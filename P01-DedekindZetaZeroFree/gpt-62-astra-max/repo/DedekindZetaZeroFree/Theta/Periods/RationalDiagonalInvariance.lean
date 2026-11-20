@@ -12,13 +12,10 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.DigitMasks
 open MomentSources NumberField MeasureTheory
 open scoped Classical Topology
-open _root_.DedekindZetaZeroFree.ThetaDigitDescent renaming scale → scale
-open _root_.DedekindZetaZeroFree.ThetaDigitDescent renaming scale_mk → scale_mk
-open _root_.DedekindZetaZeroFree.ThetaDigitDescent renaming scale_continuous → scale_continuous
-open _root_.DedekindZetaZeroFree.ThetaDigitDescent renaming scale_inverse → scale_inverse
+open _root_.DedekindZetaZeroFree.ThetaDigitDescent (scale scale_mk scale_continuous scale_inverse)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem pglA_rational (a : Fˣ) :
     KPRationalAdelicSplitting.pglA F R.A.zeta12 R.A.primitive_zeta12

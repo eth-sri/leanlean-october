@@ -37,11 +37,28 @@ namespace DedekindZetaZeroFree.KPCuspChart.SectionConstruction
     refine Fin.lastCases ?_ (fun j => ?_) i <;>
       simp [KPArch.shape, Finset.mul_sum]
 
-private theorem normalized_succ (d : ℕ) :
-    ∃ μ : Measure (KPCuspLogShape.hyperplane (d+1)), μ.IsAddHaarMeasure ∧
-      Measure.map (fun p : ((Fin (d+1) → ℂ) × KPCuspLogShape.hyperplane (d+1)) × ℝ =>
+theorem normalized_shape_haar
+    (F : Type*) [Field F] [NumberField F]
+    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) :
+    ∃ μ : Measure (Shape F), μ.IsAddHaarMeasure ∧
+      Measure.map (toArch F)
+        ((volume.prod μ).prod (radialMeasure (KPCuspLogShape.dimension F))) =
+        KPArch.hyperbolicVolume (KPCuspLogShape.dimension F) := by
+  have hn := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank F
+  have hp := Module.finrank_pos (R := ℚ) (M := F)
+  have hd : 0 < KPCuspLogShape.dimension F := by
+    dsimp [KPCuspLogShape.dimension]
+    omega
+  obtain ⟨d, hd⟩ := Nat.exists_eq_succ_of_ne_zero (Nat.ne_of_gt hd)
+  unfold toArch
+  change ∃ μ : Measure (KPCuspLogShape.hyperplane (KPCuspLogShape.dimension F)),
+    μ.IsAddHaarMeasure ∧
+      Measure.map (fun p : ((Fin (KPCuspLogShape.dimension F) → ℂ) ×
+        KPCuspLogShape.hyperplane (KPCuspLogShape.dimension F)) × ℝ =>
         fun i => (p.1.1 i, p.2 + p.1.2.val i))
-        ((volume.prod μ).prod (radialMeasure (d+1))) = KPArch.hyperbolicVolume (d+1) := by
+        ((volume.prod μ).prod (radialMeasure (KPCuspLogShape.dimension F))) =
+        KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)
+  rw [hd]
   let c := ENNReal.ofReal (d+1 : ℝ)
   let e := (shapeEquiv d).toContinuousLinearEquiv
   have hc : c ≠ 0 := by dsimp [c]; positivity
@@ -87,30 +104,6 @@ private theorem normalized_succ (d : ℕ) :
   rw [hsource]
   rw [← KPArch.hyperbolicVolume_split d]
   congr 1
-
-theorem normalized_shape_haar
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) :
-    ∃ μ : Measure (Shape F), μ.IsAddHaarMeasure ∧
-      Measure.map (toArch F)
-        ((volume.prod μ).prod (radialMeasure (KPCuspLogShape.dimension F))) =
-        KPArch.hyperbolicVolume (KPCuspLogShape.dimension F) := by
-  have hn := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank F
-  have hp := Module.finrank_pos (R := ℚ) (M := F)
-  have hd : 0 < KPCuspLogShape.dimension F := by
-    dsimp [KPCuspLogShape.dimension]
-    omega
-  obtain ⟨d, hd⟩ := Nat.exists_eq_succ_of_ne_zero (Nat.ne_of_gt hd)
-  unfold toArch
-  change ∃ μ : Measure (KPCuspLogShape.hyperplane (KPCuspLogShape.dimension F)),
-    μ.IsAddHaarMeasure ∧
-      Measure.map (fun p : ((Fin (KPCuspLogShape.dimension F) → ℂ) ×
-        KPCuspLogShape.hyperplane (KPCuspLogShape.dimension F)) × ℝ =>
-        fun i => (p.1.1 i, p.2 + p.1.2.val i))
-        ((volume.prod μ).prod (radialMeasure (KPCuspLogShape.dimension F))) =
-        KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)
-  rw [hd]
-  exact normalized_succ d
 
 end DedekindZetaZeroFree.KPCuspChart.SectionConstruction
 

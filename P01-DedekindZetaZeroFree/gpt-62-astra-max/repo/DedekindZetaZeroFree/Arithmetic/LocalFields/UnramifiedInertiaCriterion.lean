@@ -9,11 +9,12 @@ namespace DedekindZetaZeroFree.AbelianQuotient
 open scoped NumberField
 open IsDedekindDomain
 
-theorem unramifiedIffInertiaBot
-    {K E : Type*} [Field K] [NumberField K] [Field E] [NumberField E]
-    [Algebra K E] [IsAbelianGalois K E]
-    (p : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 E))
-    (hw : w.asIdeal.LiesOver p.asIdeal) :
+variable {K E : Type*} [Field K] [NumberField K] [Field E] [NumberField E] [Algebra K E]
+    [IsAbelianGalois K E] (p : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 E))
+    (hw : w.asIdeal.LiesOver p.asIdeal)
+
+include hw in
+theorem unramifiedIffInertiaBot :
     Algebra.IsUnramifiedAt (𝓞 K) w.asIdeal ↔
       Ideal.inertia (E ≃ₐ[K] E) w.asIdeal = ⊥ := by
 
@@ -23,18 +24,15 @@ theorem unramifiedIffInertiaBot
 
   have hcard : Nat.card (Ideal.inertia (E ≃ₐ[K] E) w.asIdeal) =
       w.asIdeal.ramificationIdx (𝓞 K) := by
-    rw [Ideal.card_inertia_eq_ramificationIdxIn (G := Gal(E/K)) p.asIdeal w.asIdeal,
+    rw [Ideal.card_inertia_eq_ramificationIdxIn p.asIdeal w.asIdeal,
       Ideal.ramificationIdxIn_eq_ramificationIdx p.asIdeal w.asIdeal Gal(E/K)]
 
   rw [Subgroup.eq_bot_iff_card, hcard]
 
   exact Ideal.ramificationIdx_eq_one_iff.symm
 
-theorem unramifiedAtAllPrimesAboveIff
-    {K E : Type*} [Field K] [NumberField K] [Field E] [NumberField E]
-    [Algebra K E] [IsAbelianGalois K E]
-    (p : HeightOneSpectrum (𝓞 K)) (w : HeightOneSpectrum (𝓞 E))
-    (hw : w.asIdeal.LiesOver p.asIdeal) :
+include hw in
+theorem unramifiedAtAllPrimesAboveIff :
     (∀ w' : HeightOneSpectrum (𝓞 E), w'.asIdeal.LiesOver p.asIdeal →
       Algebra.IsUnramifiedAt (𝓞 K) w'.asIdeal) ↔
       Algebra.IsUnramifiedAt (𝓞 K) w.asIdeal := by

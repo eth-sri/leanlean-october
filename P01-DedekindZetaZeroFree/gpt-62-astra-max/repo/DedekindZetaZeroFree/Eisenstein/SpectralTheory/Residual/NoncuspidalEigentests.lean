@@ -18,17 +18,17 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualAveragedEigentest
 open KPContSectorCoveredQuotientVocabulary KPContSectorSmoothFramesSupport
 open ResidualSphericalGeometry ResidualHilbertCenters
-open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison renaming K_U_compact → K_U_compact
-open _root_.DedekindZetaZeroFree renaming canonicalRealization → canonicalRealization
+open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison (K_U_compact)
+open _root_.DedekindZetaZeroFree (canonicalRealization)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1800000
 set_option synthInstance.maxHeartbeats 100000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "V" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U
 local notation "Q" => KPSmoothLocalQuotientCharts.quotientMap F ζ hζ

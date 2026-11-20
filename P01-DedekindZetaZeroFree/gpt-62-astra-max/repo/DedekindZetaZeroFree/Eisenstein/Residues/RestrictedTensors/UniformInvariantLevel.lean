@@ -10,14 +10,12 @@ open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.FourierContinuation.ComplexLines
 open NumberField IsDedekindDomain MomentSources KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct
 open KPGlobalResidualConstruction LiteralSource TensorActionSource ThetaExpansion KPLiteralRaw
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming pureComponent → pureComponent
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming exists_pure_product_level → exists_pure_product_level
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming pure_raw_fixed → pure_raw_fixed
+open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource (pureComponent exists_pure_product_level pure_raw_fixed)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency true
@@ -34,15 +32,12 @@ set_option maxHeartbeats 2000000
   obtain ⟨D,hD⟩ := exists_pure_product_level R.A P C s x
   have hc := ActualFiniteFactor.productSubgroup_compact_open F ζ hζ D
   rw [EisensteinReferenceSections.SourceLevels.finite_eq F ζ hζ] at hc
-  let J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ :=
-    ⟨⟨(ActualFiniteFactor.productSubgroup F ζ hζ D).comap
-      (KPGlobalTorusFunctionData.finitePart F ζ hζ).subtype,hc.2⟩,hc.1⟩
-  refine ⟨J,?_⟩
+  refine ⟨(⟨⟨(ActualFiniteFactor.productSubgroup F ζ hζ D).comap
+    (KPGlobalTorusFunctionData.finitePart F ζ hζ).subtype,hc.2⟩,hc.1⟩),?_⟩
   intro v g j hj
   obtain ⟨u,hu,heu⟩ := hj
   obtain ⟨raw,hr,he⟩ := hu
-  have hj' : scalarQuotient F ζ hζ (amalgamation F ζ hζ raw) = j := he.trans heu
-  rw [← hj']
+  rw [← (he.trans heu)]
   induction g using QuotientGroup.induction_on with
   | H g =>
     induction g using QuotientGroup.induction_on with
@@ -51,8 +46,6 @@ set_option maxHeartbeats 2000000
         (scalarQuotient F ζ hζ (amalgamation F ζ hζ g) *
           scalarQuotient F ζ hζ (amalgamation F ζ hζ raw)) = _
       rw [← map_mul, ← map_mul, quotientCoreValue_raw]
-      change rawCoreInsertion R.A P C (RestrictedTensorSimple.stageInclusion _ _ _ s
-        (PiTensorProduct.tprod ℂ (Function.update x ⟨Sum.inl w,hw⟩ (harmonicInverse v)))) (g*raw) = _
       apply pure_raw_fixed R.A P C s _ g raw hr.1
       intro q
       have hp : pureComponent R.A P C s
@@ -84,7 +77,7 @@ private theorem core_residue_right_fixed
             unfold KPLiteralRaw.eisenstein
             simp only [← mul_assoc,hf]).trans (A.germ.1 _ z hz a).symm)) g
   rw [coreResidue_eq_owned_cleared]
-  simpa only [Fin.sum_univ_one,one_mul] using ht
+  simpa using ht
 
 theorem restrictedSlot_uniform_residue_level
     (s : RestrictedTensorSimple.Level (LiteralSource.bad R.A P C))
@@ -96,11 +89,9 @@ theorem restrictedSlot_uniform_residue_level
           coreResidue R P C (restrictedSlotTensor R.A P C s x w hw v) g := by
   obtain ⟨J,hJ⟩ := source_slot_uniform_level R P C s x w hw
   let L := EisensteinReferenceSections.SourceLevels.level F ζ hζ P C
-  let U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ :=
-    ⟨J.toOpenSubgroup ⊓ L.toOpenSubgroup,J.isCompact.inter_right L.toOpenSubgroup.isClosed⟩
-  refine ⟨U,?_⟩
+  refine ⟨(⟨J.toOpenSubgroup ⊓ L.toOpenSubgroup,J.isCompact.inter_right L.toOpenSubgroup.isClosed⟩),?_⟩
   intro v g u hu
-  have huJ : u ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ J :=
+  have huJ :=
     Subgroup.map_mono inf_le_left hu
   have huL : u ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ L :=
     Subgroup.map_mono inf_le_right hu

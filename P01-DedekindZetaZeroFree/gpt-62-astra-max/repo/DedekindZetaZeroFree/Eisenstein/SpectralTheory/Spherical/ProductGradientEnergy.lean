@@ -13,9 +13,7 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualSphericalMetric
 open KPSmoothActualFlowData
 open KPMsGreenFlux.FramedConormal.NativeShellStokes.IwasawaFieldJets
-open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalMetric renaming localD_first → localD_first
-open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalMetric renaming localD_left → localD_left
-open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalMetric renaming first_precomp → first_precomp
+open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualSphericalMetric (localD_first localD_left first_precomp)
 
 def localEnergy (f : Matrix.GeneralLinearGroup (Fin 2) ℂ → ℂ)
     (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) : ℝ :=
@@ -55,7 +53,7 @@ theorem product_basepoint_energy (d : ℕ) (f : KPArch.Space d → ℂ)
   unfold productEnergy
   apply Finset.sum_congr rfl
   intro i _
-  let L : KPArch.H3 →L[ℝ] KPArch.Space d := ContinuousLinearMap.single ℝ (fun _ : Fin d => KPArch.H3) i
+  let L := ContinuousLinearMap.single ℝ (fun _ : Fin d => KPArch.H3) i
   have he (a : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
       (fun k => KPArch.action (Function.update (fun _ : Fin d => (1 : Matrix.GeneralLinearGroup (Fin 2) ℂ)) i a k) (0,0)) =
         L (KPArch.action a (0,0)) := by
@@ -99,15 +97,11 @@ theorem product_energy_pullback (d : ℕ) (f : KPArch.Space d → ℂ)
       (fun a => f (fun k => KPArch.action (Function.update g i a k) (0,0))) (g i) 1).trans
       (by rw [mul_one])
   rw [← he]
-  have hb := product_basepoint_energy d (f ∘ KPArch.productAction d g)
+  exact product_basepoint_energy d (f ∘ KPArch.productAction d g)
     (hf.comp ((KPArch.productAction_contDiff d g).of_le (by simp)))
-  exact hb
 
-open _root_.DedekindZetaZeroFree.KPContThreeL2CotangentHelpers renaming arch_coframe_norm → arch_coframe_norm
-open _root_.DedekindZetaZeroFree.KPContThreeL2CotangentHelpers renaming differential_norm_isometry → differential_norm_isometry
-open _root_.DedekindZetaZeroFree.KPContArchLaplacianNaturality renaming act → act
-open _root_.DedekindZetaZeroFree.KPContArchLaplacianNaturality renaming act_smooth → act_smooth
-open _root_.DedekindZetaZeroFree.KPContArchLaplacianNaturality renaming act_metric → act_metric
+open _root_.DedekindZetaZeroFree.KPContThreeL2CotangentHelpers (arch_coframe_norm differential_norm_isometry)
+open _root_.DedekindZetaZeroFree.KPContArchLaplacianNaturality (act act_smooth act_metric)
 
 private theorem coframe_norm_A (d : ℕ) (f : KPArch.Space d → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (z : KPArch.Space d) :

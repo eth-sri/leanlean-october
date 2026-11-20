@@ -13,8 +13,8 @@ open DedekindZetaZeroFree NumberField Filter Asymptotics Topology MeasureTheory
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def g (Z : ℝ) : ℂ := ((Z ^ (61 / 100 : ℝ) : ℝ) : ℂ) * Spectral.f D Z
 

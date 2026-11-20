@@ -8,55 +8,58 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical
 
-private lemma absNorm_pos_of_ne_bot {F : Type*} [Field F] [NumberField F]
-    {I : Ideal (𝓞 F)} (h : I ≠ ⊥) : (0 : ℝ) < (Ideal.absNorm I : ℝ) := by
-  have h0 : Ideal.absNorm I ≠ 0 := fun hh => h (Ideal.absNorm_eq_zero_iff.mp hh)
-  exact_mod_cast Nat.pos_of_ne_zero h0
+section
 
-private lemma one_le_absNorm_of_ne_bot {F : Type*} [Field F] [NumberField F]
-    {I : Ideal (𝓞 F)} (h : I ≠ ⊥) : (1 : ℝ) ≤ (Ideal.absNorm I : ℝ) := by
-  have h0 : Ideal.absNorm I ≠ 0 := fun hh => h (Ideal.absNorm_eq_zero_iff.mp hh)
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr h0
+variable {F : Type*} [Field F] [NumberField F] {I : Ideal (𝓞 F)} (h : I ≠ ⊥)
 
-private lemma div_rpow_neg_half {x Y : ℝ} (hx : 0 < x) (hY : 0 < Y) :
-    (x / Y) ^ (-(1 / 2 : ℝ)) = Y ^ (1 / 2 : ℝ) * x ^ (-(1 / 2 : ℝ)) := by
-  rw [Real.div_rpow hx.le hY.le, Real.rpow_neg hY.le, div_inv_eq_mul, mul_comm]
+include h in
+private lemma absNorm_pos_of_ne_bot : (0 : ℝ) < (Ideal.absNorm I : ℝ) := by
+  exact_mod_cast Nat.pos_of_ne_zero (fun hh => h (Ideal.absNorm_eq_zero_iff.mp hh))
 
-private lemma div_rpow_neg_two {x Y : ℝ} (hx : 0 < x) (hY : 0 < Y) :
-    (x / Y) ^ (-(2 : ℝ)) = Y ^ 2 * x ^ (-(2 : ℝ)) := by
-  rw [Real.div_rpow hx.le hY.le, Real.rpow_neg hY.le, div_inv_eq_mul, Real.rpow_two, mul_comm]
+include h in
+private lemma one_le_absNorm_of_ne_bot : (1 : ℝ) ≤ (Ideal.absNorm I : ℝ) := by apply @DedekindZetaZeroFree.LargeSieve.InverseNormPowerSums.one_le_absNorm_coe <;> assumption
 
-noncomputable def nearScaled (F : Type*) [Field F] [NumberField F] (Y : ℝ)
-    (I : Ideal (𝓞 F)) : ℝ :=
+end
+
+section
+
+variable (F : Type*) [Field F] [NumberField F] (Y : ℝ) (I : Ideal (𝓞 F))
+
+noncomputable def nearScaled : ℝ :=
   if I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ Y then (Ideal.absNorm I : ℝ) ^ (-(1 / 2 : ℝ)) else 0
 
-noncomputable def farScaled (F : Type*) [Field F] [NumberField F] (Y : ℝ)
-    (I : Ideal (𝓞 F)) : ℝ :=
+noncomputable def farScaled : ℝ :=
   if I ≠ ⊥ ∧ Y < (Ideal.absNorm I : ℝ) then (Ideal.absNorm I : ℝ) ^ (-(2 : ℝ)) else 0
 
-noncomputable def nearPart (F : Type*) [Field F] [NumberField F] (Y : ℝ)
-    (I : Ideal (𝓞 F)) : ℝ :=
+noncomputable def nearPart : ℝ :=
   if I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ Y then ((Ideal.absNorm I : ℝ) / Y) ^ (-(1 / 2 : ℝ)) else 0
 
-noncomputable def farPart (F : Type*) [Field F] [NumberField F] (Y : ℝ)
-    (I : Ideal (𝓞 F)) : ℝ :=
+noncomputable def farPart : ℝ :=
   if I ≠ ⊥ ∧ Y < (Ideal.absNorm I : ℝ) then ((Ideal.absNorm I : ℝ) / Y) ^ (-(2 : ℝ)) else 0
 
-private lemma nearPart_eq_mul (F : Type*) [Field F] [NumberField F] {Y : ℝ} (hY : 0 < Y)
-    (I : Ideal (𝓞 F)) : nearPart F Y I = Y ^ (1 / 2 : ℝ) * nearScaled F Y I := by
+end
+
+section
+
+variable (F : Type*) [Field F] [NumberField F] {Y : ℝ} (hY : 0 < Y) (I : Ideal (𝓞 F))
+
+include hY in
+private lemma nearPart_eq_mul : nearPart F Y I = Y ^ (1 / 2 : ℝ) * nearScaled F Y I := by
   unfold nearPart nearScaled
   by_cases hc : I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ Y
   · rw [if_pos hc, if_pos hc]
-    exact div_rpow_neg_half (absNorm_pos_of_ne_bot hc.1) hY
+    rw [Real.div_rpow (absNorm_pos_of_ne_bot hc.1).le hY.le, Real.rpow_neg hY.le, div_inv_eq_mul, mul_comm]
   · rw [if_neg hc, if_neg hc, mul_zero]
 
-private lemma farPart_eq_mul (F : Type*) [Field F] [NumberField F] {Y : ℝ} (hY : 0 < Y)
-    (I : Ideal (𝓞 F)) : farPart F Y I = Y ^ 2 * farScaled F Y I := by
+include hY in
+private lemma farPart_eq_mul : farPart F Y I = Y ^ 2 * farScaled F Y I := by
   unfold farPart farScaled
   by_cases hc : I ≠ ⊥ ∧ Y < (Ideal.absNorm I : ℝ)
   · rw [if_pos hc, if_pos hc]
-    exact div_rpow_neg_two (absNorm_pos_of_ne_bot hc.1) hY
+    rw [Real.div_rpow (absNorm_pos_of_ne_bot hc.1).le hY.le, Real.rpow_neg hY.le, div_inv_eq_mul, Real.rpow_two, mul_comm]
   · rw [if_neg hc, if_neg hc, mul_zero]
+
+end
 
 theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ Y : ℝ, 0 < Y →
@@ -71,9 +74,6 @@ theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
     exists_ideal_inverse_power_initial_bound F (1 / 2) (by norm_num) (by norm_num)
   obtain ⟨Btail, hBtail0, hBtail⟩ :=
     exists_filtered_ideal_inverse_power_tail_bound F 2 (by norm_num)
-  have hsum2 : Summable (fun I : Ideal (𝓞 F) =>
-      if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-(2 : ℝ))) :=
-    summable_ideal_inverse_power F 2 (by norm_num)
   set Z2 : ℝ := ∑' I : Ideal (𝓞 F),
       (if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-(2 : ℝ))) with hZ2def
   have hZ2nn : 0 ≤ Z2 := by
@@ -95,10 +95,9 @@ theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
       · exact absurd (by rw [Finset.mem_filter]; exact ⟨mem_boundedNormIdeals.mpr hle, h⟩) hI
       · rw [nearScaled, if_neg (fun hc => hle hc.2)]
   have hfarSummable : Summable (farScaled F Y) := by
-    refine Summable.of_nonneg_of_le (g := farScaled F Y)
-      (f := fun I : Ideal (𝓞 F) =>
-        if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-(2 : ℝ)))
-      (fun I => ?_) (fun I => ?_) hsum2
+    refine Summable.of_nonneg_of_le
+
+      (fun I => ?_) (fun I => ?_) (summable_ideal_inverse_power F 2 (by norm_num))
     · by_cases h : I = ⊥
       · rw [farScaled, if_neg (fun hc => hc.1 h)]
       · by_cases hlt : Y < (Ideal.absNorm I : ℝ)
@@ -112,11 +111,9 @@ theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
         · rw [farScaled, if_neg (fun hc => hlt hc.2), if_neg h]
           exact Real.rpow_nonneg (Nat.cast_nonneg _) _
   have hnearSummable' : Summable (nearPart F Y) := by
-    have h := hnearSummable.mul_left (Y ^ (1 / 2 : ℝ))
-    exact h.congr (fun I => (nearPart_eq_mul F hY I).symm)
+    exact (hnearSummable.mul_left (Y ^ (1 / 2 : ℝ))).congr (fun I => (nearPart_eq_mul F hY I).symm)
   have hfarSummable' : Summable (farPart F Y) := by
-    have h := hfarSummable.mul_left (Y ^ 2)
-    exact h.congr (fun I => (farPart_eq_mul F hY I).symm)
+    exact (hfarSummable.mul_left (Y ^ 2)).congr (fun I => (farPart_eq_mul F hY I).symm)
 
   have hnearTsum : (∑' I : Ideal (𝓞 F), nearScaled F Y I)
       = ∑ I ∈ (boundedNormIdeals F Y).filter (fun I => I ≠ ⊥),
@@ -129,8 +126,8 @@ theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
       · by_cases hle : (Ideal.absNorm I : ℝ) ≤ Y
         · exact absurd (by rw [Finset.mem_filter]; exact ⟨mem_boundedNormIdeals.mpr hle, h⟩) hI
         · rw [nearScaled, if_neg (fun hc => hle hc.2)]
-    rw [tsum_eq_sum (f := nearScaled F Y)
-      (s := (boundedNormIdeals F Y).filter (fun I => I ≠ ⊥)) hzero]
+    rw [tsum_eq_sum
+       hzero]
     exact Finset.sum_congr rfl fun I hI => by
       rw [nearScaled, if_pos ⟨(Finset.mem_filter.mp hI).2, mem_boundedNormIdeals.mp (Finset.mem_filter.mp hI).1⟩]
 
@@ -167,7 +164,7 @@ theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
           _ = Btail * (Y ^ 2 * Y ^ (-1 : ℝ)) := by ring
           _ = Btail * Y := by rw [hYinv]
       linarith [hN', hF', mul_nonneg hZ2nn hY.le]
-    · have hYlt : Y < 1 := lt_of_not_ge hY1
+    · have hYlt := lt_of_not_ge hY1
       have hN : (∑' I : Ideal (𝓞 F), nearScaled F Y I) = 0 := by
         have hzero : ∀ I : Ideal (𝓞 F), nearScaled F Y I = 0 := by
           intro I
@@ -184,13 +181,10 @@ theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
         refine tsum_congr fun I => ?_
         by_cases h : I = ⊥
         · rw [farScaled, if_neg (fun hc => hc.1 h)]; simp [h]
-        · have hlt : Y < (Ideal.absNorm I : ℝ) :=
-            lt_of_lt_of_le hYlt (one_le_absNorm_of_ne_bot h)
-          rw [farScaled, if_pos ⟨h, hlt⟩, if_neg h]
+        · rw [farScaled, if_pos ⟨h, (lt_of_lt_of_le hYlt (one_le_absNorm_of_ne_bot h))⟩, if_neg h]
       have hF' : Y ^ 2 * (∑' I : Ideal (𝓞 F), farScaled F Y I) ≤ Z2 * Y := by
         rw [hF]
-        have hY2 : Y ^ 2 ≤ Y := by nlinarith [hY, hYlt]
-        calc Y ^ 2 * Z2 ≤ Y * Z2 := mul_le_mul_of_nonneg_right hY2 hZ2nn
+        calc _ ≤ Y * Z2 := mul_le_mul_of_nonneg_right (by nlinarith [hY, hYlt]) hZ2nn
           _ = Z2 * Y := by ring
       have hN' : Y ^ (1 / 2 : ℝ) * (∑' I : Ideal (𝓞 F), nearScaled F Y I) = 0 := by
         rw [hN, mul_zero]
@@ -234,7 +228,7 @@ theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
           Summable.sum_le_tsum u (fun I _ => add_nonneg (hnearnn I) (hfarnn I))
             (hnearSummable'.add hfarSummable')
       _ ≤ (Bhalf + Btail + Z2) * Y := hbound
-  have hnorm : Summable (fun I : Ideal (𝓞 F) => ‖g I‖) :=
+  have hnorm :=
     summable_of_sum_le (fun I => norm_nonneg _) key
   exact ⟨hnorm, Summable.of_norm hnorm, Real.tsum_le_of_sum_le (fun I => norm_nonneg _) key⟩
 

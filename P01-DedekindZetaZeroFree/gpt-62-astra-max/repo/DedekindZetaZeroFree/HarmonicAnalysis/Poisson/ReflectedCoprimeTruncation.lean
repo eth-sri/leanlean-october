@@ -73,13 +73,10 @@ theorem mass_eq_half_mellin (W : ℝ → ℂ) (a b : ℝ)
     (ha : 0 < a) (hab : a < b) :
     IntegrableOn (fun t : ℝ => W (t ^ 2)) (Set.Ioi 0) ∧
       mass W = (1 / 2 : ℂ) * mellin W (1 / 2) := by
-  have hc : HasCompactSupport W :=
-    HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp
-  refine ⟨compact_comp_sq_integrableOn W hW hc, ?_⟩
+  refine ⟨compact_comp_sq_integrableOn W hW (HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp), ?_⟩
   have hm : mass W = mellin (fun t : ℝ => W (t ^ (2 : ℝ))) (1 : ℂ) := by
     simp only [mass, mellin]
     refine setIntegral_congr_fun measurableSet_Ioi (fun t ht => ?_)
-    have ht0 : (t : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt ht
     rw [sub_self, Complex.cpow_zero, one_smul, Real.rpow_ofNat]
   rw [hm, mellin_comp_rpow W (1 : ℂ) (2 : ℝ)]
   norm_num
@@ -97,27 +94,17 @@ theorem kernel_eq_mellinInv (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
     have hmeas : AEStronglyMeasurable
         (fun t : ℝ => reflectedSquareSpectrum D r W ((c : ℂ) + (t : ℂ) * Complex.I))
         volume := by
-      have hdiff : DifferentiableOn ℂ (reflectedSquareSpectrum D r W) {s : ℂ | 0 < s.re} :=
-        reflectedSquareSpectrum_differentiableOn D r W a b hD hr hW hsupp ha hab
-      have hcont : Continuous
-          (fun t : ℝ => reflectedSquareSpectrum D r W ((c : ℂ) + (t : ℂ) * Complex.I)) :=
-        hdiff.continuousOn.comp_continuous (by fun_prop) (fun t => by simp [hc])
-      exact hcont.aestronglyMeasurable
-    have hgi : Integrable (fun t : ℝ => C * (1 + t ^ 2)⁻¹) volume :=
-      integrable_inv_one_add_sq.const_mul C
+      exact ((reflectedSquareSpectrum_differentiableOn D r W a b hD hr hW hsupp ha hab).continuousOn.comp_continuous (by fun_prop) (fun t => by simp [hc])).aestronglyMeasurable
     rw [Complex.VerticalIntegrable]
-    refine Integrable.mono' hgi hmeas ?_
+    refine Integrable.mono' (integrable_inv_one_add_sq.const_mul C) hmeas ?_
     filter_upwards with t
-    have h := hC c (Set.left_mem_Icc.mpr (le_refl c)) t
-    have h1 : (1 : ℝ) + t ^ 2 ≤ (1 + |t|) ^ 2 := by
-      nlinarith [abs_nonneg t, sq_abs t]
-    have hpos : 0 < (1 : ℝ) + t ^ 2 := by positivity
     have hpos2 : 0 < (1 + |t|) ^ 2 := by positivity
     have hle : ‖reflectedSquareSpectrum D r W ((c : ℂ) + (t : ℂ) * Complex.I)‖ ≤
-        C / (1 + |t|) ^ 2 := (le_div_iff₀ hpos2).mpr (by rw [mul_comm]; exact h)
+        C / (1 + |t|) ^ 2 := (le_div_iff₀ hpos2).mpr (by rw [mul_comm]; exact (hC c (Set.left_mem_Icc.mpr (le_refl c)) t))
     have hcmp : C / (1 + |t|) ^ 2 ≤ C * (1 + t ^ 2)⁻¹ := by
       rw [div_eq_mul_inv]
-      exact mul_le_mul_of_nonneg_left (inv_anti₀ hpos h1) hCpos.le
+      exact mul_le_mul_of_nonneg_left (inv_anti₀ (by positivity) (by
+        nlinarith [abs_nonneg t, sq_abs t])) hCpos.le
     exact hle.trans hcmp
   · have := EulerIter_reflectedSquareTransform_eq_mellinInv D r W a b hD hr hW hsupp ha hab
       0 c x hc hx
@@ -128,7 +115,11 @@ theorem kernel_eq_mellinInv (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
       funext s; simp
     rw [hfun]
 
-theorem absolutely_summable (F : Type) [Field F] [NumberField F]
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+theorem absolutely_summable
     (hF : NumberField.IsTotallyComplex F) (W : ℝ → ℂ) (a b : ℝ)
     (hW : ContDiff ℝ ∞ W) (hsupp : Function.support W ⊆ Set.Icc a b)
     (ha : 0 < a) (hab : a < b) (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
@@ -145,12 +136,10 @@ theorem absolutely_summable (F : Type) [Field F] [NumberField F]
         ‖ReflectedTails.dualSummand F
           (SquareSecondPass.reflectedTransform (principalDiscriminant F)
             (principalComplexPlaces F) W) T d I‖) := by
-  have hc : HasCompactSupport W :=
-    HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp
   have hs (X : ℝ) (hX : 0 < X) :=
     (SquarePoisson.reflected_and_ideal_estimates
       (principalDiscriminant F) (principalComplexPlaces F) W
-      (principalDiscriminant_pos F) (principalComplexPlaces_pos F hF) hW hc).2 F X hX
+      (principalDiscriminant_pos F) (principalComplexPlaces_pos F hF) hW (HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp)).2 F X hX
   refine ⟨Summable.of_nonneg_of_le (fun I => by split_ifs <;> positivity) ?_ (hs T hT).1, ?_⟩
   · intro I
     by_cases hI : I = ⊥
@@ -167,17 +156,17 @@ theorem absolutely_summable (F : Type) [Field F] [NumberField F]
     · convert hscale.1 using 1
       funext I
       simp only [ReflectedTails.primalSummand]
-      split_ifs <;> try simp only [norm_zero]
+      split_ifs <;> try simp
       congr 2
       field_simp
     · convert hscale.2 using 1
       funext I
       simp only [ReflectedTails.dualSummand]
-      split_ifs <;> try simp only [norm_zero]
+      split_ifs <;> try simp
       congr 2
       ring
 
-private lemma dual_split (F : Type) [Field F] [NumberField F]
+private lemma dual_split
     (k : ℝ → ℂ) (T L : ℝ) (d : Ideal (𝓞 F))
     (hs : Summable (ReflectedTails.dualSummand F k T d)) :
     (∑' b, ReflectedTails.dualSummand F k T d b) =
@@ -204,11 +193,17 @@ private lemma dual_split (F : Type) [Field F] [NumberField F]
   exact Finset.sum_congr rfl (fun b hb => by
     simp [ReflectedTails.dualSummand, (Finset.mem_filter.mp hb).2])
 
+end
+
+alias ReflectedCoprimeTruncation.dual_split := dual_split
+
 private lemma sum_cut {α : Type*} (s : Finset α) (n : α → ℝ) (Z : ℝ)
     (f : α → ℂ) :
     ∑ d ∈ s, f d = (∑ d ∈ s.filter (fun d => n d ≤ Z), f d) +
       ∑ d ∈ s.filter (fun d => Z < n d), f d := by
-  simpa only [not_le] using (Finset.sum_filter_add_sum_filter_not s (fun d => n d ≤ Z) f).symm
+  simpa using (Finset.sum_filter_add_sum_filter_not s (fun d => n d ≤ Z) f).symm
+
+alias ReflectedCoprimeTruncation.sum_cut := sum_cut
 
 private lemma sum_band {α : Type*} (s : Finset α) (n : α → ℝ) (Y Z : ℝ)
     (hYZ : Y ≤ Z) (f : α → ℂ) :
@@ -225,6 +220,8 @@ private lemma sum_band {α : Type*} (s : Finset α) (n : α → ℝ) (Y Z : ℝ)
       s.filter (fun d => Y < n d ∧ n d ≤ Z) := by
     ext d; simp only [Finset.mem_filter]; tauto
   rwa [h₁, h₂] at h
+
+alias ReflectedCoprimeTruncation.sum_band := sum_band
 
 lemma originalSum_eq_truncatedMainTerm_add_remainder
     (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
@@ -243,7 +240,7 @@ lemma originalSum_eq_truncatedMainTerm_add_remainder
     ∑' I, ReflectedTails.dualSummand F k T d I
   let A := SquareSecondPass.kappa data * (T : ℂ) * mass W
   let R := originCoefficient data W
-  have hc : HasCompactSupport W := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp
+  have hc := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp
   have hmass := (mass_eq_half_mellin W a b hW hsupp ha hab).2
   have hfull : originalSum F W T m =
       A * (∑ d ∈ idealDivisors m, q d) + R * (∑ d ∈ idealDivisors m, mu d) +
@@ -265,24 +262,22 @@ lemma originalSum_eq_truncatedMainTerm_add_remainder
     have hd0 : 0 < (Ideal.absNorm d : ℝ) := by
       exact_mod_cast Nat.pos_of_ne_zero (fun h =>
         ne_bot_of_mem_idealDivisors (Finset.mem_filter.mp hd).1 (Ideal.absNorm_eq_zero_iff.mp h))
-    have hp := SquareSecondPass.principal_poisson F hF W hW hc
-      (T / (Ideal.absNorm d : ℝ)) (div_pos hT hd0)
     have heq : (∑' I, ReflectedTails.primalSummand F g T d I) =
       ∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else g ((Ideal.absNorm I : ℝ) / (T / (Ideal.absNorm d : ℝ))) := by
       apply tsum_congr; intro I; simp only [ReflectedTails.primalSummand]
       split_ifs <;> try rfl
       congr 1; field_simp
     rw [heq]
-    change mu d * _ = _
-    rw [show (∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else g ((Ideal.absNorm I : ℝ) / (T / (Ideal.absNorm d : ℝ)))) = _ from hp]
+    rw [show (∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else g ((Ideal.absNorm I : ℝ) / (T / (Ideal.absNorm d : ℝ)))) = _ from (SquareSecondPass.principal_poisson F hF W hW hc
+      (T / (Ideal.absNorm d : ℝ)) (div_pos hT hd0))]
     dsimp [A, q, R, du, data, k, ReflectedTails.dualSummand, originCoefficient]
     rw [hmass]
     simp only [Complex.ofReal_div, Complex.ofReal_natCast]
     have heqdual : (∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else
-        SquareSecondPass.reflectedTransform (principalDiscriminant F) (principalComplexPlaces F) W
+        k
           (T / (Ideal.absNorm d : ℝ) * (Ideal.absNorm I : ℝ))) =
         ∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else
-        SquareSecondPass.reflectedTransform (principalDiscriminant F) (principalComplexPlaces F) W
+        k
           (T * (Ideal.absNorm I : ℝ) / (Ideal.absNorm d : ℝ)) := by
       apply tsum_congr; intro I; congr 1; congr 1; ring
     rw [heqdual]; ring
@@ -297,16 +292,11 @@ lemma originalSum_eq_truncatedMainTerm_add_remainder
         ((idealDivisors m).filter (fun d => Y < (Ideal.absNorm d : ℝ) ∧ (Ideal.absNorm d : ℝ) ≤ Z)) mu := by
     simp only [ReflectedTails.dualCutoffTail, ← Finset.sum_add_distrib]
     apply Finset.sum_congr rfl; intro d hd
-    have hs := ((absolutely_summable F hF W a b hW hsupp ha hab m hm T hT).2
-      d (Finset.mem_filter.mp hd).1).2.of_norm
     dsimp [du]
-    rw [dual_split F k T L d hs]
+    rw [dual_split F k T L d (((absolutely_summable F hF W a b hW hsupp ha hab m hm T hT).2
+      d (Finset.mem_filter.mp hd).1).2.of_norm)]
     ring
-  have hq := sum_cut (idealDivisors m) (fun d => (Ideal.absNorm d : ℝ)) Z q
-  have hmu := sum_cut (idealDivisors m) (fun d => (Ideal.absNorm d : ℝ)) Z mu
-  have hdu := sum_cut (idealDivisors m) (fun d => (Ideal.absNorm d : ℝ)) Z du
-  have hband := sum_band (idealDivisors m) (fun d => (Ideal.absNorm d : ℝ)) Y Z hYZ du
-  rw [hfull, hmu, hdu, hband, hdusplit]
+  rw [hfull, (sum_cut (idealDivisors m) (fun d => (Ideal.absNorm d : ℝ)) Z mu), (sum_cut (idealDivisors m) (fun d => (Ideal.absNorm d : ℝ)) Z du), (sum_band (idealDivisors m) (fun d => (Ideal.absNorm d : ℝ)) Y Z hYZ du), hdusplit]
   change _ = A * (∑ d ∈ idealDivisors m, q d) - A * _ + R * _ + _ +
     (ReflectedTails.primalTail F g T _ mu + ReflectedTails.smallDualTail F k T _ mu + _)
   rw [hlarge]

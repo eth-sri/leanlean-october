@@ -24,6 +24,8 @@ private theorem product_coordinate (y x : Fin 3 → ℂ) (hy : y 1 ≠ 0) (hx : 
   fin_cases i <;> simp [rightCoordinates, Matrix.det_fin_two, Matrix.mul_apply, Fin.sum_univ_two]
   all_goals field_simp [hden, add_comm (y 2*x 0) 1] <;> ring
 
+alias ArchimedeanChartMultiplication.product_coordinate := product_coordinate
+
  theorem product_chart (y x : ArchCoordinates F) (hy : y ∈ archDomain F)
     (hx : x ∈ archDomain F) (hden : ∀w, 1+y w 2*x w 0 ≠ 0) :
     archChart F ζ hζ (product F (y,x)) = archChart F ζ hζ y * archChart F ζ hζ x := by
@@ -39,16 +41,12 @@ private theorem product_coordinate (y x : Fin 3 → ℂ) (hy : y 1 ≠ 0) (hx : 
   apply rightCoordinates_reconstruct
   simpa [Units.val_mul, rightMatrix_val _ (hy w), rightMatrix_val _ (hx w),
     Matrix.mul_apply, Fin.sum_univ_two, add_comm] using hden w
- theorem domain_open : IsOpen (archDomain F) := by
-  have he : archDomain F = ⋂ w : InfinitePlace F, {x : ArchCoordinates F | x w 1 ≠ 0} := by
-    ext x; simp [archDomain]
-  rw [he]
-  apply isOpen_iInter_of_finite
-  intro w
-  exact isOpen_ne_fun (by fun_prop) continuous_const
+ theorem domain_open : IsOpen (archDomain F) := by apply @DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.groupArchDomain_open <;> assumption
 private theorem base_domain : archBase F ∈ archDomain F := by
   intro w
   simp [archBase]
+
+alias ArchimedeanChartMultiplication.base_domain := base_domain
  theorem choose_domain : ∃ V : Set (ArchCoordinates F), IsOpen V ∧ archBase F ∈ V ∧
     V ⊆ archDomain F ∧ ∀y∈V, ∀x∈V, ∀w, 1+y w 2*x w 0 ≠ 0 := by
   let O : Set (ArchCoordinates F × ArchCoordinates F) :=
@@ -66,8 +64,7 @@ private theorem base_domain : archBase F ∈ archDomain F := by
   refine ⟨W₁∩W₂∩archDomain F, (ho₁.inter ho₂).inter (domain_open F),
     ⟨⟨hb₁,hb₂⟩,base_domain F⟩, Set.inter_subset_right, ?_⟩
   intro y hy x hx w
-  have hp : (y,x) ∈ O := hs (show (y,x) ∈ S₁ ×ˢ S₂ from ⟨hW₁ hy.1.1, hW₂ hx.1.2⟩)
-  exact Set.mem_iInter.mp hp w
+  exact Set.mem_iInter.mp (hs (show (y,x) ∈ S₁ ×ˢ S₂ from ⟨hW₁ hy.1.1, hW₂ hx.1.2⟩)) w
  theorem product_smooth (V : Set (ArchCoordinates F))
     (hden : ∀y∈V, ∀x∈V, ∀w, 1+y w 2*x w 0 ≠ 0) :
     ContDiffOn ℝ (⊤ : ℕ∞) (product F) (V ×ˢ V) := by

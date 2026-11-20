@@ -11,15 +11,14 @@ open NumberField
 namespace DedekindZetaZeroFree.ThetaExpansion.QuotientDescent
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def digitReindex (m : ThetaReflectionData.Row R.A) (u : R.A.U) : Digits R m ≃ Digits R m :=
   ThetaDigitDescent.reindex R.A (ThetaDigitAverage.rowPrimes R.A m.val m.property)
     (fun p hp => ((ThetaDigitAverage.rowPrimes_finite R.A m.val m.property).mem_toFinset.mp hp).1) u
 
-open _root_.DedekindZetaZeroFree.ThetaDigitDescent renaming sexticFourierMask_mul_eq → sexticFourierMask_mul_eq
-open _root_.DedekindZetaZeroFree.ThetaDigitDescent renaming chi_sixth_pow_eq_one → chi_sixth_pow_eq_one
+open _root_.DedekindZetaZeroFree.ThetaDigitDescent (sexticFourierMask_mul_eq chi_sixth_pow_eq_one)
 
 theorem digitWeight_reindex (m : ThetaReflectionData.Row R.A) (u : R.A.U) (d : Digits R m) :
     digitWeight R m (digitReindex R m u d) = digitWeight R m d := by

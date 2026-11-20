@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -36,11 +33,12 @@ variable {G : Type u} {H : Type v}
 variable [Group G] [TopologicalSpace G]
 variable [Group H] [TopologicalSpace H]
 
+variable (N : Subgroup G) (M : Subgroup H) [N.Normal] [M.Normal] (e : G ≃ₜ* H)
+    (h : N.map e.toMulEquiv.toMonoidHom = M)
+
 /-- A continuous multiplicative equivalence descends to continuously
 equivalent quotients when it maps one normal subgroup onto the other. -/
-noncomputable def continuousCongr
-    (N : Subgroup G) (M : Subgroup H) [N.Normal] [M.Normal]
-    (e : G ≃ₜ* H) (h : N.map e.toMulEquiv.toMonoidHom = M) :
+noncomputable def continuousCongr :
     G ⧸ N ≃ₜ* H ⧸ M := by
   let eAlg : G ⧸ N ≃* H ⧸ M :=
     QuotientGroup.congr (G' := N) (H' := M) e.toMulEquiv h
@@ -49,20 +47,13 @@ noncomputable def continuousCongr
       continuous_toFun := ?_
       continuous_invFun := ?_ }
   · refine (QuotientGroup.isQuotientMap_mk N).continuous_iff.2 ?_
-    change Continuous fun x : G => QuotientGroup.mk' M (e x)
     exact continuous_quotient_mk'.comp e.continuous_toFun
   · refine (QuotientGroup.isQuotientMap_mk M).continuous_iff.2 ?_
-    have hsymm : M.map e.symm.toMulEquiv.toMonoidHom = N :=
-      (Subgroup.map_symm_eq_iff_map_eq (K := N) (H := M)
-        (e := e.toMulEquiv)).mpr h
-    change Continuous fun y : H => QuotientGroup.mk' N (e.symm y)
     exact continuous_quotient_mk'.comp e.symm.continuous_toFun
 
 /-- The descended equivalence acts on quotient classes through the original
 equivalence. -/
-@[simp] theorem continuousCongr_mk
-    (N : Subgroup G) (M : Subgroup H) [N.Normal] [M.Normal]
-    (e : G ≃ₜ* H) (h : N.map e.toMulEquiv.toMonoidHom = M) (g : G) :
+@[simp] theorem continuousCongr_mk (g : G) :
     continuousCongr N M e h (QuotientGroup.mk' N g) =
       QuotientGroup.mk' M (e g) :=
   rfl

@@ -10,7 +10,7 @@ open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.RawStageL2.TruncatedEstimate.CompactCore.ArchimedeanGeometry
 
 variable {F : Type} [Field F] [NumberField F]
-variable {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
+    {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
 theorem spherical_core_isCompact
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
@@ -30,7 +30,7 @@ theorem spherical_core_isCompact
     intro i
     obtain ⟨hc, ho⟩ :=
       KPCuspMonodromy.projected_finite_level_compact_open F ζ hζ U
-    obtain ⟨n, q, σ, _hn, _hσ, _hcover, hcov⟩ :=
+    obtain ⟨n, q, σ, _hσ, _hcover, hcov⟩ :=
       KPFiniteAdelicCuspEnds.finite_adelic_cusp_cover_with_compact_complement F hF
         (U.toOpenSubgroup.toSubgroup.map (KPCuspGenuineMonodromy.finiteBase F ζ hζ))
         hc ho (KPCuspGenuineMonodromy.finiteBase F ζ hζ (A.representative i))

@@ -14,11 +14,11 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.KPContActualCutoffTestPairingHolomorphy
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 section CompactIntegralMaps
 
@@ -35,17 +35,21 @@ private lemma compactIntegral_apply (g : C(X, ℂ)) :
   rw [L1.integral_eq_integral]
   exact integral_congr_ae (ContinuousMap.coeFn_toLp μ g)
 
-private lemma compactIntegral_holomorphic {Ω : Set ℂ} {j : ℂ → C(X, ℂ)}
-    (hj : DifferentiableOn ℂ j Ω) :
-    DifferentiableOn ℂ (fun s => ∫ x, j s x ∂μ) Ω := by
-  have h := (compactIntegral μ).differentiable.comp_differentiableOn hj
-  simpa only [Function.comp_def, compactIntegral_apply] using h
+section
 
-private lemma compactHermitianIntegral_holomorphic {Ω : Set ℂ} {j : ℂ → C(X, ℂ)}
-    (hj : DifferentiableOn ℂ j Ω) (ψ : C(X, ℂ)) :
+variable {Ω : Set ℂ} {j : ℂ → C(X, ℂ)} (hj : DifferentiableOn ℂ j Ω)
+
+include hj in
+private lemma compactIntegral_holomorphic :
+    DifferentiableOn ℂ (fun s => ∫ x, j s x ∂μ) Ω := by
+  simpa only [Function.comp_def, compactIntegral_apply] using ((compactIntegral μ).differentiable.comp_differentiableOn hj)
+
+include hj in
+private lemma compactHermitianIntegral_holomorphic (ψ : C(X, ℂ)) :
     DifferentiableOn ℂ (fun s => ∫ x, j s x * star (ψ x) ∂μ) Ω := by
-  have hmul : DifferentiableOn ℂ (fun s => j s * star ψ) Ω := hj.mul_const (star ψ)
-  simpa using compactIntegral_holomorphic μ hmul
+  exact compactIntegral_holomorphic μ (hj.mul_const (star ψ))
+
+end
 
 private lemma compact_pullback_hermitian {A : Type*} [MeasurableSpace A] (ν : Measure A)
     [IsFiniteMeasure ν] (q : A → X) (hq : Measurable q)
@@ -55,8 +59,7 @@ private lemma compact_pullback_hermitian {A : Type*} [MeasurableSpace A] (ν : M
   have hi (s : ℂ) : Integrable (fun x => j s x * star (ψ x)) (Measure.map q ν) :=
     memLp_one_iff_integrable.mp ((j s * star ψ).memLp (Measure.map q ν) ℂ)
   have he (s : ℂ) : (∫ y, j s (q y) * star (ψ (q y)) ∂ν) =
-      ∫ x, j s x * star (ψ x) ∂Measure.map q ν := by
-    exact (integral_map hq.aemeasurable (hi s).aestronglyMeasurable).symm
+      ∫ x, j s x * star (ψ x) ∂Measure.map q ν := (integral_map hq.aemeasurable (hi s).aestronglyMeasurable).symm
   refine ⟨fun s => (hi s).comp_measurable hq, ?_⟩
   exact (compactHermitianIntegral_holomorphic (Measure.map q ν) hj ψ).congr (fun s _ => he s)
 
@@ -65,31 +68,27 @@ end CompactIntegralMaps
 section ActualCharts
 open KPContActualCotangentCountableShrinking KPContCotangentActualOverlap
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {C : KPGlobalTorusInducingPlan.ModelData F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable {U : KPMsRationalCompactCrossPairing.Level F ζ hζ}
-variable (a : ShrunkChart F ζ hζ (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U) R P H)
+    {C : KPGlobalTorusInducingPlan.ModelData F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsRationalCompactCrossPairing.Level F ζ hζ}
+    (a : ShrunkChart F ζ hζ (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U) R P H)
 
 private lemma chart_measure_finite : IsFiniteMeasure a.liftedMeasure := by
   let V := KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U
-  let ν := KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P V
   letI := KPContSectorFixedMeasureLocalFiniteness.sphericalMeasure_finiteOnCompacts F ζ hζ R P V
-  let proj : KPCuspGenuineMonodromy.SymmetricSpace F → KPFiniteCuspAtlas.rawXU F ζ hζ V :=
+  let proj :=
     fun z => (H.atlas V).components ⟨a.component, Quotient.mk _ z⟩
-  have hc : Continuous proj :=
-    (H.atlas V).components.continuous.comp (continuous_sigmaMk.comp continuous_quot_mk)
-  have hK := a.closure_compact.image hc
   have hsub : a.baseDomain ⊆ proj '' closure a.domain := by
     rintro x ⟨y, rfl⟩
     refine ⟨y.val, subset_closure y.property, ?_⟩
     change (H.atlas V).components ⟨a.component, Quotient.mk _ y.val⟩ = _
     rw [(H.atlas V).components_formula]
     rfl
-  letI : IsFiniteMeasure (ν.restrict a.baseDomain) := ⟨by
+  letI : IsFiniteMeasure ((KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P V).restrict a.baseDomain) := ⟨by
     rw [Measure.restrict_apply MeasurableSet.univ, Set.univ_inter]
-    exact (measure_mono hsub).trans_lt hK.measure_lt_top⟩
+    exact (measure_mono hsub).trans_lt (a.closure_compact.image ((H.atlas V).components.continuous.comp (continuous_sigmaMk.comp continuous_quot_mk))).measure_lt_top⟩
   have hp := every_shrunkChart_properties F ζ hζ V R P H a
   letI : IsFiniteMeasure (Measure.map a.toBase a.liftedMeasure) := by
     rw [hp.exact_pushforward]
@@ -110,18 +109,18 @@ private lemma flattenEquiv_apply (x : Space (dimension F)) :
   (flattenEquiv (F := F)).symm (labeledAInv (placeEquiv F ζ hζ) y)
 
 private lemma flatCoord_continuous : Continuous (flatCoord (F := F) (ζ := ζ) (hζ := hζ)) := by
-  apply (flattenEquiv (F := F)).symm.continuous.comp
+  apply (flattenEquiv).symm.continuous.comp
   exact (CotangentLogCoframe.A (d F)).symm.continuous.comp (continuous_pi fun k => continuous_apply _)
 
 private lemma coordinates_flatCoord (y : KPCuspGenuineMonodromy.SymmetricSpace F) :
     KPContActualCutoffChartJetHolomorphy.coordinates F (flatCoord (ζ := ζ) (hζ := hζ) y) =
       labeledAInv (placeEquiv F ζ hζ) y := by
   rw [← flattenEquiv_apply]
-  exact (flattenEquiv (F := F)).apply_symm_apply _
+  exact (flattenEquiv).apply_symm_apply _
 
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable {T : ℝ}
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    {T : ℝ}
 variable (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U) R P H T)
 variable (Ω : Set ℂ) (f : ℂ → S)
@@ -132,7 +131,7 @@ variable (D : KPContActualCutoffSmoothDescent.Descent F ζ hζ C R P H U ι buff
 private lemma chart_continuous_family (hΩ : IsOpen Ω)
     (hΩspectral : Ω ⊆ KPContinuation.spectralDomain) (hf : DifferentiableOn ℂ f Ω)
     (hι : Function.Injective ι)
-    (hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι) (b : Bool) :
+    (b : Bool) :
     let L := flatCoord (F := F) (ζ := ζ) (hζ := hζ) '' closure a.domain
     letI : CompactSpace L := isCompact_iff_compactSpace.mp
       (a.closure_compact.image flatCoord_continuous)
@@ -155,7 +154,7 @@ private lemma chart_continuous_family (hΩ : IsOpen Ω)
     rw [he]
     exact a.closure_subset hy
   obtain ⟨j, hj, he⟩ := compact_jets_holomorphic F ζ hζ C R P H U ι buffer Ω f χ
-    hΩ hΩspectral hf hι hStage D (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a) b L hL hLD 0
+    hΩ hΩspectral hf hι D (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a) b L hL hLD 0
   let α : MultiIndex (dimension F) 0 := ⟨fun _ => 0, by simp⟩
   have hp := (ContinuousLinearMap.proj (R := ℂ) (φ := fun _ : MultiIndex (dimension F) 0 => C(L, ℂ)) α).differentiable.comp_differentiableOn hj
   refine ⟨fun s => j s α, hp, ?_⟩
@@ -169,37 +168,13 @@ private lemma chart_continuous_family (hΩ : IsOpen Ω)
 
 open KPContActualCutoffSmoothDescent KPContActualSectorSmoothTestModules
 
-private theorem pairing_smooth_laplacian {d : ℕ} (g : HyperbolicChart.Space d → ℂ)
-    (hg : ContDiff ℝ (⊤ : ℕ∞) g) : ContDiff ℝ (⊤ : ℕ∞) (HyperbolicChart.laplacian d g) := by
-  have hd (f : HyperbolicChart.Space d → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (i : Fin d) (k : Fin 3) :
-      ContDiff ℝ (⊤ : ℕ∞) (HyperbolicChart.coordinateDerivative d i k f) :=
-    (hf.fderiv_right (by simp)).clm_apply contDiff_const
-  unfold HyperbolicChart.laplacian
-  apply ContDiff.sum
-  intro i hi
-  have he : ContDiff ℝ (⊤ : ℕ∞) (fun q : HyperbolicChart.Space d => (Real.exp (2 * q (i, 2)) : ℂ)) := by
-    have hreal : ContDiff ℝ (⊤ : ℕ∞) (fun q : HyperbolicChart.Space d => Real.exp (2 * q (i,2))) := by
-      fun_prop
-    exact Complex.ofRealCLM.contDiff.comp hreal
-  exact ((hd _ (hd g hg i 2) i 2).neg.add (contDiff_const.mul (hd g hg i 2))).sub
-    (he.mul ((hd _ (hd g hg i 0) i 0).add (hd _ (hd g hg i 1) i 1)))
-private theorem pairing_continuous_laplacian_section (ψ : Tests F ζ hζ C R P H U) :
-    ∀ i, Continuous (KPCuspCutoffGraph.localLaplacianSection F ζ hζ H.totallyComplex
-      (level F ζ hζ C R P H U) (H.atlas (level F ζ hζ C R P H U))
-      ⟨ψ.val, ψ.property.1⟩ i).val := by
-  intro i
-  have hi := ψ.property.1 i
-  have hg : ContDiff ℝ (⊤ : ℕ∞) ((ψ.val i).val ∘ KPCuspCutoffGraph.toArch F) :=
-    hi.comp (KPCuspCutoffGraphApproximation.cutoff_toArch_contDiff F)
-  change Continuous (HyperbolicChart.laplacian _ _ ∘ KPCuspCutoffGraph.fromArch F)
-  exact (pairing_smooth_laplacian _ hg).continuous.comp (by
-    change Continuous (CotangentLogCoframe.A (KPCuspLogShape.dimension F)).symm
-    exact (CotangentLogCoframe.A _).symm.continuous)
+private alias pairing_smooth_laplacian := DedekindZetaZeroFree.KPContActualPartitionPairing.LaplacianChartTransport.smooth_laplacian
+private alias pairing_continuous_laplacian_section := DedekindZetaZeroFree.KPContActualPartitionPairing.LaplacianChartTransport.continuous_laplacian_section
 
 private lemma chart_hermitian_holomorphic (hΩ : IsOpen Ω)
     (hΩspectral : Ω ⊆ KPContinuation.spectralDomain) (hf : DifferentiableOn ℂ f Ω)
     (hι : Function.Injective ι)
-    (hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι) (b : Bool)
+    (b : Bool)
     (t : KPContSectorSmoothFramesSupport.Sections F ζ hζ
       (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U) R P H)
     (ht : ∀ i, Continuous (t i).val) :
@@ -213,7 +188,7 @@ private lemma chart_hermitian_holomorphic (hΩ : IsOpen Ω)
   have hL : IsCompact L := a.closure_compact.image flatCoord_continuous
   letI : CompactSpace L := isCompact_iff_compactSpace.mp hL
   letI : IsFiniteMeasure a.liftedMeasure := chart_measure_finite a
-  obtain ⟨j, hj, he⟩ := chart_continuous_family a ι buffer Ω f χ D hΩ hΩspectral hf hι hStage b
+  obtain ⟨j, hj, he⟩ := chart_continuous_family a ι buffer Ω f χ D hΩ hΩspectral hf hι b
   let q : a.domain → L := fun y => ⟨flatCoord (ζ := ζ) (hζ := hζ) y.val,
     ⟨y.val, subset_closure y.property, rfl⟩⟩
   have hq : Continuous q := (flatCoord_continuous.comp continuous_subtype_val).subtype_mk _
@@ -244,23 +219,25 @@ private lemma chart_hermitian_holomorphic (hΩ : IsOpen Ω)
   rw [hqcoord]
   cases b <;> rfl
 
-private theorem pairing_testLaplacian_sum {n : ℕ} (ψ : Fin n → Tests F ζ hζ C R P H U) :
+variable {n : ℕ} (ψ : Fin n → Tests F ζ hζ C R P H U)
+
+private theorem pairing_testLaplacian_sum :
     testLaplacian F ζ hζ C R P H U (∑ i, ψ i) =
       fun x => ∑ i, testLaplacian F ζ hζ C R P H U (ψ i) x := by
   unfold testLaplacian
   simp only [← KPCuspCutoffGraph.divergence_differential_local]
   simp only [map_sum, Submodule.coe_sum]
   funext x
-  simp only [Submodule.coe_sum, Finset.sum_apply]
+  simp
 
-private theorem pairing_testScalar_sum {n : ℕ} (ψ : Fin n → Tests F ζ hζ C R P H U) :
+private theorem pairing_testScalar_sum :
     testScalar F ζ hζ C R P H U (∑ i, ψ i) =
       fun x => ∑ i, testScalar F ζ hζ C R P H U (ψ i) x := by
   have he (φ : Tests F ζ hζ C R P H U) : testScalar F ζ hζ C R P H U φ =
       ((KPContSectorScalarLineAlgebra.S F ζ hζ (level F ζ hζ C R P H U) R P H).symm φ.val).val := rfl
   simp only [he, Submodule.coe_sum, map_sum]
   funext x
-  simp only [Submodule.coe_sum, Finset.sum_apply]
+  simp
 
 end ActualCharts
 
@@ -285,8 +262,8 @@ structure PairingConclusions (Ω : Set ℂ)
     (fun s => ∫ x, quotientPair F ζ hζ C R P H U (w s) ψ x ∂ R.quotientHaar) Ω
 
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable {T : ℝ}
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    {T : ℝ}
 variable (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U) R P H T)
 variable (Ω : Set ℂ) (f : ℂ → S)
@@ -328,31 +305,26 @@ private lemma pairing_conclusions_of_covered
         ∂KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R
           (level F ζ hζ C R P H U)) Ω) :
     PairingConclusions F ζ hζ C R P H U Ω w ψ := by
+  let level₀ := level F ζ hζ C R P H U
   have hf : AEMeasurable (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ
-      (level F ζ hζ C R P H U)) R.quotientHaar :=
+      (level₀)) R.quotientHaar :=
     (KPContSectorQuotientRelationsComparison.piTilde_continuous F ζ hζ
-      (level F ζ hζ C R P H U)).aemeasurable
+      (level₀)).aemeasurable
   have hcov : ∀ s ∈ Ω, Integrable (coveredPair F ζ hζ C R P H U (w s) ψ)
       (Measure.map (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ
-        (level F ζ hζ C R P H U)) R.quotientHaar) := by
-    intro s hs
-    exact hint s hs
-  have hqint : ∀ s ∈ Ω, Integrable (quotientPair F ζ hζ C R P H U (w s) ψ)
-      R.quotientHaar := by
-    intro s hs
-    exact (integrable_map_measure (hcov s hs).aestronglyMeasurable hf).1 (hcov s hs)
+        (level₀)) R.quotientHaar) := fun s hs => hint s hs
   have hid : ∀ s ∈ Ω,
       (∫ x, quotientPair F ζ hζ C R P H U (w s) ψ x ∂ R.quotientHaar) =
         ∫ x, coveredPair F ζ hζ C R P H U (w s) ψ x
           ∂KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R
-            (level F ζ hζ C R P H U) := by
+            (level₀) := by
     intro s hs
-    have hmap := integral_map (μ := R.quotientHaar)
-      (φ := KPContSectorQuotientRelationsComparison.piTilde F ζ hζ
-        (level F ζ hζ C R P H U)) hf (hcov s hs).aestronglyMeasurable
+    have hmap := integral_map
+       hf (hcov s hs).aestronglyMeasurable
     rw [← hR.covered_pushforward] at hmap
     exact hmap.symm
-  exact ⟨hint, hqint, hid, hhol, hhol.congr (fun s hs => hid s hs)⟩
+  refine ⟨hint, ?_, hid, hhol, hhol.congr (fun s hs => hid s hs)⟩
+  exact fun s hs => (integrable_map_measure (hcov s hs).aestronglyMeasurable hf).1 (hcov s hs)
 
 private lemma covered_pairing_holomorphy
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -369,7 +341,6 @@ private lemma covered_pairing_holomorphy
     (Ω : Set ℂ) (hopen : IsOpen Ω) (f : ℂ → S)
     (hΩspectral : Ω ⊆ KPContinuation.spectralDomain) (hf : DifferentiableOn ℂ f Ω)
     (hι : Function.Injective ι)
-    (hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
     (D : Descent F ζ hζ C R P H U ι buffer Ω f χ)
     (w : ℂ → SmoothSections F ζ hζ C R P H U) (ψ : Covered F ζ hζ C R P H U → ℂ)
@@ -456,7 +427,7 @@ private lemma covered_pairing_holomorphy
         cases l
         · exact fun j => ((τ i).property.1 j).continuous
         · exact pairing_continuous_laplacian_section (τ i)
-      have hh := chart_hermitian_holomorphic (a i) ι buffer Ω f χ D hopen hΩspectral hf hι hStage b (t i) ht
+      have hh := chart_hermitian_holomorphic (a i) ι buffer Ω f χ D hopen hΩspectral hf hι b (t i) ht
       apply hh.congr
       intro s hs
       cases b <;> simpa only [v, Bool.false_eq_true, if_false, if_true] using heq i s
@@ -496,7 +467,6 @@ theorem kp_cont_actual_cutoff_test_pairing_holomorphy
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
     (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (_hι : Function.Injective ι)
-    (_hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (Ω : Set ℂ) (_hΩ : Ω ⊆ KPContinuation.spectralDomain) (_hopen : IsOpen Ω)
     (f : ℂ → S) (_hf : DifferentiableOn ℂ f Ω)
     (χ : KPContActualCutoffSmoothDescent.Cusps F ζ hζ C R P H U →
@@ -514,7 +484,7 @@ theorem kp_cont_actual_cutoff_test_pairing_holomorphy
           ψ = KPContActualCutoffTestPairingHolomorphy.testLaplacian F ζ hζ C R P H U ψ₀)) →
       KPContActualCutoffTestPairingHolomorphy.PairingConclusions F ζ hζ C R P H U Ω w ψ := by
     intro w ψ hw hψ
-    obtain ⟨hint, hhol⟩ := covered_pairing_holomorphy F ζ hζ C R P H U ι buffer Ω _hopen f _hΩ _hf _hι _hStage χ
+    obtain ⟨hint, hhol⟩ := covered_pairing_holomorphy F ζ hζ C R P H U ι buffer Ω _hopen f _hΩ _hf _hι χ
       D w ψ hw hψ
     exact pairing_conclusions_of_covered F ζ hζ C R P H U _hR Ω w ψ hint hhol
   refine ⟨?_, ?_, ?_⟩

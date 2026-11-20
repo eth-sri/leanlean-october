@@ -10,21 +10,9 @@ open MeasureTheory
 
 namespace DedekindZetaZeroFree.KPMsFixedHaar.WeightedSectionGlobalization
 
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar renaming weighted_section_measure → weighted_section_measure
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar renaming angular_measurable → angular_measurable
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar renaming cross_section_inclusion_measurable → cross_section_inclusion_measurable
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.ActualCuspLabelPort renaming actualCuspLabel → actualCuspLabel
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.ActualCuspLabelPort renaming actualCuspLabel_preimage → actualCuspLabel_preimage
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.ActualCuspLabelPort renaming cuspCorrection → cuspCorrection
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.ActualCuspLabelPort renaming coarseLabel_mem → coarseLabel_mem
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.ActualCuspLabelPort renaming actual_weighted_pinned_cusp_degree_balance → actual_weighted_pinned_cusp_degree_balance
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.ActualCuspLabelPort renaming actual_label_transition → actual_label_transition
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.ActualCuspLabelPort renaming actual_transition_degree → actual_transition_degree
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.ActualCuspLabelPort renaming cuspCorrection_formula → cuspCorrection_formula
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.PinnedRadialCharts renaming pinned_cusp_chart → pinned_cusp_chart
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.PinnedRadialCharts renaming pinned_cusp_chart_formula → pinned_cusp_chart_formula
+open _root_.DedekindZetaZeroFree.KPMsFixedHaar (weighted_section_measure angular_measurable cross_section_inclusion_measurable)
+open _root_.DedekindZetaZeroFree.KPMsFixedHaar.ActualCuspLabelPort (actualCuspLabel actualCuspLabel_preimage cuspCorrection coarseLabel_mem actual_weighted_pinned_cusp_degree_balance actual_label_transition actual_transition_degree cuspCorrection_formula)
 
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.NormOneTransition renaming crossCoordinate_continuous → crossCoordinate_continuous
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
   {hF : NumberField.InfinitePlace.nrRealPlaces F = 0} {V U : Level F ζ hζ}
@@ -46,10 +34,14 @@ abbrev weightedSectionMeasure (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF V)
     (w : Fin A.componentCount → ℝ≥0∞) : Measure (CrossSection A) :=
   weighted_section_measure A w
 
-def cuspLabel (M : ComponentMatching AV AU) : CuspIndex AV → CuspIndex AU :=
+section
+
+variable (M : ComponentMatching AV AU)
+
+def cuspLabel : CuspIndex AV → CuspIndex AU :=
   actualCuspLabel AV AU M.component M.rational
 
-def correction (M : ComponentMatching AV AU) (j : CuspIndex AV) :
+def correction (j : CuspIndex AV) :
     KPCuspGenuineMonodromy.Component F ζ hζ U (AU.representative (cuspLabel M j).1) :=
   cuspCorrection
     (KPCuspGenuineMonodromy.Component F ζ hζ U (AU.representative (cuspLabel M j).1))
@@ -57,20 +49,12 @@ def correction (M : ComponentMatching AV AU) (j : CuspIndex AV) :
     (M.rational j.1 • (AV.cuspAtlas j.1).cusp j.2)
     (coarseLabel_mem _ _ (AU.cuspAtlas (M.component j.1)).exhaustive _)
 
-def transition (M : ComponentMatching AV AU) (j : CuspIndex AV) :
+def transition (j : CuspIndex AV) :
     KPCuspArithmetic.PGL2 F :=
   ((AU.cuspAtlas (cuspLabel M j).1).representative (cuspLabel M j).2)⁻¹ *
     ((correction M j).val⁻¹ * M.rational j.1) * (AV.cuspAtlas j.1).representative j.2
 
-structure NormOneMatrix (M : ComponentMatching AV AU) (j : CuspIndex AV) where
-  matrix : Matrix.GeneralLinearGroup (Fin 2) F
-  ratio : Fˣ
-  upper : (matrix : Matrix (Fin 2) (Fin 2) F) 1 0 = 0
-  ratio_formula : (matrix : Matrix (Fin 2) (Fin 2) F) 0 0 =
-    (ratio : F) * (matrix : Matrix (Fin 2) (Fin 2) F) 1 1
-  projective_formula : Matrix.ProjGenLinGroup.mk matrix = transition M j
-  sum_log_zero : ∑ i : Fin (KPCuspLogShape.dimension F),
-    Real.log ((KPCusp.complexPlace F i) (ratio : F)) = 0
+end
 
  theorem transition_properties
     (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup)
@@ -83,8 +67,7 @@ structure NormOneMatrix (M : ComponentMatching AV AU) (j : CuspIndex AV) where
       (KPCuspGenuineMonodromy.Component F ζ hζ U (AU.representative k.1))
       ((AU.cuspAtlas k.1).cusp k.2) ((AU.cuspAtlas k.1).representative k.2)
     S.map (MulAut.conj (transition M j)).toMonoidHom ≤ T ∧
-      ((S.map (MulAut.conj (transition M j)).toMonoidHom).subgroupOf T).FiniteIndex := by
-  exact (actual_label_transition h AV AU M.component M.rational M.central M.level M.formula j).2
+      ((S.map (MulAut.conj (transition M j)).toMonoidHom).subgroupOf T).FiniteIndex := (actual_label_transition h AV AU M.component M.rational M.central M.level M.formula j).2
 
 private theorem sum_sigma_fiber {I K : Type*} [Fintype I] [Fintype K] [DecidableEq K]
     {B : I → Type*} [∀ i, Fintype (B i)] {E : Type*} [AddCommMonoid E]
@@ -104,7 +87,11 @@ private theorem sum_sigma_fiber {I K : Type*} [Fintype I] [Fintype K] [Decidable
     exact Finset.sum_subtype (Finset.univ.filter (p i)) (by simp) (fun b => f ⟨i,b⟩)
   · simp [hi]
 
-private theorem cuspLabel_eq_iff (M : ComponentMatching AV AU)
+section
+
+variable (M : ComponentMatching AV AU)
+
+private theorem cuspLabel_eq_iff
     (i : Fin AV.componentCount) (b : Fin (AV.cuspAtlas i).cuspCount)
     (k : Fin AU.componentCount) (a : Fin (AU.cuspAtlas k).cuspCount) :
     cuspLabel M ⟨i,b⟩ = ⟨k,a⟩ ↔ M.component i = k ∧
@@ -120,7 +107,7 @@ private theorem cuspLabel_eq_iff (M : ComponentMatching AV AU)
     subst k
     exact (actualCuspLabel_preimage AV AU M.component M.rational i a b).mpr hb
 
-def degree (M : ComponentMatching AV AU) (j : CuspIndex AV) : ℕ :=
+def degree (j : CuspIndex AV) : ℕ :=
   ((KPCuspArithmetic.conjugatedStabilizer F
     (KPCuspGenuineMonodromy.Component F ζ hζ V (AV.representative j.1))
     ((AV.cuspAtlas j.1).cusp j.2) ((AV.cuspAtlas j.1).representative j.2)).map
@@ -130,7 +117,7 @@ def degree (M : ComponentMatching AV AU) (j : CuspIndex AV) : ℕ :=
       ((AU.cuspAtlas (cuspLabel M j).1).cusp (cuspLabel M j).2)
       ((AU.cuspAtlas (cuspLabel M j).1).representative (cuspLabel M j).2))
 
-private theorem degree_eq_shifted (M : ComponentMatching AV AU) (j : CuspIndex AV) :
+private theorem degree_eq_shifted (j : CuspIndex AV) :
     degree M j =
       (((KPCuspGenuineMonodromy.Component F ζ hζ V (AV.representative j.1)).map
         (MulAut.conj (M.rational j.1)).toMonoidHom) ⊓
@@ -138,9 +125,10 @@ private theorem degree_eq_shifted (M : ComponentMatching AV AU) (j : CuspIndex A
             (M.rational j.1 • (AV.cuspAtlas j.1).cusp j.2)).relIndex
       ((KPCuspGenuineMonodromy.Component F ζ hζ U (AU.representative (M.component j.1))) ⊓
           MulAction.stabilizer (KPCuspArithmetic.PGL2 F)
-            (M.rational j.1 • (AV.cuspAtlas j.1).cusp j.2)) := by
-  exact actual_transition_degree _ _ _ _ _ _ _ (correction M j)
+            (M.rational j.1 • (AV.cuspAtlas j.1).cusp j.2)) := actual_transition_degree _ _ _ _ _ _ _ (correction M j)
     (cuspCorrection_formula _ _ _ _)
+
+end
 
 theorem exists_matching_degree_balance
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)

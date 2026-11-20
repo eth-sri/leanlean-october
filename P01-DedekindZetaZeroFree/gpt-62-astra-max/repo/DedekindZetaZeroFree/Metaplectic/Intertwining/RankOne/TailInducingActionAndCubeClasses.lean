@@ -14,12 +14,14 @@ variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
   (S : CanonicalFiniteInducingData F ζ hζ q)
 
-def actualRootAction (P : Polarization S.heisenberg) (ε : Sign) (s : ℂ)
+variable (P : Polarization S.heisenberg) (ε : Sign) (s : ℂ)
+
+def actualRootAction
     (v : (LocalField F q)ˣ) : InducedModule P →ₗ[ℂ] InducedModule P :=
   inducingAction S.borel P (sourceSign ε) (sourceParameter ε s)
     (S.borel.torus ((S.openCell P).rootTorus v))
 
-theorem actual_tail_inducing (P : Polarization S.heisenberg) (ε : Sign) (s : ℂ)
+theorem actual_tail_inducing
     (f : sectionSpace S.borel P (sourceSign ε) (sourceParameter ε s))
     (v : (LocalField F q)ˣ) (g : ActualCover F ζ hζ q) :
     f.val (kernelW (LocalField F q) S.borel ε *
@@ -45,7 +47,7 @@ theorem actual_tail_inducing (P : Polarization S.heisenberg) (ε : Sign) (s : �
   rw [hc]
   rfl
 
-theorem actualRootAction_cube (P : Polarization S.heisenberg) (ε : Sign) (s : ℂ)
+theorem actualRootAction_cube
     (u : (LocalField F q)ˣ) (V : InducedModule P) :
     actualRootAction F ζ hζ q S P ε s (u ^ 3) V =
       (deltaHalf S.borel (rootCubeLift S.borel u) *

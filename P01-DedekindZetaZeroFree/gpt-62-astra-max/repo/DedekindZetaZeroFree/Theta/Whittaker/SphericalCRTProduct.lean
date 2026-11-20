@@ -10,19 +10,22 @@ open scoped NumberField Classical BigOperators
 open NumberField IsDedekindDomain
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-private theorem norm_prod_eq (A : SArithmeticData F) (I : A.Exterior)
-    (P : Finset (ThetaBranch.ExteriorPrime A))
-    (hI : I.val = ∏ p ∈ P, p.val.asIdeal ^ idealPrimeExponent p.val.asIdeal I.val) :
+section
+
+variable (A : SArithmeticData F) (I : A.Exterior) (P : Finset (ThetaBranch.ExteriorPrime A))
+    (hI : I.val = ∏ p ∈ P, p.val.asIdeal ^ idealPrimeExponent p.val.asIdeal I.val)
+
+include hI in
+private theorem norm_prod_eq :
     A.exteriorNorm I = ∏ p ∈ P, idealNorm p.val.asIdeal ^ idealPrimeExponent p.val.asIdeal I.val := by
   unfold SArithmeticData.exteriorNorm idealNorm
   conv_lhs => rw [hI, map_prod]
-  simp only [map_pow, Nat.cast_prod, Nat.cast_pow]
+  simp
 
-private theorem norm_inverse_prod (A : SArithmeticData F) (I : A.Exterior)
-    (P : Finset (ThetaBranch.ExteriorPrime A))
-    (hI : I.val = ∏ p ∈ P, p.val.asIdeal ^ idealPrimeExponent p.val.asIdeal I.val) :
+include hI in
+private theorem norm_inverse_prod :
     (∏ p ∈ P, (idealNorm p.val.asIdeal : ℂ) ^ (-(idealPrimeExponent p.val.asIdeal I.val : ℤ))) =
       (A.exteriorNorm I : ℂ)⁻¹ := by
   simp only [zpow_neg, zpow_natCast]
@@ -31,9 +34,8 @@ private theorem norm_inverse_prod (A : SArithmeticData F) (I : A.Exterior)
   push_cast at h
   exact congrArg Inv.inv h.symm
 
-private theorem sqrt_inverse_prod (A : SArithmeticData F) (I : A.Exterior)
-    (P : Finset (ThetaBranch.ExteriorPrime A))
-    (hI : I.val = ∏ p ∈ P, p.val.asIdeal ^ idealPrimeExponent p.val.asIdeal I.val) :
+include hI in
+private theorem sqrt_inverse_prod :
     (∏ p ∈ P, (Real.sqrt (idealNorm p.val.asIdeal) : ℂ)⁻¹ ^ idealPrimeExponent p.val.asIdeal I.val) =
       (Real.sqrt (A.exteriorNorm I) : ℂ)⁻¹ := by
   simp only [inv_pow]
@@ -54,6 +56,8 @@ private theorem sqrt_inverse_prod (A : SArithmeticData F) (I : A.Exterior)
   push_cast at h
   exact h
 
+end
+
 theorem sphericalProduct (R : PrincipalMellin.ActualRecipe S η)
     (c : ExteriorSquarefreeIdeal R.A.cS) (n : R.A.Exterior)
     (P : Finset (ThetaBranch.ExteriorPrime R.A))
@@ -68,12 +72,11 @@ theorem sphericalProduct (R : PrincipalMellin.ActualRecipe S η)
   let k := fun p : ThetaBranch.ExteriorPrime R.A => idealPrimeExponent p.val.asIdeal n.val
   let r := fun p : ThetaBranch.ExteriorPrime R.A =>
     Classical.choose (R.probe.allowed.generates (ThetaBranch.primeIdeal R.A p))
-  have he : ∀ p, e p = 0 ∨ e p = 1 := squarefree_exps R.A c
   have hr (p : ThetaBranch.ExteriorPrime R.A) :
       (R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p) : F) = (r p : F) :=
     (Classical.choose_spec (R.probe.allowed.generates (ThetaBranch.primeIdeal R.A p))).2
   have hl (p : ThetaBranch.ExteriorPrime R.A) (hp : p ∈ P) :=
-    sphericalFactor_generatorProduct R.A R.probe.allowed R.σ (MomentSources.Characters.psi R) P e k p hp (he p)
+    sphericalFactor_generatorProduct R.A R.probe.allowed R.σ (MomentSources.Characters.psi R) P e k p hp ((squarefree_exps R.A c) p)
   simp_rw [generatorProduct_phase R.A R.probe.allowed R.σ P e k r hr] at hl
   dsimp only
   calc

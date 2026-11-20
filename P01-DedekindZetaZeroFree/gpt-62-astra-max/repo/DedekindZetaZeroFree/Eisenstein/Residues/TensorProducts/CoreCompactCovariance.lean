@@ -12,10 +12,10 @@ open NumberField KPGlobalTorusFiniteStages ThetaExpansion MomentSources TensorAc
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 
 theorem coreFlatInsertion_compact (w : InfinitePlace F)
     (k : KPCplxCharacterHaar.ComplexSU2)
@@ -27,22 +27,21 @@ theorem coreFlatInsertion_compact (w : InfinitePlace F)
   change Complex.exp _ * quotientCoreEvaluator R.A P C (coreCompactSlot R.A P C w k x) g =
     Complex.exp _ * quotientCoreEvaluator R.A P C x _
   rw [quotientCoreEvaluator_compact]
-  have hh := height_compact R g
+  rw [(height_compact R g
     ⟨KPGlobalResidualConstruction.complexCompactLift F R.A.zeta12 R.A.primitive_zeta12 w k,
-      (full_product_compact_iwasawa R).2.2 w k⟩
-  rw [hh]
+      (full_product_compact_iwasawa R).2.2 w k⟩)]
 
-def coreResidueOfFamily
-    (E NN : Flat F R.A.zeta12 R.A.primitive_zeta12 (fullProductCompact R) → ℂ → Functions R)
+section
+
+variable (E NN : Flat F R.A.zeta12 R.A.primitive_zeta12 (fullProductCompact R) → ℂ → Functions R)
     (hg : ExceptionalGerm F R.A.zeta12 R.A.primitive_zeta12 (fullProductCompact R) E NN)
-    (hm : ∀ f g, MeromorphicOn (fun z => E f z g) KPContinuation.spectralDomain) :
+    (hm : ∀ f g, MeromorphicOn (fun z => E f z g) KPContinuation.spectralDomain)
+
+def coreResidueOfFamily :
     RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C) →ₗ[ℂ] Functions R :=
   (literalFlatResidue (full_product_compact_iwasawa R) E NN hg hm).comp (coreFlatInsertion R P C)
 
 theorem coreResidueOfFamily_compact
-    (E NN : Flat F R.A.zeta12 R.A.primitive_zeta12 (fullProductCompact R) → ℂ → Functions R)
-    (hg : ExceptionalGerm F R.A.zeta12 R.A.primitive_zeta12 (fullProductCompact R) E NN)
-    (hm : ∀ f g, MeromorphicOn (fun z => E f z g) KPContinuation.spectralDomain)
     (w : InfinitePlace F) (k : KPCplxCharacterHaar.ComplexSU2)
     (x : RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C))
     (g : Group R) :
@@ -63,6 +62,8 @@ theorem coreResidueOfFamily_compact
   change NN (coreFlatInsertion R P C (coreCompactSlot R.A P C w k x)) 0 g =
     NN (coreFlatInsertion R P C x) 0 _
   simpa only [Fin.sum_univ_one, one_mul] using ht.symm
+
+end
 
 theorem coreResidue_eq_owned_cleared
     (x : RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C)) :

@@ -14,8 +14,8 @@ open KPRankOneReverseRegulatorShellsRaw KPActualScalarBinding
 noncomputable section
 set_option maxHeartbeats 1000000
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-variable (S : ActualKPBinding F ζ hζ q)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
+    (S : ActualKPBinding F ζ hζ q)
 local notation "H₀" => KPExceptionalRaw.actualTorus F ζ hζ q
 
 private theorem weyl_sheet (e : rootsOfUnity 3 F) :
@@ -24,10 +24,9 @@ private theorem weyl_sheet (e : rootsOfUnity 3 F) :
   apply Subtype.ext
   rw [S.borel.weylCenter_coe, ← S.torus_full, S.borel.weyl_from_lift,
     S.torus_full, S.central_actual]
-  have hc := Subgroup.mem_center_iff.mp
+  rw [mul_assoc, ← (Subgroup.mem_center_iff.mp
     (KPPGLLocalCover.centralInjection_range_le_center F ζ hζ (Sum.inr q) ⟨e,rfl⟩)
-    S.borel.liftedW
-  rw [mul_assoc, ← hc, ← mul_assoc, inv_mul_cancel, one_mul]
+    S.borel.liftedW), ← mul_assoc, inv_mul_cancel, one_mul]
 
 private theorem center_sheet (ε : Sign) (e : rootsOfUnity 3 F)
     (V : CenterModule S.heisenberg) :
@@ -35,8 +34,7 @@ private theorem center_sheet (ε : Sign) (e : rootsOfUnity 3 F)
       (KPExceptionalRaw.ordinaryIota F ζ hζ e : ℂ) • V := by
   apply Subtype.ext
   funext h
-  have hc : (h * (S.central e : H₀)) = (S.central e : H₀) * h := by
-    exact Subgroup.mem_center_iff.mp (S.heisenberg.central (S.central e).property) h
+  have hc := Subgroup.mem_center_iff.mp (S.heisenberg.central (S.central e).property) h
   cases ε
   · change V.val (h * (S.central e : H₀)) = _
     rw [hc, V.property]
@@ -62,14 +60,16 @@ private theorem center_genuine (ε : Sign) (e : rootsOfUnity 3 F)
   rw [centralTorus_eq, S.openCell_ordinary]
   exact center_sheet F ζ hζ q S ε e V
 
-private theorem modulus_sq (v : (LocalField F q)ˣ) :
-    normPower (LocalField F q) (v ^ 2) (1 / 2) =
-      (localAbs (LocalField F q) v : ℂ) := by
-  rw [normPower, show localAbs (LocalField F q) (v ^ 2) =
-    localAbs (LocalField F q) v ^ 2 by simp [pow_two, localAbs_mul], Real.log_pow]
+local notation "LocalCompletion" => LocalField F q
+
+private theorem modulus_sq (v : LocalCompletionˣ) :
+    normPower LocalCompletion (v ^ 2) (1 / 2) =
+      (localAbs LocalCompletion v : ℂ) := by
+  rw [normPower, show localAbs LocalCompletion (v ^ 2) =
+    localAbs LocalCompletion v ^ 2 by simp [pow_two, localAbs_mul], Real.log_pow]
   norm_num only [Nat.cast_ofNat]
-  rw [show (1 / 2 : ℂ) * ((2 : ℝ) * Real.log (localAbs (LocalField F q) v) : ℝ) =
-    (Real.log (localAbs (LocalField F q) v) : ℂ) by push_cast; ring]
+  rw [show (1 / 2 : ℂ) * ((2 : ℝ) * Real.log (localAbs LocalCompletion v) : ℝ) =
+    (Real.log (localAbs LocalCompletion v) : ℂ) by push_cast; ring]
   rw [← Complex.ofReal_exp, Real.exp_log (localAbs_pos _ _)]
 
 private theorem weyl_inv : (signedWeyl F ζ hζ q)⁻¹ = signedWeyl F ζ hζ q := by
@@ -80,13 +80,13 @@ private theorem weyl_inv : (signedWeyl F ζ hζ q)⁻¹ = signedWeyl F ζ hζ q 
 
 theorem actual_reverse_chart (r : ℂˣ)
     (f : centerSectionSpace F ζ hζ q S.heisenberg S.borel .minus (-additiveParameter F q r))
-    (v : (LocalField F q)ˣ) :
-    f.val (signedWeyl F ζ hζ q * nLift F ζ hζ q (-(v⁻¹ : (LocalField F q)ˣ) : LocalField F q) *
+    (v : LocalCompletionˣ) :
+    f.val (signedWeyl F ζ hζ q * nLift F ζ hζ q (-(v⁻¹ : LocalCompletionˣ) : LocalCompletion) *
       openCoordinate F ζ hζ q 0) =
-    (localAbs (LocalField F q) v : ℂ) •
+    (localAbs LocalCompletion v : ℂ) •
       ((KPExceptionalRaw.ordinaryIota F ζ hζ (kappa F ζ hζ q v 0) : ℂ) •
         reverseRoot F ζ hζ q S.heisenberg S.borel P (S.openCell P) r v
-          (f.val (openCoordinate F ζ hζ q (v : LocalField F q)))) := by
+          (f.val (openCoordinate F ζ hζ q (v : LocalCompletion)))) := by
   rw [← S.openCell_ordinary P]
   rw [← weyl_inv F ζ hζ q]
   change f.val ((signedWeyl F ζ hζ q)⁻¹ * nLift F ζ hζ q _ *
@@ -95,7 +95,7 @@ theorem actual_reverse_chart (r : ℂˣ)
   rw [← (S.openCell P).central_eq, ← (S.openCell P).torus_eq, ← (S.openCell P).upper_eq]
   simp only [mul_assoc]
   rw [f.property.1, f.property.1, f.property.1]
-  have hu (x : LocalField F q) (V : CenterModule S.heisenberg) :
+  have hu (x : LocalCompletion) (V : CenterModule S.heisenberg) :
       centerInducingAction F ζ hζ q S.heisenberg S.borel .minus (-additiveParameter F q r)
         (S.borel.upperRoot (Multiplicative.ofAdd x)) V = V := by
     simp [centerInducingAction, inducingScalar, deltaHalf, S.borel.retract_upperRoot,
@@ -105,15 +105,15 @@ theorem actual_reverse_chart (r : ℂˣ)
     centerTorus F ζ hζ q S.heisenberg S.borel .minus (S.borel.retract (S.borel.torus ((S.openCell P).centralTorus _)))
       (inducingScalar S.borel (-additiveParameter F q r) (S.borel.torus ((S.openCell P).rootTorus v)) •
         centerTorus F ζ hζ q S.heisenberg S.borel .minus (S.borel.retract (S.borel.torus ((S.openCell P).rootTorus v)))
-          (f.val (openCoordinate F ζ hζ q (0 + (v : LocalField F q))))) = _
+          (f.val (openCoordinate F ζ hζ q (0 + (v : LocalCompletion))))) = _
   simp only [S.borel.retract_torus, zero_add]
   rw [center_genuine F ζ hζ q S P]
   simp only [inducingScalar, deltaHalf, S.borel.retract_torus, (S.openCell P).central_coordinate,
     (S.openCell P).coordinate_eq, normPower, localAbs_one, Real.log_one, Complex.ofReal_zero,
     mul_zero, Complex.exp_zero, one_mul, one_smul]
   change ((S.openCell P).eta (kappa F ζ hζ q v 0) : ℂ) •
-    ((normPower (LocalField F q) (v ^ 2) (1 / 2) *
-      normPower (LocalField F q) (v ^ 2) (-additiveParameter F q r)) • _) = _
+    ((normPower LocalCompletion (v ^ 2) (1 / 2) *
+      normPower LocalCompletion (v ^ 2) (-additiveParameter F q r)) • _) = _
   rw [modulus_sq]
   simp only [reverseRoot, smul_smul]
   rw [mul_left_comm]

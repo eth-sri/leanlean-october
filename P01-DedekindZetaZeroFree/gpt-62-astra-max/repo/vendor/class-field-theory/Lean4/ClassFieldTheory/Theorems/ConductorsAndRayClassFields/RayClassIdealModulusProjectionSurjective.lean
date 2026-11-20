@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -43,8 +38,9 @@ universe u
     (m : RayClassModulus K) : CommGroup (RayClassGroup m) :=
   { (inferInstance : Group (RayClassGroup m)) with mul_comm := mul_comm' }
 
+variable (K : Type u) [Field K] [NumberField K]
+
 private theorem rayClassGroup_hom_ext_of_prime
-    (K : Type u) [Field K] [NumberField K]
     (n m : RayClassModulus K)
     (f g : RayClassGroup n →* RayClassGroup m)
     (hprime : ∀ (v : HeightOneSpectrum (𝓞 K))
@@ -54,7 +50,7 @@ private theorem rayClassGroup_hom_ext_of_prime
     f = g := by
   let n' := GlobalClassFieldComparison.rayClassModulusToOriginal K n
   let e := GlobalClassFieldComparison.rayClassGroupEquivOriginal K n
-  let ι : RayClass.primeToModulusIdeals n' →* RayClassGroup n :=
+  let ι :=
     e.symm.toMonoidHom.comp
       (QuotientGroup.mk' (RayClass.principalRayIdealSubgroup n'))
   have hιprime (v : HeightOneSpectrum (𝓞 K))
@@ -63,7 +59,7 @@ private theorem rayClassGroup_hom_ext_of_prime
         rayClassOfFinitePrime n v hv := by
     apply e.injective
     calc
-      e (ι (RayClass.primeToModulusIdeal n' v hv)) =
+      _ =
           QuotientGroup.mk' (RayClass.principalRayIdealSubgroup n')
             (RayClass.primeToModulusIdeal n' v hv) := by
         change e (e.symm
@@ -86,7 +82,7 @@ private theorem rayClassGroup_hom_ext_of_prime
     exact hI
   have hcomp : f.comp ι = g.comp ι := by
     refine RayClass.primeToModulusIdeals_hom_ext
-      (G := RayClassGroup m) n' (f.comp ι) (g.comp ι) ?_
+       n' (f.comp ι) (g.comp ι) ?_
     intro v hv
     change f (ι (RayClass.primeToModulusIdeal n' v hv)) =
       g (ι (RayClass.primeToModulusIdeal n' v hv))
@@ -101,24 +97,22 @@ private theorem rayClassGroup_hom_ext_of_prime
 /-- Reducing a ray modulus gives a surjection of ideal-theoretic ray class
 groups. -/
 theorem rayClassIdealModulusProjection_surjective
-    (K : Type u) [Field K] [NumberField K]
     {m n : RayClassModulus K} (hmn : m ≤ n) :
     Function.Surjective (rayClassIdealModulusProjection K hmn) := by
   let m' := GlobalClassFieldComparison.rayClassModulusToOriginal K m
   let n' := GlobalClassFieldComparison.rayClassModulusToOriginal K n
-  have hmn' : m' ≤ n' := hmn
   let : IsMulCommutative (IdeleClassGroup K) :=
     ⟨⟨fun a b => mul_comm a b⟩⟩
   let : (RayClass.Modulus.congruenceSubgroup m').Normal :=
     Subgroup.normal_of_isMulCommutative _
   let : (RayClass.Modulus.congruenceSubgroup n').Normal :=
     Subgroup.normal_of_isMulCommutative _
-  let projection : RayClass.RayClassGroup n' →* RayClass.RayClassGroup m' :=
+  let projection :=
     QuotientGroup.map
       (RayClass.Modulus.congruenceSubgroup n')
       (RayClass.Modulus.congruenceSubgroup m')
       (MonoidHom.id (IdeleClassGroup K))
-      (RayClass.Modulus.congruenceSubgroup_antitone hmn')
+      (RayClass.Modulus.congruenceSubgroup_antitone hmn)
   have hprojection : Function.Surjective projection := by
     intro q
     obtain ⟨c, rfl⟩ :=

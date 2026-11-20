@@ -10,8 +10,8 @@ namespace DedekindZetaZeroFree.OrbitFrequencies
 open MomentSources NumberField MeasureTheory ThetaProfileHaarSheets
 open scoped NumberField Classical Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem complex_uniform_integrable_iff (w : InfinitePlace F) (x : PositiveAxis)
     (f : R.A.G → ℂ) :

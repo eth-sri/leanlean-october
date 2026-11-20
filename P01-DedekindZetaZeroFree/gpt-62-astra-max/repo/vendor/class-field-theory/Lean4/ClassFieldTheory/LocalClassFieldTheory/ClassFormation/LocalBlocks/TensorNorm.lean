@@ -21,19 +21,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -158,11 +145,9 @@ theorem normUnits_rightCosetCompletionAlgEquiv
       Units.map (Algebra.norm vK.Completion) z := by
   let hK :=
     AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let _ : SMul K w.1.Completion := hK.toSMul
+  let _ := hK.toSMul
   let _ := AbsoluteValue.completionAlgebra vK w.1 w.2
-  let _ :
-      Algebra vK.Completion
-        (rightCosetExtensionEquiv vK hvK w q).1.Completion :=
+  let _ :=
     AbsoluteValue.completionAlgebra vK
       (rightCosetExtensionEquiv vK hvK w q).1
       (rightCosetExtensionEquiv vK hvK w q).2
@@ -170,8 +155,7 @@ theorem normUnits_rightCosetCompletionAlgEquiv
       (rightCosetExtensionEquiv vK hvK w q).1.Completion :=
     completionModuleFinite vK hvK
       (rightCosetExtensionEquiv vK hvK w q)
-  let _ : Module.Finite vK.Completion
-      (LocalizedCompletion vK w) :=
+  let _ :=
     localizedCompletionModuleFinite vK hvK w
   apply Units.ext
   change
@@ -257,19 +241,6 @@ theorem normUnits_completionProductUnitsEquivRightCosets
           vK hvK w p q) =
       Units.map (Algebra.norm vK.Completion)
         (p (rightCosetExtensionEquiv vK hvK w q)) := by
-  let hK :=
-    AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let _ : SMul K w.1.Completion := hK.toSMul
-  let _ := AbsoluteValue.completionAlgebra vK w.1 w.2
-  let _ : ∀ w' : AbsoluteValueExtension vK L,
-      Algebra vK.Completion w'.1.Completion :=
-    fun w' ↦ AbsoluteValue.completionAlgebra vK w'.1 w'.2
-  let _ : ∀ w' : AbsoluteValueExtension vK L,
-      Module.Finite vK.Completion w'.1.Completion :=
-    fun w' ↦ completionModuleFinite vK hvK w'
-  let _ : Module.Finite vK.Completion
-      (LocalizedCompletion vK w) :=
-    localizedCompletionModuleFinite vK hvK w
   rw [← normUnits_rightCosetCompletionAlgEquiv
     vK hvK w q
       (p (rightCosetExtensionEquiv vK hvK w q))]
@@ -306,7 +277,7 @@ theorem localTensorDetNorm_eq_prod_chosenCoordinates
       (K := K) (L := L) vK hvK
   let hK :=
     AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let _ : SMul K w.1.Completion := hK.toSMul
+  let _ := hK.toSMul
   let _ := AbsoluteValue.completionAlgebra vK w.1 w.2
   let _ : ∀ w' : AbsoluteValueExtension vK L,
       Algebra vK.Completion w'.1.Completion :=
@@ -314,8 +285,7 @@ theorem localTensorDetNorm_eq_prod_chosenCoordinates
   let _ : ∀ w' : AbsoluteValueExtension vK L,
       Module.Finite vK.Completion w'.1.Completion :=
     fun w' ↦ completionModuleFinite vK hvK w'
-  let _ : Module.Finite vK.Completion
-      (LocalizedCompletion vK w) :=
+  let _ :=
     localizedCompletionModuleFinite vK hvK w
   apply Units.ext
   change
@@ -392,7 +362,7 @@ theorem localTensorNormSubgroup_eq_localNormSubgroup
       (K := K) (L := L) vK hvK
   let hK :=
     AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let _ : SMul K w.1.Completion := hK.toSMul
+  let _ := hK.toSMul
   let _ := AbsoluteValue.completionAlgebra vK w.1 w.2
   let _ : ∀ w' : AbsoluteValueExtension vK L,
       Algebra vK.Completion w'.1.Completion :=
@@ -429,7 +399,7 @@ theorem localTensorNormSubgroup_eq_localNormSubgroup
             (absoluteValueDecompositionGroup K w.1) →
           (LocalizedCompletion vK w)ˣ :=
       fun q ↦ if q₀ = q then y else 1
-    let z : (LocalTensorAlgebra (L := L) vK)ˣ :=
+    let z : (LocalTensorAlgebra vK)ˣ :=
       (localTensorUnitsEquivChosenCoordinates
         vK hvK w).symm f
     refine ⟨z, ?_⟩
@@ -446,9 +416,7 @@ theorem localTensorNormSubgroup_eq_localNormSubgroup
           (LocalizedCompletion vK w) y
     rw [(localTensorUnitsEquivChosenCoordinates
       vK hvK w).apply_symm_apply f]
-    have hq₀ :
-        q₀ ∈ decompositionRightCosetsFinset
-          (K := K) (vK := vK) (w := w) :=
+    have hq₀ :=
       mem_decompositionRightCosetsFinset
         (K := K) (vK := vK) (w := w) q₀
     simpa only [f, apply_ite, map_one] using

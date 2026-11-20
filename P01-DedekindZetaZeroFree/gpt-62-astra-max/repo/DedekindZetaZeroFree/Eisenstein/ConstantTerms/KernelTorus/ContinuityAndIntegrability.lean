@@ -12,16 +12,16 @@ set_option maxHeartbeats 1200000
 namespace DedekindZetaZeroFree.KPContinuation.ChamberModerateGrowth
 open KPContFlatCuspIncomingEvaluation
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
 variable (hι : Function.Injective ι) (f : ℂ → S)
-variable (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-variable (a : Cusps F ζ hζ C R P H U) (s : ℂ) (hs : s ∈ KPContActualChamberNormalSeries.V)
+    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+    (a : Cusps F ζ hζ C R P H U) (s : ℂ) (hs : s ∈ KPContActualChamberNormalSeries.V)
 include hι hf hs
 
 theorem actualCuspSheet_kernel_continuous
@@ -43,9 +43,7 @@ theorem actualCuspSheet_kernel_continuous
   have hrel : ∀ x y, (QuotientAddGroup.leftRel
       (KPCuspCharts.translationLattice F (KPCuspGenuineMonodromy.kernelLattice
         (stabilizer F ζ hζ C R P H U a) (parabolic F ζ hζ C R P H U a)
-        (rho F ζ hζ C R P H U a)))).r x y → u x = u y := by
-    intro x y h
-    exact actualCuspSheet_kernel_representative F ζ hζ C R P H U ι hι f hf a s hs
+        (rho F ζ hζ C R P H U a)))).r x y → u x = u y := fun x y h => actualCuspSheet_kernel_representative F ζ hζ C R P H U ι hι f hf a s hs
       t x y b ε (Quotient.sound h)
   have heq : (fun z : KernelTorus F ζ hζ C R P H U a => u (Quotient.out z)) =
       Quotient.lift u hrel := by

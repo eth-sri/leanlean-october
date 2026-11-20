@@ -11,8 +11,8 @@ open NumberField Filter
 namespace DedekindZetaZeroFree.RootDerivatives
 open MomentSources KPLiteralRaw
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1800000
 local instance : T2Space (Group R) :=
@@ -61,7 +61,7 @@ local instance : IsTopologicalGroup (Group R) :=
     carrier := {a | ∀ g, u (g*a) = u g}
     one_mem' := by simp
     mul_mem' := by intro a b ha hb g; rw [← mul_assoc,hb,ha]
-    inv_mem' := by intro a ha g; have h := ha (g*a⁻¹); simpa using h.symm }
+    inv_mem' := by intro a ha g; simpa using (ha (g*a⁻¹)).symm}
   have hJ : IsClosed (J : Set (Group R)) := by
     change IsClosed {a | ∀ g, u (g*a) = u g}
     simp only [Set.setOf_forall]

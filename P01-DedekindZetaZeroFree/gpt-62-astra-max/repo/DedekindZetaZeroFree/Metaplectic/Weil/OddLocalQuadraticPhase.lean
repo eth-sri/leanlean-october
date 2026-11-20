@@ -20,18 +20,18 @@ abbrev residueFintype (v : HeightOneSpectrum (𝓞 F)) : Fintype (Residue v) :=
 
 attribute [local instance] residueFintype
 
-abbrev localUnit (v : HeightOneSpectrum (𝓞 F)) :
+variable (v : HeightOneSpectrum (𝓞 F))
+
+abbrev localUnit :
     (v.adicCompletionIntegers F)ˣ →* (v.adicCompletion F)ˣ :=
   Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom
 
-abbrev uniformizer (v : HeightOneSpectrum (𝓞 F))
+abbrev uniformizer
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) :
     (v.adicCompletion F)ˣ :=
-  Units.mk0 (π : v.adicCompletion F) (by
-    intro h
-    exact hπ.ne_zero (Subtype.ext h))
+  Units.mk0 (π : v.adicCompletion F) (fun h => hπ.ne_zero (Subtype.ext h))
 
-abbrev conductor (v : HeightOneSpectrum (𝓞 F))
+abbrev conductor
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) (c : ℤ) : Prop :=
   (∀ x : v.adicCompletionIntegers F,
     ResidueTrace.localTraceCharacter v
@@ -42,7 +42,7 @@ abbrev conductor (v : HeightOneSpectrum (𝓞 F))
       (((uniformizer v π hπ)^(c-1) : (v.adicCompletion F)ˣ) *
         (x : v.adicCompletion F)) ≠ 1
 
-abbrev theta (v : HeightOneSpectrum (𝓞 F))
+abbrev theta
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) (c : ℤ)
     (x : Residue v) : Circle :=
   ((ResidueTrace.localTraceCharacter v).compAddMonoidHom
@@ -51,10 +51,10 @@ abbrev theta (v : HeightOneSpectrum (𝓞 F))
     (((Classical.choose (IsLocalRing.residue_surjective x) :
       v.adicCompletionIntegers F) : v.adicCompletion F) / (π : v.adicCompletion F))
 
-abbrev quadratic (v : HeightOneSpectrum (𝓞 F))
+abbrev quadratic
     (x : Residue v) : ℂ := (quadraticChar (Residue v) x : ℂ)
 
-abbrev epsilon (v : HeightOneSpectrum (𝓞 F))
+abbrev epsilon
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) (c : ℤ) : ℂ :=
   (∑ x : Residue v, (theta v π hπ c (x^2) : ℂ)) /
     (Real.sqrt (Fintype.card (Residue v)) : ℂ)

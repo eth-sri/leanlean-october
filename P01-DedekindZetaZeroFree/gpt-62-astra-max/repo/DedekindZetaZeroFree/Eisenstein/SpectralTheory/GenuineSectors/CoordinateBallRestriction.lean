@@ -20,10 +20,10 @@ open KPContCotangentOverlapRationalBranches KPContCotangentActualOverlap
 open KPContActualSectorCoordinateNullEquivalence
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 open KPContActualCotangentPieceHilbertSum KPContActualCotangentChartRestriction
 open KPContCotangentActualGenuineTwistIsotropy
@@ -96,18 +96,16 @@ variable (a : ActualChart (U := U) (H := H))
     funext k
     simp [labeledA, labeledAInv]
   measurable_toFun := by
-    change Measurable (toActual (ζ := ζ) (hζ := hζ))
+    change Measurable (toActual)
     apply Continuous.measurable
     unfold toActual labeledA
     fun_prop
   measurable_invFun := by
-    change Measurable (fromActual (ζ := ζ) (hζ := hζ))
+    change Measurable (fromActual)
     apply Continuous.measurable
     unfold fromActual labeledAInv
     fun_prop
- theorem emb_meas : MeasurableEmbedding (emb a) :=
-  (actualEquiv (ζ := ζ) (hζ := hζ)).symm.measurableEmbedding.comp
-    (MeasurableEmbedding.subtype_coe a.domain_open.measurableSet)
+ theorem emb_meas : MeasurableEmbedding (emb a) := by apply @ActualScalarTransport.emb_meas <;> assumption
  def flatLp : Lp (E F) 2 a.liftedMeasure →L[ℂ] Lp (E F) 2 (measure a) := by
   have hm : Measure.map (emb a) a.liftedMeasure = measure a :=
     lifted_measure_transport (a := a)
@@ -132,28 +130,32 @@ private theorem cotangentFlat_pull (v : KPContActualSectorCotangentL2.V F ζ hζ
     (r : SquareFiniteFamily (U := U) (H := H))
     (hr : KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r = v) :
     (fun y => cotangentFlat a v (emb a y)) =ᵐ[a.liftedMeasure] localCoefficient a r.val := by
-  have h := flatLp_pull a ((res (KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H) a v).val)
-  refine h.trans ?_
+  refine (flatLp_pull a ((res (KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H) a v).val)).trans ?_
   apply res_represented
   symm
-  change (KPContActualSectorCotangentL2.intrinsicClass F ζ hζ U R P H) v = toAeQuotient r
   rw [← hr]
   exact (KPContActualSectorCotangentL2.intrinsicClass F ζ hζ U R P H).apply_symm_apply _
 
- def decodeIndex (j : Fin (3*d F)) : Fin (d F) × Fin 3 :=
+ section
+
+variable (j : Fin (3*d F))
+
+def decodeIndex : Fin (d F) × Fin 3 :=
   let ik := (coefficientIndex (F := F)).symm j
   (ik.1, ![1,2,0] ik.2)
- def decodeFactor (j : Fin (3*d F)) (x : Space (3*d F)) : ℂ :=
+ def decodeFactor (x : Space (3*d F)) : ℂ :=
   let ik := (coefficientIndex (F := F)).symm j
   if ik.2 = 2 then 1 else (Real.exp (-((baseReindex (F := F)).symm x) (ik.1,2)) : ℂ)
-private theorem decode_cont (j : Fin (3*d F)) : Continuous (decodeFactor (F := F) j) := by
+private theorem decode_cont : Continuous (decodeFactor (F := F) j) := by
   unfold decodeFactor
   dsimp only
   split_ifs <;> fun_prop
+
+end
 private theorem decoder_eq (W : Family (U := U) (H := H)) (x : Space (3*d F)) (j : Fin (3*d F)) :
     coordinateW W a x j = decodeFactor j x *
       (liftExtension a (coefficient W a) ((baseReindex (F := F)).symm x)) (decodeIndex j) := by
-  generalize hk : (coefficientIndex (F := F)).symm j = ik
+  generalize hk : (coefficientIndex).symm j = ik
   obtain ⟨i,k⟩ := ik
   fin_cases k <;> simp [coordinateW, decodeFactor, decodeIndex, hk]
  def coordFlat (j : Fin (3*d F)) : KPContActualSectorCotangentL2.V F ζ hζ U R P H →L[ℂ]
@@ -174,21 +176,27 @@ private theorem coordFlat_ae (j : Fin (3*d F)) (v : KPContActualSectorCotangentL
     exact (emb_meas a).ae_map_iff.mp hh
   filter_upwards [hp', cotangentFlat_pull a v r hr] with y h1 h2
   rw [h1,h2]
- theorem factor_bound (B : LocalBall (3*d F)) (hB : BallInside a B) (j : Fin (3*d F)) :
+ section
+
+variable (B : LocalBall (3*d F)) (hB : BallInside a B) (j : Fin (3*d F))
+
+include hB in
+theorem factor_bound :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ᵐ x ∂volume.restrict B.carrier, ‖decodeFactor (F := F) j x‖ ≤ C := by
   obtain ⟨C,hC⟩ := hB.1.bddAbove_image ((decode_cont j).norm.continuousOn)
   refine ⟨max C 0, le_max_right _ _, ?_⟩
   filter_upwards [ae_restrict_mem (Metric.isOpen_ball.measurableSet)] with x hx
   exact (hC ⟨x, subset_closure hx, rfl⟩).trans (le_max_left _ _)
 
- theorem factorMem (B : LocalBall (3*d F)) (hB : BallInside a B) (j : Fin (3*d F))
+ include hB in
+theorem factorMem
     (f : BallL2 B) : MemLp (fun x => decodeFactor j x * f x) 2 (volume.restrict B.carrier) := by
   obtain ⟨C,hC,hb⟩ := factor_bound a B hB j
   have hm : AEStronglyMeasurable (decodeFactor (F := F) j) (volume.restrict B.carrier) :=
     (decode_cont (F := F) j).measurable.aestronglyMeasurable
-  have htop := memLp_top_of_bound (hm : AEStronglyMeasurable _ (volume.restrict B.carrier)) C hb
+  have htop := memLp_top_of_bound hm C hb
   exact htop.mul (Lp.memLp f)
- def factorLinear (B : LocalBall (3*d F)) (hB : BallInside a B) (j : Fin (3*d F)) :
+ def factorLinear :
     BallL2 B →ₗ[ℂ] BallL2 B where
   toFun f := (factorMem a B hB j f).toLp (fun x => decodeFactor j x * f x)
   map_add' f g := by
@@ -204,11 +212,10 @@ private theorem coordFlat_ae (j : Fin (3*d F)) (v : KPContActualSectorCotangentL
       (factorMem a B hB j f).coeFn_toLp, Lp.coeFn_smul c f,
       Lp.coeFn_smul c ((factorMem a B hB j f).toLp _)] with x h1 h2 h3 h4
     simp only [RingHom.id_apply,h1,h4,Pi.smul_apply,h2,h3,smul_eq_mul,mul_left_comm]
- def factorCLM (B : LocalBall (3*d F)) (hB : BallInside a B) (j : Fin (3*d F)) :
+ def factorCLM :
     BallL2 B →L[ℂ] BallL2 B := by
   let C := (factor_bound a B hB j).choose
   have hC := (factor_bound a B hB j).choose_spec.1
-  have hb := (factor_bound a B hB j).choose_spec.2
   refine (factorLinear a B hB j).mkContinuous C ?_
   intro f
   change ‖(factorMem a B hB j f).toLp _‖ ≤ C * ‖f‖
@@ -218,26 +225,24 @@ private theorem coordFlat_ae (j : Fin (3*d F)) (v : KPContActualSectorCotangentL
       ENNReal.ofReal C * eLpNorm f 2 (volume.restrict B.carrier) := by
     calc _ ≤ eLpNorm (fun x => (C : ℂ) * f x) 2 (volume.restrict B.carrier) := by
            apply eLpNorm_mono_ae hm
-           filter_upwards [hb] with x hx
+           filter_upwards [((factor_bound a B hB j).choose_spec.2)] with x hx
            rw [norm_mul,norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg hC]
            exact mul_le_mul_of_nonneg_right hx (norm_nonneg _)
          _ = _ := by
            change eLpNorm ((C : ℂ) • (fun x => f x)) 2 (volume.restrict B.carrier) = _
            rw [eLpNorm_const_smul, ← ofReal_norm, Complex.norm_real,
              Real.norm_eq_abs, abs_of_nonneg hC]
-  have hfin := ENNReal.mul_ne_top (ENNReal.ofReal_ne_top (r := C)) (Lp.memLp f).eLpNorm_ne_top
-  have hr := ENNReal.toReal_mono hfin hh
+  have hr := ENNReal.toReal_mono (ENNReal.mul_ne_top (ENNReal.ofReal_ne_top) (Lp.memLp f).eLpNorm_ne_top) hh
   rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (show 0 ≤ C from hC)] at hr
   exact hr
-private theorem factorCLM_ae (B : LocalBall (3*d F)) (hB : BallInside a B) (j : Fin (3*d F))
+private theorem factorCLM_ae
     (f : BallL2 B) : factorCLM a B hB j f =ᵐ[volume.restrict B.carrier]
-      (fun x => decodeFactor j x * f x) := by
-  exact (factorMem a B hB j f).coeFn_toLp
+      (fun x => decodeFactor j x * f x) := (factorMem a B hB j f).coeFn_toLp
 
- def completeBall (B : LocalBall (3*d F)) (hB : BallInside a B) (j : Fin (3*d F)) :
+ def completeBall :
     KPContActualSectorCotangentL2.V F ζ hζ U R P H →L[ℂ] BallL2 B :=
   (factorCLM a B hB j).comp ((weightedBall a B hB).comp (coordFlat a j))
-private theorem completeBall_ae (B : LocalBall (3*d F)) (hB : BallInside a B) (j : Fin (3*d F))
+private theorem completeBall_ae
     (v : KPContActualSectorCotangentL2.V F ζ hζ U R P H)
     (r : SquareFiniteFamily (U := U) (H := H))
     (hr : KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r = v) :
@@ -255,7 +260,7 @@ private theorem completeBall_ae (B : LocalBall (3*d F)) (hB : BallInside a B) (j
     rw [he]
     simp only [liftExtension, dite_eq_left (coordinates a y).property, localCoefficient]
   obtain ⟨c,hc0,hdom⟩ := ball_measure_domination a B hB
-  have habs : volume.restrict B.carrier ≪ measure a := Measure.absolutelyContinuous_of_le_smul hdom
+  have habs := Measure.absolutelyContinuous_of_le_smul hdom
   have hball := habs.ae_le hg
   have h1 := factorCLM_ae a B hB j (weightedBall a B hB (coordFlat a j v))
   have h2 := weightedBall_ae a B hB (coordFlat a j v)
@@ -263,10 +268,9 @@ private theorem completeBall_ae (B : LocalBall (3*d F)) (hB : BallInside a B) (j
   change factorCLM a B hB j (weightedBall a B hB (coordFlat a j v)) x = _
   rw [hx1,hx2,hx3]
 
-def coordinateBall (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F))
-    (hB : BallInside a B) (j : Fin (3 * d F)) :
-    KPContActualSectorCotangentL2.V F ζ hζ U R P H →L[ℂ] BallL2 B :=
-  completeBall a B hB j
+end
+
+alias coordinateBall := completeBall
 
 theorem coordinateBall_ae (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F))
     (hB : BallInside a B) (j : Fin (3 * d F))
@@ -274,8 +278,7 @@ theorem coordinateBall_ae (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 
     (r : SquareFiniteFamily (U := U) (H := H))
     (hr : KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r = v) :
     (fun x => coordinateBall a B hB j v x) =ᵐ[volume.restrict B.carrier]
-      (fun x => coordinateW r.val a x j) := by
-  exact completeBall_ae a B hB j v r hr
+      (fun x => coordinateW r.val a x j) := completeBall_ae a B hB j v r hr
 
 end DedekindZetaZeroFree.KPContActualSectorBallRestriction
 

@@ -9,10 +9,10 @@ open scoped Classical NumberField TensorProduct
 namespace DedekindZetaZeroFree.FourierContinuation.CurrentRepairedLocalBinding
 open NumberField MomentSources KPGlobalTorusFiniteStages FaithfulSource.RepairedInducing
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1800000
 
@@ -54,15 +54,13 @@ theorem scalar_stage_raw
   unfold stageVector LiteralSource.rawStageValue
   simp only [LinearMap.comp_apply, LiteralSource.rationalEvaluation]
   rw [comparison_stage]
-  have hm : (fun p : s.val => localValue R N P C p (g p)) =
-      (fun p : s.val => LiteralSource.localValueMap R.A P C p.val (g p.val)) := by
-    funext p
-    rcases p with ⟨p, hp⟩
-    cases p <;> rfl
-  exact congrArg (fun y : RestrictedTensorSimple.Stage (Fiber R P C) s.val =>
+  refine congrArg (fun y : RestrictedTensorSimple.Stage (Fiber R P C) s.val =>
     (LiteralSource.comparison R.A P C
       (RestrictedTensorSimple.stageInclusion _ _ _ (sourceLevel R P C s) y)).val.val 1)
-    (congrArg (fun m => PiTensorProduct.map m x) hm)
+    (congrArg (fun m => PiTensorProduct.map m x) ?_)
+  funext p
+  rcases p with ⟨p, hp⟩
+  cases p <;> rfl
 
 end DedekindZetaZeroFree.FourierContinuation.CurrentRepairedLocalBinding
 

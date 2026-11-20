@@ -11,7 +11,7 @@ open scoped Classical NumberField Topology ENNReal Pointwise
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.RawStageL2.TruncatedEstimate.CompactCore.ArchimedeanGeometry
 
 variable {F : Type} [Field F] [NumberField F]
-variable {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
+    {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
 theorem quotientHaar_compact_ne_top
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)

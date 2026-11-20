@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Metaplectic.Torus.CenterCubeIdeles
 
 public import DedekindZetaZeroFree.Metaplectic.Torus.RationalCenterCharacterData
 
@@ -11,7 +12,7 @@ noncomputable section
 set_option autoImplicit false
 set_option maxHeartbeats 800000
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
  def coveredTorusDiagonalRatioCubicProjection : E F ζ hζ →* KPGlobalCubicIdelePairing.D F :=
   (QuotientGroup.mk' (CubicCharacters.cubes (Ideles F))).comp
@@ -26,11 +27,13 @@ private lemma diag_inverse (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
   have hu := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit_spec
   change A⁻¹ 0 0 * A 0 0 = 1 at h
   let u := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit
-  have hu' : (u : KPAdelicCoverRestrictedProduct.Adeles F) = A 0 0 := hu
+  have hu' : u = A 0 0 := hu
   calc
     _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * 1 := (mul_one _).symm
     _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * (A⁻¹ 0 0 * A 0 0) := by rw [h]
     _ = A⁻¹ 0 0 := by rw [← hu']; simp [← mul_assoc, mul_comm]
+
+alias PrincipalCubicLagrangianPreimage.diag_inverse := diag_inverse
 
 private lemma diag_inverse11 (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
     (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) :
@@ -41,11 +44,13 @@ private lemma diag_inverse11 (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
   have hu := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit_spec
   change A⁻¹ 1 1 * A 1 1 = 1 at h
   let u := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit
-  have hu' : (u : KPAdelicCoverRestrictedProduct.Adeles F) = A 1 1 := hu
+  have hu' : u = A 1 1 := hu
   calc
     _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * 1 := (mul_one _).symm
     _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * (A⁻¹ 1 1 * A 1 1) := by rw [h]
     _ = A⁻¹ 1 1 := by rw [← hu']; simp [← mul_assoc, mul_comm]
+
+alias PrincipalCubicLagrangianPreimage.diag_inverse11 := diag_inverse11
 
 private lemma preimage_diag (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
     (hA : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A ∈
@@ -57,6 +62,8 @@ private lemma preimage_diag (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
   rw [← he]
   simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
+
+alias PrincipalCubicLagrangianPreimage.preimage_diag := preimage_diag
 
 private lemma ratio_continuous : Continuous (KPGlobalTorusFunctionData.torusRatio F) := by
   let q := QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
@@ -102,13 +109,19 @@ private lemma ratio_continuous : Continuous (KPGlobalTorusFunctionData.torusRati
   rw [he]
   exact hu.mul hw.inv
 
+alias PrincipalCubicLagrangianPreimage.ratio_continuous := ratio_continuous
+
 private theorem p_continuous : Continuous (KPGlobalTorusFunctionData.p F ζ hζ) := by
   apply (ratio_continuous F).comp
   exact ((KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous.comp
     continuous_subtype_val).subtype_mk (fun t => t.property)
 
+alias PrincipalCubicLagrangianPreimage.p_continuous := p_continuous
+
 private theorem pD_continuous : Continuous (coveredTorusDiagonalRatioCubicProjection F ζ hζ) :=
   (QuotientGroup.isOpenQuotientMap_mk).continuous.comp (p_continuous F ζ hζ)
+
+alias PrincipalCubicLagrangianPreimage.pD_continuous := pD_continuous
 
 private theorem p_rational (a : Fˣ) :
     KPGlobalTorusFunctionData.p F ζ hζ (KPGlobalTorusFunctionData.s F ζ hζ a) =
@@ -141,36 +154,15 @@ private theorem p_rational (a : Fˣ) :
     simp [A, KPAdelicCoverRestrictedProduct.rationalBase]
   simp [he1, he2]
 
+alias PrincipalCubicLagrangianPreimage.p_rational := p_rational
+
 private theorem pD_rational (a : Fˣ) :
     coveredTorusDiagonalRatioCubicProjection F ζ hζ (KPGlobalTorusFunctionData.s F ζ hζ a) =
       KPGlobalPrincipalCubicLagrangian.principalClass F a := by
   rw [coveredTorusDiagonalRatioCubicProjection, MonoidHom.comp_apply, p_rational F ζ hζ a]
   rfl
 
- theorem principalCubicLagrangianPreimage_diagonalPGL_torusRatio (t : KPGlobalTorusFunctionData.ordinaryTorus F) :
-    KPGlobalCubicIdelePairing.diagonalPGL F (KPGlobalTorusFunctionData.torusRatio F t) = t.val := by
-  let A := Classical.choose t.property
-  have hA : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A = t.val ∧
-      A 1 0 = 0 ∧ A 0 1 = 0 := Classical.choose_spec t.property
-  let u := (KPGlobalTorusFunctionData.diagonal_entries_units F A hA.2.1 hA.2.2).1.unit
-  let w := (KPGlobalTorusFunctionData.diagonal_entries_units F A hA.2.1 hA.2.2).2.unit
-  have hu : (u : KPAdelicCoverRestrictedProduct.Adeles F) = A 0 0 := IsUnit.unit_spec _
-  have hw : (w : KPAdelicCoverRestrictedProduct.Adeles F) = A 1 1 := IsUnit.unit_spec _
-  have heq : A = KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹) *
-      Matrix.GeneralLinearGroup.scalar (Fin 2) w := by
-    apply Units.ext
-    ext i j
-    fin_cases i <;> fin_cases j <;>
-      simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-        Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, hu, hA.2.1, hA.2.2]
-    exact hw.symm
-  change QuotientGroup.mk' _ (KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹)) = t.val
-  rw [← hA.1, heq]
-  have hs : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
-      (Matrix.GeneralLinearGroup.scalar (Fin 2) w) = 1 :=
-    (QuotientGroup.eq_one_iff _).mpr ⟨w, rfl⟩
-  rw [(QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)).map_mul, hs, mul_one]
+ alias principalCubicLagrangianPreimage_diagonalPGL_torusRatio := CubeDiagonalProduct.diagonalPGL_torusRatio
 
  def coveredTorusDiagonalRatioPullbackHom : E F ζ hζ →* KPGlobalCubicIdelePairing.E F ζ hζ where
   toFun e := ⟨(e.val, KPGlobalTorusFunctionData.p F ζ hζ e),
@@ -179,9 +171,9 @@ private theorem pD_rational (a : Fˣ) :
   map_mul' x y := by apply Subtype.ext; exact Prod.ext rfl (map_mul _ _ _)
 
 private theorem torusPullbackBridge_injective :
-    Function.Injective (coveredTorusDiagonalRatioPullbackHom F ζ hζ) := by
-  intro x y h
-  exact Subtype.ext (congrArg (fun t : KPGlobalCubicIdelePairing.E F ζ hζ => t.val.1) h)
+    Function.Injective (coveredTorusDiagonalRatioPullbackHom F ζ hζ) := fun x y h => Subtype.ext (congrArg (fun t : KPGlobalCubicIdelePairing.E F ζ hζ => t.val.1) h)
+
+alias PrincipalCubicLagrangianPreimage.torusPullbackBridge_injective := torusPullbackBridge_injective
 
 private theorem torusPullbackBridge_surjective :
     Function.Surjective (coveredTorusDiagonalRatioPullbackHom F ζ hζ) := by
@@ -228,6 +220,8 @@ private theorem torusPullbackBridge_surjective :
     simp [A, KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix]
   simp [he1, he2]
 
+alias PrincipalCubicLagrangianPreimage.torusPullbackBridge_surjective := torusPullbackBridge_surjective
+
 private theorem commute_iff_beta (x y : E F ζ hζ) :
     Commute x y ↔ KPGlobalCubicIdelePairing.beta3 F ζ hζ
       (coveredTorusDiagonalRatioCubicProjection F ζ hζ x) (coveredTorusDiagonalRatioCubicProjection F ζ hζ y) = 1 := by
@@ -238,7 +232,9 @@ private theorem commute_iff_beta (x y : E F ζ hζ) :
     exact h.mp (hc.map (coveredTorusDiagonalRatioPullbackHom F ζ hζ))
   · intro hb
     apply torusPullbackBridge_injective F ζ hζ
-    simpa only [map_mul] using (h.mpr hb).eq
+    simpa using (h.mpr hb).eq
+
+alias PrincipalCubicLagrangianPreimage.commute_iff_beta := commute_iff_beta
 
 private theorem center_eq_pD_ker : Z F ζ hζ = (coveredTorusDiagonalRatioCubicProjection F ζ hζ).ker := by
   have hcenter : (Z F ζ hζ : Subgroup (E F ζ hζ)) =
@@ -259,6 +255,8 @@ private theorem center_eq_pD_ker : Z F ζ hζ = (coveredTorusDiagonalRatioCubicP
     ← MonoidHom.comap_ker, QuotientGroup.ker_mk']
   rfl
 
+alias PrincipalCubicLagrangianPreimage.center_eq_pD_ker := center_eq_pD_ker
+
 private theorem mem_A_iff_annihilator (x : KPGlobalCubicIdelePairing.D F) :
     x ∈ KPGlobalPrincipalCubicLagrangian.A F ↔
       x ∈ KPGlobalPrincipalCubicLagrangian.annihilator F ζ hζ
@@ -273,56 +271,44 @@ theorem rational_subgroup_geometry :
           (KPGlobalTorusFunctionData.p F ζ hζ)) ∧
     IsClosed (rationalCenterSubgroup F ζ hζ : Set (E F ζ hζ)) ∧
     KPLocalPolarization.IsMaximalAbelian (rationalCenterSubgroup F ζ hζ) := by
-  have hiso : ∀ a ∈ KPGlobalPrincipalCubicLagrangian.A F,
-      ∀ b ∈ KPGlobalPrincipalCubicLagrangian.A F,
-      KPGlobalCubicIdelePairing.beta3 F ζ hζ a b = 1 := by
-    intro a ha b hb
-    exact (mem_A_iff_annihilator F ζ hζ a).mp ha b hb
   have hR : rationalCenterSubgroup F ζ hζ =
       (KPGlobalPrincipalCubicLagrangian.A F).comap (coveredTorusDiagonalRatioCubicProjection F ζ hζ) := by
     ext x
     constructor
     · intro hx
       rw [Subgroup.mem_comap]
-      have hx' : x ∈ (KPGlobalTorusFunctionData.s F ζ hζ).range ⊔ Z F ζ hζ := hx
-      obtain ⟨u, hu, z, hz, hxz⟩ := Subgroup.mem_sup_of_normal_right.mp hx'
+      obtain ⟨u, hu, z, hz, hxz⟩ := Subgroup.mem_sup_of_normal_right.mp hx
       obtain ⟨a, rfl⟩ := hu
       have hz1 : coveredTorusDiagonalRatioCubicProjection F ζ hζ z = 1 := by
-        have hmem : z ∈ (coveredTorusDiagonalRatioCubicProjection F ζ hζ).ker := by
-          rw [← center_eq_pD_ker F ζ hζ]; exact hz
-        exact MonoidHom.mem_ker.mp hmem
+        refine MonoidHom.mem_ker.mp ?_
+        rw [← center_eq_pD_ker F ζ hζ]; exact hz
       rw [← hxz, map_mul, pD_rational F ζ hζ a, hz1, mul_one]
       exact ⟨a, rfl⟩
     · intro hx
       obtain ⟨a, ha⟩ := hx
-      have h1 : coveredTorusDiagonalRatioCubicProjection F ζ hζ ((KPGlobalTorusFunctionData.s F ζ hζ a)⁻¹ * x) = 1 := by
-        rw [map_mul, map_inv, pD_rational F ζ hζ a, ha.symm, inv_mul_cancel]
-      have hz : (KPGlobalTorusFunctionData.s F ζ hζ a)⁻¹ * x ∈ Z F ζ hζ := by
-        rw [center_eq_pD_ker F ζ hζ]
-        exact MonoidHom.mem_ker.mpr h1
       have hx' : x = KPGlobalTorusFunctionData.s F ζ hζ a *
           ((KPGlobalTorusFunctionData.s F ζ hζ a)⁻¹ * x) := by group
       rw [hx']
-      exact Subgroup.mul_mem _
+      refine Subgroup.mul_mem _
         (Subgroup.mem_sup_left (⟨a, rfl⟩ : KPGlobalTorusFunctionData.s F ζ hζ a ∈
           (KPGlobalTorusFunctionData.s F ζ hζ).range))
-        (Subgroup.mem_sup_right hz)
+        (Subgroup.mem_sup_right ?_)
+      rw [center_eq_pD_ker F ζ hζ]
+      exact MonoidHom.mem_ker.mpr (by
+        rw [map_mul, map_inv, pD_rational F ζ hζ a, ha.symm, inv_mul_cancel])
   refine ⟨hR, ?_, ?_⟩
   · rw [hR]
     haveI : T2Space (KPGlobalCubicIdelePairing.D F) := KPGlobalCubicIdelePairing.hausdorff F
     haveI : DiscreteTopology (KPGlobalPrincipalCubicLagrangian.A F) :=
       KPGlobalPrincipalCubicLagrangian.principal_discrete F ζ hζ
-    have hAcl : IsClosed
-        (KPGlobalPrincipalCubicLagrangian.A F : Set (KPGlobalCubicIdelePairing.D F)) :=
-      Subgroup.isClosed_of_discreteTopology
     show IsClosed (coveredTorusDiagonalRatioCubicProjection F ζ hζ ⁻¹'
       (KPGlobalPrincipalCubicLagrangian.A F : Set (KPGlobalCubicIdelePairing.D F)))
-    exact hAcl.preimage (pD_continuous F ζ hζ)
+    exact Subgroup.isClosed_of_discreteTopology.preimage (pD_continuous F ζ hζ)
   · rw [hR]
     refine ⟨?_, ?_⟩
     · intro x hx y hy
       exact (commute_iff_beta F ζ hζ x y).mpr
-        (hiso (coveredTorusDiagonalRatioCubicProjection F ζ hζ x) hx (coveredTorusDiagonalRatioCubicProjection F ζ hζ y) hy)
+        ((fun a ha b hb => (mem_A_iff_annihilator F ζ hζ a).mp ha b hb) (coveredTorusDiagonalRatioCubicProjection F ζ hζ x) hx (coveredTorusDiagonalRatioCubicProjection F ζ hζ y) hy)
     · intro B hB hBab
       apply le_antisymm _ hB
       intro x hx
@@ -330,13 +316,9 @@ theorem rational_subgroup_geometry :
       rw [mem_A_iff_annihilator F ζ hζ]
       intro y hy
       obtain ⟨a₀, rfl⟩ := hy
-      have hs_mem : KPGlobalTorusFunctionData.s F ζ hζ a₀ ∈
-          (KPGlobalPrincipalCubicLagrangian.A F).comap (coveredTorusDiagonalRatioCubicProjection F ζ hζ) := by
+      have hbeta := (commute_iff_beta F ζ hζ x (KPGlobalTorusFunctionData.s F ζ hζ a₀)).mp (hBab x hx _ (hB (by
         rw [Subgroup.mem_comap, pD_rational F ζ hζ a₀]
-        exact ⟨a₀, rfl⟩
-      have hcomm : Commute x (KPGlobalTorusFunctionData.s F ζ hζ a₀) :=
-        hBab x hx _ (hB hs_mem)
-      have hbeta := (commute_iff_beta F ζ hζ x (KPGlobalTorusFunctionData.s F ζ hζ a₀)).mp hcomm
+        exact ⟨a₀, rfl⟩)))
       rwa [pD_rational F ζ hζ a₀] at hbeta
 
 end

@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 namespace ClassFormation
@@ -74,8 +68,7 @@ open scoped Topology
 This is deliberately a `def`, rather than an `abbrev`: clients use the
 reduction maps and the representation equivalence below instead of depending
 on the closure subtype. -/
-def ZHat : Type 0 :=
-  ZHatClosureModel
+alias ZHat := ZHatClosureModel
 
 /-- The closure model equips `ZHat` with its canonical commutative ring structure. -/
 instance : CommRing ZHat := by
@@ -107,22 +100,16 @@ instance : CompactSpace ZHat :=
   Topology.IsClosedEmbedding.compactSpace
     (Subring.isClosed_topologicalClosure zHatIntegerSubring).isClosedEmbedding_subtypeVal
 
-/-- `ZHat` as Mathlib's bundled profinite additive group. -/
-def zHatProfiniteAddGrp : ProfiniteAddGrp :=
-  ProfiniteAddGrp.of ZHat
-
 /-- The multiplicative presentation of `ZHat` remains totally disconnected. -/
 instance : TotallyDisconnectedSpace (Multiplicative ZHat) := by
-  change TotallyDisconnectedSpace ZHat
   infer_instance
 
-/-- The multiplicative presentation of `ZHat` as Mathlib's bundled profinite
-group.  Its multiplication is addition in `ZHat`. -/
-def zHatMulProfiniteGrp : ProfiniteGrp :=
-  ProfiniteGrp.of (Multiplicative ZHat)
+section
+
+variable (n : ℕ) (hn : 0 < n)
 
 /-- The canonical continuous reduction `ℤ̂ → ℤ/nℤ`. -/
-def zHatReduction (n : ℕ) (hn : 0 < n) :
+def zHatReduction :
     ContinuousAddMonoidHom ZHat (ZMod n) where
   toFun x := (show ZHatClosureModel from x).1 (zHatIndex n hn)
   map_zero' := rfl
@@ -135,14 +122,16 @@ def zHatReduction (n : ℕ) (hn : 0 < n) :
 /-- Reduction agrees with the ordinary integer cast.  This is the public
 computation rule; it does not expose the closure model used to construct
 `ZHat`. -/
-@[simp] theorem zHatReduction_intCast (n : ℕ) (hn : 0 < n) (a : ℤ) :
+@[simp] theorem zHatReduction_intCast (a : ℤ) :
     zHatReduction n hn (a : ZHat) = (a : ZMod n) :=
   rfl
 
 /-- Reduction modulo one sends every profinite integer to the unique residue class. -/
-@[simp] theorem zHatReduction_one (n : ℕ) (hn : 0 < n) :
+@[simp] theorem zHatReduction_one :
     zHatReduction n hn (1 : ZHat) = 1 := by
-  simpa only [Int.cast_one] using zHatReduction_intCast n hn 1
+  rfl
+
+end
 
 namespace ZHat
 
@@ -163,18 +152,7 @@ theorem zHatReduction_transition {m n : ℕ}
     (hm : 0 < m) (hn : 0 < n) (hmn : m ∣ n) (x : ZHat) :
     ZMod.castHom hmn (ZMod m) (zHatReduction n hn x) =
       zHatReduction m hm x := by
-  let f : ZHatAmbient → ZMod m :=
-    fun z => ZMod.castHom hmn (ZMod m) (z (zHatIndex n hn))
-  let g : ZHatAmbient → ZMod m :=
-    fun z => z (zHatIndex m hm)
-  have hfg : Set.EqOn f g (zHatIntegerSubring : Set ZHatAmbient) := by
-    rintro _ ⟨a, rfl⟩
-    exact map_intCast (ZMod.castHom hmn (ZMod m)) a
-  have hf : Continuous f :=
-    continuous_of_discreteTopology.comp (continuous_apply (zHatIndex n hn))
-  have hg : Continuous g :=
-    continuous_apply (zHatIndex m hm)
-  exact hfg.closure hf hg x.property
+  exact Set.EqOn.closure (fun ⦃x⦄ a ↦ Exists.casesOn a fun a h ↦ h ▸ map_intCast (ZMod.castHom hmn (ZMod m)) a) (Continuous.comp continuous_of_discreteTopology (continuous_apply (zHatIndex n hn))) (continuous_apply (zHatIndex m hm)) x.property
 
 /-- The ordinary integers have dense image in their profinite completion. -/
 theorem denseRange_intCast_zHat :
@@ -183,15 +161,9 @@ theorem denseRange_intCast_zHat :
       (Set.inclusion (Subring.le_topologicalClosure zHatIntegerSubring)) := by
     apply (denseRange_inclusion_iff
       (Subring.le_topologicalClosure zHatIntegerSubring)).2
-    change closure (zHatIntegerSubring : Set ZHatAmbient) ⊆
-      closure (zHatIntegerSubring : Set ZHatAmbient)
     exact Set.Subset.rfl
-  have hdiagonal : DenseRange zHatDiagonal.rangeRestrict :=
-    zHatDiagonal.rangeRestrict_surjective.denseRange
-  have hcomp : DenseRange
-      (Set.inclusion (Subring.le_topologicalClosure zHatIntegerSubring) ∘
-        zHatDiagonal.rangeRestrict) :=
-    hinclusion.comp hdiagonal
+  have hcomp :=
+    hinclusion.comp zHatDiagonal.rangeRestrict_surjective.denseRange
       (continuous_inclusion
         (Subring.le_topologicalClosure zHatIntegerSubring))
   have heq :
@@ -211,25 +183,15 @@ theorem zHatOne_topologicallyGenerates :
     TopologicallyGenerates
       (G := Multiplicative ZHat)
       ({Multiplicative.ofAdd (1 : ZHat)} : Set (Multiplicative ZHat)) := by
-  let f : Multiplicative ℤ →* Multiplicative ZHat :=
+  let f :=
     AddMonoidHom.toMultiplicative (Int.castRingHom ZHat).toAddMonoidHom
   have hf : DenseRange f := by
-    have hOfAdd :
-        DenseRange (Multiplicative.ofAdd : ZHat → Multiplicative ZHat) :=
-      (show Function.Surjective
-          (Multiplicative.ofAdd : ZHat → Multiplicative ZHat) from
-        fun x => ⟨Multiplicative.toAdd x, rfl⟩).denseRange
-    have hCast :
-        DenseRange
-          (Multiplicative.ofAdd ∘ fun a : ℤ => (a : ZHat)) :=
-      hOfAdd.comp denseRange_intCast_zHat continuous_id
-    have hToAdd :
-        DenseRange (Multiplicative.toAdd : Multiplicative ℤ → ℤ) :=
-      (show Function.Surjective
-          (Multiplicative.toAdd : Multiplicative ℤ → ℤ) from
-        fun a => ⟨Multiplicative.ofAdd a, rfl⟩).denseRange
     simpa [f, Function.comp_def] using
-      hCast.comp hToAdd continuous_of_discreteTopology
+      (((show Function.Surjective
+          Multiplicative.ofAdd from
+        fun x => ⟨Multiplicative.toAdd x, rfl⟩).denseRange).comp denseRange_intCast_zHat continuous_id).comp ((show Function.Surjective
+          Multiplicative.toAdd from
+        fun a => ⟨Multiplicative.ofAdd a, rfl⟩).denseRange) continuous_of_discreteTopology
   simpa [f] using
     (topologicallyGenerates_singleton_of_denseRange_mint f hf)
 

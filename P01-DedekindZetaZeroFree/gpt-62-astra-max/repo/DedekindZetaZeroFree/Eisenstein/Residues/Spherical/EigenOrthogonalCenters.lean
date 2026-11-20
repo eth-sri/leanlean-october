@@ -10,20 +10,15 @@ open scoped Classical NumberField Topology BigOperators
 open Filter
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming native_second_word → native_second_word
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming nativeIndex → nativeIndex
-open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy renaming actualRightWord_compact_holomorphy → actualRightWord_compact_holomorphy
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming scalar_analytic_of_right_holomorphic → scalar_analytic_of_right_holomorphic
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming word_smul → word_smul
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 local notation "G" => KPGlobalTorusFunctionData.G F ζ hζ
 variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "level" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U
 
@@ -55,7 +50,7 @@ theorem spherical_scalar_native_orthogonal_centers
               F ζ hζ C R P H U (N c) → N c = 0) := by
   obtain ⟨Z, hch, hl⟩ := ResidualHilbertCenters.spherical_scalar_hilbert_orthogonal_centers
     F ζ hζ C R P H U v hv
-  let A : ℂ → G → ℂ := fun s => groupScalar F ζ hζ C R P H U (Z s)
+  let A := fun s => groupScalar F ζ hζ C R P H U (Z s)
   have hm (w) (g) : MeromorphicOn (fun s => actualRightWord F ζ hζ w (A s) g)
       KPContinuation.spectralDomain := by
     apply actual_word_meromorphic F ζ hζ C R P H U A _ w g

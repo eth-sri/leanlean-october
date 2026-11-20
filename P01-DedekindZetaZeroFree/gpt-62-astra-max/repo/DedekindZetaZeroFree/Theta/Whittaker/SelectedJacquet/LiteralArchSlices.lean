@@ -11,33 +11,22 @@ noncomputable section
 open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.SheetRescaling
 open NumberField KPLiteralRaw KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
-open _root_.DedekindZetaZeroFree.RepresentationTheory.KPContHolomorphicKGenerationProve renaming orbit_span_invariant → orbit_span_invariant
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal renaming diagonalUnit → diagonalUnit
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal renaming lowerCoordinates → lowerCoordinates
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal renaming lowerCoordinates_smooth → lowerCoordinates_smooth
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal renaming lowerCoordinates_insertion → lowerCoordinates_insertion
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal renaming update_left_mul → update_left_mul
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal renaming weyl_upper → weyl_upper
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal renaming singleDiagonal → singleDiagonal
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal renaming diagonal_insertion → diagonal_insertion
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal renaming singleAdele → singleAdele
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal renaming unipotent_insertion → unipotent_insertion
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal renaming upper_projective → upper_projective
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal renaming compact_insertion → compact_insertion
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal renaming insertion_commutes_finite → insertion_commutes_finite
+open _root_.DedekindZetaZeroFree.RepresentationTheory.KPContHolomorphicKGenerationProve (orbit_span_invariant)
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal (diagonalUnit lowerCoordinates lowerCoordinates_smooth lowerCoordinates_insertion update_left_mul weyl_upper singleDiagonal diagonal_insertion singleAdele unipotent_insertion upper_projective compact_insertion insertion_commutes_finite)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-def literalArchSlice (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K)
-    (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)
+section
+
+variable (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K) (w : InfinitePlace F)
+
+def literalArchSlice (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) (g : ComplexGL2) : ℂ :=
   f.val 0 (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
     (Function.update a w (Matrix.ProjGenLinGroup.mk g)) * c.val)
 
-theorem literalArchSlice_lower_smooth
-    (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K)
-    (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)
+theorem literalArchSlice_lower_smooth (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) (g : ComplexGL2) :
     ContDiff ℝ (⊤ : ℕ∞) (fun u : ℂ => literalArchSlice F ζ hζ K f w a c
       (lowerUnipotent u * g)) := by
@@ -55,9 +44,7 @@ theorem literalArchSlice_lower_smooth
     ← (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1,
     update_left_mul, map_mul]
 
-theorem literalArchSlice_charts_smooth
-    (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K)
-    (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)
+theorem literalArchSlice_charts_smooth (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     ContDiff ℝ (⊤ : ℕ∞) (openCoordinate (literalArchSlice F ζ hζ K f w a c)) ∧
       ContDiff ℝ (⊤ : ℕ∞) (infinityCoordinate (literalArchSlice F ζ hζ K f w a c)) := by
@@ -69,9 +56,7 @@ theorem literalArchSlice_charts_smooth
     simpa only [mul_one] using
       literalArchSlice_lower_smooth F ζ hζ K f w a c 1
 
-theorem literalArchSlice_covariance
-    (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K)
-    (w : InfinitePlace F) (a₀ : KPSmoothActualFlowData.GInfinity F)
+theorem literalArchSlice_covariance (a₀ : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     HasCovariance positiveParameter (literalArchSlice F ζ hζ K f w a₀ c) := by
   intro a d b g
@@ -139,16 +124,17 @@ theorem literalArchSlice_covariance
   push_cast
   ring
 
-def literalArchPrincipalSeries
-    (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K)
-    (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)
+def literalArchPrincipalSeries (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) : PrincipalSeries positiveParameter :=
   ⟨literalArchSlice F ζ hζ K f w a c, literalArchSlice_covariance F ζ hζ K f w a c,
     literalArchSlice_charts_smooth F ζ hζ K f w a c⟩
 
-theorem literalArchPrincipalSeries_kfinite
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (w : InfinitePlace F)
+end
+
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K)
+
+include hK in
+theorem literalArchPrincipalSeries_kfinite (w : InfinitePlace F)
     (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     KPContHolomorphicKGeneration.IsKFinite positiveParameter
@@ -202,9 +188,8 @@ theorem literalArchPrincipalSeries_kfinite
   change FiniteDimensional ℂ O
   exact FiniteDimensional.of_injective T.rangeRestrict hi
 
-theorem literalArchPrincipalSeries_uniform_band
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) :
+include hK in
+theorem literalArchPrincipalSeries_uniform_band :
     ∃ B : ℕ, ∀ (w : InfinitePlace F)
       (a : KPSmoothActualFlowData.GInfinity F)
       (c : KPGlobalTorusFunctionData.finitePart F ζ hζ),

@@ -41,11 +41,9 @@ private theorem log_mellin (f : ℝ → ℂ) (s : ℂ) {c n : ℝ} (hc : 0 < c) 
     push_cast
     field_simp [Complex.ofReal_ne_zero.mpr hn.ne']
     <;> ring
-  have hj : Integrable (fun x : ℝ ↦ h ((x - Real.log c) / n)) :=
-    (hi.comp_div hn.ne').comp_sub_right (Real.log c)
   have hconv : MellinConvergent f s := by
     apply (integrable_comp_exp g).mp
-    simpa only [heq] using hj.const_mul ((c : ℂ) ^ s)
+    simpa only [heq] using ((hi.comp_div hn.ne').comp_sub_right (Real.log c)).const_mul ((c : ℂ) ^ s)
   refine ⟨hconv, ?_⟩
   change (∫ t in Set.Ioi 0, g t) = _
   rw [← integral_comp_exp g]
@@ -55,7 +53,11 @@ private theorem log_mellin (f : ℝ → ℂ) (s : ℂ) {c n : ℝ} (hc : 0 < c) 
   simp only [abs_of_pos hn, Complex.real_smul]
   dsimp [h]
   ring
-private theorem slab_coords (K : Type*) [Field K] [NumberField K]
+section
+
+variable (K : Type*) [Field K] [NumberField K]
+
+private theorem slab_coords
     (a : ℝ) (u : Angular K) :
     unitSlabCoordinates (K := K) a u = angularLift K u + radialLift K a := by
   classical
@@ -63,7 +65,7 @@ private theorem slab_coords (K : Type*) [Field K] [NumberField K]
   by_cases hw : w = w₀ <;> simp [unitSlabCoordinates, unitRadialAngularEquiv,
     angularLift, radialLift, hw]
 
-private theorem cov_pos (K : Type*) [Field K] [NumberField K]
+private theorem cov_pos
     (J : (Ideal (𝓞 K))⁰) : 0 < mixedThetaCovolume K (FractionalIdeal.mk0 K J) := by
   unfold mixedThetaCovolume
   rw [FractionalIdeal.coe_mk0, FractionalIdeal.coeIdeal_absNorm]
@@ -71,8 +73,13 @@ private theorem cov_pos (K : Type*) [Field K] [NumberField K]
   have hd : (discr K : ℝ) ≠ 0 := by exact_mod_cast discr_ne_zero K
   positivity
 
-private theorem class_centered_mellin (K : Type) [Field K] [NumberField K]
-    (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re) :
+end
+
+section
+
+variable (K : Type) [Field K] [NumberField K] (J : (Ideal (𝓞 K))⁰)
+
+private theorem class_centered_mellin {s : ℂ} (hs : 1 < s.re) :
     HasMellin (fun t : ℝ ↦ mixedAngularAverage K (FractionalIdeal.mk0 K J) t - 1) s
       ((Module.finrank ℚ K : ℂ) *
         (mixedThetaCovolume K (FractionalIdeal.mk0 K J) : ℂ) ^ s *
@@ -134,8 +141,7 @@ private theorem class_centered_mellin (K : Type) [Field K] [NumberField K]
   change (∫ y in DedekindZetaZeroFree.Theta.unitFundamentalParamSet K, F y) = _ at hcone
   rw [hcone] at hm
   exact hm
-private theorem cov_cpow (K : Type) [Field K] [NumberField K]
-    (J : (Ideal (𝓞 K))⁰) (s : ℂ) :
+private theorem cov_cpow (s : ℂ) :
     (mixedThetaCovolume K (FractionalIdeal.mk0 K J) : ℂ) ^ s =
       (Ideal.absNorm (J : Ideal (𝓞 K)) : ℂ) ^ s *
         (((|discr K| : ℤ) : ℂ) ^ (s / 2)) := by
@@ -145,8 +151,6 @@ private theorem cov_cpow (K : Type) [Field K] [NumberField K]
   unfold mixedThetaCovolume
   rw [FractionalIdeal.coe_mk0, FractionalIdeal.coeIdeal_absNorm]
   rw [Complex.ofReal_mul, Rat.cast_natCast]
-  change (((Ideal.absNorm (J : Ideal (𝓞 K)) : ℝ) : ℂ) *
-    (Real.sqrt |(discr K : ℝ)| : ℂ)) ^ s = _
   rw [Complex.mul_cpow_ofReal_nonneg hN.le (Real.sqrt_nonneg _)]
   congr 1
   rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hD).ne'),
@@ -158,8 +162,12 @@ private theorem cov_cpow (K : Type) [Field K] [NumberField K]
   push_cast
   ring
 
-private theorem normalized_calibration (K : Type) [Field K] [NumberField K]
-    (C : ClassGroup (𝓞 K)) {s : ℂ} (hs : 1 < s.re) :
+end
+
+variable (K : Type) [Field K] [NumberField K] (C : ClassGroup (𝓞 K)) {s : ℂ} (hs : 1 < s.re)
+
+include hs in
+private theorem normalized_calibration :
     (alpha K : ℂ) *
       ((Module.finrank ℚ K : ℂ) *
         (mixedThetaCovolume K (FractionalIdeal.mk0 K (inverseClassIdealRepresentative K C)) : ℂ) ^ s *
@@ -169,21 +177,20 @@ private theorem normalized_calibration (K : Type) [Field K] [NumberField K]
           fundamentalConeZeta K (inverseClassIdealRepresentative K C) s)) =
         zetaGammaFactor K s * partialDedekindZeta K C s := by
   have hn : (Module.finrank ℚ K : ℂ) ≠ 0 := by
-    exact_mod_cast (Module.finrank_pos (R := ℚ) (M := K)).ne'
-  have hr : (Units.regulator K : ℂ) ≠ 0 := by
-    exact_mod_cast (Units.regulator_pos K).ne'
+    exact_mod_cast (Module.finrank_pos).ne'
   have hw : (Units.torsionOrder K : ℂ) ≠ 0 := by
     exact_mod_cast Units.torsionOrder_ne_zero K
   rw [partialDedekindZeta_eq_normalized_fundamentalConeZeta K C hs,
     cov_cpow K _ s]
   unfold alpha zetaGammaFactor
   push_cast
-  rw [← Nat.cast_add (R := ℤ), zpow_neg, zpow_natCast]
-  field_simp [hn, hr, hw]
+  rw [← Nat.cast_add, zpow_neg, zpow_natCast]
+  field_simp [hn, by
+    exact_mod_cast (Units.regulator_pos K).ne', hw]
   <;> ring
 
-theorem hasMellin_classTheta (K : Type) [Field K] [NumberField K]
-    (C : ClassGroup (𝓞 K)) {s : ℂ} (hs : 1 < s.re) :
+include hs in
+theorem hasMellin_classTheta :
     HasMellin
       (fun t : ℝ ↦ (alpha K : ℂ) *
         (mixedAngularAverage K

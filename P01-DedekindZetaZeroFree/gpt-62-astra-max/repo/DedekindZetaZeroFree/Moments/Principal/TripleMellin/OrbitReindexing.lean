@@ -11,21 +11,25 @@ noncomputable section
 open MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 abbrev FrequencyIndex (P : PrincipalData A σ η hS) :=
   {u // u ∈ P.frequencies.reps} × A.Exterior
 
-def frequencyRow (P : PrincipalData A σ η hS) (j : FrequencyIndex P) :
+section
+
+variable (P : PrincipalData A σ η hS) (j : FrequencyIndex P)
+
+def frequencyRow :
     ProbeOrbitNormSum.Nonzero A :=
   ⟨j.1.val.val * P.coefficients.generator j.2 ^ 6,
     mul_ne_zero j.1.val.property (pow_ne_zero _ (P.coefficients.generates j.2).1)⟩
 
-def frequencyOrbit (P : PrincipalData A σ η hS) (j : FrequencyIndex P) :
+def frequencyOrbit :
     ProbeOrbitNormSum.Orbit A := ProbeOrbitNormSum.orbitMk A (frequencyRow P j)
 
-private lemma rowUnit_frequencyRow (P : PrincipalData A σ η hS) (j : FrequencyIndex P) :
+private lemma rowUnit_frequencyRow :
     ThetaReflectionData.rowUnit A (frequencyRow P j) =
       ThetaReflectionData.rowUnit A j.1.val * P.allowed.generator j.2 ^ 6 := by
   apply Units.ext
@@ -33,6 +37,8 @@ private lemma rowUnit_frequencyRow (P : PrincipalData A σ η hS) (j : Frequency
     Units.val_pow_eq_pow_val, Subalgebra.coe_mul, Subalgebra.coe_pow]
   rw [show ((P.coefficients.generator j.2 : A.R) : F) = (P.allowed.generator j.2 : F) from
     (P.sameGenerator j.2).symm]
+
+end
 
 private lemma gamma_val_eq_sixth (γ : ProbeOrbitNormSum.Gamma A) :
     ∃ δ : A.U, (γ.val : Fˣ) = (δ : Fˣ) ^ 6 := by
@@ -48,8 +54,7 @@ theorem frequencyOrbit_bijective (P : PrincipalData A σ η hS) :
     obtain ⟨δ, hδ⟩ := gamma_val_eq_sixth γ
     have hF : ((δ : Fˣ) : F) ^ 6 * ((frequencyRow P (u, I)).val : F) =
         ((frequencyRow P (u', I')).val : F) := by
-      have h1 : ((γ • frequencyRow P (u, I)).val : F) =
-          ((frequencyRow P (u', I')).val : F) :=
+      have h1 :=
         congrArg (fun x : ProbeOrbitNormSum.Nonzero A => (x.val : F)) hγ
       have h2 : ((γ • frequencyRow P (u, I)).val : F) =
           ((δ : Fˣ) : F) ^ 6 * ((frequencyRow P (u, I)).val : F) := by
@@ -63,17 +68,14 @@ theorem frequencyOrbit_bijective (P : PrincipalData A σ η hS) :
       simp only [ThetaReflectionData.rowUnit, Units.val_mk0, Units.val_mul,
         Units.val_pow_eq_pow_val]
       exact hF.symm
-    have hkey : ThetaReflectionData.rowUnit A (frequencyRow P (u', I')) =
-        ThetaReflectionData.rowUnit A u.val * P.allowed.generator I ^ 6 * (δ : Fˣ) ^ 6 := by
-      rw [hU, rowUnit_frequencyRow P (u, I)]
-      ac_rfl
     obtain ⟨x0, hx0, huniq⟩ := P.frequencies.factorization (frequencyRow P (u', I'))
-    have hx1 : (u, I) = x0 := huniq (u, I) ⟨δ, hkey⟩
     have hx2 : (u', I') = x0 := by
       refine huniq (u', I') ⟨1, ?_⟩
       rw [rowUnit_frequencyRow P (u', I')]
       simp
-    exact hx1.trans hx2.symm
+    exact (huniq (u, I) ⟨δ, by
+      rw [hU, rowUnit_frequencyRow P (u, I)]
+      ac_rfl⟩).trans hx2.symm
   · intro o
     induction o using Quotient.inductionOn with | h h =>
       obtain ⟨x0, hx0, -⟩ := P.frequencies.factorization h
@@ -116,25 +118,18 @@ private theorem orbitNorm_orbitMk_eq_exteriorNorm (A : SArithmeticData F)
   rw [(ProbeOrbitNormSum.principalExterior_generates A h).2, A.exteriorResidue_card]
   rfl
 
-private theorem norm_diagonal_rowUnit_eq_orbitNorm (A : SArithmeticData F)
-    (h : ProbeOrbitNormSum.Nonzero A) :
-    A.norm (A.diagonal (ThetaReflectionData.rowUnit A h)) =
-      ProbeOrbitNormSum.orbitNorm A (ProbeOrbitNormSum.orbitMk A h) :=
-  (ProbeOrbitNormSum.orbitNorm_eq_snorm A h (ThetaReflectionData.rowUnit A h) rfl).symm
-
 private theorem norm_diagonal_rowUnit (A : SArithmeticData F)
     (h : ProbeOrbitNormSum.Nonzero A) :
     A.norm (A.diagonal (ThetaReflectionData.rowUnit A h)) =
       (FiniteTransform.exteriorNorm A.R.toSubring h.val : ℝ) :=
-  (norm_diagonal_rowUnit_eq_orbitNorm A h).trans (orbitNorm_orbitMk_eq_exteriorNorm A h)
+  (((ProbeOrbitNormSum.orbitNorm_eq_snorm A h (ThetaReflectionData.rowUnit A h) rfl).symm)).trans (orbitNorm_orbitMk_eq_exteriorNorm A h)
 
 private theorem normPow (A : SArithmeticData F) (x : A.G) (n : ℕ) :
-    A.norm (x ^ n) = A.norm x ^ n := by
-  induction n with
-  | zero => simp [SArithmeticData.norm]
-  | succ n ih => rw [pow_succ, ProbeSheet.norm_mul, ih, pow_succ]
+    A.norm (x ^ n) = A.norm x ^ n := by apply @DedekindZetaZeroFree.ProbeJointAbsoluteMass.PoissonJointAbsoluteMass.norm_pow_raw <;> assumption
 
-theorem frequencyOrbit_norm (P : PrincipalData A σ η hS) (j : FrequencyIndex P) :
+variable (P : PrincipalData A σ η hS)
+
+theorem frequencyOrbit_norm (j : FrequencyIndex P) :
     ProbeOrbitNormSum.orbitNorm A (frequencyOrbit P j) =
       (FiniteTransform.exteriorNorm A.R.toSubring j.1.val.val : ℝ) *
         A.exteriorNorm j.2 ^ 6 := by
@@ -160,16 +155,16 @@ theorem frequencyOrbit_norm (P : PrincipalData A σ η hS) (j : FrequencyIndex P
     norm_diagonal_rowUnit A ⟨P.coefficients.generator j.2, (P.coefficients.generates j.2).1⟩,
     hg]
 
-def frequencySection (P : PrincipalData A σ η hS) (o : ProbeOrbitNormSum.Orbit A) :
+def frequencySection (o : ProbeOrbitNormSum.Orbit A) :
     ProbeOrbitNormSum.Nonzero A := frequencyRow P ((frequencyEquiv P).symm o)
 
-theorem frequencySection_leftInverse (P : PrincipalData A σ η hS) :
+theorem frequencySection_leftInverse :
     Function.LeftInverse (ProbeOrbitNormSum.orbitMk A) (frequencySection P) := by
   intro o
   change frequencyEquiv P ((frequencyEquiv P).symm o) = o
   simp
 
-def orbitIndexEquiv (P : PrincipalData A σ η hS) :
+def orbitIndexEquiv :
     MellinSeriesIndex P ≃ ProbePoissonOrbitFormula.Index A where
   toFun i := (i.2.2.2.1, i.2.1, i.2.2.1, frequencyEquiv P (i.1, i.2.2.2.2))
   invFun i := ((frequencyEquiv P).symm i.2.2.2 |>.1,
@@ -177,7 +172,7 @@ def orbitIndexEquiv (P : PrincipalData A σ η hS) :
   left_inv i := by simp
   right_inv i := by simp
 
-theorem probe_eq_reindexed_sum (P : PrincipalData A σ η hS)
+theorem probe_eq_reindexed_sum
     (N : MellinNormalizationData A σ η hS P)
     (ρ : ProbeOrbitNormSum.Orbit A → ProbeOrbitNormSum.Nonzero A)
     (hρ : Function.LeftInverse (ProbeOrbitNormSum.orbitMk A) ρ)

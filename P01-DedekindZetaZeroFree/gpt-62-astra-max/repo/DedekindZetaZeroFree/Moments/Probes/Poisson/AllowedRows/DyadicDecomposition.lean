@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Moments.Probes.Poisson.DyadicDomination
 
 public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllowedRows.SmallFrequencySum
 public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllowedRows.HorizontalAndTailBounds
@@ -18,10 +19,14 @@ open DedekindZetaZeroFree NumberField MeasureTheory DedekindZetaZeroFree.Quantit
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
-theorem dyadNP_eq_union (ρ U : ℝ) :
+section
+
+variable (ρ U : ℝ)
+
+theorem dyadNP_eq_union :
     dyadRows D U \ principalRows D = exceptionalSet D ρ U ∪ goodRows D ρ U := by
   ext u
   constructor
@@ -35,17 +40,19 @@ theorem dyadNP_eq_union (ρ U : ℝ) :
       exact he.1 h1
     · exact ⟨hg.1, hg.2.1⟩
 
-theorem exceptional_disjoint_good (ρ U : ℝ) :
+theorem exceptional_disjoint_good :
     Disjoint (exceptionalSet D ρ U) (goodRows D ρ U) := by
   rw [Set.disjoint_left]
   intro u hu hg
   exact hg.2.2 hu
 
-theorem exceptionalSet_finite (ρ U : ℝ) : (exceptionalSet D ρ U).Finite :=
+theorem exceptionalSet_finite : (exceptionalSet D ρ U).Finite :=
   (ActualRowCount.dyadRows_finite D U).subset fun u hu => ⟨hu.2.1, hu.2.2.1⟩
 
-theorem goodRows_finite (ρ U : ℝ) : (goodRows D ρ U).Finite :=
+theorem goodRows_finite : (goodRows D ρ U).Finite :=
   (ActualRowCount.dyadRows_finite D U).subset fun u hu => hu.1
+
+end
 
 theorem J_dyadNP_split (ρ U Z : ℝ) :
     J D (dyadRows D U \ principalRows D) 4 4 2 Z =
@@ -94,31 +101,18 @@ private theorem lt_floor_iff {x : ℝ} (hx : 1 ≤ x) (k : ℕ) :
 private theorem mem_intermediate_iff {Z : ℝ} (hZ : 1 ≤ Z) (k : ℕ) :
     k ∈ intermediateDyads Z ↔
       Z ^ Scales.smallCutoffExponent < (2 : ℝ) ^ k ∧ (2 : ℝ) ^ k ≤ Z ^ Scales.largeCutoffExponent := by
-  have h1 : (1 : ℝ) ≤ Z ^ Scales.largeCutoffExponent := Real.one_le_rpow hZ (by unfold Scales.largeCutoffExponent; norm_num)
   unfold intermediateDyads
-  rw [Finset.mem_filter, Finset.mem_range, lt_floor_iff h1]
+  rw [Finset.mem_filter, Finset.mem_range, lt_floor_iff (Real.one_le_rpow hZ (by unfold Scales.largeCutoffExponent; norm_num))]
   exact and_comm
 
-private theorem dyad_disjoint (k l : ℕ) (hkl : k ≠ l) :
-    Disjoint (dyadRows D ((2 : ℝ) ^ k)) (dyadRows D ((2 : ℝ) ^ l)) := by
-  rw [Set.disjoint_left]
-  intro u hk hl
-  rcases Nat.lt_or_gt_of_ne hkl with h | h
-  · have h1 : (2 : ℝ) ^ (k + 1) ≤ 2 ^ l := pow_le_pow_right₀ (by norm_num) (Nat.succ_le_of_lt h)
-    have h2 : (2 : ℝ) ^ (k + 1) = 2 * 2 ^ k := by ring
-    have h3 : D.q u < 2 * (2 : ℝ) ^ k := hk.2
-    have h4 : (2 : ℝ) ^ l ≤ D.q u := hl.1
-    linarith
-  · have h1 : (2 : ℝ) ^ (l + 1) ≤ 2 ^ k := pow_le_pow_right₀ (by norm_num) (Nat.succ_le_of_lt h)
-    have h2 : (2 : ℝ) ^ (l + 1) = 2 * 2 ^ l := by ring
-    have h3 : D.q u < 2 * (2 : ℝ) ^ l := hl.2
-    have h4 : (2 : ℝ) ^ k ≤ D.q u := hk.1
-    linarith
+section
 
-private theorem dyad_bound_summable (Z : ℝ) (hZ : 0 < Z) :
+variable (Z : ℝ) (hZ : 0 < Z)
+
+include hZ in
+private theorem dyad_bound_summable :
     Summable (fun k : ℕ => ∑ u ∈ (ActualRowCount.dyadRows_finite D ((2 : ℝ) ^ k)).toFinset,
       ∫ t : ℝ × ℝ × ℝ, ‖PoissonIdentity.rowIntegrand D u Z t‖) := by
-  have hsum := PoissonInitialBridge.rowIntegrand_norm_summable D Z hZ
   refine summable_of_sum_range_le
     (c := ∑' u : D.Row, ∫ t : ℝ × ℝ × ℝ, ‖PoissonIdentity.rowIntegrand D u Z t‖)
     (fun k => Finset.sum_nonneg fun u _ => integral_nonneg fun t => norm_nonneg _)
@@ -128,13 +122,15 @@ private theorem dyad_bound_summable (Z : ℝ) (hZ : 0 < Z) :
     intro k _ l _ hkl
     refine Finset.disjoint_left.mpr ?_
     intro u hu hu'
-    exact Set.disjoint_left.mp (dyad_disjoint D k l hkl)
+    exact Set.disjoint_left.mp (by
+      apply @DedekindZetaZeroFree.Quantitative.InitialDyadDomination.dyadRows_disjoint <;> assumption)
       ((Set.Finite.mem_toFinset _).mp hu) ((Set.Finite.mem_toFinset _).mp hu')
   refine le_of_eq_of_le (Finset.sum_biUnion
-    (f := fun u => ∫ t : ℝ × ℝ × ℝ, ‖PoissonIdentity.rowIntegrand D u Z t‖) hd).symm ?_
-  exact hsum.sum_le_tsum _ (fun u _ => integral_nonneg fun t => norm_nonneg _)
+     hd).symm ?_
+  exact (PoissonInitialBridge.rowIntegrand_norm_summable D Z hZ).sum_le_tsum _ (fun u _ => integral_nonneg fun t => norm_nonneg _)
 
-private theorem dyad_norm_le (Z : ℝ) (hZ : 0 < Z) (k : ℕ) :
+include hZ in
+private theorem dyad_norm_le (k : ℕ) :
     ‖J D (dyadRows D ((2 : ℝ) ^ k) \ principalRows D) 4 4 2 Z‖ ≤
       ‖(2 * (Real.pi : ℂ))⁻¹ ^ 3‖ *
         ∑ u ∈ (ActualRowCount.dyadRows_finite D ((2 : ℝ) ^ k)).toFinset,
@@ -143,11 +139,14 @@ private theorem dyad_norm_le (Z : ℝ) (hZ : 0 < Z) (k : ℕ) :
   exact J_norm_le_finset D _ (hfin.subset Set.diff_subset) hfin.toFinset
     (fun u hu => hfin.mem_toFinset.mpr hu.1) Z hZ
 
-private theorem dyad_summable (Z : ℝ) (hZ : 0 < Z) :
+include hZ in
+private theorem dyad_summable :
     Summable (fun k : ℕ => J D (dyadRows D ((2 : ℝ) ^ k) \ principalRows D) 4 4 2 Z) :=
   Summable.of_norm_bounded
     ((dyad_bound_summable D Z hZ).mul_left ‖(2 * (Real.pi : ℂ))⁻¹ ^ 3‖)
     (fun k => dyad_norm_le D Z hZ k)
+
+end
 
 theorem good_initial_eq (ρ U Z : ℝ) (hU : 2 ≤ U) (hZ : 2 ≤ Z) :
     J D (goodRows D ρ U) 4 4 2 Z =
@@ -174,27 +173,18 @@ theorem good_dyad_split (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpone
           heightErrors D ρ U Z := by
   obtain ⟨U₀, hU₀, hdeform⟩ := RowGoodDeform.row_good_deform D A_F ρ hA hconv hρ
   refine ⟨U₀, hU₀, fun U Z hU hZ => ?_⟩
-  have hU2 : 2 ≤ U := le_trans hU₀ hU
-  have hZ0 : 0 < Z := by linarith
-  have hC : ∀ u ∈ goodRows D ρ U, FixedData.Row.u u ≠ 1 ∧ U ≤ D.q u ∧ D.q u < 2 * U ∧
-      u ∉ exceptionalSet D ρ U := by
-    intro u hu
-    exact ⟨hu.2.1, hu.1.1, hu.1.2, hu.2.2⟩
-  have hdef := (hdeform U hU (goodRows D ρ U) (goodRows_finite D ρ U) hC Z hZ0).2.2
-  rw [good_initial_eq D ρ U Z hU2 hZ, ← J_eq_JCont D (goodRows D ρ U) Scales.rightLine Scales.wLine
-    Scales.zLine Z, hdef]
+  rw [good_initial_eq D ρ U Z (le_trans hU₀ hU) hZ, ← J_eq_JCont D (goodRows D ρ U) Scales.rightLine Scales.wLine
+    Scales.zLine Z, ((hdeform U hU (goodRows D ρ U) (goodRows_finite D ρ U) (fun u hu => ⟨hu.2.1, hu.1.1, hu.1.2, hu.2.2⟩) Z (by linarith)).2.2)]
   unfold heightErrors
   ring
 
 theorem dyad_five_piece (ρ Z : ℝ) (hZ : 2 ≤ Z) :
-    Summable (fun k : ℕ => J D (dyadRows D ((2 : ℝ) ^ k) \ principalRows D) 4 4 2 Z) ∧
     ∑' k : ℕ, J D (dyadRows D ((2 : ℝ) ^ k) \ principalRows D) 4 4 2 Z =
       smallDyadSum D Z + exceptionalDyadSum D ρ Z +
         ∑ k ∈ intermediateDyads Z, J D (goodRows D ρ ((2 : ℝ) ^ k)) 4 4 2 Z +
         ∑' k : ℕ, (if Z ^ Scales.largeCutoffExponent < (2 : ℝ) ^ k then dyadNP D ((2 : ℝ) ^ k) 2 Z else 0) := by
   have hZ0 : 0 < Z := by linarith
   have hZ1 : 1 ≤ Z := by linarith
-  refine ⟨dyad_summable D Z hZ0, ?_⟩
   obtain ⟨T, hT⟩ : ∃ T : ℕ → ℂ, ∀ k : ℕ,
       T k = J D (dyadRows D ((2 : ℝ) ^ k) \ principalRows D) 4 4 2 Z :=
     ⟨fun k => J D (dyadRows D ((2 : ℝ) ^ k) \ principalRows D) 4 4 2 Z, fun k => rfl⟩

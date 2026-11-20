@@ -16,23 +16,25 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 namespace ErrorRectangles
 
 def upperConstant (c : Ideal (𝓞 F)) : ℝ := 8 * max 1 (norm c)
 
-def originRectangles (C : Context Q) (B : ℝ) : Finset (ℝ × ℝ) :=
+variable (C : Context Q) (B : ℝ)
+
+def originRectangles : Finset (ℝ × ℝ) :=
   (rectangles C).filter (fun P => P.1 * P.2 ≤
     upperConstant c * (C.N / Real.sqrt (B * C.M)) *
       Real.rpow (C.M * C.N) C.δ)
 
-def originScore (C : Context Q) (B : ℝ) (P : ℝ × ℝ) : ℝ :=
+def originScore (P : ℝ × ℝ) : ℝ :=
   Real.sqrt (P.1 * P.2) *
     Real.sqrt (U Q B (C.N / (norm C.d * P.1)) *
       U Q B (C.N / (norm C.d * P.2)))
 
-def originEnvelope (C : Context Q) (B : ℝ) : ℝ :=
+def originEnvelope : ℝ :=
   finiteSup (originRectangles C B) (originScore C B)
 
 end ErrorRectangles
@@ -42,11 +44,10 @@ theorem quotient_weighted_energy (C : Context Q) (hN : 1 ≤ C.N) :
       ‖C.lam (C.d * u) / (Real.sqrt (norm u) : ℂ)‖ ^ 2) ≤
       (norm C.d / C.N) * Sieve.energy F c C.N C.lam := by
   classical
-  have hNpos : 0 < C.N := lt_of_lt_of_le zero_lt_one hN
+  have hNpos := lt_of_lt_of_le zero_lt_one hN
   have hdpos : 0 < norm C.d := by
-    have hd : Ideal.absNorm C.d ≠ 0 := fun h => C.hd0 (Ideal.absNorm_eq_zero_iff.mp h)
     unfold norm
-    exact_mod_cast Nat.pos_of_ne_zero hd
+    exact_mod_cast Nat.pos_of_ne_zero (fun h => C.hd0 (Ideal.absNorm_eq_zero_iff.mp h))
   rw [Sieve.energy, Finset.mul_sum]
   apply Finset.sum_le_sum_of_injOn (fun u => C.d * u)
   · intro u hu v hv h
@@ -55,25 +56,22 @@ theorem quotient_weighted_energy (C : Context Q) (hN : 1 ≤ C.N) :
     rcases Finset.mem_image.mp hb with ⟨u, hu, rfl⟩
     exact (Finset.mem_filter.mp hu).2.1
   · intro u hu
-    have hmem := (Finset.mem_filter.mp hu).2.1
-    have hlow := ((Sieve.mem_paperShell F c C.N (C.d * u)).mp hmem).2.2.1
+    have hlow := ((Sieve.mem_paperShell F c C.N (C.d * u)).mp ((Finset.mem_filter.mp hu).2.1)).2.2.1
     have hmul : norm (C.d * u) = norm C.d * norm u := by
       simp only [norm, map_mul, Nat.cast_mul]
     change C.N < norm (C.d * u) at hlow
     rw [hmul] at hlow
     have hup : 0 < norm u := by
-      have hnonneg : 0 ≤ norm u := by unfold norm; positivity
       nlinarith
     rw [norm_div, Complex.norm_real, Real.norm_eq_abs,
       abs_of_nonneg (Real.sqrt_nonneg _), div_pow, Real.sq_sqrt hup.le]
-    have hinv : 1 / norm u ≤ norm C.d / C.N := by
-      rw [div_le_div_iff₀ hup hNpos]
-      simpa only [one_mul] using hlow.le
     calc
-      ‖C.lam (C.d * u)‖ ^ 2 / norm u =
+      _ =
           (1 / norm u) * ‖C.lam (C.d * u)‖ ^ 2 := by ring
       _ ≤ (norm C.d / C.N) * ‖C.lam (C.d * u)‖ ^ 2 :=
-        mul_le_mul_of_nonneg_right hinv (sq_nonneg _)
+        mul_le_mul_of_nonneg_right (by
+          rw [div_le_div_iff₀ hup hNpos]
+          simpa using hlow.le) (sq_nonneg _)
   · intro b hb hbnot
     exact mul_nonneg (div_nonneg hdpos.le hNpos.le) (sq_nonneg _)
 

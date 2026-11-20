@@ -12,13 +12,12 @@ noncomputable section
 
 def spectralDomain : Set ℂ := {s | -(1 : ℝ) / 6 < s.re}
 
-theorem spectralDomain_isOpen : IsOpen spectralDomain := by
-  exact isOpen_lt continuous_const Complex.continuous_re
+theorem spectralDomain_isOpen : IsOpen spectralDomain := isOpen_lt continuous_const Complex.continuous_re
 
 theorem spectralDomain_isConnected : IsConnected spectralDomain := by
-  apply (convex_halfSpace_gt (f := Complex.re)
+  apply (convex_halfSpace_gt
     ⟨fun x y => by simp, fun a x => by simp⟩ (-(1 : ℝ) / 6)).isConnected
-  exact ⟨0, by norm_num [spectralDomain]⟩
+  exact ⟨0, by norm_num⟩
 
 theorem convergenceHalfPlane_subset_spectralDomain :
     {s : ℂ | (1 : ℝ) / 3 < s.re} ⊆ spectralDomain := by
@@ -32,8 +31,7 @@ theorem exceptionalBall_subset_spectralDomain :
   have hn : ‖s‖ < (1 : ℝ) / 6 := by simpa using hs
   have hr := Complex.abs_re_le_norm s
   dsimp [spectralDomain]
-  have h := neg_lt_of_abs_lt (lt_of_le_of_lt hr hn)
-  linarith
+  grind [neg_lt_of_abs_lt]
 
 end
 end DedekindZetaZeroFree.KPContinuation
@@ -44,16 +42,20 @@ namespace DedekindZetaZeroFree.KPContinuation
 
 noncomputable section
 
-def spectralCoordinate (d : ℤ) (s : ℂ) : ℂ :=
+section
+
+variable (d : ℤ)
+
+def spectralCoordinate (s : ℂ) : ℂ :=
   (d : ℂ) * (1 - ((1 : ℂ) / 3 + 2 * s) ^ 2)
 
-def thresholdRay (d : ℤ) : Set ℂ := {μ | μ.im = 0 ∧ (d : ℝ) ≤ μ.re}
+def thresholdRay : Set ℂ := {μ | μ.im = 0 ∧ (d : ℝ) ≤ μ.re}
 
-theorem spectralCoordinate_avoids_thresholdRay (d : ℤ) (hd : 0 < d) :
+theorem spectralCoordinate_avoids_thresholdRay (hd : 0 < d) :
     spectralCoordinate d '' spectralDomain ⊆ (thresholdRay d)ᶜ := by
   rintro _ ⟨s, hs, rfl⟩ hμ
   have hdR : (0 : ℝ) < d := by exact_mod_cast hd
-  let u : ℂ := (1 : ℂ) / 3 + 2 * s
+  let u := (1 : ℂ) / 3 + 2 * s
   have hu : 0 < u.re := by
     dsimp [u]
     norm_num
@@ -72,28 +74,24 @@ theorem spectralCoordinate_avoids_thresholdRay (d : ℤ) (hd : 0 < d) :
     have hz' : u.re * u.im = 0 := by linarith
     exact (mul_eq_zero.mp hz').resolve_left (ne_of_gt hu)
   have hr : (d : ℝ) ≤ (d : ℝ) * (1 - u.re ^ 2) := by
-    have h := hμ.2
     simpa only [pow_two, Complex.mul_re, Complex.mul_im, Complex.sub_re,
       Complex.one_re, Complex.intCast_re, Complex.intCast_im, hui,
-      zero_mul, mul_zero, sub_zero] using h
+      zero_mul, mul_zero, sub_zero] using hμ.2
   nlinarith [mul_pos hdR (sq_pos_of_pos hu)]
 
-theorem spectralCoordinate_zero (d : ℤ) :
+theorem spectralCoordinate_zero :
     spectralCoordinate d 0 = 8 * (d : ℂ) / 9 := by
   unfold spectralCoordinate
   ring
 
-theorem spectralCoordinate_hasDerivAt (d : ℤ) (s : ℂ) :
+theorem spectralCoordinate_hasDerivAt (s : ℂ) :
     HasDerivAt (spectralCoordinate d) (-4 * (d : ℂ) * ((1 : ℂ) / 3 + 2 * s)) s := by
   unfold spectralCoordinate
-  have h := ((hasDerivAt_id s).const_mul (2 : ℂ)).const_add ((1 : ℂ) / 3)
-  convert ((h.pow 2).const_sub (1 : ℂ)).const_mul (d : ℂ) using 1
-  · ext z
-    simp
-  · simp only [id_eq, Nat.cast_ofNat, pow_one, mul_one]
-    ring
+  convert (((((hasDerivAt_id s).const_mul (2 : ℂ)).const_add ((1 : ℂ) / 3)).pow 2).const_sub (1 : ℂ)).const_mul (d : ℂ) using 1
+  · simp
+  · simp [id_eq] <;> ring
 
-theorem spectralCoordinate_deriv_zero (d : ℤ) (hd : 0 < d) :
+theorem spectralCoordinate_deriv_zero (hd : 0 < d) :
     deriv (spectralCoordinate d) 0 = -4 * (d : ℂ) / 3 ∧
       deriv (spectralCoordinate d) 0 ≠ 0 := by
   have he : deriv (spectralCoordinate d) 0 = -4 * (d : ℂ) / 3 := by
@@ -102,6 +100,8 @@ theorem spectralCoordinate_deriv_zero (d : ℤ) (hd : 0 < d) :
   refine ⟨he, ?_⟩
   rw [he]
   exact div_ne_zero (mul_ne_zero (by norm_num) (by exact_mod_cast ne_of_gt hd)) (by norm_num)
+
+end
 
 theorem spectralCoordinate_deriv_ne_zero (d : ℤ) (hd : 0 < d)
     (s : ℂ) (hs : s ∈ spectralDomain) :

@@ -38,17 +38,17 @@ theorem average_memLp (a : K → X → X)
       exact integrable_const _
   have havg : Continuous (fun x => ∫ k, f (a k x) ∂ν) := by
     rw [← continuousOn_univ]
-    exact continuousOn_integral_of_compact_support (μ := ν) isCompact_univ
+    exact continuousOn_integral_of_compact_support isCompact_univ
       (hc.comp continuous_swap).continuousOn (fun _ _ _ hk => (hk (Set.mem_univ _)).elim)
   apply (memLp_two_iff_integrable_sq_norm havg.aestronglyMeasurable).mpr
   apply hsq.integral_prod_right.mono' (havg.norm.pow 2).aestronglyMeasurable
   exact Filter.Eventually.of_forall fun x => by
     rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
     have hcx : Continuous (fun k => f (a k x)) := hc.comp (continuous_id.prodMk continuous_const)
-    exact ((convexOn_norm (convex_univ : Convex ℝ (Set.univ : Set ℂ))).pow
+    exact ((convexOn_norm convex_univ).pow
       (fun _ _ => norm_nonneg _) 2).map_integral_le
       (continuous_norm.pow 2).continuousOn isClosed_univ
-      (Filter.Eventually.of_forall fun _ => Set.mem_univ _)
+      (Filter.Eventually.of_forall Set.mem_univ)
       (hcx.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _))
       ((hcx.norm.pow 2).integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _))
 end DedekindZetaZeroFree.FourierContinuation.ResidualAverageL2

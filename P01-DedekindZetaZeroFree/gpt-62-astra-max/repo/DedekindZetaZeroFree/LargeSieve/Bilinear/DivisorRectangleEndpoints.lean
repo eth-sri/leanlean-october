@@ -12,7 +12,7 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 namespace RectangleEndpoints
 
@@ -28,17 +28,13 @@ theorem row_endpoints (C : Context Q) (hK : 1 ≤ C.K) (B : ℝ) :
     C.reflectedCoreRows B false =
       (Sieve.paperShell F c B).filter (fun a => norm a ≤ C.K) := by
   have hunit (m : Ideal (𝓞 F)) : ReflectedSigma4.unitRows c m C.K = {⊤} := by
-    have hk : Sieve.squarefreeKernel (⊤ : Ideal (𝓞 F)) = ⊤ :=
-      Sieve.squarefreeKernel_eq_self (by simpa only [← Ideal.one_eq_top] using squarefree_one)
     have hsc : sc c (⊤ : Ideal (𝓞 F)) = 1 := by
       unfold sc primeToSquarefreeKernel
-      rw [hk, ← Ideal.one_eq_top, UniqueFactorizationMonoid.normalizedFactors_one]
+      rw [(Sieve.squarefreeKernel_eq_self (by simpa using squarefree_one)), ← Ideal.one_eq_top, UniqueFactorizationMonoid.normalizedFactors_one]
       simp
     simp [ReflectedSigma4.unitRows, hsc, hK,
-      show Squarefree (⊤ : Ideal (𝓞 F)) from by simpa only [← Ideal.one_eq_top] using squarefree_one]
-  have hsf : ∀ a ∈ squarefreeBadPool c, a ≠ ⊥ ∧ Squarefree a := by
-    intro a ha
-    exact ((mem_squarefreeBadPool C.D.original_ne_bot).mp ha).imp_right (fun h => h.1)
+      show Squarefree (⊤ : Ideal (𝓞 F)) from by simpa using squarefree_one]
+  have hsf : ∀ a ∈ squarefreeBadPool c, a ≠ ⊥ ∧ Squarefree a := fun a ha => ((mem_squarefreeBadPool C.D.original_ne_bot).mp ha).imp_right (fun h => h.1)
   have hrows : C.reflectedRows 1 true = squarefreeBadPool c := by
     ext a
     simp only [Context.reflectedRows, Context.reflectedRowIndices, Context.reflectedCoreRows,

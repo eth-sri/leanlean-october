@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -54,24 +50,22 @@ section AbsoluteValueExtensions
 variable {K M : Type}
     [Field K] [Field M] [Algebra K M]
 
+section
+
+variable [FiniteDimensional K M] (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
+    (L : IntermediateField K M) (u : AbsoluteValueExtension vK L)
+
 /-- Extend an actual extension of `v` from an intermediate field to the
 ambient finite Galois extension.  The source is the absolute-value
 extension theorem, applied to the algebraic extension `M / L`. -/
-noncomputable def extendAbsoluteValueExtensionFromIntermediate
-    [FiniteDimensional K M]
-    (vK : AbsoluteValue K ℝ)
-    (hvK : vK.IsNontrivial)
-    (L : IntermediateField K M)
-    (u : AbsoluteValueExtension vK L) :
+noncomputable def extendAbsoluteValueExtensionFromIntermediate :
     AbsoluteValueExtension vK M := by
   let : Module.IsTorsionFree L
       (absoluteValueExtension_algebraicCompletionClosure u.1) :=
     DivisionSemiring.to_moduleIsTorsionFree
-  let hu : u.1.IsNontrivial :=
-    u.isNontrivial hvK
   let wL : AbsoluteValueExtension u.1 M :=
     pullbackAbsoluteValueExtension
-      u.1 hu IsAlgClosed.lift
+      u.1 (u.isNontrivial hvK) IsAlgClosed.lift
   exact
     { val := wL.1
       property := by
@@ -81,11 +75,6 @@ noncomputable def extendAbsoluteValueExtensionFromIntermediate
 
 @[simp]
 theorem extendAbsoluteValueExtensionFromIntermediate_apply
-    [FiniteDimensional K M]
-    (vK : AbsoluteValue K ℝ)
-    (hvK : vK.IsNontrivial)
-    (L : IntermediateField K M)
-    (u : AbsoluteValueExtension vK L)
     (x : L) :
     (extendAbsoluteValueExtensionFromIntermediate
       vK hvK L u).1 x = u.1 x := by
@@ -101,6 +90,8 @@ theorem extendAbsoluteValueExtensionFromIntermediate_apply
     (pullbackAbsoluteValueExtension
       u.1 (u.isNontrivial hvK)
         IsAlgClosed.lift).2 x
+
+end
 
 variable (vK : AbsoluteValue K ℝ)
     (hvK : vK.IsNontrivial)
@@ -127,7 +118,7 @@ noncomputable def doubleCosetExtension :
     (by
       intro g r hgr
       change
-        DoubleCoset.setoid (H : Set G) (D : Set G) g r
+        DoubleCoset.setoid H D g r
         at hgr
       rw [DoubleCoset.rel_iff] at hgr
       obtain ⟨h, hh, d, hd, rfl⟩ := hgr
@@ -136,21 +127,17 @@ noncomputable def doubleCosetExtension :
       change
         w.1 (g⁻¹ (x : M)) =
           w.1 (d⁻¹ (g⁻¹ (h⁻¹ (x : M))))
-      have hhInv : h⁻¹ ∈ H :=
+      have hhInv :=
         L.fixingSubgroup.inv_mem hh
       have hfix : h⁻¹ (x : M) = (x : M) :=
         hhInv x
       rw [hfix]
-      have hdInv : d⁻¹ ∈ D :=
-        (absoluteValueDecompositionGroup K w.val).inv_mem hd
-      have hdEq :=
-        (mem_absoluteValueDecompositionGroup_iff_extensionConjugate_eq
-          vK hvK w d⁻¹).mp hdInv
       have hvalue :=
         congrArg
           (fun z : AbsoluteValueExtension vK M ↦
             z.1 (g⁻¹ (x : M)))
-          hdEq
+          ((mem_absoluteValueDecompositionGroup_iff_extensionConjugate_eq
+            vK hvK w d⁻¹).mp ((absoluteValueDecompositionGroup K w.val).inv_mem hd))
       exact hvalue.symm)
 
 @[simp]
@@ -172,7 +159,7 @@ theorem doubleCosetExtension_surjective
     Function.Surjective
       (doubleCosetExtension vK hvK w L) := by
   intro u
-  let w' : AbsoluteValueExtension vK M :=
+  let w' :=
     extendAbsoluteValueExtensionFromIntermediate
       vK hvK L u
   obtain ⟨g : G, hg⟩ :=
@@ -190,10 +177,7 @@ theorem doubleCosetExtension_surjective
       hg
   change w'.1 (x : M) = w.1 (g (x : M))
     at hvalue
-  rw [← hvalue]
-  exact
-    extendAbsoluteValueExtensionFromIntermediate_apply
-      vK hvK L u x
+  grind [extendAbsoluteValueExtensionFromIntermediate_apply]
 
 /-- Equality after restriction to `L` is precisely equality of the
 corresponding double cosets. The proof applies valuation-extension counting over
@@ -204,8 +188,8 @@ theorem doubleCosetExtension_injective
     Function.Injective
       (doubleCosetExtension vK hvK w L) := by
   intro q r hqr
-  let g : G := q.out
-  let s : G := r.out
+  let g := q.out
+  let s := r.out
   have hrestr :
       restrictAbsoluteValueExtensionToIntermediate
           vK
@@ -220,24 +204,19 @@ theorem doubleCosetExtension_injective
     calc
       _ = doubleCosetExtension vK hvK w L q := by
         rw [← DoubleCoset.out_eq' q]
-        exact
-          (doubleCosetExtension_mk
-            vK hvK w L g).symm
+        rfl
       _ = doubleCosetExtension vK hvK w L r :=
         hqr
       _ = _ := by
         rw [← DoubleCoset.out_eq' r]
-        exact
-          doubleCosetExtension_mk
-            vK hvK w L s
-  let u :
-      AbsoluteValueExtension vK L :=
+        rfl
+  let u :=
     restrictAbsoluteValueExtensionToIntermediate
       vK
       (absoluteValueExtensionConjugate
         vK w g⁻¹)
       L
-  let wG : AbsoluteValueExtension u.1 M :=
+  let wG :=
     absoluteValueExtensionOverIntermediate
       vK
       (absoluteValueExtensionConjugate
@@ -254,20 +233,12 @@ theorem doubleCosetExtension_injective
             (fun z : AbsoluteValueExtension vK L ↦
               z.1 x)
             hrestr
-        change
-          w.1 (s⁻¹ (x : M)) =
-            w.1 (g⁻¹ (x : M))
         exact hx.symm }
-  let hu : u.1.IsNontrivial :=
-    u.isNontrivial hvK
   obtain ⟨η : M ≃ₐ[L] M, hη⟩ :=
-    absoluteValueConjugacy u.1 hu wG wS
-  let h : G :=
+    absoluteValueConjugacy u.1 (u.isNontrivial hvK) wG wS
+  let h :=
     η.restrictScalars K
-  have hh : h ∈ H := by
-    intro x
-    exact η.commutes x
-  let d : G :=
+  let d :=
     s⁻¹ * h⁻¹ * g
   have hdEq :
       absoluteValueExtensionConjugate
@@ -286,16 +257,14 @@ theorem doubleCosetExtension_injective
     change
       w.1 (s⁻¹ (η⁻¹ (g x))) = w.1 x
     simpa using hx
-  have hd : d ∈ D :=
-    (mem_absoluteValueDecompositionGroup_iff_extensionConjugate_eq
-      vK hvK w d).mpr hdEq
   rw [← DoubleCoset.out_eq' q,
     ← DoubleCoset.out_eq' r,
     DoubleCoset.eq]
   refine
-    ⟨h⁻¹, L.fixingSubgroup.inv_mem hh,
+    ⟨h⁻¹, L.fixingSubgroup.inv_mem (fun x => η.commutes x),
       d⁻¹,
-      (absoluteValueDecompositionGroup K w.val).inv_mem hd,
+      (absoluteValueDecompositionGroup K w.val).inv_mem ((mem_absoluteValueDecompositionGroup_iff_extensionConjugate_eq
+        vK hvK w d).mpr hdEq),
       ?_⟩
   simp [d, g, s, mul_assoc]
 
@@ -359,10 +328,7 @@ theorem leftCosetDoubleCoset_card_eq_finrank
           (⊥ : Subgroup G)) =
       Module.finrank K L := by
   calc
-    Nat.card
-        (DoubleCoset.Quotient
-          (L.fixingSubgroup : Set G)
-          (⊥ : Subgroup G)) =
+    _ =
         Nat.card
           (Quotient
             (QuotientGroup.rightRel
@@ -417,33 +383,12 @@ theorem absoluteValueDecompositionGroup_eq_bot_of_splitsCompletelyInIntermediate
       AbsoluteValueSplitsCompletelyInExtension
         (E := L) vK) :
     absoluteValueDecompositionGroup K w.1 = ⊥ := by
-  have hcard :=
-    (absoluteValueSplitsCompletelyInExtension_iff_doubleCoset_card_eq
-      vK w L hvK).mp hsplit
   exact
     (doubleCoset_card_eq_leftCoset_iff_of_normalCore_eq_bot
       L.fixingSubgroup
       (absoluteValueDecompositionGroup K w.1)
-      hcore).mp hcard
-
-/-- Fixed-field spelling of the preceding source theorem.  This is the
-literal `L = M^H` formulation used in the normal-closure reduction. -/
-theorem absoluteValueDecompositionGroup_eq_bot_of_splitsCompletelyInFixedField
-    (hvK : vK.IsNontrivial)
-    (H : Subgroup G)
-    (hcore : H.normalCore = ⊥)
-    (hsplit :
-      AbsoluteValueSplitsCompletelyInExtension
-        (E := IntermediateField.fixedField H) vK) :
-    absoluteValueDecompositionGroup K w.1 = ⊥ := by
-  apply
-    absoluteValueDecompositionGroup_eq_bot_of_splitsCompletelyInIntermediate
-      vK w (IntermediateField.fixedField H)
-      hvK
-  · simpa only
-      [IntermediateField.fixingSubgroup_fixedField H]
-      using hcore
-  · exact hsplit
+      hcore).mp ((absoluteValueSplitsCompletelyInExtension_iff_doubleCoset_card_eq
+        vK w L hvK).mp hsplit)
 
 end DoubleCosetCount
 
@@ -462,9 +407,9 @@ theorem fixingSubgroup_normalCore_eq_bot_of_normalClosure_eq_top
     (hclosure :
       IntermediateField.normalClosure K L M = ⊤) :
     L.fixingSubgroup.normalCore = ⊥ := by
-  let N : Subgroup (M ≃ₐ[K] M) :=
+  let N :=
     L.fixingSubgroup.normalCore
-  let : N.Normal :=
+  let :=
     L.fixingSubgroup.normalCore_normal
   have hLle :
       L ≤ IntermediateField.fixedField N := by
@@ -472,32 +417,14 @@ theorem fixingSubgroup_normalCore_eq_bot_of_normalClosure_eq_top
     exact
       IntermediateField.fixedField_le
         L.fixingSubgroup.normalCore_le
-  let :
-      IsGalois K (IntermediateField.fixedField N) :=
+  let :=
     IsGalois.of_fixedField_normal_subgroup N
-  have hclosureLe :
-      IntermediateField.normalClosure K L M ≤
-        IntermediateField.fixedField N :=
-    (IntermediateField.normalClosure_le_iff_of_normal).2
-      hLle
-  have htop :
-      IntermediateField.fixedField N = ⊤ :=
-    top_unique (hclosure ▸ hclosureLe)
+  have htop :=
+    top_unique (hclosure ▸ ((IntermediateField.normalClosure_le_iff_of_normal).2
+      hLle))
   change N = ⊥
   rw [← IntermediateField.fixingSubgroup_fixedField N,
     htop, IntermediateField.fixingSubgroup_top]
-
-/-- Class-valued normal-closure form of the preceding theorem. -/
-theorem fixingSubgroup_normalCore_eq_bot_of_isNormalClosure
-    (L : IntermediateField K M)
-    [IsNormalClosure K L M] :
-    L.fixingSubgroup.normalCore = ⊥ := by
-  apply
-    fixingSubgroup_normalCore_eq_bot_of_normalClosure_eq_top
-      L
-  exact
-    (Algebra.IsAlgebraic.isNormalClosure_iff.mp
-      (show IsNormalClosure K L M from inferInstance)).2
 
 end NormalClosure
 
@@ -526,32 +453,11 @@ theorem finitePlaceSplitsCompletelyInExtension_iff_doubleCoset_card_eq
         Nat.card
           (DoubleCoset.Quotient
             (L.fixingSubgroup : Set G)
-            (⊥ : Subgroup G)) := by
-  exact
-    absoluteValueSplitsCompletelyInExtension_iff_doubleCoset_card_eq
+            (⊥ : Subgroup G)) := absoluteValueSplitsCompletelyInExtension_iff_doubleCoset_card_eq
       (NumberField.HeightOneSpectrum.adicAbv K v)
-      (chosenFinitePlaceExtension (L := M) v)
+      (chosenFinitePlaceExtension v)
       L
       (RayClass.adicAbv_isNontrivial v)
-
-/-- Literal fixed-field form: if `H` is core-free and the finite place
-splits completely in `M^H`, then it splits completely in `M`. -/
-theorem finitePlaceSplitsCompletely_in_ambient_of_fixedField
-    (H : Subgroup G)
-    (hcore : H.normalCore = ⊥)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hsplit :
-      FinitePlaceSplitsCompletelyInExtension
-        (K := K)
-        (E := IntermediateField.fixedField H) v) :
-    FinitePlaceSplitsCompletely
-      (K := K) (L := M) v := by
-  exact
-    absoluteValueDecompositionGroup_eq_bot_of_splitsCompletelyInFixedField
-      (NumberField.HeightOneSpectrum.adicAbv K v)
-      (chosenFinitePlaceExtension (L := M) v)
-      (RayClass.adicAbv_isNontrivial v)
-      H hcore hsplit
 
 /-- Source-producing normal-closure reduction for a finite place.
 
@@ -573,7 +479,7 @@ theorem finitePlaceSplitsCompletely_in_normalClosure
   apply
     absoluteValueDecompositionGroup_eq_bot_of_splitsCompletelyInIntermediate
       (NumberField.HeightOneSpectrum.adicAbv K v)
-      (chosenFinitePlaceExtension (L := M) v)
+      (chosenFinitePlaceExtension v)
       L
       (RayClass.adicAbv_isNontrivial v)
       (fixingSubgroup_normalCore_eq_bot_of_normalClosure_eq_top
@@ -599,33 +505,6 @@ theorem finitePlaceSplitsCompletely_in_isNormalClosure
           inferInstance)).2)
       v
   exact hsplit
-
-/-- The same result displayed together with the intermediate
-double-coset equality that drives the proof. -/
-theorem finitePlace_normalClosure_doubleCoset_source
-    (L : IntermediateField K M)
-    (hclosure :
-      IntermediateField.normalClosure K L M = ⊤)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hsplit :
-      FinitePlaceSplitsCompletelyInExtension
-        (K := K) (E := L) v) :
-    (Nat.card
-          (DoubleCoset.Quotient
-            (L.fixingSubgroup : Set G)
-            (finitePlaceDecompositionGroup
-              (K := K) (L := M) v)) =
-        Nat.card
-          (DoubleCoset.Quotient
-            (L.fixingSubgroup : Set G)
-            (⊥ : Subgroup G))) ∧
-      FinitePlaceSplitsCompletely
-        (K := K) (L := M) v := by
-  exact
-    ⟨(finitePlaceSplitsCompletelyInExtension_iff_doubleCoset_card_eq
-        L v).mp hsplit,
-      finitePlaceSplitsCompletely_in_normalClosure
-        L hclosure v hsplit⟩
 
 end FinitePlaces
 
@@ -728,42 +607,31 @@ theorem finitePlaceSplitsCompletely_iff_inExtension
         (K := K) (E := E) v := by
   let T : IntermediateField K E := ⊤
   let e : T ≃ₐ[K] E := by
-    simpa only [T] using
-      (IntermediateField.topEquiv :
-        (⊤ : IntermediateField K E) ≃ₐ[K] E)
-  have htransport :
-      FinitePlaceSplitsCompletelyInExtension
-          (K := K) (E := T) v ↔
-        FinitePlaceSplitsCompletelyInExtension
-          (K := K) (E := E) v :=
+    simpa using
+      IntermediateField.topEquiv
+  have htransport :=
     finitePlaceSplitsCompletelyInExtension_algEquiv e v
   constructor
   · intro hsplit
     apply htransport.mp
     apply
       (finitePlaceSplitsCompletelyInExtension_iff_doubleCoset_card_eq
-        (K := K) (M := E) T v).2
+          T v).2
     rw [hsplit]
   · intro hsplit
-    have hcard :=
-      (finitePlaceSplitsCompletelyInExtension_iff_doubleCoset_card_eq
-        (K := K) (M := E) T v).mp
-        (htransport.mpr hsplit)
-    change
-      finitePlaceDecompositionGroup
-          (K := K) (L := E) v =
-        ⊥
     exact
       (doubleCoset_card_eq_leftCoset_iff_of_normalCore_eq_bot
         T.fixingSubgroup
         (finitePlaceDecompositionGroup
-          (K := K) (L := E) v)
+            v)
         (by
           simpa only
             [T, IntermediateField.fixingSubgroup_top]
             using
               (Subgroup.normalCore_eq_self
-                (⊥ : Subgroup (E ≃ₐ[K] E))))).mp hcard
+                (⊥ : Subgroup (E ≃ₐ[K] E))))).mp ((finitePlaceSplitsCompletelyInExtension_iff_doubleCoset_card_eq
+                    T v).mp
+                  (htransport.mpr hsplit))
 
 end GaloisSplittingBridge
 
@@ -790,17 +658,17 @@ theorem
         (AlgEquiv.restrictNormalHom
           (F := K) (K₁ := N) (E := E)).ker) :
     FinitePlaceSplitsCompletely (K := K) (L := E) v := by
-  let M : IntermediateField K N :=
+  let M :=
     (IsScalarTower.toAlgHom K E N).fieldRange
-  let e : E ≃ₐ[K] M :=
+  let e :=
     (IsScalarTower.toAlgHom K E N).equivFieldRange
-  let : FiniteDimensional K M :=
+  let :=
     e.toLinearEquiv.finiteDimensional
-  let : IsGalois K M :=
+  let :=
     IsGalois.of_algEquiv e
   let vK :=
     NumberField.HeightOneSpectrum.adicAbv K v
-  let hvK : vK.IsNontrivial :=
+  let hvK :=
     RayClass.adicAbv_isNontrivial v
   let wN :=
     chosenFinitePlaceExtension (L := N) v
@@ -814,20 +682,15 @@ theorem
     rw [IntermediateField.mem_fixingSubgroup_iff]
     intro y hy
     rcases hy with ⟨x, rfl⟩
-    have hsigmaKer :
-        AlgEquiv.restrictNormalHom
-            (F := K) (K₁ := N) (E := E) sigma =
-          1 :=
-      MonoidHom.mem_ker.mp (h hsigma)
     have hx :
         sigma.restrictNormal E x = x := by
       change
         (AlgEquiv.restrictNormalHom
           (F := K) (K₁ := N) (E := E) sigma) x =
             (1 : Gal(E/K)) x
-      rw [hsigmaKer]
+      rw [(MonoidHom.mem_ker.mp (h hsigma))]
     calc
-      sigma (algebraMap E N x) =
+      _ =
           algebraMap E N (sigma.restrictNormal E x) :=
         (AlgEquiv.restrictNormal_commutes sigma E x).symm
       _ = algebraMap E N x :=
@@ -855,26 +718,18 @@ theorem
         (K := K) (L := M) v := by
     change
       absoluteValueDecompositionGroup K
-          (chosenFinitePlaceExtension (L := M) v).1 =
+          (chosenFinitePlaceExtension v).1 =
         ⊥
     exact
       absoluteValueDecompositionGroup_eq_bot_independent_extension
         vK hvK wM
-        (chosenFinitePlaceExtension (L := M) v)
+        (chosenFinitePlaceExtension v)
         hwMbot
-  have hMIntrinsic :
-      FinitePlaceSplitsCompletelyInExtension
-        (K := K) (E := M) v :=
-    (finitePlaceSplitsCompletely_iff_inExtension
-      (K := K) (E := M) v).mp hM
-  have hEIntrinsic :
-      FinitePlaceSplitsCompletelyInExtension
-        (K := K) (E := E) v :=
-    (finitePlaceSplitsCompletelyInExtension_algEquiv e v).mpr
-      hMIntrinsic
   exact
     (finitePlaceSplitsCompletely_iff_inExtension
-      (K := K) (E := E) v).mpr hEIntrinsic
+        v).mpr ((finitePlaceSplitsCompletelyInExtension_algEquiv e v).mpr
+        ((finitePlaceSplitsCompletely_iff_inExtension
+          v).mp hM))
 
 end SplittingThroughRestriction
 
@@ -885,16 +740,6 @@ variable
     [Field K] [NumberField K]
     [Field L] [NumberField L] [Algebra K L]
 
-/-- The fixing subgroup of the distinguished copy of `L` is
-core-free in the Galois group of its finite normal closure. -/
-theorem finiteNormalClosureOriginalField_fixingSubgroup_normalCore :
-    (finiteNormalClosureOriginalField K L).fixingSubgroup.normalCore =
-      ⊥ := by
-  exact
-    fixingSubgroup_normalCore_eq_bot_of_normalClosure_eq_top
-      (finiteNormalClosureOriginalField K L)
-      (finiteNormalClosureOriginalField_normalClosure_eq_top K L)
-
 /-- Complete splitting in the original extension forces complete
 splitting in its finite normal closure. -/
 theorem finitePlaceSplitsCompletely_in_finiteNormalClosure
@@ -904,9 +749,7 @@ theorem finitePlaceSplitsCompletely_in_finiteNormalClosure
         (K := K)
         (E := finiteNormalClosureOriginalField K L) v) :
     FinitePlaceSplitsCompletely
-      (K := K) (L := finiteNormalClosure K L) v := by
-  exact
-    finitePlaceSplitsCompletely_in_normalClosure
+      (K := K) (L := finiteNormalClosure K L) v := finitePlaceSplitsCompletely_in_normalClosure
       (finiteNormalClosureOriginalField K L)
       (finiteNormalClosureOriginalField_normalClosure_eq_top K L)
       v hsplit

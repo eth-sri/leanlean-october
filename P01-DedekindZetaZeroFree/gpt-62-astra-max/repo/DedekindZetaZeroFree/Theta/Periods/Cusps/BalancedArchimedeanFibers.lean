@@ -10,11 +10,9 @@ set_option backward.isDefEq.respectTransparency false
 open scoped Classical NumberField Topology ENNReal NNReal BigOperators
 namespace DedekindZetaZeroFree.CurrentBoundaryArchFiber
 open KPMsActualAngularSource KPMsNativeOffsetMass KPMsGreenFlux
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.GradientCollar renaming balancedArch_basepoint → balancedArch_basepoint
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabFullAngularHaar renaming compactSubgroup_eq_origin_stabilizer → compactSubgroup_eq_origin_stabilizer
-open _root_.DedekindZetaZeroFree.KPContSectorArchSphericalFibers renaming mem_KInfinity_iff_stab → mem_KInfinity_iff_stab
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming actualFrame_spec → actualFrame_spec
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeFullDomain → nativeFullDomain
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.GradientCollar (balancedArch_basepoint)
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabFullAngularHaar (compactSubgroup_eq_origin_stabilizer)
+open _root_.DedekindZetaZeroFree.KPContSectorArchSphericalFibers (mem_KInfinity_iff_stab)
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 

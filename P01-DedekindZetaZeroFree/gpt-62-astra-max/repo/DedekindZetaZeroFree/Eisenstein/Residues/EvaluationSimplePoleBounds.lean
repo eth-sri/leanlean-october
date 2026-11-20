@@ -9,10 +9,10 @@ open scoped Classical NumberField Topology
 open MeasureTheory Filter
 namespace DedekindZetaZeroFree.EisensteinSmoothGerms.ScalarSource
 open MomentSources ThetaExpansion
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.FiniteWordNumerator renaming finite_word_numerator → finite_word_numerator
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.FiniteWordNumerator (finite_word_numerator)
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem selected_scalar_order_zero
     (R : PrincipalMellin.ActualRecipe S η) {N : TraceHaarTransport R}
@@ -30,7 +30,7 @@ theorem selected_scalar_order_zero
   obtain ⟨C, _⟩ := KPGlobalTorusFiniteStages.compatibleModelData_exists F ζ hζ L
   obtain ⟨Haar, _, _, P, ⟨H⟩⟩ :=
     kp_ms_fixed_haar_disintegration F ζ hζ
-      (Measure.haar : Measure (KPLiteralRaw.G F ζ hζ)) inferInstance
+      Measure.haar inferInstance
   obtain ⟨Q, A, T, r, hQ, hQ0, hA, hch, hr, _, _, hT, hclear⟩ :=
     finite_word_numerator F ζ hζ C Haar P H
       B.sources.K B.sources.iwasawa (B.sources.flat v)

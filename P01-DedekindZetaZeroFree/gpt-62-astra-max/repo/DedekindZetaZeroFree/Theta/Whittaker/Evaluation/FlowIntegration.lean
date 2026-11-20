@@ -13,7 +13,7 @@ open Filter
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 variable {α : Type*} [TopologicalSpace α]
-variable (E : complexCore →ₗ[ℂ] (α → ℂ)) (he : ∀v,Continuous (E v)) (hb : CompactBound E)
+    (E : complexCore →ₗ[ℂ] (α → ℂ)) (he : ∀v,Continuous (E v)) (hb : CompactBound E)
 
 include he in
 theorem completed_flow_constant
@@ -34,16 +34,13 @@ theorem completed_flow_constant
   have hder (a : ℝ) : HasDerivAt f 0 a := by
     let vr := fun r=>KPCplxPrincipalSeriesCharts.rightTranslate negativeParameter (sourceFlow (-X) r) (vt a)
     have hvr (r : ℝ) : vr r=vt (r+a) := sourceTranslate_add negativeParameter (-X) r a v
-    have hz : vr 0=vt a := by simpa only [zero_add] using hvr 0
-    have hs : Tendsto (fun r : ℝ=>(r:ℂ)⁻¹ • (vr r-vr 0)) (𝓝[≠] 0)
-        (𝓝 (NativeComplexHCOperators.derivative negativeParameter (-X) (vt a))) := by
-      rw [hz]
-      exact source_flow_difference negativeParameter (-X) (vt a)
-    have hh := hd (vt a) a
+    have hz : vr 0=vt a := by simpa using hvr 0
     have hh0 := (show HasDerivAt (fun r=>extendedEvaluation E hb (q r) (vt a))
-        (extendedEvaluation E hb (q a) (NativeComplexHCOperators.derivative negativeParameter X (vt a))) (0+a) from by simpa using hh).comp_add_const 0 a
+        (extendedEvaluation E hb (q a) (NativeComplexHCOperators.derivative negativeParameter X (vt a))) (0+a) from by simpa using (hd (vt a) a)).comp_add_const 0 a
     have H := diagonal_derivative E he hb (fun r=>q (r+a)) (hq.comp (continuous_id.add_const a)) vr
-      (NativeComplexHCOperators.derivative negativeParameter (-X) (vt a)) hs
+      (NativeComplexHCOperators.derivative negativeParameter (-X) (vt a)) (by
+        rw [hz]
+        exact source_flow_difference negativeParameter (-X) (vt a))
       (extendedEvaluation E hb (q a) (NativeComplexHCOperators.derivative negativeParameter X (vt a)))
       (by simpa only [hz] using hh0)
     simp only [zero_add,sourceDerivative_neg,map_neg,neg_add_cancel] at H
@@ -52,10 +49,8 @@ theorem completed_flow_constant
       rw [hvr]
     rw [He] at H
     have H0 : HasDerivAt (fun r=>f (r+a)) 0 (a-a) := by simpa using H
-    have H1 := H0.comp_sub_const a a
-    simpa only [sub_add_cancel] using H1
-  have hc := is_const_of_deriv_eq_zero (fun a=>(hder a).differentiableAt) (fun a=>(hder a).deriv) t 0
-  simpa only [f,hv0] using hc
+    simpa using (H0.comp_sub_const a a)
+  simpa only [f,hv0] using (is_const_of_deriv_eq_zero (fun a=>(hder a).differentiableAt) (fun a=>(hder a).deriv) t 0)
 
 include he in
 theorem completed_flow_action

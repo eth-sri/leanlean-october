@@ -32,12 +32,11 @@ theorem normalized_multiplier (s : ℂ) (t : KPGlobalTorusFunctionData.E F ζ h�
     KPGlobalExceptionalParameter.realLogPower
       (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) (1 / 2 + s) =
     KPGlobalTorusFunctionData.deltaHalf F ζ hζ t * normPower F ζ hζ s t := by
-  have hr : 0 < (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) := by
-    exact_mod_cast (pos_iff_ne_zero.mpr (Units.ne_zero _))
   have hh : (Real.sqrt (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) : ℂ) =
       KPGlobalExceptionalParameter.realLogPower
         (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) (1 / 2) := by
-    rw [Real.sqrt_eq_rpow, Real.rpow_def_of_pos hr, Complex.ofReal_exp]
+    rw [Real.sqrt_eq_rpow, Real.rpow_def_of_pos (by
+      exact_mod_cast (pos_iff_ne_zero.mpr (Units.ne_zero _))), Complex.ofReal_exp]
     unfold KPGlobalExceptionalParameter.realLogPower
     congr 1
     push_cast

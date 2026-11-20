@@ -8,8 +8,11 @@ noncomputable section
 open scoped Classical Matrix
 namespace DedekindZetaZeroFree.FiniteAdelicParabolicExtension
 
- def mixedChart (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) :
+ section
+
+variable (F : Type*) [Field F] [NumberField F] (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+
+def mixedChart :
     NumberField.mixedEmbedding.mixedSpace F ≃ₗ[ℝ] KPCuspChart.Horizontal F := by
   letI : IsEmpty {w : NumberField.InfinitePlace F // w.IsReal} :=
     Fintype.card_eq_zero_iff.mp hF
@@ -26,11 +29,14 @@ namespace DedekindZetaZeroFree.FiniteAdelicParabolicExtension
       map_add' := by intro x y; rfl
       map_smul' := by intro r x; rfl }
 
-private theorem mixedChart_embedding (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (x : F) :
+private theorem mixedChart_embedding (x : F) :
     mixedChart F hF (NumberField.mixedEmbedding F x) = KPCuspChart.embedding F x := by
   ext i
   simp [mixedChart, KPCuspChart.embedding, KPCusp.complexPlace]
+
+end
+
+alias FractionalIdealComplexLattice.mixedChart_embedding := mixedChart_embedding
 
 theorem fractionalIdeal_complexPlace_lattice
     (F : Type*) [Field F] [NumberField F]
@@ -44,7 +50,7 @@ theorem fractionalIdeal_complexPlace_lattice
       IsZLattice ℝ
         (KPCuspChart.translationLattice F
           (J : Submodule (NumberField.RingOfIntegers F) F).toAddSubgroup).toIntSubmodule := by
-  let u : (FractionalIdeal (nonZeroDivisors (NumberField.RingOfIntegers F)) F)ˣ :=
+  let u :=
     Units.mk0 J hJ
   let e := (mixedChart F hF).toContinuousLinearEquiv
   have heq : (KPCuspChart.translationLattice F
@@ -63,9 +69,8 @@ theorem fractionalIdeal_complexPlace_lattice
       simpa [e] using mixedChart_embedding F hF y
     · rintro ⟨y, hy, he⟩
       refine ⟨y, hy, ?_⟩
-      have hh := congrArg e he
-      simpa only [ContinuousLinearEquiv.apply_symm_apply] using
-        (mixedChart_embedding F hF y).symm.trans hh
+      simpa using
+        (mixedChart_embedding F hF y).symm.trans (congrArg e he)
   rw [heq]
   exact ⟨inferInstance, inferInstance⟩
 

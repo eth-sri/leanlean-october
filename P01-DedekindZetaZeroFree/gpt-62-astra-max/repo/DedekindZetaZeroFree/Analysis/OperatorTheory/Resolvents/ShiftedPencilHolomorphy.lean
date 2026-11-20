@@ -8,30 +8,40 @@ namespace DedekindZetaZeroFree.KPResolventPencil
 
 noncomputable section
 
-def GenuineInverse {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+section
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+
+def GenuineInverse
     (D : H →ₗ.[ℂ] H) (z : ℂ) (R : H →L[ℂ] H) : Prop :=
   ∃ hR : ∀ x : H, R x ∈ D.domain,
     (∀ x : H, D ⟨R x, hR x⟩ - z • R x = x) ∧
     (∀ y : D.domain, R (D y - z • (y : H)) = (y : H))
 
-def shiftedPencil {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+def shiftedPencil
     (B : H →L[ℂ] H) (z : ℂ) : H →L[ℂ] H :=
   1 - (z + 1) • B
 
-def resolventSet {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+def resolventSet
     (D : H →ₗ.[ℂ] H) : Set ℂ :=
   {z | ∃ R : H →L[ℂ] H, GenuineInverse D z R}
 
-def shiftedResolvent {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+def shiftedResolvent
     (B : H →L[ℂ] H) (z : ℂ) : H →L[ℂ] H :=
   B * Ring.inverse (shiftedPencil B z)
+
+end
 
 section Algebra
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
 
-private lemma base_left (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
-    (hB : GenuineInverse D (-1) B) :
+section
+
+variable (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H) (hB : GenuineInverse D (-1) B)
+
+include hB in
+private lemma base_left :
     ∃ h : ∀ x : H, B x ∈ D.domain,
       (∀ x, D ⟨B x, h x⟩ = x - B x) ∧
       (∀ y : D.domain, B (D y + (y : H)) = (y : H)) := by
@@ -41,16 +51,16 @@ private lemma base_left (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     have hx := h1 x
     simp only [neg_smul, one_smul, sub_neg_eq_add] at hx
     exact eq_sub_of_add_eq hx
-  · simpa only [neg_smul, one_smul, sub_neg_eq_add] using h2
+  · simpa using h2
 
-private lemma genuine_formula (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
-    (hB : GenuineInverse D (-1) B) (z : ℂ)
+include hB in
+private lemma genuine_formula (z : ℂ)
     (hz : IsUnit (shiftedPencil B z)) :
     GenuineInverse D z (shiftedResolvent B z) := by
   rcases base_left D B hB with ⟨h, h1, h2⟩
   let A := shiftedPencil B z
   let C := Ring.inverse A
-  have hAC : A * C = 1 := Ring.mul_inverse_cancel A hz
+  have hAC := Ring.mul_inverse_cancel A hz
   have hCA : C * A = 1 := Ring.inverse_mul_cancel A hz
   have hAB : A * B = B * A := by
     dsimp [A, shiftedPencil]
@@ -86,37 +96,7 @@ private lemma genuine_formula (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     rw [he]
     exact DFunLike.congr_fun hCA (y : H)
 
-private lemma genuine_unit (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
-    (hB : GenuineInverse D (-1) B) (z : ℂ) (R : H →L[ℂ] H)
-    (hR : GenuineInverse D z R) : IsUnit (shiftedPencil B z) := by
-  rcases base_left D B hB with ⟨h, h1, h2⟩
-  rcases hR with ⟨hr, hr1, hr2⟩
-  have hAR : shiftedPencil B z * R = B := by
-    ext x
-    have hb := h2 ⟨R x, hr x⟩
-    have hd : D ⟨R x, hr x⟩ = x + z • R x := eq_add_of_sub_eq (hr1 x)
-    rw [hd] at hb
-    simp only [map_add, map_smul] at hb
-    simp only [mul_apply_eq_comp, shiftedPencil, sub_apply,
-      one_apply_eq_self, smul_apply]
-    calc
-      R x - (z + 1) • B (R x) = R x - (z • B (R x) + B (R x)) := by module
-      _ = B x := by rw [sub_eq_iff_eq_add]; simpa only [add_assoc] using hb.symm
-  have hRA : R * shiftedPencil B z = B := by
-    ext x
-    have hrb := hr2 ⟨B x, h x⟩
-    rw [h1] at hrb
-    simp only [mul_apply_eq_comp, shiftedPencil, sub_apply,
-      one_apply_eq_self, smul_apply]
-    have he : x - (z + 1) • B x = x - B x - z • B x := by module
-    rw [he]
-    exact hrb
-  apply isUnit_iff_exists.mpr
-  refine ⟨1 + (z + 1) • R, ?_, ?_⟩
-  · rw [mul_add, mul_one, mul_smul_comm, hAR]
-    simp [shiftedPencil]
-  · rw [add_mul, one_mul, smul_mul_assoc, hRA]
-    simp [shiftedPencil]
+end
 
 private lemma genuine_unique (D : H →ₗ.[ℂ] H) (z : ℂ)
     (R S : H →L[ℂ] H) (hR : GenuineInverse D z R) (hS : GenuineInverse D z S) :
@@ -130,50 +110,74 @@ private lemma genuine_unique (D : H →ₗ.[ℂ] H) (z : ℂ)
 
 end Algebra
 
-theorem isUnit_shiftedPencil_iff
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (D : H →ₗ.[ℂ] H) (hDense : Dense (D.domain : Set H))
-    (B : H →L[ℂ] H) (hB : GenuineInverse D (-1) B) (z : ℂ) :
+section
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H] (D : H →ₗ.[ℂ] H)
+    (hDense : Dense (D.domain : Set H)) (B : H →L[ℂ] H) (hB : GenuineInverse D (-1) B) (z : ℂ)
+
+include hDense hB in
+theorem isUnit_shiftedPencil_iff :
     IsUnit (shiftedPencil B z) ↔ z ∈ resolventSet D := by
   constructor
   · intro hz
     exact ⟨shiftedResolvent B z, genuine_formula D B hB z hz⟩
   · rintro ⟨R, hR⟩
-    exact genuine_unit D B hB z R hR
+    rcases base_left D B hB with ⟨h, h1, h2⟩
+    rcases hR with ⟨hr, hr1, hr2⟩
+    have hAR : shiftedPencil B z * R = B := by
+      ext x
+      have hb := h2 ⟨R x, hr x⟩
+      rw [(eq_add_of_sub_eq (hr1 x))] at hb
+      simp only [map_add, map_smul] at hb
+      simp only [mul_apply_eq_comp, shiftedPencil, sub_apply,
+        one_apply_eq_self, smul_apply]
+      calc
+        _ = R x - (z • B (R x) + B (R x)) := by module
+        _ = B x := by rw [sub_eq_iff_eq_add]; simpa only [add_assoc] using hb.symm
+    have hRA : R * shiftedPencil B z = B := by
+      ext x
+      have hrb := hr2 ⟨B x, h x⟩
+      rw [h1] at hrb
+      simp only [mul_apply_eq_comp, shiftedPencil, sub_apply,
+        one_apply_eq_self, smul_apply]
+      have he : x - (z + 1) • B x = x - B x - z • B x := by module
+      rw [he]
+      exact hrb
+    apply isUnit_iff_exists.mpr
+    refine ⟨1 + (z + 1) • R, ?_, ?_⟩
+    · rw [mul_add, mul_one, mul_smul_comm, hAR]
+      simp [shiftedPencil]
+    · rw [add_mul, one_mul, smul_mul_assoc, hRA]
+      simp [shiftedPencil]
 
-theorem shiftedResolvent_genuine_unique
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (D : H →ₗ.[ℂ] H) (hDense : Dense (D.domain : Set H))
-    (B : H →L[ℂ] H) (hB : GenuineInverse D (-1) B)
-    (z : ℂ) (hz : IsUnit (shiftedPencil B z)) :
+include hDense hB in
+theorem shiftedResolvent_genuine_unique (hz : IsUnit (shiftedPencil B z)) :
     GenuineInverse D z (shiftedResolvent B z) ∧
       ∀ R : H →L[ℂ] H, GenuineInverse D z R → R = shiftedResolvent B z := by
   have hg := genuine_formula D B hB z hz
   exact ⟨hg, fun R hR => genuine_unique D z R (shiftedResolvent B z) hR hg⟩
 
+end
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+
 @[simp] theorem shiftedPencil_neg_one
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     (B : H →L[ℂ] H) : shiftedPencil B (-1) = 1 := by
   simp [shiftedPencil]
 
 @[simp] theorem shiftedResolvent_neg_one
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     (B : H →L[ℂ] H) : shiftedResolvent B (-1) = B := by
   simp [shiftedResolvent]
 
-theorem analyticOnNhd_shiftedResolvent
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+theorem analyticOnNhd_shiftedResolvent [CompleteSpace H]
     (D : H →ₗ.[ℂ] H) (hDense : Dense (D.domain : Set H))
     (B : H →L[ℂ] H) (hB : GenuineInverse D (-1) B) :
     AnalyticOnNhd ℂ (shiftedResolvent B) (resolventSet D) := by
   intro z hz
-  have hA : AnalyticAt ℂ (shiftedPencil B) z := by
-    unfold shiftedPencil
-    exact analyticAt_const.sub ((analyticAt_id.add analyticAt_const).smul analyticAt_const)
-  have hi : AnalyticAt ℂ Ring.inverse (shiftedPencil B z) :=
-    analyticOnNhd_inverse (𝕜 := ℂ) (shiftedPencil B z)
-      ((isUnit_shiftedPencil_iff D hDense B hB z).mpr hz)
-  exact analyticAt_const.mul (hi.comp hA)
+  refine analyticAt_const.mul ((analyticOnNhd_inverse (shiftedPencil B z)
+    ((isUnit_shiftedPencil_iff D hDense B hB z).mpr hz)).comp ?_)
+  unfold shiftedPencil
+  exact analyticAt_const.sub ((analyticAt_id.add analyticAt_const).smul analyticAt_const)
 
 end
 end DedekindZetaZeroFree.KPResolventPencil

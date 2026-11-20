@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -51,24 +46,22 @@ theorem finiteNormalClosure_ideleClassNorm_range_le_source :
     (_root_.ideleClassNorm K (finiteNormalClosure K L)).range ≤
       (_root_.ideleClassNorm K L).range := by
   let N := finiteNormalClosure K L
-  let : Algebra (finiteNormalClosureOriginalField K L) N :=
+  let :=
     (finiteNormalClosureOriginalField K L).val.toRingHom.toAlgebra
   let : IsScalarTower K (finiteNormalClosureOriginalField K L) N :=
     by infer_instance
-  let : FiniteDimensional (finiteNormalClosureOriginalField K L) N :=
+  let :=
     FiniteDimensional.right K (finiteNormalClosureOriginalField K L) N
   let : IsMulCommutative
       (RelativeIdeleGroup K
         (finiteNormalClosureOriginalField K L)) :=
     ⟨⟨fun a b => mul_comm a b⟩⟩
-  let : Group
-      (RelativeIdeleGroup.ClassGroup K
-        (finiteNormalClosureOriginalField K L)) :=
+  let :=
     QuotientGroup.Quotient.group
       (RelativeIdeleGroup.principalSubgroup K
         (finiteNormalClosureOriginalField K L))
   calc
-    (_root_.ideleClassNorm K N).range ≤
+    _ ≤
         (_root_.ideleClassNorm K (finiteNormalClosureOriginalField K L)).range :=
       ordinaryIdeleClassNorm_range_le_of_tower
         (K := K) (M := finiteNormalClosureOriginalField K L) (L := N)

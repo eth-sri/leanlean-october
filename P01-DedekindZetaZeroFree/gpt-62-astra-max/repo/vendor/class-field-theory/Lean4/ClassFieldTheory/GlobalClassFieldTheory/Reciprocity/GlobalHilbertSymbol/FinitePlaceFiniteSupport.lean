@@ -12,9 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -50,31 +47,16 @@ theorem finitePlaceHilbertSymbol_hasFiniteMulSupport
       (fun v : HeightOneSpectrum (𝓞 K) =>
         finitePlaceHilbertSymbol K n hnK hmu v a b) := by
   let L := chosenSimpleKummerExtension K n hnK b
-  let _ : FiniteDimensional K L :=
+  let _ :=
     chosenSimpleKummerExtension_finiteDimensional K n hnK b
-  let _ : IsAbelianGalois K L :=
+  let _ :=
     chosenSimpleKummerExtension_isAbelianGalois K n hnK hmu b
-  let _ : NumberField L := NumberField.of_module_finite K L
-  let chi : Gal(L/K) →* nthRootsSubgroup K (n : ℕ) :=
+  let _ := NumberField.of_module_finite K L
+  let chi :=
     (nthRootsSubgroupEquivOfPrimitiveRoots K L n hmu).symm.toMonoidHom.comp
       (chosenSimpleKummerRootCharacter K n hnK hmu b)
-  have hArtin :
-      HasFiniteMulSupport
-        (fun v : HeightOneSpectrum (𝓞 K) =>
-          chosenFinitePlaceArtinMonoidHom (K := K) (L := L) v
-            (IdeleGroup.finiteComponent v
-              (IdeleGroup.principalIdele K a))) :=
-    finitePlaceArtinFactors_hasFiniteMulSupport
-      (K := K) (L := L) (IdeleGroup.principalIdele K a)
-  have hRoot :
-      HasFiniteMulSupport
-        (fun v : HeightOneSpectrum (𝓞 K) =>
-          chi
-            (chosenFinitePlaceArtinMonoidHom (K := K) (L := L) v
-              (IdeleGroup.finiteComponent v
-                (IdeleGroup.principalIdele K a)))) :=
-    Function.HasFiniteMulSupport.fun_comp hArtin chi.map_one
-  convert hRoot using 1
+  convert (Function.HasFiniteMulSupport.fun_comp (finitePlaceArtinFactors_hasFiniteMulSupport
+    (IdeleGroup.principalIdele K a)) chi.map_one) using 1
   funext v
   have hcomponent :
       (IdeleGroup.finiteComponent v (IdeleGroup.principalIdele K a) :
@@ -94,19 +76,16 @@ theorem finitePlaceHilbertSymbol_hasFiniteMulSupport
         simpa using hmap
   rw [hcomponent]
   calc
-    finitePlaceHilbertSymbol K n hnK hmu v a b =
+    _ =
         finitePlaceKummerRootCharacter K n hnK hmu v a b :=
       (finitePlaceKummerRootCharacter_localGlobal
         K n hnK hmu v a b).symm
     _ = chi
-        (chosenFinitePlaceArtinMonoidHom (K := K) (L := L) v
+        (chosenFinitePlaceArtinMonoidHom v
           (Units.map (algebraMap K (v.adicCompletion K)).toMonoidHom a)) := by
-      change finitePlaceKummerRootCharacter K n hnK hmu v a b =
-        finitePlaceKummerRootCharacterOfExtension K n hnK hmu v a b
-          (chosenFinitePlaceExtension (L := L) v)
       exact
         (finitePlaceKummerRootCharacterOfExtension_eq K n hnK hmu v a b
-          (chosenFinitePlaceExtension (L := L) v)).symm
+          (chosenFinitePlaceExtension v)).symm
 
 end Reciprocity
 end GlobalClassFieldTheory

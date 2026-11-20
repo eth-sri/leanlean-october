@@ -24,14 +24,14 @@ theorem slot_relationSpan_eq_top [DecidableEq I] (i : I) (ρ : Representation R 
   let Q := Representation.Coinvariants.ker σ
   have hpure (f : ∀ j, S j) (e : E) :
       PiTensorProduct.tprod R f ⊗ₜ[R] e ∈ Q := by
-    let L : S i →ₗ[R] (⨂[R] j, S j) ⊗[R] E :=
+    let L :=
       ((TensorProduct.mk R (⨂[R] j, S j) E).flip e).comp
         ((PiTensorProduct.tprod R).toLinearMap f i)
     have hL (x : S i) : L x =
         PiTensorProduct.tprod R (Function.update f i x) ⊗ₜ[R] e := rfl
     have hcomm (g : G) (x : S i) : σ g (L x) = L (ρ g x) := by
       rw [hL, hσ, hL]
-      simp only [Function.update_self, Function.update_idem]
+      simp
     have hle : Representation.Coinvariants.ker ρ ≤ Q.comap L := by
       apply Submodule.span_le.mpr
       rintro x ⟨⟨g, y⟩, rfl⟩

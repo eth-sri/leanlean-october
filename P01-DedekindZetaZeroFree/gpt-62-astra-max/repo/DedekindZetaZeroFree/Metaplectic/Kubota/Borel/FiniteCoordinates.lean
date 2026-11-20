@@ -42,7 +42,7 @@ theorem raw_borel_finite (a : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12)
     (q : KPFinitePlace F) :
     KPPGLLocalCover.coverQuotient F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) (a (Sum.inr q)) ∈
       KPKirillovGenuineSectionCharts.P F R.A.zeta12 R.A.primitive_zeta12 q := by
-  refine ⟨(a (Sum.inr q)).g, ?_, raw_borel_lower10 (R := R) a ha (Sum.inr q)⟩
+  refine ⟨(a (Sum.inr q)).g, ?_, raw_borel_lower10 a ha (Sum.inr q)⟩
   rfl
 
 theorem exists_raw_borel (b : KPGlobalTorusFunctionData.borel F R.A.zeta12 R.A.primitive_zeta12) :
@@ -52,12 +52,12 @@ theorem exists_raw_borel (b : KPGlobalTorusFunctionData.borel F R.A.zeta12 R.A.p
         KPKirillovGenuineSectionCharts.P F R.A.zeta12 R.A.primitive_zeta12 q := by
   obtain ⟨g, hg⟩ := QuotientGroup.mk_surjective b.val
   obtain ⟨a, ha⟩ := QuotientGroup.mk_surjective g
-  have he : rawGlobal (R := R) a = b.val := by
+  have he : rawGlobal a = b.val := by
     change QuotientGroup.mk (QuotientGroup.mk a) = b.val
     rw [ha, hg]
   refine ⟨a, he, ?_⟩
   intro q
-  exact raw_borel_finite (R := R) a (he.symm ▸ b.property) q
+  exact raw_borel_finite a (he.symm ▸ b.property) q
 end DedekindZetaZeroFree.FourierContinuation.WildFiniteExteriorAssembly
 
 end

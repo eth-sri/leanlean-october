@@ -14,10 +14,10 @@ namespace DedekindZetaZeroFree.Hecke.Theta
 
 variable {F : Type} [Field F] [NumberField F]
 
-theorem coprimeIdealResidueRayClass_eq_iff_unit_orbit
-    (hF : NumberField.IsTotallyComplex F)
-    (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
-    (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤) :
+variable (hF : NumberField.IsTotallyComplex F) (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
+    (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤)
+
+theorem coprimeIdealResidueRayClass_eq_iff_unit_orbit :
     letI := coprimeIdealResidueUnitAction F m a hm ha hcop hmt
     ∀ q r : coprimeIdealResidueUnits F m a hm ha hcop hmt,
       coprimeIdealResidueRayClass hF m a hm ha hcop hmt q =
@@ -39,20 +39,18 @@ theorem coprimeIdealResidueRayClass_eq_iff_unit_orbit
       ⟨algebraMap (𝓞 F) F x.val, coprimeIdealResidue_mem a ha x.val x.property⟩
     let Y : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)} :=
       ⟨algebraMap (𝓞 F) F y.val, coprimeIdealResidue_mem a ha y.val y.property⟩
-    have hxπ : π X = q.val := hx
-    have hyπ : π Y = r.val := hy
+    have hxπ := hx
+    have hyπ := hy
     have hx0 := coprimeIdealResidueUnits_lift_ne_zero hF m a hm ha hcop hmt η E q X hxπ
     have hy0 := coprimeIdealResidueUnits_lift_ne_zero hF m a hm ha hcop hmt η E r Y hyπ
     have hxN := coprimeIdealResidueUnits_integralElementIdeal_ne_bot hF m a hm ha hcop hmt η E q X hxπ
     have hyN := coprimeIdealResidueUnits_integralElementIdeal_ne_bot hF m a hm ha hcop hmt η E r Y hyπ
-    have hxC := coprimeIdealResidueUnits_integralElementIdeal_coprime hF m a hm ha hcop hmt η E q X hxπ
-    have hyC := coprimeIdealResidueUnits_integralElementIdeal_coprime hF m a hm ha hcop hmt η E r Y hyπ
     have hclass : rayIdealClass F m hm (integralElementIdeal I X) =
         rayIdealClass F m hm (integralElementIdeal I Y) := by
       rw [coprimeIdealResidueRayClass_lift hF m a hm ha hcop hmt η E q X hxπ,
         coprimeIdealResidueRayClass_lift hF m a hm ha hcop hmt η E r Y hyπ, h]
-    rw [rayIdealClass_eq_some F m hm _ hxN hxC,
-      rayIdealClass_eq_some F m hm _ hyN hyC] at hclass
+    rw [rayIdealClass_eq_some F m hm _ hxN (coprimeIdealResidueUnits_integralElementIdeal_coprime hF m a hm ha hcop hmt η E q X hxπ),
+      rayIdealClass_eq_some F m hm _ hyN (coprimeIdealResidueUnits_integralElementIdeal_coprime hF m a hm ha hcop hmt η E r Y hyπ)] at hclass
     have hp := QuotientGroup.eq.mp (Option.some.inj hclass)
     change (rayIdealFractionalIdeal F (integralElementIdeal I X) hxN)⁻¹ *
       rayIdealFractionalIdeal F (integralElementIdeal I Y) hyN ∈
@@ -76,11 +74,11 @@ theorem coprimeIdealResidueRayClass_eq_iff_unit_orbit
           toPrincipalIdeal (𝓞 F) F (Units.mk0 Y.val hy0) := by
         rw [map_mul, hzI, hXI, hYI]
         simp [mul_inv_rev, mul_assoc, mul_comm, mul_left_comm]
-      simpa only [coe_toPrincipalIdeal, Units.val_mul, Units.val_mk0] using congrArg Units.val he
+      simpa using congrArg Units.val he
     obtain ⟨ε, hε⟩ := FractionalIdeal.spanSingleton_eq_spanSingleton.mp hspan
     obtain ⟨b, d, hb0, hd0, hbd, hbm, hdm, _⟩ := positiveRayDenominator F m hm z hz
     have hres : Ideal.Quotient.mk m y.val =
-        Ideal.Quotient.mk m (ε : 𝓞 F) * Ideal.Quotient.mk m x.val := by
+        Ideal.Quotient.mk m ε * Ideal.Quotient.mk m x.val := by
       have hdy : d * y.val = (ε : 𝓞 F) * (b * x.val) := by
         apply NumberField.RingOfIntegers.coe_injective (K := F)
         push_cast
@@ -97,9 +95,7 @@ theorem coprimeIdealResidueRayClass_eq_iff_unit_orbit
           (Ideal.Quotient.eq_zero_iff_mem.mpr hdm)
       have he := congrArg (Ideal.Quotient.mk m) hdy
       simpa only [map_mul, hd, hb, one_mul] using he
-    let εbar : residueUnitImage F m :=
-      ⟨Units.map (Ideal.Quotient.mk m).toMonoidHom ε, ⟨ε, rfl⟩⟩
-    refine ⟨εbar, ?_⟩
+    refine ⟨(⟨Units.map (Ideal.Quotient.mk m).toMonoidHom ε, ⟨ε, rfl⟩⟩), ?_⟩
     apply (coprimeIdealResidueUnitsEquiv F m a hm ha hcop hmt).injective
     rw [coprimeIdealResidueUnitAction_apply]
     apply Units.ext
@@ -114,9 +110,6 @@ theorem coprimeIdealResidueRayClass_eq_iff_unit_orbit
       η (chooseRayCharacterData η) ε q).symm
 
 theorem coprimeIdealResidueRayClass_fiber_card
-    (hF : NumberField.IsTotallyComplex F)
-    (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
-    (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤)
     (c : {c : RayIdealClass F m hm //
       rayToOrdinary F m hm c =
         (ClassGroup.mk F (rayIdealFractionalIdeal F a ha))⁻¹})

@@ -20,9 +20,7 @@ theorem conductor_support_upper
     (c : ClassFieldTheory.RayClassModulus F)
     (hc : ClassFieldTheory.IsAbelianConductor F d.extension c) :
     ∀ p : HeightOneSpectrum (𝓞 F),
-      p ∈ c.finitePart.support → p.asIdeal ⊔ f ≠ ⊤ := by
-  intro p hp htop
-  exact (Finsupp.mem_support_iff.mp hp)
+      p ∈ c.finitePart.support → p.asIdeal ⊔ f ≠ ⊤ := fun p hp htop => (Finsupp.mem_support_iff.mp hp)
     ((hc.finiteExponent_eq_zero_iff_unramified p).mpr
       (fun W hW => (d.unramified p htop) W.asIdeal W.isPrime hW))
 

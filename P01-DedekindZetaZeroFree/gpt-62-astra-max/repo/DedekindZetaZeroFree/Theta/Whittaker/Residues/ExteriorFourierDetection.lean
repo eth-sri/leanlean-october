@@ -13,13 +13,13 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPLiteralRaw KPGlobalTorusFiniteStages ThetaExpansion TensorActionSource
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 variable (N : MomentSources.TraceHaarTransport R)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
@@ -80,7 +80,7 @@ theorem exterior_whittaker_comparison (p : ThetaBranch.ExteriorPrime R.A)
     rw [href] at hz'
     exact one_ne_zero hz'
   letI : Nontrivial S₀ := ⟨⟨e,0,he⟩⟩
-  have hd : Module.finrank ℂ S₀ = 1 := le_antisymm
+  have hd := le_antisymm
     (Module.finrank_le_of_rank_le (by simpa using hr : Module.rank ℂ S₀ ≤ (1:ℕ)))
     (Module.finrank_pos (R := ℂ) (M := S₀))
   obtain ⟨c,hc⟩ := exists_smul_eq_of_finrank_eq_one hd he (⟨L,hmem L hL⟩ : S₀)
@@ -103,11 +103,7 @@ theorem actualSlotPeriod_whittaker (t : RestrictedTensorSimple.Level (bad R.A P 
       (actualSlotPeriod R P C μ hμ N t x q hq) := by
   intro z b
   let M := actualImageData R P C μ hμ q
-  have hr := (M.inducing.openCell M.inducing.polarization).upper_eq z
-  change actualSlotPeriod R P C μ hμ N t x q hq
-    (KPRankOneShellRepair.actualCanonicalImageRepresentation F ζ hζ q M.inducing
-      M.inducing.polarization (μ q) (hμ q) (M.inducing.borel.upperRoot (Multiplicative.ofAdd z)) b) = _
-  rw [hr]
+  rw [((M.inducing.openCell M.inducing.polarization).upper_eq z)]
   have he := actualCoreFourier_stage_upper R P C μ hμ N t q hq z
     (Function.update x ⟨Sum.inr q,hq⟩ b)
   simp only [Function.update_self,Function.update_idem] at he
@@ -118,8 +114,6 @@ theorem actualSlotPeriod_whittaker (t : RestrictedTensorSimple.Level (bad R.A P 
           M.inducing.polarization (μ q) (hμ q) (KPPGLLocalCover.N F ζ hζ (Sum.inr q) z) b)))) = _
   rw [he]
   congr 1
-  change (adelicTraceQuotientCharacter F (QuotientAddGroup.mk
-    (KPRationalAdelicSplitting.localAdele F (Sum.inr q) z)) : ℂ) = _
   exact congrArg (fun a : Circle => (a:ℂ))
     (((adelicTraceQuotientCharacter_mk F _).trans
       (adelicTraceCharacter_finite_single F q z)).trans
@@ -160,11 +154,10 @@ theorem actualExteriorEll_slot (hC : C.exceptional = R.A.Sf)
     have hq : q ∉ R.A.Sf := by
       simpa only [bad,KPGlobalResidualConstruction.ScalarAbsorption.fullBad,
         Finset.inr_mem_disjSum,hC] using hj
-    have hell := (actualReference_normalized_whittaker R P C μ hμ hC ⟨q,hq⟩).choose_spec.1
     have hc := exterior_whittaker_comparison R P C μ hμ ⟨q,hq⟩
       (actualExteriorEll R P C μ hμ hC (Sum.inr q))
       (actualSlotPeriod R P C μ hμ N t x q hv)
-      (by simpa only [actualExteriorEll,dif_pos hq] using hell)
+      (by simpa only [actualExteriorEll,dif_pos hq] using ((actualReference_normalized_whittaker R P C μ hμ hC ⟨q,hq⟩).choose_spec.1))
       (actualSlotPeriod_whittaker R P C μ hμ N t x q hv)
       (actualExteriorEll_normalized R P C μ hμ hC (Sum.inr q) hj)
     exact LinearMap.congr_fun hc a
@@ -174,8 +167,7 @@ theorem actualCoreFourier_detected_initial (hC : C.exceptional = R.A.Sf)
     ∃ x : ∀ j : bad R.A P C, W j.val,
       actualCoreFourier R P C μ hμ N 1
         (RestrictedTensorSimple.stageInclusion W (actualReference R P C μ hμ)
-          (bad R.A P C) ⟨bad R.A P C,le_rfl⟩ (PiTensorProduct.tprod ℂ x)) ≠ 0 := by
-  exact KPFrozenDetection.detected_initial_of_exterior_comparison W
+          (bad R.A P C) ⟨bad R.A P C,le_rfl⟩ (PiTensorProduct.tprod ℂ x)) ≠ 0 := KPFrozenDetection.detected_initial_of_exterior_comparison W
     (actualReference R P C μ hμ) (bad R.A P C) (actualCoreFourier R P C μ hμ N 1)
     (actualExteriorEll R P C μ hμ hC) (actualExteriorEll_normalized R P C μ hμ hC)
     (by

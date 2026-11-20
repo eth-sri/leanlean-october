@@ -11,7 +11,7 @@ noncomputable section
 set_option autoImplicit false
 set_option maxHeartbeats 800000
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
  def torusHom :
     KPGlobalCubicIdelePairing.E F ζ hζ →* KPGlobalTorusFunctionData.E F ζ hζ where
@@ -71,16 +71,8 @@ theorem diagonalPGL_torusRatio (t : KPGlobalTorusFunctionData.ordinaryTorus F) :
       t.val := by
   let A := Classical.choose t.property
   have hA := Classical.choose_spec t.property
-  have h10 : A 1 0 = 0 := hA.2.1
-  have h01 : A 0 1 = 0 := hA.2.2
-  have hratio : ((KPGlobalTorusFunctionData.torusRatio F t : KPAdelicCoverRestrictedProduct.Ideles F) :
-      KPAdelicCoverRestrictedProduct.Adeles F) =
-      ((KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit :
-        KPAdelicCoverRestrictedProduct.Adeles F) *
-      (((KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit⁻¹ :
-        (KPAdelicCoverRestrictedProduct.Adeles F)ˣ) :
-        KPAdelicCoverRestrictedProduct.Adeles F) :=
-    KPGlobalTorusFunctionData.ratio_formula F t A hA.1 h10 h01
+  have h10 := hA.2.1
+  have h01 := hA.2.2
   have hmat : KPGlobalCubicIdelePairing.diagonalMatrix F (KPGlobalTorusFunctionData.torusRatio F t) *
       Matrix.GeneralLinearGroup.scalar (Fin 2)
         (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit = A := by
@@ -91,7 +83,7 @@ theorem diagonalPGL_torusRatio (t : KPGlobalTorusFunctionData.ordinaryTorus F) :
         KPGlobalCubicIdelePairing.diagonalMatrix, Matrix.mul_apply, Fin.sum_univ_two,
         Matrix.diagonal_apply_eq, Matrix.diagonal_apply_ne]
     · rw [← IsUnit.unit_spec (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2]
-      rw [hratio, IsUnit.unit_spec
+      rw [(KPGlobalTorusFunctionData.ratio_formula F t A hA.1 h10 h01), IsUnit.unit_spec
         (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1]
       rw [mul_assoc, ← Units.val_mul, inv_mul_cancel, Units.val_one, mul_one]
     · rw [h01]
@@ -111,12 +103,11 @@ private theorem torusHom_surjective : Function.Surjective (torusHom F ζ hζ) :=
 private theorem p_torusHom (u : KPGlobalCubicIdelePairing.E F ζ hζ) :
     KPGlobalTorusFunctionData.p F ζ hζ (torusHom F ζ hζ u) =
       KPGlobalCubicIdelePairing.torusProjection F ζ hζ u := by
-  have h := diagonalPGL_torusRatio F (toOrdinary F ζ hζ (torusHom F ζ hζ u))
   have h1 : KPGlobalTorusFunctionData.p F ζ hζ (torusHom F ζ hζ u) =
       KPGlobalTorusFunctionData.torusRatio F (toOrdinary F ζ hζ (torusHom F ζ hζ u)) :=
     rfl
   rw [h1]
-  refine diagonalPGL_injective F (h.trans ?_)
+  refine diagonalPGL_injective F ((diagonalPGL_torusRatio F (toOrdinary F ζ hζ (torusHom F ζ hζ u))).trans ?_)
   show KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ (torusHom F ζ hζ u).val =
     KPGlobalCubicIdelePairing.diagonalPGL F (KPGlobalCubicIdelePairing.torusProjection F ζ hζ u)
   exact u.property

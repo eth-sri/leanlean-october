@@ -9,7 +9,7 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.TraceHaarTransport
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
  theorem divided_negative_trace (R : PrincipalMellin.ActualRecipe S η)
     (p : ThetaBranch.ExteriorPrime R.A) (t : 𝓞 F) :
@@ -18,10 +18,9 @@ variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
         (algebraMap F (p.val.adicCompletion F)
           (-((t : F) / (R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p) : F)))) : ℂ) := by
   let I := ThetaBranch.primeIdeal R.A p
-  let a := R.probe.allowed.generator I
   obtain ⟨b, hb⟩ := R.probe.allowed.generates I
   have hh := R.A.residueTraceCharacter_prime_local R.traceBad R.probe.allowed.B I p.val rfl
-    b hb.1 a hb.2 (R.probe.allowed.allowed I) (algebraMap (𝓞 F) R.A.R t)
+    b hb.1 (R.probe.allowed.generator I) hb.2 (R.probe.allowed.allowed I) (algebraMap (𝓞 F) R.A.R t)
   rw [R.A.residueTraceCharacter_apply] at hh
   rw [MomentSources.Characters.psi_apply R, PrincipalMellinSource.additiveCharacter_eq_fieldTrace]
   apply congrArg (fun z : Circle => (z : ℂ))
@@ -56,29 +55,24 @@ variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
   witnessPsi_trace p t := by
     rw [divided_negative_trace R p t]
     congr 1
-    have he := IsScalarTower.algebraMap_apply (𝓞 F) F (p.val.adicCompletion F) t
     simp only [map_neg, map_div₀, div_neg, Units.val_neg, Units.coe_map]
-    rw [← he]
+    rw [← (IsScalarTower.algebraMap_apply (𝓞 F) F (p.val.adicCompletion F) t)]
     rfl
   delta _ := 1
   delta_actual p t ht := by
-    have hm : t - 1 ∈ p.val.asIdeal := Ideal.Quotient.eq_zero_iff_mem.mp (by
-      rw [map_sub, map_one, ht]; simp)
-    have hz : algebraMap F (p.val.adicCompletion F)
-        (R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p) : F) ≠ 0 :=
-      (map_ne_zero (algebraMap F (p.val.adicCompletion F))).mpr
-        (R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p)).ne_zero
     change ‖algebraMap (𝓞 F) (p.val.adicCompletion F) t +
       -(algebraMap F (p.val.adicCompletion F)
         (R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p) : F)) /
       algebraMap F (p.val.adicCompletion F)
         (R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p) : F)‖ < 1
-    rw [neg_div, div_self hz, ← sub_eq_add_neg, ← map_one (algebraMap (𝓞 F) _), ← map_sub]
+    rw [neg_div, div_self ((map_ne_zero (algebraMap F (p.val.adicCompletion F))).mpr
+      (R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p)).ne_zero), ← sub_eq_add_neg, ← map_one (algebraMap (𝓞 F) _), ← map_sub]
     rw [IsScalarTower.algebraMap_apply (𝓞 F) F (p.val.adicCompletion F),
       Valued.toNormedField.norm_lt_one_iff]
     change Valued.v (((t - 1 : 𝓞 F) : F) : p.val.adicCompletion F) < 1
     rw [HeightOneSpectrum.adicCompletion.valued_coe]
-    exact (p.val.valuation_lt_one_iff_mem (K := F) (t - 1)).mpr hm
+    exact (p.val.valuation_lt_one_iff_mem (t - 1)).mpr (Ideal.Quotient.eq_zero_iff_mem.mp (by
+      rw [map_sub, map_one, ht]; simp))
   signed_shift _ := by ext x; simp [AddChar.mulShift_apply]
 end DedekindZetaZeroFree.TraceHaarTransport
 

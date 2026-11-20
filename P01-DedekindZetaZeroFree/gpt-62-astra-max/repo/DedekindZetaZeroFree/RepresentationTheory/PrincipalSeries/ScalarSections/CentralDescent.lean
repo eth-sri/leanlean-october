@@ -11,9 +11,9 @@ open scoped Classical NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open NumberField IsDedekindDomain KPGlobalTorusFiniteStages KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (A : SArithmeticData F)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 local notation "Places" => KPHilbert.Place
@@ -130,8 +130,7 @@ theorem localValue_central (v : Places F) (f : Plus A P C v) (e : rootsOfUnity 3
    rw [hs, one_smul, B.genuine] at hv
    change f.val (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (_ * _)) = _
    rw [map_mul]
-   have heta : B.eta = KPSourceConvention.ordinaryGenuineCharacter F ζ hζ := S.openCell_ordinary (C.polarization q)
-   rw [heta] at hv
+   rw [(S.openCell_ordinary (C.polarization q))] at hv
    exact hv
 
 theorem rawStageValue_centralTuple (s : RestrictedTensorSimple.Level (bad A P C))
@@ -218,11 +217,9 @@ theorem rawCoreValue_amalgamation_eq (x : Core) (g h : Raw A)
  (he : KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ g =
    KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ h) :
  rawCoreValue A P C g x = rawCoreValue A P C h x := by
- have hm : g⁻¹ * h ∈ KPAdelicCoverRestrictedProduct.M F ζ hζ := QuotientGroup.eq.mp he
- have hc := KPAdelicCoverRestrictedProduct.M_central F ζ hζ hm
+ have hm := QuotientGroup.eq.mp he
  have hh : (⟨g⁻¹ * h, hm⟩ : KPAdelicCoverRestrictedProduct.M F ζ hζ).val * g = h := by
-   change (g⁻¹ * h) * g = h
-   rw [← Subgroup.mem_center_iff.mp hc g, ← mul_assoc, mul_inv_cancel, one_mul]
+   rw [← Subgroup.mem_center_iff.mp (KPAdelicCoverRestrictedProduct.M_central F ζ hζ hm) g, ← mul_assoc, mul_inv_cancel, one_mul]
  have hi := rawCoreValue_amalgamation_invariant A P C x ⟨_,hm⟩ g
  rw [hh] at hi
  exact hi.symm
@@ -244,7 +241,6 @@ theorem amalgamatedCoreValue_scalar (x : Core)
      (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ (KPAdelicCoverRestrictedProduct.scalarTuple F ζ hζ z) *
        KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ g) = _
    rw [← map_mul, amalgamatedCoreValue_raw]
-   change _ = rawCoreValue A P C g x
    exact rawCoreInsertion_scalar A P C z g x
 
 theorem amalgamatedCoreValue_quotient_eq (x : Core) (g h : GL)
@@ -252,9 +248,8 @@ theorem amalgamatedCoreValue_quotient_eq (x : Core) (g h : GL)
    KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ h) :
  amalgamatedCoreValue A P C x g = amalgamatedCoreValue A P C x h := by
  obtain ⟨z, hz⟩ := QuotientGroup.eq.mp he
- have hc := KPAdelicCoverRestrictedProduct.scalarHom_central F ζ hζ (MonoidHom.mem_range.mpr ⟨z,rfl⟩)
  have hh : KPAdelicCoverRestrictedProduct.scalarHom F ζ hζ z * g = h := by
-   rw [← Subgroup.mem_center_iff.mp hc g, hz, ← mul_assoc, mul_inv_cancel, one_mul]
+   rw [← Subgroup.mem_center_iff.mp (KPAdelicCoverRestrictedProduct.scalarHom_central F ζ hζ (MonoidHom.mem_range.mpr ⟨z,rfl⟩)) g, hz, ← mul_assoc, mul_inv_cancel, one_mul]
  have hi := amalgamatedCoreValue_scalar A P C x z g
  rw [hh] at hi
  exact hi.symm

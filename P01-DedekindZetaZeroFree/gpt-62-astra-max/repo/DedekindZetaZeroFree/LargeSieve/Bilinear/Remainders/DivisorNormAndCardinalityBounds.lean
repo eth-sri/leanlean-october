@@ -10,7 +10,7 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.LocalTailGeometry
 open ExplicitTerms
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 lemma norm_mul (u v : Ideal (𝓞 F)) : norm (u * v) = norm u * norm v := by
   simp [ExplicitTerms.norm, map_mul]
@@ -29,40 +29,42 @@ lemma norm_le_of_dvd {u v : Ideal (𝓞 F)} (hv : v ≠ ⊥) (h : u ∣ v) :
     (Ideal.absNorm_dvd_absNorm_of_le (Ideal.dvd_iff_le.mp h))
 
 lemma unit_row_eq_top {m : Ideal (𝓞 F)} {K : ℝ} {r : Ideal (𝓞 F)}
-    (hr : r ∈ ReflectedSigma4.unitRows c m K) : r = ⊤ := by
-  exact Finset.mem_singleton.mp (Finset.mem_filter.mp hr).1
+    (hr : r ∈ ReflectedSigma4.unitRows c m K) : r = ⊤ := Finset.mem_singleton.mp (Finset.mem_filter.mp hr).1
 
-lemma core_row_norm (C : Context Q) (B : ℝ) (unit : Bool) (hB : 1 ≤ B)
-    {r : Ideal (𝓞 F)} (hr : r ∈ C.reflectedCoreRows B unit) :
+section
+
+variable (C : Context Q) (B : ℝ) (unit : Bool) (hB : 1 ≤ B) {r : Ideal (𝓞 F)}
+
+include hB in
+lemma core_row_norm (hr : r ∈ C.reflectedCoreRows B unit) :
     1 ≤ norm r ∧ norm r ≤ 2 * B := by
   cases unit
-  · have hr' := Finset.mem_filter.mp hr
-    have hs := (Sieve.mem_paperShell F c B r).mp hr'.1
+  · have hs := (Sieve.mem_paperShell F c B r).mp (Finset.mem_filter.mp hr).1
     exact ⟨by simpa [ExplicitTerms.norm] using hB.trans hs.2.2.1.le, hs.2.2.2⟩
-  · have he : r = ⊤ := unit_row_eq_top hr
+  · have he := unit_row_eq_top hr
     subst r
     simp only [ExplicitTerms.norm, Ideal.absNorm_top, Nat.cast_one]
     constructor <;> linarith
 
-lemma original_row_norm (C : Context Q) (B : ℝ) (unit : Bool) (hB : 1 ≤ B)
-    {r : Ideal (𝓞 F)} (hr : r ∈ C.originalRows B unit) :
+include hB in
+lemma original_row_norm (hr : r ∈ C.originalRows B unit) :
     1 ≤ norm r ∧ norm r ≤ 2 * B := by
   cases unit
-  · have hr' := Finset.mem_filter.mp hr
-    have hs := (Sieve.mem_paperShell F (c * C.d) B r).mp hr'.1
+  · have hs := (Sieve.mem_paperShell F (c * C.d) B r).mp (Finset.mem_filter.mp hr).1
     exact ⟨by simpa [ExplicitTerms.norm] using hB.trans hs.2.2.1.le, hs.2.2.2⟩
-  · have he : r = ⊤ := unit_row_eq_top hr
+  · have he := unit_row_eq_top hr
     subst r
     simp only [ExplicitTerms.norm, Ideal.absNorm_top, Nat.cast_one]
     constructor <;> linarith
+
+end
 
 def supportedNormBound (c : Ideal (𝓞 F)) : ℝ :=
   1 + ∑ t ∈ squarefreeBadPool c, norm t
 
 lemma supportedNormBound_one_le (c : Ideal (𝓞 F)) : 1 ≤ supportedNormBound c := by
   unfold supportedNormBound
-  have : 0 ≤ ∑ t ∈ squarefreeBadPool c, norm t := Finset.sum_nonneg (by
-    intro t ht; exact norm_nonneg t)
+  have : 0 ≤ ∑ t ∈ squarefreeBadPool c, norm t := Finset.sum_nonneg (fun t ht => norm_nonneg t)
   linarith
 
 lemma supported_norm_le {t : Ideal (𝓞 F)} (ht : t ∈ squarefreeBadPool c) :
@@ -71,19 +73,22 @@ lemma supported_norm_le {t : Ideal (𝓞 F)} (ht : t ∈ squarefreeBadPool c) :
   unfold supportedNormBound
   linarith
 
-lemma reflected_row_norm (C : Context Q) (B : ℝ) (unit : Bool) (hB : 1 ≤ B)
+section
+
+variable (C : Context Q)
+
+lemma reflected_row_norm (B : ℝ) (unit : Bool) (hB : 1 ≤ B)
     {r : Ideal (𝓞 F)} (hr : r ∈ C.reflectedRows B unit) :
     1 ≤ norm r ∧ norm r ≤ supportedNormBound c * (2 * B) := by
   obtain ⟨⟨t,s⟩, hts, rfl⟩ := Finset.mem_image.mp hr
   obtain ⟨hts, hmask⟩ := Finset.mem_filter.mp hts
   obtain ⟨ht, hs⟩ := Finset.mem_product.mp hts
-  have hn := core_row_norm C B unit hB hs
   refine ⟨norm_one_le hmask.2.2, ?_⟩
   rw [norm_mul]
-  exact mul_le_mul (supported_norm_le ht) hn.2 (norm_nonneg s)
+  exact mul_le_mul (supported_norm_le ht) (core_row_norm C B unit hB hs).2 (norm_nonneg s)
     (by linarith [supportedNormBound_one_le c])
 
-lemma pair_norm_bounds (C : Context Q) (hN : 1 ≤ C.N) (hd : 1 ≤ norm C.d)
+lemma pair_norm_bounds (hN : 1 ≤ C.N) (hd : 1 ≤ norm C.d)
     {p : Ideal (𝓞 F) × Ideal (𝓞 F)} (hp : p ∈ C.pairs) :
     (C.N / norm C.d) ^ 2 < norm (p.1 * p.2) ∧
     norm (p.1 * p.2) ≤ (2 * C.N / norm C.d) ^ 2 := by
@@ -94,56 +99,46 @@ lemma pair_norm_bounds (C : Context Q) (hN : 1 ≤ C.N) (hd : 1 ≤ norm C.d)
   have hv' := (Sieve.mem_paperShell F c C.N (C.d * p.2)).mp
     (Finset.mem_filter.mp hv).2.1
   have hd0 : 0 < norm C.d := by linarith
-  have hN0 : 0 < C.N := by linarith
-  have ulo : C.N / norm C.d < norm p.1 := by
-    rw [div_lt_iff₀ hd0]; simpa [ExplicitTerms.norm, map_mul, mul_comm] using hu'.2.2.1
   have vlo : C.N / norm C.d < norm p.2 := by
     rw [div_lt_iff₀ hd0]; simpa [ExplicitTerms.norm, map_mul, mul_comm] using hv'.2.2.1
-  have uhi : norm p.1 ≤ 2 * C.N / norm C.d := by
-    rw [le_div_iff₀ hd0]; simpa [ExplicitTerms.norm, map_mul, mul_comm] using hu'.2.2.2
-  have vhi : norm p.2 ≤ 2 * C.N / norm C.d := by
-    rw [le_div_iff₀ hd0]; simpa [ExplicitTerms.norm, map_mul, mul_comm] using hv'.2.2.2
   rw [norm_mul, pow_two, pow_two]
-  exact ⟨mul_lt_mul ulo vlo.le (div_pos hN0 hd0) (by linarith [norm_nonneg p.1]),
-    mul_le_mul uhi vhi (norm_nonneg p.2) (by positivity)⟩
+  refine ⟨mul_lt_mul ?_ vlo.le (div_pos ?_ hd0) (by linarith [norm_nonneg p.1]),
+    mul_le_mul ?_ ?_ (norm_nonneg p.2) (by positivity)⟩
+  · rw [div_lt_iff₀ hd0]; simpa [ExplicitTerms.norm, map_mul, mul_comm] using hu'.2.2.1
+  · linarith
+  · rw [le_div_iff₀ hd0]; simpa [ExplicitTerms.norm, map_mul, mul_comm] using hu'.2.2.2
+  · rw [le_div_iff₀ hd0]; simpa [ExplicitTerms.norm, map_mul, mul_comm] using hv'.2.2.2
 
-lemma active_scale_bounds (C : Context Q) (hK : 1 ≤ C.K)
+lemma active_scale_bounds (hK : 1 ≤ C.K)
     {B : ℝ} (hB : B ∈ dyadicScales C) : 1 ≤ B ∧ B < C.K := by
   obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hB
   exact ⟨one_le_pow₀ (by norm_num),
     Vendor.pow_lt_of_lt_dyadicLength hK (Finset.mem_range.mp hi)⟩
 
-lemma mobius_divisor_norm (C : Context Q) {e : Ideal (𝓞 F)}
+lemma mobius_divisor_norm {e : Ideal (𝓞 F)}
     (he : e ∈ C.mobiusDivisors) :
     1 ≤ norm e ∧ norm e ≤ norm c * norm C.d := by
   refine ⟨norm_one_le (ne_bot_of_mem_idealDivisors he), ?_⟩
-  have hcd : c * C.d ≠ ⊥ := mul_ne_zero C.D.original_ne_bot C.hd0
-  have he' := absNorm_le_of_mem_idealDivisors he
-  have hrad : Ideal.absNorm (c * C.d).radical ≤ Ideal.absNorm (c * C.d) :=
-    Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hcd))
-      (Ideal.absNorm_dvd_absNorm_of_le Ideal.le_radical)
   simpa [ExplicitTerms.norm, map_mul] using
-    (show (Ideal.absNorm e : ℝ) ≤ (Ideal.absNorm (c * C.d) : ℝ) by exact_mod_cast he'.trans hrad)
+    (show (Ideal.absNorm e : ℝ) ≤ (Ideal.absNorm (c * C.d) : ℝ) by exact_mod_cast (absNorm_le_of_mem_idealDivisors he).trans (Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (mul_ne_zero C.D.original_ne_bot C.hd0)))
+      (Ideal.absNorm_dvd_absNorm_of_le Ideal.le_radical)))
 
-lemma primitive_norm_le_one (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F))
-    (hp : C.ValidPair p) (e : Ideal (𝓞 F)) : ‖C.primitive p hp e‖ ≤ 1 := by
-  exact ((primitiveProductQuadratic Q hp.hu0 hp.hv0 hp.hu hp.hv hp.huc hp.hvc hp.huv
+lemma primitive_norm_le_one (p : Ideal (𝓞 F) × Ideal (𝓞 F))
+    (hp : C.ValidPair p) (e : Ideal (𝓞 F)) : ‖C.primitive p hp e‖ ≤ 1 := ((primitiveProductQuadratic Q hp.hu0 hp.hv0 hp.hu hp.hv hp.huc hp.hvc hp.huv
     hp.hquotientClass (C.primitive p hp) (C.primitive_spec p hp).2.1).1 e).2.2.2
 
-lemma prefactor_norm_le (C : Context Q) (hM : 1 ≤ C.M)
+lemma prefactor_norm_le (hM : 1 ≤ C.M)
     (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : C.ValidPair p)
     {e : Ideal (𝓞 F)} (he : e ∈ C.mobiusDivisors) :
     ‖C.prefactor e p hp‖ ≤ C.M := by
   have hen := (mobius_divisor_norm C he).1
-  have hpn := norm_one_le (mul_ne_zero hp.hu0 hp.hv0)
   have hsq : 1 ≤ Real.sqrt (norm (p.1 * p.2)) := by
-    simpa using Real.sqrt_le_sqrt hpn
+    simpa using Real.sqrt_le_sqrt (norm_one_le (mul_ne_zero hp.hu0 hp.hv0))
   have hden : 1 ≤ norm e * Real.sqrt (norm (p.1 * p.2)) := by nlinarith
-  have hmo : ‖(UniqueFactorizationMonoid.moebius e : ℂ)‖ ≤ 1 := by
-    rw [UniqueFactorizationMonoid.moebius]; split <;> simp
   have hprod : ‖(UniqueFactorizationMonoid.moebius e : ℂ) * C.primitive p hp e‖ ≤ 1 := by
     rw [_root_.norm_mul]
-    exact (mul_le_mul hmo (primitive_norm_le_one C p hp e) (_root_.norm_nonneg _)
+    exact (mul_le_mul (by
+      rw [UniqueFactorizationMonoid.moebius]; split <;> simp) (primitive_norm_le_one C p hp e) (_root_.norm_nonneg _)
       zero_le_one).trans_eq (by ring)
   have hM0 : 0 ≤ C.M := by linarith
   have hq : ‖((C.M : ℂ) / ((norm e : ℂ) * (Real.sqrt (norm (p.1 * p.2)) : ℂ)))‖ =
@@ -156,6 +151,8 @@ lemma prefactor_norm_le (C : Context Q) (hM : 1 ≤ C.M)
   rw [_root_.norm_mul, hq]
   exact (mul_le_mul_of_nonneg_right hprod (div_nonneg hM0 (by linarith))).trans
     (by simpa using div_le_self hM0 hden)
+
+end
 
 lemma finite_card_bounds (F : Type) [Field F] [NumberField F] :
     ∃ H : ℝ, 1 ≤ H ∧
@@ -187,10 +184,8 @@ lemma finite_card_bounds (F : Type) [Field F] [NumberField F] :
 lemma mobius_card_le (C : Context Q) (H : ℝ)
     (hcount : ∀ j : Ideal (𝓞 F), (idealDivisors j).card ≤ H * norm j)
     (hH : 0 ≤ H) : C.mobiusDivisors.card ≤ H * (norm c * norm C.d) := by
-  have hcd : c * C.d ≠ ⊥ := mul_ne_zero C.D.original_ne_bot C.hd0
-  have hrad : norm (c * C.d).radical ≤ norm c * norm C.d := by
-    simpa [norm_mul] using norm_le_of_dvd hcd (Ideal.dvd_iff_le.mpr Ideal.le_radical)
-  exact (hcount _).trans (mul_le_mul_of_nonneg_left hrad hH)
+  refine (hcount _).trans (mul_le_mul_of_nonneg_left ?_ hH)
+  simpa [norm_mul] using norm_le_of_dvd (mul_ne_zero C.D.original_ne_bot C.hd0) (Ideal.dvd_iff_le.mpr Ideal.le_radical)
 
 set_option maxHeartbeats 1000000 in
 

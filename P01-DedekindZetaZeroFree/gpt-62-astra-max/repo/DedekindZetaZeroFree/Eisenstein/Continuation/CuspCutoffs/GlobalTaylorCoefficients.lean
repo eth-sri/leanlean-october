@@ -14,35 +14,9 @@ section CauchyHelpers
 set_option maxHeartbeats 600000
 open KPContLocalNorm KPContLocalHolomorphyUpgrade.CauchyAssembly
 
-private theorem chartJetContinuous {n : ℕ} (A : LocalBall n)
-    (Ω : Set ℂ) (h : ℂ → Space n → ℂ)
-    (hh : KPCutoffSource.ChartSmoothHolomorphicOn A h Ω) : Raw.JetContinuousOn A h Ω := by
-  intro z₀ hz₀ K hK hKA m ε hε
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
-  obtain ⟨j, hj, hspec⟩ := hh.2 K hK hKA m
-  obtain ⟨δ, hδ, hd⟩ := hilbert_difference_small Ω j hj.continuousOn hz₀ hε
-  refine ⟨δ, hδ, ?_⟩
-  intro z hz hdist α x
-  have hb := hd z hz hdist
-  have hp := (ContinuousMap.norm_coe_le_norm ((j z - j z₀) α) x).trans
-    (norm_le_pi_norm (j z - j z₀) α)
-  change ‖j z α x - j z₀ α x‖ ≤ _ at hp
-  rw [hspec z hz α x, hspec z₀ hz₀ α x] at hp
-  rw [coordinateDerivative, finite_coordinate_derivative_sub A (hh.1 z hz) (hh.1 z₀ hz₀)
-    α.directions (hKA x.property), ← coordinateDerivative, ← coordinateDerivative]
-  exact hp.trans_lt hb
+private alias chartJetContinuous := DedekindZetaZeroFree.KPContActualCutoffChartJetHolomorphy.ChartJetHolomorphy.ballJet_continuous
 
-private theorem scalarJetHolomorphic {n : ℕ} (A : LocalBall n) (Ω : Set ℂ)
-    (f : ℂ → Space n → ℂ) (hf : KPCutoffSource.ChartSmoothHolomorphicOn A f Ω)
-    (m : ℕ) (α : MultiIndex n m) (x : Space n) (hx : x ∈ A.carrier) :
-    DifferentiableOn ℂ (fun s => coordinateDerivative α (f s) x) Ω := by
-  let K : Set (Space n) := {x}
-  have hKA : K ⊆ A.carrier := Set.singleton_subset_iff.mpr hx
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp (isCompact_singleton : IsCompact K)
-  obtain ⟨j, hj, hv⟩ := hf.2 K isCompact_singleton hKA m
-  let L : CompactJets K m →L[ℂ] ℂ :=
-    (ContinuousMap.evalCLM ℂ (⟨x, rfl⟩ : K)).comp (ContinuousLinearMap.proj α)
-  exact (L.differentiable.comp_differentiableOn hj).congr (fun s hs => (hv s hs α ⟨x, rfl⟩).symm)
+private alias scalarJetHolomorphic := DedekindZetaZeroFree.KPContActualCutoffChartJetHolomorphy.ChartJetHolomorphy.ballScalarJet_holomorphic
 
  def scalarCauchy (f : ℂ → ℂ) (c : ℂ) (ρ : ℝ) (j : ℕ) : ℂ :=
   (cauchyPowerSeries f c ρ j) (fun _ => 1)
@@ -57,15 +31,12 @@ private theorem scalarCauchySeries {n : ℕ} (A : LocalBall n) (Ω : Set ℂ)
   refine ⟨fun j => (hb j).1, fun s hs => hf.1 s (hclosed (Metric.ball_subset_closedBall hs)), ?_⟩
   intro K hK hKA m r hr hrρ ε hε
   have hhol : ∀ m (α : MultiIndex n m) x, x ∈ A.carrier →
-      DifferentiableOn ℂ (fun s => coordinateDerivative α (f s) x) (Metric.ball c ρ) := by
-    intro m α x hx
-    exact (scalarJetHolomorphic A Ω f hf m α x hx).mono (Metric.ball_subset_closedBall.trans hclosed)
+      DifferentiableOn ℂ (fun s => coordinateDerivative α (f s) x) (Metric.ball c ρ) := fun m α x hx => (scalarJetHolomorphic A Ω f hf m α x hx).mono (Metric.ball_subset_closedBall.trans hclosed)
   obtain ⟨N, hN⟩ := ContourLift.scalar_jet_cauchy_uniform A Ω f hf.1 hj c ρ hρ hclosed hhol
     K hK hKA m r hr hrρ ε hε
   refine ⟨N, ?_⟩
   intro M hM z hz α x
-  have hzΩ := hclosed ((Metric.closedBall_subset_closedBall hrρ.le) hz)
-  rw [coordinate_derivative_taylor_remainder A b (fun j => (hb j).1) (f z) (hf.1 z hzΩ)
+  rw [coordinate_derivative_taylor_remainder A b (fun j => (hb j).1) (f z) (hf.1 z (hclosed ((Metric.closedBall_subset_closedBall hrρ.le) hz)))
     (z - c) M α (hKA x.property)]
   have hd : ∀ j, coordinateDerivative α (b j) x = scalarCauchy
       (fun s => coordinateDerivative α (f s) x) c ρ j := fun j => (hb j).2 m α (hKA x.property)
@@ -103,34 +74,23 @@ private theorem coefficient_identity (w : Sections F ζ hζ U R P H)
   intro i
   refine ⟨fun x => scalarCauchy (fun s => ((w s).val i).val x) c ρ j, ?_, ?_⟩
   · intro x ε hε
-    have he : (fun s => (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) * ((w s).val i).val x) =
-        (fun s => ((w s).val i).val x) :=
-      funext fun s => ((w s).val i).property.1 x ε hε
-    exact (scalarCauchy_const_mul _ _ c ρ j).symm.trans (congrArg (fun f => scalarCauchy f c ρ j) he)
+    exact (scalarCauchy_const_mul _ _ c ρ j).symm.trans (congrArg (fun f => scalarCauchy f c ρ j) (funext fun s => ((w s).val i).property.1 x ε hε))
   · intro γ x
-    have he : (fun s => ((w s).val i).val ((γ : KPCuspArithmetic.PGL2 F) • x)) =
-        fun s => (KPCuspGenuineMonodromy.chi F ζ hζ (((H.atlas U).line i).rho γ) : ℂ) *
-          ((w s).val i).val x := funext fun s => ((w s).val i).property.2 γ x
-    exact (congrArg (fun f => scalarCauchy f c ρ j) he).trans (scalarCauchy_const_mul _ _ c ρ j)
+    exact (congrArg (fun f => scalarCauchy f c ρ j) (funext fun s => ((w s).val i).property.2 γ x)).trans (scalarCauchy_const_mul _ _ c ρ j)
 
-private theorem cauchySections_coordinate (w : ℂ → smoothSections F ζ hζ U R P H)
-    (c : ℂ) (ρ : ℝ) (j : ℕ) (A : ChartBall F ζ hζ U R P H)
-    (hphase : A.phase = phaseClass F ζ hζ U 1) (p : Space (KPCuspLogShape.dimension F * 3)) :
-    (cauchySections F ζ hζ U R P H w c ρ j A.component).val (coordinates F p) =
-      scalarCauchy (fun s => coefficient F ζ hζ U R P H (w s).val A p) c ρ j := by
-  apply congrArg (fun f => scalarCauchy f c ρ j)
-  funext s
-  exact (coefficient_identity F ζ hζ U R P H (w s).val A hphase p).symm
+ section
 
- theorem cauchySections_smooth (w : ℂ → smoothSections F ζ hζ U R P H)
-    (Ω : Set ℂ)
-    (hlocal : ∀ A : ChartBall F ζ hζ U R P H, KPCutoffSource.ChartSmoothHolomorphicOn A.ball
-      (fun s => coefficient F ζ hζ U R P H (w s).val A) Ω)
-    (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hclosed : Metric.closedBall c ρ ⊆ Ω) (j : ℕ) :
+variable (w : ℂ → smoothSections F ζ hζ U R P H) (Ω : Set ℂ)
+    (hlocal : ∀ A : ChartBall F ζ hζ U R P H, KPCutoffSource.ChartSmoothHolomorphicOn A.ball (fun s => coefficient F ζ hζ U R P H (w s).val A) Ω)
+    (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hclosed : Metric.closedBall c ρ ⊆ Ω) (j : ℕ)
+
+include hlocal hρ hclosed in
+theorem cauchySections_smooth :
     IsSmoothSections F ζ hζ U R P H (cauchySections F ζ hζ U R P H w c ρ j) := by
   intro i
+  let cauchySections₀ := cauchySections F ζ hζ U R P H w c ρ j i
   have hsp : ContDiff ℝ (⊤ : ℕ∞) (fun p =>
-      (cauchySections F ζ hζ U R P H w c ρ j i).val (coordinates F p)) := by
+      (cauchySections₀).val (coordinates F p)) := by
     rw [contDiff_iff_contDiffAt]
     intro p
     let A := canonicalChartBall F ζ hζ U R P H i (coordinates F p) (phaseClass F ζ hζ U 1)
@@ -138,33 +98,33 @@ private theorem cauchySections_coordinate (w : ℂ → smoothSections F ζ hζ U
       simpa only [Homeomorph.symm_apply_apply] using canonicalChartBall_mem F ζ hζ U R P H i
         (coordinates F p) (phaseClass F ζ hζ U 1)
     have hf := hlocal A
-    have hb := (ContourLift.coefficient_smooth_and_derivatives A.ball Ω _ hf.1
-      (chartJetContinuous A.ball Ω _ hf) c ρ hρ hclosed j).1
-    have he : (fun q => (cauchySections F ζ hζ U R P H w c ρ j i).val (coordinates F q)) =
-        (fun q => scalarCauchy (fun s => coefficient F ζ hζ U R P H (w s).val A q) c ρ j) := by
-      funext q
-      exact cauchySections_coordinate F ζ hζ U R P H w c ρ j A rfl q
-    exact ((hb p hp).contDiffAt (Metric.isOpen_ball.mem_nhds hp)).congr_of_eventuallyEq
-      (Filter.Eventually.of_forall (congrFun he))
+    refine ((((ContourLift.coefficient_smooth_and_derivatives A.ball Ω _ hf.1
+      (chartJetContinuous A.ball Ω _ hf) c ρ hρ hclosed j).1) p hp).contDiffAt (Metric.isOpen_ball.mem_nhds hp)).congr_of_eventuallyEq
+      (Filter.Eventually.of_forall (congrFun ?_))
+    funext q
+    apply congrArg (fun f => scalarCauchy f c ρ j)
+    funext s
+    exact (coefficient_identity F ζ hζ U R P H (w s).val A rfl q).symm
   have hc := hsp.comp (CoreChartLocalizers.CutoffConstruction.ChartDensityConstruction.coordinates_symm_contDiff
     (KPCuspLogShape.dimension F))
-  have he : ((fun p => (cauchySections F ζ hζ U R P H w c ρ j i).val (coordinates F p)) ∘
-      (coordinates F).symm) = (cauchySections F ζ hζ U R P H w c ρ j i).val := by
+  have he : ((fun p => (cauchySections₀).val (coordinates F p)) ∘
+      (coordinates F).symm) = (cauchySections₀).val := by
     funext x
-    exact congrArg (cauchySections F ζ hζ U R P H w c ρ j i).val ((coordinates F).apply_symm_apply x)
-  change ContDiff ℝ (⊤ : ℕ∞) ((fun p => (cauchySections F ζ hζ U R P H w c ρ j i).val
+    exact congrArg (cauchySections₀).val ((coordinates F).apply_symm_apply x)
+  change ContDiff ℝ (⊤ : ℕ∞) ((fun p => (cauchySections₀).val
     (coordinates F p)) ∘ (coordinates F).symm) at hc
   rwa [he] at hc
 
- def cauchySmoothSections (w : ℂ → smoothSections F ζ hζ U R P H) (Ω : Set ℂ)
-    (hlocal : ∀ A : ChartBall F ζ hζ U R P H, KPCutoffSource.ChartSmoothHolomorphicOn A.ball
-      (fun s => coefficient F ζ hζ U R P H (w s).val A) Ω)
-    (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hclosed : Metric.closedBall c ρ ⊆ Ω) (j : ℕ) :
+ def cauchySmoothSections :
     smoothSections F ζ hζ U R P H :=
   ⟨cauchySections F ζ hζ U R P H w c ρ j,
     cauchySections_smooth F ζ hζ U R P H w Ω hlocal c ρ hρ hclosed j⟩
 
-private theorem cauchySections_coefficient (w : ℂ → smoothSections F ζ hζ U R P H)
+end
+
+variable (w : ℂ → smoothSections F ζ hζ U R P H)
+
+private theorem cauchySections_coefficient
     (c : ℂ) (ρ : ℝ) (j : ℕ) (A : ChartBall F ζ hζ U R P H)
     (p : Space (KPCuspLogShape.dimension F * 3)) :
     coefficient F ζ hζ U R P H (cauchySections F ζ hζ U R P H w c ρ j) A p =
@@ -182,7 +142,7 @@ private theorem cauchySections_coefficient (w : ℂ → smoothSections F ζ hζ 
   funext s
   exact (hcoef (w s).val).symm
 
-private theorem genuineCommonDisk (w : ℂ → smoothSections F ζ hζ U R P H) (Ω : Set ℂ)
+private theorem genuineCommonDisk (Ω : Set ℂ)
     (hlocal : ∀ A : ChartBall F ζ hζ U R P H, KPCutoffSource.ChartSmoothHolomorphicOn A.ball
       (fun s => coefficient F ζ hζ U R P H (w s).val A) Ω)
     (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hclosed : Metric.closedBall c ρ ⊆ Ω) :
@@ -233,7 +193,6 @@ theorem actual_cutoff_common_disk_coefficients
         (fun s => KPContActualSmoothLineGluing.coefficient F ζ hζ V R P H
           (source.descent.cutoff s).val A) Ω := by
     intro A
-    have hh := (source.local_holomorphy A.component A.center A.chart A.phase A.ball A.contained).1
     have hcoef (w : KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U) :
         KPContActualAllCuspSource.chartCoefficient F ζ hζ C R P H U w A.component A.phase =
           KPContActualSmoothLineGluing.coefficient F ζ hζ V R P H w.val A := by
@@ -243,7 +202,7 @@ theorem actual_cutoff_common_disk_coefficients
         rw [KPContSectorLineL2Isometry.scalarRepresentative_eq_symm]
         rfl
       rw [he]
-    simpa only [hcoef] using hh
+    simpa only [hcoef] using ((source.local_holomorphy A.component A.center A.chart A.phase A.ball A.contained).1)
   exact genuineCommonDisk F ζ hζ V R P H source.descent.cutoff Ω hlocal c ρ hρ hclosed
 
 end DedekindZetaZeroFree.KPContActualCutoffPlusClearedGerm

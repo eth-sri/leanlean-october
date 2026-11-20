@@ -17,8 +17,11 @@ def IsOrthogonalResidueAddChar {A : Type*} [CommRing A] [Fintype A]
     (ψ : AddChar A ℂ) : Prop :=
   ∀ n : A, n ≠ 0 → ∑ d : A, ψ (n * d) = 0
 
-private lemma residue_shifted {A : Type*} [CommRing A] [Fintype A]
-    (χ : MulChar A ℂ) (ψ : AddChar A ℂ)
+section
+
+variable {A : Type*} [CommRing A] [Fintype A] (χ : MulChar A ℂ) (ψ : AddChar A ℂ)
+
+private lemma residue_shifted
     (hp : IsPrimitiveResidueCharacter χ) (n : A) :
     gaussSum χ⁻¹ (ψ.mulShift n) = χ n * gaussSum χ⁻¹ ψ := by
   by_cases hn : IsUnit n
@@ -29,13 +32,11 @@ private lemma residue_shifted {A : Type*} [CommRing A] [Fintype A]
       rw [AddChar.mulShift_mulShift, hna']
     have he := gaussSum_mulShift χ⁻¹ (ψ.mulShift n) a
     rw [hs] at he
-    have hi : χ⁻¹ (a : A) ≠ 1 := by
-      simpa [MulChar.inv_apply_eq_inv'] using ha
     rw [MulChar.map_nonunit χ hn, zero_mul]
-    exact eq_zero_of_mul_eq_self_left hi he
+    refine eq_zero_of_mul_eq_self_left ?_ he
+    simpa [MulChar.inv_apply_eq_inv'] using ha
 
-private lemma residue_inversion {A : Type*} [CommRing A] [Fintype A]
-    (χ : MulChar A ℂ) (ψ : AddChar A ℂ)
+private lemma residue_inversion
     (ho : IsOrthogonalResidueAddChar ψ) :
     (∑ n : A, gaussSum χ⁻¹ (ψ.mulShift n) * ψ (-n)) = (Fintype.card A : ℂ) := by
   simp only [gaussSum, AddChar.mulShift_apply, Finset.sum_mul]
@@ -50,8 +51,7 @@ private lemma residue_inversion {A : Type*} [CommRing A] [Fintype A]
   simp_rw [← Finset.mul_sum, hor]
   simp
 
-private lemma residue_unit_sum {A : Type*} [CommRing A] [Fintype A]
-    (χ : MulChar A ℂ) (ψ : AddChar A ℂ) (n : A) :
+private lemma residue_unit_sum (n : A) :
     (∑ d : Aˣ, χ⁻¹ (d : A) * ψ (n * (d : A))) =
       gaussSum χ⁻¹ (ψ.mulShift n) := by
   apply Fintype.sum_of_injective Units.val Units.val_injective
@@ -62,6 +62,8 @@ private lemma residue_unit_sum {A : Type*} [CommRing A] [Fintype A]
     simp [MulChar.map_nonunit _ hnu]
   · intro d
     rfl
+
+end
 
 theorem detector_gauss_residue
     (A : Type*) [CommRing A] [Fintype A]
@@ -82,9 +84,8 @@ theorem detector_gauss_residue
     rw [star_gaussSum_eq, inv_inv]
     simpa only [gaussSum, AddChar.inv_apply] using hi
   have hnorm : ‖gaussSum χ⁻¹ ψ‖ ^ 2 = (Fintype.card A : ℝ) := by
-    have hr := congrArg Complex.re hprod
     simpa only [Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow,
-      Complex.ofReal_re, Complex.natCast_re] using hr
+      Complex.ofReal_re, Complex.natCast_re] using (congrArg Complex.re hprod)
   have hnz : gaussSum χ⁻¹ ψ ≠ 0 := by
     intro hz
     have hc : (Fintype.card A : ℝ) > 0 := by exact_mod_cast Fintype.card_pos

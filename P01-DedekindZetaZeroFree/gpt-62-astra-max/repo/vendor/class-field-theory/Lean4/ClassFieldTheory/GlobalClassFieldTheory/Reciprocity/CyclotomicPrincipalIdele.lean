@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -78,133 +76,12 @@ noncomputable local instance
   have : IsGalois ℚ
       (KummerTheory.rationalCyclotomicLevel m) :=
     inferInstance
-  let e :=
-    IsCyclotomicExtension.Rat.galEquivZMod
-      (m : ℕ) (KummerTheory.rationalCyclotomicLevel m)
   exact
     { is_comm.comm σ τ := by
-        apply e.injective
+        apply (IsCyclotomicExtension.Rat.galEquivZMod
+          (m : ℕ) (KummerTheory.rationalCyclotomicLevel m)).injective
         simp only [map_mul]
         exact mul_comm _ _ }
-
-/-- Every finite subextension of the rational cyclotomic closure is
-contained in one of its internal finite cyclotomic levels.  The proof
-uses finite generation of the intermediate field together with the
-divisibility-directed presentation of `ℚ(μ∞)`. -/
-theorem finiteSubfieldOfRationalCyclotomicField_le_level
-    (E :
-      IntermediateField ℚ
-        KummerTheory.rationalCyclotomicField)
-    [FiniteDimensional ℚ E] :
-    ∃ n : ℕ+,
-      E ≤ KummerTheory.rationalCyclotomicLevel n := by
-  classical
-  have hdirected :
-      Directed (· ≤ ·)
-        (KummerTheory.rationalCyclotomicLevel :
-          ℕ+ →
-            IntermediateField ℚ
-              KummerTheory.rationalCyclotomicField) := by
-    intro m n
-    refine ⟨m * n, ?_, ?_⟩
-    · apply KummerTheory.rationalCyclotomicLevel_mono
-      exact ⟨(n : ℕ), rfl⟩
-    · apply KummerTheory.rationalCyclotomicLevel_mono
-      exact ⟨(m : ℕ), by simp [Nat.mul_comm]⟩
-  have helement :
-      ∀ x : KummerTheory.rationalCyclotomicField,
-        ∃ n : ℕ+,
-          x ∈ KummerTheory.rationalCyclotomicLevel n := by
-    intro x
-    have hx :
-        x ∈
-          ⋃ n : ℕ+,
-            (KummerTheory.rationalCyclotomicLevel n :
-              Set KummerTheory.rationalCyclotomicField) := by
-      rw [← IntermediateField.coe_iSup_of_directed hdirected,
-        KummerTheory.iSup_rationalCyclotomicLevel]
-      exact Set.mem_univ x
-    rcases Set.mem_iUnion.mp hx with ⟨n, hn⟩
-    exact ⟨n, hn⟩
-  let levelIndex :
-      KummerTheory.rationalCyclotomicField → ℕ+ :=
-    fun x => Classical.choose (helement x)
-  have hlevelIndex
-      (x : KummerTheory.rationalCyclotomicField) :
-      x ∈
-        KummerTheory.rationalCyclotomicLevel
-          (levelIndex x) :=
-    Classical.choose_spec (helement x)
-  have hmoduleFinite : E.toSubmodule.FG :=
-    Submodule.FG.of_finite
-  have hfg : E.FG :=
-    E.fg_of_fg_toSubalgebra
-      (Subalgebra.fg_of_fg_toSubmodule hmoduleFinite)
-  obtain ⟨s, hsFinite, hsE⟩ :=
-    IntermediateField.fg_def.mp hfg
-  let t : Finset KummerTheory.rationalCyclotomicField :=
-    hsFinite.toFinset
-  let N : ℕ :=
-    ∏ x ∈ t, (levelIndex x : ℕ)
-  have hNpos : 0 < N := by
-    dsimp only [N]
-    exact Finset.prod_pos fun x _ => (levelIndex x).property
-  let n : ℕ+ := ⟨N, hNpos⟩
-  refine ⟨n, ?_⟩
-  rw [← hsE, IntermediateField.adjoin_le_iff]
-  intro x hx
-  have hxt : x ∈ t := by
-    simpa only [t, Set.Finite.mem_toFinset] using hx
-  have hdiv :
-      (levelIndex x : ℕ) ∣ (n : ℕ) := by
-    change
-      (levelIndex x : ℕ) ∣
-        ∏ y ∈ t, (levelIndex y : ℕ)
-    exact
-      Finset.dvd_prod_of_mem
-        (fun y => (levelIndex y : ℕ)) hxt
-  exact
-    KummerTheory.rationalCyclotomicLevel_mono hdiv
-      (hlevelIndex x)
-
-/-- Every finite Galois coordinate of the rational cyclotomic
-`ZHat`-extension has a canonical image inside a finite internal
-cyclotomic level.  The image field is retained explicitly so that
-restriction of actual global Artin automorphisms can be applied in a
-scalar tower. -/
-theorem finiteSubfieldOfRationalCyclotomicZHatField_mapsIntoLevel
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    ∃ (n : ℕ+)
-        (F :
-          IntermediateField ℚ
-            KummerTheory.rationalCyclotomicField)
-        (_e : E ≃ₐ[ℚ] F),
-      F ≤ KummerTheory.rationalCyclotomicLevel n := by
-  let hfull :
-      rationalCyclotomicZHatField ≤
-        KummerTheory.rationalCyclotomicField :=
-    IntermediateField.lift_le
-      KummerTheory.rationalCyclotomicTorsionFixedField
-  let i :
-      rationalCyclotomicZHatField →ₐ[ℚ]
-        KummerTheory.rationalCyclotomicField :=
-    IntermediateField.inclusion hfull
-  let F :
-      IntermediateField ℚ
-        KummerTheory.rationalCyclotomicField :=
-    (E : IntermediateField ℚ
-      rationalCyclotomicZHatField).map i
-  let e : E ≃ₐ[ℚ] F :=
-    IntermediateField.equivMap
-      (E : IntermediateField ℚ
-        rationalCyclotomicZHatField) i
-  let _ : FiniteDimensional ℚ F :=
-    e.toLinearEquiv.finiteDimensional
-  obtain ⟨n, hn⟩ :=
-    finiteSubfieldOfRationalCyclotomicField_le_level F
-  exact ⟨n, F, e, hn⟩
 
 /-- Restriction to the lifted torsion-free cyclotomic field commutes with its
 canonical inclusion into the full rational cyclotomic field.  Keeping this
@@ -223,14 +100,13 @@ private theorem rationalCyclotomicFullRestrictionToZHat_commutes
           (IntermediateField.lift_le
             KummerTheory.rationalCyclotomicTorsionFixedField)) x) := by
   let T := KummerTheory.rationalCyclotomicTorsionFixedField
-  let hTZ : IntermediateField.lift T ≤
-      KummerTheory.rationalCyclotomicField :=
+  let hTZ :=
     IntermediateField.lift_le T
   let φ := IntermediateField.liftAlgEquiv T
   let _ : Normal ℚ T := by
     dsimp only [T]
     exact KummerTheory.rationalCyclotomicTorsionFixedField_normal
-  let rσ : T ≃ₐ[ℚ] T :=
+  let rσ :=
     AlgEquiv.restrictNormalHom T σ
   change
     (IntermediateField.inclusion hTZ) (φ.autCongr rσ x) =
@@ -239,21 +115,16 @@ private theorem rationalCyclotomicFullRestrictionToZHat_commutes
       (IntermediateField.inclusion hTZ) (φ y) = y.1 := by
     apply Subtype.ext
     rfl
-  have hinv :
-      ((φ.symm x : T) : KummerTheory.rationalCyclotomicField) =
-        (IntermediateField.inclusion hTZ) x := by
-    apply Subtype.ext
-    rfl
   calc
-    (IntermediateField.inclusion hTZ) (φ.autCongr rσ x) =
-        (IntermediateField.inclusion hTZ) (φ (rσ (φ.symm x))) := by
-      rfl
+    _ =
+        (IntermediateField.inclusion hTZ) (φ (rσ (φ.symm x))) := rfl
     _ = (rσ (φ.symm x) : T) := hlift _
     _ = σ ((φ.symm x : T) :
-          KummerTheory.rationalCyclotomicField) := by
-      exact AlgEquiv.restrictNormalHom_apply T σ (φ.symm x)
+          KummerTheory.rationalCyclotomicField) := AlgEquiv.restrictNormalHom_apply T σ (φ.symm x)
     _ = σ ((IntermediateField.inclusion hTZ) x) :=
-      congrArg σ hinv
+      congrArg σ (by
+        apply Subtype.ext
+        rfl)
 
 /-- Restriction along the two sides of a commuting tower square gives the
 same automorphism of the finite bottom field.  Keeping the field types
@@ -275,7 +146,7 @@ private theorem restrictNormalHom_eq_of_commuting_square
   intro x
   apply (algebraMap E Ω).injective
   calc
-    algebraMap E Ω ((AlgEquiv.restrictNormalHom E τ) x) =
+    _ =
         algebraMap Z Ω
           (algebraMap E Z ((AlgEquiv.restrictNormalHom E τ) x)) :=
       IsScalarTower.algebraMap_apply E Z Ω _
@@ -289,49 +160,38 @@ private theorem restrictNormalHom_eq_of_commuting_square
     _ = algebraMap E Ω ((AlgEquiv.restrictNormalHom E σ) x) :=
       (AlgEquiv.restrictNormal_commutes σ E x).symm
 
+section
+
+variable (a : IdeleGroup ℚ)
+
 /-- The infinite Artin automorphism of the actual rational
 `ZHat`-field is the restriction of the infinite Artin automorphism of
 the full rational cyclotomic field.  The statement uses the genuine
 torsion-fixed subfield and its actual lift inside `SeparableClosure ℚ`. -/
-theorem rationalCyclotomicZHatGlobalArtin_eq_fullRestriction
-    (a : IdeleGroup ℚ) :
+theorem rationalCyclotomicZHatGlobalArtin_eq_fullRestriction :
     rationalCyclotomicZHatGlobalArtin a =
       rationalCyclotomicFullRestrictionToZHat
         (infiniteGlobalArtinMonoidHom
           ℚ KummerTheory.rationalCyclotomicField a) := by
-  let hfull :
-      rationalCyclotomicZHatField ≤
-        KummerTheory.rationalCyclotomicField :=
-    IntermediateField.lift_le
-      KummerTheory.rationalCyclotomicTorsionFixedField
-  let i :
-      rationalCyclotomicZHatField →ₐ[ℚ]
-        KummerTheory.rationalCyclotomicField :=
-    IntermediateField.inclusion hfull
+  let i :=
+    IntermediateField.inclusion (IntermediateField.lift_le
+      KummerTheory.rationalCyclotomicTorsionFixedField)
   apply
     (InfiniteGalois.continuousMulEquivToLimit
       ℚ rationalCyclotomicZHatField).injective
   apply Subtype.ext
   funext Eop
   let E := Eop.unop
-  let hENumberField : NumberField E :=
-    NumberField.of_module_finite ℚ E
-  let hEAbelian : IsAbelianGalois ℚ E :=
-    IsAbelianGalois.of_algHom
-      (E : IntermediateField ℚ
-        rationalCyclotomicZHatField).val
-  let : NumberField E := hENumberField
-  let : IsAbelianGalois ℚ E := hEAbelian
-  let σ : KummerTheory.rationalCyclotomicField ≃ₐ[ℚ]
-      KummerTheory.rationalCyclotomicField :=
+  let := (NumberField.of_module_finite ℚ E)
+  let := (IsAbelianGalois.of_algHom
+    E.val)
+  let σ :=
     infiniteGlobalArtinMonoidHom
       ℚ KummerTheory.rationalCyclotomicField a
-  let j : E →ₐ[ℚ] KummerTheory.rationalCyclotomicField :=
+  let j :=
     i.comp
-      (E : IntermediateField ℚ
-        rationalCyclotomicZHatField).val
-  let algZHatFull : Algebra rationalCyclotomicZHatField
-      KummerTheory.rationalCyclotomicField :=
+      E.val
+  let algZHatFull :=
     i.toRingHom.toAlgebra
   let _ : SMul rationalCyclotomicZHatField
       KummerTheory.rationalCyclotomicField :=
@@ -366,11 +226,6 @@ theorem rationalCyclotomicZHatGlobalArtin_eq_fullRestriction
         KummerTheory.rationalCyclotomicField
     intro x
     exact rationalCyclotomicFullRestrictionToZHat_commutes σ x
-  have hfullArtin :
-      AlgEquiv.restrictNormalHom E σ =
-        globalArtinMonoidHom (K := ℚ) (L := E) a :=
-    restrictNormalHom_infiniteGlobalArtinMonoidHom_of_scalarTower
-      ℚ E KummerTheory.rationalCyclotomicField a
   change
     AlgEquiv.restrictNormalHom E
         (rationalCyclotomicZHatGlobalArtin a) =
@@ -379,20 +234,19 @@ theorem rationalCyclotomicZHatGlobalArtin_eq_fullRestriction
           (infiniteGlobalArtinMonoidHom
             ℚ KummerTheory.rationalCyclotomicField a))
   calc
-    AlgEquiv.restrictNormalHom E
-          (rationalCyclotomicZHatGlobalArtin a) =
-        globalArtinMonoidHom (K := ℚ) (L := E) a :=
+    _ =
+        globalArtinMonoidHom a :=
       restrictNormalHom_rationalCyclotomicZHatGlobalArtin a E
     _ = AlgEquiv.restrictNormalHom E σ :=
-      hfullArtin.symm
+      (restrictNormalHom_infiniteGlobalArtinMonoidHom_of_scalarTower
+        ℚ E KummerTheory.rationalCyclotomicField a).symm
     _ = AlgEquiv.restrictNormalHom E
           (rationalCyclotomicFullRestrictionToZHat σ) :=
       htransport.symm
 
 /-- The rational cyclotomic idele value is the genuine torsion-free
 factor of the full cyclotomic character of its infinite Artin symbol. -/
-theorem rationalCyclotomicZHatIdeleValue_eq_fullCharacterFreePart
-    (a : IdeleGroup ℚ) :
+theorem rationalCyclotomicZHatIdeleValue_eq_fullCharacterFreePart :
     rationalCyclotomicZHatIdeleValue a =
       (KummerTheory.zHatUnitsDecomposition
         (KummerTheory.rationalCyclotomicCharacterContinuousMulEquiv
@@ -404,22 +258,19 @@ theorem rationalCyclotomicZHatIdeleValue_eq_fullCharacterFreePart
 
 /-- The archimedean part of a rational idele, with all finite
 components replaced by one. -/
-def rationalIdeleArchimedeanPart
-    (a : IdeleGroup ℚ) :
+def rationalIdeleArchimedeanPart :
     IdeleGroup ℚ :=
   (a.1, 1)
 
 /-- The finite part of a rational idele, with its archimedean
 component replaced by one. -/
-def rationalIdeleFinitePart
-    (a : IdeleGroup ℚ) :
+def rationalIdeleFinitePart :
     IdeleGroup ℚ :=
   (1, a.2)
 
 /-- The archimedean part preserves every infinite component. -/
 @[simp]
 theorem rationalIdeleArchimedeanPart_infiniteComponent
-    (a : IdeleGroup ℚ)
     (v : InfinitePlace ℚ) :
     IdeleGroup.infiniteComponent v
         (rationalIdeleArchimedeanPart a) =
@@ -429,7 +280,6 @@ theorem rationalIdeleArchimedeanPart_infiniteComponent
 /-- Every finite component of the archimedean part is one. -/
 @[simp]
 theorem rationalIdeleArchimedeanPart_finiteComponent
-    (a : IdeleGroup ℚ)
     (v : HeightOneSpectrum (𝓞 ℚ)) :
     IdeleGroup.finiteComponent v
         (rationalIdeleArchimedeanPart a) =
@@ -439,7 +289,6 @@ theorem rationalIdeleArchimedeanPart_finiteComponent
 /-- Every infinite component of the finite part is one. -/
 @[simp]
 theorem rationalIdeleFinitePart_infiniteComponent
-    (a : IdeleGroup ℚ)
     (v : InfinitePlace ℚ) :
     IdeleGroup.infiniteComponent v
         (rationalIdeleFinitePart a) =
@@ -449,12 +298,13 @@ theorem rationalIdeleFinitePart_infiniteComponent
 /-- The finite part preserves every finite component. -/
 @[simp]
 theorem rationalIdeleFinitePart_finiteComponent
-    (a : IdeleGroup ℚ)
     (v : HeightOneSpectrum (𝓞 ℚ)) :
     IdeleGroup.finiteComponent v
         (rationalIdeleFinitePart a) =
       IdeleGroup.finiteComponent v a :=
   rfl
+
+end
 
 private theorem globalArtinMonoidHom_rationalIdeleFinitePart
     {L : Type}
@@ -524,32 +374,26 @@ theorem globalArtinMonoidHom_rationalIdeleArchimedeanPart_sq
     rw [rationalIdeleArchimedeanPart_finiteComponent,
       map_one]
   rw [hfinite, mul_one]
-  rw [show (default : InfinitePlace ℚ) = Rat.infinitePlace by
+  rw [show default = Rat.infinitePlace by
     exact Subsingleton.elim _ _]
   rw [← map_pow]
   apply
     chosenInfinitePlaceArtinMonoidHom_eq_one_of_real_pos
-      (K := ℚ) (L := L)
+
       Rat.infinitePlace Rat.isReal_infinitePlace
-  have hne :
-      InfinitePlace.Completion.ringEquivRealOfIsReal
-          Rat.isReal_infinitePlace
-          ((IdeleGroup.infiniteComponent
-            Rat.infinitePlace
-            (rationalIdeleArchimedeanPart a) :
-              Rat.infinitePlace.Completionˣ) :
-            Rat.infinitePlace.Completion) ≠
-        0 := by
-    exact
-      (map_ne_zero
+  have hne := (map_ne_zero
         (InfinitePlace.Completion.ringEquivRealOfIsReal
           Rat.isReal_infinitePlace)).2
         (Units.ne_zero
           (IdeleGroup.infiniteComponent
             Rat.infinitePlace
             (rationalIdeleArchimedeanPart a)))
-  simpa only [Units.val_pow_eq_pow_val, map_pow] using
+  simpa using
     sq_pos_of_ne_zero hne
+
+section
+
+variable (a : IdeleGroup ℚ)
 
 /-- The actual rational `ZHat` Artin homomorphism kills every idele
 supported at the archimedean place.  The finite-layer images have
@@ -557,8 +401,7 @@ order at most two, while the inverse-limit Galois group is
 torsion-free. -/
 @[simp]
 theorem
-    rationalCyclotomicZHatGlobalArtin_rationalIdeleArchimedeanPart
-    (a : IdeleGroup ℚ) :
+    rationalCyclotomicZHatGlobalArtin_rationalIdeleArchimedeanPart :
     rationalCyclotomicZHatGlobalArtin
         (rationalIdeleArchimedeanPart a) =
       1 := by
@@ -585,9 +428,7 @@ theorem
               (rationalIdeleArchimedeanPart a)) =
           infiniteGlobalArtinToLimit
             ℚ rationalCyclotomicZHatField
-            (rationalIdeleArchimedeanPart a) := by
-      exact
-        (InfiniteGalois.continuousMulEquivToLimit
+            (rationalIdeleArchimedeanPart a) := (InfiniteGalois.continuousMulEquivToLimit
           ℚ rationalCyclotomicZHatField).apply_symm_apply _
     apply
       (InfiniteGalois.continuousMulEquivToLimit
@@ -597,21 +438,20 @@ theorem
     funext E
     exact
       globalArtinMonoidHom_rationalIdeleArchimedeanPart_sq
-        (L := E.unop) a
+         a
   exact
     (pow_left_injective
       (M :=
         rationalCyclotomicZHatField ≃ₐ[ℚ]
           rationalCyclotomicZHatField)
       (n := 2) (by norm_num))
-        (by simpa using hsq)
+        (by exact hsq)
 
 /-- The rational cyclotomic value kills the archimedean part of every
 rational idele. -/
 @[simp]
 theorem
-    rationalCyclotomicZHatIdeleValue_rationalIdeleArchimedeanPart
-    (a : IdeleGroup ℚ) :
+    rationalCyclotomicZHatIdeleValue_rationalIdeleArchimedeanPart :
     rationalCyclotomicZHatIdeleValue
         (rationalIdeleArchimedeanPart a) =
       1 := by
@@ -621,8 +461,7 @@ theorem
 
 /-- The rational cyclotomic value depends only on the finite part of
 an idele. -/
-theorem rationalCyclotomicZHatIdeleValue_eq_finitePart
-    (a : IdeleGroup ℚ) :
+theorem rationalCyclotomicZHatIdeleValue_eq_finitePart :
     rationalCyclotomicZHatIdeleValue a =
       rationalCyclotomicZHatIdeleValue
         (rationalIdeleFinitePart a) := by
@@ -646,8 +485,7 @@ theorem rationalCyclotomicZHatIdeleValue_eq_finitePart
 
 /-- Restriction of the infinite Artin symbol to a concrete prime-power
 cyclotomic level is its finite global Artin symbol. -/
-private theorem rationalCyclotomicGlobalArtin_restrict_primePowerLevel
-    (a : IdeleGroup ℚ) (p : Nat.Primes) (k : ℕ) :
+private theorem rationalCyclotomicGlobalArtin_restrict_primePowerLevel (p : Nat.Primes) (k : ℕ) :
     AlgEquiv.restrictNormalHom
         (KummerTheory.rationalCyclotomicLevel
           ⟨p.1 ^ k, pow_pos p.2.pos k⟩)
@@ -657,9 +495,7 @@ private theorem rationalCyclotomicGlobalArtin_restrict_primePowerLevel
         (K := ℚ)
         (L := KummerTheory.rationalCyclotomicLevel
           ⟨p.1 ^ k, pow_pos p.2.pos k⟩)
-        a := by
-  exact
-    restrictNormalHom_infiniteGlobalArtinMonoidHom_intermediateField
+        a := restrictNormalHom_infiniteGlobalArtinMonoidHom_intermediateField
       ℚ KummerTheory.rationalCyclotomicField a
         (KummerTheory.rationalCyclotomicLevel
           ⟨p.1 ^ k, pow_pos p.2.pos k⟩)
@@ -668,8 +504,7 @@ private theorem rationalCyclotomicGlobalArtin_restrict_primePowerLevel
 the infinite Artin symbol gives the finite global Artin symbol.  This is kept
 separate from character evaluation so both dependent comparisons elaborate
 within the default heartbeat budget. -/
-private theorem rationalCyclotomicGlobalArtin_projection_toZModPow
-    (a : IdeleGroup ℚ) (p : Nat.Primes) (k : ℕ) :
+private theorem rationalCyclotomicGlobalArtin_projection_toZModPow (p : Nat.Primes) (k : ℕ) :
     IsCyclotomicExtension.Rat.galEquivZMod
         (p.1 ^ k)
         (KummerTheory.rationalCyclotomicLevel
@@ -692,9 +527,7 @@ private theorem rationalCyclotomicGlobalArtin_projection_toZModPow
           (K := ℚ)
           (L := KummerTheory.rationalCyclotomicLevel
             ⟨p.1 ^ k, pow_pos p.2.pos k⟩)
-          a) := by
-  exact
-    congrArg
+          a) := congrArg
       (IsCyclotomicExtension.Rat.galEquivZMod
         (p.1 ^ k)
         (KummerTheory.rationalCyclotomicLevel
@@ -703,6 +536,8 @@ private theorem rationalCyclotomicGlobalArtin_projection_toZModPow
           KummerTheory.rationalCyclotomicLevel_isCyclotomicExtension
             ⟨p.1 ^ k, pow_pos p.2.pos k⟩))
       (rationalCyclotomicGlobalArtin_restrict_primePowerLevel a p k)
+
+end
 
 /-- Evaluating the actual infinite global Artin symbol in the full
 rational cyclotomic extension at the `p ^ k` cyclotomic character is
@@ -727,18 +562,19 @@ theorem rationalCyclotomicGlobalArtin_character_toZModPow
           (L :=
             KummerTheory.rationalCyclotomicLevel
               ⟨p.1 ^ k, pow_pos p.2.pos k⟩)
-          a) := by
-  exact
-    (KummerTheory.rationalCyclotomicCharacterPrimeProduct_toZModPow
+          a) := (KummerTheory.rationalCyclotomicCharacterPrimeProduct_toZModPow
       (infiniteGlobalArtinMonoidHom
         ℚ KummerTheory.rationalCyclotomicField a) p k).trans
       (rationalCyclotomicGlobalArtin_projection_toZModPow a p k)
 
+section
+
+variable (a : IdeleGroup ℚ) (p : Nat.Primes) (k : ℕ)
+
 /-- After removing the archimedean component, the `p ^ k` coordinate
 of the full rational cyclotomic Artin character is the genuine finite
 product of the chosen finite-place Artin maps. -/
-theorem rationalCyclotomicGlobalArtin_character_toZModPow_finitePart
-    (a : IdeleGroup ℚ) (p : Nat.Primes) (k : ℕ) :
+theorem rationalCyclotomicGlobalArtin_character_toZModPow_finitePart :
     Units.map (PadicInt.toZModPow k).toMonoidHom
         (KummerTheory.rationalCyclotomicCharacterPrimeProduct
           (infiniteGlobalArtinMonoidHom
@@ -768,8 +604,7 @@ actual chosen local Artin characters.  This is the pointwise form into
 which the p-adic unit formula and the unramified Frobenius formula
 substitute directly. -/
 theorem
-    rationalCyclotomicGlobalArtin_character_toZModPow_finitePart_eq_finprod
-    (a : IdeleGroup ℚ) (p : Nat.Primes) (k : ℕ) :
+    rationalCyclotomicGlobalArtin_character_toZModPow_finitePart_eq_finprod :
     Units.map (PadicInt.toZModPow k).toMonoidHom
         (KummerTheory.rationalCyclotomicCharacterPrimeProduct
           (infiniteGlobalArtinMonoidHom
@@ -807,6 +642,8 @@ theorem
             ⟨p.1 ^ k, pow_pos p.2.pos k⟩)
         a)
 
+end
+
 /-- Principal-idele evaluation reduced to its genuine finite local
 part. -/
 theorem
@@ -820,44 +657,12 @@ theorem
   rationalCyclotomicZHatIdeleValue_eq_finitePart
     (IdeleGroup.principalIdele ℚ x)
 
-/-- At a finite cyclotomic layer, the Artin image of the finite part
-of a rational idele is exactly the finite product of the chosen local
-Artin symbols. -/
-theorem
-    restrictNormalHom_rationalCyclotomicZHatGlobalArtin_finitePart
-    (a : IdeleGroup ℚ)
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    letI : NumberField E :=
-      NumberField.of_module_finite ℚ E
-    letI : IsAbelianGalois ℚ E :=
-      IsAbelianGalois.of_algHom E.toIntermediateField.val
-    AlgEquiv.restrictNormalHom E
-        (rationalCyclotomicZHatGlobalArtin
-          (rationalIdeleFinitePart a)) =
-      ∏ᶠ v : HeightOneSpectrum (𝓞 ℚ),
-        chosenFinitePlaceArtinMonoidHom
-          (K := ℚ) (L := E) v
-          (IdeleGroup.finiteComponent v a) := by
-  let hE : NumberField E :=
-    NumberField.of_module_finite ℚ E
-  let hAbelian : IsAbelianGalois ℚ E :=
-    IsAbelianGalois.of_algHom E.toIntermediateField.val
-  let _ : NumberField E := hE
-  let _ : IsAbelianGalois ℚ E := hAbelian
-  exact
-    (restrictNormalHom_rationalCyclotomicZHatGlobalArtin_of_structures
-      (rationalIdeleFinitePart a) E hE hAbelian).trans
-      (globalArtinMonoidHom_rationalIdeleFinitePart
-        (L := E) a)
+variable (K : Type) [Field K] [NumberField K] (x : Kˣ)
 
 /-- The unnormalized value on a principal idele over a number field
 is the rational cyclotomic value of the finite part of its field-norm
 principal idele. -/
-theorem cyclotomicZHatNormComposite_principalIdele_eq_finitePart
-    (K : Type) [Field K] [NumberField K]
-    (x : Kˣ) :
+theorem cyclotomicZHatNormComposite_principalIdele_eq_finitePart :
     cyclotomicZHatNormComposite K
         (Additive.ofMul
           (IdeleGroup.principalIdele K x)) =
@@ -875,9 +680,7 @@ remaining rational finite-part product formula.  Thus the only missing
 input for descent to the idele class group is the finite local
 cyclotomic compatibility, not an archimedean calculation. -/
 theorem
-    normalizedCyclotomicZHatIdeleValue_principalIdele_eq_zero_iff_finitePart
-    (K : Type) [Field K] [NumberField K]
-    (x : Kˣ) :
+    normalizedCyclotomicZHatIdeleValue_principalIdele_eq_zero_iff_finitePart :
     normalizedCyclotomicZHatIdeleValue K
           (Additive.ofMul
             (IdeleGroup.principalIdele K x)) =
@@ -897,7 +700,7 @@ theorem
     rw [hzero, smul_zero,
       cyclotomicZHatNormComposite_principalIdele_eq_finitePart]
         at hnormalize
-    simpa using hnormalize.symm
+    exact hnormalize.symm
   · intro hfinite
     apply
       zHatMulNat_injective

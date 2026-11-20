@@ -13,23 +13,27 @@ namespace DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration.Slice
 open KPMeanZeroWeightedEnergy HyperbolicChart
 open KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection
 
-def horizontalDivergence (F : Type) [Field F] [NumberField F]
+section
+
+variable (F : Type) [Field F] [NumberField F]
     (W : Space (KPCuspLogShape.dimension F) → Cotangent (KPCuspLogShape.dimension F))
-    (c : KPCuspCharts.Cross F) (t : ℝ) : ℝ :=
+    (c : KPCuspCharts.Cross F) (t : ℝ)
+
+def horizontalDivergence : ℝ :=
   let d := KPCuspLogShape.dimension F
   let x := real d (KPCuspCharts.toArch F (c,t))
   ∑ i : Fin d,
     (((Real.exp (x (i,2)) : ℂ) * coordinateDerivative d i 0 (fun q => W q i 1) x).re +
     ((Real.exp (x (i,2)) : ℂ) * coordinateDerivative d i 1 (fun q => W q i 2) x).re)
 
-def shapeDivergence (F : Type) [Field F] [NumberField F]
-    (W : Space (KPCuspLogShape.dimension F) → Cotangent (KPCuspLogShape.dimension F))
-    (c : KPCuspCharts.Cross F) (t : ℝ) : ℝ :=
+def shapeDivergence : ℝ :=
   let d := KPCuspLogShape.dimension F
   let x := real d (KPCuspCharts.toArch F (c,t))
   ∑ i : Fin d,
     ((coordinateDerivative d i 2 (fun q => W q i 0) x).re -
     (∑ j : Fin d, (coordinateDerivative d j 2 (fun q => W q i 0) x).re) / (d : ℝ))
+
+end
 
 theorem tangentialDivergence_eq_horizontal_add_shape
     {F : Type} [Field F] [NumberField F]
@@ -67,11 +71,14 @@ private theorem shapeEmbedding_direction (d : ℕ) (hd : 0 < d) (i : Fin d) :
   rw [hh]
   simp
 
-theorem restricted_verticalFlux_fderiv {F : Type} [Field F] [NumberField F]
-    (hd : 0 < KPCuspLogShape.dimension F)
+section
+
+variable {F : Type} [Field F] [NumberField F] (hd : 0 < KPCuspLogShape.dimension F)
     (W : Space (KPCuspLogShape.dimension F) → Cotangent (KPCuspLogShape.dimension F))
-    (hW : ∀ i, Differentiable ℝ (fun q => W q i 0))
-    (c : KPCuspCharts.Cross F) (t : ℝ) (i : Fin (KPCuspLogShape.dimension F)) :
+    (hW : ∀ i, Differentiable ℝ (fun q => W q i 0)) (c : KPCuspCharts.Cross F) (t : ℝ)
+
+include hW in
+theorem restricted_verticalFlux_fderiv (i : Fin (KPCuspLogShape.dimension F)) :
     fderiv ℝ (fun b : KPCuspCharts.Shape F =>
       W (real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F ((c.1,b),t))) i 0)
       c.2 (projectedShapeDirection _ hd i) =
@@ -102,12 +109,8 @@ theorem restricted_verticalFlux_fderiv {F : Type} [Field F] [NumberField F]
   simp only [d, Complex.real_smul, Complex.ofReal_mul, Complex.ofReal_inv, Complex.ofReal_one]
   ring
 
-theorem shapeDivergence_eq_sum_restricted_fderiv
-    {F : Type} [Field F] [NumberField F]
-    (hd : 0 < KPCuspLogShape.dimension F)
-    (W : Space (KPCuspLogShape.dimension F) → Cotangent (KPCuspLogShape.dimension F))
-    (hW : ∀ i, Differentiable ℝ (fun q => W q i 0))
-    (c : KPCuspCharts.Cross F) (t : ℝ) :
+include hW in
+theorem shapeDivergence_eq_sum_restricted_fderiv :
     shapeDivergence F W c t = ∑ i,
       (fderiv ℝ (fun b : KPCuspCharts.Shape F =>
         W (real _ (KPCuspCharts.toArch F ((c.1,b),t))) i 0)
@@ -117,7 +120,9 @@ theorem shapeDivergence_eq_sum_restricted_fderiv
   apply Finset.sum_congr rfl
   intro i hi
   rw [restricted_verticalFlux_fderiv hd W hW c t i]
-  simp only [Complex.sub_re, Complex.div_ofReal_re, Complex.re_sum]
+  simp
+
+end
 
 theorem shapeDivergence_eq_zero_of_dimension_le_one
     {F : Type} [Field F] [NumberField F]
@@ -131,39 +136,25 @@ theorem shapeDivergence_eq_zero_of_dimension_le_one
   have hd1 : KPCuspLogShape.dimension F = 1 := by
     have hi := i.isLt
     omega
-  have hu : (Finset.univ : Finset (Fin (KPCuspLogShape.dimension F))) = {i} := by
+  have hu : Finset.univ = {i} := by
     ext j
     simp only [Finset.mem_univ, Finset.mem_singleton, true_iff]
     apply Fin.ext
-    have hj := j.isLt
-    have hi := i.isLt
     omega
   rw [hu]
   simp [hd1]
 
-private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  ext i <;> simp [arch, real]
-private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply ContDiff.prodMk
-  · exact Complex.equivRealProdCLM.symm.contDiff.comp
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
-       (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
-private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
-  unfold KPCuspLogShape.meanHeight
-  apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
- def verticalLine {F : Type} [Field F] [NumberField F]
-    (hd : 0 < KPCuspLogShape.dimension F) (c : KPCuspCharts.Cross F) (t : ℝ)
-    (i : Fin (KPCuspLogShape.dimension F)) (r : ℝ) : KPCuspCharts.Coordinates F :=
+private alias arch_real := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.arch_real
+private alias smooth_arch := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.smooth_arch
+private alias smooth_mean := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.smooth_mean
+ section
+
+variable {F : Type} [Field F] [NumberField F] (hd : 0 < KPCuspLogShape.dimension F)
+    (c : KPCuspCharts.Cross F) (t : ℝ) (i : Fin (KPCuspLogShape.dimension F)) (r : ℝ)
+
+def verticalLine : KPCuspCharts.Coordinates F :=
   ((c.1,c.2 + r • projectedShapeDirection _ hd i),t + r / (KPCuspLogShape.dimension F : ℝ))
-private theorem real_verticalLine {F : Type} [Field F] [NumberField F]
-    (hd : 0 < KPCuspLogShape.dimension F) (c : KPCuspCharts.Cross F) (t : ℝ)
-    (i : Fin (KPCuspLogShape.dimension F)) (r : ℝ) :
+private theorem real_verticalLine :
     real _ (KPCuspCharts.toArch F (verticalLine hd c t i r)) =
       real _ (KPCuspCharts.toArch F (c,t)) + r • coordinateVector _ i 2 := by
   ext ⟨j,k⟩
@@ -171,8 +162,13 @@ private theorem real_verticalLine {F : Type} [Field F] [NumberField F]
     projectedShapeDirection, coordinateVector]
   split_ifs <;> simp_all [div_eq_mul_inv] <;> ring
 
-private theorem verticalFlux_eq_line_deriv
-    {F : Type} [Field F] [NumberField F] {T : ℝ}
+end
+
+section
+
+variable {F : Type} [Field F] [NumberField F]
+
+private theorem verticalFlux_eq_line_deriv {T : ℝ}
     (hd : 0 < KPCuspLogShape.dimension F)
     (u : KPArch.Space (KPCuspLogShape.dimension F) → ℝ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u
@@ -183,7 +179,7 @@ private theorem verticalFlux_eq_line_deriv
       a t * deriv (fun r => u (KPCuspCharts.toArch F (verticalLine hd c t i r))) 0 := by
   let d := KPCuspLogShape.dimension F
   let x := real d (KPCuspCharts.toArch F (c,t))
-  let g : Space d → ℂ := fun q => (u (arch d q) : ℂ)
+  let g := fun q => (u (arch d q) : ℂ)
   have hx : T < KPCuspLogShape.meanHeight d (arch d x) := by
     rw [arch_real, KPCuspCharts.toArch_meanHeight F hd]; exact ht
   have hu' : ContDiffAt ℝ (⊤ : ℕ∞) g x :=
@@ -192,9 +188,7 @@ private theorem verticalFlux_eq_line_deriv
         (smooth_arch d).contDiffAt)
   have hline : HasDerivAt (fun r : ℝ => real d (KPCuspCharts.toArch F (verticalLine hd c t i r)))
       (coordinateVector d i 2) 0 := by
-    have he : (fun r : ℝ => real d (KPCuspCharts.toArch F (verticalLine hd c t i r))) =
-        fun r => x + r • coordinateVector d i 2 := funext (real_verticalLine hd c t i)
-    rw [he]
+    rw [(funext (real_verticalLine hd c t i))]
     simpa using ((hasDerivAt_id (0 : ℝ)).smul_const (coordinateVector d i 2)).const_add x
   have hbase : real d (KPCuspCharts.toArch F (verticalLine hd c t i 0)) = x := by
     simp [verticalLine, x]
@@ -202,17 +196,15 @@ private theorem verticalFlux_eq_line_deriv
       (real d (KPCuspCharts.toArch F (verticalLine hd c t i 0))) := by
     rw [hbase]
     exact (hu'.differentiableAt (by simp)).hasFDerivAt
-  have hr := Complex.reCLM.hasFDerivAt.comp_hasDerivAt 0
-    (hg.comp_hasDerivAt 0 hline)
   have hr' : HasDerivAt (fun r => u (KPCuspCharts.toArch F (verticalLine hd c t i r)))
       (coordinateDerivative d i 2 g x).re 0 := by
-    simpa [Function.comp_def, g, arch_real, Complex.reCLM_apply, coordinateDerivative] using hr
+    simpa [Function.comp_def, g, arch_real, Complex.reCLM_apply, coordinateDerivative] using (Complex.reCLM.hasFDerivAt.comp_hasDerivAt 0
+      (hg.comp_hasDerivAt 0 hline))
   rw [hr'.deriv]
   simp [cutoffScalarFlux, scalarDifferential, differential, arch_real,
     KPCuspCharts.toArch_meanHeight F hd, d, x, g]
 
 theorem cutoff_verticalFlux_crossAction_invariant
-    {F : Type} [Field F] [NumberField F]
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
     (G : KPCuspCharts.ChartOutput F hF S D)
@@ -240,26 +232,18 @@ theorem cutoff_verticalFlux_crossAction_invariant
       · rfl
     have huEv : (fun r => u (KPCuspCharts.toArch F (verticalLine hd (G.crossAction s c) t i r)))
         =ᶠ[nhds 0] fun r => u (KPCuspCharts.toArch F (verticalLine hd c t i r)) := by
-      have hn : ∀ᶠ r : ℝ in nhds 0, T < t + r / (KPCuspLogShape.dimension F : ℝ) := by
-        exact (isOpen_lt continuous_const (continuous_const.add (continuous_id.div_const _))).mem_nhds
+      have hn : ∀ᶠ r : ℝ in nhds 0, T < t + r / (KPCuspLogShape.dimension F : ℝ) := (isOpen_lt continuous_const (continuous_const.add (continuous_id.div_const _))).mem_nhds
           (by simpa using ht)
       filter_upwards [hn] with r hr
       apply hinv ⟨verticalLine hd (G.crossAction s c) t i r, hr⟩ ⟨verticalLine hd c t i r, hr⟩
       exact ⟨s, hact r⟩
     rw [verticalFlux_eq_line_deriv hd u hu a _ t ht,
       verticalFlux_eq_line_deriv hd u hu a _ t ht, huEv.deriv_eq]
-  · have hat : a t = 0 := image_eq_zero_of_notMem_tsupport (fun hm => ht (ha.2.2 hm))
-    simp [cutoffScalarFlux, arch_real, KPCuspCharts.toArch_meanHeight F G.positive_dimension, hat]
+  · simp [cutoffScalarFlux, arch_real, KPCuspCharts.toArch_meanHeight F G.positive_dimension, (image_eq_zero_of_notMem_tsupport (fun hm => ht (ha.2.2 hm)))]
 
-private theorem smooth_real (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (real d) := by
-  apply (contDiff_piLp 2).mpr
-  intro ⟨i,k⟩
-  fin_cases k
-  · simpa [real, Function.comp_def] using Complex.reCLM.contDiff.comp
-      (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
-  · simpa [real, Function.comp_def] using Complex.imCLM.contDiff.comp
-      (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
-  · simpa [real, Function.comp_def] using contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+end
+
+private alias smooth_real := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.smooth_real
 set_option maxHeartbeats 600000 in
 
 theorem cutoff_verticalFlux_haar_average_logLattice_periodic
@@ -288,17 +272,14 @@ theorem cutoff_verticalFlux_haar_average_logLattice_periodic
         (v : KPCuspLogShape.logLattice F hF D.E D.integralUnits),
         (∫ z, f z (b + v.val) ∂μ) = ∫ z, f z b ∂μ) := by
   let d := KPCuspLogShape.dimension F
-  let k : KPCuspCharts.Cross F → ℝ := fun c =>
+  let k := fun c =>
     (cutoffScalarFlux d u a (real d (KPCuspCharts.toArch F (c,t))) i 0).re
   have hki (s : S) (c : KPCuspCharts.Cross F) : k (G.crossAction s c) = k c :=
     cutoff_verticalFlux_crossAction_invariant G u hu hinv a ha t s c i
   have hkc : Continuous k := by
-    have hc : ContDiff ℝ (⊤ : ℕ∞) (fun c : KPCuspCharts.Cross F =>
-        real d (KPCuspCharts.toArch F (c,t))) :=
-      (smooth_real d).comp (((KPCuspCharts.toArch_contDiff F).of_le (by simp)).comp
-        (contDiff_id.prodMk contDiff_const))
     exact (Complex.reCLM.contDiff.comp
-      ((cutoff_flux_component_contDiff d u hu a ha i 0).comp hc)).continuous
+      ((cutoff_flux_component_contDiff d u hu a ha i 0).comp ((smooth_real d).comp (((KPCuspCharts.toArch_contDiff F).of_le (by simp)).comp
+        (contDiff_id.prodMk contDiff_const))))).continuous
   have hrel (b : KPCuspCharts.Shape F) (x y : KPCuspCharts.Horizontal F)
       (hxy : QuotientAddGroup.leftRel
         (KPCuspCharts.translationLattice F (KPCuspGenuineMonodromy.kernelLattice S D ρ)) x y) :
@@ -357,12 +338,16 @@ private theorem integral_lift_scale
   rw [← integral_map hmp.measurable.aemeasurable hm, hmp.map_eq]
   simp [μ', integral_smul_measure]
 
-private theorem kernelLattice_one {F : Type} [Field F] [NumberField F]
+section
+
+variable {F : Type} [Field F] [NumberField F]
+
+private theorem kernelLattice_one
   {S : Subgroup (KPCuspArithmetic.PGL2 F)} (D : KPCuspCharts.ParabolicData F S) :
   KPCuspGenuineMonodromy.kernelLattice S D (1 : S →* rootsOfUnity 3 F) = D.L := by
   ext x
   simp [KPCuspGenuineMonodromy.kernelLattice]
-private theorem fullTorus_probability_haar {F : Type} [Field F] [NumberField F]
+private theorem fullTorus_probability_haar
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
     (G : KPCuspCharts.ChartOutput F hF S D) :
@@ -371,10 +356,11 @@ private theorem fullTorus_probability_haar {F : Type} [Field F] [NumberField F]
   letI := hd
   letI : DiscreteTopology (KPCuspCharts.translationLattice F D.L) := hd
   letI := G.compact_torus
-  let μ := Measure.addHaarMeasure (⊤ : TopologicalSpace.PositiveCompacts (KPCuspCharts.Torus F D.L))
-  refine ⟨μ,inferInstance,?_⟩
+  refine ⟨(Measure.addHaarMeasure (⊤ : TopologicalSpace.PositiveCompacts (KPCuspCharts.Torus F D.L))),inferInstance,?_⟩
   constructor
   exact Measure.addHaarMeasure_self
+
+end
 set_option maxHeartbeats 600000 in
 
 theorem cutoff_verticalFlux_exact_domain_logLattice_periodic
@@ -405,15 +391,10 @@ theorem cutoff_verticalFlux_exact_domain_logLattice_periodic
   letI := hμ
   letI := hprob
   let ρ : S →* rootsOfUnity 3 F := 1
-  have heq : KPCuspGenuineMonodromy.kernelLattice S D ρ = D.L := kernelLattice_one D
   have hx := cutoff_verticalFlux_haar_average_logLattice_periodic (ρ := ρ) G u hu hinv a ha t
   unfold KPCuspGenuineMonodromy.KernelTorus at hx
-  rw [heq] at hx
+  rw [(kernelLattice_one D)] at hx
   obtain ⟨f,hf,hc,hp⟩ := hx μ hμ hprob i
-  have hinj : Function.Injective (KPCuspCharts.embedding F) := by
-    intro a c hac
-    have h0 := congrFun hac ⟨0, G.positive_dimension⟩
-    exact (KPCusp.complexPlace F ⟨0, G.positive_dimension⟩).embedding.injective h0
   have htiling : ∀ y : KPCuspCharts.Horizontal F,
       ∃! l : (KPCuspCharts.translationLattice F D.L).op, l +ᵥ y ∈ A := by
     intro y
@@ -424,25 +405,19 @@ theorem cutoff_verticalFlux_exact_domain_logLattice_periodic
     · exact ha
     · intro k hk
       obtain ⟨c, hc, hec⟩ := k.property
-      have hkc : y + KPCuspCharts.embedding F c ∈ A := by
-        change y + k.val.unop ∈ A at hk
-        rwa [← hec] at hk
-      have he := hau ⟨c, hc⟩ hkc
       apply Subtype.ext
       apply AddOpposite.unop_injective
-      exact hec.symm.trans (congrArg (fun x : D.L => KPCuspCharts.embedding F x.val) he)
-  have hfd : IsAddFundamentalDomain (KPCuspCharts.translationLattice F D.L).op A volume :=
-    IsAddFundamentalDomain.mk' hAm.nullMeasurableSet htiling
+      exact hec.symm.trans (congrArg (fun x : D.L => KPCuspCharts.embedding F x.val) (hau ⟨c, hc⟩ (by
+        change y + k.val.unop ∈ A at hk
+        rwa [← hec] at hk)))
   have hfc (b : KPCuspCharts.Shape F) : Continuous (fun z => f z b) := by
     apply (QuotientAddGroup.isQuotientMap_mk _).continuous_iff.mpr
     simp_rw [Function.comp_def,hf]
-    have hr : ContDiff ℝ (⊤ : ℕ∞) (fun x : KPCuspCharts.Horizontal F =>
-        real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F ((x,b),t))) := by
-      exact (smooth_real _).comp (((KPCuspCharts.toArch_contDiff F).of_le (by simp)).comp
-        ((contDiff_id.prodMk contDiff_const).prodMk contDiff_const))
-    exact (Complex.reCLM.contDiff.comp
-      ((cutoff_flux_component_contDiff _ u hu a ha i 0).comp hr)).continuous
-  have hscale (b : KPCuspCharts.Shape F) := integral_lift_scale volume μ hfd
+    refine (Complex.reCLM.contDiff.comp
+      ((cutoff_flux_component_contDiff _ u hu a ha i 0).comp ?_)).continuous
+    exact (smooth_real _).comp (((KPCuspCharts.toArch_contDiff F).of_le (by simp)).comp
+    ((contDiff_id.prodMk contDiff_const).prodMk contDiff_const))
+  have hscale (b : KPCuspCharts.Shape F) := integral_lift_scale volume μ (IsAddFundamentalDomain.mk' hAm.nullMeasurableSet htiling)
     hAb.measure_lt_top.ne (fun z => f z b) (hfc b).aestronglyMeasurable
   simp_rw [hf] at hscale
   rw [hscale,hscale,hp]
@@ -500,8 +475,7 @@ private theorem periodic_setIntegral_translate_haar
     · intro x
       change ∃! k : K, (k.val + x) - v ∈ A
       simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using hA (x - v)
-  have hm := measurePreserving_add_right μ v
-  have hh := hm.setIntegral_preimage_emb (Homeomorph.addRight v).measurableEmbedding f B
+  have hh := (measurePreserving_add_right μ v).setIntegral_preimage_emb (Homeomorph.addRight v).measurableEmbedding f B
   have he : (fun x => x + v) ⁻¹' B = A := by ext x; simp [B]
   rw [he] at hh
   refine hh.trans (hd'.setIntegral_eq hd ?_)
@@ -513,8 +487,11 @@ variable {F : Type} [Field F] [NumberField F]
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
 
+section
+
+variable {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H]
+
 private theorem periodic_setIntegral_translate
-    {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H]
     [MeasureSpace H] [BorelSpace H] [(volume : Measure H).IsAddHaarMeasure] (K : AddSubgroup H) [Countable K]
     (A : Set H) (hAm : MeasurableSet A)
     (hA : ∀ x : H, ∃! k : K, x + k.val ∈ A)
@@ -532,16 +509,14 @@ private theorem periodic_setIntegral_translate
     · intro x
       change ∃! k : K, (k.val + x) - v ∈ A
       simpa [sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using hA (x - v)
-  have hm := measurePreserving_add_right (volume : Measure H) v
-  have hh := hm.setIntegral_preimage_emb (Homeomorph.addRight v).measurableEmbedding f B
+  have hh := (measurePreserving_add_right volume v).setIntegral_preimage_emb (Homeomorph.addRight v).measurableEmbedding f B
   have he : (fun x => x + v) ⁻¹' B = A := by ext x; simp [B]
   rw [he] at hh
   refine hh.trans (hd'.setIntegral_eq hd ?_)
   intro k x
   change f (k.val + x) = f x
   simpa [add_comm] using hf k x
-private theorem periodic_setIntegral_fderiv_zero
-    {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H] [FiniteDimensional ℝ H]
+private theorem periodic_setIntegral_fderiv_zero [FiniteDimensional ℝ H]
     [MeasureSpace H] [BorelSpace H] [(volume : Measure H).IsAddHaarMeasure]
     (K : AddSubgroup H) [Countable K] (A : Set H) (hAm : MeasurableSet A)
     (hAb : Bornology.IsBounded A) (hA : ∀ x : H, ∃! k : K, x + k.val ∈ A)
@@ -576,23 +551,30 @@ private theorem periodic_setIntegral_fderiv_zero
     intro x s hs
     exact (hf.differentiable (by simp)).differentiableAt.hasFDerivAt.comp_hasDerivAt s
       (by simpa using ((hasDerivAt_id s).smul_const w |>.const_add x))
- def horizontalShift {F : Type} [Field F] [NumberField F] (l : F) : Space (KPCuspLogShape.dimension F) :=
+
+end
+ section
+
+variable {F : Type} [Field F] [NumberField F] (l : F)
+
+def horizontalShift : Space (KPCuspLogShape.dimension F) :=
   real (KPCuspLogShape.dimension F) (fun i => (KPCuspCharts.embedding F l i, 0))
-private theorem shift_arch {F : Type} [Field F] [NumberField F]
-    (l : F) (q : Space (KPCuspLogShape.dimension F)) :
+private theorem shift_arch (q : Space (KPCuspLogShape.dimension F)) :
     arch (KPCuspLogShape.dimension F) (q + horizontalShift l) =
       fun i => ((arch (KPCuspLogShape.dimension F) q i).1 + KPCuspCharts.embedding F l i,
         (arch (KPCuspLogShape.dimension F) q i).2) := by
   ext i <;> simp [arch, horizontalShift, real, Complex.ext_iff]
-private theorem u_horizontalShift_invariant
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+
+end
+section
+
+variable {F : Type} [Field F] [NumberField F] {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D) {T : ℝ}
-    (u : KPArch.Space (KPCuspLogShape.dimension F) → ℝ)
-    (hinv : ∀ p q : {p : KPCuspCharts.Coordinates F // T < p.2},
-      KPCuspCharts.highRelation F S T p q →
-      u (KPCuspCharts.toArch F p.val) = u (KPCuspCharts.toArch F q.val))
+    (G : KPCuspCharts.ChartOutput F hF S D) {T : ℝ} (u : KPArch.Space (KPCuspLogShape.dimension F) → ℝ)
+    (hinv : ∀ p q : {p : KPCuspCharts.Coordinates F // T < p.2}, KPCuspCharts.highRelation F S T p q → u (KPCuspCharts.toArch F p.val) = u (KPCuspCharts.toArch F q.val))
+
+include G hinv in
+private theorem u_horizontalShift_invariant
     (l : D.L) (q : Space (KPCuspLogShape.dimension F))
     (hq : T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) (arch (KPCuspLogShape.dimension F) q)) :
     u (arch (KPCuspLogShape.dimension F) (q + horizontalShift l.val)) =
@@ -614,19 +596,10 @@ private theorem u_horizontalShift_invariant
   convert hh using 1
   congr 1
   ext i
-  · have hei := congrFun he i
-    simpa [KPCuspCharts.toArch, z, r'] using (congrArg Prod.fst hei).symm
-  · have hei := congrFun he i
-    simpa [KPCuspCharts.toArch, z, r'] using (congrArg Prod.snd hei).symm
+  · simpa [KPCuspCharts.toArch, z, r'] using (congrArg Prod.fst (congrFun he i)).symm
+  · simpa [KPCuspCharts.toArch, z, r'] using (congrArg Prod.snd (congrFun he i)).symm
+include G hinv in
 private theorem cutoff_flux_horizontalShift_invariant
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D) {T : ℝ}
-    (u : KPArch.Space (KPCuspLogShape.dimension F) → ℝ)
-    (hinv : ∀ p q : {p : KPCuspCharts.Coordinates F // T < p.2},
-      KPCuspCharts.highRelation F S T p q →
-      u (KPCuspCharts.toArch F p.val) = u (KPCuspCharts.toArch F q.val))
     (a : ℝ → ℝ) (ha : CompactRadialTest T a)
     (l : D.L) (q : Space (KPCuspLogShape.dimension F)) (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) :
     cutoffScalarFlux (KPCuspLogShape.dimension F) u a (q + horizontalShift l.val) i k =
@@ -641,16 +614,14 @@ private theorem cutoff_flux_horizontalShift_invariant
       apply Continuous.div_const
       apply continuous_finset_sum
       intro j hj
-      exact (EuclideanSpace.proj (𝕜 := ℝ) (j, (2 : Fin 3))).continuous
-    have hn : ∀ᶠ r in 𝓝 q, T < m r :=
-      (isOpen_lt continuous_const hmc).mem_nhds (ha.2.2 hq)
+      exact (EuclideanSpace.proj (j, (2 : Fin 3))).continuous
     have he : (fun r : Space d => (u (arch d (r + horizontalShift l.val)) : ℂ)) =ᶠ[𝓝 q]
         (fun r : Space d => (u (arch d r) : ℂ)) := by
-      filter_upwards [hn] with r hr
+      filter_upwards [((isOpen_lt continuous_const hmc).mem_nhds (ha.2.2 hq))] with r hr
       rw [u_horizontalShift_invariant G u hinv l r hr]
     have hd : fderiv ℝ (fun r => (u (arch d r) : ℂ)) (q + horizontalShift l.val) =
         fderiv ℝ (fun r => (u (arch d r) : ℂ)) q := by
-      rw [← fderiv_comp_add_right (𝕜 := ℝ) (x := q) (horizontalShift l.val)]
+      rw [← fderiv_comp_add_right (horizontalShift l.val)]
       exact he.fderiv_eq
     have hv : (q + horizontalShift l.val) (i,2) = q (i,2) := by
       simp [horizontalShift, real]
@@ -661,18 +632,25 @@ private theorem cutoff_flux_horizontalShift_invariant
     fin_cases k <;> simp [differential, scalarDifferential, coordinateDerivative, hd, hv]
   · change (a (m (q + horizontalShift l.val)) : ℂ) * _ = (a (m q) : ℂ) * _
     simp [hm, image_eq_zero_of_notMem_tsupport hq]
+
+end
  def horizontalRealLinear (d : ℕ) : (Fin d → ℂ) →L[ℝ] Space d :=
   LinearMap.toContinuousLinearMap {
     toFun x := real d (fun i => (x i, 0))
     map_add' := by intro x y; ext ⟨i,k⟩; fin_cases k <;> simp [real]
     map_smul' := by intro r x; ext ⟨i,k⟩; fin_cases k <;> simp [real, Complex.real_smul] }
- def sliceOrigin {F : Type} [Field F] [NumberField F] (b : KPCuspCharts.Shape F) (t : ℝ) :=
+ section
+
+variable {F : Type} [Field F] [NumberField F] (b : KPCuspCharts.Shape F) (t : ℝ)
+
+def sliceOrigin :=
   real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F ((0,b),t))
-private theorem slice_real_eq {F : Type} [Field F] [NumberField F]
-    (b : KPCuspCharts.Shape F) (t : ℝ) (x : KPCuspCharts.Horizontal F) :
+private theorem slice_real_eq (x : KPCuspCharts.Horizontal F) :
     real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F ((x,b),t)) =
       horizontalRealLinear (KPCuspLogShape.dimension F) x + sliceOrigin b t := by
   ext ⟨i,k⟩; fin_cases k <;> simp [real, KPCuspCharts.toArch, horizontalRealLinear, sliceOrigin]
+
+end
 private theorem horizontalRealLinear_coord (d : ℕ) (i : Fin d) (k : Fin 2) :
     horizontalRealLinear d (Pi.single i (if k = 0 then 1 else Complex.I)) =
       coordinateVector d i (k.castLE (by decide)) := by
@@ -681,8 +659,11 @@ private theorem horizontalRealLinear_coord (d : ℕ) (i : Fin d) (k : Fin 2) :
   all_goals fin_cases k <;> fin_cases l <;>
     simp [horizontalRealLinear, real, coordinateVector, PiLp.toLp_apply, Pi.single_apply,
       PiLp.proj_apply, ← ite_and, and_comm, hj]
+section
+
+variable {F : Type} [Field F] [NumberField F]
+
 private theorem slice_coordinateDerivative_eq
-    {F : Type} [Field F] [NumberField F]
     (f : Space (KPCuspLogShape.dimension F) → ℂ) (hf : Differentiable ℝ f)
     (b : KPCuspCharts.Shape F) (t : ℝ) (x : KPCuspCharts.Horizontal F)
     (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 2) :
@@ -698,7 +679,6 @@ private theorem slice_coordinateDerivative_eq
   rw [hh']
   simp only [ContinuousLinearMap.comp_apply, horizontalRealLinear_coord, coordinateDerivative]
 private theorem cutoff_flux_slice_periodic
-    {F : Type} [Field F] [NumberField F]
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
     (G : KPCuspCharts.ChartOutput F hF S D) {T : ℝ}
@@ -718,16 +698,16 @@ private theorem cutoff_flux_slice_periodic
   rw [he]
   exact cutoff_flux_horizontalShift_invariant G u hinv a ha l _ i k
 
+end
+
+variable (G : KPCuspCharts.ChartOutput F hF S D) {T : ℝ}
+    (u : KPArch.Space (KPCuspLogShape.dimension F) → ℝ)
+    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u {z | T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z})
+    (hinv : ∀ p q : {p : KPCuspCharts.Coordinates F // T < p.2}, KPCuspCharts.highRelation F S T p q → u (KPCuspCharts.toArch F p.val) = u (KPCuspCharts.toArch F q.val))
+    (a : ℝ → ℝ) (ha : CompactRadialTest T a) (t : ℝ) (A : Set (KPCuspCharts.Horizontal F))
+
+include G hu hinv ha in
 theorem cutoff_horizontalDivergence_integral_zero
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    {T : ℝ} (u : KPArch.Space (KPCuspLogShape.dimension F) → ℝ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u
-      {z | T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z})
-    (hinv : ∀ p q : {p : KPCuspCharts.Coordinates F // T < p.2},
-      KPCuspCharts.highRelation F S T p q →
-      u (KPCuspCharts.toArch F p.val) = u (KPCuspCharts.toArch F q.val))
-    (a : ℝ → ℝ) (ha : CompactRadialTest T a) (t : ℝ)
-    (A : Set (KPCuspCharts.Horizontal F))
     (hAm : MeasurableSet A) (hAb : Bornology.IsBounded A)
     (hA : ∀ y : KPCuspCharts.Horizontal F, ∃! l : D.L,
       y + KPCuspCharts.embedding F l.val ∈ A)
@@ -744,9 +724,8 @@ theorem cutoff_horizontalDivergence_integral_zero
     · exact ⟨l.val,l.property,rfl⟩
     · intro k hk
       obtain ⟨r,hr,he⟩ := k.property
-      have hu' := hlu ⟨r,hr⟩ (by simpa [he] using hk)
       apply Subtype.ext
-      simpa [he] using congrArg (fun l : D.L => KPCuspCharts.embedding F l.val) hu'
+      simpa [he] using congrArg (fun l : D.L => KPCuspCharts.embedding F l.val) (hlu ⟨r,hr⟩ (by simpa [he] using hk))
   letI : Countable F := (Module.finBasis ℚ F).repr.injective.countable
   letI : Countable K := by
     have hh : Function.Surjective (fun l : D.L => (⟨KPCuspCharts.embedding F l.val, ⟨l.val,l.property,rfl⟩⟩ : K)) := by
@@ -793,13 +772,13 @@ theorem cutoff_horizontalDivergence_integral_zero
     rw [show (∫ x in A, (coordinateDerivative d i 0 (fun q => W q i 1) (real d (KPCuspCharts.toArch F ((x,b),t)))).re) =
       (∫ x in A, coordinateDerivative d i 0 (fun q => W q i 1) (real d (KPCuspCharts.toArch F ((x,b),t)))).re from
       Complex.reCLM.integral_comp_comm (hint i 0 1)]
-    simpa using congrArg Complex.re (hz i 0)
+    exact congrArg Complex.re (hz i 0)
   have hz1 (i : Fin d) : (∫ x in A, (coordinateDerivative d i 1 (fun q => W q i 2)
       (real d (KPCuspCharts.toArch F ((x,b),t)))).re) = 0 := by
     rw [show (∫ x in A, (coordinateDerivative d i 1 (fun q => W q i 2) (real d (KPCuspCharts.toArch F ((x,b),t)))).re) =
       (∫ x in A, coordinateDerivative d i 1 (fun q => W q i 2) (real d (KPCuspCharts.toArch F ((x,b),t)))).re from
       Complex.reCLM.integral_comp_comm (hint i 1 2)]
-    simpa using congrArg Complex.re (hz i 1)
+    exact congrArg Complex.re (hz i 1)
   have he : (fun x : KPCuspCharts.Horizontal F => horizontalDivergence F W (x,b) t) =
       fun x => ∑ i : Fin d, (Real.exp (t + b.val i) *
         (coordinateDerivative d i 0 (fun q => W q i 1) (real d (KPCuspCharts.toArch F ((x,b),t)))).re +
@@ -816,7 +795,6 @@ theorem cutoff_horizontalDivergence_integral_zero
     rw [hheight]
     simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero]
     rfl
-  change (∫ x in A, horizontalDivergence F W (x,b) t) = 0
   rw [he, integral_finset_sum]
   · apply Finset.sum_eq_zero
     intro i hi
@@ -826,16 +804,8 @@ theorem cutoff_horizontalDivergence_integral_zero
   · intro i hi
     exact ((hre i 0 1).const_mul _).add ((hre i 1 2).const_mul _)
 
-theorem cutoff_verticalFlux_shape_direction_integral_zero
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    {T : ℝ} (u : KPArch.Space (KPCuspLogShape.dimension F) → ℝ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u
-      {z | T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z})
-    (hinv : ∀ p q : {p : KPCuspCharts.Coordinates F // T < p.2},
-      KPCuspCharts.highRelation F S T p q →
-      u (KPCuspCharts.toArch F p.val) = u (KPCuspCharts.toArch F q.val))
-    (a : ℝ → ℝ) (ha : CompactRadialTest T a) (t : ℝ)
-    (A : Set (KPCuspCharts.Horizontal F)) (B : Set (KPCuspCharts.Shape F))
+include hu hinv ha in
+theorem cutoff_verticalFlux_shape_direction_integral_zero (B : Set (KPCuspCharts.Shape F))
     (hAm : MeasurableSet A) (hAb : Bornology.IsBounded A)
     (hBm : MeasurableSet B) (hBb : Bornology.IsBounded B)
     (hA : ∀ y : KPCuspCharts.Horizontal F, ∃! l : D.L,
@@ -848,7 +818,7 @@ theorem cutoff_verticalFlux_shape_direction_integral_zero
         (real _ (KPCuspCharts.toArch F (c,t))) i 0).re) c (0,w)
       ∂volume.prod G.shapeMeasure) = 0 := by
   let d := KPCuspLogShape.dimension F
-  let k : KPCuspCharts.Cross F → ℝ := fun c =>
+  let k := fun c =>
     (cutoffScalarFlux d u a (real d (KPCuspCharts.toArch F (c,t))) i 0).re
   have hkc : ContDiff ℝ (⊤ : ℕ∞) k :=
     Complex.reCLM.contDiff.comp ((cutoff_flux_component_contDiff d u hu a ha i 0).comp
@@ -861,18 +831,14 @@ theorem cutoff_verticalFlux_shape_direction_integral_zero
   have hav (v : K) (b : KPCuspCharts.Shape F) :
       (∫ x in A, k (x,b + v.val)) = ∫ x in A, k (x,b) :=
     cutoff_verticalFlux_exact_domain_logLattice_periodic G u hu hinv a ha t A hAm hAb hA b v i
-  have hb : Bornology.IsBounded (A ×ˢ B) := hAb.prod hBb
+  have hb := hAb.prod hBb
   let μ : Measure (KPCuspCharts.Cross F) := volume.prod G.shapeMeasure
   letI : IsFiniteMeasureOnCompacts μ := inferInstance
-  have hd := bounded_setIntegral_hasDerivAt (volume.prod G.shapeMeasure) (A ×ˢ B)
-    (hAm.prod hBm) hb k hkc (0,w)
   have he : (fun r : ℝ => ∫ c in A ×ˢ B, k (c + r • (0,w)) ∂volume.prod G.shapeMeasure) =
       fun _ => ∫ c in A ×ˢ B, k c ∂volume.prod G.shapeMeasure := by
     funext r
-    have hc : IsCompact (closure (A ×ˢ B)) :=
-      Metric.isCompact_of_isClosed_isBounded isClosed_closure hb.closure
     have hi (r : ℝ) : IntegrableOn (fun c => k (c + r • (0,w))) (A ×ˢ B) (volume.prod G.shapeMeasure) :=
-      ((hkc.continuous.comp (continuous_id.add continuous_const)).continuousOn.integrableOn_compact hc).mono_set subset_closure
+      ((hkc.continuous.comp (continuous_id.add continuous_const)).continuousOn.integrableOn_compact (Metric.isCompact_of_isClosed_isBounded isClosed_closure hb.closure)).mono_set subset_closure
     have hir := hi r
     rw [IntegrableOn, ← Measure.prod_restrict] at hir
     rw [← Measure.prod_restrict, integral_prod_symm _ hir]
@@ -883,19 +849,11 @@ theorem cutoff_verticalFlux_shape_direction_integral_zero
     simp only [Prod.smul_mk, smul_zero, Prod.mk_add_mk, add_zero]
     exact periodic_setIntegral_translate_haar G.shapeMeasure K B hBm hB
       (fun b => ∫ x in A, k (x,b)) hav (r • w)
-  have hz := hd.unique (he ▸ hasDerivAt_const (0 : ℝ) (∫ c in A ×ˢ B, k c ∂volume.prod G.shapeMeasure))
-  exact hz
+  exact (bounded_setIntegral_hasDerivAt (volume.prod G.shapeMeasure) (A ×ˢ B)
+    (hAm.prod hBm) hb k hkc (0,w)).unique (he ▸ hasDerivAt_const (0 : ℝ) (∫ c in A ×ˢ B, k c ∂volume.prod G.shapeMeasure))
 
-theorem cutoff_shapeDivergence_rectangle_integral_zero
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    {T : ℝ} (u : KPArch.Space (KPCuspLogShape.dimension F) → ℝ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u
-      {z | T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z})
-    (hinv : ∀ p q : {p : KPCuspCharts.Coordinates F // T < p.2},
-      KPCuspCharts.highRelation F S T p q →
-      u (KPCuspCharts.toArch F p.val) = u (KPCuspCharts.toArch F q.val))
-    (a : ℝ → ℝ) (ha : CompactRadialTest T a) (t : ℝ)
-    (A : Set (KPCuspCharts.Horizontal F)) (B : Set (KPCuspCharts.Shape F))
+include hu hinv ha in
+theorem cutoff_shapeDivergence_rectangle_integral_zero (B : Set (KPCuspCharts.Shape F))
     (hAm : MeasurableSet A) (hAb : Bornology.IsBounded A)
     (hBm : MeasurableSet B) (hBb : Bornology.IsBounded B)
     (hA : ∀ y : KPCuspCharts.Horizontal F, ∃! l : D.L,
@@ -911,7 +869,7 @@ theorem cutoff_shapeDivergence_rectangle_integral_zero
     let W := cutoffScalarFlux d u a
     have hw (i : Fin d) : ContDiff ℝ (⊤ : ℕ∞) (fun q => W q i 0) :=
       cutoff_flux_component_contDiff d u hu a ha i 0
-    let k : Fin d → KPCuspCharts.Cross F → ℝ := fun i c =>
+    let k := fun i c =>
       (W (real d (KPCuspCharts.toArch F (c,t))) i 0).re
     have hk (i : Fin d) : ContDiff ℝ (⊤ : ℕ∞) (k i) :=
       Complex.reCLM.contDiff.comp ((hw i).comp
@@ -938,12 +896,9 @@ theorem cutoff_shapeDivergence_rectangle_integral_zero
       rw [h1.fderiv, h2.fderiv]
       rfl
     letI := G.haar_shapeMeasure
-    have hb : Bornology.IsBounded (A ×ˢ B) := hAb.prod hBb
-    have hc : IsCompact (closure (A ×ˢ B)) :=
-      Metric.isCompact_of_isClosed_isBounded isClosed_closure hb.closure
     have hint (i : Fin d) : IntegrableOn (fun c => fderiv ℝ (k i) c
         (0,projectedShapeDirection d G.positive_dimension i)) (A ×ˢ B) (volume.prod G.shapeMeasure) :=
-      (((hk i).continuous_fderiv (by simp)).clm_apply continuous_const).continuousOn.integrableOn_compact hc
+      (((hk i).continuous_fderiv (by simp)).clm_apply continuous_const).continuousOn.integrableOn_compact (Metric.isCompact_of_isClosed_isBounded isClosed_closure (hAb.prod hBb).closure)
         |>.mono_set subset_closure
     change (∫ c in A ×ˢ B, shapeDivergence F W c t ∂volume.prod G.shapeMeasure) = 0
     simp_rw [he]

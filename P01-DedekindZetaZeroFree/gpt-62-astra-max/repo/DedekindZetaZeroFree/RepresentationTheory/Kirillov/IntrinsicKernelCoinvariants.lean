@@ -44,12 +44,8 @@ theorem embedding_equivariant (p : P F ζ hζ v)
   unfold embedding kernelEquiv
   simp only [LinearMap.comp_apply, LinearEquiv.coe_coe, Submodule.subtype_apply,
     LinearEquiv.trans_apply]
-  let T := sectionsTensorEquiv F ζ hζ v m hm (ψ F v) hψ (J F ζ hζ v ρ)
-  let O := KPKirillovOrbitMapSurjective.orbitEquiv F ζ hζ v ρ m hm hρ hgen
-  have ht := sectionsTensorEquiv_equivariant F ζ hζ v m hm (ψ F v) hψ p x
-  have ho := KPKirillovOrbitMapSurjective.orbitEquiv_symm_intertwines
-    F ζ hζ v ρ m hm hρ hgen p (T x)
-  exact (congrArg (fun f => (O.symm f).val) ht).trans (congrArg Subtype.val ho)
+  exact (congrArg (fun f => ((KPKirillovOrbitMapSurjective.orbitEquiv F ζ hζ v ρ m hm hρ hgen).symm f).val) (sectionsTensorEquiv_equivariant F ζ hζ v m hm (ψ F v) hψ p x)).trans (congrArg Subtype.val (KPKirillovOrbitMapSurjective.orbitEquiv_symm_intertwines
+    F ζ hζ v ρ m hm hρ hgen p ((sectionsTensorEquiv F ζ hζ v m hm (ψ F v) hψ (J F ζ hζ v ρ)) x)))
 
 theorem embedding_evaluation
     (s : Sections F ζ hζ v m (ψ F v) ℂ) (e : J F ζ hζ v ρ) :

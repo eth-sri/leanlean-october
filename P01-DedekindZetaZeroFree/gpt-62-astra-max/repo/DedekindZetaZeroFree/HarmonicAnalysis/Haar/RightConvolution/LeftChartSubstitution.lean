@@ -39,19 +39,13 @@ theorem left_chart_substitution
     change e (ell F z * b * a, c) = e (((ell F z, 1) * (b, c)) * (a, 1)) at hm
     rw [map_mul, map_mul, he, he, he, he] at hm
     simpa only [Subgroup.coe_one, mul_one, hchart] using hm
-  let f : L F → ℂ := fun y => (q (b⁻¹ * (ell F z)⁻¹ * y) : ℂ) *
+  let f := fun y => (q (b⁻¹ * (ell F z)⁻¹ * y) : ℂ) *
     v (PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ y * c.val)
-  have hT : b⁻¹ * (ell F z)⁻¹ = (ell F z * b)⁻¹ := (mul_inv_rev _ _).symm
-  have hi := integral_mul_left_eq_self (μ := μL) f (ell F z * b)
-  change (∫ a, (q a : ℂ) * v
-    ((KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z *
-      (PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ b * c.val)) *
-      PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ a) ∂μL) = ∫ y, f y ∂μL
-  rw [← hi]
+  rw [← (integral_mul_left_eq_self f (ell F z * b))]
   apply integral_congr_ae
   filter_upwards with a
   dsimp [f]
-  rw [hT, inv_mul_cancel_left, ← hmul a]
+  rw [((mul_inv_rev _ _).symm), inv_mul_cancel_left, ← hmul a]
 
 end DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel.RightConvolution
 

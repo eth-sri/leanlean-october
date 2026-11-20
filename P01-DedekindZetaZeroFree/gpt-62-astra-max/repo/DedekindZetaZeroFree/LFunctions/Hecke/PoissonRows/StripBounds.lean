@@ -13,8 +13,8 @@ noncomputable section
 open DedekindZetaZeroFree NumberField
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem Lpsi_strip_bound (u : D.Row) (hu : u.u ≠ 1) :
     ∃ A C : ℝ, 0 ≤ A ∧ 0 < C ∧ ∀ w : ℂ, Scales.wLine - EulerDomain.pad / 2 ≤ w.re →
@@ -22,7 +22,7 @@ theorem Lpsi_strip_bound (u : D.Row) (hu : u.u ≠ 1) :
   classical
   have hpad : EulerDomain.pad = 1 / 1000000 := rfl
   have hy0 : Scales.wLine = 3 / 25 := rfl
-  have hF : NumberField.IsTotallyComplex F :=
+  have hF :=
     primitive12_totallyComplex F D.recipe.A.zeta12 D.recipe.A.primitive_zeta12
   obtain ⟨A, hA0, hconv⟩ := convex_normalized F hF
   obtain ⟨C1, hC1, hnorm⟩ := hconv (1 / 100) (by norm_num) (by norm_num)
@@ -49,13 +49,7 @@ theorem Lpsi_strip_bound (u : D.Row) (hu : u.u ≠ 1) :
   have hY0 : (0 : ℝ) ≤ (2 + |w.im|) ^ A := by linarith
   have hPC : 0 ≤ P * C1 * Q := by positivity
   by_cases hcase : w.re ≤ 1 + 1 / 100
-  · have hwpos : 0 < w.re := lt_of_lt_of_le hσpos hw1
-    have hg_eq := ConvexBridge.entire_eq_mask_mul D u hnpP hg hgs w hwpos
-    have hgL := RowAnalyticContinuation.entire_eq_Lpsi D u hu hg hgs w hwpos
-    have hN_eq := nonprincipalHeckeEntireContinuation_eq F hF (D.inducers u).plus.conductor
-      (D.inducers u).plus.conductor_ne_zero (D.inducers u).plus.character
-      (RowHeckeBridge.hecke D.recipe.A (D.inducers u).plus hnpP) w hwpos
-    have hmask := (RowHeckeBridge.mask_norm_le D u (D.inducers u).plus σs hσpos w hw1).1
+  · have hwpos := lt_of_lt_of_le hσpos hw1
     have hNb := hnorm (D.inducers u).plus.conductor (D.inducers u).plus.conductor_ne_zero
       (D.inducers u).plus.character (D.inducers u).plus.primitive hnpP
       (RowHeckeBridge.hecke D.recipe.A (D.inducers u).plus hnpP) w (by linarith) hcase
@@ -70,15 +64,15 @@ theorem Lpsi_strip_bound (u : D.Row) (hu : u.u ≠ 1) :
         ‖nonprincipalHeckeEntireContinuation F (D.inducers u).plus.conductor
           (D.inducers u).plus.character (RowHeckeBridge.hecke D.recipe.A (D.inducers u).plus hnpP)
           w‖ := by
-      rw [← hgL, hg_eq, ← hN_eq, norm_mul]
+      rw [← (RowAnalyticContinuation.entire_eq_Lpsi D u hu hg hgs w hwpos), (ConvexBridge.entire_eq_mask_mul D u hnpP hg hgs w hwpos), ← (nonprincipalHeckeEntireContinuation_eq F hF (D.inducers u).plus.conductor
+        (D.inducers u).plus.conductor_ne_zero (D.inducers u).plus.character
+        (RowHeckeBridge.hecke D.recipe.A (D.inducers u).plus hnpP) w hwpos), norm_mul]
     rw [hnorm_eq]
-    have hNb' : ‖nonprincipalHeckeEntireContinuation F (D.inducers u).plus.conductor
-          (D.inducers u).plus.character (RowHeckeBridge.hecke D.recipe.A (D.inducers u).plus hnpP)
-          w‖ ≤ C1 * Q * (2 + |w.im|) ^ A :=
+    have hNb' :=
       hNb.trans (mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left hQe hC1.le) hY0)
     calc _ ≤ P * (C1 * Q * (2 + |w.im|) ^ A) :=
-          mul_le_mul hmask hNb' (norm_nonneg _) hP0
+          mul_le_mul ((RowHeckeBridge.mask_norm_le D u (D.inducers u).plus σs hσpos w hw1).1) hNb' (norm_nonneg _) hP0
       _ = (P * C1 * Q) * (2 + |w.im|) ^ A := by ring
       _ ≤ (P * C1 * Q + Cr + 1) * (2 + |w.im|) ^ A :=
           mul_le_mul_of_nonneg_right (by linarith) hY0

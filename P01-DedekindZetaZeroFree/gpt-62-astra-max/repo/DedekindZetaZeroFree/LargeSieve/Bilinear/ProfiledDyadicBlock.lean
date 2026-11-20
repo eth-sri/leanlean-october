@@ -15,9 +15,7 @@ variable {F : Type} [Field F] [NumberField F]
 
 private theorem classes_finite (A : SArithmeticData F) : Finite A.V := by
   have hn (n : ℕ) (h : n = 2 ∨ n = 3) : Finite (A.LocalPowerClasses n) := by
-    have hnpos : n ≠ 0 := by rcases h with rfl | rfl <;> norm_num
-    have hc := A.Vn_card F n h
-    have : Finite (SArithmeticData.Vn F A n) := Nat.finite_of_card_ne_zero (by rw [hc]; exact pow_ne_zero _ hnpos)
+    have := Nat.finite_of_card_ne_zero (by rw [(A.Vn_card F n h)]; exact pow_ne_zero _ (by rcases h with rfl | rfl <;> norm_num))
     exact Finite.of_equiv _ (Equiv.sumPiEquivProdPi (fun v : A.Place => PowerQuotient (A.Completion v)ˣ n))
   letI := hn 2 (Or.inl rfl)
   letI := hn 3 (Or.inr rfl)
@@ -27,21 +25,25 @@ private theorem finiteMinkowski {I J : Type*} [Fintype I]
     (s : Finset J) (a : J → I → ℂ) :
     Real.sqrt (∑ i, ‖∑ j ∈ s, a j i‖ ^ 2) ≤
       ∑ j ∈ s, Real.sqrt (∑ i, ‖a j i‖ ^ 2) := by
-  let v : J → EuclideanSpace ℂ I := fun j => WithLp.toLp 2 (a j)
-  have he : (WithLp.toLp 2 (fun i => ∑ j ∈ s, a j i) : EuclideanSpace ℂ I) =
-      ∑ j ∈ s, v j := by
-    ext i
-    simp [v]
+  let v := fun j => WithLp.toLp 2 (a j)
   calc
     _ = ‖(WithLp.toLp 2 (fun i => ∑ j ∈ s, a j i) : EuclideanSpace ℂ I)‖ := by
-      simpa only [PiLp.toLp_apply] using
+      simpa using
         (EuclideanSpace.norm_eq (WithLp.toLp 2 (fun i => ∑ j ∈ s, a j i) :
           EuclideanSpace ℂ I)).symm
-    _ = ‖∑ j ∈ s, v j‖ := congrArg norm he
+    _ = ‖∑ j ∈ s, v j‖ := congrArg norm (by
+      ext i
+      simp [v])
     _ ≤ ∑ j ∈ s, ‖v j‖ := norm_sum_le _ _
     _ = _ := by simp only [v, EuclideanSpace.norm_eq, PiLp.toLp_apply]
 
-theorem frozen_scalar_norm_le (A : SArithmeticData F) (G : AllowedRecipe A)
+alias ProfiledDyadicBlock.finiteMinkowski := finiteMinkowski
+
+section
+
+variable (A : SArithmeticData F)
+
+theorem frozen_scalar_norm_le (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
@@ -49,27 +51,23 @@ theorem frozen_scalar_norm_le (A : SArithmeticData F) (G : AllowedRecipe A)
     ‖omega A G U σ ψ L T / (A.exteriorNorm T.n : ℂ)‖ ≤
       betaIdeal (RMSeparatedExpansion.activeSupport A T) T.a.val /
         A.exteriorNorm T.n := by
-  have hn : 0 < A.exteriorNorm T.n :=
+  have hn :=
     lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ T.n.property.1)
   rw [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hn]
   apply div_le_div_of_nonneg_right _ hn.le
   exact (RMSeparatedExpansion.factors_norm_le_betaIdeal A G U σ ψ hψ L hL T T.h T.f).1
 
-theorem frozen_profileArgument_dyadic (A : SArithmeticData F) (T : Frozen A)
+theorem frozen_profileArgument_dyadic (T : Frozen A)
     (d c : A.Exterior) (Z C D : ℝ) (hC : 0 < C) (hD : 0 < D) :
     profileArgument A T d c Z =
       (Z * A.exteriorNorm T.a * A.exteriorNorm T.n ^ 3 * C /
         (D ^ 2 * A.exteriorNorm T.f ^ 2)) *
         (A.exteriorNorm c / C) * (A.exteriorNorm d / D) ^ (-2 : ℤ) := by
-  have hd : 0 < A.exteriorNorm d :=
-    lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ d.property.1)
-  have hf : 0 < A.exteriorNorm T.f :=
-    lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ T.f.property.1)
   simp only [profileArgument, zpow_neg, zpow_ofNat]
   field_simp
   <;> ring
 
-theorem frozen_summand_sieve_form (A : SArithmeticData F) (G : AllowedRecipe A)
+theorem frozen_summand_sieve_form (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
@@ -94,11 +92,8 @@ theorem frozen_summand_sieve_form (A : SArithmeticData F) (G : AllowedRecipe A)
       else 0 := by
   have he : H (RMSeparatedExpansion.termClass A G U T d.val c.val) = Φ := by
     simpa only [RMSeparatedExpansion.termClass, hd, hc] using hΦ
-  have hcn : 0 < A.exteriorNorm c.val :=
+  have hcn :=
     lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ c.val.property.1)
-  have hn : 0 < A.exteriorNorm T.n :=
-    lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ T.n.property.1)
-  have hs : 0 < Real.sqrt (A.exteriorNorm c.val) := Real.sqrt_pos.mpr hcn
   have hp : (A.exteriorNorm c.val) ^ (-(1 / 2 : ℝ)) =
       (Real.sqrt (A.exteriorNorm c.val))⁻¹ := by
     rw [Real.rpow_neg hcn.le, Real.sqrt_eq_rpow]
@@ -108,7 +103,7 @@ theorem frozen_summand_sieve_form (A : SArithmeticData F) (G : AllowedRecipe A)
   simp only [rowMask, columnMask, Complex.ofReal_inv]
   split_ifs <;> simp_all <;> field_simp <;> ring
 
-theorem frozen_row_window_finite (A : SArithmeticData F) (h : A.Exterior) (D : ℝ) :
+theorem frozen_row_window_finite (h : A.Exterior) (D : ℝ) :
     {d : ExteriorSquarefreeIdeal A.cS |
       D ≤ A.exteriorNorm d.val ∧ A.exteriorNorm d.val < 2 * D ∧
         d.val.val ⊔ h.val = ⊤}.Finite := by
@@ -121,7 +116,7 @@ theorem frozen_row_window_finite (A : SArithmeticData F) (h : A.Exterior) (D : �
     exact Subtype.ext (Subtype.ext (congrArg (fun i : NonzeroIdeal F => i.val) hde))
   · exact normBoundedIdeals_finite F (2 * D)
 
-theorem frozen_row_finsum_eq_sum (A : SArithmeticData F) (h : A.Exterior)
+theorem frozen_row_finsum_eq_sum (h : A.Exterior)
     (D : ℝ) (g : ExteriorSquarefreeIdeal A.cS → ℝ) :
     (∑ᶠ d : {d : ExteriorSquarefreeIdeal A.cS |
       D ≤ A.exteriorNorm d.val ∧ A.exteriorNorm d.val < 2 * D ∧
@@ -130,28 +125,28 @@ theorem frozen_row_finsum_eq_sum (A : SArithmeticData F) (h : A.Exterior)
   rw [finsum_subtype_eq_finsum_cond]
   exact finsum_mem_eq_finite_toFinset_sum g (frozen_row_window_finite A h D)
 
-theorem frozen_profile_scale_pos (A : SArithmeticData F) (T : Frozen A)
+theorem frozen_profile_scale_pos (T : Frozen A)
     (Z C D : ℝ) (hZ : 0 < Z) (hC : 0 < C) (hD : 0 < D) :
     0 < Z * A.exteriorNorm T.a * A.exteriorNorm T.n ^ 3 * C /
       (D ^ 2 * A.exteriorNorm T.f ^ 2) := by
-  have ha : 0 < A.exteriorNorm T.a :=
+  have ha :=
     lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ T.a.property.1)
-  have hn : 0 < A.exteriorNorm T.n :=
+  have hn :=
     lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ T.n.property.1)
-  have hf : 0 < A.exteriorNorm T.f :=
+  have hf :=
     lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ T.f.property.1)
   positivity
 
- def liftColumn (A : SArithmeticData F) (f : ExteriorSquarefreeIdeal A.cS → ℂ)
+ def liftColumn (f : ExteriorSquarefreeIdeal A.cS → ℂ)
     (I : Ideal (𝓞 F)) : ℂ :=
   if h : ∃ d : ExteriorSquarefreeIdeal A.cS, d.val.val = I then f h.choose else 0
-private theorem liftColumn_apply (A : SArithmeticData F)
+private theorem liftColumn_apply
     (f : ExteriorSquarefreeIdeal A.cS → ℂ) (d : ExteriorSquarefreeIdeal A.cS) :
     liftColumn A f d.val.val = f d := by
   have h : ∃ e : ExteriorSquarefreeIdeal A.cS, e.val.val = d.val.val := ⟨d, rfl⟩
-  have he : h.choose = d := Subtype.ext (Subtype.ext h.choose_spec)
+  have he := Subtype.ext (Subtype.ext h.choose_spec)
   simp only [liftColumn, dif_pos h, he]
-private theorem liftColumn_norm_le (A : SArithmeticData F)
+private theorem liftColumn_norm_le
     (f : ExteriorSquarefreeIdeal A.cS → ℂ) (hf : ∀ d, ‖f d‖ ≤ 1) :
     ∀ I, ‖liftColumn A f I‖ ≤ 1 := by
   intro I
@@ -159,7 +154,6 @@ private theorem liftColumn_norm_le (A : SArithmeticData F)
   split_ifs <;> simp_all
 
 theorem frozen_exterior_profiled_hgl
-     (A : SArithmeticData F)
     (𝓕 : QuadraticHeckeFamily F A.cS)
     (J : Type) [Fintype J] (Φ : J → ℝ → ℂ)
     (hΦ : RMFourierProfile.UniformLogBounds Φ) (b : ℝ) (hb : 0 < b) :
@@ -201,6 +195,8 @@ theorem frozen_exterior_profiled_hgl
   simp_rw [liftColumn_apply] at h
   exact h
 
+end
+
 set_option maxHeartbeats 1000000 in
 theorem frozen_sliced_dyadic_bound
     (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
@@ -229,8 +225,7 @@ theorem frozen_sliced_dyadic_bound
           A.exteriorNorm T.n) *
           Real.rpow (D * C) (b / 2) * Real.sqrt (D + C) := by
   obtain ⟨I, P, hcover, hC2, hdecay⟩ := hH
-  have hp : RMFourierProfile.UniformLogBounds P := ⟨hC2, hdecay⟩
-  obtain ⟨M, hM, hbound⟩ := frozen_exterior_profiled_hgl A 𝓕 I P hp b hb
+  obtain ⟨M, hM, hbound⟩ := frozen_exterior_profiled_hgl A 𝓕 I P (⟨hC2, hdecay⟩) b hb
   refine ⟨M, hM, ?_⟩
   intro u T sd sc Z C D cs rs hZ hC hD hcs hrs
   have hCp : 0 < C := by linarith
@@ -238,7 +233,7 @@ theorem frozen_sliced_dyadic_bound
   obtain ⟨j, hj⟩ := hcover u (profileIndex A G U T sd sc)
   let v := Z * A.exteriorNorm T.a * A.exteriorNorm T.n ^ 3 * C /
     (D ^ 2 * A.exteriorNorm T.f ^ 2)
-  let W : ℂ := omega A G U σ ψ (L u) T / (A.exteriorNorm T.n : ℂ)
+  let W := omega A G U σ ψ (L u) T / (A.exteriorNorm T.n : ℂ)
   let R : ExteriorSquarefreeIdeal A.cS → ℂ := fun d =>
     if d.val.val ⊔ (T.h.val * T.n.val) = ⊤ then rho A G U σ ψ (L u) T d.val else 0
   let K : ExteriorSquarefreeIdeal A.cS → ℂ := fun c =>
@@ -286,17 +281,15 @@ theorem frozen_sliced_dyadic_bound
       RMSeparatedExpansion.summand A G U σ ψ (L u) (H u) T d.val c Z‖ ^ 2) =
       ‖W‖ * Real.sqrt (∑ d ∈ rs, ‖R d * ∑ c ∈ cs, k c d‖ ^ 2) := by
     rw [hm, Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq (norm_nonneg _)]
-  have hB := hbound j C D v cs rs K R hC hD
-    (frozen_profile_scale_pos A T Z C D hZ hCp hDp)
-    (fun c hc => (hcs c hc).2) (fun d hd => (hrs d hd).2) hK hR
-  have hW := frozen_scalar_norm_le A G U σ ψ hψ (L u) (hL u) T
   rw [hs]
   calc
     _ ≤ ‖W‖ * (M * (D * C) ^ (b / 2) * Real.sqrt (D + C)) :=
-      mul_le_mul_of_nonneg_left hB (norm_nonneg _)
+      mul_le_mul_of_nonneg_left (hbound j C D v cs rs K R hC hD
+        (frozen_profile_scale_pos A T Z C D hZ hCp hDp)
+        (fun c hc => (hcs c hc).2) (fun d hd => (hrs d hd).2) hK hR) (norm_nonneg _)
     _ ≤ (betaIdeal (RMSeparatedExpansion.activeSupport A T) T.a.val /
       A.exteriorNorm T.n) * (M * (D * C) ^ (b / 2) * Real.sqrt (D + C)) :=
-      mul_le_mul_of_nonneg_right hW (by positivity)
+      mul_le_mul_of_nonneg_right (frozen_scalar_norm_le A G U σ ψ hψ (L u) (hL u) T) (by positivity)
     _ = _ := by simp only [Real.rpow_eq_pow]; ring
 
 theorem frozen_dyadic_block_bound
@@ -335,13 +328,14 @@ theorem frozen_dyadic_block_bound
   intro u h T Z C D s hZ hC hD hs
   let cs := s.image (fun i => i.2)
   let rs := (frozen_row_window_finite A h D).toFinset
+  let summand₀ := RMSeparatedExpansion.summand A G U σ ψ (L u) (H u)
   let f : ExteriorSquarefreeIdeal A.cS → ExteriorSquarefreeIdeal A.cS → ℂ :=
-    fun d c => RMSeparatedExpansion.summand A G U σ ψ (L u) (H u) T.val d.val c Z
+    fun d c => summand₀ T.val d.val c Z
   have hinj : Set.InjOn (fun i : RMSeparatedExpansion.Index A h => i.2) s := by
     intro i hi j hj he
     exact Prod.ext ((hs i hi).1.trans (hs j hj).1.symm) he
   have hsum (d : ExteriorSquarefreeIdeal A.cS) :
-      (∑ i ∈ s, RMSeparatedExpansion.summand A G U σ ψ (L u) (H u)
+      (∑ i ∈ s, summand₀
         i.1.val d.val i.2 Z) = ∑ c ∈ cs, f d c := by
     rw [Finset.sum_image hinj]
     apply Finset.sum_congr rfl
@@ -377,7 +371,7 @@ theorem frozen_dyadic_block_bound
     have he : (∑ d : rs, ‖a q d.val‖ ^ 2) =
         ∑ d ∈ rs.filter (fun d => RMSeparatedExpansion.rowClass A G d.val = q.1),
           ‖∑ c ∈ cs.filter (fun c => RMSeparatedExpansion.rowClass A G c.val = q.2),
-            RMSeparatedExpansion.summand A G U σ ψ (L u) (H u) T.val d.val c Z‖ ^ 2 := by
+            summand₀ T.val d.val c Z‖ ^ 2 := by
       rw [Finset.sum_coe_sort rs (fun d => ‖a q d‖ ^ 2), Finset.sum_filter]
       apply Finset.sum_congr rfl
       intro d hd
@@ -387,7 +381,7 @@ theorem frozen_dyadic_block_bound
     rw [he]
     exact hbq
   rw [frozen_row_finsum_eq_sum A h D (fun d =>
-    ‖∑ i ∈ s, RMSeparatedExpansion.summand A G U σ ψ (L u) (H u)
+    ‖∑ i ∈ s, summand₀
       i.1.val d.val i.2 Z‖ ^ 2)]
   simp_rw [hsum]
   change Real.sqrt (∑ d ∈ rs, ‖∑ c ∈ cs, f d c‖ ^ 2) ≤ _

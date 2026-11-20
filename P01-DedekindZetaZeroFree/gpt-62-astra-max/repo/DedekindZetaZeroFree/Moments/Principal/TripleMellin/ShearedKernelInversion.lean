@@ -12,28 +12,38 @@ open MeasureTheory
 open TripleMellinRaw
 open scoped NumberField Classical
 
-lemma cpow_positive (x : ℝ) (hx : 0 < x) (s : ℂ) :
+section
+
+variable (x : ℝ) (hx : 0 < x)
+
+include hx in
+lemma cpow_positive (s : ℂ) :
     (x : ℂ) ^ s = comparisonRealPower x s := by
   rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr (ne_of_gt hx)),
     ← Complex.ofReal_log hx.le]
   simp [comparisonRealPower, mul_comm]
 
-lemma power_neg_one (x : ℝ) (hx : 0 < x) :
+include hx in
+lemma power_neg_one :
     comparisonRealPower x (-1) = (x : ℂ)⁻¹ := by
   rw [← cpow_positive x hx, Complex.cpow_neg_one]
 
-lemma power_half (x : ℝ) (hx : 0 < x) :
+include hx in
+lemma power_half :
     comparisonRealPower x (1 / 2) = (Real.sqrt x : ℂ) := by
   rw [← cpow_positive x hx]
   have h := Complex.ofReal_cpow hx.le (1 / 2 : ℝ)
   norm_num only [Complex.ofReal_div, Complex.ofReal_one, Complex.ofReal_ofNat] at h
   rw [← h, Real.sqrt_eq_rpow]
 
-lemma power_neg_half (x : ℝ) (hx : 0 < x) :
+include hx in
+lemma power_neg_half :
     comparisonRealPower x (-1 / 2) = (Real.sqrt x : ℂ)⁻¹ := by
   rw [show (-1 / 2 : ℂ) = -(1 / 2) by ring]
   simp only [comparisonRealPower, neg_mul, Complex.exp_neg]
   exact congrArg Inv.inv (power_half x hx)
+
+end
 
 lemma power_balance (X Y Z c n s r u : ℝ)
     (hX : 0 < X) (hY : 0 < Y) (hZ : 0 < Z) (hc : 0 < c) (hn : 0 < n)
@@ -72,13 +82,12 @@ lemma power_balance (X Y Z c n s r u : ℝ)
 lemma integral_three_product (g a b : ℝ → ℂ) :
     (∫ t : Fin 3 → ℝ, g (t 0) * a (t 1) * b (t 2)) =
       (∫ t, g t) * (∫ t, a t) * (∫ t, b t) := by
-  have h := integral_fin_nat_prod_volume_eq_prod (n := 3)
-    (![g, a, b] : Fin 3 → ℝ → ℂ)
-  simpa [Fin.prod_univ_succ, mul_assoc] using h
+  simpa [Fin.prod_univ_succ, mul_assoc] using (integral_fin_nat_prod_volume_eq_prod
+    (![g, a, b] : Fin 3 → ℝ → ℂ))
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 lemma inversions_product (P : PrincipalData A σ η hS)
     (N : MellinNormalizationData A σ η hS P) (L S V : ℝ)
@@ -92,7 +101,7 @@ lemma inversions_product (P : PrincipalData A σ η hS)
           (S : ℂ) ^ (-4 - (t 1 : ℂ) * Complex.I)) *
         ((principalMellinWeights A σ η hS P).M (2 + (t 2 : ℂ) * Complex.I) *
           (V : ℂ) ^ (-2 - (t 2 : ℂ) * Complex.I)) := by
-  rw [(gaussian_inversion L hL).2, (realWeight_inversion P S hS').2,
+  rw [(gaussian_inversion L hL), (realWeight_inversion P S hS').2,
     (sheet_inversion P N V hV).2]
   rw [integral_three_product
     (fun τ : ℝ => Complex.exp ((5 + (τ : ℂ) * Complex.I) ^ 2) *
@@ -154,11 +163,11 @@ lemma term_inversion_race (P : PrincipalData A σ η hS)
     have hq := ProbeOrbitNormSum.orbitNorm_pos A (frequencyOrbit P (i.1, i.2.2.2.2))
     rw [frequencyOrbit_norm] at hq
     exact (mul_pos_iff.mp hq).elim (fun h => h.1) (fun h => False.elim (not_lt_of_ge (pow_nonneg hr.le _) h.2))
-  let C : ℂ := P.coefficients.gammaTwo i.2.1 *
+  let C := P.coefficients.gammaTwo i.2.1 *
     P.coefficients.theta (ThetaReflectionData.forwardModulus A P.coefficients i.2.1 i.2.2.1) *
     comparisonPoissonFiniteCoefficient F A P.coefficients i.2.1 i.2.2.1 i.2.2.2.1
       (i.1.val.val * P.coefficients.generator i.2.2.2.2 ^ 6)
-  let B : ℂ := ((Real.sqrt X.val / Y.val : ℝ) : ℂ) / ((Real.sqrt c : ℂ) * n * (c * n ^ 3))
+  let B := ((Real.sqrt X.val / Y.val : ℝ) : ℂ) / ((Real.sqrt c : ℂ) * n * (c * n ^ 3))
   have hq : 0 < c * n ^ 3 := by positivity
   have he := inversions_sheared P N (c * n ^ 3 / Z.val) (s / Y.val)
     (X.val * (u * r ^ 6) / (c * n ^ 3))
@@ -190,7 +199,6 @@ lemma term_inversion_race (P : PrincipalData A σ η hS)
   unfold initialTripleMellinSummand tripleMellinWeight weightedSeparatedSummand
     comparisonEulerPoissonSummand
   simp only [initialMellinPoint, heightEquiv_apply]
-  change (C * B) * _ = _
   dsimp [C]
   dsimp [c, n, s, r, u] at hb
   have hh := congrArg (fun v : ℂ => v *

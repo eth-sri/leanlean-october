@@ -14,16 +14,15 @@ lemma compact_jet_bound (U K : Set ℂ) (hU : IsOpen U) (hK : IsCompact K)
     (hKU : K ⊆ U) (f : ℂ → ℂ) (hf : ContDiffOn ℝ (⊤ : ℕ∞) f U) (n : ℕ) :
     ∃ D : ℝ, 1 ≤ D ∧ ∀ k ≤ n, ∀ x ∈ K, ‖iteratedFDeriv ℝ k f x‖ ≤ D := by
   have hb (k : ℕ) : ∃ D : ℝ, ∀ x ∈ K, ‖iteratedFDeriv ℝ k f x‖ ≤ D := by
-    have hc : ContinuousOn (iteratedFDeriv ℝ k f) K := by
-      apply ((hf.continuousOn_iteratedFDerivWithin (by simp) hU.uniqueDiffOn).mono hKU).congr
-      intro x hx
-      exact (iteratedFDerivWithin_of_isOpen k hU (hKU hx)).symm
-    exact hK.exists_bound_of_continuousOn hc
+    apply hK.exists_bound_of_continuousOn
+    apply ((hf.continuousOn_iteratedFDerivWithin (by simp) hU.uniqueDiffOn).mono hKU).congr
+    intro x hx
+    exact (iteratedFDerivWithin_of_isOpen k hU (hKU hx)).symm
   induction n with
   | zero =>
     obtain ⟨D, hD⟩ := hb 0
     exact ⟨max 1 D, le_max_left _ _, fun k hk x hx => by
-      have : k = 0 := Nat.eq_zero_of_le_zero hk
+      have := Nat.eq_zero_of_le_zero hk
       subst k
       exact (hD x hx).trans (le_max_right _ _)⟩
   | succ n ih =>
@@ -39,10 +38,9 @@ lemma compact_jet_bound (U K : Set ℂ) (hU : IsOpen U) (hK : IsCompact K)
 private lemma weight_smooth (a : ℝ) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun z : ℂ => (Real.rpow ‖z‖ a : ℂ)) ({0}ᶜ : Set ℂ) := by
   intro z hz
-  have hz0 : z ≠ 0 := hz
-  have hn : ContDiffAt ℝ (⊤ : ℕ∞) (fun z : ℂ => ‖z‖) z := contDiffAt_norm ℝ hz0
+  have hz0 := hz
   exact (Complex.ofRealCLM.contDiff.comp_contDiffAt z
-    (hn.rpow_const_of_ne (norm_ne_zero_iff.mpr hz0))).contDiffWithinAt
+    ((contDiffAt_norm ℝ hz0).rpow_const_of_ne (norm_ne_zero_iff.mpr hz0))).contDiffWithinAt
 
 lemma weighted_inversion_jet_bound (a : ℝ) (K : Set ℂ) (hK : IsCompact K)
     (hKext : ∀ z ∈ K, 1 ≤ ‖z‖) (n : ℕ) :
@@ -55,20 +53,17 @@ lemma weighted_inversion_jet_bound (a : ℝ) (K : Set ℂ) (hK : IsCompact K)
   have hKU : K ⊆ U := by
     intro z hz
     have h := hKext z hz
-    change z ≠ 0
     intro he
     rw [he, norm_zero] at h
     linarith
-  have hi : ContDiffOn ℝ (⊤ : ℕ∞) (Inv.inv : ℂ → ℂ) U := contDiffOn_inv ℝ
+  have hi : ContDiffOn ℝ (⊤ : ℕ∞) Inv.inv U := contDiffOn_inv ℝ
   have hw := weight_smooth a
   obtain ⟨D, hD, hDb⟩ := compact_jet_bound U K hU hK hKU _ hi n
   obtain ⟨B, hB, hBb⟩ := compact_jet_bound U K hU hK hKU _ hw n
-  let C : ℝ := ∑ i ∈ Finset.range (n+1),
+  let C := ∑ i ∈ Finset.range (n+1),
     (n.choose i : ℝ) * B * ((n-i).factorial : ℝ) * D ^ (n-i)
   refine ⟨max 1 C, le_max_left _ _, fun H hH z hz => ?_⟩
-  let S : ℝ := ∑ k ∈ Finset.range (n+1), KPCplxPrincipalSeriesJets.jetSup k H
-  have hS : 0 ≤ S := Finset.sum_nonneg fun k hk =>
-    KPCplxPrincipalSeriesJets.jetNonneg k H hH
+  let S := ∑ k ∈ Finset.range (n+1), KPCplxPrincipalSeriesJets.jetSup k H
   have hzi : z⁻¹ ∈ Metric.closedBall (0 : ℂ) 1 := by
     simpa only [Metric.mem_closedBall, dist_zero_right, norm_inv] using
       inv_le_one_of_one_le₀ (hKext z hz)
@@ -98,17 +93,18 @@ lemma weighted_inversion_jet_bound (a : ℝ) (K : Set ℂ) (hK : IsCompact K)
         (n.choose i : ℝ) * B * ((n-i).factorial * S * D ^ (n-i)) := by
       apply Finset.sum_le_sum
       intro i hi'
-      have hin : i ≤ n := by simp only [Finset.mem_range] at hi'; omega
-      exact mul_le_mul
-        (mul_le_mul_of_nonneg_left (hBb i hin z hz) (by positivity))
+      refine mul_le_mul
+        (mul_le_mul_of_nonneg_left (hBb i ?_ z hz) (by positivity))
         (hc (n-i) (Nat.sub_le _ _)) (norm_nonneg _) (by positivity)
+      simp only [Finset.mem_range] at hi'; omega
     _ = C * S := by
       dsimp [C]
       rw [Finset.sum_mul]
       apply Finset.sum_congr rfl
       intro i hi'
       ring
-    _ ≤ max 1 C * S := mul_le_mul_of_nonneg_right (le_max_right _ _) hS
+    _ ≤ max 1 C * S := mul_le_mul_of_nonneg_right (le_max_right _ _) (Finset.sum_nonneg fun k hk =>
+      KPCplxPrincipalSeriesJets.jetNonneg k H hH)
 
 lemma compatible_twoChart_jet_bound (a R : ℝ) (n : ℕ) :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ F H : ℂ → ℂ,
@@ -118,24 +114,20 @@ lemma compatible_twoChart_jet_bound (a R : ℝ) (n : ℕ) :
         C * ∑ k ∈ Finset.range (n+1),
           (KPCplxPrincipalSeriesJets.jetSup k F + KPCplxPrincipalSeriesJets.jetSup k H) := by
   let K := Metric.closedBall (0 : ℂ) R \ Metric.ball (0 : ℂ) 1
-  have hK : IsCompact K := (isCompact_closedBall _ _).diff Metric.isOpen_ball
-  have hKext : ∀ z ∈ K, 1 ≤ ‖z‖ := by
-    intro z hz
-    exact le_of_not_gt (by simpa only [Metric.mem_ball, dist_zero_right] using hz.2)
-  obtain ⟨C, hC, hCb⟩ := weighted_inversion_jet_bound a K hK hKext n
+  have hKext : ∀ z ∈ K, 1 ≤ ‖z‖ := fun z hz => le_of_not_gt (by simpa using hz.2)
+  obtain ⟨C, hC, hCb⟩ := weighted_inversion_jet_bound a K ((isCompact_closedBall _ _).diff Metric.isOpen_ball) hKext n
   refine ⟨C, hC, fun F H hF hH ht z hz => ?_⟩
   let S := ∑ k ∈ Finset.range (n+1),
     (KPCplxPrincipalSeriesJets.jetSup k F + KPCplxPrincipalSeriesJets.jetSup k H)
   have hnon (k : ℕ) : 0 ≤ KPCplxPrincipalSeriesJets.jetSup k F +
       KPCplxPrincipalSeriesJets.jetSup k H := add_nonneg
     (KPCplxPrincipalSeriesJets.jetNonneg k F hF) (KPCplxPrincipalSeriesJets.jetNonneg k H hH)
-  have hS : 0 ≤ S := Finset.sum_nonneg fun k hk => hnon k
   by_cases hi : z ∈ Metric.ball (0 : ℂ) 1
   · have hb : ‖iteratedFDeriv ℝ n F z‖ ≤ S := by
       apply (KPCplxPrincipalSeriesJets.jetLe n F hF z (Metric.ball_subset_closedBall hi)).trans
       exact (le_add_of_nonneg_right (KPCplxPrincipalSeriesJets.jetNonneg n H hH)).trans
         (Finset.single_le_sum (fun k hk => hnon k) (Finset.mem_range.mpr (by omega)))
-    exact hb.trans (le_mul_of_one_le_left hS hC)
+    exact hb.trans (le_mul_of_one_le_left (Finset.sum_nonneg fun k hk => hnon k) hC)
   · have hzK : z ∈ K := ⟨hz, hi⟩
     have hz0 : z ≠ 0 := by
       intro he

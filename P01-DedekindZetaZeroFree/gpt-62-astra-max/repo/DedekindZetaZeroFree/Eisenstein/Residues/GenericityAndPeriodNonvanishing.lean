@@ -37,10 +37,8 @@ theorem unipotentFiber_eq
     (g : G) (x : NumberField.AdeleRing (𝓞 F) F) :
     KPCompactFourier.unipotentFiber F n θ g (QuotientAddGroup.mk x) = θ (n x * g) := by
   let r := KPCompactFourier.representative F (QuotientAddGroup.mk x)
-  have hr : (QuotientAddGroup.mk r : KPCompactFourier.AdditiveQuotient F) = QuotientAddGroup.mk x :=
-    Quotient.out_eq' _
   have hm : r - x ∈ NumberField.AdeleRing.principalSubgroup (𝓞 F) F :=
-    QuotientAddGroup.eq_iff_sub_mem.mp hr
+    QuotientAddGroup.eq_iff_sub_mem.mp (Quotient.out_eq' _)
   obtain ⟨t, ht⟩ := hm
   have hr' : r = algebraMap F (NumberField.AdeleRing (𝓞 F) F) t + x := by
     rw [ht]; abel

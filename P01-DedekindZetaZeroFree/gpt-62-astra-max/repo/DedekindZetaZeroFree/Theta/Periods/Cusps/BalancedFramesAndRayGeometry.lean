@@ -13,12 +13,12 @@ open scoped Classical NumberField NNReal ENNReal Topology BigOperators
 open MeasureTheory
 namespace DedekindZetaZeroFree.CurrentBoundaryFrame
 open KPMsGreenFlux KPContFlatArchDiagonalMultiplier
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualFrames renaming balancedArch_eq_section → balancedArch_eq_section
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.GradientCollar renaming balancedArch_basepoint → balancedArch_basepoint
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualFrames (balancedArch_eq_section)
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.GradientCollar (balancedArch_basepoint)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 def shapeAt (b : KPCuspCharts.Shape F) : NumberField.InfinitePlace F → ℝ := fun w => b.val ((Fintype.equivFin {v : NumberField.InfinitePlace F // v.IsComplex}) ⟨w,KPHilbert.infinite_isComplex F ζ hζ w⟩)
 theorem shapeAt_sum (b : KPCuspCharts.Shape F) : ∑ w, shapeAt (ζ := ζ) (hζ := hζ) b w = 0 := by
-  let e : NumberField.InfinitePlace F ≃ Fin (KPCuspLogShape.dimension F) :=
+  let e :=
     (Equiv.subtypeUnivEquiv (fun w => KPHilbert.infinite_isComplex F ζ hζ w)).symm.trans
       (Fintype.equivFin {v : NumberField.InfinitePlace F // v.IsComplex})
   change ∑ w, b.val (e w) = 0
@@ -52,8 +52,8 @@ theorem balanced_insertion_factor (p : KPCuspCharts.Cross F)
     KPContinuation.ChamberFlatCasimir.iwasawa_insertion]
 
 variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
 def cuspOffset (j : Cusps A) (ε : rootsOfUnity 3 F) (u : U.toOpenSubgroup) :
     KPMsFixedHaarDisintegration.Radius :=
@@ -61,13 +61,14 @@ def cuspOffset (j : Cusps A) (ε : rootsOfUnity 3 F) (u : U.toOpenSubgroup) :
     (KPMsActualCuspSource.rationalLift F ζ hζ ((A.cuspAtlas j.1).representative j.2))
     ((A.representative j.1 * KPCuspGenuineMonodromy.central F ζ hζ ε * u.val).val)
 
-def actualPoint (j : Cusps A) (p : KPCuspCharts.Cross F) (k : K F)
-    (ε : rootsOfUnity 3 F) (u : U.toOpenSubgroup) (r : ℝ) : Cover F ζ hζ :=
+variable (j : Cusps A) (p : KPCuspCharts.Cross F) (k : K F) (ε : rootsOfUnity 3 F) (u : U.toOpenSubgroup)
+    (r : ℝ)
+
+def actualPoint : Cover F ζ hζ :=
   (cuspRepresentative A j)⁻¹ * KPBoundedCuspFrames.actualCuspLift A j p k r *
     KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val.val
 
-theorem actual_ray_norm (j : Cusps A) (p : KPCuspCharts.Cross F) (k : K F)
-    (ε : rootsOfUnity 3 F) (u : U.toOpenSubgroup) (r : ℝ) (hr : 0 < r) :
+theorem actual_ray_norm (hr : 0 < r) :
     ((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ
       (KPContFlatSourceRecipe.D F ζ hζ) (actualPoint A j p k ε u r) : ℝ≥0) : ℝ) =
         (cuspOffset A j ε u).val * r := by

@@ -15,7 +15,7 @@ variable {K : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
 variable {G H D : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [Group H] [TopologicalSpace H] [IsTopologicalGroup H] [CommGroup D] [Finite D]
 variable {T : LocalHeisenbergData H D}
-variable {V W : Type*} [AddCommGroup V] [Module ℂ V] [AddCommGroup W] [Module ℂ W]
+    {V W : Type*} [AddCommGroup V] [Module ℂ V] [AddCommGroup W] [Module ℂ W]
 
 def root (A : LocalBorelData (K := K) (G := G) T) : Multiplicative K →* G :=
   A.B.subtype.comp A.upperRoot
@@ -30,7 +30,7 @@ private theorem conjugate_root (A : LocalBorelData (K := K) (G := G) T)
     (h : H) (x : Multiplicative K) :
     ∃ y : Multiplicative K,
       (A.torus h : G) * root A x * (A.torus h : G)⁻¹ = root A y := by
-  let b : A.B := A.torus h * A.upperRoot x * (A.torus h)⁻¹
+  let b := A.torus h * A.upperRoot x * (A.torus h)⁻¹
   obtain ⟨y, hy⟩ := A.borel_decomposition b
   have hb : A.retract b = 1 := by
     simp [b, A.retract_torus, A.retract_upperRoot]

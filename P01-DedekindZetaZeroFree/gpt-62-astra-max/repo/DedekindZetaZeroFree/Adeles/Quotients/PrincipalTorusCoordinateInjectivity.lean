@@ -13,16 +13,15 @@ namespace DedekindZetaZeroFree.EisensteinReferenceSections.FrozenTorus
 open KPGlobalCubicIdelePairing
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
 
-open _root_.DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw renaming char_mem → char_mem
+open _root_.DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw (char_mem)
 
 theorem outside_good (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ A.Sf) :
     ¬ KPAdelicCoverRestrictedProduct.Bad F q := by
   intro hb
-  have hs : (6 : 𝓞 F) ∈ q.asIdeal := by
-    rcases hb with hb | hb
-    · exact q.asIdeal.mem_of_dvd (⟨3, by norm_num⟩ : (2 : 𝓞 F) ∣ 6) (char_mem F q 2 hb)
-    · exact q.asIdeal.mem_of_dvd (⟨2, by norm_num⟩ : (3 : 𝓞 F) ∣ 6) (char_mem F q 3 hb)
-  exact hq (A.above_six q hs)
+  refine hq (A.above_six q ?_)
+  rcases hb with hb | hb
+  · exact q.asIdeal.mem_of_dvd (⟨3, by norm_num⟩ : (2 : 𝓞 F) ∣ 6) (char_mem F q 2 hb)
+  · exact q.asIdeal.mem_of_dvd (⟨2, by norm_num⟩ : (3 : 𝓞 F) ∣ 6) (char_mem F q 3 hb)
 
 private theorem localPairing_one_left (v : KPHilbert.Place F) (a : LocalD F v) :
     localPairing F A.zeta12 A.primitive_zeta12 v 1 a = 1 := by
@@ -37,7 +36,7 @@ theorem supported_class_mem_unit (u : _root_.IdeleGroup F)
     classComparison F (QuotientGroup.mk' _ (_root_.IdeleGroup.equivAdeleRingUnits u))
       (Sum.inr q) ∈ U F (Sum.inr q) := by
   have hunit := (_root_.IdeleGroup.mem_supportedAt_iff
-    (K := F) (A.Sf : Set _) u).mp hu q hq
+     A.Sf u).mp hu q hq
   letI : ValuativeRel (q.adicCompletion F) :=
     ClassFieldTheory.finitePlaceCompletionValuativeRel F q
   letI : (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ))).Compatible :=
@@ -46,13 +45,11 @@ theorem supported_class_mem_unit (u : _root_.IdeleGroup F)
       z ∈ (ValuativeRel.valuation (q.adicCompletion F)).integer := by
     rw [Valuation.mem_integer_iff, ← Valuation.vle_one_iff]
     exact (Valuation.vle_one_iff
-      (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ)))).mpr hz
+      Valued.v).mpr hz
   let z := u.2 q
-  let b : KPHilbert.LocalIntegerUnits F q :=
-    ⟨⟨z.val, mem _ hunit.1⟩, ⟨z.inv, mem _ hunit.2⟩,
-      by apply Subtype.ext; exact z.val_inv,
-      by apply Subtype.ext; exact z.inv_val⟩
-  exact ⟨_, ⟨b, rfl⟩, rfl⟩
+  exact ⟨_, ⟨(⟨⟨z.val, mem _ hunit.1⟩, ⟨z.inv, mem _ hunit.2⟩,
+    by apply Subtype.ext; exact z.val_inv,
+    by apply Subtype.ext; exact z.inv_val⟩), rfl⟩, rfl⟩
 
 theorem principal_eq_one_of_frozen_coordinates
     (hCl : Subsingleton (ClassGroup A.R)) (d : D F)
@@ -69,9 +66,8 @@ theorem principal_eq_one_of_frozen_coordinates
       exists_supportedAt_mul_principalIdele_of_classGroup_subsingleton
         F A hCl (e.symm y)
     have hy' : y = e u * IdeleGroup.unitEmbedding (𝓞 F) F a := by
-      have h := congrArg e hy
       simpa only [e, MulEquiv.apply_symm_apply, map_mul,
-        _root_.IdeleGroup.equivAdeleRingUnits_principalIdele] using h
+        _root_.IdeleGroup.equivAdeleRingUnits_principalIdele] using (congrArg e hy)
     change beta3 F A.zeta12 A.primitive_zeta12 d (QuotientGroup.mk' _ y) = 1
     rw [hy', map_mul, (beta3_bilinear F A.zeta12 A.primitive_zeta12).2.1]
     have hp : beta3 F A.zeta12 A.primitive_zeta12 d

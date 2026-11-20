@@ -12,14 +12,12 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 4000000
 namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 open MomentSources TensorActionSource KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct ThetaExpansion
-open _root_.DedekindZetaZeroFree.ThetaExpansion renaming height_borel → height_borel
-open _root_.DedekindZetaZeroFree.ThetaExpansion renaming height_compact → height_compact
-open _root_.DedekindZetaZeroFree.ThetaExpansion renaming height_one → height_one
+open _root_.DedekindZetaZeroFree.ThetaExpansion (height_borel height_compact height_one)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 
 theorem scalarSource_has_compact_level (x : PlusCore R N P C) :
     ∃ U : KPGlobalTorusFunctionData.FiniteLevel F R.A.zeta12 R.A.primitive_zeta12,
@@ -33,13 +31,10 @@ theorem scalarSource_has_compact_level (x : PlusCore R N P C) :
   have hV : KPGlobalTorusFunctionData.globalLevel F R.A.zeta12 R.A.primitive_zeta12 V ≤ fullProductCompact R := by
     rw [EisensteinReferenceSections.SourceLevels.globalLevel_eq]
     exact EisensteinReferenceSections.SourceLevels.refined_compact_le R P C
-  have hWU : KPGlobalTorusFunctionData.globalLevel F R.A.zeta12 R.A.primitive_zeta12 W ≤
-      KPGlobalTorusFunctionData.globalLevel F R.A.zeta12 R.A.primitive_zeta12 U :=
-    Subgroup.map_mono inf_le_left
   have hWV : KPGlobalTorusFunctionData.globalLevel F R.A.zeta12 R.A.primitive_zeta12 W ≤
       KPGlobalTorusFunctionData.globalLevel F R.A.zeta12 R.A.primitive_zeta12 V :=
     Subgroup.map_mono inf_le_right
-  exact ⟨W, hWV.trans hV, fun g u h => hu g u (hWU h)⟩
+  exact ⟨W, hWV.trans hV, fun g u h => hu g u ((Subgroup.map_mono inf_le_left) h)⟩
 
 def sourceTwist (x : PlusCore R N P C) (s : ℂ) : Functions R :=
   fun g => Complex.exp (s * (iwasawaLogHeight R g : ℂ)) * scalarSourceEvaluator R N P C x g
@@ -89,9 +84,6 @@ def sourceFlat (x : PlusCore R N P C) :
     simp only [sourceTwist, ht, KPGlobalExceptionalParameter.realLogPower]
   · rw [sourceTwist_zero]
     exact scalarSource_kfinite R N P C x
-
-@[simp] theorem sourceFlat_zero (x : PlusCore R N P C) :
-    (sourceFlat R N P C x).val 0 = scalarSourceEvaluator R N P C x := sourceTwist_zero R N P C x
 
 theorem sourceFlat_value (x : PlusCore R N P C) (s : ℂ) (g : Group R) :
     (sourceFlat R N P C x).val s g =

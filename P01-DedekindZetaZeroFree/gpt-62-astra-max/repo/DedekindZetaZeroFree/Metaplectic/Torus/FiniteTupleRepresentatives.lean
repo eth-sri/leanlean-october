@@ -22,16 +22,22 @@ def FiniteRawRepresentatives (S : Finset (HeightOneSpectrum (𝓞 F)))
     ∀ q, q ∉ S → (R t).raw (Sum.inr q) = 1
 
 open KPAdelicCoverRestrictedProduct
- def localRaw (q : HeightOneSpectrum (𝓞 F))
-    (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
+ section
+
+variable (q : HeightOneSpectrum (𝓞 F)) (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
+
+def localRaw :
     KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q) :=
   KPLocalCover.centralInjection F ζ hζ (Sum.inr q) (ActualFiniteTorus.sheet F ζ hζ q t) *
     KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) (ActualFiniteTorus.coordinate F ζ hζ q t)
-private theorem localRaw_spec (q : HeightOneSpectrum (𝓞 F))
-    (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
+private theorem localRaw_spec :
     KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (localRaw F ζ hζ q t) = t.val := by
   rw [localRaw, map_mul]
   exact ((ActualFiniteTorus.actual_torus_normal_form F ζ hζ q).2.2.1 t).symm
+
+end
+
+alias FiniteTupleRepresentatives.localRaw_spec := localRaw_spec
 private theorem localRaw_diagonal (q : HeightOneSpectrum (𝓞 F))
     (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
     (localRaw F ζ hζ q t).g 1 0 = 0 ∧ (localRaw F ζ hζ q t).g 0 1 = 0 := by
@@ -39,14 +45,20 @@ private theorem localRaw_diagonal (q : HeightOneSpectrum (𝓞 F))
     KPLocalCover.projection, KubotaRankTwo.d, Matrix.mul_apply,
     MonoidHom.coe_mk, OneHom.coe_mk]
   exact ⟨rfl, rfl⟩
- def finiteRawTuple (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q) : RestrictedCover F ζ hζ :=
+
+alias FiniteTupleRepresentatives.localRaw_diagonal := localRaw_diagonal
+ section
+
+variable (S : Finset (HeightOneSpectrum (𝓞 F)))
+    (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
+
+def finiteRawTuple : RestrictedCover F ζ hζ :=
   ⟨fun v => match v with
     | Sum.inl _ => 1
     | Sum.inr q => if q ∈ S then localRaw F ζ hζ q (t q) else 1,
     by
       apply Filter.eventually_cofinite.mpr
-      apply (S.finite_toSet.image (Sum.inr : HeightOneSpectrum (𝓞 F) → KPHilbert.Place F)).subset
+      apply (S.finite_toSet.image Sum.inr).subset
       intro v hv
       cases v with
       | inl w => exact False.elim (hv (Subgroup.one_mem _))
@@ -58,8 +70,7 @@ private theorem localRaw_diagonal (q : HeightOneSpectrum (𝓞 F))
           change (if q ∈ S then localRaw F ζ hζ q (t q) else 1) ∈ compact F ζ hζ (Sum.inr q)
           rw [if_neg hq]
           exact (compact F ζ hζ (Sum.inr q)).one_mem⟩
-private theorem finiteRawTuple_diagonal (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
+private theorem finiteRawTuple_diagonal :
     restrictedProjection F ζ hζ (finiteRawTuple F ζ hζ S t) 1 0 = 0 ∧
       restrictedProjection F ζ hζ (finiteRawTuple F ζ hζ S t) 0 1 = 0 := by
   have hd (i j : Fin 2) (hij : i ≠ j) :
@@ -77,6 +88,10 @@ private theorem finiteRawTuple_diagonal (S : Finset (HeightOneSpectrum (𝓞 F))
         fin_cases i <;> fin_cases j <;> simp_all [localRaw_diagonal F ζ hζ q (t q)]
       · simp [hq, hij]
   exact ⟨hd 1 0 (by decide), hd 0 1 (by decide)⟩
+
+end
+
+alias FiniteTupleRepresentatives.finiteRawTuple_diagonal := finiteRawTuple_diagonal
 
 theorem finite_raw_representatives_exist
     (S : Finset (HeightOneSpectrum (𝓞 F))) :
@@ -109,7 +124,6 @@ theorem finite_raw_representatives_exist
     · intro q
       simp [extend, q.property]
     · intro q hq
-      change (if q ∈ S then localRaw F ζ hζ q (extend t q) else 1) = 1
       exact if_neg hq
   choose R hR using hpoint
   exact ⟨R, hR⟩

@@ -15,7 +15,11 @@ open Classical MeasureTheory DedekindZetaZeroFree.AbelianQuotient
 namespace DedekindZetaZeroFree.Hecke.Theta
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem summable_traceGaussian (J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
+section
+
+variable (J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
+
+private theorem summable_traceGaussian
     (z : NumberField.mixedEmbedding.euclidean.mixedSpace F) {a : ℝ} (ha : 0 < a) :
     Summable (fun l : {l : F // l ∈ (J : FractionalIdeal (𝓞 F)⁰ F)} =>
       Real.exp (-a * ‖z + Theta.traceEmbedding F l.val‖ ^ 2)) := by
@@ -31,19 +35,20 @@ private theorem summable_traceGaussian (J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
   have hs' := hs.comp_injective (i := f) hf
   exact hs'
 
-private theorem summable_scaledTraceGaussian (J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
+private theorem summable_scaledTraceGaussian
     (x : F) {r a : ℝ} (hr : 0 < r) (ha : 0 < a) :
     Summable (fun l : {l : F // l ∈ (J : FractionalIdeal (𝓞 F)⁰ F)} =>
       Real.exp (-a * ‖r • Theta.traceEmbedding F (x + l.val)‖ ^ 2)) := by
-  have hs := summable_traceGaussian J (Theta.traceEmbedding F x)
-    (mul_pos ha (sq_pos_of_pos hr))
-  convert hs using 1
+  convert (summable_traceGaussian J (Theta.traceEmbedding F x)
+    (mul_pos ha (sq_pos_of_pos hr))) using 1
   ext l
   rw [← Theta.traceEmbeddingIntLinearMap_apply, map_add]
   simp only [Theta.traceEmbeddingIntLinearMap_apply, norm_smul, Real.norm_eq_abs,
     abs_of_pos hr, mul_pow]
   congr 1
   ring
+
+end
 
 private theorem affineResidueScale_pos (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) :
     0 < affineResidueScale I := by
@@ -70,14 +75,11 @@ theorem affineResidueTheta_summable_norm (h : RayCoset.logHyperplane F) :
         (affineResidueScale I • Theta.traceEmbedding F (x.val + l.val)))‖) := by
   obtain ⟨P, c, hP, hc, hb⟩ := DedekindZetaZeroFree.thetaParityShapeBounds F ∅
     {h} (isCompact_singleton)
-  have ha : 0 < c * u ^ (2 / (Module.finrank ℚ F : ℝ)) :=
-    mul_pos hc (Real.rpow_pos_of_pos hu _)
-  have hs := (summable_scaledTraceGaussian (I * rayIdealFractionalIdeal F m hm)
-    x.val (affineResidueScale_pos I) ha).mul_left P
-  apply hs.of_norm_bounded
+  apply ((summable_scaledTraceGaussian (I * rayIdealFractionalIdeal F m hm)
+    x.val (affineResidueScale_pos I) (mul_pos hc (Real.rpow_pos_of_pos hu _))).mul_left P).of_norm_bounded
   intro l
   unfold RayTheta.q
-  simpa only [Real.norm_eq_abs, abs_norm, neg_mul, mul_assoc, one_div] using
+  simpa using
     (hb u hu h (Set.mem_singleton h) (affineResidueScale I •
       Theta.traceEmbedding F (x.val + l.val))).1
 
@@ -106,13 +108,10 @@ theorem affineResidueDualTheta_summable_norm (h : RayCoset.logHyperplane F) :
       Theta.traceConjugation F (Theta.traceEmbedding F β.val))).2
 
 theorem affineResidueTheta_continuous : Continuous (affineResidueTheta m hm I x u) := by
-  have hs : ∀ a : ℝ, 0 < a → Summable (fun l : L =>
-      Real.exp (-a * ‖affineResidueScale I • Theta.traceEmbedding F (x.val + l.val)‖ ^ 2)) :=
-    fun a ha => summable_scaledTraceGaussian (I * rayIdealFractionalIdeal F m hm)
-      x.val (affineResidueScale_pos I) ha
   have hc := AnalyticTailHelper.continuous_tsum_thetaParityShape F ∅ u hu
     (fun l : L => affineResidueScale I • Theta.traceEmbedding F (x.val + l.val))
-    hs (fun _ => (1 : ℂ)) (C := 1) (by positivity) (by intro l; simp)
+    (fun a ha => summable_scaledTraceGaussian (I * rayIdealFractionalIdeal F m hm)
+      x.val (affineResidueScale_pos I) ha) (fun _ => (1 : ℂ)) (C := 1) (by positivity) (by intro l; simp)
   unfold affineResidueTheta
   simpa only [one_mul] using hc
 
@@ -134,20 +133,19 @@ theorem affineResidueDualTheta_continuous :
 
 theorem affineResidueTheta_integrableOn :
     IntegrableOn (affineResidueTheta m hm I x u)
-      (RayCoset.rayUnitHalfOpenDomain F m hm) (Theta.normalizedLogHaar F) := by
-  exact ((affineResidueTheta_continuous m hm I x u hu).continuousOn.integrableOn_compact
+      (RayCoset.rayUnitHalfOpenDomain F m hm) (Theta.normalizedLogHaar F) := ((affineResidueTheta_continuous m hm I x u hu).continuousOn.integrableOn_compact
     (RayCoset.isCompact_closure_rayUnitHalfOpenDomain F m hm)).mono_set subset_closure
 
 theorem affineResidueDualTheta_integrableOn :
     IntegrableOn (affineResidueDualTheta m hm I x u)
-      (RayCoset.rayUnitHalfOpenDomain F m hm) (Theta.normalizedLogHaar F) := by
-  exact ((affineResidueDualTheta_continuous m hm I x u hu).continuousOn.integrableOn_compact
+      (RayCoset.rayUnitHalfOpenDomain F m hm) (Theta.normalizedLogHaar F) := ((affineResidueDualTheta_continuous m hm I x u hu).continuousOn.integrableOn_compact
     (RayCoset.isCompact_closure_rayUnitHalfOpenDomain F m hm)).mono_set subset_closure
 
+variable (y : {y : F // y ∈ (I : FractionalIdeal (𝓞 F)⁰ F)})
+    (hxy : x.val - y.val ∈ ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F))
+
+include hxy in
 theorem affineResidueTheta_congr
-    (y : {y : F // y ∈ (I : FractionalIdeal (𝓞 F)⁰ F)})
-    (hxy : x.val - y.val ∈
-      ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F))
     (h : RayCoset.logHyperplane F) :
     affineResidueTheta m hm I x u h = affineResidueTheta m hm I y u h := by
   let J := ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)
@@ -164,40 +162,33 @@ theorem affineResidueTheta_congr
   change x.val + (l.val - (x.val - y.val)) = y.val + l.val
   ring
 
+include hxy in
 theorem affineResidueDualTheta_congr
-    (y : {y : F // y ∈ (I : FractionalIdeal (𝓞 F)⁰ F)})
-    (hxy : x.val - y.val ∈
-      ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F))
     (h : RayCoset.logHyperplane F) :
     affineResidueDualTheta m hm I x u h = affineResidueDualTheta m hm I y u h := by
   unfold affineResidueDualTheta
   apply tsum_congr
   intro β
   congr 1
-  have hp := tracePhase_eq_one_of_mem_dual
-    ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)
-    (Units.ne_zero (I * rayIdealFractionalIdeal F m hm)) hxy β.property
   have ht : Algebra.trace ℚ F (x.val * β.val) =
       Algebra.trace ℚ F ((x.val - y.val) * β.val) +
         Algebra.trace ℚ F (y.val * β.val) := by
     rw [← map_add]
     congr 1
     ring
-  rw [ht, AddChar.map_add_eq_mul, hp, one_mul]
+  rw [ht, AddChar.map_add_eq_mul, (tracePhase_eq_one_of_mem_dual
+    ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)
+    (Units.ne_zero (I * rayIdealFractionalIdeal F m hm)) hxy β.property), one_mul]
 
-theorem affineResidueAverage_congr
-    (y : {y : F // y ∈ (I : FractionalIdeal (𝓞 F)⁰ F)})
-    (hxy : x.val - y.val ∈
-      ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)) :
+include hxy in
+theorem affineResidueAverage_congr :
     affineResidueAverage m hm I x u = affineResidueAverage m hm I y u := by
   unfold affineResidueAverage
   exact setIntegral_congr_fun (RayCoset.measurableSet_rayUnitHalfOpenDomain F m hm)
     (fun h _ => affineResidueTheta_congr m hm I x u hu y hxy h)
 
-theorem affineResidueDualAverage_congr
-    (y : {y : F // y ∈ (I : FractionalIdeal (𝓞 F)⁰ F)})
-    (hxy : x.val - y.val ∈
-      ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)) :
+include hxy in
+theorem affineResidueDualAverage_congr :
     affineResidueDualAverage m hm I x u = affineResidueDualAverage m hm I y u := by
   unfold affineResidueDualAverage
   exact setIntegral_congr_fun (RayCoset.measurableSet_rayUnitHalfOpenDomain F m hm)
@@ -218,7 +209,7 @@ theorem weightedIdealBlock_summable_norm (h : RayCoset.logHyperplane F) :
           ((FractionalIdeal.absNorm (I : FractionalIdeal (𝓞 F)⁰ F) : ℝ) ^
             (-1 / (Module.finrank ℚ F : ℝ)) • Theta.traceEmbedding F x.val))‖) := by
   have ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥ := top_ne_bot
-  have hz : (0 : F) ∈ (I : FractionalIdeal (𝓞 F)⁰ F) := I.val.coeToSubmodule.zero_mem
+  have hz := I.val.coeToSubmodule.zero_mem
   have hs := affineResidueTheta_summable_norm (⊤ : Ideal (𝓞 F)) ht I ⟨0, hz⟩ u hu h
   have hM : (I * rayIdealFractionalIdeal F (⊤ : Ideal (𝓞 F)) ht :
       FractionalIdeal (𝓞 F)⁰ F) = I.val := by simp
@@ -234,9 +225,8 @@ theorem weightedIdealBlock_summable_norm (h : RayCoset.logHyperplane F) :
   apply Summable.of_nonneg_of_le (fun x => norm_nonneg _) _ hs'
   intro x
   rw [norm_mul]
-  have hc := rayCharacter_norm_le_one F m hm η (integralElementIdeal I x)
   simpa [affineResidueScale, neg_div, one_div] using
-    mul_le_mul_of_nonneg_right hc (norm_nonneg (RayParity.gδ F ∅
+    mul_le_mul_of_nonneg_right (rayCharacter_norm_le_one F m hm η (integralElementIdeal I x)) (norm_nonneg (RayParity.gδ F ∅
      (RayParity.Q F (RayTheta.q F u h) (affineResidueScale I • Theta.traceEmbedding F x.val))))
 
 end Weighted

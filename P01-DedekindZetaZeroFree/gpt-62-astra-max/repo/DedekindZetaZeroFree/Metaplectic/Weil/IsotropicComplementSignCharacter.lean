@@ -14,18 +14,19 @@ namespace SArithmeticData
 
 variable {F : Type} [Field F] [NumberField F]
 
-def weilSProduct (A : SArithmeticData F)
-    (wInf : (v : InfinitePlace F) → v.Completionˣ → ℂ)
-    (wFin : (v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ → ℂ)
-    (x : A.G) : ℂ :=
+section
+
+variable (A : SArithmeticData F) (wInf : (v : InfinitePlace F) → v.Completionˣ → ℂ)
+    (wFin : (v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ → ℂ) (x : A.G)
+
+def weilSProduct : ℂ :=
   (∏ v : InfinitePlace F, wInf v (x.1 v)) *
     ∏ v : {v // v ∈ A.Sf}, wFin v (x.2 v)
 
-def weilSCorrection (A : SArithmeticData F)
-    (wInf : (v : InfinitePlace F) → v.Completionˣ → ℂ)
-    (wFin : (v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ → ℂ)
-    (x : A.G) : ℂ :=
+def weilSCorrection : ℂ :=
   (A.weilSProduct wInf wFin x⁻¹)⁻¹
+
+end
 
 def WeilSStructuralLaws (A : SArithmeticData F)
     (H : A.V → A.V → Fˣ) (σ : F →+* ℂ)
@@ -41,20 +42,23 @@ def WeilSStructuralLaws (A : SArithmeticData F)
         (QuotientGroup.mk' A.sixthPowers y) : Fˣ) : F) ^ 3 *
         A.weilSProduct wInf wFin (x * y))
 
-private theorem weilSProduct_one (A : SArithmeticData F)
-    (wInf : (v : InfinitePlace F) → v.Completionˣ → ℂ)
+section
+
+variable (A : SArithmeticData F) (wInf : (v : InfinitePlace F) → v.Completionˣ → ℂ)
     (wFin : (v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ → ℂ)
+
+private theorem weilSProduct_one
     (hInf : ∀ v, wInf v 1 = 1) (hFin : ∀ v, wFin v 1 = 1) :
     A.weilSProduct wInf wFin 1 = 1 := by
   simp [weilSProduct, hInf, hFin]
 
-private theorem weilSProduct_mul_sq (A : SArithmeticData F)
-    (wInf : (v : InfinitePlace F) → v.Completionˣ → ℂ)
-    (wFin : (v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ → ℂ)
+private theorem weilSProduct_mul_sq
     (hInf : ∀ v a t, wInf v (a * t ^ 2) = wInf v a)
     (hFin : ∀ v a t, wFin v (a * t ^ 2) = wFin v a) (x t : A.G) :
     A.weilSProduct wInf wFin (x * t ^ 2) = A.weilSProduct wInf wFin x := by
   simp [weilSProduct, hInf, hFin]
+
+end
 
 theorem weilSProduct_sign_of_structural_laws (A : SArithmeticData F)
     (H : A.V → A.V → Fˣ) (σ : F →+* ℂ)
@@ -98,15 +102,15 @@ theorem exists_weilBCharacter_of_structural_laws (A : SArithmeticData F)
         c ⟨QuotientGroup.mk' A.sixthPowers x, hx⟩ =
           A.weilSCorrection wInf wFin x) := by
   classical
-  let r : A.V → A.G := fun v => (QuotientGroup.mk'_surjective A.sixthPowers v).choose
+  let r := fun v => (QuotientGroup.mk'_surjective A.sixthPowers v).choose
   have hr (v : A.V) : QuotientGroup.mk' A.sixthPowers (r v) = v :=
     (QuotientGroup.mk'_surjective A.sixthPowers v).choose_spec
-  let W : A.V → ℂ := fun v => A.weilSProduct wInf wFin (r v)
+  let W := fun v => A.weilSProduct wInf wFin (r v)
   have hW (x : A.G) : W (QuotientGroup.mk' A.sixthPowers x) =
       A.weilSProduct wInf wFin x :=
     weilSProduct_eq_of_mk_eq A H σ wInf wFin h _ _ (hr _)
   have hWone : W 1 = 1 := by
-    simpa only [map_one] using (hW 1).trans (weilSProduct_one A wInf wFin h.1 h.2.1)
+    simpa using (hW 1).trans (weilSProduct_one A wInf wFin h.1 h.2.1)
   have hWmul (b d : B) : W ((b : A.V) * (d : A.V)) = W b * W d := by
     have hm := h.2.2.2.2.2 (r b) (r d)
     rw [hr, hr, hB.2.1 _ b.property _ d.property] at hm
@@ -119,8 +123,6 @@ theorem exists_weilBCharacter_of_structural_laws (A : SArithmeticData F)
     map_one' := by simp [hWone]
     map_mul' := by
       intro b d
-      change (W (((b * d)⁻¹ : B) : A.V))⁻¹ =
-        (W ((b⁻¹ : B) : A.V))⁻¹ * (W ((d⁻¹ : B) : A.V))⁻¹
       rw [mul_inv_rev, Subgroup.coe_mul, hWmul]
       exact mul_inv_rev (W (d⁻¹ : B)) (W (b⁻¹ : B)) }
   refine ⟨c, ?_, ?_⟩

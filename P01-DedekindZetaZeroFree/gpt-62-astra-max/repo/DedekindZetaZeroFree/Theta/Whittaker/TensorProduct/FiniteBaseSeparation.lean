@@ -23,15 +23,14 @@ theorem openCell_finite_base (a : InfiniteAdeleRing F)
         (c.val * archMatrixInsertion F ζ hζ g) =
     (openCellFiniteArgument F ζ hζ b * c).val * archMatrixInsertion F ζ hζ
       (fun w => weyl * upperUnipotent (archTraceCoordinates F ζ hζ a w) * g w) := by
-  have hc := (archMatrixInsertion_commutes_finite F ζ hζ g c).eq
-  rw [← hc, ← mul_assoc, openCell_arch_finite]
-  have hc' := (archMatrixInsertion_commutes_finite F ζ hζ
-    (fun w => weyl * upperUnipotent (archTraceCoordinates F ζ hζ a w) * g w) c).eq
+  rw [← ((archMatrixInsertion_commutes_finite F ζ hζ g c).eq), ← mul_assoc, openCell_arch_finite]
   simp only [Subgroup.coe_mul, openCellFiniteArgument]
-  rw [mul_assoc, hc', ← mul_assoc]
+  rw [mul_assoc, ((archMatrixInsertion_commutes_finite F ζ hζ
+    (fun w => weyl * upperUnipotent (archTraceCoordinates F ζ hζ a w) * g w) c).eq), ← mul_assoc]
 
-theorem finiteBase_fourier_separation (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) :
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K)
+
+theorem finiteBase_fourier_separation :
     ∃ (n : ℕ) (p : Fin n → (InfinitePlace F → ComplexGL2))
       (b : Fin n → ℂ) (h : Fin n → InfinitePlace F → KPLiteralTensor.harmonicPlus),
       ∀ (s : ℂ) (a : InfiniteAdeleRing F)
@@ -55,8 +54,7 @@ theorem finiteBase_fourier_separation (K : Subgroup (G F ζ hζ))
   simp only [openCellComplexAmplitude, Finset.prod_mul_distrib]
   ring
 
-theorem finiteBase_arch_integral_separation (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) :
+theorem finiteBase_arch_integral_separation :
     ∃ (n : ℕ) (p : Fin n → (InfinitePlace F → ComplexGL2))
       (b : Fin n → ℂ) (h : Fin n → InfinitePlace F → KPLiteralTensor.harmonicPlus),
       ∀ s : ℂ, s ∈ chamber → ∀ (t : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F)
@@ -79,17 +77,12 @@ theorem finiteBase_arch_integral_separation (K : Subgroup (G F ζ hζ))
   let d := fun i => b i * literalArchProduct F ζ hζ K f (openCellFiniteArgument F ζ hζ t * c) (p i) *
     literalFiniteDeformation F ζ hζ K hK s (openCellFiniteArgument F ζ hζ t * c) *
     star (adelicTraceCharacter F ((0,t) : KPAdeles F) : ℂ)
-  let k := fun i (a : InfiniteAdeleRing F) => ∏ w,
+  let k := fun i a => ∏ w,
     openCellComplexAmplitude s (h i w) (g w) (archTraceCoordinates F ζ hζ a w)
   have hk (i) := openCellComplexProduct_integral F ζ hζ s hs (h i) g
   have hi : ∀ i, Integrable (fun a => d i * k i a) (KPAdditiveHaar.archMeasure F) :=
     fun i => (hk i).1.const_mul _
-  have hident : (fun a : InfiniteAdeleRing F => f.val s
-      (KPRationalAdelicSplitting.pglW F ζ hζ * KPGlobalTorusFunctionData.N F ζ hζ (a,t) *
-        (c.val * archMatrixInsertion F ζ hζ g)) *
-      star (adelicTraceCharacter F ((a,t) : KPAdeles F) : ℂ)) =
-      (fun a => ∑ i, d i * k i a) := funext (fun a => he s a t c g)
-  rw [hident]
+  rw [(funext (fun a => he s a t c g))]
   refine ⟨integrable_finset_sum _ (fun i _ => hi i), ?_⟩
   rw [integral_finset_sum _ (fun i _ => hi i)]
   apply Finset.sum_congr rfl

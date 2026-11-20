@@ -14,8 +14,10 @@ noncomputable section
 set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
-theorem correctedPhaseGluing (A : SArithmeticData F)
-    (hCl : Subsingleton (ClassGroup A.R)) (σ : F →+* ℂ)
+variable (A : SArithmeticData F) (hCl : Subsingleton (ClassGroup A.R))
+
+include hCl in
+theorem correctedPhaseGluing (σ : F →+* ℂ)
     (H : A.V → A.V → Fˣ) (B : Subgroup A.V)
     (hB : A.IsSUnitIsotropicComplement H B)
     (h : A.WeilSStructuralLaws H σ A.complexWeilPhase
@@ -33,8 +35,8 @@ theorem correctedPhaseGluing (A : SArithmeticData F)
   intro y hy
   rw [hrecipe y hy, CubicWeilCorrection.cubicS_coe]
 
-theorem correctedWeilExtension (A : SArithmeticData F)
-    (hCl : Subsingleton (ClassGroup A.R)) (hS : A.ContainsTraceBadPlaces)
+include hCl in
+theorem correctedWeilExtension (hS : A.ContainsTraceBadPlaces)
     (σ : F →+* ℂ) (H : A.V → A.V → Fˣ) (B : Subgroup A.V)
     (hActual : ∀ x y : A.G, H (QuotientGroup.mk' A.sixthPowers x)
       (QuotientGroup.mk' A.sixthPowers y) = (A.H_S x y : Fˣ))
@@ -48,10 +50,6 @@ theorem correctedWeilExtension (A : SArithmeticData F)
     finiteOrder := D.finiteOrder
     unramified := D.unramified
     infinity := classCharacterExtension_infinity A B φ D
-    stabilized := finiteQuadraticStabilizes_free A
-    normalizer_ne_zero := finiteGamma_one_ne_zero_free A
-    structural := actualWeilSStructuralLaws A σ H hActual
-    local_recipe := fun y hy => hrecipe y hy
     prime := ?_ }⟩
   intro I v hIv p hp a ha hap x hx
   have hideal := (localArithmeticLaws A D.ideleCharacter D.continuous D.unramified).1

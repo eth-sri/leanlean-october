@@ -12,20 +12,26 @@ namespace DedekindZetaZeroFree.KPClearedResolvent
 open MeasureTheory
 open KPContLocalNorm
 
-def GraphHolomorphicOn {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
+section
+
+variable {H : Type*} [NormedAddCommGroup H]
+
+def GraphHolomorphicOn [NormedSpace ℂ H]
     (Δ : H →ₗ.[ℂ] H) (w F : ℂ → H) (O : Set ℂ) : Prop :=
   ∃ g : ℂ → Δ.graph, DifferentiableOn ℂ g O ∧
     ∀ s ∈ O, (g s : H × H) = (w s, F s)
 
-def parameterPoleSet {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+def parameterPoleSet [InnerProductSpace ℂ H]
     (Δ : H →ₗ.[ℂ] H) (d : ℕ) : Set ℂ :=
   {s | KPContinuation.spectralCoordinate (d : ℤ) s ∈
     KPBelowThresholdResolvent.poleSet Δ (d : ℝ)}
 
-def correction {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+def correction [InnerProductSpace ℂ H]
     (d : ℕ) (baseInverse : H →L[ℂ] H) (h : ℂ → H) (s : ℂ) : H :=
   KPResolventPencil.shiftedResolvent baseInverse
     (KPContinuation.spectralCoordinate (d : ℤ) s) (h s)
+
+end
 
 def RightSmoothHolomorphicOn {m b : ℕ} (T : LocalBall m)
     (fields : Fin b → Space m → Space m) (u : ℂ → Space m → ℂ)
@@ -40,31 +46,27 @@ def RightSmoothHolomorphicOn {m b : ℕ} (T : LocalBall m)
 
 end KPClearedResolvent
 
-private lemma cleared_graph_projection {H : Type*} [NormedAddCommGroup H]
-    [InnerProductSpace ℂ H] [CompleteSpace H]
-    (Δ : H →ₗ.[ℂ] H) (hc : Δ.IsClosed) :
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H] (Δ : H →ₗ.[ℂ] H)
+
+private lemma cleared_graph_projection (hc : Δ.IsClosed) :
     ∃ P : (H × H) →L[ℂ] Δ.graph, ∀ x : Δ.graph, P x = x := by
   let e := WithLp.prodContinuousLinearEquiv 2 ℂ H H
   let K := Δ.graph.comap e.toLinearEquiv.toLinearMap
-  have hK : IsClosed (K : Set (WithLp 2 (H × H))) := hc.preimage e.continuous
+  have hK := hc.preimage e.continuous
   letI : IsClosed (K : Set (WithLp 2 (H × H))) := hK
   letI : CompleteSpace K := IsClosed.completeSpace_coe
-  let L : K →L[ℂ] Δ.graph :=
+  let L :=
     (e.toContinuousLinearMap.comp K.subtypeL).codRestrict Δ.graph (fun x => x.property)
   refine ⟨(L.comp K.orthogonalProjectionOnto).comp e.symm.toContinuousLinearMap, ?_⟩
   intro x
-  have hx : e.symm (x : H × H) ∈ K := by
-    change e (e.symm (x : H × H)) ∈ Δ.graph
-    simpa using x.property
-  have hp := K.orthogonalProjectionOnto_mem_subspace_eq_self ⟨e.symm x, hx⟩
+  have hp := K.orthogonalProjectionOnto_mem_subspace_eq_self ⟨e.symm x, by
+    exact x.property⟩
   change L (K.orthogonalProjectionOnto (e.symm x)) = x
   rw [hp]
   apply Subtype.ext
   exact e.apply_symm_apply x
 
-theorem kp_cont_local_cleared_resolvent
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (Δ : H →ₗ.[ℂ] H) (hclosed : Δ.IsClosed)
+theorem kp_cont_local_cleared_resolvent (hclosed : Δ.IsClosed)
     (d : ℕ) (hd : 0 < d) (baseInverse : H →L[ℂ] H)
     (s₀ : ℂ) (r : ℝ) (hr : 0 < r)
     (hΩ : Metric.ball s₀ r ⊆ KPContinuation.spectralDomain)
@@ -90,13 +92,12 @@ theorem kp_cont_local_cleared_resolvent
   let O := Metric.ball s₀ r
   let S := KPClearedResolvent.parameterPoleSet Δ d
   let a := KPContinuation.spectralCoordinate (d : ℤ)
-  let F : ℂ → H := fun s => a s • w s + q s • h s
-  let p : ℂ → H × H := fun s => (w s, F s)
+  let F := fun s => a s • w s + q s • h s
+  let p := fun s => (w s, F s)
   have ha : Differentiable ℂ a := by
     change Differentiable ℂ (fun s : ℂ => (d : ℂ) * (1 - ((1 : ℂ) / 3 + 2 * s) ^ 2))
     fun_prop
-  have hF : DifferentiableOn ℂ F O := (ha.differentiableOn.smul hw).add (hq.smul hh)
-  have hp : DifferentiableOn ℂ p O := hw.prodMk hF
+  have hp := hw.prodMk ((ha.differentiableOn.smul hw).add (hq.smul hh))
   have hoff : Set.MapsTo p (O \ S) Δ.graph := by
     intro s hs
     rcases hR s hs with ⟨hdom, heq, _⟩
@@ -107,7 +108,7 @@ theorem kp_cont_local_cleared_resolvent
       change Δ ⟨v, hv⟩ - a s • v = h s at he
       simpa only [add_comm] using (sub_eq_iff_eq_add.mp he)
     have hweq : w s = q s • v := hclears s hs
-    have hwdom : w s ∈ Δ.domain := hweq ▸ Δ.domain.smul_mem (q s) hv
+    have hwdom := hweq ▸ Δ.domain.smul_mem (q s) hv
     apply Δ.mem_graph_iff'.mpr
     refine ⟨⟨w s, hwdom⟩, ?_⟩
     apply Prod.ext
@@ -119,18 +120,14 @@ theorem kp_cont_local_cleared_resolvent
       rw [hweq, smul_add]
       congr 1
       exact smul_comm (q s) (a s) v
-  have hc : (O ∩ S).Countable := IsLindelof.of_coe.countable_of_isDiscrete hdiscrete
-  have hdense : Dense (O ∩ S)ᶜ := hc.dense_compl ℂ
   have hmem : ∀ s ∈ O, p s ∈ Δ.graph := by
     intro s hs
     have hcl : s ∈ closure (O \ S) := by
-      have ht := Metric.isOpen_ball.inter_closure ⟨hs, hdense s⟩
+      have ht := Metric.isOpen_ball.inter_closure ⟨hs, ((IsLindelof.of_coe.countable_of_isDiscrete hdiscrete).dense_compl ℂ) s⟩
       apply closure_mono _ ht
       intro t ht
       exact ⟨ht.1, fun hS => ht.2 ⟨ht.1, hS⟩⟩
-    have hcp : ContinuousWithinAt p (O \ S) s :=
-      (hp.continuousOn s hs).mono Set.diff_subset
-    have ht := hcp.mem_closure hcl hoff
+    have ht := ((hp.continuousOn s hs).mono Set.diff_subset).mem_closure hcl hoff
     rwa [hclosed.closure_eq] at ht
   constructor
   · intro s hs
@@ -143,8 +140,7 @@ theorem kp_cont_local_cleared_resolvent
   · rcases cleared_graph_projection Δ hclosed with ⟨P, hP⟩
     refine ⟨fun s => P (p s), P.differentiable.comp_differentiableOn hp, ?_⟩
     intro s hs
-    have he := hP ⟨p s, hmem s hs⟩
-    exact congrArg Subtype.val he
+    exact congrArg Subtype.val (hP ⟨p s, hmem s hs⟩)
 
 end DedekindZetaZeroFree
 

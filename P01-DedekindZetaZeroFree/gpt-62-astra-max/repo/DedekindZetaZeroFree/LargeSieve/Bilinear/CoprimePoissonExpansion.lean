@@ -21,7 +21,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly
 open ExplicitTerms
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 def originalBlock (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
   C.pairSum fun p hp => C.coefficient p *
@@ -34,19 +34,7 @@ def originalTailBlock (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
       C.primitive p hp a * C.originalRemainder ((c * C.d) * (p.1 * p.2))
         (Real.sqrt (C.M / norm a)) (C.Y2 B) (C.Z2 B) C.L2
 
-private lemma compact_sq (h : ℝ → ℂ) (hc : HasCompactSupport h) :
-    HasCompactSupport (fun t : ℝ => h (t ^ 2)) := by
-  obtain ⟨r, hr⟩ := Metric.isBounded_iff_subset_closedBall (0 : ℝ) |>.mp hc.isBounded
-  apply HasCompactSupport.of_support_subset_isCompact
-    (K := Set.Icc (-(|r| + 1)) (|r| + 1)) isCompact_Icc
-  intro t ht
-  have hmem : t ^ 2 ∈ tsupport h := subset_tsupport h ht
-  have hbound : |t ^ 2| ≤ r := by
-    have := hr hmem
-    simpa [Metric.mem_closedBall, dist_zero_right] using this
-  have : t ^ 2 ≤ |r| := le_trans (le_abs_self _) (hbound.trans (le_abs_self _))
-  constructor <;> nlinarith [sq_nonneg (t + (|r| + 1)),
-    sq_nonneg (t - (|r| + 1)), abs_nonneg r]
+private alias compact_sq := LocalTailAux.PairEnergyAndUniformTailBounds.compact_sq
 
 private lemma rho_eq_divisor_sum (j : Ideal (𝓞 F)) (hj : j ≠ ⊥) :
     (sigma4Rho j : ℂ) = ∑ d ∈ idealDivisors j,
@@ -55,55 +43,18 @@ private lemma rho_eq_divisor_sum (j : Ideal (𝓞 F)) (hj : j ≠ ⊥) :
   simp only [idealEulerDeletion, Complex.cpow_neg_one, ← div_eq_mul_inv] at he
   rw [he, sigma4Rho, badPrimes]
   push_cast
-  simp only [one_div]
+  simp
 
-private lemma sum_cut {α : Type*} (s : Finset α) (n : α → ℝ) (Z : ℝ)
-    (f : α → ℂ) :
-    ∑ d ∈ s, f d = (∑ d ∈ s.filter (fun d => n d ≤ Z), f d) +
-      ∑ d ∈ s.filter (fun d => Z < n d), f d := by
-  simpa only [not_le] using
-    (Finset.sum_filter_add_sum_filter_not s (fun d => n d ≤ Z) f).symm
+private alias sum_cut := DedekindZetaZeroFree.LargeSieve.ReflectedCoprimeTruncation.ReflectedCoprimeTruncation.sum_cut
 
-private lemma sum_band {α : Type*} (s : Finset α) (n : α → ℝ) (Y Z : ℝ)
-    (hYZ : Y ≤ Z) (f : α → ℂ) :
-    (∑ d ∈ s.filter (fun d => n d ≤ Z), f d) =
-      (∑ d ∈ s.filter (fun d => n d ≤ Y), f d) +
-      ∑ d ∈ s.filter (fun d => Y < n d ∧ n d ≤ Z), f d := by
-  have h := sum_cut (s.filter (fun d => n d ≤ Z)) n Y f
-  have h₁ : (s.filter (fun d => n d ≤ Z)).filter (fun d => n d ≤ Y) =
-      s.filter (fun d => n d ≤ Y) := by
-    ext d; simp only [Finset.mem_filter]; constructor
-    · tauto
-    · intro hd; exact ⟨⟨hd.1, hd.2.trans hYZ⟩, hd.2⟩
-  have h₂ : (s.filter (fun d => n d ≤ Z)).filter (fun d => Y < n d) =
-      s.filter (fun d => Y < n d ∧ n d ≤ Z) := by
-    ext d; simp only [Finset.mem_filter]; tauto
-  rwa [h₁, h₂] at h
+private alias sum_band := DedekindZetaZeroFree.LargeSieve.ReflectedCoprimeTruncation.ReflectedCoprimeTruncation.sum_band
 
 private lemma dual_split (k : ℝ → ℂ) (T L : ℝ) (d : Ideal (𝓞 F))
     (hs : Summable (ReflectedTails.dualSummand F k T d)) :
     (∑' b, ReflectedTails.dualSummand F k T d b) =
       (∑ b ∈ (boundedNormIdeals F L).filter (fun b => b ≠ ⊥),
         k (T * (Ideal.absNorm b : ℝ) / (Ideal.absNorm d : ℝ))) +
-      ∑' b, ReflectedTails.dualCutoffSummand F k T L d b := by
-  let s := (boundedNormIdeals F L).filter (fun b => b ≠ ⊥)
-  have heq : (fun b => ReflectedTails.dualCutoffSummand F k T L d b) =
-      (fun b => if b ∈ s then 0 else ReflectedTails.dualSummand F k T d b) := by
-    funext b
-    simp only [s, Finset.mem_filter, mem_boundedNormIdeals,
-      ReflectedTails.dualCutoffSummand, ReflectedTails.dualSummand]
-    by_cases hb : b = ⊥ <;> by_cases hL : (Ideal.absNorm b : ℝ) ≤ L <;>
-      simp [hb, hL, not_lt_of_ge, lt_of_not_ge]
-  have ht : (∑' b, if b ∈ s then 0 else ReflectedTails.dualSummand F k T d b) =
-      ∑' b : {b // b ∉ s}, ReflectedTails.dualSummand F k T d b := by
-    convert (tsum_subtype ({b | b ∉ s} : Set (Ideal (𝓞 F)))
-      (ReflectedTails.dualSummand F k T d)).symm using 1 <;>
-      try simp only [Set.indicator, Set.mem_setOf_eq, ite_not]
-    rfl
-  rw [heq, ht, ← hs.sum_add_tsum_subtype_compl s]
-  congr 1
-  exact Finset.sum_congr rfl (fun b hb => by
-    simp [ReflectedTails.dualSummand, (Finset.mem_filter.mp hb).2])
+      ∑' b, ReflectedTails.dualCutoffSummand F k T L d b := by apply @DedekindZetaZeroFree.LargeSieve.ReflectedCoprimeTruncation.ReflectedCoprimeTruncation.dual_split <;> assumption
 
 private lemma row_identity (C : Context Q) (m f a : Ideal (𝓞 F))
     (hmf : m * f ≠ ⊥) (hM : 0 < C.M) (ha : 0 < norm a)
@@ -148,7 +99,8 @@ private lemma row_identity (C : Context Q) (m f a : Ideal (𝓞 F))
       (if principalComplexPlaces F = 1 then principalPoleCoefficient F C.hF * g 0 / 2 else 0) +
       (u : ℂ) * ∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else k (u * (Ideal.absNorm I : ℝ)) at hp
     simpa [hmass, g, C.source_zero] using hp
-  have hsdual : ∀ d ∈ idealDivisors (m * f),
+  let idealDivisors₀ := idealDivisors (m * f)
+  have hsdual : ∀ d ∈ idealDivisors₀,
       Summable (ReflectedTails.dualSummand F k T d) := by
     intro d hd
     have hdpos : 0 < ExplicitTerms.norm d := by
@@ -167,8 +119,8 @@ private lemma row_identity (C : Context Q) (m f a : Ideal (𝓞 F))
     dsimp only [ExplicitTerms.norm]
     ring
   have hfull : squareWeightSeries m f C.source C.M a =
-      A * (∑ d ∈ idealDivisors (m * f), q d) +
-        ∑ d ∈ idealDivisors (m * f), du d := by
+      A * (∑ d ∈ idealDivisors₀, q d) +
+        ∑ d ∈ idealDivisors₀, du d := by
     have heq : ∀ I : Ideal (𝓞 F),
         (Ideal.absNorm a : ℝ) * (Ideal.absNorm I : ℝ) ^ 2 / C.M =
           ((Ideal.absNorm I : ℝ) / T) ^ 2 := by
@@ -198,15 +150,15 @@ private lemma row_identity (C : Context Q) (m f a : Ideal (𝓞 F))
       zero_mul, add_zero] at hp
     rw [hp]
     change C.kappa * (T : ℂ) * Vendor.originMellinH g 1 *
-        (∑ d ∈ idealDivisors (m * f), q d) +
-        (∑ d ∈ idealDivisors (m * f), mu d * ((T : ℂ) / (Ideal.absNorm d : ℂ)) *
+        (∑ d ∈ idealDivisors₀, q d) +
+        (∑ d ∈ idealDivisors₀, mu d * ((T : ℂ) / (Ideal.absNorm d : ℂ)) *
           ∑' I, ReflectedTails.dualSummand F k T d I) = _
     rw [hmass]
     rfl
   have hlarge : ReflectedTails.primalTail F g T
-      ((idealDivisors (m * f)).filter (fun d => Z < ExplicitTerms.norm d)) mu =
-      A * (∑ d ∈ (idealDivisors (m * f)).filter (fun d => Z < ExplicitTerms.norm d), q d) +
-      ∑ d ∈ (idealDivisors (m * f)).filter (fun d => Z < ExplicitTerms.norm d), du d := by
+      ((idealDivisors₀).filter (fun d => Z < ExplicitTerms.norm d)) mu =
+      A * (∑ d ∈ (idealDivisors₀).filter (fun d => Z < ExplicitTerms.norm d), q d) +
+      ∑ d ∈ (idealDivisors₀).filter (fun d => Z < ExplicitTerms.norm d), du d := by
     simp only [ReflectedTails.primalTail, Finset.mul_sum, ← Finset.sum_add_distrib]
     apply Finset.sum_congr rfl
     intro d hd
@@ -236,11 +188,11 @@ private lemma row_identity (C : Context Q) (m f a : Ideal (𝓞 F))
     dsimp only [ExplicitTerms.norm]
     simp only [Complex.ofReal_div, Complex.ofReal_natCast]
     ring
-  have hdusplit : (∑ d ∈ (idealDivisors (m * f)).filter
+  have hdusplit : (∑ d ∈ (idealDivisors₀).filter
       (fun d => Y < ExplicitTerms.norm d ∧ ExplicitTerms.norm d ≤ Z), du d) =
       Context.middle k (m * f) T Y Z L +
       ReflectedTails.dualCutoffTail F k T L
-        ((idealDivisors (m * f)).filter
+        ((idealDivisors₀).filter
           (fun d => Y < ExplicitTerms.norm d ∧ ExplicitTerms.norm d ≤ Z)) mu := by
     unfold Context.middle ReflectedTails.dualCutoffTail
     rw [← Finset.sum_add_distrib]
@@ -261,19 +213,19 @@ private lemma row_identity (C : Context Q) (m f a : Ideal (𝓞 F))
       apply Finset.sum_congr rfl; intro b _; rw [mul_comm T]
     rw [heq]
     dsimp [mu]; ring
-  have hdu := sum_cut (idealDivisors (m * f)) (fun d => ExplicitTerms.norm d) Z du
-  have hband := sum_band (idealDivisors (m * f)) (fun d => ExplicitTerms.norm d) Y Z hYZ du
+  have hdu := sum_cut (idealDivisors₀) (fun d => ExplicitTerms.norm d) Z du
+  have hband := sum_band (idealDivisors₀) (fun d => ExplicitTerms.norm d) Y Z hYZ du
   rw [hfull, hdu, hband, hdusplit, rho_eq_divisor_sum (m * f) hmf]
   change _ = A * _ - A * _ + Context.middle k (m * f) T Y Z L +
     (ReflectedTails.primalTail F g T _ mu + ReflectedTails.smallDualTail F k T _ mu + _)
   rw [hlarge]
   unfold Context.largeDensity ReflectedTails.smallDualTail
-  change _ = A * (∑ d ∈ idealDivisors (m * f), q d) -
-    A * (∑ d ∈ (idealDivisors (m * f)).filter (fun d => Z < ExplicitTerms.norm d), q d) +
+  change _ = A * (∑ d ∈ idealDivisors₀, q d) -
+    A * (∑ d ∈ (idealDivisors₀).filter (fun d => Z < ExplicitTerms.norm d), q d) +
     Context.middle k (m * f) T Y Z L +
-    (A * (∑ d ∈ (idealDivisors (m * f)).filter (fun d => Z < ExplicitTerms.norm d), q d) +
-      (∑ d ∈ (idealDivisors (m * f)).filter (fun d => Z < ExplicitTerms.norm d), du d) +
-      (∑ d ∈ (idealDivisors (m * f)).filter (fun d => ExplicitTerms.norm d ≤ Y), du d) + _)
+    (A * (∑ d ∈ (idealDivisors₀).filter (fun d => Z < ExplicitTerms.norm d), q d) +
+      (∑ d ∈ (idealDivisors₀).filter (fun d => Z < ExplicitTerms.norm d), du d) +
+      (∑ d ∈ (idealDivisors₀).filter (fun d => ExplicitTerms.norm d ≤ Y), du d) + _)
   ring
 
 theorem compact_block_match (C : Context Q) (B : ℝ) (unit : Bool)
@@ -281,7 +233,7 @@ theorem compact_block_match (C : Context Q) (B : ℝ) (unit : Bool)
     originalBlock C B unit =
       Tprime C B unit - E4 C B unit + E5 C B unit + originalTailBlock C B unit := by
   have hMpos : 0 < C.M := by linarith
-  have hMN : 1 ≤ C.M * C.N := one_le_mul_of_one_le_of_one_le hM hN
+  have hMN := one_le_mul_of_one_le_of_one_le hM hN
   have hpow : Real.rpow (C.M * C.N) (-C.δ) ≤ Real.rpow (C.M * C.N) C.δ :=
     Real.rpow_le_rpow_of_exponent_le hMN (by linarith)
   have hYZ : C.Y2 B ≤ C.Z2 B := by
@@ -299,7 +251,7 @@ theorem compact_block_match (C : Context Q) (B : ℝ) (unit : Bool)
         (Finset.mem_filter.mp ha).1).2.2.1
       change 0 < (Ideal.absNorm a : ℝ)
       linarith
-    · have ha' : a = ⊤ := Finset.mem_singleton.mp (Finset.mem_filter.mp ha).1
+    · have ha' := Finset.mem_singleton.mp (Finset.mem_filter.mp ha).1
       subst a
       simp [ExplicitTerms.norm]
   have hc0 : c ≠ ⊥ := by simpa only [C.core] using C.D.bad_ne_bot
@@ -353,9 +305,13 @@ namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly
 open ExplicitTerms
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
-private lemma col_mem (C : Context Q) {u : Ideal (𝓞 F)}
+variable (C : Context Q)
+
+local notation "IntegerIdeal" => Ideal (𝓞 F)
+
+private lemma col_mem {u : IntegerIdeal}
     (h : C.d * u ∈ Sieve.paperShell F c C.N) (hg : Q.cls (C.d * u) = C.g) :
     u ∈ C.columns := by
   obtain ⟨hs, hc, hl, hr⟩ := (Sieve.mem_paperShell F c C.N _).mp h
@@ -370,7 +326,7 @@ private lemma col_mem (C : Context Q) {u : Ideal (𝓞 F)}
   · exact top_unique (hc.symm.trans_le (sup_le_sup_right Ideal.mul_le_right c))
   · exact (le_div_iff₀ hdpos).mpr (by rw [mul_comm]; exact hn ▸ hr)
 
-private lemma valid_of_original (C : Context Q) {u v : Ideal (𝓞 F)}
+private lemma valid_of_original {u v : IntegerIdeal}
     (hu : C.d * u ∈ Sieve.paperShell F c C.N)
     (hv : C.d * v ∈ Sieve.paperShell F c C.N)
     (hne : C.d * u ≠ C.d * v) (hgcd : C.d * u ⊔ C.d * v = C.d)
@@ -381,47 +337,45 @@ private lemma valid_of_original (C : Context Q) {u v : Ideal (𝓞 F)}
     (by rw [hgcd]) (by rw [hgcd])
   rw [hgcd] at hstrip
   obtain ⟨-, hus, hvs, huv, hdu, hdv⟩ := hstrip
-  have huc : u ⊔ c = ⊤ := top_unique (hcu.symm.trans_le (sup_le_sup_right Ideal.mul_le_right c))
-  have hvc : v ⊔ c = ⊤ := top_unique (hcv.symm.trans_le (sup_le_sup_right Ideal.mul_le_right c))
-  have hduv : C.d ⊔ u * v = ⊤ := Ideal.isCoprime_iff_sup_eq.mp
-    ((Ideal.isCoprime_iff_sup_eq.mpr hdu).mul_right (Ideal.isCoprime_iff_sup_eq.mpr hdv))
+  have huc := top_unique (hcu.symm.trans_le (sup_le_sup_right Ideal.mul_le_right c))
+  have hvc := top_unique (hcv.symm.trans_le (sup_le_sup_right Ideal.mul_le_right c))
   have hquot : Q.cls u = Q.cls v := by
     letI := Q.instGroup
-    apply mul_left_cancel (a := Q.cls C.d)
+    apply mul_left_cancel
     rw [← Q.cls_mul C.d u C.hdc huc, ← Q.cls_mul C.d v C.hdc hvc]
     exact hclass
   refine ⟨SquarefreeGcd.ne_bot_of_squarefree hus, SquarefreeGcd.ne_bot_of_squarefree hvs,
-    hus, hvs, huc, hvc, hsu, hsv, hcu, hcv, huv, hduv, hclass, hquot, ?_⟩
+    hus, hvs, huc, hvc, hsu, hsv, hcu, hcv, huv, (Ideal.isCoprime_iff_sup_eq.mp
+      ((Ideal.isCoprime_iff_sup_eq.mpr hdu).mul_right (Ideal.isCoprime_iff_sup_eq.mpr hdv))), hclass, hquot, ?_⟩
   intro htop
   have hut : u = ⊤ := top_unique (htop.symm.trans_le Ideal.mul_le_left)
   have hvt : v = ⊤ := top_unique (htop.symm.trans_le Ideal.mul_le_right)
   exact hne (by rw [hut, hvt])
 
-private lemma original_of_valid (C : Context Q) {p : Ideal (𝓞 F) × Ideal (𝓞 F)}
+private lemma original_of_valid {p : IntegerIdeal × IntegerIdeal}
     (hp : C.ValidPair p) : C.d * p.1 ≠ C.d * p.2 ∧
       C.d * p.1 ⊔ C.d * p.2 = C.d := by
   refine ⟨?_, ?_⟩
   · intro he
-    have huv : p.1 = p.2 := mul_left_cancel₀ C.hd0 he
+    have huv := mul_left_cancel₀ C.hd0 he
     have hut : p.1 = ⊤ := by simpa [← huv] using hp.huv
     exact hp.offDiagonal (by rw [← huv, hut, Ideal.top_mul])
   · rw [← Ideal.mul_sup, hp.huv, Ideal.mul_top]
 
-private lemma row_zero (C : Context Q) {p : Ideal (𝓞 F) × Ideal (𝓞 F)}
-    (hp : C.ValidPair p) {a : Ideal (𝓞 F)} (hac : a ⊔ c = ⊤)
+private lemma row_zero {p : IntegerIdeal × IntegerIdeal}
+    (hp : C.ValidPair p) {a : IntegerIdeal} (hac : a ⊔ c = ⊤)
     (had : a ⊔ C.d ≠ ⊤) : (Q.χ (C.d * p.1)) a = 0 := by
-  have hind : C.d * p.1 ∣ Q.cond (C.d * p.1) := by
-    have h := C.D.all_index_dvd (C.d * p.1) hp.hdu hp.hduc
-    rw [C.core] at h
-    exact (Ideal.isCoprime_iff_sup_eq.mpr hp.hduc).dvd_of_dvd_mul_right h
   apply (quadraticFamily_eq_zero_iff Q hp.hdu hp.hduc a).mpr
   right
   intro hcond
   apply had
-  exact top_unique (hcond.symm.trans_le (sup_le_sup_left
-    (Ideal.le_of_dvd (dvd_trans (dvd_mul_right C.d p.1) hind)) a))
+  refine top_unique (hcond.symm.trans_le (sup_le_sup_left
+    (Ideal.le_of_dvd (dvd_trans (dvd_mul_right C.d p.1) ?_)) a))
+  have h := C.D.all_index_dvd (C.d * p.1) hp.hdu hp.hduc
+  rw [C.core] at h
+  exact (Ideal.isCoprime_iff_sup_eq.mpr hp.hduc).dvd_of_dvd_mul_right h
 
-private lemma weight_outside (C : Context Q) (hM : 1 ≤ C.M) {a : Ideal (𝓞 F)}
+private lemma weight_outside (hM : 1 ≤ C.M) {a : IntegerIdeal}
     (ha : a ∉ boundedNormIdeals F ((5 / 2) * C.M)) :
     C.source ((Ideal.absNorm a : ℝ) / C.M) = 0 := by
   apply Complex.ofReal_eq_zero.mpr
@@ -429,12 +383,11 @@ private lemma weight_outside (C : Context Q) (hM : 1 ≤ C.M) {a : Ideal (𝓞 F
   intro hx
   apply ha
   apply mem_boundedNormIdeals.mpr
-  have hm : 0 < C.M := lt_of_lt_of_le one_pos hM
-  have := (div_le_iff₀ hm).mp hx.2
+  have := (div_le_iff₀ (lt_of_lt_of_le one_pos hM)).mp hx.2
   linarith
 
-private lemma rows_match (C : Context Q) (hM : 1 ≤ C.M)
-    (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : C.ValidPair p) :
+private lemma rows_match (hM : 1 ≤ C.M)
+    (p : IntegerIdeal × IntegerIdeal) (hp : C.ValidPair p) :
     (∑ a ∈ Sieve.kernelRows F c C.M C.K,
       (C.W ((Ideal.absNorm a : ℝ) / C.M) : ℂ) *
         (Q.χ (C.d * p.1)) a * starRingEnd ℂ ((Q.χ (C.d * p.2)) a)) =
@@ -489,11 +442,11 @@ private lemma rows_match (C : Context Q) (hM : 1 ≤ C.M)
     · simp [S4allTerm, S4Term, hcd, show ¬(a ≠ ⊥ ∧ a ⊔ c * C.d = ⊤ ∧ sc c a ≤ C.K)
         from fun h => hcd ⟨h.1, h.2.1⟩]
 
- def originalPairs (C : Context Q) : Finset (Ideal (𝓞 F) × Ideal (𝓞 F)) :=
+ def originalPairs : Finset (IntegerIdeal × IntegerIdeal) :=
   (Sieve.paperShell F c C.N ×ˢ Sieve.paperShell F c C.N).filter
     (fun b => b.1 ≠ b.2 ∧ b.1 ⊔ b.2 = C.d ∧ Q.cls b.1 = C.g ∧ Q.cls b.2 = C.g)
 
-private lemma pair_mem_original (C : Context Q) {p : Ideal (𝓞 F) × Ideal (𝓞 F)}
+private lemma pair_mem_original {p : IntegerIdeal × IntegerIdeal}
     (hp : p ∈ C.pairs) : (C.d * p.1, C.d * p.2) ∈ originalPairs C := by
   obtain ⟨hcols, hv⟩ := Finset.mem_filter.mp hp
   obtain ⟨hu, hw⟩ := Finset.mem_product.mp hcols
@@ -503,18 +456,16 @@ private lemma pair_mem_original (C : Context Q) {p : Ideal (𝓞 F) × Ideal (�
   exact Finset.mem_filter.mpr ⟨Finset.mem_product.mpr ⟨huc.1, hvc.1⟩,
     ho.1, ho.2, huc.2, hvc.2⟩
 
-private lemma original_surj (C : Context Q) (b : Ideal (𝓞 F) × Ideal (𝓞 F))
+private lemma original_surj (b : IntegerIdeal × IntegerIdeal)
     (hb : b ∈ originalPairs C) : ∃ p ∈ C.pairs, (C.d * p.1, C.d * p.2) = b := by
   obtain ⟨hcols, hne, hgcd, hg1, hg2⟩ := Finset.mem_filter.mp hb
   obtain ⟨hb1, hb2⟩ := Finset.mem_product.mp hcols
-  have hs1 := ((Sieve.mem_paperShell F c C.N _).mp hb1).1
-  have hs2 := ((Sieve.mem_paperShell F c C.N _).mp hb2).1
-  obtain ⟨p, ⟨h1, h2⟩, -⟩ := SquarefreeGcd.existsUnique_strip hs1 hs2
+  obtain ⟨p, ⟨h1, h2⟩, -⟩ := SquarefreeGcd.existsUnique_strip (((Sieve.mem_paperShell F c C.N _).mp hb1).1) (((Sieve.mem_paperShell F c C.N _).mp hb2).1)
   rw [hgcd] at h1 h2
-  have hu : C.d * p.1 ∈ Sieve.paperShell F c C.N := h1 ▸ hb1
-  have hv : C.d * p.2 ∈ Sieve.paperShell F c C.N := h2 ▸ hb2
-  have hc1 : Q.cls (C.d * p.1) = C.g := h1 ▸ hg1
-  have hc2 : Q.cls (C.d * p.2) = C.g := h2 ▸ hg2
+  have hu := h1 ▸ hb1
+  have hv := h2 ▸ hb2
+  have hc1 := h1 ▸ hg1
+  have hc2 := h2 ▸ hg2
   refine ⟨p, Finset.mem_filter.mpr ⟨Finset.mem_product.mpr
     ⟨col_mem C hu hc1, col_mem C hv hc2⟩, ?_⟩, Prod.ext h1.symm h2.symm⟩
   apply valid_of_original C hu hv
@@ -522,13 +473,13 @@ private lemma original_surj (C : Context Q) (b : Ideal (𝓞 F) × Ideal (𝓞 F
   · simpa only [← h1, ← h2] using hgcd
   · exact hc1.trans hc2.symm
 
-theorem pair_high_eq_all_sub_low (C : Context Q)
+theorem pair_high_eq_all_sub_low
     (hM : 1 ≤ C.M) (hN : 1 ≤ C.N) (hK : 1 ≤ C.K) :
     offDiagonalT3 Q C.W C.M C.N C.K C.d C.g C.lam =
       C.pairSum (fun p hp => C.coefficient p *
         (S4all (c * C.d) C.source C.M (C.primitive p hp) -
           S4 c (c * C.d) C.K C.source C.M (C.primitive p hp))) := by
-  let term := fun b : Ideal (𝓞 F) × Ideal (𝓞 F) =>
+  let term := fun b : IntegerIdeal × IntegerIdeal =>
     C.lam b.1 * starRingEnd ℂ (C.lam b.2) *
       (∑ a ∈ Sieve.kernelRows F c C.M C.K,
         (C.W ((Ideal.absNorm a : ℝ) / C.M) : ℂ) *
@@ -539,7 +490,7 @@ theorem pair_high_eq_all_sub_low (C : Context Q)
     rfl
   rw [hoff, Context.pairSum]
   symm
-  apply Finset.sum_bij (i := fun p _ => (C.d * p.1, C.d * p.2))
+  apply Finset.sum_bij
   · exact fun p hp => pair_mem_original C hp
   · intro p hp q hq he
     exact Prod.ext (mul_left_cancel₀ C.hd0 (congrArg Prod.fst he))
@@ -548,7 +499,7 @@ theorem pair_high_eq_all_sub_low (C : Context Q)
     obtain ⟨p, hp, he⟩ := original_surj C b hb
     exact ⟨p, hp, he⟩
   · intro p hp
-    have hv : C.ValidPair p := (Finset.mem_filter.mp hp).2
+    have hv := (Finset.mem_filter.mp hp).2
     rw [dif_pos hv, ← rows_match C hM p hv]
     rfl
 
@@ -574,26 +525,25 @@ namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly
 open ExplicitTerms
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
-private theorem reflected_y_le_z (C : Context Q) (B : ℝ) (e : Ideal (𝓞 F))
+variable (C : Context Q)
+
+private theorem reflected_y_le_z (B : ℝ) (e : Ideal (𝓞 F))
     (hM : 1 ≤ C.M) (hN : 1 ≤ C.N) (hδ : 0 < C.δ) (hB : 0 < B) :
     C.Y1 B e ≤ C.Z1 B e := by
-  have hM0 : 0 < C.M := lt_of_lt_of_le zero_lt_one hM
-  have hN0 : 0 < C.N := lt_of_lt_of_le zero_lt_one hN
   have hMN : 1 ≤ C.M * C.N := by nlinarith
   have hd : 0 < norm C.d := by
     unfold ExplicitTerms.norm
     exact_mod_cast Nat.pos_of_ne_zero (fun h => C.hd0 (Ideal.absNorm_eq_zero_iff.mp h))
-  have hMN0 : 0 < C.M * C.N := mul_pos hM0 hN0
   have he : 0 ≤ norm e := by unfold ExplicitTerms.norm; positivity
   unfold Context.Y1 Context.Z1
   gcongr
-  · exact (Real.rpow_pos_of_pos hMN0 _).le
+  · exact (Real.rpow_pos_of_pos (mul_pos (lt_of_lt_of_le zero_lt_one hM) (lt_of_lt_of_le zero_lt_one hN)) _).le
   · nlinarith
   · exact Real.rpow_le_rpow_of_exponent_le hMN (by linarith)
 
-private theorem reflected_row_match (C : Context Q) (j a : Ideal (𝓞 F))
+private theorem reflected_row_match (j a : Ideal (𝓞 F))
     (X Y Z L : ℝ) (hj : j ≠ ⊥) (hX : 0 < X) (ha : 0 < norm a) (hYZ : Y ≤ Z) :
     squareWeightSeries ⊤ j
       (fieldTransform (principalDiscriminant F) (principalComplexPlaces F) C.source) X a =
@@ -611,8 +561,7 @@ private theorem reflected_row_match (C : Context Q) (j a : Ideal (𝓞 F))
     by_cases hb : b ≠ ⊥ ∧ b ⊔ j = ⊤
     · rw [if_pos hb, if_pos hb, SquareSecondPass.weight]
       congr 1
-      have hT2 := Real.sq_sqrt (le_of_lt (div_pos hX ha))
-      rw [div_pow, hT2]
+      rw [div_pow, (Real.sq_sqrt (le_of_lt (div_pos hX ha)))]
       dsimp [ExplicitTerms.norm]
       field_simp
     · rw [if_neg hb, if_neg hb]
@@ -621,7 +570,7 @@ private theorem reflected_row_match (C : Context Q) (j a : Ideal (𝓞 F))
     simp only [idealEulerDeletion, Complex.cpow_neg_one, ← div_eq_mul_inv] at he
     rw [ReflectedCoprimeTruncation.rho, he, sigma4Rho, badPrimes]
     push_cast
-    simp only [one_div]
+    simp
   rw [hs, ReflectedCoprimeTruncation.originalSum_eq_truncatedMainTerm_add_remainder F C.hF C.source (1/2) (5/2)
     C.source_smooth C.source_support (by norm_num) (by norm_num) j hj
     (Real.sqrt (X / norm a)) Y Z L (Real.sqrt_pos.2 (div_pos hX ha)) hYZ]
@@ -633,7 +582,7 @@ private theorem reflected_row_match (C : Context Q) (j a : Ideal (𝓞 F))
     Complex.ofReal_div, Complex.ofReal_natCast, mul_comm]
   rfl
 
-def reflectedBlock (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
+def reflectedBlock (B : ℝ) (unit : Bool := false) : ℂ :=
   C.pairSum fun p hp => C.coefficient p *
     ∑ e ∈ C.mobiusDivisors, C.prefactor e p hp *
       ∑ a ∈ C.reflectedRows B unit,
@@ -641,14 +590,14 @@ def reflectedBlock (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
           (fieldTransform (principalDiscriminant F) (principalComplexPlaces F) C.source)
           (C.dualScale e p) a
 
-def reflectedTailBlock (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
+def reflectedTailBlock (B : ℝ) (unit : Bool := false) : ℂ :=
   C.pairSum fun p hp => C.coefficient p *
     ∑ e ∈ C.mobiusDivisors, C.prefactor e p hp *
       ∑ a ∈ C.reflectedRows B unit,
         C.primitive p hp a * C.reflectedRemainder (p.1 * p.2)
           (Real.sqrt (C.dualScale e p / norm a)) (C.Y1 B e) (C.Z1 B e) C.L1
 
-theorem reflected_block_match (C : Context Q) (B : ℝ) (unit : Bool)
+theorem reflected_block_match (B : ℝ) (unit : Bool)
     (hM : 1 ≤ C.M) (hN : 1 ≤ C.N) (hδ : 0 < C.δ) (hB : 0 < B) :
     reflectedBlock C B unit =
       T C B unit - E1 C B unit - E2 C B unit + E3 C B unit +
@@ -656,25 +605,20 @@ theorem reflected_block_match (C : Context Q) (B : ℝ) (unit : Bool)
   have hrow (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : Context.ValidPair C p)
       (e : Ideal (𝓞 F)) (he : e ∈ C.mobiusDivisors)
       (a : Ideal (𝓞 F)) (ha : a ∈ C.reflectedRows B unit) := by
-    have he0 : e ≠ ⊥ := ne_bot_of_mem_idealDivisors he
-    have hj : p.1 * p.2 ≠ ⊥ := by
-      exact mul_ne_zero hp.hu0 hp.hv0
+    have hj := mul_ne_zero hp.hu0 hp.hv0
     have ha0 : a ≠ ⊥ := by
       obtain ⟨tr, htr, rfl⟩ := Finset.mem_image.mp ha
       exact (Finset.mem_filter.mp htr).2.2.2
-    have heN : 0 < norm e := by
-      unfold ExplicitTerms.norm
-      exact_mod_cast Nat.pos_of_ne_zero (fun h => he0 (Ideal.absNorm_eq_zero_iff.mp h))
-    have hjN : 0 < norm (p.1 * p.2) := by
-      unfold ExplicitTerms.norm
-      exact_mod_cast Nat.pos_of_ne_zero (fun h => hj (Ideal.absNorm_eq_zero_iff.mp h))
-    have haN : 0 < norm a := by
-      unfold ExplicitTerms.norm
-      exact_mod_cast Nat.pos_of_ne_zero (fun h => ha0 (Ideal.absNorm_eq_zero_iff.mp h))
-    exact reflected_row_match C (p.1 * p.2) a (C.dualScale e p)
+    refine reflected_row_match C (p.1 * p.2) a (C.dualScale e p)
       (C.Y1 B e) (C.Z1 B e) C.L1 hj
-      (div_pos (mul_pos heN hjN) (lt_of_lt_of_le zero_lt_one hM)) haN
+      (div_pos (mul_pos ?_ ?_) (lt_of_lt_of_le zero_lt_one hM)) ?_
       (reflected_y_le_z C B e hM hN hδ hB)
+    · unfold ExplicitTerms.norm
+      exact_mod_cast Nat.pos_of_ne_zero (fun h => (ne_bot_of_mem_idealDivisors he) (Ideal.absNorm_eq_zero_iff.mp h))
+    · unfold ExplicitTerms.norm
+      exact_mod_cast Nat.pos_of_ne_zero (fun h => hj (Ideal.absNorm_eq_zero_iff.mp h))
+    · unfold ExplicitTerms.norm
+      exact_mod_cast Nat.pos_of_ne_zero (fun h => ha0 (Ideal.absNorm_eq_zero_iff.mp h))
   have hexpand : reflectedBlock C B unit =
       C.pairSum (fun p hp => C.coefficient p *
         ∑ e ∈ C.mobiusDivisors, C.prefactor e p hp *
@@ -733,22 +677,24 @@ namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly
 open ExplicitTerms
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
-private lemma core_partition (C : Context Q) (m : Ideal (𝓞 F)) (hK : 1 ≤ C.K)
+section
+
+variable (C : Context Q)
+
+private lemma core_partition (m : Ideal (𝓞 F)) (hK : 1 ≤ C.K)
     (G : Ideal (𝓞 F) → ℂ) :
     (∑ a ∈ Sieve.idealAdmissibleFinset F m C.K, G a) =
       (∑ a ∈ ReflectedSigma4.unitRows c m C.K, G a) +
         ∑ B ∈ dyadicScales C, ∑ a ∈ sigma4DyadicRows F m C.K B, G a := by
   have hu : ReflectedSigma4.unitRows c m C.K = {⊤} := by
-    have hk : Sieve.squarefreeKernel (⊤ : Ideal (𝓞 F)) = ⊤ :=
-      Sieve.squarefreeKernel_eq_self (by simpa only [← Ideal.one_eq_top] using squarefree_one)
     have hs : sc c (⊤ : Ideal (𝓞 F)) = 1 := by
       unfold sc primeToSquarefreeKernel
-      rw [hk, ← Ideal.one_eq_top, UniqueFactorizationMonoid.normalizedFactors_one]
+      rw [(Sieve.squarefreeKernel_eq_self (by simpa using squarefree_one)), ← Ideal.one_eq_top, UniqueFactorizationMonoid.normalizedFactors_one]
       simp
     simp [ReflectedSigma4.unitRows, hs, hK,
-      show Squarefree (⊤ : Ideal (𝓞 F)) from by simpa only [← Ideal.one_eq_top] using squarefree_one]
+      show Squarefree (⊤ : Ideal (𝓞 F)) from by simpa using squarefree_one]
   have hb (i : ℕ) : Sieve.clippedDyadicBlock F m C.K (i+1) =
       sigma4DyadicRows F m C.K ((2 : ℝ)^i) := by
     ext a
@@ -759,7 +705,7 @@ private lemma core_partition (C : Context Q) (m : Ideal (𝓞 F)) (hK : 1 ≤ C.
   have hz : Sieve.clippedDyadicBlock F m C.K 0 = {⊤} := by
     ext a
     simp [Sieve.clippedDyadicBlock, Sieve.idealDyadicBlock, Sieve.mem_idealAdmissibleFinset,
-      hK, show Squarefree (⊤ : Ideal (𝓞 F)) from by simpa only [← Ideal.one_eq_top] using squarefree_one]
+      hK, show Squarefree (⊤ : Ideal (𝓞 F)) from by simpa using squarefree_one]
   rw [← Sieve.biUnion_clippedDyadicBlock F m C.K hK,
     Finset.sum_biUnion (Sieve.pairwiseDisjoint_clippedDyadicBlock F m C.K hK),
     Finset.sum_range_succ', hz, hu]
@@ -771,7 +717,7 @@ private lemma core_partition (C : Context Q) (m : Ideal (𝓞 F)) (hK : 1 ≤ C.
   · intro i hi j hj hij
     exact (pow_right_injective₀ (by norm_num : (0 : ℝ) < 2) (by norm_num : (2 : ℝ) ≠ 1)) hij
 
-private lemma supported_facts (C : Context Q) {t r : Ideal (𝓞 F)}
+private lemma supported_facts {t r : Ideal (𝓞 F)}
     (ht : t ∈ squarefreeBadPool c) (hr : r ∈ Sieve.idealAdmissibleFinset F c C.K) :
     t ⊔ r = ⊤ ∧ Squarefree (t*r) ∧ t*r ≠ ⊥ ∧
       t = badPart c (t*r) ∧ r = goodPart c (t*r) := by
@@ -781,16 +727,13 @@ private lemma supported_facts (C : Context Q) {t r : Ideal (𝓞 F)}
     apply (UniqueFactorizationMonoid.isRelPrime_iff_no_prime_factors ht0).mpr
     intro p hpt hpr hp
     exact hp.not_isUnit ((Ideal.isCoprime_iff_sup_eq.mpr hrc).isRelPrime hpr (htp p hp hpt))
-  have hcop : t ⊔ r = ⊤ := by
-    have hu : IsUnit (t ⊔ r) := hrel
-      (Ideal.dvd_iff_le.mpr le_sup_left) (Ideal.dvd_iff_le.mpr le_sup_right)
-    exact Ideal.isUnit_iff.mp hu
-  have hsf := squarefree_mul_iff.mpr ⟨hrel, hts, hrs⟩
   have h0 := mul_ne_zero ht0 hrs.ne_zero
   obtain ⟨htb, hrg⟩ := bad_good_unique C.D.original_ne_bot h0 ht0 hrs.ne_zero rfl hrc htp
-  exact ⟨hcop, hsf, h0, htb, hrg⟩
+  refine ⟨?_, (squarefree_mul_iff.mpr ⟨hrel, hts, hrs⟩), h0, htb, hrg⟩
+  exact Ideal.isUnit_iff.mp (hrel
+  (Ideal.dvd_iff_le.mpr le_sup_left) (Ideal.dvd_iff_le.mpr le_sup_right))
 
-private lemma reflected_rows_sum (C : Context Q) (B : ℝ) (unit : Bool)
+private lemma reflected_rows_sum (B : ℝ) (unit : Bool)
     (hR : C.reflectedCoreRows B unit ⊆ Sieve.idealAdmissibleFinset F c C.K)
     (G : Ideal (𝓞 F) → ℂ) :
     (∑ a ∈ C.reflectedRows B unit, G a) =
@@ -814,7 +757,7 @@ private lemma reflected_rows_sum (C : Context Q) (B : ℝ) (unit : Bool)
   · rw [hb, hb', hpq]
   · rw [hg, hg', hpq]
 
-private lemma reflected_core_subset (C : Context Q) (hK : 1 ≤ C.K)
+private lemma reflected_core_subset (hK : 1 ≤ C.K)
     (B : ℝ) (unit : Bool) :
     C.reflectedCoreRows B unit ⊆ Sieve.idealAdmissibleFinset F c C.K := by
   intro r hr
@@ -826,20 +769,9 @@ private lemma reflected_core_subset (C : Context Q) (hK : 1 ≤ C.K)
     rw [(RectangleEndpoints.row_endpoints C hK B).2.1] at hr
     obtain rfl := Finset.mem_singleton.mp hr
     simp [Sieve.mem_idealAdmissibleFinset, hK,
-      show Squarefree (⊤ : Ideal (𝓞 F)) from by simpa only [← Ideal.one_eq_top] using squarefree_one]
+      show Squarefree (⊤ : Ideal (𝓞 F)) from by simpa using squarefree_one]
 
-private lemma reflected_partition (C : Context Q) (hK : 1 ≤ C.K)
-    (G : Ideal (𝓞 F) → ℂ) :
-    (∑ t ∈ squarefreeBadPool c, ∑ r ∈ Sieve.idealAdmissibleFinset F c C.K, G (t*r)) =
-      (∑ a ∈ C.reflectedRows 1 true, G a) +
-        ∑ B ∈ dyadicScales C, ∑ a ∈ C.reflectedRows B false, G a := by
-  rw [reflected_rows_sum C 1 true (reflected_core_subset C hK 1 true)]
-  simp_rw [reflected_rows_sum C _ false (reflected_core_subset C hK _ false)]
-  simp only [Context.reflectedCoreRows, Bool.true_eq, ↓reduceIte]
-  simp_rw [core_partition C c hK]
-  rw [Finset.sum_add_distrib]
-  congr 1
-  exact Finset.sum_comm
+end
 
 private lemma transform_rapid (C : Context Q) : HasRapidDecayAtInfinity
     (fieldTransform (principalDiscriminant F) (principalComplexPlaces F) C.source) := by
@@ -851,7 +783,7 @@ private lemma transform_rapid (C : Context Q) : HasRapidDecayAtInfinity
     C.source_smooth C.source_compact 0 n 1 zero_lt_one
   refine ⟨R, 1, hR.le, le_refl 1, fun t ht => ?_⟩
   have h1 : ‖fieldTransform (principalDiscriminant F) (principalComplexPlaces F) C.source t‖ ≤
-      R * Real.rpow t (-(n : ℝ)) := by simpa using hb t ht
+      R * Real.rpow t (-(n : ℝ)) := by exact hb t ht
   exact h1.trans (mul_le_mul_of_nonneg_left
     (Real.rpow_le_rpow_of_exponent_le ht (by linarith)) hR.le)
 
@@ -880,7 +812,9 @@ private lemma all_eq_low_tail {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.Ra
     · simp [S4Term, S4allTerm, reflectedKernelTailTerm, ha, hk, not_lt.mpr hk]
     · simp [S4Term, S4allTerm, reflectedKernelTailTerm, ha, hk, lt_of_not_ge hk]
 
-private lemma original_low (C : Context Q) (hM : 1 ≤ C.M) (hK : 1 ≤ C.K)
+variable (C : Context Q)
+
+private lemma original_low (hM : 1 ≤ C.M) (hK : 1 ≤ C.K)
     (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : Context.ValidPair C p) :
     S4 c (c*C.d) C.K C.source C.M (C.primitive p hp) =
       (∑ a ∈ C.originalRows 1 true, C.primitive p hp a *
@@ -895,7 +829,7 @@ private lemma original_low (C : Context Q) (hM : 1 ≤ C.M) (hK : 1 ≤ C.K)
     (C.primitive_spec p hp).1 (C.primitive_quadratic p hp)]
   exact core_partition C (c*C.d) hK _
 
-private lemma reflected_low (C : Context Q) (hK : 1 ≤ C.K)
+private lemma reflected_low (hK : 1 ≤ C.K)
     (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : Context.ValidPair C p)
     (X : ℝ) (hX : 0 < X) :
     S4 c ⊤ C.K (fieldTransform (principalDiscriminant F) (principalComplexPlaces F) C.source)
@@ -910,10 +844,15 @@ private lemma reflected_low (C : Context Q) (hK : 1 ≤ C.K)
     (C.primitive p hp) (C.primitive_spec p hp).1 (C.primitive_quadratic p hp)]
   simp only [sup_top_eq, ↓reduceIte, Ideal.top_mul]
   simp_rw [Finset.mul_sum, ← mul_assoc, ← (C.primitive p hp).map_mul']
-  exact reflected_partition C hK (fun a => C.primitive p hp a * squareWeightSeries ⊤ (p.1*p.2)
-    (fieldTransform (principalDiscriminant F) (principalComplexPlaces F) C.source) X a)
+  rw [reflected_rows_sum C 1 true (reflected_core_subset C hK 1 true)]
+  simp_rw [reflected_rows_sum C _ false (reflected_core_subset C hK _ false)]
+  simp only [Context.reflectedCoreRows, Bool.true_eq, ↓reduceIte]
+  simp_rw [core_partition C c hK]
+  rw [Finset.sum_add_distrib]
+  congr 1
+  exact Finset.sum_comm
 
-private lemma pair_identity (C : Context Q) (hM : 1 ≤ C.M) (hK : 1 ≤ C.K)
+private lemma pair_identity (hM : 1 ≤ C.M) (hK : 1 ≤ C.K)
     (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : Context.ValidPair C p) :
     S4all (c*C.d) C.source C.M (C.primitive p hp) -
       S4 c (c*C.d) C.K C.source C.M (C.primitive p hp) =
@@ -937,9 +876,10 @@ private lemma pair_identity (C : Context Q) (hM : 1 ≤ C.M) (hK : 1 ≤ C.K)
     (primitive_product_not_principal p.1 p.2 hp.hu0 hp.hv0 hp.huv hp.offDiagonal
       (C.primitive p hp) (C.primitive_spec p hp).1)
     C.source C.source_smooth C.source_compact hM0
+  let fieldTransform₀ := fieldTransform (principalDiscriminant F) (principalComplexPlaces F) C.source
   change S4all (c*C.d) C.source C.M (C.primitive p hp) =
     ∑ e ∈ C.mobiusDivisors, C.prefactor e p hp *
-      S4all ⊤ (fieldTransform (principalDiscriminant F) (principalComplexPlaces F) C.source)
+      S4all ⊤ (fieldTransform₀)
         (C.dualScale e p) (C.primitive p hp) at heq
   have hscale (e) (he : e ∈ C.mobiusDivisors) : 0 < C.dualScale e p := by
     have he0 := ne_bot_of_mem_idealDivisors he
@@ -952,15 +892,15 @@ private lemma pair_identity (C : Context Q) (hM : 1 ≤ C.M) (hK : 1 ≤ C.K)
     exact div_pos (mul_pos heN hpN) hM0
   rw [heq, original_low C hM hK p hp]
   have heqs : ∀ e ∈ C.mobiusDivisors,
-      S4all ⊤ (fieldTransform (principalDiscriminant F) (principalComplexPlaces F) C.source)
+      S4all ⊤ (fieldTransform₀)
         (C.dualScale e p) (C.primitive p hp) =
       (∑ a ∈ C.reflectedRows 1 true, C.primitive p hp a * squareWeightSeries ⊤ (p.1*p.2)
-        (fieldTransform (principalDiscriminant F) (principalComplexPlaces F) C.source) (C.dualScale e p) a) +
+        (fieldTransform₀) (C.dualScale e p) a) +
       (∑ B ∈ dyadicScales C, ∑ a ∈ C.reflectedRows B false,
         C.primitive p hp a * squareWeightSeries ⊤ (p.1*p.2)
-          (fieldTransform (principalDiscriminant F) (principalComplexPlaces F) C.source) (C.dualScale e p) a) +
+          (fieldTransform₀) (C.dualScale e p) a) +
       ∑' a, reflectedKernelTailTerm c C.K
-        (fieldTransform (principalDiscriminant F) (principalComplexPlaces F) C.source)
+        (fieldTransform₀)
         (C.dualScale e p) (C.primitive p hp) a := by
     intro e he
     rw [all_eq_low_tail (C.primitive p hp) C.K (C.dualScale e p) _ (hs e he)]
@@ -971,7 +911,7 @@ private lemma pair_identity (C : Context Q) (hM : 1 ≤ C.M) (hK : 1 ≤ C.K)
   rw [Finset.sum_comm (s := C.mobiusDivisors) (t := dyadicScales C)]
   have ht : primitiveMobiusTransformTail c C.d C.W C.M C.K p.1 p.2 (C.primitive p hp) =
       ∑ e ∈ C.mobiusDivisors, C.prefactor e p hp * ∑' a, reflectedKernelTailTerm c C.K
-        (fieldTransform (principalDiscriminant F) (principalComplexPlaces F) C.source)
+        (fieldTransform₀)
         (C.dualScale e p) (C.primitive p hp) a := by
     unfold primitiveMobiusTransformTail
     simp only [Context.mobiusDivisors, Context.prefactor, Context.source,
@@ -981,7 +921,7 @@ private lemma pair_identity (C : Context Q) (hM : 1 ≤ C.M) (hK : 1 ≤ C.K)
   rw [ht]
   ring
 
-theorem primitive_dyadic_reindex (C : Context Q)
+theorem primitive_dyadic_reindex
     (hM : 1 ≤ C.M) (hN : 1 ≤ C.N) (hK : 1 ≤ C.K) :
     C.pairSum (fun p hp => C.coefficient p *
       (S4all (c * C.d) C.source C.M (C.primitive p hp) -
@@ -1017,7 +957,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly
 open ExplicitTerms
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 theorem finite_assembly (C : Context Q)
     (hM : 1 ≤ C.M) (hN : 1 ≤ C.N) (hδ : 0 < C.δ) :
@@ -1040,8 +980,7 @@ theorem finite_assembly (C : Context Q)
     obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp hB
     positivity
   rw [hblock 1 true (by norm_num)]
-  have hsum : (∑ B ∈ dyadicScales C, (reflectedBlock C B - originalBlock C B)) =
-      ∑ B ∈ dyadicScales C, (sevenTermBlock C B + R C B) :=
+  have hsum :=
     Finset.sum_congr rfl (fun B hB => hblock B false (hscale B hB))
   rw [hsum, Finset.sum_add_distrib]
   unfold sevenTermSum unitBlock totalRemainder
@@ -1066,7 +1005,7 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 theorem bilinear_explicit_assembly_identity (C : Context Q)
     (hM : 1 ≤ C.M) (hN : 1 ≤ C.N) (hK : 1 ≤ C.K) (hKM : C.K ≤ C.M)

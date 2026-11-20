@@ -16,19 +16,8 @@ open KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 local notation "G" => KPGlobalTorusFunctionData.G F ζ hζ
 
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming invertibleProducts_open → invertibleProducts_open
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming matrixPullback_at_units → matrixPullback_at_units
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming productField → productField
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming product_path_hasDeriv → product_path_hasDeriv
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming productRightDerivative_eq_fderiv → productRightDerivative_eq_fderiv
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming productRightDerivative_smooth → productRightDerivative_smooth
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming matrixRightDerivative → matrixRightDerivative
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming rightOmega → rightOmega
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming matrix_omega_right_commutes → matrix_omega_right_commutes
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming matrixRightDerivative_eq_fderiv → matrixRightDerivative_eq_fderiv
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming matrixRightDerivative_smooth → matrixRightDerivative_smooth
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming matrix_omega_smooth → matrix_omega_smooth
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming six_flow_pauli_normalization → six_flow_pauli_normalization
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth (invertibleProducts_open matrixPullback_at_units productField product_path_hasDeriv productRightDerivative_eq_fderiv productRightDerivative_smooth)
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir (matrixRightDerivative rightOmega matrix_omega_right_commutes matrixRightDerivative_eq_fderiv matrixRightDerivative_smooth matrix_omega_smooth six_flow_pauli_normalization)
 local notation "MP" => MatrixProduct F
 local notation "B" => KPSmoothActualFlowData.B F
 local notation "O" => invertibleProducts (F := F)
@@ -56,14 +45,10 @@ private theorem R_congr (b : B) {f h : MP → ℂ} (he : Set.EqOn f h O)
     {m : MP} (hm : m ∈ O) : R b f m = R b h m := by
   unfold productRightDerivative
   apply Filter.EventuallyEq.deriv_eq
-  have hp := (product_path_hasDeriv b m).continuousAt
-  have h0 : Function.update m b.1 (m b.1 * NormedSpace.exp
-      (((0 : ℝ) : ℂ) • KPSmoothActualFlowData.basisMatrix b.2)) = m := by simp
-  have hN : ∀ᶠ n in 𝓝 m, n ∈ O := invertibleProducts_open.mem_nhds hm
   have ht : ∀ᶠ (t : ℝ) in 𝓝 (0 : ℝ), Function.update m b.1 (m b.1 * NormedSpace.exp
       ((t : ℂ) • KPSmoothActualFlowData.basisMatrix b.2)) ∈ O := by
-    apply hp.eventually
-    simpa only [h0] using hN
+    apply ((product_path_hasDeriv b m).continuousAt).eventually
+    simpa using (invertibleProducts_open.mem_nhds hm)
   filter_upwards [ht] with t ht
   exact he ht
 
@@ -152,9 +137,7 @@ private theorem slot_commute_distinct (b : B) (v : NumberField.InfinitePlace F) 
     (f : MP → ℂ) (hf : ContDiffOn ℝ (⊤ : ℕ∞) f O) (m : MP) (hm : m ∈ O) :
     slotCasimir v (R b f) m = R b (slotCasimir v f) m := by
   have hc (i j : Fin 6) : R (v,i) (R (v,j) (R b f)) m = R b (R (v,i) (R (v,j) f)) m := by
-    have he : Set.EqOn (R (v,j) (R b f)) (R b (R (v,j) f)) O := by
-      intro n hn
-      exact productRightDerivative_commute_distinct_places _ _ hv _ invertibleProducts_open hf n hn
+    have he : Set.EqOn (R (v,j) (R b f)) (R b (R (v,j) f)) O := fun n hn => productRightDerivative_commute_distinct_places _ _ hv _ invertibleProducts_open hf n hn
     rw [R_congr _ he hm]
     exact productRightDerivative_commute_distinct_places _ _ hv _ invertibleProducts_open (R_smooth _ _ hf) m hm
   rw [R_slot_expand b v f hf m hm]
@@ -176,24 +159,22 @@ private theorem slot_commute_same (v : NumberField.InfinitePlace F) (j : Fin 6)
   let phi := fun a => f (Function.update m v a)
   let D : Set (Matrix (Fin 2) (Fin 2) ℂ) := {a | a.det ≠ 0}
   have hD : IsOpen D := isOpen_ne.preimage (by fun_prop)
-  have hp : ContDiffOn ℝ (⊤ : ℕ∞) phi D := slice_smooth v m hm f hf
+  have hp := slice_smooth v m hm f hf
   have hs : (fun a => R (v,j) f (Function.update m v a)) = matrixRightDerivative (KPSmoothActualFlowData.basisMatrix j) phi := by
     funext a; exact slice_R v j f m a
-  have hm0 : Function.update m v (m v) = m := Function.update_eq_self v m
   have hc := matrix_omega_right_commutes (KPSmoothActualFlowData.basisMatrix j) phi hD hp
     (Matrix.GeneralLinearGroup.mkOfDetNeZero (m v) (hm v)) (hm v)
   change rightOmega (matrixRightDerivative (KPSmoothActualFlowData.basisMatrix j) phi) (m v) =
     matrixRightDerivative (KPSmoothActualFlowData.basisMatrix j) (rightOmega phi) (m v) at hc
-  rw [← hm0, slice_slot_omega v _ m hm (R_smooth _ _ hf) _ (hm v), hs, hc, slice_R]
+  rw [← (Function.update_eq_self v m), slice_slot_omega v _ m hm (R_smooth _ _ hf) _ (hm v), hs, hc, slice_R]
   have he : (fun a => slotCasimir v f (Function.update m v a)) =ᶠ[𝓝 (m v)]
       (fun a => -((1 : ℂ)/2) * rightOmega phi a) := by
     filter_upwards [hD.mem_nhds (hm v)] with a ha
     exact slice_slot_omega v f m hm hf a ha
-  have hd1 := (slice_smooth v m hm _ (slot_smooth v f hf)).differentiableOn (by simp)
-    |>.differentiableAt (hD.mem_nhds (hm v))
   have hd2 := (matrix_omega_smooth phi hD hp).differentiableOn (by simp)
     |>.differentiableAt (hD.mem_nhds (hm v))
-  rw [matrixRightDerivative_eq_fderiv _ _ _ hd1, he.fderiv_eq,
+  rw [matrixRightDerivative_eq_fderiv _ _ _ ((slice_smooth v m hm _ (slot_smooth v f hf)).differentiableOn (by simp)
+    |>.differentiableAt (hD.mem_nhds (hm v))), he.fderiv_eq,
     fderiv_const_mul hd2, matrixRightDerivative_eq_fderiv _ _ _ hd2]
   rfl
 
@@ -204,11 +185,10 @@ private theorem R_sum {ι : Type} (u : Finset ι) (b : B) (f : ι → MP → ℂ
     R b (fun n => ∑ i ∈ u, f i n) m = ∑ i ∈ u, R b (f i) m := by
   have hd (i) (hi : i ∈ u) := (hf i hi).differentiableOn (by simp)
     |>.differentiableAt (invertibleProducts_open.mem_nhds hm)
-  have hdS := DifferentiableAt.fun_sum hd
-  rw [productRightDerivative_eq_fderiv _ _ _ hdS]
+  rw [productRightDerivative_eq_fderiv _ _ _ (DifferentiableAt.fun_sum hd)]
   have heq : (fun y => ∑ i ∈ u, f i y) = ∑ i ∈ u, f i := by
     funext y
-    simp only [Finset.sum_apply]
+    simp
   rw [heq, fderiv_sum hd]
   simp only [sum_apply]
   apply Finset.sum_congr rfl
@@ -266,9 +246,7 @@ private theorem product_word_commute (w : List B) (f : MP → ℂ)
 
 private theorem matrixPullback_casimir_eqOn (f : G → ℂ) (g : G) :
     Set.EqOn (matrixPullback (KPMsGreenFlux.casimir F ζ hζ f) g)
-      (productCasimir (matrixPullback f g)) O := by
-  intro m hm
-  exact matrixPullback_casimir_units f g (fun v => Matrix.GeneralLinearGroup.mkOfDetNeZero (m v) (hm v))
+      (productCasimir (matrixPullback f g)) O := fun m hm => matrixPullback_casimir_units f g (fun v => Matrix.GeneralLinearGroup.mkOfDetNeZero (m v) (hm v))
 
 private theorem native_fold_commute (f : G → ℂ)
     (hf : ∀ a, ContDiffOn ℝ (⊤ : ℕ∞) (fun x => f (a * archChart F ζ hζ x)) (archDomain F))
@@ -277,7 +255,7 @@ private theorem native_fold_commute (f : G → ℂ)
     w.foldr (fun b h => KPMsGreenFlux.rightDerivative F ζ hζ b.1 b.2 h)
       (KPMsGreenFlux.casimir F ζ hζ f) g := by
   let a : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2 := fun _ => 1
-  have ha : (fun v => (a v).val) ∈ O := fun v => Matrix.GeneralLinearGroup.det_ne_zero (a v)
+  have ha := fun v => Matrix.GeneralLinearGroup.det_ne_zero (a v)
   have hp (h : G → ℂ) : matrixPullback h g (fun v => (a v).val) = h g := by
     rw [matrixPullback_at_units]
     have he : (fun v => Matrix.ProjGenLinGroup.mk (a v)) = 1 := by ext v; simp [a]
@@ -286,9 +264,7 @@ private theorem native_fold_commute (f : G → ℂ)
     (w.foldr (fun b h => KPMsGreenFlux.rightDerivative F ζ hζ b.1 b.2 h) f)), matrixPullback_casimir_units]
   have he : Set.EqOn
       (matrixPullback (w.foldr (fun b h => KPMsGreenFlux.rightDerivative F ζ hζ b.1 b.2 h) f) g)
-      (productRightWord w (matrixPullback f g)) O := by
-    intro m hm
-    exact matrixPullback_rightWord w f g (fun v => Matrix.GeneralLinearGroup.mkOfDetNeZero (m v) (hm v))
+      (productRightWord w (matrixPullback f g)) O := fun m hm => matrixPullback_rightWord w f g (fun v => Matrix.GeneralLinearGroup.mkOfDetNeZero (m v) (hm v))
   have he2 : Set.EqOn (productCasimir
       (matrixPullback (w.foldr (fun b h => KPMsGreenFlux.rightDerivative F ζ hζ b.1 b.2 h) f) g))
       (productCasimir (productRightWord w (matrixPullback f g))) O := by
@@ -303,7 +279,7 @@ private theorem native_fold_commute (f : G → ℂ)
   rw [← productWord_congr w (matrixPullback_casimir_eqOn f g) ha,
     ← matrixPullback_rightWord, hp]
 
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativePositiveChart renaming word_reindex → word_reindex
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativePositiveChart (word_reindex)
 
 theorem native_casimir_commutes_word
     (f : G → ℂ)

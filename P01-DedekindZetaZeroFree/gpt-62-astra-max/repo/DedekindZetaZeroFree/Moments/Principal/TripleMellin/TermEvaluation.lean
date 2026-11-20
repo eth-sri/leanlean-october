@@ -10,17 +10,10 @@ noncomputable section
 open MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-theorem orbit_term_mellin (P : PrincipalData A σ η hS)
-    (N : MellinNormalizationData A σ η hS P)
-    (X Y Z : {x : ℝ // 0 < x}) (i : MellinSeriesIndex P) :
-    ProbePoissonOrbitFormula.term A σ η hS P (frequencySection P)
-      X.val Y.val Z.val (orbitIndexEquiv P i) =
-      tripleMellinNormalization * ∫ t : ℝ × ℝ × ℝ,
-        initialTripleMellinSummand P X.val Y.val Z.val i t := by
-  exact TermRace.term_inversion_race P N X Y Z i
+alias orbit_term_mellin := TermRace.term_inversion_race
 
 theorem probe_eq_mellin_integral (P : PrincipalData A σ η hS)
     (N : MellinNormalizationData A σ η hS P) (X Y Z : {x : ℝ // 0 < x}) :

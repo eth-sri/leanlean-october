@@ -32,12 +32,7 @@ theorem sphericalScalar_pos (β : ℂˣ) : 0 < sphericalScalar β := by
   rw [sphericalScalar_eq_eigenvalue_zero]
   exact (KPCplxIntertwinerEigenvalues.eigenvalue_zero β).2
 
-theorem sphereArea_isProbabilityMeasure : IsProbabilityMeasure sphereArea := by
-  constructor
-  rw [sphereArea, Measure.smul_apply, smul_eq_mul]
-  exact ENNReal.inv_mul_cancel
-    (Measure.measure_univ_pos.mpr (Measure.toSphere_ne_zero volume)).ne'
-    (measure_ne_top _ _)
+theorem sphereArea_isProbabilityMeasure : IsProbabilityMeasure sphereArea := by apply @RawSphereProjection.rawSphereArea_isProbabilityMeasure <;> assumption
 
 theorem fractionalKernel_nonneg (α : ℝ) (hα : 0 < α) (x y : Sphere) :
     0 ≤ fractionalKernel α x y := by
@@ -47,26 +42,15 @@ theorem fractionalKernel_nonneg (α : ℝ) (hα : 0 < α) (x y : Sphere) :
   have h : inner ℝ (x : Ambient) (y : Ambient) ≤ 1 := by
     calc
       _ ≤ ‖(x : Ambient)‖ * ‖(y : Ambient)‖ := real_inner_le_norm _ _
-      _ = 1 := by simp [mem_sphere_zero_iff_norm.mp x.property,
-        mem_sphere_zero_iff_norm.mp y.property]
+      _ = 1 := by simp
   linarith
 
-@[simp] theorem fractionalKernel_one (x y : Sphere) : fractionalKernel 1 x y = 1 := by
-  simp [fractionalKernel]
+private alias interval_kernel_integrable := HarmonicIdentity.powerWeight_integrable
 
-private lemma interval_kernel_integrable (α : ℝ) (hα : 0 < α) :
-    Integrable (fun t : ℝ => α * t ^ (α - 1)) (volume.restrict (Icc 0 1)) := by
-  have h := (intervalIntegral.intervalIntegrable_rpow' (a := 0) (b := 1)
-    (r := α - 1) (by linarith)).const_mul α
-  exact (intervalIntegrable_iff_integrableOn_Icc_of_le (by norm_num)).mp h
+variable (α : ℝ) (hα : 0 < α)
 
-private lemma interval_kernel_mass (α : ℝ) (hα : 0 < α) :
-    (∫ t : ℝ in Icc 0 1, α * t ^ (α - 1)) = 1 := by
-  rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le (by norm_num),
-    intervalIntegral.integral_const_mul, integral_rpow (Or.inl (by linarith))]
-  simp [Real.zero_rpow hα.ne', hα.ne']
-
-theorem fractionalKernel_mass_of_projection (α : ℝ) (hα : 0 < α) (x : Sphere)
+include hα in
+theorem fractionalKernel_mass_of_projection (x : Sphere)
     (hprojection : Measure.map
       (fun y : Sphere => (1 - inner ℝ (x : Ambient) (y : Ambient)) / 2) sphereArea =
       (volume : Measure ℝ).restrict (Icc 0 1)) :
@@ -81,20 +65,20 @@ theorem fractionalKernel_mass_of_projection (α : ℝ) (hα : 0 < α) (x : Spher
   · exact (integrable_map_measure hi.aestronglyMeasurable hp.aemeasurable).mp hi
   · have h := integral_map hp.aemeasurable hi.aestronglyMeasurable
     rw [show Measure.map p sphereArea = _ from hprojection] at h
-    exact h.symm.trans (interval_kernel_mass α hα)
+    exact h.symm.trans (by
+      rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le (by norm_num),
+        intervalIntegral.integral_const_mul, integral_rpow (Or.inl (by linarith))]
+      simp [Real.zero_rpow hα.ne', hα.ne'])
 
-theorem fractionalKernel_mass (α : ℝ) (hα : 0 < α) :
+include hα in
+theorem fractionalKernel_mass :
     IsProbabilityMeasure sphereArea ∧
       ∀ x : Sphere, Integrable (fractionalKernel α x) sphereArea ∧
         (∀ y : Sphere, 0 ≤ fractionalKernel α x y) ∧
         (∫ y : Sphere, fractionalKernel α x y ∂sphereArea) = 1 := by
   refine ⟨sphereArea_isProbabilityMeasure, fun x => ?_⟩
-  have hprojection : Measure.map
-      (fun y : Sphere => (1 - inner ℝ (x : Ambient) (y : Ambient)) / 2) sphereArea =
-      (volume : Measure ℝ).restrict (Icc 0 1) :=
-    (KernelMass.normalized_area_projection_rotation 3 0 x).trans
-      KernelMass.normalized_area_coordinate_projection
-  obtain ⟨hi, hm⟩ := fractionalKernel_mass_of_projection α hα x hprojection
-  exact ⟨hi, fractionalKernel_nonneg α hα x, hm⟩
+  obtain ⟨hi, hm⟩ := fractionalKernel_mass_of_projection α hα x ((KernelMass.normalized_area_projection_rotation 3 0 x).trans
+    KernelMass.normalized_area_coordinate_projection)
+  grind [fractionalKernel_nonneg]
 
 end DedekindZetaZeroFree.ComplexFractionalInverse

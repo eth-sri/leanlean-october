@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Metaplectic.Intertwining.Cubic.ShiftedBetaContinuation
 
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.LocalMellin.TestFunctionPole
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.CubicBetaAndMellinEvaluation
@@ -26,10 +27,9 @@ private lemma exponent_nonneg_iff (K : Type*) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] (y : Kˣ) :
     0 ≤ KPCubicExpansion.valuationExponent K y ↔ (y : K) ∈ (valuation K).integer := by
   let iso := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-  have hne : iso (valuation K (y : K)) ≠ 0 := by
-    exact (map_ne_zero_iff iso iso.injective).mpr ((Valuation.ne_zero_iff _).mpr y.ne_zero)
+  have hne : iso (valuation K (y : K)) ≠ 0 := (map_ne_zero_iff iso iso.injective).mpr ((Valuation.ne_zero_iff _).mpr y.ne_zero)
   rw [Valuation.mem_integer_iff]
-  rw [← map_le_map_iff iso, map_one]
+  simp [← map_le_map_iff iso]
   rw [← WithZero.exp_log hne, ← WithZero.exp_zero, WithZero.exp_le_exp]
   simp only [KPCubicExpansion.valuationExponent]
   dsimp [iso] at *
@@ -49,14 +49,13 @@ private lemma shell_measure (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     intro h
     simp [h] at hp
     exact uniformizer_ne_zero hp.symm
-  let π : Kˣ := Units.mk0 p hpne
-  have hπ : valuation K (π : K) = uniformizer K := hp
+  let π := Units.mk0 p hpne
+  have hπ := hp
   let ν := KPCubicHaar.multiplicativeHaar K dx
   have hhaar := kp_rankone_cubic_haar_power_measure K dx m hm hvol
   letI : ν.IsHaarMeasure := hhaar.1
   let U : Set Kˣ := {y | (y : K) ∈ (valuation K).integer ∧ ((y⁻¹ : Kˣ) : K) ∈ (valuation K).integer}
-  have hU : MeasurableSet U := by
-    exact ((valuation K).isOpen_integer.preimage Units.continuous_val).measurableSet.inter
+  have hU := ((valuation K).isOpen_integer.preimage Units.continuous_val).measurableSet.inter
       ((valuation K).isOpen_integer.preimage (Units.continuous_val.comp continuous_inv)).measurableSet
   have hUeq (y : Kˣ) : y ∈ U ↔ KPCubicExpansion.valuationExponent K y = 0 := by
     change ((y : K) ∈ (valuation K).integer ∧ ((y⁻¹ : Kˣ) : K) ∈ (valuation K).integer) ↔ _
@@ -78,22 +77,24 @@ private lemma shell_measure (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   constructor
   · rw [hset]
     exact hU.preimage (continuous_const.mul continuous_id).measurable
-  · change ν _ = _
-    rw [hset, measure_preimage_mul]
+  · simp [hset]
     exact hhaar.2
 
 private lemma cubic_norm (χ : Kˣ →ₜ* ℂˣ) (hχ : ∀ x, χ x ^ 3 = 1) (x : Kˣ) :
     ‖(χ x : ℂ)‖ = 1 := by
-  have hp : ‖(χ x : ℂ)‖ ^ (3 : ℕ) = 1 := by
-    rw [← norm_pow]
-    have he := congrArg (fun z : ℂˣ => (z : ℂ)) (hχ x)
-    rw [Units.val_pow_eq_pow_val, Units.val_one] at he
-    rw [he, norm_one]
-  exact (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by decide : (3 : ℕ) ≠ 0)).mp hp
+  refine (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by decide : (3 : ℕ) ≠ 0)).mp ?_
+  rw [← norm_pow]
+  have he := congrArg (fun z : ℂˣ => (z : ℂ)) (hχ x)
+  simp at he
+  rw [he, norm_one]
 
+section
+
+variable (dx : Measure K) [dx.IsAddHaarMeasure] (m : ℝ) (hm : 0 < m)
+    (hvol : dx ((valuation K).integer : Set K) = ENNReal.ofReal m)
+
+include hm hvol in
 private lemma shell_character_integral
-    (dx : Measure K) [dx.IsAddHaarMeasure]
-    (m : ℝ) (hm : 0 < m) (hvol : dx ((valuation K).integer : Set K) = ENNReal.ofReal m)
     (π : Kˣ) (hπ : valuation K (π : K) = uniformizer K)
     (χ : Kˣ →ₜ* ℂˣ) (j : ℤ) :
     (∫ y : Kˣ in {y | KPCubicExpansion.valuationExponent K y = j}, (χ y : ℂ)
@@ -147,16 +148,14 @@ private lemma shell_character_integral
     have hi := integral_mul_left_eq_self f z (μ := μ)
     simp_rw [he] at hi
     rw [integral_const_mul] at hi
-    have hn : (χ z : ℂ) ≠ 1 := fun h => hu (Units.ext h)
     have hf : ∫ y, f y ∂μ = 0 := by
       apply (mul_eq_zero.mp (show ((χ z : ℂ)-1) * (∫ y, f y ∂μ) = 0 by
-        rw [sub_mul, hi, one_mul, sub_self])).resolve_left (sub_ne_zero.mpr hn)
+        rw [sub_mul, hi, one_mul, sub_self])).resolve_left (sub_ne_zero.mpr (fun h => hu (Units.ext h)))
     rw [integral_indicator hS] at hf
     exact hf
 
+include hm hvol in
 private lemma twisted_shell_bounds
-    (dx : Measure K) [dx.IsAddHaarMeasure]
-    (m : ℝ) (hm : 0 < m) (hvol : dx ((valuation K).integer : Set K) = ENNReal.ofReal m)
     (φ : K → ℂ) (hφlc : IsLocallyConstant φ) (hφcs : HasCompactSupport φ)
     (χ : Kˣ →ₜ* ℂˣ) (hχ : ∀ x, χ x ^ 3 = 1)
     (r : ℂ) (hrne : r ≠ 0) (hrnorm : ‖r‖ < 1) (nmin : ℤ) :
@@ -165,13 +164,14 @@ private lemma twisted_shell_bounds
     (∀ k : ℕ, MeasurableSet {y : Kˣ | KPCubicExpansion.valuationExponent K y = nmin + (k : ℤ)}) ∧
     (∀ k : ℕ, IntegrableOn f {y : Kˣ | KPCubicExpansion.valuationExponent K y = nmin + (k : ℤ)} ν) ∧
     Summable (fun k : ℕ => ∫ y : Kˣ in {y | KPCubicExpansion.valuationExponent K y = nmin + (k : ℤ)}, ‖f y‖ ∂ν) := by
+  let ofReal₀ := ENNReal.ofReal (m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹))
   classical
   let ν := KPCubicHaar.multiplicativeHaar K dx
   let f := fun y : Kˣ => φ (y : K) * (χ y : ℂ) * r ^ KPCubicExpansion.valuationExponent K y
   let S := fun j : ℤ => {y : Kˣ | KPCubicExpansion.valuationExponent K y = j}
   have hS (j : ℤ) : MeasurableSet (S j) := (shell_measure K dx m hm hvol j).1
   have hmass (j : ℤ) : ν (S j) =
-      ENNReal.ofReal (m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹)) :=
+      ofReal₀ :=
     (shell_measure K dx m hm hvol j).2
   have hfinite (j : ℤ) : ν (S j) ≠ ⊤ := by rw [hmass]; exact ENNReal.ofReal_ne_top
   have hcont : Continuous (fun y : Kˣ => φ (y : K) * (χ y : ℂ)) :=
@@ -196,12 +196,12 @@ private lemma twisted_shell_bounds
     change KPCubicExpansion.valuationExponent K y = j at hy
     simp only [f, hy]
   have hreal (j : ℤ) : (ν.restrict (S j)).real Set.univ =
-      (ENNReal.ofReal (m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹))).toReal := by
+      (ofReal₀).toReal := by
     rw [Measure.real_def, Measure.restrict_apply_univ, hmass]
-  let M := (ENNReal.ofReal (m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹))).toReal
+  let M := (ofReal₀).toReal
   have hibound (j : ℤ) : (∫ y in S j, ‖f y‖ ∂ν) ≤ C * ‖r ^ j‖ * M := by
     letI : IsFiniteMeasure (ν.restrict (S j)) := ⟨by
-      rw [Measure.restrict_apply_univ]
+      simp
       exact (hfinite j).lt_top⟩
     have hb : ∀ᵐ y ∂ν.restrict (S j), ‖‖f y‖‖ ≤ C * ‖r ^ j‖ := by
       filter_upwards [ae_restrict_mem (hS j)] with y hy
@@ -217,9 +217,8 @@ private lemma twisted_shell_bounds
   apply Summable.of_nonneg_of_le (fun k => integral_nonneg (fun y => norm_nonneg _))
     (fun k => hibound _) hs
 
+include hm hvol in
 private lemma twisted_series
-    (dx : Measure K) [dx.IsAddHaarMeasure]
-    (m : ℝ) (hm : 0 < m) (hvol : dx ((valuation K).integer : Set K) = ENNReal.ofReal m)
     (π : Kˣ) (hπ : valuation K (π : K) = uniformizer K)
     (φ : K → ℂ) (hφlc : IsLocallyConstant φ) (hφcs : HasCompactSupport φ)
     (χ : Kˣ →ₜ* ℂˣ) (hχ : ∀ x, χ x ^ 3 = 1)
@@ -243,12 +242,12 @@ private lemma twisted_series
     φ (y : K) * (χ y : ℂ) ∂μ
   let D := ((m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹) : ℝ) : ℂ) * φ 0
   let unram := ∀ u : ((valuation K).integer)ˣ, χ (KPRankOneCubicProjection.unitInclusion K u) = 1
-  let b : ℂ := χ π
-  have hb : b ≠ 0 := (χ π).ne_zero
+  let b := χ π
+  have hb := (χ π).ne_zero
   obtain ⟨hS, hint, hsum⟩ := twisted_shell_bounds K dx m hm hvol φ hφlc hφcs χ hχ r hr hrnorm nmin
   have hre := KPRankOneMellinShellReassembly.shell_reassembly μ
     (KPCubicExpansion.valuationExponent K) (fun y => φ (y : K)*(χ y : ℂ)) r nmin
-    (fun y hy => by rw [hlower y hy, zero_mul]) hS hint hsum
+    (fun y hy => by simp [hlower y hy]) hS hint hsum
   refine ⟨hre.1, ?_⟩
   have htailc (j : ℤ) (hj : n₀ ≤ j) : c j = (if unram then D else 0) * b^j := by
     have he : Set.EqOn (fun y : Kˣ => φ (y : K) * (χ y : ℂ))
@@ -263,10 +262,8 @@ private lemma twisted_series
     by_cases hu : unram
     · simp [hu, D, b]; ring
     · simp [hu]
-  have hbr : b*r ≠ 0 := mul_ne_zero hb hr
-  have hbrnorm : ‖b*r‖ < 1 := by rw [norm_mul, cubic_norm K χ hχ π, one_mul]; exact hrnorm
   have hgeom := KPRankOneMellinShellReassembly.finite_geometric_tail
-    (fun j => c j * b^(-j)) (if unram then D else 0) (b*r) hbr hbrnorm nmin n₀ hle
+    (fun j => c j * b^(-j)) (if unram then D else 0) (b*r) (mul_ne_zero hb hr) (by rw [norm_mul, cubic_norm K χ hχ π, one_mul]; exact hrnorm) nmin n₀ hle
     (fun j hj => by rw [htailc j hj, mul_assoc, ← zpow_add₀ hb]; simp)
   have hterm (j : ℤ) : c j * b^(-j) * (b*r)^j = c j * r^j := by
     rw [mul_zpow, ← mul_assoc, mul_assoc (c j), ← zpow_add₀ hb]
@@ -279,82 +276,93 @@ private lemma twisted_series
   · simpa [hu] using heq
   · simpa [hu] using heq
 
+end
+
  def Regular {F : Type*} [Field F] (u : F) (r : RatFunc F) : Prop :=
   r.denom.eval u ≠ 0
 
-private lemma regular_C {F : Type*} [Field F] (u c : F) : Regular u (RatFunc.C c) := by
-  simp [Regular]
-private lemma regular_X {F : Type*} [Field F] (u : F) : Regular u (RatFunc.X : RatFunc F) := by
-  simp [Regular]
-private lemma regular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r+s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
-    simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
-private lemma regular_mul {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
-    simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
-private lemma regular_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
-    (hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : Regular u r⁻¹ := by
-  have hr0 : r ≠ 0 := by intro h; simp [h] at hv
-  intro h
-  have hn := Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_inv_dvd hr0) h
-  apply hv
-  simp [RatFunc.eval, Polynomial.eval₂_at_apply, hn]
-private lemma eval_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
-    (hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) :
-    RatFunc.eval (RingHom.id F) u r⁻¹ = (RatFunc.eval (RingHom.id F) u r)⁻¹ := by
-  have hr0 : r ≠ 0 := by intro h; simp [h] at hv
-  have hm := RatFunc.eval_mul (f := RingHom.id F) (a := u) hr (regular_inv hr hv)
-  rw [mul_inv_cancel₀ hr0, RatFunc.eval_one] at hm
-  exact eq_inv_of_mul_eq_one_right hm.symm
+section
 
- def Evaluates {F : Type*} [Field F] (u : F) (r : RatFunc F) (v : F) : Prop :=
+variable {F : Type*} [Field F] {u : F} {r s : RatFunc F} (hr : Regular u r) (hs : Regular u s)
+
+include hr hs in
+private lemma regular_add : Regular u (r+s) := by exact ShiftedBetaAlgebra.ShiftedBetaContinuation.regular_add hr hs
+include hr hs in
+private lemma regular_mul : Regular u (r*s) := by exact ShiftedBetaAlgebra.ShiftedBetaContinuation.regular_mul hr hs
+
+end
+section
+
+variable {F : Type*} [Field F] {u : F} {r : RatFunc F} (hr : Regular u r)
+    (hv : RatFunc.eval (RingHom.id F) u r ≠ 0)
+
+include hr hv in
+private lemma regular_inv : Regular u r⁻¹ := by exact ShiftedBetaAlgebra.ShiftedBetaContinuation.regular_inv hr hv
+include hr hv in
+private lemma eval_inv :
+    RatFunc.eval (RingHom.id F) u r⁻¹ = (RatFunc.eval (RingHom.id F) u r)⁻¹ := by exact ShiftedBetaAlgebra.ShiftedBetaContinuation.eval_inv hr hv
+
+end
+
+ section
+
+variable {F : Type*} [Field F]
+
+def Evaluates (u : F) (r : RatFunc F) (v : F) : Prop :=
   Regular u r ∧ RatFunc.eval (RingHom.id F) u r = v
-private lemma Evaluates.const {F : Type*} [Field F] (u v : F) : Evaluates u (RatFunc.C v) v :=
-  ⟨regular_C u v, by simp⟩
-private lemma Evaluates.var {F : Type*} [Field F] (u : F) : Evaluates u RatFunc.X u :=
-  ⟨regular_X u, by simp⟩
-private lemma Evaluates.add {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : Evaluates u r a) (hs : Evaluates u s b) : Evaluates u (r+s) (a+b) := by
+private lemma Evaluates.const (u v : F) : Evaluates u (RatFunc.C v) v :=
+  ⟨(by
+    simp [Regular]), by simp⟩
+private lemma Evaluates.var (u : F) : Evaluates u RatFunc.X u :=
+  ⟨(by
+    simp [Regular]), by simp⟩
+
+end
+section
+
+variable {F : Type*} [Field F] {u a b : F} {r s : RatFunc F} (hr : Evaluates u r a)
+    (hs : Evaluates u s b)
+
+include hr hs in
+private lemma Evaluates.add : Evaluates u (r+s) (a+b) := by
   refine ⟨regular_add hr.1 hs.1, ?_⟩
   rw [RatFunc.eval_add (RingHom.id F) u hr.1 hs.1, hr.2, hs.2]
-private lemma Evaluates.mul {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : Evaluates u r a) (hs : Evaluates u s b) : Evaluates u (r*s) (a*b) := by
+include hr hs in
+private lemma Evaluates.mul : Evaluates u (r*s) (a*b) := by
   refine ⟨regular_mul hr.1 hs.1, ?_⟩
   rw [RatFunc.eval_mul (RingHom.id F) u hr.1 hs.1, hr.2, hs.2]
-private lemma Evaluates.neg {F : Type*} [Field F] {u a : F} {r : RatFunc F}
+
+end
+section
+
+variable {F : Type*} [Field F]
+
+private lemma Evaluates.neg {u a : F} {r : RatFunc F}
     (hr : Evaluates u r a) : Evaluates u (-r) (-a) := by
-  simpa only [map_neg, map_one, neg_one_mul] using (Evaluates.const u (-1)).mul hr
-private lemma Evaluates.sub {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
+  simpa using (Evaluates.const u (-1)).mul hr
+private lemma Evaluates.sub {u a b : F} {r s : RatFunc F}
     (hr : Evaluates u r a) (hs : Evaluates u s b) : Evaluates u (r-s) (a-b) := by
-  simpa only [sub_eq_add_neg] using hr.add hs.neg
-private lemma Evaluates.inv {F : Type*} [Field F] {u a : F} {r : RatFunc F}
-    (hr : Evaluates u r a) (ha : a ≠ 0) : Evaluates u r⁻¹ a⁻¹ := by
-  have hv : RatFunc.eval (RingHom.id F) u r ≠ 0 := hr.2 ▸ ha
-  exact ⟨regular_inv hr.1 hv, by rw [eval_inv hr.1 hv, hr.2]⟩
-private lemma Evaluates.div {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
+  simpa [sub_eq_add_neg] using hr.add hs.neg
+private lemma Evaluates.inv {u a : F} {r : RatFunc F}
+    (hr : Evaluates u r a) (ha : a ≠ 0) : Evaluates u r⁻¹ a⁻¹ := by exact ShiftedBetaAlgebra.Evaluates.ShiftedBetaContinuation.inv hr ha
+private lemma Evaluates.div {u a b : F} {r s : RatFunc F}
     (hr : Evaluates u r a) (hs : Evaluates u s b) (hb : b ≠ 0) : Evaluates u (r/s) (a/b) := by
-  simpa only [div_eq_mul_inv] using hr.mul (hs.inv hb)
-private lemma Evaluates.pow {F : Type*} [Field F] {u a : F} {r : RatFunc F}
-    (hr : Evaluates u r a) (n : ℕ) : Evaluates u (r^n) (a^n) := by
-  induction n with
-  | zero => simpa only [pow_zero, map_one] using Evaluates.const u 1
-  | succ n ih => simpa only [pow_succ] using ih.mul hr
-private lemma Evaluates.zpow {F : Type*} [Field F] {u a : F} {r : RatFunc F}
-    (hr : Evaluates u r a) (ha : a ≠ 0) (n : ℤ) : Evaluates u (r^n) (a^n) := by
-  cases n with
-  | ofNat n => simpa using hr.pow n
-  | negSucc n => simpa only [zpow_negSucc] using (hr.pow (n+1)).inv (pow_ne_zero _ ha)
+  simpa [div_eq_mul_inv] using hr.mul (hs.inv hb)
+
+end
+section
+
+variable {F : Type*} [Field F] {u a : F} {r : RatFunc F} (hr : Evaluates u r a)
+
+include hr in
+private lemma Evaluates.pow (n : ℕ) : Evaluates u (r^n) (a^n) := by exact ShiftedBetaAlgebra.Evaluates.ShiftedBetaContinuation.pow hr n
+include hr in
+private lemma Evaluates.zpow (ha : a ≠ 0) (n : ℤ) : Evaluates u (r^n) (a^n) := by apply @DedekindZetaZeroFree.ShiftedBetaAlgebra.Evaluates.ShiftedBetaContinuation.zpow <;> assumption
+
+end
 private lemma Evaluates.sum {F I : Type*} [Field F] {u : F} (s : Finset I)
     {r : I → RatFunc F} {a : I → F} (h : ∀ i ∈ s, Evaluates u (r i) (a i)) :
-    Evaluates u (∑ i ∈ s, r i) (∑ i ∈ s, a i) := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simpa only [Finset.sum_empty, map_zero] using Evaluates.const u 0
-  | @insert i s hi ih =>
-    simp only [Finset.sum_insert hi]
-    exact (h i (Finset.mem_insert_self i s)).add (ih (fun j hj => h j (Finset.mem_insert_of_mem hj)))
+    Evaluates u (∑ i ∈ s, r i) (∑ i ∈ s, a i) := by exact ShiftedBetaAlgebra.Evaluates.ShiftedBetaContinuation.sum s h
 
 private lemma exp_weight (ρ : ℂ) (y : Kˣ) :
     Complex.exp (ρ * (Real.log (KPCubicHaar.abs K (y : K)) : ℂ)) =
@@ -368,11 +376,10 @@ private lemma exp_weight (ρ : ℂ) (y : Kˣ) :
 private lemma exp_ratio_norm (ρ : ℂ) (hρ : 0 < ρ.re) :
     ‖Complex.exp (-ρ * (Real.log (KPCubicUnitIndices.residueCard K : ℝ) : ℂ))‖ < 1 := by
   rw [Complex.norm_exp, Real.exp_lt_one_iff]
-  have hq : (1 : ℝ) < KPCubicUnitIndices.residueCard K := by
-    exact_mod_cast (lt_of_lt_of_le (by decide : 1 < 2) (KPCubicUnitIndices.two_le_residueCard K))
   simp only [Complex.mul_re, Complex.neg_re, Complex.neg_im, Complex.ofReal_re,
     Complex.ofReal_im, mul_zero, sub_zero]
-  exact mul_neg_of_neg_of_pos (neg_neg_of_pos hρ) (Real.log_pos hq)
+  refine mul_neg_of_neg_of_pos (neg_neg_of_pos hρ) (Real.log_pos ?_)
+  exact_mod_cast (lt_of_lt_of_le (by decide : 1 < 2) (KPCubicUnitIndices.two_le_residueCard K))
 
 private lemma character_eq_one (π : Kˣ) (hπ : valuation K (π : K) = uniformizer K)
     (χ : Kˣ →ₜ* ℂˣ)
@@ -385,12 +392,14 @@ private lemma character_eq_one (π : Kˣ) (hπ : valuation K (π : K) = uniformi
   change (↑(χ π ^ j * χ (KPRankOneCubicProjection.unitInclusion K u)) : ℂ) = _
   simp [hb', hu u]
 
-private lemma laurent_eval (a : ℤ →₀ ℂ) (Q : ℂ) (hQ : Q ≠ 0) :
+variable (a : ℤ →₀ ℂ)
+
+private lemma laurent_eval (Q : ℂ) (hQ : Q ≠ 0) :
     Evaluates Q (∑ n ∈ a.support, RatFunc.C (a n) * (RatFunc.X : RatFunc ℂ)^n)
       (∑ n ∈ a.support, a n * Q^n) :=
   Evaluates.sum a.support (fun n _ => (Evaluates.const Q (a n)).mul ((Evaluates.var Q).zpow hQ n))
 
-private lemma rational_eval (a : ℤ →₀ ℂ) (D b Q : ℂ) (n₀ : ℤ) (unram : Prop)
+private lemma rational_eval (D b Q : ℂ) (n₀ : ℤ) (unram : Prop)
     (hb : b ≠ 0) (hQ : Q ≠ 0) (hden : 1-b*Q ≠ 0) :
     Evaluates Q ((∑ n ∈ a.support, RatFunc.C (a n) * (RatFunc.X : RatFunc ℂ)^n) +
       if unram then RatFunc.C D * (RatFunc.C b*RatFunc.X)^n₀ / (1-RatFunc.C b*RatFunc.X) else 0)
@@ -398,19 +407,19 @@ private lemma rational_eval (a : ℤ →₀ ℂ) (D b Q : ℂ) (n₀ : ℤ) (unr
   have hL := laurent_eval a Q hQ
   by_cases hu : unram
   · simp only [hu, ite_eq_left]
-    simpa only [map_one] using hL.add (((Evaluates.const Q D).mul
+    simpa using hL.add (((Evaluates.const Q D).mul
       (((Evaluates.const Q b).mul (Evaluates.var Q)).zpow (mul_ne_zero hb hQ) n₀)).div
       ((Evaluates.const Q 1).sub ((Evaluates.const Q b).mul (Evaluates.var Q))) hden)
   · simpa [hu] using hL
 
-private lemma rational_residue_trivial (a : ℤ →₀ ℂ) (D : ℂ) (n₀ : ℤ) :
+private lemma rational_residue_trivial (D : ℂ) (n₀ : ℤ) :
     Evaluates 1 ((1-RatFunc.X)*((∑ n ∈ a.support, RatFunc.C (a n) * (RatFunc.X : RatFunc ℂ)^n) +
       RatFunc.C D * RatFunc.X^n₀/(1-RatFunc.X))) D := by
   have hn : (1-RatFunc.X : RatFunc ℂ) ≠ 0 := by
     intro h
     have he := congrArg (RatFunc.eval (RingHom.id ℂ) 0) h
     have hv : RatFunc.eval (RingHom.id ℂ) 0 (1-RatFunc.X) = 1-0 := by
-      simpa only [map_one] using ((Evaluates.const (0:ℂ) 1).sub (Evaluates.var 0)).2
+      simpa using ((Evaluates.const (0:ℂ) 1).sub (Evaluates.var 0)).2
     rw [hv] at he
     simp at he
   have he : (1-RatFunc.X)*((∑ n ∈ a.support, RatFunc.C (a n) * (RatFunc.X : RatFunc ℂ)^n) +
@@ -418,15 +427,14 @@ private lemma rational_residue_trivial (a : ℤ →₀ ℂ) (D : ℂ) (n₀ : �
       (1-RatFunc.X)*(∑ n ∈ a.support, RatFunc.C (a n) * (RatFunc.X : RatFunc ℂ)^n) +
       RatFunc.C D * RatFunc.X^n₀ := by field_simp
   rw [he]
-  have h := (((Evaluates.const (1:ℂ) 1).sub (Evaluates.var 1)).mul
+  simpa using ((((Evaluates.const (1:ℂ) 1).sub (Evaluates.var 1)).mul
     (laurent_eval a 1 one_ne_zero)).add
-    ((Evaluates.const 1 D).mul ((Evaluates.var 1).zpow one_ne_zero n₀))
-  simpa using h
+    ((Evaluates.const 1 D).mul ((Evaluates.var 1).zpow one_ne_zero n₀)))
 
 end Generic
 end TwistedMellinProof
 variable (F : Type) [Field F] [NumberField F]
-variable (q : HeightOneSpectrum (𝓞 F))
+    (q : HeightOneSpectrum (𝓞 F))
 local instance twistedMellinValuativeRel : ValuativeRel (q.adicCompletion F) :=
   ClassFieldTheory.finitePlaceCompletionValuativeRel F q
 local instance twistedMellinLocalField : IsNonarchimedeanLocalField (q.adicCompletion F) :=
@@ -552,12 +560,12 @@ theorem actual_twisted_profile_geometric_tail
       by_cases hu : unram
       · have hb1 : b ≠ 1 := fun h => hχ1 (TwistedMellinProof.character_eq_one K π hπ χ hu h)
         simpa only [mul_one] using TwistedMellinProof.rational_eval a D b 1 n₀ unram hb one_ne_zero
-          (by simpa only [mul_one] using sub_ne_zero.mpr (Ne.symm hb1))
+          (by simpa using sub_ne_zero.mpr (Ne.symm hb1))
       · simpa [M,hu] using TwistedMellinProof.laurent_eval a 1 one_ne_zero
     have hp := ((TwistedMellinProof.Evaluates.const (1:ℂ) 1).sub
       (TwistedMellinProof.Evaluates.var 1)).mul he
-    exact ⟨by simpa only [map_one, TwistedMellinProof.Regular] using hp.1,
-      by simpa [map_one,hχ1] using hp.2,fun _ => he.1⟩
+    exact ⟨by simpa [TwistedMellinProof.Regular] using hp.1,
+      by simpa [hχ1] using hp.2,fun _ => he.1⟩
 
 end DedekindZetaZeroFree
 

@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -47,12 +42,12 @@ theorem unit_mem_localNormSubgroup_chosenSimpleKummerExtension_one_sub
       (chosenSimpleKummerExtension K n hnK
         (Units.mk0 (1 - (a : K)) h_one_sub)) := by
   classical
-  let b : Kˣ := Units.mk0 (1 - (a : K)) h_one_sub
+  let b := Units.mk0 (1 - (a : K)) h_one_sub
   let E := chosenSimpleKummerExtension K n hnK b
-  let beta : Eˣ := chosenSimpleKummerRootUnit K n hnK b
-  let _ : FiniteDimensional K E :=
+  let beta := chosenSimpleKummerRootUnit K n hnK b
+  let _ :=
     chosenSimpleKummerExtension_finiteDimensional K n hnK b
-  let _ : IsAbelianGalois K E :=
+  let _ :=
     chosenSimpleKummerExtension_isAbelianGalois K n hnK hmu b
   let _ : MulDistribMulAction Gal(E / K) Eˣ :=
     AlgEquiv.instMulDistribMulActionUnits
@@ -91,7 +86,7 @@ theorem unit_mem_localNormSubgroup_chosenSimpleKummerExtension_one_sub
     have hrel : (Quotient.out q) ⁻¹ * z ∈ H := by
       apply QuotientGroup.leftRel_apply.mp
       exact @Quotient.exact' mu (QuotientGroup.leftRel H) _ _
-        (by simpa only [q] using Quotient.out_eq' q)
+        (by apply Quotient.out_eq')
     change (Quotient.out q) ⁻¹ * z ∈ chi.range at hrel
     rcases hrel with ⟨sigma, hsigma⟩
     refine ⟨(q, sigma), ?_⟩
@@ -115,9 +110,9 @@ theorem unit_mem_localNormSubgroup_chosenSimpleKummerExtension_one_sub
           (chosenSimpleKummerRootUnit_pow K n hnK b).symm
         _ = ((Quotient.out q : mu).1 * beta) ^ (n : ℕ) := by
           rw [mul_pow, (Quotient.out q : mu).2, one_mul]
-        _ = 1 := by rw [hmul, one_pow]
+        _ = 1 := by simp [hmul]
     have hb : b = 1 :=
-      (Units.map_injective (f := (algebraMap K E).toMonoidHom)
+      (Units.map_injective
         (algebraMap K E).injective) hb_map
     have hb_val := congrArg Units.val hb
     change 1 - (a : K) = 1 at hb_val
@@ -128,8 +123,7 @@ theorem unit_mem_localNormSubgroup_chosenSimpleKummerExtension_one_sub
       (factor_ne q)
   let witness : Eˣ := ∏ q : Q, factor q
   let hbase : NthRootsOfUnityInBase (K := K) (L := E) n :=
-    nthRootsOfUnityInBase_of_primitiveRoots
-      (K := K) (L := E) n hmu
+    nthRootsOfUnityInBase_of_primitiveRoots n hmu
   have chi_mul_beta (sigma : Gal(E / K)) :
       (chi sigma).1 * beta = Units.map sigma.toMonoidHom beta := by
     change
@@ -137,7 +131,7 @@ theorem unit_mem_localNormSubgroup_chosenSimpleKummerExtension_one_sub
         Units.map sigma.toMonoidHom beta
     rw [chosenSimpleKummerRootCharacter_apply]
     change
-      rootQuotient (K := K) (L := E) beta sigma * beta =
+      rootQuotient beta sigma * beta =
         Units.map sigma.toMonoidHom beta
     simp only [rootQuotient]
     rw [div_mul_cancel]
@@ -177,7 +171,7 @@ theorem unit_mem_localNormSubgroup_chosenSimpleKummerExtension_one_sub
       mu ≃ {z : E // z ∈ Polynomial.nthRootsFinset (n : ℕ) (1 : E)} :=
     { toFun := fun z =>
         ⟨((z.1 : Eˣ) : E), by
-          rw [Polynomial.mem_nthRootsFinset n.pos]
+          simp
           exact congrArg Units.val z.2⟩
       invFun := fun z =>
         ⟨Units.mk0 z.1
@@ -199,9 +193,9 @@ theorem unit_mem_localNormSubgroup_chosenSimpleKummerExtension_one_sub
           (fun z : mu => 1 - (((z.1 : Eˣ) : E) * (beta : E))) =
         1 - (beta : E) ^ (n : ℕ) := by
     obtain ⟨zeta, hzeta_mem⟩ := hmu
-    have hzeta : IsPrimitiveRoot zeta (n : ℕ) :=
+    have hzeta :=
       (mem_primitiveRoots n.pos).1 hzeta_mem
-    have hzeta_E : IsPrimitiveRoot (algebraMap K E zeta) (n : ℕ) :=
+    have hzeta_E :=
       hzeta.map_of_injective (algebraMap K E).injective
     calc
       Finset.univ.prod
@@ -218,7 +212,7 @@ theorem unit_mem_localNormSubgroup_chosenSimpleKummerExtension_one_sub
             (s := Polynomial.nthRootsFinset (n : ℕ) (1 : E))
             (f := fun z => 1 - z * (beta : E)))
       _ = 1 - (beta : E) ^ (n : ℕ) := by
-        simpa only [one_pow] using
+        simpa using
           (hzeta_E.pow_sub_pow_eq_prod_sub_mul
             (1 : E) (beta : E) n.pos).symm
   change a ∈ (LocalFieldTheory.normUnits K E).range
@@ -235,8 +229,6 @@ theorem unit_mem_localNormSubgroup_chosenSimpleKummerExtension_one_sub
       Algebra.norm_eq_prod_automorphisms K (witness : E)
     _ = Finset.univ.prod (fun sigma : Gal(E / K) =>
           Finset.univ.prod (fun q : Q => sigma (factor q : E))) := by
-      apply Finset.prod_congr rfl
-      intro sigma _
       simp only [witness, Units.coe_prod, map_prod]
     _ = Finset.univ.prod (fun sigma : Gal(E / K) =>
           Finset.univ.prod (fun q : Q =>

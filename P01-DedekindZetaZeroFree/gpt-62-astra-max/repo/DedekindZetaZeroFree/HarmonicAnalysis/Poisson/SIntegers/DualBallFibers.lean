@@ -13,7 +13,7 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.PoissonS
 
 variable (F : Type) [Field F] [NumberField F]
-variable (S : Finset (HeightOneSpectrum (𝓞 F)))
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
 
 def finiteBallTraceCharacter : AddChar (PoissonFinite.Space F S) Circle :=
   (sLocalTraceCharacter F S).compAddMonoidHom
@@ -37,17 +37,21 @@ theorem finiteBallTraceCharacter_apply (x : PoissonFinite.Space F S) :
         ∏ v : S, localFiniteCharacter F v.val (x v)
   rw [hz, one_mul]
 
-def finiteBallAnnihilator (k : (v : S) → ℤ) :
+section
+
+variable (k : (v : S) → ℤ)
+
+def finiteBallAnnihilator :
     Set (PoissonFinite.Space F S) :=
   {y | ∀ u : PoissonFinite.Space F S, u ∈ finiteBall F S k →
     finiteBallTraceCharacter F S (u * y) = 1}
 
-def dualBallFractionalIdeal (k : (v : S) → ℤ) :
+def dualBallFractionalIdeal :
     FractionalIdeal (𝓞 F)⁰ F :=
   (PoissonArch.codifferentIdeal F : FractionalIdeal (𝓞 F)⁰ F) *
     (ballFractionalIdeal F S k)⁻¹
 
-private theorem finiteBallAnnihilator_coordinate_iff (k : (v : S) → ℤ)
+private theorem finiteBallAnnihilator_coordinate_iff
     (y : PoissonFinite.Space F S) :
     y ∈ finiteBallAnnihilator F S k ↔
       ∀ v : S, ∀ a : v.val.adicCompletion F,
@@ -79,12 +83,11 @@ private theorem finiteBallAnnihilator_coordinate_iff (k : (v : S) → ℤ)
     rw [finiteBallTraceCharacter_apply]
     exact Finset.prod_eq_one (fun v _ => hy v (u v) (hu v))
 
-theorem finiteBallAnnihilator_eq (k : (v : S) → ℤ) :
+theorem finiteBallAnnihilator_eq :
     finiteBallAnnihilator F S k =
       finiteBall F S (fun v => -differentExponent F v.val - k v) := by
   ext y
   rw [finiteBallAnnihilator_coordinate_iff]
-  change _ ↔ ∀ v : S, _
   apply forall_congr'
   intro v
   have hb (n : ℤ) :
@@ -98,6 +101,8 @@ theorem finiteBallAnnihilator_eq (k : (v : S) → ℤ) :
   rw [← FiniteOscillatoryStabilization.globalDifferentExponent_eq_localDifferentExponent]
     at ha
   simpa only [Set.mem_setOf_eq, sub_eq_add_neg, add_comm] using ha
+
+end
 
 theorem dualBallFractionalIdeal_subset_sIntegerRing
     (hS : ContainsDifferent F S) (k : (v : S) → ℤ) :

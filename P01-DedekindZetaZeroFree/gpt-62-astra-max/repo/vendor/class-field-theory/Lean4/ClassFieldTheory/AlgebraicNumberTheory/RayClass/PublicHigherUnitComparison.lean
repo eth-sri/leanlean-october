@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -36,8 +33,7 @@ by the existing ray-class implementation. -/
 theorem rayLocalHigherUnitGroup_eq_rayClass
     {K : Type} [Field K] [NumberField K]
     (v : HeightOneSpectrum (𝓞 K)) (n : ℕ) :
-    rayLocalHigherUnitGroup v n = RayClass.localHigherUnitGroup v n := by
-  rfl
+    rayLocalHigherUnitGroup v n = RayClass.localHigherUnitGroup v n := rfl
 
 end ClassFieldTheory
 

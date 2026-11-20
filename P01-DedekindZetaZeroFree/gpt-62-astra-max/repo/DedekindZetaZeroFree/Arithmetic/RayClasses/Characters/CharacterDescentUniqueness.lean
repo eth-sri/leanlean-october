@@ -15,8 +15,9 @@ open scoped NumberField Classical
 
 variable {F : Type} [Field F] [NumberField F]
 
-def descendedCharacter (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (η : DedekindZetaZeroFree.RayClassCharacter F m) :
+variable (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (η : DedekindZetaZeroFree.RayClassCharacter F m)
+
+def descendedCharacter :
     ClassFieldTheory.RayClassGroup (fullModulus m hm) →* ℂˣ := by
   refine QuotientGroup.lift
     (ClassFieldTheory.rayPrincipalIdealSubgroupInPrimeTo (fullModulus m hm))
@@ -55,15 +56,11 @@ def descendedCharacter (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     η.map_span' a ha ha1 hapos, η.map_span' b hb hb1 hbpos, one_div, inv_one]
 
 @[simp] theorem descendedCharacter_apply_idealClass
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (η : DedekindZetaZeroFree.RayClassCharacter F m)
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ m = ⊤) :
     (descendedCharacter m hm η (idealClass m hm I hI hcop) : ℂ) = η I := by
-  change (fractionalCharacter m hm η (idealToPrimeTo m hm I hI hcop) : ℂ) = η I
   exact fractionalCharacter_apply m hm η I hI hcop
 
-theorem descendedCharacter_unique (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (η : DedekindZetaZeroFree.RayClassCharacter F m)
+theorem descendedCharacter_unique
     (ψ : ClassFieldTheory.RayClassGroup (fullModulus m hm) →* ℂˣ)
     (hψ : ∀ (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ m = ⊤),
       (ψ (idealClass m hm I hI hcop) : ℂ) = η I) :

@@ -10,8 +10,8 @@ noncomputable section
 namespace DedekindZetaZeroFree.CanonicalGaussCorrection
 open LocalFiniteSums CanonicalLocalGaussTable
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 private theorem depth_one_mask_eq (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (a : ℤ) (x : Residue C p 1) :
     maskedPower C p 1 a x = A.sexticResiduePowerChar σ (primeIdeal p) a (depthOneEquiv C p x) := by
@@ -33,7 +33,9 @@ private theorem qPower_neg_half (p : ExteriorPrime A) : qPower p (-1 / 2) = (Rea
     ring
   have hpos : 0 < Q p := lt_of_lt_of_le zero_lt_one (idealNorm_ge_one p.val.asIdeal p.val.ne_bot)
   rw [heq, Complex.exp_neg, ← Complex.ofReal_exp, Real.exp_half, Real.exp_log hpos]
-private theorem depth_one_trace_eq (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (x : Residue C p 1) :
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+
+private theorem depth_one_trace_eq (x : Residue C p 1) :
     quotientTrace C p 1 x = A.residueTraceCharacter hS (primeIdeal p) (generator C p)
       (generator_generates C p) (depthOneEquiv C p x) := by
   obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
@@ -43,8 +45,7 @@ private theorem depth_one_trace_eq (C : A.GeneralArithmeticContext σ η hS) (p 
   rw [← LocalFiniteSumCompatibility.fieldTrace_eq_negative_localTrace C p 1 x]
   simp
 
-theorem tau_mul_qPower_eq_idealGauss (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (a : ℤ) :
+theorem tau_mul_qPower_eq_idealGauss (a : ℤ) :
     tau C p a * qPower p (-1 / 2) =
       A.idealGauss σ hS (primeIdeal p) (generator C p) (generator_generates C p) a := by
   rw [qPower_neg_half]
@@ -62,8 +63,7 @@ theorem tau_mul_qPower_eq_idealGauss (C : A.GeneralArithmeticContext σ η hS)
   rw [depth_one_trace_eq]
   rfl
 
-theorem gammaTwo_vartheta_tau_one (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) :
+theorem gammaTwo_vartheta_tau_one :
     gammaTwo C p * vartheta C p * tau C p 1 * qPower p (-1 / 2) =
       -η p.val.asIdeal := by
   obtain ⟨x, hx⟩ := A.exists_exterior_ideal_representative (primeIdeal p)

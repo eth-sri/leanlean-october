@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -38,7 +36,7 @@ namespace Higher
 open ValuationTheory.DiscreteValuationField
 
 variable {K : Type u} {L : Type w} [Field K] [Field L] [Algebra K L]
-variable {base : DVF.{u, v} K} {target : DVF.{w, x} L}
+    {base : DVF.{u, v} K} {target : DVF.{w, x} L}
 variable [base.valuation.HasExtension target.valuation]
 
 /-- If `σ` fixes `b`, and `a-b` is strictly deeper than the displacement
@@ -54,40 +52,36 @@ theorem valuationSubringAutOfUniqueExtension_eq_of_fixed_of_close
         base target)
     (σ : Gal(L/K)) (a b : target.valuationSubring)
     (hfix :
-      valuationSubringAutOfUniqueExtension
-        (base := base) (target := target) huniq σ b = b)
+      valuationSubringAutOfUniqueExtension huniq σ b = b)
     (hclose :
-      valuationSubringAutOfUniqueExtension
-            (base := base) (target := target) huniq σ a ≠ a →
+      valuationSubringAutOfUniqueExtension huniq σ a ≠ a →
         IsDiscreteValuationRing.addVal target.valuationSubring
-            (valuationSubringAutOfUniqueExtension
-              (base := base) (target := target) huniq σ a - a) <
+            (valuationSubringAutOfUniqueExtension huniq σ a - a) <
           IsDiscreteValuationRing.addVal target.valuationSubring
             (a - b)) :
-    valuationSubringAutOfUniqueExtension
-      (base := base) (target := target) huniq σ a = a := by
+    valuationSubringAutOfUniqueExtension huniq σ a = a := by
   by_contra hne
   have hfirst :
       IsDiscreteValuationRing.addVal target.valuationSubring
           (valuationSubringAutOfUniqueExtension
-              (base := base) (target := target) huniq σ a - b) =
+                huniq σ a - b) =
         IsDiscreteValuationRing.addVal target.valuationSubring
           (a - b) := by
     calc
       IsDiscreteValuationRing.addVal target.valuationSubring
           (valuationSubringAutOfUniqueExtension
-              (base := base) (target := target) huniq σ a - b) =
+                huniq σ a - b) =
         IsDiscreteValuationRing.addVal target.valuationSubring
           (valuationSubringAutOfUniqueExtension
-            (base := base) (target := target) huniq σ (a - b)) := by
+              huniq σ (a - b)) := by
               apply congrArg
                 (IsDiscreteValuationRing.addVal
                   target.valuationSubring)
-              rw [map_sub, hfix]
+              simp [hfix]
       _ = IsDiscreteValuationRing.addVal target.valuationSubring
           (a - b) :=
         addVal_valuationSubringAutOfUniqueExtension
-          (base := base) (target := target) huniq σ (a - b)
+            huniq σ (a - b)
   have hsecond :
       IsDiscreteValuationRing.addVal target.valuationSubring (b - a) =
         IsDiscreteValuationRing.addVal target.valuationSubring (a - b) := by
@@ -98,23 +92,17 @@ theorem valuationSubringAutOfUniqueExtension_eq_of_fixed_of_close
     IsDiscreteValuationRing.addVal_add
       (R := target.valuationSubring)
       (a :=
-        valuationSubringAutOfUniqueExtension
-            (base := base) (target := target) huniq σ a - b)
+        valuationSubringAutOfUniqueExtension huniq σ a - b)
       (b := b - a)
-  have hle :
-      IsDiscreteValuationRing.addVal target.valuationSubring (a - b) ≤
-        IsDiscreteValuationRing.addVal target.valuationSubring
-          (valuationSubringAutOfUniqueExtension
-            (base := base) (target := target) huniq σ a - a) := by
-    have hsum :
-        (valuationSubringAutOfUniqueExtension
-              (base := base) (target := target) huniq σ a - b) +
-            (b - a) =
-          valuationSubringAutOfUniqueExtension
-              (base := base) (target := target) huniq σ a - a := by
-      ring
-    simpa [hfirst, hsecond, hsum] using hultra
-  exact (not_le_of_gt (hclose hne)) hle
+  refine (not_le_of_gt (hclose hne)) ?_
+  have hsum :
+      (valuationSubringAutOfUniqueExtension
+              huniq σ a - b) +
+          (b - a) =
+        valuationSubringAutOfUniqueExtension
+              huniq σ a - a := by
+    ring
+  simpa [hfirst, hsecond, hsum] using hultra
 
 end Higher
 end RamificationTheory.HilbertRamification

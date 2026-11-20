@@ -10,25 +10,7 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel.RightConvolution
 open MeasureTheory Set Filter Topology
 
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming Mat → Mat
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixClass → matrixClass
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixDomain → matrixDomain
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixDomain_open → matrixDomain_open
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrix_pullback_smooth → matrix_pullback_smooth
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixClass_mul → matrixClass_mul
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixClass_out → matrixClass_out
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming joint_spatial_jets_on → joint_spatial_jets_on
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift → localMatrixLift
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift_continuousAt → localMatrixLift_continuousAt
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift_reconstruct → localMatrixLift_reconstruct
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift_eventually → localMatrixLift_eventually
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming actualSmoothBridge → actualSmoothBridge
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming affineDomain_open → affineDomain_open
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming affineEll_continuousAt → affineEll_continuousAt
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming toAffine_contDiff → toAffine_contDiff
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming toAffine_mapsTo → toAffine_mapsTo
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming affineEll_toAffine → affineEll_toAffine
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming gauss_domain_open → gauss_domain_open
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel (Mat matrixClass matrixDomain matrixDomain_open matrix_pullback_smooth matrixClass_mul matrixClass_out joint_spatial_jets_on localMatrixLift localMatrixLift_continuousAt localMatrixLift_reconstruct localMatrixLift_eventually actualSmoothBridge affineDomain_open affineEll_continuousAt toAffine_contDiff toAffine_mapsTo affineEll_toAffine gauss_domain_open)
 open scoped NumberField Classical Topology Matrix.Norms.Elementwise
 
 variable (F : Type) [Field F] [NumberField F]
@@ -51,29 +33,32 @@ private theorem inverseShiftMatrix_smooth (b : L F) :
   simp only [inverseShiftMatrix, Matrix.mul_apply, Fin.sum_univ_two]
   fun_prop (disch := exact hc _ _)
 
-private theorem inverseShiftMatrix_mem (b : L F) (M : Mat F)
-    (hM : M ∈ matrixDomain F) (x : Y F) (hx : x ∈ affineDomain F) :
+section
+
+variable (b : L F) (M : Mat F) (hM : M ∈ matrixDomain F) (x : Y F) (hx : x ∈ affineDomain F)
+
+include hM hx in
+private theorem inverseShiftMatrix_mem :
     inverseShiftMatrix F b (M,x) ∈ matrixDomain F := by
   intro w
   change ((b⁻¹ w).out.val * PGLComplex.affineAdjugate (x w) * M w).det ≠ 0
   rw [Matrix.det_mul, Matrix.det_mul, PGLComplex.affineAdjugate_det]
   exact mul_ne_zero (mul_ne_zero (Matrix.GeneralLinearGroup.det_ne_zero _) (hx w)) (hM w)
 
-private theorem inverseShiftMatrix_class (b : L F) (M : Mat F)
-    (hM : M ∈ matrixDomain F) (x : Y F) (hx : x ∈ affineDomain F) :
+include hM hx in
+private theorem inverseShiftMatrix_class :
     matrixClass F (inverseShiftMatrix F b (M,x)) =
       b⁻¹ * (affineEll F x)⁻¹ * matrixClass F M := by
-  let B : Mat F := fun w => (b⁻¹ w).out.val
-  let A : Mat F := fun w => PGLComplex.affineAdjugate (x w)
+  let B := fun w => (b⁻¹ w).out.val
+  let A := fun w => PGLComplex.affineAdjugate (x w)
   have hB : B ∈ matrixDomain F := fun w => Matrix.GeneralLinearGroup.det_ne_zero _
   have hA : A ∈ matrixDomain F := fun w => by
     rw [PGLComplex.affineAdjugate_det]
     exact hx w
-  have hBA : (fun w => B w * A w) ∈ matrixDomain F := fun w => by
-    rw [Matrix.det_mul]
-    exact mul_ne_zero (hB w) (hA w)
   rw [show inverseShiftMatrix F b (M,x) = fun w => (B w * A w) * M w from rfl,
-    matrixClass_mul F _ _ hBA hM, matrixClass_mul F B A hB hA, matrixClass_out F]
+    matrixClass_mul F _ _ (fun w => by
+      rw [Matrix.det_mul]
+      exact mul_ne_zero (hB w) (hA w)) hM, matrixClass_mul F B A hB hA, matrixClass_out F]
   congr 1
   congr 1
   funext w
@@ -82,66 +67,59 @@ private theorem inverseShiftMatrix_class (b : L F) (M : Mat F)
   rw [dite_eq_left (hA w)]
   exact PGLComplex.affineAdjugate_class (x w) (hx w)
 
-private theorem inverse_shift_matrix_jets
-    (q : L F → ℝ) (hd : AffineSmooth F q) (b : L F) (n : ℕ) :
+end
+
+section
+
+variable (q : L F → ℝ) (hd : AffineSmooth F q)
+
+include hd in
+private theorem inverse_shift_matrix_jets (b : L F) (n : ℕ) :
     ContinuousOn (fun p : Mat F × Y F => iteratedFDeriv ℝ n
       (fun x => q (b⁻¹ * (affineEll F x)⁻¹ * matrixClass F p.1)) p.2)
       (matrixDomain F ×ˢ affineDomain F) := by
-  have hsm : ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun p : Mat F × Y F => q (matrixClass F (inverseShiftMatrix F b p)))
-      (matrixDomain F ×ˢ affineDomain F) :=
-    (matrix_pullback_smooth F q hd).comp (inverseShiftMatrix_smooth F b).contDiffOn
-    (fun p hp => inverseShiftMatrix_mem F b p.1 hp.1 p.2 hp.2)
   have hsm' : ContDiffOn ℝ (⊤ : ℕ∞)
       (fun p : Mat F × Y F => q (b⁻¹ * (affineEll F p.2)⁻¹ * matrixClass F p.1))
       (matrixDomain F ×ˢ affineDomain F) := by
-    apply hsm.congr
+    apply ((matrix_pullback_smooth F q hd).comp (inverseShiftMatrix_smooth F b).contDiffOn
+      (fun p hp => inverseShiftMatrix_mem F b p.1 hp.1 p.2 hp.2)).congr
     intro p hp
     change _ = q (matrixClass F (inverseShiftMatrix F b p))
     rw [inverseShiftMatrix_class F b p.1 hp.1 p.2 hp.2]
   exact (joint_spatial_jets_on _ ((matrixDomain_open F).prod (affineDomain_open F)) _ hsm' n).continuousOn
 
-private theorem inverse_shift_jets (q : L F → ℝ) (hd : AffineSmooth F q)
+include hd in
+private theorem inverse_shift_jets
     (b : L F) (n : ℕ) :
     ContinuousOn (fun p : Y F × L F => iteratedFDeriv ℝ n
       (fun x => q (b⁻¹ * (affineEll F x)⁻¹ * p.2)) p.1)
       (affineDomain F ×ˢ univ) := by
   intro p hp
   let ML := localMatrixLift F p.2
-  have hM := localMatrixLift_reconstruct F p.2 p.2
-    (show p.2⁻¹ * p.2 ∈ gaussTarget F by
-      simp only [inv_mul_cancel]; intro w; exact PGLComplex.one_mem_affineTarget)
-  have hML : ContinuousAt (fun u : Y F × L F => ML u.2) p :=
-    (localMatrixLift_continuousAt F p.2).comp_of_eq continuousAt_snd rfl
-  have hJ : ContinuousAt (fun u : Mat F × Y F => iteratedFDeriv ℝ n
-      (fun x => q (b⁻¹ * (affineEll F x)⁻¹ * matrixClass F u.1)) u.2) (ML p.2,p.1) :=
-    (inverse_shift_matrix_jets F q hd b n).continuousAt
-      (((matrixDomain_open F).prod (affineDomain_open F)).mem_nhds ⟨hM.1,hp.1⟩)
-  have hc := hJ.comp_of_eq (hML.prodMk (show ContinuousAt (fun u : Y F × L F => u.1) p from continuousAt_fst)) rfl
-  have he : ∀ᶠ u : Y F × L F in 𝓝 p, ML u.2 ∈ matrixDomain F ∧
-      matrixClass F (ML u.2) = u.2 :=
-    continuousAt_snd (localMatrixLift_eventually F p.2)
   have hEq : (fun u : Y F × L F => iteratedFDeriv ℝ n
       (fun x => q (b⁻¹ * (affineEll F x)⁻¹ * u.2)) u.1) =ᶠ[𝓝 p]
       (fun u => iteratedFDeriv ℝ n
         (fun x => q (b⁻¹ * (affineEll F x)⁻¹ * matrixClass F (ML u.2))) u.1) := by
-    filter_upwards [he] with u hu
+    filter_upwards [(continuousAt_snd (localMatrixLift_eventually F p.2))] with u hu
     rw [hu.2]
-  exact (hc.congr_of_eventuallyEq hEq).continuousWithinAt
+  exact ((((inverse_shift_matrix_jets F q hd b n).continuousAt
+    (((matrixDomain_open F).prod (affineDomain_open F)).mem_nhds ⟨(localMatrixLift_reconstruct F p.2 p.2
+      (show p.2⁻¹ * p.2 ∈ gaussTarget F by
+        simp only [inv_mul_cancel]; intro w; exact PGLComplex.one_mem_affineTarget)).1,hp.1⟩)).comp_of_eq (((localMatrixLift_continuousAt F p.2).comp_of_eq continuousAt_snd rfl).prodMk (show ContinuousAt (fun u : Y F × L F => u.1) p from continuousAt_fst)) rfl).congr_of_eventuallyEq hEq).continuousWithinAt
 
-private theorem inverse_shift_slice (q : L F → ℝ) (hd : AffineSmooth F q)
+include hd in
+private theorem inverse_shift_slice
     (b y : L F) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => q (b⁻¹ * (affineEll F x)⁻¹ * y)) (affineDomain F) := by
-  let M : Mat F := fun w => (y w).out.val
+  let M := fun w => (y w).out.val
   have hM : M ∈ matrixDomain F := fun w => Matrix.GeneralLinearGroup.det_ne_zero _
-  have hc : ContDiff ℝ (⊤ : ℕ∞) (fun x : Y F => inverseShiftMatrix F b (M,x)) :=
-    (inverseShiftMatrix_smooth F b).comp (contDiff_const.prodMk contDiff_id)
-  have H := (matrix_pullback_smooth F q hd).comp hc.contDiffOn
-    (fun x hx => inverseShiftMatrix_mem F b M hM x hx)
-  apply H.congr
+  apply ((matrix_pullback_smooth F q hd).comp ((inverseShiftMatrix_smooth F b).comp (contDiff_const.prodMk contDiff_id)).contDiffOn
+    (fun x hx => inverseShiftMatrix_mem F b M hM x hx)).congr
   intro x hx
   change _ = q (matrixClass F (inverseShiftMatrix F b (M,x)))
   rw [inverseShiftMatrix_class F b M hM x hx, matrixClass_out F]
+
+end
 
 private theorem weighted_inverse_shift_smooth
     {K : Type*} [TopologicalSpace K] [CompactSpace K]
@@ -150,7 +128,7 @@ private theorem weighted_inverse_shift_smooth
     (v : K → L F) (hv : Continuous v) (f : K → ℂ) (hf : Continuous f) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x : Y F =>
       ∫ k, q (b⁻¹ * (affineEll F x)⁻¹ * v k) • f k ∂μ) (affineDomain F) := by
-  let g : Y F → K → ℂ := fun x k => q (b⁻¹ * (affineEll F x)⁻¹ * v k) • f k
+  let g := fun x k => q (b⁻¹ * (affineEll F x)⁻¹ * v k) • f k
   have hslice (k : K) : ContDiffOn ℝ (⊤ : ℕ∞) (fun x => g x k) (affineDomain F) :=
     (inverse_shift_slice F q hd b (v k)).smul contDiffOn_const
   apply CompactJets.contDiffOn_average_of_taylor μ (affineDomain F) (affineDomain_open F) g
@@ -158,14 +136,10 @@ private theorem weighted_inverse_shift_smooth
   · intro k
     exact (hslice k).ftaylorSeriesWithin (affineDomain_open F).uniqueDiffOn
   · intro n
-    have hj : ContinuousOn (fun p : Y F × K => iteratedFDeriv ℝ n
-        (fun x => q (b⁻¹ * (affineEll F x)⁻¹ * v p.2)) p.1) (affineDomain F ×ˢ univ) :=
-      (inverse_shift_jets F q hd b n).comp
-        (continuous_fst.prodMk (hv.comp continuous_snd)).continuousOn
-        (fun p hp => ⟨hp.1, mem_univ _⟩)
-    have hc := ((ContinuousMultilinearMap.smulRightL ℝ (fun _ : Fin n => Y F) ℂ).continuous.comp_continuousOn hj).clm_apply
-      (hf.comp continuous_snd).continuousOn
-    apply hc.congr
+    apply (((ContinuousMultilinearMap.smulRightL ℝ (fun _ : Fin n => Y F) ℂ).continuous.comp_continuousOn ((inverse_shift_jets F q hd b n).comp
+      (continuous_fst.prodMk (hv.comp continuous_snd)).continuousOn
+      (fun p hp => ⟨hp.1, mem_univ _⟩))).clm_apply
+      (hf.comp continuous_snd).continuousOn).congr
     intro p hp
     change iteratedFDerivWithin ℝ n (fun x => g x p.2) (affineDomain F) p.1 = _
     rw [iteratedFDerivWithin_of_isOpen n (affineDomain_open F) hp.1]

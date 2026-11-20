@@ -11,12 +11,12 @@ namespace DedekindZetaZeroFree.FourierContinuation.ResidualPrincipalSlices
 open KPMsGreenFlux KPMsGreenFlux.IntrinsicAveraging KPSmoothActualFlowData
 open KPContActualSphericalRightFieldIdentification KPMsClearedTruncationL2.NativeWordBridge
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 variable {hF : InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
 set_option backward.isDefEq.respectTransparency false
 
 theorem originalUpper_word (U : KPMsFixedHaarDisintegration.Level F ζ hζ) (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (j : Cusps A)

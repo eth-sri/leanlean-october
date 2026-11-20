@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -42,28 +39,29 @@ section transferFrobeniusGeometry
 
 variable {G : Type u} [Group G] [TopologicalSpace G]
 
+section
+
+variable (K K' : ClosedSubgroup G) (hK'K : K'.toSubgroup ≤ K.toSubgroup)
+
 /-- The absolute group of an intermediate field, identified with its
 literal copy inside the absolute group of the base field. -/
-noncomputable def transferNormNaturalityIntermediateAbsoluteEquiv
-    (K K' : ClosedSubgroup G)
-    (hK'K : K'.toSubgroup ≤ K.toSubgroup) :
+noncomputable def transferNormNaturalityIntermediateAbsoluteEquiv :
     K'.toSubgroup ≃* extensionSubgroup K K' hK'K :=
   MulEquiv.ofBijective
     ((Subgroup.inclusion hK'K).codRestrict
       (extensionSubgroup K K' hK'K) (fun k' => k'.2))
     ⟨fun _ _ h => Subtype.ext (congrArg (fun z => z.1.1) h), by
       rintro ⟨k, hk'⟩
-      let k' : K'.toSubgroup := ⟨k.1, hk'⟩
-      exact ⟨k', Subtype.ext rfl⟩⟩
+      exact ⟨(⟨k.1, hk'⟩), Subtype.ext rfl⟩⟩
 
 /-- The absolute intermediate-field equivalence evaluates by the underlying transfer map. -/
 @[simp]
 theorem transferNormNaturalityIntermediateAbsoluteEquiv_apply
-    (K K' : ClosedSubgroup G)
-    (hK'K : K'.toSubgroup ≤ K.toSubgroup)
     (k' : K'.toSubgroup) :
     ((transferNormNaturalityIntermediateAbsoluteEquiv K K' hK'K k').1 : G) = k'.1 :=
   rfl
+
+end
 
 /-- Normality of `L | K` restricts to every intermediate field `K'`. -/
 theorem transferNormNaturality_intermediateExtension_normal
@@ -72,14 +70,6 @@ theorem transferNormNaturality_intermediateExtension_normal
     (hK'K : K'.toSubgroup ≤ K.toSubgroup)
     [hLnormal : (extensionSubgroup K L (hLK'.trans hK'K)).Normal] :
     (extensionSubgroup K' L hLK').Normal := by
-  have hcomap : extensionSubgroup K' L hLK' =
-      (extensionSubgroup K L (hLK'.trans hK'K)).comap
-        (Subgroup.inclusion hK'K) := by
-    ext k'
-    rw [Subgroup.mem_comap, mem_extensionSubgroup_iff,
-      mem_extensionSubgroup_iff]
-    rfl
-  rw [hcomap]
   exact hLnormal.comap (Subgroup.inclusion hK'K)
 
 namespace DegreeData
@@ -103,22 +93,9 @@ theorem transferNormNaturalityFrobeniusTowerMap_injective
   refine QuotientGroup.induction_on y ?_
   intro l' h
   apply QuotientGroup.eq.mpr
-  have hmem :
-      (Subgroup.inclusion E.below k')⁻¹ * Subgroup.inclusion E.below l' ∈
-        D.extensionInertiaWithin E.base.field L (hL.trans E.below) :=
+  have hmem :=
     QuotientGroup.eq.mp h
-  constructor
-  · apply (mem_extensionSubgroup_iff E.field.field L hL (k'⁻¹ * l')).2
-    have hG := (mem_extensionSubgroup_iff E.base.field L
-      (hL.trans E.below)
-      ((Subgroup.inclusion E.below k')⁻¹ *
-        Subgroup.inclusion E.below l')).1 hmem.1
-    simpa using hG
-  · have hI := hmem.2
-    change D.degree (((Subgroup.inclusion E.below k')⁻¹ *
-      Subgroup.inclusion E.below l' : E.base.field.toSubgroup) : G) = 1 at hI
-    change D.degree ((k'⁻¹ * l' : E.field.field.toSubgroup) : G) = 1
-    exact hI
+  exact hmem
 
 /-- The copy of `G(\widetilde L/K')` inside
 `G(\widetilde L/K)`.  This is the subgroup `H` used in the classical
@@ -136,15 +113,16 @@ def transferNormNaturalityFrobeniusIntermediateSubgroup
     E.base.field E.field.field L L
     (hL.trans E.below) hL E.below le_rfl).range
 
+section
+
+variable (D : DegreeData G) [IsTopologicalGroup G] (E : FiniteResidueAbstractExtension D)
+    (L : ClosedSubgroup G) (hL : L.toSubgroup ≤ E.field.field.toSubgroup)
+    [hLnormal : (extensionSubgroup E.base.field L (hL.trans E.below)).Normal]
+    [hL'normal : (extensionSubgroup E.field.field L hL).Normal]
+
 /-- The subgroup above is also the image of `G_K'` under the quotient
 projection `G_K → G(\widetilde L/K)`. -/
-theorem transferNormNaturalityFrobeniusIntermediateSubgroup_eq_map
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (E : FiniteResidueAbstractExtension D) (L : ClosedSubgroup G)
-    (hL : L.toSubgroup ≤ E.field.field.toSubgroup)
-    [hLnormal :
-      (extensionSubgroup E.base.field L (hL.trans E.below)).Normal]
-    [hL'normal : (extensionSubgroup E.field.field L hL).Normal] :
+theorem transferNormNaturalityFrobeniusIntermediateSubgroup_eq_map :
     D.transferNormNaturalityFrobeniusIntermediateSubgroup E L hL =
       (extensionSubgroup E.base.field E.field.field E.below).map
         (QuotientGroup.mk'
@@ -160,19 +138,11 @@ theorem transferNormNaturalityFrobeniusIntermediateSubgroup_eq_map
   · rintro ⟨k, hk', rfl⟩
     let k' : E.field.field.toSubgroup := ⟨k.1, hk'⟩
     refine ⟨QuotientGroup.mk k', ?_⟩
-    change QuotientGroup.mk (Subgroup.inclusion E.below k') =
-      QuotientGroup.mk k
     rfl
 
 /-- Quotient projection maps the literal absolute subgroup belonging to
 `K'` onto its copy `H` inside `G(\widetilde L/K)`. -/
-noncomputable def transferNormNaturalityIntermediateToFrobeniusSubgroup
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (E : FiniteResidueAbstractExtension D) (L : ClosedSubgroup G)
-    (hL : L.toSubgroup ≤ E.field.field.toSubgroup)
-    [hLnormal :
-      (extensionSubgroup E.base.field L (hL.trans E.below)).Normal]
-    [hL'normal : (extensionSubgroup E.field.field L hL).Normal] :
+noncomputable def transferNormNaturalityIntermediateToFrobeniusSubgroup :
     extensionSubgroup E.base.field E.field.field E.below →*
       D.transferNormNaturalityFrobeniusIntermediateSubgroup E L hL := by
   refine ((QuotientGroup.mk'
@@ -180,20 +150,12 @@ noncomputable def transferNormNaturalityIntermediateToFrobeniusSubgroup
       (extensionSubgroup E.base.field E.field.field E.below).subtype).codRestrict
         (D.transferNormNaturalityFrobeniusIntermediateSubgroup E L hL) ?_
   intro m
-  change QuotientGroup.mk m.1 ∈
-    D.transferNormNaturalityFrobeniusIntermediateSubgroup E L hL
   rw [D.transferNormNaturalityFrobeniusIntermediateSubgroup_eq_map
     E L hL]
   exact ⟨m.1, m.2, rfl⟩
 
 /-- The map from the intermediate quotient onto the Frobenius subgroup is surjective. -/
-theorem transferNormNaturalityIntermediateToFrobeniusSubgroup_surjective
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (E : FiniteResidueAbstractExtension D) (L : ClosedSubgroup G)
-    (hL : L.toSubgroup ≤ E.field.field.toSubgroup)
-    [hLnormal :
-      (extensionSubgroup E.base.field L (hL.trans E.below)).Normal]
-    [hL'normal : (extensionSubgroup E.field.field L hL).Normal] :
+theorem transferNormNaturalityIntermediateToFrobeniusSubgroup_surjective :
     Function.Surjective
       (D.transferNormNaturalityIntermediateToFrobeniusSubgroup
         E L hL) := by
@@ -209,34 +171,20 @@ theorem transferNormNaturalityIntermediateToFrobeniusSubgroup_surjective
   refine ⟨⟨m, hm⟩, ?_⟩
   apply Subtype.ext
   unfold transferNormNaturalityIntermediateToFrobeniusSubgroup
-  simpa only [MonoidHom.codRestrict_apply, MonoidHom.comp_apply,
-    Subgroup.subtype_apply] using hval
+  simpa using hval
 
 /-- The intermediate-to-Frobenius map has the stated value on each representative. -/
 @[simp]
 theorem transferNormNaturalityIntermediateToFrobeniusSubgroup_apply
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (E : FiniteResidueAbstractExtension D) (L : ClosedSubgroup G)
-    (hL : L.toSubgroup ≤ E.field.field.toSubgroup)
-    [hLnormal :
-      (extensionSubgroup E.base.field L (hL.trans E.below)).Normal]
-    [hL'normal : (extensionSubgroup E.field.field L hL).Normal]
     (m : extensionSubgroup E.base.field E.field.field E.below) :
     (D.transferNormNaturalityIntermediateToFrobeniusSubgroup
       E L hL m).1 =
         (QuotientGroup.mk m.1 : E.base.field.toSubgroup ⧸
-          D.extensionInertiaWithin E.base.field L (hL.trans E.below)) := by
-  rfl
+          D.extensionInertiaWithin E.base.field L (hL.trans E.below)) := rfl
 
 /-- The canonical coset equivalence from `G_K/G_Σ` to
 `G(\widetilde L/K)/Γ` intertwines the two copies of the `K'`-action. -/
 theorem frobeniusFixedCosetClosureEquiv_equivariant
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (E : FiniteResidueAbstractExtension D) (L : ClosedSubgroup G)
-    (hL : L.toSubgroup ≤ E.field.field.toSubgroup)
-    [hLnormal :
-      (extensionSubgroup E.base.field L (hL.trans E.below)).Normal]
-    [hL'normal : (extensionSubgroup E.field.field L hL).Normal]
     (σ : D.FrobeniusElements E.base L (hL.trans E.below))
     (m : extensionSubgroup E.base.field E.field.field E.below)
     (x : E.base.field.toSubgroup ⧸ extensionSubgroup E.base.field
@@ -249,56 +197,9 @@ theorem frobeniusFixedCosetClosureEquiv_equivariant
           (hL.trans E.below) σ x := by
   refine Quotient.inductionOn' x ?_
   intro k
-  change QuotientGroup.mk (QuotientGroup.mk (m.1 * k)) =
-    QuotientGroup.mk
-      ((D.transferNormNaturalityIntermediateToFrobeniusSubgroup
-        E L hL m).1 * QuotientGroup.mk k)
-  rw [D.transferNormNaturalityIntermediateToFrobeniusSubgroup_apply]
   rfl
 
-/-- Restriction from the infinite Frobenius quotient onto the finite
-Galois quotient is surjective. -/
-theorem transferNormNaturalityExtensionRestriction_surjective
-    (D : DegreeData G)
-    (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal] :
-    Function.Surjective (D.extensionRestriction K L hLK) := by
-  intro q
-  refine QuotientGroup.induction_on q ?_
-  intro k
-  exact ⟨QuotientGroup.mk k, rfl⟩
-
-/-- The kernel of restriction to `G(L/K)` is contained in the subgroup
-coming from `G(\widetilde L/K')`. -/
-theorem transferNormNaturalityExtensionRestriction_ker_le_intermediate
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (E : FiniteResidueAbstractExtension D) (L : ClosedSubgroup G)
-    (hL : L.toSubgroup ≤ E.field.field.toSubgroup)
-    [hLnormal :
-      (extensionSubgroup E.base.field L (hL.trans E.below)).Normal]
-    [hL'normal : (extensionSubgroup E.field.field L hL).Normal] :
-    (D.extensionRestriction E.base.field L (hL.trans E.below)).ker ≤
-      D.transferNormNaturalityFrobeniusIntermediateSubgroup E L hL := by
-  rw [D.transferNormNaturalityFrobeniusIntermediateSubgroup_eq_map
-    E L hL]
-  intro q hq
-  revert hq
-  refine QuotientGroup.induction_on q ?_
-  intro k hk
-  change D.extensionRestriction E.base.field L (hL.trans E.below)
-      (QuotientGroup.mk k) = 1 at hk
-  rw [D.extensionRestriction_mk] at hk
-  have hkL : k ∈
-      extensionSubgroup E.base.field L (hL.trans E.below) := by
-    exact QuotientGroup.eq_one_iff k |>.1 hk
-  have hkK' : k ∈
-      extensionSubgroup E.base.field E.field.field E.below := by
-    apply (mem_extensionSubgroup_iff
-      E.base.field E.field.field E.below k).2
-    exact hL ((mem_extensionSubgroup_iff E.base.field L
-      (hL.trans E.below) k).1 hkL)
-  exact ⟨k, hkK', rfl⟩
+end
 
 /-- `H` has finite index in `G(\widetilde L/K)`, with no normality
 assumption on the intermediate extension `K'/K`. -/
@@ -341,24 +242,17 @@ theorem transferNormNaturalityFrobeniusIntermediate_isClosed
       E L hL : Set
         (E.base.field.toSubgroup ⧸ D.extensionInertiaWithin E.base.field L
           (hL.trans E.below))) := by
-  let : CompactSpace E.field.field.toSubgroup :=
+  let :=
     isCompact_iff_compactSpace.mp E.field.field.isClosed'.isCompact
-  let : IsClosed
-      (D.extensionInertiaWithin E.field.field L hL :
-        Set E.field.field.toSubgroup) :=
+  let :=
     D.extensionInertiaWithin_isClosed E.field L hL
-  let : IsClosed (D.extensionInertiaWithin E.base.field L
-      (hL.trans E.below) : Set E.base.field.toSubgroup) :=
+  let :=
     D.extensionInertiaWithin_isClosed E.base L (hL.trans E.below)
   let f := D.finiteReciprocityNaturalityFrobeniusTowerMapContinuous
     E.base.field E.field.field L L
     (hL.trans E.below) hL E.below le_rfl
   change IsClosed (Set.range f)
-  have hrange : Set.range f = Set.range f.toContinuousMap := by
-    ext y
-    constructor <;> rintro ⟨x, rfl⟩ <;> exact ⟨x, rfl⟩
-  rw [hrange]
-  simpa only [Set.image_univ] using
+  simpa using
     (isCompact_univ.image f.continuous).isClosed
 
 /-- The transfer-orbit index set
@@ -425,74 +319,6 @@ noncomputable def transferNormNaturalityTransferNormOrbitEquiv
   exact (orbitQuotientSwapEquiv (Subgroup.zpowers σ.1) H).trans
     ((orbitQuotientClosedCyclicEquiv H hHclosed σ.1).trans
       (eΓorbit.trans eAction.symm))
-
-/-- The transfer-norm orbit equivalence sends quotient representatives to their norm orbits. -/
-@[simp]
-theorem transferNormNaturalityTransferNormOrbitEquiv_mk
-    (D : DegreeData G) [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (E : FiniteResidueAbstractExtension D) (L : ClosedSubgroup G)
-    (hL : L.toSubgroup ≤ E.field.field.toSubgroup)
-    [hLnormal :
-      (extensionSubgroup E.base.field L (hL.trans E.below)).Normal]
-    [hL'normal : (extensionSubgroup E.field.field L hL).Normal]
-    (σ : D.FrobeniusElements E.base L (hL.trans E.below))
-    (k : E.base.field.toSubgroup) :
-    D.transferNormNaturalityTransferNormOrbitEquiv E L hL σ
-        (Quotient.mk'' (QuotientGroup.mk
-          (QuotientGroup.mk k : E.base.field.toSubgroup ⧸
-            D.extensionInertiaWithin E.base.field L (hL.trans E.below)) :
-          (E.base.field.toSubgroup ⧸ D.extensionInertiaWithin E.base.field L
-            (hL.trans E.below)) ⧸
-              D.transferNormNaturalityFrobeniusIntermediateSubgroup
-                E L hL)) =
-      Quotient.mk'' (QuotientGroup.mk k⁻¹ :
-        E.base.field.toSubgroup ⧸ extensionSubgroup E.base.field
-          (D.frobeniusFixedField E.base L (hL.trans E.below) σ)
-          (D.frobeniusFixedField_le E.base L
-            (hL.trans E.below) σ)) := by
-  unfold transferNormNaturalityTransferNormOrbitEquiv
-  simp only [Equiv.trans_apply, orbitQuotientSwapEquiv_mk,
-    orbitQuotientClosedCyclicEquiv_mk,
-    orbitQuotientEquivOfSurjectiveEquivariant_mk,
-    orbitQuotientEquivOfSurjectiveEquivariant_symm_mk,
-    Subgroup.quotientEquivOfEq_mk]
-  apply congrArg Quotient.mk''
-  exact (D.frobeniusFixedCosetClosureEquiv E.base L
-    (hL.trans E.below) σ).symm_apply_apply (QuotientGroup.mk k⁻¹)
-
-/-- On the classical chosen transfer representative `t`, the preceding
-equivalence is literally the norm orbit represented by `t⁻¹`. -/
-theorem transferNormNaturalityTransferNormOrbitEquiv_apply
-    (D : DegreeData G) [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (E : FiniteResidueAbstractExtension D) (L : ClosedSubgroup G)
-    (hL : L.toSubgroup ≤ E.field.field.toSubgroup)
-    [hLnormal :
-      (extensionSubgroup E.base.field L (hL.trans E.below)).Normal]
-    [hL'normal : (extensionSubgroup E.field.field L hL).Normal]
-    (σ : D.FrobeniusElements E.base L (hL.trans E.below))
-    (q : Quotient (orbitRel (Subgroup.zpowers σ.1)
-      ((E.base.field.toSubgroup ⧸ D.extensionInertiaWithin E.base.field L
-        (hL.trans E.below)) ⧸
-          D.transferNormNaturalityFrobeniusIntermediateSubgroup
-            E L hL))) :
-    D.transferNormNaturalityTransferNormOrbitEquiv E L hL σ q =
-      Quotient.mk'' (QuotientGroup.mk (Quotient.out q.out.out)⁻¹ :
-        E.base.field.toSubgroup ⧸ extensionSubgroup E.base.field
-          (D.frobeniusFixedField E.base L (hL.trans E.below) σ)
-          (D.frobeniusFixedField_le E.base L
-            (hL.trans E.below) σ)) := by
-  let orbitEquiv := D.transferNormNaturalityTransferNormOrbitEquiv E L hL σ
-  calc
-    orbitEquiv q = orbitEquiv (Quotient.mk'' q.out) :=
-      congrArg orbitEquiv (Quotient.out_eq' q).symm
-    _ = orbitEquiv (Quotient.mk'' (QuotientGroup.mk q.out.out)) :=
-      congrArg orbitEquiv (congrArg Quotient.mk'' (Quotient.out_eq' q.out).symm)
-    _ = orbitEquiv (Quotient.mk'' (QuotientGroup.mk
-        (QuotientGroup.mk (Quotient.out q.out.out)))) :=
-      congrArg orbitEquiv (congrArg Quotient.mk''
-        (congrArg QuotientGroup.mk (Quotient.out_eq' q.out.out).symm))
-    _ = _ := D.transferNormNaturalityTransferNormOrbitEquiv_mk
-      E L hL σ (Quotient.out q.out.out)
 
 end DegreeData
 

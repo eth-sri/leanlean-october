@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -36,78 +33,64 @@ open ValuationTheory.DiscreteValuationField
 open ValuationTheory.DiscreteValuationField.ResidueField
 open ValuationTheory.DiscreteValuationField.ValuedExtension
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+
 /-- The completed multiplicative level has residue degree one over the
 completed-unramified coefficient field. -/
-theorem padicCompletedLevel_residueDegree_eq_one
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedLevel_residueDegree_eq_one :
     residueDegree
         (padicCompletedUnramifiedCompleteDVF p).toDVF
         (padicCompletedLevelCompleteDVF p n).toDVF = 1 := by
   let base := padicCompletedUnramifiedCompleteDVF p
   let target := padicCompletedLevelCompleteDVF p n
-  let E := padicCompletedLevelField p n
   let : IsScalarTower base.valuationSubring
-      target.valuationSubring E :=
+      target.valuationSubring (padicCompletedLevelField p n) :=
     IsScalarTower.of_algebraMap_eq' rfl
   exact
     (residueDegree_eq_one_iff_ramificationIndex_eq_degree_of_finite_separable
       base target).2
       (by
-        simpa only [base, target] using
-          padicCompletedLevel_ramificationIndex_eq_degree p n)
+        apply padicCompletedLevel_ramificationIndex_eq_degree)
 
 /-- The target residue field has linear rank one over the
 completed-unramified residue field. -/
-theorem padicCompletedLevel_residueField_finrank_eq_one
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedLevel_residueField_finrank_eq_one :
     Module.finrank
         (padicCompletedUnramifiedCompleteDVF p).residueField
         (padicCompletedLevelCompleteDVF p n).residueField = 1 := by
   let base := padicCompletedUnramifiedCompleteDVF p
   let target := padicCompletedLevelCompleteDVF p n
-  let E := padicCompletedLevelField p n
   let : IsScalarTower base.valuationSubring
-      target.valuationSubring E :=
+      target.valuationSubring (padicCompletedLevelField p n) :=
     IsScalarTower.of_algebraMap_eq' rfl
-  let : target.maximalIdeal.LiesOver base.maximalIdeal :=
+  let :=
     maximalIdeal_liesOver base target
   have hfinrank :
       residueDegree base.toDVF target.toDVF =
         Module.finrank base.residueField target.residueField := by
     rw [residueDegree_eq_finrank_quotient base target]
     rfl
-  change Module.finrank base.residueField target.residueField = 1
   calc
     Module.finrank base.residueField target.residueField =
         residueDegree base.toDVF target.toDVF :=
       hfinrank.symm
     _ = 1 := by
-      simpa only [base, target] using
-        padicCompletedLevel_residueDegree_eq_one p n
+      exact padicCompletedLevel_residueDegree_eq_one p n
 
 /-- The canonical residue map from the completed-unramified coefficient
 field onto the completed level is surjective. -/
-theorem padicCompletedLevel_residueMap_surjective
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedLevel_residueMap_surjective :
     Function.Surjective
       (residueMap
         (padicCompletedUnramifiedCompleteDVF p).toDVF
         (padicCompletedLevelCompleteDVF p n).toDVF) := by
-  let base := padicCompletedUnramifiedCompleteDVF p
-  let target := padicCompletedLevelCompleteDVF p n
-  have hbijective :
-      Function.Bijective
-        (algebraMap base.residueField target.residueField) :=
-    (Algebra.finrank_eq_one_iff_bijective_algebraMap).1
-      (by
-        simpa only [base, target] using
-          padicCompletedLevel_residueField_finrank_eq_one p n)
-  exact hbijective.2
+  exact (Algebra.finrank_eq_one_iff_bijective_algebraMap.mp (padicCompletedLevel_residueField_finrank_eq_one p n)).right
 
 /-- The canonical residue-field equivalence from the completed-unramified
 coefficient field to a completed multiplicative level. -/
-noncomputable def padicCompletedLevelResidueFieldEquiv
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicCompletedLevelResidueFieldEquiv :
     (padicCompletedUnramifiedCompleteDVF p).residueField ≃+*
       (padicCompletedLevelCompleteDVF p n).residueField :=
   residueFieldEquivOfSurjective
@@ -119,7 +102,6 @@ noncomputable def padicCompletedLevelResidueFieldEquiv
 residue map. -/
 @[simp]
 theorem padicCompletedLevelResidueFieldEquiv_apply
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (x : (padicCompletedUnramifiedCompleteDVF p).residueField) :
     padicCompletedLevelResidueFieldEquiv p n x =
       residueMap
@@ -127,23 +109,7 @@ theorem padicCompletedLevelResidueFieldEquiv_apply
         (padicCompletedLevelCompleteDVF p n).toDVF x :=
   rfl
 
-/-- On integral representatives, the completed-level residue equivalence is
-the residue of the canonical valuation-ring inclusion. -/
-@[simp]
-theorem padicCompletedLevelResidueFieldEquiv_apply_residue
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (a : (padicCompletedUnramifiedCompleteDVF p).valuationSubring) :
-    padicCompletedLevelResidueFieldEquiv p n
-        ((padicCompletedUnramifiedCompleteDVF p).residueMap a) =
-      (padicCompletedLevelCompleteDVF p n).residueMap
-        (integerMap
-          (padicCompletedUnramifiedCompleteDVF p).toDVF
-          (padicCompletedLevelCompleteDVF p n).toDVF a) := by
-  exact
-    residueFieldEquivOfSurjective_apply_residue
-      (padicCompletedUnramifiedCompleteDVF p).toDVF
-      (padicCompletedLevelCompleteDVF p n).toDVF
-      (padicCompletedLevel_residueMap_surjective p n) a
+end
 
 private theorem
     padicCompletedUnramifiedWitt_residue_frobenius_eq_pow
@@ -153,19 +119,13 @@ private theorem
         (WittVector.frobenius a) =
       IsLocalRing.residue (padicCompletedUnramifiedWittRing p) a ^ p := by
   calc
-    IsLocalRing.residue (padicCompletedUnramifiedWittRing p)
-        (WittVector.frobenius a) =
+    _ =
         IsLocalRing.residue (padicCompletedUnramifiedWittRing p)
           (a ^ p) := by
       rw [residue_eq_residue_iff_sub_mem_maximalIdeal,
         padicCompletedUnramifiedWittRing_maximalIdeal,
         ← WittVector.ker_constantCoeff]
-      change
-        WittVector.constantCoeff
-          (WittVector.frobenius a - a ^ p) = 0
-      rw [map_sub, map_pow, WittVector.constantCoeff_apply,
-        WittVector.coeff_frobenius_charP]
-      exact sub_self _
+      simp [map_sub, map_pow, WittVector.constantCoeff_apply]
     _ =
         IsLocalRing.residue (padicCompletedUnramifiedWittRing p) a ^ p := by
       rw [map_pow]
@@ -182,13 +142,9 @@ theorem
         (padicCompletedUnitFrobeniusIntegerEquiv p n u) x =
       x ^ p := by
   let W := padicCompletedUnramifiedWittRing p
-  let base := padicCompletedUnramifiedCompleteDVF p
   let target := padicCompletedLevelCompleteDVF p n
-  let wittIntegerEquiv : W ≃+* base.valuationSubring :=
-    padicCompletedUnramifiedWittRingEquivValuationSubring p
-  let coefficientResidueEquiv :
-      IsLocalRing.ResidueField W ≃+* target.residueField :=
-    (IsLocalRing.ResidueField.mapEquiv wittIntegerEquiv).trans
+  let coefficientResidueEquiv :=
+    (IsLocalRing.ResidueField.mapEquiv (padicCompletedUnramifiedWittRingEquivValuationSubring p)).trans
       (padicCompletedLevelResidueFieldEquiv p n)
   have hcoefficient (a : W) :
       coefficientResidueEquiv (IsLocalRing.residue W a) =
@@ -200,13 +156,10 @@ theorem
   obtain ⟨z, rfl⟩ := coefficientResidueEquiv.surjective x
   obtain ⟨a, rfl⟩ := IsLocalRing.residue_surjective z
   calc
-    IsLocalRing.ResidueField.mapEquiv
-        (padicCompletedUnitFrobeniusIntegerEquiv p n u)
-        (coefficientResidueEquiv (IsLocalRing.residue W a)) =
+    _ =
         target.residueMap
           (padicCompletedUnitFrobeniusIntegerEquiv p n u
             (padicCompletedLevelWittCoefficientHom p n a)) := by
-      rw [hcoefficient]
       rfl
     _ =
         target.residueMap

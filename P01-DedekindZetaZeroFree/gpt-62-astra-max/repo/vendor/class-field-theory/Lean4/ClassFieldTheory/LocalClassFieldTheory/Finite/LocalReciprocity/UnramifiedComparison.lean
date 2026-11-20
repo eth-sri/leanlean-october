@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -50,19 +44,23 @@ private theorem localSeparableResidueExtension_isAlgebraic
 
 attribute [local instance] localSeparableResidueExtension_isAlgebraic
 
+ section
 
- abbrev unramifiedComparisonAbsoluteGalois (K : Type) [Field K] :=
+variable (K : Type) [Field K]
+
+abbrev unramifiedComparisonAbsoluteGalois :=
   intrinsicAbsoluteGalois K
 
- abbrev unramifiedComparisonAbstractBase (K : Type) [Field K] :
+ abbrev unramifiedComparisonAbstractBase :
     ClosedSubgroup (unramifiedComparisonAbsoluteGalois K) :=
   intrinsicAbstractBase K
 
- noncomputable def finiteResidueAbstractBase
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
+ noncomputable def finiteResidueAbstractBase [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] :
     DegreeData.FiniteResidueAbstractField (localResidueDatum K) :=
   (intrinsicFiniteAbstractBase K).toFiniteResidueAbstractField (localResidueDatum K)
+
+end
 
 section BaseResidueDegree
 
@@ -79,7 +77,6 @@ theorem intrinsicFiniteAbstractBase_residueDegree_eq_one :
 
 private theorem finiteResidueAbstractBase_residueDegree_eq_one :
     ((finiteResidueAbstractBase K).residueDegree : ℕ) = 1 := by
-  change ((intrinsicFiniteAbstractBase K).residueDegree (localResidueDatum K) : ℕ) = 1
   exact intrinsicFiniteAbstractBase_residueDegree_eq_one K
 
 end BaseResidueDegree
@@ -230,12 +227,9 @@ noncomputable def finiteGaloisResidueEmbeddingOfEmbedding :
   letI : IsLocalRing ((localSeparableValuationSubring K).comap i.toRingHom).toSubring := by
     change IsLocalRing ((localSeparableValuationSubring K).comap i.toRingHom)
     infer_instance
-  let e : (ValuativeRel.valuation L).integer ≃+*
-      ((localSeparableValuationSubring K).comap i.toRingHom).toSubring :=
-    RingEquiv.subringCongr h.symm
   exact (valuationSubringComapResidueMap
-      (F := L) (localSeparableValuationSubring K)).comp
-    (IsLocalRing.ResidueField.mapEquiv e).toRingHom
+       (localSeparableValuationSubring K)).comp
+    (IsLocalRing.ResidueField.mapEquiv (RingEquiv.subringCongr h.symm)).toRingHom
 
 omit [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] in
 /-- The residue embedding is reduction of the original field embedding. -/
@@ -265,7 +259,7 @@ theorem finiteGaloisResidueEmbeddingOfEmbedding_equivariant
       localSeparableResidueAlgAction K τ.1
         (finiteGaloisResidueEmbeddingOfEmbedding K L i x) := by
   let A := localSeparableValuationSubring K
-  let σ : Gal(L / K) :=
+  let σ :=
     finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding K L i
       (QuotientGroup.mk τ)
   obtain ⟨a, rfl⟩ := IsLocalRing.residue_surjective x
@@ -275,10 +269,10 @@ theorem finiteGaloisResidueEmbeddingOfEmbedding_equivariant
         rw [localSeparableValuationSubring_comap_embedding K L i]
         exact y.property
       exact hy⟩
-  let σa : 𝒪[L] :=
+  let σa :=
     galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ a
-  let aA : A := jO a
-  let σaA : A := jO σa
+  let aA := jO a
+  let σaA := jO σa
   let τD : decompositionGroup K A :=
     toDecompositionGroupOfEqTop K A
       (localSeparableDecompositionGroup_eq_top K) τ.1
@@ -287,9 +281,7 @@ theorem finiteGaloisResidueEmbeddingOfEmbedding_equivariant
     exact finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding_mk_apply
       K L i τ (a : L)
   calc
-    finiteGaloisResidueEmbeddingOfEmbedding K L i
-        (galoisGroupResidueAlgEquivOfIsIntegralClosure K L σ
-          (IsLocalRing.residue 𝒪[L] a)) =
+    _ =
       finiteGaloisResidueEmbeddingOfEmbedding K L i
         (IsLocalRing.residue 𝒪[L] σa) := by
           congr 1
@@ -324,7 +316,7 @@ theorem finiteGaloisAbstractExtensionOfEmbedding_isUnramified :
   let k := decompositionResidueField K A
   let Omega := selectedResidueField A
   let τ : (unramifiedComparisonAbstractBase K).toSubgroup := ⟨g, hg.1⟩
-  let q : Gal(L / K) :=
+  let q :=
     finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding K L i
       (QuotientGroup.mk τ)
   have hdegree : localResidueDegree K g = 1 := hg.2
@@ -348,9 +340,6 @@ theorem finiteGaloisAbstractExtensionOfEmbedding_isUnramified :
     intro x
     apply (finiteGaloisResidueEmbeddingOfEmbedding K L i).injective
     rw [finiteGaloisResidueEmbeddingOfEmbedding_equivariant K L i τ x]
-    change localSeparableResidueAlgAction K g
-        (finiteGaloisResidueEmbeddingOfEmbedding K L i x) =
-      finiteGaloisResidueEmbeddingOfEmbedding K L i x
     rw [hlocal]
     rfl
   have hq : q = 1 := by
@@ -397,16 +386,10 @@ theorem finiteGaloisAbstractUnramifiedFrobenius_eq_arithmeticFrobenius :
           (finiteGaloisAbstractExtensionOfEmbedding K L i).below) =
       arithmeticFrobeniusOfUnramifiedValuation K L := by
   let phi := abstractBaseFrobeniusLift K
-  let q : Gal(L / K) :=
+  let q :=
     finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding K L i
       (QuotientGroup.mk phi)
-  have hselected :
-      localSeparableResidueAlgAction K phi.1 =
-        FiniteField.frobeniusAlgEquivOfAlgebraic
-          (decompositionResidueField K
-            (localSeparableValuationSubring K))
-          (selectedResidueField
-            (localSeparableValuationSubring K)) :=
+  have hselected :=
     localSeparableResidueAlgAction_eq_frobenius_of_degree_one K phi.1
       (abstractBaseFrobeniusLift_degree K)
   have hcard :
@@ -433,7 +416,6 @@ theorem finiteGaloisAbstractUnramifiedFrobenius_eq_arithmeticFrobenius :
       galoisGroupResidueAlgEquivHomOfIsIntegralClosure_injective_of_unramifiedValuation
         K L
     exact hresidue
-  change q = arithmeticFrobeniusOfUnramifiedValuation K L
   exact hq
 
 end AbstractUnramifiedFrobenius

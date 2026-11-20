@@ -10,13 +10,13 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ComplexLines
 open LiteralSource MomentSources HCGeneration TensorActionSource KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 local notation "H" => actualImageData R P C μ hμ
 local notation "W" => actualLocal R H
 local notation "E" => bad R.A P C
@@ -36,7 +36,7 @@ theorem actualSlot_source_lift (N : TraceHaarTransport R)
     ∃y : ∀j : s.val,Plus R.A P C j.val, ∀v : complexCore,
       actualCoreResidue R P C μ hμ N (actualSlotTensor R P C μ hμ s x w hw v) =
       coreResidue R P C (restrictedSlotTensor R.A P C s y w hw v) := by
-  let y : ∀j : s.val,Plus R.A P C j.val := fun j =>
+  let y := fun j =>
     Classical.choose (localImageQuotient_surjective R P C H j.val (x j))
   have hy : (fun j : s.val => localImageQuotient R P C H j.val (y j)) = x := by
     funext j
@@ -46,15 +46,13 @@ theorem actualSlot_source_lift (N : TraceHaarTransport R)
   have he : sourceStageQuotient R H s.val
       (PiTensorProduct.tprod ℂ (Function.update y ⟨Sum.inl w,hw⟩ (harmonicInverse v))) =
       PiTensorProduct.tprod ℂ (Function.update x ⟨Sum.inl w,hw⟩ v) := by
-    change stageImageQuotient R P C H s _ = _
     exact (stageImageQuotient_variable_slot R P C H s y w hw v).trans
       (congrArg (fun z : ∀j : s.val,W j.val =>
         PiTensorProduct.tprod ℂ (Function.update z ⟨Sum.inl w,hw⟩ v)) hy)
-  have hh := actualCoreResidue_source_stage R P C μ hμ N s
-    (PiTensorProduct.tprod ℂ (Function.update y ⟨Sum.inl w,hw⟩ (harmonicInverse v)))
   exact (congrArg (fun z : RestrictedTensorSimple.Stage W s.val =>
     actualCoreResidue R P C μ hμ N
-      (RestrictedTensorSimple.stageInclusion W e E s z)) he.symm).trans hh
+      (RestrictedTensorSimple.stageInclusion W e E s z)) he.symm).trans (actualCoreResidue_source_stage R P C μ hμ N s
+        (PiTensorProduct.tprod ℂ (Function.update y ⟨Sum.inl w,hw⟩ (harmonicInverse v))))
 
 theorem actualSlot_period_lift (N : TraceHaarTransport R)
     (s : RestrictedTensorSimple.Level E) (x : ∀j : s.val,W j.val)

@@ -76,10 +76,6 @@ def radialSection (w : NumberField.InfinitePlace F) (r : Radius) : Cover F ζ h�
 structure RadialData where
   slot : NumberField.InfinitePlace F
   ell : Radius → KPGlobalTorusFunctionData.Ideles F
-  continuous_ell : Continuous ell
-  ell_one : ell ⟨1, by norm_num⟩ = 1
-  ell_mul : ∀ r s : Radius,
-    ell ⟨r.val * s.val, mul_pos r.property s.property⟩ = ell r * ell s
   ell_cube : ∀ r, ∃ u : KPGlobalTorusFunctionData.Ideles F, u ^ 3 = ell r
   ell_slots : ∀ r v,
     KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inl v) (ell r : KPAdeles F) =
@@ -110,7 +106,7 @@ def radialMeasure : Measure ℝ :=
 section Atlas
 variable {F ζ hζ}
 variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : Level F ζ hζ} (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {U : Level F ζ hζ} (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
 abbrev CuspIndex := Σ i : Fin A.componentCount, Fin (A.cuspAtlas i).cuspCount
 
@@ -211,7 +207,6 @@ structure GeometricDisintegration (R : KPSmoothLocalQuotientCharts.HaarRecipe F 
 
 structure RadialIntegration (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : SphericalTransport F ζ hζ) (D : GeometricDisintegration A R P) : Prop where
-
   cusp_integral : ∀ Y (hY : AdmissibleCutoff A Y)
       (φ : Spherical F ζ hζ U → ℝ≥0∞), Measurable φ →
     (∫⁻ x in cuspEnds A Y, φ x ∂sphericalMeasure F ζ hζ R P U) =
@@ -240,33 +235,7 @@ structure LevelCompatibility
     (AV : KPFiniteCuspAtlas.Atlas F ζ hζ hF V)
     (AU : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (DV : GeometricDisintegration AV R P) (DU : GeometricDisintegration AU R P) where
-  cuspForget : CuspIndex AV → CuspIndex AU
-  radiusScale : CuspIndex AV → Radius
-  angularForget : Omega AV → Omega AU
-  measurable_angularForget : Measurable angularForget
-  angular_label : ∀ ω, (angularForget ω).1 = cuspForget ω.1
-  crossForget : CrossSection AV → CrossSection AU
-  measurable_crossForget : Measurable crossForget
-  cross_label : ∀ x, (crossForget x).1 = cuspForget x.1
-  projection_commutes : ∀ x,
-    angularProjection AU (crossForget x) = angularForget (angularProjection AV x)
-  induced_angular : Measure.map angularForget
-      (DV.beta.withDensity (fun ω => ENNReal.ofReal (radiusScale ω.1).val)) = DU.beta
-  induced_probability : Measure.map angularForget
-      (probability AV (DV.beta.withDensity
-        (fun ω => ENNReal.ofReal (radiusScale ω.1).val))) = probability AU DU.beta
-  coefficient : kappa AU R P DU =
-    ((DV.beta.withDensity (fun ω => ENNReal.ofReal (radiusScale ω.1).val)) Set.univ).toReal
   common_slot : DV.radial.slot = DU.radial.slot
-  chart_commutes : ∀ YV YU (hV : AdmissibleCutoff AV YV) (hU : AdmissibleCutoff AU YU)
-      (x : CrossSection AV) (r : Set.Ioi YV)
-      (hr : YU < (radiusScale x.1).val * r.val),
-    P.forget V U h (DV.chart YV hV (x,r)) =
-      DU.chart YU hU (crossForget x, ⟨(radiusScale x.1).val * r.val,hr⟩)
-  induced_kernel : ∀ f : CrossSection AU → ℝ≥0∞, Measurable f →
-    (∫⁻ ω, ENNReal.ofReal (radiusScale ω.1).val *
-      ∫⁻ x, f (crossForget x) ∂DV.unipotent ω ∂DV.beta) =
-      ∫⁻ ω, ∫⁻ x, f x ∂DU.unipotent ω ∂DU.beta
 
 structure AllLevels (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : SphericalTransport F ζ hζ) where

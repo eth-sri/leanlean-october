@@ -19,7 +19,7 @@ private theorem zero_derivative {n k : ℕ} (f : Space n → ℂ) :
     intro l
     induction l with
     | nil => rfl
-    | cons i l ih => simpa using ih
+    | cons i l ih => exact ih
   simp [coordinateDerivative, MultiIndex.directions, coordinateDerivativeList, he]
 
 theorem exists_sobolev_bound_of_coordinate_lpNorm {n k : ℕ} (A : LocalBall n) :
@@ -33,19 +33,17 @@ theorem exists_sobolev_bound_of_coordinate_lpNorm {n k : ℕ} (A : LocalBall n) 
         f =ᵐ[volume.restrict A.carrier]
           (fun x => u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x) ∧
         u.sobolevNorm ≤ C * B := by
-  let C : ℝ := 1 + Real.sqrt (Fintype.card (MultiIndex n k))
-  have hC : 0 < C := by dsimp [C]; positivity
-  refine ⟨C, hC, ?_⟩
+  let C := 1 + Real.sqrt (Fintype.card (MultiIndex n k))
+  refine ⟨C, by dsimp [C]; positivity, ?_⟩
   intro f hf hLp B hB hb
   obtain ⟨u, hu⟩ := smooth_has_integerSobolev_data A f hf hLp
   refine ⟨u, ?_, ?_⟩
-  · have hz := (hLp (⟨fun _ => 0, by simp⟩ : MultiIndex n k)).coeFn_toLp
-    rw [hu]
-    simpa only [zero_derivative] using hz.symm
+  · rw [hu]
+    simpa only [zero_derivative] using ((hLp (⟨fun _ => 0, by simp⟩ : MultiIndex n k)).coeFn_toLp).symm
   · have hn : u.normSq ≤ (Fintype.card (MultiIndex n k) : ℝ) * B ^ 2 := by
       unfold IntegerSobolev.normSq
       calc
-        ∑ α : MultiIndex n k, ‖u.derivatives α‖ ^ 2 ≤ ∑ _α : MultiIndex n k, B ^ 2 := by
+        _ ≤ ∑ _α : MultiIndex n k, B ^ 2 := by
           apply Finset.sum_le_sum
           intro α _
           rw [hu α]
@@ -97,7 +95,7 @@ private theorem finite_lp_combination {E I : Type*} [MeasurableSpace E] [Fintype
         ∑ i, b i * ‖(hv i).toLp (v i)‖ := by
   let t := fun i x => c i x • v i x
   have ht (i : I) : MemLp (t i) 2 μ := by
-    apply (hv i).of_le_mul (c := b i) ((hc i).smul (hv i).aestronglyMeasurable)
+    apply (hv i).of_le_mul ((hc i).smul (hv i).aestronglyMeasurable)
     filter_upwards [hbound i] with x hx
     change ‖c i x • v i x‖ ≤ b i * ‖v i x‖
     rw [norm_smul]
@@ -114,7 +112,6 @@ private theorem finite_lp_combination {E I : Type*} [MeasurableSpace E] [Fintype
     filter_upwards [hsum.coeFn_toLp, Lp.coeFn_fun_finsetSum (Finset.univ) (fun i => (ht i).toLp (t i)),
       ae_all_iff.mpr (fun i => (ht i).coeFn_toLp)] with x hx hy hz
     rw [hx, hy]
-    change (∑ i, t i x) = ∑ i, ((ht i).toLp (t i)) x
     exact Finset.sum_congr rfl (fun i _ => (hz i).symm)
   rw [heq]
   exact (norm_sum_le _ _).trans (Finset.sum_le_sum (fun i _ => hn i))
@@ -135,21 +132,19 @@ theorem exists_finite_frame_word_sobolev_bound {n k : ℕ} {B : Type*} [Fintype 
             (fun x => u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x) ∧
           u.sobolevNorm ≤ C * M := by
   classical
-  have hsub : A.carrier ⊆ U := Metric.ball_subset_closedBall.trans hA
+  have hsub := Metric.ball_subset_closedBall.trans hA
   have htransport (α : MultiIndex n k) := transport U U hU hU fields hfields hframe
     id contDiffOn_id (fun x hx => hx) (α.directions.map (fun i => EuclideanSpace.single i 1))
   choose N c w hc hw he using htransport
-  have hclosed : IsCompact (Metric.closedBall A.center A.radius) := isCompact_closedBall _ _
-  choose b hb using fun (α : MultiIndex n k) (i : Fin (N α)) =>
-    hclosed.exists_bound_of_continuousOn ((hc α i).continuousOn.mono hA)
-  let J := Σ α : MultiIndex n k, Fin (N α)
-  let S : Finset (List B) := Finset.univ.image (fun p : J => w p.1 p.2)
+  choose b hb using fun α i =>
+    (isCompact_closedBall _ _).exists_bound_of_continuousOn ((hc α i).continuousOn.mono hA)
+  let S := Finset.univ.image (fun p : (Σ α : MultiIndex n k, Fin (N α)) => w p.1 p.2)
   have hmem (α : MultiIndex n k) (i : Fin (N α)) : w α i ∈ S :=
     Finset.mem_image.mpr ⟨⟨α, i⟩, Finset.mem_univ _, rfl⟩
   let b' := fun α i => max (b α i) 0
-  let D : ℝ := 1 + ∑ α : MultiIndex n k, ∑ i : Fin (N α), b' α i
+  let D := 1 + ∑ α : MultiIndex n k, ∑ i : Fin (N α), b' α i
   have hD : 0 < D := by dsimp [D, b']; positivity
-  obtain ⟨C, hC, hSob⟩ := CoordinateSobolevBound.exists_sobolev_bound_of_coordinate_lpNorm (k := k) A
+  obtain ⟨C, hC, hSob⟩ := CoordinateSobolevBound.exists_sobolev_bound_of_coordinate_lpNorm A
   refine ⟨S, ?_, C * D, mul_pos hC hD, ?_⟩
   · intro r hr
     obtain ⟨p, _, rfl⟩ := Finset.mem_image.mp hr
@@ -167,8 +162,7 @@ theorem exists_finite_frame_word_sobolev_bound {n k : ℕ} {B : Type*} [Fintype 
     have heq : coordinateDerivative α f =ᵐ[volume.restrict A.carrier]
         (fun x => ∑ i : Fin (N α), c α i x • directionalWord fields (w α i) f x) := by
       filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
-      have hh := he α f hf x (hsub hx)
-      simpa only [Function.comp_id, id_eq, coordinate_as_word, coordinateDerivative] using hh
+      simpa only [Function.comp_id, id_eq, coordinate_as_word, coordinateDerivative] using (he α f hf x (hsub hx))
     obtain ⟨hh, hhn⟩ := finite_lp_combination (volume.restrict A.carrier) (c α)
       (fun i => directionalWord fields (w α i) f)
       (fun i => ((hc α i).continuousOn.mono hsub).aestronglyMeasurable Metric.isOpen_ball.measurableSet)
@@ -176,7 +170,7 @@ theorem exists_finite_frame_word_sobolev_bound {n k : ℕ} {B : Type*} [Fintype 
       (fun i => le_max_right _ _) (fun i => by
         filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
         exact (hb α i x (Metric.ball_subset_closedBall hx)).trans (le_max_left _ _))
-    have hh' : MemLp (coordinateDerivative α f) 2 (volume.restrict A.carrier) := hh.ae_eq heq.symm
+    have hh' := hh.ae_eq heq.symm
     refine ⟨hh', ?_⟩
     have hclass : hh'.toLp (coordinateDerivative α f) =
         hh.toLp (fun x => ∑ i : Fin (N α), c α i x • directionalWord fields (w α i) f x) := by
@@ -211,13 +205,6 @@ open scoped Classical NumberField BigOperators
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.NativeWordInverse.ActualInverseValue.GroupChartSobolev
 open KPContLocalNorm KPContActualSphericalRightFieldIdentification
 
-private theorem rightWord_eq_directional {n b : ℕ}
-    (fields : Fin b → Space n → Space n) (w : List (Fin b)) (f : Space n → ℂ) :
-    KPContRightJets.rightWord fields w f = RightFrame.PullbackWords.directionalWord fields w f := by
-  induction w with
-  | nil => rfl
-  | cons i w ih => simp only [KPContRightJets.rightWord, RightFrame.PullbackWords.directionalWord, ih]
-
 theorem exists_actual_group_chart_word_sobolev_bound
     {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
     {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
@@ -247,9 +234,11 @@ theorem exists_actual_group_chart_word_sobolev_bound
       (fun x => actualRightWord F ζ hζ w f (chart.groupLift x)) =ᵐ[volume.restrict A.carrier]
         RightFrame.PullbackWords.directionalWord chart.fields w (fun x => f (chart.groupLift x)) := by
     filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
-    have hxT := hA (Metric.ball_subset_closedBall hx)
-    exact (chart.identification.right_iteration f hf w x hxT).trans
-      (congrFun (rightWord_eq_directional chart.fields w _) x)
+    exact (chart.identification.right_iteration f hf w x (hA (Metric.ball_subset_closedBall hx))).trans
+      (congrFun (by
+        induction w with
+        | nil => rfl
+        | cons i w ih => simp only [KPContRightJets.rightWord, RightFrame.PullbackWords.directionalWord, ih]) x)
   have hd (w : List (Fin (groupDimension F))) (hw : w ∈ S) :
       MemLp (RightFrame.PullbackWords.directionalWord chart.fields w (fun x => f (chart.groupLift x)))
         2 (volume.restrict A.carrier) := (hLp w hw).ae_eq (heq w)

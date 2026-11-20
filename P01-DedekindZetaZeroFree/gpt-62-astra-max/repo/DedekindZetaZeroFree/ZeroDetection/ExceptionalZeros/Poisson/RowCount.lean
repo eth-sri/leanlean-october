@@ -17,11 +17,15 @@ open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
 
-private def pre (g : Ideal (𝓞 F) → ℂ) (a b : ℝ) : ℂ :=
+section
+
+variable (g : Ideal (𝓞 F) → ℂ)
+
+private def pre (a b : ℝ) : ℂ :=
   ∑ᶠ n : Ideal (𝓞 F),
     if a < (Ideal.absNorm n : ℝ) ∧ (Ideal.absNorm n : ℝ) ≤ b then g n else 0
 
-private theorem pre_eq_sum (g : Ideal (𝓞 F) → ℂ) (c : ℝ) {a b : ℝ} (ha : 0 ≤ a) (hb : b ≤ c) :
+private theorem pre_eq_sum (c : ℝ) {a b : ℝ} (ha : 0 ≤ a) (hb : b ≤ c) :
     pre g a b = ∑ n ∈ (ball_finite F c).toFinset,
       if a < (Ideal.absNorm n : ℝ) ∧ (Ideal.absNorm n : ℝ) ≤ b then g n else 0 := by
   unfold pre
@@ -37,7 +41,7 @@ private theorem pre_eq_sum (g : Ideal (𝓞 F) → ℂ) (c : ℝ) {a b : ℝ} (h
   simp at this
   linarith
 
-private theorem pre_add (g : Ideal (𝓞 F) → ℂ) {a b c : ℝ} (ha : 0 ≤ a) (hab : a ≤ b)
+private theorem pre_add {a b c : ℝ} (ha : 0 ≤ a) (hab : a ≤ b)
     (hbc : b ≤ c) : pre g a c = pre g a b + pre g b c := by
   rw [pre_eq_sum g c ha le_rfl, pre_eq_sum g c ha hbc, pre_eq_sum g c (ha.trans hab) le_rfl,
     ← Finset.sum_add_distrib]
@@ -47,11 +51,13 @@ private theorem pre_add (g : Ideal (𝓞 F) → ℂ) {a b c : ℝ} (ha : 0 ≤ a
   · by_cases h2 : a < (Ideal.absNorm n : ℝ)
     · simp [h1, h2, h1.trans hbc, not_lt.mpr h1]
     · simp [h2, not_lt.mpr h1]
-  · have h3 : ¬ ((Ideal.absNorm n : ℝ) ≤ b) := h1
+  · have h3 := h1
     by_cases h2 : (Ideal.absNorm n : ℝ) ≤ c
-    · have : a < (Ideal.absNorm n : ℝ) := lt_of_le_of_lt hab (not_le.mp h1)
+    · have := lt_of_le_of_lt hab (not_le.mp h1)
       simp [h2, this, h3, not_le.mp h1]
     · simp [h2, h3]
+
+end
 
 private def bco (U M : ℝ) : Ideal (𝓞 F) → ℂ := fun n =>
   if n ≠ ⊥ ∧ M < (Ideal.absNorm n : ℝ) ∧ (Ideal.absNorm n : ℝ) ≤ 2 * M then
@@ -73,9 +79,8 @@ private theorem pre_eq_dyadic (U M y γ : ℝ) (hM : 0 ≤ M) (hy : y ≤ 2 * M)
       have := h.1
       simp at this
       linarith
-    have hpos : (0 : ℝ) < Ideal.absNorm n := lt_of_le_of_lt hM h.1
-    have hc : n ≠ ⊥ ∧ M < (Ideal.absNorm n : ℝ) ∧ (Ideal.absNorm n : ℝ) ≤ y := ⟨hn, h⟩
-    rw [if_pos h, if_pos hc]
+    have hpos := lt_of_le_of_lt hM h.1
+    rw [if_pos h, if_pos (⟨hn, h⟩)]
     simp only [bco]
     rw [if_pos ⟨hn, h.1, h.2.trans hy⟩]
     have hne : (Ideal.absNorm n : ℂ) ≠ 0 := by exact_mod_cast hpos.ne'
@@ -86,9 +91,7 @@ private theorem pre_eq_dyadic (U M y γ : ℝ) (hM : 0 ≤ M) (hy : y ≤ 2 * M)
       rw [Complex.ofReal_cpow hpos.le, Complex.ofReal_natCast]
     rw [hexp, Complex.cpow_add _ _ hne, h2]
     ring
-  · have hc : ¬ (n ≠ ⊥ ∧ M < (Ideal.absNorm n : ℝ) ∧ (Ideal.absNorm n : ℝ) ≤ y) :=
-      fun h' => h h'.2
-    rw [if_neg h, if_neg hc]
+  · rw [if_neg h, if_neg (fun h' => h h'.2)]
 
 private theorem key_le (U M y γ T : ℝ) (ω : Ideal (𝓞 F) → ℂ) (hM : 2 ≤ M) (hT : 1 ≤ T)
     (hy1 : M ≤ y) (hy2 : y ≤ 2 * M) (hγ : |γ| ≤ T) :
@@ -99,7 +102,7 @@ private theorem key_le (U M y γ T : ℝ) (ω : Ideal (𝓞 F) → ℂ) (hM : 2 
   exact (hall y ⟨hy1, hy2⟩).trans (hall2 γ (Set.mem_Icc.mpr (abs_le.mp hγ)))
 
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    (D : FixedData S η)
 
 private theorem pre_self (g : Ideal (𝓞 F) → ℂ) (a : ℝ) : pre g a a = 0 := by
   unfold pre
@@ -174,14 +177,14 @@ private theorem mass_eq (U M : ℝ) (hM : 2 ≤ M) :
   · rw [if_neg h, if_neg (fun h' => h h'.2)]
 
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    (D : FixedData S η)
 
 theorem exceptionalSet_card (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) :
     ∃ C : ℝ, 0 < C ∧ ∃ U₀ : ℝ, 2 ≤ U₀ ∧ ∀ U : ℝ, U₀ ≤ U →
       (exceptionalSet D ρ U).Finite ∧
         ((exceptionalSet D ρ U).ncard : ℝ) ≤ C * U ^ DetectorDef.α := by
-  obtain ⟨c₁, hc₁, U₁, hU₁, hpre⟩ := detector_prefix D A_F ρ hA hconv hρ
+  obtain ⟨c₁, hc₁, U₁, hpre⟩ := detector_prefix D A_F ρ hA hconv hρ
   obtain ⟨Clog, hClog, hsieve⟩ := DedekindZetaZeroFree.Quantitative.DetectorSieve.detector_maximal_sieve D
   obtain ⟨Cs, hCs, hs⟩ := hsieve (1 / 100000) (by norm_num)
   obtain ⟨Ce, hCe, hen⟩ := DetectorCoefficients.energy_le F (1 / 100000) (by norm_num)

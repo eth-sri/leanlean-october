@@ -41,19 +41,17 @@ theorem covariant_smooth_approximation_closed
   let B : Submodule ℂ A := {
     carrier := {t | ∀ w g, ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z => (t w).val (chart z * g)) O}
-    zero_mem' := by intro w g; exact contDiffOn_const
+    zero_mem' := fun w g => contDiffOn_const
     add_mem' := by
       intro t u ht hu w g
       exact (ht w g).add (hu w g)
-    smul_mem' := by
-      intro a t ht w g
-      exact contDiffOn_const.mul (ht w g) }
+    smul_mem' := fun a t ht w g => contDiffOn_const.mul (ht w g)}
   let ev : A →ₗ[ℂ] (G → ℂ) := {
     toFun := fun t => (t w).val
     map_add' := by intros; rfl
     map_smul' := by intros; rfl }
   let U := B.map ev
-  let : FiniteDimensional ℂ A :=
+  let :=
     intertwiningMap_finiteDimensional C K J chi n r hcover hnormalize tau
   let : FiniteDimensional ℂ B := inferInstance
   let : FiniteDimensional ℂ U := inferInstance
@@ -64,10 +62,9 @@ theorem covariant_smooth_approximation_closed
       ⟨t m, ht m, rfl⟩)
   obtain ⟨a, ha, he⟩ := Submodule.mem_map.mp hu
   intro g
-  have hs := ha w g
   change ev a = (i w).val at he
   rw [← he]
-  exact hs
+  exact ha w g
 
 end DedekindZetaZeroFree.KPSpatialSamplingClosure
 
@@ -85,9 +82,9 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 
 variable {G : Type*} [Group G]
-variable (C K J : Subgroup G) (chi : C →* ℂ)
-variable (hn : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
-variable (v : V_J C J chi)
+    (C K J : Subgroup G) (chi : C →* ℂ)
+    (hn : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
+    (v : V_J C J chi)
 
 theorem orbit_finiteDimensional
     (hfin : FiniteDimensional ℂ (Submodule.span ℂ (Set.range
@@ -124,11 +121,11 @@ theorem orbit_stable :
     have he : rho k (rho l v) = rho (k * l) v := by rw [map_mul]; rfl
     rw [he]
     exact Submodule.subset_span ⟨k * l, rfl⟩
-  · simpa using W.zero_mem
+  · exact W.zero_mem
   · intro x y hx hy hxm hym
-    simpa only [map_add] using W.add_mem hxm hym
+    simpa using W.add_mem hxm hym
   · intro c x hx hxm
-    simpa only [map_smul] using W.smul_mem c hxm
+    simpa using W.smul_mem c hxm
 
 theorem orbit_continuous [TopologicalSpace G] [IsTopologicalGroup G]
     (hv : Continuous v.val)

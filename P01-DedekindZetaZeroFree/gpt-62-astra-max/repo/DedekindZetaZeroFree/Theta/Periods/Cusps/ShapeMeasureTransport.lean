@@ -12,9 +12,9 @@ namespace DedekindZetaZeroFree.CurrentBoundaryShapeTransport
 open KPMsActualAngularSource KPMsNativeOffsetMass KPMsNativeOffsetComparison
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable (M : NativeMeasuredSource F ζ hζ R P) (V : Level F ζ hζ)
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    (M : NativeMeasuredSource F ζ hζ R P) (V : Level F ζ hζ)
 
 private theorem full_shape_measurable :
     Measurable (M.shape V ∘ fullToLevel F ζ hζ (nativeDatum F ζ hζ)
@@ -38,9 +38,8 @@ theorem averaged_shape_integral
       (fullToLevel F ζ hζ (nativeDatum F ζ hζ) (cofinalLevel F ζ hζ V) ω), k)
         ∂dk ∂fullNu M) =
       ∫ η, ∫ k, Ψ (η,k) ∂dk ∂normalizedShapeBeta M V := by
-  have hm := full_shape_map M V
   have ha := hΨ.integral_prod_left.aestronglyMeasurable
-  rw [← hm] at ha ⊢
+  rw [← (full_shape_map M V)] at ha ⊢
   exact (integral_map (full_shape_measurable M V).aemeasurable ha).symm
 
 theorem ae_fullNu_of_shells
@@ -52,7 +51,6 @@ theorem ae_fullNu_of_shells
         (cuspShell F ζ hζ R P (nativeRecipe F ζ hζ R P) V j Y),
           q (fullCoordinate F ζ hζ R P (nativeRecipe F ζ hζ R P) V j Y x)) :
     ∀ᵐ ω ∂fullNu M, q ω := by
-  change ∀ᵐ ω ∂(fullMass M)⁻¹ • M.full, q ω
   apply Measure.ae_smul_measure
   rw [full_from_source M V Y hY]
   apply ae_finsetSum_measure_iff.mpr

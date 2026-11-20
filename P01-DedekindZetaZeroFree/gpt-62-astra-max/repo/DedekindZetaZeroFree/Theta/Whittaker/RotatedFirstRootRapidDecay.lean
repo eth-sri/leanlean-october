@@ -40,7 +40,7 @@ theorem radial_min_bound_of_power_bounds {ι : Type*} (F : ι → ℂˣ → ℂ)
   obtain ⟨C₁, hC₁, hb₁⟩ := hb h
   refine ⟨max C₀ C₁, le_trans hC₀ (le_max_left _ _), ?_⟩
   intro i y
-  have hr : 0 < ‖(y : ℂ)‖ := norm_pos_iff.mpr y.ne_zero
+  have hr := norm_pos_iff.mpr y.ne_zero
   have he (a : ℝ) : (complexAbs (y : ℂ)) ^ a = ‖(y : ℂ)‖ ^ (2 * a) := by
     rw [complexAbs, ← Real.rpow_natCast_mul hr.le]
     rfl
@@ -55,13 +55,9 @@ theorem radial_min_bound_of_power_bounds {ι : Type*} (F : ι → ℂˣ → ℂ)
   · by_cases hr₁ : ‖(y : ℂ)‖ ≤ 1
     · have hz := hb₀ i y
       simp only [Nat.cast_zero, sub_zero] at hz
-      have hp : ‖(y : ℂ)‖ ^ (2 / 3 : ℝ) ≤ ‖(y : ℂ)‖ ^ (-2 * A) :=
-        Real.rpow_le_rpow_of_exponent_ge hr hr₁ (by linarith)
-      exact hz.trans ((mul_le_mul_of_nonneg_left hp hC₀).trans
+      exact hz.trans ((mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_ge hr hr₁ (by linarith)) hC₀).trans
         (mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.rpow_nonneg hr.le _)))
-    · have hp : ‖(y : ℂ)‖ ^ ((2 / 3 : ℝ) - (h : ℝ)) ≤ ‖(y : ℂ)‖ ^ (-2 * A) :=
-        Real.rpow_le_rpow_of_exponent_le (le_of_lt (lt_of_not_ge hr₁)) (by linarith)
-      exact (hb₁ i y).trans ((mul_le_mul_of_nonneg_left hp hC₁).trans
+    · exact (hb₁ i y).trans ((mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le (le_of_lt (lt_of_not_ge hr₁)) (by linarith)) hC₁).trans
         (mul_le_mul_of_nonneg_right (le_max_right _ _) (Real.rpow_nonneg hr.le _)))
 
 end DedekindZetaZeroFree.KPCplxRotatedRapidDecay

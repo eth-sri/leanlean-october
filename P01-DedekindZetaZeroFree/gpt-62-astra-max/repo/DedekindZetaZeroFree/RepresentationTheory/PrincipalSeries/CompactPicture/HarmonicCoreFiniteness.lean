@@ -29,15 +29,13 @@ theorem finite_invariant_subspace (s : ℝ) (f : PrincipalSeries s)
       (harmonicKType_multiplicity_one s ℓ).1, le_iSup _ ℓ⟩
   · refine ⟨⊥, inferInstance, Submodule.zero_mem _, ?_, bot_le⟩
     intro k f hf
-    have hf' : f = 0 := by simpa using hf
     subst f
-    change KPCplxPrincipalSeriesCharts.pi s k 0 = 0
     induction k.val using Quotient.inductionOn with
     | h a => rfl
   · intro f g hf hg
     obtain ⟨U, hU, hfU, hinvU, hleU⟩ := hf
     obtain ⟨V, hV, hgV, hinvV, hleV⟩ := hg
-    let : Module.Finite ℂ U := hU
+    let := hU
     let : Module.Finite ℂ V := hV
     refine ⟨U ⊔ V, inferInstance,
       Submodule.add_mem _ (Submodule.mem_sup_left hfU) (Submodule.mem_sup_right hgV),

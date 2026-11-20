@@ -10,16 +10,15 @@ open scoped Classical NumberField Topology
 open NumberField MeasureTheory Filter
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPLiteralRaw KPGlobalTorusFiniteStages ThetaExpansion TensorActionSource
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.QuotientUpperOrbit renaming upper_fiber_eq → upper_fiber_eq
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.QuotientUpperOrbit renaming compact_additive_representatives → compact_additive_representatives
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NormalizedPeriodContinuity renaming clearing_disk_rational → clearing_disk_rational
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.CompactPeriodDescent renaming extension_of_compact_period → extension_of_compact_period
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.FiniteCompactAssembly renaming extension_evaluates_native_pullback → extension_evaluates_native_pullback
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.QuotientUpperOrbit (upper_fiber_eq compact_additive_representatives)
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NormalizedPeriodContinuity (clearing_disk_rational)
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.CompactPeriodDescent (extension_of_compact_period)
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.FiniteCompactAssembly (extension_evaluates_native_pullback)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "V" => RestrictedTensorSimple.Core (Plus R.A P C)
@@ -30,8 +29,6 @@ set_option maxHeartbeats 2400000
 theorem core_compact_period_clearing (x : V)
     (μ : Measure (KPAdditiveQuotient F)) (hμ : μ.IsAddHaarMeasure) (g : G F ζ hζ) :
     ∃ (r : ℝ) (B : ℂ → ℂ), 0 < r ∧
-      Metric.ball (0 : ℂ) r ⊆ KPContinuation.spectralDomain ∧
-      AnalyticOnNhd ℂ B (Metric.ball (0 : ℂ) r) ∧
       ∀ s ∈ Metric.ball (0 : ℂ) r,
         Integrable (fun q : KPAdditiveQuotient F => (AF).cleared
           (coreFlatInsertion R P C x) s
@@ -70,9 +67,7 @@ theorem core_compact_period_clearing (x : V)
   obtain ⟨L, hL⟩ := extension_of_compact_period q hq μ
   let LL : C(D, ℂ) →L[ℂ] ℂ := L.comp (ContinuousMap.compCLM ℂ ℂ jj)
   let r := min t u
-  refine ⟨r, fun s => LL (N s), lt_min ht hu,
-    (Metric.ball_subset_ball (min_le_left _ _)).trans hb,
-    (LL.comp_analyticOnNhd hN).mono (Metric.ball_subset_ball (min_le_left _ _)), ?_⟩
+  refine ⟨r, fun s => LL (N s), lt_min ht hu, ?_⟩
   intro s hs
   let c : KPAdditiveQuotient F → ℂ := fun z => (AF).cleared (coreFlatInsertion R P C x) s
     (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out z) * g)

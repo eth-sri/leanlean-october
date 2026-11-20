@@ -13,7 +13,7 @@ namespace DedekindZetaZeroFree.FourierContinuation.ResidualWeakEnergy
 open KPSmoothActualFlowData
 open KPMsClearedTruncationL2
 open ActualWordLinearity
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.ActualSmoothWordAction renaming word_append → word_append
+open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.ActualSmoothWordAction (word_append)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
  theorem word_zero (w : List (B F)) :
     wordDerivative F ζ hζ w (0 : KPSmoothActualFlowData.X F ζ hζ → ℂ) = 0 := by

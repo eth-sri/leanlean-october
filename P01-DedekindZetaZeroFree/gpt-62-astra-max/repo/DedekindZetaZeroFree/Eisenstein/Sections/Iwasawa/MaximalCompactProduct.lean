@@ -51,24 +51,19 @@ theorem localCompactFactor_le_max (v : KPHilbert.Place F) :
 theorem localCompactFactorMax_eq_compact_eventually :
     ∀ᶠ v in Filter.cofinite, localCompactFactorMax F ζ hζ v =
       KPAdelicCoverRestrictedProduct.compact F ζ hζ v := by
-  have hf : {v : KPHilbert.Place F | ∃ w : InfinitePlace F, v = Sum.inl w}.Finite := by
-    exact (Set.finite_range Sum.inl).subset (by rintro v ⟨w,rfl⟩; exact ⟨w,rfl⟩)
-  have hb := (KPAdelicCoverRestrictedProduct.bad_finite F).image
-    (Sum.inr : HeightOneSpectrum (𝓞 F) → KPHilbert.Place F)
+  have hf : {v : KPHilbert.Place F | ∃ w : InfinitePlace F, v = Sum.inl w}.Finite := (Set.finite_range Sum.inl).subset (by rintro v ⟨w,rfl⟩; exact ⟨w,rfl⟩)
   have hfi : ∀ᶠ v : KPHilbert.Place F in Filter.cofinite,
-      ¬ (∃ w : InfinitePlace F, v = Sum.inl w) := by
-    exact Filter.eventually_cofinite.mpr (by simpa using hf)
+      ¬ (∃ w : InfinitePlace F, v = Sum.inl w) := Filter.eventually_cofinite.mpr (by simpa using hf)
   have hbi : ∀ᶠ v : KPHilbert.Place F in Filter.cofinite,
       v ∉ Sum.inr '' {q | KPAdelicCoverRestrictedProduct.Bad F q} := by
     apply Filter.eventually_cofinite.mpr
-    simpa only [not_not, Set.setOf_mem_eq] using hb
+    simpa only [not_not, Set.setOf_mem_eq] using ((KPAdelicCoverRestrictedProduct.bad_finite F).image
+      Sum.inr)
   filter_upwards [hfi, hbi] with v hv hvb
   cases v with
   | inl w => exact False.elim (hv ⟨w,rfl⟩)
   | inr q =>
-    have hn : ¬ KPAdelicCoverRestrictedProduct.Bad F q := by
-      intro h
-      exact hvb ⟨q,h,rfl⟩
+    have hn : ¬ KPAdelicCoverRestrictedProduct.Bad F q := fun h => hvb ⟨q,h,rfl⟩
     simp [localCompactFactorMax, hn, KPAdelicCoverRestrictedProduct.compact]
 
 theorem fullCompactPreimage_le_max :

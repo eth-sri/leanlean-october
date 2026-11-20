@@ -29,7 +29,7 @@ open scoped Classical NumberField
 
 open DedekindZetaZeroFree
 
-open _root_.DedekindZetaZeroFree.ScalarRationalProductTransport renaming scalar_injective → scalar_injective
+open _root_.DedekindZetaZeroFree.ScalarRationalProductTransport (scalar_injective)
 
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.IntertwinerRegularization.FactorizationSources.NormalizedCoordinateAnalyticity
 
@@ -46,24 +46,29 @@ theorem zero_pol : (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 
   change ((KPGlobalTorusBorelTwistCompatibility.rationalModel F ζ hζ).character h : ℂ) * KPGlobalTorusBorelTwistCompatibility.normPower F ζ hζ 0 h.val = ((KPGlobalTorusBorelTwistCompatibility.rationalModel F ζ hζ).character h : ℂ)
   simp [KPGlobalTorusBorelTwistCompatibility.normPower]
 
-def castScalar (P P' : KPGlobalTorusFunctionData.Polarization F ζ hζ) (h : P = P') :
+section
+
+variable (P P' : KPGlobalTorusFunctionData.Polarization F ζ hζ) (h : P = P')
+
+def castScalar :
     KPGlobalTorusFunctionData.BorelFunctions F ζ hζ P →ₗ[ℂ]
       KPGlobalTorusFunctionData.BorelFunctions F ζ hζ P' := by
   subst P'
   exact LinearMap.id
 
-private theorem castScalar_apply (P P' : KPGlobalTorusFunctionData.Polarization F ζ hζ) (h : P = P')
+private theorem castScalar_apply
     (v : KPGlobalTorusFunctionData.BorelFunctions F ζ hζ P) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     (castScalar F ζ hζ P P' h v).val g = v.val g := by
   subst P'; rfl
+
+end
 
 def scalarZero : V →ₗ[ℂ] KPMsRationalCompactCrossPairing.Source F ζ hζ 0 :=
   (castScalar F ζ hζ Q (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) (zero_pol F ζ hζ).symm).comp
     (KPGlobalTorusBorelTwistCompatibility.scalarSection F ζ hζ Q)
 
 private theorem scalarZero_value (v : V) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
-    (scalarZero F ζ hζ v).val g = (v.val.val g).val.val 1 := by
-  exact castScalar_apply F ζ hζ _ _ _ _ _
+    (scalarZero F ζ hζ v).val g = (v.val.val g).val.val 1 := castScalar_apply F ζ hζ _ _ _ _ _
 
 private theorem scalarZero_injective : Function.Injective (scalarZero F ζ hζ) := by
   intro v w h

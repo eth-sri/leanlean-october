@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspEnergy.GradientDensityInvariance
 
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GenuineSections.ChartEllipticity
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspDivergence.CutoffScalarFlux
@@ -12,24 +13,11 @@ open scoped Classical Topology
 namespace DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration
 open KPMeanZeroWeightedEnergy HyperbolicChart
 
-private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply ContDiff.prodMk
-  · exact Complex.equivRealProdCLM.symm.contDiff.comp
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
-       (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+private alias smooth_arch := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.smooth_arch
 
-private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
-  unfold KPCuspLogShape.meanHeight
-  apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+private alias smooth_mean := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.smooth_mean
 
-private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  ext i <;> simp [arch, real]
+private alias arch_real := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.arch_real
 
 theorem codifferential_star_mul (d : ℕ) (f : Space d → ℂ)
     (W : Space d → Cotangent d) (x : Space d)
@@ -53,20 +41,17 @@ theorem codifferential_star_mul (d : ℕ) (f : Space d → ℂ)
     Matrix.vecHead, Matrix.vecTail, Function.comp_def, Fin.succ_zero_eq_one, star_mul, Complex.star_def, Complex.conj_ofReal]
   ring
 
-private theorem derivative_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := by
-  exact (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
+private alias derivative_smoothAt := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.derivative_smoothAt
 
 private theorem exp_mul_derivative (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : DifferentiableAt ℝ g x) (i : Fin d) (k : Fin 3) (hk : k ≠ 2) :
     coordinateDerivative d i k (fun q => (Real.exp (q (i,2)) : ℂ) * g q) x =
       (Real.exp (x (i,2)) : ℂ) * coordinateDerivative d i k g x := by
-  have he := Complex.ofRealCLM.hasFDerivAt.comp x
-    ((EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).hasFDerivAt.exp)
-  have hh := congrArg (fun A : Space d →L[ℝ] ℂ => A (coordinateVector d i k))
-    (he.mul hg.hasFDerivAt).fderiv
-  simpa [coordinateDerivative, coordinateVector, hk, Ne.symm hk, Pi.mul_def] using hh
+  simpa [coordinateDerivative, coordinateVector, hk, Ne.symm hk, Pi.mul_def] using (congrArg (fun A : Space d →L[ℝ] ℂ => A (coordinateVector d i k))
+    ((Complex.ofRealCLM.hasFDerivAt.comp x
+      ((EuclideanSpace.proj (i, (2 : Fin 3))).hasFDerivAt.exp)).mul hg.hasFDerivAt).fderiv)
+
+alias CodifferentialInvariance.exp_mul_derivative := exp_mul_derivative
 
 theorem codifferential_differential_at (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) :
@@ -84,21 +69,16 @@ theorem codifferential_differential_at (d : ℕ) (g : Space d → ℂ) (x : Spac
     rw [two_mul, Real.exp_add, Complex.ofReal_mul]]
   ring
 
-private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (fun q => differential d g q i k) x := by
-  have he : ContDiffAt ℝ (⊤ : ℕ∞) (fun q : Space d => (Real.exp (q (i,2)) : ℂ)) x :=
-    Complex.ofRealCLM.contDiff.contDiffAt.comp x
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff.contDiffAt.exp)
-  fin_cases k
-  · simpa [differential] using derivative_smoothAt d g x hg i 2
-  · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 0)
-  · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 1)
+private alias differential_smoothAt := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.differential_smoothAt
 
 open HyperbolicChart
- def second (d : ℕ) (h : Space d → ℂ) (x v w : Space d) : ℂ :=
+ section
+
+variable (d : ℕ) (h : Space d → ℂ)
+
+def second (x v w : Space d) : ℂ :=
   fderiv ℝ (fderiv ℝ h) x v w
-private theorem cd_second (d : ℕ) (h : Space d → ℂ) (x : Space d)
+private theorem cd_second (x : Space d)
     (hh : ContDiffAt ℝ (⊤ : ℕ∞) h x) (i : Fin d) (k : Fin 3) :
     coordinateDerivative d i k (coordinateDerivative d i k h) x =
       second d h x (coordinateVector d i k) (coordinateVector d i k) := by
@@ -106,21 +86,26 @@ private theorem cd_second (d : ℕ) (h : Space d → ℂ) (x : Space d)
   simpa using congrArg (fun L : Space d →L[ℝ] ℂ => L (coordinateVector d i k))
     (((hh.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiableAt (by simp)).hasFDerivAt.clm_apply
       (hasFDerivAt_const (coordinateVector d i k) x)).fderiv
+
+end
+
+alias CodifferentialInvariance.cd_second := cd_second
 private theorem affine_first (d : ℕ) (L : Space d →L[ℝ] Space d) (b : Space d)
     (h : Space d → ℂ) (x : Space d) (v : Space d)
     (hh : DifferentiableAt ℝ h (L x + b)) :
     fderiv ℝ (fun y => h (L y + b)) x v = fderiv ℝ h (L x + b) (L v) := by
   simpa [Function.comp_def] using congrArg (fun A : Space d →L[ℝ] ℂ => A v)
     (hh.hasFDerivAt.comp x (L.hasFDerivAt.add_const b)).fderiv
+
+alias CodifferentialInvariance.affine_first := affine_first
 private theorem affine_second (d : ℕ) (L : Space d →L[ℝ] Space d) (b : Space d)
     (h : Space d → ℂ) (x : Space d) (i : Fin d) (k : Fin 3)
     (hh : ContDiffAt ℝ (⊤ : ℕ∞) h (L x + b)) :
     coordinateDerivative d i k (coordinateDerivative d i k (fun y => h (L y + b))) x =
       second d h (L x + b) (L (coordinateVector d i k)) (L (coordinateVector d i k)) := by
   have hs : ∀ᶠ y in nhds x, DifferentiableAt ℝ h (L y + b) := by
-    have ht := ((hh.of_le (show (1 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)).mono
-      (fun y hy => hy.differentiableAt (by simp))
-    exact (L.continuous.add continuous_const).continuousAt.eventually ht
+    exact (L.continuous.add continuous_const).continuousAt.eventually (((hh.of_le (show (1 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)).mono
+      (fun y hy => hy.differentiableAt (by simp)))
   have he : coordinateDerivative d i k (fun y => h (L y + b)) =ᶠ[nhds x]
       (fun y => fderiv ℝ h (L y + b) (L (coordinateVector d i k))) :=
     hs.mono fun y hy => affine_first d L b h y _ hy
@@ -131,7 +116,13 @@ private theorem affine_second (d : ℕ) (L : Space d →L[ℝ] Space d) (b : Spa
     (hasFDerivAt_const (c := L (coordinateVector d i k)) x)
   simpa [second] using congrArg (fun A : Space d →L[ℝ] ℂ => A (coordinateVector d i k))
     hcomp.fderiv
- def lin (d : ℕ) (u : Fin d → ℂ) : Space d →L[ℝ] Space d :=
+
+alias CodifferentialInvariance.affine_second := affine_second
+ section
+
+variable (d : ℕ) (u : Fin d → ℂ)
+
+def lin : Space d →L[ℝ] Space d :=
   (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Fin d × Fin 3 => ℝ)).symm.toContinuousLinearMap.comp
     (ContinuousLinearMap.pi (fun j =>
       ![(u j.1).re • EuclideanSpace.proj (j.1, (0 : Fin 3)) -
@@ -139,27 +130,37 @@ private theorem affine_second (d : ℕ) (L : Space d →L[ℝ] Space d) (b : Spa
         (u j.1).im • EuclideanSpace.proj (j.1, (0 : Fin 3)) +
           (u j.1).re • EuclideanSpace.proj (j.1, (1 : Fin 3)),
         EuclideanSpace.proj (j.1, (2 : Fin 3))] j.2))
-private theorem lin_apply (d : ℕ) (u : Fin d → ℂ) (x : Space d) (i : Fin d) (k : Fin 3) :
+private theorem lin_apply (x : Space d) (i : Fin d) (k : Fin 3) :
     lin d u x (i,k) =
       ![(u i).re * x (i,0) - (u i).im * x (i,1),
         (u i).im * x (i,0) + (u i).re * x (i,1), x (i,2)] k := by
   fin_cases k <;> rfl
+
+end
+
+alias CodifferentialInvariance.lin_apply := lin_apply
 private theorem lin_zero (d : ℕ) (u : Fin d → ℂ) (i : Fin d) :
     lin d u (coordinateVector d i 0) =
       (u i).re • coordinateVector d i 0 + (u i).im • coordinateVector d i 1 := by
   ext ⟨j,k⟩
   fin_cases k <;> simp [lin_apply, coordinateVector]
   all_goals split_ifs <;> simp_all
+
+alias CodifferentialInvariance.lin_zero := lin_zero
 private theorem lin_one (d : ℕ) (u : Fin d → ℂ) (i : Fin d) :
     lin d u (coordinateVector d i 1) =
       -(u i).im • coordinateVector d i 0 + (u i).re • coordinateVector d i 1 := by
   ext ⟨j,k⟩
   fin_cases k <;> simp [lin_apply, coordinateVector]
   all_goals split_ifs <;> simp_all
+
+alias CodifferentialInvariance.lin_one := lin_one
 private theorem lin_two (d : ℕ) (u : Fin d → ℂ) (i : Fin d) :
     lin d u (coordinateVector d i 2) = coordinateVector d i 2 := by
   ext ⟨j,k⟩
   fin_cases k <;> simp [lin_apply, coordinateVector]
+
+alias CodifferentialInvariance.lin_two := lin_two
 private theorem second_horizontal (d : ℕ) (u : Fin d → ℂ) (h : Space d → ℂ)
     (x : Space d) (i : Fin d) :
     second d h x (lin d u (coordinateVector d i 0)) (lin d u (coordinateVector d i 0)) +
@@ -173,6 +174,8 @@ private theorem second_horizontal (d : ℕ) (u : Fin d → ℂ) (h : Space d →
   rw [Complex.sq_norm, Complex.normSq_apply]
   push_cast
   ring
+
+alias CodifferentialInvariance.second_horizontal := second_horizontal
 private theorem affine_laplacian (d : ℕ) (u : Fin d → ℂ) (b : Space d)
     (hb : ∀ i, b (i,2) = Real.log ‖u i‖) (hu : ∀ i, u i ≠ 0)
     (h : Space d → ℂ) (x : Space d)
@@ -197,16 +200,18 @@ private theorem affine_laplacian (d : ℕ) (u : Fin d → ℂ) (b : Space d)
       Real.exp (2 * x (i,2)) * ‖u i‖ ^ 2 := by
     rw [mul_add, Real.exp_add]
     congr 1
-    simpa using Real.exp_nat_mul (Real.log ‖u i‖) 2 |>.trans
+    exact Real.exp_nat_mul (Real.log ‖u i‖) 2 |>.trans
       (congrArg (fun t : ℝ => t ^ 2) (Real.exp_log (norm_pos_iff.mpr (hu i))))
   rw [ht, he]
   simp only [Complex.real_smul]
   push_cast
   ring
+
+alias CodifferentialInvariance.affine_laplacian := affine_laplacian
 private theorem laplacian_congr (d : ℕ) (h f : Space d → ℂ) (x : Space d)
     (he : h =ᶠ[nhds x] f) : laplacian d h x = laplacian d f x := by
   have hd (i : Fin d) (k : Fin 3) : coordinateDerivative d i k h =ᶠ[nhds x]
-      coordinateDerivative d i k f := (he.fderiv (𝕜 := ℝ)).mono fun y hy => congrArg (fun A : Space d →L[ℝ] ℂ => A (coordinateVector d i k)) hy
+      coordinateDerivative d i k f := (he.fderiv).mono fun y hy => congrArg (fun A : Space d →L[ℝ] ℂ => A (coordinateVector d i k)) hy
   have hdd (i : Fin d) (k : Fin 3) := congrArg (fun A => A (coordinateVector d i k))
     ((hd i k).fderiv_eq (𝕜 := ℝ))
   have hd0 (i : Fin d) (k : Fin 3) := (hd i k).eq_of_nhds
@@ -215,15 +220,15 @@ private theorem laplacian_congr (d : ℕ) (h f : Space d → ℂ) (x : Space d)
   intro i hi
   simp only [coordinateDerivative] at hd0 hdd ⊢
   rw [hdd, hdd, hdd, hd0]
+
+alias CodifferentialInvariance.laplacian_congr := laplacian_congr
 private theorem laplacian_mul (d : ℕ) (h : Space d → ℂ) (x : Space d) (c : ℂ)
     (hh : ContDiffAt ℝ (⊤ : ℕ∞) h x) :
     laplacian d (fun y => c * h y) x = c * laplacian d h x := by
-  have ht : ∀ᶠ y in nhds x, DifferentiableAt ℝ h y :=
-    ((hh.of_le (show (1 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)).mono
-      (fun y hy => hy.differentiableAt (by simp))
   have he (i : Fin d) (k : Fin 3) : coordinateDerivative d i k (fun y => c * h y) =ᶠ[nhds x]
       (fun y => c * coordinateDerivative d i k h y) := by
-    filter_upwards [ht] with y hy
+    filter_upwards [(((hh.of_le (show (1 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)).mono
+      (fun y hy => hy.differentiableAt (by simp)))] with y hy
     simpa [coordinateDerivative] using congrArg (fun A : Space d →L[ℝ] ℂ => A (coordinateVector d i k))
       (hy.hasFDerivAt.const_mul c).fderiv
   have hd (i : Fin d) (k : Fin 3) :
@@ -241,12 +246,12 @@ private theorem laplacian_mul (d : ℕ) (h : Space d → ℂ) (x : Space d) (c :
   intro i hi
   rw [hd, hd, hd, (he i 2).eq_of_nhds]
   ring
+
+alias CodifferentialInvariance.laplacian_mul := laplacian_mul
 private theorem upper_fst (A : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (ha : A 1 0 = 0) (u : ℂ) (hr : A 0 0 = u * A 1 1) (z : KPArch.H3) :
     (KPArch.action A z).1 = u * z.1 + A 0 1 / A 1 1 := by
-  have hd : A 1 1 ≠ 0 := by
-    intro hz
-    exact A.det_ne_zero (by simp [Matrix.det_fin_two, ha, hz])
+  have hd : A 1 1 ≠ 0 := fun hz => A.det_ne_zero (by simp [Matrix.det_fin_two, ha, hz])
   have hn : (‖A 1 1‖ ^ 2 : ℂ) = A 1 1 * star (A 1 1) := by
     simp [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq]
   change _ / _ = _
@@ -254,9 +259,11 @@ private theorem upper_fst (A : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     add_zero, hr, star_zero, mul_zero, zero_mul]
   simp only [zero_pow (by decide : (2 : ℕ) ≠ 0), zero_mul, add_zero, Complex.ofReal_pow]
   rw [hn]
-  have hs : star (A 1 1) ≠ 0 := star_ne_zero.mpr hd
+  have hs := star_ne_zero.mpr hd
   field_simp
   <;> ring
+
+alias CodifferentialInvariance.upper_fst := upper_fst
  def shift (d : ℕ) (u b : Fin d → ℂ) : Space d :=
   WithLp.toLp 2 (fun j => ![(b j.1).re, (b j.1).im, Real.log ‖u j.1‖] j.2)
 private theorem upper_real (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
@@ -272,6 +279,8 @@ private theorem upper_real (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (F
       lin_apply, shift, arch, Complex.mul_im, add_comm]
   · simp [real, KPArch.productAction, KPCuspLogShape.upper_action_snd _ (hz i) _ (hu i) (hr i),
       lin_apply, shift, arch]
+
+alias CodifferentialInvariance.upper_real := upper_real
 private theorem upper_equivariant_laplacian (d : ℕ)
     (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) (u : Fin d → ℂ)
     (hu : ∀ i, u i ≠ 0) (hz : ∀ i, g i 1 0 = 0) (hr : ∀ i, g i 0 0 = u i * g i 1 1)
@@ -284,6 +293,8 @@ private theorem upper_equivariant_laplacian (d : ℕ)
   simp only [upper_real d g u hu hz hr] at hc hy ⊢
   rw [← affine_laplacian d u _ (fun i => rfl) hu h x hy,
     laplacian_congr d _ _ x hc, laplacian_mul d h x c hx]
+
+alias CodifferentialInvariance.upper_equivariant_laplacian := upper_equivariant_laplacian
 
 private lemma differential_add (d : ℕ) (f g : Space d → ℂ) (x : Space d)
     (hf : DifferentiableAt ℝ f x) (hg : DifferentiableAt ℝ g x) :
@@ -328,42 +339,45 @@ private lemma two_mul_re_pairing (d : ℕ) (U W : Cotangent d) :
           (∑ i, ∑ k, ‖W i k‖ ^ 2) := by
         simp only [Finset.sum_sub_distrib]
 
- def toCoord {F : Type} [Field F] [NumberField F]
-    (hd : 0 < KPCuspLogShape.dimension F)
-    (z : KPArch.Space (KPCuspLogShape.dimension F)) : KPCuspCharts.Coordinates F :=
+ section
+
+variable {F : Type} [Field F] [NumberField F] (hd : 0 < KPCuspLogShape.dimension F)
+    (z : KPArch.Space (KPCuspLogShape.dimension F))
+
+def toCoord : KPCuspCharts.Coordinates F :=
   (((fun i => (z i).1),
     ⟨KPCuspLogShape.shapeCoordinates (KPCuspLogShape.dimension F) z,
       KPCuspLogShape.shapeCoordinates_mem_hyperplane _
         (Nat.ne_of_gt hd) z⟩),
     KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z)
 
-private theorem toArch_toCoord {F : Type} [Field F] [NumberField F]
-    (hd : 0 < KPCuspLogShape.dimension F)
-    (z : KPArch.Space (KPCuspLogShape.dimension F)) :
+private theorem toArch_toCoord :
     KPCuspCharts.toArch F (toCoord hd z) = z := by
   funext i
   simp [KPCuspCharts.toArch, toCoord, KPCuspLogShape.shapeCoordinates]
 
-private theorem action_meanHeight
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+end
+
+section
+
+variable {F : Type} [Field F] [NumberField F] {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
     (G : KPCuspCharts.ChartOutput F hF S D)
+
+include G in
+private theorem action_meanHeight
     (s : S) (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
         (KPCuspSiegel.action F (s : KPCuspArithmetic.PGL2 F) z) =
       KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z := by
   have hd := G.positive_dimension
-  obtain ⟨A, hA, hA10⟩ := D.upper (s : KPCuspArithmetic.PGL2 F) s.2
+  obtain ⟨A, hA, hA10⟩ := D.upper s s.2
   conv_lhs => rw [← toArch_toCoord hd z]
   rw [G.actual_action s A hA hA10 (toCoord hd z), KPCuspCharts.toArch_meanHeight F hd]
   rfl
 
+include G in
 private theorem u_action_invariant
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D)
     {T : ℝ} (u : KPArch.Space (KPCuspLogShape.dimension F) → ℝ)
     (hinv : ∀ p q : {p : KPCuspCharts.Coordinates F // T < p.2},
       KPCuspCharts.highRelation F S T p q →
@@ -374,15 +388,14 @@ private theorem u_action_invariant
   have hd := G.positive_dimension
   set p' : {p : KPCuspCharts.Coordinates F // T < p.2} :=
     ⟨toCoord hd z, by
-      change T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z
       exact hz⟩ with hp'def
   have hsz : T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
-      (KPCuspSiegel.action F (s : KPCuspArithmetic.PGL2 F) z) := by
+      (KPCuspSiegel.action F s z) := by
     rw [action_meanHeight G s z]; exact hz
   set q' : {p : KPCuspCharts.Coordinates F // T < p.2} :=
-    ⟨toCoord hd (KPCuspSiegel.action F (s : KPCuspArithmetic.PGL2 F) z), by
+    ⟨toCoord hd (KPCuspSiegel.action F s z), by
       change T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
-        (KPCuspSiegel.action F (s : KPCuspArithmetic.PGL2 F) z)
+        (KPCuspSiegel.action F s z)
       exact hsz⟩ with hq'def
   have hrel : KPCuspCharts.highRelation F S T p' q' := by
     refine ⟨s⁻¹, ?_⟩
@@ -394,6 +407,8 @@ private theorem u_action_invariant
   have hfin := hinv p' q' hrel
   simp only [hp'def, hq'def, toArch_toCoord hd] at hfin
   exact hfin.symm
+
+end
 
 private theorem pairing_re_invariant
     (d : ℕ) (g0 : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
@@ -414,42 +429,39 @@ private theorem pairing_re_invariant
     filter_upwards [hAceq, hUeq] with z h1 h2
     simp only [Function.comp_apply] at h1 h2 ⊢
     rw [h1, h2]; ring
-  have hAUX : ContDiffAt ℝ (⊤ : ℕ∞) (fun z => Ac z + U z) x := hAcX.add hUX
-  have hAUY : ContDiffAt ℝ (⊤ : ℕ∞) (fun z => Ac z + U z)
-      (real d (KPArch.productAction d g0 (arch d x))) := hAcY.add hUY
+  have hAUX := hAcX.add hUX
+  have hAUY := hAcY.add hUY
   have hSAU := KPLocalizedFormGraph.ChartEnergyGeometry.differential_invariant d g0 (fun z => Ac z + U z) x 1
     (hAUX.differentiableAt (by simp)) (hAUY.differentiableAt (by simp)) hAUeq (by norm_num)
   have hSA := KPLocalizedFormGraph.ChartEnergyGeometry.differential_invariant d g0 Ac x 1
     (hAcX.differentiableAt (by simp)) (hAcY.differentiableAt (by simp)) hAceq (by norm_num)
   have hSU := KPLocalizedFormGraph.ChartEnergyGeometry.differential_invariant d g0 U x 1
     (hUX.differentiableAt (by simp)) (hUY.differentiableAt (by simp)) hUeq (by norm_num)
+  let real₀ := real d (KPArch.productAction d g0 (arch d x))
   have hY := two_mul_re_pairing d
-    (differential d Ac (real d (KPArch.productAction d g0 (arch d x))))
-    (differential d U (real d (KPArch.productAction d g0 (arch d x))))
+    (differential d Ac (real₀))
+    (differential d U (real₀))
   have hXp := two_mul_re_pairing d (differential d Ac x) (differential d U x)
-  have eY : differential d Ac (real d (KPArch.productAction d g0 (arch d x))) +
-        differential d U (real d (KPArch.productAction d g0 (arch d x))) =
-      differential d (fun z => Ac z + U z) (real d (KPArch.productAction d g0 (arch d x))) :=
+  have eY :=
     (differential_add d Ac U _ (hAcY.differentiableAt (by simp))
       (hUY.differentiableAt (by simp))).symm
-  have eX : differential d Ac x + differential d U x =
-      differential d (fun z => Ac z + U z) x :=
+  have eX :=
     (differential_add d Ac U _ (hAcX.differentiableAt (by simp))
       (hUX.differentiableAt (by simp))).symm
   rw [eY] at hY
   rw [eX] at hXp
   have h2 : 2 * (pairing d
-        (differential d Ac (real d (KPArch.productAction d g0 (arch d x))))
-        (differential d U (real d (KPArch.productAction d g0 (arch d x))))).re =
+        (differential d Ac (real₀))
+        (differential d U (real₀))).re =
       2 * (pairing d (differential d Ac x) (differential d U x)).re := by
     have hSAU' : (∑ i, ∑ k, ‖differential d (fun z => Ac z + U z)
-          (real d (KPArch.productAction d g0 (arch d x))) i k‖ ^ 2) =
+          (real₀) i k‖ ^ 2) =
         ∑ i, ∑ k, ‖differential d (fun z => Ac z + U z) x i k‖ ^ 2 := hSAU
     have hSA' : (∑ i, ∑ k, ‖differential d Ac
-          (real d (KPArch.productAction d g0 (arch d x))) i k‖ ^ 2) =
+          (real₀) i k‖ ^ 2) =
         ∑ i, ∑ k, ‖differential d Ac x i k‖ ^ 2 := hSA
     have hSU' : (∑ i, ∑ k, ‖differential d U
-          (real d (KPArch.productAction d g0 (arch d x))) i k‖ ^ 2) =
+          (real₀) i k‖ ^ 2) =
         ∑ i, ∑ k, ‖differential d U x i k‖ ^ 2 := hSU
     rw [hY, hXp, hSAU', hSA', hSU']
   exact mul_left_cancel₀ two_ne_zero h2

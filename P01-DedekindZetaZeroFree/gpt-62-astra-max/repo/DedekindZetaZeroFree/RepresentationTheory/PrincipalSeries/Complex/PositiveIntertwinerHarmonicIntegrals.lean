@@ -26,7 +26,7 @@ theorem positive_haar_integral_of_transport
     (∫ z, g z ∂characterHaar β) =
       ((3 * characterScale β / 2 : ℝ) : ℂ) *
         ∫ y, K y ∂ComplexFractionalInverse.RawSphereProjection.rawSphereArea := by
-  let d : ℂ → ℝ := fun z =>
+  let d := fun z =>
     ComplexLocal.StereographicTransport.denominator z ^ (-2 : ℝ) / Real.pi
   have hd : Measurable (fun z => ENNReal.ofReal (d z)) := by
     dsimp [d, ComplexLocal.StereographicTransport.denominator]
@@ -45,9 +45,7 @@ theorem positive_haar_integral_of_transport
       integral_withDensity_eq_integral_toReal_smul hd
         (Filter.Eventually.of_forall (fun z => ENNReal.ofReal_lt_top))] at hm
     simpa only [ENNReal.toReal_ofReal (hdpos _), Complex.real_smul] using hm.symm
-  have hc : 0 ≤ characterScale β / (2 * Real.pi) :=
-    div_nonneg (characterScale_pos β).le (mul_pos (by norm_num) Real.pi_pos).le
-  rw [characterHaar, integral_smul_measure, ENNReal.toReal_ofReal hc,
+  rw [characterHaar, integral_smul_measure, ENNReal.toReal_ofReal (div_nonneg (characterScale_pos β).le (mul_pos (by norm_num) Real.pi_pos).le),
     Complex.real_smul]
   simp_rw [hg]
   change ((characterScale β / (2 * Real.pi) : ℝ) : ℂ) *
@@ -72,12 +70,11 @@ theorem positive_intertwiner_harmonic_integral (β : ℂˣ) (ℓ : ℕ)
   obtain ⟨x, q, hx, hq, hsection⟩ :=
     HarmonicIntegral.compact_section_spherical_transport k
   let w : ℝ → ℝ := fun u => (1 / 3) * u ^ (1 / 3 - 1 : ℝ)
-  have hw : Integrable w (volume.restrict (Set.Icc (0 : ℝ) 1)) :=
+  have hw :=
     ComplexFractionalInverse.HarmonicIdentity.powerWeight_integrable
       (1 / 3) (by norm_num)
-  have hK := HarmonicIntegral.raw_polynomial_latitude_integrable p w hw x
   rw [positive_haar_integral_of_transport β q hq
-    (HarmonicIntegral.rawLatitudeKernel w x p) hK.aestronglyMeasurable
+    (HarmonicIntegral.rawLatitudeKernel w x p) (HarmonicIntegral.raw_polynomial_latitude_integrable p w hw x).aestronglyMeasurable
     (fun z => f (weyl * upperUnipotent z * complexSU2Embedding k))
     (hsection p f hf)]
   rw [HarmonicIntegral.raw_polynomial_funkHecke ℓ p hp w hw x]

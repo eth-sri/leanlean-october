@@ -12,13 +12,13 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPLiteralRaw KPGlobalTorusFiniteStages ThetaExpansion TensorActionSource
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 variable (N : MomentSources.TraceHaarTransport R)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
@@ -40,8 +40,7 @@ theorem actualCoreResidue_automorphic (x : V) :
 theorem actualCoreResidue_period_integrable (x : V) (g : MomentSources.Group R) :
     Integrable (fun q : KPAdditiveQuotient F => actualCoreResidue R P C μ hμ N x
       (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out q)*g) *
-      star (adelicTraceQuotientCharacter F q : ℂ)) dq := by
-  exact (KPLiteralPeriod.haar_fourier_vanishing_forces_root_invariance F ζ hζ
+      star (adelicTraceQuotientCharacter F q : ℂ)) dq := (KPLiteralPeriod.haar_fourier_vanishing_forces_root_invariance F ζ hζ
     (PrincipalOfKP.standardCharacter F) (PrincipalOfKP.standardCharacter_nontrivial F)
     dq inferInstance _ (actualCoreResidue_automorphic R P C μ hμ N x)).2.2.1 g
 

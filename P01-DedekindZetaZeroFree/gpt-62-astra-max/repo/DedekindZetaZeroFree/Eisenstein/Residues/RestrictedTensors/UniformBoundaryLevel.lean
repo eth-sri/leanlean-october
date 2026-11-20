@@ -10,20 +10,17 @@ open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.FourierContinuation.ComplexLines
 open NumberField IsDedekindDomain MomentSources KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct
 open KPGlobalResidualConstruction LiteralSource TensorActionSource ThetaExpansion KPLiteralRaw
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming pureComponent → pureComponent
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming exists_pure_product_level → exists_pure_product_level
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming pure_raw_fixed → pure_raw_fixed
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency true
 set_option maxHeartbeats 2000000
 
-open _root_.DedekindZetaZeroFree.FourierContinuation.ComplexLines renaming source_slot_uniform_level → source_slot_uniform_level
+open _root_.DedekindZetaZeroFree.FourierContinuation.ComplexLines (source_slot_uniform_level)
 
 theorem restrictedSlot_uniform_source_residue_level
     (s : RestrictedTensorSimple.Level (LiteralSource.bad R.A P C))

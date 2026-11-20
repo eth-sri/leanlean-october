@@ -86,12 +86,11 @@ theorem residue_eq_of_norm_sub_lt_one (p : ExteriorPrime A)
   rw [cftResidueEquiv_mk]
   apply sub_eq_zero.mp
   rw [← map_sub, IsLocalRing.residue_eq_zero_iff]
-  change ¬ IsUnit _
   apply Valuation.Integer.not_isUnit_iff_valuation_lt_one.mpr
   let : (Valued.v : Valuation (LocalField p) (WithZero (Multiplicative ℤ))).Compatible :=
     Valuation.Compatible.ofValuation _
   rw [← (ValuativeRel.isEquiv
-    (Valued.v : Valuation (LocalField p) (WithZero (Multiplicative ℤ)))
+    Valued.v
     (ValuativeRel.valuation (LocalField p))).lt_one_iff_lt_one]
   apply Valued.toNormedField.norm_lt_one_iff.mp
   exact ht
@@ -112,52 +111,30 @@ theorem unit_phase_of_norm_sub_lt_one (R : PrincipalMellin.ActualRecipe S η)
       ThetaBranch.residueCharacter R.A R.σ p (Ideal.Quotient.mk p.val.asIdeal t) := by
   rw [NormalizedProbe.principal_prime_residueCharacter_transport]
   erw [ArithGaussCRT.exteriorQuotientEquiv_mk R.A (ThetaBranch.primeIdeal R.A p) t]
-  have h := chi_eq_residueSixCharacter_of_residue (σ := R.σ) (localPrime p)
-    (algebraMap (𝓞 F) R.A.R t) u (residue_eq_of_norm_sub_lt_one (localPrime p) u t ht)
   have hr := hR (KPHilbert.residueSixCharacter F p.val R.A.zeta12 R.A.primitive_zeta12 (exterior_tame (localPrime p)) u)
   have he : KPLocalCover.coefficientEmbedding F S.zeta12 S.primitive_zeta12 =
       KPLocalCover.coefficientEmbedding F R.A.zeta12 R.A.primitive_zeta12 := by
     congr 1
     exact R.sameRoot.symm
   rw [he] at hr
-  exact (h.trans hr).symm
+  exact ((chi_eq_residueSixCharacter_of_residue (localPrime p)
+    (algebraMap (𝓞 F) R.A.R t) u (residue_eq_of_norm_sub_lt_one (localPrime p) u t ht)).trans hr).symm
 
 section Valuation
 open ValuativeRel LocalFieldTheory.IsNonarchimedeanLocalField
 variable (q : HeightOneSpectrum (𝓞 F))
 local instance : ValuativeRel (q.adicCompletion F) := ClassFieldTheory.finitePlaceCompletionValuativeRel F q
 local instance : IsNonarchimedeanLocalField (q.adicCompletion F) := ClassFieldTheory.finitePlaceCompletionIsNonarchimedeanLocalField F q
-private theorem iso_unique (e : WithZero (Multiplicative ℤ) ≃*o WithZero (Multiplicative ℤ)) : e = OrderMonoidIso.refl _ := by
-  have hf : OrderMonoidIso.withZero.symm e = OrderMonoidIso.refl (Multiplicative ℤ) := Subsingleton.elim _ _
-  have := congrArg OrderMonoidIso.withZero hf
-  have hh : e = OrderMonoidIso.withZero (OrderMonoidIso.refl (Multiplicative ℤ)) := by simpa using this
-  exact hh.trans (by ext x; cases x <;> rfl)
+private alias iso_unique := DedekindZetaZeroFree.RMTameQuadraticExponent.TameQuadraticConductorExponents.iso_unique
 private theorem val_eq (x : q.adicCompletion F) :
-    IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (q.adicCompletion F) (valuation (q.adicCompletion F) x) = Valued.v x := by
-  let ν : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ)) := Valued.v
-  let : ν.Compatible := Valuation.Compatible.ofValuation _
-  let e := (ValuativeRel.ValueGroupWithZero.orderMonoidIso ν).trans
-    (Valuation.IsRankOneDiscrete.valueGroup₀_equiv_withZeroMulInt ν)
-  have he : e = IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (q.adicCompletion F) := by
-    have hh := iso_unique (e.symm.trans (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (q.adicCompletion F)))
-    ext a
-    have h := congrArg (fun f => f (e a)) hh
-    simpa using h.symm
-  rw [← he]
-  change Valuation.IsRankOneDiscrete.valueGroup₀_equiv_withZeroMulInt ν
-    (ValuativeRel.ValueGroupWithZero.orderMonoidIso ν (valuation (q.adicCompletion F) x)) = _
-  rw [ValuativeRel.ValueGroupWithZero.orderMonoidIso_valuation_eq_restrict₀]
-  exact Valuation.IsRankOneDiscrete.valueGroup₀_equiv_withZeroMulInt_restrict_apply_of_surjective
-    (q.valuedAdicCompletion_surjective F) x
+    IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (q.adicCompletion F) (valuation (q.adicCompletion F) x) = Valued.v x := by apply @DedekindZetaZeroFree.RMTameQuadraticExponent.TameQuadraticConductorExponents.val_eq <;> assumption
 theorem ordinaryValuation_eq_order (x : Fˣ) :
     KPHilbert.ordinaryValuation F q (Units.map (algebraMap F (q.adicCompletion F)).toMonoidHom x) = ThetaBranch.order q x := by
   unfold KPHilbert.ordinaryValuation
   rw [valuationMap_apply, v_apply, WithZero.toAdd_unzero_eq_log]
-  change -WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (q.adicCompletion F)
-    (valuation (q.adicCompletion F) (algebraMap F (q.adicCompletion F) (x : F)))) = _
   rw [val_eq]
   exact congrArg (fun a : WithZero (Multiplicative ℤ) => -WithZero.log a)
-    (q.valuedAdicCompletion_eq_valuation' (K := F) (x : F))
+    (q.valuedAdicCompletion_eq_valuation' (x : F))
 
 end Valuation
 
@@ -179,8 +156,8 @@ theorem exists_integerUnit_of_valuation_one (p : ThetaBranch.ExteriorPrime A)
       (Valuation.integer.integers (ValuativeRel.valuation (p.val.adicCompletion F)))).mpr hu
   refine ⟨ha.unit, ?_⟩
   apply Units.ext
-  change ((ha.unit.val : (ValuativeRel.valuation (p.val.adicCompletion F)).integer) :
-    p.val.adicCompletion F) = (u : p.val.adicCompletion F)
+  change (ha.unit.val :
+    p.val.adicCompletion F) = u
   rw [ha.unit_spec]
 
 end DedekindZetaZeroFree.ExteriorWhittakerValues.UnitCovarianceCompletion

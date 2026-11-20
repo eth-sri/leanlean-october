@@ -13,11 +13,11 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.SourceCuspidalOrthog
 open KPContSectorCoveredQuotientVocabulary KPContSectorFixedPushforwardSupport
 open KPContActualCutoffSmoothDescent
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "V" => level F ζ hζ C R P H U
 local notation "A" => H.atlas V
 local notation "D" => H.disintegration V

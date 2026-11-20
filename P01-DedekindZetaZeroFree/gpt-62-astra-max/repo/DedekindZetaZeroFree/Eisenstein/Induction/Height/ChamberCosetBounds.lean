@@ -36,9 +36,8 @@ private theorem optP1_injective : Function.Injective (optP1 F) := by
       have hh : p1Inf F = p1Fin F t := h
       rw [p1Inf, p1Fin, Projectivization.mk_eq_mk_iff] at hh
       obtain ⟨a, ha⟩ := hh
-      have h1 : (a : F) = 0 := by
-        simpa [Units.smul_def] using congrFun ha 1
-      exact a.ne_zero h1
+      exact a.ne_zero (by
+        simpa [Units.smul_def] using congrFun ha 1)
   | some t =>
     cases j with
     | none =>
@@ -46,9 +45,8 @@ private theorem optP1_injective : Function.Injective (optP1 F) := by
       have hh : p1Fin F t = p1Inf F := h
       rw [p1Fin, p1Inf, Projectivization.mk_eq_mk_iff] at hh
       obtain ⟨a, ha⟩ := hh
-      have h1 : (a : F) = 0 := by
-        simpa [Units.smul_def] using congrFun ha 1
-      exact a.ne_zero h1
+      exact a.ne_zero (by
+        simpa [Units.smul_def] using congrFun ha 1)
     | some u =>
       have hh : p1Fin F t = p1Fin F u := h
       rw [p1Fin, p1Fin, Projectivization.mk_eq_mk_iff] at hh
@@ -84,10 +82,9 @@ theorem chamberCosetIndex_mulHeight_out
   rw [hi]
   cases i with
   | none =>
-    have he := bottomRow_eq_of_rationalCoset_eq F
+    rw [(bottomRow_eq_of_rationalCoset_eq F
       (Quotient.out (KPChamberBruhatTwoCells.cellIndex F none)) 1
-      (Quotient.out_eq _)
-    rw [he, bottomRow_one_mulHeight]
+      (Quotient.out_eq _)), bottomRow_one_mulHeight]
     simp [optP1, p1Inf, Projectivization.mulHeight_mk]
   | some t =>
     have he := bottomRow_eq_of_rationalCoset_eq F
@@ -118,25 +115,18 @@ theorem chamberCosetHeightBound (K : Subgroup (G F ζ hζ))
   obtain ⟨B, hB, hb⟩ := actualScalarHeightDecay F ζ hζ K hK f s hs
   obtain ⟨m, hm, hlow⟩ := chamberCoset_fixed_parameter_height_lower_bound F
     (coveredHeightProjection F ζ hζ g)
-  let a : ℝ := 2 / 3 + s.re
-  have ha : 0 ≤ a := by dsimp [a]; linarith
-  have hq : -2 * a ≤ 0 := mul_nonpos_of_nonpos_of_nonneg (by norm_num) ha
+  let a := 2 / 3 + s.re
   refine ⟨B * m ^ (-2 * a), fun c => ?_⟩
   have he := hb (rationalLift F ζ hζ (Quotient.out c) * g)
   rw [actualBaseRowHeight_rational_mul] at he
-  have hpow :
-      (KPChamberHeight.height F (KPChamberHeight.bottomRow F (Quotient.out c))
-        (coveredHeightProjection F ζ hζ g)) ^ (-2 * a) ≤
-      (m * Projectivization.mulHeight (chamberCosetIndex F c)) ^ (-2 * a) :=
-    Real.rpow_le_rpow_of_nonpos
-      (mul_pos hm (Projectivization.mulHeight_pos _)) (hlow c) hq
   calc
-    ‖f.val s (rationalLift F ζ hζ (Quotient.out c) * g)‖ ≤
+    _ ≤
         B * (KPChamberHeight.height F (KPChamberHeight.bottomRow F (Quotient.out c))
           (coveredHeightProjection F ζ hζ g)) ^ (-2 * a) := he
     _ ≤ B * (m * Projectivization.mulHeight (chamberCosetIndex F c)) ^ (-2 * a) :=
-      mul_le_mul_of_nonneg_left hpow hB
-    _ = (B * m ^ (-2 * a)) * KPHeightSeries.term (Projectivization.mulHeight (K := F))
+      mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_nonpos
+        (mul_pos hm (Projectivization.mulHeight_pos _)) (hlow c) (mul_nonpos_of_nonpos_of_nonneg (by norm_num) (by dsimp [a]; linarith))) hB
+    _ = (B * m ^ (-2 * a)) * KPHeightSeries.term (Projectivization.mulHeight)
         (2 / 3 + s.re) (chamberCosetIndex F c) := by
       rw [Real.mul_rpow hm.le (Projectivization.mulHeight_pos _).le]
       dsimp [KPHeightSeries.term, a]

@@ -12,8 +12,8 @@ open Filter
 namespace DedekindZetaZeroFree.EisensteinSmoothGerms
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 
 theorem scalarGerm_covariance {C : ScalarContinuation R Q}
     {v : R.A.UnitQuotient} (H : ScalarGerm C v) (g h : Group R) (c : ℂ)
@@ -44,7 +44,7 @@ theorem scalarGerm_covariance {C : ScalarContinuation R Q}
     change H.cleared z g = z * C.E v z g at hg
     rw [hh, hg, he, mul_left_comm]
   exact (H.analytic h).eqOn_of_preconnected_of_frequently_eq
-    ((analyticOnNhd_const : AnalyticOnNhd ℂ (fun _ : ℂ => c) _).mul (H.analytic g))
+    (analyticOnNhd_const.mul (H.analytic g))
     (convex_ball (0 : ℂ) H.radius).isPreconnected
     (Metric.mem_ball_self H.radius_pos) heN.frequently hs
 
@@ -53,7 +53,7 @@ theorem scalarGerm_level {C : ScalarContinuation R Q}
     {s : ℂ} (hs : s ∈ Metric.ball 0 H.radius) (g u : Group R)
     (hu : u ∈ KPGlobalTorusFunctionData.globalLevel F R.A.zeta12 R.A.primitive_zeta12 Q.level) :
     H.cleared s (g * u) = H.cleared s g := by
-  simpa only [one_mul] using scalarGerm_covariance H g (g * u) 1 (by
+  simpa using scalarGerm_covariance H g (g * u) 1 (by
     intro z _
     unfold KPLiteralRaw.eisenstein
     rw [one_mul]

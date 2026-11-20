@@ -40,7 +40,7 @@ theorem isConj_torusExp_iff_cos_eq {θ φ : ℝ} :
     IsConj (torusExp θ) (torusExp φ) ↔ Real.cos φ = Real.cos θ := by
   rw [isConj_iff_trace_eq, trace_torusExp, trace_torusExp]
   refine ⟨fun h => ?_, fun h => by rw [h]⟩
-  exact_mod_cast (mul_left_cancel₀ (a := (2 : ℂ)) (by norm_num) h).symm
+  exact_mod_cast (mul_left_cancel₀ (by norm_num) h).symm
 
 theorem exists_isConj_torusExp_mem_Icc (g : SU2) :
     ∃ θ ∈ Set.Icc (0 : ℝ) Real.pi, IsConj g (torusExp θ) := by

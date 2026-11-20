@@ -11,9 +11,7 @@ open scoped NumberField Classical Topology NNReal
 open NumberField
 namespace DedekindZetaZeroFree.KPLiteralExceptionalResidue.DiscrepancyCuts
 open KPLiteralRaw KPLiteralChamber
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy renaming discrepancy → discrepancy
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy renaming discrepancy_locallyConstant → discrepancy_locallyConstant
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy renaming discrepancy_borel → discrepancy_borel
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy (discrepancy discrepancy_locallyConstant discrepancy_borel)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
  def cut (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
@@ -35,14 +33,10 @@ private theorem compact_mask_locallyConstant (K : Subgroup (G F ζ hζ))
       apply IsCompact.eventually_forall_of_forall_eventually isCompact_univ
       intro v _
       have h := (discrepancy_locallyConstant F ζ hζ K hK).eventually_eq (v.val * k.val)
-      have hc₁ : Continuous (fun p : K × K => p.2.val * p.1.val) :=
-        (continuous_subtype_val.comp continuous_snd).mul
-          (continuous_subtype_val.comp continuous_fst)
-      have hc₂ : Continuous (fun p : K × K => p.2.val * k.val) :=
-        (continuous_subtype_val.comp continuous_snd).mul continuous_const
-      filter_upwards [hc₁.continuousAt h, hc₂.continuousAt h] with p hp₁ hp₂
+      filter_upwards [((continuous_subtype_val.comp continuous_snd).mul
+        (continuous_subtype_val.comp continuous_fst)).continuousAt h, ((continuous_subtype_val.comp continuous_snd).mul continuous_const).continuousAt h] with p hp₁ hp₂
       exact hp₁.trans hp₂.symm
-    simpa only [Set.mem_univ, forall_true_left] using he'
+    simpa using he'
   filter_upwards [he] with l hl
   funext g
   obtain ⟨t, x, v, hg⟩ := hK.2.1 g
@@ -128,10 +122,7 @@ private theorem discrepancy_right_level (K : Subgroup (G F ζ hζ))
     · exact hv.1.continuousAt
     · exact continuousAt_const
   · intro g x hx
-    have hc : ContinuousOn (fun z => g * KPGlobalResidualConstruction.archChart F ζ hζ z)
-        (KPGlobalResidualConstruction.archDomain F) :=
-      continuousOn_const.mul (KPGlobalResidualConstruction.ActualMovingCompact.archChart_continuousOn F ζ hζ)
-    have hel := (hc x hx) (he (g * KPGlobalResidualConstruction.archChart F ζ hζ x))
+    have hel := ((continuousOn_const.mul (KPGlobalResidualConstruction.ActualMovingCompact.archChart_continuousOn F ζ hζ)) x hx) (he (g * KPGlobalResidualConstruction.archChart F ζ hζ x))
     have hpoint := (he (g * KPGlobalResidualConstruction.archChart F ζ hζ x)).self_of_nhds
     split_ifs at hel hpoint
     · exact (hv.2.1 g x hx).congr_of_eventuallyEq hel hpoint
@@ -175,11 +166,7 @@ open scoped NumberField Classical Topology NNReal
 open NumberField
 namespace DedekindZetaZeroFree.KPLiteralExceptionalResidue.DiscrepancyCuts
 open KPLiteralRaw KPLiteralChamber
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy renaming discrepancy → discrepancy
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy renaming discrepancy_locallyConstant → discrepancy_locallyConstant
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy renaming discrepancy_borel → discrepancy_borel
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy renaming discrepancy_range_finite → discrepancy_range_finite
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy renaming literal_reweight_finite_expansion → literal_reweight_finite_expansion
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy (discrepancy discrepancy_locallyConstant discrepancy_borel discrepancy_range_finite literal_reweight_finite_expansion)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
  def cutCore (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)

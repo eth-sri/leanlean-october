@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -67,7 +61,7 @@ theorem unitsTateH0FiniteOfIntegerUnitsHerbrand
   let := galoisGroupValueGroupMulDistribMulAction K L
   obtain ⟨hField, _⟩ :=
     valuationHerbrand_multiplicativity_of_integerUnits_defined K L g hg hU
-  let : Finite (HerbrandH0 (Gal(L / K)) Lˣ) := hField.1
+  let := hField.1
   exact Finite.of_equiv (HerbrandH0 (Gal(L / K)) Lˣ)
     (herbrandH0EquivTateCohomologyZero K L)
 
@@ -94,30 +88,21 @@ theorem fieldUnits_tate_card_of_integerUnits_herbrand_eq_one
   let := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
   let := galoisGroupFieldUnitsMulDistribMulAction K L
   let := galoisGroupValueGroupMulDistribMulAction K L
-  let hZ : HerbrandQuotientDefined
-      (Gal(L / K)) (Multiplicative Int) g :=
+  let hZ :=
     galoisGroupValueGroup_herbrandQuotientDefined K L g
   rcases valuationHerbrand_multiplicativity_of_integerUnits_defined
       K L g hg hU with ⟨hField, hmult⟩
-  let : Finite (HerbrandH0 (Gal(L / K)) Lˣ) := hField.1
-  let : Finite (HerbrandHMinusOne (Gal(L / K)) Lˣ g) := hField.2
-  let : Finite
-      (HerbrandH0 (Gal(L / K)) (Multiplicative Int)) := hZ.1
-  let : Finite
-      (HerbrandHMinusOne (Gal(L / K)) (Multiplicative Int) g) := hZ.2
-  have hZ0 :
-      Nat.card (HerbrandH0 (Gal(L / K)) (Multiplicative Int)) =
-        Module.finrank K L :=
-    galoisGroupValueGroup_herbrandH0_card_eq_finrank K L
-  have hZm1 :
-      Nat.card (HerbrandHMinusOne
-        (Gal(L / K)) (Multiplicative Int) g) = 1 :=
+  let := hField.1
+  let := hField.2
+  let := hZ.1
+  let := hZ.2
+  have hZm1 :=
     galoisGroupValueGroup_herbrandHMinusOne_card_eq_one K L g
   have hZ_one :
       @herbrandQuotient (Gal(L / K)) (Multiplicative Int) _ _ _
           (galoisGroupValueGroupMulDistribMulAction K L) g hZ.1 hZ.2 =
         (Module.finrank K L : ℚ) := by
-    rw [herbrandQuotient_eq_card_ratio, hZ0, hZm1]
+    rw [herbrandQuotient_eq_card_ratio, (galoisGroupValueGroup_herbrandH0_card_eq_finrank K L), hZm1]
     simp
   have hm1_actual :
       Nat.card (tateCohomology (Rep.ofAlgebraAutOnUnits K L) (-1)) = 1 :=

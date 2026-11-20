@@ -22,8 +22,9 @@ private lemma unit_diagonal_chart (u : ℂˣ) (x : ℂ) :
       Matrix.mul_apply, Fin.sum_univ_two]
   all_goals field_simp
 
-private lemma unitRadius_coordinate (β κ : ℂˣ)
-    (f : PrincipalSeries positiveParameter) (u : ℂˣ) (hu : ‖(u : ℂ)‖ = 1) (x : ℂ) :
+variable (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
+
+private lemma unitRadius_coordinate (u : ℂˣ) (hu : ‖(u : ℂ)‖ = 1) (x : ℂ) :
     rotatedAmplitude β κ f u 1 x =
       ((κ : ℂ) * (characterScale β / (2 * Real.pi) : ℂ)) *
         openCoordinate (rightTranslate positiveParameter weyl f)
@@ -41,21 +42,19 @@ private lemma unitRadius_coordinate (β κ : ℂˣ)
       (characterRotation β : ℂ) / (u : ℂ) * x := by ring
   rw [he]
 
-theorem norm_iteratedFDeriv_rotatedAmplitude_one_le (β κ : ℂˣ)
-    (f : PrincipalSeries positiveParameter) (h : ℕ) :
+theorem norm_iteratedFDeriv_rotatedAmplitude_one_le (h : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ (u : ℂˣ) (z : ℂ), ‖(u : ℂ)‖ = 1 →
       ‖iteratedFDeriv ℝ h
         (fun x : ℂ => rotatedAmplitude β κ f u 1 x) z‖ ≤
         C * Real.rpow (1 + ‖z‖ ^ 2) (-(4 / 3 : ℝ) - (h : ℝ) / 2) := by
   let g := rightTranslate positiveParameter weyl f
-  let a : ℂ := (κ : ℂ) * (characterScale β / (2 * Real.pi) : ℂ)
+  let a := (κ : ℂ) * (characterScale β / (2 * Real.pi) : ℂ)
   obtain ⟨D, hD, hb⟩ := KPCplxPrincipalSeriesCharts.norm_iteratedFDeriv_openCoordinate_le g h
   refine ⟨(‖a‖ + 1) * D, mul_pos (by positivity) hD, ?_⟩
   intro u z hu
-  let v : Circle := ⟨(characterRotation β : ℂ) / (u : ℂ), by
+  let L := rotation (⟨(characterRotation β : ℂ) / (u : ℂ), by
     apply mem_sphere_zero_iff_norm.mpr
-    simp [hu]⟩
-  let L : ℂ ≃ₗᵢ[ℝ] ℂ := rotation v
+    simp [hu]⟩)
   have hL (x : ℂ) : L x = ((characterRotation β : ℂ) / (u : ℂ)) * x := rfl
   have he : (fun x : ℂ => rotatedAmplitude β κ f u 1 x) =
       (fun x : ℂ => a • (openCoordinate g ∘ L) x) := by
@@ -66,11 +65,10 @@ theorem norm_iteratedFDeriv_rotatedAmplitude_one_le (β κ : ℂˣ)
     g.property.2.1.comp L.toContinuousLinearEquiv.contDiff
   rw [he, iteratedFDeriv_const_smul_apply' (hs.contDiffAt.of_le (by simp)), norm_smul,
     L.norm_iteratedFDeriv_comp_right]
-  have hnorm : ‖L z‖ = ‖z‖ := L.norm_map z
   have hb' := hb (L z)
-  rw [hnorm] at hb'
+  rw [(L.norm_map z)] at hb'
   calc
-    ‖a‖ * ‖iteratedFDeriv ℝ h (openCoordinate g) (L z)‖ ≤
+    _ ≤
         ‖a‖ * (D * Real.rpow (1 + ‖z‖ ^ 2) (-(4 / 3 : ℝ) - (h : ℝ) / 2)) :=
       mul_le_mul_of_nonneg_left hb' (norm_nonneg _)
     _ ≤ (‖a‖ + 1) * (D * Real.rpow (1 + ‖z‖ ^ 2)

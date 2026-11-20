@@ -35,8 +35,7 @@ theorem exp_mul_I_sub_exp_mul_I (α β : ℝ) :
   have hsin : Complex.exp ((((α - β) / 2 : ℝ) : ℂ) * Complex.I) -
       Complex.exp (-(((α - β) / 2 : ℝ) : ℂ) * Complex.I) =
       2 * Complex.sin (((α - β) / 2 : ℝ) : ℂ) * Complex.I := by
-    have h2 := Complex.two_sin ((((α - β) / 2 : ℝ) : ℂ))
-    linear_combination (-Complex.I) * h2 +
+    linear_combination (-Complex.I) * (Complex.two_sin ((((α - β) / 2 : ℝ) : ℂ))) +
       (Complex.exp ((((α - β) / 2 : ℝ) : ℂ) * Complex.I) -
         Complex.exp (-(((α - β) / 2 : ℝ) : ℂ) * Complex.I)) * Complex.I_sq
   have h1 : (α : ℂ) * Complex.I =

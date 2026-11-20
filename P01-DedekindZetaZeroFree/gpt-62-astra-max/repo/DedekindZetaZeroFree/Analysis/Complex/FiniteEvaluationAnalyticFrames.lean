@@ -10,10 +10,13 @@ set_option backward.isDefEq.respectTransparency false
 open scoped Classical Topology
 namespace DedekindZetaZeroFree.SheetRescaling
 open Filter
-open _root_.DedekindZetaZeroFree.KPLiteralScalarArchIndependentSlices renaming finite_interpolation → finite_interpolation
+open _root_.DedekindZetaZeroFree.KPLiteralScalarArchIndependentSlices (finite_interpolation)
 
-private theorem frame_det_analytic {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (A : ℂ → Matrix ι ι ℂ) {Ω : Set ℂ}
+section
+
+variable {ι : Type*} [Fintype ι] [DecidableEq ι] (A : ℂ → Matrix ι ι ℂ)
+
+private theorem frame_det_analytic {Ω : Set ℂ}
     (hA : ∀ i j, AnalyticOnNhd ℂ (fun s => A s i j) Ω) :
     AnalyticOnNhd ℂ (fun s => (A s).det) Ω := by
   intro s hs
@@ -25,8 +28,7 @@ private theorem frame_det_analytic {ι : Type*} [Fintype ι] [DecidableEq ι]
   intro i _
   exact hA (σ i) i s hs
 
-private theorem frame_inv_analytic {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (A : ℂ → Matrix ι ι ℂ) (hA : ∀ i j, AnalyticAt ℂ (fun s => A s i j) 0)
+private theorem frame_inv_analytic (hA : ∀ i j, AnalyticAt ℂ (fun s => A s i j) 0)
     (hzero : A 0 = 1) : ∀ i j, AnalyticAt ℂ (fun s => (A s)⁻¹ i j) 0 := by
   have hd : AnalyticAt ℂ (fun s => (A s).det) 0 := by
     simp_rw [Matrix.det_apply]
@@ -53,8 +55,7 @@ private theorem frame_inv_analytic {ι : Type*} [Fintype ι] [DecidableEq ι]
   · simp only [Matrix.updateRow_ne hk]
     exact hA (σ k) k
 
-private theorem frame_inv_meromorphic {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (A : ℂ → Matrix ι ι ℂ) {Ω : Set ℂ}
+private theorem frame_inv_meromorphic {Ω : Set ℂ}
     (hA : ∀ i j, AnalyticOnNhd ℂ (fun s => A s i j) Ω) :
     ∀ i j, MeromorphicOn (fun s => (A s)⁻¹ i j) Ω := by
   intro i j
@@ -71,6 +72,8 @@ private theorem frame_inv_meromorphic {ι : Type*} [Fintype ι] [DecidableEq ι]
   · simp only [Matrix.updateRow_ne hk]
     exact hA k l s hs
 
+end
+
 theorem analytic_function_frame
     {V Y : Type*} [AddCommGroup V] [Module ℂ V] [FiniteDimensional ℂ V]
     (J : ℂ → V →ₗ[ℂ] (Y → ℂ)) (hJ : Function.Injective (J 0))
@@ -79,8 +82,6 @@ theorem analytic_function_frame
     ∃ (n : ℕ) (p : Fin n → Y) (b : Fin n → ℂ → V),
       (∀ i, ∀ l : V →ₗ[ℂ] ℂ, AnalyticAt ℂ (fun s => l (b i s)) 0) ∧
       (∀ i, ∀ l : V →ₗ[ℂ] ℂ, MeromorphicOn (fun s => l (b i s)) Ω) ∧
-      (∀ᶠ s in 𝓝 (0 : ℂ), ∀ v,
-        v = ∑ i, J s v (p i) • b i s) ∧
       (∀ z ∈ Ω, ∀ᶠ s in 𝓝[≠] z, s ∈ Ω → ∀ v,
         v = ∑ i, J s v (p i) • b i s) := by
   let T := (J 0).range
@@ -179,9 +180,7 @@ theorem analytic_function_frame
     apply Finset.sum_congr rfl
     intro j _
     ring
-  refine ⟨n,p,c,hca,hcm,?_,?_⟩
-  · filter_upwards [hn] with s hs
-    exact hrec s hs
+  refine ⟨n, p, c, hca, hcm, ?_⟩
   · have hne : ∀ᶠ s in codiscreteWithin Ω, (A s).det ≠ 0 := by
       rcases (frame_det_analytic A hA).eqOn_zero_or_eventually_ne_zero_of_preconnected hΩ with hz | hn
       · have hz0 := hz h0

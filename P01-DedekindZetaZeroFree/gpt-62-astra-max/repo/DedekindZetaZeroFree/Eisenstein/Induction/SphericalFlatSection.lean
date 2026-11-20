@@ -11,11 +11,13 @@ open scoped Classical NumberField
 
 namespace DedekindZetaZeroFree.KPContinuation.ChamberFlatSource
 
+section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ) {S : Type*} [NormedAddCommGroup S]
+    [NormedSpace ℂ S] [FiniteDimensional ℂ S] (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+
 private theorem actual_right_chart_smooth
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (s : ℂ) (v : S) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => KPContActualSphericalFlatStage.L F ζ hζ U ι s v
       (g * KPGlobalResidualConstruction.archChart F ζ hζ x))
@@ -29,16 +31,11 @@ private theorem actual_right_chart_smooth
     (KPContActualSphericalFlatStage.coreInclusion F ζ hζ U ι)
     (KPContActualSphericalFlatStage.stage_smooth F ζ hζ U ι) (fun _ => v) s
     (g * KPGlobalResidualConstruction.archChart F ζ hζ x₀)
-  have hc := hleft.comp hq hqO
-  apply (hc.congr (fun x hx => congrArg
+  apply ((hleft.comp hq hqO).congr (fun x hx => congrArg
     (KPContActualSphericalFlatStage.L F ζ hζ U ι s v) (heq x hx))).mono
   exact Set.inter_subset_right
 
-private theorem actual_scalar_kfinite
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U) (v : S) :
+private theorem actual_scalar_kfinite (v : S) :
     KPLiteralRaw.KFinite F ζ hζ (KPContFlatFullProductIwasawa.iwasawaData F ζ hζ).K
       (KPContActualSphericalFlatStage.L F ζ hζ U ι 0 v) := by
   letI : IsTopologicalGroup (KPGlobalTorusFunctionData.G F ζ hζ) :=
@@ -49,10 +46,8 @@ private theorem actual_scalar_kfinite
     _ _ _ f.property
   let A := (KPMsRationalCompactCrossPairing.Source F ζ hζ 0).subtype
   let W := T.space.map A
-  have hW : FiniteDimensional ℂ W :=
-    (Submodule.fg_iff_finiteDimensional _).mp
-      (((Submodule.fg_iff_finiteDimensional _).mpr T.finiteDimensional).map A)
-  refine ⟨W, hW, ?_, ?_⟩
+  refine ⟨W, ((Submodule.fg_iff_finiteDimensional _).mp
+    (((Submodule.fg_iff_finiteDimensional _).mpr T.finiteDimensional).map A)), ?_, ?_⟩
   · refine ⟨f.val, hT.2, ?_⟩
     funext g
     simp [A, f, KPContFlatCommonLevelKernel.L_formula]
@@ -64,10 +59,6 @@ private theorem actual_scalar_kfinite
     rfl
 
 private theorem actual_level_all
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (s : ℂ) (v : S) (g : KPGlobalTorusFunctionData.G F ζ hζ)
     (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U) :
     KPContActualSphericalFlatStage.L F ζ hζ U ι s v (g * u.val) =
@@ -75,11 +66,11 @@ private theorem actual_level_all
   have hc := (ι v).property.1 g u
   rw [KPContFlatCommonLevelKernel.L_formula, KPContFlatCommonLevelKernel.L_formula, hc.1]
   rcases mul_eq_zero.mp hc.2 with ha | hz
-  · have he : KPContFlatSourceRecipe.alpha F ζ hζ (g * u.val) =
-        KPContFlatSourceRecipe.alpha F ζ hζ g := sub_eq_zero.mp
-      (Complex.ofReal_eq_zero.mp ha)
-    rw [he]
+  · rw [(sub_eq_zero.mp
+      (Complex.ofReal_eq_zero.mp ha))]
   · rw [hz, mul_zero, mul_zero]
+
+end
 
 private theorem half_modulus_multiplier
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -111,11 +102,7 @@ theorem actual_fixedVector_flat
   · intro s
     dsimp only
     refine ⟨⟨?_, actual_right_chart_smooth F ζ hζ U ι s v, ?_⟩, ?_⟩
-    · have he : KPContActualSphericalFlatStage.L F ζ hζ U ι s v =
-        fun g => Complex.exp (s * (KPContFlatSourceRecipe.alpha F ζ hζ g : ℂ)) *
-          (KPContActualSphericalFlatStage.coreInclusion F ζ hζ U ι v).val.val g :=
-        funext (fun g => KPContFlatCommonLevelKernel.L_formula F ζ hζ U ι s v g)
-      rw [he]
+    · rw [(funext (fun g => KPContFlatCommonLevelKernel.L_formula F ζ hζ U ι s v g))]
       exact (Complex.continuous_exp.comp
         (continuous_const.mul (Complex.continuous_ofReal.comp
           (KPContFlatLogNormSmooth.alpha_continuous F ζ hζ)))).mul

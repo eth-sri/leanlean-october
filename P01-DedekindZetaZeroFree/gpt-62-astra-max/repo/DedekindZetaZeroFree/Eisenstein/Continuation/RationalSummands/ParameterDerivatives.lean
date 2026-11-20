@@ -21,8 +21,7 @@ set_option backward.isDefEq.respectTransparency.types false in
 theorem chartPartialEq (h : A → E → Y) (s : A) (z : E)
     (hh : DifferentiableAt ℝ (Function.uncurry h) (s, z)) :
     fderiv ℝ (h s) z =
-      (fderiv ℝ (Function.uncurry h) (s, z)).comp (ContinuousLinearMap.inr ℝ A E) := by
-  exact (hh.hasFDerivAt.comp z (hasFDerivAt_prodMk_right s z)).fderiv
+      (fderiv ℝ (Function.uncurry h) (s, z)).comp (ContinuousLinearMap.inr ℝ A E) := (hh.hasFDerivAt.comp z (hasFDerivAt_prodMk_right s z)).fderiv
 
 set_option backward.isDefEq.respectTransparency.types false in
 
@@ -32,29 +31,22 @@ theorem chartMixedPartial (h : A → E → Y) (s : A) (z : E)
       (fderiv ℝ (fun x => fderiv ℝ (fun t => h t x) s) z) w v := by
   let H := Function.uncurry h
   let D := fderiv ℝ H
-  let L := ContinuousLinearMap.inl ℝ A E
-  let R := ContinuousLinearMap.inr ℝ A E
-  let CR := (ContinuousLinearMap.compL ℝ E (A × E) Y).flip R
-  let CL := (ContinuousLinearMap.compL ℝ A (A × E) Y).flip L
+  let CR := (ContinuousLinearMap.compL ℝ E (A × E) Y).flip (ContinuousLinearMap.inr ℝ A E)
+  let CL := (ContinuousLinearMap.compL ℝ A (A × E) Y).flip (ContinuousLinearMap.inl ℝ A E)
   have hD : HasFDerivAt D (fderiv ℝ D (s, z)) (s, z) :=
     (hh.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiableAt (by simp) |>.hasFDerivAt
   have hs : (fun t => fderiv ℝ (h t) z) =ᶠ[𝓝 s]
       (fun t => CR (D (t, z))) := by
-    have hn := (hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)
-    filter_upwards [(continuous_id.prodMk continuous_const).continuousAt.eventually hn] with t ht
+    filter_upwards [(continuous_id.prodMk continuous_const).continuousAt.eventually ((hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp))] with t ht
     exact chartPartialEq h t z (ht.differentiableAt (by simp))
   have hz : (fun x => fderiv ℝ (fun t => h t x) s) =ᶠ[𝓝 z]
       (fun x => CL (D (s, x))) := by
-    have hn := (hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)
-    filter_upwards [(continuous_const.prodMk continuous_id).continuousAt.eventually hn] with x hx
-    have hd : HasFDerivAt H (D (s, x)) (s, x) := (hx.differentiableAt (by simp)).hasFDerivAt
+    filter_upwards [(continuous_const.prodMk continuous_id).continuousAt.eventually ((hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp))] with x hx
     have hleft : HasFDerivAt (fun t : A => H (t, x)) (CL (D (s, x))) s :=
-      by convert hd.comp s (hasFDerivAt_prodMk_left (𝕜 := ℝ) s x) using 1 <;> rfl
+      by convert ((hx.differentiableAt (by simp)).hasFDerivAt).comp s (hasFDerivAt_prodMk_left (𝕜 := ℝ) s x) using 1 <;> rfl
     exact hleft.fderiv
-  have hsd := CR.hasFDerivAt.comp s (hD.comp s (hasFDerivAt_prodMk_left s z))
-  have hzd := CL.hasFDerivAt.comp z (hD.comp z (hasFDerivAt_prodMk_right s z))
-  have hsde := hsd.fderiv
-  have hzde := hzd.fderiv
+  have hsde := (CR.hasFDerivAt.comp s (hD.comp s (hasFDerivAt_prodMk_left s z))).fderiv
+  have hzde := (CL.hasFDerivAt.comp z (hD.comp z (hasFDerivAt_prodMk_right s z))).fderiv
   dsimp only [Function.comp_def] at hsde hzde
   rw [hs.fderiv_eq, hz.fderiv_eq, hsde, hzde]
   exact (hh.isSymmSndFDerivAt (by simp)).eq (v, 0) (0, w)
@@ -111,8 +103,11 @@ section Words
 variable {B : Type*}
 open RightFrame.PullbackWords
 
-private lemma joint_word (Ω : Set ℂ) (hΩ : IsOpen Ω) (O : Set E) (hO : IsOpen O)
-    (fields : B → E → E) (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) O)
+variable (Ω : Set ℂ) (hΩ : IsOpen Ω) (O : Set E) (hO : IsOpen O) (fields : B → E → E)
+    (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) O)
+
+include hΩ hO hfields in
+private lemma joint_word
     (h : ℂ → E → ℂ)
     (hh : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry h) (Ω ×ˢ O)) (w : List B) :
     ContDiffOn ℝ (⊤ : ℕ∞)
@@ -121,16 +116,11 @@ private lemma joint_word (Ω : Set ℂ) (hΩ : IsOpen Ω) (O : Set E) (hO : IsOp
   | nil => exact hh
   | cons b w ih =>
     intro p hp
-    have hlocal := ih.contDiffAt ((hΩ.prod hO).mem_nhds hp)
-    have hcomp : ContDiffAt ℝ (⊤ : ℕ∞)
-        (fun q : (ℂ × E) × E => directionalWord fields w (h q.1.1) q.2) (p,p.2) :=
-      hlocal.comp (p,p.2) (contDiff_fst.fst.prodMk contDiff_snd).contDiffAt
-    have hd := ContDiffAt.fderiv (f := fun q : ℂ × E => directionalWord fields w (h q.1))
-      (g := fun q : ℂ × E => q.2) (m := (⊤ : ℕ∞)) hcomp contDiff_snd.contDiffAt (by simp)
-    exact (hd.clm_apply ((hfields b).contDiffAt (hO.mem_nhds hp.2) |>.comp p contDiffAt_snd)).contDiffWithinAt
+    exact ((ContDiffAt.fderiv
+      ((ih.contDiffAt ((hΩ.prod hO).mem_nhds hp)).comp (p,p.2) (contDiff_fst.fst.prodMk contDiff_snd).contDiffAt) contDiff_snd.contDiffAt (by simp)).clm_apply ((hfields b).contDiffAt (hO.mem_nhds hp.2) |>.comp p contDiffAt_snd)).contDiffWithinAt
 
-theorem word_hasDeriv (Ω : Set ℂ) (hΩ : IsOpen Ω) (O : Set E) (hO : IsOpen O)
-    (fields : B → E → E) (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) O)
+include hΩ hO hfields in
+theorem word_hasDeriv
     (h k : ℂ → E → ℂ)
     (hh : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry h) (Ω ×ˢ O))
     (hk : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry k) (Ω ×ˢ O))
@@ -163,14 +153,16 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
     (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U) (f : ℂ → S)
 
-private theorem term_holomorphic
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (q : Q F) (g : G F ζ hζ) :
+section
+
+variable (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (q : Q F)
+
+include hf in
+private theorem term_holomorphic (g : G F ζ hζ) :
     DifferentiableOn ℂ (fun s => term F ζ hζ U ι f q s g) V := by
-  let ev : S →ₗ[ℂ] ℂ :=
+  let ev :=
     (LinearMap.proj (lift F ζ hζ q * g)).comp
       (KPContActualSphericalFlatStage.L F ζ hζ U ι 0)
-  have hev : DifferentiableOn ℂ (fun s => ev (f s)) KPContinuation.spectralDomain :=
-    ((⟨ev, ev.continuous_of_finiteDimensional⟩ : S →L[ℂ] ℂ).differentiable.comp_differentiableOn hf)
   have heq : (fun s => term F ζ hζ U ι f q s g) = fun s =>
       Complex.exp (s * (KPContFlatSourceRecipe.alpha F ζ hζ (lift F ζ hζ q * g) : ℂ)) *
         ev (f s) := by
@@ -178,11 +170,11 @@ private theorem term_holomorphic
     simp only [term, ev, LinearMap.comp_apply, LinearMap.proj_apply,
       KPContFlatCommonLevelKernel.L_formula, zero_mul, Complex.exp_zero, one_mul]
   rw [heq]
-  apply ((Differentiable.differentiableOn (by fun_prop)).mul hev).mono
+  apply ((Differentiable.differentiableOn (by fun_prop)).mul (((⟨ev, ev.continuous_of_finiteDimensional⟩ : S →L[ℂ] ℂ).differentiable.comp_differentiableOn hf))).mono
   intro z hz; change -(1 : ℝ)/6 < z.re; change (1 : ℝ)/3 < z.re at hz; linarith
 
+include hf in
 theorem actual_parameterTerm_hasDeriv
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (q : Q F)
     (k : ℕ) (s : ℂ) (hs : s ∈ V) (g : G F ζ hζ) :
     HasDerivAt (fun z => mixedJet F ζ hζ (term F ζ hζ U ι f q) k [] z g)
       (mixedJet F ζ hζ (term F ζ hζ U ι f q) (k+1) [] s g) s := by
@@ -194,6 +186,8 @@ theorem actual_parameterTerm_hasDeriv
     (iteratedDerivWithin (k+1) (fun t => term F ζ hζ U ι f q t g) V s) s
   rw [iteratedDerivWithin_succ, derivWithin_of_isOpen KPChamberL2Defect.chamber_isOpen hs]
   exact hh
+
+end
 
 private theorem alpha_right_chart_smooth (g : G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
@@ -209,8 +203,7 @@ private theorem alpha_right_chart_smooth (g : G F ζ hζ) :
     (KPContFlatLogNormSmooth.alpha_groupArchChart_mul_contDiffOn F ζ hζ
       (g * KPGlobalResidualConstruction.archChart F ζ hζ x₀))).of_le
     (show (↑(⊤ : ℕ∞) : WithTop ℕ∞) ≤ ω by simp)
-  have hc := hleft.comp hq hqO
-  apply (hc.congr (fun x hx => congrArg
+  apply ((hleft.comp hq hqO).congr (fun x hx => congrArg
     (fun g => (KPContFlatSourceRecipe.alpha F ζ hζ g : ℂ)) (heq x hx))).mono
   exact Set.inter_subset_right
 
@@ -226,8 +219,6 @@ theorem actual_parameterSection_joint_right_chart_smooth
       (Set.univ ×ˢ KPGlobalResidualConstruction.archDomain F)
       (KPGlobalResidualConstruction.archDomain F) := fun p hp => hp.2
   have hα := (alpha_right_chart_smooth F ζ hζ g).comp contDiffOn_snd hmaps
-  have hzero := (actual_parameterSection_right_chart_smooth F ζ hζ U ι 0 0 v g).comp
-    contDiffOn_snd hmaps
   have heq : (fun p : ℂ × KPGlobalResidualConstruction.ArchCoordinates F =>
       KPContFlatStageJetHolomorphy.parameterSection F ζ hζ
         (KPContActualSphericalFlatStage.coreInclusion F ζ hζ U ι) m p.1 v
@@ -245,11 +236,13 @@ theorem actual_parameterSection_joint_right_chart_smooth
       pow_zero, zero_mul, Complex.exp_zero, one_mul]
     ring
   rw [heq]
-  exact ((hα.pow m).mul (contDiffOn_fst.mul hα).cexp).mul hzero
+  exact ((hα.pow m).mul (contDiffOn_fst.mul hα).cexp).mul ((actual_parameterSection_right_chart_smooth F ζ hζ U ι 0 0 v g).comp
+    contDiffOn_snd hmaps)
 
-theorem actual_parameterTerm_joint_right_chart_smooth
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (q : Q F)
-    (k : ℕ) (g : G F ζ hζ) :
+variable (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (q : Q F) (k : ℕ)
+
+include hf in
+theorem actual_parameterTerm_joint_right_chart_smooth (g : G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
       (fun p : ℂ × KPGlobalResidualConstruction.ArchCoordinates F =>
         mixedJet F ζ hζ (term F ζ hζ U ι f q) k [] p.1
@@ -273,41 +266,34 @@ theorem actual_parameterTerm_joint_right_chart_smooth
   intro i _
   apply ContDiffOn.sum
   intro j _
-  have hcoeff := (hc i j).comp contDiffOn_fst
+  exact (contDiffOn_const.mul ((hc i j).comp contDiffOn_fst
     (show Set.MapsTo (fun p : ℂ × KPGlobalResidualConstruction.ArchCoordinates F => p.1)
-      (V ×ˢ KPGlobalResidualConstruction.archDomain F) V from fun p hp => hp.1)
-  have hsection := (actual_parameterSection_joint_right_chart_smooth F ζ hζ U ι (k-j)
-    (B i) (lift F ζ hζ q * g)).mono (Set.prod_mono (Set.subset_univ V) Set.Subset.rfl)
-  exact (contDiffOn_const.mul hcoeff).mul (by simpa only [mul_assoc] using hsection)
+      (V ×ˢ KPGlobalResidualConstruction.archDomain F) V from fun p hp => hp.1))).mul (by simpa only [mul_assoc] using ((actual_parameterSection_joint_right_chart_smooth F ζ hζ U ι (k-j)
+    (B i) (lift F ζ hζ q * g)).mono (Set.prod_mono (Set.subset_univ V) Set.Subset.rfl)))
 
-theorem actual_mixedTerm_hasDeriv
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (q : Q F)
-    (k : ℕ) (w : Word F) (s : ℂ) (hs : s ∈ V) (g : G F ζ hζ) :
+include hf in
+theorem actual_mixedTerm_hasDeriv (w : Word F) (s : ℂ) (hs : s ∈ V) (g : G F ζ hζ) :
     HasDerivAt (fun z => mixedJet F ζ hζ (term F ζ hζ U ι f q) k w z g)
       (mixedJet F ζ hζ (term F ζ hζ U ι f q) (k+1) w s g) s := by
   obtain ⟨O, fields, hOo, hb, hOD, hfields, hword⟩ :=
     PositiveChart.rightWord_chart_realization F ζ hζ
-  let H := fun (j : ℕ) (z : ℂ) (x : KPGlobalResidualConstruction.ArchCoordinates F) =>
+  let H := fun (j : ℕ) (z : ℂ) x =>
     mixedJet F ζ hζ (term F ζ hζ U ι f q) j [] z
       (g * KPGlobalResidualConstruction.archChart F ζ hζ x)
   have hH (j : ℕ) : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry (H j)) (V ×ˢ O) :=
     (actual_parameterTerm_joint_right_chart_smooth F ζ hζ U ι f hf q j g).mono
       (Set.prod_mono Set.Subset.rfl hOD)
-  have hd : ∀ z ∈ V, ∀ x ∈ O, HasDerivAt (fun t => H k t x) (H (k+1) z x) z := by
-    intro z hz x hx
-    exact actual_parameterTerm_hasDeriv F ζ hζ U ι f hf q k z hz _
   have hp := ParameterChart.word_hasDeriv V KPChamberL2Defect.chamber_isOpen
-    O hOo fields hfields (H k) (H (k+1)) (hH k) (hH (k+1)) hd w s hs
+    O hOo fields hfields (H k) (H (k+1)) (hH k) (hH (k+1)) (fun z hz x hx => actual_parameterTerm_hasDeriv F ζ hζ U ι f hf q k z hz _) w s hs
     (KPGlobalResidualConstruction.archBase F) hb
   have heq (j : ℕ) (z : ℂ) (hz : z ∈ V) :
       mixedJet F ζ hζ (term F ζ hζ U ι f q) j w z g =
         RightFrame.PullbackWords.directionalWord fields w (H j z)
           (KPGlobalResidualConstruction.archBase F) := by
-    have hh := hword (mixedJet F ζ hζ (term F ζ hζ U ι f q) j [] z)
-      (actual_parameterTerm_right_chart_smooth F ζ hζ U ι f hf q j z hz) w g
-      (KPGlobalResidualConstruction.archBase F) hb
     simpa only [KPInterface.ResidueConstruction.Raw.archChart_base, mul_one, H,
-      mixedJet, rightWord, List.foldr_nil] using hh
+      mixedJet, rightWord, List.foldr_nil] using (hword (mixedJet F ζ hζ (term F ζ hζ U ι f q) j [] z)
+        (actual_parameterTerm_right_chart_smooth F ζ hζ U ι f hf q j z hz) w g
+        (KPGlobalResidualConstruction.archBase F) hb)
   rw [← heq (k+1) s hs] at hp
   exact hp.congr_of_eventuallyEq (Filter.Eventually.mono
     (KPChamberL2Defect.chamber_isOpen.mem_nhds hs) (fun z hz => heq k z hz))

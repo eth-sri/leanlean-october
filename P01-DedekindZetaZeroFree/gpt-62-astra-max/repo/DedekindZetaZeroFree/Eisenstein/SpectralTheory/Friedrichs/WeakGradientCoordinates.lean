@@ -19,46 +19,49 @@ open KPContSectorSmoothFramesSupport KPContSectorLineL2Isometry
 open KPContActualSectorSmoothTestModules KPContActualSectorTestDifferentialDescent
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
- def permIsometry {n m : ℕ} (e : Fin n ≃ Fin m) : Space n ≃ₗᵢ[ℝ] Space m :=
+ section
+
+variable {n m : ℕ} (e : Fin n ≃ Fin m)
+
+def permIsometry : Space n ≃ₗᵢ[ℝ] Space m :=
   LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e
 
- def permBall {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall n) : LocalBall m :=
+ def permBall (B : LocalBall n) : LocalBall m :=
   ⟨by
     have h : n = m := by simpa using Fintype.card_congr e
     exact h ▸ B.dimension_pos,
    permIsometry e B.center, B.radius, B.radius_pos⟩
 
-private theorem permBall_preimage {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall n) :
+private theorem permBall_preimage (B : LocalBall n) :
     permIsometry e ⁻¹' (permBall e B).carrier = B.carrier := by
   ext x
   change dist (permIsometry e x) (permIsometry e B.center) < B.radius ↔ _
   rw [(permIsometry e).dist_map]
   rfl
 
-private theorem perm_preserving {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall n) :
+private theorem perm_preserving (B : LocalBall n) :
     MeasurePreserving (permIsometry e) (volume.restrict B.carrier)
       (volume.restrict (permBall e B).carrier) := by
   have h := (permIsometry e).measurePreserving.restrict_preimage_emb
     (permIsometry e).toHomeomorph.measurableEmbedding (permBall e B).carrier
   rwa [permBall_preimage] at h
 
-private theorem perm_single {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) :
+private theorem perm_single (j : Fin n) :
     permIsometry e (EuclideanSpace.single j 1) = EuclideanSpace.single (e j) 1 := by
   ext k
   simp only [permIsometry, LinearIsometryEquiv.piLpCongrLeft_apply]
   simp [Pi.single_apply, Equiv.symm_apply_eq]
 
- def permTest {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall n)
+ def permTest (B : LocalBall n)
     (φ : TestFunction B.toOpens ℂ ⊤) : TestFunction (permBall e B).toOpens ℂ ⊤ :=
   ⟨fun x => φ ((permIsometry e).symm x),
     φ.contDiff.comp (permIsometry e).symm.contDiff,
-    by
-      exact φ.hasCompactSupport.comp_homeomorph (permIsometry e).symm.toHomeomorph,
+    φ.hasCompactSupport.comp_homeomorph (permIsometry e).symm.toHomeomorph,
     by
       have hs := tsupport_comp_eq_preimage (fun x => φ x) (permIsometry e).symm.toHomeomorph
       change tsupport (fun x => φ ((permIsometry e).symm x)) = _ at hs
@@ -70,7 +73,7 @@ private theorem perm_single {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) :
       rw [(permIsometry e).apply_symm_apply] at he
       rwa [he]⟩
 
-private theorem permTest_deriv {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall n)
+private theorem permTest_deriv (B : LocalBall n)
     (φ : TestFunction B.toOpens ℂ ⊤) (j : Fin n) (x : Space n) :
     coordinateDerivativeList [e j] (permTest e B φ) (permIsometry e x) =
       coordinateDerivativeList [j] φ x := by
@@ -97,15 +100,14 @@ private theorem permTest_deriv {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall 
   rw [hs]
   rfl
 
+end
+
 private theorem first_dirs {n : ℕ} (j : Fin n) :
     (KPContLocalEnergy.firstIndex j).directions = [j] :=
   KPContLocalEnergy.SobolevEnergyEstimates.firstIndex_directions j
 
 private theorem first_degree {n : ℕ} (j : Fin n) :
-    (KPContLocalEnergy.firstIndex j).degree = 1 := by
-  simp only [KPContLocalEnergy.firstIndex, MultiIndex.degree,
-    apply_ite Fin.val, Fin.val_one, Fin.val_zero]
-  simp
+    (KPContLocalEnergy.firstIndex j).degree = 1 := by apply @DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates.FirstOrderSmoothProducts.first_degree <;> assumption
 
 private theorem pull_weak_first {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall n)
     (h : IntegerSobolev (permBall e B) 1) (j : Fin n) :
@@ -120,9 +122,7 @@ private theorem pull_weak_first {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall
     (-1 : ℂ) ^ _ * (∫ x in (permBall e B).carrier,
       KPContLocalEnergy.gradient h (e j) x * permTest e B φ x) at hw
   simp only [coordinateDerivative, first_dirs, first_degree] at hw ⊢
-  have ht : ∀ x, permTest e B φ (permIsometry e x) = φ x := by
-    intro x
-    exact congrArg φ ((permIsometry e).symm_apply_apply x)
+  have ht : ∀ x, permTest e B φ (permIsometry e x) = φ x := fun x => congrArg φ ((permIsometry e).symm_apply_apply x)
   rw [← (perm_preserving e B).integral_comp
     (permIsometry e).toHomeomorph.measurableEmbedding
     (fun x => KPContLocalEnergy.value h x * coordinateDerivativeList [e j] (permTest e B φ) x),
@@ -158,6 +158,8 @@ private theorem ballLp_locallyIntegrable {n : ℕ} (B : LocalBall n) (u : BallL2
   rw [Measure.restrict_restrict hKc.measurableSet, Set.inter_eq_left.mpr hK]
   exact ((Lp.memLp u).mono_measure (Measure.restrict_mono hK le_rfl)).integrable (by norm_num)
 
+alias WeakGradientCoordinates.ballLp_locallyIntegrable := ballLp_locallyIntegrable
+
 private theorem weakDerivative_unique {n k : ℕ} (B : LocalBall n) (α : MultiIndex n k)
     (u₁ u₂ d₁ d₂ : BallL2 B)
     (hu : u₁ =ᵐ[volume.restrict B.carrier] u₂)
@@ -167,7 +169,7 @@ private theorem weakDerivative_unique {n k : ℕ} (B : LocalBall n) (α : MultiI
   have hz : ∀ᵐ x ∂volume.restrict B.carrier, x ∈ B.carrier → d₁ x - d₂ x = 0 := by
     apply Metric.isOpen_ball.ae_eq_zero_of_integral_contDiff_smul_eq_zero (hi₁.sub hi₂)
     intro φ hφ hφc hφs
-    have hcast : ContDiff ℝ ∞ (fun x => (φ x : ℂ)) := Complex.ofRealCLM.contDiff.comp hφ
+    have hcast := Complex.ofRealCLM.contDiff.comp hφ
     have hsupp : tsupport (fun x => (φ x : ℂ)) = tsupport φ := by
       unfold tsupport
       congr 1
@@ -223,7 +225,7 @@ private theorem coordinate_compat (p : Space (KPCuspLogShape.dimension F * 3)) :
         p (finProdFinEquiv ((placeEquiv F ζ hζ) ik.1, ik.2)) := by
     simp only [baseReindex, LinearIsometryEquiv.piLpCongrLeft_symm,
       LinearIsometryEquiv.piLpCongrLeft_apply, permIsometry]
-    change p ((coordinateIndex (F := F) (ζ := ζ) (hζ := hζ)).symm
+    change p ((coordinateIndex).symm
       (coefficientIndex ik)) = _
     rw [coordinateIndex_inverse]
   rw [hleft]
@@ -231,10 +233,7 @@ private theorem coordinate_compat (p : Space (KPCuspLogShape.dimension F * 3)) :
   fin_cases k <;> simp [labeledAInv, coordinates, KPArchRealCoordinates.coordinates,
     CotangentLogCoframe.A]
 
-private theorem labeled_inverse (x : KPCuspGenuineMonodromy.SymmetricSpace F) :
-    labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) x) = x := by
-  funext k
-  simp [labeledAInv, labeledA]
+private alias labeled_inverse := DedekindZetaZeroFree.KPContActualSectorMultiplier.CompactCutoffDifferentialBounds.la
 
 private theorem coord_ball_inside (a : ShrunkChart F ζ hζ U R P H)
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
@@ -262,18 +261,9 @@ private theorem coord_ball_inside (a : ShrunkChart F ζ hζ U R P H)
     rw [hcoord, labeled_inverse]
     exact hA ⟨p, hp, rfl⟩
 
-private theorem sectionFields_apply (s : Sections F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : omega a) :
-    sectionFields s a x = (s a.component).val (labeledA (placeEquiv F ζ hζ) x.val) := by
-  have hcoe : (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).coefficient s x.val =
-      (KPCuspGenuineMonodromy.chi F ζ hζ
-          ((KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).splitting x.val) : ℂ) *
-        (s a.component).val
-          ((KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).kind.representative •
-            labeledA (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).places x.val) :=
-    rfl
-  rw [sectionFields, hcoe]
-  simp [KPContCotangentActualGenuineTwistIsotropy.isotropyChart, ChartKind.representative]
+private alias sectionFields_apply := DedekindZetaZeroFree.KPContActualSectorCoordinateNullEquivalence.CoordinateNullEquivalence.sectionFields_apply_actual
+
+alias WeakGradientCoordinates.sectionFields_apply := sectionFields_apply
 
 theorem coordinate_weak_gradient_decode (s : BorelL2Sections F ζ hζ U R P H)
     (W : Family (U := U) (H := H))
@@ -297,8 +287,7 @@ theorem coordinate_weak_gradient_decode (s : BorelL2Sections F ζ hζ U R P H)
             (Real.exp (-q (k, 2)) : ℂ) * v (k, 2), v (k, 0)] ik.2) := by
   let e := coordinateIndex (F := F) (ζ := ζ) (hζ := hζ)
   let B := permBall e A
-  have hB : InteriorBall a B := coord_ball_inside a A hA
-  obtain ⟨h, h0, hgrad⟩ := hsW a B hB ε
+  obtain ⟨h, h0, hgrad⟩ := hsW a B (coord_ball_inside a A hA) ε
   have hmp := perm_preserving e A
   have h0pull := hmp.quasiMeasurePreserving.ae_eq_comp h0
   have hu : (Lp.compMeasurePreserving (permIsometry e) hmp (KPContLocalEnergy.value h) : BallL2 A)
@@ -313,20 +302,16 @@ theorem coordinate_weak_gradient_decode (s : BorelL2Sections F ζ hζ U R P H)
       (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) * scalarCoordinate s a (permIsometry e p) at hrep
     rw [hrep]
     congr 1
-    have hdom : coordinates F p ∈ a.domain :=
+    have hdom :=
       hA ⟨p, Metric.ball_subset_closedBall hpA, rfl⟩
     have hq : labeledAInv (placeEquiv F ζ hζ) (coordinates F p) ∈ omega a := by
       change labeledA (placeEquiv F ζ hζ) _ ∈ a.domain
       rwa [labeled_inverse]
     simp only [scalarCoordinate]
-    rw [show (baseReindex (F := F)).symm (permIsometry e p) =
+    rw [show (baseReindex).symm (permIsometry e p) =
       labeledAInv (placeEquiv F ζ hζ) (coordinates F p) from coordinate_compat p]
     rw [liftExtension, dite_eq_left hq, sectionFields_apply, labeled_inverse]
   intro j
-  have hj : ((KPContLocalEnergy.firstIndex (e j)).val (e j)).val = 1 := by
-    simp [KPContLocalEnergy.firstIndex]
-  have hg := hgrad (KPContLocalEnergy.firstIndex (e j)) (e j) hj
-  have hgpull := hmp.quasiMeasurePreserving.ae_eq_comp hg
   have heq := weakDerivative_unique A (KPContLocalEnergy.firstIndex j)
     (KPContLocalEnergy.value ξ)
     (Lp.compMeasurePreserving (permIsometry e) hmp (KPContLocalEnergy.value h))
@@ -340,13 +325,14 @@ theorem coordinate_weak_gradient_decode (s : BorelL2Sections F ζ hζ U R P H)
     rw [Equiv.symm_apply_apply]
     rfl
   filter_upwards [Lp.coeFn_compMeasurePreserving (KPContLocalEnergy.gradient h (e j)) hmp,
-    hgpull] with p hp hgp
+    (hmp.quasiMeasurePreserving.ae_eq_comp (hgrad (KPContLocalEnergy.firstIndex (e j)) (e j) (by
+      simp [KPContLocalEnergy.firstIndex])))] with p hp hgp
   rw [heq, hp]
   change KPContLocalEnergy.gradient h (e j) (permIsometry e p) = _ at hgp
   simp only [Function.comp_apply] at hgp ⊢
   rw [hgp]
   simp only [covariantCoordinate, hidx]
-  rw [show (baseReindex (F := F)).symm (permIsometry e p) =
+  rw [show (baseReindex).symm (permIsometry e p) =
     labeledAInv (placeEquiv F ζ hζ) (coordinates F p) from coordinate_compat p]
 
 end DedekindZetaZeroFree.KPContFriedrichsWeakGradientCoordinates

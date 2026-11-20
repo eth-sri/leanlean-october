@@ -12,16 +12,18 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.KPMsActualAngularShellSource
 open KPMsActualAngularSource
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (S : SourceRecipe F ζ hζ R P H) (U : Level F ζ hζ)
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    (S : SourceRecipe F ζ hζ R P H) (U : Level F ζ hζ)
 
-theorem fullToLevel_continuous (D : Iwasawa F ζ hζ) (V : Level F ζ hζ) :
+variable (D : Iwasawa F ζ hζ) (V : Level F ζ hζ)
+
+theorem fullToLevel_continuous :
     Continuous (fullToLevel F ζ hζ D V) :=
   continuous_quotient_mk'.quotient_lift _
 
-theorem fullToLevel_measurable (D : Iwasawa F ζ hζ) (V : Level F ζ hζ) :
+theorem fullToLevel_measurable :
     Measurable (fullToLevel F ζ hζ D V) := by
   letI : BorelSpace (FullOmega F ζ hζ D) := ⟨rfl⟩
   letI : BorelSpace (Omega F ζ hζ D V) := ⟨rfl⟩

@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -61,10 +58,7 @@ theorem
         (x : (w₀.adicCompletion K ⊗[K] L)ˣ) := by
   let vK := HeightOneSpectrum.adicAbv K w₀
   let u := chosenFinitePlaceExtension (L := L) w₀
-  let hvK : vK.IsNontrivial := RayClass.adicAbv_isNontrivial w₀
-  let hvKna : IsNonarchimedean (vK : K → ℝ) :=
-    HeightOneSpectrum.isNonarchimedean_adicAbv K w₀
-  let := decompositionGroupLocalUnitsAction vK hvK u
+  let := decompositionGroupLocalUnitsAction vK (RayClass.adicAbv_isNontrivial w₀) u
   apply
     (inducedRightCosetCoordinates
       (absoluteValueDecompositionGroup K u.1)).injective

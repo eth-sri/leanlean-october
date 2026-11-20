@@ -14,55 +14,45 @@ open scoped NumberField Classical
 private lemma primeSupportCost_le_divisorCount {F : Type} [Field F] [NumberField F]
     (u : Ideal (𝓞 F)) (hu : u ≠ ⊥) :
     primeSupportCost u ≤ (DedekindZetaZeroFree.LargeSieve.idealDivisorCount u : ℝ) := by
+  let Finset₀ := Finset (Ideal (𝓞 F))
   classical
   set m := UniqueFactorizationMonoid.normalizedFactors u with hm
   set S := m.toFinset with hS
   have hmem : ∀ p : Ideal (𝓞 F), p ∈ S ↔ p ∈ m := fun p => Multiset.mem_toFinset
-  have hprime : ∀ p ∈ S, Irreducible p := fun p hp =>
-    UniqueFactorizationMonoid.irreducible_of_normalized_factor p ((hmem p).mp hp)
-  have hnorm : ∀ p ∈ S, normalize p = p := fun p hp =>
-    UniqueFactorizationMonoid.normalize_normalized_factor p ((hmem p).mp hp)
-  have key : ∀ s : Finset (Ideal (𝓞 F)), s ⊆ S →
+  have key : ∀ s : Finset₀, s ⊆ S →
       UniqueFactorizationMonoid.normalizedFactors (∏ p ∈ s, p) = s.val := by
     intro s hs
-    have hirr : ∀ p ∈ s.val, Irreducible p := by
-      intro p hp
-      exact hprime p (hs (by simpa using hp))
-    have h1 := UniqueFactorizationMonoid.normalizedFactors_prod_eq s.val hirr
     have hprod : (∏ p ∈ s, p) = s.val.prod := by
       rw [Finset.prod_eq_multiset_prod, Multiset.map_id']
-    rw [hprod, h1]
-    rw [Multiset.map_congr rfl (fun p hp => hnorm p (hs (by simpa using hp))),
+    rw [hprod, (UniqueFactorizationMonoid.normalizedFactors_prod_eq s.val (fun p hp => (fun p hp =>
+      UniqueFactorizationMonoid.irreducible_of_normalized_factor p ((hmem p).mp hp)) p (hs (by exact hp))))]
+    rw [Multiset.map_congr rfl (fun p hp => (fun p hp =>
+      UniqueFactorizationMonoid.normalize_normalized_factor p ((hmem p).mp hp)) p (hs (by exact hp))),
       Multiset.map_id']
-  have hinj : Set.InjOn (fun s : Finset (Ideal (𝓞 F)) => ∏ p ∈ s, p)
-      (↑S.powerset : Set (Finset (Ideal (𝓞 F)))) := by
+  have hinj : Set.InjOn (fun s : Finset₀ => ∏ p ∈ s, p)
+      (↑S.powerset : Set (Finset₀)) := by
     intro s hs t ht hst
-    have hssub : s ⊆ S := Finset.mem_powerset.mp hs
-    have htsub : t ⊆ S := Finset.mem_powerset.mp ht
-    have hsval : UniqueFactorizationMonoid.normalizedFactors (∏ p ∈ s, p) = s.val :=
-      key s hssub
-    have htval : UniqueFactorizationMonoid.normalizedFactors (∏ p ∈ t, p) = t.val :=
+    have htsub := Finset.mem_powerset.mp ht
+    have hsval :=
+      key s (Finset.mem_powerset.mp hs)
+    have htval :=
       key t htsub
     have hst' : (∏ p ∈ s, p) = (∏ p ∈ t, p) := hst
     rw [hst'] at hsval
     exact Finset.val_inj.mp (hsval.symm.trans htval)
-  have hmaps : Set.MapsTo (fun s : Finset (Ideal (𝓞 F)) => ∏ p ∈ s, p)
-      (↑S.powerset : Set (Finset (Ideal (𝓞 F))))
+  have hmaps : Set.MapsTo (fun s : Finset₀ => ∏ p ∈ s, p)
+      (↑S.powerset : Set (Finset₀))
       (↑(DedekindZetaZeroFree.LargeSieve.idealDivisors u) : Set (Ideal (𝓞 F))) := by
     intro s hs
     change (∏ p ∈ s, p) ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors u
     rw [DedekindZetaZeroFree.LargeSieve.mem_idealDivisors hu]
-    have hssub : s ⊆ S := Finset.mem_powerset.mp hs
-    have hle : s.val ≤ m := by
-      rw [Multiset.le_iff_subset s.nodup]
-      intro p hp
-      exact (hmem p).mp (hssub (by simpa using hp))
     have hprod : (∏ p ∈ s, p) = s.val.prod := by
       rw [Finset.prod_eq_multiset_prod, Multiset.map_id']
     rw [hprod, ← Ideal.prod_normalizedFactors_eq_self hu]
-    exact Multiset.prod_dvd_prod_of_le hle
-  have hcard : S.powerset.card ≤ (DedekindZetaZeroFree.LargeSieve.idealDivisors u).card :=
-    Finset.card_le_card_of_injOn _ hmaps hinj
+    refine Multiset.prod_dvd_prod_of_le ?_
+    rw [Multiset.le_iff_subset s.nodup]
+    intro p hp
+    exact (hmem p).mp ((Finset.mem_powerset.mp hs) (by exact hp))
   have hcost : primeSupportCost u = (2 : ℝ) ^ S.card := by
     rw [primeSupportCost, hS, ← hm]
   rw [hcost]
@@ -71,7 +61,7 @@ private lemma primeSupportCost_le_divisorCount {F : Type} [Field F] [NumberField
     push_cast
     ring
   rw [← hpc]
-  exact_mod_cast hcard
+  exact_mod_cast (Finset.card_le_card_of_injOn _ hmaps hinj)
 
 theorem support_cost_energy_bound
     (F : Type) [Field F] [NumberField F] (ε : ℝ) (hε : 0 < ε) :

@@ -13,47 +13,11 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicExtraction.ChartRemainder
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
 open scoped BigOperators Topology
 
-private lemma infinityChart_lowerUnipotent_zero_eq_one : lowerUnipotent 0 = 1 := by
-  apply Units.ext
-  ext i j
-  fin_cases i <;> fin_cases j <;> simp [lowerUnipotent]
+private alias infinityChart_lowerUnipotent_zero_eq_one := DedekindZetaZeroFree.KPCplxHarmonicExtraction.CharacterAverageOrbitClosure.lower_zero
 
-private lemma principalSeries_identityEvaluation_norm_le_chartSeminorm_zero (s : ℝ) (f : PrincipalSeries s) :
-    ‖f 1‖ ≤ chartSeminorm s 0 f := by
-  have hc : Continuous (fun u : ℂ => ‖infinityCoordinate f u‖) :=
-    f.property.2.2.continuous.norm
-  have hb := (isCompact_closedBall (0 : ℂ) 1).image hc
-  have hh : ‖infinityCoordinate f 0‖ ≤
-      sSup ((fun u : ℂ => ‖infinityCoordinate f u‖) '' Metric.closedBall 0 1) := by
-    apply le_csSup hb.bddAbove
-    exact ⟨0, by simp, rfl⟩
-  change ‖f 1‖ ≤ chartSeminormValue s 0 f
-  simpa only [chartSeminormValue, norm_iteratedFDeriv_zero, infinityCoordinate,
-    infinityChart_lowerUnipotent_zero_eq_one] using hh.trans (le_max_right
-      (sSup ((fun x : ℂ => ‖openCoordinate f x‖) '' Metric.closedBall 0 1))
-      (sSup ((fun u : ℂ => ‖infinityCoordinate f u‖) '' Metric.closedBall 0 1)))
+private alias principalSeries_identityEvaluation_norm_le_chartSeminorm_zero := DedekindZetaZeroFree.KPCplxHarmonicExtraction.CharacterAverageOrbitClosure.eval_one_bound
 
-private lemma principalSeries_scalarEvaluation_continuous_of_chartSeminorms (s : ℝ) (g : ComplexGL2) :
-    Continuous (fun f : PrincipalSeries s => f g) := by
-  let e : PrincipalSeries s →ₗ[ℂ] ℂ :=
-    { toFun := fun f => f 1
-      map_add' := fun _ _ => rfl
-      map_smul' := fun _ _ => rfl }
-  have hc : Continuous e := by
-    apply WithSeminorms.continuous_normedSpace_rng ℂ
-      (show WithSeminorms (chartSeminorm s) from ⟨rfl⟩) e
-    refine ⟨{0}, 1, ?_⟩
-    intro f
-    simpa [e] using principalSeries_identityEvaluation_norm_le_chartSeminorm_zero s f
-  have h := hc.comp ((pi_continuous s).comp
-    (continuous_const.prodMk continuous_id : Continuous (fun f : PrincipalSeries s =>
-      (Matrix.ProjGenLinGroup.mk g, f))))
-  have he : (fun f : PrincipalSeries s => e (pi s (Matrix.ProjGenLinGroup.mk g) f)) =
-      (fun f : PrincipalSeries s => f g) := by
-    funext f
-    change f (1 * g) = f g
-    rw [one_mul]
-  exact he ▸ h
+private alias principalSeries_scalarEvaluation_continuous_of_chartSeminorms := DedekindZetaZeroFree.KPCplxHarmonicExtraction.CharacterAverageOrbitClosure.eval_cont
 
 theorem chart_remainder_of_summable_of_compact_tendsto (s : ℝ)
     (f : PrincipalSeries s) (a : ℕ → PrincipalSeries s)
@@ -80,10 +44,7 @@ theorem chart_remainder_of_summable_of_compact_tendsto (s : ℝ)
     apply cauchySeq_finset_iff_sum_vanishing.mpr
     intro e he
     obtain ⟨⟨I, ε⟩, hε, hIe⟩ := hp.hasBasis_zero_ball.mem_iff.mp he
-    have htail : ∀ i : ℕ, ∃ S : Finset ℕ, ∀ t : Finset ℕ, Disjoint t S →
-        ‖∑ j ∈ t, chartSeminorm s i (a j)‖ < ε :=
-      fun i => summable_iff_vanishing_norm.mp (hsum i) ε hε
-    choose S hS using htail
+    choose S hS using (fun i => summable_iff_vanishing_norm.mp (hsum i) ε hε)
     refine ⟨I.biUnion S, fun t ht => hIe ?_⟩
     rw [Seminorm.mem_ball_zero]
     apply Seminorm.finset_sup_apply_lt hε
@@ -114,8 +75,13 @@ open scoped BigOperators
 open KPCplxCharacterHaar KPCplxHarmonicExtraction MeasureTheory
 open scoped Topology Matrix.Norms.Elementwise
 
-theorem raw_average_section (s : ℝ) (μ : Measure ComplexSU2)
-    (hprob : IsProbabilityMeasure μ) (ℓ : ℕ) (f : PrincipalSeries s) :
+section
+
+variable (s : ℝ) (μ : Measure ComplexSU2) (hprob : IsProbabilityMeasure μ) (ℓ : ℕ)
+    (f : PrincipalSeries s)
+
+include hprob in
+theorem raw_average_section :
     characterAverage s μ ℓ f ∈ principalSeriesSubmodule s := by
   letI : CompactSpace ComplexSU2 := isCompact_iff_compactSpace.mp (by
     convert complexSU2_isCompact using 1
@@ -124,11 +90,7 @@ theorem raw_average_section (s : ℝ) (μ : Measure ComplexSU2)
   · intro a d b g
     unfold characterAverage
     simp_rw [mul_assoc]
-    have hcov : ∀ k : ComplexSU2,
-        f (upperTriangular a d b * (g * complexSU2Embedding k)) =
-          (inductionWeight s a d : ℂ) * f (g * complexSU2Embedding k) :=
-      fun k => f.property.1 a d b _
-    simp_rw [hcov]
+    simp_rw [(fun k => f.property.1 a d b _)]
     rw [show (fun k : ComplexSU2 => star (su2HarmonicCharacter ℓ k) *
         ((inductionWeight s a d : ℂ) * f (g * complexSU2Embedding k))) =
         (fun k => (inductionWeight s a d : ℂ) *
@@ -144,14 +106,11 @@ theorem raw_average_section (s : ℝ) (μ : Measure ComplexSU2)
         μ hprob (fun z k => f (g z * complexSU2Embedding k)) hs hj
         (Metric.closedBall 0 1) (isCompact_closedBall 0 1) 0
       obtain ⟨hc, hn⟩ := ChartDerivativeBounds.su2_character_continuous_norm_bound ℓ
-      have hi := (hb (fun k => star (su2HarmonicCharacter ℓ k))
+      exact contDiff_const.mul ((hb (fun k => star (su2HarmonicCharacter ℓ k))
         ((2 * ℓ + 1 : ℕ) : ℝ) hc.star (by positivity)
-        (fun k => by simpa only [norm_star] using hn k)).1
-      exact contDiff_const.mul hi
+        (fun k => by simpa using hn k)).1)
   · apply hsmooth (fun z => weyl * upperUnipotent z)
     unfold upperUnipotent
-    change ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ =>
-      (weyl : Matrix (Fin 2) (Fin 2) ℂ) * !![1, z; 0, 1])
     apply contDiff_pi.mpr
     intro i
     apply contDiff_pi.mpr
@@ -160,17 +119,16 @@ theorem raw_average_section (s : ℝ) (μ : Measure ComplexSU2)
       simp [Matrix.mul_apply, Fin.sum_univ_two] <;> fun_prop
   · apply hsmooth lowerUnipotent
     unfold lowerUnipotent
-    change ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ =>
-      (!![1, 0; z, 1] : Matrix (Fin 2) (Fin 2) ℂ))
     apply contDiff_pi.mpr
     intro i
     apply contDiff_pi.mpr
     intro j
     fin_cases i <;> fin_cases j <;> simp <;> fun_prop
 
-noncomputable def averageSection (s : ℝ) (μ : Measure ComplexSU2)
-    (hprob : IsProbabilityMeasure μ) (ℓ : ℕ) (f : PrincipalSeries s) : PrincipalSeries s :=
+noncomputable def averageSection : PrincipalSeries s :=
   ⟨characterAverage s μ ℓ f, raw_average_section s μ hprob ℓ f⟩
+
+end
 
 private theorem average_summable (s : ℝ) (μ : Measure ComplexSU2)
     (hhaar : μ.IsHaarMeasure) (hprob : IsProbabilityMeasure μ) (f : PrincipalSeries s) :
@@ -180,8 +138,6 @@ private theorem average_summable (s : ℝ) (μ : Measure ComplexSU2)
   letI : IsUniformAddGroup (PrincipalSeries s) := isUniformAddGroup_of_addCommGroup
   letI : CompleteSpace (PrincipalSeries s) := principalSeries_complete s
   have hp : WithSeminorms (chartSeminorm s) := ⟨rfl⟩
-  have hsum := ChartRemainder.characterAverage_chartSeminorm_summable
-    s μ hhaar hprob f a (fun _ _ => rfl)
   have hsum_le (i : ℕ) (t : Finset ℕ) :
       chartSeminorm s i (∑ j ∈ t, a j) ≤ ∑ j ∈ t, chartSeminorm s i (a j) := by
     induction t using Finset.induction_on with
@@ -193,10 +149,8 @@ private theorem average_summable (s : ℝ) (μ : Measure ComplexSU2)
   apply cauchySeq_finset_iff_sum_vanishing.mpr
   intro e he
   obtain ⟨⟨I, ε⟩, hε, hIe⟩ := hp.hasBasis_zero_ball.mem_iff.mp he
-  have htail : ∀ i : ℕ, ∃ S : Finset ℕ, ∀ t : Finset ℕ, Disjoint t S →
-      ‖∑ j ∈ t, chartSeminorm s i (a j)‖ < ε :=
-    fun i => summable_iff_vanishing_norm.mp (hsum i) ε hε
-  choose S hS using htail
+  choose S hS using (fun i => summable_iff_vanishing_norm.mp ((ChartRemainder.characterAverage_chartSeminorm_summable
+    s μ hhaar hprob f a (fun _ _ => rfl)) i) ε hε)
   refine ⟨I.biUnion S, fun t ht => hIe ?_⟩
   rw [Seminorm.mem_ball_zero]
   apply Seminorm.finset_sup_apply_lt hε
@@ -214,11 +168,9 @@ noncomputable def evalOne (s : ℝ) : PrincipalSeries s →L[ℂ] ℂ := by
     (show WithSeminorms (chartSeminorm s) from ⟨rfl⟩) e
   refine ⟨{0}, 1, ?_⟩
   intro f
-  have hc : Continuous (fun u : ℂ => ‖infinityCoordinate f u‖) :=
-    f.property.2.2.continuous.norm
   have hh : ‖infinityCoordinate f 0‖ ≤
       sSup ((fun u : ℂ => ‖infinityCoordinate f u‖) '' Metric.closedBall 0 1) := by
-    apply le_csSup ((isCompact_closedBall (0 : ℂ) 1).image hc).bddAbove
+    apply le_csSup ((isCompact_closedBall (0 : ℂ) 1).image f.property.2.2.continuous.norm).bddAbove
     exact ⟨0, by simp, rfl⟩
   have hz : lowerUnipotent 0 = 1 := by
     apply Units.ext
@@ -232,31 +184,16 @@ noncomputable def evalOne (s : ℝ) : PrincipalSeries s →L[ℂ] ℂ := by
       (sSup ((fun x : ℂ => ‖openCoordinate f x‖) '' Metric.closedBall 0 1))
       (sSup ((fun u : ℂ => ‖infinityCoordinate f u‖) '' Metric.closedBall 0 1)))
 
-theorem embedding_continuous : Continuous complexSU2Embedding := by
-  apply Units.continuous_iff.mpr
-  constructor
-  · exact continuous_subtype_val
-  · have he (k : ComplexSU2) :
-        (↑(complexSU2Embedding k)⁻¹ : Matrix (Fin 2) (Fin 2) ℂ) =
-          star (k : Matrix (Fin 2) (Fin 2) ℂ) := by
-      rw [← map_inv]
-      rfl
-    simp_rw [he]
-    exact continuous_subtype_val.star
+alias embedding_continuous := DedekindZetaZeroFree.KPActualReflectionData.StandardLocalSource.complexSU2Embedding_continuous
 
-theorem eval_continuous (s : ℝ) (g : ComplexGL2) :
-    Continuous (fun f : PrincipalSeries s => f g) := by
-  have hc := (evalOne s).continuous.comp ((pi_continuous s).comp
-    (continuous_const.prodMk continuous_id : Continuous (fun f : PrincipalSeries s =>
-      (Matrix.ProjGenLinGroup.mk g, f))))
-  convert hc using 1
-  funext f
-  dsimp only [Function.comp_def, evalOne]
-  change f g = f (1 * g)
-  rw [one_mul]
+alias eval_continuous := DedekindZetaZeroFree.KPCplxHarmonicExtraction.ChartRemainder.principalSeries_scalarEvaluation_continuous_of_chartSeminorms
 
-theorem average_eval_continuous (s : ℝ) (μ : Measure ComplexSU2)
-    (hprob : IsProbabilityMeasure μ) (ℓ : ℕ) (g : ComplexGL2) :
+section
+
+variable (s : ℝ) (μ : Measure ComplexSU2) (hprob : IsProbabilityMeasure μ) (ℓ : ℕ) (g : ComplexGL2)
+
+include hprob in
+theorem average_eval_continuous :
     Continuous (fun f : PrincipalSeries s => characterAverage s μ ℓ f g) := by
   letI : IsProbabilityMeasure μ := hprob
   letI : CompactSpace ComplexSU2 := isCompact_iff_compactSpace.mp (by
@@ -264,28 +201,22 @@ theorem average_eval_continuous (s : ℝ) (μ : Measure ComplexSU2)
     exact Subtype.range_coe.symm)
   have hj : Continuous (fun p : PrincipalSeries s × ComplexSU2 =>
       p.1 (g * complexSU2Embedding p.2)) := by
-    have hproj : Continuous (Matrix.ProjGenLinGroup.mk : ComplexGL2 → ComplexPGL2) :=
-      continuous_coinduced_rng
-    have h := (evalOne s).continuous.comp ((pi_continuous s).comp
-      ((hproj.comp ((continuous_const : Continuous (fun _ : PrincipalSeries s × ComplexSU2 => g)).mul
-        (embedding_continuous.comp continuous_snd))).prodMk continuous_fst))
-    convert h using 1
+    convert ((evalOne s).continuous.comp ((pi_continuous s).comp
+      ((continuous_coinduced_rng.comp (continuous_const.mul
+        (embedding_continuous.comp continuous_snd))).prodMk continuous_fst))) using 1
     funext p
     dsimp only [Function.comp_def, evalOne]
     change p.1 (g * complexSU2Embedding p.2) = p.1 (1 * (g * complexSU2Embedding p.2))
     rw [one_mul]
   obtain ⟨hc, _⟩ := ChartDerivativeBounds.su2_character_continuous_norm_bound ℓ
-  have hi : Continuous (fun f : PrincipalSeries s => ∫ k : ComplexSU2,
-      star (su2HarmonicCharacter ℓ k) * f (g * complexSU2Embedding k) ∂μ) := by
-    apply continuousOn_univ.mp
-    apply continuousOn_integral_of_compact_support (k := Set.univ) isCompact_univ
-    · exact ((hc.comp continuous_snd).star.mul hj).continuousOn
-    · intro p x hp hx
-      exact (hx (Set.mem_univ x)).elim
-  exact continuous_const.mul hi
+  apply continuous_const.mul
+  apply continuousOn_univ.mp
+  apply continuousOn_integral_of_compact_support isCompact_univ
+  · exact ((hc.comp continuous_snd).star.mul hj).continuousOn
+  · intro p x hp hx
+    exact (hx (Set.mem_univ x)).elim
 
-noncomputable def averageEval (s : ℝ) (μ : Measure ComplexSU2)
-    (hprob : IsProbabilityMeasure μ) (ℓ : ℕ) (g : ComplexGL2) :
+noncomputable def averageEval :
     PrincipalSeries s →L[ℂ] ℂ := by
   letI : IsProbabilityMeasure μ := hprob
   letI : CompactSpace ComplexSU2 := isCompact_iff_compactSpace.mp (by
@@ -310,8 +241,7 @@ noncomputable def averageEval (s : ℝ) (μ : Measure ComplexSU2)
                 ComplexGL2 → ComplexPGL2)).comp
                 ((continuous_const : Continuous (fun _ : ComplexSU2 => g)).mul embedding_continuous)).prodMk
                 (continuous_const : Continuous (fun _ : ComplexSU2 => v)))
-            have hi := (evalOne s).continuous.comp h
-            convert hi using 1
+            convert ((evalOne s).continuous.comp h) using 1
             funext k
             dsimp only [Function.comp_def, evalOne]
             change v (g * complexSU2Embedding k) = v (1 * (g * complexSU2Embedding k))
@@ -329,13 +259,19 @@ noncomputable def averageEval (s : ℝ) (μ : Measure ComplexSU2)
         ring }
   exact ⟨L, average_eval_continuous s μ hprob ℓ g⟩
 
+end
+
 noncomputable def evaluation (s : ℝ) (g : ComplexGL2) :
     PrincipalSeries s →L[ℂ] ℂ :=
   ⟨{ toFun := fun f => f g, map_add' := fun _ _ => rfl,
       map_smul' := fun _ _ => rfl }, eval_continuous s g⟩
 
-private theorem average_on_harmonic (s : ℝ) (μ : Measure ComplexSU2)
-    (hhaar : μ.IsHaarMeasure) (hprob : IsProbabilityMeasure μ)
+section
+
+variable (s : ℝ) (μ : Measure ComplexSU2) (hhaar : μ.IsHaarMeasure) (hprob : IsProbabilityMeasure μ)
+
+include hhaar hprob in
+private theorem average_on_harmonic
     (j : ℕ) (f : PrincipalSeries s) (hf : f ∈ harmonicKType s j)
     (ℓ : ℕ) (k : ComplexSU2) :
     characterAverage s μ ℓ f (complexSU2Embedding k) =
@@ -353,8 +289,8 @@ private theorem average_on_harmonic (s : ℝ) (μ : Measure ComplexSU2)
     rw [CompactPolynomial.harmonic_character_projection_off_diagonal
       μ hhaar hprob ℓ j (Ne.symm hℓ) p hp k, mul_zero]
 
-private theorem average_tsum_eq (s : ℝ) (μ : Measure ComplexSU2)
-    (hhaar : μ.IsHaarMeasure) (hprob : IsProbabilityMeasure μ) (f : PrincipalSeries s) :
+include hhaar in
+private theorem average_tsum_eq (f : PrincipalSeries s) :
     (∑' ℓ, averageSection s μ hprob ℓ f) = f := by
   classical
   letI : IsUniformAddGroup (PrincipalSeries s) := isUniformAddGroup_of_addCommGroup
@@ -367,26 +303,24 @@ private theorem average_tsum_eq (s : ℝ) (μ : Measure ComplexSU2)
     infer_instance
   apply compactRestriction_injective s
   funext k
-  let P : ℕ → PrincipalSeries s →L[ℂ] ℂ :=
+  let P :=
     fun N => ∑ ℓ ∈ Finset.range N, averageEval s μ hprob ℓ (complexSU2Embedding k)
-  let F : PrincipalSeries s → ℂ :=
+  let F :=
     fun v => (∑' ℓ, averageSection s μ hprob ℓ v) (complexSU2Embedding k)
   have hlim : Filter.Tendsto (fun N v => P N v) Filter.atTop (nhds F) := by
     apply tendsto_pi_nhds.mpr
     intro v
-    have h := ((evaluation s (complexSU2Embedding k)).continuous.tendsto _).comp
-      ((average_summable s μ hhaar hprob v).hasSum.tendsto_sum_nat)
     have he (N : ℕ) : P N v =
         (∑ ℓ ∈ Finset.range N, averageSection s μ hprob ℓ v) (complexSU2Embedding k) := by
       simp only [P, ContinuousLinearMap.sum_apply, Submodule.coe_sum, Finset.sum_apply]
       rfl
     simp only [he]
-    exact h
-  let T : PrincipalSeries s →L[ℂ] ℂ := continuousLinearMapOfTendsto P hlim
+    exact ((evaluation s (complexSU2Embedding k)).continuous.tendsto _).comp
+      ((average_summable s μ hhaar hprob v).hasSum.tendsto_sum_nat)
+  let T := continuousLinearMapOfTendsto P hlim
   have hT (v : PrincipalSeries s) : T v = F v := rfl
   let E := evaluation s (complexSU2Embedding k)
   let U := (T - E).ker
-  have hclosed : IsClosed (U : Set (PrincipalSeries s)) := (T - E).isClosed_ker
   have hall : ∀ j, harmonicKType s j ≤ U := by
     intro j v hv
     have hevent : (fun N => P N v) =ᶠ[Filter.atTop] (fun _ => v (complexSU2Embedding k)) := by
@@ -396,16 +330,15 @@ private theorem average_tsum_eq (s : ℝ) (μ : Measure ComplexSU2)
       change (∑ ℓ ∈ Finset.range N, characterAverage s μ ℓ v (complexSU2Embedding k)) = _
       simp_rw [average_on_harmonic s μ hhaar hprob j v hv]
       simp [Finset.mem_range, hN]
-    have heq : F v = v (complexSU2Embedding k) :=
-      tendsto_nhds_unique ((tendsto_pi_nhds.mp hlim) v)
-        (tendsto_const_nhds.congr' hevent.symm)
     change (T - E) v = 0
-    rw [ContinuousLinearMap.sub_apply, hT, heq]
+    rw [ContinuousLinearMap.sub_apply, hT, (tendsto_nhds_unique ((tendsto_pi_nhds.mp hlim) v)
+      (tendsto_const_nhds.congr' hevent.symm))]
     exact sub_self _
-  have htop := KPCplxActualImageProof.closed_harmonic_exhaustion s U hclosed hall
-  have hmem : f ∈ U := by rw [htop]; trivial
+  have hmem : f ∈ U := by rw [(KPCplxActualImageProof.closed_harmonic_exhaustion s U ((T - E).isClosed_ker) hall)]; trivial
   have hTf : T f = E f := sub_eq_zero.mp hmem
   exact (hT f).symm.trans hTf
+
+end
 
 theorem harmonic_finiteSum_approximation (s : ℝ) (f : PrincipalSeries s) :
     ∃ a : ℕ → PrincipalSeries s,
@@ -432,125 +365,30 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicExtraction.ChartRemainder
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues MeasureTheory
 open scoped BigOperators Topology
 
-private lemma lowerUnipotent_zero_eq_identity : lowerUnipotent 0 = 1 := by
-  apply Units.ext
-  ext i j
-  fin_cases i <;> fin_cases j <;> simp [lowerUnipotent]
+private alias lowerUnipotent_zero_eq_identity := infinityChart_lowerUnipotent_zero_eq_one
 
-private lemma principalSeries_identity_eval_norm_le_chartSeminorm_zero (s : ℝ) (f : PrincipalSeries s) :
-    ‖f 1‖ ≤ chartSeminorm s 0 f := by
-  have hc : Continuous (fun u : ℂ => ‖infinityCoordinate f u‖) :=
-    f.property.2.2.continuous.norm
-  have hb := (isCompact_closedBall (0 : ℂ) 1).image hc
-  have hh : ‖infinityCoordinate f 0‖ ≤
-      sSup ((fun u : ℂ => ‖infinityCoordinate f u‖) '' Metric.closedBall 0 1) := by
-    apply le_csSup hb.bddAbove
-    exact ⟨0, by simp, rfl⟩
-  change ‖f 1‖ ≤ chartSeminormValue s 0 f
-  simpa only [chartSeminormValue, norm_iteratedFDeriv_zero, infinityCoordinate,
-    lowerUnipotent_zero_eq_identity] using hh.trans (le_max_right
-      (sSup ((fun x : ℂ => ‖openCoordinate f x‖) '' Metric.closedBall 0 1))
-      (sSup ((fun u : ℂ => ‖infinityCoordinate f u‖) '' Metric.closedBall 0 1)))
+private alias principalSeries_identity_eval_norm_le_chartSeminorm_zero := principalSeries_identityEvaluation_norm_le_chartSeminorm_zero
 
-private lemma eval_one_continuous (s : ℝ) :
-    Continuous (fun f : PrincipalSeries s => f 1) := by
-  let e : PrincipalSeries s →ₗ[ℂ] ℂ :=
-    { toFun := fun f => f 1
-      map_add' := fun _ _ => rfl
-      map_smul' := fun _ _ => rfl }
-  apply WithSeminorms.continuous_normedSpace_rng ℂ
-    (show WithSeminorms (chartSeminorm s) from ⟨rfl⟩) e
-  refine ⟨{0}, 1, ?_⟩
-  intro f
-  simpa [e] using principalSeries_identity_eval_norm_le_chartSeminorm_zero s f
+private alias eval_one_continuous := DedekindZetaZeroFree.KPCplxHarmonicExtraction.CharacterAverageOrbitClosure.eval_one_cont
 
-private lemma principalSeries_complexGL2_evaluation_continuous (s : ℝ) (g : ComplexGL2) :
-    Continuous (fun f : PrincipalSeries s => f g) := by
-  have h := (eval_one_continuous s).comp ((pi_continuous s).comp
-    (continuous_const.prodMk continuous_id : Continuous (fun f : PrincipalSeries s =>
-      (Matrix.ProjGenLinGroup.mk g, f))))
-  have he : (fun f : PrincipalSeries s => pi s (Matrix.ProjGenLinGroup.mk g) f 1) =
-      (fun f : PrincipalSeries s => f g) := by
-    funext f
-    change f (1 * g) = f g
-    rw [one_mul]
-  exact he ▸ h
+private alias principalSeries_complexGL2_evaluation_continuous := DedekindZetaZeroFree.KPCplxInverseTopology.eval_continuous
 
-private lemma embedding_continuous : Continuous complexSU2Embedding := by
-  apply Units.continuous_iff.mpr
-  constructor
-  · exact continuous_subtype_val
-  · have he (k : ComplexSU2) :
-        (↑(complexSU2Embedding k)⁻¹ : Matrix (Fin 2) (Fin 2) ℂ) =
-          star (k : Matrix (Fin 2) (Fin 2) ℂ) := by
-      rw [← map_inv]
-      rfl
-    simp_rw [he]
-    exact continuous_subtype_val.star
+private alias embedding_continuous := DedekindZetaZeroFree.KPCplxInverseTopology.embedding_continuous
 
-private lemma character_continuous (ℓ : ℕ) : Continuous (su2HarmonicCharacter ℓ) := by
-  have htrace : ∀ n : ℕ, Continuous (fun k : ComplexSU2 =>
-      KPCompactHarmonic.symmetricPowerTrace n
-        ⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
-          (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩) := by
-    intro n
-    induction n using Nat.twoStepInduction with
-    | zero => simpa [KPCompactHarmonic.symmetricPowerTrace] using
-        (continuous_const : Continuous (fun _ : ComplexSU2 => (1 : ℂ)))
-    | one => simp only [KPCompactHarmonic.symmetricPowerTrace]; fun_prop
-    | more n hn hn1 =>
-        simp only [KPCompactHarmonic.symmetricPowerTrace]
-        exact ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.trace (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn1).sub
-          ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.det (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn)
-  unfold su2HarmonicCharacter KPCompactHarmonic.rankOneCharacter
-  simp only [(Matrix.mem_specialUnitaryGroup_iff.mp (Subtype.prop _)).2, one_pow, div_one]
-  exact htrace (2 * ℓ)
+private alias character_continuous := DedekindZetaZeroFree.KPCplxHarmonicExtraction.CharacterAverageOrbitClosure.char_cont
 
-private lemma average_continuous (s : ℝ) (μ : Measure ComplexSU2)
-    (hprob : IsProbabilityMeasure μ) (ℓ : ℕ) (g : ComplexGL2) :
-    Continuous (fun f : PrincipalSeries s => characterAverage s μ ℓ f g) := by
-  letI : IsProbabilityMeasure μ := hprob
-  letI : CompactSpace ComplexSU2 := isCompact_iff_compactSpace.mp (by
-    convert complexSU2_isCompact using 1
-    exact Subtype.range_coe.symm)
-  have hj : Continuous (fun p : PrincipalSeries s × ComplexSU2 =>
-      p.1 (g * complexSU2Embedding p.2)) := by
-    have hproj : Continuous (Matrix.ProjGenLinGroup.mk : ComplexGL2 → ComplexPGL2) :=
-      continuous_coinduced_rng
-    have h := (eval_one_continuous s).comp ((pi_continuous s).comp
-      ((hproj.comp ((continuous_const : Continuous (fun _ : PrincipalSeries s × ComplexSU2 => g)).mul
-          (embedding_continuous.comp continuous_snd))).prodMk
-        continuous_fst))
-    have he : (fun p : PrincipalSeries s × ComplexSU2 =>
-        pi s (Matrix.ProjGenLinGroup.mk (g * complexSU2Embedding p.2)) p.1 1) =
-        (fun p : PrincipalSeries s × ComplexSU2 => p.1 (g * complexSU2Embedding p.2)) := by
-      funext p
-      change p.1 (1 * (g * complexSU2Embedding p.2)) = _
-      rw [one_mul]
-    exact he ▸ h
-  have hi : Continuous (fun f : PrincipalSeries s => ∫ t : ComplexSU2,
-      star (su2HarmonicCharacter ℓ t) * f (g * complexSU2Embedding t) ∂μ) := by
-    apply continuousOn_univ.mp
-    apply continuousOn_integral_of_compact_support (k := Set.univ) isCompact_univ
-    · exact (((character_continuous ℓ).comp continuous_snd).star.mul hj).continuousOn
-    · intro p x hp hx
-      exact (hx (Set.mem_univ x)).elim
-  exact continuous_const.mul hi
+private alias average_continuous := DedekindZetaZeroFree.KPCplxInverseTopology.average_eval_continuous
 
-private lemma average_partialSum_harmonic (s : ℝ) (μ : Measure ComplexSU2)
-    (hhaar : μ.IsHaarMeasure) (hprob : IsProbabilityMeasure μ)
+variable (s : ℝ) (μ : Measure ComplexSU2) (hhaar : μ.IsHaarMeasure) (hprob : IsProbabilityMeasure μ)
+
+include hhaar hprob in
+private lemma average_partialSum_harmonic
     (b : ℕ → PrincipalSeries s) (hb : ∀ ℓ, b ℓ ∈ harmonicKType s ℓ)
     (ℓ N : ℕ) (k : ComplexSU2) :
     characterAverage s μ ℓ (∑ j ∈ Finset.range N, b j) (complexSU2Embedding k) =
       if ℓ < N then b ℓ (complexSU2Embedding k) else 0 := by
   classical
-  have hpol : ∀ j, ∃ p : MvPolynomial (Fin 3) ℂ,
-      p ∈ harmonicPolynomials j ∧ polynomialCompactRestriction p = compactRestriction s (b j) := by
-    intro j
-    exact Submodule.mem_map.mp (hb j)
-  choose p hp heq using hpol
+  choose p hp heq using (fun j => Submodule.mem_map.mp (hb j))
   have hv (j : ℕ) (t : ComplexSU2) :
       b j (complexSU2Embedding t) = polynomialCompactRestriction (p j) t :=
     (congrFun (heq j) t).symm
@@ -559,11 +397,10 @@ private lemma average_partialSum_harmonic (s : ℝ) (μ : Measure ComplexSU2)
   simp_rw [← map_mul, hv]
   rw [CompactPolynomial.harmonic_character_projection μ hhaar hprob ℓ
     (Finset.range N) p (fun j _ => hp j) k]
-  simp only [Finset.mem_range, ← hv]
+  simp
 
-theorem characterAverage_compact_partialSums_tendsto (s : ℝ)
-    (μ : Measure ComplexSU2) (hhaar : μ.IsHaarMeasure)
-    (hprob : IsProbabilityMeasure μ) (f : PrincipalSeries s)
+include hhaar hprob in
+theorem characterAverage_compact_partialSums_tendsto (f : PrincipalSeries s)
     (a : ℕ → PrincipalSeries s)
     (ha : ∀ ℓ g, a ℓ g = characterAverage s μ ℓ f g) :
     ∀ k : ComplexSU2,
@@ -573,12 +410,11 @@ theorem characterAverage_compact_partialSums_tendsto (s : ℝ)
   obtain ⟨b, hb, hlim⟩ := KPCplxInverseTopology.harmonic_finiteSum_approximation s f
   have hcoef (ℓ : ℕ) (k : ComplexSU2) :
       characterAverage s μ ℓ f (complexSU2Embedding k) = b ℓ (complexSU2Embedding k) := by
-    have ht := ((average_continuous s μ hprob ℓ (complexSU2Embedding k)).tendsto f).comp hlim
     have hevent : (fun N => characterAverage s μ ℓ (∑ j ∈ Finset.range N, b j)
         (complexSU2Embedding k)) =ᶠ[Filter.atTop] (fun _ => b ℓ (complexSU2Embedding k)) := by
       filter_upwards [Filter.eventually_gt_atTop ℓ] with N hN
       rw [average_partialSum_harmonic s μ hhaar hprob b hb ℓ N k, if_pos hN]
-    exact tendsto_nhds_unique ht (tendsto_const_nhds.congr' hevent.symm)
+    exact tendsto_nhds_unique (((average_continuous s μ hprob ℓ (complexSU2Embedding k)).tendsto f).comp hlim) (tendsto_const_nhds.congr' hevent.symm)
   have hab : a = b := by
     funext ℓ
     apply compactRestriction_injective s
@@ -605,8 +441,7 @@ theorem characterAverage_chart_remainder (s : ℝ) (μ : Measure ComplexSU2)
     (f : PrincipalSeries s) (a : ℕ → PrincipalSeries s)
     (ha : ∀ ℓ g, a ℓ g = characterAverage s μ ℓ f g) (n : ℕ) :
     ∀ ε : ℝ, 0 < ε → ∀ᶠ N in Filter.atTop,
-      chartSeminorm s n ((∑ ℓ ∈ Finset.range N, a ℓ) - f) < ε := by
-  exact ChartRemainder.chart_remainder_of_summable_of_compact_tendsto s f a
+      chartSeminorm s n ((∑ ℓ ∈ Finset.range N, a ℓ) - f) < ε := ChartRemainder.chart_remainder_of_summable_of_compact_tendsto s f a
     (ChartRemainder.characterAverage_chartSeminorm_summable s μ hhaar hprob f a ha)
     (ChartRemainder.characterAverage_compact_partialSums_tendsto s μ hhaar hprob f a ha) n
 
@@ -622,110 +457,44 @@ open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalue
 open MeasureTheory Set
 open scoped BigOperators Topology Matrix.Norms.Elementwise
 
-theorem su2HarmonicCharacter_continuous (ℓ : ℕ) : Continuous (su2HarmonicCharacter ℓ) := by
-  have htrace : ∀ n : ℕ, Continuous (fun k : ComplexSU2 =>
-      KPCompactHarmonic.symmetricPowerTrace n
-        ⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
-          (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩) := by
-    intro n
-    induction n using Nat.twoStepInduction with
-    | zero => simpa [KPCompactHarmonic.symmetricPowerTrace] using
-        (continuous_const : Continuous (fun _ : ComplexSU2 => (1 : ℂ)))
-    | one => simp only [KPCompactHarmonic.symmetricPowerTrace]; fun_prop
-    | more n hn hn1 =>
-        simp only [KPCompactHarmonic.symmetricPowerTrace]
-        exact ((by fun_prop : Continuous (fun k : ComplexSU2 => Matrix.trace (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn1).sub
-          ((by fun_prop : Continuous (fun k : ComplexSU2 => Matrix.det (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn)
-  unfold su2HarmonicCharacter KPCompactHarmonic.rankOneCharacter
-  simp only [(Matrix.mem_specialUnitaryGroup_iff.mp (Subtype.prop _)).2, one_pow, div_one]
-  exact htrace (2 * ℓ)
+alias su2HarmonicCharacter_continuous := ChartRemainder.character_continuous
 private theorem matrixFunction_eval (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
-    matrixFunction f (g : Matrix (Fin 2) (Fin 2) ℂ) = f g := by
-  rw [matrixFunction, dif_pos (Matrix.GeneralLinearGroup.det_ne_zero g)]
-  congr 1
-  apply Units.ext
-  rfl
+    matrixFunction f (g : Matrix (Fin 2) (Fin 2) ℂ) = f g := by apply @DedekindZetaZeroFree.KPCplxPrincipalSeriesMatrixSmooth.matrixFunction_coe <;> assumption
 
-theorem principalSeries_su2_orbit_continuous (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2) :
-    Continuous (fun k : ComplexSU2 => f (g * complexSU2Embedding k)) := by
-  have hf := ((principalSeries_mem_iff s f).mp f.property).2.continuousOn
-  have hm : Continuous (fun k : ComplexSU2 =>
-      ((g * complexSU2Embedding k : ComplexGL2) : Matrix (Fin 2) (Fin 2) ℂ)) := by
-    simp only [Matrix.GeneralLinearGroup.coe_mul]
-    change Continuous (fun k : ComplexSU2 =>
-      (g : Matrix (Fin 2) (Fin 2) ℂ) * (k : Matrix (Fin 2) (Fin 2) ℂ))
-    fun_prop
-  have hc := hf.comp_continuous hm (fun k =>
-    Matrix.GeneralLinearGroup.det_ne_zero (g * complexSU2Embedding k))
-  simpa only [Function.comp_def, matrixFunction_eval] using hc
+alias principalSeries_su2_orbit_continuous := CasimirTransfer.Transfer.CompactCasimirTransfer.orbit_continuous
 
 theorem characterAverage_integrable (s : ℝ) (μ : Measure ComplexSU2)
     (hprob : IsProbabilityMeasure μ) (ℓ : ℕ) (f : PrincipalSeries s) (g : ComplexGL2) :
     Integrable (fun k : ComplexSU2 =>
       star (su2HarmonicCharacter ℓ k) * f (g * complexSU2Embedding k)) μ := by
   letI : IsProbabilityMeasure μ := hprob
-  have hcompact : IsCompact (ComplexSU2 : Set (Matrix (Fin 2) (Fin 2) ℂ)) := by
-    have heq : Set.range (fun k : ComplexSU2 => (k : Matrix (Fin 2) (Fin 2) ℂ)) =
-        (ComplexSU2 : Set (Matrix (Fin 2) (Fin 2) ℂ)) := Subtype.range_coe
+  let Matrix₀ := Matrix (Fin 2) (Fin 2) ℂ
+  have hcompact : IsCompact (ComplexSU2 : Set (Matrix₀)) := by
+    have heq : Set.range (fun k : ComplexSU2 => (k : Matrix₀)) =
+        (ComplexSU2 : Set (Matrix₀)) := Subtype.range_coe
     rw [← heq]
     exact complexSU2_isCompact
   letI : CompactSpace ComplexSU2 := isCompact_iff_compactSpace.mp hcompact
   exact ((su2HarmonicCharacter_continuous ℓ).star.mul (principalSeries_su2_orbit_continuous s f g)).integrable_of_hasCompactSupport
     (HasCompactSupport.of_compactSpace _)
 
-private lemma lower_zero : lowerUnipotent 0 = 1 := by
-  apply Units.ext
-  ext i j
-  fin_cases i <;> fin_cases j <;> simp [lowerUnipotent]
+private alias lower_zero := ChartRemainder.lowerUnipotent_zero_eq_identity
 
-private lemma eval_one_bound (s : ℝ) (f : PrincipalSeries s) : ‖f 1‖ ≤ chartSeminorm s 0 f := by
-  have hc : Continuous (fun u : ℂ => ‖infinityCoordinate f u‖) := f.property.2.2.continuous.norm
-  have hb := (isCompact_closedBall (0 : ℂ) 1).image hc
-  have hh : ‖infinityCoordinate f 0‖ ≤ sSup ((fun u : ℂ => ‖infinityCoordinate f u‖) '' Metric.closedBall 0 1) := by
-    apply le_csSup hb.bddAbove
-    exact ⟨0, by simp, rfl⟩
-  change ‖f 1‖ ≤ chartSeminormValue s 0 f
-  simpa only [chartSeminormValue, norm_iteratedFDeriv_zero, infinityCoordinate, lower_zero] using hh.trans (le_max_right
-    (sSup ((fun x : ℂ => ‖openCoordinate f x‖) '' Metric.closedBall 0 1))
-    (sSup ((fun u : ℂ => ‖infinityCoordinate f u‖) '' Metric.closedBall 0 1)))
+private alias eval_one_bound := ChartRemainder.principalSeries_identity_eval_norm_le_chartSeminorm_zero
 
-private lemma eval_one_cont (s : ℝ) : Continuous (fun f : PrincipalSeries s => f 1) := by
-  let e : PrincipalSeries s →ₗ[ℂ] ℂ :=
-    { toFun := fun f => f 1, map_add' := fun _ _ => rfl, map_smul' := fun _ _ => rfl }
-  apply WithSeminorms.continuous_normedSpace_rng ℂ (show WithSeminorms (chartSeminorm s) from ⟨rfl⟩) e
-  refine ⟨{0}, 1, ?_⟩
-  intro f
-  simpa [e] using eval_one_bound s f
+private alias eval_one_cont := ChartRemainder.eval_one_continuous
 
-theorem principalSeries_evaluation_continuous (s : ℝ) (g : ComplexGL2) :
-    Continuous (fun f : PrincipalSeries s => f g) := by
-  have h := (eval_one_cont s).comp ((pi_continuous s).comp
-    (continuous_const.prodMk continuous_id : Continuous (fun f : PrincipalSeries s => (Matrix.ProjGenLinGroup.mk g, f))))
-  have he : (fun f : PrincipalSeries s =>
-      pi s (Matrix.ProjGenLinGroup.mk g) f 1) = (fun f : PrincipalSeries s => f g) := by
-    funext f
-    change f (1 * g) = f g
-    rw [one_mul]
-  exact he ▸ h
+alias principalSeries_evaluation_continuous := DedekindZetaZeroFree.KPCplxInverseTopology.eval_continuous
 
-private lemma su2_embed_cont : Continuous complexSU2Embedding := by
-  apply Units.continuous_iff.mpr
-  constructor
-  · exact continuous_subtype_val
-  · have he (k : ComplexSU2) : (↑(complexSU2Embedding k)⁻¹ : Matrix (Fin 2) (Fin 2) ℂ) = star (k : Matrix (Fin 2) (Fin 2) ℂ) := by
-      have hk : complexSU2Embedding k⁻¹ = (complexSU2Embedding k)⁻¹ := map_inv _ _
-      rw [← hk]
-      rfl
-    simp_rw [he]
-    exact continuous_subtype_val.star
+private alias su2_embed_cont := DedekindZetaZeroFree.KPCplxInverseTopology.embedding_continuous
 
 theorem principalSeries_su2_section_orbit_continuous (s : ℝ) (f : PrincipalSeries s) :
     Continuous (fun k : ComplexSU2 => rightTranslate s (complexSU2Embedding k) f) := by
-  have hproj : Continuous (Matrix.ProjGenLinGroup.mk : ComplexGL2 → ComplexPGL2) :=
-    continuous_coinduced_rng
-  exact (pi_continuous s).comp ((hproj.comp su2_embed_cont).prodMk continuous_const)
+  exact (pi_continuous s).comp ((continuous_coinduced_rng.comp su2_embed_cont).prodMk continuous_const)
 
-theorem principalSeries_compact_barycenter_exists (s : ℝ) (μ : Measure ComplexSU2)
+variable (s : ℝ) (μ : Measure ComplexSU2)
+
+theorem principalSeries_compact_barycenter_exists
     (hprob : IsProbabilityMeasure μ) (F : ComplexSU2 → PrincipalSeries s)
     (hc : Continuous F) (hint : ∀ g, Integrable (fun k => F k g) μ) :
     ∃ v : PrincipalSeries s, v ∈ closure (convexHull ℝ (Set.range F)) ∧
@@ -773,32 +542,29 @@ theorem principalSeries_compact_barycenter_exists (s : ℝ) (μ : Measure Comple
     (fun g => isClosed_eq (principalSeries_evaluation_continuous s g) continuous_const) hfin
   exact ⟨w, hwC, fun g => Set.mem_iInter.mp hw g⟩
 
-theorem characterAverage_section_exists (s : ℝ) (μ : Measure ComplexSU2)
+theorem characterAverage_section_exists
     (hprob : IsProbabilityMeasure μ) (ℓ : ℕ) (f : PrincipalSeries s) :
     ∃ v : PrincipalSeries s, ∀ g, v g = characterAverage s μ ℓ f g := by
-  let D : ℂ := ((2 * ℓ + 1 : ℕ) : ℂ)
-  let F : ComplexSU2 → PrincipalSeries s := fun k =>
+  let D := ((2 * ℓ + 1 : ℕ) : ℂ)
+  let F := fun k =>
     (D * star (su2HarmonicCharacter ℓ k)) • rightTranslate s (complexSU2Embedding k) f
   letI : ContinuousSMul ℂ (PrincipalSeries s) :=
     (show WithSeminorms (chartSeminorm s) from ⟨rfl⟩).continuousSMul
-  have hc : Continuous F :=
-    (continuous_const.mul (su2HarmonicCharacter_continuous ℓ).star).smul
-      (principalSeries_su2_section_orbit_continuous s f)
   have hF (k : ComplexSU2) (g : ComplexGL2) :
       F k g = D * (star (su2HarmonicCharacter ℓ k) * f (g * complexSU2Embedding k)) := by
-    change (D * star (su2HarmonicCharacter ℓ k)) * f (g * complexSU2Embedding k) = _
     exact mul_assoc _ _ _
   have hint : ∀ g, Integrable (fun k => F k g) μ := by
     intro g
     simp_rw [hF]
     exact (characterAverage_integrable s μ hprob ℓ f g).const_mul D
-  obtain ⟨v, _, hv⟩ := principalSeries_compact_barycenter_exists s μ hprob F hc hint
+  obtain ⟨v, _, hv⟩ := principalSeries_compact_barycenter_exists s μ hprob F ((continuous_const.mul (su2HarmonicCharacter_continuous ℓ).star).smul
+    (principalSeries_su2_section_orbit_continuous s f)) hint
   refine ⟨v, fun g => ?_⟩
   rw [hv g]
   simp_rw [hF]
   exact integral_const_mul D _
 
-theorem character_average_harmonic_expansion (s : ℝ) (μ : Measure ComplexSU2)
+theorem character_average_harmonic_expansion
     (hhaar : μ.IsHaarMeasure) (hprob : IsProbabilityMeasure μ)
     (f : PrincipalSeries s) :
     ∃ a : ℕ → PrincipalSeries s,
@@ -814,8 +580,6 @@ theorem character_average_harmonic_expansion (s : ℝ) (μ : Measure ComplexSU2)
     ha, ?_, ?_⟩
   · intro ℓ
     obtain ⟨p, hp, hpk⟩ := characterAverage_compact_polynomial s μ hhaar hprob ℓ f
-    change compactRestriction s (a ℓ) ∈
-      (harmonicPolynomials ℓ).map polynomialCompactRestriction
     refine ⟨p, hp, ?_⟩
     ext k
     exact (hpk k).trans ((ha ℓ (complexSU2Embedding k)).symm)

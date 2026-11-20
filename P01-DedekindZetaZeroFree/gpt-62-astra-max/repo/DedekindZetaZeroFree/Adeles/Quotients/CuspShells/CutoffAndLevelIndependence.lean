@@ -10,8 +10,8 @@ open scoped Classical NumberField Topology NNReal ENNReal BigOperators
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPMsNativeOffsetMass
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
@@ -25,8 +25,7 @@ theorem fullShell_cutoff_and_cofinal_independent
       (hA : OffsetAdmissible F ζ hζ R P S U A) (hAB : A ≤ B) :
       OffsetAdmissible F ζ hζ R P S U B := by
     intro j
-    have hcut : A / (cuspOffset F ζ hζ R P S U j).val ≤
-        B / (cuspOffset F ζ hζ R P S U j).val :=
+    have hcut :=
       div_le_div_of_nonneg_right hAB (cuspOffset F ζ hζ R P S U j).property.le
     refine ⟨lt_of_lt_of_le (hA j).1 hcut, (hA j).2.trans ?_⟩
     unfold KPMsFixedHaarDisintegration.logHeight

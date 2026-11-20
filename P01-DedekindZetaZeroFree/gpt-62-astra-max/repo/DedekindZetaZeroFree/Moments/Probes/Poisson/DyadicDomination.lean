@@ -12,8 +12,8 @@ open DedekindZetaZeroFree NumberField MeasureTheory PoissonKernel PoissonInitial
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem J_singleton_eq (u : D.Row) (Z : ℝ) (hZ : 0 < Z) :
     J D {u} 4 4 2 Z =
@@ -89,22 +89,33 @@ theorem dyadRows_disjoint {k j : ℕ} (h : k ≠ j) :
     rw [pow_succ] at h1
     linarith
 
-def nonprincipalDyad (k : ℕ) : Set D.Row := dyadRows D ((2 : ℝ) ^ k) \ principalRows D
+section
 
-theorem nonprincipalDyad_finite (k : ℕ) : (nonprincipalDyad D k).Finite :=
+variable (k : ℕ)
+
+def nonprincipalDyad : Set D.Row := dyadRows D ((2 : ℝ) ^ k) \ principalRows D
+
+theorem nonprincipalDyad_finite : (nonprincipalDyad D k).Finite :=
   (ActualRowCount.dyadRows_finite D _).subset Set.diff_subset
 
-def Jnp (k : ℕ) (Z : ℝ) : ℂ := J D (nonprincipalDyad D k) 4 4 2 Z
+def Jnp (Z : ℝ) : ℂ := J D (nonprincipalDyad D k) 4 4 2 Z
 
-theorem norm_Jnp_le (k : ℕ) (Z : ℝ) (hZ : 0 < Z) :
+theorem norm_Jnp_le (Z : ℝ) (hZ : 0 < Z) :
     ‖Jnp D k Z‖ ≤ ((2 * Real.pi) ^ 3)⁻¹ *
       ∑ u ∈ (nonprincipalDyad_finite D k).toFinset,
         ∫ t : ℝ × ℝ × ℝ, ‖initialRowIntegrand D u Z t‖ :=
   norm_J_set_le D _ (nonprincipalDyad_finite D k) Z hZ
 
+end
+
 def rowNormTotal (Z : ℝ) : ℝ := ∑' u : D.Row, ∫ t : ℝ × ℝ × ℝ, ‖initialRowIntegrand D u Z t‖
 
-private theorem partition_facts (Z : ℝ) (hZ : 0 < Z) :
+section
+
+variable (Z : ℝ) (hZ : 0 < Z)
+
+include hZ in
+private theorem partition_facts :
     Summable (fun k : ℕ => ∑ u ∈ (nonprincipalDyad_finite D k).toFinset,
       ∫ t : ℝ × ℝ × ℝ, ‖initialRowIntegrand D u Z t‖) ∧
     ∑' k : ℕ, ∑ u ∈ (nonprincipalDyad_finite D k).toFinset,
@@ -117,20 +128,24 @@ private theorem partition_facts (Z : ℝ) (hZ : 0 < Z) :
   rw [Set.Finite.mem_toFinset] at hk hj
   exact Set.disjoint_left.mp (dyadRows_disjoint D hkj) hk.1 hj.1
 
-theorem Jnp_norm_summable (Z : ℝ) (hZ : 0 < Z) : Summable (fun k : ℕ => ‖Jnp D k Z‖) := by
+include hZ in
+theorem Jnp_norm_summable : Summable (fun k : ℕ => ‖Jnp D k Z‖) := by
   refine Summable.of_nonneg_of_le (fun k => norm_nonneg _) (fun k => norm_Jnp_le D k Z hZ)
     ((partition_facts D Z hZ).1.mul_left _)
 
-theorem Jnp_norm_tsum_le (Z : ℝ) (hZ : 0 < Z) :
+include hZ in
+theorem Jnp_norm_tsum_le :
     ∑' k : ℕ, ‖Jnp D k Z‖ ≤ ((2 * Real.pi) ^ 3)⁻¹ * rowNormTotal D Z := by
   obtain ⟨hs, hle⟩ := partition_facts D Z hZ
-  calc ∑' k : ℕ, ‖Jnp D k Z‖ ≤ ∑' k : ℕ, ((2 * Real.pi) ^ 3)⁻¹ *
+  calc _ ≤ ∑' k : ℕ, ((2 * Real.pi) ^ 3)⁻¹ *
         ∑ u ∈ (nonprincipalDyad_finite D k).toFinset,
           ∫ t : ℝ × ℝ × ℝ, ‖initialRowIntegrand D u Z t‖ :=
         (Jnp_norm_summable D Z hZ).tsum_le_tsum (fun k => norm_Jnp_le D k Z hZ) (hs.mul_left _)
     _ = ((2 * Real.pi) ^ 3)⁻¹ * ∑' k : ℕ, ∑ u ∈ (nonprincipalDyad_finite D k).toFinset,
           ∫ t : ℝ × ℝ × ℝ, ‖initialRowIntegrand D u Z t‖ := tsum_mul_left
     _ ≤ _ := mul_le_mul_of_nonneg_left hle (by have := Real.pi_pos; positivity)
+
+end
 
 def weightExp : ℝ := Scales.xExponent / 2 + 3 + 2 * Scales.smoothingExponent + 3 * Scales.yExponent
 
@@ -158,18 +173,14 @@ theorem norm_weight_scale (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ) (hξ : ξ.re = 4
 theorem norm_row_scale (u : D.Row) (Z : ℝ) (hZ : 0 < Z) (t : ℝ × ℝ × ℝ) :
     ‖initialRowIntegrand D u Z t‖ = (Z / 2) ^ weightExp * ‖initialRowIntegrand D u 2 t‖ := by
   have h2 : (0 : ℝ) < 2 := by norm_num
-  have h1 : (NormalizedProbe.initialMellinPoint t).1.re = 4 := by
-    simp [NormalizedProbe.initialMellinPoint]
-  have h2' : (NormalizedProbe.initialMellinPoint t).2.1.re = 4 := by
-    simp [NormalizedProbe.initialMellinPoint]
-  have h3 : (NormalizedProbe.initialMellinPoint t).2.2.re = 2 := by
-    simp [NormalizedProbe.initialMellinPoint]
-  have hw := norm_weight_scale D Z hZ (NormalizedProbe.initialMellinPoint t).1
-    (NormalizedProbe.initialMellinPoint t).2.1 (NormalizedProbe.initialMellinPoint t).2.2 h1 h2' h3
   rw [rowIntegrand_eq_tsum D u Z hZ, rowIntegrand_eq_tsum D u 2 h2]
   simp only [NormalizedProbe.initialTripleMellinSummand]
   rw [tsum_mul_left, tsum_mul_left]
-  simp only [norm_mul, hw]
+  simp only [norm_mul, (norm_weight_scale D Z hZ (NormalizedProbe.initialMellinPoint t).1
+    (NormalizedProbe.initialMellinPoint t).2.1 (NormalizedProbe.initialMellinPoint t).2.2 (by
+      simp [NormalizedProbe.initialMellinPoint]) (by
+      simp [NormalizedProbe.initialMellinPoint]) (by
+      simp [NormalizedProbe.initialMellinPoint]))]
   ring
 
 theorem rowNormTotal_scale (Z : ℝ) (hZ : 0 < Z) :

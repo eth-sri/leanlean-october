@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -35,11 +29,13 @@ noncomputable section
 
 namespace LocalFieldTheory.DiscreteValuationField
 
+section
+
+variable {C G : Type*} [AddZeroClass C] [MulOneClass G] [TopologicalSpace C] [TopologicalSpace G]
+
 /-- Turn a topological group equivalence whose source is an additive group
 written multiplicatively into the inverse topological additive equivalence. -/
 noncomputable def continuousAddEquivOfMultiplicativeSource
-    {C G : Type*} [AddZeroClass C] [MulOneClass G]
-    [TopologicalSpace C] [TopologicalSpace G]
     (e : Multiplicative C ≃ₜ* G) : Additive G ≃ₜ+ C :=
   { (MulEquiv.toAdditiveRight e.toMulEquiv).symm with
     continuous_toFun := e.continuous_invFun
@@ -49,15 +45,15 @@ noncomputable def continuousAddEquivOfMultiplicativeSource
 topological multiplicative equivalence after tagging the source
 multiplicatively. -/
 noncomputable def continuousMulEquivOfAdditiveTarget
-    {C G : Type*} [AddZeroClass C] [MulOneClass G]
-    [TopologicalSpace C] [TopologicalSpace G]
     (e : C ≃ₜ+ Additive G) : Multiplicative C ≃ₜ* G :=
   { e.toAddEquiv.toMultiplicativeLeft with
     continuous_toFun := e.continuous_toFun
     continuous_invFun := e.continuous_invFun }
 
+end
+
 variable {p : ℕ} [Fact p.Prime]
-variable {A B : Type*}
+    {A B : Type*}
 variable [TopologicalSpace A] [TopologicalSpace B]
 variable [AddCommMonoid A] [AddCommMonoid B]
 variable [Module ℤ_[p] A] [Module ℤ_[p] B]
@@ -70,15 +66,9 @@ copy of `ℕ` in `Z_p`. -/
 theorem map_padicInt_smul_of_continuous
     (f : A →+ B) (hf : Continuous f) (a : ℤ_[p]) (x : A) :
     f (a • x) = a • f x := by
-  have hleft : Continuous (fun z : ℤ_[p] => f (z • x)) :=
-    hf.comp (continuous_id.smul continuous_const)
-  have hright : Continuous (fun z : ℤ_[p] => z • f x) :=
-    continuous_id.smul continuous_const
-  have hclosed : IsClosed {z : ℤ_[p] | f (z • x) = z • f x} :=
-    isClosed_eq hleft hright
-  refine PadicInt.denseRange_natCast.induction_on a hclosed ?_
+  refine PadicInt.denseRange_natCast.induction_on a (isClosed_eq (hf.comp (continuous_id.smul continuous_const)) (continuous_id.smul continuous_const)) ?_
   intro n
-  simp only [Nat.cast_smul_eq_nsmul, map_nsmul]
+  simp [Nat.cast_smul_eq_nsmul]
 
 /-- Package the preceding density argument as a linear equivalence. -/
 noncomputable def padicLinearEquivOfContinuousAddEquiv
@@ -99,36 +89,18 @@ theorem continuous_padicInt_finPi_linearMap
   have hfun :
       (fun x : Fin d → ℤ_[p] => f x) =
         fun x => ∑ i : Fin d,
-          x i • f (Pi.single (M := fun _ : Fin d => ℤ_[p]) i 1) := by
+          x i • f (Pi.single i 1) := by
     funext x
-    have hx : x = ∑ i : Fin d,
-        x i • Pi.single (M := fun _ : Fin d => ℤ_[p]) i 1 :=
-      pi_eq_sum_univ' x
     calc
       f x = f (∑ i : Fin d,
-          x i • Pi.single (M := fun _ : Fin d => ℤ_[p]) i 1) :=
-        congrArg f hx
+          x i • Pi.single i 1) :=
+        congrArg f (pi_eq_sum_univ' x)
       _ = ∑ i : Fin d,
-          x i • f (Pi.single (M := fun _ : Fin d => ℤ_[p]) i 1) := by
-        simp only [map_sum, map_smul]
+          x i • f (Pi.single i 1) := by
+        simp
   change Continuous (fun x : Fin d → ℤ_[p] => f x)
   rw [hfun]
   fun_prop
-
-/-- Finite generation across a short exact sequence, phrased for a
-surjective linear map.  This avoids unfolding a large ambient module when a
-finite kernel and finite quotient are already available. -/
-theorem moduleFinite_of_surjective_of_ker
-    {R M N : Type*} [Ring R]
-    [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N]
-    (f : M →ₗ[R] N) (hf : Function.Surjective f)
-    [Module.Finite R N] [Module.Finite R (LinearMap.ker f)] :
-    Module.Finite R M := by
-  let e : (M ⧸ LinearMap.ker f) ≃ₗ[R] N :=
-    f.quotKerEquivOfSurjective hf
-  let : Module.Finite R (M ⧸ LinearMap.ker f) :=
-    Module.Finite.equiv e.symm
-  exact Module.Finite.of_submodule_quotient (LinearMap.ker f)
 
 end LocalFieldTheory.DiscreteValuationField
 

@@ -15,7 +15,7 @@ namespace DedekindZetaZeroFree.KPLiteralScalarHCFiniteDecomposition
 open KPLiteralRaw KPAdelicCoverRestrictedProduct KPLiteralScalarHCFiniteInsertion
 open KPLiteralScalarHCFiniteProduct KPLiteralScalarHCFiniteOutside
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
+    (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
 abbrev RawStage := ∀ q : T, KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q.val)
 
 def stageRawInsertion : RawStage F ζ hζ T →* RestrictedCover F ζ hζ where
@@ -44,19 +44,25 @@ def stageRawInsertion : RawStage F ζ hζ T →* RestrictedCover F ζ hζ where
     | inl w => simp
     | inr q => by_cases hq : q ∈ T <;> simp [hq]
 
-@[simp] theorem stageRawInsertion_here (a : RawStage F ζ hζ T) (q : T) :
+section
+
+variable (a : RawStage F ζ hζ T)
+
+@[simp] theorem stageRawInsertion_here (q : T) :
     stageRawInsertion F ζ hζ T a (Sum.inr q.val) = a q := by
   change (if h : q.val ∈ T then a ⟨q.val, h⟩ else 1) = a q
   simp only [dite_eq_left q.property]
 
-@[simp] theorem stageRawInsertion_arch (a : RawStage F ζ hζ T) (w : InfinitePlace F) :
+@[simp] theorem stageRawInsertion_arch (w : InfinitePlace F) :
     stageRawInsertion F ζ hζ T a (Sum.inl w) = 1 := rfl
 
-@[simp] theorem stageRawInsertion_outside (a : RawStage F ζ hζ T)
+@[simp] theorem stageRawInsertion_outside
     (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) (hq : q ∉ T) :
     stageRawInsertion F ζ hζ T a (Sum.inr q) = 1 := by
   change (if h : q ∈ T then a ⟨q, h⟩ else (1 : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))) = 1
   rw [dite_eq_right hq]
+
+end
 
 theorem stageRawInsertion_single (q : T)
     (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q.val)) :

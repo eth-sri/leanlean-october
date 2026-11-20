@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -67,19 +64,6 @@ theorem rationalCyclotomicZHatIdeleValue_apply
         (rationalCyclotomicZHatGlobalArtin a) :=
   rfl
 
-/-- The rational cyclotomic value has dense image in `ZHat`. -/
-theorem rationalCyclotomicZHatIdeleValue_denseRange :
-    DenseRange rationalCyclotomicZHatIdeleValue := by
-  change
-    DenseRange
-      (fun a =>
-        rationalCyclotomicZHatFieldGalEquivZHat
-          (rationalCyclotomicZHatGlobalArtin a))
-  exact
-    rationalCyclotomicZHatFieldGalEquivZHat.surjective.denseRange.comp
-      rationalCyclotomicZHatGlobalArtin_denseRange
-      rationalCyclotomicZHatFieldGalEquivZHat.continuous
-
 /-- The norm-one rational ideles already have dense image in the actual
 cyclotomic `ZHat` coordinate.  This is the compact source used for
 surjectivity after descent to the idele class group. -/
@@ -123,7 +107,7 @@ theorem
   apply Subtype.ext
   funext Eop
   let E := Eop.unop
-  let : NumberField E :=
+  let :=
     NumberField.of_module_finite ℚ E
   let P :=
     numberFieldCyclotomicZHatFiniteGaloisLayerInCompositum K E
@@ -141,8 +125,7 @@ theorem
   have hcomm :
       (IntermediateField.restrictRestrictAlgEquivMapHom
           ℚ E K P).comp
-          (globalArtinMonoidHom
-            (K := K) (L := P)) =
+          (globalArtinMonoidHom) =
         (globalArtinMonoidHom
           (K := ℚ) (L := E)).comp
             (IdeleGroup.norm ℚ K) := by
@@ -156,22 +139,14 @@ theorem
     rw [hr]
     exact
       globalArtinMonoidHom_norm_restriction
-        (K := ℚ) (L := E)
-        (K' := K)
-        (L' := P)
-  have hPProjection :
-      AlgEquiv.restrictNormalHom P
-          (infiniteGlobalArtinMonoidHom K
-            (numberFieldCyclotomicZHatCompositum K) a) =
-        globalArtinMonoidHom (K := K) (L := P) a :=
+  have hPProjection :=
     restrictNormalHom_infiniteGlobalArtinMonoidHom
       K (numberFieldCyclotomicZHatCompositum K) a P
+  let restrictNormalHom₀ := AlgEquiv.restrictNormalHom E (rationalCyclotomicZHatGlobalArtin (IdeleGroup.norm ℚ K a))
   have hQProjection :
-      AlgEquiv.restrictNormalHom E
-          (rationalCyclotomicZHatGlobalArtin
-            (IdeleGroup.norm ℚ K a)) =
+      restrictNormalHom₀ =
         globalArtinMonoidHom
-          (K := ℚ) (L := E) (IdeleGroup.norm ℚ K a) :=
+            (IdeleGroup.norm ℚ K a) :=
     restrictNormalHom_rationalCyclotomicZHatGlobalArtin
       (IdeleGroup.norm ℚ K a) E
   change
@@ -179,14 +154,9 @@ theorem
         (numberFieldCyclotomicZHatCompositumRestriction K
           (infiniteGlobalArtinMonoidHom K
             (numberFieldCyclotomicZHatCompositum K) a)) =
-      AlgEquiv.restrictNormalHom E
-        (rationalCyclotomicZHatGlobalArtin
-          (IdeleGroup.norm ℚ K a))
+      restrictNormalHom₀
   calc
-    AlgEquiv.restrictNormalHom E
-          (numberFieldCyclotomicZHatCompositumRestriction K
-            (infiniteGlobalArtinMonoidHom K
-              (numberFieldCyclotomicZHatCompositum K) a)) =
+    _ =
         IntermediateField.restrictRestrictAlgEquivMapHom ℚ E K
           P
           (AlgEquiv.restrictNormalHom
@@ -200,26 +170,14 @@ theorem
     _ = IntermediateField.restrictRestrictAlgEquivMapHom ℚ E K
           P
           (globalArtinMonoidHom
-            (K := K) (L := P) a) :=
+              a) :=
       congrArg
         (IntermediateField.restrictRestrictAlgEquivMapHom ℚ E K P)
         hPProjection
     _ = globalArtinMonoidHom
-          (K := ℚ) (L := E) (IdeleGroup.norm ℚ K a) :=
+            (IdeleGroup.norm ℚ K a) :=
       DFunLike.congr_fun hcomm a
-    _ = AlgEquiv.restrictNormalHom E
-          (rationalCyclotomicZHatGlobalArtin
-            (IdeleGroup.norm ℚ K a)) := by
-      exact hQProjection.symm
-
-/-- The rational normalization factor is one:
-`[ℚ ∩ ℚ̃ : ℚ] = 1`. -/
-@[simp]
-theorem cyclotomicZHatIntersectionDegree_rat :
-    cyclotomicZHatIntersectionDegree ℚ = 1 :=
-  Nat.dvd_one.mp (by
-    simpa using
-      (cyclotomicZHatIntersectionDegree_dvd_finrank ℚ))
+    _ = restrictNormalHom₀ := hQProjection.symm
 
 /-- The unnormalized composite
 `v_ℚ ∘ N_{K/ℚ}`, in additive notation. -/
@@ -249,7 +207,6 @@ theorem cyclotomicZHatNormComposite_baseIdeleInclusion
     cyclotomicZHatNormComposite K
         (Additive.ofMul
           (relativeIdeleBaseChangeMulEquiv
-            (K := ℚ) (L := K)
             (RelativeIdeleGroup.inclusion ℚ K a))) =
       Module.finrank ℚ K •
         Multiplicative.toAdd
@@ -259,7 +216,7 @@ theorem cyclotomicZHatNormComposite_baseIdeleInclusion
         (rationalCyclotomicZHatIdeleValue
           (IdeleGroup.norm ℚ K
             (relativeIdeleBaseChangeMulEquiv
-              (K := ℚ) (L := K)
+
               (RelativeIdeleGroup.inclusion ℚ K a)))) =
       Module.finrank ℚ K •
         Multiplicative.toAdd
@@ -267,31 +224,6 @@ theorem cyclotomicZHatNormComposite_baseIdeleInclusion
   rw [IdeleGroup.norm_relativeIdeleBaseChangeMulEquiv,
     RelativeIdeleGroup.norm_inclusion, map_pow,
     toAdd_pow]
-
-/-- The image of the unnormalized value contains the absolute-degree
-multiple of the rational cyclotomic value group. -/
-theorem
-    nsmulImage_rationalCyclotomicZHatIdeleValue_range_le_normComposite_range :
-    nsmulImage
-        ((AddEquiv.additiveMultiplicative ZHat).toAddMonoidHom.comp
-          (MonoidHom.toAdditive
-            rationalCyclotomicZHatIdeleValue.toMonoidHom)).range
-        (Module.finrank ℚ K) ≤
-      (cyclotomicZHatNormComposite K).range := by
-  intro z hz
-  rw [mem_nsmulImage_iff] at hz
-  obtain ⟨x, hx, rfl⟩ := hz
-  obtain ⟨a, rfl⟩ := hx
-  refine
-    ⟨Additive.ofMul
-        (relativeIdeleBaseChangeMulEquiv
-          (K := ℚ) (L := K)
-          (RelativeIdeleGroup.inclusion ℚ K
-            (Additive.toMul a))),
-      ?_⟩
-  exact
-    cyclotomicZHatNormComposite_baseIdeleInclusion
-      K (Additive.toMul a)
 
 /-- At every finite cyclotomic layer, the Artin image of norms from
 `K` is exactly the image of restriction from the actual finite
@@ -309,20 +241,19 @@ theorem finiteCyclotomicLayer_normArtin_range
           (IdeleGroup.norm ℚ K)).range =
       (IntermediateField.restrictRestrictAlgEquivMapHom
         ℚ E K C).range := by
-  let : NumberField E :=
+  let :=
     NumberField.of_module_finite ℚ E
   let C :=
     numberFieldCyclotomicZHatFiniteCompositum K E
-  let r :
-      (C ≃ₐ[K] C) →* (E ≃ₐ[ℚ] E) :=
+  let r :=
     IntermediateField.restrictRestrictAlgEquivMapHom
       ℚ E K C
   have hcomm :
       r.comp
           (globalArtinMonoidHom
-            (K := K) (L := C)) =
+             ) =
         (globalArtinMonoidHom
-          (K := ℚ) (L := E)).comp
+           ).comp
             (IdeleGroup.norm ℚ K) :=
     by
       have hr :
@@ -334,28 +265,28 @@ theorem finiteCyclotomicLayer_normArtin_range
       rw [hr]
       exact
         globalArtinMonoidHom_norm_restriction
-          (K := ℚ) (L := E) (K' := K) (L' := C)
+
   apply le_antisymm
   · rintro σ ⟨a, rfl⟩
     refine
       ⟨globalArtinMonoidHom
-          (K := K) (L := C) a,
+            a,
         ?_⟩
     exact DFunLike.congr_fun hcomm a
   · rintro σ ⟨τ, rfl⟩
     obtain ⟨a, ha⟩ :=
       globalArtinMonoidHom_surjective
-        (K := K) (L := C) τ
+          τ
     refine ⟨a, ?_⟩
     have h := DFunLike.congr_fun hcomm a
     change
-      r (globalArtinMonoidHom (K := K) (L := C) a) =
+      r (globalArtinMonoidHom a) =
         globalArtinMonoidHom
-          (K := ℚ) (L := E) (IdeleGroup.norm ℚ K a) at h
+            (IdeleGroup.norm ℚ K a) at h
     calc
       globalArtinMonoidHom
-            (K := ℚ) (L := E) (IdeleGroup.norm ℚ K a) =
-          r (globalArtinMonoidHom (K := K) (L := C) a) := h.symm
+              (IdeleGroup.norm ℚ K a) =
+          r (globalArtinMonoidHom a) := h.symm
       _ = r τ := congrArg r ha
 
 /-- Finite-layer form of the norm-image calculation: the Artin image
@@ -371,7 +302,7 @@ theorem finiteCyclotomicLayer_normArtin_range_eq_fixingSubgroup
         (K := ℚ) (L := E)).comp
           (IdeleGroup.norm ℚ K)).range =
       (numberFieldCyclotomicZHatFiniteIntersection K E).fixingSubgroup := by
-  let : NumberField E :=
+  let :=
     NumberField.of_module_finite ℚ E
   rw [finiteCyclotomicLayer_normArtin_range K E]
   exact
@@ -402,32 +333,30 @@ theorem
     inf_le_right
   let E :=
     (numberFieldCyclotomicZHatIntersection K).restrict hle
-  let : FiniteDimensional ℚ E :=
+  let :=
     (IntermediateField.restrictAlgEquiv hle).toLinearEquiv.finiteDimensional
-  let : NumberField E :=
+  let :=
     NumberField.of_module_finite ℚ E
-  let eEK : E →ₐ[ℚ] K :=
+  let eEK :=
     (numberFieldCyclotomicZHatIntersectionEmbedding K).comp
       (IntermediateField.restrictAlgEquiv hle).symm.toAlgHom
-  let : Algebra E K :=
+  let :=
     eEK.toRingHom.toAlgebra
-  let : IsScalarTower ℚ E K :=
+  let :=
     IsScalarTower.of_algebraMap_eq'
       eEK.comp_algebraMap.symm
-  let : FiniteDimensional E K :=
+  let :=
     FiniteDimensional.right ℚ E K
   let b : RelativeIdeleGroup ℚ K :=
     (relativeIdeleBaseChangeMulEquiv
       (K := ℚ) (L := K)).symm a
-  let t : TowerRelativeIdeleGroup ℚ E K :=
+  let t :=
     (towerRelativeIdeleEquiv ℚ E K).symm b
   refine
     ⟨TowerRelativeIdeleGroup.norm ℚ E K t,
       ?_⟩
   calc
-    RelativeIdeleGroup.norm ℚ E
-          (TowerRelativeIdeleGroup.norm
-            ℚ E K t) =
+    _ =
         RelativeIdeleGroup.norm ℚ K
           (towerRelativeIdeleEquiv
             ℚ E K t) :=
@@ -438,13 +367,13 @@ theorem
           simp [t]]
     _ = IdeleGroup.norm ℚ K
           (relativeIdeleBaseChangeMulEquiv
-            (K := ℚ) (L := K) b) :=
+              b) :=
       (IdeleGroup.norm_relativeIdeleBaseChangeMulEquiv
         ℚ K b).symm
     _ = IdeleGroup.norm ℚ K a := by
       rw [show
         relativeIdeleBaseChangeMulEquiv
-            (K := ℚ) (L := K) b = a by
+              b = a by
           simp [b]]
 
 /-- The infinite rational Artin symbol of `N_{K/ℚ}(a)` fixes the actual
@@ -465,23 +394,20 @@ theorem
     inf_le_right
   let E₀ :=
     (numberFieldCyclotomicZHatIntersection K).restrict hle
-  let : FiniteDimensional ℚ E₀ :=
+  let :=
     (IntermediateField.restrictAlgEquiv hle).toLinearEquiv.finiteDimensional
-  let : NumberField E₀ :=
+  let :=
     NumberField.of_module_finite ℚ E₀
-  let : IsAbelianGalois ℚ rationalCyclotomicZHatField :=
+  let :=
     rationalCyclotomicZHatField_isAbelianGalois
-  let inclusion : E₀ →ₐ[ℚ] rationalCyclotomicZHatField :=
-    E₀.val.toRingHom.toRatAlgHom
   let E :
       FiniteGaloisIntermediateField
         ℚ rationalCyclotomicZHatField :=
     { toIntermediateField := E₀
       finiteDimensional := inferInstance
       isGalois :=
-        (IsAbelianGalois.of_algHom (K := ℚ) (L := E₀)
-          (M := rationalCyclotomicZHatField) inclusion).toIsGalois }
-  let : NumberField E :=
+        (IsAbelianGalois.of_algHom E₀.val.toRingHom.toRatAlgHom).toIsGalois}
+  let :=
     NumberField.of_module_finite ℚ E
   have hnorm :
       IdeleGroup.norm ℚ K a ∈
@@ -489,24 +415,23 @@ theorem
     change
       IdeleGroup.norm ℚ K a ∈
         (RelativeIdeleGroup.norm ℚ E₀).range
-    simpa only [E₀, hle] using
+    simpa using
       ideleNorm_mem_cyclotomicZHatIntersection_relativeIdeleNorm_range
         K a
   obtain ⟨z, hz⟩ := hnorm
-  let : IsAbelianGalois ℚ E :=
-    IsAbelianGalois.of_algHom (K := ℚ) (L := E)
-      (M := rationalCyclotomicZHatField)
+  let :=
+    IsAbelianGalois.of_algHom
+
       (show E →ₐ[ℚ] rationalCyclotomicZHatField from
         E.toIntermediateField.val.toRingHom.toRatAlgHom)
   have hfinite :
-      globalArtinMonoidHom
-          (K := ℚ) (L := E)
+      globalArtinMonoidHom (L := E)
           (IdeleGroup.norm ℚ K a) =
         1 := by
     rw [← hz]
     exact
       globalArtinMonoidHom_relativeIdeleNorm_eq_one
-        (K := ℚ) (L := E) z
+          z
   change
     rationalCyclotomicZHatGlobalArtin
           (IdeleGroup.norm ℚ K a) ∈
@@ -514,11 +439,9 @@ theorem
   rw [
     FiniteGaloisIntermediateField.mem_fixingSubgroup_iff]
   calc
-    AlgEquiv.restrictNormalHom E
-          (rationalCyclotomicZHatGlobalArtin
-            (IdeleGroup.norm ℚ K a)) =
+    _ =
         globalArtinMonoidHom
-          (K := ℚ) (L := E) (IdeleGroup.norm ℚ K a) :=
+            (IdeleGroup.norm ℚ K a) :=
       restrictNormalHom_rationalCyclotomicZHatGlobalArtin
         (IdeleGroup.norm ℚ K a) E
     _ = 1 := hfinite
@@ -573,7 +496,7 @@ theorem
           rationalCyclotomicZHatField) :=
     (Homeomorph.mulLeft
       σ.1) ⁻¹' U₀
-  have hVopen : IsOpen V :=
+  have hVopen :=
     hU₀open.preimage
       (Homeomorph.mulLeft
         σ.1).continuous
@@ -584,12 +507,10 @@ theorem
       σ.1 * (1 : F.fixingSubgroup).1 = σ.1 by
         exact congrArg Subtype.val (mul_one σ)]
     exact hσU₀
-  have hVnhds :
-      V ∈ 𝓝 ((1 : F.fixingSubgroup).1) :=
+  have hVnhds :=
     hVopen.mem_nhds hVone
   have hkrull :=
-    InfiniteGalois.krullTopology_mem_nhds_one_iff_of_isGalois
-      (k := ℚ) (K := rationalCyclotomicZHatField) V
+    InfiniteGalois.krullTopology_mem_nhds_one_iff_of_isGalois V
   obtain ⟨E, hEV⟩ :=
     hkrull.mp hVnhds
   let hENumberField : NumberField E :=
@@ -657,25 +578,21 @@ theorem
           (IdeleGroup.norm ℚ K a) :=
     rfl
   have ha' :
-      globalArtinMonoidHom
-          (K := ℚ) (L := E) (IdeleGroup.norm ℚ K a) =
+      globalArtinMonoidHom (L := E) (IdeleGroup.norm ℚ K a) =
         AlgEquiv.restrictNormalHom E σ.1 := by
     simpa only [MonoidHom.comp_apply] using ha
   have hτProjection :
       AlgEquiv.restrictNormalHom E τ.1 =
-        globalArtinMonoidHom
-          (K := ℚ) (L := E) (IdeleGroup.norm ℚ K a) := by
+        globalArtinMonoidHom (L := E) (IdeleGroup.norm ℚ K a) := by
     rw [hτ]
     change
       AlgEquiv.restrictNormalHom E
           (infiniteGlobalArtinMonoidHom
             ℚ rationalCyclotomicZHatField
             (IdeleGroup.norm ℚ K a)) =
-        globalArtinMonoidHom
-          (K := ℚ) (L := E) (IdeleGroup.norm ℚ K a)
+        globalArtinMonoidHom (L := E) (IdeleGroup.norm ℚ K a)
     exact
-      restrictNormalHom_rationalCyclotomicZHatGlobalArtin_of_structures
-        (IdeleGroup.norm ℚ K a) E hENumberField hEAbelian
+      (by apply restrictNormalHom_rationalCyclotomicZHatGlobalArtin_of_structures)
   have hrestrictEq :
       AlgEquiv.restrictNormalHom E τ.1 =
         AlgEquiv.restrictNormalHom E σ.1 :=
@@ -728,7 +645,7 @@ theorem
     rw [hcancelVal] at hmemV
     exact hmemV
   have hτU : τ ∈ U := by
-    have hτpre : τ ∈ Subtype.val ⁻¹' U₀ :=
+    have hτpre :=
       hτU₀
     exact hUeq ▸ hτpre
   exact ⟨τ, hτU, ⟨a, rfl⟩⟩
@@ -743,25 +660,8 @@ theorem cyclotomicZHatNormComposite_mem_mulNat_range
   let σ :=
     rationalCyclotomicZHatGlobalArtin
       (IdeleGroup.norm ℚ K (Additive.toMul a))
-  have hfix :
-      σ ∈
-        ((numberFieldCyclotomicZHatIntersection K).restrict
-          (show
-            numberFieldCyclotomicZHatIntersection K ≤
-              rationalCyclotomicZHatField from
-            inf_le_right)).fixingSubgroup := by
-    exact
-      rationalCyclotomicZHatGlobalArtin_norm_mem_intersection_fixingSubgroup
+  have hfix := rationalCyclotomicZHatGlobalArtin_norm_mem_intersection_fixingSubgroup
         K (Additive.toMul a)
-  have hmap :
-      rationalCyclotomicZHatFieldGalEquivZHat σ ∈
-        ((numberFieldCyclotomicZHatIntersection K).restrict
-          (show
-            numberFieldCyclotomicZHatIntersection K ≤
-              rationalCyclotomicZHatField from
-            inf_le_right)).fixingSubgroup.map
-          rationalCyclotomicZHatFieldGalEquivZHat.toMonoidHom :=
-    ⟨σ, hfix, rfl⟩
   have hadd :
       Multiplicative.toAdd
           (rationalCyclotomicZHatFieldGalEquivZHat σ) ∈
@@ -773,7 +673,7 @@ theorem cyclotomicZHatNormComposite_mem_mulNat_range
               inf_le_right)).fixingSubgroup.map
           rationalCyclotomicZHatFieldGalEquivZHat.toMonoidHom) := by
     rw [Subgroup.mem_toAddSubgroup']
-    simpa using hmap
+    exact (⟨σ, hfix, rfl⟩)
   rw [
     rationalCyclotomicZHatFieldGal_fixingSubgroup_image_eq_mulNat_range
       K] at hadd
@@ -783,15 +683,6 @@ theorem cyclotomicZHatNormComposite_mem_mulNat_range
       (zHatMulNat
         (cyclotomicZHatIntersectionDegree K)).toAddMonoidHom.range
   exact hadd
-
-/-- Subgroup form of the upper image bound:
-`v_ℚ(N_{K/ℚ}(I_K)) ⊆ f_K ZHat`. -/
-theorem cyclotomicZHatNormComposite_range_le_mulNat_range :
-    (cyclotomicZHatNormComposite K).range ≤
-      (zHatMulNat
-        (cyclotomicZHatIntersectionDegree K)).toAddMonoidHom.range := by
-  rintro _ ⟨a, rfl⟩
-  exact cyclotomicZHatNormComposite_mem_mulNat_range K a
 
 /-- The unnormalized composite, with codomain restricted to the actual
 multiple subgroup `f_K ZHat`. -/
@@ -810,12 +701,8 @@ statement for norm Artin symbols. -/
 theorem cyclotomicZHatNormCompositeInMulNatRange_denseRange :
     DenseRange
       (cyclotomicZHatNormCompositeInMulNatRange K) := by
-  let hle :
-      numberFieldCyclotomicZHatIntersection K ≤
-        rationalCyclotomicZHatField :=
-    inf_le_right
   let F :=
-    (numberFieldCyclotomicZHatIntersection K).restrict hle
+    (numberFieldCyclotomicZHatIntersection K).restrict inf_le_right
   let H := F.fixingSubgroup
   let f := cyclotomicZHatIntersectionDegree K
   let R :=
@@ -864,21 +751,11 @@ theorem cyclotomicZHatNormCompositeInMulNatRange_denseRange :
               rationalCyclotomicZHatGlobalArtin_norm_mem_intersection_fixingSubgroup
                 K a⟩ :
             H)) := by
-    simpa only [H, F] using
+    simpa using
       (rationalCyclotomicZHatGlobalArtin_norm_denseRange_in_intersection_fixingSubgroup
         K)
-  have hcompDense :
-      DenseRange
-        (fun a : IdeleGroup K =>
-          g
-            (⟨rationalCyclotomicZHatGlobalArtin
-                  (IdeleGroup.norm ℚ K a),
-                rationalCyclotomicZHatGlobalArtin_norm_mem_intersection_fixingSubgroup
-                  K a⟩ :
-              H)) :=
-    hgSurjective.denseRange.comp
-      hnormDense hgContinuous
-  apply hcompDense.mono
+  apply (hgSurjective.denseRange.comp
+    hnormDense hgContinuous).mono
   rintro z ⟨a, rfl⟩
   refine ⟨Additive.ofMul a, ?_⟩
   apply Subtype.ext
@@ -918,9 +795,7 @@ theorem cyclotomicZHatIntersectionDegree_nsmul_normalizedIdeleValue
     (a : Additive (IdeleGroup K)) :
     cyclotomicZHatIntersectionDegree K •
         normalizedCyclotomicZHatIdeleValue K a =
-      cyclotomicZHatNormComposite K a := by
-  exact
-    zHatMulNat_zHatDivide
+      cyclotomicZHatNormComposite K a := zHatMulNat_zHatDivide
       (cyclotomicZHatIntersectionDegree K)
       (cyclotomicZHatIntersectionDegree_pos K)
       (cyclotomicZHatNormCompositeInMulNatRange K a)
@@ -932,7 +807,6 @@ theorem normalizedCyclotomicZHatIdeleValue_baseIdeleInclusion
     normalizedCyclotomicZHatIdeleValue K
         (Additive.ofMul
           (relativeIdeleBaseChangeMulEquiv
-            (K := ℚ) (L := K)
             (RelativeIdeleGroup.inclusion ℚ K a))) =
       (Module.finrank ℚ K /
           cyclotomicZHatIntersectionDegree K) •

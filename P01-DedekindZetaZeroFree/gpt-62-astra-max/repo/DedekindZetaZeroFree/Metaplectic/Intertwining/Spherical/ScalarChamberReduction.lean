@@ -50,7 +50,7 @@ theorem fixed_inducing_vector_formula
     refine ⟨(fixedSubmodule _ _).add_mem hv ((fixedSubmodule _ _).smul_mem _ h0.1), ?_⟩
     change v.val 1 + (1 - v.val 1) * v0.val 1 = 1
     rw [h0.2]; ring
-  have he : v + (1 - v.val 1) • v0 = v0 := (huniq _ hnorm).trans (huniq _ h0).symm
+  have he := (huniq _ hnorm).trans (huniq _ h0).symm
   apply Subtype.ext
   funext x
   change v.val x = v.val 1 * v0.val x
@@ -69,7 +69,7 @@ theorem fixed_inducing_vector_formula
   have hj : (j : H) ∈ (compactTorus A I).map A.weyl.toMulEquiv.toMonoidHom := by
     rw [hW]; exact j.property
   obtain ⟨a, ha, he⟩ := hj
-  have ht : (A.torus a : G) ∈ I.compact.toOpenSubgroup := ha
+  have ht := ha
   let k : I.compact.toOpenSubgroup := ⟨A.torus a, ht⟩
   have hc := φ.property.1 (A.torus a) 1 k (by simp [k])
   rw [compact_level_constant K A P I .minus φ hφ k,
@@ -93,10 +93,9 @@ theorem exists_minus_spherical_vector
         rw [hb']; exact I.compact.toOpenSubgroup.mul_mem k'.property
           (I.compact.toOpenSubgroup.inv_mem k.property)
       rw [compact_action K A P I .minus b hb]
-      have hw : A.weyl (A.retract b) ∈ compactTorus A I := by
-        rw [← hW]
-        exact ⟨A.retract b, hu.compact_borel_retract b hb, rfl⟩
-      exact (hv.1 ⟨A.weyl (A.retract b), hw⟩).symm
+      refine (hv.1 ⟨A.weyl (A.retract b), ?_⟩).symm
+      rw [← hW]
+      exact ⟨A.retract b, hu.compact_borel_retract b hb, rfl⟩
     · refine ⟨⊤, ?_⟩
       intro j hj
       rfl⟩
@@ -113,15 +112,14 @@ theorem minus_compact_level_formula
     (hφ : φ ∈ compactLevel A P I .minus I.compact) :
     φ = (φ.val 1).val 1 • φ0 := by
   have h0' := (is_spherical_vector_iff K A P I .minus φ0).mp h0
-  have hf := fixed_inducing_vector_formula K A P I hu (φ0.val 1) (φ.val 1)
-    ⟨minus_fiber_fixed K A P I hW φ0 h0'.1, h0'.2⟩
-    (minus_fiber_fixed K A P I hW φ hφ)
   apply Subtype.ext
   funext k
   change φ.val k = (φ.val 1).val 1 • φ0.val k
   rw [compact_level_constant K A P I .minus φ hφ k,
     compact_level_constant K A P I .minus φ0 h0'.1 k]
-  exact hf
+  exact fixed_inducing_vector_formula K A P I hu (φ0.val 1) (φ.val 1)
+    ⟨minus_fiber_fixed K A P I hW φ0 h0'.1, h0'.2⟩
+    (minus_fiber_fixed K A P I hW φ hφ)
 
 end DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
 
@@ -169,8 +167,7 @@ theorem compact_torus_weyl_stable
   · intro hh
     refine ⟨A.weyl.symm h, ?_, ?_⟩
     swap
-    · change A.weyl (A.weyl.symm h) = h
-      exact A.weyl.apply_symm_apply h
+    · exact A.weyl.apply_symm_apply h
     change (A.torus (A.weyl.symm h) : G) ∈ I.compact.toOpenSubgroup
     have he : (A.torus (A.weyl.symm h) : G) =
         A.liftedW * (A.torus h : G) * A.liftedW⁻¹ := by

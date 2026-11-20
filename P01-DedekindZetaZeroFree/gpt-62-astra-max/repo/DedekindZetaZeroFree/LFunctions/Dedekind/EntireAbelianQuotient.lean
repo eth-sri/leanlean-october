@@ -25,10 +25,10 @@ theorem dedekindAbelianQuotient :
   obtain ⟨n, m, χ, hmχ, hfac⟩ := AbelianQuotient.abelianFactorization K L hcomm
   choose F hFdiff hFsum using fun i =>
     AbelianQuotient.rayCharacterEntire K (m i) (hmχ i).1 (χ i) (hmχ i).2
-  let g : ℂ → ℂ := fun s => ∏ i, F i s
+  let g := fun s => ∏ i, F i s
   have hg : Differentiable ℂ g := by
-    simpa only [g] using
-      (Differentiable.fun_finsetProd (u := Finset.univ) fun i _ => hFdiff i)
+    simpa using
+      (Differentiable.fun_finsetProd fun i _ => hFdiff i)
   refine ⟨fK, fL, g, hfK, hfL, hg, hfKeq, hfLeq, ?_⟩
   intro s hs
   have hmain : Set.EqOn fL (fun s => g s * fK s) ({1}ᶜ : Set ℂ) := by
@@ -47,6 +47,6 @@ theorem dedekindAbelianQuotient :
         simp only [g]
         exact Finset.prod_congr rfl fun i _ => (hFsum i s hs).tsum_eq.symm
       rw [hfLeq s hs, hfKeq s hs, hfac s hs, hg_eq]
-  exact hmain (by simpa using hs)
+  exact hmain (by exact hs)
 
 end DedekindZetaZeroFree

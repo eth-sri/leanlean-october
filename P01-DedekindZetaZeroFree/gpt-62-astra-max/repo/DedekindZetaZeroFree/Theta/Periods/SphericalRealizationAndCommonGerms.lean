@@ -11,7 +11,7 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory RootDerivatives
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 private theorem spherical_word_smul
     (R : PrincipalMellin.ActualRecipe S η) (c : ℂ) (f : Functions R)
@@ -43,7 +43,6 @@ theorem normalized_spherical_factorization_exists
   have hpin (v) : T.theta v = tensorFunction R A.factorization D.tensor.stage P.entries :=
     (funext (fun g => FlatScalarResidue.value_unique (realizationScalarResidue T v) (L.residue v) g)).trans
       (L.residue_exact v)
-  have hscaled : T.theta 1 = P.scalar • D.tensor.value := (hpin 1).trans P.realization_exact
   have hspan : sphericalHCSpan R D.tensor.value ≤ hcHeckeSpan T := by
     apply Submodule.span_le.mpr
     rintro f ⟨a, w, rfl⟩
@@ -63,14 +62,11 @@ theorem normalized_spherical_factorization_exists
             rw [ih]
             rfl
         rw [h]⟩
-    rw [hscaled, spherical_word_smul, map_smul] at hm
-    have hi := Submodule.smul_mem (hcHeckeSpan T) P.scalar⁻¹ hm
-    exact (by simpa only [smul_smul, inv_mul_cancel₀ P.scalar_nonzero, one_smul] using hi :
+    rw [((hpin 1).trans P.realization_exact), spherical_word_smul, map_smul] at hm
+    exact (by simpa only [smul_smul, inv_mul_cancel₀ P.scalar_nonzero, one_smul] using (Submodule.smul_mem (hcHeckeSpan T) P.scalar⁻¹ hm) :
       KPLiteralRaw.rightAction F R.A.zeta12 R.A.primitive_zeta12 a
         (KPContActualSphericalRightFieldIdentification.actualRightWord
           F R.A.zeta12 R.A.primitive_zeta12 w D.tensor.value) ∈ hcHeckeSpan T)
-  let core := RestrictedTensorSimple.stageInclusion _ A.factorization.references A.factorization.bad
-    D.tensor.stage (PiTensorProduct.tprod ℂ P.entries)
   let E : SourceFactorization R L.sources T := {
     finiteData := A.factorization.finiteData
     references := A.factorization.references
@@ -80,7 +76,8 @@ theorem normalized_spherical_factorization_exists
     reference_value := A.factorization.reference_value
     scalarSlot := A.factorization.scalarSlot
     coreMap := A.factorization.coreMap
-    selected := fun _ => core
+    selected := fun _ => (RestrictedTensorSimple.stageInclusion _ A.factorization.references A.factorization.bad
+      D.tensor.stage (PiTensorProduct.tprod ℂ P.entries))
     selected_eq := fun v => (hpin v).symm
     selected_frozen_stage := fun _ => ⟨D.tensor.stage, P.entries, D.tensor.stage_exact, rfl⟩
     core_injective := A.factorization.core_injective
@@ -107,8 +104,6 @@ theorem normalized_spherical_factorization_exists
       rw [L.dq_exact, hpin]
       exact P.period_nonzero
   · intro q
-    change N.finiteHaar q = ENNReal.ofReal (PoissonS.integerVolume F q) •
-      (A.factorization.finiteData q).haar
     exact (congrArg (fun M : TraceHaarTransport R => M.finiteHaar q) A.transport_exact).symm.trans
       (A.localHaarTransport q)
 

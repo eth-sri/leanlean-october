@@ -9,7 +9,7 @@ namespace DedekindZetaZeroFree.LargeSieve
 open scoped NumberField Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {f : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F f}
+    {f : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F f}
 
 theorem PrincipalHeckeWitness.U_reflection (p : PrincipalHeckeWitness η) :
     ∀ s : ℂ, p.U s = p.U (1 - s) := by
@@ -32,11 +32,9 @@ theorem PrincipalHeckeWitness.U_reflection (p : PrincipalHeckeWitness η) :
     filter_upwards [eventually_ne_nhds (by norm_num : (2 : ℂ) ≠ 0),
       eventually_ne_nhds (by norm_num : (2 : ℂ) ≠ 1)] with s hs0 hs1
     exact h_agree s hs0 hs1
-  have hg : Differentiable ℂ fun s : ℂ => p.U (1 - s) :=
-    p.differentiable_U.comp ((differentiable_const (1 : ℂ)).sub differentiable_id)
-  have h := AnalyticOnNhd.eq_of_eventuallyEq (𝕜 := ℂ)
+  have h := AnalyticOnNhd.eq_of_eventuallyEq
     (Complex.analyticOnNhd_univ_iff_differentiable.mpr p.differentiable_U)
-    (Complex.analyticOnNhd_univ_iff_differentiable.mpr hg) hfg
+    (Complex.analyticOnNhd_univ_iff_differentiable.mpr (p.differentiable_U.comp ((differentiable_const (1 : ℂ)).sub differentiable_id))) hfg
   exact fun s => congrFun h s
 
 end DedekindZetaZeroFree.LargeSieve

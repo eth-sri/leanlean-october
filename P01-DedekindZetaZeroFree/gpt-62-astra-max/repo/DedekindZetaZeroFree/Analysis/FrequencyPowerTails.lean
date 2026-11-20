@@ -118,50 +118,44 @@ private lemma dyadic_index (q : α → ℝ) (X : ℝ) (hX : 0 < X) (a : α) (h :
   have hle : (2:ℕ)^(Nat.log 2 m) ≤ m := Nat.pow_log_le_self 2 hm
   have hlt : m < (2:ℕ)^(Nat.log 2 m + 1) := Nat.lt_pow_succ_log_self (by norm_num) m
   have hfl : (m : ℝ) ≤ q a / X := Nat.floor_le (by positivity)
-  have hfl2 : q a / X < (m : ℝ) + 1 := Nat.lt_floor_add_one _
   have hle' : (2:ℝ)^(Nat.log 2 m) ≤ m := by exact_mod_cast hle
   have hlt' : (m : ℝ) + 1 ≤ (2:ℝ)^(Nat.log 2 m + 1) := by exact_mod_cast hlt
   constructor
   · have := hle'.trans hfl
     rwa [le_div_iff₀ hX] at this
-  · have : q a / X < (2:ℝ)^(Nat.log 2 m + 1) := lt_of_lt_of_le hfl2 hlt'
+  · have : q a / X < (2:ℝ)^(Nat.log 2 m + 1) := lt_of_lt_of_le (Nat.lt_floor_add_one _) hlt'
     rwa [div_lt_iff₀ hX] at this
 
-theorem tail_tsum_enn_le (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
-    (hfin : ∀ Y : ℝ, {a | q a ≤ Y}.Finite)
+variable (q : α → ℝ) (p K : ℝ) (hp : 1 < p) (hfin : ∀ Y : ℝ, {a | q a ≤ Y}.Finite)
     (hK : ∀ Y : ℝ, 1 ≤ Y → ((({a | q a ≤ Y} : Set α).ncard : ℕ) : ℝ) ≤ K * Y)
+
+include hp hfin hK in
+theorem tail_tsum_enn_le
     (X : ℝ) (hX : 1 ≤ X) :
     ∑' a, (if X < q a then ENNReal.ofReal (q a ^ (-p)) else 0)
       ≤ ENNReal.ofReal (2 * max K 1 / (1 - (2:ℝ) ^ (1 - p)) * X ^ (1 - p)) := by
   classical
-  have hX0 : 0 < X := by linarith
   set n : α → ℕ := fun a => Nat.log 2 ⌊q a / X⌋₊ with hn_def
-  have hn : ∀ a, X < q a → (2:ℝ)^(n a) * X ≤ q a ∧ q a < (2:ℝ)^(n a + 1) * X :=
-    fun a h => dyadic_index q X hX0 a h
   set f : α → ℝ≥0∞ := fun a => if X < q a then ENNReal.ofReal (q a ^ (-p)) else 0 with hf
-  have h1 : ∀ a, ∑' k : ℕ, (if n a = k then f a else 0) = f a := fun a =>
-    (tsum_eq_single (n a) (fun k hk => if_neg (Ne.symm hk))).trans (if_pos rfl)
   set r : ℝ := (2:ℝ) ^ (1 - p) with hr
   have hr0 : 0 < r := by positivity
   have hr1 : r < 1 := Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
   set c : ℝ := 2 * max K 1 * X ^ (1 - p) with hc
-  have hc0 : 0 ≤ c := by positivity
-  have hsum : Summable (fun k : ℕ => c * r ^ k) := (summable_geometric_of_lt_one hr0.le hr1).mul_left c
-  calc ∑' a, f a = ∑' a, ∑' k : ℕ, (if n a = k then f a else 0) := tsum_congr (fun a => (h1 a).symm)
+  calc _ = ∑' a, ∑' k : ℕ, (if n a = k then f a else 0) := tsum_congr (fun a => ((fun a =>
+    (tsum_eq_single (n a) (fun k hk => if_neg (Ne.symm hk))).trans (if_pos rfl)) a).symm)
     _ = ∑' k : ℕ, ∑' a, (if n a = k then f a else 0) := ENNReal.tsum_comm
     _ ≤ ∑' k : ℕ, ENNReal.ofReal (c * r ^ k) :=
-        ENNReal.tsum_le_tsum (fun k => shell_term_le q p K X hp hX hfin hK k n hn)
+        ENNReal.tsum_le_tsum (fun k => shell_term_le q p K X hp hX hfin hK k n (fun a h => dyadic_index q X (by linarith) a h))
     _ = ENNReal.ofReal (∑' k : ℕ, c * r ^ k) :=
-        (ENNReal.ofReal_tsum_of_nonneg (fun k => by positivity) hsum).symm
+        (ENNReal.ofReal_tsum_of_nonneg (fun k => by positivity) ((summable_geometric_of_lt_one hr0.le hr1).mul_left c)).symm
     _ = _ := by
         congr 1
         rw [tsum_mul_left, tsum_geometric_of_lt_one hr0.le hr1, hc]
         have : 1 - r ≠ 0 := by linarith
         field_simp
 
-theorem tail_dominated (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
-    (hfin : ∀ Y : ℝ, {a | q a ≤ Y}.Finite)
-    (hK : ∀ Y : ℝ, 1 ≤ Y → ((({a | q a ≤ Y} : Set α).ncard : ℕ) : ℝ) ≤ K * Y) :
+include hp hfin hK in
+theorem tail_dominated :
     ∃ C : ℝ, 0 < C ∧ ∀ X : ℝ, 1 ≤ X → ∀ (B : ℝ), 0 ≤ B → ∀ (S : Set α) (w : α → ℝ),
       (∀ a ∈ S, X < q a) → (∀ a ∈ S, 0 ≤ w a ∧ w a ≤ B * q a ^ (-p)) →
       Summable (fun a : S => w a) ∧ ∑' a : S, w a ≤ B * C * X ^ (1 - p) := by
@@ -170,9 +164,7 @@ theorem tail_dominated (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
   refine ⟨2 * max K 1 / (1 - (2:ℝ) ^ (1 - p)), by positivity, ?_⟩
   intro X hX B hB S w hS hw
   classical
-  have hX0 : 0 < X := by linarith
   set C : ℝ := 2 * max K 1 / (1 - (2:ℝ) ^ (1 - p)) with hC
-  have hC0 : 0 < C := by positivity
   have hcore := tail_tsum_enn_le q p K hp hfin hK X hX
   have hbound : ∑' a : S, ENNReal.ofReal (w a) ≤ ENNReal.ofReal (B * (C * X ^ (1 - p))) := by
     rw [tsum_subtype S (fun a => ENNReal.ofReal (w a))]
@@ -187,10 +179,8 @@ theorem tail_dominated (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
           ENNReal.tsum_mul_left
       _ ≤ ENNReal.ofReal B * ENNReal.ofReal (C * X ^ (1 - p)) := by gcongr
       _ = _ := (ENNReal.ofReal_mul hB).symm
-  have hne : ∑' a : S, ENNReal.ofReal (w a) ≠ ⊤ :=
-    ne_top_of_le_ne_top ENNReal.ofReal_ne_top hbound
   have hsm : Summable (fun a : S => w a) := by
-    have := ENNReal.summable_toReal hne
+    have := ENNReal.summable_toReal (ne_top_of_le_ne_top ENNReal.ofReal_ne_top hbound)
     refine this.congr (fun a => ?_)
     exact ENNReal.toReal_ofReal (hw a a.2).1
   refine ⟨hsm, ?_⟩

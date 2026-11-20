@@ -33,7 +33,6 @@ theorem principal_series_fixed_finite
   let f : (fixedSubmodule (principalSeries A P ε s) J.toOpenSubgroup.toSubgroup) →ₗ[ℂ] L :=
     { toFun := fun x => ⟨e.symm x.val, by
         apply (compact_level_identification A P I ε J hJ s (e.symm x.val)).mpr
-        change e (e.symm x.val) ∈ _
         rw [LinearEquiv.apply_symm_apply]
         exact x.property⟩
       map_add' := by intros; apply Subtype.ext; exact map_add e.symm _ _

@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -78,19 +73,12 @@ theorem card_finitePlace_nthPowerQuotient
   let F :=
     LocalFieldTheory.DiscreteValuationField.LocalField.ofWithZeroValuation ν
   let : NeZero (n : ℕ) := ⟨n.ne_zero⟩
-  have hν : Function.Surjective ν :=
+  have hν :=
     v₀.valuedAdicCompletion_surjective K
-  let :
-      LocalFieldTheory.DiscreteValuationField.LocalField.MixedWithZeroValuationContext
-        ν :=
+  let :=
     LocalFieldTheory.DiscreteValuationField.LocalField.mixedWithZeroValuationContext ν
-  let :
-      Valued (v₀.adicCompletion K)
-        (WithZero (Multiplicative ℤ)) :=
+  let :=
     Valued.mk' ν
-  let d :=
-    Module.finrank ℚ_[F.residueCharacteristic]
-      (v₀.adicCompletion K)
   obtain ⟨a, e⟩ :=
     LocalFieldTheory.DiscreteValuationField.LocalField.chosenMixed_firstPrincipalUnitStructure_ofWithZeroValuation
       ν hν
@@ -99,28 +87,20 @@ theorem card_finitePlace_nthPowerQuotient
       F.toCompleteDVF 1
   let A :=
     ZMod (F.residueCharacteristic ^ a) ×
-      (Fin d → ℤ_[F.residueCharacteristic])
+      (Fin (Module.finrank ℚ_[F.residueCharacteristic]
+        (v₀.adicCompletion K)) → ℤ_[F.residueCharacteristic])
   let : Finite
       (A ⧸ LocalFieldTheory.nsmulAddSubgroup A (n : ℕ)) := by
     infer_instance
   let emul : U ≃* Multiplicative A := by
-    let direct :
-        Valued (v₀.adicCompletion K)
-          (WithZero (Multiplicative ℤ)) :=
-      Valued.mk' ν
     letI : TopologicalSpace (v₀.adicCompletion K) :=
-      direct.toTopologicalSpace
+      (Valued.mk' ν).toTopologicalSpace
     exact e.symm.toMulEquiv
-  let : Finite
-      (U ⧸
-        (powMonoidHom (n : ℕ) : U →* U).range) :=
+  let :=
     LocalFieldTheory.finite_nthPowerQuotient_of_mulEquiv
       U (Multiplicative A) (n : ℕ) emul
   let hex := F.toCompleteDVF.exists_uniformizer
-  let π := Classical.choose hex
-  have hπ :
-      F.toCompleteDVF.valuation.IsUniformizer
-        (π : v₀.adicCompletion K) :=
+  have hπ :=
     Classical.choose_spec hex
   let : Finite
       ((v₀.adicCompletion K)ˣ ⧸
@@ -141,10 +121,8 @@ theorem card_finitePlace_nthPowerQuotient
     rw [
       LocalFieldTheory.powMonoidHom_ker_units_eq_rootsOfUnity]
     obtain ⟨ζ, hζ⟩ := hmu
-    have hζprim : IsPrimitiveRoot ζ (n : ℕ) :=
-      (mem_primitiveRoots n.pos).mp hζ
     exact
-      (hζprim.map_of_injective
+      (((mem_primitiveRoots n.pos).mp hζ).map_of_injective
         (algebraMap K (v₀.adicCompletion K)).injective).card_rootsOfUnity
   simpa only [hroots] using hindex
 
@@ -179,7 +157,7 @@ the principal ideal `(n)` at `v`. -/
 theorem finitePlaceNthPowerDefect_eq_absNorm_maxPowDividing
     (n : ℕ+)
     (v : HeightOneSpectrum (𝓞 K)) :
-    finitePlaceNthPowerDefect (K := K) n v =
+    finitePlaceNthPowerDefect n v =
       Ideal.absNorm
         (v.maxPowDividing
           (Ideal.span {((n : ℕ) : 𝓞 K)})) := by
@@ -191,15 +169,10 @@ theorem finitePlaceNthPowerDefect_eq_absNorm_maxPowDividing
   let F :=
     LocalFieldTheory.DiscreteValuationField.LocalField.ofWithZeroValuation
       ν
-  let :
-      LocalFieldTheory.DiscreteValuationField.LocalField.MixedWithZeroValuationContext
-        ν :=
+  let :=
     LocalFieldTheory.DiscreteValuationField.LocalField.mixedWithZeroValuationContext
       ν
-  let :
-      Valued
-        (v.adicCompletion K)
-        (WithZero (Multiplicative ℤ)) :=
+  let :=
     Valued.mk' ν
   let p := F.residueCharacteristic
   let d :=
@@ -212,12 +185,8 @@ theorem finitePlaceNthPowerDefect_eq_absNorm_maxPowDividing
       (LocalFieldTheory.DiscreteValuationField.Examples.Qp.padicCompleteDVF p).toDVF
       F.toCompleteDVF.toDVF
   let k := padicValNat p (n : ℕ)
-  let x : 𝓞 K := ((n : ℕ) : 𝓞 K)
-  have hx : x ≠ 0 := by
-    exact Nat.cast_ne_zero.mpr n.ne_zero
-  have hI :
-      Ideal.span {x} ≠ 0 :=
-    Submodule.span_singleton_eq_bot.mp.mt hx
+  let x := ((n : ℕ) : 𝓞 K)
+  have hx : x ≠ 0 := Nat.cast_ne_zero.mpr n.ne_zero
   have hd : d = e * f := by
     simpa [F, p, d, e, f] using
       finrank_qp_eq_ramificationIndex_mul_residueDegree
@@ -225,18 +194,17 @@ theorem finitePlaceNthPowerDefect_eq_absNorm_maxPowDividing
   have hq : Ideal.absNorm v.asIdeal = p ^ f := by
     simpa [ν, F, p, f] using
       absNorm_eq_residueCharacteristic_pow_residueDegree
-        (K := K) v
+         v
+  let exp₀ := WithZero.exp (-((e : ℤ) * (k : ℤ)))
   have hcomp :
       ν ((n : ℕ) : v.adicCompletion K) =
-        WithZero.exp
-          (-((e : ℤ) * (k : ℤ))) := by
+        exp₀ := by
     simpa [F, e, k] using
       LocalFieldTheory.DiscreteValuationField.LocalField.valuation_natCast_eq_exp_neg_ramificationIndex_mul_padicValNat
         ν (n : ℕ) n.ne_zero
   have hval :
       v.intValuation x =
-        WithZero.exp
-          (-((e : ℤ) * (k : ℤ))) := by
+        exp₀ := by
     calc
       v.intValuation x =
           v.valuation K x :=
@@ -259,8 +227,7 @@ theorem finitePlaceNthPowerDefect_eq_absNorm_maxPowDividing
       WithZero.exp
           (-(multiplicity v.asIdeal
             (Ideal.span {x}) : ℤ)) =
-        WithZero.exp
-          (-((e : ℤ) * (k : ℤ))) := by
+        exp₀ := by
     rw [← v.intValuation_eq_exp_neg_multiplicity hx]
     exact hval
   have hmult :
@@ -276,11 +243,10 @@ theorem finitePlaceNthPowerDefect_eq_absNorm_maxPowDividing
         (v.maxPowDividing
           (Ideal.span {x}))
   calc
-    p ^ (d * k) =
+    _ =
         p ^ ((e * f) * k) := by
       rw [hd]
     _ = p ^ (f * (e * k)) := by
-      congr 1
       ac_rfl
     _ = (p ^ f) ^ (e * k) := by
       rw [pow_mul]
@@ -297,7 +263,7 @@ theorem finitePlaceNthPowerDefect_eq_absNorm_maxPowDividing
             (Ideal.span {x})) := by
       rw [
         HeightOneSpectrum.maxPowDividing_eq_pow_multiplicity
-          hI,
+          (Submodule.span_singleton_eq_bot.mp.mt hx),
         hmult]
 
 /-- The finite local power-index formula with the
@@ -314,11 +280,8 @@ theorem card_finitePlace_nthPowerQuotient_eq_defect
               (v₀.adicCompletion K)ˣ).range) =
       (n : ℕ) *
         ((n : ℕ) *
-          finitePlaceNthPowerDefect (K := K) n v₀) := by
-  simpa [finitePlaceNthPowerDefect] using
-    card_finitePlace_nthPowerQuotient
-      (K := K) n hmu v₀
-
+          finitePlaceNthPowerDefect n v₀) := by
+  solve_by_elim [card_finitePlace_nthPowerQuotient]
 
 end GlobalClassFieldTheory.ClassFieldAxiom
 

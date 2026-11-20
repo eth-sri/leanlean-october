@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -27,18 +24,16 @@ namespace ClassFieldTheory.GlobalHilbertPairingFamily
 
 universe u
 
+variable (F : Type u) [Field F] [NumberField F] {n : ℕ+} (B : GlobalHilbertPairingFamily F n)
+
 /-- Every finite-place member of the family is a local Hilbert pairing. -/
-def IsLocallyHilbert
-    (F : Type u) [Field F] [NumberField F]
-    {n : ℕ+} (B : GlobalHilbertPairingFamily F n) : Prop :=
+def IsLocallyHilbert : Prop :=
   ∀ v : HeightOneSpectrum (𝓞 F),
     HilbertPairing.IsLocalHilbertPairing (B v)
 
 /-- For each pair of nonzero elements of the number field, only finitely many
 finite-place factors are nontrivial. -/
 def HasFiniteSupport
-    (F : Type u) [Field F] [NumberField F]
-    {n : ℕ+} (B : GlobalHilbertPairingFamily F n)
     (hmu : (primitiveRoots (n : ℕ) F).Nonempty) : Prop :=
   ∀ a b : Fˣ,
     Function.HasFiniteMulSupport (fun v : HeightOneSpectrum (𝓞 F) ↦

@@ -12,7 +12,7 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.FiniteLevels
 open KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 
 def localLevel (q : HeightOneSpectrum (𝓞 F)) :
     CompactOpenLevel (KPLocalExceptionalConstruction.ActualCover F ζ hζ q) :=
@@ -54,8 +54,7 @@ theorem raw_local_fixed (u : RestrictedCover F ζ hζ)
     (g : KPLocalExceptionalConstruction.ActualCover F ζ hζ q) :
     (LocalSeed.finite F ζ hζ P C q).val
       (g * KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (u (Sum.inr q))) =
-        (LocalSeed.finite F ζ hζ P C q).val g := by
-  exact local_fixed F ζ hζ P C q
+        (LocalSeed.finite F ζ hζ P C q).val g := local_fixed F ζ hζ P C q
     ⟨_, (Subgroup.mem_iInf.mp hu.2) q⟩ g
 
 end DedekindZetaZeroFree.EisensteinReferenceSections.FiniteLevels

@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Geometry.Cusps.MeanHeightDescent
 
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.SphericalHaarDisintegrationData
 
@@ -39,9 +40,10 @@ private theorem insertion_commutes_cover (a : KPSmoothActualFlowData.GInfinity F
     rw [MonoidHom.mem_ker] at he
     rw [he]
     exact map_one _
-  have hm := (PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ).choose_spec.2.2.2.1
-  rw [hm] at hc
+  rw [((PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ).choose_spec.2.2.2.1)] at hc
   exact RepresentationTheory.ArchFiniteSplitting.insertion_commutes_finite F ζ hζ a ⟨c.val, hc⟩
+
+alias SphericalProjection.insertion_commutes_cover := insertion_commutes_cover
 
 private theorem projective_equiv_injective {K L : Type} [Field K] [Field L]
     (e : K ≃+* L) : Function.Injective (Matrix.ProjGenLinGroup.map (n := Fin 2) e.toRingHom) := by
@@ -49,6 +51,8 @@ private theorem projective_equiv_injective {K L : Type} [Field K] [Field L]
   have h' := congrArg (Matrix.ProjGenLinGroup.map e.symm.toRingHom) h
   simp only [← MonoidHom.comp_apply, ← Matrix.ProjGenLinGroup.map_comp] at h'
   simpa using h'
+
+alias SphericalProjection.projective_equiv_injective := projective_equiv_injective
 
 private theorem complex_kernel_mem {g : KPCubicCoverConstruction.AdelicPGL2Cover F ζ hζ}
     (hg : PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ g = 1) :
@@ -60,6 +64,8 @@ private theorem complex_kernel_mem {g : KPCubicCoverConstruction.AdelicPGL2Cover
       (KPHilbert.infinite_isComplex F ζ hζ w))
   rw [← archProjection_compare, hg]
   exact (map_one _).symm
+
+alias SphericalProjection.complex_kernel_mem := complex_kernel_mem
 
  theorem projective_action_mk (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (q : KPArch.H3) :
@@ -106,23 +112,26 @@ private theorem finiteProjection_local_infinite (v : NumberField.InfinitePlace F
     (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl v)) :
     KPCuspGenuineMonodromy.finiteProjection F ζ hζ
       (scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inl v) g)) = 1 := by
+  let localToRestricted₀ := localToRestricted F ζ hζ (Sum.inl v) g
   classical
   change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map (RingHom.snd _ _)
-    (restrictedProjection F ζ hζ (localToRestricted F ζ hζ (Sum.inl v) g))) = 1
+    (restrictedProjection F ζ hζ (localToRestricted₀))) = 1
   have he : Matrix.GeneralLinearGroup.map (RingHom.snd _ _)
-      (restrictedProjection F ζ hζ (localToRestricted F ζ hζ (Sum.inl v) g)) = 1 := by
+      (restrictedProjection F ζ hζ (localToRestricted₀)) = 1 := by
     apply Matrix.GeneralLinearGroup.ext
     intro i j
     apply Subtype.ext
     funext q
-    have h := restrictedProjection_eval F ζ hζ (localToRestricted F ζ hζ (Sum.inl v) g) (Sum.inr q)
-    have hn : localToRestricted F ζ hζ (Sum.inl v) g (Sum.inr q) = 1 := by
+    have h := restrictedProjection_eval F ζ hζ (localToRestricted₀) (Sum.inr q)
+    have hn : localToRestricted₀ (Sum.inr q) = 1 := by
       exact RestrictedProduct.mulSingle_eq_of_ne' _ _ (by simp)
     rw [hn, map_one] at h
     convert congrArg (fun m => m i j) h using 1
     · rfl
     · by_cases hij : i = j <;> subst_vars <;> simp [Matrix.one_apply, *] <;> rfl
   rw [he, map_one]
+
+alias SphericalProjection.finiteProjection_local_infinite := finiteProjection_local_infinite
 
 private theorem finiteProjection_archimedeanInsertion (a : KPSmoothActualFlowData.GInfinity F) :
     KPCuspGenuineMonodromy.finiteProjection F ζ hζ
@@ -131,6 +140,8 @@ private theorem finiteProjection_archimedeanInsertion (a : KPSmoothActualFlowDat
   rw [map_list_prod]
   simp only [List.map_map, Function.comp_def, finiteProjection_local_infinite]
   simp
+
+alias SphericalProjection.finiteProjection_archimedeanInsertion := finiteProjection_archimedeanInsertion
 
  def rationalEquiv : KPCuspArithmetic.PGL2 F ≃* KPRationalAdelicSplitting.RationalPGL2 F :=
   QuotientGroup.quotientMulEquivOfEq Matrix.GeneralLinearGroup.center_eq_range_scalar
@@ -146,17 +157,19 @@ private theorem rationalLift_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
     rationalLift F ζ hζ (Matrix.ProjGenLinGroup.mk m) = scalarQuotient F ζ hζ (rationalSection F ζ hζ m) := by
   simp [rationalLift, rationalEquiv_mk]
 
- theorem rationalLift_finite (γ : KPCuspArithmetic.PGL2 F) :
+ section
+
+variable (γ : KPCuspArithmetic.PGL2 F)
+
+theorem rationalLift_finite :
     KPCuspGenuineMonodromy.finiteProjection F ζ hζ (rationalLift F ζ hζ γ) = KPFiniteComponents.diagonal F γ := by
   obtain ⟨m, rfl⟩ := Matrix.ProjGenLinGroup.mk_surjective γ
   rw [rationalLift_mk]
-  change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map (RingHom.snd _ _)
-    (projection F ζ hζ (rationalSection F ζ hζ m))) = _
   exact congrArg (fun k => Matrix.ProjGenLinGroup.mk
     (Matrix.GeneralLinearGroup.map (RingHom.snd _ _) k))
       (projection_rationalSection F ζ hζ m)
 
- theorem rationalLift_arch (γ : KPCuspArithmetic.PGL2 F) :
+ theorem rationalLift_arch :
     PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ (rationalLift F ζ hζ γ) = archRational F γ := by
   obtain ⟨m, rfl⟩ := Matrix.ProjGenLinGroup.mk_surjective γ
   rw [rationalLift_mk]
@@ -183,6 +196,8 @@ private theorem rationalLift_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
   exact congrArg (Matrix.ProjGenLinGroup.map w.embedding)
     (Quotient.out_eq (Matrix.ProjGenLinGroup.mk m)).symm
 
+end
+
  theorem rationalLift_split (γ : KPCuspArithmetic.PGL2 F) :
     ∃ ε : rootsOfUnity 3 F, rationalLift F ζ hζ γ =
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (archRational F γ) *
@@ -203,11 +218,11 @@ private theorem rationalLift_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
   simp only [r, i, rationalLift_finite, map_mul, finiteProjection_archimedeanInsertion, one_mul] at hp
   have hf : KPCuspGenuineMonodromy.finiteBase F ζ hζ s =
       KPCuspGenuineMonodromy.finiteBase F ζ hζ (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ) := by
-    rw [← MonoidHom.comp_apply, (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2.2.1]
+    rw [← MonoidHom.comp_apply, (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2]
     exact hp.symm
   have hm' : s * (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ)⁻¹ ∈
       (KPCuspGenuineMonodromy.central F ζ hζ).range := by
-    rw [(KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.1, MonoidHom.mem_ker,
+    rw [(KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).1, MonoidHom.mem_ker,
       map_mul, map_inv, hf, mul_inv_cancel]
   obtain ⟨ε, hε⟩ := hm'
   refine ⟨ε, ?_⟩
@@ -245,10 +260,9 @@ private theorem insertion_mul (a b : KPSmoothActualFlowData.GInfinity F) :
   exact map_mul i a b
 
 private theorem central_comm (ε : rootsOfUnity 3 F) (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
-    KPCuspGenuineMonodromy.central F ζ hζ ε * c = c * KPCuspGenuineMonodromy.central F ζ hζ ε := by
-  apply Subtype.ext
-  exact (Subgroup.mem_center_iff.mp
-    (pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩) c).symm
+    KPCuspGenuineMonodromy.central F ζ hζ ε * c = c * KPCuspGenuineMonodromy.central F ζ hζ ε := by apply @DedekindZetaZeroFree.KPActualCollarBuffer.MeanHeightDescent.central_comm <;> assumption
+
+alias SphericalProjection.central_comm := central_comm
 
 private theorem archBasepoint_rational (γ : KPCuspArithmetic.PGL2 F) (a : KPSmoothActualFlowData.GInfinity F) :
     archBasepoint F (archRational F γ * a) = γ • archBasepoint F a := by
@@ -262,7 +276,7 @@ private theorem glOrbit_continuous (z : KPArch.H3) :
   have hd : Continuous (fun g : Matrix.GeneralLinearGroup (Fin 2) ℂ => KPArch.actionDenominator g z) := by
     unfold KPArch.actionDenominator
     fun_prop
-  have hn : ∀ g : Matrix.GeneralLinearGroup (Fin 2) ℂ, KPArch.actionDenominator g z ≠ 0 :=
+  have hn :=
     fun g => ne_of_gt (KPArch.actionDenominator_pos g z)
   apply Continuous.prodMk
   · exact (((hc 0 0 |>.mul continuous_const |>.add (hc 0 1)).mul
@@ -271,9 +285,7 @@ private theorem glOrbit_continuous (z : KPArch.H3) :
           (Complex.continuous_ofReal.comp hd) (fun g => by exact_mod_cast hn g)
   · have hp : ∀ g : Matrix.GeneralLinearGroup (Fin 2) ℂ,
         ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ * KPArch.height z /
-          KPArch.actionDenominator g z ≠ 0 := by
-      intro g
-      exact ne_of_gt (div_pos (mul_pos (norm_pos_iff.mpr g.det_ne_zero)
+          KPArch.actionDenominator g z ≠ 0 := fun g => ne_of_gt (div_pos (mul_pos (norm_pos_iff.mpr g.det_ne_zero)
         (Real.exp_pos _)) (KPArch.actionDenominator_pos g z))
     exact (((Units.continuous_val.matrix_det).norm.mul continuous_const).div hd hn).log hp
 
@@ -287,6 +299,8 @@ private theorem archBasepoint_continuous : Continuous (archBasepoint F) := by
   apply continuous_pi
   intro i
   exact (projectiveOrbit_continuous (0,0)).comp (continuous_apply (KPCusp.complexPlace F i))
+
+alias SphericalProjection.archBasepoint_continuous := archBasepoint_continuous
 
  def forgetMap (V U : Level F ζ hζ)
     (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup) : Spherical F ζ hζ V → Spherical F ζ hζ U :=
@@ -330,13 +344,10 @@ private theorem rawProjection_formula (U : Level F ζ hζ)
   have hprod : rationalLift F ζ hζ γ * g =
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (archRational F γ * a) * (d * c).val := by
     rw [hε, hg, insertion_mul]
-    change (_ * d.val) * (_ * c.val) = (_ * _) * (d.val * c.val)
-    have hcomm := (insertion_commutes_cover F ζ hζ a d).symm
-    exact hcomm.mul_mul_mul_comm _ _
+    exact ((insertion_commutes_cover F ζ hζ a d).symm).mul_mul_mul_comm _ _
   rw [hg, rawProjection_formula F ζ hζ U e he, ← hg, hprod, rawProjection_formula F ζ hζ U e he]
   apply Quotient.sound
   refine ⟨γ, ε, 1, archBasepoint_rational F γ a, ?_⟩
-  change d * c = _
   dsimp [d]
   rw [central_comm]
   simp
@@ -362,7 +373,6 @@ private theorem projection_continuous (U : Level F ζ hζ)
     (he : ∀ a c, e (a,c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val) :
     Continuous (projection F ζ hζ U e he) := by
   apply isQuotientMap_quotient_mk'.continuous_iff.mpr
-  change Continuous (rawProjection F ζ hζ U e)
   exact continuous_quotient_mk'.comp
     (((archBasepoint_continuous F).comp (continuous_fst.comp e.symm.continuous)).prodMk
       (continuous_snd.comp e.symm.continuous))

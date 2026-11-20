@@ -14,10 +14,10 @@ open KPContLocalNorm KPContSectorSmoothFramesSupport
 open KPContActualCommonDiskRightHolomorphy
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
  theorem coefficient_phase (u : Sections F ζ hζ U R P H)
     (A : KPContActualSmoothLineGluing.ChartBall F ζ hζ U R P H)
@@ -89,7 +89,7 @@ theorem coherentSeries_moving_jets
       (n + KPContRightJets.combinationOrder D) r hr hrρ δ hδ
   refine ⟨Finset.univ.sup N, ?_⟩
   intro L hL s hs g hg x hx
-  let u : smoothSections F ζ hζ U R P H :=
+  let u :=
     (∑ j ∈ Finset.range L, (s - c) ^ j • b j) - W s
   have hcoeff (j : Fin cover.count) :
       KPContActualSmoothLineGluing.coefficient F ζ hζ U R P H u.val (cover.chart j) =
@@ -116,10 +116,8 @@ theorem coherentSeries_moving_jets
     intro α y
     rw [hcoeff j]
     exact le_of_lt (hN j L ((Finset.le_sup (Finset.mem_univ j)).trans hL) s hs α y)
-  have hbound := hbnd u.val hu g hg x hx
-  apply lt_of_le_of_lt hbound
+  apply lt_of_le_of_lt (hbnd u.val hu g hg x hx)
   apply lt_of_le_of_lt (mul_le_mul_of_nonneg_left (Finset.sum_le_sum (fun j _ => hp j)) hM.le)
-  have hden : 0 < M * (cover.count + 1) := by positivity
   have heq : M * (cover.count + 1) * δ = ε := by
     dsimp [δ]
     field_simp

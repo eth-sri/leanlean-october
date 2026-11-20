@@ -45,29 +45,30 @@ def finiteDilation (A : SArithmeticData F)
     (f : v.adicCompletion F → ℂ) (x : v.adicCompletion F) : ℂ :=
   f (c * x)
 
-def finiteQuadraticCutoff (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) (n : ℕ) : ℂ := by
+section
+
+variable (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
+
+def finiteQuadraticCutoff (n : ℕ) : ℂ := by
   letI : MeasurableSpace (v.adicCompletion F) := borel _
   letI : BorelSpace (v.adicCompletion F) := ⟨rfl⟩
   exact exteriorRawQuadraticCutoff v (A.finiteTraceHaar v) a n
 
-def FiniteQuadraticStabilizes (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) : Prop :=
+def FiniteQuadraticStabilizes : Prop :=
   ∃ z : ℂ, ∀ᶠ n : ℕ in Filter.atTop, A.finiteQuadraticCutoff v a n = z
 
-def finiteGamma (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) : ℂ :=
+def finiteGamma : ℂ :=
   if h : A.FiniteQuadraticStabilizes v a then Classical.choose h else 0
 
-theorem finiteQuadraticCutoff_eventually_eq_gamma (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
+theorem finiteQuadraticCutoff_eventually_eq_gamma
     (h : A.FiniteQuadraticStabilizes v a) :
     ∀ᶠ n : ℕ in Filter.atTop, A.finiteQuadraticCutoff v a n = A.finiteGamma v a := by
   simpa only [finiteGamma, dif_pos h] using Classical.choose_spec h
 
-def finiteWeilPhase (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) : ℂ :=
+def finiteWeilPhase : ℂ :=
   A.finiteGamma v a / A.finiteGamma v 1
+
+end
 
 def complexGamma (A : SArithmeticData F)
     (w : InfinitePlace F) (a : w.Completionˣ) : ℂ := 1

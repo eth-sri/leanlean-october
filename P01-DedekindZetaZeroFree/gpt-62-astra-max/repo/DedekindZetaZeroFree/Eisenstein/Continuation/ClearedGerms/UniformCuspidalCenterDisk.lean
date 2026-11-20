@@ -15,65 +15,62 @@ open MeasureTheory Filter
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 set_option synthInstance.maxHeartbeats 200000
-open _root_.DedekindZetaZeroFree.KPContActualChamberCasimirJets.CuspAnalytic renaming scalar_cusp_frame → scalar_cusp_frame
+open _root_.DedekindZetaZeroFree.KPContActualChamberCasimirJets.CuspAnalytic (scalar_cusp_frame)
 
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.CommonSphericalDisk.PolarDetection
 
 section Actual
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U
 local notation "Hilbert" => KPContActualAllCuspSource.Sector F ζ hζ C R P H U
 
 variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ
   (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H)
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable {T : ℝ}
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    {T : ℝ}
 variable (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H T)
 variable (f : ℂ → S)
-variable (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
+    (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
 variable (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer
   KPContinuation.spectralDomain f χ)
 
 end Actual
 
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
 open Filter
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 open MeasureTheory Filter
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
 
 variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 section ActualSourceChamberPin
 variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ
   (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H)
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U) (hι : Function.Injective ι)
-variable (f : ℂ → S) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U) (hι : Function.Injective ι)
+    (f : ℂ → S) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
 variable {T : ℝ} (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H T)
 variable (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-variable (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer KPContinuation.spectralDomain f χ)
-variable (V : ℂ → KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U)
+    (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer KPContinuation.spectralDomain f χ)
+    (V : ℂ → KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U)
 variable (hV : KPContActualCutoffPlusClearedGerm.Properties F ζ hζ C R P H U R.adelicHaar R.adelic_isHaar rfl
   ι KPContinuation.spectralDomain f χ realization buffer source V)
 
@@ -85,12 +82,12 @@ open NumberField
 open KPContFlatCuspIncomingEvaluation
 open KPMsResidualTailRestoration.SharpConstantTerm.FiberStability
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (Z : KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (Z : KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U)
 local notation "lZ" => KPContActualCommonDiskRightHolomorphy.lift F ζ hζ (atlasLevel F ζ hζ C R P H U) R P H Z.val
 variable (a : Cusps F ζ hζ C R P H U) (t : ℝ) (b : KPCuspCharts.Shape F)
  theorem section_localGroup_frame (x : KPCuspCharts.Horizontal F) :
@@ -145,7 +142,6 @@ variable (a : Cusps F ζ hζ C R P H U) (t : ℝ) (b : KPCuspCharts.Shape F)
       congr 1
       dsimp only [u]
       group
-    change _ * ((finiteRoot F ζ hζ z).val * c.val) = _
     rw [he, mul_assoc]
   rw [KPGlobalTorusFunctionData.N_add, mul_assoc, hg, ← mul_assoc]
   exact ActualMovingCompactGeometry.section_lift_finite_level F ζ hζ _ R P H Z.val _ ⟨u,hz⟩

@@ -22,7 +22,9 @@ def residuePrime (v : HeightOneSpectrum (𝓞 F)) : Nat.Primes :=
 instance (v : HeightOneSpectrum (𝓞 F)) : Fact (residuePrime v).1.Prime :=
   ⟨(residuePrime v).2⟩
 
-private lemma liesOver (v : HeightOneSpectrum (𝓞 F)) :
+variable (v : HeightOneSpectrum (𝓞 F))
+
+private lemma liesOver :
     v.asIdeal.LiesOver ((Rat.HeightOneSpectrum.primesEquiv (R := ℤ)).symm (residuePrime v)).asIdeal := by
   letI : v.asIdeal.IsMaximal := v.isPrime.isMaximal v.ne_bot
   rw [Ideal.liesOver_iff]
@@ -44,34 +46,27 @@ private lemma liesOver (v : HeightOneSpectrum (𝓞 F)) :
     obtain ⟨y, rfl⟩ := hx
     simpa using v.asIdeal.mul_mem_right (y : 𝓞 F) hh
   · intro hx
-    have hh : (x : 𝓞 F ⧸ v.asIdeal) = 0 := by
-      simpa using Ideal.Quotient.eq_zero_iff_mem.mpr hx
-    exact (CharP.intCast_eq_zero_iff (𝓞 F ⧸ v.asIdeal) (ringChar (𝓞 F ⧸ v.asIdeal)) x).mp hh
-private lemma extension (v : HeightOneSpectrum (𝓞 F)) :
+    refine (CharP.intCast_eq_zero_iff (𝓞 F ⧸ v.asIdeal) (ringChar (𝓞 F ⧸ v.asIdeal)) x).mp ?_
+    exact Ideal.Quotient.eq_zero_iff_mem.mpr hx
+private lemma extension :
     ∃ ι : ℚ_[residuePrime v] →+* v.adicCompletion F, Continuous ι := by
   let w : HeightOneSpectrum ℤ := (Rat.HeightOneSpectrum.primesEquiv (R := ℤ)).symm (residuePrime v)
   letI : v.asIdeal.LiesOver w.asIdeal := liesOver v
   let f := algebraMap (WithVal (w.valuation ℚ)) (WithVal (v.valuation F))
-  have hf : Continuous f := (HeightOneSpectrum.uniformContinuous_algebraMap_liesOver ℚ F w v).continuous
-  let c := UniformSpace.Completion.mapRingHom f hf
   let e := Padic.adicCompletionEquiv ℤ (residuePrime v)
-  let ι : ℚ_[residuePrime v] →+* v.adicCompletion F :=
-    ((HeightOneSpectrum.adicCompletion.equiv F v).symm.toRingHom.comp c).comp
-      ((HeightOneSpectrum.adicCompletion.equiv ℚ w).toRingHom.comp e.toAlgEquiv.toRingHom)
-  refine ⟨ι, ?_⟩
+  refine ⟨(((HeightOneSpectrum.adicCompletion.equiv F v).symm.toRingHom.comp (UniformSpace.Completion.mapRingHom f ((HeightOneSpectrum.uniformContinuous_algebraMap_liesOver ℚ F w v).continuous))).comp
+    ((HeightOneSpectrum.adicCompletion.equiv ℚ w).toRingHom.comp e.toAlgEquiv.toRingHom)), ?_⟩
   exact (HeightOneSpectrum.adicCompletion.uniformEquiv F v).symm.continuous.comp
     (UniformSpace.Completion.continuous_map.comp
       ((HeightOneSpectrum.adicCompletion.uniformEquiv ℚ w).continuous.comp e.continuous))
 
-theorem existsUnique_rationalExtension (v : HeightOneSpectrum (𝓞 F)) :
+theorem existsUnique_rationalExtension :
     ∃! ι : ℚ_[residuePrime v] →+* v.adicCompletion F,
       Continuous ι ∧ ∀ q : ℚ, ι (q : ℚ_[residuePrime v]) =
         algebraMap F (v.adicCompletion F) (algebraMap ℚ F q) := by
   obtain ⟨ι, hι⟩ := extension v
-  have heq : ∀ q : ℚ, ι (q : ℚ_[residuePrime v]) =
-      algebraMap F (v.adicCompletion F) (algebraMap ℚ F q) := by
-    intro q
-    exact DFunLike.congr_fun (RingHom.ext_rat
+  have heq : ∀ q : ℚ, ι q =
+      algebraMap F (v.adicCompletion F) (algebraMap ℚ F q) := fun q => DFunLike.congr_fun (RingHom.ext_rat
       (ι.comp (algebraMap ℚ ℚ_[residuePrime v]))
       ((algebraMap F (v.adicCompletion F)).comp (algebraMap ℚ F))) q
   refine ⟨ι, ⟨hι, heq⟩, ?_⟩
@@ -104,11 +99,10 @@ theorem finite_rationalExtension (v : HeightOneSpectrum (𝓞 F))
 
   haveI : ContinuousSMul ℚ_[residuePrime v] (v.adicCompletion F) := ⟨by
     show Continuous fun p : ℚ_[residuePrime v] × v.adicCompletion F => p.1 • p.2
-    change Continuous fun p : ℚ_[residuePrime v] × v.adicCompletion F => ι p.1 * p.2
     exact (hι.comp continuous_fst).mul continuous_snd⟩
 
   set b := Module.finBasis ℚ F
-  let S : Submodule ℚ_[residuePrime v] (v.adicCompletion F) :=
+  let S :=
     Submodule.span ℚ_[residuePrime v]
       (Set.range fun i => algebraMap F (v.adicCompletion F) (b i))
   haveI : Module.Finite ℚ_[residuePrime v] S :=
@@ -116,8 +110,7 @@ theorem finite_rationalExtension (v : HeightOneSpectrum (𝓞 F))
 
   have hmem : ∀ x : F, algebraMap F (v.adicCompletion F) x ∈ S := by
     intro x
-    have hx : x = ∑ i, b.repr x i • b i := (b.sum_repr x).symm
-    rw [hx, map_sum]
+    rw [((b.sum_repr x).symm), map_sum]
     refine Submodule.sum_mem _ fun i _ => ?_
     have hthis : algebraMap F (v.adicCompletion F) (b.repr x i • b i) =
         (b.repr x i : ℚ_[residuePrime v]) •
@@ -126,18 +119,16 @@ theorem finite_rationalExtension (v : HeightOneSpectrum (𝓞 F))
       rfl
     rw [hthis]
     exact S.smul_mem _ (Submodule.subset_span ⟨i, rfl⟩)
-  have hrange : Set.range (algebraMap F (v.adicCompletion F)) ⊆ (S : Set _) := by
+  have hrange : Set.range (algebraMap F (v.adicCompletion F)) ⊆ S := by
     rintro _ ⟨x, rfl⟩
     exact hmem x
 
-  have hclosed : IsClosed (S : Set (v.adicCompletion F)) :=
-    Submodule.closed_of_finiteDimensional S
-  have hdense : DenseRange (algebraMap F (v.adicCompletion F)) :=
+  have hdense :=
     IsDedekindDomain.HeightOneSpectrum.denseRange_algebraMap F v
   have htop : S = ⊤ := by
     rw [eq_top_iff]
     intro x _
-    exact (hclosed.closure_subset_iff.mpr hrange)
+    exact ((Submodule.closed_of_finiteDimensional S).closure_subset_iff.mpr hrange)
       (by rw [hdense.closure_range]; exact Set.mem_univ x)
   refine Module.Finite.of_surjective S.subtype fun y => ⟨⟨y, ?_⟩, rfl⟩
   rw [htop]; exact Submodule.mem_top
@@ -232,25 +223,7 @@ variable {F : Type} [Field F] [NumberField F]
 theorem archTraceCharacter_product_eq_trace (x : F) :
     (∏ w : InfinitePlace F,
       archTraceCharacter w (algebraMap F w.Completion x)) =
-      Circle.exp (2 * Real.pi * ((Algebra.trace ℚ F x : ℚ) : ℝ)) := by
-  classical
-  rw [trace_eq_sum_archTrace]
-  have h (s : Finset (InfinitePlace F)) :
-      (∏ w ∈ s, archTraceCharacter w (algebraMap F w.Completion x)) =
-        Circle.exp (2 * Real.pi * ∑ w ∈ s,
-          archTrace w (algebraMap F w.Completion x)) := by
-    induction s using Finset.induction_on with
-    | empty => simp [Circle.exp_zero]
-    | @insert w s hw ih =>
-      simp only [Finset.prod_insert hw, Finset.sum_insert hw]
-      rw [ih]
-      change Circle.exp (2 * Real.pi * archTrace w (algebraMap F w.Completion x)) *
-        Circle.exp (2 * Real.pi * ∑ w ∈ s,
-          archTrace w (algebraMap F w.Completion x)) = _
-      rw [← Circle.exp_add]
-      congr 1
-      ring
-  exact h Finset.univ
+      Circle.exp (2 * Real.pi * ((Algebra.trace ℚ F x : ℚ) : ℝ)) := by apply @DedekindZetaZeroFree.TraceProductFormula.arch_character_product <;> assumption
 
 private theorem residuePrime_eq_adapter (v : HeightOneSpectrum (𝓞 F)) :
     residuePrime v = PlaceTraceAdapter.prime F v := by
@@ -273,6 +246,8 @@ private theorem residuePrime_eq_adapter (v : HeightOneSpectrum (𝓞 F)) :
       ((PlaceTraceAdapter.prime F v).1 : 𝓞 ℚ)) ∈ v.asIdeal := h
   simpa using h'
 
+alias GlobalTraceProductFormula.residuePrime_eq_adapter := residuePrime_eq_adapter
+
 private theorem traceFactor_eq_localFiniteCharacter
     (ι : (v : HeightOneSpectrum (𝓞 F)) →
       ℚ_[residuePrime v] →+* v.adicCompletion F)
@@ -282,7 +257,6 @@ private theorem traceFactor_eq_localFiniteCharacter
     (v : HeightOneSpectrum (𝓞 F)) :
     traceFactor v (ι v) = localFiniteCharacter F v := by
   letI (p : Nat.Primes) : Fact p.1.Prime := ⟨p.2⟩
-  have hpv := residuePrime_eq_adapter v
   have hgeneral (p : Nat.Primes) (m : ℚ_[p] →+* v.adicCompletion F)
       (hmc : Continuous m)
       (hmq : ∀ q : ℚ, m (q : ℚ_[p]) =
@@ -305,28 +279,18 @@ private theorem traceFactor_eq_localFiniteCharacter
         exact (hmq q).trans (by simp [PlaceTraceAdapter.padicMap, map_ratCast])
     subst m
     rfl
-  exact hgeneral (residuePrime v) (ι v) (hι v) (hℚ v) hpv
+  exact hgeneral (residuePrime v) (ι v) (hι v) (hℚ v) (residuePrime_eq_adapter v)
 
-private theorem character_sum {A ι : Type*} [AddCommMonoid A]
-    (χ : AddChar A Circle) (s : Finset ι) (f : ι → A) :
-    χ (∑ i ∈ s, f i) = ∏ i ∈ s, χ (f i) := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simp
-  | @insert i s hi ih => simp [hi, χ.map_add_eq_mul, ih]
+private alias character_sum := DedekindZetaZeroFree.TraceProductFormula.character_sum
 
-private theorem character_cast (p q : Nat.Primes) (h : p = q) (x : ℚ_[p]) :
-    rationalPadicCharacter p x = rationalPadicCharacter q
-      (cast (congrArg (fun r : Nat.Primes => ℚ_[r]) h) x) := by
-  subst q
-  rfl
+private alias character_cast := DedekindZetaZeroFree.TraceProductFormula.character_cast
 
-private theorem traceFactor_fiber_product
-    (ι : (v : HeightOneSpectrum (𝓞 F)) →
-      ℚ_[residuePrime v] →+* v.adicCompletion F)
+variable (ι : (v : HeightOneSpectrum (𝓞 F)) → ℚ_[residuePrime v] →+* v.adicCompletion F)
     (hι : ∀ v, Continuous (ι v))
-    (hℚ : ∀ v (q : ℚ), ι v (q : ℚ_[residuePrime v]) =
-      algebraMap F (v.adicCompletion F) (algebraMap ℚ F q))
+    (hℚ : ∀ v (q : ℚ), ι v (q : ℚ_[residuePrime v]) = algebraMap F (v.adicCompletion F) (algebraMap ℚ F q))
+
+include hι hℚ in
+private theorem traceFactor_fiber_product
     (x : F) (p : Nat.Primes) :
     letI := finitePlacesAboveRationalPrimeFintype F p
     (∏ v : FinitePlacesAbove ℚ F (Rat.HeightOneSpectrum.primesEquiv.symm p),
@@ -337,18 +301,10 @@ private theorem traceFactor_fiber_product
   apply Finset.prod_congr rfl
   intro v _
   rw [traceFactor_eq_localFiniteCharacter ι hι hℚ v.val]
-  change rationalPadicCharacter (PlaceTraceAdapter.prime F v.val)
-      (PlaceTraceAdapter.trace F v.val (algebraMap F (v.val.adicCompletion F) x)) =
-    rationalPadicCharacter p
-      (PlaceTraceAdapter.traceAbove F p v (algebraMap F (v.val.adicCompletion F) x))
   exact character_cast _ p (PlaceTraceAdapter.prime_eq_of_above F p v) _
 
+include hι hℚ in
 private theorem traceFactor_finprod_eq_rational
-    (ι : (v : HeightOneSpectrum (𝓞 F)) →
-      ℚ_[residuePrime v] →+* v.adicCompletion F)
-    (hι : ∀ v, Continuous (ι v))
-    (hℚ : ∀ v (q : ℚ), ι v (q : ℚ_[residuePrime v]) =
-      algebraMap F (v.adicCompletion F) (algebraMap ℚ F q))
     (hsupport : ∀ x : F, Function.HasFiniteMulSupport
       (fun v : HeightOneSpectrum (𝓞 F) =>
         traceFactor v (ι v) (algebraMap F (v.adicCompletion F) x)))
@@ -370,24 +326,17 @@ private theorem traceFactor_finprod_eq_rational
   rw [← finprod_eq_prod_of_fintype]
   change (∏ y ∈ hg.toFinset with PlaceTraceAdapter.prime F y = p, g y) =
     ∏ᶠ i : {v : HeightOneSpectrum (𝓞 F) //
-      finitePlaceBelow (K := ℚ) v = Rat.HeightOneSpectrum.primesEquiv.symm p}, g i.val
+      finitePlaceBelow v = Rat.HeightOneSpectrum.primesEquiv.symm p}, g i.val
   rw [finprod_subtype_eq_finprod_cond]
   symm
   apply finprod_cond_eq_prod_of_cond_iff
   intro v hv
   rw [Finset.mem_filter]
-  have hmem : v ∈ hg.toFinset := hg.mem_toFinset.mpr hv
-  simp only [hmem, true_and]
-  change finitePlaceBelow (K := ℚ) v = Rat.HeightOneSpectrum.primesEquiv.symm p ↔
-    PlaceTraceAdapter.prime F v = p
+  simp only [(hg.mem_toFinset.mpr hv), true_and]
   exact Rat.HeightOneSpectrum.primesEquiv.apply_eq_iff_eq_symm_apply.symm
 
+include hι hℚ in
 theorem traceFactors_product_formula
-    (ι : (v : HeightOneSpectrum (𝓞 F)) →
-      ℚ_[residuePrime v] →+* v.adicCompletion F)
-    (hι : ∀ v, Continuous (ι v))
-    (hℚ : ∀ v (q : ℚ), ι v (q : ℚ_[residuePrime v]) =
-      algebraMap F (v.adicCompletion F) (algebraMap ℚ F q))
     (hsupport : ∀ x : F, Function.HasFiniteMulSupport
       (fun v : HeightOneSpectrum (𝓞 F) =>
         traceFactor v (ι v) (algebraMap F (v.adicCompletion F) x)))
@@ -413,11 +362,13 @@ noncomputable section
 namespace DedekindZetaZeroFree.ResidueTraceFactorProductFormula
 variable {F : Type} [Field F] [NumberField F]
 
+local notation "FinitePlace" => HeightOneSpectrum (𝓞 F)
+
 private theorem locally_integral_cofinite (z : F) :
-    ∃ T : Finset (HeightOneSpectrum (𝓞 F)), ∀ v ∉ T,
+    ∃ T : Finset FinitePlace, ∀ v ∉ T,
       algebraMap F (v.adicCompletion F) z ∈ v.adicCompletionIntegers F := by
   obtain ⟨a, b, hb, rfl⟩ := IsFractionRing.div_surjective (𝓞 F) z
-  let T : Finset (HeightOneSpectrum (𝓞 F)) :=
+  let T : Finset FinitePlace :=
     (Ideal.finite_factors (I := Ideal.span {b})
       (by simpa [Ideal.span_singleton_eq_bot] using nonZeroDivisors.ne_zero hb)).toFinset
   refine ⟨T, ?_⟩
@@ -430,7 +381,7 @@ private theorem locally_integral_cofinite (z : F) :
   rw [HeightOneSpectrum.valuedAdicCompletion_eq_valuation']
   exact (v.valuation_div_le_one_iff F a (nonZeroDivisors.ne_zero hb) (fun h => (hvb h).elim)).mpr hvb
 
-private theorem continuous_traceFactor (v : HeightOneSpectrum (𝓞 F))
+private theorem continuous_traceFactor (v : FinitePlace)
     (ι : ℚ_[residuePrime v] →+* v.adicCompletion F)
     (hι : Continuous ι)
     (hℚ : ∀ q : ℚ, ι (q : ℚ_[residuePrime v]) =
@@ -440,19 +391,18 @@ private theorem continuous_traceFactor (v : HeightOneSpectrum (𝓞 F))
   letI := finite_rationalExtension v ι hι hℚ
   letI : ContinuousSMul ℚ_[residuePrime v] (v.adicCompletion F) := by
     constructor
-    change Continuous (fun x : ℚ_[residuePrime v] × v.adicCompletion F => ι x.1 * x.2)
     exact (hι.comp continuous_fst).mul continuous_snd
   exact (continuous_rationalPadicCharacter (residuePrime v)).comp
     (Algebra.trace ℚ_[residuePrime v] (v.adicCompletion F)).continuous_of_finiteDimensional
 
 theorem principalResidue_separation
-    (ι : (v : HeightOneSpectrum (𝓞 F)) →
+    (ι : (v : FinitePlace) →
       ℚ_[residuePrime v] →+* v.adicCompletion F)
     (hι : ∀ v, Continuous (ι v))
     (hℚ : ∀ v (q : ℚ), ι v (q : ℚ_[residuePrime v]) =
       algebraMap F (v.adicCompletion F) (algebraMap ℚ F q))
     (A : SArithmeticData F)
-    (hS : ∀ v : HeightOneSpectrum (𝓞 F), v ∉ A.Sf →
+    (hS : ∀ v : FinitePlace, v ∉ A.Sf →
       ∀ z : v.adicCompletion F,
         (∀ o : v.adicCompletionIntegers F,
           traceFactor v (ι v) (z * (o : v.adicCompletion F)) = 1) ↔
@@ -466,42 +416,37 @@ theorem principalResidue_separation
         (algebraMap F (v.1.adicCompletion F) (((x : F) * (y : F)) / (c : F)))) ≠ 1 := by
   classical
   by_contra! hall
-  let z : F := (x : F) / (c : F)
+  let z := (x : F) / (c : F)
   obtain ⟨T, hT⟩ := locally_integral_cofinite z
   let P := T \ A.Sf
-  have hout (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf ∪ P)
+  have hout (v : FinitePlace) (hv : v ∉ A.Sf ∪ P)
       (o : v.adicCompletionIntegers F) :
       traceFactor v (ι v) (algebraMap F (v.adicCompletion F) z * o) = 1 := by
-    have hvS : v ∉ A.Sf := fun h => hv (Finset.mem_union_left P h)
-    have hvT : v ∉ T := by
-      intro h
-      exact hv (Finset.mem_union_right A.Sf (Finset.mem_sdiff.mpr ⟨h, hvS⟩))
-    exact (hS v hvS _).mpr (hT v hvT) o
-  let g := fun (o : (v : HeightOneSpectrum (𝓞 F)) → v.adicCompletionIntegers F) =>
+    have hvS := fun h => hv (Finset.mem_union_left P h)
+    refine (hS v hvS _).mpr (hT v ?_) o
+    exact fun h => hv (Finset.mem_union_right A.Sf (Finset.mem_sdiff.mpr ⟨h, hvS⟩))
+  let g := fun (o : (v : FinitePlace) → v.adicCompletionIntegers F) =>
     ∏ v ∈ P, traceFactor v (ι v) (algebraMap F (v.adicCompletion F) z * o v)
   have hg : Continuous g := by
     apply continuous_finset_prod
     intro v hv
     exact (continuous_traceFactor v (ι v) (hι v) (hℚ v)).comp
       (continuous_const.mul (continuous_subtype_val.comp (continuous_apply v)))
-  have hmap (v : HeightOneSpectrum (𝓞 F)) (a : 𝓞 F) :
+  have hmap (v : FinitePlace) (a : 𝓞 F) :
       (algebraMap (𝓞 F) (v.adicCompletionIntegers F) a : v.adicCompletion F) =
         algebraMap F (v.adicCompletion F) (algebraMap (𝓞 F) A.R a : F) := by
     rw [HeightOneSpectrum.algebraMap_adicCompletionIntegers_apply]
-    change algebraMap (𝓞 F) (v.adicCompletion F) a =
-      algebraMap F (v.adicCompletion F) (algebraMap (𝓞 F) F a)
     exact IsScalarTower.algebraMap_apply (𝓞 F) F (v.adicCompletion F) a
   have hdiag (a : 𝓞 F) : g (ringOfIntegers_integralDiagonal F a) = 1 := by
-    let y : A.R := algebraMap (𝓞 F) A.R a
-    let t : F := z * (y : F)
-    let f := fun v : HeightOneSpectrum (𝓞 F) =>
+    let y := algebraMap (𝓞 F) A.R a
+    let t := z * (y : F)
+    let f := fun v : FinitePlace =>
       traceFactor v (ι v) (algebraMap F (v.adicCompletion F) t)
     have hf : Function.mulSupport f ⊆ ↑(A.Sf ∪ P) := by
       intro v hv
       by_contra hn
       apply hv
-      have hh := hout v hn (algebraMap (𝓞 F) (v.adicCompletionIntegers F) a)
-      simpa only [f, t, y, map_mul, hmap] using hh
+      simpa only [f, t, y, map_mul, hmap] using (hout v hn (algebraMap (𝓞 F) (v.adicCompletionIntegers F) a))
     have hd : Disjoint A.Sf P := by
       apply Finset.disjoint_left.mpr
       intro v hv hvP
@@ -522,9 +467,6 @@ theorem principalResidue_separation
     rw [show (∏ w : InfinitePlace F, archTraceCharacter w (algebraMap F w.Completion t)) *
       (∏ v ∈ A.Sf, f v) = 1 from hs, one_mul] at hp'
     simpa only [g, ringOfIntegers_integralDiagonal, f, t, y, map_mul, hmap] using hp'
-  have heq : g = fun _ => (1 : Circle) :=
-    (denseRange_ringOfIntegers_integralDiagonal F).equalizer hg continuous_const
-      (funext hdiag)
   have hz : z ∈ A.R := by
     intro v hv
     change v ∉ A.Sf at hv
@@ -532,9 +474,8 @@ theorem principalResidue_separation
       apply (hS v hv _).mp
       intro o
       by_cases hvP : v ∈ P
-      · let u : (w : HeightOneSpectrum (𝓞 F)) → w.adicCompletionIntegers F :=
+      · let u : (w : FinitePlace) → w.adicCompletionIntegers F :=
           Function.update 0 v o
-        have hu := congrFun heq u
         have hsingle : g u = traceFactor v (ι v) (algebraMap F (v.adicCompletion F) z * o) := by
           dsimp [g]
           rw [Finset.prod_eq_single v]
@@ -542,8 +483,9 @@ theorem principalResidue_separation
           · intro w hw hwv
             simp [u, Function.update_of_ne hwv]
           · exact fun h => (h hvP).elim
-        exact hsingle.symm.trans hu
-      · exact hout v (by simpa only [Finset.mem_union, not_or] using And.intro hv hvP) o
+        exact hsingle.symm.trans (congrFun ((denseRange_ringOfIntegers_integralDiagonal F).equalizer hg continuous_const
+          (funext hdiag)) u)
+      · exact hout v (by simpa using And.intro hv hvP) o
     rw [HeightOneSpectrum.mem_adicCompletionIntegers,
       HeightOneSpectrum.algebraMap_adicCompletion] at hvint
     simp only [Function.comp_apply, Algebra.algebraMap_self] at hvint
@@ -553,7 +495,6 @@ theorem principalResidue_separation
   apply Ideal.mem_span_singleton.mpr
   refine ⟨⟨z, hz⟩, ?_⟩
   apply Subtype.ext
-  change (x : F) = (c : F) * ((x : F) / (c : F))
   exact (mul_div_cancel₀ _ (by exact_mod_cast hc.1)).symm
 
 end DedekindZetaZeroFree.ResidueTraceFactorProductFormula

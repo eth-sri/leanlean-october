@@ -23,17 +23,21 @@ variable (F : Type) [Field F] [NumberField F]
     (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
   (ε : Sign)
 
- def coefficientSection
-    (n : ℤ) (φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J) :
+ section
+
+variable (n : ℤ) (φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J)
+
+def coefficientSection :
     compactLevel S.borel P S.iwasawa (targetSign ε) J :=
   (actual_scalar_coefficients_target_level F ζ hζ q S P J hJ μ hμ π hπ ε φ n).choose
 
  theorem coefficientSection_coordinate
-    (n : ℤ) (φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J)
     (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q) :
     ((coefficientSection F ζ hζ q S P J hJ μ hμ π hπ ε n φ).val.val k).val h =
       actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε φ k h n :=
   (actual_scalar_coefficients_target_level F ζ hζ q S P J hJ μ hμ π hπ ε φ n).choose_spec k h
+
+end
 
 def actualCoefficientOperator (n : ℤ) :
     compactLevel S.borel P S.iwasawa (sourceSign ε) J →ₗ[ℂ]
@@ -67,8 +71,7 @@ theorem actualCoefficientOperator_coordinate
     (n : ℤ) (φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J)
     (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q) :
     ((actualCoefficientOperator F ζ hζ q S P J hJ μ hμ π hπ ε n φ).val.val k).val h =
-      actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε φ k h n :=
-  coefficientSection_coordinate F ζ hζ q S P J hJ μ hμ π hπ ε n φ k h
+      actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε φ k h n := by apply @coefficientSection_coordinate <;> assumption
 
 end DedekindZetaZeroFree.KPRankOneShellRepair
 

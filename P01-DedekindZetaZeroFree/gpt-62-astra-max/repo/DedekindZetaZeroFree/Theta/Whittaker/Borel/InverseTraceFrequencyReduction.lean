@@ -43,17 +43,14 @@ theorem borel_nontrivial_fourier_zero_iff_inverse_standard_trace_zero
         ((continuous_adelicTraceQuotientCharacter F).comp continuous_neg)
         (inv_ne_one.mpr (adelicTraceQuotientCharacter_ne_one F))
   · intro hp
-    have hconj := KPWildBorelFrequencyReduction.borel_nontrivial_fourier_zero_iff_standard_trace_zero
-      F ζ hζ μ (fun g => starRingEnd ℂ (θ g)) (Complex.continuous_conj.comp hθcont)
-      (fun γ g => congrArg (starRingEnd ℂ) (hθrat γ g))
-    have hall := hconj.mpr (fun b => by
-      rw [conjugate_integral, hp b, map_zero])
     intro b χ hχ hχne
-    have h := hall b χ⁻¹ (hχ.comp continuous_neg) (inv_ne_one.mpr hχne)
+    have h := ((KPWildBorelFrequencyReduction.borel_nontrivial_fourier_zero_iff_standard_trace_zero
+      F ζ hζ μ (fun g => starRingEnd ℂ (θ g)) (Complex.continuous_conj.comp hθcont)
+      (fun γ g => congrArg (starRingEnd ℂ) (hθrat γ g))).mpr (fun b => by
+      rw [conjugate_integral, hp b, map_zero])) b χ⁻¹ (hχ.comp continuous_neg) (inv_ne_one.mpr hχne)
     rw [conjugate_integral] at h
-    have hh := congrArg (starRingEnd ℂ) h
     simpa only [AddChar.inv_apply', Circle.coe_inv, inv_inv, Complex.conj_conj,
-      map_zero] using hh
+      map_zero] using (congrArg (starRingEnd ℂ) h)
 
 end DedekindZetaZeroFree.KPWildInverseBorelFrequencyReduction
 

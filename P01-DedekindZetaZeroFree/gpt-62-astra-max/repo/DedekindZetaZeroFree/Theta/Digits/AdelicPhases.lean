@@ -13,16 +13,15 @@ namespace DedekindZetaZeroFree.DigitMasks
 open MomentSources NumberField IsDedekindDomain
 open scoped Classical BigOperators
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem rational_mul_local (p : KPFinitePlace F) (a : F) (x : p.adicCompletion F) :
     algebraMap F (KPAdeles F) a * KPRationalAdelicSplitting.localAdele F (Sum.inr p) x =
       KPRationalAdelicSplitting.localAdele F (Sum.inr p)
         (algebraMap F (p.adicCompletion F) a * x) := by
   apply Prod.ext
-  · change (algebraMap F (KPAdeles F) a).1 * 0 = 0
-    exact mul_zero _
+  · exact mul_zero _
   · apply Subtype.ext
     funext q
     change (algebraMap F (q.adicCompletion F) a) *
@@ -60,7 +59,7 @@ theorem digitParameter_phase (m : ThetaReflectionData.Row R.A)
   simp only [digitParameter, Finset.mul_sum, rational_mul_local]
   rw [hsum Finset.univ]
   simp only [trace_local]
-  exact map_prod (Circle.coeHom : Circle →* ℂ) _ _
+  exact map_prod Circle.coeHom _ _
 
 end DedekindZetaZeroFree.DigitMasks
 

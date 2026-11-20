@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Analysis.CompactSupport.IteratedDerivatives
 
 public import DedekindZetaZeroFree.Moments.Reflected.SeparatedProfileExpansion
 
@@ -34,33 +35,34 @@ private theorem fourier_norm_le (g : ℝ → ℂ) (t : ℝ) :
     ‖FourierTransform.fourier g t‖ ≤ ∫ x : ℝ, ‖g x‖ := by
   rw [Real.fourier_eq]
   calc
-    ‖∫ x : ℝ, Real.fourierChar (-inner ℝ x t) • g x‖ ≤
+    _ ≤
         ∫ x : ℝ, ‖Real.fourierChar (-inner ℝ x t) • g x‖ := norm_integral_le_integral_norm _
     _ = _ := by simp
 
-private theorem fourier_c2_majorant (g : ℝ → ℂ) (hg : ContDiff ℝ 2 g)
-    (hgi : ∀ n : ℕ, n ≤ 2 → Integrable (iteratedDeriv n g)) (t : ℝ) :
+section
+
+variable (g : ℝ → ℂ) (hg : ContDiff ℝ 2 g) (hgi : ∀ n : ℕ, n ≤ 2 → Integrable (iteratedDeriv n g))
+
+include hg hgi in
+private theorem fourier_c2_majorant (t : ℝ) :
     ‖FourierTransform.fourier g t‖ ≤
       ((∫ x : ℝ, ‖g x‖) + (∫ x : ℝ, ‖iteratedDeriv 2 g x‖)) * (1 + t ^ 2)⁻¹ := by
-  have hft := Real.fourier_iteratedDeriv (N := 2) (n := 2) hg
-    (fun n hn => hgi n (by exact_mod_cast hn)) (by norm_num)
-  have hpoint := congrFun hft t
   have hdecay := fourier_norm_le (iteratedDeriv 2 g) t
-  rw [hpoint, norm_smul, norm_pow] at hdecay
+  rw [(congrFun (Real.fourier_iteratedDeriv hg
+    (fun n hn => hgi n (by exact_mod_cast hn)) (by norm_num)) t), norm_smul, norm_pow] at hdecay
   simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs, Complex.norm_I, mul_one] at hdecay
   norm_num at hdecay
   have hsmall := fourier_norm_le g t
-  have hcoef : 1 ≤ (2 * Real.pi) ^ 2 := by
-    nlinarith [Real.pi_gt_three]
   have hsq : (2 * Real.pi * |t|) ^ 2 = (2 * Real.pi) ^ 2 * t ^ 2 := by
     rw [mul_pow, sq_abs]
   rw [hsq] at hdecay
   have hlarge : t ^ 2 * ‖FourierTransform.fourier g t‖ ≤
       ∫ x : ℝ, ‖iteratedDeriv 2 g x‖ := by
     calc
-      t ^ 2 * ‖FourierTransform.fourier g t‖ ≤
+      _ ≤
           (2 * Real.pi) ^ 2 * (t ^ 2 * ‖FourierTransform.fourier g t‖) :=
-        le_mul_of_one_le_left (by positivity) hcoef
+        le_mul_of_one_le_left (by positivity) (by
+          nlinarith [Real.pi_gt_three])
       _ ≤ _ := by simpa only [mul_assoc] using hdecay
   have hsum : (1 + t ^ 2) * ‖FourierTransform.fourier g t‖ ≤
       (∫ x : ℝ, ‖g x‖) + (∫ x : ℝ, ‖iteratedDeriv 2 g x‖) := by nlinarith
@@ -68,31 +70,30 @@ private theorem fourier_c2_majorant (g : ℝ → ℂ) (hg : ContDiff ℝ 2 g)
   apply (le_div_iff₀ (by positivity : 0 < 1 + t ^ 2)).2
   nlinarith
 
-theorem fourier_c2_l1_bound (g : ℝ → ℂ) (hg : ContDiff ℝ 2 g)
-    (hgi : ∀ n : ℕ, n ≤ 2 → Integrable (iteratedDeriv n g)) :
+include hg hgi in
+theorem fourier_c2_l1_bound :
     Integrable (FourierTransform.fourier g) ∧
     (∫ t : ℝ, ‖FourierTransform.fourier g t‖) ≤
       ((∫ x : ℝ, ‖g x‖) + (∫ x : ℝ, ‖iteratedDeriv 2 g x‖)) *
         (∫ t : ℝ, (1 + t ^ 2)⁻¹) := by
   let M := (∫ x : ℝ, ‖g x‖) + (∫ x : ℝ, ‖iteratedDeriv 2 g x‖)
-  have hint : Integrable (fun t : ℝ => M * (1 + t ^ 2)⁻¹) :=
+  have hint :=
     integrable_inv_one_add_sq.const_mul M
-  have hf : Integrable (FourierTransform.fourier g) :=
+  have hf :=
     hint.mono' (VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
-      (by exact continuous_fst.inner continuous_snd)
-      (by simpa using hgi 0 (by omega))).aestronglyMeasurable
+      (continuous_fst.inner continuous_snd)
+      (by exact hgi 0 (by omega))).aestronglyMeasurable
       (Filter.Eventually.of_forall (fourier_c2_majorant g hg hgi))
   refine ⟨hf, ?_⟩
   calc
-    (∫ t : ℝ, ‖FourierTransform.fourier g t‖) ≤ ∫ t : ℝ, M * (1 + t ^ 2)⁻¹ :=
+    _ ≤ ∫ t : ℝ, M * (1 + t ^ 2)⁻¹ :=
       integral_mono hf.norm hint (fourier_c2_majorant g hg hgi)
     _ = _ := integral_const_mul _ _
 
+end
+
 private theorem compact_iterated {f : ℝ → ℂ} (hf : HasCompactSupport f) (n : ℕ) :
-    HasCompactSupport (iteratedDeriv n f) := by
-  induction n with
-  | zero => simpa using hf
-  | succ n hn => simpa only [iteratedDeriv_succ] using hn.deriv
+    HasCompactSupport (iteratedDeriv n f) := by apply @DedekindZetaZeroFree.LargeSieve.Vendor.hasCompactSupport_iteratedDeriv <;> assumption
 
 private theorem second_product (a f : ℝ → ℂ) (ha : ContDiff ℝ 2 a)
     (hf : ContDiff ℝ 2 f) (x : ℝ) :
@@ -243,13 +244,13 @@ theorem dyadic_log_mem (C D qc qd : ℝ) (hC : 0 < C) (hD : 0 < D)
     (hc : C ≤ qc ∧ qc < 2 * C) (hd : D ≤ qd ∧ qd < 2 * D) :
     Real.log (qc / C) - 2 * Real.log (qd / D) ∈
       Set.Icc (-2 * Real.log 2) (Real.log 2) := by
-  have hqc : 0 < qc := lt_of_lt_of_le hC hc.1
-  have hqd : 0 < qd := lt_of_lt_of_le hD hd.1
+  have hqc := lt_of_lt_of_le hC hc.1
+  have hqd := lt_of_lt_of_le hD hd.1
   have hc1 : 1 ≤ qc / C := (le_div_iff₀ hC).2 (by simpa using hc.1)
   have hd1 : 1 ≤ qd / D := (le_div_iff₀ hD).2 (by simpa using hd.1)
-  have hc2 : qc / C ≤ 2 := (div_le_iff₀ hC).2 hc.2.le
-  have hd2 : qd / D ≤ 2 := (div_le_iff₀ hD).2 hd.2.le
-  have hlc0 : 0 ≤ Real.log (qc / C) := Real.log_nonneg hc1
+  have hc2 := (div_le_iff₀ hC).2 hc.2.le
+  have hd2 := (div_le_iff₀ hD).2 hd.2.le
+  have hlc0 := Real.log_nonneg hc1
   have hld0 : 0 ≤ Real.log (qd / D) := Real.log_nonneg hd1
   have hlc2 : Real.log (qc / C) ≤ Real.log 2 :=
     Real.log_le_log (div_pos hqc hC) hc2
@@ -268,10 +269,8 @@ theorem dyadic_separation {I : Type*} [Fintype I]
     P i (v * (qc / C) / (qd / D) ^ 2) =
       ∫ t : ℝ, FourierTransform.fourier (localizedProfile ξ (P i) v) t *
         normPhase t (qc / C) * normPhase (-2 * t) (qd / D) := by
-  have hqc : 0 < qc := lt_of_lt_of_le hC hc.1
-  have hqd : 0 < qd := lt_of_lt_of_le hD hd.1
-  have hr : 0 < qc / C := div_pos hqc hC
-  have hs : 0 < qd / D := div_pos hqd hD
+  have hr := div_pos (lt_of_lt_of_le hC hc.1) hC
+  have hs := div_pos (lt_of_lt_of_le hD hd.1) hD
   let x := Real.log (qc / C) - 2 * Real.log (qd / D)
   let f := FourierTransform.fourier (localizedProfile ξ (P i) v)
   have hphase (t : ℝ) :
@@ -287,22 +286,15 @@ theorem dyadic_separation {I : Type*} [Fintype I]
     unfold normPhase
     fun_prop
   obtain ⟨K, hK, hbound⟩ := uniform_fourier_l1 ξ hξ P hP 1 (by norm_num)
-  have hf : Integrable f := (hbound i v hv).2.1
-  have hfirst : Integrable (fun t => f t * normPhase t (qc / C)) :=
-    hf.mul_bdd (hcontphase _).aestronglyMeasurable
-      (Filter.Eventually.of_forall (fun t => (norm_normPhase t _ hr).le))
-  have hall : Integrable
-      (fun t => f t * normPhase t (qc / C) * normPhase (-2 * t) (qd / D)) :=
-    hfirst.mul_bdd ((hcontphase _).comp (continuous_const.mul continuous_id)).aestronglyMeasurable
-      (Filter.Eventually.of_forall (fun t => (norm_normPhase (-2 * t) _ hs).le))
-  refine ⟨hall, ?_⟩
-  have hcut : ξ x = 1 := hξ.2.2 (dyadic_log_mem C D qc qd hC hD hc hd)
+  refine ⟨((((hbound i v hv).2.1).mul_bdd (hcontphase _).aestronglyMeasurable
+    (Filter.Eventually.of_forall (fun t => (norm_normPhase t _ hr).le))).mul_bdd ((hcontphase _).comp (continuous_const.mul continuous_id)).aestronglyMeasurable
+    (Filter.Eventually.of_forall (fun t => (norm_normPhase (-2 * t) _ hs).le))), ?_⟩
   have hexp : Real.exp x = (qc / C) / (qd / D) ^ 2 := by
     simp only [x, Real.exp_sub, Real.exp_log hr]
     rw [mul_comm (2 : ℝ), Real.exp_mul, Real.exp_log hs]
     norm_num
   have hinv := fourier_inversion ξ hξ P hP i v hv x
-  rw [localizedProfile, hcut, Complex.ofReal_one, one_mul, hexp] at hinv
+  rw [localizedProfile, (hξ.2.2 (dyadic_log_mem C D qc qd hC hD hc hd)), Complex.ofReal_one, one_mul, hexp] at hinv
   convert hinv using 1
   · congr 1
     ring

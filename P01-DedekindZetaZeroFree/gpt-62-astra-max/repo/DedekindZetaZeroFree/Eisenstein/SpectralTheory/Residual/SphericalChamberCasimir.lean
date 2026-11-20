@@ -9,10 +9,8 @@ noncomputable section
 open scoped Classical NumberField Topology BigOperators
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry
 open KPContActualSphericalRightFieldIdentification KPGlobalResidualConstruction
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming native_flat_casimir → native_flat_casimir
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming native_second_word → native_second_word
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming nativeIndex → nativeIndex
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming spherical_word_chamber → spherical_word_chamber
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir (native_flat_casimir native_second_word nativeIndex)
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (spherical_word_chamber)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -40,9 +38,8 @@ theorem actual_spherical_chamber_casimir
         ∑' q : KPChamberBruhatTwoCells.RationalQuotient F,
           KPMsGreenFlux.rightDerivative F ζ hζ w i
             (KPMsGreenFlux.rightDerivative F ζ hζ w j f) (a q*g) := by
-    have hh := spherical_word_chamber F ζ hζ U v
-      [nativeIndex F (w,i),nativeIndex F (w,j)] s hs g
-    simpa only [native_second_word] using hh
+    simpa only [native_second_word] using (spherical_word_chamber F ζ hζ U v
+      [nativeIndex F (w,i),nativeIndex F (w,j)] s hs g)
   have hw (w : NumberField.InfinitePlace F) :
       -((1 : ℂ)/4) *
         (KPMsGreenFlux.rightDerivative F ζ hζ w 0

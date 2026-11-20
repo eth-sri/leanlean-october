@@ -4,7 +4,7 @@ public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.
 
 @[expose] public section
 
-open _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts renaming evaluation_point_eval_continuous → evaluation_point_eval_continuous
+open _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts (evaluation_point_eval_continuous)
 noncomputable section
 open MeasureTheory
 open scoped Topology Matrix.Norms.Elementwise
@@ -23,19 +23,18 @@ theorem compactQuotient_surjective : Function.Surjective compactQuotient := by
 
 theorem compactQuotient_continuous : Continuous compactQuotient := by
   apply Continuous.subtype_mk
-  have he : Continuous complexSU2Embedding := by
-    apply Units.continuous_iff.mpr
-    constructor
-    · exact continuous_subtype_val
-    · have hi (k : ComplexSU2) :
-          (↑(complexSU2Embedding k)⁻¹ : Matrix (Fin 2) (Fin 2) ℂ) =
-            star (k : Matrix (Fin 2) (Fin 2) ℂ) := by
-        rw [← map_inv]
-        rfl
-      simp_rw [hi]
-      exact continuous_subtype_val.star
-  exact (show Continuous (Matrix.ProjGenLinGroup.mk : ComplexGL2 → ComplexPGL2) from
-    continuous_coinduced_rng).comp he
+  refine (show Continuous Matrix.ProjGenLinGroup.mk from
+    continuous_coinduced_rng).comp ?_
+  apply Units.continuous_iff.mpr
+  constructor
+  · exact continuous_subtype_val
+  · have hi (k : ComplexSU2) :
+        (↑(complexSU2Embedding k)⁻¹ : Matrix (Fin 2) (Fin 2) ℂ) =
+          star k := by
+      rw [← map_inv]
+      rfl
+    simp_rw [hi]
+    exact continuous_subtype_val.star
 
 local instance : CompactSpace compactSubgroup :=
   isCompact_iff_compactSpace.mp compactSubgroup_isCompact
@@ -55,8 +54,7 @@ theorem quotientBoundary_eq (ν : Measure ComplexSU2) [IsProbabilityMeasure ν] 
     (s : ℝ) (f : PrincipalSeries s) (g : PrincipalSeries (-s)) :
     quotientBoundary μ s f g = compactBoundary ν s f g := by
   have hc : Continuous (fun k : compactSubgroup =>
-      (KPCplxPrincipalSeriesCharts.pi s k.val f) 1 * star ((KPCplxPrincipalSeriesCharts.pi (-s) k.val g) 1)) := by
-    exact ((evaluation_point_eval_continuous s 1).comp
+      (KPCplxPrincipalSeriesCharts.pi s k.val f) 1 * star ((KPCplxPrincipalSeriesCharts.pi (-s) k.val g) 1)) := ((evaluation_point_eval_continuous s 1).comp
       ((pi_continuous s).comp (continuous_subtype_val.prodMk continuous_const))).mul
       (((evaluation_point_eval_continuous (-s) 1).comp
         ((pi_continuous (-s)).comp (continuous_subtype_val.prodMk continuous_const))).star)

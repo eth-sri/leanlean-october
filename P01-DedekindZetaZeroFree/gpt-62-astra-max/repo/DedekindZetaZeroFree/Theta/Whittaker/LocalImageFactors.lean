@@ -9,8 +9,8 @@ namespace DedekindZetaZeroFree.MomentSources
 open scoped NumberField Classical
 open NumberField MeasureTheory ValuativeRel
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 structure LocalImageData (q : KPFinitePlace F) where
   inducing : KPLocalExceptionalConstruction.CanonicalFiniteInducingData F R.A.zeta12 R.A.primitive_zeta12 q
   haar : Measure (q.adicCompletion F)

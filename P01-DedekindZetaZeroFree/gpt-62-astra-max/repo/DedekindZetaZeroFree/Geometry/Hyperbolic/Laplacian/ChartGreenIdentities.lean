@@ -13,59 +13,63 @@ open MeasureTheory
 namespace DedekindZetaZeroFree
 namespace HyperbolicChart
 
-abbrev Space (d : ℕ) := EuclideanSpace ℝ (Fin d × Fin 3)
+section
 
-abbrev Cotangent (d : ℕ) := Fin d → Fin 3 → ℂ
+variable (d : ℕ)
 
-def coordinateVector (d : ℕ) (i : Fin d) (k : Fin 3) : Space d :=
+abbrev Space := EuclideanSpace ℝ (Fin d × Fin 3)
+
+abbrev Cotangent := Fin d → Fin 3 → ℂ
+
+def coordinateVector (i : Fin d) (k : Fin 3) : Space d :=
   WithLp.toLp 2 (fun j => if j = (i, k) then 1 else 0)
 
-def coordinateDerivative (d : ℕ) (i : Fin d) (k : Fin 3) (f : Space d → ℂ)
+def coordinateDerivative (i : Fin d) (k : Fin 3) (f : Space d → ℂ)
     (p : Space d) : ℂ := fderiv ℝ f p (coordinateVector d i k)
 
-def metric (d : ℕ) (p v w : Space d) : ℝ :=
+def metric (p v w : Space d) : ℝ :=
   ∑ i : Fin d, (v (i, 2) * w (i, 2) + Real.exp (-2 * p (i, 2)) *
     (v (i, 0) * w (i, 0) + v (i, 1) * w (i, 1)))
 
-def density (d : ℕ) (p : Space d) : ℝ :=
+def density (p : Space d) : ℝ :=
   Real.exp (-2 * ∑ i : Fin d, p (i, 2))
 
-def measure (d : ℕ) : MeasureTheory.Measure (Space d) :=
+def measure : MeasureTheory.Measure (Space d) :=
   MeasureTheory.volume.withDensity (fun p => ENNReal.ofReal (density d p))
 
-def chartMeasure (d : ℕ) (c : ℝ) (m : ℕ) : MeasureTheory.Measure (Space d) :=
+def chartMeasure (c : ℝ) (m : ℕ) : MeasureTheory.Measure (Space d) :=
   ENNReal.ofReal (c / (m : ℝ)) • measure d
 
-def differential (d : ℕ) (f : Space d → ℂ) (p : Space d) : Cotangent d :=
+def differential (f : Space d → ℂ) (p : Space d) : Cotangent d :=
   fun i => ![coordinateDerivative d i 2 f p,
     (Real.exp (p (i, 2)) : ℂ) * coordinateDerivative d i 0 f p,
     (Real.exp (p (i, 2)) : ℂ) * coordinateDerivative d i 1 f p]
 
-def codifferential (d : ℕ) (W : Space d → Cotangent d) (p : Space d) : ℂ :=
+def codifferential (W : Space d → Cotangent d) (p : Space d) : ℂ :=
   ∑ i : Fin d, (-coordinateDerivative d i 2 (fun q => W q i 0) p + 2 * W p i 0 -
     (Real.exp (p (i, 2)) : ℂ) * coordinateDerivative d i 0 (fun q => W q i 1) p -
     (Real.exp (p (i, 2)) : ℂ) * coordinateDerivative d i 1 (fun q => W q i 2) p)
 
-def laplacian (d : ℕ) (f : Space d → ℂ) (p : Space d) : ℂ :=
+def laplacian (f : Space d → ℂ) (p : Space d) : ℂ :=
   ∑ i : Fin d, (-coordinateDerivative d i 2 (coordinateDerivative d i 2 f) p + 2 * coordinateDerivative d i 2 f p -
     (Real.exp (2 * p (i, 2)) : ℂ) *
       (coordinateDerivative d i 0 (coordinateDerivative d i 0 f) p + coordinateDerivative d i 1 (coordinateDerivative d i 1 f) p))
 
-def pairing (d : ℕ) (U W : Cotangent d) : ℂ :=
+def pairing (U W : Cotangent d) : ℂ :=
   ∑ i : Fin d, ∑ k : Fin 3, star (U i k) * W i k
 
-def IsTestFunction (d : ℕ) (Ω : Set (Space d)) (f : Space d → ℂ) : Prop :=
+def IsTestFunction (Ω : Set (Space d)) (f : Space d → ℂ) : Prop :=
   ContDiff ℝ ∞ f ∧ HasCompactSupport f ∧ tsupport f ⊆ Ω
 
-def IsTestField (d : ℕ) (Ω : Set (Space d)) (W : Space d → Cotangent d) : Prop :=
+def IsTestField (Ω : Set (Space d)) (W : Space d → Cotangent d) : Prop :=
   ContDiff ℝ ∞ W ∧ HasCompactSupport W ∧ tsupport W ⊆ Ω
 
-private theorem smooth_coordinateDerivative (d : ℕ) (f : Space d → ℂ)
+private theorem smooth_coordinateDerivative (f : Space d → ℂ)
     (hf : ContDiff ℝ ∞ f) (i : Fin d) (k : Fin 3) :
     ContDiff ℝ ∞ (coordinateDerivative d i k f) :=
   (hf.fderiv_right (by simp)).clm_apply contDiff_const
 
-private theorem coordinateDerivative_exp_mul (d : ℕ) (i : Fin d) (k : Fin 3)
+private theorem coordinateDerivative_exp_mul (i : Fin d) (k : Fin 3)
     (hk : k ≠ 2) (f : Space d → ℂ) (hf : Differentiable ℝ f) (p : Space d) :
     coordinateDerivative d i k (fun q => (Real.exp (q (i, 2)) : ℂ) * f q) p =
       (Real.exp (p (i, 2)) : ℂ) * coordinateDerivative d i k f p := by
@@ -74,32 +78,30 @@ private theorem coordinateDerivative_exp_mul (d : ℕ) (i : Fin d) (k : Fin 3)
     simpa only [Function.comp_def, PiLp.proj_apply, Complex.ofRealCLM_apply] using
       (Complex.ofRealCLM.hasFDerivAt.comp p
         ((EuclideanSpace.proj (i, 2)).hasFDerivAt.exp))
-  have hh := congrArg (fun A : Space d →L[ℝ] ℂ => A (coordinateVector d i k))
-    (he.mul (hf p).hasFDerivAt).fderiv
-  simpa [coordinateDerivative, coordinateVector, hk, Ne.symm hk, Pi.mul_def] using hh
+  simpa [coordinateDerivative, coordinateVector, hk, Ne.symm hk, Pi.mul_def] using (congrArg (fun A : Space d →L[ℝ] ℂ => A (coordinateVector d i k))
+    (he.mul (hf p).hasFDerivAt).fderiv)
 
-private theorem smooth_star (d : ℕ) (f : Space d → ℂ) (hf : ContDiff ℝ ∞ f) :
- ContDiff ℝ ∞ (fun p => star (f p)) := by
- exact (starL' ℝ : ℂ ≃L[ℝ] ℂ).contDiff.comp hf
+private theorem smooth_star (f : Space d → ℂ) (hf : ContDiff ℝ ∞ f) :
+ ContDiff ℝ ∞ (fun p => star (f p)) := (starL' ℝ : ℂ ≃L[ℝ] ℂ).contDiff.comp hf
 
-private theorem deriv_mul (d : ℕ) (i : Fin d) (k : Fin 3) (f g : Space d → ℂ)
+private theorem deriv_mul (i : Fin d) (k : Fin 3) (f g : Space d → ℂ)
     (hf : Differentiable ℝ f) (hg : Differentiable ℝ g) (p : Space d) :
  coordinateDerivative d i k (fun q => f q * g q) p =
   f p * coordinateDerivative d i k g p + g p * coordinateDerivative d i k f p := by
- simpa [coordinateDerivative, Pi.mul_def] using congrArg
+ exact congrArg
   (fun A : Space d →L[ℝ] ℂ => A (coordinateVector d i k)) ((hf p).hasFDerivAt.mul (hg p).hasFDerivAt).fderiv
 
-private theorem deriv_star (d : ℕ) (i : Fin d) (k : Fin 3) (f : Space d → ℂ) (p : Space d) :
+private theorem deriv_star (i : Fin d) (k : Fin 3) (f : Space d → ℂ) (p : Space d) :
  coordinateDerivative d i k (fun q => star (f q)) p = star (coordinateDerivative d i k f p) := by
  unfold coordinateDerivative
  rw [fderiv_star]
  rfl
 
-private theorem compact_star (d : ℕ) (f : Space d → ℂ) (hf : HasCompactSupport f) :
+private theorem compact_star (f : Space d → ℂ) (hf : HasCompactSupport f) :
  HasCompactSupport (fun p => star (f p)) :=
  hf.comp_left (g := star) (by simp)
 
-private theorem smooth_density (d : ℕ) : ContDiff ℝ ∞ (density d) := by
+private theorem smooth_density : ContDiff ℝ ∞ (density d) := by
  unfold density
  apply ContDiff.exp
  apply ContDiff.mul contDiff_const
@@ -108,7 +110,7 @@ private theorem smooth_density (d : ℕ) : ContDiff ℝ ∞ (density d) := by
  convert (PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d × Fin 3 => ℝ) (i, 2)).contDiff (n := ∞) using 1
  rfl
 
-private theorem deriv_density (d : ℕ) (i : Fin d) (k : Fin 3) (p : Space d) :
+private theorem deriv_density (i : Fin d) (k : Fin 3) (p : Space d) :
  coordinateDerivative d i k (fun q => (density d q : ℂ)) p =
  (if k = 2 then -2 else 0) * (density d p : ℂ) := by
  have hs : HasFDerivAt (fun q : Space d => ∑ j : Fin d, q (j,2))
@@ -117,8 +119,7 @@ private theorem deriv_density (d : ℕ) (i : Fin d) (k : Fin 3) (p : Space d) :
   intro j hj
   convert (EuclideanSpace.proj (𝕜 := ℝ) (j,(2 : Fin 3))).hasFDerivAt (x := p) using 1
   rfl
- have hh := Complex.ofRealCLM.hasFDerivAt.comp p (hs.const_mul (-2)).exp
- have hhe := congrArg (fun A : Space d →L[ℝ] ℂ => A (coordinateVector d i k)) hh.fderiv
+ have hhe := congrArg (fun A : Space d →L[ℝ] ℂ => A (coordinateVector d i k)) (Complex.ofRealCLM.hasFDerivAt.comp p (hs.const_mul (-2)).exp).fderiv
  by_cases hk : k = 2
  · subst k
    simpa [coordinateDerivative, density, PiLp.proj_apply, Function.comp_def, coordinateVector,
@@ -126,41 +127,48 @@ private theorem deriv_density (d : ℕ) (i : Fin d) (k : Fin 3) (p : Space d) :
  · simpa [coordinateDerivative, density, PiLp.proj_apply, Function.comp_def, coordinateVector,
     Finset.sum_apply, Pi.mul_def, Finset.sum_ite, mul_comm, mul_left_comm, hk, Ne.symm hk] using hhe
 
-private theorem smooth_exp (d : ℕ) (i : Fin d) :
+private theorem smooth_exp (i : Fin d) :
     ContDiff ℝ ∞ (fun p : Space d => (Real.exp (p (i, 2)) : ℂ)) := by
   apply Complex.ofRealCLM.contDiff.comp
   apply ContDiff.exp
   convert (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff (n := ∞) using 1
   rfl
 
+end
+
+alias ChartGreenIdentities.smooth_exp := smooth_exp
+
 private theorem smooth_density_complex (d : ℕ) :
     ContDiff ℝ ∞ (fun p => (density d p : ℂ)) :=
   Complex.ofRealCLM.contDiff.comp (smooth_density d)
 
-private theorem smooth_differential (d : ℕ) (f : Space d → ℂ) (hf : ContDiff ℝ ∞ f) :
+section
+
+variable (d : ℕ) (f : Space d → ℂ)
+
+private theorem smooth_differential (hf : ContDiff ℝ ∞ f) :
     ContDiff ℝ ∞ (differential d f) := by
   apply contDiff_pi.mpr
   intro i
   apply contDiff_pi.mpr
   intro k
   fin_cases k
-  · simpa [differential] using smooth_coordinateDerivative d f hf i 2
-  · simpa [differential] using (smooth_exp d i).mul (smooth_coordinateDerivative d f hf i 0)
-  · simpa [differential] using (smooth_exp d i).mul (smooth_coordinateDerivative d f hf i 1)
+  · apply smooth_coordinateDerivative <;> assumption
+  · exact (smooth_exp d i).mul (smooth_coordinateDerivative d f hf i 0)
+  · exact (smooth_exp d i).mul (smooth_coordinateDerivative d f hf i 1)
 
-private theorem differential_zero_off (d : ℕ) (f : Space d → ℂ) (p : Space d)
+private theorem differential_zero_off (p : Space d)
     (hp : p ∉ tsupport f) : differential d f p = 0 := by
   funext i k
   fin_cases k <;> simp [differential, coordinateDerivative, fderiv_of_notMem_tsupport ℝ hp]
 
-private theorem compact_differential (d : ℕ) (f : Space d → ℂ) (hf : HasCompactSupport f) :
-    HasCompactSupport (differential d f) := by
-  apply HasCompactSupport.of_support_subset_isCompact hf
-  intro p hp
-  by_contra hn
-  exact hp (differential_zero_off d f p hn)
+end
 
-private theorem continuous_codifferential (d : ℕ) (W : Space d → Cotangent d)
+section
+
+variable (d : ℕ)
+
+private theorem continuous_codifferential (W : Space d → Cotangent d)
     (hW : ContDiff ℝ ∞ W) : Continuous (codifferential d W) := by
   apply continuous_finset_sum
   intro i hi
@@ -171,26 +179,24 @@ private theorem continuous_codifferential (d : ℕ) (W : Space d → Cotangent d
     ((smooth_exp d i).continuous.mul (smooth_coordinateDerivative d _ (h 1) i 0).continuous)).sub
     ((smooth_exp d i).continuous.mul (smooth_coordinateDerivative d _ (h 2) i 1).continuous))
 
-private theorem continuous_pairing (d : ℕ) (U W : Space d → Cotangent d)
+private theorem continuous_pairing (U W : Space d → Cotangent d)
     (hU : Continuous U) (hW : Continuous W) : Continuous (fun p => pairing d (U p) (W p)) := by
   apply continuous_finset_sum
   intro i hi
   apply continuous_finset_sum
   intro k hk
-  exact ((continuous_apply k).comp ((continuous_apply i).comp hU)).star.mul
-    ((continuous_apply k).comp ((continuous_apply i).comp hW))
+  fun_prop
 
-private theorem integrable_measure (d : ℕ) (F : Space d → ℂ)
+private theorem integrable_measure (F : Space d → ℂ)
     (hF : Continuous F) (hc : HasCompactSupport F) : Integrable F (measure d) := by
   unfold measure
   rw [integrable_withDensity_iff_integrable_smul'
     ((smooth_density d).continuous.measurable.ennreal_ofReal) (Filter.Eventually.of_forall (fun p => ENNReal.ofReal_lt_top))]
   have hi : Integrable (fun p => density d p • F p) volume :=
-    ((smooth_density d).continuous.smul hF).integrable_of_hasCompactSupport
-      (μ := volume) hc.smul_left
-  simpa only [ENNReal.toReal_ofReal (show 0 ≤ density d _ from le_of_lt (Real.exp_pos _))] using hi
+    ((smooth_density d).continuous.smul hF).integrable_of_hasCompactSupport hc.smul_left
+  simpa [ENNReal.toReal_ofReal (show 0 ≤ density d _ from le_of_lt (Real.exp_pos _))] using hi
 
-private theorem integral_measure (d : ℕ) (F : Space d → ℂ) :
+private theorem integral_measure (F : Space d → ℂ) :
     (∫ p, F p ∂measure d) = ∫ p, (density d p : ℂ) * F p := by
   unfold measure
   rw [integral_withDensity_eq_integral_toReal_smul
@@ -199,9 +205,9 @@ private theorem integral_measure (d : ℕ) (F : Space d → ℂ) :
   congr 1
   funext p
   rw [ENNReal.toReal_ofReal (show 0 ≤ density d p from le_of_lt (Real.exp_pos _))]
-  exact Complex.real_smul
+  rfl
 
-private theorem weighted_parts (d : ℕ) (i : Fin d) (k : Fin 3)
+private theorem weighted_parts (i : Fin d) (k : Fin 3)
  (f g w : Space d → ℂ) (hf : ContDiff ℝ ∞ f) (hg : ContDiff ℝ ∞ g)
  (hw : ContDiff ℝ ∞ w) (hfc : HasCompactSupport f) (hgc : HasCompactSupport g) :
  (∫ p, w p * star (coordinateDerivative d i k f p) * g p) =
@@ -209,11 +215,9 @@ private theorem weighted_parts (d : ℕ) (i : Fin d) (k : Fin 3)
  have hd : ∀ h : Space d → ℂ, ContDiff ℝ ∞ h → Differentiable ℝ h := fun h hh => hh.differentiable (by simp)
  have h1 := ((hw.mul ((smooth_star d f hf))).mul (smooth_coordinateDerivative d g hg i k)).continuous.integrable_of_hasCompactSupport (μ := volume)
   ((compact_star d f hfc).mul_left.mul_right)
- have h2 := (((smooth_coordinateDerivative d (fun p => w p * star (f p)) (hw.mul (smooth_star d f hf)) i k)).mul hg).continuous.integrable_of_hasCompactSupport (μ := volume)
-  (hgc.mul_left)
- have h3 := ((hw.mul (smooth_star d f hf)).mul hg).continuous.integrable_of_hasCompactSupport (μ := volume) (hgc.mul_left)
  have ibp := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable
-  (μ := volume) (v := coordinateVector d i k) h2 h1 h3
+    ((((smooth_coordinateDerivative d (fun p => w p * star (f p)) (hw.mul (smooth_star d f hf)) i k)).mul hg).continuous.integrable_of_hasCompactSupport
+    (hgc.mul_left)) h1 (((hw.mul (smooth_star d f hf)).mul hg).continuous.integrable_of_hasCompactSupport (hgc.mul_left))
   (fun p hp => hd _ (hw.mul (smooth_star d f hf)) p) (fun p hp => hd _ hg p)
  have eq : (fun p => coordinateDerivative d i k (fun q => w q * star (f q)) p * g p) =
   (fun p => w p * star (coordinateDerivative d i k f p) * g p +
@@ -221,11 +225,10 @@ private theorem weighted_parts (d : ℕ) (i : Fin d) (k : Fin 3)
   funext p
   rw [deriv_mul d i k w (fun q => star (f q)) (hd _ hw) (hd _ (smooth_star d f hf)), deriv_star]
   ring
- have ha := ((hw.mul (smooth_star d (coordinateDerivative d i k f) (smooth_coordinateDerivative d f hf i k))).mul hg).continuous.integrable_of_hasCompactSupport (μ := volume) (hgc.mul_left)
  have hb := (((smooth_star d f hf).mul (smooth_coordinateDerivative d w hw i k)).mul hg).continuous.integrable_of_hasCompactSupport (μ := volume) (hgc.mul_left)
  change (∫ p, w p * star (f p) * coordinateDerivative d i k g p) =
   -(∫ p, coordinateDerivative d i k (fun q => w q * star (f q)) p * g p) at ibp
- rw [eq, integral_add ha hb] at ibp
+ rw [eq, integral_add (((hw.mul (smooth_star d (coordinateDerivative d i k f) (smooth_coordinateDerivative d f hf i k))).mul hg).continuous.integrable_of_hasCompactSupport (hgc.mul_left)) hb] at ibp
  have hr : (fun p => star (f p) * (-w p * coordinateDerivative d i k g p - coordinateDerivative d i k w p * g p)) =
    (fun p => -(w p * star (f p) * coordinateDerivative d i k g p) - star (f p) * coordinateDerivative d i k w p * g p) := by
   funext p; ring
@@ -233,7 +236,7 @@ private theorem weighted_parts (d : ℕ) (i : Fin d) (k : Fin 3)
  rw [integral_sub (show Integrable (fun p => -(w p * star (f p) * coordinateDerivative d i k g p)) volume from h1.neg) hb, integral_neg]
  linear_combination ibp
 
-private theorem component_parts (d : ℕ) (i : Fin d) (k : Fin 3)
+private theorem component_parts (i : Fin d) (k : Fin 3)
     (f g : Space d → ℂ) (hf : ContDiff ℝ ∞ f) (hg : ContDiff ℝ ∞ g)
     (hfc : HasCompactSupport f) (hgc : HasCompactSupport g) :
     (∫ p, (if k = 2 then (1 : ℂ) else (Real.exp (p (i, 2)) : ℂ)) *
@@ -244,43 +247,31 @@ private theorem component_parts (d : ℕ) (i : Fin d) (k : Fin 3)
   rw [integral_measure, integral_measure]
   by_cases hk : k = 2
   · subst k
-    have ibp := weighted_parts d i 2 f g (fun p => (density d p : ℂ)) hf hg
-      (smooth_density_complex d) hfc hgc
     simp only [ite_true, one_mul]
     calc
       _ = ∫ p, (density d p : ℂ) * star (coordinateDerivative d i 2 f p) * g p := by
-        congr 1; funext p; ring
-      _ = _ := ibp
+        ring
+      _ = _ := (weighted_parts d i 2 f g (fun p => (density d p : ℂ)) hf hg
+        (smooth_density_complex d) hfc hgc)
       _ = _ := by
         congr 1; funext p
-        rw [deriv_density]
-        simp only [ite_true]
-        ring
-  · have hw := (smooth_exp d i).mul (smooth_density_complex d)
-    have hder (p : Space d) :
+        simp [ite_true, deriv_density] <;> ring
+  · have hder (p : Space d) :
         coordinateDerivative d i k (fun q => (Real.exp (q (i,2)) : ℂ) * (density d q : ℂ)) p = 0 := by
       rw [coordinateDerivative_exp_mul d i k hk _ ((smooth_density_complex d).differentiable (by simp)),
         deriv_density]
       simp [hk]
     have ibp := weighted_parts d i k f g
-      (fun p => (Real.exp (p (i,2)) : ℂ) * (density d p : ℂ)) hf hg hw hfc hgc
+      (fun p => (Real.exp (p (i,2)) : ℂ) * (density d p : ℂ)) hf hg ((smooth_exp d i).mul (smooth_density_complex d)) hfc hgc
     simp only [hder, zero_mul, sub_zero] at ibp
     simp only [hk, ite_false, zero_mul, add_zero]
-    calc
-      _ = ∫ p, ((Real.exp (p (i,2)) : ℂ) * (density d p : ℂ)) *
-          star (coordinateDerivative d i k f p) * g p := by
-        congr 1; funext p; ring
-      _ = _ := ibp
-      _ = _ := by congr 1; funext p; ring
+    grind
 
-private theorem compact_pairing_right (d : ℕ) (U W : Space d → Cotangent d)
-    (hW : HasCompactSupport W) : HasCompactSupport (fun p => pairing d (U p) (W p)) := by
-  apply hW.mono
-  intro p hp hn
-  apply hp
-  simp [pairing, hn]
+end
 
- theorem first_order_green (d : ℕ) (f : Space d → ℂ) (W : Space d → Cotangent d)
+ variable (d : ℕ)
+
+theorem first_order_green (f : Space d → ℂ) (W : Space d → Cotangent d)
     (hf : ContDiff ℝ ∞ f) (hfc : HasCompactSupport f)
     (hW : ContDiff ℝ ∞ W) (hWc : HasCompactSupport W) :
     Integrable (fun p => pairing d (differential d f p) (W p)) (measure d) ∧
@@ -291,13 +282,15 @@ private theorem compact_pairing_right (d : ℕ) (U W : Space d → Cotangent d)
     contDiff_pi.mp (contDiff_pi.mp hW i) k
   have hcs (i : Fin d) (k : Fin 3) : HasCompactSupport (fun p => W p i k) :=
     hWc.comp_left (g := fun a : Cotangent d => a i k) (by simp)
-  have hleft := integrable_measure d _
+  refine ⟨(integrable_measure d _
     (continuous_pairing d _ W (smooth_differential d f hf).continuous hW.continuous)
-    (compact_pairing_right d _ W hWc)
-  have hright := integrable_measure d _
+    (by
+      apply hWc.mono
+      intro p hp hn
+      apply hp
+      simp [pairing, hn])), (integrable_measure d _
     ((smooth_star d f hf).continuous.mul (continuous_codifferential d W hW))
-    (compact_star d f hfc).mul_right
-  refine ⟨hleft, hright, ?_⟩
+    (compact_star d f hfc).mul_right), ?_⟩
   let A (i : Fin d) (k : Fin 3) (p : Space d) :=
     star (differential d f p i k) * W p i k
   let B (i : Fin d) (p : Space d) := star (f p) *
@@ -334,15 +327,12 @@ private theorem compact_pairing_right (d : ℕ) (U W : Space d → Cotangent d)
       have he : star (Real.exp (p (i,2)) : ℂ) = (Real.exp (p (i,2)) : ℂ) := by
         apply Complex.ext <;> simp only [Complex.star_def, Complex.conj_re, Complex.conj_im, Complex.ofReal_re, Complex.ofReal_im, neg_zero]
       fin_cases k
-      · change A i 0 p = _
-        simp [A, differential]
-      · change A i 1 p = _
-        change star ((Real.exp (p (i,2)) : ℂ) * coordinateDerivative d i 0 f p) * W p i 1 =
+      · simp [A, differential]
+      · change star ((Real.exp (p (i,2)) : ℂ) * coordinateDerivative d i 0 f p) * W p i 1 =
           (Real.exp (p (i,2)) : ℂ) * star (coordinateDerivative d i 0 f p) * W p i 1
         rw [star_mul, he]
         ring
-      · change A i 2 p = _
-        change star ((Real.exp (p (i,2)) : ℂ) * coordinateDerivative d i 1 f p) * W p i 2 =
+      · change star ((Real.exp (p (i,2)) : ℂ) * coordinateDerivative d i 1 f p) * W p i 2 =
           (Real.exp (p (i,2)) : ℂ) * star (coordinateDerivative d i 1 f p) * W p i 2
         rw [star_mul, he]
         ring
@@ -372,9 +362,9 @@ private theorem compact_pairing_right (d : ℕ) (U W : Space d → Cotangent d)
   have hBe : (fun p => star (f p) * codifferential d W p) = fun p => ∑ i : Fin d, B i p := by
     funext p; simp only [codifferential, Finset.mul_sum]; rfl
   rw [hBe, integral_finset_sum _ (fun i hi => hB i)]
-  exact Finset.sum_congr rfl (fun i hi => hAB i)
+  solve_by_elim [Finset.sum_congr]
 
-theorem codifferential_differential (d : ℕ) (hd : 1 ≤ d)
+theorem codifferential_differential (hd : 1 ≤ d)
     (f : Space d → ℂ) (hf : ContDiff ℝ ∞ f) :
     codifferential d (differential d f) = laplacian d f := by
   funext p
@@ -419,7 +409,11 @@ theorem kp_cont_hyperbolic_chart_green (d : ℕ) (hd : 1 ≤ d)
   obtain ⟨hg, hgc, hgs⟩ := hg
   obtain ⟨hW, hWc, hWs⟩ := hW
   have hfg := HyperbolicChart.first_order_green d f (differential d g) hf hfc
-    (HyperbolicChart.smooth_differential d g hg) (HyperbolicChart.compact_differential d g hgc)
+    (HyperbolicChart.smooth_differential d g hg) (by
+      apply HasCompactSupport.of_support_subset_isCompact hgc
+      intro p hp
+      by_contra hn
+      exact hp (differential_zero_off d g p hn))
   have hfW := HyperbolicChart.first_order_green d f W hf hfc hW hWc
   rw [codifferential_differential d hd g hg] at hfg
   have int (F : Space d → ℂ) (hF : Integrable F (measure d)) :

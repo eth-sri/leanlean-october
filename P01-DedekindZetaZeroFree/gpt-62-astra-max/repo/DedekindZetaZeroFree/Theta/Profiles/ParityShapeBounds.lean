@@ -77,12 +77,12 @@ private theorem parityCompactLower (S : Set (RayCoset.logHyperplane K)) (hS : Is
       rw [map_smul, mul_smul_comm, map_smul]
     rw [he, _root_.norm_smul, Real.norm_eq_abs, abs_of_nonneg (inv_nonneg.mpr (norm_nonneg x))] at hb'
     have := mul_le_mul_of_nonneg_left hb' (norm_nonneg x)
-    have hn : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr hx
     field_simp at this
     nlinarith
 
+variable (δ : Finset (RayCoset.RealPlaces K))
+
 theorem thetaParityShapeBounds
-    (δ : Finset (RayCoset.RealPlaces K))
     (S : Set (RayCoset.logHyperplane K)) (hS : IsCompact S) :
     ∃ P c : ℝ, 0 < P ∧ 0 < c ∧
       ∀ t : ℝ, 0 < t → ∀ h ∈ S, ∀ x : euclidean.mixedSpace K,
@@ -95,8 +95,7 @@ theorem thetaParityShapeBounds
             (fun v => t ^ (1 / (Module.finrank ℚ K : ℝ)) * Real.exp ((-h).val v)) x)‖ ≤
           P * Real.exp (-c * t ^ (2 / (Module.finrank ℚ K : ℝ)) * ‖x‖ ^ 2) := by
   let T := S ∪ Neg.neg '' S
-  have hT : IsCompact T := hS.union (hS.image continuous_neg)
-  obtain ⟨m, hm, hb⟩ := parityCompactLower K T hT
+  obtain ⟨m, hm, hb⟩ := parityCompactLower K T (hS.union (hS.image continuous_neg))
   obtain ⟨P, hP, hpoly⟩ := thetaPolynomialGaussianAbsorption δ.card Real.pi Real.pi_pos
   refine ⟨P, (Real.pi / 2) * m ^ 2, hP, mul_pos (by positivity) (sq_pos_of_pos hm), ?_⟩
   have hbound : ∀ t : ℝ, 0 < t → ∀ h ∈ T, ∀ x : euclidean.mixedSpace K,
@@ -113,7 +112,7 @@ theorem thetaParityShapeBounds
       rw [hy, _root_.norm_smul, Real.norm_eq_abs, abs_of_pos hr]
       exact mul_le_mul_of_nonneg_left (hb h hh x) hr.le
     have hsquare : m ^ 2 * r ^ 2 * ‖x‖ ^ 2 ≤ ‖y‖ ^ 2 := by
-      have : (r * (m * ‖x‖)) ^ 2 ≤ ‖y‖ ^ 2 :=
+      have :=
         pow_le_pow_left₀ (by positivity) hlower 2
       nlinarith
     have hrpow : r ^ 2 = t ^ (2 / (Module.finrank ℚ K : ℝ)) := by
@@ -133,8 +132,7 @@ theorem thetaParityShapeBounds
   exact ⟨hbound t ht h (Or.inl hh) x,
     hbound t ht (-h) (Or.inr ⟨h, hh, rfl⟩) x⟩
 
-theorem continuousOn_thetaParityShape
-    (δ : Finset (RayCoset.RealPlaces K)) :
+theorem continuousOn_thetaParityShape :
     ContinuousOn
       (fun thx : ℝ × (RayCoset.logHyperplane K × euclidean.mixedSpace K) =>
         RayParity.gδ K δ
@@ -156,8 +154,7 @@ theorem continuousOn_thetaParityShape
   · exact (Theta.traceToMixed K).continuous.comp_continuousOn
       (continuous_snd.comp continuous_snd).continuousOn
 
-theorem continuousOn_thetaParityShape_neg
-    (δ : Finset (RayCoset.RealPlaces K)) :
+theorem continuousOn_thetaParityShape_neg :
     ContinuousOn
       (fun thx : ℝ × (RayCoset.logHyperplane K × euclidean.mixedSpace K) =>
         RayParity.gδ K δ
@@ -179,7 +176,7 @@ theorem continuousOn_thetaParityShape_neg
   · exact (Theta.traceToMixed K).continuous.comp_continuousOn
       (continuous_snd.comp continuous_snd).continuousOn
 
-theorem thetaParity_zero (δ : Finset (RayCoset.RealPlaces K)) :
+theorem thetaParity_zero :
     RayParity.gδ K δ (0 : euclidean.mixedSpace K) =
       if δ = ∅ then (1 : ℂ) else 0 := by
   by_cases h : δ = ∅

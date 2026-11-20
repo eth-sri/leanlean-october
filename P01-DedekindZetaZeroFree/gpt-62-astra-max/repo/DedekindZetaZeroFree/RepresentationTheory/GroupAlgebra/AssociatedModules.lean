@@ -27,9 +27,9 @@ theorem _root_.Representation.finrank_moduleCat_asModule
   let e : (ModuleCat.of k[G] ρ.asModule) ≃ₗ[k] V :=
     { toFun := fun x ↦ ρ.asModuleEquiv x
       invFun := fun x ↦ ρ.asModuleEquiv.symm x
-      left_inv := fun x ↦ by exact ρ.asModuleEquiv.toEquiv.left_inv x
-      right_inv := fun x ↦ by exact ρ.asModuleEquiv.toEquiv.right_inv x
-      map_add' := fun x y ↦ by exact ρ.asModuleEquiv.map_add x y
+      left_inv := fun x ↦ ρ.asModuleEquiv.toEquiv.left_inv x
+      right_inv := fun x ↦ ρ.asModuleEquiv.toEquiv.right_inv x
+      map_add' := fun x y ↦ ρ.asModuleEquiv.map_add x y
       map_smul' := fun r x ↦ by
 
         change ρ.asModuleEquiv (algebraMap k k[G] r • x) = r • ρ.asModuleEquiv x

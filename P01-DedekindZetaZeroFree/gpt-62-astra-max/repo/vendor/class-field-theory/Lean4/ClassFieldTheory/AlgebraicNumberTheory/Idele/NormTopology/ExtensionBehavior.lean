@@ -11,8 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -109,7 +107,6 @@ lying over the chosen base place. -/
     ⟨W.1, ⟨congrArg (fun v : InfinitePlace K => v.1) W.2⟩⟩
   invFun W :=
     ⟨W.1, by
-      change W.1.comap (algebraMap K L) = v₀
       let : W.1.1.LiesOver v₀.1 := W.2
       exact InfinitePlace.LiesOver.comap_eq W.1 v₀⟩
   left_inv W := Subtype.ext rfl
@@ -189,9 +186,7 @@ private theorem infinitePlaceFiber_inertiaDeg_sum
       apply Finset.sum_subtype
       intro W
       simp
-    _ = Module.finrank K L := by
-      exact
-        InfinitePlace.sum_inertiaDeg_eq_finrank
+    _ = Module.finrank K L := InfinitePlace.sum_inertiaDeg_eq_finrank
           K L v₀
 
 omit [FiniteDimensional K L] in
@@ -311,7 +306,7 @@ theorem archimedeanNorm_extension
         Finset.prod_pow_eq_pow_sum
           Finset.univ
           (fun W : {W : InfinitePlace L //
-              _root_.infinitePlaceBelow (K := K) W = v₀} =>
+              _root_.infinitePlaceBelow W = v₀} =>
             W.1.mult)
           (nnnormUnitHom v₀.Completion
             (infiniteComponent v₀ a))
@@ -336,37 +331,12 @@ theorem archimedeanNorm_extension
         (∏ v₀ : InfinitePlace K,
           nnnormUnitHom v₀.Completion
             (infiniteComponent v₀ a) ^ v₀.mult) ^
-          Module.finrank K L := by
-      exact
-        Finset.prod_pow
+          Module.finrank K L := Finset.prod_pow
           Finset.univ
           (Module.finrank K L)
           (fun v₀ : InfinitePlace K =>
             nnnormUnitHom v₀.Completion
               (infiniteComponent v₀ a) ^ v₀.mult)
-
-/-- Scalar extension raises the absolute idele norm to the degree of the
-number-field extension. -/
-theorem absoluteNorm_extension
-    (a : IdeleGroup K) :
-    absoluteNorm (extension K L a) =
-      absoluteNorm a ^ Module.finrank K L := by
-  rw [absoluteNorm_apply, absoluteNorm_apply,
-    finiteAbsoluteNorm_extension,
-    archimedeanNorm_extension]
-  calc
-    FiniteIdeleGroup.absoluteNorm a.2 ^ Module.finrank K L *
-          (InfiniteIdeleGroup.archimedeanNorm a.1 ^
-            Module.finrank K L)⁻¹ =
-        FiniteIdeleGroup.absoluteNorm a.2 ^ Module.finrank K L *
-          (InfiniteIdeleGroup.archimedeanNorm a.1)⁻¹ ^
-            Module.finrank K L := by
-      rw [inv_pow]
-    _ =
-        (FiniteIdeleGroup.absoluteNorm a.2 *
-          (InfiniteIdeleGroup.archimedeanNorm a.1)⁻¹) ^
-            Module.finrank K L := by
-      rw [mul_pow]
 
 /-- If the finite part of a rational idele is trivial, then its scalar
 extension has absolute norm equal to the extension degree power of the
@@ -390,19 +360,18 @@ theorem absoluteNorm_relativeIdeleBaseChange_inclusion_of_finite_eq_one
     change
       Units.map
           (finitePlaceAdicCompletionMap ℚ L
-            (_root_.finitePlaceBelow (K := ℚ) W)
+            (_root_.finitePlaceBelow W)
             ⟨W, rfl⟩).toMonoidHom
-          (a.2 (_root_.finitePlaceBelow (K := ℚ) W)) =
+          (a.2 (_root_.finitePlaceBelow W)) =
         1
     rw [ha]
     exact map_one _
   rw [absoluteNorm_apply, absoluteNorm_apply, hfinite, ha,
     map_one, one_mul,
-    archimedeanNorm_extension (K := ℚ) (L := L)]
-  simpa only [map_one, one_mul] using
+    archimedeanNorm_extension]
+  simpa using
     (inv_pow (InfiniteIdeleGroup.archimedeanNorm a.1)
       (Module.finrank ℚ L)).symm
-
 
 end IdeleGroup
 

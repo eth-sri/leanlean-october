@@ -10,8 +10,8 @@ noncomputable section
 namespace DedekindZetaZeroFree.LocalFiniteSumCompatibility
 open LocalFiniteSums
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 theorem globalDenominator_mem_iff (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (n : ℕ) (x : A.R) :

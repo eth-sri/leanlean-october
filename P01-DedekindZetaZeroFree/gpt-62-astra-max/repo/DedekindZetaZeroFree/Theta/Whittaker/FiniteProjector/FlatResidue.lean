@@ -59,7 +59,7 @@ structure FlatScalarResidue {K : Subgroup (G F ζ hζ)} (f : Flat F ζ hζ K) wh
 variable {F ζ hζ}
 
 variable (F ζ hζ)
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.FiniteWordNumerator renaming finite_word_numerator → finite_word_numerator
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.FiniteWordNumerator (finite_word_numerator)
 
 theorem flatScalarResidue_exists (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
@@ -94,7 +94,7 @@ theorem flatScalarResidue_exists (C : KPGlobalTorusInducingPlan.ModelData F ζ h
     self_mem_nhdsWithin] with z hz hzr hzne
   rw [hTe z hzr hzne g, hz]
   calc
-    z * (Q z * E z g) / Q z = (z * E z g) * Q z / Q z := by ring
+    _ = (z * E z g) * Q z / Q z := by ring
     _ = _ := mul_div_cancel_right₀ _ (hne z hzr)
 
 variable {F ζ hζ}
@@ -134,12 +134,9 @@ theorem flat_finite_residue {K : Subgroup (G F ζ hζ)}
     change A.E z (g * a) = _
     rw [A.chamber z hz, flat_finite_chamber hK f s v b a hexp z hz]
     exact Finset.sum_congr rfl (fun i _ => congrArg (b i z * ·) ((B i).chamber z hz g).symm)
-  have hall : ∀ᶠ z in 𝓝[≠] (0 : ℂ), ∀ i ∈ s,
-      (B i).numerator z g = z * (B i).E z g :=
-    (Filter.eventually_all_finite s.finite_toSet).mpr (fun i hi => (B i).clears g)
   have hn : (fun z => A.numerator z (g * a)) =ᶠ[𝓝[≠] (0 : ℂ)]
       (fun z => ∑ i ∈ s, b i z * (B i).numerator z g) := by
-    filter_upwards [A.clears _, he, hall] with z ha he hz
+    filter_upwards [A.clears _, he, ((Filter.eventually_all_finite s.finite_toSet).mpr (fun i hi => (B i).clears g))] with z ha he hz
     rw [ha, he, Finset.mul_sum]
     exact Finset.sum_congr rfl (fun i hi => by rw [hz i hi]; ring)
   have hcont : ContinuousAt (fun z => ∑ i ∈ s, b i z * (B i).numerator z g) 0 := by
@@ -163,12 +160,9 @@ theorem FlatScalarResidue.value_unique {K : Subgroup (G F ζ hζ)}
     intro z hz
     change A.E z g = B.E z g
     rw [A.chamber z hz g, B.chamber z hz g]
-  have hn : (fun z => A.numerator z g) =ᶠ[𝓝[≠] (0 : ℂ)] (fun z => B.numerator z g) := by
-    filter_upwards [A.clears g, B.clears g, he] with z ha hb he
-    rw [ha, hb, he]
-  have hAc := (A.analytic g 0 (Metric.mem_ball_self A.radius_pos)).continuousAt
-  have hBc := (B.analytic g 0 (Metric.mem_ball_self B.radius_pos)).continuousAt
-  exact ((hAc.eventuallyEq_nhds_iff_eventuallyEq_nhdsNE hBc).mp hn).eq_of_nhds
+  refine ((((A.analytic g 0 (Metric.mem_ball_self A.radius_pos)).continuousAt).eventuallyEq_nhds_iff_eventuallyEq_nhdsNE ((B.analytic g 0 (Metric.mem_ball_self B.radius_pos)).continuousAt)).mp ?_).eq_of_nhds
+  filter_upwards [A.clears g, B.clears g, he] with z ha hb he
+  rw [ha, hb, he]
 
 end DedekindZetaZeroFree.RootDerivatives
 

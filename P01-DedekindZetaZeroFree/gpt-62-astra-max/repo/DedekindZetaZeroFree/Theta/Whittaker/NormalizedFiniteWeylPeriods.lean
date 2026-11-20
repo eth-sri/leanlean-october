@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Theta.Whittaker.LocalFunctionalsFromGlobalPeriods
 
 public import DedekindZetaZeroFree.Theta.Profiles.RadialJetsAndLocalNorms
 
@@ -11,9 +12,9 @@ namespace DedekindZetaZeroFree.SheetRescaling
 open MomentSources NumberField MeasureTheory
 open scoped Classical Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {N : TraceHaarTransport R} (C : JointDigitDescentSources R N)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {N : TraceHaarTransport R} (C : JointDigitDescentSources R N)
 
 theorem finite_translate_period
     (s : RestrictedTensorSimple.Level C.factorization.bad)
@@ -125,18 +126,7 @@ theorem selected_finite_ratio (v : R.A.UnitQuotient)
         split_ifs with h <;> simp_all
   · exact hq
 
-theorem dependent_prod_update {I : Type*} [Fintype I] [DecidableEq I] {V : I → Type*}
-    (f : ∀ i, V i → ℂ) (x : ∀ i, V i) (i : I) (b : V i) :
-    (∏ j, f j (Function.update x i b j)) =
-      f i b * ∏ j ∈ Finset.univ.erase i, f j (x j) := by
-  classical
-  rw [← Finset.mul_prod_erase Finset.univ
-    (fun j => f j (Function.update x i b j)) (Finset.mem_univ i)]
-  rw [Function.update_self]
-  congr 1
-  apply Finset.prod_congr rfl
-  intro j hj
-  exact congrArg (f j) (Function.update_of_ne (Finset.mem_erase.mp hj).1 b x)
+alias dependent_prod_update := DedekindZetaZeroFree.ExteriorWhittakerValues.StoredWhittaker.dependent_prod_update
 
 theorem localWeylValue_eq (v : R.A.UnitQuotient)
     (s : RestrictedTensorSimple.Level C.factorization.bad)

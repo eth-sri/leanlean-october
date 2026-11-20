@@ -13,7 +13,7 @@ open DedekindZetaZeroFree.AbelianQuotient
 namespace DedekindZetaZeroFree.Hecke
 
 variable (F : Type) [Field F] [instNF : NumberField F]
-variable (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
 
 include instNF hm
 
@@ -54,12 +54,13 @@ theorem mk_traceDual_mul_modulus_of_inverse_class
 
 namespace Theta
 
-theorem rayToOrdinary_surjective : Function.Surjective (rayToOrdinary F m hm) := by
-  exact ClassFieldTheory.ordinaryRayClassGroupEquivClassGroup.surjective.comp
+theorem rayToOrdinary_surjective : Function.Surjective (rayToOrdinary F m hm) := ClassFieldTheory.ordinaryRayClassGroupEquivClassGroup.surjective.comp
       (ClassFieldTheory.rayClassIdealModulusProjection_surjective F
         (ClassFieldTheory.ordinaryRayClassModulus_le F (narrowIdealModulus F m hm)))
 
-theorem exists_integral_inverse_ordinaryClass_coprime (C : ClassGroup (𝓞 F)) :
+variable (C : ClassGroup (𝓞 F))
+
+theorem exists_integral_inverse_ordinaryClass_coprime :
     ∃ a : Ideal (𝓞 F), ∃ ha : a ≠ ⊥,
       a ⊔ m = ⊤ ∧ ClassGroup.mk F (rayIdealFractionalIdeal F a ha) = C⁻¹ := by
   obtain ⟨c, hc⟩ := rayToOrdinary_surjective F m hm C
@@ -67,27 +68,24 @@ theorem exists_integral_inverse_ordinaryClass_coprime (C : ClassGroup (𝓞 F)) 
   refine ⟨a, ha, hcop, ?_⟩
   rw [← rayToOrdinary_rayIdealClass hm a ha hcop c⁻¹ hcls, map_inv, hc]
 
-def inverseOrdinaryClassCoprimeRepresentative (C : ClassGroup (𝓞 F)) :
+def inverseOrdinaryClassCoprimeRepresentative :
     (Ideal (𝓞 F))⁰ :=
   ⟨Classical.choose (exists_integral_inverse_ordinaryClass_coprime F m hm C),
     mem_nonZeroDivisors_of_ne_zero
       (Classical.choose (Classical.choose_spec
         (exists_integral_inverse_ordinaryClass_coprime F m hm C)))⟩
 
-theorem inverseOrdinaryClassCoprimeRepresentative_coprime (C : ClassGroup (𝓞 F)) :
-    (inverseOrdinaryClassCoprimeRepresentative F m hm C : Ideal (𝓞 F)) ⊔ m = ⊤ := by
-  exact (Classical.choose_spec (Classical.choose_spec
+theorem inverseOrdinaryClassCoprimeRepresentative_coprime :
+    (inverseOrdinaryClassCoprimeRepresentative F m hm C : Ideal (𝓞 F)) ⊔ m = ⊤ := (Classical.choose_spec (Classical.choose_spec
       (exists_integral_inverse_ordinaryClass_coprime F m hm C))).1
 
-theorem mk_inverseOrdinaryClassCoprimeRepresentative (C : ClassGroup (𝓞 F)) :
+theorem mk_inverseOrdinaryClassCoprimeRepresentative :
     ClassGroup.mk F
       (FractionalIdeal.mk0 F (inverseOrdinaryClassCoprimeRepresentative F m hm C)) =
-      C⁻¹ := by
-  exact (Classical.choose_spec (Classical.choose_spec
+      C⁻¹ := (Classical.choose_spec (Classical.choose_spec
       (exists_integral_inverse_ordinaryClass_coprime F m hm C))).2
 
-theorem mk_traceDual_mul_modulus_inverseOrdinaryClassCoprimeRepresentative
-    (C : ClassGroup (𝓞 F)) :
+theorem mk_traceDual_mul_modulus_inverseOrdinaryClassCoprimeRepresentative :
     ClassGroup.mk F (DedekindZetaZeroFree.AbelianQuotient.Theta.traceDualIdealUnit F
       (FractionalIdeal.mk0 F (inverseOrdinaryClassCoprimeRepresentative F m hm C) *
         rayIdealFractionalIdeal F m hm)) =

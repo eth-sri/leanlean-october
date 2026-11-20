@@ -13,7 +13,7 @@ noncomputable section
 
 namespace ClassKillProof
 variable (F : Type) [Field F] [NumberField F]
-variable (S : Set (HeightOneSpectrum (𝓞 F)))
+    (S : Set (HeightOneSpectrum (𝓞 F)))
  abbrev extHom : FractionalIdeal (𝓞 F)⁰ F →+* FractionalIdeal (S.integer F)⁰ F :=
   FractionalIdeal.extendedHom (K := F) F (S.integer F)
 private lemma map_id : IsFractionRing.map (FaithfulSMul.algebraMap_injective (𝓞 F) (S.integer F)) = RingHom.id F := by
@@ -55,17 +55,11 @@ private lemma descent (I : FractionalIdeal (S.integer F)⁰ F) (hI : IsUnit I) :
     change Submodule.span (S.integer F) (Submodule.span (𝓞 F) ((id : F → F) '' (s : Set F)) : Set F) = _
     rw [Submodule.span_span_of_tower]
     simpa using hs
-  have hJ : J ≠ 0 := by
-    intro h
-    rw [h, map_zero] at hext
-    exact hI.ne_zero hext.symm
-  exact ⟨Units.mk0 J hJ, hext⟩
-private lemma inv_mem (a : 𝓞 F) (hS : ∀ v : HeightOneSpectrum (𝓞 F), a ∈ v.asIdeal → v ∈ S) :
-    (algebraMap (𝓞 F) F a)⁻¹ ∈ S.integer F := by
-  intro v hv
-  have h : v.valuation F (algebraMap (𝓞 F) F a) = 1 :=
-    (v.valuation_eq_one_iff_notMem).mpr (fun ha => hv (hS v ha))
-  simp [map_inv₀, h]
+  refine ⟨Units.mk0 J ?_, hext⟩
+  intro h
+  rw [h, map_zero] at hext
+  exact hI.ne_zero hext.symm
+
 private lemma kill (J : Ideal (𝓞 F)) (a : 𝓞 F) (ha : a ∈ J) (ha0 : a ≠ 0)
     (hS : ∀ v : HeightOneSpectrum (𝓞 F), a ∈ v.asIdeal → v ∈ S) :
     extHom F S (J : FractionalIdeal (𝓞 F)⁰ F) = 1 := by
@@ -73,18 +67,12 @@ private lemma kill (J : Ideal (𝓞 F)) (a : 𝓞 F) (ha : a ∈ J) (ha0 : a ≠
   · exact FractionalIdeal.extended_le_one_of_le_one _ _ _ FractionalIdeal.coeIdeal_le_one
   · rw [FractionalIdeal.one_le]
     rw [← FractionalIdeal.mem_coe, ext_coe]
-    have hm : algebraMap (𝓞 F) F a ∈ Submodule.span (S.integer F) ((J : FractionalIdeal (𝓞 F)⁰ F) : Set F) :=
-      Submodule.subset_span ((FractionalIdeal.mem_coeIdeal (𝓞 F)⁰).mpr ⟨a, ha, rfl⟩)
     have := (Submodule.span (S.integer F) ((J : FractionalIdeal (𝓞 F)⁰ F) : Set F)).smul_mem
-      (⟨(algebraMap (𝓞 F) F a)⁻¹, inv_mem F S a hS⟩ : S.integer F) hm
-    have haF : algebraMap (𝓞 F) F a ≠ 0 := (map_ne_zero_iff _ (IsFractionRing.injective _ _)).mpr ha0
-    simpa [Algebra.smul_def, inv_mul_cancel₀ haF] using this
-private lemma principalize (J : FractionalIdeal (𝓞 F)⁰ F) (a : Fˣ)
-    (h : extHom F S J * FractionalIdeal.spanSingleton (S.integer F)⁰ (a : F) = 1) :
-    extHom F S J = FractionalIdeal.spanSingleton (S.integer F)⁰ ((a⁻¹ : Fˣ) : F) := by
-  have h' := congrArg (fun I => I * FractionalIdeal.spanSingleton (S.integer F)⁰ ((a⁻¹ : Fˣ) : F)) h
-  simpa only [mul_assoc, FractionalIdeal.spanSingleton_mul_spanSingleton,
-    Units.mul_inv, FractionalIdeal.spanSingleton_one, mul_one, one_mul] using h'
+      (⟨(algebraMap (𝓞 F) F a)⁻¹, (by
+        intro v hv
+        simp [map_inv₀, ((v.valuation_eq_one_iff_notMem).mpr (fun ha => hv (hS v ha)))])⟩ : S.integer F) (Submodule.subset_span ((FractionalIdeal.mem_coeIdeal (𝓞 F)⁰).mpr ⟨a, ha, rfl⟩))
+    simpa [Algebra.smul_def, inv_mul_cancel₀ ((map_ne_zero_iff _ (IsFractionRing.injective _ _)).mpr ha0)] using this
+
 private lemma principal_of_reps
     (rep : ClassGroup (𝓞 F) → (Ideal (𝓞 F))⁰)
     (hrep : ∀ C, ClassGroup.mk0 (rep C) = C)
@@ -93,13 +81,14 @@ private lemma principal_of_reps
     ∃ x : Fˣ, I = FractionalIdeal.spanSingleton (S.integer F)⁰ (x : F) := by
   obtain ⟨J, hJ⟩ := descent F S I hI
   let C := ClassGroup.mk F J
-  have hclass : ClassGroup.mk F J = ClassGroup.mk F (FractionalIdeal.mk0 F (rep C)) := by
-    rw [ClassGroup.mk_mk0, hrep]
-  obtain ⟨x, hx⟩ := same_class F J (FractionalIdeal.mk0 F (rep C)) hclass
-  have hx' := congrArg (fun J : (FractionalIdeal (𝓞 F)⁰ F)ˣ => extHom F S (J : FractionalIdeal (𝓞 F)⁰ F)) hx
+  obtain ⟨x, hx⟩ := same_class F J (FractionalIdeal.mk0 F (rep C)) (by
+    rw [ClassGroup.mk_mk0, hrep])
+  have hx' := congrArg (fun J : (FractionalIdeal (𝓞 F)⁰ F)ˣ => extHom F S J) hx
   simp only [Units.val_mul, coe_toPrincipalIdeal, map_mul, ext_span, FractionalIdeal.coe_mk0] at hx'
   rw [hkill] at hx'
-  exact ⟨x⁻¹, hJ ▸ principalize F S J x hx'⟩
+  exact ⟨x⁻¹, hJ ▸ (by
+    simpa only [mul_assoc, FractionalIdeal.spanSingleton_mul_spanSingleton,
+      Units.mul_inv, FractionalIdeal.spanSingleton_one, mul_one, one_mul] using (congrArg (fun I => I * FractionalIdeal.spanSingleton (S.integer F)⁰ ((x⁻¹ : Fˣ) : F)) hx'))⟩
 end ClassKillProof
 
 open ClassKillProof
@@ -115,9 +104,11 @@ lemma exists_unit_of_isPrincipal {K : Type*} [Field K] {R : Type*} [CommRing R] 
   have hx0 : x ≠ 0 := fun hxz => h0 (by rw [hIeq, hxz, FractionalIdeal.spanSingleton_zero])
   exact ⟨Units.mk0 x hx0, by rw [hIeq, Units.val_mk0]⟩
 
-theorem exists_principalizing_finite_set (F : Type) [Field F] [NumberField F]
-    (S₀ : Finset (HeightOneSpectrum (𝓞 F)))
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) :
+variable (F : Type) [Field F] [NumberField F] (S₀ : Finset (HeightOneSpectrum (𝓞 F))) (𝔪 : Ideal (𝓞 F))
+    (h𝔪 : 𝔪 ≠ ⊥)
+
+include h𝔪 in
+theorem exists_principalizing_finite_set :
     ∃ Sf : Finset (HeightOneSpectrum (𝓞 F)),
       S₀ ⊆ Sf ∧
       (∀ v : HeightOneSpectrum (𝓞 F), (6 : 𝓞 F) ∈ v.asIdeal → v ∈ Sf) ∧
@@ -137,7 +128,6 @@ theorem exists_principalizing_finite_set (F : Type) [Field F] [NumberField F]
   let modSupp := (Ideal.finite_factors h𝔪).toFinset
   let classSupp := Finset.univ.biUnion (fun C => supp (a C) (ha0 C))
   let Sf := S₀ ∪ six ∪ modSupp ∪ classSupp
-  have hbad : S₀ ⊆ Sf := by intro v hv; simp [Sf, hv]
   have hsix : ∀ v : HeightOneSpectrum (𝓞 F), (6 : 𝓞 F) ∈ v.asIdeal → v ∈ Sf := by
     intro v hv
     have hv' : v ∈ six := by simpa [six, supp, Ideal.dvd_span_singleton] using hv
@@ -146,18 +136,17 @@ theorem exists_principalizing_finite_set (F : Type) [Field F] [NumberField F]
     intro v hv
     have hv' : v ∈ modSupp := by simpa [modSupp, Ideal.dvd_iff_le] using hv
     simp [Sf, hv']
-  refine ⟨Sf, hbad, hsix, hmod, ?_⟩
-  apply principal_of_reps F (Sf : Set _) rep hrep
+  refine ⟨Sf, by intro v hv; simp [Sf, hv], hsix, hmod, ?_⟩
+  apply principal_of_reps F Sf rep hrep
   intro C
-  apply kill F (Sf : Set _) (rep C) (a C) (ha C) (ha0 C)
+  apply kill F Sf (rep C) (a C) (ha C) (ha0 C)
   intro v hv
   have hv' : v ∈ supp (a C) (ha0 C) := by simpa [supp, Ideal.dvd_span_singleton] using hv
   have hv'' : v ∈ classSupp := Finset.mem_biUnion.mpr ⟨C, Finset.mem_univ _, hv'⟩
   simp [Sf, hv'']
 
-theorem exists_principalizing_sArithmeticData (F : Type) [Field F] [NumberField F]
-    (S₀ : Finset (HeightOneSpectrum (𝓞 F)))
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
+include h𝔪 in
+theorem exists_principalizing_sArithmeticData
     (zeta12 : F) (hzeta12 : IsPrimitiveRoot zeta12 12) :
     ∃ A : SArithmeticData F,
       A.S₀ = S₀ ∧ A.modulus = 𝔪 ∧ A.zeta12 = zeta12 ∧

@@ -40,7 +40,6 @@ theorem radial_log_integrable (k : ℝ) (hk : 0 < k) (f : ℝ → ℂ) (hf : Int
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with r hr
   rw [ENNReal.toReal_ofReal (inv_nonneg.mpr (sq_nonneg r))]
   simp only [Complex.real_smul, Complex.ofReal_inv, Complex.ofReal_pow]
-  have hn : (r:ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hr)
   field_simp
 theorem incoming_commutator_radial_integrable (d : ℕ) (hd : 0 < d) {T : ℝ}
     (χ : SmoothCuspCutoff T) (s : ℂ) (τ : ℝ) :

@@ -9,26 +9,22 @@ open scoped Classical NumberField Topology ContDiff
 open MeasureTheory Filter
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming cutoff → cutoff
-open _root_.DedekindZetaZeroFree renaming canonicalRealization → canonicalRealization
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming lift_eq → lift_eq
+
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "level" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U
 local notation "G" => KPContSectorCoveredQuotientVocabulary.ActualCover F ζ hζ
 
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming scalar_analytic_of_right_holomorphic → scalar_analytic_of_right_holomorphic
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming word_smul → word_smul
-open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy renaming actualRightWord_compact_holomorphy → actualRightWord_compact_holomorphy
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming word_zero → word_zero
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer (scalar_analytic_of_right_holomorphic word_smul)
+open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy (actualRightWord_compact_holomorphy)
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (word_zero)
 theorem spherical_word_scalar_hilbert_orthogonal_producer
     (v : KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (w : List (Fin (groupDimension F))) :
@@ -77,7 +73,7 @@ theorem spherical_word_scalar_hilbert_orthogonal_producer
           exact deriv_const _ _
       exact (congrFun hwz g).symm
     · intro g s hs
-      exact (analyticAt_const (v := (0 : ℂ))).meromorphicAt
+      exact (analyticAt_const).meromorphicAt
     · intro s hs hne
       ext g
       simp
@@ -98,9 +94,7 @@ theorem spherical_word_scalar_hilbert_orthogonal_producer
         rw [KPContSectorLineL2Isometry.scalarRepresentative_eq_symm]
         exact congrArg Subtype.val (LinearEquiv.map_zero
           (KPContSectorScalarLineAlgebra.S F ζ hζ level R P H).symm)
-      refine ⟨hs ▸ (MemLp.zero : MemLp
-        (0 : KPContActualAllCuspSource.Covered F ζ hζ C R P H U → ℂ)
-        2 (KPContActualAllCuspSource.measure F ζ hζ C R P H U)), ?_⟩
+      refine ⟨hs ▸ MemLp.zero, ?_⟩
       simp only [hs, MemLp.toLp_zero]
       rfl
     · simpa using (sourceLaplacian F ζ hζ C R P H U).graph.zero_mem
@@ -108,11 +102,9 @@ theorem spherical_word_scalar_hilbert_orthogonal_producer
       exact inner_zero_right t
     · intro g
       have hz : groupScalar F ζ hζ C R P H U (0 : Smooth) = 0 := by
-        have he := groupScalar_smul F ζ hζ C R P H U (0 : ℂ) (0 : Smooth)
-        simpa using he
+        simpa using (groupScalar_smul F ζ hζ C R P H U (0 : ℂ) (0 : Smooth))
       rw [hz]
-      have he := ResidualSphericalGeometry.casimir_smul F ζ hζ (0 : ℂ) (0 : G → ℂ) g
-      simpa using he
+      simpa using (ResidualSphericalGeometry.casimir_smul F ζ hζ (0 : ℂ) (0 : G → ℂ) g)
     · have hz : groupScalar F ζ hζ C R P H U (0 : Smooth) = 0 := by
         have he := groupScalar_smul F ζ hζ C R P H U (0 : ℂ) (0 : Smooth)
         simpa using he
@@ -169,18 +161,12 @@ theorem spherical_word_scalar_hilbert_orthogonal_producer
       change N s g = (s - c) * A s g at heq
       rw [heq]
       exact mul_div_cancel_left₀ (A s g) (sub_ne_zero.mpr hsne)
-    have hzero : (0 : ℂ) ∈ KPContinuation.spectralDomain := by
-      norm_num [KPContinuation.spectralDomain]
-    obtain ⟨r, hr, hb, N, hNj, hNa, he, hcent⟩ := hwordlocal 0 hzero
+    obtain ⟨r, hr, hb, N, hNj, hNa, he, hcent⟩ := hwordlocal 0 (by
+      norm_num [KPContinuation.spectralDomain])
     refine ⟨A, N, ?_, hm, r, hr, hb, ?_, hNa, hNj, hcent⟩
     · intro s hs g
-      have hz : groupScalar F ζ hζ C R P H U (Z s) =
-          fun h => ∑' c : KPChamberBruhatTwoCells.RationalQuotient F,
-            (KPContFlatSourceRecipe.flatR F ζ hζ s v.val).val
-              (KPLiteralRaw.rationalLift F ζ hζ (Quotient.out c) * h) :=
-        funext (hch s hs)
-      exact congrFun (congrArg (actualRightWord F ζ hζ w) hz) g
-    · simpa only [sub_zero] using he
+      exact congrFun (congrArg (actualRightWord F ζ hζ w) (funext (hch s hs))) g
+    · simpa using he
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 

@@ -11,9 +11,9 @@ namespace DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 open ResidualSphericalGeometry KPContSectorCoveredQuotientVocabulary KPContSectorSmoothFramesSupport
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
-open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison renaming K_U_compact → K_U_compact
+open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison (K_U_compact)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (V : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (V : KPMsFixedHaarDisintegration.Level F ζ hζ)
 local instance : MeasurableSpace (K_U F ζ hζ V) := borel (K_U F ζ hζ V)
 local instance : BorelSpace (K_U F ζ hζ V) := ⟨rfl⟩
 

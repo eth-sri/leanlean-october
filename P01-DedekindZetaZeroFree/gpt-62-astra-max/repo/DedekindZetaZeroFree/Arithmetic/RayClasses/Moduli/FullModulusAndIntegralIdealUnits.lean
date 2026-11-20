@@ -13,7 +13,11 @@ open scoped NumberField Classical
 
 variable {F : Type*} [Field F] [NumberField F]
 
-def fullModulus (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
+section
+
+variable (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+
+def fullModulus :
     ClassFieldTheory.RayClassModulus F where
   finitePart := Finsupp.onFinset (Ideal.finite_factors hm).toFinset
     (fun v => (Associates.mk v.asIdeal).count (Associates.mk m).factors)
@@ -23,21 +27,17 @@ def fullModulus (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
         ((Associates.count_ne_zero_iff_dvd hm v.irreducible).mp hv))
   infinitePart := Finset.univ
 
-@[simp] theorem fullModulus_finitePart (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+@[simp] theorem fullModulus_finitePart
     (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
     (fullModulus m hm).finitePart v =
       (Associates.mk v.asIdeal).count (Associates.mk m).factors := by
-  simp [fullModulus]
+  rfl
 
-@[simp] theorem fullModulus_infinitePart (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
+@[simp] theorem fullModulus_infinitePart :
     (fullModulus m hm).infinitePart = Finset.univ := by
   rw [fullModulus]
 
-@[simp] theorem mem_fullModulus_infinitePart (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (v : ClassFieldTheory.RayClassRealPlace F) :
-    v ∈ (fullModulus m hm).infinitePart := by
-  rw [fullModulus_infinitePart]
-  exact Finset.mem_univ v
+end
 
 def integralIdealUnit (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     ClassFieldTheory.NumberFieldFractionalIdealGroup F :=
@@ -51,8 +51,7 @@ def integralIdealUnit (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
 @[simp] theorem integralIdealUnit_mul (I J : Ideal (𝓞 F))
     (hI : I ≠ ⊥) (hJ : J ≠ ⊥) (hIJ : I * J ≠ ⊥) :
     integralIdealUnit (I * J) hIJ = integralIdealUnit I hI * integralIdealUnit J hJ := by
-  ext
-  simp only [integralIdealUnit, Units.val_mk0, Units.val_mul, FractionalIdeal.coeIdeal_mul]
+  simp [integralIdealUnit]
 
 end DedekindZetaZeroFree.LargeSieve.RayBridge
 

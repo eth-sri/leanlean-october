@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -60,15 +56,12 @@ theorem prod_twistedFinRotate_div
         (∏ i : Fin n, v i)⁻¹ =
       τ • v 0 * (v 0)⁻¹ := by
   classical
-  let u : Fin n → C :=
+  let u :=
     fun j ↦ if j = 0 then τ • v 0 else v j
-  have hrotate :
-      (∏ i : Fin n, twistedFinRotate τ v i) =
-        ∏ j : Fin n, u j := by
-    exact Fintype.prod_equiv
+  have hrotate := Fintype.prod_equiv
       (finRotate n) (twistedFinRotate τ v) u
       (fun i ↦ rfl)
-  let R : C :=
+  let R :=
     ∏ j ∈ (Finset.univ.erase (0 : Fin n)), v j
   have hu :
       (∏ j : Fin n, u j) = (τ • v 0) * R := by
@@ -78,20 +71,14 @@ theorem prod_twistedFinRotate_div
     congr 1
     apply Finset.prod_congr rfl
     intro j hj
-    have hj0 : j ≠ 0 :=
-      Finset.ne_of_mem_erase hj
-    simp [hj0]
+    simp [(Finset.ne_of_mem_erase hj)]
   have hv :
       (∏ j : Fin n, v j) = v 0 * R := by
     rw [← Finset.mul_prod_erase Finset.univ v
       (Finset.mem_univ (0 : Fin n))]
   rw [hrotate, hu, hv]
   simp only [mul_inv_rev]
-  calc
-    (τ • v 0) * R * (R⁻¹ * (v 0)⁻¹) =
-        (τ • v 0) * (v 0)⁻¹ *
-          (R * R⁻¹) := by ac_rfl
-    _ = τ • v 0 * (v 0)⁻¹ := by simp
+  simp
 
 /-- Multiplication by the cyclic generator advances `finRotate`, with the
 last coordinate wrapping to the full-period power. -/
@@ -107,38 +94,34 @@ theorem pow_mul_eq_pow_finRotate
       by_cases hi : i = Fin.last n
       · subst i
         simp [pow_succ]
-      · have hil : i.1 < n :=
-          Fin.val_lt_last hi
-        rw [finRotate_of_lt hil]
+      · rw [finRotate_of_lt (Fin.val_lt_last hi)]
         simp [pow_succ]
 
+section
+
+variable {C : Type*} [CommMonoid C] {n : ℕ} (v : Fin n → C)
+
 /-- Partial product of a finite vector. -/
-def finPartialProduct {C : Type*} [CommMonoid C]
-    {n : ℕ} (v : Fin n → C) (k : ℕ) : C :=
+def finPartialProduct (k : ℕ) : C :=
   (Finset.range k).prod fun i ↦
     if hi : i < n then v ⟨i, hi⟩ else 1
 
 @[simp]
-theorem finPartialProduct_zero
-    {C : Type*} [CommMonoid C] {n : ℕ}
-    (v : Fin n → C) :
+theorem finPartialProduct_zero :
     finPartialProduct v 0 = 1 := by
-  simp [finPartialProduct]
+  rfl
 
-theorem finPartialProduct_succ
-    {C : Type*} [CommMonoid C] {n : ℕ}
-    (v : Fin n → C) (i : Fin n) :
+theorem finPartialProduct_succ (i : Fin n) :
     finPartialProduct v (i.1 + 1) =
       finPartialProduct v i.1 * v i := by
-  simp [finPartialProduct,
-    Finset.prod_range_succ, i.2]
+  simp [finPartialProduct, Finset.prod_range_succ]
 
-theorem finPartialProduct_full
-    {C : Type*} [CommMonoid C] {n : ℕ}
-    (v : Fin n → C) :
+theorem finPartialProduct_full :
     finPartialProduct v n = ∏ i : Fin n, v i := by
   simpa [finPartialProduct] using
     (Finset.prod_fin_eq_prod_range v).symm
+
+end
 
 /-- A split homomorphism induces an equivalence of quotients when it
 identifies the selected subgroups and its remaining kernel lies in the
@@ -152,11 +135,7 @@ noncomputable def quotientMulEquivOfSplit
     (hsM : ∀ y : Y, y ∈ M → s y ∈ N)
     (hker : ∀ x : X, f x = 1 → x ∈ N) :
     X ⧸ N ≃* Y ⧸ M := by
-  let qf : (X ⧸ N) →* (Y ⧸ M) :=
-    QuotientGroup.map N M f (fun x hx ↦ hfN x hx)
-  let qs : (Y ⧸ M) →* (X ⧸ N) :=
-    QuotientGroup.map M N s (fun y hy ↦ hsM y hy)
-  refine MonoidHom.toMulEquiv qf qs ?_ ?_
+  refine MonoidHom.toMulEquiv (QuotientGroup.map N M f (fun x hx ↦ hfN x hx)) (QuotientGroup.map M N s (fun y hy ↦ hsM y hy)) ?_ ?_
   · apply QuotientGroup.monoidHom_ext
     ext x
     apply QuotientGroup.eq_iff_div_mem.mpr
@@ -170,24 +149,26 @@ noncomputable def quotientMulEquivOfSplit
 export ProCGroups.InducedFunctions
   (inducedSubgroup InducedModule inducedEvaluation inducedEvaluation_apply)
 
+section
+
+variable [Group G] (H : Subgroup G) [CommGroup B] [MulDistribMulAction H B]
+
 /-- Compatibility name for the canonical action supplied by the common core.
 This alias is not registered as an additional instance. -/
-abbrev inducedMulDistribMulAction [Group G] (H : Subgroup G) [CommGroup B]
-    [MulDistribMulAction H B] :
+abbrev inducedMulDistribMulAction :
     MulDistribMulAction G (InducedModule (B := B) H) :=
   ProCGroups.InducedFunctions.inducedMulDistribMulAction H
 
 /-- Evaluation at the identity identifies the fixed points of an induced
 module with the fixed points for the inducing subgroup. -/
-noncomputable def inducedFixedEquiv [Group G] (H : Subgroup G)
-    [CommGroup B] [MulDistribMulAction H B] :
+noncomputable def inducedFixedEquiv :
     fixedSubgroup G (InducedModule (B := B) H) ≃*
       fixedSubgroup H B where
   toFun f := ⟨f.1.1 1, by
     intro h
     have hcov := f.1.2 h 1
     have hfix := congrArg
-      (fun q : InducedModule (B := B) H ↦ q.1 1) (f.2 h.1)
+      (fun q : InducedModule H ↦ q.1 1) (f.2 h.1)
     change f.1.1 (h.1 * 1) = h • f.1.1 1 at hcov
     change f.1.1 (1 * h.1) = f.1.1 1 at hfix
     have hcov' : h • f.1.1 1 = f.1.1 h.1 := by
@@ -195,9 +176,7 @@ noncomputable def inducedFixedEquiv [Group G] (H : Subgroup G)
     have hfix' : f.1.1 h.1 = f.1.1 1 := by
       simpa using hfix
     exact hcov'.trans hfix'⟩
-  invFun b := ⟨⟨fun _ ↦ b.1, by
-      intro h x
-      exact (b.2 h).symm⟩,
+  invFun b := ⟨⟨fun _ ↦ b.1, fun h x => (b.2 h).symm⟩,
     by
       intro g
       apply Subtype.ext
@@ -208,7 +187,7 @@ noncomputable def inducedFixedEquiv [Group G] (H : Subgroup G)
     apply Subtype.ext
     funext x
     have hx := congrArg
-      (fun q : InducedModule (B := B) H ↦ q.1 1) (f.2 x)
+      (fun q : InducedModule H ↦ q.1 1) (f.2 x)
     change f.1.1 (1 * x) = f.1.1 1 at hx
     simpa using hx.symm
   right_inv b := by
@@ -217,11 +196,12 @@ noncomputable def inducedFixedEquiv [Group G] (H : Subgroup G)
   map_mul' _ _ := rfl
 
 @[simp]
-theorem inducedFixedEquiv_apply_coe [Group G] (H : Subgroup G)
-    [CommGroup B] [MulDistribMulAction H B]
+theorem inducedFixedEquiv_apply_coe
     (f : fixedSubgroup G (InducedModule (B := B) H)) :
     (inducedFixedEquiv H f : B) = f.1.1 1 :=
   rfl
+
+end
 
 section CyclicCoordinates
 
@@ -246,7 +226,6 @@ omit [Fintype G] in
 theorem quotientGenerator_order (H : Subgroup G) (σ : G)
     (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ) :
     orderOf (QuotientGroup.mk' H σ) = H.index := by
-  rw [H.index_eq_card]
   exact orderOf_eq_card_of_forall_mem_zpowers
     (quotientGenerator_generates H σ hgen)
 
@@ -277,12 +256,10 @@ noncomputable def cyclicCosetEquiv (H : Subgroup G) (σ : G)
           rw [map_mul, map_pow, hqone, one_mul]
     have hmod : p.2.1 ≡ q.2.1 [MOD H.index] := by
       have hm := (pow_eq_pow_iff_modEq
-        (x := QuotientGroup.mk' H σ)).mp hquot
+        ).mp hquot
       rw [quotientGenerator_order H σ hgen] at hm
       exact hm
-    have hij : p.2.1 = q.2.1 :=
-      Nat.ModEq.eq_of_lt_of_lt hmod p.2.2 q.2.2
-    have hfin : p.2 = q.2 := Fin.ext hij
+    have hfin := Fin.ext (Nat.ModEq.eq_of_lt_of_lt hmod p.2.2 q.2.2)
     cases p with
     | mk ph pi =>
       cases q with
@@ -294,7 +271,7 @@ noncomputable def cyclicCosetEquiv (H : Subgroup G) (σ : G)
         exact mul_right_cancel hpq
   · intro x
     have hcover := IsCyclic.image_range_card
-      (a := QuotientGroup.mk' H σ)
+
       (quotientGenerator_generates H σ hgen)
     rw [← H.index_eq_card] at hcover
     have hxmem : QuotientGroup.mk' H x ∈
@@ -304,11 +281,10 @@ noncomputable def cyclicCosetEquiv (H : Subgroup G) (σ : G)
       rw [hcover]
       simp
     obtain ⟨i, hi, hqi⟩ := Finset.mem_image.mp hxmem
-    have hdiv : x / σ ^ i ∈ H := by
-      apply QuotientGroup.eq_iff_div_mem.mp
-      simpa using hqi.symm
     refine
-      ⟨(⟨x / σ ^ i, hdiv⟩,
+      ⟨(⟨x / σ ^ i, by
+        apply QuotientGroup.eq_iff_div_mem.mp
+        exact hqi.symm⟩,
         ⟨i, Finset.mem_range.mp hi⟩), ?_⟩
     exact div_mul_cancel x (σ ^ i)
 
@@ -317,8 +293,7 @@ theorem cyclicCosetEquiv_apply (H : Subgroup G) (σ : G)
     (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
     (h : H) (i : Fin H.index) :
     cyclicCosetEquiv H σ hgen (h, i) =
-      h.1 * σ ^ i.1 := by
-  exact congrFun
+      h.1 * σ ^ i.1 := congrFun
     (Equiv.coe_ofBijective
       (fun p : H × Fin H.index => p.1.1 * σ ^ p.2.1)
       (cyclicCosetEquiv H σ hgen).bijective) (h, i)
@@ -336,17 +311,16 @@ theorem zpowers_pow_index_eq (H : Subgroup G) (σ : G)
   have hn0 : H.index ≠ 0 := by
     rw [H.index_eq_card]
     exact Nat.card_pos.ne'
-  have horder : orderOf σ = Nat.card G :=
+  have horder :=
     orderOf_eq_card_of_forall_mem_zpowers hgen
-  have hindex_dvd_order : H.index ∣ orderOf σ := by
-    rw [horder]
-    exact H.index_dvd_card
   have hpowOrder :
       orderOf (σ ^ H.index) = Nat.card H := by
     calc
-      orderOf (σ ^ H.index) =
+      _ =
           orderOf σ / H.index :=
-        orderOf_pow_of_dvd hn0 hindex_dvd_order
+        orderOf_pow_of_dvd hn0 (by
+          rw [horder]
+          exact H.index_dvd_card)
       _ = Nat.card G / H.index := by rw [horder]
       _ = Nat.card H := by
         rw [← H.index_mul_card]
@@ -372,12 +346,10 @@ theorem subgroupGenerator_generates (H : Subgroup G) (σ : G)
     (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ) :
     ∀ h : H, h ∈ Subgroup.zpowers (subgroupGenerator H σ) := by
   intro h
-  have hh : h.1 ∈
-      Subgroup.zpowers (σ ^ H.index) := by
-    rw [zpowers_pow_index_eq H σ hgen]
-    exact h.2
   obtain ⟨k, hk⟩ :=
-    Subgroup.mem_zpowers_iff.mp hh
+    Subgroup.mem_zpowers_iff.mp (by
+      rw [zpowers_pow_index_eq H σ hgen]
+      exact h.2)
   refine Subgroup.mem_zpowers_iff.mpr ⟨k, ?_⟩
   apply Subtype.ext
   exact hk
@@ -389,10 +361,13 @@ section InducedCoordinates
 variable [CommGroup G] [Fintype G] [CommGroup B]
 variable (H : Subgroup G) [MulDistribMulAction H B]
 
+section
+
+variable (σ : G) (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
+
 /-- Restriction to the canonical cyclic transversal identifies an induced
 module with a finite product of copies of the inducing group. -/
-noncomputable def inducedCoordinates (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ) :
+noncomputable def inducedCoordinates :
     InducedModule (B := B) H ≃*
       (Fin H.index → B) where
   toFun f i := f.1 (σ ^ i.1)
@@ -451,13 +426,14 @@ noncomputable def inducedCoordinates (σ : G)
     rfl
 
 @[simp]
-theorem inducedCoordinates_apply (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
+theorem inducedCoordinates_apply
     (f : InducedModule (B := B) H)
     (i : Fin H.index) :
     inducedCoordinates H σ hgen f i =
       f.1 (σ ^ i.1) :=
   rfl
+
+end
 
 /-- The multiplicative section supported on the first transversal
 coordinate. -/
@@ -471,21 +447,20 @@ def inducedFirstCoordinateHom :
     funext i
     by_cases hi : i.1 = 0 <;> simp [hi]
 
+variable (σ : G) (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
+
 /-- The canonical multiplicative section from the inducing group. -/
-noncomputable def inducedSection (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ) :
+noncomputable def inducedSection :
     B →* InducedModule (B := B) H :=
   (inducedCoordinates H σ hgen).symm.toMonoidHom.comp
     (inducedFirstCoordinateHom H)
 
 @[simp]
-theorem inducedSection_apply_one (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ) (b : B) :
+theorem inducedSection_apply_one (b : B) :
     (inducedSection H σ hgen b).1 1 = b := by
-  have hn : 0 < H.index := by
+  let i0 : Fin H.index := ⟨0, by
     rw [H.index_eq_card]
-    exact Nat.card_pos
-  let i0 : Fin H.index := ⟨0, hn⟩
+    exact Nat.card_pos⟩
   have h :=
     (inducedCoordinates_apply H σ hgen
       ((inducedCoordinates H σ hgen).symm
@@ -494,11 +469,10 @@ theorem inducedSection_apply_one (σ : G)
         ((inducedCoordinates H σ hgen).apply_symm_apply
           (inducedFirstCoordinateHom H b)) i0)
   change (inducedSection H σ hgen b).1 (σ ^ (0 : ℕ)) = b at h
-  simpa only [pow_zero] using h
+  simpa using h
 
 /-- Product over the canonical transversal. -/
-noncomputable def inducedCoordinateProduct (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ) :
+noncomputable def inducedCoordinateProduct :
     InducedModule (B := B) H →* B where
   toFun f :=
     ∏ i : Fin H.index,
@@ -509,8 +483,7 @@ noncomputable def inducedCoordinateProduct (σ : G)
       Finset.prod_mul_distrib]
 
 @[simp]
-theorem inducedCoordinateProduct_apply (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
+theorem inducedCoordinateProduct_apply
     (f : InducedModule (B := B) H) :
     inducedCoordinateProduct H σ hgen f =
       ∏ i : Fin H.index, f.1 (σ ^ i.1) :=
@@ -519,15 +492,13 @@ theorem inducedCoordinateProduct_apply (σ : G)
 /-- The first-coordinate section is a right inverse to the transversal
 product. -/
 @[simp]
-theorem inducedCoordinateProduct_section (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ) (b : B) :
+theorem inducedCoordinateProduct_section (b : B) :
     inducedCoordinateProduct H σ hgen
         (inducedSection H σ hgen b) = b := by
   classical
-  have hn : 0 < H.index := by
+  let i0 : Fin H.index := ⟨0, by
     rw [H.index_eq_card]
-    exact Nat.card_pos
-  let i0 : Fin H.index := ⟨0, hn⟩
+    exact Nat.card_pos⟩
   change (∏ i : Fin H.index,
     inducedCoordinates H σ hgen
       ((inducedCoordinates H σ hgen).symm
@@ -553,10 +524,13 @@ variable (H : Subgroup G) [MulDistribMulAction H B]
 
 local instance : Fintype H := Fintype.ofFinite H
 
+section
+
+variable (σ : G) (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
+
 /-- Norm compatibility under evaluation:
 `ev₁(N_G f) = N_H(∏_{G/H} f)`. -/
-theorem inducedEvaluation_tateNorm (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
+theorem inducedEvaluation_tateNorm
     (f : InducedModule (B := B) H) :
     inducedEvaluation H
         (tateNorm G (InducedModule (B := B) H) f) =
@@ -613,11 +587,10 @@ theorem inducedEvaluation_tateNorm (σ : G)
       simp only [tateNorm,
         inducedCoordinateProduct_apply]
 
+include hgen in
 /-- Under evaluation of fixed points, global and subgroup norm images
 correspond. -/
 theorem inducedFixedEquiv_mem_tateNormSubgroup_iff
-    (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
     (x : fixedSubgroup G
       (InducedModule (B := B) H)) :
     x.1 ∈ tateNormSubgroup G
@@ -629,11 +602,10 @@ theorem inducedFixedEquiv_mem_tateNormSubgroup_iff
     refine
       ⟨inducedCoordinateProduct H σ hgen f, ?_⟩
     calc
-      tateNorm H B
-            (inducedCoordinateProduct H σ hgen f) =
+      _ =
           inducedEvaluation H
             (tateNorm G
-              (InducedModule (B := B) H) f) :=
+              (InducedModule H) f) :=
         (inducedEvaluation_tateNorm
           H σ hgen f).symm
       _ = inducedEvaluation H x.1 :=
@@ -669,13 +641,15 @@ theorem inducedFixedEquiv_mem_tateNormSubgroup_iff
     exact congrArg Subtype.val
       ((inducedFixedEquiv H).injective hy)
 
+end
+
 /-- Multiplicative Shapiro lemma in Tate degree zero. -/
 noncomputable def inducedHerbrandH0Equiv (σ : G)
     (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ) :
     HerbrandH0 G (InducedModule (B := B) H) ≃*
       HerbrandH0 H B := by
   let e :
-      fixedSubgroup G (InducedModule (B := B) H) ≃*
+      fixedSubgroup G (InducedModule H) ≃*
         fixedSubgroup H B :=
     inducedFixedEquiv H
   let NG :=
@@ -683,11 +657,9 @@ noncomputable def inducedHerbrandH0Equiv (σ : G)
       (InducedModule (B := B) H)).subgroupOf
       (fixedSubgroup G
         (InducedModule (B := B) H))
-  let NH :=
-    (tateNormSubgroup H B).subgroupOf
-      (fixedSubgroup H B)
   exact quotientMulEquivOfSplit
-    NG NH e.toMonoidHom e.symm.toMonoidHom
+    NG ((tateNormSubgroup H B).subgroupOf
+      (fixedSubgroup H B)) e.toMonoidHom e.symm.toMonoidHom
     (fun y ↦ e.apply_symm_apply y)
     (fun x hx ↦ by
       rw [Subgroup.mem_subgroupOf] at hx ⊢
@@ -696,11 +668,9 @@ noncomputable def inducedHerbrandH0Equiv (σ : G)
           H σ hgen x).mp hx)
     (fun y hy ↦ by
       rw [Subgroup.mem_subgroupOf] at hy ⊢
-      have h :=
-        (inducedFixedEquiv_mem_tateNormSubgroup_iff
-          H σ hgen (e.symm y)).mpr
-          (by simpa [e] using hy)
-      simpa [e] using h)
+      simpa [e] using ((inducedFixedEquiv_mem_tateNormSubgroup_iff
+        H σ hgen (e.symm y)).mpr
+        (by simpa [e] using hy)))
     (fun x hx ↦ by
       have hx1 : x = 1 := by
         apply e.injective
@@ -721,10 +691,13 @@ local instance : NeZero H.index := ⟨by
   rw [H.index_eq_card]
   exact Nat.card_pos.ne'⟩
 
+section
+
+variable (σ : G) (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
+
 /-- In canonical coordinates, right translation by `σ` is the cyclic shift
 whose wrap-around is acted on by `σ^[G:H]`. -/
-theorem inducedCoordinates_smul_generator (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
+theorem inducedCoordinates_smul_generator
     (f : InducedModule (B := B) H)
     (i : Fin H.index) :
     inducedCoordinates H σ hgen (σ • f) i =
@@ -751,19 +724,17 @@ theorem inducedCoordinates_smul_generator (σ : G)
 /-- The transversal product sends a `σ`-coboundary to the corresponding
 `σ^[G:H]`-coboundary. -/
 theorem inducedCoordinateProduct_sigmaMinusOne
-    (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
     (f : InducedModule (B := B) H) :
     inducedCoordinateProduct H σ hgen
         (sigmaMinusOne G
           (InducedModule (B := B) H) σ f) =
       sigmaMinusOne H B
         (subgroupGenerator H σ) (f.1 1) := by
-  let v : Fin H.index → B :=
+  let v :=
     inducedCoordinates H σ hgen f
   rw [show
       sigmaMinusOne G
-          (InducedModule (B := B) H) σ f =
+          (InducedModule H) σ f =
         σ • f * f⁻¹ by rfl,
     map_mul, map_inv]
   change
@@ -773,9 +744,7 @@ theorem inducedCoordinateProduct_sigmaMinusOne
       sigmaMinusOne H B
         (subgroupGenerator H σ) (f.1 1)
   calc
-    (∏ i : Fin H.index,
-          inducedCoordinates H σ hgen (σ • f) i) *
-          (∏ i : Fin H.index, v i)⁻¹ =
+    _ =
         (∏ i : Fin H.index,
           twistedFinRotate
             (subgroupGenerator H σ) v i) *
@@ -799,22 +768,20 @@ theorem inducedCoordinateProduct_sigmaMinusOne
 /-- If the product of the canonical coordinates is one, successive partial
 products construct a `σ`-primitive. -/
 theorem inducedCoordinateProduct_eq_one_mem_augmentation
-    (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
     (f : InducedModule (B := B) H)
     (hf :
       inducedCoordinateProduct H σ hgen f = 1) :
     f ∈ augmentationSubgroup G
       (InducedModule (B := B) H) σ := by
-  let e : InducedModule (B := B) H ≃*
+  let e : InducedModule H ≃*
       (Fin H.index → B) :=
     inducedCoordinates H σ hgen
-  let v : Fin H.index → B := e f
+  let v := e f
   let p : Fin H.index → B :=
     fun i ↦ finPartialProduct v i.1
-  let c : InducedModule (B := B) H :=
+  let c :=
     e.symm p
-  have hc : e c = p := e.apply_symm_apply p
+  have hc := e.apply_symm_apply p
   have hprod :
       (∏ i : Fin H.index, v i) = 1 := by
     change
@@ -873,8 +840,7 @@ theorem inducedCoordinateProduct_eq_one_mem_augmentation
     have hsucc :=
       finPartialProduct_succ v i
     rw [heq] at hsucc
-    have hmul :
-        finPartialProduct v i.1 * v i = 1 :=
+    have hmul :=
       hsucc.symm.trans hfull
     rw [hcwrap, hci, one_mul]
     change
@@ -884,24 +850,21 @@ theorem inducedCoordinateProduct_eq_one_mem_augmentation
 /-- The transversal product carries the ambient norm kernel into the
 subgroup norm kernel. -/
 theorem inducedCoordinateProduct_mem_normKernel
-    (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
     {f : InducedModule (B := B) H}
     (hf : f ∈ normKernelSubgroup G
       (InducedModule (B := B) H)) :
     inducedCoordinateProduct H σ hgen f ∈
       normKernelSubgroup H B := by
   change
-    tateNorm G (InducedModule (B := B) H) f = 1 at hf
+    tateNorm G (InducedModule H) f = 1 at hf
   change
     tateNorm H B
       (inducedCoordinateProduct H σ hgen f) = 1
   calc
-    tateNorm H B
-          (inducedCoordinateProduct H σ hgen f) =
+    _ =
         inducedEvaluation H
           (tateNorm G
-            (InducedModule (B := B) H) f) :=
+            (InducedModule H) f) :=
       (inducedEvaluation_tateNorm
         H σ hgen f).symm
     _ = inducedEvaluation H 1 :=
@@ -910,8 +873,7 @@ theorem inducedCoordinateProduct_mem_normKernel
 
 /-- The canonical section carries the subgroup norm kernel into the ambient
 norm kernel. -/
-theorem inducedSection_mem_normKernel (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
+theorem inducedSection_mem_normKernel
     {b : B} (hb : b ∈ normKernelSubgroup H B) :
     inducedSection H σ hgen b ∈
       normKernelSubgroup G
@@ -926,7 +888,6 @@ theorem inducedSection_mem_normKernel (σ : G)
         (A := InducedModule (B := B) H) g _⟩
   have hey : inducedFixedEquiv H y = 1 := by
     apply Subtype.ext
-    change inducedEvaluation H y.1 = 1
     calc
       inducedEvaluation H y.1 =
           tateNorm H B
@@ -944,8 +905,6 @@ theorem inducedSection_mem_normKernel (σ : G)
 
 /-- The transversal product maps augmentation subgroups compatibly. -/
 theorem inducedCoordinateProduct_mem_augmentation
-    (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
     {f : InducedModule (B := B) H}
     (hf : f ∈ augmentationSubgroup G
       (InducedModule (B := B) H) σ) :
@@ -960,8 +919,7 @@ theorem inducedCoordinateProduct_mem_augmentation
 
 /-- The canonical section maps subgroup coboundaries to ambient
 coboundaries. -/
-theorem inducedSection_mem_augmentation (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
+theorem inducedSection_mem_augmentation
     {b : B}
     (hb : b ∈ augmentationSubgroup H B
       (subgroupGenerator H σ)) :
@@ -969,33 +927,29 @@ theorem inducedSection_mem_augmentation (σ : G)
       augmentationSubgroup G
         (InducedModule (B := B) H) σ := by
   obtain ⟨c, rfl⟩ := hb
-  let a₁ : InducedModule (B := B) H :=
+  let sigmaMinusOne₀ := sigmaMinusOne H B (subgroupGenerator H σ)
+  let a₁ : InducedModule H :=
     inducedSection H σ hgen
-      (sigmaMinusOne H B
-        (subgroupGenerator H σ) c)
+      (sigmaMinusOne₀ c)
   let a₂ : InducedModule (B := B) H :=
     sigmaMinusOne G
       (InducedModule (B := B) H) σ
       (inducedSection H σ hgen c)
   have hnu₁ :
       inducedCoordinateProduct H σ hgen a₁ =
-        sigmaMinusOne H B
-          (subgroupGenerator H σ) c :=
+        sigmaMinusOne₀ c :=
     inducedCoordinateProduct_section H σ hgen _
   have hnu₂ :
       inducedCoordinateProduct H σ hgen a₂ =
-        sigmaMinusOne H B
-          (subgroupGenerator H σ) c := by
+        sigmaMinusOne₀ c := by
     calc
       inducedCoordinateProduct H σ hgen a₂ =
-          sigmaMinusOne H B
-            (subgroupGenerator H σ)
+          sigmaMinusOne₀
             ((inducedSection H σ hgen c).1 1) :=
         inducedCoordinateProduct_sigmaMinusOne
           H σ hgen
             (inducedSection H σ hgen c)
-      _ = sigmaMinusOne H B
-            (subgroupGenerator H σ) c := by
+      _ = sigmaMinusOne₀ c := by
         rw [inducedSection_apply_one
           H σ hgen c]
   let d : InducedModule (B := B) H :=
@@ -1010,9 +964,7 @@ theorem inducedSection_mem_augmentation (σ : G)
         simp only [d, map_mul, map_inv]
       _ = 1 := by
         rw [hnu₁, hnu₂, mul_inv_cancel]
-  have hd :
-      d ∈ augmentationSubgroup G
-        (InducedModule (B := B) H) σ :=
+  have hd :=
     inducedCoordinateProduct_eq_one_mem_augmentation
       H σ hgen d hnud
   have ha₂ :
@@ -1028,8 +980,7 @@ theorem inducedSection_mem_augmentation (σ : G)
   exact hmul
 
 /-- Restriction of the transversal product to norm kernels. -/
-noncomputable def inducedNormKernelProductHom (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ) :
+noncomputable def inducedNormKernelProductHom :
     normKernelSubgroup G
         (InducedModule (B := B) H) →*
       normKernelSubgroup H B where
@@ -1048,8 +999,7 @@ noncomputable def inducedNormKernelProductHom (σ : G)
         x.1 y.1
 
 /-- Restriction of the canonical section to norm kernels. -/
-noncomputable def inducedNormKernelSectionHom (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ) :
+noncomputable def inducedNormKernelSectionHom :
     normKernelSubgroup H B →*
       normKernelSubgroup G
         (InducedModule (B := B) H) where
@@ -1065,6 +1015,8 @@ noncomputable def inducedNormKernelSectionHom (σ : G)
     exact map_mul (inducedSection H σ hgen)
       x.1 y.1
 
+end
+
 /-- Multiplicative Shapiro lemma in Tate degree minus one. -/
 noncomputable def inducedHerbrandHMinusOneEquiv
     (σ : G)
@@ -1073,27 +1025,15 @@ noncomputable def inducedHerbrandHMinusOneEquiv
         (InducedModule (B := B) H) σ ≃*
       HerbrandHMinusOne H B
         (subgroupGenerator H σ) := by
-  let f :
-      normKernelSubgroup G
-          (InducedModule (B := B) H) →*
-        normKernelSubgroup H B :=
-    inducedNormKernelProductHom H σ hgen
-  let s :
-      normKernelSubgroup H B →*
-        normKernelSubgroup G
-          (InducedModule (B := B) H) :=
-    inducedNormKernelSectionHom H σ hgen
   let IG :=
     (augmentationSubgroup G
       (InducedModule (B := B) H) σ).subgroupOf
         (normKernelSubgroup G
           (InducedModule (B := B) H))
-  let IH :=
-    (augmentationSubgroup H B
-      (subgroupGenerator H σ)).subgroupOf
-        (normKernelSubgroup H B)
   exact quotientMulEquivOfSplit
-    IG IH f s
+    IG ((augmentationSubgroup H B
+      (subgroupGenerator H σ)).subgroupOf
+        (normKernelSubgroup H B)) (inducedNormKernelProductHom H σ hgen) (inducedNormKernelSectionHom H σ hgen)
     (fun y ↦ by
       apply Subtype.ext
       exact inducedCoordinateProduct_section
@@ -1137,9 +1077,10 @@ theorem subgroupGeneratorOfGenerator_coe (σ : G)
       σ ^ H.index :=
   rfl
 
+variable (σ : G) (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ)
+
 /-- The derived element `σ^[G:H]` generates `H`. -/
-theorem subgroupGeneratorOfGenerator_generates (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ) :
+theorem subgroupGeneratorOfGenerator_generates :
     ∀ h : H,
       h ∈ Subgroup.zpowers
         (subgroupGeneratorOfGenerator H σ hgen) := by
@@ -1152,21 +1093,9 @@ theorem subgroupGeneratorOfGenerator_generates (σ : G)
   rw [hτ]
   exact subgroupGenerator_generates H σ hgen
 
-/-- Cyclic-transversal coordinates for an ordinary finite cyclic group. -/
-noncomputable def inducedCoordinatesOfFiniteCyclic
-    (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ) :
-    InducedModule (B := B) H ≃*
-      (Fin H.index → B) := by
-  letI : IsCyclic G := ⟨⟨σ, hgen⟩⟩
-  letI : CommGroup G := IsCyclic.commGroup
-  exact inducedCoordinates H σ hgen
-
 /-- Tate-degree-zero Shapiro equivalence for an ordinary finite cyclic
 group. -/
-noncomputable def inducedHerbrandH0EquivOfFiniteCyclic
-    (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ) :
+noncomputable def inducedHerbrandH0EquivOfFiniteCyclic :
     letI : Fintype H := Fintype.ofFinite H
     HerbrandH0 G (InducedModule (B := B) H) ≃*
       HerbrandH0 H B := by
@@ -1177,9 +1106,7 @@ noncomputable def inducedHerbrandH0EquivOfFiniteCyclic
 
 /-- Tate-degree-minus-one Shapiro equivalence for an ordinary finite cyclic
 group. -/
-noncomputable def inducedHerbrandHMinusOneEquivOfFiniteCyclic
-    (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ) :
+noncomputable def inducedHerbrandHMinusOneEquivOfFiniteCyclic :
     letI : Fintype H := Fintype.ofFinite H
     HerbrandHMinusOne G
         (InducedModule (B := B) H) σ ≃*
@@ -1191,7 +1118,7 @@ noncomputable def inducedHerbrandHMinusOneEquivOfFiniteCyclic
   have hτ :
       subgroupGeneratorOfGenerator H σ hgen =
         subgroupGenerator H σ :=
-    Subtype.ext (by rfl)
+    Subtype.ext (rfl)
   rw [hτ]
   exact inducedHerbrandHMinusOneEquiv H σ hgen
 

@@ -35,7 +35,7 @@ namespace LubinTate
 open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
-variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    {F : LocalField.{u, v} K} {π : F.valuationSubring}
 
 /-- The polynomial power series `π X + X ^ q`, where `q` is the residue
 field cardinality. -/

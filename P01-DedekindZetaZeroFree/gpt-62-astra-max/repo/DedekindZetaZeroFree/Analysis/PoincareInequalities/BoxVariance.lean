@@ -22,7 +22,11 @@ noncomputable def mix {n : ℕ} (x y : Space n) (k : ℕ) : Space n :=
   (EuclideanSpace.equiv (Fin n) ℝ).symm (fun j => if j.val < k then y j else x j)
 
 variable {I : Type*} [Fintype I] [DecidableEq I]
-private theorem hybrid_map (μ : I → Measure ℝ) [∀ i, IsFiniteMeasure (μ i)]
+section
+
+variable (μ : I → Measure ℝ) [∀ i, IsFiniteMeasure (μ i)]
+
+private theorem hybrid_map
     (p : I → Prop) [DecidablePred p] :
     ((Measure.pi μ).prod (Measure.pi μ)).map
       (fun q : (I → ℝ) × (I → ℝ) => fun i => if p i then q.2 i else q.1 i) =
@@ -59,7 +63,7 @@ private theorem hybrid_map (μ : I → Measure ℝ) [∀ i, IsFiniteMeasure (μ 
     intro s hs
     simp only [Measure.smul_apply, smul_eq_mul, Measure.pi_univ, Measure.pi_pi,
       Finset.prod_mul_distrib]
-private theorem update_map (μ : I → Measure ℝ) [∀ i, IsFiniteMeasure (μ i)] (j : I) :
+private theorem update_map (j : I) :
     ((Measure.pi μ).prod (μ j)).map
       (fun q : (I → ℝ) × ℝ => Function.update q.1 j q.2) =
       (μ j Set.univ) • Measure.pi μ := by
@@ -97,7 +101,7 @@ private theorem update_map (μ : I → Measure ℝ) [∀ i, IsFiniteMeasure (μ 
     intro s hs
     simp only [Measure.smul_apply, smul_eq_mul, Measure.pi_pi, ν, Finset.prod_mul_distrib]
     simp
-private theorem hybrid_integral (μ : I → Measure ℝ) [∀ i, IsFiniteMeasure (μ i)]
+private theorem hybrid_integral
     (p : I → Prop) [DecidablePred p] (j : I) (f : (I → ℝ) → ℝ)
     (hf : StronglyMeasurable f) (hfi : Integrable f (Measure.pi μ)) :
     ∫ x, ∫ y, ∫ t, f (Function.update (fun i => if p i then y i else x i) j t)
@@ -108,28 +112,27 @@ private theorem hybrid_integral (μ : I → Measure ℝ) [∀ i, IsFiniteMeasure
   have hU : Measurable U := by
     apply measurable_pi_lambda; intro i; dsimp [U]; by_cases hi : i = j <;>
       simp [Function.update, hi] <;> fun_prop
-  have hmapU : (M.prod (μ j)).map U = (μ j Set.univ) • M := update_map μ j
+  have hmapU := update_map μ j
   have hfu : Integrable (fun q => f (U q)) (M.prod (μ j)) := by
     apply (integrable_map_measure (hf.aestronglyMeasurable) hU.aemeasurable).mp
     rw [hmapU]; exact hfi.smul_measure (by finiteness)
-  let H : (I → ℝ) → ℝ := fun x => ∫ t, f (Function.update x j t) ∂μ j
+  let H := fun x => ∫ t, f (Function.update x j t) ∂μ j
   have hH : StronglyMeasurable H := (hf.comp_measurable hU).integral_prod_right'
-  have hiH : Integrable H M := hfu.integral_prod_left
   let T : ((I → ℝ) × (I → ℝ)) → (I → ℝ) :=
     fun q i => if p i then q.2 i else q.1 i
   have hT : Measurable T := by
     apply measurable_pi_lambda; intro i; dsimp [T]; split_ifs <;> fun_prop
-  have hmapT : (M.prod M).map T = (M Set.univ) • M := hybrid_map μ p
+  have hmapT := hybrid_map μ p
   have hHT : Integrable (fun q => H (T q)) (M.prod M) := by
     apply (integrable_map_measure hH.aestronglyMeasurable hT.aemeasurable).mp
-    rw [hmapT]; exact hiH.smul_measure (by finiteness)
-  change ∫ x, ∫ y, H (T (x,y)) ∂M ∂M = _
+    rw [hmapT]; exact hfu.integral_prod_left.smul_measure (by finiteness)
   rw [← integral_prod _ hHT, ← integral_map hT.aemeasurable hH.aestronglyMeasurable,
     hmapT, integral_smul_measure]
-  change (M Set.univ).toReal * (∫ x, ∫ t, f (U (x,t)) ∂μ j ∂M) = _
   rw [← integral_prod _ hfu, ← integral_map hU.aemeasurable hf.aestronglyMeasurable,
     hmapU, integral_smul_measure]
   simp [M, smul_eq_mul, mul_assoc]
+
+end
 
 private theorem box_integral_pi (n : ℕ) (l : Fin n → ℝ) (h : ℝ)
     (f : Space n → ℝ) :
@@ -138,14 +141,14 @@ private theorem box_integral_pi (n : ℕ) (l : Fin n → ℝ) (h : ℝ)
   let C := Set.univ.pi (fun i : Fin n => Set.Ico (l i) (l i + h))
   have hp := (PiLp.volume_preserving_ofLp (Fin n)).restrict_preimage
     (MeasurableSet.univ_pi (fun _ => measurableSet_Ico) : MeasurableSet C)
-  have hc : (WithLp.ofLp : Space n → Fin n → ℝ) ⁻¹' C = box n l h := by
+  have hc : WithLp.ofLp ⁻¹' C = box n l h := by
     ext x; simp [C, box]
   rw [hc] at hp
-  have hp' : MeasurePreserving (WithLp.ofLp : Space n → Fin n → ℝ)
+  have hp' : MeasurePreserving WithLp.ofLp
       (volume.restrict (box n l h))
       (Measure.pi (fun i => volume.restrict (Set.Ico (l i) (l i + h)))) := by
     convert hp using 1
-    exact (Measure.restrict_pi_pi (fun _ : Fin n => (volume : Measure ℝ)) _).symm
+    exact (Measure.restrict_pi_pi (fun _ : Fin n => volume) _).symm
   let e := (EuclideanSpace.equiv (Fin n) ℝ).toHomeomorph
   have ht := hp'.integral_comp e.measurableEmbedding (fun x => f (e.symm x))
   rw [show (fun x : Space n => f (e.symm (WithLp.ofLp x))) = f by
@@ -216,15 +219,17 @@ namespace DedekindZetaZeroFree.KPCubeAverageError
 
 open MeasureTheory
 
- def closedBox (n : ℕ) (l : Fin n → ℝ) (h : ℝ) : Set (Space n) :=
+ section
+
+variable (n : ℕ) (l : Fin n → ℝ) (h : ℝ)
+
+def closedBox : Set (Space n) :=
   {x | ∀ j, l j ≤ x j ∧ x j ≤ l j + h}
 
-private theorem closedBox_compact (n : ℕ) (l : Fin n → ℝ) (h : ℝ) :
+private theorem closedBox_compact :
     IsCompact (closedBox n l h) := by
   let e := EuclideanSpace.equiv (Fin n) ℝ
-  have hc : IsCompact {x : Fin n → ℝ | ∀ j, x j ∈ Set.Icc (l j) (l j + h)} :=
-    isCompact_pi_infinite (fun _ => isCompact_Icc)
-  convert hc.image e.symm.continuous using 1
+  convert (isCompact_pi_infinite (fun _ => isCompact_Icc)).image e.symm.continuous using 1
   ext x
   constructor
   · intro hx
@@ -232,7 +237,7 @@ private theorem closedBox_compact (n : ℕ) (l : Fin n → ℝ) (h : ℝ) :
   · rintro ⟨y, hy, rfl⟩
     exact hy
 
-private theorem box_meas (n : ℕ) (l : Fin n → ℝ) (h : ℝ) :
+private theorem box_meas :
     MeasurableSet (box n l h) := by
   have hc := fun j : Fin n => (PiLp.continuous_apply 2 (fun _ : Fin n => ℝ) j).measurable
   simpa only [box, Set.setOf_forall, Set.setOf_and] using
@@ -240,33 +245,34 @@ private theorem box_meas (n : ℕ) (l : Fin n → ℝ) (h : ℝ) :
       (measurableSet_le measurable_const (hc j)).inter
         (measurableSet_lt (hc j) measurable_const))
 
-private theorem box_subset_closed (n : ℕ) (l : Fin n → ℝ) (h : ℝ) :
-    box n l h ⊆ closedBox n l h := fun _ hx j => ⟨(hx j).1, (hx j).2.le⟩
+end
 
-private theorem box_ae_closed (n : ℕ) (l : Fin n → ℝ) (h : ℝ) :
-    box n l h =ᵐ[volume] closedBox n l h := by
-  have he := (PiLp.volume_preserving_ofLp (Fin n)).quasiMeasurePreserving.ae
-    (Measure.univ_pi_Ico_ae_eq_Icc (f := l) (g := fun j => l j + h))
-  filter_upwards [he] with x hx
-  simpa only [box, closedBox, Set.mem_pi, Set.mem_univ, forall_const,
-    Set.mem_Ico, Set.mem_Icc, Pi.le_def, Set.mem_setOf_eq, forall_and] using hx
+section
 
-private theorem box_integrable {n : ℕ} {l : Fin n → ℝ} {h : ℝ}
+variable {n : ℕ} {l : Fin n → ℝ} {h : ℝ}
+
+private theorem box_integrable
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {g : Space n → E} (hg : Continuous g) : IntegrableOn g (box n l h) :=
   (hg.continuousOn.integrableOn_compact (closedBox_compact n l h)).mono_set
-    (box_subset_closed n l h)
+    ((fun _ hx j => ⟨(hx j).1, (hx j).2.le⟩))
 
-private theorem box_param_cont {n : ℕ} {l : Fin n → ℝ} {h : ℝ}
+private theorem box_param_cont
     {X : Type*} [TopologicalSpace X] [FirstCountableTopology X] [LocallyCompactSpace X]
     {g : X → Space n → ℝ} (hg : Continuous (Function.uncurry g)) :
     Continuous (fun x => ∫ y in box n l h, g x y) := by
   have he : (fun x => ∫ y in box n l h, g x y) =
       (fun x => ∫ y in closedBox n l h, g x y) := by
     funext x
-    exact setIntegral_congr_set (box_ae_closed n l h)
+    exact setIntegral_congr_set (by
+      filter_upwards [((PiLp.volume_preserving_ofLp (Fin n)).quasiMeasurePreserving.ae
+        (Measure.univ_pi_Ico_ae_eq_Icc))] with x hx
+      simpa only [box, closedBox, Set.mem_pi, Set.mem_univ, forall_const,
+        Set.mem_Ico, Set.mem_Icc, Pi.le_def, Set.mem_setOf_eq, forall_and] using hx)
   rw [he]
   exact continuous_parametric_integral_of_continuous hg (closedBox_compact n l h)
+
+end
 
 private theorem box_volume (n : ℕ) (l : Fin n → ℝ) (h : ℝ) (hh : 0 < h) :
     volume (box n l h) = ENNReal.ofReal (h ^ n) := by
@@ -289,14 +295,6 @@ private theorem mix_continuous (n k : ℕ) :
   · exact (PiLp.continuous_apply 2 (fun _ : Fin n => ℝ) j).comp continuous_snd
   · exact (PiLp.continuous_apply 2 (fun _ : Fin n => ℝ) j).comp continuous_fst
 
-private theorem line_continuous {n : ℕ} (j : Fin n) :
-    Continuous (fun p : (Space n × Space n) × ℝ => axis (mix p.1.1 p.1.2 j.val) j p.2) := by
-  have hm : Continuous (fun p : (Space n × Space n) × ℝ => mix p.1.1 p.1.2 j.val) :=
-    (mix_continuous n j.val).comp continuous_fst
-  unfold axis
-  exact hm.add ((continuous_snd.sub
-    ((PiLp.continuous_apply 2 (fun _ : Fin n => ℝ) j).comp hm)).smul continuous_const)
-
 private theorem norm_toLp_sq {α : Type*} [MeasurableSpace α] {μ : Measure α}
     {f : α → ℂ} (hf : MemLp f 2 μ) :
     ‖hf.toLp f‖ ^ 2 = ∫ x, ‖f x‖ ^ 2 ∂μ := by
@@ -304,6 +302,8 @@ private theorem norm_toLp_sq {α : Type*} [MeasurableSpace α] {μ : Measure α}
   apply integral_congr_ae
   filter_upwards [hf.coeFn_toLp] with x hx
   rw [hx, real_inner_self_eq_norm_sq]
+
+alias BoxVariance.norm_toLp_sq := norm_toLp_sq
 
 private theorem integral_sq_bound {α : Type*} [MeasurableSpace α] {μ : Measure α}
     [IsFiniteMeasure μ] {f : α → ℂ} (hf : MemLp f 2 μ) :
@@ -315,7 +315,7 @@ private theorem integral_sq_bound {α : Type*} [MeasurableSpace α] {μ : Measur
       (hμs := measure_ne_top μ _) (c := (1 : ℂ)))
     simp only [Set.indicator_univ, Pi.one_apply] at hcoe
     calc
-      (∫ x, inner ℝ (e x) (e x) ∂μ) = ∫ x, (1 : ℝ) ∂μ := by
+      _ = ∫ x, (1 : ℝ) ∂μ := by
         apply integral_congr_ae
         filter_upwards [hcoe] with x hx
         change inner ℝ (indicatorConstLp 2 MeasurableSet.univ (measure_ne_top μ _) (1 : ℂ) x)
@@ -332,6 +332,8 @@ private theorem integral_sq_bound {α : Type*} [MeasurableSpace α] {μ : Measur
     _ ≤ (‖e‖ * ‖hf.toLp f‖) ^ 2 := pow_le_pow_left₀ (norm_nonneg _) (norm_inner_le_norm e _ ) 2
     _ = (μ Set.univ).toReal * ∫ x, ‖f x‖ ^ 2 ∂μ := by
       rw [mul_pow, he, norm_toLp_sq hf]
+
+alias BoxVariance.integral_sq_bound := integral_sq_bound
 
 theorem box_variance_bound_of_pair_bound (n : ℕ) (l : Fin n → ℝ) (h : ℝ)
     (hh : 0 < h) (f : Space n → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
@@ -369,7 +371,12 @@ theorem box_variance_bound_of_pair_bound (n : ℕ) (l : Fin n → ℝ) (h : ℝ)
     intro j
     exact continuous_parametric_integral_of_continuous
       (f := fun (p : Space n × Space n) (t : ℝ) => G j (axis (mix p.1 p.2 j.val) j t))
-      ((hG j).comp (line_continuous j)) isCompact_Icc
+      ((hG j).comp (by
+        have hm : Continuous (fun p : (Space n × Space n) × ℝ => mix p.1.1 p.1.2 j.val) :=
+          (mix_continuous n j.val).comp continuous_fst
+        unfold axis
+        exact hm.add ((continuous_snd.sub
+          ((PiLp.continuous_apply 2 (fun _ : Fin n => ℝ) j).comp hm)).smul continuous_const))) isCompact_Icc
   have hS : Continuous (fun p : Space n × Space n => ∑ j, L j p) :=
     continuous_finset_sum _ (fun j _ => hL j)
   have hA : Continuous (fun x => ∫ y in B, ∑ j, L j (x, y)) :=

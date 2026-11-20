@@ -13,7 +13,7 @@ open scoped Classical NumberField
 open NumberField IsDedekindDomain MeasureTheory
 
 variable (F : Type) [Field F] [NumberField F]
-variable (S : Finset (HeightOneSpectrum (𝓞 F)))
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
 
 local instance archMeasurable : MeasurableSpace (InfiniteAdeleRing F) := borel _
 local instance archBorel : BorelSpace (InfiniteAdeleRing F) := ⟨rfl⟩
@@ -49,10 +49,9 @@ theorem modulus_continuous [NumberField.IsTotallyComplex F] :
 theorem units_val_isOpenEmbedding [NumberField.IsTotallyComplex F] :
     Topology.IsOpenEmbedding (Units.val : (SLocalProduct F S)ˣ → SLocalProduct F S) := by
   refine ⟨units_val_isEmbedding F S, ?_⟩
-  have heq : Set.range (Units.val : (SLocalProduct F S)ˣ → SLocalProduct F S) =
+  have heq : Set.range Units.val =
       {x | 0 < TateTensorProfile.modulus F S x} := by
     ext x
-    change IsUnit x ↔ 0 < TateTensorProfile.modulus F S x
     exact (TateTensorProfile.modulus_pos_iff F S x).symm
   rw [heq]
   exact isOpen_lt continuous_const (modulus_continuous F S)
@@ -79,6 +78,8 @@ private theorem canonical_additive_haar (S : Finset (HeightOneSpectrum (𝓞 F))
   unfold TateTensorProfile.additiveMeasure
   infer_instance
 
+alias HaarMellinComparison.canonical_additive_haar := canonical_additive_haar
+
 theorem additive_fourier_comparison (S : Finset (HeightOneSpectrum (𝓞 F)))
     [NumberField.IsTotallyComplex F]
     (μ : @Measure (SLocalProduct F S) (borel _))
@@ -91,9 +92,8 @@ theorem additive_fourier_comparison (S : Finset (HeightOneSpectrum (𝓞 F)))
     fun v => PoissonS.completion_secondCountable F v.val
   letI : SecondCountableTopology (InfiniteAdeleRing F) :=
     (PoissonArch.infiniteAdeleToSpace F).toHomeomorph.secondCountableTopology
-  have heq := BorelSpace.measurable_eq (α := SLocalProduct F S)
   revert μ hμ
-  rw [← heq]
+  rw [← (BorelSpace.measurable_eq)]
   intro μ hμ
   letI := hμ
   let b := Measure.addHaarScalarFactor μ (TateTensorProfile.additiveMeasure F S)
@@ -112,8 +112,9 @@ def canonicalUnitsMeasure (S : Finset (HeightOneSpectrum (𝓞 F)))
     (fun x => ENNReal.ofReal (TateTensorProfile.multiplicativeDensityConstant F S /
       TateTensorProfile.modulus F S x)))
 
-theorem canonicalUnitsMeasure_map (S : Finset (HeightOneSpectrum (𝓞 F)))
-    [NumberField.IsTotallyComplex F] :
+variable (S : Finset (HeightOneSpectrum (𝓞 F))) [NumberField.IsTotallyComplex F]
+
+theorem canonicalUnitsMeasure_map :
     Measure.map Units.val (canonicalUnitsMeasure F S) =
       TateTensorProfile.multiplicativeMeasure F S := by
   unfold canonicalUnitsMeasure TateTensorProfile.multiplicativeMeasure
@@ -121,15 +122,13 @@ theorem canonicalUnitsMeasure_map (S : Finset (HeightOneSpectrum (𝓞 F)))
   rw [restrict_withDensity (units_val_isOpenEmbedding F S).measurableEmbedding.measurableSet_range]
   rfl
 
-theorem canonicalUnitsMeasure_integral (S : Finset (HeightOneSpectrum (𝓞 F)))
-    [NumberField.IsTotallyComplex F] (g : SLocalProduct F S → ℂ) :
+theorem canonicalUnitsMeasure_integral (g : SLocalProduct F S → ℂ) :
     (∫ y, g y.val ∂canonicalUnitsMeasure F S) =
       ∫ x, g x ∂TateTensorProfile.multiplicativeMeasure F S := by
   rw [← canonicalUnitsMeasure_map]
   exact ((units_val_isOpenEmbedding F S).measurableEmbedding.integral_map g).symm
 
-theorem canonicalUnitsMeasure_left (S : Finset (HeightOneSpectrum (𝓞 F)))
-    [NumberField.IsTotallyComplex F]
+theorem canonicalUnitsMeasure_left
     (hscale : ∀ g : (SLocalProduct F S)ˣ,
       Measure.map (fun x : SLocalProduct F S => g.val * x) (TateTensorProfile.additiveMeasure F S) =
         (ENNReal.ofReal (TateTensorProfile.modulus F S g.val))⁻¹ •
@@ -156,10 +155,9 @@ theorem canonicalUnitsMeasure_left (S : Finset (HeightOneSpectrum (𝓞 F)))
     · rintro ⟨u, hu, he⟩
       refine ⟨g⁻¹ * u, ?_, ?_⟩
       · simpa using hu
-      · change (g⁻¹ * u).val = x
-        simp only [Units.val_mul]
+      · simp only [Units.val_mul]
         rw [he]; simp
-  rw [hpre, withDensity_apply _ (by exact (ev.measurableSet_image.mpr hs).preimage (by fun_prop)),
+  rw [hpre, withDensity_apply _ ((ev.measurableSet_image.mpr hs).preimage (by fun_prop)),
     withDensity_apply _ (ev.measurableSet_image.mpr hs)]
   have hmul (x : SLocalProduct F S) : D (g.val * x) =
       (ENNReal.ofReal (TateTensorProfile.modulus F S g.val))⁻¹ * D x := by
@@ -183,8 +181,7 @@ theorem canonicalUnitsMeasure_left (S : Finset (HeightOneSpectrum (𝓞 F)))
     (by simp)
     (by simp only [ne_eq, ENNReal.inv_eq_top, ENNReal.ofReal_eq_zero, not_le];
         exact TateTensorProfile.modulus_pos_of_isUnit F S _ g.isUnit)).mp hm.symm
-theorem canonicalUnitsMeasure_isHaar (S : Finset (HeightOneSpectrum (𝓞 F)))
-    [NumberField.IsTotallyComplex F]
+theorem canonicalUnitsMeasure_isHaar
     [LocallyCompactSpace (SLocalProduct F S)]
     [hleft : (canonicalUnitsMeasure F S).IsMulLeftInvariant] :
     (canonicalUnitsMeasure F S).IsHaarMeasure := by
@@ -201,18 +198,15 @@ theorem canonicalUnitsMeasure_isHaar (S : Finset (HeightOneSpectrum (𝓞 F)))
   apply Measure.isHaarMeasure_of_isCompact_nonempty_interior _ K hK hint
   · unfold canonicalUnitsMeasure
     rw [ev.comap_apply]
-    change ((TateTensorProfile.additiveMeasure F S).withDensity D) (Units.val '' K) ≠ 0
-    apply mt (withDensity_apply_eq_zero (μ := TateTensorProfile.additiveMeasure F S)
-      (s := Units.val '' K) hD).mp
+    apply mt (withDensity_apply_eq_zero
+       hD).mp
     have heq : {x | D x ≠ 0} ∩ (Units.val '' K) = Units.val '' K := by
       apply Set.inter_eq_right.mpr
       rintro x ⟨u, hu, rfl⟩
       exact (ENNReal.ofReal_pos.mpr (div_pos (TateTensorProfile.multiplicativeDensityConstant_pos F S)
         (TateTensorProfile.modulus_pos_of_isUnit F S _ u.isUnit))).ne'
     rw [heq]
-    have hpos : 0 < (TateTensorProfile.additiveMeasure F S) (Units.val '' interior K) :=
-      ((units_val_isOpenEmbedding F S).isOpenMap _ isOpen_interior).measure_pos _ (hint.image _)
-    exact (hpos.trans_le (measure_mono (Set.image_mono interior_subset))).ne'
+    exact ((((units_val_isOpenEmbedding F S).isOpenMap _ isOpen_interior).measure_pos _ (hint.image _)).trans_le (measure_mono (Set.image_mono interior_subset))).ne'
   · unfold canonicalUnitsMeasure
     rw [ev.comap_apply, withDensity_apply _ ((hK.image Units.continuous_val).measurableSet)]
     have hc : ContinuousOn (fun x : SLocalProduct F S =>
@@ -221,15 +215,13 @@ theorem canonicalUnitsMeasure_isHaar (S : Finset (HeightOneSpectrum (𝓞 F)))
       apply ContinuousOn.div continuousOn_const (modulus_continuous F S).continuousOn
       rintro x ⟨u, hu, rfl⟩
       exact (TateTensorProfile.modulus_pos_of_isUnit F S _ u.isUnit).ne'
-    have hi := ContinuousOn.integrableOn_compact (μ := TateTensorProfile.additiveMeasure F S)
-      (hK.image Units.continuous_val) hc
-    rw [← ofReal_integral_eq_lintegral_ofReal hi (Filter.Eventually.of_forall (fun x =>
+    rw [← ofReal_integral_eq_lintegral_ofReal (ContinuousOn.integrableOn_compact
+      (hK.image Units.continuous_val) hc) (Filter.Eventually.of_forall (fun x =>
       div_nonneg (TateTensorProfile.multiplicativeDensityConstant_pos F S).le
         (TateTensorProfile.modulus_nonneg F S x)))]
     exact ENNReal.ofReal_ne_top
 
 theorem units_normMellin_comparison_of_canonicalHaar
-    (S : Finset (HeightOneSpectrum (𝓞 F))) [NumberField.IsTotallyComplex F]
     [SecondCountableTopology (SLocalProduct F S)ˣ]
     [(canonicalUnitsMeasure F S).IsHaarMeasure]
     (ν : @Measure (SLocalProduct F S)ˣ
@@ -240,9 +232,8 @@ theorem units_normMellin_comparison_of_canonicalHaar
       (∫ y, TateTensorProfile.fourier F S W y.val *
         (TateTensorProfile.modulus F S y.val : ℂ) ^ (s : ℂ) ∂ν) =
         (c : ℂ) * TateTensorProfile.normMellin F S W s := by
-  have heq := BorelSpace.measurable_eq (α := SLocalProduct F S)
   revert ν hν
-  rw [← heq]
+  rw [← (BorelSpace.measurable_eq)]
   intro ν hν
   letI := hν
   let c := Measure.haarScalarFactor ν (canonicalUnitsMeasure F S)
@@ -258,7 +249,6 @@ theorem units_normMellin_comparison_of_canonicalHaar
     rfl
 
 theorem haar_fourierMellin_comparison_of_canonicalHaar
-    (S : Finset (HeightOneSpectrum (𝓞 F))) [NumberField.IsTotallyComplex F]
     [SecondCountableTopology (SLocalProduct F S)ˣ]
     [(canonicalUnitsMeasure F S).IsHaarMeasure]
     (μ : @Measure (SLocalProduct F S) (borel _))
@@ -278,8 +268,7 @@ theorem haar_fourierMellin_comparison_of_canonicalHaar
   simp_rw [hfourier, mul_assoc]
   rw [integral_const_mul, hmellin, Complex.ofReal_mul, mul_assoc]
 
-theorem additiveMeasure_map_mul (S : Finset (HeightOneSpectrum (𝓞 F)))
-    [NumberField.IsTotallyComplex F] (g : (SLocalProduct F S)ˣ) :
+theorem additiveMeasure_map_mul (g : (SLocalProduct F S)ˣ) :
     Measure.map (fun x : SLocalProduct F S => g.val * x)
         (TateTensorProfile.additiveMeasure F S) =
       (ENNReal.ofReal (TateTensorProfile.modulus F S g.val))⁻¹ •
@@ -311,8 +300,7 @@ theorem additiveMeasure_map_mul (S : Finset (HeightOneSpectrum (𝓞 F)))
     positivity), ENNReal.mul_inv (Or.inr ENNReal.ofReal_ne_top)
       (Or.inl ENNReal.ofReal_ne_top)]
 
-theorem haar_fourierMellin_comparison (S : Finset (HeightOneSpectrum (𝓞 F)))
-    [NumberField.IsTotallyComplex F]
+theorem haar_fourierMellin_comparison
     (μ : @Measure (SLocalProduct F S) (borel _))
     (ν : @Measure (SLocalProduct F S)ˣ
       (@Units.instMeasurableSpace (SLocalProduct F S) _ (borel _)))

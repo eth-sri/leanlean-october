@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -77,8 +71,9 @@ theorem padicCyclicClosure_isOpen_of_degree_ne_one
     restrictedDegree.toMonoidHom.range
   let H : AddSubgroup ℤ_[p] :=
     R.toAddSubgroup'
+  let Set₀ := Set (Multiplicative ℤ_[p])
   have hRclosed :
-      IsClosed (R : Set (Multiplicative ℤ_[p])) := by
+      IsClosed (R : Set₀) := by
     change
       IsClosed (Set.range restrictedDegree)
     exact
@@ -89,7 +84,7 @@ theorem padicCyclicClosure_isOpen_of_degree_ne_one
     change
       IsClosed
         ((fun z : ℤ_[p] => Multiplicative.ofAdd z) ⁻¹'
-          (R : Set (Multiplicative ℤ_[p])))
+          (R : Set₀))
     exact hRclosed.preimage continuous_ofAdd
   have hHne : H ≠ ⊥ := by
     intro hbot
@@ -115,7 +110,7 @@ theorem padicCyclicClosure_isOpen_of_degree_ne_one
     PadicInt.addSubgroup_isOpen_of_isClosed_of_ne_bot
       p H hHclosed hHne
   have hRopen :
-      IsOpen (R : Set (Multiplicative ℤ_[p])) := by
+      IsOpen (R : Set₀) := by
     change
       IsOpen
         ((fun z : Multiplicative ℤ_[p] =>
@@ -128,7 +123,7 @@ theorem padicCyclicClosure_isOpen_of_degree_ne_one
   have hDegreeRangeOpen :
       IsOpen
         (degree.toMonoidHom.range :
-          Set (Multiplicative ℤ_[p])) :=
+          Set₀) :=
     Subgroup.isOpen_mono hRle hRopen
   have hRsubgroupOpen :
       IsOpen
@@ -157,10 +152,8 @@ theorem padicCyclicClosure_isOpen_of_degree_ne_one
         degree.toMonoidHom.range := by
     ext z
     constructor
-    · rintro ⟨g, _, rfl⟩
-      exact ⟨g, rfl⟩
-    · rintro ⟨g, rfl⟩
-      exact ⟨g, Subgroup.mem_top g, rfl⟩
+    · simp
+    · simp
   have himage :
       (Γ.toSubgroup.map degree.toMonoidHom).relIndex
           ((⊤ : Subgroup G).map degree.toMonoidHom) ≠ 0 := by
@@ -174,8 +167,7 @@ theorem padicCyclicClosure_isOpen_of_degree_ne_one
     Finite.of_injective toKernel (by
       intro x y hxy
       apply Subtype.ext
-      simpa [toKernel] using
-        congrArg (fun z : degree.toMonoidHom.ker => (z : G)) hxy)
+      grind)
   have hkernel :
       (Γ.toSubgroup ⊓ degree.toMonoidHom.ker).relIndex
           ((⊤ : Subgroup G) ⊓ degree.toMonoidHom.ker) ≠ 0 := by
@@ -264,8 +256,7 @@ theorem padicCyclicClosure_degree_injective_of_primePower_finiteCoordinate
         change
           a * (c : ℤ_[p]) ∈
             Ideal.span ({(c : ℤ_[p])} : Set ℤ_[p])
-        rw [Ideal.mem_span_singleton]
-        exact ⟨a, mul_comm _ _⟩
+        simp [Ideal.mem_span_singleton]
     have hJclosed : IsClosed (J : Set ℤ_[p]) := by
       rw [hJrange]
       exact
@@ -321,11 +312,8 @@ theorem padicCyclicClosure_degree_injective_of_primePower_finiteCoordinate
           ({γ} : Set G) := by
       ext x
       constructor
-      · rintro ⟨u, rfl⟩
-        simp
-      · intro hx
-        rw [Set.mem_singleton_iff] at hx
-        exact ⟨(), hx.symm⟩
+      · simp
+      · simp
     have hyZPowers :
         y ∈ Subgroup.zpowers γ := by
       rw [Subgroup.zpowers_eq_closure, ← hrange]
@@ -354,8 +342,7 @@ theorem padicCyclicClosure_degree_injective_of_primePower_finiteCoordinate
         (n : ℤ_[p]) *
             (a * (p : ℤ_[p]) ^ m) =
             a * (c : ℤ_[p]) := by
-              simp only [c, Nat.cast_mul, Nat.cast_pow]
-              ring
+              simp [c] <;> ring
         _ = (k : ℤ_[p]) * (n : ℤ_[p]) := by
           simpa [mul_comm] using ha.symm
         _ = (n : ℤ_[p]) * (k : ℤ_[p]) := mul_comm _ _
@@ -395,11 +382,11 @@ theorem padicCyclicClosure_degree_injective_of_primePower_finiteCoordinate
     have hzG : z.1 = (1 : G) := by
       apply hjoint
       apply Prod.ext
-      · simpa only [map_one] using hzfinite
+      · simpa using hzfinite
       · have hzdegree' : degree z.1 = 1 := by
           dsimp [restrictedDegree, inclusion] at hzdegree
           exact hzdegree
-        simpa only [map_one] using hzdegree'
+        simpa using hzdegree'
     exact Subtype.ext hzG
   intro x y hxy
   have hxy' : restrictedDegree x = restrictedDegree y := by

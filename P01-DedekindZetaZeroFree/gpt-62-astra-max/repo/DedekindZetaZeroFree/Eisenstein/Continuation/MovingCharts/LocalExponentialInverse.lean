@@ -13,10 +13,10 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualMovingLocal
 open KPContLocalNorm
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 set_option backward.isDefEq.respectTransparency false in
 private theorem partial_jets_smooth
@@ -33,31 +33,18 @@ private theorem partial_jets_smooth
   | succ n ih =>
     intro p hp
     let J := fun q : A × E => iteratedFDeriv ℝ n (fun y => f (q.1,y)) q.2
-    have hJ : ContDiffAt ℝ (⊤ : ℕ∞) J p := ih.contDiffAt (hS.mem_nhds hp)
     have hJJ : ContDiffAt ℝ (⊤ : ℕ∞)
         (fun q : (A × E) × E => J (q.1.1,q.2)) (p,p.2) := by
-      simpa only [Function.comp_def] using hJ.comp (p,p.2)
+      simpa only [Function.comp_def] using (ih.contDiffAt (hS.mem_nhds hp)).comp (p,p.2)
         (contDiffAt_fst.fst.prodMk contDiffAt_snd)
-    have hD : ContDiffAt ℝ (⊤ : ℕ∞)
-        (fun q : A × E => fderiv ℝ (fun y => J (q.1,y)) q.2) p :=
-      hJJ.fderiv contDiffAt_snd (by simp)
     simpa only [iteratedFDeriv_succ_eq_comp_left, Function.comp_def, J] using
-      ((continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => E) B).symm.contDiff.comp_contDiffAt p hD).contDiffWithinAt
+      ((continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => E) B).symm.contDiff.comp_contDiffAt p (hJJ.fderiv contDiffAt_snd (by simp))).contDiffWithinAt
 
-private lemma domain_open : IsOpen (archDomain F) := by
-  have he : archDomain F = ⋂ w, {x : ArchCoordinates F | x w 1 ≠ 0} := by
-    ext x; simp [archDomain]
-  rw [he]
-  exact isOpen_iInter_of_finite (fun _ => isOpen_ne_fun (by fun_prop) continuous_const)
+private lemma domain_open : IsOpen (archDomain F) := by apply @DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.groupArchDomain_open <;> assumption
 
 private lemma actual_split :
     ∃ e : (KPSmoothLocalQuotientCharts.ArchGroup F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ* G F ζ hζ,
-      ∀ a c, e (a,c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c := by
-  have hsub := KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_finiteSubgroup_eq F ζ hζ
-  have hh := PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ
-  rw [hsub] at hh
-  obtain ⟨e,he,_⟩ := hh
-  exact ⟨e,he⟩
+      ∀ a c, e (a,c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c := by apply @DedekindZetaZeroFree.KPActualComponentHaarSources.actual_product_splitting <;> assumption
 
 open scoped Manifold
 
@@ -74,17 +61,11 @@ private lemma param_split
 
 private lemma param_continuous (ζ : F) (hζ : IsPrimitiveRoot ζ 12) : ContinuousOn (archParam F) (archDomain F) := by
   obtain ⟨e,he⟩ := actual_split F ζ hζ
-  have hc := (continuous_fst.comp e.symm.continuous).comp_continuousOn
-    (ActualMovingCompact.archChart_continuousOn F ζ hζ)
-  exact hc.congr (fun y _ => congrArg Prod.fst (param_split F ζ hζ e he y).symm)
+  exact ((continuous_fst.comp e.symm.continuous).comp_continuousOn
+    (ActualMovingCompact.archChart_continuousOn F ζ hζ)).congr (fun y _ => congrArg Prod.fst (param_split F ζ hζ e he y).symm)
 
 private lemma target_mk (M : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
-    Matrix.ProjGenLinGroup.mk M ∈ PGLComplex.affineTarget ↔ M.val 0 0 ≠ 0 := by
-  obtain ⟨z,hz⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp
-    ((Quotient.out_eq (Matrix.ProjGenLinGroup.mk M)).symm)
-  change (Matrix.ProjGenLinGroup.mk M).out.val 0 0 ≠ 0 ↔ _
-  rw [← hz]
-  simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_diagonal]
+    Matrix.ProjGenLinGroup.mk M ∈ PGLComplex.affineTarget ↔ M.val 0 0 ≠ 0 := by apply @DedekindZetaZeroFree.PGLComplex.mk_mem_affineTarget_iff <;> assumption
 
 set_option backward.isDefEq.respectTransparency false in
 private lemma param_smooth (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :

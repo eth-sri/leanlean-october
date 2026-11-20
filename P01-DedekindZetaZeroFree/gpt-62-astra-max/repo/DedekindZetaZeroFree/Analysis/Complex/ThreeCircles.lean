@@ -52,7 +52,7 @@ theorem three_circles (ℓ : ℂ → ℂ) (c : ℂ) (R r₀ r₁ r₂ : ℝ) (hr
     (hbig : ∀ s ∈ closedBall c r₂, ‖ℓ s‖ ≤ A * L)
     (w : ℝ) (hw0 : r₀ < |w|) (hw : |w| ≤ r₁) :
     ‖ℓ (c + w)‖ ≤ A * L ^ ((Real.log r₁ - Real.log r₀) / (Real.log r₂ - Real.log r₀)) := by
-  have hlu : Real.log r₀ < Real.log r₂ := Real.log_lt_log hr₀ hr₀₂
+  have hlu := Real.log_lt_log hr₀ hr₀₂
   have hsub : 0 < Real.log r₂ - Real.log r₀ := by linarith
   have hexp_le : ∀ z : ℂ, z.re ≤ Real.log r₂ → ‖Complex.exp z‖ ≤ r₂ := by
     intro z hz
@@ -63,7 +63,7 @@ theorem three_circles (ℓ : ℂ → ℂ) (c : ℂ) (R r₀ r₁ r₂ : ℝ) (hr
     intro z hz
     rw [mem_closedBall, dist_eq_norm, add_sub_cancel_left]
     exact hexp_le z hz
-  let f : ℂ → ℂ := fun z => ℓ (c + Complex.exp z)
+  let f := fun z => ℓ (c + Complex.exp z)
   have hd : DiffContOnCl ℂ f (verticalStrip (Real.log r₀) (Real.log r₂)) := by
     apply DifferentiableOn.diffContOnCl
     have hcl : closure (verticalStrip (Real.log r₀) (Real.log r₂)) =
@@ -71,29 +71,25 @@ theorem three_circles (ℓ : ℂ → ℂ) (c : ℂ) (R r₀ r₁ r₂ : ℝ) (hr
       rw [verticalStrip, verticalClosedStrip, Complex.closure_preimage_re, closure_Ioo hlu.ne]
     rw [hcl]
     intro z hz
-    have hz2 : z.re ≤ Real.log r₂ := hz.2
-    have h1 : c + Complex.exp z ∈ Metric.ball c R := by
-      have := hmem z hz2
+    refine (DifferentiableAt.comp z (hℓ.differentiableAt (isOpen_ball.mem_nhds ?_)) ?_
+      ).differentiableWithinAt
+    · have := hmem z hz.2
       rw [mem_closedBall] at this
       rw [mem_ball]; linarith
-    have h2 : DifferentiableAt ℂ (fun z => c + Complex.exp z) z := by fun_prop
-    exact (DifferentiableAt.comp z (hℓ.differentiableAt (isOpen_ball.mem_nhds h1)) h2
-      ).differentiableWithinAt
+    · fun_prop
   have hB : BddAbove ((norm ∘ f) '' verticalClosedStrip (Real.log r₀) (Real.log r₂)) := by
     refine ⟨A * L, ?_⟩
     rintro _ ⟨z, hz, rfl⟩
     exact hbig _ (hmem z hz.2)
   have ha : ∀ z ∈ re ⁻¹' {Real.log r₀}, ‖f z‖ ≤ A := by
     intro z hz
-    have hz' : z.re = Real.log r₀ := hz
     show ‖ℓ (c + Complex.exp z)‖ ≤ A
     apply hsmall
-    rw [mem_closedBall, dist_eq_norm, add_sub_cancel_left, Complex.norm_exp, hz',
+    rw [mem_closedBall, dist_eq_norm, add_sub_cancel_left, Complex.norm_exp, hz,
       Real.exp_log hr₀]
   have hb : ∀ z ∈ re ⁻¹' {Real.log r₂}, ‖f z‖ ≤ A * L := by
     intro z hz
-    have hz' : z.re = Real.log r₂ := hz
-    exact hbig _ (hmem z hz'.le)
+    exact hbig _ (hmem z hz.le)
   have hw0' : (w : ℂ) ≠ 0 := by
     intro h
     have : w = 0 := by exact_mod_cast h
@@ -102,11 +98,10 @@ theorem three_circles (ℓ : ℂ → ℂ) (c : ℂ) (R r₀ r₁ r₂ : ℝ) (hr
     linarith
   have hre : (Complex.log (w : ℂ)).re = Real.log |w| := by
     rw [Complex.log_re, Complex.norm_real, Real.norm_eq_abs]
-  have hr₁pos : 0 < |w| := by linarith
-  have hlog1 : Real.log |w| ≤ Real.log r₁ := Real.log_le_log hr₁pos hw
+  have hlog1 := Real.log_le_log (by linarith) hw
   have hlog2 : Real.log r₁ ≤ Real.log r₂ :=
     Real.log_le_log (by linarith) hr₁₂
-  have hlog0 : Real.log r₀ ≤ Real.log |w| := Real.log_le_log hr₀ hw0.le
+  have hlog0 := Real.log_le_log hr₀ hw0.le
   have hz0 : Complex.log (w : ℂ) ∈ verticalClosedStrip (Real.log r₀) (Real.log r₂) := by
     show (Complex.log (w : ℂ)).re ∈ Icc (Real.log r₀) (Real.log r₂)
     rw [hre]
@@ -122,10 +117,9 @@ theorem three_circles (ℓ : ℂ → ℂ) (c : ℂ) (R r₀ r₁ r₂ : ℝ) (hr
   have hx1 : (Real.log |w| - Real.log r₀) / (Real.log r₂ - Real.log r₀) ≤
       (Real.log r₁ - Real.log r₀) / (Real.log r₂ - Real.log r₀) :=
     div_le_div_of_nonneg_right (by linarith) hsub.le
-  have hL0 : 0 ≤ L := by linarith
   have heq : ∀ x : ℝ, A ^ (1 - x) * (A * L) ^ x = A * L ^ x := by
     intro x
-    rw [Real.mul_rpow hA.le hL0, ← mul_assoc, ← Real.rpow_add hA]
+    rw [Real.mul_rpow hA.le (by linarith), ← mul_assoc, ← Real.rpow_add hA]
     simp
   refine key.trans ?_
   rw [heq]

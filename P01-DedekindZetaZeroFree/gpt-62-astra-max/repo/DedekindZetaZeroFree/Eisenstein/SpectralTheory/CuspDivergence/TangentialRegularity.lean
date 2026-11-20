@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspEnergy.GradientDensityInvariance
 
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspDivergence.RadialAndTangentialComponents
 
@@ -10,47 +11,20 @@ open scoped Classical Topology
 namespace DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration.Slice
 open KPMeanZeroWeightedEnergy HyperbolicChart
 
-private theorem smooth_real (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (real d) := by
-  apply (contDiff_piLp 2).mpr
-  intro ⟨i,k⟩
-  fin_cases k
-  · simpa [real, Function.comp_def] using Complex.reCLM.contDiff.comp
-      (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
-  · simpa [real, Function.comp_def] using Complex.imCLM.contDiff.comp
-      (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
-  · simpa [real, Function.comp_def] using contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+private alias smooth_real := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.smooth_real
 
-private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply ContDiff.prodMk
-  · exact Complex.equivRealProdCLM.symm.contDiff.comp
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
-       (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
-private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
-  unfold KPCuspLogShape.meanHeight
-  apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
-private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (fun q => differential d g q i k) x := by
-  have hd (k : Fin 3) : ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x :=
-    (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
-  have he : ContDiffAt ℝ (⊤ : ℕ∞) (fun q : Space d => (Real.exp (q (i,2)) : ℂ)) x :=
-    Complex.ofRealCLM.contDiff.contDiffAt.comp x
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff.contDiffAt.exp)
-  fin_cases k
-  · simpa [differential] using hd 2
-  · simpa [differential] using he.mul (hd 0)
-  · simpa [differential] using he.mul (hd 1)
+private alias smooth_arch := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.smooth_arch
+private alias smooth_mean := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.smooth_mean
+private alias differential_smoothAt := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.differential_smoothAt
 
-private theorem flux_component_contDiff
-    (d : ℕ) {T : ℝ} (u : KPArch.Space d → ℝ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u {z | T < KPCuspLogShape.meanHeight d z})
-    (a : ℝ → ℝ) (ha : CompactRadialTest T a) (i : Fin d) (k : Fin 3) :
+section
+
+variable (d : ℕ) {T : ℝ} (u : KPArch.Space d → ℝ)
+    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u {z | T < KPCuspLogShape.meanHeight d z}) (a : ℝ → ℝ)
+    (ha : CompactRadialTest T a) (i : Fin d) (k : Fin 3)
+
+include hu ha in
+private theorem flux_component_contDiff :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : Space d =>
       (a (KPCuspLogShape.meanHeight d (arch d x)) : ℂ) *
         differential d (fun q => (u (arch d q) : ℂ)) x i k) := by
@@ -74,12 +48,12 @@ private theorem flux_component_contDiff
       simp [image_eq_zero_of_notMem_tsupport hq]
     exact contDiffAt_const.congr_of_eventuallyEq he
 
-theorem cutoff_flux_component_contDiff
-    (d : ℕ) {T : ℝ} (u : KPArch.Space d → ℝ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u {z | T < KPCuspLogShape.meanHeight d z})
-    (a : ℝ → ℝ) (ha : CompactRadialTest T a) (i : Fin d) (k : Fin 3) :
+include hu ha in
+theorem cutoff_flux_component_contDiff :
     ContDiff ℝ (⊤ : ℕ∞) (fun x => cutoffScalarFlux d u a x i k) :=
   flux_component_contDiff d u hu a ha i k
+
+end
 
 theorem cutoff_tangentialDivergence_contDiff
     {F : Type} [Field F] [NumberField F]
@@ -101,10 +75,7 @@ theorem cutoff_tangentialDivergence_contDiff
     ((hw i k).fderiv_right (by simp)).clm_apply contDiff_const
   have he (i : Fin d) : ContDiff ℝ (⊤ : ℕ∞) (fun x : Space d => (Real.exp (x (i,2)) : ℂ)) :=
     Complex.ofRealCLM.contDiff.comp
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff.exp)
-  have hx : ContDiff ℝ (⊤ : ℕ∞) (fun p : KPCuspCharts.Coordinates F =>
-      real d (KPCuspCharts.toArch F p)) :=
-    (smooth_real d).comp ((KPCuspCharts.toArch_contDiff F).of_le (by simp))
+      ((EuclideanSpace.proj (i, (2 : Fin 3))).contDiff.exp)
   unfold tangentialDivergence
   apply ContDiff.sum
   intro i hi
@@ -115,10 +86,9 @@ theorem cutoff_tangentialDivergence_contDiff
     exact Complex.reCLM.contDiff.comp (hc i j 2)
   exact (((Complex.reCLM.contDiff.comp (hc i i 2)).sub (hs.div_const _)).add
     (Complex.reCLM.contDiff.comp ((he i).mul (hc' i 0 1)))).add
-      (Complex.reCLM.contDiff.comp ((he i).mul (hc' i 1 2))) |>.comp hx
+      (Complex.reCLM.contDiff.comp ((he i).mul (hc' i 1 2))) |>.comp ((smooth_real d).comp ((KPCuspCharts.toArch_contDiff F).of_le (by simp)))
 
-private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  ext i <;> simp [arch, real]
+private alias arch_real := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.arch_real
 
 theorem cutoff_tangentialDivergence_eq_zero_of_notMem_tsupport
     {F : Type} [Field F] [NumberField F]
@@ -137,11 +107,10 @@ theorem cutoff_tangentialDivergence_eq_zero_of_notMem_tsupport
     apply Continuous.div_const
     apply continuous_finset_sum
     intro i hi
-    exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).continuous
+    exact (EuclideanSpace.proj (i, (2 : Fin 3))).continuous
   have he : (fun q : Space d => a (KPCuspLogShape.meanHeight d (arch d q)))
       =ᶠ[nhds x] (fun _ => 0) := by
-    have hat := notMem_tsupport_iff_eventuallyEq.mp ht
-    apply hat.comp_tendsto
+    apply (notMem_tsupport_iff_eventuallyEq.mp ht).comp_tendsto
     rw [← hmean]
     exact hh.continuousAt
   have hw (i : Fin d) (k : Fin 3) :

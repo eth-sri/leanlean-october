@@ -9,17 +9,17 @@ open scoped FourierTransform Convolution
 
 namespace DedekindZetaZeroFree
 
-private lemma fourier_fourier_apply_neg {W : Type*} [NormedAddCommGroup W] [InnerProductSpace ℝ W]
-    [FiniteDimensional ℝ W] [MeasurableSpace W] [BorelSpace W]
+section
+
+variable {W : Type*} [NormedAddCommGroup W] [InnerProductSpace ℝ W] [FiniteDimensional ℝ W]
+    [MeasurableSpace W] [BorelSpace W]
+
+private lemma fourier_fourier_apply_neg
     (f : SchwartzMap W ℂ) (x : W) :
     ((𝓕 (𝓕 f) : SchwartzMap W ℂ) : W → ℂ) x = f (-x) := by
-  have h := Continuous.fourierInv_fourier_eq f.continuous f.integrable (𝓕 f).integrable
-  have hx := congrFun h (-x)
-  rw [Real.fourierInv_eq_fourier_neg] at hx
-  simpa only [SchwartzMap.fourier_coe, neg_neg] using hx
+  simpa [Real.fourierInv_eq_fourier_neg, SchwartzMap.fourier_coe, neg_neg] using congrFun (Continuous.fourierInv_fourier_eq f.continuous f.integrable (𝓕 f).integrable) (-x)
 
-private lemma schwartz_pairing_fourier_eq_convolution {W : Type*} [NormedAddCommGroup W]
-    [InnerProductSpace ℝ W] [FiniteDimensional ℝ W] [MeasurableSpace W] [BorelSpace W]
+private lemma schwartz_pairing_fourier_eq_convolution
     (f g : SchwartzMap W ℂ) :
     (𝓕 (SchwartzMap.pairing (ContinuousLinearMap.mul ℂ ℂ) f g) : SchwartzMap W ℂ)
       = SchwartzMap.convolution (ContinuousLinearMap.mul ℂ ℂ) (𝓕 f) (𝓕 g) := by
@@ -29,8 +29,9 @@ private lemma schwartz_pairing_fourier_eq_convolution {W : Type*} [NormedAddComm
     rw [SchwartzMap.fourier_convolution, SchwartzMap.pairing_apply_apply]
     rw [fourier_fourier_apply_neg, fourier_fourier_apply_neg]
     rw [fourier_fourier_apply_neg, SchwartzMap.pairing_apply_apply]
-  have h2 := congrArg (fun (h : SchwartzMap W ℂ) => (𝓕⁻ h : SchwartzMap W ℂ)) hA
-  simpa using h2
+  simpa using (congrArg (fun h => (𝓕⁻ h : SchwartzMap W ℂ)) hA)
+
+end
 
 theorem schwartz_product_fourier_tsupport_subset_closedBall
     (W : Type*) [NormedAddCommGroup W] [InnerProductSpace ℝ W]

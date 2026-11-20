@@ -8,17 +8,18 @@ namespace DedekindZetaZeroFree.AbelianQuotient
 
 open Complex
 
-theorem zetaGammaReciprocal_differentiable (K : Type) [Field K] [NumberField K] :
+variable (K : Type) [Field K] [NumberField K]
+
+theorem zetaGammaReciprocal_differentiable :
     Differentiable ℂ (zetaGammaReciprocal K) := by
-  have hc : ((|NumberField.discr K| : ℤ) : ℂ) ≠ 0 := by
-    simp [NumberField.discr_ne_zero K]
   unfold zetaGammaReciprocal
   refine Differentiable.mul (Differentiable.mul ?_ ?_) ?_
-  · exact (differentiable_id.neg.div_const 2).const_cpow (Or.inl hc)
+  · exact (differentiable_id.neg.div_const 2).const_cpow (Or.inl (by
+    simp [NumberField.discr_ne_zero K]))
   · exact (Complex.differentiable_Gammaℝ_inv.pow _)
   · exact (Complex.differentiable_Gammaℂ_inv.pow _)
 
-theorem zetaGammaReciprocal_zero (K : Type) [Field K] [NumberField K] :
+theorem zetaGammaReciprocal_zero :
     zetaGammaReciprocal K 0 = 0 := by
   have hsum := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank (K := K)
   have hrank : 0 < Module.finrank ℚ K := Module.finrank_pos
@@ -36,23 +37,21 @@ theorem zetaGammaReciprocal_zero (K : Type) [Field K] [NumberField K] :
     exact zero_pow h2
   · rw [zero_pow h1, zero_mul]
 
-theorem zetaGammaReciprocal_mul_factor (K : Type) [Field K] [NumberField K]
+theorem zetaGammaReciprocal_mul_factor
     (s : ℂ) (hs : 1 < s.re) :
     zetaGammaReciprocal K s * zetaGammaFactor K s = 1 := by
-  have hs0 : 0 < s.re := lt_trans zero_lt_one hs
-  have hc : ((|NumberField.discr K| : ℤ) : ℂ) ≠ 0 := by
-    simp [NumberField.discr_ne_zero K]
-  have hGℝ : Complex.Gammaℝ s ≠ 0 := Complex.Gammaℝ_ne_zero_of_re_pos hs0
+  have hs0 := lt_trans zero_lt_one hs
   have hGℂ : Complex.Gammaℂ s ≠ 0 := by
     rw [Complex.Gammaℂ_def]
     exact mul_ne_zero (mul_ne_zero two_ne_zero (cpow_ne_zero_iff.mpr (Or.inl (by norm_num))))
       (Complex.Gamma_ne_zero_of_re_pos hs0)
   have hc1 : ((|NumberField.discr K| : ℤ) : ℂ) ^ (-s / 2) *
       ((|NumberField.discr K| : ℤ) : ℂ) ^ (s / 2) = 1 := by
-    rw [← cpow_add _ _ hc, show -s / 2 + s / 2 = 0 by ring, cpow_zero]
+    rw [← cpow_add _ _ (by
+      simp [NumberField.discr_ne_zero K]), show -s / 2 + s / 2 = 0 by ring, cpow_zero]
   have hℝ : (Complex.Gammaℝ s)⁻¹ ^ NumberField.InfinitePlace.nrRealPlaces K *
       Complex.Gammaℝ s ^ NumberField.InfinitePlace.nrRealPlaces K = 1 := by
-    rw [← mul_pow, inv_mul_cancel₀ hGℝ, one_pow]
+    rw [← mul_pow, inv_mul_cancel₀ (Complex.Gammaℝ_ne_zero_of_re_pos hs0), one_pow]
   have hℂ : (Complex.Gammaℂ s)⁻¹ ^ NumberField.InfinitePlace.nrComplexPlaces K *
       Complex.Gammaℂ s ^ NumberField.InfinitePlace.nrComplexPlaces K = 1 := by
     rw [← mul_pow, inv_mul_cancel₀ hGℂ, one_pow]

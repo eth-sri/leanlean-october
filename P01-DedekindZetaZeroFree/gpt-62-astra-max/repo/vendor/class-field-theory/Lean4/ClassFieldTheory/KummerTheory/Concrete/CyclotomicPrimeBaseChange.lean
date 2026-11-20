@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -53,19 +50,13 @@ theorem cyclotomicField_finrank_le_totient
       Nat.totient m := by
   let : NeZero m := ⟨hm.ne'⟩
   let C := CyclotomicField m F
-  let : IsCyclotomicExtension {m} F C :=
+  let :=
     CyclotomicField.isCyclotomicExtension m F
-  let : FiniteDimensional F C :=
+  let :=
     IsCyclotomicExtension.finiteDimensional {m} F C
   obtain ⟨ζ, hζ⟩ :=
     (CyclotomicField.isCyclotomicExtension m F).exists_isPrimitiveRoot
       (Set.mem_singleton m) hm.ne'
-  have hgen : Algebra.adjoin F ({ζ} : Set C) = ⊤ :=
-    IsCyclotomicExtension.adjoin_primitive_root_eq_top hζ
-  have htop :
-      IntermediateField.adjoin F ({ζ} : Set C) = ⊤ :=
-    IntermediateField.adjoin_eq_top_of_algebra
-      F ({ζ} : Set C) hgen
   have hroot :
       Polynomial.aeval ζ
           (Polynomial.cyclotomic m F) = 0 := by
@@ -74,24 +65,21 @@ theorem cyclotomicField_finrank_le_totient
       Polynomial.map_cyclotomic,
       ← Polynomial.IsRoot.def]
     exact hζ.isRoot_cyclotomic hm
-  have hdegree :
-      (minpoly F ζ).natDegree ≤
-        (Polynomial.cyclotomic m F).natDegree :=
-    Polynomial.natDegree_le_natDegree
-      (minpoly.min F ζ
-        (Polynomial.cyclotomic.monic m F) hroot)
   calc
-    Module.finrank F (CyclotomicField m F) =
+    _ =
         Module.finrank F C := rfl
     _ = Module.finrank F
           (IntermediateField.adjoin F ({ζ} : Set C)) := by
-      rw [htop]
+      rw [(IntermediateField.adjoin_eq_top_of_algebra
+        F ({ζ} : Set C) (IsCyclotomicExtension.adjoin_primitive_root_eq_top hζ))]
       simp
     _ = (minpoly F ζ).natDegree :=
       IntermediateField.adjoin.finrank
         (IsIntegral.of_finite F ζ)
     _ ≤ (Polynomial.cyclotomic m F).natDegree :=
-      hdegree
+      (Polynomial.natDegree_le_natDegree
+        (minpoly.min F ζ
+          (Polynomial.cyclotomic.monic m F) hroot))
     _ = Nat.totient m :=
       Polynomial.natDegree_cyclotomic m F
 
@@ -129,9 +117,7 @@ theorem primeCyclotomicBase_finrank_lt
     (p : ℕ) (hp : p.Prime) :
     Module.finrank K (PrimeCyclotomicBase K p) < p := by
   let : NeZero p := ⟨hp.ne_zero⟩
-  have hle :
-      Module.finrank K (PrimeCyclotomicBase K p) ≤
-        Nat.totient p :=
+  have hle :=
     cyclotomicField_finrank_le_totient
       K p hp.pos
   rw [Nat.totient_prime hp] at hle
@@ -145,12 +131,7 @@ theorem primeCyclotomicBase_finrank_coprime
     (Module.finrank K (PrimeCyclotomicBase K p)).Coprime
       (Module.finrank K L) := by
   rw [hdegree]
-  exact
-    (Nat.coprime_of_lt_prime
-      (ne_of_gt Module.finrank_pos)
-      (primeCyclotomicBase_finrank_lt
-        (K := K) p hp)
-      hp).symm
+  exact Nat.Coprime.symm (Nat.coprime_of_lt_prime (ne_of_gt Module.finrank_pos) (primeCyclotomicBase_finrank_lt K p hp) hp)
 
 /-- The field structure on the prime cyclotomic pushout, obtained
 from coprime degrees. -/
@@ -196,14 +177,7 @@ theorem primeCyclotomicPushout_finrank
         (PrimeCyclotomicBase K p)
         (PrimeCyclotomicPushout K L p) =
       p := by
-  let : NeZero p := ⟨hp.ne_zero⟩
-  let : Field (PrimeCyclotomicPushout K L p) :=
-    primeCyclotomicPushoutField K L p hp hdegree
-  let : Algebra
-      (PrimeCyclotomicBase K p)
-      (PrimeCyclotomicPushout K L p) :=
-    primeCyclotomicPushoutAlgebra K L p hp hdegree
-  rw [Module.finrank_baseChange, hdegree]
+  simp [hdegree]
 
 /-- The prime cyclotomic pushout is Galois over `K(μ_p)`. -/
 theorem primeCyclotomicPushout_isGalois
@@ -219,13 +193,6 @@ theorem primeCyclotomicPushout_isGalois
     IsGalois
       (PrimeCyclotomicBase K p)
       (PrimeCyclotomicPushout K L p) := by
-  let : NeZero p := ⟨hp.ne_zero⟩
-  let : Field (PrimeCyclotomicPushout K L p) :=
-    primeCyclotomicPushoutField K L p hp hdegree
-  let : Algebra
-      (PrimeCyclotomicBase K p)
-      (PrimeCyclotomicPushout K L p) :=
-    primeCyclotomicPushoutAlgebra K L p hp hdegree
   exact
     tensorProduct_isGalois_of_finrank_coprime
       K (PrimeCyclotomicBase K p) L
@@ -245,21 +212,13 @@ theorem primeCyclotomicPushout_numberField
         (PrimeCyclotomicPushout K L p) :=
       primeCyclotomicPushoutAlgebra K L p hp hdegree
     NumberField (PrimeCyclotomicPushout K L p) := by
-  let : NeZero p := ⟨hp.ne_zero⟩
-  let : Field (PrimeCyclotomicPushout K L p) :=
-    primeCyclotomicPushoutField K L p hp hdegree
-  let : Algebra
-      (PrimeCyclotomicBase K p)
-      (PrimeCyclotomicPushout K L p) :=
-    primeCyclotomicPushoutAlgebra K L p hp hdegree
-  exact
-    NumberField.of_module_finite
-      (PrimeCyclotomicBase K p)
-      (PrimeCyclotomicPushout K L p)
+  grind [NumberField.of_module_finite]
 
+variable (p : ℕ) (hp : p.Prime)
+
+include hp in
 /-- The cyclotomic base contains a primitive `p`-th root of unity. -/
-theorem primeCyclotomicBase_primitiveRoots_nonempty
-    (p : ℕ) (hp : p.Prime) :
+theorem primeCyclotomicBase_primitiveRoots_nonempty :
     (primitiveRoots p (PrimeCyclotomicBase K p)).Nonempty := by
   let : NeZero p := ⟨hp.ne_zero⟩
   obtain ⟨ζ, hζ⟩ :=
@@ -270,7 +229,6 @@ theorem primeCyclotomicBase_primitiveRoots_nonempty
 /-- The Galois group after cyclotomic base change is cyclic of prime
 order. -/
 theorem primeCyclotomicPushout_isCyclic
-    (p : ℕ) (hp : p.Prime)
     (hdegree : Module.finrank K L = p) :
     letI : NeZero p := ⟨hp.ne_zero⟩
     letI : Field (PrimeCyclotomicPushout K L p) :=
@@ -289,20 +247,16 @@ theorem primeCyclotomicPushout_isCyclic
         PrimeCyclotomicBase K p]
         PrimeCyclotomicPushout K L p) := by
   let : NeZero p := ⟨hp.ne_zero⟩
-  let : Field (PrimeCyclotomicPushout K L p) :=
+  let :=
     primeCyclotomicPushoutField K L p hp hdegree
-  let : Algebra
-      (PrimeCyclotomicBase K p)
-      (PrimeCyclotomicPushout K L p) :=
+  let :=
     primeCyclotomicPushoutAlgebra K L p hp hdegree
-  let : IsGalois
-      (PrimeCyclotomicBase K p)
-      (PrimeCyclotomicPushout K L p) :=
+  let :=
     primeCyclotomicPushout_isGalois
       K L p hp hdegree
   let : Fact p.Prime := ⟨hp⟩
   exact
-    isCyclic_of_prime_card (p := p) (by
+    isCyclic_of_prime_card (by
       rw [IsGalois.card_aut_eq_finrank,
         primeCyclotomicPushout_finrank
           K L p hp hdegree])
@@ -310,7 +264,6 @@ theorem primeCyclotomicPushout_isCyclic
 /-- Prime-degree Kummer coordinates for the base-changed Galois group,
 in the exact one-coordinate form used by the prime-degree Kummer coordinate construction. -/
 noncomputable def primeCyclotomicPushoutGalEquivPiZMod
-    (p : ℕ) (hp : p.Prime)
     (hdegree : Module.finrank K L = p) :
     letI : NeZero p := ⟨hp.ne_zero⟩
     letI : Field (PrimeCyclotomicPushout K L p) :=

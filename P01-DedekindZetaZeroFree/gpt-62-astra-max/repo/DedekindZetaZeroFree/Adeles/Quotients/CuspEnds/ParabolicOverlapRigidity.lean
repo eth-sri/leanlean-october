@@ -19,7 +19,7 @@ private theorem actual_element_of_open_overlap
     (γ : Γ) (x : X) (hx : x ∈ V) (hγx : γ • x ∈ V) : (γ : G) ∈ P := by
   by_contra hnot
   let O := V ∩ ((fun y : X => (γ : G) • y) ⁻¹' V)
-  have hO : IsOpen O := hV.inter (hV.preimage (continuous_const_smul (γ : G)))
+  have hO := hV.inter (hV.preimage (continuous_const_smul (γ : G)))
   have hOne : O.Nonempty := ⟨x, hx, hγx⟩
   have hsub : O ⊆ ⋃ p : P, {y : X | ((p : G)⁻¹ * (γ : G)) • y = y} := by
     intro y hy
@@ -31,9 +31,8 @@ private theorem actual_element_of_open_overlap
     rw [mul_smul, ← hp, inv_smul_smul]
   have hn : ∀ p : P, (p : G)⁻¹ * (γ : G) ≠ 1 := by
     intro p he
-    have heq : (γ : G) = p := (inv_mul_eq_one.mp he).symm
-    exact hnot (heq ▸ p.property)
-  have hz : μ (⋃ p : P, {y : X | ((p : G)⁻¹ * (γ : G)) • y = y}) = 0 :=
+    exact hnot (((inv_mul_eq_one.mp he).symm) ▸ p.property)
+  have hz :=
     measure_iUnion_null (fun p => hnull _ (hn p))
   exact hO.measure_ne_zero μ hOne (measure_mono_null hsub hz)
 
@@ -80,16 +79,17 @@ theorem actual_high_intersection_of_endMap_injective
     exact Quotient.sound (MulAction.orbitRel_apply.mpr (MulAction.mem_orbit_iff.mpr hxy))
   have hrel := Quotient.exact (hembed heq)
   obtain ⟨p, hp⟩ := MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp hrel)
-  refine ⟨⟨KPCuspGenuineMonodromy.cuspInclusion F Γ q σ p, ?_⟩, ?_⟩
-  · change (KPCuspGenuineMonodromy.cuspInclusion F Γ q σ p : KPCuspArithmetic.PGL2 F) ∈
+  let cuspInclusion₀ := KPCuspGenuineMonodromy.cuspInclusion F Γ q σ p
+  refine ⟨⟨cuspInclusion₀, ?_⟩, ?_⟩
+  · change (cuspInclusion₀ : KPCuspArithmetic.PGL2 F) ∈
       Γ ⊓ MulAction.stabilizer (KPCuspArithmetic.PGL2 F) q
     obtain ⟨k, hk, he⟩ := Subgroup.mem_map.mp p.property
-    have he' : (KPCuspGenuineMonodromy.cuspInclusion F Γ q σ p : KPCuspArithmetic.PGL2 F) = k := by
+    have he' : (cuspInclusion₀ : KPCuspArithmetic.PGL2 F) = k := by
       rw [KPCuspGenuineMonodromy.cuspInclusion_formula, ← he]
       simp only [MulEquiv.toMonoidHom_eq_coe, MonoidHom.coe_ofClass, MulAut.conj_apply]
       group
     rw [he']; exact hk
-  · change (KPCuspGenuineMonodromy.cuspInclusion F Γ q σ p : KPCuspArithmetic.PGL2 F) •
+  · change (cuspInclusion₀ : KPCuspArithmetic.PGL2 F) •
       (σ • x₀) = σ • y₀
     rw [KPCuspGenuineMonodromy.cuspInclusion_formula, mul_smul, mul_smul, inv_smul_smul]
     change (p : KPCuspArithmetic.PGL2 F) • KPCuspCharts.toArch F c = KPCuspCharts.toArch F d at hp

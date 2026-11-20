@@ -14,9 +14,6 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerP
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 local notation "W" => KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
   (KPCubicCoverConstruction.adelicW F ζ hζ)
-open _root_.DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm.Actual renaming actual_standard_integrable → actual_standard_integrable
-open _root_.DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm.Actual renaming section_signed_weyl → section_signed_weyl
-open _root_.DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm.Actual renaming rational → rational
 
 theorem adelicBox_monotone : Monotone (TraceBox.adelicBox F) := by
   intro S T hST a ha
@@ -29,7 +26,7 @@ theorem adelicBox_monotone : Monotone (TraceBox.adelicBox F) := by
 theorem adelicBox_iUnion : (⋃ E, TraceBox.adelicBox F E) = Set.univ := by
   apply Set.eq_univ_of_forall
   intro a
-  have hfin : {q | ¬ a.2 q ∈ q.adicCompletionIntegers F}.Finite :=
+  have hfin :=
     Filter.eventually_cofinite.mp a.2.property
   apply Set.mem_iUnion.mpr
   refine ⟨hfin.toFinset, ?_⟩
@@ -41,9 +38,8 @@ theorem adelicBox_iUnion : (⋃ E, TraceBox.adelicBox F E) = Set.univ := by
 
 theorem adelicBox_measurable (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) :
     MeasurableSet (TraceBox.adelicBox F E) := by
-  have ho := (KPAdditiveHaar.chartMap_isOpenEmbedding F E).isOpen_range
   have hc : Continuous (fun a : A F => a.2) := continuous_snd
-  have hb : IsOpen (TraceBox.adelicBox F E) := ho.preimage hc
+  have hb : IsOpen (TraceBox.adelicBox F E) := ((KPAdditiveHaar.chartMap_isOpenEmbedding F E).isOpen_range).preimage hc
   exact hb.measurableSet
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.FullSourceExhaustion

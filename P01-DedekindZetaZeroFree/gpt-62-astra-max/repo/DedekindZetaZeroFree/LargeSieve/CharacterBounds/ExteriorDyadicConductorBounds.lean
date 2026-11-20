@@ -11,9 +11,11 @@ noncomputable section
 open scoped Classical NumberField
 open NumberField IsDedekindDomain
 
+section
+
+variable (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+
 def HasExteriorDyadicConductorSieve
-    (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F)
     (sigma : FixedSResidue.FullLocalCharacters A)
     (C0 : ℝ) : Prop :=
   ∃ K : ℝ, 0 ≤ K ∧
@@ -28,9 +30,7 @@ def HasExteriorDyadicConductorSieve
         (∑ i : Fin n, ‖∑ a ∈ c.support, c a * (omega i).character a.val‖ ^ 2) ≤
           K * (X + U ^ 2) * ∑ a ∈ c.support, ‖c a‖ ^ 2
 
-theorem hasExteriorDyadicConductorSieve_of_balancedSection
-    (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F) (B : Subgroup A.V)
+theorem hasExteriorDyadicConductorSieve_of_balancedSection (B : Subgroup A.V)
     (K_bal : Set A.G) (hK : IsCompact K_bal)
     (s : A.BalancedIdealSection B K_bal)
     (sigma : FixedSResidue.FullLocalCharacters A)
@@ -40,6 +40,8 @@ theorem hasExteriorDyadicConductorSieve_of_balancedSection
   obtain ⟨K, hK0, hbound⟩ :=
     detector_exterior_dyadic_conductor_sieve F A B K_bal hK sigma hSigma C0 hC0
   exact ⟨K, hK0, hbound s⟩
+
+end
 
 private theorem dyadic_arbitrary {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) (sigma : FixedSResidue.FullLocalCharacters A) (C0 K : ℝ)
@@ -60,19 +62,10 @@ private theorem dyadic_arbitrary {F : Type} [Field F] [NumberField F]
     (∑ i, ‖∑ a ∈ c.support, c a * (omega i).character a.val‖^2) ≤
       K * (X + U^2) * ∑ a ∈ c.support, ‖c a‖^2 := by
   let e := (Fintype.equivFin ι).symm
-  have h := hK X U hX hU (Fintype.card ι) (omega ∘ e)
-    (fun i j hij => hω (e.injective.ne hij)) (fun i => htype (e i))
-    (fun i => hcond (e i)) c hc
   simpa only [Function.comp_apply,
-    e.sum_comp (fun i => ‖∑ a ∈ c.support, c a * (omega i).character a.val‖^2)] using h
-private theorem finite_cauchy_schwarz {ι : Type} (s : Finset ι) (z : ι → ℂ) :
-    ‖∑ i ∈ s, z i‖ ^ 2 ≤ (s.card : ℝ) * ∑ i ∈ s, ‖z i‖ ^ 2 := by
-  calc
-    _ ≤ (∑ i ∈ s, ‖z i‖)^2 := by
-      gcongr
-      exact norm_sum_le s z
-    _ ≤ _ := by
-      simpa using Finset.sum_mul_sq_le_sq_mul_sq s (fun _ => (1 : ℝ)) (fun i => ‖z i‖)
+    e.sum_comp (fun i => ‖∑ a ∈ c.support, c a * (omega i).character a.val‖^2)] using (hK X U hX hU (Fintype.card ι) (omega ∘ e)
+      (fun i j hij => hω (e.injective.ne hij)) (fun i => htype (e i))
+      (fun i => hcond (e i)) c hc)
 
 private theorem finite_partition_sum {α β M : Type} [DecidableEq β] [Nonempty β]
     [AddCommMonoid M] (T : Finset α) (L : Finset β) (B : β → Finset α)
@@ -81,7 +74,7 @@ private theorem finite_partition_sum {α β M : Type} [DecidableEq β] [Nonempty
     (f : α → M) : (∑ l ∈ L, ∑ a ∈ B l, f a) = ∑ a ∈ T, f a := by
   classical
   choose label hlabel hunique using huniq
-  let g : α → β := fun a => if ha : a ∈ T then (label a ha).val else Classical.arbitrary β
+  let g := fun a => if ha : a ∈ T then (label a ha).val else Classical.arbitrary β
   have hf : ∀ l ∈ L, B l = T.filter (fun a => g a = l) := by
     intro l hl
     ext a
@@ -121,11 +114,9 @@ private theorem block_coefficients {F : Type} [Field F] [NumberField F]
   classical
   let f : SSupportedPartition.Exterior Sf → NonzeroIdeal F :=
     fun a => ⟨h.val.val * a.val, mul_ne_zero h.val.property a.property.1⟩
-  have hf : Function.Injective f := by
-    intro a a' he
-    exact SSupportedPartition.mul_exterior_injective Sf h (congrArg Subtype.val he)
+  have hf : Function.Injective f := fun a a' he => SSupportedPartition.mul_exterior_injective Sf h (congrArg Subtype.val he)
   let T := B.preimage f hf.injOn
-  let c : SSupportedPartition.Exterior Sf →₀ ℂ := Finsupp.onFinset T
+  let c := Finsupp.onFinset T
     (fun a => if a ∈ T then b (f a) else 0)
     (fun a ha => by by_contra hh; simp [hh] at ha)
   have hc : c.support ⊆ T := Finsupp.support_onFinset_subset
@@ -161,7 +152,6 @@ private theorem block_coefficients {F : Type} [Field F] [NumberField F]
     rw [hsum, Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro a ha
-    change b (f a) * ω.character (h.val.val * a.val) = _
     rw [ω.character.map_mul']
     ring
   · have hsum : (∑ a ∈ c.support, ‖c a‖^2) = ∑ a ∈ T, ‖b (f a)‖^2 := by
@@ -315,7 +305,13 @@ theorem detector_logarithmic_sieve_gluing
         apply Finset.sum_le_sum
         intro i hi
         rw [← hsum (fun I => (omega i).character I.val)]
-        exact finite_cauchy_schwarz L (fun l => ∑ I ∈ B l, b I * (omega i).character I.val)
+        let z := (fun l => ∑ I ∈ B l, b I * (omega i).character I.val)
+        calc
+          _ ≤ (∑ i ∈ L, ‖z i‖)^2 := by
+            gcongr
+            exact norm_sum_le L z
+          _ ≤ _ := by
+            simpa using Finset.sum_mul_sq_le_sq_mul_sq L (fun _ => (1 : ℝ)) (fun i => ‖z i‖)
       _ = _ := by rw [← Finset.mul_sum, Finset.sum_comm]
   calc
     _ ≤ (L.card : ℝ) * ∑ l ∈ L, ∑ i : Fin n,
@@ -356,11 +352,9 @@ private theorem logarithmic_power_absorption (m : ℕ) (hm : 0 < m)
   refine ⟨(1 + 1 / d)^m, pow_pos (by positivity) _, ?_⟩
   intro N hN
   have hN0 : 0 ≤ N := by linarith
-  have hpow : 1 ≤ N^d := Real.one_le_rpow (by linarith) hd.le
-  have hlog := Real.log_le_rpow_div hN0 hd
   have hbase : 1 + Real.log N ≤ (1 + 1 / d) * N^d := by
     calc
-      1 + Real.log N ≤ N^d + N^d / d := add_le_add hpow hlog
+      _ ≤ N^d + N^d / d := add_le_add (Real.one_le_rpow (by linarith) hd.le) (Real.log_le_rpow_div hN0 hd)
       _ = (1 + 1 / d) * N^d := by ring
   have h := pow_le_pow_left₀
     (by linarith [Real.log_nonneg (show 1 ≤ N by linarith)]) hbase m
@@ -400,7 +394,7 @@ theorem detector_logarithmic_sieve_gluing_epsilon
   intro N U hN hU n omega hω htype hcond b hb
   have hfirst := hbound N U hN hU n omega hω htype hcond b hb
   have hNU : N ≤ N * U := by nlinarith
-  have hpow : N ^ epsilon ≤ (N * U) ^ epsilon :=
+  have hpow :=
     Real.rpow_le_rpow (by linarith) hNU hepsilon.le
   have hNUSq : 0 ≤ N + U ^ 2 := by positivity
   have henergy : 0 ≤ ∑ I ∈ b.support, ‖b I‖ ^ 2 := by positivity

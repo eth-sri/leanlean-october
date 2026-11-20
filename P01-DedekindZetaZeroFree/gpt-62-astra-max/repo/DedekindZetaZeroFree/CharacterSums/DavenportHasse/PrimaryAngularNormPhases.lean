@@ -43,16 +43,11 @@ theorem exists_prime_below_exterior
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) :
     ∃ q : HeightOneSpectrum (𝓞 E), v.asIdeal.LiesOver q.asIdeal ∧
       q.asIdeal ⊔ Ideal.span {(6 : 𝓞 E)} = ⊤ := by
-  let q : Ideal (𝓞 E) := v.asIdeal.under (𝓞 E)
-  have hq_ne : q ≠ ⊥ := Ideal.IsIntegral.under_ne_bot (𝓞 E) v.ne_bot
-  have hq_prime : q.IsPrime := Ideal.IsPrime.under (𝓞 E) v.asIdeal
-  have hq_max : q.IsMaximal := Ideal.IsMaximal.under (𝓞 E) v.asIdeal
-  refine ⟨⟨q, hq_prime, hq_ne⟩, ?_, ?_⟩
-  · exact Ideal.over_under (A := 𝓞 E) v.asIdeal
+  let q := v.asIdeal.under (𝓞 E)
+  refine ⟨⟨q, (Ideal.IsPrime.under (𝓞 E) v.asIdeal), (Ideal.IsIntegral.under_ne_bot (𝓞 E) v.ne_bot)⟩, ?_, ?_⟩
+  · exact Ideal.over_under v.asIdeal
   · by_contra h
-    have heq : q = q ⊔ Ideal.span {(6 : 𝓞 E)} :=
-      Ideal.IsMaximal.eq_of_le hq_max h le_sup_left
-    have hle : Ideal.span {(6 : 𝓞 E)} ≤ q := heq ▸ le_sup_right
+    have hle := (Ideal.IsMaximal.eq_of_le (Ideal.IsMaximal.under (𝓞 E) v.asIdeal) h le_sup_left) ▸ le_sup_right
     have h6 : (6 : 𝓞 E) ∈ q := hle (Ideal.subset_span (by simp))
     have h6v : (6 : 𝓞 F) ∈ v.asIdeal := by
       have := (Ideal.mem_under (𝓞 E) v.asIdeal).mp h6
@@ -161,27 +156,28 @@ theorem star_angular (z : ℂ) (hz : z ≠ 0) :
   rw [mul_comm, Complex.mul_conj, Complex.normSq_eq_norm_sq, Complex.ofReal_pow]
   ring
 
-def lambdaBase (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ι : E →+* ℂ)
+section
+
+variable (E : Type) [Field E] [NumberField E] [IsCyclotomicExtension {3} ℚ E] (ι : E →+* ℂ)
+
+def lambdaBase
     (I : Ideal (𝓞 E)) : ℂ :=
   if hI : I ∈ Eisenstein.I3 E then
     angular (Eisenstein.ιR E ι (Eisenstein.primaryGenerator E ⟨I, hI⟩))
   else 0
 
-theorem lambdaBase_mul (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ι : E →+* ℂ) (I J : Ideal (𝓞 E)) :
+theorem lambdaBase_mul (I J : Ideal (𝓞 E)) :
     lambdaBase E ι (I * J) = lambdaBase E ι I * lambdaBase E ι J := by
   have key : ∀ A B : Ideal (𝓞 E), A * B ∈ Eisenstein.I3 E → A ∈ Eisenstein.I3 E := by
     intro A B h
     rw [Eisenstein.mem_I3] at h ⊢
-    have h' : ¬(A = ⊥ ∨ B = ⊥) := fun hc => h.1 (Ideal.mul_eq_bot.mpr hc)
-    refine ⟨fun hA => h' (Or.inl hA), ?_⟩
+    refine ⟨fun hA => (fun hc => h.1 (Ideal.mul_eq_bot.mpr hc)) (Or.inl hA), ?_⟩
     refine le_antisymm le_top ?_
     rw [← h.2]
-    exact sup_le_sup_right (Ideal.mul_le_left (I := A) (J := B)) _
+    exact sup_le_sup_right (Ideal.mul_le_left) _
   by_cases hI : I ∈ Eisenstein.I3 E
   · by_cases hJ : J ∈ Eisenstein.I3 E
-    · have hIJ : I * J ∈ Eisenstein.I3 E := (Eisenstein.I3 E).mul_mem hI hJ
+    · have hIJ := (Eisenstein.I3 E).mul_mem hI hJ
       unfold lambdaBase
       rw [dif_pos hIJ, dif_pos hI, dif_pos hJ]
       have hsub : (⟨I, hI⟩ : Eisenstein.I3 E) * ⟨J, hJ⟩ = ⟨I * J, hIJ⟩ := Subtype.ext rfl
@@ -196,6 +192,8 @@ theorem lambdaBase_mul (E : Type) [Field E] [NumberField E]
     rw [dif_neg hI, zero_mul]
     rw [dif_neg]
     exact fun hIJ => hI (key I J hIJ)
+
+end
 
 def lambdaF (E F : Type) [Field E] [NumberField E] [Field F] [NumberField F]
     [IsCyclotomicExtension {3} ℚ E] [Algebra E F]
@@ -214,17 +212,23 @@ instance e0Cyclotomic (F : Type) [Field F] [NumberField F] (A : SArithmeticData 
     IsCyclotomicExtension {3} ℚ (E0 F A) :=
   (A.primitive_zeta12.pow (by decide) (by decide : 12 = 4 * 3)).intermediateField_adjoin_isCyclotomicExtension ℚ
 
-def omega0 (F : Type) [Field F] [NumberField F] (A : SArithmeticData F) : E0 F A :=
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+def omega0 (A : SArithmeticData F) : E0 F A :=
   ⟨A.zeta12 ^ 4, IntermediateField.mem_adjoin_simple_self ℚ _⟩
 
-theorem omega0_primitive (F : Type) [Field F] [NumberField F] (A : SArithmeticData F) :
+theorem omega0_primitive (A : SArithmeticData F) :
     IsPrimitiveRoot (omega0 F A) 3 := by
   apply (IsPrimitiveRoot.map_iff_of_injective
     (RingHom.injective (algebraMap (E0 F A) F))).mp
   exact A.primitive_zeta12.pow (by decide) (by decide : 12 = 4 * 3)
 
-def lambda (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+def lambda (A : SArithmeticData F)
     (ι : E0 F A →+* ℂ) (I : Ideal (𝓞 F)) : ℂ := lambdaF (E0 F A) F ι I
+
+end
 
 abbrev Residue (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) := 𝓞 F ⧸ v.asIdeal
@@ -236,20 +240,24 @@ instance residueField (F : Type) [Field F] [NumberField F]
 instance residueFintype (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) : Fintype (Residue F v) := Fintype.ofFinite _
 
-def IsNormalizedSextic (F : Type) [Field F] [NumberField F]
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+def IsNormalizedSextic
     (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     (χ : MulChar (Residue F v) (𝓞 F)) : Prop :=
   ∀ x : Residue F v, x ≠ 0 →
     (∃ j : ℕ, j < 6 ∧ χ x = A.primitive_zeta12.toInteger ^ (2 * j)) ∧
       Ideal.Quotient.mk v.asIdeal (χ x) = x ^ ((Fintype.card (Residue F v) - 1) / 6)
 
-def gammaTwo (F : Type) [Field F] [NumberField F]
+def gammaTwo
     (v : HeightOneSpectrum (𝓞 F)) (σ : F →+* ℂ)
     (χ : MulChar (Residue F v) (𝓞 F)) (ψ : AddChar (Residue F v) ℂ) : ℂ :=
   FiniteGauss.normalizedGaussPower
     (χ.ringHomComp (σ.comp (algebraMap (𝓞 F) F))) ψ 2
 
-private theorem red_sextic_primitive (F : Type) [Field F] [NumberField F]
+private theorem red_sextic_primitive
     (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) :
     IsPrimitiveRoot (Ideal.Quotient.mk v.asIdeal (A.primitive_zeta12.toInteger ^ 2)) 6 := by
   let r := Ideal.Quotient.mk v.asIdeal
@@ -294,11 +302,18 @@ private theorem red_sextic_primitive (F : Type) [Field F] [NumberField F]
   apply (IsPrimitiveRoot.iff_def _ _).mpr
   refine ⟨by rw [← map_pow, hp.pow_eq_one, map_one], ?_⟩
   intro l hl
-  have hd2 : 2 ∣ l := hr3.dvd_of_pow_eq_one l (by rw [pow_right_comm, hl, one_pow])
-  have hd3 : 3 ∣ l := hr2.dvd_of_pow_eq_one l (by rw [pow_right_comm, hl, one_pow])
-  exact Nat.lcm_dvd hd2 hd3
-private theorem sextic_roots_red_bijective (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) :
+  exact Nat.lcm_dvd (hr3.dvd_of_pow_eq_one l (by rw [pow_right_comm, hl, one_pow])) (hr2.dvd_of_pow_eq_one l (by rw [pow_right_comm, hl, one_pow]))
+
+end
+
+alias PrimaryAngularNormPhases.red_sextic_primitive := red_sextic_primitive
+section
+
+variable (F : Type) [Field F] [NumberField F] (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+    (hv : v ∉ A.Sf)
+
+include hv in
+private theorem sextic_roots_red_bijective :
     Function.Bijective (restrictRootsOfUnity (Ideal.Quotient.mk v.asIdeal) 6) := by
   let r := Ideal.Quotient.mk v.asIdeal
   let z := A.primitive_zeta12.toInteger ^ 2
@@ -323,16 +338,16 @@ private theorem sextic_roots_red_bijective (F : Type) [Field F] [NumberField F]
       change r (z ^ i) = (a.val : Residue F v)
       simpa only [map_pow] using hai
 
-theorem existsUnique_normalizedSextic (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) :
+include hv in
+theorem existsUnique_normalizedSextic :
     ∃! χ : MulChar (Residue F v) (𝓞 F), IsNormalizedSextic F A v χ := by
   let r := Ideal.Quotient.mk v.asIdeal
   let z := A.primitive_zeta12.toInteger ^ 2
   let n := (Fintype.card (Residue F v) - 1) / 6
-  have hp : IsPrimitiveRoot z 6 := A.primitive_zeta12.toInteger_isPrimitiveRoot.pow
+  have hp := A.primitive_zeta12.toInteger_isPrimitiveRoot.pow
     (by decide) (by decide : 12 = 2 * 6)
-  have hr : IsPrimitiveRoot (r z) 6 := red_sextic_primitive F A v hv
-  have hd : 6 ∣ Fintype.card (Residue F v) - 1 :=
+  have hr := red_sextic_primitive F A v hv
+  have hd :=
     hr.dvd_of_pow_eq_one _ (FiniteField.pow_card_sub_one_eq_one _ (hr.ne_zero (by decide)))
   let e := MulEquiv.ofBijective (restrictRootsOfUnity r 6)
     (sextic_roots_red_bijective F A v hv)
@@ -352,7 +367,6 @@ theorem existsUnique_normalizedSextic (F : Type) [Field F] [NumberField F]
     change r (g x : 𝓞 F) = (x : Residue F v) ^ n at hv
     simpa only [χ, MulChar.ofUnitHom_coe] using hv
   have hpow (x : (Residue F v)ˣ) : χ x ^ 6 = 1 := by
-    change (MulChar.ofUnitHom g) x ^ 6 = 1
     rw [MulChar.ofUnitHom_coe]
     exact (mem_rootsOfUnity' 6 (e.symm (f x)).val).mp (e.symm (f x)).prop
   refine ⟨χ, ?_, ?_⟩
@@ -376,8 +390,8 @@ theorem existsUnique_normalizedSextic (F : Type) [Field F] [NumberField F]
     exact congrArg (fun z : rootsOfUnity 6 (𝓞 F) => (z.val : 𝓞 F))
       ((sextic_roots_red_bijective F A v hv).1 he)
 
-theorem orderOf_normalizedSextic (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf)
+include hv in
+theorem orderOf_normalizedSextic
     (χ : MulChar (Residue F v) (𝓞 F)) (hχ : IsNormalizedSextic F A v χ) :
     orderOf χ = 6 := by
   let q := Fintype.card (Residue F v) - 1
@@ -414,8 +428,8 @@ theorem orderOf_normalizedSextic (F : Type) [Field F] [NumberField F]
       ((FiniteField.forall_pow_eq_one_iff (Residue F v) _).mp hpow)
     change q ≤ n * m at hl
     nlinarith
-theorem orderOf_normalizedSextic_complex (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf)
+include hv in
+theorem orderOf_normalizedSextic_complex
     (σ : F →+* ℂ) (χ : MulChar (Residue F v) (𝓞 F))
     (hχ : IsNormalizedSextic F A v χ) :
     orderOf (χ.ringHomComp (σ.comp (algebraMap (𝓞 F) F))) = 6 := by
@@ -423,8 +437,8 @@ theorem orderOf_normalizedSextic_complex (F : Type) [Field F] [NumberField F]
   exact (orderOf_injective (MulChar.ringHomCompHom (σ.comp (algebraMap (𝓞 F) F)))
     (MulChar.injective_ringHomComp (σ.injective.comp NumberField.RingOfIntegers.coe_injective)) χ)
 
-theorem gammaTwo_cube_eq_jacobi (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf)
+include hv in
+theorem gammaTwo_cube_eq_jacobi
     (σ : F →+* ℂ) (χ : MulChar (Residue F v) (𝓞 F))
     (hχ : IsNormalizedSextic F A v χ) (ψ : AddChar (Residue F v) ℂ) (hψ : ψ ≠ 1) :
     gammaTwo F v σ χ ψ ^ 3 =
@@ -437,6 +451,8 @@ theorem gammaTwo_cube_eq_jacobi (F : Type) [Field F] [NumberField F]
   · exact orderOf_normalizedSextic_complex F A v hv σ χ hχ
   · exact hψ
 
+end
+
 private theorem card_sub_one_dvd (k K : Type) [Field k] [Fintype k] [Field K] [Fintype K] [Algebra k K] :
     Fintype.card k - 1 ∣ Fintype.card K - 1 := by
   obtain ⟨x, hx⟩ := IsCyclic.exists_generator (α := kˣ)
@@ -447,11 +463,10 @@ private theorem card_sub_one_dvd (k K : Type) [Field k] [Fintype k] [Field K] [F
     intro a b h
     apply Units.ext
     exact (algebraMap k K).injective (by simpa [hom] using congrArg Units.val h)
-  have he := orderOf_injective hom hi x
   have hd : orderOf (hom x) ∣ Fintype.card K - 1 := by
     rw [← Fintype.card_units]
     exact orderOf_dvd_card
-  rwa [he, ho] at hd
+  rwa [(orderOf_injective hom hi x), ho] at hd
 
 theorem normalizedSextic_sq_norm_lift (E F : Type) [Field E] [NumberField E] [Field F] [NumberField F]
     [IsCyclotomicExtension {3} ℚ E] [Algebra E F]
@@ -474,7 +489,6 @@ theorem normalizedSextic_sq_norm_lift (E F : Type) [Field E] [NumberField E] [Fi
   let z := A.primitive_zeta12.toInteger ^ 4
   have hz : algebraMap (𝓞 E) (𝓞 F) (Eisenstein.η E ω hω) = z := by
     apply NumberField.RingOfIntegers.coe_injective
-    change algebraMap E F (hω.toInteger : E) = (A.primitive_zeta12.toInteger : F) ^ 4
     exact hcompat
   have hp : IsPrimitiveRoot (r z) 3 := by
     have hp := (Eisenstein.redq_η_isPrimitiveRoot E ω hω q hq0 hqp hq6).map_of_injective
@@ -485,9 +499,8 @@ theorem normalizedSextic_sq_norm_lift (E F : Type) [Field E] [NumberField E] [Fi
   · subst x
     have hc0 : χ 0 = 0 := χ.map_nonunit (by simp)
     simp [hc0]
-  have hnx : Algebra.norm k x ≠ 0 := Algebra.norm_ne_zero_iff.mpr hx
   obtain ⟨⟨j, hj, hjval⟩, hjred⟩ := hχ x hx
-  have hh := Eisenstein.ρq_mem E ω hω q hq0 hqp hq6 (Algebra.norm k x) hnx
+  have hh := Eisenstein.ρq_mem E ω hω q hq0 hqp hq6 (Algebra.norm k x) (Algebra.norm_ne_zero_iff.mpr hx)
   have hpred := Eisenstein.redq_ρq E ω hω q hq0 hqp hq6 (Algebra.norm k x)
   have hexp : ((Fintype.card K - 1) / (Fintype.card k - 1)) *
       ((Fintype.card k - 1) / 3) = 2 * ((Fintype.card K - 1) / 6) := by
@@ -529,8 +542,7 @@ theorem normalizedSextic_sq_norm_lift (E F : Type) [Field E] [NumberField E] [Fi
       congr 1
       omega
     rw [hpow]
-    have hpz : IsPrimitiveRoot z 3 := by
-      exact A.primitive_zeta12.toInteger_isPrimitiveRoot.pow
+    have hpz := A.primitive_zeta12.toInteger_isPrimitiveRoot.pow
         (by decide : 0 < 12) (by decide : 12 = 4 * 3)
     simpa only [hpz.eq_orderOf] using (pow_mod_orderOf z j).symm
   obtain ⟨i, hi, hright⟩ : ∃ i : ℕ, i < 3 ∧
@@ -646,7 +658,7 @@ theorem gammaTwo_cube
         intro hzero
         have : (x : Residue E q) = 0 := by simpa [hzero] using hy.symm
         exact x.ne_zero this
-      have hyunit : IsUnit y := isUnit_iff_ne_zero.mpr hyne
+      have hyunit := isUnit_iff_ne_zero.mpr hyne
       simp only [MulChar.mul_apply, hnorm, hy, MulChar.one_apply hyunit] at hh
       simpa only [MulChar.mul_apply, MulChar.one_apply x.isUnit] using hh
     exact jacobiSum_norm_pullback (Residue E q) (Residue F v) ρ ρF ψbase ψF
@@ -669,35 +681,37 @@ theorem gammaTwo_cube_canonical
     (χ : MulChar (Residue F v) (𝓞 F)) (hχ : IsNormalizedSextic F A v χ)
     (ψ : AddChar (Residue F v) ℂ) (hψ : ψ ≠ 1) :
     gammaTwo F v σ χ ψ ^ 3 =
-      -lambda F A (σ.comp (algebraMap (E0 F A) F)) v.asIdeal := by
-  exact gammaTwo_cube (E0 F A) F A (omega0 F A) (omega0_primitive F A)
+      -lambda F A (σ.comp (algebraMap (E0 F A) F)) v.asIdeal := gammaTwo_cube (E0 F A) F A (omega0 F A) (omega0_primitive F A)
     rfl (σ.comp (algebraMap (E0 F A) F)) σ rfl v hv χ hχ ψ hψ
 
-theorem lambdaF_mul (E F : Type) [Field E] [NumberField E]
-    [Field F] [NumberField F] [IsCyclotomicExtension {3} ℚ E] [Algebra E F]
+section
+
+variable (E F : Type) [Field E] [NumberField E] [Field F] [NumberField F] [IsCyclotomicExtension {3} ℚ E]
+    [Algebra E F]
+
+theorem lambdaF_mul
     (ι : E →+* ℂ) (I J : Ideal (𝓞 F)) :
     lambdaF E F ι (I * J) = lambdaF E F ι I * lambdaF E F ι J := by
   unfold lambdaF
   rw [map_mul]
   exact lambdaBase_mul E ι _ _
 
-private theorem lambdaF_prime_unitary (E F : Type) [Field E] [NumberField E]
-    [Field F] [NumberField F] [IsCyclotomicExtension {3} ℚ E] [Algebra E F]
+private theorem lambdaF_prime_unitary
     (A : SArithmeticData F) (ι : E →+* ℂ) (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) :
     ‖lambdaF E F ι v.asIdeal‖ = 1 := by
   let q := v.asIdeal.under (𝓞 E)
-  have hq0 : q ≠ ⊥ := Ideal.under_ne_bot (𝓞 E) v.ne_bot
+  have hq0 := Ideal.under_ne_bot (𝓞 E) v.ne_bot
   have hq3 : q ⊔ Ideal.span {(3 : 𝓞 E)} = ⊤ := by
     by_contra h
-    have heq : q = q ⊔ Ideal.span {(3 : 𝓞 E)} :=
+    have heq :=
       Ideal.IsMaximal.eq_of_le (inferInstance : q.IsMaximal) h le_sup_left
-    have hle : Ideal.span {(3 : 𝓞 E)} ≤ q := heq ▸ le_sup_right
+    have hle := heq ▸ le_sup_right
     have h3 : (3 : 𝓞 E) ∈ q := hle (Ideal.subset_span (by simp))
     have h3v : (3 : 𝓞 F) ∈ v.asIdeal := by
       have := (Ideal.mem_under (𝓞 E) v.asIdeal).mp h3
       simpa only [map_ofNat] using this
     exact hv (A.above_six v (by convert v.asIdeal.mul_mem_left 2 h3v using 1 <;> norm_num))
-  have hq : q ∈ Eisenstein.I3 E := (Eisenstein.mem_I3 E q).mpr ⟨hq0, hq3⟩
+  have hq := (Eisenstein.mem_I3 E q).mpr ⟨hq0, hq3⟩
   have hn : q ^ v.asIdeal.inertiaDeg (𝓞 E) ∈ Eisenstein.I3 E :=
     (Eisenstein.I3 E).pow_mem hq _
   rw [lambdaF, Ideal.relNorm_eq_pow_of_isMaximal v.asIdeal q]
@@ -707,34 +721,29 @@ private theorem lambdaF_prime_unitary (E F : Type) [Field E] [NumberField E]
   intro h
   apply Eisenstein.primaryGenerator_ne_zero E ⟨_, hn⟩
   apply ι.injective.comp NumberField.RingOfIntegers.coe_injective
-  simpa only [Eisenstein.ιR, RingHom.comp_apply, Function.comp_apply, map_zero] using h
+  simpa using h
 
-theorem lambdaF_exterior_norm (E F : Type) [Field E] [NumberField E]
-    [Field F] [NumberField F] [IsCyclotomicExtension {3} ℚ E] [Algebra E F]
+theorem lambdaF_exterior_norm
     (A : SArithmeticData F) (ι : E →+* ℂ) (I : A.Exterior) :
     ‖lambdaF E F ι I.val‖ = 1 := by
   have hfac : ∀ p ∈ normalizedFactors I.val, ‖lambdaF E F ι p‖ = 1 := by
     intro p hp
-    have hp0 : p ≠ ⊥ := ne_zero_of_mem_normalizedFactors hp
     obtain ⟨hpp, hIp⟩ := (Ideal.mem_normalizedFactors_iff I.property.1).mp hp
-    let v : HeightOneSpectrum (𝓞 F) := ⟨p, hpp, hp0⟩
-    have hv : v ∉ A.Sf := by
-      intro hmem
-      have hc : A.cS ≤ v.asIdeal := by
-        change (∏ w ∈ A.Sf, w.asIdeal) ≤ v.asIdeal
-        rw [← Ideal.dvd_iff_le]
-        exact Finset.dvd_prod_of_mem (fun w => w.asIdeal) hmem
-      have ht : (⊤ : Ideal (𝓞 F)) ≤ p := by
-        rw [← I.property.2]
-        exact sup_le hIp hc
-      exact hpp.ne_top (top_le_iff.mp ht)
-    exact lambdaF_prime_unitary E F A ι v hv
+    let v : HeightOneSpectrum (𝓞 F) := ⟨p, hpp, (ne_zero_of_mem_normalizedFactors hp)⟩
+    apply lambdaF_prime_unitary E F A ι v
+    intro hmem
+    have hc : A.cS ≤ v.asIdeal := by
+      rw [← Ideal.dvd_iff_le]
+      exact Finset.dvd_prod_of_mem (fun w => w.asIdeal) hmem
+    refine hpp.ne_top (top_le_iff.mp ?_)
+    rw [← I.property.2]
+    exact sup_le hIp hc
   rw [← prod_normalizedFactors_eq_self I.property.1]
   generalize normalizedFactors I.val = ps at hfac ⊢
   induction ps using Multiset.induction_on with
   | empty =>
     have htop : (⊤ : Ideal (𝓞 E)) ∈ Eisenstein.I3 E := by
-      simpa only [Ideal.one_eq_top] using (Eisenstein.I3 E).one_mem
+      simpa using (Eisenstein.I3 E).one_mem
     simp [lambdaF, lambdaBase, angular, Eisenstein.primaryGenerator_ne_zero E ⟨⊤, htop⟩]
   | cons p ps ih =>
     rw [Multiset.prod_cons, lambdaF_mul, norm_mul]
@@ -743,14 +752,13 @@ theorem lambdaF_exterior_norm (E F : Type) [Field E] [NumberField E]
     · intro q hq
       exact hfac q (Multiset.mem_cons_of_mem hq)
 
-theorem infinity_restriction (E F : Type) [Field E] [NumberField E]
-    [Field F] [NumberField F] [IsCyclotomicExtension {3} ℚ E] [Algebra E F]
+theorem infinity_restriction
     (ι : E →+* ℂ) (w : InfinitePlace F) :
     w.embedding.comp (algebraMap E F) = ι ∨
       w.embedding.comp (algebraMap E F) = (starRingEnd ℂ).comp ι := by
   obtain ⟨ω, hω⟩ := IsCyclotomicExtension.exists_isPrimitiveRoot ℚ E
     (show 3 ∈ ({3} : Set ℕ) by simp) (by decide)
-  have hr : InfinitePlace.nrRealPlaces E = 0 :=
+  have hr :=
     InfinitePlace.IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt (by decide) hω
   have hf : Module.finrank ℚ E = 2 := by
     rw [IsCyclotomicExtension.Rat.finrank 3 E]
@@ -767,8 +775,7 @@ theorem infinity_restriction (E F : Type) [Field E] [NumberField E]
   · exact Or.inl h
   · exact Or.inr (by rw [← h]; ext x; simp [ComplexEmbedding.conjugate_coe_eq])
 
-theorem infinity_angular (E F : Type) [Field E] [NumberField E]
-    [Field F] [NumberField F] [IsCyclotomicExtension {3} ℚ E] [Algebra E F]
+theorem infinity_angular
     (A : SArithmeticData F) (ι : E →+* ℂ) (w : InfinitePlace F) :
     w.IsComplex ∧ ∃ n : ℤ, (n = 1 ∨ n = -1) ∧
       ∀ z : ℂ, z ≠ 0 → infinityComponent E F ι w z = angular z ^ n := by
@@ -778,16 +785,20 @@ theorem infinity_angular (E F : Type) [Field E] [NumberField E]
   · exact ⟨-1, Or.inr rfl, fun z hz => by
       rw [infinityComponent, if_neg h, star_angular z hz]⟩
 
-theorem infinity_no_radial (E F : Type) [Field E] [NumberField E]
-    [Field F] [NumberField F] [Algebra E F]
+end
+
+section
+
+variable (E F : Type) [Field E] [NumberField E] [Field F] [NumberField F]
+
+theorem infinity_no_radial [Algebra E F]
     (ι : E →+* ℂ) (w : InfinitePlace F) (z : ℂ)
     (r : ℝ) (hr : 0 < r) :
     infinityComponent E F ι w ((r : ℂ) * z) = infinityComponent E F ι w z := by
   unfold infinityComponent
   rw [angular_smul_ofReal z hr]
 
-private theorem norm_primary_congruence (E F : Type) [Field E] [NumberField E]
-    [Field F] [NumberField F] [IsCyclotomicExtension {3} ℚ E] [Algebra E F]
+private theorem norm_primary_congruence [IsCyclotomicExtension {3} ℚ E] [Algebra E F]
     (α : 𝓞 F) (hα3 : α - 1 ∈ Ideal.span {(3 : 𝓞 F)}) :
     Algebra.intNorm (𝓞 E) (𝓞 F) α - 1 ∈ Ideal.span {(3 : 𝓞 E)} := by
   haveI : IsPrincipalIdealRing (𝓞 E) := IsCyclotomicExtension.Rat.three_pid E
@@ -809,26 +820,28 @@ private theorem norm_primary_congruence (E F : Type) [Field E] [NumberField E]
       map_add, map_mul, h3, zero_mul, add_zero]
     by_cases hij : i = j <;> simp [Matrix.one_apply, hij, h3]
   rw [hm, Matrix.det_one, sub_self]
+
+end
 private theorem auxiliary_embedding_not_real (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (ι : E →+* ℂ) :
     ComplexEmbedding.conjugate ι ≠ ι := by
   intro h
   obtain ⟨ω, hω⟩ := IsCyclotomicExtension.exists_isPrimitiveRoot ℚ E
     (Set.mem_singleton 3) (by decide : 3 ≠ 0)
-  have hp : IsPrimitiveRoot (ι ω) 3 := hω.map_of_injective ι.injective
+  have hp := hω.map_of_injective ι.injective
   have he : star (ι ω) = ι ω := by
     simpa [ComplexEmbedding.conjugate_coe_eq] using DFunLike.congr_fun h ω
-  have hn : ‖ι ω‖ = 1 := hp.norm'_eq_one (by decide)
   have hc : (ι ω) ^ 2 = 1 := by
     calc
       (ι ω) ^ 2 = (ι ω) * star (ι ω) := by rw [he, pow_two]
-      _ = 1 := by simp [Complex.mul_conj, Complex.normSq_eq_norm_sq, hn]
+      _ = 1 := by simp [Complex.mul_conj, Complex.normSq_eq_norm_sq, (hp.norm'_eq_one (by decide))]
   have hd := hp.dvd_of_pow_eq_one 2 hc
   norm_num at hd
 
-private theorem angular_norm_eq_infinity_product (E F : Type) [Field E] [NumberField E]
-    [Field F] [NumberField F] [IsCyclotomicExtension {3} ℚ E] [Algebra E F]
-    (ι : E →+* ℂ) (x : F) :
+variable (E F : Type) [Field E] [NumberField E] [Field F] [NumberField F] [IsCyclotomicExtension {3} ℚ E]
+    [Algebra E F] (ι : E →+* ℂ)
+
+private theorem angular_norm_eq_infinity_product (x : F) :
     angular (ι (Algebra.norm E x)) =
       ∏ w : InfinitePlace F, infinityComponent E F ι w (w.embedding x) := by
   letI : Algebra E ℂ := ι.toAlgebra
@@ -841,8 +854,7 @@ private theorem angular_norm_eq_infinity_product (E F : Type) [Field E] [NumberF
       · exact DFunLike.congr_fun h y
       · obtain h' | h' := infinity_restriction E F ι w
         · exact False.elim (h h')
-        · have hy := DFunLike.congr_fun h' y
-          simpa [ComplexEmbedding.conjugate_coe_eq, RingHom.algebraMap_toAlgebra] using congrArg star hy }
+        · simpa [ComplexEmbedding.conjugate_coe_eq, RingHom.algebraMap_toAlgebra] using congrArg star (DFunLike.congr_fun h' y)}
   have hkmk (w : InfinitePlace F) : InfinitePlace.mk (k w).toRingHom = w := by
     change InfinitePlace.mk (if _ then _ else _) = w
     split_ifs <;> simp
@@ -853,15 +865,12 @@ private theorem angular_norm_eq_infinity_product (E F : Type) [Field E] [NumberF
     intro σ
     refine ⟨InfinitePlace.mk σ.toRingHom, ?_⟩
     apply AlgHom.ext
-    have hmk : InfinitePlace.mk (k (InfinitePlace.mk σ.toRingHom)).toRingHom =
-      InfinitePlace.mk σ.toRingHom := hkmk _
-    obtain he | he := InfinitePlace.mk_eq_iff.mp hmk
+    obtain he | he := InfinitePlace.mk_eq_iff.mp (hkmk _)
     · intro y; exact DFunLike.congr_fun he y
     · exfalso
       apply auxiliary_embedding_not_real E ι
       ext y
-      have hc := DFunLike.congr_fun he (algebraMap E F y)
-      simpa [ComplexEmbedding.conjugate_coe_eq, RingHom.algebraMap_toAlgebra] using hc
+      simpa [ComplexEmbedding.conjugate_coe_eq, RingHom.algebraMap_toAlgebra] using (DFunLike.congr_fun he (algebraMap E F y))
   rw [show ι (Algebra.norm E x) = ∏ σ : F →ₐ[E] ℂ, σ x from Algebra.norm_eq_prod_embeddings E ℂ x]
   have hap : ∀ s : Finset (F →ₐ[E] ℂ), angular (∏ σ ∈ s, σ x) = ∏ σ ∈ s, angular (σ x) := by
     intro s
@@ -880,9 +889,7 @@ private theorem angular_norm_eq_infinity_product (E F : Type) [Field E] [NumberF
   · simp [infinityComponent, h, angular, ComplexEmbedding.conjugate_coe_eq,
       map_div₀, Complex.norm_conj]
 
-theorem lambdaF_principal_congruence (E F : Type) [Field E] [NumberField E]
-    [Field F] [NumberField F] [IsCyclotomicExtension {3} ℚ E] [Algebra E F]
-    (ι : E →+* ℂ) (α : 𝓞 F) (hα : α ≠ 0)
+theorem lambdaF_principal_congruence (α : 𝓞 F) (hα : α ≠ 0)
     (hα3 : α - 1 ∈ Ideal.span {(3 : 𝓞 F)}) :
     lambdaF E F ι (Ideal.span {α}) =
       ∏ w : InfinitePlace F, infinityComponent E F ι w (w.embedding (α : F)) := by

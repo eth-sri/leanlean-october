@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -87,14 +82,13 @@ theorem localCompleteDVF_valuation_isEquiv_padicLocalField
       (padicLocalField p).toCompleteDVF.valuation :=
   (padicLocalField_valuation_isEquiv_localCompleteDVF p).symm
 
+variable (p : ℕ) [Fact p.Prime] {E : Type u} [Field E] [Algebra ℚ_[p] E] {Gamma : Type v}
+    [LinearOrderedCommGroupWithZero Gamma] (wE : _root_.Valuation E Gamma)
+
 /-- Any valuation extension of the canonical complete-DVF valuation on
 `ℚ_[p]` is also an extension of the valuation selected by
 `padicLocalField p`. -/
 theorem padicLocalFieldValuation_hasExtension_of_localCompleteDVF
-    (p : ℕ) [Fact p.Prime]
-    {E : Type u} [Field E] [Algebra ℚ_[p] E]
-    {Gamma : Type v} [LinearOrderedCommGroupWithZero Gamma]
-    (wE : _root_.Valuation E Gamma)
     [(LocalFieldTheory.localCompleteDVF ℚ_[p]).valuation.HasExtension wE] :
     (padicLocalField p).toCompleteDVF.valuation.HasExtension wE :=
   ValuationTheory.DiscreteValuationField.ValuedExtension.hasExtension_of_isEquiv_base
@@ -104,10 +98,6 @@ theorem padicLocalFieldValuation_hasExtension_of_localCompleteDVF
 `padicLocalField p` is also an extension of the canonical complete-DVF
 valuation on `ℚ_[p]`. -/
 theorem localCompleteDVFValuation_hasExtension_of_padicLocalField
-    (p : ℕ) [Fact p.Prime]
-    {E : Type u} [Field E] [Algebra ℚ_[p] E]
-    {Gamma : Type v} [LinearOrderedCommGroupWithZero Gamma]
-    (wE : _root_.Valuation E Gamma)
     [(padicLocalField p).toCompleteDVF.valuation.HasExtension wE] :
     (LocalFieldTheory.localCompleteDVF ℚ_[p]).valuation.HasExtension wE :=
   ValuationTheory.DiscreteValuationField.ValuedExtension.hasExtension_of_isEquiv_base

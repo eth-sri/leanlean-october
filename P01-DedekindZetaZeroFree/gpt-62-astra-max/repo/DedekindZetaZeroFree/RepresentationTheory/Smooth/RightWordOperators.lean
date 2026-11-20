@@ -10,12 +10,8 @@ open scoped Classical NumberField Topology ContDiff
 namespace DedekindZetaZeroFree.SharedSource
 open KPGlobalResidualConstruction KPContSectorSmoothFramesSupport
 open KPContActualCommonDiskRightHolomorphy
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction renaming actual_eq_word → actual_eq_word
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction renaming native_word_smooth → native_word_smooth
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming rightWord_continuous_of_chart_smooth → rightWord_continuous_of_chart_smooth
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming rightWord_level → rightWord_level
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming word_add → word_add
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming word_smul → word_smul
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction (actual_eq_word native_word_smooth)
+open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets (rightWord_continuous_of_chart_smooth rightWord_level word_add word_smul)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
 theorem sectionLift_smooth

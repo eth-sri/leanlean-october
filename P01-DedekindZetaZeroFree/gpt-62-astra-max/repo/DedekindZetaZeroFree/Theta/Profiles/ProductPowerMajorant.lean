@@ -11,11 +11,13 @@ open MeasureTheory NumberField
 open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
 
-def productPowerMajorant (A : SArithmeticData F) (M B : ℝ) (y : A.G) : ℝ :=
+variable (A : SArithmeticData F) (M B : ℝ) (y : A.G)
+
+def productPowerMajorant : ℝ :=
   (∏ v : A.Sf, finitePowerMajorant M ‖(y.2 v : v.val.adicCompletion F)‖) *
     ∏ w : InfinitePlace F, archPowerMajorant B (‖(y.1 w : w.Completion)‖ ^ 2)
 
-theorem productPowerMajorant_nonneg (A : SArithmeticData F) (M B : ℝ) (y : A.G) :
+theorem productPowerMajorant_nonneg :
     0 ≤ productPowerMajorant A M B y := by
   apply mul_nonneg
   · exact Finset.prod_nonneg fun v _ => finitePowerMajorant_nonneg M _ (norm_nonneg _)

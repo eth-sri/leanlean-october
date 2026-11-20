@@ -12,16 +12,16 @@ open MomentSources KPGlobalTorusFiniteStages FaithfulSource FaithfulSource.Repai
 open KPCplxPrincipalSeriesCharts KPCplxCharacterHaar KPGlobalResidualConstruction
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 variable (s : RestrictedTensorSimple.Level (bad R P C))
-variable (x : ∀ j : s.val, actualLocal R (imageData R N P C) j.val)
+    (x : ∀ j : s.val, actualLocal R (imageData R N P C) j.val)
 
 def finiteValues (a : Raw R) : ∀ j : s.val, Fiber R P C j.val := fun j =>
   match j with
@@ -68,13 +68,10 @@ theorem finiteValues_locallyConstant : IsLocallyConstant (finiteValues R N P C s
         obtain ⟨J,hJ⟩ := (x ⟨.inr q,hj⟩).val.property.2
         rw [IsLocallyConstant.iff_eventually_eq]
         intro g
-        have hc : Continuous (fun y : KPLocalExceptionalConstruction.ActualCover F ζ hζ q => g⁻¹*y) :=
-          continuous_const.mul continuous_id
         have hm : ∀ᶠ y in nhds g, g⁻¹*y ∈ J :=
-          hc.continuousAt.preimage_mem_nhds (by simpa using J.isOpen.mem_nhds J.one_mem)
+          (continuous_const.mul continuous_id).continuousAt.preimage_mem_nhds (by simpa using J.isOpen.mem_nhds J.one_mem)
         filter_upwards [hm] with y hy
-        have he := congrFun (hJ (g⁻¹*y) hy) g
-        simpa [KPLocalPrincipalSeries.vectorRightTranslation] using he
+        simpa [KPLocalPrincipalSeries.vectorRightTranslation] using (congrFun (hJ (g⁻¹*y) hy) g)
       exact hc.comp_continuous (QuotientGroup.continuous_mk.comp (RestrictedProduct.continuous_eval _))
   rw [IsLocallyConstant.iff_eventually_eq]
   intro a
@@ -184,11 +181,10 @@ theorem reflected_update (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val)
       ∏ j ∈ Finset.univ.erase (⟨Sum.inl w,hw⟩ : s.val), archFactor R N P C s x a j := by
     apply Finset.prod_congr rfl
     intro j hj
-    have hne := (Finset.mem_erase.mp hj).1
     rcases j with ⟨j,hj⟩
     cases j with
     | inr q => rfl
-    | inl u => simp only [archFactor, Function.update_of_ne hne]
+    | inl u => simp only [archFactor, Function.update_of_ne ((Finset.mem_erase.mp hj).1)]
   rw [hp]
   simp only [archFactor, Function.update_self, smoothSlot, LinearMap.coe_mk, AddHom.coe_mk,
     coefficient]

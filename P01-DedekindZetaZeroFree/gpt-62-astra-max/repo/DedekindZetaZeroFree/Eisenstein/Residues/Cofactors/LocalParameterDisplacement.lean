@@ -6,17 +6,17 @@ public import DedekindZetaZeroFree.Eisenstein.Residues.Cofactors.BoxFiberDisplac
 @[expose] public section
 
 noncomputable section
-open _root_.DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant renaming forwardSection_real_formula → forwardSection_real_formula
+open _root_.DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant (forwardSection_real_formula)
 open scoped Classical NumberField TensorProduct BigOperators
 open NumberField MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource.CofactorChamber
 open KPLocalPrincipalSeries KPGlobalTorusFiniteStages KPLocalExceptionalConstruction
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -45,10 +45,9 @@ theorem finite_parameter_value (E Q : Finset (KPFinitePlace F)) (hE : C.exceptio
       localValue, FiniteSourceTransport.localLogNorm, LocalCompactChange.forwardAbs]
   · simp only [ExteriorTensorHaar.enlargedProfiles, dite_eq_right hq,
       FiniteSourceTransport.parameterSource_extension]
-    have hn : q.val ∉ C.exceptional := fun h => hq (hE h)
     simp only [cofactorExtendedTuple, cofactorSourceLevel, Finset.inr_mem_disjSum,
       dite_eq_right hq]
-    rw [CurrentExteriorReference.plusReference_eq_exterior R.A P C q.val hn]
+    rw [CurrentExteriorReference.plusReference_eq_exterior R.A P C q.val (fun h => hq (hE h))]
     rfl
 
 theorem complex_spherical_parameter (g : Raw R.A) (z : ℂ) (v : InfinitePlace F) :

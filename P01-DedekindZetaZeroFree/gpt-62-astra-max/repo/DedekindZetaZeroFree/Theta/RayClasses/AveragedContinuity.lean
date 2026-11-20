@@ -42,9 +42,8 @@ private theorem continuousOn_rayAverage
     subset_closure F hF ?_).2.2.1
   intro a b ha hab
   let A := c * a ^ (2 / (Module.finrank ℚ K : ℝ))
-  have hA : 0 < A := mul_pos hc (Real.rpow_pos_of_pos ha _)
-  refine ⟨fun i : L => P * Real.exp (-A * ‖z + (i : euclidean.mixedSpace K)‖ ^ 2),
-    (summable_shiftedGaussian L z hA).mul_left P,
+  refine ⟨fun i : L => P * Real.exp (-A * ‖z + i‖ ^ 2),
+    (summable_shiftedGaussian L z (mul_pos hc (Real.rpow_pos_of_pos ha _))).mul_left P,
     fun i => mul_nonneg hP.le (Real.exp_pos _).le, ?_⟩
   intro t ht h hh i
   refine (hb t (lt_of_lt_of_le ha ht.1) h hh i).trans ?_
@@ -54,13 +53,14 @@ private theorem continuousOn_rayAverage
       t ^ (2 / (Module.finrank ℚ K : ℝ)) :=
     Real.rpow_le_rpow ha.le ht.1 (div_nonneg (by norm_num) (Nat.cast_nonneg _))
   dsimp [A]
-  nlinarith [sq_nonneg ‖z + (i : euclidean.mixedSpace K)‖,
+  nlinarith [sq_nonneg ‖z + i‖,
     mul_le_mul_of_nonneg_left hp hc.le,
     mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hp hc.le)
-      (sq_nonneg ‖z + (i : euclidean.mixedSpace K)‖)]
+      (sq_nonneg ‖z + i‖)]
 
-theorem rayTheta_continuousOn_fδ
-    (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
+variable (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
+
+theorem rayTheta_continuousOn_fδ :
     ContinuousOn (RayTheta.fδ D δ) (Set.Ioi (0 : ℝ)) := by
   let F := fun t h (i : RayCoset.normalizedLattice D) =>
     RayParity.gδ K δ (RayParity.Q K (RayTheta.q K t h)
@@ -93,8 +93,7 @@ theorem rayTheta_continuousOn_fδ
   rw [if_pos (show 0 < t from ht)]
   rfl
 
-theorem rayTheta_continuousOn_gδDual
-    (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
+theorem rayTheta_continuousOn_gδDual :
     ContinuousOn (RayTheta.gδDual D δ) (Set.Ioi (0 : ℝ)) := by
   let L := Theta.dualLattice (RayCoset.normalizedLattice D)
   letI : Countable L := countable_of_Lindelof_of_discrete
@@ -106,14 +105,15 @@ theorem rayTheta_continuousOn_gδDual
     simp
   let F := fun t h (i : L) => phase i *
     RayParity.gδ K δ (RayParity.Q K (RayTheta.q K t (-h)) (i : euclidean.mixedSpace K))
+  let closure₀ := closure (RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot)
   have hF : ∀ i, ContinuousOn (fun th : ℝ × RayCoset.logHyperplane K => F th.1 th.2 i)
-      (Set.Ioi 0 ×ˢ closure (RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot)) := by
+      (Set.Ioi 0 ×ˢ closure₀) := by
     intro i
     have hm : Continuous (fun th : ℝ × RayCoset.logHyperplane K =>
         (th.1, (th.2, (i : euclidean.mixedSpace K)))) :=
       continuous_fst.prodMk (continuous_snd.prodMk continuous_const)
     have h := (continuousOn_thetaParityShape_neg K δ).comp
-      (s := Set.Ioi 0 ×ˢ closure (RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot))
+      (s := Set.Ioi 0 ×ˢ closure₀)
       hm.continuousOn (fun th hth => hth.1)
     change ContinuousOn (fun th : ℝ × RayCoset.logHyperplane K => phase i *
       RayParity.gδ K δ (RayParity.Q K
@@ -123,11 +123,11 @@ theorem rayTheta_continuousOn_gδDual
       RayParity.gδ K δ (RayParity.Q K
         (fun v => th.1 ^ (Module.finrank ℚ K : ℝ)⁻¹ * Real.exp ((-th.2).val v))
         (i : euclidean.mixedSpace K)))
-      (Set.Ioi 0 ×ˢ closure (RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot)) := by
+      (Set.Ioi 0 ×ˢ closure₀) := by
       simpa only [one_div, Function.comp_def] using h
     exact (continuousOn_const (c := phase i)).mul h'
   obtain ⟨P, c, hP, hc, hb⟩ := thetaParityShapeBounds K δ
-    (closure (RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot))
+    (closure₀)
     (RayCoset.isCompact_closure_rayUnitHalfOpenDomain K D.m D.modulus_ne_bot)
   have hav := continuousOn_rayAverage D L 0 F hF ⟨P, c, hP, hc, fun t ht h hh i => by
     change ‖phase i * RayParity.gδ K δ (RayParity.Q K
@@ -142,15 +142,11 @@ theorem rayTheta_continuousOn_gδDual
   rw [if_pos (show 0 < t from ht)]
   rfl
 
-theorem rayTheta_locallyIntegrableOn_fδ
-    (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
-    LocallyIntegrableOn (RayTheta.fδ D δ) (Set.Ioi (0 : ℝ)) volume := by
-  exact (rayTheta_continuousOn_fδ D δ).locallyIntegrableOn measurableSet_Ioi
+theorem rayTheta_locallyIntegrableOn_fδ :
+    LocallyIntegrableOn (RayTheta.fδ D δ) (Set.Ioi (0 : ℝ)) volume := (rayTheta_continuousOn_fδ D δ).locallyIntegrableOn measurableSet_Ioi
 
-theorem rayTheta_locallyIntegrableOn_gδDual
-    (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
-    LocallyIntegrableOn (RayTheta.gδDual D δ) (Set.Ioi (0 : ℝ)) volume := by
-  exact (rayTheta_continuousOn_gδDual D δ).locallyIntegrableOn measurableSet_Ioi
+theorem rayTheta_locallyIntegrableOn_gδDual :
+    LocallyIntegrableOn (RayTheta.gδDual D δ) (Set.Ioi (0 : ℝ)) volume := (rayTheta_continuousOn_gδDual D δ).locallyIntegrableOn measurableSet_Ioi
 
 end DedekindZetaZeroFree
 

@@ -10,10 +10,10 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.KPContActualSectorPositiveBumps
 open KPContActualCotangentCountableShrinking KPContSectorCoveredQuotientVocabulary
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 structure PositiveBumps {n : ℕ} (C : Fin n → ShrunkChart F ζ hζ U R P H) (K O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) where
   bump : Fin n → KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ
@@ -35,27 +35,35 @@ structure PositiveBumps {n : ℕ} (C : Fin n → ShrunkChart F ζ hζ U R P H) (
 namespace Construction
 open KPContSectorPhaseComponentCharts
 
- def Q (C : ShrunkChart F ζ hζ U R P H) (x : SymmetricSpace F) : KPFiniteCuspAtlas.rawXU F ζ hζ U :=
+ section
+
+variable (C : ShrunkChart F ζ hζ U R P H)
+
+def Q (x : SymmetricSpace F) : KPFiniteCuspAtlas.rawXU F ζ hζ U :=
   Quotient.mk _ (x,(H.atlas U).representative C.component)
-private theorem Q_cont (C : ShrunkChart F ζ hζ U R P H) : Continuous (Q C) :=
+private theorem Q_cont : Continuous (Q C) :=
   continuous_quotient_mk'.comp (continuous_id.prodMk continuous_const)
+
+end
 private theorem act_smooth (γ : KPCuspArithmetic.PGL2 F) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun x : SymmetricSpace F => γ • x) := by
-  change ContDiff ℝ (⊤ : ℕ∞) (KPCuspSiegel.action F γ)
-  unfold KPCuspSiegel.action KPCuspSiegel.glAction
-  exact (KPArch.productAction_contDiff _ _).of_le (by simp)
-private theorem Q_inv (C : ShrunkChart F ζ hζ U R P H) (σ : C.Isotropy) (x : SymmetricSpace F) :
+    ContDiff ℝ (⊤ : ℕ∞) (fun x : SymmetricSpace F => γ • x) := by apply @DedekindZetaZeroFree.KPContSectorSmoothFramesSupport.SmoothSectionsAndSupport.rationalAction_smooth <;> assumption
+section
+
+variable (C : ShrunkChart F ζ hζ U R P H)
+
+private theorem Q_inv (σ : C.Isotropy) (x : SymmetricSpace F) :
     Q C ((σ.val : KPCuspArithmetic.PGL2 F) • x) = Q C x := by
-  change KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative C.component)
+  let componentMap₀ := KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative C.component)
+  change componentMap₀
     (KPCuspSiegel.projection F _ (σ.val • x)) =
-    KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative C.component)
+    componentMap₀
       (KPCuspSiegel.projection F _ x)
-  apply congrArg (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative C.component))
+  apply congrArg (componentMap₀)
   apply Quotient.sound
   apply MulAction.orbitRel_apply.mpr
   exact MulAction.mem_orbit_iff.mpr ⟨σ.val,rfl⟩
 
-private theorem upstairs (C : ShrunkChart F ζ hζ U R P H)
+private theorem upstairs
     (O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hO : IsOpen O)
     (y : C.domain) (hy : C.toBase y ∈ O) :
     ∃ b : SymmetricSpace F → ℝ,
@@ -118,7 +126,7 @@ private theorem upstairs (C : ShrunkChart F ζ hζ U R P H)
     intro τ
     simp only [Subgroup.coe_mul,mul_smul]
 
-private theorem descend (C : ShrunkChart F ζ hζ U R P H) (b : SymmetricSpace F → ℝ)
+private theorem descend (b : SymmetricSpace F → ℝ)
     (hb : Continuous b) (hc : HasCompactSupport b) (hs : tsupport b ⊆ C.domain)
     (hn : ∀ x, 0 ≤ b x)
     (hi : ∀ (σ : C.Isotropy) x, b ((σ.val : KPCuspArithmetic.PGL2 F) • x) = b x) :
@@ -135,16 +143,15 @@ private theorem descend (C : ShrunkChart F ζ hζ U R P H) (b : SymmetricSpace F
     have hy : C.toBase y ∈ C.baseDomain := Set.mem_range_self y
     simp only [f,dif_pos hy]
     obtain ⟨σ,hσ⟩ := (hp.orbit_fibers (lift ⟨C.toBase y,hy⟩) y).mp (hl _)
-    have hh := congrArg Subtype.val hσ
-    exact (hi σ _).symm.trans (congrArg b hh)
-  have him : IsCompact (Q C '' tsupport b) := hc.image (Q_cont C)
+    exact (hi σ _).symm.trans (congrArg b (congrArg Subtype.val hσ))
+  have him := hc.image (Q_cont C)
   have hsu : Function.support f ⊆ Q C '' tsupport b := by
     intro x hx
     by_cases hxB : x ∈ C.baseDomain
     · refine ⟨(lift ⟨x,hxB⟩).val,?_,hl _⟩
       exact subset_tsupport _ (by simpa [f,hxB] using hx)
     · exact (hx (by simp [f,hxB])).elim
-  have hts : tsupport f ⊆ Q C '' tsupport b := closure_minimal hsu him.isClosed
+  have hts := closure_minimal hsu him.isClosed
   have hf : Continuous f := by
     rw [continuous_iff_continuousAt]
     intro x
@@ -156,11 +163,10 @@ private theorem descend (C : ShrunkChart F ζ hζ U R P H) (b : SymmetricSpace F
         rw [he]
         exact hb.comp continuous_subtype_val
       exact (continuousOn_iff_continuous_restrict.mpr hr).continuousAt (hp.base_open.mem_nhds hxB)
-    · have hxS : x ∉ Q C '' tsupport b := by
+    · apply continuousAt_const.congr_of_eventuallyEq
+      filter_upwards [him.isClosed.isOpen_compl.mem_nhds (by
         rintro ⟨y,hy,rfl⟩
-        exact hxB ⟨⟨y,hs hy⟩,rfl⟩
-      apply continuousAt_const.congr_of_eventuallyEq
-      filter_upwards [him.isClosed.isOpen_compl.mem_nhds hxS] with z hz
+        exact hxB ⟨⟨y,hs hy⟩,rfl⟩)] with z hz
       exact image_eq_zero_of_notMem_tsupport (fun ht => hz (hts ht))
   refine ⟨f,hf,him.of_isClosed_subset (isClosed_tsupport _) hts,hts,?_,hformula⟩
   intro x
@@ -169,7 +175,7 @@ private theorem descend (C : ShrunkChart F ζ hζ U R P H) (b : SymmetricSpace F
   · exact hn _
   · exact le_rfl
 
-private theorem descend_smooth (C : ShrunkChart F ζ hζ U R P H)
+private theorem descend_smooth
     (b : SymmetricSpace F → ℝ) (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
     (hs : tsupport f ⊆ C.baseDomain)
@@ -187,7 +193,7 @@ private theorem descend_smooth (C : ShrunkChart F ζ hζ U R P H)
     obtain ⟨γ,ε,u,hxγ,hc⟩ := Quotient.exact hy
     change x = γ • y.val at hxγ
     have hxD : γ⁻¹ • x ∈ C.domain := by rw [hxγ]; simpa using y.property
-    have ha := act_smooth (F := F) γ⁻¹
+    have ha := act_smooth γ⁻¹
     apply (hb.contDiffAt.comp x ha.contDiffAt).congr_of_eventuallyEq
     have hnh : (fun z : SymmetricSpace F => γ⁻¹ • z) ⁻¹' C.domain ∈ 𝓝 x :=
       (C.domain_open.preimage ha.continuous).mem_nhds hxD
@@ -196,14 +202,13 @@ private theorem descend_smooth (C : ShrunkChart F ζ hζ U R P H)
         Quotient.mk _ (z,c) := by
       apply Quotient.sound
       exact ⟨γ,ε,u,by simp,hc⟩
-    change f (Quotient.mk _ (z,c)) = b (γ⁻¹ • z)
     rw [← he]
     exact hform ⟨γ⁻¹ • z,hz⟩
-  · apply (contDiffAt_const (c := (0 : ℝ))).congr_of_eventuallyEq
+  · apply (contDiffAt_const).congr_of_eventuallyEq
     filter_upwards [hq.continuousAt.preimage_mem_nhds ((isClosed_tsupport f).isOpen_compl.mem_nhds hx)] with z hz
     exact image_eq_zero_of_notMem_tsupport hz
 
-private theorem point_bump (C : ShrunkChart F ζ hζ U R P H)
+private theorem point_bump
     (O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hO : IsOpen O)
     (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) (hx : x ∈ C.baseDomain ∩ O) :
     ∃ (f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ) (b : SymmetricSpace F → ℝ),
@@ -228,17 +233,18 @@ private theorem point_bump (C : ShrunkChart F ζ hζ U R P H)
   · intro z hz
     exact image_eq_zero_of_notMem_tsupport (fun hh => hz (hbs hh).1)
 
+end
+
 private theorem sum_tsupport {X : Type*} [TopologicalSpace X] {ι : Type*}
     (s : Finset ι) (f : ι → X → ℝ) : tsupport (fun x => ∑ j ∈ s, f j x) ⊆
       ⋃ j ∈ s, tsupport (f j) := by
   apply closure_minimal
   · intro x hx
     by_contra hn
-    have hz : ∀ j ∈ s, f j x = 0 := by
-      intro j hj
-      by_contra hh
-      exact hn (Set.mem_iUnion₂.mpr ⟨j,hj,subset_tsupport _ hh⟩)
-    exact hx (Finset.sum_eq_zero hz)
+    refine hx (Finset.sum_eq_zero ?_)
+    intro j hj
+    by_contra hh
+    exact hn (Set.mem_iUnion₂.mpr ⟨j,hj,subset_tsupport _ hh⟩)
   · exact isClosed_biUnion_finset (fun _ _ => isClosed_tsupport _)
 
 private theorem produce {n : ℕ} (C : Fin n → ShrunkChart F ζ hζ U R P H)
@@ -254,11 +260,10 @@ private theorem produce {n : ℕ} (C : Fin n → ShrunkChart F ζ hζ U R P H)
   choose f b hfc hfcomp hfsub hfsm hfn hfpos hbsm hbcomp hbsub hbinv hform hbzero using
     (fun x : K => point_bump (C (idx x)) O hO x.val (hidx x))
   obtain ⟨s,hs⟩ := hK.elim_finite_subcover (fun x : K => {z | 0 < f x z})
-    (fun x => isOpen_lt continuous_const (hfc x)) (by
-      intro x hx; exact Set.mem_iUnion.mpr ⟨⟨x,hx⟩,hfpos _⟩)
-  let t : Fin n → Finset K := fun i => s.filter (fun x => idx x = i)
-  let fs : Fin n → KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ := fun i z => ∑ x ∈ t i, f x z
-  let B : Fin n → SymmetricSpace F → ℝ := fun i z => ∑ x ∈ t i, b x z
+    (fun x => isOpen_lt continuous_const (hfc x)) (fun x hx => Set.mem_iUnion.mpr ⟨⟨x,hx⟩,hfpos _⟩)
+  let t := fun i => s.filter (fun x => idx x = i)
+  let fs := fun i z => ∑ x ∈ t i, f x z
+  let B := fun i z => ∑ x ∈ t i, b x z
   have hidx' (i : Fin n) (x : K) (hx : x ∈ t i) : idx x = i := (Finset.mem_filter.mp hx).2
   have hsub (i : Fin n) : tsupport (fs i) ⊆ (C i).baseDomain ∩ O := by
     apply (sum_tsupport (t i) f).trans
@@ -281,7 +286,7 @@ private theorem produce {n : ℕ} (C : Fin n → ShrunkChart F ζ hζ U R P H)
             lift_restriction := ?_
             lift_zero_outside := ?_ }⟩
   · intro i
-    convert HasCompactSupport.finset_sum (s := t i) (fun x _ => hfcomp x) using 1
+    convert HasCompactSupport.finset_sum (fun x _ => hfcomp x) using 1
     funext z
     exact (Finset.sum_apply z (t i) f).symm
   · intro z hz
@@ -293,7 +298,7 @@ private theorem produce {n : ℕ} (C : Fin n → ShrunkChart F ζ hζ U R P H)
       Finset.single_le_sum (fun i _ => Finset.sum_nonneg (fun y _ => hfn y z)) (Finset.mem_univ _)
     exact hxz.trans_le (h1.trans h2)
   · intro i
-    convert HasCompactSupport.finset_sum (s := t i) (fun x _ => hbcomp x) using 1
+    convert HasCompactSupport.finset_sum (fun x _ => hbcomp x) using 1
     funext z
     exact (Finset.sum_apply z (t i) b).symm
   · intro i σ z
@@ -322,8 +327,7 @@ theorem actual_positive_bumps
     (n : ℕ) (C : Fin n → ShrunkChart F ζ hζ U R P H)
     (K O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
     (hK : IsCompact K) (hO : IsOpen O) (hKO : K ⊆ O)
-    (hcover : K ⊆ ⋃ i, (C i).baseDomain) : Nonempty (PositiveBumps C K O) := by
-  exact Construction.produce C K O hK hO hKO hcover
+    (hcover : K ⊆ ⋃ i, (C i).baseDomain) : Nonempty (PositiveBumps C K O) := Construction.produce C K O hK hO hKO hcover
 
 end DedekindZetaZeroFree.KPContActualSectorPositiveBumps
 

@@ -17,12 +17,18 @@ universe u
 abbrev KPFinitePlace (F : Type u) [Field F] [NumberField F] :=
   HeightOneSpectrum (RingOfIntegers F)
 
-abbrev KPPlace (F : Type u) [Field F] [NumberField F] :=
+section
+
+variable (F : Type u) [Field F] [NumberField F]
+
+abbrev KPPlace :=
   KPFinitePlace F ⊕ InfinitePlace F
 
-def KPCompletion (F : Type u) [Field F] [NumberField F] : KPPlace F → Type u
+def KPCompletion : KPPlace F → Type u
   | .inl v => v.adicCompletion F
   | .inr v => v.Completion
+
+end
 
 instance (F : Type u) [Field F] [NumberField F] (v : KPPlace F) :
     Field (KPCompletion F v) := by

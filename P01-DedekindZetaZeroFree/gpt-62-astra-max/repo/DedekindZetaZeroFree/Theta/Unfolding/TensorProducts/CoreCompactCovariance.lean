@@ -12,8 +12,8 @@ open NumberField KPGlobalTorusFiniteStages TensorActionSource
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 
 theorem rawCoreInsertion_expanded (s t : RestrictedTensorSimple.Level (bad A P C))
     (hst : s ≤ t) (x : RestrictedTensorSimple.Stage (Plus A P C) s.val) (g : Raw A)

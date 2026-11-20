@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -36,11 +33,14 @@ variable
     [Field K] [NumberField K]
     [Field L] [NumberField L] [Algebra K L]
 
+section
+
+variable (w : HeightOneSpectrum (𝓞 K))
+
 /-- The canonical map between adic completions at a finite place and a
 chosen place above it.  It is obtained by completing the algebra map
 between the corresponding valued copies of the number fields. -/
 noncomputable def finitePlaceAdicCompletionMap
-    (w : HeightOneSpectrum (𝓞 K))
     (W : {W : HeightOneSpectrum (𝓞 L) //
       finitePlaceBelow (K := K) W = w}) :
     w.adicCompletion K →+* W.1.adicCompletion L := by
@@ -60,7 +60,6 @@ noncomputable def finitePlaceAdicCompletionMap
 /-- On the dense copy of the base field, the canonical map of adic
 completions is the original field embedding. -/
 theorem finitePlaceAdicCompletionMap_coe
-    (w : HeightOneSpectrum (𝓞 K))
     (W : {W : HeightOneSpectrum (𝓞 L) //
       finitePlaceBelow (K := K) W = w})
     (x : K) :
@@ -70,12 +69,11 @@ theorem finitePlaceAdicCompletionMap_coe
   let : W.1.asIdeal.LiesOver w.asIdeal := by
     constructor
     exact congrArg HeightOneSpectrum.asIdeal W.2.symm
+  let algebraMap₀ := algebraMap (WithVal (w.valuation K)) (WithVal (W.1.valuation L))
   change
     HeightOneSpectrum.adicCompletion.ofCompletion
       (UniformSpace.Completion.mapRingHom
-        (algebraMap
-          (WithVal (w.valuation K))
-          (WithVal (W.1.valuation L)))
+        (algebraMap₀)
         (HeightOneSpectrum.uniformContinuous_algebraMap_liesOver
           K L w W.1).continuous
         (algebraMap K (w.valuation K).Completion x)) =
@@ -83,16 +81,12 @@ theorem finitePlaceAdicCompletionMap_coe
   congr 1
   change
     UniformSpace.Completion.mapRingHom
-        (algebraMap
-          (WithVal (w.valuation K))
-          (WithVal (W.1.valuation L)))
+        (algebraMap₀)
         (HeightOneSpectrum.uniformContinuous_algebraMap_liesOver
           K L w W.1).continuous
         ((WithVal.equiv (w.valuation K)).symm x :
           (w.valuation K).Completion) =
-      ((algebraMap
-        (WithVal (w.valuation K))
-        (WithVal (W.1.valuation L)))
+      ((algebraMap₀)
         ((WithVal.equiv (w.valuation K)).symm x) :
           (W.1.valuation L).Completion)
   rw [UniformSpace.Completion.mapRingHom_coe]
@@ -100,37 +94,33 @@ theorem finitePlaceAdicCompletionMap_coe
 /-- The canonical map of adic completions is compatible with the original
 number-field tower. -/
 theorem finitePlaceAdicCompletionMap_isScalarTower
-    (w : HeightOneSpectrum (𝓞 K))
     (W : {W : HeightOneSpectrum (𝓞 L) //
       finitePlaceBelow (K := K) W = w}) :
     letI : Algebra (w.adicCompletion K) (W.1.adicCompletion L) :=
       (finitePlaceAdicCompletionMap K L w W).toAlgebra
     IsScalarTower K (w.adicCompletion K) (W.1.adicCompletion L) := by
-  let : Algebra (w.adicCompletion K) (W.1.adicCompletion L) :=
+  let :=
     (finitePlaceAdicCompletionMap K L w W).toAlgebra
   apply IsScalarTower.of_algebraMap_eq
   intro x
   change
     (algebraMap K (W.1.adicCompletion L)) x =
       finitePlaceAdicCompletionMap K L w W
-        (x : w.adicCompletion K)
+        x
   rw [finitePlaceAdicCompletionMap_coe K L w W x]
-  exact IsScalarTower.algebraMap_apply K L (W.1.adicCompletion L) x
+  rfl
 
 /-- The canonical map between the two adic completions is continuous. -/
 theorem finitePlaceAdicCompletionMap_continuous
-    (w : HeightOneSpectrum (𝓞 K))
     (W : {W : HeightOneSpectrum (𝓞 L) //
       finitePlaceBelow (K := K) W = w}) :
     Continuous (finitePlaceAdicCompletionMap K L w W) := by
-  let : W.1.asIdeal.LiesOver w.asIdeal := by
-    constructor
-    exact congrArg HeightOneSpectrum.asIdeal W.2.symm
-  unfold finitePlaceAdicCompletionMap
   exact
     (HeightOneSpectrum.adicCompletion.continuous_ofCompletion L W.1).comp
       (UniformSpace.Completion.continuous_map.comp
         (HeightOneSpectrum.adicCompletion.continuous_toCompletion K w))
+
+end
 
 /-- The canonical map on a finite-place adic completion induced by the
 identity field extension is the identity map. -/
@@ -141,7 +131,7 @@ theorem finitePlaceAdicCompletionMap_self_apply
     finitePlaceAdicCompletionMap K K W
         ⟨W, finitePlaceBelow_self W⟩ x =
       x := by
-  let P : (W.valuation K).Completion → Prop := fun y =>
+  let P := fun y =>
     finitePlaceAdicCompletionMap K K W
         ⟨W, finitePlaceBelow_self W⟩
         (HeightOneSpectrum.adicCompletion.ofCompletion y) =
@@ -155,7 +145,7 @@ theorem finitePlaceAdicCompletionMap_self_apply
         (HeightOneSpectrum.adicCompletion.continuous_ofCompletion K W))
       (HeightOneSpectrum.adicCompletion.continuous_ofCompletion K W)
   · intro r
-    let k : K := WithVal.equiv (W.valuation K) r
+    let k := WithVal.equiv (W.valuation K) r
     change
       finitePlaceAdicCompletionMap K K W
           ⟨W, finitePlaceBelow_self W⟩
@@ -182,7 +172,7 @@ theorem finitePlaceAdicCompletionMap_comp
     finitePlaceAdicCompletionMap M L vM ⟨vL, hLM⟩
         (finitePlaceAdicCompletionMap K M vK ⟨vM, hMK⟩ x) =
       finitePlaceAdicCompletionMap K L vK ⟨vL, hLK⟩ x := by
-  let P : (vK.valuation K).Completion → Prop := fun y =>
+  let P := fun y =>
     finitePlaceAdicCompletionMap M L vM ⟨vL, hLM⟩
         (finitePlaceAdicCompletionMap K M vK ⟨vM, hMK⟩
           (HeightOneSpectrum.adicCompletion.ofCompletion y)) =

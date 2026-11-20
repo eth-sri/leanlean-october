@@ -10,7 +10,7 @@ open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPGlobalResidualConstructio
 open NumberField
 open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (w : InfinitePlace F)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (w : InfinitePlace F)
 
 theorem complex_section_scalar_quotient
     (g : KPLocalCover.LocalGL2 F (Sum.inl w))

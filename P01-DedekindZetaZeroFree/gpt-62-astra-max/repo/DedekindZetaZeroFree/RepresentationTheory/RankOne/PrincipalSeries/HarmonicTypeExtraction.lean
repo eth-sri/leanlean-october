@@ -15,15 +15,12 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeComplexHCAlgeb
 def coreHarmonic (ℓ : ℕ) : Submodule ℂ complexCore :=
   (harmonicKType negativeParameter ℓ).comap complexCore.subtype
 
- theorem harmonic_le_core (ℓ : ℕ) : harmonicKType negativeParameter ℓ ≤ complexCore := by
-  intro f hf
-  exact ⟨by rw [KPCplxActualImage.imageSubmodule_eq_top]; trivial,
+ theorem harmonic_le_core (ℓ : ℕ) : harmonicKType negativeParameter ℓ ≤ complexCore := fun f hf => ⟨by rw [KPCplxActualImage.imageSubmodule_eq_top]; trivial,
     Submodule.mem_iSup_of_mem ℓ hf⟩
 
  theorem coreHarmonic_finrank (ℓ : ℕ) :
     Module.finrank ℂ (coreHarmonic ℓ) = 2 * ℓ + 1 := by
-  have e := Submodule.comapSubtypeEquivOfLe (harmonic_le_core ℓ)
-  exact e.finrank_eq.trans (harmonicKType_multiplicity_one negativeParameter ℓ).2.1
+  exact (Submodule.comapSubtypeEquivOfLe (harmonic_le_core ℓ)).finrank_eq.trans (harmonicKType_multiplicity_one negativeParameter ℓ).2.1
 
  theorem coreHarmonic_zero_fixed (f : complexCore) (hf : f ∈ coreHarmonic 0)
     (k : KPCplxCharacterHaar.ComplexSU2) : complexCoreCompactLinearMap k f = f := by
@@ -44,15 +41,18 @@ def coreHarmonic (ℓ : ℕ) : Submodule ℂ complexCore :=
   rw [sphericalSection_spans_fixed negativeParameter f.val hfixed]
   exact Submodule.smul_mem _ _ (Submodule.mem_span_singleton_self _)
 
- theorem commutant_preserves_lowest (T : Module.End ℂ complexCore)
+ variable (T : Module.End ℂ complexCore)
     (hT : ∀ k f, T (complexCoreCompactLinearMap k f) = complexCoreCompactLinearMap k (T f))
+
+include hT in
+theorem commutant_preserves_lowest
     (f : complexCore) (hf : f ∈ coreHarmonic 0) : T f ∈ coreHarmonic 0 := by
   apply coreHarmonic_zero_of_fixed
   intro k
   rw [← hT, coreHarmonic_zero_fixed f hf k]
 
- theorem commutant_scalar_on_lowest (T : Module.End ℂ complexCore)
-    (hT : ∀ k f, T (complexCoreCompactLinearMap k f) = complexCoreCompactLinearMap k (T f)) :
+ include hT in
+theorem commutant_scalar_on_lowest :
     ∃ c : ℂ, ∀ f ∈ coreHarmonic 0, T f = c • f := by
   have hdim : Module.finrank ℂ (coreHarmonic 0) = 1 := by
     simpa using coreHarmonic_finrank 0
@@ -75,16 +75,13 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeComplexHCExtra
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues
 
 private theorem pi_add' (s : ℝ) (k : ComplexPGL2) (f h : PrincipalSeries s) :
-    KPCplxPrincipalSeriesCharts.pi s k (f+h) = KPCplxPrincipalSeriesCharts.pi s k f + KPCplxPrincipalSeriesCharts.pi s k h := by
-  induction k using Quotient.inductionOn with
-  | h k => rfl
+    KPCplxPrincipalSeriesCharts.pi s k (f+h) = KPCplxPrincipalSeriesCharts.pi s k f + KPCplxPrincipalSeriesCharts.pi s k h := by apply @DedekindZetaZeroFree.KPGlobalResidualConstruction.pi_add <;> assumption
 
-private theorem pi_smul' (s : ℝ) (k : ComplexPGL2) (c : ℂ) (f : PrincipalSeries s) :
-    KPCplxPrincipalSeriesCharts.pi s k (c • f) = c • KPCplxPrincipalSeriesCharts.pi s k f := by
-  induction k using Quotient.inductionOn with
-  | h k => rfl
+private alias pi_smul' := DedekindZetaZeroFree.RepresentationTheory.KPContHolomorphicKGenerationProve.HolomorphicKTypeGeneration.pi_smul
 
-theorem finite_band_of_mem (s : ℝ) (f : PrincipalSeries s)
+variable (s : ℝ)
+
+theorem finite_band_of_mem (f : PrincipalSeries s)
     (hf : f ∈ ⨆ n : ℕ, harmonicKType s n) :
     ∃ I : Finset ℕ, f ∈ I.sup (harmonicKType s) := by
   refine Submodule.iSup_induction (harmonicKType s)
@@ -100,12 +97,11 @@ theorem finite_band_of_mem (s : ℝ) (f : PrincipalSeries s)
     exact (I.sup (harmonicKType s) ⊔ J.sup (harmonicKType s)).add_mem
       (Submodule.mem_sup_left hI) (Submodule.mem_sup_right hJ)
 
-private theorem finite_band_invariant (s : ℝ) (I : Finset ℕ) :
+private theorem finite_band_invariant (I : Finset ℕ) :
     IsKInvariant s (I.sup (harmonicKType s)) := by
   induction I using Finset.induction_on with
   | empty =>
     intro k f hf
-    have hf0 : f = 0 := by simpa using hf
     subst f
     simpa using (pi_smul' s k 0 (sphericalSection s))
   | @insert n I hn ih =>
@@ -117,7 +113,7 @@ private theorem finite_band_invariant (s : ℝ) (I : Finset ℕ) :
       (Submodule.mem_sup_left ((harmonicKType_multiplicity_one s n).1 k a ha))
       (Submodule.mem_sup_right (ih k b hb))
 
-theorem finite_compact_orbit (s : ℝ) (f : PrincipalSeries s)
+theorem finite_compact_orbit (f : PrincipalSeries s)
     (hf : f ∈ ⨆ n : ℕ, harmonicKType s n) :
     FiniteDimensional ℂ (Submodule.span ℂ
       (Set.range (fun k : compactSubgroup => KPCplxPrincipalSeriesCharts.pi s k f))) := by
@@ -129,7 +125,7 @@ theorem finite_compact_orbit (s : ℝ) (f : PrincipalSeries s)
   rintro _ ⟨k, rfl⟩
   exact finite_band_invariant s I k f hI
 
-theorem harmonic_type_of_nonzero (s : ℝ)
+theorem harmonic_type_of_nonzero
     (U : Submodule ℂ (PrincipalSeries s)) (hU : IsKInvariant s U)
     (f : PrincipalSeries s) (hfU : f ∈ U)
     (hf : f ∈ ⨆ n : ℕ, harmonicKType s n) (hf0 : f ≠ 0) :
@@ -139,18 +135,16 @@ theorem harmonic_type_of_nonzero (s : ℝ)
   letI : T2Space (PrincipalSeries s) := principalSeries_t2 s
   letI : ContinuousSMul ℂ (PrincipalSeries s) :=
     (show WithSeminorms (chartSeminorm s) from ⟨rfl⟩).continuousSMul
-  have hclosed : IsClosed (O : Set (PrincipalSeries s)) := O.closed_of_finiteDimensional
-  have hOU : O ≤ U := Submodule.span_le.mpr (by
-    rintro _ ⟨k, rfl⟩
-    exact hU k f hfU)
   obtain ⟨μ, hhaar, hprob⟩ := KPCplxHarmonicExtraction.exists_su2_probability_haar
   obtain ⟨a, hint, havg, htype, hlim⟩ :=
     KPCplxHarmonicExtraction.character_average_harmonic_expansion s μ hhaar hprob f
   have haU (n : ℕ) : a n ∈ U := by
     have hn := KPCplxHarmonicExtraction.character_average_mem_orbit_closure
       s μ hhaar hprob n f (a n) (hint n) (havg n)
-    rw [hclosed.closure_eq] at hn
-    exact hOU hn
+    rw [O.closed_of_finiteDimensional.closure_eq] at hn
+    exact (Submodule.span_le.mpr (by
+      rintro _ ⟨k, rfl⟩
+      exact hU k f hfU)) hn
   have hnonzero : ∃ n, a n ≠ 0 := by
     by_contra hn
     push_neg at hn

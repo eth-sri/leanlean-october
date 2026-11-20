@@ -14,18 +14,18 @@ namespace DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 open ResidualSphericalGeometry ResidualWeakEnergy KPGlobalResidualConstruction
 open KPMsClearedTruncationL2.NativeWordBridge
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (M : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable {n : ℕ} (U : Fin n → KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (m : Fin n → ℕ)
-variable (w : ∀ i, Fin (m i) → List (Fin (KPContActualSphericalRightFieldIdentification.groupDimension F)))
+    (M : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    {n : ℕ} (U : Fin n → KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (m : Fin n → ℕ)
+    (w : ∀ i, Fin (m i) → List (Fin (KPContActualSphericalRightFieldIdentification.groupDimension F)))
 variable (a : ∀ i, Fin (m i) → ℂ)
-variable (Z : ∀ i, Fin (m i) → KPContActualAllCuspSource.SmoothSections F ζ hζ M R P H (U i))
+    (Z : ∀ i, Fin (m i) → KPContActualAllCuspSource.SmoothSections F ζ hζ M R P H (U i))
  abbrev rawSmoothWordDerivative := KPSmoothActualFlowData.wordDerivative F ζ hζ
 
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming smooth_smul → smooth_smul
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy (smooth_smul)
 
 theorem finiteCenterSum_raw_smooth : KPLiteralRaw.Smooth F ζ hζ (fun g =>
     finiteCenterSum F ζ hζ M R P H U m w a Z
@@ -35,7 +35,7 @@ theorem finiteCenterSum_raw_smooth : KPLiteralRaw.Smooth F ζ hζ (fun g =>
       ∑ i, ∑ j, a i j • KPContActualSphericalRightFieldIdentification.actualRightWord F ζ hζ
         (w i j) (KPContActualCutoffPlusClearedGerm.groupScalar F ζ hζ M R P H (U i) (Z i j)) := by
     funext g
-    simpa only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul] using
+    simpa using
       finiteCenterSum_lift F ζ hζ M R P H U m w a Z g
   rw [he]
   apply SharedSource.nativeSmooth_finset_sum

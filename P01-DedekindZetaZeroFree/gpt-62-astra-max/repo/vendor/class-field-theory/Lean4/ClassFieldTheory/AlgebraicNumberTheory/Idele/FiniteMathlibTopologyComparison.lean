@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -113,11 +109,8 @@ theorem continuous_finiteEquivFiniteAdeleUnits :
 is continuous in the forward direction. -/
 theorem continuous_equivAdeleRingUnits :
     Continuous (equivAdeleRingUnits (K := K)) := by
-  have hprod : Continuous (fun a : IdeleGroup K =>
-      (a.1, finiteEquivFiniteAdeleUnits (K := K) a.2)) :=
-    continuous_fst.prodMk
-      ((continuous_finiteEquivFiniteAdeleUnits K).comp continuous_snd)
-  exact (Homeomorph.prodUnits.symm.continuous.comp hprod).congr
+  exact (Homeomorph.prodUnits.symm.continuous.comp (continuous_fst.prodMk
+    ((continuous_finiteEquivFiniteAdeleUnits K).comp continuous_snd))).congr
     (fun _ => rfl)
 
 /-- The full restricted-product idèle group is canonically isomorphic to
@@ -126,15 +119,11 @@ noncomputable def equivAdeleRingUnitsContinuousMulEquiv :
     IdeleGroup K ≃ₜ* (NumberField.AdeleRing (𝓞 K) K)ˣ := by
   let e := finiteEquivFiniteAdeleUnitsContinuousMulEquiv K
   refine
-    { toMulEquiv := equivAdeleRingUnits (K := K)
+    { toMulEquiv := equivAdeleRingUnits
       continuous_toFun := continuous_equivAdeleRingUnits K
       continuous_invFun := ?_ }
-  have hprod : Continuous (fun a : (NumberField.AdeleRing (𝓞 K) K)ˣ =>
-      ((Homeomorph.prodUnits a).1,
-        e.symm (Homeomorph.prodUnits a).2)) :=
-    (Homeomorph.prodUnits.continuous.fst).prodMk
-      (e.symm.continuous.comp Homeomorph.prodUnits.continuous.snd)
-  exact hprod.congr (fun _ => rfl)
+  exact ((Homeomorph.prodUnits.continuous.fst).prodMk
+    (e.symm.continuous.comp Homeomorph.prodUnits.continuous.snd)).congr (fun _ => rfl)
 
 end IdeleGroup
 

@@ -118,14 +118,13 @@ theorem metric_volume : Measure.map (coordinates d)
   rw [Measure.map_apply (coordinates d).continuous.measurable hs,
     withDensity_apply _ ((coordinates d).continuous.measurable hs),
     KPArch.hyperbolicVolume, withDensity_apply _ hs]
-  have hm := coordinate_volume d
   have hg : Measurable (fun z : KPArch.Space d =>
       s.indicator (fun z => ENNReal.ofReal (KPArch.volumeDensity (d) z)) z) := by
     apply Measurable.indicator _ hs
     apply ENNReal.measurable_ofReal.comp
     unfold KPArch.volumeDensity KPArch.height
     fun_prop
-  rw [← lintegral_indicator hs, ← hm, lintegral_map hg (coordinates d).continuous.measurable]
+  rw [← lintegral_indicator hs, ← (coordinate_volume d), lintegral_map hg (coordinates d).continuous.measurable]
   rw [← lintegral_indicator ((coordinates d).continuous.measurable hs)]
   rfl
 

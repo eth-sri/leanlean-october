@@ -10,8 +10,8 @@ open MomentSources MeasureTheory ThetaProfileHaarSheets ThetaSheetExactUnfolding
 open ThetaExpansion.SignedExpansion
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem dyadic_row_factorization (u : R.A.Rˣ) (h d : R.A.Exterior)
     (hh : Powerful h.val) (hd : Squarefree d.val) (hcop : h.val ⊔ d.val = ⊤) :
@@ -25,11 +25,8 @@ theorem dyadic_row_factorization (u : R.A.Rˣ) (h d : R.A.Exterior)
     · change Ideal.span {((u : R.A.R) * R.probe.coefficients.generator h *
         R.probe.coefficients.generator d)} = _
       rw [← Ideal.span_singleton_mul_span_singleton]
-      have hu : Ideal.span {((u : R.A.R) * R.probe.coefficients.generator h)} =
-          Ideal.span {R.probe.coefficients.generator h} :=
-        Ideal.span_singleton_eq_span_singleton.mpr
-          (associated_unit_mul_left _ _ (Units.isUnit u))
-      rw [hu, (R.probe.coefficients.generates h).2, (R.probe.coefficients.generates d).2]
+      rw [(Ideal.span_singleton_eq_span_singleton.mpr
+        (associated_unit_mul_left _ _ (Units.isUnit u))), (R.probe.coefficients.generates h).2, (R.probe.coefficients.generates d).2]
       exact (Ideal.map_mul _ _ _).symm
   have hI : ActualRowTransfer.rowIdeal R.A m = I := by
     apply R.A.exteriorIdealEquiv.injective
@@ -38,7 +35,7 @@ theorem dyadic_row_factorization (u : R.A.Rˣ) (h d : R.A.Exterior)
     exact (ActualRowTransfer.span_rowIdeal R.A m).symm.trans hm.2
   obtain ⟨eps, heps⟩ := ActualRowTransfer.exists_unit_mul_generator R.A R.probe.coefficients m
   rw [hI] at heps
-  let epsilon : R.A.U := R.A.unitEquiv.symm eps
+  let epsilon := R.A.unitEquiv.symm eps
   have hrow : ThetaReflectionData.rowUnit R.A m = epsilon.val * R.probe.allowed.generator I := by
     apply Units.ext
     change (m.val : F) = (epsilon.val : F) * (R.probe.allowed.generator I : F)
@@ -61,8 +58,7 @@ theorem forward_of_evaluation {N : TraceHaarTransport R} (C : JointUpperVanishin
       smoothedTheta R C.transport C.sources C.realization C.packet (rowClass R u)
         (ActualRowTransfer.dyadicRow R.A R.probe.coefficients u h d) true Z -
       mainTerm R C.transport C.sources C.realization C.packet (rowClass R u)
-        (ActualRowTransfer.dyadicRow R.A R.probe.coefficients u h d) true Z := by
-  exact he.unique (hx (rowClass R u) _ true Z hZ).2.2.2.1
+        (ActualRowTransfer.dyadicRow R.A R.probe.coefficients u h d) true Z := he.unique (hx (rowClass R u) _ true Z hZ).2.2.2.1
 
 theorem reflected_term_eq_of_coefficient {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
@@ -98,7 +94,7 @@ theorem reverse_of_evaluation {N : TraceHaarTransport R} (C : JointUpperVanishin
         mainTerm R C.transport C.sources C.realization C.packet v m false Z := by
   calc
     _ = ∑' ξ, numericalReflectedTerm R C v m D Z ξ :=
-      (numerical_frequency_dictionary R C v m D Z hZ).2.symm
+      (numerical_frequency_dictionary R C v m D Z hZ).symm
     _ = ∑' ξ, actualReflectedTerm R C v m Z ξ :=
       tsum_congr (fun ξ => (reflected_term_eq_of_coefficient R C v m D Z hc ξ).symm)
     _ = ∑' i : OrbitIndex R, orbitTerm R C v m false Z hZ i := he.tsum_eq
@@ -127,15 +123,9 @@ def signedUnfolding_of_analytic_evaluations {N : TraceHaarTransport R} (C : Join
     Ur := Ur
     units := hUr
     row_class := rowClass R
-    forward_smoothing_integrable := ?_
-    reverse_smoothing_integrable := ?_
     forward_unfolding := ?_
     reverse_unfolding := ?_
   }
-  · intro u hu h d hh hd hcop Z hZ
-    exact (hx (rowClass R u) _ true Z hZ).2.2.2.2
-  · intro u hu h d hh hd hcop Z hZ
-    exact (hx (rowClass R u) _ false Z hZ).2.2.2.2
   · intro u hu h d hh hd hcop Z hZ
     exact forward_of_evaluation R C hx u h d Z hZ (hf u h d hh hd hcop Z hZ)
   · intro u hu h d hh hd hcop Z hZ

@@ -18,8 +18,8 @@ set_option maxHeartbeats 1200000
 set_option backward.isDefEq.respectTransparency false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
 
 theorem actual_kernelW_sign_flip (S : ActualKPBinding F ζ hζ q) (ε : Sign) :
     kernelW (KPExceptionalRaw.LocalField F q) S.borel ε =
@@ -38,13 +38,13 @@ theorem actual_weighted_reflection_chamber (ε : Sign) (s : ℂ) :
   cases ε <;> simp [convergenceHalfPlane, targetSign] <;> constructor <;> intro h <;> linarith
 
 variable (S : ActualKPBinding F ζ hζ q) (I : IwasawaData S.borel)
-variable (E : CenterModule S.heisenberg ≃ₗ[ℂ] CenterModule S.heisenberg)
-variable (hE : ∀ (f : CenterModule S.heisenberg)
+    (E : CenterModule S.heisenberg ≃ₗ[ℂ] CenterModule S.heisenberg)
+    (hE : ∀ (f : CenterModule S.heisenberg)
   (h : KPExceptionalRaw.actualTorus F ζ hζ q),
   (E f).val h = normPower (KPExceptionalRaw.LocalField F q)
     (S.borel.coordinate h) (1/3) * f.val (S.borel.weyl h))
 variable (J : CompactOpenLevel (KPRankOneOpenCellKernel.Cover F ζ hζ q))
-variable (hJ : J.toOpenSubgroup ≤ I.compact.toOpenSubgroup)
+    (hJ : J.toOpenSubgroup ≤ I.compact.toOpenSubgroup)
 
 def actualWeightedLevelFlip (ε : Sign) :
     centerCompactLevel F ζ hζ q S.heisenberg S.borel I (sourceSign ε) J ≃ₗ[ℂ]
@@ -89,8 +89,9 @@ theorem actual_weighted_signed_kernel (ε : Sign) (s : ℂ)
     exact hs.2.2.2.2 s φ _ h
   · exact hs.2.2.2.1 s φ _ h
 
-theorem actual_weighted_integral_coordinate (μ : Measure (KPExceptionalRaw.LocalField F q))
-    (ε : Sign) (s : ℂ)
+variable (μ : Measure (KPExceptionalRaw.LocalField F q)) (ε : Sign)
+
+theorem actual_weighted_integral_coordinate (s : ℂ)
     (φ : centerCompactLevel F ζ hζ q S.heisenberg S.borel I (sourceSign ε) J)
     (g : KPRankOneOpenCellKernel.Cover F ζ hζ q)
     (h : KPExceptionalRaw.actualTorus F ζ hζ q) :
@@ -111,7 +112,6 @@ theorem actual_weighted_integral_coordinate (μ : Measure (KPExceptionalRaw.Loca
   simpa only [(S.openCell S.polarization).upper_eq] using hh
 
 theorem actual_weighted_numerator_chamber
-    (μ : Measure (KPExceptionalRaw.LocalField F q)) (ε : Sign)
     (p : CenterLevelLaurentOperator F ζ hζ q S.heisenberg S.borel I J ε)
     (p' : CenterLevelLaurentOperator F ζ hζ q S.heisenberg S.borel I J (targetSign ε))
     (hp : IsCenterLevelNumerator F ζ hζ q S.heisenberg S.borel I J μ ε p)
@@ -129,7 +129,6 @@ theorem actual_weighted_numerator_chamber
         (actualWeightedLevelFlip F ζ hζ q S I E hE J hJ ε φ)).val.val k).val h := by
   rw [hp s hs φ k (S.borel.weyl h),
     hp' (-s - 1/3) ((actual_weighted_reflection_chamber ε s).mp hs)]
-  have hi := actual_weighted_integral_coordinate F ζ hζ q S I E hE J hJ μ ε s φ k h
   calc
     _ = denominator (KPExceptionalRaw.LocalField F q) ε s *
         (denominator (KPExceptionalRaw.LocalField F q) (targetSign ε) (-s - 1/3) *
@@ -137,7 +136,7 @@ theorem actual_weighted_numerator_chamber
             centerIntegralCoordinate F ζ hζ q S.heisenberg S.borel μ ε s
               (centerCompactTrivialization F ζ hζ q S.heisenberg S.borel I
                 (sourceSign ε) (sourceParameter ε s) φ.val) k (S.borel.weyl h))) := by ring
-    _ = _ := by rw [hi]
+    _ = _ := by rw [(actual_weighted_integral_coordinate F ζ hζ q S I E hE J hJ μ ε s φ k h)]
 
 end
 end DedekindZetaZeroFree.KPActualResidueSources

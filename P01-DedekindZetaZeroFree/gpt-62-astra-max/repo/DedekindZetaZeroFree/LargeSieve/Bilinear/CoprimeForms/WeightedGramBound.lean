@@ -11,39 +11,9 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve.GcdTail
 
 open scoped NumberField Classical
 
-private lemma sum_powerset_neg_one_pow_card_C {P : Type*} [DecidableEq P] (A : Finset P) :
-    (∑ D ∈ A.powerset, (-1 : ℂ) ^ D.card) = if A = ∅ then 1 else 0 := by
-  have h : ((∑ D ∈ A.powerset, (-1 : ℤ) ^ D.card : ℤ) : ℂ) =
-      ((if A = ∅ then 1 else 0 : ℤ) : ℂ) := by
-    rw [Finset.sum_powerset_neg_one_pow_card]
-  rw [Int.cast_sum] at h
-  simpa using h
+private alias sum_powerset_neg_one_pow_card_C := DedekindZetaZeroFree.LargeSieve.Vendor.CoprimeBilinear.FiniteDisjointSupportInequality.sum_powerset_neg_one_pow_card_C
 
-private lemma disjoint_indicator_expansion {P : Type*} [DecidableEq P]
-    (ambient S T : Finset P) (hS : S ⊆ ambient) (hT : T ⊆ ambient) :
-    (∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *
-        (if D ⊆ S ∧ D ⊆ T then 1 else 0)) = if Disjoint S T then 1 else 0 := by
-  have hfilter : ambient.powerset.filter (fun D => D ⊆ S ∧ D ⊆ T) = (S ∩ T).powerset := by
-    ext D
-    simp only [Finset.mem_filter, Finset.mem_powerset]
-    constructor
-    · rintro ⟨_, hDS, hDT⟩ x hx
-      exact Finset.mem_inter.mpr ⟨hDS hx, hDT hx⟩
-    · intro hD
-      exact ⟨fun x hx => hS (Finset.mem_inter.mp (hD hx)).1,
-        fun x hx => (Finset.mem_inter.mp (hD hx)).1,
-        fun x hx => (Finset.mem_inter.mp (hD hx)).2⟩
-  have hsum : (∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *
-        (if D ⊆ S ∧ D ⊆ T then 1 else 0))
-      = ∑ D ∈ ambient.powerset.filter (fun D => D ⊆ S ∧ D ⊆ T), (-1 : ℂ) ^ D.card := by
-    rw [Finset.sum_filter]
-    apply Finset.sum_congr rfl
-    intro D _
-    split_ifs <;> simp
-  rw [hsum, hfilter, sum_powerset_neg_one_pow_card_C]
-  by_cases h : S ∩ T = ∅
-  · rw [if_pos h, if_pos (Finset.disjoint_iff_inter_eq_empty.mpr h)]
-  · rw [if_neg h, if_neg (fun hd => h (Finset.disjoint_iff_inter_eq_empty.mp hd))]
+private alias disjoint_indicator_expansion := DedekindZetaZeroFree.LargeSieve.Vendor.CoprimeBilinear.FiniteDisjointSupportInequality.disjoint_indicator_expansion
 
 private lemma sum_comm_three {α β γ M : Type*} [AddCommMonoid M]
     (A : Finset α) (B : Finset β) (C : Finset γ) (f : α → β → γ → M) :
@@ -73,7 +43,7 @@ private lemma disjoint_expansion_finset {P ι κ : Type*} [DecidableEq P]
         ∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *
           (if D ⊆ S i ∧ D ⊆ T j then z i * star (v j) else 0) := by
     intro i hi j hj
-    calc (if Disjoint (S i) (T j) then z i * star (v j) else 0)
+    calc _
         = (if Disjoint (S i) (T j) then (1 : ℂ) else 0) * (z i * star (v j)) := by
           split_ifs <;> simp
       _ = (∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *
@@ -124,10 +94,7 @@ private lemma sup_eq_top_iff_disjoint_normalizedFactors
     rw [Finset.disjoint_left]
     intro x hxu hxv
     rw [Multiset.mem_toFinset] at hxu hxv
-    have hxmem : x ∈ UniqueFactorizationMonoid.normalizedFactors u ∩
-        UniqueFactorizationMonoid.normalizedFactors v := Multiset.mem_inter.mpr ⟨hxu, hxv⟩
-    have hdvd : x ∣ (UniqueFactorizationMonoid.normalizedFactors u ∩
-        UniqueFactorizationMonoid.normalizedFactors v).prod := Multiset.dvd_prod hxmem
+    have hdvd := Multiset.dvd_prod (Multiset.mem_inter.mpr ⟨hxu, hxv⟩)
     rw [hprod] at hdvd
     exact (UniqueFactorizationMonoid.prime_of_normalized_factor x hxu).not_isUnit
       (isUnit_of_dvd_one hdvd)
@@ -140,6 +107,8 @@ private lemma sup_eq_top_iff_disjoint_normalizedFactors
       exact (Finset.disjoint_left.mp hd (Multiset.mem_toFinset.mpr (Multiset.mem_inter.mp hx).1))
         (Multiset.mem_toFinset.mpr (Multiset.mem_inter.mp hx).2)
     rw [hinter, Multiset.prod_zero, Ideal.one_eq_top]
+
+alias WeightedGramBound.sup_eq_top_iff_disjoint_normalizedFactors := sup_eq_top_iff_disjoint_normalizedFactors
 
 theorem coprime_form_bound
     {F : Type} [Field F] [NumberField F] {R : Type*}

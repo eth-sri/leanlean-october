@@ -9,17 +9,15 @@ open scoped Classical NumberField
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.FiniteWhittakerProjectors
 open NumberField MomentSources KPAdelicCoverRestrictedProduct
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_localIdele → eval_localIdele
+open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting (eval_localIdele)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 private theorem eval_localIdele_units (v w : KPHilbert.Place F)
     (z : (KPHilbert.Completion F v)ˣ) :
     Units.map (adeleEval F w).toMonoidHom (KPRationalAdelicSplitting.localIdele F v z) =
-      Pi.mulSingle (M := fun v => (KPHilbert.Completion F v)ˣ) v z w := by
-  apply Units.ext
-  exact congrArg Units.val (eval_localIdele F v w z)
+      Pi.mulSingle (M := fun v => (KPHilbert.Completion F v)ˣ) v z w := by apply @DedekindZetaZeroFree.KPRationalAdelicSplitting.eval_localIdele <;> assumption
 
 attribute [local simp] eval_localIdele_units
 
@@ -54,17 +52,11 @@ open scoped Classical NumberField
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.RootDerivatives
 open NumberField MomentSources KPAdelicCoverRestrictedProduct
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_localIdele → eval_localIdele
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
-private theorem eval_localIdele_units (v w : KPHilbert.Place F)
-    (z : (KPHilbert.Completion F v)ˣ) :
-    Units.map (adeleEval F w).toMonoidHom (KPRationalAdelicSplitting.localIdele F v z) =
-      Pi.mulSingle (M := fun v => (KPHilbert.Completion F v)ˣ) v z w := by
-  apply Units.ext
-  exact congrArg Units.val (eval_localIdele F v w z)
+private alias eval_localIdele_units := DedekindZetaZeroFree.FiniteWhittakerProjectors.eval_localIdele_units
 
 attribute [local simp] eval_localIdele_units
 
@@ -88,25 +80,7 @@ theorem selected_localIdele_arch (y : R.A.G) (w : InfinitePlace F) :
     exact Pi.mulSingle_eq_of_ne (Sum.inl_injective.ne hbw.symm) _
   · simp
 
-theorem selected_localIdele_finite (y : R.A.G) (q : R.A.Sf) :
-    Units.map (adeleEval F (Sum.inr q.val)).toMonoidHom (MomentSources.localIdele R y) = y.2 q := by
-  unfold MomentSources.localIdele
-  simp only [map_mul, map_prod]
-  have he (p : KPHilbert.Place F) (z : (KPHilbert.Completion F p)ˣ) :
-      Units.map (adeleEval F (Sum.inr q.val)).toMonoidHom (KPRationalAdelicSplitting.localIdele F p z) =
-        Pi.mulSingle (M := fun v => (KPHilbert.Completion F v)ˣ) p z (Sum.inr q.val) :=
-    eval_localIdele_units p (Sum.inr q.val) z
-  simp only [he]
-  have ha : (∏ w : InfinitePlace F, Pi.mulSingle (M := fun v => (KPHilbert.Completion F v)ˣ)
-      (Sum.inl w) (y.1 w) (Sum.inr q.val)) = 1 := by
-    apply Finset.prod_eq_one
-    intro w _
-    exact Pi.mulSingle_eq_of_ne (by simp) _
-  rw [ha, one_mul, Finset.prod_eq_single q]
-  · simp
-  · intro p _ hpq
-    exact Pi.mulSingle_eq_of_ne (Sum.inr_injective.ne (Subtype.val_injective.ne hpq.symm)) _
-  · simp
+alias selected_localIdele_finite := DedekindZetaZeroFree.FiniteWhittakerProjectors.selected_localIdele_finite
 
 theorem selected_localIdele_exterior (y : R.A.G) (q : KPFinitePlace F) (hq : q ∉ R.A.Sf) :
     Units.map (adeleEval F (Sum.inr q)).toMonoidHom (MomentSources.localIdele R y) = 1 := by

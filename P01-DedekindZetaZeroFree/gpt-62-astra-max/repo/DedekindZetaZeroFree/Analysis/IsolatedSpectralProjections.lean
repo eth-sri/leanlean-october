@@ -10,14 +10,18 @@ open scoped InnerProductSpace
 
 noncomputable section
 
-def IsIsolatedSpectralPoint {H : Type*} [NormedAddCommGroup H]
-    [InnerProductSpace ℂ H] (B : H →L[ℂ] H) (β : ℝ) : Prop :=
+section
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] (B : H →L[ℂ] H) (β : ℝ)
+
+def IsIsolatedSpectralPoint : Prop :=
   (β : ℂ) ∈ spectrum ℂ B ∧
     ∃ ε : ℝ, 0 < ε ∧ ∀ w ∈ spectrum ℂ B, dist w (β : ℂ) < ε → w = (β : ℂ)
 
-def eigenspace {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    (B : H →L[ℂ] H) (β : ℝ) : Submodule ℂ H :=
+def eigenspace : Submodule ℂ H :=
   (B - (β : ℂ) • (1 : H →L[ℂ] H)).ker
+
+end
 
 instance eigenspace_completeSpace {H : Type*} [NormedAddCommGroup H]
     [InnerProductSpace ℂ H] [CompleteSpace H] (B : H →L[ℂ] H) (β : ℝ) :
@@ -37,12 +41,15 @@ open scoped InnerProductSpace
 
 noncomputable section
 
-def projection {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+section
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+
+def projection
     [CompleteSpace H] (B : H →L[ℂ] H) (β : ℝ) : H →L[ℂ] H :=
   (eigenspace B β).starProjection
 
 private theorem continuousOn_isolated_ite
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     (B : H →L[ℂ] H) (β : ℝ) (hiso : IsIsolatedSpectralPoint B β)
     (a : ℂ) (F : ℂ → ℂ)
     (hF : ∀ w ∈ spectrum ℂ B, w ≠ (β : ℂ) → ContinuousAt F w) :
@@ -60,21 +67,21 @@ private theorem continuousOn_isolated_ite
     filter_upwards [mem_nhdsWithin_of_mem_nhds (isOpen_compl_singleton.mem_nhds he)] with z hz
     simp_all
 
-theorem projection_eq_cfc
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (β : ℝ)
+end
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H] (B : H →L[ℂ] H)
+
+theorem projection_eq_cfc (hB : IsSelfAdjoint B) (β : ℝ)
     (hβ : β ≠ 0) (hiso : IsIsolatedSpectralPoint B β) :
     projection B β = cfc (fun w : ℂ => if w = (β : ℂ) then (1 : ℂ) else 0) B := by
   classical
   let f : ℂ → ℂ := fun w => if w = (β : ℂ) then 1 else 0
-  let g : ℂ → ℂ := fun w => if w = (β : ℂ) then 0 else (w - (β : ℂ))⁻¹
-  have hn : IsStarNormal B := hB.isStarNormal
-  have hf : ContinuousOn f (spectrum ℂ B) :=
+  let g := fun w => if w = (β : ℂ) then 0 else (w - (β : ℂ))⁻¹
+  have hn := hB.isStarNormal
+  have hf :=
     continuousOn_isolated_ite B β hiso 1 (fun _ => 0) (by intros; fun_prop)
-  have hg : ContinuousOn g (spectrum ℂ B) :=
-    continuousOn_isolated_ite B β hiso 0 _ (by
-      intro w hw he
-      exact (continuousAt_id.sub continuousAt_const).inv₀ (sub_ne_zero.mpr he))
+  have hg :=
+    continuousOn_isolated_ite B β hiso 0 _ (fun w hw he => (continuousAt_id.sub continuousAt_const).inv₀ (sub_ne_zero.mpr he))
   have hP : IsStarProjection (cfc f B) := by
     constructor
     · change cfc f B * cfc f B = cfc f B
@@ -109,8 +116,7 @@ theorem projection_eq_cfc
     · simp [f, g, he]
     · simp [f, g, he, sub_ne_zero.mpr he]
   apply ContinuousLinearMap.IsStarProjection.ext
-    (isStarProjection_starProjection (U := eigenspace B β)) hP
-  change (eigenspace B β).starProjection.range = (cfc f B).range
+    (isStarProjection_starProjection) hP
   rw [Submodule.range_starProjection]
   apply le_antisymm
   · intro x hx
@@ -121,12 +127,9 @@ theorem projection_eq_cfc
       ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply] at ht
     exact (sub_eq_zero.mp ht.symm).symm
   · rintro x ⟨y, rfl⟩
-    change (B - (β : ℂ) • 1) (cfc f B y) = 0
     exact congrArg (fun T : H →L[ℂ] H => T y) hmul
 
-theorem projection_spec
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (β : ℝ)
+theorem projection_spec (hB : IsSelfAdjoint B) (β : ℝ)
     (hβ : β ≠ 0) (hiso : IsIsolatedSpectralPoint B β) :
     projection B β ≠ 0 ∧ IsSelfAdjoint (projection B β) ∧
     projection B β * projection B β = projection B β ∧
@@ -144,31 +147,22 @@ theorem projection_spec
     Submodule.range_starProjection _, hmul, ?_⟩
   · rw [projection_eq_cfc B hB β hβ hiso]
     intro hz
-    have hf : ContinuousOn (fun w : ℂ => if w = (β : ℂ) then (1 : ℂ) else 0)
-        (spectrum ℂ B) :=
-      continuousOn_isolated_ite B β hiso 1 (fun _ => 0) (by intros; fun_prop)
-    have he := eqOn_of_cfc_eq_cfc (hz.trans (cfc_const_zero ℂ B).symm)
-      hf continuousOn_const hB.isStarNormal hiso.1
-    simpa using he
-  · have he := congrArg star hmul
-    simpa only [star_mul, hP.star_eq, hB.star_eq, star_smul, Complex.star_def,
-      Complex.conj_ofReal] using he
+    simpa using (eqOn_of_cfc_eq_cfc (hz.trans (cfc_const_zero ℂ B).symm)
+      (continuousOn_isolated_ite B β hiso 1 (fun _ => 0) (by intros; fun_prop)) continuousOn_const hB.isStarNormal hiso.1)
+  · simpa only [star_mul, hP.star_eq, hB.star_eq, star_smul, Complex.star_def,
+      Complex.conj_ofReal] using (congrArg star hmul)
 
-theorem projection_finiteRank
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (β : ℝ) [FiniteDimensional ℂ (eigenspace B β)] :
+theorem projection_finiteRank (β : ℝ) [FiniteDimensional ℂ (eigenspace B β)] :
     FiniteDimensional ℂ (projection B β).range := by
   rw [projection, Submodule.range_starProjection]
   infer_instance
 
-theorem isUnit_gap_add_projection
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (β : ℝ)
+theorem isUnit_gap_add_projection (hB : IsSelfAdjoint B) (β : ℝ)
     (hβ : β ≠ 0) (hiso : IsIsolatedSpectralPoint B β) :
     IsUnit (1 - (β : ℂ)⁻¹ • B + projection B β) := by
   classical
   let f : ℂ → ℂ := fun w => if w = (β : ℂ) then 1 else 0
-  have hn : IsStarNormal B := hB.isStarNormal
+  have hn := hB.isStarNormal
   have hf : ContinuousOn f (spectrum ℂ B) :=
     continuousOn_isolated_ite B β hiso 1 (fun _ => 0) (by intros; fun_prop)
   have he : cfc (fun w => 1 - (β : ℂ)⁻¹ * w + f w) B =

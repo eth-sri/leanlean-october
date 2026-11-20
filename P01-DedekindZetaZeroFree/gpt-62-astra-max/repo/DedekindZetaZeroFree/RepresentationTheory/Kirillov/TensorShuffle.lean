@@ -33,8 +33,7 @@ lemma shuffle_eq : (shuffle S J).toLinearMap = TensorProduct.lift (PiTensorProdu
 @[simp] lemma shuffle_tmul (f : ∀ i, S i) (e : ∀ i, J i) :
  shuffle S J ((PiTensorProduct.tprod ℂ f) ⊗ₜ[ℂ] (PiTensorProduct.tprod ℂ e)) = PiTensorProduct.tprod ℂ (fun i => f i ⊗ₜ[ℂ] e i) := by
  change (shuffle S J).toLinearMap _ = _
- rw [shuffle_eq]
- simp only [TensorProduct.lift.tmul, PiTensorProduct.map₂_tprod_tprod, TensorProduct.mk_apply]
+ simp [shuffle_eq, TensorProduct.lift.tmul, PiTensorProduct.map₂_tprod_tprod]
 end DedekindZetaZeroFree.KPKirillovFiniteTensor.ShuffleHelpers
 
 end

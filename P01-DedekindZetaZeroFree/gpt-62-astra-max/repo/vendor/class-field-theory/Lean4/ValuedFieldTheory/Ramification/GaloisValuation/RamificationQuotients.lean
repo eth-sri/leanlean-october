@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -67,11 +65,6 @@ def gradedPiece (n : ℕ) : Type u :=
 abbrev inertiaSubgroup : Subgroup G :=
   F.lower 0
 
-/-- States the theorem `lower_zero_eq_inertiaSubgroup`. -/
-theorem lower_zero_eq_inertiaSubgroup :
-    F.lower 0 = F.inertiaSubgroup :=
-  rfl
-
 /-- The wild inertia subgroup `G_1` of a lower ramification filtration. -/
 abbrev wildInertiaSubgroup : Subgroup G :=
   F.lower 1
@@ -82,23 +75,15 @@ def tameQuotient : Type u :=
 
 /-- Provides the instance `inertiaSubgroup_normal`. -/
 instance inertiaSubgroup_normal : F.inertiaSubgroup.Normal := by
-  change (F.lower 0).Normal
   infer_instance
 
 /-- Provides the instance `wildInertiaSubgroup_normal`. -/
 instance wildInertiaSubgroup_normal : F.wildInertiaSubgroup.Normal := by
-  change (F.lower 1).Normal
   infer_instance
-
-/-- States the theorem `wildInertiaSubgroup_le_inertiaSubgroup`. -/
-theorem wildInertiaSubgroup_le_inertiaSubgroup :
-    F.wildInertiaSubgroup ≤ F.inertiaSubgroup :=
-  F.antitone (Nat.zero_le 1)
 
 /-- Provides the instance `wildInertiaSubgroup_subgroupOf_inertiaSubgroup_normal`. -/
 instance wildInertiaSubgroup_subgroupOf_inertiaSubgroup_normal :
     ((F.wildInertiaSubgroup).subgroupOf F.inertiaSubgroup).Normal := by
-  change ((F.lower 1).subgroupOf (F.lower 0)).Normal
   infer_instance
 
 /-! ### Named quotient boundaries
@@ -168,45 +153,34 @@ def tameQuotientConcreteMulEquiv :
   (F.tameQuotientEquivGradedPiece).trans
     (F.gradedPieceConcreteMulEquiv 0)
 
+section
+
+variable (n : ℕ)
+
 /-- Canonical projection to `G/G_n`. -/
-def quotientMk (n : ℕ) : G →* F.quotient n :=
+def quotientMk : G →* F.quotient n :=
   (F.quotientConcreteMulEquiv n).symm.toMonoidHom.comp
     (QuotientGroup.mk' (F.lower n))
 
 /-- States the theorem `quotientMk_apply`. -/
 @[simp]
-theorem quotientMk_apply (n : ℕ) (σ : G) :
+theorem quotientMk_apply (σ : G) :
     F.quotientConcreteMulEquiv n (F.quotientMk n σ) =
       QuotientGroup.mk' (F.lower n) σ :=
   rfl
 
 /-- States the theorem `quotientMk_eq_one_iff`. -/
 @[simp]
-theorem quotientMk_eq_one_iff (n : ℕ) (σ : G) :
+theorem quotientMk_eq_one_iff (σ : G) :
     F.quotientMk n σ = 1 ↔ σ ∈ F.lower n := by
   constructor
   · intro h
-    have h' := congrArg (F.quotientConcreteMulEquiv n) h
-    rw [F.quotientMk_apply, map_one] at h'
-    exact (QuotientGroup.eq_one_iff σ).1 h'
+    simpa using congrArg (F.quotientConcreteMulEquiv n) h
   · intro h
     apply (F.quotientConcreteMulEquiv n).injective
-    rw [F.quotientMk_apply, map_one]
     exact (QuotientGroup.eq_one_iff σ).2 h
 
-/-- States the theorem `quotientMk_eq_iff`. -/
-@[simp]
-theorem quotientMk_eq_iff (n : ℕ) (σ τ : G) :
-    F.quotientMk n σ = F.quotientMk n τ ↔ σ / τ ∈ F.lower n := by
-  constructor
-  · intro h
-    have h' := congrArg (F.quotientConcreteMulEquiv n) h
-    rw [F.quotientMk_apply, F.quotientMk_apply] at h'
-    exact QuotientGroup.eq_iff_div_mem.mp h'
-  · intro h
-    apply (F.quotientConcreteMulEquiv n).injective
-    rw [F.quotientMk_apply, F.quotientMk_apply]
-    exact QuotientGroup.eq_iff_div_mem.mpr h
+end
 
 /-- Eliminate a named ramification quotient through canonical
 representatives. -/
@@ -219,26 +193,32 @@ protected theorem quotient_inductionOn (n : ℕ)
       (QuotientGroup.mk'_surjective (F.lower n))) q
   exact h σ
 
+section
+
+variable {H : Type v} [Group H] (n : ℕ) (f : G →* H) (h : F.lower n ≤ f.ker)
+
 /-- Descend a homomorphism that kills the `n`th lower group. -/
-def quotientLift {H : Type v} [Group H] (n : ℕ)
-    (f : G →* H) (h : F.lower n ≤ f.ker) :
+def quotientLift :
     F.quotient n →* H :=
   (QuotientGroup.lift (F.lower n) f h).comp
     (F.quotientConcreteMulEquiv n).toMonoidHom
 
 /-- States the theorem `quotientLift_mk`. -/
 @[simp]
-theorem quotientLift_mk {H : Type v} [Group H] (n : ℕ)
-    (f : G →* H) (h : F.lower n ≤ f.ker) (σ : G) :
+theorem quotientLift_mk (σ : G) :
     F.quotientLift n f h (F.quotientMk n σ) = f σ :=
   rfl
 
+end
+
+section
+
+variable {H : Type v} [Group H] (E : AntitoneNormalSubgroupFiltration H) (n m : ℕ) (f : G →* H)
+    (h : ∀ σ : G, σ ∈ F.lower n → f σ ∈ E.lower m)
+
 /-- Map between named ramification quotients induced by a group
 homomorphism. -/
-def quotientMap {H : Type v} [Group H]
-    (E : AntitoneNormalSubgroupFiltration H) (n m : ℕ)
-    (f : G →* H)
-    (h : ∀ σ : G, σ ∈ F.lower n → f σ ∈ E.lower m) :
+def quotientMap :
     F.quotient n →* E.quotient m :=
   F.quotientLift n ((E.quotientMk m).comp f) (by
     intro σ hσ
@@ -247,64 +227,44 @@ def quotientMap {H : Type v} [Group H]
 
 /-- States the theorem `quotientMap_apply_mk`. -/
 @[simp]
-theorem quotientMap_apply_mk {H : Type v} [Group H]
-    (E : AntitoneNormalSubgroupFiltration H) (n m : ℕ)
-    (f : G →* H)
-    (h : ∀ σ : G, σ ∈ F.lower n → f σ ∈ E.lower m) (σ : G) :
+theorem quotientMap_apply_mk (σ : G) :
     F.quotientMap E n m f h (F.quotientMk n σ) =
       E.quotientMk m (f σ) :=
   rfl
 
+end
+
+section
+
+variable (m n : ℕ)
+
 /-- Canonical projection to `G_m/G_n`. -/
-def subquotientMk (m n : ℕ) : F.lower m →* F.subquotient m n :=
+def subquotientMk : F.lower m →* F.subquotient m n :=
   (F.subquotientConcreteMulEquiv m n).symm.toMonoidHom.comp
     (QuotientGroup.mk' ((F.lower n).subgroupOf (F.lower m)))
 
 /-- States the theorem `subquotientMk_apply`. -/
 @[simp]
-theorem subquotientMk_apply (m n : ℕ) (σ : F.lower m) :
+theorem subquotientMk_apply (σ : F.lower m) :
     F.subquotientConcreteMulEquiv m n (F.subquotientMk m n σ) =
       QuotientGroup.mk' ((F.lower n).subgroupOf (F.lower m)) σ :=
   rfl
 
 /-- States the theorem `subquotientMk_eq_one_iff`. -/
 @[simp]
-theorem subquotientMk_eq_one_iff (m n : ℕ) (σ : F.lower m) :
+theorem subquotientMk_eq_one_iff (σ : F.lower m) :
     F.subquotientMk m n σ = 1 ↔ (σ : G) ∈ F.lower n := by
   constructor
   · intro h
-    have h' := congrArg (F.subquotientConcreteMulEquiv m n) h
-    rw [F.subquotientMk_apply, map_one] at h'
-    simpa [Subgroup.mem_subgroupOf] using
-      ((QuotientGroup.eq_one_iff
-        (N := (F.lower n).subgroupOf (F.lower m)) σ).1 h')
+    simpa [Subgroup.mem_subgroupOf, F.subquotientMk_apply, map_one] using congrArg (F.subquotientConcreteMulEquiv m n) h
   · intro h
     apply (F.subquotientConcreteMulEquiv m n).injective
     rw [F.subquotientMk_apply, map_one]
     apply (QuotientGroup.eq_one_iff
-      (N := (F.lower n).subgroupOf (F.lower m)) σ).2
+       σ).2
     simpa [Subgroup.mem_subgroupOf] using h
 
-/-- States the theorem `subquotientMk_eq_iff`. -/
-@[simp]
-theorem subquotientMk_eq_iff (m n : ℕ) (σ τ : F.lower m) :
-    F.subquotientMk m n σ = F.subquotientMk m n τ ↔
-      ((σ / τ : F.lower m) : G) ∈ F.lower n := by
-  constructor
-  · intro h
-    have h' := congrArg (F.subquotientConcreteMulEquiv m n) h
-    rw [F.subquotientMk_apply, F.subquotientMk_apply] at h'
-    simpa [Subgroup.mem_subgroupOf] using
-      ((QuotientGroup.eq_iff_div_mem
-        (N := (F.lower n).subgroupOf (F.lower m))
-        (x := σ) (y := τ)).1 h')
-  · intro h
-    apply (F.subquotientConcreteMulEquiv m n).injective
-    rw [F.subquotientMk_apply, F.subquotientMk_apply]
-    apply (QuotientGroup.eq_iff_div_mem
-      (N := (F.lower n).subgroupOf (F.lower m))
-      (x := σ) (y := τ)).2
-    simpa [Subgroup.mem_subgroupOf] using h
+end
 
 /-- Eliminate a named ramification subquotient. -/
 protected theorem subquotient_inductionOn (m n : ℕ)
@@ -317,10 +277,13 @@ protected theorem subquotient_inductionOn (m n : ℕ)
         ((F.lower n).subgroupOf (F.lower m)))) q
   exact h σ
 
+section
+
+variable {H : Type v} [Group H] (m n : ℕ) (f : F.lower m →* H)
+    (h : (F.lower n).subgroupOf (F.lower m) ≤ f.ker)
+
 /-- Descend a homomorphism from `G_m` that kills the copy of `G_n`. -/
-def subquotientLift {H : Type v} [Group H] (m n : ℕ)
-    (f : F.lower m →* H)
-    (h : (F.lower n).subgroupOf (F.lower m) ≤ f.ker) :
+def subquotientLift :
     F.subquotient m n →* H :=
   (QuotientGroup.lift
     ((F.lower n).subgroupOf (F.lower m)) f h).comp
@@ -328,20 +291,22 @@ def subquotientLift {H : Type v} [Group H] (m n : ℕ)
 
 /-- States the theorem `subquotientLift_mk`. -/
 @[simp]
-theorem subquotientLift_mk {H : Type v} [Group H] (m n : ℕ)
-    (f : F.lower m →* H)
-    (h : (F.lower n).subgroupOf (F.lower m) ≤ f.ker)
+theorem subquotientLift_mk
     (σ : F.lower m) :
     F.subquotientLift m n f h (F.subquotientMk m n σ) = f σ :=
   rfl
 
+end
+
+section
+
+variable {H : Type v} [Group H] (E : AntitoneNormalSubgroupFiltration H) (m n p q : ℕ)
+    (f : F.lower m →* E.lower p)
+    (h : ∀ σ : F.lower m, (σ : G) ∈ F.lower n → ((f σ : E.lower p) : H) ∈ E.lower q)
+
 /-- Map between named subquotients induced by a homomorphism of their upper
 groups which sends the lower relation into the target lower group. -/
-def subquotientMap {H : Type v} [Group H]
-    (E : AntitoneNormalSubgroupFiltration H)
-    (m n p q : ℕ) (f : F.lower m →* E.lower p)
-    (h : ∀ σ : F.lower m, (σ : G) ∈ F.lower n →
-      ((f σ : E.lower p) : H) ∈ E.lower q) :
+def subquotientMap :
     F.subquotient m n →* E.subquotient p q :=
   F.subquotientLift m n ((E.subquotientMk p q).comp f) (by
     intro σ hσ
@@ -350,25 +315,27 @@ def subquotientMap {H : Type v} [Group H]
 
 /-- States the theorem `subquotientMap_apply_mk`. -/
 @[simp]
-theorem subquotientMap_apply_mk {H : Type v} [Group H]
-    (E : AntitoneNormalSubgroupFiltration H)
-    (m n p q : ℕ) (f : F.lower m →* E.lower p)
-    (h : ∀ σ : F.lower m, (σ : G) ∈ F.lower n →
-      ((f σ : E.lower p) : H) ∈ E.lower q)
+theorem subquotientMap_apply_mk
     (σ : F.lower m) :
     F.subquotientMap E m n p q f h (F.subquotientMk m n σ) =
       E.subquotientMk p q (f σ) :=
   rfl
 
+end
+
+section
+
+variable (n : ℕ)
+
 /-- Canonical projection to `G_n/G_{n+1}`. -/
-def gradedPieceMk (n : ℕ) : F.lower n →* F.gradedPiece n :=
+def gradedPieceMk : F.lower n →* F.gradedPiece n :=
   (F.gradedPieceConcreteMulEquiv n).symm.toMonoidHom.comp
     (QuotientGroup.mk'
       ((F.lower (n + 1)).subgroupOf (F.lower n)))
 
 /-- States the theorem `gradedPieceMk_apply`. -/
 @[simp]
-theorem gradedPieceMk_apply (n : ℕ) (σ : F.lower n) :
+theorem gradedPieceMk_apply (σ : F.lower n) :
     F.gradedPieceConcreteMulEquiv n (F.gradedPieceMk n σ) =
       QuotientGroup.mk'
         ((F.lower (n + 1)).subgroupOf (F.lower n)) σ :=
@@ -376,42 +343,19 @@ theorem gradedPieceMk_apply (n : ℕ) (σ : F.lower n) :
 
 /-- States the theorem `gradedPieceMk_eq_one_iff`. -/
 @[simp]
-theorem gradedPieceMk_eq_one_iff (n : ℕ) (σ : F.lower n) :
+theorem gradedPieceMk_eq_one_iff (σ : F.lower n) :
     F.gradedPieceMk n σ = 1 ↔ (σ : G) ∈ F.lower (n + 1) := by
   constructor
   · intro h
-    have h' := congrArg (F.gradedPieceConcreteMulEquiv n) h
-    rw [F.gradedPieceMk_apply, map_one] at h'
-    simpa [Subgroup.mem_subgroupOf] using
-      ((QuotientGroup.eq_one_iff
-        (N := (F.lower (n + 1)).subgroupOf (F.lower n)) σ).1 h')
+    simpa [Subgroup.mem_subgroupOf, F.gradedPieceMk_apply, map_one] using congrArg (F.gradedPieceConcreteMulEquiv n) h
   · intro h
     apply (F.gradedPieceConcreteMulEquiv n).injective
     rw [F.gradedPieceMk_apply, map_one]
     apply (QuotientGroup.eq_one_iff
-      (N := (F.lower (n + 1)).subgroupOf (F.lower n)) σ).2
+       σ).2
     simpa [Subgroup.mem_subgroupOf] using h
 
-/-- States the theorem `gradedPieceMk_eq_iff`. -/
-@[simp]
-theorem gradedPieceMk_eq_iff (n : ℕ) (σ τ : F.lower n) :
-    F.gradedPieceMk n σ = F.gradedPieceMk n τ ↔
-      ((σ / τ : F.lower n) : G) ∈ F.lower (n + 1) := by
-  constructor
-  · intro h
-    have h' := congrArg (F.gradedPieceConcreteMulEquiv n) h
-    rw [F.gradedPieceMk_apply, F.gradedPieceMk_apply] at h'
-    simpa [Subgroup.mem_subgroupOf] using
-      ((QuotientGroup.eq_iff_div_mem
-        (N := (F.lower (n + 1)).subgroupOf (F.lower n))
-        (x := σ) (y := τ)).1 h')
-  · intro h
-    apply (F.gradedPieceConcreteMulEquiv n).injective
-    rw [F.gradedPieceMk_apply, F.gradedPieceMk_apply]
-    apply (QuotientGroup.eq_iff_div_mem
-      (N := (F.lower (n + 1)).subgroupOf (F.lower n))
-      (x := σ) (y := τ)).2
-    simpa [Subgroup.mem_subgroupOf] using h
+end
 
 /-- Eliminate a named graded piece. -/
 protected theorem gradedPiece_inductionOn (n : ℕ)
@@ -424,10 +368,13 @@ protected theorem gradedPiece_inductionOn (n : ℕ)
         ((F.lower (n + 1)).subgroupOf (F.lower n)))) q
   exact h σ
 
+section
+
+variable {H : Type v} [Group H] (n : ℕ) (f : F.lower n →* H)
+    (h : (F.lower (n + 1)).subgroupOf (F.lower n) ≤ f.ker)
+
 /-- Descend a homomorphism from `G_n` that kills `G_{n+1}`. -/
-def gradedPieceLift {H : Type v} [Group H] (n : ℕ)
-    (f : F.lower n →* H)
-    (h : (F.lower (n + 1)).subgroupOf (F.lower n) ≤ f.ker) :
+def gradedPieceLift :
     F.gradedPiece n →* H :=
   (QuotientGroup.lift
     ((F.lower (n + 1)).subgroupOf (F.lower n)) f h).comp
@@ -435,19 +382,21 @@ def gradedPieceLift {H : Type v} [Group H] (n : ℕ)
 
 /-- States the theorem `gradedPieceLift_mk`. -/
 @[simp]
-theorem gradedPieceLift_mk {H : Type v} [Group H] (n : ℕ)
-    (f : F.lower n →* H)
-    (h : (F.lower (n + 1)).subgroupOf (F.lower n) ≤ f.ker)
+theorem gradedPieceLift_mk
     (σ : F.lower n) :
     F.gradedPieceLift n f h (F.gradedPieceMk n σ) = f σ :=
   rfl
 
-/-- Map between named graded pieces. -/
-def gradedPieceMap {H : Type v} [Group H]
-    (E : AntitoneNormalSubgroupFiltration H) (n m : ℕ)
+end
+
+section
+
+variable {H : Type v} [Group H] (E : AntitoneNormalSubgroupFiltration H) (n m : ℕ)
     (f : F.lower n →* E.lower m)
-    (h : ∀ σ : F.lower n, (σ : G) ∈ F.lower (n + 1) →
-      ((f σ : E.lower m) : H) ∈ E.lower (m + 1)) :
+    (h : ∀ σ : F.lower n, (σ : G) ∈ F.lower (n + 1) → ((f σ : E.lower m) : H) ∈ E.lower (m + 1))
+
+/-- Map between named graded pieces. -/
+def gradedPieceMap :
     F.gradedPiece n →* E.gradedPiece m :=
   F.gradedPieceLift n ((E.gradedPieceMk m).comp f) (by
     intro σ hσ
@@ -456,15 +405,13 @@ def gradedPieceMap {H : Type v} [Group H]
 
 /-- States the theorem `gradedPieceMap_apply_mk`. -/
 @[simp]
-theorem gradedPieceMap_apply_mk {H : Type v} [Group H]
-    (E : AntitoneNormalSubgroupFiltration H) (n m : ℕ)
-    (f : F.lower n →* E.lower m)
-    (h : ∀ σ : F.lower n, (σ : G) ∈ F.lower (n + 1) →
-      ((f σ : E.lower m) : H) ∈ E.lower (m + 1))
+theorem gradedPieceMap_apply_mk
     (σ : F.lower n) :
     F.gradedPieceMap E n m f h (F.gradedPieceMk n σ) =
       E.gradedPieceMk m (f σ) :=
   rfl
+
+end
 
 /-- Canonical projection to `G_0/G_1`. -/
 def tameQuotientMk : F.inertiaSubgroup →* F.tameQuotient :=
@@ -486,37 +433,12 @@ theorem tameQuotientMk_eq_one_iff (σ : F.inertiaSubgroup) :
     F.tameQuotientMk σ = 1 ↔ (σ : G) ∈ F.wildInertiaSubgroup := by
   constructor
   · intro h
-    have h' := congrArg F.tameQuotientConcreteMulEquiv h
-    rw [F.tameQuotientMk_apply, map_one] at h'
-    simpa [Subgroup.mem_subgroupOf] using
-      ((QuotientGroup.eq_one_iff
-        (N := (F.wildInertiaSubgroup).subgroupOf F.inertiaSubgroup) σ).1 h')
+    simpa [Subgroup.mem_subgroupOf, F.tameQuotientMk_apply, map_one] using congrArg F.tameQuotientConcreteMulEquiv h
   · intro h
     apply F.tameQuotientConcreteMulEquiv.injective
     rw [F.tameQuotientMk_apply, map_one]
     apply (QuotientGroup.eq_one_iff
-      (N := (F.wildInertiaSubgroup).subgroupOf F.inertiaSubgroup) σ).2
-    simpa [Subgroup.mem_subgroupOf] using h
-
-/-- States the theorem `tameQuotientMk_eq_iff`. -/
-@[simp]
-theorem tameQuotientMk_eq_iff (σ τ : F.inertiaSubgroup) :
-    F.tameQuotientMk σ = F.tameQuotientMk τ ↔
-      ((σ / τ : F.inertiaSubgroup) : G) ∈ F.wildInertiaSubgroup := by
-  constructor
-  · intro h
-    have h' := congrArg F.tameQuotientConcreteMulEquiv h
-    rw [F.tameQuotientMk_apply, F.tameQuotientMk_apply] at h'
-    simpa [Subgroup.mem_subgroupOf] using
-      ((QuotientGroup.eq_iff_div_mem
-        (N := (F.wildInertiaSubgroup).subgroupOf F.inertiaSubgroup)
-        (x := σ) (y := τ)).1 h')
-  · intro h
-    apply F.tameQuotientConcreteMulEquiv.injective
-    rw [F.tameQuotientMk_apply, F.tameQuotientMk_apply]
-    apply (QuotientGroup.eq_iff_div_mem
-      (N := (F.wildInertiaSubgroup).subgroupOf F.inertiaSubgroup)
-      (x := σ) (y := τ)).2
+       σ).2
     simpa [Subgroup.mem_subgroupOf] using h
 
 /-- Eliminate the named tame quotient. -/
@@ -530,10 +452,13 @@ protected theorem tameQuotient_inductionOn
         ((F.wildInertiaSubgroup).subgroupOf F.inertiaSubgroup))) q
   exact h σ
 
+section
+
+variable {H : Type v} [Group H] (f : F.inertiaSubgroup →* H)
+    (h : (F.wildInertiaSubgroup).subgroupOf F.inertiaSubgroup ≤ f.ker)
+
 /-- Descend an inertia homomorphism which kills wild inertia. -/
-def tameQuotientLift {H : Type v} [Group H]
-    (f : F.inertiaSubgroup →* H)
-    (h : (F.wildInertiaSubgroup).subgroupOf F.inertiaSubgroup ≤ f.ker) :
+def tameQuotientLift :
     F.tameQuotient →* H :=
   (QuotientGroup.lift
     ((F.wildInertiaSubgroup).subgroupOf F.inertiaSubgroup) f h).comp
@@ -541,19 +466,21 @@ def tameQuotientLift {H : Type v} [Group H]
 
 /-- States the theorem `tameQuotientLift_mk`. -/
 @[simp]
-theorem tameQuotientLift_mk {H : Type v} [Group H]
-    (f : F.inertiaSubgroup →* H)
-    (h : (F.wildInertiaSubgroup).subgroupOf F.inertiaSubgroup ≤ f.ker)
+theorem tameQuotientLift_mk
     (σ : F.inertiaSubgroup) :
     F.tameQuotientLift f h (F.tameQuotientMk σ) = f σ :=
   rfl
 
-/-- Map between named tame quotients. -/
-def tameQuotientMap {H : Type v} [Group H]
-    (E : AntitoneNormalSubgroupFiltration H)
+end
+
+section
+
+variable {H : Type v} [Group H] (E : AntitoneNormalSubgroupFiltration H)
     (f : F.inertiaSubgroup →* E.inertiaSubgroup)
-    (h : ∀ σ : F.inertiaSubgroup, (σ : G) ∈ F.wildInertiaSubgroup →
-      ((f σ : E.inertiaSubgroup) : H) ∈ E.wildInertiaSubgroup) :
+    (h : ∀ σ : F.inertiaSubgroup, (σ : G) ∈ F.wildInertiaSubgroup → ((f σ : E.inertiaSubgroup) : H) ∈ E.wildInertiaSubgroup)
+
+/-- Map between named tame quotients. -/
+def tameQuotientMap :
     F.tameQuotient →* E.tameQuotient :=
   F.tameQuotientLift (E.tameQuotientMk.comp f) (by
     intro σ hσ
@@ -562,15 +489,13 @@ def tameQuotientMap {H : Type v} [Group H]
 
 /-- States the theorem `tameQuotientMap_apply_mk`. -/
 @[simp]
-theorem tameQuotientMap_apply_mk {H : Type v} [Group H]
-    (E : AntitoneNormalSubgroupFiltration H)
-    (f : F.inertiaSubgroup →* E.inertiaSubgroup)
-    (h : ∀ σ : F.inertiaSubgroup, (σ : G) ∈ F.wildInertiaSubgroup →
-      ((f σ : E.inertiaSubgroup) : H) ∈ E.wildInertiaSubgroup)
+theorem tameQuotientMap_apply_mk
     (σ : F.inertiaSubgroup) :
     F.tameQuotientMap E f h (F.tameQuotientMk σ) =
       E.tameQuotientMk (f σ) :=
   rfl
+
+end
 
 /-- Provides the instance `quotientFinite`. -/
 instance quotientFinite [Finite G] (n : ℕ) : Finite (F.quotient n) :=
@@ -601,7 +526,6 @@ instance tameQuotientFinite [Finite G] : Finite F.tameQuotient :=
     F.tameQuotient_inductionOn
       (motive := fun q => ∃ σ, F.tameQuotientMk σ = q) q
       (fun σ => ⟨σ, rfl⟩)
-
 
 end AntitoneNormalSubgroupFiltration
 

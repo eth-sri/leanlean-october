@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -35,15 +32,13 @@ variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
+variable (D : DegreeData G) [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
+    (K : FiniteResidueAbstractField D) (L : FiniteGaloisSubextension K.field)
+    (hTot : L.IsTotallyRamified D) (q : L.extensionQuotient)
+
 /-- Restriction identifies the actual lower Galois group `G(M/M⁰)` with
 the original totally ramified group `G(L/K)`. -/
-noncomputable def abstractReciprocityTotallyRamifiedRestrictionEquiv
-    (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+noncomputable def abstractReciprocityTotallyRamifiedRestrictionEquiv :
     let M := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
       K L hTot q
     let S := M.inertiaImage D
@@ -66,7 +61,6 @@ noncomputable def abstractReciprocityTotallyRamifiedRestrictionEquiv
   letI : (extensionSubgroup K.field L.field L.below).Normal := L.normal
   let EL := L.toFiniteAbstractExtension.toAbstractExtension
   letI : (extensionSubgroup EL.base EL.field EL.below).Normal := by
-    change (extensionSubgroup K.field L.field L.below).Normal
     exact L.normal
   letI : Group EL.quotient := by
     change Group
@@ -79,13 +73,7 @@ noncomputable def abstractReciprocityTotallyRamifiedRestrictionEquiv
 
 /-- Restriction identifies the degree of the totally ramified lower
 extension `M/M⁰` with the original cyclic degree `[L:K]`. -/
-theorem abstractReciprocityTotallyRamifiedLowerDegree_eq
-    (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+theorem abstractReciprocityTotallyRamifiedLowerDegree_eq :
   let M := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
     K L hTot q
   let N := M.lowerFiniteGalois (M.inertiaImage D)
@@ -95,37 +83,27 @@ theorem abstractReciprocityTotallyRamifiedLowerDegree_eq
     K L hTot q
   let S := M.inertiaImage D
   let M₀ := M.maximalUnramifiedSubextension D
-  let hMM₀ : M.field.toSubgroup ≤ M₀.toSubgroup :=
+  let hMM₀ :=
     M.field_le_intermediateField S
   let N := M.lowerFiniteGalois S
   let E := L.toFiniteAbstractExtension
-  let e := D.abstractReciprocityTotallyRamifiedRestrictionEquiv
-    K L hTot q
   calc
-    (N.toFiniteAbstractExtension.degree : ℕ) =
+    _ =
         (extensionSubgroup M₀ M.field hMM₀).index :=
       N.toFiniteAbstractExtension.extensionSubgroup_index_eq_degree.symm
     _ = Nat.card N.extensionQuotient :=
       Subgroup.index_eq_card (extensionSubgroup M₀ M.field hMM₀)
     _ = Nat.card L.extensionQuotient :=
-      Nat.card_congr e.toEquiv
+      Nat.card_congr (D.abstractReciprocityTotallyRamifiedRestrictionEquiv
+        K L hTot q).toEquiv
     _ = (extensionSubgroup K.field L.field L.below).index :=
       (Subgroup.index_eq_card (extensionSubgroup K.field L.field L.below)).symm
     _ = (E.degree : ℕ) := by
-      have h := E.extensionSubgroup_index_eq_degree
-      change (extensionSubgroup K.field L.field L.below).index =
-        (E.degree : ℕ) at h
-      exact h
+      rfl
 
 /-- The generator of `G(M/M⁰)` corresponding to the prescribed generator
 of `G(L/K)`. -/
-noncomputable def abstractReciprocityTotallyRamifiedLowerGenerator
-    (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+noncomputable def abstractReciprocityTotallyRamifiedLowerGenerator :
     let M := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
       K L hTot q
     let S := M.inertiaImage D
@@ -133,39 +111,23 @@ noncomputable def abstractReciprocityTotallyRamifiedLowerGenerator
     letI : (extensionSubgroup
         (M.maximalUnramifiedSubextension D) M.field N.below).Normal :=
       N.normal
-    N.extensionQuotient := by
-  exact (D.abstractReciprocityTotallyRamifiedRestrictionEquiv
+    N.extensionQuotient := (D.abstractReciprocityTotallyRamifiedRestrictionEquiv
     K L hTot q).symm q
 
 /-- The restriction equivalence sends the constructed lower generator to the target generator. -/
 @[simp]
-theorem abstractReciprocityTotallyRamifiedRestrictionEquiv_lowerGenerator
-    (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+theorem abstractReciprocityTotallyRamifiedRestrictionEquiv_lowerGenerator :
     D.abstractReciprocityTotallyRamifiedRestrictionEquiv K L hTot q
       (D.abstractReciprocityTotallyRamifiedLowerGenerator
-        K L hTot q) = q := by
-  exact MulEquiv.apply_symm_apply _ q
+        K L hTot q) = q := MulEquiv.apply_symm_apply _ q
 
 /-- The constructed lower automorphism generates the relevant cyclic quotient. -/
 theorem abstractReciprocityTotallyRamifiedLowerGenerator_generates
-    (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient)
     (hq : ∀ x, x ∈ Subgroup.zpowers q) :
     ∀ x, x ∈ Subgroup.zpowers
       (D.abstractReciprocityTotallyRamifiedLowerGenerator
         K L hTot q) := by
   let e := D.abstractReciprocityTotallyRamifiedRestrictionEquiv
-    K L hTot q
-  let g := D.abstractReciprocityTotallyRamifiedLowerGenerator
     K L hTot q
   intro x
   obtain ⟨n, hn⟩ := Subgroup.mem_zpowers_iff.mp (hq (e x))

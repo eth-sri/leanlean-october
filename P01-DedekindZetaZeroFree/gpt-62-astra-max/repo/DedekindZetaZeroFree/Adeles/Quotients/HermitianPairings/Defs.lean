@@ -13,15 +13,17 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.KPContActualCutoffTestPairingHolomorphy
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+
+local notation "cuspLevel" => KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U
 
 abbrev Tests := KPCuspCutoffGraph.scalarTests F ζ hζ H.totallyComplex
-  (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U)
-  (H.atlas (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U))
+  cuspLevel
+  (H.atlas cuspLevel)
 
 def testScalar (ψ : Tests F ζ hζ C R P H U) :
     KPContActualCutoffSmoothDescent.Covered F ζ hζ C R P H U → ℂ :=
@@ -30,20 +32,21 @@ def testScalar (ψ : Tests F ζ hζ C R P H U) :
 def testLaplacian (φ : Tests F ζ hζ C R P H U) :
     KPContActualCutoffSmoothDescent.Covered F ζ hζ C R P H U → ℂ :=
   ((KPContSectorScalarLineAlgebra.S F ζ hζ
-    (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U) R P H).symm
+    cuspLevel R P H).symm
     (KPCuspCutoffGraph.localLaplacianSection F ζ hζ H.totallyComplex
-      (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U)
-      (H.atlas (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U))
+      cuspLevel
+      (H.atlas cuspLevel)
       ⟨φ.val, φ.property.1⟩)).val
 
-def coveredPair (w : KPContActualCutoffSmoothDescent.SmoothSections F ζ hζ C R P H U)
-    (ψ : KPContActualCutoffSmoothDescent.Covered F ζ hζ C R P H U → ℂ) :
+variable (w : KPContActualCutoffSmoothDescent.SmoothSections F ζ hζ C R P H U)
+    (ψ : KPContActualCutoffSmoothDescent.Covered F ζ hζ C R P H U → ℂ)
+
+def coveredPair :
     KPContActualCutoffSmoothDescent.Covered F ζ hζ C R P H U → ℂ :=
   fun x => KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U w x *
     star (ψ x)
 
-def quotientPair (w : KPContActualCutoffSmoothDescent.SmoothSections F ζ hζ C R P H U)
-    (ψ : KPContActualCutoffSmoothDescent.Covered F ζ hζ C R P H U → ℂ) :
+def quotientPair :
     KPSmoothLocalQuotientCharts.X F ζ hζ → ℂ :=
   coveredPair F ζ hζ C R P H U w ψ ∘
     KPContSectorQuotientRelationsComparison.piTilde F ζ hζ

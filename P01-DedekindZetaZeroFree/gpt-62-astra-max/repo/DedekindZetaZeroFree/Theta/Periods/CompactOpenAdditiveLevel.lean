@@ -13,9 +13,9 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory IsDedekindDomain
 open scoped NumberField Classical Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-open _root_.DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility renaming finitePart_normal → finitePart_normal
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+open _root_.DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility (finitePart_normal)
 
 theorem thetaFiber_hasSmoothAdditiveLevel_of_root_containment
     {Q : AdmissibleFlatSources R} (T : Realization R Q)
@@ -49,10 +49,6 @@ theorem finiteRoot_mem_finitePart (k : FiniteAdeleRing (𝓞 F) F) :
     (finiteLevelFiniteInclusion F k), ?_, rfl⟩
   apply Subgroup.mem_iInf.mpr
   intro w
-  change KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w)
-    (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inl w)
-      (finiteLevelFiniteInclusion F k)) = 1
-  change KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w) 0 = 1
   exact KPStandardLocalRootLifts.N_zero F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w)
 
 theorem thetaFiber_exists_compact_open_level
@@ -82,8 +78,7 @@ theorem thetaFiber_exists_compact_open_level
           (finiteLevelFiniteInclusion F (a.toAdd + b.toAdd)) = _
         rw [map_add]
         exact KPGlobalTorusFunctionData.N_add F R.A.zeta12 R.A.primitive_zeta12 _ _ }
-  let c := (MulAut.conjNormal (H := KPGlobalTorusFunctionData.finitePart
-    F R.A.zeta12 R.A.primitive_zeta12) g⁻¹).toMonoidHom.comp n
+  let c := (MulAut.conjNormal g⁻¹).toMonoidHom.comp n
   let K₀ : AddSubgroup (FiniteAdeleRing (𝓞 F) F) :=
     { carrier := {k | c (Multiplicative.ofAdd k) ∈ Q.level.toOpenSubgroup}
       zero_mem' := by exact (Q.level.toOpenSubgroup.toSubgroup.comap c).one_mem
@@ -107,7 +102,7 @@ theorem thetaFiber_exists_compact_open_level
   have hKo : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F)) :=
     (Q.level.toOpenSubgroup.isOpen.preimage hc).inter
       (KPAdelicTopology.integralAdeles_isOpen F)
-  have hKc : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)) :=
+  have hKc :=
     (KPAdelicTopology.integralAdeles_isCompact F).of_isClosed_subset
       (K.isClosed_of_isOpen hKo) (fun _ h => h.2)
   refine ⟨K, hKc, hKo, thetaFiber_hasSmoothAdditiveLevel_of_root_containment R T v g K ?_⟩

@@ -19,17 +19,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -48,7 +37,6 @@ open scoped NumberField TensorProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 open AlgebraicNumberTheory.Valuations
 open LocalClassFieldTheory
@@ -69,8 +57,6 @@ noncomputable def finitePlaceLocalTensorDecompositionComponentRingHom
       (HeightOneSpectrum.adicAbv K w) L) :
     (w.adicCompletion K ⊗[K] L) →+* wL.1.Completion := by
   let vK := HeightOneSpectrum.adicAbv K w
-  let hvK : vK.IsNontrivial :=
-    RayClass.adicAbv_isNontrivial w
   letI : ∀ u : AbsoluteValueExtension vK L,
       Algebra vK.Completion u.1.Completion :=
     fun u =>
@@ -80,9 +66,9 @@ noncomputable def finitePlaceLocalTensorDecompositionComponentRingHom
       (fun u : AbsoluteValueExtension vK L =>
         u.1.Completion) wL).comp
       ((completionTensorDecomposition_left
-        (K := K) (L := L) vK hvK).toRingEquiv.toRingHom.comp
+          vK (RayClass.adicAbv_isNontrivial w)).toRingEquiv.toRingHom.comp
         (relativeFinitePlaceLocalTensorAlgEquiv
-          (K := K) (L := L) w).symm.toRingEquiv.toRingHom)
+            w).symm.toRingEquiv.toRingHom)
 
 omit [NumberField L] in
 /-- The ring-homomorphism packaging evaluates to the original
@@ -100,19 +86,6 @@ theorem finitePlaceLocalTensorDecompositionComponentRingHom_apply
   rfl
 
 omit [NumberField L] in
-/-- Every relative-tensor component map sends zero to zero. -/
-@[simp]
-theorem finitePlaceLocalTensorDecompositionComponent_zero
-    (w : HeightOneSpectrum (𝓞 K))
-    (wL : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K w) L) :
-    finitePlaceLocalTensorDecompositionComponent
-        (K := K) (L := L) w wL 0 = 0 := by
-  simpa only [finitePlaceLocalTensorDecompositionComponentRingHom_apply] using
-    (finitePlaceLocalTensorDecompositionComponentRingHom
-      (K := K) (L := L) w wL).map_zero
-
-omit [NumberField L] in
 /-- Relative-tensor component maps preserve addition. -/
 @[simp]
 theorem finitePlaceLocalTensorDecompositionComponent_add
@@ -126,9 +99,9 @@ theorem finitePlaceLocalTensorDecompositionComponent_add
           (K := K) (L := L) w wL x +
         finitePlaceLocalTensorDecompositionComponent
           (K := K) (L := L) w wL y := by
-  simpa only [finitePlaceLocalTensorDecompositionComponentRingHom_apply] using
+  simpa using
     (finitePlaceLocalTensorDecompositionComponentRingHom
-      (K := K) (L := L) w wL).map_add x y
+        w wL).map_add x y
 
 /-- The corresponding component homomorphism on units. -/
 noncomputable def finitePlaceLocalTensorDecompositionUnitsComponent
@@ -150,8 +123,6 @@ noncomputable def finitePlaceLocalTensorDecompositionUnitsEquiv
           (HeightOneSpectrum.adicAbv K w) L,
         wL.1.Completionˣ := by
   let vK := HeightOneSpectrum.adicAbv K w
-  let hvK : vK.IsNontrivial :=
-    RayClass.adicAbv_isNontrivial w
   letI : ∀ u : AbsoluteValueExtension vK L,
       Algebra vK.Completion u.1.Completion :=
     fun u =>
@@ -159,9 +130,9 @@ noncomputable def finitePlaceLocalTensorDecompositionUnitsEquiv
   exact
     (Units.mapEquiv
       (((relativeFinitePlaceLocalTensorAlgEquiv
-            (K := K) (L := L) w).symm.toRingEquiv.trans
+              w).symm.toRingEquiv.trans
           (completionTensorDecomposition_left
-            (K := K) (L := L) vK hvK).toRingEquiv).toMulEquiv)).trans
+              vK (RayClass.adicAbv_isNontrivial w)).toRingEquiv).toMulEquiv)).trans
       MulEquiv.piUnits
 
 omit [NumberField L] in
@@ -210,7 +181,6 @@ theorem conjugateExtensionCompletionRingEquiv_norm_eq
         vK wL σ).1.Completion) :
     ‖conjugateExtensionCompletionRingEquiv vK wL σ x‖ =
       ‖x‖ := by
-  change ‖conjugateCompletionRingEquiv wL.1 σ x‖ = ‖x‖
   let f := (conjugateWithAbsRingEquiv wL.1 σ).toRingHom
   let h := conjugateWithAbsRingEquiv_isometry wL.1 σ
   change
@@ -270,8 +240,6 @@ theorem finitePlaceLocalTensorDecompositionComponent_scalarTensorConjugation
           (absoluteValueExtensionConjugate
             (HeightOneSpectrum.adicAbv K w) wL σ) x) := by
   let vK := HeightOneSpectrum.adicAbv K w
-  let hvK : vK.IsNontrivial :=
-    RayClass.adicAbv_isNontrivial w
   let : ∀ u : AbsoluteValueExtension vK L,
       Algebra vK.Completion u.1.Completion :=
     fun u =>
@@ -288,14 +256,14 @@ theorem finitePlaceLocalTensorDecompositionComponent_scalarTensorConjugation
       change
         algebraMap vK.Completion wL.1.Completion
               ((relativeFinitePlaceCompletionAlgEquiv
-                (K := K) w).symm a) *
+                 w).symm a) *
             AbsoluteValue.toCompletion wL.1 (σ b) =
           conjugateExtensionCompletionRingEquiv vK wL σ
                 (algebraMap vK.Completion
                   (absoluteValueExtensionConjugate
                     vK wL σ).1.Completion
                   ((relativeFinitePlaceCompletionAlgEquiv
-                    (K := K) w).symm a)) *
+                     w).symm a)) *
             conjugateExtensionCompletionRingEquiv vK wL σ
               (AbsoluteValue.toCompletion
                 (absoluteValueExtensionConjugate
@@ -348,24 +316,18 @@ theorem relativeLocalTensorDecompositionIntegralUnitAt_smul
     (K := K) (L := L)
     (A := w.adicCompletion K)
   constructor
-  · change
-      RelativeLocalTensorDecompositionIntegralAt
-        (K := K) (L := L) w
-        (↑(σ • x) :
-          w.adicCompletion K ⊗[K] L)
-    rw [scalarTensorUnitsAction_coe]
-    exact
+  · exact
       relativeLocalTensorDecompositionIntegralAt_scalarTensorConjugation
-        (K := K) (L := L) w σ hx.1
+          w σ hx.1
   · change
       RelativeLocalTensorDecompositionIntegralAt
-        (K := K) (L := L) w
+          w
         (↑((σ • x)⁻¹) :
           w.adicCompletion K ⊗[K] L)
     rw [← smul_inv', scalarTensorUnitsAction_coe]
     exact
       relativeLocalTensorDecompositionIntegralAt_scalarTensorConjugation
-        (K := K) (L := L) w σ hx.2
+          w σ hx.2
 
 omit [NumberField L] in
 /-- Integrality of a tensor unit is exactly membership of every
@@ -389,7 +351,7 @@ theorem relativeLocalTensorDecompositionIntegralUnitAt_iff
     exact ⟨hx wL, by
       change
         finitePlaceLocalTensorDecompositionComponent
-            (K := K) (L := L) w wL
+              w wL
             (↑(x⁻¹) :
               w.adicCompletion K ⊗[K] L) ∈
           absoluteValueCompletionIntegers wL.1
@@ -452,9 +414,7 @@ noncomputable def
   toFun x wL :=
     ⟨x.1 wL, x.2 wL (Set.mem_univ wL)⟩
   invFun x :=
-    ⟨fun wL => x wL, by
-      intro wL hwL
-      exact (x wL).2⟩
+    ⟨fun wL => x wL, fun wL hwL => (x wL).2⟩
   left_inv x := by
     apply Subtype.ext
     rfl
@@ -501,10 +461,7 @@ theorem mem_relativeLocalTensorDecompositionIntegralUnitSubgroup_iff
         (K := K) (L := L) w ↔
       RelativeLocalTensorDecompositionIntegralUnitAt
         (K := K) (L := L) w x := by
-  rw [relativeLocalTensorDecompositionIntegralUnitAt_iff]
-  simp only [relativeLocalTensorDecompositionIntegralUnitSubgroup,
-    Subgroup.mem_comap, MonoidHom.pi_apply, Subgroup.mem_pi,
-    Set.mem_univ, forall_const]
+  simp [relativeLocalTensorDecompositionIntegralUnitAt_iff, relativeLocalTensorDecompositionIntegralUnitSubgroup, Subgroup.mem_comap, MonoidHom.pi_apply, Subgroup.mem_pi, Set.mem_univ, forall_const]
 
 /-- The restricted Galois action on the integral tensor-unit
 subgroup. -/
@@ -598,7 +555,7 @@ noncomputable def
       relativeLocalTensorDecompositionIntegralUnitAt_iff] at hx
     rw [Subgroup.mem_pi]
     intro wL hwL
-    simpa only [finitePlaceLocalTensorDecompositionUnitsEquiv_apply] using
+    simpa using
       (hx wL)⟩
   invFun y := ⟨(finitePlaceLocalTensorDecompositionUnitsEquiv
       (K := K) (L := L) w).symm y, by
@@ -607,18 +564,18 @@ noncomputable def
     intro wL
     have hy :
         finitePlaceLocalTensorDecompositionUnitsEquiv
-            (K := K) (L := L) w
+              w
             ((finitePlaceLocalTensorDecompositionUnitsEquiv
-              (K := K) (L := L) w).symm y) wL ∈
+                w).symm y) wL ∈
           (absoluteValueCompletionIntegers wL.1
             (absoluteValueExtension_isNonarchimedean
               (HeightOneSpectrum.adicAbv K w)
               (HeightOneSpectrum.isNonarchimedean_adicAbv K w)
               wL)).units := by
       rw [(finitePlaceLocalTensorDecompositionUnitsEquiv
-        (K := K) (L := L) w).apply_symm_apply]
+          w).apply_symm_apply]
       exact y.property wL (Set.mem_univ wL)
-    simpa only [finitePlaceLocalTensorDecompositionUnitsEquiv_apply] using hy⟩
+    simpa using hy⟩
   left_inv x := by
     apply Subtype.ext
     exact

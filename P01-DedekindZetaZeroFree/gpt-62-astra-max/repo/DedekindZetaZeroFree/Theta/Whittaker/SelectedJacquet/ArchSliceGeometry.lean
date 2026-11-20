@@ -12,7 +12,7 @@ set_option maxHeartbeats 1200000
 
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal
 open KPLiteralChamber
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_insertion → sectionTuple_insertion
+open _root_.DedekindZetaZeroFree.KPLiteralChamber (sectionTuple_insertion)
 
  def diagonalUnit (x : ℂ) : ℂˣ := if h : x = 0 then 1 else Units.mk0 x h
 
@@ -28,20 +28,18 @@ private theorem mapped_diagonalUnit
           intro hx
           apply h
           simpa using congrArg (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-            (KPHilbert.infinite_isComplex F ζ hζ w)) hx)) := by
-  by_cases hx : x = 0
-  · simp [diagonalUnit, hx]
-  · simp only [diagonalUnit, hx, ↓reduceDIte]
-    apply Units.ext
-    rfl
+            (KPHilbert.infinite_isComplex F ζ hζ w)) hx)) := by apply @DedekindZetaZeroFree.KPLiteralChamber.TranslatedBigCellCoordinates.mapped_diagonalUnit <;> assumption
 
  def lowerCoordinates
     (F : Type) [Field F] [NumberField F] (w : InfinitePlace F) (u : ℂ) :
     KPGlobalTorusBorelTwistCompatibility.GroupArch F :=
   fun v => ![if v = w then u else 0, 1, 0]
 
- theorem lowerCoordinates_smooth
-    (F : Type) [Field F] [NumberField F] (w : InfinitePlace F) :
+ section
+
+variable (F : Type) [Field F] [NumberField F]
+
+theorem lowerCoordinates_smooth (w : InfinitePlace F) :
     ContDiff ℝ (⊤ : ℕ∞) (lowerCoordinates F w) := by
   apply contDiff_pi.mpr
   intro v
@@ -49,8 +47,7 @@ private theorem mapped_diagonalUnit
   intro i
   fin_cases i <;> dsimp [lowerCoordinates] <;> (try split_ifs) <;> fun_prop
 
- theorem lowerCoordinates_insertion
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+ theorem lowerCoordinates_insertion (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (w : InfinitePlace F) (u : ℂ) :
     KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ (lowerCoordinates F w u) =
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
@@ -76,14 +73,15 @@ private theorem mapped_diagonalUnit
     intro i j
     fin_cases i <;> fin_cases j <;> simp [lowerCoordinates, hv]
 
- theorem update_left_mul
-    (F : Type) [Field F] [NumberField F] (w : InfinitePlace F)
+ theorem update_left_mul (w : InfinitePlace F)
     (a : KPSmoothActualFlowData.GInfinity F)
     (g h : Matrix.ProjGenLinGroup (Fin 2) ℂ) :
     Function.update (fun _ => 1) w g * Function.update a w h =
       Function.update a w (g * h) := by
   funext v
   by_cases hv : v = w <;> simp [hv]
+
+end
 
  theorem weyl_upper (u : ℂ) :
     KPCplxCharacterHaar.weyl * KPCplxCharacterHaar.upperUnipotent u =
@@ -98,8 +96,11 @@ private theorem mapped_diagonalUnit
     (w : InfinitePlace F) (z : ℂˣ) : KPGlobalTorusFunctionData.TorusArch F :=
   Function.update (fun _ => 1) w z
 
- theorem diagonal_insertion
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+ section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+
+theorem diagonal_insertion
     (z : KPGlobalTorusFunctionData.TorusArch F) :
     (KPGlobalTorusFunctionData.torusArchChart F ζ hζ z).val =
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
@@ -121,20 +122,18 @@ private theorem mapped_diagonalUnit
     intro i j
     fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map]
 
- def singleAdele (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (w : InfinitePlace F) (u : ℂ) :
+ def singleAdele (w : InfinitePlace F) (u : ℂ) :
     KPGlobalTorusFunctionData.Adeles F :=
   (Pi.single w ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
     (KPHilbert.infinite_isComplex F ζ hζ w)).symm u), 0)
 
  theorem unipotent_insertion
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (w : InfinitePlace F) (u : ℂ) :
     KPGlobalTorusFunctionData.N F ζ hζ (singleAdele F ζ hζ w u) =
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
         (Function.update (fun _ => 1) w
           (Matrix.ProjGenLinGroup.mk (KPCplxCharacterHaar.upperUnipotent u))) := by
-  let r : InfinitePlace F → KPCplxCharacterHaar.ComplexGL2 :=
+  let r :=
     fun v => KPCplxCharacterHaar.upperUnipotent (if v = w then u else 0)
   have he : (fun v => Matrix.ProjGenLinGroup.mk (r v)) =
       Function.update (fun _ => 1) w (Matrix.ProjGenLinGroup.mk (KPCplxCharacterHaar.upperUnipotent u)) := by
@@ -154,7 +153,6 @@ private theorem mapped_diagonalUnit
   intro v
   cases v with
   | inr q =>
-    change KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) 0 = 1
     exact KPStandardLocalRootLifts.N_zero F ζ hζ (Sum.inr q)
   | inl v =>
     change KPStandardLocalRootLifts.N F ζ hζ (Sum.inl v) _ = _
@@ -175,6 +173,8 @@ private theorem mapped_diagonalUnit
       change Pi.single w _ v = 0
       simp [Pi.single_apply, hv]
 
+end
+
  theorem upper_projective (a d : ℂˣ) (b : ℂ) :
     Matrix.ProjGenLinGroup.mk (KPCplxPrincipalSeriesCharts.upperTriangular a d b) =
       Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d ℂ (a / d) 1 *
@@ -188,8 +188,9 @@ private theorem mapped_diagonalUnit
       Matrix.mul_apply, Fin.sum_univ_two, div_eq_mul_inv]
   field_simp
 
- theorem compact_insertion
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+
+theorem compact_insertion
     (w : InfinitePlace F) (h : KPCplxCharacterHaar.ComplexSU2) :
     KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
       (Function.update (fun _ => 1) w
@@ -208,14 +209,12 @@ private theorem mapped_diagonalUnit
     change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
       (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ (Sum.inl v) 1) = 1
     simp)]
-  have hc : ((Finset.univ : Finset (InfinitePlace F)).toList.count w) = 1 := by
-    exact (List.nodup_iff_count_le_one.mp (Finset.nodup_toList _) w).antisymm
+  have hc : (Finset.univ.toList.count w) = 1 := (List.nodup_iff_count_le_one.mp (Finset.nodup_toList _) w).antisymm
       (Nat.succ_le_of_lt (List.count_pos_iff.mpr (by simp)))
   simp only [hc, pow_one, r, Function.update_self]
   rfl
 
  theorem insertion_commutes_finite
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) c.val := by

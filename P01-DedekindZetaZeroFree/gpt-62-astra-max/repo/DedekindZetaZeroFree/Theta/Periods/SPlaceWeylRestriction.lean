@@ -11,10 +11,10 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open scoped Classical NumberField
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_rationalUnit → eval_rationalUnit
+open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting (eval_rationalUnit)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 abbrev sDiagonalTuple (y : R.A.G) :=
   KPRationalAdelicSplitting.ATuple F R.A.zeta12 R.A.primitive_zeta12 (localIdele R y)
@@ -38,19 +38,11 @@ theorem sRestriction_rational (x : Fˣ) :
   cases w with
   | inl w =>
     simp only [sRestriction, restrictTuple_eval, Set.mem_compl_iff, exteriorPlaces_arch, if_true]
-    change KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w) _ =
-      KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w) _
-    have hr := eval_rationalUnit F (Sum.inl w) x
-    have hs := DigitMasks.localIdele_arch R (R.A.diagonal x) w
-    exact congrArg (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w)) (hr.trans hs.symm)
+    exact congrArg (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w)) ((eval_rationalUnit F (Sum.inl w) x).trans (DigitMasks.localIdele_arch R (R.A.diagonal x) w).symm)
   | inr p =>
     by_cases hp : p ∈ R.A.Sf
     · simp only [sRestriction, restrictTuple_eval, Set.mem_compl_iff, exteriorPlaces_finite, not_not, hp, if_true]
-      change KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) _ =
-        KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) _
-      have hr := eval_rationalUnit F (Sum.inr p) x
-      have hs := DigitMasks.localIdele_finite R (R.A.diagonal x) p hp
-      exact congrArg (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p)) (hr.trans hs.symm)
+      exact congrArg (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p)) ((eval_rationalUnit F (Sum.inr p) x).trans (DigitMasks.localIdele_finite R (R.A.diagonal x) p hp).symm)
     · simp only [sRestriction, restrictTuple_eval, Set.mem_compl_iff, exteriorPlaces_finite, not_not, hp, if_false]
       exact (sDiagonal_exterior R (R.A.diagonal x) p hp).symm
 
@@ -89,7 +81,6 @@ theorem sReverseTuple_eq (x : Fˣ) (y : R.A.G) (m : ThetaReflectionData.Row R.A)
 theorem tuples_commute_of_disjoint
     (a b : KPAdelicCoverRestrictedProduct.RestrictedCover F R.A.zeta12 R.A.primitive_zeta12)
     (h : ∀ w, a w = 1 ∨ b w = 1) : Commute a b := by
-  change a * b = b * a
   apply RestrictedProduct.ext
   intro w
   rw [RestrictedProduct.mul_apply, RestrictedProduct.mul_apply]
@@ -115,14 +106,13 @@ theorem sReverseTuple_period {Q : AdmissibleFlatSources R} (T : Realization R Q)
   rw [sReverseTuple_eq, map_mul, map_mul]
   have hW : KPRationalAdelicSplitting.WTuple F R.A.zeta12 R.A.primitive_zeta12 =
       sWeylTuple R * exteriorWeylTuple R := by simp [exteriorWeylTuple]
-  have hc := (exteriorWeyl_commute_diagonal R y).map (restrictedLift R)
   have he : diagonal R (R.A.diagonal x) * KPRationalAdelicSplitting.pglW F R.A.zeta12 R.A.primitive_zeta12 * diagonal R y =
       (restrictedLift R (sDiagonalTuple R (R.A.diagonal x)) * restrictedLift R (sWeylTuple R) *
         restrictedLift R (sDiagonalTuple R y)) * restrictedLift R (exteriorWeylTuple R) := by
     change restrictedLift R (sDiagonalTuple R (R.A.diagonal x)) *
       restrictedLift R (KPRationalAdelicSplitting.WTuple F R.A.zeta12 R.A.primitive_zeta12) *
       restrictedLift R (sDiagonalTuple R y) = _
-    rw [hW, map_mul, mul_assoc, mul_assoc, hc.eq, ← mul_assoc, ← mul_assoc]
+    rw [hW, map_mul, mul_assoc, mul_assoc, ((exteriorWeyl_commute_diagonal R y).map (restrictedLift R)).eq, ← mul_assoc, ← mul_assoc]
   rw [he]
   symm
   unfold MomentSources.fourier

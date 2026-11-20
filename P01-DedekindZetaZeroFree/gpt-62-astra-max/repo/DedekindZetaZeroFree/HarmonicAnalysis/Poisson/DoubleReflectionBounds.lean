@@ -43,19 +43,16 @@ theorem bilinear_middle_double_reflection_bounds
   · intro c x hc hx
     have hK := ReflectedCoprimeTruncation.kernel_eq_mellinInv D r W a b hD hr hW hsupp ha hab
       c x hc hx
-    have hvi : Complex.VerticalIntegrable (reflectedSquareSpectrum D r W) c := hK.1
-    have htr : SquareSecondPass.reflectedTransform D r W x =
-        mellinInv c (reflectedSquareSpectrum D r W) x := hK.2
-    have hcont : Continuous (fun t : ℝ => (x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I))) :=
-      (by fun_prop : Continuous (fun t : ℝ => -((c : ℂ) + (t : ℂ) * Complex.I))).const_cpow
-        (Or.inl (Complex.ofReal_ne_zero.mpr hx.ne'))
+    have hvi := hK.1
+    have htr := hK.2
     have hint : Integrable (fun t : ℝ =>
         reflectedSquareSpectrum D r W ((c : ℂ) + (t : ℂ) * Complex.I) *
           (x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I))) := by
       refine Integrable.mono'
         (g := fun t : ℝ => x ^ (-c) *
           ‖reflectedSquareSpectrum D r W ((c : ℂ) + (t : ℂ) * Complex.I)‖)
-        (hvi.norm.const_mul _) (hvi.aestronglyMeasurable.mul hcont.aestronglyMeasurable) ?_
+        (hvi.norm.const_mul _) (hvi.aestronglyMeasurable.mul ((by fun_prop : Continuous (fun t : ℝ => -((c : ℂ) + (t : ℂ) * Complex.I))).const_cpow
+          (Or.inl (Complex.ofReal_ne_zero.mpr hx.ne'))).aestronglyMeasurable) ?_
       filter_upwards with t
       have hre : (-((c : ℂ) + (t : ℂ) * Complex.I)).re = -c := by
         simp [Complex.add_re, Complex.mul_re]

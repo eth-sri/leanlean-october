@@ -10,7 +10,7 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualPrincipalSlices
 set_option backward.isDefEq.respectTransparency false
 variable {α : Type*} [TopologicalSpace α] [CompactSpace α] [MeasurableSpace α] [BorelSpace α]
-variable {κ κ₂ : Type*} [Fintype κ] [Fintype κ₂]
+    {κ κ₂ : Type*} [Fintype κ] [Fintype κ₂]
 theorem compact_pairing_sum (μ : Measure α) [IsFiniteMeasure μ]
     (c : κ → ℂ) (d : κ₂ → ℂ) (f : κ → α → ℂ) (g : κ₂ → α → ℂ)
     (hf : ∀i,Continuous (f i)) (hg : ∀j,Continuous (g j)) :

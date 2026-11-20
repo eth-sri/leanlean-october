@@ -20,16 +20,20 @@ local instance invCompletionMeasurable (v : HeightOneSpectrum (𝓞 F)) :
 local instance invCompletionBorel (v : HeightOneSpectrum (𝓞 F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
- def dualDepth (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) : ℤ :=
+ section
+
+variable (v : HeightOneSpectrum (𝓞 F))
+
+def dualDepth (n : ℤ) : ℤ :=
   -n - (localDifferentExponent F v : ℤ)
 
-private theorem localSchwartz_mul_locallyConstant (v : HeightOneSpectrum (𝓞 F))
+private theorem localSchwartz_mul_locallyConstant
     (c f : v.adicCompletion F → ℂ) (hc : IsLocallyConstant c)
     (hf : f ∈ localSchwartz F v) :
     (fun y => c y * f y) ∈ localSchwartz F v :=
   ⟨hc.mul hf.1, hf.2.mul_left⟩
 
-private theorem localFourierIntegral_modulation (v : HeightOneSpectrum (𝓞 F))
+private theorem localFourierIntegral_modulation
     (b : v.adicCompletion F) (m : ℤ) (x : v.adicCompletion F) :
     localFourierIntegral F v (fun y => (localFiniteCharacter F v (-b * y) : ℂ) *
         localCosetIndicator F v 0 (finiteCompletionBall F v m) y) x =
@@ -46,7 +50,7 @@ private theorem localFourierIntegral_modulation (v : HeightOneSpectrum (𝓞 F))
   rw [← hchar]
   ring
 
-private theorem localFourierIntegral_ballIndicator_mem (v : HeightOneSpectrum (𝓞 F))
+private theorem localFourierIntegral_ballIndicator_mem
     (b : v.adicCompletion F) (n : ℤ) :
     localFourierIntegral F v (localCosetIndicator F v b (finiteCompletionBall F v n)) ∈
       localSchwartz F v := by
@@ -64,7 +68,7 @@ private theorem localFourierIntegral_ballIndicator_mem (v : HeightOneSpectrum (�
     ((IsLocallyConstant.const _).mul (isLocallyConstant_localFiniteCharacter_neg_mul F v b))
     (localCosetIndicator_ball_mem_localSchwartz F v 0 _)
 
-private theorem localFourierIntegral_sq_ballIndicator (v : HeightOneSpectrum (𝓞 F))
+private theorem localFourierIntegral_sq_ballIndicator
     (b : v.adicCompletion F) (n : ℤ) (x : v.adicCompletion F) :
     localFourierIntegral F v
         (localFourierIntegral F v (localCosetIndicator F v b (finiteCompletionBall F v n))) x =
@@ -96,15 +100,17 @@ private theorem localFourierIntegral_sq_ballIndicator (v : HeightOneSpectrum (�
   apply if_congr _ rfl rfl
   constructor
   · intro h
-    have hh : -(b + x) ∈ finiteCompletionBall F v n := (finiteCompletionBall F v n).neg_mem h
+    have hh := (finiteCompletionBall F v n).neg_mem h
     rwa [show -x - b = -(b + x) from by ring]
   · intro h
-    have hh : -(b + x) ∈ finiteCompletionBall F v n := by
-      rwa [show -x - b = -(b + x) from by ring] at h
-    exact (finiteCompletionBall F v n).neg_mem_iff.mp hh
+    refine (finiteCompletionBall F v n).neg_mem_iff.mp ?_
+    rwa [show -x - b = -(b + x) from by ring] at h
+
+end
+
+variable (v : HeightOneSpectrum (𝓞 F)) (f : v.adicCompletion F → ℂ)
 
 theorem localFourierIntegral_fourierIntegral
-    (v : HeightOneSpectrum (𝓞 F)) (f : v.adicCompletion F → ℂ)
     (hf : f ∈ localSchwartz F v) (x : v.adicCompletion F) :
     localFourierIntegral F v (localFourierIntegral F v f) x = f (-x) := by
   obtain ⟨r, n, T, hrn, hsupp, hTsub, hdisj, hcover, hinv, hexp⟩ :=
@@ -112,7 +118,7 @@ theorem localFourierIntegral_fourierIntegral
   have hfsum : f = ∑ t ∈ T, f t • localCosetIndicator F v t (finiteCompletionBall F v n) := by
     funext y
     rw [hexp y]
-    simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
+    simp
   have hFTf : localFourierIntegral F v f =
       ∑ t ∈ T, f t •
         localFourierIntegral F v (localCosetIndicator F v t (finiteCompletionBall F v n)) := by
@@ -135,17 +141,14 @@ theorem localFourierIntegral_fourierIntegral
   intro t ht
   rw [localFourierIntegral_sq_ballIndicator F v t n x]
 
-def localInverseFourierIntegral (v : HeightOneSpectrum (𝓞 F))
-    (f : v.adicCompletion F → ℂ) : v.adicCompletion F → ℂ :=
+def localInverseFourierIntegral : v.adicCompletion F → ℂ :=
   fun x => localFourierIntegral F v f (-x)
 
 @[simp] theorem localInverseFourierIntegral_apply
-    (v : HeightOneSpectrum (𝓞 F)) (f : v.adicCompletion F → ℂ)
     (x : v.adicCompletion F) :
     localInverseFourierIntegral F v f x = localFourierIntegral F v f (-x) := rfl
 
 theorem localInverseFourierIntegral_fourierIntegral
-    (v : HeightOneSpectrum (𝓞 F)) (f : v.adicCompletion F → ℂ)
     (hf : f ∈ localSchwartz F v) :
     localInverseFourierIntegral F v (localFourierIntegral F v f) = f := by
   funext x

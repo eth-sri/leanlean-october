@@ -51,15 +51,18 @@ abbrev Induced {E : Type*} [AddCommGroup E] [Module ℂ E]
   letI := finiteCoverTopology F ζ hζ w m
   SmoothInd (Borel F ζ hζ w) τ (dB F ζ hζ w)
 
-abbrev inflatedRepresentation {E : Type*} [AddCommGroup E] [Module ℂ E]
-    (q : Borel F ζ hζ w →* Torus F ζ hζ w)
-    (τ : Representation ℂ (Torus F ζ hζ w) E) :=
+section
+
+variable {E : Type*} [AddCommGroup E] [Module ℂ E] (q : Borel F ζ hζ w →* Torus F ζ hζ w)
+    (τ : Representation ℂ (Torus F ζ hζ w) E)
+
+abbrev inflatedRepresentation :=
   KPRankOneInduction.inflatedTorusRepresentation F w (projection F ζ hζ w) q τ
 
-abbrev PrincipalSeries {E : Type*} [AddCommGroup E] [Module ℂ E]
-    (q : Borel F ζ hζ w →* Torus F ζ hζ w)
-    (τ : Representation ℂ (Torus F ζ hζ w) E) :=
+abbrev PrincipalSeries :=
   Induced F ζ hζ w m (inflatedRepresentation F ζ hζ w q τ)
+
+end
 
 def upperRoot : Multiplicative (KPRankOneInduction.LocalField F w) →*
     FiniteCover F ζ hζ w where
@@ -81,14 +84,18 @@ def lowerRoot : Multiplicative (KPRankOneInduction.LocalField F w) →*
     simpa only [add_zero, mul_eq_left] using h.symm
   map_mul' t u := KPPGLLocalCover.LowerN_add F ζ hζ (Sum.inr w) _ _
 
-abbrev OrdinaryCoinvariants {V : Type*} [AddCommGroup V] [Module ℂ V]
-    (ρ : Representation ℂ (FiniteCover F ζ hζ w) V) :=
+section
+
+variable {V : Type*} [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ (FiniteCover F ζ hζ w) V)
+
+abbrev OrdinaryCoinvariants :=
   RootCoinvariants ρ (upperRoot F ζ hζ w) 1
 
-abbrev TwistedCoinvariants {V : Type*} [AddCommGroup V] [Module ℂ V]
-    (ρ : Representation ℂ (FiniteCover F ζ hζ w) V)
+abbrev TwistedCoinvariants
     (ψ : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ) :=
   RootCoinvariants ρ (upperRoot F ζ hζ w) ψ
+
+end
 
 def continuousUpperRoot (hm : KPLocalChartTopology.MatrixChartDepth F w m) :
     letI := finiteCoverTopology F ζ hζ w m
@@ -118,21 +125,27 @@ variable (F : Type) [Field F] [NumberField F]
 local instance : (KPPGLLocalCover.scalarSubgroup F (Sum.inr w)).Normal :=
   KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
 
-def genericGenuine {V : Type*} [AddCommGroup V] [Module ℂ V]
+section
+
+variable {V : Type*} [AddCommGroup V] [Module ℂ V]
+
+def genericGenuine
     (χ : rootsOfUnity 3 F →* ℂˣ)
     (ρ : Representation ℂ (FiniteCover F ζ hζ w) V) : Prop :=
   ∀ z v, ρ (KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr w) z) v =
     (χ z : ℂ) • v
 
-def genuine {V : Type*} [AddCommGroup V] [Module ℂ V]
+def genuine
     (ρ : Representation ℂ (FiniteCover F ζ hζ w) V) : Prop :=
   genericGenuine F ζ hζ w
     ((KPLocalCover.coefficientEmbedding F ζ hζ).comp (KPLocalCover.threeToSix F)) ρ
 
-def smoothGenuine {V : Type*} [AddCommGroup V] [Module ℂ V]
+def smoothGenuine
     (ρ : Representation ℂ (FiniteCover F ζ hζ w) V) : Prop :=
   letI := finiteCoverTopology F ζ hζ w m
   SmoothRepresentation ρ ∧ genuine F ζ hζ w ρ
+
+end
 
 def scalarRepresentation {H : Type*} [Group H] (χ : H →* ℂˣ) :
     Representation ℂ H ℂ where

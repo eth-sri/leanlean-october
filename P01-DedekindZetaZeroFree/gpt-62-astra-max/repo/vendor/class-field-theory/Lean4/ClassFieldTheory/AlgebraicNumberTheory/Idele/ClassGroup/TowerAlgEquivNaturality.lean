@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -52,83 +49,6 @@ variable
     [Field M] [NumberField M]
     [Field N] [NumberField N]
 
-/-- Relative adelic transport over `ℚ` is functorial in the transported
-top field. -/
-theorem relativeAdeleCongr_trans
-    (e : K ≃ₐ[ℚ] M)
-    (f : M ≃ₐ[ℚ] N)
-    (z : RelativeAdeleRing ℚ K) :
-    relativeAdeleCongr (K := ℚ) f
-        (relativeAdeleCongr (K := ℚ) e z) =
-      relativeAdeleCongr (K := ℚ) (e.trans f) z := by
-  induction z using TensorProduct.inductionOn with
-  | add x y hx hy =>
-      simpa only [map_add] using congrArg₂ (· + ·) hx hy
-  | tmul a x =>
-      rw [relativeAdeleCongr_tmul,
-        relativeAdeleCongr_tmul,
-        relativeAdeleCongr_tmul]
-      rfl
-
-/-- Canonical transport of ordinary adele rings is functorial. -/
-theorem adeleCongr_trans
-    (e : K ≃ₐ[ℚ] M)
-    (f : M ≃ₐ[ℚ] N)
-    (a : NumberField.AdeleRing (𝓞 K) K) :
-    adeleCongr f (adeleCongr e a) =
-      adeleCongr (e.trans f) a := by
-  change
-    relativeAdeleBaseChangeRingEquiv
-        (K := ℚ) (L := N)
-        (relativeAdeleCongr (K := ℚ) f
-          ((relativeAdeleBaseChangeRingEquiv
-            (K := ℚ) (L := M)).symm
-            (relativeAdeleBaseChangeRingEquiv
-              (K := ℚ) (L := M)
-              (relativeAdeleCongr (K := ℚ) e
-                ((relativeAdeleBaseChangeRingEquiv
-                  (K := ℚ) (L := K)).symm a))))) =
-      relativeAdeleBaseChangeRingEquiv
-        (K := ℚ) (L := N)
-        (relativeAdeleCongr (K := ℚ) (e.trans f)
-          ((relativeAdeleBaseChangeRingEquiv
-            (K := ℚ) (L := K)).symm a))
-  rw [RingEquiv.symm_apply_apply,
-    relativeAdeleCongr_trans]
-
-/-- Canonical transport of ordinary ideles is functorial. -/
-theorem ideleCongr_trans
-    (e : K ≃ₐ[ℚ] M)
-    (f : M ≃ₐ[ℚ] N)
-    (a : IdeleGroup K) :
-    ideleCongr f (ideleCongr e a) =
-      ideleCongr (e.trans f) a := by
-  apply
-    (IdeleGroup.equivAdeleRingUnits
-      (K := N)).injective
-  simp only [ideleCongr, MulEquiv.trans_apply,
-    MulEquiv.apply_symm_apply]
-  apply Units.ext
-  exact adeleCongr_trans e f
-    (((IdeleGroup.equivAdeleRingUnits
-      (K := K) a :
-        (NumberField.AdeleRing (𝓞 K) K)ˣ) :
-      NumberField.AdeleRing (𝓞 K) K))
-
-/-- Canonical transport of ordinary idele classes is functorial. -/
-theorem ideleClassCongr_trans
-    (e : K ≃ₐ[ℚ] M)
-    (f : M ≃ₐ[ℚ] N)
-    (c : IdeleClassGroup K) :
-    ideleClassCongr f (ideleClassCongr e c) =
-      ideleClassCongr (e.trans f) c := by
-  refine QuotientGroup.induction_on c ?_
-  intro a
-  exact congrArg
-    (QuotientGroup.mk'
-      (IdeleGroup.principalSubgroup N))
-    (ideleCongr_trans e f a)
-
 /-- Transport of ordinary idele classes along the identity
 number-field equivalence is the identity. -/
 @[simp]
@@ -141,7 +61,7 @@ theorem ideleClassCongr_refl
   intro a
   change
     ideleClassCongr
-        (AlgEquiv.refl : K ≃ₐ[ℚ] K)
+        AlgEquiv.refl
         (QuotientGroup.mk'
           (IdeleGroup.principalSubgroup K) a) =
       QuotientGroup.mk'
@@ -150,17 +70,17 @@ theorem ideleClassCongr_refl
   congr 1
   apply
     (IdeleGroup.equivAdeleRingUnits
-      (K := K)).injective
+      ).injective
   simp only [ideleCongr, MulEquiv.trans_apply,
     MulEquiv.apply_symm_apply]
   apply Units.ext
-  let u : NumberField.AdeleRing (𝓞 K) K :=
-    ((IdeleGroup.equivAdeleRingUnits (K := K) a :
+  let u :=
+    ((IdeleGroup.equivAdeleRingUnits a :
       (NumberField.AdeleRing (𝓞 K) K)ˣ) :
       NumberField.AdeleRing (𝓞 K) K)
   change
     adeleCongr
-        (AlgEquiv.refl : K ≃ₐ[ℚ] K) u =
+        AlgEquiv.refl u =
       u
   let z : RelativeAdeleRing ℚ K :=
     (relativeAdeleBaseChangeRingEquiv
@@ -171,32 +91,31 @@ theorem ideleClassCongr_refl
     (relativeAdeleBaseChangeRingEquiv
       (K := ℚ) (L := K)).apply_symm_apply u
   have hcongr :
-      relativeAdeleCongr (K := ℚ)
-          (AlgEquiv.refl : K ≃ₐ[ℚ] K) z = z := by
+      relativeAdeleCongr
+          AlgEquiv.refl z = z := by
     induction z using TensorProduct.inductionOn with
     | add x y hx hy =>
-        simpa only [map_add] using congrArg₂ (· + ·) hx hy
+        simpa using congrArg₂ (· + ·) hx hy
     | tmul b x =>
         rw [relativeAdeleCongr_tmul]
         rfl
   calc
-    adeleCongr
-          (AlgEquiv.refl : K ≃ₐ[ℚ] K) u =
+    _ =
         adeleCongr
-          (AlgEquiv.refl : K ≃ₐ[ℚ] K)
+          AlgEquiv.refl
           (relativeAdeleBaseChangeRingEquiv
-            (K := ℚ) (L := K) z) :=
+              z) :=
       congrArg _ hz.symm
     _ =
         relativeAdeleBaseChangeRingEquiv
-          (K := ℚ) (L := K)
-          (relativeAdeleCongr (K := ℚ)
-            (AlgEquiv.refl : K ≃ₐ[ℚ] K) z) :=
+
+          (relativeAdeleCongr
+            AlgEquiv.refl z) :=
       (relativeAdeleBaseChangeRingEquiv_relativeAdeleCongr
-        (AlgEquiv.refl : K ≃ₐ[ℚ] K) z).symm
+        AlgEquiv.refl z).symm
     _ =
         relativeAdeleBaseChangeRingEquiv
-          (K := ℚ) (L := K) z := by
+            z := by
       rw [hcongr]
     _ = u := hz
 
@@ -220,7 +139,7 @@ theorem relativeAdeleCongrOfAlgEquiv_towerActual
             (towerRelativeAdeleFlatten ℚ K L z))) := by
   induction z using TensorProduct.inductionOn with
   | add z₁ z₂ hz₁ hz₂ =>
-      simpa only [map_add] using congrArg₂ (· + ·) hz₁ hz₂
+      simpa using congrArg₂ (· + ·) hz₁ hz₂
   | tmul b x =>
       induction b using TensorProduct.inductionOn with
       | add b₁ b₂ hb₁ hb₂ =>
@@ -230,9 +149,9 @@ theorem relativeAdeleCongrOfAlgEquiv_towerActual
           have hK :
               adeleCongr eK
                   (relativeAdeleBaseChangeRingEquiv
-                    (K := ℚ) (L := K) (a ⊗ₜ[ℚ] y)) =
+                      (a ⊗ₜ[ℚ] y)) =
                 relativeAdeleBaseChangeRingEquiv
-                  (K := ℚ) (L := K')
+
                   (a ⊗ₜ[ℚ] eK y) := by
             rw [←
               relativeAdeleBaseChangeRingEquiv_relativeAdeleCongr
@@ -241,10 +160,10 @@ theorem relativeAdeleCongrOfAlgEquiv_towerActual
           change
             relativeAdeleCongrOfAlgEquiv eK eL h
                 (relativeAdeleBaseChangeRingEquiv
-                    (K := ℚ) (L := K) (a ⊗ₜ[ℚ] y) ⊗ₜ[K] x) =
+                      (a ⊗ₜ[ℚ] y) ⊗ₜ[K] x) =
               towerActualRelativeAdeleRingEquiv ℚ K' L'
                 (towerRelativeAdeleUnflatten ℚ K' L'
-                  (relativeAdeleCongr (K := ℚ) eL
+                  (relativeAdeleCongr eL
                     (towerRelativeAdeleFlatten ℚ K L
                       ((a ⊗ₜ[ℚ] y) ⊗ₜ[K] x))))
           rw [relativeAdeleCongrOfAlgEquiv_tmul,
@@ -264,9 +183,9 @@ theorem relativeAdeleCongrOfAlgEquiv_towerActual
           rw [hK]
           change
             relativeAdeleBaseChangeRingEquiv
-                  (K := ℚ) (L := K') (a ⊗ₜ[ℚ] eK y) ⊗ₜ[K'] eL x =
+                    (a ⊗ₜ[ℚ] eK y) ⊗ₜ[K'] eL x =
               relativeAdeleBaseChangeRingEquiv
-                  (K := ℚ) (L := K') (a ⊗ₜ[ℚ] (1 : K')) ⊗ₜ[K']
+                    (a ⊗ₜ[ℚ] (1 : K')) ⊗ₜ[K']
                 ((algebraMap K' L') (eK y) * eL x)
           have htmul :
               (a ⊗ₜ[ℚ] eK y : RelativeAdeleRing ℚ K') =
@@ -278,7 +197,7 @@ theorem relativeAdeleCongrOfAlgEquiv_towerActual
             relativeAdeleBaseChangeRingEquiv_fieldInclusion]
           rw [mul_comm
             (relativeAdeleBaseChangeRingEquiv
-              (K := ℚ) (L := K') (a ⊗ₜ[ℚ] (1 : K')))
+                (a ⊗ₜ[ℚ] (1 : K')))
             (algebraMap K'
               (NumberField.AdeleRing (𝓞 K') K') (eK y)),
             ← Algebra.smul_def, TensorProduct.smul_tmul,
@@ -299,70 +218,70 @@ theorem relativeAdeleBaseChangeRingEquiv_congrOfAlgEquiv
       adeleCongr eL
         (relativeAdeleBaseChangeRingEquiv
           (K := K) (L := L) z) := by
-  let t : TowerRelativeAdeleRing ℚ K L :=
+  let t :=
     (towerActualRelativeAdeleRingEquiv ℚ K L).symm z
-  let q : RelativeAdeleRing ℚ L' :=
-    relativeAdeleCongr (K := ℚ) eL
+  let q :=
+    relativeAdeleCongr eL
       (towerRelativeAdeleFlatten ℚ K L t)
   calc
     relativeAdeleBaseChangeRingEquiv
-          (K := K') (L := L')
+
           (relativeAdeleCongrOfAlgEquiv eK eL h z) =
         relativeAdeleBaseChangeRingEquiv
-          (K := K') (L := L')
+
           (relativeAdeleCongrOfAlgEquiv eK eL h
             (towerActualRelativeAdeleRingEquiv ℚ K L t)) := by
       rw [(towerActualRelativeAdeleRingEquiv ℚ K L).apply_symm_apply]
     _ =
         relativeAdeleBaseChangeRingEquiv
-          (K := K') (L := L')
+
           (towerActualRelativeAdeleRingEquiv ℚ K' L'
             (towerRelativeAdeleUnflatten ℚ K' L' q)) := by
       rw [relativeAdeleCongrOfAlgEquiv_towerActual]
     _ =
         relativeAdeleBaseChangeRingEquiv
-          (K := ℚ) (L := L')
+
           (towerRelativeAdeleRingEquiv ℚ K' L'
             (towerRelativeAdeleUnflatten ℚ K' L' q)) :=
       relativeAdeleBaseChangeRingEquiv_tower
         ℚ K' L' (towerRelativeAdeleUnflatten ℚ K' L' q)
     _ =
         relativeAdeleBaseChangeRingEquiv
-          (K := ℚ) (L := L') q := by
+            q := by
       change
         relativeAdeleBaseChangeRingEquiv
-            (K := ℚ) (L := L')
+
             ((towerRelativeAdeleRingEquiv ℚ K' L')
               ((towerRelativeAdeleRingEquiv ℚ K' L').symm q)) =
           relativeAdeleBaseChangeRingEquiv
-            (K := ℚ) (L := L') q
+              q
       rw [RingEquiv.apply_symm_apply]
     _ =
         adeleCongr eL
           (relativeAdeleBaseChangeRingEquiv
-            (K := ℚ) (L := L)
+
             (towerRelativeAdeleFlatten ℚ K L t)) :=
       relativeAdeleBaseChangeRingEquiv_relativeAdeleCongr
         eL (towerRelativeAdeleFlatten ℚ K L t)
     _ =
         adeleCongr eL
           (relativeAdeleBaseChangeRingEquiv
-            (K := K) (L := L)
+
             (towerActualRelativeAdeleRingEquiv ℚ K L t)) := by
       change
         adeleCongr eL
           (relativeAdeleBaseChangeRingEquiv
-            (K := ℚ) (L := L)
+
             ((towerRelativeAdeleRingEquiv ℚ K L) t)) =
           adeleCongr eL
             (relativeAdeleBaseChangeRingEquiv
-              (K := K) (L := L)
+
               (towerActualRelativeAdeleRingEquiv ℚ K L t))
       rw [← relativeAdeleBaseChangeRingEquiv_tower]
     _ =
         adeleCongr eL
           (relativeAdeleBaseChangeRingEquiv
-            (K := K) (L := L) z) := by
+              z) := by
       rw [(towerActualRelativeAdeleRingEquiv ℚ K L).apply_symm_apply]
 
 /-- The relative-to-ordinary idele comparison commutes with compatible
@@ -382,7 +301,7 @@ theorem relativeIdeleBaseChangeMulEquiv_congrOfAlgEquiv
           (K := K) (L := L) a) := by
   apply
     (IdeleGroup.equivAdeleRingUnits
-      (K := L')).injective
+      ).injective
   rw [relativeIdeleBaseChangeMulEquiv_eq_ringUnits]
   simp only [ideleCongr, MulEquiv.trans_apply,
     MulEquiv.apply_symm_apply,
@@ -390,7 +309,7 @@ theorem relativeIdeleBaseChangeMulEquiv_congrOfAlgEquiv
   apply Units.ext
   exact
     relativeAdeleBaseChangeRingEquiv_congrOfAlgEquiv
-      eK eL h (a : RelativeAdeleRing K L)
+      eK eL h a
 
 /-- The relative-to-ordinary idele-class comparison commutes with
 compatible equivalences of both fields in a finite extension. -/
@@ -428,20 +347,18 @@ theorem ideleClassCongr_ideleClassNorm
     (c : IdeleClassGroup L) :
     ideleClassCongr eK (_root_.ideleClassNorm K L c) =
       _root_.ideleClassNorm K' L' (ideleClassCongr eL c) := by
-  let d : RelativeIdeleGroup.ClassGroup K L :=
+  let d :=
     (relativeIdeleClassBaseChangeMulEquiv
       (K := K) (L := L)).symm c
-  have hd :
-      relativeIdeleClassBaseChangeMulEquiv
-          (K := K) (L := L) d = c :=
+  have hd :=
     (relativeIdeleClassBaseChangeMulEquiv
       (K := K) (L := L)).apply_symm_apply c
   calc
-    ideleClassCongr eK (_root_.ideleClassNorm K L c) =
+    _ =
         ideleClassCongr eK
           (_root_.ideleClassNorm K L
             (relativeIdeleClassBaseChangeMulEquiv
-              (K := K) (L := L) d)) := by rw [hd]
+                d)) := by rw [hd]
     _ =
         ideleClassCongr eK
           (RelativeIdeleGroup.classNorm K L d) := by
@@ -454,14 +371,14 @@ theorem ideleClassCongr_ideleClassNorm
     _ =
         _root_.ideleClassNorm K' L'
           (relativeIdeleClassBaseChangeMulEquiv
-            (K := K') (L := L')
+
             (relativeIdeleClassCongrOfAlgEquiv eK eL h d)) := by
       rw [ordinaryIdeleClassNorm_relativeIdeleClassBaseChange]
     _ =
         _root_.ideleClassNorm K' L'
           (ideleClassCongr eL
             (relativeIdeleClassBaseChangeMulEquiv
-              (K := K) (L := L) d)) := by
+                d)) := by
       rw [relativeIdeleClassBaseChangeMulEquiv_congrOfAlgEquiv]
     _ =
         _root_.ideleClassNorm K' L'

@@ -32,34 +32,34 @@ section CompactGroup
 variable {𝕜 G : Type*} [RCLike 𝕜] [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
   [CompactSpace G] [MeasurableSpace G] [BorelSpace G]
 
-theorem convolutionCLM_rightRegularLp (k : C(G, 𝕜)) (f : Lp 𝕜 2 (haarProb G)) (g : G) :
+variable (k : C(G, 𝕜))
+
+theorem convolutionCLM_rightRegularLp (f : Lp 𝕜 2 (haarProb G)) (g : G) :
     convolutionCLM k (rightRegularLp 𝕜 G g f)
       = (convolutionCLM k f).comp (.mulRight g) := by
-  rw [rightRegularLp_apply]
   exact ContinuousMap.ext fun x => convolutionCLM_compMeasurePreserving_mul_right k f g x
 
-theorem rightRegularLp_mem_eigenspace_convolutionOperator (k : C(G, 𝕜)) (μ : 𝕜) (g : G)
+theorem rightRegularLp_mem_eigenspace_convolutionOperator (μ : 𝕜) (g : G)
     {f : Lp 𝕜 2 (haarProb G)}
     (hf : f ∈ Module.End.eigenspace (convolutionOperator (G := G) k).toLinearMap μ) :
     rightRegularLp 𝕜 G g f ∈
       Module.End.eigenspace (convolutionOperator (G := G) k).toLinearMap μ := by
-  rw [rightRegularLp_apply]
   exact compMeasurePreserving_mul_right_mem_eigenspace_convolutionOperator k μ g hf
 
-noncomputable def convolutionEigenspaceRepresentation (k : C(G, 𝕜)) (μ : 𝕜) :
+noncomputable def convolutionEigenspaceRepresentation (μ : 𝕜) :
     ContRepresentation 𝕜 G
       (Module.End.eigenspace (convolutionOperator (G := G) k).toLinearMap μ) :=
   ContRepresentation.subrepresentation (rightRegularLp 𝕜 G) _
     fun g _ hf => rightRegularLp_mem_eigenspace_convolutionOperator k μ g hf
 
 @[simp]
-theorem coe_convolutionEigenspaceRepresentation_apply (k : C(G, 𝕜)) (μ : 𝕜) (g : G)
+theorem coe_convolutionEigenspaceRepresentation_apply (μ : 𝕜) (g : G)
     (f : Module.End.eigenspace (convolutionOperator (G := G) k).toLinearMap μ) :
     ((convolutionEigenspaceRepresentation k μ g f : _) : Lp 𝕜 2 (haarProb G))
       = rightRegularLp 𝕜 G g (f : Lp 𝕜 2 (haarProb G)) :=
   ContRepresentation.coe_subrepresentation_apply g f
 
-theorem continuous_convolutionEigenspaceRepresentation (k : C(G, 𝕜)) {μ : 𝕜} (hμ : μ ≠ 0) :
+theorem continuous_convolutionEigenspaceRepresentation {μ : 𝕜} (hμ : μ ≠ 0) :
     Continuous (convolutionEigenspaceRepresentation k μ) := by
   have := finiteDimensional_eigenspace_convolutionOperator k hμ
   rw [continuous_clm_apply]
@@ -68,14 +68,13 @@ theorem continuous_convolutionEigenspaceRepresentation (k : C(G, 𝕜)) {μ : �
   simpa only [Function.comp_def, coe_convolutionEigenspaceRepresentation_apply] using
     continuous_rightRegularLp_apply (f : Lp 𝕜 2 (haarProb G))
 
-theorem exists_smul_convolutionCLM_eq_star_matrixCoeff (k : C(G, 𝕜)) {μ : 𝕜} (hμ : μ ≠ 0) :
+theorem exists_smul_convolutionCLM_eq_star_matrixCoeff {μ : 𝕜} (hμ : μ ≠ 0) :
     ∃ y : Module.End.eigenspace (convolutionOperator (G := G) k).toLinearMap μ,
       ∀ f (hf : f ∈ Module.End.eigenspace (convolutionOperator (G := G) k).toLinearMap μ),
         μ⁻¹ • convolutionCLM k f
           = star (ContRepresentation.matrixCoeff (convolutionEigenspaceRepresentation k μ)
               (continuous_convolutionEigenspaceRepresentation k hμ) ⟨f, hf⟩ y) := by
   have := finiteDimensional_eigenspace_convolutionOperator k hμ
-  have hπ := continuous_convolutionEigenspaceRepresentation k hμ
   obtain ⟨y, hy⟩ :
       ∃ y : Module.End.eigenspace (convolutionOperator (G := G) k).toLinearMap μ,
         ∀ h : Module.End.eigenspace (convolutionOperator (G := G) k).toLinearMap μ,
@@ -86,18 +85,17 @@ theorem exists_smul_convolutionCLM_eq_star_matrixCoeff (k : C(G, 𝕜)) {μ : �
           (Module.End.eigenspace (convolutionOperator (G := G) k).toLinearMap μ).subtypeL))),
       fun h => ?_⟩
     rw [InnerProductSpace.toDual_symm_apply]
-    simp only [smul_apply, ContinuousLinearMap.comp_apply,
-      Submodule.coe_subtypeL, Submodule.subtype_apply, ContinuousMap.evalCLM_apply, smul_eq_mul]
+    simp
   refine ⟨y, fun f hf => ?_⟩
   ext g
   have hg : ⟪y, convolutionEigenspaceRepresentation k μ g ⟨f, hf⟩⟫_𝕜
       = μ⁻¹ * convolutionCLM k f g := by
     rw [hy, coe_convolutionEigenspaceRepresentation_apply, convolutionCLM_rightRegularLp]
-    simp only [ContinuousMap.comp_apply, ContinuousMap.coe_mulRight, one_mul]
+    simp
   rw [ContinuousMap.star_apply, ContinuousMap.smul_apply, smul_eq_mul,
     ContRepresentation.matrixCoeff_apply, RCLike.star_def, inner_conj_symm, hg]
 
-theorem isRepresentative_smul_convolutionCLM_of_mem_eigenspace (k : C(G, 𝕜)) {μ : 𝕜}
+theorem isRepresentative_smul_convolutionCLM_of_mem_eigenspace {μ : 𝕜}
     {f : Lp 𝕜 2 (haarProb G)}
     (hf : f ∈ Module.End.eigenspace (convolutionOperator (G := G) k).toLinearMap μ) :
     IsRepresentative (μ⁻¹ • convolutionCLM k f) := by
@@ -109,7 +107,7 @@ theorem isRepresentative_smul_convolutionCLM_of_mem_eigenspace (k : C(G, 𝕜)) 
   rw [hy f hf]
   exact (isRepresentative_matrixCoeff _ _ _ _).star
 
-theorem convolutionCLM_mem_representativeSubmodule_of_mem_iSup_eigenspace (k : C(G, 𝕜))
+theorem convolutionCLM_mem_representativeSubmodule_of_mem_iSup_eigenspace
     {f : Lp 𝕜 2 (haarProb G)}
     (hf : f ∈ ⨆ μ : 𝕜, Module.End.eigenspace (convolutionOperator (G := G) k).toLinearMap μ) :
     convolutionCLM k f ∈ representativeSubmodule 𝕜 G := by
@@ -127,15 +125,13 @@ theorem convolutionCLM_mem_representativeSubmodule_of_mem_iSup_eigenspace (k : C
   · rw [map_add]
     exact add_mem hx hy
 
-theorem convolutionCLM_mem_closure_representativeSubmodule (k : C(G, 𝕜))
+theorem convolutionCLM_mem_closure_representativeSubmodule
     (hk : ∀ g : G, k g⁻¹ = (starRingEnd 𝕜) (k g)) (f : Lp 𝕜 2 (haarProb G)) :
     convolutionCLM k f ∈ closure (representativeSubmodule 𝕜 G : Set C(G, 𝕜)) := by
-  set S := ⨆ μ : 𝕜, Module.End.eigenspace (convolutionOperator (G := G) k).toLinearMap μ
-  have htop : S.topologicalClosure = ⊤ :=
-    Submodule.topologicalClosure_eq_top_iff.2
-      (orthogonalComplement_iSup_eigenspaces_convolutionOperator_eq_bot k hk)
-  have hf : f ∈ closure (S : Set (Lp 𝕜 2 (haarProb G))) := by
-    rw [← Submodule.topologicalClosure_coe, htop]
+  set S := ⨆ μ : 𝕜, Module.End.eigenspace (convolutionOperator k).toLinearMap μ
+  have hf : f ∈ closure S := by
+    rw [← Submodule.topologicalClosure_coe, (Submodule.topologicalClosure_eq_top_iff.2
+      (orthogonalComplement_iSup_eigenspaces_convolutionOperator_eq_bot k hk))]
     exact Submodule.mem_top
   refine closure_mono ?_
     (image_closure_subset_closure_image (convolutionCLM (G := G) k).continuous ⟨f, hf, rfl⟩)

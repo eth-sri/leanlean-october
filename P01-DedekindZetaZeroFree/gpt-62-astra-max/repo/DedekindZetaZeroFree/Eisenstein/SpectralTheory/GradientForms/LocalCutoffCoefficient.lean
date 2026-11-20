@@ -12,13 +12,13 @@ attribute [local instance 2000]
   KPContSectorQuotientRelationsComparison.instMeasurableSpaceRawXU
 open KPContActualFixedHaarCoreLocalizers KPContSectorLineL2Isometry
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
-variable (hR : R.adelicHaar = μG)
-variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
+    (hR : R.adelicHaar = μG)
+    (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
 variable (K : Set (X_U F ζ hζ U)) (hK : IsCompact K)
 
 def actualLocalCoefficient (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count)

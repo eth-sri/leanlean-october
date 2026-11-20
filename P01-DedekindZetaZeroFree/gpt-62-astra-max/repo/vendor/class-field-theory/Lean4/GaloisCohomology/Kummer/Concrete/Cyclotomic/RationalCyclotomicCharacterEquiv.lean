@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -50,25 +47,20 @@ theorem rationalCyclotomicCharacterPrimeProduct_toZModPow_of_dvd
   let F := rationalCyclotomicLevel m
   let K := rationalCyclotomicLevel n
   let : IsCyclotomicExtension {p.1 ^ k} ℚ F := by
-    change IsCyclotomicExtension {(m : ℕ)} ℚ
-      (rationalCyclotomicLevel m)
     exact rationalCyclotomicLevel_isCyclotomicExtension m
-  have hFK : F ≤ K :=
-    rationalCyclotomicLevel_mono h
-  let ζ : F :=
+  let ζ :=
     IsCyclotomicExtension.zeta (p.1 ^ k) ℚ F
-  have hζ : IsPrimitiveRoot ζ (p.1 ^ k) :=
+  have hζ :=
     IsCyclotomicExtension.zeta_spec (p.1 ^ k) ℚ F
-  let x : rationalCyclotomicField :=
+  let x :=
     algebraMap F rationalCyclotomicField ζ
-  have hζx : IsPrimitiveRoot x (p.1 ^ k) :=
+  have hζx :=
     hζ.map_of_injective
       (algebraMap F rationalCyclotomicField).injective
-  let y : K :=
-    IntermediateField.inclusion hFK ζ
+  let y :=
+    IntermediateField.inclusion (rationalCyclotomicLevel_mono h) ζ
   have hy : y ^ (n : ℕ) = 1 := by
     apply Subtype.ext
-    change x ^ (n : ℕ) = 1
     exact (hζx.pow_eq_one_iff_dvd _).2 h
   let a :=
     IsCyclotomicExtension.Rat.galEquivZMod
@@ -76,28 +68,18 @@ theorem rationalCyclotomicCharacterPrimeProduct_toZModPow_of_dvd
   let b :=
     IsCyclotomicExtension.Rat.galEquivZMod
       (n : ℕ) K (σ.restrictNormal K)
-  have ha :
-      (σ.restrictNormal F) ζ =
-        ζ ^ a.val.val := by
-    exact
-      IsCyclotomicExtension.Rat.galEquivZMod_apply_of_pow_eq
+  have ha := IsCyclotomicExtension.Rat.galEquivZMod_apply_of_pow_eq
         (p.1 ^ k) F (σ.restrictNormal F) hζ.pow_eq_one
-  have hb :
-      (σ.restrictNormal K) y =
-        y ^ b.val.val := by
-    exact
-      IsCyclotomicExtension.Rat.galEquivZMod_apply_of_pow_eq
+  have hb := IsCyclotomicExtension.Rat.galEquivZMod_apply_of_pow_eq
         (n : ℕ) K (σ.restrictNormal K) hy
   change
     Units.map (PadicInt.toZModPow k).toMonoidHom
         (rationalCyclotomicCharacterPrimeProduct σ p) =
       ZMod.unitsMap h b
   calc
-    Units.map (PadicInt.toZModPow k).toMonoidHom
-        (rationalCyclotomicCharacterPrimeProduct σ p) =
+    _ =
         a := by
-      simpa only [a, F, m] using
-        rationalCyclotomicCharacterPrimeProduct_toZModPow σ p k
+      apply rationalCyclotomicCharacterPrimeProduct_toZModPow
     _ = ZMod.unitsMap h b := by
       suffices x ^ a.val.val = x ^ b.val.val by
         rw [(hζx.isOfFinOrder (NeZero.ne _)).pow_inj_mod,
@@ -123,7 +105,6 @@ theorem rationalCyclotomicCharacterPrimeProduct_toZModPow_of_dvd
               (y ^ b.val.val) := by
           rw [hb]
         _ = x ^ b.val.val := by
-          rw [map_pow]
           congr 1
 
 /-- The product of the `p`-adic cyclotomic characters separates
@@ -134,16 +115,15 @@ theorem rationalCyclotomicCharacterPrimeProduct_injective :
   have hrestrict (n : ℕ+) :
       σ.restrictNormal (rationalCyclotomicLevel n) =
         τ.restrictNormal (rationalCyclotomicLevel n) := by
-    let K := rationalCyclotomicLevel n
     apply
       (IsCyclotomicExtension.Rat.galEquivZMod
-        (n : ℕ) K).injective
+        (n : ℕ) (rationalCyclotomicLevel n)).injective
     apply Units.ext
     let e :=
       ZMod.equivPi (n := (n : ℕ)) n.2.ne'
     apply e.injective
     funext q
-    have hqPrime : q.1.Prime :=
+    have hqPrime :=
       Nat.prime_of_mem_primeFactors q.2
     let p : Nat.Primes := ⟨q.1, hqPrime⟩
     let k := (n : ℕ).factorization q.1
@@ -180,14 +160,10 @@ theorem rationalCyclotomicCharacterPrimeProduct_injective :
   let E : IntermediateField ℚ rationalCyclotomicField :=
     { AlgHom.equalizer σ.toAlgHom τ.toAlgHom with
       inv_mem' := by
-        intro x hx
-        change σ x = τ x at hx
-        change σ x⁻¹ = τ x⁻¹
-        simpa only [map_inv₀] using congrArg Inv.inv hx }
+        simp}
   have hlevel (n : ℕ+) :
       rationalCyclotomicLevel n ≤ E := by
     intro x hx
-    change σ x = τ x
     let y : rationalCyclotomicLevel n := ⟨x, hx⟩
     calc
       σ x =
@@ -222,12 +198,7 @@ theorem rationalCyclotomicCharacter_injective :
     Function.Injective rationalCyclotomicCharacter := by
   intro σ τ hστ
   apply rationalCyclotomicCharacterPrimeProduct_injective
-  have h :=
-    congrArg
-      (fun u : ZHatˣ =>
-        zHatUnitsContinuousMulEquivPrimeProduct u)
-      hστ
-  simpa [rationalCyclotomicCharacter] using h
+  simp_all [rationalCyclotomicCharacter]
 
 /-- The canonical rational cyclotomic character is surjective. -/
 theorem rationalCyclotomicCharacter_surjective :
@@ -262,11 +233,8 @@ theorem rationalCyclotomicCharacter_surjective :
         rationalCyclotomicField)
       inferInstance inferInstance krullTopology_t2
       _ _ ?_ ?_
-    · exact
-        InfiniteGalois.restrictNormalHom_continuous
-          (k := ℚ) (K := rationalCyclotomicField)
-          (rationalCyclotomicLevel n)
-    · exact continuous_const
+    · solve_by_elim [InfiniteGalois.restrictNormalHom_continuous]
+    · fun_prop
   have hfip (s : Finset ℕ+) :
       (⋂ n ∈ s, C n).Nonempty := by
     let N : ℕ+ :=
@@ -431,14 +399,8 @@ theorem
     zHatUnitsContinuousMulEquivPrimeProduct
         (rationalCyclotomicCharacterContinuousMulEquiv σ) p =
       rationalCyclotomicCharacterPrimeProduct σ p := by
-  change
-    zHatUnitsContinuousMulEquivPrimeProduct
-        (rationalCyclotomicCharacter σ) p =
-      rationalCyclotomicCharacterPrimeProduct σ p
-  have h :=
-    zHatUnitsContinuousMulEquivPrimeProduct.apply_symm_apply
-      (rationalCyclotomicCharacterPrimeProduct σ)
-  exact congrFun h p
+  exact congrFun (zHatUnitsContinuousMulEquivPrimeProduct.apply_symm_apply
+    (rationalCyclotomicCharacterPrimeProduct σ)) p
 
 end KummerTheory
 

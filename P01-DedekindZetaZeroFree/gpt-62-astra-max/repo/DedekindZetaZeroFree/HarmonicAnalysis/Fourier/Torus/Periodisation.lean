@@ -10,11 +10,11 @@ open Module
 
 namespace DedekindZetaZeroFree.PoissonArch
 
-def torusPeriodisation
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V]
-    {L : Submodule ℤ V} [DiscreteTopology L] [IsZLattice ℝ L]
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L) (f : 𝓢(V, ℂ)) :
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
+    {L : Submodule ℤ V} [DiscreteTopology L] [IsZLattice ℝ L] {ι : Type*} [Fintype ι] (b : Basis ι ℤ L)
+    (f : 𝓢(V, ℂ))
+
+def torusPeriodisation :
     C(UnitAddTorus ι, ℂ) where
   toFun t := periodisation L f
     ((b.ofZLatticeBasis ℝ L).equivFun.symm
@@ -22,17 +22,13 @@ def torusPeriodisation
   continuous_toFun := by
     classical
     let B := b.ofZLatticeBasis ℝ L
-    have hquot : Topology.IsQuotientMap
-        (fun x : ι → ℝ => (fun i => (x i : UnitAddCircle))) :=
-      (IsOpenQuotientMap.piMap
-        (fun _ : ι => (QuotientAddGroup.isOpenQuotientMap_mk :
-          IsOpenQuotientMap (fun x : ℝ => (x : UnitAddCircle))))).isQuotientMap
-    apply hquot.continuous_iff.mpr
+    apply ((IsOpenQuotientMap.piMap
+      (fun _ : ι => QuotientAddGroup.isOpenQuotientMap_mk)).isQuotientMap).continuous_iff.mpr
     have hperiod (x : ι → ℝ) :
         periodisation L f (B.equivFun.symm
           (fun i => ((AddCircle.equivIco (1 : ℝ) (0 : ℝ)) (x i : UnitAddCircle) : ℝ))) =
         periodisation L f (B.equivFun.symm x) := by
-      let v : L := ∑ i, (-⌊x i⌋) • b i
+      let v := ∑ i, (-⌊x i⌋) • b i
       have heq : B.equivFun.symm
           (fun i => ((AddCircle.equivIco (1 : ℝ) (0 : ℝ)) (x i : UnitAddCircle) : ℝ)) =
           B.equivFun.symm x + (v : V) := by
@@ -47,10 +43,7 @@ def torusPeriodisation
         intro i _
         simp [neg_smul, Int.cast_smul_eq_zsmul]
       rw [heq, periodisation_add_lattice]
-    have hfun : (fun x : ι → ℝ => periodisation L f
-        (B.equivFun.symm
-          (fun i => ((AddCircle.equivIco (1 : ℝ) (0 : ℝ)) (x i : UnitAddCircle) : ℝ)))) =
-        (fun x => periodisation L f (B.equivFun.symm x)) := funext hperiod
+    have hfun := funext hperiod
     change Continuous (fun x : ι → ℝ => periodisation L f
       (B.equivFun.symm
         (fun i => ((AddCircle.equivIco (1 : ℝ) (0 : ℝ)) (x i : UnitAddCircle) : ℝ))))
@@ -59,16 +52,12 @@ def torusPeriodisation
       B.equivFun.toContinuousLinearEquiv.symm.continuous
 
 theorem torusPeriodisation_coe
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V]
-    {L : Submodule ℤ V} [DiscreteTopology L] [IsZLattice ℝ L]
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L) (f : 𝓢(V, ℂ))
     (x : ι → ℝ) :
     torusPeriodisation b f (fun i => (x i : UnitAddCircle)) =
       periodisation L f ((b.ofZLatticeBasis ℝ L).equivFun.symm x) := by
   classical
   let B := b.ofZLatticeBasis ℝ L
-  let v : L := ∑ i, (-⌊x i⌋) • b i
+  let v := ∑ i, (-⌊x i⌋) • b i
   change periodisation L f (B.equivFun.symm
     (fun i => ((AddCircle.equivIco (1 : ℝ) (0 : ℝ)) (x i : UnitAddCircle) : ℝ))) = _
   have heq : B.equivFun.symm

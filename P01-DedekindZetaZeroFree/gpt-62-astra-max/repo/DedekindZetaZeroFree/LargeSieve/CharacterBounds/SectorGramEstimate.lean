@@ -11,15 +11,6 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical
 
-private lemma gram_sum_eq (F : Type) [Field F] [NumberField F]
-    {c : Ideal (𝓞 F)} (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (M : ℝ) (b d : Ideal (𝓞 F)) :
-    (∑ a ∈ (DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F ((5 / 2 : ℝ) * M)).filter (fun I => I ≠ ⊥),
-        ((DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight ((Ideal.absNorm a : ℝ) / M) : ℂ) *
-          (Q.χ b) a * (starRingEnd ℂ) ((Q.χ d) a)))
-      = initialGram F Q M b d := by
-  simp only [initialGram, initialTheta, mul_assoc]
-
 theorem initial_conditional_sector
     (F : Type) [Field F] [NumberField F]
     (ε D H : ℝ) (hε : 0 < ε) (hD : 0 ≤ D) (hH : 0 ≤ H) :
@@ -81,7 +72,7 @@ theorem initial_conditional_sector
         = initialGram F Q M b d := by
     intro b d
     rw [hR, hw]
-    exact gram_sum_eq F Q M b d
+    simp only [initialGram, initialTheta, mul_assoc]
   have hdiag : ∀ b ∈ S,
       ‖∑ a ∈ R, (w a : ℂ) * (Q.χ b) a * (starRingEnd ℂ) ((Q.χ b) a)‖ ≤ D * M := by
     intro b hb

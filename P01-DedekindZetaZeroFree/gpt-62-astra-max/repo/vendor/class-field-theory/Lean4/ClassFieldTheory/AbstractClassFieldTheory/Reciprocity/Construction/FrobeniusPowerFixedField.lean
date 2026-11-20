@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 universe u
@@ -58,10 +56,6 @@ theorem extensionInertia_commutes_of_mem_extensionSubgroup (D : DegreeData G)
   revert hq
   refine Quotient.inductionOn' q ?_
   intro t hdt
-  have htI : t ∈ D.fieldInertiaWithin K.field := by
-    rw [← D.normalizedDegree_ker K]
-    exact hdt
-  change QuotientGroup.mk (k * t) = QuotientGroup.mk (t * k)
   apply QuotientGroup.eq.mpr
   constructor
   · change (k * t)⁻¹ * (t * k) ∈ extensionSubgroup K.field L hLK
@@ -70,11 +64,7 @@ theorem extensionInertia_commutes_of_mem_extensionSubgroup (D : DegreeData G)
         ((extensionSubgroup K.field L hLK).inv_mem hk) t⁻¹
     simpa [mul_assoc] using
       (extensionSubgroup K.field L hLK).mul_mem hconj hk
-  · change (k * t)⁻¹ * (t * k) ∈ D.fieldInertiaWithin K.field
-    have hconj : k⁻¹ * t * k ∈ D.fieldInertiaWithin K.field := by
-      simpa using (inferInstance : (D.fieldInertiaWithin K.field).Normal).conj_mem
-        t htI k⁻¹
-    simp [mul_assoc]
+  · simp [mul_assoc]
 
 /-- Let `P/K` be a finite Galois subextension of `\widetilde L/K`
 containing `L`.  The `|G(P/K)|`-th power of every element of
@@ -94,21 +84,13 @@ theorem quotientPower_card_commutes_degreeZero (D : DegreeData G)
       (K.field.toSubgroup ⧸ extensionSubgroup K.field P.field P.below)
     q ^ n * τ = τ * q ^ n := by
   let R := K.field.toSubgroup ⧸ extensionSubgroup K.field P.field P.below
-  let : Finite R := P.finite
+  let := P.finite
   let n := Nat.card R
   let Q := K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK
   let hIP : D.extensionInertiaWithin K.field L hLK ≤
       extensionSubgroup K.field P.field P.below := by
-    intro x hx
-    have hxE : x ∈ extensionSubgroup K.field (D.maximalUnramifiedField L)
-        (D.maximalUnramifiedField_le_of_le hLK) := by
-      rw [D.extensionSubgroup_maximalUnramifiedField K.field L hLK]
-      exact hx
-    apply (mem_extensionSubgroup_iff K.field P.field P.below x).2
-    exact P.above
-      ((mem_extensionSubgroup_iff K.field (D.maximalUnramifiedField L)
-        (D.maximalUnramifiedField_le_of_le hLK) x).1 hxE)
-  let rP : Q →* R :=
+    solve_by_elim [P.above]
+  let rP :=
     QuotientGroup.map (D.extensionInertiaWithin K.field L hLK)
       (extensionSubgroup K.field P.field P.below)
       (MonoidHom.id K.field.toSubgroup) hIP
@@ -129,15 +111,16 @@ theorem quotientPower_card_commutes_degreeZero (D : DegreeData G)
     exact hPL ((mem_extensionSubgroup_iff K.field P.field P.below k).1 hkP)
   have hcomm := D.extensionInertia_commutes_of_mem_extensionSubgroup
     K L hLK k hkL τ hτ
-  simpa [Q, n, hkq] using hcomm
+  simpa [hkq] using hcomm
 
-theorem extensionNormalizedDegree_pow_of_degreeOne (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (φ : D.FrobeniusElements K L hLK)
-    (hφ : D.frobeniusExponent K L hLK φ = 1)
-    (n : ℕ) :
+section
+
+variable (D : DegreeData G) (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+    (hLK : L.toSubgroup ≤ K.field.toSubgroup) [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+    (φ : D.FrobeniusElements K L hLK) (hφ : D.frobeniusExponent K L hLK φ = 1) (n : ℕ)
+
+include hφ in
+theorem extensionNormalizedDegree_pow_of_degreeOne :
     D.extensionNormalizedDegree K L hLK (φ.1 ^ n) =
       (Multiplicative.ofAdd (1 : ZHat)) ^ n := by
   rw [map_pow,
@@ -146,28 +129,18 @@ theorem extensionNormalizedDegree_pow_of_degreeOne (D : DegreeData G)
 
 /-- A positive power of a degree-one Frobenius element, with the exponent
 recorded exactly.  These are the elements `σ = φⁿ` and `σⁿ = φⁿ²`. -/
-def frobeniusPowerOfDegreeOne (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (φ : D.FrobeniusElements K L hLK)
-    (hφ : D.frobeniusExponent K L hLK φ = 1)
-    (n : ℕ) (hn : 0 < n) : D.FrobeniusElements K L hLK :=
+def frobeniusPowerOfDegreeOne (hn : 0 < n) : D.FrobeniusElements K L hLK :=
   ⟨φ.1 ^ n,
     ⟨n, hn, D.extensionNormalizedDegree_pow_of_degreeOne
       K L hLK φ hφ n⟩⟩
 
 /-- The degree-one Frobenius power has the stated ambient coercion. -/
 @[simp]
-theorem frobeniusPowerOfDegreeOne_coe (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (φ : D.FrobeniusElements K L hLK)
-    (hφ : D.frobeniusExponent K L hLK φ = 1)
-    (n : ℕ) (hn : 0 < n) :
+theorem frobeniusPowerOfDegreeOne_coe (hn : 0 < n) :
     (D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn).1 = φ.1 ^ n :=
   rfl
+
+end
 
 /-- If `P/K` is finite Galois and contained in `\widetilde L`, then `P`
 is contained in the field fixed by `φⁿ`, where
@@ -191,19 +164,10 @@ theorem frobeniusPowerFixedField_le_finiteField (D : DegreeData G)
   dsimp only
   let R := K.field.toSubgroup ⧸ extensionSubgroup K.field P.field P.below
   let n := P.quotientCard
-  have hn : 0 < n := P.quotientCard_pos
   let Q := K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK
   let hIP : D.extensionInertiaWithin K.field L hLK ≤
       extensionSubgroup K.field P.field P.below := by
-    intro x hx
-    have hxE : x ∈ extensionSubgroup K.field (D.maximalUnramifiedField L)
-        (D.maximalUnramifiedField_le_of_le hLK) := by
-      rw [D.extensionSubgroup_maximalUnramifiedField K.field L hLK]
-      exact hx
-    apply (mem_extensionSubgroup_iff K.field P.field P.below x).2
-    exact P.above
-      ((mem_extensionSubgroup_iff K.field (D.maximalUnramifiedField L)
-        (D.maximalUnramifiedField_le_of_le hLK) x).1 hxE)
+    solve_by_elim [P.above]
   let rP : Q →ₜ* R :=
     { toMonoidHom :=
         QuotientGroup.map
@@ -211,38 +175,14 @@ theorem frobeniusPowerFixedField_le_finiteField (D : DegreeData G)
           (M := extensionSubgroup K.field P.field P.below)
           (f := MonoidHom.id K.field.toSubgroup) hIP
       continuous_toFun := by
-        refine (QuotientGroup.isQuotientMap_mk
-          (G := K.field.toSubgroup)
-          (N := D.extensionInertiaWithin K.field L hLK)).continuous_iff.2 ?_
-        change Continuous
-          (⇑(QuotientGroup.map
-              (D.extensionInertiaWithin K.field L hLK)
-              (extensionSubgroup K.field P.field P.below)
-              (MonoidHom.id K.field.toSubgroup) hIP) ∘
-            QuotientGroup.mk'
-              (D.extensionInertiaWithin K.field L hLK))
-        have hcomp :
-            (⇑(QuotientGroup.map
-                (D.extensionInertiaWithin K.field L hLK)
-                (extensionSubgroup K.field P.field P.below)
-                (MonoidHom.id K.field.toSubgroup) hIP) ∘
-              QuotientGroup.mk'
-                (D.extensionInertiaWithin K.field L hLK)) =
-              QuotientGroup.mk'
-                (extensionSubgroup K.field P.field P.below) := by
-          funext k
-          exact QuotientGroup.map_mk' _ _ _ _ k
-        rw [hcomp]
-        exact continuous_quotient_mk' }
-  let : Finite R := P.finite
-  let : IsClosed
-      (extensionSubgroup K.field P.field P.below : Set K.field.toSubgroup) :=
+        solve_by_elim [QuotientGroup.map]}
+  let := P.finite
+  let :=
     extensionSubgroup_isClosed K.field P.field P.below
   have hrPpow : rP (φ.1 ^ n) = 1 := by
     rw [map_pow]
-    change (rP φ.1) ^ Nat.card R = 1
     exact pow_card_eq_one'
-  let σ := D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn
+  let σ := D.frobeniusPowerOfDegreeOne K L hLK φ hφ n P.quotientCard_pos
   have hclosure :
       (D.frobeniusClosure K L hLK σ).toSubgroup ≤
         rP.toMonoidHom.ker := by
@@ -252,8 +192,7 @@ theorem frobeniusPowerFixedField_le_finiteField (D : DegreeData G)
       have hz' : z = φ.1 ^ n := by simpa [σ] using hz
       subst z
       exact hrPpow
-    · change IsClosed {x : Q | rP x = 1}
-      exact isClosed_eq rP.continuous continuous_const
+    · exact isClosed_eq rP.continuous continuous_const
   rintro g ⟨k, hk, rfl⟩
   apply (mem_extensionSubgroup_iff K.field P.field P.below k).1
   apply (QuotientGroup.eq_one_iff k).1
@@ -274,16 +213,7 @@ theorem frobeniusExponent_powerOfDegreeOne (D : DegreeData G)
       (D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn) = n :=
   by
     apply proCIntegerOne_pow_nat_injective
-    calc
-      (Multiplicative.ofAdd (1 : ZHat)) ^
-          D.frobeniusExponent K L hLK
-            (D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn) =
-          D.extensionNormalizedDegree K L hLK
-            (D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn).1 :=
-        (D.extensionNormalizedDegree_frobenius_eq_pow K L hLK
-          (D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn)).symm
-      _ = (Multiplicative.ofAdd (1 : ZHat)) ^ n :=
-        D.extensionNormalizedDegree_pow_of_degreeOne K L hLK φ hφ n
+    exact ((D.extensionNormalizedDegree_frobenius_eq_pow K L hLK (D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn)).symm).trans (D.extensionNormalizedDegree_pow_of_degreeOne K L hLK φ hφ n)
 
 private theorem frobeniusClosure_power_mul_le (D : DegreeData G)
     [IsTopologicalGroup G]
@@ -299,14 +229,12 @@ private theorem frobeniusClosure_power_mul_le (D : DegreeData G)
       (D.frobeniusClosure K L hLK
         (D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn)).toSubgroup := by
   let Q := K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK
-  let x : Q := φ.1 ^ n
-  let C : ClosedSubgroup Q := closedSubgroupGenerated ({x} : Set Q)
-  have hxC : x ∈ C.toSubgroup :=
-    Subgroup.le_topologicalClosure _
-      (Subgroup.subset_closure (by simp [x]))
+  let x := φ.1 ^ n
+  let C := closedSubgroupGenerated ({x} : Set Q)
   have hpowC : φ.1 ^ (n * m) ∈ C.toSubgroup := by
     rw [pow_mul]
-    exact C.toSubgroup.pow_mem hxC m
+    exact C.toSubgroup.pow_mem (Subgroup.le_topologicalClosure _
+      (Subgroup.subset_closure (by simp [x]))) m
   change (closedSubgroupGenerated
       (Set.range (fun _ : Unit => φ.1 ^ (n * m)))).toSubgroup ≤
     (closedSubgroupGenerated
@@ -317,9 +245,8 @@ private theorem frobeniusClosure_power_mul_le (D : DegreeData G)
       ({φ.1 ^ n} : Set Q) := by ext q; simp
   rw [hrangeLeft, hrangeRight]
   apply Subgroup.topologicalClosure_minimal
-  · rw [Subgroup.closure_le]
-    simpa [C, x] using hpowC
-  · exact (closedSubgroupGenerated ({φ.1 ^ n} : Set Q)).isClosed'
+  · simpa using hpowC
+  apply ClosedSubgroup.isClosed'
 
 /-- If `Σ` is fixed by `φⁿ`, then the field fixed by `φⁿᵐ` extends `Σ`.
 This is the tower `Σ_m / Σ` used in the universal norm-descent lemma. -/
@@ -341,11 +268,14 @@ theorem frobeniusPowerFixedField_le (D : DegreeData G)
     D.frobeniusClosure_power_mul_le K L hLK φ hφ n m hn hm hk,
     rfl⟩
 
+section
+
+variable (D : DegreeData G) [IsTopologicalGroup G]
+
 /-- The power-fixed-field tower is Galois.  On the group side this is the
 normality of `closure ⟨φⁿᵐ⟩` inside the procyclic group
 `closure ⟨φⁿ⟩`. -/
-theorem frobeniusPowerFixedField_normal (D : DegreeData G)
-    [IsTopologicalGroup G] [T2Space G]
+theorem frobeniusPowerFixedField_normal [T2Space G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
@@ -371,7 +301,7 @@ theorem frobeniusPowerFixedField_normal (D : DegreeData G)
   let C := D.frobeniusClosure K L hLK σ
   let Cm := D.frobeniusClosure K L hLK σm
   let : CommGroup C := D.frobeniusClosureCommGroup K L hLK σ
-  have hCmC : Cm.toSubgroup ≤ C.toSubgroup :=
+  have hCmC :=
     D.frobeniusClosure_power_mul_le K L hLK φ hφ n m hn hm
   constructor
   intro t ht s
@@ -409,8 +339,7 @@ theorem frobeniusPowerFixedField_normal (D : DegreeData G)
 
 /-- The extension fixed by `φⁿᵐ` over the field fixed by `φⁿ` is
 unramified. -/
-theorem frobeniusPowerFixedField_isUnramified (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
+theorem frobeniusPowerFixedField_isUnramified [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
@@ -435,16 +364,11 @@ theorem frobeniusPowerFixedField_isUnramified (D : DegreeData G)
   rw [(DegreeData.AbstractExtension.mk T S hTS).isUnramified_iff_inertia_le D]
   intro x hx
   have hxI : x ∈ D.fieldInertia S := ⟨hx.1, hx.2⟩
-  have hSI : D.fieldInertia S = D.fieldInertia L :=
-    D.frobeniusFixedField_fieldInertia K L hLK σ
-  have hTI : D.fieldInertia T = D.fieldInertia L :=
-    D.frobeniusFixedField_fieldInertia K L hLK σm
-  rw [hSI, ← hTI] at hxI
+  rw [(D.frobeniusFixedField_fieldInertia K L hLK σ), ← (D.frobeniusFixedField_fieldInertia K L hLK σm)] at hxI
   exact hxI.1
 
 /-- Finiteness of the power-fixed-field tower. -/
-theorem frobeniusPowerFixedField_finite (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
+theorem frobeniusPowerFixedField_finite [CompactSpace G] [T2Space G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
@@ -464,27 +388,24 @@ theorem frobeniusPowerFixedField_finite (D : DegreeData G)
   let σ := D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn
   let σm := D.frobeniusPowerOfDegreeOne K L hLK φ hφ (n * m)
     (Nat.mul_pos hn hm)
-  let S := D.frobeniusFixedField K L hLK σ
-  let T := D.frobeniusFixedField K L hLK σm
-  let hSK := D.frobeniusFixedField_le K L hLK σ
   let hTK := D.frobeniusFixedField_le K L hLK σm
-  let hTS := D.frobeniusPowerFixedField_le K L hLK φ hφ n m hn hm
-  let hTKfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field T hTK) :=
+  let hTKfinite :=
     D.frobeniusFixedField_finite K L hLK σm
-  exact FiniteIntermediateField.finite_extension_of_le hTK hSK hTS
+  exact FiniteIntermediateField.finite_extension_of_le hTK (D.frobeniusFixedField_le K L hLK σ) (D.frobeniusPowerFixedField_le K L hLK φ hφ n m hn hm)
+
+end
+
+section
+
+variable (D : DegreeData G) [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
+    [TotallyDisconnectedSpace G] (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+    (hLK : L.toSubgroup ≤ K.field.toSubgroup) [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+    (φ : D.FrobeniusElements K L hLK) (hφ : D.frobeniusExponent K L hLK φ = 1) (n m : ℕ) (hn : 0 < n)
+    (hm : 0 < m)
 
 /-- The relative degree of the tower fixed by φⁿᵐ over the field fixed
 by φⁿ is exactly m. -/
-private theorem frobeniusPowerFixedField_relIndex (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (φ : D.FrobeniusElements K L hLK)
-    (hφ : D.frobeniusExponent K L hLK φ = 1)
-    (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
+private theorem frobeniusPowerFixedField_relIndex :
     let σ := D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn
     let σm := D.frobeniusPowerOfDegreeOne K L hLK φ hφ
       (n * m) (Nat.mul_pos hn hm)
@@ -499,15 +420,13 @@ private theorem frobeniusPowerFixedField_relIndex (D : DegreeData G)
   let T := D.frobeniusFixedField K L hLK σm
   let hTS := D.frobeniusPowerFixedField_le
     K L hLK φ hφ n m hn hm
-  have hTSunramified : (DegreeData.AbstractExtension.mk T S hTS).IsUnramified D :=
-    D.frobeniusPowerFixedField_isUnramified
-      K L hLK φ hφ n m hn hm
   have hTSramification :
       (T.toSubgroup ⊓ D.degree.toMonoidHom.ker).relIndex
           (S.toSubgroup ⊓ D.degree.toMonoidHom.ker) = 1 := by
     rw [Subgroup.relIndex_eq_one]
     intro x hx
-    exact ⟨hTSunramified hx, hx.2⟩
+    exact ⟨(D.frobeniusPowerFixedField_isUnramified
+      K L hLK φ hφ n m hn hm) hx, hx.2⟩
   rw [relIndex_eq_map_relIndex_mul_inf_ker_relIndex
       D.degree.toMonoidHom hTS,
     hTSramification, Nat.mul_one]
@@ -537,24 +456,14 @@ private theorem frobeniusPowerFixedField_relIndex (D : DegreeData G)
         K L hLK φ hφ n hn] at hresidueMul
   apply Nat.eq_of_mul_eq_mul_right (Nat.mul_pos hn K.residueDegree.property)
   calc
-    (T.toSubgroup.map D.degree.toMonoidHom).relIndex
-          (S.toSubgroup.map D.degree.toMonoidHom) *
-        (n * (K.residueDegree : ℕ)) =
+    _ =
       (n * m) * (K.residueDegree : ℕ) := hresidueMul
     _ = m * (n * (K.residueDegree : ℕ)) := by ac_rfl
 
 /-- The quotient between two successive Frobenius power fixed fields is
 genuinely finite.  This is obtained from the computed finite relative index,
 before taking its natural-valued cardinality. -/
-theorem frobeniusPowerFixedField_quotientFinite (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (φ : D.FrobeniusElements K L hLK)
-    (hφ : D.frobeniusExponent K L hLK φ = 1)
-    (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
+theorem frobeniusPowerFixedField_quotientFinite :
     let σ := D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn
     let σm := D.frobeniusPowerOfDegreeOne K L hLK φ hφ
       (n * m) (Nat.mul_pos hn hm)
@@ -564,29 +473,16 @@ theorem frobeniusPowerFixedField_quotientFinite (D : DegreeData G)
       K L hLK φ hφ n m hn hm
     Finite (S.toSubgroup ⧸ extensionSubgroup S T hTS) := by
   dsimp only
-  let σ := D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn
-  let σm := D.frobeniusPowerOfDegreeOne K L hLK φ hφ
-    (n * m) (Nat.mul_pos hn hm)
-  let S := D.frobeniusFixedField K L hLK σ
-  let T := D.frobeniusFixedField K L hLK σm
-  let hTS := D.frobeniusPowerFixedField_le
-    K L hLK φ hφ n m hn hm
+  let T := D.frobeniusFixedField K L hLK (D.frobeniusPowerOfDegreeOne K L hLK φ hφ
+    (n * m) (Nat.mul_pos hn hm))
   apply (Subgroup.index_ne_zero_iff_finite).mp
-  change T.toSubgroup.relIndex S.toSubgroup ≠ 0
+  change T.toSubgroup.relIndex (D.frobeniusFixedField K L hLK (D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn)).toSubgroup ≠ 0
   rw [D.frobeniusPowerFixedField_relIndex
     K L hLK φ hφ n m hn hm]
   exact hm.ne'
 
 /-- Cardinality form of the preceding relative-degree computation. -/
-theorem frobeniusPowerFixedField_quotientCard (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (φ : D.FrobeniusElements K L hLK)
-    (hφ : D.frobeniusExponent K L hLK φ = 1)
-    (n m : ℕ) (hn : 0 < n) (hm : 0 < m) :
+theorem frobeniusPowerFixedField_quotientCard :
     let σ := D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn
     let σm := D.frobeniusPowerOfDegreeOne K L hLK φ hφ
       (n * m) (Nat.mul_pos hn hm)
@@ -595,25 +491,9 @@ theorem frobeniusPowerFixedField_quotientCard (D : DegreeData G)
     let hTS := D.frobeniusPowerFixedField_le
       K L hLK φ hφ n m hn hm
     Nat.card (S.toSubgroup ⧸ extensionSubgroup S T hTS) = m := by
-  dsimp only
-  let σ := D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn
-  let σm := D.frobeniusPowerOfDegreeOne K L hLK φ hφ
-    (n * m) (Nat.mul_pos hn hm)
-  let S := D.frobeniusFixedField K L hLK σ
-  let T := D.frobeniusFixedField K L hLK σm
-  let hTS := D.frobeniusPowerFixedField_le
-    K L hLK φ hφ n m hn hm
-  let : Finite (S.toSubgroup ⧸ extensionSubgroup S T hTS) :=
-    D.frobeniusPowerFixedField_quotientFinite
-      K L hLK φ hφ n m hn hm
-  calc
-    Nat.card (S.toSubgroup ⧸ extensionSubgroup S T hTS) =
-        (extensionSubgroup S T hTS).index := rfl
-    _ = T.toSubgroup.relIndex S.toSubgroup := by
-      rfl
-    _ = m :=
-      D.frobeniusPowerFixedField_relIndex
-        K L hLK φ hφ n m hn hm
+  apply D.frobeniusPowerFixedField_relIndex <;> assumption
+
+end
 
 /-- The restriction of the concrete element `φⁿ` is a degree-one
 generator of `Gal(Σₘ/Σ)`.  This is the generator to which the unit-cohomology axiom
@@ -648,12 +528,11 @@ theorem frobeniusPowerFixedField_generator (D : DegreeData G)
         x ∈ Subgroup.zpowers (QuotientGroup.mk s) := by
   dsimp only
   let σ := D.frobeniusPowerOfDegreeOne K L hLK φ hφ n hn
-  let σm := D.frobeniusPowerOfDegreeOne K L hLK φ hφ (n * m)
-    (Nat.mul_pos hn hm)
   let S := D.frobeniusFixedField K L hLK σ
-  let T := D.frobeniusFixedField K L hLK σm
+  let T := D.frobeniusFixedField K L hLK (D.frobeniusPowerOfDegreeOne K L hLK φ hφ (n * m)
+    (Nat.mul_pos hn hm))
   let hTS := D.frobeniusPowerFixedField_le K L hLK φ hφ n m hn hm
-  let hTSnormal : (extensionSubgroup S T hTS).Normal :=
+  let hTSnormal :=
     D.frobeniusPowerFixedField_normal K L hLK φ hφ n m hn hm
   let := hTSnormal
   let k : K.field.toSubgroup := Quotient.out σ.1
@@ -677,24 +556,16 @@ theorem frobeniusPowerFixedField_generator (D : DegreeData G)
     rw [← D.frobeniusFixedField_normalizedDegree_compatibility
       K L hLK σ s, hsClosure]
     exact D.fixedFieldNormalizedDegree_generator K L hLK σ
-  let hTSfinite : Finite
-      (S.toSubgroup ⧸ extensionSubgroup S T hTS) :=
-    D.frobeniusPowerFixedField_finite K L hLK φ hφ n m hn hm
-  have hTSunramified : (DegreeData.AbstractExtension.mk T S hTS).IsUnramified D :=
-    D.frobeniusPowerFixedField_isUnramified
-      K L hLK φ hφ n m hn hm
   let SR := D.frobeniusFixedResidueField K L hLK σ
   let : (extensionSubgroup SR.field T hTS).Normal := by
-    change (extensionSubgroup S T hTS).Normal
     exact hTSnormal
   let : Finite
       (SR.field.toSubgroup ⧸ extensionSubgroup SR.field T hTS) := by
-    change Finite (S.toSubgroup ⧸ extensionSubgroup S T hTS)
-    exact hTSfinite
+    apply D.frobeniusPowerFixedField_finite <;> assumption
   have hTSunramifiedR :
       (DegreeData.AbstractExtension.mk T SR.field hTS).IsUnramified D := by
-    change (DegreeData.AbstractExtension.mk T S hTS).IsUnramified D
-    exact hTSunramified
+    exact (D.frobeniusPowerFixedField_isUnramified
+      K L hLK φ hφ n m hn hm)
   refine ⟨s, hsClosure, hsDegree, ?_⟩
   exact D.quotient_generator_of_unramified_degree_one
     SR T hTS hTSunramifiedR s hsDegree

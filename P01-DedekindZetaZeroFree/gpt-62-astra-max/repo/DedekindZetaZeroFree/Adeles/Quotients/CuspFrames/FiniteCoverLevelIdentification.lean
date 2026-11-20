@@ -15,8 +15,6 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   rw [KPGlobalTorusFiniteStagesCofinality.finitePart_eq_closure,
     ActualFiniteFactor.finiteSubgroup_eq_ker]
   ext g
-  change PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ g = 1 ↔
-    KPCuspGenuineMonodromy.archProjection F ζ hζ g = 1
   constructor
   · intro h
     funext w
@@ -45,8 +43,7 @@ private theorem matching_of_subgroup_eq {G : Type*} [Group G] [TopologicalSpace 
 theorem matching_levels :
     ∃ L : Level F ζ hζ → KPMsFixedHaarDisintegration.Level F ζ hζ,
       ∀ U, KPGlobalTorusFunctionData.globalLevel F ζ hζ U =
-        (L U).toOpenSubgroup.toSubgroup.map (KPFiniteCuspAtlas.FiniteCover F ζ hζ).subtype := by
-  exact matching_of_subgroup_eq _ _ (finitePart_eq_finiteCover F ζ hζ)
+        (L U).toOpenSubgroup.toSubgroup.map (KPFiniteCuspAtlas.FiniteCover F ζ hζ).subtype := matching_of_subgroup_eq _ _ (finitePart_eq_finiteCover F ζ hζ)
 end DedekindZetaZeroFree.KPMsAngularSourceRecipe
 
 end

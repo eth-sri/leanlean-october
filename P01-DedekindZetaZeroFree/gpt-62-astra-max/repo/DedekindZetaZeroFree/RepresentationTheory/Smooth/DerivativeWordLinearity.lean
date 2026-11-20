@@ -21,7 +21,7 @@ private theorem rightTranslate_mul
 
 section Generic
 variable {G : Type*} [Group G] [TopologicalSpace G]
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [FiniteDimensional ℝ V] [ChartedSpace V G] [LieGroup 𝓘(ℝ, V) (⊤ : ℕ∞) G]
 variable {B : Type*} [Fintype B]
 
@@ -32,15 +32,13 @@ private theorem right_derivative_smooth (D : HilbertLieExponentialData G V B)
   intro a
   let f : G → ℝ → ℂ := fun a t => q (a * D.exponential (t • D.basis b))
   have hp : ContMDiffAt ((𝓘(ℝ, V)).prod 𝓘(ℝ, ℝ)) 𝓘(ℝ, ℂ)
-      (⊤ : ℕ∞) (Function.uncurry f) (a, 0) := by
-    exact hq.contMDiffAt.comp _ (contMDiffAt_fst.mul
+      (⊤ : ℕ∞) (Function.uncurry f) (a, 0) := hq.contMDiffAt.comp _ (contMDiffAt_fst.mul
       (D.exponential_smooth.contMDiffAt.comp _ (contMDiffAt_snd.smul contMDiffAt_const)))
   have hd := ContMDiffAt.mfderiv (m := (⊤ : ℕ∞)) f (fun _ : G => (0 : ℝ))
     hp contMDiffAt_const (by simp)
   simp +unfoldPartialApp only [inTangentCoordinates,
     inCoordinates_tangent_bundle_core_model_space] at hd
-  have hd' := hd.clm_apply (contMDiffAt_const (c := (1 : ℝ)))
-  convert hd' using 1
+  convert (hd.clm_apply (contMDiffAt_const)) using 1
   funext g
   rw [mfderiv_eq_fderiv]
   rfl
@@ -58,8 +56,8 @@ private theorem smooth_orbit_contMDiff
       (fun a => f (KPSmoothActualFlowData.rightTranslate F ζ hζ (archimedeanInsertion F ζ hζ a) x)) := by
   intro a
   let E := D.exponentialChart.toOpenPartialHomeomorph
-  let q : GInfinity F → ℂ := fun g => f (KPSmoothActualFlowData.rightTranslate F ζ hζ (archimedeanInsertion F ζ hζ g) x)
-  let φ : LieCoordinates F → ℂ := fun v => q (a * exponential F v)
+  let q := fun g => f (KPSmoothActualFlowData.rightTranslate F ζ hζ (archimedeanInsertion F ζ hζ g) x)
+  let φ := fun v => q (a * exponential F v)
   have hφ : ContDiff ℝ (⊤ : ℕ∞) φ := by
     convert hf.2 (KPSmoothActualFlowData.rightTranslate F ζ hζ (archimedeanInsertion F ζ hζ a) x) using 1
     funext v
@@ -67,29 +65,26 @@ private theorem smooth_orbit_contMDiff
     rw [rightTranslate_mul, ← (archimedean_insertion_properties F ζ hζ).2.1]
   have hi : ContMDiffAt 𝓘(ℝ, LieCoordinates F) 𝓘(ℝ, LieCoordinates F)
       (⊤ : ℕ∞) E.symm (1 : GInfinity F) := by
-    have h1 : E 0 = (1 : GInfinity F) := (D.chart_eq_exponential 0 D.zero_mem_source).trans D.exponential_zero
-    exact h1 ▸ D.exponentialChart.symm.contMDiffOn.contMDiffAt
+    exact ((D.chart_eq_exponential 0 D.zero_mem_source).trans D.exponential_zero) ▸ D.exponentialChart.symm.contMDiffOn.contMDiffAt
       (E.open_target.mem_nhds (E.map_source D.zero_mem_source))
-  have hψ : ContMDiffAt 𝓘(ℝ, LieCoordinates F) 𝓘(ℝ, LieCoordinates F)
-      (⊤ : ℕ∞) (fun g : GInfinity F => E.symm (a⁻¹ * g)) a :=
-    hi.comp_of_eq (contMDiffAt_const.mul contMDiffAt_id) (inv_mul_cancel a)
-  have hh := hφ.contMDiff.contMDiffAt.comp a hψ
-  apply hh.congr_of_eventuallyEq
-  have hn : ∀ᶠ g in 𝓝 a, a⁻¹ * g ∈ E.target :=
+  apply (hφ.contMDiff.contMDiffAt.comp a (hi.comp_of_eq (contMDiffAt_const.mul contMDiffAt_id) (inv_mul_cancel a))).congr_of_eventuallyEq
+  have hn :=
     (show ContinuousAt (fun g : GInfinity F => a⁻¹ * g) a from
       continuousAt_const.mul continuousAt_id).preimage_mem_nhds (by
-      change E.target ∈ 𝓝 (a⁻¹ * a)
       rw [inv_mul_cancel]
-      have h1 : E 0 = (1 : GInfinity F) := (D.chart_eq_exponential 0 D.zero_mem_source).trans D.exponential_zero
-      exact E.open_target.mem_nhds (h1 ▸ E.map_source D.zero_mem_source))
+      exact E.open_target.mem_nhds (((D.chart_eq_exponential 0 D.zero_mem_source).trans D.exponential_zero) ▸ E.map_source D.zero_mem_source))
   filter_upwards [hn] with g hg
   dsimp [φ]
   rw [← hD, ← D.chart_eq_exponential _ (E.map_target hg)]
   change q g = q (a * E (E.symm (a⁻¹ * g)))
   rw [E.right_inv hg, ← mul_assoc, mul_inv_cancel, one_mul]
 
-theorem word_orbit_contDiff (f : X F ζ hζ → ℂ)
-    (hf : SmoothAutomorphic F ζ hζ f) (w : List (B F)) (x : X F ζ hζ) :
+section
+
+variable (f : X F ζ hζ → ℂ) (hf : SmoothAutomorphic F ζ hζ f) (w : List (B F))
+
+include hf in
+theorem word_orbit_contDiff (x : X F ζ hζ) :
     ContDiff ℝ (⊤ : ℕ∞) (fun a : LieCoordinates F =>
       wordDerivative F ζ hζ w f
         (KPSmoothActualFlowData.rightTranslate F ζ hζ (archimedeanInsertion F ζ hζ (exponential F a)) x)) := by
@@ -103,7 +98,7 @@ theorem word_orbit_contDiff (f : X F ζ hζ → ℂ)
     funext c
     simp only [Pi.smul_apply, hbasis, smul_eq_mul]
     split_ifs <;> simp
-  let q : List (B F) → GInfinity F → ℂ := fun u a =>
+  let q := fun u a =>
     wordDerivative F ζ hζ u f (KPSmoothActualFlowData.rightTranslate F ζ hζ (archimedeanInsertion F ζ hζ a) x)
   have hq (u : List (B F)) : ContMDiff 𝓘(ℝ, LieCoordinates F) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (q u) := by
     induction u with
@@ -115,12 +110,10 @@ theorem word_orbit_contDiff (f : X F ζ hζ → ℂ)
       funext t
       dsimp [q, wordDerivative, flowDerivative]
       rw [rightTranslate_mul, ← (archimedean_insertion_properties F ζ hζ).2.1, hflow]
-  have he : ContMDiff 𝓘(ℝ, LieCoordinates F) 𝓘(ℝ, LieCoordinates F) (⊤ : ℕ∞)
-      (exponential F) := hD ▸ D.exponential_smooth
-  exact ((hq w).comp he).contDiff
+  exact ((hq w).comp (hD ▸ D.exponential_smooth)).contDiff
 
-theorem word_orbit_continuous (f : X F ζ hζ → ℂ)
-    (hf : SmoothAutomorphic F ζ hζ f) (w : List (B F)) (x : X F ζ hζ) :
+include hf in
+theorem word_orbit_continuous (x : X F ζ hζ) :
     Continuous (fun a : GInfinity F => wordDerivative F ζ hζ w f
       (KPSmoothActualFlowData.rightTranslate F ζ hζ (archimedeanInsertion F ζ hζ a) x)) := by
   obtain ⟨C, hC⟩ := actual_archimedean_lie_data F
@@ -133,7 +126,7 @@ theorem word_orbit_continuous (f : X F ζ hζ → ℂ)
     funext c
     simp only [Pi.smul_apply, hbasis, smul_eq_mul]
     split_ifs <;> simp
-  let q : List (B F) → GInfinity F → ℂ := fun u a =>
+  let q := fun u a =>
     wordDerivative F ζ hζ u f (KPSmoothActualFlowData.rightTranslate F ζ hζ (archimedeanInsertion F ζ hζ a) x)
   have hq (u : List (B F)) : ContMDiff 𝓘(ℝ, LieCoordinates F) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (q u) := by
     induction u with
@@ -147,8 +140,8 @@ theorem word_orbit_continuous (f : X F ζ hζ → ℂ)
       rw [rightTranslate_mul, ← (archimedean_insertion_properties F ζ hζ).2.1, hflow]
   exact (hq w).continuous
 
-theorem word_hasDerivAt_flow (f : X F ζ hζ → ℂ)
-    (hf : SmoothAutomorphic F ζ hζ f) (w : List (B F)) (b : B F) (x : X F ζ hζ) :
+include hf in
+theorem word_hasDerivAt_flow (b : B F) (x : X F ζ hζ) :
     HasDerivAt (fun t : ℝ => wordDerivative F ζ hζ w f
       (KPSmoothActualFlowData.rightTranslate F ζ hζ (archimedeanInsertion F ζ hζ (flow F b t)) x))
       (wordDerivative F ζ hζ (b :: w) f x) 0 := by
@@ -159,6 +152,8 @@ theorem word_hasDerivAt_flow (f : X F ζ hζ → ℂ)
     dsimp [c]
     split_ifs <;> fun_prop
   exact ((word_orbit_contDiff F ζ hζ f hf w x).comp hc).differentiable (by simp) 0 |>.hasDerivAt
+
+end
 
 theorem word_add (f g : X F ζ hζ → ℂ)
     (hf : SmoothAutomorphic F ζ hζ f) (hg : SmoothAutomorphic F ζ hζ g)
@@ -185,15 +180,15 @@ theorem word_smul (c : ℂ) (f : X F ζ hζ → ℂ)
     simp only [ih, Pi.smul_apply]
     exact ((word_hasDerivAt_flow F ζ hζ f hf w b x).const_smul c).deriv
 
-def wordLinearMap (V : Submodule ℂ (X F ζ hζ → ℂ))
-    (hV : ∀ v : V, SmoothAutomorphic F ζ hζ v.val) (w : List (B F)) :
+variable (V : Submodule ℂ (X F ζ hζ → ℂ)) (hV : ∀ v : V, SmoothAutomorphic F ζ hζ v.val) (w : List (B F))
+
+def wordLinearMap :
     V →ₗ[ℂ] (X F ζ hζ → ℂ) where
   toFun v := wordDerivative F ζ hζ w v.val
   map_add' v u := word_add F ζ hζ v.val u.val (hV v) (hV u) w
   map_smul' c v := word_smul F ζ hζ c v.val (hV v) w
 
-@[simp] theorem wordLinearMap_apply (V : Submodule ℂ (X F ζ hζ → ℂ))
-    (hV : ∀ v : V, SmoothAutomorphic F ζ hζ v.val) (w : List (B F))
+@[simp] theorem wordLinearMap_apply
     (v : V) (x : X F ζ hζ) :
     wordLinearMap F ζ hζ V hV w v x = wordDerivative F ζ hζ w v.val x := rfl
 

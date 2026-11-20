@@ -21,11 +21,11 @@ open KPContCotangentActualGenuineTwistIsotropy
 open KPContCotangentOverlapRationalBranches
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (cover : CountableCover F ζ hζ U R P H)
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    (cover : CountableCover F ζ hζ U R P H)
 
 def localCoefficient (v : Family (U := U) (H := H)) (n : ℕ)
     (y : (cover.chart n).domain) : E F :=
@@ -36,22 +36,18 @@ def e (v : Family (U := U) (H := H)) (n : ℕ) : (cover.chart n).domain → E F 
 
 theorem measurable_e (v : Family (U := U) (H := H)) (n : ℕ) :
     Measurable (e cover v n) := by
-  have hs : MeasurableSet (liftedPiece cover n) :=
-    (kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover).lifted_measurable n
-  have hlc : Measurable (localCoefficient cover v n) :=
-    (v.property.1 (cover.chart n)).comp (coordinates_continuous (cover.chart n)).measurable
-  exact hlc.indicator hs
+  exact ((v.property.1 (cover.chart n)).comp (coordinates_continuous (cover.chart n)).measurable).indicator ((kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover).lifted_measurable n)
 
 theorem e_equivariant (v : Family (U := U) (H := H)) (n : ℕ)
     (γ : Gamma (cover.chart n)) (y : (cover.chart n).domain) :
     e cover v n (actualActionEquiv (cover.chart n) γ y) =
       actualTensor (cover.chart n) γ y (e cover v n y) := by
-  show e cover v n ((cover.chart n).action γ.val.1 y) =
+  let e₀ := e cover v n ((cover.chart n).action γ.val.1 y)
+  show e₀ =
     actualTensor (cover.chart n) γ y (e cover v n y)
-  have hp := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
   have hmem : (cover.chart n).action γ.val.1 y ∈ liftedPiece cover n ↔
       y ∈ liftedPiece cover n := by
-    have hinv := hp.lifted_invariant n γ.val.1
+    have hinv := (kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover).lifted_invariant n γ.val.1
     constructor
     · intro h
       have h' : (cover.chart n).action γ.val.1 y ∈
@@ -64,31 +60,28 @@ theorem e_equivariant (v : Family (U := U) (H := H)) (n : ℕ)
           (cover.chart n).action γ.val.1 '' liftedPiece cover n := ⟨y, h, rfl⟩
       rwa [hinv] at h'
   by_cases hy : y ∈ liftedPiece cover n
-  · have h2 : (cover.chart n).action γ.val.1 y ∈ liftedPiece cover n := hmem.mpr hy
-    rw [show e cover v n ((cover.chart n).action γ.val.1 y) =
+  let coordinates₀ := coordinates (cover.chart n) y
+  · rw [show e₀ =
         localCoefficient cover v n ((cover.chart n).action γ.val.1 y) from
-      Set.indicator_of_mem h2 _,
+      Set.indicator_of_mem (hmem.mpr hy) _,
       show e cover v n y = localCoefficient cover v n y from Set.indicator_of_mem hy _]
     have hsub : coordinates (cover.chart n) ((cover.chart n).action γ.val.1 y) =
-        ⟨(isotropyArrow (cover.chart n) γ).psi (coordinates (cover.chart n) y).val,
-          isotropy_mem (cover.chart n) γ (coordinates (cover.chart n) y).val
-            (coordinates (cover.chart n) y).property⟩ :=
+        ⟨(isotropyArrow (cover.chart n) γ).psi (coordinates₀).val,
+          isotropy_mem (cover.chart n) γ (coordinates₀).val
+            (coordinates₀).property⟩ :=
       Subtype.ext (coordinates_action (cover.chart n) γ y)
-    have hcov := v.property.2.1 (cover.chart n) γ (coordinates (cover.chart n) y).val
-      (coordinates (cover.chart n) y).property
+    have hcov := v.property.2.1 (cover.chart n) γ (coordinates₀).val
+      (coordinates₀).property
     simp only [localCoefficient, coefficient, actualTensor]
     rw [hsub, hcov]
-  · have h2 : (cover.chart n).action γ.val.1 y ∉ liftedPiece cover n :=
-      fun h => hy (hmem.mp h)
-    rw [show e cover v n ((cover.chart n).action γ.val.1 y) = 0 from
-        Set.indicator_of_notMem h2 _,
+  · rw [show e₀ = 0 from
+        Set.indicator_of_notMem (fun h => hy (hmem.mp h)) _,
       show e cover v n y = 0 from Set.indicator_of_notMem hy _,
       map_zero]
 
 theorem e_supported (v : Family (U := U) (H := H)) (n : ℕ)
     (y : (cover.chart n).domain) (hy : y ∉ liftedPiece cover n) :
-    e cover v n y = 0 := by
-  exact Set.indicator_of_notMem hy _
+    e cover v n y = 0 := Set.indicator_of_notMem hy _
 
 theorem enorm_eq_ofReal_norm (z : E F) : ‖z‖ₑ = ENNReal.ofReal ‖z‖ := by
   rw [enorm_eq_nnnorm, ← ENNReal.ofReal_coe_nnreal]
@@ -115,7 +108,7 @@ theorem toBase_eq_q (n : ℕ) (y : (cover.chart n).domain) :
 theorem memLp_e (v : Family (U := U) (H := H)) (hv : squareFinite v) (n : ℕ) :
     MemLp (e cover v n) 2 (cover.chart n).liftedMeasure := by
   have hp := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
-  have hs : MeasurableSet (liftedPiece cover n) := hp.lifted_measurable n
+  have hs := hp.lifted_measurable n
   have hf : Measurable (localCoefficient cover v n) :=
     (v.property.1 (cover.chart n)).comp (coordinates_continuous (cover.chart n)).measurable
   have hpt : ∀ y : (cover.chart n).domain,
@@ -128,7 +121,7 @@ theorem memLp_e (v : Family (U := U) (H := H)) (hv : squareFinite v) (n : ℕ) :
   have hfin_tsum : (∑' k, ∫⁻ y in liftedPiece cover k,
       ENNReal.ofReal (normSquare v ((cover.chart k).toBase y) : ℝ)
         ∂(cover.chart k).liftedMeasure) < ⊤ := by
-    have hbase : Measurable (fun x => ENNReal.ofReal (normSquare v x : ℝ)) :=
+    have hbase :=
       ENNReal.measurable_ofReal.comp (measurable_normSquare v).coe_nnreal_real
     rw [← hp.lintegral_eq_tsum (fun x => ENNReal.ofReal (normSquare v x : ℝ)) hbase]
     exact hv
@@ -147,7 +140,7 @@ theorem memLp_e (v : Family (U := U) (H := H)) (hv : squareFinite v) (n : ℕ) :
     eLpNorm_indicator_eq_eLpNorm_restrict hs.nullMeasurableSet,
     eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top (by norm_num) (by norm_num)
       hf.stronglyMeasurable.aestronglyMeasurable]
-  simpa only [enorm_rpow_two, ENNReal.toReal_ofNat] using hfin
+  simpa using hfin
 
 def pieceLp (v : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
     Lp (E F) 2 (cover.chart n).liftedMeasure :=
@@ -159,20 +152,13 @@ theorem pieceLp_mem_Q (v : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
     MemLp.coeFn_toLp _
   refine ⟨?_, ?_⟩
   · intro γ
-    have h1 : (fun x : (cover.chart n).domain =>
-          pieceLp cover v n ((localData (cover.chart n)).action γ x))
-        =ᵐ[(localData (cover.chart n)).measure]
-        (fun x => e cover v.val n ((localData (cover.chart n)).action γ x)) :=
-      (((localData (cover.chart n)).invariant_measure γ).quasiMeasurePreserving).ae_eq_comp hcoe
     have h2 : (fun x => e cover v.val n (actualActionEquiv (cover.chart n) γ x))
         =ᵐ[(localData (cover.chart n)).measure]
         (fun x => actualTensor (cover.chart n) γ x (e cover v.val n x)) :=
       Filter.Eventually.of_forall fun x => e_equivariant cover v.val n γ x
-    have h3 : (fun x => actualTensor (cover.chart n) γ x (e cover v.val n x))
-        =ᵐ[(localData (cover.chart n)).measure]
-        (fun x => actualTensor (cover.chart n) γ x (pieceLp cover v n x)) :=
+    have h3 :=
       hcoe.mono fun x hx => congrArg (actualTensor (cover.chart n) γ x) hx.symm
-    exact h1.trans (h2.trans h3)
+    exact ((((localData (cover.chart n)).invariant_measure γ).quasiMeasurePreserving).ae_eq_comp hcoe).trans (h2.trans h3)
   · filter_upwards [hcoe] with x hx
     intro hy
     exact hx.trans (e_supported cover v.val n x hy)
@@ -185,7 +171,6 @@ private theorem local_lintegral_lt_top (v : Family (U := U) (H := H)) (hv : squa
     (∫⁻ y in liftedPiece cover n,
       ENNReal.ofReal (‖localCoefficient cover v n y‖ ^ 2)
         ∂(cover.chart n).liftedMeasure) < ⊤ := by
-  have hp := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
   have hpt : ∀ y : (cover.chart n).domain,
       ENNReal.ofReal (normSquare v ((cover.chart n).toBase y) : ℝ) =
         ENNReal.ofReal (‖localCoefficient cover v n y‖ ^ 2) := by
@@ -196,17 +181,9 @@ private theorem local_lintegral_lt_top (v : Family (U := U) (H := H)) (hv : squa
   have hfin_tsum : (∑' k, ∫⁻ y in liftedPiece cover k,
       ENNReal.ofReal (normSquare v ((cover.chart k).toBase y) : ℝ)
         ∂(cover.chart k).liftedMeasure) < ⊤ := by
-    have hbase : Measurable (fun x => ENNReal.ofReal (normSquare v x : ℝ)) :=
-      ENNReal.measurable_ofReal.comp (measurable_normSquare v).coe_nnreal_real
-    rw [← hp.lintegral_eq_tsum (fun x => ENNReal.ofReal (normSquare v x : ℝ)) hbase]
+    rw [← (kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover).lintegral_eq_tsum (fun x => ENNReal.ofReal (normSquare v x : ℝ)) (ENNReal.measurable_ofReal.comp (measurable_normSquare v).coe_nnreal_real)]
     exact hv
-  have hterm : (∫⁻ y in liftedPiece cover n,
-      ENNReal.ofReal (normSquare v ((cover.chart n).toBase y) : ℝ)
-        ∂(cover.chart n).liftedMeasure) < ⊤ :=
-    lt_of_le_of_lt (ENNReal.le_tsum (f := fun k => ∫⁻ y in liftedPiece cover k,
-      ENNReal.ofReal (normSquare v ((cover.chart k).toBase y) : ℝ)
-        ∂(cover.chart k).liftedMeasure) n) hfin_tsum
-  simpa only [hpt] using hterm
+  simpa only [hpt] using (lt_of_le_of_lt (ENNReal.le_tsum n) hfin_tsum)
 
 theorem component_normSquare (v : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
     (∫⁻ y in liftedPiece cover n,
@@ -252,10 +229,7 @@ theorem tsum_component_normSquare (v : SquareFiniteFamily (U := U) (H := H)) :
     (∑' n, ENNReal.ofReal (‖component cover v n‖ ^ 2)) =
       ∫⁻ x, ENNReal.ofReal (normSquare v.val x : ℝ)
         ∂(baseMeasure (R := R) (P := P) (U := U)) := by
-  have hp := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
-  have hbase : Measurable (fun x => ENNReal.ofReal (normSquare v.val x : ℝ)) :=
-    ENNReal.measurable_ofReal.comp (measurable_normSquare v.val).coe_nnreal_real
-  rw [hp.lintegral_eq_tsum (fun x => ENNReal.ofReal (normSquare v.val x : ℝ)) hbase]
+  rw [(kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover).lintegral_eq_tsum (fun x => ENNReal.ofReal (normSquare v.val x : ℝ)) (ENNReal.measurable_ofReal.comp (measurable_normSquare v.val).coe_nnreal_real)]
   refine tsum_congr fun n => ?_
   rw [← component_normSquare cover v n]
   refine lintegral_congr fun y => ?_
@@ -271,7 +245,6 @@ theorem tsum_component_normSquare_lt_top (v : SquareFiniteFamily (U := U) (H := 
 theorem memℓp_component (v : SquareFiniteFamily (U := U) (H := H)) :
     Memℓp (component cover v) 2 := by
   rw [memℓp_gen_iff (by norm_num : 0 < (2 : ℝ≥0∞).toReal)]
-  have hlt := tsum_component_normSquare_lt_top cover v
   have hne : (∑' n, ((‖component cover v n‖₊ ^ 2 : ℝ≥0) : ℝ≥0∞)) ≠ ∞ := by
     have heq : (∑' n, ((‖component cover v n‖₊ ^ 2 : ℝ≥0) : ℝ≥0∞))
         = ∑' n, ENNReal.ofReal (‖component cover v n‖ ^ 2) :=
@@ -279,10 +252,8 @@ theorem memℓp_component (v : SquareFiniteFamily (U := U) (H := H)) :
         rw [← ENNReal.ofReal_coe_nnreal, NNReal.coe_pow]
         rfl
     rw [heq]
-    exact hlt.ne
-  have hsum : Summable fun n => ‖component cover v n‖ ^ 2 :=
-    ENNReal.tsum_coe_ne_top_iff_summable_coe.mp hne
-  simpa only [ENNReal.toReal_ofNat, Real.rpow_two] using hsum
+    exact (tsum_component_normSquare_lt_top cover v).ne
+  simpa using (ENNReal.tsum_coe_ne_top_iff_summable_coe.mp hne)
 
 theorem component_eq_of_aeEquivalent
     (v w : SquareFiniteFamily (U := U) (H := H)) (hvw : AeEquivalent v.val w.val)
@@ -361,12 +332,6 @@ theorem component_add (v w : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
   apply Subtype.ext
   show pieceLp cover (v + w) n = pieceLp cover v n + pieceLp cover w n
   apply Lp.ext
-  have hcoe_vw : ⇑(pieceLp cover (v + w) n)
-      =ᵐ[(cover.chart n).liftedMeasure] e cover (v + w).val n := MemLp.coeFn_toLp _
-  have hcoe_v : ⇑(pieceLp cover v n)
-      =ᵐ[(cover.chart n).liftedMeasure] e cover v.val n := MemLp.coeFn_toLp _
-  have hcoe_w : ⇑(pieceLp cover w n)
-      =ᵐ[(cover.chart n).liftedMeasure] e cover w.val n := MemLp.coeFn_toLp _
   have hfun : e cover (v + w).val n = e cover v.val n + e cover w.val n := by
     funext y
     by_cases hyy : y ∈ liftedPiece cover n
@@ -383,8 +348,8 @@ theorem component_add (v w : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
   have hptE : e cover (v + w).val n =ᵐ[(cover.chart n).liftedMeasure]
       (e cover v.val n + e cover w.val n) :=
     Filter.Eventually.of_forall fun y => congrFun hfun y
-  exact hcoe_vw.trans (hptE.trans
-    ((hcoe_v.symm.add hcoe_w.symm).trans (Lp.coeFn_add _ _).symm))
+  exact (MemLp.coeFn_toLp _).trans (hptE.trans
+    (((MemLp.coeFn_toLp _).symm.add (MemLp.coeFn_toLp _).symm).trans (Lp.coeFn_add _ _).symm))
 
 theorem localCoefficient_smul (c : ℂ) (v : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
     localCoefficient cover (c • v).val n = c • localCoefficient cover v.val n := by
@@ -396,10 +361,6 @@ theorem component_smul (c : ℂ) (v : SquareFiniteFamily (U := U) (H := H)) (n :
   apply Subtype.ext
   show pieceLp cover (c • v) n = c • pieceLp cover v n
   apply Lp.ext
-  have hcoe_cv : ⇑(pieceLp cover (c • v) n)
-      =ᵐ[(cover.chart n).liftedMeasure] e cover (c • v).val n := MemLp.coeFn_toLp _
-  have hcoe_v : ⇑(pieceLp cover v n)
-      =ᵐ[(cover.chart n).liftedMeasure] e cover v.val n := MemLp.coeFn_toLp _
   have hfun : e cover (c • v).val n = c • e cover v.val n := by
     funext y
     by_cases hyy : y ∈ liftedPiece cover n
@@ -413,8 +374,8 @@ theorem component_smul (c : ℂ) (v : SquareFiniteFamily (U := U) (H := H)) (n :
   have hptE : e cover (c • v).val n =ᵐ[(cover.chart n).liftedMeasure]
       (c • e cover v.val n) :=
     Filter.Eventually.of_forall fun y => congrFun hfun y
-  exact hcoe_cv.trans (hptE.trans
-    ((hcoe_v.symm.const_smul c).trans (Lp.coeFn_smul c _).symm))
+  exact (MemLp.coeFn_toLp _).trans (hptE.trans
+    (((MemLp.coeFn_toLp _).symm.const_smul c).trans (Lp.coeFn_smul c _).symm))
 
 def extractFamily (v : SquareFiniteFamily (U := U) (H := H)) : PieceHilbert cover :=
   ⟨component cover v, memℓp_component cover v⟩
@@ -454,7 +415,7 @@ theorem ext_welldef (a b : SquareFiniteFamily (U := U) (H := H))
       (nullSubmodule (U := U) (H := H)) a b) :
     extractFamily cover a = extractFamily cover b := by
   refine extractFamily_eq_of_aeEquivalent cover a b
-    ((toAeQuotient_eq_iff (U := U) (H := H) a b).mp ?_)
+    ((toAeQuotient_eq_iff a b).mp ?_)
   exact Quotient.sound hab
 
 set_option maxHeartbeats 1000000 in

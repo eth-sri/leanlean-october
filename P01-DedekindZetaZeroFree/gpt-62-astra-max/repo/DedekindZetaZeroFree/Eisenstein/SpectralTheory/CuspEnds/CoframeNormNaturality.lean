@@ -13,8 +13,10 @@ namespace DedekindZetaZeroFree.KPContCuspCoframeNaturality
 private theorem sum_real_basis {I : Type*} [Fintype I] [DecidableEq I]
     (b : OrthonormalBasis I ℝ (EuclideanSpace ℝ I)) (L : EuclideanSpace ℝ I →L[ℝ] ℝ) :
     ∑ i, (L (b i)) ^ 2 = ‖(InnerProductSpace.toDual ℝ (EuclideanSpace ℝ I)).symm L‖ ^ 2 := by
-  simpa only [InnerProductSpace.toDual_symm_apply] using
+  simpa using
     b.sum_sq_inner_left ((InnerProductSpace.toDual ℝ (EuclideanSpace ℝ I)).symm L)
+
+alias CoframeNormNaturality.sum_real_basis := sum_real_basis
 
 private theorem sum_complex_basis {I : Type*} [Fintype I] [DecidableEq I]
     (b c : OrthonormalBasis I ℝ (EuclideanSpace ℝ I)) (L : EuclideanSpace ℝ I →L[ℝ] ℂ) :
@@ -26,6 +28,8 @@ private theorem sum_complex_basis {I : Type*} [Fintype I] [DecidableEq I]
   simp only [ContinuousLinearMap.comp_apply, Complex.reCLM_apply, Complex.imCLM_apply] at hRe hIm
   simp only [Complex.sq_norm, Complex.normSq_apply, Finset.sum_add_distrib]
   simpa only [pow_two] using congrArg₂ (· + ·) hRe hIm
+
+alias CoframeNormNaturality.sum_complex_basis := sum_complex_basis
 
 private theorem differential_frame (d : ℕ) (f : HyperbolicChart.Space d → ℂ) (x : HyperbolicChart.Space d) (k : Fin d × Fin 3) :
     (CotangentLogCoframe.j d (HyperbolicChart.differential d f x)) k =
@@ -78,7 +82,7 @@ private theorem differential_norm_isometry (d : ℕ)
     (f : HyperbolicChart.Space d → ℂ) (hf : DifferentiableAt ℝ f (ψ x)) :
     (∑ i, ∑ k, ‖HyperbolicChart.differential d (f ∘ ψ) x i k‖ ^ 2) =
     ∑ i, ∑ k, ‖HyperbolicChart.differential d f (ψ x) i k‖ ^ 2 := by
-  let Q : EuclideanSpace ℝ (Fin d × Fin 3) →L[ℝ] EuclideanSpace ℝ (Fin d × Fin 3) :=
+  let Q :=
     (CotangentLogCoframe.C d (ψ x)).toContinuousLinearMap.comp
       ((fderiv ℝ ψ x).comp (CotangentLogCoframe.H d x).toContinuousLinearMap)
   have hQ : ∀ v w, inner ℝ (Q v) (Q w) = inner ℝ v w := by
@@ -88,7 +92,7 @@ private theorem differential_norm_isometry (d : ℕ)
       (CotangentLogCoframe.C d (ψ x) (fderiv ℝ ψ x (CotangentLogCoframe.H d x w))) = _
     rw [CotangentLogCoframe.inner_C, hm, ← CotangentLogCoframe.inner_C]
     simp [CotangentLogCoframe.H]
-  let q : EuclideanSpace ℝ (Fin d × Fin 3) ≃ₗᵢ[ℝ] EuclideanSpace ℝ (Fin d × Fin 3) :=
+  let q :=
     LinearIsometryEquiv.ofSurjective
       {toLinearMap := Q.toLinearMap,
        norm_map' := (LinearMap.norm_map_iff_inner_map_map Q).2 hQ}
@@ -124,15 +128,17 @@ private theorem differential_norm_isometry (d : ℕ)
       differential_frame]
     rfl
 
- def rationalCoordinates (F : Type) [Field F] [NumberField F]
+ section
+
+variable (F : Type) [Field F] [NumberField F]
     (places : Fin (KPContCotangentActualOverlap.d F) ≃ Fin (KPCuspLogShape.dimension F))
-    (σ : KPCuspArithmetic.PGL2 F) (x : HyperbolicChart.Space (KPContCotangentActualOverlap.d F)) :=
+    (σ : KPCuspArithmetic.PGL2 F)
+
+def rationalCoordinates (x : HyperbolicChart.Space (KPContCotangentActualOverlap.d F)) :=
   KPContCotangentActualOverlap.labeledAInv places
     (σ • KPContCotangentActualOverlap.labeledA places x)
 
-private theorem rational_smooth_metric (F : Type) [Field F] [NumberField F]
-    (places : Fin (KPContCotangentActualOverlap.d F) ≃ Fin (KPCuspLogShape.dimension F))
-    (σ : KPCuspArithmetic.PGL2 F) :
+private theorem rational_smooth_metric :
     ContDiff ℝ (⊤ : ℕ∞) (rationalCoordinates F places σ) ∧
       ∀ x v w, HyperbolicChart.metric (KPContCotangentActualOverlap.d F)
         (rationalCoordinates F places σ x) (fderiv ℝ (rationalCoordinates F places σ) x v)
@@ -154,10 +160,8 @@ private theorem rational_smooth_metric (F : Type) [Field F] [NumberField F]
     simp [KPCuspSiegel.glAction, KPArch.productAction, KPContCotangentActualOverlap.labeledA, g, A]
     rfl
   rw [he]
-  have hs : ContDiff ℝ (⊤ : ℕ∞) (fun x => A.symm (KPArch.productAction n g (A x))) :=
-    A.symm.contDiff.comp (((KPArch.productAction_contDiff n g).of_le
-      (show (⊤ : ℕ∞) ≤ (⊤ : ℕ∞ω) from le_top)).comp A.contDiff)
-  refine ⟨hs, ?_⟩
+  refine ⟨(A.symm.contDiff.comp (((KPArch.productAction_contDiff n g).of_le
+    (show (⊤ : ℕ∞) ≤ (⊤ : ℕ∞ω) from le_top)).comp A.contDiff)), ?_⟩
   have hquad : ∀ x v, HyperbolicChart.metric n (A.symm (KPArch.productAction n g (A x)))
       (fderiv ℝ (fun x => A.symm (KPArch.productAction n g (A x))) x v)
       (fderiv ℝ (fun x => A.symm (KPArch.productAction n g (A x))) x v) =
@@ -186,6 +190,8 @@ private theorem rational_smooth_metric (F : Type) [Field F] [NumberField F]
   rw [map_add, hpolar, hpolar, hquad x v, hquad x w] at hp
   linarith
 
+end
+
 open KPContActualCotangentCountableShrinking KPContSectorPhaseComponentCharts
 open KPContSectorSmoothFramesSupport KPContCotangentActualOverlap
 open KPContCotangentOverlapRationalBranches KPContCotangentActualGenuineTwistIsotropy
@@ -193,33 +199,34 @@ open KPContActualSectorSmoothTestModules KPContActualSectorTestDifferentialDesce
 open KPContActualCotangentMeasurableFamilies
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 private theorem shrink_at (i : Fin (H.atlas U).componentCount) (p : KPCuspGenuineMonodromy.SymmetricSpace F) :
-    ∃ C : ShrunkChart F ζ hζ U R P H, C.component = i ∧ C.center = p ∧ p ∈ C.domain := by
+    ∃ C : ShrunkChart F ζ hζ U R P H, C.component = i ∧ p ∈ C.domain := by
   let O := Classical.choice (orbifoldChart_exists F ζ hζ U R P H i p)
-  let : Finite (MulAction.stabilizer (Component F ζ hζ U R P H i) p) :=
+  let stabilizer₀ := MulAction.stabilizer (Component F ζ hζ U R P H i) p
+  let : Finite (stabilizer₀) :=
     chart_stabilizer_finite F ζ hζ U R P H i p O
-  let := Fintype.ofFinite (MulAction.stabilizer (Component F ζ hζ U R P H i) p)
+  let := Fintype.ofFinite (stabilizer₀)
   obtain ⟨W,hWo,hpW,hWsub,hWc⟩ := exists_open_between_and_isCompact_closure
     (isCompact_singleton (x := p)) O.isOpen (Set.singleton_subset_iff.mpr O.center_mem)
-  let V := ⋂ g : MulAction.stabilizer (Component F ζ hζ U R P H i) p,
+  let V := ⋂ g : stabilizer₀,
     (fun x : KPCuspGenuineMonodromy.SymmetricSpace F => (g.val : KPCuspArithmetic.PGL2 F) • x) ⁻¹' W
   have hopen : IsOpen V := isOpen_iInter_of_finite fun g =>
     hWo.preimage (KPCuspSiegel.continuous_action F g.val.val)
   have hsub : V ⊆ W := by
     intro x hx
-    simpa using Set.mem_iInter.mp hx (1 : MulAction.stabilizer (Component F ζ hζ U R P H i) p)
+    simpa using Set.mem_iInter.mp hx (1 : stabilizer₀)
   have hp : p ∈ V := by
     apply Set.mem_iInter.mpr; intro g
     change g.val • p ∈ W
     rw [MulAction.mem_stabilizer_iff.mp g.property]
     exact hpW (Set.mem_singleton p)
   refine ⟨⟨i,p,O,V,hopen,hWc.of_isClosed_subset isClosed_closure (closure_mono hsub),
-    (closure_mono hsub).trans hWsub,?_⟩,rfl,rfl,hp⟩
+    (closure_mono hsub).trans hWsub,?_⟩, rfl, hp⟩
   intro g
   ext x; constructor
   · rintro ⟨y,hy,rfl⟩
@@ -239,7 +246,7 @@ private theorem pairing_at_arch (f : S_U F ζ hζ U R P H)
         (labeledAInv (placeEquiv F ζ hζ) y) j k‖ ^ 2) =
     (∑ j : Fin (d F), KPContActualSectorFriedrichsSynthesis.placePair (D_U f) (D_U f) j
       ((H.atlas U).components ⟨i, Quotient.mk _ y⟩)).re := by
-  obtain ⟨a, hi, hcenter, hy⟩ := shrink_at (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) i y
+  obtain ⟨a, hi, hy⟩ := shrink_at (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) i y
   let x := labeledAInv (placeEquiv F ζ hζ) y
   have hA : labeledA (placeEquiv F ζ hζ) x = y := by
     funext k
@@ -280,11 +287,13 @@ private theorem pairing_at_arch (f : S_U F ζ hζ U R P H)
     (D_U f) (D_U f) _ a ⟨x,hx⟩, hcoeff, inner_self_eq_norm_sq_to_K]
   simp [x, ← Complex.ofReal_pow]
 
+alias CoframeNormNaturality.pairing_at_arch := pairing_at_arch
+
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 set_option linter.unusedVariables false in
 
@@ -313,7 +322,7 @@ theorem actual_cusp_coframe_placePair
   let z := KPCuspCharts.toArch F (p,t)
   let x := labeledAInv places z
   let ψ := rationalCoordinates F places σ
-  let g : M F → ℂ := fun x => (scalarSections f c.1).val (labeledA places x)
+  let g := fun x => (scalarSections f c.1).val (labeledA places x)
   have hA : ∀ y : KPCuspGenuineMonodromy.SymmetricSpace F,
       labeledA places (labeledAInv places y) = y := by
     intro y
@@ -326,19 +335,13 @@ theorem actual_cusp_coframe_placePair
     rw [hA]
   have hsm := rational_smooth_metric F places σ
   have hg : DifferentiableAt ℝ g (ψ x) := by
-    have hsg : ContDiff ℝ (⊤ : ℕ∞) (scalarSections f c.1).val :=
-      (Classical.choose_spec (scalar_gluing f)).1.1 c.1
-    have hla : ContDiff ℝ (⊤ : ℕ∞) (labeledA places) := by
-      apply contDiff_pi.mpr
-      intro k
-      exact (ContinuousLinearMap.proj (places.symm k) : KPArch.Space (d F) →L[ℝ] KPArch.H3).contDiff.comp
-        (CotangentLogCoframe.A (d F)).contDiff
-    exact (hsg.comp hla).differentiable (by simp) |>.differentiableAt
-  have hn := differential_norm_isometry (d F) ψ x
-    (hsm.1.differentiable (by simp) |>.differentiableAt) (hsm.2 x) g hg
-  change (∑ i, ∑ k, ‖HyperbolicChart.differential (d F)
-    (fun x => (scalarSections f c.1).val (σ • labeledA places x)) x i k‖ ^ 2) = _
-  rw [he, hn]
+    refine (((Classical.choose_spec (scalar_gluing f)).1.1 c.1).comp ?_).differentiable (by simp) |>.differentiableAt
+    apply contDiff_pi.mpr
+    intro k
+    exact (ContinuousLinearMap.proj (places.symm k) : KPArch.Space (d F) →L[ℝ] KPArch.H3).contDiff.comp
+      (CotangentLogCoframe.A (d F)).contDiff
+  rw [he, (differential_norm_isometry (d F) ψ x
+    (hsm.1.differentiable (by simp) |>.differentiableAt) (hsm.2 x) g hg)]
   have hx : ψ x = labeledAInv places (σ • z) := by
     change labeledAInv places (σ • labeledA places (labeledAInv places z)) = _
     rw [hA]

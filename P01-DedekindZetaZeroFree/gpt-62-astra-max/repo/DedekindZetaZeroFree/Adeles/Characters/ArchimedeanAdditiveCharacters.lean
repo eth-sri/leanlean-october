@@ -42,9 +42,6 @@ def infiniteAdeleToSpace : NumberField.InfiniteAdeleRing F ≃L[ℝ] Space F :=
 theorem infiniteAdeleToSpace_coordinates (x : NumberField.InfiniteAdeleRing F) :
     NumberField.mixedEmbedding.euclidean.toMixed F (infiniteAdeleToSpace F x) =
       NumberField.InfiniteAdeleRing.ringEquiv_mixedSpace F x := by
-  change (NumberField.mixedEmbedding.euclidean.toMixed F)
-    ((NumberField.mixedEmbedding.euclidean.toMixed F).symm
-      (NumberField.InfiniteAdeleRing.ringEquiv_mixedSpace F x)) = _
   exact (NumberField.mixedEmbedding.euclidean.toMixed F).apply_symm_apply _
 end DedekindZetaZeroFree.PoissonArch
 
@@ -90,7 +87,7 @@ private theorem arch_character_inner
     field_simp
   · intro w hw
     let H : C(E, ℝ) := ⟨fun x => 2 * Real.pi * inner ℝ x w, by fun_prop⟩
-    have hH : H = g := hguniq H ⟨by simp [H], ?_⟩
+    have hH := hguniq H ⟨by simp [H], ?_⟩
     · apply (InnerProductSpace.toDual ℝ E).injective
       ext x
       rw [InnerProductSpace.toDual_apply_apply, InnerProductSpace.toDual_apply_apply,
@@ -102,8 +99,9 @@ private theorem arch_character_inner
     · funext x
       exact (hw x).symm
 
+variable (F : Type) [Field F] [NumberField F]
+
 theorem kp_additive_arch_character
-    (F : Type) [Field F] [NumberField F]
     (χ : AddChar (PoissonArch.Space F) Circle) (hχ : Continuous χ) :
     ∃! y : PoissonArch.Space F, ∀ x : PoissonArch.Space F,
       χ x = Real.fourierChar (PoissonArch.tracePairing F x y) := by
@@ -117,15 +115,13 @@ theorem kp_additive_arch_character
     exact huniq _ (by simpa [PoissonArch.tracePairing_eq_inner] using hy)
 
 theorem kp_additive_infinite_adele_character
-    (F : Type) [Field F] [NumberField F]
     (χ : AddChar (NumberField.InfiniteAdeleRing F) Circle) (hχ : Continuous χ) :
     ∃! y : NumberField.InfiniteAdeleRing F, ∀ x : NumberField.InfiniteAdeleRing F,
       χ x = Real.fourierChar (PoissonArch.tracePairing F
         (PoissonArch.infiniteAdeleToSpace F x) (PoissonArch.infiniteAdeleToSpace F y)) := by
   let e := PoissonArch.infiniteAdeleToSpace F
   let ψ := χ.compAddMonoidHom e.symm.toLinearEquiv.toAddMonoidHom
-  have hψ : Continuous ψ := hχ.comp e.symm.continuous
-  obtain ⟨z, hz, huniq⟩ := kp_additive_arch_character F ψ hψ
+  obtain ⟨z, hz, huniq⟩ := kp_additive_arch_character F ψ (hχ.comp e.symm.continuous)
   refine ⟨e.symm z, ?_, ?_⟩
   · intro x
     simpa [ψ, e] using hz (e x)

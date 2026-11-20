@@ -23,7 +23,6 @@ theorem word_right_invariant (f : X F ζ hζ → ℂ) (u : G F ζ hζ)
   induction w generalizing g with
   | nil => exact hf g
   | cons b w ih =>
-    change deriv _ 0 = deriv _ 0
     apply congrArg (fun q : ℝ → ℂ => deriv q 0)
     funext t
     change wordDerivative F ζ hζ w f
@@ -65,7 +64,7 @@ theorem word_continuous_at_finite_level
     convert (ho.comp continuous_fst).continuousAt using 1
     funext p
     change wordDerivative F ζ hζ w f (Quotient.mk _ (archimedeanInsertion F ζ hζ p.1 * k)) =
-      wordDerivative F ζ hζ w f (Quotient.mk _ ((k : G F ζ hζ) * archimedeanInsertion F ζ hζ p.1))
+      wordDerivative F ζ hζ w f (Quotient.mk _ (k * archimedeanInsertion F ζ hζ p.1))
     rw [(hcomm p.1 k).eq]
   apply hc.congr_of_eventuallyEq
   have hn : ∀ᶠ p : GInfinity F × KPSmoothLocalQuotientCharts.finiteSubgroup F ζ hζ in 𝓝 (a,k),
@@ -93,9 +92,7 @@ theorem word_continuous (U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
       f (Quotient.mk _ (g * u.val)) = f (Quotient.mk _ g))
     (w : List (B F)) : Continuous (wordDerivative F ζ hζ w f) := by
   have h : ∀ g : G F ζ hζ, ∀ u : U.toOpenSubgroup,
-      f (Quotient.mk _ (g * (u.val : G F ζ hζ))) = f (Quotient.mk _ g) := by
-    intro g u
-    exact hlevel g ⟨u.val.val, ⟨u.val, u.property, rfl⟩⟩
+      f (Quotient.mk _ (g * u.val)) = f (Quotient.mk _ g) := fun g u => hlevel g ⟨u.val.val, ⟨u.val, u.property, rfl⟩⟩
   clear hlevel
   revert h
   change CompactOpenLevel (KPGlobalTorusFunctionData.finitePart F ζ hζ) at U

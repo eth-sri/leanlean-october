@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -67,7 +65,7 @@ theorem exists_chosenNormalBasisPrincipalUnit_herbrand_subsingleton
   have hfixed : fixedSubgroup (Gal(L / K)) V ≤
       tateNormSubgroup (Gal(L / K)) V := by
     intro a ha
-    have haSet : ((a : V) : 𝒪[L]ˣ) ∈ (V : Set 𝒪[L]ˣ) := (a : V).2
+    have haSet : ((a : V) : 𝒪[L]ˣ) ∈ V := (a : V).2
     have haLevel : ((a : V) : 𝒪[L]ˣ) ∈
         chosenNormalBasisPrincipalUnitSet K L n := by
       rw [← hV]

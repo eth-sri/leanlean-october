@@ -12,12 +12,12 @@ open NumberField MeasureTheory Filter
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 namespace ChamberPeriods
 variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.ResidueCovariance renaming cleared_limit_of_chamber_transformation → cleared_limit_of_chamber_transformation
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.ResidueCovariance (cleared_limit_of_chamber_transformation)
 
 theorem incoming_entire (C : JointForwardIdentitySources R N) (v : R.A.UnitQuotient) (g : Group R) :
     Differentiable ℂ (fun s => incoming C v s g) := by
@@ -64,7 +64,7 @@ theorem selected_residue_radial (C : JointForwardIdentitySources R N) (v : R.A.U
         upper R C.sources.dq (C.realization.theta v) g := by
   obtain ⟨U, r, I, hU, hc, _hdom, hchsub, hr, _hrr, hball, hmer, hIch, hclear⟩ :=
     selected_upper_period_continuation C
-  have hcont := (selected_compact_period_germ C).2
+  have hcont := (selected_compact_period_germ C)
   have hC : (fun s => clearedPeriod C v s (archDiagonal w z * g)) =ᶠ[𝓝[≠] (0 : ℂ)]
       (fun s => s * I v s (archDiagonal w z * g)) := by
     filter_upwards [self_mem_nhdsWithin,

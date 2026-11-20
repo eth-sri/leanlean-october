@@ -13,7 +13,7 @@ set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option maxRecDepth 4000
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 attribute [local instance] localTopology
 
@@ -25,21 +25,12 @@ def rationalCoordinates (g : KubotaRankTwo.GL2 F) (v : KPHilbert.Place F) :
   KPLocalCover.sectionMap F ζ hζ v
     (Matrix.GeneralLinearGroup.map (algebraMap F (KPHilbert.Completion F v)) g)
 
-private theorem integers_eq (q : HeightOneSpectrum (𝓞 F)) :
-    KPLocalCube.LocalIntegers F q = (q.adicCompletionIntegers F).toSubring := by
-  letI : ValuativeRel (q.adicCompletion F) := ClassFieldTheory.finitePlaceCompletionValuativeRel F q
-  letI : (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ))).Compatible :=
-    Valuation.Compatible.ofValuation _
-  ext a
-  rw [Valuation.mem_integer_iff]
-  rw [← Valuation.vle_one_iff]
-  exact Valuation.vle_one_iff (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ)))
+private alias integers_eq := GL2Projection.localIntegers_eq
 
 private theorem rational_integral (a : F) :
     ∀ᶠ q : HeightOneSpectrum (𝓞 F) in Filter.cofinite,
       algebraMap F (q.adicCompletion F) a ∈ KPTameCompact.O F q := by
-  have h := (algebraMap F (FiniteAdeleRing (𝓞 F) F) a).property
-  filter_upwards [h] with q hq
+  filter_upwards [((algebraMap F (FiniteAdeleRing (𝓞 F) F) a).property)] with q hq
   change _ ∈ KPLocalCube.LocalIntegers F q
   rw [integers_eq]
   exact hq
@@ -74,11 +65,13 @@ private theorem integralMatrix_inclusion (q : HeightOneSpectrum (𝓞 F))
     (g : KubotaRankTwo.GL2 F) (hg hi) :
     KPTameCompact.inclusion F q (integralMatrix F q g hg hi) =
       Matrix.GeneralLinearGroup.map (algebraMap F (q.adicCompletion F)) g := by
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
   rfl
 
-private theorem rational_compact_finite (g : KubotaRankTwo.GL2 F) :
+section
+
+variable (g : KubotaRankTwo.GL2 F)
+
+private theorem rational_compact_finite :
     ∀ᶠ q : HeightOneSpectrum (𝓞 F) in Filter.cofinite,
       rationalCoordinates F ζ hζ g (Sum.inr q) ∈ finiteCompact F ζ hζ q := by
   have hg : ∀ᶠ q : HeightOneSpectrum (𝓞 F) in Filter.cofinite,
@@ -127,38 +120,30 @@ private theorem rational_compact_finite (g : KubotaRankTwo.GL2 F) :
   change KPLocalCover.CubicGL2Raw.mk _ _ = KPLocalCover.CubicGL2Raw.mk _ _
   rw [hk, hm]
 
-theorem rationalCoordinates_restricted (g : KubotaRankTwo.GL2 F) :
+theorem rationalCoordinates_restricted :
     ∀ᶠ v in Filter.cofinite,
       rationalCoordinates F ζ hζ g v ∈ (compact F ζ hζ v : Set _) := by
   have h := rational_compact_finite F ζ hζ g
-  rw [Filter.eventually_cofinite] at h ⊢
-  apply (h.image (Sum.inr : HeightOneSpectrum (𝓞 F) → KPHilbert.Place F)).subset
+  apply (h.image Sum.inr).subset
   intro v hv
   cases v with
   | inl w => exact (hv (Subgroup.mem_top _)).elim
   | inr q => exact ⟨q, hv, rfl⟩
 
-def rationalTuple (g : KubotaRankTwo.GL2 F) : RestrictedCover F ζ hζ :=
+def rationalTuple : RestrictedCover F ζ hζ :=
   ⟨rationalCoordinates F ζ hζ g, rationalCoordinates_restricted F ζ hζ g⟩
 
-def rationalSection (g : KubotaRankTwo.GL2 F) : CubicGL2Adelic F ζ hζ :=
+def rationalSection : CubicGL2Adelic F ζ hζ :=
   amalgamation F ζ hζ (rationalTuple F ζ hζ g)
 
-@[simp] theorem rationalTuple_eval (g : KubotaRankTwo.GL2 F) (v : KPHilbert.Place F) :
+@[simp] theorem rationalTuple_eval (v : KPHilbert.Place F) :
     rationalTuple F ζ hζ g v = rationalCoordinates F ζ hζ g v := rfl
 
-theorem projection_rationalSection (g : KubotaRankTwo.GL2 F) :
+theorem projection_rationalSection :
     projection F ζ hζ (rationalSection F ζ hζ g) = rationalBase F g := by
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  apply Prod.ext
-  · funext w
-    rfl
-  · apply Subtype.ext
-    funext q
-    rfl
+  rfl
 
-private theorem map_X (g : KubotaRankTwo.GL2 F) (v : KPHilbert.Place F) :
+private theorem map_X (v : KPHilbert.Place F) :
     KubotaRankTwo.X _ (Matrix.GeneralLinearGroup.map (algebraMap F (KPHilbert.Completion F v)) g) =
       KPHilbert.diagonal F v (KubotaRankTwo.X F g) := by
   apply Units.ext
@@ -168,12 +153,18 @@ private theorem map_X (g : KubotaRankTwo.GL2 F) (v : KPHilbert.Place F) :
   rw [map_eq_zero_iff _ (RingHom.injective _)]
   split_ifs <;> rfl
 
- def multiplier (g h : KubotaRankTwo.GL2 F) (v : KPHilbert.Place F) :=
+end
+
+ section
+
+variable (g h : KubotaRankTwo.GL2 F)
+
+def multiplier (v : KPHilbert.Place F) :=
   KPLocalCover.sigmaTwo F ζ hζ v
     (Matrix.GeneralLinearGroup.map (algebraMap F (KPHilbert.Completion F v)) g)
     (Matrix.GeneralLinearGroup.map (algebraMap F (KPHilbert.Completion F v)) h)
 
-private theorem multiplier_formula (g h : KubotaRankTwo.GL2 F) (v : KPHilbert.Place F) :
+private theorem multiplier_formula (v : KPHilbert.Place F) :
     multiplier F ζ hζ g h v =
       KPHilbert.B3 F ζ hζ v
         (KPHilbert.diagonal F v (KubotaRankTwo.X F (g * h) / KubotaRankTwo.X F g))
@@ -187,7 +178,7 @@ private theorem multiplier_formula (g h : KubotaRankTwo.GL2 F) (v : KPHilbert.Pl
   simp only [KPHilbert.diagonal, map_div, map_mul]
   rfl
 
-private theorem multiplier_reciprocity (g h : KubotaRankTwo.GL2 F) :
+private theorem multiplier_reciprocity :
     Function.HasFiniteMulSupport (multiplier F ζ hζ g h) ∧
       (∏ᶠ v, multiplier F ζ hζ g h v) = 1 := by
   obtain ⟨hf, hp⟩ := KPHilbert.B3_productFormula F ζ hζ
@@ -203,11 +194,11 @@ private theorem multiplier_reciprocity (g h : KubotaRankTwo.GL2 F) :
           (KPHilbert.diagonal F v (KubotaRankTwo.det F h)) ^ 2) := hf'.pow 2
     rw [finprod_mul_distrib hf hf2, ← finprod_pow hf' 2, hp, hp', one_pow, one_mul]
 
-theorem rationalSection_mul (g h : KubotaRankTwo.GL2 F) :
+theorem rationalSection_mul :
     rationalSection F ζ hζ (g * h) = rationalSection F ζ hζ g * rationalSection F ζ hζ h := by
   obtain ⟨hf, hp⟩ := multiplier_reciprocity F ζ hζ g h
   let e : CentralTuples F := ⟨multiplier F ζ hζ g h, by
-    simpa only [Filter.eventually_cofinite, Subgroup.mem_bot, SetLike.mem_coe, Function.HasFiniteMulSupport, Function.mulSupport] using hf⟩
+    assumption⟩
   have he : centralTupleMap F ζ hζ e ∈ M F ζ hζ := by
     apply Subgroup.mem_map.mpr
     refine ⟨e, ?_, rfl⟩
@@ -226,6 +217,8 @@ theorem rationalSection_mul (g h : KubotaRankTwo.GL2 F) :
   have he1 : amalgamation F ζ hζ (centralTupleMap F ζ hζ e) = 1 :=
     (QuotientGroup.eq_one_iff _).mpr he
   rw [he1, one_mul]
+
+end
 
 theorem rationalSection_one : rationalSection F ζ hζ 1 = 1 := by
   apply congrArg (amalgamation F ζ hζ)
@@ -292,7 +285,7 @@ set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option maxRecDepth 4000
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 attribute [local instance] localTopology
 
@@ -306,7 +299,7 @@ theorem rationalHom_injective : Function.Injective (rationalHom F ζ hζ) := by
   have he := congrArg (projection F ζ hζ) e
   change projection F ζ hζ (rationalSection F ζ hζ g) =
     projection F ζ hζ (rationalSection F ζ hζ h) at he
-  rw [projection_rationalSection, projection_rationalSection] at he
+  simp [projection_rationalSection] at he
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   apply NumberField.AdeleRing.algebraMap_injective (𝓞 F) F

@@ -29,15 +29,11 @@ theorem deleted_exterior_series_continuation
       fun s _ => rfl⟩
   ·
 
-    have hF : NumberField.IsTotallyComplex F :=
-      primitive12_totallyComplex F A.zeta12 A.primitive_zeta12
-    let H := nonprincipalRayHeckeData F hF ν.conductor ν.conductor_ne_zero
+    let H := nonprincipalRayHeckeData F (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12) ν.conductor ν.conductor_ne_zero
       ν.character ν.primitive hnp
-    have hLmero : MeromorphicOn H.L {s : ℂ | 0 < s.re} :=
-      (H.L_holo.analyticOnNhd
-        (isOpen_lt continuous_const Complex.continuous_re)).meromorphicOn
     obtain ⟨hmask, -, hsum⟩ := Detector.deleted_primitive_L_continuation F ν D hD
-      {s : ℂ | 0 < s.re} H.L hLmero H.series
+      {s : ℂ | 0 < s.re} H.L ((H.L_holo.analyticOnNhd
+        (isOpen_lt continuous_const Complex.continuous_re)).meromorphicOn) H.series
     refine ⟨fun s => H.L s *
         Detector.finiteEulerDeletionMask F D (fun v => ν.character v.asIdeal) s,
       fun _ => H.L_holo.mul (hmask.differentiableOn.mono (Set.subset_univ _)), ?_⟩
@@ -55,17 +51,12 @@ theorem deleted_exterior_series_continuation
           · simp [hex]
           · simp only [hex, if_false]
             exact (ν.character.eq_zero_iff' ⊥).mpr (Or.inl rfl)
-        · have hsup : I ⊔ A.cS ≠ ⊤ := fun h => hn ⟨hbot, h⟩
-          have hex : ∃ v ∈ D, I ≤ v.asIdeal := by
+        · have hex : ∃ v ∈ D, I ≤ v.asIdeal := by
             have hA : ¬ ∀ v : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
-                v ∈ A.Sf → I ⊔ v.asIdeal = ⊤ := by
-              intro hall
-              exact hsup ((SArithmeticData.exterior_iff A ⟨I, hbot⟩).mpr hall)
+                v ∈ A.Sf → I ⊔ v.asIdeal = ⊤ := fun hall => (fun h => hn ⟨hbot, h⟩) ((SArithmeticData.exterior_iff A ⟨I, hbot⟩).mpr hall)
             push Not at hA
             obtain ⟨v, hvS, hvv⟩ := hA
-            have heq : v.asIdeal = I ⊔ v.asIdeal :=
-              v.isMaximal.eq_of_le hvv le_sup_right
-            exact ⟨v, hSD (by simpa using hvS), le_sup_left.trans heq.symm.le⟩
+            exact ⟨v, hSD (by exact hvS), le_sup_left.trans (v.isMaximal.eq_of_le hvv le_sup_right).symm.le⟩
           simp only [Detector.deletedPrimitiveIdealCoefficient]
           simp [hex]
       rw [hc, zero_mul]

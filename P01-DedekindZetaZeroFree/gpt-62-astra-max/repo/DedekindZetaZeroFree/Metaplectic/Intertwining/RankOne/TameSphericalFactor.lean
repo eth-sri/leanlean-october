@@ -20,17 +20,23 @@ variable {G H D : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [Group H] [TopologicalSpace H] [IsTopologicalGroup H] [CommGroup D] [Finite D]
 variable {T : LocalHeisenbergData H D}
 
-def haarMass (μ : Measure K) : ℝ :=
+section
+
+variable (μ : Measure K)
+
+def haarMass : ℝ :=
   (μ ((valuation K).integer : Set K)).toReal
 
-def forwardFactorInRoot (μ : Measure K) (z : ℂ) : ℂ :=
+def forwardFactorInRoot (z : ℂ) : ℂ :=
   (haarMass K μ : ℂ) *
     (1 - (residueCardinality K : ℂ)⁻¹ *
       ((residueCardinality K : ℂ)⁻¹ * z ^ 6)) /
     (1 - (residueCardinality K : ℂ)⁻¹ * z ^ 6)
 
-def forwardFactor (μ : Measure K) (s : ℂ) : ℂ :=
+def forwardFactor (s : ℂ) : ℂ :=
   forwardFactorInRoot K μ (r K s)
+
+end
 
 def IsSphericalVector
     (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)

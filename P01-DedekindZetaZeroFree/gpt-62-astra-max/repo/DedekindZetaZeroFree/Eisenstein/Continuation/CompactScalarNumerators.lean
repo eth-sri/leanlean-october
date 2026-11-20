@@ -9,7 +9,7 @@ noncomputable section
 open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.SharedSource
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator renaming finite_literal_compact_numerator → finite_literal_compact_numerator
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator (finite_literal_compact_numerator)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
 theorem literal_compact_numerator_exists
@@ -33,7 +33,7 @@ theorem literal_compact_numerator_exists
   obtain ⟨M, _⟩ := KPGlobalTorusFiniteStages.compatibleModelData_exists F ζ hζ L
   obtain ⟨μ, _, _, P, ⟨J⟩⟩ :=
     kp_ms_fixed_haar_disintegration F ζ hζ
-      (MeasureTheory.Measure.haar : MeasureTheory.Measure (G F ζ hζ)) inferInstance
+      MeasureTheory.Measure.haar inferInstance
   exact finite_literal_compact_numerator F ζ hζ M μ P J D hD K hK f
 
 end DedekindZetaZeroFree.SharedSource

@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -33,30 +30,28 @@ namespace Valuations
 
 open scoped Polynomial
 
+section
+
+variable {K L : Type*} [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] (v : AbsoluteValue K ℝ)
+    (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
+    (hv : ValuationTheory.DiscreteValuationField.HenselFactorizationProperty (absoluteValueValuationSubring v hnonarch))
+
+include hv in
 /-- A closed unit for the finite norm-formula value is integral over the base
 valuation ring, using only the primitive factorization definition's primitive factorization property. -/
 theorem normFormula_finiteExtensionNormFormulaValue_isIntegral_of_le_one_of_henselFactorization
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L]
-    (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (hv : ValuationTheory.DiscreteValuationField.HenselFactorizationProperty
-      (absoluteValueValuationSubring v hnonarch))
     {x : L} (hx : finiteExtensionNormFormulaValue v x ≤ 1) :
     IsIntegral
       (absoluteValueValuationSubring v hnonarch) x := by
   let V := absoluteValueValuationSubring v hnonarch
-  let : Algebra.IsAlgebraic K L := Algebra.IsAlgebraic.of_finite K L
+  let := Algebra.IsAlgebraic.of_finite K L
   let : Algebra.IsIntegral K L := Algebra.IsAlgebraic.isIntegral
   have hxint : IsIntegral K x := Algebra.IsIntegral.isIntegral x
-  have hconst : v ((minpoly K x).coeff 0) ≤ 1 :=
-    (normFormula_finiteExtensionNormFormulaValue_le_one_iff_minpoly_coeff_zero_le_one
-      v x).1 hx
-  have hcoeff : ∀ i : ℕ, v ((minpoly K x).coeff i) ≤ 1 :=
-    normFormula_monic_coeff_abs_le_one_of_const_abs_le_one_of_henselFactorization
-      v hnonarch hv (minpoly.irreducible hxint) (minpoly.monic hxint) hconst
   rcases
       exists_polynomial_over_absoluteValueUnitBallSubringAsValuationSubring_of_coeff_abs_le_one
-        v hnonarch (minpoly K x) hcoeff with
+        v hnonarch (minpoly K x) (normFormula_monic_coeff_abs_le_one_of_const_abs_le_one_of_henselFactorization
+          v hnonarch hv (minpoly.irreducible hxint) (minpoly.monic hxint) ((normFormula_finiteExtensionNormFormulaValue_le_one_iff_minpoly_coeff_zero_le_one
+            v x).1 hx)) with
     ⟨F, hFmap, hFdegree, _hcoeff⟩
   have hφinj : Function.Injective (algebraMap V K) := by
     intro a b hab
@@ -74,39 +69,28 @@ theorem normFormula_finiteExtensionNormFormulaValue_isIntegral_of_le_one_of_hens
       rw [hFmap]
       exact minpoly.aeval K x
     rwa [Polynomial.aeval_map_algebraMap K x F] at hmaproot
-  exact IsIntegral.of_aeval_monic hFmonic hFdegree_ne (by
-    rw [hroot]
-    exact isIntegral_zero)
+  solve_by_elim [IsIntegral.of_aeval_monic]
 
+include hv in
 /-- In a finite extension, every element or its inverse belongs to the actual
 integral closure of the base valuation ring. -/
 theorem normFormula_finite_integralClosure_mem_or_inv_of_henselFactorization
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L]
-    (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (hv : ValuationTheory.DiscreteValuationField.HenselFactorizationProperty
-      (absoluteValueValuationSubring v hnonarch))
     (x : L) :
     x ∈ (integralClosure
         (absoluteValueValuationSubring v hnonarch) L).toSubring ∨
       x⁻¹ ∈ (integralClosure
         (absoluteValueValuationSubring v hnonarch) L).toSubring := by
   by_cases hx : finiteExtensionNormFormulaValue v x ≤ 1
-  · left
-    exact
-      normFormula_finiteExtensionNormFormulaValue_isIntegral_of_le_one_of_henselFactorization
-        v hnonarch hv hx
+  · solve_by_elim [normFormula_finiteExtensionNormFormulaValue_isIntegral_of_le_one_of_henselFactorization]
   · right
-    have hx_gt : 1 < finiteExtensionNormFormulaValue v x :=
+    have hx_gt :=
       lt_of_not_ge hx
-    have hx_pos : 0 < finiteExtensionNormFormulaValue v x :=
-      zero_lt_one.trans hx_gt
-    have hinv : finiteExtensionNormFormulaValue v x⁻¹ ≤ 1 := by
-      rw [normFormula_finiteExtensionNormFormulaValue_inv]
-      exact (inv_le_one₀ hx_pos).2 hx_gt.le
-    exact
-      normFormula_finiteExtensionNormFormulaValue_isIntegral_of_le_one_of_henselFactorization
-        v hnonarch hv hinv
+    apply normFormula_finiteExtensionNormFormulaValue_isIntegral_of_le_one_of_henselFactorization
+        v hnonarch hv
+    rw [normFormula_finiteExtensionNormFormulaValue_inv]
+    exact (inv_le_one₀ (zero_lt_one.trans hx_gt)).2 hx_gt.le
+
+end
 
 /-- the finite norm-formula theorem, source-producing algebraic endpoint: for an arbitrary
 algebraic extension, the actual integral closure of the Henselian valuation
@@ -129,26 +113,20 @@ theorem normFormula_algebraic_integralClosure_mem_or_inv_of_henselFactorization
     ⟨x, IntermediateField.subset_adjoin K ({x} : Set L)
       (Set.mem_singleton x)⟩
   have hxint : IsIntegral K x := Algebra.IsIntegral.isIntegral x
-  let : FiniteDimensional K E :=
+  let :=
     IntermediateField.adjoin.finiteDimensional hxint
-  have hfinite :=
-    normFormula_finite_integralClosure_mem_or_inv_of_henselFactorization
-      (K := K) (L := E) v hnonarch hv xE
-  rcases hfinite with hxE | hxEinv
+  rcases (normFormula_finite_integralClosure_mem_or_inv_of_henselFactorization
+    v hnonarch hv xE) with hxE | hxEinv
   · left
-    have hxEint : IsIntegral V xE := hxE
-    have hmap := hxEint.map
+    have hmap := hxE.map
       ((IntermediateField.val E).restrictScalars V)
-    have hxintV : IsIntegral V x := by
-      simpa [E, xE] using hmap
-    exact (mem_integralClosure_iff (R := V) (A := L)).2 hxintV
+    exact (mem_integralClosure_iff (R := V) (A := L)).2 (by
+      assumption)
   · right
-    have hxEinvint : IsIntegral V xE⁻¹ := hxEinv
-    have hmap := hxEinvint.map
+    have hmap := hxEinv.map
       ((IntermediateField.val E).restrictScalars V)
-    have hxinvintV : IsIntegral V x⁻¹ := by
-      simpa [E, xE] using hmap
-    exact (mem_integralClosure_iff (R := V) (A := L)).2 hxinvintV
+    exact (mem_integralClosure_iff (R := V) (A := L)).2 (by
+      assumption)
 
 end Valuations
 end AlgebraicNumberTheory

@@ -31,11 +31,10 @@ private theorem recipe_M_estimates {F : Type} [Field F] [NumberField F]
     intro v he
     obtain ⟨x, hx⟩ := R.probe.finiteTrace_ne_one R.A R.σ R.target R.traceBad v
     exact hx (by rw [he]; rfl)
-  let w : NumberField.InfinitePlace F := Classical.choice inferInstance
   obtain ⟨dt, hdt, hdis, hsheet⟩ := probe_sheet_mellin_estimates F R.A
     R.probe.finiteTrace R.probe.continuousTrace R.probe.traceCompatible hne
     R.probe.additiveMeasure R.probe.multiplicativeMeasure
-    R.probe.additiveHaar R.probe.multiplicativeHaar w
+    R.probe.additiveHaar R.probe.multiplicativeHaar (Classical.choice inferInstance)
     R.probe.W0 R.probe.W1 R.probe.annular R.probe.compactSupport R.probe.supportUnits
   rcases hsheet with ⟨_, _, _, hM, hMd, _, _, _⟩
   exact ⟨hM, hMd⟩
@@ -43,15 +42,14 @@ private theorem recipe_M_estimates {F : Type} [Field F] [NumberField F]
 namespace FixedData
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def context : D.recipe.A.GeneralArithmeticContext D.recipe.σ D.recipe.target
     D.recipe.traceBad :=
   PrincipalMellinGrowth.recipeContext D.recipe
 
 structure Row where
-
   toFrequency : CorrectionFactors.Frequency D.context
 
   isRep : ∃ h : toFrequency.u ≠ 0,
@@ -74,22 +72,23 @@ private theorem frequency_ext_of_u_ideal {f g : CorrectionFactors.Frequency D.co
     (hu : f.u = g.u) (hI : f.ideal = g.ideal) : f = g := by
   obtain ⟨u, I, a, b, c⟩ := f
   obtain ⟨u', I', a', b', c'⟩ := g
-  have hu' : u = u' := hu
-  have hI' : I = I' := hI
+  have hu' := hu
+  have hI' := hI
   subst hu'
   subst hI'
   rfl
 
+alias FixedData.frequency_ext_of_u_ideal := frequency_ext_of_u_ideal
+
 theorem u_injective : Function.Injective (Row.u (D := D)) := by
   intro r r' h
-  have hu : r.toFrequency.u = r'.toFrequency.u := h
-  have hI : r.toFrequency.ideal = r'.toFrequency.ideal := by
-    apply D.recipe.A.exteriorIdealEquiv.injective
-    apply Subtype.ext
-    rw [D.recipe.A.exteriorIdealEquiv_apply, D.recipe.A.exteriorIdealEquiv_apply,
-      ← r.toFrequency.generates.2, ← r'.toFrequency.generates.2]
-    exact congrArg (fun x : D.recipe.A.R => Ideal.span {x}) hu
-  exact ext (frequency_ext_of_u_ideal hu hI)
+  have hu := h
+  refine ext (frequency_ext_of_u_ideal hu ?_)
+  apply D.recipe.A.exteriorIdealEquiv.injective
+  apply Subtype.ext
+  rw [D.recipe.A.exteriorIdealEquiv_apply, D.recipe.A.exteriorIdealEquiv_apply,
+    ← r.toFrequency.generates.2, ← r'.toFrequency.generates.2]
+  exact congrArg (fun x : D.recipe.A.R => Ideal.span {x}) hu
 
 theorem u_mem_reps (r : D.Row) :
     ∃ h : r.u ≠ 0, (⟨r.u, h⟩ : ThetaReflectionData.Row D.recipe.A) ∈
@@ -101,76 +100,81 @@ theorem u_unique {r r' : D.Row} (h : r.u = r'.u) : r = r' := u_injective h
 
 end Row
 
-def q (u : D.Row) : ℝ :=
+section
+
+variable (u : D.Row)
+
+def q : ℝ :=
   (FiniteTransform.exteriorNorm D.recipe.A.R.toSubring u.u : ℝ)
 
-def inducers (u : D.Row) : FrequencyCharacterMasks.PrimitiveInducers u.toFrequency :=
+def inducers : FrequencyCharacterMasks.PrimitiveInducers u.toFrequency :=
   (MaskedHeckeMeromorphic.masked_hecke_meromorphic u.toFrequency).choose
 
-def rowContinuation (u : D.Row) (i : MaskedHeckeMeromorphic.Row) :
+def rowContinuation (i : MaskedHeckeMeromorphic.Row) :
     MaskedHeckeMeromorphic.RowContinuation u.toFrequency (D.inducers u) i :=
   ((MaskedHeckeMeromorphic.masked_hecke_meromorphic u.toFrequency).choose_spec i).some
 
-def omega (u : D.Row) : Detector.PrimitiveFrequencyCharacter F :=
+def omega : Detector.PrimitiveFrequencyCharacter F :=
   (D.inducers u).minus
 
-def LpsiRaw (u : D.Row) (s : ℂ) : ℂ :=
+def LpsiRaw (s : ℂ) : ℂ :=
   MaskedHeckeMeromorphic.incompleteL u.toFrequency MaskedHeckeMeromorphic.Row.plus s
 
-def LlamRaw (u : D.Row) (s : ℂ) : ℂ :=
+def LlamRaw (s : ℂ) : ℂ :=
   MaskedHeckeMeromorphic.incompleteL u.toFrequency MaskedHeckeMeromorphic.Row.minus s
 
-def Lpsi (u : D.Row) (s : ℂ) : ℂ :=
+def Lpsi (s : ℂ) : ℂ :=
   MaskedHeckeMeromorphic.quotientRepresentative u.toFrequency (D.inducers u)
     MaskedHeckeMeromorphic.Row.plus (D.rowContinuation u .plus).J s
 
-def Llam (u : D.Row) (s : ℂ) : ℂ :=
+def Llam (s : ℂ) : ℂ :=
   MaskedHeckeMeromorphic.quotientRepresentative u.toFrequency (D.inducers u)
     MaskedHeckeMeromorphic.Row.minus (D.rowContinuation u .minus).J s
 
-abbrev rowDeletionSet (u : D.Row) (i : MaskedHeckeMeromorphic.Row) :
+abbrev rowDeletionSet (i : MaskedHeckeMeromorphic.Row) :
     Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :=
   MaskedHeckeMeromorphic.deletionSet u.toFrequency i
 
-theorem Lpsi_eq_raw (u : D.Row) (s : ℂ) (hs : 1 < s.re) : D.Lpsi u s = D.LpsiRaw u s :=
+theorem Lpsi_eq_raw (s : ℂ) (hs : 1 < s.re) : D.Lpsi u s = D.LpsiRaw u s :=
   ((D.rowContinuation u .plus).regular_equality s hs).symm
 
-theorem Llam_eq_raw (u : D.Row) (s : ℂ) (hs : 1 < s.re) : D.Llam u s = D.LlamRaw u s :=
+theorem Llam_eq_raw (s : ℂ) (hs : 1 < s.re) : D.Llam u s = D.LlamRaw u s :=
   ((D.rowContinuation u .minus).regular_equality s hs).symm
 
-theorem Lpsi_eq_J_mask (u : D.Row) (s : ℂ) :
+theorem Lpsi_eq_J_mask (s : ℂ) :
     D.Lpsi u s = (D.rowContinuation u .plus).J s *
       Detector.finiteEulerDeletionMask F (D.rowDeletionSet u .plus)
         (fun p => (D.inducers u).plus.character p.asIdeal) s /
       (s - 1) ^ MaskedHeckeMeromorphic.poleIndicator (D.inducers u).plus := rfl
 
-theorem Llam_eq_J_mask (u : D.Row) (s : ℂ) :
+theorem Llam_eq_J_mask (s : ℂ) :
     D.Llam u s = (D.rowContinuation u .minus).J s *
       Detector.finiteEulerDeletionMask F (D.rowDeletionSet u .minus)
         (fun p => (D.omega u).character p.asIdeal) s /
       (s - 1) ^ MaskedHeckeMeromorphic.poleIndicator (D.omega u) := rfl
 
-theorem Lpsi_analyticOnNhd (u : D.Row) :
-    AnalyticOnNhd ℂ (D.Lpsi u) ({s : ℂ | 0 < s.re} \ {1}) := by
-  intro s hs
-  have hJ := (D.rowContinuation u .plus).J_holomorphic s hs.1
-  have hB := (D.rowContinuation u .plus).B_holomorphic s hs.1
-  have hne : s - 1 ≠ 0 := sub_ne_zero.mpr hs.2
-  have hp : AnalyticAt ℂ (fun z : ℂ => (z - 1) ^ MaskedHeckeMeromorphic.poleIndicator
-      (D.inducers u).plus) s :=
-    ((analyticAt_id.sub analyticAt_const).pow _)
-  exact (hJ.mul hB).div hp (pow_ne_zero _ hne)
+end
 
-theorem Llam_analyticOnNhd (u : D.Row) :
-    AnalyticOnNhd ℂ (D.Llam u) ({s : ℂ | 0 < s.re} \ {1}) := by
+private theorem row_analyticOnNhd (u : D.Row) (i : MaskedHeckeMeromorphic.Row) :
+    AnalyticOnNhd ℂ (MaskedHeckeMeromorphic.quotientRepresentative u.toFrequency
+      (D.inducers u) i (D.rowContinuation u i).J) ({s : ℂ | 0 < s.re} \ {1}) := by
   intro s hs
-  have hJ := (D.rowContinuation u .minus).J_holomorphic s hs.1
-  have hB := (D.rowContinuation u .minus).B_holomorphic s hs.1
-  have hne : s - 1 ≠ 0 := sub_ne_zero.mpr hs.2
-  have hp : AnalyticAt ℂ (fun z : ℂ => (z - 1) ^ MaskedHeckeMeromorphic.poleIndicator
-      (D.omega u)) s :=
-    ((analyticAt_id.sub analyticAt_const).pow _)
-  exact (hJ.mul hB).div hp (pow_ne_zero _ hne)
+  apply ((D.rowContinuation u i).J_holomorphic s hs.1 |>.mul
+    ((D.rowContinuation u i).B_holomorphic s hs.1)).div
+  · exact (analyticAt_id.sub analyticAt_const).pow _
+  · exact pow_ne_zero _ (sub_ne_zero.mpr hs.2)
+
+section
+
+variable (u : D.Row)
+
+theorem Lpsi_analyticOnNhd :
+    AnalyticOnNhd ℂ (D.Lpsi u) ({s : ℂ | 0 < s.re} \ {1}) := D.row_analyticOnNhd u .plus
+
+theorem Llam_analyticOnNhd :
+    AnalyticOnNhd ℂ (D.Llam u) ({s : ℂ | 0 < s.re} \ {1}) := D.row_analyticOnNhd u .minus
+
+end
 
 def zetaS (s : ℂ) : ℂ := InitialSeparatedEuler.zetaS D.recipe.A s
 
@@ -195,37 +199,24 @@ theorem W1Hat_one_ne_zero : D.W1Hat 1 ≠ 0 :=
 theorem M_differentiableOn : DifferentiableOn ℂ D.M {z : ℂ | 0 < z.re} :=
   (recipe_M_estimates D.recipe).1
 
+private theorem mul_le_of_rpow_decay {x y C : ℝ} (hx : 0 < x) {k : ℕ}
+    (h : y ≤ C * x ^ (-(k : ℝ))) : x ^ k * y ≤ C := by
+  rwa [Real.rpow_neg hx.le, Real.rpow_natCast, ← div_eq_mul_inv,
+    le_div_iff₀ (pow_pos hx _), mul_comm] at h
+
 theorem M_vertical_decay (a b : ℝ) (ha : 0 < a) (hab : a ≤ b) (k : ℕ) :
     ∃ C : ℝ, ∀ z : ℂ, a ≤ z.re → z.re ≤ b →
       (1 + |z.im|) ^ k * ‖D.M z‖ ≤ C := by
   obtain ⟨C, hC, hb⟩ := (recipe_M_estimates D.recipe).2 a b (k : ℝ) ha hab (Nat.cast_nonneg k)
-  refine ⟨C, fun z hza hzb => ?_⟩
-  have h := hb z.re ⟨hza, hzb⟩ z.im
-  rw [Complex.re_add_im] at h
-  have h' : ‖D.M z‖ ≤ C * (1 + |z.im|) ^ (-(k : ℝ)) := h
-  have hpos : (0 : ℝ) < 1 + |z.im| := by positivity
-  have hk : (1 + |z.im|) ^ k * (1 + |z.im|) ^ (-(k : ℝ)) = 1 := by
-    rw [Real.rpow_neg hpos.le, Real.rpow_natCast, mul_inv_cancel₀ (pow_ne_zero _ hpos.ne')]
-  calc (1 + |z.im|) ^ k * ‖D.M z‖ ≤ (1 + |z.im|) ^ k * (C * (1 + |z.im|) ^ (-(k : ℝ))) :=
-        mul_le_mul_of_nonneg_left h' (by positivity)
-    _ = C * ((1 + |z.im|) ^ k * (1 + |z.im|) ^ (-(k : ℝ))) := by ring
-    _ = C := by rw [hk, mul_one]
+  refine ⟨C, fun z hza hzb => mul_le_of_rpow_decay (by positivity) ?_⟩
+  simpa [M, Complex.re_add_im] using hb z.re ⟨hza, hzb⟩ z.im
 
 theorem W1Hat_vertical_decay (a b : ℝ) (hab : a ≤ b) (k : ℕ) :
     ∃ C : ℝ, ∀ z : ℂ, a ≤ z.re → z.re ≤ b →
       (1 + |z.im|) ^ k * ‖D.W1Hat z‖ ≤ C := by
   obtain ⟨C, hC, hb⟩ := DedekindZetaZeroFree.PrincipalMellinComparison.principal_real_weight_rapid_strip_decay
     D.recipe a b (k : ℝ) (Nat.cast_nonneg k)
-  refine ⟨C, fun z hza hzb => ?_⟩
-  have hz : z ∈ DedekindZetaZeroFree.comparisonClosedStrip a b := ⟨hza, hzb⟩
-  have h := hb z hz
-  have hpos : (0 : ℝ) < 1 + |z.im| := by positivity
-  have hk : (1 + |z.im|) ^ k * (1 + |z.im|) ^ (-(k : ℝ)) = 1 := by
-    rw [Real.rpow_neg hpos.le, Real.rpow_natCast, mul_inv_cancel₀ (pow_ne_zero _ hpos.ne')]
-  calc (1 + |z.im|) ^ k * ‖D.W1Hat z‖ ≤ (1 + |z.im|) ^ k * (C * (1 + |z.im|) ^ (-(k : ℝ))) :=
-        mul_le_mul_of_nonneg_left h (by positivity)
-    _ = C * ((1 + |z.im|) ^ k * (1 + |z.im|) ^ (-(k : ℝ))) := by ring
-    _ = C := by rw [hk, mul_one]
+  exact ⟨C, fun z hza hzb => mul_le_of_rpow_decay (by positivity) (hb z ⟨hza, hzb⟩)⟩
 
 end FixedData
 

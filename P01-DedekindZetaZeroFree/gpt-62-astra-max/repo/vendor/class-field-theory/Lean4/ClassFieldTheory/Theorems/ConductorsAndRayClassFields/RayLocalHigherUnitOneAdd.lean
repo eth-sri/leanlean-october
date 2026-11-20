@@ -15,13 +15,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -57,40 +50,36 @@ theorem mem_rayLocalHigherUnitGroup_iff_exists_one_add
   · intro hx
     obtain ⟨y, hxy, hcong⟩ :=
       (mem_rayLocalHigherUnitGroup_iff v n x).mp hx
-    refine ⟨(y : v.adicCompletionIntegers K) - 1, hcong, ?_⟩
+    refine ⟨y - 1, hcong, ?_⟩
     have hval := congrArg Units.val hxy
-    change ((y : v.adicCompletionIntegers K) : v.adicCompletion K) =
-      (x : v.adicCompletion K) at hval
+    change (y : v.adicCompletion K) =
+      x at hval
     calc
-      (x : v.adicCompletion K) =
-          ((y : v.adicCompletionIntegers K) : v.adicCompletion K) := hval.symm
-      _ = ((1 + ((y : v.adicCompletionIntegers K) - 1) :
+      _ =
+          (y : v.adicCompletion K) := hval.symm
+      _ = ((1 + (y - 1) :
             v.adicCompletionIntegers K) : v.adicCompletion K) := by
         congr 1
         ring
   · rintro ⟨t, ht, hx⟩
-    have htmax : t ∈ IsLocalRing.maximalIdeal (v.adicCompletionIntegers K) :=
-      (Ideal.pow_le_self (Nat.ne_of_gt hn)) ht
-    have hnon : -t ∈ nonunits (v.adicCompletionIntegers K) :=
-      (IsLocalRing.mem_maximalIdeal (-t)).mp
-        ((IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)).neg_mem htmax)
     have hunit : IsUnit (1 + t : v.adicCompletionIntegers K) := by
-      simpa only [sub_neg_eq_add] using
-        (IsLocalRing.isUnit_one_sub_self_of_mem_nonunits (-t) hnon)
+      simpa using
+        (IsLocalRing.isUnit_one_sub_self_of_mem_nonunits (-t) ((IsLocalRing.mem_maximalIdeal (-t)).mp
+          ((IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)).neg_mem ((Ideal.pow_le_self (Nat.ne_of_gt hn)) ht))))
     obtain ⟨y, hy⟩ := hunit
     apply (mem_rayLocalHigherUnitGroup_iff v n x).mpr
     refine ⟨y, ?_, ?_⟩
     · apply Units.ext
-      change ((y : v.adicCompletionIntegers K) : v.adicCompletion K) =
-        (x : v.adicCompletion K)
+      change (y : v.adicCompletion K) =
+        x
       calc
-        ((y : v.adicCompletionIntegers K) : v.adicCompletion K) =
+        _ =
             ((1 + t : v.adicCompletionIntegers K) : v.adicCompletion K) :=
           congrArg
             (fun z : v.adicCompletionIntegers K =>
               (z : v.adicCompletion K)) hy
         _ = (x : v.adicCompletion K) := hx.symm
-    · have hsub : (y : v.adicCompletionIntegers K) - 1 = t := by
+    · have hsub : y - 1 = t := by
         rw [hy]
         ring
       rw [hsub]

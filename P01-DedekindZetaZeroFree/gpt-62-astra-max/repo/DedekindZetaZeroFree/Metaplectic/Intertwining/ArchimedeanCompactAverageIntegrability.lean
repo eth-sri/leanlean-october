@@ -12,26 +12,25 @@ open MeasureTheory Set Topology
 open scoped NumberField Classical Topology Matrix.Norms.Elementwise
 
 theorem pgl_t2 : T2Space PGLComplex.Group := by
-  have hc : IsClosed (Subgroup.center (Matrix.GeneralLinearGroup (Fin 2) ℂ) :
-      Set (Matrix.GeneralLinearGroup (Fin 2) ℂ)) := by
-    have he : (Subgroup.center (Matrix.GeneralLinearGroup (Fin 2) ℂ) :
-        Set (Matrix.GeneralLinearGroup (Fin 2) ℂ)) =
-        ⋂ g : Matrix.GeneralLinearGroup (Fin 2) ℂ, {x | x * g = g * x} := by
+  let GeneralLinearGroup₀ := Matrix.GeneralLinearGroup (Fin 2) ℂ
+  have hc : IsClosed (Subgroup.center (GeneralLinearGroup₀) :
+      Set (GeneralLinearGroup₀)) := by
+    have he : (Subgroup.center (GeneralLinearGroup₀) :
+        Set (GeneralLinearGroup₀)) =
+        ⋂ g : GeneralLinearGroup₀, {x | x * g = g * x} := by
       ext x
       simp [Subgroup.mem_center_iff]
       exact ⟨fun h g => (h g).symm, fun h g => (h g).symm⟩
     rw [he]
     exact isClosed_iInter fun g => isClosed_eq (continuous_mul_const g) (continuous_const_mul g)
-  letI : IsClosed (Subgroup.center (Matrix.GeneralLinearGroup (Fin 2) ℂ) :
-      Set (Matrix.GeneralLinearGroup (Fin 2) ℂ)) := hc
-  change T2Space (Matrix.GeneralLinearGroup (Fin 2) ℂ ⧸ Subgroup.center _)
+  letI : IsClosed (Subgroup.center (GeneralLinearGroup₀) :
+      Set (GeneralLinearGroup₀)) := hc
   infer_instance
 
 theorem pgl_locallyCompact : LocallyCompactSpace PGLComplex.Group := by
   letI : LocallyCompactSpace (Matrix (Fin 2) (Fin 2) ℂ) := by
     change LocallyCompactSpace (Fin 2 → Fin 2 → ℂ)
     infer_instance
-  change LocallyCompactSpace (Matrix.GeneralLinearGroup (Fin 2) ℂ ⧸ Subgroup.center _)
   infer_instance
 
 theorem pgl_secondCountable : SecondCountableTopology PGLComplex.Group := by
@@ -42,7 +41,6 @@ theorem pgl_secondCountable : SecondCountableTopology PGLComplex.Group := by
     MulOpposite.opHomeomorph.symm.secondCountableTopology
   letI : SecondCountableTopology (Matrix.GeneralLinearGroup (Fin 2) ℂ) :=
     Units.isEmbedding_embedProduct.secondCountableTopology
-  change SecondCountableTopology (Matrix.GeneralLinearGroup (Fin 2) ℂ ⧸ Subgroup.center _)
   infer_instance
 
 end DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel

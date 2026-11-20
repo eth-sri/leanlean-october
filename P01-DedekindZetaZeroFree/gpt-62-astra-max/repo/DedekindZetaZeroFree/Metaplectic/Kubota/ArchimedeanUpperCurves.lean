@@ -13,8 +13,8 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.RootDerivatives
 open MomentSources KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def direction (imaginary : Bool) : ℂ := if imaginary then Complex.I else 1
 
@@ -38,8 +38,7 @@ theorem upperCoordinates_smooth (w : InfinitePlace F) (b : Bool) :
   apply contDiff_pi.mpr; intro i
   fin_cases i <;> simp only [upperCoordinates, Matrix.cons_val_zero, Matrix.cons_val_one,
     Matrix.cons_val_two]
-  · change ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ => if v = w then (t : ℂ) * direction b else 0)
-    split_ifs
+  · split_ifs
     · exact Complex.ofRealCLM.contDiff.mul contDiff_const
     · exact contDiff_const
   · exact contDiff_const
@@ -84,9 +83,9 @@ theorem upperCurve_hasDeriv (w : InfinitePlace F) (b : Bool) (f : Functions R)
     (hf : KPLiteralRaw.Smooth F R.A.zeta12 R.A.primitive_zeta12 f) (g : Group R) :
     HasDerivAt (fun t => f (g * upperCurve R w b t)) (upperLieDerivative R w b f g) 0 := by
   have hbase : archBase F ∈ archDomain F := by intro v; simp [archBase]
-  have hO : IsOpen (archDomain F) := KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F
+  have hO := KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F
   have hc := (hf.2.1 g).contDiffAt (hO.mem_nhds hbase)
-  have ht := upperCoordinates_smooth (F := F) w b
+  have ht := upperCoordinates_smooth w b
   have hd : DifferentiableAt ℝ (fun t => f (g * upperCurve R w b t)) 0 := by
     simp_rw [← upperCoordinates_chart]
     exact ((upperCoordinates_zero w b).symm ▸ hc |>.comp 0 ht.contDiffAt).differentiableAt (by simp)
@@ -115,10 +114,10 @@ theorem upperCurve_hasDerivAt (w : InfinitePlace F) (b : Bool) (f : Functions R)
     (hf : KPLiteralRaw.Smooth F R.A.zeta12 R.A.primitive_zeta12 f) (g : Group R) (t : ℝ) :
     HasDerivAt (fun s => f (g * upperCurve R w b s))
       (upperLieDerivative R w b f (g * upperCurve R w b t)) t := by
-  have hd : HasDerivAt (fun s : ℝ => s - t) 1 t := by simpa using (hasDerivAt_id t).sub_const t
+  have hd : HasDerivAt (fun s : ℝ => s - t) 1 t := by exact (hasDerivAt_id t).sub_const t
   have hout : HasDerivAt (fun s => f ((g * upperCurve R w b t) * upperCurve R w b s))
       (upperLieDerivative R w b f (g * upperCurve R w b t)) (t - t) := by
-    simpa only [sub_self] using (upperCurve_hasDeriv R w b f hf (g * upperCurve R w b t))
+    simpa using (upperCurve_hasDeriv R w b f hf (g * upperCurve R w b t))
   have h := hout.scomp (h := fun s : ℝ => s - t) t hd
   convert h using 1
   · funext s

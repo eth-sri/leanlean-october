@@ -11,8 +11,8 @@ open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPGlobalResidualConstruction Filter
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 
@@ -37,13 +37,9 @@ theorem quotientCoreEvaluator_continuous
   intro S hS
   have hn : J ⁻¹' S ∈ nhds (archBase F) := hJ (by rwa [hbase])
   obtain ⟨W, hW, hoW, hbW⟩ := mem_nhds_iff.mp (Filter.inter_mem hn (hVo.mem_nhds hb))
-  have hWV : W ⊆ V := fun y hy => (hW hy).2
-  have hT := hthick W hoW hbW hWV U
   have hG : (fun k : G F ζ hζ => g⁻¹ * k) ⁻¹'
       {k | ∃ y ∈ W, ∃ u ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U, k = archChart F ζ hζ y * u} ∈ nhds g := by
-    have hc : ContinuousAt (fun k : G F ζ hζ => g⁻¹ * k) g :=
-      continuousAt_const.mul continuousAt_id
-    exact hc (by simpa using hT)
+    exact (continuousAt_const.mul continuousAt_id) (by simpa using (hthick W hoW hbW (fun y hy => (hW hy).2) U))
   apply Filter.mem_of_superset hG
   intro k hk
   obtain ⟨y, hy, u, hu, hk⟩ := hk

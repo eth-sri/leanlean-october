@@ -13,18 +13,17 @@ set_option autoImplicit false
 open LocalFiniteSums
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 private lemma separation_good_data (C : A.GeneralArithmeticContext σ η hS)
     (U : Frequency C) (p : ExteriorPrime A) (hp : (U.j p).val = 0) :
-    U.u = U.unitPart p ∧
-      IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u) ∧
+    IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u) ∧
       (U.theta p).val = chi (σ := σ) p
         (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u) := by
   have hu : U.u = U.unitPart p := by
     simpa [hp] using (U.unitPart_spec p).1
-  refine ⟨hu, ?_, ?_⟩
+  refine ⟨?_, ?_⟩
   · rw [hu]
     exact (U.unitPart_spec p).2
   · simp only [Frequency.theta, hu]
@@ -41,14 +40,15 @@ private lemma separation_qPower_norm_lt_one (p : ExteriorPrime A) (s : ℂ)
 
 private lemma separation_sub_ne_zero {a : ℂ} (ha : ‖a‖ < 1) : 1 - a ≠ 0 := by
   intro h
-  have he : a = 1 := (sub_eq_zero.mp h).symm
-  simpa [he] using ha
+  simpa [((sub_eq_zero.mp h).symm)] using ha
+
+alias PrimeFactorSeparation.separation_sub_ne_zero := separation_sub_ne_zero
 
 private lemma separation_D_ne_zero (C : A.GeneralArithmeticContext σ η hS)
     (U : Frequency C) (p : ExteriorPrime A) (ξ : ℂ) (hξ : 4 < ξ.re) :
     1 - D (σ := σ) (η := η) p U.u ξ ≠ 0 := by
   by_cases hp : (U.j p).val = 0
-  · have hθ := (separation_good_data C U p hp).2.2
+  · have hθ := (separation_good_data C U p hp).2
     have hn : ‖chi (σ := σ) p
         (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u)‖ = 1 := by
       rw [← hθ]
@@ -72,8 +72,8 @@ theorem prime_factor_separation (C : A.GeneralArithmeticContext σ η hS)
         f C p (U.j p) (U.theta p) ξ w z =
       (1 - D (σ := σ) (η := η) p U.u ξ) * localFactor C U p ξ w z := by
   by_cases hp : (U.j p).val = 0
-  · obtain ⟨_, hu, hθ⟩ := separation_good_data C U p hp
-    have hformula := (good_euler_series C p U.u hu (U.theta p) hθ ξ w z hξ hw hz).2
+  · obtain ⟨hu, hθ⟩ := separation_good_data C U p hp
+    have hformula := (good_euler_series C p U.u hu (U.theta p) hθ ξ w z hξ hw hz)
     have hj : U.j p = 0 := Fin.ext hp
     have hf : f C p (U.j p) (U.theta p) ξ w z = goodRational C p U.u ξ w z := by
       rw [hj]
@@ -93,7 +93,7 @@ theorem prime_factor_separation_denominators_nonzero
   · apply separation_sub_ne_zero
     exact separation_qPower_norm_lt_one p (-6 * z) (by simp; linarith)
   · by_cases hp : (U.j p).val = 0
-    · have hθ := (separation_good_data C U p hp).2.2
+    · have hθ := (separation_good_data C U p hp).2
       apply separation_sub_ne_zero
       simp only [W, norm_mul, ← hθ, (U.theta p).property, one_mul]
       exact separation_qPower_norm_lt_one p (-w) (by simp; linarith)

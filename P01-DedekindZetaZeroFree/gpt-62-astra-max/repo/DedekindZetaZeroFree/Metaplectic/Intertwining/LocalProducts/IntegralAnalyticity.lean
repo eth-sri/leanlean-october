@@ -17,10 +17,7 @@ namespace DedekindZetaZeroFree.KPGlobalResidualKernel.IntertwinerRegularization.
 open KPLocalPrincipalSeries KPLocalExceptionalConstruction KPLocalStoneVonNeumann
 open KPRankOneShellRepair KPRankOneShellContinuation
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor renaming actualFiberCoordinates → actualFiberCoordinates
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor renaming actual_fiber_coordinates_apply → actual_fiber_coordinates_apply
-open _root_.DedekindZetaZeroFree.KPRankOneTranslatedMeromorphy renaming section_coordinate_formula → section_coordinate_formula
-open _root_.DedekindZetaZeroFree.KPRankOneTranslatedMeromorphy renaming target_scalar_diff → target_scalar_diff
+open _root_.DedekindZetaZeroFree.KPRankOneTranslatedMeromorphy (section_coordinate_formula target_scalar_diff)
 
  theorem multilinear_coordinate_analytic
     {ι : Type} [Fintype ι] [DecidableEq ι]
@@ -47,12 +44,9 @@ open _root_.DedekindZetaZeroFree.KPRankOneTranslatedMeromorphy renaming target_s
         rw [L.map_sum_finset]
         apply Finset.sum_congr rfl
         intro r _
-        simpa only [smul_eq_mul] using
+        simpa using
           L.map_smul_univ (fun i => e i (y i) (r i)) (fun i => w i (r i))
-  have hf : (fun s => L (v s)) =
-      (fun s => ∑ r : ∀ i, J i, (∏ i, e i (v s i) (r i)) * L (fun i => w i (r i))) :=
-    funext (fun s => he (v s))
-  rw [hf]
+  rw [(funext (fun s => he (v s)))]
   intro s hs
   apply Finset.analyticAt_fun_sum
   intro r _
@@ -90,20 +84,18 @@ theorem finite_full_right_coordinate_analytic
     rw [LinearEquiv.symm_apply_apply]
     exact section_coordinate_formula F ζ hζ q S P .plus s _ g t
   simp_rw [he]
-  have hc := ActualLocalProduct.finite_coordinate_analytic F ζ hζ q S P μ hμ φ
-    (S.iwasawa.compactPart g)
-    (t * S.borel.weyl (S.borel.retract (S.iwasawa.borelPart g)))
-  have hd := target_scalar_diff F ζ hζ q S .plus (S.iwasawa.borelPart g)
   intro s hs
-  exact (hd.analyticAt s).mul (hc s hs)
+  exact ((target_scalar_diff F ζ hζ q S .plus (S.iwasawa.borelPart g)).analyticAt s).mul ((ActualLocalProduct.finite_coordinate_analytic F ζ hζ q S P μ hμ φ
+    (S.iwasawa.compactPart g)
+    (t * S.borel.weyl (S.borel.retract (S.iwasawa.borelPart g)))) s hs)
 
 variable (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-variable (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
-variable (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (hE : C₀.exceptional ⊆ E)
-variable (φfin : ∀ q : E, compactPicture (C₀.canonical q.val).borel (C₀.polarization q.val)
+    (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
+    (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (hE : C₀.exceptional ⊆ E)
+    (φfin : ∀ q : E, compactPicture (C₀.canonical q.val).borel (C₀.polarization q.val)
   (C₀.canonical q.val).iwasawa .plus)
 variable (gfin : ∀ q : E, ActualCover F ζ hζ q.val)
-variable (t : KPGlobalTorusFunctionData.E F ζ hζ)
+    (t : KPGlobalTorusFunctionData.E F ζ hζ)
 
 variable (φarch : {w : NumberField.InfinitePlace F // w.IsComplex} →
   KPComplexIntertwinerParameterMajorant.CompactPicture)

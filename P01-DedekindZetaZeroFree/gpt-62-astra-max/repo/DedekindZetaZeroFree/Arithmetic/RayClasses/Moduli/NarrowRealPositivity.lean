@@ -18,12 +18,12 @@ theorem narrowRayRealPositivity
   classical
   constructor
   · intro h φ
-    let ψ : K →+* ℂ := Complex.ofRealHom.comp φ
+    let ψ := Complex.ofRealHom.comp φ
     have hψ : ComplexEmbedding.IsReal ψ := by
       rw [ComplexEmbedding.isReal_iff]
       ext x
       simp [ψ, ComplexEmbedding.conjugate_coe_eq]
-    have hw : (InfinitePlace.mk ψ).IsReal := InfinitePlace.isReal_mk_iff.mpr hψ
+    have hw := InfinitePlace.isReal_mk_iff.mpr hψ
     have hpos := h ⟨InfinitePlace.mk ψ, hw⟩
       (by rw [narrowIdealModulus_infinitePart]; exact Finset.mem_univ _)
     have hemb : (InfinitePlace.mk ψ).embedding_of_isReal hw = φ := by

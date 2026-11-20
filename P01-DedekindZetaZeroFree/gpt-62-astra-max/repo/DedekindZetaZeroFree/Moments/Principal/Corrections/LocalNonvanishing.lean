@@ -26,33 +26,24 @@ def principalGap (σ₀ : ℝ) : ℝ :=
 theorem principalGap_pos (σ₀ : ℝ) (hσ₀ : (1 / 2 : ℝ) < σ₀) :
     0 < principalGap σ₀ := by
   unfold principalGap
-  have h₁ : Real.rpow 2 (-σ₀) < 1 :=
-    Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
-  have h₂ : Real.rpow 2 (3 - 6 * σ₀) < 1 :=
-    Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
-  exact sub_pos.mpr (max_lt h₁ h₂)
+  exact sub_pos.mpr (max_lt (Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)) (Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)))
 
 private lemma model_moduli (σ₀ Q : ℝ) (hσ₀ : (1 / 2 : ℝ) < σ₀)
     (hQ : 2 ≤ Q) (α β s : ℂ) (hα : ‖α‖ = 1) (hβ : ‖β‖ = 1)
     (hs : σ₀ ≤ s.re) :
     ‖α * Complex.exp (-s * (Real.log Q : ℂ))‖ ≤ 1 - principalGap σ₀ ∧
     ‖β * Complex.exp ((3 - 6 * s) * (Real.log Q : ℂ))‖ ≤ 1 - principalGap σ₀ := by
-  have hQ0 : 0 < Q := by linarith
   have hn (z : ℂ) : ‖Complex.exp (z * (Real.log Q : ℂ))‖ = Real.rpow Q z.re := by
-    rw [Complex.norm_exp, Real.rpow_eq_pow, Real.rpow_def_of_pos hQ0]
+    rw [Complex.norm_exp, Real.rpow_eq_pow, Real.rpow_def_of_pos (by linarith)]
     simp [mul_comm]
   simp only [norm_mul, hα, hβ, one_mul, hn]
   have hre : (3 - 6 * s).re = 3 - 6 * s.re := by simp
   rw [Complex.neg_re, hre]
-  have hd : Real.rpow Q (-s.re) ≤ Real.rpow 2 (-σ₀) :=
-    (Real.rpow_le_rpow_of_exponent_le (by linarith) (neg_le_neg hs)).trans
-      (Real.rpow_le_rpow_of_nonpos (by norm_num) hQ (by linarith))
-  have he : Real.rpow Q (3 - 6 * s.re) ≤ Real.rpow 2 (3 - 6 * σ₀) :=
-    (Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith)).trans
-      (Real.rpow_le_rpow_of_nonpos (by norm_num) hQ (by linarith))
   constructor
-  · simpa [principalGap] using hd.trans (le_max_left _ _)
-  · simpa [principalGap] using he.trans (le_max_right _ _)
+  · simpa [principalGap] using ((Real.rpow_le_rpow_of_exponent_le (by linarith) (neg_le_neg hs)).trans
+    (Real.rpow_le_rpow_of_nonpos (by norm_num) hQ (by linarith))).trans (le_max_left _ _)
+  · simpa [principalGap] using ((Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith)).trans
+    (Real.rpow_le_rpow_of_nonpos (by norm_num) hQ (by linarith))).trans (le_max_right _ _)
 
 private lemma rational_bounds (r M : ℝ) (D E : ℂ) (hr0 : 0 ≤ r)
     (hr : r ≤ 1 / 2) (hM : M < 1) (hD : ‖D‖ ≤ M) (hE : ‖E‖ ≤ M) :

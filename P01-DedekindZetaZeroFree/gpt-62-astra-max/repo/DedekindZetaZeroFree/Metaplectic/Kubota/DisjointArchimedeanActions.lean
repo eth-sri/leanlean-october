@@ -10,8 +10,8 @@ open NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.CurrentOutputExtension
 open MomentSources KPSmoothActualFlowData
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1500000
 
@@ -23,14 +23,12 @@ theorem projectiveSlot_commute_of_projection_one (w : InfinitePlace F)
   have he : E (Function.update (1 : InfinitePlace F → KPCplxCharacterHaar.ComplexPGL2) w a,1) = projectiveSlot R w a := by
     rw [hE]
     exact mul_one _
-  have hw : (E.symm g).1 w = 1 := (congrFun (hp g) w).trans hg
   have hc : Commute (E.symm g) (Function.update (1 : InfinitePlace F → KPCplxCharacterHaar.ComplexPGL2) w a,1) := by
-    change (E.symm g) * (Function.update (1 : InfinitePlace F → KPCplxCharacterHaar.ComplexPGL2) w a,1) = (Function.update (1 : InfinitePlace F → KPCplxCharacterHaar.ComplexPGL2) w a,1) * (E.symm g)
     apply Prod.ext
     · funext u
       by_cases hu : u = w
       · subst u
-        simp [hw]
+        simp [((congrFun (hp g) w).trans hg)]
       · simp [hu]
     · simp
   have hh := hc.map E.toMonoidHom

@@ -50,7 +50,7 @@ theorem kernel_generators_mem_of_actual_compact
     refine ⟨KPStandardLocalRootLifts.integralN F q x, ?_⟩
     rw [(S.openCell S.polarization).upper_eq]
     change _ = KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
-      (KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) (x : LocalField F q))
+      (KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) x)
     rw [KPStandardLocalRootLifts.N_eq_compact F ζ hζ q ht x]
     rfl
 

@@ -48,14 +48,18 @@ theorem tendsto_sum_idealNormCount_div :
       (fun k _ ↦ Ideal.finite_setOfPred_absNorm_eq k)]
   simp [Set.coe_eq_subtype]
 
-theorem lSeriesSummable_idealNormCount {s : ℂ} (hs : 1 < s.re) :
+variable {s : ℂ} (hs : 1 < s.re)
+
+include hs in
+theorem lSeriesSummable_idealNormCount :
     LSeriesSummable (fun n ↦ (idealNormCount K n : ℂ)) s := by
   refine LSeriesSummable_of_sum_norm_bigO_and_nonneg ?_
     (fun n ↦ by positivity) zero_le_one hs
   exact Asymptotics.isBigO_atTop_natCast_rpow_of_tendsto_div_rpow
     (by simpa using tendsto_sum_idealNormCount_div K)
 
-theorem hasSum_dedekindZeta {s : ℂ} (hs : 1 < s.re) :
+include hs in
+theorem hasSum_dedekindZeta :
     HasSum (LSeries.term (fun n ↦ (idealNormCount K n : ℂ)) s)
       (NumberField.dedekindZeta K s) := by
   rw [dedekindZeta_eq_LSeries_idealNormCount]

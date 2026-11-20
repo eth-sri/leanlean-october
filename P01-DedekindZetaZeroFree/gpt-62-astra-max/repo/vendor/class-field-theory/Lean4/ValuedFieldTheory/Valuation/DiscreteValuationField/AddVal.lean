@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -47,12 +45,11 @@ additive valuation. -/
     simp
   obtain ⟨ϖ, hϖ⟩ := exists_irreducible R
   obtain ⟨n, u, ha_decomp⟩ := eq_unit_mul_pow_irreducible ha hϖ
-  have hmapϖ : Irreducible (e ϖ) := hϖ.map e
   have hmap_decomp :
       e a = (Units.map e.toMonoidHom u : R) * (e ϖ) ^ n := by
     rw [ha_decomp, map_mul, map_pow]
     rfl
-  rw [addVal_def (e a) (Units.map e.toMonoidHom u) hmapϖ n hmap_decomp,
+  rw [addVal_def (e a) (Units.map e.toMonoidHom u) (hϖ.map e) n hmap_decomp,
     addVal_def a u hϖ n ha_decomp]
 
 end IsDiscreteValuationRing

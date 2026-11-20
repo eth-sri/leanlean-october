@@ -10,16 +10,16 @@ set_option maxHeartbeats 1200000
 namespace DedekindZetaZeroFree.KPContinuation.ChamberModerateGrowth
 open KPContFlatCuspIncomingEvaluation
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
 variable (hι : Function.Injective ι) (f : ℂ → S)
-variable (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-variable (a : Cusps F ζ hζ C R P H U) (s : ℂ) (hs : s ∈ KPContActualChamberNormalSeries.V)
+    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+    (a : Cusps F ζ hζ C R P H U) (s : ℂ) (hs : s ∈ KPContActualChamberNormalSeries.V)
 
 private theorem scalar_cusp_frame
     (e : KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ
@@ -29,28 +29,7 @@ private theorem scalar_cusp_frame
       (z, finiteRepresentative F ζ hζ C R P H U a ε) =
     (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) *
       (KPContSectorScalarLineAlgebra.S F ζ hζ (atlasLevel F ζ hζ C R P H U)
-        R P H e a.1).val ((sigma F ζ hζ C R P H U a) • z) := by
-  let j := KPContSectorScalarLineAlgebra.J F ζ hζ (atlasLevel F ζ hζ C R P H U) e
-  have hr := j.property.1 z (finiteRepresentative F ζ hζ C R P H U a ε)
-    (sigma F ζ hζ C R P H U a)
-  have hc : KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ
-      (sigma F ζ hζ C R P H U a) * finiteRepresentative F ζ hζ C R P H U a ε =
-      KPCuspGenuineMonodromy.central F ζ hζ ε * (atlas F ζ hζ C R P H U).representative a.1 := by
-    have hcomm : ∀ c : KPCuspGenuineMonodromy.FiniteCover F ζ hζ,
-        c * KPCuspGenuineMonodromy.central F ζ hζ ε =
-          KPCuspGenuineMonodromy.central F ζ hζ ε * c := by
-      intro c
-      apply Subtype.ext
-      exact Subgroup.mem_center_iff.mp
-        (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
-          (show (KPCuspGenuineMonodromy.central F ζ hζ ε :
-            KPCuspGenuineMonodromy.Cover F ζ hζ) ∈
-            (KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ).range from ⟨ε, rfl⟩)) c
-    rw [finiteRepresentative, ← mul_assoc, ← mul_assoc, hcomm]
-    simp only [map_inv, mul_assoc, mul_inv_cancel_left]
-  rw [hc, j.property.2.1] at hr
-  rw [KPContSectorScalarLineAlgebra.S_apply]
-  exact hr.symm
+        R P H e a.1).val ((sigma F ζ hζ C R P H U a) • z) := by apply @DedekindZetaZeroFree.KPContActualChamberCasimirJets.CuspAnalytic.scalar_cusp_frame <;> assumption
 
 include hι hf hs in
 private theorem sheet_frame
@@ -129,10 +108,9 @@ theorem actualCuspSheet_translation
   obtain ⟨A, hA, hc⟩ := D.upper h.val h.property
   have ha := G.actual_action h A hA hc ((x,b),0)
   rw [G.unipotent_action l ((x,b),0)] at ha
-  have hp := (KPCuspCharts.toArchHomeomorph F G.positive_dimension).injective ha
   have he : G.crossAction h (x,b) = (x + KPCuspCharts.embedding F l.val,b) := by
     rw [G.crossAction_formula h A hA hc]
-    exact (congrArg Prod.fst hp).symm
+    exact (congrArg Prod.fst ((KPCuspCharts.toArchHomeomorph F G.positive_dimension).injective ha)).symm
   have hh := actualCuspSheet_crossAction F ζ hζ C R P H U ι hι f hf a s hs h t (x,b) ε
   change G.crossAction h (x,b) = _ at he
   change KPContActualChamberCasimirJets.cuspSheet F ζ hζ C R P H U ι f a 0 s t

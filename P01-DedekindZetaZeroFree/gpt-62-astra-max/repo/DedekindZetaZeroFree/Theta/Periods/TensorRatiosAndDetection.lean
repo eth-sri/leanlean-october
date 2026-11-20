@@ -12,13 +12,13 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ComplexLines
 open LiteralSource MomentSources HCGeneration TensorActionSource KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 local notation "H" => actualImageData R P C μ hμ
 local notation "W" => actualLocal R H
 local notation "E" => bad R.A P C
@@ -44,15 +44,13 @@ theorem actualSlot_period_ratio (N : TraceHaarTransport R)
       fourier R (KPWildKernelUpperBound.quotientHaar F)
         (actualCoreResidue R P C μ hμ N (actualSlotTensor R P C μ hμ s x w hw v0)) g := by
   obtain ⟨y,hy⟩ := actualSlot_period_lift R P C μ hμ N s x w hw
-  have hc : ∀z:ℂ,g*actualMatrixSlot R w (KPCplxCharacterHaar.upperUnipotent z)=
-      actualMatrixSlot R w (KPCplxCharacterHaar.upperUnipotent z)*g := by
-    intro z
-    rw [←projectiveSlot_mk]
-    exact (projectiveSlot_commute_of_projection_one R w g hg _).eq
-  exact (hy (g*projectiveSlot R w a) v0).trans
-    ((restrictedSlotPeriod_background_ratio R N P C  s y w hw g hc M hM v0 hv0 a).trans
+  refine (hy (g*projectiveSlot R w a) v0).trans
+    ((restrictedSlotPeriod_background_ratio R N P C s y w hw g ?_ M hM v0 hv0 a).trans
       (congrArg (fun z:ℂ => (M (imageAction traceFrequency a (harmonicInclusion v0))/M (harmonicInclusion v0))*z)
         (hy g v0).symm))
+  intro z
+  rw [←projectiveSlot_mk]
+  exact (projectiveSlot_commute_of_projection_one R w g hg _).eq
 
 theorem actualStage_detector (N : TraceHaarTransport R)
 

@@ -27,13 +27,12 @@ private theorem invariant_level {G : Type*} [Group G] [TopologicalSpace G]
       map_one' := by apply Subtype.ext; simp
       map_mul' := by intro a b; apply Subtype.ext; dsimp; group }
   let U : Subgroup N := ⨅ k : K, U₀.toOpenSubgroup.toSubgroup.comap (c k)
-  have hUc : Continuous (fun p : K × N => c p.1 p.2) := by
-    exact ((continuous_subtype_val.comp continuous_fst).mul
+  have hUc : Continuous (fun p : K × N => c p.1 p.2) := ((continuous_subtype_val.comp continuous_fst).mul
       (continuous_subtype_val.comp continuous_snd)).mul
         (continuous_subtype_val.comp continuous_fst).inv |>.subtype_mk _
   have hopen : IsOpen (U : Set N) := by
-    have he : (U : Set N) = (Prod.snd '' ((fun p : K × N => c p.1 p.2) ⁻¹'
-        (U₀.toOpenSubgroup : Set N)ᶜ))ᶜ := by
+    have he : U = (Prod.snd '' ((fun p : K × N => c p.1 p.2) ⁻¹'
+        U₀.toOpenSubgroupᶜ))ᶜ := by
       ext n
       simp [U, Subgroup.mem_iInf, Subgroup.mem_comap, Set.mem_image]
     rw [he]
@@ -41,9 +40,8 @@ private theorem invariant_level {G : Type*} [Group G] [TopologicalSpace G]
       (U₀.toOpenSubgroup.isOpen.isClosed_compl.preimage hUc)).isOpen_compl
   have hsub : U ≤ U₀.toOpenSubgroup.toSubgroup := by
     intro n hn
-    have h := Subgroup.mem_iInf.mp hn (1 : K)
-    simpa [c] using h
-  have hcompact : IsCompact (U : Set N) :=
+    simpa [c] using (Subgroup.mem_iInf.mp hn (1 : K))
+  have hcompact :=
     U₀.isCompact.of_isClosed_subset (OpenSubgroup.isClosed ⟨U, hopen⟩) hsub
   refine ⟨⟨⟨U, hopen⟩, hcompact⟩, ?_⟩
   intro k hk
@@ -153,10 +151,9 @@ theorem exists_iwasawaNorm_right_level
     iwasawaNorm F ζ hζ (raw D) ((t.val * KPGlobalTorusFunctionData.N F ζ hζ x) * k.val)
   rw [mul_assoc, iwasawaNorm_borel_mul F ζ hζ (raw D) t x,
     iwasawaNorm_formula F ζ hζ (raw D) t x k]
-  have hku : k.val * u.val ∈ L := L.mul_mem
+  rw [norm_compact_supergroup D L hL le_sup_left ⟨_,(L.mul_mem
     ((show D.K ≤ L from le_sup_left) k.property)
-    ((show KPGlobalTorusFunctionData.globalLevel F ζ hζ U ≤ L from le_sup_right) u.property)
-  rw [norm_compact_supergroup D L hL le_sup_left ⟨_,hku⟩, mul_one]
+    ((show KPGlobalTorusFunctionData.globalLevel F ζ hζ U ≤ L from le_sup_right) u.property))⟩, mul_one]
 
 end DedekindZetaZeroFree.KPGlobalResidualKernel.ResidualChamberConstruction.RegularSymmetrySteps
 

@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -62,35 +59,34 @@ theorem absoluteValueDecompositionGroup_eq_finitePlaceStabilizer
     absoluteValueExtensionConjugate
         (HeightOneSpectrum.adicAbv K v) w σ = w ↔
       finitePlaceEquiv K L σ
-          (finitePlaceExtensionCentre (K := K) (L := L) v w) =
-        finitePlaceExtensionCentre (K := K) (L := L) v w
+          (finitePlaceExtensionCentre v w) =
+        finitePlaceExtensionCentre v w
   constructor
   · intro h
     have hc := congrArg
-      (finitePlaceExtensionCentre (K := K) (L := L) v) h
+      (finitePlaceExtensionCentre v) h
     rw [finitePlaceExtensionCentre_conjugate] at hc
     calc
       finitePlaceEquiv K L σ
-          (finitePlaceExtensionCentre (K := K) (L := L) v w) =
+          (finitePlaceExtensionCentre v w) =
           finitePlaceEquiv K L σ
             (finitePlaceEquiv K L σ⁻¹
-              (finitePlaceExtensionCentre (K := K) (L := L) v w)) :=
+              (finitePlaceExtensionCentre v w)) :=
         congrArg (finitePlaceEquiv K L σ) hc.symm
-      _ = finitePlaceExtensionCentre (K := K) (L := L) v w := by
-        rw [← finitePlaceEquiv_mul]
+      _ = finitePlaceExtensionCentre v w := by
         simp
   · intro h
     apply finitePlaceExtensionCentre_injective
-      (K := K) (L := L) v
+        v
     rw [finitePlaceExtensionCentre_conjugate]
     calc
       finitePlaceEquiv K L σ⁻¹
-          (finitePlaceExtensionCentre (K := K) (L := L) v w) =
+          (finitePlaceExtensionCentre v w) =
           finitePlaceEquiv K L σ⁻¹
             (finitePlaceEquiv K L σ
-              (finitePlaceExtensionCentre (K := K) (L := L) v w)) :=
+              (finitePlaceExtensionCentre v w)) :=
         congrArg (finitePlaceEquiv K L σ⁻¹) h.symm
-      _ = finitePlaceExtensionCentre (K := K) (L := L) v w := by
+      _ = finitePlaceExtensionCentre v w := by
         rw [← finitePlaceEquiv_mul]
         simp
 
@@ -109,24 +105,21 @@ theorem finitePlaceSplitsCompletely_iff_centre_stabilizer_eq_bot
   unfold FinitePlaceSplitsCompletely finitePlaceDecompositionGroup
   constructor
   · intro h
-    have hw :
-        absoluteValueDecompositionGroup K w.1 = ⊥ :=
+    have hw :=
       absoluteValueDecompositionGroup_eq_bot_independent_extension
         (HeightOneSpectrum.adicAbv K v)
         (RayClass.adicAbv_isNontrivial v)
-        (chosenFinitePlaceExtension (L := L) v) w h
+        (chosenFinitePlaceExtension v) w h
     rwa [absoluteValueDecompositionGroup_eq_finitePlaceStabilizer
-      (K := K) (L := L) v w] at hw
+        v w] at hw
   · intro h
-    have hw :
-        absoluteValueDecompositionGroup K w.1 = ⊥ := by
-      rwa [absoluteValueDecompositionGroup_eq_finitePlaceStabilizer
-        (K := K) (L := L) v w]
-    exact
+    refine
       absoluteValueDecompositionGroup_eq_bot_independent_extension
         (HeightOneSpectrum.adicAbv K v)
         (RayClass.adicAbv_isNontrivial v)
-        w (chosenFinitePlaceExtension (L := L) v) hw
+        w (chosenFinitePlaceExtension v) ?_
+    rwa [absoluteValueDecompositionGroup_eq_finitePlaceStabilizer
+    v w]
 
 /-- Complete splitting can equivalently be tested at any finite place
 above the base place. -/
@@ -140,17 +133,15 @@ theorem finitePlaceSplitsCompletely_iff_stabilizer_eq_bot
   let := finitePlaceMulAction K L
   let Wv :
       {W : HeightOneSpectrum (𝓞 L) //
-        finitePlaceBelow (K := K) W = v} :=
+        finitePlaceBelow W = v} :=
     ⟨W, hW⟩
   let w :=
-    (finitePlaceExtensionEquivAbove (K := K) (L := L) v).symm Wv
+    (finitePlaceExtensionEquivAbove v).symm Wv
   have hw :
-      finitePlaceExtensionCentre (K := K) (L := L) v w = W := by
-    have happ :=
-      (finitePlaceExtensionEquivAbove (K := K) (L := L) v).apply_symm_apply Wv
-    exact congrArg Subtype.val happ
+      finitePlaceExtensionCentre v w = W := by
+    exact congrArg Subtype.val ((finitePlaceExtensionEquivAbove v).apply_symm_apply Wv)
   rw [finitePlaceSplitsCompletely_iff_centre_stabilizer_eq_bot
-    (K := K) (L := L) v w, hw]
+      v w, hw]
 
 omit [FiniteDimensional K L] [IsGalois K L] in
 /-- There are finitely many finite places of `L` above a fixed finite
@@ -179,11 +170,9 @@ theorem Set.Finite.preimage_finitePlaceBelow
     (hS : S.Finite) :
     {W : HeightOneSpectrum (𝓞 L) |
       finitePlaceBelow (K := K) W ∈ S}.Finite := by
-  show
-    ((finitePlaceBelow (K := K)) ⁻¹' S).Finite
   exact hS.preimage'
     (fun v _ => finite_finitePlaceBelow_fibre
-      (K := K) (L := L) v)
+        v)
 
 section IntermediateField
 
@@ -204,8 +193,6 @@ theorem finitePlaceEquiv_restrictAutomorphismScalars
         (RamificationTheory.HilbertRamification.ValuationSubring.restrictAutomorphismScalars
           (K := K) (M := M) σ) W =
       finitePlaceEquiv M L σ W := by
-  apply HeightOneSpectrum.ext
-  ext x
   rfl
 
 /-- If a finite place splits completely in `L / K`, then every finite
@@ -225,8 +212,7 @@ theorem finitePlaceSplitsCompletely_over_intermediate_of_below
   let W :=
     finitePlaceExtensionCentre
       (K := M) (L := L) v' w
-  have hWM :
-      finitePlaceBelow (K := M) W = v' :=
+  have hWM :=
     finitePlaceBelow_finitePlaceExtensionCentre
       (K := M) (L := L) v' w
   have hWK :
@@ -235,8 +221,7 @@ theorem finitePlaceSplitsCompletely_over_intermediate_of_below
     rw [← finitePlaceBelow_finitePlaceBelow
       (K := K) (M := M) (L := L) W, hWM]
   let := finitePlaceMulAction K L
-  have hKbot :
-      MulAction.stabilizer (L ≃ₐ[K] L) W = ⊥ :=
+  have hKbot :=
     (finitePlaceSplitsCompletely_iff_stabilizer_eq_bot
       (K := K) (L := L)
       (finitePlaceBelow (K := K) v') W hWK).mp hsplit
@@ -247,7 +232,7 @@ theorem finitePlaceSplitsCompletely_over_intermediate_of_below
   apply le_bot_iff.mp
   intro σ hσ
   rw [Subgroup.mem_bot]
-  let ρ : L ≃ₐ[K] L :=
+  let ρ :=
     RamificationTheory.HilbertRamification.ValuationSubring.restrictAutomorphismScalars
       (K := K) (M := M) σ
   have hρ :
@@ -259,12 +244,10 @@ theorem finitePlaceSplitsCompletely_over_intermediate_of_below
     rw [finitePlaceEquiv_restrictAutomorphismScalars
       (K := K) (M := M) (L := L)]
     exact hσ
-  have hρOne : ρ = 1 :=
+  have hρOne :=
     Subgroup.mem_bot.mp (hKbot ▸ hρ)
   ext x
   have hx := DFunLike.congr_fun hρOne x
-  change σ x = x
-  change σ x = x at hx
   exact hx
 
 /-- Finiteness of the nonsplitting finite places ascends from `K` to
@@ -279,16 +262,12 @@ theorem finite_nonsplittingPlaces_over_intermediate
         (K := M) (L := L) v'}.Finite := by
   apply
     (Set.Finite.preimage_finitePlaceBelow
-      (K := K) (L := M) hfinite).subset
+        hfinite).subset
   intro v' hv'
-  change
-    ¬ FinitePlaceSplitsCompletely
-      (K := K) (L := L)
-      (finitePlaceBelow (K := K) v')
   intro hsplit
   exact hv'
     (finitePlaceSplitsCompletely_over_intermediate_of_below
-      (K := K) (M := M) (L := L) v' hsplit)
+         v' hsplit)
 
 end IntermediateField
 

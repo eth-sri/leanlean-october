@@ -24,11 +24,10 @@ theorem rayFractionalCharacterExtension
             (I : F) →
           (f J : ℂ) = χ I := by
   classical
-  let P := ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus K m hm)
   let w : IsDedekindDomain.HeightOneSpectrum (𝓞 K) → ℂˣ :=
     fun v => if h : χ v.asIdeal ≠ 0 then Units.mk0 (χ v.asIdeal) h else 1
   obtain ⟨H, hH⟩ := weightedFractionalCharacter K w
-  refine ⟨H.comp P.subtype, ?_⟩
+  refine ⟨H.comp (ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus K m hm)).subtype, ?_⟩
   intro I hI hcop J hJ
   have hprime : ∀ v : IsDedekindDomain.HeightOneSpectrum (𝓞 K),
       χ v.asIdeal ≠ 0 →
@@ -41,16 +40,15 @@ theorem rayFractionalCharacterExtension
     rcases (χ.eq_zero_iff' I).mp h0 with h | h
     · exact hI h
     · exact h hcop
-  have hred := rayCharacterIntegralPrimeReduction K m χ H hprime I hchi
-    (rayIdealFractionalIdeal K I hI)
-    (by rw [rayIdealFractionalIdeal_coe])
-  have hJeq : (J : ClassFieldTheory.NumberFieldFractionalIdealGroup K) =
+  have hJeq : J =
       rayIdealFractionalIdeal K I hI := by
     apply Units.ext
     rw [rayIdealFractionalIdeal_coe]
     exact hJ
-  change (H (J : ClassFieldTheory.NumberFieldFractionalIdealGroup K) : ℂ) = χ I
+  change (H J : ℂ) = χ I
   rw [hJeq]
-  exact hred
+  exact rayCharacterIntegralPrimeReduction K m χ H hprime I hchi
+    (rayIdealFractionalIdeal K I hI)
+    (by rw [rayIdealFractionalIdeal_coe])
 
 end DedekindZetaZeroFree.AbelianQuotient

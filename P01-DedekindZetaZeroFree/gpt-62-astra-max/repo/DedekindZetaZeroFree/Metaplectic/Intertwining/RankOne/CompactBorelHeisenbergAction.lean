@@ -23,7 +23,7 @@ theorem torus_root (t : actualTorus F ζ hζ q) (x : LocalField F q) :
       (S.borel.torus t : ActualCover F ζ hζ q)⁻¹ =
       (S.borel.upperRoot (Multiplicative.ofAdd ((S.borel.coordinate t : LocalField F q) * x)) : ActualCover F ζ hζ q) := by
   letI := canonicalKernel_finite F ζ hζ q S P
-  let n : Multiplicative (LocalField F q) →* ActualCover F ζ hζ q :=
+  let n :=
     S.borel.B.subtype.comp S.borel.upperRoot
   have ht : S.borel.projection (S.borel.torus t : ActualCover F ζ hζ q) ∈
       KPRankOneInductionRaw.diagonalTorus F q := by
@@ -40,10 +40,9 @@ theorem torus_root (t : actualTorus F ζ hζ q) (x : LocalField F q) :
     simpa using KPRankOneInductionRaw.borelRatio_eq F q _
       (KubotaRankTwo.d (LocalField F q) (S.borel.coordinate t) 1)
       (S.borel.torus_projection t).symm (by simp)
-  have h := FiniteCentralBorel.torusLift_conjugates_root F q S.borel.projection
+  simpa [n, hr] using (FiniteCentralBorel.torusLift_conjugates_root F q S.borel.projection
     (canonicalKernel_le_center F ζ hζ q S P) n
-    (fun y => S.borel.upperRoot_projection y) (S.borel.torus t) ht htB x
-  simpa [n, hr] using h
+    (fun y => S.borel.upperRoot_projection y) (S.borel.torus t) ht htB x)
 
 include P in
 
@@ -70,9 +69,7 @@ theorem root_torus (t : actualTorus F ζ hζ q) (x : LocalField F q) :
     (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) * S.borel.torus t =
       (S.borel.torus t : ActualCover F ζ hζ q) *
         S.borel.upperRoot (Multiplicative.ofAdd (((S.borel.coordinate t)⁻¹ : (LocalField F q)ˣ) * x)) := by
-  have H := torus_root F ζ hζ q S P t⁻¹ x
-  have H' := congrArg (fun z => (S.borel.torus t : ActualCover F ζ hζ q) * z) H
-  simpa [map_inv, mul_assoc] using H'
+  simpa [map_inv, mul_assoc] using (congrArg (fun z => (S.borel.torus t : ActualCover F ζ hζ q) * z) (torus_root F ζ hζ q S P t⁻¹ x))
 
 include P in
 
@@ -84,8 +81,7 @@ theorem kernel_borel (ε : Sign) (b : S.borel.B) (t : Multiplicative (LocalField
       (kernelW (LocalField F q) S.borel ε *
         S.borel.upperRoot (Multiplicative.ofAdd
           ((((S.borel.coordinate (S.borel.retract b))⁻¹ : (LocalField F q)ˣ) : LocalField F q) * x + Multiplicative.toAdd t))) := by
-  have ht' := congrArg Subtype.val ht
-  rw [ht']
+  rw [(congrArg Subtype.val ht)]
   simp only [Subgroup.coe_mul]
   rw [← mul_assoc, mul_assoc (kernelW (LocalField F q) S.borel ε),
     root_torus F ζ hζ q S P, ← mul_assoc, kernel_torus F ζ hζ q S P]
@@ -102,9 +98,8 @@ theorem source_weyl_action (ε : Sign) (s : ℂ) (b : S.borel.B)
   have hn := S.iwasawa.intersection_norm b hb
   have hi : localAbs (LocalField F q)
       ((S.borel.coordinate (S.borel.retract b))⁻¹) = 1 := by
-    have HH := localAbs_mul (LocalField F q)
-      (S.borel.coordinate (S.borel.retract b)) (S.borel.coordinate (S.borel.retract b))⁻¹
-    simpa [hn, localAbs_one] using HH.symm
+    simpa [hn, localAbs_one] using (localAbs_mul (LocalField F q)
+      (S.borel.coordinate (S.borel.retract b)) (S.borel.coordinate (S.borel.retract b))⁻¹).symm
   cases ε <;>
     simp [inducingAction, inducingScalar, deltaHalf, normPower, S.borel.retract_torus,
       KPRankOneReversePairGeneric.GraphTwist.coordinate_weyl_inverse,

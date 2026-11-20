@@ -60,38 +60,28 @@ private theorem exists_reduction (a : AdeleRing (𝓞 F) F) :
   let e := archHomeo F
   obtain ⟨r, hrem⟩ := KPAdelicTopology.exists_integral_remainder F a.2
   let y := e (a.1 - algebraMap F (InfiniteAdeleRing F) r)
-  have hf : (ZSpan.floor b y : mixedEmbedding.mixedSpace F) ∈
-      mixedEmbedding.integerLattice F :=
-    (mixedEmbedding.mem_span_latticeBasis F).mp (ZSpan.floor b y).property
-  obtain ⟨s, hs⟩ := hf
-  let z : F := r + (s : F)
+  obtain ⟨s, hs⟩ := ((mixedEmbedding.mem_span_latticeBasis F).mp (ZSpan.floor b y).property)
+  let z := r + (s : F)
   refine ⟨z, ⟨?_, ?_⟩⟩
   · change InfiniteAdeleRing.ringEquiv_mixedSpace F
       (a.1 - algebraMap F (InfiniteAdeleRing F) z) ∈ ZSpan.fundamentalDomain b
     rw [← archHomeo_apply]
-    have hs' : mixedEmbedding F (s : F) =
-        (ZSpan.floor b y : mixedEmbedding.mixedSpace F) := hs
     have hmap (x : InfiniteAdeleRing F) (t : F) :
         e (x - algebraMap F (InfiniteAdeleRing F) t) = e x - mixedEmbedding F t := by
       simp only [e, archHomeo_apply, map_sub,
         ← InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
     have hfrac : e (a.1 - algebraMap F (InfiniteAdeleRing F) z) = ZSpan.fract b y := by
-      rw [ZSpan.fract_apply, ← hs']
+      rw [ZSpan.fract_apply, ← hs]
       change e (a.1 - algebraMap F (InfiniteAdeleRing F) (r + (s : F))) =
         e (a.1 - algebraMap F (InfiniteAdeleRing F) r) - mixedEmbedding F (s : F)
       rw [hmap, hmap, map_add]
       abel
     rw [hfrac]
     exact ZSpan.fract_mem_fundamentalDomain b y
-  · change a.2 - algebraMap F (FiniteAdeleRing (𝓞 F) F) z ∈
-      KPAdelicTopology.integralAdeles F
-    have hsfin : algebraMap F (FiniteAdeleRing (𝓞 F) F) (s : F) ∈
-        KPAdelicTopology.integralAdeles F := by
-      intro v
-      exact HeightOneSpectrum.coe_algebraMap_mem (RingOfIntegers F) F v s
-    dsimp [z]
+  · dsimp [z]
     rw [map_add, ← sub_sub]
-    exact (KPAdelicTopology.integralAdeles F).sub_mem hrem hsfin
+    refine (KPAdelicTopology.integralAdeles F).sub_mem hrem ?_
+    exact fun v => HeightOneSpectrum.coe_algebraMap_mem (RingOfIntegers F) F v s
 
 theorem projection_surjective :
     (QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F)) ''
@@ -102,21 +92,15 @@ theorem projection_surjective :
     (AdeleRing.principalSubgroup (𝓞 F) F) q
   obtain ⟨z, hz⟩ := exists_reduction F a
   refine ⟨a - algebraMap F (AdeleRing (𝓞 F) F) z, hz, ?_⟩
-  change QuotientAddGroup.mk (a - algebraMap F (AdeleRing (𝓞 F) F) z) =
-    QuotientAddGroup.mk a
   apply QuotientAddGroup.eq_iff_sub_mem.mpr
-  have h : algebraMap F (AdeleRing (𝓞 F) F) z ∈
-      AdeleRing.principalSubgroup (𝓞 F) F := ⟨z, rfl⟩
-  simpa only [sub_sub_cancel_left] using
-    (AdeleRing.principalSubgroup (𝓞 F) F).neg_mem h
+  simpa using
+    (AdeleRing.principalSubgroup (𝓞 F) F).neg_mem (⟨z, rfl⟩)
 
 theorem projection_injective :
     Set.InjOn (QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F))
       (domain F) := by
   intro x hx y hy hxy
-  have hsub : x - y ∈ AdeleRing.principalSubgroup (𝓞 F) F :=
-    QuotientAddGroup.eq_iff_sub_mem.mp hxy
-  obtain ⟨c, hc⟩ := hsub
+  obtain ⟨c, hc⟩ := (QuotientAddGroup.eq_iff_sub_mem.mp hxy)
   have hfin : algebraMap F (FiniteAdeleRing (𝓞 F) F) c ∈
       KPAdelicTopology.integralAdeles F := by
     have h := (KPAdelicTopology.integralAdeles F).sub_mem hx.2 hy.2
@@ -153,16 +137,11 @@ theorem projection_injective :
 theorem compact_closed_cover :
     IsCompact (closure (archParallelepiped F) ×ˢ
       (KPAdelicTopology.integralAdeles F : Set (FiniteAdeleRing (𝓞 F) F))) := by
-  have hC : IsCompact ((archHomeo F) ⁻¹'
-      ((mixedEmbedding.latticeBasis F).parallelepiped : Set _)) :=
-    (archHomeo F).isCompact_preimage.mpr
-      (mixedEmbedding.latticeBasis F).parallelepiped.isCompact
-  have hP : archParallelepiped F ⊆ (archHomeo F) ⁻¹'
-      ((mixedEmbedding.latticeBasis F).parallelepiped : Set _) := by
-    intro x hx
-    rw [Set.mem_preimage, archHomeo_apply]
-    exact ZSpan.fundamentalDomain_subset_parallelepiped _ hx
-  exact (hC.closure_of_subset hP).prod (KPAdelicTopology.integralAdeles_isCompact F)
+  refine (((archHomeo F).isCompact_preimage.mpr
+    (mixedEmbedding.latticeBasis F).parallelepiped.isCompact).closure_of_subset ?_).prod (KPAdelicTopology.integralAdeles_isCompact F)
+  intro x hx
+  rw [Set.mem_preimage, archHomeo_apply]
+  exact ZSpan.fundamentalDomain_subset_parallelepiped _ hx
 
 theorem quotient_compactSpace :
     CompactSpace (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) := by
@@ -181,22 +160,22 @@ theorem domain_measurableSet : MeasurableSet (domain F) := by
   letI : MeasurableSpace (InfiniteAdeleRing F) := borel _
   letI : BorelSpace (InfiniteAdeleRing F) := ⟨rfl⟩
   have hc : Continuous (InfiniteAdeleRing.ringEquiv_mixedSpace F) := by
-    have he : (archHomeo F : InfiniteAdeleRing F → mixedEmbedding.mixedSpace F) =
-        InfiniteAdeleRing.ringEquiv_mixedSpace F := funext (archHomeo_apply F)
-    rw [← he]
+    rw [← (funext (archHomeo_apply F))]
     exact (archHomeo F).continuous
-  have hP : MeasurableSet (archParallelepiped F) :=
+  have hP :=
     (ZSpan.fundamentalDomain_measurableSet (mixedEmbedding.latticeBasis F)).preimage
       hc.measurable
   have hO := (KPAdelicTopology.integralAdeles_isOpen F).measurableSet
-  have hcfst : Continuous (fun x : AdeleRing (𝓞 F) F => x.1) := continuous_fst
-  have hcsnd : Continuous (fun x : AdeleRing (𝓞 F) F => x.2) := continuous_snd
-  have hfst : Measurable (fun x : AdeleRing (𝓞 F) F => x.1) := hcfst.measurable
-  have hsnd : Measurable (fun x : AdeleRing (𝓞 F) F => x.2) := hcsnd.measurable
+  let AdeleRing₀ := AdeleRing (𝓞 F) F
+  have hcfst : Continuous (fun x : AdeleRing₀ => x.1) := continuous_fst
+  have hcsnd : Continuous (fun x : AdeleRing₀ => x.2) := continuous_snd
+  have hfst : Measurable (fun x : AdeleRing₀ => x.1) := hcfst.measurable
+  have hsnd : Measurable (fun x : AdeleRing₀ => x.2) := hcsnd.measurable
   exact (hP.preimage hfst).inter (hO.preimage hsnd)
 
-theorem isAddFundamentalDomain (μ : Measure (AdeleRing (𝓞 F) F))
-    [μ.IsAddHaarMeasure] :
+variable (μ : Measure (AdeleRing (𝓞 F) F)) [μ.IsAddHaarMeasure]
+
+theorem isAddFundamentalDomain :
     IsAddFundamentalDomain F (domain F) μ := by
   apply IsAddFundamentalDomain.mk' (domain_measurableSet F).nullMeasurableSet
   intro x
@@ -212,16 +191,13 @@ theorem isAddFundamentalDomain (μ : Measure (AdeleRing (𝓞 F) F))
     simpa only [principalTranslation_apply, add_sub_cancel_right] using
       (show algebraMap F (AdeleRing (𝓞 F) F) a ∈
         AdeleRing.principalSubgroup (𝓞 F) F from ⟨a, rfl⟩)
-  have heq := projection_injective F hw hz' ((hq w).trans (hq (-z)).symm)
   apply (algebraMap F (AdeleRing (𝓞 F) F)).injective
-  exact add_right_cancel heq
+  exact add_right_cancel (projection_injective F hw hz' ((hq w).trans (hq (-z)).symm))
 
-theorem domain_mass (μ : Measure (AdeleRing (𝓞 F) F))
-    [μ.IsAddHaarMeasure] :
+theorem domain_mass :
     0 < μ (domain F) ∧ μ (domain F) < ∞ := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   letI : VAddInvariantMeasure F (AdeleRing (𝓞 F) F) μ := ⟨fun c s hs => by
-    change μ ((fun x => algebraMap F (AdeleRing (𝓞 F) F) c + x) ⁻¹' s) = μ s
     exact measure_preimage_add μ _ s⟩
   refine ⟨pos_iff_ne_zero.mpr ((isAddFundamentalDomain F μ).measure_ne_zero (NeZero.ne μ)), ?_⟩
   letI : IsFiniteMeasureOnCompacts μ := inferInstance

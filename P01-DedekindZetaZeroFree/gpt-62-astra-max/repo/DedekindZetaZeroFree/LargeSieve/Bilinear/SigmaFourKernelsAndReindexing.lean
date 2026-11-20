@@ -26,24 +26,34 @@ def HasRapidDecayAtInfinity (h : ℝ → ℂ) : Prop :=
   ∀ A : ℝ, 0 ≤ A → ∃ C R : ℝ, 0 ≤ C ∧ 1 ≤ R ∧
     ∀ t : ℝ, R ≤ t → ‖h t‖ ≤ C * Real.rpow t (-A)
 
-def S4Term (c m : Ideal (𝓞 F)) (K : ℝ) (h : ℝ → ℂ) (X : ℝ)
-    {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f)
+section
+
+variable (c m : Ideal (𝓞 F)) (K : ℝ) (h : ℝ → ℂ) (X : ℝ) {f : Ideal (𝓞 F)}
+    (η : DedekindZetaZeroFree.RayClassCharacter F f)
+
+def S4Term
     (I : Ideal (𝓞 F)) : ℂ :=
   if I ≠ ⊥ ∧ I ⊔ m = ⊤ ∧ sc c I ≤ K then
     h ((Ideal.absNorm I : ℝ) / X) * η I else 0
 
-def S4 (c m : Ideal (𝓞 F)) (K : ℝ) (h : ℝ → ℂ) (X : ℝ)
-    {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f) : ℂ :=
+def S4 : ℂ :=
   ∑' I, S4Term c m K h X η I
 
-def S4allTerm (m : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
-    {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f)
+end
+
+section
+
+variable (m : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ) {f : Ideal (𝓞 F)}
+    (η : DedekindZetaZeroFree.RayClassCharacter F f)
+
+def S4allTerm
     (I : Ideal (𝓞 F)) : ℂ :=
   if I ≠ ⊥ ∧ I ⊔ m = ⊤ then h ((Ideal.absNorm I : ℝ) / X) * η I else 0
 
-def S4all (m : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
-    {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f) : ℂ :=
+def S4all : ℂ :=
   ∑' I, S4allTerm m h X η I
+
+end
 
 def S4finite (c m : Ideal (𝓞 F)) (K : ℝ) (h : ℝ → ℂ) (X R : ℝ)
     {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f) : ℂ :=
@@ -85,22 +95,10 @@ private theorem term_norm_bound {c m f : Ideal (𝓞 F)} (K : ℝ)
     (hR : ∀ t : ℝ, h t ≠ 0 → t ≤ R)
     (η : DedekindZetaZeroFree.RayClassCharacter F f) (I : Ideal (𝓞 F))
     (hI : S4Term c m K h X η I ≠ 0) : (Ideal.absNorm I : ℝ) ≤ R * X := by
-  have hw : h ((Ideal.absNorm I : ℝ) / X) ≠ 0 := by
-    by_cases hc : I ≠ ⊥ ∧ I ⊔ m = ⊤ ∧ sc c I ≤ K
-    · exact (mul_ne_zero_iff.mp (by simpa [S4Term, hc] using hI)).1
-    · simp [S4Term, hc] at hI
-  exact (div_le_iff₀ hX).mp (hR _ hw)
-
-private theorem allterm_norm_bound {m f : Ideal (𝓞 F)}
-    (h : ℝ → ℂ) {X R : ℝ} (hX : 0 < X)
-    (hR : ∀ t : ℝ, h t ≠ 0 → t ≤ R)
-    (η : DedekindZetaZeroFree.RayClassCharacter F f) (I : Ideal (𝓞 F))
-    (hI : S4allTerm m h X η I ≠ 0) : (Ideal.absNorm I : ℝ) ≤ R * X := by
-  have hw : h ((Ideal.absNorm I : ℝ) / X) ≠ 0 := by
-    by_cases hc : I ≠ ⊥ ∧ I ⊔ m = ⊤
-    · exact (mul_ne_zero_iff.mp (by simpa [S4allTerm, hc] using hI)).1
-    · simp [S4allTerm, hc] at hI
-  exact (div_le_iff₀ hX).mp (hR _ hw)
+  refine (div_le_iff₀ hX).mp (hR _ ?_)
+  by_cases hc : I ≠ ⊥ ∧ I ⊔ m = ⊤ ∧ sc c I ≤ K
+  · exact (mul_ne_zero_iff.mp (by simpa [S4Term, hc] using hI)).1
+  · simp [S4Term, hc] at hI
 
 theorem compact_support_api :
     (∀ {c m f : Ideal (𝓞 F)} (K : ℝ)
@@ -126,7 +124,11 @@ theorem compact_support_api :
   · intro m f h hh X hX η
     obtain ⟨R, _, hR⟩ := upper_support_bound h hh
     exact (DedekindZetaZeroFree.LargeSieve.finite_ideals_absNorm_le F (R * X)).subset
-      (fun I hI => allterm_norm_bound h hX hR η I hI)
+      (fun I hI => (by
+        refine (div_le_iff₀ hX).mp (hR _ ?_)
+        by_cases hc : I ≠ ⊥ ∧ I ⊔ m = ⊤
+        · exact (mul_ne_zero_iff.mp (by simpa [S4allTerm, hc] using hI)).1
+        · simp [S4allTerm, hc] at hI))
   · intro c m f K h hh X hX η
     obtain ⟨R, hR0, hR⟩ := upper_support_bound h hh
     refine ⟨R, hR0, hR, ?_⟩
@@ -179,9 +181,8 @@ theorem kernel_algebra :
         Multiset.count_add, two_nsmul, Multiset.count_add]
       constructor
       · intro hp
-        have hcount : (UniqueFactorizationMonoid.normalizedFactors a).count p % 2 = 1 := by
-          omega
-        exact ⟨Multiset.count_pos.mp (by omega), hcount⟩
+        refine ⟨Multiset.count_pos.mp (by omega), ?_⟩
+        omega
       · intro hp
         exact ⟨Or.inl hp.1, by omega⟩
     simp only [sc, primeToSquarefreeKernel, hkernel]
@@ -189,31 +190,21 @@ theorem kernel_algebra :
     have hcopc : a ⊔ c = ⊤ := by
       by_contra hne
       obtain ⟨p, hp_max, hp_le⟩ := Ideal.exists_le_maximal (a ⊔ c) hne
-      have hp_prime : p.IsPrime := hp_max.isPrime
-      have ha_le : a ≤ p := le_trans le_sup_left hp_le
-      have hc_le : c ≤ p := le_trans le_sup_right hp_le
-      have hm_le : m ≤ p :=
-        le_trans (Ideal.dvd_iff_le.mp hcm)
-          ((Ideal.IsPrime.radical_le_iff hp_prime).mpr hc_le)
-      have htop : (⊤ : Ideal (𝓞 F)) ≤ p := by
-        rw [← ham]
-        exact sup_le ha_le hm_le
-      exact hp_prime.ne_top (top_le_iff.mp htop)
+      have hp_prime := hp_max.isPrime
+      refine hp_prime.ne_top (top_le_iff.mp ?_)
+      rw [← ham]
+      exact sup_le (le_trans le_sup_left hp_le) (le_trans (Ideal.dvd_iff_le.mp hcm)
+        ((Ideal.IsPrime.radical_le_iff hp_prime).mpr (le_trans le_sup_right hp_le)))
     have hfilter : ∀ p ∈ (UniqueFactorizationMonoid.normalizedFactors a).toFinset,
         ¬ p ∣ c := by
       intro p hp hpc
       have hpmem := Multiset.mem_toFinset.mp hp
-      have hpprime := UniqueFactorizationMonoid.prime_of_normalized_factor p hpmem
-      have hpdvd := UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hpmem
-      have htop : (⊤ : Ideal (𝓞 F)) ≤ p := by
-        rw [← hcopc]
-        exact sup_le (Ideal.dvd_iff_le.mp hpdvd) (Ideal.dvd_iff_le.mp hpc)
-      exact hpprime.not_isUnit (Ideal.isUnit_iff.mpr (top_le_iff.mp htop))
-    have hnodup :=
-      (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors ha.ne_zero).mp ha
+      refine (UniqueFactorizationMonoid.prime_of_normalized_factor p hpmem).not_isUnit (Ideal.isUnit_iff.mpr (top_le_iff.mp ?_))
+      rw [← hcopc]
+      exact sup_le (Ideal.dvd_iff_le.mp (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hpmem)) (Ideal.dvd_iff_le.mp hpc)
     rw [sc, primeToSquarefreeKernel, DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel_eq_self ha,
       Finset.filter_true_of_mem hfilter, Finset.prod_eq_multiset_prod,
-      Multiset.map_id', Multiset.toFinset_val, Multiset.dedup_eq_self.mpr hnodup,
+      Multiset.map_id', Multiset.toFinset_val, Multiset.dedup_eq_self.mpr ((UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors ha.ne_zero).mp ha),
       Ideal.prod_normalizedFactors_eq_self ha.ne_zero]
 
 end DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4
@@ -229,22 +220,24 @@ open scoped NumberField Classical
 namespace DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4
 variable {F : Type} [Field F] [NumberField F]
 
-private lemma norm_one_le {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) :
+local notation "IntegerIdeal" => Ideal (𝓞 F)
+
+private lemma norm_one_le {I : IntegerIdeal} (hI : I ≠ ⊥) :
     (1 : ℝ) ≤ (Ideal.absNorm I : ℝ) := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun h => hI (Ideal.absNorm_eq_zero_iff.mp h))
 
 private lemma rapid_summable (h : ℝ → ℂ) (hh : HasRapidDecayAtInfinity h)
-    (t : Ideal (𝓞 F) → ℝ) (u : ℝ) (hu : 0 < u)
+    (t : IntegerIdeal → ℝ) (u : ℝ) (hu : 0 < u)
     (ht : ∀ I, I ≠ ⊥ → u * (Ideal.absNorm I : ℝ) ≤ t I) :
     Summable (fun I => if I = ⊥ then (0 : ℝ) else ‖h (t I)‖) := by
   obtain ⟨C, R, hC, hR, hdec⟩ := hh 2 (by norm_num)
   let s := DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F (R / u)
-  let g : Ideal (𝓞 F) → ℝ := fun I => if I = ⊥ then 0 else ‖h (t I)‖
+  let g : IntegerIdeal → ℝ := fun I => if I = ⊥ then 0 else ‖h (t I)‖
   have hsmall : Summable (fun I => if I ∈ s then g I else 0) := by
     apply summable_of_ne_finset_zero (s := s)
     intro I hI
     simp [hI]
-  have hmajor : Summable (fun I : Ideal (𝓞 F) =>
+  have hmajor : Summable (fun I : IntegerIdeal =>
       C * u ^ (-(2 : ℝ)) * (if I = ⊥ then 0 else (Ideal.absNorm I : ℝ) ^ (-(2 : ℝ)))) :=
     (DedekindZetaZeroFree.LargeSieve.summable_ideal_inverse_power F 2 (by norm_num)).mul_left _
   refine Summable.of_nonneg_of_le (g := g) (fun I => by dsimp [g]; split <;> positivity)
@@ -257,9 +250,9 @@ private lemma rapid_summable (h : ℝ → ℂ) (hh : HasRapidDecayAtInfinity h)
     exact le_add_of_nonneg_right (by positivity)
   · simp only [if_neg hmem, if_neg hI, zero_add]
     have hN : 0 < (Ideal.absNorm I : ℝ) := lt_of_lt_of_le zero_lt_one (norm_one_le hI)
-    have hlt : R / u < (Ideal.absNorm I : ℝ) :=
+    have hlt :=
       lt_of_not_ge (fun hn => hmem (DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals.mpr hn))
-    have hRt : R ≤ t I := le_trans (le_of_lt ((div_lt_iff₀ hu).mp hlt))
+    have hRt := le_trans (le_of_lt ((div_lt_iff₀ hu).mp hlt))
       (by simpa [mul_comm] using ht I hI)
     dsimp only [g]
     rw [if_neg hI]
@@ -273,23 +266,23 @@ private lemma rapid_summable (h : ℝ → ℂ) (hh : HasRapidDecayAtInfinity h)
         ring
 
 theorem rapid_convergence_api :
-    (∀ {m f : Ideal (𝓞 F)} (hf : f ≠ ⊥)
+    (∀ {m f : IntegerIdeal} (hf : f ≠ ⊥)
     (h : ℝ → ℂ) (hh : HasRapidDecayAtInfinity h) {X : ℝ} (hX : 0 < X)
     (η : DedekindZetaZeroFree.RayClassCharacter F f),
     Summable (fun I => ‖S4allTerm m h X η I‖)) ∧
-    (∀ {c m f : Ideal (𝓞 F)} (hf : f ≠ ⊥) (K : ℝ)
+    (∀ {c m f : IntegerIdeal} (hf : f ≠ ⊥) (K : ℝ)
     (h : ℝ → ℂ) (hh : HasRapidDecayAtInfinity h) {X : ℝ} (hX : 0 < X)
     (η : DedekindZetaZeroFree.RayClassCharacter F f),
     Summable (fun I => ‖S4Term c m K h X η I‖)) ∧
-    (∀ {m f a : Ideal (𝓞 F)}
+    (∀ {m f a : IntegerIdeal}
     (hf : f ≠ ⊥) (ha : a ≠ ⊥) (h : ℝ → ℂ) (hh : HasRapidDecayAtInfinity h)
     {X : ℝ} (hX : 0 < X) (η : DedekindZetaZeroFree.RayClassCharacter F f),
-    Summable (fun b : Ideal (𝓞 F) => ‖if b ≠ ⊥ ∧ b ⊔ (m * f) = ⊤ then
+    Summable (fun b : IntegerIdeal => ‖if b ≠ ⊥ ∧ b ⊔ (m * f) = ⊤ then
       h ((Ideal.absNorm a : ℝ) * (Ideal.absNorm b : ℝ) ^ 2 / X) * (η b) ^ 2 else 0‖) ∧
-    Summable (fun b : Ideal (𝓞 F) => ‖if b ≠ ⊥ ∧ b ⊔ (m * f) = ⊤ then
+    Summable (fun b : IntegerIdeal => ‖if b ≠ ⊥ ∧ b ⊔ (m * f) = ⊤ then
       h ((Ideal.absNorm a : ℝ) * (Ideal.absNorm b : ℝ) ^ 2 / X) else 0‖)) := by
   have hlinear (h : ℝ → ℂ) (hh : HasRapidDecayAtInfinity h) (X : ℝ) (hX : 0 < X) :
-      Summable (fun I : Ideal (𝓞 F) => if I = ⊥ then (0 : ℝ) else
+      Summable (fun I : IntegerIdeal => if I = ⊥ then (0 : ℝ) else
         ‖h ((Ideal.absNorm I : ℝ) / X)‖) := by
     apply rapid_summable h hh _ X⁻¹ (inv_pos.mpr hX)
     intro I _
@@ -316,9 +309,9 @@ theorem rapid_convergence_api :
     · simp only [if_neg hI, norm_zero]
       split <;> positivity
   · intro m f a hf ha h hh X hX η
-    have hA : 0 < (Ideal.absNorm a : ℝ) := lt_of_lt_of_le zero_lt_one (norm_one_le ha)
+    have hA := lt_of_lt_of_le zero_lt_one (norm_one_le ha)
     have hs := rapid_summable h hh
-      (fun b : Ideal (𝓞 F) => (Ideal.absNorm a : ℝ) * (Ideal.absNorm b : ℝ) ^ 2 / X)
+      (fun b : IntegerIdeal => (Ideal.absNorm a : ℝ) * (Ideal.absNorm b : ℝ) ^ 2 / X)
       ((Ideal.absNorm a : ℝ) / X) (div_pos hA hX) (by
         intro b hb
         have hb1 := norm_one_le hb
@@ -370,12 +363,6 @@ private theorem squareMap_injective : Function.Injective (squareMap (F := F)) :=
     (pow_ne_zero 2 p.2.property),
     UniqueFactorizationMonoid.normalizedFactors_mul q.1.property.1
     (pow_ne_zero 2 q.2.property), UniqueFactorizationMonoid.normalizedFactors_pow] at hc
-  have hp := Multiset.nodup_iff_count_le_one.mp
-    ((UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors
-      p.1.property.1).mp p.1.property.2)
-  have hq := Multiset.nodup_iff_count_le_one.mp
-    ((UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors
-      q.1.property.1).mp q.1.property.2)
   have hcount (a : Ideal (𝓞 F)) :
       (UniqueFactorizationMonoid.normalizedFactors p.1.val).count a =
         (UniqueFactorizationMonoid.normalizedFactors q.1.val).count a ∧
@@ -383,29 +370,29 @@ private theorem squareMap_injective : Function.Injective (squareMap (F := F)) :=
         (UniqueFactorizationMonoid.normalizedFactors q.2.val).count a := by
     have h := congrArg (Multiset.count a) hc
     simp only [Multiset.count_add, Multiset.count_nsmul] at h
-    have := hp a
-    have := hq a
+    have := (Multiset.nodup_iff_count_le_one.mp
+      ((UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors
+        p.1.property.1).mp p.1.property.2)) a
+    have := (Multiset.nodup_iff_count_le_one.mp
+      ((UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors
+        q.1.property.1).mp q.1.property.2)) a
     omega
-  have ha : p.1.val = q.1.val := associated_iff_eq.mp
+  exact Prod.ext (Subtype.ext (associated_iff_eq.mp
     ((UniqueFactorizationMonoid.associated_iff_normalizedFactors_eq_normalizedFactors
-      p.1.property.1 q.1.property.1).mpr (Multiset.ext.mpr fun a => (hcount a).1))
-  have hb : p.2.val = q.2.val := associated_iff_eq.mp
+      p.1.property.1 q.1.property.1).mpr (Multiset.ext.mpr fun a => (hcount a).1)))) (Subtype.ext (associated_iff_eq.mp
     ((UniqueFactorizationMonoid.associated_iff_normalizedFactors_eq_normalizedFactors
-      p.2.property q.2.property).mpr (Multiset.ext.mpr fun a => (hcount a).2))
-  exact Prod.ext (Subtype.ext ha) (Subtype.ext hb)
+      p.2.property q.2.property).mpr (Multiset.ext.mpr fun a => (hcount a).2))))
 
 private theorem squareMap_range {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) :
     I ∈ Set.range (squareMap (F := F)) := by
   obtain ⟨b, a, heq, hsf⟩ := exists_sq_mul_squarefree I
-  have ha : a ≠ ⊥ := by
-    intro hz
+  refine ⟨(⟨a, ?_, hsf⟩, ⟨b, ?_⟩), by simpa [squareMap, mul_comm] using heq⟩
+  · intro hz
     simp [hz] at heq
     exact hI heq.symm
-  have hb : b ≠ ⊥ := by
-    intro hz
+  · intro hz
     simp [hz] at heq
     exact hI heq.symm
-  exact ⟨(⟨a, ha, hsf⟩, ⟨b, hb⟩), by simpa [squareMap, mul_comm] using heq⟩
 
 private theorem sup_square (a b m : Ideal (𝓞 F)) :
     (a * b ^ 2) ⊔ m = ⊤ ↔ a ⊔ m = ⊤ ∧ b ⊔ m = ⊤ := by
@@ -450,7 +437,7 @@ private theorem reindex (m : Ideal (𝓞 F)) {f : Ideal (𝓞 F)}
     · by_cases hbm : b.val ⊔ m = ⊤
       · by_cases hbf : b.val ⊔ f = ⊤
         · simp [a.property.1, b.property, hb2, ha.1, ha.2, hbm, hbf, mul_assoc, mul_comm, mul_left_comm]
-        · have hz : η b.val = 0 := (η.eq_zero_iff' b.val).mpr (Or.inr hbf)
+        · have hz := (η.eq_zero_iff' b.val).mpr (Or.inr hbf)
           simp [ha.1, ha.2, hbm, hbf, hz]
       · simp [ha.1, ha.2, hbm]
     · have hx : ¬ ((a.val ⊔ m = ⊤ ∧ b.val ⊔ m = ⊤) ∧ P a.val) := by
@@ -527,7 +514,7 @@ theorem squarefree_reindex_api :
           (rapid_convergence_api.1 (m := m) hf h hh hX η).of_norm
         change Summable (fun I : Ideal (𝓞 F) =>
           if I ≠ ⊥ ∧ I ⊔ m = ⊤ then h ((Ideal.absNorm I : ℝ) / X) * η I else 0) at hs
-        simpa only [and_true] using hs)
+        simpa using hs)
     simpa only [and_true, S4all, S4allTerm] using hr
 
 end DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4
@@ -580,14 +567,14 @@ private theorem pair_facts {c m e z : Ideal (𝓞 F)} {K : ℝ} (hc : c ≠ ⊥)
   obtain ⟨he0, hesf, hesup⟩ := (DedekindZetaZeroFree.LargeSieve.Bilinear.mem_squarefreeBadPool hc).mp he
   obtain ⟨hzsf, hzc, hzn⟩ := (DedekindZetaZeroFree.LargeSieve.Sieve.mem_idealAdmissibleFinset F (m * c) K z).mp hz
   obtain ⟨hzm, hzc⟩ := (sup_mul_iff z m c).mp hzc
-  have hz0 : z ≠ ⊥ := hzsf.ne_zero
-  have hez0 : e * z ≠ ⊥ := mul_ne_zero he0 hz0
+  have hz0 := hzsf.ne_zero
+  have hez0 := mul_ne_zero he0 hz0
   have hcop : IsRelPrime e z := by
     apply (UniqueFactorizationMonoid.isRelPrime_iff_no_prime_factors he0).mpr
     intro p hpe hpz hp
     exact hp.not_isUnit ((Ideal.isCoprime_iff_sup_eq.mpr hzc).isRelPrime hpz
       (hesup p hp hpe))
-  have hezsf : Squarefree (e * z) := squarefree_mul_iff.mpr ⟨hcop, hesf, hzsf⟩
+  have hezsf := squarefree_mul_iff.mpr ⟨hcop, hesf, hzsf⟩
   obtain ⟨heb, hzg⟩ := DedekindZetaZeroFree.LargeSieve.Bilinear.bad_good_unique hc hez0 he0 hz0 rfl hzc hesup
   refine ⟨hez0, hezsf, (mul_sup_iff e z m).mpr ⟨hem, hzm⟩, ?_, heb, hzg⟩
   rw [sc_squarefree c (e * z) hc hezsf, ← hzg]
@@ -615,14 +602,12 @@ private theorem finite_reindex {c m : Ideal (𝓞 F)} {K : ℝ} (hc : c ≠ ⊥)
     · rintro ⟨ha,hs,ham,hK⟩
       obtain ⟨he0,hz0,hprod,hzc,hsup⟩ := DedekindZetaZeroFree.LargeSieve.Bilinear.bad_good_factorization hc ha
       obtain ⟨hem,hzm⟩ := (mul_sup_iff _ _ m).mp (hprod ▸ ham)
-      have he := DedekindZetaZeroFree.LargeSieve.Bilinear.badPart_mem_squarefreeBadPool hc ha hs
-      have hz : DedekindZetaZeroFree.LargeSieve.Bilinear.goodPart c a ∈ Z := by
-        apply (DedekindZetaZeroFree.LargeSieve.Sieve.mem_idealAdmissibleFinset F (m * c) K _).mpr
-        refine ⟨(DedekindZetaZeroFree.LargeSieve.Bilinear.squarefree_bad_good hc ha hs).2,
-          (sup_mul_iff _ m c).mpr ⟨hzm,hzc⟩, ?_⟩
-        rwa [sc_squarefree c a hc hs] at hK
-      exact Finset.mem_image.mpr ⟨(_, _),
-        Finset.mem_product.mpr ⟨Finset.mem_filter.mpr ⟨he,hem⟩,hz⟩, hprod.symm⟩
+      refine Finset.mem_image.mpr ⟨(_, _),
+        Finset.mem_product.mpr ⟨Finset.mem_filter.mpr ⟨(DedekindZetaZeroFree.LargeSieve.Bilinear.badPart_mem_squarefreeBadPool hc ha hs),hem⟩,?_⟩, hprod.symm⟩
+      apply (DedekindZetaZeroFree.LargeSieve.Sieve.mem_idealAdmissibleFinset F (m * c) K _).mpr
+      refine ⟨(DedekindZetaZeroFree.LargeSieve.Bilinear.squarefree_bad_good hc ha hs).2,
+        (sup_mul_iff _ m c).mpr ⟨hzm,hzc⟩, ?_⟩
+      rwa [sc_squarefree c a hc hs] at hK
   have hinj : Set.InjOn (fun p : Ideal (𝓞 F) × Ideal (𝓞 F) => p.1 * p.2) ↑P := by
     intro p hp q hq heq
     obtain ⟨hep,hzp⟩ := Finset.mem_product.mp hp
@@ -693,12 +678,11 @@ theorem fixed_primes_reindex_api :
     intro b
     split_ifs with hb
     · obtain ⟨hb0,hbc⟩ := hb
-      have hbf := ((sup_mul_iff b m f).mp hbc).2
       have hbη : η b ≠ 0 := by
         intro hzero
         rcases (η.eq_zero_iff' b).mp hzero with hzero | hbad
         · exact hb0 hzero
-        · exact hbad hbf
+        · exact hbad (((sup_mul_iff b m f).mp hbc).2)
       have hs : (η b) ^ 2 = 1 := by
         apply mul_left_cancel₀ hbη
         simpa only [← pow_succ', mul_one] using hquad b
@@ -737,7 +721,7 @@ private theorem weighted_radical_reindex
       exact ⟨hs, ham, hn⟩
     · rintro ⟨hs, ham, hn⟩
       exact ⟨hs.ne_zero, hs, ham, by rwa [kernel_algebra.2 hc hm hcm hs ham]⟩
-  rw [tsum_eq_sum (s := DedekindZetaZeroFree.LargeSieve.Sieve.idealAdmissibleFinset F m K)
+  rw [tsum_eq_sum
     (fun a ha => if_neg (fun hp => ha ((hmask a).mp hp)))]
   apply Finset.sum_congr rfl
   intro a ha
@@ -810,24 +794,34 @@ def HasRapidDecayAtInfinity (h : ℝ → ℂ) : Prop :=
   ∀ A : ℝ, 0 ≤ A → ∃ C R : ℝ, 0 ≤ C ∧ 1 ≤ R ∧
     ∀ t : ℝ, R ≤ t → ‖h t‖ ≤ C * Real.rpow t (-A)
 
-def S4Term (c m : Ideal (𝓞 F)) (K : ℝ) (h : ℝ → ℂ) (X : ℝ)
-    {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f)
+section
+
+variable (c m : Ideal (𝓞 F)) (K : ℝ) (h : ℝ → ℂ) (X : ℝ) {f : Ideal (𝓞 F)}
+    (η : DedekindZetaZeroFree.RayClassCharacter F f)
+
+def S4Term
     (I : Ideal (𝓞 F)) : ℂ :=
   if I ≠ ⊥ ∧ I ⊔ m = ⊤ ∧ sc c I ≤ K then
     h ((Ideal.absNorm I : ℝ) / X) * η I else 0
 
-def S4 (c m : Ideal (𝓞 F)) (K : ℝ) (h : ℝ → ℂ) (X : ℝ)
-    {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f) : ℂ :=
+def S4 : ℂ :=
   ∑' I, S4Term c m K h X η I
 
-def S4allTerm (m : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
-    {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f)
+end
+
+section
+
+variable (m : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ) {f : Ideal (𝓞 F)}
+    (η : DedekindZetaZeroFree.RayClassCharacter F f)
+
+def S4allTerm
     (I : Ideal (𝓞 F)) : ℂ :=
   if I ≠ ⊥ ∧ I ⊔ m = ⊤ then h ((Ideal.absNorm I : ℝ) / X) * η I else 0
 
-def S4all (m : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
-    {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f) : ℂ :=
+def S4all : ℂ :=
   ∑' I, S4allTerm m h X η I
+
+end
 
 def squareWeightSeries (m f : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
     (a : Ideal (𝓞 F)) : ℂ :=
@@ -837,33 +831,31 @@ def squareWeightSeries (m f : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
 theorem finite_support_S4allTerm {m f : Ideal (𝓞 F)}
     (h : ℝ → ℂ) (hh : HasCompactSupport h) {X : ℝ} (hX : 0 < X)
     (η : DedekindZetaZeroFree.RayClassCharacter F f) :
-    (Function.support (S4allTerm m h X η)).Finite := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api (F := F)).2.1 h hh hX η
+    (Function.support (S4allTerm m h X η)).Finite := (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api).2.1 h hh hX η
 
 theorem rapidDecay_of_compactSupport (h : ℝ → ℂ) (hh : HasCompactSupport h) :
-    HasRapidDecayAtInfinity h := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api (F := ℚ)).2.2.2 h hh
+    HasRapidDecayAtInfinity h := (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api (F := ℚ)).2.2.2 h hh
 
-theorem S4_reindex_quadratic_of_radical_dvd {c m f : Ideal (𝓞 F)}
-    (hc : c ≠ ⊥) (hm : m ≠ ⊥) (hf : f ≠ ⊥) (hcm : c.radical ∣ m)
+variable {c m f : Ideal (𝓞 F)} (hc : c ≠ ⊥) (hm : m ≠ ⊥) (hf : f ≠ ⊥)
+
+include hc hm hf in
+theorem S4_reindex_quadratic_of_radical_dvd (hcm : c.radical ∣ m)
     {K X : ℝ} (hK : 1 ≤ K) (hX : 0 < X)
     (h : ℝ → ℂ) (hh : HasRapidDecayAtInfinity h)
     (η : DedekindZetaZeroFree.RayClassCharacter F f) (hprim : η.IsPrimitive)
     (hquad : ∀ I : Ideal (𝓞 F), (η I) ^ 3 = η I) :
     S4 c m K h X η = ∑ a ∈ DedekindZetaZeroFree.LargeSieve.Sieve.idealAdmissibleFinset F m K,
-      η a * squareWeightSeries m f h X a := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.radical_reindex_api (F := F)).2 hc hm hf hcm hK hX h hh η hprim hquad
+      η a * squareWeightSeries m f h X a := (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.radical_reindex_api).2 hc hm hf hcm hK hX h hh η hprim hquad
 
-theorem S4_reindex_fixed_primes_quadratic {c m f : Ideal (𝓞 F)}
-    (hc : c ≠ ⊥) (hm : m ≠ ⊥) (hf : f ≠ ⊥)
+include hc hm hf in
+theorem S4_reindex_fixed_primes_quadratic
     {K X : ℝ} (hK : 1 ≤ K) (hX : 0 < X)
     (h : ℝ → ℂ) (hh : HasRapidDecayAtInfinity h)
     (η : DedekindZetaZeroFree.RayClassCharacter F f) (hprim : η.IsPrimitive)
     (hquad : ∀ I : Ideal (𝓞 F), (η I) ^ 3 = η I) :
     S4 c m K h X η = ∑ e ∈ squarefreeBadPool c, if e ⊔ m = ⊤ then
       η e * (∑ z ∈ DedekindZetaZeroFree.LargeSieve.Sieve.idealAdmissibleFinset F (m * c) K,
-        η z * squareWeightSeries m f h X (e * z)) else 0 := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.fixed_primes_reindex_api (F := F)).2 hc hm hf hK hX h hh η hprim hquad
+        η z * squareWeightSeries m f h X (e * z)) else 0 := (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.fixed_primes_reindex_api).2 hc hm hf hK hX h hh η hprim hquad
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear
 

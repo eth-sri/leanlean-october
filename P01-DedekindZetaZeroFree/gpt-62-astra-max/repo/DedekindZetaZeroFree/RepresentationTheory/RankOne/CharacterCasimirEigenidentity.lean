@@ -73,7 +73,11 @@ theorem rawRankOneCharacter_eq_chebR (n : ℕ) (g : RawU2) :
   rw [rawRankOneCharacter, (rawSymmetricPowerTrace_even g n).1]
   field_simp
 
-theorem traceless_anticommutator (M N : Matrix (Fin 2) (Fin 2) ℂ)
+section
+
+variable (M N : Matrix (Fin 2) (Fin 2) ℂ)
+
+theorem traceless_anticommutator
     (hM : Matrix.trace M = 0) (hN : Matrix.trace N = 0) :
     M * N + N * M = (Matrix.trace (M * N)) • (1 : Matrix (Fin 2) (Fin 2) ℂ) := by
   have hm : M 1 1 = -M 0 0 := by
@@ -86,19 +90,22 @@ theorem traceless_anticommutator (M N : Matrix (Fin 2) (Fin 2) ℂ)
   fin_cases i <;> fin_cases j <;>
     simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.trace_fin_two, hm, hn, Matrix.one_apply] <;> ring
 
-theorem skew_trace_mul_real (M N : Matrix (Fin 2) (Fin 2) ℂ)
+theorem skew_trace_mul_real
     (hM : star M = -M) (hN : star N = -N) :
     Matrix.trace (M * N) = ((Matrix.trace (M * N)).re : ℂ) := by
-  have hs : star (Matrix.trace (M * N)) = Matrix.trace (M * N) := by
+  let trace₀ := Matrix.trace (M * N)
+  have hs : star (trace₀) = trace₀ := by
     rw [← Matrix.trace_conjTranspose]
     change Matrix.trace (star (M * N)) = _
     rw [star_mul, hM, hN, neg_mul_neg, Matrix.trace_mul_comm]
   apply Complex.ext
   · simp
   · have hi := congrArg Complex.im hs
-    change -(Matrix.trace (M * N)).im = (Matrix.trace (M * N)).im at hi
+    change -(trace₀).im = (trace₀).im at hi
     simp only [Complex.ofReal_im]
     linarith
+
+end
 
 theorem orthonormal_traceless_square (M : Matrix (Fin 2) (Fin 2) ℂ)
     (hskew : star M = -M) (htrace : Matrix.trace M = 0)
@@ -115,16 +122,16 @@ theorem orthonormal_traceless_square (M : Matrix (Fin 2) (Fin 2) ℂ)
   simp only [Matrix.add_apply, Matrix.smul_apply, smul_eq_mul] at hij ⊢
   linear_combination (1/2 : ℂ) * hij
 
-noncomputable def rankOneSecondDerivative {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
-    (hskew : ∀ j a, star (B j a) = -B j a)
+section
+
+variable {d : ℕ} (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ) (hskew : ∀ j a, star (B j a) = -B j a)
+
+noncomputable def rankOneSecondDerivative
     (n : ℕ) (b : Fin d × Fin 3) (u : RawU2) : ℂ :=
   deriv (fun t : ℝ => deriv (fun s : ℝ =>
     star (rawRankOneCharacter n (u * basisExp B hskew b t * basisExp B hskew b s))) 0) 0
 
-theorem characterSecondDerivative_factor {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
-    (hskew : ∀ j a, star (B j a) = -B j a)
+theorem characterSecondDerivative_factor
     (ℓ : RawHarmonicType d) (b : Fin d × Fin 3) (g : Fin d → RawU2) :
     characterSecondDerivative B hskew ℓ b g =
       rankOneSecondDerivative B hskew (ℓ b.1) b (g b.1) *
@@ -141,21 +148,12 @@ theorem characterSecondDerivative_factor {d : ℕ}
     · simp [basisLift]
     · apply Finset.prod_congr rfl
       intro j hj
-      have hj' : j ≠ b.1 := (Finset.mem_erase.mp hj).1
+      have hj' := (Finset.mem_erase.mp hj).1
       simp [basisLift, hj']
   simp only [characterSecondDerivative, hfactor, deriv_mul_const_field,
     rankOneSecondDerivative]
 
-@[simp] theorem rawRankOneCharacter_zero (u : RawU2) :
-    rawRankOneCharacter 0 u = 1 := by
-  simp [rawRankOneCharacter, rawSymmetricPowerTrace]
-
-@[simp] theorem rankOneSecondDerivative_zero {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
-    (hskew : ∀ j a, star (B j a) = -B j a)
-    (b : Fin d × Fin 3) (u : RawU2) :
-    rankOneSecondDerivative B hskew 0 b u = 0 := by
-  simp [rankOneSecondDerivative]
+end
 
 open scoped Matrix.Norms.Operator in
 theorem basisExp_hasDerivAt_entry {d : ℕ}
@@ -164,10 +162,8 @@ theorem basisExp_hasDerivAt_entry {d : ℕ}
     (b : Fin d × Fin 3) (t : ℝ) (i j : Fin 2) :
     HasDerivAt (fun s : ℝ => (basisExp B hskew b s).val i j)
       (((basisExp B hskew b t).val * B b.1 b.2) i j) t := by
-  have h := ((hasDerivAt_exp_smul_const (𝕂 := ℂ) (B b.1 b.2) (t : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt
-    (f := fun t : ℝ => (t : ℂ)) t Complex.ofRealCLM.hasDerivAt
-  have hi := (ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt t h
-  have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt t hi
+  have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt t ((ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt t (((hasDerivAt_exp_smul_const (B b.1 b.2) (t : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt
+    t Complex.ofRealCLM.hasDerivAt))
   simp only [Function.comp_def, ContinuousLinearMap.proj_apply,
     ContinuousLinearMap.coe_restrictScalars, ContinuousLinearMap.toSpanSingleton_apply,
     Complex.ofRealCLM_apply, Complex.ofReal_one, one_smul] at hj
@@ -177,16 +173,16 @@ theorem basisExp_hasDerivAt_entry {d : ℕ}
         (NormedSpace.exp ((t : ℂ) • B b.1 b.2) * B b.1 b.2))) 1) i j) t at hj
   simpa [basisExp] using hj
 
-@[simp] theorem basisExp_zero {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
-    (hskew : ∀ j a, star (B j a) = -B j a)
+section
+
+variable {d : ℕ} (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ) (hskew : ∀ j a, star (B j a) = -B j a)
+
+@[simp] theorem basisExp_zero
     (b : Fin d × Fin 3) : basisExp B hskew b 0 = 1 := by
   apply Subtype.ext
   simp [basisExp]
 
-theorem trace_basisExp_hasDerivAt {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
-    (hskew : ∀ j a, star (B j a) = -B j a)
+theorem trace_basisExp_hasDerivAt
     (b : Fin d × Fin 3) (g : Matrix (Fin 2) (Fin 2) ℂ) (t : ℝ) :
     HasDerivAt (fun s : ℝ => Matrix.trace (g * (basisExp B hskew b s).val))
       (Matrix.trace (g * (basisExp B hskew b t).val * B b.1 b.2)) t := by
@@ -201,9 +197,7 @@ theorem trace_basisExp_hasDerivAt {d : ℕ}
   simpa [Matrix.trace] using
     HasDerivAt.fun_sum (u := Finset.univ) (fun i _ => hentry i i)
 
-theorem basisExp_det_eq_one {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
-    (hskew : ∀ j a, star (B j a) = -B j a)
+theorem basisExp_det_eq_one
     (htrace : ∀ j a, Matrix.trace (B j a) = 0)
     (b : Fin d × Fin 3) (t : ℝ) :
     Matrix.det (basisExp B hskew b t).val = 1 := by
@@ -222,9 +216,10 @@ theorem basisExp_det_eq_one {d : ℕ}
       have ht' := congrArg (fun z : ℂ => -Matrix.det (basisExp B hskew b s).val * z) ht
       simp only [Matrix.det_fin_two] at ht'
       linear_combination ht'
-  have hc := is_const_of_deriv_eq_zero (fun s => (hD s).differentiableAt)
-    (fun s => (hD s).deriv) t 0
-  simpa using hc
+  simpa using (is_const_of_deriv_eq_zero (fun s => (hD s).differentiableAt)
+    (fun s => (hD s).deriv) t 0)
+
+end
 
 theorem orthonormal_trace_contraction
     (B : Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
@@ -282,8 +277,7 @@ theorem polynomial_hasDerivAt_complex_curve (p : Polynomial ℂ)
     {f : ℝ → ℂ} {v : ℂ} {t : ℝ} (hf : HasDerivAt f v t) :
     HasDerivAt (fun s => Polynomial.eval (f s) p)
       (Polynomial.eval (f t) p.derivative * v) t := by
-  have h := ((p.hasDerivAt (f t)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt t hf
-  simpa [Function.comp_def, mul_comm] using h
+  simpa [Function.comp_def, mul_comm] using (((p.hasDerivAt (f t)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt t hf)
 
 theorem polynomial_mixed_derivative (p : Polynomial ℂ)
     (f : ℝ → ℝ → ℂ) (v : ℝ → ℂ) (w : ℂ)
@@ -298,12 +292,13 @@ theorem polynomial_mixed_derivative (p : Polynomial ℂ)
     funext t
     exact (polynomial_hasDerivAt_complex_curve p (hs t)).deriv
   rw [heq]
-  have h := (polynomial_hasDerivAt_complex_curve p.derivative ht).mul hv
-  convert h.deriv using 1 <;> ring
+  convert ((polynomial_hasDerivAt_complex_curve p.derivative ht).mul hv).deriv using 1 <;> ring
 
-theorem trace_basisExp_mul_hasDerivAt {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
-    (hskew : ∀ j a, star (B j a) = -B j a)
+section
+
+variable {d : ℕ} (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ) (hskew : ∀ j a, star (B j a) = -B j a)
+
+theorem trace_basisExp_mul_hasDerivAt
     (b : Fin d × Fin 3) (g A : Matrix (Fin 2) (Fin 2) ℂ) (t : ℝ) :
     HasDerivAt (fun s : ℝ => Matrix.trace (g * (basisExp B hskew b s).val * A))
       (Matrix.trace (g * (basisExp B hskew b t).val * B b.1 b.2 * A)) t := by
@@ -315,9 +310,7 @@ theorem trace_basisExp_mul_hasDerivAt {d : ℕ}
   rw [Matrix.trace_mul_comm _ A]
   simp only [Matrix.mul_assoc]
 
-theorem polynomial_trace_invariant_mixed_derivative {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
-    (hskew : ∀ j a, star (B j a) = -B j a)
+theorem polynomial_trace_invariant_mixed_derivative
     (htrace : ∀ j a, Matrix.trace (B j a) = 0)
     (horth : ∀ j a b, -(Matrix.trace (B j a * B j b)).re = if a = b then 1 else 0)
     (b : Fin d × Fin 3) (g : RawU2) (p : Polynomial ℂ) :
@@ -336,12 +329,10 @@ theorem polynomial_trace_invariant_mixed_derivative {d : ℕ}
   let v (t : ℝ) := 2 * Matrix.trace (g.val * (basisExp B hskew b t).val) *
     Matrix.trace (g.val * (basisExp B hskew b t).val * B b.1 b.2) / Matrix.det g.val
   have hs (t : ℝ) : HasDerivAt (f t) (v t) 0 := by
-    have h := ((trace_basisExp_hasDerivAt B hskew b
-      (g.val * (basisExp B hskew b t).val) 0).pow 2).div_const (Matrix.det g.val)
-    simpa [f, v, mul_assoc] using h
+    simpa [f, v, mul_assoc] using (((trace_basisExp_hasDerivAt B hskew b
+      (g.val * (basisExp B hskew b t).val) 0).pow 2).div_const (Matrix.det g.val))
   have ht : HasDerivAt (fun t => f t 0) (v 0) 0 := by
-    have h := ((trace_basisExp_hasDerivAt B hskew b g.val 0).pow 2).div_const (Matrix.det g.val)
-    simpa [f, v, mul_assoc] using h
+    simpa [f, v, mul_assoc] using (((trace_basisExp_hasDerivAt B hskew b g.val 0).pow 2).div_const (Matrix.det g.val))
   have hv : HasDerivAt v
       ((2 * (Matrix.trace (g.val * B b.1 b.2))^2 - (Matrix.trace g.val)^2) / Matrix.det g.val) 0 := by
     have h := (((trace_basisExp_hasDerivAt B hskew b g.val 0).const_mul 2).mul
@@ -353,6 +344,8 @@ theorem polynomial_trace_invariant_mixed_derivative {d : ℕ}
     simp only [Matrix.mul_smul, Matrix.mul_one, Matrix.trace_smul, smul_eq_mul] at h
     convert h using 1 <;> ring
   simpa [f, v] using polynomial_mixed_derivative p f v _ hs ht hv
+
+end
 
 theorem orthonormal_trace_square_sum
     (B : Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
@@ -384,7 +377,7 @@ theorem polynomial_trace_invariant_casimir {d : ℕ}
       4 * ((Matrix.trace g.val)^2 / Matrix.det g.val - 1) *
         Polynomial.eval ((Matrix.trace g.val)^2 / Matrix.det g.val) p.derivative := by
   have hsum := orthonormal_trace_square_sum (B j) (hskew j) (htrace j) (horth j) g.val
-  have hd : Matrix.det g.val ≠ 0 := (Matrix.UnitaryGroup.det_isUnit g).ne_zero
+  have hd := (Matrix.UnitaryGroup.det_isUnit g).ne_zero
   simp_rw [polynomial_trace_invariant_mixed_derivative B hskew htrace horth]
   have hv (a : Fin 3) :
       (2 * Matrix.trace g.val * Matrix.trace (g.val * B j a) / Matrix.det g.val)^2 =
@@ -417,15 +410,19 @@ noncomputable def casimirQ (n : ℕ) := (casimirPolyPair n).2
 
 @[simp] theorem casimirQ_zero : casimirQ 0 = 1 := rfl
 
-theorem casimirP_succ (n : ℕ) : casimirP (n+1) = X * casimirQ n - casimirP n := rfl
-theorem casimirQ_succ (n : ℕ) : casimirQ (n+1) = (X - 1) * casimirQ n - casimirP n := by
+section
+
+variable (n : ℕ)
+
+theorem casimirP_succ : casimirP (n+1) = X * casimirQ n - casimirP n := rfl
+theorem casimirQ_succ : casimirQ (n+1) = (X - 1) * casimirQ n - casimirP n := by
   simp only [casimirQ, casimirPolyPair, casimirP]; ring
-theorem casimirPoly_eval (n : ℕ) (z : ℂ) :
+theorem casimirPoly_eval (z : ℂ) :
   (casimirP n).eval z = chebR n z ∧ (casimirQ n).eval z = chebR' n z := by
   induction n with
   | zero => simp
   | succ n ih => simp [casimirP_succ, casimirQ_succ, chebR_succ, chebR'_succ, ih]; ring
-theorem casimirPoly_first (n : ℕ) :
+theorem casimirPoly_first :
   (X - 4) * (casimirP n).derivative = C (2*(n:ℂ)+1) * casimirQ n - C ((n:ℂ)+1) * casimirP n ∧
   X * (X - 4) * (casimirQ n).derivative = (C (n:ℂ)*X+2) * casimirQ n - C (2*((n:ℂ)+1)) * casimirP n := by
   induction n with
@@ -439,7 +436,7 @@ theorem casimirPoly_first (n : ℕ) :
     constructor
     · linear_combination -hp + hq
     · linear_combination -X*hp + (X-1)*hq
-theorem casimirPoly_equation (n : ℕ) :
+theorem casimirPoly_equation :
   X * (X-4) * (casimirP n).derivative.derivative + 2*(X-1)*(casimirP n).derivative =
     C ((n:ℂ)*((n:ℂ)+1)) * casimirP n := by
   obtain ⟨hp,hq⟩ := casimirPoly_first n
@@ -451,7 +448,7 @@ theorem casimirPoly_equation (n : ℕ) :
       (X-4) * ((C (n:ℂ) * (C (n:ℂ)+1)) * casimirP n) := by
     linear_combination X*(X-4)*hdp + (2*C (n:ℂ)+1)*hq - (C (n:ℂ)*X+2)*hp
   exact mul_left_cancel₀ (by intro he; have hc := congrArg (fun p : Polynomial ℂ => p.coeff 1) he; simp at hc) h
-theorem casimirPoly_eval_equation (n : ℕ) (z : ℂ) :
+theorem casimirPoly_eval_equation (z : ℂ) :
     2*z*(4-z)*(casimirP n).derivative.derivative.eval z -
       4*(z-1)*(casimirP n).derivative.eval z =
       -(2*(n:ℂ)*((n:ℂ)+1)) * chebR n z := by
@@ -459,6 +456,8 @@ theorem casimirPoly_eval_equation (n : ℕ) (z : ℂ) :
   simp only [eval_add, eval_mul, eval_sub, eval_X, eval_ofNat, eval_C, eval_one] at h
   rw [← (casimirPoly_eval n z).1]
   linear_combination -2*h
+
+end
 
 theorem rankOneSecondDerivative_sum {d : ℕ}
     (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)

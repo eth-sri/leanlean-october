@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -49,31 +45,23 @@ theorem
         normalizedCyclotomicZHatIdeleValue K
           (Additive.ofMul a) := by
   let d := Module.finrank ℚ K
-  have hd : d ≠ 0 := Module.finrank_pos.ne'
-  let r : ℝ≥0ˣ := IdeleGroup.absoluteNorm a
-  have hrpos : 0 < (r : ℝ≥0) :=
-    pos_iff_ne_zero.mpr r.ne_zero
+  let r := IdeleGroup.absoluteNorm a
   let s0 : ℝ≥0 := (r : ℝ≥0) ^ ((d : ℝ)⁻¹)
-  have hs0pos : 0 < s0 := by
-    exact NNReal.rpow_pos hrpos
-  let s : ℝ≥0ˣ := Units.mk0 s0 hs0pos.ne'
+  have hs0pos : 0 < s0 := NNReal.rpow_pos (pos_iff_ne_zero.mpr r.ne_zero)
+  let s := Units.mk0 s0 hs0pos.ne'
   have hs_pow : s ^ d = r := by
     apply Units.ext
-    change s0 ^ d = (r : ℝ≥0)
-    exact NNReal.rpow_inv_natCast_pow (r : ℝ≥0) hd
-  let c : IdeleGroup K :=
+    exact NNReal.rpow_inv_natCast_pow r Module.finrank_pos.ne'
+  let c :=
     relativeIdeleBaseChangeMulEquiv
-      (K := ℚ) (L := K)
+
       (RelativeIdeleGroup.inclusion ℚ K
         (rationalPositiveArchimedeanIdele s))
   have hc_absoluteNorm :
       IdeleGroup.absoluteNorm c = r⁻¹ := by
     change
       IdeleGroup.absoluteNorm
-          (relativeIdeleBaseChangeMulEquiv
-            (K := ℚ) (L := K)
-            (RelativeIdeleGroup.inclusion ℚ K
-              (rationalPositiveArchimedeanIdele s))) =
+          (c) =
         r⁻¹
     rw [
       IdeleGroup.absoluteNorm_relativeIdeleBaseChange_inclusion_of_finite_eq_one
@@ -94,10 +82,7 @@ theorem
     change
       normalizedCyclotomicZHatIdeleValue K
           (Additive.ofMul
-            (relativeIdeleBaseChangeMulEquiv
-              (K := ℚ) (L := K)
-              (RelativeIdeleGroup.inclusion ℚ K
-                (rationalPositiveArchimedeanIdele s)))) =
+            (c)) =
         0
     rw [normalizedCyclotomicZHatIdeleValue_baseIdeleInclusion,
       hs_value]

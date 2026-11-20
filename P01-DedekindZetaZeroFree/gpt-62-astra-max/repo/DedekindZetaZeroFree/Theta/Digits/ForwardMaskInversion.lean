@@ -11,8 +11,8 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 lemma rationalValue_left_root {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (a : Fˣ) (g : Group R) (t : KPAdeles F) :
@@ -38,8 +38,7 @@ lemma rationalValue_left_root {N : TraceHaarTransport R} (C : JointUpperVanishin
   rw [ExteriorWhittakerValues.StoredWhittaker.fourier_left_root R C.sources.dq (C.realization.theta v)
     (ExteriorWhittakerValues.StoredWhittaker.core_rational_root R C.factorization (C.factorization.selected v) |>
       fun h => by simpa only [C.factorization.selected_eq] using h) _ (A * g) (C.factorization.period_integrable v (A * g))]
-  have hχ := adelicTraceQuotientCharacter_mk F (algebraMap F (KPAdeles F) (a : F) * t)
-  refine congrArg₂ (fun z : Circle => fun c : ℂ => (z : ℂ) * c) hχ ?_
+  refine congrArg₂ (fun z : Circle => fun c : ℂ => (z : ℂ) * c) (adelicTraceQuotientCharacter_mk F (algebraMap F (KPAdeles F) (a : F) * t)) ?_
   exact (OrbitFrequencies.rationalValue_eq_fourier R C.realization v a g).symm
 
 lemma diagonal_commute_digit_root (y : R.A.G) (m : ThetaReflectionData.Row R.A)
@@ -89,10 +88,8 @@ lemma forward_digit_average {N : TraceHaarTransport R} (C : JointUpperVanishingS
       OrbitFrequencies.rationalValue R C.realization v ((Quotient.out i.1) * i.2.val) g := rfl
   rw [hv, signedArgument]
   simp only [Bool.true_eq, ↓reduceIte, one_mul]
-  have hc := congrArg (fun g : Group R => OrbitFrequencies.rationalValue R C.realization v
-    ((Quotient.out i.1) * i.2.val) g) (diagonal_commute_digit_root R y m d).eq
-  have he := hc.trans (rationalValue_left_root R C v _ _ _)
-  exact (congrArg (fun z : ℂ => digitWeight R m d * z) he).trans
+  exact (congrArg (fun z : ℂ => digitWeight R m d * z) ((congrArg (fun g : Group R => OrbitFrequencies.rationalValue R C.realization v
+    ((Quotient.out i.1) * i.2.val) g) (diagonal_commute_digit_root R y m d).eq).trans (rationalValue_left_root R C v _ _ _))).trans
     ((mul_assoc _ _ _).symm.trans (congrArg (fun z : ℂ =>
       (digitWeight R m d * (adelicTraceCharacter F
         (algebraMap F (KPAdeles F) ((Quotient.out i.1) * i.2.val : Fˣ) * digitParameter R m d) : ℂ)) * z)

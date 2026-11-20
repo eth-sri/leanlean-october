@@ -15,10 +15,10 @@ set_option maxHeartbeats 1000000
 namespace DedekindZetaZeroFree.KPMsNativeOffsetMass
 open KPMsActualAngularSource
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 
-abbrev nativeFamily := KPMsActualNativeHaarFamily.family F ζ hζ R P
+abbrev nativeFamily := @DedekindZetaZeroFree.KPMsActualNativeHaarFamily.family
 
 abbrev NativeRecipe := KPMsAngularSourceRecipe.OffsetSourceRecipe F ζ hζ R P
   (nativeFamily F ζ hζ R P)
@@ -29,7 +29,7 @@ def nativeRecipe : NativeRecipe F ζ hζ R P :=
 
 abbrev cofinalLevel (V : Level F ζ hζ) := KPShift81CoherentLevel.level F ζ hζ V
 
-abbrev nativeDatum := KPMsAngularSourceRecipe.D F ζ hζ
+abbrev nativeDatum := @DedekindZetaZeroFree.KPMsAngularSourceRecipe.D
 
 variable (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
 
@@ -50,7 +50,11 @@ def OffsetAdmissible (Y : ℝ) : Prop :=
     KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V)
       (Y / (cuspOffset F ζ hζ R P S V j).val)
 
-def cuspShell (j : NativeCusp F ζ hζ R P S V) (Y : ℝ) :
+section
+
+variable (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
+
+def cuspShell :
     Set (KPSmoothLocalQuotientCharts.X F ζ hζ) :=
   KPMsActualCuspSource.cuspEnd (H := nativeFamily F ζ hζ R P)
       (S.atlasLevel (cofinalLevel F ζ hζ V)) j
@@ -62,7 +66,7 @@ def cuspShell (j : NativeCusp F ζ hζ R P S V) (Y : ℝ) :
         (P.projection (S.atlasLevel (cofinalLevel F ζ hζ V)) x) ≤
           2 * Y / (cuspOffset F ζ hζ R P S V j).val}
 
-def actualFrame (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
+def actualFrame
     (x : KPSmoothLocalQuotientCharts.X F ζ hζ) : G F ζ hζ :=
   if hx : x ∈ KPMsActualCuspSource.cuspEnd (H := nativeFamily F ζ hζ R P)
       (S.atlasLevel (cofinalLevel F ζ hζ V)) j
@@ -73,7 +77,7 @@ def actualFrame (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
       (Y / (cuspOffset F ζ hζ R P S V j).val) x hx)
   else Quotient.out x
 
-def fullCoordinate (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
+def fullCoordinate
     (x : KPSmoothLocalQuotientCharts.X F ζ hζ) : FullOmega F ζ hζ (nativeDatum F ζ hζ) :=
   Quotient.mk _ (⟨framedNormalization F ζ hζ (nativeDatum F ζ hζ)
     (nativeDisintegration F ζ hζ R P S V).radial
@@ -83,6 +87,8 @@ def fullCoordinate (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
     (framedNormalization_normOne_continuous F ζ hζ (nativeDatum F ζ hζ)
       (nativeDisintegration F ζ hζ R P S V).radial _).1 _⟩ :
         NormOne F ζ hζ (nativeDatum F ζ hζ))
+
+end
 
 def fullShell (Y : ℝ) : Measure (FullOmega F ζ hζ (nativeDatum F ζ hζ)) :=
   ∑ j : NativeCusp F ζ hζ R P S V,

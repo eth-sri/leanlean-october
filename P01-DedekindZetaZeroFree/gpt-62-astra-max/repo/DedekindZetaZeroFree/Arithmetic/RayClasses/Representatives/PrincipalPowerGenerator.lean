@@ -30,9 +30,8 @@ theorem integral_ideal_pow_card_rayClassGroup_generator
     rw [QuotientGroup.mk_pow]
     exact pow_card_eq_one'
   rw [ClassFieldTheory.GlobalClassFieldComparison.rayPrincipalIdealSubgroup_eq] at hpow
-  let M' := ClassFieldTheory.GlobalClassFieldComparison.rayClassModulusToOriginal F M
   obtain ⟨x, hx, hEq⟩ :=
-    (RayClass.mem_principalRayIdealSubgroup_iff M' (J ^ N)).mp hpow
+    (RayClass.mem_principalRayIdealSubgroup_iff (ClassFieldTheory.GlobalClassFieldComparison.rayClassModulusToOriginal F M) (J ^ N)).mp hpow
   have hxray : ClassFieldTheory.IsRayCongruent M x :=
     (ClassFieldTheory.GlobalClassFieldComparison.principalIdele_mem_primeTo_iff_isRayCongruent
       F M x).mp hx

@@ -43,10 +43,9 @@ theorem complexHC_algebra_cyclic
     have hm : v ∈ N := by
       exact Submodule.subset_span ⟨1, rfl⟩
     exact hv (by simpa only [hN, Submodule.mem_bot] using hm)
-  have ht : N = ⊤ := (eq_bot_or_eq_top N).resolve_left hN
   apply Submodule.eq_top_iff'.mpr
   intro x
-  exact (show x ∈ N from ht ▸ Submodule.mem_top)
+  exact (show x ∈ N from ((eq_bot_or_eq_top N).resolve_left hN) ▸ Submodule.mem_top)
 
 theorem complexHC_recovery {V : Type*} [AddCommGroup V] [Module ℂ V]
     (B : Fin 6 → Module.End ℂ complexCore)
@@ -63,7 +62,7 @@ theorem complexHC_recovery {V : Type*} [AddCommGroup V] [Module ℂ V]
       one_mem' := by intros x hx; exact hx
       add_mem' := by
         intro a b ha hb x hx
-        simpa only [LinearMap.add_apply, map_add] using U.add_mem (ha x hx) (hb x hx)
+        simpa using U.add_mem (ha x hx) (hb x hx)
       mul_mem' := by
         intro a b ha hb x hx
         exact ha _ (hb x hx)
@@ -85,8 +84,8 @@ theorem complexHC_recovery {V : Type*} [AddCommGroup V] [Module ℂ V]
     obtain ⟨a,rfl⟩ := hx
     exact hA a.property v hm
   | zero => simpa using U.zero_mem
-  | add x y hx hy ihx ihy => simpa only [map_add] using U.add_mem ihx ihy
-  | smul c x hx ih => simpa only [map_smul] using U.smul_mem c ih
+  | add x y hx hy ihx ihy => simpa using U.add_mem ihx ihy
+  | smul c x hx ih => simpa using U.smul_mem c ih
 
 end DedekindZetaZeroFree.RootDerivatives
 

@@ -8,16 +8,10 @@ noncomputable section
 open scoped NumberField Classical TensorProduct Topology
 open NumberField
 namespace DedekindZetaZeroFree.NativeScalarFiniteCompactRestriction
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Cover → Cover
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Fiber → Fiber
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Source → Source
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductCover → ProductCover
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductFiber → ProductFiber
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductFunctions → ProductFunctions
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming productCovariance → productCovariance
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation (Cover Fiber Source ProductCover ProductFiber ProductFunctions productCovariance)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (M : FourierContinuation.SourceReconstruction.InducingData F ζ hζ)
-variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
+    (M : FourierContinuation.SourceReconstruction.InducingData F ζ hζ)
+    (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
  abbrev CompactCover := ∀ q : S, (M q.val).iwasawa.compact.toOpenSubgroup
 
 private theorem productSection_from_compact
@@ -28,9 +22,8 @@ private theorem productSection_from_compact
         (M q.val).polarization .plus 0
         ((M q.val).iwasawa.borelPart (g q)))
       (f (fun q => ((M q.val).iwasawa.compactPart (g q) : Cover F ζ hζ S q))) := by
-  have h := hf (fun q => (M q.val).iwasawa.borelPart (g q))
-    (fun q => ((M q.val).iwasawa.compactPart (g q) : Cover F ζ hζ S q))
-  convert h using 1
+  convert (hf (fun q => (M q.val).iwasawa.borelPart (g q))
+    (fun q => ((M q.val).iwasawa.compactPart (g q) : Cover F ζ hζ S q))) using 1
   congr 1
   funext q
   exact (M q.val).iwasawa.decomposition (g q)

@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -51,8 +48,7 @@ noncomputable def norm :
 theorem norm_relativeIdeleBaseChangeMulEquiv
     (z : RelativeIdeleGroup K L) :
     norm K L
-        (relativeIdeleBaseChangeMulEquiv
-          (K := K) (L := L) z) =
+        (relativeIdeleBaseChangeMulEquiv z) =
       RelativeIdeleGroup.norm K L z := by
   simp [norm]
 
@@ -64,7 +60,7 @@ theorem norm_principalIdele
     norm K L (principalIdele L x) =
       principalIdele K (Units.map (Algebra.norm K) x) := by
   rw [← relativeIdeleBaseChangeMulEquiv_principalIdele
-    (K := K) (L := L) x]
+    (K := K) x]
   rw [norm_relativeIdeleBaseChangeMulEquiv,
     RelativeIdeleGroup.norm_principalIdele]
 

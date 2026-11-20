@@ -28,15 +28,14 @@ noncomputable def representation : Representation ℂ G (P U) :=
 def sectionValue (F : P U) (g : G) : ℂ := F.val.val.val g
 
 @[simp] theorem representation_apply (h g : G) (F : P U) :
-    sectionValue U (representation U h F) g = sectionValue U F (g * h) := by
-  rfl
+    sectionValue U (representation U h F) g = sectionValue U F (g * h) := rfl
 
 theorem sectionValue_left_invariant (F : P U) (u : inducingSubgroup U) (g : G) :
     sectionValue U F ((u : G) * g) = sectionValue U F g := by
   have h := F.val.val.property u g
   change sectionValue U F ((u : G) * g) =
     (1 : ℂ) • sectionValue U F g at h
-  simpa only [one_smul] using h
+  simpa using h
 
 omit [IsTopologicalGroup G] [T2Space G] in
 theorem coset_left (u : inducingSubgroup U) (g : G) :
@@ -50,14 +49,14 @@ theorem coset_left (u : inducingSubgroup U) (g : G) :
 theorem sectionValue_out (F : P U) (g : G) :
     sectionValue U F (Quotient.mk (QuotientGroup.rightRel (inducingSubgroup U)) g).out =
       sectionValue U F g := by
+  let mk₀ := Quotient.mk (QuotientGroup.rightRel (inducingSubgroup U)) g
   have h := Quotient.exact (Quotient.out_eq
-    (Quotient.mk (QuotientGroup.rightRel (inducingSubgroup U)) g))
-  change (QuotientGroup.rightRel (inducingSubgroup U)) (Quotient.mk (QuotientGroup.rightRel (inducingSubgroup U)) g).out g at h
+    (mk₀))
+  change (QuotientGroup.rightRel (inducingSubgroup U)) (mk₀).out g at h
   rw [QuotientGroup.rightRel_apply] at h
-  have hi := sectionValue_left_invariant U F ⟨g *
-    (Quotient.mk (QuotientGroup.rightRel (inducingSubgroup U)) g).out⁻¹, h⟩
-    (Quotient.mk (QuotientGroup.rightRel (inducingSubgroup U)) g).out
-  simpa using hi.symm
+  simpa using (sectionValue_left_invariant U F ⟨g *
+    (mk₀).out⁻¹, h⟩
+    (mk₀).out).symm
 
 noncomputable def finiteCosetSection : (Cosets U →₀ ℂ) →ₗ[ℂ]
     EqSections (inducingSubgroup U)
@@ -134,7 +133,7 @@ theorem finiteCosetSection_compact_support (f : Cosets U →₀ ℂ) :
       exact hg
     · intro hc
       refine ⟨c.out, ?_, Quotient.out_eq c⟩
-      simpa only [Function.mem_support, finiteCosetSection_apply, Quotient.out_eq] using hc
+      simpa using hc
   unfold HasCompactSupportModH
   rw [heq, (f.finite_support.isClosed).closure_eq]
   exact f.finite_support.isCompact
@@ -169,8 +168,7 @@ noncomputable def finiteSupportEquiv : P U ≃ₗ[ℂ] (Cosets U →₀ ℂ) whe
 theorem finiteSupportEquiv_apply (F : P U) (g : G) :
     finiteSupportEquiv U F
       (Quotient.mk (QuotientGroup.rightRel (inducingSubgroup U)) g) =
-        sectionValue U F g := by
-  exact sectionValue_out U F g
+        sectionValue U F g := sectionValue_out U F g
 
 noncomputable def finiteSupportRepresentation : Representation ℂ G (Cosets U →₀ ℂ) where
   toFun h := (finiteSupportEquiv U).toLinearMap ∘ₗ representation U h ∘ₗ
@@ -193,8 +191,6 @@ theorem delta_apply (g : G) :
   classical
   rw [← finiteSupportEquiv_apply]
   simp only [delta, LinearEquiv.apply_symm_apply]
-  change Finsupp.single (Quotient.mk (QuotientGroup.rightRel (inducingSubgroup U)) 1) 1
-    (Quotient.mk (QuotientGroup.rightRel (inducingSubgroup U)) g) = _
   simp [Finsupp.single_apply, Quotient.eq, QuotientGroup.rightRel_apply, Set.indicator]
 
 theorem delta_fixed (u : inducingSubgroup U) :
@@ -221,8 +217,6 @@ theorem finiteSupportEquiv_translate_delta (g : G) :
   obtain ⟨k, rfl⟩ := Quotient.exists_rep c
   rw [finiteSupportEquiv_apply, representation_apply, delta_apply]
   simp only [Finsupp.single_apply, Quotient.eq, QuotientGroup.rightRel_apply]
-  change (if k * g⁻¹ ∈ inducingSubgroup U then (1 : ℂ) else 0) =
-    (if k * g⁻¹ ∈ inducingSubgroup U then 1 else 0)
   rfl
 
 section Target
@@ -241,7 +235,7 @@ theorem intertwiningMap_ext
   obtain ⟨f, rfl⟩ := (finiteSupportEquiv U).symm.surjective F
   induction f using Finsupp.induction_linear with
   | zero => simp
-  | add f k hf hk => simpa only [map_add] using congrArg₂ (· + ·) hf hk
+  | add f k hf hk => simpa using congrArg₂ (· + ·) hf hk
   | single c a =>
     have he : Finsupp.single c a = a • finiteSupportEquiv U
         (representation U c.out⁻¹ (delta U)) := by
@@ -255,37 +249,38 @@ theorem intertwiningMap_ext
     rw [Representation.IntertwiningMap.isIntertwining (representation U) ρ S,
       Representation.IntertwiningMap.isIntertwining (representation U) ρ T, h]
 
-theorem inverse_translate_well_defined (x : fixedSubmodule ρ (inducingSubgroup U))
+section
+
+variable (x : fixedSubmodule ρ (inducingSubgroup U))
+
+theorem inverse_translate_well_defined
     (g g' : G)
     (hgg' : Quotient.mk (QuotientGroup.rightRel (inducingSubgroup U)) g =
       Quotient.mk (QuotientGroup.rightRel (inducingSubgroup U)) g') :
     ρ g⁻¹ x.val = ρ g'⁻¹ x.val := by
-  have h : g' * g⁻¹ ∈ inducingSubgroup U :=
-    (QuotientGroup.rightRel_apply).mp (Quotient.eq.mp hgg')
-  have hx := x.property (⟨g' * g⁻¹, h⟩ : inducingSubgroup U)
   have he : g⁻¹ = g'⁻¹ * (g' * g⁻¹) := by group
   conv_lhs => rw [he]
-  rw [map_mul, Module.End.mul_apply, hx]
+  rw [map_mul, Module.End.mul_apply, (x.property (⟨g' * g⁻¹, ((QuotientGroup.rightRel_apply).mp (Quotient.eq.mp hgg'))⟩ : inducingSubgroup U))]
 
-noncomputable def sumLinear (x : fixedSubmodule ρ (inducingSubgroup U)) :
+noncomputable def sumLinear :
     P U →ₗ[ℂ] X :=
   (Finsupp.linearCombination ℂ (fun c : Cosets U => ρ c.out⁻¹ x.val)).comp
     (finiteSupportEquiv U).toLinearMap
 
-private theorem sumLinear_translate (x : fixedSubmodule ρ (inducingSubgroup U)) (g : G) :
+private theorem sumLinear_translate (g : G) :
     sumLinear U ρ x (representation U g⁻¹ (delta U)) = ρ g⁻¹ x.val := by
   change Finsupp.linearCombination ℂ _ (finiteSupportEquiv U _) = _
   rw [finiteSupportEquiv_translate_delta, Finsupp.linearCombination_single, one_smul]
   exact inverse_translate_well_defined U ρ x _ g (Quotient.out_eq _)
 
-theorem sumLinear_intertwining (x : fixedSubmodule ρ (inducingSubgroup U))
+theorem sumLinear_intertwining
     (h : G) (F : P U) :
     sumLinear U ρ x (representation U h F) = ρ h (sumLinear U ρ x F) := by
   classical
   obtain ⟨f, rfl⟩ := (finiteSupportEquiv U).symm.surjective F
   induction f using Finsupp.induction_linear with
   | zero => simp
-  | add f k hf hk => simpa only [map_add] using congrArg₂ (· + ·) hf hk
+  | add f k hf hk => simpa using congrArg₂ (· + ·) hf hk
   | single c a =>
     have he : Finsupp.single c a = a • finiteSupportEquiv U
         (representation U c.out⁻¹ (delta U)) := by
@@ -301,7 +296,7 @@ theorem sumLinear_intertwining (x : fixedSubmodule ρ (inducingSubgroup U))
     rw [hm, sumLinear_translate, sumLinear_translate]
     simp [map_mul, Module.End.mul_apply]
 
-noncomputable def finiteSumMap (x : fixedSubmodule ρ (inducingSubgroup U)) :
+noncomputable def finiteSumMap :
     Representation.IntertwiningMap (representation U) ρ where
   toLinearMap :=
     { toFun := fun F => (finiteSupportEquiv U F).sum
@@ -317,10 +312,12 @@ noncomputable def finiteSumMap (x : fixedSubmodule ρ (inducingSubgroup U)) :
     ext F
     exact sumLinear_intertwining U ρ x h F
 
-@[simp] theorem finiteSumMap_delta (x : fixedSubmodule ρ (inducingSubgroup U)) :
+@[simp] theorem finiteSumMap_delta :
     finiteSumMap U ρ x (delta U) = x.val := by
   change sumLinear U ρ x (delta U) = x.val
   simpa using sumLinear_translate U ρ x (1 : G)
+
+end
 
 noncomputable def evaluationEquiv :
     Representation.IntertwiningMap (representation U) ρ ≃ₗ[ℂ]

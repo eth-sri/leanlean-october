@@ -15,7 +15,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2200000
 local instance : SecondCountableTopology compactSubgroup := by
   letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) ℂ) := by
-    change SecondCountableTopology (Fin 2 → Fin 2 → ℂ)
     infer_instance
   letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) ℂ)ᵐᵒᵖ :=
     MulOpposite.opHomeomorph.symm.secondCountableTopology
@@ -25,10 +24,10 @@ local instance : SecondCountableTopology compactSubgroup := by
   exact Topology.IsEmbedding.subtypeVal.secondCountableTopology
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "Core" => RestrictedTensorSimple.Core (LiteralSource.Plus R.A P C) (LiteralSource.plusReference R.A P C) (LiteralSource.bad R.A P C)
@@ -47,7 +46,7 @@ theorem compact_source_upper_derivative_adjoint
       (KPMsGreenFlux.compactInsertion F ζ hζ k*c.val) *
       star (originalUpper R (LiteralSource.coreResidue R P C x)
         (KPMsGreenFlux.compactInsertion F ζ hζ k*c.val)) ∂dk) := by
-  have hms : KPMsGreenFlux.instMeasurableSpaceK F = (MeasurableSpace.pi : MeasurableSpace (InfinitePlace F → compactSubgroup)) := by
+  have hms : KPMsGreenFlux.instMeasurableSpaceK F = MeasurableSpace.pi := by
     exact (@BorelSpace.measurable_eq (InfinitePlace F → compactSubgroup) _ MeasurableSpace.pi (Pi.borelSpace)).symm
   revert dk
   rw [hms]
@@ -57,7 +56,6 @@ theorem compact_source_upper_derivative_adjoint
   have ht0 := ht []
   have hx0 := hx []
   simp only [actualRightWord, List.map_nil, slotWords, matrixWord] at ht0 hx0
-  have hn : negativeParameter = -positiveParameter := by norm_num [negativeParameter,positiveParameter]
   subst_vars
   have H := finiteCompact_word_adjoint ρ dk ν positiveParameter (w.map (matrixLetter F)) d e f g
   simp only [List.length_map, ←List.map_reverse] at H

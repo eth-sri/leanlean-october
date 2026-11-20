@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -50,8 +47,6 @@ structure FiniteRankTorsionProjectionData
   /-- The restriction of `f` to the torsion submodule is injective. -/
   torsionProjection_injective :
     Function.Injective (f.domRestrict (Submodule.torsion R M))
-  /-- The middle module has `R`-finrank `d`. -/
-  finrankMiddle : Module.finrank R M = d
   /-- The torsion-free quotient of the middle module has `R`-finrank `d`. -/
   finrankFree :
     Module.finrank R (M ⧸ Submodule.torsion R M) = d
@@ -89,8 +84,6 @@ structure FiniteRankTorsionData
   torsionProjection : Submodule.torsion R M →ₗ[R] Q
   /-- The torsion projection is injective. -/
   torsionProjection_injective : Function.Injective torsionProjection
-  /-- The middle module has `R`-finrank `d`. -/
-  finrankMiddle : Module.finrank R M = d
   /-- The torsion-free quotient of the middle module has `R`-finrank `d`. -/
   finrankFree :
     Module.finrank R (M ⧸ Submodule.torsion R M) = d
@@ -169,7 +162,6 @@ theorem finite_rank_and_torsion_projection_of_surjective
     { moduleFinite := hM
       finiteTorsion := hT
       torsionProjection_injective := htproj
-      finrankMiddle := hrankM
       finrankFree := hrankFree }
 
 /-- Consume a finite quotient setup and forget the concrete quotient map
@@ -194,7 +186,6 @@ noncomputable def finite_rank_torsion_data_of_setup
       torsionProjection :=
         setup.projection.domRestrict (Submodule.torsion R M)
       torsionProjection_injective := core.torsionProjection_injective
-      finrankMiddle := core.finrankMiddle
       finrankFree := core.finrankFree }
 
 /-- The proof-relevant algebraic package used to assemble the topological
@@ -227,11 +218,9 @@ theorem isAddCyclic_of_injective_multiplicative_map
     (f : A →+ Additive U) (g : U →* D)
     (hf : Function.Injective f) (hg : Function.Injective g) :
     IsAddCyclic A := by
-  let fmul : Multiplicative A →* U :=
+  let fmul :=
     AddMonoidHom.toMultiplicativeLeft f
-  have hfmul : Function.Injective fmul := by
-    intro x y hxy
-    exact Multiplicative.toAdd.injective
+  have hfmul : Function.Injective fmul := fun x y hxy => Multiplicative.toAdd.injective
       (hf (Additive.toMul.injective hxy))
   exact isCyclic_multiplicative_iff.mp
     (isCyclic_of_injective_ringHom (g.comp fmul) (hg.comp hfmul))
@@ -244,7 +233,7 @@ theorem exists_card_eq_prime_power_of_injective_addMonoidHom
     (f : A →+ B) (hf : Function.Injective f)
     (hB : IsPGroup p (Multiplicative B)) :
     ∃ a : ℕ, Nat.card A = p ^ a := by
-  let fmul : Multiplicative A →* Multiplicative B :=
+  let fmul :=
     AddMonoidHom.toMultiplicative f
   have hfmul : Function.Injective fmul := by
     intro x y hxy
@@ -265,10 +254,12 @@ structure FiniteFreeSubmoduleData
   /-- The submodule `N` has `R`-finrank `d`. -/
   finrank : Module.finrank R N = d
 
+local notation "DiscreteValueGroup" => WithZero (Multiplicative ℤ)
+
 /-- The deep logarithmic lattice, viewed inside `U¹`, is finite free of the
 field degree. -/
 theorem mixed_principalUnitSuccKernelData
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
+    (v : _root_.Valuation K DiscreteValueGroup)
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
     (hv : Function.Surjective v)
@@ -287,52 +278,47 @@ theorem mixed_principalUnitSuccKernelData
     let d := Module.finrank ℚ_[p] K
     FiniteFreeSubmoduleData R M
       (F.principalUnitSuccPadicSubmodule n) d := by
-  let F : LocalField.{u, 0} K := ofWithZeroValuation v
-  let p : ℕ := F.residueCharacteristic
+  let F := ofWithZeroValuation v
+  let p := F.residueCharacteristic
   let R := ℤ_[p]
-  let M := Additive (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) 1)
-  let : MixedQPadicContext F := mixedQPadicContext F
-  let : Module R M :=
+  let := mixedQPadicContext F
+  let :=
     CompleteDVF.higherPrincipalUnitGroup.principalUnitPadicModule F
-  let d : ℕ := Module.finrank ℚ_[p] K
-  let : Algebra R F.toCompleteDVF.valuationSubring :=
+  let d := Module.finrank ℚ_[p] K
+  let :=
     F.padicIntValuationSubringAlgebra
   have hlevelSucc :
       (ramificationIndexOfWithZeroValuation v : ℚ) /
           ((F.residueCharacteristic : ℚ) - 1) < ((n + 1 : ℕ) : ℚ) :=
     lt_trans hlevel (by exact_mod_cast Nat.lt_succ_self n)
-  let hr : 1 ≤ n + 1 := Nat.succ_le_succ (Nat.zero_le n)
+  let hr := Nat.succ_le_succ (Nat.zero_le n)
   let deep := Additive
     (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) (n + 1))
-  let : Module R deep := F.higherPrincipalUnitPadicModule hr
-  let : Module.Finite R deep :=
+  let := F.higherPrincipalUnitPadicModule hr
+  let :=
     mixed_deepPrincipalUnit_moduleFinite
       v hv (n + 1) hlevelSucc
-  let eDeep : deep ≃ₗ[R] (Fin d → R) :=
+  let eDeep :=
     mixed_deepPrincipalUnitLinearEquivPi
       v hv (n + 1) hlevelSucc
   let higher := F.principalUnitSuccPadicSubmodule n
-  let eHigher : deep ≃ₗ[R] higher :=
+  let eHigher :=
     F.higherPrincipalUnitLinearEquivPadicSubmodule hr
-  let hHigherFinite : Module.Finite R higher :=
-    F.higherPrincipalUnitPadicSubmodule_moduleFinite hr inferInstance
-  let : Module.Free R deep := Module.Free.of_equiv eDeep.symm
-  let hHigherFree : Module.Free R higher := Module.Free.of_equiv eHigher
-  have hrankDeep : Module.finrank R deep = d := by
-    simpa [d] using eDeep.finrank_eq
+  let := Module.Free.of_equiv eDeep.symm
   have hrankHigher : Module.finrank R higher = d := by
     calc
       Module.finrank R higher = Module.finrank R deep := eHigher.finrank_eq.symm
-      _ = d := hrankDeep
+      _ = d := (by
+        simpa [d] using eDeep.finrank_eq)
   exact
-    { moduleFinite := hHigherFinite
-      moduleFree := hHigherFree
+    { moduleFinite := (F.higherPrincipalUnitPadicSubmodule_moduleFinite hr inferInstance)
+      moduleFree := (Module.Free.of_equiv eHigher)
       finrank := hrankHigher }
 
 /-- The finite quotient map in the mixed-characteristic field-unit structure theorem, with the deep logarithmic
 lattice identified as its finite free kernel. -/
 noncomputable def mixed_firstPrincipalUnitFiniteQuotientSetup
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
+    (v : _root_.Valuation K DiscreteValueGroup)
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
     (hv : Function.Surjective v)
@@ -355,14 +341,14 @@ noncomputable def mixed_firstPrincipalUnitFiniteQuotientSetup
     letI : Module R q :=
       CompleteDVF.higherPrincipalUnitGroup.discretePrincipalUnitQuotientPadicModule F n
     FiniteQuotientSetup R M q d := by
-  let F : LocalField.{u, 0} K := ofWithZeroValuation v
-  let p : ℕ := F.residueCharacteristic
+  let F := ofWithZeroValuation v
+  let p := F.residueCharacteristic
   let R := ℤ_[p]
   let M := Additive (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) 1)
   letI : MixedQPadicContext F := mixedQPadicContext F
   letI : Module R M :=
     CompleteDVF.higherPrincipalUnitGroup.principalUnitPadicModule F
-  let d : ℕ := Module.finrank ℚ_[p] K
+  let d := Module.finrank ℚ_[p] K
   let higher := F.principalUnitSuccPadicSubmodule n
   let kernelData := mixed_principalUnitSuccKernelData
     v hv n hlevel
@@ -373,15 +359,14 @@ noncomputable def mixed_firstPrincipalUnitFiniteQuotientSetup
     CompleteDVF.higherPrincipalUnitGroup.discretePrincipalUnitQuotientPadicModule F n
   letI : Finite q := inferInstance
   letI : Module.Finite R q := Module.Finite.of_finite
-  let projection : M →ₗ[R] q := F.principalUnitQuotientProjectionLinear n
+  let projection := F.principalUnitQuotientProjectionLinear n
   let U := LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.toPrincipalUnitFiltration
     F.toCompleteDVF
-  let quotientKernel := (U.principalUnitSubgroup (n + 1)).subgroupOf
-    (U.principalUnitSubgroup 1)
   have hsur : Function.Surjective projection := by
     intro y
     obtain ⟨x, hx⟩ :=
-      QuotientGroup.mk'_surjective quotientKernel (Additive.toMul y.val)
+      QuotientGroup.mk'_surjective ((U.principalUnitSubgroup (n + 1)).subgroupOf
+        (U.principalUnitSubgroup 1)) (Additive.toMul y.val)
     refine ⟨Additive.ofMul x, ?_⟩
     apply (CompleteDVF.higherPrincipalUnitGroup.DiscretePrincipalUnitQuotient.addEquiv
       F.toCompleteDVF n).injective
@@ -414,7 +399,7 @@ noncomputable def mixed_firstPrincipalUnitFiniteQuotientSetup
 The deep logarithmic lattice supplies the free kernel; the finite-level
 principal-unit quotient detects all torsion. -/
 noncomputable def chosenMixed_firstPrincipalUnitAlgebraicData
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
+    (v : _root_.Valuation K DiscreteValueGroup)
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
     (hv : Function.Surjective v)
@@ -432,14 +417,14 @@ noncomputable def chosenMixed_firstPrincipalUnitAlgebraicData
       CompleteDVF.higherPrincipalUnitGroup.principalUnitPadicModule F
     let d := Module.finrank ℚ_[p] K
     FirstPrincipalUnitAlgebraicData R M p d := by
-  let F : LocalField.{u, 0} K := ofWithZeroValuation v
+  let F := ofWithZeroValuation v
   let p : ℕ := F.residueCharacteristic
   let R := ℤ_[p]
   let M := Additive (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) 1)
   letI : MixedQPadicContext F := mixedQPadicContext F
   letI : Module R M :=
     CompleteDVF.higherPrincipalUnitGroup.principalUnitPadicModule F
-  let d : ℕ := Module.finrank ℚ_[p] K
+  let d := Module.finrank ℚ_[p] K
   let q :=
     CompleteDVF.higherPrincipalUnitGroup.DiscretePrincipalUnitQuotient
       F.toCompleteDVF n
@@ -447,22 +432,20 @@ noncomputable def chosenMixed_firstPrincipalUnitAlgebraicData
     CompleteDVF.higherPrincipalUnitGroup.discretePrincipalUnitQuotientPadicModule F n
   letI : Finite q := inferInstance
   letI : Module.Finite R q := Module.Finite.of_finite
-  let setup :=
-    mixed_firstPrincipalUnitFiniteQuotientSetup
-      v hv n hlevel
-  let exactData : FiniteRankTorsionData R M q d :=
-    finite_rank_torsion_data_of_setup d setup
+  let exactData :=
+    finite_rank_torsion_data_of_setup d (mixed_firstPrincipalUnitFiniteQuotientSetup
+      v hv n hlevel)
   letI : Module.Finite R M := exactData.moduleFinite
   let T := Submodule.torsion R M
-  letI hTAddCommGroup : AddCommGroup T := Submodule.addCommGroup T
-  letI hTAddGroup : AddGroup T := hTAddCommGroup.toAddGroup
-  letI hTModule : Module R T := Submodule.module T
+  letI hTAddCommGroup := Submodule.addCommGroup T
+  letI hTAddGroup := hTAddCommGroup.toAddGroup
+  letI hTModule := Submodule.module T
   letI : Finite T := exactData.finiteTorsion
   letI hqAddGroup : AddGroup q := inferInstance
   let U1 := LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) 1
   let valuationUnitsToFieldUnits :=
     _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.valuationSubringUnitsToFieldUnits F.toCompleteDVF
-  let principalToField : U1 →* K :=
+  let principalToField :=
     (Units.coeHom K).comp
       (valuationUnitsToFieldUnits.comp U1.subtype)
   have hvaluationUnitsToFieldUnits :
@@ -470,37 +453,28 @@ noncomputable def chosenMixed_firstPrincipalUnitAlgebraicData
     intro x y hxy
     apply Units.ext
     apply Subtype.ext
-    have hxy' := congrArg (fun z : Kˣ => (z : K)) hxy
-    simpa [valuationUnitsToFieldUnits] using hxy'
-  have hprincipalToField : Function.Injective principalToField := by
-    exact Units.val_injective.comp
+    simpa [valuationUnitsToFieldUnits] using (congrArg (fun z : Kˣ => (z : K)) hxy)
+  have hprincipalToField : Function.Injective principalToField := Units.val_injective.comp
       (hvaluationUnitsToFieldUnits.comp Subtype.val_injective)
-  have hcyclic : IsAddCyclic T :=
-    isAddCyclic_of_injective_multiplicative_map
-      T.subtype.toAddMonoidHom principalToField
-      T.subtype_injective hprincipalToField
-  let tproj : T →ₗ[R] q := exactData.torsionProjection
-  have hqP : IsPGroup p (Multiplicative q) :=
-    F.discretePrincipalUnitQuotient_isPGroup n
   let hcardExists :=
     exists_card_eq_prime_power_of_injective_addMonoidHom
-      tproj.toAddMonoidHom exactData.torsionProjection_injective hqP
-  let a : ℕ := Classical.choose hcardExists
-  have hcard : Nat.card T = p ^ a :=
-    Classical.choose_spec hcardExists
+      exactData.torsionProjection.toAddMonoidHom exactData.torsionProjection_injective (F.discretePrincipalUnitQuotient_isPGroup n)
+  let a := Classical.choose hcardExists
   refine
     { a := a
       moduleFinite := exactData.moduleFinite
       finiteTorsion := exactData.finiteTorsion
-      cyclicTorsion := hcyclic
-      cardTorsion := hcard
+      cyclicTorsion := (isAddCyclic_of_injective_multiplicative_map
+        T.subtype.toAddMonoidHom principalToField
+        T.subtype_injective hprincipalToField)
+      cardTorsion := (Classical.choose_spec hcardExists)
       finrankFree := exactData.finrankFree }
 
 /-- The mixed-characteristic field-unit structure theorem, principal-unit factor in its literal algebraic and
 topological form.  The finite torsion is a cyclic `p`-group and the free
 factor has rank `[K : Q_p]`. -/
 noncomputable def mixed_firstPrincipalUnitStructure
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
+    (v : _root_.Valuation K DiscreteValueGroup)
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
     (hv : Function.Surjective v)
@@ -512,21 +486,20 @@ noncomputable def mixed_firstPrincipalUnitStructure
     let F : LocalField.{u, 0} K := ofWithZeroValuation v
     letI : MixedWithZeroValuationContext v :=
       mixedWithZeroValuationContext v
-    letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
+    letI : Valued K DiscreteValueGroup := Valued.mk' v
     let d := Module.finrank ℚ_[F.residueCharacteristic] K
     Σ a : ℕ,
       Multiplicative
           (ZMod (F.residueCharacteristic ^ a) ×
             (Fin d → ℤ_[F.residueCharacteristic])) ≃ₜ*
         LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) 1 := by
-  let F : LocalField.{u, 0} K := ofWithZeroValuation v
-  let p : ℕ := F.residueCharacteristic
+  let F := ofWithZeroValuation v
+  let p := F.residueCharacteristic
   let R := ℤ_[p]
   let M := Additive (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) 1)
   letI : MixedWithZeroValuationContext v :=
     mixedWithZeroValuationContext v
-  letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  let d : ℕ := Module.finrank ℚ_[p] K
+  letI : Valued K DiscreteValueGroup := Valued.mk' v
   let T := Submodule.torsion R M
   letI : AddCommGroup T := Submodule.addCommGroup T
   letI : Module R T := Submodule.module T
@@ -542,37 +515,33 @@ noncomputable def mixed_firstPrincipalUnitStructure
   letI : CompactSpace M := Module.Finite.compactSpace R M
   letI : T2Space M :=
     T2Space.of_injective_continuous Additive.toMul.injective continuous_toMul
-  let eAdd :=
-    CompleteDVF.higherPrincipalUnitGroup.chosenPadicModuleContinuousAddEquivZModProdFinPi
-      p M data.a d data.cyclicTorsion data.cardTorsion data.finrankFree
-  exact ⟨data.a, continuousMulEquivOfAdditiveTarget eAdd⟩
+  exact ⟨data.a, continuousMulEquivOfAdditiveTarget (CompleteDVF.higherPrincipalUnitGroup.chosenPadicModuleContinuousAddEquivZModProdFinPi
+    p M data.a (Module.finrank ℚ_[p] K) data.cyclicTorsion data.cardTorsion data.finrankFree)⟩
 
 /-- The mixed-characteristic field-unit structure theorem, principal-unit factor with the logarithmic depth
 chosen internally.  Thus the statement retains only the hypotheses attached
 to the local field and a normalized valuation. -/
 noncomputable def chosenMixed_firstPrincipalUnitStructure_ofWithZeroValuation
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
+    (v : _root_.Valuation K DiscreteValueGroup)
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
     (hv : Function.Surjective v) :
     let F : LocalField.{u, 0} K := ofWithZeroValuation v
     letI : MixedWithZeroValuationContext v :=
       mixedWithZeroValuationContext v
-    letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
+    letI : Valued K DiscreteValueGroup := Valued.mk' v
     let d := Module.finrank ℚ_[F.residueCharacteristic] K
     Σ a : ℕ,
       Multiplicative
           (ZMod (F.residueCharacteristic ^ a) ×
             (Fin d → ℤ_[F.residueCharacteristic])) ≃ₜ*
         LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) 1 := by
-  let F : LocalField.{u, 0} K := ofWithZeroValuation v
+  let F := ofWithZeroValuation v
   let hex := exists_nat_gt
     ((ramificationIndexOfWithZeroValuation v : ℚ) /
       ((F.residueCharacteristic : ℚ) - 1))
-  let n : ℕ := Classical.choose hex
-  have hn := Classical.choose_spec hex
   exact mixed_firstPrincipalUnitStructure
-    v hv n (by simpa [F] using hn)
+    v hv (Classical.choose hex) (by simpa [F] using (Classical.choose_spec hex))
 
 end LocalField
 end LocalFieldTheory.DiscreteValuationField

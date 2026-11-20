@@ -17,21 +17,27 @@ abbrev Iwasawa := KPGlobalTorusBorelTwistCompatibility.IwasawaData F ζ hζ
 abbrev NormOne (D : Iwasawa F ζ hζ) :=
   {g : G F ζ hζ // KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D g = 1}
 
-def angularRelation (D : Iwasawa F ζ hζ) (U : Level F ζ hζ)
+section
+
+variable (D : Iwasawa F ζ hζ) (U : Level F ζ hζ)
+
+def angularRelation
     (g g' : NormOne F ζ hζ D) : Prop :=
   ∃ (y : Fˣ) (x : KPGlobalTorusFunctionData.Adeles F)
     (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U),
     g'.val = ((KPGlobalTorusFunctionData.s F ζ hζ y).val *
       KPGlobalTorusFunctionData.N F ζ hζ x) * g.val * u.val
 
-def angularSetoid (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
+def angularSetoid :
     Setoid (NormOne F ζ hζ D) where
   r := Relation.EqvGen (angularRelation F ζ hζ D U)
   iseqv := ⟨Relation.EqvGen.refl, fun h => Relation.EqvGen.symm _ _ h,
     fun h k => Relation.EqvGen.trans _ _ _ h k⟩
 
-abbrev Omega (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :=
+abbrev Omega :=
   Quotient (angularSetoid F ζ hζ D U)
+
+end
 instance (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
     MeasurableSpace (Omega F ζ hζ D U) := borel _
 
@@ -44,7 +50,11 @@ def fullAngularSetoid (D : Iwasawa F ζ hζ) : Setoid (NormOne F ζ hζ D) where
 abbrev FullOmega (D : Iwasawa F ζ hζ) := Quotient (fullAngularSetoid F ζ hζ D)
 instance (D : Iwasawa F ζ hζ) : MeasurableSpace (FullOmega F ζ hζ D) := borel _
 
-def fullToLevel (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
+section
+
+variable (D : Iwasawa F ζ hζ) (U : Level F ζ hζ)
+
+def fullToLevel :
     FullOmega F ζ hζ D → Omega F ζ hζ D U := by
   refine Quotient.lift (fun g => Quotient.mk (angularSetoid F ζ hζ D U) g) ?_
   intro a b hab
@@ -56,9 +66,11 @@ def fullToLevel (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
     exact ⟨y, x, 1, by simpa using h⟩
   exact hrel a b hab
 
-theorem fullToLevel_mk (D : Iwasawa F ζ hζ) (U : Level F ζ hζ)
+theorem fullToLevel_mk
     (g : NormOne F ζ hζ D) :
     fullToLevel F ζ hζ D U (Quotient.mk _ g) = Quotient.mk _ g := rfl
+
+end
 
 structure SourceRecipe
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
@@ -84,17 +96,21 @@ structure SourceRecipe
           KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val)) : ℝ≥0) : ℝ) =
       Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * t)
 
-def framedRadius (D : Iwasawa F ζ hζ) (σ g : G F ζ hζ) :
+section
+
+variable (D : Iwasawa F ζ hζ)
+
+def framedRadius (σ g : G F ζ hζ) :
     KPMsFixedHaarDisintegration.Radius :=
   ⟨((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D (σ⁻¹ * g) : ℝ≥0) : ℝ),
     NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr (Units.ne_zero _))⟩
 
-def framedNormalization (D : Iwasawa F ζ hζ)
+def framedNormalization
     (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ) (σ g : G F ζ hζ) : G F ζ hζ :=
   (KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot
     (framedRadius F ζ hζ D σ g))⁻¹ * (σ⁻¹ * g)
 
-theorem framedNormalization_normOne_continuous (D : Iwasawa F ζ hζ)
+theorem framedNormalization_normOne_continuous
     (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ) (σ : G F ζ hζ) :
     (∀ g, KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D
       (framedNormalization F ζ hζ D B σ g) = 1) ∧
@@ -120,17 +136,17 @@ theorem framedNormalization_normOne_continuous (D : Iwasawa F ζ hζ)
     simpa only [hn, mul_one, map_inv, hd, inv_mul_cancel] using he
   · have hframe : Continuous (fun g : G F ζ hζ => σ⁻¹ * g) :=
       continuous_const.mul continuous_id
-    have hr : Continuous (framedRadius F ζ hζ D σ) :=
-      ((KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_iwasawaNorm_continuous
-        F ζ hζ D).comp hframe).subtype_mk _
-    exact ((B.continuous_section.comp hr).inv).mul hframe
+    exact ((B.continuous_section.comp (((KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_iwasawaNorm_continuous
+      F ζ hζ D).comp hframe).subtype_mk _)).inv).mul hframe
+
+end
 
 section CuspCoordinates
 variable {F ζ hζ}
 variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (S : SourceRecipe F ζ hζ R P H) (U : Level F ζ hζ)
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    (S : SourceRecipe F ζ hζ R P H) (U : Level F ζ hζ)
 
 end CuspCoordinates
 end DedekindZetaZeroFree.KPMsActualAngularSource

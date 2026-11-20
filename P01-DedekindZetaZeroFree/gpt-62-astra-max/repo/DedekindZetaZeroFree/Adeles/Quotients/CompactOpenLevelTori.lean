@@ -19,17 +19,25 @@ def finiteLevelFiniteInclusion (F : Type*) [Field F] [NumberField F] :
     change (0, x + y) = (0 + 0, x + y)
     simp
 
-def finiteLevelImage {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F)) :
+section
+
+variable {F : Type*} [Field F] [NumberField F] (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
+
+def finiteLevelImage :
     AddSubgroup (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) :=
   K.map ((QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F)).comp
     (finiteLevelFiniteInclusion F))
 
-abbrev finiteLevelAdditiveQuotient {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F)) :=
+abbrev finiteLevelAdditiveQuotient :=
   (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) ⧸ finiteLevelImage K
 
-private theorem existsOpenDiagonalZero (F : Type*) [Field F] [NumberField F] :
+end
+
+section
+
+variable (F : Type*) [Field F] [NumberField F]
+
+private theorem existsOpenDiagonalZero :
     ∃ U : Set (AdeleRing (𝓞 F) F), IsOpen U ∧ (0 : AdeleRing (𝓞 F) F) ∈ U ∧
       (algebraMap F (AdeleRing (𝓞 F) F)) ⁻¹' U = ({0} : Set F) := by
   classical
@@ -95,23 +103,24 @@ private theorem existsOpenDiagonalZero (F : Type*) [Field F] [NumberField F] :
         simpa only [map_zero] using hW0
       · exact (integralFiniteAdeles F).zero_mem
 
-theorem adelePrincipalSubgroup_discrete (F : Type*) [Field F] [NumberField F] :
+theorem adelePrincipalSubgroup_discrete :
     DiscreteTopology (AdeleRing.principalSubgroup (𝓞 F) F) := by
   obtain ⟨U, hU, hU0, hdiag⟩ := existsOpenDiagonalZero F
   apply discreteTopology_of_isOpen_singleton_zero
-  have heq : (Subtype.val : AdeleRing.principalSubgroup (𝓞 F) F → AdeleRing (𝓞 F) F) ⁻¹' U = {0} := by
+  let AdeleRing₀ := AdeleRing (𝓞 F) F
+  have heq : (Subtype.val : AdeleRing.principalSubgroup (𝓞 F) F → AdeleRing₀) ⁻¹' U = {0} := by
     ext a
     constructor
     · intro ha
       obtain ⟨x, hx⟩ := a.property
       have hx0 : x = 0 := by
-        have hm : x ∈ (algebraMap F (AdeleRing (𝓞 F) F)) ⁻¹' U := by
-          change algebraMap F (AdeleRing (𝓞 F) F) x ∈ U
+        have hm : x ∈ (algebraMap F (AdeleRing₀)) ⁻¹' U := by
+          change algebraMap F (AdeleRing₀) x ∈ U
           rwa [hx]
         rwa [hdiag, Set.mem_singleton_iff] at hm
       apply Set.mem_singleton_iff.mpr
       apply Subtype.ext
-      change (a : AdeleRing (𝓞 F) F) = 0
+      change (a : AdeleRing₀) = 0
       simpa only [hx0, map_zero] using hx.symm
     · intro ha
       rcases Set.mem_singleton_iff.mp ha with rfl
@@ -119,7 +128,7 @@ theorem adelePrincipalSubgroup_discrete (F : Type*) [Field F] [NumberField F] :
   rw [← heq]
   exact hU.preimage continuous_subtype_val
 
-theorem adelePrincipalSubgroup_isClosed (F : Type*) [Field F] [NumberField F] :
+theorem adelePrincipalSubgroup_isClosed :
     IsClosed (AdeleRing.principalSubgroup (𝓞 F) F : Set (AdeleRing (𝓞 F) F)) := by
   haveI : DiscreteTopology (AdeleRing.principalSubgroup (𝓞 F) F) :=
     adelePrincipalSubgroup_discrete F
@@ -131,6 +140,8 @@ theorem adelePrincipalSubgroup_isClosed (F : Type*) [Field F] [NumberField F] :
   haveI : T2Space (AdeleRing (𝓞 F) F) :=
     inferInstanceAs (T2Space (InfiniteAdeleRing F × FiniteAdeleRing (𝓞 F) F))
   infer_instance
+
+end
 
  def mixedHomeo (F : Type*) [Field F] [NumberField F] :
     InfiniteAdeleRing F ≃ₜ mixedEmbedding.mixedSpace F :=
@@ -144,11 +155,14 @@ theorem adelePrincipalSubgroup_isClosed (F : Type*) [Field F] [NumberField F] :
           (not_isReal_iff_isComplex.mp v.2)).toHomeomorph)).trans
         (Homeomorph.piCongrLeft (Y := fun _ => ℂ)
           (Equiv.subtypeEquivRight (fun _ => not_isReal_iff_isComplex))))))
-private theorem mixedHomeo_apply (F : Type*) [Field F] [NumberField F]
-    (x : InfiniteAdeleRing F) : mixedHomeo F x = InfiniteAdeleRing.ringEquiv_mixedSpace F x := by
-  rfl
+section
 
-theorem additiveAdeleQuotient_compactHausdorff (F : Type*) [Field F] [NumberField F] :
+variable (F : Type*) [Field F] [NumberField F]
+
+private theorem mixedHomeo_apply
+    (x : InfiniteAdeleRing F) : mixedHomeo F x = InfiniteAdeleRing.ringEquiv_mixedSpace F x := rfl
+
+theorem additiveAdeleQuotient_compactHausdorff :
     CompactSpace (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) ∧
       T2Space (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) := by
   have hO : IsCompact (integralFiniteAdeles F : Set (FiniteAdeleRing (𝓞 F) F)) := by
@@ -167,8 +181,8 @@ theorem additiveAdeleQuotient_compactHausdorff (F : Type*) [Field F] [NumberFiel
     RestrictedProduct.isOpen_forall_mem (fun v => Valued.isOpen_valuationSubring _)
   let b := mixedEmbedding.latticeBasis F
   let e := mixedHomeo F
-  let C := e ⁻¹' (b.parallelepiped : Set _)
-  have hC : IsCompact C := e.isCompact_preimage.mpr b.parallelepiped.isCompact
+  let C := e ⁻¹' b.parallelepiped
+  have hC := e.isCompact_preimage.mpr b.parallelepiped.isCompact
   have hcover : (QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F)) ''
       (C ×ˢ (integralFiniteAdeles F : Set (FiniteAdeleRing (𝓞 F) F))) = Set.univ := by
     apply Set.eq_univ_of_forall
@@ -179,13 +193,11 @@ theorem additiveAdeleQuotient_compactHausdorff (F : Type*) [Field F] [NumberFiel
       rw [hr, add_sub_cancel_left]
       exact k.property
     let y := e (a.1 - algebraMap F (InfiniteAdeleRing F) r)
-    have hf : (ZSpan.floor b y : mixedEmbedding.mixedSpace F) ∈ mixedEmbedding.integerLattice F :=
-      (mixedEmbedding.mem_span_latticeBasis F).mp (ZSpan.floor b y).property
-    obtain ⟨s, hs⟩ := hf
+    obtain ⟨s, hs⟩ := ((mixedEmbedding.mem_span_latticeBasis F).mp (ZSpan.floor b y).property)
     let z : F := r + (s : F)
     refine ⟨a - algebraMap F (AdeleRing (𝓞 F) F) z, ⟨?_, ?_⟩, ?_⟩
-    · change e (a.1 - algebraMap F (InfiniteAdeleRing F) z) ∈ (b.parallelepiped : Set _)
-      have hs' : mixedEmbedding F (s : F) = (ZSpan.floor b y : mixedEmbedding.mixedSpace F) := hs
+    · change e (a.1 - algebraMap F (InfiniteAdeleRing F) z) ∈ b.parallelepiped
+      have hs' := hs
       have hmap (x : InfiniteAdeleRing F) (t : F) :
           e (x - algebraMap F (InfiniteAdeleRing F) t) = e x - mixedEmbedding F t := by
         simp only [e, mixedHomeo_apply, map_sub, ← InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
@@ -197,17 +209,12 @@ theorem additiveAdeleQuotient_compactHausdorff (F : Type*) [Field F] [NumberFiel
         abel
       rw [hfrac]
       exact ZSpan.fundamentalDomain_subset_parallelepiped b (ZSpan.fract_mem_fundamentalDomain b y)
-    · change a.2 - algebraMap F (FiniteAdeleRing (𝓞 F) F) z ∈ integralFiniteAdeles F
-      have hsfin : algebraMap F (FiniteAdeleRing (𝓞 F) F) (s : F) ∈ integralFiniteAdeles F := by
-        intro v
-        exact HeightOneSpectrum.coe_algebraMap_mem (RingOfIntegers F) F v s
+    · have hsfin : algebraMap F (FiniteAdeleRing (𝓞 F) F) (s : F) ∈ integralFiniteAdeles F := fun v => HeightOneSpectrum.coe_algebraMap_mem (RingOfIntegers F) F v s
       dsimp [z]
       rw [map_add, ← sub_sub]
       exact (integralFiniteAdeles F).sub_mem hrem hsfin
-    · change QuotientAddGroup.mk (a - algebraMap F (AdeleRing (𝓞 F) F) z) = QuotientAddGroup.mk a
-      apply QuotientAddGroup.eq_iff_sub_mem.mpr
-      have hz : algebraMap F (AdeleRing (𝓞 F) F) z ∈ AdeleRing.principalSubgroup (𝓞 F) F := ⟨z, rfl⟩
-      simpa only [sub_sub_cancel_left] using (AdeleRing.principalSubgroup (𝓞 F) F).neg_mem hz
+    · apply QuotientAddGroup.eq_iff_sub_mem.mpr
+      simpa using (AdeleRing.principalSubgroup (𝓞 F) F).neg_mem (⟨z, rfl⟩)
   have hQ : CompactSpace (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) := by
     apply isCompact_univ_iff.mp
     rw [← hcover]
@@ -216,6 +223,8 @@ theorem additiveAdeleQuotient_compactHausdorff (F : Type*) [Field F] [NumberFiel
     adelePrincipalSubgroup_isClosed F
   exact ⟨hQ, inferInstance⟩
 
+end
+
 theorem finiteLevelImage_isCompact {F : Type*} [Field F] [NumberField F]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F))) :
@@ -223,16 +232,12 @@ theorem finiteLevelImage_isCompact {F : Type*} [Field F] [NumberField F]
       Set (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F)) := by
   rw [show (finiteLevelImage K : Set _) =
       ((QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F)).comp
-        (finiteLevelFiniteInclusion F)) '' (K : Set (FiniteAdeleRing (𝓞 F) F)) from rfl]
+        (finiteLevelFiniteInclusion F)) '' K from rfl]
   refine hcompact.image ?_
-  exact (QuotientAddGroup.continuous_mk (N := AdeleRing.principalSubgroup (𝓞 F) F)).comp
+  exact (QuotientAddGroup.continuous_mk).comp
     (by
       show Continuous (fun x : FiniteAdeleRing (𝓞 F) F => ((0, x) : AdeleRing (𝓞 F) F))
       fun_prop)
-
-private theorem mixedHomeo_symm (F : Type*) [Field F] [NumberField F]
-    (x : mixedEmbedding.mixedSpace F) : (mixedHomeo F).symm x =
-      (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x := by rfl
 
 set_option backward.isDefEq.respectTransparency false in
 
@@ -252,7 +257,8 @@ theorem finiteLevel_torus_homeomorph {F : Type*} [Field F] [NumberField F]
   let P := AdeleRing.principalSubgroup (𝓞 F) F
   let q := QuotientAddGroup.mk' P
   let r := QuotientAddGroup.mk' (finiteLevelImage K)
-  let i : mixedEmbedding.mixedSpace F →+ AdeleRing (𝓞 F) F :=
+  let AdeleRing₀ := AdeleRing (𝓞 F) F
+  let i : mixedEmbedding.mixedSpace F →+ AdeleRing₀ :=
     { toFun := fun x => ((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x, 0)
       map_zero' := by
         change ((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm 0, 0) = (0, 0)
@@ -267,8 +273,8 @@ theorem finiteLevel_torus_homeomorph {F : Type*} [Field F] [NumberField F]
     apply QuotientAddGroup.continuous_mk.comp
     apply QuotientAddGroup.continuous_mk.comp
     have hi : Continuous (fun x : mixedEmbedding.mixedSpace F =>
-        (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x, 0) : AdeleRing (𝓞 F) F)) := by
-      exact ((mixedHomeo F).symm.continuous.congr (fun x => mixedHomeo_symm F x)).prodMk continuous_const
+        (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x, 0) : AdeleRing₀)) := by
+      exact ((mixedHomeo F).symm.continuous.congr (fun x => rfl)).prodMk continuous_const
     exact hi
   have hs : Function.Surjective f := by
     intro y
@@ -278,14 +284,14 @@ theorem finiteLevel_torus_homeomorph {F : Type*} [Field F] [NumberField F]
     refine ⟨InfiniteAdeleRing.ringEquiv_mixedSpace F
       (a.1 - algebraMap F (InfiniteAdeleRing F) lam), ?_⟩
     change r (q (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm
-      (InfiniteAdeleRing.ringEquiv_mixedSpace F (a.1 - algebraMap F (InfiniteAdeleRing F) lam)), 0) : AdeleRing (𝓞 F) F)) = r (q a)
+      (InfiniteAdeleRing.ringEquiv_mixedSpace F (a.1 - algebraMap F (InfiniteAdeleRing F) lam)), 0) : AdeleRing₀)) = r (q a)
     rw [RingEquiv.symm_apply_apply]
-    change r (q ((a.1 - algebraMap F (InfiniteAdeleRing F) lam, 0) : AdeleRing (𝓞 F) F)) = r (q a)
+    change r (q ((a.1 - algebraMap F (InfiniteAdeleRing F) lam, 0) : AdeleRing₀)) = r (q a)
     apply QuotientAddGroup.eq_iff_sub_mem.mpr
     change q _ - q a ∈ finiteLevelImage K
     rw [← map_sub]
-    have ha : (show AdeleRing (𝓞 F) F from (a.1 - algebraMap F (InfiniteAdeleRing F) lam, 0)) - a =
-        - algebraMap F (AdeleRing (𝓞 F) F) lam + (show AdeleRing (𝓞 F) F from (0, -(k : FiniteAdeleRing (𝓞 F) F))) := by
+    have ha : (show AdeleRing₀ from (a.1 - algebraMap F (InfiniteAdeleRing F) lam, 0)) - a =
+        - algebraMap F (AdeleRing₀) lam + (show AdeleRing₀ from (0, -(k : FiniteAdeleRing (𝓞 F) F))) := by
       apply Prod.ext
       · change a.1 - algebraMap F (InfiniteAdeleRing F) lam - a.1 = -algebraMap F (InfiniteAdeleRing F) lam + 0
         abel
@@ -293,7 +299,7 @@ theorem finiteLevel_torus_homeomorph {F : Type*} [Field F] [NumberField F]
         rw [hk]
         abel
     rw [ha, map_add]
-    have hlam : q (-algebraMap F (AdeleRing (𝓞 F) F) lam) = 0 :=
+    have hlam : q (-algebraMap F (AdeleRing₀) lam) = 0 :=
       (QuotientAddGroup.eq_zero_iff _).mpr (P.neg_mem ⟨lam, rfl⟩)
     rw [hlam, zero_add]
     exact ⟨-(k : FiniteAdeleRing (𝓞 F) F), K.neg_mem k.property, rfl⟩
@@ -306,10 +312,10 @@ theorem finiteLevel_torus_homeomorph {F : Type*} [Field F] [NumberField F]
     · intro hx
       obtain ⟨lam, hlam, heq⟩ := (mem_finiteLevelLattice_iff K x).mp hx
       refine ⟨-algebraMap F (FiniteAdeleRing (𝓞 F) F) lam, K.neg_mem hlam, ?_⟩
-      change q ((0, -algebraMap F (FiniteAdeleRing (𝓞 F) F) lam) : AdeleRing (𝓞 F) F) = q (i x)
+      change q ((0, -algebraMap F (FiniteAdeleRing (𝓞 F) F) lam) : AdeleRing₀) = q (i x)
       apply QuotientAddGroup.eq_iff_sub_mem.mpr
-      have hdiff : (show AdeleRing (𝓞 F) F from (0, -algebraMap F (FiniteAdeleRing (𝓞 F) F) lam)) - i x =
-          algebraMap F (AdeleRing (𝓞 F) F) (-lam) := by
+      have hdiff : (show AdeleRing₀ from (0, -algebraMap F (FiniteAdeleRing (𝓞 F) F) lam)) - i x =
+          algebraMap F (AdeleRing₀) (-lam) := by
         apply Prod.ext
         · change 0 - (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x = algebraMap F (InfiniteAdeleRing F) (-lam)
           rw [← heq, InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp, RingEquiv.symm_apply_apply]
@@ -319,14 +325,14 @@ theorem finiteLevel_torus_homeomorph {F : Type*} [Field F] [NumberField F]
       rw [hdiff]
       exact ⟨-lam, rfl⟩
     · rintro ⟨k, hk, heq⟩
-      change q ((0, k) : AdeleRing (𝓞 F) F) = q (i x) at heq
+      change q ((0, k) : AdeleRing₀) = q (i x) at heq
       obtain ⟨lam, hlam⟩ := QuotientAddGroup.eq_iff_sub_mem.mp heq
       have harch : - (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x = algebraMap F (InfiniteAdeleRing F) lam := by
-        have h := (congrArg (fun a : AdeleRing (𝓞 F) F => a.1) hlam).symm
+        have h := (congrArg (fun a : AdeleRing₀ => a.1) hlam).symm
         change 0 - (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x = algebraMap F (InfiniteAdeleRing F) lam at h
         simpa only [zero_sub] using h
       have hfin : algebraMap F (FiniteAdeleRing (𝓞 F) F) lam = k := by
-        have h := congrArg (fun a : AdeleRing (𝓞 F) F => a.2) hlam
+        have h := congrArg (fun a : AdeleRing₀ => a.2) hlam
         change algebraMap F (FiniteAdeleRing (𝓞 F) F) lam = k - 0 at h
         simpa only [sub_zero] using h
       apply (mem_finiteLevelLattice_iff K x).mpr
@@ -348,7 +354,7 @@ theorem finiteLevel_torus_homeomorph {F : Type*} [Field F] [NumberField F]
         rw [QuotientAddGroup.mk_add, (QuotientAddGroup.eq_zero_iff w).mpr hw, add_zero])
     simpa only [Set.range_eq_univ.mpr QuotientAddGroup.mk_surjective] using hp
   letI := (additiveAdeleQuotient_compactHausdorff F).2
-  letI : IsClosed (finiteLevelImage K : Set (AdeleRing (𝓞 F) F ⧸ P)) :=
+  letI : IsClosed (finiteLevelImage K : Set (AdeleRing₀ ⧸ P)) :=
     (finiteLevelImage_isCompact K hcompact).isClosed
   letI : T2Space (finiteLevelAdditiveQuotient K) := inferInstance
   exact ⟨{ e with continuous_toFun := he
@@ -390,8 +396,7 @@ private theorem latticeTorus {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
       apply (AddCircle.coe_eq_zero_iff (1 : ℝ)).mpr
       exact ⟨n, by simpa [c, f, Module.Basis.equivFun_apply] using hn⟩
     · intro hx i
-      have hi : (c.equivFun x i : UnitAddCircle) = 0 := congrFun hx i
-      obtain ⟨n, hn⟩ := (AddCircle.coe_eq_zero_iff (1 : ℝ)).mp hi
+      obtain ⟨n, hn⟩ := (AddCircle.coe_eq_zero_iff (1 : ℝ)).mp (congrFun hx i)
       exact ⟨n, by simpa [Module.Basis.equivFun_apply] using hn⟩
   let e := QuotientAddGroup.liftEquiv L.toAddSubgroup hs hk
   have he : Continuous e := by
@@ -404,7 +409,7 @@ private theorem latticeTorus {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
       QuotientAddGroup.continuous_mk (by
         intro z w hw
         rw [QuotientAddGroup.mk_add, (QuotientAddGroup.eq_zero_iff w).mpr hw, add_zero])
-    simpa only [Set.range_eq_univ.mpr QuotientAddGroup.mk_surjective] using hp
+    simpa using hp
   letI := hcomp
   exact ⟨{ e with continuous_toFun := he
                   continuous_invFun := he.homeoOfEquivCompactToT2.continuous_invFun }⟩

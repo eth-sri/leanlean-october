@@ -28,7 +28,6 @@ theorem kp_cont_actual_commutator_chart_sobolev_holomorphy
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
     (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (_hι : Function.Injective ι)
-    (_hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (Ω : Set ℂ) (_hΩ : Ω ⊆ KPContinuation.spectralDomain) (_hopen : IsOpen Ω)
     (f : ℂ → S) (_hf : DifferentiableOn ℂ f Ω)
     (χ : KPContActualCutoffSmoothDescent.Cusps F ζ hζ C R P H U →
@@ -54,8 +53,7 @@ theorem kp_cont_actual_commutator_chart_sobolev_holomorphy
   have hBmeas : MeasurableSet B.carrier := Metric.isOpen_ball.measurableSet
   haveI : CompactSpace L := isCompact_iff_compactSpace.mp hLc
   obtain ⟨j, hjdiff, hjval, _⟩ :=
-    (kp_cont_actual_cutoff_chart_jet_holomorphy F ζ hζ C R P H U _hR buffer ι _hι
-      _hStage Ω _hΩ _hopen f _hf χ D i q B hBsub).compact_jets true L hLc hLdom k
+    (kp_cont_actual_cutoff_chart_jet_holomorphy F ζ hζ C R P H U _hR buffer ι _hι Ω _hΩ _hopen f _hf χ D i q B hBsub).compact_jets true L hLc hLdom k
   haveI : IsFiniteMeasure (volume.restrict B.carrier) := by
     rw [isFiniteMeasure_restrict]
     exact measure_ball_lt_top.ne

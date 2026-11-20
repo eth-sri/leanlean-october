@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -58,36 +53,32 @@ theorem standardLubinTatePolynomial_derivative_eval_zero
     (standardLubinTatePolynomial F π).derivative.eval 0 = π := by
   simp [standardLubinTatePolynomial, Polynomial.derivative_pow,
     Nat.sub_ne_zero_of_lt
-      (Finite.one_lt_card : 1 < Nat.card F.residueField)]
+      Finite.one_lt_card]
+
+section
+
+variable (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ)
 
 /-- The derivative at zero of the `n`-fold standard iterate is `π ^ n`. -/
 @[simp]
-theorem standardLubinTatePolynomialIterate_derivative_eval_zero
-    (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ) :
+theorem standardLubinTatePolynomialIterate_derivative_eval_zero :
     (standardLubinTatePolynomialIterate F π n).derivative.eval 0 =
       π ^ n := by
   induction n with
   | zero =>
-      simp [standardLubinTatePolynomialIterate]
+      simp
   | succ n ih =>
-      rw [standardLubinTatePolynomialIterate_succ,
-        Polynomial.derivative_comp, Polynomial.eval_mul, ih,
-        Polynomial.eval_comp,
-        standardLubinTatePolynomialIterate_eval_zero,
-        standardLubinTatePolynomial_derivative_eval_zero]
-      simp [pow_succ]
+      simp_all [pow_succ, standardLubinTatePolynomialIterate_succ, Polynomial.derivative_comp]
 
 /-- The primitive division polynomial after extending coefficients from the
 valuation ring to the base field. -/
-noncomputable def standardLubinTatePrimitivePolynomialOverField
-    (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ) :
+noncomputable def standardLubinTatePrimitivePolynomialOverField :
     Polynomial K :=
   (standardLubinTatePrimitivePolynomial F π n).map
     (algebraMap F.valuationSubring K)
 
 /-- The field-valued primitive polynomial has the expected formula. -/
-theorem standardLubinTatePrimitivePolynomialOverField_formula
-    (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ) :
+theorem standardLubinTatePrimitivePolynomialOverField_formula :
     standardLubinTatePrimitivePolynomialOverField F π n =
       (standardLubinTatePolynomialIterate F π n).map
           (algebraMap F.valuationSubring K) ^
@@ -97,15 +88,13 @@ theorem standardLubinTatePrimitivePolynomialOverField_formula
     standardLubinTatePrimitivePolynomial]
 
 /-- The field-valued primitive polynomial is monic. -/
-theorem standardLubinTatePrimitivePolynomialOverField_monic
-    (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ) :
+theorem standardLubinTatePrimitivePolynomialOverField_monic :
     (standardLubinTatePrimitivePolynomialOverField F π n).Monic :=
   (standardLubinTatePrimitivePolynomial_monic F π n).map _
 
 /-- The field-valued primitive polynomial has degree
 `(q - 1) * q ^ n`. -/
-theorem standardLubinTatePrimitivePolynomialOverField_natDegree
-    (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ) :
+theorem standardLubinTatePrimitivePolynomialOverField_natDegree :
     (standardLubinTatePrimitivePolynomialOverField F π n).natDegree =
       (Nat.card F.residueField - 1) *
         Nat.card F.residueField ^ n := by
@@ -113,16 +102,14 @@ theorem standardLubinTatePrimitivePolynomialOverField_natDegree
     (standardLubinTatePrimitivePolynomial_monic F π n).natDegree_map,
     standardLubinTatePrimitivePolynomial_natDegree]
 
+end
+
 /-- Gauss's lemma transfers Eisenstein irreducibility from the valuation
 ring to the base field. -/
 theorem standardLubinTatePrimitivePolynomialOverField_irreducible
     {F : LocalField.{u, v} K} {π : F.valuationSubring}
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
     Irreducible (standardLubinTatePrimitivePolynomialOverField F π n) := by
-  let : IsFractionRing F.valuationSubring K :=
-    F.toCompleteDVF.toDVF.valuationSubring_isFractionRing
-  let : IsIntegrallyClosed F.valuationSubring :=
-    F.toCompleteDVF.toDVF.valuationSubring_isIntegrallyClosed
   exact
     (standardLubinTatePrimitivePolynomial_monic F π n).irreducible_iff_irreducible_map_fraction_map.mp
       (standardLubinTatePrimitivePolynomial_irreducible hπ n)
@@ -139,69 +126,63 @@ theorem residueFieldNatCard_sub_one_cast_ne_zero
       ((Nat.card F.residueField - 1 : ℕ) : F.residueField) ≠ 0 := by
     rw [Nat.cast_sub
       (Nat.le_of_lt
-        (Finite.one_lt_card : 1 < Nat.card F.residueField)), hcard]
+        Finite.one_lt_card), hcard]
     simp
   intro hfield
-  have hvaluation :
-      ((Nat.card F.residueField - 1 : ℕ) : F.valuationSubring) = 0 := by
-    apply Subtype.ext
-    simpa using hfield
-  have hreszero :
-      ((Nat.card F.residueField - 1 : ℕ) : F.residueField) = 0 := by
-    simpa using congrArg F.residueMap hvaluation
-  exact hres hreszero
+  refine hres ?_
+  exact congrArg F.residueMap (by
+  exact Subtype.ext hfield)
 
+section
+
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+
+include hπ in
 /-- The field-valued primitive polynomial has nonzero derivative. -/
-theorem standardLubinTatePrimitivePolynomialOverField_derivative_ne_zero
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTatePrimitivePolynomialOverField_derivative_ne_zero :
     (standardLubinTatePrimitivePolynomialOverField F π n).derivative ≠ 0 := by
   let A :=
     (standardLubinTatePolynomialIterate F π n).map
       (algebraMap F.valuationSubring K)
-  have hAmonic : A.Monic :=
-    (standardLubinTatePolynomialIterate_monic F π n).map _
   have hAderivativeAtZero :
       A.derivative.eval 0 = (π : K) ^ n := by
     calc
       A.derivative.eval 0 =
           algebraMap F.valuationSubring K
             ((standardLubinTatePolynomialIterate F π n).derivative.eval 0) := by
-        dsimp [A]
         rw [Polynomial.derivative_map, Polynomial.eval_zero_map,
           Algebra.algebraMap_ofSubsemiring_apply]
       _ = (π : K) ^ n := by
-        rw [standardLubinTatePolynomialIterate_derivative_eval_zero,
-          map_pow]
-        rfl
-  have hAderivative : A.derivative ≠ 0 := by
-    intro hzero
-    apply pow_ne_zero n hπ.ne_zero
-    calc
-      (π : K) ^ n = A.derivative.eval 0 :=
-        hAderivativeAtZero.symm
-      _ = 0 := by rw [hzero, Polynomial.eval_zero]
+        simp
   rw [standardLubinTatePrimitivePolynomialOverField_formula]
   change
     (A ^ (Nat.card F.residueField - 1) +
       Polynomial.C (π : K)).derivative ≠ 0
   rw [Polynomial.derivative_add, Polynomial.derivative_pow,
     Polynomial.derivative_C, add_zero]
-  exact mul_ne_zero
+  refine mul_ne_zero
     (mul_ne_zero
       (Polynomial.C_ne_zero.mpr
         (residueFieldNatCard_sub_one_cast_ne_zero F))
-      (pow_ne_zero _ hAmonic.ne_zero))
-    hAderivative
+      (pow_ne_zero _ ((standardLubinTatePolynomialIterate_monic F π n).map _).ne_zero))
+    ?_
+  intro hzero
+  apply pow_ne_zero n hπ.ne_zero
+  calc
+    _ = A.derivative.eval 0 :=
+      hAderivativeAtZero.symm
+    _ = 0 := by rw [hzero, Polynomial.eval_zero]
 
+include hπ in
 /-- The field-valued primitive polynomial is separable. -/
-theorem standardLubinTatePrimitivePolynomialOverField_separable
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTatePrimitivePolynomialOverField_separable :
     (standardLubinTatePrimitivePolynomialOverField F π n).Separable :=
   (Polynomial.separable_iff_derivative_ne_zero
     (standardLubinTatePrimitivePolynomialOverField_irreducible hπ n)).2
       (standardLubinTatePrimitivePolynomialOverField_derivative_ne_zero hπ n)
+
+end
 
 /-- The primitive polynomial has a root in the chosen separable closure. -/
 theorem exists_standardLubinTatePrimitivePolynomialOverField_root
@@ -217,13 +198,9 @@ theorem exists_standardLubinTatePrimitivePolynomialOverField_root
       standardLubinTatePrimitivePolynomialOverField_natDegree]
     exact Nat.mul_pos
       (Nat.sub_pos_of_lt
-        (Finite.one_lt_card : 1 < Nat.card F.residueField))
+        Finite.one_lt_card)
       (Nat.pow_pos Nat.card_pos)
-  have hdegree : (Q.map ι).degree ≠ 0 :=
-    ne_of_gt (Polynomial.natDegree_pos_iff_degree_pos.mp hnat)
-  have hseparable : (Q.map ι).Separable :=
-    (standardLubinTatePrimitivePolynomialOverField_separable hπ n).map
-  exact IsSepClosed.exists_root (Q.map ι) hdegree hseparable
+  exact IsSepClosed.exists_root (Q.map ι) (ne_of_gt (Polynomial.natDegree_pos_iff_degree_pos.mp hnat)) ((standardLubinTatePrimitivePolynomialOverField_separable hπ n).map)
 
 /-- A chosen primitive level-`n+1` root in `SeparableClosure K`. -/
 noncomputable def chosenStandardLubinTatePrimitiveRoot
@@ -233,11 +210,12 @@ noncomputable def chosenStandardLubinTatePrimitiveRoot
   Classical.choose
     (exists_standardLubinTatePrimitivePolynomialOverField_root hπ n)
 
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+
 /-- The chosen primitive element is a root of the field-valued primitive
 polynomial. -/
-theorem chosenStandardLubinTatePrimitiveRoot_isRoot
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem chosenStandardLubinTatePrimitiveRoot_isRoot :
     ((standardLubinTatePrimitivePolynomialOverField F π n).map
       (algebraMap K (SeparableClosure K))).IsRoot
         (chosenStandardLubinTatePrimitiveRoot hπ n) :=
@@ -245,21 +223,13 @@ theorem chosenStandardLubinTatePrimitiveRoot_isRoot
     (exists_standardLubinTatePrimitivePolynomialOverField_root hπ n)
 
 /-- The chosen primitive root is integral over the base field. -/
-theorem chosenStandardLubinTatePrimitiveRoot_isIntegral
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem chosenStandardLubinTatePrimitiveRoot_isIntegral :
     IsIntegral K (chosenStandardLubinTatePrimitiveRoot hπ n) := by
-  refine
-    ⟨standardLubinTatePrimitivePolynomialOverField F π n,
-      standardLubinTatePrimitivePolynomialOverField_monic F π n, ?_⟩
-  simpa [Polynomial.IsRoot, Polynomial.eval_map] using
-    (chosenStandardLubinTatePrimitiveRoot_isRoot hπ n)
+  apply Algebra.IsIntegral.isIntegral
 
 /-- The field-valued primitive polynomial is the minimal polynomial of the
 chosen root. -/
-theorem standardLubinTatePrimitivePolynomialOverField_eq_minpoly
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTatePrimitivePolynomialOverField_eq_minpoly :
     standardLubinTatePrimitivePolynomialOverField F π n =
       minpoly K (chosenStandardLubinTatePrimitiveRoot hπ n) := by
   apply minpoly.eq_of_irreducible_of_monic
@@ -267,38 +237,29 @@ theorem standardLubinTatePrimitivePolynomialOverField_eq_minpoly
     _
     (standardLubinTatePrimitivePolynomialOverField_monic F π n)
   rw [Polynomial.aeval_def]
-  simpa [Polynomial.IsRoot, Polynomial.eval_map] using
+  simpa [Polynomial.eval_map] using
     (chosenStandardLubinTatePrimitiveRoot_isRoot hπ n)
 
 /-- The simple extension generated by the chosen primitive root. -/
 @[reducible]
-noncomputable def standardLubinTateLevelField
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+noncomputable def standardLubinTateLevelField :
     IntermediateField K (SeparableClosure K) :=
   IntermediateField.adjoin K
     {chosenStandardLubinTatePrimitiveRoot hπ n}
 
 /-- Every standard Lubin--Tate level field is finite-dimensional over the
 base field. -/
-theorem standardLubinTateLevelField_finiteDimensional
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTateLevelField_finiteDimensional :
     FiniteDimensional K (standardLubinTateLevelField hπ n) :=
   IntermediateField.adjoin.finiteDimensional
     (chosenStandardLubinTatePrimitiveRoot_isIntegral hπ n)
 
 /-- The standard primitive level-`n+1` extension has degree
 `(q - 1) * q ^ n`. -/
-theorem standardLubinTateLevelField_finrank
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTateLevelField_finrank :
     Module.finrank K (standardLubinTateLevelField hπ n) =
       (Nat.card F.residueField - 1) *
         Nat.card F.residueField ^ n := by
-  change Module.finrank K
-      (IntermediateField.adjoin K
-        {chosenStandardLubinTatePrimitiveRoot hπ n}) = _
   rw [IntermediateField.adjoin.finrank
       (chosenStandardLubinTatePrimitiveRoot_isIntegral hπ n),
     ← standardLubinTatePrimitivePolynomialOverField_eq_minpoly hπ n,

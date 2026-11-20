@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -30,7 +26,6 @@ open scoped NumberField BigOperators ValuativeRel Classical NNReal
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 open AlgebraicNumberTheory.Valuations
 open CyclicCohomology.ProfiniteCohomology.Herbrand
@@ -83,18 +78,16 @@ theorem absoluteValueDecompositionGroup_card_eq_localizedDegree
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) w.1
   let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   let := localizedCompletionGlobalAlgebra vK w
   let := localizedCompletionIsScalarTower vK w
-  let : FiniteDimensional vK.Completion
-      (LocalizedCompletion vK w) :=
+  let :=
     localizedCompletionModuleFinite vK hvK w
-  let : IsGalois vK.Completion
-      (LocalizedCompletion vK w) :=
+  let :=
     HilbertRamification.algebraicLocalization_isGalois vK w
   calc
-    Nat.card (absoluteValueDecompositionGroup K w.1) =
+    _ =
         Nat.card
           (LocalizedCompletion vK w ≃ₐ[vK.Completion]
             LocalizedCompletion vK w) :=
@@ -137,17 +130,15 @@ theorem relativeUnrestrictedLocalHerbrandH0Finite
   | inl v =>
       exact
         infinitePlaceLocalHerbrandH0Finite
-          v (chosenInfinitePlaceAbove (L := L) v)
+          v (chosenInfinitePlaceAbove v)
           (chosenInfinitePlaceAbove_comap
-            (L := L) v)
+             v)
   | inr v =>
-      let vK := HeightOneSpectrum.adicAbv K v.1
-      let hvK := RayClass.adicAbv_isNontrivial v.1
       exact
         localHerbrandH0Finite
-          vK hvK
+          (HeightOneSpectrum.adicAbv K v.1) (RayClass.adicAbv_isNontrivial v.1)
           (chosenFinitePlaceExtension
-            (L := L) v.1)
+             v.1)
           σ hgen
 
 omit [NumberField L] in
@@ -185,18 +176,16 @@ theorem relativeUnrestrictedLocalHerbrandHMinusOneFinite
   | inl v =>
       exact
         infinitePlaceLocalHerbrandHMinusOneFinite
-          v (chosenInfinitePlaceAbove (L := L) v)
+          v (chosenInfinitePlaceAbove v)
           (chosenInfinitePlaceAbove_comap
-            (L := L) v)
+             v)
           σ hgen
   | inr v =>
-      let vK := HeightOneSpectrum.adicAbv K v.1
-      let hvK := RayClass.adicAbv_isNontrivial v.1
       exact
         localHerbrandHMinusOneFinite
-          vK hvK
+          (HeightOneSpectrum.adicAbv K v.1) (RayClass.adicAbv_isNontrivial v.1)
           (chosenFinitePlaceExtension
-            (L := L) v.1)
+             v.1)
           σ hgen
 
 omit [NumberField L] in
@@ -241,8 +230,6 @@ theorem relativeUnrestrictedLocalHerbrandH0_card_eq_localDegree
       dsimp only [relativeUnrestrictedSPlaceDatum,
         relativeUnrestrictedSPlaceLocalDegree]
       let w := chosenInfinitePlaceAbove (L := L) v
-      let hw := chosenInfinitePlaceAbove_comap
-        (L := L) v
       have hcard :=
         infinitePlaceLocalHerbrandH0_card_eq_localDegree
           v (chosenInfinitePlaceAbove (L := L) v)
@@ -263,13 +250,13 @@ theorem relativeUnrestrictedLocalHerbrandH0_card_eq_localDegree
         (localHerbrandH0_card_eq_localDegree
           vK hvK
           (chosenFinitePlaceExtension
-            (L := L) v.1)
+             v.1)
           σ hgen).trans
         (absoluteValueDecompositionGroup_card_eq_localizedDegree
-          (K := K) (L := L)
+
           vK hvK
           (chosenFinitePlaceExtension
-            (L := L) v.1)).symm
+             v.1)).symm
 
 omit [NumberField L] in
 /-- Every local degree-minus-one term has cardinality one. -/
@@ -316,22 +303,18 @@ theorem relativeUnrestrictedLocalHerbrandHMinusOne_card_eq_one
             σ hgen)) = 1 := by
   cases i with
   | inl v =>
-      dsimp only [relativeUnrestrictedSPlaceDatum]
       exact
         (infinitePlaceLocalClassAxiom_cards
-          v (chosenInfinitePlaceAbove (L := L) v)
+          v (chosenInfinitePlaceAbove v)
           (chosenInfinitePlaceAbove_comap
-            (L := L) v)
+             v)
           σ hgen).1
   | inr v =>
-      let vK := HeightOneSpectrum.adicAbv K v.1
-      let hvK := RayClass.adicAbv_isNontrivial v.1
-      dsimp only [relativeUnrestrictedSPlaceDatum]
       exact
         localHerbrandHMinusOne_card_eq_one
-          vK hvK
+          (HeightOneSpectrum.adicAbv K v.1) (RayClass.adicAbv_isNontrivial v.1)
           (chosenFinitePlaceExtension
-            (L := L) v.1)
+             v.1)
           σ hgen
 
 end

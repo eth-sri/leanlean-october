@@ -12,10 +12,10 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.DigitMasks
 open MomentSources NumberField
 open scoped Classical BigOperators
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_localIdele → eval_localIdele
+open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting (eval_localIdele)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem local_A_pow_six_mul (w : KPHilbert.Place F)
     (x y : (KPHilbert.Completion F w)ˣ) :

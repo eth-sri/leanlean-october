@@ -7,12 +7,9 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.ChamberIntegrals.Ade
 @[expose] public section
 
 noncomputable section
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.TraceBox renaming adelic_measure_box → adelic_measure_box
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.TraceBox renaming finite_measure_sigmaFinite → finite_measure_sigmaFinite
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.TraceBox renaming arch_measure_sigmaFinite → arch_measure_sigmaFinite
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.TraceBox (adelic_measure_box finite_measure_sigmaFinite arch_measure_sigmaFinite)
 local instance cofactorArchMeasurable (F : Type) [Field F] [NumberField F] : MeasurableSpace (NumberField.InfiniteAdeleRing F) := borel _
 local instance cofactorArchBorel (F : Type) [Field F] [NumberField F] : BorelSpace (NumberField.InfiniteAdeleRing F) := ⟨rfl⟩
-open _root_.DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant renaming forwardSection_real_formula → forwardSection_real_formula
 open scoped Classical NumberField TensorProduct BigOperators
 open NumberField MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource.CofactorChamber
@@ -20,10 +17,10 @@ open KPLocalPrincipalSeries KPGlobalTorusFiniteStages KPLocalExceptionalConstruc
 open KPGlobalResidualConstruction
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -60,16 +57,17 @@ theorem box_fiber_integral (E Q : Finset (KPFinitePlace F)) (hE : C.exceptional 
   rw [hpin]
   let := finite_measure_sigmaFinite F
   let := arch_measure_sigmaFinite F
-  let e : (InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F) ≃ₜ
+  let FiniteAdeleRing₀ := IsDedekindDomain.FiniteAdeleRing (𝓞 F) F
+  let e : (InfiniteAdeleRing F × FiniteAdeleRing₀) ≃ₜ
       KPGlobalTorusFunctionData.Adeles F := Homeomorph.refl _
   have he : @MeasurableEmbedding (InfiniteAdeleRing F ×
-      IsDedekindDomain.FiniteAdeleRing (𝓞 F) F) (KPGlobalTorusFunctionData.Adeles F)
+      FiniteAdeleRing₀) (KPGlobalTorusFunctionData.Adeles F)
       inferInstance inferInstance (fun a => a) := e.measurableEmbedding
   rw [adelic_measure_box F Q, he.integral_map]
-  change (∫ x : InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F,
+  change (∫ x : InfiniteAdeleRing F × FiniteAdeleRing₀,
     TraceBox.archCylinder F z x.1 * f (fun q => x.2 q.val) ∂_) = _
   rw [integral_prod_mul (TraceBox.archCylinder F z)
-    (fun a : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F => f (fun q => a q.val)), KPAdditiveHaar.finiteMeasure_chart F Q hD,
+    (fun a : FiniteAdeleRing₀ => f (fun q => a q.val)), KPAdditiveHaar.finiteMeasure_chart F Q hD,
     (KPAdditiveHaar.chartMap_isOpenEmbedding F Q).measurableEmbedding.integral_map]
   have hc : (fun b : KPAdditiveHaar.Chart F Q =>
       f (fun q => KPAdditiveHaar.chartMap F Q b q.val)) = fun b => f b.1 := by

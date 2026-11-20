@@ -39,9 +39,8 @@ theorem rawWord_eq (a : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12)
   | nil => simp [rawWord, WildRestrictedTruncation.word]
   | cons p l ih =>
     simp only [rawWord, WildRestrictedTruncation.word, map_mul, ← ih]
-    apply congrArg (fun y : Group R ↦ y * rawWord (R := R) a l)
-    change rawGlobal (R := R) (localToRestricted F R.A.zeta12 R.A.primitive_zeta12 p (a p)) = _
-    apply congrArg (rawGlobal (R := R))
+    apply congrArg (fun y : Group R ↦ y * rawWord a l)
+    apply congrArg (rawGlobal)
     apply RestrictedProduct.ext
     intro j
     by_cases hj : j = p
@@ -65,9 +64,8 @@ theorem exists_tame_word (D : TensorActions R N) (W : Finset (KPFinitePlace F))
       simpa only [rawWord, hp, map_one, one_mul] using hm
     · obtain ⟨q, hq, ho, ht⟩ := ha p hp
       subst p
-      let b : TameAction D W t := ⟨q, hl _ (List.mem_cons_self), ho, ht, a (Sum.inr q)⟩
-      refine ⟨b :: m, ?_⟩
-      change _ * wordGroup D W t m = _ * rawWord (R := R) a l
+      refine ⟨(⟨q, hl _ (List.mem_cons_self), ho, ht, a (Sum.inr q)⟩) :: m, ?_⟩
+      change _ * wordGroup D W t m = _ * rawWord a l
       rw [hm]
 
 theorem rawWord_kernel (D : TensorDetected R N) (W : Finset (KPFinitePlace F))
@@ -82,9 +80,7 @@ theorem rawWord_kernel (D : TensorDetected R N) (W : Finset (KPFinitePlace F))
     fourier R D.sources.dq (globalMap D.toTensorActions W s hW x z) (rawWord (R := R) a l) = 0 := by
   let t : RestrictedTensorSimple.Level D.bad :=
     ⟨s.val ∪ l.toFinset, s.property.trans (Finset.subset_union_left)⟩
-  obtain ⟨m, hm⟩ := exists_tame_word D.toTensorActions W t a ha l (by
-    intro p hp
-    exact Finset.mem_union_right _ (List.mem_toFinset.mpr hp))
+  obtain ⟨m, hm⟩ := exists_tame_word D.toTensorActions W t a ha l (fun p hp => Finset.mem_union_right _ (List.mem_toFinset.mpr hp))
   rw [← hm]
   exact enlarged_finite_word_right_kernel D W s t hW (Finset.subset_union_left) x hx m z hz
 end DedekindZetaZeroFree.FourierContinuation.WildFiniteExteriorAssembly

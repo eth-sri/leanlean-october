@@ -34,8 +34,7 @@ variable {F : Type} [Field F] [NumberField F]
 
 theorem prime_character_ne_zero_cofinite (ψ : Detector.PrimitiveFrequencyCharacter F) :
     ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite, ψ.character v.asIdeal ≠ 0 := by
-  let m := RayClassBridge.narrowIdealModulus F ψ.conductor ψ.conductor_ne_zero
-  filter_upwards [m.finitePart.support.finite_toSet.compl_mem_cofinite] with v hv
+  filter_upwards [(RayClassBridge.narrowIdealModulus F ψ.conductor ψ.conductor_ne_zero).finitePart.support.finite_toSet.compl_mem_cofinite] with v hv
   have hn : ¬ ψ.conductor ≤ v.asIdeal := by
     change v ∉ (RayClassBridge.narrowIdealModulus F ψ.conductor
       ψ.conductor_ne_zero).finitePart.support at hv
@@ -86,7 +85,6 @@ private theorem totallyPositive [NumberField.IsTotallyComplex F] (a : 𝓞 F) :
   intro φ
   exfalso
   apply NumberField.IsTotallyComplex.complexEmbedding_not_isReal (Complex.ofRealHom.comp φ)
-  rw [NumberField.ComplexEmbedding.isReal_iff]
   ext z
   simp [NumberField.ComplexEmbedding.conjugate]
 
@@ -96,11 +94,7 @@ private theorem coprime_congr {R : Type*} [CommRing R] (m : Ideal R) (a b : R)
   rw [← ha]
   apply sup_le _ le_sup_right
   apply (Ideal.span_singleton_le_iff_mem _).mpr
-  have hb : b ∈ Ideal.span {b} ⊔ m :=
-    (show Ideal.span {b} ≤ Ideal.span {b} ⊔ m from le_sup_left) (Ideal.mem_span_singleton_self b)
-  have hd : b - a ∈ Ideal.span {b} ⊔ m :=
-    (show m ≤ Ideal.span {b} ⊔ m from le_sup_right) hba
-  simpa only [sub_sub_cancel] using (Ideal.span {b} ⊔ m).sub_mem hb hd
+  simpa using (Ideal.span {b} ⊔ m).sub_mem ((show Ideal.span {b} ≤ Ideal.span {b} ⊔ m from le_sup_left) (Ideal.mem_span_singleton_self b)) ((show m ≤ Ideal.span {b} ⊔ m from le_sup_right) hba)
 
 private theorem principal_value_congr [NumberField.IsTotallyComplex F]
     (m : Ideal (𝓞 F)) (χ : RayClassCharacter F m) (hm : m ≠ ⊤)
@@ -118,32 +112,29 @@ private theorem principal_value_congr [NumberField.IsTotallyComplex F]
   have he : Ideal.Quotient.mk m (a * c) = 1 := by
     rw [map_mul, ← hu, hc]
     exact u.val_inv
-  have hac' : a * c - 1 ∈ m := Ideal.Quotient.eq.mp (by simpa using he)
+  have hac' := Ideal.Quotient.eq.mp (by exact he)
   have hc0 : c ≠ 0 := by
     intro hz
     subst c
     have h1 : (1 : 𝓞 F) ∈ m := by simpa using m.neg_mem hac'
     exact hm (Ideal.eq_top_of_isUnit_mem m h1 isUnit_one)
-  have hbe : Ideal.Quotient.mk m b = Ideal.Quotient.mk m a :=
-    (Ideal.Quotient.eq.mpr hab).symm
   have hbc : b * c - 1 ∈ m := by
     apply Ideal.Quotient.eq.mp
-    simpa only [map_mul, map_one, hbe] using he
+    simpa only [map_mul, map_one, ((Ideal.Quotient.eq.mpr hab).symm)] using he
   have hva := χ.map_span' (a * c) (mul_ne_zero ha hc0) hac' (totallyPositive _)
   have hvb := χ.map_span' (b * c) (mul_ne_zero hb hc0) hbc (totallyPositive _)
   rw [← Ideal.span_singleton_mul_span_singleton, χ.map_mul'] at hva hvb
   exact mul_right_cancel₀ (right_ne_zero_of_mul_eq_one hva) (hva.trans hvb.symm)
 
-private theorem conductor_le [NumberField.IsTotallyComplex F]
-    (ν ψ : Detector.PrimitiveFrequencyCharacter F)
-    (h : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ ν.conductor = ⊤ →
-      I ⊔ ψ.conductor = ⊤ → ν.character I = ψ.character I) :
+variable [NumberField.IsTotallyComplex F] (ν ψ : Detector.PrimitiveFrequencyCharacter F)
+    (h : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ ν.conductor = ⊤ → I ⊔ ψ.conductor = ⊤ → ν.character I = ψ.character I)
+
+include h in
+private theorem conductor_le :
     ψ.conductor ≤ ν.conductor := by
   by_contra hn
-  have hlt : ν.conductor < ν.conductor ⊔ ψ.conductor :=
-    lt_of_le_of_ne le_sup_left (fun he => hn (he ▸ le_sup_right))
   have hmt : ν.conductor ≠ ⊤ := by intro he; simp [he] at hn
-  obtain ⟨a, ha, ham, _, hac, hne⟩ := ν.primitive _ hlt
+  obtain ⟨a, ha, ham, _, hac, hne⟩ := ν.primitive _ (lt_of_le_of_ne le_sup_left (fun he => hn (he ▸ le_sup_right)))
   obtain ⟨x, hx, y, hy, hxy⟩ := Submodule.mem_sup.mp ham
   let b := a - x
   have hba : b - a ∈ ν.conductor := by
@@ -152,46 +143,36 @@ private theorem conductor_le [NumberField.IsTotallyComplex F]
     have he : b - 1 = y := by dsimp [b]; linear_combination -hxy
     rw [he]
     exact hy
-  have hbc : Ideal.span {b} ⊔ ν.conductor = ⊤ := coprime_congr _ _ _ hac hba
+  have hbc := coprime_congr _ _ _ hac hba
   have hb : b ≠ 0 := by
     intro hz
     have : ν.conductor = ⊤ := by simpa [hz] using hbc
     exact hmt this
   have hbψ : Ideal.span {b} ⊔ ψ.conductor = ⊤ := by
     apply (Ideal.eq_top_iff_one _).mpr
-    have hbm : b ∈ Ideal.span {b} ⊔ ψ.conductor :=
-      (show Ideal.span {b} ≤ Ideal.span {b} ⊔ ψ.conductor from le_sup_left)
-        (Ideal.mem_span_singleton_self b)
-    have hbd : b - 1 ∈ Ideal.span {b} ⊔ ψ.conductor :=
-      (show ψ.conductor ≤ Ideal.span {b} ⊔ ψ.conductor from le_sup_right) hb1
-    simpa only [sub_sub_cancel] using (Ideal.span {b} ⊔ ψ.conductor).sub_mem hbm hbd
+    simpa using (Ideal.span {b} ⊔ ψ.conductor).sub_mem ((show Ideal.span {b} ≤ Ideal.span {b} ⊔ ψ.conductor from le_sup_left)
+      (Ideal.mem_span_singleton_self b)) ((show ψ.conductor ≤ Ideal.span {b} ⊔ ψ.conductor from le_sup_right) hb1)
   apply hne
   calc
-    ν.character (Ideal.span {a}) = ν.character (Ideal.span {b}) :=
+    _ = ν.character (Ideal.span {b}) :=
       principal_value_congr _ _ hmt a b ha hb hac (by simpa using ν.conductor.neg_mem hba)
     _ = ψ.character (Ideal.span {b}) := h _ (by simpa using hb) hbc hbψ
     _ = 1 := ψ.character.map_span' b hb hb1 (totallyPositive _)
 
-theorem primitive_conductors_eq [NumberField.IsTotallyComplex F]
-    (ν ψ : Detector.PrimitiveFrequencyCharacter F)
-    (h : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ ν.conductor = ⊤ →
-      I ⊔ ψ.conductor = ⊤ → ν.character I = ψ.character I) :
-    ν.conductor = ψ.conductor := by
-  exact le_antisymm (conductor_le ψ ν (fun I hI hψ hν => (h I hI hν hψ).symm))
+include h in
+theorem primitive_conductors_eq :
+    ν.conductor = ψ.conductor := le_antisymm (conductor_le ψ ν (fun I hI hψ hν => (h I hI hν hψ).symm))
     (conductor_le ν ψ h)
 
-theorem primitive_eq_of_common_domain [NumberField.IsTotallyComplex F]
-    (ν ψ : Detector.PrimitiveFrequencyCharacter F)
-    (h : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ ν.conductor = ⊤ →
-      I ⊔ ψ.conductor = ⊤ → ν.character I = ψ.character I) : ν = ψ := by
+include h in
+theorem primitive_eq_of_common_domain : ν = ψ := by
   have hc := primitive_conductors_eq ν ψ h
   have hv : ∀ I : Ideal (𝓞 F), ν.character I = ψ.character I := by
     intro I
     by_cases hbad : I = ⊥ ∨ I ⊔ ν.conductor ≠ ⊤
     · exact ((ν.character.eq_zero_iff' I).mpr hbad).trans
-        ((ψ.character.eq_zero_iff' I).mpr (by simpa only [← hc] using hbad)).symm
-    · push Not at hbad
-      exact h I hbad.1 hbad.2 (by simpa only [← hc] using hbad.2)
+        ((ψ.character.eq_zero_iff' I).mpr (by simpa [← hc] using hbad)).symm
+    · simp_all
   cases ν with
   | mk m hm χ hχ =>
     cases ψ with

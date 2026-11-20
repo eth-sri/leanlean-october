@@ -14,8 +14,8 @@ open KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct KPGlobalResidualCo
 open KPGlobalTorusPeriodizationInverse hiding productModel
 attribute [local instance] KPGlobalTorusPeriodizationInverse.modelTopology
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 
@@ -39,14 +39,11 @@ private theorem pure_rawCoreFiber_torus (s : RestrictedTensorSimple.Level (bad A
   obtain ⟨w, hw⟩ := exists_reference_stage A P C (u*g)
   let z : RestrictedTensorSimple.Level (bad A P C) := ⟨s.val ∪ v.val ∪ w.val,
     (s.property.trans Finset.subset_union_left).trans Finset.subset_union_left⟩
-  have hsz : s ≤ z := Finset.subset_union_left.trans Finset.subset_union_left
   let y : ∀ j : z.val, Plus A P C j.val := fun j => pureSections A P C s x j.val
   have hi : RestrictedTensorSimple.stageInclusion (Plus A P C) (plusReference A P C) (bad A P C) z
       (PiTensorProduct.tprod ℂ y) = RestrictedTensorSimple.stageInclusion _ _ _ s (PiTensorProduct.tprod ℂ x) := by
-    have hins := RestrictedTensorSimple.insert_pure (Plus A P C) (plusReference A P C) s.val z.val hsz x
-    have hins' := congrArg (RestrictedTensorSimple.stageInclusion (Plus A P C)
-      (plusReference A P C) (bad A P C) z) hins
-    convert hins'.symm.trans Module.DirectLimit.of_f using 1
+    convert (congrArg (RestrictedTensorSimple.stageInclusion (Plus A P C)
+      (plusReference A P C) (bad A P C) z) (RestrictedTensorSimple.insert_pure (Plus A P C) (plusReference A P C) s.val z.val (Finset.subset_union_left.trans Finset.subset_union_left) x)).symm.trans Module.DirectLimit.of_f using 1
     · congr 2
       funext j
       change (if h : j.val ∈ s.val then x ⟨j.val, h⟩ else plusReference A P C j.val) = _
@@ -111,9 +108,6 @@ private theorem rational_contraction_torus (r : KPGlobalCenterRationalCharacter.
   have hc := (unitaryPeriodization F ζ hζ P f).val.property r 1
   change _ = (rationalUnitCharacter F ζ hζ r : ℂ) * _ at hc
   rw [mul_one] at hc
-  have hpos := KPGlobalCenterRationalCharacter.nu_positive F ζ hζ r.val
-  have hn : ((KPGlobalCenterRationalCharacter.nu F ζ hζ r.val : ℝ≥0) : ℂ) ≠ 0 := by
-    exact_mod_cast hpos.ne'
   have hchar : (rationalUnitCharacter F ζ hζ r : ℂ) =
       (KPGlobalCenterRationalCharacter.lambdaR F ζ hζ r : ℂ) /
         ((KPGlobalCenterRationalCharacter.nu F ζ hζ r.val : ℝ≥0) : ℂ) := by

@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -51,10 +46,7 @@ namespace Reciprocity
 
 attribute [local instance] topologicalNormResidueIdeleClassCommGroup
 
- theorem topologicalNormResidueIdeleClassIsMulCommutative
-    (F : Type) [Field F] [NumberField F] :
-    IsMulCommutative (IdeleClassGroup F) :=
-  IsMulCommutative.of_comm (fun a b => mul_comm a b)
+ alias topologicalNormResidueIdeleClassIsMulCommutative := realizedTowerIdeleClassIsMulCommutative
 
 attribute [local instance] topologicalNormResidueIdeleClassIsMulCommutative
 
@@ -73,7 +65,6 @@ theorem ideleClassNormQuotient_discreteTopology :
   apply QuotientGroup.discreteTopology
   exact
     GlobalClassFields.ideleClassNorm_range_isOpen
-      (K := K) (L := L)
 
 /-- Global norm-residue reciprocity as a homeomorphic multiplicative
 equivalence between the native norm quotient and the finite Krull
@@ -83,18 +74,11 @@ noncomputable def globalNormResidueContinuousMulEquiv :
     (IdeleClassGroup K ⧸
         (_root_.ideleClassNorm K L).range) ≃ₜ*
       Gal(L / K) := by
-  let : DiscreteTopology
-      (IdeleClassGroup K ⧸
-        (_root_.ideleClassNorm K L).range) :=
+  let :=
     ideleClassNormQuotient_discreteTopology K L
-  let e :
-      (IdeleClassGroup K ⧸
-          (_root_.ideleClassNorm K L).range) ≃*
-        Gal(L / K) :=
-    AddEquiv.toMultiplicative
-      (globalNormResidueEquiv K L)
   exact
-    { e with
+    { (AddEquiv.toMultiplicative
+      (globalNormResidueEquiv K L)) with
       continuous_toFun := continuous_of_discreteTopology
       continuous_invFun := continuous_of_discreteTopology }
 
@@ -108,8 +92,7 @@ theorem globalNormResidueContinuousMulEquiv_apply
     globalNormResidueContinuousMulEquiv K L c =
       Additive.toMul
         (globalNormResidueEquiv K L
-          (Additive.ofMul c)) := by
-  rfl
+          (Additive.ofMul c)) := rfl
 
 /-- Global reciprocity in the direction used by the class-field
 correspondence,
@@ -135,8 +118,7 @@ theorem globalReciprocityContinuousMulEquiv_apply
     globalReciprocityContinuousMulEquiv K L σ =
       Additive.toMul
         ((globalNormResidueEquiv K L).symm
-          (Additive.ofMul σ)) := by
-  rfl
+          (Additive.ofMul σ)) := rfl
 
 /-- The genuine quotient map
 `C_K → C_K / N_{L/K}(C_L)`, bundled with continuity for the native
@@ -163,16 +145,7 @@ the existing actual global norm-residue symbol. -/
 theorem globalNormResidueContinuousMonoidHom_apply
     (c : IdeleClassGroup K) :
     globalNormResidueContinuousMonoidHom K L c =
-      globalNormResidueMonoidHom K L c := by
-  rfl
-
-/-- The existing actual global norm-residue homomorphism is continuous
-for the ordinary idele-class topology and the finite Krull topology. -/
-theorem globalNormResidueMonoidHom_continuous :
-    Continuous (globalNormResidueMonoidHom K L) :=
-  (globalNormResidueContinuousMonoidHom K L).continuous.congr
-    (fun c =>
-      globalNormResidueContinuousMonoidHom_apply K L c)
+      globalNormResidueMonoidHom K L c := rfl
 
 end Reciprocity
 end GlobalClassFieldTheory

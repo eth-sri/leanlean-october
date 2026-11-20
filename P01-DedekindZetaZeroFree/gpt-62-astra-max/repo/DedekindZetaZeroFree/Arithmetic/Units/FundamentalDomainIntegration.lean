@@ -123,24 +123,22 @@ theorem mem_unitFundamentalTranslate_iff
   constructor
   · intro hx
     funext i
-    have hi := hx i i.prop
     have hi' : x i - (z i : ℝ) ∈ Set.Ico 0 1 := by
-      simpa [unitCoordinateShift, i.prop] using hi
+      simpa [unitCoordinateShift, i.prop] using (hx i i.prop)
     have hfloor :
         ⌊x i - (z i : ℝ)⌋ = 0 :=
       Int.floor_eq_zero_iff.mpr hi'
     simp only [Int.floor_sub_intCast] at hfloor
     simpa [unitFloor, i.prop] using sub_eq_zero.mp hfloor
   · intro hz w hw
-    have hfloor := congr_fun hz ⟨w, hw⟩
     have hfloor' : ⌊x w⌋ = z ⟨w, hw⟩ := by
-      simpa [unitFloor, hw] using hfloor
+      simpa [unitFloor, hw] using (congr_fun hz ⟨w, hw⟩)
     have hshift :
         unitCoordinateShift z w = (z ⟨w, hw⟩ : ℝ) := by
       simp [unitCoordinateShift, hw]
     simp only [Pi.sub_apply, hshift]
     rw [← hfloor']
-    simpa only [Int.fract] using
+    simpa using
       (show Int.fract (x w) ∈ Set.Ico (0 : ℝ) 1 from
         ⟨Int.fract_nonneg _, Int.fract_lt_one _⟩)
 
@@ -174,15 +172,17 @@ theorem unitFundamentalTranslate_eq_image
   · rintro ⟨y, hy, rfl⟩
     simpa [unitFundamentalTranslate] using hy
 
+section
+
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] (f : realSpace K → E)
+
 theorem setIntegral_unitFundamentalTranslate
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (f : realSpace K → E)
     (z : {w : InfinitePlace K // w ≠ w₀} → ℤ) :
     (∫ x in unitFundamentalTranslate z, f x) =
       ∫ x in unitFundamentalParamSet K,
         f (x + unitCoordinateShift z) := by
   rw [unitFundamentalTranslate_eq_image]
-  let e : realSpace K ≃ᵐ realSpace K :=
+  let e :=
     MeasurableEquiv.addRight (unitCoordinateShift z)
   have he : MeasurePreserving e volume volume :=
     ⟨e.measurable, by
@@ -191,14 +191,12 @@ theorem setIntegral_unitFundamentalTranslate
   exact he.setIntegral_image_emb e.measurableEmbedding f
     (unitFundamentalParamSet K)
 
-theorem integral_eq_tsum_setIntegral_unitFundamentalTranslate
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (f : realSpace K → E) (hf : Integrable f) :
+theorem integral_eq_tsum_setIntegral_unitFundamentalTranslate (hf : Integrable f) :
     (∫ x, f x) =
       ∑' z : {w : InfinitePlace K // w ≠ w₀} → ℤ,
         ∫ x in unitFundamentalTranslate z, f x := by
   calc
-    (∫ x, f x) =
+    _ =
         ∫ x in ⋃ z : {w : InfinitePlace K // w ≠ w₀} → ℤ,
           unitFundamentalTranslate z, f x := by
       rw [iUnion_unitFundamentalTranslate, setIntegral_univ]
@@ -207,9 +205,7 @@ theorem integral_eq_tsum_setIntegral_unitFundamentalTranslate
         rw [iUnion_unitFundamentalTranslate]
         simp_all)
 
-theorem integral_eq_tsum_setIntegral_add_unitCoordinateShift
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (f : realSpace K → E) (hf : Integrable f) :
+theorem integral_eq_tsum_setIntegral_add_unitCoordinateShift (hf : Integrable f) :
     (∫ x, f x) =
       ∑' z : {w : InfinitePlace K // w ≠ w₀} → ℤ,
         ∫ x in unitFundamentalParamSet K,
@@ -218,6 +214,8 @@ theorem integral_eq_tsum_setIntegral_add_unitCoordinateShift
   congr 1
   funext z
   exact setIntegral_unitFundamentalTranslate f z
+
+end
 
 open scoped Classical in
 theorem setIntegral_expMapBasis_image

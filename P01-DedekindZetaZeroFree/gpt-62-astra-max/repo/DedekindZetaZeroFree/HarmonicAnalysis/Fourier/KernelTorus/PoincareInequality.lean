@@ -26,7 +26,7 @@ private theorem compact_of_finite_haar
   rw [not_compactSpace_iff] at H
   obtain ⟨K, K1, hK, Kclosed⟩ : ∃ K ∈ nhds (0 : G), IsCompact K ∧ IsClosed K :=
     exists_mem_nhds_isCompact_isClosed 0
-  have K_pos : 0 < μ K := measure_pos_of_mem_nhds μ K1
+  have K_pos := measure_pos_of_mem_nhds μ K1
   have A : ∀ L : Set G, IsCompact L → ∃ g : G, Disjoint L (g +ᵥ K) := fun L hL =>
     exists_disjoint_vadd_of_isCompact hL hK
   choose! g hg using A
@@ -58,7 +58,7 @@ private theorem compact_of_finite_haar
     apply ENNReal.Tendsto.mul_const _ (Or.inl ENNReal.top_ne_zero)
     exact ENNReal.tendsto_nat_nhds_top.comp (Filter.tendsto_add_atTop_nat _)
   simp only [ENNReal.top_mul', K_pos.ne', ite_false] at N
-  have ht : μ Set.univ = ∞ := top_le_iff.1 <|
+  have ht := top_le_iff.1 <|
     le_of_tendsto' N fun n => measure_mono (Set.subset_univ _)
   exact (measure_ne_top μ Set.univ) ht
 
@@ -97,8 +97,10 @@ private theorem exponent_apply
   push_cast
   ring
 
-private theorem mode_lift (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
+variable (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : KPCuspCharts.ParabolicData F S)
+    (ρ : S →* rootsOfUnity 3 F)
+
+private theorem mode_lift
     (ξ : KPCuspFrequencyGap.Frequency S D ρ) :
     (fun y : KPCuspCharts.Horizontal F =>
       KPCuspFrequencyGap.torusMode S D ρ ξ (QuotientAddGroup.mk y)) =
@@ -108,8 +110,6 @@ private theorem mode_lift (S : Subgroup (KPCuspArithmetic.PGL2 F))
   rfl
 
 theorem coefficient_fderiv
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (μ : Measure (KPCuspGenuineMonodromy.KernelTorus S D ρ))
     (hμ : μ.IsAddHaarMeasure) (hprob : IsProbabilityMeasure μ)
     (f : KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ)
@@ -138,8 +138,6 @@ theorem coefficient_fderiv
   let df := fun z : Q => fderiv ℝ (fun y : KPCuspCharts.Horizontal F =>
     f (QuotientAddGroup.mk y)) (Quotient.out z) w
   have hm : ContDiff ℝ (⊤ : ℕ∞) (fun y : KPCuspCharts.Horizontal F => m (QuotientAddGroup.mk y)) := by
-    change ContDiff ℝ (⊤ : ℕ∞) (fun y : KPCuspCharts.Horizontal F =>
-      KPCuspFrequencyGap.torusMode S D ρ ξ (QuotientAddGroup.mk y))
     rw [mode_lift]
     exact L.contDiff.cexp
   have hd : ∀ y : KPCuspCharts.Horizontal F,
@@ -183,10 +181,7 @@ theorem coefficient_fderiv
     change star (m z) * df z + f z * star (m z * c) = _
     rw [star_mul, hsc]
     ring
-  have heq : (fun z : Q => fderiv ℝ (fun y : KPCuspCharts.Horizontal F =>
-      star (m (QuotientAddGroup.mk y)) * f (QuotientAddGroup.mk y)) (Quotient.out z) w) =
-      (fun z : Q => star (m z) * df z - c * (star (m z) * f z)) := funext hder
-  rw [heq] at hp
+  rw [(funext hder)] at hp
   letI : MeasurableConstVAdd Q Q := ⟨fun a => by
     induction a using Quotient.inductionOn with
     | h x =>
@@ -195,7 +190,7 @@ theorem coefficient_fderiv
         (QuotientAddGroup.mk x : Q) + QuotientAddGroup.mk y)
       simp only [← QuotientAddGroup.mk_add]
       exact QuotientAddGroup.measurable_coe.comp (measurable_const.add measurable_id)⟩
-  have hc : CompactSpace Q := compact_of_finite_haar μ
+  have hc := compact_of_finite_haar μ
   letI := hc
   have hcf : Continuous f :=
     (QuotientAddGroup.isQuotientMap_mk K).continuous_iff.mpr hf.continuous
@@ -243,19 +238,18 @@ namespace DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.Fourier
 
 variable {F : Type} [Field F] [NumberField F]
 
+section
+
+variable (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : KPCuspCharts.ParabolicData F S)
+    (ρ : S →* rootsOfUnity 3 F) (f : KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ)
+
 def horizontalDeriv
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
-    (f : KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ)
     (w : KPCuspCharts.Horizontal F)
     (z : KPCuspGenuineMonodromy.KernelTorus S D ρ) : ℂ :=
   fderiv ℝ (fun y : KPCuspCharts.Horizontal F => f (QuotientAddGroup.mk y))
     (Quotient.out z) w
 
 private theorem horizontalDeriv_mk
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
-    (f : KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ)
     (w y : KPCuspCharts.Horizontal F) :
     horizontalDeriv S D ρ f w (QuotientAddGroup.mk y) =
       fderiv ℝ (fun z : KPCuspCharts.Horizontal F => f (QuotientAddGroup.mk z)) y w := by
@@ -277,9 +271,6 @@ private theorem horizontalDeriv_mk
   exact congrArg (fun L => L w) hh
 
 private theorem continuous_horizontalDeriv
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
-    (f : KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞)
       (fun y : KPCuspCharts.Horizontal F => f (QuotientAddGroup.mk y)))
     (w : KPCuspCharts.Horizontal F) : Continuous (horizontalDeriv S D ρ f w) := by
@@ -290,12 +281,14 @@ private theorem continuous_horizontalDeriv
   simp_rw [horizontalDeriv_mk]
   exact (hf.continuous_fderiv (by simp)).clm_apply continuous_const
 
+end
+
 private theorem pairing_single
     (ξ : KPCuspFrequencyGap.Euclidean (KPCuspLogShape.dimension F))
     (i : Fin (KPCuspLogShape.dimension F)) (v : ℂ) :
     inner ℝ ξ ((KPCuspFrequencyGap.coordinates _).symm (Pi.single i v)) =
       (star (KPCuspFrequencyGap.coordinates _ ξ i) * v).re := by
-  simp_rw [PiLp.inner_apply (𝕜 := ℝ)]
+  simp_rw [PiLp.inner_apply]
   have hs : ∀ j, ((KPCuspFrequencyGap.coordinates (KPCuspLogShape.dimension F)).symm
       (Pi.single i v)).ofLp j = (Pi.single i v : KPCuspCharts.Horizontal F) j := by
     intro j; rfl
@@ -310,9 +303,10 @@ private theorem pairing_single
     simp [hji]
   · simp
 
+variable (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : KPCuspCharts.ParabolicData F S)
+    (ρ : S →* rootsOfUnity 3 F)
+
 theorem coefficient_horizontalDeriv
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (μ : Measure (KPCuspGenuineMonodromy.KernelTorus S D ρ))
     (hμ : μ.IsAddHaarMeasure) (hprob : IsProbabilityMeasure μ)
     (f : KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ)
@@ -323,12 +317,9 @@ theorem coefficient_horizontalDeriv
       ((2 * Real.pi : ℂ) * Complex.I *
         (inner ℝ (ξ : KPCuspFrequencyGap.Euclidean (KPCuspLogShape.dimension F))
           ((KPCuspFrequencyGap.coordinates _).symm w) : ℝ)) *
-        coefficient S D ρ μ f ξ := by
-  exact PeriodicLiftHaar.coefficient_fderiv S D ρ μ hμ hprob f hf ξ w
+        coefficient S D ρ μ f ξ := PeriodicLiftHaar.coefficient_fderiv S D ρ μ hμ hprob f hf ξ w
 
 private theorem coefficient_energy_eq
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (μ : Measure (KPCuspGenuineMonodromy.KernelTorus S D ρ))
     (hμ : μ.IsAddHaarMeasure) (hprob : IsProbabilityMeasure μ)
     (b : KPCuspCharts.Shape F) (t : ℝ)
@@ -359,8 +350,6 @@ private theorem coefficient_energy_eq
   ring
 
 theorem kernel_torus_energy_parseval
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (hlattice : ∃ hd : DiscreteTopology
       (KPCuspFrequencyGap.kernelEuclideanLattice S D ρ),
       letI := hd; IsZLattice ℝ (KPCuspFrequencyGap.kernelEuclideanLattice S D ρ))
@@ -393,8 +382,7 @@ theorem kernel_torus_energy_parseval
     AddCosetSpace.borelSpace
   let a : Fin (KPCuspLogShape.dimension F) → ℝ :=
     fun i => Real.exp (2 * (t + (b : Fin _ → ℝ) i))
-  let g : Fin (KPCuspLogShape.dimension F) →
-      KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ :=
+  let g :=
     fun i => horizontalDeriv S D ρ f (Pi.single i 1)
   let k : Fin (KPCuspLogShape.dimension F) →
       KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ :=
@@ -427,7 +415,6 @@ theorem kernel_torus_energy_parseval
       rw [integral_add (hgi i) (hki i), (pg i).2, (pk i).2,
         (Summable.tsum_add (pg i).1 (pk i).1)]
     simp_rw [hpi, ← tsum_mul_left]
-    change (∑ i, ∑' ξ, q i ξ) = _
     rw [← Summable.tsum_finsetSum (fun i _ => hq i)]
     simp_rw [hqe]
 
@@ -447,9 +434,10 @@ namespace DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity
 
 variable {F : Type} [Field F] [NumberField F]
 
+variable (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : KPCuspCharts.ParabolicData F S)
+    (ρ : S →* rootsOfUnity 3 F)
+
 def torusHorizontalSq
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (b : KPCuspCharts.Shape F) (t : ℝ)
     (f : KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ)
     (z : KPCuspGenuineMonodromy.KernelTorus S D ρ) : ℝ :=
@@ -459,16 +447,12 @@ def torusHorizontalSq
       ‖fderiv ℝ lift (Quotient.out z) (Pi.single i Complex.I)‖ ^ 2)
 
 theorem lift_fderiv_eq
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (f : KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ)
     (x y : KPCuspCharts.Horizontal F)
     (hxy : (QuotientAddGroup.mk x : KPCuspGenuineMonodromy.KernelTorus S D ρ) =
       QuotientAddGroup.mk y) :
     fderiv ℝ (fun z => f (QuotientAddGroup.mk z)) x =
       fderiv ℝ (fun z => f (QuotientAddGroup.mk z)) y := by
-  let L := KPCuspCharts.translationLattice F
-    (KPCuspGenuineMonodromy.kernelLattice S D ρ)
   have hd : (QuotientAddGroup.mk (y - x) : KPCuspGenuineMonodromy.KernelTorus S D ρ) = 0 := by
     rw [QuotientAddGroup.mk_sub, ← hxy, sub_self]
   have hshift : (fun z : KPCuspCharts.Horizontal F =>
@@ -483,8 +467,6 @@ theorem lift_fderiv_eq
   exact hh
 
 theorem torusHorizontalSq_mk
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (b : KPCuspCharts.Shape F) (t : ℝ)
     (f : KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ)
     (y : KPCuspCharts.Horizontal F) :
@@ -498,8 +480,6 @@ theorem torusHorizontalSq_mk
   rw [lift_fderiv_eq S D ρ f _ y (Quotient.out_eq _)]
 
 theorem torusHorizontalSq_nonneg
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (b : KPCuspCharts.Shape F) (t : ℝ)
     (f : KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ)
     (z : KPCuspGenuineMonodromy.KernelTorus S D ρ) :
@@ -509,20 +489,15 @@ theorem torusHorizontalSq_nonneg
     (add_nonneg (sq_nonneg _) (sq_nonneg _))
 
 theorem kernel_torus_poincare_nonpos
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (μ : Measure (KPCuspGenuineMonodromy.KernelTorus S D ρ))
     (b : KPCuspCharts.Shape F) (t c : ℝ) (hc : c ≤ 0)
     (f : KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ) :
     c * (∫ z, ‖f z‖ ^ 2 ∂μ) ≤
-      (∫ z, torusHorizontalSq S D ρ b t f z ∂μ) := by
-  exact le_trans (mul_nonpos_of_nonpos_of_nonneg hc
+      (∫ z, torusHorizontalSq S D ρ b t f z ∂μ) := le_trans (mul_nonpos_of_nonpos_of_nonneg hc
     (integral_nonneg fun z => sq_nonneg _))
     (integral_nonneg (torusHorizontalSq_nonneg S D ρ b t f))
 
 theorem continuous_of_smooth_lift
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (f : KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞)
       (fun y : KPCuspCharts.Horizontal F => f (QuotientAddGroup.mk y))) :
@@ -532,23 +507,17 @@ theorem continuous_of_smooth_lift
     hf.continuous
 
  theorem torusMode_mk
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (ξ : KPCuspFrequencyGap.Frequency S D ρ) (y : KPCuspCharts.Horizontal F) :
     KPCuspFrequencyGap.torusMode S D ρ ξ (QuotientAddGroup.mk y) =
       KPCuspFrequencyGap.fourierCharacter (ξ : KPCuspFrequencyGap.Euclidean (KPCuspLogShape.dimension F)) y := rfl
 
 theorem torusMode_zero
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (z : KPCuspGenuineMonodromy.KernelTorus S D ρ) :
     KPCuspFrequencyGap.torusMode S D ρ 0 z = 1 := by
   induction z using Quotient.inductionOn with
   | h y => simp [torusMode_mk, KPCuspFrequencyGap.fourierCharacter]
 
 theorem kernel_torus_poincare_of_parseval
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (μ : Measure (KPCuspGenuineMonodromy.KernelTorus S D ρ))
     (b : KPCuspCharts.Shape F) (t c : ℝ)
     (hgap : ∀ ξ : KPCuspFrequencyGap.Frequency S D ρ,
@@ -573,8 +542,6 @@ theorem kernel_torus_poincare_of_parseval
     exact mul_le_mul_of_nonneg_left (hgap ξ hξ) (sq_nonneg _)
 
 theorem kernel_torus_poincare
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (hlattice : ∃ hd : DiscreteTopology
       (KPCuspFrequencyGap.kernelEuclideanLattice S D ρ),
       letI := hd; IsZLattice ℝ (KPCuspFrequencyGap.kernelEuclideanLattice S D ρ))
@@ -596,10 +563,9 @@ theorem kernel_torus_poincare
       f (continuous_of_smooth_lift S D ρ f hf)
     obtain ⟨haE, henergy⟩ := Fourier.kernel_torus_energy_parseval
       S D ρ hlattice μ hμ hprob b t f hf
-    have ha0 : Fourier.coefficient S D ρ μ f 0 = 0 := by
-      simpa [Fourier.coefficient, torusMode_zero] using hzero
-    exact kernel_torus_poincare_of_parseval S D ρ μ b t c hgap f
-      (Fourier.coefficient S D ρ μ f) ha0 ha haE hparseval henergy
+    refine kernel_torus_poincare_of_parseval S D ρ μ b t c hgap f
+      (Fourier.coefficient S D ρ μ f) ?_ ha haE hparseval henergy
+    simpa [Fourier.coefficient, torusMode_zero] using hzero
 
 end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity
 

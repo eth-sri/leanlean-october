@@ -15,13 +15,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -45,7 +38,7 @@ open ValuationTheory.DiscreteValuationField
 namespace WithZeroValuation
 
 variable {R : Type u}
-variable {Gamma : Type x} [LinearOrderedCommGroupWithZero Gamma]
+    {Gamma : Type x} [LinearOrderedCommGroupWithZero Gamma]
 
 /-- A nontrivial `ℤᵐ⁰`-valued valuation is rank one via the standard strictly
 monotone embedding `ℤᵐ⁰ -> ℝ≥0`.  This is kept as an explicit definition, not
@@ -77,19 +70,18 @@ theorem isCyclic_mulArchimedean
   classical
   by_cases hsub : Subsingleton G
   · refine ⟨fun _ y hy => ?_⟩
-    exact (hy.ne' (Subsingleton.elim y 1)).elim
-  have : Nontrivial G := not_subsingleton_iff_nontrivial.mp hsub
-  let a : G := LinearOrderedCommGroup.Subgroup.genLTOne (⊤ : Subgroup G)
-  let b : G := a⁻¹
+    simp
+  have := not_subsingleton_iff_nontrivial.mp hsub
+  let a := LinearOrderedCommGroup.Subgroup.genLTOne (⊤ : Subgroup G)
+  let b := a⁻¹
   have hb : 1 < b := by
     have ha : a < 1 := by
       simpa [a] using
       LinearOrderedCommGroup.Subgroup.genLTOne_lt_one (⊤ : Subgroup G)
     simpa [b] using (one_lt_inv'.2 ha)
   have hbtop : Subgroup.zpowers b = (⊤ : Subgroup G) := by
-    have hatop : Subgroup.zpowers a = (⊤ : Subgroup G) := by
-      simp [a]
-    simpa [b, Subgroup.zpowers_inv] using hatop
+    simpa [b, Subgroup.zpowers_inv] using (by
+      simp [a])
   refine ⟨fun x y hy => ?_⟩
   have hxmem : x ∈ Subgroup.zpowers b := by
     rw [hbtop]
@@ -106,13 +98,12 @@ theorem isCyclic_mulArchimedean
   obtain ⟨n, hn⟩ := Archimedean.arch m hlpos
   refine ⟨n, ?_⟩
   rw [← hy_eq]
-  have hmn : m ≤ l * (n : ℤ) := by
-    simpa [nsmul_eq_mul, mul_comm] using hn
   calc
     b ^ m ≤ b ^ (l * (n : ℤ)) :=
-      (zpow_le_zpow_iff_right hb).2 hmn
+      (zpow_le_zpow_iff_right hb).2 (by
+        simpa [mul_comm] using hn)
     _ = (b ^ l) ^ n := by
-      rw [zpow_mul, zpow_natCast]
+      simp [zpow_mul]
 
 /-- If the nonzero part of a value group is cyclic, the value group is
 multiplicatively Archimedean. -/
@@ -120,9 +111,9 @@ theorem units_isCyclic_mulArchimedean
     (Gamma : Type x) [LinearOrderedCommGroupWithZero Gamma]
     [IsCyclic Gammaˣ] :
     MulArchimedean Gamma := by
-  have : MulArchimedean Gammaˣ :=
+  have :=
     isCyclic_mulArchimedean Gammaˣ
-  exact (Units.mulArchimedean_iff (G₀ := Gamma)).1 inferInstance
+  exact (Units.mulArchimedean_iff).1 inferInstance
 
 /-- A nontrivial valuation whose ambient value group has cyclic unit group is
 rank one.  This is used only after restricting an abstract complete-DVF
@@ -139,13 +130,13 @@ noncomputable def rankOneOfUnitsIsCyclic
         v.ValueGroup₀ :=
     MulArchimedean.comap
       (MonoidWithZeroHom.ValueGroup₀.embedding
-        (f := (v : R →*₀ Gamma))).toMonoidHom
+        ).toMonoidHom
       (MonoidWithZeroHom.ValueGroup₀.embedding_strictMono
-        (f := (v : R →*₀ Gamma)))
+        )
   exact
     Classical.choice
       ((_root_.Valuation.nonempty_rankOne_iff_mulArchimedean
-        (v := v)).2 inferInstance)
+        ).2 inferInstance)
 
 open LinearOrderedCommGroup
 
@@ -158,10 +149,7 @@ theorem isUniformizer_of_valuation_eq_exp_neg_one
     (hπ : v π = WithZero.exp (-1 : ℤ)) :
     v.IsUniformizer π := by
   rw [_root_.Valuation.IsUniformizer.iff, hπ]
-  simpa using
-    (congrArg Units.val
-      (_root_.Valuation.IsRankOneDiscrete.generator_eq_exp_neg_one_of_mem_range
-        (v := v) ⟨π, hπ⟩)).symm
+  exact Eq.symm (congrArg Units.val (Valuation.IsRankOneDiscrete.generator_eq_exp_neg_one_of_mem_range (Exists.intro π hπ)))
 
 /-- A surjective standard `ℤᵐ⁰`-valued valuation has a normalized
 uniformizer in its valuation subring. -/
@@ -179,7 +167,6 @@ theorem exists_valuationSubring_valuation_eq_exp_neg_one_of_surjective
     rw [WithZero.exp_le_exp]
     norm_num
   exact ⟨⟨π, hπmem⟩, hπ⟩
-
 
 end WithZeroValuation
 end LocalFieldTheory.DiscreteValuationField

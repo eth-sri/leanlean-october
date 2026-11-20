@@ -14,7 +14,7 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (q : HeightOneSpectrum (𝓞 F))
+    (q : HeightOneSpectrum (𝓞 F))
 variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField F q)]
 
 def infinityBlock (N n : ℕ) : Set (LocalField F q)ˣ :=

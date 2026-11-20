@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.CharacterOperations
 
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
@@ -12,27 +13,20 @@ open scoped NumberField Classical
 
 variable {F : Type} [Field F] [NumberField F] {m : Ideal (𝓞 F)}
 
-theorem primitivePrincipal_modulus_eq_top
-    (η : DedekindZetaZeroFree.RayClassCharacter F m)
-    (hprimitive : η.IsPrimitive) (hprincipal : η.IsPrincipal) :
-    m = ⊤ := by
-  by_contra hm
-  have hlt : m < ⊤ := lt_top_iff_ne_top.mpr hm
-  obtain ⟨α, hα0, _hα1, _hpos, hspan, hne⟩ := hprimitive ⊤ hlt
-  have hspanne : Ideal.span {α} ≠ ⊥ := by
-    simpa [Ideal.span_singleton_eq_bot] using hα0
-  exact hne (hprincipal _ hspanne hspan)
+variable (η : DedekindZetaZeroFree.RayClassCharacter F m) (hprimitive : η.IsPrimitive)
+    (hprincipal : η.IsPrincipal)
 
+include hprimitive hprincipal in
+theorem primitivePrincipal_modulus_eq_top :
+    m = ⊤ := by apply @DedekindZetaZeroFree.LargeSieve.RayOperations.modulus_eq_top_of_primitive_principal <;> assumption
+
+include hprimitive hprincipal in
 theorem primitivePrincipal_apply_nonzero
-    (η : DedekindZetaZeroFree.RayClassCharacter F m)
-    (hprimitive : η.IsPrimitive) (hprincipal : η.IsPrincipal)
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) : η I = 1 := by
-  have hm : m = ⊤ := primitivePrincipal_modulus_eq_top η hprimitive hprincipal
-  exact hprincipal I hI (by rw [hm, sup_top_eq])
+  exact hprincipal I hI (by rw [(primitivePrincipal_modulus_eq_top η hprimitive hprincipal), sup_top_eq])
 
+include hprimitive hprincipal in
 theorem primitivePrincipal_apply_eq_ite
-    (η : DedekindZetaZeroFree.RayClassCharacter F m)
-    (hprimitive : η.IsPrimitive) (hprincipal : η.IsPrincipal)
     (I : Ideal (𝓞 F)) : η I = if I = ⊥ then 0 else 1 := by
   by_cases hI : I = ⊥
   · rw [if_pos hI, hI]

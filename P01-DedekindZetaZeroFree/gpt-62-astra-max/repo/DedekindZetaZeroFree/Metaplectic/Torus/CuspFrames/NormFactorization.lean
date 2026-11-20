@@ -76,19 +76,12 @@ theorem actual_frame_norm_factorization
     2 * (KPCuspLogShape.dimension F : ℝ) * t +
       KPContFlatFullProductIwasawa.alpha F ζ hζ (finiteComponent F ζ hζ _) at hl
   rw [hf] at hl
-  have hn : 0 < ((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ
-      (D F ζ hζ) ((KPMsActualCuspSource.rationalLift F ζ hζ σ)⁻¹ *
-        frame F ζ hζ a c.val) : ℝ≥0) : ℝ) :=
-    NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr (Units.ne_zero _))
-  have ho : 0 < (finiteOffset F ζ hζ
-      (KPMsActualCuspSource.rationalLift F ζ hζ σ) c.val).val :=
-    (finiteOffset F ζ hζ _ _).property
   have he := congrArg Real.exp hl
   change Real.exp (Real.log _) =
     Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * t +
       Real.log (finiteOffset F ζ hζ
         (KPMsActualCuspSource.rationalLift F ζ hζ σ) c.val).val) at he
-  rw [Real.exp_log hn, Real.exp_add, Real.exp_log ho, mul_comm] at he
+  rw [Real.exp_log (NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr (Units.ne_zero _))), Real.exp_add, Real.exp_log ((finiteOffset F ζ hζ _ _).property), mul_comm] at he
   exact he
 end DedekindZetaZeroFree.KPMsAngularSourceRecipe
 

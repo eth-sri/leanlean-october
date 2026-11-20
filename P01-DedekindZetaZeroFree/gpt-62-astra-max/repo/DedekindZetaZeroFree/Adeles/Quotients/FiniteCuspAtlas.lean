@@ -53,10 +53,9 @@ def sphericalRelation (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
       · rw [hy, hx, mul_smul]
       · rw [hd, hc]
         simp only [map_mul]
-        have hcomm := central_comm F ζ hζ η
-          (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ)
         simp only [mul_assoc]
-        rw [← mul_assoc (KPCuspGenuineMonodromy.central F ζ hζ η), hcomm]
+        rw [← mul_assoc (KPCuspGenuineMonodromy.central F ζ hζ η), (central_comm F ζ hζ η
+          (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ))]
         simp only [mul_assoc]
         rfl
 
@@ -88,8 +87,7 @@ theorem compact_core_of_finite_components
     IsCompact ((Set.univ : Set X) \ (⋃ i, ⋃ a, f i '' E i a)) := by
   have hcont : ∀ i, Continuous (f i) := by
     intro i
-    have he := e.continuous.comp (continuous_sigmaMk (i := i))
-    convert he using 1
+    convert (e.continuous.comp (continuous_sigmaMk)) using 1
     ext y
     exact (hf i y).symm
   have hset : ((Set.univ : Set X) \ (⋃ i, ⋃ a, f i '' E i a)) =
@@ -98,7 +96,7 @@ theorem compact_core_of_finite_components
     constructor
     · intro hx
       obtain ⟨⟨i, y⟩, hy⟩ := e.surjective x
-      have hfy : f i y = x := (hf i y).symm.trans hy
+      have hfy := (hf i y).symm.trans hy
       apply Set.mem_iUnion.mpr
       refine ⟨i, y, ⟨Set.mem_univ _, ?_⟩, hfy⟩
       intro hE
@@ -146,11 +144,11 @@ private theorem base_relation (U : CompactOpenLevel (FiniteCover F ζ hζ))
       KPFiniteComponents.diagonal F γ * finiteBase F ζ hζ c * finiteBase F ζ hζ u) ↔
     ∃ (ε : rootsOfUnity 3 F) (u : U.toOpenSubgroup),
       d = finiteRationalLift F ζ hζ γ * central F ζ hζ ε * c * u := by
-  have hd := (finite_cover_exact F ζ hζ).2.2.2.1
+  have hd := (finite_cover_exact F ζ hζ).2.2
   have hc : ∀ ε, finiteBase F ζ hζ (central F ζ hζ ε) = 1 := by
     intro ε
     apply MonoidHom.mem_ker.mp
-    rw [← (finite_cover_exact F ζ hζ).2.1]
+    rw [← (finite_cover_exact F ζ hζ).1]
     exact ⟨ε, rfl⟩
   constructor
   · rintro ⟨u, hu⟩
@@ -158,7 +156,7 @@ private theorem base_relation (U : CompactOpenLevel (FiniteCover F ζ hζ))
     have ht : finiteBase F ζ hζ d = finiteBase F ζ hζ t := by
       simpa only [t, map_mul, ← MonoidHom.comp_apply, hd] using hu
     have hk : d * t⁻¹ ∈ (central F ζ hζ).range := by
-      rw [(finite_cover_exact F ζ hζ).2.1]
+      rw [(finite_cover_exact F ζ hζ).1]
       change finiteBase F ζ hζ (d * t⁻¹) = 1
       rw [map_mul, map_inv, ht, mul_inv_cancel]
     obtain ⟨ε, he⟩ := hk
@@ -177,9 +175,6 @@ private theorem component_iff (U : CompactOpenLevel (FiniteCover F ζ hζ))
       ∃ (ε : rootsOfUnity 3 F) (u : U.toOpenSubgroup),
         g = finiteRationalLift F ζ hζ γ * central F ζ hζ ε * g * u := by
   rw [← base_relation F ζ hζ U g g γ]
-  change KPFiniteComponents.diagonal F γ ∈
-    (U.toOpenSubgroup.toSubgroup.map (finiteBase F ζ hζ)).map
-      (MulAut.conj (finiteBase F ζ hζ g)).toMonoidHom ↔ _
   constructor
   · rintro ⟨b, ⟨u, hu, rfl⟩, hb⟩
     refine ⟨⟨u⁻¹, U.toOpenSubgroup.inv_mem hu⟩, ?_⟩
@@ -187,11 +182,10 @@ private theorem component_iff (U : CompactOpenLevel (FiniteCover F ζ hζ))
     rw [← hb]
     simp [mul_assoc]
   · rintro ⟨u, hu⟩
-    refine ⟨finiteBase F ζ hζ (u : FiniteCover F ζ hζ)⁻¹,
-      ⟨(u : FiniteCover F ζ hζ)⁻¹, U.toOpenSubgroup.inv_mem u.property, rfl⟩, ?_⟩
-    have hh := congrArg (fun b => b * (finiteBase F ζ hζ u)⁻¹ *
-      (finiteBase F ζ hζ g)⁻¹) hu
-    simpa [MulAut.conj_apply, mul_assoc] using hh
+    refine ⟨finiteBase F ζ hζ u⁻¹,
+      ⟨u⁻¹, U.toOpenSubgroup.inv_mem u.property, rfl⟩, ?_⟩
+    simpa [MulAut.conj_apply, mul_assoc] using (congrArg (fun b => b * (finiteBase F ζ hζ u)⁻¹ *
+      (finiteBase F ζ hζ g)⁻¹) hu)
 
 private theorem slice_open
     (U : CompactOpenLevel (FiniteCover F ζ hζ))
@@ -211,9 +205,8 @@ private theorem slice_open
   rintro ⟨y,c⟩ ⟨x, hx, he⟩
   obtain ⟨γ, ε, u, hy, hc⟩ := (hs (x,g) (y,c)).mp (Quotient.exact he)
   let a := finiteRationalLift F ζ hζ γ * central F ζ hζ ε * g
-  let V := (Homeomorph.smul γ '' O) ×ˢ
-    (Homeomorph.mulLeft a '' (U.toOpenSubgroup : Set (FiniteCover F ζ hζ)))
-  refine ⟨V, ?_, (Homeomorph.smul γ).isOpenMap O hO |>.prod
+  refine ⟨((Homeomorph.smul γ '' O) ×ˢ
+    (Homeomorph.mulLeft a '' U.toOpenSubgroup)), ?_, (Homeomorph.smul γ).isOpenMap O hO |>.prod
     ((Homeomorph.mulLeft a).isOpenMap _ U.toOpenSubgroup.isOpen), ?_⟩
   · rintro ⟨z,d⟩ ⟨⟨w, hw, rfl⟩, ⟨v, hv, rfl⟩⟩
     refine ⟨w, hw, Quotient.sound ((hs (w,g) (γ • w, a * v)).mpr ?_)⟩
@@ -250,7 +243,7 @@ theorem finite_spherical_components
   letI : Fintype Q := Fintype.ofFinite Q
   let n := Fintype.card Q
   let r : Fin n ≃ Q := (Fintype.equivFin Q).symm
-  have hπ := (finite_cover_exact F ζ hζ).2.2.1
+  have hπ := (finite_cover_exact F ζ hζ).2.1
   let g : Fin n → FiniteCover F ζ hζ := fun i => (hπ ((r i).out)).choose
   have hg : ∀ i, DoubleCoset.mk D H (π (g i)) = r i := by
     intro i
@@ -370,12 +363,12 @@ private theorem component_of_compare (F : Type) [Field F] [NumberField F]
   have hc : ∀ δ, finiteBase F ζ hζ (central F ζ hζ δ) = 1 := by
     intro δ
     have : central F ζ hζ δ ∈ (finiteBase F ζ hζ).ker := by
-      rw [← (finite_cover_exact F ζ hζ).2.1]
+      rw [← (finite_cover_exact F ζ hζ).1]
       exact ⟨δ, rfl⟩
     exact this
   have hp := congrArg (finiteBase F ζ hζ) h
   simp only [map_mul, hc, one_mul] at hp
-  rw [← MonoidHom.comp_apply, (finite_cover_exact F ζ hζ).2.2.2.1] at hp
+  rw [← MonoidHom.comp_apply, (finite_cover_exact F ζ hζ).2.2] at hp
   change KPFiniteComponents.diagonal F γ ∈
     (U.toOpenSubgroup.toSubgroup.map (finiteBase F ζ hζ)).map
       (MulAut.conj (finiteBase F ζ hζ g)).toMonoidHom
@@ -518,8 +511,8 @@ theorem finite_component_scalar_descent
       dsimp only [R, Prod.fst, Prod.snd] at hp
       have ht : R (x, c * u) i y δ ε (v * u) := by
         refine ⟨hp.1, ?_⟩
-        change c * (u : FiniteCover F ζ hζ) = finiteRationalLift F ζ hζ δ *
-          (central F ζ hζ ε * g i * ((v : FiniteCover F ζ hζ) * u))
+        change c * u = finiteRationalLift F ζ hζ δ *
+          (central F ζ hζ ε * g i * (v * u))
         rw [hp.2]
         simp only [mul_assoc]
       rw [hE f _ i y δ ε (v * u) ht, hE f _ i y δ ε v hp]
@@ -617,7 +610,6 @@ def componentMap (U : CompactOpenLevel (FiniteCover F ζ hζ))
     apply Eq.symm
     apply Quotient.sound
     refine ⟨γ, ε⁻¹, u⁻¹, hγ.symm, ?_⟩
-    change g = _
     rw [← central_comm F ζ hζ ε⁻¹
       (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ)]
     rw [mul_assoc (KPCuspGenuineMonodromy.central F ζ hζ ε⁻¹)
@@ -724,16 +716,6 @@ structure ComponentAtlas
     (ξ : KPCuspFrequencyGap.Euclidean (KPCuspLogShape.dimension F)) ≠ 0 →
       frequencyGap ≤ KPCuspFrequencyGap.shapeEnergy b ξ
 
-  constant_rank : ∀ a, Module.finrank ℂ
-    (KPCuspFrequencyGap.constantSections (ζ := ζ) (hζ := hζ) _ (parabolic a)
-      (line.rho.comp (KPCuspGenuineMonodromy.cuspInclusion F
-        (KPCuspGenuineMonodromy.Component F ζ hζ U g) (cusp a) (representative a)))
-      (KPCuspGenuineMonodromy.scalarFiber F ζ hζ U)) ≤ 1
-  constant_finite : ∀ a, FiniteDimensional ℂ
-    (KPCuspFrequencyGap.constantSections (ζ := ζ) (hζ := hζ) _ (parabolic a)
-      (line.rho.comp (KPCuspGenuineMonodromy.cuspInclusion F
-        (KPCuspGenuineMonodromy.Component F ζ hζ U g) (cusp a) (representative a)))
-      (KPCuspGenuineMonodromy.scalarFiber F ζ hζ U))
   open_ends : ∀ a, IsOpen (endSet F
     (KPCuspGenuineMonodromy.Component F ζ hζ U g) (representative a) threshold)
   disjoint_ends : Pairwise fun a b : Fin cuspCount => Disjoint
@@ -753,17 +735,6 @@ structure ComponentAtlas
   isFundamentalDomain : IsFundamentalDomain
     (KPCuspGenuineMonodromy.Component F ζ hζ U g) fundamentalDomain
     (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F))
-
-  end_volume : ∀ a,
-    Measure.map (endMap F (KPCuspGenuineMonodromy.Component F ζ hζ U g)
-      (cusp a) (representative a) threshold)
-      (Measure.map ((geometry a).highPresentation threshold)
-        ((geometry a).sectionMeasure.prod
-          (Measure.comap (Subtype.val : Set.Ioi threshold → ℝ)
-            (KPCuspCharts.radialMeasure (KPCuspLogShape.dimension F))))) =
-    (quotientVolume F (KPCuspGenuineMonodromy.Component F ζ hζ U g)
-      fundamentalDomain).restrict
-      (endSet F (KPCuspGenuineMonodromy.Component F ζ hζ U g) (representative a) threshold)
 
 structure Atlas (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : CompactOpenLevel (FiniteCover F ζ hζ)) where
@@ -791,13 +762,6 @@ structure Atlas (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
         endSet F (KPCuspGenuineMonodromy.Component F ζ hζ U (representative i))
           ((cuspAtlas i).representative a) threshold))
 
-  norm_transitions : ∀ i (b : SymmetricSpace F → rootsOfUnity 3 F),
-    IsLocallyConstant b → ∀ (γ : KPCuspGenuineMonodromy.Component F ζ hζ U (representative i))
-      (x : SymmetricSpace F) (a : ℂ),
-    ‖(KPCuspGenuineMonodromy.chi F ζ hζ
-      (KPCuspGenuineMonodromy.chartMultiplier F ζ hζ U (representative i)
-        (line i).rho b γ x) : ℂ) * a‖ = ‖a‖
-
 private def componentAtlasOfEndData
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : CompactOpenLevel (FiniteCover F ζ hζ)) (g : FiniteCover F ζ hζ)
@@ -823,8 +787,6 @@ private def componentAtlasOfEndData
   frequencyGap := D.frequencyGap
   positive_frequencyGap := D.positive_frequencyGap
   shortest_frequency := D.shortest_frequency
-  constant_rank := D.constant_rank
-  constant_finite := D.constant_finite
   open_ends := D.open_ends
   disjoint_ends := D.disjoint_ends
   compact_core := D.compact_core
@@ -833,7 +795,6 @@ private def componentAtlasOfEndData
   fundamentalDomain := D.fundamentalDomain
   measurable_fundamentalDomain := D.measurable_fundamentalDomain
   isFundamentalDomain := D.isFundamentalDomain
-  end_volume := D.end_volume
 
 end KPFiniteCuspAtlas
 
@@ -886,7 +847,7 @@ theorem kp_cont_finite_cusp_atlas
       threshold := T
       common_threshold := hA
       compact_core := ?_
-      norm_transitions := ?_ }⟩
+       }⟩
     · apply KPFiniteAdelicCuspEnds.compact_core_of_finite_components e
         (fun i => KPFiniteCuspAtlas.componentMap F ζ hζ U (g i)) he
         (fun i => Fin (A i).cuspCount)
@@ -895,8 +856,6 @@ theorem kp_cont_finite_cusp_atlas
       intro i
       rw [← hA i]
       exact (A i).compact_core
-    · intro i b hb γ x a
-      rw [norm_mul, (L i).unitary, one_mul]
 
 end DedekindZetaZeroFree
 

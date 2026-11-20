@@ -25,11 +25,11 @@ theorem globalMap_quotient_joint (D : TensorActions R N) (W : Finset (KPFinitePl
     (z : AmbientTensor F W (fiber D W)) :
     Continuous (fun p : Group R × KPAdditiveQuotient F ↦ globalMap D W s hW x z
       (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out p.2) * p.1)) := by
-  let : IsTopologicalGroup (Group R) :=
+  let :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F R.A.zeta12 R.A.primitive_zeta12).2.2.1
-  apply ((IsOpenQuotientMap.id (X := Group R)).prodMap
+  apply ((IsOpenQuotientMap.id).prodMap
     (QuotientAddGroup.isOpenQuotientMap_mk
-      (N := AdeleRing.principalSubgroup (𝓞 F) F))).continuous_comp_iff.mp
+      )).continuous_comp_iff.mp
   have he (g : Group R) (u : KPAdeles F) : globalMap D W s hW x z
       (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
         (Quotient.out (QuotientAddGroup.mk u : KPAdditiveQuotient F)) * g) =
@@ -69,8 +69,7 @@ theorem globalMap_fourier_continuous (D : TensorActions R N) (W : Finset (KPFini
     apply ContinuousMap.continuous_of_continuous_uncurry
     exact (globalMap_quotient_joint D W s hW x z).mul
       (trace_weight_continuous.comp continuous_snd)
-  have hh := (CompactPeriodAnalyticity.UpperPeriodContinuation.averageCLM D.sources.dq).continuous.comp hf
-  apply hh.congr
+  apply ((CompactPeriodAnalyticity.UpperPeriodContinuation.averageCLM D.sources.dq).continuous.comp hf).congr
   intro g
   exact CompactPeriodAnalyticity.UpperPeriodContinuation.averageCLM_apply D.sources.dq (f g)
 end DedekindZetaZeroFree.FourierContinuation.WildCurrentGlobalMap

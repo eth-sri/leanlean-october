@@ -58,15 +58,10 @@ theorem denseRange_ringOfIntegers_adicCompletionIntegers
   intro s hs
   obtain ⟨u, hu, hus⟩ := (mem_nhds_subtype _ x s).mp hs
   obtain ⟨ε, hε⟩ := Valued.mem_nhds.mp hu
-  let γ : (WithZero (Multiplicative ℤ))ˣ :=
-    Units.map MonoidWithZeroHom.ValueGroup₀.embedding.toMonoidHom ε
-  obtain ⟨a, ha⟩ := exists_ringOfIntegers_adicCompletion_approximation F v x x.property γ
+  obtain ⟨a, ha⟩ := exists_ringOfIntegers_adicCompletion_approximation F v x x.property (Units.map MonoidWithZeroHom.ValueGroup₀.embedding.toMonoidHom ε)
   refine ⟨⟨algebraMap (NumberField.RingOfIntegers F) (v.adicCompletionIntegers F) a,
     ⟨a, rfl⟩⟩, hus ?_⟩
   apply hε
   apply Valued.v.restrict_lt_iff_lt_embedding.mpr
-  change Valued.v
-    ((algebraMap (NumberField.RingOfIntegers F) (v.adicCompletionIntegers F) a :
-      v.adicCompletion F) - x) < _
   exact ha
 end DedekindZetaZeroFree

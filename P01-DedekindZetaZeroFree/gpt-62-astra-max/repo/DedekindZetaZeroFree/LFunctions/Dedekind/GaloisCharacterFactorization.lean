@@ -65,7 +65,7 @@ theorem allCharacterFactorization
         (1 - (Ideal.absNorm Q : ℂ) ^ (-s))⁻¹ := by
     intro p
     obtain ⟨Q₀⟩ := Ideal.nonempty_primesOver (R := 𝓞 K) (S := 𝓞 L) p.asIdeal
-    have hne : Q₀.1 ≠ ⊥ := Ideal.ne_bot_of_mem_primesOver p.ne_bot Q₀.2
+    have hne := Ideal.ne_bot_of_mem_primesOver p.ne_bot Q₀.2
     let W : HeightOneSpectrum (𝓞 L) := ⟨Q₀.1, Q₀.2.1, hne⟩
     have hW : W.asIdeal.LiesOver p.asIdeal := Q₀.2.2
     set x : ℂ := (Ideal.absNorm p.asIdeal : ℂ) ^ (-s) with hx
@@ -111,12 +111,7 @@ theorem allCharacterFactorization
       _ = ∏ Q ∈ IsDedekindDomain.primesOverFinset p.asIdeal (𝓞 L),
             (1 - (Ideal.absNorm Q : ℂ) ^ (-s))⁻¹ := hprod_fac
 
-  have hA' : HasProd
-      (fun P : HeightOneSpectrum (𝓞 K) =>
-        ∏ Q ∈ IsDedekindDomain.primesOverFinset P.asIdeal (𝓞 L),
-          (1 - (Ideal.absNorm Q : ℂ) ^ (-s))⁻¹)
-      (∏ ρ : ComplexDual (L ≃ₐ[K] L),
-        ∑' I : Ideal (𝓞 K), χ ρ I * (Ideal.absNorm I : ℂ) ^ (-s)) :=
+  have hA' :=
     hA.congr_fun fun P => (hpoint P).symm
   exact (hA'.unique (primeEulerRegroup K L s hs)).symm
 

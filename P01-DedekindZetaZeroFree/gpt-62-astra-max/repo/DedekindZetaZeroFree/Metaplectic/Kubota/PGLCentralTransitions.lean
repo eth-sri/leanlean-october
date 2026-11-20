@@ -24,7 +24,7 @@ theorem ordinaryPGLMap_injective
   induction g using QuotientGroup.induction_on with
   | _ a =>
     apply (QuotientGroup.eq_one_iff _).mpr
-    have ha : a ∈ Subgroup.center (KPLocalCover.LocalGL2 F (Sum.inr v)) :=
+    have ha :=
       Matrix.ProjGenLinGroup.mk_eq_one.mp hg
     rw [Matrix.GeneralLinearGroup.center_eq_range_scalar] at ha
     exact ha

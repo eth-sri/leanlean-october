@@ -11,109 +11,121 @@ open Topology
 namespace DedekindZetaZeroFree.KPContActualCutoffSmoothDescent
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable {T : ℝ}
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    {T : ℝ}
 variable (B : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (level F ζ hζ C R P H U) R P H T)
 
-def cutoffScalar (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-    (f : ℂ → S) (s : ℂ) : Covered F ζ hζ C R P H U → ℂ :=
+section
+
+variable (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T) (f : ℂ → S) (s : ℂ)
+
+def cutoffScalar : Covered F ζ hζ C R P H U → ℂ :=
   KPCutoffSource.cutoffSum (ends F ζ hζ C R P H U B) (height F ζ hζ C R P H U B)
     (fun a => (χ a).toFun) (incomingRealization F ζ hζ C R P H U ι B) f s
 
-def commutatorScalar (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-    (f : ℂ → S) (s : ℂ) : Covered F ζ hζ C R P H U → ℂ :=
+def commutatorScalar : Covered F ζ hζ C R P H U → ℂ :=
   KPCutoffSource.commutatorSum (Module.finrank ℚ F / 2)
     (ends F ζ hζ C R P H U B) (height F ζ hζ C R P H U B)
     (fun a => (χ a).toFun) (incomingRealization F ζ hζ C R P H U ι B) f s
 
+end
+
 abbrev SmoothSections := KPContSectorSmoothFramesSupport.smoothSections F ζ hζ
   (level F ζ hζ C R P H U) R P H
 
-def scalar (w : SmoothSections F ζ hζ C R P H U) : Covered F ζ hζ C R P H U → ℂ :=
+section
+
+variable (w : SmoothSections F ζ hζ C R P H U)
+
+def scalar : Covered F ζ hζ C R P H U → ℂ :=
   ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ (level F ζ hζ C R P H U)
     R P H).symm w).val.val
 
-def lift (w : SmoothSections F ζ hζ C R P H U) : KPSmoothLocalQuotientCharts.X F ζ hζ → ℂ :=
+def lift : KPSmoothLocalQuotientCharts.X F ζ hζ → ℂ :=
   scalar F ζ hζ C R P H U w ∘
     KPContSectorQuotientRelationsComparison.piTilde F ζ hζ (level F ζ hζ C R P H U)
 
-def frameValue (w : SmoothSections F ζ hζ C R P H U)
+def frameValue
     (a : Cusps F ζ hζ C R P H U) (z : KPCuspCharts.Coordinates F) : ℂ :=
   (KPContSectorSmoothFramesSupport.cuspCoefficient F ζ hζ (level F ζ hζ C R P H U)
     R P H w.val a.1 a.2 z : ℂ)
 
-theorem coveredPoint_eq_central (a : Cusps F ζ hζ C R P H U) (ε : rootsOfUnity 3 F)
-    (z : KPCuspCharts.Coordinates F) :
+end
+
+section
+
+variable (a : Cusps F ζ hζ C R P H U) (ε : rootsOfUnity 3 F) (z : KPCuspCharts.Coordinates F)
+
+local notation "cuspLevel" => level F ζ hζ C R P H U
+
+theorem coveredPoint_eq_central :
     coveredPoint F ζ hζ C R P H U a ε z =
-      KPContSectorCoveredQuotientVocabulary.z F ζ hζ (level F ζ hζ C R P H U) ε
+      KPContSectorCoveredQuotientVocabulary.z F ζ hζ cuspLevel ε
         (coveredPoint F ζ hζ C R P H U a 1 z) := by
   simp [coveredPoint, KPContSectorCoveredQuotientVocabulary.z_mk,
     map_one]
 
-theorem coveredPoint_base (a : Cusps F ζ hζ C R P H U) (ε : rootsOfUnity 3 F)
-    (z : KPCuspCharts.Coordinates F) :
-    KPContSectorCoveredQuotientVocabulary.q F ζ hζ (level F ζ hζ C R P H U)
+theorem coveredPoint_base :
+    KPContSectorCoveredQuotientVocabulary.q F ζ hζ cuspLevel
       (coveredPoint F ζ hζ C R P H U a ε z) =
-      KPContActualCollarBuffer.chartLift F ζ hζ (level F ζ hζ C R P H U) R P H a z := by
+      KPContActualCollarBuffer.chartLift F ζ hζ cuspLevel R P H a z := by
   rw [coveredPoint_eq_central, KPContSectorCoveredQuotientVocabulary.q_z]
   simp [coveredPoint, KPContSectorCoveredQuotientVocabulary.q_mk,
     map_one, KPContActualCollarBuffer.chartLift,
     KPContSectorSmoothFramesSupport.cuspPoint, KPContFlatCuspIncomingEvaluation.atlas]
 
-theorem height_coveredPoint (a : Cusps F ζ hζ C R P H U) (ε : rootsOfUnity 3 F)
-    (z : KPCuspCharts.Coordinates F) (hz : B.τ < z.2) :
+theorem height_coveredPoint (hz : B.τ < z.2) :
     height F ζ hζ C R P H U B a (coveredPoint F ζ hζ C R P H U a ε z) = z.2 := by
   unfold height
   rw [coveredPoint_base]
   exact B.height_coordinates a z hz
 
-theorem coveredPoint_mem_end (a : Cusps F ζ hζ C R P H U) (ε : rootsOfUnity 3 F)
-    (z : KPCuspCharts.Coordinates F) (hz : B.τ < z.2) :
+theorem coveredPoint_mem_end (hz : B.τ < z.2) :
     coveredPoint F ζ hζ C R P H U a ε z ∈ ends F ζ hζ C R P H U B a := by
-  change KPContSectorCoveredQuotientVocabulary.q F ζ hζ (level F ζ hζ C R P H U)
+  change KPContSectorCoveredQuotientVocabulary.q F ζ hζ cuspLevel
     (coveredPoint F ζ hζ C R P H U a ε z) ∈
-      KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H B.τ a
+      KPContActualCollarBuffer.endSet F ζ hζ cuspLevel R P H B.τ a
   rw [coveredPoint_base, ← B.lift_range a]
   exact ⟨z, hz, rfl⟩
 
-theorem ends_pairwise_disjoint : Pairwise (fun a b => Disjoint
-    (ends F ζ hζ C R P H U B a) (ends F ζ hζ C R P H U B b)) := by
-  intro a b hab
-  exact (B.disjoint_ends hab).preimage _
+end
 
-theorem scalar_off_ends
-    (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-    (f : ℂ → S) (s : ℂ) (x : Covered F ζ hζ C R P H U)
+theorem ends_pairwise_disjoint : Pairwise (fun a b => Disjoint
+    (ends F ζ hζ C R P H U B a) (ends F ζ hζ C R P H U B b)) := fun a b hab => (B.disjoint_ends hab).preimage _
+
+section
+
+variable (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T) (f : ℂ → S) (s : ℂ)
+
+theorem scalar_off_ends (x : Covered F ζ hζ C R P H U)
     (hx : ∀ a, x ∉ ends F ζ hζ C R P H U B a) :
     cutoffScalar F ζ hζ C R P H U ι B χ f s x = 0 ∧
       commutatorScalar F ζ hζ C R P H U ι B χ f s x = 0 := by
   simp [cutoffScalar, commutatorScalar, KPCutoffSource.cutoffSum,
     KPCutoffSource.commutatorSum, hx]
 
-theorem cutoffScalar_tail
-    (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-    (f : ℂ → S) (s : ℂ) (a : Cusps F ζ hζ C R P H U)
+theorem cutoffScalar_tail (a : Cusps F ζ hζ C R P H U)
     (x : Covered F ζ hζ C R P H U) (hx : x ∈ ends F ζ hζ C R P H U B a)
     (ht : T + 1 ≤ height F ζ hζ C R P H U B a x) :
     cutoffScalar F ζ hζ C R P H U ι B χ f s x =
-      incomingRealization F ζ hζ C R P H U ι B s (f s) x := by
-  exact KPCutoffSource.cutoffSum_at_every_cusp _
+      incomingRealization F ζ hζ C R P H U ι B s (f s) x := KPCutoffSource.cutoffSum_at_every_cusp _
     (ends_pairwise_disjoint F ζ hζ C R P H U B) _ χ _ f a s x hx ht
+
+end
 
 private theorem multiplier_zero_off_collar (d : ℕ) (χ : KPCutoffSource.SmoothCuspCutoff T)
     (s : ℂ) (t : ℝ) (ht : t ∉ Set.Icc T (T + 1)) :
     KPCutoffSource.incomingCommutatorMultiplier d χ.toFun s t = 0 := by
-  have hw := Function.support_subset_iff'.mp
-    (subset_trans subset_closure (KPCutoffSource.incoming_commutator_support d χ s 1)) t ht
-  simpa [KPIncomingCasimir.heightFactor, Complex.exp_ne_zero] using hw
+  simpa [KPIncomingCasimir.heightFactor, Complex.exp_ne_zero] using (Function.support_subset_iff'.mp
+    (subset_trans subset_closure (KPCutoffSource.incoming_commutator_support d χ s 1)) t ht)
 
 theorem commutatorScalar_covered_support
     (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
@@ -142,10 +154,13 @@ theorem commutatorScalar_covered_support
     rw [multiplier_zero_off_collar _ (χ a) s _ ht, zero_mul]
   · rfl
 
-theorem cutoffScalar_on_end
-    (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-    (f : ℂ → S) (s : ℂ) (a : Cusps F ζ hζ C R P H U)
-    (x : Covered F ζ hζ C R P H U) (hx : x ∈ ends F ζ hζ C R P H U B a) :
+section
+
+variable (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T) (f : ℂ → S) (s : ℂ)
+    (a : Cusps F ζ hζ C R P H U) (x : Covered F ζ hζ C R P H U) (hx : x ∈ ends F ζ hζ C R P H U B a)
+
+include hx in
+theorem cutoffScalar_on_end :
     cutoffScalar F ζ hζ C R P H U ι B χ f s x =
       ((χ a).toFun (height F ζ hζ C R P H U B a x) : ℂ) *
         incomingRealization F ζ hζ C R P H U ι B s (f s) x := by
@@ -158,10 +173,8 @@ theorem cutoffScalar_on_end
     simp [hb]
   · simp
 
-theorem commutatorScalar_on_end
-    (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-    (f : ℂ → S) (s : ℂ) (a : Cusps F ζ hζ C R P H U)
-    (x : Covered F ζ hζ C R P H U) (hx : x ∈ ends F ζ hζ C R P H U B a) :
+include hx in
+theorem commutatorScalar_on_end :
     commutatorScalar F ζ hζ C R P H U ι B χ f s x =
       KPCutoffSource.incomingCommutatorMultiplier (Module.finrank ℚ F / 2)
         (χ a).toFun s (height F ζ hζ C R P H U B a x) *
@@ -175,6 +188,8 @@ theorem commutatorScalar_on_end
     simp [hb]
   · simp
 
+end
+
 theorem endLift_iff_mem_end (x : Covered F ζ hζ C R P H U) :
     Nonempty (EndLift F ζ hζ C R P H U B x) ↔
       ∃ a, x ∈ ends F ζ hζ C R P H U B a := by
@@ -184,14 +199,14 @@ theorem endLift_iff_mem_end (x : Covered F ζ hζ C R P H U) :
       l.cusp l.sheet l.coordinates l.high
     rw [l.point] at hl
     exact ⟨l.cusp, hl⟩
+  let level₀ := level F ζ hζ C R P H U
   · rintro ⟨a, hx⟩
-    change KPContSectorCoveredQuotientVocabulary.q F ζ hζ (level F ζ hζ C R P H U) x ∈
-      KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H B.τ a at hx
+    change KPContSectorCoveredQuotientVocabulary.q F ζ hζ (level₀) x ∈
+      KPContActualCollarBuffer.endSet F ζ hζ (level₀) R P H B.τ a at hx
     rw [← B.lift_range a] at hx
     obtain ⟨z, hz, he⟩ := hx
-    have hq := (coveredPoint_base F ζ hζ C R P H U a 1 z).trans he
     obtain ⟨ε, hε⟩ := (KPContSectorQuotientRelationsComparison.q_eq_iff F ζ hζ
-      (level F ζ hζ C R P H U) _ x).mp hq
+      (level₀) _ x).mp ((coveredPoint_base F ζ hζ C R P H U a 1 z).trans he)
     refine ⟨⟨a, ε, z, hz, ?_⟩⟩
     exact (coveredPoint_eq_central F ζ hζ C R P H U a ε z).trans hε.symm
 
@@ -219,12 +234,11 @@ theorem incomingRealization_eq_of_transport (s : ℂ) (v : S)
       (coveredPoint F ζ hζ C R P H U a ε z) =
         (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ ε : ℂ) *
           incomingValue F ζ hζ C R P H U ι a s v z := by
-  let m : EndLift F ζ hζ C R P H U B (coveredPoint F ζ hζ C R P H U a ε z) :=
+  let EndLift₀ := EndLift F ζ hζ C R P H U B (coveredPoint F ζ hζ C R P H U a ε z)
+  let m : EndLift₀ :=
     ⟨a, ε, z, hz, rfl⟩
-  have hm : Nonempty (EndLift F ζ hζ C R P H U B
-      (coveredPoint F ζ hζ C R P H U a ε z)) := ⟨m⟩
-  change (if h : Nonempty (EndLift F ζ hζ C R P H U B
-      (coveredPoint F ζ hζ C R P H U a ε z)) then _ else _) = _
+  have hm : Nonempty (EndLift₀) := ⟨m⟩
+  change (if h : Nonempty (EndLift₀) then _ else _) = _
   rw [dif_pos hm]
   exact htransport _ (Classical.choice hm) m
 
@@ -234,22 +248,26 @@ theorem scalar_coveredPoint (w : SmoothSections F ζ hζ C R P H U)
     scalar F ζ hζ C R P H U w (coveredPoint F ζ hζ C R P H U a ε z) =
       (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ ε : ℂ) *
         frameValue F ζ hζ C R P H U w a z := by
+  let level₀ := level F ζ hζ C R P H U
   let g := ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ
-    (level F ζ hζ C R P H U) R P H).symm w).val
+    (level₀) R P H).symm w).val
   have hg : KPContSectorScalarLineAlgebra.S F ζ hζ
-      (level F ζ hζ C R P H U) R P H g = w.val := by
+      (level₀) R P H g = w.val := by
     exact congrArg Subtype.val ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ
-      (level F ζ hζ C R P H U) R P H).apply_symm_apply w)
+      (level₀) R P H).apply_symm_apply w)
   have he := KPContSectorSmoothFramesSupport.phase_lift_formula F ζ hζ
-    (level F ζ hζ C R P H U) R P H g a.1 ε
+    (level₀) R P H g a.1 ε
     (KPContSectorSmoothFramesSupport.cuspPoint F ζ hζ
-      (level F ζ hζ C R P H U) R P H a.1 a.2 z)
+      (level₀) R P H a.1 a.2 z)
   rw [hg] at he
   exact he
 
+section
+
+variable (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T) (f : ℂ → S) (s : ℂ)
+    (w : SmoothSections F ζ hζ C R P H U)
+
 theorem cutoff_sheet_of_incoming
-    (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-    (f : ℂ → S) (s : ℂ) (w : SmoothSections F ζ hζ C R P H U)
     (hw : scalar F ζ hζ C R P H U w = cutoffScalar F ζ hζ C R P H U ι B χ f s)
     (a : Cusps F ζ hζ C R P H U) (ε : rootsOfUnity 3 F)
     (z : KPCuspCharts.Coordinates F) (hz : B.τ < z.2)
@@ -266,8 +284,6 @@ theorem cutoff_sheet_of_incoming
   ring
 
 theorem commutator_sheet_of_incoming
-    (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-    (f : ℂ → S) (s : ℂ) (w : SmoothSections F ζ hζ C R P H U)
     (hw : scalar F ζ hζ C R P H U w = commutatorScalar F ζ hζ C R P H U ι B χ f s)
     (a : Cusps F ζ hζ C R P H U) (ε : rootsOfUnity 3 F)
     (z : KPCuspCharts.Coordinates F) (hz : B.τ < z.2)
@@ -285,8 +301,6 @@ theorem commutator_sheet_of_incoming
   ring
 
 theorem cutoff_frame_of_incoming
-    (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-    (f : ℂ → S) (s : ℂ) (w : SmoothSections F ζ hζ C R P H U)
     (hw : scalar F ζ hζ C R P H U w = cutoffScalar F ζ hζ C R P H U ι B χ f s)
     (a : Cusps F ζ hζ C R P H U) (z : KPCuspCharts.Coordinates F) (hz : B.τ < z.2)
     (hin : incomingRealization F ζ hζ C R P H U ι B s (f s)
@@ -300,8 +314,6 @@ theorem cutoff_frame_of_incoming
   simpa using h
 
 theorem commutator_frame_of_incoming
-    (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-    (f : ℂ → S) (s : ℂ) (w : SmoothSections F ζ hζ C R P H U)
     (hw : scalar F ζ hζ C R P H U w = commutatorScalar F ζ hζ C R P H U ι B χ f s)
     (a : Cusps F ζ hζ C R P H U) (z : KPCuspCharts.Coordinates F) (hz : B.τ < z.2)
     (hin : incomingRealization F ζ hζ C R P H U ι B s (f s)
@@ -316,24 +328,24 @@ theorem commutator_frame_of_incoming
   simpa using h
 
 theorem section_support_of_commutator_formula
-    (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-    (f : ℂ → S) (s : ℂ) (w : SmoothSections F ζ hζ C R P H U)
     (hw : scalar F ζ hζ C R P H U w = commutatorScalar F ζ hζ C R P H U ι B χ f s) :
     tsupport (KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ
       (level F ζ hζ C R P H U) R P H w.val) ⊆
       KPContActualCollarBuffer.collars F ζ hζ (level F ζ hζ C R P H U) R P H B.τ T := by
+  let level₀ := level F ζ hζ C R P H U
   let g := ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ
-    (level F ζ hζ C R P H U) R P H).symm w).val
+    (level₀) R P H).symm w).val
   have hg : KPContSectorScalarLineAlgebra.S F ζ hζ
-      (level F ζ hζ C R P H U) R P H g = w.val := by
+      (level₀) R P H g = w.val := by
     exact congrArg Subtype.val ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ
-      (level F ζ hζ C R P H U) R P H).apply_symm_apply w)
+      (level₀) R P H).apply_symm_apply w)
   rw [← hg, KPContSectorSmoothFramesSupport.tsupport_sectionNorm]
   rintro x ⟨y, hy, rfl⟩
-  have hy' : y ∈ tsupport (commutatorScalar F ζ hζ C R P H U ι B χ f s) := by
+  exact commutatorScalar_covered_support F ζ hζ C R P H U ι B χ f s (by
     change y ∈ tsupport (scalar F ζ hζ C R P H U w) at hy
-    rwa [hw] at hy
-  exact commutatorScalar_covered_support F ζ hζ C R P H U ι B χ f s hy'
+    rwa [hw] at hy)
+
+end
 
 def LiftCovariance (w : SmoothSections F ζ hζ C R P H U) : Prop :=
   (∀ (g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) (ε : rootsOfUnity 3 F),
@@ -369,8 +381,7 @@ private theorem split_cover (g : KPSmoothLocalQuotientCharts.ActualCover F ζ h�
 private theorem central_comm_cover (ε : rootsOfUnity 3 F)
     (g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) :
     KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * g =
-      g * KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε := by
-  exact (Subgroup.mem_center_iff.mp
+      g * KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε := (Subgroup.mem_center_iff.mp
     (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩) g).symm
 
 theorem lift_covariance (w : SmoothSections F ζ hζ C R P H U) :
@@ -427,28 +438,26 @@ theorem lift_covariance (w : SmoothSections F ζ hζ C R P H U) :
 
 private theorem deriv_zero_below {A : ℝ} (φ : ℝ → ℝ)
     (hzero : ∀ t, t ≤ A → φ t = 0) (t : ℝ) (ht : t ≤ A) : deriv φ t = 0 := by
-  have hc : HasDerivWithinAt φ 0 (Set.Iic t) t :=
-    (hasDerivWithinAt_const t (Set.Iic t) (0 : ℝ)).congr
-      (fun x hx => hzero x (le_trans hx ht)) (hzero t ht)
-  exact hc.deriv_eq_zero (uniqueDiffWithinAt_Iic t)
+  exact ((hasDerivWithinAt_const t (Set.Iic t) (0 : ℝ)).congr
+    (fun x hx => hzero x (le_trans hx ht)) (hzero t ht)).deriv_eq_zero (uniqueDiffWithinAt_Iic t)
 
-private theorem incoming_multiplier_smooth (d : ℕ)
-    (χ : KPCutoffSource.SmoothCuspCutoff T) (s : ℂ) :
+section
+
+variable (d : ℕ) (χ : KPCutoffSource.SmoothCuspCutoff T) (s : ℂ)
+
+private theorem incoming_multiplier_smooth :
     ContDiff ℝ (⊤ : ℕ∞) (KPCutoffSource.incomingCommutatorMultiplier d χ.toFun s) := by
   have h₁ := (contDiff_infty_iff_deriv.mp χ.smooth).2
-  have h₂ := (contDiff_infty_iff_deriv.mp h₁).2
   have hc₁ := Complex.ofRealCLM.contDiff.comp h₁
-  have hc₂ := Complex.ofRealCLM.contDiff.comp h₂
-  exact ((contDiff_const.mul hc₂).add (contDiff_const.mul hc₁)).sub
+  exact ((contDiff_const.mul (Complex.ofRealCLM.contDiff.comp ((contDiff_infty_iff_deriv.mp h₁).2))).add (contDiff_const.mul hc₁)).sub
     (contDiff_const.mul hc₁)
 
-private theorem incoming_multiplier_zero_below (d : ℕ)
-    (χ : KPCutoffSource.SmoothCuspCutoff T) (s : ℂ) (t : ℝ) (ht : t ≤ T) :
+private theorem incoming_multiplier_zero_below (t : ℝ) (ht : t ≤ T) :
     KPCutoffSource.incomingCommutatorMultiplier d χ.toFun s t = 0 := by
-  have h₁ := deriv_zero_below χ.toFun χ.zero_below t ht
-  have h₂ := deriv_zero_below (deriv χ.toFun)
-    (deriv_zero_below χ.toFun χ.zero_below) t ht
-  simp [KPCutoffSource.incomingCommutatorMultiplier, h₁, h₂]
+  simp [KPCutoffSource.incomingCommutatorMultiplier, (deriv_zero_below χ.toFun χ.zero_below t ht), (deriv_zero_below (deriv χ.toFun)
+    (deriv_zero_below χ.toFun χ.zero_below) t ht)]
+
+end
 
 private theorem incoming_sum_smooth_section (s : ℂ)
     (hs : s ∈ KPContinuation.spectralDomain) (v : S)
@@ -503,29 +512,6 @@ structure Descent (Ω : Set ℂ) (f : ℂ → S)
   commutator_formula : ∀ s ∈ Ω, scalar F ζ hζ C R P H U (commutator s) =
     commutatorScalar F ζ hζ C R P H U ι B χ f s
 
-  cutoff_lift : ∀ s ∈ Ω, ∀ x,
-    lift F ζ hζ C R P H U (cutoff s) x =
-      KPCutoffSource.cutoffSum (ends F ζ hζ C R P H U B) (height F ζ hζ C R P H U B)
-        (fun a => (χ a).toFun) (incomingRealization F ζ hζ C R P H U ι B) f s
-        (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ (level F ζ hζ C R P H U) x)
-  commutator_lift : ∀ s ∈ Ω, ∀ x,
-    lift F ζ hζ C R P H U (commutator s) x =
-      KPCutoffSource.commutatorSum (Module.finrank ℚ F / 2)
-        (ends F ζ hζ C R P H U B) (height F ζ hζ C R P H U B)
-        (fun a => (χ a).toFun) (incomingRealization F ζ hζ C R P H U ι B) f s
-        (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ (level F ζ hζ C R P H U) x)
-
-  incoming_lift_formula : ∀ s ∈ Ω, ∀ (v : S) a ε z, B.τ < z.2 →
-    incomingRealization F ζ hζ C R P H U ι B s v
-      (coveredPoint F ζ hζ C R P H U a ε z) =
-        (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ ε : ℂ) *
-          incomingValue F ζ hζ C R P H U ι a s v z
-  incoming_height_formula : ∀ (s : ℂ) (hs : s ∈ Ω) (hΩ : Ω ⊆ KPContinuation.spectralDomain)
-      (v : S) a z,
-    incomingValue F ζ hζ C R P H U ι a s v z =
-      KPIncomingCasimir.heightFactor (Module.finrank ℚ F / 2) s z.2 *
-        ((KPContFlatCuspIncomingEvaluation.b F ζ hζ C R P H U a ι s (hΩ hs) v).val
-          z.1.2).val (QuotientAddGroup.mk z.1.1)
   cutoff_frame : ∀ s ∈ Ω, ∀ a z, B.τ < z.2 →
     frameValue F ζ hζ C R P H U (cutoff s) a z =
       ((χ a).toFun z.2 : ℂ) * incomingValue F ζ hζ C R P H U ι a s (f s) z
@@ -533,17 +519,6 @@ structure Descent (Ω : Set ℂ) (f : ℂ → S)
     frameValue F ζ hζ C R P H U (commutator s) a z =
       KPCutoffSource.incomingCommutatorMultiplier (Module.finrank ℚ F / 2)
         (χ a).toFun s z.2 * incomingValue F ζ hζ C R P H U ι a s (f s) z
-  cutoff_sheet : ∀ s ∈ Ω, ∀ a ε z, B.τ < z.2 →
-    scalar F ζ hζ C R P H U (cutoff s) (coveredPoint F ζ hζ C R P H U a ε z) =
-      (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ ε : ℂ) *
-        (((χ a).toFun z.2 : ℂ) * incomingValue F ζ hζ C R P H U ι a s (f s) z)
-  commutator_sheet : ∀ s ∈ Ω, ∀ a ε z, B.τ < z.2 →
-    scalar F ζ hζ C R P H U (commutator s) (coveredPoint F ζ hζ C R P H U a ε z) =
-      (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ ε : ℂ) *
-        (KPCutoffSource.incomingCommutatorMultiplier (Module.finrank ℚ F / 2)
-          (χ a).toFun s z.2 * incomingValue F ζ hζ C R P H U ι a s (f s) z)
-  covariance : ∀ s ∈ Ω, LiftCovariance F ζ hζ C R P H U (cutoff s) ∧
-    LiftCovariance F ζ hζ C R P H U (commutator s)
   off_ends : ∀ s ∈ Ω, ∀ x, (∀ a, x ∉ ends F ζ hζ C R P H U B a) →
     scalar F ζ hζ C R P H U (cutoff s) x = 0 ∧
       scalar F ζ hζ C R P H U (commutator s) x = 0
@@ -553,13 +528,6 @@ structure Descent (Ω : Set ℂ) (f : ℂ → S)
         KPContActualCollarBuffer.collars F ζ hζ (level F ζ hζ C R P H U) R P H B.τ T
   covered_support : ∀ s ∈ Ω, tsupport (scalar F ζ hζ C R P H U (commutator s)) ⊆
     KPContActualCollarBuffer.coveredCollars F ζ hζ (level F ζ hζ C R P H U) R P H B.τ T
-  tail : ∀ s ∈ Ω, ∀ a x, x ∈ ends F ζ hζ C R P H U B a →
-    T + 1 ≤ height F ζ hζ C R P H U B a x →
-      scalar F ζ hζ C R P H U (cutoff s) x =
-        incomingRealization F ζ hζ C R P H U ι B s (f s) x
-  tail_frame : ∀ s ∈ Ω, ∀ a z, B.τ < z.2 → T + 1 ≤ z.2 →
-    frameValue F ζ hζ C R P H U (cutoff s) a z =
-      incomingValue F ζ hζ C R P H U ι a s (f s) z
 
 end DedekindZetaZeroFree.KPContActualCutoffSmoothDescent
 
@@ -579,7 +547,6 @@ theorem kp_cont_actual_cutoff_smooth_descent
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
     (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (hι : Function.Injective ι)
-    (_hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (Ω : Set ℂ) (hΩ : Ω ⊆ KPContinuation.spectralDomain)
     (f : ℂ → S) (hf : DifferentiableOn ℂ f Ω)
     (χ : KPContActualCutoffSmoothDescent.Cusps F ζ hζ C R P H U →
@@ -631,42 +598,16 @@ theorem kp_cont_actual_cutoff_smooth_descent
     commutator := commutator
     cutoff_formula := hc
     commutator_formula := hm
-    cutoff_lift := ?_
-    commutator_lift := ?_
-    incoming_lift_formula := hin
-    incoming_height_formula := ?_
     cutoff_frame := hcf
     commutator_frame := ?_
-    cutoff_sheet := ?_
-    commutator_sheet := ?_
-    covariance := ?_
     off_ends := ?_
     support := ?_
     covered_support := ?_
-    tail := ?_
-    tail_frame := ?_ }⟩
-  · intro s hs x
-    exact congrFun (hc s hs) _
-  · intro s hs x
-    exact congrFun (hm s hs) _
-  · intro s hs hΩ' v a z
-    exact KPContActualCutoffSmoothDescent.incomingValue_height_formula
-      F ζ hζ C R P H U ι a s (hΩ' hs) v z
+     }⟩
   · intro s hs a z hz
     exact KPContActualCutoffSmoothDescent.commutator_frame_of_incoming
       F ζ hζ C R P H U ι B χ f s (commutator s) (hm s hs) a z hz
       (by simpa using hin s hs (f s) a 1 z hz)
-  · intro s hs a ε z hz
-    exact KPContActualCutoffSmoothDescent.cutoff_sheet_of_incoming
-      F ζ hζ C R P H U ι B χ f s (cutoff s) (hc s hs) a ε z hz
-      (hin s hs (f s) a ε z hz)
-  · intro s hs a ε z hz
-    exact KPContActualCutoffSmoothDescent.commutator_sheet_of_incoming
-      F ζ hζ C R P H U ι B χ f s (commutator s) (hm s hs) a ε z hz
-      (hin s hs (f s) a ε z hz)
-  · intro s hs
-    exact ⟨KPContActualCutoffSmoothDescent.lift_covariance F ζ hζ C R P H U (cutoff s),
-      KPContActualCutoffSmoothDescent.lift_covariance F ζ hζ C R P H U (commutator s)⟩
   · intro s hs x hx
     rw [hc s hs, hm s hs]
     exact KPContActualCutoffSmoothDescent.scalar_off_ends F ζ hζ C R P H U ι B χ f s x hx
@@ -677,12 +618,6 @@ theorem kp_cont_actual_cutoff_smooth_descent
     rw [hm s hs]
     exact KPContActualCutoffSmoothDescent.commutatorScalar_covered_support
       F ζ hζ C R P H U ι B χ f s
-  · intro s hs a x hx ht
-    rw [hc s hs]
-    exact KPContActualCutoffSmoothDescent.cutoffScalar_tail
-      F ζ hζ C R P H U ι B χ f s a x hx ht
-  · intro s hs a z hz ht
-    rw [hcf s hs a z hz, (χ a).one_above z.2 ht, Complex.ofReal_one, one_mul]
 
 end DedekindZetaZeroFree
 

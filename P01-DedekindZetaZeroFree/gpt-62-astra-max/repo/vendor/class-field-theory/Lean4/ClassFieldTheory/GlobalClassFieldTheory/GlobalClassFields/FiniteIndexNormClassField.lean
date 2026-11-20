@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -47,13 +43,15 @@ open GlobalClassFieldTheory.ClassFieldAxiom
 
 variable {K : Type} [Field K] [NumberField K]
 
+section
+
+variable (H : Subgroup (IdeleClassGroup K)) [H.FiniteIndex]
+
 /-- The Kummer exponent attached to a closed finite-index idele-class
 subgroup.  A proper subgroup uses its exact index.  The top subgroup uses
 exponent two, so the same concrete finite Galois construction also covers
 the trivial class field case. -/
-noncomputable def closedFiniteIndexNormExponent
-    (H : Subgroup (IdeleClassGroup K))
-    [H.FiniteIndex] :
+noncomputable def closedFiniteIndexNormExponent :
     ℕ+ :=
   if H = ⊤ then 2
   else
@@ -62,8 +60,6 @@ noncomputable def closedFiniteIndexNormExponent
 
 /-- For a proper finite-index subgroup, its norm exponent is its index. -/
 theorem closedFiniteIndexNormExponent_eq_index
-    (H : Subgroup (IdeleClassGroup K))
-    [H.FiniteIndex]
     (hH : H ≠ ⊤) :
     closedFiniteIndexNormExponent (K := K) H =
       ⟨H.index,
@@ -76,25 +72,21 @@ theorem closedFiniteIndexNormExponent_eq_index
 
 /-- The Kummer exponent attached to a finite-index subgroup is always
 strictly larger than one. -/
-theorem one_lt_closedFiniteIndexNormExponent
-    (H : Subgroup (IdeleClassGroup K))
-    [H.FiniteIndex] :
+theorem one_lt_closedFiniteIndexNormExponent :
     1 < (closedFiniteIndexNormExponent (K := K) H : ℕ) := by
   by_cases hH : H = ⊤
-  · have hexponent : closedFiniteIndexNormExponent (K := K) H = (2 : ℕ+) := by
+  · have hexponent : closedFiniteIndexNormExponent H = (2 : ℕ+) := by
       change
         (if H = ⊤ then (2 : ℕ+) else
           H.index.toPNat (Nat.pos_of_ne_zero Subgroup.FiniteIndex.index_ne_zero)) =
           (2 : ℕ+)
       exact ite_eq_left hH
-    have hvalue : (closedFiniteIndexNormExponent (K := K) H : ℕ) = 2 :=
-      congrArg PNat.val hexponent
-    rw [hvalue]
+    rw [(congrArg PNat.val hexponent)]
     decide
-  · have hindex : (closedFiniteIndexNormExponent (K := K) H : ℕ) = H.index :=
-      congrArg PNat.val (closedFiniteIndexNormExponent_eq_index (K := K) H hH)
-    rw [hindex]
+  · rw [(congrArg PNat.val (closedFiniteIndexNormExponent_eq_index H hH))]
     exact Subgroup.one_lt_index_of_ne_top hH
+
+end
 
 /-- The finite seed used in the norm-neighbourhood construction is the
 support of the canonical ray modulus whose congruence subgroup lies in
@@ -128,7 +120,7 @@ noncomputable instance
   unfold closedFiniteIndexNormCyclotomicField
   exact
     CyclotomicField.isCyclotomicExtension
-      (closedFiniteIndexNormExponent (K := K) H : ℕ) K
+      (closedFiniteIndexNormExponent H : ℕ) K
 
 noncomputable instance
     closedFiniteIndexNormCyclotomicFieldFiniteDimensional
@@ -175,8 +167,8 @@ noncomputable instance closedFiniteIndexNormKummerFieldFiniteDimensional
     closedFiniteIndexNormKummerField
   exact
     cyclotomicFullSUnitKummerExtension_finiteDimensional
-      (K := K) (closedFiniteIndexNormExponent (K := K) H)
-      (closedFiniteIndexNormSeed (K := K) H hclosed)
+       (closedFiniteIndexNormExponent H)
+      (closedFiniteIndexNormSeed H hclosed)
 
 noncomputable instance closedFiniteIndexNormKummerFieldIsGalois
     (H : Subgroup (IdeleClassGroup K))
@@ -188,8 +180,8 @@ noncomputable instance closedFiniteIndexNormKummerFieldIsGalois
     closedFiniteIndexNormKummerField
   exact
     cyclotomicFullSUnitKummerExtension_isGalois
-      (K := K) (closedFiniteIndexNormExponent (K := K) H)
-      (closedFiniteIndexNormSeed (K := K) H hclosed)
+       (closedFiniteIndexNormExponent H)
+      (closedFiniteIndexNormSeed H hclosed)
 
 noncomputable instance closedFiniteIndexNormKummerFieldNumberField
     (H : Subgroup (IdeleClassGroup K))
@@ -235,8 +227,7 @@ noncomputable instance closedFiniteIndexNormKummerFieldScalarTower
     [H.FiniteIndex] :
     IsScalarTower K
       (closedFiniteIndexNormCyclotomicField (K := K) H)
-      (closedFiniteIndexNormKummerField (K := K) H hclosed) := by
-  exact IsScalarTower.of_algebraMap_eq' rfl
+      (closedFiniteIndexNormKummerField (K := K) H hclosed) := IsScalarTower.of_algebraMap_eq' rfl
 
 noncomputable instance
     closedFiniteIndexNormKummerFieldFiniteDimensionalOverBase
@@ -275,7 +266,7 @@ noncomputable instance closedFiniteIndexNormAmbientNumberField
   unfold closedFiniteIndexNormAmbient
   exact
     finiteNormalClosure_numberField K
-      (closedFiniteIndexNormKummerField (K := K) H hclosed)
+      (closedFiniteIndexNormKummerField H hclosed)
 
 noncomputable instance closedFiniteIndexNormAmbientIsGalois
     (H : Subgroup (IdeleClassGroup K))
@@ -285,7 +276,7 @@ noncomputable instance closedFiniteIndexNormAmbientIsGalois
   unfold closedFiniteIndexNormAmbient
   exact
     finiteNormalClosure_isGalois K
-      (closedFiniteIndexNormKummerField (K := K) H hclosed)
+      (closedFiniteIndexNormKummerField H hclosed)
 
 /-- The finite normal closure of the cyclotomic full S-unit Kummer
 extension attached to a closed finite-index subgroup is an actual finite
@@ -297,45 +288,41 @@ theorem closedFiniteIndexSubgroup_has_finiteGaloisNormNeighborhood
     (_root_.ideleClassNorm K
       (closedFiniteIndexNormAmbient (K := K) H hclosed)).range ≤ H := by
   classical
-  let n := closedFiniteIndexNormExponent (K := K) H
-  let seed := closedFiniteIndexNormSeed (K := K) H hclosed
+  let n := closedFiniteIndexNormExponent H
+  let seed := closedFiniteIndexNormSeed H hclosed
   have hNormPower :
       (_root_.ideleClassNorm K
-        (closedFiniteIndexNormAmbient (K := K) H hclosed)).range ≤
+        (closedFiniteIndexNormAmbient H hclosed)).range ≤
         ideleClassPowerLocalUnitSubgroup
-          (K := K) n
-          (cyclotomicKummerNormSupport (K := K) n seed) ∅ := by
-    simpa only [n, seed, closedFiniteIndexNormAmbient,
-      closedFiniteIndexNormKummerField,
-      closedFiniteIndexNormCyclotomicField] using
+           n
+          (cyclotomicKummerNormSupport n seed) ∅ := by
+    simpa using
       (cyclotomicFullSUnitKummerFiniteNormalClosure_ideleClassNormRange_le_powerLocalUnit
-        (K := K) n
-        (one_lt_closedFiniteIndexNormExponent (K := K) H) seed)
+         n
+        (one_lt_closedFiniteIndexNormExponent H) seed)
   have hPower :
       ideleClassPowerLocalUnitSubgroup
-          (K := K) n
-          (cyclotomicKummerNormSupport (K := K) n seed) ∅ ≤
+           n
+          (cyclotomicKummerNormSupport n seed) ∅ ≤
         H := by
     by_cases hH : H = ⊤
     · simpa only [hH] using
         (le_top :
           ideleClassPowerLocalUnitSubgroup
-              (K := K) n
-              (cyclotomicKummerNormSupport (K := K) n seed) ∅ ≤
+               n
+              (cyclotomicKummerNormSupport n seed) ∅ ≤
             (⊤ : Subgroup (IdeleClassGroup K)))
     · have hSeed :
           (RayClass.modulusInsideClosedFiniteIndex H hclosed).finitePart.support ⊆
-            cyclotomicKummerNormSupport (K := K) n seed := by
+            cyclotomicKummerNormSupport n seed := by
         simpa only [seed, closedFiniteIndexNormSeed] using
           (subset_cyclotomicKummerNormSupport
             (K := K) n seed)
-      have hIndexPower :=
-        ideleClassPowerLocalUnitSubgroup_le_closedFiniteIndexSubgroup
-          (K := K) H hclosed
-          (cyclotomicKummerNormSupport (K := K) n seed) hSeed
       simpa only [n,
-        closedFiniteIndexNormExponent_eq_index (K := K) H hH
-      ] using hIndexPower
+        closedFiniteIndexNormExponent_eq_index H hH
+      ] using (ideleClassPowerLocalUnitSubgroup_le_closedFiniteIndexSubgroup
+         H hclosed
+        (cyclotomicKummerNormSupport n seed) hSeed)
   exact hNormPower.trans hPower
 
 end GlobalClassFields

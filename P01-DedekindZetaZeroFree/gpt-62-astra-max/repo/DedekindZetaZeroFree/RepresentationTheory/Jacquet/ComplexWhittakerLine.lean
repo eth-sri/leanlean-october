@@ -12,7 +12,7 @@ open NumberField KPReferenceChange.StandardComplexImage
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxActualImage
 open KPInterface.ResidueConstruction.Raw
 variable {F : Type} [Field F] [NumberField F]
-variable (A : SArithmeticData F) (w : InfinitePlace F)
+    (A : SArithmeticData F) (w : InfinitePlace F)
 
 def complexRootAction : Representation ℂ (Multiplicative (KPHilbert.Completion F (Sum.inl w)))
     (Theta frequency) :=
@@ -37,11 +37,6 @@ theorem complex_whittakerLine : KPReflectionSpec.LocalWhittakerLine (V := Theta 
       (complexRawPsi w).toAddChar.toMonoidHom =
       KPCplxWhittakerUnique.whittakerSpace frequency (character (frequency : ℂ)) := by
     ext ell
-    change (∀ t : Multiplicative (KPHilbert.Completion F (Sum.inl w)), ∀ h : Theta frequency,
-      ell (complexRootAction A w t h) = (complexRawPsi w).toAddChar t.toAdd * ell h) ↔
-      (∀ t : ℂ, ∀ h : Theta frequency,
-        ell (imageAction frequency (Matrix.ProjGenLinGroup.mk (upperUnipotent t)) h) =
-          (character (frequency : ℂ) t : ℂ) * ell h)
     constructor
     · intro hell t h
       have hx := hell (Multiplicative.ofAdd ((coordinate A w).symm t)) h

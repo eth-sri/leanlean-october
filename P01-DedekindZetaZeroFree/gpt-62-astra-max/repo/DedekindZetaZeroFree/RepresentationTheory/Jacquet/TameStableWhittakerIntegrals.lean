@@ -425,6 +425,8 @@ private theorem ball_measurable
   exact MeasurableSet.preimage (valuation (LocalField F q)).isOpen_integer.measurableSet
     (measurable_const.mul measurable_id)
 
+alias TameStableWhittakerIntegrals.ball_measurable := ball_measurable
+
 theorem integrals_stabilize_of_shell_vanishing
     (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
     (π : (LocalField F q)ˣ)
@@ -489,6 +491,8 @@ private theorem stable_unique
   exact (hr (max r r') (le_max_left _ _)).2.symm.trans
     (hr' (max r r') (le_max_right _ _)).2
 
+alias TameStableWhittakerIntegrals.stable_unique := stable_unique
+
 private theorem stable_add
     (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
     (π : (LocalField F q)ˣ) (ψ : Multiplicative (LocalField F q) →* ℂˣ)
@@ -529,65 +533,17 @@ private theorem stable_smul
   rw [he]
   exact ⟨hint.const_mul _, by rw [integral_const_mul, hval]⟩
 
-private theorem valuation_norm_le (x y : LocalField F q) :
-    valuation (LocalField F q) x ≤ valuation (LocalField F q) y ↔ ‖x‖ ≤ ‖y‖ := by
-  rw [← Valuation.Compatible.vle_iff_le]
-  change Valued.v x ≤ Valued.v y ↔ _
-  exact (Valued.toNormedField.norm_le_iff).symm
+private alias valuation_norm_le := Stabilization.valuation_norm_le
 
-private theorem expandingBall_norm (π : (LocalField F q)ˣ) (r : ℕ) (x : LocalField F q) :
-    x ∈ expandingBall F q π r ↔ ‖x‖ ≤ ‖(π : LocalField F q)‖⁻¹ ^ r := by
-  let a : LocalField F q := ((π ^ r : (LocalField F q)ˣ) : LocalField F q)⁻¹
-  have ha : a ≠ 0 := inv_ne_zero (π ^ r).ne_zero
-  have hn : ‖a‖ = ‖(π : LocalField F q)‖⁻¹ ^ r := by
-    simp [a, norm_inv, norm_pow, inv_pow]
-  have hm : ∀ y : LocalField F q, y ∈ (valuation (LocalField F q)).integer ↔ ‖y‖ ≤ 1 := by
-    intro y
-    rw [Valuation.mem_integer_iff, ← map_one (valuation (LocalField F q)), valuation_norm_le]
-    simp
-  change (∃ u : (valuation (LocalField F q)).integer, x = a * (u : LocalField F q)) ↔ _
-  rw [← hn]
-  constructor
-  · rintro ⟨u, rfl⟩
-    rw [norm_mul]
-    exact mul_le_of_le_one_right (norm_nonneg _) ((hm _).mp u.property)
-  · intro hx
-    refine ⟨⟨x / a, (hm _).mpr ?_⟩, (mul_div_cancel₀ x ha).symm⟩
-    rw [norm_div, div_le_one (norm_pos_iff.mpr ha)]
-    exact hx
+alias TameStableWhittakerIntegrals.valuation_norm_le := valuation_norm_le
 
-private theorem eventually_mem_ball (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
-    (t : LocalField F q) :
-    ∃ r₀ : ℕ, ∀ r ≥ r₀, t ∈ expandingBall F q π r := by
-  have hv : valuation (LocalField F q) (π : LocalField F q) < 1 := by
-    apply (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).toOrderIso.lt_iff_lt.mp
-    change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) <
-      IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) 1
-    rw [hπ, map_one]
-    norm_num
-  have hn : ‖(π : LocalField F q)‖ < 1 := by
-    have hh := not_le.mpr hv
-    rw [← map_one (valuation (LocalField F q)), valuation_norm_le] at hh
-    simpa using not_le.mp hh
-  have hp : 0 < ‖(π : LocalField F q)‖ := norm_pos_iff.mpr π.ne_zero
-  have ht := tendsto_pow_atTop_atTop_of_one_lt (one_lt_inv₀ hp |>.mpr hn)
-  obtain ⟨r₀, hr₀⟩ := Filter.eventually_atTop.mp (ht.eventually (Filter.eventually_ge_atTop ‖t‖))
-  exact ⟨r₀, fun r hr => (expandingBall_norm F q π r t).mpr (hr₀ r hr)⟩
+private alias expandingBall_norm := Stabilization.expandingBall_norm
 
-private theorem ball_translate (π : (LocalField F q)ˣ) (r : ℕ)
-    (t : LocalField F q) (ht : t ∈ expandingBall F q π r) :
-    (fun x => x + t) ⁻¹' expandingBall F q π r = expandingBall F q π r := by
-  ext x
-  simp only [Set.mem_preimage, expandingBall_norm] at *
-  constructor
-  · intro hx
-    have h := IsUltrametricDist.norm_add_le_max (x + t) (-t)
-    simpa using h.trans (max_le hx (by simpa using ht))
-  · intro hx
-    exact (IsUltrametricDist.norm_add_le_max x t).trans (max_le hx ht)
+alias TameStableWhittakerIntegrals.expandingBall_norm := expandingBall_norm
+
+private alias eventually_mem_ball := Stabilization.eventually_mem_ball
+
+private alias ball_translate := Stabilization.ball_translate
 
 private theorem integrand_root
     (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)

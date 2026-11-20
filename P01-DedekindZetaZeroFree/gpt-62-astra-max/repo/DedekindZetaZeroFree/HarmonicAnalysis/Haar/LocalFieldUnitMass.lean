@@ -19,8 +19,8 @@ theorem normalized_unit_complement_mass (μ : Measure K) [μ.IsAddHaarMeasure]
   letI := IsTopologicalAddGroup.rightUniformSpace K
   haveI := isUniformAddGroup_of_addCommGroup (G := K)
   let R := (valuation K).integer
-  let p : Set K := R.subtype '' (IsLocalRing.maximalIdeal R : Set R)
-  have hp : p ⊆ (R : Set K) := by
+  let p := R.subtype '' (IsLocalRing.maximalIdeal R : Set R)
+  have hp : p ⊆ R := by
     rintro x ⟨y, hy, rfl⟩
     exact y.property
   have hclosed : IsClosed p := by
@@ -32,10 +32,10 @@ theorem normalized_unit_complement_mass (μ : Measure K) [μ.IsAddHaarMeasure]
   have hpvol : μ p = (IntrinsicHaarScaling.residueCard K : ℝ≥0∞)⁻¹ := by
     rw [← one_div]
     apply (ENNReal.eq_div_iff ?_ (ENNReal.natCast_ne_top _)).mpr
-    · simpa using hm
-    · exact_mod_cast (Nat.card_pos (α := IsLocalRing.ResidueField R)).ne'
+    · exact hm
+    · exact_mod_cast (Nat.card_pos).ne'
   rw [measureReal_sdiff hp hclosed.measurableSet (by simpa [R, hμ]), measureReal_def,
-    show μ (R : Set K) = 1 from hμ, ENNReal.toReal_one]
+    show μ R = 1 from hμ, ENNReal.toReal_one]
   change 1 - (μ p).toReal = _
   rw [hpvol, ENNReal.toReal_inv, ENNReal.toReal_natCast]
 end DedekindZetaZeroFree.KPTameTransposeBaseMassSteps

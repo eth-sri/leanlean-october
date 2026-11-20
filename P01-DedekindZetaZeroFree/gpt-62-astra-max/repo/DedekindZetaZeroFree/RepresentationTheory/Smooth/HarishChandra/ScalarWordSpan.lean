@@ -10,13 +10,9 @@ noncomputable section
 open scoped Classical NumberField Topology BigOperators
 namespace DedekindZetaZeroFree.FourierContinuation.HCGeneration
 open MomentSources EisensteinSmoothGerms SharedSource
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming smooth_zero → smooth_zero
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming smooth_add → smooth_add
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming smooth_smul → smooth_smul
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming word_zero → word_zero
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 local notation "W" => KPContActualSphericalRightFieldIdentification.actualRightWord
   F R.A.zeta12 R.A.primitive_zeta12
 

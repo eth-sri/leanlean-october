@@ -25,16 +25,15 @@ theorem pushforward_le_of_orbit_multiplicity {G X Q : Type*}
     Measure.smul_apply, smul_eq_mul, Measure.map_apply hq hS,
     Measure.restrict_apply (hq hS)]
   let f : X → ℝ≥0∞ := (q ⁻¹' S ∩ C).indicator (fun _ => 1)
-  have hf : Measurable f := measurable_const.indicator ((hq hS).inter hC)
   rw [← lintegral_indicator_one ((hq hS).inter hC)]
   change (∫⁻ x, f x ∂μ) ≤ _
   rw [hD.lintegral_eq_tsum'' f]
   have hft : ∀ γ : G, AEMeasurable (fun x => f (γ • x)) (μ.restrict D) :=
-    fun γ => (hf.comp (measurable_const_smul γ)).aemeasurable
+    fun γ => ((measurable_const.indicator ((hq hS).inter hC)).comp (measurable_const_smul γ)).aemeasurable
   rw [← lintegral_tsum hft]
   calc
-    (∫⁻ x in D, ∑' γ : G, f (γ • x) ∂μ) ≤
-        ∫⁻ x in D, (q ⁻¹' S).indicator (fun _ => (N : ℝ≥0∞)) x ∂μ := by
+    _ ≤
+        ∫⁻ x in D, (q ⁻¹' S).indicator (fun _ => N) x ∂μ := by
       apply lintegral_mono
       intro x
       by_cases hx : q x ∈ S
@@ -43,16 +42,13 @@ theorem pushforward_le_of_orbit_multiplicity {G X Q : Type*}
           by_cases hc : γ • x ∈ C
           · simp [f, Set.indicator_apply, hc, hqin, hx]
           · simp [f, Set.indicator_apply, hc])).trans (hN x)
-      · have hz : ∀ γ : G, f (γ • x) = 0 := by
-          intro γ
-          exact Set.indicator_of_notMem (by
-            intro h; exact hx (hqin γ x ▸ h.1)) _
+      · have hz : ∀ γ : G, f (γ • x) = 0 := fun γ => Set.indicator_of_notMem (fun h => hx (hqin γ x ▸ h.1)) _
         simp only [hz, tsum_zero]
         exact bot_le
-    _ = (N : ℝ≥0∞) * μ (q ⁻¹' S ∩ D) := by
+    _ = N * μ (q ⁻¹' S ∩ D) := by
       rw [lintegral_indicator (hq hS), lintegral_const,
         Measure.restrict_restrict (hq hS), Measure.restrict_apply MeasurableSet.univ]
-      simp only [Set.univ_inter]
+      simp
 
 theorem compact_haar_recipe_pushforward_bound (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -73,9 +69,8 @@ theorem compact_haar_recipe_pushforward_bound (F : Type) [Field F] [NumberField 
   letI : R.adelicHaar.IsHaarMeasure := R.adelic_isHaar
   let Γ := KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ
   haveI : Countable Γ := by
-    have hd := (ActualQuotient.actual_rational_closed_discrete F ζ hζ).2
     exact (IsLindelof.countable_of_isDiscrete
-      (ActualQuotient.actual_rational_closed_discrete F ζ hζ).1.isLindelof hd).to_subtype
+      (ActualQuotient.actual_rational_closed_discrete F ζ hζ).1.isLindelof ((ActualQuotient.actual_rational_closed_discrete F ζ hζ).2)).to_subtype
   obtain ⟨N, hN⟩ :=
     KPSmoothAutomorphicEvaluation.OrbitTubeComparison.compact_orbit_indicator_bound Γ
       (ActualQuotient.actual_rational_closed_discrete F ζ hζ).1
@@ -89,7 +84,7 @@ theorem compact_haar_recipe_pushforward_bound (F : Type) [Field F] [NumberField 
   · intro γ g
     apply Quotient.sound
     apply QuotientGroup.rightRel_apply.mpr
-    change g * ((γ : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) * g)⁻¹ ∈ Γ
+    change g * (γ * g)⁻¹ ∈ Γ
     simpa only [mul_inv_rev, ← mul_assoc, mul_inv_cancel, one_mul] using Γ.inv_mem γ.property
 
 end DedekindZetaZeroFree.KPGroupChartFullTubeHaarL2

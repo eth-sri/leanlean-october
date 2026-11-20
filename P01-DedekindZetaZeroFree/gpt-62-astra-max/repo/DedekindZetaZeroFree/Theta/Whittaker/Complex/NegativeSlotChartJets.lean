@@ -16,13 +16,13 @@ open KPCplxPrincipalSeriesCharts KPCplxCharacterHaar
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 4000000
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 local notation "Raw" => KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ
 variable (s : RestrictedTensorSimple.Level (bad A P C))
-variable (x : ∀ j : s.val, Plus A P C j.val) (g : Raw)
+    (x : ∀ j : s.val, Plus A P C j.val) (g : Raw)
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
 

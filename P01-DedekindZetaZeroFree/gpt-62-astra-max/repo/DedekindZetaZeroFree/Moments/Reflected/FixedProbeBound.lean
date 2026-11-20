@@ -14,16 +14,11 @@ open MeasureTheory
 
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem norm_continuous (A : SArithmeticData F) : Continuous A.norm := by
-  unfold SArithmeticData.norm
-  fun_prop
+private alias norm_continuous := DedekindZetaZeroFree.ProbeSheet.continuous_norm
 
-private theorem normalizeShape_continuous (A : SArithmeticData F) :
-    Continuous (normalizeShape A) := by
-  exact continuous_id.div' (A.continuous_radialSection.comp
-    ((norm_continuous A).subtype_mk (norm_pos A)))
+variable (A : SArithmeticData F)
 
-private theorem localPoint_injective (A : SArithmeticData F) :
+private theorem localPoint_injective :
     Function.Injective (NormalizedProbe.asLocalPoint A) := by
   intro x y h
   apply Prod.ext
@@ -34,7 +29,7 @@ private theorem localPoint_injective (A : SArithmeticData F) :
     apply Units.ext
     exact congrFun (congrArg Prod.snd h) v
 
-private theorem scaled_row_shape (A : SArithmeticData F) (T : ℝ) (hT : 0 < T)
+private theorem scaled_row_shape (T : ℝ) (hT : 0 < T)
     (K : Set A.G) (m : ThetaReflectionData.Row A)
     (hm : m.val ∈ NormalizedProbe.scaledIntegralRows A T K) :
     ∃ k ∈ K, ActualRowTransfer.rowShape A m = normalizeShape A k ∧
@@ -51,7 +46,7 @@ private theorem scaled_row_shape (A : SArithmeticData F) (T : ℝ) (hT : 0 < T)
   have hn : A.exteriorNorm (ActualRowTransfer.rowIdeal A m) = T * A.norm k := by
     rw [← A.generator_norm (ActualRowTransfer.rowIdeal A m) m.val
       ⟨m.property, ActualRowTransfer.span_rowIdeal A m⟩
-      (ThetaReflectionData.rowUnit A m) (by rfl), hg]
+      (ThetaReflectionData.rowUnit A m) (rfl), hg]
     have hmul (x y : A.G) : A.norm (x * y) = A.norm x * A.norm y := by
       simp [SArithmeticData.norm, norm_mul, mul_pow, Finset.prod_mul_distrib,
         mul_mul_mul_comm]
@@ -60,9 +55,9 @@ private theorem scaled_row_shape (A : SArithmeticData F) (T : ℝ) (hT : 0 < T)
   unfold ActualRowTransfer.rowShape normalizeShape
   rw [hg]
   simp only [hn, A.radialSection_mul T (A.norm k) hT (norm_pos A k)]
-  simp only [mul_div_mul_left_eq_div]
+  simp
 
-private theorem integrand_eq_rows (A : SArithmeticData F)
+private theorem integrand_eq_rows
     (D : ComparisonPoissonCoefficientData F A) (P : NormalizedProbe.DomainData A)
     (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight)
     (X Y Z : ℝ) (hY : 0 < Y) (t : A.G1) (rs : Finset A.R)
@@ -75,7 +70,7 @@ private theorem integrand_eq_rows (A : SArithmeticData F)
         NormalizedProbe.rowB A D m Z := by
   classical
   let ss := (NormalizedProbe.exterior_weight_finite A W1 Y hY).toFinset
-  let c : A.Exterior → A.R → ℂ := fun s m =>
+  let c := fun s m =>
     (W1 (A.exteriorNorm s / Y) : ℂ) *
       (Real.sqrt (A.exteriorNorm s * X) : ℂ)⁻¹ * NormalizedProbe.gaussRow A D s m *
       W0 (sLocalDiagonal F A.Sf (m : F) *
@@ -109,15 +104,14 @@ private theorem integrand_eq_rows (A : SArithmeticData F)
     exact tsum_eq_sum (fun m hm => by rw [hcm s m hm, zero_mul])
   unfold NormalizedProbe.integrand
   simp_rw [hinner]
-  rw [tsum_eq_sum (s := ss) (fun s hs => by simp [hcs s hs])]
+  rw [tsum_eq_sum (fun s hs => by simp [hcs s hs])]
   rw [Finset.sum_comm, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro m hm
   unfold NormalizedProbe.additiveCoefficient
-  change _ = (Y⁻¹ : ℂ) * (∑' s, c s m) * NormalizedProbe.rowB A D m Z
-  rw [tsum_eq_sum (s := ss) (fun s hs => hcs s hs m), mul_assoc, Finset.sum_mul]
+  rw [tsum_eq_sum (fun s hs => hcs s hs m), mul_assoc, Finset.sum_mul]
 
-private theorem general_bound (A : SArithmeticData F) (σ : F →+* ℂ)
+private theorem general_bound (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : NormalizedProbe.PrincipalData A σ η hS)
     (hmoment : ∀ Kshape : Set A.G, IsCompact Kshape → ∀ Cstar : ℝ, 0 < Cstar →
@@ -138,16 +132,12 @@ private theorem general_bound (A : SArithmeticData F) (σ : F →+* ℂ)
   obtain ⟨Kbox, hKbox, hsupport⟩ := NormalizedProbe.additiveCoefficient_uniform_support A
     P.domain.domain P.domain.relativelyCompact P.W0 P.compactSupport P.supportUnits P.W1
   let Kshape := normalizeShape A '' Kbox
-  have hKshape : IsCompact Kshape := hKbox.image (normalizeShape_continuous A)
   obtain ⟨Cstar, hCstar⟩ := hKbox.exists_bound_of_continuousOn (norm_continuous A).continuousOn
   let Cnorm := max Cstar 1
-  have hCnorm : 0 < Cnorm := lt_of_lt_of_le zero_lt_one (le_max_right _ _)
-  obtain ⟨KB, hKB, hmomentB⟩ := hmoment Kshape hKshape Cnorm hCnorm (2 * ε) (by positivity)
+  obtain ⟨KB, hKB, hmomentB⟩ := hmoment Kshape (hKbox.image ((continuous_id.div' (A.continuous_radialSection.comp
+    ((norm_continuous A).subtype_mk (norm_pos A)))))) Cnorm (lt_of_lt_of_le zero_lt_one (le_max_right _ _)) (2 * ε) (by positivity)
   obtain ⟨CA, hCA, henergy⟩ := NormalizedProbe.principal_additiveCoefficient_square_energy
     A σ η hS P P.domain.domain P.domain.relativelyCompact
-  have hmass : P.domain.measure P.domain.domain < ⊤ :=
-    lt_of_le_of_lt (MeasureTheory.measure_mono subset_closure)
-      P.domain.relativelyCompact.measure_lt_top
   refine ⟨Real.sqrt (2 * CA * KB) * P.domain.measure.real P.domain.domain, by positivity, ?_⟩
   intro Z hZ
   have hZpos : 0 < Z := by linarith
@@ -171,18 +161,15 @@ private theorem general_bound (A : SArithmeticData F) (σ : F →+* ℂ)
     ring
   generalize hXg : Scales.xScale Z = X at *
   generalize hYg : Scales.yScale Z = Y at *
-  have hYt : Y = Z ^ Scales.yExponent := by rw [← hYg]; rfl
   obtain ⟨hf, hs⟩ := hsupport X Y hXpos hYpos
   let rs := hf.toFinset
-  let rows : Finset (ThetaReflectionData.Row A) := rs.subtype (fun m => m ≠ 0)
+  let rows := rs.subtype (fun m => m ≠ 0)
   have hB : (∑ m ∈ rows, ‖ThetaReflectionData.forwardB A P.coefficients m Z‖ ^ 2) ≤
       KB * Z ^ (2 * Scales.supportExponent - 1 + 2 * ε) := by
     apply hmomentB Z hZ rows
     intro m hm
-    have hmem : m.val ∈ NormalizedProbe.scaledIntegralRows A (X * Y) Kbox := by
-      exact hf.mem_toFinset.mp (Finset.mem_subtype.mp hm)
     obtain ⟨k, hk, hshape, hn⟩ := scaled_row_shape A (X * Y) (mul_pos hXpos hYpos)
-      Kbox m hmem
+      Kbox m (hf.mem_toFinset.mp (Finset.mem_subtype.mp hm))
     constructor
     · exact ⟨k, hk, hshape.symm⟩
     · rw [hn, hXY, mul_comm]
@@ -205,9 +192,8 @@ private theorem general_bound (A : SArithmeticData F) (σ : F →+* ℂ)
       ‖NormalizedProbe.integrand A P.coefficients P.domain P.W0 P.W1 X Y Z t‖ ≤
         Real.sqrt (2 * CA * KB) * Z ^ (Scales.reflectedExponent + ε) := by
     intro t ht
-    have hterm := (hs t ht).1
     rw [integrand_eq_rows A P.coefficients P.domain P.W0 P.W1 X Y Z hYpos t rs
-      (fun s m hw1 hw0 => hf.mem_toFinset.mpr (hterm s m hw1 hw0))]
+      (fun s m hw1 hw0 => hf.mem_toFinset.mpr (((hs t ht).1) s m hw1 hw0))]
     obtain ⟨hsummable, _, hsmall⟩ := henergy X Y hX hY t ht
     have hArs : (∑ m ∈ rs,
         ‖NormalizedProbe.additiveCoefficient A P.coefficients P.W0 P.W1 X Y t m‖ ^ 2) ≤
@@ -217,7 +203,7 @@ private theorem general_bound (A : SArithmeticData F) (σ : F →+* ℂ)
       _ ≤ ∑ m ∈ rs,
           ‖NormalizedProbe.additiveCoefficient A P.coefficients P.W0 P.W1 X Y t m‖ *
           ‖NormalizedProbe.rowB A P.coefficients m Z‖ := by
-        simpa only [norm_mul] using norm_sum_le rs (fun m =>
+        simpa using norm_sum_le rs (fun m =>
           NormalizedProbe.additiveCoefficient A P.coefficients P.W0 P.W1 X Y t m *
             NormalizedProbe.rowB A P.coefficients m Z)
       _ ≤ Real.sqrt (∑ m ∈ rs,
@@ -232,15 +218,11 @@ private theorem general_bound (A : SArithmeticData F) (σ : F →+* ℂ)
         rw [← Real.sqrt_mul (by positivity), key]
         have hW : Z ^ ((Scales.reflectedExponent + ε) * 2) = (Z ^ (Scales.reflectedExponent + ε)) ^ 2 := by
           rw [Real.rpow_mul hZpos.le, Real.rpow_two]
-        have hYne : Y ≠ 0 := hYpos.ne'
         rw [hW, show 2 * CA / Y * (KB * ((Z ^ (Scales.reflectedExponent + ε)) ^ 2 * Y)) =
           (2 * CA * KB) * (Z ^ (Scales.reflectedExponent + ε)) ^ 2 by field_simp]
         rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (Real.rpow_nonneg hZpos.le _)]
-  have hint := MeasureTheory.norm_setIntegral_le_of_norm_le_const hmass hpoint
-  change ‖∫ t in P.domain.domain,
-    NormalizedProbe.integrand A P.coefficients P.domain P.W0 P.W1 X Y Z t
-      ∂P.domain.measure‖ ≤ _
-  exact hint.trans_eq (by ring)
+  exact (MeasureTheory.norm_setIntegral_le_of_norm_le_const (lt_of_le_of_lt (MeasureTheory.measure_mono subset_closure)
+    P.domain.relativelyCompact.measure_lt_top) hpoint).trans_eq (by ring)
 
 end DedekindZetaZeroFree.Quantitative.ReflectedProbe
 
@@ -256,7 +238,6 @@ theorem FixedData.Iscale_bound {F : Type} [Field F] [NumberField F]
     D.recipe.traceBad D.recipe.probe
     (fun Kshape hK Cstar hCstar ε' hε' => D.moment_m₀ Kshape hK Cstar hCstar ε' hε') ε hε
   refine ⟨C + 1, by linarith, fun Z hZ => ?_⟩
-  have h2 : 0 ≤ Z ^ (Scales.reflectedExponent + ε) := Real.rpow_nonneg (by linarith) _
-  exact (hC Z hZ).trans (mul_le_mul_of_nonneg_right (by linarith) h2)
+  exact (hC Z hZ).trans (mul_le_mul_of_nonneg_right (by linarith) (Real.rpow_nonneg (by linarith) _))
 
 end DedekindZetaZeroFree.Quantitative

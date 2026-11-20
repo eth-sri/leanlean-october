@@ -17,7 +17,11 @@ open UniqueFactorizationMonoid
 
 variable {R : Type u} [CommRing R] [IsDedekindDomain R]
 
-private theorem product_eq (e : HeightOneSpectrum R →₀ ℕ) :
+section
+
+variable (e : HeightOneSpectrum R →₀ ℕ)
+
+private theorem product_eq :
     e.prod (fun p n => p.asIdeal ^ n) =
       (e.toMultiset.map HeightOneSpectrum.asIdeal).prod := by
   classical
@@ -30,7 +34,7 @@ private theorem product_eq (e : HeightOneSpectrum R →₀ ℕ) :
     rw [← Multiset.coe_mapAddMonoidHom, map_nsmul, Multiset.prod_nsmul]
     simp
 
-theorem product_nonzero (e : HeightOneSpectrum R →₀ ℕ) :
+theorem product_nonzero :
     e.prod (fun p n => p.asIdeal ^ n) ≠ (⊥ : Ideal R) := by
   rw [product_eq]
   apply Multiset.prod_ne_zero_of_prime
@@ -38,7 +42,7 @@ theorem product_nonzero (e : HeightOneSpectrum R →₀ ℕ) :
   obtain ⟨q, _, rfl⟩ := Multiset.mem_map.mp hp
   exact q.prime
 
-private theorem factors_product (e : HeightOneSpectrum R →₀ ℕ) :
+private theorem factors_product :
     normalizedFactors (e.prod (fun p n => p.asIdeal ^ n)) =
       e.toMultiset.map HeightOneSpectrum.asIdeal := by
   rw [product_eq]
@@ -47,8 +51,10 @@ private theorem factors_product (e : HeightOneSpectrum R →₀ ℕ) :
   obtain ⟨q, _, rfl⟩ := Multiset.mem_map.mp hp
   exact q.prime
 
-noncomputable def exponentProduct (e : HeightOneSpectrum R →₀ ℕ) :
+noncomputable def exponentProduct :
     {I : Ideal R // I ≠ ⊥} := ⟨e.prod (fun p n => p.asIdeal ^ n), product_nonzero e⟩
+
+end
 
 theorem exponentProduct_bijective : Function.Bijective (@exponentProduct R _ _) := by
   classical
@@ -72,26 +78,26 @@ theorem exponentProduct_bijective : Function.Bijective (@exponentProduct R _ _) 
 end Helpers
 
 noncomputable def primeExponentEquiv (R : Type u) [CommRing R] [IsDedekindDomain R] :
-    (HeightOneSpectrum R →₀ ℕ) ≃ {I : Ideal R // I ≠ ⊥} := by
-  exact Equiv.ofBijective exponentProduct exponentProduct_bijective
+    (HeightOneSpectrum R →₀ ℕ) ≃ {I : Ideal R // I ≠ ⊥} := Equiv.ofBijective exponentProduct exponentProduct_bijective
 
-theorem primeExponentEquiv_apply (R : Type u) [CommRing R] [IsDedekindDomain R]
+variable (R : Type u) [CommRing R] [IsDedekindDomain R]
+
+theorem primeExponentEquiv_apply
     (e : HeightOneSpectrum R →₀ ℕ) :
-    (primeExponentEquiv R e).val = e.prod (fun p n => p.asIdeal ^ n) := by
-  rfl
+    (primeExponentEquiv R e).val = e.prod (fun p n => p.asIdeal ^ n) := rfl
 
-theorem primeExponentEquiv_zero (R : Type u) [CommRing R] [IsDedekindDomain R] :
+theorem primeExponentEquiv_zero :
     (primeExponentEquiv R 0).val = ⊤ := by
   rw [primeExponentEquiv_apply]
   simp
 
-theorem primeExponentEquiv_single (R : Type u) [CommRing R] [IsDedekindDomain R]
+theorem primeExponentEquiv_single
     (p : HeightOneSpectrum R) (n : ℕ) :
     (primeExponentEquiv R (Finsupp.single p n)).val = p.asIdeal ^ n := by
   rw [primeExponentEquiv_apply]
   simp
 
-theorem primeExponentEquiv_add (R : Type u) [CommRing R] [IsDedekindDomain R]
+theorem primeExponentEquiv_add
     (e d : HeightOneSpectrum R →₀ ℕ) :
     (primeExponentEquiv R (e + d)).val =
       (primeExponentEquiv R e).val * (primeExponentEquiv R d).val := by

@@ -16,10 +16,10 @@ open KPLiteralScalarArchUniformBands KPAdelicCoverRestrictedProduct TensorAction
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1800000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 
@@ -28,7 +28,7 @@ theorem upper_finite_pure_near_compact
     (K : Set (InfinitePlace F → ComplexGL2)) (hK : IsCompact K)
     (r : Raw R) (hr : ∀w : InfinitePlace F,r (.inl w)=1)
     (v : RestrictedTensorSimple.Stage (Plus R N P C) s.val) :
-    ∃ A : Set (InfinitePlace F → ComplexGL2), IsCompact A ∧ K ⊆ interior A ∧
+    ∃ A : Set (InfinitePlace F → ComplexGL2), K ⊆ interior A ∧
     ∃ n : ℕ, ∃ d : Fin n → ℂ, ∃ f : Fin n → InfinitePlace F → PrincipalSeries negativeParameter,
       ∀ a ∈ A,
         (∫ u : KPAdditiveQuotient F,
@@ -49,8 +49,8 @@ theorem upper_finite_pure_near_compact
   obtain ⟨n,d,f,hf⟩ := reflected_finite_pure R N P C (fullLevel R P C E hCE)
     (by intro w; simp [fullLevel,LiteralSource.cofactorSourceLevel]) r hr
     (sourceStageQuotient R (imageData R N P C) (fullLevel R P C E hCE).val y)
-  refine ⟨A,hA,hKA,n,fun j => KPGlobalFiniteSIntertwiner.residueNormalizer F  ζ hζ E *
-    (arithmeticStageScale R (fullLevel R P C E hCE).val : ℂ) * d j,f,?_⟩
+  refine ⟨A, hKA, n, fun j => KPGlobalFiniteSIntertwiner.residueNormalizer F ζ hζ E *
+    (arithmeticStageScale R (fullLevel R P C E hCE).val : ℂ) * d j, f, ?_⟩
   intro a ha
   rw [hfactor _ ⟨a,ha,rfl⟩ v,parameterStage_zero]
   change _ * ((arithmeticStageScale R (fullLevel R P C E hCE).val : ℂ) *

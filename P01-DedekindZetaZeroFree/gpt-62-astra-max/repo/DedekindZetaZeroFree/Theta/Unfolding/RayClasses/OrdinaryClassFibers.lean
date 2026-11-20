@@ -26,13 +26,12 @@ def coprimeIdealDualKernel (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ �
     (((Ideal.absNorm a : ℝ) ^ (-(Module.finrank ℚ F : ℝ)⁻¹))⁻¹ •
       Theta.traceConjugation F (Theta.traceEmbedding F β.val)))
 
-theorem rayTheta_primal_fiber_eq_weightedIdealBlock
-    (hF : NumberField.IsTotallyComplex F)
-    (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
-    (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤)
-    (η : DedekindZetaZeroFree.RayClassCharacter F m)
-    (E : RayCharacterData F m hm η)
-    (D : RayThetaRepresentatives F m hm) (u : ℝ) (hu : 0 < u) :
+variable (hF : NumberField.IsTotallyComplex F) (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
+    (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤) (η : DedekindZetaZeroFree.RayClassCharacter F m)
+    (E : RayCharacterData F m hm η) (D : RayThetaRepresentatives F m hm) (u : ℝ) (hu : 0 < u)
+
+include hcop hu in
+theorem rayTheta_primal_fiber_eq_weightedIdealBlock :
     letI : Fintype (RayIdealClass F m hm) := Fintype.ofFinite _
     (∑ c ∈ Finset.univ.filter (fun c : RayIdealClass F m hm =>
       rayToOrdinary F m hm c = (ClassGroup.mk F
@@ -56,13 +55,8 @@ theorem rayTheta_primal_fiber_eq_weightedIdealBlock
     ← Finset.mul_sum]
   simp [Nat.cast_mul, ← mul_assoc, hd, hw]
 
-theorem rayTheta_dual_fiber_eq_residuePacketIntegral
-    (hF : NumberField.IsTotallyComplex F)
-    (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
-    (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤)
-    (η : DedekindZetaZeroFree.RayClassCharacter F m)
-    (E : RayCharacterData F m hm η)
-    (D : RayThetaRepresentatives F m hm) (u : ℝ) (hu : 0 < u) :
+include hu in
+theorem rayTheta_dual_fiber_eq_residuePacketIntegral :
     letI : Fintype (RayIdealClass F m hm) := Fintype.ofFinite _
     (∑ c ∈ Finset.univ.filter (fun c : RayIdealClass F m hm =>
       rayToOrdinary F m hm c = (ClassGroup.mk F
@@ -89,7 +83,6 @@ theorem rayTheta_dual_fiber_eq_residuePacketIntegral
     _ (by intro c; simp)]
   have hpacket := coprimeIdealResidue_dual_common_averages hF m a hm ha hcop hmt η E u hu
   simp_rw [affineResidueScale_rayIdealFractionalIdeal] at hpacket
-  change _ = _ * _ * _
   rw [show (∫ h in RayCoset.rayUnitHalfOpenDomain F m hm,
       ∑' β, coprimeIdealResiduePacket hF m a hm ha hcop hmt η E β *
         coprimeIdealDualKernel m a hm ha u h β ∂Theta.normalizedLogHaar F) =

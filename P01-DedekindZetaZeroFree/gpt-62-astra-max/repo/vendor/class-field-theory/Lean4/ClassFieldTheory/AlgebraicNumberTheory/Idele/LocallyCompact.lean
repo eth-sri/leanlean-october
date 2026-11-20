@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -32,7 +28,6 @@ open NumberField IsDedekindDomain
 
 noncomputable section
 
-
 variable (K : Type*) [Field K] [NumberField K]
 
 /-- An element integral at a finite place can be approximated by an
@@ -41,13 +36,11 @@ theorem exists_ringOfIntegers_approximation
     (v : HeightOneSpectrum (𝓞 K)) (y : K)
     (hy : v.valuation K y ≤ 1) :
     ∃ r : 𝓞 K, v.valuation K (y - algebraMap (𝓞 K) K r) < 1 := by
-  let : Field (𝓞 K ⧸ v.asIdeal) := Ideal.Quotient.field v.asIdeal
-  have hy' : y ∈ v.valuationSubringAtPrime K := by
-    rw [v.valuationSubringAtPrime_eq_valuationSubring]
-    exact hy
-  let y' : v.valuationSubringAtPrime K := ⟨y, hy'⟩
+  let := Ideal.Quotient.field v.asIdeal
+  let y' : v.valuationSubringAtPrime K := ⟨y, by
+    simp_all [v.valuationSubringAtPrime_eq_valuationSubring]⟩
   obtain ⟨⟨a, d⟩, had⟩ := IsLocalization.surj v.asIdeal.primeCompl y'
-  have hd : d.1 ∉ v.asIdeal := d.2
+  have hd := d.2
   have hdmk : Ideal.Quotient.mk v.asIdeal d.1 ≠ 0 := by
     simpa only [ne_eq, Ideal.Quotient.eq_zero_iff_mem]
   obtain ⟨r, hr⟩ := Ideal.Quotient.mk_surjective
@@ -59,18 +52,18 @@ theorem exists_ringOfIntegers_approximation
     rw [map_sub, map_mul, hr]
     field_simp
     simp
-  have hvalard :
-      v.valuation K (algebraMap (𝓞 K) K (a - r * d.1)) < 1 :=
+  have hvalard :=
     (v.valuation_lt_one_iff_mem (K := K) (a - r * d.1)).2 hard
-  have hdval : v.valuation K (algebraMap (𝓞 K) K d.1) = 1 := by
+  let algebraMap₀ := algebraMap (𝓞 K) K
+  have hdval : v.valuation K (algebraMap₀ d.1) = 1 := by
     exact le_antisymm (v.valuation_le_one d.1)
       (not_lt.mp ((v.valuation_lt_one_iff_mem (K := K) d.1).not.mpr hd))
   have hadK :
-      y * algebraMap (𝓞 K) K d.1 = algebraMap (𝓞 K) K a := by
+      y * algebraMap₀ d.1 = algebraMap₀ a := by
     exact congrArg Subtype.val had
   rw [← mul_lt_mul_iff_right₀ (show
-    0 < v.valuation K (algebraMap (𝓞 K) K d.1) by simp [hdval])]
-  rw [← map_mul, mul_sub, mul_comm _ y, hadK, mul_comm _ (algebraMap (𝓞 K) K r),
+    0 < v.valuation K (algebraMap₀ d.1) by simp [hdval])]
+  rw [← map_mul, mul_sub, mul_comm _ y, hadK, mul_comm _ (algebraMap₀ r),
     ← map_mul, ← map_sub, hdval, mul_one]
   exact hvalard
 
@@ -116,9 +109,7 @@ noncomputable def ringOfIntegersQuotientEquivAdicResidueField
       ext
       simp
   }
-  let residueMap :
-      𝓞 K →+*
-        Valued.ResidueField (v.adicCompletion K) :=
+  let residueMap :=
     (IsLocalRing.residue
       (Valued.integer
         (v.adicCompletion K))).comp integerMap
@@ -148,20 +139,18 @@ noncomputable def ringOfIntegersQuotientEquivAdicResidueField
           (algebraMap (𝓞 K) K r) from
       HeightOneSpectrum.valuedAdicCompletion_eq_valuation
         (v := v) r]
-    exact v.valuation_lt_one_iff_mem (K := K) r
+    exact v.valuation_lt_one_iff_mem r
   have hsur : Function.Surjective residueMap := by
     intro z
     obtain ⟨x, hx⟩ :=
       (IsLocalRing.residue_surjective
-        (R :=
-          Valued.integer
-            (v.adicCompletion K))) z
+        ) z
     obtain ⟨y, hy⟩ :=
       (v.denseRange_algebraMap K).exists_dist_lt
-        (x : v.adicCompletion K) zero_lt_one
+        x zero_lt_one
     have hxy :
         Valued.v
-            ((x : v.adicCompletion K) -
+            (x -
               algebraMap K
                 (v.adicCompletion K) y) < 1 := by
       rw [← Valued.toNormedField.norm_lt_one_iff]
@@ -176,8 +165,8 @@ noncomputable def ringOfIntegersQuotientEquivAdicResidueField
           (v := v) y).symm]
       rw [show
         algebraMap K (v.adicCompletion K) y =
-          (x : v.adicCompletion K) -
-            ((x : v.adicCompletion K) -
+          x -
+            (x -
               algebraMap K
                 (v.adicCompletion K) y) by
         ring]
@@ -206,14 +195,14 @@ noncomputable def ringOfIntegersQuotientEquivAdicResidueField
       exact hyr
     have hxr :
         Valued.v
-            ((x : v.adicCompletion K) -
+            (x -
               algebraMap (𝓞 K)
                 (v.adicCompletion K) r) < 1 := by
       rw [show
-        (x : v.adicCompletion K) -
+        x -
             algebraMap (𝓞 K)
               (v.adicCompletion K) r =
-          ((x : v.adicCompletion K) -
+          (x -
               algebraMap K
                 (v.adicCompletion K) y) +
             (algebraMap K
@@ -240,7 +229,7 @@ noncomputable def ringOfIntegersQuotientEquivAdicResidueField
     change
       Valued.v
           ((integerMap r : v.adicCompletion K) -
-            (x : v.adicCompletion K)) < 1
+            x) < 1
     rw [Valued.v.map_sub_swap]
     exact hxr
   exact
@@ -254,11 +243,9 @@ finite. -/
 theorem finite_adicCompletion_residueField
     (v : HeightOneSpectrum (𝓞 K)) :
     Finite (Valued.ResidueField (v.adicCompletion K)) := by
-  let : Finite (𝓞 K ⧸ v.asIdeal) :=
-    Ideal.finiteQuotientOfFreeOfNeBot v.asIdeal v.ne_bot
   exact Finite.of_equiv (𝓞 K ⧸ v.asIdeal)
     (GlobalClassFieldTheory.ClassFieldAxiom.ringOfIntegersQuotientEquivAdicResidueField
-      (K := K) v).toEquiv
+       v).toEquiv
 
 /-- Every nonarchimedean completion of a number field is a proper metric
 space. -/
@@ -278,9 +265,6 @@ theorem isCompact_finiteLocalUnits
       ((v.adicCompletionIntegers K).units :
         Set (v.adicCompletion K)ˣ) := by
   apply Submonoid.units_isCompact
-  change IsCompact
-    ((Valued.integer (v.adicCompletion K)) :
-      Set (v.adicCompletion K))
   exact isCompact_iff_compactSpace.mpr
     (Valued.integer.properSpace_iff_compactSpace_integer.mp inferInstance)
 

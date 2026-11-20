@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -73,8 +67,8 @@ noncomputable def chosenPadicModuleContinuousAddEquivZModProdFinPi
   have hliftExists : ∃ lift : Q →ₗ[ℤ_[p]] M,
       q.comp lift = LinearMap.id :=
     Module.projective_lifting_property q LinearMap.id T.mkQ_surjective
-  let lift : Q →ₗ[ℤ_[p]] M := Classical.choose hliftExists
-  have hlift : q.comp lift = LinearMap.id := Classical.choose_spec hliftExists
+  let lift := Classical.choose hliftExists
+  have hlift := Classical.choose_spec hliftExists
   have hexact : LinearMap.range T.subtype = LinearMap.ker q := by
     change LinearMap.range T.subtype = LinearMap.ker T.mkQ
     rw [Submodule.range_subtype, Submodule.ker_mkQ]

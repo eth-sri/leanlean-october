@@ -16,24 +16,22 @@ open DedekindZetaZeroFree.Quantitative.RawFixed DedekindZetaZeroFree.Quantitativ
 open scoped Classical Topology
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
 private theorem vertical_norm_le' (G : ℂ → ℂ) (x A B : ℝ) (hB : 1 < B)
     (h : ∀ t : ℝ, ‖G ((x : ℂ) + (t : ℂ) * Complex.I)‖ ≤ A * (1 + |t|) ^ (-B)) :
     ‖comparisonVerticalIntegral x G‖ ≤
       (2 * Real.pi)⁻¹ * (A * ∫ t : ℝ, (1 + |t|) ^ (-B)) := by
-  have hI : Integrable (fun t : ℝ => (1 + |t|) ^ (-B)) volume :=
-    KernelWeightIntegration.one_add_abs_rpow_integrable B hB
   have hpi : (0 : ℝ) ≤ (2 * Real.pi)⁻¹ := by positivity
   unfold comparisonVerticalIntegral
   have h2 : ((2 * (Real.pi : ℂ))⁻¹) = (((2 * Real.pi)⁻¹ : ℝ) : ℂ) := by push_cast; ring
   rw [h2, norm_mul, Complex.norm_real, Real.norm_of_nonneg hpi]
   apply mul_le_mul_of_nonneg_left _ hpi
-  calc ‖∫ t : ℝ, G ((x : ℂ) + (t : ℂ) * Complex.I)‖
+  calc _
       ≤ ∫ t : ℝ, ‖G ((x : ℂ) + (t : ℂ) * Complex.I)‖ := norm_integral_le_integral_norm _
     _ ≤ ∫ t : ℝ, A * (1 + |t|) ^ (-B) := integral_mono_of_nonneg
-          (Filter.Eventually.of_forall fun t => norm_nonneg _) (hI.const_mul A)
+          (Filter.Eventually.of_forall fun t => norm_nonneg _) ((KernelWeightIntegration.one_add_abs_rpow_integrable B hB).const_mul A)
           (Filter.Eventually.of_forall fun t => h t)
     _ = A * ∫ t : ℝ, (1 + |t|) ^ (-B) := integral_const_mul _ _
 
@@ -58,8 +56,6 @@ private theorem rawKernel_cont_heights (u : Frequency D.recipe)
     (hξ : ξ.re = Scales.rightLine) :
     Continuous (fun p : ℝ × ℝ => rawKernel D u ξ
       ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I) ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I) Z) := by
-  have hmem := hmem_omega
-  have hz6 : (1 / 6 : ℝ) < Scales.zLine := by unfold Scales.zLine; norm_num
   obtain ⟨t0, rfl⟩ : ∃ t0 : ℝ, ξ = ((Scales.rightLine : ℝ) : ℂ) + (t0 : ℂ) * Complex.I :=
     ⟨ξ.im, by apply Complex.ext <;> simp [hξ]⟩
   have hc : Continuous (fun t : ℝ × ℝ × ℝ => rawKernel D u
@@ -68,7 +64,7 @@ private theorem rawKernel_cont_heights (u : Frequency D.recipe)
       (((Scales.zLine : ℝ) : ℂ) + (t.2.2 : ℂ) * Complex.I) Z) := by
     rw [continuous_iff_continuousAt]
     intro t
-    exact RawKernelRegularity31.rawKernel_continuousAt_heights D u hu Z hZ _ _ _ hmem hz6 t
+    exact RawKernelRegularity31.rawKernel_continuousAt_heights D u hu Z hZ _ _ _ hmem_omega (by unfold Scales.zLine; norm_num) t
       (minus_ne_x1 D u hu _ (by simp))
   have hg : Continuous (fun p : ℝ × ℝ => (t0, p.2, p.1)) := by fun_prop
   have hcomp := hc.comp hg
@@ -83,11 +79,8 @@ private theorem triple_bound_of_majorant (k : ℝ) (hk : 0 ≤ k) :
           Cc * WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p *
             (2 + |p.1| + |p.2| + |ξ.im|) ^ k) →
       ‖triple D u Scales.rightLine Scales.wLine Scales.zLine Z‖ ≤ K * Cc := by
-  have hz0 : 0 < Scales.zLine := by unfold Scales.zLine; norm_num
   obtain ⟨Cw, hCw0, hCw⟩ := KernelWeightIntegration.nested_integral_bound D Scales.zLine Scales.zLine
-    Scales.wLine Scales.wLine Scales.rightLine Scales.rightLine hz0 le_rfl le_rfl le_rfl 2 k (by norm_num) hk
-  have hI0 : 0 ≤ ∫ t : ℝ, (1 + |t|) ^ (-(2 : ℝ)) :=
-    integral_nonneg (fun t => Real.rpow_nonneg (by positivity) _)
+    Scales.wLine Scales.wLine Scales.rightLine Scales.rightLine (by unfold Scales.zLine; norm_num) le_rfl le_rfl le_rfl 2 k (by norm_num) hk
   refine ⟨(2 * Real.pi)⁻¹ * (((2 * Real.pi)⁻¹) ^ 2 * Cw * ∫ t : ℝ, (1 + |t|) ^ (-(2 : ℝ))),
     by positivity, ?_⟩
   intro u hu Z hZ Cc hCc hmaj
@@ -107,11 +100,10 @@ private theorem triple_bound_of_majorant (k : ℝ) (hk : 0 ≤ k) :
     rw [this]
     calc _ ≤ _ := hle
       _ = _ := by ring
-  have hv := vertical_norm_le'
-    (fun ξ => Iwz D u ξ Scales.wLine Scales.zLine Z) Scales.rightLine (((2 * Real.pi)⁻¹) ^ 2 * Cw * Cc) 2
-    (by norm_num) hdec
   unfold DedekindZetaZeroFree.Quantitative.RawFixed.FixedData.triple
-  calc _ ≤ _ := hv
+  calc _ ≤ _ := (vertical_norm_le'
+    (fun ξ => Iwz D u ξ Scales.wLine Scales.zLine Z) Scales.rightLine (((2 * Real.pi)⁻¹) ^ 2 * Cw * Cc) 2
+    (by norm_num) hdec)
     _ = _ := by ring
 
 theorem raw_low_dyad_bound (ε : ℝ) (hε : 0 < ε) :
@@ -128,18 +120,12 @@ theorem raw_low_dyad_bound (ε : ℝ) (hε : 0 < ε) :
   have hZ0 : 0 < Z := by linarith
   have hZp : 0 ≤ Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) := Real.rpow_nonneg hZ0.le _
   have hUp : 0 ≤ U ^ ((1 : ℝ) / 25 + ε) := Real.rpow_nonneg (by linarith) _
-  have hCc : 0 ≤ C0 * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) * U ^ ((1 : ℝ) / 25 + ε) :=
-    mul_nonneg (mul_nonneg hC0.le hZp) hUp
-  have := hK u hu Z hZ0 _ hCc (fun ξ hξ p => by
-    have h1 := hmaj U hU u hu hUq hUq2 ξ Z p hZ0 hξ
-    have hw : 0 ≤ WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p := norm_nonneg _
-    have hP : (2 + |p.2|) ^ A ≤ (2 + |p.1| + |p.2| + |ξ.im|) ^ A :=
-      Real.rpow_le_rpow (by positivity) (by linarith [abs_nonneg p.1, abs_nonneg ξ.im]) hA
-    calc _ ≤ _ := h1
+  have := hK u hu Z hZ0 _ (mul_nonneg (mul_nonneg hC0.le hZp) hUp) (fun ξ hξ p => by
+    calc _ ≤ _ := (hmaj U hU u hu hUq hUq2 ξ Z p hZ0 hξ)
       _ = (C0 * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) * U ^ ((1 : ℝ) / 25 + ε)) *
           WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p * (2 + |p.2|) ^ A := by ring
-      _ ≤ _ := mul_le_mul_of_nonneg_left hP
-          (mul_nonneg (mul_nonneg (mul_nonneg hC0.le hZp) hUp) hw))
+      _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) (by linarith [abs_nonneg p.1, abs_nonneg ξ.im]) hA)
+          (mul_nonneg (mul_nonneg (mul_nonneg hC0.le hZp) hUp) (norm_nonneg _)))
   calc _ ≤ _ := this
     _ = (K * C0) * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) * U ^ ((1 : ℝ) / 25 + ε) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (by linarith) hZp) hUp

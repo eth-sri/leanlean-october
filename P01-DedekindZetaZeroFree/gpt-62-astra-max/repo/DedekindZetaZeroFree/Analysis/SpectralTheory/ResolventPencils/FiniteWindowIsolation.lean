@@ -13,7 +13,9 @@ namespace DedekindZetaZeroFree.KPFiniteWindowPencil
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
 
-private lemma cfc_eigen (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (r : ℝ)
+variable (B : H →L[ℂ] H)
+
+private lemma cfc_eigen (hB : IsSelfAdjoint B) (r : ℝ)
     (u : H) (hu : u ≠ 0) (he : B u = r • u) (f : ℝ → ℝ) (hf : Continuous f) :
     (cfc f B) u = f r • u := by
   have hr : r ∈ spectrum ℝ B := by
@@ -31,8 +33,8 @@ private lemma cfc_eigen (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (r : ℝ)
       change ((cfcHom hB) (algebraMap ℝ _ r)) u = r • u
       rw [AlgHomClass.commutes]
       simp [Algebra.algebraMap_eq_smul_one]
-    | id => simpa [x, cfcHom_id] using he
-    | star_id => simpa [x, cfcHom_id] using he
+    | id => simpa [cfcHom_id] using he
+    | star_id => simpa [cfcHom_id] using he
     | add g k hg hk => simp [hg, hk, add_smul]
     | mul g k hg hk =>
       simp only [map_mul, ContinuousLinearMap.mul_apply, ContinuousMap.mul_apply]
@@ -42,22 +44,22 @@ private lemma cfc_eigen (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (r : ℝ)
         isClosed_eq ((cfcHom_continuous hB).clm_apply continuous_const) (by fun_prop)
       have hm : g ∈ closure {g : C(spectrum ℝ B, ℝ) | (cfcHom hB g) u = g x • u} :=
         mem_closure_iff_frequently.mpr hg
-      rw [hc.closure_eq] at hm
+      simp at hm
       exact hm
   rw [cfc_apply f B hB hf.continuousOn]
   exact hh _
 
- noncomputable def W (B : H →L[ℂ] H) (J : Set ℝ) : Submodule ℂ H :=
+ noncomputable def W (J : Set ℝ) : Submodule ℂ H :=
   ⨅ (f : ℝ → ℝ) (_ : Continuous f)
           (_ : ∀ ν ∈ J, f (1 / (1 + ν)) = 0),
           (cfc f B).toLinearMap.ker
 
-private lemma W_mem (B : H →L[ℂ] H) (J : Set ℝ) (u : H) :
+private lemma W_mem (J : Set ℝ) (u : H) :
     u ∈ W B J ↔ ∀ (f : ℝ → ℝ) (hf : Continuous f)
       (hzero : ∀ ν ∈ J, f (1 / (1 + ν)) = 0), (cfc f B) u = 0 := by
   simp [W]
 
-private lemma W_invariant (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (J : Set ℝ)
+private lemma W_invariant (hB : IsSelfAdjoint B) (J : Set ℝ)
     (u : H) (hu : u ∈ W B J) : B u ∈ W B J := by
   rw [W_mem] at hu ⊢
   intro f hf hf0
@@ -67,8 +69,7 @@ private lemma W_invariant (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (J : Set �
     exact congr($(hc.eq).toLinearMap u)
   rw [← hc', hu f hf hf0, map_zero]
 
-lemma pencil_isolated_of_finite_window
-    (B : H →L[ℂ] H) (hB : IsSelfAdjoint B)
+lemma pencil_isolated_of_finite_window (hB : IsSelfAdjoint B)
     (μ : ℝ) (hμ : ¬ IsUnit (1 - (μ + 1) • B))
     (J : Set ℝ) (hμJ : μ ∈ interior J)
     (hfinite : Module.Finite ℂ
@@ -113,23 +114,16 @@ lemma pencil_isolated_of_finite_window
     apply Module.End.hasEigenvalue_of_hasEigenvector (x := (⟨u, huW⟩ : p))
     rw [Module.End.hasEigenvector_iff, Module.End.mem_eigenspace_iff]
     constructor
-    · apply Subtype.ext
-      change B u = ((1 / (1 + ν) : ℝ) : ℂ) • u
-      change B u = (algebraMap ℝ ℂ (1 / (1 + ν))) • u
-      rw [algebraMap_smul]
-      exact he'
-    · simpa only [ne_eq, Subtype.ext_iff, ZeroMemClass.coe_zero] using hu
+    · apply Subtype.ext <;> assumption
+    · simpa using hu
   have hnear : (interior J) ∩ (F \ {μ})ᶜ ∈ nhds μ := by
-    have ho : IsOpen ((interior J) ∩ (F \ {μ})ᶜ) :=
-      isOpen_interior.inter hF.diff.isClosed.isOpen_compl
-    exact ho.mem_nhds ⟨hμJ, by simp⟩
+    exact (isOpen_interior.inter hF.diff.isClosed.isOpen_compl).mem_nhds ⟨hμJ, by simp⟩
   rcases Metric.mem_nhds_iff.mp hnear with ⟨η, hη, hηball⟩
   refine ⟨η, hη, fun ν hv hν => ?_⟩
   have hball : ν ∈ Metric.ball μ η := by
     simpa only [Metric.mem_ball, Real.dist_eq] using hν
   have hgood := hηball hball
-  have hνF : ν ∈ F := ⟨hgood.1, hv⟩
   by_contra hne
-  exact hgood.2 ⟨hνF, by simpa only [Set.mem_singleton_iff] using hne⟩
+  exact hgood.2 ⟨(⟨hgood.1, hv⟩), by simpa using hne⟩
 
 end DedekindZetaZeroFree.KPFiniteWindowPencil

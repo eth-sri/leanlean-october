@@ -16,7 +16,11 @@ namespace DedekindZetaZeroFree.Hecke.Theta
 
 variable {F : Type} [Field F] [NumberField F]
 
- def cosetPrimalIndexEquiv (E : RayCoset.Data F) :
+ section
+
+variable (E : RayCoset.Data F)
+
+def cosetPrimalIndexEquiv :
     {l : F // l ∈ ((rayIdealFractionalIdeal F E.a E.ideal_ne_bot *
       rayIdealFractionalIdeal F E.m E.modulus_ne_bot) : FractionalIdeal (𝓞 F)⁰ F)} ≃
       RayCoset.normalizedLattice E := by
@@ -27,24 +31,22 @@ variable {F : Type} [Field F] [NumberField F]
       (Theta.traceEmbedding_mem_traceIdealLattice F _).mpr l.property, rfl⟩
   · intro l k he
     apply Subtype.ext
-    have ht := (smul_right_injective _ (affineResidueScale_pos
-      (rayIdealFractionalIdeal F E.a E.ideal_ne_bot)).ne') (congrArg Subtype.val he)
     apply NumberField.mixedEmbedding_injective F
-    simpa [Theta.traceEmbedding] using congrArg (Theta.traceToMixed F) ht
+    simpa [Theta.traceEmbedding] using congrArg (Theta.traceToMixed F) ((smul_right_injective _ (affineResidueScale_pos
+      (rayIdealFractionalIdeal F E.a E.ideal_ne_bot)).ne') (congrArg Subtype.val he))
   · intro v
-    have hv := v.property
     have hv' : v.val ∈ commonNormalizedLattice E.m E.modulus_ne_bot
         (rayIdealFractionalIdeal F E.a E.ideal_ne_bot) := by
-      simpa only [commonNormalizedLattice_eq_normalizedLattice] using hv
+      simpa only [commonNormalizedLattice_eq_normalizedLattice] using v.property
     obtain ⟨w, hw, he⟩ := Submodule.mem_map.mp hv'
     obtain ⟨l, hl, hle⟩ := Theta.exists_traceEmbedding_eq_of_mem_traceIdealLattice F _ hw
     exact ⟨⟨l, hl⟩, Subtype.ext (by simpa only [s, hle, LinearMap.smul_apply, LinearMap.id_apply] using he)⟩
 
- def cosetBasepointLift (E : RayCoset.Data F) :
+ def cosetBasepointLift :
     {x : F // x ∈ (rayIdealFractionalIdeal F E.a E.ideal_ne_bot : FractionalIdeal (𝓞 F)⁰ F)} :=
   ⟨(E.b : F), (FractionalIdeal.mem_coeIdeal _).mpr ⟨E.b, E.basepoint_mem, rfl⟩⟩
 
-private theorem coset_primal_integrand (E : RayCoset.Data F)
+private theorem coset_primal_integrand
     (u : ℝ) (h : RayCoset.logHyperplane F) :
     (∑' l : RayCoset.normalizedLattice E,
       RayParity.gδ F ∅ (RayParity.Q F (RayTheta.q F u h)
@@ -62,7 +64,7 @@ private theorem coset_primal_integrand (E : RayCoset.Data F)
   rw [RayCoset.normalizationScale, ← affineResidueScale_rayIdealFractionalIdeal E.a E.ideal_ne_bot]
   simp only [cosetBasepointLift, Theta.traceEmbedding, map_add, smul_add]
 
-private theorem coset_dual_integrand (E : RayCoset.Data F)
+private theorem coset_dual_integrand
     (u : ℝ) (h : RayCoset.logHyperplane F) :
     (∑' l : Theta.dualLattice (RayCoset.normalizedLattice E),
       Complex.exp ((2 * Real.pi : ℝ) * Complex.I *
@@ -78,19 +80,17 @@ private theorem coset_dual_integrand (E : RayCoset.Data F)
   rw [normalizedCosetDualIndex_tracePhase, normalizedCosetDualIndexEquiv_apply]
   rfl
 
-theorem rayTheta_fδ_eq_affineResidueAverage
-    (hF : NumberField.IsTotallyComplex F)
-    (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
-    (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤)
-    (D : RayThetaRepresentatives F m hm)
+end
+
+variable (hF : NumberField.IsTotallyComplex F) (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
+    (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤) (D : RayThetaRepresentatives F m hm)
     (q : coprimeIdealResidueUnits F m a hm ha hcop hmt)
-    (x : {x : F // x ∈
-      (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)})
-    (hx : fractionalIdealQuotientMk
-      (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)
-      ((rayIdealFractionalIdeal F a ha * rayIdealFractionalIdeal F m hm) :
-        FractionalIdeal (𝓞 F)⁰ F) x = q.val)
-    (u : ℝ) (hu : 0 < u) :
+    (x : {x : F // x ∈ (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)})
+    (hx : fractionalIdealQuotientMk (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F) ((rayIdealFractionalIdeal F a ha * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F) x = q.val)
+    (u : ℝ) (hu : 0 < u)
+
+include hx hu in
+theorem rayTheta_fδ_eq_affineResidueAverage :
     let c := (coprimeIdealResidueRayClass hF m a hm ha hcop hmt q).val
     RayTheta.fδ (D.coset c) ∅ u =
       (RayCoset.rayUnitTorsionCard F m : ℂ)⁻¹ *
@@ -117,8 +117,6 @@ theorem rayTheta_fδ_eq_affineResidueAverage
     affineResidueAverage (D.coset c).m (D.coset c).modulus_ne_bot J
       (cosetBasepointLift (D.coset c)) u = _
   simp only [D.modulus_eq c]
-  change (RayCoset.rayUnitTorsionCard F m : ℂ)⁻¹ *
-    affineResidueAverage m hm J (cosetBasepointLift (D.coset c)) u = _
   congr 1
   rw [affineResidueAverage_congr m hm J (cosetBasepointLift (D.coset c)) u hu z hby]
   unfold affineResidueAverage
@@ -130,19 +128,8 @@ theorem rayTheta_fδ_eq_affineResidueAverage
     (affineResidueTheta_rayUnit_periodic hF m hm I x u hu)
     (principalNormalizedLogShift hF γ)
 
-theorem rayTheta_gδDual_eq_affineResidueDualAverage
-    (hF : NumberField.IsTotallyComplex F)
-    (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
-    (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤)
-    (D : RayThetaRepresentatives F m hm)
-    (q : coprimeIdealResidueUnits F m a hm ha hcop hmt)
-    (x : {x : F // x ∈
-      (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)})
-    (hx : fractionalIdealQuotientMk
-      (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)
-      ((rayIdealFractionalIdeal F a ha * rayIdealFractionalIdeal F m hm) :
-        FractionalIdeal (𝓞 F)⁰ F) x = q.val)
-    (u : ℝ) (hu : 0 < u) :
+include hx hu in
+theorem rayTheta_gδDual_eq_affineResidueDualAverage :
     let c := (coprimeIdealResidueRayClass hF m a hm ha hcop hmt q).val
     RayTheta.gδDual (D.coset c) ∅ u =
       ((RayCoset.rayUnitTorsionCard F m : ℂ) *

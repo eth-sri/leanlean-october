@@ -15,28 +15,14 @@ open KPContSectorCoveredQuotientVocabulary KPContSectorPhaseComponentCharts
 open KPContSectorSmoothFramesSupport KPContSectorLineL2Isometry
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 open KPContActualCotangentCountableShrinking
 
-private theorem orbifold_action_mem (i : Fin (H.atlas U).componentCount)
-    (x : SymmetricSpace F) (O : OrbifoldChart F ζ hζ U R P H i x)
-    (σ : MulAction.stabilizer (Component F ζ hζ U R P H i) x)
-    (y : SymmetricSpace F) (hy : y ∈ O.neighborhood) :
-    (σ.val : KPCuspArithmetic.PGL2 F) • y ∈ O.neighborhood := by
-  let τ : MulAction.stabilizer (ArchComponent F ζ hζ U R P H i) x :=
-    ⟨⟨complexProjectiveEmbedding F σ.val.val,
-      ⟨σ.val.val, σ.val.property, rfl⟩⟩, by
-      change complexProjectiveEmbedding F σ.val.val • x = x
-      rw [complexProjectiveEmbedding_smul]
-      exact σ.property⟩
-  have h := Set.mem_image_of_mem (fun z : SymmetricSpace F => τ • z) hy
-  rw [O.invariant τ] at h
-  change complexProjectiveEmbedding F σ.val.val • y ∈ O.neighborhood at h
-  simpa only [complexProjectiveEmbedding_smul] using h
+private alias orbifold_action_mem := DedekindZetaZeroFree.KPContFriedrichsChartProjectedPairings.ProjectedTestPairings.orbifold_action_mem
 
 private theorem compact_shrinking (i : Fin (H.atlas U).componentCount)
     (x : SymmetricSpace F) (O : OrbifoldChart F ζ hζ U R P H i x)
@@ -91,8 +77,7 @@ theorem closed_ball_shrinking (i : Fin (H.atlas U).componentCount)
       chartDomain F ζ hζ U R P H i x O) :
     ∃ a : KPContActualCotangentCountableShrinking.ShrunkChart F ζ hζ U R P H,
       a.component = i ∧ a.center = x ∧
-        coordinates F '' KPContLocalCubeEmbedding.closedCarrier A ⊆ a.domain := by
-  exact compact_shrinking F ζ hζ U R P H i x O _
+        coordinates F '' KPContLocalCubeEmbedding.closedCarrier A ⊆ a.domain := compact_shrinking F ζ hζ U R P H i x O _
     ((isCompact_closedBall A.center A.radius).image (coordinates F).continuous)
     (by rintro y ⟨p, hp, rfl⟩; exact hA hp)
 
@@ -166,7 +151,6 @@ open KPContLocalEnergy
   radius_pos := A.radius_pos
  def reindexedIndex {n m : ℕ} (e : Fin n ≃ Fin m) (α : MultiIndex n 1) : MultiIndex m 1 :=
   ⟨fun j => α.val (e.symm j), by
-    change (∑ j, (α.val (e.symm j)).val) ≤ 1
     rw [e.symm.sum_comp (fun i => (α.val i).val)]
     exact α.property⟩
  theorem reindexedBall_preimage {n m : ℕ} (e : Fin n ≃ Fin m) (A : LocalBall n) :
@@ -175,31 +159,9 @@ open KPContLocalEnergy
   simp only [LocalBall.carrier, reindexedBall, Set.mem_preimage, Metric.mem_ball]
   rw [(LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e).isometry.dist_eq]
 private theorem index_cases {n : ℕ} (α : MultiIndex n 1) :
-    α = zeroIndex n 1 ∨ ∃ i : Fin n, α = firstIndex i := by
-  by_cases hz : ∀ i, (α.val i).val = 0
-  · left
-    apply Subtype.ext
-    funext i
-    exact Fin.ext (hz i)
-  · obtain ⟨i, hi⟩ := not_forall.mp hz
-    right
-    refine ⟨i, ?_⟩
-    have hone : (α.val i).val = 1 := by omega
-    apply Subtype.ext
-    funext j
-    apply Fin.ext
-    by_cases hji : j = i
-    · subst j; simpa [firstIndex] using hone
-    · have hj : (α.val j).val = 0 := by
-        have hsum := Finset.sum_le_sum_of_subset_of_nonneg (f := fun i => (α.val i).val)
-          (show ({i,j} : Finset (Fin n)) ⊆ Finset.univ from Finset.subset_univ _)
-          (fun _ _ _ => Nat.zero_le _)
-        have h := α.property
-        simp [Finset.sum_pair (Ne.symm hji), hone] at hsum
-        omega
-      simpa [firstIndex, hji] using hj
+    α = zeroIndex n 1 ∨ ∃ i : Fin n, α = firstIndex i := by apply @DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates.raw_index_cases <;> assumption
  theorem reindexed_zero {n m : ℕ} (e : Fin n ≃ Fin m) :
-    reindexedIndex e (zeroIndex n 1) = zeroIndex m 1 := by rfl
+    reindexedIndex e (zeroIndex n 1) = zeroIndex m 1 := rfl
 private theorem reindexed_first {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) :
     reindexedIndex e (firstIndex j) = firstIndex (e j) := by
   apply Subtype.ext
@@ -227,10 +189,9 @@ private theorem reindex_direction {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) 
     rw [heq, tsupport]
     rw [hs, ← he.preimage_closure]
     intro p hp
-    have hp' := φ.tsupport_subset hp
     have hx : (LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e) (he p) ∈ (reindexedBall e A).carrier := by
       rw [← Set.mem_preimage, reindexedBall_preimage]
-      exact hp'
+      exact (φ.tsupport_subset hp)
     change p ∈ (reindexedBall e A).carrier
     simpa only [he, LinearIsometryEquiv.coe_toHomeomorph,
       LinearIsometryEquiv.apply_symm_apply] using hx
@@ -271,7 +232,6 @@ private theorem reindex_direction {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) 
  theorem reindexed_degree {n m : ℕ} (e : Fin n ≃ Fin m) (α : MultiIndex n 1) :
     (reindexedIndex e α).degree = α.degree := by
   unfold MultiIndex.degree
-  change (∑ j, (α.val (e.symm j)).val) = _
   exact e.symm.sum_comp (fun i => (α.val i).val)
  def sobolevPullback {n m : ℕ} (e : Fin n ≃ Fin m) (A : LocalBall n)
     (h : IntegerSobolev (reindexedBall e A) 1) : IntegerSobolev A 1 where
@@ -286,7 +246,7 @@ private theorem reindex_direction {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) 
       exact hm) (h.derivatives (reindexedIndex e α))
   weak_derivatives := by
     intro α φ
-    let E : Space n ≃ₗᵢ[ℝ] Space m := LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e
+    let E := LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e
     have hm : MeasurePreserving E (volume.restrict A.carrier)
         (volume.restrict (reindexedBall e A).carrier) := by
       have hh := E.measurePreserving.restrict_preimage (reindexedBall e A).toOpens.isOpen.measurableSet
@@ -300,30 +260,25 @@ private theorem reindex_direction {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) 
       exact hh
     have he := h.weak_derivatives (reindexedIndex e α) (pullbackTest e A φ)
     rw [reindexed_degree] at he
-    have hz := reindexed_zero e
-    have hz' : reindexedIndex e (⟨fun _ => 0, by simp⟩ : MultiIndex n 1) =
-        (⟨fun _ => 0, by simp⟩ : MultiIndex m 1) := hz
     rw [← hm.integral_comp E.toHomeomorph.measurableEmbedding
       (fun x => h.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex m 1) x *
         coordinateDerivative (reindexedIndex e α) (fun y => pullbackTest e A φ y) x),
       ← hm.integral_comp E.toHomeomorph.measurableEmbedding
         (fun x => h.derivatives (reindexedIndex e α) x * pullbackTest e A φ x)] at he
-    have hval := Lp.coeFn_compMeasurePreserving (h.derivatives (reindexedIndex e (zeroIndex n 1))) hm
-    have hder := Lp.coeFn_compMeasurePreserving (h.derivatives (reindexedIndex e α)) hm
     have hl : (∫ x in A.carrier,
         (Lp.compMeasurePreserving E hm (h.derivatives (reindexedIndex e (zeroIndex n 1)))) x *
           coordinateDerivative α (fun y => φ y) x) =
         ∫ x in A.carrier, h.derivatives (zeroIndex m 1) (E x) *
           coordinateDerivative (reindexedIndex e α) (fun y => pullbackTest e A φ y) (E x) := by
       apply integral_congr_ae
-      filter_upwards [hval] with x hx
+      filter_upwards [(Lp.coeFn_compMeasurePreserving (h.derivatives (reindexedIndex e (zeroIndex n 1))) hm)] with x hx
       rw [hx, reindexed_zero, reindex_test_derivative]
       rfl
     have hr : (∫ x in A.carrier,
         (Lp.compMeasurePreserving E hm (h.derivatives (reindexedIndex e α))) x * φ x) =
         ∫ x in A.carrier, h.derivatives (reindexedIndex e α) (E x) * pullbackTest e A φ (E x) := by
       apply integral_congr_ae
-      filter_upwards [hder] with x hx
+      filter_upwards [(Lp.coeFn_compMeasurePreserving (h.derivatives (reindexedIndex e α)) hm)] with x hx
       rw [hx]
       change h.derivatives (reindexedIndex e α) (E x) * φ x =
         h.derivatives (reindexedIndex e α) (E x) * φ (E.symm (E x))
@@ -368,8 +323,7 @@ private theorem canonical_ball_inside (i : Fin (H.atlas U).componentCount)
     rw [closure_ball _ (ne_of_gt A.radius_pos)]
     exact isCompact_closedBall _ _
   · intro p hp
-    let E : Space (KPCuspLogShape.dimension F * 3) ≃ₗᵢ[ℝ]
-        Space (3 * KPContCotangentActualOverlap.d F) :=
+    let E :=
       LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ (canonicalIndex F ζ hζ)
     have hp' : E.symm p ∈ KPContLocalCubeEmbedding.closedCarrier A := by
       change E.symm p ∈ Metric.closedBall A.center A.radius
@@ -402,12 +356,11 @@ private theorem exists_sobolev_value (μG : Measure (KPMsFixedHaarDisintegration
       Space (3 * KPContCotangentActualOverlap.d F) := LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e
   let B := reindexedBall e A
   have hB := canonical_ball_inside F ζ hζ U R P H i A a ha
-  obtain ⟨s, r, hs, hr, hw⟩ := (kp_cont_actual_sector_form_weak_localization
-    F ζ hζ μG hμG U R hR P H realization).closed_gradient v
+  obtain ⟨s, r, hs, hr, hw⟩ := KPContActualSectorFormWeakLocalization.closedGradient_isActualWeak F ζ hζ U R P H μG hμG hR realization v
   obtain ⟨ε,hε⟩ := QuotientGroup.mk_surjective m
   change phaseClass F ζ hζ U ε = m at hε
   obtain ⟨h, hv, hd⟩ := hw a B hB ε
-  obtain ⟨g,hg,hgLp,hgU,f₀,hf₀,hfLp,havg,hfU,hgen,hiso⟩ :=
+  obtain ⟨g, hg, hgLp, f₀, hf₀, hfLp, hfU, hgen⟩ :=
     KPContSectorExactBorelRepresentatives.exists_exact_borel_representative F ζ hζ R U v.val
   let f : BorelL2Scalars F ζ hζ U R := ⟨⟨f₀,hgen⟩,hf₀,hfLp⟩
   have hf : scalarEmbedding F ζ hζ U R P H f = v.val := by
@@ -522,7 +475,7 @@ theorem exists_xi (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ))
       (fun p j => if (finProdFinEquiv.symm j).2 = 2 then 1 else
         Real.exp (2 * (coordinates F p (finProdFinEquiv.symm j).1).2)) hρ hg
     intro φ
-    obtain ⟨f,_,_,hs,hg'⟩ := KPContFriedrichsChartProjectedPairings.projected_test_pairings
+    obtain ⟨f, hs, hg'⟩ := KPContFriedrichsChartProjectedPairings.projected_test_pairings
       F ζ hζ U R P H μG hμG hR realization i x O m A hA φ
     have he := congrArg star (hvar
       (KPContActualSectorFriedrichsSynthesis.formTest F ζ hζ U R P H μG hμG hR realization f))

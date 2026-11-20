@@ -12,10 +12,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPLiteralRaw KPGlobalTorusFiniteStages ThetaExpansion TensorActionSource
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "V" => RestrictedTensorSimple.Core (Plus R.A P C)
@@ -24,8 +24,8 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
 variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 
 theorem finiteCoreResidue_regular (N : MomentSources.TraceHaarTransport R)
     (x : RestrictedTensorSimple.Core (FiniteQuotientFiber R P C μ hμ)

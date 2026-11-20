@@ -12,13 +12,15 @@ open MeasureTheory
 open scoped ContDiff
 open KPContLocalNorm
 
-def euclideanSobolevNorm {n : ℕ} (k : ℕ) (w : Space n → ℂ) : ℝ :=
+variable {n : ℕ}
+
+def euclideanSobolevNorm (k : ℕ) (w : Space n → ℂ) : ℝ :=
   Real.sqrt (∑ α : MultiIndex n k, ∫ x, ‖coordinateDerivative α w x‖ ^ 2)
 
-def closedCarrier {n : ℕ} (B : LocalBall n) : Set (Space n) :=
+def closedCarrier (B : LocalBall n) : Set (Space n) :=
   Metric.closedBall B.center B.radius
 
-theorem ball_sobolev_embedding {n : ℕ} (A B : LocalBall n)
+theorem ball_sobolev_embedding (A B : LocalBall n)
     (hAB : closedCarrier A ⊆ B.carrier) (m : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ u : IntegerSobolev B (m + n),
       ∃ (f : Space n → ℂ) (j : CompactJets (closedCarrier A) m),
@@ -44,13 +46,13 @@ theorem ball_sobolev_embedding {n : ℕ} (A B : LocalBall n)
   exact Measure.eqOn_open_of_ae_eq (hgu.trans hfu.symm) Metric.isOpen_ball
     hg.continuousOn hf.continuousOn
 
-def LocallyAllIntegerSobolev {n : ℕ} (U : Set (Space n)) (u : Space n → ℂ) : Prop :=
+def LocallyAllIntegerSobolev (U : Set (Space n)) (u : Space n → ℂ) : Prop :=
   ∀ B : LocalBall n, closedCarrier B ⊆ U → ∀ k : ℕ,
     ∃ v : IntegerSobolev B k,
       u =ᵐ[volume.restrict B.carrier]
         (fun x => v.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x)
 
-private theorem smooth_on_local_ball {n : ℕ} (B : LocalBall n)
+private theorem smooth_on_local_ball (B : LocalBall n)
     (u : Space n → ℂ)
     (hu : ∀ k : ℕ, ∃ v : IntegerSobolev B k,
       u =ᵐ[volume.restrict B.carrier]
@@ -59,13 +61,11 @@ private theorem smooth_on_local_ball {n : ℕ} (B : LocalBall n)
       f =ᵐ[volume.restrict B.carrier] u := by
   classical
   let A : LocalBall n := ⟨B.dimension_pos, B.center, B.radius / 2, by linarith [B.radius_pos]⟩
-  have hAB : closedCarrier A ⊆ B.carrier :=
-    Metric.closedBall_subset_ball (by dsimp [A]; linarith [B.radius_pos])
   have hreps : ∀ m : ℕ, ∃ f : Space n → ℂ,
       ContDiffOn ℝ m f B.carrier ∧ f =ᵐ[volume.restrict B.carrier] u := by
     intro m
     obtain ⟨v, hv⟩ := hu (m + n)
-    obtain ⟨C, hC, h⟩ := ball_sobolev_embedding A B hAB m
+    obtain ⟨C, hC, h⟩ := ball_sobolev_embedding A B (Metric.closedBall_subset_ball (by dsimp [A]; linarith [B.radius_pos])) m
     obtain ⟨f, j, hf, hfv, hj, hbound, hunique⟩ := h v
     exact ⟨f, hf, hfv.trans hv.symm⟩
   choose f hf hfu using hreps
@@ -75,7 +75,7 @@ private theorem smooth_on_local_ball {n : ℕ} (B : LocalBall n)
   exact Measure.eqOn_open_of_ae_eq ((hfu 0).trans (hfu m).symm)
     Metric.isOpen_ball (hf 0).continuousOn (hf m).continuousOn
 
-theorem locally_all_orders_smooth_representative {n : ℕ} (hn : 0 < n)
+theorem locally_all_orders_smooth_representative (hn : 0 < n)
     (U : Set (Space n)) (hU : IsOpen U) (u : Space n → ℂ)
     (hu : LocallyAllIntegerSobolev U u) :
     ∃ f : Space n → ℂ, ContDiffOn ℝ (⊤ : ℕ∞) f U ∧

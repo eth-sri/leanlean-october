@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -43,11 +40,14 @@ attribute [local instance]
   padicCompletedMultiplicativeTargetCompleteSpace
   padicCompletedMultiplicativeTargetT2Space
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+
 /-- The completed multiplicative division point obtained by evaluating the
 coefficient-extended comparison at the chosen completed standard primitive
 point. -/
-noncomputable def padicCompletedMultiplicativePrimitivePoint
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicCompletedMultiplicativePrimitivePoint :
     (padicCompletedLevelCompleteDVF p n).valuationSubring :=
   padicCompletedLevelPowerSeriesEval p n
     (padicCompletedPrimitiveRootInteger p n)
@@ -56,12 +56,9 @@ noncomputable def padicCompletedMultiplicativePrimitivePoint
 
 /-- The completed multiplicative primitive point is topologically
 nilpotent, so it is itself a valid power-series evaluation point. -/
-theorem padicCompletedMultiplicativePrimitivePoint_hasEval
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedMultiplicativePrimitivePoint_hasEval :
     PowerSeries.HasEval
-      (padicCompletedMultiplicativePrimitivePoint p n) := by
-  exact
-    padicCompletedLevelPowerSeriesEval_hasEval p n
+      (padicCompletedMultiplicativePrimitivePoint p n) := padicCompletedLevelPowerSeriesEval_hasEval p n
       (padicCompletedPrimitiveRootInteger p n)
       (padicCompletedPrimitiveRootInteger_hasEval p n)
       (padicCompletedStandardToMultiplicativeIntertwiner p)
@@ -70,15 +67,14 @@ theorem padicCompletedMultiplicativePrimitivePoint_hasEval
 /-- The actual completed multiplicative primitive point is killed by the
 scalar endomorphism for `π ^ (n + 1)`. -/
 theorem
-    padicCompletedMultiplicativePrimitivePoint_uniformizer_pow_succ_eq_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+    padicCompletedMultiplicativePrimitivePoint_uniformizer_pow_succ_eq_zero :
     padicCompletedMultiplicativeScalarEndomorphismValue p n
         (padicCompletedMultiplicativePrimitivePoint p n)
         (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
         ((padicIntEquivValuationSubring p (p : ℤ_[p])) ^ (n + 1)) =
       0 := by
-  let π : (padicLocalField p).valuationSubring :=
-    padicIntEquivValuationSubring p (p : ℤ_[p])
+  let π :=
+    padicIntEquivValuationSubring p p
   change
     padicCompletedMultiplicativeScalarEndomorphismValue p n
         (padicCompletedMultiplicativePrimitivePoint p n)
@@ -115,46 +111,33 @@ theorem
             (padicLocalField p) π (n + 1)) at hUniformizer
     rw [hUniformizer]
     exact padicCompletedPrimitiveRootInteger_iterate_succ_eq_zero p n
-  have hleftZero :
+  apply hbridge.symm.trans
+  calc
+  _ =
       padicCompletedLevelPowerSeriesEval p n
-          (padicCompletedStandardScalarEndomorphismValue p n
-            (padicCompletedPrimitiveRootInteger p n)
-            (padicCompletedPrimitiveRootInteger_hasEval p n)
-            (π ^ (n + 1)))
-          (padicCompletedStandardScalarEndomorphismValue_hasEval p n
-            (padicCompletedPrimitiveRootInteger p n)
-            (padicCompletedPrimitiveRootInteger_hasEval p n)
-            (π ^ (n + 1)))
-          (padicCompletedStandardToMultiplicativeIntertwiner p) =
-        0 := by
-    calc
-      _ =
-          padicCompletedLevelPowerSeriesEval p n
-            0 PowerSeries.HasEval.zero
-            (padicCompletedStandardToMultiplicativeIntertwiner p) :=
-        padicCompletedLevelPowerSeriesEval_congr_point p n
-          (padicCompletedStandardScalarEndomorphismValue_hasEval p n
-            (padicCompletedPrimitiveRootInteger p n)
-            (padicCompletedPrimitiveRootInteger_hasEval p n)
-            (π ^ (n + 1)))
-          PowerSeries.HasEval.zero hstandardPoint
-          (padicCompletedStandardToMultiplicativeIntertwiner p)
-      _ = 0 :=
-        padicCompletedStandardToMultiplicativeIntertwiner_eval_zero p n
-  exact hbridge.symm.trans hleftZero
+        0 PowerSeries.HasEval.zero
+        (padicCompletedStandardToMultiplicativeIntertwiner p) :=
+    padicCompletedLevelPowerSeriesEval_congr_point p n
+      (padicCompletedStandardScalarEndomorphismValue_hasEval p n
+        (padicCompletedPrimitiveRootInteger p n)
+        (padicCompletedPrimitiveRootInteger_hasEval p n)
+        (π ^ (n + 1)))
+      PowerSeries.HasEval.zero hstandardPoint
+      (padicCompletedStandardToMultiplicativeIntertwiner p)
+  _ = 0 :=
+    padicCompletedStandardToMultiplicativeIntertwiner_eval_zero p n
 
 /-- The actual completed multiplicative primitive point is not killed by
 the scalar endomorphism for `π ^ n`. -/
 theorem
-    padicCompletedMultiplicativePrimitivePoint_uniformizer_pow_ne_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+    padicCompletedMultiplicativePrimitivePoint_uniformizer_pow_ne_zero :
     padicCompletedMultiplicativeScalarEndomorphismValue p n
         (padicCompletedMultiplicativePrimitivePoint p n)
         (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
         ((padicIntEquivValuationSubring p (p : ℤ_[p])) ^ n) ≠
       0 := by
-  let π : (padicLocalField p).valuationSubring :=
-    padicIntEquivValuationSubring p (p : ℤ_[p])
+  let π :=
+    padicIntEquivValuationSubring p p
   change
     padicCompletedMultiplicativeScalarEndomorphismValue p n
         (padicCompletedMultiplicativePrimitivePoint p n)
@@ -167,17 +150,11 @@ theorem
   let lambdaN :=
     padicCompletedStandardScalarEndomorphismValue
       p n lambda hlambda (π ^ n)
-  let hlambdaN : PowerSeries.HasEval lambdaN :=
+  let hlambdaN :=
     padicCompletedStandardScalarEndomorphismValue_hasEval
       p n lambda hlambda (π ^ n)
-  have hbridge :=
-    padicCompletedStandardToMultiplicativeIntertwiner_eval_endomorphism
-      p n lambda hlambda (π ^ n)
-  have hleftZero :
-      padicCompletedLevelPowerSeriesEval p n lambdaN hlambdaN
-          (padicCompletedStandardToMultiplicativeIntertwiner p) =
-        0 := by
-    exact hbridge.trans hzero
+  have hleftZero := (padicCompletedStandardToMultiplicativeIntertwiner_eval_endomorphism
+      p n lambda hlambda (π ^ n)).trans hzero
   have hlambdaNZero : lambdaN = 0 := by
     apply
       padicCompletedStandardToMultiplicativeIntertwiner_eval_injective
@@ -191,12 +168,14 @@ theorem
       p n lambda hlambda n]
   exact hlambdaNZero
 
+end
+
+variable (p : ℕ) [Fact p.Prime] (u : (padicLocalField p).valuationSubringˣ)
+
 /-- The completed multiplicative primitive point is killed by the
 `n + 1`-st power of the scalar `u p` defining the changed uniformizer. -/
 theorem
-    padicCompletedMultiplicativePrimitivePoint_changedUniformizer_pow_succ_eq_zero
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+    padicCompletedMultiplicativePrimitivePoint_changedUniformizer_pow_succ_eq_zero (n : ℕ) :
     padicCompletedMultiplicativeScalarEndomorphismValue p n
         (padicCompletedMultiplicativePrimitivePoint p n)
         (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
@@ -237,29 +216,25 @@ theorem
           xπ hxπ
           ((u : (padicLocalField p).valuationSubring) ^ (n + 1)) := by
       rw [standardLubinTateChangedUniformizer_eq_unit_mul, mul_pow]
-      simpa only [xπ, hxπ] using
+      simpa using
         (padicCompletedMultiplicativeScalarEndomorphismValue_mul
           p n x hx
-          ((u : (padicLocalField p).valuationSubring) ^ (n + 1))
+          (u ^ (n + 1))
           (π ^ (n + 1)))
     _ =
         padicCompletedMultiplicativeScalarEndomorphismValue p n
           0 PowerSeries.HasEval.zero
-          ((u : (padicLocalField p).valuationSubring) ^ (n + 1)) := by
-      exact
-        padicCompletedLevelPowerSeriesEval_congr_point p n
+          ((u : (padicLocalField p).valuationSubring) ^ (n + 1)) := padicCompletedLevelPowerSeriesEval_congr_point p n
           hxπ PowerSeries.HasEval.zero hxπZero
           (padicCompletedMultiplicativeScalarEndomorphism p
-            ((u : (padicLocalField p).valuationSubring) ^ (n + 1)))
+            (u ^ (n + 1)))
     _ = 0 :=
       padicCompletedMultiplicativeScalarEndomorphismValue_zero p n _
 
 /-- The completed multiplicative primitive point is not killed one level
 early by the scalar `u p`. -/
 theorem
-    padicCompletedMultiplicativePrimitivePoint_changedUniformizer_pow_ne_zero
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+    padicCompletedMultiplicativePrimitivePoint_changedUniformizer_pow_ne_zero (n : ℕ) :
     padicCompletedMultiplicativeScalarEndomorphismValue p n
         (padicCompletedMultiplicativePrimitivePoint p n)
         (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
@@ -292,24 +267,18 @@ theorem
           xπ hxπ
           ((u : (padicLocalField p).valuationSubring) ^ n) := by
     rw [standardLubinTateChangedUniformizer_eq_unit_mul, mul_pow]
-    simpa only [xπ, hxπ] using
+    simpa using
       (padicCompletedMultiplicativeScalarEndomorphismValue_mul
         p n x hx
-        ((u : (padicLocalField p).valuationSubring) ^ n)
+        (u ^ n)
         (π ^ n))
-  have hunitZero :
-      padicCompletedMultiplicativeScalarEndomorphismValue p n
-          xπ hxπ
-          ((u : (padicLocalField p).valuationSubring) ^ n) =
-        0 :=
-    hdecomp.symm.trans hzero
   have hunitZero' :
       padicCompletedMultiplicativeScalarEndomorphismValue p n
           xπ hxπ
           (((u ^ n : (padicLocalField p).valuationSubringˣ) :
             (padicLocalField p).valuationSubring)) =
         0 := by
-    simpa only [Units.val_pow_eq_pow_val] using hunitZero
+    simpa using (hdecomp.symm.trans hzero)
   have hxπZero : xπ = 0 := by
     apply
       padicCompletedMultiplicativeScalarEndomorphismValue_unit_injective
@@ -321,35 +290,26 @@ theorem
   apply
     padicCompletedMultiplicativePrimitivePoint_uniformizer_pow_ne_zero
       p n
-  change xπ = 0
   exact hxπZero
 
 /-- The multiplicative scalar endomorphism attached to a `p`-adic unit,
 with coefficients extended to the completed unramified Witt ring. -/
-noncomputable def padicCompletedMultiplicativeUnitEndomorphism
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+noncomputable def padicCompletedMultiplicativeUnitEndomorphism :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
   padicCompletedMultiplicativeScalarEndomorphism p
     (u : (padicLocalField p).valuationSubring)
 
 /-- The completed multiplicative unit endomorphism admits formal
 substitution. -/
-theorem padicCompletedMultiplicativeUnitEndomorphism_hasSubst
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicCompletedMultiplicativeUnitEndomorphism_hasSubst :
     PowerSeries.HasSubst
       (padicCompletedMultiplicativeUnitEndomorphism p u) :=
   by
-    simpa only [padicCompletedMultiplicativeUnitEndomorphism] using
-      padicCompletedMultiplicativeScalarEndomorphism_hasSubst p
-        (u : (padicLocalField p).valuationSubring)
+    solve_by_elim [padicCompletedMultiplicativeScalarEndomorphism_hasSubst]
 
 /-- The action of a completed multiplicative unit endomorphism on the
 completed multiplicative primitive point. -/
-noncomputable def padicCompletedMultiplicativePrimitivePointUnitAction
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+noncomputable def padicCompletedMultiplicativePrimitivePointUnitAction (n : ℕ) :
     (padicCompletedLevelCompleteDVF p n).valuationSubring :=
   padicCompletedLevelPowerSeriesEval p n
     (padicCompletedMultiplicativePrimitivePoint p n)
@@ -358,13 +318,9 @@ noncomputable def padicCompletedMultiplicativePrimitivePointUnitAction
 
 /-- The unit translate of the completed multiplicative primitive point is
 again a convergent evaluation point. -/
-theorem padicCompletedMultiplicativePrimitivePointUnitAction_hasEval
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicCompletedMultiplicativePrimitivePointUnitAction_hasEval (n : ℕ) :
     PowerSeries.HasEval
-      (padicCompletedMultiplicativePrimitivePointUnitAction p u n) := by
-  exact
-    padicCompletedLevelPowerSeriesEval_hasEval p n
+      (padicCompletedMultiplicativePrimitivePointUnitAction p u n) := padicCompletedLevelPowerSeriesEval_hasEval p n
       (padicCompletedMultiplicativePrimitivePoint p n)
       (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
       (padicCompletedMultiplicativeUnitEndomorphism p u)

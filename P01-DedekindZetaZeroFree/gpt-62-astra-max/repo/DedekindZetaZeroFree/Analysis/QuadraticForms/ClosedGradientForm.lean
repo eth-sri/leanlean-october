@@ -7,70 +7,50 @@ public import Mathlib.Analysis.InnerProductSpace.LinearPMap
 noncomputable section
 namespace DedekindZetaZeroFree
 
-def closedGradientGraph
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) : Submodule ℂ (WithLp 2 (H × V)) :=
+section
+
+variable {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [NormedAddCommGroup V]
+    [InnerProductSpace ℂ V] (D : H →ₗ.[ℂ] V)
+
+def closedGradientGraph : Submodule ℂ (WithLp 2 (H × V)) :=
   D.closure.graph.comap (WithLp.linearEquiv 2 ℂ (H × V)).toLinearMap
 
-abbrev ClosedGradientSpace
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) := ↥(closedGradientGraph D)
+abbrev ClosedGradientSpace := ↥(closedGradientGraph D)
 
-def closedGradientEmbedding
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) : ClosedGradientSpace D →L[ℂ] H :=
+def closedGradientEmbedding : ClosedGradientSpace D →L[ℂ] H :=
   (WithLp.fstL 2 ℂ H V).comp (closedGradientGraph D).subtypeL
 
-def closedGradientCoordinate
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) : ClosedGradientSpace D →L[ℂ] V :=
+def closedGradientCoordinate : ClosedGradientSpace D →L[ℂ] V :=
   (WithLp.sndL 2 ℂ H V).comp (closedGradientGraph D).subtypeL
 
-def closedGradientForm
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) (u v : D.closure.domain) : ℂ :=
+def closedGradientForm (u v : D.closure.domain) : ℂ :=
   inner ℂ (D.closure u) (D.closure v)
 
-def closedGradientEnergy
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) (u : D.closure.domain) : ℝ := ‖D.closure u‖ ^ 2
+def closedGradientEnergy (u : D.closure.domain) : ℝ := ‖D.closure u‖ ^ 2
 
-def closedGradientEnergyNorm
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) (u : D.closure.domain) : ℝ :=
+def closedGradientEnergyNorm (u : D.closure.domain) : ℝ :=
   Real.sqrt (‖(u : H)‖ ^ 2 + closedGradientEnergy D u)
 
-theorem closedGradientGraph_isClosed
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) (hclosable : D.IsClosable) :
-    IsClosed (closedGradientGraph D : Set (WithLp 2 (H × V))) := by
-  exact hclosable.closure_isClosed.preimage (WithLp.prod_continuous_ofLp 2 H V)
+theorem closedGradientGraph_isClosed (hclosable : D.IsClosable) :
+    IsClosed (closedGradientGraph D : Set (WithLp 2 (H × V))) := hclosable.closure_isClosed.preimage (WithLp.prod_continuous_ofLp 2 H V)
 
-theorem closedGradientSpace_complete
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
-    (D : H →ₗ.[ℂ] V) (hclosable : D.IsClosable) :
-    CompleteSpace (ClosedGradientSpace D) := by
-  exact (closedGradientGraph_isClosed D hclosable).completeSpace_coe
+end
 
-theorem closedGradientEmbedding_properties
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
-    (D : H →ₗ.[ℂ] V) (hdense : Dense (D.domain : Set H))
+section
+
+variable {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+    [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V] (D : H →ₗ.[ℂ] V)
+
+theorem closedGradientSpace_complete (hclosable : D.IsClosable) :
+    CompleteSpace (ClosedGradientSpace D) := (closedGradientGraph_isClosed D hclosable).completeSpace_coe
+
+theorem closedGradientEmbedding_properties (hdense : Dense (D.domain : Set H))
     (hclosable : D.IsClosable) :
     ‖closedGradientEmbedding D‖ ≤ 1 ∧
       Function.Injective (closedGradientEmbedding D) ∧
       DenseRange (closedGradientEmbedding D) ∧
       Set.range (closedGradientEmbedding D) = (D.closure.domain : Set H) := by
-  have hrange : Set.range (closedGradientEmbedding D) = (D.closure.domain : Set H) := by
+  have hrange : Set.range (closedGradientEmbedding D) = D.closure.domain := by
     ext x
     constructor
     · rintro ⟨w, rfl⟩
@@ -79,7 +59,7 @@ theorem closedGradientEmbedding_properties
       refine ⟨⟨WithLp.toLp 2 (x, D.closure ⟨x, hx⟩), D.closure.mem_graph ⟨x, hx⟩⟩, rfl⟩
   refine ⟨ContinuousLinearMap.opNorm_le_bound _ zero_le_one (fun w => ?_), ?_, ?_, hrange⟩
   · change ‖(w.val).fst‖ ≤ 1 * ‖w.val‖
-    simpa using WithLp.norm_fst_le H (w : WithLp 2 (H × V))
+    grind [WithLp.norm_fst_le]
   · intro w z hwz
     apply Subtype.ext
     apply (WithLp.linearEquiv 2 ℂ (H × V)).injective
@@ -89,39 +69,40 @@ theorem closedGradientEmbedding_properties
     rw [hrange]
     exact hdense.mono D.le_closure.1
 
-theorem closedGradientSpace_inner
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) (w z : ClosedGradientSpace D) :
+end
+
+section
+
+variable {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [NormedAddCommGroup V]
+    [InnerProductSpace ℂ V] (D : H →ₗ.[ℂ] V)
+
+theorem closedGradientSpace_inner (w z : ClosedGradientSpace D) :
     inner ℂ w z =
       inner ℂ (closedGradientEmbedding D w) (closedGradientEmbedding D z) +
-      inner ℂ (closedGradientCoordinate D w) (closedGradientCoordinate D z) := by
-  exact WithLp.prod_inner_apply (w : WithLp 2 (H × V)) (z : WithLp 2 (H × V))
+      inner ℂ (closedGradientCoordinate D w) (closedGradientCoordinate D z) := WithLp.prod_inner_apply (w : WithLp 2 (H × V)) (z : WithLp 2 (H × V))
 
-theorem closedGradientEnergyNorm_eq_graphNorm
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) (u : D.closure.domain) :
-    closedGradientEnergyNorm D u = ‖WithLp.toLp 2 ((u : H), D.closure u)‖ := by
-  exact (WithLp.prod_norm_eq_of_L2 (WithLp.toLp 2 ((u : H), D.closure u))).symm
+theorem closedGradientEnergyNorm_eq_graphNorm (u : D.closure.domain) :
+    closedGradientEnergyNorm D u = ‖WithLp.toLp 2 ((u : H), D.closure u)‖ := (WithLp.prod_norm_eq_of_L2 (WithLp.toLp 2 ((u : H), D.closure u))).symm
 
-theorem closedGradientForm_nonnegative_dense
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) (hdense : Dense (D.domain : Set H))
+theorem closedGradientForm_nonnegative_dense (hdense : Dense (D.domain : Set H))
     (hclosable : D.IsClosable) :
     Dense (D.closure.domain : Set H) ∧
       ∀ u : D.closure.domain,
         0 ≤ closedGradientEnergy D u ∧
         closedGradientForm D u u = (closedGradientEnergy D u : ℂ) := by
   refine ⟨hdense.mono D.le_closure.1, fun u => ⟨sq_nonneg _, ?_⟩⟩
-  simpa [closedGradientForm, closedGradientEnergy] using
-    (inner_self_eq_norm_sq_to_K (𝕜 := ℂ) (D.closure u))
+  simp [closedGradientForm, closedGradientEnergy]
 
+end
+
+section
+
+variable {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+    [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V] (D : H →ₗ.[ℂ] V)
+    (hclosable : D.IsClosable)
+
+include hclosable in
 theorem closedGradientForm_closed
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
-    (D : H →ₗ.[ℂ] V) (hclosable : D.IsClosable)
     (u : ℕ → D.closure.domain)
     (hcauchy : CauchySeq (fun n => WithLp.toLp 2 ((u n : H), D.closure (u n)))) :
     ∃ v : D.closure.domain,
@@ -136,20 +117,16 @@ theorem closedGradientForm_closed
     apply (WithLp.linearEquiv 2 ℂ (H × V)).injective
     exact Prod.ext hvH hvV
   refine ⟨v, ?_⟩
-  have hn := (hw.sub_const w).norm
-  simpa only [sub_self, norm_zero, ← heq, closedGradientEnergyNorm_eq_graphNorm,
-    Submodule.coe_sub, LinearPMap.map_sub, ← WithLp.toLp_sub, Prod.mk_sub_mk] using hn
+  simpa [sub_self, norm_zero, ← heq, closedGradientEnergyNorm_eq_graphNorm, Submodule.coe_sub, LinearPMap.map_sub, ← WithLp.toLp_sub, Prod.mk_sub_mk] using ((hw.sub_const w).norm)
 
-theorem closedGradientForm_core
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
-    (D : H →ₗ.[ℂ] V) (hclosable : D.IsClosable) (u : D.closure.domain) :
+include hclosable in
+theorem closedGradientForm_core (u : D.closure.domain) :
     ∃ s : ℕ → D.domain,
       Filter.Tendsto (fun n => (s n : H)) Filter.atTop (nhds (u : H)) ∧
       Filter.Tendsto (fun n => D (s n)) Filter.atTop (nhds (D.closure u)) ∧
       Filter.Tendsto (fun n => ‖D (s n)‖ ^ 2) Filter.atTop
         (nhds (closedGradientEnergy D u)) := by
-  have hu : ((u : H), D.closure u) ∈ closure (D.graph : Set (H × V)) := by
+  have hu : ((u : H), D.closure u) ∈ closure D.graph := by
     change ((u : H), D.closure u) ∈ D.graph.topologicalClosure
     rw [hclosable.graph_closure_eq_closure_graph]
     exact D.closure.mem_graph u
@@ -161,6 +138,8 @@ theorem closedGradientForm_core
     simpa only [Function.comp_def, funext (fun n => (hs n).2)] using ((continuous_snd.tendsto _).comp hlim)
   exact ⟨s, hH, hV, hV.norm.pow 2⟩
 
+end
+
 theorem closedGradientForm_extends
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     [NormedAddCommGroup V] [InnerProductSpace ℂ V]
@@ -169,13 +148,15 @@ theorem closedGradientForm_extends
       ⟨(t : H), D.le_closure.1 t.property⟩ = inner ℂ (D s) (D t) := by
   unfold closedGradientForm
   congr 1
-  · exact (D.le_closure.2 (rfl : (s : H) = (⟨(s : H), D.le_closure.1 s.property⟩ : D.closure.domain))).symm
-  · exact (D.le_closure.2 (rfl : (t : H) = (⟨(t : H), D.le_closure.1 t.property⟩ : D.closure.domain))).symm
+  · exact (D.le_closure.2 rfl).symm
+  · exact (D.le_closure.2 rfl).symm
 
-theorem closedGradientForm_closure_characterization
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
-    (D : H →ₗ.[ℂ] V) (hclosable : D.IsClosable) (s : ℕ → D.domain) (u : H)
+variable {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+    [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V] (D : H →ₗ.[ℂ] V)
+    (hclosable : D.IsClosable) (s : ℕ → D.domain)
+
+include hclosable in
+theorem closedGradientForm_closure_characterization (u : H)
     (hlimit : Filter.Tendsto (fun n => (s n : H)) Filter.atTop (nhds u))
     (hcauchy : CauchySeq (fun n => D (s n))) :
     ∃ hu : u ∈ D.closure.domain,
@@ -193,19 +174,17 @@ theorem closedGradientForm_closure_characterization
     have he : (⟨u, hu⟩ : D.closure.domain) = u' := Subtype.ext hu'.symm
     simpa only [he] using hv'
   refine ⟨hu, ?_, ?_⟩
-  · simpa only [heq] using hv
-  · simpa only [closedGradientEnergy, heq] using hv.norm.pow 2
+  · simpa [heq] using hv
+  · simpa [closedGradientEnergy, heq] using hv.norm.pow 2
 
+include hclosable in
 theorem gradientQuadraticForm_closable
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
-    (D : H →ₗ.[ℂ] V) (hclosable : D.IsClosable) (s : ℕ → D.domain)
     (hzero : Filter.Tendsto (fun n => (s n : H)) Filter.atTop (nhds 0))
     (hcauchy : CauchySeq (fun n => D (s n))) :
     Filter.Tendsto (fun n => D (s n)) Filter.atTop (nhds 0) := by
   obtain ⟨hu, hgrad, _⟩ := closedGradientForm_closure_characterization D hclosable s 0 hzero hcauchy
   have hz : (⟨0, hu⟩ : D.closure.domain) = 0 := Subtype.ext rfl
-  simpa only [hz, LinearPMap.map_zero] using hgrad
+  simp_all [hz]
 
 end DedekindZetaZeroFree
 

@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -27,7 +25,6 @@ open scoped NumberField TensorProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 universe u v w
 
@@ -61,10 +58,10 @@ variable
 noncomputable def scalarTensorConjugation
     (σ : L ≃ₐ[K] L) :
     A ⊗[K] L ≃ₐ[A] A ⊗[K] L := by
-  let f : A ⊗[K] L →ₐ[A] A ⊗[K] L :=
+  let f :=
     Algebra.TensorProduct.map
       (AlgHom.id A A) σ.toAlgHom
-  let g : A ⊗[K] L →ₐ[A] A ⊗[K] L :=
+  let g :=
     Algebra.TensorProduct.map
       (AlgHom.id A A) σ.symm.toAlgHom
   exact AlgEquiv.ofAlgHom f g
@@ -76,8 +73,7 @@ omit [NumberField K] [NumberField L]
 @[simp]
 theorem scalarTensorConjugation_tmul
     (σ : L ≃ₐ[K] L) (a : A) (x : L) :
-    scalarTensorConjugation
-        (K := K) (L := L) (A := A) σ
+    scalarTensorConjugation σ
         (a ⊗ₜ[K] x) =
       a ⊗ₜ[K] σ x :=
   rfl
@@ -87,7 +83,6 @@ omit [NumberField K] [NumberField L]
 theorem scalarTensorConjugation_one
     (z : A ⊗[K] L) :
     scalarTensorConjugation
-        (K := K) (L := L) (A := A)
         (1 : L ≃ₐ[K] L) z = z := by
   induction z using TensorProduct.inductionOn with
   | tmul a x => simp
@@ -98,12 +93,10 @@ omit [NumberField K] [NumberField L]
 theorem scalarTensorConjugation_mul
     (σ τ : L ≃ₐ[K] L)
     (z : A ⊗[K] L) :
-    scalarTensorConjugation
-        (K := K) (L := L) (A := A) (σ * τ) z =
+    scalarTensorConjugation (σ * τ) z =
       scalarTensorConjugation
         (K := K) (L := L) (A := A) σ
-        (scalarTensorConjugation
-          (K := K) (L := L) (A := A) τ z) := by
+        (scalarTensorConjugation τ z) := by
   induction z using TensorProduct.inductionOn with
   | tmul a x => simp
   | add x y hx hy => simp [hx, hy]
@@ -131,7 +124,7 @@ noncomputable def scalarTensorUnitsAction :
     apply Units.ext
     exact
       (scalarTensorConjugation
-        (K := K) (L := L) (A := A) σ).map_one
+           σ).map_one
   smul_mul σ x y := by
     apply Units.ext
     exact
@@ -149,8 +142,7 @@ theorem scalarTensorUnitsAction_coe
       (K := K) (L := L) (A := A)
     ((σ • z : (A ⊗[K] L)ˣ) :
         A ⊗[K] L) =
-      scalarTensorConjugation
-        (K := K) (L := L) (A := A) σ
+      scalarTensorConjugation σ
         (z : A ⊗[K] L) :=
   rfl
 
@@ -162,12 +154,9 @@ theorem relativeAdeleInfiniteComponent_conjugation
     (w : InfinitePlace K)
     (σ : L ≃ₐ[K] L)
     (z : RelativeAdeleRing K L) :
-    relativeAdeleInfiniteComponent
-        (K := K) (L := L) w
+    relativeAdeleInfiniteComponent w
         (RelativeIdeleGroup.conjugation K L σ z) =
-      scalarTensorConjugation
-        (K := K) (L := L)
-        (A := w.Completion) σ
+      scalarTensorConjugation σ
         (relativeAdeleInfiniteComponent
           (K := K) (L := L) w z) := by
   induction z using TensorProduct.inductionOn with
@@ -180,12 +169,9 @@ theorem relativeAdeleFiniteComponent_conjugation
     (w : HeightOneSpectrum (𝓞 K))
     (σ : L ≃ₐ[K] L)
     (z : RelativeAdeleRing K L) :
-    relativeAdeleFiniteComponent
-        (K := K) (L := L) w
+    relativeAdeleFiniteComponent w
         (RelativeIdeleGroup.conjugation K L σ z) =
-      scalarTensorConjugation
-        (K := K) (L := L)
-        (A := w.adicCompletion K) σ
+      scalarTensorConjugation σ
         (relativeAdeleFiniteComponent
           (K := K) (L := L) w z) := by
   induction z using TensorProduct.inductionOn with
@@ -200,16 +186,12 @@ theorem RelativeIdeleGroup.infiniteComponent_smul
     (z : RelativeIdeleGroup K L) :
     letI := scalarTensorUnitsAction
       (K := K) (L := L) (A := w.Completion)
-    RelativeIdeleGroup.infiniteComponent
-        (K := K) (L := L) w (σ • z) =
-      σ • RelativeIdeleGroup.infiniteComponent
-        (K := K) (L := L) w z := by
-  let _ := scalarTensorUnitsAction
-    (K := K) (L := L) (A := w.Completion)
+    RelativeIdeleGroup.infiniteComponent w (σ • z) =
+      σ • RelativeIdeleGroup.infiniteComponent w z := by
   apply Units.ext
   exact relativeAdeleInfiniteComponent_conjugation
-    (K := K) (L := L) w σ
-      (z : RelativeAdeleRing K L)
+      w σ
+      z
 
 omit [NumberField L] [FiniteDimensional K L] in
 /-- The finite local unit component map is equivariant. -/
@@ -220,160 +202,11 @@ theorem RelativeIdeleGroup.finiteComponent_smul
     letI := scalarTensorUnitsAction
       (K := K) (L := L)
       (A := w.adicCompletion K)
-    RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) w (σ • z) =
-      σ • RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) w z := by
-  let _ := scalarTensorUnitsAction
-    (K := K) (L := L)
-    (A := w.adicCompletion K)
+    RelativeIdeleGroup.finiteComponent w (σ • z) =
+      σ • RelativeIdeleGroup.finiteComponent w z := by
   apply Units.ext
   exact relativeAdeleFiniteComponent_conjugation
-    (K := K) (L := L) w σ
-      (z : RelativeAdeleRing K L)
-
-/-- The Galois action on the restricted local product transported
-through the exact relative-idele equivalence. -/
-@[reducible]
-noncomputable def relativeLocalIdeleDataMulDistribMulAction :
-    MulDistribMulAction
-      (L ≃ₐ[K] L)
-      (RelativeLocalIdeleData
-        (K := K) (L := L)) := by
-  letI : MulDistribMulAction
-      (L ≃ₐ[K] L) (RelativeIdeleGroup K L) :=
-    relativeIdeleRestrictedMulDistribMulAction
-      (K := K) (L := L)
-  let e :=
-    relativeIdeleMulEquivLocalData
-      (K := K) (L := L)
-  exact
-    { smul := fun σ a => e (σ • e.symm a)
-      one_smul := by
-        intro a
-        change e (1 • e.symm a) = a
-        rw [one_smul, e.apply_symm_apply]
-      mul_smul := by
-        intro σ τ a
-        change
-          e ((σ * τ) • e.symm a) =
-            e (σ • e.symm (e (τ • e.symm a)))
-        rw [e.symm_apply_apply, mul_smul]
-      smul_one := by
-        intro σ
-        change e (σ • e.symm 1) = 1
-        rw [e.symm.map_one, smul_one, e.map_one]
-      smul_mul := by
-        intro σ a b
-        change
-          e (σ • e.symm (a * b)) =
-            e (σ • e.symm a) *
-              e (σ • e.symm b)
-        rw [e.symm.map_mul,
-          MulDistribMulAction.smul_mul, e.map_mul] }
-
-omit [NumberField L] in
-/-- Equivariance of the exact restricted-product equivalence. -/
-theorem relativeIdeleMulEquivLocalData_smul
-    (σ : L ≃ₐ[K] L)
-    (z : RelativeIdeleGroup K L) :
-    letI :=
-      relativeIdeleRestrictedMulDistribMulAction
-        (K := K) (L := L)
-    letI :=
-      relativeLocalIdeleDataMulDistribMulAction
-        (K := K) (L := L)
-    relativeIdeleMulEquivLocalData
-        (K := K) (L := L) (σ • z) =
-      σ • relativeIdeleMulEquivLocalData
-        (K := K) (L := L) z := by
-  let _ :=
-    relativeIdeleRestrictedMulDistribMulAction
-      (K := K) (L := L)
-  let _ :=
-    relativeLocalIdeleDataMulDistribMulAction
-      (K := K) (L := L)
-  change
-    relativeIdeleMulEquivLocalData
-        (K := K) (L := L) (σ • z) =
-      relativeIdeleMulEquivLocalData
-        (K := K) (L := L)
-        (σ •
-          (relativeIdeleMulEquivLocalData
-            (K := K) (L := L)).symm
-            (relativeIdeleMulEquivLocalData
-              (K := K) (L := L) z))
-  rw [(relativeIdeleMulEquivLocalData
-    (K := K) (L := L)).symm_apply_apply]
-
-omit [NumberField L] in
-/-- The transported action is coordinatewise tensor conjugation at
-infinite places. -/
-theorem RelativeLocalIdeleData.infinite_smul
-    (σ : L ≃ₐ[K] L)
-    (a : RelativeLocalIdeleData (K := K) (L := L))
-    (w : InfinitePlace K) :
-    letI :=
-      relativeIdeleRestrictedMulDistribMulAction
-        (K := K) (L := L)
-    letI :=
-      relativeLocalIdeleDataMulDistribMulAction
-        (K := K) (L := L)
-    letI := scalarTensorUnitsAction
-      (K := K) (L := L) (A := w.Completion)
-    (σ • a).infinite w =
-      σ • a.infinite w := by
-  let _ :=
-    relativeIdeleRestrictedMulDistribMulAction
-      (K := K) (L := L)
-  let _ :=
-    relativeLocalIdeleDataMulDistribMulAction
-      (K := K) (L := L)
-  let _ := scalarTensorUnitsAction
-    (K := K) (L := L) (A := w.Completion)
-  change
-    RelativeIdeleGroup.infiniteComponent
-        (K := K) (L := L) w
-        (σ • relativeIdeleOfLocalData
-          (K := K) (L := L) a) =
-      σ • a.infinite w
-  rw [RelativeIdeleGroup.infiniteComponent_smul,
-    relativeIdeleOfLocalData_infiniteComponent]
-
-omit [NumberField L] in
-/-- The transported action is coordinatewise tensor conjugation at
-finite places. -/
-theorem RelativeLocalIdeleData.finite_smul
-    (σ : L ≃ₐ[K] L)
-    (a : RelativeLocalIdeleData (K := K) (L := L))
-    (w : HeightOneSpectrum (𝓞 K)) :
-    letI :=
-      relativeIdeleRestrictedMulDistribMulAction
-        (K := K) (L := L)
-    letI :=
-      relativeLocalIdeleDataMulDistribMulAction
-        (K := K) (L := L)
-    letI := scalarTensorUnitsAction
-      (K := K) (L := L)
-      (A := w.adicCompletion K)
-    (σ • a).finite w =
-      σ • a.finite w := by
-  let _ :=
-    relativeIdeleRestrictedMulDistribMulAction
-      (K := K) (L := L)
-  let _ :=
-    relativeLocalIdeleDataMulDistribMulAction
-      (K := K) (L := L)
-  let _ := scalarTensorUnitsAction
-    (K := K) (L := L)
-    (A := w.adicCompletion K)
-  change
-    RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) w
-        (σ • relativeIdeleOfLocalData
-          (K := K) (L := L) a) =
-      σ • a.finite w
-  rw [RelativeIdeleGroup.finiteComponent_smul,
-    relativeIdeleOfLocalData_finiteComponent]
+      w σ
+      z
 
 end

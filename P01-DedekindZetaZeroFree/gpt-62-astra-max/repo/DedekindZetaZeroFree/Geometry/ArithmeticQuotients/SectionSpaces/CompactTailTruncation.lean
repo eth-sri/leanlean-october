@@ -21,36 +21,15 @@ open KPContCotangentActualOverlap KPContCotangentOverlapRationalBranches
 open KPContCotangentActualGenuineTwistIsotropy
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem continuous_labeledA_placeEquiv :
-    Continuous (labeledA (placeEquiv F ζ hζ)) := by
-  apply continuous_pi
-  intro k
-  exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
+private alias continuous_labeledA_placeEquiv := DedekindZetaZeroFree.KPContActualCotangentChartZeroExtension.continuous_labeledA_placeEquiv
 
 private theorem measurable_q (a : Chart (U := U) (H := H)) :
-    Measurable (KPContCotangentOverlapRationalBranches.q a) := by
-  have hcm : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
-      ((H.atlas U).representative a.component)) := by
-    have he : KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component) =
-        (H.atlas U).components ∘ Sigma.mk a.component := by
-      funext x; exact ((H.atlas U).components_formula a.component x).symm
-    rw [he]
-    exact ((H.atlas U).components.isOpenEmbedding.comp IsOpenEmbedding.sigmaMk).continuous
-  have hproj : Measurable (KPCuspSiegel.projection F
-      (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)) :=
-    measurable_quotient_mk''
-  have hcomp : KPContCotangentOverlapRationalBranches.q a =
-      KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component)
-      ∘ KPCuspSiegel.projection F
-          (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)
-      ∘ labeledA (placeEquiv F ζ hζ) := rfl
-  rw [hcomp]
-  exact hcm.measurable.comp (hproj.comp continuous_labeledA_placeEquiv.measurable)
+    Measurable (KPContCotangentOverlapRationalBranches.q a) := by apply @DedekindZetaZeroFree.KPContActualCotangentChartZeroExtension.measurable_q <;> assumption
 
 private theorem q_isotropyArrow (a : Chart (U := U) (H := H)) (γ : Gamma a) (x : M F)
     (hx : x ∈ omega a) :
@@ -69,29 +48,18 @@ private theorem q_isotropyArrow (a : Chart (U := U) (H := H)) (γ : Gamma a) (x 
   apply MulAction.orbitRel_apply.mpr
   exact MulAction.mem_orbit_iff.mpr ⟨γ.val.1.val, rfl⟩
 
+alias CompactTailTruncation.q_isotropyArrow := q_isotropyArrow
+
 private theorem q_actualBranch {a b : Chart (U := U) (H := H)} (e : ActualBranch a b)
     (x : M F) :
     KPContCotangentOverlapRationalBranches.q b (e.arrow.psi x) =
-      KPContCotangentOverlapRationalBranches.q a x := by
-  rcases a with ⟨i, ca, oa, da, dao, dac, das, dai⟩
-  rcases b with ⟨j, cb, ob, db, dbo, dbc, dbs, dbi⟩
-  rcases e with ⟨h, e, hs, ht, hl⟩
-  dsimp at h
-  subst j
-  simp only [KPContCotangentOverlapRationalBranches.q]
-  apply congrArg (KPFiniteCuspAtlas.componentMap F ζ hζ U
-    ((H.atlas U).representative i))
-  simp only [Arrow.psi, coordinateMap, targetChart, isotropyChart,
-    ChartKind.representative, inv_one, one_mul, mul_one]
-  have ha (v : KPCuspGenuineMonodromy.SymmetricSpace F) :
-      labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) v) = v := by
-    funext k; simp [labeledA, labeledAInv]
-  rw [ha]
-  apply Quotient.sound
-  exact ⟨e.gamma, rfl⟩
+      KPContCotangentOverlapRationalBranches.q a x := by apply @DedekindZetaZeroFree.KPContActualCotangentChartZeroExtension.q_actualBranch <;> assumption
 
-private theorem sectionNorm_indicator_of_coeff
-    (s u : Sections F ζ hζ U R P H) (D : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
+section
+
+variable (s u : Sections F ζ hζ U R P H)
+
+private theorem sectionNorm_indicator_of_coeff (D : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
     (h : ∀ i x, (u i).val x =
       (if Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U)
           (x, (H.atlas U).representative i) ∈ D then (s i).val x else 0)) :
@@ -111,8 +79,7 @@ private theorem sectionNorm_indicator_of_coeff
   · rw [Set.indicator_of_notMem hx, h i x, if_neg hx]
     simp
 
-private theorem sectionNorm_indicator_of_coeff_neg
-    (s u : Sections F ζ hζ U R P H) (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
+private theorem sectionNorm_indicator_of_coeff_neg (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
     (h : ∀ i x, (u i).val x =
       (if Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U)
           (x, (H.atlas U).representative i) ∈ E then 0 else (s i).val x)) :
@@ -133,6 +100,8 @@ private theorem sectionNorm_indicator_of_coeff_neg
   · rw [Set.indicator_of_mem (by simp [Set.mem_compl_iff, hx]), h i x, if_neg hx,
       ← hbc, sectionNorm_component]
 
+end
+
 private theorem sectionNorm_nonneg' (s : Sections F ζ hζ U R P H)
     (b : KPMsFixedHaarDisintegration.Spherical F ζ hζ U) :
     0 ≤ sectionNorm F ζ hζ U R P H s b := by
@@ -140,6 +109,8 @@ private theorem sectionNorm_nonneg' (s : Sections F ζ hζ U R P H)
   refine Quotient.inductionOn y (fun x => ?_)
   rw [sectionNorm_component]
   exact norm_nonneg _
+
+alias CompactTailTruncation.sectionNorm_nonneg' := sectionNorm_nonneg'
 
 private theorem squaredNorm_indicator_of_sectionNorm
     {u w : Sections F ζ hζ U R P H} {D : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)}
@@ -157,31 +128,23 @@ private theorem squaredNorm_indicator_of_sectionNorm
 
 structure ScalarIndicatorSpec (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
     (s t : BorelL2Sections F ζ hζ U R P H) : Prop where
-  coefficients : ∀ (i : Fin (H.atlas U).componentCount) (x : KPFiniteCuspAtlas.SymmetricSpace F),
-    (t.val i).val x =
-      (if Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U)
-          (x, (H.atlas U).representative i) ∈ E then (s.val i).val x else 0)
   norm : sectionNorm F ζ hζ U R P H t.val =
     E.indicator (sectionNorm F ζ hζ U R P H s.val)
   error : squaredNorm F ζ hζ U R P H (s.val - t.val) =
     Eᶜ.indicator (squaredNorm F ζ hζ U R P H s.val)
-  integral_le : normIntegral F ζ hζ U R P H t.val ≤ normIntegral F ζ hζ U R P H s.val
 
 structure CotangentIndicatorSpec (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
     (r t : Family (U := U) (H := H)) : Prop where
-  coefficients : ∀ (a : Chart (U := U) (H := H))
-      (x : KPContCotangentOverlapRationalBranches.omega a),
-    coefficient t a x =
-      (if KPContCotangentOverlapRationalBranches.q a x.val ∈ E
-        then coefficient r a x else 0)
   norm : normSquare t = E.indicator (normSquare r)
   error : normSquare (r - t) = Eᶜ.indicator (normSquare r)
   integral_le :
     (∫⁻ b, ENNReal.ofReal (normSquare t b : ℝ) ∂baseMeasure (U := U) (R := R) (P := P)) ≤
       ∫⁻ b, ENNReal.ofReal (normSquare r b : ℝ) ∂baseMeasure (U := U) (R := R) (P := P)
 
-theorem indicator_truncation (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
-    (hE : MeasurableSet E) :
+variable (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hE : MeasurableSet E)
+
+include hE in
+theorem indicator_truncation :
     (∀ s : BorelL2Sections F ζ hζ U R P H,
       ∃ t : BorelL2Sections F ζ hζ U R P H, ScalarIndicatorSpec E s t) ∧
     (∀ r : Family (U := U) (H := H),
@@ -257,7 +220,7 @@ theorem indicator_truncation (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
       simp only [normIntegral]
       exact lintegral_mono hle
     refine ⟨⟨tSec, ⟨hmeas, hfin⟩⟩, ?_⟩
-    refine ⟨fun i x => rfl, hnorm, ?_, ?_⟩
+    refine ⟨hnorm, ?_⟩
     ·
       have hcoeff : ∀ i x, ((s.val - tSec) i).val x =
           (if Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U)
@@ -274,8 +237,6 @@ theorem indicator_truncation (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
           rw [ht, sub_zero, if_neg h]
       exact squaredNorm_indicator_of_sectionNorm
         (sectionNorm_indicator_of_coeff_neg s.val (s.val - tSec) E hcoeff)
-    · simp only [normIntegral]
-      exact lintegral_mono hle
   · intro r
     let tFun : ChartFields F ζ hζ U R P H := fun a x =>
       if KPContCotangentOverlapRationalBranches.q a x.val ∈ E then r.val a x else 0
@@ -332,7 +293,7 @@ theorem indicator_truncation (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
             simp only [coefficient, t, tFun]; rw [if_neg hc]
           rw [Set.indicator_of_notMem hc, ht]; simp)).symm
     refine ⟨t, ?_⟩
-    refine ⟨fun a x => rfl, hnorm_sq, ?_, ?_⟩
+    refine ⟨hnorm_sq, ?_, ?_⟩
     · have huniq := (Classical.choose_spec (normSquare_descends (r - t))).2
       exact (huniq _ (by
         refine ⟨(measurable_normSquare r).indicator hE.compl, ?_⟩
@@ -359,34 +320,27 @@ theorem indicator_truncation (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
       · rw [Set.indicator_of_mem h]
       · rw [Set.indicator_of_notMem h]; simp
 
-def scalarIndicator (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
-    (hE : MeasurableSet E) (s : BorelL2Sections F ζ hζ U R P H) :
+def scalarIndicator (s : BorelL2Sections F ζ hζ U R P H) :
     BorelL2Sections F ζ hζ U R P H :=
   Classical.choose ((indicator_truncation E hE).1 s)
 
-def cotangentBorelIndicator (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
-    (hE : MeasurableSet E) (r : Family (U := U) (H := H)) :
+def cotangentBorelIndicator (r : Family (U := U) (H := H)) :
     Family (U := U) (H := H) :=
   Classical.choose ((indicator_truncation E hE).2 r)
 
-theorem cotangentBorelIndicator_spec (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
-    (hE : MeasurableSet E) (r : Family (U := U) (H := H)) :
+theorem cotangentBorelIndicator_spec (r : Family (U := U) (H := H)) :
     CotangentIndicatorSpec E r (cotangentBorelIndicator E hE r) :=
   Classical.choose_spec ((indicator_truncation E hE).2 r)
 
-def cotangentIndicator (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
-    (hE : MeasurableSet E) (r : SquareFiniteFamily (U := U) (H := H)) :
+def cotangentIndicator (r : SquareFiniteFamily (U := U) (H := H)) :
     SquareFiniteFamily (U := U) (H := H) :=
-  ⟨cotangentBorelIndicator E hE r.val, by
-    exact lt_of_le_of_lt (cotangentBorelIndicator_spec E hE r.val).integral_le r.property⟩
+  ⟨cotangentBorelIndicator E hE r.val, lt_of_le_of_lt (cotangentBorelIndicator_spec E hE r.val).integral_le r.property⟩
 
-theorem scalarIndicator_spec (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
-    (hE : MeasurableSet E) (s : BorelL2Sections F ζ hζ U R P H) :
+theorem scalarIndicator_spec (s : BorelL2Sections F ζ hζ U R P H) :
     ScalarIndicatorSpec E s (scalarIndicator E hE s) :=
   Classical.choose_spec ((indicator_truncation E hE).1 s)
 
-theorem cotangentIndicator_spec (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
-    (hE : MeasurableSet E) (r : SquareFiniteFamily (U := U) (H := H)) :
+theorem cotangentIndicator_spec (r : SquareFiniteFamily (U := U) (H := H)) :
     CotangentIndicatorSpec E r.val (cotangentIndicator E hE r).val :=
   cotangentBorelIndicator_spec E hE r.val
 
@@ -413,10 +367,10 @@ open KPContSectorLineL2Isometry KPContSectorSmoothFramesSupport
 open KPContActualCotangentMeasurableFamilies
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 noncomputable def compactExhaustion :
     ℕ → Set (KPFiniteCuspAtlas.rawXU F ζ hζ U) :=
@@ -438,7 +392,11 @@ theorem compactExhaustion_covers :
     ⋃ n, compactExhaustion F ζ hζ U n = Set.univ :=
   iUnion_compactCovering (KPFiniteCuspAtlas.rawXU F ζ hζ U)
 
-private theorem tendsto_indicator_compl_zero {α : Type*} (f : α → ℝ) (E : ℕ → Set α)
+section
+
+variable {α : Type*} (f : α → ℝ)
+
+private theorem tendsto_indicator_compl_zero (E : ℕ → Set α)
     (hmono : Monotone E) (hcov : ⋃ n, E n = Set.univ) (x : α) :
     Tendsto (fun n => (E n)ᶜ.indicator f x) atTop (𝓝 (0 : ℝ)) := by
   obtain ⟨N, hN⟩ := Set.mem_iUnion.mp (by rw [hcov]; exact Set.mem_univ x)
@@ -446,7 +404,7 @@ private theorem tendsto_indicator_compl_zero {α : Type*} (f : α → ℝ) (E : 
   filter_upwards [Filter.eventually_atTop.mpr ⟨N, fun n hn => hmono hn hN⟩] with n hn
   exact (Set.indicator_of_notMem (s := (E n)ᶜ) (f := f) (show x ∉ (E n)ᶜ from fun h => h hn)).symm
 
-private theorem antitone_indicator_compl {α : Type*} (f : α → ℝ) (hf0 : ∀ y, 0 ≤ f y)
+private theorem antitone_indicator_compl (hf0 : ∀ y, 0 ≤ f y)
     (E : ℕ → Set α) (hmono : Monotone E) (x : α) :
     Antitone fun n => (E n)ᶜ.indicator f x :=
   antitone_nat_of_succ_le fun n => by
@@ -456,12 +414,17 @@ private theorem antitone_indicator_compl {α : Type*} (f : α → ℝ) (hf0 : �
     · rw [Set.indicator_of_notMem hx]
       exact Set.indicator_nonneg (fun y _ => hf0 y) x
 
-private theorem tendsto_setLIntegral_compl {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) (f : α → ℝ≥0∞) (hf : AEMeasurable f μ) (E : ℕ → Set α)
+end
+
+section
+
+variable {α : Type*} [MeasurableSpace α] (μ : Measure α)
+
+private theorem tendsto_setLIntegral_compl (f : α → ℝ≥0∞) (hf : AEMeasurable f μ) (E : ℕ → Set α)
     (hE : ∀ n, MeasurableSet (E n)) (hmono : Monotone E)
     (hcov : ⋃ n, E n = Set.univ) (hfin : ∫⁻ a, f a ∂μ ≠ ∞) :
     Tendsto (fun n => ∫⁻ a, (E n)ᶜ.indicator f a ∂μ) atTop (𝓝 0) := by
-  have hmeas : ∀ n, AEMeasurable (fun a => (E n)ᶜ.indicator f a) μ :=
+  have hmeas :=
     fun n => hf.indicator (hE n).compl
   have hanti : ∀ᵐ x ∂μ, Antitone fun n => (E n)ᶜ.indicator f x :=
     Filter.Eventually.of_forall fun x => antitone_nat_of_succ_le fun n => by
@@ -470,30 +433,23 @@ private theorem tendsto_setLIntegral_compl {α : Type*} [MeasurableSpace α]
         rw [Set.indicator_of_mem hx, Set.indicator_of_mem hx']
       · rw [Set.indicator_of_notMem hx]
         exact bot_le
-  have h0 : ∫⁻ a, (E 0)ᶜ.indicator f a ∂μ ≠ ∞ :=
-    ne_top_of_le_ne_top hfin (lintegral_mono fun a => Set.indicator_le_self _ _ a)
   have htend : ∀ᵐ x ∂μ, Tendsto (fun n => (E n)ᶜ.indicator f x) atTop (𝓝 0) :=
     Filter.Eventually.of_forall fun x => by
       obtain ⟨N, hN⟩ := Set.mem_iUnion.mp (by rw [hcov]; exact Set.mem_univ x)
       refine Tendsto.congr' ?_ tendsto_const_nhds
       filter_upwards [Filter.eventually_atTop.mpr ⟨N, fun n hn => hmono hn hN⟩] with n hn
       exact (Set.indicator_of_notMem (s := (E n)ᶜ) (f := f) (show x ∉ (E n)ᶜ from fun h => h hn)).symm
-  have := lintegral_tendsto_of_tendsto_of_antitone hmeas hanti h0 htend
+  have := lintegral_tendsto_of_tendsto_of_antitone hmeas hanti (ne_top_of_le_ne_top hfin (lintegral_mono fun a => Set.indicator_le_self _ _ a)) htend
   simpa using this
 
-private theorem tendsto_setIntegral_compl {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) (g : α → ℝ) (hg : Integrable g μ) (hg0 : ∀ y, 0 ≤ g y) (E : ℕ → Set α)
+private theorem tendsto_setIntegral_compl (g : α → ℝ) (hg : Integrable g μ) (hg0 : ∀ y, 0 ≤ g y) (E : ℕ → Set α)
     (hE : ∀ n, MeasurableSet (E n)) (hmono : Monotone E)
     (hcov : ⋃ n, E n = Set.univ) :
     Tendsto (fun n => ∫ a, (E n)ᶜ.indicator g a ∂μ) atTop (𝓝 0) := by
-  have hf : ∀ n, Integrable (fun a => (E n)ᶜ.indicator g a) μ :=
-    fun n => hg.indicator (hE n).compl
-  have hanti : ∀ᵐ x ∂μ, Antitone fun n => (E n)ᶜ.indicator g x :=
-    Filter.Eventually.of_forall fun x => antitone_indicator_compl g hg0 E hmono x
-  have htend : ∀ᵐ x ∂μ, Tendsto (fun n => (E n)ᶜ.indicator g x) atTop (𝓝 0) :=
-    Filter.Eventually.of_forall fun x => tendsto_indicator_compl_zero g E hmono hcov x
-  have := integral_tendsto_of_tendsto_of_antitone hf (integrable_zero α ℝ μ) hanti htend
+  have := integral_tendsto_of_tendsto_of_antitone (fun n => hg.indicator (hE n).compl) (integrable_zero α ℝ μ) (Filter.Eventually.of_forall fun x => antitone_indicator_compl g hg0 E hmono x) (Filter.Eventually.of_forall fun x => tendsto_indicator_compl_zero g E hmono hcov x)
   simpa using this
+
+end
 
 private theorem norm_eq_sqrt_of_sq_eq {E : Type*} [NormedAddCommGroup E] {x : E} {A : ℝ}
     (h : ‖x‖ ^ 2 = A) : ‖x‖ = Real.sqrt A := by
@@ -535,14 +491,7 @@ theorem compact_indicator_norm_tendsto :
             (compactExhaustion_measurable F ζ hζ U n) r)‖) atTop (𝓝 0)) := by
   constructor
   · intro s
-    have hspec : ∀ n, ScalarIndicatorSpec (compactExhaustion F ζ hζ U n) s
-        (scalarIndicator (compactExhaustion F ζ hζ U n)
-          (compactExhaustion_measurable F ζ hζ U n) s) :=
-      fun n => scalarIndicator_spec _ _ _
-    have hconv : Tendsto (fun n => ∫⁻ b,
-        ((compactExhaustion F ζ hζ U n)ᶜ).indicator
-          (squaredNorm F ζ hζ U R P H s.val) b
-        ∂KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U) atTop (𝓝 0) :=
+    have hconv :=
       tendsto_setLIntegral_compl _ _
         (squaredNorm_measurable F ζ hζ U R P H s.val s.property.1).aemeasurable
         (compactExhaustion F ζ hζ U) (compactExhaustion_measurable F ζ hζ U)
@@ -554,13 +503,7 @@ theorem compact_indicator_norm_tendsto :
       refine hconv.congr' ?_
       filter_upwards with n
       simp only [normIntegral]
-      rw [Submodule.coe_sub, ← (hspec n).error]
-    have haR : Tendsto (fun n => (normIntegral F ζ hζ U R P H
-        (s - scalarIndicator (compactExhaustion F ζ hζ U n)
-          (compactExhaustion_measurable F ζ hζ U n) s).val).toReal) atTop (𝓝 0) :=
-      (ENNReal.tendsto_toReal_zero_iff
-        (fun n => ne_of_lt (s - scalarIndicator (compactExhaustion F ζ hζ U n)
-          (compactExhaustion_measurable F ζ hζ U n) s).property.2)).mpr ha
+      rw [Submodule.coe_sub, ← ((fun n => scalarIndicator_spec _ _ _) n).error]
     have hnorm : ∀ n, ‖toSector F ζ hζ U R P H s -
         toSector F ζ hζ U R P H
           (scalarIndicator (compactExhaustion F ζ hζ U n)
@@ -569,26 +512,14 @@ theorem compact_indicator_norm_tendsto :
           (s - scalarIndicator (compactExhaustion F ζ hζ U n)
             (compactExhaustion_measurable F ζ hζ U n) s).val).toReal) := by
       intro n
-      have hlin : toSector F ζ hζ U R P H s -
-          toSector F ζ hζ U R P H
-            (scalarIndicator (compactExhaustion F ζ hζ U n)
-              (compactExhaustion_measurable F ζ hζ U n) s) =
-          toSector F ζ hζ U R P H (s - scalarIndicator (compactExhaustion F ζ hζ U n)
-            (compactExhaustion_measurable F ζ hζ U n) s) :=
-        (map_sub (toSector F ζ hζ U R P H) s _).symm
-      rw [hlin]
+      rw [((map_sub (toSector F ζ hζ U R P H) s _).symm)]
       exact norm_eq_sqrt_of_sq_eq (toSector_norm_sq F ζ hζ U R P H _)
-    have := (Real.continuous_sqrt.tendsto (0 : ℝ)).comp haR
+    have := (Real.continuous_sqrt.tendsto (0 : ℝ)).comp ((ENNReal.tendsto_toReal_zero_iff
+      (fun n => ne_of_lt (s - scalarIndicator (compactExhaustion F ζ hζ U n)
+        (compactExhaustion_measurable F ζ hζ U n) s).property.2)).mpr ha)
     simpa only [Real.sqrt_zero, Function.comp_def, hnorm] using this
   · intro r
-    have hspec : ∀ n, CotangentIndicatorSpec (compactExhaustion F ζ hζ U n) r.val
-        (cotangentIndicator (compactExhaustion F ζ hζ U n)
-          (compactExhaustion_measurable F ζ hζ U n) r).val :=
-      fun n => cotangentIndicator_spec _ _ _
-    have hconv : Tendsto (fun n => ∫ x,
-        ((compactExhaustion F ζ hζ U n)ᶜ).indicator
-          (fun b => (normSquare r.val b : ℝ)) x
-        ∂KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U) atTop (𝓝 0) :=
+    have hconv :=
       tendsto_setIntegral_compl _ _
         (KPContActualCotangentIntrinsicHilbertIntegral.integrable_normSquare r)
         (fun b => NNReal.coe_nonneg _)
@@ -604,7 +535,7 @@ theorem compact_indicator_norm_tendsto :
       filter_upwards with x
       rw [← coe_indicator F ζ hζ U ((compactExhaustion F ζ hζ U n)ᶜ) (normSquare r.val) x]
       rw [Submodule.coe_sub]
-      exact congrArg (fun v : NNReal => (v : ℝ)) (congrFun (hspec n).error x).symm
+      exact congrArg (fun v : NNReal => (v : ℝ)) (congrFun ((fun n => cotangentIndicator_spec _ _ _) n).error x).symm
     have hnorm : ∀ n, ‖KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r -
         KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H
           (cotangentIndicator (compactExhaustion F ζ hζ U n)
@@ -614,15 +545,7 @@ theorem compact_indicator_norm_tendsto :
             (compactExhaustion_measurable F ζ hζ U n) r).val x : ℝ)
           ∂KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U) := by
       intro n
-      have hlin : KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r -
-          KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H
-            (cotangentIndicator (compactExhaustion F ζ hζ U n)
-              (compactExhaustion_measurable F ζ hζ U n) r) =
-          KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H
-            (r - cotangentIndicator (compactExhaustion F ζ hζ U n)
-              (compactExhaustion_measurable F ζ hζ U n) r) :=
-        (map_sub (KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H) r _).symm
-      rw [hlin]
+      rw [((map_sub (KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H) r _).symm)]
       exact norm_eq_sqrt_of_sq_eq (ofFamily_norm_sq F ζ hζ U R P H _)
     have := (Real.continuous_sqrt.tendsto (0 : ℝ)).comp ha
     simpa only [Real.sqrt_zero, Function.comp_def, hnorm] using this
@@ -672,7 +595,7 @@ theorem compact_tail
         ‖v - KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r‖ < ε := by
   classical
 
-  obtain ⟨g, hg, hgLp, hgu, f, hf, hfLp, hfg, hfu, hfeq, _⟩ :=
+  obtain ⟨g, hg, hgLp, f, hf, hfLp, hfu, hfeq⟩ :=
     KPContSectorExactBorelRepresentatives.exists_exact_borel_representative F ζ hζ R U u
   let f₀ : KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ U := ⟨f, hfeq⟩
   let f₁ : BorelL2Scalars F ζ hζ U R := ⟨f₀, hf, hfLp⟩

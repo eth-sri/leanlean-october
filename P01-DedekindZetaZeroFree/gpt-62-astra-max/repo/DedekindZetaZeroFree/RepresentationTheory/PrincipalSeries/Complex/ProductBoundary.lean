@@ -17,7 +17,6 @@ local instance : CompactSpace compactSubgroup :=
 
 local instance : SecondCountableTopology compactSubgroup := by
   letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) ℂ) := by
-    change SecondCountableTopology (Fin 2 → Fin 2 → ℂ)
     infer_instance
   letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) ℂ)ᵐᵒᵖ :=
     MulOpposite.opHomeomorph.symm.secondCountableTopology
@@ -36,10 +35,9 @@ theorem productBoundary_factor
     [∀ i, (ν i).IsHaarMeasure] (s : ι → ℝ)
     (f : ∀ i, PrincipalSeries (s i)) (g : ∀ i, PrincipalSeries (-s i)) :
     productBoundary μ s f g = ∏ i, quotientBoundary (ν i) (s i) (f i) (g i) := by
-  have hm : μ = Measure.pi ν := Measure.isHaarMeasure_eq_of_isProbabilityMeasure μ (Measure.pi ν)
   unfold productBoundary quotientBoundary
-  rw [hm]
-  exact integral_fintype_prod_eq_prod (μ := ν) (fun i (k : compactSubgroup) =>
+  rw [(Measure.isHaarMeasure_eq_of_isProbabilityMeasure μ (Measure.pi ν))]
+  exact integral_fintype_prod_eq_prod (fun i (k : compactSubgroup) =>
     (KPCplxPrincipalSeriesCharts.pi (s i) k.val (f i)) 1 * star ((KPCplxPrincipalSeriesCharts.pi (-s i) k.val (g i)) 1))
 
 theorem productBoundary_word_adjoint

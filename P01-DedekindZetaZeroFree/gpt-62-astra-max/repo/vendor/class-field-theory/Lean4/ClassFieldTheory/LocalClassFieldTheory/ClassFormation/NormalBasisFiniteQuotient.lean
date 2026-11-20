@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 /-! Provides the public declarations in the `LocalClassFieldTheory.ClassFormation.NormalBasisFiniteQuotient` Lean module. -/
 
@@ -46,19 +43,13 @@ theorem exists_principalUnits_le_chosenNormalBasisPrincipalUnitSet :
       (K := K) (L := L) with ⟨c, hc⟩
   refine ⟨c, ?_⟩
   intro n hcn
-  let S : Set L :=
+  let S :=
     (chosenBaseUniformizerPowSubmodule K L n
       (chosenNormalBasisIntegerLattice K L) : Set L)
-  have hS : S ∈ nhds (0 : L) := hc n hcn
-  have hSO : {x : 𝒪[L] | (x : L) ∈ S} ∈ nhds (0 : 𝒪[L]) := by
-    exact continuous_subtype_val.continuousAt hS
   rcases exists_maximalIdeal_pow_subset_nhds_zero L
-      {x : 𝒪[L] | (x : L) ∈ S} hSO with ⟨m, hm⟩
+      {x : 𝒪[L] | (x : L) ∈ S} (continuous_subtype_val.continuousAt (hc n hcn)) with ⟨m, hm⟩
   refine ⟨m, ?_⟩
   intro a ha
-  rw [mem_chosenNormalBasisPrincipalUnitSet_iff]
-  change
-    (((((a : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L)) ∈ S
   exact hm ((mem_principalUnits_iff L a m).1 ha)
 
 /-- The canonical map from `𝒪_Lˣ/U_L^m` onto `𝒪_Lˣ/V` whenever
@@ -70,7 +61,6 @@ def integerUnitsModPrincipalUnitsToSubgroupQuotient
     (by
       intro a ha
       rw [MonoidHom.mem_ker]
-      change (QuotientGroup.mk a : 𝒪[L]ˣ ⧸ V) = 1
       exact (QuotientGroup.eq_one_iff a).2 (h ha))
 
 omit [TopologicalSpace L] [IsNonarchimedeanLocalField L] in
@@ -90,7 +80,7 @@ finite. -/
 theorem finite_chosenNormalBasisIntegerUnitsQuotient_of_principalUnits_le
     (m : Nat) (V : Subgroup 𝒪[L]ˣ) (h : principalUnits L m ≤ V) :
     Finite (𝒪[L]ˣ ⧸ V) := by
-  let : Finite (IntegerUnitsModPrincipalUnitsAtLevel L m) :=
+  let :=
     integerUnitsModPrincipalUnitsAtLevel_finite_of_isNonarchimedeanLocalField L m
   exact Finite.of_surjective
     (integerUnitsModPrincipalUnitsToSubgroupQuotient L m V h)
@@ -113,8 +103,7 @@ theorem exists_finite_chosenNormalBasisIntegerUnitsQuotient :
     change (a : 𝒪[L]ˣ) ∈ (V : Set 𝒪[L]ˣ)
     rw [hV]
     exact hm ha
-  exact finite_chosenNormalBasisIntegerUnitsQuotient_of_principalUnits_le
-    (L := L) m V hle
+  solve_by_elim [finite_chosenNormalBasisIntegerUnitsQuotient_of_principalUnits_le]
 
 end
 end LocalClassFieldTheory

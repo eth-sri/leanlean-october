@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -31,13 +27,15 @@ open scoped BigOperators TensorProduct
 
 noncomputable section
 
-
 namespace RelativeIdeleGroup
 
 open AlgebraicNumberTheory.Valuations
 open ValuationTheory.Completion
 
 universe u v
+
+variable {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L] [FiniteDimensional K L]
+    [Algebra.IsSeparable K L] (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
 
 /-- At one place of the base field, under the
 canonical isomorphism
@@ -47,10 +45,6 @@ canonical isomorphism
 the determinant norm of an arbitrary local component is the product of
 the field norms of its components above `v`. -/
 theorem localNorm_eq_prod
-    {K : Type u} {L : Type v}
-    [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (z : vK.Completion ⊗[K] L) :
     letI :=
       completionTensorDecomposition_extensionFintype
@@ -90,17 +84,13 @@ theorem localNorm_eq_prod
     _ = ∏ w : AbsoluteValueExtension vK L,
         _root_.Algebra.norm vK.Completion (e z w) :=
       algebra_norm_pi_apply
-        (R := vK.Completion)
+
         (fun w : AbsoluteValueExtension vK L ↦
           w.1.Completion) (e z)
 
 /-- The unit-valued version of `localNorm_eq_prod`, which is the formula
 used for local components of ideles. -/
 theorem localNorm_units_eq_prod
-    {K : Type u} {L : Type v}
-    [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (z : (vK.Completion ⊗[K] L)ˣ) :
     letI :=
       completionTensorDecomposition_extensionFintype
@@ -116,8 +106,7 @@ theorem localNorm_units_eq_prod
       ∏ w : AbsoluteValueExtension vK L,
         _root_.Algebra.norm vK.Completion
           (completionTensorDecomposition_left
-            (K := K) (L := L) vK hvK (z : _) w) := by
-  exact localNorm_eq_prod vK hvK (z : vK.Completion ⊗[K] L)
+            (K := K) (L := L) vK hvK (z : _) w) := localNorm_eq_prod vK hvK (z : vK.Completion ⊗[K] L)
 
 end RelativeIdeleGroup
 

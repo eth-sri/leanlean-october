@@ -26,46 +26,40 @@ private theorem decomposition_norm_unique
     localAbs K (A.coordinate (A.retract b)) =
       localAbs K (A.coordinate (A.retract c)) := by
   have he : ((c⁻¹ * b : A.B) : G) = (l : G) * (k : G)⁻¹ := by
-    have h' := congrArg (fun g : G => (c : G)⁻¹ * g * (k : G)⁻¹) h
     simpa only [Subgroup.coe_mul, Subgroup.coe_inv, mul_assoc,
-      mul_inv_cancel, mul_one, inv_mul_cancel_left] using h'
+      mul_inv_cancel, mul_one, inv_mul_cancel_left] using (congrArg (fun g : G => (c : G)⁻¹ * g * (k : G)⁻¹) h)
   have hm : ((c⁻¹ * b : A.B) : G) ∈ J.compact.toOpenSubgroup := by
     rw [he]
     exact J.compact.toOpenSubgroup.mul_mem l.property
       (J.compact.toOpenSubgroup.inv_mem k.property)
-  have hn := J.intersection_norm (c⁻¹ * b) hm
   have hmul : localAbs K (A.coordinate (A.retract c)) *
       localAbs K (A.coordinate (A.retract (c⁻¹ * b))) =
       localAbs K (A.coordinate (A.retract b)) := by
     rw [← localAbs_mul, ← map_mul, ← map_mul, mul_inv_cancel_left]
-  rw [hn,mul_one] at hmul
+  rw [(J.intersection_norm (c⁻¹ * b) hm),mul_one] at hmul
   exact hmul.symm
 
 theorem localLogNorm_borel_mul (b : A.B) (g : G) :
     localLogNorm A J ((b : G) * g) =
       Real.log (localAbs K (A.coordinate (A.retract b))) + localLogNorm A J g := by
-  have hn := decomposition_norm_unique A J (J.borelPart ((b : G) * g))
-    (b * J.borelPart g) (J.compactPart ((b : G) * g)) (J.compactPart g) (by
-      rw [← J.decomposition, Subgroup.coe_mul, mul_assoc, ← J.decomposition])
   unfold localLogNorm
-  rw [hn,map_mul,map_mul,localAbs_mul,Real.log_mul
+  rw [(decomposition_norm_unique A J (J.borelPart ((b : G) * g))
+    (b * J.borelPart g) (J.compactPart ((b : G) * g)) (J.compactPart g) (by
+      rw [← J.decomposition, Subgroup.coe_mul, mul_assoc, ← J.decomposition])),map_mul,map_mul,localAbs_mul,Real.log_mul
     (localAbs_pos K _).ne' (localAbs_pos K _).ne']
 
 theorem localLogNorm_mul_compact (g : G) (k : J.compact.toOpenSubgroup) :
     localLogNorm A J (g * (k : G)) = localLogNorm A J g := by
-  have hn := decomposition_norm_unique A J (J.borelPart (g * (k : G)))
+  exact congrArg Real.log (decomposition_norm_unique A J (J.borelPart (g * (k : G)))
     (J.borelPart g) (J.compactPart (g * (k : G))) (J.compactPart g * k) (by
-      rw [← J.decomposition, Subgroup.coe_mul, ← mul_assoc, ← J.decomposition])
-  exact congrArg Real.log hn
+      rw [← J.decomposition, Subgroup.coe_mul, ← mul_assoc, ← J.decomposition]))
 
 theorem localLogNorm_locallyConstant : IsLocallyConstant (localLogNorm A J) := by
   apply (IsLocallyConstant.iff_exists_open _).mpr
   intro g
-  let U : Set G := {h | g⁻¹ * h ∈ J.compact.toOpenSubgroup}
-  refine ⟨U, ?_, ?_, ?_⟩
+  refine ⟨({h | g⁻¹ * h ∈ J.compact.toOpenSubgroup}), ?_, ?_, ?_⟩
   · exact J.compact.toOpenSubgroup.isOpen.preimage (continuous_const.mul continuous_id)
-  · change g⁻¹ * g ∈ J.compact.toOpenSubgroup
-    simp
+  · simp
   · intro h hh
     let k : J.compact.toOpenSubgroup := ⟨g⁻¹ * h, hh⟩
     have he : h = g * (k : G) := by dsimp [k]; group
@@ -79,12 +73,6 @@ def normValues : Finset ℝ := by
     (localLogNorm_locallyConstant A J).comp_continuous continuous_subtype_val
   exact h.range_finite.toFinset
 
-private theorem mem_normValues (k : I.compact.toOpenSubgroup) :
-    localLogNorm A J (k : G) ∈ normValues A I J := by
-  unfold normValues
-  simp only [Set.Finite.mem_toFinset]
-  exact ⟨k,rfl⟩
-
  theorem norm_fiber_compact_covariance (b : A.B)
     (k k' : I.compact.toOpenSubgroup) (h : (k' : G) = (b : G) * (k : G)) :
     localLogNorm A J (k' : G) = localLogNorm A J (k : G) := by
@@ -95,8 +83,9 @@ private theorem mem_normValues (k : I.compact.toOpenSubgroup) :
       (I.compact.toOpenSubgroup.inv_mem k.property)
   rw [h,localLogNorm_borel_mul, I.intersection_norm b hb, Real.log_one, zero_add]
 
-def normPiece (P : Polarization T) (ε : Sign)
-    (φ : compactPicture A P I ε) (r : ℝ) : compactPicture A P I ε := by
+variable (P : Polarization T) (ε : Sign) (φ : compactPicture A P I ε)
+
+def normPiece (r : ℝ) : compactPicture A P I ε := by
   refine ⟨fun k => if localLogNorm A J (k : G) = r then φ.val k else 0, ?_, ?_⟩
   · intro b k k' h
     dsimp only
@@ -105,9 +94,7 @@ def normPiece (P : Polarization T) (ε : Sign)
     · exact φ.property.1 b k k' h
     · exact (map_zero _).symm
   · obtain ⟨L,hL⟩ := φ.property.2
-    let U : OpenSubgroup I.compact.toOpenSubgroup :=
-      J.compact.toOpenSubgroup.comap I.compact.toOpenSubgroup.subtype continuous_subtype_val
-    refine ⟨L ⊓ U, ?_⟩
+    refine ⟨L ⊓ (J.compact.toOpenSubgroup.comap I.compact.toOpenSubgroup.subtype continuous_subtype_val), ?_⟩
     intro j hj
     funext k
     change (if localLogNorm A J (((k*j : I.compact.toOpenSubgroup) : G)) = r
@@ -118,20 +105,17 @@ def normPiece (P : Polarization T) (ε : Sign)
     rw [show (((k*j : I.compact.toOpenSubgroup) : G)) = (k:G)*(j:G) from rfl,
       hn,hp]
 
-def parameterSource (P : Polarization T) (ε : Sign)
-    (φ : compactPicture A P I ε) (s : ℂ) : compactPicture A P I ε :=
+def parameterSource (s : ℂ) : compactPicture A P I ε :=
   (compactTrivialization A P I ε s).symm
     (compactTrivialization A P J ε s
       ((compactTrivialization A P J ε 0).symm
         (compactTrivialization A P I ε 0 φ)))
 
-theorem parameterSource_zero (P : Polarization T) (ε : Sign)
-    (φ : compactPicture A P I ε) : parameterSource A I J P ε φ 0 = φ := by
+theorem parameterSource_zero : parameterSource A I J P ε φ 0 = φ := by
   unfold parameterSource
   rw [LinearEquiv.apply_symm_apply,LinearEquiv.symm_apply_apply]
 
-theorem parameterSource_extension (P : Polarization T) (ε : Sign)
-    (φ : compactPicture A P I ε) (s : ℂ) (g : G) :
+theorem parameterSource_extension (s : ℂ) (g : G) :
     (compactTrivialization A P I ε s (parameterSource A I J P ε φ s)).val g =
       Complex.exp (s * (localLogNorm A J g : ℂ)) •
         (compactTrivialization A P I ε 0 φ).val g := by
@@ -142,8 +126,6 @@ theorem parameterSource_extension (P : Polarization T) (ε : Sign)
   have hz : compactTrivialization A P J ε 0 σ = compactTrivialization A P I ε 0 φ :=
     LinearEquiv.apply_symm_apply _ _
   rw [← hz, LinearEquiv.symm_apply_apply]
-  change (inducingScalar A s (J.borelPart g)) •
-    (borelAction A P ε (J.borelPart g)) (σ.val (J.compactPart g)) = _
   change _ = Complex.exp (s * (localLogNorm A J g : ℂ)) •
     ((inducingScalar A 0 (J.borelPart g)) •
       (borelAction A P ε (J.borelPart g)) (σ.val (J.compactPart g)))
@@ -151,8 +133,7 @@ theorem parameterSource_extension (P : Polarization T) (ε : Sign)
   rw [mul_comm]
   rfl
 
-theorem parameterSource_finite_expansion (P : Polarization T) (ε : Sign)
-    (φ : compactPicture A P I ε) (s : ℂ) :
+theorem parameterSource_finite_expansion (s : ℂ) :
     parameterSource A I J P ε φ s =
       ∑ r ∈ normValues A I J, Complex.exp (s * (r : ℂ)) • normPiece A I J P ε φ r := by
   apply Subtype.ext
@@ -172,7 +153,10 @@ theorem parameterSource_finite_expansion (P : Polarization T) (ε : Sign)
   · simp
   · intro r hr hne
     simp [Ne.symm hne]
-  · exact fun h => (h (mem_normValues A I J k)).elim
+  · exact fun h => (h (by
+    unfold normValues
+    simp only [Set.Finite.mem_toFinset]
+    exact ⟨k,rfl⟩)).elim
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.FiniteSourceTransport
 

@@ -19,7 +19,7 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 abbrev G := KPGlobalTorusFunctionData.G F ζ hζ
 
@@ -56,7 +56,7 @@ def archChart (x : ArchCoordinates F) : G F ζ hζ := by
         KPStandardLocalRootLifts.N F ζ hζ (Sum.inl w) (e.symm (x w 0)) *
         KPStandardLocalRootLifts.A F ζ hζ (Sum.inl w)
           (if h : x w 1 = 0 then 1 else Units.mk0 (e.symm (x w 1))
-            (by exact fun h0 => h (by simpa using congrArg e h0))) *
+            (fun h0 => h (by simpa using congrArg e h0))) *
         KPStandardLocalRootLifts.LowerN F ζ hζ (Sum.inl w) (e.symm (x w 2)), by
       apply Filter.Eventually.of_forall
       intro v
@@ -93,9 +93,7 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-
-abbrev B := KPGlobalTorusFunctionData.borel F ζ hζ
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 abbrev A := KPGlobalTorusFunctionData.Adeles F
 abbrev Y := A F ⧸ AdeleRing.principalSubgroup (𝓞 F) F
 abbrev Places := KPHilbert.Place F

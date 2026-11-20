@@ -9,8 +9,11 @@ open scoped Classical NumberField
 namespace DedekindZetaZeroFree.KPContinuation.RationalArchFiniteSplitting
 open KPAdelicCoverRestrictedProduct
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-private theorem infinite_section_mul (w : NumberField.InfinitePlace F)
-    (A B : KPLocalCover.LocalGL2 F (Sum.inl w)) :
+section
+
+variable (w : NumberField.InfinitePlace F) (A B : KPLocalCover.LocalGL2 F (Sum.inl w))
+
+private theorem infinite_section_mul :
     KPLocalCover.sectionMap F ζ hζ (Sum.inl w) (A * B) =
       KPLocalCover.sectionMap F ζ hζ (Sum.inl w) A *
         KPLocalCover.sectionMap F ζ hζ (Sum.inl w) B := by
@@ -21,8 +24,7 @@ private theorem infinite_section_mul (w : NumberField.InfinitePlace F)
     KPLocalCover.CubicGL2Raw.mk (A * B) (1 * 1 * KPLocalCover.sigmaTwo F ζ hζ (Sum.inl w) A B)
   rw [one_mul, one_mul, hσ]
 
-private theorem local_section_congr (w : NumberField.InfinitePlace F)
-    (A B : KPLocalCover.LocalGL2 F (Sum.inl w))
+private theorem local_section_congr
     (h : Matrix.ProjGenLinGroup.mk A = Matrix.ProjGenLinGroup.mk B) :
     scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inl w)
       (KPLocalCover.sectionMap F ζ hζ (Sum.inl w) A)) =
@@ -40,6 +42,8 @@ private theorem local_section_congr (w : NumberField.InfinitePlace F)
       exact ⟨z, rfl⟩
     rw [hq, map_one]
   rw [hs, mul_one]
+
+end
 private theorem rational_tuple_split (A : Matrix.GeneralLinearGroup (Fin 2) F) :
     rationalTuple F ζ hζ A =
       ((Finset.univ : Finset (NumberField.InfinitePlace F)).toList.map
@@ -64,8 +68,7 @@ private theorem rational_tuple_split (A : Matrix.GeneralLinearGroup (Fin 2) F) :
       intro v hv _
       simp [p, f, localToRestricted, RestrictedProduct.mulSingleMonoidHom_apply,
         RestrictedProduct.coe_mulSingle_apply, hv])]
-    have hc : l.count w = 1 := List.count_eq_one_of_mem (Finset.nodup_toList _) (by simp [l])
-    rw [hc, pow_one]
+    rw [(List.count_eq_one_of_mem (Finset.nodup_toList _) (by simp [l])), pow_one]
     simp [p, f, localToRestricted, KPCuspGenuineMonodromy.finiteRationalTuple]
   | inr q =>
     have hf : ∀ w, p (f w) = 1 := by
@@ -75,16 +78,18 @@ private theorem rational_tuple_split (A : Matrix.GeneralLinearGroup (Fin 2) F) :
     simp [hf, KPCuspGenuineMonodromy.finiteRationalTuple]
 
 open KPMsResidualTailRestoration.SharpConstantTerm.FiberStability in
-private theorem arch_local_rational (A : Matrix.GeneralLinearGroup (Fin 2) F)
-    (w : NumberField.InfinitePlace F) :
-    scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inl w)
-      (rationalCoordinates F ζ hζ A (Sum.inl w))) =
-    scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inl w)
-      (KPLocalCover.sectionMap F ζ hζ (Sum.inl w)
-        (Matrix.GeneralLinearGroup.map
-          (NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
-            (KPHilbert.infinite_isComplex F ζ hζ w)).symm.toRingHom
-          (archRational (Matrix.ProjGenLinGroup.mk A) w).out))) := by
+private theorem rationalTuple_product (A : Matrix.GeneralLinearGroup (Fin 2) F) :
+    scalarQuotient F ζ hζ (amalgamation F ζ hζ (rationalTuple F ζ hζ A)) =
+      KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
+        (archRational (Matrix.ProjGenLinGroup.mk A)) *
+      scalarQuotient F ζ hζ
+        (amalgamation F ζ hζ (KPCuspGenuineMonodromy.finiteRationalTuple F ζ hζ A)) := by
+  rw [rational_tuple_split, map_mul, map_mul, map_list_prod, map_list_prod]
+  congr 1
+  simp only [List.map_map, Function.comp_def]
+  apply congrArg List.prod
+  apply List.map_congr_left
+  intro w hw
   apply local_section_congr
   let e := NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
     (KPHilbert.infinite_isComplex F ζ hζ w)
@@ -110,20 +115,6 @@ private theorem arch_local_rational (A : Matrix.GeneralLinearGroup (Fin 2) F)
       rw [← Matrix.ProjGenLinGroup.map_mk]
       exact congrArg (Matrix.ProjGenLinGroup.map e.symm.toRingHom)
         (Quotient.out_eq (archRational (Matrix.ProjGenLinGroup.mk A) w)).symm
-open KPMsResidualTailRestoration.SharpConstantTerm.FiberStability in
-private theorem rationalTuple_product (A : Matrix.GeneralLinearGroup (Fin 2) F) :
-    scalarQuotient F ζ hζ (amalgamation F ζ hζ (rationalTuple F ζ hζ A)) =
-      KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
-        (archRational (Matrix.ProjGenLinGroup.mk A)) *
-      scalarQuotient F ζ hζ
-        (amalgamation F ζ hζ (KPCuspGenuineMonodromy.finiteRationalTuple F ζ hζ A)) := by
-  rw [rational_tuple_split, map_mul, map_mul, map_list_prod, map_list_prod]
-  congr 1
-  simp only [List.map_map, Function.comp_def]
-  apply congrArg List.prod
-  apply List.map_congr_left
-  intro w hw
-  exact arch_local_rational F ζ hζ A w
 
 open KPMsResidualTailRestoration.SharpConstantTerm.FiberStability in
 

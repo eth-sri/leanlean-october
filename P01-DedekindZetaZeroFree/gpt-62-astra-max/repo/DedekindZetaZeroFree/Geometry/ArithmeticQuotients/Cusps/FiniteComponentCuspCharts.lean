@@ -68,16 +68,6 @@ structure ComponentEndData
     (ξ : KPCuspFrequencyGap.Euclidean (KPCuspLogShape.dimension F)) ≠ 0 →
       frequencyGap ≤ KPCuspFrequencyGap.shapeEnergy b ξ
 
-  constant_rank : ∀ a, Module.finrank ℂ
-    (KPCuspFrequencyGap.constantSections (ζ := ζ) (hζ := hζ) _ (parabolic a)
-      (line.rho.comp (KPCuspGenuineMonodromy.cuspInclusion F
-        (KPCuspGenuineMonodromy.Component F ζ hζ U g) (cusp a) (representative a)))
-      (KPCuspGenuineMonodromy.scalarFiber F ζ hζ U)) ≤ 1
-  constant_finite : ∀ a, FiniteDimensional ℂ
-    (KPCuspFrequencyGap.constantSections (ζ := ζ) (hζ := hζ) _ (parabolic a)
-      (line.rho.comp (KPCuspGenuineMonodromy.cuspInclusion F
-        (KPCuspGenuineMonodromy.Component F ζ hζ U g) (cusp a) (representative a)))
-      (KPCuspGenuineMonodromy.scalarFiber F ζ hζ U))
   open_ends : ∀ a, IsOpen (ends
     (KPCuspGenuineMonodromy.Component F ζ hζ U g) (representative a) threshold)
   disjoint_ends : Pairwise fun a b : Fin cuspCount => Disjoint
@@ -98,27 +88,15 @@ structure ComponentEndData
     (KPCuspGenuineMonodromy.Component F ζ hζ U g) fundamentalDomain
     (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F))
 
-  end_volume : ∀ a,
-    Measure.map (transport (KPCuspGenuineMonodromy.Component F ζ hζ U g)
-      (cusp a) (representative a) threshold)
-      (Measure.map ((geometry a).highPresentation threshold)
-        ((geometry a).sectionMeasure.prod
-          (Measure.comap (Subtype.val : Set.Ioi threshold → ℝ)
-            (KPCuspCharts.radialMeasure (KPCuspLogShape.dimension F))))) =
-    (volume (KPCuspGenuineMonodromy.Component F ζ hζ U g)
-      fundamentalDomain).restrict
-      (ends (KPCuspGenuineMonodromy.Component F ζ hζ U g) (representative a) threshold)
+section
 
-theorem component_transport_range
-    (hd : 0 < KPCuspLogShape.dimension F)
-    (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (q : KPCuspArithmetic.Cusp F)
-    (σ : KPCuspArithmetic.PGL2 F) (T : ℝ)
-    (f : KPCuspCharts.HighQuotient F
-      (KPCuspArithmetic.conjugatedStabilizer F Γ q σ) T →
-        KPCuspSiegel.OrbitQuotient F Γ)
-    (hf : ∀ (p : {p : KPCuspCharts.Coordinates F // T < p.2}),
-      f (Quotient.mk _ p) =
-        KPCuspSiegel.projection F Γ (σ • KPCuspCharts.toArch F p.val)) :
+variable (hd : 0 < KPCuspLogShape.dimension F) (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
+    (q : KPCuspArithmetic.Cusp F) (σ : KPCuspArithmetic.PGL2 F) (T : ℝ)
+    (f : KPCuspCharts.HighQuotient F (KPCuspArithmetic.conjugatedStabilizer F Γ q σ) T → KPCuspSiegel.OrbitQuotient F Γ)
+    (hf : ∀ (p : {p : KPCuspCharts.Coordinates F // T < p.2}), f (Quotient.mk _ p) = KPCuspSiegel.projection F Γ (σ • KPCuspCharts.toArch F p.val))
+
+include hd hf in
+theorem component_transport_range :
     Set.range f = KPCuspSiegel.projection F Γ '' KPCuspSiegel.highCusp F σ T := by
   let e := KPCuspCharts.highCoordinatesHomeomorph F hd σ T
   apply Set.ext
@@ -129,22 +107,13 @@ theorem component_transport_range
     rw [hf]
     exact ⟨(e p).val, (e p).property, rfl⟩
   · rintro ⟨z, hz, rfl⟩
-    let p := e.symm ⟨z, hz⟩
-    refine ⟨Quotient.mk _ p, ?_⟩
+    refine ⟨Quotient.mk _ (e.symm ⟨z, hz⟩), ?_⟩
     rw [hf]
     exact congrArg (KPCuspSiegel.projection F Γ)
       (congrArg Subtype.val (e.apply_symm_apply ⟨z, hz⟩))
 
+include hd hf in
 theorem component_transport_embedding
-    (hd : 0 < KPCuspLogShape.dimension F)
-    (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (q : KPCuspArithmetic.Cusp F)
-    (σ : KPCuspArithmetic.PGL2 F) (T : ℝ)
-    (f : KPCuspCharts.HighQuotient F
-      (KPCuspArithmetic.conjugatedStabilizer F Γ q σ) T →
-        KPCuspSiegel.OrbitQuotient F Γ)
-    (hf : ∀ (p : {p : KPCuspCharts.Coordinates F // T < p.2}),
-      f (Quotient.mk _ p) =
-        KPCuspSiegel.projection F Γ (σ • KPCuspCharts.toArch F p.val))
     (j : KPCuspSiegel.CuspQuotient F Γ q (KPCuspSiegel.highCusp F σ T) →
       KPCuspSiegel.OrbitQuotient F Γ)
     (hj : Topology.IsEmbedding j)
@@ -163,8 +132,13 @@ theorem component_transport_embedding
   rw [he]
   exact hj.comp e.isEmbedding
 
+end
+
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
 theorem component_bounded_shapes
-    (F : Type) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : KPCuspCharts.ParabolicData F S) :
     ∃ B : Set (KPCuspCharts.Shape F), IsCompact B ∧
@@ -182,8 +156,7 @@ theorem component_bounded_shapes
   simp only [sub_sub_cancel]
   exact ⟨Additive.ofMul u, rfl⟩
 
-theorem component_common_frequency_gap
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+theorem component_common_frequency_gap (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     {ι : Type} [Finite ι]
     (S : ι → Subgroup (KPCuspArithmetic.PGL2 F))
     (D : ∀ a, KPCuspCharts.ParabolicData F (S a))
@@ -217,8 +190,7 @@ theorem component_common_frequency_gap
     exact ⟨δ, hδ, fun a => hδc a (Finset.mem_univ a)⟩
   exact ⟨δ, hδ, fun a b hb ξ hξ => (hδc a).trans (hgap a b hb ξ hξ).1⟩
 
-theorem component_local_cusp_data
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+theorem component_local_cusp_data (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : CompactOpenLevel (KPCuspGenuineMonodromy.FiniteCover F ζ hζ))
     (g : KPCuspGenuineMonodromy.FiniteCover F ζ hζ)
@@ -244,7 +216,6 @@ theorem component_local_cusp_data
   exact ⟨D, G, C, KPCuspFrequencyGap.cusp_frequency_gap _ _ _ hF G _ C⟩
 
 theorem component_open_end
-    (F : Type) [Field F] [NumberField F]
     (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (σ : KPCuspArithmetic.PGL2 F) (T : ℝ) :
     IsOpen (KPCuspSiegel.projection F Γ '' KPCuspSiegel.highCusp F σ T) := by
   haveI : ContinuousConstSMul (KPCuspArithmetic.PGL2 F)
@@ -258,6 +229,8 @@ theorem component_open_end
   apply isOpen_lt continuous_const
   unfold KPCuspLogShape.meanHeight
   fun_prop
+
+end
 
 theorem component_ends_exist
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -333,8 +306,6 @@ theorem component_ends_exist
     frequencyGap := δ
     positive_frequencyGap := hδ
     shortest_frequency := hgap
-    constant_rank := fun a => (O a).constantSystem.rank_le_one
-    constant_finite := fun a => (O a).constantSystem.finiteDimensional
     open_ends := ?_
     disjoint_ends := ?_
     compact_core := ?_
@@ -343,7 +314,7 @@ theorem component_ends_exist
     fundamentalDomain := A
     measurable_fundamentalDomain := hA
     isFundamentalDomain := hFD
-    end_volume := ?_ }, rfl⟩
+     }, rfl⟩
   · intro a
     rw [hends]
     exact component_open_end F _ (σ a) T
@@ -353,10 +324,6 @@ theorem component_ends_exist
     rw [hends]
     exact component_transport_range F (G a).positive_dimension _ (q a) (σ a) T
       _ (htransport _ (q a) (σ a) T)
-  · intro a
-    rw [hvolume, hends]
-    exact embedded_cusp_end_volume F hF _ (q a) (σ a) (hσ a) T
-      (P a) (G a) _ (htransport _ (q a) (σ a) T) (hemb a) A hA hFD
 
 end DedekindZetaZeroFree.KPFiniteAdelicCuspEnds
 

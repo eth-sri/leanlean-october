@@ -13,9 +13,9 @@ set_option autoImplicit false
 attribute [local instance] KPGlobalProductPolarizationCharacter.localCoverTopology
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-abbrev ModelData := KPGlobalTorusPeriodizationInverse.ModelData F ζ hζ
+abbrev ModelData := @DedekindZetaZeroFree.KPGlobalTorusPeriodizationInverse.ModelData
 
 local instance torusTop (H : KPGlobalTorusFunctionData.Polarization F ζ hζ) :
     TopologicalSpace (KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ H) :=

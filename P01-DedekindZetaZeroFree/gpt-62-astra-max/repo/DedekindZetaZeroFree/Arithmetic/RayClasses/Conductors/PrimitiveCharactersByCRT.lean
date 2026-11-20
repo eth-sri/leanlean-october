@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Arithmetic.LocalFields.CompletionIdealPowerPullback
 
 public import DedekindZetaZeroFree.Arithmetic.Ideals.ExteriorIdeals.EulerWeights
 
@@ -39,32 +40,13 @@ open Valuation UniqueFactorizationMonoid
 
 theorem CRT_completed_power_mem_iff (v : HeightOneSpectrum (𝓞 F)) (a : 𝓞 F) (n : ℕ) :
     algebraMap (𝓞 F) (v.adicCompletionIntegers F) a ∈
-      IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) ^ n ↔ a ∈ v.asIdeal ^ n := by
-  obtain ⟨p, hp⟩ := v.intValuation_exists_uniformizer
-  let π := algebraMap (𝓞 F) (v.adicCompletionIntegers F) p
-  have hπval : Valued.v (π : v.adicCompletion F) = WithZero.exp (-1) := by
-    exact (v.valuedAdicCompletion_eq_valuation p).trans ((v.valuation_of_algebraMap p).trans hp)
-  have hπunif : (Valued.v : Valuation (v.adicCompletion F) (WithZero (Multiplicative ℤ))).IsUniformizer (π : v.adicCompletion F) := by
-    rw [Valuation.IsUniformizer.iff, Valuation.IsRankOneDiscrete.generator_eq_exp_neg_one_of_surjective (v.valuedAdicCompletion_surjective F)]
-    exact hπval
-  have hπirr : Irreducible π := (IsDiscreteValuationRing.irreducible_iff_uniformizer π).mpr hπunif.is_generator
-  have heq := (HeightOneSpectrum.adicCompletionIntegers.integers F v).maximalIdeal_pow_eq_setOf_le_v_algebraMap_pow hπirr n
-  change algebraMap (𝓞 F) (v.adicCompletionIntegers F) a ∈ (↑(IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) ^ n) : Set _) ↔ _
-  rw [heq]
-  change Valued.v ((algebraMap (𝓞 F) (v.adicCompletion F)) a) ≤ Valued.v (π : v.adicCompletion F) ^ n ↔ _
-  rw [hπval, ← WithZero.exp_nsmul]
-  simp only [nsmul_eq_mul, mul_neg, mul_one]
-  have hval : Valued.v ((algebraMap (𝓞 F) (v.adicCompletion F)) a) = v.intValuation a :=
-    (v.valuedAdicCompletion_eq_valuation (K := F) a).trans (v.valuation_of_algebraMap (K := F) a)
-  rw [hval]
-  exact v.intValuation_le_pow_iff_mem a n
+      IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) ^ n ↔ a ∈ v.asIdeal ^ n := by apply @AbelianQuotient.completionIdealPowerPullback <;> assumption
 
 theorem CRT_exists_smaller_exponent (m f : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hf : m < f) :
     ∃ v : ↥(CRTIdealSupport F m), idealPrimeExponent v.val.asIdeal f < idealPrimeExponent v.val.asIdeal m := by
-  have hf0 : f ≠ ⊥ := ne_bot_of_le_ne_bot hm hf.le
   have hnot : ¬ normalizedFactors m ≤ normalizedFactors f := by
     intro h
-    have hfm := Ideal.dvd_iff_le.mp ((dvd_iff_normalizedFactors_le_normalizedFactors hm hf0).mpr h)
+    have hfm := Ideal.dvd_iff_le.mp ((dvd_iff_normalizedFactors_le_normalizedFactors hm (ne_bot_of_le_ne_bot hm hf.le)).mpr h)
     exact hf.not_ge hfm
   obtain ⟨p, hp⟩ : ∃ p, (normalizedFactors f).count p < (normalizedFactors m).count p := by
     simpa only [Multiset.le_iff_count, not_forall, not_le] using hnot
@@ -92,6 +74,8 @@ private theorem CRT_power_criterion (v : HeightOneSpectrum (𝓞 F)) (b : v.adic
  change Valued.v (b : v.adicCompletion F) ≤ Valued.v (π : v.adicCompletion F) ^ n ↔ _
  rw [hπval, ← WithZero.exp_nsmul]
  simp
+
+alias PrimitiveCharactersByCRT.CRT_power_criterion := CRT_power_criterion
 
 theorem CRT_completed_residue_representative (v : HeightOneSpectrum (𝓞 F)) (b : v.adicCompletionIntegers F) (n : ℕ) :
  ∃ a : 𝓞 F, algebraMap (𝓞 F) (v.adicCompletionIntegers F) a - b ∈
@@ -149,7 +133,12 @@ theorem CRT_congruent_isUnit (v : HeightOneSpectrum (𝓞 F)) (n : ℕ) (hn : n 
   simpa using (IsLocalRing.maximalIdeal (v.adicCompletionIntegers F)).sub_mem ha' hd
  simpa [IsLocalRing.mem_maximalIdeal] using hb
 
-theorem CRT_global_mem (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (a : 𝓞 F)
+section
+
+variable (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (a : 𝓞 F)
+
+include hI in
+theorem CRT_global_mem
     (h : ∀ v ∈ CRTIdealSupport F I, a ∈ v.asIdeal ^ idealPrimeExponent v.asIdeal I) : a ∈ I := by
   have heq : I = (idealPrimeSupport I).inf (fun p => p ^ idealPrimeExponent p I) := by
     rw [IsDedekindDomain.inf_pow_eq_prod_of_prime]
@@ -164,21 +153,20 @@ theorem CRT_global_mem (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (a : 𝓞 F)
   simp only [Submodule.mem_iInf]
   intro p hp
   have hprime := prime_of_normalized_factor p (Multiset.mem_toFinset.mp hp)
-  let v : HeightOneSpectrum (𝓞 F) := ⟨p, Ideal.isPrime_of_prime hprime, hprime.ne_zero⟩
-  apply h v
+  apply h (⟨p, Ideal.isPrime_of_prime hprime, hprime.ne_zero⟩)
   simpa only [CRTIdealSupport, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset] using (Multiset.mem_toFinset.mp hp)
 
-theorem CRT_global_coprime (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (a : 𝓞 F)
+include hI in
+theorem CRT_global_coprime
     (h : ∀ v ∈ CRTIdealSupport F I, a ∉ v.asIdeal) : Ideal.span {a} ⊔ I = ⊤ := by
   by_contra hne
   obtain ⟨v, hv⟩ := (HeightOneSpectrum.ideal_ne_top_iff_exists (NumberField.RingOfIntegers.not_isField F) _).mp hne
-  have hvI : I ≤ v.asIdeal := le_sup_right.trans hv
   have hvm : v ∈ CRTIdealSupport F I := by
-    have hd : v.asIdeal ∣ I := Ideal.dvd_iff_le.mpr hvI
-    have hp := (dvd_iff_normalizedFactors_le_normalizedFactors v.ne_bot hI).mp hd
-    have hmem : v.asIdeal ∈ normalizedFactors I := (Multiset.subset_of_le hp) (by simp [normalizedFactors_irreducible v.irreducible, normalize_eq])
+    have hmem : v.asIdeal ∈ normalizedFactors I := (Multiset.subset_of_le ((dvd_iff_normalizedFactors_le_normalizedFactors v.ne_bot hI).mp (Ideal.dvd_iff_le.mpr (le_sup_right.trans hv)))) (by simp [normalizedFactors_irreducible v.irreducible, normalize_eq])
     simpa only [CRTIdealSupport, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset] using hmem
   exact h v hvm ((le_sup_left.trans hv) (Ideal.subset_span (by simp)))
+
+end
 
 theorem CRT_character_eq_of_congruence (v : HeightOneSpectrum (𝓞 F)) (e : ℕ)
     (χ : (v.adicCompletion F)ˣ →* ℂˣ)
@@ -190,11 +178,10 @@ theorem CRT_character_eq_of_congruence (v : HeightOneSpectrum (𝓞 F)) (e : ℕ
   have hcong : ((a * b⁻¹ : (v.adicCompletionIntegers F)ˣ) : v.adicCompletionIntegers F) - 1 ∈
       IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) ^ e := by
     have heq : ((a * b⁻¹ : (v.adicCompletionIntegers F)ˣ) : v.adicCompletionIntegers F) - 1 =
-      ((a : v.adicCompletionIntegers F) - b) * ↑(b⁻¹) := by simp [sub_mul]
+      (a - b) * ↑(b⁻¹) := by simp [sub_mul]
     rw [heq]
     exact Ideal.mul_mem_right _ _ hab
-  have hh := hχ _ ⟨a * b⁻¹, rfl, hcong⟩
-  simpa only [map_mul, _root_.map_inv, mul_inv_eq_one] using hh
+  simpa only [map_mul, _root_.map_inv, mul_inv_eq_one] using (hχ _ ⟨a * b⁻¹, rfl, hcong⟩)
 
 private theorem CRT_global_lift (m : Ideal (𝓞 F))
  (b : (v : ↥(CRTIdealSupport F m)) → (v.val.adicCompletionIntegers F)ˣ) :
@@ -204,13 +191,11 @@ private theorem CRT_global_lift (m : Ideal (𝓞 F))
  choose x hx using fun v : ↥(CRTIdealSupport F m) =>
   CRT_completed_residue_representative F v.val (b v) (idealPrimeExponent v.val.asIdeal m)
  obtain ⟨a, ha⟩ := IsDedekindDomain.exists_forall_sub_mem_ideal
-  (s := CRTIdealSupport F m) HeightOneSpectrum.asIdeal
+   HeightOneSpectrum.asIdeal
   (fun v => idealPrimeExponent v.asIdeal m) (fun v _ => v.prime)
   (fun v _ w _ h => fun heq => h (HeightOneSpectrum.ext heq)) x
  refine ⟨a, fun v => ?_⟩
- have hc := (CRT_completed_power_mem_iff F v.val (a - x v) _).mpr (ha v.val v.property)
- have hd := (IsLocalRing.maximalIdeal (v.val.adicCompletionIntegers F) ^ idealPrimeExponent v.val.asIdeal m).add_mem hc (hx v)
- simpa only [_root_.map_sub, sub_add_sub_cancel] using hd
+ simpa using ((IsLocalRing.maximalIdeal (v.val.adicCompletionIntegers F) ^ idealPrimeExponent v.val.asIdeal m).add_mem ((CRT_completed_power_mem_iff F v.val (a - x v) _).mpr (ha v.val v.property)) (hx v))
 
 private theorem CRT_global_nonmembership (v : HeightOneSpectrum (𝓞 F)) (a : 𝓞 F)
  (hu : IsUnit (algebraMap (𝓞 F) (v.adicCompletionIntegers F) a)) : a ∉ v.asIdeal := by
@@ -219,20 +204,24 @@ private theorem CRT_global_nonmembership (v : HeightOneSpectrum (𝓞 F)) (a : �
  have hm' : algebraMap (𝓞 F) (v.adicCompletionIntegers F) a ∈ IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) := by simpa using hm
  simpa [IsLocalRing.mem_maximalIdeal, hu] using hm'
 
-private theorem CRT_exponent_le (m f : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hf : m ≤ f) :
- ∀ v : HeightOneSpectrum (𝓞 F), idealPrimeExponent v.asIdeal f ≤ idealPrimeExponent v.asIdeal m := by
- have hf0 : f ≠ ⊥ := ne_bot_of_le_ne_bot hm hf
- have hn := (dvd_iff_normalizedFactors_le_normalizedFactors hf0 hm).mp (Ideal.dvd_iff_le.mpr hf)
- intro v
- exact (Multiset.le_iff_count.mp hn) _
+section
 
-private theorem CRT_support_subset (m f : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hf : m ≤ f) :
+variable (m f : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hf : m ≤ f)
+
+include hm hf in
+private theorem CRT_exponent_le :
+ ∀ v : HeightOneSpectrum (𝓞 F), idealPrimeExponent v.asIdeal f ≤ idealPrimeExponent v.asIdeal m := by
+ intro v
+ exact (Multiset.le_iff_count.mp ((dvd_iff_normalizedFactors_le_normalizedFactors (ne_bot_of_le_ne_bot hm hf) hm).mp (Ideal.dvd_iff_le.mpr hf))) _
+
+include hm hf in
+private theorem CRT_support_subset :
  CRTIdealSupport F f ⊆ CRTIdealSupport F m := by
  intro v hv
- have hf0 : f ≠ ⊥ := ne_bot_of_le_ne_bot hm hf
- have hn := (dvd_iff_normalizedFactors_le_normalizedFactors hf0 hm).mp (Ideal.dvd_iff_le.mpr hf)
  simp only [CRTIdealSupport, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset] at hv ⊢
- exact Multiset.subset_of_le hn hv
+ exact Multiset.subset_of_le ((dvd_iff_normalizedFactors_le_normalizedFactors (ne_bot_of_le_ne_bot hm hf) hm).mp (Ideal.dvd_iff_le.mpr hf)) hv
+
+end
 
 theorem primitive_of_exact_local_exponents
     (htc : NumberField.IsTotallyComplex F) (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
@@ -285,16 +274,13 @@ theorem primitive_of_exact_local_exponents
     intro v hv
     let w : ↥(CRTIdealSupport F m) := ⟨v, CRT_support_subset F m f hm hf.le hv⟩
     apply (CRT_completed_power_mem_iff F v (a - 1) _).mp
-    have h1 := Ideal.pow_le_pow_right (CRT_exponent_le F m f hm hf.le v) (ha w)
-    have h2 := (IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) ^ idealPrimeExponent v.asIdeal f).add_mem h1 (hbcong w)
-    simpa only [_root_.map_sub, map_one, sub_add_sub_cancel] using h2
+    simpa using ((IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) ^ idealPrimeExponent v.asIdeal f).add_mem (Ideal.pow_le_pow_right (CRT_exponent_le F m f hm hf.le v) (ha w)) (hbcong w))
   have hcop : Ideal.span {a} ⊔ m = ⊤ := by
     apply CRT_global_coprime F m hm a
     intro v hv
     exact CRT_global_nonmembership F v a (hai ⟨v, hv⟩)
-  let A : (v : ↥(CRTIdealSupport F m)) → (v.val.adicCompletionIntegers F)ˣ := fun v => (hai v).unit
-  have hA : ∀ v, (A v : v.val.adicCompletionIntegers F) = algebraMap (𝓞 F) (v.val.adicCompletionIntegers F) a := by
-    intro v; exact IsUnit.unit_spec (hai v)
+  let A := fun v => (hai v).unit
+  have hA : ∀ v, (A v : v.val.adicCompletionIntegers F) = algebraMap (𝓞 F) (v.val.adicCompletionIntegers F) a := fun v => IsUnit.unit_spec (hai v)
   have hmap : ∀ v, Units.map (v.val.adicCompletionIntegers F).subtype.toMonoidHom (A v) = CRTIntegralLocalUnit F v.val a ha0 := by
     intro v
     apply Units.ext
@@ -324,7 +310,7 @@ theorem primitive_of_exact_local_exponents
     intro h
     apply hu
     apply Units.ext
-    simpa only [inv_eq_one, Units.val_one] using h
+    simpa using h
 
 end
 end DedekindZetaZeroFree

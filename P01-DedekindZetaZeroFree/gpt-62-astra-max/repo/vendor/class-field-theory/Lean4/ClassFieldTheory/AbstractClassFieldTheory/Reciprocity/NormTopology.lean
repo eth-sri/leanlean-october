@@ -15,13 +15,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -45,35 +38,37 @@ namespace FiniteGaloisSubextension
 
 variable {K : ClosedSubgroup G}
 
+variable (A : Rep ℤ G)
+
 /-- The actual norm subgroup belonging to a packaged finite Galois
 extension. -/
-def normSubgroup (A : Rep ℤ G) (L : FiniteGaloisSubextension K) :
+def normSubgroup (L : FiniteGaloisSubextension K) :
     AddSubgroup (ambientFixedAddSubgroup A K) := by
   letI := L.finite
   exact finiteNormSubgroup A K L.field L.below
 
 /-- Proves the bound `normSubgroup A (L₁.compositum L₂) ≤ normSubgroup A L₁`. -/
-theorem normSubgroup_compositum_le_left
-    (A : Rep ℤ G) (L₁ L₂ : FiniteGaloisSubextension K) :
+theorem normSubgroup_compositum_le_left (L₁ L₂ : FiniteGaloisSubextension K) :
     normSubgroup A (L₁.compositum L₂) ≤ normSubgroup A L₁ := by
-  simpa [normSubgroup] using
-    ClassFormation.FiniteGaloisSubextension.finiteNormSubgroup_compositum_le_left A L₁ L₂
+  apply ClassFormation.FiniteGaloisSubextension.finiteNormSubgroup_compositum_le_left
 
 /-- Proves the bound `normSubgroup A (L₁.compositum L₂) ≤ normSubgroup A L₂`. -/
-theorem normSubgroup_compositum_le_right
-    (A : Rep ℤ G) (L₁ L₂ : FiniteGaloisSubextension K) :
+theorem normSubgroup_compositum_le_right (L₁ L₂ : FiniteGaloisSubextension K) :
     normSubgroup A (L₁.compositum L₂) ≤ normSubgroup A L₂ := by
-  simpa [normSubgroup] using
-    ClassFormation.FiniteGaloisSubextension.finiteNormSubgroup_compositum_le_right A L₁ L₂
+  apply ClassFormation.FiniteGaloisSubextension.finiteNormSubgroup_compositum_le_right
 
 end FiniteGaloisSubextension
 
 open FiniteGaloisSubextension
 
+section
+
+variable (A : Rep ℤ G) (K : ClosedSubgroup G)
+
 /-- The additive-group filter basis formed by all finite Galois norm
 subgroups. -/
 @[implicit_reducible]
-def normFilterBasis (A : Rep ℤ G) (K : ClosedSubgroup G) :
+def normFilterBasis :
     AddGroupFilterBasis (ambientFixedAddSubgroup A K) :=
   addGroupFilterBasisOfComm
     {U | ∃ L : FiniteGaloisSubextension K,
@@ -108,9 +103,11 @@ def normFilterBasis (A : Rep ℤ G) (K : ClosedSubgroup G) :
 
 /-- The norm topology: norm subgroups form a basis at zero. -/
 @[implicit_reducible]
-def normTopology (A : Rep ℤ G) (K : ClosedSubgroup G) :
+def normTopology :
     TopologicalSpace (ambientFixedAddSubgroup A K) :=
   (normFilterBasis A K).topology
+
+end
 
 /-- The fixed subgroup with its norm topology recorded in the type.  This is
 the public carrier model for norm-topological statements; choosing the norm
@@ -137,75 +134,33 @@ instance withNormTopology.instAddCommGroup
     (WithTopology.equiv
       (ambientFixedAddSubgroup A K) (normTopology A K)).addCommGroup
 
-/-- Forget the norm-topology wrapper without changing the underlying point. -/
-def withNormTopologyEquiv (A : Rep ℤ G) (K : ClosedSubgroup G) :
-    WithNormTopology A K ≃ ambientFixedAddSubgroup A K := by
-  unfold WithNormTopology
-  exact WithTopology.equiv (ambientFixedAddSubgroup A K) (normTopology A K)
-
 /-- Openness in the norm topology, expressed through the type-level norm
 topology model. -/
 def IsNormOpen (A : Rep ℤ G) (K : ClosedSubgroup G)
     (s : Set (ambientFixedAddSubgroup A K)) : Prop :=
   @IsOpen (ambientFixedAddSubgroup A K) (normTopology A K) s
 
-/-- Closedness in the norm topology, expressed through the type-level norm
-topology model. -/
-def IsNormClosed (A : Rep ℤ G) (K : ClosedSubgroup G)
-    (s : Set (ambientFixedAddSubgroup A K)) : Prop :=
-  @IsClosed (ambientFixedAddSubgroup A K) (normTopology A K) s
+section
 
-/-- Hausdorffness of the type-level norm-topology model. -/
-def IsNormHausdorff (A : Rep ℤ G) (K : ClosedSubgroup G) : Prop :=
-  T2Space (WithNormTopology A K)
-
-/-- Continuity from a norm-topological fixed subgroup to an explicitly
-topologized target. -/
-def IsContinuousFromNormTopology
-    (A : Rep ℤ G) (K : ClosedSubgroup G)
-    {β : Type*} [TopologicalSpace β]
-    (f : ambientFixedAddSubgroup A K → β) : Prop :=
-  @Continuous (ambientFixedAddSubgroup A K) β (normTopology A K) inferInstance f
-
-/-- Continuity between two fixed subgroups carrying their norm topologies. -/
-def IsNormContinuous
-    (A : Rep ℤ G) (L K : ClosedSubgroup G)
-    (f : ambientFixedAddSubgroup A L → ambientFixedAddSubgroup A K) : Prop :=
-  @Continuous (ambientFixedAddSubgroup A L) (ambientFixedAddSubgroup A K)
-    (normTopology A L) (normTopology A K) f
+variable (A : Rep ℤ G) (K : ClosedSubgroup G)
 
 private theorem isNormOpen_iff_raw
-    (A : Rep ℤ G) (K : ClosedSubgroup G)
     (s : Set (ambientFixedAddSubgroup A K)) :
     IsNormOpen A K s ↔
       @IsOpen (ambientFixedAddSubgroup A K) (normTopology A K) s := by
   rfl
 
-private theorem isNormClosed_iff_raw
-    (A : Rep ℤ G) (K : ClosedSubgroup G)
-    (s : Set (ambientFixedAddSubgroup A K)) :
-    IsNormClosed A K s ↔
-      @IsClosed (ambientFixedAddSubgroup A K) (normTopology A K) s := by
-  rfl
-
- def withNormTopologyHomeomorph
-    (A : Rep ℤ G) (K : ClosedSubgroup G) :
-    @Homeomorph (WithNormTopology A K) (ambientFixedAddSubgroup A K)
-      (inferInstance : TopologicalSpace (WithNormTopology A K))
-      (normTopology A K) := by
-  unfold WithNormTopology
-  exact WithTopology.homeomorph
-
 /-- A set belongs to the defining filter basis exactly when it is one of
 the finite Galois norm subgroups. -/
 @[simp]
 theorem mem_normFilterBasis_iff
-    (A : Rep ℤ G) (K : ClosedSubgroup G)
     (U : Set (ambientFixedAddSubgroup A K)) :
     U ∈ normFilterBasis A K ↔
       ∃ L : FiniteGaloisSubextension K,
         U = (normSubgroup A L : Set (ambientFixedAddSubgroup A K)) :=
   Iff.rfl
+
+end
 
 /-- A subgroup is open in the norm topology exactly when it contains one
 finite Galois norm subgroup. -/
@@ -215,14 +170,12 @@ theorem normTopology_addSubgroup_isOpen_iff
     IsNormOpen A K H ↔
       ∃ L : FiniteGaloisSubextension K, normSubgroup A L ≤ H := by
   rw [isNormOpen_iff_raw]
-  let : TopologicalSpace (ambientFixedAddSubgroup A K) := normTopology A K
-  let : IsTopologicalAddGroup (ambientFixedAddSubgroup A K) :=
+  let := normTopology A K
+  let :=
     (normFilterBasis A K).isTopologicalAddGroup
   constructor
   · intro hH
-    have hnh : (H : Set (ambientFixedAddSubgroup A K)) ∈ nhds 0 :=
-      hH.mem_nhds H.zero_mem
-    rcases (normFilterBasis A K).nhds_zero_hasBasis.mem_iff.mp hnh with
+    rcases (normFilterBasis A K).nhds_zero_hasBasis.mem_iff.mp (hH.mem_nhds H.zero_mem) with
       ⟨U, hU, hUH⟩
     rcases hU with ⟨L, rfl⟩
     exact ⟨L, hUH⟩
@@ -238,103 +191,6 @@ theorem normSubgroup_isOpen
     IsNormOpen A K (normSubgroup A L) := by
   rw [normTopology_addSubgroup_isOpen_iff]
   exact ⟨L, le_rfl⟩
-
-/-- The subgroup of universal norms used in Hausdorffness of the norm topology. -/
-def universalNormSubgroup (A : Rep ℤ G) (K : ClosedSubgroup G) :
-    AddSubgroup (ambientFixedAddSubgroup A K) :=
-  ⨅ L : FiniteGaloisSubextension K, normSubgroup A L
-
-/--
-Characterizes `a ∈ universalNormSubgroup A K` by the equivalent condition `∀ L :
-FiniteGaloisSubextension K, a ∈ normSubgroup A L`.
--/
-@[simp]
-theorem mem_universalNormSubgroup_iff
-    (A : Rep ℤ G) (K : ClosedSubgroup G)
-    (a : ambientFixedAddSubgroup A K) :
-    a ∈ universalNormSubgroup A K ↔
-      ∀ L : FiniteGaloisSubextension K, a ∈ normSubgroup A L := by
-  simp [universalNormSubgroup]
-
-private theorem normTopology_hausdorff_raw
-    (A : Rep ℤ G) (K : ClosedSubgroup G) :
-    @T2Space (ambientFixedAddSubgroup A K) (normTopology A K) ↔
-      universalNormSubgroup A K = ⊥ := by
-  let B := normFilterBasis A K
-  have hsInter : ⋂₀ B.sets =
-      (universalNormSubgroup A K : Set (ambientFixedAddSubgroup A K)) := by
-    ext a
-    constructor
-    · intro ha
-      change a ∈ universalNormSubgroup A K
-      rw [mem_universalNormSubgroup_iff]
-      intro L
-      exact ha (normSubgroup A L) ⟨L, rfl⟩
-    · intro ha U hU
-      rcases hU with ⟨L, rfl⟩
-      exact (mem_universalNormSubgroup_iff A K a).1 ha L
-  rw [B.t2Space_iff (t := normTopology A K) rfl, hsInter]
-  constructor
-  · intro h
-    apply SetLike.coe_injective
-    simpa using h
-  · intro h
-    have := congrArg
-      (fun S : AddSubgroup (ambientFixedAddSubgroup A K) =>
-        (S : Set (ambientFixedAddSubgroup A K))) h
-    simpa using this
-
-/-- Hausdorffness of the norm topology: the norm-topology model is Hausdorff
-exactly when the universal norm subgroup is trivial. -/
-theorem normTopology_hausdorff
-    (A : Rep ℤ G) (K : ClosedSubgroup G) :
-    IsNormHausdorff A K ↔ universalNormSubgroup A K = ⊥ := by
-  let modelHomeomorph := withNormTopologyHomeomorph A K
-  constructor
-  · intro hmodel
-    let : T2Space (WithNormTopology A K) := hmodel
-    let : TopologicalSpace (ambientFixedAddSubgroup A K) := normTopology A K
-    let : T2Space (ambientFixedAddSubgroup A K) :=
-      modelHomeomorph.t2Space
-    exact (normTopology_hausdorff_raw A K).1 inferInstance
-  · intro huniversal
-    let : TopologicalSpace (ambientFixedAddSubgroup A K) := normTopology A K
-    let : T2Space (ambientFixedAddSubgroup A K) :=
-      (normTopology_hausdorff_raw A K).2 huniversal
-    exact modelHomeomorph.symm.t2Space
-
-/-- General norm-topology lemma: once every defining norm quotient is
-finite, openness is equivalent to closedness together with finite index.
-the norm-subgroup basis characterization supplies the finiteness premise from the abstract reciprocity theorem. -/
-theorem normTopology_open_iff_closed_finiteIndex_of_finite_normQuotients
-    (A : Rep ℤ G) (K : ClosedSubgroup G)
-    (hfinite : ∀ L : FiniteGaloisSubextension K,
-      Finite (ambientFixedAddSubgroup A K ⧸ normSubgroup A L))
-    (H : AddSubgroup (ambientFixedAddSubgroup A K)) :
-    IsNormOpen A K H ↔
-      IsNormClosed A K H ∧
-        Finite (ambientFixedAddSubgroup A K ⧸ H) := by
-  let : TopologicalSpace (ambientFixedAddSubgroup A K) := normTopology A K
-  let : IsTopologicalAddGroup (ambientFixedAddSubgroup A K) :=
-    (normFilterBasis A K).isTopologicalAddGroup
-  constructor
-  · intro hHmodel
-    have hH := (isNormOpen_iff_raw A K H).1 hHmodel
-    refine ⟨(isNormClosed_iff_raw A K H).2 (H.isClosed_of_isOpen hH), ?_⟩
-    obtain ⟨L, hLH⟩ :=
-      (normTopology_addSubgroup_isOpen_iff A K H).1 hHmodel
-    let : Finite (ambientFixedAddSubgroup A K ⧸ normSubgroup A L) :=
-      hfinite L
-    let : (normSubgroup A L).FiniteIndex :=
-      AddSubgroup.finiteIndex_of_finite_quotient
-    let : H.FiniteIndex := AddSubgroup.finiteIndex_of_le hLH
-    exact AddSubgroup.finite_quotient_of_finiteIndex
-  · rintro ⟨hclosedModel, hfin⟩
-    have hclosed := (isNormClosed_iff_raw A K H).1 hclosedModel
-    let : Finite (ambientFixedAddSubgroup A K ⧸ H) := hfin
-    let : H.FiniteIndex := AddSubgroup.finiteIndex_of_finite_quotient
-    exact (isNormOpen_iff_raw A K H).2
-      (H.isOpen_of_isClosed_of_finiteIndex hclosed)
 
 end ClassFormation
 

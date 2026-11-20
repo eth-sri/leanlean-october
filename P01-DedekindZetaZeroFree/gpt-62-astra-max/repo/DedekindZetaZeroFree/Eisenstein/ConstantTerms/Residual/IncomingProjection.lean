@@ -8,23 +8,25 @@ noncomputable section
 open scoped Classical NumberField BigOperators
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualIncomingProjection
 open KPContFlatCuspIncomingEvaluation
-open _root_.DedekindZetaZeroFree.KPContFlatCuspIncomingEvaluation renaming central_comm → central_comm
+open _root_.DedekindZetaZeroFree.KPContFlatCuspIncomingEvaluation (central_comm)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1200000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (a : Cusps F ζ hζ C R P H U)
-variable {S : Type*} [AddCommGroup S] [Module ℂ S] [FiniteDimensional ℂ S]
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (a : Cusps F ζ hζ C R P H U)
+    {S : Type*} [AddCommGroup S] [Module ℂ S] [FiniteDimensional ℂ S]
 variable (ι : S →ₗ[ℂ] KPContFlatCommonLevelKernel.CommonSphericalStage F ζ hζ U)
 
 private theorem inverse_fix (a z : ℂ) (ha : a ≠ 0) (h : a * z = z) : a⁻¹ * z = z := by
   calc
-    a⁻¹ * z = a⁻¹ * (a * z) := congrArg (a⁻¹ * ·) h.symm
+    _ = a⁻¹ * (a * z) := congrArg (a⁻¹ * ·) h.symm
     _ = z := by rw [← mul_assoc, inv_mul_cancel₀ ha, one_mul]
+
+alias IncomingProjection.inverse_fix := inverse_fix
 
 private theorem average_fix {T : Type*} [Fintype T] [Nonempty T]
     (c : T → ℂ) (z : ℂ) (h : ∀ t, c t * z = z) :
@@ -33,7 +35,12 @@ private theorem average_fix {T : Type*} [Fintype T] [Nonempty T]
   simp only [h, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
   rw [← mul_assoc, inv_mul_cancel₀ (Nat.cast_ne_zero.mpr Fintype.card_ne_zero), one_mul]
 
-private theorem sheet_central_level (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain) (v : S)
+alias IncomingProjection.average_fix := average_fix
+
+variable (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain) (v : S)
+
+include hs in
+private theorem sheet_central_level
     (ε : KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
       (atlasLevel F ζ hζ C R P H U)) :
     (KPCuspGenuineMonodromy.chi F ζ hζ ε.val : ℂ) *
@@ -45,13 +52,12 @@ private theorem sheet_central_level (s : ℂ) (hs : s ∈ KPContinuation.spectra
     ⟨(KPCuspGenuineMonodromy.central F ζ hζ ε.val).val,
       atlasLevel_mem_globalLevel F ζ hζ C R P H U
         ⟨KPCuspGenuineMonodromy.central F ζ hζ ε.val, ε.property⟩⟩
-  have hc := congrArg (fun x : KPFiniteCuspAtlas.FiniteCover F ζ hζ => x.val)
-    (central_comm F ζ hζ ε.val (finiteRepresentative F ζ hζ C R P H U a 1))
   have he : (finiteRepresentative F ζ hζ C R P H U a ε.val).val =
       (finiteRepresentative F ζ hζ C R P H U a 1).val *
         (KPCuspGenuineMonodromy.central F ζ hζ ε.val).val := by
     simp only [finiteRepresentative, map_one, one_mul, Subgroup.coe_mul]
-    simpa only [finiteRepresentative, map_one, one_mul, Subgroup.coe_mul, mul_assoc] using hc
+    simpa only [finiteRepresentative, map_one, one_mul, Subgroup.coe_mul, mul_assoc] using (congrArg (fun x : KPFiniteCuspAtlas.FiniteCover F ζ hζ => x.val)
+      (central_comm F ζ hζ ε.val (finiteRepresentative F ζ hζ C R P H U a 1)))
   rw [mul_one] at hphase
   rw [← hphase]
   change KPContFlatCommonLevelKernel.L F ζ hζ U ι s v
@@ -59,7 +65,8 @@ private theorem sheet_central_level (s : ℂ) (hs : s ∈ KPContinuation.spectra
   rw [he]
   exact hf
 
-theorem projected_sheet_evaluation (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain) (v : S) :
+include hs in
+theorem projected_sheet_evaluation :
     (zeroProjection F ζ hζ C R P H U a
       (sheetEvaluation F ζ hζ C R P H U a ι s v)).val 0 =
       sheetEvaluation F ζ hζ C R P H U a ι s v 1 := by

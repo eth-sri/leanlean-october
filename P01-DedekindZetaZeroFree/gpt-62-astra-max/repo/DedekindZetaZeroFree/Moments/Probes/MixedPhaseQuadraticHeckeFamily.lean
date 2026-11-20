@@ -40,10 +40,13 @@ variable {F : Type} [Field F] [NumberField F]
     allowed_unique := fun I a b ha hb =>
       A.allowed_generator_unique_mod_sixth R.classKilled D.H D.B D.B_complement I a b ha hb
     normOne_compact := ArithmeticContext.normOne_sixth_unit_quotient_compact A
-    prime_target := fun I v hIv p hp a ha hap x hx =>
-      D.prime_theta I v hIv p hp a ha hap x hx }
+     }
 
- def exteriorFamily (A : SArithmeticData F)
+ section
+
+variable (A : SArithmeticData F)
+
+def exteriorFamily
     (𝓕 : QuadraticHeckeFamily F (uniformSquareUnitModulus A.Sf)) :
     QuadraticHeckeFamily F A.cS where
   cond := 𝓕.cond
@@ -67,7 +70,7 @@ variable {F : Type} [Field F] [NumberField F]
     ((KummerSquarefreeMembers.exterior_iff A c).mpr hcopc) hd
     ((KummerSquarefreeMembers.exterior_iff A d).mpr hcopd)
 
-private theorem char_one (A : SArithmeticData F) (σ : F →+* ℂ)
+private theorem char_one (σ : F →+* ℂ)
     (I : A.Exterior) (t : A.R) :
     A.sexticResiduePowerChar σ I 1 (Ideal.Quotient.mk (A.extendIdeal I) t) =
       σ (A.sexticResidue I t) := by
@@ -81,13 +84,11 @@ private theorem char_one (A : SArithmeticData F) (σ : F →+* ℂ)
     change 0 = σ (MulChar.ofUnitHom (A.sexticResidueFamily I) _)
     rw [MulChar.map_nonunit _ hx, map_zero]
 
-private theorem idealSymbol_eq_residue (A : SArithmeticData F) (G : AllowedRecipe A)
+private theorem idealSymbol_eq_residue (G : AllowedRecipe A)
     (σ : F →+* ℂ) (d c : A.Exterior) (hd : Squarefree d.val)
     (r : A.R) (hr : (G.generator c : F) = (r : F)) :
     idealSymbol A σ d (G.generator c) = σ (A.sexticResidue d r) := by
-  have hr0 : r ≠ 0 := by
-    intro h
-    exact (G.generator c).ne_zero (hr.trans (by simp [h]))
+  have hr0 : r ≠ 0 := fun h => (G.generator c).ne_zero (hr.trans (by simp [h]))
   have he : ThetaReflectionData.rowUnit A ⟨r, hr0⟩ = G.generator c :=
     Units.ext hr.symm
   have h := (NormalizedProbe.exteriorSexticRowCharacter_eq_sexticResiduePowerChar A σ d r).trans
@@ -103,6 +104,8 @@ private theorem idealSymbol_eq_residue (A : SArithmeticData F) (G : AllowedRecip
     simpa only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset] using p.property
   rw [hexp, pow_one]
   rfl
+
+end
 
 private theorem chosen_residue_eq
     {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
@@ -144,7 +147,7 @@ theorem actual_quadratic_family_exists
   classical
   have h12 : (primitiveRoots 12 F).Nonempty :=
     ⟨R.A.zeta12, (mem_primitiveRoots (by norm_num)).mpr R.A.primitive_zeta12⟩
-  obtain ⟨_, _, 𝓕, h𝓕⟩ := RMKummerFamily.exists_actualKummerFamily
+  obtain ⟨𝓕, h𝓕⟩ := RMKummerFamily.exists_actualKummerFamily
     h12 R.A R.σ R.target R.traceBad (recipeContext R)
   refine ⟨exteriorFamily R.A 𝓕, ?_⟩
   intro d c

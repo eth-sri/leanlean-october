@@ -9,9 +9,9 @@ open scoped Classical NumberField
 open NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPActualReflectionData.ScalarFiberInverse renaming fiber_covariance → fiber_covariance
+open _root_.DedekindZetaZeroFree.KPActualReflectionData.ScalarFiberInverse (fiber_covariance)
 variable {F : Type} [Field F] [NumberField F]
-variable (A : SArithmeticData F)
+    (A : SArithmeticData F)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false

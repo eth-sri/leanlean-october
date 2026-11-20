@@ -29,14 +29,8 @@ theorem strip_inverse_api (K : ℂ → ℂ) (a b : ℝ)
   have hshift : ∀ c d x : ℝ, a < c → c ≤ d → d < b → 0 < x →
       mellinInv c K x = mellinInv d K x := by
     intro c d x hac hcd hdb hx
-    have hcb : c < b := lt_of_le_of_lt hcd hdb
-    have had : a < d := lt_of_lt_of_le hac hcd
     haveI : NeZero (x : ℂ) := ⟨Complex.ofReal_ne_zero.mpr hx.ne'⟩
-    have hpow : Differentiable ℂ (fun s : ℂ => (x : ℂ) ^ (-s)) :=
-      (differentiable_const_cpow_of_neZero (x : ℂ)).comp differentiable_neg
-    have hKcont : ContinuousOn K {s : ℂ | s.re ∈ Set.Icc c d} := by
-      intro s hs
-      exact (hhol s (lt_of_lt_of_le hac hs.1)
+    have hKcont : ContinuousOn K {s : ℂ | s.re ∈ Set.Icc c d} := fun s hs => (hhol s (lt_of_lt_of_le hac hs.1)
         (lt_of_le_of_lt hs.2 hdb)).continuousAt.continuousWithinAt
     obtain ⟨B, hB, hbound⟩ := Subquadratic.strip_bound_of_tail_bound K hKcont (by
       obtain ⟨C, hC, htail⟩ := hrapid c d hac hcd hdb 0
@@ -53,10 +47,10 @@ theorem strip_inverse_api (K : ℂ → ℂ) (a b : ℝ)
     refine integral_eq_of_exponential_strip_growth hcd
       (fun s => (x : ℂ) ^ (-s) * K s) ?_ ?_ ?_ ?_
     · intro s hs1 hs2
-      exact hpow.differentiableAt.mul
+      exact ((differentiable_const_cpow_of_neZero (x : ℂ)).comp differentiable_neg).differentiableAt.mul
         (hhol s (lt_of_lt_of_le hac hs1) (lt_of_le_of_lt hs2 hdb))
-    · exact (strip_integrability K a b hhol hrapid c hac hcb).2 x hx
-    · exact (strip_integrability K a b hhol hrapid d had hdb).2 x hx
+    · exact (strip_integrability K a b hhol hrapid c hac (lt_of_le_of_lt hcd hdb)).2 x hx
+    · exact (strip_integrability K a b hhol hrapid d (lt_of_lt_of_le hac hcd) hdb).2 x hx
     · refine ⟨0, max (Real.rpow x (-c)) (Real.rpow x (-d)) * B, le_rfl,
         mul_nonneg ((Real.rpow_nonneg hx.le _).trans (le_max_left _ _)) hB, ?_⟩
       intro σ hσ t
@@ -72,13 +66,12 @@ theorem strip_inverse_api (K : ℂ → ℂ) (a b : ℝ)
     · exact hshift c d x hac hcd hdb hx
     · exact (hshift d c x had hdc hcb hx).symm
   · intro c hac hcb
-    let P : ℝ := ‖(1 / (2 * Real.pi) : ℂ)‖
-    let L : ℝ := ∫ t : ℝ, ‖K ((c : ℂ) + (t : ℂ) * Complex.I)‖
+    let P := ‖(1 / (2 * Real.pi) : ℂ)‖
+    let L := ∫ t : ℝ, ‖K ((c : ℂ) + (t : ℂ) * Complex.I)‖
     have hP : 0 ≤ P := norm_nonneg _
-    have hL : 0 ≤ L := MeasureTheory.integral_nonneg (fun _ => norm_nonneg _)
-    refine ⟨P * L, mul_nonneg hP hL, ?_⟩
+    refine ⟨P * L, mul_nonneg hP (MeasureTheory.integral_nonneg (fun _ => norm_nonneg _)), ?_⟩
     intro x hx1
-    have hx : 0 < x := lt_of_lt_of_le zero_lt_one hx1
+    have hx := lt_of_lt_of_le zero_lt_one hx1
     have hnorm : (∫ t : ℝ, ‖(x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I)) *
         K ((c : ℂ) + (t : ℂ) * Complex.I)‖) = Real.rpow x (-c) * L := by
       simp_rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx]
@@ -88,8 +81,7 @@ theorem strip_inverse_api (K : ℂ → ℂ) (a b : ℝ)
       exact MeasureTheory.integral_const_mul _ _
     rw [mellinInv_eq_verticalIntegral c K hx, verticalIntegral, norm_mul]
     calc
-      P * ‖∫ t : ℝ, (x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I)) *
-          K ((c : ℂ) + (t : ℂ) * Complex.I)‖
+      _
           ≤ P * (∫ t : ℝ, ‖(x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I)) *
             K ((c : ℂ) + (t : ℂ) * Complex.I)‖) :=
         mul_le_mul_of_nonneg_left (MeasureTheory.norm_integral_le_integral_norm _) hP

@@ -14,19 +14,19 @@ open KPMsActualAngularSource KPMsNativeOffsetMass KPMsNativeOffsetComparison
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "Core" => RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C)
 variable (D : KPGlobalTorusInducingPlan.ModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable {HR : KPSmoothLocalQuotientCharts.HaarRecipe F R.A.zeta12 R.A.primitive_zeta12}
-variable {HP : KPMsFixedHaarDisintegration.SphericalTransport F R.A.zeta12 R.A.primitive_zeta12}
-variable (M : NativeMeasuredSource F R.A.zeta12 R.A.primitive_zeta12 HR HP)
-variable (U : Level F R.A.zeta12 R.A.primitive_zeta12)
-variable (dk : Measure (KPMsGreenFlux.K F)) [IsFiniteMeasure dk] [dk.IsHaarMeasure]
+    {HR : KPSmoothLocalQuotientCharts.HaarRecipe F R.A.zeta12 R.A.primitive_zeta12}
+    {HP : KPMsFixedHaarDisintegration.SphericalTransport F R.A.zeta12 R.A.primitive_zeta12}
+    (M : NativeMeasuredSource F R.A.zeta12 R.A.primitive_zeta12 HR HP)
+    (U : Level F R.A.zeta12 R.A.primitive_zeta12)
+    (dk : Measure (KPMsGreenFlux.K F)) [IsFiniteMeasure dk] [dk.IsHaarMeasure]
 
 theorem spherical_boundary_full_law (hU : cofinalLevel F ζ hζ U = U)
     (v : KPContActualSphericalFlatStage.Stage F ζ hζ U) (x : Core)
@@ -45,9 +45,7 @@ theorem spherical_boundary_full_law (hU : cofinalLevel F ζ hζ U = U)
           KPMsGreenFlux.compactInsertion F ζ hζ k) ∂dk)
       ∂((nativeFamily F ζ hζ HR HP).disintegration
         (EisensteinSmoothGerms.ScalarSource.atlasLevel F ζ hζ U)).beta := by
-  have hf : ∀g u, u∈KPGlobalTorusFunctionData.globalLevel F ζ hζ U →
-      v.val.val.val (g*u)=v.val.val.val g := fun g u hu => (v.property.1 g ⟨u,hu⟩).1
-  rw [boundary_full_mass_eq_beta R P C M U dk v.val x hf hx]
+  rw [boundary_full_mass_eq_beta R P C M U dk v.val x (fun g u hu => (v.property.1 g ⟨u,hu⟩).1) hx]
   calc
     _ = ∫ω, boundaryAverage R P C dk v.val x
         (KPBoundedCuspFrames.actualFiniteRepresentative

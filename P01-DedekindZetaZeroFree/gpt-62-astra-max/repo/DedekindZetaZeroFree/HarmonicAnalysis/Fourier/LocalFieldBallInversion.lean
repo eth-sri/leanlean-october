@@ -12,19 +12,21 @@ namespace DedekindZetaZeroFree.PoissonS.Covolume
 
 attribute [local instance] completionMeasurable completionBorel
 
-private theorem integral_character_subgroup_eq_zero
-    {G : Type*} [AddGroup G] [MeasurableSpace G] [MeasurableAdd G]
-    (μ : Measure G) [μ.IsAddLeftInvariant]
-    (H : AddSubgroup G) (χ : G → ℂ)
+section
+
+variable {G : Type*} [AddGroup G] [MeasurableSpace G] [MeasurableAdd G] (μ : Measure G)
+    [μ.IsAddLeftInvariant] (H : AddSubgroup G)
+
+private theorem integral_character_subgroup_eq_zero (χ : G → ℂ)
     (hχ : ∀ a b, χ (a + b) = χ a * χ b)
     (h : G) (hh : h ∈ H) (hn : χ h ≠ 1) :
     (∫ x, (if x ∈ H then χ x else 0) ∂μ) = 0 := by
-  let f : G → ℂ := fun x => if x ∈ H then χ x else 0
+  let f := fun x => if x ∈ H then χ x else 0
   have hm (x : G) : h + x ∈ H ↔ x ∈ H := by
     constructor
     · intro hx
-      have : -h + (h+x) ∈ H := H.add_mem (H.neg_mem hh) hx
-      simpa only [neg_add_cancel_left] using this
+      have := H.add_mem (H.neg_mem hh) hx
+      simpa using this
     · intro hx
       exact H.add_mem hh hx
   have he (x : G) : f (h + x) = χ h * f x := by
@@ -32,16 +34,10 @@ private theorem integral_character_subgroup_eq_zero
   have hv := integral_add_left_eq_self f h (μ := μ)
   simp_rw [he] at hv
   rw [integral_const_mul] at hv
-  have hv' : (χ h - 1) * (∫ x, f x ∂μ) = 0 := by
-    rw [sub_mul, hv, one_mul, sub_self]
-  have hf : (∫ x, f x ∂μ) = 0 :=
-    (mul_eq_zero.mp hv').resolve_left (sub_ne_zero.mpr hn)
-  exact hf
+  exact (mul_eq_zero.mp (by
+    rw [sub_mul, hv, one_mul, sub_self])).resolve_left (sub_ne_zero.mpr hn)
 
-theorem integral_character_subgroup
-    {G : Type*} [AddGroup G] [MeasurableSpace G] [MeasurableAdd G]
-    (μ : Measure G) [μ.IsAddLeftInvariant]
-    (H : AddSubgroup G) (hH : MeasurableSet (H : Set G)) (χ : G → ℂ)
+theorem integral_character_subgroup (hH : MeasurableSet (H : Set G)) (χ : G → ℂ)
     (hχ : ∀ a b, χ (a + b) = χ a * χ b) :
     (∫ x, (if x ∈ H then χ x else 0) ∂μ) =
       if ∀ x ∈ H, χ x = 1 then (μ H).toReal else 0 := by
@@ -60,6 +56,8 @@ theorem integral_character_subgroup
     obtain ⟨x, hx, hn⟩ := ht
     exact integral_character_subgroup_eq_zero μ H χ hχ x hx hn
 
+end
+
 theorem finite_scaled_ball_conductor
     (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F))
@@ -75,20 +73,17 @@ theorem finite_scaled_ball_conductor
     rw [← mul_assoc]
     exact h (z * a) (by rw [norm_mul]; nlinarith [norm_nonneg a])
   · intro h z hz
-    have hza : ‖z / a‖ ≤ 1 := by
+    simpa only [← mul_assoc, div_mul_cancel₀ z ha] using (h (z / a) (by
       rw [norm_div]
-      exact (div_le_one (norm_pos_iff.mpr ha)).mpr hz
-    have hh := h (z / a) hza
-    simpa only [← mul_assoc, div_mul_cancel₀ z ha] using hh
+      exact (div_le_one (norm_pos_iff.mpr ha)).mpr hz))
 
-theorem finite_scaled_ball_fourier
-    (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F))
-    (e : AddChar (v.adicCompletion F) Circle)
-    (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
-    (hconductor : ∀ y, (∀ z : v.adicCompletion F, ‖z‖ ≤ 1 → e (z * y) = 1) ↔
-      ‖y‖ ≤ (v.asIdeal.absNorm : ℝ) ^ differentExponent F v)
-    (a : v.adicCompletion F) (ha : a ≠ 0) (y : v.adicCompletion F) :
+variable (F : Type) [Field F] [NumberField F] (v : HeightOneSpectrum (RingOfIntegers F))
+    (e : AddChar (v.adicCompletion F) Circle) (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
+    (hconductor : ∀ y, (∀ z : v.adicCompletion F, ‖z‖ ≤ 1 → e (z * y) = 1) ↔ ‖y‖ ≤ (v.asIdeal.absNorm : ℝ) ^ differentExponent F v)
+    (a : v.adicCompletion F) (ha : a ≠ 0)
+
+include hconductor ha in
+theorem finite_scaled_ball_fourier (y : v.adicCompletion F) :
     (∫ z, (if ‖z‖ ≤ ‖a‖ then (1 : ℂ) else 0) * (e (-z * y) : ℂ) ∂μ) =
       if ‖a‖ * ‖y‖ ≤ (v.asIdeal.absNorm : ℝ) ^ differentExponent F v then
         ((μ {z | ‖z‖ ≤ ‖a‖}).toReal : ℂ) else 0 := by
@@ -117,19 +112,13 @@ theorem finite_scaled_ball_fourier
   rw [integral_character_subgroup μ H hH χ hχ, hc]
   split_ifs <;> simp [H]
 
-theorem finite_translated_ball_fourier
-    (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F))
-    (e : AddChar (v.adicCompletion F) Circle)
-    (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
-    (hconductor : ∀ y, (∀ z : v.adicCompletion F, ‖z‖ ≤ 1 → e (z * y) = 1) ↔
-      ‖y‖ ≤ (v.asIdeal.absNorm : ℝ) ^ differentExponent F v)
-    (a : v.adicCompletion F) (ha : a ≠ 0) (b y : v.adicCompletion F) :
+include hconductor ha in
+theorem finite_translated_ball_fourier (b y : v.adicCompletion F) :
     (∫ z, (if ‖z - b‖ ≤ ‖a‖ then (1 : ℂ) else 0) * (e (-z * y) : ℂ) ∂μ) =
       (e (-b * y) : ℂ) *
         (if ‖a‖ * ‖y‖ ≤ (v.asIdeal.absNorm : ℝ) ^ differentExponent F v then
           ((μ {z | ‖z‖ ≤ ‖a‖}).toReal : ℂ) else 0) := by
-  let f : v.adicCompletion F → ℂ := fun z =>
+  let f := fun z =>
     (if ‖z - b‖ ≤ ‖a‖ then (1 : ℂ) else 0) * (e (-z * y) : ℂ)
   have hf (z : v.adicCompletion F) : f (b + z) =
       (e (-b * y) : ℂ) *
@@ -137,8 +126,7 @@ theorem finite_translated_ball_fourier
     dsimp [f]
     rw [add_sub_cancel_left, neg_add, add_mul, AddChar.map_add_eq_mul, Circle.coe_mul]
     ring
-  have hi := integral_add_left_eq_self f b (μ := μ)
-  rw [← hi]
+  rw [← (integral_add_left_eq_self f b)]
   simp_rw [hf]
   rw [integral_const_mul, finite_scaled_ball_fourier F v e μ hconductor a ha y]
 

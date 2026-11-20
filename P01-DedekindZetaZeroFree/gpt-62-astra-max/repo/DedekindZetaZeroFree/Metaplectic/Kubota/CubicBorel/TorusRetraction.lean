@@ -10,7 +10,7 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.ActualFiniteBorel.Geometry
 noncomputable section
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (q : HeightOneSpectrum (𝓞 F))
 open KPLocalSmoothRepresentation KPLocalInductionJacquetReciprocity
 
 theorem root_ratio_one (x : Multiplicative (q.adicCompletion F)) :

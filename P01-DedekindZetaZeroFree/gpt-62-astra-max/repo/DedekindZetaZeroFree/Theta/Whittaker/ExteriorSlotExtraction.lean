@@ -11,12 +11,12 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open scoped Classical NumberField
-open _root_.DedekindZetaZeroFree.RestrictedTensorSimple renaming inclusion_insert → inclusion_insert
+open _root_.DedekindZetaZeroFree.RestrictedTensorSimple (inclusion_insert)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
-variable (D : SourceFactorization R Q T)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    (D : SourceFactorization R Q T)
 local notation "V" => actualLocal R D.finiteData
 
 theorem exterior_three_unit (p : KPFinitePlace F) (hp : p ∉ R.A.Sf) :

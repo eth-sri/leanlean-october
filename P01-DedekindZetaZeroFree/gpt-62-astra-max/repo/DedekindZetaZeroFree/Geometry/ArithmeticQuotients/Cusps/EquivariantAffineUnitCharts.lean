@@ -14,37 +14,41 @@ open MeasureTheory
 namespace DedekindZetaZeroFree
 namespace KPCuspCharts
 
-abbrev Horizontal (F : Type*) [Field F] [NumberField F] :=
+section
+
+variable (F : Type*) [Field F] [NumberField F]
+
+abbrev Horizontal :=
   Fin (KPCuspLogShape.dimension F) → ℂ
 
-abbrev Shape (F : Type*) [Field F] [NumberField F] :=
+abbrev Shape :=
   KPCuspLogShape.hyperplane (KPCuspLogShape.dimension F)
 
-abbrev Cross (F : Type*) [Field F] [NumberField F] := Horizontal F × Shape F
+abbrev Cross := Horizontal F × Shape F
 
-abbrev Coordinates (F : Type*) [Field F] [NumberField F] := Cross F × ℝ
+abbrev Coordinates := Cross F × ℝ
 
-def embedding (F : Type*) [Field F] [NumberField F] : F →+ Horizontal F where
+def embedding : F →+ Horizontal F where
   toFun x := fun i => (KPCusp.complexPlace F i).embedding x
   map_zero' := by ext i; simp
   map_add' x y := by ext i; simp
 
-def translationLattice (F : Type*) [Field F] [NumberField F] (L : AddSubgroup F) :
+def translationLattice (L : AddSubgroup F) :
     AddSubgroup (Horizontal F) := L.map (embedding F)
 
-abbrev Torus (F : Type*) [Field F] [NumberField F] (L : AddSubgroup F) :=
+abbrev Torus (L : AddSubgroup F) :=
   Horizontal F ⧸ translationLattice F L
 
-abbrev Base (F : Type*) [Field F] [NumberField F]
+abbrev Base
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F) :=
   Shape F ⧸ (KPCuspLogShape.logLattice F hF E hE).toAddSubgroup
 
-def toArch (F : Type*) [Field F] [NumberField F] (p : Coordinates F) :
+def toArch (p : Coordinates F) :
     KPArch.Space (KPCuspLogShape.dimension F) :=
   fun i => (p.1.1 i, p.2 + (p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i)
 
-theorem toArch_meanHeight (F : Type*) [Field F] [NumberField F]
+theorem toArch_meanHeight
     (hd : 0 < KPCuspLogShape.dimension F) (p : Coordinates F) :
     KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) (toArch F p) = p.2 := by
   have hb : ∑ i, (p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i = 0 := by
@@ -54,43 +58,51 @@ theorem toArch_meanHeight (F : Type*) [Field F] [NumberField F]
     add_zero, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
   exact mul_div_cancel_left₀ p.2 hn
 
-def metric (F : Type*) [Field F] [NumberField F] (p v : Coordinates F) : ℝ :=
+def metric (p v : Coordinates F) : ℝ :=
   KPArch.metric (KPCuspLogShape.dimension F) (toArch F p) (toArch F v)
 
-def affine (F : Type*) [Field F] [NumberField F]
+def affine
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
     (u : E) (v : F) (p : Coordinates F) : Coordinates F :=
   ((fun i => embedding F ((u : Fˣ) : F) i * p.1.1 i + embedding F v i,
     p.1.2 + KPCuspLogShape.logarithm F hF E hE (Additive.ofMul u)), p.2)
 
-def crossRelation (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) : Setoid (Cross F) :=
+end
+
+section
+
+variable (F : Type*) [Field F] [NumberField F] (S : Subgroup (KPCuspArithmetic.PGL2 F))
+
+def crossRelation : Setoid (Cross F) :=
   Setoid.comap (fun p => toArch F (p, 0))
     (MulAction.orbitRel S (KPArch.Space (KPCuspLogShape.dimension F)))
 
-abbrev CrossQuotient (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) := Quotient (crossRelation F S)
+abbrev CrossQuotient := Quotient (crossRelation F S)
 
-def highRelation (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (T : ℝ) :
+def highRelation (T : ℝ) :
     Setoid {p : Coordinates F // T < p.2} :=
   Setoid.comap (fun p => toArch F p.val)
     (MulAction.orbitRel S (KPArch.Space (KPCuspLogShape.dimension F)))
 
-abbrev HighQuotient (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (T : ℝ) := Quotient (highRelation F S T)
+abbrev HighQuotient (T : ℝ) := Quotient (highRelation F S T)
 
-@[instance_reducible] def homeomorphAction {G X : Type*} [Group G] [TopologicalSpace X]
-    (β : G →* (X ≃ₜ X)) : MulAction G X where
+end
+
+section
+
+variable {G X : Type*} [Group G] [TopologicalSpace X] (β : G →* (X ≃ₜ X))
+
+@[instance_reducible] def homeomorphAction : MulAction G X where
   smul g x := β g x
   one_smul x := by change (β 1) x = x; rw [map_one]; rfl
   mul_smul g h x := by change (β (g * h)) x = (β g) ((β h) x); rw [map_mul]; rfl
 
-abbrev AffineOrbit {G X : Type*} [Group G] [TopologicalSpace X]
-    (β : G →* (X ≃ₜ X)) :=
+abbrev AffineOrbit :=
   letI := homeomorphAction β
   Quotient (MulAction.orbitRel G X)
+
+end
 
 def kernelUnits (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -107,17 +119,19 @@ def kernelUnits (F : Type*) [Field F] [NumberField F]
     change KPCuspLogShape.logarithm F hF E hE (-Additive.ofMul a) = 0
     rw [map_neg, ha, neg_zero]
 
-abbrev CoarseFiber (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+section
+
+variable (F : Type*) [Field F] [NumberField F] (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (L : AddSubgroup F) (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
-    (β : E →* (Torus F L ≃ₜ Torus F L)) :=
+    (β : E →* (Torus F L ≃ₜ Torus F L))
+
+abbrev CoarseFiber :=
   AffineOrbit (β.comp (kernelUnits F hF E hE).subtype)
 
-def coarseProjection (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (L : AddSubgroup F) (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
-    (β : E →* (Torus F L ≃ₜ Torus F L)) :
+def coarseProjection :
     Torus F L → CoarseFiber F hF L E hE β := Quotient.mk _
+
+end
 
 structure ParabolicData (F : Type*) [Field F] [NumberField F]
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) where
@@ -127,7 +141,6 @@ structure ParabolicData (F : Type*) [Field F] [NumberField F]
   ratio : S →* E
   integralUnits : E ≤ KPCuspArithmetic.rationalUnits F
   unitIndex : (E.subgroupOf (KPCuspArithmetic.rationalUnits F)).FiniteIndex
-  injective : Function.Injective inclusion
   surjective : Function.Surjective ratio
   exact : inclusion.range = ratio.ker
   upper : ∀ g ∈ S, KPCuspArithmetic.IsUpperTriangular F g
@@ -139,19 +152,25 @@ structure ParabolicData (F : Type*) [Field F] [NumberField F]
     Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) →
     A 1 0 = 0 → A 0 0 = ((ratio g : Fˣ) : F) * A 1 1
 
-def totalRelation (F : Type*) [Field F] [NumberField F]
+section
+
+variable (F : Type*) [Field F] [NumberField F]
+
+def totalRelation
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) : Setoid (Coordinates F) :=
   Setoid.comap (toArch F)
     (MulAction.orbitRel S (KPArch.Space (KPCuspLogShape.dimension F)))
 
-abbrev TotalQuotient (F : Type*) [Field F] [NumberField F]
+abbrev TotalQuotient
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) := Quotient (totalRelation F S)
 
-def crossAffine (F : Type*) [Field F] [NumberField F]
+def crossAffine
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
     (u : E) (v : F) (p : Cross F) : Cross F :=
   (affine F hF E hE u v (p, 0)).1
+
+end
 
 def radialMeasure (d : ℕ) : Measure ℝ :=
   volume.withDensity (fun t => ENNReal.ofReal (Real.exp (-2 * (d : ℝ) * t)))
@@ -173,27 +192,14 @@ structure BundleAtlas (F : Type*) [Field F] [NumberField F]
       β u z = z' ∧ b' = b +
         KPCuspLogShape.logarithm F hF D.E D.integralUnits (Additive.ofMul u)
   chartCount : ℕ
-  positive_chartCount : 0 < chartCount
   shapeLift : Fin chartCount → Set (Shape F)
   open_shapeLift : ∀ i, IsOpen (shapeLift i)
-  nonempty_shapeLift : ∀ i, (shapeLift i).Nonempty
-  small_shapeLift : ∀ (i : Fin chartCount) (b b' : Shape F) (u : D.E),
-    b ∈ shapeLift i → b' ∈ shapeLift i →
-    b' = b + KPCuspLogShape.logarithm F hF D.E D.integralUnits (Additive.ofMul u) →
-    KPCuspLogShape.logarithm F hF D.E D.integralUnits (Additive.ofMul u) = 0
   baseOpen : Fin chartCount → Set (Base F hF D.E D.integralUnits)
   open_baseOpen : ∀ i, IsOpen (baseOpen i)
-  baseOpen_formula : ∀ i, baseOpen i = QuotientAddGroup.mk '' shapeLift i
   cover : (⋃ i, baseOpen i) = Set.univ
   baseChart : ∀ i, shapeLift i ≃ₜ baseOpen i
   baseChart_formula : ∀ (i : Fin chartCount) (b : shapeLift i),
     (baseChart i b).val = QuotientAddGroup.mk b.val
-  coarseChart : ∀ i,
-    CoarseFiber F hF D.L D.E D.integralUnits β × shapeLift i ≃ₜ
-      {c : CrossQuotient F S // projection c ∈ baseOpen i}
-  coarseChart_formula : ∀ (i : Fin chartCount) (z : Torus F D.L) (b : shapeLift i),
-    (coarseChart i (coarseProjection F hF D.L D.E D.integralUnits β z, b)).val =
-      lift (z, b.val)
 
   transitions : ∀ (i j : Fin chartCount) (b : shapeLift i) (b' : shapeLift j),
     (QuotientAddGroup.mk b.val : Base F hF D.E D.integralUnits) =
@@ -210,7 +216,6 @@ structure ChartOutput (F : Type*) [Field F] [NumberField F]
   lattice : ∃ hdisc : DiscreteTopology (translationLattice F D.L).toIntSubmodule,
     letI := hdisc; IsZLattice ℝ (translationLattice F D.L).toIntSubmodule
   compact_torus : CompactSpace (Torus F D.L)
-  compact_base : CompactSpace (Base F hF D.E D.integralUnits)
   finite_isotropy : Finite (kernelUnits F hF D.E D.integralUnits)
 
   torusAction : D.E →* (Torus F D.L ≃ₜ Torus F D.L)
@@ -239,17 +244,6 @@ structure ChartOutput (F : Type*) [Field F] [NumberField F]
     KPCuspSiegel.action F
       (D.inclusion (Multiplicative.ofAdd x) : KPCuspArithmetic.PGL2 F) (toArch F p) =
       toArch F ((p.1.1 + embedding F (x : F), p.1.2), p.2)
-  metric_invariant : ∀ (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F),
-    Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) → A 1 0 = 0 →
-    ∀ p v : Coordinates F,
-      let f := affine F hF D.E D.integralUnits (D.ratio g) (A 0 1 / A 1 1)
-      metric F (f p) (fderiv ℝ f p v) = metric F p v
-  smooth_transitions : ∀ (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F),
-    Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) → A 1 0 = 0 →
-    ContDiff ℝ ⊤ (affine F hF D.E D.integralUnits (D.ratio g) (A 0 1 / A 1 1))
-  density_formula : ∀ p : Coordinates F,
-    KPArch.volumeDensity (KPCuspLogShape.dimension F) (toArch F p) =
-      Real.exp (-2 * (KPCuspLogShape.dimension F : ℝ) * p.2)
   shapeMeasure : Measure (Shape F)
   haar_shapeMeasure : shapeMeasure.IsAddHaarMeasure
   archVolume_formula :
@@ -273,12 +267,6 @@ structure ChartOutput (F : Type*) [Field F] [NumberField F]
   radialPresentation_formula : ∀ (p : Cross F) (t : ℝ),
     radialPresentation (Quotient.mk _ p, t) = Quotient.mk _ (p, t)
 
-  quotientVolume_formula :
-    Measure.map radialPresentation
-      (sectionMeasure.prod (radialMeasure (KPCuspLogShape.dimension F))) =
-    Measure.map (Quotient.mk (totalRelation F S))
-      (((volume.prod shapeMeasure).prod (radialMeasure (KPCuspLogShape.dimension F))).restrict
-        {p : Coordinates F | p.1 ∈ fundamentalDomain})
   highPresentation : ∀ T : ℝ,
     CrossQuotient F S × Set.Ioi T ≃ₜ HighQuotient F S T
   highPresentation_formula : ∀ (T : ℝ) (p : Cross F) (t : Set.Ioi T),
@@ -293,7 +281,11 @@ structure ChartOutput (F : Type*) [Field F] [NumberField F]
         (((volume.prod shapeMeasure).prod (radialMeasure (KPCuspLogShape.dimension F))).restrict
           {p : Coordinates F | p.1 ∈ fundamentalDomain}))
 
-theorem volumeDensity_toArch (F : Type*) [Field F] [NumberField F]
+section
+
+variable (F : Type*) [Field F] [NumberField F]
+
+theorem volumeDensity_toArch
     (p : Coordinates F) :
     KPArch.volumeDensity (KPCuspLogShape.dimension F) (toArch F p) =
       Real.exp (-2 * (KPCuspLogShape.dimension F : ℝ) * p.2) := by
@@ -310,29 +302,27 @@ theorem volumeDensity_toArch (F : Type*) [Field F] [NumberField F]
     add_zero, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
   ring
 
-theorem affine_radial (F : Type*) [Field F] [NumberField F]
+theorem affine_radial
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
     (u : E) (v : F) (p : Coordinates F) :
     (affine F hF E hE u v p).2 = p.2 := rfl
 
-theorem toArch_contDiff (F : Type*) [Field F] [NumberField F] :
+theorem toArch_contDiff :
     ContDiff ℝ ⊤ (toArch F) := by
-  have hb : ContDiff ℝ ⊤ (fun p : Coordinates F =>
-      (p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ)) :=
-    (Shape F).subtypeL.contDiff.comp (contDiff_snd.comp contDiff_fst)
-  unfold toArch
   apply contDiff_pi.mpr
   intro i
   exact (by fun_prop : ContDiff ℝ ⊤ (fun p : Coordinates F => p.1.1 i)).prodMk
-    (contDiff_snd.add ((contDiff_apply ℝ ℝ i).comp hb))
+    (contDiff_snd.add ((contDiff_apply ℝ ℝ i).comp ((Shape F).subtypeL.contDiff.comp (contDiff_snd.comp contDiff_fst))))
 
-theorem affine_contDiff (F : Type*) [Field F] [NumberField F]
+theorem affine_contDiff
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
     (u : E) (v : F) : ContDiff ℝ ⊤ (affine F hF E hE u v) := by
   unfold affine
   fun_prop
+
+end
 
  theorem upper_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (hc : g 1 0 = 0) (u : ℂ) (hu : u ≠ 0) (ha : g 0 0 = u * g 1 1)
@@ -342,7 +332,6 @@ theorem affine_contDiff (F : Type*) [Field F] [NumberField F]
     intro h
     apply g.det_ne_zero
     simp [Matrix.det_fin_two, hc, h]
-  have hdR : ‖g 1 1‖ ≠ 0 := norm_ne_zero_iff.mpr hd
   have huR : ‖u‖ ≠ 0 := norm_ne_zero_iff.mpr hu
   apply Prod.ext
   · simp only [KPArch.action, KPArch.actionDenominator, hc, zero_mul, zero_add,
@@ -350,7 +339,7 @@ theorem affine_contDiff (F : Type*) [Field F] [NumberField F]
     have hn : (‖g 1 1‖ ^ 2 : ℝ) = (g 1 1 * star (g 1 1) : ℂ) := by
       simpa [Complex.normSq_eq_norm_sq] using (Complex.mul_conj (g 1 1)).symm
     rw [hn, ha]
-    have hds : star (g 1 1) ≠ 0 := star_ne_zero.mpr hd
+    have hds := star_ne_zero.mpr hd
     field_simp
   · simp only [KPArch.action, KPArch.actionDenominator, hc, zero_mul, zero_add,
       norm_zero, zero_pow (by norm_num : 2 ≠ 0), mul_zero, add_zero,
@@ -374,18 +363,19 @@ theorem actual_affine_action (F : Type*) [Field F] [NumberField F]
   have hi : (Matrix.GeneralLinearGroup.map σ A) 1 0 = 0 := by
     change σ (A 1 0) = 0
     simp [hc]
-  have hu : σ ((D.ratio g : Fˣ) : F) ≠ 0 :=
+  let σ₀ := σ ((D.ratio g : Fˣ) : F)
+  have hu : σ₀ ≠ 0 :=
     (map_ne_zero σ).mpr (Units.ne_zero _)
   have ha : (Matrix.GeneralLinearGroup.map σ A) 0 0 =
-      σ ((D.ratio g : Fˣ) : F) * (Matrix.GeneralLinearGroup.map σ A) 1 1 := by
+      σ₀ * (Matrix.GeneralLinearGroup.map σ A) 1 1 := by
     change σ (A 0 0) = _
     rw [D.ratioFormula g A hA hc, map_mul]
     rfl
   change KPArch.action (Matrix.GeneralLinearGroup.map σ A) (toArch F p i) = _
   rw [upper_action _ hi _ hu ha]
   apply Prod.ext
-  · change σ ((D.ratio g : Fˣ) : F) * p.1.1 i + σ (A 0 1) / σ (A 1 1) =
-      σ ((D.ratio g : Fˣ) : F) * p.1.1 i + σ (A 0 1 / A 1 1)
+  · change σ₀ * p.1.1 i + σ (A 0 1) / σ (A 1 1) =
+      σ₀ * p.1.1 i + σ (A 0 1 / A 1 1)
     rw [map_div₀]
   · change p.2 + (p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i + Real.log ‖σ _‖ =
       p.2 + ((p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i +
@@ -417,7 +407,11 @@ theorem actual_unipotent_action (F : Type*) [Field F] [NumberField F]
   congr 1
   ext i <;> simp [affine, embedding]
 
- def affineLinear (F : Type*) [Field F] [NumberField F] (u : F) :
+ section
+
+variable (F : Type*) [Field F] [NumberField F]
+
+def affineLinear (u : F) :
     Coordinates F →L[ℝ] Coordinates F :=
   LinearMap.toContinuousLinearMap {
     toFun := fun p => ((fun i => embedding F u i * p.1.1 i, p.1.2), p.2)
@@ -427,7 +421,7 @@ theorem actual_unipotent_action (F : Type*) [Field F] [NumberField F]
       ext i <;> simp [Algebra.smul_def] <;> ring
   }
 
-private theorem affine_fderiv (F : Type*) [Field F] [NumberField F]
+private theorem affine_fderiv
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
     (u : E) (v : F) (p : Coordinates F) :
@@ -439,7 +433,7 @@ private theorem affine_fderiv (F : Type*) [Field F] [NumberField F]
   rw [hf]
   exact ((affineLinear F ((u : Fˣ) : F)).hasFDerivAt.add_const _).fderiv
 
-theorem affine_metric_invariant (F : Type*) [Field F] [NumberField F]
+theorem affine_metric_invariant
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
     (u : E) (v : F) (p w : Coordinates F) :
@@ -464,18 +458,17 @@ theorem affine_metric_invariant (F : Type*) [Field F] [NumberField F]
   field_simp
   <;> ring
 
- theorem shape_sum_zero (F : Type*) [Field F] [NumberField F]
+ theorem shape_sum_zero
     (hd : 0 < KPCuspLogShape.dimension F)
     (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     KPCuspLogShape.shapeCoordinates (KPCuspLogShape.dimension F) z ∈ Shape F := by
-  have hn : (KPCuspLogShape.dimension F : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hd)
   change ∑ i, ((z i).2 - KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z) = 0
   simp only [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ,
     Fintype.card_fin, nsmul_eq_mul, KPCuspLogShape.meanHeight]
   field_simp
   ring
 
-def toArchHomeomorph (F : Type*) [Field F] [NumberField F]
+def toArchHomeomorph
     (hd : 0 < KPCuspLogShape.dimension F) :
     Coordinates F ≃ₜ KPArch.Space (KPCuspLogShape.dimension F) where
   toFun := toArch F
@@ -510,7 +503,7 @@ def toArchHomeomorph (F : Type*) [Field F] [NumberField F]
     exact (by fun_prop : Continuous (fun z : KPArch.Space (KPCuspLogShape.dimension F) =>
       fun i => (z i).1)).prodMk (hb.subtype_mk (shape_sum_zero F hd)) |>.prodMk ht
 
-def projectiveHomeomorph (F : Type*) [Field F] [NumberField F]
+def projectiveHomeomorph
     (g : KPCuspArithmetic.PGL2 F) :
     KPArch.Space (KPCuspLogShape.dimension F) ≃ₜ KPArch.Space (KPCuspLogShape.dimension F) where
   toFun := KPCuspSiegel.action F g
@@ -530,7 +523,7 @@ def projectiveHomeomorph (F : Type*) [Field F] [NumberField F]
     rw [he]
     exact (KPArch.productAction_contDiff _ _).continuous
 
-def highCoordinatesHomeomorph (F : Type*) [Field F] [NumberField F]
+def highCoordinatesHomeomorph
     (hd : 0 < KPCuspLogShape.dimension F) (σ : KPCuspArithmetic.PGL2 F) (T : ℝ) :
     {p : Coordinates F // T < p.2} ≃ₜ KPCuspSiegel.highCusp F σ T :=
   ((toArchHomeomorph F hd).subtype (fun p => by
@@ -538,7 +531,7 @@ def highCoordinatesHomeomorph (F : Type*) [Field F] [NumberField F]
     rw [toArch_meanHeight F hd])).trans
     ((projectiveHomeomorph F σ).image {z | T < KPCuspLogShape.meanHeight _ z})
 
- theorem conjugated_orbit_iff (F : Type*) [Field F] [NumberField F]
+ theorem conjugated_orbit_iff
     (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (q : KPCuspArithmetic.Cusp F)
     (σ : KPCuspArithmetic.PGL2 F) (z w : KPArch.Space (KPCuspLogShape.dimension F)) :
     MulAction.orbitRel (KPCuspArithmetic.conjugatedStabilizer F Γ q σ) _ z w ↔
@@ -548,52 +541,51 @@ def highCoordinatesHomeomorph (F : Type*) [Field F] [NumberField F]
   · rintro ⟨g, hg⟩
     obtain ⟨k, hk, hkg⟩ := Subgroup.mem_map.mp g.property
     refine ⟨⟨k, hk⟩, ?_⟩
-    have hkg' : σ⁻¹ * k * σ = (g : KPCuspArithmetic.PGL2 F) := by
-      simpa only [MulEquiv.toMonoidHom_eq_coe, MonoidHom.coe_coe, MulAut.conj_apply, inv_inv] using hkg
-    change k • (σ • w) = σ • z
+    have hkg' : σ⁻¹ * k * σ = g := by
+      simpa using hkg
     rw [← hg]
     change k • (σ • w) = σ • ((g : KPCuspArithmetic.PGL2 F) • w)
     rw [← hkg']
     simp only [mul_smul, smul_inv_smul]
   · rintro ⟨k, hk⟩
-    let g : KPCuspArithmetic.conjugatedStabilizer F Γ q σ :=
-      ⟨σ⁻¹ * (k : KPCuspArithmetic.PGL2 F) * σ,
-        Subgroup.mem_map.mpr ⟨k.val, k.property, by
-          simp only [MulEquiv.toMonoidHom_eq_coe, MonoidHom.coe_coe, MulAut.conj_apply, inv_inv]⟩⟩
-    refine ⟨g, ?_⟩
-    change (σ⁻¹ * (k : KPCuspArithmetic.PGL2 F) * σ) • w = z
+    refine ⟨(⟨σ⁻¹ * k * σ,
+      Subgroup.mem_map.mpr ⟨k.val, k.property, by
+        simp⟩⟩), ?_⟩
+    change (σ⁻¹ * k * σ) • w = z
     change (k : KPCuspArithmetic.PGL2 F) • (σ • w) = σ • z at hk
     simpa only [mul_smul, inv_smul_smul] using congrArg (fun v => σ⁻¹ • v) hk
 
-def highCuspQuotientHomeomorph (F : Type*) [Field F] [NumberField F]
-    (hd : 0 < KPCuspLogShape.dimension F)
-    (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (q : KPCuspArithmetic.Cusp F)
-    (σ : KPCuspArithmetic.PGL2 F) (T : ℝ) :
+end
+
+section
+
+variable (F : Type*) [Field F] [NumberField F] (hd : 0 < KPCuspLogShape.dimension F)
+    (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (q : KPCuspArithmetic.Cusp F) (σ : KPCuspArithmetic.PGL2 F)
+    (T : ℝ)
+
+def highCuspQuotientHomeomorph :
     HighQuotient F (KPCuspArithmetic.conjugatedStabilizer F Γ q σ) T ≃ₜ
       KPCuspSiegel.CuspQuotient F Γ q (KPCuspSiegel.highCusp F σ T) :=
   Homeomorph.Quotient.congr (highCoordinatesHomeomorph F hd σ T) (fun p r =>
     conjugated_orbit_iff F Γ q σ (toArch F p.val) (toArch F r.val))
 
-theorem highCuspQuotientHomeomorph_formula (F : Type*) [Field F] [NumberField F]
-    (hd : 0 < KPCuspLogShape.dimension F)
-    (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (q : KPCuspArithmetic.Cusp F)
-    (σ : KPCuspArithmetic.PGL2 F) (T : ℝ)
+theorem highCuspQuotientHomeomorph_formula
     (p : {p : Coordinates F // T < p.2}) :
     ∃ z : KPCuspSiegel.highCusp F σ T,
       z.val = KPCuspSiegel.action F σ (toArch F p.val) ∧
-      highCuspQuotientHomeomorph F hd Γ q σ T (Quotient.mk _ p) = Quotient.mk _ z := by
-  exact ⟨highCoordinatesHomeomorph F hd σ T p, rfl, rfl⟩
+      highCuspQuotientHomeomorph F hd Γ q σ T (Quotient.mk _ p) = Quotient.mk _ z := ⟨highCoordinatesHomeomorph F hd σ T p, rfl, rfl⟩
 
-theorem positive_dimension (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) :
+end
+
+variable (F : Type*) [Field F] [NumberField F] (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+
+include hF in
+theorem positive_dimension :
     0 < KPCuspLogShape.dimension F := by
-  have hr := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank F
-  have hp : 0 < Module.finrank ℚ F := Module.finrank_pos
-  change 0 < NumberField.InfinitePlace.nrComplexPlaces F
-  omega
+  apply DedekindZetaZeroFree.KPCuspLogShape.dimension_pos <;> assumption
 
-theorem highCuspQuotient_presentation (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+include hF in
+theorem highCuspQuotient_presentation
     (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (q : KPCuspArithmetic.Cusp F)
     (σ : KPCuspArithmetic.PGL2 F) (T : ℝ) :
     ∃ e : HighQuotient F (KPCuspArithmetic.conjugatedStabilizer F Γ q σ) T ≃ₜ
@@ -601,8 +593,7 @@ theorem highCuspQuotient_presentation (F : Type*) [Field F] [NumberField F]
       ∀ p : {p : Coordinates F // T < p.2},
         ∃ z : KPCuspSiegel.highCusp F σ T,
           z.val = KPCuspSiegel.action F σ (toArch F p.val) ∧
-          e (Quotient.mk _ p) = Quotient.mk _ z := by
-  exact ⟨highCuspQuotientHomeomorph F (positive_dimension F hF) Γ q σ T,
+          e (Quotient.mk _ p) = Quotient.mk _ z := ⟨highCuspQuotientHomeomorph F (positive_dimension F hF) Γ q σ T,
     highCuspQuotientHomeomorph_formula F (positive_dimension F hF) Γ q σ T⟩
 
 end KPCuspCharts
@@ -639,7 +630,6 @@ theorem kp_cusp_equivariant_nilmanifold_charts
     ratio := D₀.ratio
     integralUnits := D₀.integralUnits
     unitIndex := D₀.unitIndex
-    injective := D₀.injective
     surjective := D₀.surjective
     exact := D₀.exact
     upper := D₀.upper
@@ -655,26 +645,19 @@ theorem kp_cusp_equivariant_nilmanifold_charts
     lift_formula := G.atlas.lift_formula
     orbit_equivalence := G.atlas.orbit_equivalence
     chartCount := G.atlas.chartCount
-    positive_chartCount := G.atlas.positive_chartCount
     shapeLift := G.atlas.shapeLift
     open_shapeLift := G.atlas.open_shapeLift
-    nonempty_shapeLift := G.atlas.nonempty_shapeLift
-    small_shapeLift := G.atlas.small_shapeLift
     baseOpen := G.atlas.baseOpen
     open_baseOpen := G.atlas.open_baseOpen
-    baseOpen_formula := G.atlas.baseOpen_formula
     cover := G.atlas.cover
     baseChart := G.atlas.baseChart
     baseChart_formula := G.atlas.baseChart_formula
-    coarseChart := G.atlas.coarseChart
-    coarseChart_formula := G.atlas.coarseChart_formula
     transitions := G.atlas.transitions
   }
   let O : KPCuspCharts.ChartOutput F hF _ D := {
     positive_dimension := KPCuspCharts.positive_dimension F hF
     lattice := ⟨hdisc, hlattice⟩
     compact_torus := G.compact_torus
-    compact_base := G.compact_base
     finite_isotropy := G.finite_isotropy
     torusAction := G.torusAction
     torusAction_formula := G.torusAction_formula
@@ -684,15 +667,6 @@ theorem kp_cusp_equivariant_nilmanifold_charts
     atlas := atlas
     actual_action := KPCuspCharts.actual_affine_action F hF _ D
     unipotent_action := KPCuspCharts.actual_unipotent_action F hF _ D
-    metric_invariant := by
-      intro g A _ _ p v
-      exact KPCuspCharts.affine_metric_invariant F hF D.E D.integralUnits
-        (D.ratio g) (A 0 1 / A 1 1) p v
-    smooth_transitions := by
-      intro g A _ _
-      exact KPCuspCharts.affine_contDiff F hF D.E D.integralUnits
-        (D.ratio g) (A 0 1 / A 1 1)
-    density_formula := KPCuspCharts.volumeDensity_toArch F
     shapeMeasure := V.shapeMeasure
     haar_shapeMeasure := V.haar_shapeMeasure
     archVolume_formula := V.archVolume_formula
@@ -706,7 +680,6 @@ theorem kp_cusp_equivariant_nilmanifold_charts
     positive_sectionMeasure := V.positive_sectionMeasure
     radialPresentation := R.radialPresentation
     radialPresentation_formula := R.radialPresentation_formula
-    quotientVolume_formula := R.quotientVolume_formula
     highPresentation := R.highPresentation
     highPresentation_formula := R.highPresentation_formula
     highVolume_formula := R.highVolume_formula

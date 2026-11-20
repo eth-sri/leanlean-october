@@ -15,12 +15,11 @@ theorem weighted_archPowerMajorant_integrable (ν : Measure ℂˣ) [ν.IsHaarMea
     (B s : ℝ) (hs : -(1 / 4 : ℝ) < s) (hBs : s < B) :
     Integrable (fun z : ℂˣ => ((‖z.val‖ ^ 2) ^ s) *
       archPowerMajorant B (‖z.val‖ ^ 2)) ν := by
-  have hi := SheetPowerMinIntegrability.complex_units_min_powers_integrable
-    (2 * (s + 1 / 4)) (2 * (s - B)) (by linarith) (by linarith) ν
-  convert hi using 1
+  convert (SheetPowerMinIntegrability.complex_units_min_powers_integrable
+    (2 * (s + 1 / 4)) (2 * (s - B)) (by linarith) (by linarith) ν) using 1
   funext z
-  have hz : 0 < ‖z.val‖ := norm_pos_iff.mpr z.ne_zero
-  have hz2 : 0 < ‖z.val‖ ^ 2 := pow_pos hz 2
+  have hz := norm_pos_iff.mpr z.ne_zero
+  have hz2 := pow_pos hz 2
   unfold archPowerMajorant
   rw [mul_min_of_nonneg _ _ (Real.rpow_nonneg hz2.le _)]
   change min ((‖z.val‖ ^ 2) ^ s * (‖z.val‖ ^ 2) ^ (1 / 4 : ℝ))

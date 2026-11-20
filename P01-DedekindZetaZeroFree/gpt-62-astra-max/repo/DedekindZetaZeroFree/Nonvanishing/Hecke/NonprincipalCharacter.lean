@@ -22,7 +22,7 @@ theorem nonprincipalRayCharacter_ne_zero
       (∀ s, 31 / 32 < s.re → f s ≠ 0) := by
   obtain ⟨R, ρ, hρ, hρprime⟩ := exists_rayCharacter_galoisRealization K m hm χ
   have hρne : ρ ≠ 1 := fun h => hχ (hρ.mp h)
-  obtain ⟨m₀, χ₀, f₀, hm₀, _hχ₀, hprime, hf₀, hsum₀, hnz₀⟩ :=
+  obtain ⟨m₀, χ₀, f₀, hm₀, hprime, hf₀, hsum₀, hnz₀⟩ :=
     galoisCharacter_ne_zero K R.extension ρ hρne
   let S := (narrowIdealModulus K m hm).finitePart.support
   have hzero : ∀ P ∈ S, χ P.asIdeal = 0 :=

@@ -24,7 +24,7 @@ theorem meromorphicOn_of_local_clearing (A : ℂ → X → ℂ) (O : Set ℂ)
   refine ⟨-(m : ℤ), fun s => w s g, ha g z (Metric.mem_ball_self hr), ?_⟩
   filter_upwards [nhdsWithin_le_nhds (Metric.ball_mem_nhds z hr), self_mem_nhdsWithin]
     with s hs hsz
-  have hne : s ≠ z := by simpa using hsz
+  have hne : s ≠ z := by exact hsz
   rw [hc s hs hne g, zpow_neg, zpow_natCast, smul_eq_mul,
     inv_mul_cancel_left₀ (pow_ne_zero m (sub_ne_zero.mpr hne))]
 
@@ -41,20 +41,17 @@ theorem scalar_singularities_isolated_of_local_clearing
   intro t ht hp
   by_contra htz
   obtain ⟨g, hg⟩ := hp.2
-  have hn : (t-z)^m ≠ 0 := pow_ne_zero m (sub_ne_zero.mpr htz)
-  have hq : AnalyticAt ℂ (fun s => w s g / (s-z)^m) t :=
-    (ha g t ht).div ((analyticAt_id.sub analyticAt_const).pow m) hn
   have he : (fun s => A s g) =ᶠ[𝓝 t] (fun s => w s g / (s-z)^m) := by
     filter_upwards [Metric.isOpen_ball.mem_nhds ht, isOpen_ne.mem_nhds htz]
       with s hs hsz
     rw [hc s hs hsz g, mul_div_cancel_left₀ _
       (pow_ne_zero m (sub_ne_zero.mpr hsz))]
-  exact hg (hq.congr he.symm)
+  exact hg (((ha g t ht).div ((analyticAt_id.sub analyticAt_const).pow m) (pow_ne_zero m (sub_ne_zero.mpr htz))).congr he.symm)
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
-variable {B : JointRootAlignedSources R N} {v : R.A.UnitQuotient}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {B : JointRootAlignedSources R N} {v : R.A.UnitQuotient}
 
 end DedekindZetaZeroFree.KPScalarContinuation
 

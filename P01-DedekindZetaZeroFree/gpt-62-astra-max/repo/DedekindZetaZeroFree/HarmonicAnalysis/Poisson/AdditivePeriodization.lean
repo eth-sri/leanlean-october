@@ -28,11 +28,17 @@ def CompatibleHaar (dx : Measure (A F)) (dq : Measure (Q F)) : Prop :=
 def nonnegativePeriod (h : A F → ℝ≥0∞) (q : Q F) : ℝ≥0∞ :=
   ∑' t : F, h (algebraMap F (A F) t + Quotient.out q)
 
-def normPeriod (h : A F → ℂ) (q : Q F) : ℝ≥0∞ :=
+section
+
+variable (h : A F → ℂ) (q : Q F)
+
+def normPeriod : ℝ≥0∞ :=
   nonnegativePeriod F (fun a => ENNReal.ofReal ‖h a‖) q
 
-def complexPeriod (h : A F → ℂ) (q : Q F) : ℂ :=
+def complexPeriod : ℂ :=
   ∑' t : F, h (algebraMap F (A F) t + Quotient.out q)
+
+end
 
 theorem nonnegativePeriod_eq_sum (h : A F → ℝ≥0∞) (x : A F) :
     nonnegativePeriod F h (QuotientAddGroup.mk x) =
@@ -75,9 +81,7 @@ private theorem measurable_nonnegativePeriod (h : A F → ℝ≥0∞) (hh : Meas
     Measurable (nonnegativePeriod F h) := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   letI := adele_polish F
-  have hm : Measurable (QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F)) :=
-    QuotientAddGroup.continuous_mk.measurable
-  apply (hm.measurable_comp_iff_of_surjective
+  apply (QuotientAddGroup.continuous_mk.measurable.measurable_comp_iff_of_surjective
     (QuotientAddGroup.mk'_surjective _)).mp
   change Measurable (fun x : A F => nonnegativePeriod F h (QuotientAddGroup.mk x))
   simp_rw [nonnegativePeriod_eq_sum]
@@ -87,9 +91,7 @@ private theorem measurable_complexPeriod (h : A F → ℂ) (hh : Measurable h) :
     Measurable (complexPeriod F h) := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   letI := adele_polish F
-  have hm : Measurable (QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F)) :=
-    QuotientAddGroup.continuous_mk.measurable
-  apply (hm.measurable_comp_iff_of_surjective
+  apply (QuotientAddGroup.continuous_mk.measurable.measurable_comp_iff_of_surjective
     (QuotientAddGroup.mk'_surjective _)).mp
   change Measurable (fun x : A F => complexPeriod F h (QuotientAddGroup.mk x))
   simp_rw [complexPeriod_eq_sum]
@@ -120,9 +122,7 @@ theorem integral_complexPeriod (dx : Measure (A F)) (dq : Measure (Q F))
     (hnorm : CompatibleHaar F dx dq) (h : A F → ℂ)
     (hh : Measurable h)
     (hfinite : ∫⁻ q, normPeriod F h q ∂dq < ⊤) :
-    Integrable h dx ∧
-      (∀ᵐ q ∂dq, Summable (fun t : F => h (algebraMap F (A F) t + Quotient.out q))) ∧
-      Integrable (complexPeriod F h) dq ∧
+    Integrable (complexPeriod F h) dq ∧
       ∫ q, complexPeriod F h q ∂dq = ∫ x, h x ∂dx := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   have hnormmeas : Measurable (normPeriod F h) :=
@@ -144,7 +144,7 @@ theorem integral_complexPeriod (dx : Measure (A F)) (dq : Measure (Q F))
     intro q
     simpa only [complexPeriod, normPeriod, nonnegativePeriod, ofReal_norm_eq_enorm]
       using (enorm_tsum_le_tsum_enorm (f := fun t : F => h (algebraMap F (A F) t + Quotient.out q)))
-  refine ⟨hup, hsum, hdown, ?_⟩
+  refine ⟨hdown, ?_⟩
   let e := KPAdelicDiagonal.diagonalAddEquiv F
   letI : Countable (AdeleRing.principalSubgroup (𝓞 F) F) := e.toEquiv.countable_iff.mp inferInstance
   obtain ⟨domain, hd, hfd, _hmass, rfl⟩ := hnorm

@@ -11,8 +11,7 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor
 
-open _root_.DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant renaming planarEnvelope_volume_integral → planarEnvelope_volume_integral
-open _root_.DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant renaming ratio_wn → ratio_wn
+open _root_.DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant (planarEnvelope_volume_integral ratio_wn)
 
 private theorem actual_arch_trace_spherical_real_integral (t : ℝ)
     (ht : -(1 / 6 : ℝ) < t) :
@@ -60,7 +59,6 @@ private theorem actual_arch_trace_integral_eq_character (s : ℂ) :
   norm_num only [ENNReal.toReal_ofNat, Complex.real_smul, Complex.ofReal_div,
     Complex.ofReal_one, Complex.ofReal_mul]
   push_cast
-  have hπ : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_pos.ne'
   field_simp
   ring
 
@@ -73,7 +71,7 @@ private theorem actual_arch_trace_integral_eq_character (s : ℂ) :
         2 * (Real.pi : ℂ) / ((1 / 3 : ℂ) + 2 * s) := by
   let f : ℂ → ℂ := fun z => (4 * Real.pi : ℂ) *
     KPComplexStandardIntertwinerGerm.haarIntegral 1 z KPComplexStandardIntertwinerGerm.compactSpherical 1
-  let g : ℂ → ℂ := fun z => 2 * (Real.pi : ℂ) / ((1 / 3 : ℂ) + 2 * z)
+  let g := fun z => 2 * (Real.pi : ℂ) / ((1 / 3 : ℂ) + 2 * z)
   have hf : AnalyticOnNhd ℂ f KPComplexStandardIntertwinerGerm.halfPlane :=
     ((differentiableOn_const _).mul
       (KPComplexStandardIntertwinerGerm.haarIntegral_holomorphic 1
@@ -81,14 +79,13 @@ private theorem actual_arch_trace_integral_eq_character (s : ℂ) :
       KPComplexStandardIntertwinerGerm.halfPlane_open_connected.1
   have hg : AnalyticOnNhd ℂ g KPComplexStandardIntertwinerGerm.halfPlane := by
     intro z hz
-    have hn : (1 / 3 : ℂ) + 2 * z ≠ 0 := by
-      intro he
-      have hr := congrArg Complex.re he
-      simp only [Complex.add_re, Complex.mul_re, Complex.zero_re] at hr
-      change -(1 / 6 : ℝ) < z.re at hz
-      norm_num at hr
-      linarith
-    exact analyticAt_const.div (by fun_prop) hn
+    refine analyticAt_const.div (by fun_prop) ?_
+    intro he
+    have hr := congrArg Complex.re he
+    simp only [Complex.add_re, Complex.mul_re, Complex.zero_re] at hr
+    change -(1 / 6 : ℝ) < z.re at hz
+    norm_num at hr
+    linarith
   let u : ℕ → ℂ := fun n => 1 / ((n : ℂ) + 1)
   have hu : Tendsto u atTop (𝓝[≠] (0 : ℂ)) := by
     apply tendsto_nhdsWithin_iff.mpr
@@ -99,9 +96,7 @@ private theorem actual_arch_trace_integral_eq_character (s : ℂ) :
     apply hu.frequently
     apply (Filter.Eventually.of_forall ?_).frequently
     intro n
-    have ht : -(1 / 6 : ℝ) < 1 / ((n : ℝ) + 1) :=
-      lt_trans (by norm_num) (by positivity : (0 : ℝ) < 1 / ((n : ℝ) + 1))
-    have hr := actual_arch_trace_spherical_real_integral (1 / ((n : ℝ) + 1)) ht
+    have hr := actual_arch_trace_spherical_real_integral (1 / ((n : ℝ) + 1)) (lt_trans (by norm_num) (by positivity : (0 : ℝ) < 1 / ((n : ℝ) + 1)))
     rw [actual_arch_trace_integral_eq_character] at hr
     simpa [f,g,u] using hr
   rw [actual_arch_trace_integral_eq_character]

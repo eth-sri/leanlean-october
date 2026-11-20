@@ -18,7 +18,7 @@ private theorem localAbs_injective (K : Type*) [Field K] [ValuativeRel K]
     IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K (a : K)) =
       IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K (b : K)) := by
   have hq : 1 < (residueCardinality K : ℝ) := by
-    exact_mod_cast (Finite.one_lt_card (α := 𝓀[K]))
+    exact_mod_cast (Finite.one_lt_card)
   have he : WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K (a : K))) =
       WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K (b : K))) := by
     exact_mod_cast (Real.rpow_right_inj (lt_trans zero_lt_one hq) (ne_of_gt hq)).mp hab
@@ -39,10 +39,9 @@ private theorem borel_coordinate_of_compact_factor
     IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (S.borel.coordinate (S.borel.retract b) : LocalField F q)) := by
   let c := (S.iwasawa.borelPart g)⁻¹ * b
-  have hc : (c : ActualCover F ζ hζ q) =
-      (S.iwasawa.compactPart g : ActualCover F ζ hζ q) * (k : ActualCover F ζ hζ q)⁻¹ := by
-    have he := S.iwasawa.decomposition g
-    have hh := hg.symm.trans he
+  have hc : c =
+      (S.iwasawa.compactPart g : ActualCover F ζ hζ q) * k⁻¹ := by
+    have hh := hg.symm.trans (S.iwasawa.decomposition g)
     dsimp [c]
     exact eq_mul_inv_iff_mul_eq.mpr (by
       simpa only [mul_assoc, inv_mul_cancel_left] using
@@ -57,11 +56,11 @@ private theorem borel_coordinate_of_compact_factor
   have hh := congrArg (fun d : S.borel.B => localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract d))) he
   simpa only [map_mul, localAbs_mul, hn, mul_one] using hh
 
+variable (hw : S.borel.liftedW ∈ S.iwasawa.compact.toOpenSubgroup)
+    (hn : ∀ x : (valuation (LocalField F q)).integer, (S.borel.upperRoot (Multiplicative.ofAdd (x : LocalField F q)) : ActualCover F ζ hζ q) ∈ S.iwasawa.compact.toOpenSubgroup)
+
+include hw hn in
 theorem signed_bruhat_iwasawa_coordinate
-    (hw : S.borel.liftedW ∈ S.iwasawa.compact.toOpenSubgroup)
-    (hn : ∀ x : (valuation (LocalField F q)).integer,
-      (S.borel.upperRoot (Multiplicative.ofAdd (x : LocalField F q)) : ActualCover F ζ hζ q) ∈
-        S.iwasawa.compact.toOpenSubgroup)
     (v : (LocalField F q)ˣ)
     (hv : ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q) ∈ (valuation (LocalField F q)).integer) :
     IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
@@ -71,15 +70,13 @@ theorem signed_bruhat_iwasawa_coordinate
     IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) ((v⁻¹ ^ 2 : (LocalField F q)ˣ) : LocalField F q)) := by
   let B := S.openCell S.polarization
-  let u : S.borel.B := S.borel.upperRoot (Multiplicative.ofAdd
+  let u := S.borel.upperRoot (Multiplicative.ofAdd
     (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q)))
-  let b : S.borel.B := u * (S.borel.torus (B.rootTorus v))⁻¹ *
+  let b := u * (S.borel.torus (B.rootTorus v))⁻¹ *
     (S.borel.torus (B.centralTorus (KPRankOneOpenCellKernel.kappa F ζ hζ q v 0)))⁻¹
-  have hu : (u : ActualCover F ζ hζ q) ∈ S.iwasawa.compact.toOpenSubgroup :=
-    hn ⟨_, (valuation (LocalField F q)).integer.neg_mem hv⟩
   let k : S.iwasawa.compact.toOpenSubgroup := ⟨S.borel.liftedW⁻¹ * u * S.borel.liftedW⁻¹,
     S.iwasawa.compact.toOpenSubgroup.mul_mem
-      (S.iwasawa.compact.toOpenSubgroup.mul_mem (S.iwasawa.compact.toOpenSubgroup.inv_mem hw) hu)
+      (S.iwasawa.compact.toOpenSubgroup.mul_mem (S.iwasawa.compact.toOpenSubgroup.inv_mem hw) (hn ⟨_, (valuation (LocalField F q)).integer.neg_mem hv⟩))
       (S.iwasawa.compact.toOpenSubgroup.inv_mem hw)⟩
   have hb := KPRankOneOpenCellKernel.lifted_bruhat_identity F ζ hζ q v 0
   have hn0 : KPRankOneOpenCellKernel.nLift F ζ hζ q 0 = 1 := by
@@ -88,16 +85,14 @@ theorem signed_bruhat_iwasawa_coordinate
   simp only [hn0, zero_add, mul_one] at hb
   rw [← B.weyl_eq, ← B.upper_eq, ← B.upper_eq, ← B.upper_eq, ← B.torus_eq, ← B.central_eq] at hb
   have he : S.borel.liftedW⁻¹ *
-      (S.borel.upperRoot (Multiplicative.ofAdd (v : LocalField F q)) : ActualCover F ζ hζ q) =
-      (b : ActualCover F ζ hζ q) * k := by
-    change _ = (b : ActualCover F ζ hζ q) *
-      (S.borel.liftedW⁻¹ * (S.borel.upperRoot (Multiplicative.ofAdd
-        (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q))) : ActualCover F ζ hζ q) * S.borel.liftedW⁻¹)
+      (S.borel.upperRoot (Multiplicative.ofAdd v) : ActualCover F ζ hζ q) =
+      b * k := by
+    change _ = b *
+      (S.borel.liftedW⁻¹ * (u : ActualCover F ζ hζ q) * S.borel.liftedW⁻¹)
     rw [hb]
-    have hi : (u : ActualCover F ζ hζ q) =
+    have hi : u =
         (S.borel.upperRoot (Multiplicative.ofAdd
           ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q)) : ActualCover F ζ hζ q)⁻¹ := by
-      change (S.borel.upperRoot (Multiplicative.ofAdd (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q))) : ActualCover F ζ hζ q) = _
       rw [← Subgroup.coe_inv, ← map_inv]
       rfl
     dsimp [b, k]
@@ -109,11 +104,8 @@ theorem signed_bruhat_iwasawa_coordinate
     map_one, B.coordinate_eq, B.central_coordinate, inv_one, one_mul, mul_one, inv_pow]
   congr 2
 
-theorem negative_shell_iwasawa_coordinate
-    (hw : S.borel.liftedW ∈ S.iwasawa.compact.toOpenSubgroup)
-    (hn : ∀ x : (valuation (LocalField F q)).integer,
-      (S.borel.upperRoot (Multiplicative.ofAdd (x : LocalField F q)) : ActualCover F ζ hζ q) ∈
-        S.iwasawa.compact.toOpenSubgroup) :
+include hw hn in
+theorem negative_shell_iwasawa_coordinate :
     ∀ n : ℕ, ∀ x ∈
       KPExceptionalRaw.FiniteSource.GoodSphericalVector.negativeValuationShell
         (LocalField F q) n,
@@ -123,17 +115,17 @@ theorem negative_shell_iwasawa_coordinate
             (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q)))) : LocalField F q)) =
           WithZero.exp (-2 * (n + 1 : ℕ) : ℤ) := by
   intro n x hx
+  let valuation₀ := valuation (LocalField F q)
   change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-    (valuation (LocalField F q) x) = WithZero.exp (n + 1 : ℤ) at hx
-  have hx0 : x ≠ 0 := by
+    (valuation₀ x) = WithZero.exp (n + 1 : ℤ) at hx
+  let v := Units.mk0 x (by
     intro h
-    simp [h] at hx
-  let v : (LocalField F q)ˣ := Units.mk0 x hx0
-  have hv : ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q) ∈ (valuation (LocalField F q)).integer := by
-    change valuation (LocalField F q) (x⁻¹) ≤ 1
+    simp [h] at hx)
+  have hv : ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q) ∈ (valuation₀).integer := by
+    change valuation₀ (x⁻¹) ≤ 1
     apply (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).toOrderIso.le_iff_le.mp
     change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (x⁻¹)) ≤
+      (valuation₀ (x⁻¹)) ≤
         IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) 1
     rw [map_inv₀, map_inv₀, hx, map_one, ← WithZero.exp_neg, ← WithZero.exp_zero,
       WithZero.exp_le_exp]
@@ -142,7 +134,7 @@ theorem negative_shell_iwasawa_coordinate
   dsimp [v] at he
   rw [he]
   change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-    (valuation (LocalField F q) (x⁻¹ ^ 2)) = _
+    (valuation₀ (x⁻¹ ^ 2)) = _
   rw [map_pow, map_pow, map_inv₀, map_inv₀, hx, ← WithZero.exp_neg, ← WithZero.exp_nsmul]
   congr 1
 

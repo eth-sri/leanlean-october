@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -97,13 +95,13 @@ theorem
       K L v w).1
         (algebraMap L (SeparableClosure ℚ) x) =
       w.1 x := by
-  let : Algebra K (SeparableClosure ℚ) :=
+  let :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  let : Algebra L (SeparableClosure ℚ) :=
+  let :=
     numberFieldTowerSeparableClosureTopAlgebra L
-  let : IsScalarTower K L (SeparableClosure ℚ) :=
+  let :=
     numberFieldTowerSeparableClosureScalarTower K L
-  let : IsScalarTower ℚ L (SeparableClosure ℚ) :=
+  let :=
     numberFieldTowerSeparableClosureTopScalarTower L
   let : Algebra.IsAlgebraic L (SeparableClosure ℚ) :=
     Algebra.IsAlgebraic.tower_top (K := ℚ) L
@@ -131,11 +129,11 @@ theorem
         (f := algebraMap L (SeparableClosure ℚ))
         (algebraMap L (SeparableClosure ℚ)).injective =
       w.1 := by
-  let : Algebra K (SeparableClosure ℚ) :=
+  let :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  let : Algebra L (SeparableClosure ℚ) :=
+  let :=
     numberFieldTowerSeparableClosureTopAlgebra L
-  let : IsScalarTower K L (SeparableClosure ℚ) :=
+  let :=
     numberFieldTowerSeparableClosureScalarTower K L
   ext x
   exact

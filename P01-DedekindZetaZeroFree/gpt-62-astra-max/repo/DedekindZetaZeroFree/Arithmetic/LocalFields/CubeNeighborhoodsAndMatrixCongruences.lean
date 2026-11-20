@@ -13,7 +13,7 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (v : HeightOneSpectrum (𝓞 F))
+    (v : HeightOneSpectrum (𝓞 F))
 
 abbrev LocalField := v.adicCompletion F
 
@@ -60,8 +60,7 @@ theorem mem_integerCongruence_iff (r : ℕ) (g : IntegerGL2 F v) :
     apply (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp
     simpa [Matrix.one_apply] using h i j
   · intro h i j
-    have hi := (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mpr (h i j)
-    simpa [Matrix.one_apply] using hi
+    simpa [Matrix.one_apply] using ((Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mpr (h i j))
 
 open Polynomial in
 private theorem cube_of_nine_times_maximalIdeal (c : LocalIntegers F v) (hc : c ∈ maximalIdeal F v) :
@@ -107,12 +106,10 @@ private theorem cube_of_nine_times_maximalIdeal (c : LocalIntegers F v) (hc : c 
       apply Subtype.val_injective
       have hn : ((9 : LocalIntegers F v) : LocalField F v) = 9 := by norm_cast
       simpa only [Subring.coe_add, Subring.coe_one, Subring.coe_mul, Subring.coe_zero, hn, ht0, zero_pow (by decide : (3 : ℕ) ≠ 0)] using ht.symm
-    have h1 : (1 : LocalIntegers F v) ∈ maximalIdeal F v := by
-      have h9 := (maximalIdeal F v).mul_mem_left 9 hc
-      have heq : -(9*c) = (1 : LocalIntegers F v) := by linear_combination -ha
-      rw [← heq]
-      exact (maximalIdeal F v).neg_mem h9
-    exact (IsLocalRing.maximalIdeal.isMaximal (LocalIntegers F v)).ne_top ((Ideal.eq_top_iff_one _).mpr h1)
+    refine (IsLocalRing.maximalIdeal.isMaximal (LocalIntegers F v)).ne_top ((Ideal.eq_top_iff_one _).mpr ?_)
+    have heq : -(9*c) = (1 : LocalIntegers F v) := by linear_combination -ha
+    rw [← heq]
+    exact (maximalIdeal F v).neg_mem ((maximalIdeal F v).mul_mem_left 9 hc)
   exact ⟨Units.mk0 t htn, ht⟩
 
 theorem principal_units_eventually_cubes :
@@ -159,21 +156,17 @@ theorem Gamma_compact_open (r : ℕ) (hr : 1 ≤ r) :
     intro j
     apply (Ideal.isCompact_of_fg (IsNoetherian.noetherian (maximalIdeal F v ^ r))).isClosed.preimage
     fun_prop
-  have hopen : IsOpen (integerCongruence F v r : Set (IntegerGL2 F v)) := by
-    rw [hh]
-    simp only [Set.setOf_forall]
-    apply isOpen_iInter_of_finite
-    intro i
-    apply isOpen_iInter_of_finite
-    intro j
-    apply (IsLocalRing.isOpen_maximalIdeal_pow (LocalIntegers F v) r).preimage
-    fun_prop
-  have hi : Topology.IsOpenEmbedding (LocalIntegers F v).subtype :=
+  have hi :=
     (ValuativeRel.valuation (LocalField F v)).isOpen_integer.isOpenEmbedding_subtypeVal
-  have hc : Continuous (integerInclusion F v) := hi.continuous.generalLinearGroup_map
-  have ho : IsOpenMap (integerInclusion F v) :=
-    Units.isOpenMap_map hi.matrix_map.injective hi.matrix_map.isOpenMap
-  exact ⟨hclosed.isCompact.image hc, ho _ hopen⟩
+  refine ⟨hclosed.isCompact.image hi.continuous.generalLinearGroup_map, (Units.isOpenMap_map hi.matrix_map.injective hi.matrix_map.isOpenMap) _ ?_⟩
+  rw [hh]
+  simp only [Set.setOf_forall]
+  apply isOpen_iInter_of_finite
+  intro i
+  apply isOpen_iInter_of_finite
+  intro j
+  apply (IsLocalRing.isOpen_maximalIdeal_pow (LocalIntegers F v) r).preimage
+  fun_prop
 
 private theorem cube_inclusion_injective : Function.Injective (integerInclusion F v) := by
   intro g h he
@@ -188,19 +181,20 @@ private theorem cube_Gamma_antitone {r s : ℕ} (hrs : r ≤ s) : Gamma F v s �
   intro i j
   exact Ideal.pow_le_pow_right hrs ((mem_integerCongruence_iff F v s g).mp hg i j)
 
+alias CubeNeighborhoodsAndMatrixCongruences.cube_Gamma_antitone := cube_Gamma_antitone
+
 theorem Gamma_nhds_basis (m : ℕ) (hm : 1 ≤ m) :
     (nhds (1 : LocalGL2 F v)).HasBasis (fun r : ℕ => m ≤ r)
       (fun r => (Gamma F v r : Set (LocalGL2 F v))) := by
   have hinter : (⋂ n : ℕ, (Gamma F v (m + n) : Set (LocalGL2 F v))) = {1} := by
     apply Set.Subset.antisymm
     · intro g hg
-      have hall : ∀ n, g ∈ Gamma F v (m + n) := Set.mem_iInter.mp hg
+      have hall := Set.mem_iInter.mp hg
       obtain ⟨g₀, _, h₀⟩ := hall 0
       have hc : ∀ n, g₀ ∈ integerCongruence F v (m + n) := by
         intro n
         obtain ⟨g₁, hg₁, h₁⟩ := hall n
-        have he : g₁ = g₀ := cube_inclusion_injective F v (h₁.trans h₀.symm)
-        simpa [he] using hg₁
+        simpa [(cube_inclusion_injective F v (h₁.trans h₀.symm))] using hg₁
       have he : g₀ = 1 := by
         apply Matrix.GeneralLinearGroup.ext
         intro i j
@@ -215,7 +209,7 @@ theorem Gamma_nhds_basis (m : ℕ) (hm : 1 ≤ m) :
         exact sub_eq_zero.mp (Ideal.mem_bot.mp hz)
       simp [← h₀, he]
     · intro g hg
-      have : g = 1 := Set.mem_singleton_iff.mp hg
+      have := Set.mem_singleton_iff.mp hg
       simp [this]
   apply Filter.hasBasis_iff.mpr
   intro U
@@ -227,10 +221,9 @@ theorem Gamma_nhds_basis (m : ℕ) (hm : 1 ≤ m) :
       refine ⟨max a b, ?_, ?_⟩
       · exact cube_Gamma_antitone F v (Nat.add_le_add_left (le_max_left _ _) _)
       · exact cube_Gamma_antitone F v (Nat.add_le_add_left (le_max_right _ _) _)
-    have hU' : U ∈ nhdsSet (⋂ n : ℕ, (Gamma F v (m+n) : Set (LocalGL2 F v))) := by
-      simpa [hinter] using hU
     obtain ⟨n, hn⟩ := exists_subset_nhds_of_isCompact hdir
-      (fun n => (Gamma_compact_open F v (m+n) (hm.trans (Nat.le_add_right _ _))).1) hU'
+      (fun n => (Gamma_compact_open F v (m+n) (hm.trans (Nat.le_add_right _ _))).1) (by
+        simpa [hinter] using hU)
     exact ⟨m+n, Nat.le_add_right _ _, hn⟩
   · rintro ⟨r, hr, hsub⟩
     exact Filter.mem_of_superset ((Gamma_compact_open F v r (hm.trans hr)).2.mem_nhds
@@ -256,22 +249,18 @@ theorem deep_principal_units_and_matrix_charts :
   refine ⟨hcompact, hopen, ?_⟩
   intro g hg
   obtain ⟨g₀, hg₀, rfl⟩ := hg
-  have he := (mem_integerCongruence_iff F v r g₀).mp hg₀
   constructor
   · intro i
     apply hc r hr
     refine ⟨g₀ i i - 1, ?_, ?_⟩
-    · simpa using he i i
+    · simpa using ((mem_integerCongruence_iff F v r g₀).mp hg₀) i i
     · simp [integerInclusion, Matrix.GeneralLinearGroup.map_apply]
   · have hd : (Matrix.GeneralLinearGroup.det g₀ : LocalIntegers F v) - 1 ∈
         maximalIdeal F v ^ r := by
       apply (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp
-      have hk : Matrix.GeneralLinearGroup.map
-          (Ideal.Quotient.mk (maximalIdeal F v ^ r)) g₀ = 1 := hg₀
-      have hdet := congrArg Matrix.GeneralLinearGroup.det hk
       simpa [Matrix.GeneralLinearGroup.map_det] using
         congrArg (fun u : (LocalIntegers F v ⧸ maximalIdeal F v ^ r)ˣ =>
-          (u : LocalIntegers F v ⧸ maximalIdeal F v ^ r)) hdet
+          (u : LocalIntegers F v ⧸ maximalIdeal F v ^ r)) (congrArg Matrix.GeneralLinearGroup.det hg₀)
     obtain ⟨t, ht⟩ := hc r hr (Matrix.GeneralLinearGroup.det
         (integerInclusion F v g₀) : LocalField F v) ⟨
       (Matrix.GeneralLinearGroup.det g₀ : LocalIntegers F v) - 1, hd, by

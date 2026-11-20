@@ -12,17 +12,17 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages MomentSources ThetaExpansion TensorActionSource
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 local notation "V" => RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C)
 
 variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 
 variable
     (hR : RootAligned R) (N : TraceHaarTransport R) (hC : C.exceptional = R.A.Sf)
@@ -58,15 +58,13 @@ theorem canonicalFinite_all_rank (q : KPFinitePlace F) :
           apply h3
           exact Ideal.span_singleton_eq_bot.mp h))
     let T := hfin.toFinset
-    have hqT : q∈T := by simpa [T] using hq
     obtain ⟨s,hT,x,hdet⟩ := exists_detected_stage (DC).tensorDetected T
-    have ht : ∀p:KPFinitePlace F,Sum.inr p∉places T → WildCurrentTameExterior.tameSlot (Sum.inr p) := by
-      intro p hp
-      change (3:𝓞 F)∉p.asIdeal
+    refine canonicalFinite_slice_rank R P C μ hμ hR N hC u hspherical hx T s hT x hdet ?_ ⟨q,?_⟩
+    · intro p hp
       intro he
       apply hp
       simp [places,T,he]
-    exact canonicalFinite_slice_rank R P C μ hμ  hR N hC u hspherical hx T s hT x hdet ht ⟨q,hqT⟩
+    · simpa [T] using hq
   · exact TensorActions.finite_slice_rank_le_one_of_three_not_mem (D) q hq
 
 def canonicalTensorFiniteLines : TensorFiniteLines R N where

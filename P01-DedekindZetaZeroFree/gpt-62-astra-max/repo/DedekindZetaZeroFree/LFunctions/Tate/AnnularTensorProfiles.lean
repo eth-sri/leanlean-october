@@ -16,7 +16,7 @@ open scoped Classical NumberField SchwartzMap
 open NumberField IsDedekindDomain MeasureTheory
 
 variable (F : Type) [Field F] [NumberField F] [NumberField.IsTotallyComplex F]
-variable (S : Finset (HeightOneSpectrum (𝓞 F)))
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
 
 local instance archMeasurable : MeasurableSpace (InfiniteAdeleRing F) := borel _
 local instance archBorel : BorelSpace (InfiniteAdeleRing F) := ⟨rfl⟩
@@ -72,8 +72,11 @@ theorem complexAnnular_zero_not_tsupport (f : ℂ → ℂ) (hf : IsComplexAnnula
   have := (hs h).1
   exact (not_le.mpr ha) (by simpa using this)
 
+section
+
+variable (f : (v : {v : InfinitePlace F // v.IsComplex}) → ℂ → ℂ)
+
 theorem coordinateTensor_ne_zero
-    (f : (v : {v : InfinitePlace F // v.IsComplex}) → ℂ → ℂ)
     (hf : ∀ v, f v ≠ 0) : coordinateTensor F S f ≠ 0 := by
   have hpoints : ∀ v, ∃ z, f v z ≠ 0 := by
     intro v
@@ -89,13 +92,11 @@ theorem coordinateTensor_ne_zero
     · exact Finset.prod_ne_zero_iff.mpr (fun v hv => hz v)
     · apply Finset.prod_ne_zero_iff.mpr
       intro v hv
-      have hmem := (TateFiniteShell.mem_unitShell_iff F v.val 1).mpr (map_one _)
-      simp [TateFiniteShell.annularTest, hmem]
+      simp [TateFiniteShell.annularTest, ((TateFiniteShell.mem_unitShell_iff F v.val 1).mpr (map_one _))]
   intro h
   exact hx (congrFun h x)
 
 theorem archTensor_integral_zero
-    (f : (v : {v : InfinitePlace F // v.IsComplex}) → ℂ → ℂ)
     (v₀ : {v : InfinitePlace F // v.IsComplex})
     (hzero : ∫ z : ℂ, f v₀ z = 0) :
     (∫ x, archTensor F f x ∂PoissonArch.traceMeasure F) = 0 := by
@@ -105,7 +106,6 @@ theorem archTensor_integral_zero
     rw [(mixedEmbedding.euclidean.volumePreserving_toMixed F).integral_comp
       (mixedEmbedding.euclidean.toMixed F).toHomeomorph.measurableEmbedding
       (fun x => ∏ v, f v (x.2 v))]
-    change (∫ x : mixedEmbedding.mixedSpace F, ∏ v, f v (x.2 v)) = 0
     rw [Measure.volume_eq_prod]
     have hi := integral_prod_mul (μ := volume) (ν := volume)
       (fun _ : ({v : InfinitePlace F // v.IsReal} → ℝ) => (1 : ℂ))
@@ -116,6 +116,8 @@ theorem archTensor_integral_zero
     rw [integral_fintype_prod_eq_prod]
     rw [Finset.prod_eq_zero (Finset.mem_univ v₀) hzero, mul_zero]
   rw [h, smul_zero]
+
+end
 
 set_option backward.isDefEq.respectTransparency false in
 
@@ -152,7 +154,6 @@ theorem archTensor_integral
       (PoissonArch.haarScalar F : ℂ) * ∏ v, ∫ z : ℂ, f v z := by
   rw [PoissonArch.traceMeasure, integral_smul_measure,
     ENNReal.toReal_ofReal (PoissonArch.haarScalar_pos F).le]
-  change (PoissonArch.haarScalar F : ℂ) * _ = _
   congr 1
   have hm := (mixedEmbedding.euclidean.volumePreserving_toMixed F).integral_comp
     (mixedEmbedding.euclidean.toMixed F).toHomeomorph.measurableEmbedding
@@ -191,15 +192,6 @@ private theorem complex_phase (v : {v : InfinitePlace F // v.IsComplex})
   congr 2
   push_cast
   ring
-private theorem arch_phase (x y : InfiniteAdeleRing F) :
-    (∏ v : InfinitePlace F, (archTraceCharacter v ((-(x*y)) v) : ℂ)) =
-      ∏ v : {v : InfinitePlace F // v.IsComplex},
-        Complex.exp (((-4 * Real.pi *
-          (((InfiniteAdeleRing.ringEquiv_mixedSpace F x).2 v) *
-            ((InfiniteAdeleRing.ringEquiv_mixedSpace F y).2 v)).re : ℝ) : ℂ) * Complex.I) := by
-  apply Fintype.prod_equiv (complexPlacesEquiv F)
-  intro v
-  exact complex_phase F (complexPlacesEquiv F v) x y
 
 theorem archTensor_traceFourier
     (f : (v : {v : InfinitePlace F // v.IsComplex}) → ℂ → ℂ)
@@ -283,7 +275,10 @@ theorem coordinateTensor_fourier
           Complex.exp (↑(-4 * Real.pi *
             (((InfiniteAdeleRing.ringEquiv_mixedSpace F x).2 v) *
               ((InfiniteAdeleRing.ringEquiv_mixedSpace F y.1).2 v)).re) * Complex.I) :=
-    arch_phase F x y.1
+    (by
+      apply Fintype.prod_equiv (complexPlacesEquiv F)
+      intro v
+      exact complex_phase F (complexPlacesEquiv F v) x y.1)
   simp_rw [hap]
   have he : MeasurableEmbedding ((PoissonArch.infiniteAdeleToSpace F).symm :
       PoissonArch.Space F → InfiniteAdeleRing F) :=
@@ -312,8 +307,7 @@ theorem coordinateTensor_fourier
   intro v hv
   ring
 
-theorem modulus_nonneg (x : SLocalProduct F S) : 0 ≤ modulus F S x := by
-  exact mul_nonneg
+theorem modulus_nonneg (x : SLocalProduct F S) : 0 ≤ modulus F S x := mul_nonneg
     (by rw [InfiniteAdeleRing.norm_def]; positivity)
     (Finset.prod_nonneg (fun _ _ => norm_nonneg _))
 
@@ -402,10 +396,8 @@ theorem modulus_pos_iff (x : SLocalProduct F S) : 0 < modulus F S x ↔ IsUnit x
     intro v
     apply isUnit_iff_ne_zero.mpr
     intro hv
-    have hn : (∏ v : S, ‖x.2 v‖) = 0 :=
-      Finset.prod_eq_zero (Finset.mem_univ v) (by simp [hv])
     change 0 < ‖x.1‖ * (∏ v : S, ‖x.2 v‖) at hx
-    rw [hn, mul_zero] at hx
+    rw [(Finset.prod_eq_zero (Finset.mem_univ v) (by simp [hv])), mul_zero] at hx
     exact (lt_irrefl 0) hx
 
 theorem measurableSet_units : MeasurableSet {x : SLocalProduct F S | IsUnit x} := by
@@ -514,7 +506,7 @@ theorem arch_weighted_integral
       ∂Measure.map (PoissonArch.infiniteAdeleToSpace F).symm (PoissonArch.traceMeasure F)) =
       (PoissonArch.haarScalar F : ℂ) *
         ∏ v, ∫ z : ℂ, complexNormMellinIntegrand (g v) s z := by
-  have hz : s - 1 ≠ 0 := sub_ne_zero.mpr hs
+  have hz := sub_ne_zero.mpr hs
   have hvanish (a : InfiniteAdeleRing F) (ha : a ∉ {a | IsUnit a}) :
       (∏ v, g v ((InfiniteAdeleRing.ringEquiv_mixedSpace F a).2 v)) *
         (‖a‖ ^ (s - 1) : ℝ) = 0 := by
@@ -587,26 +579,24 @@ open scoped Classical NumberField SchwartzMap
 open NumberField IsDedekindDomain MeasureTheory
 
 variable (F : Type) [Field F] [NumberField F] [NumberField.IsTotallyComplex F]
-variable (S : Finset (HeightOneSpectrum (𝓞 F)))
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
 
 theorem archTensor_integrable_of_factors
     (g : (v : {v : InfinitePlace F // v.IsComplex}) → ℂ → ℂ)
     (hg : ∀ v, Integrable (g v) (volume : Measure ℂ)) :
     Integrable (archTensor F g) (PoissonArch.traceMeasure F) := by
-  have hp := Integrable.fintype_prod_dep hg
   have ha : Integrable (fun _ : {v : InfinitePlace F // v.IsReal} → ℝ => (1 : ℂ)) volume := by
     apply integrable_const_iff.mpr
     right
     constructor
     simp only [volume_pi, Measure.pi_univ, Finset.prod_of_isEmpty]
     exact ENNReal.one_lt_top
-  have hi := ha.mul_prod hp
+  have hi := ha.mul_prod (Integrable.fintype_prod_dep hg)
   simp only [one_mul] at hi
   rw [← volume_pi, ← Measure.volume_eq_prod] at hi
-  have hm := (mixedEmbedding.euclidean.volumePreserving_toMixed F).integrable_comp_emb
+  exact (((mixedEmbedding.euclidean.volumePreserving_toMixed F).integrable_comp_emb
     (mixedEmbedding.euclidean.toMixed F).toHomeomorph.measurableEmbedding
-    (g := fun x : mixedEmbedding.mixedSpace F => ∏ v, g v (x.2 v))
-  exact (hm.mpr hi).smul_measure ENNReal.ofReal_ne_top
+).mpr hi).smul_measure ENNReal.ofReal_ne_top
 
 end
 end TateTensorProfile

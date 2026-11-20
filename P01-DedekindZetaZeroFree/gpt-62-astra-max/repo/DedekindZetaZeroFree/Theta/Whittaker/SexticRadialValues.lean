@@ -12,7 +12,7 @@ open NumberField IsDedekindDomain ValuativeRel
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.ExteriorWhittakerValues.ShellArithmetic
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem radialValue_eq_sextic (R : PrincipalMellin.ActualRecipe S η)
     (p : ThetaBranch.ExteriorPrime R.A)

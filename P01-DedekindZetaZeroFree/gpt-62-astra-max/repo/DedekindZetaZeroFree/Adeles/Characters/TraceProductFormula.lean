@@ -25,14 +25,12 @@ private theorem finiteCharacter_support (a : FiniteAdeleRing (𝓞 F) F) :
 theorem localFiniteCharacter_diagonal_hasFiniteMulSupport (t : F) :
     Function.HasFiniteMulSupport
       (fun v : HeightOneSpectrum (𝓞 F) =>
-        localFiniteCharacter F v (algebraMap F (v.adicCompletion F) t)) := by
-  exact finiteCharacter_support F (algebraMap F (FiniteAdeleRing (𝓞 F) F) t)
+        localFiniteCharacter F v (algebraMap F (v.adicCompletion F) t)) := finiteCharacter_support F (algebraMap F (FiniteAdeleRing (𝓞 F) F) t)
 
 theorem localFiniteCharacter_adele_hasFiniteMulSupport
     (x : AdeleRing (𝓞 F) F) :
     Function.HasFiniteMulSupport
-      (fun v : HeightOneSpectrum (𝓞 F) => localFiniteCharacter F v (x.2 v)) := by
-  exact finiteCharacter_support F x.2
+      (fun v : HeightOneSpectrum (𝓞 F) => localFiniteCharacter F v (x.2 v)) := finiteCharacter_support F x.2
 
 private theorem character_sum {A ι : Type*} [AddCommMonoid A]
     (χ : AddChar A Circle) (s : Finset ι) (f : ι → A) :
@@ -42,11 +40,15 @@ private theorem character_sum {A ι : Type*} [AddCommMonoid A]
   | empty => simp
   | @insert i s hi ih => simp [hi, χ.map_add_eq_mul, ih]
 
+alias TraceProductFormula.character_sum := character_sum
+
 private theorem character_cast (p q : Nat.Primes) (h : p = q) (x : ℚ_[p]) :
     rationalPadicCharacter p x = rationalPadicCharacter q
       (cast (congrArg (fun r : Nat.Primes => ℚ_[r]) h) x) := by
   subst q
   rfl
+
+alias TraceProductFormula.character_cast := character_cast
 
 private theorem fiber_character_product (t : F) (p : Nat.Primes) :
     letI := finitePlacesAboveRationalPrimeFintype F p
@@ -78,16 +80,13 @@ private theorem finite_character_product (t : F) :
   rw [← finprod_eq_prod_of_fintype]
   change (∏ y ∈ hg.toFinset with PlaceTraceAdapter.prime F y = p, g y) =
     ∏ᶠ i : {v : HeightOneSpectrum (𝓞 F) //
-      finitePlaceBelow (K := ℚ) v = Rat.HeightOneSpectrum.primesEquiv.symm p}, g i.val
+      finitePlaceBelow v = Rat.HeightOneSpectrum.primesEquiv.symm p}, g i.val
   rw [finprod_subtype_eq_finprod_cond]
   symm
   apply finprod_cond_eq_prod_of_cond_iff
   intro v hv
   rw [Finset.mem_filter]
-  have hmem : v ∈ hg.toFinset := hg.mem_toFinset.mpr hv
-  simp only [hmem, true_and]
-  change finitePlaceBelow (K := ℚ) v = Rat.HeightOneSpectrum.primesEquiv.symm p ↔
-    Rat.HeightOneSpectrum.primesEquiv (finitePlaceBelow (K := ℚ) v) = p
+  simp only [(hg.mem_toFinset.mpr hv), true_and]
   exact Rat.HeightOneSpectrum.primesEquiv.apply_eq_iff_eq_symm_apply.symm
 
 private theorem arch_character_product (t : F) :
@@ -105,6 +104,8 @@ private theorem arch_character_product (t : F) :
       rw [Finset.prod_insert hv, Finset.sum_insert hv, ih, Circle.exp_add]
       rfl
   exact h Finset.univ
+
+alias TraceProductFormula.arch_character_product := arch_character_product
 
 theorem traceCharacter_diagonal_product_formula (t : F) :
     (∏ v : InfinitePlace F,

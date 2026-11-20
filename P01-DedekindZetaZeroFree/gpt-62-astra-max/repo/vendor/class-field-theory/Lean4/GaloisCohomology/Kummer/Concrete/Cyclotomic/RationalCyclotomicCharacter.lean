@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -114,59 +109,43 @@ theorem rationalCyclotomicCharacterPrimeProduct_toZModPow
   let n : ℕ+ := ⟨p.1 ^ k, pow_pos p.2.pos k⟩
   let F := rationalCyclotomicLevel n
   let : IsCyclotomicExtension {p.1 ^ k} ℚ F := by
-    change IsCyclotomicExtension {(n : ℕ)} ℚ (rationalCyclotomicLevel n)
     exact rationalCyclotomicLevel_isCyclotomicExtension n
-  let ζ : F :=
+  let ζ :=
     IsCyclotomicExtension.zeta (p.1 ^ k) ℚ F
-  have hζ : IsPrimitiveRoot ζ (p.1 ^ k) :=
+  have hζ :=
     IsCyclotomicExtension.zeta_spec (p.1 ^ k) ℚ F
-  let t : rationalCyclotomicField :=
+  let t :=
     algebraMap F rationalCyclotomicField ζ
-  have ht : t ^ (p.1 ^ k) = 1 := by
-    dsimp only [t]
-    rw [← map_pow, hζ.pow_eq_one, map_one]
-  let g : rationalCyclotomicField ≃+* rationalCyclotomicField :=
+  let g :=
     MulSemiringAction.toRingAut
       (rationalCyclotomicField ≃ₐ[ℚ] rationalCyclotomicField)
       rationalCyclotomicField σ
-  have hinfinite :
-      g t =
-        t ^ ((cyclotomicCharacter
-          rationalCyclotomicField p.1 g).val.toZModPow k).val :=
-    cyclotomicCharacter.spec p.1 g t ht
-  have hfinite :
-      (σ.restrictNormal F) ζ =
-        ζ ^ (IsCyclotomicExtension.Rat.galEquivZMod
-          (p.1 ^ k) F (σ.restrictNormal F)).val.val :=
-    IsCyclotomicExtension.Rat.galEquivZMod_apply_of_pow_eq
-      (p.1 ^ k) F (σ.restrictNormal F) hζ.pow_eq_one
-  have hζmap : IsPrimitiveRoot t (p.1 ^ k) := by
-    exact hζ.map_of_injective
+  have hζmap := hζ.map_of_injective
       (algebraMap F rationalCyclotomicField).injective
+  let galEquivZMod₀ := IsCyclotomicExtension.Rat.galEquivZMod (p.1 ^ k) F (σ.restrictNormal F)
   change
     Units.map (PadicInt.toZModPow k).toMonoidHom
         (rationalCyclotomicCharacterPrimeProduct σ p) =
-      IsCyclotomicExtension.Rat.galEquivZMod
-        (p.1 ^ k) F (σ.restrictNormal F)
+      galEquivZMod₀
   apply Units.ext
   apply ZMod.val_injective
   apply hζmap.pow_inj (ZMod.val_lt _) (ZMod.val_lt _)
   calc
-    t ^ ((PadicInt.toZModPow k)
-        (rationalCyclotomicCharacterPrimeProduct σ p).val).val =
+    _ =
         g t := by
       rw [rationalCyclotomicCharacterPrimeProduct_apply]
-      exact hinfinite.symm
+      exact (cyclotomicCharacter.spec p.1 g t (by
+        dsimp only [t]
+        rw [← map_pow, hζ.pow_eq_one, map_one])).symm
     _ = σ t := rfl
     _ = algebraMap F rationalCyclotomicField
         ((σ.restrictNormal F) ζ) :=
       (AlgEquiv.restrictNormal_commutes σ F ζ).symm
     _ = algebraMap F rationalCyclotomicField
-        (ζ ^ (IsCyclotomicExtension.Rat.galEquivZMod
-          (p.1 ^ k) F (σ.restrictNormal F)).val.val) := by
-      rw [hfinite]
-    _ = t ^ (IsCyclotomicExtension.Rat.galEquivZMod
-        (p.1 ^ k) F (σ.restrictNormal F)).val.val := by
+        (ζ ^ (galEquivZMod₀).val.val) := by
+      rw [(IsCyclotomicExtension.Rat.galEquivZMod_apply_of_pow_eq
+        (p.1 ^ k) F (σ.restrictNormal F) hζ.pow_eq_one)]
+    _ = t ^ (galEquivZMod₀).val.val := by
       rw [map_pow]
 
 end PrimePowerCharacter

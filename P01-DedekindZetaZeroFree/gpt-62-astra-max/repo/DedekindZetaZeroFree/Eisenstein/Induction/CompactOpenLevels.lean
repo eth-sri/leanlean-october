@@ -13,7 +13,7 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.SourceLevels
 open KPAdelicCoverRestrictedProduct KPGlobalTorusFiniteStages
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology
 attribute [local instance] KPAdelicCoverRestrictedProduct.pglLocalTopology
 
@@ -93,10 +93,9 @@ theorem refined_compact_le (R : PrincipalMellin.ActualRecipe S η)
 variable (F ζ hζ)
 
 def level : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ := by
-  let J := ActualFiniteFactor.productSubgroup F ζ hζ (refined F ζ hζ P C)
   have hc := ActualFiniteFactor.productSubgroup_compact_open F ζ hζ (refined F ζ hζ P C)
   rw [finite_eq F ζ hζ] at hc
-  exact ⟨⟨J.comap (KPGlobalTorusFunctionData.finitePart F ζ hζ).subtype, hc.2⟩, hc.1⟩
+  exact ⟨⟨(ActualFiniteFactor.productSubgroup F ζ hζ (refined F ζ hζ P C)).comap (KPGlobalTorusFunctionData.finitePart F ζ hζ).subtype, hc.2⟩, hc.1⟩
 
 theorem globalLevel_eq : KPGlobalTorusFunctionData.globalLevel F ζ hζ (level F ζ hζ P C) =
     ActualFiniteFactor.productSubgroup F ζ hζ (refined F ζ hζ P C) := by

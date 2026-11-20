@@ -41,12 +41,11 @@ private theorem frequency_denominator_full_local_tuples
     frequency_rows_finite_ramified_local_types F ζ12 hζ12 ι S hS hSix η hηS
   let index : {v // v ∈ A.Sf} → S := fun v => ⟨v.val, hAS ▸ v.property⟩
   let R := Set.univ.pi (fun v : {v // v ∈ A.Sf} => Q (index v))
-  have hR : R.Finite := Set.Finite.pi (fun v => (hfin (index v)).2)
+  have hR := Set.Finite.pi (fun v => (hfin (index v)).2)
   let tuple : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ →ₜ* ℂˣ) →
       Detector.FixedSResidue.FullLocalCharacters A :=
     fun δ => (fun _ => 1, fun v => (δ v).toMonoidHom)
-  let L := (tuple '' R) ∩ {σ | Detector.FixedSResidue.HasFiniteOrder A σ}
-  refine ⟨L, (hR.image tuple).inter_of_left _, fun σ hσ => hσ.2, ?_⟩
+  refine ⟨((tuple '' R) ∩ {σ | Detector.FixedSResidue.HasFiniteOrder A σ}), (hR.image tuple).inter_of_left _, fun σ hσ => hσ.2, ?_⟩
   intro U K T u
   choose δ hδmem hδlocal using fun v : {v // v ∈ A.Sf} =>
     (hlocal U K T u (index v)).2
@@ -81,7 +80,7 @@ private theorem frequency_denominator_full_local_tuples
 end Copied
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem raw_local_tuple_cover (R : PrincipalMellin.ActualRecipe S η) :
     ∃ L : Set (Detector.FixedSResidue.FullLocalCharacters R.A), L.Finite ∧
@@ -99,24 +98,24 @@ theorem raw_local_tuple_cover (R : PrincipalMellin.ActualRecipe S η) :
     R.A.principalIdealRing_of_classGroup_subsingleton R.classKilled
   have hSix : ∀ v : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
       ¬ (Ideal.absNorm v.asIdeal).Coprime 6 →
-        v ∈ (R.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) := by
+        v ∈ R.A.Sf := by
     intro v hv
     by_contra hout
     exact hv (ArithmeticContext.actual_outside_norm_coprime_six R.A v hout)
   obtain ⟨V, e, he, hnorm⟩ :=
     MinusArithmetic.actual_detector_frequency_representatives R
   obtain ⟨K⟩ := Detector.kummer_frequency_family_exists F R.A.zeta12
-    R.A.primitive_zeta12 R.σ (R.A.Sf : Set _) R.A.Sf.finite_toSet hSix V
+    R.A.primitive_zeta12 R.σ R.A.Sf R.A.Sf.finite_toSet hSix V
   obtain ⟨η0, hη0, _, htarget⟩ := MinusArithmetic.target_primitive_inducer R
   obtain ⟨T, hT⟩ :=
     MinusArithmetic.raw_minus_family_identification R V e he K η0 hη0 htarget
   obtain ⟨L, hL, hOrder, hType⟩ :=
     frequency_denominator_full_local_tuples F R.A.zeta12 R.A.primitive_zeta12
-      R.σ (R.A.Sf : Set _) R.A.Sf.finite_toSet hSix η0 hη0 R.A rfl
+      R.σ R.A.Sf R.A.Sf.finite_toSet hSix η0 hη0 R.A rfl
   obtain ⟨_, Ufam, _, hUfam⟩ := RawHeckeRows.actual_context_and_raw_frequencies R
   refine ⟨L, hL, hOrder, ?_⟩
   intro ω hω u
-  have hEq : ω u = T.denominator (e u) :=
+  have hEq :=
     MinusArithmetic.deleted_primitive_inducers_eq R.A
       (RawHeckeRows.rawDeletionSet (Ufam u))
       (RawDenominatorExistence.rawDeletionSet_finite R (Ufam u))

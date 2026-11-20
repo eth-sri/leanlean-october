@@ -14,7 +14,11 @@ local instance : DecidableEq I := Classical.decEq _
 
 abbrev Product := RestrictedProduct G (fun i ↦ (K i : Set (G i))) Filter.cofinite
 
-def truncate (x : Product G K) (s : Finset I) : Product G K :=
+section
+
+variable (x : Product G K)
+
+def truncate (s : Finset I) : Product G K :=
   ⟨fun i ↦ if i ∈ s then x i else 1, by
     apply Filter.eventually_cofinite.mpr
     apply s.finite_toSet.subset
@@ -25,12 +29,9 @@ def truncate (x : Product G K) (s : Finset I) : Product G K :=
     rw [ite_eq_right (show i ∉ s from hn)]
     exact (K i).one_mem⟩
 
-theorem tendsto_truncate (x : Product G K) :
+theorem tendsto_truncate :
     Tendsto (truncate G K x) atTop (𝓝 x) := by
-  let S : Set I := {i | x i ∈ K i}
-  have hS : Filter.cofinite ≤ Filter.principal S := Filter.le_principal_iff.mpr x.property
-  let y : RestrictedProduct G (fun i ↦ (K i : Set (G i))) (Filter.principal S) :=
-    ⟨x, by exact Filter.eventually_principal.mpr (fun i hi ↦ hi)⟩
+  let S := {i | x i ∈ K i}
   let f (s : Finset I) :
       RestrictedProduct G (fun i ↦ (K i : Set (G i))) (Filter.principal S) :=
     ⟨truncate G K x s, by
@@ -39,21 +40,20 @@ theorem tendsto_truncate (x : Product G K) :
       change (if i ∈ s then x i else 1) ∈ K i
       split_ifs
       · exact hi
-      · exact (K i).one_mem⟩
-  have hf : Tendsto f atTop (𝓝 y) := by
-    apply (RestrictedProduct.isEmbedding_coe_of_principal (R := G)
-      (A := fun i ↦ (K i : Set (G i))) (S := S)).tendsto_nhds_iff.mpr
+      apply one_mem⟩
+  have hf : Tendsto f atTop (𝓝 (⟨x, Filter.eventually_principal.mpr (fun i hi ↦ hi)⟩)) := by
+    apply (RestrictedProduct.isEmbedding_coe_of_principal
+       ).tendsto_nhds_iff.mpr
     apply tendsto_pi_nhds.mpr
     intro i
     apply tendsto_const_nhds.congr'
     filter_upwards [eventually_ge_atTop ({i} : Finset I)] with s hs
-    have hi : i ∈ s := hs (Finset.mem_singleton_self i)
     change x i = (if i ∈ s then x i else 1)
-    rw [ite_eq_left hi]
-  exact (RestrictedProduct.continuous_inclusion (R := G)
-    (A := fun i ↦ (K i : Set (G i))) hS).continuousAt.tendsto.comp hf
+    rw [ite_eq_left (hs (Finset.mem_singleton_self i))]
+  exact (RestrictedProduct.continuous_inclusion
+     (Filter.le_principal_iff.mpr x.property)).continuousAt.tendsto.comp hf
 
-theorem truncate_insert (x : Product G K) (s : Finset I) (i : I) (hi : i ∉ s) :
+theorem truncate_insert (s : Finset I) (i : I) (hi : i ∉ s) :
     truncate G K x (insert i s) = RestrictedProduct.mulSingle K i (x i) * truncate G K x s := by
   apply RestrictedProduct.ext
   intro j
@@ -61,12 +61,12 @@ theorem truncate_insert (x : Product G K) (s : Finset I) (i : I) (hi : i ∉ s) 
   · subst j
     change (if i ∈ insert i s then x i else 1) =
       RestrictedProduct.mulSingle K i (x i) i * (if i ∈ s then x i else 1)
-    rw [ite_eq_left (Finset.mem_insert_self i s), ite_eq_right hi,
-      RestrictedProduct.mulSingle_eq_same, mul_one]
+    simp_all
   · change (if j ∈ insert i s then x j else 1) =
       RestrictedProduct.mulSingle K i (x i) j * (if j ∈ s then x j else 1)
-    rw [RestrictedProduct.mulSingle_eq_of_ne K _ hj, one_mul]
-    simp only [Finset.mem_insert, hj, false_or]
+    simp_all
+
+end
 
 def word (x : Product G K) : List I → Product G K
   | [] => 1
@@ -76,12 +76,9 @@ theorem truncate_list (x : Product G K) (l : List I) (hl : l.Nodup) :
     truncate G K x l.toFinset = word G K x l := by
   induction l with
   | nil =>
-    apply RestrictedProduct.ext
-    intro i
-    change (if i ∈ ([] : List I).toFinset then x i else 1) = 1
-    simp
+    rfl
   | cons i l ih =>
-    rw [List.nodup_cons] at hl
+    simp at hl
     rw [List.toFinset_cons, truncate_insert G K x l.toFinset i (by simpa using hl.1),
       ih hl.2]
     rfl

@@ -17,10 +17,11 @@ def normalizedKernelRows (F : Type) [Field F] [NumberField F]
     (c bad : Ideal (𝓞 F)) (M K : ℝ) : Finset (Ideal (𝓞 F)) :=
   (kernelRows F c M K).filter (fun a => a ⊔ bad = ⊤)
 
-def T3normalizedMasked (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (bad : Ideal (𝓞 F)) (W : ℝ → ℝ) (M N K : ℝ)
-    (d : Ideal (𝓞 F)) (g : Q.G)
+variable (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
+    (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (bad : Ideal (𝓞 F)) (W : ℝ → ℝ) (M N K : ℝ)
+    (d : Ideal (𝓞 F))
+
+def T3normalizedMasked (g : Q.G)
     (U : Finset (Ideal (𝓞 F))) (τ lam : Ideal (𝓞 F) → ℂ) : ℂ :=
   ∑ u ∈ paperShell F c N, ∑ v ∈ paperShell F c N,
     if u ⊔ v = d ∧ Q.cls u = g ∧ Q.cls v = g then
@@ -31,10 +32,7 @@ def T3normalizedMasked (F : Type) [Field F] [NumberField F]
             (Q.χ u) a * (starRingEnd ℂ) ((Q.χ v) a))
     else 0
 
-def B3normalizedMasked (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (bad : Ideal (𝓞 F)) (W : ℝ → ℝ) (M N K : ℝ)
-    (d : Ideal (𝓞 F)) (U : Finset (Ideal (𝓞 F)))
+def B3normalizedMasked (U : Finset (Ideal (𝓞 F)))
     (τ : Ideal (𝓞 F) → ℂ) : ℝ :=
   sSup ({0} ∪ {x : ℝ | ∃ (g : Q.G) (lam : Ideal (𝓞 F) → ℂ),
     energy F c N lam ≤ 1 ∧
@@ -184,20 +182,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve.CoreNormalizedEstimate
 
 open DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
 
-theorem assembly_tail_uniform_small_delta
-    {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
-    (D : AllIndexNormalizedFamilyData Q) (W : ℝ → ℝ)
-    (ε : ℝ) (hε : 0 < ε) (δ : ℝ) (hδ : 0 < δ) (hδε : δ ≤ ε / 100) :
-    ∃ A : ℝ, 0 < A ∧
-      ∀ C : Context Q, C.D = D → C.W = W → C.δ = δ →
-        1 ≤ C.M → 1 ≤ C.N →
-        max 1 (C.N ^ 2 / C.M * Real.rpow (C.M * C.N) ε) ≤ C.K →
-        C.K ≤ C.M * Real.rpow (C.M * C.N) (-ε) →
-        1 ≤ norm C.d → norm C.d ≤ 2 * C.N →
-        ‖totalRemainder C‖ ≤ A * energy F c C.N C.lam := by
-  exact DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.uniform_remainder_small_delta
-    D W ε hε δ hδ hδε
+alias assembly_tail_uniform_small_delta := DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.uniform_remainder_small_delta
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.CoreNormalizedEstimate
 
@@ -232,9 +217,12 @@ private theorem norm_five_le (a b c d e : ℂ) :
   have hD := norm_add_le a b
   linarith
 
-private theorem sevenTermSum_eq_mainDifference_sub_errComb
-    {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c} (C : Context Q) :
+section
+
+variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c} (C : Context Q)
+
+private theorem sevenTermSum_eq_mainDifference_sub_errComb :
     sevenTermSum C = MainBoundary.mainDifference C - errComb C := by
   have hblock : ∀ (B : ℝ) (unit : Bool), sevenTermBlock C B unit =
       (T C B unit - Tprime C B unit) -
@@ -250,8 +238,7 @@ private theorem sevenTermSum_eq_mainDifference_sub_errComb
   rw [hblock 1 true, hsum]
   ring
 
-private theorem norm_errComb_le {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c} (C : Context Q) :
+private theorem norm_errComb_le :
     ‖errComb C‖ ≤
       (‖E1 C 1 true‖ + ‖E2 C 1 true‖ + ‖E3 C 1 true‖ + ‖E4 C 1 true‖ +
         ‖E5 C 1 true‖) +
@@ -266,17 +253,7 @@ private theorem norm_errComb_le {F : Type} [Field F] [NumberField F] {c : Ideal 
           (‖E1 C B‖ + ‖E2 C B‖ + ‖E3 C B‖ + ‖E4 C B‖ + ‖E5 C B‖) :=
         Finset.sum_le_sum (fun B _ => norm_five_le _ _ _ _ _)
 
-private theorem norm_sevenTermSum_le {F : Type} [Field F] [NumberField F]
-    {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
-    (C : Context Q) :
-    ‖sevenTermSum C‖ ≤
-      ‖MainBoundary.mainDifference C‖ +
-      ((‖E1 C 1 true‖ + ‖E2 C 1 true‖ + ‖E3 C 1 true‖ + ‖E4 C 1 true‖ +
-          ‖E5 C 1 true‖) +
-        ∑ B ∈ dyadicScales C,
-          (‖E1 C B‖ + ‖E2 C B‖ + ‖E3 C B‖ + ‖E4 C B‖ + ‖E5 C B‖)) := by
-  rw [sevenTermSum_eq_mainDifference_sub_errComb C]
-  exact le_trans (norm_sub_le _ _) (add_le_add le_rfl (norm_errComb_le C))
+end
 
 theorem large_cutoff_energy_bound
     {F : Type} [Field F] [NumberField F]
@@ -437,7 +414,9 @@ theorem large_cutoff_energy_bound
                 ‖E5 C 1 true‖) +
               ∑ B ∈ dyadicScales C,
                 (‖E1 C B‖ + ‖E2 C B‖ + ‖E3 C B‖ + ‖E4 C B‖ + ‖E5 C B‖)) :=
-            norm_sevenTermSum_le C
+            (by
+              rw [sevenTermSum_eq_mainDifference_sub_errComb C]
+              exact le_trans (norm_sub_le _ _) (add_le_add le_rfl (norm_errComb_le C)))
         _ ≤ (A₄ * (Ideal.absNorm d : ℝ) ^ 4 * Real.rpow (M * N) ε' *
               (M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) +
                 Real.sqrt (M / K) * N) * energy F c N lam) +
@@ -600,6 +579,7 @@ theorem masked_le_canonical
   unfold NormalizedKernelProfiles.B3normalizedMasked B3
   refine csSup_le ?_ ?_
   · exact ⟨0, Or.inl rfl⟩
+  let B3₀ := B3 F c Q W M N K d
   · rintro x (hx | ⟨g, lam, hlam, rfl⟩)
     · rw [Set.mem_singleton_iff] at hx
       rw [hx]
@@ -618,15 +598,13 @@ theorem masked_le_canonical
             (pow_le_one₀ (norm_nonneg _) (hτ b))
         · rw [if_neg hb]
           simp
-      have h3 : energy F c N (fun u => if u ∈ U then τ u * lam u else 0) ≤ 1 :=
-        henergy.trans hlam
       calc ‖T3 F c Q W M N K d g (fun u => if u ∈ U then τ u * lam u else 0)‖
-          ≤ B3 F c Q W M N K d *
+          ≤ B3₀ *
               energy F c N (fun u => if u ∈ U then τ u * lam u else 0) :=
             norm_T3_le_B3_mul_energy Q W M N K d g _
-        _ ≤ B3 F c Q W M N K d * 1 :=
-            mul_le_mul_of_nonneg_left h3 (B3_nonneg Q W M N K d)
-        _ = B3 F c Q W M N K d := mul_one _
+        _ ≤ B3₀ * 1 :=
+            mul_le_mul_of_nonneg_left (henergy.trans hlam) (B3_nonneg Q W M N K d)
+        _ = B3₀ := mul_one _
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.CoreNormalizedEstimate
 

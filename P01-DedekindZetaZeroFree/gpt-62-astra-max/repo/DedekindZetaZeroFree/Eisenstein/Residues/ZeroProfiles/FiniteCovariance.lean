@@ -10,7 +10,7 @@ open NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.TensorActionSource
 open KPLiteralRaw
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {K : Subgroup (G F ζ hζ)}
+    {K : Subgroup (G F ζ hζ)}
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 

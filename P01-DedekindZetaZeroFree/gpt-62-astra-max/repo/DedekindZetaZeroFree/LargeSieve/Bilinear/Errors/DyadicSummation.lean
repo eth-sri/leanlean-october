@@ -13,8 +13,6 @@ theorem error_dyadic_internal_exponents
     (ε C0 : ℝ) (hε : 0 < ε) (hC0 : 0 ≤ C0) :
     0 < ε / 64 ∧ 0 < ε / (8 * (C0 + 2)) ∧
       8 * (ε / 64) + (C0 + 2) * (ε / (8 * (C0 + 2))) + ε / 4 ≤ ε := by
-  have hpos : 0 < C0 + 2 := by linarith
-  have hne : C0 + 2 ≠ 0 := ne_of_gt hpos
   constructor
   · positivity
   constructor
@@ -97,7 +95,7 @@ theorem error_dyadic_sum_of_card_bound
     calc
       n = n ^ (1 : ℕ) := by simp
       _ ≤ n ^ (4 : ℕ) := pow_le_pow_right₀ hn (by norm_num)
-  have hexp : q + η ≤ ε := (error_dyadic_internal_exponents ε C0 hε hC0).2.2
+  have hexp := (error_dyadic_internal_exponents ε C0 hε hC0).2.2
   have hpow : Real.rpow (M * N) q * Real.rpow (M * N) η ≤ Real.rpow (M * N) ε := by
     change (M * N) ^ q * (M * N) ^ η ≤ (M * N) ^ ε
     rw [← Real.rpow_add (by positivity : 0 < M * N)]
@@ -154,10 +152,10 @@ theorem bilinear_error_dyadic_sum
     D := D, core := core, hF := hF,
     M := M, N := N, K := K, δ := ε / (8 * (C0 + 2)), W := W, hW := hW,
     d := d, hd0 := hd0, hd := hd, hdc := hdc, g := g, lam := lam }
-  let mass : ℝ → Bool → ℝ := fun B unit =>
+  let mass := fun B unit =>
     ‖E1 ctx B unit‖ + ‖E2 ctx B unit‖ + ‖E3 ctx B unit‖ +
       ‖E4 ctx B unit‖ + ‖E5 ctx B unit‖
-  let J : Finset (Option ℝ) := insert none ((dyadicScales ctx).image some)
+  let J := insert none ((dyadicScales ctx).image some)
   let B : Option ℝ → ℝ := fun j => j.elim 1 id
   let e : Option ℝ → ℝ := fun j => j.elim (mass 1 true) (fun b => mass b false)
   have hcard : J.card ≤ Vendor.dyadicLength K + 2 := by
@@ -174,16 +172,13 @@ theorem bilinear_error_dyadic_sum
   have hscale : ∀ b ∈ dyadicScales ctx, 1 ≤ b ∧ b ≤ K := by
     intro b hb
     obtain ⟨j, hj, rfl⟩ := Finset.mem_image.mp hb
-    have hjK : j < Vendor.dyadicLength K := by simpa [ctx] using hj
-    exact ⟨one_le_pow₀ (by norm_num), (Vendor.pow_lt_of_lt_dyadicLength hK hjK).le⟩
+    refine ⟨one_le_pow₀ (by norm_num), (Vendor.pow_lt_of_lt_dyadicLength hK ?_).le⟩
+    simpa [ctx] using hj
   have hB : ∀ j ∈ J, 1 ≤ B j ∧ B j ≤ K := by
     intro j hj
     cases j with
     | none => exact ⟨le_rfl, hK⟩
     | some b => exact hscale b (by simpa [J] using hj)
-  have he : ∀ j ∈ J, 0 ≤ e j := by
-    intro j hj
-    cases j <;> dsimp [e, mass] <;> positivity
   have hbound : ∀ j ∈ J, e j ≤
       A * (Ideal.absNorm d : ℝ) * Real.rpow (M * N)
         (8 * (ε / 64) + (C0 + 2) * (ε / (8 * (C0 + 2)))) *
@@ -198,9 +193,10 @@ theorem bilinear_error_dyadic_sum
       obtain ⟨hb1, hbK⟩ := hB (some b) hj
       exact hblocks M N K hM hN hK hKM d hd0 hd hdc hn hnN g lam b false
         hb1 hbK (by simp)
-  have hE : 0 ≤ Sieve.energy F c N lam := by unfold Sieve.energy; positivity
   have hs := hsum M N K (Ideal.absNorm d : ℝ) (Sieve.energy F c N lam)
-    hM hN hK hn hKM hnN hE J B e hcard hB he hbound
+    hM hN hK hn hKM hnN (by unfold Sieve.energy; positivity) J B e hcard hB (by
+      intro j hj
+      cases j <;> dsimp [e, mass] <;> positivity) hbound
   have heq : (∑ j ∈ J, e j) = mass 1 true + ∑ b ∈ dyadicScales ctx, mass b false := by
     dsimp [J]
     rw [Finset.sum_insert (by simp), Finset.sum_image]

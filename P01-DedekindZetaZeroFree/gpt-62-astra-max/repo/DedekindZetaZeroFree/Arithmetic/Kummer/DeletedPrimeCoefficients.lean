@@ -43,12 +43,10 @@ theorem source_kummer_raw_prime_values
     by_contra hvD
     simp only [RawHeckeRows.rawDeletionSet, Set.mem_union, Set.mem_setOf_eq, not_or] at hvD
     obtain ⟨hvSf, hnot⟩ := hvD
-    have huval : v.valuation F (U.u : F) = 1 :=
-      ArithmeticContext.actual_generator_valuation_unit A U.ideal U.u
-        (Units.mk0 (U.u : F) (by exact_mod_cast U.generates.1)) U.generates rfl v hvSf hnot
-    obtain ⟨hcop, _⟩ := hχ v hvSf huval
-    have htop : (⊤ : Ideal (𝓞 F)) ≤ v.asIdeal := by rw [← hcop]; exact sup_le le_rfl hvle
-    exact v.isPrime.ne_top (top_unique htop)
+    obtain ⟨hcop, _⟩ := hχ v hvSf (ArithmeticContext.actual_generator_valuation_unit A U.ideal U.u
+      (Units.mk0 (U.u : F) (by exact_mod_cast U.generates.1)) U.generates rfl v hvSf hnot)
+    refine v.isPrime.ne_top (top_unique ?_)
+    rw [← hcop]; exact sup_le le_rfl hvle
   ·
     intro p
     have hvSf : p.val ∉ A.Sf :=
@@ -119,8 +117,7 @@ theorem source_kummer_raw_prime_values
       rw [A.exteriorResidue_card (primeIdeal p), hu] at hkred
       have hkj : k = j.val :=
         (A.exterior_sextic_primitive (primeIdeal p) p.val.isPrime.ne_top).pow_inj hk j.isLt (by
-          have hh := hkred.trans hred.symm
-          simpa only [z, ← map_pow, pow_mul] using hh)
+          simpa only [z, ← map_pow, pow_mul] using (hkred.trans hred.symm))
       have hres : A.sexticResidue (primeIdeal p) U.u = (A.zeta12 ^ 2) ^ j.val := by
         have h1 : A.sexticResidue (primeIdeal p) U.u =
             ((A.sexticResidueFamily (primeIdeal p)) u : F) := by

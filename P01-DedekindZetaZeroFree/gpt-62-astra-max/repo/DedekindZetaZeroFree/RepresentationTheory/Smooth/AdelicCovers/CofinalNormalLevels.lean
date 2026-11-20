@@ -14,7 +14,7 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 def finiteSubgroup : Subgroup (KPCubicCoverConstruction.AdelicGL2Cover F ζ hζ) :=
   ⨅ w : InfinitePlace F,
@@ -31,8 +31,7 @@ private theorem countable_nhds_local {X Y : Type*}
     {f : X → Y} (hf : IsLocalHomeomorph f) (x : X) : (𝓝 x).IsCountablyGenerated := by
   obtain ⟨U, hU, he⟩ := isLocalHomeomorph_iff_isOpenEmbedding_restrict.mp hf x
   letI : FirstCountableTopology U := he.isEmbedding.firstCountableTopology
-  let xU : U := ⟨x, mem_of_mem_nhds hU⟩
-  have hm : map (Subtype.val : U → X) (𝓝 xU) = 𝓝 x := by
+  have hm : map Subtype.val (𝓝 (⟨x, mem_of_mem_nhds hU⟩)) = 𝓝 x := by
     rw [Topology.IsEmbedding.subtypeVal.map_nhds_eq, Subtype.range_val]
     exact nhdsWithin_eq_nhds.mpr hU
   rw [← hm]
@@ -66,14 +65,11 @@ variable {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
 theorem compact_conjugation_nhds (S : Set G) (hS : IsCompact S)
     (U : OpenSubgroup G) :
     ∃ W ∈ 𝓝 (1 : G), ∀ g ∈ S, ∀ u ∈ W, g⁻¹ * u * g ∈ U := by
-  have h : ∀ᶠ u in 𝓝 (1 : G), ∀ g ∈ S, g⁻¹ * u * g ∈ U := by
-    apply hS.eventually_forall_of_forall_eventually
-    intro g hg
-    have hc : Continuous (fun p : G × G => p.2⁻¹ * p.1 * p.2) :=
-      (continuous_snd.inv.mul continuous_fst).mul continuous_snd
-    have hu : g⁻¹ * (1 : G) * g ∈ U := by simp
-    exact hc.continuousAt.eventually (U.isOpen.mem_nhds hu)
-  exact ⟨{u | ∀ g ∈ S, g⁻¹ * u * g ∈ U}, h, by tauto⟩
+  refine ⟨{u | ∀ g ∈ S, g⁻¹ * u * g ∈ U}, ?_, by tauto⟩
+  apply hS.eventually_forall_of_forall_eventually
+  intro g hg
+  refine ((continuous_snd.inv.mul continuous_fst).mul continuous_snd).continuousAt.eventually (U.isOpen.mem_nhds ?_)
+  simp
 
 end NormalCoreHelpers
 
@@ -125,9 +121,7 @@ theorem adelicPGL2Cover_firstCountableTopology :
   letI := adelicGL2Cover_firstCountableTopology F ζ hζ
   letI : IsTopologicalGroup (KPCubicCoverConstruction.AdelicGL2Cover F ζ hζ) :=
     (KPAdelicCoverRestrictedProduct.adelic_topological_cover F ζ hζ).2.2.1
-  exact inferInstanceAs (FirstCountableTopology
-    (KPAdelicCoverRestrictedProduct.CubicGL2Adelic F ζ hζ ⧸
-      KPAdelicCoverRestrictedProduct.splitScalarSubgroup F ζ hζ))
+  infer_instance
 
 instance finitePGL2Cover_firstCountableTopology :
     FirstCountableTopology (FinitePGL2Cover F ζ hζ) := by

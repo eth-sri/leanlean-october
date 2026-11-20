@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 universe u v
@@ -53,16 +51,8 @@ theorem frobeniusQuotientAction_coe_out (D : DegreeData G) (A : Rep ℤ G)
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) :
     (D.frobeniusQuotientAction A K L hLK q a).1 =
       A.ρ (Quotient.out q).1 a.1 := by
-  let k : K.toSubgroup := Quotient.out q
-  have hkq : (QuotientGroup.mk k :
-      K.toSubgroup ⧸ D.extensionInertiaWithin K L hLK) = q :=
-    Quotient.out_eq' q
-  calc
-    (D.frobeniusQuotientAction A K L hLK q a).1 =
-        (D.frobeniusQuotientAction A K L hLK (QuotientGroup.mk k) a).1 :=
-      congrArg (fun z => (D.frobeniusQuotientAction A K L hLK z a).1) hkq.symm
-    _ = A.ρ k.1 a.1 := rfl
-    _ = A.ρ (Quotient.out q).1 a.1 := rfl
+  let k := Quotient.out q
+  exact ((congrArg (fun z => (D.frobeniusQuotientAction A K L hLK z a).1) (Quotient.out_eq' q).symm).trans rfl).trans rfl
 
 /-- The linear action of `G(\widetilde L/K)` on
 `A_{\widetilde L}`.  This packages the concrete quotient action from
@@ -79,13 +69,11 @@ noncomputable def frobeniusQuotientActionLinearMap (D : DegreeData G)
     refine Quotient.inductionOn' q ?_
     intro k
     apply Subtype.ext
-    change A.ρ k.1 (a.1 + b.1) = A.ρ k.1 a.1 + A.ρ k.1 b.1
     exact map_add (A.ρ k.1) _ _
   map_smul' n a := by
     refine Quotient.inductionOn' q ?_
     intro k
     apply Subtype.ext
-    change A.ρ k.1 (n • a.1) = n • A.ρ k.1 a.1
     exact map_zsmul (A.ρ k.1) n a.1
 
 /-- The actual `G(\widetilde L/K)`-representation on
@@ -110,12 +98,14 @@ noncomputable def frobeniusQuotientRepresentation (D : DegreeData G)
         rw [map_mul]
         rfl }
 
+section
+
+variable (D : DegreeData G) (A : Rep ℤ G) (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
+    [hLnormal : (extensionSubgroup K L hLK).Normal]
+
 /-- The Frobenius quotient representation evaluates by the chosen quotient action. -/
 @[simp]
-theorem frobeniusQuotientRepresentation_apply (D : DegreeData G)
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal]
+theorem frobeniusQuotientRepresentation_apply
     (q : K.toSubgroup ⧸ D.extensionInertiaWithin K L hLK)
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) :
     (D.frobeniusQuotientRepresentation A K L hLK).ρ q a =
@@ -123,10 +113,7 @@ theorem frobeniusQuotientRepresentation_apply (D : DegreeData G)
   rfl
 
 /-- The Birkhoff sum of the quotient action is the corresponding sum of Frobenius powers. -/
-theorem birkhoffSum_eq_frobeniusPowerSum (D : DegreeData G)
-    (A : Rep ℤ G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal]
+theorem birkhoffSum_eq_frobeniusPowerSum
     (φ : K.toSubgroup ⧸ D.extensionInertiaWithin K L hLK) (n : ℕ)
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) :
     birkhoffSum
@@ -142,9 +129,7 @@ theorem birkhoffSum_eq_frobeniusPowerSum (D : DegreeData G)
 
 /-- A Frobenius power sum splits into its first `n` terms and a translated
 block of `m` terms. -/
-theorem frobeniusPowerSum_add (D : DegreeData G) (A : Rep ℤ G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal]
+theorem frobeniusPowerSum_add
     (φ : K.toSubgroup ⧸ D.extensionInertiaWithin K L hLK)
     (n m : ℕ)
     (x : ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) :
@@ -158,22 +143,16 @@ theorem frobeniusPowerSum_add (D : DegreeData G) (A : Rep ℤ G)
       birkhoffSum (B.ρ φ) id r a =
         D.frobeniusPowerSum A K L hLK φ r a :=
     D.birkhoffSum_eq_frobeniusPowerSum A K L hLK φ r a
-  have hiterate : ((B.ρ φ)^[n]) x =
-      D.frobeniusQuotientAction A K L hLK (φ ^ n) x :=
-    (rep_action_pow_eq_iterate B φ n x).symm
   exact ((hsum (n + m) x).symm.trans
     (birkhoffSum_add_right_apply (B.ρ φ) id n m x)).trans
       (congrArg₂
         (fun a b : ambientFixedAddSubgroup A (D.maximalUnramifiedField L) => a + b)
         (hsum n x)
         ((hsum m (((B.ρ φ)^[n]) x)).trans
-          (congrArg (D.frobeniusPowerSum A K L hLK φ m) hiterate)))
+          (congrArg (D.frobeniusPowerSum A K L hLK φ m) ((rep_action_pow_eq_iterate B φ n x).symm))))
 
 /-- Actual additive telescoping identity for the Frobenius power sum. -/
-theorem frobeniusPowerSum_action_sub (D : DegreeData G)
-    (A : Rep ℤ G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal]
+theorem frobeniusPowerSum_action_sub
     (φ : K.toSubgroup ⧸ D.extensionInertiaWithin K L hLK) (n : ℕ)
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) :
     D.frobeniusQuotientAction A K L hLK φ
@@ -186,7 +165,7 @@ theorem frobeniusPowerSum_action_sub (D : DegreeData G)
       B.ρ φ (birkhoffSum (B.ρ φ) id n a) =
         birkhoffSum (B.ρ φ) id n (B.ρ φ a) := by
     calc
-      B.ρ φ (birkhoffSum (B.ρ φ) id n a) =
+      _ =
           birkhoffSum (B.ρ φ) (B.ρ φ ∘ id) n a :=
         map_birkhoffSum (B.ρ φ) (B.ρ φ) id n a
       _ = birkhoffSum (B.ρ φ) id n (B.ρ φ a) := by
@@ -207,16 +186,13 @@ theorem frobeniusPowerSum_action_sub (D : DegreeData G)
   exact h
 
 /-- The difference of Frobenius power sums is represented by universal norm descent. -/
-theorem frobeniusPowerSum_sub_universalNormDescent (D : DegreeData G) (A : Rep ℤ G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal]
+theorem frobeniusPowerSum_sub_universalNormDescent
     (φ : K.toSubgroup ⧸ D.extensionInertiaWithin K L hLK)
     (n : ℕ)
     (x y : ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) :
     D.frobeniusPowerSum A K L hLK φ n (x - y) =
       D.frobeniusPowerSum A K L hLK φ n x -
         D.frobeniusPowerSum A K L hLK φ n y := by
-  unfold DegreeData.frobeniusPowerSum
   change
     (∑ i : Fin n,
       D.frobeniusQuotientActionLinearMap A K L hLK (φ ^ i.1) (x - y)) =
@@ -224,13 +200,11 @@ theorem frobeniusPowerSum_sub_universalNormDescent (D : DegreeData G) (A : Rep �
         D.frobeniusQuotientActionLinearMap A K L hLK (φ ^ i.1) x) -
       ∑ i : Fin n,
         D.frobeniusQuotientActionLinearMap A K L hLK (φ ^ i.1) y
-  simp only [map_sub, Finset.sum_sub_distrib]
+  simp
 
 /-- An orbit sum of an element fixed by its first translate is scalar
 multiplication by the orbit length. -/
-theorem frobeniusPowerSum_eq_nsmul_of_fixed (D : DegreeData G) (A : Rep ℤ G)
-    (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal]
+theorem frobeniusPowerSum_eq_nsmul_of_fixed
     (q : K.toSubgroup ⧸ D.extensionInertiaWithin K L hLK)
     (n : ℕ)
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField L))
@@ -239,10 +213,8 @@ theorem frobeniusPowerSum_eq_nsmul_of_fixed (D : DegreeData G) (A : Rep ℤ G)
   let B := D.frobeniusQuotientRepresentation A K L hLK
   have hpow (i : ℕ) :
       D.frobeniusQuotientAction A K L hLK (q ^ i) a = a := by
-    have haB : B.ρ q a = a := by
-      change D.frobeniusQuotientAction A K L hLK q a = a
-      exact ha
-    have hi := rep_action_pow_fixed B q a haB i
+    have hi := rep_action_pow_fixed B q a (by
+      exact ha) i
     change D.frobeniusQuotientAction A K L hLK (q ^ i) a = a at hi
     exact hi
   unfold DegreeData.frobeniusPowerSum
@@ -251,10 +223,7 @@ theorem frobeniusPowerSum_eq_nsmul_of_fixed (D : DegreeData G) (A : Rep ℤ G)
 
 /-- Equivariance of `N_{\widetilde L/\widetilde K}` expressed inside
 `A_{\widetilde L}`. -/
-theorem maximalUnramifiedNorm_frobeniusQuotientAction (D : DegreeData G)
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal]
+theorem maximalUnramifiedNorm_frobeniusQuotientAction
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (q : K.toSubgroup ⧸ D.extensionInertiaWithin K L hLK)
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField L)) :
@@ -275,21 +244,21 @@ theorem maximalUnramifiedNorm_frobeniusQuotientAction (D : DegreeData G)
           (relativeNorm A (D.maximalUnramifiedField K)
             (D.maximalUnramifiedField L) (D.maximalUnramifiedField_mono hLK)
             a)) := by
-  let : Finite
-      ((D.maximalUnramifiedField K).toSubgroup ⧸
-        extensionSubgroup (D.maximalUnramifiedField K)
-          (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK)) :=
+  let :=
     D.maximalUnramifiedExtension_finite K L hLK
   apply Subtype.ext
-  exact D.relativeNorm_frobeniusQuotientAction A K L hLK q a
+  apply D.relativeNorm_frobeniusQuotientAction
+
+end
+
+section
+
+variable (D : DegreeData G) (A : Rep ℤ G) (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+    (hLK : L.toSubgroup ≤ K.field.toSubgroup) [hLnormal : (extensionSubgroup K.field L hLK).Normal]
 
 /-- A degree-zero element acts trivially on an element already defined
 over `\widetilde K`. -/
-theorem frobeniusQuotientAction_fixed_of_degreeZero (D : DegreeData G)
-    (A : Rep ℤ G) (K : FiniteResidueAbstractField D)
-    (L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+theorem frobeniusQuotientAction_fixed_of_degreeZero
     (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
     (hq : D.extensionNormalizedDegree K L hLK q = 1)
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField K.field)) :
@@ -298,10 +267,8 @@ theorem frobeniusQuotientAction_fixed_of_degreeZero (D : DegreeData G)
           (D.maximalUnramifiedField L) (D.maximalUnramifiedField_mono hLK) a) =
       fixedFieldInclusion A (D.maximalUnramifiedField K.field)
         (D.maximalUnramifiedField L) (D.maximalUnramifiedField_mono hLK) a := by
-  let k : K.field.toSubgroup := Quotient.out q
-  have hkq :
-      (QuotientGroup.mk k :
-        K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) = q :=
+  let k := Quotient.out q
+  have hkq :=
     Quotient.out_eq' q
   have hkDegree : D.normalizedDegree K k = 1 := by
     calc
@@ -322,10 +289,7 @@ theorem frobeniusQuotientAction_fixed_of_degreeZero (D : DegreeData G)
 /-- Applying `N_{\widetilde L/\widetilde K}` to equation `(*)` kills
 all degree-zero differences.  Hence the norm of `u` is fixed by the
 chosen degree-one Frobenius element. -/
-theorem maximalUnramifiedNorm_fixed_of_hstar (D : DegreeData G)
-    (A : Rep ℤ G) (K : FiniteResidueAbstractField D)
-    (L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+theorem maximalUnramifiedNorm_fixed_of_hstar
     [hLfinite : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     {ι : Type v} (s : Finset ι)
@@ -349,11 +313,7 @@ theorem maximalUnramifiedNorm_fixed_of_hstar (D : DegreeData G)
       (D.maximalUnramifiedField L) (D.maximalUnramifiedField_mono hLK) (N u)
     D.frobeniusQuotientAction A K.field L hLK φ b = b := by
   dsimp only
-  let : Finite
-      ((D.maximalUnramifiedField K.field).toSubgroup ⧸
-        extensionSubgroup (D.maximalUnramifiedField K.field)
-          (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK)) :=
+  let :=
     D.maximalUnramifiedExtension_finite K.field L hLK
   let N := relativeNorm A (D.maximalUnramifiedField K.field)
     (D.maximalUnramifiedField L) (D.maximalUnramifiedField_mono hLK)
@@ -375,7 +335,7 @@ theorem maximalUnramifiedNorm_fixed_of_hstar (D : DegreeData G)
       J (N (D.frobeniusQuotientAction A K.field L hLK (τ i).1 (uᵢ i))) =
         J (N (uᵢ i)) := by
     calc
-      J (N (D.frobeniusQuotientAction A K.field L hLK (τ i).1 (uᵢ i))) =
+      _ =
           D.frobeniusQuotientAction A K.field L hLK (τ i).1 (J (N (uᵢ i))) := by
         simpa [J, N] using
           D.maximalUnramifiedNorm_frobeniusQuotientAction
@@ -386,8 +346,10 @@ theorem maximalUnramifiedNorm_fixed_of_hstar (D : DegreeData G)
   simp_rw [hzero] at hnorm
   have hnormzero :
       D.frobeniusQuotientAction A K.field L hLK φ (J (N u)) - J (N u) = 0 := by
-    simpa only [sub_self, Finset.sum_const_zero] using hnorm
+    simpa using hnorm
   simpa [J, N] using sub_eq_zero.mp hnormzero
+
+end
 
 /-- A `\widetilde K`-fixed element with finite Galois support descends to
 `K` as soon as it is fixed by a degree-one Frobenius lift.  The proof is
@@ -424,17 +386,18 @@ theorem descend_maximalUnramified_fixed_of_finiteSupport (D : DegreeData G)
       (QuotientGroup.mk f :
         K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) = φ.1 :=
     Quotient.out_eq' φ.1
+  let ofAdd₀ := Multiplicative.ofAdd (1 : ZHat)
   have hfDegree : D.normalizedDegree K f =
-      Multiplicative.ofAdd (1 : ZHat) := by
+      ofAdd₀ := by
     calc
       D.normalizedDegree K f =
           D.extensionNormalizedDegree K L hLK (QuotientGroup.mk f) := rfl
       _ = D.extensionNormalizedDegree K L hLK φ.1 :=
         congrArg (D.extensionNormalizedDegree K L hLK) hfφ
-      _ = (Multiplicative.ofAdd (1 : ZHat)) ^
+      _ = (ofAdd₀) ^
             D.frobeniusExponent K L hLK φ :=
         D.extensionNormalizedDegree_frobenius_eq_pow K L hLK φ
-      _ = Multiplicative.ofAdd (1 : ZHat) := by simp [hφ]
+      _ = ofAdd₀ := by simp [hφ]
   have hfFixed : A.ρ f.1 aI.1 = aI.1 := by
     rw [← hfφ] at hfixed
     exact congrArg Subtype.val hfixed
@@ -456,7 +419,7 @@ theorem descend_maximalUnramified_fixed_of_finiteSupport (D : DegreeData G)
           K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field P.field P.below) = q.1 :=
       Quotient.out_eq' q.1
     have htDegree : D.normalizedDegree K t =
-        (Multiplicative.ofAdd (1 : ZHat)) ^ n := by
+        (ofAdd₀) ^ n := by
       calc
         D.normalizedDegree K t =
             D.extensionNormalizedDegree K P.field P.below

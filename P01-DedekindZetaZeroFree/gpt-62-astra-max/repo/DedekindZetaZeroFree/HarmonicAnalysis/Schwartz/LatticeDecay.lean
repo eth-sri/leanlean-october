@@ -19,8 +19,11 @@ def schwartzLatticeTranslate (L : Submodule ℤ E) (f : SchwartzMap E ℂ)
   ⟨fun x => f (x + (ℓ : E)),
     f.continuous.comp (continuous_id.add continuous_const)⟩
 
-theorem schwartzLatticeDecay (L : Submodule ℤ E)
-    [DiscreteTopology L] [IsZLattice ℝ L] (f : SchwartzMap E ℂ)
+section
+
+variable (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] (f : SchwartzMap E ℂ)
+
+theorem schwartzLatticeDecay
     (C : TopologicalSpace.Compacts E) :
     Summable (fun ℓ : L => ‖(schwartzLatticeTranslate L f ℓ).restrict C‖) := by
   classical
@@ -33,7 +36,7 @@ theorem schwartzLatticeDecay (L : Submodule ℤ E)
   have hx (x : C) : ‖(x : E)‖ ≤ R :=
     ContinuousMap.norm_coe_le_norm ((ContinuousMap.id E).restrict C) x
   have hfinite : {ℓ : L | ‖(ℓ : E)‖ ≤ 2 * R + 1}.Finite := by
-    have hclosed : IsClosed (L : Set E) := L.toAddSubgroup.isClosed_of_discreteTopology
+    have hclosed := L.toAddSubgroup.isClosed_of_discreteTopology
     have hf := (Metric.finite_isBounded_inter_isClosed DiscreteTopology.isDiscrete
       (Metric.isBounded_closedBall (x := (0 : E)) (r := 2 * R + 1)) hclosed).preimage_embedding
         (Function.Embedding.subtype (fun x : E => x ∈ L))
@@ -75,8 +78,7 @@ theorem schwartzLatticeDecay (L : Submodule ℤ E)
   change ‖‖(schwartzLatticeTranslate L f ℓ).restrict C‖‖ ≤ D * 2 ^ k * ‖ℓ‖⁻¹ ^ k
   simpa only [Real.norm_of_nonneg (norm_nonneg _), Submodule.norm_coe] using hbound
 
-theorem schwartzLatticeDecay_pointwise (L : Submodule ℤ E)
-    [DiscreteTopology L] [IsZLattice ℝ L] (f : SchwartzMap E ℂ) (z : E) :
+theorem schwartzLatticeDecay_pointwise (z : E) :
     Summable (fun ℓ : L => ‖f (z + (ℓ : E))‖) := by
   let C : TopologicalSpace.Compacts E := ⟨{z}, isCompact_singleton⟩
   apply (schwartzLatticeDecay L f C).of_norm_bounded
@@ -85,24 +87,25 @@ theorem schwartzLatticeDecay_pointwise (L : Submodule ℤ E)
   exact ContinuousMap.norm_coe_le_norm ((schwartzLatticeTranslate L f ℓ).restrict C)
     ⟨z, Set.mem_singleton z⟩
 
+end
+
 variable {ι : Type*} [Fintype ι]
 
-def coordinateSchwartzTranslate (L : Submodule ℤ E)
-    [DiscreteTopology L] [IsZLattice ℝ L] (b : Basis ι ℤ L)
-    (f : SchwartzMap E ℂ) (n : ι → ℤ) : C(ι → ℝ, ℂ) := by
+variable (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] (b : Basis ι ℤ L)
+    (f : SchwartzMap E ℂ)
+
+def coordinateSchwartzTranslate (n : ι → ℤ) : C(ι → ℝ, ℂ) := by
   let B := LinearEquiv.toContinuousLinearEquiv
     (b.ofZLatticeBasis ℝ L).equivFun.symm
   exact ⟨fun x => f (B (x + fun i => (n i : ℝ))),
     f.continuous.comp (B.continuous.comp (continuous_id.add continuous_const))⟩
 
-theorem schwartzLatticeDecay_coordinates (L : Submodule ℤ E)
-    [DiscreteTopology L] [IsZLattice ℝ L] (b : Basis ι ℤ L)
-    (f : SchwartzMap E ℂ) (C : TopologicalSpace.Compacts (ι → ℝ)) :
+theorem schwartzLatticeDecay_coordinates (C : TopologicalSpace.Compacts (ι → ℝ)) :
     Summable (fun n : ι → ℤ => ‖(coordinateSchwartzTranslate L b f n).restrict C‖) := by
   classical
   let B := LinearEquiv.toContinuousLinearEquiv
     (b.ofZLatticeBasis ℝ L).equivFun.symm
-  let K : TopologicalSpace.Compacts E := C.map B B.continuous
+  let K := C.map B B.continuous
   have hcast (n : ι → ℤ) : B (fun i => (n i : ℝ)) = (b.equivFun.symm n : E) := by
     apply (b.ofZLatticeBasis ℝ L).equivFun.injective
     ext i
@@ -120,13 +123,10 @@ theorem schwartzLatticeDecay_coordinates (L : Submodule ℤ E)
   rw [Real.norm_of_nonneg (norm_nonneg _)]
   apply (ContinuousMap.norm_le _ (norm_nonneg _)).2
   intro x
-  have hx : B (x : ι → ℝ) ∈ (K : Set E) :=
-    ⟨(x : ι → ℝ), x.property, rfl⟩
-  have ht := ContinuousMap.norm_coe_le_norm
-    ((schwartzLatticeTranslate L f (b.equivFun.symm n)).restrict K) ⟨B x, hx⟩
-  change ‖f (B ((x : ι → ℝ) + fun i => (n i : ℝ)))‖ ≤ _
+  change ‖f (B (x + fun i => (n i : ℝ)))‖ ≤ _
   rw [map_add, hcast]
-  exact ht
+  exact ContinuousMap.norm_coe_le_norm
+    ((schwartzLatticeTranslate L f (b.equivFun.symm n)).restrict K) ⟨B x, (⟨x, x.property, rfl⟩)⟩
 
 end DedekindZetaZeroFree
 

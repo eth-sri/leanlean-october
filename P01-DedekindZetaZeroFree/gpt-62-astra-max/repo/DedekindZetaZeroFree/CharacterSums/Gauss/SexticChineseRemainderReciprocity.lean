@@ -17,23 +17,33 @@ variable {F : Type} [Field F] [NumberField F]
 
 def sexticExponent (j : ℤ) : ℕ := (j % 6).toNat
 
-def sexticResiduePowerChar (A : SArithmeticData F) (σ : F →+* ℂ)
+section
+
+variable (A : SArithmeticData F)
+
+def sexticResiduePowerChar (σ : F →+* ℂ)
     (I : A.Exterior) (j : ℤ) : MulChar (A.R ⧸ A.extendIdeal I) ℂ :=
   MulChar.ofUnitHom ((Units.map σ.toMonoidHom).comp (A.sexticResidueFamily I)) ^
     sexticExponent j
 
-theorem exteriorResidue_card (A : SArithmeticData F) (I : A.Exterior) :
+theorem exteriorResidue_card (I : A.Exterior) :
     Nat.card (A.R ⧸ A.extendIdeal I) = Ideal.absNorm I.val := by
   rw [← Nat.card_congr (ArithGaussCRT.exteriorQuotientEquiv A I).toEquiv]
-  exact (Submodule.cardQuot_apply I.val).symm
+  apply Submodule.cardQuot_apply
 
-theorem exteriorResidue_finite (A : SArithmeticData F) (I : A.Exterior) :
+theorem exteriorResidue_finite (I : A.Exterior) :
     Finite (A.R ⧸ A.extendIdeal I) := by
   apply Nat.finite_of_card_ne_zero
   rw [A.exteriorResidue_card I]
   exact fun h => I.property.1 (Ideal.absNorm_eq_zero_iff.mp h)
 
-def idealGauss (A : SArithmeticData F) (σ : F →+* ℂ)
+end
+
+section
+
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
+
+def idealGauss
     (hS : A.ContainsTraceBadPlaces) (I : A.Exterior) (a : A.R)
     (ha : A.Generates I a) (j : ℤ) : ℂ :=
   letI : Finite (A.R ⧸ A.extendIdeal I) := A.exteriorResidue_finite I
@@ -43,17 +53,15 @@ def idealGauss (A : SArithmeticData F) (σ : F →+* ℂ)
       A.sexticResiduePowerChar σ I j x *
         (A.residueTraceCharacter hS I a ha x : ℂ)
 
-theorem sexticResiduePowerChar_nonunit (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem sexticResiduePowerChar_nonunit
     (I : A.Exterior) (j : ℤ) (x : A.R ⧸ A.extendIdeal I) (hx : ¬ IsUnit x) :
-    A.sexticResiduePowerChar σ I j x = 0 := by
-  exact MulChar.map_nonunit _ hx
+    A.sexticResiduePowerChar σ I j x = 0 := MulChar.map_nonunit _ hx
 
-theorem idealGauss_top (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem idealGauss_top
     (hS : A.ContainsTraceBadPlaces) (I : A.Exterior) (hI : I.val = ⊤)
     (a : A.R) (ha : A.Generates I a) (j : ℤ) :
     A.idealGauss σ hS I a ha j = 1 := by
-  have htop : A.extendIdeal I = ⊤ := by rw [extendIdeal, hI, Ideal.map_top]
-  letI : Subsingleton (A.R ⧸ A.extendIdeal I) := Ideal.Quotient.subsingleton_iff.mpr htop
+  letI : Subsingleton (A.R ⧸ A.extendIdeal I) := Ideal.Quotient.subsingleton_iff.mpr (by rw [extendIdeal, hI, Ideal.map_top])
   letI : Finite (A.R ⧸ A.extendIdeal I) := A.exteriorResidue_finite I
   letI : Fintype (A.R ⧸ A.extendIdeal I) := Fintype.ofFinite _
   unfold idealGauss
@@ -63,7 +71,7 @@ theorem idealGauss_top (A : SArithmeticData F) (σ : F →+* ℂ)
   rw [Subsingleton.elim (1 : A.R ⧸ A.extendIdeal I) 0]
   simp
 
-theorem idealGauss_sixth_unit_translate (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem idealGauss_sixth_unit_translate
     (hS : A.ContainsTraceBadPlaces) (I : A.Exterior) (a : A.R)
     (ha : A.Generates I a) (u : A.U)
     (ha' : A.Generates I (a * (A.unitEquiv u : A.R) ^ 6)) (j : ℤ) :
@@ -71,7 +79,7 @@ theorem idealGauss_sixth_unit_translate (A : SArithmeticData F) (σ : F →+* �
       A.idealGauss σ hS I a ha j := by
   letI : Finite (A.R ⧸ A.extendIdeal I) := A.exteriorResidue_finite I
   letI : Fintype (A.R ⧸ A.extendIdeal I) := Fintype.ofFinite _
-  let v : (A.R ⧸ A.extendIdeal I)ˣ :=
+  let v :=
     Units.map (Ideal.Quotient.mk (A.extendIdeal I)).toMonoidHom (A.unitEquiv u)
   have hv : A.sexticResiduePowerChar σ I j ((v ^ 6 : (A.R ⧸ A.extendIdeal I)ˣ) :
       A.R ⧸ A.extendIdeal I) = 1 := by
@@ -79,9 +87,7 @@ theorem idealGauss_sixth_unit_translate (A : SArithmeticData F) (σ : F →+* �
     rw [MulChar.pow_apply_coe, MulChar.ofUnitHom_coe]
     have h6 := congrArg (Units.map σ.toMonoidHom) (A.sexticResidueFamily_normalized.1 I v)
     simp only [map_pow, map_one] at h6
-    have hval := congrArg Units.val h6
-    simpa only [map_pow, MonoidHom.comp_apply, Units.val_pow_eq_pow_val, Units.val_one,
-      one_pow] using congrArg (fun z : ℂˣ => (z : ℂ) ^ sexticExponent j) h6
+    simpa using congrArg (fun z : ℂˣ => (z : ℂ) ^ sexticExponent j) h6
   have hphase : ∀ x : A.R ⧸ A.extendIdeal I,
       A.residueTraceCharacter hS I (a * (A.unitEquiv u : A.R) ^ 6) ha'
         (x * ↑(v ^ 6)) = A.residueTraceCharacter hS I a ha x := by
@@ -91,8 +97,6 @@ theorem idealGauss_sixth_unit_translate (A : SArithmeticData F) (σ : F →+* �
       (Ideal.Quotient.mk (A.extendIdeal I) (r * (A.unitEquiv u : A.R) ^ 6)) = _
     rw [A.residueTraceCharacter_apply, A.residueTraceCharacter_apply]
     congr 1
-    have huF : ((A.unitEquiv u : A.R) : F) ≠ 0 := by
-      exact_mod_cast (A.unitEquiv u).ne_zero
     push_cast
     field_simp
   unfold idealGauss
@@ -105,16 +109,15 @@ theorem idealGauss_sixth_unit_translate (A : SArithmeticData F) (σ : F →+* �
   congr 1
   exact congrArg (fun z : Circle => (z : ℂ)) (hphase x).symm
 
-theorem idealGauss_generator_independent (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem idealGauss_generator_independent
     (hS : A.ContainsTraceBadPlaces) (I : A.Exterior) (a a' : A.R)
     (ha : A.Generates I a) (ha' : A.Generates I a')
     (hchange : ∃ u : A.U, a' = a * (A.unitEquiv u : A.R) ^ 6) (j : ℤ) :
     A.idealGauss σ hS I a' ha' j = A.idealGauss σ hS I a ha j := by
   obtain ⟨u, rfl⟩ := hchange
-  exact A.idealGauss_sixth_unit_translate σ hS I a ha u ha' j
+  apply A.idealGauss_sixth_unit_translate
 
-theorem idealGauss_allowed_generator_independent (A : SArithmeticData F)
-    (σ : F →+* ℂ) (hS : A.ContainsTraceBadPlaces)
+theorem idealGauss_allowed_generator_independent (hS : A.ContainsTraceBadPlaces)
     (hCl : Subsingleton (ClassGroup A.R)) (H : A.V → A.V → Fˣ)
     (B : Subgroup A.V) (hB : A.IsSUnitIsotropicComplement H B)
     (I : A.Exterior) (a a' : A.R)
@@ -130,14 +133,12 @@ theorem idealGauss_allowed_generator_independent (A : SArithmeticData F)
     refine ⟨?_, hallowed'⟩
     rw [← ha'.2, FractionalIdeal.coeIdeal_span_singleton, hua']
     rfl
-  have h := A.allowed_generator_unique_mod_sixth hCl H B hB _ ua' ua hu' hu
-  obtain ⟨ε, hε, heq⟩ := h
+  obtain ⟨ε, hε, heq⟩ := (A.allowed_generator_unique_mod_sixth hCl H B hB _ ua' ua hu' hu)
   let u : A.U := ⟨ε, hε⟩
-  have hratio : ua' / ua = u.val ^ 6 := heq.symm
   apply A.idealGauss_generator_independent σ hS I a a' ha ha' _ j
   refine ⟨u, ?_⟩
   apply Subtype.ext
-  have hval := congrArg Units.val hratio
+  have hval := congrArg Units.val heq.symm
   have hunit : ((A.unitEquiv u : A.R) : F) = (u.val : F) := by
     simp [unitEquiv, Set.unitEquivUnitsInteger]
   change (a' : F) = (a : F) * ((A.unitEquiv u : A.R) : F) ^ 6
@@ -145,7 +146,7 @@ theorem idealGauss_allowed_generator_independent (A : SArithmeticData F)
   simp only [Units.val_div_eq_div_val, Units.val_pow_eq_pow_val, hua, hua'] at hval
   exact (div_eq_iff (by simpa [hua] using ua.ne_zero)).mp hval |>.trans (mul_comm _ _)
 
-private theorem gaussCRT_char_base (A : SArithmeticData F) (σ : F →+* ℂ)
+private theorem gaussCRT_char_base
     (I : A.Exterior) (x : A.R) :
     MulChar.ofUnitHom ((Units.map σ.toMonoidHom).comp (A.sexticResidueFamily I))
       (Ideal.Quotient.mk (A.extendIdeal I) x) = σ (A.sexticResidue I x) := by
@@ -155,8 +156,16 @@ private theorem gaussCRT_char_base (A : SArithmeticData F) (σ : F →+* ℂ)
     rfl
   · rw [MulChar.map_nonunit _ hx]
     change 0 = σ (MulChar.ofUnitHom (A.sexticResidueFamily I) _)
-    rw [MulChar.map_nonunit _ hx, map_zero]
-private theorem gaussCRT_char_mul_modulus (A : SArithmeticData F) (σ : F →+* ℂ)
+    simp [MulChar.map_nonunit _ hx]
+
+end
+
+alias SexticChineseRemainderReciprocity.gaussCRT_char_base := gaussCRT_char_base
+section
+
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
+
+private theorem gaussCRT_char_mul_modulus
     (I J K : A.Exterior) (hK : K.val = I.val * J.val) (x : A.R)
     (hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal K) x) ↔
       IsUnit (Ideal.Quotient.mk (A.extendIdeal I) x) ∧
@@ -177,13 +186,17 @@ private theorem gaussCRT_char_mul_modulus (A : SArithmeticData F) (σ : F →+* 
   · simp only [sexticResiduePowerChar, MulChar.pow_apply' _ hn, gaussCRT_char_base]
     rw [show A.sexticResidue K x = A.sexticResidue I x * A.sexticResidue J x from
       A.sexticResidueFamily_normalized.2.2 I J K hK x, map_mul, mul_pow]
-private theorem gaussCRT_char_unit (A : SArithmeticData F) (σ : F →+* ℂ)
+private theorem gaussCRT_char_unit
     (I : A.Exterior) (x : A.R) (hx : IsUnit (Ideal.Quotient.mk (A.extendIdeal I) x))
     (j : ℤ) : A.sexticResiduePowerChar σ I j (Ideal.Quotient.mk (A.extendIdeal I) x) =
     σ (A.sexticResidue I x) ^ sexticExponent j := by
   unfold sexticResiduePowerChar
   rw [← hx.unit_spec, MulChar.pow_apply_coe]
   rw [hx.unit_spec, gaussCRT_char_base]
+
+end
+
+alias SexticChineseRemainderReciprocity.gaussCRT_char_unit := gaussCRT_char_unit
 
 set_option maxHeartbeats 800000 in
 

@@ -8,7 +8,7 @@ noncomputable section
 open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.KPGlobalResidualKernelSplit.RawStageL2.OutgoingSplit.ZeroProfileSteps.FiniteNormPartition
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
+    {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
 
 theorem logIncrement_compact_right_orbit_locallyConstant
     (u : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
@@ -28,14 +28,10 @@ theorem logIncrement_compact_right_orbit_locallyConstant
       intro v _
       have h := (logIncrement_finite_global_locallyConstant (D := D) u).eventually_eq
         (v.val * k.val)
-      have hc₁ : Continuous (fun p : D.K × D.K => p.2.val * p.1.val) :=
-        (continuous_subtype_val.comp continuous_snd).mul
-          (continuous_subtype_val.comp continuous_fst)
-      have hc₂ : Continuous (fun p : D.K × D.K => p.2.val * k.val) :=
-        (continuous_subtype_val.comp continuous_snd).mul continuous_const
-      filter_upwards [hc₁.continuousAt h, hc₂.continuousAt h] with p hp₁ hp₂
+      filter_upwards [((continuous_subtype_val.comp continuous_snd).mul
+        (continuous_subtype_val.comp continuous_fst)).continuousAt h, ((continuous_subtype_val.comp continuous_snd).mul continuous_const).continuousAt h] with p hp₁ hp₂
       exact hp₁.trans hp₂.symm
-    simpa only [Set.mem_univ, forall_true_left] using he'
+    simpa using he'
   filter_upwards [he] with l hl
   funext g
   obtain ⟨t, x, v, hg⟩ := D.decomposition g
@@ -50,7 +46,7 @@ theorem logIncrement_compact_right_orbit_finite
       (fun g : KPMsRationalCompactCrossPairing.G F ζ hζ =>
         logIncrement (D := D) (g * k.val) u.val))).Finite := by
   letI : CompactSpace D.K := isCompact_iff_compactSpace.mp D.compact
-  exact (logIncrement_compact_right_orbit_locallyConstant (D := D) u).range_finite
+  exact (logIncrement_compact_right_orbit_locallyConstant u).range_finite
 
 end DedekindZetaZeroFree.KPGlobalResidualKernelSplit.RawStageL2.OutgoingSplit.ZeroProfileSteps.FiniteNormPartition
 

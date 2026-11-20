@@ -12,14 +12,20 @@ open DedekindZetaZeroFree DedekindZetaZeroFree.PrincipalMellinComparison
 open scoped NumberField Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-abbrev Freq (D : FixedData S η) : Type := PrincipalMellinComparison.Frequency D.recipe
+section
 
-abbrev principal (D : FixedData S η) : Freq D := principalFrequency D.recipe
+variable (D : FixedData S η)
 
-abbrev Raw (D : FixedData S η) : Type :=
+abbrev Freq : Type := PrincipalMellinComparison.Frequency D.recipe
+
+abbrev principal : Freq D := principalFrequency D.recipe
+
+abbrev Raw : Type :=
   AllRowEuler.InitialSeparation.RawFrequency D.recipe.A
+
+end
 
 abbrev delSet {D : FixedData S η} (U : Raw D) : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :=
   PrincipalMellinComparison.NonprincipalContinuation.RawHeckeRows.rawDeletionSet U
@@ -27,11 +33,17 @@ abbrev delSet {D : FixedData S η} (U : Raw D) : Set (IsDedekindDomain.HeightOne
 theorem context_correction (D : FixedData S η) :
     D.recipe.probe.correction = D.context.correction := rfl
 
-def Row.toFreq {D : FixedData S η} (r : D.Row) : Freq D :=
+section
+
+variable {D : FixedData S η} (r : D.Row)
+
+def Row.toFreq : Freq D :=
   ⟨⟨r.u, r.isRep.choose⟩, r.isRep.choose_spec⟩
 
-@[simp] theorem Row.toFreq_val {D : FixedData S η} (r : D.Row) : (Row.toFreq r).val.val = r.u :=
+@[simp] theorem Row.toFreq_val : (Row.toFreq r).val.val = r.u :=
   rfl
+
+end
 
 structure Bridge (D : FixedData S η) (U : Freq D → Raw D)
     (P M : Freq D → Detector.PrimitiveFrequencyCharacter F) (plus minus : Freq D → ℂ → ℂ) :
@@ -72,8 +84,10 @@ theorem plus_conductor_bound (h : Bridge D U P M plus minus) :
   NonprincipalContinuation.RightBound.ConductorEstimate.raw_plus_inducer_conductor_bound
     D.recipe U h.raw_u P h.plus_coeff
 
-theorem plus_eq_hecke_mul_mask (h : Bridge D U P M plus minus) (u : Freq D)
-    (hu : u ≠ principal D) (w : ℂ) (hw : 0 < w.re) :
+variable (h : Bridge D U P M plus minus) (u : Freq D) (hu : u ≠ principal D) (w : ℂ) (hw : 0 < w.re)
+
+include hw in
+theorem plus_eq_hecke_mul_mask :
     plus u w = (RowHeckeBridge.hecke D.recipe.A (P u) (h.plus_nonprincipal u hu)).L w *
       Detector.finiteEulerDeletionMask F (delSet (U u))
         (fun v => (P u).character v.asIdeal) w :=
@@ -83,8 +97,8 @@ theorem plus_eq_hecke_mul_mask (h : Bridge D U P M plus minus) (u : Freq D)
     (AllRowEuler.InitialSeparation.plusExteriorCoefficient D.recipe.σ (U u)) (h.plus_coeff u)
     (plus u) (h.plus_diff u hu) (h.plus_series u) w hw
 
-theorem minus_eq_hecke_mul_mask (h : Bridge D U P M plus minus) (u : Freq D)
-    (hu : u ≠ principal D) (w : ℂ) (hw : 0 < w.re) :
+include hw in
+theorem minus_eq_hecke_mul_mask :
     minus u w = (RowHeckeBridge.hecke D.recipe.A (M u) (h.minus_nonprincipal u hu)).L w *
       Detector.finiteEulerDeletionMask F (delSet (U u))
         (fun v => (M u).character v.asIdeal) w :=

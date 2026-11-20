@@ -18,6 +18,8 @@ private theorem mixed_smooth {n : ℕ} (l : List (Fin n)) {f : Space n → ℂ}
   | cons i l ih =>
     exact (ih.fderiv_right (by simp)).clm_apply contDiff_const
 
+alias CompactMixedDerivativeBound.mixed_smooth := mixed_smooth
+
 private theorem mixed_support {n : ℕ} (l : List (Fin n)) (f : Space n → ℂ) :
     tsupport (coordinateDerivativeList l f) ⊆ tsupport f := by
   induction l with
@@ -25,12 +27,11 @@ private theorem mixed_support {n : ℕ} (l : List (Fin n)) (f : Space n → ℂ)
   | cons i l ih =>
     exact (tsupport_fderiv_apply_subset ℝ (EuclideanSpace.single i 1)).trans ih
 
+alias CompactMixedDerivativeBound.mixed_support := mixed_support
+
 private theorem mixed_append {n : ℕ} (l k : List (Fin n)) (f : Space n → ℂ) :
     coordinateDerivativeList (l ++ k) f =
-      coordinateDerivativeList l (coordinateDerivativeList k f) := by
-  induction l with
-  | nil => rfl
-  | cons i l ih => simp only [List.cons_append, coordinateDerivativeList, ih]
+      coordinateDerivativeList l (coordinateDerivativeList k f) := by apply @DedekindZetaZeroFree.KPContLocalNorm.CompactOpenHolomorphyAndMeromorphy.list_append <;> assumption
 
 private theorem mixed_perm {n : ℕ} {l k : List (Fin n)} (hp : l.Perm k)
     {f : Space n → ℂ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
@@ -49,10 +50,14 @@ private theorem mixed_perm {n : ℕ} {l k : List (Fin n)} (hp : l.Perm k)
         (EuclideanSpace.single j 1) (EuclideanSpace.single i 1)
   | trans hp hq ih ij => exact ih.trans ij
 
+alias CompactMixedDerivativeBound.mixed_perm := mixed_perm
+
 private theorem directions_count {n k : ℕ} (α : MultiIndex n k) (i : Fin n) :
     α.directions.count i = (α.val i).val := by
   rw [MultiIndex.directions, List.count_flatMap, ← List.sum_toFinset _ (List.nodup_finRange n)]
   simp [Function.comp_def, List.count_replicate]
+
+alias CompactMixedDerivativeBound.directions_count := directions_count
 
 private theorem full_mixed_index {n m : ℕ} (hn : 0 < n) (α : MultiIndex n m)
     {w : Space n → ℂ} (hw : ContDiff ℝ (⊤ : ℕ∞) w) :
@@ -61,7 +66,6 @@ private theorem full_mixed_index {n m : ℕ} (hn : 0 < n) (α : MultiIndex n m)
         coordinateDerivative β w := by
   classical
   let β : MultiIndex n (m + n) := ⟨fun i => ⟨(α.val i).val + 1, by
-    have hi := (α.val i).isLt
     omega⟩, by
       simp only [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ,
         Fintype.card_fin, smul_eq_mul, mul_one]
@@ -110,9 +114,7 @@ theorem full_mixed_integral_le_sobolev {n : ℕ} (hn : 0 < n)
   let K : Set (Space n) := {x | ∀ i, lower i ≤ x i ∧ x i ≤ upper i}
   have hK : IsCompact K := by
     let e := EuclideanSpace.equiv (Fin n) ℝ
-    have hc : IsCompact {x : Fin n → ℝ | ∀ i, x i ∈ Set.Icc (lower i) (upper i)} :=
-      isCompact_pi_infinite (fun _ => isCompact_Icc)
-    convert hc.image e.symm.continuous using 1
+    convert (isCompact_pi_infinite (fun _ => isCompact_Icc)).image e.symm.continuous using 1
     ext x
     constructor
     · intro hx
@@ -123,21 +125,19 @@ theorem full_mixed_integral_le_sobolev {n : ℕ} (hn : 0 < n)
   intro w hw hcomp hsub α
   obtain ⟨β, hβ⟩ := full_mixed_index hn α hw
   rw [hβ]
-  have hd := mixed_smooth β.directions hw
   have hs : tsupport (coordinateDerivative β w) ⊆ K := by
     intro x hx
     have hx' := hsub (mixed_support β.directions w hx)
     exact fun i => ⟨(hx' i).1.le, (hx' i).2.le⟩
   have hle : (∫ y, ‖coordinateDerivative β w y‖ ^ 2) ≤
       ∑ γ : MultiIndex n (m + n), ∫ y, ‖coordinateDerivative γ w y‖ ^ 2 := by
-    apply Finset.single_le_sum (f := fun γ : MultiIndex n (m + n) =>
-      ∫ y, ‖coordinateDerivative γ w y‖ ^ 2) _ (Finset.mem_univ β)
+    apply Finset.single_le_sum _ (Finset.mem_univ β)
     intro γ _
     exact integral_nonneg (fun _ => sq_nonneg _)
   calc
     (∫ y, ‖coordinateDerivative β w y‖) ≤
         Real.sqrt (volume.real K) * Real.sqrt (∫ y, ‖coordinateDerivative β w y‖ ^ 2) :=
-      compact_l1_l2 hK hd.continuous hs
+      compact_l1_l2 hK (mixed_smooth β.directions hw).continuous hs
     _ ≤ (Real.sqrt (volume.real K) + 1) *
         Real.sqrt (∑ γ : MultiIndex n (m + n), ∫ y, ‖coordinateDerivative γ w y‖ ^ 2) := by
       gcongr

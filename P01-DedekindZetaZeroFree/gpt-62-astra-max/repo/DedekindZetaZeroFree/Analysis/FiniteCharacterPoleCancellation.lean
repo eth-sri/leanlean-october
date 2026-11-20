@@ -14,12 +14,9 @@ private lemma hasSum_finset_sum {ι X M : Type*} [AddCommMonoid M] [TopologicalS
     HasSum (fun x => ∑ i ∈ t, f i x) (∑ i ∈ t, g i) := by
   classical
   induction t using Finset.induction with
-  | empty => simpa using hasSum_zero (α := M) (β := X)
+  | empty => exact hasSum_zero
   | insert i t hi ih =>
-      have h1 : HasSum (f i) (g i) := h i (Finset.mem_insert_self i t)
-      have h2 : HasSum (fun x => ∑ j ∈ t, f j x) (∑ j ∈ t, g j) :=
-        ih fun j hj => h j (Finset.mem_insert_of_mem hj)
-      simpa [Finset.sum_insert hi] using h1.add h2
+      simpa [Finset.sum_insert hi] using (h i (Finset.mem_insert_self i t)).add (ih fun j hj => h j (Finset.mem_insert_of_mem hj))
 
 theorem finiteCharacterEntireAssembly
     {A G : Type*} [Group G] [Fintype G]

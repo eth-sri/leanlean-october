@@ -23,29 +23,29 @@ theorem root_torus_sixth_mem_kStar
   set a : (KPTameCompact.K F p)ˣ := KPTameCompact.unitInclusion F p u ^ 6 with ha
 
   obtain ⟨s, hs⟩ : ∃ s : KPTameCompact.O F p,
-      (s : KPTameCompact.K F p) = t' - (a : KPTameCompact.K F p) * t :=
+      s = t' - a * t :=
     ⟨⟨_, ht⟩, rfl⟩
 
-  have hsplit : t' = (a : KPTameCompact.K F p) * t + (s : KPTameCompact.K F p) := by
+  have hsplit : t' = a * t + s := by
     rw [hs]; ring
   have hNt' : KPStandardLocalRootLifts.N F ζ hζ (Sum.inr p) t' =
       KPStandardLocalRootLifts.N F ζ hζ (Sum.inr p) ((a : KPTameCompact.K F p) * t) *
         KPStandardLocalRootLifts.N F ζ hζ (Sum.inr p) (s : KPTameCompact.K F p) := by
     rw [hsplit, KPStandardLocalRootLifts.N_add]
 
-  have hNnegs : KPStandardLocalRootLifts.N F ζ hζ (Sum.inr p) (-(s : KPTameCompact.K F p)) =
-      (KPStandardLocalRootLifts.N F ζ hζ (Sum.inr p) (s : KPTameCompact.K F p))⁻¹ := by
+  have hNnegs : KPStandardLocalRootLifts.N F ζ hζ (Sum.inr p) (-s) =
+      (KPStandardLocalRootLifts.N F ζ hζ (Sum.inr p) s)⁻¹ := by
     have h := KPStandardLocalRootLifts.N_add F ζ hζ (Sum.inr p)
-      (-(s : KPTameCompact.K F p)) (s : KPTameCompact.K F p)
+      (-s) s
     rw [neg_add_cancel, KPStandardLocalRootLifts.N_zero] at h
     exact eq_inv_of_mul_eq_one_left h.symm
 
   have hAN : KPStandardLocalRootLifts.A F ζ hζ (Sum.inr p) a *
       KPStandardLocalRootLifts.N F ζ hζ (Sum.inr p) t =
-      KPStandardLocalRootLifts.N F ζ hζ (Sum.inr p) ((a : KPTameCompact.K F p) * t) *
+      KPStandardLocalRootLifts.N F ζ hζ (Sum.inr p) (a * t) *
         KPStandardLocalRootLifts.A F ζ hζ (Sum.inr p) a := by
     have h := KPCorrectedBruhatLifts.upper_diagonal F ζ hζ (Sum.inr p)
-      ((a : KPTameCompact.K F p) * t) a
+      (a * t) a
     rw [mul_div_cancel_left₀ _ a.ne_zero] at h
     exact h.symm
 
@@ -59,7 +59,7 @@ theorem root_torus_sixth_mem_kStar
     rw [hAN]
     group
 
-  have hN : KPStandardLocalRootLifts.N F ζ hζ (Sum.inr p) (-(s : KPTameCompact.K F p)) =
+  have hN : KPStandardLocalRootLifts.N F ζ hζ (Sum.inr p) (-s) =
       KPGoodCompactSplitting.kStar F ζ hζ p hp (KPStandardLocalRootLifts.integralN F p (-s)) := by
     change KPStandardLocalRootLifts.N F ζ hζ (Sum.inr p)
       ((-s : KPTameCompact.O F p) : KPTameCompact.K F p) = _

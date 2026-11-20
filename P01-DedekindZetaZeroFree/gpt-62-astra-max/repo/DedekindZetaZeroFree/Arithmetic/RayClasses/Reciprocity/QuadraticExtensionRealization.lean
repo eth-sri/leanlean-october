@@ -21,28 +21,21 @@ theorem exists_quadraticRayExtensionData
     (hq : ∀ I : Ideal (𝓞 F), η I ^ 3 = η I)
     (hn : ¬η.IsPrincipal) : Nonempty (QuadraticRayExtensionData η) := by
   let m := RayBridge.fullModulus f hf
-  let ψ : ClassFieldTheory.RayClassGroup m →* ℂˣ := RayBridge.descendedCharacter f hf η
-  have hsq : ∀ x, ψ x ^ 2 = 1 := RayBridge.descendedCharacter_square f hf η hq
-  have hn' : ψ ≠ 1 := RayBridge.descendedCharacter_ne_one f hf η hn
+  let ψ := RayBridge.descendedCharacter f hf η
   obtain ⟨R⟩ := ClassFieldTheory.rayClassSubgroup_existence F m ψ.ker
   obtain ⟨χ, hinj, hsqχ, hagree, hdeg⟩ :=
-    quadraticCharacter_of_rayClassRealization m ψ hsq hn' R
+    quadraticCharacter_of_rayClassRealization m ψ (RayBridge.descendedCharacter_square f hf η hq) (RayBridge.descendedCharacter_ne_one f hf η hn) R
   exact ⟨{
     extension := R.extension
     character := χ
     degree_two := hdeg
     character_injective := hinj
     character_square := hsqχ
-    unramified := by
-      intro p hp
-      exact R.unramifiedOutsideModulus.1 p
+    unramified := fun p hp => R.unramifiedOutsideModulus.1 p
         ((RayBridge.prime_not_mem_fullModulus_support_iff f hf p).2 hp)
     frobenius := by
       intro p hp Q hQ
-      have hv : p ∉ m.finitePart.support :=
-        (RayBridge.prime_not_mem_fullModulus_support_iff f hf p).2 hp
-      have h1 := R.artin_frobenius p hv Q hQ
-      rw [← h1, hagree]
+      rw [← (R.artin_frobenius p ((RayBridge.prime_not_mem_fullModulus_support_iff f hf p).2 hp) Q hQ), hagree]
       exact RayBridge.descendedCharacter_apply_finitePrime f hf η p hp }⟩
 
 end DedekindZetaZeroFree.LargeSieve

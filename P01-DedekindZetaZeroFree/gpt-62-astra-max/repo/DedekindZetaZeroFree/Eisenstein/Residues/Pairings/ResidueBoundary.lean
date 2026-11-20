@@ -13,15 +13,15 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPContFlatCuspIncomingEvaluation KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (D : KPGlobalTorusInducingPlan.ModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (Haar : KPSmoothLocalQuotientCharts.HaarRecipe F R.A.zeta12 R.A.primitive_zeta12)
-variable (Transport : KPMsFixedHaarDisintegration.SphericalTransport F R.A.zeta12 R.A.primitive_zeta12)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (D : KPGlobalTorusInducingPlan.ModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (Haar : KPSmoothLocalQuotientCharts.HaarRecipe F R.A.zeta12 R.A.primitive_zeta12)
+    (Transport : KPMsFixedHaarDisintegration.SphericalTransport F R.A.zeta12 R.A.primitive_zeta12)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F R.A.zeta12 R.A.primitive_zeta12 Haar Transport)
-variable (U : KPMsRationalCompactCrossPairing.Level F R.A.zeta12 R.A.primitive_zeta12)
+    (U : KPMsRationalCompactCrossPairing.Level F R.A.zeta12 R.A.primitive_zeta12)
 local instance (K : Subgroup (KPLiteralRaw.G F R.A.zeta12 R.A.primitive_zeta12)) :
     MeasurableSpace K := borel K
 local instance (K : Subgroup (KPLiteralRaw.G F R.A.zeta12 R.A.primitive_zeta12)) :
@@ -82,23 +82,20 @@ theorem actual_retained_residue_boundary
           (KPWildKernelUpperBound.quotientHaar F)
           (ResidualRawAverage.average F R.A.zeta12 R.A.primitive_zeta12 K ν (coreResidue R P C x))
           (finiteRepresentative F R.A.zeta12 R.A.primitive_zeta12 D Haar Transport H U ω.1 1).val) ∂KPMsFixedHaarDisintegration.probability A (H.disintegration V).beta) := by
-  have h0 : (0:ℂ) ∈ KPContinuation.spectralDomain := by norm_num [KPContinuation.spectralDomain]
-  have hs := actual_source_pairing_boundary R P C D Haar Transport H U K hK ν ι x
-    B KPContinuation.spectralDomain f h0 χ source u uH huH hpin
   have hrp := ResidualHilbertCenters.actual_cleared_center_source_eigentest_pairing
     F R.A.zeta12 R.A.primitive_zeta12 D Haar Transport H U
     realization ι hι f hf B χ source r hr hb w hw he uH heigen
   have hd : 0 < d := by
     rw [← (KPArch.complex_places_of_primitive_twelfth_root F R.A.zeta12 R.A.primitive_zeta12).2.1]
     exact (KPArch.complex_places_of_primitive_twelfth_root F R.A.zeta12 R.A.primitive_zeta12).2.2
-  have hd' : (0:ℤ) < (d:ℤ) := by exact_mod_cast hd
-  obtain ⟨hder,hne⟩ := KPContinuation.spectralCoordinate_deriv_zero (d:ℤ) hd'
+  obtain ⟨hder,hne⟩ := KPContinuation.spectralCoordinate_deriv_zero (d:ℤ) (by exact_mod_cast hd)
   rw [hder] at hrp
   simp only [Int.cast_natCast] at hrp
   have hn : (-(4:ℂ)*(d:ℂ)/3) ≠ 0 := by
     rw [hder] at hne
     simpa only [Int.cast_natCast] using hne
-  exact mul_left_cancel₀ hn (hrp.symm.trans hs)
+  exact mul_left_cancel₀ hn (hrp.symm.trans (actual_source_pairing_boundary R P C D Haar Transport H U K hK ν ι x
+    B KPContinuation.spectralDomain f (by norm_num [KPContinuation.spectralDomain]) χ source u uH huH hpin))
 
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource
 

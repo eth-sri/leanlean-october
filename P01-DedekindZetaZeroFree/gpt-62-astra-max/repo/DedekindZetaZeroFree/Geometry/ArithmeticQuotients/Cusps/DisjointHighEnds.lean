@@ -14,37 +14,7 @@ attribute [local instance] Fintype.ofFinite
 
 namespace DedekindZetaZeroFree.KPFiniteCuspAtlasReduction
 
-private theorem meanHeight_upper_frame
-    (F : Type) [Field F] [NumberField F]
-    (A : Matrix.GeneralLinearGroup (Fin 2) F) (hA : A 1 0 = 0)
-    (z : KPArch.Space (KPCuspLogShape.dimension F)) :
-    KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
-        (KPCuspSiegel.action F (Matrix.ProjGenLinGroup.mk A) z) =
-      KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z +
-        (∑ i : Fin (KPCuspLogShape.dimension F),
-          Real.log ‖(KPCusp.complexPlace F i).embedding (A 0 0 / A 1 1)‖) /
-          KPCuspLogShape.dimension F := by
-  have h00 : A 0 0 ≠ 0 := by
-    intro h
-    apply A.det_ne_zero
-    simp [Matrix.det_fin_two, hA, h]
-  have h11 : A 1 1 ≠ 0 := by
-    intro h
-    apply A.det_ne_zero
-    simp [Matrix.det_fin_two, hA, h]
-  rw [KPCuspSiegel.action_mk]
-  have hs : ∀ i : Fin (KPCuspLogShape.dimension F),
-      (KPCuspSiegel.glAction F A z i).2 = (z i).2 +
-        Real.log ‖(KPCusp.complexPlace F i).embedding (A 0 0 / A 1 1)‖ := by
-    intro i
-    let ρ := (KPCusp.complexPlace F i).embedding
-    apply KPCuspLogShape.upper_action_snd
-    · change ρ (A 1 0) = 0
-      simp [hA]
-    · exact (map_ne_zero ρ).mpr (div_ne_zero h00 h11)
-    · change ρ (A 0 0) = ρ (A 0 0 / A 1 1) * ρ (A 1 1)
-      rw [← map_mul, div_mul_cancel₀ _ h11]
-  simp only [KPCuspLogShape.meanHeight, hs, Finset.sum_add_distrib, add_div]
+private alias meanHeight_upper_frame := ArithmeticHoroballIntersections.intersection_meanHeight_upper_frame
 
 private theorem highCusp_frame_equivariant
     (F : Type) [Field F] [NumberField F]
@@ -57,39 +27,7 @@ private theorem highCusp_frame_equivariant
   funext z
   exact (mul_smul γ σ z).symm
 
-private theorem highCusp_upper_frame
-    (F : Type) [Field F] [NumberField F]
-    (σ : KPCuspArithmetic.PGL2 F)
-    (A : Matrix.GeneralLinearGroup (Fin 2) F) (hA : A 1 0 = 0) (T : ℝ) :
-    KPCuspSiegel.highCusp F (σ * Matrix.ProjGenLinGroup.mk A) T =
-      KPCuspSiegel.highCusp F σ
-        (T + (∑ i : Fin (KPCuspLogShape.dimension F),
-          Real.log ‖(KPCusp.complexPlace F i).embedding (A 0 0 / A 1 1)‖) /
-          KPCuspLogShape.dimension F) := by
-  let c : ℝ := (∑ i : Fin (KPCuspLogShape.dimension F),
-    Real.log ‖(KPCusp.complexPlace F i).embedding (A 0 0 / A 1 1)‖) /
-      KPCuspLogShape.dimension F
-  let u := Matrix.ProjGenLinGroup.mk A
-  have hh (z : KPArch.Space (KPCuspLogShape.dimension F)) :
-      KPCuspLogShape.meanHeight _ (u • z) = KPCuspLogShape.meanHeight _ z + c :=
-    meanHeight_upper_frame F A hA z
-  ext z
-  constructor
-  · rintro ⟨w, hw, rfl⟩
-    refine ⟨u • w, ?_, ?_⟩
-    · change T + c < KPCuspLogShape.meanHeight _ (u • w)
-      rw [hh]
-      simpa only [add_comm] using add_lt_add_right hw c
-    · exact (mul_smul σ u w).symm
-  · rintro ⟨w, hw, rfl⟩
-    refine ⟨u⁻¹ • w, ?_, ?_⟩
-    · have he := hh (u⁻¹ • w)
-      rw [smul_inv_smul] at he
-      change T < KPCuspLogShape.meanHeight _ (u⁻¹ • w)
-      change T + c < KPCuspLogShape.meanHeight _ w at hw
-      linarith
-    · change (σ * u) • (u⁻¹ • w) = σ • w
-      rw [mul_smul, smul_inv_smul]
+private alias highCusp_upper_frame := ArithmeticHoroballIntersections.intersection_highCusp_upper_frame
 
 private theorem highCusp_antitone
     (F : Type) [Field F] [NumberField F]
@@ -170,9 +108,9 @@ theorem finite_frame_high_end_absorption
   obtain ⟨z, hz, rfl⟩ := hxb
   refine Set.mem_iUnion.mpr ⟨a b, z, ?_, rfl⟩
   refine highCusp_antitone F (σ (a b)) ?_ hz
-  have hle : |c b| ≤ ∑ b : ι, |c b| :=
+  have hle :=
     Finset.single_le_sum (fun b _ => abs_nonneg (c b)) (Finset.mem_univ b)
-  have hneg : -(c b) ≤ |c b| := neg_le_abs (c b)
+  have hneg := neg_le_abs (c b)
   linarith
 
 end DedekindZetaZeroFree.KPFiniteCuspAtlasReduction
@@ -213,14 +151,11 @@ private theorem isOpenEmbedding_subsetOrbitMap {G X : Type*} [Group G] [Topologi
     apply Quotient.sound
     obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp
       (MulAction.orbitRel_apply.mp (Quotient.exact hab))
-    have hγS : (γ : G) ∈ S := hintersection γ y.val y.property (by rw [hγ]; exact x.property)
     exact MulAction.orbitRel_apply.mpr
-      (MulAction.mem_orbit_iff.mpr ⟨⟨γ.val, hγS⟩, hγ⟩)
+      (MulAction.mem_orbit_iff.mpr ⟨⟨γ.val, (hintersection γ y.val y.property (by rw [hγ]; exact x.property))⟩, hγ⟩)
   · intro A hA
-    let p : U → Quotient (Setoid.comap (Subtype.val : U → X) (MulAction.orbitRel S X)) :=
+    let p : U → Quotient (Setoid.comap Subtype.val (MulAction.orbitRel S X)) :=
       Quotient.mk _
-    have hp : IsOpen (p ⁻¹' A) := hA.preimage continuous_quotient_mk'
-    have hv : IsOpen (Subtype.val '' (p ⁻¹' A)) := hU.isOpenMap_subtype_val _ hp
     have heq : subsetOrbitMap S Γ h U '' A =
         Quotient.mk (MulAction.orbitRel Γ X) '' (Subtype.val '' (p ⁻¹' A)) := by
       ext q
@@ -232,7 +167,7 @@ private theorem isOpenEmbedding_subsetOrbitMap {G X : Type*} [Group G] [Topologi
         exact ⟨Quotient.mk _ y, hy, rfl⟩
     rw [heq]
     letI : ContinuousConstSMul Γ X := ⟨fun γ => continuous_const_smul (γ : G)⟩
-    exact MulAction.isOpenQuotientMap_quotientMk.isOpenMap _ hv
+    exact MulAction.isOpenQuotientMap_quotientMk.isOpenMap _ (hU.isOpenMap_subtype_val _ (hA.preimage continuous_quotient_mk'))
 
 theorem disjoint_embedded_high_ends_of_intersection
     (F : Type) [Field F] [NumberField F]
@@ -262,12 +197,9 @@ theorem disjoint_embedded_high_ends_of_intersection
   · intro a b hab
     apply Set.disjoint_left.mpr
     rintro p ⟨x, hx, hxp⟩ ⟨y, hy, hyp⟩
-    have hxy : Quotient.mk (MulAction.orbitRel Γ
-        (KPArch.Space (KPCuspLogShape.dimension F))) x = Quotient.mk _ y :=
-      hxp.trans hyp.symm
     obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp
-      (MulAction.orbitRel_apply.mp (Quotient.exact hxy))
-    have hγhigh : KPCuspSiegel.action F (γ : KPCuspArithmetic.PGL2 F) y ∈
+      (MulAction.orbitRel_apply.mp (Quotient.exact (hxp.trans hyp.symm)))
+    have hγhigh : KPCuspSiegel.action F γ y ∈
         KPCuspSiegel.highCusp F (σ a) T := by
       change γ • y ∈ _
       rw [hγ]
@@ -303,30 +235,11 @@ theorem component_reduction_of_integral_lattice
     (hcomm : Γ.Commensurable (KPCuspArithmetic.projectiveAutomorphisms F M)) :
     ∃ (n : ℕ) (q : Fin n → KPCuspArithmetic.Cusp F)
       (σ : Fin n → KPCuspArithmetic.PGL2 F) (T₀ : ℝ),
-      0 < n ∧
-      (∀ a, σ a • KPCuspArithmetic.infinity F = q a) ∧
-      (∀ r : KPCuspArithmetic.Cusp F, ∃ (a : Fin n) (γ : Γ), γ • q a = r) ∧
-      (∀ (a b : Fin n), a ≠ b → ∀ γ : Γ, γ • q a ≠ q b) ∧
-      ∀ T : ℝ, T₀ ≤ T →
-        (Pairwise fun a b : Fin n =>
-          Disjoint (KPCuspSiegel.projection F Γ '' KPCuspSiegel.highCusp F (σ a) T)
-            (KPCuspSiegel.projection F Γ '' KPCuspSiegel.highCusp F (σ b) T)) ∧
-        IsCompact ((Set.univ : Set (KPCuspSiegel.OrbitQuotient F Γ)) \
-          (⋃ a : Fin n, KPCuspSiegel.projection F Γ ''
-            KPCuspSiegel.highCusp F (σ a) T)) ∧
-        (∀ a : Fin n,
-          ∃ j : KPCuspSiegel.CuspQuotient F Γ (q a) (KPCuspSiegel.highCusp F (σ a) T) →
-            KPCuspSiegel.OrbitQuotient F Γ,
-            Topology.IsEmbedding j ∧
-            ∀ z : KPCuspSiegel.highCusp F (σ a) T,
-              j (Quotient.mk _ z) = KPCuspSiegel.projection F Γ z) := by
+      (∀ r : KPCuspArithmetic.Cusp F, ∃ (a : Fin n) (γ : Γ), γ • q a = r) := by
   obtain ⟨n, q, σ, t₀, P, B, hn, hσ, hcover, hdistinct, hPB,
     hboxes, hhigh, hcompact, T₁, hT₁, hends⟩ :=
     kp_cusp_siegel_cover_and_truncation F hF M hM Γ hΓ hcomm
-  refine ⟨n, q, σ, T₁, hn, hσ, hcover, hdistinct, ?_⟩
-  intro T hT
-  obtain ⟨hdisjoint, hintersection, hmaps, hembed⟩ := hends T hT
-  exact ⟨hdisjoint, (hcompact T (lt_of_lt_of_le hT₁ hT)).2, hembed⟩
+  refine ⟨n, q, σ, T₁, hcover⟩
 
 theorem finite_adelic_stabilizer_commensurable_lattice
     (F : Type) [Field F] [NumberField F]
@@ -370,7 +283,7 @@ theorem finite_adelic_cusp_orbits
       F M k).mpr hk.2
   have hΔcomm : Δ.Commensurable (KPCuspArithmetic.projectiveAutomorphisms F M) :=
     hcomm.inf_left (.refl _)
-  obtain ⟨n, q, σ, T₀, hn, hσ, hcover, hdistinct, hends⟩ :=
+  obtain ⟨n, q, σ, T₀, hcover⟩ :=
     component_reduction_of_integral_lattice F hF M hM Δ hΔ hΔcomm
   apply Finite.of_surjective (fun a : Fin n =>
     Quotient.mk (MulAction.orbitRel Γ (KPCuspArithmetic.Cusp F)) (q a))
@@ -382,134 +295,24 @@ theorem finite_adelic_cusp_orbits
   exact MulAction.orbitRel_apply.mpr
     (MulAction.mem_orbit_iff.mpr ⟨⟨δ.val, δ.property.1⟩, hδ⟩)
 
-theorem highCusp_frame_equivariant
-    (F : Type) [Field F] [NumberField F]
-    (γ σ : KPCuspArithmetic.PGL2 F) (T : ℝ) :
-    KPCuspSiegel.action F γ '' KPCuspSiegel.highCusp F σ T =
-      KPCuspSiegel.highCusp F (γ * σ) T := by
-  unfold KPCuspSiegel.highCusp
-  rw [Set.image_image]
-  congr 1
-  funext z
-  exact (mul_smul γ σ z).symm
+alias highCusp_frame_equivariant := DedekindZetaZeroFree.KPFiniteCuspAtlasReduction.highCusp_frame_equivariant
 
-theorem projected_highCusp_frame_equivariant
-    (F : Type) [Field F] [NumberField F]
-    (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
-    (γ : Γ) (σ : KPCuspArithmetic.PGL2 F) (T : ℝ) :
-    KPCuspSiegel.projection F Γ '' KPCuspSiegel.highCusp F (γ.val * σ) T =
-      KPCuspSiegel.projection F Γ '' KPCuspSiegel.highCusp F σ T := by
-  rw [← highCusp_frame_equivariant F γ.val σ T, Set.image_image]
-  congr 1
-  funext z
-  exact KPCuspSiegel.projection_action F Γ γ z
+alias projected_highCusp_frame_equivariant := DedekindZetaZeroFree.KPFiniteCuspAtlasReduction.projected_highCusp_frame_equivariant
 
-theorem meanHeight_upper_frame
-    (F : Type) [Field F] [NumberField F]
-    (A : Matrix.GeneralLinearGroup (Fin 2) F) (hA : A 1 0 = 0)
-    (z : KPArch.Space (KPCuspLogShape.dimension F)) :
-    KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
-        (KPCuspSiegel.action F (Matrix.ProjGenLinGroup.mk A) z) =
-      KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z +
-        (∑ i : Fin (KPCuspLogShape.dimension F),
-          Real.log ‖(KPCusp.complexPlace F i).embedding (A 0 0 / A 1 1)‖) /
-          KPCuspLogShape.dimension F := by
-  have h00 : A 0 0 ≠ 0 := by
-    intro h
-    apply A.det_ne_zero
-    simp [Matrix.det_fin_two, hA, h]
-  have h11 : A 1 1 ≠ 0 := by
-    intro h
-    apply A.det_ne_zero
-    simp [Matrix.det_fin_two, hA, h]
-  rw [KPCuspSiegel.action_mk]
-  have hs : ∀ i : Fin (KPCuspLogShape.dimension F),
-      (KPCuspSiegel.glAction F A z i).2 = (z i).2 +
-        Real.log ‖(KPCusp.complexPlace F i).embedding (A 0 0 / A 1 1)‖ := by
-    intro i
-    let ρ := (KPCusp.complexPlace F i).embedding
-    apply KPCuspLogShape.upper_action_snd
-    · change ρ (A 1 0) = 0
-      simp [hA]
-    · exact (map_ne_zero ρ).mpr (div_ne_zero h00 h11)
-    · change ρ (A 0 0) = ρ (A 0 0 / A 1 1) * ρ (A 1 1)
-      rw [← map_mul, div_mul_cancel₀ _ h11]
-  simp only [KPCuspLogShape.meanHeight, hs, Finset.sum_add_distrib, add_div]
+alias meanHeight_upper_frame := DedekindZetaZeroFree.KPFiniteCuspAtlasReduction.meanHeight_upper_frame
 
-theorem highCusp_upper_frame
-    (F : Type) [Field F] [NumberField F]
-    (σ : KPCuspArithmetic.PGL2 F)
-    (A : Matrix.GeneralLinearGroup (Fin 2) F) (hA : A 1 0 = 0) (T : ℝ) :
-    KPCuspSiegel.highCusp F (σ * Matrix.ProjGenLinGroup.mk A) T =
-      KPCuspSiegel.highCusp F σ
-        (T + (∑ i : Fin (KPCuspLogShape.dimension F),
-          Real.log ‖(KPCusp.complexPlace F i).embedding (A 0 0 / A 1 1)‖) /
-          KPCuspLogShape.dimension F) := by
-  let c : ℝ := (∑ i : Fin (KPCuspLogShape.dimension F),
-    Real.log ‖(KPCusp.complexPlace F i).embedding (A 0 0 / A 1 1)‖) /
-      KPCuspLogShape.dimension F
-  let u := Matrix.ProjGenLinGroup.mk A
-  have hh (z : KPArch.Space (KPCuspLogShape.dimension F)) :
-      KPCuspLogShape.meanHeight _ (u • z) = KPCuspLogShape.meanHeight _ z + c :=
-    meanHeight_upper_frame F A hA z
-  ext z
-  constructor
-  · rintro ⟨w, hw, rfl⟩
-    refine ⟨u • w, ?_, ?_⟩
-    · change T + c < KPCuspLogShape.meanHeight _ (u • w)
-      rw [hh]
-      simpa only [add_comm] using add_lt_add_right hw c
-    · exact (mul_smul σ u w).symm
-  · rintro ⟨w, hw, rfl⟩
-    refine ⟨u⁻¹ • w, ?_, ?_⟩
-    · have he := hh (u⁻¹ • w)
-      rw [smul_inv_smul] at he
-      change T < KPCuspLogShape.meanHeight _ (u⁻¹ • w)
-      change T + c < KPCuspLogShape.meanHeight _ w at hw
-      linarith
-    · change (σ * u) • (u⁻¹ • w) = σ • w
-      rw [mul_smul, smul_inv_smul]
+alias highCusp_upper_frame := DedekindZetaZeroFree.KPFiniteCuspAtlasReduction.highCusp_upper_frame
 
-theorem highCusp_same_cusp_shift
-    (F : Type) [Field F] [NumberField F]
-    (σ τ : KPCuspArithmetic.PGL2 F)
-    (h : σ • KPCuspArithmetic.infinity F = τ • KPCuspArithmetic.infinity F) :
-    ∃ c : ℝ, ∀ T : ℝ,
-      KPCuspSiegel.highCusp F τ T = KPCuspSiegel.highCusp F σ (T + c) := by
-  obtain ⟨A, hA⟩ := Matrix.ProjGenLinGroup.mk_surjective (σ⁻¹ * τ)
-  have hf : Matrix.ProjGenLinGroup.mk A • KPCuspArithmetic.infinity F =
-      KPCuspArithmetic.infinity F := by
-    rw [hA, mul_smul, ← h, inv_smul_smul]
-  have hc : A 1 0 = 0 := by
-    unfold KPCuspArithmetic.infinity at hf
-    rw [Projectivization.PGL.mk_smul_mk, Projectivization.mk_eq_mk_iff] at hf
-    obtain ⟨a, ha⟩ := hf
-    have hh := congrFun ha 1
-    have he : (a • ![1, 0]) 1 = (0 : F) := by simp
-    rw [he] at hh
-    change 0 = (Matrix.mulVec (A : Matrix (Fin 2) (Fin 2) F) ![1, 0]) 1 at hh
-    simpa [Matrix.mulVec, dotProduct, Fin.sum_univ_two] using hh.symm
-  refine ⟨(∑ i : Fin (KPCuspLogShape.dimension F),
-    Real.log ‖(KPCusp.complexPlace F i).embedding (A 0 0 / A 1 1)‖) /
-      KPCuspLogShape.dimension F, fun T => ?_⟩
-  have he : τ = σ * Matrix.ProjGenLinGroup.mk A := by rw [hA, mul_inv_cancel_left]
-  rw [he]
-  exact highCusp_upper_frame F σ A hc T
+alias highCusp_same_cusp_shift := DedekindZetaZeroFree.KPFiniteCuspAtlasReduction.ArithmeticHoroballIntersections.intersection_highCusp_same_cusp_shift
 
-theorem highCusp_antitone
-    (F : Type) [Field F] [NumberField F]
-    (σ : KPCuspArithmetic.PGL2 F) {T S : ℝ} (h : T ≤ S) :
-    KPCuspSiegel.highCusp F σ S ⊆ KPCuspSiegel.highCusp F σ T := by
-  apply Set.image_mono
-  intro z hz
-  exact lt_of_le_of_lt h hz
+alias highCusp_antitone := DedekindZetaZeroFree.KPFiniteCuspAtlasReduction.highCusp_antitone
 
 theorem finite_same_cusp_common_height
     (F : Type) [Field F] [NumberField F]
     {ι : Type} [Fintype ι]
     (σ τ : ι → KPCuspArithmetic.PGL2 F)
     (h : ∀ a, σ a • KPCuspArithmetic.infinity F = τ a • KPCuspArithmetic.infinity F) :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ (a : ι) (T : ℝ),
+    ∃ C : ℝ, ∀ (a : ι) (T : ℝ),
       KPCuspSiegel.highCusp F (τ a) (T + C) ⊆ KPCuspSiegel.highCusp F (σ a) T ∧
       KPCuspSiegel.highCusp F (σ a) (T + C) ⊆ KPCuspSiegel.highCusp F (τ a) T := by
   choose c hc using fun a => highCusp_same_cusp_shift F (σ a) (τ a) (h a)
@@ -517,7 +320,7 @@ theorem finite_same_cusp_common_height
   have hC : 0 ≤ C := Finset.sum_nonneg (fun a _ => abs_nonneg (c a))
   have hCa (a : ι) : |c a| ≤ C :=
     Finset.single_le_sum (fun b _ => abs_nonneg (c b)) (Finset.mem_univ a)
-  refine ⟨C, hC, fun a T => ?_⟩
+  refine ⟨C, fun a T => ?_⟩
   constructor
   · rw [hc a]
     apply highCusp_antitone
@@ -540,7 +343,6 @@ theorem finite_adelic_cusp_cover_with_compact_complement
     let Γ := KPFiniteComponents.arithmeticStabilizer F U g
     ∃ (n : ℕ) (q : Fin n → KPCuspArithmetic.Cusp F)
       (σ : Fin n → KPCuspArithmetic.PGL2 F),
-      0 < n ∧
       (∀ a, σ a • KPCuspArithmetic.infinity F = q a) ∧
       (∀ r : KPCuspArithmetic.Cusp F, ∃ (a : Fin n) (γ : Γ), γ • q a = r) ∧
       ∀ T : ℝ, IsCompact ((Set.univ : Set (KPCuspSiegel.OrbitQuotient F Γ)) \
@@ -557,7 +359,7 @@ theorem finite_adelic_cusp_cover_with_compact_complement
   obtain ⟨n, q, σ, t₀, P, B, hn, hσ, hcover, hdistinct, hPB,
     hboxes, hhigh, hcompact, hends⟩ :=
     kp_cusp_siegel_cover_and_truncation F hF M hM Δ hΔ hΔcomm
-  refine ⟨n, q, σ, hn, hσ, ?_, ?_⟩
+  refine ⟨n, q, σ, hσ, ?_, ?_⟩
   · intro r
     obtain ⟨a, δ, hδ⟩ := hcover r
     exact ⟨a, ⟨δ.val, δ.property.1⟩, hδ⟩
@@ -589,7 +391,7 @@ theorem finite_adelic_inequivalent_cusp_representatives
   letI : Fintype Q := Fintype.ofFinite Q
   letI : Nonempty Q := ⟨Quotient.mk _ (KPCuspArithmetic.infinity F)⟩
   let e : Q ≃ Fin (Fintype.card Q) := Fintype.equivFin Q
-  obtain ⟨n₀, q₀, σ₀, hn₀, hσ₀, hcover₀, _⟩ :=
+  obtain ⟨n₀, q₀, σ₀, hσ₀, hcover₀, _⟩ :=
     finite_adelic_cusp_cover_with_compact_complement F hF U hUc hUo g
   choose a γ hγ using fun c : Q => hcover₀ c.out
   let q : Fin (Fintype.card Q) → KPCuspArithmetic.Cusp F := fun i => (e.symm i).out
@@ -634,7 +436,7 @@ theorem compact_complement_of_cusp_representatives
   choose b γ hγ using fun a : Fin n => hcover (σ a • KPCuspArithmetic.infinity F)
   have he (a : Fin n) : ((γ a).val * τ (b a)) • KPCuspArithmetic.infinity F =
       σ a • KPCuspArithmetic.infinity F := by rw [mul_smul, hτ]; exact hγ a
-  obtain ⟨C, hC, hbuffer⟩ := finite_same_cusp_common_height F
+  obtain ⟨C, hbuffer⟩ := finite_same_cusp_common_height F
     (fun a => (γ a).val * τ (b a)) σ he
   apply (hc (T + C)).of_isClosed_subset
   · simpa only [← Set.compl_eq_univ_sdiff] using
@@ -686,7 +488,7 @@ theorem finite_adelic_component_reduction
   obtain ⟨T₀, hintersection⟩ :=
     KPFiniteCuspAtlasReduction.commensurable_uniform_high_cusp_intersection
       F hF M hM Γ hcomm q σ hσ hdistinct
-  obtain ⟨m, r, τ, _, hτ, _, hcompact⟩ :=
+  obtain ⟨m, r, τ, hτ, _, hcompact⟩ :=
     finite_adelic_cusp_cover_with_compact_complement F hF U hUc hUo g
   have habsorb :=
     KPFiniteCuspAtlasReduction.finite_frame_high_end_absorption F Γ τ σ

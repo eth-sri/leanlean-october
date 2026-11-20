@@ -10,8 +10,8 @@ open scoped Classical NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open NumberField IsDedekindDomain KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 attribute [local instance] KPAdelicCoverRestrictedProduct.pglLocalTopology
@@ -23,7 +23,7 @@ private theorem local_compact_level (q : KPFinitePlace F) (f : Plus A P C (Sum.i
   obtain ⟨U, hU⟩ := f.property.2
   obtain ⟨L, hL⟩ := KPLocalPrincipalSeriesCuspidalExclusion.actual_cover_compact_open_basis
     F A.zeta12 A.primitive_zeta12 q (depth F A.zeta12 A.primitive_zeta12 q)
-    (depth_admissible F A.zeta12 A.primitive_zeta12 q) (U : Set _) U.mem_nhds_one
+    (depth_admissible F A.zeta12 A.primitive_zeta12 q) U U.mem_nhds_one
   exact ⟨L, fun k g => congrFun (hU k.val (hL k.property)) g⟩
 
  def pureComponent (s : RestrictedTensorSimple.Level (bad A P C))
@@ -134,16 +134,12 @@ private theorem local_compact_level (q : KPFinitePlace F) (f : Plus A P C (Sum.i
   obtain ⟨D, hD⟩ := exists_pure_product_level A P C s x
   have hc := ActualFiniteFactor.productSubgroup_compact_open F A.zeta12 A.primitive_zeta12 D
   rw [EisensteinReferenceSections.SourceLevels.finite_eq F A.zeta12 A.primitive_zeta12] at hc
-  let J : KPGlobalTorusFunctionData.FiniteLevel F A.zeta12 A.primitive_zeta12 :=
-    ⟨⟨(ActualFiniteFactor.productSubgroup F A.zeta12 A.primitive_zeta12 D).comap
-      (KPGlobalTorusFunctionData.finitePart F A.zeta12 A.primitive_zeta12).subtype, hc.2⟩, hc.1⟩
-  refine ⟨J, ?_⟩
+  refine ⟨(⟨⟨(ActualFiniteFactor.productSubgroup F A.zeta12 A.primitive_zeta12 D).comap
+    (KPGlobalTorusFunctionData.finitePart F A.zeta12 A.primitive_zeta12).subtype, hc.2⟩, hc.1⟩), ?_⟩
   intro g j
   obtain ⟨u, hu, heu⟩ := j.property
   obtain ⟨raw, hr, he⟩ := hu
-  have hj : scalarQuotient F A.zeta12 A.primitive_zeta12
-      (amalgamation F A.zeta12 A.primitive_zeta12 raw) = j.val := he.trans heu
-  rw [← hj]
+  rw [← (he.trans heu)]
   induction g using QuotientGroup.induction_on with
   | H g =>
     induction g using QuotientGroup.induction_on with

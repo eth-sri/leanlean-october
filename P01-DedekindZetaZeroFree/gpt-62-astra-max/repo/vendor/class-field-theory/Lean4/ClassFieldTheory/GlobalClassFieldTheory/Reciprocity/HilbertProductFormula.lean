@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -48,12 +44,11 @@ private theorem map_product_mul_finprod
       chi ((∏ i, f i) * ∏ᶠ j, g j) := by
   rw [chi.map_mul, map_prod, MonoidHom.map_finprod chi hg]
 
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ)
+
 /-- The product of the Hilbert symbols of two global units over all places.
 The finite-place part is a genuine finite-support product. -/
-noncomputable def globalHilbertProduct
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (a b : Kˣ) :
+noncomputable def globalHilbertProduct :
     nthRootsSubgroup K (n : ℕ) :=
   (∏ v : InfinitePlace K,
       infinitePlaceHilbertSymbol K n v a b) *
@@ -63,53 +58,47 @@ noncomputable def globalHilbertProduct
 /-- The global Hilbert product of a principal pair is trivial.  The proof
 maps the chosen local Artin product through the global Kummer root character
 and then uses the finite- and infinite-place comparison theorems. -/
-theorem globalHilbertProduct_principal
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (a b : Kˣ) :
+theorem globalHilbertProduct_principal :
     globalHilbertProduct K n hnK hmu a b = 1 := by
   let L := chosenSimpleKummerExtension K n hnK b
-  let : FiniteDimensional K L :=
+  let :=
     chosenSimpleKummerExtension_finiteDimensional K n hnK b
-  let : IsAbelianGalois K L :=
+  let :=
     chosenSimpleKummerExtension_isAbelianGalois K n hnK hmu b
-  let : NumberField L := NumberField.of_module_finite K L
-  let chi : Gal(L/K) →* nthRootsSubgroup K (n : ℕ) :=
+  let := NumberField.of_module_finite K L
+  let chi :=
     (nthRootsSubgroupEquivOfPrimitiveRoots K L n hmu).symm.toMonoidHom.comp
       (chosenSimpleKummerRootCharacter K n hnK hmu b)
-  have hArtin :=
-    chosenLocalArtin_product_principalIdele
-      (K := K) (L := L) a
-  have hFiniteSupport := finitePlaceArtinFactors_hasFiniteMulSupport
-    (K := K) (L := L) (IdeleGroup.principalIdele K a)
   have hMapped :
       (∏ v : InfinitePlace K,
           chi
-            (chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v
+            (chosenInfinitePlaceArtinMonoidHom v
               (IdeleGroup.infiniteComponent v
                 (IdeleGroup.principalIdele K a)))) *
         ∏ᶠ v : HeightOneSpectrum (𝓞 K),
           chi
-            (chosenFinitePlaceArtinMonoidHom (K := K) (L := L) v
+            (chosenFinitePlaceArtinMonoidHom v
               (IdeleGroup.finiteComponent v
                 (IdeleGroup.principalIdele K a))) = 1 := by
     calc
       _ = chi
           ((∏ v : InfinitePlace K,
-            chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v
+            chosenInfinitePlaceArtinMonoidHom v
               (IdeleGroup.infiniteComponent v
                 (IdeleGroup.principalIdele K a))) *
           ∏ᶠ v : HeightOneSpectrum (𝓞 K),
-            chosenFinitePlaceArtinMonoidHom (K := K) (L := L) v
+            chosenFinitePlaceArtinMonoidHom v
               (IdeleGroup.finiteComponent v
                 (IdeleGroup.principalIdele K a))) :=
-        map_product_mul_finprod chi _ _ hFiniteSupport
-      _ = chi 1 := congrArg chi hArtin
+        map_product_mul_finprod chi _ _ (finitePlaceArtinFactors_hasFiniteMulSupport
+          (IdeleGroup.principalIdele K a))
+      _ = chi 1 := congrArg chi (chosenLocalArtin_product_principalIdele
+        a)
       _ = 1 := chi.map_one
   have hInfinite :
       (∏ v : InfinitePlace K,
         chi
-          (chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v
+          (chosenInfinitePlaceArtinMonoidHom v
             (IdeleGroup.infiniteComponent v
               (IdeleGroup.principalIdele K a)))) =
         ∏ v : InfinitePlace K,
@@ -122,8 +111,7 @@ theorem globalHilbertProduct_principal
           Units.map (algebraMap K v.Completion).toMonoidHom a := by
       apply Units.ext
       calc
-        ((IdeleGroup.infiniteComponent v (IdeleGroup.principalIdele K a) :
-            v.Completionˣ) : v.Completion) =
+        _ =
             ((a : K) : v.Completion) :=
           IdeleGroup.infiniteComponent_principalIdele a v
         _ = algebraMap K v.Completion (a : K) :=
@@ -132,17 +120,16 @@ theorem globalHilbertProduct_principal
     rw [hcomponent]
     calc
       chi
-          (chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v
+          (chosenInfinitePlaceArtinMonoidHom v
             (Units.map (algebraMap K v.Completion).toMonoidHom a)) =
-          infinitePlaceKummerRootCharacter K n hnK hmu v a b := by
-        rfl
+          infinitePlaceKummerRootCharacter K n hnK hmu v a b := rfl
       _ = infinitePlaceHilbertSymbol K n v a b :=
         infinitePlaceKummerRootCharacter_localGlobal
           K n hnK hmu v a b
   have hFinite :
       (∏ᶠ v : HeightOneSpectrum (𝓞 K),
         chi
-          (chosenFinitePlaceArtinMonoidHom (K := K) (L := L) v
+          (chosenFinitePlaceArtinMonoidHom v
             (IdeleGroup.finiteComponent v
               (IdeleGroup.principalIdele K a)))) =
         ∏ᶠ v : HeightOneSpectrum (𝓞 K),
@@ -155,27 +142,22 @@ theorem globalHilbertProduct_principal
           Units.map (algebraMap K (v.adicCompletion K)).toMonoidHom a := by
       apply Units.ext
       calc
-        ((IdeleGroup.finiteComponent v (IdeleGroup.principalIdele K a) :
-            (v.adicCompletion K)ˣ) : v.adicCompletion K) =
+        _ =
             ((a : K) : v.adicCompletion K) :=
           IdeleGroup.finiteComponent_principalIdele a v
         _ = algebraMap K (v.adicCompletion K) (a : K) := by
           symm
-          have hmap := congrFun
+          exact (congrFun
             (IsDedekindDomain.HeightOneSpectrum.algebraMap_adicCompletion
-              (𝓞 K) K (S := K) v) (a : K)
-          simpa using hmap
+              (𝓞 K) K v) (a : K))
     rw [hcomponent]
     calc
       chi
-          (chosenFinitePlaceArtinMonoidHom (K := K) (L := L) v
+          (chosenFinitePlaceArtinMonoidHom v
             (Units.map (algebraMap K (v.adicCompletion K)).toMonoidHom a)) =
           finitePlaceKummerRootCharacter K n hnK hmu v a b := by
-        change finitePlaceKummerRootCharacterOfExtension K n hnK hmu v a b
-          (chosenFinitePlaceExtension (L := L) v) =
-            finitePlaceKummerRootCharacter K n hnK hmu v a b
         exact finitePlaceKummerRootCharacterOfExtension_eq K n hnK hmu v a b
-          (chosenFinitePlaceExtension (L := L) v)
+          (chosenFinitePlaceExtension v)
       _ = finitePlaceHilbertSymbol K n hnK hmu v a b :=
         finitePlaceKummerRootCharacter_localGlobal
           K n hnK hmu v a b
@@ -185,15 +167,11 @@ theorem globalHilbertProduct_principal
 
 /-- The Hilbert symbols of two global units have product one over all finite
 and infinite places. -/
-theorem hilbertSymbol_allPlaces_product_eq_one
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (a b : Kˣ) :
+theorem hilbertSymbol_allPlaces_product_eq_one :
     (∏ v : InfinitePlace K,
         infinitePlaceHilbertSymbol K n v a b) *
       ∏ᶠ v : HeightOneSpectrum (𝓞 K),
-        finitePlaceHilbertSymbol K n hnK hmu v a b = 1 := by
-  exact globalHilbertProduct_principal K n hnK hmu a b
+        finitePlaceHilbertSymbol K n hnK hmu v a b = 1 := globalHilbertProduct_principal K n hnK hmu a b
 
 end Reciprocity
 end GlobalClassFieldTheory

@@ -24,11 +24,12 @@ theorem integer_open_cell_section
           (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q)) =
           if x ∈ (valuation (LocalField F q)).integer then v else 0) := by
   let U : AddSubgroup (LocalField F q) := (valuation (LocalField F q)).integer.toAddSubgroup
-  have ho : IsClopen (U : Set (LocalField F q)) :=
+  let Set₀ := Set (LocalField F q)
+  have ho : IsClopen (U : Set₀) :=
     (valuation (LocalField F q)).isClopen_integer
-  have hc : IsCompact (U : Set (LocalField F q)) :=
+  have hc : IsCompact (U : Set₀) :=
     IsNonarchimedeanLocalField.isCompact_closedBall (LocalField F q) 1
-  let φ : LocalField F q → InducedModule P := (U : Set (LocalField F q)).indicator (fun _ => v)
+  let φ : LocalField F q → InducedModule P := (U : Set₀).indicator (fun _ => v)
   have hl : IsLocallyConstant φ := by
     rw [IsLocallyConstant.iff_eventually_eq]
     intro x
@@ -50,7 +51,7 @@ theorem integer_open_cell_section
     simp only [KPRankOneOpenCellKernel.openCoordinate,
       (S.openCell P).weyl_eq, (S.openCell P).upper_eq]
   rw [he, hf.2 x]
-  change (U : Set (LocalField F q)).indicator (fun _ => v) x = if x ∈ U then v else 0
+  change (U : Set₀).indicator (fun _ => v) x = if x ∈ U then v else 0
   exact Set.indicator_apply _ _ _
 
 end DedekindZetaZeroFree.KPRankOneForwardTestVector.ActualSource

@@ -13,9 +13,13 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.LocalCovariance
 open KPGlobalTorusFiniteStages
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 
-theorem finite_upper (q : HeightOneSpectrum (𝓞 F))
+section
+
+variable (q : HeightOneSpectrum (𝓞 F))
+
+theorem finite_upper
     (y : KPHilbert.Completion F (Sum.inr q))
     (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) :
     (LocalSeed.finite F ζ hζ P C q).val
@@ -28,13 +32,12 @@ theorem finite_upper (q : HeightOneSpectrum (𝓞 F))
   have hf := f.property.1 (S.borel.upperRoot (Multiplicative.ofAdd y))
     (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) g)
   rw [KPLocalPrincipalSeries.upperRoot_trivial] at hf
-  have hn := (S.openCell (C.polarization q)).upper_eq y
   change f.val (_ * _) = _ at hf
-  rw [hn] at hf
+  rw [((S.openCell (C.polarization q)).upper_eq y)] at hf
   rw [map_mul]
   exact hf
 
-theorem finite_scalar (q : HeightOneSpectrum (𝓞 F))
+theorem finite_scalar
     (z : (KPHilbert.Completion F (Sum.inr q))ˣ)
     (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) :
     (LocalSeed.finite F ζ hζ P C q).val
@@ -48,7 +51,7 @@ theorem finite_scalar (q : HeightOneSpectrum (𝓞 F))
     (QuotientGroup.eq_one_iff _).mpr (MonoidHom.mem_range.mpr ⟨z, rfl⟩)
   rw [hs, one_mul]
 
-theorem finite_central (q : HeightOneSpectrum (𝓞 F)) (e : rootsOfUnity 3 F)
+theorem finite_central (e : rootsOfUnity 3 F)
     (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) :
     (LocalSeed.finite F ζ hζ P C q).val
       (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
@@ -77,24 +80,32 @@ theorem finite_central (q : HeightOneSpectrum (𝓞 F)) (e : rootsOfUnity 3 F)
   rw [S.openCell_ordinary (C.polarization q)] at hv
   exact hv
 
-def complexMatrix (w : InfinitePlace F)
-    (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) :
+end
+
+section
+
+variable (w : InfinitePlace F) (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w))
+
+def complexMatrix :
     KPCplxCharacterHaar.ComplexGL2 :=
   Matrix.GeneralLinearGroup.map
     (InfinitePlace.Completion.ringEquivComplexOfIsComplex
       (KPHilbert.infinite_isComplex F ζ hζ w)).toRingHom g.g
 
-def arch (w : InfinitePlace F)
-    (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) : ℂ :=
+def arch : ℂ :=
   (KPSourceConvention.ordinaryGenuineCharacter F ζ hζ g.epsilon : ℂ) *
     KPCplxPrincipalSeriesCharts.sphericalSection
       KPCplxPrincipalSeriesCharts.positiveParameter (complexMatrix F ζ hζ w g)
 
-@[simp] theorem arch_one (w : InfinitePlace F) : arch F ζ hζ w 1 = 1 := by
+end
+
+variable (w : InfinitePlace F)
+
+@[simp] theorem arch_one : arch F ζ hζ w 1 = 1 := by
   simp [arch, complexMatrix, KPLocalCover.one_g, KPLocalCover.one_epsilon,
     KPCplxPrincipalSeriesCharts.sphericalSection_one]
 
-theorem arch_central (w : InfinitePlace F) (e : rootsOfUnity 3 F)
+theorem arch_central (e : rootsOfUnity 3 F)
     (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) :
     arch F ζ hζ w (KPLocalCover.centralInjection F ζ hζ (Sum.inl w) e * g) =
       (KPSourceConvention.ordinaryGenuineCharacter F ζ hζ e : ℂ) * arch F ζ hζ w g := by
@@ -109,7 +120,7 @@ theorem arch_central (w : InfinitePlace F) (e : rootsOfUnity 3 F)
   simp only [arch, he, hm, map_mul, Units.val_mul]
   ring
 
-theorem arch_upper (w : InfinitePlace F)
+theorem arch_upper
     (y : KPHilbert.Completion F (Sum.inl w))
     (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) :
     arch F ζ hζ w (KPStandardLocalRootLifts.N F ζ hζ (Sum.inl w) y * g) =
@@ -136,7 +147,7 @@ theorem arch_upper (w : InfinitePlace F)
     KPCplxPrincipalSeriesCharts.positiveParameter).property.1]
   simp [KPCplxPrincipalSeriesCharts.inductionWeight, KPCplxPrincipalSeriesCharts.complexAbs]
 
-theorem arch_scalar (w : InfinitePlace F)
+theorem arch_scalar
     (z : (KPHilbert.Completion F (Sum.inl w))ˣ)
     (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) :
     arch F ζ hζ w (KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inl w) z * g) =
@@ -163,7 +174,7 @@ theorem arch_scalar (w : InfinitePlace F)
   unfold arch
   rw [he, hm, KPCplxPrincipalSeriesCharts.central_invariance]
 
-theorem arch_right_su2 (w : InfinitePlace F)
+theorem arch_right_su2
     (k : KPCplxCharacterHaar.ComplexSU2)
     (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) :
     arch F ζ hζ w (g * KPLocalCover.sectionMap F ζ hζ (Sum.inl w)

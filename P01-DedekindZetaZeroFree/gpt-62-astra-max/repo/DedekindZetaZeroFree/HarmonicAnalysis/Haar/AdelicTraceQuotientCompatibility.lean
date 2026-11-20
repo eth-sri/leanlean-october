@@ -84,7 +84,6 @@ private theorem fundamentalDomain_of_op {A : Type*} [AddCommGroup A] [Measurable
     (L : AddSubgroup A) (D : Set A) (μ : Measure A)
     (h : IsAddFundamentalDomain L.op D μ) : IsAddFundamentalDomain L D μ := by
   have hv (g : L) (x : A) : (L.equivOp g) +ᵥ x = g +ᵥ x := by
-    change x + g.val = g.val + x
     exact add_comm _ _
   refine ⟨h.nullMeasurableSet, ?_, ?_⟩
   · filter_upwards [h.ae_covers] with x hx
@@ -92,27 +91,22 @@ private theorem fundamentalDomain_of_op {A : Type*} [AddCommGroup A] [Measurable
     refine ⟨L.equivOp.symm g, ?_⟩
     simpa only [← hv, Equiv.apply_symm_apply] using hg
   · intro a b hab
-    have hh := h.aedisjoint (show L.equivOp a ≠ L.equivOp b from
-      fun he => hab (L.equivOp.injective he))
-    simpa only [Function.onFun, ← Set.image_vadd, hv] using hh
+    simpa only [Function.onFun, ← Set.image_vadd, hv] using (h.aedisjoint (show L.equivOp a ≠ L.equivOp b from
+      fun he => hab (L.equivOp.injective he)))
 
 theorem actual_quotientHaar_compatible : KPChamberAdditivePeriodization.CompatibleHaar F
     (KPAdditiveHaar.adelicMeasure F) (KPWildKernelUpperBound.quotientHaar F) := by
   letI := KPAdditiveHaar.finiteMeasure_isAddHaarMeasure F
   obtain ⟨D, hD, hfd⟩ := additiveProductHaar_exists_fundamentalDomain F
     (KPAdditiveHaar.finiteMeasure F)
-  have hnorm : KPAdditiveHaar.finiteMeasure F (integralFiniteAdeles F : Set _) =
-      ENNReal.ofReal (1 / Real.sqrt |(NumberField.discr F : ℝ)|) :=
-    (KPAdditiveHaar.finiteMeasure_integral_mass F).trans (KPAdditiveHaar.finiteMass_eq_discriminant F).1
   obtain ⟨hhaar, hprob, hmass⟩ := additiveQuotientMeasureFromDomain_haar_probability F
-    (KPAdditiveHaar.finiteMeasure F) hnorm D hD hfd
+    (KPAdditiveHaar.finiteMeasure F) ((KPAdditiveHaar.finiteMeasure_integral_mass F).trans (KPAdditiveHaar.finiteMass_eq_discriminant F).1) D hD hfd
   let dq := additiveQuotientMeasureFromDomain F (KPAdditiveHaar.finiteMeasure F) D
   letI : dq.IsAddHaarMeasure := hhaar
   letI : IsProbabilityMeasure dq := hprob
   have heq : dq = KPWildKernelUpperBound.quotientHaar F :=
     Measure.isAddHaarMeasure_eq_of_isProbabilityMeasure _ _
-  have hup : additiveProductHaar F (KPAdditiveHaar.finiteMeasure F) =
-      KPAdditiveHaar.adelicMeasure F := (adelicMeasure_eq_product F).symm
+  have hup := (adelicMeasure_eq_product F).symm
   refine ⟨D, hD, hup ▸ fundamentalDomain_of_op _ _ _ hfd, ?_, ?_⟩
   · have h := hmass
     unfold additiveQuotientMeasureFromDomain at h

@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -34,7 +30,6 @@ open scoped NumberField
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -97,7 +92,6 @@ omit [NumberField K] in
 theorem mixedEmbedding_one_mem_integerLattice :
     NumberField.mixedEmbedding K (1 : K) ∈
       NumberField.mixedEmbedding.integerLattice K := by
-  change _ ∈ LinearMap.range _
   refine ⟨1, ?_⟩
   simp
 
@@ -109,14 +103,12 @@ theorem principal_infiniteMixedEmbedding_mem_integerLattice
       integralAtFinitePlaces (K := K)) :
     infiniteMixedEmbedding (principalIdele K x) ∈
       NumberField.mixedEmbedding.integerLattice K := by
-  have hker :
-      fractionalIdeal (principalIdele K x) = 1 := by
-    rw [← MonoidHom.mem_ker, fractionalIdeal_ker]
-    exact hx
   have hprincipal :
       toPrincipalIdeal (𝓞 K) K x = 1 := by
     rw [← fractionalIdeal_principalIdele]
-    exact hker
+    exact (by
+      rw [← MonoidHom.mem_ker, fractionalIdeal_ker]
+      exact hx)
   have hxmem :
       (x : K) ∈
         (1 : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) := by
@@ -131,7 +123,6 @@ theorem principal_infiniteMixedEmbedding_mem_integerLattice
     (FractionalIdeal.mem_one_iff
       (nonZeroDivisors (𝓞 K))).mp hxmem
   rw [infiniteMixedEmbedding_principal]
-  change _ ∈ LinearMap.range _
   refine ⟨y, ?_⟩
   change NumberField.mixedEmbedding K
       (algebraMap (𝓞 K) K y) =
@@ -202,7 +193,7 @@ instance principalSubgroupDiscreteTopology :
           Set (NumberField.mixedEmbedding.integerLattice K)) := by
         rw [← hUeq]
         exact hyU
-      have hyz : y = z := Set.mem_singleton_iff.mp hySingleton
+      have hyz := Set.mem_singleton_iff.mp hySingleton
       have hmix :
           NumberField.mixedEmbedding K (x : K) =
             NumberField.mixedEmbedding K (1 : K) := by
@@ -215,7 +206,7 @@ instance principalSubgroupDiscreteTopology :
       rw [← hx, hxOne, map_one]
       rfl
     · intro hp
-      have hpOne : p = 1 := Set.mem_singleton_iff.mp hp
+      have hpOne := Set.mem_singleton_iff.mp hp
       subst p
       change (1 : IdeleGroup K) ∈ V
       constructor

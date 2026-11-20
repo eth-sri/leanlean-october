@@ -29,14 +29,11 @@ theorem conductor_character
             θ p.asIdeal =
               (d.character (ClassFieldTheory.arithmeticFrobeniusAt (K := F) Q) : ℂ) := by
   dsimp only
-  have hemb : ClassFieldTheory.EmbedsInRayClassField F d.extension
-      (DedekindZetaZeroFree.LargeSieve.RayBridge.fullModulus (finiteModulusIdeal c)
-        (finiteModulusIdeal_ne_bot c)) := by
-    rw [fullModulus_finiteModulusIdeal hF c]
-    exact (hc c).mpr le_rfl
   obtain ⟨A, -, hA⟩ := artin_at_containing_modulus d.extension
     (DedekindZetaZeroFree.LargeSieve.RayBridge.fullModulus (finiteModulusIdeal c)
-      (finiteModulusIdeal_ne_bot c)) hemb
+      (finiteModulusIdeal_ne_bot c)) (by
+        rw [fullModulus_finiteModulusIdeal hF c]
+        exact (hc c).mpr le_rfl)
   refine ⟨RayBridge.characterFromRayGroup (finiteModulusIdeal c)
     (finiteModulusIdeal_ne_bot c) (d.character.comp A), ?_⟩
   intro p hcop Q hQ

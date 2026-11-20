@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -44,13 +42,14 @@ def bundledRestrictionHom
       K L.field M.field hML L.below).comp
         M.extensionQuotientMulEquiv.toMonoidHom)
 
+section
+
+variable (D : DegreeData G) [IsTopologicalGroup G] (E : DegreeData.AbstractExtension G)
+    (M : FiniteGaloisSubextension E.base) (hME : M.field.toSubgroup ≤ E.field.toSubgroup)
+
 /-- The coset map from the lower maximal-unramified quotient to a totally
 ramified quotient. -/
-noncomputable def abstractReciprocityRestrictionCosetMap
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (E : DegreeData.AbstractExtension G)
-    (M : FiniteGaloisSubextension E.base)
-    (hME : M.field.toSubgroup ≤ E.field.toSubgroup) :
+noncomputable def abstractReciprocityRestrictionCosetMap :
     let M₀ := M.maximalUnramifiedSubextension D
     let hMM₀ : M.field.toSubgroup ≤ M₀.toSubgroup :=
       M.field_le_intermediateField (M.inertiaImage D)
@@ -58,13 +57,9 @@ noncomputable def abstractReciprocityRestrictionCosetMap
       (E.base.toSubgroup ⧸ E.subgroup) := by
   let S := M.inertiaImage D
   let M₀ := M.maximalUnramifiedSubextension D
-  let hMM₀ : M.field.toSubgroup ≤ M₀.toSubgroup :=
-    M.field_le_intermediateField S
-  let hM₀K : M₀.toSubgroup ≤ E.base.toSubgroup :=
-    M.intermediateField_le_base S
   exact Quotient.map'
     (fun x : M₀.toSubgroup =>
-      (⟨x.1, hM₀K x.2⟩ : E.base.toSubgroup))
+      (⟨x.1, (M.intermediateField_le_base S) x.2⟩ : E.base.toSubgroup))
     (by
       intro x y hxy
       rw [QuotientGroup.leftRel_apply] at hxy ⊢
@@ -73,10 +68,6 @@ noncomputable def abstractReciprocityRestrictionCosetMap
 /-- The restriction coset map is bijective when the upper extension is
 totally ramified and the auxiliary field contains the relevant inertia. -/
 theorem abstractReciprocityRestrictionCosetMap_bijective
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (E : DegreeData.AbstractExtension G)
-    (M : FiniteGaloisSubextension E.base)
-    (hME : M.field.toSubgroup ≤ E.field.toSubgroup)
     (hTot : E.IsTotallyRamified D)
     (hInertia : ∀ i : E.base.toSubgroup,
       i ∈ D.fieldInertiaWithin E.base →
@@ -84,9 +75,9 @@ theorem abstractReciprocityRestrictionCosetMap_bijective
     Function.Bijective (M.abstractReciprocityRestrictionCosetMap D E hME) := by
   let S := M.inertiaImage D
   let M₀ := M.maximalUnramifiedSubextension D
-  let hMM₀ : M.field.toSubgroup ≤ M₀.toSubgroup :=
+  let hMM₀ :=
     M.field_le_intermediateField S
-  let hM₀K : M₀.toSubgroup ≤ E.base.toSubgroup :=
+  let hM₀K :=
     M.intermediateField_le_base S
   constructor
   · intro x y hxy
@@ -96,18 +87,14 @@ theorem abstractReciprocityRestrictionCosetMap_bijective
     rw [QuotientGroup.leftRel_apply]
     let aK : E.base.toSubgroup := ⟨a.1, hM₀K a.2⟩
     let bK : E.base.toSubgroup := ⟨b.1, hM₀K b.2⟩
-    let z : E.base.toSubgroup := aK⁻¹ * bK
-    have habE : aK⁻¹ * bK ∈ E.subgroup := by
-      exact QuotientGroup.leftRel_apply.mp (Quotient.exact' hab)
-    have hzE : z.1 ∈ E.field.toSubgroup :=
-      (mem_extensionSubgroup_iff E.base E.field E.below z).1 habE
+    let z := aK⁻¹ * bK
     have haP : aK ∈ M.intermediateSubgroup S := by
       rw [← M.extensionSubgroup_intermediateField_eq S]
       exact (mem_extensionSubgroup_iff E.base M₀ hM₀K aK).2 a.2
     have hbP : bK ∈ M.intermediateSubgroup S := by
       rw [← M.extensionSubgroup_intermediateField_eq S]
       exact (mem_extensionSubgroup_iff E.base M₀ hM₀K bK).2 b.2
-    have hzP : z ∈ M.intermediateSubgroup S :=
+    have hzP :=
       (M.intermediateSubgroup S).mul_mem
         ((M.intermediateSubgroup S).inv_mem haP) hbP
     change (QuotientGroup.mk'
@@ -116,28 +103,21 @@ theorem abstractReciprocityRestrictionCosetMap_bijective
           (QuotientGroup.mk'
             (extensionSubgroup E.base M.field M.below)) at hzP
     obtain ⟨i, hiI, hi⟩ := hzP
-    have hizM : i⁻¹ * z ∈ extensionSubgroup E.base M.field M.below :=
-      QuotientGroup.eq.mp hi
-    have hizM' : i.1⁻¹ * z.1 ∈ M.field.toSubgroup :=
-      (mem_extensionSubgroup_iff E.base M.field M.below (i⁻¹ * z)).1 hizM
+    have hizM' :=
+      (mem_extensionSubgroup_iff E.base M.field M.below (i⁻¹ * z)).1 (QuotientGroup.eq.mp hi)
     have hiE : i.1 ∈ E.field.toSubgroup := by
-      have hmul := E.field.toSubgroup.mul_mem hzE
-        (E.field.toSubgroup.inv_mem (hME hizM'))
-      simpa [mul_inv_rev, mul_assoc] using hmul
-    have hiM : i.1 ∈ M.field.toSubgroup := hInertia i hiI hiE
+      simpa [mul_inv_rev, mul_assoc] using (E.field.toSubgroup.mul_mem ((mem_extensionSubgroup_iff E.base E.field E.below z).1 (QuotientGroup.leftRel_apply.mp (Quotient.exact' hab)))
+        (E.field.toSubgroup.inv_mem (hME hizM')))
     have hzM : z.1 ∈ M.field.toSubgroup := by
-      have hmul := M.field.toSubgroup.mul_mem hiM hizM'
-      simpa [mul_assoc] using hmul
+      simpa [mul_assoc] using (M.field.toSubgroup.mul_mem (hInertia i hiI hiE) hizM')
     exact hzM
   · intro x
     refine Quotient.inductionOn' x ?_
     intro k
-    have hkDegree : D.degree k.1 ∈
-        E.base.toSubgroup.map D.degree.toMonoidHom := ⟨k.1, k.2, rfl⟩
     obtain ⟨e, heE, heDegree⟩ :=
-      (E.isTotallyRamified_iff_image_le D).1 hTot hkDegree
+      (E.isTotallyRamified_iff_image_le D).1 hTot (⟨k.1, k.2, rfl⟩)
     let eE : E.field.toSubgroup := ⟨e, heE⟩
-    let eK : E.base.toSubgroup := Subgroup.inclusion E.below eE
+    let eK := Subgroup.inclusion E.below eE
     let i : E.base.toSubgroup := k * eK⁻¹
     have hiI : i ∈ D.fieldInertiaWithin E.base := by
       change D.degree i.1 = 1
@@ -147,12 +127,7 @@ theorem abstractReciprocityRestrictionCosetMap_bijective
       change D.degree e = D.degree k.1 at heDegree
       rw [heDegree]
       simp
-    have hiS : (QuotientGroup.mk'
-        (extensionSubgroup E.base M.field M.below)) i ∈ S :=
-      ⟨i, hiI, rfl⟩
-    have hiP : i ∈ M.intermediateSubgroup S := hiS
-    let iM₀ : M₀.toSubgroup := ⟨i.1, ⟨i, hiP, rfl⟩⟩
-    refine ⟨QuotientGroup.mk iM₀, ?_⟩
+    refine ⟨QuotientGroup.mk (⟨i.1, ⟨i, (⟨i, hiI, rfl⟩), rfl⟩⟩), ?_⟩
     apply Quotient.sound'
     rw [QuotientGroup.leftRel_apply]
     change (i⁻¹ * k).1 ∈ E.field.toSubgroup
@@ -160,10 +135,6 @@ theorem abstractReciprocityRestrictionCosetMap_bijective
 
 /-- The equivalence induced by the totally ramified restriction coset map. -/
 noncomputable def abstractReciprocityRestrictionCosetEquiv
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (E : DegreeData.AbstractExtension G)
-    (M : FiniteGaloisSubextension E.base)
-    (hME : M.field.toSubgroup ≤ E.field.toSubgroup)
     (hTot : E.IsTotallyRamified D)
     (hInertia : ∀ i : E.base.toSubgroup,
       i ∈ D.fieldInertiaWithin E.base →
@@ -180,10 +151,6 @@ noncomputable def abstractReciprocityRestrictionCosetEquiv
 /-- The multiplicative restriction equivalence from the lower Galois group
 to the original totally ramified quotient. -/
 noncomputable def abstractReciprocityRestrictionMulEquiv
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (E : DegreeData.AbstractExtension G)
-    (M : FiniteGaloisSubextension E.base)
-    (hME : M.field.toSubgroup ≤ E.field.toSubgroup)
     [hEnormal :
       (extensionSubgroup E.base E.field E.below).Normal]
     (hTot : E.IsTotallyRamified D)
@@ -204,22 +171,17 @@ noncomputable def abstractReciprocityRestrictionMulEquiv
   let S := M.inertiaImage D
   let M₀ := M.maximalUnramifiedSubextension D
   let N := M.lowerFiniteGalois S
-  let hM₀K : M₀.toSubgroup ≤ E.base.toSubgroup :=
-    M.intermediateField_le_base S
   letI : (extensionSubgroup M₀ M.field N.below).Normal := N.normal
   letI : Group E.quotient := by
     change Group
       (E.base.toSubgroup ⧸ extensionSubgroup E.base E.field E.below)
     infer_instance
-  let r : N.extensionQuotient →*
-      E.quotient :=
+  let r :=
     QuotientGroup.map
       (extensionSubgroup M₀ M.field N.below)
       (extensionSubgroup E.base E.field E.below)
-      (Subgroup.inclusion hM₀K)
-      (by
-        intro m hm
-        exact hME hm)
+      (Subgroup.inclusion (M.intermediateField_le_base S))
+      (fun m hm => hME hm)
   apply MulEquiv.ofBijective r
   have hr : (r : N.extensionQuotient →
       E.quotient) =
@@ -232,10 +194,15 @@ noncomputable def abstractReciprocityRestrictionMulEquiv
   exact M.abstractReciprocityRestrictionCosetMap_bijective
     D E hME hTot hInertia
 
+end
+
+section
+
+variable (A : Rep ℤ G) (D : DegreeData G) [IsTopologicalGroup G]
+
 /-- Relative coset actions are transported by the restriction coset
 equivalence. -/
 theorem relativeCosetAction_abstractReciprocityRestrictionCosetEquiv
-    (A : Rep ℤ G) (D : DegreeData G) [IsTopologicalGroup G]
     (E : DegreeData.AbstractExtension G)
     (M : FiniteGaloisSubextension E.base)
     (hME : M.field.toSubgroup ≤ E.field.toSubgroup)
@@ -258,10 +225,6 @@ theorem relativeCosetAction_abstractReciprocityRestrictionCosetEquiv
           D E hME hTot hInertia r) := by
   let S := M.inertiaImage D
   let M₀ := M.maximalUnramifiedSubextension D
-  let hMM₀ : M.field.toSubgroup ≤ M₀.toSubgroup :=
-    M.field_le_intermediateField S
-  let hM₀K : M₀.toSubgroup ≤ E.base.toSubgroup :=
-    M.intermediateField_le_base S
   refine Quotient.inductionOn' r ?_
   intro x
   rfl
@@ -269,7 +232,6 @@ theorem relativeCosetAction_abstractReciprocityRestrictionCosetEquiv
 /-- Relative norm commutes with fixed-field inclusion along the totally
 ramified restriction equivalence. -/
 theorem abstractReciprocity_relativeNorm_fixedFieldInclusion
-    (A : Rep ℤ G) (D : DegreeData G) [IsTopologicalGroup G]
     (E : DegreeData.FiniteAbstractExtension G)
     (M : FiniteGaloisSubextension E.base)
     (hME : M.field.toSubgroup ≤ E.field.toSubgroup)
@@ -313,19 +275,22 @@ theorem abstractReciprocity_relativeNorm_fixedFieldInclusion
   let : Fintype
       (E.base.toSubgroup ⧸ extensionSubgroup E.base E.field E.below) :=
     Fintype.ofFinite _
+  let relativeCosetAction₀ := relativeCosetAction A E.base E.field E.below a
   change (∑ r, relativeCosetAction A M₀ M.field hMM₀
       (fixedFieldInclusion A E.field M.field hME a) r) =
-    ∑ q, relativeCosetAction A E.base E.field E.below a q
+    ∑ q, relativeCosetAction₀ q
   calc
     ∑ r, relativeCosetAction A M₀ M.field hMM₀
         (fixedFieldInclusion A E.field M.field hME a) r =
-      ∑ r, relativeCosetAction A E.base E.field E.below a (e r) := by
+      ∑ r, relativeCosetAction₀ (e r) := by
         apply Fintype.sum_congr
         intro r
         exact M.relativeCosetAction_abstractReciprocityRestrictionCosetEquiv
           A D E.toAbstractExtension hME hTot hInertia a r
-    _ = ∑ q, relativeCosetAction A E.base E.field E.below a q :=
-      e.sum_comp (relativeCosetAction A E.base E.field E.below a)
+    _ = ∑ q, relativeCosetAction₀ q :=
+      e.sum_comp (relativeCosetAction₀)
+
+end
 
 /-- Two auxiliary quotient elements commute when they have the same
 restriction and the auxiliary field contains the inertia subgroup. -/
@@ -353,6 +318,7 @@ theorem commute_of_same_restriction_of_inertia_le
   have hb : (QuotientGroup.mk'
       (extensionSubgroup E.base M.field M.below)) b = t :=
     Quotient.out_eq' t
+  let abstractReciprocityRestriction₀ := abstractReciprocityRestriction E.base E.field M.field hME E.below
   have hcosetE :
       (QuotientGroup.mk'
         (extensionSubgroup E.base E.field E.below)) (a * b) =
@@ -361,32 +327,26 @@ theorem commute_of_same_restriction_of_inertia_le
     rw [map_mul, map_mul]
     have haE : (QuotientGroup.mk'
         (extensionSubgroup E.base E.field E.below)) a =
-        abstractReciprocityRestriction
-          E.base E.field M.field hME E.below g := by
+        abstractReciprocityRestriction₀ g := by
       calc
         (QuotientGroup.mk'
             (extensionSubgroup E.base E.field E.below)) a =
-            abstractReciprocityRestriction E.base E.field M.field hME E.below
+            abstractReciprocityRestriction₀
               ((QuotientGroup.mk'
                 (extensionSubgroup E.base M.field M.below)) a) := rfl
-        _ = abstractReciprocityRestriction
-            E.base E.field M.field hME E.below g :=
-          congrArg (abstractReciprocityRestriction
-            E.base E.field M.field hME E.below) ha
+        _ = abstractReciprocityRestriction₀ g :=
+          congrArg (abstractReciprocityRestriction₀) ha
     have hbE : (QuotientGroup.mk'
         (extensionSubgroup E.base E.field E.below)) b =
-        abstractReciprocityRestriction
-          E.base E.field M.field hME E.below t := by
+        abstractReciprocityRestriction₀ t := by
       calc
         (QuotientGroup.mk'
             (extensionSubgroup E.base E.field E.below)) b =
-            abstractReciprocityRestriction E.base E.field M.field hME E.below
+            abstractReciprocityRestriction₀
               ((QuotientGroup.mk'
                 (extensionSubgroup E.base M.field M.below)) b) := rfl
-        _ = abstractReciprocityRestriction
-            E.base E.field M.field hME E.below t :=
-          congrArg (abstractReciprocityRestriction
-            E.base E.field M.field hME E.below) hb
+        _ = abstractReciprocityRestriction₀ t :=
+          congrArg (abstractReciprocityRestriction₀) hb
     rw [haE, hbE, hres]
   let z : E.base.toSubgroup := (a * b)⁻¹ * (b * a)
   have hzE : z ∈ extensionSubgroup E.base E.field E.below :=
@@ -435,7 +395,7 @@ theorem relativeCosetAction_eq_of_restriction_eq
   refine Quotient.inductionOn₂' g t ?_ hres
   intro x y hxy
   simp only [relativeCosetAction_mk, fixedFieldInclusion_coe]
-  have hxyE : x⁻¹ * y ∈ extensionSubgroup E.base E.field E.below :=
+  have hxyE :=
     QuotientGroup.eq.mp hxy
   let e : E.field.toSubgroup := ⟨(x⁻¹ * y).1, hxyE⟩
   have hy : y = x * Subgroup.inclusion E.below e := by

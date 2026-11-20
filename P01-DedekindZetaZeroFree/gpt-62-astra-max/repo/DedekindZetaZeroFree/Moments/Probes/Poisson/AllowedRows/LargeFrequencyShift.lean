@@ -14,8 +14,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonK
 open scoped Classical Topology
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem K_analytic_z (u : D.Row) (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.re = 4)
     (hw : w.re = 4) :
@@ -33,7 +33,7 @@ theorem K_analytic_z (u : D.Row) (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.r
     rw [hξ, hw]
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
   have hHu : DifferentiableAt ℂ (fun z : ℂ => EulerDomain.Hu D u ξ w z) z := by
-    have h1 := (EulerDomain.Hu_normal_convergence D u).2.2.1
+    have h1 := (EulerDomain.Hu_normal_convergence D u).2
     have h2 : DifferentiableAt ℂ
         (fun p : EulerDomain.Coordinates => EulerDomain.Hu D u p.1 p.2.1 p.2.2) (ξ, w, z) :=
       h1.differentiableAt (EulerDomain.OmegaStar_isOpen.mem_nhds hmem)
@@ -83,29 +83,26 @@ private lemma key_ineq (A B Cc s : ℝ) (hA : 1 ≤ A) (hB : 1 ≤ B) (hC : 1 �
     (hAs : A ≤ (1 + |s|) * Cc) :
     Real.exp (-s ^ 2) * ((Cc ^ 4)⁻¹ * (B ^ 2)⁻¹) ≤
       2 * ((A ^ 2)⁻¹ * ((B ^ 2)⁻¹ * (Cc ^ 2)⁻¹)) := by
-  have hA0 : 0 < A := by linarith
-  have hB0 : 0 < B := by linarith
-  have hC0 : 0 < Cc := by linarith
-  have he : Real.exp (-s ^ 2) * (1 + |s|) ^ 2 ≤ 2 := by
+  let exp₀ := Real.exp (-s ^ 2)
+  have he : exp₀ * (1 + |s|) ^ 2 ≤ 2 := by
     have h1 : (1 + |s|) ^ 2 ≤ 2 * Real.exp (s ^ 2) := by
       have := Real.add_one_le_exp (s ^ 2)
       nlinarith [sq_abs s, abs_nonneg s, sq_nonneg (|s| - 1)]
-    calc Real.exp (-s ^ 2) * (1 + |s|) ^ 2 ≤ Real.exp (-s ^ 2) * (2 * Real.exp (s ^ 2)) :=
+    calc _ ≤ exp₀ * (2 * Real.exp (s ^ 2)) :=
           mul_le_mul_of_nonneg_left h1 (Real.exp_pos _).le
       _ = 2 := by rw [mul_left_comm, ← Real.exp_add]; simp
-  have hA2 : A ^ 2 ≤ ((1 + |s|) * Cc) ^ 2 := pow_le_pow_left₀ (by linarith) hAs 2
-  have h2 : Real.exp (-s ^ 2) * A ^ 2 ≤ 2 * Cc ^ 2 := by
-    calc Real.exp (-s ^ 2) * A ^ 2 ≤ Real.exp (-s ^ 2) * (((1 + |s|) * Cc) ^ 2) :=
-          mul_le_mul_of_nonneg_left hA2 (Real.exp_pos _).le
-      _ = (Real.exp (-s ^ 2) * (1 + |s|) ^ 2) * Cc ^ 2 := by ring
+  have h2 : exp₀ * A ^ 2 ≤ 2 * Cc ^ 2 := by
+    calc _ ≤ exp₀ * (((1 + |s|) * Cc) ^ 2) :=
+          mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by linarith) hAs 2) (Real.exp_pos _).le
+      _ = (exp₀ * (1 + |s|) ^ 2) * Cc ^ 2 := by ring
       _ ≤ 2 * Cc ^ 2 := mul_le_mul_of_nonneg_right he (by positivity)
-  have e1 : Real.exp (-s ^ 2) * ((Cc ^ 4)⁻¹ * (B ^ 2)⁻¹) = Real.exp (-s ^ 2) / (Cc ^ 4 * B ^ 2) := by
+  have e1 : exp₀ * ((Cc ^ 4)⁻¹ * (B ^ 2)⁻¹) = exp₀ / (Cc ^ 4 * B ^ 2) := by
     rw [div_eq_mul_inv, mul_inv]
   have e2 : 2 * ((A ^ 2)⁻¹ * ((B ^ 2)⁻¹ * (Cc ^ 2)⁻¹)) = 2 / (A ^ 2 * (B ^ 2 * Cc ^ 2)) := by
     rw [div_eq_mul_inv, mul_inv, mul_inv]
   rw [e1, e2, div_le_div_iff₀ (by positivity) (by positivity)]
-  calc Real.exp (-s ^ 2) * (A ^ 2 * (B ^ 2 * Cc ^ 2))
-      = (Real.exp (-s ^ 2) * A ^ 2) * (B ^ 2 * Cc ^ 2) := by ring
+  calc _
+      = (exp₀ * A ^ 2) * (B ^ 2 * Cc ^ 2) := by ring
     _ ≤ (2 * Cc ^ 2) * (B ^ 2 * Cc ^ 2) := mul_le_mul_of_nonneg_right h2 (by positivity)
     _ = 2 * (Cc ^ 4 * B ^ 2) := by ring
 
@@ -131,7 +128,8 @@ private theorem K_bound_explicit (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨CM, hCM⟩ := D.M_vertical_decay 2 Scales.tailShift (by norm_num)
     (by norm_num [Scales.tailShift]) 4
   obtain ⟨CW, hCW⟩ := D.W1Hat_vertical_decay 4 4 le_rfl 2
-  refine ⟨2 * Real.exp ((Scales.tailShift + 3) ^ 2) * |CM| * |CW| * Cz * Cp * Cl * CH,
+  let exp₀ := Real.exp ((Scales.tailShift + 3) ^ 2)
+  refine ⟨2 * exp₀ * |CM| * |CW| * Cz * Cp * Cl * CH,
     by positivity, ?_⟩
   intro u Z hZ σ hσ t
   have hZ0 : 0 < Z := by linarith
@@ -209,24 +207,24 @@ private theorem K_bound_explicit (ε : ℝ) (hε : 0 < ε) :
     (by linarith [abs_nonneg t1]) (by linarith [abs_nonneg t2]) (by linarith [abs_nonneg t3])
     hpeet
   have hwm : WeightConvolution.weightModulus D ((4 : ℂ) + (t1 : ℂ) * I) σ 4 (t3, t2) ≤
-      (2 * Real.exp ((Scales.tailShift + 3) ^ 2) * |CM| * |CW|) *
+      (2 * exp₀ * |CM| * |CW|) *
         (((1 + |t1|) ^ 2)⁻¹ * (((1 + |t2|) ^ 2)⁻¹ * ((1 + |t3|) ^ 2)⁻¹)) := by
     unfold WeightConvolution.weightModulus
     dsimp only
     simp only [Complex.ofReal_ofNat]
     rw [norm_mul, norm_mul]
-    calc _ ≤ (Real.exp ((Scales.tailShift + 3) ^ 2) * Real.exp (-(t1 + t3) ^ 2)) *
+    calc _ ≤ (exp₀ * Real.exp (-(t1 + t3) ^ 2)) *
           (|CM| * ((1 + |t3|) ^ 4)⁻¹) * (|CW| * ((1 + |t2|) ^ 2)⁻¹) :=
           mul_le_mul (mul_le_mul hex hMn (norm_nonneg _) (by positivity)) hWn
             (norm_nonneg _) (by positivity)
-      _ = (Real.exp ((Scales.tailShift + 3) ^ 2) * |CM| * |CW|) *
+      _ = (exp₀ * |CM| * |CW|) *
           (Real.exp (-(t1 + t3) ^ 2) * (((1 + |t3|) ^ 4)⁻¹ * ((1 + |t2|) ^ 2)⁻¹)) := by ring
-      _ ≤ (Real.exp ((Scales.tailShift + 3) ^ 2) * |CM| * |CW|) *
+      _ ≤ (exp₀ * |CM| * |CW|) *
           (2 * (((1 + |t1|) ^ 2)⁻¹ * (((1 + |t2|) ^ 2)⁻¹ * ((1 + |t3|) ^ 2)⁻¹))) :=
           mul_le_mul_of_nonneg_left hkey (by positivity)
       _ = _ := by ring
   calc _ ≤ Z ^ (Scales.xExponent / 2 + 4 - 1 + Scales.smoothingExponent * σ + Scales.yExponent * (4 - 1)) * D.q u ^ (-σ) *
-        ((2 * Real.exp ((Scales.tailShift + 3) ^ 2) * |CM| * |CW|) *
+        ((2 * exp₀ * |CM| * |CW|) *
           (((1 + |t1|) ^ 2)⁻¹ * (((1 + |t2|) ^ 2)⁻¹ * ((1 + |t3|) ^ 2)⁻¹))) *
         (Cz * Cp * Cl * (CH * D.q u ^ ε)) :=
         mul_le_mul (mul_le_mul_of_nonneg_left hwm (by positivity)) hrf (norm_nonneg _)
@@ -250,11 +248,10 @@ private theorem re_facts (t : ℝ × ℝ × ℝ) :
 
 private theorem cont_M (u : D.Row) :
     Continuous fun t : ℝ × ℝ × ℝ => D.M (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I) := by
-  have hR0 : (0 : ℝ) < Scales.tailShift := by norm_num [Scales.tailShift]
   refine D.M_differentiableOn.continuousOn.comp_continuous (by fun_prop) (fun t => ?_)
   have := (re_facts t).2.2.1
   show 0 < (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I).re
-  rw [this]; exact hR0
+  rw [this]; exact by norm_num [Scales.tailShift]
 
 private theorem meas_W :
     Measurable fun t : ℝ × ℝ × ℝ => D.W1Hat ((4 : ℂ) + (t.2.1 : ℂ) * I) :=
@@ -271,12 +268,15 @@ private theorem cont_zeta :
   · show 0 < (6 * (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I)).re
     rw [h6]; norm_num [Scales.tailShift]
   · intro h
-    have h1 : (6 * (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I)) = 1 := h
-    have h2 := congrArg Complex.re h1
+    have h2 := congrArg Complex.re h
     rw [h6] at h2
     norm_num [Scales.tailShift] at h2
 
-private theorem cont_Lpsi (u : D.Row) :
+section
+
+variable (u : D.Row)
+
+private theorem cont_Lpsi :
     Continuous fun t : ℝ × ℝ × ℝ => D.Lpsi u ((4 : ℂ) + (t.2.1 : ℂ) * I) := by
   refine (D.Lpsi_analyticOnNhd u).continuousOn.comp_continuous (by fun_prop) (fun t => ?_)
   have h4 := (re_facts t).2.1
@@ -284,12 +284,11 @@ private theorem cont_Lpsi (u : D.Row) :
   · show 0 < ((4 : ℂ) + (t.2.1 : ℂ) * I).re
     rw [h4]; norm_num
   · intro h
-    have h1 : ((4 : ℂ) + (t.2.1 : ℂ) * I) = 1 := h
-    have h2 := congrArg Complex.re h1
+    have h2 := congrArg Complex.re h
     rw [h4] at h2
     norm_num at h2
 
-private theorem cont_Llam (u : D.Row) :
+private theorem cont_Llam :
     Continuous fun t : ℝ × ℝ × ℝ => D.Llam u ((4 : ℂ) + (t.1 : ℂ) * I) := by
   refine (D.Llam_analyticOnNhd u).continuousOn.comp_continuous (by fun_prop) (fun t => ?_)
   have h4 := (re_facts t).1
@@ -297,10 +296,11 @@ private theorem cont_Llam (u : D.Row) :
   · show 0 < ((4 : ℂ) + (t.1 : ℂ) * I).re
     rw [h4]; norm_num
   · intro h
-    have h1 : ((4 : ℂ) + (t.1 : ℂ) * I) = 1 := h
-    have h2 := congrArg Complex.re h1
+    have h2 := congrArg Complex.re h
     rw [h4] at h2
     norm_num at h2
+
+end
 
 private theorem cont_Hu (u : D.Row) :
     Continuous fun t : ℝ × ℝ × ℝ =>
@@ -309,7 +309,7 @@ private theorem cont_Hu (u : D.Row) :
   have hc : Continuous fun t : ℝ × ℝ × ℝ =>
       (((4 : ℂ) + (t.1 : ℂ) * I, (4 : ℂ) + (t.2.1 : ℂ) * I,
         ((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I) : EulerDomain.Coordinates) := by fun_prop
-  have hHu := (EulerDomain.Hu_normal_convergence D u).2.2.1.continuousOn
+  have hHu := (EulerDomain.Hu_normal_convergence D u).2.continuousOn
   have hmem : ∀ t : ℝ × ℝ × ℝ, (((4 : ℂ) + (t.1 : ℂ) * I, (4 : ℂ) + (t.2.1 : ℂ) * I,
         ((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I) : EulerDomain.Coordinates) ∈
         EulerDomain.OmegaStar := by
@@ -329,42 +329,21 @@ private theorem K_measurable_R (u : D.Row) (Z : ℝ) (hZ : 0 < Z) :
     Measurable (fun t : ℝ × ℝ × ℝ =>
       K D u ((4 : ℂ) + (t.1 : ℂ) * I) ((4 : ℂ) + (t.2.1 : ℂ) * I)
         (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I) Z) := by
-  have hq0 : 0 < D.q u := PoissonInitialBridge.q_pos D u
-  have hZc : (Z : ℂ) ≠ 0 := by exact_mod_cast hZ.ne'
-  have hqc : (D.q u : ℂ) ≠ 0 := by exact_mod_cast hq0.ne'
-  have f1 : Measurable fun t : ℝ × ℝ × ℝ => (Z : ℂ) ^ (((Scales.xExponent / 2 : ℝ) : ℂ) +
-      ((4 : ℂ) + (t.1 : ℂ) * I) - 1 + (Scales.smoothingExponent : ℂ) * (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I) +
-      (Scales.yExponent : ℂ) * (((4 : ℂ) + (t.2.1 : ℂ) * I) - 1)) :=
-    (Continuous.const_cpow (by fun_prop) (Or.inl hZc)).measurable
-  have f2 : Measurable fun t : ℝ × ℝ × ℝ => Complex.exp
-      ((((4 : ℂ) + (t.1 : ℂ) * I) + (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I) - 1) ^ 2) :=
-    Continuous.measurable (by fun_prop)
-  have f3 : Measurable fun t : ℝ × ℝ × ℝ =>
-      (D.q u : ℂ) ^ (-(((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I)) :=
-    (Continuous.const_cpow (by fun_prop) (Or.inl hqc)).measurable
-  have f4 : Measurable fun t : ℝ × ℝ × ℝ =>
-      D.zetaSCont (6 * (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I)) * D.Lpsi u ((4 : ℂ) + (t.2.1 : ℂ) * I) /
-        D.Llam u ((4 : ℂ) + (t.1 : ℂ) * I) *
-      EulerDomain.Hu D u ((4 : ℂ) + (t.1 : ℂ) * I) ((4 : ℂ) + (t.2.1 : ℂ) * I)
-        (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I) :=
-    Measurable.mul (Measurable.div (Measurable.mul (cont_zeta D).measurable
-      (cont_Lpsi D u).measurable) (cont_Llam D u).measurable) (cont_Hu D u).measurable
-  exact ((((f1.mul f2).mul (cont_M D u).measurable).mul (meas_W D)).mul f3).mul f4
+  exact ((((((Continuous.const_cpow (by fun_prop) (Or.inl (by exact_mod_cast hZ.ne'))).measurable).mul (Continuous.measurable (by fun_prop))).mul (cont_M D u).measurable).mul (meas_W D)).mul ((Continuous.const_cpow (by fun_prop) (Or.inl (by exact_mod_cast (PoissonInitialBridge.q_pos D u).ne'))).measurable)).mul (Measurable.mul (Measurable.div (Measurable.mul (cont_zeta D).measurable
+    (cont_Lpsi D u).measurable) (cont_Llam D u).measurable) (cont_Hu D u).measurable)
 
 theorem K_integrable_line (u : D.Row) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : ℂ) (hξ : ξ.re = 4)
     (hw : w.re = 4) (σ : ℝ) (hσ : σ ∈ Icc (2 : ℝ) Scales.tailShift) :
     Integrable (fun t : ℝ => K D u ξ w ((σ : ℂ) + (t : ℂ) * I) Z) := by
   obtain ⟨c, hc, h⟩ := K_bound_explicit D 1 one_pos
-  have hZ0 : 0 < Z := by linarith
-  have hσ1 : 2 ≤ σ := hσ.1
+  have hσ1 := hσ.1
   obtain ⟨t1, rfl⟩ : ∃ t1 : ℝ, ξ = (4 : ℂ) + (t1 : ℂ) * I :=
     ⟨ξ.im, by apply Complex.ext <;> simp [hξ]⟩
   obtain ⟨t2, rfl⟩ : ∃ t2 : ℝ, w = (4 : ℂ) + (t2 : ℂ) * I :=
     ⟨w.im, by apply Complex.ext <;> simp [hw]⟩
-  have hA := K_analytic_z D u Z hZ0 ((4 : ℂ) + (t1 : ℂ) * I) ((4 : ℂ) + (t2 : ℂ) * I) hξ hw
   have hcont : Continuous (fun t : ℝ =>
       K D u ((4 : ℂ) + (t1 : ℂ) * I) ((4 : ℂ) + (t2 : ℂ) * I) ((σ : ℂ) + (t : ℂ) * I) Z) :=
-    hA.continuousOn.comp_continuous (by fun_prop) (fun t => by
+    (K_analytic_z D u Z (by linarith) ((4 : ℂ) + (t1 : ℂ) * I) ((4 : ℂ) + (t2 : ℂ) * I) hξ hw).continuousOn.comp_continuous (by fun_prop) (fun t => by
       show 1 / 6 < ((σ : ℂ) + (t : ℂ) * I).re
       simp
       linarith)
@@ -383,7 +362,6 @@ theorem K_horizontal_tendsto_zero (u : D.Row) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : �
         K D u ξ w ((x : ℂ) + ((ε * T : ℝ) : ℂ) * I) Z) atTop (𝓝 0) := by
   obtain ⟨c, hc, h⟩ := K_bound_explicit D 1 one_pos
   have hZ0 : 0 < Z := by linarith
-  have hq0 : 0 < D.q u := PoissonInitialBridge.q_pos D u
   obtain ⟨t1, rfl⟩ : ∃ t1 : ℝ, ξ = (4 : ℂ) + (t1 : ℂ) * I :=
     ⟨ξ.im, by apply Complex.ext <;> simp [hξ]⟩
   obtain ⟨t2, rfl⟩ : ∃ t2 : ℝ, w = (4 : ℂ) + (t2 : ℂ) * I :=
@@ -394,7 +372,7 @@ theorem K_horizontal_tendsto_zero (u : D.Row) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : �
     apply Continuous.mul
     · exact Continuous.rpow continuous_const (by unfold Scales.kernelExponent; fun_prop)
         (fun _ => Or.inl hZ0.ne')
-    · exact Continuous.rpow continuous_const (by fun_prop) (fun _ => Or.inl hq0.ne')
+    · exact Continuous.rpow continuous_const (by fun_prop) (fun _ => Or.inl (PoissonInitialBridge.q_pos D u).ne')
   obtain ⟨Mx, hMx⟩ := isCompact_Icc.exists_bound_of_continuousOn hcontf
   set Kc : ℝ := Mx * (c * (((1 + |t1|) ^ 2)⁻¹ * ((1 + |t2|) ^ 2)⁻¹)) with hKc
   have h1 : Tendsto (fun T : ℝ => (1 + T) ^ 2) atTop atTop :=
@@ -415,37 +393,31 @@ theorem K_horizontal_tendsto_zero (u : D.Row) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : �
   simp only [habs] at hb
   have hm := hMx x hxI
   rw [Real.norm_eq_abs] at hm
-  have hm2 := le_abs_self (Z ^ (Scales.kernelExponent 4 4 x) * D.q u ^ (-x + 1))
   refine hb.trans ?_
-  have hG : 0 ≤ c * (((1 + |t1|) ^ 2)⁻¹ * (((1 + |t2|) ^ 2)⁻¹ * ((1 + T) ^ 2)⁻¹)) := by
-    positivity
-  calc Z ^ (Scales.kernelExponent 4 4 x) * D.q u ^ (-x + 1) *
-        (c * (((1 + |t1|) ^ 2)⁻¹ * (((1 + |t2|) ^ 2)⁻¹ * ((1 + T) ^ 2)⁻¹)))
+  calc _
       ≤ Mx * (c * (((1 + |t1|) ^ 2)⁻¹ * (((1 + |t2|) ^ 2)⁻¹ * ((1 + T) ^ 2)⁻¹))) :=
-        mul_le_mul_of_nonneg_right (hm2.trans hm) hG
+        mul_le_mul_of_nonneg_right ((le_abs_self (Z ^ (Scales.kernelExponent 4 4 x) * D.q u ^ (-x + 1))).trans hm) (by
+          positivity)
     _ = Kc * ((1 + T) ^ 2)⁻¹ := by rw [hKc]; ring
 
 theorem large_row_z_shift (u : D.Row) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : ℂ) (hξ : ξ.re = 4)
     (hw : w.re = 4) :
     comparisonVerticalIntegral 2 (fun z => K D u ξ w z Z) =
       comparisonVerticalIntegral Scales.tailShift (fun z => K D u ξ w z Z) := by
-  have hZ0 : (0 : ℝ) < Z := by linarith
-  have hA := K_analytic_z D u Z hZ0 ξ w hξ hw
+  have hA := K_analytic_z D u Z (by linarith) ξ w hξ hw
   have hR : (3 : ℝ) < Scales.tailShift := by norm_num [Scales.tailShift]
   have h2 : (2 : ℝ) < 3 := by norm_num
-  have hcont : ContinuousAt (fun z : ℂ => K D u ξ w z Z) 3 :=
-    (hA 3 (by simp only [Set.mem_setOf_eq]; norm_num)).continuousAt
   have hres : Tendsto (fun z : ℂ => (z - 3) * K D u ξ w z Z) (𝓝[≠] (3 : ℂ)) (𝓝 0) := by
     have h1 : Tendsto (fun z : ℂ => (z - 3) * K D u ξ w z Z) (𝓝 (3 : ℂ))
         (𝓝 ((3 - 3) * K D u ξ w 3 Z)) :=
-      ((continuous_id.sub continuous_const).continuousAt.mul hcont).tendsto
+      ((continuous_id.sub continuous_const).continuousAt.mul ((hA 3 (by simp only [Set.mem_setOf_eq]; norm_num)).continuousAt)).tendsto
     simp only [sub_self, zero_mul] at h1
     exact h1.mono_left nhdsWithin_le_nhds
   have hf : DifferentiableOn ℂ (fun z : ℂ => K D u ξ w z Z)
       (comparisonClosedStrip 2 Scales.tailShift \ {(3 : ℂ)}) := by
     intro z hz
     have hz1 : z ∈ {z : ℂ | 1 / 6 < z.re} := by
-      have h1 : (2 : ℝ) ≤ z.re := hz.1.1
+      have h1 := hz.1.1
       show 1 / 6 < z.re
       linarith
     exact ((hA z hz1).differentiableAt).differentiableWithinAt
@@ -476,33 +448,28 @@ theorem large_row_triple_bound (ε : ℝ) (hε : 0 < ε) :
   refine ⟨c * I0 ^ 3 + 1, by positivity, ?_⟩
   intro u Z hZ
   have hZ0 : 0 < Z := by linarith
-  have hq0 : 0 < D.q u := PoissonInitialBridge.q_pos D u
-  have hRmem : Scales.tailShift ∈ Icc (2 : ℝ) Scales.tailShift := ⟨by norm_num [Scales.tailShift], le_rfl⟩
+  have hq0 := PoissonInitialBridge.q_pos D u
   obtain ⟨B, hBd⟩ : ∃ B : ℝ, B = Z ^ (Scales.kernelExponent 4 4 Scales.tailShift) * D.q u ^ (-Scales.tailShift + ε) :=
     ⟨_, rfl⟩
   have hB0 : 0 ≤ B := by rw [hBd]; positivity
-  have hgint : Integrable (fun t : ℝ × ℝ × ℝ => B * (c * (((1 + |t.1|) ^ 2)⁻¹ *
-      (((1 + |t.2.1|) ^ 2)⁻¹ * ((1 + |t.2.2|) ^ 2)⁻¹)))) :=
+  have hgint :=
     ((hI_inv_sq.mul_prod (hI_inv_sq.mul_prod hI_inv_sq)).const_mul c).const_mul B
-  have hmeas := K_measurable_R D u Z hZ0
   have hbound : ∀ t : ℝ × ℝ × ℝ,
       ‖K D u ((4 : ℂ) + (t.1 : ℂ) * I) ((4 : ℂ) + (t.2.1 : ℂ) * I)
         (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I) Z‖ ≤
       B * (c * (((1 + |t.1|) ^ 2)⁻¹ * (((1 + |t.2.1|) ^ 2)⁻¹ * ((1 + |t.2.2|) ^ 2)⁻¹))) := by
     intro t
     rw [hBd]
-    exact h u Z hZ Scales.tailShift hRmem t
-  have hKint : Integrable (fun t : ℝ × ℝ × ℝ =>
-      K D u ((4 : ℂ) + (t.1 : ℂ) * I) ((4 : ℂ) + (t.2.1 : ℂ) * I)
-        (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I) Z) :=
-    Integrable.mono' hgint hmeas.aestronglyMeasurable (Filter.Eventually.of_forall hbound)
+    exact h u Z hZ Scales.tailShift (⟨by norm_num [Scales.tailShift], le_rfl⟩) t
+  have hKint :=
+    Integrable.mono' hgint (K_measurable_R D u Z hZ0).aestronglyMeasurable (Filter.Eventually.of_forall hbound)
   refine ⟨hKint, ?_⟩
   have e2 : ∫ y : ℝ × ℝ, ((1 + |y.1|) ^ 2)⁻¹ * ((1 + |y.2|) ^ 2)⁻¹ = I0 * I0 := by
     rw [hI0]
     exact integral_prod_mul (fun x : ℝ => ((1 + |x|) ^ 2)⁻¹) (fun x : ℝ => ((1 + |x|) ^ 2)⁻¹)
   have e3 : ∫ t : ℝ × ℝ × ℝ, ((1 + |t.1|) ^ 2)⁻¹ *
       (((1 + |t.2.1|) ^ 2)⁻¹ * ((1 + |t.2.2|) ^ 2)⁻¹) = I0 * (I0 * I0) := by
-    have := integral_prod_mul (μ := (volume : Measure ℝ)) (ν := (volume : Measure (ℝ × ℝ)))
+    have := integral_prod_mul (μ := volume) (ν := volume)
       (fun x : ℝ => ((1 + |x|) ^ 2)⁻¹)
       (fun y : ℝ × ℝ => ((1 + |y.1|) ^ 2)⁻¹ * ((1 + |y.2|) ^ 2)⁻¹)
     rw [e2, ← hI0] at this

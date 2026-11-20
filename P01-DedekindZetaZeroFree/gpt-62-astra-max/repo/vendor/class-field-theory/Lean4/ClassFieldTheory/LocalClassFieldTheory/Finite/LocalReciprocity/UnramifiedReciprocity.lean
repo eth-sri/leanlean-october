@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -48,18 +45,16 @@ noncomputable def unramifiedLocalReciprocityIsoToGaloisGroup
   (normQuotientUnramifiedValuationEquivZModOfIsIntegralClosure K L).trans
     (galoisGroupEquivZModOfUnramifiedValuationNormalized K L).symm
 
+variable (K L : Type) [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+    [Field L] [ValuativeRel L] [UniformSpace L] [IsUniformAddGroup L] [IsNonarchimedeanLocalField L]
+    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
+    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
+    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]] [IsUnramifiedValuedExtension K L]
+
 /-- The chosen inverse prime element
 maps to the arithmetic Frobenius under the actual reciprocity equivalence. -/
 @[simp]
-theorem unramifiedLocalReciprocityIsoToGaloisGroup_inverseIntegerRingUniformizerFieldUnit
-    (K L : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [UniformSpace L] [IsUniformAddGroup L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L] :
+theorem unramifiedLocalReciprocityIsoToGaloisGroup_inverseIntegerRingUniformizerFieldUnit :
     unramifiedLocalReciprocityIsoToGaloisGroup K L
         (normClass K L (inverseIntegerRingUniformizerFieldUnit K)) =
       arithmeticFrobeniusOfUnramifiedValuation K L := by
@@ -76,35 +71,10 @@ theorem unramifiedLocalReciprocityIsoToGaloisGroup_inverseIntegerRingUniformizer
   rw [← galoisGroupEquivZModOfUnramifiedValuationNormalized_arithmeticFrobenius K L]
   exact (galoisGroupEquivZModOfUnramifiedValuationNormalized K L).symm_apply_apply _
 
-/-- Power form of the unramified reciprocity calculation for the chosen inverse
-prime element. -/
-theorem unramifiedLocalReciprocityIsoToGaloisGroup_inverseIntegerRingUniformizerFieldUnit_zpow
-    (K L : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [UniformSpace L] [IsUniformAddGroup L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L] (m : Int) :
-    unramifiedLocalReciprocityIsoToGaloisGroup K L
-        ((normClass K L (inverseIntegerRingUniformizerFieldUnit K)) ^ m) =
-      (arithmeticFrobeniusOfUnramifiedValuation K L) ^ m := by
-  rw [map_zpow,
-    unramifiedLocalReciprocityIsoToGaloisGroup_inverseIntegerRingUniformizerFieldUnit]
-
 /-- The actual reciprocity equivalence to
 `GaloisGroup` sends any field unit class to the corresponding power of arithmetic
 Frobenius, with exponent its normalized valuation. -/
-theorem unramifiedLocalReciprocityIsoToGaloisGroup_normClass
-    (K L : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [UniformSpace L] [IsUniformAddGroup L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L] (x : Kˣ) :
+theorem unramifiedLocalReciprocityIsoToGaloisGroup_normClass (x : Kˣ) :
     unramifiedLocalReciprocityIsoToGaloisGroup K L (normClass K L x) =
       (arithmeticFrobeniusOfUnramifiedValuation K L) ^
         LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K (Additive.ofMul x) := by
@@ -124,15 +94,7 @@ theorem unramifiedLocalReciprocityIsoToGaloisGroup_normClass
 It composes the valuation quotient and normalized Frobenius model, then
 passes to the abelianization of the
 cyclic Galois group. -/
-noncomputable def unramifiedLocalReciprocityIso
-    (K L : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [UniformSpace L] [IsUniformAddGroup L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L] :
+noncomputable def unramifiedLocalReciprocityIso :
     NormQuotient K L ≃* Abelianization (Gal(L / K)) :=
   (unramifiedLocalReciprocityIsoToGaloisGroup K L).trans
     (galoisGroupEquivAbelianizationOfUnramifiedValuation K L)
@@ -140,55 +102,16 @@ noncomputable def unramifiedLocalReciprocityIso
 /-- With abelianized target, the chosen
 inverse prime element maps to the class of the arithmetic Frobenius. -/
 @[simp]
-theorem unramifiedLocalReciprocityIso_inverseIntegerRingUniformizerFieldUnit
-    (K L : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [UniformSpace L] [IsUniformAddGroup L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L] :
+theorem unramifiedLocalReciprocityIso_inverseIntegerRingUniformizerFieldUnit :
     unramifiedLocalReciprocityIso K L
         (normClass K L (inverseIntegerRingUniformizerFieldUnit K)) =
       Abelianization.of (arithmeticFrobeniusOfUnramifiedValuation K L) := by
-  unfold unramifiedLocalReciprocityIso
-  change galoisGroupEquivAbelianizationOfUnramifiedValuation K L
-      (unramifiedLocalReciprocityIsoToGaloisGroup K L
-        (normClass K L (inverseIntegerRingUniformizerFieldUnit K))) =
-    Abelianization.of (arithmeticFrobeniusOfUnramifiedValuation K L)
-  rw [unramifiedLocalReciprocityIsoToGaloisGroup_inverseIntegerRingUniformizerFieldUnit]
-  rfl
-
-/-- Power form of the unramified reciprocity calculation with abelianized
-target. -/
-theorem unramifiedLocalReciprocityIso_inverseIntegerRingUniformizerFieldUnit_zpow
-    (K L : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [UniformSpace L] [IsUniformAddGroup L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L] (m : Int) :
-    unramifiedLocalReciprocityIso K L
-        ((normClass K L (inverseIntegerRingUniformizerFieldUnit K)) ^ m) =
-      (Abelianization.of (arithmeticFrobeniusOfUnramifiedValuation K L)) ^ m := by
-  rw [map_zpow,
-    unramifiedLocalReciprocityIso_inverseIntegerRingUniformizerFieldUnit]
+  simp [unramifiedLocalReciprocityIso, unramifiedLocalReciprocityIsoToGaloisGroup_inverseIntegerRingUniformizerFieldUnit]
 
 /-- The unramified reciprocity map
 on a general field unit is the arithmetic Frobenius class raised to the
 normalized valuation. -/
-theorem unramifiedLocalReciprocityIso_normClass
-    (K L : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [UniformSpace L] [IsUniformAddGroup L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L] (x : Kˣ) :
+theorem unramifiedLocalReciprocityIso_normClass (x : Kˣ) :
     unramifiedLocalReciprocityIso K L (normClass K L x) =
       (Abelianization.of (arithmeticFrobeniusOfUnramifiedValuation K L)) ^
         LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K (Additive.ofMul x) := by
@@ -204,29 +127,13 @@ theorem unramifiedLocalReciprocityIso_normClass
 /-- The actual unramified Artin map induced by the certificate-free
 reciprocity equivalence.  This avoids introducing `LocalReciprocityDataReal`
 as an assumption package. -/
-noncomputable def unramifiedLocalArtinMap
-    (K L : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [UniformSpace L] [IsUniformAddGroup L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L] :
+noncomputable def unramifiedLocalArtinMap :
     Kˣ →* Abelianization (Gal(L / K)) :=
   (unramifiedLocalReciprocityIso K L).toMonoidHom.comp (normClass K L)
 
 /-- States the theorem `unramifiedLocalArtinMap_apply`. -/
 @[simp]
-theorem unramifiedLocalArtinMap_apply
-    (K L : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [UniformSpace L] [IsUniformAddGroup L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L] (x : Kˣ) :
+theorem unramifiedLocalArtinMap_apply (x : Kˣ) :
     unramifiedLocalArtinMap K L x =
       unramifiedLocalReciprocityIso K L (normClass K L x) :=
   rfl
@@ -234,15 +141,7 @@ theorem unramifiedLocalArtinMap_apply
 /-- In the arithmetic-Frobenius convention,
 the actual local Artin map sends `x` to the arithmetic Frobenius class raised
 to `v_K(x)`. -/
-theorem unramifiedLocalArtinMap_eq_frobenius_zpow
-    (K L : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [UniformSpace L] [IsUniformAddGroup L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L] (x : Kˣ) :
+theorem unramifiedLocalArtinMap_eq_frobenius_zpow (x : Kˣ) :
     unramifiedLocalArtinMap K L x =
       (Abelianization.of (arithmeticFrobeniusOfUnramifiedValuation K L)) ^
         LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K (Additive.ofMul x) := by

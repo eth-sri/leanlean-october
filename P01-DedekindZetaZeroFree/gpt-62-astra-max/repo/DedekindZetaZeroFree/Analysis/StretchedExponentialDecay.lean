@@ -11,8 +11,7 @@ theorem thetaStretchedExponentialPower (p B : ℝ) (hp : 0 < p) (hB : 0 < B)
     Asymptotics.IsLittleO Filter.atTop
       (fun t : ℝ => Real.exp (-B * Real.rpow t p))
       (fun t : ℝ => Real.rpow t r) := by
-  have h1 : Asymptotics.IsLittleO Filter.atTop
-      (fun x : ℝ => Real.exp (-B * x)) (fun x : ℝ => Real.rpow x (r / p)) :=
+  have h1 :=
     isLittleO_exp_neg_mul_rpow_atTop hB (r / p)
   have h2 : Asymptotics.IsLittleO Filter.atTop
       (fun t : ℝ => Real.exp (-B * Real.rpow t p))
@@ -35,10 +34,6 @@ theorem thetaStretchedExponentialPower_bound (p B : ℝ) (hp : 0 < p) (hB : 0 < 
     rw [one_mul, norm_mul, Real.norm_of_nonneg hA,
       Real.norm_of_nonneg (Real.exp_pos _).le]
     exact hF t ht
-  have hlit : Asymptotics.IsLittleO Filter.atTop
-      (fun t : ℝ => A * Real.exp (-B * Real.rpow t p))
-      (fun t : ℝ => Real.rpow t r) :=
-    (thetaStretchedExponentialPower p B hp hB r).const_mul_left A
-  exact hbig.trans hlit.isBigO
+  exact hbig.trans ((thetaStretchedExponentialPower p B hp hB r).const_mul_left A).isBigO
 
 end DedekindZetaZeroFree

@@ -16,7 +16,7 @@ noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.PrimitivePhases
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
+    (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
 
 structure ReferenceCharacter (u u₀ : Ideal (𝓞 F)) where
   modulus : Ideal (𝓞 F)
@@ -42,7 +42,7 @@ private theorem reference_character_exists (hc : c ≠ ⊥)
     letI := Q.instGroup
     have ha := congrArg Q.cls hx
     have hb := congrArg Q.cls hy
-    have hdc : (u ⊔ u₀) ⊔ c = ⊤ :=
+    have hdc :=
       (SquarefreeGcd.strip_coprime_aux hu hu₀ hx hy huc hu₀c).1
     rw [Q.cls_mul _ _ hdc hxc] at ha
     rw [Q.cls_mul _ _ hdc hyc] at hb
@@ -54,13 +54,11 @@ private theorem reference_character_exists (hc : c ≠ ⊥)
     (SquarefreeGcd.ne_bot_of_squarefree hxsf)
     (SquarefreeGcd.ne_bot_of_squarefree hysf)
     hxsf hysf hxc hyc hxy hcls ψ' hψ'
-  have hxdiv : x ∣ u := ⟨u ⊔ u₀, hx.trans (mul_comm _ _)⟩
-  have hydiv : y ∣ u₀ := ⟨u ⊔ u₀, hy.trans (mul_comm _ _)⟩
   let R := c * u * u₀ * Q.cond u * Q.cond u₀ * Q.cond x * Q.cond y
   refine ⟨{ modulus := x*y
             modulus_ne := mul_ne_zero (SquarefreeGcd.ne_bot_of_squarefree hxsf)
               (SquarefreeGcd.ne_bot_of_squarefree hysf)
-            modulus_dvd := mul_dvd_mul hxdiv hydiv
+            modulus_dvd := mul_dvd_mul (⟨u ⊔ u₀, hx.trans (mul_comm _ _)⟩) (⟨u ⊔ u₀, hy.trans (mul_comm _ _)⟩)
             character := ψ'
             self_conj := fun z => (hquad.1 z).1
             norm_le := fun z => (hquad.1 z).2.2.2
@@ -68,7 +66,6 @@ private theorem reference_character_exists (hc : c ≠ ⊥)
             comparison_ne := hR
             agree := ?_ }⟩
   intro z hz hzc
-  have hprod := (rawGcdPairTransport hc Q hu hu₀ huc hu₀c hclass hx hy).2.1 z hz hzc
   have hcond : z ⊔ (Q.cond x * Q.cond y) = ⊤ := by
     apply top_unique
     rw [← hzc]
@@ -78,7 +75,7 @@ private theorem reference_character_exists (hc : c ≠ ⊥)
       (Ideal.mul_le_right (I := c * u * u₀ * Q.cond u * Q.cond u₀)
         (J := Q.cond x * Q.cond y))
   rw [hψ' z hcond, quadraticFamily_conj Q hysf hyc]
-  exact hprod.symm
+  exact ((rawGcdPairTransport hc Q hu hu₀ huc hu₀c hclass hx hy).2.1 z hz hzc).symm
 
 theorem primitive_pair_phase_separation
     (hc : c ≠ ⊥) (S : Finset (Ideal (𝓞 F)))
@@ -94,9 +91,7 @@ theorem primitive_pair_phase_separation
         ψ z = phase u z * star (phase v z) := by
   by_cases hS0 : S.Nonempty
   · obtain ⟨u₀, hu₀⟩ := hS0
-    have href : ∀ u ∈ S, Nonempty (ReferenceCharacter Q u u₀) := by
-      intro u hu
-      exact reference_character_exists Q hc (hS u hu).1 (hS u₀ hu₀).1
+    have href : ∀ u ∈ S, Nonempty (ReferenceCharacter Q u u₀) := fun u hu => reference_character_exists Q hc (hS u hu).1 (hS u₀ hu₀).1
         (hS u hu).2 (hS u₀ hu₀).2 (hclass u hu u₀ hu₀)
     let Γ (u : {u : Ideal (𝓞 F) // u ∈ S}) : ReferenceCharacter Q u.val u₀ :=
       Classical.choice (href u.val u.property)
@@ -107,24 +102,19 @@ theorem primitive_pair_phase_separation
     intro u hu v hv huv ψ hψ z hz hzS
     simp only [dif_pos hu, dif_pos hv]
     let m := (u * v) * ((Γ ⟨u, hu⟩).modulus * (Γ ⟨v, hv⟩).modulus)
-    have huv0 : u * v ≠ ⊥ := mul_ne_zero
-      (SquarefreeGcd.ne_bot_of_squarefree (hS u hu).1)
-      (SquarefreeGcd.ne_bot_of_squarefree (hS v hv).1)
-    have hmΓ : (Γ ⟨u, hu⟩).modulus * (Γ ⟨v, hv⟩).modulus ≠ ⊥ :=
-      mul_ne_zero (Γ ⟨u, hu⟩).modulus_ne (Γ ⟨v, hv⟩).modulus_ne
-    have hm : m ≠ ⊥ := mul_ne_zero huv0 hmΓ
     have hdivψ : u * v ∣ m := dvd_mul_right _ _
     have hdivΓ : (Γ ⟨u, hu⟩).modulus * (Γ ⟨v, hv⟩).modulus ∣ m := dvd_mul_left _ _
     let θ := RayOperations.mul (Γ ⟨u, hu⟩).character (Γ ⟨v, hv⟩).character
     let R := (Γ ⟨u, hu⟩).comparison * (Γ ⟨v, hv⟩).comparison *
       (Q.cond u * Q.cond v) * Q.cond u₀
-    have hR : R ≠ ⊥ := by
-      exact mul_ne_zero (mul_ne_zero
+    have hR := mul_ne_zero (mul_ne_zero
         (mul_ne_zero (Γ ⟨u, hu⟩).comparison_ne (Γ ⟨v, hv⟩).comparison_ne)
         (mul_ne_zero (Q.primitive u (hS u hu).1 (hS u hu).2).1
           (Q.primitive v (hS v hv).1 (hS v hv).2).1))
         (Q.primitive u₀ (hS u₀ hu₀).1 (hS u₀ hu₀).2).1
-    have heq := RayComparison.away_uniqueness hm hR
+    have heq := RayComparison.away_uniqueness (mul_ne_zero (mul_ne_zero
+      (SquarefreeGcd.ne_bot_of_squarefree (hS u hu).1)
+      (SquarefreeGcd.ne_bot_of_squarefree (hS v hv).1)) (mul_ne_zero (Γ ⟨u, hu⟩).modulus_ne (Γ ⟨v, hv⟩).modulus_ne)) hR
       (Sieve.Initial.liftCharacter hdivψ ψ)
       (Sieve.Initial.liftCharacter hdivΓ θ) (by
         intro I hI hImR
@@ -142,29 +132,25 @@ theorem primitive_pair_phase_separation
             exact ⟨Ideal.isCoprime_iff_sup_eq.mpr hsplit.2.2.2.1,
               Ideal.isCoprime_iff_sup_eq.mpr hsplit.2.2.2.2.1⟩),
           quadraticFamily_conj Q (hS v hv).1 (hS v hv).2]
-        have hsq := quadraticFamily_value_sq_eq_one Q (hS u₀ hu₀).1
-          (hS u₀ hu₀).2 I hI hsplit.2.2.2.2.2
         calc
           _ = ((Q.χ u) I * (Q.χ v) I) * 1 := by ring
-          _ = ((Q.χ u) I * (Q.χ v) I) * ((Q.χ u₀) I)^2 := by rw [hsq]
+          _ = ((Q.χ u) I * (Q.χ v) I) * ((Q.χ u₀) I)^2 := by rw [(quadraticFamily_value_sq_eq_one Q (hS u₀ hu₀).1
+            (hS u₀ hu₀).2 I hI hsplit.2.2.2.2.2)]
           _ = _ := by ring)
     have hzmod : z ⊔ m = ⊤ := by
-      have hzu := hzS u hu
-      have hzv := hzS v hv
-      have hz₀ := hzS u₀ hu₀
       have hzΓ : ∀ b, ∀ hb : b ∈ S, z ⊔ (Γ ⟨b, hb⟩).modulus = ⊤ := by
         intro b hb
         apply top_unique
         have hzprod : z ⊔ b * u₀ = ⊤ := by
           simp only [← Ideal.isCoprime_iff_sup_eq, IsCoprime.mul_right_iff]
           exact ⟨Ideal.isCoprime_iff_sup_eq.mpr (hzS b hb),
-            Ideal.isCoprime_iff_sup_eq.mpr hz₀⟩
+            Ideal.isCoprime_iff_sup_eq.mpr (hzS u₀ hu₀)⟩
         rw [← hzprod]
         exact sup_le_sup_left (Ideal.dvd_iff_le.mp (Γ ⟨b, hb⟩).modulus_dvd) z
       dsimp [m]
       simp only [← Ideal.isCoprime_iff_sup_eq, IsCoprime.mul_right_iff]
-      exact ⟨⟨Ideal.isCoprime_iff_sup_eq.mpr hzu,
-        Ideal.isCoprime_iff_sup_eq.mpr hzv⟩,
+      exact ⟨⟨Ideal.isCoprime_iff_sup_eq.mpr (hzS u hu),
+        Ideal.isCoprime_iff_sup_eq.mpr (hzS v hv)⟩,
         ⟨Ideal.isCoprime_iff_sup_eq.mpr (hzΓ u hu),
           Ideal.isCoprime_iff_sup_eq.mpr (hzΓ v hv)⟩⟩
     have hzEq := heq z

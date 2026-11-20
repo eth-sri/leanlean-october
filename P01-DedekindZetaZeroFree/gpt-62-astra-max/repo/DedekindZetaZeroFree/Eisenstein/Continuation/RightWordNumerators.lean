@@ -12,23 +12,18 @@ open Filter
 namespace DedekindZetaZeroFree.RootDerivatives
 open KPLiteralRaw KPContActualSphericalRightFieldIdentification SharedSource
 open KPGlobalResidualConstruction KPContActualCutoffPlusClearedGerm
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming scalar_line_construction → scalar_line_construction
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming scalar_analytic_of_right_holomorphic → scalar_analytic_of_right_holomorphic
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming word_smul → word_smul
-open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy renaming actualRightWord_compact_holomorphy → actualRightWord_compact_holomorphy
-open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy renaming actualRightWord_append → actualRightWord_append
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator renaming scalar_eq_lift → scalar_eq_lift
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming word_zero → word_zero
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming literal_finite_word_chamber → literal_finite_word_chamber
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming smooth_zero → smooth_zero
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming finite_level_exists → finite_level_exists
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer (scalar_line_construction scalar_analytic_of_right_holomorphic word_smul)
+open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy (actualRightWord_compact_holomorphy actualRightWord_append)
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator (scalar_eq_lift)
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (word_zero literal_finite_word_chamber)
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy (smooth_zero finite_level_exists)
 set_option maxHeartbeats 1800000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (M : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (μ : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ μ P)
+    (M : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (μ : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ μ P)
 
 include M μ P H in
 theorem spherical_allWord_numerator (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
@@ -89,12 +84,11 @@ theorem spherical_allWord_numerator (U : KPMsRationalCompactCrossPairing.Level F
       apply hq.congr
       filter_upwards [nhdsWithin_le_nhds (Metric.ball_mem_nhds c hr), self_mem_nhdsWithin] with s hsr hn
       rw [he s hsr hn, actualRightWord_smul _ _ (hs s) a]
-      change (s-c) * actualRightWord F ζ hζ a (A s) g / (s-c) = _
       exact mul_div_cancel_left₀ _ (sub_ne_zero.mpr hn)
     obtain ⟨r,hr,hb,N,hNs,hNa,he⟩ := hloc 0 (by norm_num [KPContinuation.spectralDomain])
     refine ⟨A,N,?_,hs,hm,r,hr,hb,hNs,hNa,?_⟩
     · intro s hs g; exact congrFun (congrArg (actualRightWord F ζ hζ w) (funext (hch s hs))) g
-    · simpa only [sub_zero] using he
+    · simpa using he
 
 include M μ P H in
 theorem literal_allWord_numerator (K : Subgroup (KPLiteralRaw.G F ζ hζ))
@@ -104,8 +98,7 @@ theorem literal_allWord_numerator (K : Subgroup (KPLiteralRaw.G F ζ hζ))
       (∀ s, KPLiteralRaw.Smooth F ζ hζ (A s)) ∧
       (∀ a g, MeromorphicOn (fun s => actualRightWord F ζ hζ a (A s) g) KPContinuation.spectralDomain) ∧
       (∀ s, (1/3 : ℝ) < s.re → ∀ g, A s g = q s * eisenstein F ζ hζ K f s g) ∧
-      0 < r ∧ Metric.ball (0 : ℂ) r ⊆ KPContinuation.spectralDomain ∧
-      (∀ s, KPLiteralRaw.Smooth F ζ hζ (N s)) ∧
+      0 < r ∧ (∀ s, KPLiteralRaw.Smooth F ζ hζ (N s)) ∧
       (∀ a g, AnalyticOnNhd ℂ (fun s => actualRightWord F ζ hζ a (N s) g) (Metric.ball (0 : ℂ) r)) ∧
       ∀ s ∈ Metric.ball (0 : ℂ) r, s ≠ 0 → N s = s • A s := by
   obtain ⟨n,U,m,v,w,q,B,hq,hq0,hdisk,hB,hrec,hch⟩ := literal_finite_word_chamber F ζ hζ K hK f
@@ -141,7 +134,7 @@ theorem literal_allWord_numerator (K : Subgroup (KPLiteralRaw.G F ζ hζ))
     simp_rw [actualRightWord_finset_sum _ _ (fun j _ =>
       (nativeSmoothSpace F ζ hζ).smul_mem _ (hNs _ j s)) a,
       actualRightWord_smul _ _ (hNs _ _ s) a]
-  refine ⟨q,AA,NN,ρ,hq,hq0,hsm,?_,?_,hρ,(fun s hs => (hρsub hs).2),hnsm,?_,?_⟩
+  refine ⟨q, AA, NN, ρ, hq, hq0, hsm, ?_, ?_, hρ, hnsm, ?_, ?_⟩
   · intro a g s hs
     simp only [hword, Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
     exact MeromorphicAt.fun_sum (fun i _ => MeromorphicAt.fun_sum (fun j _ =>

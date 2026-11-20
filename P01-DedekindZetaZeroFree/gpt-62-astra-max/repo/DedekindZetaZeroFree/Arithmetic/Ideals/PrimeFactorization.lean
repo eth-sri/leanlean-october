@@ -41,8 +41,7 @@ noncomputable def idealPrimeFactors (I : NonzeroIdeal K) :
 
 noncomputable def idealOfPrimeFactors
     (m : Multiset (HeightOneSpectrum (𝓞 K))) : NonzeroIdeal K :=
-  ⟨(m.map HeightOneSpectrum.asIdeal).prod, by
-    exact Multiset.prod_ne_zero fun h ↦
+  ⟨(m.map HeightOneSpectrum.asIdeal).prod, Multiset.prod_ne_zero fun h ↦
       let ⟨P, hP, heq⟩ := Multiset.mem_map.mp h
       P.ne_bot (heq ▸ rfl)⟩
 
@@ -57,18 +56,19 @@ theorem idealOfPrimeFactors_idealPrimeFactors (I : NonzeroIdeal K) :
     idealOfPrimeFactors K (idealPrimeFactors K I) = I := by
   apply Subtype.ext
   simp only [idealOfPrimeFactors_coe, idealPrimeFactors, Multiset.map_pmap]
+  let normalizedFactors₀ := normalizedFactors (I : Ideal (𝓞 K))
   rw [show Multiset.pmap
       (fun _ hP ↦ (HeightOneSpectrum.ofPrime hP).asIdeal)
-      (normalizedFactors (I : Ideal (𝓞 K))) prime_of_normalized_factor =
-      normalizedFactors (I : Ideal (𝓞 K)) by
+      (normalizedFactors₀) prime_of_normalized_factor =
+      normalizedFactors₀ by
         calc
           _ = Multiset.pmap (fun P (_ : Prime P) ↦ P)
-              (normalizedFactors (I : Ideal (𝓞 K)))
+              (normalizedFactors₀)
               prime_of_normalized_factor := by simp
-          _ = Multiset.map id (normalizedFactors (I : Ideal (𝓞 K))) :=
+          _ = Multiset.map id (normalizedFactors₀) :=
                 Multiset.pmap_eq_map _ _ _ _
-          _ = normalizedFactors (I : Ideal (𝓞 K)) := Multiset.map_id _]
-  simpa only [normalize_eq] using prod_normalizedFactors_eq I.2
+          _ = normalizedFactors₀ := Multiset.map_id _]
+  simpa using prod_normalizedFactors_eq I.2
 
 theorem idealPrimeFactors_idealOfPrimeFactors
     (m : Multiset (HeightOneSpectrum (𝓞 K))) :

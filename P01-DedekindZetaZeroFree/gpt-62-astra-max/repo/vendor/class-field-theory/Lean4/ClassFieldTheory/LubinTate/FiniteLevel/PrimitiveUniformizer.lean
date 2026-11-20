@@ -16,14 +16,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -57,121 +49,36 @@ open ValuationTheory.DiscreteValuationField.ValuedExtension
 
 variable {K : Type u} [Field K]
 
-private theorem
-    isIntegral_mem_adjoin_of_powerBasis_minpoly_isEisensteinAt
-    {R K' L : Type*} [CommRing R] [IsDomain R]
-    [IsDiscreteValuationRing R] [Field K'] [Field L]
-    [Algebra R K'] [Algebra K' L] [Algebra R L]
-    [IsScalarTower R K' L] [IsFractionRing R K']
-    [FiniteDimensional K' L] [Algebra.IsSeparable K' L]
-    (B : PowerBasis K' L) (pi : R) (hpi : Irreducible pi)
-    (hBint : IsIntegral R B.gen)
-    (hei : (minpoly R B.gen).IsEisensteinAt
-      (Ideal.span ({pi} : Set R)))
-    {z : L} (hzint : IsIntegral R z) :
-    z ∈ Algebra.adjoin R ({B.gen} : Set L) := by
-  have hdiscInt :
-      IsIntegral R (Algebra.discr K' B.basis) :=
-    Algebra.discr_isIntegral K' (fun i => by
-      simpa using hBint.pow (i : ℕ))
-  obtain ⟨d, hd⟩ :=
-    IsIntegrallyClosed.isIntegral_iff.mp hdiscInt
-  have hd0 : d ≠ 0 := by
-    intro hd0
-    have hdisc0 : Algebra.discr K' B.basis ≠ 0 :=
-      Algebra.discr_not_zero_of_basis K' B.basis
-    apply hdisc0
-    rw [← hd, hd0, map_zero]
-  obtain ⟨m, unit, hdu⟩ :=
-    IsDiscreteValuationRing.eq_unit_mul_pow_irreducible hd0 hpi
-  have H :=
-    Algebra.discr_mul_isIntegral_mem_adjoin K' hBint hzint
-  rw [← hd, hdu, map_mul, map_pow] at H
-  have Hpow :
-      pi ^ m • z ∈ Algebra.adjoin R ({B.gen} : Set L) := by
-    have HR :
-        ((↑unit : R) * pi ^ m) • z ∈
-          Algebra.adjoin R ({B.gen} : Set L) := by
-      rw [← IsScalarTower.algebraMap_smul K']
-      simpa [map_mul, map_pow] using H
-    have Hu :=
-      Subalgebra.smul_mem
-        (Algebra.adjoin R ({B.gen} : Set L)) HR (↑(unit⁻¹) : R)
-    simpa [smul_smul, ← mul_assoc] using Hu
-  exact mem_adjoin_of_smul_prime_pow_smul_of_minpoly_isEisensteinAt
-    (UniqueFactorizationMonoid.irreducible_iff_prime.mp hpi)
-    hBint hzint Hpow hei
+section
 
-private theorem
-    integralClosure_adjoin_eq_top_of_powerBasis_minpoly_isEisensteinAt
-    {R K' L A : Type*} [CommRing R] [IsDomain R]
-    [IsDiscreteValuationRing R] [Field K'] [Field L] [CommRing A]
-    [Algebra R K'] [Algebra K' L] [Algebra R L]
-    [Algebra R A] [Algebra A L]
-    [IsScalarTower R K' L] [IsScalarTower R A L]
-    [IsFractionRing R K'] [FiniteDimensional K' L]
-    [Algebra.IsSeparable K' L] [IsIntegralClosure A R L]
-    (B : PowerBasis K' L) (pi : R) (hpi : Irreducible pi)
-    (a : A) (ha : algebraMap A L a = B.gen)
-    (hmap_injective : Function.Injective (algebraMap A L))
-    (hBint : IsIntegral R B.gen)
-    (hei : (minpoly R B.gen).IsEisensteinAt
-      (Ideal.span ({pi} : Set R))) :
-    Algebra.adjoin R ({a} : Set A) = ⊤ := by
-  apply top_unique
-  intro z _hz
-  let j : A →ₐ[R] L := IsScalarTower.toAlgHom R A L
-  have hzint : IsIntegral R (j z) :=
-    IsIntegralClosure.isIntegral_iff.mpr ⟨z, rfl⟩
-  have hzfield :
-      j z ∈ Algebra.adjoin R ({B.gen} : Set L) :=
-    isIntegral_mem_adjoin_of_powerBasis_minpoly_isEisensteinAt
-      B pi hpi hBint hei hzint
-  have hmap :
-      (Algebra.adjoin R ({a} : Set A)).map j =
-        Algebra.adjoin R ({B.gen} : Set L) := by
-    rw [AlgHom.map_adjoin_singleton]
-    congr 2
-  rw [← hmap] at hzfield
-  rcases hzfield with ⟨y, hy, hyz⟩
-  have hya : y = z := hmap_injective hyz
-  exact hya ▸ hy
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
 
 /-- The canonical power basis of the simple standard Lubin--Tate level
 extension. -/
-noncomputable def standardLubinTateLevelPowerBasis
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+noncomputable def standardLubinTateLevelPowerBasis :
     PowerBasis K (standardLubinTateLevelField hπ n) :=
   IntermediateField.adjoin.powerBasis
     (chosenStandardLubinTatePrimitiveRoot_isIntegral hπ n)
 
 /-- The chosen primitive root, regarded as an element of its standard level
 field. -/
-noncomputable def standardLubinTateLevelGenerator
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+noncomputable def standardLubinTateLevelGenerator :
     standardLubinTateLevelField hπ n :=
   (standardLubinTateLevelPowerBasis hπ n).gen
 
 /-- The level-field generator is the chosen primitive root after inclusion
 into the separable closure. -/
 @[simp]
-theorem standardLubinTateLevelGenerator_coe
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTateLevelGenerator_coe :
     ((standardLubinTateLevelGenerator hπ n :
         standardLubinTateLevelField hπ n) : SeparableClosure K) =
       chosenStandardLubinTatePrimitiveRoot hπ n := by
-  simp [standardLubinTateLevelGenerator,
-    standardLubinTateLevelPowerBasis,
-    IntermediateField.adjoin.powerBasis_gen]
+  rfl
 
 /-- The minimal polynomial of the level-field generator is the standard
 primitive division polynomial over the base field. -/
-theorem standardLubinTateLevelPowerBasis_minpoly
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTateLevelPowerBasis_minpoly :
     minpoly K (standardLubinTateLevelPowerBasis hπ n).gen =
       standardLubinTatePrimitivePolynomialOverField F π n := by
   change
@@ -179,20 +86,16 @@ theorem standardLubinTateLevelPowerBasis_minpoly
         (IntermediateField.adjoin.powerBasis
           (chosenStandardLubinTatePrimitiveRoot_isIntegral hπ n)).gen =
       standardLubinTatePrimitivePolynomialOverField F π n
-  rw [IntermediateField.adjoin.powerBasis_gen,
-    IntermediateField.minpoly_gen,
-    ← standardLubinTatePrimitivePolynomialOverField_eq_minpoly hπ n]
+  simp_all [IntermediateField.adjoin.powerBasis_gen, IntermediateField.minpoly_gen, standardLubinTatePrimitivePolynomialOverField_eq_minpoly]
 
 /-- The integral primitive polynomial annihilates the level-field
 generator. -/
-theorem standardLubinTateLevelGenerator_aeval_primitivePolynomial
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTateLevelGenerator_aeval_primitivePolynomial :
     Polynomial.aeval (standardLubinTateLevelGenerator hπ n)
         (standardLubinTatePrimitivePolynomial F π n) = 0 := by
   let Q := standardLubinTatePrimitivePolynomial F π n
   calc
-    Polynomial.aeval (standardLubinTateLevelGenerator hπ n) Q =
+    _ =
         Polynomial.aeval (standardLubinTateLevelGenerator hπ n)
           (Q.map (algebraMap F.valuationSubring K)) := by
             symm
@@ -204,6 +107,8 @@ theorem standardLubinTateLevelGenerator_aeval_primitivePolynomial
           rfl
     _ = 0 :=
       minpoly.aeval K (standardLubinTateLevelPowerBasis hπ n).gen
+
+end
 
 noncomputable local instance
     standardLubinTateLevelField_finiteDimensionalInstance
@@ -221,9 +126,12 @@ local instance standardLubinTateLevelField_isSeparableInstance
     (Algebra.IsSeparable.isSeparable K
       (chosenStandardLubinTatePrimitiveRoot hπ n))
 
- theorem standardLubinTateLevelCompleteDVFData_exists
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+ section
+
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+
+theorem standardLubinTateLevelCompleteDVFData_exists :
     ∃ target : CompleteDVF.{u, 0} (standardLubinTateLevelField hπ n),
       ∃ hExt : F.toCompleteDVF.valuation.HasExtension target.valuation,
         letI : F.toCompleteDVF.valuation.HasExtension target.valuation := hExt
@@ -231,29 +139,25 @@ local instance standardLubinTateLevelField_isSeparableInstance
             (standardLubinTateLevelField hπ n) ∧
           degree F.toCompleteDVF.toDVF target.toDVF =
             ramificationIndex F.toCompleteDVF.toDVF target.toDVF *
-              residueDegree F.toCompleteDVF.toDVF target.toDVF := by
-  exact
-    exists_integralClosure_standard_fundamental_identity
-      (K := K) (L := standardLubinTateLevelField hπ n)
+              residueDegree F.toCompleteDVF.toDVF target.toDVF := exists_integralClosure_standard_fundamental_identity
+
       F.toCompleteDVF
 
 /-- The complete discrete valuation on a standard Lubin--Tate level field
 selected from its actual integral closure over the base valuation ring. -/
-noncomputable def standardLubinTateLevelCompleteDVF
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+noncomputable def standardLubinTateLevelCompleteDVF :
     CompleteDVF.{u, 0} (standardLubinTateLevelField hπ n) :=
   Classical.choose (standardLubinTateLevelCompleteDVFData_exists hπ n)
 
 /-- The chosen level valuation extends the given base valuation. -/
-theorem standardLubinTateLevelCompleteDVF_hasExtension
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTateLevelCompleteDVF_hasExtension :
     F.toCompleteDVF.valuation.HasExtension
       (standardLubinTateLevelCompleteDVF hπ n).valuation :=
   Classical.choose
     (Classical.choose_spec
       (standardLubinTateLevelCompleteDVFData_exists hπ n))
+
+end
 
 noncomputable instance
     standardLubinTateLevelCompleteDVF_hasExtensionInstance
@@ -304,76 +208,38 @@ noncomputable instance
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
     Module.Finite F.valuationSubring
       (standardLubinTateLevelCompleteDVF hπ n).valuationSubring := by
-  let : IsIntegralClosure
-      (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
-      F.valuationSubring (standardLubinTateLevelField hπ n) :=
+  let :=
     standardLubinTateLevelCompleteDVF_isIntegralClosure hπ n
-  let : IsFractionRing F.valuationSubring K :=
-    base_valuationSubring_isFractionRing (K := K) F.toCompleteDVF
-  let : IsIntegrallyClosed F.valuationSubring :=
-    base_valuationSubring_isIntegrallyClosed (K := K) F.toCompleteDVF
-  let : IsNoetherianRing F.valuationSubring :=
-    base_valuationSubring_isNoetherianRing (K := K) F.toCompleteDVF
+  let :=
+    base_valuationSubring_isFractionRing F.toCompleteDVF
+  let :=
+    base_valuationSubring_isIntegrallyClosed F.toCompleteDVF
+  let :=
+    base_valuationSubring_isNoetherianRing F.toCompleteDVF
   exact IsIntegralClosure.finite F.valuationSubring K
     (standardLubinTateLevelField hπ n)
     (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
 
-/-- The chosen complete-DVF structure is a local-field structure: its
-residue field is finite over the finite residue field of `F`. -/
-noncomputable def standardLubinTateLevelLocalField
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
-    LocalField.{u, 0} (standardLubinTateLevelField hπ n) := by
-  let target := standardLubinTateLevelCompleteDVF hπ n
-  letI : FiniteDimensional F.residueField target.residueField :=
-    residueField_finiteDimensional_of_moduleFinite F.toCompleteDVF target
-  letI : Finite target.residueField :=
-    Module.finite_of_finite F.residueField
-  exact { toCompleteDVF := target }
+section
+
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
 
 /-- The level generator is integral over the base valuation ring, witnessed
 by the genuine integral primitive division polynomial. -/
-theorem standardLubinTateLevelGenerator_isIntegral_over_valuationSubring
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTateLevelGenerator_isIntegral_over_valuationSubring :
     IsIntegral F.valuationSubring
       (standardLubinTateLevelGenerator hπ n) :=
   ⟨standardLubinTatePrimitivePolynomial F π n,
     standardLubinTatePrimitivePolynomial_monic F π n,
     standardLubinTateLevelGenerator_aeval_primitivePolynomial hπ n⟩
 
-/-- The integral minimal polynomial of the primitive level generator is the
-standard primitive division polynomial. -/
-theorem standardLubinTatePrimitivePoint_minpoly
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
-    minpoly F.valuationSubring
-        (standardLubinTateLevelPowerBasis hπ n).gen =
-      standardLubinTatePrimitivePolynomial F π n := by
-  have hgen :
-      IsIntegral F.valuationSubring
-        (standardLubinTateLevelPowerBasis hπ n).gen := by
-    simpa only [standardLubinTateLevelGenerator] using
-      standardLubinTateLevelGenerator_isIntegral_over_valuationSubring
-        hπ n
-  apply Polynomial.map_injective
-    (algebraMap F.valuationSubring K)
-    (fun x y h => Subtype.ext h)
-  rw [← minpoly.isIntegrallyClosed_eq_field_fractions' K
-      hgen,
-    standardLubinTateLevelPowerBasis_minpoly hπ n]
-  rfl
-
 /-- The chosen primitive root belongs to the selected integral-closure
 valuation ring. -/
-theorem standardLubinTateLevelGenerator_mem_valuationSubring
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTateLevelGenerator_mem_valuationSubring :
     standardLubinTateLevelGenerator hπ n ∈
       (standardLubinTateLevelCompleteDVF hπ n).valuation.valuationSubring := by
-  let : IsIntegralClosure
-      (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
-      F.valuationSubring (standardLubinTateLevelField hπ n) :=
+  let :=
     standardLubinTateLevelCompleteDVF_isIntegralClosure hπ n
   rcases
       (IsIntegralClosure.isIntegral_iff
@@ -383,17 +249,12 @@ theorem standardLubinTateLevelGenerator_mem_valuationSubring
         (standardLubinTateLevelGenerator_isIntegral_over_valuationSubring
           hπ n) with
     ⟨z, hz⟩
-  change
-    (standardLubinTateLevelCompleteDVF hπ n).valuation
-        (standardLubinTateLevelGenerator hπ n) ≤ 1
   rw [← hz]
   exact z.property
 
 /-- The primitive division point as an element of the chosen level valuation
 ring. -/
-noncomputable def standardLubinTatePrimitivePointInteger
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+noncomputable def standardLubinTatePrimitivePointInteger :
     (standardLubinTateLevelCompleteDVF hπ n).valuationSubring :=
   ⟨standardLubinTateLevelGenerator hπ n,
     standardLubinTateLevelGenerator_mem_valuationSubring hπ n⟩
@@ -401,107 +262,52 @@ noncomputable def standardLubinTatePrimitivePointInteger
 /-- The valuation-ring primitive point has the chosen level generator as its
 underlying field element. -/
 @[simp]
-theorem standardLubinTatePrimitivePointInteger_coe
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTatePrimitivePointInteger_coe :
     (standardLubinTatePrimitivePointInteger hπ n).val =
         standardLubinTateLevelGenerator hπ n :=
   rfl
 
-/-- The primitive Lubin--Tate point generates the entire integral-closure
-valuation ring over the base valuation ring. -/
-theorem standardLubinTatePrimitivePointInteger_adjoin_eq_top
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
-    Algebra.adjoin F.valuationSubring
-        ({standardLubinTatePrimitivePointInteger hπ n} :
-          Set
-            (standardLubinTateLevelCompleteDVF hπ n).valuationSubring) =
-      ⊤ := by
-  let : FiniteDimensional K (standardLubinTateLevelField hπ n) :=
-    standardLubinTateLevelField_finiteDimensional hπ n
-  let : IsScalarTower F.valuationSubring
-      (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
-      (standardLubinTateLevelField hπ n) :=
-    IsScalarTower.of_algebraMap_eq' rfl
-  let : IsIntegralClosure
-      (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
-      F.valuationSubring (standardLubinTateLevelField hπ n) :=
-    standardLubinTateLevelCompleteDVF_isIntegralClosure hπ n
-  have hπIrreducible : Irreducible π :=
-    (IsDiscreteValuationRing.irreducible_iff_uniformizer π).2
-      (F.toCompleteDVF.maximalIdeal_eq_span_uniformizer hπ)
-  apply
-    integralClosure_adjoin_eq_top_of_powerBasis_minpoly_isEisensteinAt
-      (standardLubinTateLevelPowerBasis hπ n)
-      π hπIrreducible
-      (standardLubinTatePrimitivePointInteger hπ n)
-      (by rfl)
-      (fun x y h => Subtype.ext h)
-      (standardLubinTateLevelGenerator_isIntegral_over_valuationSubring
-        hπ n)
-  rw [standardLubinTatePrimitivePoint_minpoly hπ n]
-  rw [← F.toCompleteDVF.maximalIdeal_eq_span_uniformizer hπ]
-  exact standardLubinTatePrimitivePolynomial_isEisensteinAt hπ n
-
  noncomputable def
-    standardLubinTatePrimitivePointIntegerToSeparableClosure
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+    standardLubinTatePrimitivePointIntegerToSeparableClosure :
     (standardLubinTateLevelCompleteDVF hπ n).valuationSubring →+*
       SeparableClosure K :=
   (standardLubinTateLevelField hπ n).val.toRingHom.comp
     (standardLubinTateLevelCompleteDVF hπ n).valuation.valuationSubring.subtype
 
 private theorem
-    standardLubinTatePrimitivePointIntegerToSeparableClosure_injective
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+    standardLubinTatePrimitivePointIntegerToSeparableClosure_injective :
     Function.Injective
       (standardLubinTatePrimitivePointIntegerToSeparableClosure hπ n) := by
   intro a b hab
-  change
-    (standardLubinTateLevelField hπ n).val
-        a.val =
-      (standardLubinTateLevelField hπ n).val
-        b.val at hab
   apply Subtype.ext
   exact (standardLubinTateLevelField hπ n).val.injective hab
 
+end
+
+alias PrimitiveUniformizer.standardLubinTatePrimitivePointIntegerToSeparableClosure_injective := standardLubinTatePrimitivePointIntegerToSeparableClosure_injective
+
+section
+
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+
 private theorem
-    standardLubinTatePrimitivePointIntegerToSeparableClosure_comp_integerMap
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+    standardLubinTatePrimitivePointIntegerToSeparableClosure_comp_integerMap :
     (standardLubinTatePrimitivePointIntegerToSeparableClosure hπ n).comp
         (integerMap F.toCompleteDVF.toDVF
           (standardLubinTateLevelCompleteDVF hπ n).toDVF) =
       (algebraMap K (SeparableClosure K)).comp
         (algebraMap F.valuationSubring K) := by
-  apply RingHom.ext
-  intro a
-  change
-    ((standardLubinTateLevelField hπ n).val
-      ((integerMap F.toCompleteDVF.toDVF
-        (standardLubinTateLevelCompleteDVF hπ n).toDVF) a :
-          (standardLubinTateLevelCompleteDVF hπ n).valuationSubring).val) =
-      algebraMap K (SeparableClosure K)
-        (algebraMap F.valuationSubring K a)
-  rw [integerMap_apply]
-  exact (standardLubinTateLevelField hπ n).val.commutes
-    (algebraMap F.valuationSubring K a)
+  rfl
 
 private theorem
-    standardLubinTatePrimitivePointIntegerToSeparableClosure_apply
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+    standardLubinTatePrimitivePointIntegerToSeparableClosure_apply :
     standardLubinTatePrimitivePointIntegerToSeparableClosure hπ n
         (standardLubinTatePrimitivePointInteger hπ n) =
       chosenStandardLubinTatePrimitiveRoot hπ n := by
-  change
-    ((standardLubinTateLevelGenerator hπ n :
-      standardLubinTateLevelField hπ n) : SeparableClosure K) =
-        chosenStandardLubinTatePrimitiveRoot hπ n
   exact standardLubinTateLevelGenerator_coe hπ n
+
+end
 
 private theorem polynomial_eval₂_mem_ideal_of_coeff_mem
     {R S : Type*} [CommSemiring R] [CommSemiring S]
@@ -512,6 +318,8 @@ private theorem polynomial_eval₂_mem_ideal_of_coeff_mem
   exact Ideal.sum_mem _ fun i _ =>
     Ideal.mul_mem_right (z ^ i) I (hcoeff i)
 
+alias PrimitiveUniformizer.polynomial_eval₂_mem_ideal_of_coeff_mem := polynomial_eval₂_mem_ideal_of_coeff_mem
+
 /-- The integral primitive polynomial annihilates the primitive point in the
 valuation ring of the standard finite level. -/
 theorem standardLubinTatePrimitivePointInteger_aeval
@@ -520,22 +328,24 @@ theorem standardLubinTatePrimitivePointInteger_aeval
     Polynomial.aeval (standardLubinTatePrimitivePointInteger hπ n)
         (standardLubinTatePrimitivePolynomial F π n) = 0 := by
   let target := standardLubinTateLevelCompleteDVF hπ n
-  let i : target.valuationSubring →ₐ[F.valuationSubring]
-      standardLubinTateLevelField hπ n :=
+  let i :=
     IsScalarTower.toAlgHom F.valuationSubring target.valuationSubring
       (standardLubinTateLevelField hπ n)
   apply Subtype.ext
   change
     i (Polynomial.aeval (standardLubinTatePrimitivePointInteger hπ n)
       (standardLubinTatePrimitivePolynomial F π n)) = i 0
-  rw [← Polynomial.aeval_algHom_apply (f := i), map_zero]
+  rw [← Polynomial.aeval_algHom_apply, map_zero]
   simpa [i] using
     standardLubinTateLevelGenerator_aeval_primitivePolynomial hπ n
 
+section
+
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+
 private theorem
-    standardLubinTatePrimitivePointInteger_addVal_and_ramificationIndex
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+    standardLubinTatePrimitivePointInteger_addVal_and_ramificationIndex :
     IsDiscreteValuationRing.addVal
         (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
         (standardLubinTatePrimitivePointInteger hπ n) = 1 ∧
@@ -569,8 +379,7 @@ private theorem
     calc
       d = degree base.toDVF target.toDVF := hdegree.symm
       _ = e * f := by
-        simpa [base, target, e, f] using
-          standardLubinTateLevelCompleteDVF_fundamentalIdentity hπ n
+        apply standardLubinTateLevelCompleteDVF_fundamentalIdentity
   have he_ne : e ≠ 0 := by
     intro he
     apply hdne
@@ -675,7 +484,7 @@ private theorem
       Polynomial.eval₂_X, Polynomial.eval₂_C] at h
     calc
       R.eval₂ j lambda = lambda * tail + j (R.coeff 0) := by
-        simpa [tail] using h.symm
+        exact h.symm
       _ = j (R.coeff 0) + lambda * tail :=
         add_comm _ _
   have htailVal :
@@ -721,8 +530,7 @@ private theorem
               rw [nsmul_eq_mul]
       _ = IsDiscreteValuationRing.addVal target.valuationSubring
           (lambda ^ d) := by
-            symm
-            exact IsDiscreteValuationRing.addVal_pow lambda d
+            simp
       _ = IsDiscreteValuationRing.addVal target.valuationSubring
           (-(R.eval₂ j lambda)) := by rw [hpowEq]
       _ = IsDiscreteValuationRing.addVal target.valuationSubring
@@ -764,9 +572,7 @@ private theorem
 
 /-- The chosen primitive division point has normalized additive valuation one
 in the integral-closure valuation ring. -/
-theorem standardLubinTatePrimitivePointInteger_addVal
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTatePrimitivePointInteger_addVal :
     IsDiscreteValuationRing.addVal
         (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
         (standardLubinTatePrimitivePointInteger hπ n) = 1 :=
@@ -775,15 +581,15 @@ theorem standardLubinTatePrimitivePointInteger_addVal
 
 /-- The standard finite Lubin--Tate level is totally ramified: its
 ramification index equals its field degree. -/
-theorem standardLubinTateLevel_ramificationIndex_eq_degree
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTateLevel_ramificationIndex_eq_degree :
     ramificationIndex F.toCompleteDVF.toDVF
         (standardLubinTateLevelCompleteDVF hπ n).toDVF =
       degree F.toCompleteDVF.toDVF
         (standardLubinTateLevelCompleteDVF hπ n).toDVF :=
   (standardLubinTatePrimitivePointInteger_addVal_and_ramificationIndex
     hπ n).2
+
+end
 
 /-- The image of any base-field uniformizer in a standard finite level has
 additive valuation equal to the degree of that level.  The uniformizer used
@@ -801,19 +607,10 @@ theorem standardLubinTateUniformizerInteger_map_addVal
       (((Nat.card F.residueField - 1) *
         Nat.card F.residueField ^ n : ℕ) : ℕ∞) := by
   let target := standardLubinTateLevelCompleteDVF hπ n
-  have hϖIrreducible : Irreducible ϖ := by
-    exact
-      (IsDiscreteValuationRing.irreducible_iff_uniformizer ϖ).2
+  have hϖIrreducible := (IsDiscreteValuationRing.irreducible_iff_uniformizer ϖ).2
         (F.toCompleteDVF.maximalIdeal_eq_span_uniformizer hϖ)
-  have hdegree :
-      degree F.toCompleteDVF.toDVF target.toDVF =
-        (Nat.card F.residueField - 1) *
-          Nat.card F.residueField ^ n := by
-    simpa [target, degree] using
-      standardLubinTateLevelField_finrank hπ n
   calc
-    IsDiscreteValuationRing.addVal target.valuationSubring
-        (integerMap F.toCompleteDVF.toDVF target.toDVF ϖ) =
+    _ =
         (ramificationIndex F.toCompleteDVF.toDVF target.toDVF : ℕ∞) :=
       addVal_integerMap_eq_ramificationIndex_of_irreducible
         F.toCompleteDVF target
@@ -822,7 +619,7 @@ theorem standardLubinTateUniformizerInteger_map_addVal
       rw [standardLubinTateLevel_ramificationIndex_eq_degree hπ n]
     _ = (((Nat.card F.residueField - 1) *
         Nat.card F.residueField ^ n : ℕ) : ℕ∞) := by
-      exact_mod_cast hdegree
+      solve_by_elim [standardLubinTateLevelField_finrank]
 
 /-- The image of the parameter uniformizer has additive valuation equal to
 the standard finite-level degree. -/
@@ -847,14 +644,11 @@ theorem standardLubinTatePrimitivePointInteger_irreducible
   let lambda := standardLubinTatePrimitivePointInteger hπ n
   obtain ⟨varpi, hvarpi⟩ :=
     IsDiscreteValuationRing.exists_irreducible target.valuationSubring
-  have hval :
-      IsDiscreteValuationRing.addVal target.valuationSubring lambda =
-        IsDiscreteValuationRing.addVal target.valuationSubring varpi := by
-    rw [standardLubinTatePrimitivePointInteger_addVal hπ n,
-      IsDiscreteValuationRing.addVal_uniformizer hvarpi]
-  exact
-    ((IsDiscreteValuationRing.addVal_eq_iff_associated lambda varpi).1 hval).symm.irreducible
+  refine
+    ((IsDiscreteValuationRing.addVal_eq_iff_associated lambda varpi).1 ?_).symm.irreducible
       hvarpi
+  rw [standardLubinTatePrimitivePointInteger_addVal hπ n,
+  IsDiscreteValuationRing.addVal_uniformizer hvarpi]
 
 /-- The chosen primitive division point is a uniformizer of the standard
 Lubin--Tate level field with its integral-closure valuation. -/
@@ -862,8 +656,7 @@ theorem standardLubinTatePrimitivePoint_isUniformizer
     {F : LocalField.{u, v} K} {π : F.valuationSubring}
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
     (standardLubinTateLevelCompleteDVF hπ n).valuation.IsUniformizer
-      (standardLubinTatePrimitivePointInteger hπ n).val := by
-  exact Valuation.isUniformizer_of_maximalIdeal_eq_span
+      (standardLubinTatePrimitivePointInteger hπ n).val := Valuation.isUniformizer_of_maximalIdeal_eq_span
     (v := (standardLubinTateLevelCompleteDVF hπ n).valuation)
     (standardLubinTatePrimitivePointInteger_irreducible hπ n).maximalIdeal_eq
 
@@ -884,8 +677,7 @@ theorem standardLubinTatePrimitivePointInteger_iterate_succ_eq_zero
     standardLubinTatePrimitivePointIntegerToSeparableClosure_comp_integerMap
       hπ n,
     standardLubinTatePrimitivePointIntegerToSeparableClosure_apply hπ n]
-  simpa only [
-    standardLubinTatePolynomialIterateOverSeparableClosure_eval] using
+  simpa using
       chosenStandardLubinTatePrimitiveRoot_iterate_succ_eq_zero hπ n
 
 /-- No iterate of index at most `n` already kills the primitive
@@ -912,37 +704,32 @@ theorem standardLubinTatePrimitivePointInteger_iterate_ne_zero_of_le
   have hzeroSeparable :
       (standardLubinTatePolynomialIterateOverSeparableClosure F π r).eval
           (chosenStandardLubinTatePrimitiveRoot hπ n) = 0 := by
-    simpa only [
-      standardLubinTatePolynomialIterateOverSeparableClosure_eval] using
+    simpa using
         hzeroMap
-  have hnzero :
-      (standardLubinTatePolynomialIterateOverSeparableClosure F π n).eval
-          (chosenStandardLubinTatePrimitiveRoot hπ n) = 0 := by
-    calc
-      (standardLubinTatePolynomialIterateOverSeparableClosure F π n).eval
-          (chosenStandardLubinTatePrimitiveRoot hπ n) =
-          (standardLubinTatePolynomialIterateOverSeparableClosure
-            F π ((n - r) + r)).eval
-              (chosenStandardLubinTatePrimitiveRoot hπ n) := by
-                rw [Nat.sub_add_cancel hr]
-      _ =
-          (standardLubinTatePolynomialIterateOverSeparableClosure
-            F π (n - r)).eval
-              ((standardLubinTatePolynomialIterateOverSeparableClosure
-                F π r).eval
-                  (chosenStandardLubinTatePrimitiveRoot hπ n)) :=
-        standardLubinTatePolynomialIterateOverSeparableClosure_eval_add
-          F π (n - r) r
-            (chosenStandardLubinTatePrimitiveRoot hπ n)
-      _ =
-          (standardLubinTatePolynomialIterateOverSeparableClosure
-            F π (n - r)).eval 0 := by
-              rw [hzeroSeparable]
-      _ = 0 := by
-        rw [standardLubinTatePolynomialIterateOverSeparableClosure,
-          Polynomial.eval_zero_map,
-          standardLubinTatePolynomialIterate_eval_zero, map_zero]
-  exact chosenStandardLubinTatePrimitiveRoot_iterate_ne_zero hπ n hnzero
+  apply chosenStandardLubinTatePrimitiveRoot_iterate_ne_zero hπ n
+  calc
+  _ =
+      (standardLubinTatePolynomialIterateOverSeparableClosure
+        F π ((n - r) + r)).eval
+          (chosenStandardLubinTatePrimitiveRoot hπ n) := by
+            rw [Nat.sub_add_cancel hr]
+  _ =
+      (standardLubinTatePolynomialIterateOverSeparableClosure
+        F π (n - r)).eval
+          ((standardLubinTatePolynomialIterateOverSeparableClosure
+            F π r).eval
+              (chosenStandardLubinTatePrimitiveRoot hπ n)) :=
+    standardLubinTatePolynomialIterateOverSeparableClosure_eval_add
+      F π (n - r) r
+        (chosenStandardLubinTatePrimitiveRoot hπ n)
+  _ =
+      (standardLubinTatePolynomialIterateOverSeparableClosure
+        F π (n - r)).eval 0 := by
+          rw [hzeroSeparable]
+  _ = 0 := by
+    rw [standardLubinTatePolynomialIterateOverSeparableClosure,
+      Polynomial.eval_zero_map,
+      standardLubinTatePolynomialIterate_eval_zero, map_zero]
 
 end LubinTate
 

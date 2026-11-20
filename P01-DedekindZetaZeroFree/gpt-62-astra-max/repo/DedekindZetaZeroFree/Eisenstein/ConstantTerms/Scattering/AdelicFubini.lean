@@ -11,11 +11,11 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct MomentSources KPLiteralRaw
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (N : TraceHaarTransport R)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (N : TraceHaarTransport R)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "V" => RestrictedTensorSimple.Core (Plus R.A P C)

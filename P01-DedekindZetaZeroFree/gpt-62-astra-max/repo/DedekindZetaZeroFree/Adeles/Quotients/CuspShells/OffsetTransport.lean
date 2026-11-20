@@ -10,14 +10,11 @@ open scoped Classical NumberField Topology NNReal ENNReal BigOperators
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPMsNativeOffsetMass
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeFullDomain → nativeFullDomain
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeFrameInvariant → nativeFrameInvariant
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming actualFrame_spec → actualFrame_spec
 
 theorem cuspOffset_right_center_cofinal
     (S : NativeRecipe F ζ hζ R P) (V : KPMsActualAngularSource.Level F ζ hζ)
@@ -57,10 +54,8 @@ theorem offset_shell_lintegral (d : ℕ) (hd : 0 < d)
     apply setLIntegral_congr_fun measurableSet_Ioi
     intro t ht
     have hr : Y < c * Real.exp (2 * (d : ℝ) * t) := by
-      have hq : 0 < 2 * (d : ℝ) := by positivity
-      have hl : Real.log (Y / c) < 2 * (d : ℝ) * t := by
-        simpa only [mul_comm] using (div_lt_iff₀ hq).mp ht
-      have he := Real.exp_lt_exp.mpr hl
+      have he := Real.exp_lt_exp.mpr (by
+        simpa using (div_lt_iff₀ (by positivity)).mp ht)
       rw [Real.exp_log (div_pos hY hc)] at he
       simpa only [mul_comm] using (div_lt_iff₀ hc).mp he
     simp [Set.indicator, Set.mem_Ioc, hr]

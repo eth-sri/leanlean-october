@@ -19,10 +19,11 @@ theorem initial_ray_one_step_descent
       Ideal.span {a} ⊔ m = ⊤ → η (Ideal.span {a}) = 1) :
     ∃ θ : DedekindZetaZeroFree.RayClassCharacter F f,
       ∀ I : Ideal (𝓞 F), η I = if I = ⊥ ∨ I ⊔ m ≠ ⊤ then 0 else θ I := by
+  let modulusReduction₀ := RayBridge.modulusReduction m hm f hf hmf
   classical
-  let χ : ClassFieldTheory.RayClassGroup (RayBridge.fullModulus m hm) →* ℂˣ :=
+  let χ :=
     RayBridge.descendedCharacter m hm η
-  have hker : (RayBridge.modulusReduction m hm f hf hmf).ker ≤ χ.ker := by
+  have hker : (modulusReduction₀).ker ≤ χ.ker := by
     intro c hc
     rw [MonoidHom.mem_ker] at hc ⊢
     obtain ⟨a, b, ha, hb, hca, hcb, haf, hbf, hpa, hpb, hc_eq⟩ :=
@@ -40,15 +41,13 @@ theorem initial_ray_one_step_descent
     simp only [Units.val_mul, Units.val_inv_eq_inv_val, Units.val_one]
     rw [h1, h2]
     simp
-  have hsurj : Function.Surjective (RayBridge.modulusReduction m hm f hf hmf) :=
+  have hsurj :=
     RayBridge.modulusReduction_surjective m hm f hf hmf
-  let χf : ClassFieldTheory.RayClassGroup (RayBridge.fullModulus f hf) →* ℂˣ :=
-    (RayBridge.modulusReduction m hm f hf hmf).liftOfSurjective hsurj ⟨χ, hker⟩
+  let χf :=
+    (modulusReduction₀).liftOfSurjective hsurj ⟨χ, hker⟩
   have hχf : ∀ x : ClassFieldTheory.RayClassGroup (RayBridge.fullModulus m hm),
-      χf (RayBridge.modulusReduction m hm f hf hmf x) = χ x := by
-    intro x
-    exact MonoidHom.liftOfRightInverse_comp_apply
-      (RayBridge.modulusReduction m hm f hf hmf) (Function.surjInv hsurj)
+      χf (modulusReduction₀ x) = χ x := fun x => MonoidHom.liftOfRightInverse_comp_apply
+      (modulusReduction₀) (Function.surjInv hsurj)
       (Function.rightInverse_surjInv hsurj) ⟨χ, hker⟩ x
   refine ⟨RayBridge.characterFromRayGroup f hf χf, ?_⟩
   intro I
@@ -58,18 +57,15 @@ theorem initial_ray_one_step_descent
   · rw [if_neg hbad]
     push Not at hbad
     obtain ⟨hI, hcop⟩ := hbad
-    have hcopf : I ⊔ f = ⊤ :=
+    have hcopf :=
       top_unique (le_trans (le_of_eq hcop.symm) (sup_le_sup_left hmf I))
-    have hθ : (RayBridge.characterFromRayGroup f hf χf) I =
-        (χf (RayBridge.idealClass f hf I hI hcopf) : ℂ) :=
-      RayBridge.characterFromRayGroup_apply f hf χf I hI hcopf
-    have hred : RayBridge.modulusReduction m hm f hf hmf
+    have hred : modulusReduction₀
           (RayBridge.idealClass m hm I hI hcop) =
         RayBridge.idealClass f hf I hI hcopf := by
       rw [RayBridge.modulusReduction_apply_idealClass m hm f hf hmf I hI hcop]
     have hχI : (χf (RayBridge.idealClass f hf I hI hcopf) : ℂ) = η I := by
       rw [← hred, hχf]
       exact RayBridge.descendedCharacter_apply_idealClass m hm η I hI hcop
-    rw [hθ, hχI]
+    rw [(RayBridge.characterFromRayGroup_apply f hf χf I hI hcopf), hχI]
 
 end DedekindZetaZeroFree.LargeSieve

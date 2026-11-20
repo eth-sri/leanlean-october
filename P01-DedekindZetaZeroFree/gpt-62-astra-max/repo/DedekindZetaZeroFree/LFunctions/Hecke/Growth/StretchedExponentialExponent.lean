@@ -10,20 +10,19 @@ theorem stretchedExp_envelope_exponent_le (a p : ℝ) (ha : 0 < a) (hp : 0 < p) 
     ∃ K : ℝ, 0 ≤ K ∧ ∀ R : ℝ, 0 ≤ R →
       (R / p) * Real.log (2 + 2 * R / (a * p)) ≤
         K * (1 + R) * Real.log (2 + R) := by
-  have hap : 0 < a * p := mul_pos ha hp
+  have hap := mul_pos ha hp
   have h2ap : 0 ≤ 2 / (a * p) := div_nonneg (by norm_num) hap.le
   set c : ℝ := 2 + 2 / (a * p) with hc_def
   have hc1 : 1 < c := by
     have : 0 < 2 / (a * p) := by positivity
     simp only [hc_def]; linarith
-  have hc_pos : 0 < c := lt_trans zero_lt_one hc1
   have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  have hlogc : 0 < Real.log c := Real.log_pos hc1
+  have hlogc := Real.log_pos hc1
   have hB : 0 ≤ 1 + Real.log c / Real.log 2 := by
-    have : 0 ≤ Real.log c / Real.log 2 := div_nonneg hlogc.le hlog2.le
+    have := div_nonneg hlogc.le hlog2.le
     linarith
   refine ⟨(1 / p) * (1 + Real.log c / Real.log 2), ?_, ?_⟩
-  · exact mul_nonneg (by positivity) hB
+  · positivity
   · intro R hR
     have hR2 : 0 < 2 + R := by linarith
     have hbase_pos : 0 < 2 + 2 * R / (a * p) := by
@@ -47,26 +46,15 @@ theorem stretchedExp_envelope_exponent_le (a p : ℝ) (ha : 0 < a) (hp : 0 < p) 
         (1 + Real.log c / Real.log 2) * Real.log (2 + R) := by
       have hC : Real.log (2 + 2 * R / (a * p)) ≤ Real.log (c * (2 + R)) :=
         Real.log_le_log hbase_pos hle
-      rw [Real.log_mul (ne_of_gt hc_pos) (ne_of_gt hR2)] at hC
+      rw [Real.log_mul (ne_of_gt (lt_trans zero_lt_one hc1)) (ne_of_gt hR2)] at hC
       nlinarith [hC, hD]
-    have hlog2R : 0 ≤ Real.log (2 + R) := Real.log_nonneg (by linarith)
-    have hstep : (R / p) * Real.log (2 + 2 * R / (a * p)) ≤
-        (R / p) * ((1 + Real.log c / Real.log 2) * Real.log (2 + R)) :=
-      mul_le_mul_of_nonneg_left hmain (by positivity)
-    have hF : (R / p) * ((1 + Real.log c / Real.log 2) * Real.log (2 + R)) ≤
-        ((1 / p) * (1 + Real.log c / Real.log 2)) * (1 + R) * Real.log (2 + R) := by
-      have hnonneg : 0 ≤ (1 / p) * (1 + Real.log c / Real.log 2) * Real.log (2 + R) :=
-        mul_nonneg (mul_nonneg (by positivity) hB) hlog2R
-      have hkey : R * ((1 / p) * (1 + Real.log c / Real.log 2) * Real.log (2 + R)) ≤
-          (1 + R) * ((1 / p) * (1 + Real.log c / Real.log 2) * Real.log (2 + R)) :=
-        mul_le_mul_of_nonneg_right (by linarith) hnonneg
-      have hEq1 : (R / p) * ((1 + Real.log c / Real.log 2) * Real.log (2 + R))
-          = R * ((1 / p) * (1 + Real.log c / Real.log 2) * Real.log (2 + R)) := by ring
-      have hEq2 : ((1 / p) * (1 + Real.log c / Real.log 2)) * (1 + R) * Real.log (2 + R)
-          = (1 + R) * ((1 / p) * (1 + Real.log c / Real.log 2) * Real.log (2 + R)) := by
-        ring
-      rw [hEq1, hEq2]
-      exact hkey
-    exact hstep.trans hF
+    refine (mul_le_mul_of_nonneg_left hmain (by positivity)).trans ?_
+    have hEq1 : (R / p) * ((1 + Real.log c / Real.log 2) * Real.log (2 + R))
+        = R * ((1 / p) * (1 + Real.log c / Real.log 2) * Real.log (2 + R)) := by ring
+    have hEq2 : ((1 / p) * (1 + Real.log c / Real.log 2)) * (1 + R) * Real.log (2 + R)
+        = (1 + R) * ((1 / p) * (1 + Real.log c / Real.log 2) * Real.log (2 + R)) := by
+      ring
+    rw [hEq1, hEq2]
+    exact mul_le_mul_of_nonneg_right (by linarith) (mul_nonneg (mul_nonneg (by positivity) hB) (Real.log_nonneg (by linarith)))
 
 end DedekindZetaZeroFree.Hecke

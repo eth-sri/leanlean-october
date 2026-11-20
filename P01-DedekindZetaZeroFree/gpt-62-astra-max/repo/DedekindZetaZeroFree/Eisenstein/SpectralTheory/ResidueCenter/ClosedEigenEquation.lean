@@ -21,7 +21,7 @@ theorem closed_cleared_center_eigen
     filter_upwards [he, hclear] with s hs hws
     obtain ⟨hv, heq⟩ := hs
     have hm := D.graph.smul_mem (s-c) (D.mem_graph ⟨v s, hv⟩)
-    have hvEq : D ⟨v s, hv⟩ = -(h s) + a s • v s := sub_eq_iff_eq_add.mp heq
+    have hvEq := sub_eq_iff_eq_add.mp heq
     simpa only [Prod.smul_mk, hws, hvEq, smul_add, smul_neg, smul_smul,
       mul_comm, sub_eq_add_neg, add_comm] using hm
   have ht : Tendsto (fun s => (w s, a s • w s - (s-c) • h s)) (𝓝[≠] c)

@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.RepresentationTheory.Smooth.RightTranslations.MovingCompactJetBounds
 
 public import DedekindZetaZeroFree.Eisenstein.Continuation.SphericalScalarPoleClearing
 
@@ -10,10 +11,10 @@ open Filter
 namespace DedekindZetaZeroFree.ResidueContinuity.ScalarSourceJointContinuity
 open KPContActualSphericalRightFieldIdentification KPContLocalNorm
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
  theorem right_holomorphic_joint (D : GroupChart F ζ hζ U R P H)
     (O : Set ℂ) (hO : IsOpen O) (f : ℂ → Space (groupDimension F) → ℂ)
@@ -34,7 +35,7 @@ variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
     continuous_fst.continuousAt.preimage_mem_nhds (hO.mem_nhds hp.1)
   have hxN : ∀ᶠ q : ℂ × Space (groupDimension F) in 𝓝 p, q.2 ∈ K :=
     continuous_snd.continuousAt.preimage_mem_nhds (Metric.closedBall_mem_nhds _ hr)
-  have hcj : ContinuousAt j p.1 := hj.continuousOn.continuousAt (hO.mem_nhds hp.1)
+  have hcj := hj.continuousOn.continuousAt (hO.mem_nhds hp.1)
   apply ContinuousAt.continuousWithinAt
   apply Metric.tendsto_nhds.mpr
   intro ε hε
@@ -92,24 +93,7 @@ variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
       f (g * (u.val : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ)) = f g)
     (w : List (Fin (groupDimension F))) (g) (u : U.toOpenSubgroup) :
     actualRightWord F ζ hζ w f (g * (u.val : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ)) =
-      actualRightWord F ζ hζ w f g := by
-  induction w generalizing g with
-  | nil => exact hf g u
-  | cons b w ih =>
-    change deriv _ 0 = deriv _ 0
-    congr 1
-    funext t
-    have hc := RepresentationTheory.ArchFiniteSplitting.insertion_commutes_finite F ζ hζ
-      (KPSmoothLocalQuotientCharts.matrixExp F (t • Pi.single (lieEnumeration F b) 1))
-      (show PGLComplex.AdelicSlicesRaw.finiteSubgroup F ζ hζ from
-        ⟨u.val.val, by
-          have hu : u.val.val ∈ KPFiniteCuspAtlas.FiniteCover F ζ hζ := u.val.property
-          simpa only [KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_finiteSubgroup_eq F ζ hζ] using hu⟩)
-    change Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
-      (KPSmoothLocalQuotientCharts.matrixExp F (t • Pi.single (lieEnumeration F b) 1)))
-      (u.val : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) at hc
-    rw [mul_assoc, hc.eq.symm, ← mul_assoc]
-    exact ih _
+      actualRightWord F ζ hζ w f g := by apply @DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualMovingCompactGeometry.right_word_finite_level <;> assumption
 
 end DedekindZetaZeroFree.ResidueContinuity.ScalarSourceJointContinuity
 

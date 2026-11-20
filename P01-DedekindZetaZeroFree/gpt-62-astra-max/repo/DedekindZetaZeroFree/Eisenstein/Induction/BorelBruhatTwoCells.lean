@@ -44,10 +44,9 @@ private theorem cell_mem_mk (A : GL (Fin 2) F) :
   constructor
   · rintro ⟨B, hB, he⟩
     obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp he
-    have hc := congrArg (fun C : GL (Fin 2) F => C 1 0) hu
     change B 1 0 = 0 at hB
     simpa [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-      Matrix.mul_apply, Fin.sum_univ_two, hB] using hc.symm
+      Matrix.mul_apply, Fin.sum_univ_two, hB] using (congrArg (fun C : GL (Fin 2) F => C 1 0) hu).symm
   · intro hA
     exact ⟨A, hA, rfl⟩
 
@@ -72,29 +71,6 @@ private theorem closed_ne_open (t : F) : cellIndex F none ≠ cellIndex F (some 
   rw [ne_eq, cell_coset_eq]
   simp [cellN, cellW, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
 
-private theorem cell_surjective (q : RationalQuotient F) :
-    ∃ i, cellIndex F i = q := by
-  obtain ⟨A, hA⟩ := Matrix.ProjGenLinGroup.mk_surjective (Quotient.out q)
-  have hq : rationalCoset F (Matrix.ProjGenLinGroup.mk A) = q := by
-    rw [hA]
-    exact Quotient.out_eq q
-  suffices ∃ i, cellIndex F i = rationalCoset F (Matrix.ProjGenLinGroup.mk A) by
-    simpa [hq] using this
-  by_cases hc : A 1 0 = 0
-  · refine ⟨none, ?_⟩
-    change rationalCoset F (Matrix.ProjGenLinGroup.mk 1) = _
-    rw [cell_coset_eq]
-    simpa using hc
-  · refine ⟨some (A 1 1 / A 1 0), ?_⟩
-    change rationalCoset F (Matrix.ProjGenLinGroup.mk
-      (cellW F * cellN F (A 1 1 / A 1 0))) = _
-    rw [cell_coset_eq]
-    simp [cellN, cellW, Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_inv,
-      Matrix.inv_def, Matrix.adjugate_fin_two, Matrix.det_fin_two,
-      Matrix.mul_apply, Fin.sum_univ_two]
-    field_simp
-    ring
-
 theorem cellIndex_bijective : Function.Bijective (cellIndex F) := by
   constructor
   · intro i j hij
@@ -108,7 +84,26 @@ theorem cellIndex_bijective : Function.Bijective (cellIndex F) := by
       | none => exact False.elim ((closed_ne_open F t) hij.symm)
       | some u => exact congrArg some ((open_cell_eq F t u).mp hij)
   · intro q
-    exact cell_surjective F q
+    obtain ⟨A, hA⟩ := Matrix.ProjGenLinGroup.mk_surjective (Quotient.out q)
+    have hq : rationalCoset F (Matrix.ProjGenLinGroup.mk A) = q := by
+      rw [hA]
+      exact Quotient.out_eq q
+    suffices ∃ i, cellIndex F i = rationalCoset F (Matrix.ProjGenLinGroup.mk A) by
+      simpa [hq] using this
+    by_cases hc : A 1 0 = 0
+    · refine ⟨none, ?_⟩
+      change rationalCoset F (Matrix.ProjGenLinGroup.mk 1) = _
+      rw [cell_coset_eq]
+      simpa using hc
+    · refine ⟨some (A 1 1 / A 1 0), ?_⟩
+      change rationalCoset F (Matrix.ProjGenLinGroup.mk
+        (cellW F * cellN F (A 1 1 / A 1 0))) = _
+      rw [cell_coset_eq]
+      simp [cellN, cellW, Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_inv,
+        Matrix.inv_def, Matrix.adjugate_fin_two, Matrix.det_fin_two,
+        Matrix.mul_apply, Fin.sum_univ_two]
+      field_simp
+      ring
 
 section Lifts
 
@@ -125,24 +120,24 @@ def ScalarUnipotentInvariant (n : Multiplicative (Adeles F) →* G)
     (fR : G → ℂ) : Prop :=
   ∀ x g, fR (n (Multiplicative.ofAdd x) * g) = fR g
 
-def ScalarRationalBorelInvariant (s : PGL(2, F) →* G) (fR : G → ℂ) : Prop :=
+variable (s : PGL(2, F) →* G)
+
+def ScalarRationalBorelInvariant (fR : G → ℂ) : Prop :=
   ∀ b : rationalBorel F, ∀ g, fR (s b * g) = fR g
 
-def rationalTerm (s : PGL(2, F) →* G) (fR : G → ℂ)
+def rationalTerm (fR : G → ℂ)
     (g : G) (q : RationalQuotient F) : ℂ :=
   fR (s (Quotient.out q) * g)
 
-theorem rationalTerm_eq (s : PGL(2, F) →* G) (fR : G → ℂ)
+theorem rationalTerm_eq (fR : G → ℂ)
     (hB : ScalarRationalBorelInvariant F s fR) (g : G) (a : PGL(2, F)) :
     rationalTerm F s fR g (rationalCoset F a) = fR (s a * g) := by
-  have he : rationalCoset F (Quotient.out (rationalCoset F a)) = rationalCoset F a :=
-    Quotient.out_eq _
   have hb : a * (Quotient.out (rationalCoset F a))⁻¹ ∈ rationalBorel F :=
-    QuotientGroup.rightRel_apply.mp (Quotient.exact he)
+    QuotientGroup.rightRel_apply.mp (Quotient.exact (Quotient.out_eq _))
   have hi := hB ⟨_, hb⟩ (s (Quotient.out (rationalCoset F a)) * g)
   simpa [rationalTerm, map_mul, map_inv, mul_assoc] using hi.symm
 
-theorem open_cell_translate (s : PGL(2, F) →* G)
+theorem open_cell_translate
     (n : Multiplicative (Adeles F) →* G)
     (hcompat : CompatibleUnipotentLift F s n)
     (fR : G → ℂ) (t : F) (x : Adeles F) (g : G) :
@@ -153,7 +148,7 @@ theorem open_cell_translate (s : PGL(2, F) →* G)
   rw [map_mul, hcompat t]
   simp only [ofAdd_add, map_mul, mul_assoc]
 
-theorem eisenstein_two_cells (s : PGL(2, F) →* G) (fR : G → ℂ)
+theorem eisenstein_two_cells (fR : G → ℂ)
     (hB : ScalarRationalBorelInvariant F s fR) (g : G)
     (hsum : KPGlobalEisensteinData.EisensteinSummable
       (fun q : RationalQuotient F => s (Quotient.out q)) fR g) :

@@ -16,8 +16,7 @@ theorem davenportHasse :
     (∀ x : E, ψE x = ψ (Algebra.trace k E x)) →
     gaussSum χE ψE = -(-gaussSum χ ψ) ^ Module.finrank k E := by
   intro k E _ _ _ _ _ χ ψ χE ψE hψ hχE hψE
-  have hn : 0 < Module.finrank k E := Module.finrank_pos
-  rw [← DavenportHasse.b_eq χ ψ hψ hn, ← DavenportHasse.sum_lifted_eq_b E χ ψ]
+  rw [← DavenportHasse.b_eq χ ψ hψ Module.finrank_pos, ← DavenportHasse.sum_lifted_eq_b E χ ψ]
   simp only [gaussSum, hχE, hψE]
 
 end DedekindZetaZeroFree

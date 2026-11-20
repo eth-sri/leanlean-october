@@ -12,8 +12,8 @@ open DedekindZetaZeroFree NumberField Filter Topology
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def H (s : ℂ) : ℂ :=
   D.recipe.H s
@@ -33,8 +33,6 @@ def RS : ℂ :=
 theorem RS_spec :
     Tendsto (fun s : ℂ => (s - 1) * D.zetaSCont s) (𝓝[≠] 1) (𝓝 (RS D)) := by
   have hopen : IsOpen {s : ℂ | 0 < s.re} := isOpen_lt continuous_const Complex.continuous_re
-  have hR : ContinuousAt D.recipe.continuation.R 1 :=
-    (D.recipe.continuation.R_holo.differentiableAt (hopen.mem_nhds (by simp))).continuousAt
   have hE : ContinuousAt (fun s : ℂ => ∏ v ∈ D.recipe.A.Sf,
       (1 - D.recipe.target v.asIdeal * comparisonRealPower (idealNorm v.asIdeal) (-s))) 1 := by
     apply Continuous.continuousAt
@@ -44,15 +42,11 @@ theorem RS_spec :
     apply Continuous.mul continuous_const
     unfold comparisonRealPower
     fun_prop
-  have hlim := (hR.mul hE).tendsto
-  have hpos : ∀ᶠ s in 𝓝[≠] (1:ℂ), 0 < s.re :=
-    eventually_nhdsWithin_of_eventually_nhds (hopen.mem_nhds (by simp))
-  refine (hlim.mono_left nhdsWithin_le_nhds).congr' ?_
-  filter_upwards [hpos, eventually_mem_nhdsWithin] with s hs hs1
-  have hreg := D.recipe.continuation.regularized s hs hs1
+  refine (((((D.recipe.continuation.R_holo.differentiableAt (hopen.mem_nhds (by simp))).continuousAt).mul hE).tendsto).mono_left nhdsWithin_le_nhds).congr' ?_
+  filter_upwards [(eventually_nhdsWithin_of_eventually_nhds (hopen.mem_nhds (by simp))), eventually_mem_nhdsWithin] with s hs hs1
   unfold FixedData.zetaSCont
   unfold PrincipalMellin.ActualRecipe.L comparisonPrincipalIncompleteL
-  rw [Pi.mul_apply, hreg]
+  rw [Pi.mul_apply, (D.recipe.continuation.regularized s hs hs1)]
   ring
 
 def c₀ : ℂ := RS D ^ 2 * D.M (1 / 6) * D.W1Hat 1 / 6

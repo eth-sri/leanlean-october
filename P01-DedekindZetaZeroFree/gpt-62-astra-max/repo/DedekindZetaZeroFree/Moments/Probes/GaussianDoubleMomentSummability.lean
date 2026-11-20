@@ -24,6 +24,8 @@ private theorem thetaReflectionGaussian_nonneg (x : ℝ) : 0 ≤ thetaReflection
   · positivity
   · exact le_refl 0
 
+alias GaussianDoubleMomentSummability.thetaReflectionGaussian_nonneg := thetaReflectionGaussian_nonneg
+
 private theorem gauss_pow_bound (B Z x : ℝ) (hZ : 0 < Z) (hx : 0 < x) :
     thetaReflectionGaussian (x / Z) ≤
       Real.exp (B ^ 2) * Z ^ B / (2 * Real.sqrt Real.pi) * x ^ (-B) := by
@@ -46,11 +48,11 @@ private theorem gauss_pow_bound (B Z x : ℝ) (hZ : 0 < Z) (hx : 0 < x) :
       rw [show -B * (Real.log x - Real.log Z) = (-B) * Real.log x + B * Real.log Z by ring]
       rw [Real.exp_add, hxa, hZb]
       ring
-    calc Real.exp (-(Real.log x - Real.log Z) ^ 2 / 4)
+    calc _
         ≤ Real.exp (B ^ 2) * Real.exp (-B * (Real.log x - Real.log Z)) := e1
       _ = Real.exp (B ^ 2) * (Z ^ B * x ^ (-B)) := by rw [e2]
       _ = Real.exp (B ^ 2) * Z ^ B * x ^ (-B) := by ring
-  calc Real.exp (-(Real.log (x / Z)) ^ 2 / 4) / (2 * Real.sqrt Real.pi)
+  calc _
       ≤ (Real.exp (B ^ 2) * Z ^ B * x ^ (-B)) / (2 * Real.sqrt Real.pi) :=
         div_le_div_of_nonneg_right hnum (by positivity)
     _ = Real.exp (B ^ 2) * Z ^ B / (2 * Real.sqrt Real.pi) * x ^ (-B) := by ring
@@ -67,27 +69,22 @@ private theorem summand_le (A : SArithmeticData F) (β Z B : ℝ) (hZ : 0 < Z)
       Real.exp (B ^ 2) * Z ^ B / (2 * Real.sqrt Real.pi) *
         (A.exteriorNorm i.1.val) ^ (β - 1 / 2 - B) *
         (A.exteriorNorm i.2) ^ (3 * β - 1 - 3 * B) := by
-  have hqc : 0 < A.exteriorNorm i.1.val :=
+  have hqc :=
     lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ i.1.val.property.1)
-  have hqn : 0 < A.exteriorNorm i.2 :=
+  have hqn :=
     lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ i.2.property.1)
-  have hx : 0 < A.exteriorNorm i.1.val * A.exteriorNorm i.2 ^ 3 := by positivity
-  have hg := gauss_pow_bound B Z (A.exteriorNorm i.1.val * A.exteriorNorm i.2 ^ 3) hZ hx
-  have hab : 0 ≤ (A.exteriorNorm i.1.val) ^ (β - 1 / 2) *
-      (A.exteriorNorm i.2) ^ (3 * β - 1) :=
-    mul_nonneg (Real.rpow_nonneg hqc.le _) (Real.rpow_nonneg (by positivity) _)
   have hsplit : (A.exteriorNorm i.1.val * A.exteriorNorm i.2 ^ 3) ^ (-B) =
       (A.exteriorNorm i.1.val) ^ (-B) * (A.exteriorNorm i.2) ^ (-(3 * B)) := by
     rw [Real.mul_rpow hqc.le (by positivity : (0:ℝ) ≤ A.exteriorNorm i.2 ^ 3),
       rpow_three hqn.le]
-  calc gaussianDoubleMomentSummand A β Z i
+  calc _
       = (A.exteriorNorm i.1.val) ^ (β - 1 / 2) * (A.exteriorNorm i.2) ^ (3 * β - 1) *
           thetaReflectionGaussian (A.exteriorNorm i.1.val * A.exteriorNorm i.2 ^ 3 / Z) :=
         rfl
     _ ≤ (A.exteriorNorm i.1.val) ^ (β - 1 / 2) * (A.exteriorNorm i.2) ^ (3 * β - 1) *
           (Real.exp (B ^ 2) * Z ^ B / (2 * Real.sqrt Real.pi) *
             (A.exteriorNorm i.1.val * A.exteriorNorm i.2 ^ 3) ^ (-B)) :=
-        mul_le_mul_of_nonneg_left hg hab
+        mul_le_mul_of_nonneg_left (gauss_pow_bound B Z (A.exteriorNorm i.1.val * A.exteriorNorm i.2 ^ 3) hZ (by positivity)) (mul_nonneg (Real.rpow_nonneg hqc.le _) (Real.rpow_nonneg (by positivity) _))
     _ = Real.exp (B ^ 2) * Z ^ B / (2 * Real.sqrt Real.pi) *
           ((A.exteriorNorm i.1.val) ^ (β - 1 / 2) * (A.exteriorNorm i.1.val) ^ (-B)) *
           ((A.exteriorNorm i.2) ^ (3 * β - 1) * (A.exteriorNorm i.2) ^ (-(3 * B))) := by
@@ -100,20 +97,18 @@ private theorem summand_le (A : SArithmeticData F) (β Z B : ℝ) (hZ : 0 < Z)
         rw [show β - 1 / 2 + -B = β - 1 / 2 - B by ring,
           show 3 * β - 1 + -(3 * B) = 3 * β - 1 - 3 * B by ring]
 
-theorem gaussianDoubleMomentSummand_nonneg (A : SArithmeticData F)
-    (β Z : ℝ) (hZ : 0 < Z)
+variable (A : SArithmeticData F) (β Z : ℝ) (hZ : 0 < Z)
+
+include hZ in
+theorem gaussianDoubleMomentSummand_nonneg
     (i : ExteriorSquarefreeIdeal A.cS × A.Exterior) :
     0 ≤ gaussianDoubleMomentSummand A β Z i := by
-  have hqc : 0 ≤ A.exteriorNorm i.1.val :=
-    le_of_lt (lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ i.1.val.property.1))
-  have hqn : 0 ≤ A.exteriorNorm i.2 :=
-    le_of_lt (lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ i.2.property.1))
   unfold gaussianDoubleMomentSummand
-  exact mul_nonneg (mul_nonneg (Real.rpow_nonneg hqc _) (Real.rpow_nonneg hqn _))
+  exact mul_nonneg (mul_nonneg (Real.rpow_nonneg (le_of_lt (lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ i.1.val.property.1))) _) (Real.rpow_nonneg (le_of_lt (lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ i.2.property.1))) _))
     (thetaReflectionGaussian_nonneg _)
 
-theorem gaussian_double_moments_summable (A : SArithmeticData F)
-    (β Z : ℝ) (hZ : 0 < Z) :
+include hZ in
+theorem gaussian_double_moments_summable :
     Summable (gaussianDoubleMomentSummand A β Z) := by
   set B := β + 2 with hB
   have hαc : β - 1 / 2 - B = -(5 / 2) := by rw [hB]; ring

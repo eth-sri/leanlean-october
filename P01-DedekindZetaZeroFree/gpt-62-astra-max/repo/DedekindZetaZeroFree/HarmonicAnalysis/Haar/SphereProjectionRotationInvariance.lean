@@ -25,11 +25,10 @@ theorem normalized_area_projection_rotation (n : ℕ) (i : Fin n)
   classical
   let μ : Measure ↥(Metric.sphere (0 : EuclideanSpace ℝ (Fin n)) 1) := (volume : Measure (EuclideanSpace ℝ (Fin n))).toSphere
   let z : ↥(Metric.sphere (0 : EuclideanSpace ℝ (Fin n)) 1) := ⟨EuclideanSpace.single i (1 : ℝ), by
-    simpa only [mem_sphere_zero_iff_norm, PiLp.norm_single, norm_one]⟩
+    simp⟩
   let g : (EuclideanSpace ℝ (Fin n)) ≃ₗᵢ[ℝ] (EuclideanSpace ℝ (Fin n)) := (ℝ ∙ ((z : (EuclideanSpace ℝ (Fin n))) - (x : (EuclideanSpace ℝ (Fin n)))))ᗮ.reflection
   have hg : g z = (x : (EuclideanSpace ℝ (Fin n))) := Submodule.reflection_sub (by
-    rw [mem_sphere_zero_iff_norm.mp z.property,
-      mem_sphere_zero_iff_norm.mp x.property])
+    simp)
   let R : ↥(Metric.sphere (0 : EuclideanSpace ℝ (Fin n)) 1) ≃ₜ ↥(Metric.sphere (0 : EuclideanSpace ℝ (Fin n)) 1) := g.toHomeomorph.subtype (fun y => by
     change ‖y - 0‖ = 1 ↔ ‖g y - 0‖ = 1
     simp only [sub_zero, g.norm_map])
@@ -47,8 +46,7 @@ theorem normalized_area_projection_rotation (n : ℕ) (i : Fin n)
       · rintro ⟨t, ht, _, ⟨y, hy, rfl⟩, heq⟩
         refine ⟨t, ht, g.symm y, ⟨R.symm y, ?_, rfl⟩, ?_⟩
         · simpa using hy
-        · have := congrArg g.symm heq
-          simpa using this
+        · simpa using congrArg g.symm heq
     rw [hset]
     exact g.measurePreserving.measure_preimage_emb g.toHomeomorph.measurableEmbedding _
   have hRN := hR.smul_measure (μ Set.univ)⁻¹

@@ -21,7 +21,12 @@ variable (F : Type) [Field F] [NumberField F]
     (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
   (ε : Sign)
 
-theorem actualContinued_compact_eq_integral (s : ℂ) (hs : convergenceHalfPlane ε s)
+section
+
+variable (s : ℂ) (hs : convergenceHalfPlane ε s)
+
+include hs in
+theorem actualContinued_compact_eq_integral
     (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
     (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q) :
     ((actualContinued F ζ hζ q S P μ hμ π hπ ε s φ).val k).val h =
@@ -30,7 +35,8 @@ theorem actualContinued_compact_eq_integral (s : ℂ) (hs : convergenceHalfPlane
   rw [actualContinued_eq_level F ζ hζ q S P μ hμ π hπ ε s J hJ ⟨φ, hφ⟩]
   exact actualContinuedLevel_eq_integral F ζ hζ q S P J hJ μ hμ π hπ ε s hs ⟨φ, hφ⟩ k h
 
-theorem actualContinued_section_eq_integral (s : ℂ) (hs : convergenceHalfPlane ε s)
+include hs in
+theorem actualContinued_section_eq_integral
     (f : sectionSpace S.borel P (sourceSign ε) (sourceParameter ε s))
     (g : ActualCover F ζ hζ q) (h : actualTorus F ζ hζ q) :
     ((transportToSections (LocalField F q) S.borel P S.iwasawa ε s
@@ -59,7 +65,8 @@ theorem actualContinued_section_eq_integral (s : ℂ) (hs : convergenceHalfPlane
     cases ε <;> rfl
   rw [ha, actualContinued_compact_eq_integral F ζ hζ q S P μ hμ π hπ ε s hs]
 
-theorem actualContinued_section_intertwines_chamber (s : ℂ) (hs : convergenceHalfPlane ε s)
+include hs in
+theorem actualContinued_section_intertwines_chamber
     (g : ActualCover F ζ hζ q)
     (f : sectionSpace S.borel P (sourceSign ε) (sourceParameter ε s)) :
     transportToSections (LocalField F q) S.borel P S.iwasawa ε s
@@ -85,6 +92,8 @@ theorem actualContinued_section_intertwines_chamber (s : ℂ) (hs : convergenceH
     S.borel.upperRoot (Multiplicative.ofAdd t) * x) * g)).val h = _
   rw [mul_assoc]
 
+end
+
 include hμ π hπ in
 
 theorem actual_section_integrable (s : ℂ) (hs : convergenceHalfPlane ε s)
@@ -93,8 +102,7 @@ theorem actual_section_integrable (s : ℂ) (hs : convergenceHalfPlane ε s)
     Integrable (fun x : LocalField F q =>
       (f.val (kernelW (LocalField F q) S.borel ε *
         S.borel.upperRoot (Multiplicative.ofAdd x) * g)).val h) μ := by
-  let fg := principalSeries S.borel P (sourceSign ε) (sourceParameter ε s) g f
-  let φ := (compactTrivialization S.borel P S.iwasawa (sourceSign ε) (sourceParameter ε s)).symm fg
+  let φ := (compactTrivialization S.borel P S.iwasawa (sourceSign ε) (sourceParameter ε s)).symm (principalSeries S.borel P (sourceSign ε) (sourceParameter ε s) g f)
   obtain ⟨J, hJ, hφ⟩ := actual_common_level F ζ hζ q S P (sourceSign ε) φ
   have hi := actual_standard_integral_coordinate_integrable F ζ hζ q S P J hJ μ hμ π hπ
     ε s hs ⟨φ, hφ⟩ 1 h

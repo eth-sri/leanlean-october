@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -52,7 +50,7 @@ theorem zHatUnit_padicCoordinate_isOfFinOrder_of_freeCoordinate_eq_zero
     apply isOfFinOrder_iff_pow_eq_one.mpr
     refine ⟨orderOf a, orderOf_pos a, ?_⟩
     ext
-    · exact pow_orderOf_eq_one a
+    · simp
     · simp
   have hsource :
       (a, (1 : Multiplicative ℤ_[p.1])) =

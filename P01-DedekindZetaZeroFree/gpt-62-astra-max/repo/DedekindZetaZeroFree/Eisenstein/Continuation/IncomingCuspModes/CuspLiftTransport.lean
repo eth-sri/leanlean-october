@@ -11,13 +11,13 @@ open scoped Classical NumberField BigOperators ContDiff
 namespace DedekindZetaZeroFree.KPContActualCutoffSmoothDescent
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
 variable {T : ℝ}
 variable (B : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (level F ζ hζ C R P H U) R P H T)
@@ -36,24 +36,28 @@ private theorem transport_coveredPoint_base (a : Cusps F ζ hζ C R P H U)
     KPContActualCollarBuffer.chartLift, KPContSectorSmoothFramesSupport.cuspPoint,
     KPContFlatCuspIncomingEvaluation.atlas]
 
+alias CuspLiftTransport.transport_coveredPoint_base := transport_coveredPoint_base
+
+local notation "cuspLevel" => level F ζ hζ C R P H U
+
 private theorem transport_lift_pins
     (x : Covered F ζ hζ C R P H U) (l m : EndLift F ζ hζ C R P H U B x) :
     l.cusp = m.cusp ∧ l.coordinates.2 = m.coordinates.2 := by
-  have hl : KPContActualCollarBuffer.chartLift F ζ hζ (level F ζ hζ C R P H U)
+  have hl : KPContActualCollarBuffer.chartLift F ζ hζ cuspLevel
       R P H l.cusp l.coordinates = KPContSectorCoveredQuotientVocabulary.q F ζ hζ
-        (level F ζ hζ C R P H U) x := by
+        cuspLevel x := by
     rw [← transport_coveredPoint_base F ζ hζ C R P H U, l.point]
-  have hm : KPContActualCollarBuffer.chartLift F ζ hζ (level F ζ hζ C R P H U)
+  have hm : KPContActualCollarBuffer.chartLift F ζ hζ cuspLevel
       R P H m.cusp m.coordinates = KPContSectorCoveredQuotientVocabulary.q F ζ hζ
-        (level F ζ hζ C R P H U) x := by
+        cuspLevel x := by
     rw [← transport_coveredPoint_base F ζ hζ C R P H U, m.point]
   have hab : l.cusp = m.cusp := by
     by_contra hne
     have hlmem : _ ∈ KPContActualCollarBuffer.chartLift F ζ hζ
-        (level F ζ hζ C R P H U) R P H l.cusp '' {z | B.τ < z.2} :=
+        cuspLevel R P H l.cusp '' {z | B.τ < z.2} :=
       ⟨l.coordinates, l.high, rfl⟩
     have hmmem : _ ∈ KPContActualCollarBuffer.chartLift F ζ hζ
-        (level F ζ hζ C R P H U) R P H m.cusp '' {z | B.τ < z.2} :=
+        cuspLevel R P H m.cusp '' {z | B.τ < z.2} :=
       ⟨m.coordinates, m.high, rfl⟩
     rw [B.lift_range, hl] at hlmem
     rw [B.lift_range, hm] at hmmem
@@ -79,25 +83,22 @@ private theorem transport_incoming_formula (a : Cusps F ζ hζ C R P H U)
 private theorem transport_central_comm (ε : rootsOfUnity 3 F)
     (c : KPCuspGenuineMonodromy.FiniteCover F ζ hζ) :
     KPCuspGenuineMonodromy.central F ζ hζ ε * c =
-      c * KPCuspGenuineMonodromy.central F ζ hζ ε := by
-  apply Subtype.ext
-  exact (Subgroup.mem_center_iff.mp
-    (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩) c).symm
+      c * KPCuspGenuineMonodromy.central F ζ hζ ε := by apply @DedekindZetaZeroFree.KPMsActualCuspSource.central_comm <;> assumption
 
 private theorem transport_component_mem (γ : KPCuspArithmetic.PGL2 F)
     (c : KPCuspGenuineMonodromy.FiniteCover F ζ hζ)
-    (ε η : rootsOfUnity 3 F) (u : (level F ζ hζ C R P H U).toOpenSubgroup)
+    (ε η : rootsOfUnity 3 F) (u : (cuspLevel).toOpenSubgroup)
     (he : KPCuspGenuineMonodromy.central F ζ hζ η * c =
       KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ *
         (KPCuspGenuineMonodromy.central F ζ hζ ε * c) * u) :
-    γ ∈ KPCuspGenuineMonodromy.Component F ζ hζ (level F ζ hζ C R P H U) c := by
+    γ ∈ KPCuspGenuineMonodromy.Component F ζ hζ cuspLevel c := by
   have hz : ∀ e : rootsOfUnity 3 F,
       KPCuspGenuineMonodromy.finiteBase F ζ hζ
         (KPCuspGenuineMonodromy.central F ζ hζ e) = 1 := by
     intro e
     have hk : KPCuspGenuineMonodromy.central F ζ hζ e ∈
         (KPCuspGenuineMonodromy.finiteBase F ζ hζ).ker := by
-      rw [← (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.1]
+      rw [← (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).1]
       exact ⟨e, rfl⟩
     exact hk
   have he' := congrArg (KPCuspGenuineMonodromy.finiteBase F ζ hζ) he
@@ -106,14 +107,14 @@ private theorem transport_component_mem (γ : KPCuspArithmetic.PGL2 F)
       (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ) =
       KPFiniteComponents.diagonal F γ :=
     congrArg (fun f : KPCuspArithmetic.PGL2 F →* KPFiniteComponents.FinitePGL2 F => f γ)
-      (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2.2.1
+      (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2
   rw [hlift] at he'
   change KPFiniteComponents.diagonal F γ ∈
-    ((level F ζ hζ C R P H U).toOpenSubgroup.toSubgroup.map
+    ((cuspLevel).toOpenSubgroup.toSubgroup.map
       (KPCuspGenuineMonodromy.finiteBase F ζ hζ)).map
       (MulAut.conj (KPCuspGenuineMonodromy.finiteBase F ζ hζ c)).toMonoidHom
   refine ⟨KPCuspGenuineMonodromy.finiteBase F ζ hζ (u⁻¹ :
-    (level F ζ hζ C R P H U).toOpenSubgroup), ⟨_, (u⁻¹).property, rfl⟩, ?_⟩
+    (cuspLevel).toOpenSubgroup), ⟨_, (u⁻¹).property, rfl⟩, ?_⟩
   simp only [MulEquiv.toMonoidHom_eq_coe, MonoidHom.coe_ofClass, MulAut.conj_apply,
     ]
   have h := congrArg (fun g : KPFiniteComponents.FinitePGL2 F =>
@@ -128,7 +129,7 @@ private theorem transport_sheet_pin (a : Cusps F ζ hζ C R P H U)
       coveredPoint F ζ hζ C R P H U a η w) :
     ∃ (g : KPContFlatCuspIncomingEvaluation.stabilizer F ζ hζ C R P H U a)
       (δ : rootsOfUnity 3 F),
-      δ ∈ KPContSectorPhaseComponentCharts.centralLevel F ζ hζ (level F ζ hζ C R P H U) ∧
+      δ ∈ KPContSectorPhaseComponentCharts.centralLevel F ζ hζ cuspLevel ∧
       η = ε * (KPContFlatCuspIncomingEvaluation.rho F ζ hζ C R P H U a g)⁻¹ * δ := by
   obtain ⟨γ, u, hx, hc⟩ := Quotient.exact he
   simp only [KPContSectorSmoothFramesSupport.cuspPoint] at hx hc
@@ -182,9 +183,10 @@ private theorem transport_sheet_pin (a : Cusps F ζ hζ C R P H U)
     simpa [β, map_mul, mul_assoc] using hc
   let δ := β⁻¹ * η
   refine ⟨g, δ, ?_, ?_⟩
-  · change KPCuspGenuineMonodromy.central F ζ hζ δ ∈ (level F ζ hζ C R P H U).toOpenSubgroup
+  let level₀ := cuspLevel
+  · change KPCuspGenuineMonodromy.central F ζ hζ δ ∈ (level₀).toOpenSubgroup
     have hδ : KPCuspGenuineMonodromy.central F ζ hζ δ = (v * u :
-        (level F ζ hζ C R P H U).toOpenSubgroup) := by
+        (level₀).toOpenSubgroup) := by
       have hh := congrArg (fun d : KPCuspGenuineMonodromy.FiniteCover F ζ hζ =>
         c⁻¹ * (KPCuspGenuineMonodromy.central F ζ hζ β)⁻¹ * d) hf
       have hccomm : (KPCuspGenuineMonodromy.central F ζ hζ β)⁻¹ *
@@ -195,7 +197,7 @@ private theorem transport_sheet_pin (a : Cusps F ζ hζ C R P H U)
         exact transport_central_comm F ζ hζ (β⁻¹ * η) c
       have hh' : c⁻¹ * ((KPCuspGenuineMonodromy.central F ζ hζ β)⁻¹ *
           KPCuspGenuineMonodromy.central F ζ hζ η * c) =
-          (v * u : (level F ζ hζ C R P H U).toOpenSubgroup) := by
+          (v * u : (level₀).toOpenSubgroup) := by
         simpa [mul_assoc] using hh
       rw [hccomm, inv_mul_cancel_left] at hh'
       simpa only [δ, map_mul, map_inv] using hh'
@@ -220,10 +222,9 @@ theorem actual_endLift_incoming_transport (s : ℂ)
   let a := KPContFlatCuspIncomingEvaluation.projectedScalar F ζ hζ C R P H U l.cusp e
   have hr : (KPCuspGenuineMonodromy.chi F ζ hζ
       (KPContFlatCuspIncomingEvaluation.rho F ζ hζ C R P H U l.cusp g)⁻¹ : ℂ) * a = a := by
-    have h := KPContFlatCuspIncomingEvaluation.projectedScalar_stabilizer
-      F ζ hζ C R P H U l.cusp ι s hs v g⁻¹
-    simpa only [map_inv] using h
-  have ha : a ∈ KPContFlatCuspIncomingEvaluation.Coefficient F ζ hζ C R P H U :=
+    simpa using (KPContFlatCuspIncomingEvaluation.projectedScalar_stabilizer
+      F ζ hζ C R P H U l.cusp ι s hs v g⁻¹)
+  have ha :=
     (KPContFlatCuspIncomingEvaluation.zeroProjection F ζ hζ C R P H U l.cusp e).property.1.1 0
   have hd : (KPCuspGenuineMonodromy.chi F ζ hζ δ : ℂ) * a = a := ha δ hδ
   rw [← hab, transport_incoming_formula F ζ hζ C R P H U ι l.cusp s hs v,

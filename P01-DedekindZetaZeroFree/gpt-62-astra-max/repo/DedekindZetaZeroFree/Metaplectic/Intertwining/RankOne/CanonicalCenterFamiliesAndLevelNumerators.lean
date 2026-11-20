@@ -31,20 +31,7 @@ variable (F : Type) [Field F] [NumberField F]
 theorem exists_uniformizer :
     ∃ π : (LocalField F q)ˣ,
       IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-        (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ) := by
-  obtain ⟨p, hp⟩ := ValuativeRel.valuation_surjective
-    ((IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).symm
-      (WithZero.exp (-1 : ℤ)))
-  have hp' : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) p) = WithZero.exp (-1 : ℤ) := by
-    rw [hp]
-    exact (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).apply_symm_apply _
-  have hpne : p ≠ 0 := by
-    intro h
-    have h0 : (0 : WithZero (Multiplicative ℤ)) = WithZero.exp (-1 : ℤ) := by
-      simpa [h] using hp'
-    exact WithZero.exp_ne_zero h0.symm
-  exact ⟨Units.mk0 p hpne, hp'⟩
+        (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ) := by apply @DedekindZetaZeroFree.KPRankOneShellRepair.uniformizer_exists <;> assumption
 
 end DedekindZetaZeroFree.KPRankOneShellContinuationProve
 
@@ -126,12 +113,10 @@ theorem actual_exists_tauStandardFamily
     exact (Measure.measure_pos_of_mem_nhds μ hn).ne'
   have hctop : c ≠ ⊤ :=
     (IsNonarchimedeanLocalField.isCompact_closedBall (LocalField F q) 1).measure_ne_top
-  let ν : Measure (LocalField F q) := c⁻¹ • μ
+  let ν := c⁻¹ • μ
   haveI : ν.IsAddHaarMeasure := Measure.IsAddHaarMeasure.smul μ
     (ENNReal.inv_ne_zero.mpr hctop) (ENNReal.inv_ne_top.mpr hc0)
-  have hν : ν ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1 :=
-    ENNReal.inv_mul_cancel hc0 hctop
-  obtain ⟨Jν⟩ := actual_exists_tauStandardFamily_normalized F ζ hζ q S P ν hν
+  obtain ⟨Jν⟩ := actual_exists_tauStandardFamily_normalized F ζ hζ q S P ν (ENNReal.inv_mul_cancel hc0 hctop)
   have hm : c • ν = μ := by
     dsimp only [ν]
     rw [smul_smul,ENNReal.mul_inv_cancel hc0 hctop,one_smul]

@@ -24,16 +24,11 @@ namespace DedekindZetaZeroFree.TauCeti
 
 theorem integral_cos_int_mul (k : ℤ) :
     ∫ θ in (0 : ℝ)..Real.pi, Real.cos ((k : ℝ) * θ) = if k = 0 then Real.pi else 0 := by
-  rcases eq_or_ne k 0 with rfl | hk
-  · simp
-  · have hk' : (k : ℝ) ≠ 0 := Int.cast_ne_zero.mpr hk
-    have h := intervalIntegral.mul_integral_comp_mul_left
-      (f := Real.cos) (a := (0 : ℝ)) (b := Real.pi) (k : ℝ)
-    rw [integral_cos, mul_zero, Real.sin_zero, sub_zero, Real.sin_int_mul_pi] at h
-    rw [ite_eq_right hk]
-    exact (mul_eq_zero.mp h).resolve_left hk'
+  aesop
 
-theorem integral_sin_nat_mul_mul_sin_nat_mul (m n : ℕ) :
+variable (m n : ℕ)
+
+theorem integral_sin_nat_mul_mul_sin_nat_mul :
     ∫ θ in (0 : ℝ)..Real.pi, Real.sin ((m : ℝ) * θ) * Real.sin ((n : ℝ) * θ)
       = if m = n ∧ m ≠ 0 then Real.pi / 2 else 0 := by
   rcases eq_or_ne m 0 with rfl | hm
@@ -59,12 +54,10 @@ theorem integral_sin_nat_mul_mul_sin_nat_mul (m n : ℕ) :
   rw [intervalIntegral.integral_sub (hint _) (hint _), intervalIntegral.integral_div,
     intervalIntegral.integral_div, integral_cos_int_mul, integral_cos_int_mul, ite_eq_right hne]
   rcases eq_or_ne m n with rfl | hmn
-  · rw [ite_eq_left (by omega : (m : ℤ) - (m : ℤ) = 0), ite_eq_left rfl]
-    ring
-  · rw [ite_eq_right (by omega : ¬((m : ℤ) - (n : ℤ) = 0)), ite_eq_right hmn]
-    ring
+  · simp
+  · grind
 
-theorem integral_sin_succ_mul_sin_succ (m n : ℕ) :
+theorem integral_sin_succ_mul_sin_succ :
     ∫ θ in (0 : ℝ)..Real.pi,
         Real.sin (((m : ℝ) + 1) * θ) * Real.sin (((n : ℝ) + 1) * θ)
       = if m = n then Real.pi / 2 else 0 := by
@@ -75,15 +68,10 @@ theorem integral_sin_succ_mul_sin_succ (m n : ℕ) :
   rw [integral_sin_nat_mul_mul_sin_nat_mul (m + 1) (n + 1),
     if_congr (by omega : (m + 1 = n + 1 ∧ m + 1 ≠ 0) ↔ m = n) rfl rfl]
 
-theorem two_div_pi_mul_integral_sin_succ_mul_sin_succ (m n : ℕ) :
+theorem two_div_pi_mul_integral_sin_succ_mul_sin_succ :
     2 / Real.pi * ∫ θ in (0 : ℝ)..Real.pi,
         Real.sin (((m : ℝ) + 1) * θ) * Real.sin (((n : ℝ) + 1) * θ)
       = if m = n then 1 else 0 := by
-  rw [integral_sin_succ_mul_sin_succ]
-  rcases eq_or_ne m n with rfl | hmn
-  · rw [ite_eq_left rfl, ite_eq_left rfl]
-    field_simp
-  · rw [ite_eq_right hmn, ite_eq_right hmn]
-    ring
+  simp [integral_sin_succ_mul_sin_succ]
 
 end DedekindZetaZeroFree.TauCeti

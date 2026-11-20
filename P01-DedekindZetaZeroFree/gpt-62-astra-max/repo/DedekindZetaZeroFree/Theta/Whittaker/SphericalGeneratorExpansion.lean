@@ -14,17 +14,10 @@ variable {F : Type} [Field F] [NumberField F]
 local notation "KPFinitePlace" F => HeightOneSpectrum (𝓞 F)
 
 private lemma ord_mul (q : KPFinitePlace F) (x y : Fˣ) :
-    ThetaBranch.order q (x * y) = ThetaBranch.order q x + ThetaBranch.order q y := by
-  simp only [ThetaBranch.order, Units.val_mul, map_mul]
-  rw [WithZero.log_mul ((Valuation.ne_zero_iff _).mpr x.ne_zero)
-    ((Valuation.ne_zero_iff _).mpr y.ne_zero), neg_add]
+    ThetaBranch.order q (x * y) = ThetaBranch.order q x + ThetaBranch.order q y := by apply @DedekindZetaZeroFree.ThetaBranch.ord_mul <;> assumption
 
 lemma ord_pow (q : KPFinitePlace F) (x : Fˣ) (n : ℕ) :
-    ThetaBranch.order q (x ^ n) = n * ThetaBranch.order q x := by
-  rw [← zpow_natCast]
-  simp only [ThetaBranch.order, Units.val_zpow_eq_zpow_val, map_zpow₀, WithZero.log_zpow,
-    smul_eq_mul]
-  ring
+    ThetaBranch.order q (x ^ n) = n * ThetaBranch.order q x := by apply @DedekindZetaZeroFree.ThetaBranch.ExteriorFrequencyBranchCoordinates.pow_order <;> assumption
 
 lemma ord_prod {ι : Type*} (q : KPFinitePlace F) (T : Finset ι) (x : ι → Fˣ) :
     ThetaBranch.order q (∏ i ∈ T, x i) = ∑ i ∈ T, ThetaBranch.order q (x i) := by
@@ -46,20 +39,14 @@ lemma prime_ord (A : SArithmeticData F) (G : ThetaBranch.AllowedRecipe A)
     simp [h, ThetaBranch.primeIdeal, idealPrimeExponent,
       normalizedFactors_irreducible q.val.irreducible, hI]
 
-private lemma symbol_six (A : SArithmeticData F) (σ : F →+* ℂ)
-    (p : ThetaBranch.ExteriorPrime A) (x : Fˣ) (hx : ThetaBranch.order p.val x = 0) :
-    ThetaBranch.symbol A σ p x ^ 6 = 1 := by
-  have hχ : orderOf (ThetaBranch.residueCharacter A σ p) = 6 := by
-    apply DHCubic.orderOf_normalizedSextic_complex F A p.val p.property σ
-    exact (DHCubic.existsUnique_normalizedSextic F A p.val p.property).exists.choose_spec
-  have h := congrArg (fun c : MulChar (DHCubic.Residue F p.val) ℂ =>
-    c (ThetaBranch.unitResidue p.val x)) (pow_orderOf_eq_one (ThetaBranch.residueCharacter A σ p))
-  simpa [hχ, MulChar.pow_apply' _ (by norm_num : (6 : ℕ) ≠ 0),
-    MulChar.one_apply (isUnit_iff_ne_zero.mpr (ThetaBranch.unitResidue_ne_zero _ _ hx)),
-    ThetaBranch.symbol] using h
+private alias symbol_six := DedekindZetaZeroFree.ThetaPhaseSeparation.QuadraticPhaseSeparation.symbol_six
 
-theorem spherical_table (A : SArithmeticData F) (G : ThetaBranch.AllowedRecipe A)
-    (σ : F →+* ℂ) (ψ : ∀ p : ThetaBranch.ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+section
+
+variable (A : SArithmeticData F) (G : ThetaBranch.AllowedRecipe A) (σ : F →+* ℂ)
+    (ψ : ∀ p : ThetaBranch.ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+
+theorem spherical_table
     (p : ThetaBranch.ExteriorPrime A) (x : Fˣ) (d k : ℕ) (hd : d = 0 ∨ d = 1)
     (hx : ThetaBranch.order p.val x = (d + 3 * k : ℕ)) :
     ThetaBranch.sphericalFactor A G σ ψ p x =
@@ -92,8 +79,7 @@ theorem spherical_table (A : SArithmeticData F) (G : ThetaBranch.AllowedRecipe A
     rw [show (2 + 6 * (k : ℤ)) = (2 + 6 * k : ℕ) by push_cast; ring,
       zpow_natCast, pow_add, pow_mul, h6, one_pow, mul_one]
 
-theorem sphericalFactor_generatorProduct (A : SArithmeticData F) (G : ThetaBranch.AllowedRecipe A)
-    (σ : F →+* ℂ) (ψ : ∀ p : ThetaBranch.ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+theorem sphericalFactor_generatorProduct
     (P : Finset (ThetaBranch.ExteriorPrime A)) (d k : ThetaBranch.ExteriorPrime A → ℕ)
     (p : ThetaBranch.ExteriorPrime A) (hp : p ∈ P) (hd : d p = 0 ∨ d p = 1) :
     let b := ∏ q ∈ P, G.generator (ThetaBranch.primeIdeal A q) ^ (d q + 3 * k q)
@@ -114,32 +100,20 @@ theorem sphericalFactor_generatorProduct (A : SArithmeticData F) (G : ThetaBranc
   congr 2
   unfold ThetaBranch.localUnit
   rw [hx, zpow_natCast]
-  have hh := Finset.prod_erase_mul P (fun q => G.generator (ThetaBranch.primeIdeal A q) ^
-    (d q + 3 * k q)) hp
   congr 1
-  change b / _ = _
   dsimp [b]
-  rw [← hh]
+  rw [← (Finset.prod_erase_mul P (fun q => G.generator (ThetaBranch.primeIdeal A q) ^
+    (d q + 3 * k q)) hp)]
   exact mul_div_cancel_right _ _
 
-private lemma char_one (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Exterior) (t : A.R) :
-    A.sexticResiduePowerChar σ I 1 (Ideal.Quotient.mk (A.extendIdeal I) t) =
-      σ (A.sexticResidue I t) := by
-  simp only [SArithmeticData.sexticResiduePowerChar,
-    show SArithmeticData.sexticExponent (1 : ℤ) = 1 from rfl, pow_one]
-  by_cases hx : IsUnit (Ideal.Quotient.mk (A.extendIdeal I) t)
-  · change _ = σ (MulChar.ofUnitHom (A.sexticResidueFamily I) _)
-    rw [← hx.unit_spec, MulChar.ofUnitHom_coe, MulChar.ofUnitHom_coe]
-    rfl
-  · rw [MulChar.map_nonunit _ hx]
-    change 0 = σ (MulChar.ofUnitHom (A.sexticResidueFamily I) _)
-    rw [MulChar.map_nonunit _ hx, map_zero]
+end
+
+private alias char_one := DedekindZetaZeroFree.NormalizedProbe.PrincipalExteriorCharacter.char_one
 
 private lemma symbol_integral (A : SArithmeticData F) (σ : F →+* ℂ)
     (p : ThetaBranch.ExteriorPrime A) (x : Fˣ) (t : A.R) (hx : (x : F) = (t : F)) :
     ThetaBranch.symbol A σ p x = σ (A.sexticResidue (ThetaBranch.primeIdeal A p) t) := by
-  have ht : t ≠ 0 := by intro h; exact x.ne_zero (hx.trans (by simp [h]))
-  have he : x = ThetaReflectionData.rowUnit A ⟨t, ht⟩ := Units.ext hx
+  have he : x = ThetaReflectionData.rowUnit A ⟨t, fun h => x.ne_zero (hx.trans (by simp [h]))⟩ := Units.ext hx
   rw [he, NormalizedProbe.principal_prime_symbol_eq_sexticResiduePowerChar, char_one]
 
 theorem generatorProduct_phase (A : SArithmeticData F) (G : ThetaBranch.AllowedRecipe A)
@@ -165,11 +139,11 @@ theorem generatorProduct_phase (A : SArithmeticData F) (G : ThetaBranch.AllowedR
       σ (A.sexticResidue (ThetaBranch.primeIdeal A p) (∏ q ∈ T, r q ^ (d q + 3 * k q))) =
         ∏ q ∈ T, σ (A.sexticResidue (ThetaBranch.primeIdeal A p) (r q)) ^ (d q + 3 * k q) := by
     unfold SArithmeticData.sexticResidue SArithmeticData.residueValue
-    simp only [map_prod, map_pow]
+    simp
   rw [hprod, ← Finset.prod_pow]
   apply Finset.prod_congr rfl
   intro q hq
-  have hne : q ≠ p := (Finset.mem_erase.mp hq).1
+  have hne := (Finset.mem_erase.mp hq).1
   have horder : ThetaBranch.order p.val (G.generator (ThetaBranch.primeIdeal A q)) = 0 := by
     rw [ThetaBranch.generator_order]
     have hI : p.val.asIdeal ≠ q.val.asIdeal := fun he => hne (Subtype.ext (HeightOneSpectrum.ext he.symm))

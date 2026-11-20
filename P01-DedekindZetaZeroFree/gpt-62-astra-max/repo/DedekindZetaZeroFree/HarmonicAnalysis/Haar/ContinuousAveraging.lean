@@ -36,8 +36,8 @@ variable {V : Type*} [NormedAddCommGroup V]
 
 theorem integrable_continuousMap (f : C(G, V)) :
     Integrable f (haarProb G) := by
-  simpa only [integrableOn_univ] using
-    f.continuous.continuousOn.integrableOn_compact' (μ := haarProb G) isCompact_univ
+  simpa using
+    f.continuous.continuousOn.integrableOn_compact' isCompact_univ
       MeasurableSet.univ
 
 section NormedFieldScalars
@@ -65,29 +65,19 @@ theorem haarAverage_const [CompleteSpace V] (v : V) :
     haarAverage G (𝕜 := 𝕜) (ContinuousMap.const G v) = v := by
   simp [haarAverage_apply]
 
+variable (f : C(G, V)) (g : G)
+
 @[simp]
-theorem haarAverage_comp_mulLeft (f : C(G, V)) (g : G) :
+theorem haarAverage_comp_mulLeft :
     haarAverage G (𝕜 := 𝕜) (f.comp (ContinuousMap.mulLeft g)) =
       haarAverage G (𝕜 := 𝕜) f := by
-  simp only [haarAverage_apply, ContinuousMap.coe_comp, Function.comp_apply,
-    ContinuousMap.coe_mulLeft]
   exact integral_mul_left_eq_self f g
 
 @[simp]
-theorem haarAverage_comp_mulRight (f : C(G, V)) (g : G) :
+theorem haarAverage_comp_mulRight :
     haarAverage G (𝕜 := 𝕜) (f.comp (ContinuousMap.mulRight g)) =
       haarAverage G (𝕜 := 𝕜) f := by
-  simp only [haarAverage_apply, ContinuousMap.coe_comp, Function.comp_apply,
-    ContinuousMap.coe_mulRight]
   exact integral_mul_right_eq_self f g
-
-@[simp]
-theorem haarAverage_comp_inv (f : C(G, V)) :
-    haarAverage G (𝕜 := 𝕜) (f.comp (Homeomorph.inv G : C(G, G))) =
-      haarAverage G (𝕜 := 𝕜) f := by
-  simp only [haarAverage_apply, ContinuousMap.coe_comp, Function.comp_apply,
-    ContinuousMap.coe_coe, Homeomorph.coe_inv]
-  exact integral_inv_eq_self f (haarProb G)
 
 end NormedFieldScalars
 
@@ -100,8 +90,6 @@ theorem _root_.ContinuousLinearMap.haarAverage_comp_comm {W : Type*} [NormedAddC
     [NormedSpace ℝ W] [NormedSpace 𝕜 W] [SMulCommClass ℝ 𝕜 W] [CompleteSpace V] [CompleteSpace W]
     (L : V →L[𝕜] W) (f : C(G, V)) :
     haarAverage G (𝕜 := 𝕜) ((L : C(V, W)).comp f) = L (haarAverage G (𝕜 := 𝕜) f) := by
-  simp only [haarAverage_apply, ContinuousMap.coe_comp, Function.comp_apply,
-    ContinuousMap.coe_coe]
   exact L.integral_comp_comm (integrable_continuousMap G f)
 
 end RCLikeScalars

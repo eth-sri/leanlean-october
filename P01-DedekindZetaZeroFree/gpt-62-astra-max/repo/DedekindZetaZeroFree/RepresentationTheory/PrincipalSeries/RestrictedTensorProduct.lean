@@ -10,9 +10,9 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open NumberField IsDedekindDomain KPLocalPrincipalSeries KPLocalStoneVonNeumann
 open KPLocalGoodSphericalImage KPGlobalTorusFiniteStages
 variable {F : Type} [Field F] [NumberField F]
-variable (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (A : SArithmeticData F)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 
@@ -24,7 +24,7 @@ set_option backward.isDefEq.respectTransparency false
   obtain ⟨f, hf, _⟩ := normalized_plus_spherical_vector (C.canonical q).borel
     (C.polarization q) (C.canonical q).iwasawa (C.unramified q hq)
   refine ⟨f, hf.1, ?_⟩
-  apply (referenceGoodSpherical F A.zeta12 A.primitive_zeta12 P C q hq).2.2
+  apply (referenceGoodSpherical F A.zeta12 A.primitive_zeta12 P C q hq).2
   · intro j
     have hj : ((C.canonical q).borel.torus j.val : KPLocalExceptionalConstruction.ActualCover
         F A.zeta12 A.primitive_zeta12 q) ∈ (C.canonical q).iwasawa.compact.toOpenSubgroup := j.property
@@ -69,16 +69,10 @@ theorem plusReference_compact_value (q : KPFinitePlace F) (hq : q ∉ C.exceptio
       reference A P C (Sum.inr q) := by
   have hk : KPLocalExceptionalConstruction.actualGoodCompactSplit F A.zeta12 A.primitive_zeta12 q
       (C.actual_compact q hq).choose k ∈ (C.canonical q).iwasawa.compact.toOpenSubgroup := by
-    change _ ∈ ((C.canonical q).iwasawa.compact.toOpenSubgroup :
-      Subgroup (KPLocalExceptionalConstruction.ActualCover F A.zeta12 A.primitive_zeta12 q))
-    have hm : KPLocalExceptionalConstruction.actualGoodCompactSplit F A.zeta12 A.primitive_zeta12 q
-        (C.actual_compact q hq).choose k ∈
-        (KPLocalExceptionalConstruction.actualGoodCompactSplit F A.zeta12 A.primitive_zeta12 q
-          (C.actual_compact q hq).choose).range := MonoidHom.mem_range.mpr ⟨k, rfl⟩
     exact Eq.mpr (congrArg (fun K : Subgroup
       (KPLocalExceptionalConstruction.ActualCover F A.zeta12 A.primitive_zeta12 q) =>
         KPLocalExceptionalConstruction.actualGoodCompactSplit F A.zeta12 A.primitive_zeta12 q
-          (C.actual_compact q hq).choose k ∈ K) (C.actual_compact q hq).choose_spec) hm
+          (C.actual_compact q hq).choose k ∈ K) (C.actual_compact q hq).choose_spec) (MonoidHom.mem_range.mpr ⟨k, rfl⟩)
   have h := congrArg (fun f : Plus A P C (Sum.inr q) => f.val 1)
     ((normalized_reference A P C q hq).choose_spec.1 ⟨_, hk⟩)
   change (normalized_reference A P C q hq).choose.val (1 * _) =

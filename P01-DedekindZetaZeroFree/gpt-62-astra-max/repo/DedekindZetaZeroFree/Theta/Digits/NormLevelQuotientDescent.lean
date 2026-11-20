@@ -15,16 +15,20 @@ open scoped NumberField Classical BigOperators
 
 variable {F : Type} [Field F] [NumberField F]
 
-def residueComparison (A : SArithmeticData F) (p : KPFinitePlace F)
-    (hp : p ∉ A.Sf) :
+section
+
+variable (A : SArithmeticData F) (p : KPFinitePlace F) (hp : p ∉ A.Sf)
+
+def residueComparison :
     ThetaDigitAverage.Residue p ≃+*
       (A.R ⧸ Ideal.map (algebraMap (𝓞 F) A.R) p.asIdeal) :=
   Classical.choose (ThetaDigitAverage.residue_SInteger_comparison A p hp)
 
-def residueSixthUnit (A : SArithmeticData F) (p : KPFinitePlace F)
-    (hp : p ∉ A.Sf) (u : A.U) : (ThetaDigitAverage.Residue p)ˣ :=
+def residueSixthUnit (u : A.U) : (ThetaDigitAverage.Residue p)ˣ :=
   Units.map (residueComparison A p hp).symm.toRingHom.toMonoidHom
     (Units.map (Ideal.Quotient.mk _).toMonoidHom (A.unitEquiv u ^ 6))
+
+end
 
 def reindex (A : SArithmeticData F) (P : Finset (KPFinitePlace F))
     (hP : ∀ p ∈ P, p ∉ A.Sf) (u : A.U) :
@@ -34,16 +38,18 @@ def reindex (A : SArithmeticData F) (P : Finset (KPFinitePlace F))
 
 section KP
 
-theorem chi_sixth_pow_eq_one {k : Type*} [Field k] [Fintype k]
-    (χ : MulChar k ℂ) (hχ : orderOf χ = 6) {x : k} (hx : x ≠ 0) : χ (x ^ 6) = 1 := by
+section
+
+variable {k : Type*} [Field k] [Fintype k] (χ : MulChar k ℂ)
+
+theorem chi_sixth_pow_eq_one (hχ : orderOf χ = 6) {x : k} (hx : x ≠ 0) : χ (x ^ 6) = 1 := by
   have h6 : χ ^ 6 = 1 := by rw [← hχ]; exact pow_orderOf_eq_one χ
   have hx6 : χ x ^ 6 = 1 := by
     rw [← MulChar.pow_apply' χ (by norm_num : (6 : ℕ) ≠ 0) x, h6]
     exact MulChar.one_apply (isUnit_iff_ne_zero.mpr hx)
   rw [map_pow, hx6]
 
-theorem sexticFourierMask_mul_eq {k : Type*} [Field k] [Fintype k]
-    (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (hχ : orderOf χ = 6)
+theorem sexticFourierMask_mul_eq (ψ : AddChar k ℂ) (hχ : orderOf χ = 6)
     {γ : k} (hγ : χ γ = 1) (j : Fin 6) (v : k) :
     sexticFourierMask χ ψ j (γ * v) = sexticFourierMask χ ψ j v := by
   have hγ0 : γ ≠ 0 := by
@@ -73,6 +79,8 @@ theorem sexticFourierMask_mul_eq {k : Type*} [Field k] [Fintype k]
     · subst hv; simp [sexticFourierMask, if_neg hj]
     · rw [hmask (γ * v) (mul_ne_zero hγ0 hv), hmask v hv, hγv]
 
+end
+
 def scale (t : F) : KPAdditiveQuotient F →+ KPAdditiveQuotient F := by
   let S := NumberField.AdeleRing.principalSubgroup (𝓞 F) F
   let m : KPAdeles F →+ KPAdeles F :=
@@ -93,7 +101,7 @@ theorem scale_mk (t : F) (x : KPAdeles F) :
 theorem scale_continuous (t : F) : Continuous (scale (F := F) t) := by
   apply (QuotientAddGroup.isQuotientMap_mk
     (NumberField.AdeleRing.principalSubgroup (𝓞 F) F)).continuous_iff.mpr
-  change Continuous (fun z : KPAdeles F => scale (F := F) t (QuotientAddGroup.mk z))
+  change Continuous (fun z : KPAdeles F => scale t (QuotientAddGroup.mk z))
   simp_rw [scale_mk]
   exact QuotientAddGroup.continuous_mk.comp (continuous_const.mul continuous_id)
 

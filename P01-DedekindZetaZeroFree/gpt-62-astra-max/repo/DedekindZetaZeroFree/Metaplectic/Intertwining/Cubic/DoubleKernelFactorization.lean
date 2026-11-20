@@ -18,39 +18,53 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
 
-private lemma winv (K : Type*) [Field K] : (KubotaRankTwo.w K)⁻¹ = KubotaRankTwo.d K (-1) (-1) * KubotaRankTwo.w K := by
+section
+
+variable (K : Type*) [Field K]
+
+private lemma winv : (KubotaRankTwo.w K)⁻¹ = KubotaRankTwo.d K (-1) (-1) * KubotaRankTwo.w K := by
   apply inv_eq_of_mul_eq_one_right
   apply Units.ext
   ext i j
   fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]
-private lemma Xwinv (K : Type*) [Field K] : KubotaRankTwo.X K (KubotaRankTwo.w K)⁻¹ = -1 := by
+private lemma Xwinv : KubotaRankTwo.X K (KubotaRankTwo.w K)⁻¹ = -1 := by
   rw [winv]
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, Matrix.mul_apply]
-private lemma Xwnw (K : Type*) [Field K] (v : Kˣ) :
+private lemma Xwnw (v : Kˣ) :
     KubotaRankTwo.X K ((KubotaRankTwo.w K)⁻¹ * KubotaRankTwo.n K (-((v⁻¹ : Kˣ) : K)) * (KubotaRankTwo.w K)⁻¹) = -v⁻¹ := by
   rw [winv]
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, Matrix.mul_apply, Units.ne_zero]
 
-private lemma BoneL (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) 1 a = 1 :=
+end
+
+section
+
+variable (a : (LocalField F q)ˣ)
+
+private lemma BoneL : KPHilbert.B3 F ζ hζ (Sum.inr q) 1 a = 1 :=
   KubotaDefectSymbolAlgebra.one_left _ _ _ (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).1 a
-private lemma BoneR (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) a 1 = 1 :=
+private lemma BoneR : KPHilbert.B3 F ζ hζ (Sum.inr q) a 1 = 1 :=
   KubotaDefectSymbolAlgebra.one_right _ _ _ (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.1 a
-private lemma BnegR (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) a (-1) = 1 :=
+private lemma BnegR : KPHilbert.B3 F ζ hζ (Sum.inr q) a (-1) = 1 :=
   (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 a |>.2.1
-private lemma sigmanR (g : KubotaRankTwo.GL2 (LocalField F q)) (s : LocalField F q) :
-    KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q) g (KubotaRankTwo.n (LocalField F q) s) = 1 := by
+
+end
+local notation "LocalCompletion" => LocalField F q
+
+private lemma sigmanR (g : KubotaRankTwo.GL2 LocalCompletion) (s : LocalCompletion) :
+    KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q) g (KubotaRankTwo.n LocalCompletion s) = 1 := by
   simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, BoneL, BoneR]
 private lemma sigww : KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
-    (KubotaRankTwo.w (LocalField F q)) (KubotaRankTwo.w (LocalField F q))⁻¹ = 1 := by
+    (KubotaRankTwo.w LocalCompletion) (KubotaRankTwo.w LocalCompletion)⁻¹ = 1 := by
   simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, Xwinv, BoneL, BoneR]
-private lemma sigwnw (v : (LocalField F q)ˣ) : KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
-    ((KubotaRankTwo.w (LocalField F q))⁻¹ * KubotaRankTwo.n (LocalField F q) (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q)))
-    (KubotaRankTwo.w (LocalField F q))⁻¹ = 1 := by
+private lemma sigwnw (v : LocalCompletionˣ) : KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
+    ((KubotaRankTwo.w LocalCompletion)⁻¹ * KubotaRankTwo.n LocalCompletion (-((v⁻¹ : LocalCompletionˣ) : LocalCompletion)))
+    (KubotaRankTwo.w LocalCompletion)⁻¹ = 1 := by
   simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, Xwnw, KubotaRankTwo.X_mul_n,
     Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w, inv_one, one_mul,
     mul_one, one_pow]
@@ -62,13 +76,13 @@ private lemma Xdnw (K : Type*) [Field K] (v : Kˣ) (s : K) :
   rw [winv]
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, Matrix.mul_apply]
-private lemma Bselfpow (a : (LocalField F q)ˣ) (m n : ℤ) :
+private lemma Bselfpow (a : LocalCompletionˣ) (m n : ℤ) :
     KPHilbert.B3 F ζ hζ (Sum.inr q) (a ^ m) (a ^ n) = 1 := by
-  let BL (b : (LocalField F q)ˣ) : (LocalField F q)ˣ →* rootsOfUnity 3 F :=
+  let BL (b : LocalCompletionˣ) : LocalCompletionˣ →* rootsOfUnity 3 F :=
     { toFun := fun x => KPHilbert.B3 F ζ hζ (Sum.inr q) x b
       map_one' := BoneL F ζ hζ q b
       map_mul' := fun x y => (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).1 x y b }
-  let BR : (LocalField F q)ˣ →* rootsOfUnity 3 F :=
+  let BR : LocalCompletionˣ →* rootsOfUnity 3 F :=
     { toFun := KPHilbert.B3 F ζ hζ (Sum.inr q) a
       map_one' := BoneR F ζ hζ q a
       map_mul' := (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.1 a }
@@ -79,23 +93,27 @@ private lemma Bselfpow (a : (LocalField F q)ˣ) (m n : ℤ) :
   change (KPHilbert.B3 F ζ hζ (Sum.inr q) a a ^ n) ^ m = 1
   rw [(KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 a |>.1]
   simp
-private lemma BnegL (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) (-1) a = 1 := by
+private lemma BnegL (a : LocalCompletionˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) (-1) a = 1 := by
   rw [(KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.1, BnegR]
   simp
-private lemma sigdnw (v : (LocalField F q)ˣ) (s : LocalField F q) :
+private lemma sigdnw (v : LocalCompletionˣ) (s : LocalCompletion) :
     KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
-      (KubotaRankTwo.d (LocalField F q) (v ^ 2) 1 * KubotaRankTwo.n (LocalField F q) s)
-      (KubotaRankTwo.w (LocalField F q))⁻¹ = 1 := by
+      (KubotaRankTwo.d LocalCompletion (v ^ 2) 1 * KubotaRankTwo.n LocalCompletion s)
+      (KubotaRankTwo.w LocalCompletion)⁻¹ = 1 := by
   simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, Xdnw, KubotaRankTwo.X_mul_n,
     KubotaRankTwo.X_d, Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w,
     KubotaRankTwo.det_d, inv_one, mul_one, div_one, one_mul, one_pow]
   rw [BnegL, BoneR]
   simp
-private lemma Xscalar (K : Type*) [Field K] (v : Kˣ) :
+section
+
+variable (K : Type*) [Field K] (v : Kˣ)
+
+private lemma Xscalar :
     KubotaRankTwo.X K (Matrix.GeneralLinearGroup.scalar (Fin 2) v) = v := by
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, Matrix.scalar]
-private lemma Xscalar_mul (K : Type*) [Field K] (v : Kˣ) (g : KubotaRankTwo.GL2 K) :
+private lemma Xscalar_mul (g : KubotaRankTwo.GL2 K) :
     KubotaRankTwo.X K (Matrix.GeneralLinearGroup.scalar (Fin 2) v * g) = v * KubotaRankTwo.X K g := by
   classical
   apply Units.ext
@@ -106,7 +124,13 @@ private lemma Xscalar_mul (K : Type*) [Field K] (v : Kˣ) (g : KubotaRankTwo.GL2
   rw [he 1 0, he 1 1]
   simp only [mul_eq_zero, v.ne_zero, false_or]
   split_ifs <;> rfl
-private lemma sigscalar (v : (LocalField F q)ˣ) (s : LocalField F q) :
+
+end
+section
+
+variable (v : (LocalField F q)ˣ) (s : LocalField F q)
+
+private lemma sigscalar :
     KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
       (Matrix.GeneralLinearGroup.scalar (Fin 2) v⁻¹)
       (KubotaRankTwo.d (LocalField F q) (v ^ 2) 1 * KubotaRankTwo.n (LocalField F q) ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q) *
@@ -124,7 +148,7 @@ private lemma sigscalar (v : (LocalField F q)ˣ) (s : LocalField F q) :
     convert Bselfpow F ζ hζ q v (-2) 2 using 1 <;> simp
   simp only [map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w,
     KubotaRankTwo.det_d, inv_one, mul_one, ← inv_pow, hB, one_pow]
-private lemma kappa_eq_one (v : (LocalField F q)ˣ) (s : LocalField F q) : kappa F ζ hζ q v s = 1 := by
+private lemma kappa_eq_one : kappa F ζ hζ q v s = 1 := by
   rw [kappa, bruhatLeft, bruhatRight, signedWeyl_eq_prescribed_signed]
   have he : ∀ x : (LocalField F q)ˣ,
       (KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inr q) x).epsilon = 1 := fun _ => rfl
@@ -137,6 +161,8 @@ private lemma kappa_eq_one (v : (LocalField F q)ˣ) (s : LocalField F q) : kappa
   simp only [sigww F ζ hζ q, sigmanR F ζ hζ q, sigwnw F ζ hζ q,
     sigdnw F ζ hζ q, sigscalar F ζ hζ q, one_mul, mul_one,
     inv_one, div_one]
+
+end
 namespace WeylAux
 local notation "K" => LocalField F q
 local notation "v" => Sum.inr q
@@ -248,16 +274,14 @@ private lemma Bpow (x y : (LocalField F q)ˣ) (i j : ℤ) :
 private lemma ratio_phase (c x y : (LocalField F q)ˣ) :
     KPHilbert.B3 F ζ hζ (Sum.inr q) ((c*x)^2)⁻¹ ((x*y^3)^2) ^ 2 =
       KPHilbert.B3 F ζ hζ (Sum.inr q) c x := by
-  have hL := (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).1
-  have hR := (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.1
-  have hcube := (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.1
   have hm : ((c*x)^2)⁻¹ = c^(-2:ℤ)*x^(-2:ℤ) := by simp [mul_pow, mul_inv_rev, zpow_neg]; ac_rfl
   have hn : (x*y^3)^2 = x^2*(y^2)^3 := by simp [mul_pow, ← pow_mul]
-  rw [hm, hn, hR, (hcube _ _).2, mul_one, hL]
+  let B3_laws₀ := KPHilbert.B3_laws F ζ hζ (Sum.inr q)
+  rw [hm, hn, ((B3_laws₀).2.1), (((B3_laws₀).2.2.2.2.1) _ _).2, mul_one, ((B3_laws₀).1)]
   have hs : KPHilbert.B3 F ζ hζ (Sum.inr q) (x^(-2:ℤ)) (x^2) = 1 := by
     have he := Bpow F ζ hζ q x x (-2) 2
     simp only [Int.reduceNeg, zpow_ofNat] at he
-    rw [he, (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 x |>.1]; simp
+    rw [he, (B3_laws₀).2.2.2.2.2 x |>.1]; simp
   rw [hs, mul_one]
   have hp := Bpow F ζ hζ q c x (-2) 2
   simp only [Int.reduceNeg, zpow_ofNat] at hp
@@ -299,8 +323,7 @@ private lemma actual_word
   simp only [Subgroup.coe_mul, hw, hr, S.central_actual, S.cube_actual]
   rw [KPPGLLocalCover.A_mul, ratio_phase]
   simp only [one_pow]
-  have hB1 : KPHilbert.B3 F ζ hζ (Sum.inr q) (c^2)⁻¹ 1 = 1 := BoneR F ζ hζ q _
-  rw [KPPGLLocalCover.A_mul, hB1]
+  rw [KPPGLLocalCover.A_mul, (BoneR F ζ hζ q _)]
   simp only [one_pow, map_one, one_mul, mul_one]
   rw [mul_assoc, KPPGLLocalCover.A_mul,
     (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.1 _ _ |>.2]
@@ -347,9 +370,9 @@ private lemma norm_unram_direct (s : ℂ) (r t : ℂˣ)
     (ht : (t : ℂ) = (residueCardinality (LocalField F q) : ℂ)⁻¹ * (r : ℂ)^6)
     (y : (LocalField F q)ˣ) :
     normPower (LocalField F q) y (1+6*s) = KPCubicExpansion.omega (LocalField F q) t y := by
-  let L : ℂ := Real.log (residueCardinality (LocalField F q) : ℝ)
+  let L := Real.log (residueCardinality (LocalField F q) : ℝ)
   have hq : 0 < (residueCardinality (LocalField F q) : ℝ) := by
-    exact_mod_cast (Nat.card_pos (α := IsLocalRing.ResidueField (ValuativeRel.valuation (LocalField F q)).integer))
+    exact_mod_cast (Nat.card_pos)
   have hl : (Real.log (localAbs (LocalField F q) y) : ℂ) =
       -(KPCubicExpansion.valuationExponent (LocalField F q) y : ℂ) * L := by
     simp only [localAbs, KPCubicExpansion.valuationExponent]
@@ -410,7 +433,7 @@ theorem actual_doubleKernel_all_ratios
   have hc : c*x = b*v^3 := by dsimp [c,x]; simp [← mul_assoc]
   have hx : x*y^3 = a*u^3 := by dsimp [x,y]; simp [div_eq_mul_inv, mul_pow, inv_pow, mul_comm, mul_left_comm, mul_assoc]
   have hφ : sourceTranslation F q a b u v =
-      (x:LocalField F q)*((y:LocalField F q)^3+(c:LocalField F q)) := by
+      x*(y^3+c) := by
     dsimp [sourceTranslation,c,x,y]
     simp only [Units.val_mul, Units.val_div_eq_div_val, Units.val_pow_eq_pow_val]
     field_simp
@@ -428,17 +451,12 @@ theorem actual_doubleKernel_all_ratios
       (z • V).val h = z * V.val h := rfl
   simp only [hsval, one_smul]
   rw [center_word_action F ζ hζ q S P c x y]
-  change _ = KPCubicExpansion.omega (LocalField F q) t y * normPower (LocalField F q) c ρ *
-    (KPExceptionalRaw.ordinaryIota F ζ hζ (KPHilbert.B3 F ζ hζ (Sum.inr q) c x) : ℂ) *
-    (normPower (LocalField F q) (c^2) (-s) * _) * φ ((x:LocalField F q)*((y:LocalField F q)^3+(c:LocalField F q))) *
-    normPower (LocalField F q) x ρ
   rw [← norm_unram_direct F q s r t hr ht]
-  have he := norm_weights F q c x y s ρ
   linear_combination (KPExceptionalRaw.ordinaryIota F ζ hζ (KPHilbert.B3 F ζ hζ (Sum.inr q) c x) : ℂ) *
-    φ ((x:LocalField F q)*((y:LocalField F q)^3+(c:LocalField F q))) *
+    φ (x*(y^3+c)) *
     (((centerTorus F ζ hζ q S.heisenberg S.borel .minus ((S.openCell P).rootTorus c))
       ((centerTorus F ζ hζ q S.heisenberg S.borel .plus ((S.openCell P).rootTorus 1))
-        ((centerCoordinates S.heisenberg rep hrep).symm (Pi.single d 1)))).val h) * he
+        ((centerCoordinates S.heisenberg rep hrep).symm (Pi.single d 1)))).val h) * (norm_weights F q c x y s ρ)
 
 end
 end DedekindZetaZeroFree.KPActualFullKernelArithmetic

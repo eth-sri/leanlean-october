@@ -13,8 +13,8 @@ open DedekindZetaZeroFree NumberField MeasureTheory
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem T_eq_G_axis (t : ℝ) :
     MellinTransform.T D (2 + (t : ℂ) * Complex.I) = Spectral.G D (2 + (t : ℂ) * Complex.I) := by
@@ -69,7 +69,7 @@ theorem zetaS_mul_T_axis (t : ℝ) :
         Spectral.H D (2 + (t : ℂ) * Complex.I) := by
   have hre : 1 < (2 + (t : ℂ) * Complex.I).re := by simp
   have hL : D.zetaSCont (2 + (t : ℂ) * Complex.I) ≠ 0 :=
-    (PrincipalMellin.actual_principal_spectral_properties S η D.recipe).2.2.2.2 _ hre
+    (PrincipalMellin.actual_principal_spectral_properties S η D.recipe).2.2 _ hre
   rw [T_eq_G_axis D t]
   unfold Spectral.G
   field_simp

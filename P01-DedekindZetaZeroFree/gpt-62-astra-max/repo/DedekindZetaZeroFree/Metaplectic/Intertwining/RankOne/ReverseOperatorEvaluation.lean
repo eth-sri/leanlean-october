@@ -28,21 +28,19 @@ theorem actualCanonicalReverseLinear_intertwines
       IPlus S.borel P g (actualCanonicalReverseLinear F ζ hζ q S P μ hμ f) := by
   let f' : sectionSpace S.borel P (sourceSign .minus) (sourceParameter .minus 0) :=
     ⟨f.val, by simpa [sourceSign, sourceParameter] using f.property⟩
-  have H := actualCanonicalContinued_intertwines F q ζ hζ S P μ hμ .minus 0
-    (denominator_ne_zero_at_zero (LocalField F q) .minus) g f'
   apply Subtype.ext
   funext x
   apply Subtype.ext
   funext h
-  have he := congrArg (fun u => (u.val x).val h) H
-  have hp : (compactTrivialization S.borel P S.iwasawa (sourceSign .minus)
-      (sourceParameter .minus 0)).symm f' =
+  have he := congrArg (fun u => (u.val x).val h) (actualCanonicalContinued_intertwines F q ζ hζ S P μ hμ .minus 0
+    (denominator_ne_zero_at_zero (LocalField F q) .minus) g f')
+  let compactTrivialization₀ := compactTrivialization S.borel P S.iwasawa (sourceSign .minus) (sourceParameter .minus 0)
+  have hp : (compactTrivialization₀).symm f' =
       (compactTrivialization S.borel P S.iwasawa .minus 0).symm f := by
     apply Subtype.ext
     funext k
     rfl
-  have hg : (compactTrivialization S.borel P S.iwasawa (sourceSign .minus)
-      (sourceParameter .minus 0)).symm
+  have hg : (compactTrivialization₀).symm
       (principalSeries S.borel P (sourceSign .minus) (sourceParameter .minus 0) g f') =
       (compactTrivialization S.borel P S.iwasawa .minus 0).symm (IMinus S.borel P g f) := by
     apply Subtype.ext
@@ -50,12 +48,12 @@ theorem actualCanonicalReverseLinear_intertwines
     rfl
   change (inducingAction S.borel P .plus (targetParameter .minus 0) (S.iwasawa.borelPart x)
     (((actualCanonicalContinued F q ζ hζ S P μ hμ .minus 0)
-      ((compactTrivialization S.borel P S.iwasawa (sourceSign .minus) (sourceParameter .minus 0)).symm
+      ((compactTrivialization₀).symm
         (principalSeries S.borel P (sourceSign .minus) (sourceParameter .minus 0) g f'))).val
           (S.iwasawa.compactPart x))).val h =
     (inducingAction S.borel P .plus (targetParameter .minus 0) (S.iwasawa.borelPart (x * g))
       (((actualCanonicalContinued F q ζ hζ S P μ hμ .minus 0)
-        ((compactTrivialization S.borel P S.iwasawa (sourceSign .minus) (sourceParameter .minus 0)).symm f')).val
+        ((compactTrivialization₀).symm f')).val
           (S.iwasawa.compactPart (x * g)))).val h at he
   rw [hp, hg] at he
   have ht : targetParameter .minus (0 : ℂ) = 0 := by norm_num [targetParameter, sourceParameter]

@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -293,7 +289,7 @@ theorem sUnitKummerChosenDecompositionGroup_eq_zpowers
         simp only [hpow, Finset.filter_true, Finset.card_univ]
       _ ≤ (n : ℕ) :=
         IsCyclic.card_pow_eq_one_le n.pos
-  have hcard : Nat.card D = (n : ℕ) :=
+  have hcard :=
     le_antisymm hupper hlower
   have hgen :
       Subgroup.zpowers sigmaD = ⊤ := by
@@ -425,19 +421,15 @@ theorem sUnitKummerChosenDecompositionField_eq_coordinateFixedField
   let N :=
     fullSUnitKummerExtension
       (K := K) (Omega := Omega) n S'
-  have hnK : ((n : ℕ) : K) ≠ 0 := by
-    exact_mod_cast n.ne_zero
   let : FiniteDimensional K N :=
     fullSUnitKummerExtension_finiteDimensional
-      (K := K) (Omega := Omega) n hnK hmu S'
-  let _ : IsGalois K N :=
-    fullSUnitKummerExtension_isGalois
-      (K := K) (Omega := Omega) n S'
-  let : NumberField N :=
+      (K := K) (Omega := Omega) n (by
+        exact_mod_cast n.ne_zero) hmu S'
+  let :=
     NumberField.of_module_finite K N
   rw [
     sUnitKummerChosenDecompositionGroup_eq_zpowers
-      (K := K) (Omega := Omega) E n hmu
+        E n hmu
       p v hp hv hn r eG S i]
   rfl
 

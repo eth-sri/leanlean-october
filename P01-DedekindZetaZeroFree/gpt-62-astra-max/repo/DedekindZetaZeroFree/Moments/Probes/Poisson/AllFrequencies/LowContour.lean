@@ -16,8 +16,8 @@ open DedekindZetaZeroFree.Quantitative.RawFixed DedekindZetaZeroFree.Quantitativ
 open scoped Classical Topology
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
 theorem initialRowIntegral_eq_triple (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (Z : ℝ) (hZ : 0 < Z) :

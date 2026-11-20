@@ -52,7 +52,7 @@ theorem exists_coordinates_and_characters
     intro t
     choose x hx using fun i => QuotientAddGroup.mk_surjective (t i)
     exact ⟨x, funext hx⟩
-  have hf : Function.Surjective f := hq.comp a.surjective
+  have hf := hq.comp a.surjective
   have hker : K = f.ker := by
     ext y
     change y ∈ K ↔ (fun i => (B.repr (c.symm y) i : UnitAddCircle)) = 0
@@ -73,35 +73,28 @@ theorem exists_coordinates_and_characters
   let e₀ := QuotientAddGroup.liftEquiv K hf hker
   have hcont : Continuous e₀ := by
     apply (QuotientAddGroup.isQuotientMap_mk K).continuous_iff.mpr
-    change Continuous f
     apply continuous_pi
     intro i
     exact (AddCircle.continuous_mk' (1 : ℝ)).comp
       ((continuous_apply i).comp a.toContinuousLinearEquiv.continuous)
   have hopen : IsOpenMap e₀ := by
-    apply (QuotientAddGroup.isOpenQuotientMap_mk (N := K)).isOpenMap_iff.mpr
-    change IsOpenMap f
+    apply (QuotientAddGroup.isOpenQuotientMap_mk).isOpenMap_iff.mpr
     exact (IsOpenMap.piMap (fun i => QuotientAddGroup.isOpenMap_coe)
       (Filter.Eventually.of_forall fun i => QuotientAddGroup.mk_surjective)).comp
       a.toContinuousLinearEquiv.toHomeomorph.isOpenMap
-  let e : (H ⧸ K) ≃ₜ+ UnitAddTorus (Fin (Module.finrank ℝ E)) :=
-    { e₀ with
-      continuous_toFun := hcont
-      continuous_invFun := (e₀.toEquiv.toHomeomorphOfContinuousOpen hcont hopen).continuous_invFun }
-  refine ⟨e, (PoissonArch.dualVector_b L b).symm.toEquiv, ?_⟩
+  refine ⟨({ e₀ with
+    continuous_toFun := hcont
+    continuous_invFun := (e₀.toEquiv.toHomeomorphOfContinuousOpen hcont hopen).continuous_invFun}), (PoissonArch.dualVector_b L b).symm.toEquiv, ?_⟩
   intro ξ y
   let n := (PoissonArch.dualVector_b L b).symm ξ
-  have hξ : PoissonArch.dualVector_b L b n = ξ :=
-    (PoissonArch.dualVector_b L b).apply_symm_apply ξ
   have hi : inner ℝ (ξ : E) (c.symm y) =
       ∑ i, B.repr (c.symm y) i * (n i : ℝ) := by
-    rw [← hξ, real_inner_comm]
+    rw [← ((PoissonArch.dualVector_b L b).apply_symm_apply ξ), real_inner_comm]
     conv_lhs => rw [← B.sum_repr (c.symm y)]
     rw [sum_inner]
     apply Finset.sum_congr rfl
     intro i _
     rw [real_inner_smul_left]
-    change B.repr (c.symm y) i * inner ℝ (B i) (PoissonArch.dualVector_b L b n : E) = _
     rw [real_inner_comm]
     simpa only [B, Module.Basis.ofZLatticeBasis_apply] using
       congrArg (fun t : ℝ => B.repr (c.symm y) i * t)
@@ -188,17 +181,16 @@ namespace DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.Fourier
 
 variable {F : Type} [Field F] [NumberField F]
 
+variable (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : KPCuspCharts.ParabolicData F S)
+    (ρ : S →* rootsOfUnity 3 F)
+
 def coefficient
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (μ : Measure (KPCuspGenuineMonodromy.KernelTorus S D ρ))
     (f : KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ)
     (ξ : KPCuspFrequencyGap.Frequency S D ρ) : ℂ :=
   ∫ z, star (KPCuspFrequencyGap.torusMode S D ρ ξ z) * f z ∂μ
 
 theorem kernel_torus_parseval
-    (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
     (hlattice : ∃ hd : DiscreteTopology
       (KPCuspFrequencyGap.kernelEuclideanLattice S D ρ),
       letI := hd; IsZLattice ℝ (KPCuspFrequencyGap.kernelEuclideanLattice S D ρ))

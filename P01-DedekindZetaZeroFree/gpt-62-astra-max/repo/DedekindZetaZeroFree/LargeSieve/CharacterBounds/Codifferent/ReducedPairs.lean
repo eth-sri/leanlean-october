@@ -11,7 +11,11 @@ open scoped Classical NumberField
 open NumberField IsDedekindDomain
 
 variable {F : Type} [Field F] [NumberField F]
-private theorem reduction (A : SArithmeticData F) [IsPrincipalIdealRing A.R]
+section
+
+variable (A : SArithmeticData F)
+
+private theorem reduction [IsPrincipalIdealRing A.R]
     (p : ProbeSeparation.Presentation F A.Sf) (x : F) :
     ∃ α : ProbeSeparation.ReducedPair F A.Sf,
       (∃ r : A.R, x = ProbeSeparation.value F p α + (r : F)) ∧
@@ -64,7 +68,7 @@ private theorem reduction (A : SArithmeticData F) [IsPrincipalIdealRing A.R]
   field_simp
   linear_combination hrF
 
-private theorem den_dvd (A : SArithmeticData F) [IsPrincipalIdealRing A.R]
+private theorem den_dvd [IsPrincipalIdealRing A.R]
     (n b : A.R) (hb : b ≠ 0) :
     (IsFractionRing.den A.R ((n : F) / (b : F)) : A.R) ∣ b := by
   let x := (n : F) / (b : F)
@@ -84,7 +88,7 @@ private theorem den_dvd (A : SArithmeticData F) [IsPrincipalIdealRing A.R]
   rw [he]
   exact dvd_mul_left _ _
 
-private theorem phase_shift (A : SArithmeticData F) (htrace : TraceDualData A)
+private theorem phase_shift (htrace : TraceDualData A)
     (x : F) (r : A.R) : phase A (x + (r : F)) = phase A x := by
   unfold phase
   rw [map_add, ProbeAdditive.phase_add]
@@ -92,6 +96,8 @@ private theorem phase_shift (A : SArithmeticData F) (htrace : TraceDualData A)
   change ProbeAdditive.phase F A.Sf (finiteTrace A)
     (sLocalDiagonal F A.Sf (r : F)) = 1 at hr
   rw [hr, mul_one]
+
+end
 
 theorem scaled_reduced_pair_adapter
     {F : Type} [Field F] [NumberField F]

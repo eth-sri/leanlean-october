@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -61,11 +58,12 @@ local instance
   intro x
   exact QuotientGroup.lift_mk _ _ _
 
-private theorem globalNormResidueEquiv_mk_one
-    (F E : Type)
-    [Field F] [NumberField F]
-    [Field E] [NumberField E] [Algebra F E]
-    [FiniteDimensional F E] [IsAbelianGalois F E] :
+section
+
+variable (F E : Type) [Field F] [NumberField F] [Field E] [NumberField E] [Algebra F E]
+    [FiniteDimensional F E] [IsAbelianGalois F E]
+
+private theorem globalNormResidueEquiv_mk_one :
     AddEquiv.toMultiplicative
         (globalNormResidueEquiv F E)
         (QuotientGroup.mk (1 : IdeleClassGroup F)) =
@@ -78,14 +76,10 @@ private theorem globalNormResidueEquiv_mk_one
               (_root_.ideleClassNorm F E).range
               (1 : IdeleClassGroup F)))) =
       1
-  simpa only [globalNormResidueMonoidHom_apply] using
+  simpa using
     map_one (globalNormResidueMonoidHom F E)
 
 private theorem globalNormResidueEquiv_mk
-    (F E : Type)
-    [Field F] [NumberField F]
-    [Field E] [NumberField E] [Algebra F E]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
     (c : IdeleClassGroup F) :
     AddEquiv.toMultiplicative
         (globalNormResidueEquiv F E)
@@ -101,10 +95,6 @@ private theorem globalNormResidueEquiv_mk
   exact (globalNormResidueMonoidHom_apply F E c).symm
 
 private theorem globalNormResidueEquiv_ne_one_of_ne_mk_one
-    (F E : Type)
-    [Field F] [NumberField F]
-    [Field E] [NumberField E] [Algebra F E]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
     (q :
       IdeleClassGroup F ⧸
         (_root_.ideleClassNorm F E).range)
@@ -120,6 +110,8 @@ private theorem globalNormResidueEquiv_ne_one_of_ne_mk_one
   exact
     h.trans
       (globalNormResidueEquiv_mk_one F E).symm
+
+end
 
 omit [NumberField K] [FiniteDimensional K L] in
 /-- The chosen local-factor Artin product on the actual special
@@ -144,12 +136,11 @@ theorem
           (ramifiedInfinitePlaceRealFixedField
             (K := K) (L := L) v hRamified) x) =
       1 := by
-  let :
-      IsAbelianGalois ℚ rationalComplexificationCyclotomicField :=
+  let :=
     rationalComplexificationCyclotomicField_isAbelianGalois
   apply
     ramifiedInfinitePlaceOverextensionCyclotomicRestriction_injective
-      (K := K) (L := L) v hRamified
+        v hRamified
   have hdiamond :=
     DFunLike.congr_fun
       (globalArtinMonoidHom_norm_restriction
@@ -166,29 +157,23 @@ theorem
           (K := K) (L := L) v hRamified) x)
   change
     ramifiedInfinitePlaceOverextensionCyclotomicRestriction
-        (K := K) (L := L) v hRamified
+          v hRamified
         (globalArtinMonoidHom
-          (K :=
-            ramifiedInfinitePlaceRealFixedField
-              (K := K) (L := L) v hRamified)
-          (L :=
-            infinitePlaceComplexificationOverfield
-              (K := K) (L := L) v)
+
           (IdeleGroup.principalIdele
             (ramifiedInfinitePlaceRealFixedField
-              (K := K) (L := L) v hRamified) x)) =
+                v hRamified) x)) =
       globalArtinMonoidHom
-        (K := ℚ)
-        (L := rationalComplexificationCyclotomicField)
+
         (IdeleGroup.norm ℚ
           (ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified)
+              v hRamified)
           (IdeleGroup.principalIdele
             (ramifiedInfinitePlaceRealFixedField
-              (K := K) (L := L) v hRamified) x)) at hdiamond
+                v hRamified) x)) at hdiamond
   rw [IdeleGroup.norm_principalIdele,
     rationalComplexificationGlobalArtin_principalIdele] at hdiamond
-  simpa only [map_one] using hdiamond
+  simpa using hdiamond
 
 /-- The actual local-factor product for the special overextension,
 descended through principal ideles of its real fixed field. -/
@@ -220,7 +205,7 @@ noncomputable def
       rintro _ ⟨x, rfl⟩
       exact
         ramifiedInfinitePlaceOverextensionGlobalArtin_principalIdele
-          (K := K) (L := L) v hRamified x)
+            v hRamified x)
 
 omit [NumberField K] [FiniteDimensional K L] in
 /-- Evaluation of the descended special-overextension Artin map on
@@ -280,28 +265,23 @@ theorem
   intro a
   change
     ramifiedInfinitePlaceOverextensionIdeleClassArtinMonoidHom
-        (K := K) (L := L) v hRamified
+          v hRamified
         (_root_.ideleClassNorm
           (ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified)
+              v hRamified)
           (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v)
+              v)
           (QuotientGroup.mk'
             (IdeleGroup.principalSubgroup
               (infinitePlaceComplexificationOverfield
-                (K := K) (L := L) v))
+                  v))
             a)) =
       1
   rw [_root_.ideleClassNorm_mk,
     ramifiedInfinitePlaceOverextensionIdeleClassArtinMonoidHom_mk]
   exact
     globalArtinMonoidHom_ideleNorm_eq_one
-      (K :=
-        ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified)
-      (L :=
-        infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)
+
       a
 
  noncomputable def
@@ -331,7 +311,7 @@ theorem
       rintro _ ⟨c, rfl⟩
       exact
         ramifiedInfinitePlaceOverextensionIdeleClassArtinMonoidHom_ideleClassNorm
-          (K := K) (L := L) v hRamified c)
+            v hRamified c)
 
 /-- The chosen-local-factor Artin map on the actual norm quotient of
 the special overextension. -/
@@ -378,21 +358,13 @@ theorem
   intro σ
   obtain ⟨a, ha⟩ :=
     globalArtinMonoidHom_surjective
-      (K :=
-        ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified)
-      (L :=
-        infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)
+
       σ
-  let c :
-      IdeleClassGroup
-        (ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified) :=
+  let c :=
     QuotientGroup.mk'
       (IdeleGroup.principalSubgroup
         (ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified))
+            v hRamified))
       a
   refine
     ⟨QuotientGroup.mk c, ?_⟩
@@ -413,14 +385,14 @@ theorem
         (K := K) (L := L) v hRamified) := by
   let K' :=
     ramifiedInfinitePlaceRealFixedField
-      (K := K) (L := L) v hRamified
+        v hRamified
   let L' :=
     infinitePlaceComplexificationOverfield
       (K := K) (L := L) v
   let Q :=
     IdeleClassGroup K' ⧸
       (_root_.ideleClassNorm K' L').range
-  let e : Q ≃* Gal(L' / K') :=
+  let e :=
     AddEquiv.toMultiplicative
       (globalNormResidueEquiv K' L')
   let : Finite Q :=
@@ -448,11 +420,11 @@ theorem
     σ = τ := by
   rcases
       ramifiedInfinitePlaceOverextension_eq_one_or_conjugation
-        (K := K) (L := L) v hRamified σ with hσ1 | hσc
+          v hRamified σ with hσ1 | hσc
   · exact (hσ hσ1).elim
   rcases
       ramifiedInfinitePlaceOverextension_eq_one_or_conjugation
-        (K := K) (L := L) v hRamified τ with hτ1 | hτc
+          v hRamified τ with hτ1 | hτc
   · exact (hτ hτ1).elim
   exact hσc.trans hτc.symm
 
@@ -484,44 +456,12 @@ private theorem
             (K := K) (L := L) v hRamified)
           (infinitePlaceComplexificationOverfield
             (K := K) (L := L) v)) q ≠
-      1 := by
-  exact
-    globalNormResidueEquiv_ne_one_of_ne_mk_one
+      1 := globalNormResidueEquiv_ne_one_of_ne_mk_one
       (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified)
+          v hRamified)
       (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v)
+          v)
       q hq
-
-omit [NumberField K] [FiniteDimensional K L] in
-private theorem
-    ramifiedInfinitePlaceOverextensionGlobalNormResidue_mk
-    (v : InfinitePlace K)
-    (hRamified :
-      (chosenInfinitePlaceAbove (L := L) v).IsRamified K)
-    (c :
-      IdeleClassGroup
-        (ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified)) :
-    AddEquiv.toMultiplicative
-        (globalNormResidueEquiv
-          (ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified)
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v))
-        (QuotientGroup.mk c) =
-      globalNormResidueMonoidHom
-        (ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified)
-        (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v) c := by
-  exact
-    globalNormResidueEquiv_mk
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified)
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v)
-      c
 
 omit [NumberField K] [FiniteDimensional K L] in
 /-- At each class in the genuine norm quotient of the special
@@ -599,60 +539,28 @@ theorem
   · subst q
     dsimp only [qOne]
     exact hArtinOne.trans hResidueOne.symm
-  · have hArtinNe :
-        ramifiedInfinitePlaceOverextensionNormQuotientArtinMonoidHom
-            (K := K) (L := L) v hRamified q ≠
-          1 := by
-      intro h
-      apply hq
-      apply
-        (ramifiedInfinitePlaceOverextensionNormQuotientArtinMonoidHom_bijective
-          (K := K) (L := L) v hRamified).1
-      exact
-        h.trans
-          hArtinOne.symm
-    have hqRaw :
+  · have hqRaw :
         q ≠
           QuotientGroup.mk
             (1 :
               IdeleClassGroup
                 (ramifiedInfinitePlaceRealFixedField
-                  (K := K) (L := L) v hRamified)) := by
+                    v hRamified)) := by
       intro h
       apply hq
       exact h
-    have hNormResidueNe :=
-      ramifiedInfinitePlaceOverextensionGlobalNormResidue_ne_one_of_ne_mk_one
-        (K := K) (L := L) v hRamified q hqRaw
-    exact
+    refine
       ramifiedInfinitePlaceOverextension_galois_eq_of_ne_one
-        (K := K) (L := L) v hRamified hArtinNe hNormResidueNe
-
-omit [NumberField K] [FiniteDimensional K L] in
-private theorem
-    ramifiedInfinitePlaceOverextensionIdeleClassArtin_eq_globalNormResidueEquiv_mk
-    (v : InfinitePlace K)
-    (hRamified :
-      (chosenInfinitePlaceAbove (L := L) v).IsRamified K)
-    (c :
-      IdeleClassGroup
-        (ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified)) :
-    ramifiedInfinitePlaceOverextensionIdeleClassArtinMonoidHom
-        (K := K) (L := L) v hRamified c =
-      AddEquiv.toMultiplicative
-        (globalNormResidueEquiv
-          (ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified)
-          (infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v))
-        (QuotientGroup.mk c) := by
-  exact
-    (ramifiedInfinitePlaceOverextensionNormQuotientArtinMonoidHom_mk
-      (K := K) (L := L) v hRamified c).symm.trans
-      (ramifiedInfinitePlaceOverextensionNormQuotientArtinMonoidHom_eq_globalNormResidue_apply
-        (K := K) (L := L) v hRamified
-        (QuotientGroup.mk c))
+          v hRamified ?_ (ramifiedInfinitePlaceOverextensionGlobalNormResidue_ne_one_of_ne_mk_one
+          v hRamified q hqRaw)
+    intro h
+    apply hq
+    apply
+      (ramifiedInfinitePlaceOverextensionNormQuotientArtinMonoidHom_bijective
+          v hRamified).1
+    exact
+      h.trans
+        hArtinOne.symm
 
 omit [NumberField K] [FiniteDimensional K L] in
 /-- On idele classes of the real fixed field, the actual product of
@@ -673,13 +581,17 @@ theorem
         (ramifiedInfinitePlaceRealFixedField
           (K := K) (L := L) v hRamified)
         (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v) c := by
-  exact
-    (ramifiedInfinitePlaceOverextensionIdeleClassArtin_eq_globalNormResidueEquiv_mk
-      (K := K) (L := L) v hRamified
-      c).trans
-      (ramifiedInfinitePlaceOverextensionGlobalNormResidue_mk
-        (K := K) (L := L) v hRamified c)
+          (K := K) (L := L) v) c := (((ramifiedInfinitePlaceOverextensionNormQuotientArtinMonoidHom_mk
+        v hRamified c).symm.trans
+      (ramifiedInfinitePlaceOverextensionNormQuotientArtinMonoidHom_eq_globalNormResidue_apply
+          v hRamified
+        (QuotientGroup.mk c)))).trans
+      ((globalNormResidueEquiv_mk
+      (ramifiedInfinitePlaceRealFixedField
+          v hRamified)
+      (infinitePlaceComplexificationOverfield
+          v)
+      c))
 
 omit [NumberField K] [FiniteDimensional K L] in
 /-- On an actual idele representative of the real fixed field, the
@@ -712,17 +624,15 @@ theorem
         (L :=
           infinitePlaceComplexificationOverfield
             (K := K) (L := L) v)
-        a := by
-  exact
-    (ramifiedInfinitePlaceOverextensionIdeleClassArtinMonoidHom_eq_globalNormResidue_apply
-      (K := K) (L := L) v hRamified
+        a := (ramifiedInfinitePlaceOverextensionIdeleClassArtinMonoidHom_eq_globalNormResidue_apply
+        v hRamified
       (QuotientGroup.mk'
         (IdeleGroup.principalSubgroup
           (ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified))
+              v hRamified))
         a)).symm.trans
       (ramifiedInfinitePlaceOverextensionIdeleClassArtinMonoidHom_mk
-        (K := K) (L := L) v hRamified a)
+          v hRamified a)
 
 omit [NumberField K] [FiniteDimensional K L] in
 /-- The canonical global norm-residue symbol of an archimedean
@@ -756,21 +666,16 @@ theorem
   change
     globalNormResidueMonoidHom
         (ramifiedInfinitePlaceRealFixedField
-          (K := K) (L := L) v hRamified)
+            v hRamified)
         (infinitePlaceComplexificationOverfield
-          (K := K) (L := L) v)
+            v)
         (QuotientGroup.mk'
           (IdeleGroup.principalSubgroup
             (ramifiedInfinitePlaceRealFixedField
-              (K := K) (L := L) v hRamified))
+                v hRamified))
           (IdeleGroup.infinitePlaceIdele w x)) =
       chosenInfinitePlaceArtinMonoidHom
-        (K :=
-          ramifiedInfinitePlaceRealFixedField
-            (K := K) (L := L) v hRamified)
-        (L :=
-          infinitePlaceComplexificationOverfield
-            (K := K) (L := L) v)
+
         w x
   rw [
     globalNormResidueMonoidHom_ramifiedInfinitePlaceOverextension_ideleClass_mk,

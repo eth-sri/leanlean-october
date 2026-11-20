@@ -11,7 +11,7 @@ open scoped Classical NumberField Topology
 open NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualFiniteAnchor
 open KPCplxCharacterHaar KPAdelicCoverRestrictedProduct KPLiteralChamber
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_insertion → sectionTuple_insertion
+open _root_.DedekindZetaZeroFree.KPLiteralChamber (sectionTuple_insertion)
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -24,9 +24,7 @@ theorem exists_compact_raw_anchors {ι : Type*} [Fintype ι]
           KPMsGreenFlux.compactInsertion F ζ hζ k * c i := by
   letI : TopologicalSpace ι := ⊥
   letI : DiscreteTopology ι := ⟨rfl⟩
-  have hs : Function.Surjective ((scalarQuotient F ζ hζ).comp (amalgamation F ζ hζ)) :=
-    (QuotientGroup.mk'_surjective _).comp (QuotientGroup.mk'_surjective _)
-  choose r hr using fun i => hs (c i)
+  choose r hr using fun i => ((QuotientGroup.mk'_surjective _).comp (QuotientGroup.mk'_surjective _)) (c i)
   let f : ι × (InfinitePlace F → ComplexSU2) → RestrictedCover F ζ hζ := fun p =>
     sectionTuple F ζ hζ (fun w => complexSU2Embedding (p.2 w)) * r p.1
   have hf : Continuous f := by
@@ -45,8 +43,6 @@ theorem exists_compact_raw_anchors {ι : Type*} [Fintype ι]
   simp only [f,map_mul,sectionTuple_insertion,show scalarQuotient F ζ hζ
     (amalgamation F ζ hζ (r i)) = c i from hr i]
   congr 1
-  change KPSmoothActualFlowData.archimedeanInsertion F ζ hζ _ =
-    KPSmoothActualFlowData.archimedeanInsertion F ζ hζ _
   congr 1
   exact funext hq
 

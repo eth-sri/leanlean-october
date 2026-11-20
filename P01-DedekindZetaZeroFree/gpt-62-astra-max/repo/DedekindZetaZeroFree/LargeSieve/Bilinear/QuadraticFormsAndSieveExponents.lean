@@ -26,26 +26,31 @@ def rowSum (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (N : ℝ) (lam : Ideal (𝓞 F) → ℂ) (a : Ideal (𝓞 F)) : ℂ :=
   ∑ b ∈ paperShell F c N, lam b * (Q.χ b) a
 
-def Q1 (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
+section
+
+variable (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
+
+def Q1
     (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (M N : ℝ) (lam : Ideal (𝓞 F) → ℂ) : ℝ :=
   ∑ a ∈ paperShell F c M, ‖rowSum Q N lam a‖ ^ 2
 
-def smoothedRows (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (M : ℝ) : Finset (Ideal (𝓞 F)) :=
+def smoothedRows (M : ℝ) : Finset (Ideal (𝓞 F)) :=
   (boundedNormIdeals F ((5 / 2) * M)).filter
     (fun a => a ≠ ⊥ ∧ Squarefree a ∧ a ⊔ c = ⊤)
 
-def Q1w (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
+def Q1w
     (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (W : ℝ → ℝ) (M N : ℝ) (lam : Ideal (𝓞 F) → ℂ) : ℝ :=
   ∑ a ∈ smoothedRows F c M,
     W ((Ideal.absNorm a : ℝ) / M) * ‖rowSum Q N lam a‖ ^ 2
 
-def B1 (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
+def B1
     (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (M N : ℝ) : ℝ :=
   sSup ({0} ∪ {x : ℝ | ∃ lam : Ideal (𝓞 F) → ℂ,
     energy F c N lam ≤ 1 ∧ x = Q1 F c Q M N lam})
+
+end
 
 def squarefreeKernel (a : Ideal (𝓞 F)) : Ideal (𝓞 F) :=
   if a = ⊥ then ⊤ else
@@ -59,21 +64,20 @@ def kernelRows (F : Type) [Field F] [NumberField F]
   (boundedNormIdeals F ((5 / 2) * M)).filter
     (fun a => a ≠ ⊥ ∧ a ⊔ c = ⊤ ∧ K < s a)
 
-def Q2 (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
-    (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (W : ℝ → ℝ) (M N K : ℝ) (lam : Ideal (𝓞 F) → ℂ) : ℝ :=
+section
+
+variable (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
+    (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (W : ℝ → ℝ) (M N K : ℝ)
+
+def Q2 (lam : Ideal (𝓞 F) → ℂ) : ℝ :=
   ∑ a ∈ kernelRows F c M K,
     W ((Ideal.absNorm a : ℝ) / M) * ‖rowSum Q N lam a‖ ^ 2
 
-def B2 (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
-    (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (W : ℝ → ℝ) (M N K : ℝ) : ℝ :=
+def B2 : ℝ :=
   sSup ({0} ∪ {x : ℝ | ∃ lam : Ideal (𝓞 F) → ℂ,
     energy F c N lam ≤ 1 ∧ x = Q2 F c Q W M N K lam})
 
-def T3 (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
-    (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (W : ℝ → ℝ) (M N K : ℝ) (d : Ideal (𝓞 F)) (g : Q.G)
+def T3 (d : Ideal (𝓞 F)) (g : Q.G)
     (lam : Ideal (𝓞 F) → ℂ) : ℂ :=
   ∑ b1 ∈ paperShell F c N, ∑ b2 ∈ paperShell F c N,
     if b1 ⊔ b2 = d ∧ Q.cls b1 = g ∧ Q.cls b2 = g then
@@ -83,11 +87,11 @@ def T3 (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
             (Q.χ b1) a * (starRingEnd ℂ) ((Q.χ b2) a))
     else 0
 
-def B3 (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
-    (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (W : ℝ → ℝ) (M N K : ℝ) (d : Ideal (𝓞 F)) : ℝ :=
+def B3 (d : Ideal (𝓞 F)) : ℝ :=
   sSup ({0} ∪ {x : ℝ | ∃ (g : Q.G) (lam : Ideal (𝓞 F) → ℂ),
     energy F c N lam ≤ 1 ∧ x = ‖T3 F c Q W M N K d g lam‖})
+
+end
 
 def HasSieveExponent (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
     (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)

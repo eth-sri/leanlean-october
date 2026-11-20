@@ -21,7 +21,7 @@ private theorem map_density_equiv {X Y : Type*} [MeasurableSpace X] [MeasurableS
   rw [e.measurableEmbedding.map_apply, withDensity_apply _ (e.measurable hs),
     withDensity_apply _ hs, Measure.restrict_map e.measurable hs,
     e.measurableEmbedding.lintegral_map]
-  simp only [e.symm_apply_apply]
+  simp
 
 private theorem product_chart_density {ι : Type*} [Fintype ι]
     (ν : Measure PGLComplex.Group) [ν.IsHaarMeasure] [SigmaFinite ν]
@@ -207,7 +207,11 @@ namespace DedekindZetaZeroFree.LocalQuotientCharts.ExponentialHaarFrame
 open MeasureTheory Topology Raw
 open scoped NumberField Classical ENNReal Manifold ContDiff Matrix.Norms.Operator
 
-private theorem smooth_det_pi {ι : Type*} [Fintype ι] [DecidableEq ι]
+section
+
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+
+private theorem smooth_det_pi
     {U : Set (ι → ℝ)}
     {F : (ι → ℝ) → ((ι → ℝ) →L[ℝ] (ι → ℝ))}
     (hF : ContDiffOn ℝ (⊤ : ℕ∞) F U) :
@@ -229,20 +233,19 @@ private theorem smooth_det_pi {ι : Type*} [Fintype ι] [DecidableEq ι]
   apply ContDiffOn.const_smul
   exact contDiffOn_prod (fun i _ => hm (σ i) i)
 
-private theorem diffeo_det_ne_zero_pi {ι : Type*} [Fintype ι] [DecidableEq ι]
+private theorem diffeo_det_ne_zero_pi
     (e : OpenPartialHomeomorph (ι → ℝ) (ι → ℝ))
     (he : DifferentiableOn ℝ e e.source)
     (hei : DifferentiableOn ℝ e.symm e.target) {x : ι → ℝ} (hx : x ∈ e.source) :
     (fderiv ℝ e x).det ≠ 0 := by
-  have hd := ((he x hx).differentiableAt (e.open_source.mem_nhds hx)).hasFDerivAt
   have hi := ((hei (e x) (e.map_source hx)).differentiableAt
     (e.open_target.mem_nhds (e.map_source hx))).hasFDerivAt
   have hinv : (fun y => e.symm (e y)) =ᶠ[𝓝 x] id := e.eventually_left_inverse hx
-  have hcomp := (hi.comp x hd).congr_of_eventuallyEq hinv.symm
+  have hcomp := (hi.comp x (((he x hx).differentiableAt (e.open_source.mem_nhds hx)).hasFDerivAt)).congr_of_eventuallyEq hinv.symm
   have hlin := hcomp.fderiv
   rw [fderiv_id] at hlin
   have hdet := congrArg (fun A : (ι → ℝ) →L[ℝ] (ι → ℝ) => A.det) hlin
-  change (LinearMap.id : (ι → ℝ) →ₗ[ℝ] (ι → ℝ)).det =
+  change LinearMap.id.det =
     ((fderiv ℝ e.symm (e x)).toLinearMap.comp (fderiv ℝ e x).toLinearMap).det at hdet
   rw [LinearMap.det_id, LinearMap.det_comp] at hdet
   intro hz
@@ -250,8 +253,7 @@ private theorem diffeo_det_ne_zero_pi {ι : Type*} [Fintype ι] [DecidableEq ι]
   rw [hz, mul_zero] at hdet
   exact one_ne_zero hdet
 
-private theorem smooth_positive_coordinate_change_density_pi {ι : Type*}
-    [Fintype ι] [DecidableEq ι]
+private theorem smooth_positive_coordinate_change_density_pi
     (ν : Measure (ι → ℝ)) [ν.IsAddHaarMeasure]
     (e : OpenPartialHomeomorph (ι → ℝ) (ι → ℝ))
     (he : ContDiffOn ℝ (⊤ : ℕ∞) e e.source)
@@ -266,9 +268,8 @@ private theorem smooth_positive_coordinate_change_density_pi {ι : Type*}
         (ν.withDensity (fun x => ENNReal.ofReal (ρ x))).restrict e.source := by
   dsimp only
   have hd := he.differentiableOn (by simp)
-  have hdi := hei.differentiableOn (by simp)
   have hdet : ∀ x ∈ e.source, (fderiv ℝ e x).det ≠ 0 :=
-    fun _ hx => diffeo_det_ne_zero_pi e hd hdi hx
+    fun _ hx => diffeo_det_ne_zero_pi e hd (hei.differentiableOn (by simp)) hx
   refine ⟨?_, ?_, ?_⟩
   · exact ((smooth_det_pi (he.fderiv_of_isOpen e.open_source (by simp))).abs
       (fun x hx => hdet x hx)).mul (hw.comp he e.mapsTo)
@@ -278,6 +279,8 @@ private theorem smooth_positive_coordinate_change_density_pi {ι : Type*}
     congr 2
     funext x
     exact (ENNReal.ofReal_mul (abs_nonneg _)).symm
+
+end
 
 private theorem glue_smooth_positive_density_pi {X : Type*}
     [NormedAddCommGroup X] [NormedSpace ℝ X] [MeasureSpace X] [BorelSpace X]
@@ -301,8 +304,7 @@ private theorem glue_smooth_positive_density_pi {X : Type*}
     have hz := congrArg (fun ν : Measure X => ν.restrict (U x)) (hμ z)
     simp only [Measure.restrict_restrict (hU _).measurableSet] at hx hz
     rw [Set.inter_comm (U z) (U x)] at hx
-    have hh : (volume.withDensity (fun y => ENNReal.ofReal (w x y))).restrict (U x ∩ U z) =
-        (volume.withDensity (fun y => ENNReal.ofReal (w z y))).restrict (U x ∩ U z) :=
+    have hh :=
       hx.symm.trans hz
     rw [restrict_withDensity (hU x |>.inter (hU z)).measurableSet,
       restrict_withDensity (hU x |>.inter (hU z)).measurableSet] at hh
@@ -313,12 +315,11 @@ private theorem glue_smooth_positive_density_pi {X : Type*}
         ((hU x).inter (hU z)).measurableSet)
       ((ENNReal.continuous_ofReal.comp_continuousOn hc2).aemeasurable
         ((hU x).inter (hU z)).measurableSet)).mp hh
-    have he := Measure.eqOn_open_of_ae_eq hae ((hU x).inter (hU z))
-      (ENNReal.continuous_ofReal.comp_continuousOn hc1)
-      (ENNReal.continuous_ofReal.comp_continuousOn hc2)
     intro y hy
-    exact (ENNReal.ofReal_eq_ofReal_iff (hpos x y hy.1).le (hpos z y hy.2).le).mp (he hy)
-  let ρ : X → ℝ := fun y => if hy : y ∈ S then w ⟨y, hy⟩ y else 0
+    exact (ENNReal.ofReal_eq_ofReal_iff (hpos x y hy.1).le (hpos z y hy.2).le).mp ((Measure.eqOn_open_of_ae_eq hae ((hU x).inter (hU z))
+      (ENNReal.continuous_ofReal.comp_continuousOn hc1)
+      (ENNReal.continuous_ofReal.comp_continuousOn hc2)) hy)
+  let ρ := fun y => if hy : y ∈ S then w ⟨y, hy⟩ y else 0
   have hρ (x : S) : Set.EqOn ρ (w x) (U x) := by
     intro y hy
     have hyS := hUS x hy
@@ -328,18 +329,13 @@ private theorem glue_smooth_positive_density_pi {X : Type*}
   refine ⟨ρ, ?_, ?_, ?_⟩
   · intro y hy
     let x : S := ⟨y, hy⟩
-    have hh : ρ =ᶠ[𝓝 y] w x := Filter.eventuallyEq_of_mem ((hU x).mem_nhds (hxU x)) (hρ x)
-    exact ((hw x y (hxU x)).contDiffAt ((hU x).mem_nhds (hxU x))).congr_of_eventuallyEq hh
+    exact ((hw x y (hxU x)).contDiffAt ((hU x).mem_nhds (hxU x))).congr_of_eventuallyEq (Filter.eventuallyEq_of_mem ((hU x).mem_nhds (hxU x)) (hρ x))
       |>.contDiffWithinAt
   · intro y hy
     simpa only [ρ, dif_pos hy] using hpos ⟨y, hy⟩ y (hxU ⟨y, hy⟩)
-  · have hcov : S ⊆ ⋃ x, U x := by
-      intro y hy
-      exact Set.mem_iUnion.mpr ⟨⟨y, hy⟩, hxU ⟨y, hy⟩⟩
-    obtain ⟨t, htc, ht⟩ := (HereditarilyLindelofSpace.isLindelof S).elim_countable_subcover U hU hcov
-    have hunion : (⋃ x ∈ t, U x) = S := Set.Subset.antisymm
-      (by simp only [Set.iUnion_subset_iff]; intro x _; exact hUS x) ht
-    rw [← hunion]
+  · obtain ⟨t, htc, ht⟩ := (HereditarilyLindelofSpace.isLindelof S).elim_countable_subcover U hU (fun y hy => Set.mem_iUnion.mpr ⟨⟨y, hy⟩, hxU ⟨y, hy⟩⟩)
+    rw [← (Set.Subset.antisymm
+      (by simp only [Set.iUnion_subset_iff]; intro x _; exact hUS x) ht)]
     apply Measure.restrict_biUnion_congr htc |>.mpr
     intro x hx
     rw [hμ x]
@@ -372,15 +368,15 @@ theorem raw_smooth_chart_haar_density (F : Type) [Field F] [NumberField F]
     rw [hC, OpenPartialHomeomorph.symm_target]
   have hF (x : E.source) : ContDiffOn ℝ (⊤ : ℕ∞) (Fx x) (Fx x).source := by
     apply ContMDiffOn.contDiffOn
-    exact (contMDiffOn_chart (I := 𝓘(ℝ, Coordinates F)) (x := E x)).comp
+    exact (contMDiffOn_chart).comp
       (hE.mono (by rw [OpenPartialHomeomorph.trans_source]; exact Set.inter_subset_left))
-      (by intro y hy; exact hy.2)
+      (fun y hy => hy.2)
   have hFi (x : E.source) : ContDiffOn ℝ (⊤ : ℕ∞) (Fx x).symm (Fx x).target := by
     apply ContMDiffOn.contDiffOn
     exact hEi.comp
-      ((contMDiffOn_chart_symm (I := 𝓘(ℝ, Coordinates F)) (x := E x)).mono
+      ((contMDiffOn_chart_symm).mono
         (by rw [OpenPartialHomeomorph.trans_target]; exact Set.inter_subset_left))
-      (by intro y hy; exact hy.2)
+      (fun y hy => hy.2)
   have htarget (x : E.source) : (Fx x).target ⊆ (rawAffineChart F (E x)).source := by
     rw [← hT (E x)]
     exact Set.inter_subset_left

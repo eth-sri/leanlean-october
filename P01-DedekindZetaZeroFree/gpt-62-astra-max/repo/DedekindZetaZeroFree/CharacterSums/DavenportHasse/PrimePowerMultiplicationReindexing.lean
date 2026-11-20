@@ -26,19 +26,16 @@ theorem mul_reindex (χ : MulChar k ℂ) (ψ : AddChar k ℂ)
     simp only [Finset.mem_image, Finset.mem_filter]
     constructor
     · rintro ⟨g, hg, rfl⟩
-      have hgm : g.Monic := (mem_Mon.1 hg).1
-      have hgd : g.natDegree = n - j * P.natDegree := (mem_Mon.1 hg).2
+      have hgm := (mem_Mon.1 hg).1
       refine ⟨mem_Mon.2 ⟨(hP.pow j).mul hgm, ?_⟩, dvd_mul_right _ _⟩
-      rw [(hP.pow j).natDegree_mul hgm, hP.natDegree_pow, hgd, Nat.add_sub_cancel' hjn]
+      rw [(hP.pow j).natDegree_mul hgm, hP.natDegree_pow, ((mem_Mon.1 hg).2), Nat.add_sub_cancel' hjn]
     · rintro ⟨hf, hdvd⟩
       obtain ⟨g, rfl⟩ := hdvd
-      have hfm : (P ^ j * g).Monic := (mem_Mon.1 hf).1
-      have hgm : g.Monic := (hP.pow j).of_mul_monic_left hfm
-      have hgd : g.natDegree = n - j * P.natDegree := by
-        have h := (hP.pow j).natDegree_mul hgm
-        rw [hP.natDegree_pow, (mem_Mon.1 hf).2] at h
-        omega
-      exact ⟨g, mem_Mon.2 ⟨hgm, hgd⟩, rfl⟩
+      have hgm := (hP.pow j).of_mul_monic_left ((mem_Mon.1 hf).1)
+      refine ⟨g, mem_Mon.2 ⟨hgm, ?_⟩, rfl⟩
+      have h := (hP.pow j).natDegree_mul hgm
+      rw [hP.natDegree_pow, (mem_Mon.1 hf).2] at h
+      omega
   rw [ha, Finset.mul_sum]
   trans ∑ g ∈ Mon k (n - j * P.natDegree), wt χ ψ (P ^ j * g)
   · exact Finset.sum_congr rfl fun g hg => by

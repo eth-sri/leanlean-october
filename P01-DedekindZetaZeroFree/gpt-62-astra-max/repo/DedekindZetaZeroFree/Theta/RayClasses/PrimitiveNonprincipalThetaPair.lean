@@ -53,12 +53,12 @@ theorem primitiveNonprincipalThetaPair
     rw [Theta.normalizedRayTheta_one_div D χ.ψ t ht,
       hdual t⁻¹ (inv_pos.mpr ht), Theta.normalizedRayConjugateTheta_eq_conj]
     ring
-  have hwnorm : ‖w‖ = 1 := thetaInversionScalar_norm_eq_one _ w hinv
+  have hwnorm := thetaInversionScalar_norm_eq_one _ w hinv
     (Theta.normalizedRayTheta_nonzero_somewhere F hF m hm η hnon D χ)
   have hfe (t : ℝ) (ht : 0 < t) :
       Theta.normalizedRayTheta D χ.ψ (1 / t) =
         w * (t : ℂ) * Theta.normalizedRayConjugateTheta D χ.ψ t := by
-    simpa only [one_div, inv_inv, Complex.ofReal_inv] using
+    simpa using
       (Theta.normalizedRayTheta_one_div D χ.ψ t⁻¹ (inv_pos.mpr ht)).trans
         (by rw [inv_inv, hdual t ht]; simp only [Complex.ofReal_inv, inv_inv]; ring)
   obtain ⟨hp, C, b, hC, hb, htail⟩ := Theta.normalizedRayTheta_tail_bound D χ hnon

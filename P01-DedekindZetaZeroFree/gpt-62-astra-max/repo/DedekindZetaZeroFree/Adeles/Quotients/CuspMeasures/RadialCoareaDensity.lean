@@ -15,21 +15,13 @@ open KPCompactStabilizerHaarSources KPActualComponentHaarSources KPMsClearedTrun
 attribute [local instance] KPCompactStabilizerHaarSources.groupMeasurableSpace
   KPCompactStabilizerHaarSources.groupBorelSpace
 
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure renaming actual_rational_Iwasawa_fiber → actual_rational_Iwasawa_fiber
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof renaming framedFullAngular → framedFullAngular
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof renaming framedFullAngular_continuous → framedFullAngular_continuous
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof renaming framedRadius → framedRadius
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof renaming framedNormOne → framedNormOne
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof renaming framedFullAngular_upper_transition → framedFullAngular_upper_transition
+open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure (actual_rational_Iwasawa_fiber)
 open KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent
 open KPMsResidualTailRestoration.SharpConstantTerm
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming placeEquiv → placeEquiv
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming archEquiv → archEquiv
-open _root_.DedekindZetaZeroFree.KPContFlatArchProjectionNorm renaming archDiagonalLift_eq_insertion → archDiagonalLift_eq_insertion
-open _root_.DedekindZetaZeroFree.KPContFlatArchProjectionNorm renaming N_eq_insertion → N_eq_insertion
-open _root_.DedekindZetaZeroFree.KPContFlatArchProjectionNorm renaming adeleOfArch → adeleOfArch
+open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources (placeEquiv archEquiv)
+open _root_.DedekindZetaZeroFree.KPContFlatArchProjectionNorm (archDiagonalLift_eq_insertion N_eq_insertion adeleOfArch)
 
 private theorem sqrt_exp_double (q : ℝ) :
     Real.sqrt (Real.exp (2*q)) = Real.exp q := by
@@ -138,23 +130,23 @@ private theorem section_diagonal_inverse (q : ℝ) (z : ℂ) (t : ℝ) :
   rw [← mul_assoc, section_diagonal_inverse]
   simp only [Pi.mul_apply, KPCuspCharts.toArch, radialShapeCorrection,
     AddSubgroup.coe_add, Pi.add_apply, Pi.zero_apply, Equiv.apply_symm_apply]
+  let radialSlotLog₀ := radialSlotLog w t (KPCusp.complexPlace F i)
   change (Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n ℂ
-    ((Real.exp (-radialSlotLog w t (KPCusp.complexPlace F i)) : ℂ) * p.1 i)) *
+    ((Real.exp (-radialSlotLog₀) : ℂ) * p.1 i)) *
       KPArithmeticAction.hyperbolicProjectiveSection
-        (0,t+p.2.val i-radialSlotLog w t (KPCusp.complexPlace F i))) * (k : G _) i =
+        (0,t+p.2.val i-radialSlotLog₀)) * (k : G _) i =
     Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n ℂ
-      ((Real.exp (-radialSlotLog w t (KPCusp.complexPlace F i)) : ℂ) * p.1 i)) *
+      ((Real.exp (-radialSlotLog₀) : ℂ) * p.1 i)) *
         (KPArithmeticAction.hyperbolicProjectiveSection
-          (0,0+(p.2.val i+(t-radialSlotLog w t (KPCusp.complexPlace F i)))) * (k : G _) i)
+          (0,0+(p.2.val i+(t-radialSlotLog₀))) * (k : G _) i)
   have hi : (placeEquiv F ζ hζ) (KPCusp.complexPlace F i) = i :=
     (placeEquiv F ζ hζ).right_inv i
-  have ht : t + p.2.val i - radialSlotLog w t (KPCusp.complexPlace F i) =
-      0 + (p.2.val i + (t - radialSlotLog w t (KPCusp.complexPlace F i))) := by ring
+  have ht : t + p.2.val i - radialSlotLog₀ =
+      0 + (p.2.val i + (t - radialSlotLog₀)) := by ring
   rw [ht]
   exact mul_assoc _ _ _
 
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming rationalArch → rationalArch
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming rationalArch_equivariant → rationalArch_equivariant
+open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources (rationalArch rationalArch_equivariant)
 
  theorem source_frame_factorization
     (σ : KPCuspArithmetic.PGL2 F)
@@ -179,10 +171,9 @@ open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming rationalA
     change s⁻¹ * (PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ)
       (PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ s) = 1
     rw [PGLComplex.AdelicSlicesRaw.archProjection_archimedeanInsertion,inv_mul_cancel]
-  have hfin := KPMsResidualTailRestoration.SharpConstantTerm.FiberStability.complex_kernel_mem
-    F ζ hζ hin
   have hc := KPMsResidualTailRestoration.SharpConstantTerm.FiberStability.insertion_commutes_cover
-    F ζ hζ a ⟨r⁻¹*ins s,hfin⟩
+    F ζ hζ a ⟨r⁻¹*ins s,(KPMsResidualTailRestoration.SharpConstantTerm.FiberStability.complex_kernel_mem
+      F ζ hζ hin)⟩
   change r⁻¹ * (ins (s*a) * b.val) = ins a * (r⁻¹*ins s*b.val)
   change r⁻¹ * (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (s*a) * b.val) = _
   rw [(KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1]
@@ -191,9 +182,9 @@ open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming rationalA
     _ = ((r⁻¹*ins s)*ins a)*b.val := by dsimp only [ins]; group
     _ = _ := by rw [hc']; group
 
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tilingLift → tilingLift
+open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources (tilingLift)
 
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure renaming actual_rational_finite_fiber → actual_rational_finite_fiber
+open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure (actual_rational_finite_fiber)
 
  theorem full_fiber_test_covariance
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -252,23 +243,15 @@ open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure renami
   simp only [htest] at hh
   exact hh.symm
 
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof renaming rational_upper_literal_factorization → rational_upper_literal_factorization
 
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming actual_finiteOrbit_positive_finite → actual_finiteOrbit_positive_finite
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 open KPCompactStabilizerHaarSources
 attribute [local instance] KPCompactStabilizerHaarSources.groupMeasurableSpace
   KPCompactStabilizerHaarSources.groupBorelSpace
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure renaming actual_compact_finite_test_covariance → actual_compact_finite_test_covariance
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure renaming actual_high_cusp_joint_coarea → actual_high_cusp_joint_coarea
 
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTransport → toRawTransport
 
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming archEquiv → archEquiv
-open _root_.DedekindZetaZeroFree.KPCompactStabilizerHaarSources renaming cocycle → cocycle
-open _root_.DedekindZetaZeroFree.KPCompactStabilizerHaarSources renaming cocycle_continuous → cocycle_continuous
 
 end DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure.LocalCuspFactorization
 

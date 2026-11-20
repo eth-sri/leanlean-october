@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.LFunctions.Hecke.CompletionFactor
 
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.EntireRegularizedQuotient
 
@@ -20,15 +21,14 @@ private lemma Gammaℂ_ne_zero_of_im_ne_zero {s : ℂ} (hs : s.im ≠ 0) :
     obtain ⟨m, hm⟩ := h0
     exact hs (by rw [hm]; simp)
 
-private lemma Gammaℂ_ne_zero_of_re_pos {s : ℂ} (hs : 0 < s.re) :
-    Complex.Gammaℂ s ≠ 0 := by
-  rw [Complex.Gammaℂ_def]
-  exact mul_ne_zero (mul_ne_zero two_ne_zero (Complex.cpow_ne_zero_iff.mpr
-      (Or.inl (mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)))))
-    (Complex.Gamma_ne_zero_of_re_pos hs)
+alias RegularizedGammaProduct.Gammaℂ_ne_zero_of_im_ne_zero := Gammaℂ_ne_zero_of_im_ne_zero
 
-theorem originMellinQ_zero (h : ℝ → ℂ)
-    (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h) :
+private alias Gammaℂ_ne_zero_of_re_pos := DedekindZetaZeroFree.CompletionFactor.Gammaℂ_ne_zero_of_re_pos
+
+variable (h : ℝ → ℂ) (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h)
+
+include hh hc in
+theorem originMellinQ_zero :
     originMellinQ h 0 = h 0 / (2 : ℂ) := by
   rw [originMellinQ_eq_chart h hh hc 1 0 (by norm_num)]
   rw [originMellinChart]
@@ -40,21 +40,21 @@ theorem originMellinQ_zero (h : ℝ → ℂ)
   rw [hm, Complex.Gammaℂ_one]
   field_simp
 
-theorem Gammaℂ_mul_originMellinQ_eq_mellin (h : ℝ → ℂ)
-    (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h)
+include hh hc in
+theorem Gammaℂ_mul_originMellinQ_eq_mellin
     (s : ℂ) (hs : 0 < s.re) :
     Complex.Gammaℂ s * originMellinQ h s = mellin h s := by
   rw [originMellinQ_eq_mellin_div_Gammaℂ h hh hc s hs]
   field_simp [Gammaℂ_ne_zero_of_re_pos hs]
 
-theorem Gammaℂ_mul_originMellinQ_eq_shift (h : ℝ → ℂ)
-    (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h)
+include hh hc in
+theorem Gammaℂ_mul_originMellinQ_eq_shift
     (n : ℕ) (s : ℂ) (hs : -(n : ℝ) < s.re) (hsi : s.im ≠ 0) :
     Complex.Gammaℂ s * originMellinQ h s =
       ((-1 : ℂ) ^ n * mellin (iteratedDeriv n h) (s + (n : ℂ))) /
         (∏ j ∈ Finset.range n, (s + (j : ℂ))) := by
   rw [originMellinQ_eq_chart h hh hc n s hs, originMellinChart]
-  have hGamS : Complex.Gammaℂ s ≠ 0 := Gammaℂ_ne_zero_of_im_ne_zero hsi
+  have hGamS := Gammaℂ_ne_zero_of_im_ne_zero hsi
   have hkey : Complex.Gammaℂ s * (Complex.Gammaℂ (s + (n : ℂ)))⁻¹ =
       (2 * (Real.pi : ℂ)) ^ n / (∏ j ∈ Finset.range n, (s + (j : ℂ))) := by
     rw [Gammaℂ_add_nat_rising_product s n hsi]

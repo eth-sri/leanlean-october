@@ -12,9 +12,9 @@ namespace DedekindZetaZeroFree.OrbitFrequencies
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
 
 def exteriorDigitValue (D : SourceFactorization R Q T)
     (m : ThetaReflectionData.Row R.A) (x : Fˣ)
@@ -38,7 +38,7 @@ theorem reverseTuple_period (D : SourceFactorization R Q T)
   obtain ⟨P, hP⟩ := OrbitExpansion.exterior_tuple_finite_exceptional R a
   have h := OrbitExpansion.fourier_exterior_tuple R D v a g
     (by intro p; simp [g, OrbitExpansion.sRestriction, p.property])
-    (by intro w hw; exact ite_eq_right hw) P hP
+    (fun w hw => ite_eq_right hw) P hP
   have he (p : ThetaBranch.ExteriorPrime R.A) :
       OrbitExpansion.exteriorSlotValue R D p.val (a (Sum.inr p.val)) = exteriorDigitValue R D m x d p := by
     have ha : a (Sum.inr p.val) = b (Sum.inr p.val) := by simp [a, p.property]

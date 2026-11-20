@@ -14,13 +14,17 @@ set_option maxHeartbeats 1200000
  def leftCoordinates (M : Matrix (Fin 2) (Fin 2) ℂ) : Fin 3 → ℂ :=
   ![M 1 0 / M 0 0, (M 0 0)^2 / M.det, M 0 1 / M 0 0]
 
-private theorem leftCoordinates_nonzero (M : Matrix.GeneralLinearGroup (Fin 2) ℂ)
-    (hM : M.val 0 0 ≠ 0) : leftCoordinates M.val 1 ≠ 0 := by
+section
+
+variable (M : Matrix.GeneralLinearGroup (Fin 2) ℂ) (hM : M.val 0 0 ≠ 0)
+
+include hM in
+private theorem leftCoordinates_nonzero : leftCoordinates M.val 1 ≠ 0 := by
   simp only [leftCoordinates, Matrix.cons_val_one, Matrix.cons_val_zero]
   exact div_ne_zero (pow_ne_zero _ hM) (Matrix.GeneralLinearGroup.det_ne_zero M)
 
-private theorem leftCoordinates_reconstruct (M : Matrix.GeneralLinearGroup (Fin 2) ℂ)
-    (hM : M.val 0 0 ≠ 0) :
+include hM in
+private theorem leftCoordinates_reconstruct :
     Matrix.ProjGenLinGroup.mk (leftMatrix (leftCoordinates M.val)) = Matrix.ProjGenLinGroup.mk M := by
   have hdet : M.val 0 0 * M.val 1 1 - M.val 0 1 * M.val 1 0 ≠ 0 := by
     simpa [Matrix.det_fin_two] using Matrix.GeneralLinearGroup.det_ne_zero M
@@ -42,21 +46,25 @@ private theorem leftCoordinates_reconstruct (M : Matrix.GeneralLinearGroup (Fin 
     ring
   rw [he, map_mul, Matrix.ProjGenLinGroup.mk_scalar, mul_one]
 
+end
+
  def mirroredMatrix {F : Type} [Field F] [NumberField F]
     (a : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (x₀ x : KPGlobalResidualConstruction.ArchCoordinates F) (w : InfinitePlace F) :
     Matrix.GeneralLinearGroup (Fin 2) ℂ :=
   a w * rightMatrix (x w) * (rightMatrix (x₀ w))⁻¹ * (a w)⁻¹
 
-private theorem mirroredMatrix_base {F : Type} [Field F] [NumberField F]
-    (a : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+section
+
+variable {F : Type} [Field F] [NumberField F] (a : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+
+private theorem mirroredMatrix_base
     (x₀ : KPGlobalResidualConstruction.ArchCoordinates F) (w : InfinitePlace F) :
     mirroredMatrix a x₀ x₀ w = 1 := by
   unfold mirroredMatrix
   group
 
-private theorem mirroredMatrix_smooth {F : Type} [Field F] [NumberField F]
-    (a : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+private theorem mirroredMatrix_smooth
     (x₀ : KPGlobalResidualConstruction.ArchCoordinates F) (w : InfinitePlace F) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => (mirroredMatrix a x₀ x w).val)
       (KPGlobalResidualConstruction.archDomain F) := by
@@ -74,8 +82,7 @@ private theorem mirroredMatrix_smooth {F : Type} [Field F] [NumberField F]
     simp only [mirroredMatrix, Units.val_mul, rightMatrix_val _ (hx w)]
     rfl)
 
-private theorem mirrored_coordinates {F : Type} [Field F] [NumberField F]
-    (a : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+private theorem mirrored_coordinates
     (x₀ : KPGlobalResidualConstruction.ArchCoordinates F)
     (hx₀ : x₀ ∈ KPGlobalResidualConstruction.archDomain F) :
     ∃ (O : Set (KPGlobalResidualConstruction.ArchCoordinates F))
@@ -89,7 +96,6 @@ private theorem mirrored_coordinates {F : Type} [Field F] [NumberField F]
   let m := mirroredMatrix a x₀
   let O := D ∩ {x | ∀ w, (m x w).val 0 0 ≠ 0}
   let q := fun x w => leftCoordinates (m x w).val
-  have hD : IsOpen D := KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F
   have hm (w : InfinitePlace F) : ContDiffOn ℝ (⊤ : ℕ∞) (fun x => (m x w).val) D :=
     mirroredMatrix_smooth a x₀ w
   have he (w : InfinitePlace F) (i j : Fin 2) :
@@ -99,7 +105,7 @@ private theorem mirrored_coordinates {F : Type} [Field F] [NumberField F]
     have ho : IsOpen (⋂ w, D ∩ {x | (m x w).val 0 0 ≠ 0}) := by
       apply isOpen_iInter_of_finite
       intro w
-      exact (he w 0 0).continuousOn.isOpen_inter_preimage hD
+      exact (he w 0 0).continuousOn.isOpen_inter_preimage (KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F)
         (isOpen_ne_fun continuous_id continuous_const)
     convert ho using 1
     ext x
@@ -119,14 +125,16 @@ private theorem mirrored_coordinates {F : Type} [Field F] [NumberField F]
       simp only [Matrix.det_fin_two]
       exact ((hentry 0 0).mul (hentry 1 1)).sub ((hentry 0 1).mul (hentry 1 0))
     fin_cases i <;> simp [q, leftCoordinates]
-    · simpa only [div_eq_mul_inv] using! (hentry 1 0).mul ((hentry 0 0).inv hn)
-    · simpa only [div_eq_mul_inv] using! ((hentry 0 0).pow 2).mul
+    · simpa using! (hentry 1 0).mul ((hentry 0 0).inv hn)
+    · simpa using! ((hentry 0 0).pow 2).mul
         (hdet.inv (fun x _ => Matrix.GeneralLinearGroup.det_ne_zero (m x w)))
-    · simpa only [div_eq_mul_inv] using! (hentry 0 1).mul ((hentry 0 0).inv hn)
+    · simpa using! (hentry 0 1).mul ((hentry 0 0).inv hn)
   · intro x hx w
     exact leftCoordinates_nonzero (m x w) (hx.2 w)
   · intro x hx w
     exact leftCoordinates_reconstruct (m x w) (hx.2 w)
+
+end
 
 theorem literal_right_to_left_chart_local_transition
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -142,7 +150,7 @@ theorem literal_right_to_left_chart_local_transition
         KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ (q x) *
           (g * KPGlobalResidualConstruction.archChart F ζ hζ x₀) := by
   let S := KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
-  obtain ⟨e, he, _⟩ := PGLComplex.AdelicSlices.actual_product_splitting F ζ hζ
+  obtain ⟨e, he⟩ := PGLComplex.AdelicSlices.actual_product_splitting F ζ hζ
   let b := (e.symm g).1
   let c := (e.symm g).2
   have hg : g = S b * c.val := by

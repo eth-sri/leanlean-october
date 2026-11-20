@@ -14,8 +14,12 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.CompactPeriodAnalyticity.ArchHaar
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem map_arch_mul_full (a : (KPGlobalTorusFunctionData.Adeles F)ˣ)
-    (ha : a.val.2 = 1) :
+section
+
+variable (a : (KPGlobalTorusFunctionData.Adeles F)ˣ) (ha : a.val.2 = 1)
+
+include ha in
+private theorem map_arch_mul_full :
     Measure.map (fun x : KPGlobalTorusFunctionData.Adeles F => a.val * x)
       (KPAdditiveHaar.adelicMeasure F) =
       (ENNReal.ofReal ‖a.val.1‖)⁻¹ • KPAdditiveHaar.adelicMeasure F := by
@@ -24,11 +28,12 @@ private theorem map_arch_mul_full (a : (KPGlobalTorusFunctionData.Adeles F)ˣ)
   let : μa.IsAddHaarMeasure := KPAdditiveHaar.archMeasure_isAddHaarMeasure F
   let : μf.IsAddHaarMeasure := KPAdditiveHaar.finiteMeasure_isAddHaarMeasure F
   let d : (InfiniteAdeleRing F)ˣ := Units.map (RingHom.fst _ _).toMonoidHom a
-  let cast : InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F →
+  let FiniteAdeleRing₀ := IsDedekindDomain.FiniteAdeleRing (𝓞 F) F
+  let cast : InfiniteAdeleRing F × FiniteAdeleRing₀ →
     KPGlobalTorusFunctionData.Adeles F := fun x => x
   have hc : Measurable cast := by
     have heq : (MeasurableSpace.prod inferInstance inferInstance :
-      MeasurableSpace (InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F)) =
+      MeasurableSpace (InfiniteAdeleRing F × FiniteAdeleRing₀)) =
       borel (KPGlobalTorusFunctionData.Adeles F) := BorelSpace.measurable_eq
     change @Measurable _ _ (MeasurableSpace.prod inferInstance inferInstance) (borel _) _
     rw [heq]
@@ -37,12 +42,12 @@ private theorem map_arch_mul_full (a : (KPGlobalTorusFunctionData.Adeles F)ˣ)
     (PoissonArch.infiniteAdeleToSpace F).toHomeomorph.isClosedEmbedding.sigmaCompactSpace
   have hm : Measurable (fun x : KPGlobalTorusFunctionData.Adeles F => a.val * x) := by fun_prop
   have hp : Measurable (Prod.map (fun x : InfiniteAdeleRing F => d.val * x)
-      (id : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F → _)) :=
+      (id : FiniteAdeleRing₀ → _)) :=
     (continuous_const.mul continuous_id).measurable.prodMap measurable_id
   have harch : Measure.map (fun x : InfiniteAdeleRing F => d.val * x) μa =
       (ENNReal.ofReal ‖d.val‖)⁻¹ • μa := TateSLocalMeasurability.archimedean_map_mul F d
   have hprod : Measure.map (Prod.map (fun x : InfiniteAdeleRing F => d.val * x)
-      (id : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F → _)) (μa.prod μf) =
+      (id : FiniteAdeleRing₀ → _)) (μa.prod μf) =
       (ENNReal.ofReal ‖d.val‖)⁻¹ • (μa.prod μf) := by
     rw [← Measure.map_prod_map (f := fun x : InfiniteAdeleRing F => d.val * x) (g := id)
       μa μf (continuous_const.mul continuous_id).measurable measurable_id,
@@ -56,8 +61,8 @@ private theorem map_arch_mul_full (a : (KPGlobalTorusFunctionData.Adeles F)ˣ)
     exact Prod.ext rfl (by change a.val.2 * x.2 = x.2; rw [ha, one_mul])
   rw [he, ← Measure.map_map hc hp, hprod, Measure.map_smul _ hc.aemeasurable]
 
-theorem arch_idele_intrinsicHaarChar (a : (KPGlobalTorusFunctionData.Adeles F)ˣ)
-    (ha : a.val.2 = 1) :
+include ha in
+theorem arch_idele_intrinsicHaarChar :
     (addEquivAddHaarChar (ContinuousAddEquiv.mulLeft a) : ℝ) = ‖a.val.1‖ := by
   let μ := KPAdditiveHaar.adelicMeasure F
   let := KPAdditiveHaar.adelicMeasure_isAddHaarMeasure F
@@ -88,9 +93,10 @@ theorem arch_idele_intrinsicHaarChar (a : (KPGlobalTorusFunctionData.Adeles F)ˣ
     apply mul_right_cancel₀ hi
     simpa [NNReal.smul_def, RCLike.real_smul_eq_coe_mul, mul_assoc, μ] using hh
   have he' : (m : ℂ) = (‖a.val.1‖ : ℂ) := by
-    have he'' := congrArg (fun x : ℂ => x * (‖a.val.1‖ : ℂ)) he
-    simpa [mul_assoc, Complex.ofReal_ne_zero.mpr hn.ne'] using he''
+    simpa [mul_assoc, Complex.ofReal_ne_zero.mpr hn.ne'] using (congrArg (fun x : ℂ => x * (‖a.val.1‖ : ℂ)) he)
   exact_mod_cast he'
+
+end
 
 theorem arch_idele_integral_mul_inv
     (μ : Measure (KPGlobalTorusFunctionData.Adeles F)) [μ.IsAddHaarMeasure]

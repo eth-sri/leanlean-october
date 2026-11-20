@@ -12,15 +12,7 @@ noncomputable section
 open MeasureTheory Filter
 open scoped Topology
 
-private theorem psi_add (β t₁ t₂ : ℂ) : psi β (t₁ + t₂) = psi β t₁ * psi β t₂ := by
-  have h : ((2 * Real.pi * (β * (t₁ + t₂)).re : ℝ) : ℂ) * Complex.I =
-      ((2 * Real.pi * (β * t₁).re : ℝ) : ℂ) * Complex.I +
-        ((2 * Real.pi * (β * t₂).re : ℝ) : ℂ) * Complex.I := by
-    rw [mul_add, Complex.add_re]
-    push_cast
-    ring
-  unfold psi
-  rw [h, Complex.exp_add]
+private theorem psi_add (β t₁ t₂ : ℂ) : psi β (t₁ + t₂) = psi β t₁ * psi β t₂ := by apply @DampedFourierComposition.psi_add <;> assumption
 
 private theorem psi_quadratic_split (β a y z : ℂ) (ha : a ≠ 0) :
     psi β (-(y + z) ^ 2 / (4 * a)) =
@@ -50,31 +42,22 @@ theorem FT_M_FT_schwartz (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
   have hC : F β (M β a (F β (⇑f))) y
       = ∫ z : ℂ, f z * ((1 / (2 * ‖a‖) : ℝ) : ℂ) *
           psi β (-(y + z) ^ 2 / (4 * a)) ∂mu β := by
-    have h1 : Tendsto (fun ε : ℝ => F β (fun x : ℂ =>
-        Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * psi β (a * x ^ 2) *
-          F β (⇑f) x) y)
-        (nhdsWithin 0 (Set.Ioi 0)) (nhds (F β (M β a (F β (⇑f))) y)) :=
+    have h1 :=
       tendsto_F_damped_M_F β a hβ ha f y
-    have h2 : Tendsto (fun ε : ℝ => F β (fun x : ℂ =>
-        Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * psi β (a * x ^ 2) *
-          F β (⇑f) x) y)
-        (nhdsWithin 0 (Set.Ioi 0))
-        (nhds (∫ z : ℂ, f z * ((1 / (2 * ‖a‖) : ℝ) : ℂ) *
-          psi β (-(y + z) ^ 2 / (4 * a)) ∂mu β)) := by
-      refine (tendsto_integral_schwartz_mul_K β a hβ ha f y).congr' ?_
-      filter_upwards [self_mem_nhdsWithin] with ε hε
-      exact (F_damped_M_F_eq_integral_K β a hβ ha ε hε f y).symm
-    exact tendsto_nhds_unique h1 h2
+    refine tendsto_nhds_unique h1 ?_
+    refine (tendsto_integral_schwartz_mul_K β a hβ ha f y).congr' ?_
+    filter_upwards [self_mem_nhdsWithin] with ε hε
+    exact (F_damped_M_F_eq_integral_K β a hβ ha ε hε f y).symm
 
   have hB : (1 / (2 * ‖a‖) : ℝ) * psi β (-y ^ 2 / (4 * a)) *
         FT β (fun z : ℂ => psi β (-z ^ 2 / (4 * a)) * f z) (y / (2 * a))
       = ∫ z : ℂ, f z * ((1 / (2 * ‖a‖) : ℝ) : ℂ) *
           psi β (-(y + z) ^ 2 / (4 * a)) ∂mu β := by
     have hinner : ∫ z : ℂ, f z * ((1 / (2 * ‖a‖) : ℝ) : ℂ) *
-          psi β (-(y + z) ^ 2 / (4 * a)) ∂(volume : Measure ℂ)
+          psi β (-(y + z) ^ 2 / (4 * a)) ∂volume
         = ((1 / (2 * ‖a‖) : ℝ) : ℂ) * psi β (-y ^ 2 / (4 * a)) *
             ∫ z : ℂ, (psi β (-z ^ 2 / (4 * a)) * f z) *
-              psi β (-z * (y / (2 * a))) ∂(volume : Measure ℂ) := by
+              psi β (-z * (y / (2 * a))) ∂volume := by
       rw [← integral_const_mul]
       apply integral_congr_ae
       filter_upwards with z

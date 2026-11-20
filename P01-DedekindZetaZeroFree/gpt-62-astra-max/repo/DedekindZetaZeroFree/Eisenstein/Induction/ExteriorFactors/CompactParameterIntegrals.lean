@@ -13,10 +13,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInduci
 open MomentSources TensorActionSource KPGlobalTorusFiniteStages KPLocalPrincipalSeries KPLocalExceptionalConstruction
 open KPRankOneShellContinuation KPRankOneShellRepair KPRankOneTameSphericalFactor
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 
 theorem exterior_parameter_compact (q : KPFinitePlace F)
@@ -39,10 +39,9 @@ theorem parameterKernel_exterior_compact (q : KPFinitePlace F)
     (z : ℂ) (x : RootPoint R (.inr q)) :
     parameterKernel R N P C (fullCompact R P C) (.inr q) a z x (plusReference R N P C (.inr q)) =
     parameterKernel R N P C (fullCompact R P C) (.inr q) 1 z x (plusReference R N P C (.inr q)) := by
-  have h := exterior_parameter_compact R N P C q hq z
+  simpa only [parameterKernel, LinearMap.coe_mk, AddHom.coe_mk, map_one, mul_one] using (exterior_parameter_compact R N P C q hq z
     ((C.canonical q).borel.liftedW⁻¹ * (C.canonical q).borel.upperRoot (Multiplicative.ofAdd x))
-    ⟨_, ha⟩
-  simpa only [parameterKernel, LinearMap.coe_mk, AddHom.coe_mk, map_one, mul_one] using h
+    ⟨_, ha⟩)
 
 theorem parameterOutput_exterior_compact (q : KPFinitePlace F)
     (hq : Sum.inr q ∉ bad R P C)

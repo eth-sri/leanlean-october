@@ -16,7 +16,6 @@ open NumberField
   have hu := Matrix.mem_unitaryGroup_iff.mp (Matrix.mem_specialUnitaryGroup_iff.mp u.property).1
   have hb := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => A 1 1) hu
   have hz := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => A 0 1) hu
-  have hd := (Matrix.mem_specialUnitaryGroup_iff.mp u.property).2
   simp only [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
     Matrix.one_apply, ite_true, show (0 : Fin 2) ≠ 1 by decide, ite_false] at hb hz
   have hn : ‖(u : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 +
@@ -28,7 +27,7 @@ open NumberField
   · simpa [KPArch.action, KPArch.actionDenominator, KPArch.height,
       KPCplxCharacterHaar.complexSU2Embedding, hn', add_comm] using hz
   · simp [KPArch.action, KPArch.actionDenominator, KPArch.height,
-      KPCplxCharacterHaar.complexSU2Embedding, hn', hd]
+      KPCplxCharacterHaar.complexSU2Embedding, hn', ((Matrix.mem_specialUnitaryGroup_iff.mp u.property).2)]
 
  def compactTuple (F : Type) [Field F] [NumberField F]
     (u : InfinitePlace F → KPCplxCharacterHaar.ComplexSU2) :
@@ -51,6 +50,8 @@ private theorem section_mk_eq (s : ℝ)
   rw [← Matrix.GeneralLinearGroup.scalar_commute]
   exact (KPCplxPrincipalSeriesCharts.central_invariance s f z a).symm
 
+alias UniformHarmonicBands.section_mk_eq := section_mk_eq
+
 private theorem kfinite_pi (s : ℝ)
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s)
     (hf : KPContHolomorphicKGeneration.IsKFinite s f)
@@ -69,7 +70,7 @@ private theorem kfinite_pi (s : ℝ)
   exact Submodule.subset_span ⟨k * u, rfl⟩
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
+    (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
 
  def singleCompact (w : InfinitePlace F) (x : KPCplxCharacterHaar.ComplexSU2) :
     KPContSectorArchSphericalFibers.KInfinity F :=
@@ -134,7 +135,6 @@ private theorem coordinateSpace_finite (w : InfinitePlace F) :
 private theorem coordinateSpace_uniform_band (w : InfinitePlace F) :
     ∃ N, coordinateSpace F ζ hζ t w ≤
       (nativeBand N).map (KPCplxIntertwinerEigenvalues.compactRestriction _) := by
-  let R := KPCplxIntertwinerEigenvalues.compactRestriction KPCplxPrincipalSeriesCharts.positiveParameter
   let g := fun p : KPGlobalTorusFunctionData.finitePart F ζ hζ × KPContSectorArchSphericalFibers.KInfinity F =>
     fun x : KPCplxCharacterHaar.ComplexSU2 => t.val.val
       (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (singleCompact F w x * p.2).val * p.1.val)
@@ -150,11 +150,10 @@ private theorem coordinateSpace_uniform_band (w : InfinitePlace F) :
     · rintro ⟨p, rfl⟩
       exact ⟨_, ⟨p, rfl⟩, rfl⟩
   letI := coordinateSpace_finite F ζ hζ t w
-  have hfg : (Submodule.span ℂ (Set.range g)).FG := by
+  obtain ⟨s, hs, he⟩ := (Submodule.fg_span_iff_fg_span_finset_subset _).mp (by
     rw [← hT]
-    exact Module.Finite.iff_fg.mp inferInstance
-  obtain ⟨s, hs, he⟩ := (Submodule.fg_span_iff_fg_span_finset_subset _).mp hfg
-  have hn : ∀ b : s, ∃ N, b.val ∈ (nativeBand N).map R := by
+    exact Module.Finite.iff_fg.mp inferInstance)
+  have hn : ∀ b : s, ∃ N, b.val ∈ (nativeBand N).map (KPCplxIntertwinerEigenvalues.compactRestriction KPCplxPrincipalSeriesCharts.positiveParameter) := by
     intro b
     obtain ⟨⟨c, u⟩, hp⟩ := hs b.property
     obtain ⟨f, hf, hfe⟩ := slot_generator_native F ζ hζ t w c u
@@ -173,8 +172,7 @@ private theorem all_slices_coordinate (h : actualCompactTranslateSpace F ζ hζ 
     (w : InfinitePlace F) (a : InfinitePlace F → KPCplxCharacterHaar.ComplexSU2) :
     (fun x => h.val (compactTuple F (Function.update a w x))) ∈ coordinateSpace F ζ hζ t w := by
   let b := compactTuple F (Function.update a w 1)
-  have hm := actualCompactTranslateSpace_right_invariant F ζ hζ t h b
-  refine Submodule.mem_map.mpr ⟨fun k => h.val (k * b), hm, ?_⟩
+  refine Submodule.mem_map.mpr ⟨fun k => h.val (k * b), (actualCompactTranslateSpace_right_invariant F ζ hζ t h b), ?_⟩
   funext x
   apply congrArg h.val
   apply Subtype.ext
@@ -189,9 +187,7 @@ private theorem coordinate_interpolation (w : InfinitePlace F) (N : ℕ)
   let S := coordinateSpace F ζ hζ t w
   letI : FiniteDimensional ℂ S := coordinateSpace_finite F ζ hζ t w
   obtain ⟨n, m, x, A, b, hb⟩ := finite_evaluation_reconstruction S
-  have hc : ∀ i : Fin m, (∑ j, A j i • (b j).val) ∈ S := by
-    intro i
-    exact Submodule.sum_mem _ (fun j _ => Submodule.smul_mem _ _ (b j).property)
+  have hc : ∀ i : Fin m, (∑ j, A j i • (b j).val) ∈ S := fun i => Submodule.sum_mem _ (fun j _ => Submodule.smul_mem _ _ (b j).property)
   have he : ∀ i : Fin m, ∃ f : nativeBand N,
       KPCplxIntertwinerEigenvalues.compactRestriction _ f.val = ∑ j, A j i • (b j).val := by
     intro i
@@ -223,7 +219,7 @@ private theorem partialProducts_mul {ι X : Type*} [Fintype ι] [DecidableEq ι]
     (E : ∀ i, V i →ₗ[ℂ] (X → ℂ)) (s : Finset ι) (w : ι) (hw : w ∉ s)
     (v : V w) (q : (ι → X) → ℂ) (hq : q ∈ partialProducts V E s) :
     (fun a => E w v (a w) * q a) ∈ partialProducts V E (insert w s) := by
-  refine Submodule.span_induction (p := fun q _ => (fun a => E w v (a w) * q a) ∈ partialProducts V E (insert w s)) ?_ ?_ ?_ ?_ hq
+  refine Submodule.span_induction ?_ ?_ ?_ ?_ hq
   · rintro _ ⟨b, rfl⟩
     apply Submodule.subset_span
     refine ⟨Function.update b w v, ?_⟩
@@ -251,7 +247,7 @@ private theorem tensor_interpolation {ι X : Type*} [Fintype ι] [DecidableEq ι
     f ∈ partialProducts V E s := by
   induction s using Finset.induction_on generalizing f with
   | empty =>
-    have he : f = fun _ => f a₀ := by funext a; simpa using hd a
+    have he : f = fun _ => f a₀ := by funext a; exact hd a
     rw [he]
     have h1 : (fun _ : ι → X => (1 : ℂ)) ∈ partialProducts V E ∅ :=
       Submodule.subset_span ⟨fun _ => 0, by simp⟩
@@ -261,13 +257,10 @@ private theorem tensor_interpolation {ι X : Type*} [Fintype ι] [DecidableEq ι
       intro j
       apply ih
       · intro v hv a
-        have hne : v ≠ w := ne_of_mem_of_not_mem hv hw
-        have hh := hf v (Finset.mem_insert_of_mem hv) (Function.update a w (x w j))
-        simpa only [Function.update_of_ne hne, Function.update_comm hne] using hh
+        have hne := ne_of_mem_of_not_mem hv hw
+        simpa only [Function.update_of_ne hne, Function.update_comm hne] using (hf v (Finset.mem_insert_of_mem hv) (Function.update a w (x w j)))
       · intro a
-        have hh := hd (Function.update a w (x w j))
-        have hh' := hd (Function.update (fun i => if i ∈ s then a i else a₀ i) w (x w j))
-        rw [hh, hh']
+        rw [(hd (Function.update a w (x w j))), (hd (Function.update (fun i => if i ∈ s then a i else a₀ i) w (x w j)))]
         congr 1
         funext i
         by_cases hi : i = w
@@ -293,25 +286,21 @@ theorem actual_compact_translate_space_mem_uniform_native_bands
           fun k : KPContSectorArchSphericalFibers.KInfinity F =>
             ∏ w, (f w).val ((k.val w).out))) := by
   classical
-  have hn := fun w => coordinateSpace_uniform_band F ζ hζ t w
-  choose N hN using hn
-  have hc := fun w => coordinate_interpolation F ζ hζ t w (N w) (hN w)
-  choose n x b hb using hc
-  let V : InfinitePlace F → Type := fun w => ↥(nativeBand (N w))
+  choose N hN using (fun w => coordinateSpace_uniform_band F ζ hζ t w)
+  choose n x b hb using (fun w => coordinate_interpolation F ζ hζ t w (N w) (hN w))
+  let V := fun w => ↥(nativeBand (N w))
   let E := fun w : InfinitePlace F =>
     (KPCplxIntertwinerEigenvalues.compactRestriction KPCplxPrincipalSeriesCharts.positiveParameter).domRestrict (nativeBand (N w))
   have hprod (h : actualCompactTranslateSpace F ζ hζ t) :
       (fun a => h.val (compactTuple F a)) ∈ partialProducts V E Finset.univ := by
     apply tensor_interpolation V E n x b Finset.univ _ (fun _ => 1)
     · intro w hw a
-      have hm := all_slices_coordinate F ζ hζ t h w a
-      have hi := hb w ⟨_, hm⟩ (a w)
       change h.val (compactTuple F a) = ∑ j,
         h.val (compactTuple F (Function.update a w (x w j))) *
           (b w j).val (KPCplxCharacterHaar.complexSU2Embedding (a w))
-      simpa only [Function.update_eq_self] using hi
+      simpa only [Function.update_eq_self] using (hb w ⟨_, (all_slices_coordinate F ζ hζ t h w a)⟩ (a w))
     · intro a
-      simp only [Finset.mem_univ, ite_true]
+      simp
   choose r hr using KPContinuation.ArchCompact.KInfinity_has_su2 F ζ hζ
   let L : ((InfinitePlace F → KPCplxCharacterHaar.ComplexSU2) → ℂ) →ₗ[ℂ]
       (KPContSectorArchSphericalFibers.KInfinity F → ℂ) :=

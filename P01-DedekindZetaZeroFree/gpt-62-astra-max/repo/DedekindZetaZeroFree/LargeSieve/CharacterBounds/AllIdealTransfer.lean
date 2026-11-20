@@ -44,7 +44,7 @@ private theorem primitive_sieve_finset_transfer_of_property
     (∑ i ∈ J, ‖∑ I ∈ B, b I * (ω i).character I‖ ^ 2) ≤
       C * (N + X ^ (2 : ℕ)) * (N * X) ^ ε * ∑ I ∈ B, ‖b I‖ ^ 2 := by
   classical
-  let D : Finset (NonzeroIdeal F) := B.attach.image (fun I => (⟨I.val, (hB I.val I.property).1⟩ : NonzeroIdeal F))
+  let D := B.attach.image (fun I => (⟨I.val, (hB I.val I.property).1⟩ : NonzeroIdeal F))
   have hD (I : NonzeroIdeal F) : I ∈ D ↔ I.val ∈ B := by
     simp only [D, Finset.mem_image, Finset.mem_attach, true_and]
     constructor
@@ -153,10 +153,7 @@ private theorem unrestricted_balanced_section
     fieldUnit := a
     generates := hr
     fieldUnit_coe := ha
-    allowed := ?_
     balanced := hb}⟩⟩
-  intro I
-  trivial
 
 end Copied
 
@@ -188,9 +185,10 @@ theorem all_ideal_sieve_transfer_of_dyadic
     (fun n ω hω' hcondω htype c hc => hbound N U hN hU n ω hω' htype hcondω c hc)
     J ω hdist hcond hP B hB b
 
-theorem all_ideal_sieve_transfer
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η) (c0 : ℝ) (hc0 : 0 < c0)
+variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+
+theorem all_ideal_sieve_transfer (c0 : ℝ) (hc0 : 0 < c0)
     (L : Set (Detector.FixedSResidue.FullLocalCharacters R.A)) (hL : L.Finite)
     (hOrder : ∀ σ ∈ L, Detector.FixedSResidue.HasFiniteOrder R.A σ)
     (ε : ℝ) (hε : 0 < ε) :
@@ -214,9 +212,7 @@ theorem all_ideal_sieve_transfer
     (fun σ hσ => Detector.hasExteriorDyadicConductorSieve_of_balancedSection F R.A ⊤ K_bal hK s σ
       (hOrder σ hσ) c0 hc0) ε hε
 
-theorem all_ideal_sieve_transfer_frequency
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η) (c : ℝ) (hc : 0 < c)
+theorem all_ideal_sieve_transfer_frequency (c : ℝ) (hc : 0 < c)
     (L : Set (Detector.FixedSResidue.FullLocalCharacters R.A)) (hL : L.Finite)
     (hOrder : ∀ σ ∈ L, Detector.FixedSResidue.HasFiniteOrder R.A σ)
     (ε : ℝ) (hε : 0 < ε) :
@@ -240,7 +236,7 @@ theorem all_ideal_sieve_transfer_frequency
   · intro i _ j _ hij hsame
     exact hij (hinj i j hsame)
   · intro u hu
-    calc (Ideal.absNorm (ω u).conductor : ℝ) ≤ c * frequencyNorm R u := hcond u
+    calc _ ≤ c * frequencyNorm R u := hcond u
       _ ≤ c * (2 * U) := mul_le_mul_of_nonneg_left (hJ u hu).le hc.le
       _ = 2 * c * U := by ring
 

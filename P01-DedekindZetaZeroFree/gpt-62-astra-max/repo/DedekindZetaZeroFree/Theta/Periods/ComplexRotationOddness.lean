@@ -10,10 +10,10 @@ namespace DedekindZetaZeroFree.IdeleInsertion
 open NumberField MeasureTheory
 open scoped Classical
 open MomentSources ThetaProfileHaarSheets ThetaSheetExactUnfolding
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_localIdele → eval_localIdele
+open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting (eval_localIdele)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def infiniteInsertion (A : SArithmeticData F) (w : InfinitePlace F)
     (z : w.Completionˣ) : A.G :=

@@ -8,9 +8,9 @@ namespace DedekindZetaZeroFree
 noncomputable section
 open scoped Classical
 
-theorem balancedRow_finiteFiber_mass_le
-    {Row Index : Type*} (rows : Multiset Row) (indices : Finset Index)
-    (index : Row → Index) (mass : Index → ℝ) (k₀ : ℕ)
+variable {Row Index : Type*} (rows : Multiset Row) (indices : Finset Index) (index : Row → Index)
+
+theorem balancedRow_finiteFiber_mass_le (mass : Index → ℝ) (k₀ : ℕ)
     (hindex : ∀ x ∈ rows, index x ∈ indices)
     (hfiber : ∀ i ∈ indices, (rows.filter (fun x => index x = i)).card ≤ k₀)
     (hmass : ∀ i ∈ indices, 0 ≤ mass i) :
@@ -21,14 +21,12 @@ theorem balancedRow_finiteFiber_mass_le
     intro i hi
     obtain ⟨x, hx, rfl⟩ := Multiset.mem_map.mp hi
     exact hindex x hx
-  have hsub : mapped.toFinset ⊆ indices := by
-    intro i hi
-    exact hmapped i (Multiset.mem_toFinset.mp hi)
+  have hsub : mapped.toFinset ⊆ indices := fun i hi => hmapped i (Multiset.mem_toFinset.mp hi)
   have hcount : ∀ i ∈ indices, mapped.count i ≤ k₀ := by
     intro i hi
     simpa [mapped, Multiset.count_map, eq_comm] using hfiber i hi
   calc
-    (rows.map (fun x => mass (index x))).sum = (mapped.map mass).sum := by
+    _ = (mapped.map mass).sum := by
       simp [mapped, Multiset.map_map, Function.comp_def]
     _ = ∑ i ∈ mapped.toFinset, mapped.count i • mass i :=
       Finset.sum_multiset_map_count mapped mass
@@ -44,9 +42,7 @@ theorem balancedRow_finiteFiber_mass_le
       exact mul_nonneg (Nat.cast_nonneg _) (hmass i hi)
     _ = (k₀ : ℝ) * ∑ i ∈ indices, mass i := by rw [Finset.mul_sum]
 
-theorem balancedRow_finiteFiber_norm_sq_le
-    {Row Index : Type*} (rows : Multiset Row) (indices : Finset Index)
-    (index : Row → Index) (B : Row → ℂ) (canonicalB : Index → ℂ) (k₀ : ℕ)
+theorem balancedRow_finiteFiber_norm_sq_le (B : Row → ℂ) (canonicalB : Index → ℂ) (k₀ : ℕ)
     (hindex : ∀ x ∈ rows, index x ∈ indices)
     (hfiber : ∀ i ∈ indices, (rows.filter (fun x => index x = i)).card ≤ k₀)
     (hdescend : ∀ x ∈ rows, B x = canonicalB (index x)) :

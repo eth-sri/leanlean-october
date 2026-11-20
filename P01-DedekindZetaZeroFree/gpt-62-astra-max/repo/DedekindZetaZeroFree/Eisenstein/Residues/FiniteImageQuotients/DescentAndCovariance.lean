@@ -11,13 +11,13 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPLiteralRaw KPRankOneShellRepair
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "Q" => FiniteQuotientFiber R P C μ hμ
@@ -57,7 +57,9 @@ theorem finiteStageResidue_quotient (N : MomentSources.TraceHaarTransport R)
   simp only [finiteStageResidue, LinearMap.comp_apply, LinearEquiv.coe_coe,
     LinearMap.quotKerEquivOfSurjective_symm_apply, Submodule.liftQ_apply]
 
-theorem finiteStageResidue_transition (N : MomentSources.TraceHaarTransport R)
+variable (N : MomentSources.TraceHaarTransport R)
+
+theorem finiteStageResidue_transition
     (s t : RestrictedTensorSimple.Level E) (hst : s ≤ t)
     (x : RestrictedTensorSimple.Stage Q s.val) :
     finiteStageResidue R P C μ hμ N t
@@ -67,13 +69,13 @@ theorem finiteStageResidue_transition (N : MomentSources.TraceHaarTransport R)
   rw [← finiteStageQuotient_transition, finiteStageResidue_quotient, finiteStageResidue_quotient]
   exact congrArg (coreResidue R P C) Module.DirectLimit.of_f
 
-def finiteCoreResidue (N : MomentSources.TraceHaarTransport R) :
+def finiteCoreResidue :
     RestrictedTensorSimple.Core Q (finiteQuotientReference R P C μ hμ) E →ₗ[ℂ]
       Functions F ζ hζ :=
   Module.DirectLimit.lift ℂ _ _ _ (finiteStageResidue R P C μ hμ N)
-    (by intro s t hst x; exact finiteStageResidue_transition R P C μ hμ N s t hst x)
+    (fun s t hst x => finiteStageResidue_transition R P C μ hμ N s t hst x)
 
-theorem finiteCoreResidue_quotient (N : MomentSources.TraceHaarTransport R)
+theorem finiteCoreResidue_quotient
     (x : RestrictedTensorSimple.Core V e E) :
     finiteCoreResidue R P C μ hμ N (finiteCoreQuotient R P C μ hμ x) = coreResidue R P C x := by
   letI : Nonempty (RestrictedTensorSimple.Level E) := ⟨⟨E,le_rfl⟩⟩
@@ -85,7 +87,7 @@ theorem finiteCoreResidue_quotient (N : MomentSources.TraceHaarTransport R)
   rw [Module.DirectLimit.lift_of]
   exact finiteStageResidue_quotient R P C μ hμ N t x
 
-theorem finiteCoreResidue_update_finite (N : MomentSources.TraceHaarTransport R)
+theorem finiteCoreResidue_update_finite
     (t : RestrictedTensorSimple.Level E) (q : KPFinitePlace F) (hq : Sum.inr q ∈ t.val)
     (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) (x : ∀ j : t.val, Q j.val)
     (g : G F ζ hζ) :
@@ -98,10 +100,7 @@ theorem finiteCoreResidue_update_finite (N : MomentSources.TraceHaarTransport R)
       (g * KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
         (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ (Sum.inr q) a)) := by
   choose y hy using fun j : t.val => finiteQuotientMap_surjective R P C μ hμ j.val (x j)
-  have he : (fun j : t.val => finiteQuotientMap R P C μ hμ j.val (y j)) = x := funext hy
-  rw [← he, ← finiteStageQuotient_update_finite]
-  change finiteCoreResidue R P C μ hμ N (RestrictedTensorSimple.stageInclusion Q
-    (finiteQuotientReference R P C μ hμ) E t (finiteStageQuotient R P C μ hμ t _)) g = _
+  rw [← (funext hy), ← finiteStageQuotient_update_finite]
   rw [← finiteCoreQuotient_stage, finiteCoreResidue_quotient]
   have hx : PiTensorProduct.tprod ℂ (fun j : t.val => finiteQuotientMap R P C μ hμ j.val (y j)) =
       finiteStageQuotient R P C μ hμ t (PiTensorProduct.tprod ℂ y) :=

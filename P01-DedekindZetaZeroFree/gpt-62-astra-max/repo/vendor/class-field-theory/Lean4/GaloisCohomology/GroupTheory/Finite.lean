@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -58,27 +55,15 @@ theorem exists_index_prime_supergroup_of_card_prime_power
     (hD : D ≠ ⊤) :
     ∃ P : Subgroup G, D ≤ P ∧ P.index = p := by
   let : Fact p.Prime := ⟨hp⟩
-  have hGp : IsPGroup p G :=
-    IsPGroup.of_card hGcard
-  have hDp : IsPGroup p D :=
-    hGp.to_subgroup D
   obtain ⟨m, hDcard⟩ :=
-    IsPGroup.exists_card_eq hDp
+    IsPGroup.exists_card_eq ((IsPGroup.of_card hGcard).to_subgroup D)
   have hmv : m < v := by
-    have hmle : m ≤ v := by
-      apply
+    refine lt_of_le_of_ne ?_ ?_
+    · apply
         (Nat.pow_le_pow_iff_right hp.one_lt).mp
       rw [← hDcard, ← hGcard]
       exact D.card_le_card_group
-    have hmne : m ≠ v := by
-      intro hmv
-      apply hD
-      apply
-        (Subgroup.card_eq_iff_eq_top D).mp
-      rw [hDcard, hmv, hGcard]
-    exact lt_of_le_of_ne hmle hmne
-  have hmPred : m ≤ v - 1 :=
-    Nat.le_sub_one_of_lt hmv
+    · grind [Subgroup.card_eq_iff_eq_top]
   have hpowDvd :
       p ^ (v - 1) ∣ Nat.card G := by
     rw [hGcard]
@@ -86,15 +71,13 @@ theorem exists_index_prime_supergroup_of_card_prime_power
       pow_dvd_pow p (Nat.sub_le v 1)
   obtain ⟨P, hPcard, hDP⟩ :=
     Sylow.exists_subgroup_card_pow_prime_le
-      p hpowDvd D hDcard hmPred
+      p hpowDvd D hDcard (Nat.le_sub_one_of_lt hmv)
   refine ⟨P, hDP, ?_⟩
   have hmul :
       p ^ (v - 1) * P.index = p ^ v := by
     simpa [hPcard, hGcard] using
       P.card_mul_index
-  have hvPred : v - 1 + 1 = v :=
-    Nat.sub_add_cancel hv
-  rw [← hvPred, pow_succ] at hmul
+  rw [← (Nat.sub_add_cancel hv), pow_succ] at hmul
   exact
     Nat.mul_left_cancel (pow_pos hp.pos _) hmul
 
@@ -116,11 +99,8 @@ theorem cyclic_exists_normal_index_prime_supergroup
   obtain ⟨P, hDP, hPindex⟩ :=
     exists_index_prime_supergroup_of_card_prime_power
       hp hv hGcard D hD
-  have hPnormal : P.Normal :=
-    inferInstance
   refine
-    ⟨P, hDP, hPindex, hPnormal, ?_⟩
-  rw [← P.index_eq_card]
+    ⟨P, hDP, hPindex, inferInstance, ?_⟩
   exact hPindex
 
 omit [Finite G] in
@@ -136,14 +116,11 @@ theorem subgroup_le_index_prime_subgroup_of_ne_top_cyclic_prime_power
     (hD : D ≠ ⊤) :
     D ≤ P := by
   obtain ⟨g, hg⟩ := IsCyclic.exists_generator (α := G)
-  have hgtop : Subgroup.zpowers g = ⊤ :=
+  have hgtop :=
     (Subgroup.eq_top_iff' (Subgroup.zpowers g)).2 hg
   obtain ⟨n, hn⟩ :=
     (Subgroup.le_zpowers_iff g D).1 (by
-      rw [hgtop]
-      exact le_top)
-  have hgorder : orderOf g = p ^ exponent :=
-    (orderOf_eq_card_of_forall_mem_zpowers hg).trans hcard
+      simp [hgtop])
   have hngcd : n.gcd (orderOf g) ≠ 1 := by
     intro hngcd
     apply hD
@@ -154,7 +131,7 @@ theorem subgroup_le_index_prime_subgroup_of_ne_top_cyclic_prime_power
   have hpdiv : p ∣ n := by
     by_contra hpnot
     apply hngcd
-    rw [hgorder]
+    rw [((orderOf_eq_card_of_forall_mem_zpowers hg).trans hcard)]
     exact
       (((hp.coprime_iff_not_dvd).2 hpnot).symm.pow_right
         exponent).gcd_eq_one
@@ -165,8 +142,7 @@ theorem subgroup_le_index_prime_subgroup_of_ne_top_cyclic_prime_power
   rw [hPindex] at hpow
   have heq : (g ^ k) ^ p = g ^ (p * k) := by
     simp only [← pow_mul, Nat.mul_comm]
-  rw [← heq]
-  exact hpow
+  simp_all [heq]
 
 end PrimePower
 
@@ -187,19 +163,8 @@ theorem exists_element_of_prime_order :
   let : Fact p.Prime := ⟨hp⟩
   obtain ⟨g, hg⟩ :=
     exists_prime_orderOf_dvd_card'
-      (G := G) p hpDvd
+       p hpDvd
   exact ⟨p, g, hp, hg⟩
-
-/-- Every nontrivial finite group contains an actual cyclic subgroup
-of prime cardinality. -/
-theorem exists_cyclic_subgroup_of_prime_card :
-    ∃ (p : ℕ) (P : Subgroup G),
-      p.Prime ∧ Nat.card P = p ∧ IsCyclic P := by
-  obtain ⟨p, g, hp, hg⟩ :=
-    exists_element_of_prime_order G
-  refine
-    ⟨p, Subgroup.zpowers g, hp, ?_, inferInstance⟩
-  rw [Nat.card_zpowers, hg]
 
 end PrimeOrder
 
@@ -207,25 +172,25 @@ section DoubleCosets
 
 variable {G : Type uG} [Group G]
 
+section
+
+variable (H D : Subgroup G)
+
 /-- The canonical projection
 `H \ G = H \ G / 1 → H \ G / D`. -/
-def doubleCosetRightProjection
-    (H D : Subgroup G) :
+def doubleCosetRightProjection :
     DoubleCoset.Quotient
         (H : Set G) (⊥ : Subgroup G) →
       DoubleCoset.Quotient (H : Set G) D :=
   Quotient.map' id fun a b hab ↦ by
     rw [DoubleCoset.rel_iff] at hab ⊢
     obtain ⟨h, hh, k, hk, hab⟩ := hab
-    have hkOne : k = 1 :=
-      Subgroup.mem_bot.mp hk
     subst k
     exact
-      ⟨h, hh, 1, D.one_mem, by simpa using hab⟩
+      ⟨h, hh, 1, D.one_mem, by exact hab⟩
 
 @[simp]
 theorem doubleCosetRightProjection_mk
-    (H D : Subgroup G)
     (g : G) :
     doubleCosetRightProjection H D
         (DoubleCoset.mk H (⊥ : Subgroup G) g) =
@@ -233,15 +198,12 @@ theorem doubleCosetRightProjection_mk
   Quotient.map'_mk'' _ _ _
 
 /-- The projection from left cosets to double cosets is onto. -/
-theorem doubleCosetRightProjection_surjective
-    (H D : Subgroup G) :
+theorem doubleCosetRightProjection_surjective :
     Function.Surjective
       (doubleCosetRightProjection H D) := by
-  intro q
-  refine
-    ⟨DoubleCoset.mk H (⊥ : Subgroup G) q.out, ?_⟩
-  rw [doubleCosetRightProjection_mk]
-  exact DoubleCoset.out_eq' q
+  exact fun q ↦ Exists.intro (DoubleCoset.mk H ⊥ (Quotient.out q)) (DoubleCoset.out_eq' q)
+
+end
 
 /-- If the left-coset to double-coset projection is injective, then
 the right subgroup lies in the normal core of the left subgroup. -/
@@ -267,19 +229,9 @@ theorem rightSubgroup_le_normalCore_of_doubleCoset_projection_injective
       using hdouble
   rw [DoubleCoset.eq] at hleft
   obtain ⟨h, hh, k, hk, heq⟩ := hleft
-  have hkOne : k = 1 :=
-    Subgroup.mem_bot.mp hk
   subst k
   simp only [mul_one] at heq
-  have hconj : g * d * g⁻¹ = h := by
-    calc
-      g * d * g⁻¹ =
-          (g * d) * g⁻¹ := rfl
-      _ = (h * g) * g⁻¹ := by
-        rw [heq]
-      _ = h := by simp
-  rw [hconj]
-  exact hh
+  simp_all
 
 /-- Equality between the number of left cosets and the number of
 double cosets forces the right subgroup into the normal core. -/
@@ -293,26 +245,16 @@ theorem rightSubgroup_le_normalCore_of_doubleCoset_card_eq
           (DoubleCoset.Quotient (H : Set G)
             (⊥ : Subgroup G))) :
     D ≤ H.normalCore := by
-  let :
-      Finite
-        (DoubleCoset.Quotient (H : Set G)
-          (⊥ : Subgroup G)) :=
+  let :=
     Finite.of_surjective
       (DoubleCoset.mk H (⊥ : Subgroup G))
-      (by
-        intro q
-        exact
-          ⟨q.out,
+      (fun q => ⟨q.out,
             DoubleCoset.out_eq' q⟩)
-  have hbij :
-      Function.Bijective
-        (doubleCosetRightProjection H D) :=
-    Function.Surjective.bijective_of_nat_card_le
-      (doubleCosetRightProjection_surjective H D)
-      hcard.symm.le
   exact
     rightSubgroup_le_normalCore_of_doubleCoset_projection_injective
-      H D hbij.injective
+      H D (Function.Surjective.bijective_of_nat_card_le
+        (doubleCosetRightProjection_surjective H D)
+        hcard.symm.le).injective
 
 /-- For a core-free subgroup `H`, the double-coset count equals the
 left-coset count exactly when the right subgroup is trivial.
@@ -329,12 +271,7 @@ theorem doubleCoset_card_eq_leftCoset_iff_of_normalCore_eq_bot
             (⊥ : Subgroup G)) ↔
       D = ⊥ := by
   constructor
-  · intro hcard
-    apply le_bot_iff.mp
-    rw [← hcore]
-    exact
-      rightSubgroup_le_normalCore_of_doubleCoset_card_eq
-        H D hcard
+  · grind [rightSubgroup_le_normalCore_of_doubleCoset_card_eq]
   · rintro rfl
     rfl
 

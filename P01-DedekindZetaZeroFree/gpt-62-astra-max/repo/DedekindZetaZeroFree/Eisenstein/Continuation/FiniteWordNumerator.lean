@@ -8,16 +8,16 @@ noncomputable section
 open scoped Classical NumberField Topology BigOperators
 namespace DedekindZetaZeroFree.KPLiteralExceptionalResidue.FiniteWordNumerator
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming literal_finite_word_chamber → literal_finite_word_chamber
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming spherical_word_scalar_producer → spherical_word_scalar_producer
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (literal_finite_word_chamber)
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer (spherical_word_scalar_producer)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 include C R P H
 
@@ -37,8 +37,8 @@ include C R P H
   have hp (i : Fin n) (j : Fin (m i)) :=
     spherical_word_scalar_producer F ζ hζ C R P H (U i) (v i j) (w i j)
   choose A N hAc hAm r hr hb hclear hNa hNj using hp
-  let S : ℂ → G F ζ hζ → ℂ := fun s g => ∑ i, ∑ j, B i j s * A i j s g
-  let T : ℂ → G F ζ hζ → ℂ := fun s g => ∑ i, ∑ j, B i j s * N i j s g
+  let S := fun s g => ∑ i, ∑ j, B i j s * A i j s g
+  let T := fun s g => ∑ i, ∑ j, B i j s * N i j s g
   have hall : ∀ᶠ s in 𝓝 (0 : ℂ),
       s ∈ Metric.ball (0 : ℂ) r₀ ∧ ∀ i j, s ∈ Metric.ball (0 : ℂ) (r i j) := by
     apply Filter.Eventually.and (Metric.isOpen_ball.mem_nhds (Metric.mem_ball_self hr₀))

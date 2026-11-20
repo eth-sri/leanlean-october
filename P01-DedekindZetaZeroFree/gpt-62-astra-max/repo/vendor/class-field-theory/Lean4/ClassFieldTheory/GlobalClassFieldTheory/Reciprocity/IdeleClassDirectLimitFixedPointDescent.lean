@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -26,23 +24,19 @@ noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace Reciprocity
+section
+
+variable (K : IntermediateField ℚ (SeparableClosure ℚ)) [FiniteDimensional ℚ K]
+    (U : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)) [Algebra K U] [IsScalarTower ℚ K U]
+    [FiniteDimensional K U] [IsGalois K U] (hKU : K ≤ (U : IntermediateField ℚ (SeparableClosure ℚ)))
+    (h_algebraMap : ∀ x : K, ((algebraMap K U x : U) : SeparableClosure ℚ) = (x : SeparableClosure ℚ))
+
+include h_algebraMap in
 /-- The tower base-change equivalence carries extension of a rational
 relative idele class along `K ↪ U` to relative class inclusion of the
 corresponding idele class of `K`. This is the actual commuting square used
 for descent. -/
 theorem rationalRelativeIdeleClass_descent_square
-    (K : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ K]
-    (U : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ))
-    [Algebra K U]
-    [IsScalarTower ℚ K U]
-    [FiniteDimensional K U]
-    [IsGalois K U]
-    (hKU :
-      K ≤ (U : IntermediateField ℚ (SeparableClosure ℚ)))
-    (h_algebraMap : ∀ x : K,
-      ((algebraMap K U x : U) : SeparableClosure ℚ) =
-        (x : SeparableClosure ℚ))
     (q : IdeleClassGroup K) :
     rationalRelativeIdeleClassTowerBaseChangeEquiv K U
         (RelativeIdeleGroup.classEmbedding (K := ℚ) (L := K) (M := U)
@@ -50,17 +44,15 @@ theorem rationalRelativeIdeleClass_descent_square
           ((_root_.relativeIdeleClassBaseChangeMulEquiv
             (K := ℚ) (L := K)).symm q)) =
       RelativeIdeleGroup.classInclusion K U q := by
-  have hAlgebra :=
-    rationalIntermediateField_algebra_eq_inclusion
-      K U hKU h_algebraMap
-  cases hAlgebra
-  let : Algebra K U :=
+  cases (rationalIntermediateField_algebra_eq_inclusion
+    K U hKU h_algebraMap)
+  let :=
     (IntermediateField.inclusion hKU).toRingHom.toAlgebra
   let : IsScalarTower ℚ K U :=
     IsScalarTower.of_algebraMap_eq' (RingHom.ext_rat _ _)
-  let : FiniteDimensional K U :=
+  let :=
     FiniteDimensional.right ℚ K U
-  let : IsGalois K U :=
+  let :=
     IsGalois.tower_top_of_isGalois ℚ K U
   calc
     rationalRelativeIdeleClassTowerBaseChangeEquiv K U
@@ -89,30 +81,17 @@ theorem rationalRelativeIdeleClass_descent_square
         rationalRelativeIdeleClassEmbedding_towerBaseChange
           hKU
           ((_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := K)).symm q)
-    _ = RelativeIdeleGroup.classInclusion K U q := by
-      exact
-        congrArg (RelativeIdeleGroup.classInclusion K U)
+             ).symm q)
+    _ = RelativeIdeleGroup.classInclusion K U q := congrArg (RelativeIdeleGroup.classInclusion K U)
           ((_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := K)).apply_symm_apply q)
+             ).apply_symm_apply q)
 
+include h_algebraMap in
 /-- A rational relative idele class at a finite Galois level whose actual
 tower base change is fixed over `K` descends to an actual idele class of
 `K`.  The conclusion is the commuting square with relative scalar
 extension, not merely an abstract preimage. -/
 theorem rationalRelativeIdeleClass_exists_descent_of_tower_fixed
-    (K : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ K]
-    (U : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ))
-    [Algebra K U]
-    [IsScalarTower ℚ K U]
-    [FiniteDimensional K U]
-    [IsGalois K U]
-    (hKU :
-      K ≤ (U : IntermediateField ℚ (SeparableClosure ℚ)))
-    (h_algebraMap : ∀ x : K,
-      ((algebraMap K U x : U) : SeparableClosure ℚ) =
-        (x : SeparableClosure ℚ))
     (d : RelativeIdeleGroup.ClassGroup ℚ U)
     (hd_fixed :
       towerRelativeIdeleClassBaseChangeMulEquiv ℚ K U
@@ -125,47 +104,42 @@ theorem rationalRelativeIdeleClass_exists_descent_of_tower_fixed
           ((_root_.relativeIdeleClassBaseChangeMulEquiv
             (K := ℚ) (L := K)).symm q) =
         d := by
-  let e :
-      RelativeIdeleGroup.ClassGroup ℚ U ≃*
-        RelativeIdeleGroup.ClassGroup K U :=
+  let e :=
     rationalRelativeIdeleClassTowerBaseChangeEquiv K U
-  let dK : RelativeIdeleGroup.ClassGroup K U :=
+  let dK :=
     towerRelativeIdeleClassBaseChangeMulEquiv ℚ K U
       ((TowerRelativeIdeleGroup.classGroupEquiv ℚ K U).symm d)
-  have hdK_fixed :
-      dK ∈
-        RelativeIdeleGroup.galoisFixedClassSubgroup K U := by
-    exact hd_fixed
   let dFixed :
       RelativeIdeleGroup.galoisFixedClassSubgroup K U :=
-    ⟨dK, hdK_fixed⟩
-  let q : IdeleClassGroup K :=
+    ⟨dK, hd_fixed⟩
+  let q :=
     (rationalIntermediateIdeleClassEquivGaloisFixed K U).symm dFixed
   have hqU :
       RelativeIdeleGroup.classInclusion K U q = dK := by
     calc
-      RelativeIdeleGroup.classInclusion K U q =
+      _ =
           ((rationalIntermediateIdeleClassEquivGaloisFixed K U q :
               RelativeIdeleGroup.galoisFixedClassSubgroup K U) :
             RelativeIdeleGroup.ClassGroup K U) :=
         (rationalIntermediateIdeleClassEquivGaloisFixed_coe
           K U q).symm
-      _ = dK := by
-        exact congrArg Subtype.val
+      _ = dK := congrArg Subtype.val
           ((rationalIntermediateIdeleClassEquivGaloisFixed
             K U).apply_symm_apply dFixed)
   refine ⟨q, e.injective ?_⟩
   calc
     e
-        (RelativeIdeleGroup.classEmbedding (K := ℚ) (L := K) (M := U)
+        (RelativeIdeleGroup.classEmbedding
           (IntermediateField.inclusion hKU)
           ((_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := K)).symm q)) =
+             ).symm q)) =
         RelativeIdeleGroup.classInclusion K U q :=
       rationalRelativeIdeleClass_descent_square
         K U hKU h_algebraMap q
     _ = dK := hqU
     _ = e d := rfl
+
+end
 
 /-- Every rational direct-limit idele class fixed by the absolute Galois
 subgroup over a finite intermediate field comes from an actual idele
@@ -191,7 +165,7 @@ theorem rationalDirectLimit_fixed_exists_ideleClass
   let hNU : rationalNormalClosure K ≤ U :=
     le_sup_right
   let hKU :
-      K ≤ (U : IntermediateField ℚ (SeparableClosure ℚ)) :=
+      K ≤ U :=
     (IntermediateField.le_normalClosure K).trans hNU
   let d : RelativeIdeleGroup.ClassGroup ℚ U :=
     RelativeIdeleGroup.classEmbedding (K := ℚ) (L := E) (M := U)

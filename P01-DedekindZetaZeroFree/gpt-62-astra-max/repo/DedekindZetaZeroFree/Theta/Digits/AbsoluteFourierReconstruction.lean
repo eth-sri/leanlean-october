@@ -13,11 +13,10 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open ThetaExpansion.SignedExpansion
 open scoped NumberField Classical Topology
-open _root_.DedekindZetaZeroFree.ThetaRationalFourierSummation renaming hasSum_of_summable_coefficients → hasSum_of_summable_coefficients
-open _root_.DedekindZetaZeroFree.ThetaRationalFourierSummation renaming freq → freq
+open _root_.DedekindZetaZeroFree.ThetaRationalFourierSummation (hasSum_of_summable_coefficients freq)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem negativeFrequency_eq_star_rationalCharacter (a : F) (q : KPAdditiveQuotient F) :
     freq F (PrincipalOfKP.standardCharacter F) a q =

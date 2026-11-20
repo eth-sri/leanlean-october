@@ -15,7 +15,7 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (q : HeightOneSpectrum (𝓞 F))
+    (q : HeightOneSpectrum (𝓞 F))
 variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField F q)]
 
  def shiftNumerator (p : ShellNumerator) (i j : ℤ) (c : ℂ) : ShellNumerator :=
@@ -82,9 +82,9 @@ theorem combine_laurent_shell_numerators (p₀ pA pInf : ShellNumerator) :
     rfl
   rw [evaluate_add, evaluate_add, eInf, eInf, eSmall, eSmall]
   change (1 - t F q r) * smallFactor F q r Q * infinityFactor F q Q ≠ 0 at hd
-  have h1 : 1 - t F q r ≠ 0 := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hd).1).1
-  have hs : smallFactor F q r Q ≠ 0 := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hd).1).2
-  have hi : infinityFactor F q Q ≠ 0 := (mul_ne_zero_iff.mp hd).2
+  have h1 := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hd).1).1
+  have hs := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hd).1).2
+  have hi := (mul_ne_zero_iff.mp hd).2
   change _ / ((1 - t F q r) * smallFactor F q r Q * infinityFactor F q Q) = _
   field_simp
   <;> ring

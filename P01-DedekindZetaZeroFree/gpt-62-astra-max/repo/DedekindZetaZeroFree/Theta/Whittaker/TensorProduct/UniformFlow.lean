@@ -9,9 +9,9 @@ namespace DedekindZetaZeroFree.SheetRescaling.WeylTensorTransport
 open MomentSources NumberField
 open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {N : TraceHaarTransport R} (C : JointDigitDescentSources R N)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {N : TraceHaarTransport R} (C : JointDigitDescentSources R N)
 
 lemma uniform_exp_add (t u : ℝ) :
     R.A.radialSection (Real.exp (t + u)) (Real.exp_pos _) =

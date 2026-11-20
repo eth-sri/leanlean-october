@@ -17,11 +17,15 @@ local instance quotientProbability_adeleMeasurable (F : Type) [Field F] [NumberF
 local instance quotientProbability_quotientMeasurable (F : Type) [Field F] [NumberField F] :
     MeasurableSpace (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) := borel _
 
-def finiteLevelInfiniteHaar (F : Type) [Field F] [NumberField F] :
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+def finiteLevelInfiniteHaar :
     Measure (mixedEmbedding.mixedSpace F) :=
   ENNReal.ofReal (PoissonArch.haarScalar F) • volume
 
-def additiveProductHaar (F : Type) [Field F] [NumberField F]
+def additiveProductHaar
     (μf : Measure (FiniteAdeleRing (𝓞 F) F)) : Measure (AdeleRing (𝓞 F) F) :=
   Measure.map
     (fun x : mixedEmbedding.mixedSpace F × FiniteAdeleRing (𝓞 F) F =>
@@ -29,11 +33,13 @@ def additiveProductHaar (F : Type) [Field F] [NumberField F]
         AdeleRing (𝓞 F) F))
     ((finiteLevelInfiniteHaar F).prod μf)
 
-def additiveQuotientMeasureFromDomain (F : Type) [Field F] [NumberField F]
+def additiveQuotientMeasureFromDomain
     (μf : Measure (FiniteAdeleRing (𝓞 F) F)) (Ω : Set (AdeleRing (𝓞 F) F)) :
     Measure (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) :=
   Measure.map (QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F))
     ((additiveProductHaar F μf).restrict Ω)
+
+end
 
 def finiteLevelProductDomain {F : Type} [Field F] [NumberField F]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))

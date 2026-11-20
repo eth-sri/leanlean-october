@@ -20,7 +20,7 @@ theorem unit_ball_lift
   · exact ⟨0, Or.inl rfl⟩
   · rintro x (rfl | ⟨lam, hlam, rfl⟩)
     · exact hA
-    · calc Q2 F c Q W M N K lam ≤ A * energy F c N lam := hform lam
+    · calc _ ≤ A * energy F c N lam := hform lam
         _ ≤ A * 1 := mul_le_mul_of_nonneg_left hlam hA
         _ = A := mul_one A
 

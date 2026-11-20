@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -51,40 +46,39 @@ theorem rationalIdeleClassRepresentation_satisfiesClassFieldAxiom :
   let := hnormal
   let := hfinite
   let Q := K.toSubgroup ⧸ extensionSubgroup K L hLK
-  let : Fintype Q := Fintype.ofFinite Q
+  let := Fintype.ofFinite Q
   let F := abstractFixedField ℚ (SeparableClosure ℚ) K
   let E := abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK
-  let : FiniteDimensional ℚ F :=
+  let :=
     abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K hKfinite
-  let : FiniteDimensional F E :=
+  let :=
     abstractRelativeFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K L hLK hKfinite hfinite
   let : IsScalarTower ℚ F E :=
     IsScalarTower.of_algebraMap_eq' rfl
-  let : FiniteDimensional ℚ E :=
+  let :=
     FiniteDimensional.trans ℚ F E
-  let : NumberField F := NumberField.of_module_finite ℚ F
-  let : NumberField E := NumberField.of_module_finite ℚ E
-  let : IsGalois F E :=
+  let := NumberField.of_module_finite ℚ F
+  let := NumberField.of_module_finite ℚ E
+  let :=
     abstractRelativeFixedField_isGalois
       ℚ (SeparableClosure ℚ) K L hLK hnormal
-  let eQ : Q ≃* Gal(E / F) :=
+  let eQ :=
     abstractExtensionQuotientEquivGaloisGroup
       ℚ (SeparableClosure ℚ) K L hLK hnormal
-  let g' : Gal(E / F) := eQ g
-  have hg' : ∀ σ : Gal(E / F),
-      σ ∈ Subgroup.zpowers g' :=
+  let g' := eQ g
+  have hg' :=
     map_cyclicGenerator eQ g hg
   let :=
     RelativeIdeleGroup.Cohomology.ideleClassMulDistribMulAction F E
   have hIdeleClassTateCard :=
     ClassFieldAxiom.ideleClass_tate_lowDegree_finite_card_eq_finrank_cyclic
       F E g' hg'
-  let : IsCyclic Q :=
+  let :=
     CyclicCohomology.isCyclic_of_generator g hg
   let : CommGroup Q := IsCyclic.commGroup
-  let : IsCyclic (Gal(E / F)) :=
+  let :=
     CyclicCohomology.isCyclic_of_generator g' hg'
   let : CommGroup (Gal(E / F)) := IsCyclic.commGroup
   let M :=
@@ -94,36 +88,24 @@ theorem rationalIdeleClassRepresentation_satisfiesClassFieldAxiom :
     Rep.ofMulDistribMulAction (E ≃ₐ[F] E)
       (RelativeIdeleGroup.ClassGroup F E)
   let eM : M ≅ Rep.res eQ.toMonoidHom U := by
-    let e :=
-      rationalAbstractExtensionIdeleClassEquiv K L hLK hnormal
-    refine Rep.mkIso (Representation.Equiv.mk e.toIntLinearEquiv ?_)
+    refine Rep.mkIso (Representation.Equiv.mk (rationalAbstractExtensionIdeleClassEquiv K L hLK hnormal).toIntLinearEquiv ?_)
     intro q
     apply LinearMap.ext
     intro x
     exact
       rationalAbstractExtensionIdeleClassEquiv_action
         K L hLK hnormal q x
-  let eH0 :
-      (Rep.FiniteCyclicGroup.normHomCompSub M g).homology ≅
-        (Rep.FiniteCyclicGroup.normHomCompSub U g').homology :=
-    (normHomCompSubHomologyIsoOfRepIso eM g) ≪≫
-      normHomCompSubHomologyResEquivIso eQ U g
-  let eHm1 :
-      (Rep.FiniteCyclicGroup.subCompNormHom M g).homology ≅
-        (Rep.FiniteCyclicGroup.subCompNormHom U g').homology :=
-    (subCompNormHomHomologyIsoOfRepIso eM g) ≪≫
-      subCompNormHomHomologyResEquivIso eQ U g
-  let eTateH0 :
-      tateCohomology M 0 ≅ tateCohomology U 0 :=
-    TateCohomology.isoFiniteCyclicZero M g hg ≪≫ eH0 ≪≫
+  let eTateH0 :=
+    TateCohomology.isoFiniteCyclicZero M g hg ≪≫ ((normHomCompSubHomologyIsoOfRepIso eM g) ≪≫
+      normHomCompSubHomologyResEquivIso eQ U g) ≪≫
       (TateCohomology.isoFiniteCyclicZero U g' hg').symm
-  let eTateHm1 :
-      tateCohomology M (-1) ≅ tateCohomology U (-1) :=
-    TateCohomology.isoFiniteCyclicNegOne M g hg ≪≫ eHm1 ≪≫
+  let eTateHm1 :=
+    TateCohomology.isoFiniteCyclicNegOne M g hg ≪≫ ((subCompNormHomHomologyIsoOfRepIso eM g) ≪≫
+      subCompNormHomHomologyResEquivIso eQ U g) ≪≫
       (TateCohomology.isoFiniteCyclicNegOne U g' hg').symm
-  let : Finite (tateCohomology U 0) := hIdeleClassTateCard.1
-  let : Finite (tateCohomology U (-1)) := hIdeleClassTateCard.2.1
-  let : Finite (tateCohomology M 0) :=
+  let := hIdeleClassTateCard.1
+  let := hIdeleClassTateCard.2.1
+  let :=
     Finite.of_equiv
       (tateCohomology U 0) eTateH0.symm.toLinearEquiv.toEquiv
   let : Finite (tateCohomology M (-1)) :=
@@ -138,11 +120,8 @@ theorem rationalIdeleClassRepresentation_satisfiesClassFieldAxiom :
         infer_instance
       tateHZero_card := ?_
       tateHMinusOne_card := ?_ }
-  · change Nat.card (tateCohomology M 0) =
-      ((DegreeData.FiniteAbstractExtension.ofInclusion
-        L K hLK).degree : ℕ)
-    calc
-      Nat.card (tateCohomology M 0) =
+  · calc
+      _ =
           Nat.card (tateCohomology U 0) :=
         Nat.card_congr eTateH0.toLinearEquiv.toEquiv
       _ = Module.finrank F E := hIdeleClassTateCard.2.2.1
@@ -152,9 +131,8 @@ theorem rationalIdeleClassRepresentation_satisfiesClassFieldAxiom :
         (finiteAbstractExtension_degree_eq_finrank
           ℚ (SeparableClosure ℚ) K L hLK hnormal
             hKfinite hfinite).symm
-  · change Nat.card (tateCohomology M (-1)) = 1
-    calc
-      Nat.card (tateCohomology M (-1)) =
+  · calc
+      _ =
           Nat.card (tateCohomology U (-1)) :=
         Nat.card_congr eTateHm1.toLinearEquiv.toEquiv
       _ = 1 := hIdeleClassTateCard.2.2.2

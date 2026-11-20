@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -39,21 +34,18 @@ theorem powerClassGroup_finite
     [IsNonarchimedeanLocalField K]
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) :
     Finite (PowerClassGroup K n) := by
-  let : Small.{0} K := LocalFieldTheory.nonarchimedeanLocalField_small K
+  let := LocalFieldTheory.nonarchimedeanLocalField_small K
   let S := Shrink.{0} K
-  let : ValuativeRel S := LocalFieldTheory.shrinkLocalFieldValuativeRel K
-  let : IsNonarchimedeanLocalField S :=
+  let := LocalFieldTheory.shrinkLocalFieldValuativeRel K
+  let :=
     LocalFieldTheory.shrinkLocalField_isNonarchimedeanLocalField K
-  let e : S ≃+* K := Shrink.ringEquiv K
+  let e := Shrink.ringEquiv K
   have hnS : ((n : ℕ) : S) ≠ 0 := by
     intro hz
     apply hnK
-    have hzK := congrArg e hz
-    simpa [e] using hzK
+    simpa [e] using (congrArg e hz)
   let : Finite (PowerClassGroup S n) := by
-    change Finite (Sˣ ⧸ (powMonoidHom (n : ℕ) : Sˣ →* Sˣ).range)
-    exact LocalFieldTheory.finite_nthPowerQuotient_of_natCast_ne_zero
-      S (n : ℕ) hnS
+    solve_by_elim [LocalFieldTheory.finite_nthPowerQuotient_of_natCast_ne_zero]
   exact Finite.of_equiv (PowerClassGroup S n)
     (powerClassGroupEquivOfRingEquiv e n).toEquiv
 

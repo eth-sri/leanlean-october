@@ -12,8 +12,9 @@ open scoped NumberField Classical
 
 variable {F : Type} [Field F] [NumberField F]
 
+variable (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
+
 theorem prime_not_mem_fullModulus_support_iff
-    (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
     (p : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
     p ∉ (fullModulus f hf).finitePart.support ↔ p.asIdeal ⊔ f = ⊤ := by
   rw [Finsupp.mem_support_iff, fullModulus_finitePart,
@@ -23,13 +24,11 @@ theorem prime_not_mem_fullModulus_support_iff
     apply (Ideal.isMaximal_def.mp (p.isPrime.isMaximal p.ne_bot)).lt_iff.mp
     exact lt_of_le_of_ne le_sup_left (fun he => h (he ▸ le_sup_right))
   · intro h hle
-    have ht : (⊤ : Ideal (𝓞 F)) ≤ p.asIdeal := by
-      rw [← h]
-      exact sup_le le_rfl hle
-    exact p.isPrime.ne_top (top_le_iff.mp ht)
+    refine p.isPrime.ne_top (top_le_iff.mp ?_)
+    rw [← h]
+    exact sup_le le_rfl hle
 
 theorem idealClass_eq_rayClassOfFinitePrime
-    (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
     (p : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
     (hp : p.asIdeal ⊔ f = ⊤) :
     idealClass f hf p.asIdeal p.ne_bot hp =
@@ -39,7 +38,6 @@ theorem idealClass_eq_rayClassOfFinitePrime
   congr 1
 
 @[simp] theorem descendedCharacter_apply_finitePrime
-    (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
     (η : DedekindZetaZeroFree.RayClassCharacter F f)
     (p : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
     (hp : p.asIdeal ⊔ f = ⊤) :

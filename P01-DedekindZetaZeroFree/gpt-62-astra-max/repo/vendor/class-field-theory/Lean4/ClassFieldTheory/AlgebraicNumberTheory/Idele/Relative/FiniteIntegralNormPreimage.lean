@@ -24,22 +24,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -55,7 +39,6 @@ open scoped NumberField TensorProduct ValuativeRel NNReal
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 open AlgebraicNumberTheory.Valuations
 open LocalClassFieldTheory
@@ -94,7 +77,7 @@ theorem exists_finitePlaceCompletionIntegerUnit_of_unitsEquiv_eq
     ∃ x₀O : 𝒪[vK.Completion]ˣ,
       integerUnitsToFieldUnits vK.Completion x₀O = x₀ := by
   let vK := HeightOneSpectrum.adicAbv K v₀
-  let hvKna : IsNonarchimedean (vK : K → ℝ) :=
+  let hvKna : IsNonarchimedean vK :=
     HeightOneSpectrum.isNonarchimedean_adicAbv K v₀
   let : Valued vK.Completion ℝ≥0 :=
     finitePlaceCompletionValued vK hvKna
@@ -182,13 +165,10 @@ theorem v_eq_zero_of_normUnits_eq_integerUnitsToFieldUnits
   have hNormValuation :=
     v_normUnits_eq_residue_finrank_mul_of_isGalois F E y
   rw [hy, v_integerUnitsToFieldUnits] at hNormValuation
-  have hf :
-      (Module.finrank 𝓀[F] 𝓀[E] : Int) ≠ 0 := by
-    exact_mod_cast
-      (Module.finrank_pos :
-        0 < Module.finrank 𝓀[F] 𝓀[E]).ne'
-  exact
-    (mul_eq_zero.mp hNormValuation.symm).resolve_left hf
+  refine
+    (mul_eq_zero.mp hNormValuation.symm).resolve_left ?_
+  exact_mod_cast
+  Module.finrank_pos.ne'
 
 omit [NumberField K] [NumberField L] [IsGalois K L] in
 /-- A unit of a localized completion whose underlying element and inverse
@@ -230,7 +210,7 @@ theorem exists_absoluteValueCompletionIntegerUnit_of_localizedCompletion_norm_bo
           (absoluteValueExtension_isNonarchimedean
             vK hvKna w) := by
     rw [mem_absoluteValueCompletionIntegers_iff]
-    change ‖eW (y : LocalizedCompletion vK w)‖ ≤ 1
+    change ‖eW y‖ ≤ 1
     change ‖(y : LocalizedCompletion vK w)‖ ≤ 1
     exact hy
   have hyWInvMem :
@@ -328,22 +308,20 @@ theorem finitePlaceLocalTensorDecompositionUnitsComponent_single
         (HeightOneSpectrum.adicAbv K v₀) L) :
     finitePlaceLocalTensorDecompositionUnitsComponent
         (K := K) (L := L) v₀ u
-        (singleRelativeLocalTensorDecompositionIntegralUnit
-          (K := K) (L := L) v₀ w y) =
+        (singleRelativeLocalTensorDecompositionIntegralUnit v₀ w y) =
       Units.map
         (absoluteValueCompletionIntegers u.1
           (absoluteValueExtension_isNonarchimedean
             (HeightOneSpectrum.adicAbv K v₀)
             (HeightOneSpectrum.isNonarchimedean_adicAbv K v₀)
             u)).subtype
-        (singleFinitePlaceIntegralUnitFamily
-          (K := K) (L := L) v₀ w y u) := by
+        (singleFinitePlaceIntegralUnitFamily v₀ w y u) := by
   have h :=
     congrFun
       ((relativeLocalTensorDecompositionIntegralUnitSubgroupEquivPiUnits
-        (K := K) (L := L) v₀).apply_symm_apply
+          v₀).apply_symm_apply
           (singleFinitePlaceIntegralUnitFamily
-            (K := K) (L := L) v₀ w y)) u
+              v₀ w y)) u
   apply Units.ext
   exact congrArg Subtype.val
     (congrArg Units.val h)
@@ -364,14 +342,11 @@ theorem singleRelativeLocalTensorDecompositionIntegralUnit_isIntegral
           w))ˣ) :
     RelativeLocalTensorDecompositionIntegralUnitAt
       (K := K) (L := L) v₀
-      (singleRelativeLocalTensorDecompositionIntegralUnit
-        (K := K) (L := L) v₀ w y) :=
+      (singleRelativeLocalTensorDecompositionIntegralUnit v₀ w y) :=
   (mem_relativeLocalTensorDecompositionIntegralUnitSubgroup_iff
     (K := K) (L := L) v₀
-    (singleRelativeLocalTensorDecompositionIntegralUnit
-      (K := K) (L := L) v₀ w y)).1
-    (singleRelativeLocalTensorDecompositionIntegralUnit
-      (K := K) (L := L) v₀ w y).property
+    (singleRelativeLocalTensorDecompositionIntegralUnit v₀ w y)).1
+    (singleRelativeLocalTensorDecompositionIntegralUnit v₀ w y).property
 
 omit [NumberField L] [IsGalois K L] in
 /-- The product of component norms of a singly supported integral tensor
@@ -423,35 +398,19 @@ theorem prod_norm_finitePlaceLocalTensorDecompositionUnitsComponent_single_eq
         (HeightOneSpectrum.adicAbv K v₀).Completion
         (finitePlaceLocalTensorDecompositionUnitsComponent
           (K := K) (L := L) v₀ u
-          (singleRelativeLocalTensorDecompositionIntegralUnit
-            (K := K) (L := L) v₀ w y) :
+          (singleRelativeLocalTensorDecompositionIntegralUnit v₀ w y) :
           u.1.Completion)) =
       (x₀ : (HeightOneSpectrum.adicAbv K v₀).Completion) := by
   classical
   let vK := HeightOneSpectrum.adicAbv K v₀
-  let hvKna : IsNonarchimedean (vK : K → ℝ) :=
-    HeightOneSpectrum.isNonarchimedean_adicAbv K v₀
-  let z :
-      (v₀.adicCompletion K ⊗[K] L)ˣ :=
-    singleRelativeLocalTensorDecompositionIntegralUnit
-      (K := K) (L := L) v₀ w y
-  have hComponents :
-      ∀ u : AbsoluteValueExtension vK L,
-        finitePlaceLocalTensorDecompositionUnitsComponent
-            (K := K) (L := L) v₀ u z =
-          Units.map
-            (absoluteValueCompletionIntegers u.1
-              (absoluteValueExtension_isNonarchimedean
-                vK hvKna u)).subtype
-            (singleFinitePlaceIntegralUnitFamily
-              (K := K) (L := L) v₀ w y u) :=
+  have hComponents :=
     finitePlaceLocalTensorDecompositionUnitsComponent_single
-      (K := K) (L := L) v₀ w y
+        v₀ w y
   rw [Finset.prod_eq_single w]
   · rw [hComponents]
     have hSelf :
         singleFinitePlaceIntegralUnitFamily
-            (K := K) (L := L) v₀ w y w =
+              v₀ w y w =
           y := by
       change
         dite (w = w)
@@ -463,17 +422,16 @@ theorem prod_norm_finitePlaceLocalTensorDecompositionUnitsComponent_single_eq
     exact hNorm
   · intro u _ hu
     rw [hComponents]
-    have hwu : w ≠ u := Ne.symm hu
     have hAway :
         singleFinitePlaceIntegralUnitFamily
-            (K := K) (L := L) v₀ w y u =
+              v₀ w y u =
           1 := by
       change
         dite (w = u)
             (fun h => h ▸ y)
             (fun _ => 1) =
           1
-      rw [dite_eq_right hwu]
+      rw [dite_eq_right (Ne.symm hu)]
     rw [hAway]
     simp
   · intro hw
@@ -515,10 +473,8 @@ theorem localTensorDetNorm_singleRelativeLocalTensorDecompositionIntegralUnit_eq
     localTensorDetNorm
         (K := K) (L := L)
         (HeightOneSpectrum.adicAbv K v₀)
-        ((finitePlaceLocalTensorUnitsEquiv
-          (K := K) (L := L) v₀).symm
-          (singleRelativeLocalTensorDecompositionIntegralUnit
-            (K := K) (L := L) v₀ w y)) =
+        ((finitePlaceLocalTensorUnitsEquiv (L := L) v₀).symm
+          (singleRelativeLocalTensorDecompositionIntegralUnit v₀ w y)) =
       x₀ := by
   classical
   let vK := HeightOneSpectrum.adicAbv K v₀
@@ -530,36 +486,25 @@ theorem localTensorDetNorm_singleRelativeLocalTensorDecompositionIntegralUnit_eq
     AbsoluteValue.completionAlgebra vK w.1 w.2
   dsimp only at hNorm
   let :=
-    completionTensorDecomposition_extensionFintype
-      (K := K) (L := L) vK hvK
+    completionTensorDecomposition_extensionFintype (L := L) vK hvK
   let : ∀ u : AbsoluteValueExtension vK L,
       Algebra vK.Completion u.1.Completion :=
     fun u =>
       AbsoluteValue.completionAlgebra vK u.1 u.2
   let : ∀ u : AbsoluteValueExtension vK L,
       Module.Finite vK.Completion u.1.Completion :=
-    fun u =>
-      completionModuleFinite vK hvK u
+    (completionModuleFinite vK hvK)
   let z :
       (v₀.adicCompletion K ⊗[K] L)ˣ :=
-    singleRelativeLocalTensorDecompositionIntegralUnit
-      (K := K) (L := L) v₀ w y
+    singleRelativeLocalTensorDecompositionIntegralUnit v₀ w y
   let zA :
       (LocalTensorAlgebra (L := L) vK)ˣ :=
-    (finitePlaceLocalTensorUnitsEquiv
-      (K := K) (L := L) v₀).symm z
+    (finitePlaceLocalTensorUnitsEquiv (L := L) v₀).symm z
   have hNormProduct :=
     RelativeIdeleGroup.localNorm_units_eq_prod
       vK hvK zA
-  have hProduct :
-      (∏ u : AbsoluteValueExtension vK L,
-        Algebra.norm vK.Completion
-          (finitePlaceLocalTensorDecompositionUnitsComponent
-            (K := K) (L := L) v₀ u z :
-              u.1.Completion)) =
-        (x₀ : vK.Completion) :=
-    prod_norm_finitePlaceLocalTensorDecompositionUnitsComponent_single_eq
-      (K := K) (L := L) v₀ w y x₀ hNorm
+  have hProduct :=
+    prod_norm_finitePlaceLocalTensorDecompositionUnitsComponent_single_eq v₀ w y x₀ hNorm
   apply Units.ext
   change
     ((Units.map (Algebra.norm vK.Completion) zA :
@@ -568,11 +513,9 @@ theorem localTensorDetNorm_singleRelativeLocalTensorDecompositionIntegralUnit_eq
   rw [hNormProduct]
   have hComponentEq :
       ∀ u : AbsoluteValueExtension vK L,
-        completionTensorDecomposition_left
-              (K := K) (L := L) vK hvK
+        completionTensorDecomposition_left vK hvK
               (zA : LocalTensorAlgebra (L := L) vK) u =
-          (finitePlaceLocalTensorDecompositionUnitsComponent
-            (K := K) (L := L) v₀ u z :
+          (finitePlaceLocalTensorDecompositionUnitsComponent v₀ u z :
               u.1.Completion) := by
     intro u
     rfl
@@ -583,8 +526,7 @@ private theorem exists_localizedCompletionNormPreimage_with_norm_bounds
     (v₀ : HeightOneSpectrum (𝓞 K))
     (x : (v₀.adicCompletion K)ˣ)
     (hxNorm :
-      x ∈ (_root_.localTensorNorm
-        (K := K) (L := L) v₀).range)
+      x ∈ (_root_.localTensorNorm (L := L) v₀).range)
     (hxUnit :
       x ∈ (v₀.adicCompletionIntegers K).units) :
     let vK := HeightOneSpectrum.adicAbv K v₀
@@ -628,7 +570,7 @@ private theorem exists_localizedCompletionNormPreimage_with_norm_bounds
   let vC : Valuation vK.Completion ℝ≥0 := Valued.v
   let : vC.IsNontrivial :=
     (inferInstance :
-      (NormedField.valuation (K := vK.Completion)).IsNontrivial)
+      (NormedField.valuation).IsNontrivial)
   let : ValuativeRel vK.Completion :=
     finitePlaceCompletionValuativeRel vK hvKna
   let : vC.Compatible :=
@@ -691,17 +633,14 @@ private theorem exists_localizedCompletionNormPreimage_with_norm_bounds
   let e :=
     finitePlaceCompletionUnitsContinuousMulEquiv v₀
   have hxChosen :
-      x ∈ chosenFinitePlaceLocalNormSubgroup
-        (K := K) (L := L) v₀ := by
-    rw [← finitePlaceLocalTensorNorm_range_eq_chosenLocalNormSubgroup
-      (K := K) (L := L) v₀]
+      x ∈ chosenFinitePlaceLocalNormSubgroup (L := L) v₀ := by
+    rw [← finitePlaceLocalTensorNorm_range_eq_chosenLocalNormSubgroup (L := L) v₀]
     exact hxNorm
   change
     x ∈ (localNormSubgroup vK.Completion E).map
       e.toMonoidHom at hxChosen
   rcases hxChosen with ⟨x₀, hx₀, hx₀map⟩
-  have hx₀' :
-      x₀ ∈ localNormSubgroup vK.Completion E :=
+  have hx₀' :=
     hx₀
   rcases
       MonoidHom.mem_range.mp hx₀' with
@@ -710,8 +649,7 @@ private theorem exists_localizedCompletionNormPreimage_with_norm_bounds
       e x₀ = x :=
     hx₀map
   obtain ⟨x₀O, hx₀O⟩ :=
-    exists_finitePlaceCompletionIntegerUnit_of_unitsEquiv_eq
-      (K := K) v₀ x₀ x hx₀val hxUnit
+    exists_finitePlaceCompletionIntegerUnit_of_unitsEquiv_eq v₀ x₀ x hx₀val hxUnit
   have hyValuation :
       v E (Additive.ofMul y) = 0 := by
     apply
@@ -740,10 +678,10 @@ private theorem exists_localizedCompletionNormPreimage_with_norm_bounds
       congrArg (fun q : Eˣ => (q : E)) hInv
     rw [← hval]
     exact (yO⁻¹).val.property
-  have hyNorm : ‖(y : E)‖ ≤ 1 :=
+  have hyNorm :=
     (localizedCompletion_mem_integers_iff_norm_le_one
       vK w hvKna (y : E)).1 hyMem
-  have hyInvNorm : ‖((y⁻¹ : Eˣ) : E)‖ ≤ 1 :=
+  have hyInvNorm :=
     (localizedCompletion_mem_integers_iff_norm_le_one
       vK w hvKna _).1 hyInvMem
   exact ⟨x₀, y, hy, hx₀val, hyNorm, hyInvNorm⟩
@@ -753,8 +691,7 @@ private theorem exists_singleFinitePlaceIntegralUnit_norm_eq
     (v₀ : HeightOneSpectrum (𝓞 K))
     (x : (v₀.adicCompletion K)ˣ)
     (hxNorm :
-      x ∈ (_root_.localTensorNorm
-        (K := K) (L := L) v₀).range)
+      x ∈ (_root_.localTensorNorm (L := L) v₀).range)
     (hxUnit :
       x ∈ (v₀.adicCompletionIntegers K).units) :
     let vK := HeightOneSpectrum.adicAbv K v₀
@@ -782,21 +719,21 @@ private theorem exists_singleFinitePlaceIntegralUnit_norm_eq
   classical
   let vK := HeightOneSpectrum.adicAbv K v₀
   let w := chosenFinitePlaceExtension (L := L) v₀
-  let hvK : vK.IsNontrivial :=
+  let hvK :=
     RayClass.adicAbv_isNontrivial v₀
-  let hvKna : IsNonarchimedean (vK : K → ℝ) :=
+  let hvKna :=
     HeightOneSpectrum.isNonarchimedean_adicAbv K v₀
   let hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
   let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   let E := LocalizedCompletion vK w
   obtain ⟨x₀, y, hy, hx₀val, hyNorm, hyInvNorm⟩ :=
     exists_localizedCompletionNormPreimage_with_norm_bounds
-      (K := K) (L := L) v₀ x hxNorm hxUnit
+        v₀ x hxNorm hxUnit
   obtain ⟨yO, hyO⟩ :=
     exists_absoluteValueCompletionIntegerUnit_of_localizedCompletion_norm_bounds
-      (K := K) (L := L) vK hvK hvKna w y hyNorm hyInvNorm
+        vK hvK hvKna w y hyNorm hyInvNorm
   let eW :=
     localizedCompletionEquivCompletion vK hvK w
   have hNormTransport :
@@ -809,21 +746,12 @@ private theorem exists_singleFinitePlaceIntegralUnit_norm_eq
         (x₀ : vK.Completion)
     rw [Algebra.norm_eq_of_algEquiv eW]
     exact congrArg Units.val hy
-  have hNorm :
-      Algebra.norm vK.Completion
-          ((Units.map
-            (absoluteValueCompletionIntegers w.1
-              (absoluteValueExtension_isNonarchimedean
-                vK hvKna w)).subtype yO :
-              w.1.Completionˣ) :
-            w.1.Completion) =
-        (x₀ : vK.Completion) := by
-    calc
-      _ = Algebra.norm vK.Completion
-          ((y : E) : w.1.Completion) :=
-        congrArg (Algebra.norm vK.Completion) hyO
-      _ = (x₀ : vK.Completion) := hNormTransport
-  exact ⟨x₀, yO, hNorm, hx₀val⟩
+  refine ⟨x₀, yO, ?_, hx₀val⟩
+  calc
+  _ = Algebra.norm vK.Completion
+      ((y : E) : w.1.Completion) :=
+    congrArg (Algebra.norm vK.Completion) hyO
+  _ = (x₀ : vK.Completion) := hNormTransport
 
 omit [NumberField L] in
 /-- A local integer unit in the finite tensor-norm image has a preimage
@@ -833,76 +761,52 @@ theorem exists_localTensorDecompositionIntegralUnit_localTensorNorm_eq
     (v₀ : HeightOneSpectrum (𝓞 K))
     (x : (v₀.adicCompletion K)ˣ)
     (hxNorm :
-      x ∈ (_root_.localTensorNorm
-        (K := K) (L := L) v₀).range)
+      x ∈ (_root_.localTensorNorm (L := L) v₀).range)
     (hxUnit :
       x ∈ (v₀.adicCompletionIntegers K).units) :
     ∃ z : (v₀.adicCompletion K ⊗[K] L)ˣ,
-      _root_.localTensorNorm
-          (K := K) (L := L) v₀ z = x ∧
-        RelativeLocalTensorDecompositionIntegralUnitAt
-          (K := K) (L := L) v₀ z := by
+      _root_.localTensorNorm v₀ z = x ∧
+        RelativeLocalTensorDecompositionIntegralUnitAt v₀ z := by
   classical
   let vK := HeightOneSpectrum.adicAbv K v₀
   let w := chosenFinitePlaceExtension (L := L) v₀
-  let hvK : vK.IsNontrivial :=
-    RayClass.adicAbv_isNontrivial v₀
-  let hvKna : IsNonarchimedean (vK : K → ℝ) :=
-    HeightOneSpectrum.isNonarchimedean_adicAbv K v₀
   let hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let := hK.toSMul
+  let :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   obtain ⟨x₀, yWO, hNorm, hx₀val⟩ :=
     exists_singleFinitePlaceIntegralUnit_norm_eq
-      (K := K) (L := L) v₀ x hxNorm hxUnit
+        v₀ x hxNorm hxUnit
   let z : (v₀.adicCompletion K ⊗[K] L)ˣ :=
     singleRelativeLocalTensorDecompositionIntegralUnit
-      (K := K) (L := L) v₀ w yWO
-  have hzIntegral :
-      RelativeLocalTensorDecompositionIntegralUnitAt
-        (K := K) (L := L) v₀ z :=
-    singleRelativeLocalTensorDecompositionIntegralUnit_isIntegral
-      (K := K) (L := L) v₀ w yWO
-  refine ⟨z, ?_, hzIntegral⟩
+        v₀ w yWO
+  refine ⟨z, ?_, (singleRelativeLocalTensorDecompositionIntegralUnit_isIntegral
+    v₀ w yWO)⟩
   let zA :
       (LocalTensorAlgebra (L := L) vK)ˣ :=
-    (finitePlaceLocalTensorUnitsEquiv
-      (K := K) (L := L) v₀).symm z
-  have hTensorNormSingle :
-      localTensorDetNorm
-          (K := K) (L := L) vK
-          ((finitePlaceLocalTensorUnitsEquiv
-            (K := K) (L := L) v₀).symm
-            (singleRelativeLocalTensorDecompositionIntegralUnit
-              (K := K) (L := L) v₀ w yWO)) =
-        x₀ :=
-      localTensorDetNorm_singleRelativeLocalTensorDecompositionIntegralUnit_eq
-        (K := K) (L := L) v₀ w yWO x₀ hNorm
-  have hTensorNorm :
-      localTensorDetNorm
-          (K := K) (L := L) vK zA = x₀ := by
-    simpa only [zA, z] using hTensorNormSingle
+    (finitePlaceLocalTensorUnitsEquiv (L := L) v₀).symm z
   let e :=
     finitePlaceCompletionUnitsContinuousMulEquiv v₀
   calc
     _root_.localTensorNorm
-        (K := K) (L := L) v₀ z =
+          v₀ z =
       _root_.localTensorNorm
-          (K := K) (L := L) v₀
+            v₀
           (finitePlaceLocalTensorUnitsEquiv
-            (K := K) (L := L) v₀ zA) := by
+              v₀ zA) := by
         congr 1
         exact
           ((finitePlaceLocalTensorUnitsEquiv
-            (K := K) (L := L) v₀).apply_symm_apply z).symm
+              v₀).apply_symm_apply z).symm
     _ =
       e
         (localTensorDetNorm
-          (K := K) (L := L) vK zA) :=
+            vK zA) :=
       (finitePlaceLocalTensorNorm_commutes
-        (K := K) (L := L) v₀ zA).symm
-    _ = e x₀ := congrArg e hTensorNorm
+          v₀ zA).symm
+    _ = e x₀ := congrArg e (by
+      simpa using (localTensorDetNorm_singleRelativeLocalTensorDecompositionIntegralUnit_eq
+        v₀ w yWO x₀ hNorm))
     _ = x := hx₀val
 
 end

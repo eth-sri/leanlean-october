@@ -21,7 +21,7 @@ theorem first_derivative_memLp_of_energy
       ∂ R.quotientHaar) < ⊤) (b : KPSmoothActualFlowData.B F) :
     MemLp (KPSmoothActualFlowData.flowDerivative F ζ hζ b f.val) 2 R.quotientHaar := by
   letI : BorelSpace (KPSmoothActualFlowData.X F ζ hζ) := ⟨rfl⟩
-  have hd : Continuous (KPSmoothActualFlowData.flowDerivative F ζ hζ b f.val) :=
+  have hd :=
     (smoothDerivatives F ζ hζ U [b] f).continuous
   apply (memLp_two_iff_integrable_sq_norm hd.aestronglyMeasurable).mpr
   refine ⟨(hd.norm.pow 2).aestronglyMeasurable, ?_⟩
@@ -29,7 +29,7 @@ theorem first_derivative_memLp_of_energy
   have hp (x : X F ζ hζ) : ‖KPSmoothActualFlowData.flowDerivative F ζ hζ b f.val x‖ ^ 2 ≤
       (c b)⁻¹ * ∑ d, c d * ‖KPSmoothActualFlowData.flowDerivative F ζ hζ d f.val x‖ ^ 2 := by
     have hs := Finset.single_le_sum
-      (fun d (_ : d ∈ Finset.univ) => mul_nonneg (hc d).le (sq_nonneg
+      (fun d _ => mul_nonneg (hc d).le (sq_nonneg
         ‖KPSmoothActualFlowData.flowDerivative F ζ hζ d f.val x‖))
       (Finset.mem_univ b)
     have hh : ‖KPSmoothActualFlowData.flowDerivative F ζ hζ b f.val x‖ ^ 2 ≤
@@ -60,8 +60,7 @@ theorem original_first_derivative_memLp
     (hv2 : MemLp (fun x => ∑ b, (c b : ℂ) *
       KPSmoothActualFlowData.wordDerivative F ζ hζ [b,b] f.val x) 2 R.quotientHaar)
     (b : KPSmoothActualFlowData.B F) :
-    MemLp (KPSmoothActualFlowData.flowDerivative F ζ hζ b f.val) 2 R.quotientHaar := by
-  exact first_derivative_memLp_of_energy R f c hc
+    MemLp (KPSmoothActualFlowData.flowDerivative F ζ hζ b f.val) 2 R.quotientHaar := first_derivative_memLp_of_energy R f c hc
     (original_diagonal_energy_finite A R P D Y hY f c (fun b => (hc b).le) hf2 hv2) b
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualWeakEnergy

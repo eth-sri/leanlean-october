@@ -16,14 +16,20 @@ variable {F : Type} [Field F] [NumberField F]
 def exteriorNormZeta (cS : Ideal (𝓞 F)) (t : ℝ) : ℝ :=
   ∑' I : ExteriorIdeal cS, (idealNorm I.val).rpow (-t)
 
-def PositiveRowIndex {cS : Ideal (𝓞 F)} (f : ExteriorSquarefreeIdeal cS) :=
+section
+
+variable {cS : Ideal (𝓞 F)} (f : ExteriorSquarefreeIdeal cS)
+
+def PositiveRowIndex :=
   {a : ExteriorIdeal cS // IdealSupportedOn a.val f.val.val} ×
     ExteriorSquarefreeIdeal cS × ExteriorIdeal cS
 
-def positiveRowWeight {cS : Ideal (𝓞 F)} (f : ExteriorSquarefreeIdeal cS)
+def positiveRowWeight
     (σ : ℝ) (x : PositiveRowIndex f) : ℝ :=
   betaIdeal f x.1.val.val * (rowNorm x.1.val x.2.1.val x.2.2).rpow (-σ) /
     (Real.sqrt (idealNorm x.2.1.val.val) * idealNorm x.2.2.val)
+
+end
 
 private theorem exterior_norm_summable (cS : Ideal (𝓞 F)) (t : ℝ) (ht : 1 < t) :
     Summable (fun I : ExteriorIdeal cS => (idealNorm I.val).rpow (-t)) := by
@@ -50,21 +56,18 @@ private theorem real_weight_factor (a c n b σ : ℝ)
   norm_num
   ring
 
-private theorem positiveRowWeight_factor {cS : Ideal (𝓞 F)}
-    (f : ExteriorSquarefreeIdeal cS) (σ : ℝ) (x : PositiveRowIndex f) :
+variable {cS : Ideal (𝓞 F)} (f : ExteriorSquarefreeIdeal cS) (σ : ℝ)
+
+private theorem positiveRowWeight_factor (x : PositiveRowIndex f) :
     positiveRowWeight f σ x = betaIdealTerm f σ x.1 *
       ((idealNorm x.2.1.val.val).rpow (-(σ + 1 / 2)) *
        (idealNorm x.2.2.val).rpow (-(3 * σ + 1))) := by
-  have ha : 0 < idealNorm x.1.val.val := lt_of_lt_of_le zero_lt_one
-    (idealNorm_ge_one _ x.1.val.property.1)
-  have hc : 0 < idealNorm x.2.1.val.val := lt_of_lt_of_le zero_lt_one
-    (idealNorm_ge_one _ x.2.1.val.property.1)
-  have hn : 0 < idealNorm x.2.2.val := lt_of_lt_of_le zero_lt_one
-    (idealNorm_ge_one _ x.2.2.property.1)
-  exact real_weight_factor _ _ _ _ σ ha hc hn
+  exact real_weight_factor _ _ _ _ σ (lt_of_lt_of_le zero_lt_one
+    (idealNorm_ge_one _ x.1.val.property.1)) (lt_of_lt_of_le zero_lt_one
+    (idealNorm_ge_one _ x.2.1.val.property.1)) (lt_of_lt_of_le zero_lt_one
+    (idealNorm_ge_one _ x.2.2.property.1))
 
-theorem positiveRowWeight_summable_le {cS : Ideal (𝓞 F)}
-    (f : ExteriorSquarefreeIdeal cS) (σ : ℝ) (hσ : 1 / 2 < σ) :
+theorem positiveRowWeight_summable_le (hσ : 1 / 2 < σ) :
     Summable (positiveRowWeight f σ) ∧
       (∑' x : PositiveRowIndex f, positiveRowWeight f σ x) ≤
         eulerIdeal f σ * exteriorNormZeta cS (σ + 1 / 2) *
@@ -82,7 +85,7 @@ theorem positiveRowWeight_summable_le {cS : Ideal (𝓞 F)}
   have hprod : Summable (fun x : PositiveRowIndex f =>
       betaIdealTerm f σ x.1 * (C x.2.1.val * N x.2.2)) :=
     summable_mul_of_summable_norm hA.norm hCN.norm
-  have hW : Summable (positiveRowWeight f σ) :=
+  have hW :=
     hprod.congr (fun x => (positiveRowWeight_factor f σ x).symm)
   refine ⟨hW, ?_⟩
   have hcol : (∑' c : ExteriorSquarefreeIdeal cS, C c.val) ≤ exteriorNormZeta cS (σ + 1 / 2) := by

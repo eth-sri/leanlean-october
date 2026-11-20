@@ -21,7 +21,7 @@ namespace DedekindZetaZeroFree.LargeSieve
 
 private lemma sum_pair (g : ({0, 1} : Finset ℝ) → ℂ) :
     (∑ p : ({0, 1} : Finset ℝ), g p) = g ⟨0, by simp⟩ + g ⟨1, by simp⟩ := by
-  rw [show (Finset.univ : Finset ↥({0, 1} : Finset ℝ)) = {⟨0, by simp⟩, ⟨1, by simp⟩} from by
+  rw [show Finset.univ = {⟨0, by simp⟩, ⟨1, by simp⟩} from by
     ext p; simp [Subtype.ext_iff, Finset.mem_insert, Finset.mem_singleton, eq_comm, or_comm]]
   rw [Finset.sum_insert (by simp), Finset.sum_singleton]
 
@@ -36,8 +36,6 @@ private lemma reflection_power {D q X : ℝ} (hD : 0 < D) (hq : 0 < q) (hX : 0 <
     (X : ℂ) ^ s * (D * q : ℝ) ^ ((1 : ℂ) / 2 - s) =
       (X : ℂ) / (Real.sqrt q : ℂ) * (D : ℂ) ^ ((1 : ℂ) / 2 - s) *
         (X / q : ℝ) ^ (-(1 - s : ℂ)) := by
-  have hqn : (q : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hq.ne'
-  have hXn : (X : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hX.ne'
   have hsqrt : (q : ℂ) ^ ((1 : ℂ) / 2) = (Real.sqrt q : ℂ) := by
     rw [show (1 : ℂ) / 2 = ((1 / 2 : ℝ) : ℂ) by norm_num,
       ← Complex.ofReal_cpow hq.le, Real.sqrt_eq_rpow]
@@ -46,11 +44,11 @@ private lemma reflection_power {D q X : ℝ} (hD : 0 < D) (hq : 0 < q) (hX : 0 <
     Complex.div_cpow_ofReal_nonneg hX.le hq.le]
   have hpX : (X : ℂ) ^ s = (X : ℂ) * (X : ℂ) ^ (-(1 - s : ℂ)) := by
     conv_rhs => lhs; rw [← Complex.cpow_one (X : ℂ)]
-    rw [← Complex.cpow_add _ _ hXn]
+    rw [← Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hX.ne')]
     congr 1; ring
   have hpq : (q : ℂ) ^ ((1 : ℂ) / 2 - s) =
       ((q : ℂ) ^ (-(1 - s : ℂ)))⁻¹ / (Real.sqrt q : ℂ) := by
-    rw [← hsqrt, ← Complex.cpow_neg, ← Complex.cpow_sub _ _ hqn]
+    rw [← hsqrt, ← Complex.cpow_neg, ← Complex.cpow_sub _ _ (Complex.ofReal_ne_zero.mpr hq.ne')]
     congr 1; ring
   rw [hpX, hpq]
   ring
@@ -75,30 +73,28 @@ private lemma logarithmic_left_integral
       W * (X : ℂ) / (Real.sqrt q : ℂ) *
         (∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥},
           a I.val * k (X * (Ideal.absNorm I.val : ℝ) / q)) := by
-  let c : ℝ := 1 + δ / 2
+  let c := 1 + δ / 2
   let K := Vendor.reflectedLogSpectrum D r H
-  let k := Vendor.reflectedLogDual D r H δ
   have hc : 1 < c := by dsimp [c]; linarith [hf.delta_pos]
   have hcδ : c < 1 + δ := by dsimp [c]; linarith [hf.delta_pos]
-  have hKcont : Continuous (fun t : ℝ => K ((c : ℂ) + t * Complex.I)) := by
-    exact (Vendor.reflectedLogSpectrum_differentiableOn D r hD hr hf).continuousOn.comp_continuous
+  have hKcont : Continuous (fun t : ℝ => K ((c : ℂ) + t * Complex.I)) := (Vendor.reflectedLogSpectrum_differentiableOn D r hD hr hf).continuousOn.comp_continuous
       (show Continuous (fun t : ℝ => (c : ℂ) + t * Complex.I) by fun_prop)
       (fun t => by simpa using And.intro hc hcδ)
   obtain ⟨_, _, _, hdn, hds, hVI, hVeq⟩ :=
-    idealLogMellin_inverseSpectrum_interchange a ha K k hc (div_pos hX hq)
+    idealLogMellin_inverseSpectrum_interchange a ha K (Vendor.reflectedLogDual D r H δ) hc (div_pos hX hq)
       hKcont (Vendor.reflectedLogSpectrum_verticalIntegrable D r hD hr hf c hc hcδ)
       (fun x hx => Vendor.reflectedLogDual_eq_mellinInv D r hD hr hf c x hc hcδ hx)
   have hscale : ∀ n : ℝ, X / q * n = X * n / q := by intro n; ring
   simp_rw [hscale] at hdn hds hVeq
   refine ⟨hdn, hds, ?_⟩
-  let G : ℂ → ℂ := fun s => K s * (X / q : ℝ) ^ (-s) * idealCoefficientLSeries a s
+  let G := fun s => K s * (X / q : ℝ) ^ (-s) * idealCoefficientLSeries a s
   have heq : Vendor.verticalIntegral (-δ / 2) (Vendor.logMellinProduct H L X) =
       Vendor.verticalIntegral (-δ / 2) (fun s => (W * (X : ℂ) / (Real.sqrt q : ℂ)) * G (1 - s)) := by
     unfold Vendor.verticalIntegral
     congr 1
     apply integral_congr_ae
     filter_upwards with t
-    let s : ℂ := ((-δ / 2 : ℝ) : ℂ) + t * Complex.I
+    let s := ((-δ / 2 : ℝ) : ℂ) + t * Complex.I
     have hs : s.re < 0 := by
       dsimp [s]
       simp only [Complex.add_re, Complex.div_re, Complex.ofReal_re, Complex.ofReal_im,
@@ -109,26 +105,25 @@ private lemma logarithmic_left_integral
     rw [hFE s hs]
     dsimp [G, K, Vendor.reflectedLogSpectrum, Vendor.logReflectionMultiplier]
     rw [← hDS (1 - s) ht]
-    have hp := reflection_power hD hq hX s
     rw [show 1 - (1 - s) = s by ring, show 1 - s - 1 / 2 = (1 : ℂ) / 2 - s by ring]
     calc
       _ = W * H s * ((X : ℂ) ^ s * (D * q : ℝ) ^ ((1 : ℂ) / 2 - s)) *
           Complex.Gammaℂ (1 - s) ^ r * (Complex.Gammaℂ s)⁻¹ ^ r * Lbar (1 - s) := by ring
-      _ = _ := by rw [hp]; ring
+      _ = _ := by rw [(reflection_power hD hq hX s)]; ring
   rw [heq]
   have hreflect : Vendor.verticalIntegral (-δ / 2) (fun s =>
       (W * (X : ℂ) / (Real.sqrt q : ℂ)) * G (1 - s)) =
       Vendor.verticalIntegral c (fun s => (W * (X : ℂ) / (Real.sqrt q : ℂ)) * G s) := by
-    have h := Vendor.verticalIntegral_one_sub (-δ / 2)
-      (fun s => (W * (X : ℂ) / (Real.sqrt q : ℂ)) * G s)
-    convert h using 1 <;> congr 1
+    convert (Vendor.verticalIntegral_one_sub (-δ / 2)
+      (fun s => (W * (X : ℂ) / (Real.sqrt q : ℂ)) * G s)) using 1 <;> congr 1
     dsimp [c]; ring
   rw [hreflect, Vendor.verticalIntegral_const_mul c _ G hVI, hVeq]
 
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) {f : ℝ → ℂ} {δ : ℝ}
+    {P : Polynomial ℂ} {H : ℂ → ℂ} (hf : Vendor.LogMellinAdmissible f δ P H) {X : ℝ} (hX : 0 < X)
+
+include hf hX in
 theorem principal_logarithmic_contour
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
-    (hf : Vendor.LogMellinAdmissible f δ P H) {X : ℝ} (hX : 0 < X)
     (a b : ℝ) (haδ : -δ < a) (ha0 : a < 0) (hb : 1 < b) :
     let M := Vendor.logMellinProduct H (principalZetaContinuation F hF) X
     Complex.VerticalIntegrable M a ∧ Complex.VerticalIntegrable M b ∧
@@ -144,12 +139,9 @@ theorem principal_logarithmic_contour
   obtain ⟨Cg, Ag, hCg, hAg, hgrowth⟩ :=
     principalLogMellinProduct_subquadratic_growth F hF hf X hX a b haδ ha0 hb
   refine ⟨hbd_a, hbd_b, ?_, ?_⟩
-  · have hnorm : ∀ I : Ideal (𝓞 F), I ≠ ⊥ →
-        ‖(fun I => principalCharacter F I) I‖ ≤ 1 :=
-      fun I hI => by simp [principalCharacter_apply, hI]
-    obtain ⟨_, hsrc⟩ :=
+  · obtain ⟨_, hsrc⟩ :=
       idealLogMellin_source_interchange (fun I : Ideal (𝓞 F) => principalCharacter F I)
-        hnorm hf hX hb
+        (fun I hI => by simp [principalCharacter_apply, hI]) hf hX hb
     have hsub : (∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥},
           f ((Ideal.absNorm I.val : ℝ) / X))
         = ∑' I : Ideal (𝓞 F), idealMellinWeight (fun I => principalCharacter F I) f X I := by
@@ -178,9 +170,8 @@ theorem principal_logarithmic_contour
     apply tsum_congr
     intro I
     by_cases hI : I = ⊥ <;> simp [hI, principalCharacter_apply]
-  · have hab : a < b := by linarith
-    have hmain := Vendor.verticalIntegral_sub_eq_sum_residues_of_finite_order
-      (a := a) (b := b) hab ({0, 1} : Finset ℝ)
+  · have hmain := Vendor.verticalIntegral_sub_eq_sum_residues_of_finite_order
+        (by linarith) ({0, 1} : Finset ℝ)
       (by
         intro p hp
         simp only [Finset.mem_insert, Finset.mem_singleton] at hp
@@ -224,10 +215,8 @@ theorem principal_logarithmic_contour
     rw [Vendor.logProductPrincipalCoeff_one]
     rfl
 
-theorem principal_logarithmic_poisson
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
-    (hf : Vendor.LogMellinAdmissible f δ P H) {X : ℝ} (hX : 0 < X) :
+include hf hX in
+theorem principal_logarithmic_poisson :
     let k := Vendor.reflectedLogDual (principalDiscriminant F)
       (principalComplexPlaces F) H δ
     Summable (fun I : {I : Ideal (𝓞 F) // I ≠ ⊥} =>

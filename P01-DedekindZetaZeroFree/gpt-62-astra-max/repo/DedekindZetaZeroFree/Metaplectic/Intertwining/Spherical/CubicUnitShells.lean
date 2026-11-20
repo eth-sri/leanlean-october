@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.TameCubicHilbertDetection
 
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.Integration.CubicShellSummation
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.ExceptionalParameterContinuation
@@ -195,10 +196,9 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 private theorem central (P : Polarization S.heisenberg)
     (e : rootsOfUnity 3 F) (V : InducedModule P) :
     tau P ((S.openCell P).centralTorus e) V = (ordinaryIota F ζ hζ e : ℂ) • V := by
-  have hg := (S.openCell P).genuine .plus e V
   simpa [inducingAction, inducingScalar, deltaHalf, borelAction,
     S.borel.retract_torus, (S.openCell P).central_coordinate, normPower,
-    localAbs_one, S.openCell_ordinary] using hg
+    localAbs_one, S.openCell_ordinary] using ((S.openCell P).genuine .plus e V)
 private theorem rootmul (P : Polarization S.heisenberg)
     (a b : (LocalField F q)ˣ) :
     (S.openCell P).rootTorus a * (S.openCell P).rootTorus b =
@@ -251,9 +251,10 @@ private theorem invmask (P : Polarization S.heisenberg) (V : InducedModule P)
     have hh := congrArg (tau P a⁻¹) (hu u)
     rw [← Module.End.mul_apply, ← map_mul] at hh
     simpa [a] using hh.symm
-  change tau P r⁻¹ V = _
   rw [hr, map_mul, map_mul, Module.End.mul_apply, Module.End.mul_apply,
     central F ζ hζ q S, map_smul, ha, map_smul]
+
+alias CubicUnitShells.invmask := invmask
 private theorem phase (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (π : (LocalField F q)ˣ) (hπ : valuationMap (LocalField F q) (Additive.ofMul π) = -1)
     (u : (KPTameCompact.O F q)ˣ) (v : (LocalField F q)ˣ) :
@@ -261,9 +262,8 @@ private theorem phase (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F 
       (KPTameCompact.unitInclusion F q u ^ 2) (v ^ 2) ^ 2 =
         KPHilbert.B3 F ζ hζ (Sum.inr q) π (KPTameCompact.unitInclusion F q u) ^
           (8 * valuationMap (LocalField F q) (Additive.ofMul v)) := by
-  have hp : valuationMap (LocalField F q) (Additive.ofMul π⁻¹) = 1 := by
-    rw [valuationMap_ofMul_inv, hπ]; norm_num
-  obtain ⟨w, hw⟩ := exists_integerUnit_mul_uniformizer_zpow (LocalField F q) π⁻¹ hp v
+  obtain ⟨w, hw⟩ := exists_integerUnit_mul_uniformizer_zpow (LocalField F q) π⁻¹ (by
+    rw [valuationMap_ofMul_inv, hπ]; norm_num) v
   have hwB := KPTameCompact.B3_units F q ζ hζ ht u w
   have ha := (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.1 π
     (KPTameCompact.unitInclusion F q u)
@@ -280,14 +280,18 @@ private theorem phase (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F 
   congr 1
   ring
 
+alias CubicUnitShells.phase := phase
+
 private theorem valunit (u : (KPTameCompact.O F q)ˣ) :
-    valuation (LocalField F q) (KPTameCompact.unitInclusion F q u : LocalField F q) = 1 := by
-  exact (Valuation.Integers.isUnit_iff_valuation_eq_one
+    valuation (LocalField F q) (KPTameCompact.unitInclusion F q u : LocalField F q) = 1 := (Valuation.Integers.isUnit_iff_valuation_eq_one
     (Valuation.integer.integers (valuation (LocalField F q)))).mp u.isUnit
 
+alias CubicUnitShells.valunit := valunit
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
+
 private theorem detecting
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (π : (KPTameCompact.K F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (KPTameCompact.K F q)
@@ -298,75 +302,9 @@ private theorem detecting
       (((KPLocalCover.coefficientEmbedding F ζ hζ
         (KPLocalCover.threeToSix F
           (KPHilbert.B3 F ζ hζ (Sum.inr q) π
-            (KPTameCompact.unitInclusion F q u)))) : ℂ) ^ e) ≠ 1 := by
-  let K := KPTameCompact.K F q
-  let p := ClassFieldTheory.powerClass K (3 : ℕ+)
-  let B := KPHilbert.finiteThreePairing F ζ hζ q
-  have hvπ : valuationMap K (Additive.ofMul π) = -1 := by
-    change Multiplicative.toAdd (WithZero.unzero _) = -1
-    rw [WithZero.toAdd_unzero_eq_log]
-    change WithZero.log ((IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (KPTameCompact.K F q))
-      (valuation (KPTameCompact.K F q) (π : KPTameCompact.K F q))) = -1
-    rw [hπ, WithZero.log_exp]
-  have hvπinv : valuationMap K (Additive.ofMul π⁻¹) = 1 := by
-    rw [valuationMap_ofMul_inv, hvπ]
-    norm_num
-  by_contra hn
-  push Not at hn
-  have hu : ∀ u : (KPTameCompact.O F q)ˣ,
-      B (p (π ^ e)) (p (KPTameCompact.unitInclusion F q u)) = 1 := by
-    intro u
-    have hc : KPLocalCover.coefficientEmbedding F ζ hζ
-        (KPLocalCover.threeToSix F
-          (KPHilbert.B3 F ζ hζ (Sum.inr q) π
-            (KPTameCompact.unitInclusion F q u)) ^ e) = 1 := by
-      apply Units.ext
-      simpa only [map_zpow, Units.val_zpow_eq_zpow_val, Units.val_one] using hn u
-    have h6 := KPLocalCover.coefficientEmbedding_injective F ζ hζ
-      (hc.trans (map_one _).symm)
-    have h3 : (KPHilbert.B3 F ζ hζ (Sum.inr q) π
-        (KPTameCompact.unitInclusion F q u)) ^ e = 1 := by
-      apply Subtype.ext
-      exact congrArg (fun z : rootsOfUnity 6 F => (z : Fˣ))
-        (by simpa only [← map_zpow, map_one] using h6)
-    rw [KPHilbert.B3_canonical] at h3
-    simpa only [p, B, map_zpow, MonoidHom.zpow_apply] using h3
-  have hs : B (p π) (p π) = 1 := by
-    simpa only [KPHilbert.B3_canonical] using
-      ((KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 π).1
-  have hall : ∀ x : Kˣ, B (p (π ^ e)) (p x) = 1 := by
-    intro x
-    obtain ⟨u, hx⟩ := exists_integerUnit_mul_uniformizer_zpow K π⁻¹ hvπinv x
-    rw [← hx]
-    simp only [map_mul, map_zpow, map_inv, MonoidHom.zpow_apply, MonoidHom.inv_apply]
-    have huu := hu u
-    simp only [map_zpow, MonoidHom.zpow_apply] at huu
-    change B (p π) (p ((integerUnitsToFieldUnits K) u)) ^ e = 1 at huu
-    rw [huu]
-    simp [hs]
-  have hclass : p (π ^ e) = 1 := by
-    apply NormalizedSymbolTransport.inverseTransport_left_nondegenerate
-      (KPHilbert.finiteRootsThree F ζ hζ q)
-      (ClassFieldTheory.finitePlaceAdicHilbertPairingFamily F 3 (KPHilbert.rootsThree F ζ hζ) q)
-      (ClassFieldTheory.finitePlaceAdicHilbertPairingFamily_isLocallyHilbert F 3
-        (KPHilbert.rootsThree F ζ hζ) q).2.2.1.1
-    intro b
-    induction b using QuotientGroup.induction_on with
-    | H x => exact hall x
-  obtain ⟨t, ht⟩ := (ClassFieldTheory.powerClass_eq_one_iff K 3 (π ^ e)).mp hclass
-  have hv := congrArg (fun x : Kˣ => valuationMap K (Additive.ofMul x)) ht
-  change valuationMap K (Additive.ofMul (t ^ (3 : ℕ))) =
-    valuationMap K (Additive.ofMul (π ^ e)) at hv
-  rw [valuationMap_ofMul_pow, valuationMap_ofMul_zpow, hvπ] at hv
-  apply he
-  apply (ZMod.intCast_zmod_eq_zero_iff_dvd e 3).mpr
-  refine ⟨-valuationMap K (Additive.ofMul t), ?_⟩
-  linarith
+            (KPTameCompact.unitInclusion F q u)))) : ℂ) ^ e) ≠ 1 := by apply @DedekindZetaZeroFree.KPTameTransposeLowShellSupport.exists_tame_cubic_unit_detecting_exponent <;> assumption
 
 theorem actual_noncubic_shell_unit_eigenvalue
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (q : HeightOneSpectrum (𝓞 F))
     (S : RawFiniteInducingData F ζ hζ q)
     (hgood : valuation (LocalField F q) (6 : LocalField F q) = 1)
     (P : Polarization S.heisenberg)
@@ -521,15 +459,14 @@ theorem integral_shell_eq_zero_of_unit_eigenfunction
     apply setIntegral_congr_ae hs
     filter_upwards with x hx
     exact hEigen x hx
-  have hfix : (∫ x in s, H x ∂μ) = c * ∫ x in s, H x ∂μ := h1.trans h2
   have hc1 : (1 - c) * (∫ x in s, H x ∂μ) = 0 := by
     rw [sub_mul, one_mul]
-    exact sub_eq_zero.mpr hfix
+    exact sub_eq_zero.mpr (h1.trans h2)
   have hzero : (∫ x in s, H x ∂μ) = 0 := by
     rcases mul_eq_zero.mp hc1 with h | h
     · exact absurd (sub_eq_zero.mp h) (Ne.symm hc)
     · exact h
-  simpa only [hs_def] using hzero
+  simpa using hzero
 
 end
 end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.GoodSphericalVector.NegativeShell
@@ -550,27 +487,22 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 
 namespace BruhatPhase
 open KPRankOneOpenCellKernel
-private lemma winv (K : Type*) [Field K] : (KubotaRankTwo.w K)⁻¹ = KubotaRankTwo.d K (-1) (-1) * KubotaRankTwo.w K := by
-  apply inv_eq_of_mul_eq_one_right
-  apply Units.ext
-  ext i j
-  fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]
-private lemma Xwinv (K : Type*) [Field K] : KubotaRankTwo.X K (KubotaRankTwo.w K)⁻¹ = -1 := by
-  rw [winv]
-  apply Units.ext
-  simp [KubotaRankTwo.X, KubotaRankTwo.x, Matrix.mul_apply]
-private lemma Xwnw (K : Type*) [Field K] (v : Kˣ) :
-    KubotaRankTwo.X K ((KubotaRankTwo.w K)⁻¹ * KubotaRankTwo.n K (-((v⁻¹ : Kˣ) : K)) * (KubotaRankTwo.w K)⁻¹) = -v⁻¹ := by
-  rw [winv]
-  apply Units.ext
-  simp [KubotaRankTwo.X, KubotaRankTwo.x, Matrix.mul_apply, Units.ne_zero]
+private alias winv := DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion.SmallTail.SignedBlockAlgebra.SignedWeylInversion.winv
+private alias Xwinv := DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion.SmallTail.SignedBlockAlgebra.SignedWeylInversion.Xwinv
+private alias Xwnw := DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion.SmallTail.SignedBlockAlgebra.SignedWeylInversion.Xwnw
 
-private lemma BoneL (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) 1 a = 1 :=
+section
+
+variable (a : (LocalField F q)ˣ)
+
+private lemma BoneL : KPHilbert.B3 F ζ hζ (Sum.inr q) 1 a = 1 :=
   KubotaDefectSymbolAlgebra.one_left _ _ _ (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).1 a
-private lemma BoneR (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) a 1 = 1 :=
+private lemma BoneR : KPHilbert.B3 F ζ hζ (Sum.inr q) a 1 = 1 :=
   KubotaDefectSymbolAlgebra.one_right _ _ _ (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.1 a
-private lemma BnegR (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) a (-1) = 1 :=
+private lemma BnegR : KPHilbert.B3 F ζ hζ (Sum.inr q) a (-1) = 1 :=
   (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 a |>.2.1
+
+end
 private lemma sigmanR (g : KubotaRankTwo.GL2 (LocalField F q)) (s : LocalField F q) :
     KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q) g (KubotaRankTwo.n (LocalField F q) s) = 1 := by
   simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, BoneL, BoneR]
@@ -586,11 +518,7 @@ private lemma sigwnw (v : (LocalField F q)ˣ) : KPLocalCover.sigmaTwo F ζ hζ (
   have hr : (-v⁻¹) / (-1) = v⁻¹ := by simp
   rw [hr, (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 v⁻¹ |>.1, BoneL]
   simp
-private lemma Xdnw (K : Type*) [Field K] (v : Kˣ) (s : K) :
-    KubotaRankTwo.X K (KubotaRankTwo.d K (v ^ 2) 1 * KubotaRankTwo.n K s * (KubotaRankTwo.w K)⁻¹) = -1 := by
-  rw [winv]
-  apply Units.ext
-  simp [KubotaRankTwo.X, KubotaRankTwo.x, Matrix.mul_apply]
+private alias Xdnw := DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion.SmallTail.SignedBlockAlgebra.SignedWeylInversion.Xdnw
 private lemma Bselfpow (a : (LocalField F q)ˣ) (m n : ℤ) :
     KPHilbert.B3 F ζ hζ (Sum.inr q) (a ^ m) (a ^ n) = 1 := by
   let BL (b : (LocalField F q)ˣ) : (LocalField F q)ˣ →* rootsOfUnity 3 F :=
@@ -608,9 +536,13 @@ private lemma Bselfpow (a : (LocalField F q)ˣ) (m n : ℤ) :
   change (KPHilbert.B3 F ζ hζ (Sum.inr q) a a ^ n) ^ m = 1
   rw [(KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 a |>.1]
   simp
+
+alias CubicUnitShells.Bselfpow := Bselfpow
 private lemma BnegL (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) (-1) a = 1 := by
   rw [(KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.1, BnegR]
   simp
+
+alias CubicUnitShells.BnegL := BnegL
 
 private lemma sigdnw (v : (LocalField F q)ˣ) (s : LocalField F q) :
     KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
@@ -621,21 +553,10 @@ private lemma sigdnw (v : (LocalField F q)ˣ) (s : LocalField F q) :
     KubotaRankTwo.det_d, inv_one, mul_one, div_one, one_mul, one_pow]
   rw [BnegL, BoneR]
   simp
-private lemma Xscalar (K : Type*) [Field K] (v : Kˣ) :
-    KubotaRankTwo.X K (Matrix.GeneralLinearGroup.scalar (Fin 2) v) = v := by
-  apply Units.ext
-  simp [KubotaRankTwo.X, KubotaRankTwo.x, Matrix.scalar]
-private lemma Xscalar_mul (K : Type*) [Field K] (v : Kˣ) (g : KubotaRankTwo.GL2 K) :
-    KubotaRankTwo.X K (Matrix.GeneralLinearGroup.scalar (Fin 2) v * g) = v * KubotaRankTwo.X K g := by
-  classical
-  apply Units.ext
-  simp only [KubotaRankTwo.X, Units.val_mk0, Units.val_mul]
-  unfold KubotaRankTwo.x
-  have he (i j : Fin 2) : (Matrix.GeneralLinearGroup.scalar (Fin 2) v * g) i j = (v : K) * g i j := by
-    fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, Matrix.scalar]
-  rw [he 1 0, he 1 1]
-  simp only [mul_eq_zero, v.ne_zero, false_or]
-  split_ifs <;> rfl
+
+alias CubicUnitShells.sigdnw := sigdnw
+private alias Xscalar := DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion.SmallTail.SignedBlockAlgebra.SignedWeylInversion.Xscalar
+private alias Xscalar_mul := DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion.SmallTail.SignedBlockAlgebra.SignedWeylInversion.Xscalar_mul
 private lemma sigscalar (v : (LocalField F q)ˣ) (s : LocalField F q) :
     KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
       (Matrix.GeneralLinearGroup.scalar (Fin 2) v⁻¹)
@@ -654,6 +575,8 @@ private lemma sigscalar (v : (LocalField F q)ˣ) (s : LocalField F q) :
     convert Bselfpow F ζ hζ q v (-2) 2 using 1 <;> simp
   simp only [map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w,
     KubotaRankTwo.det_d, inv_one, mul_one, ← inv_pow, hB, one_pow]
+
+alias CubicUnitShells.sigscalar := sigscalar
 
 theorem actual_bruhat_kappa_eq_one (v : (LocalField F q)ˣ) (s : LocalField F q) : KPRankOneOpenCellKernel.kappa F ζ hζ q v s = 1 := by
   rw [KPRankOneOpenCellKernel.kappa, bruhatLeft, bruhatRight, signedWeyl_eq_prescribed_signed]
@@ -690,14 +613,16 @@ private theorem shell_weyl_mem
   rw [hA]
   rfl
 
-theorem actual_compact_spherical_bruhat_value
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (P : Polarization S.heisenberg)
+alias CubicUnitShells.shell_weyl_mem := shell_weyl_mem
+
+section
+
+variable (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) (P : Polarization S.heisenberg)
     (f : sectionSpace S.borel P .plus 0)
-    (hfixed : ∀ k : KPTameCompact.K0 F q,
-      IPlus S.borel P
-        (((KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp
-          (KPGoodCompactSplitting.kStar F ζ hζ q ht)) k) f = f)
+    (hfixed : ∀ k : KPTameCompact.K0 F q, IPlus S.borel P (((KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp (KPGoodCompactSplitting.kStar F ζ hζ q ht)) k) f = f)
+
+include hfixed in
+theorem actual_compact_spherical_bruhat_value
     (v : (LocalField F q)ˣ)
     (hv : ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q) ∈ KPTameCompact.O F q) :
     f.val (S.borel.liftedW⁻¹ *
@@ -712,10 +637,10 @@ theorem actual_compact_spherical_bruhat_value
   let B := S.openCell P
   let k := (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp
     (KPGoodCompactSplitting.kStar F ζ hζ q ht)
-  have hw : S.borel.liftedW⁻¹ ∈ k.range :=
+  have hw :=
     k.range.inv_mem (shell_weyl_mem F ζ hζ q S ht)
-  have hn : (S.borel.upperRoot (Multiplicative.ofAdd
-      (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q))) : ActualCover F ζ hζ q) ∈ k.range := by
+  let upperRoot₀ := S.borel.upperRoot (Multiplicative.ofAdd (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q)))
+  have hn : (upperRoot₀ : ActualCover F ζ hζ q) ∈ k.range := by
     refine ⟨KPStandardLocalRootLifts.integralN F q
       ⟨-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q), ?_⟩, ?_⟩
     · exact (KPTameCompact.O F q).neg_mem hv
@@ -728,8 +653,7 @@ theorem actual_compact_spherical_bruhat_value
       rfl
   obtain ⟨a, ha⟩ := k.range.mul_mem (k.range.mul_mem hw hn) hw
   have hval : f.val (S.borel.liftedW⁻¹ *
-      (S.borel.upperRoot (Multiplicative.ofAdd
-        (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q))) : ActualCover F ζ hζ q) *
+      (upperRoot₀ : ActualCover F ζ hζ q) *
       S.borel.liftedW⁻¹) = f.val 1 := by
     have hh := congrArg (fun z : sectionSpace S.borel P .plus 0 => z.val 1) (hfixed a)
     change f.val (1 * k a) = f.val 1 at hh
@@ -742,19 +666,16 @@ theorem actual_compact_spherical_bruhat_value
   rw [← B.weyl_eq, ← B.upper_eq, ← B.upper_eq,
     ← B.upper_eq, ← B.torus_eq, ← B.central_eq] at hb
   have he : S.borel.liftedW⁻¹ *
-      (S.borel.upperRoot (Multiplicative.ofAdd (v : LocalField F q)) : ActualCover F ζ hζ q) =
-      ((S.borel.upperRoot (Multiplicative.ofAdd
-          (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q))) *
+      (S.borel.upperRoot (Multiplicative.ofAdd v) : ActualCover F ζ hζ q) =
+      ((upperRoot₀ *
         (S.borel.torus (B.rootTorus v))⁻¹ *
         (S.borel.torus (B.centralTorus (KPRankOneOpenCellKernel.kappa F ζ hζ q v 0)))⁻¹ :
           S.borel.B) : ActualCover F ζ hζ q) *
       (S.borel.liftedW⁻¹ *
-        (S.borel.upperRoot (Multiplicative.ofAdd
-          (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q))) : ActualCover F ζ hζ q) *
+        (upperRoot₀ : ActualCover F ζ hζ q) *
         S.borel.liftedW⁻¹) := by
     rw [hb]
-    have hi : (S.borel.upperRoot (Multiplicative.ofAdd
-        (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q))) : ActualCover F ζ hζ q) =
+    have hi : (upperRoot₀ : ActualCover F ζ hζ q) =
         (S.borel.upperRoot (Multiplicative.ofAdd
           ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q)) : ActualCover F ζ hζ q)⁻¹ := by
       rw [← Subgroup.coe_inv, ← map_inv]
@@ -763,14 +684,8 @@ theorem actual_compact_spherical_bruhat_value
     group
   rw [he, f.property.1, hval]
 
+include hfixed in
 theorem actual_compact_spherical_bruhat_coordinate
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (P : Polarization S.heisenberg)
-    (f : sectionSpace S.borel P .plus 0)
-    (hfixed : ∀ k : KPTameCompact.K0 F q,
-      IPlus S.borel P
-        (((KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp
-          (KPGoodCompactSplitting.kStar F ζ hζ q ht)) k) f = f)
     (v : (LocalField F q)ˣ)
     (hv : ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q) ∈ KPTameCompact.O F q)
     (t : actualTorus F ζ hζ q) :
@@ -806,18 +721,11 @@ theorem actual_compact_spherical_bruhat_coordinate
     rw [map_inv, B.coordinate_eq]
   simp only [map_mul, Module.End.mul_apply]
   rw [upperRoot_trivial, hci, map_smul, hr]
-  change _ = _
   simp only [Submodule.coe_smul, Pi.smul_apply, smul_eq_mul]
   ring
 
+include hfixed in
 theorem actual_compact_spherical_bruhat_coordinate_phase_free
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (P : Polarization S.heisenberg)
-    (f : sectionSpace S.borel P .plus 0)
-    (hfixed : ∀ k : KPTameCompact.K0 F q,
-      IPlus S.borel P
-        (((KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp
-          (KPGoodCompactSplitting.kStar F ζ hζ q ht)) k) f = f)
     (v : (LocalField F q)ˣ)
     (hv : ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q) ∈ KPTameCompact.O F q)
     (t : actualTorus F ζ hζ q) :
@@ -829,20 +737,14 @@ theorem actual_compact_spherical_bruhat_coordinate_phase_free
   rw [actual_compact_spherical_bruhat_coordinate F ζ hζ q S ht P f hfixed v hv t,
     BruhatPhase.actual_bruhat_kappa_eq_one, map_one, Units.val_one, inv_one, one_mul]
 
+include hfixed in
 theorem actual_compact_spherical_identity_unit_fixed
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (P : Polarization S.heisenberg)
-    (f : sectionSpace S.borel P .plus 0)
-    (hfixed : ∀ k : KPTameCompact.K0 F q,
-      IPlus S.borel P
-        (((KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp
-          (KPGoodCompactSplitting.kStar F ζ hζ q ht)) k) f = f)
     (u : (KPTameCompact.O F q)ˣ)
     (a : actualTorus F ζ hζ q)
     (ha : (a : ActualCover F ζ hζ q) =
       KPPGLLocalCover.A F ζ hζ (Sum.inr q) (KPTameCompact.unitInclusion F q u)) :
     tau P a (f.val 1) = f.val 1 := by
-  have hc : S.borel.coordinate a = KPTameCompact.unitInclusion F q u :=
+  have hc :=
     S.coordinate_lift a _ ha
   have hv : valuation (LocalField F q)
       ((KPTameCompact.unitInclusion F q u : (LocalField F q)ˣ) : LocalField F q) = 1 := by
@@ -869,8 +771,12 @@ theorem actual_compact_spherical_identity_unit_fixed
   rw [hb] at he
   simpa [inducingAction, hs, borelAction, S.borel.retract_torus] using he
 
+end
+
+local notation "LocalCompletion" => LocalField F q
+
 theorem actual_rootTorus_cube_mul (P : Polarization S.heisenberg)
-    (a u : (LocalField F q)ˣ) :
+    (a u : LocalCompletionˣ) :
     (S.openCell P).rootTorus (a ^ 3 * u) =
       (S.borel.cubeLift (a ^ 2) : actualTorus F ζ hζ q) *
         (S.openCell P).rootTorus u := by
@@ -879,9 +785,7 @@ theorem actual_rootTorus_cube_mul (P : Polarization S.heisenberg)
   rw [S.cube_actual, ← S.torus_full, (S.openCell P).torus_eq,
     KPRankOneOpenCellKernel.hLift, ← S.torus_full, (S.openCell P).torus_eq,
     KPRankOneOpenCellKernel.hLift, KPPGLLocalCover.A_mul]
-  have hb : KPHilbert.B3 F ζ hζ (Sum.inr q) ((a ^ 2) ^ 3) (u ^ 2) = 1 :=
-    ((KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.1 (a ^ 2) (u ^ 2)).1
-  rw [hb, one_pow, map_one, one_mul]
+  rw [(((KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.1 (a ^ 2) (u ^ 2)).1), one_pow, map_one, one_mul]
   congr 1
   simp only [mul_pow, ← pow_mul]
 
@@ -893,40 +797,40 @@ theorem actual_compact_spherical_cube_unit_bruhat_coordinate
       IPlus S.borel P
         (((KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp
           (KPGoodCompactSplitting.kStar F ζ hζ q ht)) k) f = f)
-    (a : (LocalField F q)ˣ) (u : (KPTameCompact.O F q)ˣ)
+    (a : LocalCompletionˣ) (u : (KPTameCompact.O F q)ˣ)
     (ha : (((a ^ 3 * KPTameCompact.unitInclusion F q u)⁻¹ :
-      (LocalField F q)ˣ) : LocalField F q) ∈ KPTameCompact.O F q)
+      LocalCompletionˣ) : LocalCompletion) ∈ KPTameCompact.O F q)
     (t : actualTorus F ζ hζ q) :
     (f.val (S.borel.liftedW⁻¹ *
       (S.borel.upperRoot (Multiplicative.ofAdd
-        (a ^ 3 * KPTameCompact.unitInclusion F q u : (LocalField F q)ˣ)) :
+        (a ^ 3 * KPTameCompact.unitInclusion F q u : LocalCompletionˣ)) :
           ActualCover F ζ hζ q))).val t =
-      normPower (LocalField F q) ((a ^ 3)⁻¹ ^ 2) (2 / 3) * (f.val 1).val t := by
-  have hu : localAbs (LocalField F q) (KPTameCompact.unitInclusion F q u) = 1 := by
-    have hv : valuation (LocalField F q)
-        ((KPTameCompact.unitInclusion F q u : (LocalField F q)ˣ) : LocalField F q) = 1 :=
+      normPower LocalCompletion ((a ^ 3)⁻¹ ^ 2) (2 / 3) * (f.val 1).val t := by
+  have hu : localAbs LocalCompletion (KPTameCompact.unitInclusion F q u) = 1 := by
+    have hv : valuation LocalCompletion
+        ((KPTameCompact.unitInclusion F q u : LocalCompletionˣ) : LocalCompletion) = 1 :=
       (Valuation.Integers.isUnit_iff_valuation_eq_one
-        (Valuation.integer.integers (valuation (LocalField F q)))).mp u.isUnit
+        (Valuation.integer.integers (valuation LocalCompletion))).mp u.isUnit
     simp [localAbs, hv]
-  have hui : localAbs (LocalField F q) ((KPTameCompact.unitInclusion F q u)⁻¹ ^ 2) = 1 := by
-    have hv : valuation (LocalField F q)
-        ((KPTameCompact.unitInclusion F q (u⁻¹ ^ 2) : (LocalField F q)ˣ) : LocalField F q) = 1 :=
+  have hui : localAbs LocalCompletion ((KPTameCompact.unitInclusion F q u)⁻¹ ^ 2) = 1 := by
+    have hv : valuation LocalCompletion
+        ((KPTameCompact.unitInclusion F q (u⁻¹ ^ 2) : LocalCompletionˣ) : LocalCompletion) = 1 :=
       (Valuation.Integers.isUnit_iff_valuation_eq_one
-        (Valuation.integer.integers (valuation (LocalField F q)))).mp (u⁻¹ ^ 2).isUnit
+        (Valuation.integer.integers (valuation LocalCompletion))).mp (u⁻¹ ^ 2).isUnit
     simp only [map_pow, map_inv] at hv
     unfold localAbs
     rw [hv]
     simp
-  have hm : normPower (LocalField F q)
+  have hm : normPower LocalCompletion
       ((a ^ 3 * KPTameCompact.unitInclusion F q u)⁻¹ ^ 2) (1 / 2) =
-      normPower (LocalField F q) ((a ^ 3)⁻¹ ^ 2) (1 / 2) := by
+      normPower LocalCompletion ((a ^ 3)⁻¹ ^ 2) (1 / 2) := by
     simp only [normPower, mul_inv, mul_pow, localAbs_mul, hui, mul_one]
   rw [actual_compact_spherical_bruhat_coordinate F ζ hζ q S ht P f hfixed _ ha t,
     BruhatPhase.actual_bruhat_kappa_eq_one, map_one, Units.val_one, inv_one,
     one_mul, hm, actual_rootTorus_cube_mul, mul_inv_rev, map_mul,
     Module.End.mul_apply, ← Subgroup.coe_inv, tau_hasCentralCharacter]
   have hc : (S.heisenberg.ω.toMonoidHom ((S.borel.cubeLift (a ^ 2))⁻¹) : ℂ) =
-      normPower (LocalField F q) ((a ^ 2)⁻¹ ^ 3) (1 / 6) := by
+      normPower LocalCompletion ((a ^ 2)⁻¹ ^ 3) (1 / 6) := by
     change (S.heisenberg.ω ((S.borel.cubeLift (a ^ 2))⁻¹) : ℂ) = _
     rw [← S.borel.cubeLift.map_inv, S.borel.exceptional_cube]
   rw [hc, map_smul]
@@ -950,29 +854,9 @@ theorem actual_compact_spherical_cube_unit_bruhat_coordinate
   congr 1
   ring
 
-theorem actual_centralTorus_action (P : Polarization S.heisenberg)
-    (e : rootsOfUnity 3 F) (V : InducedModule P) :
-    tau P ((S.openCell P).centralTorus e) V =
-      (ordinaryIota F ζ hζ e : ℂ) • V := by
-  have hg := (S.openCell P).genuine .plus e V
-  simpa [inducingAction, inducingScalar, deltaHalf, borelAction,
-    S.borel.retract_torus, (S.openCell P).central_coordinate, normPower,
-    localAbs_one, S.openCell_ordinary] using hg
+alias actual_centralTorus_action := NegativeShell.central
 
-theorem actual_rootTorus_mul (P : Polarization S.heisenberg)
-    (a b : (LocalField F q)ˣ) :
-    (S.openCell P).rootTorus a * (S.openCell P).rootTorus b =
-      (S.openCell P).centralTorus
-        (KPHilbert.B3 F ζ hζ (Sum.inr q) (a ^ 2) (b ^ 2) ^ 2) *
-          (S.openCell P).rootTorus (a * b) := by
-  apply Subtype.ext
-  simp only [Subgroup.coe_mul]
-  rw [← S.torus_full, (S.openCell P).torus_eq,
-    ← S.torus_full, (S.openCell P).torus_eq,
-    ← S.torus_full, (S.openCell P).central_eq,
-    ← S.torus_full, (S.openCell P).torus_eq]
-  simp only [KPRankOneOpenCellKernel.hLift]
-  rw [KPPGLLocalCover.A_mul, mul_pow]
+alias actual_rootTorus_mul := NegativeShell.rootmul
 
 theorem actual_cubic_sphere_unit_decomposition
     (a v : (LocalField F q)ˣ)
@@ -981,16 +865,17 @@ theorem actual_cubic_sphere_unit_decomposition
     ∃ u : (KPTameCompact.O F q)ˣ,
       v = a ^ 3 * KPTameCompact.unitInclusion F q u := by
   let w : (LocalField F q)ˣ := v / a ^ 3
-  have hw : valuation (LocalField F q) (w : LocalField F q) = 1 := by
-    change valuation (LocalField F q) (v / a ^ 3 : (LocalField F q)ˣ) = 1
+  let valuation₀ := valuation (LocalField F q)
+  have hw : valuation₀ (w : LocalField F q) = 1 := by
+    change valuation₀ (v / a ^ 3 : (LocalField F q)ˣ) = 1
     rw [Units.val_div_eq_div_val, map_div₀, hv, div_self]
-    exact (map_ne_zero (valuation (LocalField F q))).mpr (Units.ne_zero _)
+    exact (map_ne_zero (valuation₀)).mpr (Units.ne_zero _)
   let z : KPTameCompact.O F q := ⟨(w : LocalField F q), by
-    change valuation (LocalField F q) (w : LocalField F q) ≤ 1
+    change valuation₀ w ≤ 1
     rw [hw]⟩
   have hz : IsUnit z :=
     (Valuation.Integers.isUnit_iff_valuation_eq_one
-      (Valuation.integer.integers (valuation (LocalField F q)))).mpr hw
+      (Valuation.integer.integers (valuation₀))).mpr hw
   obtain ⟨u, hu⟩ := hz
   refine ⟨u, ?_⟩
   have hwu : KPTameCompact.unitInclusion F q u = w := by
@@ -1046,7 +931,7 @@ theorem actual_compact_spherical_negative_shell_coordinate
           (f.val 1).val t
       else 0 := by
   classical
-  let H : LocalField F q → ℂ := fun x =>
+  let H := fun x =>
     (f.val (S.borel.liftedW⁻¹ *
       (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q))).val t
   by_cases hn : 3 ∣ n + 1
@@ -1056,15 +941,13 @@ theorem actual_compact_spherical_negative_shell_coordinate
       (fun a v ha hv => actual_compact_spherical_cubic_sphere_coordinate
         F ζ hζ q S ht P f hfixed a v ha hv t) n hn
   · rw [if_neg hn]
-    have hBruhat := fun (v : (LocalField F q)ˣ)
-        (hv : ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q) ∈ KPTameCompact.O F q) =>
+    have hBruhat := fun v
+        hv =>
       actual_compact_spherical_bruhat_coordinate_phase_free
         F ζ hζ q S ht P f hfixed v hv t
     have hUnit : ∀ u : (KPTameCompact.O F q)ˣ,
         tau P ((S.openCell P).rootTorus (KPTameCompact.unitInclusion F q u))
-          (f.val 1) = f.val 1 := by
-      intro u
-      exact actual_compact_spherical_identity_unit_fixed F ζ hζ q S ht P f
+          (f.val 1) = f.val 1 := fun u => actual_compact_spherical_identity_unit_fixed F ζ hζ q S ht P f
         hfixed (u ^ 2) ((S.openCell P).rootTorus (KPTameCompact.unitInclusion F q u))
         (by rw [← S.torus_full, (S.openCell P).torus_eq,
           KPRankOneOpenCellKernel.hLift, map_pow])

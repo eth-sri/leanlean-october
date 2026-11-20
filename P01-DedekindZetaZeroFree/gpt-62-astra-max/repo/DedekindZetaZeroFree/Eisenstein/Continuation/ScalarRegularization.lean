@@ -9,14 +9,14 @@ open scoped Classical NumberField Topology
 open Filter
 namespace DedekindZetaZeroFree.SharedSource
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.FiniteWordNumerator renaming finite_word_numerator → finite_word_numerator
-open _root_.DedekindZetaZeroFree.EisensteinSmoothGerms.ScalarSource renaming normalize_div_chamber → normalize_div_chamber
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.FiniteWordNumerator (finite_word_numerator)
+open _root_.DedekindZetaZeroFree.EisensteinSmoothGerms.ScalarSource (normalize_div_chamber)
 set_option maxHeartbeats 1600000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (μ : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ μ P)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (μ : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ μ P)
 
 include C μ P H in
 
@@ -30,12 +30,11 @@ theorem literal_scalar_clearing
       ∀ s ∈ Metric.ball (0 : ℂ) r, s ≠ 0 → N s = s • E s := by
   obtain ⟨Q, A, T, r, hQ, hQ0, hA, hAc, hr, hb, hQne, hT, hclear⟩ :=
     finite_word_numerator F ζ hζ C μ P H K hK f
-  let E : ℂ → Functions F ζ hζ := fun s g =>
+  let E := fun s g =>
     toMeromorphicNFOn (fun z => A z g / Q z) KPContinuation.spectralDomain s
-  let N : ℂ → Functions F ζ hζ := fun s g => T s g / Q s
   have hE (g) : MeromorphicNFOn (fun s => E s g) KPContinuation.spectralDomain :=
     meromorphicNFOn_toMeromorphicNFOn _ _
-  refine ⟨E, N, r, hE, ?_, hr, hb, ?_, ?_⟩
+  refine ⟨E, (fun s g => T s g / Q s), r, hE, ?_, hr, hb, ?_, ?_⟩
   · intro s hs g
     exact normalize_div_chamber KPContinuation.spectralDomain_isConnected.isPreconnected
       KPContinuation.convergenceHalfPlane_subset_spectralDomain
@@ -48,13 +47,9 @@ theorem literal_scalar_clearing
     exact (hT g s hs).div (hQ s (hb hs)) (hQne s hs)
   · intro s hs hs0
     funext g
-    let B : ℂ → ℂ := fun z => T z g / Q z / z
-    have hBa : AnalyticAt ℂ B s :=
-      ((hT g s hs).div (hQ s (hb hs)) (hQne s hs)).div analyticAt_id hs0
+    let B := fun z => T z g / Q z / z
     have he : (fun z => E z g) =ᶠ[𝓝[≠] s] B := by
-      have hm := (hA g).div hQ.meromorphicOn
-      have hn := hm.toMeromorphicNFOn_eq_self_on_nhdsNE (hb hs)
-      filter_upwards [hn, nhdsWithin_le_nhds (Metric.isOpen_ball.mem_nhds hs),
+      filter_upwards [(((hA g).div hQ.meromorphicOn).toMeromorphicNFOn_eq_self_on_nhdsNE (hb hs)), nhdsWithin_le_nhds (Metric.isOpen_ball.mem_nhds hs),
         nhdsWithin_le_nhds (eventually_ne_nhds hs0)] with z hz hzr hz0
       change E z g = A z g / Q z at hz
       rw [hz]
@@ -62,7 +57,7 @@ theorem literal_scalar_clearing
       rw [hclear z hzr hz0 g]
       field_simp
     have heq := (((hE g) (hb hs)).eventuallyEq_nhdsNE_iff_eventuallyEq_nhds
-      hBa.meromorphicNFAt).mp he |>.eq_of_nhds
+      (((hT g s hs).div (hQ s (hb hs)) (hQne s hs)).div analyticAt_id hs0).meromorphicNFAt).mp he |>.eq_of_nhds
     change E s g = T s g / Q s / s at heq
     change T s g / Q s = s * E s g
     rw [heq]
@@ -103,7 +98,7 @@ theorem literal_exceptional_germ_exists
   obtain ⟨M, _⟩ := KPGlobalTorusFiniteStages.compatibleModelData_exists F ζ hζ L
   obtain ⟨μ, _, _, P, ⟨J⟩⟩ :=
     kp_ms_fixed_haar_disintegration F ζ hζ
-      (MeasureTheory.Measure.haar : MeasureTheory.Measure (G F ζ hζ)) inferInstance
+      MeasureTheory.Measure.haar inferInstance
   exact literal_exceptional_germ F ζ hζ M μ P J K hK
 end OwnedGeometry
 

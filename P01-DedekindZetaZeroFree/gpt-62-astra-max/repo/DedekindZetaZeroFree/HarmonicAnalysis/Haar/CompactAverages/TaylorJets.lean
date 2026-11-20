@@ -28,13 +28,13 @@ open MeasureTheory Set Filter Topology
   have hslice (y : H) (hy : y ∈ s) : Continuous (f y) := by
     rw [← continuousOn_univ]
     exact hf.comp (show ContinuousOn (fun k : K => (y, k)) univ from
-      (continuous_const.prodMk continuous_id).continuousOn) (by intro k hk; exact ⟨hy, hk⟩)
+      (continuous_const.prodMk continuous_id).continuousOn) (fun k hk => ⟨hy, hk⟩)
   have hslice' : Continuous (f' x) := by
     rw [← continuousOn_univ]
     exact hf'.comp (show ContinuousOn (fun k : K => (x, k)) univ from
-      (continuous_const.prodMk continuous_id).continuousOn) (by intro k hk; exact ⟨hx, hk⟩)
+      (continuous_const.prodMk continuous_id).continuousOn) (fun k hk => ⟨hx, hk⟩)
   apply hasFDerivAt_integral_of_dominated_of_fderiv_le
-    (F := f) (F' := f') (bound := fun _ => M) (mem_interior_iff_mem_nhds.mp htn)
+       (mem_interior_iff_mem_nhds.mp htn)
   · filter_upwards [hs.mem_nhds hx] with y hy
     exact ((hslice y hy).stronglyMeasurable_of_hasCompactSupport
       (HasCompactSupport.of_compactSpace _)).aestronglyMeasurable
@@ -80,22 +80,17 @@ theorem contDiffOn_average_of_taylor
     letI : NormedAddCommGroup (H [×m+1]→L[ℝ] E) := ContinuousMultilinearMap.normedAddCommGroup
     let L := continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (m + 1) => H) E
     have hd : ∀ y ∈ s, ∀ k, HasFDerivAt (fun z => p z k m)
-        (p y k (m + 1)).curryLeft y := by
-      intro y hy k
-      exact ((hp k).fderivWithin m hm y hy).hasFDerivAt (hs.mem_nhds hy)
-    have hc' : ContinuousOn (fun z : H × K => (p z.1 z.2 (m + 1)).curryLeft)
-        (s ×ˢ univ) := L.continuous.comp_continuousOn (hc (m + 1))
+        (p y k (m + 1)).curryLeft y := fun y hy k => ((hp k).fderivWithin m hm y hy).hasFDerivAt (hs.mem_nhds hy)
     have h := hasFDerivAt_average_general μ s hs (fun y k => p y k m)
-      (fun y k => (p y k (m + 1)).curryLeft) (hc m) hc' hd x hx
+      (fun y k => (p y k (m + 1)).curryLeft) (hc m) (L.continuous.comp_continuousOn (hc (m + 1))) hd x hx
     have he : (∫ k, (p x k (m + 1)).curryLeft ∂μ) =
         (∫ k, p x k (m + 1) ∂μ).curryLeft := by
       have hcp : Continuous (fun k => p x k (m + 1)) := by
         rw [← continuousOn_univ]
         exact (hc (m + 1)).comp (show ContinuousOn (fun k : K => (x, k)) univ from
           (continuous_const.prodMk continuous_id).continuousOn)
-          (by intro k hk; exact ⟨hx, hk⟩)
-      have hi := hcp.integrable_of_hasCompactSupport (μ := μ) (HasCompactSupport.of_compactSpace _)
-      let L' : (H [×m+1]→L[ℝ] E) ≃L[ℝ] (H →L[ℝ] H [×m]→L[ℝ] E) :=
+          (fun k hk => ⟨hx, hk⟩)
+      let L' :=
         L.toContinuousLinearEquiv
       exact ContinuousLinearEquiv.integral_comp_comm (𝕜 := ℝ)
         (E := H [×m+1]→L[ℝ] E) (F := H →L[ℝ] H [×m]→L[ℝ] E)
@@ -133,18 +128,14 @@ theorem joint_spatial_jets_on
   | succ n ih =>
     intro p hp
     apply ContDiffAt.contDiffWithinAt
-    have hi : ContDiffAt ℝ (⊤ : ℕ∞)
-        (fun q : P × E => iteratedFDeriv ℝ n (fun x => f (q.1, x)) q.2) p :=
-      ih.contDiffAt (hW.mem_nhds hp)
     have hd : ContDiffAt ℝ (⊤ : ℕ∞) (fun q : P × E =>
-        fderiv ℝ (iteratedFDeriv ℝ n (fun x => f (q.1, x))) q.2) p := by
-      exact (hi.comp (p, p.2) (contDiffAt_fst.fst.prodMk contDiffAt_snd)).fderiv
+        fderiv ℝ (iteratedFDeriv ℝ n (fun x => f (q.1, x))) q.2) p := ((ih.contDiffAt (hW.mem_nhds hp)).comp (p, p.2) (contDiffAt_fst.fst.prodMk contDiffAt_snd)).fderiv
         contDiffAt_snd (by simp)
     simp only [iteratedFDeriv_succ_eq_comp_left, Function.comp_apply]
     convert (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => E) V).symm.toContinuousLinearEquiv.toContinuousLinearMap.contDiff.contDiffAt.comp p hd using 1
     rfl
 
-open _root_.DedekindZetaZeroFree.PGLComplex renaming target_mk → target_mk
+open _root_.DedekindZetaZeroFree.PGLComplex (target_mk)
 
 variable (F : Type) [Field F] [NumberField F]
 
@@ -171,7 +162,7 @@ private theorem matrixClass_continuousAt (M : Mat F) (hM : M ∈ matrixDomain F)
   apply continuousAt_pi.mpr
   intro w
   apply (QuotientGroup.continuous_mk).continuousAt.comp
-  apply (Units.isOpenEmbedding_val (R := Matrix (Fin 2) (Fin 2) ℂ)).isEmbedding.isInducing.continuousAt_iff.mpr
+  apply (Units.isOpenEmbedding_val).isEmbedding.isInducing.continuousAt_iff.mpr
   apply ContinuousAt.congr_of_eventuallyEq (continuous_apply w).continuousAt
   filter_upwards [(matrixDomain_open F).mem_nhds hM] with N hN
   simp [matrixClass, hN w, Matrix.GeneralLinearGroup.mkOfDetNeZero, Function.comp_def]
@@ -213,31 +204,28 @@ private theorem translatedMatrix_class (l r : Mat F) (hl : l ∈ matrixDomain F)
   intro i j
   rfl
 
- def matrixCoordinates (M : Mat F) : Y F := fun w => PGLComplex.matrixRatios (M w)
+ section
 
-private theorem matrixCoordinates_smoothAt (M : Mat F) (hM : ∀ w, M w 0 0 ≠ 0) :
+variable (M : Mat F)
+
+def matrixCoordinates : Y F := fun w => PGLComplex.matrixRatios (M w)
+
+private theorem matrixCoordinates_smoothAt (hM : ∀ w, M w 0 0 ≠ 0) :
     ContDiffAt ℝ (⊤ : ℕ∞) (matrixCoordinates F) M := by
   apply contDiffAt_pi.mpr
   intro w
   exact (PGLComplex.contDiffAt_matrixRatios (M w) (hM w)).comp M
     (contDiff_apply ℝ _ w).contDiffAt
 
-private theorem matrixCoordinates_eq (M : Mat F) (hM : M ∈ matrixDomain F) :
+private theorem matrixCoordinates_eq (hM : M ∈ matrixDomain F) :
     matrixCoordinates F M = fun w => PGLComplex.affineInverse (matrixClass F M w) := by
   funext w
   simp only [matrixCoordinates, matrixClass, dif_pos (hM w)]
   exact (PGLComplex.matrixRatios_mk (Matrix.GeneralLinearGroup.mkOfDetNeZero (M w) (hM w))).symm
 
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming affineProductChart → affineProductChart
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming affineProductChart_source → affineProductChart_source
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming affineProductChart_target → affineProductChart_target
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming affineProductChart_apply → affineProductChart_apply
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming affineProductChart_symm_apply → affineProductChart_symm_apply
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming affineDomain_open → affineDomain_open
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming gaussTarget_open → gaussTarget_open
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming affineTarget_one → affineTarget_one
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming fromAffine_contDiff → fromAffine_contDiff
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming actualSmoothBridge → actualSmoothBridge
+end
+
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel (affineProductChart affineProductChart_source affineProductChart_target affineProductChart_apply affineProductChart_symm_apply affineDomain_open gaussTarget_open affineTarget_one fromAffine_contDiff actualSmoothBridge)
 
 private theorem matrixCoordinates_reconstruct (M : Mat F) (hM : M ∈ matrixDomain F)
     (ht : matrixClass F M ∈ gaussTarget F) :
@@ -284,7 +272,7 @@ theorem matrix_pullback_smooth {V : Type*} [NormedAddCommGroup V]
   intro M hM
   apply ContDiffAt.contDiffWithinAt
   let a := matrixClass F M
-  let C : Mat F := fun w => ((a⁻¹) w).out.val
+  let C := fun w => ((a⁻¹) w).out.val
   have hC : C ∈ matrixDomain F := fun w => Matrix.GeneralLinearGroup.det_ne_zero _
   let T : Mat F → Mat F := fun N w => C w * N w
   have hTs : ContDiff ℝ (⊤ : ℕ∞) T := by
@@ -314,10 +302,8 @@ theorem matrix_pullback_smooth {V : Type*} [NormedAddCommGroup V]
     rw [dite_eq_left (hTM w)] at ht
     exact (target_mk _).mp ht
   have hcoord := (matrixCoordinates_smoothAt F (T M) hden).comp M hTs.contDiffAt
-  have hre := matrixCoordinates_reconstruct F (T M) hTM htarget
-  have hfs := (hf a).contDiffAt ((affineDomain_open F).mem_nhds hre.1)
-  apply (hfs.comp M hcoord).congr_of_eventuallyEq
-  have hcont : ContinuousAt (fun N => matrixClass F (T N)) M :=
+  apply (((hf a).contDiffAt ((affineDomain_open F).mem_nhds (matrixCoordinates_reconstruct F (T M) hTM htarget).1)).comp M hcoord).congr_of_eventuallyEq
+  have hcont :=
     (matrixClass_continuousAt F (T M) hTM).comp hTs.continuous.continuousAt
   filter_upwards [(matrixDomain_open F).mem_nhds hM,
     hcont.preimage_mem_nhds ((gaussTarget_open F).mem_nhds htarget)] with N hN ht
@@ -367,8 +353,7 @@ theorem localMatrixLift_continuousAt (a : L F) :
   have h1 : (1 : L F) ∈ (affineProductChart F).target := by
     rw [affineProductChart_target F]
     exact affineTarget_one F
-  have hi : ContinuousAt (fun b : L F => (affineProductChart F).symm (a⁻¹ * b)) a := by
-    exact ((affineProductChart F).symm.continuousAt h1).comp_of_eq
+  have hi : ContinuousAt (fun b : L F => (affineProductChart F).symm (a⁻¹ * b)) a := ((affineProductChart F).symm.continuousAt h1).comp_of_eq
       (continuous_const.mul continuous_id).continuousAt (by simp)
   apply continuousAt_pi.mpr
   intro w
@@ -376,8 +361,7 @@ theorem localMatrixLift_continuousAt (a : L F) :
   intro i
   apply continuousAt_pi.mpr
   intro j
-  have hm : ContinuousAt (fun b : L F =>
-      PGLComplex.affineMatrix ((affineProductChart F).symm (a⁻¹ * b) w)) a :=
+  have hm :=
     PGLComplex.contDiff_affineMatrix.continuous.continuousAt.comp
       ((continuous_apply w).continuousAt.comp hi)
   simp only [localMatrixLift, Matrix.mul_apply, Fin.sum_univ_two]
@@ -412,7 +396,7 @@ theorem localMatrixLift_reconstruct (a b : L F)
       PGLComplex.affineMatrix (y w) from rfl, matrixClass_mul F _ _ hC hA, matrixClass_out F]
   have hh : matrixClass F (fun w => PGLComplex.affineMatrix (y w)) = affineEll F y := by
     funext w
-    have hd : (PGLComplex.affineMatrix (y w)).det ≠ 0 := hA w
+    have hd := hA w
     simp only [matrixClass, dite_eq_left hd, affineEll, PGLComplex.affinePoint,
       dite_eq_left (show PGLComplex.delta (y w) ≠ 0 from hy w)]
   rw [hh, he]
@@ -442,12 +426,10 @@ private theorem compact_parameter_spatial_jets
     (show (l p.2)⁻¹ * l p.2 ∈ gaussTarget F by simpa using affineTarget_one F)
   have hR := localMatrixLift_reconstruct F (r p.2) (r p.2)
     (show (r p.2)⁻¹ * r p.2 ∈ gaussTarget F by simpa using affineTarget_one F)
-  have hML : ContinuousAt (fun q : Y F × K => ML (l q.2)) p :=
-    (localMatrixLift_continuousAt F (l p.2)).comp_of_eq (hl.comp continuous_snd).continuousAt rfl
-  have hMR : ContinuousAt (fun q : Y F × K => MR (r q.2)) p :=
+  have hMR :=
     (localMatrixLift_continuousAt F (r p.2)).comp_of_eq (hr.comp continuous_snd).continuousAt rfl
   have hc := (translated_spatial_jets_continuousAt F f hf _ _ hL.1 hR.1 _ hp.1 n).comp_of_eq
-    ((hML.prodMk hMR).prodMk continuousAt_fst) rfl
+    ((((localMatrixLift_continuousAt F (l p.2)).comp_of_eq (hl.comp continuous_snd).continuousAt rfl).prodMk hMR).prodMk continuousAt_fst) rfl
   have heL : ∀ᶠ q : Y F × K in 𝓝 p, ML (l q.2) ∈ matrixDomain F ∧
       matrixClass F (ML (l q.2)) = l q.2 :=
     (hl.comp continuous_snd).continuousAt (localMatrixLift_eventually F (l p.2))
@@ -466,15 +448,12 @@ private theorem compact_parameter_slice_smooth
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
     (f : L F → V) (hf : AffineSmooth F f) (l r : L F) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => f (l * affineEll F x * r)) (affineDomain F) := by
-  let ML : Mat F := fun w => (l w).out.val
-  let MR : Mat F := fun w => (r w).out.val
+  let ML := fun w => (l w).out.val
+  let MR := fun w => (r w).out.val
   have hL : ML ∈ matrixDomain F := fun w => Matrix.GeneralLinearGroup.det_ne_zero _
   have hR : MR ∈ matrixDomain F := fun w => Matrix.GeneralLinearGroup.det_ne_zero _
-  have hc : ContDiff ℝ (⊤ : ℕ∞) (fun x : Y F => translatedMatrix F ((ML,MR),x)) :=
-    (translatedMatrix_smooth F).comp (contDiff_const.prodMk contDiff_id)
-  have H := (matrix_pullback_smooth F f hf).comp hc.contDiffOn
-    (fun x hx => translatedMatrix_mem F ML MR hL hR x hx)
-  apply H.congr
+  apply ((matrix_pullback_smooth F f hf).comp ((translatedMatrix_smooth F).comp (contDiff_const.prodMk contDiff_id)).contDiffOn
+    (fun x hx => translatedMatrix_mem F ML MR hL hR x hx)).congr
   intro x hx
   change f (l * affineEll F x * r) = f (matrixClass F (translatedMatrix F ((ML,MR),x)))
   rw [translatedMatrix_class F ML MR hL hR x hx, matrixClass_out F, matrixClass_out F]

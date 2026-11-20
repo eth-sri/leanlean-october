@@ -13,13 +13,13 @@ namespace DedekindZetaZeroFree.RootDerivatives
 open FourierContinuation
 open FourierContinuation.LiteralSource MomentSources FourierContinuation.HCGeneration TensorActionSource KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 local notation "H" => actualImageData R P C μ hμ
 local notation "W" => actualLocal R H
 local notation "E" => bad R.A P C
@@ -39,12 +39,10 @@ theorem actual_initial_repeated_realization
   have he : sourceStageQuotient R H E (PiTensorProduct.tprod ℂ u)=PiTensorProduct.tprod ℂ x := by
     rw [sourceStageQuotient,PiTensorProduct.map_tprod]
     exact congrArg (PiTensorProduct.tprod ℂ) (funext hu)
-  let y := RestrictedTensorSimple.stageInclusion (Plus R.A P C) (plusReference R.A P C)
-    E ⟨E,le_rfl⟩ (PiTensorProduct.tprod ℂ u)
-  let Q := repeatedCoreSources R P C y
+  let Q := repeatedCoreSources R P C (RestrictedTensorSimple.stageInclusion (Plus R.A P C) (plusReference R.A P C)
+    E ⟨E,le_rfl⟩ (PiTensorProduct.tprod ℂ u))
     (coreFlatInsertion_initial_exterior_spherical R P C hC (PiTensorProduct.tprod ℂ u))
-  let B : JointRootAlignedSources R N := ⟨hR,N,rfl,Q⟩
-  obtain ⟨T⟩ := SharedSource.selected_realization_exists  R B
+  obtain ⟨T⟩ := SharedSource.selected_realization_exists R (⟨hR,N,rfl,Q⟩)
   refine ⟨Q,T,?_⟩
   intro v
   rw [←he,actualCoreResidue_source_stage]

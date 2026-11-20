@@ -20,13 +20,13 @@ private theorem lattice_count {E : Type*} [NormedAddCommGroup E] [NormedSpace �
         s.Finite ∧ (s.ncard : ℝ) ≤ C * R ^ Fintype.card ι := by
   classical
   let L := b.equivFunL.toContinuousLinearMap
-  let A : ℝ := ‖L‖ + 1
+  let A := ‖L‖ + 1
   have hA : 0 < A := by dsimp [A]; positivity
   refine ⟨(2 * A + 3) ^ Fintype.card ι, by positivity, ?_⟩
   intro R hR s hs
-  let N : ℤ := ⌈A * R⌉
+  let N := ⌈A * R⌉
   let t := Fintype.piFinset (fun _ : ι => Finset.Icc (-N) N)
-  let f : E → ι → ℤ := fun x i => ⌊b.repr x i⌋
+  let f := fun x i => ⌊b.repr x i⌋
   have hrepr (x : E) (hx : x ∈ s) (i : ι) : (f x i : ℝ) = b.repr x i := by
     obtain ⟨z, hz⟩ := (b.mem_span_iff_repr_mem ℤ x).mp (hs x hx).1 i
     simpa [f, ← hz] using (Int.floor_intCast (R := ℝ) z)
@@ -36,10 +36,10 @@ private theorem lattice_count {E : Type*} [NormedAddCommGroup E] [NormedSpace �
     intro i
     have hb : |b.repr x i| ≤ A * R := by
       calc
-        |b.repr x i| = ‖L x i‖ := by simp [L, Basis.equivFunL_apply, Real.norm_eq_abs]
+        |b.repr x i| = ‖L x i‖ := by rfl
         _ ≤ ‖L x‖ := norm_le_pi_norm _ _
         _ ≤ ‖L‖ * ‖x‖ := L.le_opNorm x
-        _ ≤ A * R := mul_le_mul (by dsimp [A]; linarith) (hs x hx).2
+        _ ≤ A * R := mul_le_mul (by linarith) (hs x hx).2
           (norm_nonneg _) (le_of_lt hA)
     have hn : A * R ≤ (N : ℝ) := Int.le_ceil _
     simp only [Finset.mem_Icc]
@@ -66,13 +66,13 @@ private theorem lattice_count {E : Type*} [NormedAddCommGroup E] [NormedSpace �
     nlinarith
   refine ⟨Set.Finite.of_injOn hf hinj t.finite_toSet, ?_⟩
   calc
-    (s.ncard : ℝ) ≤ ((t : Set (ι → ℤ)).ncard : ℝ) := by
+    _ ≤ ((t : Set (ι → ℤ)).ncard : ℝ) := by
       exact_mod_cast Set.ncard_le_ncard_of_injOn f hf hinj t.finite_toSet
     _ = ((Finset.Icc (-N) N).card : ℝ) ^ Fintype.card ι := by
       rw [Set.ncard_coe_finset]
       dsimp only [t]
       rw [Fintype.card_piFinset]
-      simp only [Finset.prod_const, Finset.card_univ, Nat.cast_pow]
+      simp
     _ ≤ ((2 * A + 3) * R) ^ Fintype.card ι :=
       pow_le_pow_left₀ (by positivity) hc _
     _ = (2 * A + 3) ^ Fintype.card ι * R ^ Fintype.card ι := mul_pow _ _ _
@@ -111,9 +111,9 @@ theorem kp_chamber_lattice_box_count (F : Type*) [Field F] [NumberField F]
       ((KPChamberLattice.idealPairBox F J R).ncard : ℝ) ≤
         C_J * R ^ (2 * Module.finrank ℚ F) := by
   classical
-  let I : (FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)ˣ :=
+  let I :=
     (isUnit_iff_ne_zero.mpr hJ).unit
-  have hI : (I : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) = J :=
+  have hI : I = J :=
     IsUnit.unit_spec _
   let b := mixedEmbedding.fractionalIdealLatticeBasis F I
   let B := b.prod b
@@ -154,9 +154,7 @@ theorem kp_chamber_lattice_box_count (F : Type*) [Field F] [NumberField F]
       exact ⟨mixed_norm_bound F p.1 R (by linarith) (fun φ => (hp.2.2 φ).1),
         mixed_norm_bound F p.2 R (by linarith) (fun φ => (hp.2.2 φ).2)⟩
   obtain ⟨hfin, hc⟩ := hbound R hR (f '' s) him
-  have hsfin : s.Finite := Set.Finite.of_injOn (Set.mapsTo_image f s) hinj.injOn hfin
-  refine ⟨hsfin, ?_⟩
-  change (s.ncard : ℝ) ≤ _
+  refine ⟨(Set.Finite.of_injOn (Set.mapsTo_image f s) hinj.injOn hfin), ?_⟩
   rw [Set.ncard_image_of_injective s hinj, hd] at hc
   exact hc
 

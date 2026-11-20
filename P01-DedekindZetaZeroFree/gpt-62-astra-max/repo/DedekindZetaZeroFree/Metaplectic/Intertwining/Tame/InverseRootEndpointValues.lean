@@ -12,7 +12,7 @@ open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSerie
 open KPRankOneShellContinuation KPRankOneShellRepair KPRankOneRootParameter
 open KPTameJacquetTestDuality KPTameTransposeKernelUnfolding
 open KPTameTransposeUnitNumeratorSteps
-open _root_.DedekindZetaZeroFree.TameInverseRootValueAudit renaming eventual_inverse_root_inner_haar_value → eventual_inverse_root_inner_haar_value
+open _root_.DedekindZetaZeroFree.TameInverseRootValueAudit (eventual_inverse_root_inner_haar_value)
 
 set_option maxHeartbeats 1500000
 set_option backward.isDefEq.respectTransparency false
@@ -23,10 +23,12 @@ variable (F : Type) [Field F] [NumberField F]
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
   (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
 
- def reverseIntegrand (φ : compactPicture S.borel P S.iwasawa .minus)
-    (g : ActualCover F ζ hζ q) (s : ℂ) (v : LocalField F q) : ℂ :=
+ local notation "LocalCompletion" => LocalField F q
+
+def reverseIntegrand (φ : compactPicture S.borel P S.iwasawa .minus)
+    (g : ActualCover F ζ hζ q) (s : ℂ) (v : LocalCompletion) : ℂ :=
   ((compactTrivialization S.borel P S.iwasawa .minus (-s) φ).val
-    (kernelW (LocalField F q) S.borel .minus *
+    (kernelW LocalCompletion S.borel .minus *
       (S.borel.upperRoot (Multiplicative.ofAdd v) : ActualCover F ζ hζ q) * g)).val 1
 
 private theorem compact_reverse_endpoint
@@ -34,7 +36,7 @@ private theorem compact_reverse_endpoint
     (hJ : (J.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) ≤ S.iwasawa.compact.toOpenSubgroup)
     (φ : compactLevel S.borel P S.iwasawa .minus J)
     (g : ActualCover F ζ hζ q)
-    (C : Set (LocalField F q)) (hC : IsCompact C) (hmC : MeasurableSet C)
+    (C : Set LocalCompletion) (hC : IsCompact C) (hmC : MeasurableSet C)
     (hsupp : ∀ s v, v ∉ C → reverseIntegrand F ζ hζ q S P φ.val g s v = 0) :
     (∀ s, Integrable (reverseIntegrand F ζ hζ q S P φ.val g s) μ) ∧
     ((actualCanonicalReverseMap F ζ hζ q S P μ hμ
@@ -46,7 +48,7 @@ private theorem compact_reverse_endpoint
     exact hv (hsupp s v h)
   have hint (s : ℂ) : Integrable (reverseIntegrand F ζ hζ q S P φ.val g s) μ := by
     apply (integrableOn_iff_integrable_of_support_subset (hsupport s)).mp
-    exact standardIntegral_integrableOn_compact (LocalField F q) S.borel P S.iwasawa μ
+    exact standardIntegral_integrableOn_compact LocalCompletion S.borel P S.iwasawa μ
       .minus s φ.val g 1 C hC hmC
   have hcut (s : ℂ) : (∫ v, reverseIntegrand F ζ hζ q S P φ.val g s v ∂μ) =
       ∫ v in C, reverseIntegrand F ζ hζ q S P φ.val g s v ∂μ := by
@@ -57,24 +59,24 @@ private theorem compact_reverse_endpoint
     · rw [Set.indicator_of_mem hv]
     · rw [Set.indicator_of_notMem hv, hsupp s v hv]
   obtain ⟨l, hl⟩ := actual_initial_cutoff_laurent F ζ hζ q S P μ .minus φ.val g 1 C hC hmC
-  let L : ℂ → ℂ := fun s => l.sum (fun n c => (evaluationUnit (LocalField F q) .minus s : ℂ)^n * c)
+  let L := fun s => l.sum (fun n c => (evaluationUnit LocalCompletion .minus s : ℂ)^n * c)
   have hL (s : ℂ) : (∫ v, reverseIntegrand F ζ hζ q S P φ.val g s v ∂μ) = L s :=
     (hcut s).trans (hl s)
   let p := actualCanonicalLevelNumerator F ζ hζ q S P J hJ μ hμ .minus
-  let N : ℂ → ℂ := fun s => ∑ n ∈ p.support,
-    (evaluationUnit (LocalField F q) .minus s : ℂ)^n *
+  let N := fun s => ∑ n ∈ p.support,
+    (evaluationUnit LocalCompletion .minus s : ℂ)^n *
       ((compactTrivialization S.borel P S.iwasawa .plus s
         (((p n) φ).val : compactPicture S.borel P S.iwasawa .plus)).val g).val 1
-  let V : ℂ → ℂ := fun s =>
+  let V := fun s =>
     ((compactTrivialization S.borel P S.iwasawa .plus s
       (actualCanonicalContinued F q ζ hζ S P μ hμ .minus s φ.val)).val g).val 1
-  have hV (s : ℂ) : V s = (denominator (LocalField F q) .minus s)⁻¹ * N s := by
+  have hV (s : ℂ) : V s = (denominator LocalCompletion .minus s)⁻¹ * N s := by
     dsimp [V]
     rw [actualCanonicalContinued_eq_level F q ζ hζ S P μ hμ .minus s J hJ φ]
-    have hv : ((continuedLevel (LocalField F q) S.borel P S.iwasawa J .minus p s φ).val :
+    have hv : ((continuedLevel LocalCompletion S.borel P S.iwasawa J .minus p s φ).val :
         compactPicture S.borel P S.iwasawa .plus) =
-        (denominator (LocalField F q) .minus s)⁻¹ •
-          ∑ n ∈ p.support, (evaluationUnit (LocalField F q) .minus s : ℂ)^n •
+        (denominator LocalCompletion .minus s)⁻¹ •
+          ∑ n ∈ p.support, (evaluationUnit LocalCompletion .minus s : ℂ)^n •
             (((p n) φ).val : compactPicture S.borel P S.iwasawa .plus) := by
       simp only [continuedLevel, evaluate, Finsupp.sum, LinearMap.smul_apply,
         LinearMap.sum_apply, Submodule.coe_smul, Submodule.coe_sum]
@@ -96,8 +98,7 @@ private theorem compact_reverse_endpoint
       rw [LinearEquiv.symm_apply_apply, neg_neg] at he
       exact he
     exact he'.trans (hL s)
-  have hunit : Differentiable ℂ (fun s => (evaluationUnit (LocalField F q) .minus s : ℂ)) := by
-    change Differentiable ℂ (fun s => (r (LocalField F q) s)⁻¹)
+  have hunit : Differentiable ℂ (fun s => (evaluationUnit LocalCompletion .minus s : ℂ)) := by
     apply Differentiable.inv
     · unfold r
       fun_prop
@@ -108,33 +109,29 @@ private theorem compact_reverse_endpoint
     intro n hn
     apply Differentiable.mul
     · exact hunit.zpow (Or.inl (fun s => Units.ne_zero _))
-    · have hh := compact_level_holomorphic S.borel P S.iwasawa .plus J hJ ((p n) φ) 1 g 1
-      simpa only [map_one, Module.End.one_apply] using hh
+    · simpa using (compact_level_holomorphic S.borel P S.iwasawa .plus J hJ ((p n) φ) 1 g 1)
   have hLd : Differentiable ℂ L := by
     apply Differentiable.fun_sum
     intro n hn
     exact (hunit.zpow (Or.inl (fun s => Units.ne_zero _))).mul_const _
-  have hden : Differentiable ℂ (denominator (LocalField F q) .minus) := by
-    change Differentiable ℂ (fun s => 1 - (residueCardinality (LocalField F q) : ℂ) *
-      (r (LocalField F q) s)⁻¹ ^ 6)
+  have hden : Differentiable ℂ (denominator LocalCompletion .minus) := by
+    change Differentiable ℂ (fun s => 1 - (residueCardinality LocalCompletion : ℂ) *
+      (r LocalCompletion s)⁻¹ ^ 6)
     fun_prop
-  have hEq : N = fun s => denominator (LocalField F q) .minus s * L s := by
+  have hEq : N = fun s => denominator LocalCompletion .minus s * L s := by
     apply AnalyticOnNhd.eq_of_eventuallyEq
       (Complex.analyticOnNhd_univ_iff_differentiable.mpr hN)
-      (Complex.analyticOnNhd_univ_iff_differentiable.mpr (hden.mul hLd)) (z₀ := (-1 : ℂ))
-    have ho : IsOpen {s : ℂ | convergenceHalfPlane .minus s} :=
-      isOpen_lt Complex.continuous_re continuous_const
+      (Complex.analyticOnNhd_univ_iff_differentiable.mpr (hden.mul hLd))
     have hm : (-1 : ℂ) ∈ {s : ℂ | convergenceHalfPlane .minus s} := by
       norm_num [convergenceHalfPlane]
-    filter_upwards [ho.mem_nhds hm] with s hs
-    have hd := denominator_ne_zero_of_convergence (LocalField F q) .minus s hs
+    filter_upwards [(isOpen_lt Complex.continuous_re continuous_const).mem_nhds hm] with s hs
     have hh := hchamber s hs
     rw [hV] at hh
     calc
-      N s = denominator (LocalField F q) .minus s *
-          ((denominator (LocalField F q) .minus s)⁻¹ * N s) := by
-        rw [← mul_assoc, mul_inv_cancel₀ hd, one_mul]
-      _ = _ := congrArg (denominator (LocalField F q) .minus s * ·) hh
+      N s = denominator LocalCompletion .minus s *
+          ((denominator LocalCompletion .minus s)⁻¹ * N s) := by
+        rw [← mul_assoc, mul_inv_cancel₀ (denominator_ne_zero_of_convergence LocalCompletion .minus s hs), one_mul]
+      _ = _ := congrArg (denominator LocalCompletion .minus s * ·) hh
   refine ⟨hint, ?_⟩
   rw [actualCanonicalReverseMap_level F ζ hζ q S P μ hμ J hJ φ]
   have he0 := hV (0 : ℂ)
@@ -142,7 +139,7 @@ private theorem compact_reverse_endpoint
   rw [actualCanonicalContinued_eq_level F q ζ hζ S P μ hμ .minus 0 J hJ φ] at he0
   rw [he0]
   rw [congrFun hEq 0, ← mul_assoc,
-    inv_mul_cancel₀ (denominator_ne_zero_at_zero (LocalField F q) .minus), one_mul, ← hL]
+    inv_mul_cancel₀ (denominator_ne_zero_at_zero LocalCompletion .minus), one_mul, ← hL]
 
 theorem eventual_actual_inverse_root_endpoint
     (hP : IsTamePolarization F ζ hζ q S P)
@@ -220,8 +217,8 @@ theorem eventual_actual_inverse_root_endpoint
   obtain ⟨_, hoff, hvalue⟩ := hM m hmM i f hf u
   have hsupp : ∀ s v, v ∉ C → reverseIntegrand F ζ hζ q S P φ₀ g s v = 0 := by
     intro s v hv
-    have hvA : v ∉ A := fun h => hv (hAC h)
-    have hz0 : reverseIntegrand F ζ hζ q S P φ₀ g 0 v = 0 := (hz v).trans (hoff v hvA)
+    have hvA := fun h => hv (hAC h)
+    have hz0 := (hz v).trans (hoff v hvA)
     let x := kernelW (LocalField F q) S.borel .minus *
       (S.borel.upperRoot (Multiplicative.ofAdd v) : ActualCover F ζ hζ q) * g
     have he0 := initialCoordinate_monomial F ζ hζ q S P .minus φ₀ x 1 0
@@ -237,7 +234,7 @@ theorem eventual_actual_inverse_root_endpoint
   have hend := compact_reverse_endpoint F ζ hζ q S P μ hμ J hJ φ g C hC hmC hsupp
   dsimp only
   refine ⟨⟨C, hC, hmC, fun s => ⟨hend.1 s, hsupp s⟩⟩, ?_⟩
-  have hback : compactTrivialization S.borel P S.iwasawa .minus 0 φ.val = f₀ :=
+  have hback :=
     (compactTrivialization S.borel P S.iwasawa .minus 0).apply_symm_apply f₀
   rw [hback] at hend
   exact hend.2.trans ((integral_congr_ae (Filter.Eventually.of_forall hz)).trans hvalue)

@@ -12,9 +12,9 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualAllWordCusp
 open KPMsGreenFlux KPMsGreenFlux.IntrinsicAveraging KPSmoothActualFlowData
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 theorem constantTerm_word_zero
     (dn : Measure (KPCompactFourier.AdditiveQuotient F)) [IsFiniteMeasure dn]
     (j : Cusps A) (f : KPSmoothActualFlowData.X F ζ hζ → ℂ) (hf : ∀ w, SmoothAutomorphic F ζ hζ (wordDerivative F ζ hζ w f))
@@ -37,10 +37,8 @@ theorem constantTerm_eq_upper (dn : Measure (KPCompactFourier.AdditiveQuotient F
           ((cuspRepresentative A j)⁻¹ * g)) ∂dn := by
   apply integral_congr_ae
   filter_upwards [] with q
-  have hmem : cuspRepresentative A j ∈
-      KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ := ⟨_, rfl⟩
   simpa only [mul_assoc] using IntrinsicAveraging.pullback_rational f
-    ⟨cuspRepresentative A j, hmem⟩
+    ⟨cuspRepresentative A j, (⟨_, rfl⟩)⟩
     (KPGlobalTorusFunctionData.N F ζ hζ (KPCompactFourier.representative F q) *
       ((cuspRepresentative A j)⁻¹ * g))
 
@@ -71,8 +69,7 @@ theorem upper_actualRightWord_zero
       F ζ hζ word f x
   rw [he]
 
-  simpa only [inv_mul_cancel_left, Pi.zero_apply, IntrinsicAveraging.pullback, ww,
-    KPMsClearedTruncationL2.NativeWordBridge.actualRightWord_eq_wordDerivative] using hh
+  simpa using hh
 
 include A in
 theorem upper_word_zero
@@ -85,12 +82,9 @@ theorem upper_word_zero
     ∫ q, wordDerivative F ζ hζ v f.val (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
       (KPGlobalTorusFunctionData.N F ζ hζ (KPCompactFourier.representative F q) * g)) ∂dn = 0 := by
   let i : Fin A.componentCount := ⟨0, A.positive_componentCount⟩
-  let j : Cusps A := ⟨i, ⟨0, (A.cuspAtlas i).positive_cuspCount⟩⟩
   let W := v.map (KPMsClearedTruncationL2.NativeWordBridge.wordIndexEquiv F).symm
   have hW : W.map (KPMsClearedTruncationL2.NativeWordBridge.wordIndexEquiv F) = v := by
     simp [W]
-  have hh := upper_actualRightWord_zero A dn j f.val
-    (fun w => (f.property w).1) hz W g
   have hp (a : Cover F ζ hζ) :
       KPContActualSphericalRightFieldIdentification.actualRightWord F ζ hζ W
         (IntrinsicAveraging.pullback f.val) a =
@@ -106,7 +100,8 @@ theorem upper_word_zero
     apply integral_congr_ae
     filter_upwards [] with q
     exact (hp _).symm
-  exact he.trans hh
+  exact he.trans (upper_actualRightWord_zero A dn (⟨i, ⟨0, (A.cuspAtlas i).positive_cuspCount⟩⟩) f.val
+    (fun w => (f.property w).1) hz W g)
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualAllWordCusp
 

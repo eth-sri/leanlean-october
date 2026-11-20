@@ -12,8 +12,8 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 
@@ -34,11 +34,8 @@ theorem fiberEvaluation_left (f : ∀ v, Plus A P C v) (u g : Raw A) (q : KPFini
   change (Real.rpow _ (1/2 : ℝ) : ℂ) * localUntwistedEvaluation F ζ hζ P C q
     (localTau F ζ hζ P C q t _) x = _
   rw [EisensteinReferenceSections.SourceTorusEvaluation.untwisted_tau]
-  have hpos : 0 < ((KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q)
-      ((C.canonical q).borel.coordinate t) : ℝ≥0) : ℝ) := by
-    exact_mod_cast KPGlobalCenterRationalCharacter.localAbs_pos F _ _
-  have hh := EisensteinReferenceSections.SourceTorusCovariance.rpow_factor _ hpos
-  rw [← hh]
+  rw [← (EisensteinReferenceSections.SourceTorusCovariance.rpow_factor _ (by
+    exact_mod_cast KPGlobalCenterRationalCharacter.localAbs_pos F _ _))]
   ring
 
 private theorem archValues_left (f : ∀ v, Plus A P C v) (u g : Raw A)
@@ -97,8 +94,7 @@ theorem rawCoreFiber_pure_torus (s : RestrictedTensorSimple.Level (bad A P C))
       n q * fiberEvaluation A P C (pureSections A P C s x) g q (tz q*t q) :=
     fiberEvaluation_left A P C _ u g q _ _ (ht q)
   simp_rw [hl]
-  have hp' : ∀ w, EisensteinReferenceSections.LocalCovariance.complexMatrix F ζ hζ w (u (Sum.inl w)) =
-      KPCplxPrincipalSeriesCharts.upperTriangular (a w) (d w) (b w) := hp
+  have hp' := hp
   have hs := (EisensteinReferenceSections.TorusNorms.given_raw_norm F ζ hζ P C u t a d b e ht hp' he).1
   have hns : Function.HasFiniteMulSupport n :=
     (hs.comp (g := fun r : ℝ => (Real.rpow r (2/3 : ℝ) : ℂ)) (by norm_num)).comp_of_injective Sum.inr_injective

@@ -20,9 +20,8 @@ theorem literal_raw_group_chart_contDiffOn_source (h : Functions F ζ hζ) (hh :
   obtain ⟨O, q, hO, hzO, hq, hqO, heq⟩ :=
     literal_group_chart_local_transition F ζ hζ g z₀ hz₀
   refine ⟨O, hO, hzO, ?_⟩
-  have H := (hh.2.1
-    (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z₀ * g)).comp hq hqO
-  apply (H.congr (fun z hz => congrArg h (heq z hz))).mono
+  apply (((hh.2.1
+    (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z₀ * g)).comp hq hqO).congr (fun z hz => congrArg h (heq z hz))).mono
   exact Set.inter_subset_right
 
 end DedekindZetaZeroFree.KPLiteralChamber

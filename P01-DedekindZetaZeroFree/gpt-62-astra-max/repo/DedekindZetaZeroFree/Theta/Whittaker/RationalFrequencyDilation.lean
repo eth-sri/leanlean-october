@@ -11,8 +11,8 @@ namespace DedekindZetaZeroFree.OrbitFrequencies
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem rationalValue_eq_fourier {Q : AdmissibleFlatSources R}
     (T : Realization R Q) (v : R.A.UnitQuotient) (a : Fˣ) (g : Group R) :
@@ -22,7 +22,7 @@ theorem rationalValue_eq_fourier {Q : AdmissibleFlatSources R}
   let D := KPAdditiveRationalDilation.quotientDilation F a
   let A := KPRationalAdelicSplitting.pglA F R.A.zeta12 R.A.primitive_zeta12
     (Units.map (algebraMap F (KPAdeles F)).toMonoidHom a)
-  let f : KPAdditiveQuotient F → ℂ := fun q => T.theta v
+  let f := fun q => T.theta v
     (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * (A * g)) *
       star (adelicTraceQuotientCharacter F q : ℂ)
   letI := Q.quotientHaar
@@ -30,14 +30,12 @@ theorem rationalValue_eq_fourier {Q : AdmissibleFlatSources R}
   have hmp := KPAdditiveRationalDilation.quotientDilation_measurePreserving F a Q.dq
   obtain ⟨e, he⟩ := KPAdditiveRationalDilation.quotientDilation_is_additive_homeomorphism F a
   have hme : MeasurableEmbedding D := by
-    have hef : (e : _ → _) = D := funext he
-    rw [← hef]
+    rw [← (funext he)]
     exact e.toHomeomorph.measurableEmbedding
   have htransform (q : KPAdditiveQuotient F) : f (D q) = rationalIntegrand R T v a g q := by
     let x := Quotient.out q
-    have hq : (QuotientAddGroup.mk x : KPAdditiveQuotient F) = q := Quotient.out_eq q
     have hd : D q = QuotientAddGroup.mk (algebraMap F (KPAdeles F) (a : F) * x) := by
-      rw [← hq]; rfl
+      rw [← (Quotient.out_eq q)]; rfl
     change T.theta v
       (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out (D q)) * (A * g)) *
         star (adelicTraceQuotientCharacter F (D q) : ℂ) = _
@@ -66,14 +64,8 @@ theorem rationalValue_eq_fourier {Q : AdmissibleFlatSources R}
       rw [mul_right_comm, ← map_mul, Units.mul_inv, map_one, one_mul]
     rw [hx] at hc
     rw [hc, mul_assoc]
-    change T.theta v (A * (KPGlobalTorusFunctionData.N F R.A.zeta12
-      R.A.primitive_zeta12 x * g)) = _
     exact DigitMasks.theta_rational_diagonal R T v a _
 
-  have hi := rationalIntegrand_integrable R T v a g
-  have hiD : Integrable (fun q => f (D q)) Q.dq := by
-    simpa only [htransform] using hi
-  have _hif : Integrable f Q.dq := (hmp.integrable_comp_emb hme).mp hiD
   have h := hmp.integral_comp hme f
   change (∫ q, f (D q) ∂Q.dq) = _ at h
   simpa only [htransform, rationalValue, MomentSources.fourier, f, A] using h

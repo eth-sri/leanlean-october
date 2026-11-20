@@ -70,13 +70,9 @@ theorem coprimeIdealResidue_dual_common_averages :
   classical
   letI := coprimeIdealResidue_finite m a hm ha hcop
   letI := Fintype.ofFinite R
-  let lift : R → X := fun q => Classical.choose
-    (fractionalIdealQuotientMk_surjective (I : FractionalIdeal (𝓞 F)⁰ F)
+  let lift := fun q => Classical.choose
+    (fractionalIdealQuotientMk_surjective I
       ((I * M) : FractionalIdeal (𝓞 F)⁰ F) q)
-  have hlift : ∀ q, fractionalIdealQuotientMk (I : FractionalIdeal (𝓞 F)⁰ F)
-      ((I * M) : FractionalIdeal (𝓞 F)⁰ F) (lift q) = q := fun q =>
-    Classical.choose_spec (fractionalIdealQuotientMk_surjective
-      (I : FractionalIdeal (𝓞 F)⁰ F) ((I * M) : FractionalIdeal (𝓞 F)⁰ F) q)
   change (∑ q : R, coprimeIdealResidueCoefficient hF m a hm ha hcop hmt η E q *
     affineResidueDualAverage m hm I (lift q) u) = _
   unfold affineResidueDualAverage
@@ -86,7 +82,9 @@ theorem coprimeIdealResidue_dual_common_averages :
       (coprimeIdealResidueCoefficient hF m a hm ha hcop hmt η E q))]
   apply integral_congr_ae
   exact Filter.Eventually.of_forall (fun h =>
-    coprimeIdealResidue_dual_common_packet hF m a hm ha hcop hmt η E u hu lift hlift h)
+    coprimeIdealResidue_dual_common_packet hF m a hm ha hcop hmt η E u hu lift (fun q =>
+      Classical.choose_spec (fractionalIdealQuotientMk_surjective
+        I ((I * M) : FractionalIdeal (𝓞 F)⁰ F) q)) h)
 
 end Coprime
 

@@ -18,7 +18,7 @@ theorem finiteCharacter_product_continuous :
   classical
   apply RestrictedProduct.continuous_dom.mpr
   intro S hS
-  have hfin : Sᶜ.Finite := Filter.mem_cofinite.mp (Filter.le_principal_iff.mp hS)
+  have hfin := Filter.mem_cofinite.mp (Filter.le_principal_iff.mp hS)
   have heq : (fun a : RestrictedProduct (fun v : HeightOneSpectrum (𝓞 F) => v.adicCompletion F) (fun v => (v.adicCompletionIntegers F : Set (v.adicCompletion F))) (Filter.principal S) => ∏ᶠ v, localFiniteCharacter F v
       (RestrictedProduct.inclusion _ _ hS a v)) =
       (fun a => ∏ v ∈ hfin.toFinset, localFiniteCharacter F v (a v)) := by
@@ -28,8 +28,7 @@ theorem finiteCharacter_product_continuous :
     change v ∈ hfin.toFinset
     rw [Set.Finite.mem_toFinset]
     by_contra h
-    have ha := a.2
-    have hav : a v ∈ v.adicCompletionIntegers F := (Filter.eventually_principal.mp ha) v (by simpa using h)
+    have hav : a v ∈ v.adicCompletionIntegers F := (Filter.eventually_principal.mp a.2) v (by simpa using h)
     exact hv (localFiniteCharacter_eq_one_of_mem_integers F v (a v) hav)
   change Continuous (fun a => ∏ᶠ v, localFiniteCharacter F v (RestrictedProduct.inclusion _ _ hS a v))
   rw [heq]

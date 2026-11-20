@@ -32,7 +32,7 @@ theorem T3_eq_normalizedMasked_core
   refine Finset.sum_congr rfl fun v hv => ?_
   by_cases h0 : u ⊔ v = d ∧ Q.cls u = g ∧ Q.cls v = g
   · rw [if_pos h0, if_pos h0, if_pos hu, if_pos hv, hrows]
-    simp only [one_mul, map_one, map_mul]
+    simp
   · rw [if_neg h0, if_neg h0]
 
 theorem B3_eq_normalizedMasked_core
@@ -45,10 +45,7 @@ theorem B3_eq_normalizedMasked_core
     B3 F c Q W M N K d =
       NormalizedKernelProfiles.B3normalizedMasked F c Q D.bad W M N K d
         (paperShell F c N) (fun _ => 1) := by
-  have hT : ∀ (g : Q.G) (lam : Ideal (𝓞 F) → ℂ),
-      T3 F c Q W M N K d g lam =
-        NormalizedKernelProfiles.T3normalizedMasked F c Q (hGood.allIndexData hc).bad W M N K d g
-          (paperShell F c N) (fun _ => 1) lam :=
+  have hT :=
     fun g lam => T3_eq_normalizedMasked_core F c hc Q hGood W M N K d g lam
   unfold B3 NormalizedKernelProfiles.B3normalizedMasked
   congr 1

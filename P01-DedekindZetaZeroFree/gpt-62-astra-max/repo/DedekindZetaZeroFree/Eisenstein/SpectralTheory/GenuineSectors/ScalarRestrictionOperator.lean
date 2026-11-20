@@ -19,10 +19,10 @@ open KPContCotangentOverlapRationalBranches KPContCotangentActualOverlap
 open KPContActualSectorCoordinateNullEquivalence
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 namespace ActualScalarTransport
 
@@ -44,12 +44,12 @@ def emb (y : a.domain) := fromActual (ζ := ζ) (hζ := hζ) y.val
     funext k
     simp [labeledA, labeledAInv]
   measurable_toFun := by
-    change Measurable (toActual (ζ := ζ) (hζ := hζ))
+    change Measurable (toActual)
     apply Continuous.measurable
     unfold toActual labeledA
     fun_prop
   measurable_invFun := by
-    change Measurable (fromActual (ζ := ζ) (hζ := hζ))
+    change Measurable (fromActual)
     apply Continuous.measurable
     unfold fromActual labeledAInv
     fun_prop
@@ -80,20 +80,14 @@ theorem scalar_pull (s : BorelL2Sections F ζ hζ U R P H) (y : a.domain) :
 theorem coefficient_norm
     (s : KPContSectorSmoothFramesSupport.Sections F ζ hζ U R P H) (y : a.domain) :
     KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s (a.toBase y)
-      = ‖(a.coefficient s y : ℂ)‖ := by
-  change KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s
-    (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component)
-      (KPCuspSiegel.projection F _ y.val)) = _
-  rw [← (H.atlas U).components_formula]
-  exact KPContSectorSmoothFramesSupport.sectionNorm_component
-    F ζ hζ U R P H s a.component y.val
+      = ‖(a.coefficient s y : ℂ)‖ := by apply @DedekindZetaZeroFree.KPContActualFinitePartitionError.FinitePartitionError.scalar_chart_norm <;> assumption
 
 theorem coefficient_lintegral_le (s : BorelL2Sections F ζ hζ U R P H) :
     ∫⁻ y, squaredNorm F ζ hζ U R P H s.val (a.toBase y) ∂a.liftedMeasure ≤
       normIntegral F ζ hζ U R P H s.val := by
   have ha := KPContActualCotangentCountableShrinking.every_shrunkChart_properties F ζ hζ U R P H a
   calc
-    (∫⁻ y, squaredNorm F ζ hζ U R P H s.val (a.toBase y) ∂a.liftedMeasure) =
+    _ =
         ∫⁻ b, squaredNorm F ζ hζ U R P H s.val b ∂Measure.map a.toBase a.liftedMeasure :=
       (lintegral_map' (squaredNorm_measurable F ζ hζ U R P H s.val s.property.1).aemeasurable
         ha.measurable.aemeasurable).symm
@@ -103,35 +97,24 @@ theorem coefficient_lintegral_le (s : BorelL2Sections F ζ hζ U R P H) :
     _ ≤ normIntegral F ζ hζ U R P H s.val := setLIntegral_le_lintegral _ _
 
 theorem coefficient_memLp (s : BorelL2Sections F ζ hζ U R P H) :
-    MemLp (fun y : a.domain => (a.coefficient s.val y : ℂ)) 2 a.liftedMeasure := by
-  have hmeas : Measurable (fun y : a.domain => (a.coefficient s.val y : ℂ)) :=
-    (s.property.1 a.component).comp measurable_subtype_coe
-  rw [memLp_two_iff_integrable_sq_norm hmeas.aestronglyMeasurable]
-  refine ⟨(hmeas.norm.pow_const 2).aestronglyMeasurable, ?_⟩
-  rw [hasFiniteIntegral_iff_enorm]
-  have he (y : a.domain) : ‖(‖(a.coefficient s.val y : ℂ)‖ ^ 2 : ℝ)‖ₑ =
-      squaredNorm F ζ hζ U R P H s.val (a.toBase y) := by
-    rw [Real.enorm_eq_ofReal (sq_nonneg _), squaredNorm, coefficient_norm]
-  simp only [he]
-  exact lt_of_le_of_lt (coefficient_lintegral_le a s) s.property.2
+    MemLp (fun y : a.domain => (a.coefficient s.val y : ℂ)) 2 a.liftedMeasure := by apply @DedekindZetaZeroFree.KPContActualSectorChartEquivariantInputs.EquivariantScalarAndCotangentData.scalar_coefficient_memLp_aux <;> assumption
 
 end ActualScalarTransport
 
 theorem scalar_memLp (a : ActualChart (U := U) (H := H))
     (s : BorelL2Sections F ζ hζ U R P H) :
     MemLp (fun x => scalar s a x) 2 (measure a) := by
-  let c : a.domain → ℂ := fun y => (a.coefficient s.val y : ℂ)
-  have hc : MemLp c 2 a.liftedMeasure := ActualScalarTransport.coefficient_memLp a s
+  let c := fun y => (a.coefficient s.val y : ℂ)
   have hmap : Measure.map (ActualScalarTransport.emb a) a.liftedMeasure = measure a := by
     rw [show ActualScalarTransport.emb a =
-      (fun y : a.domain => fromActual (ζ := ζ) (hζ := hζ) y.val) from rfl]
+      (fun y : a.domain => fromActual y.val) from rfl]
     exact lifted_measure_transport (a := a)
   have hg : MemLp (Function.extend (ActualScalarTransport.emb a) c 0) 2 (measure a) := by
     have hm := (ActualScalarTransport.emb_meas a).memLp_map_measure_iff.mpr
       (show MemLp (Function.extend (ActualScalarTransport.emb a) c 0 ∘ ActualScalarTransport.emb a) 2
           a.liftedMeasure from by
         rw [Function.extend_comp (ActualScalarTransport.emb_meas a).injective]
-        exact hc)
+        exact (ActualScalarTransport.coefficient_memLp a s))
     rwa [hmap] at hm
   refine MemLp.ae_eq ?_ hg
   have hpt : ∀ y : a.domain,
@@ -163,6 +146,8 @@ private theorem scalarToLp_norm_sq {X : Type*} [MeasurableSpace X] (μ : Measure
   intro x
   rw [ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm, enorm_eq_nnnorm]
 
+alias ScalarRestrictionOperator.scalarToLp_norm_sq := scalarToLp_norm_sq
+
 private theorem scalarPull (a : ActualChart (U := U) (H := H))
     (s : BorelL2Sections F ζ hζ U R P H) (y : a.domain) :
     scalar s a (fromActual (ζ := ζ) (hζ := hζ) y.val) = (s.val a.component).val y.val := by
@@ -193,10 +178,10 @@ private theorem scalarPull_norm (a : ActualChart (U := U) (H := H))
   rw [hb, KPContSectorSmoothFramesSupport.sectionNorm_component]
 
 theorem scalar_norm_bound (a : ActualChart (U := U) (H := H)) :
-    ∃ C : ℝ, 0 < C ∧ ∀ s : BorelL2Sections F ζ hζ U R P H,
+    ∃ C : ℝ, ∀ s : BorelL2Sections F ζ hζ U R P H,
       ‖(scalar_memLp a s).toLp (fun x => scalar s a x)‖ ≤
         C * ‖mk F ζ hζ U R P H s‖ := by
-  refine ⟨1, zero_lt_one, ?_⟩
+  refine ⟨1, ?_⟩
   intro s
   have hP := KPContActualCotangentCountableShrinking.every_shrunkChart_properties F ζ hζ U R P H a
   have hi : (∫⁻ x, ENNReal.ofReal (‖scalar s a x‖^2) ∂measure a) ≤
@@ -231,7 +216,7 @@ theorem scalar_ae_of_mk_eq_measure (a : ActualChart (U := U) (H := H))
     change mk F ζ hζ U R P H (s-t) = 0
     have hh := (mk F ζ hζ U R P H).map_sub s t
     exact hh.trans (by rw [hst, sub_self])
-  obtain ⟨C, _, hb⟩ := scalar_norm_bound a
+  obtain ⟨C, hb⟩ := scalar_norm_bound a
   have hn : ‖(scalar_memLp a r).toLp (scalar r a)‖ = 0 := by
     have h := hb r
     rw [hm, norm_zero, mul_zero] at h
@@ -313,7 +298,7 @@ theorem scalarProducer_exists (a : ActualChart (U := U) (H := H)) :
   let QL : L2Line F ζ hζ U R P H →ₗ[ℂ] Lp ℂ 2 (measure a) :=
     @Submodule.liftQ ℂ W inferInstance inferInstance inferInstance N
       ℂ (Lp ℂ 2 (measure a)) inferInstance inferInstance inferInstance (RingHom.id ℂ) L hNL
-  obtain ⟨C, hC, hb⟩ := scalar_norm_bound a
+  obtain ⟨C, hb⟩ := scalar_norm_bound a
   have hbound : ∀ v, ‖QL v‖ ≤ C * ‖v‖ := by
     intro v
     obtain ⟨s, rfl⟩ := @Submodule.mkQ_surjective ℂ W inferInstance inferInstance inferInstance N v

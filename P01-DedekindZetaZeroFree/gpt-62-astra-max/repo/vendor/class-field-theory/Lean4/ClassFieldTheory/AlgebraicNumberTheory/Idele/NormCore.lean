@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -30,7 +26,6 @@ open scoped NumberField RestrictedProduct NNReal
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -99,8 +94,7 @@ def absoluteNorm :
 theorem absoluteNorm_apply (a : FiniteIdeleGroup K) :
     absoluteNorm a =
       (valuationVector a).toAdd.prod fun v n =>
-        primeNorm v ^ n := by
-  rfl
+        primeNorm v ^ n := rfl
 
 end FiniteIdeleGroup
 

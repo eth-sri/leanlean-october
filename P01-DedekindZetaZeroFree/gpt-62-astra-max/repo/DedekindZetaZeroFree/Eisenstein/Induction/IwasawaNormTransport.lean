@@ -15,7 +15,7 @@ set_option maxHeartbeats 4000000
 set_option synthInstance.maxHeartbeats 100000
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 local instance smoothTopology6 (P : Polarization F ζ hζ) :
     TopologicalSpace (Smooth F ζ hζ P) :=
@@ -34,14 +34,10 @@ local instance compactTop6 (P : Polarization F ζ hζ)
 private theorem upperRoot_entries (x : KPGlobalTorusFunctionData.Adeles F) (i j : Fin 2) :
     upperRoot F x i j = (!![1, x; 0, 1]) i j := by
   fin_cases i <;> fin_cases j <;> simp [upperRoot, Matrix.transvection]
+
+alias IwasawaNormTransport.upperRoot_entries := upperRoot_entries
 private theorem adele_ext (a b : KPGlobalTorusFunctionData.Adeles F)
-    (h : ∀ v, KPAdelicCoverRestrictedProduct.adeleEval F v a = KPAdelicCoverRestrictedProduct.adeleEval F v b) : a = b := by
-  apply Prod.ext
-  · funext w
-    exact h (Sum.inl w)
-  · apply Subtype.ext
-    funext q
-    exact h (Sum.inr q)
+    (h : ∀ v, KPAdelicCoverRestrictedProduct.adeleEval F v a = KPAdelicCoverRestrictedProduct.adeleEval F v b) : a = b := by apply @DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.GL2Projection.adele_ext <;> assumption
 private theorem projected_root (x : KPGlobalTorusFunctionData.Adeles F) :
     KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ (KPGlobalTorusFunctionData.N F ζ hζ x) =
       QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) (upperRoot F x) := by
@@ -52,9 +48,8 @@ private theorem projected_root (x : KPGlobalTorusFunctionData.Adeles F) :
   intro i j
   apply adele_ext F
   intro v
-  have h := KPAdelicCoverRestrictedProduct.restrictedProjection_eval F ζ hζ
-    (KPGlobalTorusFunctionData.rootTuple F ζ hζ x) v
-  have he := congrArg (fun A : KPLocalCover.LocalGL2 F v => A i j) h
+  have he := congrArg (fun A : KPLocalCover.LocalGL2 F v => A i j) (KPAdelicCoverRestrictedProduct.restrictedProjection_eval F ζ hζ
+    (KPGlobalTorusFunctionData.rootTuple F ζ hζ x) v)
   change KPAdelicCoverRestrictedProduct.adeleEval F v
     ((KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ
       (KPGlobalTorusFunctionData.rootTuple F ζ hζ x)) i j) = _ at he
@@ -63,6 +58,8 @@ private theorem projected_root (x : KPGlobalTorusFunctionData.Adeles F) :
     simp [KPGlobalTorusFunctionData.rootTuple, KPStandardLocalRootLifts.N,
       KPLocalCover.projection_apply, KPLocalCover.sectionMap, KubotaRankTwo.n,
       upperRoot_entries]
+
+alias IwasawaNormTransport.projected_root := projected_root
 private theorem upper_unit {R : Type*} [CommRing R] (A : Matrix.GeneralLinearGroup (Fin 2) R) (h10 : A 1 0 = 0) :
     IsUnit (A 0 0) := by
   have h : IsUnit (Matrix.det (A : Matrix (Fin 2) (Fin 2) R)) :=
@@ -70,6 +67,8 @@ private theorem upper_unit {R : Type*} [CommRing R] (A : Matrix.GeneralLinearGro
   have hd : Matrix.det (A : Matrix (Fin 2) (Fin 2) R) = A 0 0 * A 1 1 := by
     simp only [Matrix.det_fin_two, h10, mul_zero, sub_zero]
   exact isUnit_of_mul_isUnit_left (hd ▸ h)
+
+alias IwasawaNormTransport.upper_unit := upper_unit
 private theorem upper_diagonal {R : Type*} [CommRing R]
     (A : Matrix.GeneralLinearGroup (Fin 2) R) (h10 : A 1 0 = 0)
     (x : R) (hx : A 0 0 * x = A 0 1) :
@@ -78,14 +77,26 @@ private theorem upper_diagonal {R : Type*} [CommRing R]
   constructor <;>
     simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two, Matrix.transvection, h10, hx]
 
-theorem iwasawaUpperUnits (A : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (h10 : A 1 0 = 0) : IsUnit (A 0 0) ∧ IsUnit (A 1 1) := by
+alias IwasawaNormTransport.upper_diagonal := upper_diagonal
+
+section
+
+variable (A : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (h10 : A 1 0 = 0)
+
+include h10 in
+theorem iwasawaUpperUnits : IsUnit (A 0 0) ∧ IsUnit (A 1 1) := by
   have h : IsUnit (Matrix.det (A : Matrix (Fin 2) (Fin 2) (KPGlobalTorusFunctionData.Adeles F))) := (Matrix.GeneralLinearGroup.det A).isUnit
   have hd : Matrix.det (A : Matrix (Fin 2) (Fin 2) (KPGlobalTorusFunctionData.Adeles F)) = A 0 0 * A 1 1 := by simp [Matrix.det_fin_two, h10]
   exact ⟨isUnit_of_mul_isUnit_left (hd ▸ h), isUnit_of_mul_isUnit_right (hd ▸ h)⟩
-def iwasawaUpperRatio (A : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (h10 : A 1 0 = 0) : KPGlobalTorusFunctionData.Ideles F :=
+def iwasawaUpperRatio : KPGlobalTorusFunctionData.Ideles F :=
   (iwasawaUpperUnits F A h10).1.unit * (iwasawaUpperUnits F A h10).2.unit⁻¹
-theorem iwasawaUpperRatio_scalar (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F)
-    (hA : A 1 0 = 0) (hB : B 1 0 = 0)
+
+end
+section
+
+variable (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (hA : A 1 0 = 0) (hB : B 1 0 = 0)
+
+theorem iwasawaUpperRatio_scalar
     (he : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A = QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) B) : iwasawaUpperRatio F A hA = iwasawaUpperRatio F B hB := by
   obtain ⟨C, hC, he⟩ := (QuotientGroup.mk'_eq_mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)).mp he
   obtain ⟨c, rfl⟩ := hC
@@ -94,16 +105,17 @@ theorem iwasawaUpperRatio_scalar (A B : KPAdelicCoverRestrictedProduct.AdelicGL2
   simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar_apply] at he00 he11
   have hu00 : (iwasawaUpperUnits F A hA).1.unit * c = (iwasawaUpperUnits F B hB).1.unit := by
     apply Units.ext
-    simpa only [Units.val_mul, IsUnit.unit_spec] using he00
+    simpa using he00
   have hu11 : (iwasawaUpperUnits F A hA).2.unit * c = (iwasawaUpperUnits F B hB).2.unit := by
     apply Units.ext
-    simpa only [Units.val_mul, IsUnit.unit_spec] using he11
+    simpa using he11
   unfold iwasawaUpperRatio
   rw [← hu00, ← hu11]
   group
-theorem iwasawaUpperMul_zero (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (hA : A 1 0 = 0) (hB : B 1 0 = 0) : (A * B : KPAdelicCoverRestrictedProduct.AdelicGL2 F) 1 0 = 0 := by
+include hA hB in
+theorem iwasawaUpperMul_zero : (A * B : KPAdelicCoverRestrictedProduct.AdelicGL2 F) 1 0 = 0 := by
   simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two, hA, hB]
-theorem iwasawaUpperRatio_mul (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (hA : A 1 0 = 0) (hB : B 1 0 = 0) : iwasawaUpperRatio F (A * B) (iwasawaUpperMul_zero F A B hA hB) = iwasawaUpperRatio F A hA * iwasawaUpperRatio F B hB := by
+theorem iwasawaUpperRatio_mul : iwasawaUpperRatio F (A * B) (iwasawaUpperMul_zero F A B hA hB) = iwasawaUpperRatio F A hA * iwasawaUpperRatio F B hB := by
   have hu00 : (iwasawaUpperUnits F (A * B) (iwasawaUpperMul_zero F A B hA hB)).1.unit = (iwasawaUpperUnits F A hA).1.unit * (iwasawaUpperUnits F B hB).1.unit := by
     apply Units.ext
     simp [IsUnit.unit_spec, Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two, hB]
@@ -114,6 +126,8 @@ theorem iwasawaUpperRatio_mul (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F)
   rw [hu00, hu11]
   simp only [mul_inv_rev]
   ac_rfl
+
+end
 
 private theorem upperRoot_zero (x : KPGlobalTorusFunctionData.Adeles F) :
     upperRoot F x 1 0 = 0 := by simp [upperRoot_entries]
@@ -180,21 +194,28 @@ theorem iwasawaUpperRatio_torus_root (t : E F ζ hζ)
   change b.val = (b.val * KPGlobalTorusFunctionData.N F ζ hζ (-x)) * KPGlobalTorusFunctionData.N F ζ hζ x
   rw [mul_assoc, hn, mul_one]
 
- theorem upper_units {R : Type*} [CommRing R]
-    (A : Matrix.GeneralLinearGroup (Fin 2) R) (h10 : A 1 0 = 0) :
+ section
+
+variable {R : Type*} [CommRing R] (A : Matrix.GeneralLinearGroup (Fin 2) R) (h10 : A 1 0 = 0)
+
+include h10 in
+theorem upper_units :
     IsUnit (A 0 0) ∧ IsUnit (A 1 1) := by
   have h : IsUnit (Matrix.det (A : Matrix (Fin 2) (Fin 2) R)) :=
     (Matrix.GeneralLinearGroup.det (n := Fin 2) (R := R) A).isUnit
   have hd : Matrix.det (A : Matrix (Fin 2) (Fin 2) R) = A 0 0 * A 1 1 := by
     simp only [Matrix.det_fin_two, h10, mul_zero, sub_zero]
   exact ⟨isUnit_of_mul_isUnit_left (hd ▸ h), isUnit_of_mul_isUnit_right (hd ▸ h)⟩
- def ratio {R : Type*} [CommRing R]
-    (A : Matrix.GeneralLinearGroup (Fin 2) R) (h10 : A 1 0 = 0) : Rˣ :=
+ def ratio : Rˣ :=
   (upper_units A h10).1.unit * ((upper_units A h10).2.unit)⁻¹
+
+end
 private theorem upper_product {R : Type*} [CommRing R]
     (A B : Matrix.GeneralLinearGroup (Fin 2) R) (hA : A 1 0 = 0) (hB : B 1 0 = 0) :
     ((A * B : Matrix.GeneralLinearGroup (Fin 2) R) : Matrix (Fin 2) (Fin 2) R) 1 0 = 0 := by
   simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two, hA, hB]
+
+alias IwasawaNormTransport.upper_product := upper_product
 private theorem ratio_mul {R : Type*} [CommRing R]
     (A B : Matrix.GeneralLinearGroup (Fin 2) R) (hA : A 1 0 = 0) (hB : B 1 0 = 0) :
     ratio (A * B) (upper_product A B hA hB) = ratio A hA * ratio B hB := by
@@ -213,8 +234,7 @@ private theorem ratio_eq (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F)
     (h : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A =
       QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) B) :
     ratio A hA = ratio B hB := by
-  have hm := QuotientGroup.eq.mp h
-  obtain ⟨z, hz⟩ := hm
+  obtain ⟨z, hz⟩ := (QuotientGroup.eq.mp h)
   have he : B = A * Matrix.GeneralLinearGroup.scalar (Fin 2) z := by
     change Matrix.GeneralLinearGroup.scalar (Fin 2) z = A⁻¹ * B at hz
     rw [hz]
@@ -234,8 +254,11 @@ private theorem ratio_eq (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F)
   simp only [ratio, h0, h1]
   simp [mul_inv_rev, mul_assoc, mul_left_comm, mul_comm]
 
-private theorem root_upper (x : KPGlobalTorusFunctionData.Adeles F) :
-    upperRoot F x 1 0 = 0 := by rw [upperRoot_entries]; rfl
+alias IwasawaNormTransport.ratio_eq := ratio_eq
+
+private alias root_upper := upperRoot_zero
+
+alias IwasawaNormTransport.root_upper := root_upper
 
  def borelRatio (b : KPGlobalTorusFunctionData.borel F ζ hζ) : KPGlobalTorusFunctionData.Ideles F :=
   ratio (Classical.choose b.property) (Classical.choose_spec b.property).2
@@ -248,6 +271,8 @@ private theorem borelRatio_formula (b : KPGlobalTorusFunctionData.borel F ζ hζ
   apply ratio_eq F
   exact (Classical.choose_spec b.property).1.trans hA.symm
 
+alias IwasawaNormTransport.borelRatio_formula := borelRatio_formula
+
  theorem borelRatio_mul (b c : KPGlobalTorusFunctionData.borel F ζ hζ) :
     borelRatio F ζ hζ (b * c) = borelRatio F ζ hζ b * borelRatio F ζ hζ c := by
   let A := Classical.choose b.property
@@ -255,7 +280,6 @@ private theorem borelRatio_formula (b : KPGlobalTorusFunctionData.borel F ζ hζ
   have hA := Classical.choose_spec b.property
   have hB := Classical.choose_spec c.property
   rw [borelRatio_formula F ζ hζ (b * c) (A * B) (by
-    change _ = KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ (b.val * c.val)
     exact (map_mul _ A B).trans ((congrArg₂ (fun a b => a * b) hA.1 hB.1).trans (map_mul _ b.val c.val).symm)) (upper_product A B hA.2 hB.2)]
   exact ratio_mul A B hA.2 hB.2
 
@@ -285,7 +309,7 @@ private theorem borelRatio_formula (b : KPGlobalTorusFunctionData.borel F ζ hζ
       ⟨KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ t.val, t.property⟩ : KPGlobalTorusFunctionData.Adeles F)
   rw [hh]
   unfold ratio
-  simp only [Units.val_mul]
+  simp
 
 private theorem borelRatio_root (x : KPGlobalTorusFunctionData.Adeles F) :
     borelRatio F ζ hζ ⟨KPGlobalTorusFunctionData.N F ζ hζ x, borel_root F ζ hζ x⟩ = 1 := by
@@ -300,11 +324,15 @@ private theorem borelRatio_root (x : KPGlobalTorusFunctionData.Adeles F) :
     rfl
   simp only [ratio, h0, h1, inv_one, mul_one]
 
+alias IwasawaNormTransport.borelRatio_root := borelRatio_root
+
 private theorem borelRatio_element (t : E F ζ hζ) (x : KPGlobalTorusFunctionData.Adeles F) :
     borelRatio F ζ hζ (borelElement F ζ hζ t x) = KPGlobalTorusFunctionData.p F ζ hζ t := by
   change borelRatio F ζ hζ (⟨t.val, borel_torus F ζ hζ t⟩ *
     ⟨KPGlobalTorusFunctionData.N F ζ hζ x, borel_root F ζ hζ x⟩) = _
   rw [borelRatio_mul, borelRatio_torus, borelRatio_root, mul_one]
+
+alias IwasawaNormTransport.borelRatio_element := borelRatio_element
 
  def borelRatioHom : KPGlobalTorusFunctionData.borel F ζ hζ →* KPGlobalTorusFunctionData.Ideles F where
   toFun := borelRatio F ζ hζ
@@ -324,6 +352,8 @@ private theorem borelDelta_element (t : E F ζ hζ) (x : KPGlobalTorusFunctionDa
   rw [borelRatio_element]
   rfl
 
+alias IwasawaNormTransport.borelDelta_element := borelDelta_element
+
 structure IwasawaData where
   K : Subgroup (G F ζ hζ)
   compact : IsCompact (K : Set (G F ζ hζ))
@@ -334,10 +364,12 @@ structure IwasawaData where
     t.val * KPGlobalTorusFunctionData.N F ζ hζ x ∈ K →
       KPGlobalTorusFunctionData.delta F ζ hζ t = 1
 
-def iwasawaNorm (D : IwasawaData F ζ hζ) (g : G F ζ hζ) : (ℝ≥0)ˣ :=
+variable (D : IwasawaData F ζ hζ)
+
+def iwasawaNorm (g : G F ζ hζ) : (ℝ≥0)ˣ :=
   KPGlobalTorusFunctionData.delta F ζ hζ (Classical.choose (D.decomposition g))
 
- theorem iwasawaNorm_formula (D : IwasawaData F ζ hζ)
+ theorem iwasawaNorm_formula
     (t : E F ζ hζ) (x : KPGlobalTorusFunctionData.Adeles F) (k : D.K) :
     iwasawaNorm F ζ hζ D ((t.val * KPGlobalTorusFunctionData.N F ζ hζ x) * k.val) =
       KPGlobalTorusFunctionData.delta F ζ hζ t := by
@@ -357,22 +389,18 @@ def iwasawaNorm (D : IwasawaData F ζ hζ) (g : G F ζ hζ) : (ℝ≥0)ˣ :=
       _ = b.val⁻¹ * ((b.val * l.val) * k.val⁻¹) := by rw [h]
       _ = l.val * k.val⁻¹ := by group
   obtain ⟨v, z, hv⟩ := actual_borel_factorization F ζ hζ (b⁻¹ * c)
-  have hK : v.val * KPGlobalTorusFunctionData.N F ζ hζ z ∈ D.K := by
-    rw [← hv, he]
-    exact D.K.mul_mem l.property (D.K.inv_mem k.property)
   have hd : borelDelta F ζ hζ (b⁻¹ * c) = 1 := by
     have hb : b⁻¹ * c = borelElement F ζ hζ v z := Subtype.ext hv
     rw [hb, borelDelta_element]
-    exact D.overlap v z hK
+    exact D.overlap v z (by
+      rw [← hv, he]
+      exact D.K.mul_mem l.property (D.K.inv_mem k.property))
   rw [map_mul, map_inv] at hd
-  have hb := borelDelta_element F ζ hζ u y
-  have hc := borelDelta_element F ζ hζ t x
   change (borelDelta F ζ hζ b)⁻¹ * borelDelta F ζ hζ c = 1 at hd
-  rw [hb, hc] at hd
-  change KPGlobalTorusFunctionData.delta F ζ hζ u = KPGlobalTorusFunctionData.delta F ζ hζ t
+  rw [(borelDelta_element F ζ hζ u y), (borelDelta_element F ζ hζ t x)] at hd
   exact inv_mul_eq_one.mp hd
 
-theorem iwasawaNorm_right_compact (D : IwasawaData F ζ hζ)
+theorem iwasawaNorm_right_compact
     (g : G F ζ hζ) (k : D.K) :
     iwasawaNorm F ζ hζ D (g * k.val) = iwasawaNorm F ζ hζ D g := by
   obtain ⟨t, x, l, rfl⟩ := D.decomposition g
@@ -381,7 +409,7 @@ theorem iwasawaNorm_right_compact (D : IwasawaData F ζ hζ)
     simp [mul_assoc]
   rw [he, iwasawaNorm_formula, iwasawaNorm_formula]
 
-theorem iwasawaNorm_borel_mul (D : IwasawaData F ζ hζ)
+theorem iwasawaNorm_borel_mul
     (t : E F ζ hζ) (x : KPGlobalTorusFunctionData.Adeles F) (g : G F ζ hζ) :
     iwasawaNorm F ζ hζ D ((t.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) =
       KPGlobalTorusFunctionData.delta F ζ hζ t * iwasawaNorm F ζ hζ D g := by
@@ -399,12 +427,10 @@ theorem iwasawaNorm_borel_mul (D : IwasawaData F ζ hζ)
       ((u.val * KPGlobalTorusFunctionData.N F ζ hζ y) * k.val) =
       (v.val * KPGlobalTorusFunctionData.N F ζ hζ z) * k.val := by
     rw [← hv]
-    change _ = ((t.val * KPGlobalTorusFunctionData.N F ζ hζ x) *
-      (u.val * KPGlobalTorusFunctionData.N F ζ hζ y)) * k.val
     exact (mul_assoc _ _ _).symm
   rw [he, iwasawaNorm_formula, iwasawaNorm_formula, hd]
 
-theorem iwasawaNorm_compact (D : IwasawaData F ζ hζ) (k : D.K) :
+theorem iwasawaNorm_compact (k : D.K) :
     iwasawaNorm F ζ hζ D k.val = 1 := by
   have hn : KPGlobalTorusFunctionData.N F ζ hζ 0 = 1 :=
     (KPGlobalTorusFunctionData.Nhom F ζ hζ).map_one
@@ -427,7 +453,7 @@ set_option maxHeartbeats 4000000
 set_option synthInstance.maxHeartbeats 100000
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 def iwasawaWeight (D : IwasawaData F ζ hζ) (s : ℂ) (g : G F ζ hζ) : ℂ :=
   Complex.exp (s * (Real.log (((iwasawaNorm F ζ hζ D g : ℝ≥0) : ℝ)) : ℂ))
@@ -436,19 +462,10 @@ def iwasawaWeight (D : IwasawaData F ζ hζ) (s : ℂ) (g : G F ζ hζ) : ℂ :=
     0 < (((iwasawaNorm F ζ hζ D g : ℝ≥0) : ℝ)) := by
   exact_mod_cast pos_iff_ne_zero.mpr (Units.ne_zero (iwasawaNorm F ζ hζ D g))
 
-@[simp] theorem iwasawaWeight_compact (D : IwasawaData F ζ hζ) (s : ℂ) (k : D.K) :
-    iwasawaWeight F ζ hζ D s k.val = 1 := by
-  simp [iwasawaWeight, iwasawaNorm_compact]
-
-@[simp] theorem iwasawaWeight_cancel (D : IwasawaData F ζ hζ) (s : ℂ) (g : G F ζ hζ) :
-    iwasawaWeight F ζ hζ D s g * iwasawaWeight F ζ hζ D (-s) g = 1 := by
-  simp only [iwasawaWeight, neg_mul, ← Complex.exp_add, add_neg_cancel, Complex.exp_zero]
-
 section IwasawaLowerWeightPorts
 open scoped Matrix.Norms.Elementwise ContDiff
 
- theorem iwasawa_compact_subtype (D : IwasawaData F ζ hζ) : CompactSpace D.K := by
-  exact isCompact_iff_compactSpace.mp D.compact
+ theorem iwasawa_compact_subtype (D : IwasawaData F ζ hζ) : CompactSpace D.K := isCompact_iff_compactSpace.mp D.compact
 
  theorem iwasawa_compactAverage_normalization
     (D : IwasawaData F ζ hζ) (r : ℝ)
@@ -475,7 +492,7 @@ open scoped Matrix.Norms.Elementwise ContDiff
   letI : BorelSpace D.K := ⟨rfl⟩
   let μ : Measure D.K := Measure.haar
   constructor
-  · apply (integral_pos_iff_support_of_nonneg (μ := μ) (fun k : D.K => (hp k.val).le)
+  · apply (integral_pos_iff_support_of_nonneg (fun k : D.K => (hp k.val).le)
       ((hv.comp continuous_subtype_val).integrable_of_hasCompactSupport
         (HasCompactSupport.of_compactSpace _))).mpr
     have he : Function.support (fun k : D.K => v k.val) = Set.univ := by

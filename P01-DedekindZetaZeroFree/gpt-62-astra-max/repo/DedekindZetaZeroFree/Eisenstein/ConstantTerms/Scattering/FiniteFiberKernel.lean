@@ -12,11 +12,11 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct MomentSources KPLiteralRaw
 open KPLocalExceptionalConstruction KPLocalPrincipalSeries KPRankOneShellRepair
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (N : TraceHaarTransport R)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (N : TraceHaarTransport R)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 attribute [local irreducible] coreFlatInsertion
@@ -37,9 +37,12 @@ theorem scatteringComplement_at_slot (q : KPFinitePlace F) (u : KPAdeles F)
   rw [hu, KPStandardLocalRootLifts.N_zero, mul_one]
   group
 
-def scatteringSlotOutput (q : KPFinitePlace F)
-    (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure]
+section
+
+variable (q : KPFinitePlace F) (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure]
     (hμ : μ ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+
+def scatteringSlotOutput
     (s : ℂ) (g : Raw R.A) (f : Plus R.A P C (Sum.inr q)) :
     LocalFiber F ζ hζ P C q :=
   (KPRankOneShellContinuation.transportToSections (q.adicCompletion F)
@@ -49,9 +52,7 @@ def scatteringSlotOutput (q : KPFinitePlace F)
       (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
         (KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) (-1) * g (Sum.inr q)))
 
-theorem scatteringSlotOutput_zero (q : KPFinitePlace F)
-    (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure]
-    (hμ : μ ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+theorem scatteringSlotOutput_zero
     (g : Raw R.A) (f : Plus R.A P C (Sum.inr q)) :
     scatteringSlotOutput R P C q μ hμ 0 g f =
       (actualCanonicalForwardMap F ζ hζ q (C.canonical q) (C.polarization q) μ hμ f).val
@@ -79,6 +80,8 @@ theorem scatteringSlotOutput_zero (q : KPFinitePlace F)
         (KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) (-1) * g (Sum.inr q)))).val h
   rw [forwardIntegralLinear_eq_continuationWitness]
   rfl
+
+end
 
 theorem coreFlatInsertion_original_slice_kernel
     (t : RestrictedTensorSimple.Level (bad R.A P C))

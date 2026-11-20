@@ -17,16 +17,16 @@ open KPLiteralRaw KPAdelicCoverRestrictedProduct KPLiteralScalarHCExtraction
 open KPLiteralScalarHCFiniteInsertion KPLiteralScalarHCFiniteProduct KPLiteralScalarHCCompactOrbit
 open NativeScalarMixedTensorGeneration KPLiteralScalarHCSliceCharts
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "M" => FourierContinuation.CurrentFiniteFamily.nativeInducingData A P C
 local notation "Raw" => RestrictedCover F A.zeta12 A.primitive_zeta12
 variable (K : Subgroup (KPLiteralRaw.G F A.zeta12 A.primitive_zeta12))
-variable (hK : IwasawaCompact F A.zeta12 A.primitive_zeta12 K)
-variable (f : Flat F A.zeta12 A.primitive_zeta12 K)
-variable (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
-variable (hT : C.exceptional ⊆ T) (hbad : ∀ q, Bad F q → q ∈ T)
-variable (htail : ∀ (r : RestrictedCover F A.zeta12 A.primitive_zeta12)
+    (hK : IwasawaCompact F A.zeta12 A.primitive_zeta12 K)
+    (f : Flat F A.zeta12 A.primitive_zeta12 K)
+    (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
+    (hT : C.exceptional ⊆ T) (hbad : ∀ q, Bad F q → q ∈ T)
+    (htail : ∀ (r : RestrictedCover F A.zeta12 A.primitive_zeta12)
     (hi : ∀ w : InfinitePlace F, r (Sum.inl w) = 1)
     (hin : ∀ q ∈ T, KPPGLLocalCover.coverQuotient F A.zeta12 A.primitive_zeta12 (Sum.inr q) (r (Sum.inr q)) = 1)
     (hout : ∀ q, q ∉ T → KPPGLLocalCover.coverQuotient F A.zeta12 A.primitive_zeta12 (Sum.inr q) (r (Sum.inr q)) ∈ pglCompact F A.zeta12 A.primitive_zeta12 (Sum.inr q))

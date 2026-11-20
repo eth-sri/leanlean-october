@@ -14,9 +14,9 @@ open scoped Classical NumberField Topology ENNReal NNReal BigOperators
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
 namespace CutoffApproximation
 
@@ -44,23 +44,27 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
- def basisFlip (j : Fin 6) : Matrix.GeneralLinearGroup (Fin 2) ℂ :=
+ section
+
+variable (j : Fin 6)
+
+def basisFlip : Matrix.GeneralLinearGroup (Fin 2) ℂ :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero
     (if j.val < 2 then !![0,1;1,0] else !![-1,0;0,1]) (by
       split <;> simp [Matrix.det_fin_two])
-private theorem basisFlip_inv (j : Fin 6) : (basisFlip j)⁻¹ = basisFlip j := by
+private theorem basisFlip_inv : (basisFlip j)⁻¹ = basisFlip j := by
   apply inv_eq_of_mul_eq_one_left
   apply Units.ext
   fin_cases j <;> ext i k <;> fin_cases i <;> fin_cases k <;>
     simp [basisFlip, Matrix.mul_apply, Fin.sum_univ_two]
-private theorem basisFlip_conj (j : Fin 6) (t : ℂ) :
+private theorem basisFlip_conj (t : ℂ) :
     ((basisFlip j).val * (t • KPSmoothActualFlowData.basisMatrix j) *
       ((basisFlip j)⁻¹).val) = -t • KPSmoothActualFlowData.basisMatrix j := by
   rw [basisFlip_inv]
   fin_cases j <;> ext i k <;> fin_cases i <;> fin_cases k <;>
     simp [basisFlip, KPSmoothActualFlowData.basisMatrix, KPSmoothActualFlowData.sl2Matrix,
       Matrix.mul_apply, Fin.sum_univ_two]
-private theorem basisFlip_exp (j : Fin 6) (t : ℂ) :
+private theorem basisFlip_exp (t : ℂ) :
     basisFlip j * KPSmoothActualFlowData.matrixExponential (t • KPSmoothActualFlowData.basisMatrix j) *
       (basisFlip j)⁻¹ =
         KPSmoothActualFlowData.matrixExponential (-t • KPSmoothActualFlowData.basisMatrix j) := by
@@ -68,10 +72,16 @@ private theorem basisFlip_exp (j : Fin 6) (t : ℂ) :
   simp only [Units.val_mul, KPSmoothActualFlowData.matrixExponential, IsUnit.unit_spec]
   rw [← basisFlip_conj j t]
   exact (NormedSpace.exp_units_conj (basisFlip j) (t • KPSmoothActualFlowData.basisMatrix j)).symm
- def flowFlip (w : NumberField.InfinitePlace F) (j : Fin 6) :
+
+end
+ section
+
+variable (w : NumberField.InfinitePlace F) (j : Fin 6)
+
+def flowFlip :
     KPSmoothActualFlowData.GInfinity F :=
   fun v => if v = w then Matrix.ProjGenLinGroup.mk (basisFlip j) else 1
-private theorem flowFlip_conj (w : NumberField.InfinitePlace F) (j : Fin 6) (t : ℝ) :
+private theorem flowFlip_conj (t : ℝ) :
     flowFlip w j * KPSmoothActualFlowData.flow F (w,j) t * (flowFlip w j)⁻¹ =
       KPSmoothActualFlowData.flow F (w,j) (-t) := by
   ext v
@@ -80,16 +90,22 @@ private theorem flowFlip_conj (w : NumberField.InfinitePlace F) (j : Fin 6) (t :
   split_ifs with hv
   · simp only [← map_inv, ← map_mul, basisFlip_exp, Complex.ofReal_neg]
   · simp
+
+end
  def archHom : KPSmoothActualFlowData.GInfinity F →* Cover F ζ hζ where
   toFun := KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
   map_one' := (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).1
   map_mul' := (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1
-private theorem flow_inv (w : NumberField.InfinitePlace F) (j : Fin 6) (t : ℝ) :
+section
+
+variable (w : NumberField.InfinitePlace F) (j : Fin 6) (t : ℝ)
+
+private theorem flow_inv :
     KPSmoothActualFlowData.flow F (w,j) (-t) = (KPSmoothActualFlowData.flow F (w,j) t)⁻¹ := by
   apply eq_inv_of_mul_eq_one_left
   rw [← (KPSmoothActualFlowData.flow_properties F (w,j)).2.1]
   simp [(KPSmoothActualFlowData.flow_properties F (w,j)).1]
-private theorem flow_modular_one (w : NumberField.InfinitePlace F) (j : Fin 6) (t : ℝ) :
+private theorem flow_modular_one :
     letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.2
     letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.1
     Measure.modularCharacter (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
@@ -104,29 +120,33 @@ private theorem flow_modular_one (w : NumberField.InfinitePlace F) (j : Fin 6) (
   have he := congrArg χ hc
   simp only [map_mul, map_inv] at he
   have hp : 0 < χ (h (flowFlip w j)) := Measure.modularCharacterFun_pos _
-  have hp' : 0 < χ (h (KPSmoothActualFlowData.flow F (w,j) t)) := Measure.modularCharacterFun_pos _
-  have he' : χ (h (KPSmoothActualFlowData.flow F (w,j) t)) =
-      (χ (h (KPSmoothActualFlowData.flow F (w,j) t)))⁻¹ := by
+  let χ₀ := χ (h (KPSmoothActualFlowData.flow F (w,j) t))
+  have hp' : 0 < χ₀ := Measure.modularCharacterFun_pos _
+  have he' : χ₀ =
+      (χ₀)⁻¹ := by
     calc
-      _ = χ (h (flowFlip w j)) * χ (h (KPSmoothActualFlowData.flow F (w,j) t)) *
+      _ = χ (h (flowFlip w j)) * χ₀ *
           (χ (h (flowFlip w j)))⁻¹ := by
         rw [mul_right_comm, mul_inv_cancel₀ (ne_of_gt hp), one_mul]
       _ = _ := he
-  have hsq : χ (h (KPSmoothActualFlowData.flow F (w,j) t)) *
-      χ (h (KPSmoothActualFlowData.flow F (w,j) t)) = 1 := by
+  have hsq : χ₀ *
+      χ₀ = 1 := by
     conv_lhs => arg 2; rw [he']
     exact mul_inv_cancel₀ (ne_of_gt hp')
-  change χ (h (KPSmoothActualFlowData.flow F (w,j) t)) = 1
+  change χ₀ = 1
   apply NNReal.eq
-  change (χ (h (KPSmoothActualFlowData.flow F (w,j) t)) : ℝ) = 1
-  have hreal : (χ (h (KPSmoothActualFlowData.flow F (w,j) t)) : ℝ) ^ 2 = 1 := by
+  change (χ₀ : ℝ) = 1
+  have hreal : (χ₀ : ℝ) ^ 2 = 1 := by
     rw [pow_two]
     exact_mod_cast hsq
-  have hpos : (0 : ℝ) < χ (h (KPSmoothActualFlowData.flow F (w,j) t)) := by exact_mod_cast hp'
+  have hpos : (0 : ℝ) < χ₀ := by exact_mod_cast hp'
   nlinarith
-private theorem ambient_flow_measurePreserving
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (w : NumberField.InfinitePlace F) (j : Fin 6) (t : ℝ) :
+
+end
+variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ) (w : NumberField.InfinitePlace F)
+    (j : Fin 6) (t : ℝ)
+
+private theorem ambient_flow_measurePreserving :
     MeasurePreserving (fun g : Cover F ζ hζ => g *
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (KPSmoothActualFlowData.flow F (w,j) t))
       R.adelicHaar R.adelicHaar := by
@@ -142,9 +162,7 @@ private theorem ambient_flow_measurePreserving
     (KPSmoothActualFlowData.flow F (w,j) t)) : ℝ≥0) • R.adelicHaar = _
   rw [flow_modular_one, one_smul]
 
-theorem quotient_flow_measurePreserving
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (w : NumberField.InfinitePlace F) (j : Fin 6) (t : ℝ) :
+theorem quotient_flow_measurePreserving :
     MeasurePreserving (KPSmoothActualFlowData.rightTranslate F ζ hζ
       (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (KPSmoothActualFlowData.flow F (w,j) t)))
       R.quotientHaar R.quotientHaar := by

@@ -12,14 +12,20 @@ open scoped nonZeroDivisors
 
 namespace DedekindZetaZeroFree.AbelianQuotient.Theta
 
-private lemma mixedThetaPair_f (K : Type) [Field K] [NumberField K] :
+section
+
+variable (K : Type) [Field K] [NumberField K]
+
+private lemma mixedThetaPair_f :
     (mixedThetaPair K).f = fun t => (alpha K : ℂ) *
       ∑ C : ClassGroup (𝓞 K),
         mixedAngularAverage K
           (FractionalIdeal.mk0 K (inverseClassIdealRepresentative K C)) t := rfl
 
-private lemma mixedThetaPair_f0 (K : Type) [Field K] [NumberField K] :
+private lemma mixedThetaPair_f0 :
     (mixedThetaPair K).f₀ = (alpha K : ℂ) * (Fintype.card (ClassGroup (𝓞 K)) : ℂ) := rfl
+
+end
 
 private lemma hasMellin_finset_sum {s : ℂ} {ι : Type*} (t : Finset ι)
     (f : ι → ℝ → ℂ) (m : ι → ℂ)
@@ -35,8 +41,7 @@ private lemma hasMellin_finset_sum {s : ℂ} {ι : Type*} (t : Finset ι)
       · simp [mellin]
   | insert a t ha ih =>
       have hfa := h a (Finset.mem_insert_self a t)
-      have hft : ∀ i ∈ t, HasMellin (f i) s (m i) := fun i hi => h i (Finset.mem_insert_of_mem hi)
-      have ih' := ih hft
+      have ih' := ih (fun i hi => h i (Finset.mem_insert_of_mem hi))
       have hadd := hasMellin_add hfa.1 ih'.1
       rw [hfa.2, ih'.2] at hadd
       convert hadd using 2
@@ -59,7 +64,7 @@ theorem hasMellin_mixedThetaPair (K : Type) [Field K] [NumberField K]
     ring
   rw [hfun]
 
-  have h := hasMellin_finset_sum (Finset.univ : Finset (ClassGroup (𝓞 K)))
+  have h := hasMellin_finset_sum Finset.univ
     (fun C t => (alpha K : ℂ) *
       (mixedAngularAverage K
         (FractionalIdeal.mk0 K (inverseClassIdealRepresentative K C)) t - 1))

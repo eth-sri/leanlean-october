@@ -33,21 +33,17 @@ theorem eventual_inverse_root_chart_ratio_cube
   obtain ⟨M, hM, hcubes⟩ := KPLocalCube.principal_units_eventually_cubes F q
   refine ⟨M, ?_⟩
   intro m hm u w t ht hw
-  have hmpos : 0 < m := lt_of_lt_of_le (by omega : 0 < M) hm
   rw [KPTameTransposeUnitNumeratorSteps.rootLevelSet_eq_congruence_ideal
-    F q ζ hζ S P m hmpos] at ht
+    F q ζ hζ S P m (lt_of_lt_of_le (by omega : 0 < M) hm)] at ht
   obtain ⟨t₀, ht₀, rfl⟩ := ht
-  have hp : valuation (LocalField F q) (π : LocalField F q) ≤ 1 := by
+  have hp : valuation (LocalField F q) π ≤ 1 := by
     apply (map_le_map_iff (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt
       (LocalField F q))).mp
     rw [hπ, map_one, ← WithZero.exp_zero, WithZero.exp_le_exp]
     norm_num
-  let p : KPLocalCube.LocalIntegers F q := ⟨(π : LocalField F q), hp⟩
-  let x : KPLocalCube.LocalIntegers F q := p * t₀ * (↑u⁻¹)
-  have hx : x ∈ KPLocalCube.maximalIdeal F q ^ m :=
-    (KPLocalCube.maximalIdeal F q ^ m).mul_mem_right _
-      ((KPLocalCube.maximalIdeal F q ^ m).mul_mem_left _ ht₀)
-  obtain ⟨y, hy⟩ := hcubes m hm (1 + (x : LocalField F q)) ⟨x, hx, rfl⟩
+  let x := (⟨π, hp⟩) * t₀ * (↑u⁻¹)
+  obtain ⟨y, hy⟩ := hcubes m hm (1 + x) ⟨x, ((KPLocalCube.maximalIdeal F q ^ m).mul_mem_right _
+    ((KPLocalCube.maximalIdeal F q ^ m).mul_mem_left _ ht₀)), rfl⟩
   refine ⟨y, ?_⟩
   apply Units.ext
   rw [Units.val_mul, hy]

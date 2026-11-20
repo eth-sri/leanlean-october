@@ -14,10 +14,11 @@ namespace DedekindZetaZeroFree.Hecke.Theta
 
 variable (F : Type) [Field F] [NumberField F]
 
-theorem topLogDomainIntegral_translation (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
-    (f : RayCoset.logHyperplane F → ℂ)
-    (hperiodic : ∀ (γ : RayCoset.rayUnitLogLattice F ⊤)
-      (h : RayCoset.logHyperplane F), f (h + (γ : RayCoset.logHyperplane F)) = f h) :
+variable (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥) (f : RayCoset.logHyperplane F → ℂ)
+    (hperiodic : ∀ (γ : RayCoset.rayUnitLogLattice F ⊤) (h : RayCoset.logHyperplane F), f (h + (γ : RayCoset.logHyperplane F)) = f h)
+
+include hperiodic in
+theorem topLogDomainIntegral_translation :
     ∀ d : RayCoset.logHyperplane F,
       (∫ h in RayCoset.rayUnitHalfOpenDomain F ⊤ ht, f (h + d)
         ∂DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F) =
@@ -30,28 +31,25 @@ theorem topLogDomainIntegral_translation (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
       (DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F) :=
     ⟨fun g s hs => (measurePreserving_add_left
       (DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F)
-      (g : RayCoset.logHyperplane F)).measure_preimage hs.nullMeasurableSet⟩
+      g).measure_preimage hs.nullMeasurableSet⟩
   have hf : ∀ (γ : RayCoset.rayUnitLogLattice F ⊤) h, f (γ +ᵥ h) = f h := by
     intro γ h
-    change f ((γ : RayCoset.logHyperplane F) + h) = f h
+    change f (γ + h) = f h
     rw [add_comm]
     exact hperiodic γ h
   have hQ := RayCoset.isAddFundamentalDomain_rayUnitHalfOpenDomain F ⊤ ht
   have hd := hQ.vadd_of_comm d
-  have hi := (measurePreserving_add_left
-    (DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F) d).setIntegral_image_emb
-    (MeasurableEquiv.addLeft d).measurableEmbedding f (RayCoset.rayUnitHalfOpenDomain F ⊤ ht)
   have hi' : (∫ h in RayCoset.rayUnitHalfOpenDomain F ⊤ ht, f (h + d)
       ∂DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F) =
       ∫ h in d +ᵥ RayCoset.rayUnitHalfOpenDomain F ⊤ ht, f h
         ∂DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F := by
-    simpa only [← Set.image_vadd, vadd_eq_add, add_comm] using hi.symm
+    simpa only [← Set.image_vadd, vadd_eq_add, add_comm] using ((measurePreserving_add_left
+      (DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F) d).setIntegral_image_emb
+      (MeasurableEquiv.addLeft d).measurableEmbedding f (RayCoset.rayUnitHalfOpenDomain F ⊤ ht)).symm
   exact hi'.trans (hd.setIntegral_eq hQ hf)
 
-theorem topLogDomainIntegral_reflection (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
-    (f : RayCoset.logHyperplane F → ℂ)
-    (hperiodic : ∀ (γ : RayCoset.rayUnitLogLattice F ⊤)
-      (h : RayCoset.logHyperplane F), f (h + (γ : RayCoset.logHyperplane F)) = f h) :
+include hperiodic in
+theorem topLogDomainIntegral_reflection :
     (∫ h in RayCoset.rayUnitHalfOpenDomain F ⊤ ht, f (-h)
       ∂DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F) =
     ∫ h in RayCoset.rayUnitHalfOpenDomain F ⊤ ht, f h
@@ -82,8 +80,8 @@ theorem topLogDomainIntegral_reflection (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
     · exact (Measure.measurePreserving_neg
         (DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F)).quasiMeasurePreserving
     · intro γ h
-      change -(-(γ : RayCoset.logHyperplane F) + h) =
-        (γ : RayCoset.logHyperplane F) + -h
+      change -(-γ + h) =
+        γ + -h
       simp [add_comm]
   calc
     _ = ∫ h in e '' RayCoset.rayUnitHalfOpenDomain F ⊤ ht, f h

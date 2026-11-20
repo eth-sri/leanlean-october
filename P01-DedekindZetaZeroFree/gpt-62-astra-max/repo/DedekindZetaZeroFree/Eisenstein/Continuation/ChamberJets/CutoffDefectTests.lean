@@ -15,74 +15,17 @@ namespace DedekindZetaZeroFree.KPContActualChamberGraphHolomorphy
 
 section CoordinateConversion
 open KPContLocalNorm
-private theorem list_index {n : ℕ} (l : List (Fin n)) :
-    ∃ m, ∃ α : MultiIndex n m, l.Perm α.directions := by
-  classical
-  let m := ∑ i : Fin n, l.count i
-  let α : MultiIndex n m := ⟨fun i => ⟨l.count i, by
-    have := Finset.single_le_sum (fun j _ => Nat.zero_le (l.count j)) (Finset.mem_univ i)
-    dsimp [m]; omega⟩, by simp [m]⟩
-  refine ⟨m, α, List.perm_iff_count.mpr ?_⟩
-  intro i
-  rw [MultiIndex.directions, List.count_flatMap,
-    ← List.sum_toFinset _ (List.nodup_finRange n)]
-  simp [α, Function.comp_def, List.count_replicate]
+private alias list_index := DedekindZetaZeroFree.KPContActualAllCuspSourceLaplacianJets.LaplacianJets.list_index
 
-private theorem flat_word (n : ℕ) (w : List (Fin n)) (u : Space n → ℂ) :
-    RightFrame.PullbackWords.directionalWord (fun i _ => EuclideanSpace.single i (1:ℝ)) w u =
-      coordinateDerivativeList w u := by
-  induction w with
-  | nil => rfl
-  | cons i w ih => simp only [RightFrame.PullbackWords.directionalWord, coordinateDerivativeList, ih]
+private alias flat_word := DedekindZetaZeroFree.KPContActualAllCuspSourceLaplacianJets.LaplacianJets.flat_word
 
-private theorem compact_coordinate_jets_transport
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
-    {d : ℕ} (B : LocalBall d) (O : Set ℂ)
-    (g : ℂ → Space d → ℂ) (hg : KPCutoffSource.ChartSmoothHolomorphicOn B g O)
-    (D : Set E) (hD : IsOpen D) (ψ : E → Space d)
-    (hψ : ContDiffOn ℝ (⊤ : ℕ∞) ψ D) (hψB : Set.MapsTo ψ D B.carrier)
-    (K : Set E) (hK : IsCompact K) (hKD : K ⊆ D) (n : ℕ) (v : Fin n → E) :
-    letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
-    ∃ j : ℂ → C(K,ℂ), DifferentiableOn ℂ j O ∧ ∀ z ∈ O, ∀ x : K,
-      j z x = iteratedFDerivWithin ℝ n (g z ∘ ψ) D x.val v := by
-  apply KPContActualChamberCasimirJets.normalSeries_transported_compact_jet
-    B.carrier Metric.isOpen_ball D hD
-    (fun i _ => EuclideanSpace.single i (1:ℝ)) (fun _ => contDiffOn_const)
-    (fun x _ => ⟨(EuclideanSpace.basisFun (Fin d) ℝ).toBasis,
-      fun i => EuclideanSpace.basisFun_apply (Fin d) ℝ i⟩)
-    ψ hψ hψB O g hg.1 ?_ K hK hKD n v
-  intro w C hC hCB
-  letI : CompactSpace C := isCompact_iff_compactSpace.mp hC
-  obtain ⟨m,α,hperm⟩ := list_index w
-  obtain ⟨j,hj,hjval⟩ := hg.2 C hC hCB m
-  let L : CompactJets C m →L[ℂ] C(C,ℂ) := ContinuousLinearMap.proj α
-  refine ⟨fun z => L (j z), L.differentiable.comp_differentiableOn hj, ?_⟩
-  intro z hz x
-  rw [flat_word, WeakJets.Raw.coordinateDerivativeList_perm_on hperm (hg.1 z hz) (hCB x.property)]
-  exact hjval z hz α x
+private alias compact_coordinate_jets_transport := DedekindZetaZeroFree.KPContActualAllCuspSourceLaplacianJets.LaplacianJets.compact_coordinate_jets_transport
 end CoordinateConversion
 
 namespace RawCalculus
 open RightFrame.PullbackWords
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-private theorem jet_constant_word (n : ℕ) (u : E → ℂ) (U : Set E) (hU : IsOpen U)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (x : E) (hx : x ∈ U) (v : Fin n → E) :
-    iteratedFDerivWithin ℝ n u U x v =
-      RightFrame.PullbackWords.constantDirectionWord (List.ofFn v) u x := by
-  rw [iteratedFDerivWithin_of_isOpen n hU hx]
-  induction n generalizing x with
-  | zero => simp [RightFrame.PullbackWords.constantDirectionWord,
-      RightFrame.PullbackWords.directionalWord, iteratedFDeriv_zero_apply]
-  | succ n ih =>
-    rw [((hu x hx).contDiffAt (hU.mem_nhds hx)).differentiableAt_iteratedFDeriv
-      (m := n) (WithTop.coe_lt_coe.mpr (ENat.natCast_lt_top n)) |>.iteratedFDeriv_succ_apply_left']
-    have heq : (fun y => iteratedFDeriv ℝ n u y (Fin.tail v)) =ᶠ[𝓝 x]
-        RightFrame.PullbackWords.constantDirectionWord (List.ofFn (Fin.tail v)) u :=
-      eventually_of_mem (hU.mem_nhds hx) fun y hy => ih y hy _
-    rw [heq.fderiv_eq]
-    simp only [List.ofFn_succ, RightFrame.PullbackWords.constantDirectionWord,
-      RightFrame.PullbackWords.directionalWord]
-    rfl
+private alias jet_constant_word := DedekindZetaZeroFree.KPContActualChamberCasimirJets.jet_constant_word
 
 private theorem word_smooth (u : E → ℂ) (hu : ContDiff ℝ (⊤ : ℕ∞) u) (w : List E) :
     ContDiff ℝ (⊤ : ℕ∞) (constantDirectionWord w u) := by
@@ -107,14 +50,7 @@ private theorem expand_smooth (c : E → ℂ) (hc : ContDiff ℝ (⊤ : ℕ∞) 
     · exact ((ih q hq).fderiv_right (by simp)).clm_apply contDiff_const
     · exact ih q hq
 
-private theorem list_derivative {α : Type*} (ts : List α) (f : α → E → ℂ) (x : E)
-    (hf : ∀ t ∈ ts, DifferentiableAt ℝ (f t) x) :
-    HasFDerivAt (fun y => (ts.map (fun t => f t y)).sum)
-      (ts.map (fun t => fderiv ℝ (f t) x)).sum x := by
-  induction ts with
-  | nil => simpa using hasFDerivAt_const (𝕜 := ℝ) (0 : ℂ) x
-  | cons t ts ih =>
-    exact (hf t (by simp)).hasFDerivAt.fun_add (ih (fun r hr => hf r (by simp [hr])))
+private alias list_derivative := DedekindZetaZeroFree.KPContinuation.ChamberFlatSource.FlatRightWordJets.list_fderiv
 
 private theorem expand_value (c : E → ℂ) (hc : ContDiff ℝ (⊤ : ℕ∞) c)
     (u : E → ℂ) (hu : ContDiff ℝ (⊤ : ℕ∞) u) (w : List E) :
@@ -127,9 +63,7 @@ private theorem expand_value (c : E → ℂ) (hc : ContDiff ℝ (⊤ : ℕ∞) c
     change fderiv ℝ (constantDirectionWord w (fun x => c x * u x)) x b = _
     rw [ih]
     have hd : ∀ t ∈ expand c w, DifferentiableAt ℝ
-        (fun y => t.1 y * constantDirectionWord t.2 u y) x := by
-      intro t ht
-      exact ((expand_smooth c hc w t ht).mul (word_smooth u hu t.2)).differentiable (by simp) x
+        (fun y => t.1 y * constantDirectionWord t.2 u y) x := fun t ht => ((expand_smooth c hc w t ht).mul (word_smooth u hu t.2)).differentiable (by simp) x
     rw [(list_derivative (expand c w) (fun t y => t.1 y * constantDirectionWord t.2 u y) x hd).fderiv]
     rw [show (expand c (b :: w)).map (fun t => t.1 x * constantDirectionWord t.2 u x) =
         ((expand c w).map (fun t =>
@@ -160,8 +94,13 @@ private theorem expand_value (c : E → ℂ) (hc : ContDiff ℝ (⊤ : ℕ∞) c
     ∃ j : ℂ → C(K,ℂ), DifferentiableOn ℂ j O ∧
       ∀ s ∈ O, ∀ x : K, j s x = constantDirectionWord w (h s) x.val
 
-private theorem word_holomorphic_of_jets (W : Set E) (hW : IsOpen W) (O : Set ℂ)
-    (h : ℂ → E → ℂ) (hs : ∀ s ∈ O, ContDiff ℝ (⊤ : ℕ∞) (h s))
+section
+
+variable (W : Set E) (hW : IsOpen W) (O : Set ℂ) (h : ℂ → E → ℂ)
+    (hs : ∀ s ∈ O, ContDiff ℝ (⊤ : ℕ∞) (h s))
+
+include hW hs in
+private theorem word_holomorphic_of_jets
     (hh : ∀ (K : Set E) (hK : IsCompact K), K ⊆ W → ∀ n (v : Fin n → E),
       letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
       ∃ j : ℂ → C(K,ℂ), DifferentiableOn ℂ j O ∧ ∀ s ∈ O, ∀ x : K,
@@ -171,10 +110,10 @@ private theorem word_holomorphic_of_jets (W : Set E) (hW : IsOpen W) (O : Set �
   refine ⟨j,hj,?_⟩
   intro s hz x
   rw [hjval s hz x, jet_constant_word _ _ W hW (hs s hz).contDiffOn _ (hKW x.property)]
-  simp only [List.ofFn_get]
+  simp
 
-private theorem jets_of_word_holomorphic (W : Set E) (hW : IsOpen W) (O : Set ℂ)
-    (h : ℂ → E → ℂ) (hs : ∀ s ∈ O, ContDiff ℝ (⊤ : ℕ∞) (h s))
+include hW hs in
+private theorem jets_of_word_holomorphic
     (hh : WordHolomorphic W O h)
     (K : Set E) (hK : IsCompact K) (hKW : K ⊆ W) (n : ℕ) (v : Fin n → E) :
     letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
@@ -184,6 +123,8 @@ private theorem jets_of_word_holomorphic (W : Set E) (hW : IsOpen W) (O : Set �
   refine ⟨j,hj,?_⟩
   intro s hz x
   rw [jet_constant_word _ _ W hW (hs s hz).contDiffOn _ (hKW x.property), hjval s hz x]
+
+end
 
 private theorem list_holomorphic {α : Type*} {X : Type*} [TopologicalSpace X]
     [CompactSpace X] (ts : List α) (j : α → ℂ → C(X,ℂ)) (O : Set ℂ)
@@ -288,7 +229,7 @@ private theorem word_holomorphic_add (W : Set E) (O : Set ℂ) (h g : ℂ → E 
 private theorem word_holomorphic_neg (W : Set E) (O : Set ℂ) (h : ℂ → E → ℂ)
     (hs : ∀ s ∈ O, ContDiff ℝ (⊤ : ℕ∞) (h s)) (hh : WordHolomorphic W O h) :
     WordHolomorphic W O (fun s x => -h s x) := by
-  simpa only [neg_one_mul] using word_holomorphic_mul W O h hs hh
+  simpa using word_holomorphic_mul W O h hs hh
     (fun _ => (-1 : ℂ)) contDiff_const
 
 end RawCalculus
@@ -313,112 +254,16 @@ private theorem cauchy_identify (O : Set ℂ) (hO : IsOpen O)
   unfold RightFrame.CauchyCoefficient.cauchyCoefficient
   rw [hkernel, hi, smul_eq_mul]
   have hfac : (k.factorial : ℂ) ≠ 0 := by exact_mod_cast k.factorial_ne_zero
-  have hpi : (2 * (Real.pi : ℂ) * Complex.I) ≠ 0 := by
-    exact mul_ne_zero (mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)) Complex.I_ne_zero
+  have hpi : (2 * (Real.pi : ℂ) * Complex.I) ≠ 0 := mul_ne_zero (mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)) Complex.I_ne_zero
   field_simp
 
-private theorem word_smooth (U : Set E) (hU : IsOpen U) (fields : B → E → E)
-    (hf : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
-    (u : E → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (w : List B) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (directionalWord fields w u) U := by
-  induction w with
-  | nil => exact hu
-  | cons b w ih => exact (ih.fderiv_of_isOpen hU (by simp)).clm_apply (hf b)
-private theorem word_const_mul (U : Set E) (hU : IsOpen U) (fields : B → E → E)
-    (hf : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
-    (u : E → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (c : ℂ) (w : List B) :
-    ∀ x ∈ U, directionalWord fields w (fun y => c * u y) x =
-      c * directionalWord fields w u x := by
-  induction w with
-  | nil => intro x hx; rfl
-  | cons b w ih =>
-    intro x hx
-    change (fderiv ℝ (directionalWord fields w (fun y => c * u y)) x) (fields b x) = _
-    have he : directionalWord fields w (fun y => c * u y) =ᶠ[𝓝 x]
-        fun y => c * directionalWord fields w u y :=
-      Filter.eventually_of_mem (hU.mem_nhds hx) (fun y hy => ih y hy)
-    rw [he.fderiv_eq]
-    have hd := ((word_smooth U hU fields hf u hu w) x hx).contDiffAt (hU.mem_nhds hx)
-    have he' : (fun y => c * directionalWord fields w u y) =
-        fun y => c • directionalWord fields w u y := rfl
-    rw [he', fderiv_fun_const_smul (hd.differentiableAt (by simp))]
-    rfl
-private theorem parameter_word_commute
-    (U : Set E) (hU : IsOpen U) (fields : B → E → E)
-    (hf : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
-    (hframe : ∀ x ∈ U, ∃ e : Module.Basis B ℝ E, ∀ b, e b = fields b x)
-    (O : Set ℂ) (hO : IsOpen O) (h : ℂ → E → ℂ)
-    (hsp : ∀ z ∈ O, ContDiffOn ℝ (⊤ : ℕ∞) (h z) U)
-    (hj : ∀ w K, IsCompact K → K ⊆ U →
-      ContinuousOn (fun p : ℂ × E => directionalWord fields w (h p.1) p.2) (O ×ˢ K))
-    (hhol : ∀ w x, x ∈ U →
-      DifferentiableOn ℂ (fun z => directionalWord fields w (h z) x) O)
-    (k : ℕ) (s : ℂ) (hs : s ∈ O) (w : List B) (x : E) (hx : x ∈ U) :
-    directionalWord fields w (fun y => iteratedDerivWithin k (fun z => h z y) O s) x =
-      iteratedDerivWithin k (fun z => directionalWord fields w (h z) x) O s := by
-  obtain ⟨ε,hε,hεO⟩ := Metric.isOpen_iff.mp hO s hs
-  let r := ε/2
-  have hr : 0 < r := by dsimp [r]; positivity
-  have hdisk : Metric.closedBall s r ⊆ O := fun z hz =>
-    hεO (lt_of_le_of_lt hz (by change ε / 2 < ε; linarith))
-  have hj' := fun w K hK hKU => (hj w K hK hKU).mono (Set.prod_mono hdisk (Set.Subset.refl K))
-  have hc := RightFrame.CauchyCoefficient.coefficient_smooth U hU fields hf hframe
-    O hO h s r hr hdisk hsp hj' (fun x hx => hhol [] x hx) k
-  have he : (fun y => iteratedDerivWithin k (fun z => h z y) O s) =ᶠ[𝓝 x]
-      fun y => (k.factorial : ℂ) * RightFrame.CauchyCoefficient.cauchyCoefficient h s r k y :=
-    Filter.eventually_of_mem (hU.mem_nhds hx)
-      (fun y hy => cauchy_identify O hO h s hs r hr hdisk y (hhol [] y hy) k)
-  have word_local {u v : E → ℂ} (heq : u =ᶠ[𝓝 x] v) :
-      directionalWord fields w u x = directionalWord fields w v x := by
-    have heq' : ∀ w, directionalWord fields w u =ᶠ[𝓝 x] directionalWord fields w v := by
-      intro w
-      induction w with
-      | nil => exact heq
-      | cons b w ih =>
-        have hd := ih.fderiv (𝕜 := ℝ)
-        filter_upwards [hd] with y hy
-        change fderiv ℝ (directionalWord fields w u) y (fields b y) =
-          fderiv ℝ (directionalWord fields w v) y (fields b y)
-        rw [hy]
-    exact (heq' w).self_of_nhds
-  rw [word_local he, word_const_mul U hU fields hf _ hc _ w x hx,
-    RightFrame.CauchyCoefficient.word_commute U hU fields hf hframe O hO h s r hr hdisk
-      hsp hj' (fun y hy => hhol [] y hy) k w x hx]
-  exact (cauchy_identify O hO (fun z => directionalWord fields w (h z)) s hs r hr hdisk
-    x (hhol w x hx) k).symm
+private alias word_smooth := DedekindZetaZeroFree.KPContActualChamberCasimirJets.ChartCalculus.NormalSeries.word_smooth
+private alias word_const_mul := DedekindZetaZeroFree.KPContActualChamberCasimirJets.ChartCalculus.NormalSeries.word_const_mul
+private alias parameter_word_commute := DedekindZetaZeroFree.KPContActualChamberCasimirJets.ChartCalculus.parameter_word_commute
 
-private theorem joint_of_compact_family
-    (O : Set ℂ) (U : Set E) (h : ℂ → E → ℂ)
-    (hh : ∀ (K : Set E) (hK : IsCompact K), K ⊆ U →
-      letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
-      ∃ j : ℂ → C(K,ℂ), DifferentiableOn ℂ j O ∧
-        ∀ z ∈ O, ∀ x : K, j z x = h z x.val)
-    (K : Set E) (hK : IsCompact K) (hKU : K ⊆ U) :
-    ContinuousOn (fun p : ℂ × E => h p.1 p.2) (O ×ˢ K) := by
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
-  obtain ⟨j,hj,heq⟩ := hh K hK hKU
-  have hc : ContinuousOn (fun p : ℂ × K => j p.1 p.2) (O ×ˢ Set.univ) :=
-    continuous_eval.comp_continuousOn ((hj.continuousOn.comp continuous_fst.continuousOn
-      (fun _ hp => hp.1)).prodMk continuous_snd.continuousOn)
-  apply continuousOn_iff_continuous_restrict.mpr
-  let a : (O ×ˢ K) → ℂ × K := fun p => (p.val.1, ⟨p.val.2,p.property.2⟩)
-  have ha : Continuous a := (continuous_fst.comp continuous_subtype_val).prodMk
-    ((continuous_snd.comp continuous_subtype_val).subtype_mk _)
-  exact (hc.comp_continuous ha (fun p => ⟨p.property.1, Set.mem_univ _⟩)).congr
-    (fun p => heq p.val.1 p.property.1 ⟨p.val.2,p.property.2⟩)
+private alias joint_of_compact_family := DedekindZetaZeroFree.KPContActualChamberCasimirJets.ChartCalculus.joint_of_compact_family
 
-private theorem point_of_compact_family
-    (O : Set ℂ) (U : Set E) (h : ℂ → E → ℂ)
-    (hh : ∀ (K : Set E) (hK : IsCompact K), K ⊆ U →
-      letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
-      ∃ j : ℂ → C(K,ℂ), DifferentiableOn ℂ j O ∧
-        ∀ z ∈ O, ∀ x : K, j z x = h z x.val)
-    (x : E) (hx : x ∈ U) : DifferentiableOn ℂ (fun z => h z x) O := by
-  letI : CompactSpace ({x} : Set E) := isCompact_iff_compactSpace.mp isCompact_singleton
-  obtain ⟨j,hj,heq⟩ := hh {x} isCompact_singleton (Set.singleton_subset_iff.mpr hx)
-  let L : C(({x} : Set E),ℂ) →L[ℂ] ℂ := ContinuousMap.evalCLM ℂ ⟨x,rfl⟩
-  exact (L.differentiable.comp_differentiableOn hj).congr
-    (fun z hz => (heq z hz ⟨x,rfl⟩).symm)
+private alias point_of_compact_family := DedekindZetaZeroFree.KPContActualChamberCasimirJets.ChartCalculus.point_of_compact_family
 
 end RawCauchy
 
@@ -426,18 +271,16 @@ section RawTestGeometry
 open KPContActualSectorSmoothTestModules KPContSectorSmoothFramesSupport
 open KPContCotangentActualGenuineTwistIsotropy KPContCotangentOverlapRationalBranches
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 private theorem raw_test_representative (f : S_U F ζ hζ U R P H) :
-    sectionFields (scalarSections f) = f.val := by
-  exact (Classical.choose_spec (scalar_gluing f)).1.2.2
+    sectionFields (scalarSections f) = f.val := (Classical.choose_spec (scalar_gluing f)).1.2.2
 
 private theorem raw_test_smooth (f : S_U F ζ hζ U R P H) :
-    IsSmoothSections F ζ hζ U R P H (scalarSections f) := by
-  exact (Classical.choose_spec (scalar_gluing f)).1.1
+    IsSmoothSections F ζ hζ U R P H (scalarSections f) := (Classical.choose_spec (scalar_gluing f)).1.1
 
 private theorem raw_test_laplacian_coefficient (f : S_U F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (x : omega a) :
@@ -454,14 +297,7 @@ private theorem raw_test_laplacian_coefficient (f : S_U F ζ hζ U R P H)
   exact KPContActualSectorTestDifferentialDescentCalculus.coframe_calculus.2.2.2.2.1
     a (f.val a) (f.property.1 a) x
 
-private theorem raw_coefficient_formula (a : ActualChart (U := U) (H := H))
-    (s : Sections F ζ hζ U R P H) (x : KPContCotangentActualOverlap.M F) :
-    (isotropyChart a).coefficient s x = (s a.component).val
-      (KPContCotangentActualOverlap.labeledA
-        (KPContCotangentActualOverlap.placeEquiv F ζ hζ) x) := by
-  simp [isotropyChart, KPContCotangentActualOverlap.LiftedChart.coefficient,
-    KPContCotangentActualOverlap.ChartKind.representative,
-    KPContSectorCoveredQuotientVocabulary.chi_coe]
+private alias raw_coefficient_formula := DedekindZetaZeroFree.KPContActualCompactSectionL2Jets.LaplacianSmoothnessAndSupport.coefficient_isotropyChart
 
 private theorem raw_cutoffSection_support
     (r : KPContActualSectorCutoffGraphLimit.Cutoffs (U := U) (H := H)) (n : ℕ)
@@ -537,10 +373,7 @@ private theorem raw_omega_open (a : ActualChart (U := U) (H := H)) :
 private theorem raw_coefficient_smooth (a : ActualChart (U := U) (H := H))
     (s : Sections F ζ hζ U R P H) (hs : IsSmoothSections F ζ hζ U R P H s) :
     ContDiff ℝ (⊤ : ℕ∞) ((isotropyChart a).coefficient s) := by
-  have he : (isotropyChart a).coefficient s = fun x => (s a.component).val
-      (KPContCotangentActualOverlap.labeledA (KPContCotangentActualOverlap.placeEquiv F ζ hζ) x) :=
-    funext (raw_coefficient_formula a s)
-  rw [he]
+  rw [(funext (raw_coefficient_formula a s))]
   exact (hs a.component).comp KPContActualGlobalGreen.contDiff_labeledA
 
 private theorem raw_chart_sub (a : ActualChart (U := U) (H := H))
@@ -580,11 +413,8 @@ private theorem raw_cutoff_chart_holomorphic
     (r.rho n (q a x) : ℂ)
   have hs : ∀ s ∈ O, ContDiff ℝ (⊤ : ℕ∞) (h s) :=
     fun s _ => raw_coefficient_smooth a (w s).val (w s).property
-  have hc : ContDiff ℝ (⊤ : ℕ∞) c := by
-    exact (Complex.ofRealCLM.contDiff.comp (r.smooth n a.component)).comp
+  have hc : ContDiff ℝ (⊤ : ℕ∞) c := (Complex.ofRealCLM.contDiff.comp (r.smooth n a.component)).comp
       KPContActualGlobalGreen.contDiff_labeledA
-  have hw := RawCalculus.word_holomorphic_of_jets (omega a) (raw_omega_open a) O h hs hh
-  have hm := RawCalculus.word_holomorphic_mul (omega a) O h hs hw c hc
   have he : ∀ s, (isotropyChart a).coefficient
       (scalarSections (KPContActualSectorCutoffGraphLimit.cutoffTest r n (w s))) =
         fun x => c x * h s x := by
@@ -596,29 +426,18 @@ private theorem raw_cutoff_chart_holomorphic
     rfl
   intro K hK hKω m v
   obtain ⟨j,hj,hjval⟩ := RawCalculus.jets_of_word_holomorphic (omega a) (raw_omega_open a)
-    O (fun s x => c x * h s x) (fun s hz => hc.mul (hs s hz)) hm K hK hKω m v
+    O (fun s x => c x * h s x) (fun s hz => hc.mul (hs s hz)) (RawCalculus.word_holomorphic_mul (omega a) O h hs (RawCalculus.word_holomorphic_of_jets (omega a) (raw_omega_open a) O h hs hh) c hc) K hK hKω m v
   refine ⟨j,hj,?_⟩
   intro s hz x
   rw [he, hjval s hz x]
 
 open KPContCotangentActualOverlap
-private theorem contDiff_exp_height (i : Fin (d F)) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun p : M F => (Real.exp (2 * p (i, 2)) : ℂ)) := by
-  have hproj : ContDiff ℝ (⊤ : ℕ∞) (fun p : M F => p (i, 2)) := by
-    convert (EuclideanSpace.proj (i, 2) : M F →L[ℝ] ℝ).contDiff (n := (⊤ : ℕ∞)) using 1
-    ext p
-    simp [PiLp.proj_apply]
-  have h2 : ContDiff ℝ (⊤ : ℕ∞) (fun p : M F => 2 * p (i, 2)) :=
-    (contDiff_const (c := (2 : ℝ))).mul hproj
-  have h : ContDiff ℝ (⊤ : ℕ∞) (fun p : M F => ((2 * p (i, 2) : ℝ) : ℂ)) :=
-    Complex.ofRealCLM.contDiff.comp h2
-  simpa only [Complex.ofReal_exp] using h.cexp
+private alias contDiff_exp_height := DedekindZetaZeroFree.KPContActualCompactSectionL2Jets.LaplacianSmoothnessAndSupport.contDiff_exp_height
 
 private theorem contDiff_coordinateDerivative (f : M F → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (i : Fin (d F)) (k : Fin 3) :
     ContDiff ℝ (⊤ : ℕ∞) (fun p => HyperbolicChart.coordinateDerivative (d F) i k f p) := by
-  have h := (hf.fderiv_right (m := (⊤ : ℕ∞)) (by simp))
-  simpa only [HyperbolicChart.coordinateDerivative] using h.clm_apply contDiff_const
+  simpa only [HyperbolicChart.coordinateDerivative] using ((hf.fderiv_right (by simp))).clm_apply contDiff_const
 
 private theorem contDiff_laplacian (f : M F → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x => HyperbolicChart.laplacian (d F) f x) := by
@@ -633,26 +452,7 @@ private theorem contDiff_laplacian (f : M F → ℂ) (hf : ContDiff ℝ (⊤ : �
             (HyperbolicChart.coordinateDerivative (d F) i 1 f) p)) := by
     intro i
     have h22 := contDiff_coordinateDerivative f hf i 2
-    have h00 := contDiff_coordinateDerivative f hf i 0
-    have h11 := contDiff_coordinateDerivative f hf i 1
-    have h2 : ContDiff ℝ (⊤ : ℕ∞) (fun p : M F =>
-        HyperbolicChart.coordinateDerivative (d F) i 2
-          (HyperbolicChart.coordinateDerivative (d F) i 2 f) p) :=
-      contDiff_coordinateDerivative _ h22 i 2
-    have h0 : ContDiff ℝ (⊤ : ℕ∞) (fun p : M F =>
-        HyperbolicChart.coordinateDerivative (d F) i 0
-          (HyperbolicChart.coordinateDerivative (d F) i 0 f) p) :=
-      contDiff_coordinateDerivative _ h00 i 0
-    have h1 : ContDiff ℝ (⊤ : ℕ∞) (fun p : M F =>
-        HyperbolicChart.coordinateDerivative (d F) i 1
-          (HyperbolicChart.coordinateDerivative (d F) i 1 f) p) :=
-      contDiff_coordinateDerivative _ h11 i 1
-    have he : ContDiff ℝ (⊤ : ℕ∞) (fun p : M F => (Real.exp (2 * p (i, 2)) : ℂ)) :=
-      contDiff_exp_height i
-    have h22' : ContDiff ℝ (⊤ : ℕ∞) (fun p : M F =>
-        2 * HyperbolicChart.coordinateDerivative (d F) i 2 f p) :=
-      (contDiff_const (c := (2 : ℂ))).mul h22
-    exact (h2.neg.add h22').sub (he.mul (h0.add h1))
+    exact ((contDiff_coordinateDerivative _ h22 i 2).neg.add ((contDiff_const).mul h22)).sub ((contDiff_exp_height i).mul ((contDiff_coordinateDerivative _ (contDiff_coordinateDerivative f hf i 0) i 0).add (contDiff_coordinateDerivative _ (contDiff_coordinateDerivative f hf i 1) i 1)))
   simpa only [HyperbolicChart.laplacian] using ContDiff.sum (fun i _ => key i)
 
 private theorem raw_laplacian_word_holomorphic (W : Set (M F)) (O : Set ℂ)
@@ -674,7 +474,7 @@ private theorem raw_laplacian_word_holomorphic (W : Set (M F)) (O : Set ℂ)
       (fun x => HyperbolicChart.coordinateDerivative (d F) i k
         (HyperbolicChart.coordinateDerivative (d F) i k (h s)) x) :=
     fun s hz => contDiff_coordinateDerivative _ (sd i k s hz) i k
-  let t := fun (i : Fin (d F)) s x =>
+  let t := fun i s x =>
     -HyperbolicChart.coordinateDerivative (d F) i 2
         (HyperbolicChart.coordinateDerivative (d F) i 2 (h s)) x +
       2 * HyperbolicChart.coordinateDerivative (d F) i 2 (h s) x -
@@ -683,30 +483,22 @@ private theorem raw_laplacian_word_holomorphic (W : Set (M F)) (O : Set ℂ)
           (HyperbolicChart.coordinateDerivative (d F) i 0 (h s)) x +
         HyperbolicChart.coordinateDerivative (d F) i 1
           (HyperbolicChart.coordinateDerivative (d F) i 1 (h s)) x)
-  have st : ∀ i s, s ∈ O → ContDiff ℝ (⊤ : ℕ∞) (t i s) := by
-    intro i s hz
-    exact ((sdd i 2 s hz).neg.add (contDiff_const.mul (sd i 2 s hz))).sub
+  have st : ∀ i s, s ∈ O → ContDiff ℝ (⊤ : ℕ∞) (t i s) := fun i s hz => ((sdd i 2 s hz).neg.add (contDiff_const.mul (sd i 2 s hz))).sub
       ((contDiff_exp_height i).mul ((sdd i 0 s hz).add (sdd i 1 s hz)))
   have ht : ∀ i, RawCalculus.WordHolomorphic W O (t i) := by
     intro i
-    have H1 := RawCalculus.word_holomorphic_neg W O _ (sdd i 2) (hdd i 2)
-    have H2 := RawCalculus.word_holomorphic_mul W O _ (sd i 2) (hd i 2)
-      (fun _ => (2 : ℂ)) contDiff_const
-    have H3 := RawCalculus.word_holomorphic_add W O _ _ (sdd i 0) (sdd i 1) (hdd i 0) (hdd i 1)
-    have H4 := RawCalculus.word_holomorphic_mul W O _
-      (fun s hz => (sdd i 0 s hz).add (sdd i 1 s hz)) H3
-      (fun x => (Real.exp (2 * x (i,2)) : ℂ)) (contDiff_exp_height i)
-    have H5 := RawCalculus.word_holomorphic_add W O _ _
-      (fun s hz => (sdd i 2 s hz).neg)
-      (fun s hz => contDiff_const.mul (sd i 2 s hz)) H1 H2
-    have H6 := RawCalculus.word_holomorphic_neg W O _
-      (fun s hz => (contDiff_exp_height i).mul ((sdd i 0 s hz).add (sdd i 1 s hz))) H4
     exact RawCalculus.word_holomorphic_add W O _ _
       (fun s hz => (sdd i 2 s hz).neg.add (contDiff_const.mul (sd i 2 s hz)))
-      (fun s hz => ((contDiff_exp_height i).mul ((sdd i 0 s hz).add (sdd i 1 s hz))).neg) H5 H6
-  have H := RawCalculus.word_holomorphic_sum (Finset.univ.toList : List (Fin (d F))) W O t
+      (fun s hz => ((contDiff_exp_height i).mul ((sdd i 0 s hz).add (sdd i 1 s hz))).neg) (RawCalculus.word_holomorphic_add W O _ _
+        (fun s hz => (sdd i 2 s hz).neg)
+        (fun s hz => contDiff_const.mul (sd i 2 s hz)) (RawCalculus.word_holomorphic_neg W O _ (sdd i 2) (hdd i 2)) (RawCalculus.word_holomorphic_mul W O _ (sd i 2) (hd i 2)
+          (fun _ => (2 : ℂ)) contDiff_const)) (RawCalculus.word_holomorphic_neg W O _
+        (fun s hz => (contDiff_exp_height i).mul ((sdd i 0 s hz).add (sdd i 1 s hz))) (RawCalculus.word_holomorphic_mul W O _
+          (fun s hz => (sdd i 0 s hz).add (sdd i 1 s hz)) (RawCalculus.word_holomorphic_add W O _ _ (sdd i 0) (sdd i 1) (hdd i 0) (hdd i 1))
+          (fun x => (Real.exp (2 * x (i,2)) : ℂ)) (contDiff_exp_height i)))
+  have H := RawCalculus.word_holomorphic_sum Finset.univ.toList W O t
     (fun i _ s hz => st i s hz) ht
-  have he : (fun s x => ((Finset.univ.toList : List (Fin (d F))).map
+  have he : (fun s x => (Finset.univ.toList.map
       (fun i => t i s x)).sum) =
       (fun s x => HyperbolicChart.laplacian (d F) (h s) x) := by
     funext s x
@@ -715,29 +507,11 @@ private theorem raw_laplacian_word_holomorphic (W : Set (M F)) (O : Set ℂ)
   rw [he] at H
   exact H
 
-private theorem cd_congr (f g : M F → ℂ) (x : M F) (he : f =ᶠ[𝓝 x] g)
-    (i : Fin (d F)) (k : Fin 3) :
-    HyperbolicChart.coordinateDerivative (d F) i k f x =
-      HyperbolicChart.coordinateDerivative (d F) i k g x := by
-  simp only [HyperbolicChart.coordinateDerivative]
-  rw [he.fderiv_eq]
+private alias cd_congr := DedekindZetaZeroFree.KPContActualCompactSectionL2Jets.LaplacianSmoothnessAndSupport.cd_congr
 
-private theorem cd_eventuallyEq (f g : M F → ℂ) (x : M F) (he : f =ᶠ[𝓝 x] g)
-    (i : Fin (d F)) (k : Fin 3) :
-    (fun y => HyperbolicChart.coordinateDerivative (d F) i k f y) =ᶠ[𝓝 x]
-      (fun y => HyperbolicChart.coordinateDerivative (d F) i k g y) := by
-  filter_upwards [he.eventuallyEq_nhds] with y hy using cd_congr f g y hy i k
+private alias cd_eventuallyEq := DedekindZetaZeroFree.KPContActualCompactSectionL2Jets.LaplacianSmoothnessAndSupport.cd_eventuallyEq
 
-private theorem laplacian_congr (f g : M F → ℂ) (x : M F) (he : f =ᶠ[𝓝 x] g) :
-    HyperbolicChart.laplacian (d F) f x = HyperbolicChart.laplacian (d F) g x := by
-  unfold HyperbolicChart.laplacian
-  apply Finset.sum_congr rfl
-  intro i _
-  have h22 := cd_eventuallyEq f g x he i 2
-  have h00 := cd_eventuallyEq f g x he i 0
-  have h11 := cd_eventuallyEq f g x he i 1
-  rw [cd_congr _ _ x h22 i 2, cd_congr f g x he i 2,
-    cd_congr _ _ x h00 i 0, cd_congr _ _ x h11 i 1]
+private alias laplacian_congr := DedekindZetaZeroFree.KPContActualCompactSectionL2Jets.LaplacianSmoothnessAndSupport.laplacian_congr
 
 private theorem raw_test_laplacian_chart_holomorphic
     (φ : ℂ → S_U F ζ hζ U R P H) (O : Set ℂ)
@@ -750,8 +524,7 @@ private theorem raw_test_laplacian_chart_holomorphic
   let h := fun s => (isotropyChart a).coefficient (scalarSections (φ s))
   have hs : ∀ s ∈ O, ContDiff ℝ (⊤ : ℕ∞) (h s) :=
     fun s _ => raw_coefficient_smooth a _ (raw_test_smooth (φ s))
-  have hw := RawCalculus.word_holomorphic_of_jets (omega a) (raw_omega_open a) O h hs hh
-  have hl := raw_laplacian_word_holomorphic (omega a) O h hs hw
+  have hl := raw_laplacian_word_holomorphic (omega a) O h hs (RawCalculus.word_holomorphic_of_jets (omega a) (raw_omega_open a) O h hs hh)
   have he : ∀ s y, y ∈ omega a → (isotropyChart a).coefficient
       (scalarSections (KPContActualSectorTestDifferentialDescent.δ_U
         (KPContActualSectorTestDifferentialDescent.D_U (φ s)))) y =
@@ -872,10 +645,10 @@ private theorem raw_laplacian_parameter_commute (W : Set (M F)) (hW : IsOpen W)
          HyperbolicChart.coordinateDerivative (d F) i 1
           (HyperbolicChart.coordinateDerivative (d F) i 1 (h z)) x))) O s
   rw [iteratedDerivWithin_sub hz hO.uniqueDiffOn
-    (((sdd i 2).neg.add ((contDiffOn_const (c := (2:ℂ))).mul (sd i 2))).contDiffWithinAt hz)
-    (((contDiffOn_const (c := (Real.exp (2 * x (i,2)) : ℂ))).mul ((sdd i 0).add (sdd i 1))).contDiffWithinAt hz),
+    (((sdd i 2).neg.add ((contDiffOn_const).mul (sd i 2))).contDiffWithinAt hz)
+    (((contDiffOn_const).mul ((sdd i 0).add (sdd i 1))).contDiffWithinAt hz),
     iteratedDerivWithin_fun_add hz hO.uniqueDiffOn ((sdd i 2).neg.contDiffWithinAt hz)
-      (((contDiffOn_const (c := (2:ℂ))).mul (sd i 2)).contDiffWithinAt hz),
+      (((contDiffOn_const).mul (sd i 2)).contDiffWithinAt hz),
     iteratedDerivWithin_fun_neg,
     iteratedDerivWithin_const_mul_field, iteratedDerivWithin_const_mul_field,
     iteratedDerivWithin_fun_add hz hO.uniqueDiffOn
@@ -886,7 +659,7 @@ private theorem raw_laplacian_parameter_commute (W : Set (M F)) (hW : IsOpen W)
 
 open KPContSectorCoveredQuotientVocabulary
 private theorem shrink_at (i : Fin (H.atlas U).componentCount) (p : SymmetricSpace F) :
-    ∃ C : ActualChart (U := U) (H := H), C.component = i ∧ C.center = p ∧ p ∈ C.domain := by
+    ∃ C : ActualChart (U := U) (H := H), C.component = i ∧ p ∈ C.domain := by
   let O := Classical.choice (KPContSectorPhaseComponentCharts.orbifoldChart_exists F ζ hζ U R P H i p)
   letI : Finite (MulAction.stabilizer
       (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H i) p) :=
@@ -910,7 +683,7 @@ private theorem shrink_at (i : Fin (H.atlas U).componentCount) (p : SymmetricSpa
     rw [MulAction.mem_stabilizer_iff.mp g.property]
     exact hpW (Set.mem_singleton p)
   refine ⟨⟨i, p, O, V, hopen, hWc.of_isClosed_subset isClosed_closure (closure_mono hsub),
-    (closure_mono hsub).trans hWsub, ?_⟩, rfl, rfl, hp⟩
+    (closure_mono hsub).trans hWsub, ?_⟩, rfl, hp⟩
   intro g
   ext x; constructor
   · rintro ⟨y, hy, rfl⟩
@@ -936,7 +709,7 @@ private theorem raw_test_laplacian_parameter_jets
           (scalarSections (KPContActualSectorTestDifferentialDescent.δ_U
             (KPContActualSectorTestDifferentialDescent.D_U (φ 0 t))) i).val x) O s := by
   intro i x
-  obtain ⟨a,ha,hcenter,hx⟩ := shrink_at (F := F) (ζ := ζ) (hζ := hζ) i x
+  obtain ⟨a, ha, hx⟩ := shrink_at (F := F) (ζ := ζ) (hζ := hζ) i x
   let y := labeledAInv (placeEquiv F ζ hζ) x
   have hcoord : labeledA (placeEquiv F ζ hζ) y = x := by
     funext j
@@ -992,15 +765,15 @@ end RawTestGeometry
 section Actual
 open KPContActualChamberThreeL2Tails
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
 variable (hι : Function.Injective ι) (f : ℂ → S)
-variable (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
 variable {T : ℝ} (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H T)
 variable (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
@@ -1124,12 +897,7 @@ private theorem raw_defect_line_parameter_jets (k : ℕ) (s : ℂ) (hs : s ∈ V
   intro i x
   rw [lineG, KPContSectorScalarLineAlgebra.S_apply]
   simp only [coveredG, dif_pos hs]
-  change iteratedDerivWithin k (fun t => KPContActualChamberNormalSeries.E F ζ hζ U ι f t
-      (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U
-        (Quotient.mk _ (x,(H.atlas (level F ζ hζ C R P H U)).representative i))) -
-      KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (source.descent.cutoff t)
-        (Quotient.mk _ (x,(H.atlas (level F ζ hζ C R P H U)).representative i))) V s = _
-  apply iteratedDerivWithin_congr (s := V) ?_ hs
+  apply iteratedDerivWithin_congr ?_ hs
   intro t ht
   have hE : (KPContActualChamberCasimirJets.lineJet F ζ hζ C R P H U ι f hι hf 0 t i).val x =
       KPContActualChamberNormalSeries.E F ζ hζ U ι f t
@@ -1148,8 +916,6 @@ private theorem raw_defect_line_parameter_jets (k : ℕ) (s : ℂ) (hs : s ∈ V
       ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ
         (level F ζ hζ C R P H U) R P H).symm (source.descent.cutoff t))).val i).val x = _
     rw [LinearEquiv.apply_symm_apply]
-  change _ = (KPContActualChamberCasimirJets.lineJet F ζ hζ C R P H U ι f hι hf 0 t i).val x -
-    ((source.descent.cutoff t).val i).val x
   dsimp only
   rw [hE,hC]
 
@@ -1159,7 +925,7 @@ private theorem raw_lineG_parameter_jets (k : ℕ) (s : ℂ) (hs : s ∈ V) :
         (fun t => (lineG F ζ hζ C R P H U ι f buffer χ source hι hf 0 t i).val x) V s := by
   intro i x
   rw [raw_defect_line_parameter_jets F ζ hζ C R P H U ι hι f hf buffer χ source k s hs]
-  apply iteratedDerivWithin_congr (s := V) ?_ hs
+  apply iteratedDerivWithin_congr ?_ hs
   intro t ht
   exact (raw_defect_line_parameter_jets F ζ hζ C R P H U ι hι f hf buffer χ source 0 t ht i x).symm
 
@@ -1251,12 +1017,10 @@ theorem raw_actual_cutoff_test_section_jets
           KPContActualChamberThreeL2Tails.V s) := by
   intro φ σ
   have hh : ∀ a : KPContActualSectorSmoothTestModules.ActualChart
-      (U := KPContActualAllCuspSource.level F ζ hζ C R P H U) (H := H),
+       ,
       KPContActualCompactSectionL2Jets.ChartHolomorphicOn a
         (fun s => KPContActualSectorSmoothTestModules.scalarSections (φ 0 s))
-        KPContActualChamberThreeL2Tails.V := by
-    intro a
-    exact raw_cutoff_chart_holomorphic r n
+        KPContActualChamberThreeL2Tails.V := fun a => raw_cutoff_chart_holomorphic r n
       (KPContActualChamberThreeL2Tails.smoothG F ζ hζ C R P H U ι f buffer χ source hι hf 0)
       KPContActualChamberThreeL2Tails.V a
       (raw_defect_chart_holomorphic F ζ hζ C R P H U ι hι f hf buffer χ source a)

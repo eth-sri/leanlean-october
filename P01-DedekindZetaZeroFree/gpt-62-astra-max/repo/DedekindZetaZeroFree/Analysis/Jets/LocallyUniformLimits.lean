@@ -27,12 +27,8 @@ lemma taylorSeries_locallyUniform_limit (l : Filter ι) [l.NeBot]
     rw [he] at hzero
     exact tendsto_nhds_unique hzero (hF x hx)
   · intro n hn x hx
-    have hp : ∀ i x, x ∈ U → HasFDerivAt (fun y => P i y n) (P i x (n+1)).curryLeft x := by
-      intro i x hx
-      exact ((hP i).fderivWithin n hn x hx).hasFDerivAt (hU.mem_nhds hx)
-    have hconv : TendstoLocallyUniformlyOn (fun i x => (P i x (n+1)).curryLeft)
-        (fun x => (Q x (n+1)).curryLeft) l U := by
-      exact (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => E) V).toContinuousLinearEquiv.toContinuousLinearMap.uniformContinuous.comp_tendstoLocallyUniformlyOn (hQ (n+1))
+    have hp : ∀ i x, x ∈ U → HasFDerivAt (fun y => P i y n) (P i x (n+1)).curryLeft x := fun i x hx => ((hP i).fderivWithin n hn x hx).hasFDerivAt (hU.mem_nhds hx)
+    have hconv := (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => E) V).toContinuousLinearEquiv.toContinuousLinearMap.uniformContinuous.comp_tendstoLocallyUniformlyOn (hQ (n+1))
     exact (hasFDerivAt_of_tendstoLocallyUniformlyOn hU hconv hp
       (fun x hx => (hQ n).tendsto_at hx) hx).hasFDerivWithinAt
   · intro n hn

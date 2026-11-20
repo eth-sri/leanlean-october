@@ -28,8 +28,7 @@ theorem exists_open_phase_annihilator
   have hq0 (x : X) : q (x, 0) = 1 := by
     change (∏ v : S, e v (-x v * (0 : v.val.adicCompletion F))) = 1
     simp
-  let T : Set (X × X) := q ⁻¹' Circle.centeredArc (Real.pi / 2)
-  have hT : T ∈ (𝓝ˢ K) ×ˢ 𝓝 (0 : X) := by
+  have hT : (q ⁻¹' Circle.centeredArc (Real.pi / 2)) ∈ (𝓝ˢ K) ×ˢ 𝓝 (0 : X) := by
     apply hK.mem_nhdsSet_prod_of_forall
     intro x hx
     rw [← nhds_prod_eq]

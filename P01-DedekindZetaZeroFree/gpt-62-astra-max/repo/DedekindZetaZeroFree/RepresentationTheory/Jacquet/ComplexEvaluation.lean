@@ -43,8 +43,8 @@ private theorem jacquet_evaluations_separate (f : PrincipalSeries positiveParame
     simp only [U, Submodule.mem_iInf, LinearMap.mem_ker]
     rfl
   have hc : IsClosed (U : Set (PrincipalSeries positiveParameter)) := by
-    let : T2Space (PrincipalSeries positiveParameter) := principalSeries_t2 positiveParameter
-    have he : (U : Set (PrincipalSeries positiveParameter)) =
+    let := principalSeries_t2 positiveParameter
+    have he : U =
         ⋂ g : ComplexPGL2, ((J.comp (jacquetEvaluationRightAction g)).ker :
           Set (PrincipalSeries positiveParameter)) := by
       ext x
@@ -66,12 +66,11 @@ private theorem jacquet_evaluations_separate (f : PrincipalSeries positiveParame
     ext x
     have hx : x ∈ U := by rw [ht]; trivial
     simpa only [pi_one, zero_apply] using (hmem _).mp hx 1
-  have hu : U = ⊥ := (exceptional_principalSeries_irreducible.1.2 U hc hi).resolve_right hn
   have hx : f ∈ U := by
     apply (hmem _).mpr
     intro g
     induction g using Quotient.inductionOn with | _ g => exact hf g
-  simpa only [hu, Submodule.mem_bot] using hx
+  simpa only [((exceptional_principalSeries_irreducible.1.2 U hc hi).resolve_right hn), Submodule.mem_bot] using hx
 
 set_option backward.isDefEq.respectTransparency false in
 set_option maxHeartbeats 1600000 in
@@ -96,7 +95,6 @@ public theorem jacquetEvaluation_injective : Function.Injective jacquetEvaluatio
   apply LinearMap.ker_eq_bot.mp
   apply le_antisymm _ bot_le
   intro f hf
-  change f = 0
   apply jacquet_evaluations_separate
   intro g
   exact congrFun hf g

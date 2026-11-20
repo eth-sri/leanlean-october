@@ -15,9 +15,9 @@ set_option autoImplicit false
 open LocalFiniteSums CorrectionFactors
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
-variable {C : A.GeneralArithmeticContext σ η hS}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {C : A.GeneralArithmeticContext σ η hS}
 
 def localCoefficient (C : A.GeneralArithmeticContext σ η hS) (U : Frequency C)
     (p : ExteriorPrime A) (e l k m : ℕ) : ℂ :=
@@ -26,10 +26,7 @@ def localCoefficient (C : A.GeneralArithmeticContext σ η hS) (U : Frequency C)
     Ctk C p (e + 3 * l) k ((U.j p).val + 6 * m)
 
 private theorem power_generates (p : ExteriorPrime A) (n : ℕ) :
-    A.Generates (powerIdeal p n) (generator C p ^ n) := by
-  refine ⟨pow_ne_zero _ (generator_generates C p).1, ?_⟩
-  rw [← Ideal.span_singleton_pow, (generator_generates C p).2]
-  exact (Ideal.map_pow _ _ _).symm
+    A.Generates (powerIdeal p n) (generator C p ^ n) := by apply @DedekindZetaZeroFree.LocalFiniteSums.generator_power_generates <;> assumption
 private theorem exponent_power (p q : ExteriorPrime A) (n : ℕ) :
     idealPrimeExponent q.val.asIdeal (powerIdeal p n).val = if q = p then n else 0 := by
   change (UniqueFactorizationMonoid.normalizedFactors (p.val.asIdeal ^ n)).count q.val.asIdeal = _
@@ -40,6 +37,8 @@ private theorem exponent_power (p q : ExteriorPrime A) (n : ℕ) :
   · simp [h]
   · have h' : q.val.asIdeal ≠ p.val.asIdeal := fun hh => h (Subtype.ext (HeightOneSpectrum.asIdeal_injective hh))
     simp [h, h', Ne.symm h']
+
+alias CoefficientFactorization.exponent_power := exponent_power
 private theorem power_allowed (p : ExteriorPrime A) (n : ℕ) :
     A.IsAllowed C.correction.B
       (WeightedFiniteCoefficient.fieldUnit A (generator C p ^ n) (power_generates p n).1) := by
@@ -56,16 +55,13 @@ private theorem local_unit_one (p : ExteriorPrime A) (n : ℕ) :
   apply Subtype.ext
   rw [MaskedQuotientCRT.localUnitPart_spec]
   have hπ : (generator C p : F) ≠ 0 := by exact_mod_cast (generator_generates C p).1
-  have hu : uniformizer C p ≠ 0 := (map_ne_zero (algebraMap F (LocalField p))).mpr hπ
-  have hu' : algebraMap F (LocalField p) (generator C p : F) ≠ 0 := hu
-  simp [MaskedQuotientCRT.primeExponent, exponent_power, uniformizer, map_pow, hπ, hu']
+  simp [MaskedQuotientCRT.primeExponent, exponent_power, uniformizer, map_pow, hπ, ((map_ne_zero (algebraMap F (LocalField p))).mpr hπ)]
 private theorem prime_sum_eq (D : ComparisonPoissonCoefficientData F A)
     (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)
     (p : ExteriorPrime A) (t k J : ℕ) :
     GlobalPairCancel.primePowerSum A D (generator C p) (generator_generates C p).1 t k J =
       Ctk C p t k J := by
-  have hrec : GlobalPairCancel.HasArithmeticRecipes A σ hS C.correction.B D := by
-    exact ⟨fun I => ⟨WeightedFiniteCoefficient.fieldUnit A _ (D.generates I).1,
+  have hrec : GlobalPairCancel.HasArithmeticRecipes A σ hS C.correction.B D := ⟨fun I => ⟨WeightedFiniteCoefficient.fieldUnit A _ (D.generates I).1,
       rfl, hD.generator_allowed I⟩, hD.character_recipe, hD.additive_recipe, hD.gammaTwo_recipe⟩
   have hc := hrec.coefficient_prime_power_crt A σ η hS C.correction.B D C
     (powerIdeal p k) (powerIdeal p t) (powerIdeal p J)
@@ -86,6 +82,8 @@ private theorem prime_sum_eq (D : ComparisonPoissonCoefficientData F A)
       split_ifs at hq with h <;> simp_all)
   simpa [GlobalPairCancel.primePowerSum, MaskedQuotientCRT.primeExponent,
     exponent_power, local_unit_one, CompatiblePrimeRawLocal.R_one_eq_Ctk] using hc
+
+alias CoefficientFactorization.prime_sum_eq := prime_sum_eq
 private theorem theta_prime (D : ComparisonPoissonCoefficientData F A)
     (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)
     (p : ExteriorPrime A) : D.theta (D.generator (primeIdeal p)) = vartheta C p := by
@@ -97,6 +95,8 @@ private theorem theta_prime (D : ComparisonPoissonCoefficientData F A)
     _ _ (D.generates _).1 (generator_generates C p).1
     ((D.generates _).2.trans (generator_generates C p).2.symm)]
   rfl
+
+alias CoefficientFactorization.theta_prime := theta_prime
 private theorem theta_split (D : ComparisonPoissonCoefficientData F A)
     (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)
     (c n : A.Exterior) (P : Finset (ExteriorPrime A))
@@ -132,6 +132,8 @@ private theorem theta_split (D : ComparisonPoissonCoefficientData F A)
     (D.theta (D.generator (primeIdeal p)) ^ _) ^ 3 = _
   rw [theta_prime D hD p, ← pow_mul, ← pow_add, Nat.mul_comm]
 
+alias CoefficientFactorization.theta_split := theta_split
+
 private theorem phase_eq (U : Frequency C) (p : ExteriorPrime A) :
     (U.theta p).val = GlobalPairCancel.frequencyTheta A σ (primeIdeal p) (U.unitPart p) := by
   change A.sexticResiduePowerChar σ (primeIdeal p) 1
@@ -139,8 +141,7 @@ private theorem phase_eq (U : Frequency C) (p : ExteriorPrime A) :
   unfold SArithmeticData.sexticResiduePowerChar
   rw [show SArithmeticData.sexticExponent 1 = 1 by decide, pow_one]
   unfold GlobalPairCancel.frequencyTheta SArithmeticData.sexticResidue SArithmeticData.residueValue
-  have hx := (U.unitPart_spec p).2
-  rw [← hx.unit_spec, MulChar.ofUnitHom_coe, MulChar.ofUnitHom_coe]
+  rw [← ((U.unitPart_spec p).2).unit_spec, MulChar.ofUnitHom_coe, MulChar.ofUnitHom_coe]
   rfl
 
 theorem finite_coefficient_factorization (U : Frequency C)
@@ -212,7 +213,7 @@ theorem finite_coefficient_factorization (U : Frequency C)
     (fun v => rfl) (fun v => generator_allowed C (ep v)) hfac
     (fun v => U.unitPart (ep v))
     (fun v => by simpa only [← hep v, Frequency.j] using (U.unitPart_spec (ep v)).1)
-    (fun v => (U.unitPart_spec (ep v)).2)).2
+    (fun v => (U.unitPart_spec (ep v)).2))
   have hrawP : D.gammaTwo c * comparisonPoissonFiniteCoefficient F A D c n s
       (U.u * D.generator r ^ 6) = ∏ p ∈ P,
       gammaTwo C p ^ idealPrimeExponent p.val.asIdeal c.val.val *
@@ -266,18 +267,14 @@ theorem norm_weights_factorization
             (idealPrimeExponent p.val.asIdeal n.val : ℂ) * (1 + 3 * ξ) -
             (idealPrimeExponent p.val.asIdeal s.val : ℂ) * w -
             6 * (idealPrimeExponent p.val.asIdeal r.val : ℂ) * z) := by
-  have fc := WeightedFiniteCoefficient.Proof.support_factor A c.val P
-    (fun p hp => (hsupport p hp).1)
-  have fn := WeightedFiniteCoefficient.Proof.support_factor A n P
-    (fun p hp => (hsupport p hp).2.1)
-  have fs := WeightedFiniteCoefficient.Proof.support_factor A s P
-    (fun p hp => (hsupport p hp).2.2.1)
-  have fr := WeightedFiniteCoefficient.Proof.support_factor A r P
-    (fun p hp => (hsupport p hp).2.2.2)
-  rw [WeightedFiniteCoefficient.Proof.power_factor A c.val P fc (-1 / 2 - ξ),
-    WeightedFiniteCoefficient.Proof.power_factor A n P fn (-1 - 3 * ξ),
-    WeightedFiniteCoefficient.Proof.power_factor A s P fs (-w),
-    WeightedFiniteCoefficient.Proof.power_factor A r P fr (-6 * z)]
+  rw [WeightedFiniteCoefficient.Proof.power_factor A c.val P (WeightedFiniteCoefficient.Proof.support_factor A c.val P
+    (fun p hp => (hsupport p hp).1)) (-1 / 2 - ξ),
+    WeightedFiniteCoefficient.Proof.power_factor A n P (WeightedFiniteCoefficient.Proof.support_factor A n P
+      (fun p hp => (hsupport p hp).2.1)) (-1 - 3 * ξ),
+    WeightedFiniteCoefficient.Proof.power_factor A s P (WeightedFiniteCoefficient.Proof.support_factor A s P
+      (fun p hp => (hsupport p hp).2.2.1)) (-w),
+    WeightedFiniteCoefficient.Proof.power_factor A r P (WeightedFiniteCoefficient.Proof.support_factor A r P
+      (fun p hp => (hsupport p hp).2.2.2)) (-6 * z)]
   simp only [← Finset.prod_mul_distrib]
   apply Finset.prod_congr rfl
   intro p _
@@ -310,9 +307,6 @@ theorem weighted_summand_factorization (U : Frequency C)
             (idealPrimeExponent p.val.asIdeal n.val : ℂ) * (1 + 3 * ξ) -
             (idealPrimeExponent p.val.asIdeal s.val : ℂ) * w -
             6 * (idealPrimeExponent p.val.asIdeal r.val : ℂ) * z) := by
-  have hnorm := norm_weights_factorization c n s r P
-    (fun p hp => ⟨(hsupport p hp).1, (hsupport p hp).2.1,
-      (hsupport p hp).2.2.1, (hsupport p hp).2.2.2.1⟩) ξ w z
   unfold comparisonEulerPoissonSummand
   rw [finite_coefficient_factorization U D hD c n s r P hsupport]
   simpa only [← Finset.prod_mul_distrib, mul_assoc] using
@@ -320,7 +314,9 @@ theorem weighted_summand_factorization (U : Frequency C)
       (idealPrimeExponent p.val.asIdeal c.val.val)
       (idealPrimeExponent p.val.asIdeal n.val)
       (idealPrimeExponent p.val.asIdeal s.val)
-      (idealPrimeExponent p.val.asIdeal r.val)) * v) hnorm
+      (idealPrimeExponent p.val.asIdeal r.val)) * v) (norm_weights_factorization c n s r P
+        (fun p hp => ⟨(hsupport p hp).1, (hsupport p hp).2.1,
+          (hsupport p hp).2.2.1, (hsupport p hp).2.2.2.1⟩) ξ w z)
 
 theorem series_summable (U : Frequency C)
     (D : ComparisonPoissonCoefficientData F A)
@@ -328,8 +324,7 @@ theorem series_summable (U : Frequency C)
     (ξ w z : ℂ) (hξ : 4 < ξ.re) (hw : 4 < w.re) (hz : 2 < z.re) :
     Summable (fun i : CRTAbsoluteSeries.ExteriorIndex A =>
       ‖comparisonEulerPoissonSummand F A D U.u ξ w z
-        i.1 i.2.1 i.2.2.1 i.2.2.2‖) := by
-  exact CRTAbsoluteSeries.weightedSummand_summable A D C.classGroup_trivial σ η hS
+        i.1 i.2.1 i.2.2.1 i.2.2.2‖) := CRTAbsoluteSeries.weightedSummand_summable A D C.classGroup_trivial σ η hS
     C.correction hD U.ideal U.u U.generates U.allowed
     (fun p => by have h := U.sixthFree p; omega) ξ w z hξ hw hz
 
@@ -344,8 +339,7 @@ def primeEquiv : LocalFiniteSums.ExteriorPrime A ≃ ExteriorEulerPrimeIndex.ext
 def idealEquiv : A.Exterior ≃ (LocalFiniteSums.ExteriorPrime A →₀ ℕ) :=
   (ExteriorEulerPrimeIndex.exponentEquiv A.cS).trans (Finsupp.domCongr (primeEquiv A).symm).toEquiv
 theorem idealEquiv_apply (I : A.Exterior) (p : LocalFiniteSums.ExteriorPrime A) :
-    idealEquiv A I p = idealPrimeExponent p.val.asIdeal I.val := by
-  rfl
+    idealEquiv A I p = idealPrimeExponent p.val.asIdeal I.val := rfl
 
 theorem squarefree_iff (I : A.Exterior) :
     Squarefree I.val ↔ ∀ p : LocalFiniteSums.ExteriorPrime A, idealEquiv A I p ≤ 1 := by
@@ -357,12 +351,11 @@ theorem squarefree_iff (I : A.Exterior) :
   · intro h q
     by_cases hq : q ∈ UniqueFactorizationMonoid.normalizedFactors I.val
     · have hp := UniqueFactorizationMonoid.prime_of_normalized_factor q hq
-      have hc : q ⊔ A.cS = ⊤ := by
-        apply top_unique
-        rw [← I.property.2]
-        exact sup_le_sup_right (Ideal.dvd_iff_le.mp
-          (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hq)) _
-      exact h ⟨⟨q, Ideal.isPrime_of_prime hp, hp.ne_zero⟩, hc⟩
+      refine h ⟨⟨q, Ideal.isPrime_of_prime hp, hp.ne_zero⟩, ?_⟩
+      apply top_unique
+      rw [← I.property.2]
+      exact sup_le_sup_right (Ideal.dvd_iff_le.mp
+        (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hq)) _
     · simp [Multiset.count_eq_zero_of_notMem hq]
 
 variable {P : Type} [DecidableEq P]
@@ -399,7 +392,7 @@ theorem indexEquiv_apply (i : CRTAbsoluteSeries.ExteriorIndex A)
     (indexEquiv A i).val p = (idealPrimeExponent p.val.asIdeal i.1.val.val,
       idealPrimeExponent p.val.asIdeal i.2.1.val,
       idealPrimeExponent p.val.asIdeal i.2.2.1.val,
-      idealPrimeExponent p.val.asIdeal i.2.2.2.val) := by rfl
+      idealPrimeExponent p.val.asIdeal i.2.2.2.val) := rfl
 
 variable {A} {σ : F →+* ℂ} {η : RayClassCharacter F A.modulus}
   {hS : A.ContainsTraceBadPlaces} {C : A.GeneralArithmeticContext σ η hS}
@@ -483,9 +476,7 @@ theorem coefficient_summable (U : CorrectionFactors.Frequency C)
     simpa only [Function.comp_def, coefficient_index U D hD ξ w z] using
       series_summable U D hD ξ w z hξ hw hz
   exact (Subtype.val_injective.summable_iff (fun d hd => by
-    have hn : ¬ ∀ p, (d p).1 ≤ 1 := by
-      intro h
-      exact hd ⟨⟨d, h⟩, rfl⟩
+    have hn : ¬ ∀ p, (d p).1 ≤ 1 := fun h => hd ⟨⟨d, h⟩, rfl⟩
     rw [coefficient_invalid U ξ w z d hn, norm_zero])).mp hsub
 
 theorem coefficient_tsum (U : CorrectionFactors.Frequency C)
@@ -496,8 +487,7 @@ theorem coefficient_tsum (U : CorrectionFactors.Frequency C)
       FinsuppEulerProduct.coefficient (digit U ξ w z) d) =
       NormalizedProbe.separatedMellinSeries A D U.u ξ w z := by
   rw [NormalizedProbe.separatedMellinSeries_eq_tsum]
-  rw [← tsum_subtype_eq_of_support_subset (s := {d : LocalFiniteSums.ExteriorPrime A →₀
-      FinsuppEulerProduct.Digit | ∀ p, (d p).1 ≤ 1}) (by
+  rw [← tsum_subtype_eq_of_support_subset (by
     intro d hd
     by_contra hn
     exact hd (coefficient_invalid U ξ w z d hn))]
@@ -519,7 +509,7 @@ theorem local_tsum (U : CorrectionFactors.Frequency C) (ξ w z : ℂ)
     (p : LocalFiniteSums.ExteriorPrime A) :
     (∑' d : FinsuppEulerProduct.Digit, digit U ξ w z p d) =
       LocalFiniteSums.f C p (U.j p) (U.theta p) ξ w z := by
-  rw [← tsum_subtype_eq_of_support_subset (s := {d : FinsuppEulerProduct.Digit | d.1 ≤ 1})
+  rw [← tsum_subtype_eq_of_support_subset
     (by
       intro d hd
       by_contra hn
@@ -543,9 +533,8 @@ theorem hasProd_local_series (U : Frequency C)
     (ξ w z : ℂ) (hξ : 4 < ξ.re) (hw : 4 < w.re) (hz : 2 < z.re) :
     HasProd (fun p : ExteriorPrime A => f C p (U.j p) (U.theta p) ξ w z)
       (NormalizedProbe.separatedMellinSeries A D U.u ξ w z) := by
-  have h := FinsuppEulerProduct.hasProd (EulerIndex.digit U ξ w z)
-    (EulerIndex.digit_zero U ξ w z) (EulerIndex.coefficient_summable U D hD ξ w z hξ hw hz)
-  simpa only [EulerIndex.local_tsum, EulerIndex.coefficient_tsum U D hD ξ w z] using h
+  simpa only [EulerIndex.local_tsum, EulerIndex.coefficient_tsum U D hD ξ w z] using (FinsuppEulerProduct.hasProd (EulerIndex.digit U ξ w z)
+    (EulerIndex.digit_zero U ξ w z) (EulerIndex.coefficient_summable U D hD ξ w z hξ hw hz))
 
 end DedekindZetaZeroFree.CRTEulerSeparation
 

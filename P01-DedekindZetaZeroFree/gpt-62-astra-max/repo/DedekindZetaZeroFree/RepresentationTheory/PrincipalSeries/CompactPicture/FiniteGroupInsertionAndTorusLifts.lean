@@ -17,21 +17,25 @@ open KPLiteralScalarHCSliceCharts
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 attribute [local instance] pglLocalTopology localTopology
 
-def finiteGroupInsertion (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
+section
+
+variable (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+
+def finiteGroupInsertion :
     KPLocalExceptionalConstruction.ActualCover F ζ hζ q →* KPLiteralRaw.G F ζ hζ :=
   (local_pgl_injection F ζ hζ (Sum.inr q)).choose
 
-theorem finiteGroupInsertion_raw (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+theorem finiteGroupInsertion_raw
     (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) :
     finiteGroupInsertion F ζ hζ q (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) a) =
       scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inr q) a) :=
   (local_pgl_injection F ζ hζ (Sum.inr q)).choose_spec.2.2 a
 
-theorem finiteGroupInsertion_continuous (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
+theorem finiteGroupInsertion_continuous :
     Continuous (finiteGroupInsertion F ζ hζ q) :=
   (local_pgl_injection F ζ hζ (Sum.inr q)).choose_spec.2.1
 
-theorem finiteGroupInsertion_mem (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+theorem finiteGroupInsertion_mem
     (a : KPLocalExceptionalConstruction.ActualCover F ζ hζ q) :
     finiteGroupInsertion F ζ hζ q a ∈ KPGlobalTorusFunctionData.finitePart F ζ hζ := by
   induction a using QuotientGroup.induction_on with
@@ -42,21 +46,22 @@ theorem finiteGroupInsertion_mem (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F
     refine ⟨localToRestricted F ζ hζ (Sum.inr q) a, ?_, rfl⟩
     apply Subgroup.mem_iInf.mpr
     intro w
-    change localToRestricted F ζ hζ (Sum.inr q) a (Sum.inl w) = 1
     simp [localToRestricted, RestrictedProduct.coe_mulSingle_apply]
 
-def finiteInsertion (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
+def finiteInsertion :
     KPLocalExceptionalConstruction.ActualCover F ζ hζ q →*
       KPGlobalTorusFunctionData.finitePart F ζ hζ :=
   (finiteGroupInsertion F ζ hζ q).codRestrict _ (finiteGroupInsertion_mem F ζ hζ q)
 
-theorem finiteInsertion_value (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+theorem finiteInsertion_value
     (a : KPLocalExceptionalConstruction.ActualCover F ζ hζ q) :
     (finiteInsertion F ζ hζ q a).val = finiteGroupInsertion F ζ hζ q a := rfl
 
-theorem finiteInsertion_continuous (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
+theorem finiteInsertion_continuous :
     Continuous (finiteInsertion F ζ hζ q) :=
   (finiteGroupInsertion_continuous F ζ hζ q).subtype_mk _
+
+end
 
 def insertionLevel (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
@@ -64,17 +69,15 @@ def insertionLevel (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
   J.toOpenSubgroup.comap (finiteInsertion F ζ hζ q) (finiteInsertion_continuous F ζ hζ q)
 
 variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-variable (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)
+    (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)
 
 section PolarizedTorusLift
 open KPGlobalProductPolarizationCharacter
 variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-variable (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
+    (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
 
-open _root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter renaming localRatioValue_eq → localRatioValue_eq
-open _root_.DedekindZetaZeroFree.ProductPolarization renaming baseEval → baseEval
-open _root_.DedekindZetaZeroFree.ProductPolarization renaming eval_diagonal → eval_diagonal
-open _root_.DedekindZetaZeroFree.ProductPolarization renaming diagonal_formula → diagonal_formula
+open _root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter (localRatioValue_eq)
+open _root_.DedekindZetaZeroFree.ProductPolarization (baseEval eval_diagonal diagonal_formula)
 
 private theorem raw_diagonal (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
     (r : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
@@ -126,7 +129,7 @@ private theorem polarized_torus_geometry
     rw [← C₀.subgroup_matches q]
     exact Subgroup.mem_map.mpr ⟨a.val, a.property, rfl⟩
   obtain ⟨t, ht, hta⟩ := Subgroup.mem_map.mp hmatch
-  have hdr : r.g 1 0 = 0 ∧ r.g 0 1 = 0 := raw_diagonal F ζ hζ q r (hr ▸ hta ▸ t.property)
+  have hdr := raw_diagonal F ζ hζ q r (hr ▸ hta ▸ t.property)
   let R := localToRestricted F ζ hζ (Sum.inr q) r
   have hs : ∀ v : KPHilbert.Place F, v ≠ Sum.inr q → R v = 1 := by
     intro v hv
@@ -163,20 +166,18 @@ private theorem polarized_torus_geometry
     · rw [← global_raw_ratio F ζ hζ e R rfl v 1 (by rw [hs v hv, map_one]; rfl)]
       simp only [map_one]
       exact Subgroup.one_mem _
-  let b : B F ζ hζ P.localData := ⟨e, heb⟩
-  let x : rawB F ζ hζ P.localData := ⟨R, Subgroup.mem_map.mpr ⟨e, heb, rfl⟩⟩
-  refine ⟨b, x, ?_, hs, rfl, ?_⟩
+  refine ⟨(⟨e, heb⟩), (⟨R, Subgroup.mem_map.mpr ⟨e, heb, rfl⟩⟩), ?_, hs, rfl, ?_⟩
   · change scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inr q) r) = finiteGroupInsertion F ζ hζ q a.val.val
     rw [← hr, finiteGroupInsertion_raw]
-  · change a.val.val = KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (R (Sum.inr q))
-    rw [hq, hr]
+  · rw [hq, hr]
 
-open _root_.DedekindZetaZeroFree.KPGlobalTorusFiniteStages renaming rawLocalScalarData → rawLocalScalarData
-open _root_.DedekindZetaZeroFree.ProductPolarization renaming normalizedLocalAbs_norm → normalizedLocalAbs_norm
+open _root_.DedekindZetaZeroFree.KPGlobalTorusFiniteStages (rawLocalScalarData)
+open _root_.DedekindZetaZeroFree.ProductPolarization (normalizedLocalAbs_norm)
+
+variable (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+    (a : (C₀.polarization q).L.comap (C₀.canonical q).heisenberg.π)
 
 private theorem polarized_torus_deltaHalf
-    (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (a : (C₀.polarization q).L.comap (C₀.canonical q).heisenberg.π)
     (b : B F ζ hζ P.localData) (x : rawB F ζ hζ P.localData)
     (hs : ∀ v : KPHilbert.Place F, v ≠ Sum.inr q → x.val v = 1)
     (hx : scalarQuotient F ζ hζ (amalgamation F ζ hζ x.val) = b.val.val)
@@ -186,12 +187,7 @@ private theorem polarized_torus_deltaHalf
   let t : localTorus F ζ hζ (Sum.inr q) := ⟨a.val.val, by
     rw [← KPGlobalTorusFiniteStages.actual_local_torus_eq F ζ hζ q]
     exact a.val.property⟩
-  have hratio := global_raw_ratio F ζ hζ b.val x.val hx.symm (Sum.inr q) t ha
-  have hnorm := KPGlobalTorusTensorFibers.raw_local_coordinate_norm_matches
-    F ζ hζ P.localData P.adjustment (rawLocalScalarData F ζ hζ P C₀) q a.val t rfl
   letI := primitive12_totallyComplex F ζ hζ
-  have hp := KPGlobalCenterRationalCharacterExtension.CubeDiagonalProduct.idele_localAbs_finprod
-    F (KPGlobalTorusFunctionData.p F ζ hζ b.val)
   have hsingle : (∏ᶠ v : KPHilbert.Place F, Units.mk0
       (KPGlobalCenterRationalCharacterExtension.localAbs F v
         (KPGlobalCubicIdelePairing.ideleEval F v (KPGlobalTorusFunctionData.p F ζ hζ b.val)))
@@ -199,8 +195,8 @@ private theorem polarized_torus_deltaHalf
       Units.mk0 (KPGlobalCenterRationalCharacterExtension.localAbs F (Sum.inr q)
         (localRatio F ζ hζ (Sum.inr q) t))
       (ne_of_gt (KPGlobalCenterRationalCharacterExtension.localAbs_pos F (Sum.inr q) _)) := by
-    rw [finprod_eq_single (a := Sum.inr q)]
-    · rw [← hratio]
+    rw [finprod_eq_single]
+    · rw [← (global_raw_ratio F ζ hζ b.val x.val hx.symm (Sum.inr q) t ha)]
     · intro v hv
       have hv1 : KPGlobalCubicIdelePairing.ideleEval F v (KPGlobalTorusFunctionData.p F ζ hζ b.val) = 1 := by
         rw [← global_raw_ratio F ζ hζ b.val x.val hx.symm v 1 (by rw [hs v hv, map_one]; rfl), map_one]
@@ -210,9 +206,11 @@ private theorem polarized_torus_deltaHalf
   have hd : (((KPGlobalTorusFunctionData.delta F ζ hζ b.val : ℝ≥0) : ℝ)) =
       KPLocalPrincipalSeries.localAbs (q.adicCompletion F) ((C₀.canonical q).borel.coordinate a.val) := by
     change (((KPGlobalTorusFunctionData.ideleAbs F (KPGlobalTorusFunctionData.p F ζ hζ b.val) : ℝ≥0) : ℝ)) = _
-    rw [← hp, hsingle]
+    rw [← (KPGlobalCenterRationalCharacterExtension.CubeDiagonalProduct.idele_localAbs_finprod
+      F (KPGlobalTorusFunctionData.p F ζ hζ b.val)), hsingle]
     change ((KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q) (localRatio F ζ hζ (Sum.inr q) t) : ℝ≥0) : ℝ) = _
-    rw [← hnorm, normalizedLocalAbs_norm F q]
+    rw [← (KPGlobalTorusTensorFibers.raw_local_coordinate_norm_matches
+      F ζ hζ P.localData P.adjustment (rawLocalScalarData F ζ hζ P C₀) q a.val t rfl), normalizedLocalAbs_norm F q]
     rfl
   rw [KPGlobalTorusFunctionData.deltaHalf, hd, KPLocalPrincipalSeries.deltaHalf,
     (C₀.canonical q).borel.retract_torus, KPLocalPrincipalSeries.normPower,
@@ -220,9 +218,7 @@ private theorem polarized_torus_deltaHalf
     KPLocalPrincipalSeriesNormWeights.exp_mul_log_real (KPLocalPrincipalSeries.localAbs_pos _ _) _,
     Real.sqrt_eq_rpow]
 
-theorem polarized_torus_lift
-    (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (a : (C₀.polarization q).L.comap (C₀.canonical q).heisenberg.π) :
+theorem polarized_torus_lift :
     ∃ (b : B F ζ hζ P.localData) (x : rawB F ζ hζ P.localData),
       b.val.val = (finiteInsertion F ζ hζ q a.val.val).val ∧
       (∀ v : KPHilbert.Place F, v ≠ Sum.inr q → x.val v = 1) ∧

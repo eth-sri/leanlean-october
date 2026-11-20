@@ -34,21 +34,26 @@ private lemma indicator_pi {ι : Type*} [Fintype ι] {α : ι → Type*}
     rw [Set.indicator_of_notMem (by simpa [Set.mem_pi] using h)]
     exact (Finset.prod_eq_zero (Finset.mem_univ i) (Set.indicator_of_notMem hi _)).symm
 
-private lemma ball_eq_finiteCompletionBall (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F)) (k : ℤ) :
+section
+
+variable (F : Type) [Field F] [NumberField F] (v : HeightOneSpectrum (RingOfIntegers F))
+
+private lemma ball_eq_finiteCompletionBall (k : ℤ) :
     PoissonSLocalBalls.ball F v k = finiteCompletionBall F v k := by
   ext x
   simp
 
-private lemma localCosetIndicator_ball_eq (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F)) (c : v.adicCompletion F) (k : ℤ) :
+private lemma localCosetIndicator_ball_eq (c : v.adicCompletion F) (k : ℤ) :
     localCosetIndicator F v c (PoissonSLocalBalls.ball F v k) =
       localCosetIndicator F v c (finiteCompletionBall F v k) := by
   unfold localCosetIndicator
   rw [ball_eq_finiteCompletionBall F v k]
 
-private lemma elementaryTensorFunction_eq_tensor (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+end
+
+variable (F : Type) [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+
+private lemma elementaryTensorFunction_eq_tensor
     (fArch : 𝓢(PoissonArch.Space F, ℂ)) (k : S → ℤ) (t : sIntegerRing F S) :
     elementaryTensorFunction F S fArch k t =
       tensorFunction F S fArch (fun v : S =>
@@ -73,8 +78,7 @@ private lemma elementaryTensorFunction_eq_tensor (F : Type) [Field F] [NumberFie
     simp only [Set.mem_setOf_eq, Set.mem_pi, Set.mem_univ, true_implies, Pi.sub_apply,
       PoissonFinite.diagonal]
 
-private lemma elementaryTensorFunction_integrable (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+private lemma elementaryTensorFunction_integrable
     (μ : (v : S) → Measure (v.val.adicCompletion F))
     [hμ : ∀ v, (μ v).IsAddHaarMeasure]
     (fArch : 𝓢(PoissonArch.Space F, ℂ)) (k : S → ℤ) (t : sIntegerRing F S) :
@@ -89,8 +93,6 @@ private lemma elementaryTensorFunction_integrable (F : Type) [Field F] [NumberFi
         (FinitePlace.embedding v.val (t : F)) (k v))).2
 
 private lemma base_kernel_integrable
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (μ : (v : S) → Measure (v.val.adicCompletion F))
     (f : Space F S → ℂ) (hf : Integrable f (productMeasure F S μ))
     (y : Space F S) :
@@ -125,8 +127,6 @@ private lemma base_kernel_integrable
     (Filter.Eventually.of_forall (fun x => (hn x).le))
 
 theorem poisson_sum_tensorFunction
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (hS : ContainsDifferent F S)
     (μ : (v : S) → Measure (v.val.adicCompletion F))
     [hμ : ∀ v, (μ v).IsAddHaarMeasure]

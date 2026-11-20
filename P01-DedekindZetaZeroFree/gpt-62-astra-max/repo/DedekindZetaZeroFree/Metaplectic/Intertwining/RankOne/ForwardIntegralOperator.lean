@@ -27,27 +27,27 @@ private theorem forwardIntegralContinuationLinearWitness_intertwines
     forwardIntegralContinuationLinearWitness F ζ hζ q S P μ hμ (IPlus S.borel P g f) =
       IMinus S.borel P g
         (forwardIntegralContinuationLinearWitness F ζ hζ q S P μ hμ f) := by
-  have H := actualCanonicalContinued_intertwines F q ζ hζ S P μ hμ .plus 0
-    (denominator_ne_zero_at_zero (LocalField F q) .plus) g f
   apply Subtype.ext
   funext x
   apply Subtype.ext
   funext h
-  have he := congrArg (fun u => (u.val x).val h) H
+  have he := congrArg (fun u => (u.val x).val h) (actualCanonicalContinued_intertwines F q ζ hζ S P μ hμ .plus 0
+    (denominator_ne_zero_at_zero (LocalField F q) .plus) g f)
+  let actualCanonicalContinued₀ := actualCanonicalContinued F q ζ hζ S P μ hμ .plus 0
   change (inducingAction S.borel P .minus (-0) (S.iwasawa.borelPart x)
-    (((actualCanonicalContinued F q ζ hζ S P μ hμ .plus 0)
+    (((actualCanonicalContinued₀)
       ((compactTrivialization S.borel P S.iwasawa .plus 0).symm (IPlus S.borel P g f))).val
         (S.iwasawa.compactPart x))).val h =
     (inducingAction S.borel P .minus (-0) (S.iwasawa.borelPart (x * g))
-      (((actualCanonicalContinued F q ζ hζ S P μ hμ .plus 0)
+      (((actualCanonicalContinued₀)
         ((compactTrivialization S.borel P S.iwasawa .plus 0).symm f)).val
           (S.iwasawa.compactPart (x * g)))).val h at he
   change (inducingAction S.borel P .minus 0 (S.iwasawa.borelPart x)
-    (((actualCanonicalContinued F q ζ hζ S P μ hμ .plus 0)
+    (((actualCanonicalContinued₀)
       ((compactTrivialization S.borel P S.iwasawa .plus 0).symm (IPlus S.borel P g f))).val
         (S.iwasawa.compactPart x))).val h =
     (inducingAction S.borel P .minus 0 (S.iwasawa.borelPart (x * g))
-      (((actualCanonicalContinued F q ζ hζ S P μ hμ .plus 0)
+      (((actualCanonicalContinued₀)
         ((compactTrivialization S.borel P S.iwasawa .plus 0).symm f)).val
           (S.iwasawa.compactPart (x * g)))).val h
   simpa only [neg_zero] using he
@@ -153,8 +153,7 @@ theorem actualCanonicalForwardMap_eq_integral
     ((actualCanonicalForwardMap F ζ hζ q S P μ hμ f).val g).val h =
       ∫ x : LocalField F q,
         (f.val (S.borel.liftedW⁻¹ *
-          (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) * g)).val h ∂μ := by
-  rfl
+          (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) * g)).val h ∂μ := rfl
 
 include hμ in
 
@@ -163,8 +162,7 @@ theorem actualCanonicalForwardMap_integrable
     (g : ActualCover F ζ hζ q) (h : actualTorus F ζ hζ q) :
     Integrable (fun x : LocalField F q =>
       (f.val (S.borel.liftedW⁻¹ *
-        (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) * g)).val h) μ := by
-  exact actualCanonicalContinued_integrable F q ζ hζ S P μ hμ .plus 0
+        (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) * g)).val h) μ := actualCanonicalContinued_integrable F q ζ hζ S P μ hμ .plus 0
     (by norm_num [convergenceHalfPlane]) f g h
 
 end DedekindZetaZeroFree.KPRankOneShellRepair

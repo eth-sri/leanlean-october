@@ -10,10 +10,10 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualSubgroupHaar
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
-open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualCompactHaar renaming compact_hom_one → compact_hom_one
+open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualCompactHaar (compact_hom_one)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable (K : Subgroup (KPSmoothLocalQuotientCharts.ActualCover F ζ hζ))
-variable (hK : IsCompact (K : Set (KPSmoothLocalQuotientCharts.ActualCover F ζ hζ)))
+    (K : Subgroup (KPSmoothLocalQuotientCharts.ActualCover F ζ hζ))
+    (hK : IsCompact (K : Set (KPSmoothLocalQuotientCharts.ActualCover F ζ hζ)))
 include hK
 
 private theorem subgroup_modular_one (k : K) :

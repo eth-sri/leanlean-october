@@ -18,10 +18,8 @@ private lemma principal_E_reflection (F : Type) [Field F] [NumberField F]
     intro s hs hs1
     rw [D.E_eq s hs, D.regularized s hs hs1, D.completed s hs hs1]
     ring
-  have hf : Differentiable ℂ (fun s : ℂ => D.E (1-s)) :=
-    D.E_entire.comp ((differentiable_const (1 : ℂ)).sub differentiable_id)
   have eqn := (D.E_entire.differentiableOn.analyticOnNhd isOpen_univ).eqOn_of_preconnected_of_eventuallyEq
-    (hf.differentiableOn.analyticOnNhd isOpen_univ) isPreconnected_univ (Set.mem_univ (1/2 : ℂ))
+    ((D.E_entire.comp ((differentiable_const (1 : ℂ)).sub differentiable_id)).differentiableOn.analyticOnNhd isOpen_univ) isPreconnected_univ (Set.mem_univ (1/2 : ℂ))
   have hn : {s : ℂ | 0 < s.re ∧ s.re < 1} ∈ nhds (1/2 : ℂ) := by
     apply IsOpen.mem_nhds
     · exact (isOpen_lt continuous_const Complex.continuous_re).inter
@@ -40,6 +38,8 @@ private lemma principal_E_reflection (F : Type) [Field F] [NumberField F]
     ring
   intro s
   exact eqn hh (Set.mem_univ s)
+
+alias UniformRegularizationBoundaryBounds.principal_E_reflection := principal_E_reflection
 
 private lemma principal_prefactor (F : Type) [Field F] [NumberField F]
     (hF : NumberField.IsTotallyComplex F) (m : Ideal (𝓞 F)) (s : ℂ) :
@@ -65,13 +65,15 @@ private lemma principal_prefactor (F : Type) [Field F] [NumberField F]
   rw [hg]
   ring
 
+alias UniformRegularizationBoundaryBounds.principal_prefactor := principal_prefactor
+
 private lemma completion_ratio_norm (F : Type) [Field F] [NumberField F]
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (δ : ℝ) (s : ℂ) (hs : s.re = -δ) :
     ‖heckeReciprocalCompletionFactor F m s * heckeCompletionFactor F m (1-s)‖ =
       heckeConductorScale F m ^ ((1:ℝ)/2+δ) *
       ‖Complex.Gammaℂ (1-s) * (Complex.Gammaℂ s)⁻¹‖ ^
         NumberField.InfinitePlace.nrComplexPlaces F := by
-  have hQ : 0 < heckeConductorScale F m := lt_of_lt_of_le zero_lt_one (one_le_heckeConductorScale F m hm)
+  have hQ := lt_of_lt_of_le zero_lt_one (one_le_heckeConductorScale F m hm)
   have hc : (((|NumberField.discr F| : ℤ) : ℂ) * (Ideal.absNorm m : ℂ)) =
       (heckeConductorScale F m : ℂ) := by unfold heckeConductorScale; rw [Complex.ofReal_mul]; norm_cast
   unfold heckeReciprocalCompletionFactor heckeCompletionFactor
@@ -82,21 +84,23 @@ private lemma completion_ratio_norm (F : Type) [Field F] [NumberField F]
   rw [show (1:ℝ)/2+δ = δ/2 + (1+δ)/2 by ring, Real.rpow_add hQ, mul_pow]
   ring
 
-private lemma nonprincipal_left_formula (F : Type) [Field F] [NumberField F]
+alias UniformRegularizationBoundaryBounds.completion_ratio_norm := completion_ratio_norm
+
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+private lemma nonprincipal_left_formula
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (η : RayClassCharacter F m)
     (D : NonprincipalRayHeckeData F m η) (δ : ℝ) (hδ : 0 < δ)
     (s : ℂ) (hs : s.re = -δ) :
     nonprincipalHeckeEntireContinuation F m η D s =
       D.W * (heckeReciprocalCompletionFactor F m s * heckeCompletionFactor F m (1-s)) *
         (∑' I : Ideal (𝓞 F), (starRingEnd ℂ) (η I) * (Ideal.absNorm I : ℂ) ^ (-(1-s))) := by
-  have ht : 1 < (1-s).re := by simp [hs]; linarith
-  have hd := (conjugateHeckeDirichlet_right_edge F (1+δ) (by linarith) m hm η (1-s) (by simp [hs])).1.hasSum
-  have he := hd.mul_left (heckeCompletionFactor F m (1-s))
-  have hx := (D.dual_series (1-s) ht).unique he
-  rw [nonprincipalHeckeEntireContinuation, D.reflection, hx]
+  rw [nonprincipalHeckeEntireContinuation, D.reflection, ((D.dual_series (1-s) (by simp [hs]; linarith)).unique (((conjugateHeckeDirichlet_right_edge F (1+δ) (by linarith) m hm η (1-s) (by simp [hs])).1.hasSum).mul_left (heckeCompletionFactor F m (1-s))))]
   ring
 
-private lemma principal_left_formula (F : Type) [Field F] [NumberField F]
+private lemma principal_left_formula
     (hF : NumberField.IsTotallyComplex F) (m : Ideal (𝓞 F))
     (η : RayClassCharacter F m) (D : PrincipalRayHeckeData F m η)
     (δ : ℝ) (hδ : 0 < δ) (s : ℂ) (hs : s.re = -δ) :
@@ -110,8 +114,11 @@ private lemma principal_left_formula (F : Type) [Field F] [NumberField F]
     linarith
   rw [principalHeckeEntireRegularization, principal_E_reflection F m η D s,
     D.E_eq (1-s) ht, D.regularized (1-s) ht ht1]
-  have hp := principal_prefactor F hF m s
-  linear_combination (s-1) * heckeCompletionFactor F m (1-s) * D.L (1-s) * hp
+  linear_combination (s-1) * heckeCompletionFactor F m (1-s) * D.L (1-s) * (principal_prefactor F hF m s)
+
+end
+
+alias UniformRegularizationBoundaryBounds.principal_left_formula := principal_left_formula
 
 private lemma left_ratio_bound (F : Type) [Field F] [NumberField F]
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (δ K : ℝ) (hδ : 0 < δ) (hK : 0 ≤ K)
@@ -123,14 +130,17 @@ private lemma left_ratio_bound (F : Type) [Field F] [NumberField F]
   rw [completion_ratio_norm F m hm δ s hs]
   have hA : 0 ≤ ((|NumberField.discr F| : ℤ) : ℝ) := by exact_mod_cast abs_nonneg (NumberField.discr F)
   rw [heckeConductorScale, Real.mul_rpow hA (Nat.cast_nonneg _)]
-  have hx := pow_le_pow_left₀ (norm_nonneg _) (hb s hs) (NumberField.InfinitePlace.nrComplexPlaces F)
   calc
     _ ≤ (((|NumberField.discr F| : ℤ) : ℝ) ^ ((1:ℝ)/2+δ) * (Ideal.absNorm m : ℝ) ^ ((1:ℝ)/2+δ)) *
           (K*(2+|s.im|)^2)^NumberField.InfinitePlace.nrComplexPlaces F :=
-      mul_le_mul_of_nonneg_left hx (by positivity)
+      mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (norm_nonneg _) (hb s hs) (NumberField.InfinitePlace.nrComplexPlaces F)) (by positivity)
     _ = _ := by rw [mul_pow, ← pow_mul]; ring
 
-private lemma principal_strip_bound (F : Type) [Field F] [NumberField F]
+alias UniformRegularizationBoundaryBounds.left_ratio_bound := left_ratio_bound
+
+variable (F : Type) [Field F] [NumberField F]
+
+private lemma principal_strip_bound
     (hF : NumberField.IsTotallyComplex F) (η : RayClassCharacter F (⊤ : Ideal (𝓞 F)))
     (D : PrincipalRayHeckeData F ⊤ η) (δ : ℝ) (hδ : 0 < δ)
     (s : ℂ) (hs : 1+δ ≤ s.re) (hs4 : s.re ≤ 4) :
@@ -138,21 +148,19 @@ private lemma principal_strip_bound (F : Type) [Field F] [NumberField F]
   have hs0 : 0 < s.re := by linarith
   have hs1 : s ≠ 1 := by intro h; subst s; simp at hs; linarith
   rw [principalHeckeEntireRegularization_eq F hF ⊤ top_ne_bot η D s hs0 hs1, norm_mul]
-  have hb := heckeDirichlet_hasSum_norm_le F (1+δ) (by linarith) ⊤ top_ne_bot η s hs (D.L s)
-    (D.series s (by linarith))
   have hn : ‖s-1‖ ≤ 4*(2+|s.im|) := by
     calc
       _ ≤ |(s-1).re|+|(s-1).im| := Complex.norm_le_abs_re_add_abs_im _
       _ ≤ _ := by
         simp only [Complex.sub_re, Complex.one_re, Complex.sub_im, Complex.one_im, sub_zero]
-        rw [abs_of_nonneg (by linarith : 0 ≤ s.re-1)]
-        nlinarith [abs_nonneg s.im]
+        grind
   calc
     _ ≤ (4*(2+|s.im|))*idealAbsoluteSum F (1+δ) :=
-      mul_le_mul hn hb (norm_nonneg _) (by positivity)
+      mul_le_mul hn (heckeDirichlet_hasSum_norm_le F (1+δ) (by linarith) ⊤ top_ne_bot η s hs (D.L s)
+        (D.series s (by linarith))) (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
-private lemma nonprincipal_strip_bound (F : Type) [Field F] [NumberField F]
+private lemma nonprincipal_strip_bound
     (hF : NumberField.IsTotallyComplex F) (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (η : RayClassCharacter F m) (D : NonprincipalRayHeckeData F m η)
     (δ : ℝ) (hδ : 0 < δ) (s : ℂ) (hs : 1+δ ≤ s.re) :
@@ -161,7 +169,7 @@ private lemma nonprincipal_strip_bound (F : Type) [Field F] [NumberField F]
   exact heckeDirichlet_hasSum_norm_le F (1+δ) (by linarith) m hm η s hs (D.L s)
     (D.series s (by linarith))
 
-private lemma nonprincipal_left_bound (F : Type) [Field F] [NumberField F]
+private lemma nonprincipal_left_bound
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (η : RayClassCharacter F m)
     (D : NonprincipalRayHeckeData F m η) (δ K : ℝ) (hδ : 0 < δ) (hK : 0 ≤ K)
     (hb : ∀ s : ℂ, s.re = -δ → ‖Complex.Gammaℂ (1-s) * (Complex.Gammaℂ s)⁻¹‖ ≤ K*(2+|s.im|)^2)
@@ -171,13 +179,11 @@ private lemma nonprincipal_left_bound (F : Type) [Field F] [NumberField F]
       idealAbsoluteSum F (1+δ)) *
       (Ideal.absNorm m : ℝ) ^ ((1:ℝ)/2+δ) * (2+|s.im|) ^ (2*NumberField.InfinitePlace.nrComplexPlaces F) := by
   rw [nonprincipal_left_formula F m hm η D δ hδ s hs, norm_mul, norm_mul, D.root_norm, one_mul]
-  have hd := (conjugateHeckeDirichlet_right_edge F (1+δ) (by linarith) m hm η (1-s) (by simp [hs])).2
-  have hx := left_ratio_bound F m hm δ K hδ hK hb s hs
   calc
-    _ ≤ _ * idealAbsoluteSum F (1+δ) := mul_le_mul hx hd (norm_nonneg _) (by positivity)
+    _ ≤ _ * idealAbsoluteSum F (1+δ) := mul_le_mul (left_ratio_bound F m hm δ K hδ hK hb s hs) ((conjugateHeckeDirichlet_right_edge F (1+δ) (by linarith) m hm η (1-s) (by simp [hs])).2) (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
-private lemma principal_left_bound (F : Type) [Field F] [NumberField F]
+private lemma principal_left_bound
     (hF : NumberField.IsTotallyComplex F)
     (η : RayClassCharacter F (⊤ : Ideal (𝓞 F))) (D : PrincipalRayHeckeData F ⊤ η)
     (δ K : ℝ) (hδ : 0 < δ) (hδu : δ ≤ 1/10) (hK : 0 ≤ K)
@@ -189,8 +195,6 @@ private lemma principal_left_bound (F : Type) [Field F] [NumberField F]
   rw [principal_left_formula F hF ⊤ η D δ hδ s hs, norm_mul, norm_mul]
   have hx := left_ratio_bound F ⊤ top_ne_bot δ K hδ hK hb s hs
   simp only [Ideal.absNorm_top, Nat.cast_one, Real.one_rpow, mul_one] at hx
-  have hd := heckeDirichlet_hasSum_norm_le F (1+δ) (by linarith) ⊤ top_ne_bot η (1-s)
-    (by simp [hs]) (D.L (1-s)) (D.series (1-s) (by simp [hs]; linarith))
   have hn : ‖s-1‖ ≤ 2+|s.im| := by
     calc
       _ ≤ |(s-1).re|+|(s-1).im| := Complex.norm_le_abs_re_add_abs_im _
@@ -200,11 +204,11 @@ private lemma principal_left_bound (F : Type) [Field F] [NumberField F]
         linarith
   calc
     _ ≤ ((2+|s.im|)*(_))*idealAbsoluteSum F (1+δ) :=
-      mul_le_mul (mul_le_mul hn hx (norm_nonneg _) (by positivity)) hd (norm_nonneg _) (by positivity)
-    _ = _ := by rw [pow_succ]; ring
+      mul_le_mul (mul_le_mul hn hx (norm_nonneg _) (by positivity)) (heckeDirichlet_hasSum_norm_le F (1+δ) (by linarith) ⊤ top_ne_bot η (1-s)
+        (by simp [hs]) (D.L (1-s)) (D.series (1-s) (by simp [hs]; linarith))) (norm_nonneg _) (by positivity)
+    _ = _ := by ring
 
-theorem heckeEntireRegularizations_uniform_boundaries
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
+theorem heckeEntireRegularizations_uniform_boundaries (hF : NumberField.IsTotallyComplex F)
     (δ : ℝ) (hδ : 0 < δ) (hδ_upper : δ ≤ 1 / 10) :
     ∃ C : ℝ, 0 < C ∧
       (∀ (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
@@ -228,7 +232,7 @@ theorem heckeEntireRegularizations_uniform_boundaries
             4 * idealAbsoluteSum F (1 + δ) * (2 + |s.im|))) := by
   obtain ⟨K, hK, hb⟩ := gammaC_reflected_ratio_left_bound δ hδ hδ_upper
   let B := idealAbsoluteSum F (1+δ)
-  have hB : 0 < B := (idealAbsoluteSum_converges F (1+δ) (by linarith)).2.2.1
+  have hB := (idealAbsoluteSum_converges F (1+δ) (by linarith)).2.2.1
   let A := (((|NumberField.discr F| : ℤ) : ℝ) ^ ((1:ℝ)/2+δ) *
     K ^ NumberField.InfinitePlace.nrComplexPlaces F * B)
   let C := max A (4*B)
@@ -247,17 +251,14 @@ theorem heckeEntireRegularizations_uniform_boundaries
   refine ⟨C, hC, ?_, ?_⟩
   · intro m hm η hprim hnp D
     have hM : 1 ≤ (1+(Ideal.absNorm m : ℝ)) ^ ((1:ℝ)/2+δ) :=
-      Real.one_le_rpow (by linarith [Nat.cast_nonneg (Ideal.absNorm m) (α := ℝ)]) (by linarith)
+      Real.one_le_rpow (by linarith) (by linarith)
     refine ⟨?_, fun s hs _ => nonprincipal_strip_bound F hF m hm η D δ hδ s hs⟩
     intro s hs
     rcases hs with hs | hs
     · have hx := nonprincipal_left_bound F m hm η D δ K hδ hK.le hb s hs
       change ‖nonprincipalHeckeEntireContinuation F m η D s‖ ≤ A * _ * _ at hx
-      have hMp : (Ideal.absNorm m : ℝ)^((1:ℝ)/2+δ) ≤
-          (1+(Ideal.absNorm m : ℝ))^((1:ℝ)/2+δ) :=
-        Real.rpow_le_rpow (Nat.cast_nonneg _) (by linarith) (by linarith)
       exact hx.trans (mul_le_mul
-        (mul_le_mul hCA hMp (by positivity) hC.le) (hHinc s) (by positivity) (by positivity))
+        (mul_le_mul hCA (Real.rpow_le_rpow (Nat.cast_nonneg _) (by linarith) (by linarith)) (by positivity) hC.le) (hHinc s) (by positivity) (by positivity))
     · have hx := nonprincipal_strip_bound F hF m hm η D δ hδ s hs.ge
       change ‖nonprincipalHeckeEntireContinuation F m η D s‖ ≤ B at hx
       calc
@@ -270,8 +271,7 @@ theorem heckeEntireRegularizations_uniform_boundaries
     rcases hs with hs | hs
     · exact (principal_left_bound F hF η D δ K hδ hδ_upper hK.le hb s hs).trans
         (mul_le_mul_of_nonneg_right hCA (by positivity))
-    · have hx := principal_strip_bound F hF η D δ hδ s hs.ge (by linarith)
-      exact hx.trans (mul_le_mul hC4 (hHbase s) (by positivity) hC.le)
+    · exact (principal_strip_bound F hF η D δ hδ s hs.ge (by linarith)).trans (mul_le_mul hC4 (hHbase s) (by positivity) hC.le)
 
 end
 end DedekindZetaZeroFree

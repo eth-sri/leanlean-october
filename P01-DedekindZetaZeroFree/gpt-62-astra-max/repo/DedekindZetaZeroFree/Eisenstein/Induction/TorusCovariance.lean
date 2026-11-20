@@ -12,7 +12,7 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.SourceTorusCovariance
 open KPAdelicCoverRestrictedProduct KPGlobalTorusFiniteStages
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 
  theorem rpow_factor (x : ℝ) (hx : 0 < x) :
     (Real.rpow x (1/2 : ℝ) : ℂ) * (Real.rpow x (1/6 : ℝ) : ℂ) =

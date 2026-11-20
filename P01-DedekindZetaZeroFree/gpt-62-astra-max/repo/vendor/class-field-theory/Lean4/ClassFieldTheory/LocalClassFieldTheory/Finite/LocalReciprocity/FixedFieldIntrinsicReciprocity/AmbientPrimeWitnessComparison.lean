@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -36,34 +31,28 @@ open LocalFieldTheory RamificationTheory CyclicCohomology KummerTheory
 open ClassFormation
 open scoped ValuativeRel
 
+variable (K F E : Type) [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+    [Field F] [ValuativeRel F] [TopologicalSpace F] [IsNonarchimedeanLocalField F] [Field E]
+    [Algebra K F] [Algebra F E] [Algebra K E] [IsScalarTower K F E] [FiniteDimensional K F]
+    [Algebra.IsSeparable K F]
+    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
+    [FiniteDimensional F E] [IsAbelianGalois F E] (j : E →ₐ[K] SeparableClosure K)
+    (e : ambientEmbeddedSeparableClosureEquiv K F E j) (z : Abelianization Gal(E / F))
+
 /-- The chosen ambient prime witness maps to the prescribed abelianized
 Galois element under the concrete local Artin map. -/
 theorem
-    ambientEmbeddedPrimeWitness_local
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
-    (z : Abelianization Gal(E / F)) :
+    ambientEmbeddedPrimeWitness_local :
     localArtinMonoidHom F E
         (ambientEmbeddedPrimeWitness K F E j e z) =
       z := by
   let i :=
     j.comp (IsScalarTower.toAlgHom K F E)
-  let : Algebra F (SeparableClosure K) :=
+  let :=
     i.toRingHom.toAlgebra
   let jF : E →ₐ[F] SeparableClosure K :=
     { j with commutes' := fun x => rfl }
-  let jI : E →ₐ[F] SeparableClosure F :=
+  let jI :=
     e.symm.toAlgHom.comp jF
   let EI :=
     finiteGaloisAbstractExtensionOfEmbedding F E jI
@@ -81,9 +70,7 @@ theorem
     intro x hx
     rcases hx with ⟨y, rfl⟩
     exact ⟨algebraMap F E y, rfl⟩
-  let hSourceNormal :
-      (extensionSubgroup
-        (intrinsicAbstractBase F) EI.field EI.below).Normal :=
+  let hSourceNormal :=
     EI.normal
   let hSourceFinite : Finite
       ((intrinsicAbstractBase F).toSubgroup ⧸
@@ -199,27 +186,27 @@ theorem
       intrinsicFrobeniusFixedFieldEquivAmbientEmbeddedField_apply_val
         K F E j e sigma x
   let : FiniteDimensional F
-      (abstractFixedField F (SeparableClosure F) SF) :=
+      (LF) :=
     abstractFixedField_finiteDimensional
       F (SeparableClosure F) SF hSFabsolute
   let : NontriviallyNormedField
-      (abstractFixedField F (SeparableClosure F) SF) :=
+      (LF) :=
     finiteExtensionSpectralNormedField
-      F (abstractFixedField F (SeparableClosure F) SF)
+      F (LF)
   let : ValuativeRel
-      (abstractFixedField F (SeparableClosure F) SF) :=
+      (LF) :=
     finiteExtensionSpectralValuativeRel
-      F (abstractFixedField F (SeparableClosure F) SF)
+      F (LF)
   let : IsNonarchimedeanLocalField
-      (abstractFixedField F (SeparableClosure F) SF) :=
+      (LF) :=
     finiteExtensionSpectralIsNonarchimedeanLocalField
-      F (abstractFixedField F (SeparableClosure F) SF)
+      F (LF)
   let : Valuation.HasExtension
       (ValuativeRel.valuation F)
       (ValuativeRel.valuation
-        (abstractFixedField F (SeparableClosure F) SF)) :=
+        (LF)) :=
     finiteExtensionSpectralValuation_hasExtension
-      F (abstractFixedField F (SeparableClosure F) SF)
+      F (LF)
   let : FiniteDimensional K LH :=
     abstractFixedField_finiteDimensional
       K (SeparableClosure K) SH hSHabsolute
@@ -334,29 +321,15 @@ theorem
 /-- The chosen prime witness satisfies the ambient fixed-field
 norm-residue symbol formula. -/
 theorem
-    ambientEmbeddedPrimeWitness_symbol
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
-    (z : Abelianization Gal(E / F)) :
+    ambientEmbeddedPrimeWitness_symbol :
     ambientEmbeddedPrimeSymbolProperty K F E j e z := by
   let i :=
     j.comp (IsScalarTower.toAlgHom K F E)
-  let : Algebra F (SeparableClosure K) :=
+  let :=
     i.toRingHom.toAlgebra
   let jF : E →ₐ[F] SeparableClosure K :=
     { j with commutes' := fun x => rfl }
-  let jI : E →ₐ[F] SeparableClosure F :=
+  let jI :=
     e.symm.toAlgHom.comp jF
   let EI :=
     finiteGaloisAbstractExtensionOfEmbedding F E jI
@@ -374,9 +347,7 @@ theorem
     intro x hx
     rcases hx with ⟨y, rfl⟩
     exact ⟨algebraMap F E y, rfl⟩
-  let hSourceNormal :
-      (extensionSubgroup
-        (intrinsicAbstractBase F) EI.field EI.below).Normal :=
+  let hSourceNormal :=
     EI.normal
   let hSourceFinite : Finite
       ((intrinsicAbstractBase F).toSubgroup ⧸
@@ -593,13 +564,9 @@ theorem
     exact
       localHenselianValuation_isPrimeElement_abstractFixedField
         K SigmaH pH hpHvalue
+  let abstractFixedFieldNormResidueSymbol₀ := abstractFixedFieldNormResidueSymbol K (SeparableClosure K) (localResidueDatum K) (localHenselianValuation K) (separableClosureUnits_isClassFormation K) H₀ J₀ hJH
   have hambientPrime :
-      abstractFixedFieldNormResidueSymbol
-          K (SeparableClosure K)
-          (localResidueDatum K)
-          (localHenselianValuation K)
-          (separableClosureUnits_isClassFormation K)
-          H₀ J₀ hJH (Additive.ofMul xPrime0) =
+      abstractFixedFieldNormResidueSymbol₀ (Additive.ofMul xPrime0) =
         Additive.ofMul
           (q₀.abelianizationCongr
             (Abelianization.of qAmbient)) := by
@@ -618,12 +585,7 @@ theorem
     exact congrArg
       (Units.mapEquiv phiF.toMulEquiv) hxWitness
   have hsymbolWitness :
-      abstractFixedFieldNormResidueSymbol
-          K (SeparableClosure K)
-          (localResidueDatum K)
-          (localHenselianValuation K)
-          (separableClosureUnits_isClassFormation K)
-          H₀ J₀ hJH
+      abstractFixedFieldNormResidueSymbol₀
           (Additive.ofMul
             (Units.mapEquiv phiF.toMulEquiv
               (ambientEmbeddedPrimeWitness K F E j e z))) =
@@ -633,12 +595,7 @@ theorem
     exact
       (congrArg
         (fun y : F₀ˣ =>
-          abstractFixedFieldNormResidueSymbol
-            K (SeparableClosure K)
-            (localResidueDatum K)
-            (localHenselianValuation K)
-            (separableClosureUnits_isClassFormation K)
-            H₀ J₀ hJH (Additive.ofMul y))
+          abstractFixedFieldNormResidueSymbol₀ (Additive.ofMul y))
         hxPrime0).trans hambientPrime
   unfold ambientEmbeddedPrimeSymbolProperty
   exact hsymbolWitness
@@ -646,21 +603,7 @@ theorem
 /-- The transported ambient symbol of the chosen prime witness equals
 its ambient Frobenius target. -/
 theorem
-    ambientEmbeddedPrimeTransportValue_eq_target
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
-    (z : Abelianization Gal(E / F)) :
+    ambientEmbeddedPrimeTransportValue_eq_target :
     ambientEmbeddedPrimeTransportValue K F E j e z =
       ambientEmbeddedPrimeTarget K F E j e z := by
   have hsymbol :=
@@ -673,29 +616,15 @@ theorem
 /-- The ambient Frobenius target recovers the original abelianized
 Galois element. -/
 theorem
-    ambientEmbeddedPrimeTarget_eq
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
-    (z : Abelianization Gal(E / F)) :
+    ambientEmbeddedPrimeTarget_eq :
     ambientEmbeddedPrimeTarget K F E j e z = z := by
   let i :=
     j.comp (IsScalarTower.toAlgHom K F E)
-  let : Algebra F (SeparableClosure K) :=
+  let :=
     i.toRingHom.toAlgebra
   let jF : E →ₐ[F] SeparableClosure K :=
     { j with commutes' := fun x => rfl }
-  let jI : E →ₐ[F] SeparableClosure F :=
+  let jI :=
     e.symm.toAlgHom.comp jF
   let EI :=
     finiteGaloisAbstractExtensionOfEmbedding F E jI
@@ -713,28 +642,15 @@ theorem
     intro x hx
     rcases hx with ⟨y, rfl⟩
     exact ⟨algebraMap F E y, rfl⟩
-  let hSourceNormal :
-      (extensionSubgroup
-        (intrinsicAbstractBase F) EI.field EI.below).Normal :=
+  let hSourceNormal :=
     EI.normal
-  let hSourceFinite : Finite
-      ((intrinsicAbstractBase F).toSubgroup ⧸
-        extensionSubgroup
-          (intrinsicAbstractBase F) EI.field EI.below) :=
+  let hSourceFinite :=
     EI.finite
-  let hTargetNormal :
-      (extensionSubgroup H₀ J₀ hJH).Normal :=
+  let hTargetNormal :=
     ambientEmbeddedExtensionSubgroup_normal K F E j e
-  let hTargetFinite : Finite
-      (H₀.toSubgroup ⧸ extensionSubgroup H₀ J₀ hJH) :=
+  let hTargetFinite :=
     ambientEmbeddedExtensionQuotient_finite K F E j e
-  let hHabsolute : Finite
-      ((baseField
-        Gal(SeparableClosure K / K)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+  let hHabsolute := ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, ambientEmbeddedAbsoluteQuotientFinite K F i⟩
@@ -750,10 +666,6 @@ theorem
   let _hRFFinite : Finite
       (RF.field.toSubgroup ⧸
         extensionSubgroup RF.field EI.field EI.below) := by
-    change Finite
-      ((intrinsicAbstractBase F).toSubgroup ⧸
-        extensionSubgroup
-          (intrinsicAbstractBase F) EI.field EI.below)
     exact hSourceFinite
   let RH :=
     H.toFiniteResidueAbstractField (localResidueDatum K)
@@ -815,27 +727,12 @@ theorem
 /-- The ambient norm-residue value of the chosen prime witness is the
 prescribed abelianized Galois element. -/
 theorem
-    ambientEmbeddedPrimeWitness_ambient
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
-    (z : Abelianization Gal(E / F)) :
+    ambientEmbeddedPrimeWitness_ambient :
     ambientEmbeddedNormResidueAbelianElement K F E j e
         (ambientEmbeddedPrimeWitness K F E j e z) =
       z := by
   calc
-    ambientEmbeddedNormResidueAbelianElement K F E j e
-        (ambientEmbeddedPrimeWitness K F E j e z) =
+    _ =
         ambientEmbeddedPrimeTransportValue K F E j e z := rfl
     _ = ambientEmbeddedPrimeTarget K F E j e z :=
       ambientEmbeddedPrimeTransportValue_eq_target K F E j e z

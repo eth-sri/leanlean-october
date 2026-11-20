@@ -40,11 +40,10 @@ private theorem finite_matching
     ⟨⟨ζ ^ 4, hζ.pow (by decide) (by decide : 12 = 4 * 3)⟩, rootsOfUnity.isCyclic F 3⟩
   letI : HasEnoughRootsOfUnity F (Monoid.exponent H) :=
     HasEnoughRootsOfUnity.of_dvd F (Monoid.exponent_dvd_of_forall_pow_eq_one hpow)
-  let r : KPGlobalCubicIdelePairing.D F →* (H →* Fˣ) :=
+  let r :=
     MonoidHom.mk' (fun d => (pairingHom F ζ hζ d).comp
       ((KPGlobalPrincipalCubicLagrangian.A F).subtype.comp H.subtype))
       (fun d e => MonoidHom.ext (fun a => by
-        change pairingHom F ζ hζ (d * e) a.val.val = _
         exact DFunLike.congr_fun (map_mul (pairingHom F ζ hζ) d e) a.val.val))
   let Φ := K.map r
   let E := CommGroup.subgroupOrderIsoSubgroupMonoidHom H F

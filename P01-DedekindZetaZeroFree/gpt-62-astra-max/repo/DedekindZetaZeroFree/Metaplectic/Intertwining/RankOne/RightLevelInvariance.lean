@@ -28,10 +28,8 @@ theorem actual_standard_integrand_right_level (s : ℂ)
     actualStandardIntegrand F ζ hζ q S P ε s φ.val k' h x =
       actualStandardIntegrand F ζ hζ q S P ε s φ.val k h x := by
   let f := compactTrivialization S.borel P S.iwasawa (sourceSign ε) (sourceParameter ε s) φ.val
-  have hf := (compact_level_identification S.borel P S.iwasawa (sourceSign ε) J hJ
-    (sourceParameter ε s) φ.val).mp φ.property
-  have he := congrArg Subtype.val (hf j)
-  have hx := congrFun he (kernelW (LocalField F q) S.borel ε *
+  have hx := congrFun (congrArg Subtype.val (((compact_level_identification S.borel P S.iwasawa (sourceSign ε) J hJ
+    (sourceParameter ε s) φ.val).mp φ.property) j)) (kernelW (LocalField F q) S.borel ε *
     (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) * k)
   change _ = f.val _ at hx
   simpa [actualStandardIntegrand, f, hk, principalSeries, vectorRightTranslation, mul_assoc] using
@@ -63,9 +61,8 @@ theorem actual_scalar_numerator_right_level
   apply KPTameTransposeUnitNumeratorSteps.Augmentation.scalar_laurent_chamber_unique (LocalField F q) ε
   intro s hs
   have h1 := Classical.choose_spec (actual_scalar_numerator_coordinate F ζ hζ q S P J hJ μ hμ π hπ ε φ k' h) s hs
-  have h2 := Classical.choose_spec (actual_scalar_numerator_coordinate F ζ hζ q S P J hJ μ hμ π hπ ε φ k h) s hs
   rw [actual_standard_integral_right_level F ζ hζ q S P J hJ ε μ s φ j k k' hk h] at h1
-  exact h1.symm.trans h2
+  exact h1.symm.trans (Classical.choose_spec (actual_scalar_numerator_coordinate F ζ hζ q S P J hJ μ hμ π hπ ε φ k h) s hs)
 
 end DedekindZetaZeroFree.KPRankOneShellRepair
 

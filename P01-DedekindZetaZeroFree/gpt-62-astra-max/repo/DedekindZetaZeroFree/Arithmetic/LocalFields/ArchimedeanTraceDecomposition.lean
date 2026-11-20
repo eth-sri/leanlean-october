@@ -10,7 +10,9 @@ namespace DedekindZetaZeroFree
 
 open NumberField
 
-theorem archTrace_algebraMap {F : Type*} [Field F] [NumberField F]
+variable {F : Type*} [Field F] [NumberField F]
+
+theorem archTrace_algebraMap
     (v : InfinitePlace F) (t : F) :
     archTrace v (algebraMap F v.Completion t) =
       (v.mult : ℝ) * (v.embedding t).re := by
@@ -27,16 +29,9 @@ theorem archTrace_algebraMap {F : Type*} [Field F] [NumberField F]
     simp only [Complex.ofReal_re]
     ring
   · rw [archTrace_of_isComplex v hv]
-    rw [InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply]
-    rw [InfinitePlace.Completion.algebraMap_apply]
-    rw [show ((t : v.Completion)) =
-        ((WithAbs.toAbs v.1 t : WithAbs v.1) : v.Completion) from rfl]
-    rw [InfinitePlace.Completion.extensionEmbedding_coe]
-    simp only [WithAbs.equiv_apply, WithAbs.ofAbs_toAbs]
-    rw [hv.mult_eq_two]
-    ring
+    simp [InfinitePlace.Completion.extensionEmbedding_coe, WithAbs.equiv_apply, WithAbs.ofAbs_toAbs, hv.mult_eq_two]
 
-theorem trace_eq_sum_archTrace {F : Type*} [Field F] [NumberField F] (t : F) :
+theorem trace_eq_sum_archTrace (t : F) :
     (Algebra.trace ℚ F t : ℝ) =
       ∑ v : InfinitePlace F, archTrace v (algebraMap F v.Completion t) := by
   classical

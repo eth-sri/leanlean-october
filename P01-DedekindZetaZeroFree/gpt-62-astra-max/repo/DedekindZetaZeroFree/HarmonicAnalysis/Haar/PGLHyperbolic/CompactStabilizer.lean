@@ -10,13 +10,19 @@ noncomputable section
 open scoped Classical ENNReal Matrix.Norms.Operator
 open MeasureTheory MeasureTheory.Measure
 
-abbrev G (d : ℕ) := KPArithmeticAction.ProjectiveGroup d
+section
 
-abbrev X (d : ℕ) := KPArch.Space d
+variable (d : ℕ)
 
-def o (d : ℕ) : X d := fun _ => (0, 0)
+abbrev G := KPArithmeticAction.ProjectiveGroup d
 
-def K (d : ℕ) : Subgroup (G d) := MulAction.stabilizer (G d) (o d)
+abbrev X := KPArch.Space d
+
+def o : X d := fun _ => (0, 0)
+
+def K : Subgroup (G d) := MulAction.stabilizer (G d) (o d)
+
+end
 
 instance groupMeasurableSpace (d : ℕ) : MeasurableSpace (G d) := borel _
 

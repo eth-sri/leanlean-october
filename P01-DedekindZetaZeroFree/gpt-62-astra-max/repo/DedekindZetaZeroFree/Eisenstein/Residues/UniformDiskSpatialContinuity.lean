@@ -9,7 +9,7 @@ open scoped Topology
 namespace DedekindZetaZeroFree.ResidueContinuity
 open MomentSources ThetaExpansion
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem selected_numerator_circle_continuous
     {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
@@ -30,10 +30,6 @@ theorem selected_numerator_circle_continuous
     exact ht.ne' (by simpa using he.symm)
   have hnot (z : Metric.sphere (0 : ℂ) t) : (z : ℂ) ∉ P.poles :=
     fun hz => hne z (hp z (hball z) hz)
-  have hreg : ∀ s ∈ Metric.ball (0 : ℂ) r, s ≠ 0 →
-      ∀ g, AnalyticAt ℂ (fun z => D.E z g) s := by
-    intro s hs hs0
-    exact P.regular s (hb hs) (fun h => hs0 (hp s hs h))
   have hE : Continuous (fun p : Metric.sphere (0 : ℂ) t × Group R =>
       D.E p.1 p.2) := by
     apply continuousOn_univ.mp
@@ -42,8 +38,9 @@ theorem selected_numerator_circle_continuous
         ⟨⟨hb (hball p.1), hnot p.1⟩, Set.mem_univ p.2⟩)
   apply ((continuous_subtype_val.comp continuous_fst).mul hE).congr
   intro p
-  exact (congrFun (selectedScalarNumerator_clears D r hb hreg p.1
+  refine (congrFun (selectedScalarNumerator_clears D r hb ?_ p.1
     (hball p.1) (hne p.1)) p.2).symm
+  exact fun s hs hs0 => P.regular s (hb hs) (fun h => hs0 (hp s hs h))
 
 theorem selected_residue_continuous
     {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
@@ -57,13 +54,10 @@ theorem selected_residue_continuous
     Continuous (selectedScalarNumerator D r 0) := by
   have ht : 0 < r / 2 := by positivity
   have htr : r / 2 < r := by linarith
-  have hreg : ∀ s ∈ Metric.ball (0 : ℂ) r, s ≠ 0 →
-      ∀ g, AnalyticAt ℂ (fun z => D.E z g) s := by
-    intro s hs hs0
-    exact P.regular s (hb hs) (fun h => hs0 (hp s hs h))
-  exact continuous_center_of_continuous_circle (selectedScalarNumerator D r) r
-    (r / 2) ht htr (selectedScalarNumerator_analytic D r hb hreg horder)
+  refine continuous_center_of_continuous_circle (selectedScalarNumerator D r) r
+    (r / 2) ht htr (selectedScalarNumerator_analytic D r hb ?_ horder)
     (selected_numerator_circle_continuous D P hjoint r (r / 2) ht htr hb hp)
+  exact fun s hs hs0 => P.regular s (hb hs) (fun h => hs0 (hp s hs h))
 
 end DedekindZetaZeroFree.ResidueContinuity
 

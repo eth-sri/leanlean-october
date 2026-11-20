@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -48,11 +46,10 @@ theorem intermediateFieldRestrictNormalHom_apply_val
     (sigma : F ≃ₐ[K] F) (x : E) :
     E.val (intermediateFieldRestrictNormalHom E F hEF sigma x) =
       F.val (sigma (IntermediateField.inclusion hEF x)) := by
-  let : Algebra E F :=
+  let :=
     RingHom.toAlgebra (IntermediateField.inclusion hEF).toRingHom
   let : IsScalarTower K E F := IsScalarTower.of_algebraMap_eq' rfl
-  have h := AlgEquiv.restrictNormal_commutes sigma E x
-  exact congrArg F.val h
+  exact congrArg F.val (AlgEquiv.restrictNormal_commutes sigma E x)
 
 end RamificationTheory
 

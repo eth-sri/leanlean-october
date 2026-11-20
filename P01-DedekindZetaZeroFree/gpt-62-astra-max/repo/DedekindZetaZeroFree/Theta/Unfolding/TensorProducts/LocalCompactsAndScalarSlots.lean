@@ -10,7 +10,7 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.FourierContinuation.TensorSeedSource
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 def integerCompacts (q : KPFinitePlace F) :
     TopologicalSpace.PositiveCompacts (q.adicCompletion F) where
@@ -45,7 +45,7 @@ theorem bad_exact (R : PrincipalMellin.ActualRecipe S η) (p : KPHilbert.Place F
     · exact Or.inr ⟨q, hq, he.symm⟩
 
 theorem finiteSet_nonempty (A : SArithmeticData F) : A.Sf.Nonempty := by
-  let p : Ideal ℤ := Ideal.span {(2 : ℤ)}
+  let p := Ideal.span {(2 : ℤ)}
   letI : Fact (Nat.Prime 2) := ⟨by norm_num⟩
   haveI : p.IsMaximal := Int.ideal_span_isMaximal_of_prime 2
   obtain ⟨P, hP, hpP⟩ :=

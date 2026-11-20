@@ -15,35 +15,31 @@ open DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.Det
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-theorem rawDeletionSet_finite (R : PrincipalMellin.ActualRecipe S η)
+variable (R : PrincipalMellin.ActualRecipe S η)
+
+theorem rawDeletionSet_finite
     (U : AllRowEuler.InitialSeparation.RawFrequency R.A) :
     (RawHeckeRows.rawDeletionSet U).Finite := by
   unfold RawHeckeRows.rawDeletionSet
   apply Set.Finite.union R.A.Sf.finite_toSet
-  let s : Finset (Ideal (𝓞 F)) :=
+  let s :=
     (UniqueFactorizationMonoid.normalizedFactors U.ideal.val).toFinset
-  have hinj : Function.Injective
-      (fun v : IsDedekindDomain.HeightOneSpectrum (𝓞 F) => v.asIdeal) :=
-    IsDedekindDomain.HeightOneSpectrum.asIdeal_injective
-  have hsub : {v : IsDedekindDomain.HeightOneSpectrum (𝓞 F) | U.ideal.val ≤ v.asIdeal} ⊆
-      (fun v : IsDedekindDomain.HeightOneSpectrum (𝓞 F) => v.asIdeal) ⁻¹'
-        (↑s : Set (Ideal (𝓞 F))) := by
-    intro v hv
-    simp only [Set.mem_preimage, Finset.mem_coe]
-    exact Multiset.mem_toFinset.mpr
-      ((Ideal.mem_normalizedFactors_iff U.ideal.property.1).mpr ⟨v.isPrime, hv⟩)
-  exact (s.finite_toSet.preimage hinj.injOn).subset hsub
+  refine (s.finite_toSet.preimage IsDedekindDomain.HeightOneSpectrum.asIdeal_injective.injOn).subset ?_
+  intro v hv
+  simp only [Set.mem_preimage, Finset.mem_coe]
+  exact Multiset.mem_toFinset.mpr
+    ((Ideal.mem_normalizedFactors_iff U.ideal.property.1).mpr ⟨v.isPrime, hv⟩)
 
-theorem Sf_subset_rawDeletionSet (R : PrincipalMellin.ActualRecipe S η)
+theorem Sf_subset_rawDeletionSet
     (U : AllRowEuler.InitialSeparation.RawFrequency R.A) :
     (R.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) ⊆
       RawHeckeRows.rawDeletionSet U := by
   unfold RawHeckeRows.rawDeletionSet
   exact Set.subset_union_left
 
-theorem raw_denominator_existence (R : PrincipalMellin.ActualRecipe S η) :
+theorem raw_denominator_existence :
     ∃ ω : Frequency R → Detector.PrimitiveFrequencyCharacter F,
       (∀ (u : Frequency R) (U : AllRowEuler.InitialSeparation.RawFrequency R.A),
         U.u = u.val.val → ∀ I : R.A.Exterior,
@@ -64,19 +60,19 @@ theorem raw_denominator_existence (R : PrincipalMellin.ActualRecipe S η) :
     R.A.principalIdealRing_of_classGroup_subsingleton R.classKilled
   have hSix : ∀ v : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
       ¬ (Ideal.absNorm v.asIdeal).Coprime 6 →
-        v ∈ (R.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) := by
+        v ∈ R.A.Sf := by
     intro v hv
     by_contra hout
     exact hv (ArithmeticContext.actual_outside_norm_coprime_six R.A v hout)
   obtain ⟨V, e, he, hnorm⟩ :=
     MinusArithmetic.actual_detector_frequency_representatives R
   obtain ⟨K⟩ := Detector.kummer_frequency_family_exists F R.A.zeta12
-    R.A.primitive_zeta12 R.σ (R.A.Sf : Set _) R.A.Sf.finite_toSet hSix V
+    R.A.primitive_zeta12 R.σ R.A.Sf R.A.Sf.finite_toSet hSix V
   obtain ⟨η0, hη0, _, htarget⟩ := MinusArithmetic.target_primitive_inducer R
   obtain ⟨T, hT⟩ :=
     MinusArithmetic.raw_minus_family_identification R V e he K η0 hη0 htarget
   obtain ⟨c, hc, hbound⟩ := Detector.frequency_denominator_conductor_bound F
-    R.A.zeta12 R.A.primitive_zeta12 R.σ (R.A.Sf : Set _)
+    R.A.zeta12 R.A.primitive_zeta12 R.σ R.A.Sf
     R.A.Sf.finite_toSet hSix η0 hη0
   refine ⟨fun u => T.denominator (e u), hT, ?_, ?_, c, hc, ?_⟩
   · intro u U hU ν hν
@@ -86,7 +82,7 @@ theorem raw_denominator_existence (R : PrincipalMellin.ActualRecipe S η) :
       ν (T.denominator (e u)) (fun I => (hν I).symm.trans (hT u U hU I))
   · intro u v h
     exact e.injective (Detector.twisted_frequency_character_injective F R.A.zeta12
-      R.A.primitive_zeta12 R.σ (R.A.Sf : Set _) R.A.Sf.finite_toSet hSix V K η0 T
+      R.A.primitive_zeta12 R.σ R.A.Sf R.A.Sf.finite_toSet hSix V K η0 T
       (e u) (e v) h)
   · intro u
     rw [← hnorm u]

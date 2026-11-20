@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -47,17 +43,17 @@ noncomputable def chosenFinitePlaceLocalArithmeticFrobenius
     ChosenFinitePlaceLocalizedCompletion (K := K) (L := L) v ≃ₐ[
       ChosenFinitePlaceBaseCompletion (K := K) v]
       ChosenFinitePlaceLocalizedCompletion (K := K) (L := L) v := by
-  let C := ChosenFinitePlaceBaseCompletion (K := K) v
+  let C := ChosenFinitePlaceBaseCompletion v
   let E := ChosenFinitePlaceLocalizedCompletion (K := K) (L := L) v
   letI : IsGalois C E :=
-    chosenFinitePlaceLocalizedIsGalois (K := K) (L := L) v
+    chosenFinitePlaceLocalizedIsGalois v
   letI : Valuation.HasExtension
       (ValuativeRel.valuation C) (ValuativeRel.valuation E) :=
-    chosenFinitePlaceLocalizedValuationHasExtension (K := K) (L := L) v
+    chosenFinitePlaceLocalizedValuationHasExtension v
   letI : IsIntegralClosure 𝒪[E] 𝒪[C] E :=
-    chosenFinitePlaceLocalizedIsIntegralClosure (K := K) (L := L) v
+    chosenFinitePlaceLocalizedIsIntegralClosure v
   letI : Module.Finite 𝒪[C] 𝒪[E] :=
-    chosenFinitePlaceLocalizedIntegerModuleFinite (K := K) (L := L) v
+    chosenFinitePlaceLocalizedIntegerModuleFinite v
   letI : IsNonarchimedeanLocalField.IsUnramifiedValuedExtension
       C E := hunram
   exact arithmeticFrobeniusOfUnramifiedValuation C E

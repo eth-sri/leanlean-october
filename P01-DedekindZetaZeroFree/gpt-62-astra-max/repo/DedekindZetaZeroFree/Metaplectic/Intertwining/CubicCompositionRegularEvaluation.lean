@@ -16,8 +16,8 @@ open KPRankOneShellContinuation KPRankOneGenericComposition KPRankOneRootParamet
 noncomputable section
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
 
 set_option maxHeartbeats 3000000
 set_option synthInstance.maxHeartbeats 100000
@@ -26,74 +26,65 @@ set_option backward.isDefEq.respectTransparency false
  def Regular {F : Type*} [Field F] (u : F) (r : RatFunc F) : Prop :=
   r.denom.eval u ≠ 0
 
-private lemma regular_C {F : Type*} [Field F] (u c : F) : Regular u (RatFunc.C c) := by
-  simp [Regular]
-private lemma regular_X {F : Type*} [Field F] (u : F) : Regular u (RatFunc.X : RatFunc F) := by
-  simp [Regular]
-private lemma regular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r+s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
-    simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
-private lemma regular_mul_eval {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
-    simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
-private lemma regular_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
-    (_hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : Regular u r⁻¹ := by
-  have hr0 : r ≠ 0 := by intro h; simp [h] at hv
-  intro h
-  have hn := Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_inv_dvd hr0) h
-  apply hv
-  simp [RatFunc.eval, hn]
-private lemma eval_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
-    (hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) :
-    RatFunc.eval (RingHom.id F) u r⁻¹ = (RatFunc.eval (RingHom.id F) u r)⁻¹ := by
-  have hr0 : r ≠ 0 := by intro h; simp [h] at hv
-  have hm := RatFunc.eval_mul (f := RingHom.id F) (a := u) hr (regular_inv hr hv)
-  rw [mul_inv_cancel₀ hr0, RatFunc.eval_one] at hm
-  exact eq_inv_of_mul_eq_one_right hm.symm
+section
 
- def Evaluates {F : Type*} [Field F] (u : F) (r : RatFunc F) (v : F) : Prop :=
+variable {F : Type*} [Field F]
+
+private lemma regular_add {u : F} {r s : RatFunc F}
+    (hr : Regular u r) (hs : Regular u s) : Regular u (r+s) := by apply @DedekindZetaZeroFree.ShiftedBetaAlgebra.ShiftedBetaContinuation.regular_add <;> assumption
+private lemma regular_mul_eval {u : F} {r s : RatFunc F}
+    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := by apply @DedekindZetaZeroFree.ShiftedBetaAlgebra.ShiftedBetaContinuation.regular_mul <;> assumption
+private lemma regular_inv {u : F} {r : RatFunc F}
+    (_hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : Regular u r⁻¹ := by apply @DedekindZetaZeroFree.ShiftedBetaAlgebra.ShiftedBetaContinuation.regular_inv <;> assumption
+private lemma eval_inv {u : F} {r : RatFunc F}
+    (hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) :
+    RatFunc.eval (RingHom.id F) u r⁻¹ = (RatFunc.eval (RingHom.id F) u r)⁻¹ := by apply @DedekindZetaZeroFree.ShiftedBetaAlgebra.ShiftedBetaContinuation.eval_inv <;> assumption
+
+ def Evaluates (u : F) (r : RatFunc F) (v : F) : Prop :=
   Regular u r ∧ RatFunc.eval (RingHom.id F) u r = v
-private lemma Evaluates.const {F : Type*} [Field F] (u v : F) : Evaluates u (RatFunc.C v) v :=
-  ⟨regular_C u v, by simp⟩
-private lemma Evaluates.var {F : Type*} [Field F] (u : F) : Evaluates u RatFunc.X u :=
-  ⟨regular_X u, by simp⟩
-private lemma Evaluates.add {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : Evaluates u r a) (hs : Evaluates u s b) : Evaluates u (r+s) (a+b) := by
+private lemma Evaluates.const (u v : F) : Evaluates u (RatFunc.C v) v :=
+  ⟨(by
+    simp [Regular]), by simp⟩
+private lemma Evaluates.var (u : F) : Evaluates u RatFunc.X u :=
+  ⟨(by
+    simp [Regular]), by simp⟩
+
+end
+section
+
+variable {F : Type*} [Field F] {u a b : F} {r s : RatFunc F} (hr : Evaluates u r a)
+    (hs : Evaluates u s b)
+
+include hr hs in
+private lemma Evaluates.add : Evaluates u (r+s) (a+b) := by
   refine ⟨regular_add hr.1 hs.1, ?_⟩
   rw [RatFunc.eval_add (RingHom.id F) u hr.1 hs.1, hr.2, hs.2]
-private lemma Evaluates.mul {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : Evaluates u r a) (hs : Evaluates u s b) : Evaluates u (r*s) (a*b) := by
-  refine ⟨regular_mul_eval hr.1 hs.1, ?_⟩
-  rw [RatFunc.eval_mul (RingHom.id F) u hr.1 hs.1, hr.2, hs.2]
-private lemma Evaluates.neg {F : Type*} [Field F] {u a : F} {r : RatFunc F}
+include hr hs in
+private lemma Evaluates.mul : Evaluates u (r*s) (a*b) := by apply @DedekindZetaZeroFree.ShiftedBetaAlgebra.Evaluates.ShiftedBetaContinuation.mul <;> assumption
+
+end
+section
+
+variable {F : Type*} [Field F]
+
+private lemma Evaluates.neg {u a : F} {r : RatFunc F}
     (hr : Evaluates u r a) : Evaluates u (-r) (-a) := by
-  simpa only [map_neg, map_one, neg_one_mul] using (Evaluates.const u (-1)).mul hr
-private lemma Evaluates.sub {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
+  simpa using (Evaluates.const u (-1)).mul hr
+private lemma Evaluates.sub {u a b : F} {r s : RatFunc F}
     (hr : Evaluates u r a) (hs : Evaluates u s b) : Evaluates u (r-s) (a-b) := by
   simpa only [sub_eq_add_neg] using hr.add hs.neg
-private lemma Evaluates.inv {F : Type*} [Field F] {u a : F} {r : RatFunc F}
-    (hr : Evaluates u r a) (ha : a ≠ 0) : Evaluates u r⁻¹ a⁻¹ := by
-  have hv : RatFunc.eval (RingHom.id F) u r ≠ 0 := hr.2 ▸ ha
-  exact ⟨regular_inv hr.1 hv, by rw [eval_inv hr.1 hv, hr.2]⟩
-private lemma Evaluates.div {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
+private lemma Evaluates.inv {u a : F} {r : RatFunc F}
+    (hr : Evaluates u r a) (ha : a ≠ 0) : Evaluates u r⁻¹ a⁻¹ := by apply @DedekindZetaZeroFree.ShiftedBetaAlgebra.Evaluates.ShiftedBetaContinuation.inv <;> assumption
+private lemma Evaluates.div {u a b : F} {r s : RatFunc F}
     (hr : Evaluates u r a) (hs : Evaluates u s b) (hb : b ≠ 0) : Evaluates u (r/s) (a/b) := by
   simpa only [div_eq_mul_inv] using hr.mul (hs.inv hb)
-private lemma Evaluates.pow {F : Type*} [Field F] {u a : F} {r : RatFunc F}
-    (hr : Evaluates u r a) (n : ℕ) : Evaluates u (r^n) (a^n) := by
-  induction n with
-  | zero => simpa only [pow_zero, map_one] using Evaluates.const u 1
-  | succ n ih => simpa only [pow_succ] using ih.mul hr
+private lemma Evaluates.pow {u a : F} {r : RatFunc F}
+    (hr : Evaluates u r a) (n : ℕ) : Evaluates u (r^n) (a^n) := by apply @DedekindZetaZeroFree.ShiftedBetaAlgebra.Evaluates.ShiftedBetaContinuation.pow <;> assumption
+
+end
 private lemma Evaluates.sum {F I : Type*} [Field F] {u : F} (s : Finset I)
     {r : I → RatFunc F} {a : I → F} (h : ∀ i ∈ s, Evaluates u (r i) (a i)) :
-    Evaluates u (∑ i ∈ s, r i) (∑ i ∈ s, a i) := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simpa only [Finset.sum_empty, map_zero] using Evaluates.const u 0
-  | @insert i s hi ih =>
-    simp only [Finset.sum_insert hi]
-    exact (h i (Finset.mem_insert_self i s)).add (ih (fun j hj => h j (Finset.mem_insert_of_mem hj)))
+    Evaluates u (∑ i ∈ s, r i) (∑ i ∈ s, a i) := by apply @DedekindZetaZeroFree.ShiftedBetaAlgebra.Evaluates.ShiftedBetaContinuation.sum <;> assumption
 
 private lemma betaFactor_evaluates
     (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
@@ -106,13 +97,10 @@ private lemma betaFactor_evaluates
   have h1 := Evaluates.const w 1
   by_cases hξ : ξ=1
   · have hBi := hB.inv hb0
-    have hden : (1-b)*(1-b⁻¹) ≠ 0 :=
-      mul_ne_zero (sub_ne_zero.mpr hb1.symm)
-        (sub_ne_zero.mpr (by intro h; exact hb1 (inv_eq_one.mp h.symm)))
-    have h := ((h1.sub (hA.mul hB)).mul (h1.sub (hA.mul hBi))).div
-      ((h1.sub hB).mul (h1.sub hBi)) hden
     simpa only [KPRankoneCubicScalarSum.betaFactor,hξ,ite_true,
-      KPRankoneCubicScalarSum.unramifiedFactor,map_one,map_inv₀,map_natCast] using h
+      KPRankoneCubicScalarSum.unramifiedFactor,map_one,map_inv₀,map_natCast] using (((h1.sub (hA.mul hB)).mul (h1.sub (hA.mul hBi))).div
+        ((h1.sub hB).mul (h1.sub hBi)) (mul_ne_zero (sub_ne_zero.mpr hb1.symm)
+          (sub_ne_zero.mpr (fun h => hb1 (inv_eq_one.mp h.symm)))))
   · simpa only [KPRankoneCubicScalarSum.betaFactor,hξ,ite_false,map_natCast,map_inv₀] using
       hA.pow (CubicUnitCharacters.conductor K ξ)
 
@@ -123,7 +111,7 @@ private theorem residue_scalar_regular_eval
       (residueScalar (KPExceptionalRaw.LocalField F q) dx (w^2)) := by
   classical
   let K := KPExceptionalRaw.LocalField F q
-  haveI := KPCubicHaar.cubeUnits_finiteIndex (K := K)
+  haveI := KPCubicHaar.cubeUnits_finiteIndex
   haveI : Finite (CubicUnitCharacters.Character K) :=
     Nat.finite_of_card_ne_zero (by
       rw [KPCubicExpansion.card_unit_cubic_characters]
@@ -140,11 +128,9 @@ private theorem residue_scalar_regular_eval
       exact congrArg Units.val ((mem_rootsOfUnity 3 (ε : ℂˣ)).mp ε.property)
     rw [mul_pow,hε,one_mul,← pow_mul,one_pow] at hp
     exact hw6 hp
-  have hs := Evaluates.sum Finset.univ (fun ξ _ => Evaluates.sum Finset.univ (fun ε _ =>
-    betaFactor_evaluates K ξ w _ _ (hb ε) (hb0 ε) (hb1 ε)))
-  have h := (Evaluates.const w (((integerMass K dx^2*KPCubicHaar.abs K (3 : K) : ℝ) : ℂ)/9)).mul hs
   simpa only [rationalResidueScalar,residueScalar,KPRankoneCubicScalarSum.finiteScalar,
-    finsum_eq_sum_of_fintype] using h
+    finsum_eq_sum_of_fintype] using ((Evaluates.const w (((integerMass K dx^2*KPCubicHaar.abs K (3 : K) : ℝ) : ℂ)/9)).mul (Evaluates.sum Finset.univ (fun ξ _ => Evaluates.sum Finset.univ (fun ε _ =>
+      betaFactor_evaluates K ξ w _ _ (hb ε) (hb0 ε) (hb1 ε)))))
 
 theorem regular_point_residue
     (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg)
@@ -172,7 +158,7 @@ theorem regular_point_residue
   let K := KPExceptionalRaw.LocalField F q
   obtain ⟨α,hα⟩ := IsAlgClosed.exists_pow_nat_eq (residueCardinality K : ℂ) (by decide : 0 < 6)
   have hq0 : (residueCardinality K : ℂ) ≠ 0 := by
-    exact_mod_cast (Nat.card_pos (α := IsLocalRing.ResidueField (Valuation.integer (valuation K)))).ne'
+    exact_mod_cast (Nat.card_pos).ne'
   have hα0 : α ≠ 0 := by
     intro he
     rw [he,zero_pow (by decide)] at hα
@@ -191,21 +177,18 @@ theorem regular_point_residue
     apply hdplus
     change 1 - t K s = 0
     rw [he,sub_self]
-  have hw6 : w^6 ≠ 1 := htw ▸ ht1
-  have hsc := residue_scalar_regular_eval F q dx w hw0 hw6
+  have hsc := residue_scalar_regular_eval F q dx w hw0 (htw ▸ ht1)
   have hsz : residueScalar K dx (w^2) = residueScalar K dx z := by
     unfold residueScalar
     exact KPRankoneCubicScalarSum.finiteScalar_cube_root_independent K ω.val
       (hω.map_of_injective (f := (valuation K).integer.subtype) Subtype.val_injective) (integerMass K dx) (KPCubicHaar.abs K (3 : K))
       (w^2) z (t K s) (pow_ne_zero _ hw0) hz (by rw [← pow_mul]; exact htw) hzt ht1
-  have hforward := forward_two_cell_residue F ζ hζ q S P dx hμ ω hω α hα J hJ p pRev hp hpRev
-  have hreverse := reverse_two_cell_residue F ζ hζ q S P dx hμ ω hω α hα J hJ p pRev hp hpRev
   have hplus := KPActualResidueSources.actual_level_composition_specialize_regular
     F ζ hζ q S P dx J hJ α hα p pRev (rationalResidueScalar K dx) .plus s w
-      hw0 hroot hdplus hdminus hsc.1 (by simpa only [ite_true, KPRankOneGenericComposition.rationalStandard, KPRankOneGeneric.rationalStandard, KPRankOneGenericComposition.rationalDenominator, KPRankOneGeneric.rationalDenominator] using hforward)
+      hw0 hroot hdplus hdminus hsc.1 (by simpa only [ite_true, KPRankOneGenericComposition.rationalStandard, KPRankOneGeneric.rationalStandard, KPRankOneGenericComposition.rationalDenominator, KPRankOneGeneric.rationalDenominator] using (forward_two_cell_residue F ζ hζ q S P dx hμ ω hω α hα J hJ p pRev hp hpRev))
   have hminus := KPActualResidueSources.actual_level_composition_specialize_regular
     F ζ hζ q S P dx J hJ α hα p pRev (rationalResidueScalar K dx) .minus s w
-      hw0 hroot hdplus hdminus hsc.1 (by simpa only [show Sign.minus ≠ Sign.plus from by decide,ite_false, KPRankOneGenericComposition.rationalStandard, KPRankOneGeneric.rationalStandard, KPRankOneGenericComposition.rationalDenominator, KPRankOneGeneric.rationalDenominator] using hreverse)
+      hw0 hroot hdplus hdminus hsc.1 (by simpa only [show Sign.minus ≠ Sign.plus from by decide,ite_false, KPRankOneGenericComposition.rationalStandard, KPRankOneGeneric.rationalStandard, KPRankOneGenericComposition.rationalDenominator, KPRankOneGeneric.rationalDenominator] using (reverse_two_cell_residue F ζ hζ q S P dx hμ ω hω α hα J hJ p pRev hp hpRev))
   rw [hsc.2,hsz] at hplus hminus
   exact ⟨hplus,hminus⟩
 

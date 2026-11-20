@@ -12,7 +12,7 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalTorusFunctionData
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 abbrev G := KPAdelicCoverRestrictedProduct.CubicPGL2Adelic F ζ hζ
 abbrev Ideles := KPAdelicCoverRestrictedProduct.Ideles F
@@ -63,8 +63,12 @@ theorem diagonal_entries_units (A : AdelicMatrixGroup F) (h10 : A 1 0 = 0) (h01 
  def rawRatio (A : AdelicMatrixGroup F) (h : A 1 0 = 0) : Ideles F :=
   (KPGlobalTorusMatrixCertificates.diagonal_units A h).1.unit *
   ((KPGlobalTorusMatrixCertificates.diagonal_units A h).2.unit)⁻¹
- lemma rawRatio_mul (A B : AdelicMatrixGroup F) (h : A 1 0 = 0)
-    (k : B 1 0 = 0) (ha : A 0 1 = 0)
+ section
+
+variable (A B : AdelicMatrixGroup F) (h : A 1 0 = 0) (k : B 1 0 = 0) (ha : A 0 1 = 0)
+
+include ha in
+lemma rawRatio_mul
     (hk : (A * B) 1 0 = 0) :
     rawRatio F (A * B) hk = rawRatio F A h * rawRatio F B k := by
   have h0 : (KPGlobalTorusMatrixCertificates.diagonal_units (A * B) hk).1.unit =
@@ -81,8 +85,8 @@ theorem diagonal_entries_units (A : AdelicMatrixGroup F) (h10 : A 1 0 = 0) (h01 
   rw [h0, h1]
   simp only [mul_inv_rev]
   ac_rfl
- lemma rawRatio_same (A B : AdelicMatrixGroup F) (h : A 1 0 = 0)
-    (k : B 1 0 = 0) (ha : A 0 1 = 0)
+ include ha in
+lemma rawRatio_same
     (he : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A =
       QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) B) :
     rawRatio F A h = rawRatio F B k := by
@@ -103,6 +107,8 @@ theorem diagonal_entries_units (A : AdelicMatrixGroup F) (h10 : A 1 0 = 0) (h01 
   unfold rawRatio
   rw [h0, h1]
   simp [mul_inv_rev, mul_assoc]
+
+end
 
 def torusRatio : ordinaryTorus F →* Ideles F where
   toFun t :=
@@ -152,7 +158,6 @@ theorem ratio_formula (t : ordinaryTorus F) (A : AdelicMatrixGroup F)
       ↑((diagonal_entries_units F A h10 h01).2.unit)⁻¹ := by
   let B := Classical.choose t.property
   have hB := Classical.choose_spec t.property
-  change (rawRatio F B hB.2.1 : Adeles F) = (rawRatio F A h10 : Adeles F)
   exact congrArg Units.val (rawRatio_same F B A hB.2.1 h10 hB.2.2
     (hB.1.trans hA.symm))
 
@@ -174,10 +179,6 @@ def rationalDiagonalLift : Fˣ →* G F ζ hζ :=
 
 theorem rationalDiagonalLift_mem (y : Fˣ) :
     rationalDiagonalLift F ζ hζ y ∈ torus F ζ hζ := by
-  change KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ
-      (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-        (KPAdelicCoverRestrictedProduct.rationalHom F ζ hζ (rationalDiagonal F y))) ∈
-    ordinaryTorus F
   refine ⟨KPAdelicCoverRestrictedProduct.rationalBase F (rationalDiagonal F y), ?_, ?_, ?_⟩
   · change _ = QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
       (KPAdelicCoverRestrictedProduct.projection F ζ hζ
@@ -222,35 +223,37 @@ private lemma goodN (q : HeightOneSpectrum (𝓞 F)) (hb : ¬KPAdelicCoverRestri
   fin_cases i <;> fin_cases j <;> simp [g, integralN, KPTameCompact.inclusion,
     KPLocalCube.integerInclusion, KubotaRankTwo.n]
 
-theorem root_integral (x : Adeles F) :
+section
+
+variable (x : Adeles F)
+
+theorem root_integral :
     ∀ᶠ v in Filter.cofinite,
       KPStandardLocalRootLifts.N F ζ hζ v
         (KPAdelicCoverRestrictedProduct.adeleEval F v x) ∈
           KPAdelicCoverRestrictedProduct.compact F ζ hζ v := by
-  have hx : ∀ᶠ q in Filter.cofinite, (x.2 q) ∈ q.adicCompletionIntegers F := x.2.property
-  have hb : ∀ᶠ q in Filter.cofinite, ¬KPAdelicCoverRestrictedProduct.Bad F q :=
+  have hx := x.2.property
+  have hb :=
     (KPAdelicCoverRestrictedProduct.bad_finite F).compl_mem_cofinite
-  have hq : ∀ᶠ q in Filter.cofinite, KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q)
-      (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr q) x) ∈
-        KPAdelicCoverRestrictedProduct.compact F ζ hζ (Sum.inr q) := by
-    filter_upwards [hx, hb] with q hx hb
-    exact goodN F ζ hζ q hb _ hx
   apply Filter.mem_cofinite.mpr
-  have hfin := Filter.mem_cofinite.mp hq
-  apply Set.Finite.subset (hfin.image Sum.inr)
+  apply Set.Finite.subset ((Filter.mem_cofinite.mp (by
+    filter_upwards [hx, hb] with q hx hb
+    exact goodN F ζ hζ q hb _ hx)).image Sum.inr)
   intro v hv
   cases v with
   | inl w => exact False.elim (hv (show KPStandardLocalRootLifts.N F ζ hζ (Sum.inl w)
       (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inl w) x) ∈ (⊤ : Subgroup _) from trivial))
   | inr q => exact ⟨q, hv, rfl⟩
 
-def rootTuple (x : Adeles F) : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ :=
+def rootTuple : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ :=
   ⟨fun v => KPStandardLocalRootLifts.N F ζ hζ v
     (KPAdelicCoverRestrictedProduct.adeleEval F v x), root_integral F ζ hζ x⟩
 
-def N (x : Adeles F) : G F ζ hζ :=
+def N : G F ζ hζ :=
   KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
     (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ (rootTuple F ζ hζ x))
+
+end
 
 theorem N_add (x y : Adeles F) : N F ζ hζ (x + y) = N F ζ hζ x * N F ζ hζ y := by
   have ht : rootTuple F ζ hζ (x + y) = rootTuple F ζ hζ x * rootTuple F ζ hζ y := by
@@ -305,9 +308,6 @@ def rightTranslation : Representation ℂ T (ScalarFunctions H χ) where
   map_one' := by ext f g; simp
   map_mul' := by intros; ext f g; simp [mul_assoc]
 
-@[simp] theorem evaluation_covariance (f : ScalarFunctions H χ) (h : H) (g : T) :
-    evaluation H χ ((h : T) * g) f = (χ h : ℂ) * evaluation H χ g f := f.property h g
-
 @[simp] theorem evaluation_rightTranslation (a g : T) (f : ScalarFunctions H χ) :
     evaluation H χ g (rightTranslation H χ a f) = evaluation H χ (g * a) f := rfl
 
@@ -316,8 +316,7 @@ def RightLevel (J : Subgroup T) : Submodule ℂ (ScalarFunctions H χ) :=
 
 theorem rightLevel_covariance (J : Subgroup T) (f : RightLevel H χ J)
     (g j : T) (hj : j ∈ J) : f.val.val (g * j) = f.val.val g := by
-  have h := f.property ⟨j, hj⟩
-  exact congrArg (fun u : ScalarFunctions H χ => u.val g) h
+  exact congrArg (fun u : ScalarFunctions H χ => u.val g) (f.property ⟨j, hj⟩)
 end Functions
 
 structure Polarization where
@@ -327,10 +326,14 @@ structure Polarization where
   contains_center : Z F ζ hζ ≤ H
   character : ContinuousMonoidHom H ℂˣ
 
-abbrev TorusFunctions (P : Polarization F ζ hζ) :=
+section
+
+variable (P : Polarization F ζ hζ)
+
+abbrev TorusFunctions :=
   ScalarFunctions P.H P.character.toMonoidHom
 
-def BorelFunctions (P : Polarization F ζ hζ) : Submodule ℂ (G F ζ hζ → ℂ) where
+def BorelFunctions : Submodule ℂ (G F ζ hζ → ℂ) where
   carrier := {f | ∀ (h : P.H) (x : Adeles F) (g : G F ζ hζ),
     f (((h.val.val : G F ζ hζ) * N F ζ hζ x) * g) =
       deltaHalf F ζ hζ h.val * (P.character h : ℂ) * f g}
@@ -340,7 +343,7 @@ def BorelFunctions (P : Polarization F ζ hζ) : Submodule ℂ (G F ζ hζ → �
     intro c f hf h x g
     simp only [Pi.smul_apply, smul_eq_mul, hf h x g]; ring
 
-def borelRightTranslation (P : Polarization F ζ hζ) :
+def borelRightTranslation :
     Representation ℂ (G F ζ hζ) (BorelFunctions F ζ hζ P) where
   toFun a :=
     { toFun := fun f => ⟨fun g => f.val (g * a), by
@@ -349,6 +352,8 @@ def borelRightTranslation (P : Polarization F ζ hζ) :
       map_smul' := by intros; rfl }
   map_one' := by ext f g; simp
   map_mul' := by intros; ext f g; simp [mul_assoc]
+
+end
 
 def finitePart : Subgroup (G F ζ hζ) :=
   (⨅ w : InfinitePlace F,
@@ -364,7 +369,11 @@ def globalLevel (J : FiniteLevel F ζ hζ) : Subgroup (G F ζ hζ) :=
 
 abbrev TorusArch := InfinitePlace F → ℂ
 
-def archDiagonalTuple (z : TorusArch F) :
+section
+
+variable (z : TorusArch F)
+
+def archDiagonalTuple :
     KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ := by
   refine ⟨fun v => ?_, ?_⟩
   · cases v with
@@ -373,7 +382,7 @@ def archDiagonalTuple (z : TorusArch F) :
         (KPHilbert.infinite_isComplex F ζ hζ w)
       exact KPStandardLocalRootLifts.A F ζ hζ (Sum.inl w)
         (if h : z w = 0 then 1 else Units.mk0 (e.symm (z w))
-          (by exact fun h0 => h (by simpa using congrArg e h0)))
+          (fun h0 => h (by simpa using congrArg e h0)))
     | inr q => exact 1
   · apply Filter.Eventually.of_forall
     intro v
@@ -381,17 +390,15 @@ def archDiagonalTuple (z : TorusArch F) :
     | inl w => exact Subgroup.mem_top _
     | inr q => exact Subgroup.one_mem _
 
-def archDiagonalLift (z : TorusArch F) : G F ζ hζ :=
+def archDiagonalLift : G F ζ hζ :=
   KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
     (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ (archDiagonalTuple F ζ hζ z))
 
-theorem archDiagonalLift_mem (z : TorusArch F) :
+theorem archDiagonalLift_mem :
     archDiagonalLift F ζ hζ z ∈ torus F ζ hζ := by
   refine ⟨KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ
     (archDiagonalTuple F ζ hζ z), rfl, ?_, ?_⟩
-  · change KPAdelicCoverRestrictedProduct.matrixEntry F ζ hζ
-      (archDiagonalTuple F ζ hζ z) 1 0 = 0
-    apply Prod.ext
+  · apply Prod.ext
     · funext w
       simp [KPAdelicCoverRestrictedProduct.matrixEntry, archDiagonalTuple,
         KPStandardLocalRootLifts.A, KPLocalCover.sectionMap]
@@ -400,9 +407,7 @@ theorem archDiagonalLift_mem (z : TorusArch F) :
       intro q
       change (1 : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)).g 1 0 = 0
       simp
-  · change KPAdelicCoverRestrictedProduct.matrixEntry F ζ hζ
-      (archDiagonalTuple F ζ hζ z) 0 1 = 0
-    apply Prod.ext
+  · apply Prod.ext
     · funext w
       simp [KPAdelicCoverRestrictedProduct.matrixEntry, archDiagonalTuple,
         KPStandardLocalRootLifts.A, KPLocalCover.sectionMap]
@@ -412,8 +417,10 @@ theorem archDiagonalLift_mem (z : TorusArch F) :
       change (1 : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)).g 0 1 = 0
       simp
 
-def torusArchChart (z : TorusArch F) : E F ζ hζ :=
+def torusArchChart : E F ζ hζ :=
   ⟨archDiagonalLift F ζ hζ z, archDiagonalLift_mem F ζ hζ z⟩
+
+end
 
 def torusArchDomain : Set (TorusArch F) := {z | ∀ w, z w ≠ 0}
 
@@ -469,7 +476,12 @@ private lemma jet_bdd (hU : IsOpen U) (g : T) (n : ℕ) (K : JetCompact U)
   exact ((f.property.1 g).continuousOn_iteratedFDerivWithin (by simp)
     hU.uniqueDiffOn).norm.mono K.inside
 
-theorem jetBound_add_le (_hU : IsOpen U) (g : T) (n : ℕ) (K : JetCompact U)
+section
+
+variable (_hU : IsOpen U) (g : T) (n : ℕ) (K : JetCompact U)
+
+include _hU in
+theorem jetBound_add_le
     (f k : SmoothLevel H χ chart U J) :
     jetBound H χ chart U J g n K (f + k) ≤
       jetBound H χ chart U J g n K f + jetBound H χ chart U J g n K k := by
@@ -485,10 +497,10 @@ theorem jetBound_add_le (_hU : IsOpen U) (g : T) (n : ℕ) (K : JetCompact U)
     exact (norm_add_le _ _).trans (add_le_add
       (le_csSup (jet_bdd H χ chart U J hU g n K f) ⟨z, hz, rfl⟩)
       (le_csSup (jet_bdd H χ chart U J hU g n K k) ⟨z, hz, rfl⟩))
-  · have he' : K.set = ∅ := Set.not_nonempty_iff_eq_empty.mp he
-    simp [jetBound, he', Real.sSup_empty]
+  · simp [jetBound, (Set.not_nonempty_iff_eq_empty.mp he), Real.sSup_empty]
 
-theorem jetBound_smul (_hU : IsOpen U) (g : T) (n : ℕ) (K : JetCompact U)
+include _hU in
+theorem jetBound_smul
     (c : ℂ) (f : SmoothLevel H χ chart U J) :
     jetBound H χ chart U J g n K (c • f) =
       ‖c‖ * jetBound H χ chart U J g n K f := by
@@ -506,8 +518,9 @@ theorem jetBound_smul (_hU : IsOpen U) (g : T) (n : ℕ) (K : JetCompact U)
     rw [Set.image_congr hp, ← Set.image_image]
     exact ((isLUB_csSup (he.image _) (jet_bdd H χ chart U J hU g n K f)).mul_left
       (norm_nonneg c)).csSup_eq ((he.image _).image _)
-  · have he' : K.set = ∅ := Set.not_nonempty_iff_eq_empty.mp he
-    simp [jetBound, he', Real.sSup_empty]
+  · simp [jetBound, (Set.not_nonempty_iff_eq_empty.mp he), Real.sSup_empty]
+
+end
 
 def jetSeminorm (g : T) (n : ℕ) (K : JetCompact U) :
     Seminorm ℂ (SmoothLevel H χ chart U J) :=

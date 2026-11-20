@@ -35,12 +35,10 @@ theorem integral_character_symPower (d : ℕ) :
   rcases eq_or_ne d 0 with rfl | hd
   · simp
   · simp only [hd, ↓reduceIte]
-    have hbot := Representation.IsIrreducible.invariants_eq_bot_of_finrank_ne_one
-      (isIrreducible_symPowerModel d) (by rw [finrank_euclideanSpace_fin]; omega)
-
     rw [← (ContRepresentation.integral_character_eq_zero_iff (symPowerModel d)
       (continuous_symPowerModel d)).2 ((Submodule.eq_bot_iff _).2 fun v hv =>
-        (Submodule.eq_bot_iff _).1 hbot v hv)]
+        (Submodule.eq_bot_iff _).1 (Representation.IsIrreducible.invariants_eq_bot_of_finrank_ne_one
+          (isIrreducible_symPowerModel d) (by rw [finrank_euclideanSpace_fin]; omega)) v hv)]
     simp
 
 theorem continuous_weylIntegrand (f : C(SU2, ℂ)) :
@@ -62,7 +60,7 @@ noncomputable def weylFunctional : C(SU2, ℂ) →L[ℂ] ℂ :=
         ring }
     1 fun f => by
       simp only [LinearMap.coe_mk, AddHom.coe_mk, one_mul]
-      have hpi : 0 < Real.pi := Real.pi_pos
+      have hpi := Real.pi_pos
       have hbound : ‖∫ θ in (0 : ℝ)..Real.pi, f (torusExp θ) * ((4 * Real.sin θ ^ 2 : ℝ) : ℂ)‖
           ≤ ‖f‖ * (2 * Real.pi) := by
         refine (intervalIntegral.norm_integral_le_integral_norm hpi.le).trans ?_
@@ -92,10 +90,7 @@ private theorem weylFunctional_apply (f : C(SU2, ℂ)) :
 
 private theorem weylFunctional_symPowerCharacter (d : ℕ) :
     weylFunctional (symPowerCharacter d) = if d = 0 then 1 else 0 := by
-  have h := character_symPower_orthonormal_torusExp d 0
-  simp only [character_symPower_zero, map_one, mul_one] at h
-  rw [weylFunctional_apply]
-  simpa only [symPowerCharacter_apply] using h
+  simpa [weylFunctional_apply, character_symPower_zero, map_one, mul_one] using character_symPower_orthonormal_torusExp d 0
 
 theorem weyl_integration_formula {f : SU2 → ℂ} (hf : Continuous f)
     (hconj : ∀ u g : SU2, f (u * g * u⁻¹) = f g) :
@@ -105,9 +100,7 @@ theorem weyl_integration_formula {f : SU2 → ℂ} (hf : Continuous f)
   let D : C(SU2, ℂ) →L[ℂ] ℂ := haarAverage SU2 - weylFunctional
   have hspan : characterSpan ≤ LinearMap.ker (D : C(SU2, ℂ) →ₗ[ℂ] ℂ) :=
     characterSpan_le_iff.2 fun d => LinearMap.mem_ker.2 <| by
-      simp only [D, ContinuousLinearMap.coe_coe, sub_apply,
-        haarAverage_apply, weylFunctional_symPowerCharacter, symPowerCharacter_apply,
-        integral_character_symPower, sub_self]
+      simp [D, ContinuousLinearMap.coe_coe, sub_apply, haarAverage_apply, weylFunctional_symPowerCharacter, symPowerCharacter_apply, integral_character_symPower, sub_self]
   have hF : F ∈ LinearMap.ker (D : C(SU2, ℂ) →ₗ[ℂ] ℂ) :=
     Submodule.topologicalClosure_minimal _ hspan D.isClosed_ker
       (mem_topologicalClosure_characterSpan_iff.2 hconj)
@@ -124,8 +117,8 @@ theorem integral_character_symPower_mul_conj (m n : ℕ) :
     (f := fun g => (symPower m).character g * (starRingEnd ℂ) ((symPower n).character g))
     ((continuous_character_symPower m).mul
       (Complex.continuous_conj.comp (continuous_character_symPower n)))
-    fun u g => by rw [Representation.char_conj, Representation.char_conj]]
-  exact character_symPower_orthonormal_torusExp m n
+    fun u g => by simp]
+  apply character_symPower_orthonormal_torusExp
 
 end SU2
 

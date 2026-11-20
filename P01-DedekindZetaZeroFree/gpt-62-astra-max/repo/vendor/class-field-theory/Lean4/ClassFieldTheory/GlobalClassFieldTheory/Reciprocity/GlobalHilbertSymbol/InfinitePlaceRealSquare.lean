@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -42,14 +39,7 @@ theorem realInfinitePlace_globalUnit_realCoordinate
         (Units.map (algebraMap K v.Completion).toMonoidHom b :
           v.Completionˣ) =
       InfinitePlace.embedding_of_isReal hv (b : K) := by
-  change
-    InfinitePlace.Completion.ringEquivRealOfIsReal hv
-        (algebraMap K v.Completion (b : K)) =
-      InfinitePlace.embedding_of_isReal hv (b : K)
-  rw [InfinitePlace.Completion.ringEquivRealOfIsReal_apply]
-  rw [InfinitePlace.Completion.algebraMap_apply]
-  rw [InfinitePlace.Completion.extensionEmbeddingOfIsReal_coe]
-  simp only [WithAbs.equiv_apply]
+  simp
 
 omit [NumberField K] in
 /-- A global unit whose image at a real infinite place is positive becomes a
@@ -59,11 +49,9 @@ theorem realInfinitePlace_globalUnit_mem_squareSubgroup_of_pos
     (hb : 0 < InfinitePlace.embedding_of_isReal hv (b : K)) :
     Units.map (algebraMap K v.Completion).toMonoidHom b ∈
       (powMonoidHom 2 : v.Completionˣ →* v.Completionˣ).range := by
-  let e : v.Completion ≃+* ℝ :=
-    InfinitePlace.Completion.ringEquivRealOfIsReal hv
-  let eU : v.Completionˣ ≃* ℝˣ :=
-    Units.mapEquiv e.toMulEquiv
-  let b_v : v.Completionˣ :=
+  let eU :=
+    Units.mapEquiv (InfinitePlace.Completion.ringEquivRealOfIsReal hv).toMulEquiv
+  let b_v :=
     Units.map (algebraMap K v.Completion).toMonoidHom b
   have hcoord :
       (eU b_v : ℝ) = InfinitePlace.embedding_of_isReal hv (b : K) := by
@@ -71,19 +59,18 @@ theorem realInfinitePlace_globalUnit_mem_squareSubgroup_of_pos
   have hpos : 0 < (eU b_v : ℝ) := by
     rw [hcoord]
     exact hb
-  let t : ℝˣ :=
+  let t :=
     Units.mk0 (Real.sqrt (eU b_v : ℝ))
       (ne_of_gt (Real.sqrt_pos.2 hpos))
-  let y : v.Completionˣ := eU.symm t
+  let y := eU.symm t
   refine ⟨y, ?_⟩
   rw [powMonoidHom_apply]
   apply eU.injective
   calc
-    eU (y ^ 2) = (eU y) ^ 2 := map_pow eU y 2
+    _ = (eU y) ^ 2 := map_pow eU y 2
     _ = t ^ 2 := by rw [eU.apply_symm_apply]
     _ = eU b_v := by
       apply Units.ext
-      change Real.sqrt (eU b_v : ℝ) ^ 2 = (eU b_v : ℝ)
       exact Real.sq_sqrt hpos.le
 
 end Reciprocity

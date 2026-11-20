@@ -27,11 +27,9 @@ theorem independent_of_diagonal_pairings
   rw [linearIndependent_fin2]
   constructor
   · intro h
-    have H := congrArg ell₂ h
-    exact hb (by simpa [h22] using H)
+    exact hb (by simpa [h22] using (congrArg ell₂ h))
   · intro c h
-    have H := congrArg ell₀ h
-    exact ha (by simpa [map_smul, h00, h02] using H.symm)
+    exact ha (by simpa [map_smul, h00, h02] using (congrArg ell₀ h).symm)
 
 variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -51,14 +49,15 @@ variable (F : Type) [Field F] [NumberField F]
   have hr : KPLocalJacquetImage.root S.borel x =
       KPLocalSmoothRepresentation.upperRoot F ζ hζ q x :=
     (S.openCell P).upper_eq (Multiplicative.toAdd x)
-  have he : scalarCoordinateEquiv F ζ hζ q S P hP .plus
+  let scalarCoordinateEquiv₀ := scalarCoordinateEquiv F ζ hζ q S P hP .plus
+  have he : scalarCoordinateEquiv₀
       (IPlus S.borel P (KPLocalSmoothRepresentation.upperRoot F ζ hζ q x) v) =
       scalarAction F ζ hζ q S P hP .plus
         (KPLocalSmoothRepresentation.upperRoot F ζ hζ q x)
-        (scalarCoordinateEquiv F ζ hζ q S P hP .plus v) := rfl
+        (scalarCoordinateEquiv₀ v) := rfl
   rw [hr, he]
-  simpa only [smul_eq_mul] using
-    Λ.property x (scalarCoordinateEquiv F ζ hζ q S P hP .plus v)
+  simpa using
+    Λ.property x (scalarCoordinateEquiv₀ v)
 
  def actual_scalar_reverse
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -94,15 +93,12 @@ open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSerie
 open KPRankOneShellContinuation KPRankOneShellRepair KPTameJacquetTestDuality
 open KPTameTransposeKernelUnfolding KPTameTransposeLiteralCoefficients KPTameTransposeLiteral
 open KPTameValuationCoordinates
-open _root_.DedekindZetaZeroFree.ActualReverseMinorStableAssembly renaming eventual_actual_stable_value_eq_two_shells → eventual_actual_stable_value_eq_two_shells
-open _root_.DedekindZetaZeroFree.ActualReverseMinorConductorOffSupport renaming eventual_actual_conductor_shell_off_support → eventual_actual_conductor_shell_off_support
-open _root_.DedekindZetaZeroFree.ActualReverseMinorStandardConductor renaming eventual_actual_first_two_shells_diag_two → eventual_actual_first_two_shells_diag_two
-open _root_.DedekindZetaZeroFree.ActualReverseMinorStandardConductor renaming actual_first_two_shells_diag_two_value_ne_zero → actual_first_two_shells_diag_two_value_ne_zero
-open _root_.DedekindZetaZeroFree.ActualReverseMinorStandardConductor renaming standardConductorIntegral → standardConductorIntegral
-open _root_.DedekindZetaZeroFree.ActualReverseMinorOffDiagonal renaming actual_lowShell_integral_zero_of_differenceLabel_ne_zero → actual_lowShell_integral_zero_of_differenceLabel_ne_zero
-open _root_.DedekindZetaZeroFree.ActualReverseMinorLowShellDiagonal renaming eventual_actual_lowShell_diagonal_value → eventual_actual_lowShell_diagonal_value
-open _root_.DedekindZetaZeroFree.ActualReverseMinorLiteralAlgebra renaming full_jacquet_dual → full_jacquet_dual
-open _root_.DedekindZetaZeroFree.ActualReverseMinorLiteralAlgebra renaming independent_of_diagonal_pairings → independent_of_diagonal_pairings
+open _root_.DedekindZetaZeroFree.ActualReverseMinorStableAssembly (eventual_actual_stable_value_eq_two_shells)
+open _root_.DedekindZetaZeroFree.ActualReverseMinorConductorOffSupport (eventual_actual_conductor_shell_off_support)
+open _root_.DedekindZetaZeroFree.ActualReverseMinorStandardConductor (eventual_actual_first_two_shells_diag_two actual_first_two_shells_diag_two_value_ne_zero standardConductorIntegral)
+open _root_.DedekindZetaZeroFree.ActualReverseMinorOffDiagonal (actual_lowShell_integral_zero_of_differenceLabel_ne_zero)
+open _root_.DedekindZetaZeroFree.ActualReverseMinorLowShellDiagonal (eventual_actual_lowShell_diagonal_value)
+open _root_.DedekindZetaZeroFree.ActualReverseMinorLiteralAlgebra (full_jacquet_dual independent_of_diagonal_pairings)
 set_option autoImplicit false
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
@@ -119,8 +115,7 @@ variable (F : Type) [Field F] [NumberField F]
 local instance minusAdd : AddCommGroup (sectionSpace S.borel P .minus 0) := inferInstance
 
 private theorem diagonal_eta (π : (LocalField F q)ˣ) (j : Fin 3) :
-    diagonalLift F ζ hζ q π ((j.val : ℤ), 0) = eta F ζ hζ q π j := by
-  simp [diagonalLift, eta, KPPGLLocalCover.A, KPStandardLocalRootLifts.A]
+    diagonalLift F ζ hζ q π ((j.val : ℤ), 0) = eta F ζ hζ q π j := by apply @DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.DiagonalLiftGeometry.diagonalLift_index_zero_eq_eta <;> assumption
 
  def actualScalarReverse :
     scalarSections F ζ hζ q S P hP .minus →ₗ[ℂ] scalarSections F ζ hζ q S P hP .plus :=
@@ -142,9 +137,7 @@ private theorem lowShell_nonoscillatory
             KPPGLLocalCover.N F ζ hζ (Sum.inr q) x)).val 1 ∂μ) := by
   apply setIntegral_congr_fun (valuation (LocalField F q)).isOpen_integer.measurableSet
   intro x hx
-  have hneg : -x ∈ (valuation (LocalField F q)).integer :=
-    (valuation (LocalField F q)).integer.neg_mem hx
-  have hp := (hconductor 1).mpr ((valuation (LocalField F q)).integer.one_mem) ⟨-x, hneg⟩
+  have hp := (hconductor 1).mpr ((valuation (LocalField F q)).integer.one_mem) ⟨-x, ((valuation (LocalField F q)).integer.neg_mem hx)⟩
   simp only [mul_one] at hp
   simp only [jacquetIntegrand, hp, Units.val_one, mul_one]
   rfl

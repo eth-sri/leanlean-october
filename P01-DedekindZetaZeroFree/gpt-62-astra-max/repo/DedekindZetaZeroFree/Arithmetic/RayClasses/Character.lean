@@ -21,14 +21,18 @@ instance (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) :
     CoeFun (RayClassCharacter F 𝔪) (fun _ => Ideal (𝓞 F) → ℂ) :=
   ⟨RayClassCharacter.toFun⟩
 
-def RayClassCharacter.IsPrimitive {F : Type} [Field F] [NumberField F] {𝔪 : Ideal (𝓞 F)}
-    (η : RayClassCharacter F 𝔪) : Prop :=
+section
+
+variable {F : Type} [Field F] [NumberField F] {𝔪 : Ideal (𝓞 F)} (η : RayClassCharacter F 𝔪)
+
+def RayClassCharacter.IsPrimitive : Prop :=
   ∀ 𝔣 : Ideal (𝓞 F), 𝔪 < 𝔣 → ∃ α : 𝓞 F, α ≠ 0 ∧ α - 1 ∈ 𝔣 ∧ (∀ φ : F →+* ℝ, 0 < φ (α : F)) ∧
     Ideal.span {α} ⊔ 𝔪 = ⊤ ∧ η (Ideal.span {α}) ≠ 1
 
-def RayClassCharacter.IsPrincipal {F : Type} [Field F] [NumberField F] {𝔪 : Ideal (𝓞 F)}
-    (η : RayClassCharacter F 𝔪) : Prop :=
+def RayClassCharacter.IsPrincipal : Prop :=
   ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ 𝔪 = ⊤ → η I = 1
+
+end
 
 structure QuadraticHeckeFamily (F : Type) [Field F] [NumberField F] (𝔠 : Ideal (𝓞 F)) where
   cond : Ideal (𝓞 F) → Ideal (𝓞 F)

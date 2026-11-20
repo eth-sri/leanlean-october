@@ -12,7 +12,7 @@ open MomentSources NumberField
 open scoped Classical NumberField Topology
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem complex_borel_compact_decomposition (R : PrincipalMellin.ActualRecipe S η)
     (w : InfinitePlace F)
@@ -68,7 +68,7 @@ theorem local_triangularize_by_iwasawa_compact (R : PrincipalMellin.ActualRecipe
         (KPTameCompact.inclusion F q r⁻¹), ?_, ?_⟩
       · simp only [iwasawaCompactFactor, if_pos hb]
         exact ⟨r⁻¹,rfl⟩
-      · simpa only [KPLocalCover.sectionMap_g, map_inv, inv_inv] using hr
+      · simpa using hr
     · let k := KPGoodCompactSplitting.kStar F R.A.zeta12 R.A.primitive_zeta12 q
         (fun h3 => hb (Or.inr h3)) r⁻¹
       refine ⟨k,?_,?_⟩
@@ -81,13 +81,7 @@ theorem local_triangularize_by_iwasawa_compact (R : PrincipalMellin.ActualRecipe
 
 private theorem adele_ext {a b : KPAdelicCoverRestrictedProduct.Adeles F}
     (h : ∀ v, KPAdelicCoverRestrictedProduct.adeleEval F v a =
-      KPAdelicCoverRestrictedProduct.adeleEval F v b) : a = b := by
-  apply Prod.ext
-  · funext w
-    exact h (Sum.inl w)
-  · apply RestrictedProduct.ext
-    intro q
-    exact h (Sum.inr q)
+      KPAdelicCoverRestrictedProduct.adeleEval F v b) : a = b := by apply @DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.GL2Projection.adele_ext <;> assumption
 
 theorem adelic_pgl_iwasawa_decomposition (R : PrincipalMellin.ActualRecipe S η)
     (g : KPAdelicCoverRestrictedProduct.AdelicPGL2 F) :
@@ -102,7 +96,7 @@ theorem adelic_pgl_iwasawa_decomposition (R : PrincipalMellin.ActualRecipe S η)
       filter_upwards [iwasawa_compact_factor_eq_arithmetic_compact_eventually R] with v hv
       rw [← hv]
       exact hk v⟩
-  have hy : y ∈ fullProductCompactPreimage R := hk
+  have hy := hk
   let K := (KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12)
     (KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12 y)
   have hK : K ∈ fullProductCompact R := ⟨y,hy,rfl⟩

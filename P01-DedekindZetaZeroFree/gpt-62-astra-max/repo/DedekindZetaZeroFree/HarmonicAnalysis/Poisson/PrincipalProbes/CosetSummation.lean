@@ -12,12 +12,15 @@ open scoped Classical NumberField
 
 variable {F : Type} [Field F] [NumberField F]
 
-theorem raw_originalTerm_support_finite
-    (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
-    (W : SLocalProduct F A.Sf → ℂ) (hW : HasCompactSupport W)
-    (s a : A.R) (hs : s ≠ 0) (X : ℝ) (t : A.G1) :
+section
+
+variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+    (W : SLocalProduct F A.Sf → ℂ) (hW : HasCompactSupport W) (s a : A.R) (hs : s ≠ 0) (X : ℝ) (t : A.G1)
+
+include hW in
+theorem raw_originalTerm_support_finite :
     (Function.support (originalTerm A D W s a hs X t)).Finite := by
-  let d : A.G := (t : A.G) * NormalizedProbe.radialSection A (modulus A s * X)
+  let d := (t : A.G) * NormalizedProbe.radialSection A (modulus A s * X)
   have hmul : NormalizedProbe.asLocalPoint A d⁻¹ * NormalizedProbe.asLocalPoint A d = 1 := by
     apply Prod.ext
     · funext v
@@ -27,36 +30,38 @@ theorem raw_originalTerm_support_finite
       exact inv_mul_cancel₀ (Units.ne_zero _)
     · funext v
       simp [NormalizedProbe.asLocalPoint, SArithmeticData.localToAdditive]
-  let C : Set (SLocalProduct F A.Sf) :=
+  let C :=
     (fun x => x * NormalizedProbe.asLocalPoint A d) '' tsupport W
-  have hC : IsCompact C := hW.image (continuous_id.mul continuous_const)
-  have hfin := sIntegerDiagonal_finite_preimage_of_isCompact F A.Sf C hC
-  apply hfin.subset
+  apply (sIntegerDiagonal_finite_preimage_of_isCompact F A.Sf C (hW.image (continuous_id.mul continuous_const))).subset
   intro m hm
-  have hnon : W (sLocalDiagonal F A.Sf (m : F) * NormalizedProbe.asLocalPoint A d⁻¹) ≠ 0 := by
+  let sLocalDiagonal₀ := sLocalDiagonal F A.Sf (m : F)
+  have hnon : W (sLocalDiagonal₀ * NormalizedProbe.asLocalPoint A d⁻¹) ≠ 0 := by
     intro hz
     apply hm
     simp only [Function.mem_support, ne_eq] at hm ⊢
     unfold originalTerm
-    change _ * W (sLocalDiagonal F A.Sf (m : F) * NormalizedProbe.asLocalPoint A d⁻¹) = 0
     rw [hz, mul_zero]
-  refine ⟨sLocalDiagonal F A.Sf (m : F) * NormalizedProbe.asLocalPoint A d⁻¹,
+  refine ⟨sLocalDiagonal₀ * NormalizedProbe.asLocalPoint A d⁻¹,
     subset_tsupport W hnon, ?_⟩
-  change (sLocalDiagonal F A.Sf (m : F) * NormalizedProbe.asLocalPoint A d⁻¹) *
-    NormalizedProbe.asLocalPoint A d = sLocalDiagonal F A.Sf (m : F)
+  change (sLocalDiagonal₀ * NormalizedProbe.asLocalPoint A d⁻¹) *
+    NormalizedProbe.asLocalPoint A d = sLocalDiagonal₀
   rw [mul_assoc, hmul, mul_one]
 
-theorem raw_originalTerm_summable
-    (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
-    (W : SLocalProduct F A.Sf → ℂ) (hW : HasCompactSupport W)
-    (s a : A.R) (hs : s ≠ 0) (X : ℝ) (t : A.G1) :
+include hW in
+theorem raw_originalTerm_summable :
     Summable (fun m : A.R => ‖originalTerm A D W s a hs X t m‖) := by
   apply summable_of_hasFiniteSupport
   change (Function.support (fun m : A.R => ‖originalTerm A D W s a hs X t m‖)).Finite
   simpa only [Function.support, norm_ne_zero_iff] using
     raw_originalTerm_support_finite A D W hW s a hs X t
 
-def rowCoefficient (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+end
+
+section
+
+variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+
+def rowCoefficient
     (s a : A.R) (hs : s ≠ 0) (m : A.R) : ℂ := by
   letI := D.finiteResidue s hs
   exact (Real.sqrt (modulus A s) : ℂ)⁻¹ *
@@ -64,7 +69,6 @@ def rowCoefficient (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData
     D.character a (FiniteTransform.residueMap A.R.toSubring a m)
 
 theorem rowCoefficient_eq_of_residue_eq
-    (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (he : FiniteTransform.IsTrivialOn A.R.toSubring D.additiveCharacter)
     (s a : A.R) (hs : s ≠ 0) (x y : A.R)
     (hxy : FiniteTransform.residueMap A.R.toSubring (s*a) x =
@@ -94,19 +98,20 @@ theorem rowCoefficient_eq_of_residue_eq
   unfold rowCoefficient
   rw [hg, ha]
 
-theorem principal_additiveCharacter_trivial
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A σ η hS) :
+end
+
+section
+
+variable (A : SArithmeticData F) (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)
+    (hS : A.ContainsTraceBadPlaces) (P : NormalizedProbe.PrincipalData A σ η hS)
+
+theorem principal_additiveCharacter_trivial :
     FiniteTransform.IsTrivialOn A.R.toSubring P.coefficients.additiveCharacter := by
   intro r
   rw [P.sameTrace]
   exact P.traceCompatible r
 
-theorem principal_additiveCharacter_norm
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A σ η hS) (x : F) :
+theorem principal_additiveCharacter_norm (x : F) :
     ‖P.coefficients.additiveCharacter x‖ = 1 := by
   rw [P.sameTrace]
   unfold ProbeAdditive.phase ProbeAdditive.archPhase
@@ -120,10 +125,16 @@ theorem principal_additiveCharacter_norm
   rw [hexp]
   simp
 
+end
+
+section
+
+variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+    (he : FiniteTransform.IsTrivialOn A.R.toSubring D.additiveCharacter) (s a : A.R) (hs : s ≠ 0)
+    (ha : a ≠ 0)
+
+include he in
 theorem rowCoefficient_finite_transform
-    (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
-    (he : FiniteTransform.IsTrivialOn A.R.toSubring D.additiveCharacter)
-    (s a : A.R) (hs : s ≠ 0) (ha : a ≠ 0)
     (hp : FiniteTransform.IsPrimitiveAt A.R.toSubring s D.additiveCharacter) (h : A.R) :
     (letI := D.finiteResidue s hs
      letI := D.finiteResidue a ha
@@ -143,10 +154,8 @@ theorem rowCoefficient_finite_transform
   exact FiniteTransform.exact_finite_transform A.R.toSubring s a h hs ha
     (D.character s) (D.character a) D.additiveCharacter he hp
 
+include he in
 theorem row_sum_eq_sum_residue
-    (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
-    (he : FiniteTransform.IsTrivialOn A.R.toSubring D.additiveCharacter)
-    (s a : A.R) (hs : s ≠ 0) (ha : a ≠ 0)
     (w : A.R → ℂ) (hw : Summable (fun m => rowCoefficient A D s a hs m * w m)) :
     (∑' m : A.R, rowCoefficient A D s a hs m * w m) =
     (letI := D.finiteResidue (s*a) (mul_ne_zero hs ha)
@@ -154,8 +163,7 @@ theorem row_sum_eq_sum_residue
        rowCoefficient A D s a hs ((FiniteTransform.canonicalLifts A.R.toSubring (s*a)).val r) *
        ∑' m : {m : A.R // FiniteTransform.residueMap A.R.toSubring (s*a) m = r}, w m) := by
   letI := D.finiteResidue (s*a) (mul_ne_zero hs ha)
-  have hf := hw.hasSum.tsum_fiberwise (FiniteTransform.residueMap A.R.toSubring (s*a))
-  rw [← hf.tsum_eq, tsum_fintype]
+  rw [← (hw.hasSum.tsum_fiberwise (FiniteTransform.residueMap A.R.toSubring (s*a))).tsum_eq, tsum_fintype]
   apply Finset.sum_congr rfl
   intro r _
   rw [← tsum_mul_left]
@@ -165,11 +173,15 @@ theorem row_sum_eq_sum_residue
   apply rowCoefficient_eq_of_residue_eq A D he s a hs
   exact m.property.trans ((FiniteTransform.canonicalLifts A.R.toSubring (s*a)).property r).symm
 
-theorem raw_frequencyTerm_summable_of_fourier
-    (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+end
+
+section
+
+variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
-    (μ : @MeasureTheory.Measure (SLocalProduct F A.Sf) (borel _))
-    (W : SLocalProduct F A.Sf → ℂ)
+    (μ : @MeasureTheory.Measure (SLocalProduct F A.Sf) (borel _)) (W : SLocalProduct F A.Sf → ℂ)
+
+theorem raw_frequencyTerm_summable_of_fourier
     (he : ∀ x : F, ‖D.additiveCharacter x‖ = 1)
     (s a : A.R) (hs : s ≠ 0) (ha : a ≠ 0) (X : ℝ) (t : A.G1)
     (hhat : Summable (fun h : A.R =>
@@ -185,11 +197,7 @@ theorem raw_frequencyTerm_summable_of_fourier
     (FiniteTransform.finiteCoefficient_norm_le A.R.toSubring s a h
       (D.character s) (D.character a) D.additiveCharacter he) (norm_nonneg _)
 
-theorem raw_exact_coset_poisson_of_residue_poisson
-    (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
-    (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
-    (μ : @MeasureTheory.Measure (SLocalProduct F A.Sf) (borel _))
-    (W : SLocalProduct F A.Sf → ℂ) (hW : HasCompactSupport W)
+theorem raw_exact_coset_poisson_of_residue_poisson (hW : HasCompactSupport W)
     (he : FiniteTransform.IsTrivialOn A.R.toSubring D.additiveCharacter)
     (hnorm : ∀ x : F, ‖D.additiveCharacter x‖ = 1)
     (s a : A.R) (hs : s ≠ 0) (ha : a ≠ 0) (X : ℝ) (t : A.G1)
@@ -218,29 +226,27 @@ theorem raw_exact_coset_poisson_of_residue_poisson
   let w (m : A.R) := W (sLocalDiagonal F A.Sf (m : F) * NormalizedProbe.asLocalPoint A
     (((t : A.G) * NormalizedProbe.radialSection A (modulus A s * X))⁻¹))
   let H (h : A.R) := ProbeWeight.fourier F A.Sf e μ W (frequencyPoint A s a X t h)
-  let c (r : FiniteTransform.Residue A.R.toSubring (s*a)) :=
+  let Residue₀ := FiniteTransform.Residue A.R.toSubring (s*a)
+  let c (r : Residue₀) :=
     rowCoefficient A D s a hs ((FiniteTransform.canonicalLifts A.R.toSubring (s*a)).val r)
-  let phase (r : FiniteTransform.Residue A.R.toSubring (s*a)) (h : A.R) :=
+  let phase (r : Residue₀) (h : A.R) :=
     D.additiveCharacter ((h : F) *
       (((FiniteTransform.canonicalLifts A.R.toSubring (s*a)).val r) : F) / ((s : F)*(a : F)))
-  have hsum (r : FiniteTransform.Residue A.R.toSubring (s*a)) :
+  have hsum (r : Residue₀) :
       Summable (fun h => c r * (phase r h * H h)) := by
     apply Summable.of_norm_bounded (hhat.mul_left ‖c r‖)
     intro h
     simp only [norm_mul, phase, hnorm, one_mul]
     rfl
-  have horig : Summable (fun m => rowCoefficient A D s a hs m * w m) := by
-    exact (raw_originalTerm_summable A D W hW s a hs X t).of_norm
+  have horig := (raw_originalTerm_summable A D W hW s a hs X t).of_norm
   change (∑' m : A.R, rowCoefficient A D s a hs m * w m) = _
   rw [row_sum_eq_sum_residue A D he s a hs ha w horig]
-  change (∑ r, c r * ∑' m : {m : A.R //
-    FiniteTransform.residueMap A.R.toSubring (s*a) m = r}, w m.val) = _
-  have hc (r : FiniteTransform.Residue A.R.toSubring (s*a)) :
+  have hc (r : Residue₀) :
       (∑' m : {m : A.R // FiniteTransform.residueMap A.R.toSubring (s*a) m = r}, w m.val) =
       ((X / modulus A a : ℝ) : ℂ) * ∑' h : A.R, phase r h * H h := hcoset r
   simp_rw [hc]
   calc
-    (∑ r, c r * (((X / modulus A a : ℝ) : ℂ) * ∑' h, phase r h * H h)) =
+    _ =
         ((X / modulus A a : ℝ) : ℂ) * ∑ r, ∑' h, c r * (phase r h * H h) := by
       rw [Finset.mul_sum]
       apply Finset.sum_congr rfl
@@ -270,6 +276,8 @@ theorem raw_exact_coset_poisson_of_residue_poisson
       push_cast
       ring
 
+end
+
 theorem raw_exact_coset_poisson
     (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -287,8 +295,7 @@ theorem raw_exact_coset_poisson
       ((X * Real.sqrt (modulus A s) / modulus A a : ℝ) : ℂ) *
         ∑' h : A.R,
           frequencyTerm A P.coefficients P.finiteTrace
-            P.additiveMeasure P.W0 s a hs ha X t h := by
-  exact raw_exact_coset_poisson_of_residue_poisson A P.coefficients P.finiteTrace
+            P.additiveMeasure P.W0 s a hs ha X t h := raw_exact_coset_poisson_of_residue_poisson A P.coefficients P.finiteTrace
     P.additiveMeasure P.W0 P.compactSupport
     (principal_additiveCharacter_trivial A σ η hS P)
     (principal_additiveCharacter_norm A σ η hS P) s a hs ha X t

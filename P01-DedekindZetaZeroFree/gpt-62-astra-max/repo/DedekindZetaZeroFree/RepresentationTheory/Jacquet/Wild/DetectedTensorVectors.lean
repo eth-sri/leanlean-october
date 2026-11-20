@@ -10,11 +10,11 @@ open NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.WildCurrentJointPeriod
 open MomentSources KPKirillovFiniteTensor WildCurrentTensor WildCurrentReindex
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
-variable (D : TensorActions R N) (T : Finset (KPFinitePlace F))
-variable (s : RestrictedTensorSimple.Level D.bad) (hT : places T ⊆ s.val)
-variable (x : ∀p : s.val,actualLocal R D.finiteData p)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    (D : TensorActions R N) (T : Finset (KPFinitePlace F))
+    (s : RestrictedTensorSimple.Level D.bad) (hT : places T ⊆ s.val)
+    (x : ∀p : s.val,actualLocal R D.finiteData p)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1500000
 

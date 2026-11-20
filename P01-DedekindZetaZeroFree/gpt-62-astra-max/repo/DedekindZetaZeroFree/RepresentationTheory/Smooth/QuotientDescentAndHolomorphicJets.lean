@@ -29,10 +29,9 @@ theorem smooth_pullback (f : X F ζ hζ → ℂ)
 theorem centreMap_mul (g : G F ζ hζ) (ε : rootsOfUnity 3 F) :
     KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * g =
       g * KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε := by
-  have hc := KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
+  exact (Subgroup.mem_center_iff.mp (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
     (show KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε ∈
-      (KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ).range from ⟨ε, rfl⟩)
-  exact (Subgroup.mem_center_iff.mp hc g).symm
+      (KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ).range from ⟨ε, rfl⟩)) g).symm
 
 end DedekindZetaZeroFree.KPMsSameContinuationGreen.SmoothDescent
 

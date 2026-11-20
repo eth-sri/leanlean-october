@@ -11,7 +11,7 @@ open NumberField
 namespace DedekindZetaZeroFree.KPReferenceChange.StandardCover
 open StandardComplexImage KPCplxActualImage KPCplxPrincipalSeriesCharts
 variable {F : Type} [Field F] [NumberField F]
-variable (A : SArithmeticData F) (w : InfinitePlace F)
+    (A : SArithmeticData F) (w : InfinitePlace F)
 
 def complexRho : Representation ℂ (G F A.zeta12 A.primitive_zeta12 (Sum.inr w))
     (Theta frequency) where

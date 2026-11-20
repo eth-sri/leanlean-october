@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -61,13 +57,7 @@ theorem relativeNorm_coe_eq_of_closedSubgroup_eq
         ambientFixedAddSubgroup A B') : A.V) := by
   subst B'
   subst C'
-  have hle : hCB = hC'B' := Subsingleton.elim _ _
-  subst hC'B'
-  have hfin : hfinite = hfinite' := Subsingleton.elim _ _
-  subst hfinite'
-  have hxx' : x = x' := Subtype.ext hx
-  subst x'
-  rfl
+  simp_all
 
 /-- For an arbitrary finite separable abstract field, the abstract class-formation norm on
 fixed coefficients has the same underlying field element as the ordinary
@@ -86,15 +76,13 @@ theorem normToBase_abstractFixedFieldUnit_val_of_isSeparable
       algebraMap K Ω (Algebra.norm K
         (x : abstractFixedField K Ω H)) := by
   let E := abstractFixedField K Ω H
-  let y : ambientFixedAddSubgroup (galoisAmbientUnitsRep K Ω) H :=
+  let y :=
     abstractFixedFieldUnitsEquivGaloisFixed K Ω H (Additive.ofMul x)
   let yE := intermediateFieldUnitsEquivGaloisFixed K Ω E (Additive.ofMul x)
   have hy : yE.1 = y.1 := by
     rw [intermediateFieldUnitsEquivGaloisFixed_coe]
     exact (abstractFixedFieldUnitsEquivGaloisFixed_coe
       K Ω H (Additive.ofMul x)).symm
-  have hnorm :=
-    relativeNorm_intermediateFieldUnit_val_of_isSeparable K Ω E x
   have htransport := relativeNorm_coe_eq_of_closedSubgroup_eq
     (galoisAmbientUnitsRep K Ω)
     (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
@@ -104,25 +92,17 @@ theorem normToBase_abstractFixedFieldUnit_val_of_isSeparable
     (closedFixingSubgroup_bot_eq_baseField K Ω)
     (closedFixingSubgroup_abstractFixedField_eq K Ω H)
     yE y hy
-  have htransport' := congrArg
-    (fun z : Additive Ωˣ => ((Additive.toMul z : Ωˣ) : Ω)) htransport
-  change
-    ((Additive.toMul
-      ((normToBase (galoisAmbientUnitsRep K Ω) H y).1 :
-        Additive Ωˣ) : Ωˣ) : Ω) = _
-  exact htransport'.symm.trans hnorm
+  exact (congrArg
+    (fun z : Additive Ωˣ => ((Additive.toMul z : Ωˣ) : Ω)) htransport).symm.trans (relativeNorm_intermediateFieldUnit_val_of_isSeparable K Ω E x)
+
+variable (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+    (H : ClosedSubgroup (Gal(SeparableClosure K / K)))
+    [Finite ((baseField (Gal(SeparableClosure K / K))).toSubgroup ⧸ extensionSubgroup (baseField (Gal(SeparableClosure K / K))) H (le_baseField H))]
+    [FiniteDimensional K (abstractFixedField K (SeparableClosure K) H)]
 
 /-- The base normalized valuation of the abstract norm is the ordinary
 normalized valuation of the concrete field norm. -/
 theorem localBaseValuation_normToBase_abstractFixedFieldUnit
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (H : ClosedSubgroup (Gal(SeparableClosure K / K)))
-    [Finite ((baseField (Gal(SeparableClosure K / K))).toSubgroup ⧸
-      extensionSubgroup (baseField (Gal(SeparableClosure K / K))) H
-        (le_baseField H))]
-    [FiniteDimensional K
-      (abstractFixedField K (SeparableClosure K) H)]
     (x : (abstractFixedField K (SeparableClosure K) H)ˣ) :
     localBaseValuation K
         (normToBase
@@ -146,13 +126,7 @@ theorem localBaseValuation_normToBase_abstractFixedFieldUnit
     apply Additive.ext
     apply Units.ext
     calc
-      ((Additive.toMul
-          ((normToBase
-            (galoisAmbientUnitsRep K (SeparableClosure K)) H
-            (abstractFixedFieldUnitsEquivGaloisFixed
-              K (SeparableClosure K) H (Additive.ofMul x))).1 :
-              Additive (SeparableClosure K)ˣ) :
-            (SeparableClosure K)ˣ) : SeparableClosure K) =
+      _ =
           algebraMap K (SeparableClosure K)
             (Algebra.norm K (x : E)) :=
         normToBase_abstractFixedFieldUnit_val_of_isSeparable
@@ -180,14 +154,6 @@ theorem localBaseValuation_normToBase_abstractFixedFieldUnit
 base valuation after the abstract class-formation norm is exactly the actual residue-degree
 multiple of the base value group. -/
 theorem localBaseValuation_comp_normToBase_range_eq_residueFinrank
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (H : ClosedSubgroup (Gal(SeparableClosure K / K)))
-    [Finite ((baseField (Gal(SeparableClosure K / K))).toSubgroup ⧸
-      extensionSubgroup (baseField (Gal(SeparableClosure K / K))) H
-        (le_baseField H))]
-    [FiniteDimensional K
-      (abstractFixedField K (SeparableClosure K) H)]
     [ValuativeRel (abstractFixedField K (SeparableClosure K) H)]
     [TopologicalSpace (abstractFixedField K (SeparableClosure K) H)]
     [IsNonarchimedeanLocalField
@@ -209,12 +175,10 @@ theorem localBaseValuation_comp_normToBase_range_eq_residueFinrank
   ext z
   constructor
   · rintro ⟨a, rfl⟩
-    let x : Additive
-        (abstractFixedField K (SeparableClosure K) H)ˣ :=
+    let x :=
       (abstractFixedFieldUnitsEquivGaloisFixed
         K (SeparableClosure K) H).symm a
-    have hxa : abstractFixedFieldUnitsEquivGaloisFixed
-        K (SeparableClosure K) H x = a :=
+    have hxa :=
       (abstractFixedFieldUnitsEquivGaloisFixed
         K (SeparableClosure K) H).apply_symm_apply a
     rw [← hxa]
@@ -276,8 +240,7 @@ theorem localBaseValuation_comp_normToBase_range_eq_residueFinrank
       exact hnorm
     rw [hnorm', hx]
     calc
-      Int.castRingHom ZHat
-          ((f : Int) * m) =
+      _ =
           f • Int.castRingHom ZHat m := by
         rw [← map_nsmul]
         congr 1

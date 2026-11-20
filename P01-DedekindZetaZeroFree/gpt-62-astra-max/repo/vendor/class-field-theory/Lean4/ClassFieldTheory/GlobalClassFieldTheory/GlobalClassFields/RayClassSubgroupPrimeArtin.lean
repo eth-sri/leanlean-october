@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -43,8 +39,8 @@ private theorem arithmeticFinitePlacePrimeArtin_restrict_tower
     AlgEquiv.restrictNormalHom E
         (arithmeticFinitePlacePrimeArtin (K := K) (L := L) v) =
       arithmeticFinitePlacePrimeArtin (K := K) (L := E) v := by
-  rw [arithmeticFinitePlacePrimeArtin_eq_inv (K := K) (L := L) v,
-    arithmeticFinitePlacePrimeArtin_eq_inv (K := K) (L := E) v, map_inv]
+  rw [arithmeticFinitePlacePrimeArtin_eq_inv v,
+    arithmeticFinitePlacePrimeArtin_eq_inv v, map_inv]
   simpa only [finitePlacePrimeArtin, MonoidHom.comp_apply] using
     congrArg Inv.inv
       (DFunLike.congr_fun
@@ -52,46 +48,39 @@ private theorem arithmeticFinitePlacePrimeArtin_restrict_tower
           (K := K) (L := L) (E := E))
         (IdeleGroup.finitePrimeIdele v))
 
-private theorem rayClassFieldGaloisEquivRayClassGroup_symm_mk
-    {K : Type} [Field K] [NumberField K]
-    (m : RayClass.Modulus K) (c : IdeleClassGroup K) :
+variable {K : Type} [Field K] [NumberField K] (m : RayClass.Modulus K)
+
+private theorem rayClassFieldGaloisEquivRayClassGroup_symm_mk (c : IdeleClassGroup K) :
     (rayClassFieldGaloisEquivRayClassGroup (K := K) m).symm
         (QuotientGroup.mk' m.congruenceSubgroup c) =
       globalNormResidueMonoidHom K (rayClassField K m) c := by
-  apply (rayClassFieldGaloisEquivRayClassGroup (K := K) m).symm_apply_eq.mpr
+  apply (rayClassFieldGaloisEquivRayClassGroup m).symm_apply_eq.mpr
   exact (rayClassFieldGaloisEquivRayClassGroup_globalNormResidue
-    (K := K) m c).symm
+     m c).symm
 
 private theorem rayClassField_arithmeticFinitePlacePrimeArtin
-    {K : Type} [Field K] [NumberField K]
-    (m : RayClass.Modulus K)
     (v : HeightOneSpectrum (𝓞 K)) :
     (rayClassFieldGaloisEquivRayClassGroup (K := K) m).symm
         ((QuotientGroup.mk' m.congruenceSubgroup
           (QuotientGroup.mk' (IdeleGroup.principalSubgroup K)
             (IdeleGroup.finitePrimeIdele v)))⁻¹) =
       arithmeticFinitePlacePrimeArtin (K := K) (L := rayClassField K m) v := by
-  let c : IdeleClassGroup K :=
+  let c :=
     QuotientGroup.mk' (IdeleGroup.principalSubgroup K)
       (IdeleGroup.finitePrimeIdele v)
-  have hgeo := rayClassFieldGaloisEquivRayClassGroup_symm_mk m c
   have hnormprime :
       Reciprocity.arithmeticGlobalNormResidueMonoidHom K (rayClassField K m) c =
-        arithmeticFinitePlacePrimeArtin (K := K) (L := rayClassField K m) v := by
+        arithmeticFinitePlacePrimeArtin v := by
     simpa only [c, arithmeticFinitePlacePrimeArtin, MonoidHom.comp_apply] using
       DFunLike.congr_fun
         (Reciprocity.arithmeticGlobalNormResidueMonoidHom_comp_ideleClassQuotient_eq_globalArtin
           (K := K) (L := rayClassField K m))
         (IdeleGroup.finitePrimeIdele v)
-  change (rayClassFieldGaloisEquivRayClassGroup (K := K) m).symm
-      ((QuotientGroup.mk' m.congruenceSubgroup c)⁻¹) = _
-  rw [map_inv, hgeo]
+  rw [map_inv, (rayClassFieldGaloisEquivRayClassGroup_symm_mk m c)]
   exact (Reciprocity.arithmeticGlobalNormResidueMonoidHom_apply
     K (rayClassField K m) c).symm.trans hnormprime
 
 private theorem rayClassSubgroup_restrict_transport
-    {K : Type} [Field K] [NumberField K]
-    (m : RayClass.Modulus K)
     (H : Subgroup (RayClass.RayClassGroup m))
     (σ : rayClassField K m ≃ₐ[K] rayClassField K m) :
     let F := rayClassSubgroupFixedField (K := K) m H
@@ -134,8 +123,6 @@ private theorem rayClassSubgroup_restrict_transport
 /-- The fixed-field ray-class Artin map sends the ray class of an ordinary
 prime idèle to the arithmetic global Artin element of the fixed field. -/
 theorem rayClassSubgroupArtin_finitePrimeIdele
-    {K : Type} [Field K] [NumberField K]
-    (m : RayClass.Modulus K)
     (H : Subgroup (RayClass.RayClassGroup m))
     (v : HeightOneSpectrum (𝓞 K)) :
     rayClassSubgroupArtin (K := K) m H

@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -33,7 +27,6 @@ open scoped NumberField TensorProduct RestrictedProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable
     {K L : Type}
@@ -82,7 +75,7 @@ theorem exists_relativeIdele_norm_eq_of_localTensorPreimages
           relativeBasisIntegralAt_repr_mem
             (K := K) (L := L) w _ hw.2 i }
   refine
-    ⟨relativeIdeleOfLocalData (K := K) (L := L) d, ?_⟩
+    ⟨relativeIdeleOfLocalData d, ?_⟩
   apply Prod.ext
   · apply ContinuousMulEquiv.piUnits.injective
     funext w
@@ -90,7 +83,7 @@ theorem exists_relativeIdele_norm_eq_of_localTensorPreimages
       IdeleGroup.infiniteComponent w
           (RelativeIdeleGroup.norm K L
             (relativeIdeleOfLocalData
-              (K := K) (L := L) d)) =
+                d)) =
         IdeleGroup.infiniteComponent w a
     rw [RelativeIdeleGroup.infiniteComponent_norm,
       relativeIdeleOfLocalData_infiniteComponent]
@@ -101,7 +94,7 @@ theorem exists_relativeIdele_norm_eq_of_localTensorPreimages
       IdeleGroup.finiteComponent w
           (RelativeIdeleGroup.norm K L
             (relativeIdeleOfLocalData
-              (K := K) (L := L) d)) =
+                d)) =
         IdeleGroup.finiteComponent w a
     rw [RelativeIdeleGroup.finiteComponent_norm,
       relativeIdeleOfLocalData_finiteComponent]
@@ -134,14 +127,14 @@ theorem idele_mem_relativeNorm_range_of_localNorms_with_integralPreimages
   have hInfinite' :
       ∀ w : InfinitePlace K,
         ∃ z : (w.Completion ⊗[K] L)ˣ,
-          infiniteTensorDetNorm (K := K) (L := L) w z =
+          infiniteTensorDetNorm w z =
             IdeleGroup.infiniteComponent w a := by
     intro w
     simpa [infiniteTensorNormSubgroup] using hInfinite w
   choose zInfinite hNorm using hInfinite'
   obtain ⟨z, hz⟩ :=
     exists_relativeIdele_norm_eq_of_localTensorPreimages
-      (K := K) (L := L) a zInfinite zFinite hNorm hFinite hIntegral
+        a zInfinite zFinite hNorm hFinite hIntegral
   exact ⟨z, hz⟩
 
 omit [NumberField L] [IsGalois K L] in
@@ -157,9 +150,9 @@ theorem finiteComponent_mem_localTensorNorm_range_of_mem_relativeNorm_range
   obtain ⟨z, rfl⟩ := ha
   exact
     ⟨RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) w z,
+          w z,
       (RelativeIdeleGroup.finiteComponent_norm
-        (K := K) (L := L) w z).symm⟩
+          w z).symm⟩
 
 omit [NumberField L] [IsGalois K L] in
 /-- Every global relative-idele norm belongs to each infinite local
@@ -174,9 +167,9 @@ theorem infiniteComponent_mem_infiniteTensorNormSubgroup_of_mem_relativeNorm_ran
   obtain ⟨z, rfl⟩ := ha
   exact
     ⟨RelativeIdeleGroup.infiniteComponent
-        (K := K) (L := L) w z,
+          w z,
       (RelativeIdeleGroup.infiniteComponent_norm
-        (K := K) (L := L) w z).symm⟩
+          w z).symm⟩
 
 /-- **Local-to-global norm criterion for ideles.**  An idele is an
 actual global relative-idele norm if and only if all of its finite and
@@ -201,28 +194,28 @@ theorem mem_relativeIdeleNorm_range_iff_localTensorNorms
     exact
       ⟨fun w =>
           infiniteComponent_mem_infiniteTensorNormSubgroup_of_mem_relativeNorm_range
-            (K := K) (L := L) a ha w,
+              a ha w,
         fun w =>
           finiteComponent_mem_localTensorNorm_range_of_mem_relativeNorm_range
-            (K := K) (L := L) a ha w⟩
+              a ha w⟩
   · rintro ⟨hInfinite, hFinite⟩
     have hChoice :
         ∀ w : HeightOneSpectrum (𝓞 K),
           ∃ z : (w.adicCompletion K ⊗[K] L)ˣ,
             _root_.localTensorNorm
-                (K := K) (L := L) w z =
+                  w z =
               IdeleGroup.finiteComponent w a ∧
             (IdeleGroup.finiteComponent w a ∈
                 (w.adicCompletionIntegers K).units →
               RelativeLocalTensorDecompositionIntegralUnitAt
-                (K := K) (L := L) w z) := by
+                  w z) := by
       intro w
       by_cases hwUnit :
           IdeleGroup.finiteComponent w a ∈
             (w.adicCompletionIntegers K).units
       · obtain ⟨z, hz, hzIntegral⟩ :=
           exists_localTensorDecompositionIntegralUnit_localTensorNorm_eq
-            (K := K) (L := L) w
+              w
             (IdeleGroup.finiteComponent w a)
             (hFinite w) hwUnit
         exact ⟨z, hz, fun _ => hzIntegral⟩
@@ -246,7 +239,7 @@ theorem mem_relativeIdeleNorm_range_iff_localTensorNorms
           w hwUnit hwBad
       exact
         localTensorDecompositionIntegralUnit_imp_relativeBasisIntegralUnitAt_of_notMem
-          (K := K) (L := L) w hwBad
+            w hwBad
           (hFiniteIntegral w hwUnit)
     exact
       idele_mem_relativeNorm_range_of_localNorms_with_integralPreimages

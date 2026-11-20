@@ -51,14 +51,18 @@ def multiPrincipalSeries (s : ℝ) (ι : Type*) [DecidableEq ι] :
   add_mem' := by intro f g hf hg i a; exact (principalSeriesSubmodule s).add_mem (hf i a) (hg i a)
   smul_mem' := by intro c f hf i a; exact (principalSeriesSubmodule s).smul_mem c (hf i a)
 
-def evaluateSlice (s : ℝ) {ι : Type*} [DecidableEq ι] (i : ι)
+section
+
+variable (s : ℝ) {ι : Type*} [DecidableEq ι]
+
+def evaluateSlice (i : ι)
     (a : ι → KPCplxCharacterHaar.ComplexGL2) :
     multiPrincipalSeries s ι →ₗ[ℂ] PrincipalSeries s where
   toFun h := ⟨fun x => h.val (Function.update a i x), h.property i a⟩
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
 
-def multiTranslate (s : ℝ) {ι : Type*} [DecidableEq ι]
+def multiTranslate
     (k : ι → KPCplxCharacterHaar.ComplexSU2) :
     multiPrincipalSeries s ι →ₗ[ℂ] multiPrincipalSeries s ι where
   toFun h := ⟨fun a => h.val (fun j => a j * KPCplxCharacterHaar.complexSU2Embedding (k j)), by
@@ -69,9 +73,6 @@ def multiTranslate (s : ℝ) {ι : Type*} [DecidableEq ι]
         (KPCplxPrincipalSeriesCharts.rightTranslate s (KPCplxCharacterHaar.complexSU2Embedding (k i))
           (evaluateSlice s i b h)).val := by
       funext x
-      change h.val (fun j => (Function.update a i x) j *
-        KPCplxCharacterHaar.complexSU2Embedding (k j)) =
-        h.val (Function.update b i (x * KPCplxCharacterHaar.complexSU2Embedding (k i)))
       apply congrArg h.val
       funext j
       by_cases hj : j = i
@@ -82,19 +83,16 @@ def multiTranslate (s : ℝ) {ι : Type*} [DecidableEq ι]
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
 
- theorem multiTranslate_mul (s : ℝ) {ι : Type*} [DecidableEq ι]
+ theorem multiTranslate_mul
     (k l : ι → KPCplxCharacterHaar.ComplexSU2) (h : multiPrincipalSeries s ι) :
     multiTranslate s k (multiTranslate s l h) = multiTranslate s (k * l) h := by
   apply Subtype.ext
   funext a
-  change h.val (fun j => (a j * KPCplxCharacterHaar.complexSU2Embedding (k j)) *
-    KPCplxCharacterHaar.complexSU2Embedding (l j)) =
-    h.val (fun j => a j * KPCplxCharacterHaar.complexSU2Embedding ((k * l) j))
   apply congrArg h.val
   funext j
   simp [mul_assoc]
 
-theorem slice_slot_translate (s : ℝ) {ι : Type*} [DecidableEq ι]
+theorem slice_slot_translate
     (i : ι) (a : ι → KPCplxCharacterHaar.ComplexGL2)
     (k : KPCplxCharacterHaar.ComplexSU2) (h : multiPrincipalSeries s ι) :
     evaluateSlice s i a (multiTranslate s (Function.update (fun _ => 1) i k) h) =
@@ -102,14 +100,13 @@ theorem slice_slot_translate (s : ℝ) {ι : Type*} [DecidableEq ι]
         (evaluateSlice s i a h) := by
   apply Subtype.ext
   funext x
-  change h.val (fun j => (Function.update a i x) j *
-    KPCplxCharacterHaar.complexSU2Embedding ((Function.update (fun _ => (1 : KPCplxCharacterHaar.ComplexSU2)) i k) j)) =
-    h.val (Function.update a i (x * KPCplxCharacterHaar.complexSU2Embedding k))
   apply congrArg h.val
   funext j
   by_cases hj : j = i
   · subst j; simp
   · simp [Function.update_of_ne hj]
+
+end
 
  theorem harmonicBand_mono (s : ℝ) {N M : ℕ} (hNM : N ≤ M) :
     harmonicBand s N ≤ harmonicBand s M := by

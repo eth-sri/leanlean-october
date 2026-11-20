@@ -12,19 +12,23 @@ open ThetaBranch ThetaPhaseSeparation
 
 variable {F : Type} [Field F] [NumberField F]
 
-def activeSupport (A : SArithmeticData F) (T : Frozen A) :
+section
+
+variable (A : SArithmeticData F)
+
+def activeSupport (T : Frozen A) :
     ExteriorSquarefreeIdeal A.cS :=
   ⟨T.f, T.f_squarefree⟩
 
-def rowClass (A : SArithmeticData F) (G : AllowedRecipe A)
+def rowClass (G : AllowedRecipe A)
     (d : A.Exterior) : G.B :=
   ⟨ThetaReflectionData.rationalClass A (G.generator d), G.allowed d⟩
 
-def termClass (A : SArithmeticData F) (G : AllowedRecipe A)
+def termClass (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (T : Frozen A) (d c : A.Exterior) : A.V :=
   profileIndex A G U T (rowClass A G d) (rowClass A G c)
 
-def summand (A : SArithmeticData F) (G : AllowedRecipe A)
+def summand (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ) (T : Frozen A)
@@ -32,16 +36,16 @@ def summand (A : SArithmeticData F) (G : AllowedRecipe A)
   separatedCoefficient A G U σ ψ L T d c.val *
     H (termClass A G U T d c.val) (profileArgument A T d c.val Z)
 
-abbrev Index (A : SArithmeticData F) (h : A.Exterior) :=
+abbrev Index (h : A.Exterior) :=
   {T : Frozen A // T.h = h} × ExteriorSquarefreeIdeal A.cS
 
-def expansion (A : SArithmeticData F) (G : AllowedRecipe A)
+def expansion (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ) (h d : A.Exterior) (Z : ℝ) : ℂ :=
   ∑' i : Index A h, summand A G U σ ψ L H i.1.val d i.2 Z
 
-theorem omegaMajorant_eq_betaIdeal (A : SArithmeticData F) (T : Frozen A) :
+theorem omegaMajorant_eq_betaIdeal (T : Frozen A) :
     omegaMajorant A T = betaIdeal (activeSupport A T) T.a.val := by
   rw [betaIdeal, if_pos ⟨T.a.property.1, T.a.property.2, T.a_supported⟩]
   unfold omegaMajorant support activeSupport
@@ -55,9 +59,14 @@ theorem omegaMajorant_eq_betaIdeal (A : SArithmeticData F) (T : Frozen A) :
     (by simpa only [idealPrimeSupport, Multiset.mem_toFinset] using hp)
   exact ⟨IsDedekindDomain.HeightOneSpectrum.ofPrime hprime, rfl⟩
 
-theorem factors_norm_le_betaIdeal (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
+end
+
+section
+
+variable (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+
+theorem factors_norm_le_betaIdeal
     (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
     (L : Fˣ →* ℂ) (hL : ∀ x : Fˣ, ‖L x‖ = 1)
     (T : Frozen A) (d c : A.Exterior) :
@@ -66,9 +75,7 @@ theorem factors_norm_le_betaIdeal (A : SArithmeticData F) (G : AllowedRecipe A)
   simpa only [omegaMajorant_eq_betaIdeal] using
     factors_norm_le A G U σ ψ hψ L hL T d c
 
-theorem separatedCoefficient_support (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+theorem separatedCoefficient_support
     (L : Fˣ →* ℂ) (T : Frozen A) (d c : A.Exterior) :
     separatedCoefficient A G U σ ψ L T d c =
       if d.val ⊔ (T.h.val * T.n.val) = ⊤ ∧ c.val ⊔ T.f.val = ⊤ ∧
@@ -80,9 +87,7 @@ theorem separatedCoefficient_support (A : SArithmeticData F) (G : AllowedRecipe 
   simp only [separatedCoefficient, rowMask, columnMask, quadraticPairing]
   split_ifs <;> simp_all
 
-theorem coordinate_summand_exact_squarefree (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+theorem coordinate_summand_exact_squarefree
     (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
     (L : Fˣ →* ℂ) (hL : ∀ x : Fˣ, ‖L x‖ = 1)
     (hrec : SquarefreeGeneratorReciprocity A G σ) (H : A.V → ℝ → ℂ)
@@ -97,6 +102,8 @@ theorem coordinate_summand_exact_squarefree (A : SArithmeticData F) (G : Allowed
   obtain ⟨hc, hn⟩ := coordinate_class_norm A G U m D b v
     (rowClass A G D.d) (rowClass A G v.c) rfl rfl Z
   simp only [summand, termClass, hc, hn]
+
+end
 
 def FiniteProfiles (A : SArithmeticData F) (H : A.V → ℝ → ℂ) : Prop :=
   ∃ (I : Finset A.V) (P : I → ℝ → ℂ),

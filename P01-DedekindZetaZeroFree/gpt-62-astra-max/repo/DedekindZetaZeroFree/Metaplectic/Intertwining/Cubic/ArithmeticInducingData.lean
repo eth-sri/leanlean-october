@@ -12,10 +12,10 @@ namespace DedekindZetaZeroFree.KPActualScalarBinding
 noncomputable section
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
 
-abbrev ActualKPBinding := KPExceptionalRaw.RawFiniteInducingData F ζ hζ q
+abbrev ActualKPBinding := @DedekindZetaZeroFree.KPExceptionalRaw.RawFiniteInducingData
 
 end
 end DedekindZetaZeroFree.KPActualScalarBinding

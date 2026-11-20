@@ -51,14 +51,14 @@ variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
   (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
 
-theorem fullDiagonal_actual_support_lower_row
-    (π : (LocalField F q)ˣ) (i : Fin 3) (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F q m) (v x : LocalField F q)
-    (hg : kernelW (LocalField F q) S.borel .minus *
-      KPPGLLocalCover.N F ζ hζ (Sum.inr q) v *
-      (eta F ζ hζ q π i * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
-        KPPGLLocalCover.N F ζ hζ (Sum.inr q) x) ∈
-      testSupport F ζ hζ q S P (diagonalLift F ζ hζ q π (-1, (i.val : ℤ) + 1)) m) :
+section
+
+variable (π : (LocalField F q)ˣ) (i : Fin 3) (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m)
+    (v x : LocalField F q)
+    (hg : kernelW (LocalField F q) S.borel .minus * KPPGLLocalCover.N F ζ hζ (Sum.inr q) v * (eta F ζ hζ q π i * KPPGLLocalCover.W F ζ hζ (Sum.inr q) * KPPGLLocalCover.N F ζ hζ (Sum.inr q) x) ∈ testSupport F ζ hζ q S P (diagonalLift F ζ hζ q π (-1, (i.val : ℤ) + 1)) m)
+
+include hm hg in
+theorem fullDiagonal_actual_support_lower_row :
     v ≠ 0 ∧ ∃ k : KPLocalCube.Gamma F q m,
       x + (π ^ i.val : (LocalField F q)ˣ) / v = k.val 1 0 / k.val 1 1 := by
   obtain ⟨b, k, hk, hg⟩ := hg
@@ -114,14 +114,8 @@ theorem fullDiagonal_actual_support_lower_row
     (π ^ (-1 : ℤ)) (π ^ ((i.val : ℤ) + 1)) v x hB10 hB11 hk11 hp'
   exact ⟨hv, k, he⟩
 
-theorem fullDiagonal_actual_support_residual
-    (π : (LocalField F q)ˣ) (i : Fin 3) (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F q m) (v x : LocalField F q)
-    (hg : kernelW (LocalField F q) S.borel .minus *
-      KPPGLLocalCover.N F ζ hζ (Sum.inr q) v *
-      (eta F ζ hζ q π i * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
-        KPPGLLocalCover.N F ζ hζ (Sum.inr q) x) ∈
-      testSupport F ζ hζ q S P (diagonalLift F ζ hζ q π (-1, (i.val : ℤ) + 1)) m) :
+include hm hg in
+theorem fullDiagonal_actual_support_residual :
     v ≠ 0 ∧
       (∃ y : KPLocalCube.LocalIntegers F q,
         y ∈ KPLocalCube.maximalIdeal F q ^ m ∧
@@ -153,7 +147,7 @@ theorem fullDiagonal_actual_support_residual
     rw [hratio, ← hu]
     change (k₀ 1 0 : LocalField F q) * ((↑u⁻¹ : KPLocalCube.LocalIntegers F q) : LocalField F q) = _
     have huinv : ((↑u⁻¹ : KPLocalCube.LocalIntegers F q) : LocalField F q) =
-        ((u : KPLocalCube.LocalIntegers F q) : LocalField F q)⁻¹ :=
+        (u : LocalField F q)⁻¹ :=
       Units.val_inv_eq_inv_val (Units.map (KPLocalCube.LocalIntegers F q).subtype.toMonoidHom u)
     rw [huinv, div_eq_mul_inv]
   refine ⟨hv, ⟨y, hyideal, hy⟩, ?_⟩
@@ -174,42 +168,44 @@ theorem fullDiagonal_actual_support_residual
         KubotaRankTwo.n, hy]
   exact ⟨⟨_, hn⟩, rfl⟩
 
+end
+
+variable (π : (LocalField F q)ˣ)
+    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
+
+include hπ in
 theorem fullDiagonal_shifted_unit
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
     (u : (KPTameCompact.O F q)ˣ) (t : KPLocalCube.LocalIntegers F q) :
     ∃ w : (KPTameCompact.O F q)ˣ,
       (KPTameCompact.unitInclusion F q w : LocalField F q) =
         (KPTameCompact.unitInclusion F q u : LocalField F q) +
           (π : LocalField F q) * t := by
-  have hp : valuation (LocalField F q) (π : LocalField F q) < 1 := by
+  let valuation₀ := valuation (LocalField F q)
+  have hp : valuation₀ (π : LocalField F q) < 1 := by
     apply (map_lt_map_iff (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt
       (LocalField F q))).mp
     rw [hπ, map_one, ← WithZero.exp_zero, WithZero.exp_lt_exp]
     norm_num
-  have hpt : valuation (LocalField F q) ((π : LocalField F q) * t) < 1 := by
+  have hpt : valuation₀ ((π : LocalField F q) * t) < 1 := by
     rw [map_mul]
-    have ht : valuation (LocalField F q) (t : LocalField F q) ≤ 1 := t.property
+    have ht : valuation₀ (t : LocalField F q) ≤ 1 := t.property
     exact (mul_le_mul_right ht _).trans_lt (by simpa using hp)
-  have hu : valuation (LocalField F q)
+  have hu : valuation₀
       (KPTameCompact.unitInclusion F q u : LocalField F q) = 1 :=
-    (Valuation.integer.integers (valuation (LocalField F q))).valuation_unit u
-  have hw : valuation (LocalField F q)
+    (Valuation.integer.integers (valuation₀)).valuation_unit u
+  have hw : valuation₀
       ((KPTameCompact.unitInclusion F q u : LocalField F q) +
         (π : LocalField F q) * t) = 1 := by
-    rw [(valuation (LocalField F q)).map_add_eq_of_lt_left (hu ▸ hpt), hu]
+    rw [(valuation₀).map_add_eq_of_lt_left (hu ▸ hpt), hu]
   let z : KPTameCompact.O F q := ⟨_, hw.le⟩
   have hz : IsUnit z :=
     (Valuation.Integers.isUnit_iff_valuation_eq_one
-      (Valuation.integer.integers (valuation (LocalField F q)))).mpr hw
+      (Valuation.integer.integers (valuation₀))).mpr hw
   obtain ⟨w, hw⟩ := hz
   exact ⟨w, congrArg (fun z : KPTameCompact.O F q => (z : LocalField F q)) hw⟩
 
+include hπ in
 theorem fullDiagonal_actual_support_inverse_root_chart
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
     (i : Fin 3) (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m)
     (u : (KPTameCompact.O F q)ˣ) (v : LocalField F q)
     (hg : kernelW (LocalField F q) S.borel .minus *
@@ -229,11 +225,9 @@ theorem fullDiagonal_actual_support_inverse_root_chart
   obtain ⟨w, hw⟩ := fullDiagonal_shifted_unit F q π hπ u t
   refine ⟨t, w, ht ▸ hr, hw, ?_⟩
   rw [Units.val_div_eq_div_val, hw, zpow_add, zpow_one, zpow_natCast, Units.val_mul]
-  have hd : (KPTameCompact.unitInclusion F q u : LocalField F q) +
-      (π : LocalField F q) * t ≠ 0 := by
+  apply (eq_div_iff (by simpa using (by
     rw [← hw]
-    exact (KPTameCompact.unitInclusion F q w).ne_zero
-  apply (eq_div_iff (by simpa only [mul_comm] using hd)).mpr
+    exact (KPTameCompact.unitInclusion F q w).ne_zero))).mpr
   field_simp at ht
   linear_combination ht
 

@@ -65,10 +65,11 @@ theorem shaped_fullCoordinate_on_cuspShell
         (nativeFamily F ζ hζ R P).totallyComplex
         (nativeDisintegration F ζ hζ R P S V).radial.slot
         (cuspOffset F ζ hζ R P S V j))⟩ := by
+  let cuspOffset₀ := cuspOffset F ζ hζ R P S V j
   have hg : KPMsActualCuspSource.AdmissibleFrame
       (H := nativeFamily F ζ hζ R P) (U := cofinalLevel F ζ hζ V)
       (S.atlasLevel (cofinalLevel F ζ hζ V)) j
-      (Y / (cuspOffset F ζ hζ R P S V j).val) x
+      (Y / (cuspOffset₀).val) x
       (actualFrame F ζ hζ R P S V j Y x) := by
     rw [actualFrame, dif_pos hx.1]
     exact (Classical.choose_spec (KPMsActualCuspSource.cusp_lift_exists
@@ -79,11 +80,11 @@ theorem shaped_fullCoordinate_on_cuspShell
   have hd : 0 < 2 * (KPCuspLogShape.dimension F : ℝ) :=
     mul_pos (by norm_num) (Nat.cast_pos.mpr (KPCuspLogShape.dimension_pos F
       (nativeFamily F ζ hζ R P).totallyComplex))
-  have hr : Y / (cuspOffset F ζ hζ R P S V j).val <
+  have hr : Y / (cuspOffset₀).val <
       Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * t) := by
     apply (Real.log_lt_iff_lt_exp (hY j).1).mp
     exact (mul_comm t _ ▸ (div_lt_iff₀ hd).mp ht)
-  let r : Set.Ioi (Y / (cuspOffset F ζ hζ R P S V j).val) :=
+  let r : Set.Ioi (Y / (cuspOffset₀).val) :=
     ⟨Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * t),hr⟩
   have hl : KPMsFixedHaarDisintegration.logHeight (F := F) r.val = t := by
     change Real.log (Real.exp _) / _ = _
@@ -100,7 +101,7 @@ theorem shaped_fullCoordinate_on_cuspShell
   have hproj := FullSupportGeometry.chart_projection S V j a ε u
   rw [← he, hq] at hproj
   have hchart : (nativeDisintegration F ζ hζ R P S V).chart
-      (Y / (cuspOffset F ζ hζ R P S V j).val) (hY j)
+      (Y / (cuspOffset₀).val) (hY j)
       (⟨j, Quotient.mk _ p₀⟩,r) =
       P.projection (S.atlasLevel (cofinalLevel F ζ hζ V)) x := by
     rw [hproj, ha]
@@ -109,25 +110,22 @@ theorem shaped_fullCoordinate_on_cuspShell
     change Quotient.mk _ (_, _) = Quotient.mk _ (_, _)
     rw [hl, hcross]
     rfl
+  let nativeAtlas₀ := nativeAtlas F ζ hζ R P S V
   have hs : s (P.projection (S.atlasLevel (cofinalLevel F ζ hζ V)) x) =
       (⟨j, QuotientAddGroup.mk (p.2 - B)⟩ :
-        KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V)) := by
+        KPMsFixedHaarDisintegration.Omega (nativeAtlas₀)) := by
     rw [← hchart, hsc]
     change (⟨j, (KPMsFixedHaarDisintegration.Geometry
-      (nativeAtlas F ζ hζ R P S V) j).atlas.projection (Quotient.mk _ p₀)⟩ :
-      KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V)) = _
+      (nativeAtlas₀) j).atlas.projection (Quotient.mk _ p₀)⟩ :
+      KPMsFixedHaarDisintegration.Omega (nativeAtlas₀)) = _
     rw [(KPMsFixedHaarDisintegration.Geometry
-      (nativeAtlas F ζ hζ R P S V) j).atlas.projection_formula]
+      (nativeAtlas₀) j).atlas.projection_formula]
   refine ⟨QuotientAddGroup.mk (p.2 - B), hs, ?_⟩
   rw [hframe V j Y hY x hx a p t ε u he ha]
-  have hsplit := OffsetShapeDescent.sectionShape_intrinsic_split F ζ hζ R P S V j
-    (nativeDisintegration F ζ hζ R P S V).radial.slot p.2 t
   apply congrArg (fun b => (⟨j,b⟩ :
-    KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V)))
-  change QuotientAddGroup.mk (p.2 - KPMsFixedHaarDisintegration.sectionShape F
-    (nativeFamily F ζ hζ R P).totallyComplex
-    (nativeDisintegration F ζ hζ R P S V).radial.slot _) = _
-  rw [hsplit]
+    KPMsFixedHaarDisintegration.Omega (nativeAtlas₀)))
+  rw [(OffsetShapeDescent.sectionShape_intrinsic_split F ζ hζ R P S V j
+    (nativeDisintegration F ζ hζ R P S V).radial.slot p.2 t)]
   exact map_sub (QuotientAddGroup.mk' _) _ _
 
 end DedekindZetaZeroFree.KPMsNativeWeightedShapeSource.OffsetShapeFramePin

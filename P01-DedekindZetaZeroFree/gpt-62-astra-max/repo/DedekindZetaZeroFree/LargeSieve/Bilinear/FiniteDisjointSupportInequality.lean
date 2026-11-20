@@ -23,6 +23,8 @@ private lemma sum_powerset_neg_one_pow_card_C {P : Type*} [DecidableEq P] (A : F
   rw [Int.cast_sum] at h
   simpa using h
 
+alias FiniteDisjointSupportInequality.sum_powerset_neg_one_pow_card_C := sum_powerset_neg_one_pow_card_C
+
 private lemma disjoint_indicator_expansion {P : Type*} [DecidableEq P]
     (ambient S T : Finset P) (hS : S ⊆ ambient) (hT : T ⊆ ambient) :
     (∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *
@@ -48,6 +50,8 @@ private lemma disjoint_indicator_expansion {P : Type*} [DecidableEq P]
   by_cases h : S ∩ T = ∅
   · rw [if_pos h, if_pos (Finset.disjoint_iff_inter_eq_empty.mpr h)]
   · rw [if_neg h, if_neg (fun hd => h (Finset.disjoint_iff_inter_eq_empty.mp hd))]
+
+alias FiniteDisjointSupportInequality.disjoint_indicator_expansion := disjoint_indicator_expansion
 
 private lemma masked_coefficient_energy {P L : Type*} [DecidableEq P] [Fintype L]
     (B : Finset P) (left : L → Finset P) (hl : ∀ j, left j ⊆ B) (a : L → ℂ) :
@@ -90,7 +94,7 @@ theorem disjoint_bilinear_expansion
       ∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *
         (if D ⊆ s l ∧ D ⊆ t k then z l * star (v k) else 0) := by
     calc
-      (if Disjoint (s l) (t k) then z l * star (v k) else 0)
+      _
           = (if Disjoint (s l) (t k) then (1 : ℂ) else 0) * (z l * star (v k)) := by
             split_ifs <;> simp
       _ = (∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *

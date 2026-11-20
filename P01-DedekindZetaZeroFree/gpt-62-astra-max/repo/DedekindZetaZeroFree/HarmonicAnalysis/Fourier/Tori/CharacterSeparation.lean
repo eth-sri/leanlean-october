@@ -11,10 +11,7 @@ theorem unitAddTorus_characters_separate {d : Type*}
     ∃ χ : AddChar (UnitAddTorus d) Circle, Continuous χ ∧ χ x ≠ χ y := by
   classical
   obtain ⟨i, hi⟩ : ∃ i, x i ≠ y i := by
-    by_contra h
-    apply hxy
-    funext i
-    exact not_not.mp (not_exists.mp h i)
+    grind
   let χ : AddChar (UnitAddTorus d) Circle :=
     { toFun := fun z => AddCircle.toCircle (z i)
       map_zero_eq_one' := AddCircle.toCircle_zero

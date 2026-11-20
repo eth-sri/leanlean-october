@@ -11,9 +11,9 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.RootDerivatives
 open NumberField MeasureTheory MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
 
 structure PreparedSphericalTensor (D : SourceFactorization R Q T) where
   stage : RestrictedTensorSimple.Level D.bad
@@ -34,7 +34,7 @@ structure PreparedSphericalTensor (D : SourceFactorization R Q T) where
 
 theorem prepared_spherical_tensor_exists (D : SourceFactorization R Q T) :
     Nonempty (PreparedSphericalTensor R D) := by
-  obtain ⟨s, x, hs, harch, hfin, _, _, _, hne⟩ := spherical_frozen_tensor R D
+  obtain ⟨s, x, hs, harch, hfin, hne⟩ := spherical_frozen_tensor R D
   obtain ⟨V, hVo, hV1, hfix⟩ := tensor_finite_common_neighborhood R D s x
   exact ⟨{
     stage := s

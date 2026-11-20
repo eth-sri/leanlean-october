@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -40,8 +37,8 @@ variable [Field K] [Field L] [Field M]
 variable [Algebra K L] [Algebra K M] [Algebra L M]
 variable [IsScalarTower K L M] [Normal K L]
 variable {base : DVF.{u, v} K}
-variable {middle : DVF.{w, x} L}
-variable {target : DVF.{y, z} M}
+    {middle : DVF.{w, x} L}
+    {target : DVF.{y, z} M}
 variable [base.valuation.HasExtension middle.valuation]
 variable [middle.valuation.HasExtension target.valuation]
 variable [base.valuation.HasExtension target.valuation]
@@ -58,18 +55,12 @@ theorem
       RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension
         base target)
     (σ : Gal(M / K)) (a : middle.valuationSubring) :
-    valuationSubringAutOfUniqueExtension
-          (base := base) (target := target) htarget σ
+    valuationSubringAutOfUniqueExtension htarget σ
           (integerMap middle target a) =
       integerMap middle target
-        (valuationSubringAutOfUniqueExtension
-          (base := base) (target := middle) hmiddle
+        (valuationSubringAutOfUniqueExtension hmiddle
           (σ.restrictNormal L) a) := by
-  apply Subtype.ext
-  change
-    σ (algebraMap L M (a : L)) =
-      algebraMap L M ((σ.restrictNormal L) (a : L))
-  exact (AlgEquiv.restrictNormal_commutes σ L (a : L)).symm
+  exact Subtype.ext (Eq.symm (AlgEquiv.restrictNormal_commutes σ L ↑a))
 
 end Higher
 end RamificationTheory.HilbertRamification

@@ -16,19 +16,19 @@ open CurrentBoundaryShapeTransport
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "Core" => RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C)
 local notation "Source" => KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ)
 variable {HR : KPSmoothLocalQuotientCharts.HaarRecipe F R.A.zeta12 R.A.primitive_zeta12}
-variable {HP : KPMsFixedHaarDisintegration.SphericalTransport F R.A.zeta12 R.A.primitive_zeta12}
-variable (M : NativeMeasuredSource F R.A.zeta12 R.A.primitive_zeta12 HR HP)
-variable (U : Level F R.A.zeta12 R.A.primitive_zeta12)
-variable (dk : Measure (KPMsGreenFlux.K F)) [IsFiniteMeasure dk] [dk.IsHaarMeasure]
+    {HP : KPMsFixedHaarDisintegration.SphericalTransport F R.A.zeta12 R.A.primitive_zeta12}
+    (M : NativeMeasuredSource F R.A.zeta12 R.A.primitive_zeta12 HR HP)
+    (U : Level F R.A.zeta12 R.A.primitive_zeta12)
+    (dk : Measure (KPMsGreenFlux.K F)) [IsFiniteMeasure dk] [dk.IsHaarMeasure]
 theorem boundaryFullAverage_ae_cross (f : Source) (x : Core)
     (hf : ∀g u, u∈KPGlobalTorusFunctionData.globalLevel F ζ hζ U → f.val.val (g*u)=f.val.val g)
     (hx : ∀g u, u∈KPGlobalTorusFunctionData.globalLevel F ζ hζ U → coreResidue R P C x (g*u)=coreResidue R P C x g) :
@@ -45,7 +45,7 @@ theorem boundaryFullAverage_ae_cross (f : Source) (x : Core)
     exact continuous_const
   have hm := ht.measurable.comp ((M.shape_measurable U).comp
     (KPMsActualAngularShellSource.fullToLevel_measurable _ _))
-  obtain ⟨Y,hYpos,hY⟩ := exists_offset_admissible F ζ hζ HR HP (nativeRecipe F ζ hζ HR HP) U
+  obtain ⟨Y, hY⟩ := exists_offset_admissible F ζ hζ HR HP (nativeRecipe F ζ hζ HR HP) U
   apply ae_fullNu_of_shells M U Y hY _
     (measurableSet_eq_fun (boundaryFullAverage_continuous R P C _ dk f x).measurable hm)
   intro j

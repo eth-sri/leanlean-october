@@ -42,12 +42,10 @@ open scoped Matrix.Norms.Operator in
 private theorem matrix_components_differentiable (g X : Matrix (Fin 2) (Fin 2) ℂ) :
     ∀ i j, DifferentiableAt ℝ (fun t : ℝ =>
       (g * NormedSpace.exp ((t : ℂ) • X)) i j) 0 := by
-  have h := ((hasDerivAt_exp_smul_const (𝕂 := ℂ) X ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt
-    (f := fun t : ℝ => (t : ℂ)) 0 Complex.ofRealCLM.hasDerivAt
-  have hmat := (h.const_mul g).differentiableAt
   intro i j
   exact (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).differentiableAt.comp 0
-    ((ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).differentiableAt.comp 0 hmat)
+    ((ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).differentiableAt.comp 0 (((((hasDerivAt_exp_smul_const X ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt
+      0 Complex.ofRealCLM.hasDerivAt).const_mul g).differentiableAt))
 
 open scoped Matrix.Norms.Operator in
 private theorem heightSq_differentiable (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
@@ -77,13 +75,9 @@ private theorem local_height_differentiable (g : Matrix.ProjGenLinGroup (Fin 2) 
       (g * Matrix.ProjGenLinGroup.mk (KPSmoothActualFlowData.matrixExponential
         ((t : ℂ) • X))).out (0,0)).2) =
       heightSq (g.out.val * NormedSpace.exp ((t : ℂ) • X)) := by
-    have ho : Matrix.ProjGenLinGroup.mk g.out = g := Quotient.out_eq g
-    have hm : g * Matrix.ProjGenLinGroup.mk (KPSmoothActualFlowData.matrixExponential
-        ((t : ℂ) • X)) = Matrix.ProjGenLinGroup.mk
-        (g.out * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X)) := by
-      exact (congrArg (fun q => q * Matrix.ProjGenLinGroup.mk
-        (KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) ho).symm.trans
-        ((Matrix.ProjGenLinGroup.mk (n := Fin 2) (R := ℂ)).map_mul _ _).symm
+    have hm := (congrArg (fun q => q * Matrix.ProjGenLinGroup.mk
+        (KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) (Quotient.out_eq g)).symm.trans
+        ((Matrix.ProjGenLinGroup.mk).map_mul _ _).symm
     rw [hm, action_out_mk, heightSq_action]
     rfl
   simp_rw [he]
@@ -95,7 +89,6 @@ private theorem normalRadial_product (c g : Cover F ζ hζ)
       Real.exp (2 * (KPArch.action
         (KPSmoothLocalQuotientCharts.archProjection F ζ hζ (c⁻¹ * g)
           (KPCusp.complexPlace F i)).out (0,0)).2) := by
-  have hdr : (KPCuspLogShape.dimension F : ℝ) ≠ 0 := by exact_mod_cast hd
   unfold normalRadial KPCuspLogShape.meanHeight
   rw [show 2 * (KPCuspLogShape.dimension F : ℝ) *
       ((∑ i, (KPArch.action
@@ -148,32 +141,28 @@ noncomputable section
 open scoped Classical NumberField Topology BigOperators
 namespace DedekindZetaZeroFree.KPMsGreenFlux.NormalCoefficient
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
 
  theorem action_out (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : KPArch.H3) :
-    KPArch.action (Matrix.ProjGenLinGroup.mk g).out z = KPArch.action g z := by
-  obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp (Quotient.out_eq (Matrix.ProjGenLinGroup.mk g))
-  conv_rhs => rw [← hu]
-  rw [(KPArch.action_laws _ (Matrix.GeneralLinearGroup.scalar (Fin 2) u) z).2,
-    KPArch.scalar_action]
+    KPArch.action (Matrix.ProjGenLinGroup.mk g).out z = KPArch.action g z := by apply @DedekindZetaZeroFree.KPMsFixedHaar.projective_action_mk <;> assumption
 
  theorem su_origin (k : KPCplxCharacterHaar.ComplexSU2) :
     KPArch.action (KPCplxCharacterHaar.complexSU2Embedding k) (0,0) = (0,0) := by
   have hm := Matrix.mem_unitaryGroup_iff.mp (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1
-  have h01 := congrArg (fun m : Matrix (Fin 2) (Fin 2) ℂ => m 0 1) hm
-  have h11 := congrArg (fun m : Matrix (Fin 2) (Fin 2) ℂ => m 1 1) hm
+  let Matrix₀ := Matrix (Fin 2) (Fin 2) ℂ
+  have h01 := congrArg (fun m : Matrix₀ => m 0 1) hm
+  have h11 := congrArg (fun m : Matrix₀ => m 1 1) hm
   simp only [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply, Matrix.one_apply,
     Fin.reduceEq, if_false, if_true] at h01 h11
-  have hn : ‖(k : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 +
-      ‖(k : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 = 1 := by
+  have hn : ‖(k : Matrix₀) 1 0‖ ^ 2 +
+      ‖(k : Matrix₀) 1 1‖ ^ 2 = 1 := by
     change _ * (starRingEnd ℂ) _ + _ * (starRingEnd ℂ) _ = 1 at h11
     simpa only [Complex.mul_conj, Complex.add_re, Complex.ofReal_re, Complex.one_re,
       Complex.normSq_eq_norm_sq] using congrArg Complex.re h11
-  have hd := (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2
   apply Prod.ext <;>
     simp [KPArch.action, KPArch.actionDenominator, KPArch.height,
-      KPCplxCharacterHaar.complexSU2Embedding, hd, add_comm, hn, h01]
+      KPCplxCharacterHaar.complexSU2Embedding, ((Matrix.mem_specialUnitaryGroup_iff.mp k.property).2), add_comm, hn, h01]
   exact h01
 
  theorem finite_projection (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
@@ -207,7 +196,7 @@ variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
   unfold balancedArch
   simp only [hi, ← ha, ← map_mul, action_out, KPArch.action_laws, su_origin]
   let t := KPMsFixedHaarDisintegration.logHeight (F := F) r + p.2.val i
-  let u : ℂˣ := Units.mk0 (Real.exp t : ℂ) (by exact_mod_cast Real.exp_ne_zero t)
+  let u := Units.mk0 (Real.exp t : ℂ) (by exact_mod_cast Real.exp_ne_zero t)
   have h := KPCuspLogShape.upper_action_snd
     (KPCplxCharacterHaar.upperUnipotent (p.1 i) * KPCplxCharacterHaar.diagonal u)
     (by simp [KPCplxCharacterHaar.upperUnipotent, KPCplxCharacterHaar.diagonal,
@@ -215,8 +204,6 @@ variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
     (by simp [KPCplxCharacterHaar.upperUnipotent, KPCplxCharacterHaar.diagonal,
       Matrix.mul_apply, Fin.sum_univ_two]) (0,0)
   rw [← (KPArch.action_laws _ _ (0,0)).2]
-  change (KPArch.action (KPCplxCharacterHaar.upperUnipotent (p.1 i) *
-    KPCplxCharacterHaar.diagonal u) (0,0)).2 = t
   rw [h]
   change (0 : ℝ) + Real.log ‖(Real.exp t : ℂ)‖ = t
   rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.log_exp, zero_add]
@@ -259,9 +246,9 @@ open scoped Classical NumberField ENNReal NNReal Topology BigOperators
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPMsGreenFlux
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
 namespace NormalCoefficientCalculus
 

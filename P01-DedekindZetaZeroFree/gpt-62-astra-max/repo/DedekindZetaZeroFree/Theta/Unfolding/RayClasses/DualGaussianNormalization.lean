@@ -76,30 +76,26 @@ theorem coprimeIdealDualKernel_eq_conductorGaussian
         (rayIdealFractionalIdeal F a ha * rayIdealFractionalIdeal F m hm) :
           FractionalIdeal (𝓞 F)⁰ F) : ℝ) ^
         (-1 / (Module.finrank ℚ F : ℝ)) • Theta.traceEmbedding F β.val)) := by
-  have hn : 0 < (Ideal.absNorm a : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr ha)
-  have hA := conductorNorm_pos hm
-  have hq : ∀ v, RayTheta.q F u (-h) v ≠ 0 := by
-    intro v
-    exact (mul_pos (Real.rpow_pos_of_pos hu _) (Real.exp_pos _)).ne'
+  have hq : ∀ v, RayTheta.q F u (-h) v ≠ 0 := fun v => (mul_pos (Real.rpow_pos_of_pos hu _) (Real.exp_pos _)).ne'
   rw [← LinearIsometryEquiv.map_smul]
   rw [dual_gaussian_conjugation _ hq]
   rw [dual_Q_smul, dual_Q_smul, dual_norm m a hm ha]
   congr 2
   funext v
   simp only [RayTheta.q]
-  have hs := dual_radial_scale (conductorNorm F m) (Ideal.absNorm a : ℝ) u
-    (Module.finrank ℚ F : ℝ)⁻¹ hA hn hu
   simp only [neg_div, one_div] at *
   calc
     _ = (u ^ (Module.finrank ℚ F : ℝ)⁻¹ *
       ((Ideal.absNorm a : ℝ) ^ (-(Module.finrank ℚ F : ℝ)⁻¹))⁻¹) *
         Real.exp ((-h).val v) := by ring
-    _ = _ := by rw [hs]; ring
+    _ = _ := by rw [(dual_radial_scale (conductorNorm F m) (Ideal.absNorm a : ℝ) u
+      (Module.finrank ℚ F : ℝ)⁻¹ (conductorNorm_pos hm) (by
+        exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr ha)) hu)]; ring
 
-theorem conductorScale_div_modulusCovolume
-    (hF : NumberField.IsTotallyComplex F)
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
+variable (hF : NumberField.IsTotallyComplex F) (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+
+include hF hm in
+theorem conductorScale_div_modulusCovolume :
     conductorScale F m / RayCoset.modulusCovolume F m =
       1 / Real.sqrt (Ideal.absNorm m : ℝ) := by
   have hn : 0 < (Ideal.absNorm m : ℝ) := by
@@ -115,9 +111,7 @@ theorem conductorScale_div_modulusCovolume
   field_simp
   nlinarith
 
-theorem rayTheta_dual_fiber_eq_conjugateWeightedIdealBlock
-    (hF : NumberField.IsTotallyComplex F)
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hmt : m ≠ ⊤)
+theorem rayTheta_dual_fiber_eq_conjugateWeightedIdealBlock (hmt : m ≠ ⊤)
     (η : DedekindZetaZeroFree.RayClassCharacter F m) (hprim : η.IsPrimitive) :
     letI : Finite (𝓞 F ⧸ m) := m.finiteQuotientOfFreeOfNeBot hm
     letI : Fintype (𝓞 F ⧸ m) := Fintype.ofFinite _
@@ -153,12 +147,8 @@ theorem rayTheta_dual_fiber_eq_conjugateWeightedIdealBlock
   intro β₀ hgen b hb hbcop hbimage e₀ he₀ τ hτ a ha hcop E D u hu
   let J := Theta.traceDualIdealUnit F
     (rayIdealFractionalIdeal F a ha * rayIdealFractionalIdeal F m hm)
-  have hv : 0 < u / conductorNorm F m := div_pos hu (conductorNorm_pos hm)
+  have hv := div_pos hu (conductorNorm_pos hm)
   rw [rayTheta_dual_fiber_eq_residuePacketIntegral hF m a hm ha hcop hmt η E D u hu]
-  have hpacket := coprimeIdealResiduePacket_eq_gauss_conjugate_coefficient
-    hF m hm hmt η hprim β₀ hgen b hb hbcop hbimage e₀ he₀ τ hτ a ha hcop E
-  have hkernel := coprimeIdealDualKernel_eq_conductorGaussian
-    hF m a hm ha hcop hmt u hu
   have hsum : ∀ h : RayCoset.logHyperplane F,
       (∑' β : {β : F // β ∈ (J : FractionalIdeal (𝓞 F)⁰ F)},
         coprimeIdealResiduePacket hF m a hm ha hcop hmt η E β *
@@ -173,20 +163,17 @@ theorem rayTheta_dual_fiber_eq_conjugateWeightedIdealBlock
     rw [← tsum_mul_left]
     apply tsum_congr
     intro β
-    rw [hpacket β]
+    rw [(coprimeIdealResiduePacket_eq_gauss_conjugate_coefficient
+      hF m hm hmt η hprim β₀ hgen b hb hbcop hbimage e₀ he₀ τ hτ a ha hcop E) β]
     unfold coprimeIdealDualKernel
-    rw [hkernel β h, conjugateRayCharacter_apply]
+    rw [(coprimeIdealDualKernel_eq_conductorGaussian
+      hF m a hm ha hcop hmt u hu) β h, conjugateRayCharacter_apply]
     ring
   dsimp only [J] at hsum
   simp_rw [hsum]
   rw [MeasureTheory.integral_const_mul]
-  have hneg : weightedIdealBlockNeg hF hm hmt (conjugateRayCharacter η) J
-      (u / conductorNorm F m) =
-      weightedIdealBlock hF hm hmt (conjugateRayCharacter η) J
-        (u / conductorNorm F m) :=
-    weightedIdealBlockNeg_eq_weightedIdealBlock hF hm hmt
-      (conjugateRayCharacter η) J (u / conductorNorm F m) hv
-  rw [← hneg, weightedIdealBlockNeg, if_pos hv]
+  rw [← (weightedIdealBlockNeg_eq_weightedIdealBlock hF hm hmt
+    (conjugateRayCharacter η) J (u / conductorNorm F m) hv), weightedIdealBlockNeg, if_pos hv]
   dsimp only [J]
   ring
 

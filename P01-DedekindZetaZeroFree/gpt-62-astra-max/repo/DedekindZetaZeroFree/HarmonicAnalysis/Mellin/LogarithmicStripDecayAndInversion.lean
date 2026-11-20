@@ -15,15 +15,18 @@ open scoped Classical
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-theorem logMellinContinuation_rapid_vertical_decay {f : ℝ → ℂ} {δ : ℝ}
-    {P : Polynomial ℂ} (h : LogMellinPhysical f δ P)
+section
+
+variable {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} (h : LogMellinPhysical f δ P)
+
+include h in
+theorem logMellinContinuation_rapid_vertical_decay
     (u v : ℝ) (hu : -δ < u) (huv : u ≤ v) (N : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ σ t : ℝ, u ≤ σ → σ ≤ v → 1 ≤ |t| →
       (1 + |t|) ^ N *
         ‖logMellinContinuation f P ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ C := by
   set n : ℕ := max (P.natDegree + 1) (N + 1) with hn
   have hnP : P.natDegree < n := by omega
-  have hNn : N ≤ n := by omega
   obtain ⟨C0, hC0, hbound⟩ :=
     LogMellinPhysical.high_euler_uniform_mellin_norm h n hnP u v hu huv
   refine ⟨2 ^ N * C0, by positivity, ?_⟩
@@ -38,11 +41,10 @@ theorem logMellinContinuation_rapid_vertical_decay {f : ℝ → ℂ} {δ : ℝ}
     rw [h1] at ht
     simp only [abs_zero] at ht
     linarith
-  have heuler := logMellinContinuation_eq_euler h n hnP s (by rw [hsr]; linarith) hs0
   have hmellin : ‖mellin (EulerIter n f) s‖ ≤ C0 := by
     rw [mellin]
     refine (norm_integral_le_integral_norm _).trans ?_
-    simpa only [smul_eq_mul] using (hbound s (by rw [hsr]; exact hσu) (by rw [hsr]; exact hσv)).2
+    simpa using (hbound s (by rw [hsr]; exact hσu) (by rw [hsr]; exact hσv)).2
   have hnormz : ‖(-s) ^ (-(n : ℤ))‖ = ‖s‖ ^ (-(n : ℤ)) := by
     rw [norm_zpow, norm_neg]
   have hprod : ‖(-s) ^ (-(n : ℤ)) * mellin (EulerIter n f) s‖ ≤
@@ -53,29 +55,27 @@ theorem logMellinContinuation_rapid_vertical_decay {f : ℝ → ℂ} {δ : ℝ}
     have h := Complex.abs_im_le_norm s
     rw [hsi] at h
     linarith
-  have hB : 0 < ‖s‖ ^ n := pow_pos (lt_of_lt_of_le one_pos hsnorm) n
   have hA : (1 + |t|) ^ N ≤ (2 : ℝ) ^ N * ‖s‖ ^ n := by
     have hle : 1 + |t| ≤ 2 * ‖s‖ := by
       have h := Complex.abs_im_le_norm s
       rw [hsi] at h
       linarith
-    calc (1 + |t|) ^ N ≤ (2 * ‖s‖) ^ N := pow_le_pow_left₀ (by positivity) hle N
+    calc _ ≤ (2 * ‖s‖) ^ N := pow_le_pow_left₀ (by positivity) hle N
       _ = (2 : ℝ) ^ N * ‖s‖ ^ N := by rw [mul_pow]
       _ ≤ (2 : ℝ) ^ N * ‖s‖ ^ n :=
-            mul_le_mul_of_nonneg_left (pow_le_pow_right₀ hsnorm hNn) (by positivity)
-  have hAB : (1 + |t|) ^ N * ‖s‖ ^ (-(n : ℤ)) ≤ (2 : ℝ) ^ N := by
-    rw [zpow_neg, zpow_natCast, ← div_eq_mul_inv, div_le_iff₀ hB]
-    exact hA
+            mul_le_mul_of_nonneg_left (pow_le_pow_right₀ hsnorm (by omega)) (by positivity)
   calc (1 + |t|) ^ N * ‖logMellinContinuation f P ((σ : ℂ) + (t : ℂ) * Complex.I)‖
       = (1 + |t|) ^ N * ‖logMellinContinuation f P s‖ := by rw [hs]
-    _ = (1 + |t|) ^ N * ‖(-s) ^ (-(n : ℤ)) * mellin (EulerIter n f) s‖ := by rw [heuler]
+    _ = (1 + |t|) ^ N * ‖(-s) ^ (-(n : ℤ)) * mellin (EulerIter n f) s‖ := by rw [(logMellinContinuation_eq_euler h n hnP s (by rw [hsr]; linarith) hs0)]
     _ ≤ (1 + |t|) ^ N * (‖s‖ ^ (-(n : ℤ)) * C0) :=
           mul_le_mul_of_nonneg_left hprod (by positivity)
     _ = ((1 + |t|) ^ N * ‖s‖ ^ (-(n : ℤ))) * C0 := by rw [mul_assoc]
-    _ ≤ (2 : ℝ) ^ N * C0 := mul_le_mul_of_nonneg_right hAB hC0
+    _ ≤ (2 : ℝ) ^ N * C0 := mul_le_mul_of_nonneg_right (by
+      rw [zpow_neg, zpow_natCast, ← div_eq_mul_inv, div_le_iff₀ (pow_pos (lt_of_lt_of_le one_pos hsnorm) n)]
+      exact hA) hC0
 
-theorem logMellinContinuation_admissible {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
-    (h : LogMellinPhysical f δ P) :
+include h in
+theorem logMellinContinuation_admissible :
     LogMellinAdmissible f δ P (logMellinContinuation f P) := by
   refine ⟨h, ?_, ?_, ?_⟩
   · intro s hs
@@ -87,6 +87,8 @@ theorem logMellinContinuation_admissible {f : ℝ → ℂ} {δ : ℝ} {P : Polyn
       rfl
   · intro u v hu huv N
     exact logMellinContinuation_rapid_vertical_decay h u v hu huv N
+
+end
 
 namespace LogMellinAdmissible
 

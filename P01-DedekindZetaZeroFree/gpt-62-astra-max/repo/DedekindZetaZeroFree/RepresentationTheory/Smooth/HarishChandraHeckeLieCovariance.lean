@@ -14,10 +14,10 @@ set_option maxHeartbeats 6400000
 namespace DedekindZetaZeroFree.FourierContinuation.HCGeneration
 open MomentSources SharedSource KPContActualSphericalRightFieldIdentification
 open KPSmoothAutomorphicEvaluation.AmbientApproximation.OrbitSmoothing.Reconstruction.LocalSobolev.Scalar.CoordinateSource
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation renaming exists_archFiniteSplit → exists_archFiniteSplit
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation (exists_archFiniteSplit)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η}
 local notation "ins" => KPSmoothActualFlowData.archimedeanInsertion F R.A.zeta12 R.A.primitive_zeta12
 local notation "expA" => KPSmoothActualFlowData.exponential F
 local notation "W" => actualRightWord F R.A.zeta12 R.A.primitive_zeta12
@@ -47,7 +47,7 @@ theorem actualRight_right_covariance
   obtain ⟨e, he⟩ := exists_archFiniteSplit F R.A.zeta12 R.A.primitive_zeta12
   let x := (e.symm a).1
   let c := (e.symm a).2
-  have ha : a = ins x * c.val := (e.apply_symm_apply a).symm.trans (he x c)
+  have ha := (e.apply_symm_apply a).symm.trans (he x c)
   have he1 (y : KPSmoothActualFlowData.GInfinity F) : e (y, 1) = ins y := by
     simp only [he, OneMemClass.coe_one, mul_one]
   have hcomm (y : KPSmoothActualFlowData.GInfinity F) : ins y * c.val = c.val * ins y := by
@@ -67,7 +67,7 @@ theorem actualRight_right_covariance
     simpa only [q, hD] using
       KPSpatialNativeExponentialOrbit.native_exponential_contDiff F R.A.zeta12
         R.A.primitive_zeta12 f hf.2.1 (g * a)
-  have hd : HasFDerivAt q (fderiv ℝ q 0) 0 := (hq.differentiable (by simp) 0).hasFDerivAt
+  have hd := (hq.differentiable (by simp) 0).hasFDerivAt
   have hdir (X : KPSmoothActualFlowData.LieCoordinates F) :
       HasDerivAt (fun t : ℝ => q (t • X)) (fderiv ℝ q 0 X) 0 := by
     have hd' : HasFDerivAt q (fderiv ℝ q 0) ((0 : ℝ) • X) := by simpa using hd
@@ -105,8 +105,8 @@ theorem actualRight_right_covariance
       _ = _ := by rw [hcomm x]; group
   unfold actualRight
   simp only [actual_ray]
-  have heq : (fun t : ℝ => f ((g * ins (expA (t • Pi.single (actualLieIndexEquiv (F := F) b) 1))) * a)) =
-      (fun t : ℝ => q (t • D.adjoint x⁻¹ (D.basis (actualLieIndexEquiv (F := F) b)))) :=
+  have heq : (fun t : ℝ => f ((g * ins (expA (t • Pi.single (actualLieIndexEquiv b) 1))) * a)) =
+      (fun t : ℝ => q (t • D.adjoint x⁻¹ (D.basis (actualLieIndexEquiv b)))) :=
     funext fun t => congrArg f (hcurve t)
   change deriv (fun t : ℝ => f ((g * _) * a)) 0 = _
   rw [heq, (hdir _).deriv]
@@ -119,10 +119,7 @@ theorem actualRight_right_covariance
   simp only [actualRight, actual_ray]
 
 variable {Q : AdmissibleFlatSources R}
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming smooth_zero → smooth_zero
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming smooth_add → smooth_add
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming smooth_smul → smooth_smul
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming word_zero → word_zero
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy (smooth_zero smooth_add smooth_smul)
 
 private theorem actualRightWord_eq_adelic (w : List (Fin (groupDimension F)))
     (f : Functions R) :
@@ -134,6 +131,8 @@ private theorem actualRightWord_eq_adelic (w : List (Fin (groupDimension F)))
       AdelicRightLieWords.actualRightWord]
     rw [ih]
     rfl
+
+alias HarishChandraHeckeLieCovariance.actualRightWord_eq_adelic := actualRightWord_eq_adelic
 
 theorem hcHeckeSpan_smooth (T : Realization R Q) {f : Functions R}
     (hf : f ∈ hcHeckeSpan T) :
@@ -159,17 +158,12 @@ theorem hcHeckeSpan_actualRight (T : Realization R Q) {f : Functions R}
     have he : actualRight F R.A.zeta12 R.A.primitive_zeta12 b
         (KPLiteralRaw.rightAction F R.A.zeta12 R.A.primitive_zeta12 a (W w (T.theta v))) =
         ∑ j : Fin (groupDimension F),
-          (KPSmoothActualFlowData.adjointMatrix F x⁻¹ (actualLieIndexEquiv (F := F) j)
-            (actualLieIndexEquiv (F := F) b) : ℂ) •
+          (KPSmoothActualFlowData.adjointMatrix F x⁻¹ (actualLieIndexEquiv j)
+            (actualLieIndexEquiv b) : ℂ) •
             KPLiteralRaw.rightAction F R.A.zeta12 R.A.primitive_zeta12 a
               (W (j :: w) (T.theta v)) := by
       funext g
       simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
-      change actualRight F R.A.zeta12 R.A.primitive_zeta12 b
-        (KPLiteralRaw.rightAction F R.A.zeta12 R.A.primitive_zeta12 a (W w (T.theta v))) g =
-          ∑ j, (KPSmoothActualFlowData.adjointMatrix F x⁻¹ (actualLieIndexEquiv (F := F) j)
-            (actualLieIndexEquiv (F := F) b) : ℂ) *
-            actualRight F R.A.zeta12 R.A.primitive_zeta12 j (W w (T.theta v)) (g * a)
       exact hx b g
     simp only [actualRightWord_eq_adelic] at he
     rw [he]

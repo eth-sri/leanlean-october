@@ -15,10 +15,14 @@ open KPContActualChamberNormalSeries
 open KPSmoothAutomorphicEvaluation.AmbientApproximation.OrbitSmoothing.Reconstruction.LocalSobolev.Scalar.CoordinateSource
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-def wordReindex (w : List (Fin (groupDimension F))) : Word F :=
+section
+
+variable (w : List (Fin (groupDimension F)))
+
+def wordReindex : Word F :=
   w.map (fun b => actualBasisReindex F (lieEnumeration F b))
 
-theorem actualRightWord_eq_rightWord (w : List (Fin (groupDimension F)))
+theorem actualRightWord_eq_rightWord
     (u : KPGlobalTorusFunctionData.G F ζ hζ → ℂ) :
     actualRightWord F ζ hζ w u = rightWord F ζ hζ (wordReindex F w) u := by
   induction w with
@@ -33,29 +37,34 @@ theorem actualRightWord_eq_rightWord (w : List (Fin (groupDimension F)))
     rw [actual_frame_ray_eq_flow F]
     rfl
 
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable (f : ℂ → S)
+end
 
-theorem actualRightWord_eq_tsum (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (w : List (Fin (groupDimension F))) (s : ℂ) (hs : s ∈ V)
-    (g : KPGlobalTorusFunctionData.G F ζ hζ) :
+variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (f : ℂ → S)
+
+section
+
+variable (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+    (w : List (Fin (groupDimension F))) (s : ℂ) (hs : s ∈ V) (g : KPGlobalTorusFunctionData.G F ζ hζ)
+
+include hι hf hs in
+theorem actualRightWord_eq_tsum :
     actualRightWord F ζ hζ w (E F ζ hζ U ι f s) g =
       ∑' q : Q F, actualRightWord F ζ hζ w (term F ζ hζ U ι f q s) g := by
   simp_rw [actualRightWord_eq_rightWord]
   simpa only [mixedJet, iteratedDerivWithin_zero] using
     mixedJet_eq_tsum F ζ hζ U ι f hι hf 0 (wordReindex F w) s hs g
 
-theorem actualRightWord_summable (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (w : List (Fin (groupDimension F))) (s : ℂ) (hs : s ∈ V)
-    (g : KPGlobalTorusFunctionData.G F ζ hζ) :
+include hι hf hs in
+theorem actualRightWord_summable :
     Summable (fun q : Q F => actualRightWord F ζ hζ w (term F ζ hζ U ι f q s) g) := by
   simp_rw [actualRightWord_eq_rightWord]
   simpa only [mixedJet, iteratedDerivWithin_zero] using
     (mixed_summable F ζ hζ U ι f hι hf 0 (wordReindex F w) s hs g).of_norm
+
+end
 
 theorem actualRightWord_left_translate (w : List (Fin (groupDimension F)))
     (u : KPGlobalTorusFunctionData.G F ζ hζ → ℂ)

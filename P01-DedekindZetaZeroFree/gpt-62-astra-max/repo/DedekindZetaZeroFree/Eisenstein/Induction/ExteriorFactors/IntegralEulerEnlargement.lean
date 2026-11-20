@@ -15,10 +15,10 @@ open MomentSources TensorActionSource KPGlobalTorusFiniteStages KPLocalPrincipal
 open KPRankOneShellContinuation KPRankOneShellRepair KPRankOneTameSphericalFactor
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 
 theorem parameterOutput_exterior_one (q : KPFinitePlace F)
@@ -32,7 +32,7 @@ theorem parameterOutput_exterior_one (q : KPFinitePlace F)
   rw [← parameterKernel_integral R N P C (fullCompact R P C) (.inr q) 1 z hz]
   have hi := (exterior_arithmetic_integral R N P C q hq z hz
     (Function.surjInv (QuotientGroup.mk'_surjective
-      ((C.polarization q).L.comap (C.canonical q).heisenberg.π)) j)).2
+      ((C.polarization q).L.comap (C.canonical q).heisenberg.π)) j))
   simpa only [parameterKernel, inducingCoordinates, map_one, map_smul,
     Pi.smul_apply, smul_eq_mul]
 

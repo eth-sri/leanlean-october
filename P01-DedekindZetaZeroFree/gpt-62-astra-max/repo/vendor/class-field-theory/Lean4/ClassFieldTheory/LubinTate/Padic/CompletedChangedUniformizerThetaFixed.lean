@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -96,7 +94,7 @@ theorem padicCompletedDiagonalFrobenius_multiplicativeUnitAction
   have hpoint :
       r x =
         padicCompletedMultiplicativePrimitivePointUnitAction p u⁻¹ n := by
-    simpa only [r, x] using
+    simpa using
       padicCompletedUnitFrobeniusIntegerEquiv_multiplicativePrimitivePoint
         p n u⁻¹
   have htransport :=
@@ -111,24 +109,15 @@ theorem padicCompletedDiagonalFrobenius_multiplicativeUnitAction
         hpoint)
       (padicCompletedMultiplicativeUnitEndomorphism p u)
   calc
-    padicCompletedMultiplicativeScalarEndomorphismValue p n
-        (r x)
-        (padicCompletedUnitFrobeniusIntegerEquiv_hasEval
-          p n u⁻¹ x hx)
-        (u : (padicLocalField p).valuationSubring) =
+    _ =
       padicCompletedMultiplicativeScalarEndomorphismValue p n
         (padicCompletedMultiplicativePrimitivePointUnitAction p u⁻¹ n)
         (padicCompletedMultiplicativePrimitivePointUnitAction_hasEval
           p u⁻¹ n)
-        (u : (padicLocalField p).valuationSubring) := by
-      simpa only [padicCompletedMultiplicativeUnitEndomorphism,
-        padicCompletedMultiplicativeScalarEndomorphismValue] using
-        htransport
+        u := by
+      assumption
     _ = x := by
-      simpa only [x, hx,
-        padicCompletedMultiplicativePrimitivePointUnitAction,
-        padicCompletedMultiplicativeUnitEndomorphism,
-        padicCompletedMultiplicativeScalarEndomorphismValue] using
+      simpa [x, hx, padicCompletedMultiplicativePrimitivePointUnitAction, padicCompletedMultiplicativeUnitEndomorphism, padicCompletedMultiplicativeScalarEndomorphismValue] using
         (padicCompletedMultiplicativeScalarEndomorphismValue_unit_after_inverse
           p n
           (padicCompletedMultiplicativePrimitivePoint p n)
@@ -158,25 +147,13 @@ theorem
     padicCompletedLevelPowerSeriesEval_hasEval p n rx hrx U
       (padicCompletedMultiplicativeUnitEndomorphism_hasSubst p u)
   let Θ := padicChangedUniformizerIntertwiner p u
-  have hsemi :=
-    padicCompletedUnitFrobeniusIntegerEquiv_evaluation
-      p n u⁻¹ x hx Θ
-  have hfrobenius :=
-    padicChangedUniformizerIntertwiner_frobenius_evaluation
-      p u n rx hrx
   have hpoint : xBack = x := by
     change
       padicCompletedMultiplicativeScalarEndomorphismValue p n rx hrx
-          (u : (padicLocalField p).valuationSubring) =
+          u =
         x
-    simpa only [r, x, hx, rx, hrx] using
+    simpa using
       (padicCompletedDiagonalFrobenius_multiplicativeUnitAction p u n)
-  have hevaluation :
-      padicCompletedLevelPowerSeriesEval p n xBack hxBack Θ =
-        padicCompletedLevelPowerSeriesEval p n x hx Θ :=
-    DFunLike.congr_fun
-      (padicCompletedThetaFixedEvaluation_eq_of_point_eq
-        p n xBack x hxBack hx hpoint) Θ
   change
     r (padicCompletedLevelPowerSeriesEval p n x hx Θ) =
       padicCompletedLevelPowerSeriesEval p n x hx Θ
@@ -184,11 +161,13 @@ theorem
     _ =
         padicCompletedLevelPowerSeriesEval p n rx hrx
           (PowerSeries.map WittVector.frobenius Θ) := by
-      simpa only [r, x, hx, rx, hrx, Θ] using hsemi
+      exact padicCompletedUnitFrobeniusIntegerEquiv_evaluation p n u⁻¹ x hx Θ
     _ = padicCompletedLevelPowerSeriesEval p n xBack hxBack Θ := by
-      simpa only [xBack, hxBack, U, Θ] using hfrobenius
+      exact padicChangedUniformizerIntertwiner_frobenius_evaluation p u n rx hrx
     _ = padicCompletedLevelPowerSeriesEval p n x hx Θ :=
-      hevaluation
+      (DFunLike.congr_fun
+        (padicCompletedThetaFixedEvaluation_eq_of_point_eq
+          p n xBack x hxBack hx hpoint) Θ)
 
 /-- The inverse-unit diagonal completed Frobenius field automorphism fixes
 the genuine changed-uniformizer theta value. -/
@@ -203,7 +182,7 @@ theorem
       ((padicChangedUniformizerThetaValue p u n :
           (padicCompletedLevelCompleteDVF p n).valuationSubring) :
         padicCompletedLevelField p n) := by
-  simpa only [padicCompletedUnitFrobeniusIntegerEquiv_coe] using
+  simpa using
     congrArg
       (fun z : (padicCompletedLevelCompleteDVF p n).valuationSubring =>
         (z : padicCompletedLevelField p n))

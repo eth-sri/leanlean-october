@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -82,7 +79,7 @@ noncomputable def chosenExpLogContinuousMulEquiv
   have hepos : (0 : ℚ) < (e : ℚ) := by
     exact_mod_cast LocalField.ramificationIndexOfWithZeroValuation_pos v
   have hnpos : 0 < n := by
-    have hnq : (0 : ℚ) < (n : ℚ) :=
+    have hnq :=
       lt_trans (div_pos hepos hpden) hlevel'
     exact_mod_cast hnq
   have hn : 1 ≤ n := hnpos

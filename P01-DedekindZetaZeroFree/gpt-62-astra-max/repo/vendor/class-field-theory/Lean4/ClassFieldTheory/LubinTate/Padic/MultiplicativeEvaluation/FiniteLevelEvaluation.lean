@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -95,10 +91,13 @@ noncomputable local instance
         padicIntEquivValuationSubring p (p : ℤ_[p]))
       (padicMultiplicativeLubinTateSeries_isUniformizer p) n)
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+
 /-- Evaluation of the standard-to-multiplicative comparison at the chosen
 standard primitive point of level `n + 1`. -/
-noncomputable def padicMultiplicativePrimitivePoint
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicMultiplicativePrimitivePoint :
     (standardLubinTateLevelCompleteDVF
       (padicMultiplicativeLubinTateSeries_isUniformizer p) n).valuationSubring :=
   standardLubinTatePrimitivePointEvaluation
@@ -106,11 +105,8 @@ noncomputable def padicMultiplicativePrimitivePoint
     (padicStandardToMultiplicativeIntertwiner p)
 
 /-- The evaluated multiplicative point is topologically nilpotent. -/
-theorem padicMultiplicativePrimitivePoint_hasEval
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
-    PowerSeries.HasEval (padicMultiplicativePrimitivePoint p n) := by
-  exact
-    standardLubinTateLevelPowerSeriesEval_hasEval
+theorem padicMultiplicativePrimitivePoint_hasEval :
+    PowerSeries.HasEval (padicMultiplicativePrimitivePoint p n) := standardLubinTateLevelPowerSeriesEval_hasEval
       (padicMultiplicativeLubinTateSeries_isUniformizer p) n
       (standardLubinTatePrimitivePointInteger
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n)
@@ -119,21 +115,24 @@ theorem padicMultiplicativePrimitivePoint_hasEval
       (padicStandardToMultiplicativeIntertwiner p)
       (padicStandardToMultiplicativeIntertwiner_hasSubst p)
 
+end
+
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+    (x : (standardLubinTateLevelCompleteDVF (padicMultiplicativeLubinTateSeries_isUniformizer p) n).valuationSubring)
+    (hx : PowerSeries.HasEval x)
+
 /-- At every standard level, analytic evaluation of the multiplicative
 Lubin--Tate series is the literal polynomial `(1 + x)^p - 1`. -/
-theorem padicMultiplicativeLubinTateSeries_eval
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x :
-      (standardLubinTateLevelCompleteDVF
-        (padicMultiplicativeLubinTateSeries_isUniformizer p) n).valuationSubring)
-    (hx : PowerSeries.HasEval x) :
+theorem padicMultiplicativeLubinTateSeries_eval :
     standardLubinTateLevelPowerSeriesEval
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n x hx
         (padicMultiplicativeLubinTateSeries p).toPowerSeries =
       (1 + x) ^ p - 1 := by
   rw [
     LubinTateSeries.padicMultiplicativeLubinTateSeries_toPowerSeries,
-    PowerSeries.binomialSeries_nat (R := ℤ)]
+    PowerSeries.binomialSeries_nat]
   simp only [map_sub, map_pow, map_add, map_one]
   exact congrArg
     (fun z : (standardLubinTateLevelCompleteDVF
@@ -144,12 +143,7 @@ theorem padicMultiplicativeLubinTateSeries_eval
 
 /-- Analytic evaluation preserves the standard-to-multiplicative
 intertwining equation at every topologically nilpotent level integer. -/
-theorem padicStandardToMultiplicativeIntertwiner_eval_functionalEquation
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x :
-      (standardLubinTateLevelCompleteDVF
-        (padicMultiplicativeLubinTateSeries_isUniformizer p) n).valuationSubring)
-    (hx : PowerSeries.HasEval x) :
+theorem padicStandardToMultiplicativeIntertwiner_eval_functionalEquation :
     standardLubinTateLevelPowerSeriesEval
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n
         (standardLubinTateLevelPowerSeriesEval
@@ -180,26 +174,19 @@ theorem padicStandardToMultiplicativeIntertwiner_eval_functionalEquation
   let H := padicStandardToMultiplicativeIntertwiner p
   let E := padicMultiplicativeLubinTateSeries p
   let Ebar := standardLubinTateSeries hπ
-  let hH : PowerSeries.HasSubst H :=
+  let hH :=
     padicStandardToMultiplicativeIntertwiner_hasSubst p
-  let hEbar : PowerSeries.HasSubst Ebar.toPowerSeries :=
+  let hEbar :=
     PowerSeries.HasSubst.of_constantCoeff_zero
       Ebar.constantCoeff_eq_zero
-  let hHEval :
-      PowerSeries.HasEval
-        (standardLubinTateLevelPowerSeriesEval hπ n x hx H) :=
+  let hHEval :=
     standardLubinTateLevelPowerSeriesEval_hasEval
       hπ n x hx H hH
-  let hEbarEval :
-      PowerSeries.HasEval
-        (standardLubinTateLevelPowerSeriesEval
-          hπ n x hx Ebar.toPowerSeries) :=
+  let hEbarEval :=
     standardLubinTateLevelPowerSeriesEval_hasEval
       hπ n x hx Ebar.toPowerSeries hEbar
   calc
-    standardLubinTateLevelPowerSeriesEval hπ n
-        (standardLubinTateLevelPowerSeriesEval hπ n x hx H)
-        hHEval E.toPowerSeries =
+    _ =
         standardLubinTateLevelPowerSeriesEval hπ n x hx
           (PowerSeries.subst H E.toPowerSeries) :=
       (standardLubinTateLevelPowerSeriesEval_subst
@@ -220,11 +207,6 @@ theorem padicStandardToMultiplicativeIntertwiner_eval_functionalEquation
 action with coefficient `a` to the unique multiplicative-series scalar
 action with the same coefficient. -/
 theorem padicStandardToMultiplicativeIntertwiner_eval_endomorphism
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x :
-      (standardLubinTateLevelCompleteDVF
-        (padicMultiplicativeLubinTateSeries_isUniformizer p) n).valuationSubring)
-    (hx : PowerSeries.HasEval x)
     (a : (padicLocalField p).valuationSubring) :
     standardLubinTateLevelPowerSeriesEval
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n
@@ -257,21 +239,19 @@ theorem padicStandardToMultiplicativeIntertwiner_eval_endomorphism
       (fun _ : Unit => a)
   let xS := standardLubinTateEndomorphismEvalAt hπ n x hx a
   let xH := standardLubinTateLevelPowerSeriesEval hπ n x hx H
-  let hSSubst : PowerSeries.HasSubst S :=
-    (standardLubinTateEndomorphism_hasLinearTerm hπ a).hasSubst
-  let hHSubst : PowerSeries.HasSubst H :=
+  let hHSubst :=
     padicStandardToMultiplicativeIntertwiner_hasSubst p
-  let hxS : PowerSeries.HasEval xS :=
+  let hxS :=
     standardLubinTateEndomorphismEvalAt_hasEval hπ n x hx a
-  let hxH : PowerSeries.HasEval xH :=
+  let hxH :=
     standardLubinTateLevelPowerSeriesEval_hasEval
       hπ n x hx H hHSubst
   calc
-    standardLubinTateLevelPowerSeriesEval hπ n xS hxS H =
+    _ =
         standardLubinTateLevelPowerSeriesEval hπ n x hx
           (PowerSeries.subst S H) :=
       (standardLubinTateLevelPowerSeriesEval_subst
-        hπ n x hx S H hSSubst hxS).symm
+        hπ n x hx S H ((standardLubinTateEndomorphism_hasLinearTerm hπ a).hasSubst) hxS).symm
     _ =
         standardLubinTateLevelPowerSeriesEval hπ n x hx
           (PowerSeries.subst H M) := by
@@ -283,12 +263,7 @@ theorem padicStandardToMultiplicativeIntertwiner_eval_endomorphism
 
 /-- Evaluating the reverse comparison after the forward comparison recovers
 every topologically nilpotent standard-level point. -/
-theorem padicMultiplicativeToStandardIntertwiner_eval_comp
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x :
-      (standardLubinTateLevelCompleteDVF
-        (padicMultiplicativeLubinTateSeries_isUniformizer p) n).valuationSubring)
-    (hx : PowerSeries.HasEval x) :
+theorem padicMultiplicativeToStandardIntertwiner_eval_comp :
     standardLubinTateLevelPowerSeriesEval
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n
         (standardLubinTateLevelPowerSeriesEval
@@ -304,17 +279,13 @@ theorem padicMultiplicativeToStandardIntertwiner_eval_comp
     padicMultiplicativeLubinTateSeries_isUniformizer p
   let H := padicStandardToMultiplicativeIntertwiner p
   let G := padicMultiplicativeToStandardIntertwiner p
-  let hH : PowerSeries.HasSubst H :=
+  let hH :=
     padicStandardToMultiplicativeIntertwiner_hasSubst p
-  let hHEval :
-      PowerSeries.HasEval
-        (standardLubinTateLevelPowerSeriesEval hπ n x hx H) :=
+  let hHEval :=
     standardLubinTateLevelPowerSeriesEval_hasEval
       hπ n x hx H hH
   calc
-    standardLubinTateLevelPowerSeriesEval hπ n
-        (standardLubinTateLevelPowerSeriesEval hπ n x hx H)
-        hHEval G =
+    _ =
         standardLubinTateLevelPowerSeriesEval hπ n x hx
           (PowerSeries.subst H G) :=
       (standardLubinTateLevelPowerSeriesEval_subst
@@ -327,17 +298,19 @@ theorem padicMultiplicativeToStandardIntertwiner_eval_comp
       standardLubinTateLevelPowerSeriesEval_X
         hπ n x hx
 
+end
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+
 /-- The forward comparison evaluates to zero at the zero point. -/
-theorem padicStandardToMultiplicativeIntertwiner_eval_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicStandardToMultiplicativeIntertwiner_eval_zero :
     standardLubinTateLevelPowerSeriesEval
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n
         0 PowerSeries.HasEval.zero
         (padicStandardToMultiplicativeIntertwiner p) =
       0 := by
   obtain ⟨B, hB⟩ :
-      (PowerSeries.X :
-          PowerSeries (padicLocalField p).valuationSubring) ∣
+      PowerSeries.X ∣
         padicStandardToMultiplicativeIntertwiner p := by
     rw [PowerSeries.X_dvd_iff]
     exact
@@ -358,7 +331,6 @@ theorem padicStandardToMultiplicativeIntertwiner_eval_zero
 /-- Evaluation of the forward comparison is injective on topologically
 nilpotent points of every standard level. -/
 theorem padicStandardToMultiplicativeIntertwiner_eval_injective
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     {x y :
       (standardLubinTateLevelCompleteDVF
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n).valuationSubring}
@@ -407,9 +379,9 @@ theorem padicStandardToMultiplicativeIntertwiner_eval_injective
   have hpacked : packedX = packedY := by
     apply Subtype.ext
     exact hxy
-  have hxback : evalReverse packedX = x :=
+  have hxback :=
     padicMultiplicativeToStandardIntertwiner_eval_comp p n x hx
-  have hyback : evalReverse packedY = y :=
+  have hyback :=
     padicMultiplicativeToStandardIntertwiner_eval_comp p n y hy
   exact hxback.symm.trans ((congrArg evalReverse hpacked).trans hyback)
 

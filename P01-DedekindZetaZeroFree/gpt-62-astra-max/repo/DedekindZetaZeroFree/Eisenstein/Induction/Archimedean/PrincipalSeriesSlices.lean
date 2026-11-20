@@ -38,8 +38,7 @@ private theorem source_chart_smooth
   change v.val ∈ ⨆ J, KPGlobalTorusBorelTwistCompatibility.InducedLevel F ζ hζ _ J at hs
   have hd : ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z => (v.val.val (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g)).val.val 1)
-      (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) := by
-    exact Submodule.iSup_induction (motive := fun x => ContDiffOn ℝ (⊤ : ℕ∞)
+      (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) := Submodule.iSup_induction (motive := fun x => ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z => (x.val (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g)).val.val 1)
       (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F)) _ hs
       (fun _ _ hx => hx.1 g) contDiffOn_const (fun _ _ hx hy => hx.add hy)
@@ -148,6 +147,8 @@ private theorem slice_covariance
   convert hc using 2
   unfold KPCplxPrincipalSeriesCharts.inductionWeight KPCplxPrincipalSeriesCharts.complexAbs
   norm_num [KPCplxPrincipalSeriesCharts.positiveParameter]
+
+alias PrincipalSeriesSlices.slice_covariance := slice_covariance
 
  def restrictionLinear
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

@@ -20,12 +20,7 @@ theorem trace_phase_continuous
         ((∑ v : InfinitePlace F, 2 *
           (InfinitePlace.Completion.extensionEmbedding v (x.1 v)).re) : ℂ)) *
         ∏ v : S, (e v (x.2 v) : ℂ)) : Continuous χ := by
-  have hfun : χ = fun x =>
-      Complex.exp (2 * (Real.pi : ℂ) * Complex.I *
-        ((∑ v : InfinitePlace F, 2 *
-          (InfinitePlace.Completion.extensionEmbedding v (x.1 v)).re) : ℂ)) *
-        ∏ v : S, (e v (x.2 v) : ℂ) := funext hχ
-  rw [hfun]
+  rw [(funext hχ)]
   have harch (v : InfinitePlace F) :
       Continuous (fun x : SLocalProduct F S =>
         InfinitePlace.Completion.extensionEmbedding v (x.1 v)) :=

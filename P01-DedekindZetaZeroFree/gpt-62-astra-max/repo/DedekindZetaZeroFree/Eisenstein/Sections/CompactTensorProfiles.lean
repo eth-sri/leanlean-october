@@ -262,10 +262,8 @@ private theorem finite_translate_locallyConstant (v : Functions F ζ hζ)
       (by simpa using U.toOpenSubgroup.mem_nhds_one)
   filter_upwards [he] with l hl
   funext g
-  have hu : (b⁻¹ * l).val ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U :=
-    ⟨b⁻¹ * l, hl, rfl⟩
   simpa [rightAction, Subgroup.coe_mul, Subgroup.coe_inv, mul_assoc] using
-    hU (g * b.val) _ hu
+    hU (g * b.val) _ (⟨b⁻¹ * l, hl, rfl⟩)
 
  theorem finiteCompact_translate_range (v : Functions F ζ hζ)
     (hv : Smooth F ζ hζ v) :
@@ -288,7 +286,6 @@ open KPLiteralChamber
     { toFun := fun v => v.val
       map_add' := by intros; rfl
       map_smul' := by intros; rfl }
-  have he : Function.Injective e := by intro v w h; exact Subtype.ext h
   let T : KPGlobalEisensteinData.CompactTypeStage
       ((KPGlobalTorusFunctionData.borelRightTranslation F ζ hζ
         (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0)).comp
@@ -299,9 +296,9 @@ open KPLiteralChamber
         (by
           intro v w h
           apply Subtype.ext
-          apply he
+          apply (fun v w h => Subtype.ext h)
           exact congrArg (fun x : S => (x : Functions F ζ hζ)) h)
-      invariant := by intro k v hv; exact hstable k (e v) hv }
+      invariant := fun k v hv => hstable k (e v) hv}
   obtain ⟨p, hp⟩ := literal_zero_induced_lift F ζ hζ K hK f
   have hs : literalSource F ζ hζ K f 0 ∈
       KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ
@@ -320,10 +317,7 @@ open KPLiteralChamber
   funext g
   exact hU g u.val.val (Subgroup.mem_map.mpr ⟨u.val, u.property, rfl⟩)
 
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.DiscrepancyCuts renaming cutFlat → cutFlat
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.DiscrepancyCuts renaming cutCore → cutCore
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.DiscrepancyCuts renaming cutCore_formula → cutCore_formula
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.DiscrepancyCuts renaming reweight_expansion_in_literal_core → reweight_expansion_in_literal_core
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.DiscrepancyCuts (cutFlat cutCore cutCore_formula reweight_expansion_in_literal_core)
 
  def canonicalCutCore (K : Subgroup (G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K) (a : ℝ) (f : Flat F ζ hζ K) :

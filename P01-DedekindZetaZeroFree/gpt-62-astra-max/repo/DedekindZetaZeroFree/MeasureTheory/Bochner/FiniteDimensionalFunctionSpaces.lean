@@ -13,13 +13,14 @@ namespace DedekindZetaZeroFree.FiniteFunctionSpaces
 
 open MeasureTheory Filter
 
-private theorem integral_mem_finite_function_space
-    {X Y : Type*} [MeasurableSpace X] (μ : Measure X)
-    (T : Submodule ℂ (Y → ℂ)) [FiniteDimensional ℂ T]
-    (f : X → Y → ℂ) (hf : ∀ᵐ x ∂μ, f x ∈ T)
+theorem integral_mem_finite_linear_image
+    {X Y V : Type*} [MeasurableSpace X] [AddCommGroup V] [Module ℂ V]
+    [FiniteDimensional ℂ V] (μ : Measure X) (J : V →ₗ[ℂ] (Y → ℂ))
+    (f : X → Y → ℂ) (hf : ∀ᵐ x ∂μ, f x ∈ J.range)
     (hi : ∀ y, Integrable (fun x => f x y) μ) :
-    (fun y => ∫ x, f x y ∂μ) ∈ T := by
-  obtain ⟨n, p, b, hb⟩ := exists_finite_evaluation_interpolation T
+    (fun y => ∫ x, f x y ∂μ) ∈ J.range := by
+  let := Module.Finite.range J
+  obtain ⟨n, p, b, hb⟩ := exists_finite_evaluation_interpolation J.range
   have he (y : Y) :
       (fun x => f x y) =ᵐ[μ] (fun x => ∑ i, f x (p i) * (b i).val y) := by
     filter_upwards [hf] with x hx
@@ -35,15 +36,6 @@ private theorem integral_mem_finite_function_space
     · intro i _
       exact (hi (p i)).mul_const _
   rw [hrepr]
-  exact T.sum_mem (fun i _ => T.smul_mem _ (b i).property)
-
-theorem integral_mem_finite_linear_image
-    {X Y V : Type*} [MeasurableSpace X] [AddCommGroup V] [Module ℂ V]
-    [FiniteDimensional ℂ V] (μ : Measure X) (J : V →ₗ[ℂ] (Y → ℂ))
-    (f : X → Y → ℂ) (hf : ∀ᵐ x ∂μ, f x ∈ J.range)
-    (hi : ∀ y, Integrable (fun x => f x y) μ) :
-    (fun y => ∫ x, f x y ∂μ) ∈ J.range := by
-  let : FiniteDimensional ℂ J.range := Module.Finite.range J
-  exact integral_mem_finite_function_space μ J.range f hf hi
+  exact J.range.sum_mem (fun i _ => J.range.smul_mem _ (b i).property)
 
 end DedekindZetaZeroFree.FiniteFunctionSpaces

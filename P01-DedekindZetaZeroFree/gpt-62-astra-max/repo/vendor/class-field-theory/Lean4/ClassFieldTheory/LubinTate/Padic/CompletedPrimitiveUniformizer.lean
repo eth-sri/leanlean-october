@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -65,18 +61,14 @@ open ValuationTheory.DiscreteValuationField.ValuedExtension
   have hadic : IsAdic target.maximalIdeal := rfl
   exact (hadic.isAdicComplete_iff.mp target.isAdicComplete).2
 
-private theorem completedPolynomial_eval₂_mem_ideal_of_coeff_mem
-    {R S : Type*} [CommSemiring R] [CommSemiring S]
-    (f : R →+* S) (I : Ideal S) (P : Polynomial R) (z : S)
-    (hcoeff : ∀ i, f (P.coeff i) ∈ I) :
-    P.eval₂ f z ∈ I := by
-  rw [Polynomial.eval₂_eq_sum_range]
-  exact Ideal.sum_mem _ fun i _ =>
-    Ideal.mul_mem_right (z ^ i) I (hcoeff i)
+private alias completedPolynomial_eval₂_mem_ideal_of_coeff_mem := PrimitiveUniformizer.polynomial_eval₂_mem_ideal_of_coeff_mem
+
+section
+
+variable (p : ℕ) [Fact p.Prime]
 
 private theorem
-    padicCompletedPrimitiveRootInteger_addVal_and_ramificationIndex
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+    padicCompletedPrimitiveRootInteger_addVal_and_ramificationIndex (n : ℕ) :
     IsDiscreteValuationRing.addVal
         (padicCompletedLevelCompleteDVF p n).valuationSubring
         (padicCompletedPrimitiveRootInteger p n) = 1 ∧
@@ -346,20 +338,9 @@ private theorem
     simpa only [base, target, e] using hed.trans hdegree.symm
   exact ⟨hrootVal, heramDegree⟩
 
-/-- The chosen completed primitive point has normalized additive valuation
-one in the completed-level valuation ring. -/
-theorem padicCompletedPrimitiveRootInteger_addVal
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
-    IsDiscreteValuationRing.addVal
-        (padicCompletedLevelCompleteDVF p n).valuationSubring
-        (padicCompletedPrimitiveRootInteger p n) = 1 :=
-  (padicCompletedPrimitiveRootInteger_addVal_and_ramificationIndex
-    p n).1
-
 /-- The completed multiplicative Lubin--Tate level is totally ramified over
 the completed-unramified coefficient field. -/
-theorem padicCompletedLevel_ramificationIndex_eq_degree
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedLevel_ramificationIndex_eq_degree (n : ℕ) :
     ramificationIndex
         (padicCompletedUnramifiedCompleteDVF p).toDVF
         (padicCompletedLevelCompleteDVF p n).toDVF =
@@ -369,38 +350,8 @@ theorem padicCompletedLevel_ramificationIndex_eq_degree
   (padicCompletedPrimitiveRootInteger_addVal_and_ramificationIndex
     p n).2
 
-/-- The completed primitive point is irreducible in the completed-level
-valuation ring. -/
-  theorem padicCompletedPrimitiveRootInteger_irreducible
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
-    Irreducible (padicCompletedPrimitiveRootInteger p n) := by
-  let target := padicCompletedLevelCompleteDVF p n
-  let root := padicCompletedPrimitiveRootInteger p n
-  obtain ⟨ϖ, hϖ⟩ :=
-    IsDiscreteValuationRing.exists_irreducible target.valuationSubring
-  have hval :
-      IsDiscreteValuationRing.addVal target.valuationSubring root =
-        IsDiscreteValuationRing.addVal target.valuationSubring ϖ := by
-    rw [padicCompletedPrimitiveRootInteger_addVal,
-      IsDiscreteValuationRing.addVal_uniformizer hϖ]
-  exact
-    ((IsDiscreteValuationRing.addVal_eq_iff_associated root ϖ).1
-      hval).symm.irreducible hϖ
-
-/-- The chosen completed primitive point is a genuine uniformizer of the
-completed level. -/
-theorem padicCompletedPrimitiveRoot_isUniformizer
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
-    (padicCompletedLevelCompleteDVF p n).valuation.IsUniformizer
-      (padicCompletedPrimitiveRootInteger p n :
-        padicCompletedLevelField p n) := by
-  exact Valuation.isUniformizer_of_maximalIdeal_eq_span
-    (v := (padicCompletedLevelCompleteDVF p n).valuation)
-    (padicCompletedPrimitiveRootInteger_irreducible p n).maximalIdeal_eq
-
 private theorem
     padicChangedUniformizerThetaValue_addVal_and_ramificationIndex
-    (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
     IsDiscreteValuationRing.addVal
         (padicCompletedLevelCompleteDVF p n).valuationSubring
@@ -672,6 +623,8 @@ private theorem
     le_antisymm hvle honele
   exact ⟨hθval, hed⟩
 
+end
+
 /-- The genuine changed-uniformizer theta point has normalized additive
 valuation one in the completed standard level. -/
 theorem padicChangedUniformizerThetaValue_addVal
@@ -701,7 +654,7 @@ theorem padicChangedUniformizerThetaValue_isUniformizer
         IsDiscreteValuationRing.addVal target.valuationSubring ϖ := by
     rw [padicChangedUniformizerThetaValue_addVal,
       IsDiscreteValuationRing.addVal_uniformizer hϖ]
-  have hθirreducible : Irreducible θ :=
+  have hθirreducible :=
     ((IsDiscreteValuationRing.addVal_eq_iff_associated θ ϖ).1
       hval).symm.irreducible hϖ
   exact Valuation.isUniformizer_of_maximalIdeal_eq_span

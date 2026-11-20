@@ -19,11 +19,11 @@ open KPContActualCotangentPieceHilbertSum
 open KPContActualCotangentPieceExtraction
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (cover : CountableCover F ζ hζ U R P H)
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    (cover : CountableCover F ζ hζ U R P H)
 
 def IntrinsicHilbert (_cover : CountableCover F ζ hζ U R P H) :=
   CotangentAeQuotient (U := U) (H := H)
@@ -65,8 +65,7 @@ def realizationIsometry : PieceHilbert cover ≃ₗᵢ[ℂ] IntrinsicHilbert cov
     rw [LinearEquiv.symm_apply_apply]
 
 theorem realizationIsometry_toLinearEquiv :
-    (realizationIsometry cover).toLinearEquiv = realizationEquiv cover := by
-  rfl
+    (realizationIsometry cover).toLinearEquiv = realizationEquiv cover := rfl
 
 theorem norm_eq_extraction (v : IntrinsicHilbert cover) :
     ‖v‖ = ‖Ext cover (intrinsicClass cover v)‖ := by
@@ -104,7 +103,7 @@ private theorem ofReal_norm_inner_le
     have h3 : ‖u‖ * ‖v‖ ≤ ‖u‖ ^ 2 + ‖v‖ ^ 2 := by
       nlinarith [two_mul_le_add_sq ‖u‖ ‖v‖, norm_nonneg u, norm_nonneg v]
     linarith
-  calc ENNReal.ofReal ‖inner ℂ u v‖
+  calc _
       ≤ ENNReal.ofReal (((‖u‖₊ ^ 2 : NNReal) : ℝ) + ((‖v‖₊ ^ 2 : NNReal) : ℝ)) :=
         ENNReal.ofReal_le_ofReal hreal
     _ = ENNReal.ofReal ((‖u‖₊ ^ 2 : NNReal) : ℝ) +
@@ -116,9 +115,6 @@ theorem integrable_pair (r s : SquareFiniteFamily (U := U) (H := H)) :
   classical
   obtain ⟨cover⟩ := (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
   have hBR := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
-  have hmeas : Measurable
-      (fun x => ENNReal.ofReal (normSquare r.val x : ℝ)) :=
-    ((measurable_normSquare r.val).coe_nnreal_real).ennreal_ofReal
   refine ⟨(measurable_pair r.val s.val).aestronglyMeasurable, ?_⟩
   rw [hasFiniteIntegral_iff_norm]
   have hbound : ∀ x : KPFiniteCuspAtlas.rawXU F ζ hζ U,
@@ -126,9 +122,8 @@ theorem integrable_pair (r s : SquareFiniteFamily (U := U) (H := H)) :
         ENNReal.ofReal (normSquare r.val x : ℝ) +
           ENNReal.ofReal (normSquare s.val x : ℝ) := by
     intro x
-    have hmem : x ∈ ⋃ n, KPContActualCotangentBorelRefinement.basePiece cover n := by
-      rw [hBR.covers]; exact Set.mem_univ x
-    obtain ⟨n, hn⟩ := Set.mem_iUnion.mp hmem
+    obtain ⟨n, hn⟩ := Set.mem_iUnion.mp (by
+      rw [hBR.covers]; exact Set.mem_univ x)
     obtain ⟨y, hy⟩ := Set.mem_range.mp (hBR.base_subset n hn)
     have hq : KPContCotangentOverlapRationalBranches.q (cover.chart n)
         (KPContActualCotangentPieceHilbertSum.coordinates (cover.chart n) y).val = x := by
@@ -142,15 +137,15 @@ theorem integrable_pair (r s : SquareFiniteFamily (U := U) (H := H)) :
         (KPContActualCotangentPieceHilbertSum.coordinates (cover.chart n) y)]
     exact ofReal_norm_inner_le _ _
   calc (∫⁻ x, ENNReal.ofReal ‖pair r.val s.val x‖
-        ∂(baseMeasure (R := R) (P := P) (U := U)))
+        ∂(baseMeasure))
       ≤ ∫⁻ x, (ENNReal.ofReal (normSquare r.val x : ℝ) +
           ENNReal.ofReal (normSquare s.val x : ℝ))
-        ∂(baseMeasure (R := R) (P := P) (U := U)) := lintegral_mono hbound
+        ∂(baseMeasure) := lintegral_mono hbound
     _ = (∫⁻ x, ENNReal.ofReal (normSquare r.val x : ℝ)
-          ∂(baseMeasure (R := R) (P := P) (U := U))) +
+          ∂(baseMeasure)) +
         (∫⁻ x, ENNReal.ofReal (normSquare s.val x : ℝ)
-          ∂(baseMeasure (R := R) (P := P) (U := U))) :=
-        lintegral_add_left hmeas _
+          ∂(baseMeasure)) :=
+        lintegral_add_left (((measurable_normSquare r.val).coe_nnreal_real).ennreal_ofReal) _
     _ < ⊤ := ENNReal.add_lt_top.mpr ⟨r.property, s.property⟩
 
 theorem integrable_normSquare (r : SquareFiniteFamily (U := U) (H := H)) :
@@ -159,7 +154,7 @@ theorem integrable_normSquare (r : SquareFiniteFamily (U := U) (H := H)) :
   refine ⟨((measurable_normSquare r.val).coe_nnreal_real).aestronglyMeasurable, ?_⟩
   rw [hasFiniteIntegral_iff_ofNNReal]
   have h : (∫⁻ x, ENNReal.ofReal ((normSquare r.val x : ℝ))
-      ∂(baseMeasure (R := R) (P := P) (U := U))) < ⊤ := r.property
+      ∂(baseMeasure)) < ⊤ := r.property
   simpa only [ENNReal.ofReal_coe_nnreal] using h
 
 private theorem piece_inner_eq (cover : CountableCover F ζ hζ U R P H)
@@ -169,14 +164,15 @@ private theorem piece_inner_eq (cover : CountableCover F ζ hζ U R P H)
         pair r.val s.val ((cover.chart n).toBase y) ∂(cover.chart n).liftedMeasure := by
   have hmeas :=
     (kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover).lifted_measurable n
-  change inner ℂ ((component cover r n : Lp (KPContCotangentActualGenuineTwistIsotropy.E F) 2 (cover.chart n).liftedMeasure))
-      ((component cover s n : Lp (KPContCotangentActualGenuineTwistIsotropy.E F) 2 (cover.chart n).liftedMeasure)) =
+  let Lp₀ := Lp (KPContCotangentActualGenuineTwistIsotropy.E F) 2 (cover.chart n).liftedMeasure
+  change inner ℂ ((component cover r n : Lp₀))
+      ((component cover s n : Lp₀)) =
     ∫ y in KPContActualCotangentBorelRefinement.liftedPiece cover n,
       pair r.val s.val ((cover.chart n).toBase y) ∂(cover.chart n).liftedMeasure
   rw [MeasureTheory.L2.inner_def]
   have hae : (fun x => inner ℂ
-        ((component cover r n : Lp (KPContCotangentActualGenuineTwistIsotropy.E F) 2 (cover.chart n).liftedMeasure) x)
-        ((component cover s n : Lp (KPContCotangentActualGenuineTwistIsotropy.E F) 2 (cover.chart n).liftedMeasure) x)) =ᵐ[
+        ((component cover r n : Lp₀) x)
+        ((component cover s n : Lp₀) x)) =ᵐ[
       (cover.chart n).liftedMeasure]
       (fun x => inner ℂ (KPContActualCotangentPieceExtraction.e cover r.val n x)
         (KPContActualCotangentPieceExtraction.e cover s.val n x)) := by
@@ -219,63 +215,39 @@ theorem inner_eq_integral (v w : IntrinsicHilbert cover)
     apply lp.ext; funext n; rw [hG r n]; rfl
   have hExt_s : Ext cover (toAeQuotient s) = extractFamily cover s := by
     apply lp.ext; funext n; rw [hG s n]; rfl
-  have hBR := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
   rw [inner_eq_extraction cover v w, ← hr, ← hs, hExt_r, hExt_s,
     inner_eq_tsum cover (extractFamily cover r) (extractFamily cover s)]
   rw [show (∑' n, inner ℂ ((extractFamily cover r) n) ((extractFamily cover s) n)) =
       ∑' n, ∫ y in KPContActualCotangentBorelRefinement.liftedPiece cover n,
         pair r.val s.val ((cover.chart n).toBase y) ∂(cover.chart n).liftedMeasure
       from tsum_congr fun n => piece_inner_eq cover r s n]
-  rw [← hBR.integral_eq_tsum (pair r.val s.val) (integrable_pair r s)]
+  rw [← (kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover).integral_eq_tsum (pair r.val s.val) (integrable_pair r s)]
 
 theorem norm_sq_eq_integral (v : IntrinsicHilbert cover)
     (r : SquareFiniteFamily (U := U) (H := H))
     (hr : toAeQuotient r = intrinsicClass cover v) :
     ‖v‖ ^ 2 = ∫ x, (normSquare r.val x : ℝ)
       ∂(baseMeasure (R := R) (P := P) (U := U)) := by
-  classical
-  obtain ⟨-, -, hC, -, -, -, hG⟩ :=
-    kp_cont_actual_cotangent_piece_extraction F ζ hζ R.adelicHaar R.adelic_isHaar U R rfl P H
-      cover
-  have hExt : Ext cover (toAeQuotient r) = extractFamily cover r := by
-    apply lp.ext
-    funext n
-    rw [hG r n]
-    rfl
-  have hnorm : ‖v‖ = ‖extractFamily cover r‖ := by
-    rw [norm_eq_extraction cover v, ← hr, hExt]
-  have hsum : ‖extractFamily cover r‖ ^ 2 = ∑' n, ‖component cover r n‖ ^ 2 :=
-    norm_sq_eq_tsum cover (extractFamily cover r)
-  have hpt : ∀ n, ((‖component cover r n‖₊ ^ 2 : NNReal) : ℝ≥0∞) =
-      ENNReal.ofReal (‖component cover r n‖ ^ 2) := by
-    intro n
-    have h2 : ((‖component cover r n‖₊ ^ 2 : NNReal) : ℝ) = ‖component cover r n‖ ^ 2 := by
-      rw [NNReal.coe_pow, coe_nnnorm]
-    rw [← h2, ENNReal.ofReal_coe_nnreal]
-  have hsumm : Summable (fun n => (‖component cover r n‖₊ ^ 2 : NNReal)) := by
-    rw [← ENNReal.tsum_coe_ne_top_iff_summable, tsum_congr hpt]
-    exact (hC r).2.1.ne
-  have hcoe : (↑(∑' n, (‖component cover r n‖₊ ^ 2 : NNReal)) : ℝ≥0∞) =
-      ∑' n, ENNReal.ofReal (‖component cover r n‖ ^ 2) := by
-    rw [ENNReal.coe_tsum hsumm]
-    exact tsum_congr hpt
-  have hofReal : ENNReal.ofReal (∑' n, ‖component cover r n‖ ^ 2) =
-      (↑(∑' n, (‖component cover r n‖₊ ^ 2 : NNReal)) : ℝ≥0∞) := by
-    rw [← ENNReal.ofReal_coe_nnreal (p := ∑' n, (‖component cover r n‖₊ ^ 2 : NNReal))]
-    congr 1
-    rw [NNReal.coe_tsum]
-    exact tsum_congr fun n => by rw [NNReal.coe_pow, coe_nnnorm]
-  have hint : Integrable (fun x => (normSquare r.val x : ℝ))
-      (baseMeasure (R := R) (P := P) (U := U)) := KPContActualCotangentIntrinsicHilbertIntegral.integrable_normSquare r
-  have key : ENNReal.ofReal (‖v‖ ^ 2) =
-      ENNReal.ofReal (∫ x, (normSquare r.val x : ℝ)
-        ∂(baseMeasure (R := R) (P := P) (U := U))) := by
-    rw [hnorm, hsum, hofReal, hcoe, (hC r).1,
-      ← ofReal_integral_eq_lintegral_ofReal hint (Filter.Eventually.of_forall fun x => by positivity)]
-  exact (ENNReal.ofReal_eq_ofReal_iff (by positivity)
-    (integral_nonneg fun x => by positivity)).mp key
+  have hp : pair r.val r.val = fun x => ((normSquare r.val x : ℝ) : ℂ) := by
+    apply Eq.symm
+    apply (Classical.choose_spec (pairing_descends r.val r.val)).2
+    refine ⟨Complex.continuous_ofReal.measurable.comp (measurable_normSquare r.val).coe_nnreal_real, ?_⟩
+    intro a x
+    simp [normSquare_chart, inner_self_eq_norm_sq_to_K]
+  apply Complex.ofReal_injective
+  calc
+    _ = (‖v‖ : ℂ) ^ 2 := Complex.ofReal_pow ..
+    _ = inner ℂ v v := (inner_self_eq_norm_sq_to_K (𝕜 := ℂ) v).symm
+    _ = _ := inner_eq_integral cover v v r r hr hr
+    _ = _ := by
+      rw [hp]
+      exact integral_complex_ofReal (f := fun x => (normSquare r.val x : ℝ))
 
-def changeCover (other : CountableCover F ζ hζ U R P H) :
+section
+
+variable (other : CountableCover F ζ hζ U R P H)
+
+def changeCover :
     IntrinsicHilbert cover ≃ₗᵢ[ℂ] IntrinsicHilbert other where
   __ := (intrinsicClass cover).trans (intrinsicClass other).symm
   norm_map' := fun v => by
@@ -287,10 +259,11 @@ def changeCover (other : CountableCover F ζ hζ U R P H) :
         ‖v‖ ^ 2 := by rw [h2, h1]
     exact (pow_left_inj₀ (norm_nonneg _) (norm_nonneg _) (by norm_num)).mp hsq
 
-theorem changeCover_class (other : CountableCover F ζ hζ U R P H)
+theorem changeCover_class
     (v : IntrinsicHilbert cover) :
-    intrinsicClass other (changeCover cover other v) = intrinsicClass cover v := by
-  rfl
+    intrinsicClass other (changeCover cover other v) = intrinsicClass cover v := rfl
+
+end
 
 theorem scalarSector_isClosed :
     IsClosed (KPContSectorClosedLpSubspace.H F ζ hζ R U :
@@ -298,18 +271,6 @@ theorem scalarSector_isClosed :
   KPContSectorClosedLpSubspace.H_isClosed F ζ hζ R U
 
 structure Properties : Prop where
-  reconstruction_isometry :
-    (realizationIsometry cover).toLinearEquiv = realizationEquiv cover
-  extraction_norm : ∀ v : IntrinsicHilbert cover,
-    ‖v‖ = ‖Ext cover (intrinsicClass cover v)‖
-  extraction_inner : ∀ v w : IntrinsicHilbert cover,
-    inner ℂ v w = inner ℂ (Ext cover (intrinsicClass cover v))
-      (Ext cover (intrinsicClass cover w))
-  pairing_integrable : ∀ r s : SquareFiniteFamily (U := U) (H := H),
-    Integrable (pair r.val s.val) (baseMeasure (R := R) (P := P) (U := U))
-  square_integrable : ∀ r : SquareFiniteFamily (U := U) (H := H),
-    Integrable (fun x => (normSquare r.val x : ℝ))
-      (baseMeasure (R := R) (P := P) (U := U))
   inner_integral : ∀ (v w : IntrinsicHilbert cover)
     (r s : SquareFiniteFamily (U := U) (H := H)),
     toAeQuotient r = intrinsicClass cover v →
@@ -321,11 +282,6 @@ structure Properties : Prop where
     toAeQuotient r = intrinsicClass cover v →
     ‖v‖ ^ 2 = ∫ x, (normSquare r.val x : ℝ)
       ∂(baseMeasure (R := R) (P := P) (U := U))
-  cover_independent : ∀ (other : CountableCover F ζ hζ U R P H)
-    (v : IntrinsicHilbert cover),
-    intrinsicClass other (changeCover cover other v) = intrinsicClass cover v
-  scalar_closed : IsClosed (KPContSectorClosedLpSubspace.H F ζ hζ R U :
-    Set (KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R U))
 
 end DedekindZetaZeroFree.KPContActualCotangentIntrinsicHilbertIntegral
 
@@ -340,15 +296,10 @@ theorem kp_cont_actual_cotangent_intrinsic_hilbert_integral
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
     (cover : KPContActualCotangentCountableShrinking.CountableCover F ζ hζ U R P H) :
     KPContActualCotangentIntrinsicHilbertIntegral.Properties cover :=
-  { reconstruction_isometry := KPContActualCotangentIntrinsicHilbertIntegral.realizationIsometry_toLinearEquiv cover
-    extraction_norm := KPContActualCotangentIntrinsicHilbertIntegral.norm_eq_extraction cover
-    extraction_inner := KPContActualCotangentIntrinsicHilbertIntegral.inner_eq_extraction cover
-    pairing_integrable := KPContActualCotangentIntrinsicHilbertIntegral.integrable_pair
-    square_integrable := KPContActualCotangentIntrinsicHilbertIntegral.integrable_normSquare
+  {
     inner_integral := KPContActualCotangentIntrinsicHilbertIntegral.inner_eq_integral cover
     norm_integral := KPContActualCotangentIntrinsicHilbertIntegral.norm_sq_eq_integral cover
-    cover_independent := KPContActualCotangentIntrinsicHilbertIntegral.changeCover_class cover
-    scalar_closed := KPContActualCotangentIntrinsicHilbertIntegral.scalarSector_isClosed }
+     }
 
 end DedekindZetaZeroFree
 

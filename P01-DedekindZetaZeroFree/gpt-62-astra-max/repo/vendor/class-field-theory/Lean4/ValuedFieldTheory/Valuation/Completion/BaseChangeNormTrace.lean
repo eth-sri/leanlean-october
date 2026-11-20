@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -39,17 +33,6 @@ universe u v w
 
 open scoped TensorProduct
 
-/-- Algebra norm commutes with scalar extension. -/
-theorem algebra_norm_baseChange_tmul
-    {K A L : Type*} [Field K] [Field A] [CommRing L]
-    [Algebra K A] [Algebra K L]
-    [Module.Free K L] [Module.Finite K L]
-    (x : L) :
-    Algebra.norm A (1 ⊗ₜ[K] x : A ⊗[K] L) =
-      algebraMap K A (Algebra.norm K x) := by
-  rw [Algebra.norm_apply, ← Algebra.baseChange_lmul,
-    LinearMap.det_baseChange, ← Algebra.norm_apply]
-
 /-- Algebra trace commutes with scalar extension. -/
 theorem algebra_trace_baseChange_tmul
     {K A L : Type*} [Field K] [Field A] [CommRing L]
@@ -58,8 +41,7 @@ theorem algebra_trace_baseChange_tmul
     (x : L) :
     Algebra.trace A (A ⊗[K] L) (1 ⊗ₜ[K] x) =
       algebraMap K A (Algebra.trace K L x) := by
-  rw [Algebra.trace_apply, ← Algebra.baseChange_lmul,
-    LinearMap.trace_baseChange, ← Algebra.trace_apply]
+  simp [Algebra.trace_apply, ← Algebra.baseChange_lmul]
 
 end Completion
 end ValuationTheory

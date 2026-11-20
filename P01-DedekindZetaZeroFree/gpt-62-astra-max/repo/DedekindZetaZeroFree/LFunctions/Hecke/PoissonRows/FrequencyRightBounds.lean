@@ -14,10 +14,15 @@ open DedekindZetaZeroFree.PrincipalMellinComparison
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
-theorem plus_right (σ : ℝ) (hσ : 1 < σ) :
+section
+
+variable (σ : ℝ) (hσ : 1 < σ)
+
+include hσ in
+theorem plus_right :
     ∃ C : ℝ, 0 < C ∧ ∀ (u : Frequency D.recipe) (w : ℂ), σ ≤ w.re →
       (RawFixed.FixedData.pkg D).plus u w ≠ 0 ∧
         ‖(RawFixed.FixedData.pkg D).plus u w‖ ≤ C ∧
@@ -26,10 +31,11 @@ theorem plus_right (σ : ℝ) (hσ : 1 < σ) :
     Real.exp_pos _, fun u w hw => ?_⟩
   rw [(RawFixed.FixedData.pkg D).plus_eq u w (by linarith)]
   exact RightHeckeBounds.euler_data _
-    (AllRowEuler.InitialSeparation.raw_plus_isCoefficient (σ := D.recipe.σ)
+    (AllRowEuler.InitialSeparation.raw_plus_isCoefficient
       ((RawFixed.FixedData.pkg D).U u)) σ hσ w hw
 
-theorem minus_right (σ : ℝ) (hσ : 1 < σ) :
+include hσ in
+theorem minus_right :
     ∃ C : ℝ, 0 < C ∧ ∀ (u : Frequency D.recipe) (ξ : ℂ), σ ≤ ξ.re →
       (RawFixed.FixedData.pkg D).minus u ξ ≠ 0 ∧
         ‖(RawFixed.FixedData.pkg D).minus u ξ‖ ≤ C ∧
@@ -38,14 +44,16 @@ theorem minus_right (σ : ℝ) (hσ : 1 < σ) :
     Real.exp_pos _, fun u ξ hξ => ?_⟩
   rw [(RawFixed.FixedData.pkg D).minus_eq u ξ (by linarith)]
   exact RightHeckeBounds.euler_data _
-    (AllRowEuler.InitialSeparation.raw_minus_isCoefficient (σ := D.recipe.σ)
-      (η := D.recipe.target) ((RawFixed.FixedData.pkg D).U u)) σ hσ ξ hξ
+    (AllRowEuler.InitialSeparation.raw_minus_isCoefficient
+       ((RawFixed.FixedData.pkg D).U u)) σ hσ ξ hξ
+
+end
 
 theorem recipe_L_right (σ : ℝ) (hσ : 1 / 6 < σ) :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℂ, σ ≤ z.re →
       D.recipe.L (6 * z) ≠ 0 ∧ ‖D.recipe.L (6 * z)‖ ≤ C ∧ ‖(D.recipe.L (6 * z))⁻¹‖ ≤ C := by
   obtain ⟨C1, hC1, h1⟩ := RightHeckeBounds.zetaSCont_norm_le_right D (6 * σ) (by linarith)
-  obtain ⟨C2, hC2, h2⟩ := RightHeckeBounds.zetaSCont_inv_norm_le_right D (6 * σ) (by linarith)
+  obtain ⟨C2, h2⟩ := RightHeckeBounds.zetaSCont_inv_norm_le_right D (6 * σ) (by linarith)
   refine ⟨max C1 C2, lt_max_of_lt_left hC1, fun z hz => ?_⟩
   have hre : (6 * z).re = 6 * z.re := by simp
   have hz6 : 6 * σ ≤ (6 * z).re := by rw [hre]; linarith

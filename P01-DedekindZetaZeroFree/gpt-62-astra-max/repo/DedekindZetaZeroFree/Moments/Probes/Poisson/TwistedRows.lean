@@ -12,8 +12,8 @@ open DedekindZetaZeroFree NumberField MeasureTheory
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 abbrev TwistedRow : Type :=
   {f : PrincipalMellinComparison.Frequency D.recipe //

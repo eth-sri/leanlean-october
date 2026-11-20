@@ -10,13 +10,7 @@ namespace DedekindZetaZeroFree.KPLiteralChamber
 open KPAdelicCoverRestrictedProduct
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 private lemma eval_ext (a b : Adeles F)
-    (h : ∀ v, adeleEval F v a = adeleEval F v b) : a = b := by
-  apply Prod.ext
-  · funext w
-    exact h (Sum.inl w)
-  · apply Subtype.ext
-    funext q
-    exact h (Sum.inr q)
+    (h : ∀ v, adeleEval F v a = adeleEval F v b) : a = b := by apply @DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.GL2Projection.adele_ext <;> assumption
 private lemma projection_A_entry (y : Ideles F) (i j : Fin 2) :
     (projection F ζ hζ (KPRationalAdelicSplitting.A F ζ hζ y)) i j =
       (!![(y : Adeles F), 0; 0, 1] : Matrix (Fin 2) (Fin 2) (Adeles F)) i j := by
@@ -71,23 +65,24 @@ theorem coveredTorus_normalizes_upperRoot
     apply pglCentralInjection_central F ζ hζ
     rwa [pglCentralInjection_kernel]
   have hn : a * KPGlobalTorusFunctionData.N F ζ hζ x =
-      KPGlobalTorusFunctionData.N F ζ hζ ((y : KPAdeles F) * x) * a := by
+      KPGlobalTorusFunctionData.N F ζ hζ (y * x) * a := by
     have h := KPRationalAdelicSplitting.quotient_upper_diagonal F ζ hζ
-      ((y : KPAdeles F) * x) y
-    have he : (y : KPAdeles F) * x * (↑y⁻¹ : KPAdeles F) = x := by
+      (y * x) y
+    have he : y * x * (↑y⁻¹ : KPAdeles F) = x := by
       calc
-        _ = x * ((y : KPAdeles F) * (↑y⁻¹ : KPAdeles F)) := by ring
+        _ = x * (y * (↑y⁻¹ : KPAdeles F)) := by ring
         _ = x := by simp
     rw [he] at h
     exact h.symm
+  let N₀ := KPGlobalTorusFunctionData.N F ζ hζ ((y : KPAdeles F) * x)
   have hcomm := Subgroup.mem_center_iff.mp hc
-    (KPGlobalTorusFunctionData.N F ζ hζ ((y : KPAdeles F) * x))
+    (N₀)
   calc
-    t.val * KPGlobalTorusFunctionData.N F ζ hζ x =
+    _ =
         (t.val * a⁻¹) * (a * KPGlobalTorusFunctionData.N F ζ hζ x) := by group
     _ = (t.val * a⁻¹) *
-        (KPGlobalTorusFunctionData.N F ζ hζ ((y : KPAdeles F) * x) * a) := by rw [hn]
-    _ = KPGlobalTorusFunctionData.N F ζ hζ ((y : KPAdeles F) * x) * t.val := by
+        (N₀ * a) := by rw [hn]
+    _ = N₀ * t.val := by
       rw [← mul_assoc, ← hcomm]
       group
 end DedekindZetaZeroFree.KPLiteralChamber

@@ -12,33 +12,34 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPLocalExceptionalConstruction KPLocalPrincipalSeries
 open KPRankOneShellRepair KPAdelicCoverRestrictedProduct ThetaExpansion
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
-open _root_.DedekindZetaZeroFree.KPLocalStoneVonNeumann renaming inducedCosetEquiv → inducedCosetEquiv
+open _root_.DedekindZetaZeroFree.KPLocalStoneVonNeumann (inducedCosetEquiv)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
-def integralCompactProfile (q : KPFinitePlace F)
-    (f : Plus R.A P C (Sum.inr q)) (s : ℂ) :
+section
+
+variable (q : KPFinitePlace F) (f : Plus R.A P C (Sum.inr q)) (s : ℂ)
+
+def integralCompactProfile :
     compactPicture (C.canonical q).borel (C.polarization q) (C.canonical q).iwasawa .plus :=
   LocalCompactChange.correctedCompact F ζ hζ q (C.canonical q)
     (C.canonical q).iwasawa (finiteIntegralIwasawa R P C q) (C.polarization q) s
       ((compactTrivialization (C.canonical q).borel (C.polarization q)
         (C.canonical q).iwasawa .plus 0).symm f)
 
-def integralSpectralSection (q : KPFinitePlace F)
-    (f : Plus R.A P C (Sum.inr q)) (s : ℂ) :
+def integralSpectralSection :
     sectionSpace (C.canonical q).borel (C.polarization q) .plus s :=
   compactTrivialization (C.canonical q).borel (C.polarization q)
     (C.canonical q).iwasawa .plus s (integralCompactProfile R P C q f s)
 
-theorem integralSpectralSection_value (q : KPFinitePlace F)
-    (f : Plus R.A P C (Sum.inr q)) (s : ℂ) (g : ActualCover F ζ hζ q) :
+theorem integralSpectralSection_value (g : ActualCover F ζ hζ q) :
     (integralSpectralSection R P C q f s).val g =
       Complex.exp (s * (Real.log (LocalCompactChange.forwardAbs F ζ hζ q (C.canonical q)
         (finiteIntegralIwasawa R P C q) g) : ℂ)) • f.val g := by
@@ -48,6 +49,8 @@ theorem integralSpectralSection_value (q : KPFinitePlace F)
       (C.canonical q).iwasawa .plus 0).symm f) s g
   simpa only [integralSpectralSection, integralCompactProfile,
     LinearEquiv.apply_symm_apply] using h
+
+end
 
 theorem coreFlatInsertion_scattering_stage
     (t : RestrictedTensorSimple.Level (bad R.A P C))
@@ -68,7 +71,6 @@ theorem coreFlatInsertion_scattering_stage
                 KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (g (Sum.inr q)))) := by
   simp only [coreFlatInsertion, scalarTwist, quotientCoreEvaluator,
     LinearMap.coe_mk, AddHom.coe_mk]
-  change Complex.exp (s * (iwasawaLogHeight R _ : ℂ)) * quotientCoreValue R.A P C _ _ = _
   change Complex.exp (s * (iwasawaLogHeight R
     (scalarQuotient F ζ hζ (amalgamation F ζ hζ
       (localToRestricted F ζ hζ (Sum.inr q) (finiteScatteringRaw R.A q y))) *
@@ -104,7 +106,7 @@ theorem spectral_forward_contraction (q : KPFinitePlace F)
   dsimp only
   let J := actualTorus F ζ hζ q ⧸ (C.polarization q).L.comap (C.canonical q).heisenberg.π
   letI : Fintype J := Fintype.ofFinite _
-  let e : LocalFiber F ζ hζ P C q ≃ₗ[ℂ] (J → ℂ) :=
+  let e :=
     inducedCosetEquiv ((C.polarization q).L.comap (C.canonical q).heisenberg.π)
       (C.polarization q).ωL.toMonoidHom
   let b (j : J) := e.symm (Pi.single j 1)
@@ -126,21 +128,20 @@ theorem spectral_forward_contraction (q : KPFinitePlace F)
       ((C.polarization q).L.comap (C.canonical q).heisenberg.π)) j
     refine ⟨actualCanonicalContinued_integrable F q ζ hζ (C.canonical q)
       (C.polarization q) μ hμ .plus s hs f g h, ?_⟩
-    have hi := actualContinued_section_eq_integral F ζ hζ q (C.canonical q)
+    exact (actualContinued_section_eq_integral F ζ hζ q (C.canonical q)
       (C.polarization q) μ hμ (actualFamilyUniformizer F q)
-      (actualFamilyUniformizer_spec F q) .plus s hs f g h
-    exact hi.symm
+      (actualFamilyUniformizer_spec F q) .plus s hs f g h).symm
   have he : (fun y => L (v y)) = (fun y => ∑ j : J, e (v y) j * L (b j)) := by
     funext y
     conv_lhs => rw [hex (v y)]
-    simp only [map_sum, map_smul, smul_eq_mul]
+    simp
   change Integrable (fun y => L (v y)) μ ∧ (∫ y, L (v y) ∂μ) = L out
   rw [he]
   refine ⟨integrable_finsetSum _ (fun j _ => (hcoord j).1.mul_const _), ?_⟩
   rw [integral_finsetSum _ (fun j _ => (hcoord j).1.mul_const _)]
   simp_rw [integral_mul_const, (hcoord _).2]
   conv_rhs => rw [hex out]
-  simp only [map_sum, map_smul, smul_eq_mul]
+  simp
 
 theorem coreFlatInsertion_scattering_stage_integral
     (t : RestrictedTensorSimple.Level (bad R.A P C))
@@ -157,8 +158,6 @@ theorem coreFlatInsertion_scattering_stage_integral
     let out := KPRankOneShellContinuation.transportToSections (q.adicCompletion F)
       (C.canonical q).borel (C.polarization q) (C.canonical q).iwasawa .plus s
       (actualCanonicalContinued F q ζ hζ (C.canonical q) (C.polarization q) μ hμ .plus s) f
-    Integrable (fun y => (coreFlatInsertion R P C (RestrictedTensorSimple.stageInclusion _ _ _ t
-      (PiTensorProduct.tprod ℂ x))).val s (arg y)) μ ∧
     (∫ y, (coreFlatInsertion R P C (RestrictedTensorSimple.stageInclusion _ _ _ t
       (PiTensorProduct.tprod ℂ x))).val s (arg y) ∂μ) =
       Complex.exp (s * (awayHeight R P C q g : ℂ)) *
@@ -173,8 +172,8 @@ theorem coreFlatInsertion_scattering_stage_integral
     (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (g (Sum.inr q)))
     (rationalSlotContraction R.A P C t q hq
       (fun j => localValue R.A P C j.val (g j.val) (x j)))
-  exact ⟨hi.1.const_mul _, (integral_const_mul _ _).trans (congrArg (fun z =>
-    Complex.exp (s * (awayHeight R P C q g : ℂ)) * z) hi.2)⟩
+  exact (integral_const_mul _ _).trans (congrArg (fun z =>
+    Complex.exp (s * (awayHeight R P C q g : ℂ)) * z) hi.2)
 
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource
 

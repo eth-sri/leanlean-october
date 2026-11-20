@@ -30,7 +30,7 @@ theorem product_iwasawa_homeomorph (d : ℕ) :
         simp
       right_inv := by
         rintro ⟨x, k⟩
-        have hk : (k : G d) • o d = o d := k.property
+        have hk := k.property
         have hx : (s x * (k : G d)) • o d = x := by
           rw [mul_smul, hk, hso]
         apply Prod.ext

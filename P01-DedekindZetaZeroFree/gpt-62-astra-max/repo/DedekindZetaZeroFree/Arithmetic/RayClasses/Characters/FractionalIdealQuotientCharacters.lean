@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.CharacterOperations
 
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.PrimeToFractionalIdeals.IntegralRatios
 
@@ -9,28 +10,31 @@ open scoped NumberField Classical
 
 namespace DedekindZetaZeroFree.RayClassBridge
 
-@[simp] theorem rayClassCharacter_bot
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (η : RayClassCharacter F 𝔪) : η ⊥ = 0 := by
-  exact (η.eq_zero_iff' ⊥).mpr (Or.inl rfl)
+section
 
-theorem rayClassCharacter_ne_zero_iff
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (η : RayClassCharacter F 𝔪) (I : Ideal (𝓞 F)) :
-    η I ≠ 0 ↔ I ≠ ⊥ ∧ I ⊔ 𝔪 = ⊤ := by
-  rw [Ne, η.eq_zero_iff' I]
-  simp only [not_or, not_not]
+variable (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (η : RayClassCharacter F 𝔪)
+
+@[simp] theorem rayClassCharacter_bot : η ⊥ = 0 := by apply @DedekindZetaZeroFree.LargeSieve.RayOperations.map_bot <;> assumption
+
+theorem rayClassCharacter_ne_zero_iff (I : Ideal (𝓞 F)) :
+    η I ≠ 0 ↔ I ≠ ⊥ ∧ I ⊔ 𝔪 = ⊤ := by apply @DedekindZetaZeroFree.LargeSieve.RayOperations.ne_zero_iff <;> assumption
+
+end
 
 section Construction
 
 variable (F : Type) [Field F] [NumberField F]
-variable (𝔪 : Ideal (𝓞 F))
-variable (η : RayClassCharacter F 𝔪)
+    (𝔪 : Ideal (𝓞 F))
+    (η : RayClassCharacter F 𝔪)
 
- def primeVal (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) : ℂ :=
+ section
+
+variable (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+
+def primeVal : ℂ :=
   if v.asIdeal ⊔ 𝔪 = ⊤ then η v.asIdeal else 1
 
- lemma primeVal_ne_zero (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
+ lemma primeVal_ne_zero :
     primeVal F 𝔪 η v ≠ 0 := by
   unfold primeVal
   split_ifs with h
@@ -39,16 +43,18 @@ variable (η : RayClassCharacter F 𝔪)
     exact ⟨v.ne_bot, h⟩
   · exact one_ne_zero
 
- def primeUnit (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) : ℂˣ :=
+ def primeUnit : ℂˣ :=
   Units.mk0 (primeVal F 𝔪 η v) (primeVal_ne_zero F 𝔪 η v)
 
-private lemma primeUnit_val (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
+private lemma primeUnit_val :
     (primeUnit F 𝔪 η v : ℂ) = primeVal F 𝔪 η v := Units.val_mk0 _
 
-private lemma primeVal_eq_eta (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+private lemma primeVal_eq_eta
     (h : v.asIdeal ⊔ 𝔪 = ⊤) : primeVal F 𝔪 η v = η v.asIdeal := by
   unfold primeVal
   rw [if_pos h]
+
+end
 
  def freeChar :
     Multiplicative (IsDedekindDomain.HeightOneSpectrum (𝓞 F) →₀ ℤ) →* ℂˣ :=
@@ -77,18 +83,30 @@ private lemma symm_factorization_toAdd
     intro v
     rw [ClassFieldTheory.NumberFieldFractionalIdealGroup.count_factorization]
     exact ClassFieldTheory.NumberFieldFractionalIdealGroup.countVector_apply x v
-  have h2 : (ClassFieldTheory.NumberFieldFractionalIdealGroup.factorizationEquiv (K := F)).symm x =
+  have h2 : (ClassFieldTheory.NumberFieldFractionalIdealGroup.factorizationEquiv).symm x =
       Multiplicative.ofAdd
         (ClassFieldTheory.NumberFieldFractionalIdealGroup.countVector x) := by
-    apply (ClassFieldTheory.NumberFieldFractionalIdealGroup.factorizationEquiv (K := F)).injective
+    apply (ClassFieldTheory.NumberFieldFractionalIdealGroup.factorizationEquiv).injective
     rw [MulEquiv.apply_symm_apply]
     exact h1.symm
   rw [h2]
   rfl
 
-private lemma freeChar_apply (e : IsDedekindDomain.HeightOneSpectrum (𝓞 F) →₀ ℤ) :
-    ((e.prod fun v n => primeUnit F 𝔪 η v ^ n : ℂˣ) : ℂ) =
-      ∏ᶠ v, primeVal F 𝔪 η v ^ (e v) := by
+private lemma totalChar_apply (x : ClassFieldTheory.NumberFieldFractionalIdealGroup F) :
+    (totalChar F 𝔪 η x : ℂ) =
+      ∏ᶠ v, primeVal F 𝔪 η v
+        ^ (ClassFieldTheory.NumberFieldFractionalIdealGroup.countVector x v) := by
+  have h1 : totalChar F 𝔪 η x =
+      freeChar F 𝔪 η
+        ((ClassFieldTheory.NumberFieldFractionalIdealGroup.factorizationEquiv).symm x) :=
+    rfl
+  rw [h1]
+  have h2 : freeChar F 𝔪 η
+      ((ClassFieldTheory.NumberFieldFractionalIdealGroup.factorizationEquiv).symm x) =
+      ((ClassFieldTheory.NumberFieldFractionalIdealGroup.factorizationEquiv).symm
+        x).toAdd.prod (fun v n => primeUnit F 𝔪 η v ^ n) := rfl
+  rw [h2, symm_factorization_toAdd F x]
+  let e := (ClassFieldTheory.NumberFieldFractionalIdealGroup.countVector x)
   have hcoe : ((e.prod fun v n => primeUnit F 𝔪 η v ^ n : ℂˣ) : ℂ) =
       ∏ v ∈ e.support, primeVal F 𝔪 η v ^ (e v) := by
     rw [Finsupp.prod]
@@ -99,28 +117,11 @@ private lemma freeChar_apply (e : IsDedekindDomain.HeightOneSpectrum (𝓞 F) �
       rw [Units.val_zpow_eq_zpow_val, primeUnit_val]
   rw [hcoe]
   rw [← finprod_eq_prod_of_mulSupport_subset (fun v => primeVal F 𝔪 η v ^ (e v))
-    (s := e.support) ?_]
+     ?_]
   · intro v hv
     rw [Function.mem_mulSupport] at hv
     by_contra hmem
     exact hv (by rw [Finsupp.notMem_support_iff.mp hmem, zpow_zero])
-
-private lemma totalChar_apply (x : ClassFieldTheory.NumberFieldFractionalIdealGroup F) :
-    (totalChar F 𝔪 η x : ℂ) =
-      ∏ᶠ v, primeVal F 𝔪 η v
-        ^ (ClassFieldTheory.NumberFieldFractionalIdealGroup.countVector x v) := by
-  have h1 : totalChar F 𝔪 η x =
-      freeChar F 𝔪 η
-        ((ClassFieldTheory.NumberFieldFractionalIdealGroup.factorizationEquiv (K := F)).symm x) :=
-    rfl
-  rw [h1]
-  have h2 : freeChar F 𝔪 η
-      ((ClassFieldTheory.NumberFieldFractionalIdealGroup.factorizationEquiv (K := F)).symm x) =
-      ((ClassFieldTheory.NumberFieldFractionalIdealGroup.factorizationEquiv (K := F)).symm
-        x).toAdd.prod (fun v n => primeUnit F 𝔪 η v ^ n) := rfl
-  rw [h2, symm_factorization_toAdd F x]
-  exact freeChar_apply F 𝔪 η
-    (ClassFieldTheory.NumberFieldFractionalIdealGroup.countVector x)
 
 private lemma eta_top : η (⊤ : Ideal (𝓞 F)) = 1 := η.map_top'
 
@@ -131,21 +132,13 @@ private lemma eta_pow (J : Ideal (𝓞 F)) (n : ℕ) : η (J ^ n) = η J ^ n := 
       rw [pow_succ, show η (J ^ n * J) = η (J ^ n) * η J from η.map_mul' _ _, ih,
         pow_succ]
 
-private lemma eta_prod_finset (s : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
-    (f : IsDedekindDomain.HeightOneSpectrum (𝓞 F) → Ideal (𝓞 F)) :
-    η (∏ v ∈ s, f v) = ∏ v ∈ s, η (f v) := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simp [Ideal.one_eq_top, eta_top F 𝔪 η]
-  | insert a s ha ih =>
-      rw [Finset.prod_insert ha, Finset.prod_insert ha,
-        show η (f a * ∏ v ∈ s, f v) = η (f a) * η (∏ v ∈ s, f v) from η.map_mul' _ _, ih]
+alias FractionalIdealQuotientCharacters.eta_pow := eta_pow
 
 private lemma eta_map_finprod (f : IsDedekindDomain.HeightOneSpectrum (𝓞 F) → Ideal (𝓞 F))
     (hf : Function.HasFiniteMulSupport f) :
     η (∏ᶠ v, f v) = ∏ᶠ v, η (f v) := by
   classical
-  have hfF : (Function.mulSupport f).Finite := hf
+  have hfF := hf
   have hsub : Function.mulSupport (fun v => η (f v)) ⊆ hfF.toFinset := by
     intro v hv
     rw [Function.mem_mulSupport] at hv
@@ -154,10 +147,18 @@ private lemma eta_map_finprod (f : IsDedekindDomain.HeightOneSpectrum (𝓞 F) �
     intro hfv
     exact hv (by rw [hfv, Ideal.one_eq_top, eta_top F 𝔪 η])
   rw [finprod_eq_prod f hfF,
-    finprod_eq_prod_of_mulSupport_subset (fun v => η (f v)) (s := hfF.toFinset) hsub]
-  exact eta_prod_finset F 𝔪 η hfF.toFinset f
+    finprod_eq_prod_of_mulSupport_subset (fun v => η (f v)) hsub]
+  classical
+  induction hfF.toFinset using Finset.induction_on with
+  | empty => simp [Ideal.one_eq_top, eta_top F 𝔪 η]
+  | insert a hfF.toFinset ha ih =>
+      rw [Finset.prod_insert ha, Finset.prod_insert ha,
+        show η (f a * ∏ v ∈ hfF.toFinset, f v) = η (f a) * η (∏ v ∈ hfF.toFinset, f v) from η.map_mul' _ _, ih]
 
-private lemma eta_eq_finprod_count (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
+variable (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
+
+include hI in
+private lemma eta_eq_finprod_count :
     η I = ∏ᶠ v, (η v.asIdeal : ℂ)
       ^ (FractionalIdeal.count F v (I : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)) := by
   have hI0 : I ≠ 0 := by rw [Ideal.zero_eq_bot]; exact hI
@@ -170,7 +171,8 @@ private lemma eta_eq_finprod_count (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
       eta_pow F 𝔪 η v.asIdeal _]
   rw [← zpow_natCast, ← FractionalIdeal.count_coe F v hI0]
 
-private lemma coprime_of_count_ne_zero (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
+include hI in
+private lemma coprime_of_count_ne_zero
     (hcop : I ⊔ 𝔪 = ⊤) (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
     (hv : FractionalIdeal.count F v (I : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ≠ 0) :
     v.asIdeal ⊔ 𝔪 = ⊤ := by
@@ -183,21 +185,17 @@ private lemma coprime_of_count_ne_zero (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
     have hz : ((Associates.mk v.asIdeal).count (Associates.mk I).factors : ℤ) = 0 := by simp [h]
     rw [← FractionalIdeal.count_coe F v hI0] at hz
     exact hv hz
-  have hle : I ≤ v.asIdeal := (Ideal.dvd_iff_le.mp hdv)
-  have hmax : v.asIdeal.IsMaximal := v.isPrime.isMaximal v.ne_bot
-  have heq : v.asIdeal = v.asIdeal ⊔ 𝔪 := hmax.eq_of_le hne le_sup_left
-  have hmle : 𝔪 ≤ v.asIdeal := heq.symm ▸ le_sup_right
   exact v.isPrime.ne_top (le_antisymm le_top (by
     rw [← hcop]
-    exact sup_le hle hmle))
+    exact sup_le ((Ideal.dvd_iff_le.mp hdv)) (((v.isPrime.isMaximal v.ne_bot).eq_of_le hne le_sup_left).symm ▸ le_sup_right)))
 
-private lemma totalChar_integralUnit (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
+private lemma totalChar_integralUnit
     (hcop : I ⊔ 𝔪 = ⊤) :
     (totalChar F 𝔪 η (integralUnit F I hI) : ℂ) = η I := by
   rw [totalChar_apply F 𝔪 η (integralUnit F I hI)]
   have hcv : ∀ v : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
       ClassFieldTheory.NumberFieldFractionalIdealGroup.countVector (integralUnit F I hI) v =
-      FractionalIdeal.count F v (I : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) := by
+      FractionalIdeal.count F v I := by
     intro v
     rw [ClassFieldTheory.NumberFieldFractionalIdealGroup.countVector_apply]
     rfl
@@ -205,12 +203,12 @@ private lemma totalChar_integralUnit (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
       primeVal F 𝔪 η v ^
           (ClassFieldTheory.NumberFieldFractionalIdealGroup.countVector (integralUnit F I hI) v) =
       (η v.asIdeal : ℂ)
-        ^ (FractionalIdeal.count F v (I : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)) := by
+        ^ (FractionalIdeal.count F v I) := by
     intro v
     rw [hcv v]
     by_cases h : v.asIdeal ⊔ 𝔪 = ⊤
     · rw [primeVal_eq_eta F 𝔪 η v h]
-    · have hz : FractionalIdeal.count F v (I : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) = 0 := by
+    · have hz : FractionalIdeal.count F v I = 0 := by
         by_contra hc
         exact h (coprime_of_count_ne_zero F 𝔪 I hI hcop v hc)
       rw [hz, zpow_zero, zpow_zero]
@@ -219,33 +217,26 @@ private lemma totalChar_integralUnit (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
 
 end Construction
 
-theorem exists_fractionalCharacter
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪) :
+variable (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
+
+theorem exists_fractionalCharacter :
     ∃ χ : ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus F 𝔪 h𝔪) →* ℂˣ,
       ∀ (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ 𝔪 = ⊤),
         (χ (integralPrimeTo F 𝔪 h𝔪 I hI hcop) : ℂ) = η I := by
   refine ⟨subgroupChar F 𝔪 η h𝔪, ?_⟩
   intro I hI hcop
-  change (totalChar F 𝔪 η (integralUnit F I hI) : ℂ) = η I
   exact totalChar_integralUnit F 𝔪 η I hI hcop
 
-def fractionalCharacter
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪) :
+def fractionalCharacter :
     ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus F 𝔪 h𝔪) →* ℂˣ :=
   (exists_fractionalCharacter F 𝔪 h𝔪 η).choose
 
 @[simp] theorem fractionalCharacter_integral
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ 𝔪 = ⊤) :
     (fractionalCharacter F 𝔪 h𝔪 η (integralPrimeTo F 𝔪 h𝔪 I hI hcop) : ℂ) = η I :=
   (exists_fractionalCharacter F 𝔪 h𝔪 η).choose_spec I hI hcop
 
 theorem fractionalCharacter_unique
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
     (χ : ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus F 𝔪 h𝔪) →* ℂˣ)
     (hχ : ∀ (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ 𝔪 = ⊤),
       (χ (integralPrimeTo F 𝔪 h𝔪 I hI hcop) : ℂ) = η I) :
@@ -254,8 +245,6 @@ theorem fractionalCharacter_unique
     (fun I hI hcop => by rw [hχ I hI hcop, fractionalCharacter_integral F 𝔪 h𝔪 η I hI hcop])
 
 theorem fractionalCharacter_quotient
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
     (A B : Ideal (𝓞 F)) (hA : A ≠ ⊥) (hB : B ≠ ⊥)
     (hcA : A ⊔ 𝔪 = ⊤) (hcB : B ⊔ 𝔪 = ⊤) :
     (fractionalCharacter F 𝔪 h𝔪 η

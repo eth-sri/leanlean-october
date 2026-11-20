@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 universe u
@@ -46,20 +43,20 @@ variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
+section
+
+variable (D : DegreeData G) (A : Rep ℤ G) [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
+    [TotallyDisconnectedSpace G] (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+    (hLK : L.toSubgroup ≤ K.field.toSubgroup) [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+    (σ : D.FrobeniusElements K L hLK) (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
+    (hq : q * σ.1 = σ.1 * q)
+
 /-- The action on a Frobenius fixed field induced by an element commuting
 with its defining generator. -/
-noncomputable def frobeniusFixedFieldAction (D : DegreeData G) (A : Rep ℤ G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
-    (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hq : q * σ.1 = σ.1 * q) :
+noncomputable def frobeniusFixedFieldAction :
     ambientFixedAddSubgroup A (D.frobeniusFixedField K L hLK σ) →+
       ambientFixedAddSubgroup A (D.frobeniusFixedField K L hLK σ) := by
-  let k : K.field.toSubgroup := Quotient.out q
+  let k := Quotient.out q
   let hstable :
       conjugateClosedSubgroup (D.frobeniusFixedField K L hLK σ) k.1⁻¹ =
         D.frobeniusFixedField K L hLK σ :=
@@ -67,18 +64,16 @@ noncomputable def frobeniusFixedFieldAction (D : DegreeData G) (A : Rep ℤ G)
   exact
     { toFun := fun a => ⟨A.ρ k.1 a.1, by
         intro t
-        have htConj : t.1 ∈ conjugateClosedSubgroup
-            (D.frobeniusFixedField K L hLK σ) k.1⁻¹ := by
-          rw [hstable]
-          exact t.2
         have hcMem : k.1⁻¹ * t.1 * k.1 ∈
             D.frobeniusFixedField K L hLK σ := by
           simpa using (conjugateClosedSubgroup_mem
-            (D.frobeniusFixedField K L hLK σ) k.1⁻¹ t.1).mp htConj
+            (D.frobeniusFixedField K L hLK σ) k.1⁻¹ t.1).mp (by
+              rw [hstable]
+              exact t.2)
         let c : (D.frobeniusFixedField K L hLK σ).toSubgroup :=
           ⟨k.1⁻¹ * t.1 * k.1, hcMem⟩
         calc
-          A.ρ t.1 (A.ρ k.1 a.1) = A.ρ (t.1 * k.1) a.1 := by
+          _ = A.ρ (t.1 * k.1) a.1 := by
             rw [map_mul]
             rfl
           _ = A.ρ (k.1 * c.1) a.1 := by simp [c, mul_assoc]
@@ -92,43 +87,22 @@ noncomputable def frobeniusFixedFieldAction (D : DegreeData G) (A : Rep ℤ G)
 
 /-- The fixed-field action has the expected ambient automorphism after coercion. -/
 @[simp]
-theorem frobeniusFixedFieldAction_coe (D : DegreeData G) (A : Rep ℤ G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
-    (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hq : q * σ.1 = σ.1 * q)
+theorem frobeniusFixedFieldAction_coe
     (a : ambientFixedAddSubgroup A (D.frobeniusFixedField K L hLK σ)) :
     ((D.frobeniusFixedFieldAction A K L hLK σ q hq a :
       ambientFixedAddSubgroup A (D.frobeniusFixedField K L hLK σ)) : A.V) =
-      A.ρ (Quotient.out q).1 a.1 := by
-  rfl
+      A.ρ (Quotient.out q).1 a.1 := rfl
 
 /-- On a quotient representative, the fixed-field action coerces to the represented action. -/
-theorem frobeniusFixedFieldAction_coe_of_mk (D : DegreeData G) (A : Rep ℤ G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
-    (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hq : q * σ.1 = σ.1 * q)
+theorem frobeniusFixedFieldAction_coe_of_mk
     (k : K.field.toSubgroup) (hkq : QuotientGroup.mk k = q)
     (a : ambientFixedAddSubgroup A (D.frobeniusFixedField K L hLK σ)) :
     ((D.frobeniusFixedFieldAction A K L hLK σ q hq a :
       ambientFixedAddSubgroup A (D.frobeniusFixedField K L hLK σ)) : A.V) =
       A.ρ k.1 a.1 := by
-  let t : K.field.toSubgroup := Quotient.out q
-  have htq :
-      (QuotientGroup.mk t :
-        K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) = q :=
-    Quotient.out_eq' q
-  have hrel : t⁻¹ * k ∈ D.extensionInertiaWithin K.field L hLK :=
-    QuotientGroup.eq.mp (htq.trans hkq.symm)
+  let t := Quotient.out q
+  have hrel :=
+    QuotientGroup.eq.mp ((Quotient.out_eq' q).trans hkq.symm)
   have hrField : (t⁻¹ * k).1 ∈
       (D.frobeniusFixedField K L hLK σ).toSubgroup := by
     let rI : (D.fieldInertia L).toSubgroup :=
@@ -146,15 +120,6 @@ theorem frobeniusFixedFieldAction_coe_of_mk (D : DegreeData G) (A : Rep ℤ G)
 
 /-- The fixed-field action coincides with the conjugation-stable action. -/
 theorem frobeniusFixedFieldAction_eq_conjugateStableAction
-    (D : DegreeData G) (A : Rep ℤ G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
-    (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hq : q * σ.1 = σ.1 * q)
     (a : ambientFixedAddSubgroup A (D.frobeniusFixedField K L hLK σ)) :
     let k : K.field.toSubgroup := Quotient.out q
     let hstable : conjugateClosedSubgroup
@@ -164,10 +129,11 @@ theorem frobeniusFixedFieldAction_eq_conjugateStableAction
     D.frobeniusFixedFieldAction A K L hLK σ q hq a =
       conjugateStableAction A (D.frobeniusFixedField K L hLK σ)
         k.1⁻¹ hstable a := by
-  dsimp only
   apply Subtype.ext
   rw [D.frobeniusFixedFieldAction_coe, conjugateStableAction_coe]
   simp
+
+end
 
 /-- Relative norm in a power-fixed-field tower is equivariant for every
 quotient element commuting with both defining powers. -/
@@ -194,11 +160,6 @@ theorem relativeNorm_frobeniusFixedFieldAction (D : DegreeData G) (A : Rep ℤ G
       D.frobeniusFixedFieldAction A K L hLK σ q hq
         (relativeNorm A (D.frobeniusFixedField K L hLK σ)
           (D.frobeniusFixedField K L hLK σ') hTS a) := by
-  let k : K.field.toSubgroup := Quotient.out q
-  let hSstable := D.conjugate_frobeniusFixedField_eq_of_commutes
-    K L hLK σ q hq
-  let hTstable := D.conjugate_frobeniusFixedField_eq_of_commutes
-    K L hLK σ' q hq'
   rw [D.frobeniusFixedFieldAction_eq_conjugateStableAction
     A K L hLK σ' q hq' a]
   rw [relativeNorm_conjugateStableAction]
@@ -228,12 +189,9 @@ theorem frobeniusFixedFieldAction_inclusion (D : DegreeData G) (A : Rep ℤ G)
           (D.fieldInertia_le_frobeniusFixedField K L hLK σ) a) := by
   apply Subtype.ext
   refine (D.frobeniusFixedFieldAction_coe A K L hLK σ q hq a).trans ?_
-  let k : K.field.toSubgroup := Quotient.out q
-  have hkq : (QuotientGroup.mk k :
-      K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) = q :=
-    Quotient.out_eq' q
+  let k := Quotient.out q
   calc
-    A.ρ (Quotient.out q).1 a.1 = A.ρ k.1 a.1 := rfl
+    _ = A.ρ k.1 a.1 := rfl
     _ = (D.frobeniusQuotientAction A K.field L hLK (QuotientGroup.mk k)
         (fixedFieldInclusion A (D.frobeniusFixedField K L hLK σ)
           (D.maximalUnramifiedField L)
@@ -242,7 +200,7 @@ theorem frobeniusFixedFieldAction_inclusion (D : DegreeData G) (A : Rep ℤ G)
       (D.frobeniusQuotientAction A K.field L hLK z
         (fixedFieldInclusion A (D.frobeniusFixedField K L hLK σ)
           (D.maximalUnramifiedField L)
-          (D.fieldInertia_le_frobeniusFixedField K L hLK σ) a)).1) hkq
+          (D.fieldInertia_le_frobeniusFixedField K L hLK σ) a)).1) (Quotient.out_eq' q)
 
 /-- A Frobenius power sum commutes with the relative norm in a fixed-field
 tower whenever the quotient element stabilizes both fields. -/

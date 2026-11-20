@@ -18,17 +18,17 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualAveragedEigentest
 open KPContSectorCoveredQuotientVocabulary KPContSectorSmoothFramesSupport
 open ResidualSphericalGeometry ResidualHilbertCenters
-open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison renaming K_U_compact → K_U_compact
-open _root_.DedekindZetaZeroFree renaming canonicalRealization → canonicalRealization
+open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison (K_U_compact)
+open _root_.DedekindZetaZeroFree (canonicalRealization)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1800000
 set_option synthInstance.maxHeartbeats 100000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "V" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U
 local notation "Q" => KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
@@ -59,7 +59,6 @@ theorem exists_averaged_eigentest (f : KPSmoothActualFlowData.X F ζ hζ → ℂ
     (f ∘ Q) hf hr hc
   have hp (g) : originalScalar F ζ hζ V R P H Z (Q g) =
       ResidualRawAverage.average F ζ hζ (K_U F ζ hζ V) ν (f ∘ Q) g := hZ g
-  have hcont : Continuous f := continuous_coinduced_dom.mpr hf.1
   have hscalar : originalScalar F ζ hζ V R P H Z =
       ResidualQuotientAverage.average F ζ hζ (K_U F ζ hζ V) ν f := by
     funext x
@@ -68,7 +67,7 @@ theorem exists_averaged_eigentest (f : KPSmoothActualFlowData.X F ζ hζ → ℂ
   have hZ2 : MemLp (originalScalar F ζ hζ V R P H Z) 2 R.quotientHaar := by
     rw [hscalar]
     exact ResidualQuotientAverage.average_memLp F ζ hζ (K_U F ζ hζ V)
-      (K_U_compact F ζ hζ V) ν R f hcont h2
+      (K_U_compact F ζ hζ V) ν R f (continuous_coinduced_dom.mpr hf.1) h2
   have hlift : originalScalar F ζ hζ V R P H Z ∘ Q =
       ResidualRawAverage.average F ζ hζ (K_U F ζ hζ V) ν (f ∘ Q) := funext hp
   have hZe (g) : KPMsGreenFlux.casimir F ζ hζ
@@ -76,26 +75,21 @@ theorem exists_averaged_eigentest (f : KPSmoothActualFlowData.X F ζ hζ → ℂ
     rw [hlift,hp]
     exact ResidualAverageEigen.average_native_eigen F ζ hζ (K_U F ζ hζ V)
       (K_U_compact F ζ hζ V) ν (f ∘ Q) hf a he g
-  have hall := spherical_native_eigen_all_derivatives F ζ hζ C R P H U Z hZ2 a hZe
-  have hg := ResidualGradientL2.squareFinite_of_first_derivatives F ζ hζ V R P H Z
-    (fun b => hall [b])
-  have h3 := ResidualSphericalThreeL2.threeL2_of_native F ζ hζ V R P H Z a hZ2 hg hZe
   obtain ⟨z,hrep,hgraph⟩ := ResidualAverageDomain.graph_eigen_of_threeL2
-    F ζ hζ V R P H canonicalRealization Z a h3
+    F ζ hζ V R P H canonicalRealization Z a (ResidualSphericalThreeL2.threeL2_of_native F ζ hζ V R P H Z a hZ2 (ResidualGradientL2.squareFinite_of_first_derivatives F ζ hζ V R P H Z
+      (fun b => (spherical_native_eigen_all_derivatives F ζ hζ C R P H U Z hZ2 a hZe) [b])) hZe)
     (ResidualSectionMetric.section_eigen_of_native F ζ hζ V R P H Z a hZe)
   refine ⟨ν,hν,hleft,Z,z,hrep,hp,?_,hgraph⟩
   apply ResidualCuspBoundary.allCuspMeanZero_of_original_upper_zero
   let A := H.atlas V
   let i : Fin A.componentCount := ⟨0,A.positive_componentCount⟩
-  let j : KPMsGreenFlux.Cusps A := ⟨i,⟨0,(A.cuspAtlas i).positive_cuspCount⟩⟩
-  have havg := ResidualAverageCusp.upperZero_average A j (K_U F ζ hζ V)
-    (K_U_compact F ζ hζ V) ν (f ∘ Q) hf.1 hr hz
   intro g
   change (∫ q : KPAdditiveQuotient F, (originalScalar F ζ hζ V R P H Z ∘ Q)
     (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out q)*g)
     ∂(KPWildKernelUpperBound.quotientHaar F)) = 0
   rw [hlift]
-  exact havg g
+  exact (ResidualAverageCusp.upperZero_average A (⟨i,⟨0,(A.cuspAtlas i).positive_cuspCount⟩⟩) (K_U F ζ hζ V)
+    (K_U_compact F ζ hζ V) ν (f ∘ Q) hf.1 hr hz) g
 end DedekindZetaZeroFree.FourierContinuation.ResidualAveragedEigentest
 
 end

@@ -13,8 +13,8 @@ open DedekindZetaZeroFree NumberField MeasureTheory DedekindZetaZeroFree.Quantit
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem rect_cauchy (f : ℂ → ℂ) (a b T : ℝ)
     (hf : DifferentiableOn ℂ f (Set.uIcc a b ×ℂ Set.uIcc (-T) T)) :
@@ -28,7 +28,7 @@ theorem rect_cauchy (f : ℂ → ℂ) (a b T : ℝ)
 
 theorem row_pointwise_integrable (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) :
-    ∃ U₀ : ℝ, 2 ≤ U₀ ∧ ∀ U : ℝ, U₀ ≤ U → ∀ u : D.Row, u.toFrequency.u ≠ 1 →
+    ∃ U₀ : ℝ, ∀ U : ℝ, U₀ ≤ U → ∀ u : D.Row, u.toFrequency.u ≠ 1 →
       U ≤ D.q u → D.q u < 2 * U → u ∉ exceptionalSet D ρ U → ∀ Z : ℝ, 0 < Z →
         ∀ ξ : ℂ, Scales.goodLine ≤ ξ.re → ξ.re ≤ Scales.rightLine →
           (|ξ.im| ≤ U ^ ρ ∨ ξ.re = Scales.rightLine) →
@@ -40,7 +40,7 @@ theorem row_pointwise_integrable (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : Convex
                 (fun z => K D u ξ ((Scales.wLine : ℂ) + (τ : ℂ) * Complex.I) z Z)) := by
   obtain ⟨C1, hC1, U1, hU1, h1⟩ := kernel_majorant_rect D A_F ρ hA hconv hρ 1 one_pos
   obtain ⟨C2, hC2, h2⟩ := kernel_majorant_right D A_F hconv 1 one_pos
-  refine ⟨max U1 2, le_max_right _ _, ?_⟩
+  refine ⟨max U1 2, ?_⟩
   intro U hU u hu hq1 hq2 hex Z hZ ξ hxg hx1 hcase
   have hUa : U1 ≤ U := le_trans (le_max_left _ _) hU
   have hUb : 2 ≤ U := le_trans (le_max_right _ _) hU
@@ -105,9 +105,7 @@ theorem row_pointwise_integrable (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : Convex
 theorem row_right_integrable (A_F : ℝ) (hconv : ConvexityExponent D A_F) :
     ∀ U : ℝ, 2 ≤ U → ∀ u : D.Row, u.toFrequency.u ≠ 1 → U ≤ D.q u → D.q u < 2 * U →
       ∀ Z : ℝ, 0 < Z → Integrable (fun t : ℝ =>
-        wzIntegral D u ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I) Scales.wLine Scales.zLine Z) := by
-  intro U hU u hu hq1 hq2 Z hZ
-  exact wzIntegral_integrable_right D A_F hconv U hU u hu
+        wzIntegral D u ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I) Scales.wLine Scales.zLine Z) := fun U hU u hu hq1 hq2 Z hZ => wzIntegral_integrable_right D A_F hconv U hU u hu
     (RowAnalyticContinuation.exists_entire_numerator D u hu) hq1 hq2 Z hZ
 
 theorem rect_decomp (f : ℂ → ℂ) (a b T : ℝ) (hab : a ≤ b) (hT : 0 ≤ T)
@@ -141,8 +139,7 @@ theorem rect_decomp (f : ℂ → ℂ) (a b T : ℝ) (hab : a ≤ b) (hT : 0 ≤ 
   have hIcc : ∀ g : ℝ → ℂ, ∫ t in Set.Icc (-T) T, g t = ∫ t in (-T)..T, g t := by
     intro g
     rw [intervalIntegral.integral_of_le (by linarith), integral_Icc_eq_integral_Ioc]
-  have hI : Complex.I ≠ 0 := Complex.I_ne_zero
-  have hpi : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
+  have hI := Complex.I_ne_zero
   rw [hsplit, hIcc, hIcc, intervalIntegral.integral_symm a b]
   simp only [one_mul, neg_mul, Complex.ofReal_neg] at hC ⊢
   have hRL : Complex.I * (∫ t in (-T)..T, f ((b : ℂ) + (t : ℂ) * Complex.I)) =
@@ -161,7 +158,7 @@ theorem rect_decomp (f : ℂ → ℂ) (a b T : ℝ) (hab : a ≤ b) (hT : 0 ≤ 
 
 theorem row_rectangle_deformation_decomp (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) :
-    ∃ U₀ : ℝ, 2 ≤ U₀ ∧ ∀ U : ℝ, U₀ ≤ U → ∀ u : D.Row, u.toFrequency.u ≠ 1 →
+    ∃ U₀ : ℝ, ∀ U : ℝ, U₀ ≤ U → ∀ u : D.Row, u.toFrequency.u ≠ 1 →
       U ≤ D.q u → D.q u < 2 * U → u ∉ exceptionalSet D ρ U → ∀ Z : ℝ, 0 < Z →
         comparisonVerticalIntegral Scales.rightLine
             (fun ξ => wzIntegral D u ξ Scales.wLine Scales.zLine Z) =
@@ -179,7 +176,7 @@ theorem row_rectangle_deformation_decomp (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv 
             (2 * (Real.pi : ℂ))⁻¹ *
               (∫ t in {t : ℝ | U ^ ρ < |t|},
                 wzIntegral D u ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I) Scales.wLine Scales.zLine Z) := by
-  refine ⟨2, le_rfl, ?_⟩
+  refine ⟨2, ?_⟩
   intro U hU u hu hq1 hq2 hex Z hZ
   have hU0 : 0 ≤ U := by linarith
   have hT : 0 ≤ U ^ ρ := Real.rpow_nonneg hU0 ρ

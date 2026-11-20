@@ -29,25 +29,13 @@ theorem logLocalized_smooth_support (R : ℝ) (χ ψ K : ℝ → ℂ)
     ContDiff ℝ ∞ (logLocalized χ ψ K scale) ∧
     Function.support (logLocalized χ ψ K scale) ⊆
       Set.Icc (-R) R ×ˢ Set.Icc (-R) R := by
-  have harg : ContDiff ℝ ∞ (fun p : ℝ × ℝ => scale * Real.exp ((p.1 + p.2) / 2)) := by
-    fun_prop
-  have hKcomp : ContDiff ℝ ∞
-      (fun p : ℝ × ℝ => K (scale * Real.exp ((p.1 + p.2) / 2))) :=
-    hK.comp_contDiff harg (fun p => mul_pos hscale (Real.exp_pos _))
-  have hχ1 : ContDiff ℝ ∞ (fun p : ℝ × ℝ => χ p.1) := hχ.comp contDiff_fst
-  have hψ2 : ContDiff ℝ ∞ (fun p : ℝ × ℝ => ψ p.2) := hψ.comp contDiff_snd
   constructor
-  · change ContDiff ℝ ∞ (fun p : ℝ × ℝ =>
-        χ p.1 * ψ p.2 * K (scale * Real.exp ((p.1 + p.2) / 2)))
-    exact hχ1.mul hψ2 |>.mul hKcomp
+  · exact (hχ.comp contDiff_fst).mul (hψ.comp contDiff_snd) |>.mul (hK.comp_contDiff (by
+      fun_prop) (fun p => mul_pos hscale (Real.exp_pos _)))
   · intro p hp
-    have hχne : χ p.1 ≠ 0 := by
-      intro h
-      exact hp (by simp [logLocalized, h])
-    have hψne : ψ p.2 ≠ 0 := by
-      intro h
-      exact hp (by simp [logLocalized, h])
-    exact ⟨hsχ (Function.mem_support.mpr hχne), hsψ (Function.mem_support.mpr hψne)⟩
+    refine ⟨hsχ (Function.mem_support.mpr ?_), hsψ (Function.mem_support.mpr ?_)⟩
+    · exact fun h => hp (by simp [logLocalized, h])
+    · exact fun h => hp (by simp [logLocalized, h])
 
 end DedekindZetaZeroFree.LargeSieve.KernelSeparation
 
@@ -66,8 +54,9 @@ theorem boxJet_le_nine_mul (R : ℝ) (hR : 0 ≤ R) (H : ℝ × ℝ → ℂ)
     (hbound : ∀ i ≤ 2, ∀ j ≤ 2, ∀ x ∈ Set.Icc (-R) R, ∀ y ∈ Set.Icc (-R) R,
       ‖DedekindZetaZeroFree.LargeSieve.Vendor.BoxFourier.mixedDeriv i j H x y‖ ≤ L) :
     DedekindZetaZeroFree.LargeSieve.Vendor.BoxFourier.boxJet R H ≤ 9 * L := by
+  let Icc₀ := Set.Icc (-R) R
   have hterm : ∀ i ∈ Finset.range 3, ∀ j ∈ Finset.range 3,
-      sSup {v : ℝ | ∃ x ∈ Set.Icc (-R) R, ∃ y ∈ Set.Icc (-R) R,
+      sSup {v : ℝ | ∃ x ∈ Icc₀, ∃ y ∈ Icc₀,
         v = ‖DedekindZetaZeroFree.LargeSieve.Vendor.BoxFourier.mixedDeriv i j H x y‖} ≤ L := by
     intro i hi j hj
     refine csSup_le ?_ ?_
@@ -78,7 +67,7 @@ theorem boxJet_le_nine_mul (R : ℝ) (hR : 0 ≤ R) (H : ℝ × ℝ → ℂ)
       j (by have := Finset.mem_range.mp hj; omega) x hx y hy
   rw [DedekindZetaZeroFree.LargeSieve.Vendor.BoxFourier.boxJet]
   calc ∑ i ∈ Finset.range 3, ∑ j ∈ Finset.range 3,
-        sSup {v : ℝ | ∃ x ∈ Set.Icc (-R) R, ∃ y ∈ Set.Icc (-R) R,
+        sSup {v : ℝ | ∃ x ∈ Icc₀, ∃ y ∈ Icc₀,
           v = ‖DedekindZetaZeroFree.LargeSieve.Vendor.BoxFourier.mixedDeriv i j H x y‖}
       ≤ ∑ _i ∈ Finset.range 3, ∑ _j ∈ Finset.range 3, L := by
         apply Finset.sum_le_sum
@@ -107,25 +96,27 @@ open scoped ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve.KernelSeparation
 
-private lemma partial_smooth (H : ℝ × ℝ → ℂ) (hH : ContDiff ℝ ∞ H) (n : ℕ) :
+section
+
+variable (H : ℝ × ℝ → ℂ) (hH : ContDiff ℝ ∞ H)
+
+include hH in
+private lemma partial_smooth (n : ℕ) :
     ContDiff ℝ ∞ (fun p : ℝ × ℝ => iteratedDeriv n (fun t => H (p.1,t)) p.2) := by
   induction n with
-  | zero => simpa using hH
+  | zero => exact hH
   | succ n ih =>
     have hh : ContDiff ℝ ∞ (Function.uncurry (fun (p : ℝ × ℝ) (t : ℝ) =>
-        iteratedDeriv n (fun u => H (p.1,u)) t)) := by
-      exact ih.comp (contDiff_fst.fst.prodMk contDiff_snd)
-    have hd := hh.fderiv_apply (g := fun p : ℝ × ℝ => p.2)
-      (k := fun _ => (1 : ℝ)) contDiff_snd contDiff_const (by simp : (∞ : ℕ∞ω) + 1 ≤ ∞)
-    simpa only [iteratedDeriv_succ, deriv] using hd
+        iteratedDeriv n (fun u => H (p.1,u)) t)) := ih.comp (contDiff_fst.fst.prodMk contDiff_snd)
+    simpa only [iteratedDeriv_succ, deriv] using (hh.fderiv_apply
+      contDiff_snd contDiff_const (by simp : (∞ : ℕ∞ω) + 1 ≤ ∞))
 
-private lemma mixed_smooth (H : ℝ × ℝ → ℂ) (hH : ContDiff ℝ ∞ H) (i j : ℕ) :
+include hH in
+private lemma mixed_smooth (i j : ℕ) :
     Continuous (fun p : ℝ × ℝ => DedekindZetaZeroFree.LargeSieve.Vendor.LogLocalizedJets.mixed i j H p.1 p.2) := by
-  have hj := partial_smooth H hH j
-  have hs : ContDiff ℝ ∞ (fun p : ℝ × ℝ => iteratedDeriv j (fun t => H (p.2,t)) p.1) :=
-    hj.comp (contDiff_snd.prodMk contDiff_fst)
-  have hi := partial_smooth _ hs i
-  exact (hi.comp (contDiff_snd.prodMk contDiff_fst)).continuous
+  exact ((partial_smooth _ ((partial_smooth H hH j).comp (contDiff_snd.prodMk contDiff_fst)) i).comp (contDiff_snd.prodMk contDiff_fst)).continuous
+
+end
 
 theorem logLocalized_mixed_derivative_bound
     (R c : ℝ) (hR : 0 < R) (hc : 0 < c)
@@ -143,21 +134,17 @@ theorem logLocalized_mixed_derivative_bound
   intro K B hK hB hEuler scale hs i hi j hj x hx y hy
   let H := DedekindZetaZeroFree.LargeSieve.Vendor.LogLocalizedJets.localized χ ψ K scale
   have hH : ContDiff ℝ ∞ H := by
-    have hk : ContDiff ℝ ∞ (fun p : ℝ × ℝ =>
-        K (scale * Real.exp ((p.1 + p.2) / 2))) := by
-      apply hK.comp_contDiff
-      · fun_prop
-      · intro p; exact mul_pos hs (Real.exp_pos _)
-    exact (hχ.comp contDiff_fst).mul (hψ.comp contDiff_snd) |>.mul hk
-  let T := fun a b : ℕ => {z : ℝ | ∃ u ∈ Set.Icc (-R) R,
-      ∃ v ∈ Set.Icc (-R) R, z = ‖DedekindZetaZeroFree.LargeSieve.Vendor.LogLocalizedJets.mixed a b H u v‖}
+    refine (hχ.comp contDiff_fst).mul (hψ.comp contDiff_snd) |>.mul ?_
+    apply hK.comp_contDiff
+    · fun_prop
+    · intro p; exact mul_pos hs (Real.exp_pos _)
+  let Icc₀ := Set.Icc (-R) R
+  let T := fun a b : ℕ => {z : ℝ | ∃ u ∈ Icc₀,
+      ∃ v ∈ Icc₀, z = ‖DedekindZetaZeroFree.LargeSieve.Vendor.LogLocalizedJets.mixed a b H u v‖}
   have hbdd : BddAbove (T i j) := by
-    have hbox : IsCompact (Set.Icc (-R) R ×ˢ Set.Icc (-R) R) :=
-      isCompact_Icc.prod isCompact_Icc
-    have hcpt := hbox.image (mixed_smooth H hH i j).norm
     have heq : T i j = (fun p : ℝ × ℝ =>
         ‖DedekindZetaZeroFree.LargeSieve.Vendor.LogLocalizedJets.mixed i j H p.1 p.2‖) ''
-        (Set.Icc (-R) R ×ˢ Set.Icc (-R) R) := by
+        (Icc₀ ×ˢ Icc₀) := by
       ext z
       constructor
       · rintro ⟨u, hu, v, hv, rfl⟩
@@ -165,7 +152,7 @@ theorem logLocalized_mixed_derivative_bound
       · rintro ⟨⟨u,v⟩, ⟨hu,hv⟩, rfl⟩
         exact ⟨u,hu,v,hv,rfl⟩
     rw [heq]
-    exact hcpt.bddAbove
+    exact ((isCompact_Icc.prod isCompact_Icc).image (mixed_smooth H hH i j).norm).bddAbove
   have hnonneg : ∀ a b, 0 ≤ sSup (T a b) := by
     intro a b
     apply Real.sSup_nonneg
@@ -220,29 +207,28 @@ def boxJet (R : ℝ) (H : ℝ × ℝ → ℂ) : ℝ :=
 
  abbrev P := WithLp 2 (ℝ × ℝ)
  def f (H : ℝ × ℝ → ℂ) : P → ℂ := fun p => H p.ofLp
- def sm (H : ℝ × ℝ → ℂ) (hH : ContDiff ℝ ∞ H)
-    (hc : HasCompactSupport H) : 𝓢(P, ℂ) :=
+ section
+
+variable (H : ℝ × ℝ → ℂ) (hH : ContDiff ℝ ∞ H) (hc : HasCompactSupport H)
+
+def sm : 𝓢(P, ℂ) :=
   (hc.comp_homeomorph (WithLp.prodContinuousLinearEquiv 2 ℝ ℝ ℝ).toHomeomorph).toSchwartzMap
     (hH.comp (WithLp.prodContinuousLinearEquiv 2 ℝ ℝ ℝ).contDiff)
-private lemma ff (H : ℝ × ℝ → ℂ) (hH : ContDiff ℝ ∞ H)
-    (hc : HasCompactSupport H) : Integrable (𝓕 (f H)) := by
-  exact ((𝓕 (sm H hH hc) : 𝓢(P,ℂ))).integrable
+include hH hc in
+private lemma ff : Integrable (𝓕 (f H)) := ((𝓕 (sm H hH hc) : 𝓢(P,ℂ))).integrable
+
+end
 private lemma np (t x : ℝ) : ‖phase t x‖ = 1 := by
   rw [phase, Complex.norm_exp]
   simp
 private lemma kernel (p q : P) :
     Complex.exp (↑(-2 * Real.pi * inner ℝ p q) * Complex.I) =
-      phase (-q.ofLp.1) p.ofLp.1 * phase (-q.ofLp.2) p.ofLp.2 := by
-  simp only [phase, ← Complex.exp_add]
-  congr 1
-  simp only [WithLp.prod_inner_apply, Real.inner_apply]
-  push_cast
-  ring
+      phase (-q.ofLp.1) p.ofLp.1 * phase (-q.ofLp.2) p.ofLp.2 := by apply @DedekindZetaZeroFree.LargeSieve.Vendor.BoxFourier.BoxCoefficientBounds.kernel <;> assumption
 private lemma coef (H : ℝ × ℝ → ℂ) (hH : ContDiff ℝ ∞ H)
     (hc : HasCompactSupport H) (t s : ℝ) :
     coefficient H t s = 𝓕 (f H) ((WithLp.prodContinuousLinearEquiv 2 ℝ ℝ ℝ).symm (t,s)) := by
   let e := WithLp.prodContinuousLinearEquiv 2 ℝ ℝ ℝ
-  have he : MeasurePreserving (e : P → ℝ × ℝ) volume (volume.prod volume) :=
+  have he : MeasurePreserving e volume (volume.prod volume) :=
     WithLp.volume_preserving_ofLp ℝ ℝ
   have hi : Integrable (fun p : ℝ × ℝ => H p * phase (-t) p.1 * phase (-s) p.2)
       (volume.prod volume) := by
@@ -400,22 +386,22 @@ theorem logLocalized_uniform_fourier_bound
     R c hR hc χ ψ hχ hψ
   obtain ⟨F, hF, hfourier⟩ := fourierL1_le_boxJet R hR
   let C := max (9 * A) (F * (9 * A))
-  have hC : 0 < C := lt_of_lt_of_le (by positivity) (le_max_left _ _)
-  refine ⟨C, hC, ?_⟩
+  refine ⟨C, (lt_of_lt_of_le (by positivity) (le_max_left _ _)), ?_⟩
   intro K B hK hB hEuler scale hscale
   obtain ⟨hsmooth, hsupp⟩ := DedekindZetaZeroFree.LargeSieve.KernelSeparation.logLocalized_smooth_support
     R χ ψ K hχ hψ hsχ hsψ hK scale hscale
   change ContDiff ℝ ∞ (logLocalized χ ψ K scale) at hsmooth
   change Function.support (logLocalized χ ψ K scale) ⊆
     Set.Icc (-R) R ×ˢ Set.Icc (-R) R at hsupp
-  have hjet : boxJet R (logLocalized χ ψ K scale) ≤
+  let boxJet₀ := boxJet R (logLocalized χ ψ K scale)
+  have hjet : boxJet₀ ≤
       (9 * A) * B * Real.rpow scale (-c) := by
     have hj := DedekindZetaZeroFree.LargeSieve.KernelSeparation.boxJet_le_nine_mul R hR.le
       (DedekindZetaZeroFree.LargeSieve.KernelSeparation.logLocalized χ ψ K scale)
       (A * B * Real.rpow scale (-c))
       (mul_nonneg (mul_nonneg hA.le hB) (Real.rpow_nonneg hscale.le _))
       (hderiv K B hK hB hEuler scale hscale)
-    change boxJet R (logLocalized χ ψ K scale) ≤
+    change boxJet₀ ≤
       9 * (A * B * Real.rpow scale (-c)) at hj
     simpa only [mul_assoc] using hj
   have hnonneg : 0 ≤ B * Real.rpow scale (-c) :=
@@ -425,7 +411,7 @@ theorem logLocalized_uniform_fourier_bound
       simpa only [mul_assoc] using
         mul_le_mul_of_nonneg_right (le_max_left (9 * A) (F * (9 * A))) hnonneg)
   · calc
-      fourierL1 (logLocalized χ ψ K scale) ≤ F * boxJet R (logLocalized χ ψ K scale) :=
+      _ ≤ F * boxJet₀ :=
         hfourier _ hsmooth hsupp
       _ ≤ F * ((9 * A) * B * Real.rpow scale (-c)) :=
         mul_le_mul_of_nonneg_left hjet hF.le

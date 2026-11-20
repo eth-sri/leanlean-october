@@ -14,10 +14,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInduci
 open MomentSources TensorActionSource KPGlobalTorusFiniteStages
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann KPLocalGoodSphericalImage
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 
 theorem value_one_fixed (q : KPFinitePlace F)
     (f : plusLocal R (imageData R N P C) (Sum.inr q))
@@ -26,9 +26,7 @@ theorem value_one_fixed (q : KPFinitePlace F)
     f.val 1 ∈ fixedSubmodule (tau (C.polarization q))
       (compactTorus (C.canonical q).borel (C.canonical q).iwasawa) := by
   intro j
-  have hj : ((C.canonical q).borel.torus j.val :
-      KPLocalExceptionalConstruction.ActualCover F R.A.zeta12 R.A.primitive_zeta12 q) ∈
-      (C.canonical q).iwasawa.compact.toOpenSubgroup := j.property
+  have hj := j.property
   have hfix := congrArg (fun u : plusLocal R (imageData R N P C) (Sum.inr q) => u.val 1)
     (hf ⟨(C.canonical q).borel.torus j.val, hj⟩)
   have hcov := f.property.1 ((C.canonical q).borel.torus j.val) 1
@@ -52,7 +50,7 @@ theorem normalized_section (q : KPFinitePlace F) (hq : q ∉ C.exceptional) :
   obtain ⟨f, hf, _⟩ := normalized_plus_spherical_vector (C.canonical q).borel
     (C.polarization q) (C.canonical q).iwasawa (C.unramified q hq)
   exact ⟨f, hf.1,
-    (referenceGoodSpherical F R.A.zeta12 R.A.primitive_zeta12 P C q hq).2.2
+    (referenceGoodSpherical F R.A.zeta12 R.A.primitive_zeta12 P C q hq).2
       (f.val 1) (value_one_fixed R N P C q f hf.1) hf.2⟩
 
 def plusReference : ∀ p, plusLocal R (imageData R N P C) p
@@ -65,9 +63,7 @@ def plusReference : ∀ p, plusLocal R (imageData R N P C) p
   | Sum.inr q => if hq : q ∉ C.exceptional then (normalized_section R N P C q hq).choose else 0
 
 theorem finite_not_bad (q : KPFinitePlace F) (hq : Sum.inr q ∉ bad R P C) :
-    q ∉ C.exceptional := by
-  intro h
-  exact hq (PrincipalOfKP.ResidueCoreBridge.CanonicalBinding.finite_mem_badSet
+    q ∉ C.exceptional := fun h => hq (PrincipalOfKP.ResidueCoreBridge.CanonicalBinding.finite_mem_badSet
     F R.A.zeta12 R.A.primitive_zeta12 P C q h)
 
 theorem plusReference_one (q : KPFinitePlace F) (hq : Sum.inr q ∉ bad R P C) :
@@ -85,16 +81,10 @@ theorem plusReference_spherical (q : KPFinitePlace F)
       (KPLocalExceptionalConstruction.actualGoodCompactSplit F R.A.zeta12 R.A.primitive_zeta12
         q (tame R P C q hq) k) (plusReference R N P C (Sum.inr q)) =
       plusReference R N P C (Sum.inr q) := by
-  have hc := (C.actual_compact q (finite_not_bad R P C q hq)).choose_spec
-  have hk : KPLocalExceptionalConstruction.actualGoodCompactSplit F R.A.zeta12
-      R.A.primitive_zeta12 q (tame R P C q hq) k ∈
-      (C.canonical q).iwasawa.compact.toOpenSubgroup := by
-    change _ ∈ ((C.canonical q).iwasawa.compact.toOpenSubgroup :
-      Subgroup (KPLocalExceptionalConstruction.ActualCover F R.A.zeta12 R.A.primitive_zeta12 q))
-    rw [hc]
-    exact MonoidHom.mem_range.mpr ⟨k, rfl⟩
   rw [plusReference, dif_pos (finite_not_bad R P C q hq)]
-  exact (normalized_section R N P C q (finite_not_bad R P C q hq)).choose_spec.1 ⟨_, hk⟩
+  refine (normalized_section R N P C q (finite_not_bad R P C q hq)).choose_spec.1 ⟨_, ?_⟩
+  rw [((C.actual_compact q (finite_not_bad R P C q hq)).choose_spec)]
+  exact MonoidHom.mem_range.mpr ⟨k, rfl⟩
 
 end DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 

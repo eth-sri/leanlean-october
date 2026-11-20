@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Theta.Periods.WeylInvariantAverages
 
 public import DedekindZetaZeroFree.Theta.Unfolding.AdditiveFourierExtraction
 public import DedekindZetaZeroFree.Adeles.Quotients.RationalDilation
@@ -11,22 +12,13 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 lemma rationalLift_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
     KPLiteralRaw.rationalLift F R.A.zeta12 R.A.primitive_zeta12 (Matrix.ProjGenLinGroup.mk m) =
       KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
-        (KPAdelicCoverRestrictedProduct.rationalHom F R.A.zeta12 R.A.primitive_zeta12 m) := by
-  let n := Quotient.out (Matrix.ProjGenLinGroup.mk m)
-  have hn : Matrix.ProjGenLinGroup.mk n = Matrix.ProjGenLinGroup.mk m := Quotient.out_eq' _
-  obtain ⟨z, hz⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hn
-  let φ := (KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12).comp
-    (KPAdelicCoverRestrictedProduct.rationalHom F R.A.zeta12 R.A.primitive_zeta12)
-  have hs : φ (Matrix.GeneralLinearGroup.scalar (Fin 2) z) = 1 :=
-    KPRationalAdelicSplitting.rationalScalars_le_ker F R.A.zeta12 R.A.primitive_zeta12 ⟨z, rfl⟩
-  change φ n = φ m
-  rw [← hz, map_mul, hs, mul_one]
+        (KPAdelicCoverRestrictedProduct.rationalHom F R.A.zeta12 R.A.primitive_zeta12 m) := by apply @DedekindZetaZeroFree.DigitMasks.rationalLift_mk <;> assumption
 
 lemma theta_rational_root {Q : AdmissibleFlatSources R} (T : Realization R Q)
     (v : R.A.UnitQuotient) (a : F) (g : Group R) :
@@ -82,9 +74,6 @@ def rationalFrequencyValue {Q : AdmissibleFlatSources R} (T : Realization R Q)
 
 theorem rationalFrequencyValue_integrable_eq {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (a : Fˣ) (g : Group R) :
-    Integrable (fun q : KPAdditiveQuotient F => C.realization.theta v
-      (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g) *
-        star (adelicTraceCharacter F (algebraMap F (KPAdeles F) (a : F) * Quotient.out q) : ℂ)) C.sources.dq ∧
     rationalFrequencyValue R C.realization v a g =
       fourier R C.sources.dq (C.realization.theta v)
         (KPRationalAdelicSplitting.pglA F R.A.zeta12 R.A.primitive_zeta12
@@ -133,10 +122,7 @@ theorem rationalFrequencyValue_integrable_eq {N : TraceHaarTransport R} (C : Joi
   have h := hmp.integral_comp hme f
   change (∫ q, f (D q) ∂C.sources.dq) = _ at h
   simp_rw [htransform] at h
-  refine ⟨?_, h⟩
-  have hi := (hmp.integrable_comp_emb hme).mpr hint
-  change Integrable (fun q => f (D q)) C.sources.dq at hi
-  simpa only [htransform] using hi
+  refine h
 
 theorem rationalFrequencyValue_eq {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (a : Fˣ) (g : Group R) :
@@ -144,7 +130,7 @@ theorem rationalFrequencyValue_eq {N : TraceHaarTransport R} (C : JointUpperVani
       fourier R C.sources.dq (C.realization.theta v)
         (KPRationalAdelicSplitting.pglA F R.A.zeta12 R.A.primitive_zeta12
           (Units.map (algebraMap F (KPAdeles F)).toMonoidHom a) * g) :=
-  (rationalFrequencyValue_integrable_eq R C v a g).2
+  (rationalFrequencyValue_integrable_eq R C v a g)
 
 lemma orbitFrequencyValue_eq_fourier {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (i : ThetaExpansion.SignedExpansion.OrbitIndex R) (g : Group R) :

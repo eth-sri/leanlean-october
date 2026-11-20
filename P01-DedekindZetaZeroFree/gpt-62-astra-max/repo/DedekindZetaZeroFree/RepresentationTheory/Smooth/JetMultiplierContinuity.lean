@@ -12,44 +12,46 @@ open scoped BigOperators NNReal
 open KPGlobalTorusFunctionData
 
 variable {T V : Type*} [Group T] [NormedAddCommGroup V] [NormedSpace ℝ V]
-variable (H : Subgroup T) (χ : H →* ℂˣ) (chart : V → T) (U : Set V)
+    (H : Subgroup T) (χ : H →* ℂˣ) (chart : V → T) (U : Set V)
   (hU : IsOpen U) (J : Subgroup T)
 
 set_option maxHeartbeats 800000
 include hU
 
-theorem jet_image_bddAbove (g : T) (n : ℕ) (K : JetCompact U)
-    (f : SmoothLevel H χ chart U J) :
+section
+
+variable (g : T) (n : ℕ) (K : JetCompact U) (f : SmoothLevel H χ chart U J)
+
+theorem jet_image_bddAbove :
     BddAbove ((fun z => ‖iteratedFDerivWithin ℝ n
       (fun y => f.val.val (chart y * g)) U z‖) '' K.set) := by
-  have hc := (f.property.1 g).continuousOn_iteratedFDerivWithin
-    (m := n) (by simp) hU.uniqueDiffOn
-  exact (K.compact.image_of_continuousOn (hc.norm.mono K.inside)).bddAbove
+  exact (K.compact.image_of_continuousOn (((f.property.1 g).continuousOn_iteratedFDerivWithin
+    (by simp) hU.uniqueDiffOn).norm.mono K.inside)).bddAbove
 
-theorem norm_jet_le (g : T) (n : ℕ) (K : JetCompact U)
-    (f : SmoothLevel H χ chart U J) (z : V) (hz : z ∈ K.set) :
+theorem norm_jet_le (z : V) (hz : z ∈ K.set) :
     ‖iteratedFDerivWithin ℝ n (fun y => f.val.val (chart y * g)) U z‖ ≤
-      jetBound H χ chart U J g n K f := by
-  exact le_csSup (jet_image_bddAbove H χ chart U hU J g n K f) ⟨z, hz, rfl⟩
+      jetBound H χ chart U J g n K f := le_csSup (jet_image_bddAbove H χ chart U hU J g n K f) ⟨z, hz, rfl⟩
+
+end
 
 theorem multiplier_jet_bound (a : V → ℂ) (ha : ContDiffOn ℝ (⊤ : ℕ∞) a U)
     (n : ℕ) (K : JetCompact U) :
     ∃ C : ℝ≥0, ∀ z ∈ K.set, ‖iteratedFDerivWithin ℝ n a U z‖ ≤ C := by
   obtain ⟨C, hC⟩ := K.compact.exists_bound_of_continuousOn
-    ((ha.continuousOn_iteratedFDerivWithin (m := n) (by simp) hU.uniqueDiffOn).mono K.inside)
+    ((ha.continuousOn_iteratedFDerivWithin (by simp) hU.uniqueDiffOn).mono K.inside)
   exact ⟨⟨max C 0, le_max_right _ _⟩, fun z hz => (hC z hz).trans (le_max_left _ _)⟩
 
-theorem linearMap_jet_bound (ψ : H →* ℂˣ)
-    (A : SmoothLevel H χ chart U J →ₗ[ℂ] SmoothLevel H ψ chart U J)
-    (a : T → ℂ)
+variable (ψ : H →* ℂˣ) (A : SmoothLevel H χ chart U J →ₗ[ℂ] SmoothLevel H ψ chart U J) (a : T → ℂ)
     (ha : ∀ g, ContDiffOn ℝ (⊤ : ℕ∞) (fun z => a (chart z * g)) U)
     (hA : ∀ f t, (A f).val.val t = a t * f.val.val t)
+
+include ha hA in
+theorem linearMap_jet_bound
     (g : T) (n : ℕ) (K : JetCompact U) :
     ∃ C : ℕ → ℝ≥0, ∀ f,
       jetSeminorm H ψ chart U hU J g n K (A f) ≤
         (∑ i ∈ Finset.range (n + 1), C i • jetSeminorm H χ chart U hU J g (n - i) K) f := by
-  have hb := fun i => multiplier_jet_bound U hU (fun z => a (chart z * g)) (ha g) i K
-  choose C hC using hb
+  choose C hC using (fun i => multiplier_jet_bound U hU (fun z => a (chart z * g)) (ha g) i K)
   refine ⟨fun i => (n.choose i : ℝ≥0) * C i, fun f => ?_⟩
   change jetBound H ψ chart U J g n K (A f) ≤ _
   by_cases hK : K.set.Nonempty
@@ -83,11 +85,8 @@ theorem linearMap_jet_bound (ψ : H →* ℂˣ)
     exact apply_nonneg (∑ i ∈ Finset.range (n + 1),
       ((n.choose i : ℝ≥0) * C i) • jetSeminorm H χ chart U hU J g (n - i) K) f
 
-theorem linearMap_continuous (ψ : H →* ℂˣ)
-    (A : SmoothLevel H χ chart U J →ₗ[ℂ] SmoothLevel H ψ chart U J)
-    (a : T → ℂ)
-    (ha : ∀ g, ContDiffOn ℝ (⊤ : ℕ∞) (fun z => a (chart z * g)) U)
-    (hA : ∀ f t, (A f).val.val t = a t * f.val.val t) :
+include ha hA in
+theorem linearMap_continuous :
     @Continuous _ _ (smoothLevelTopology H χ chart U hU J)
       (smoothLevelTopology H ψ chart U hU J) A := by
   letI := smoothLevelTopology H χ chart U hU J

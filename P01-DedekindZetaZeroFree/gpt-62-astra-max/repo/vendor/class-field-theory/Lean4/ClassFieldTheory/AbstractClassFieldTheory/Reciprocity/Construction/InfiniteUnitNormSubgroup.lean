@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 universe u
@@ -65,19 +63,13 @@ theorem mem_finiteIntermediateUnitNormRange_of_overfield
     (aK : ambientFixedAddSubgroup A K.field)
     (haK : relativeNorm A K.field P.field P.below uP.1 = aK) :
     aK ∈ v.finiteIntermediateUnitNormRange E K M := by
-  let hMfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field M.field M.below) :=
-    M.finite
-  let hPMfinite : Finite
-      (M.field.toSubgroup ⧸ extensionSubgroup M.field P.field hPM) :=
+  let hPMfinite :=
     FiniteIntermediateField.finite_extension_of_le P.below M.below hPM
   let : Finite
       ((M.toFiniteAbstractField K).field.toSubgroup ⧸
         extensionSubgroup (M.toFiniteAbstractField K).field P.field hPM) := by
-    change Finite
-      (M.field.toSubgroup ⧸ extensionSubgroup M.field P.field hPM)
     exact hPMfinite
-  let EMP : FiniteAbstractFieldExtension G :=
+  let EMP :=
     FiniteAbstractFieldExtension.ofInclusion
       P.field (M.toFiniteAbstractField K) hPM
   let uM : v.unitAddSubgroup (M.toFiniteAbstractField K) :=
@@ -91,24 +83,20 @@ theorem mem_finiteIntermediateUnitNormRange_of_overfield
     top_le_middle := hPM
     middle_le_base := M.below
     finiteTopQuotient := hPMfinite
-    finiteBaseQuotient := hMfinite }
+    finiteBaseQuotient := M.finite}
   simp only [finiteIntermediateUnitNormRange]
-  change aK ∈ ((relativeNorm A K.field M.field M.below).comp
-    (v.unitAddSubgroup (M.toFiniteAbstractField K)).subtype).range
   refine ⟨uM, ?_⟩
-  change relativeNorm A K.field M.field M.below
-      (relativeNorm A M.field P.field hPM uP.1) = aK
   calc
     _ = relativeNorm A K.field P.field (hPM.trans M.below) uP.1 :=
       T.norm_trans_apply A uP.1
-    _ = relativeNorm A K.field P.field P.below uP.1 := by rfl
+    _ = relativeNorm A K.field P.field P.below uP.1 := rfl
     _ = aK := haK
+
+variable (v : ValuationData D A) (E : ClosedSubgroup G) (K : FiniteAbstractField G)
 
 /-- The universal unit norm group
 `N_{E/K} U_E = ⋂_M N_{M/K} U_M`. -/
-def infiniteUnitNormSubgroup
-    (v : ValuationData D A) (E : ClosedSubgroup G)
-    (K : FiniteAbstractField G) :
+def infiniteUnitNormSubgroup :
     AddSubgroup (ambientFixedAddSubgroup A K.field) :=
   ⨅ M : FiniteIntermediateField E K.field,
     v.finiteIntermediateUnitNormRange E K M
@@ -119,8 +107,6 @@ FiniteIntermediateField E K.field, a ∈ v.finiteIntermediateUnitNormRange E K M
 -/
 @[simp]
 theorem mem_infiniteUnitNormSubgroup_iff
-    (v : ValuationData D A) (E : ClosedSubgroup G)
-    (K : FiniteAbstractField G)
     (a : ambientFixedAddSubgroup A K.field) :
     a ∈ v.infiniteUnitNormSubgroup E K ↔
       ∀ M : FiniteIntermediateField E K.field,
@@ -132,30 +118,23 @@ Proves the bound `v.finiteIntermediateUnitNormRange E K M ≤ finiteIntermediate
 K.field M`.
 -/
 theorem finiteIntermediateUnitNormRange_le_normRange
-    (v : ValuationData D A) (E : ClosedSubgroup G)
-    (K : FiniteAbstractField G)
     (M : FiniteIntermediateField E K.field) :
     v.finiteIntermediateUnitNormRange E K M ≤
       finiteIntermediateNormRange A E K.field M := by
-  let hMfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field M.field M.below) :=
+  let hMfinite :=
     M.finite
   change
     ((relativeNorm A K.field M.field M.below).comp
       (v.unitAddSubgroup (M.toFiniteAbstractField K)).subtype).range ≤
         (relativeNorm A K.field M.field M.below).range
   rintro a ⟨u, hu⟩
-  refine ⟨u.1, ?_⟩
-  change relativeNorm A K.field M.field M.below u.1 = a at hu
-  exact hu
+  apply Exists.intro <;> assumption
 
 /-- Proves the bound `v.infiniteUnitNormSubgroup E K ≤ infiniteNormSubgroup A E K.field`. -/
-theorem infiniteUnitNormSubgroup_le_normSubgroup
-    (v : ValuationData D A) (E : ClosedSubgroup G)
-    (K : FiniteAbstractField G) :
+theorem infiniteUnitNormSubgroup_le_normSubgroup :
     v.infiniteUnitNormSubgroup E K ≤ infiniteNormSubgroup A E K.field := by
   intro a ha
-  rw [mem_infiniteNormSubgroup_iff]
+  simp
   intro M
   exact v.finiteIntermediateUnitNormRange_le_normRange E K M
     ((v.mem_infiniteUnitNormSubgroup_iff E K a).1 ha M)

@@ -12,28 +12,24 @@ attribute [local instance] IsCyclotomicExtension.Rat.three_pid
 abbrev R (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] := NumberField.RingOfIntegers E
 
-noncomputable abbrev η (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E]
+variable (E : Type) [Field E] [NumberField E] [IsCyclotomicExtension {3} ℚ E]
+
+noncomputable abbrev η
     (ω : E) (hω : IsPrimitiveRoot ω 3) : R E := hω.toInteger
 
-noncomputable abbrev «λ» (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E]
+noncomputable abbrev «λ»
     (ω : E) (hω : IsPrimitiveRoot ω 3) : R E := η E ω hω - 1
 
-def m3 (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] : Ideal (R E) :=
+def m3 : Ideal (R E) :=
   Ideal.span {(3 : R E)}
 
-abbrev red3 (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] :
+abbrev red3 :
     R E →+* (R E ⧸ m3 E) := Ideal.Quotient.mk (m3 E)
 
-abbrev ιR (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ι : E →+* ℂ) : R E →+* ℂ :=
+abbrev ιR (ι : E →+* ℂ) : R E →+* ℂ :=
   ι.comp (algebraMap (R E) E)
 
-def I3 (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] : Submonoid (Ideal (R E)) where
+def I3 : Submonoid (Ideal (R E)) where
   carrier := {A | A ≠ ⊥ ∧ A ⊔ m3 E = ⊤}
   one_mem' := by simp
   mul_mem' := by
@@ -44,8 +40,7 @@ def I3 (E : Type) [Field E] [NumberField E]
         ((Ideal.isCoprime_iff_sup_eq.mpr hA3).mul_left
           (Ideal.isCoprime_iff_sup_eq.mpr hB3))
 
-@[simp] theorem mem_I3 (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (A : Ideal (R E)) :
+@[simp] theorem mem_I3 (A : Ideal (R E)) :
     A ∈ I3 E ↔ A ≠ ⊥ ∧ A ⊔ m3 E = ⊤ := Iff.rfl
 
 end DedekindZetaZeroFree.Eisenstein

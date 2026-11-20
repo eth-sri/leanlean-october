@@ -9,15 +9,15 @@ open scoped Classical NumberField Topology BigOperators
 open Filter
 namespace DedekindZetaZeroFree.EisensteinSmoothGerms.ScalarSource
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming literal_finite_word_chamber → literal_finite_word_chamber
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (literal_finite_word_chamber)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 include C R P H in
 
@@ -37,7 +37,7 @@ theorem finite_word_local_numerator
   have hp (i : Fin n) (j : Fin (m i)) :=
     spherical_word_local_continuation F ζ hζ C R P H (U i) (v i j) (w i j)
   choose A hAc hAl using hp
-  let S : ℂ → G F ζ hζ → ℂ := fun s g => ∑ i, ∑ j, B i j s * A i j s g
+  let S := fun s g => ∑ i, ∑ j, B i j s * A i j s g
   refine ⟨Q, S, hQ, hQ0, ?_, ?_⟩
   · intro s hs g
     dsimp [S]
@@ -54,7 +54,7 @@ theorem finite_word_local_numerator
       intro j
       exact Metric.isOpen_ball.mem_nhds (Metric.mem_ball_self (hr i j))
     obtain ⟨ρ, hρ, hρsub⟩ := Metric.mem_nhds_iff.mp hall
-    let T : ℂ → G F ζ hζ → ℂ := fun s g => ∑ i, ∑ j, B i j s * N i j s g
+    let T := fun s g => ∑ i, ∑ j, B i j s * N i j s g
     refine ⟨ρ, T, hρ, fun s hs => (hρsub hs).1, ?_, ?_⟩
     · intro g s hs
       apply Finset.univ.analyticAt_fun_sum

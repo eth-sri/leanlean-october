@@ -29,8 +29,11 @@ namespace DedekindZetaZeroFree.AbelianQuotient.Theta
 
 variable (K : Type*) [Field K] [NumberField K]
 
-noncomputable def traceDualIdealUnit
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
+section
+
+variable (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
+
+noncomputable def traceDualIdealUnit :
     (FractionalIdeal (𝓞 K)⁰ K)ˣ :=
   Units.mk0
     (FractionalIdeal.dual ℤ ℚ
@@ -38,22 +41,13 @@ noncomputable def traceDualIdealUnit
     (FractionalIdeal.dual_ne_zero ℤ ℚ (Units.ne_zero I))
 
 @[simp]
-theorem coe_traceDualIdealUnit
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
+theorem coe_traceDualIdealUnit :
     (traceDualIdealUnit K I : FractionalIdeal (𝓞 K)⁰ K) =
       FractionalIdeal.dual ℤ ℚ
         (I : FractionalIdeal (𝓞 K)⁰ K) :=
   rfl
 
-@[simp]
-theorem traceDualIdealUnit_traceDualIdealUnit
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
-    traceDualIdealUnit K (traceDualIdealUnit K I) = I := by
-  ext
-  simp
-
-theorem coe_traceDualIdealUnit_eq_dual_one_mul_inv
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
+theorem coe_traceDualIdealUnit_eq_dual_one_mul_inv :
     (traceDualIdealUnit K I : FractionalIdeal (𝓞 K)⁰ K) =
       FractionalIdeal.dual ℤ ℚ
           (1 : FractionalIdeal (𝓞 K)⁰ K) *
@@ -61,8 +55,7 @@ theorem coe_traceDualIdealUnit_eq_dual_one_mul_inv
   rw [coe_traceDualIdealUnit,
     FractionalIdeal.dual_eq_mul_inv]
 
-theorem absNorm_traceDualIdealUnit
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
+theorem absNorm_traceDualIdealUnit :
     FractionalIdeal.absNorm
         (traceDualIdealUnit K I :
           FractionalIdeal (𝓞 K)⁰ K) =
@@ -73,6 +66,8 @@ theorem absNorm_traceDualIdealUnit
           (I : FractionalIdeal (𝓞 K)⁰ K))⁻¹ := by
   rw [coe_traceDualIdealUnit_eq_dual_one_mul_inv,
     map_mul, map_inv₀]
+
+end
 
 theorem absNorm_traceDual_one :
     FractionalIdeal.absNorm

@@ -14,20 +14,20 @@ namespace DedekindZetaZeroFree
 
 variable (F : Type) [Field F] [NumberField F]
 
-def localFiniteCharacter (v : HeightOneSpectrum (𝓞 F)) :
+variable (v : HeightOneSpectrum (𝓞 F))
+
+def localFiniteCharacter :
     AddChar (v.adicCompletion F) Circle :=
   (rationalPadicCharacter (PlaceTraceAdapter.prime F v)).compAddMonoidHom
     (PlaceTraceAdapter.trace F v).toAddMonoidHom
 
-theorem localFiniteCharacter_apply (v : HeightOneSpectrum (𝓞 F))
+theorem localFiniteCharacter_apply
     (x : v.adicCompletion F) :
     localFiniteCharacter F v x =
       rationalPadicCharacter (PlaceTraceAdapter.prime F v)
-        (PlaceTraceAdapter.trace F v x) := by
-  rfl
+        (PlaceTraceAdapter.trace F v x) := rfl
 
-private theorem continuous_rationalCompletionEquiv_symm
-    (v : HeightOneSpectrum (𝓞 F)) :
+private theorem continuous_rationalCompletionEquiv_symm :
     Continuous (PlaceTraceAdapter.rationalCompletionEquiv F v).symm := by
   letI : Algebra ℚ ((PlaceTraceAdapter.rationalPlace F v).adicCompletion ℚ) :=
     HeightOneSpectrum.instAlgebraAdicCompletion (𝓞 ℚ) ℚ
@@ -40,31 +40,27 @@ private theorem continuous_rationalCompletionEquiv_symm
   exact (Rat.HeightOneSpectrum.adicCompletion.padicEquiv
     (PlaceTraceAdapter.rationalPlace F v)).symm.continuous_toFun
 
-private theorem continuous_padicMap (v : HeightOneSpectrum (𝓞 F)) :
+private theorem continuous_padicMap :
     Continuous (PlaceTraceAdapter.padicMap F v) := by
   rw [PlaceTraceAdapter.padicMap]
   exact (finitePlaceAdicCompletionMap_continuous ℚ F
       (PlaceTraceAdapter.rationalPlace F v) ⟨v, rfl⟩).comp
     (continuous_rationalCompletionEquiv_symm F v)
 
-theorem continuous_localFiniteCharacter (v : HeightOneSpectrum (𝓞 F)) :
+theorem continuous_localFiniteCharacter :
     Continuous (localFiniteCharacter F v : v.adicCompletion F → Circle) := by
   haveI : ContinuousSMul ℚ_[PlaceTraceAdapter.prime F v] (v.adicCompletion F) := by
     constructor
-    change Continuous (fun x : ℚ_[PlaceTraceAdapter.prime F v] ×
-      v.adicCompletion F => PlaceTraceAdapter.padicMap F v x.1 * x.2)
     exact ((continuous_padicMap F v).comp continuous_fst).mul continuous_snd
-  have htrace : Continuous (PlaceTraceAdapter.trace F v) :=
-    (PlaceTraceAdapter.trace F v).continuous_of_finiteDimensional
-  exact (continuous_rationalPadicCharacter (PlaceTraceAdapter.prime F v)).comp htrace
+  exact (continuous_rationalPadicCharacter (PlaceTraceAdapter.prime F v)).comp ((PlaceTraceAdapter.trace F v).continuous_of_finiteDimensional)
 
-theorem localFiniteCharacter_add (v : HeightOneSpectrum (𝓞 F))
+theorem localFiniteCharacter_add
     (x y : v.adicCompletion F) :
     localFiniteCharacter F v (x + y) =
       localFiniteCharacter F v x * localFiniteCharacter F v y :=
   AddChar.map_add_eq_mul _ x y
 
-theorem localFiniteCharacter_eq_one_iff (v : HeightOneSpectrum (𝓞 F))
+theorem localFiniteCharacter_eq_one_iff
     (x : v.adicCompletion F) :
     localFiniteCharacter F v x = 1 ↔
       PlaceTraceAdapter.trace F v x ∈
@@ -73,8 +69,7 @@ theorem localFiniteCharacter_eq_one_iff (v : HeightOneSpectrum (𝓞 F))
   rw [localFiniteCharacter_apply]
   exact rationalPadicCharacter_eq_one_iff (PlaceTraceAdapter.prime F v) _
 
-theorem localFiniteCharacter_eq_one_of_mem_integers
-    (v : HeightOneSpectrum (𝓞 F)) (a : v.adicCompletion F)
+theorem localFiniteCharacter_eq_one_of_mem_integers (a : v.adicCompletion F)
     (ha : a ∈ v.adicCompletionIntegers F) :
     localFiniteCharacter F v a = 1 := by
   rw [localFiniteCharacter_eq_one_iff]

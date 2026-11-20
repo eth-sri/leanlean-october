@@ -114,25 +114,30 @@ private def sl2CLM : Coordinates →L[ℝ] Matrix (Fin 2) (Fin 2) ℂ :=
       map_add' := sl2Matrix_add
       map_smul' := sl2Matrix_smul }
 
-private def entryCLM (i j : Fin 2) : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] ℂ :=
+section
+
+variable (i j : Fin 2)
+
+private def entryCLM : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] ℂ :=
   LinearMap.toContinuousLinearMap
     { toFun := fun M => M i j
       map_add' := by intros; rfl
       map_smul' := by intros; rfl }
 
-private theorem hentryExp (i j : Fin 2) : HasStrictFDerivAt (fun a => NormedSpace.exp (sl2Matrix a) i j)
+private theorem hentryExp : HasStrictFDerivAt (fun a => NormedSpace.exp (sl2Matrix a) i j)
     ((entryCLM i j).comp sl2CLM) 0 := by
-  have h : HasStrictFDerivAt (fun a => NormedSpace.exp (sl2Matrix a)) sl2CLM 0 := by
-    have h : HasStrictFDerivAt NormedSpace.exp
-        (1 : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Matrix (Fin 2) (Fin 2) ℂ) (sl2CLM 0) := by
-      simpa only [map_zero] using (hasStrictFDerivAt_exp_zero (𝕂 := ℝ) (𝔸 := Matrix (Fin 2) (Fin 2) ℂ))
-    convert h.comp 0 sl2CLM.hasStrictFDerivAt using 1 <;> ext a <;> rfl
-  exact (entryCLM i j).hasStrictFDerivAt.comp 0 h
+  refine (entryCLM i j).hasStrictFDerivAt.comp 0 ?_
+  have h : HasStrictFDerivAt NormedSpace.exp
+      (1 : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Matrix (Fin 2) (Fin 2) ℂ) (sl2CLM 0) := by
+    simpa using (hasStrictFDerivAt_exp_zero)
+  convert h.comp 0 sl2CLM.hasStrictFDerivAt using 1 <;> ext a <;> rfl
 
-private def expEntry (i j : Fin 2) (a : Coordinates) : ℂ := NormedSpace.exp (sl2Matrix a) i j
+private def expEntry (a : Coordinates) : ℂ := NormedSpace.exp (sl2Matrix a) i j
 
-private theorem expEntry_zero (i j : Fin 2) : expEntry i j 0 = (1 : Matrix (Fin 2) (Fin 2) ℂ) i j := by
+private theorem expEntry_zero : expEntry i j 0 = (1 : Matrix (Fin 2) (Fin 2) ℂ) i j := by
   simp [expEntry, sl2Matrix_zero, NormedSpace.exp_zero]
+
+end
 
 private theorem hdenInv : HasStrictFDerivAt (fun a => (expEntry 0 0 a)⁻¹)
     (-((entryCLM 0 0).comp sl2CLM)) 0 := by
@@ -143,8 +148,7 @@ private theorem hdenInv : HasStrictFDerivAt (fun a => (expEntry 0 0 a)⁻¹)
 private theorem hratio (i j : Fin 2) : HasStrictFDerivAt (fun a => expEntry i j a / expEntry 0 0 a)
     ((entryCLM i j).comp sl2CLM -
       ((1 : Matrix (Fin 2) (Fin 2) ℂ) i j) • ((entryCLM 0 0).comp sl2CLM)) 0 := by
-  have hm := (hentryExp i j).mul hdenInv
-  convert hm using 1 <;> first
+  convert ((hentryExp i j).mul hdenInv) using 1 <;> first
     | rfl
     | (ext a; simp [expEntry, div_eq_mul_inv, sl2Matrix_zero, NormedSpace.exp_zero,
         sub_eq_add_neg, smul_eq_mul]; ring)
@@ -159,24 +163,18 @@ private theorem hcoordinates : HasStrictFDerivAt (fun a =>
   have hu := (hratio 1 1).sub_const (1 : ℂ)
   have hb := hratio 0 1
   have hc := hratio 1 0
-  have hur := Complex.reCLM.hasStrictFDerivAt.comp 0 hu
-  have hui := Complex.imCLM.hasStrictFDerivAt.comp 0 hu
-  have hbr := Complex.reCLM.hasStrictFDerivAt.comp 0 hb
-  have hbi := Complex.imCLM.hasStrictFDerivAt.comp 0 hb
-  have hcr := Complex.reCLM.hasStrictFDerivAt.comp 0 hc
-  have hci := Complex.imCLM.hasStrictFDerivAt.comp 0 hc
   have hp : affineExpDerivative = ContinuousLinearMap.pi
       (fun i => (ContinuousLinearMap.proj i).comp affineExpDerivative) := by ext a i; rfl
   rw [hp]
   apply hasStrictFDerivAt_pi.mpr
   intro i
   fin_cases i
-  · convert hur using 1 <;> first | rfl | (ext a; simp [entryCLM, sl2CLM, sl2Matrix, affineExpDerivative]; ring)
-  · convert hui using 1 <;> first | rfl | (ext a; simp [entryCLM, sl2CLM, sl2Matrix, affineExpDerivative]; ring)
-  · convert hbr using 1 <;> first | rfl | (ext a; simp [entryCLM, sl2CLM, sl2Matrix, affineExpDerivative])
-  · convert hbi using 1 <;> first | rfl | (ext a; simp [entryCLM, sl2CLM, sl2Matrix, affineExpDerivative])
-  · convert hcr using 1 <;> first | rfl | (ext a; simp [entryCLM, sl2CLM, sl2Matrix, affineExpDerivative])
-  · convert hci using 1 <;> first | rfl | (ext a; simp [entryCLM, sl2CLM, sl2Matrix, affineExpDerivative])
+  · convert (Complex.reCLM.hasStrictFDerivAt.comp 0 hu) using 1 <;> first | rfl | (ext a; simp [entryCLM, sl2CLM, sl2Matrix, affineExpDerivative]; ring)
+  · convert (Complex.imCLM.hasStrictFDerivAt.comp 0 hu) using 1 <;> first | rfl | (ext a; simp [entryCLM, sl2CLM, sl2Matrix, affineExpDerivative]; ring)
+  · convert (Complex.reCLM.hasStrictFDerivAt.comp 0 hb) using 1 <;> first | rfl | (ext a; simp [entryCLM, sl2CLM, sl2Matrix, affineExpDerivative])
+  · convert (Complex.imCLM.hasStrictFDerivAt.comp 0 hb) using 1 <;> first | rfl | (ext a; simp [entryCLM, sl2CLM, sl2Matrix, affineExpDerivative])
+  · convert (Complex.reCLM.hasStrictFDerivAt.comp 0 hc) using 1 <;> first | rfl | (ext a; simp [entryCLM, sl2CLM, sl2Matrix, affineExpDerivative])
+  · convert (Complex.imCLM.hasStrictFDerivAt.comp 0 hc) using 1 <;> first | rfl | (ext a; simp [entryCLM, sl2CLM, sl2Matrix, affineExpDerivative])
 
 theorem exponential_hasStrictFDerivAt_zero : HasStrictFDerivAt (fun a => affineInverse (exponential a)) affineExpDerivative 0 := by
   convert hcoordinates using 1
@@ -198,11 +196,9 @@ theorem affine_exponential_local_homeomorph : ∃ e : OpenPartialHomeomorph Coor
     (∀ a, e a = affineInverse (exponential a)) := by
   let d := affineExpDerivative.toContinuousLinearEquivOfDetNeZero
     (by change affineExpDerivative.toLinearMap.det ≠ 0; rw [affineExpDerivative_det]; norm_num)
-  have hd : (d : Coordinates →L[ℝ] Coordinates) = affineExpDerivative :=
-    affineExpDerivative.coe_toContinuousLinearEquivOfDetNeZero _
   have h : HasStrictFDerivAt (fun a => affineInverse (exponential a))
       (d : Coordinates →L[ℝ] Coordinates) 0 := by
-    rw [hd]
+    rw [(affineExpDerivative.coe_toContinuousLinearEquivOfDetNeZero _)]
     exact exponential_hasStrictFDerivAt_zero
   refine ⟨h.toOpenPartialHomeomorph _, h.mem_toOpenPartialHomeomorph_source, ?_⟩
   intro a
@@ -234,14 +230,14 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 theorem exponential_analyticAt_zero : AnalyticAt ℝ (fun a => affineInverse (exponential a)) 0 := by
-  let l : Coordinates →L[ℝ] Matrix (Fin 2) (Fin 2) ℂ :=
+  let l :=
     LinearMap.toContinuousLinearMap
       { toFun := sl2Matrix, map_add' := sl2Matrix_add, map_smul' := sl2Matrix_smul }
   let eval (i j : Fin 2) : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] ℂ :=
     LinearMap.toContinuousLinearMap
       { toFun := fun M => M i j, map_add' := by intros; rfl, map_smul' := by intros; rfl }
   have hm : AnalyticAt ℝ (fun a => NormedSpace.exp (sl2Matrix a)) 0 := by
-    convert (NormedSpace.exp_analytic (𝕂 := ℝ) (l 0)).comp (l.analyticAt 0) using 1 <;> rfl
+    convert (NormedSpace.exp_analytic (l 0)).comp (l.analyticAt 0) using 1 <;> rfl
   have he (i j : Fin 2) : AnalyticAt ℝ (fun a => NormedSpace.exp (sl2Matrix a) i j) 0 := by
     convert (eval i j |>.analyticAt _).comp hm using 1 <;> rfl
   have hn : NormedSpace.exp (sl2Matrix 0) 0 0 ≠ 0 := by
@@ -249,22 +245,16 @@ theorem exponential_analyticAt_zero : AnalyticAt ℝ (fun a => affineInverse (ex
   have hu := ((he 1 1).div (he 0 0) hn).sub (analyticAt_const (v := (1 : ℂ)))
   have hb := (he 0 1).div (he 0 0) hn
   have hc := (he 1 0).div (he 0 0) hn
-  have hur := Complex.reCLM.analyticAt _ |>.comp hu
-  have hui := Complex.imCLM.analyticAt _ |>.comp hu
-  have hbr := Complex.reCLM.analyticAt _ |>.comp hb
-  have hbi := Complex.imCLM.analyticAt _ |>.comp hb
-  have hcr := Complex.reCLM.analyticAt _ |>.comp hc
-  have hci := Complex.imCLM.analyticAt _ |>.comp hc
   simp only [exponential, affineInverse_mk]
   apply AnalyticAt.pi
   intro i
   fin_cases i
-  · convert hur using 1 <;> rfl
-  · convert hui using 1 <;> rfl
-  · convert hbr using 1 <;> rfl
-  · convert hbi using 1 <;> rfl
-  · convert hcr using 1 <;> rfl
-  · convert hci using 1 <;> rfl
+  · convert (Complex.reCLM.analyticAt _ |>.comp hu) using 1 <;> rfl
+  · convert (Complex.imCLM.analyticAt _ |>.comp hu) using 1 <;> rfl
+  · convert (Complex.reCLM.analyticAt _ |>.comp hb) using 1 <;> rfl
+  · convert (Complex.imCLM.analyticAt _ |>.comp hb) using 1 <;> rfl
+  · convert (Complex.reCLM.analyticAt _ |>.comp hc) using 1 <;> rfl
+  · convert (Complex.imCLM.analyticAt _ |>.comp hc) using 1 <;> rfl
 
 end ExponentialAnalytic
 
@@ -294,7 +284,7 @@ theorem sl2Matrix_matrixCoordinates (M : Matrix (Fin 2) (Fin 2) ℂ) (hM : Matri
   all_goals simp [sl2Matrix, matrixCoordinates]
   all_goals first | (rw [mul_comm Complex.I, Complex.re_add_im]) |
     (rw [hd]; calc
-      -(Complex.I * ↑(M 0 0).im) + -↑(M 0 0).re = -((M 0 0).re + (M 0 0).im * Complex.I) := by ring
+      _ = -((M 0 0).re + (M 0 0).im * Complex.I) := by ring
       _ = -M 0 0 := congrArg Neg.neg (Complex.re_add_im (M 0 0)))
 theorem trace_conjugation (h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (M : Matrix (Fin 2) (Fin 2) ℂ) :
     Matrix.trace (h.val * M * h⁻¹.val) = Matrix.trace M := by
@@ -317,18 +307,15 @@ private theorem affine_exponential_smooth_local_homeomorph :
       ContDiffOn ℝ (⊤ : ℕ∞) e e.source ∧
       ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target := by
   obtain ⟨e, he0, he⟩ := affine_exponential_local_homeomorph
-  have hefun : (e : Coordinates → Coordinates) =
-      (fun a => affineInverse (exponential a)) := funext he
+  have hefun := funext he
   have hf : AnalyticAt ℝ e 0 := by rw [hefun]; exact exponential_analyticAt_zero
   let d := affineExpDerivative.toContinuousLinearEquivOfDetNeZero
     (by change affineExpDerivative.toLinearMap.det ≠ 0; rw [affineExpDerivative_det]; norm_num)
-  have hd : (d : Coordinates →L[ℝ] Coordinates) = affineExpDerivative :=
-    affineExpDerivative.coe_toContinuousLinearEquivOfDetNeZero _
-  have hfd : fderiv ℝ e 0 = (d : Coordinates →L[ℝ] Coordinates) := by
-    rw [hefun, hd]
+  have hfd : fderiv ℝ e 0 = d := by
+    rw [hefun, (affineExpDerivative.coe_toContinuousLinearEquivOfDetNeZero _)]
     exact exponential_hasFDerivAt_zero.fderiv
   have hi : AnalyticAt ℝ e.symm (e 0) := e.analyticAt_symm' he0 hf hfd
-  let U : Set Coordinates := {a | AnalyticAt ℝ e a} ∩
+  let U := {a | AnalyticAt ℝ e a} ∩
     e ⁻¹' {a | AnalyticAt ℝ e.symm a}
   have hU : (0 : Coordinates) ∈ interior U := by
     apply mem_interior_iff_mem_nhds.mpr
@@ -338,15 +325,11 @@ private theorem affine_exponential_smooth_local_homeomorph :
   refine ⟨f, ⟨he0, hU⟩, ?_, ?_, ?_⟩
   · intro a; exact he a
   · intro a ha
-    have ha' : a ∈ U := interior_subset ha.2
-    exact ha'.1.contDiffAt.contDiffWithinAt
+    exact (interior_subset ha.2).1.contDiffAt.contDiffWithinAt
   · intro a ha
-    have hs := f.map_target ha
-    have hs' : f.symm a ∈ U := interior_subset hs.2
-    have heq : e (f.symm a) = a := f.right_inv ha
     have hi' : AnalyticAt ℝ e.symm a := by
-      rw [← heq]
-      exact hs'.2
+      rw [← (f.right_inv ha)]
+      exact (interior_subset (f.map_target ha).2).2
     exact hi'.contDiffAt.contDiffWithinAt
 
 private theorem coords_add (M N : Matrix (Fin 2) (Fin 2) ℂ) :
@@ -394,18 +377,14 @@ theorem exponential_local_coordinates :
         (fun a => E.symm (affinePoint a)) (affinePoint ⁻¹' E.target ∩ affineSource) := by
   refine ⟨exponential_hasFDerivAt_zero, affineExpDerivative_det, ?_⟩
   obtain ⟨e, he0, he, hf, hi⟩ := affine_exponential_smooth_local_homeomorph
-  let U : Set Coordinates := {a | exponential a ∈ affineTarget}
+  let U := {a | exponential a ∈ affineTarget}
   have hU : (0 : Coordinates) ∈ interior U := by
-    have h00 : ContinuousAt (fun a => NormedSpace.exp (sl2Matrix a) 0 0) 0 :=
-      (hentryExp 0 0).continuousAt
-    have hn : ∀ᶠ a in 𝓝 (0 : Coordinates), NormedSpace.exp (sl2Matrix a) 0 0 ≠ 0 :=
-      h00.eventually_ne (by simp [sl2Matrix_zero, NormedSpace.exp_zero])
     exact mem_interior_iff_mem_nhds.mpr
-      (hn.mono (fun a ha => (mk_mem_affineTarget_iff _).mpr ha))
+      ((((hentryExp 0 0).continuousAt).eventually_ne (by simp [sl2Matrix_zero, NormedSpace.exp_zero])).mono (fun a ha => (mk_mem_affineTarget_iff _).mpr ha))
   let E := (e.restr U).trans affineChart
   have hEexp : ∀ a ∈ E.source, E a = exponential a := by
     intro a ha
-    have haU : a ∈ U := interior_subset ha.1.2
+    have haU := interior_subset ha.1.2
     change affineChart ((e.restr U) a) = exponential a
     rw [OpenPartialHomeomorph.restr_apply, he,
       ← affineChart_symm_apply _ haU]
@@ -414,8 +393,7 @@ theorem exponential_local_coordinates :
     rw [← Matrix.ProjGenLinGroup.mk_one, affineInverse_mk]
     ext i; fin_cases i <;> simp
   refine ⟨E, ?_, hEexp, ?_, ?_⟩
-  · change 0 ∈ (e.restr U).source ∩ (e.restr U) ⁻¹' affineChart.source
-    refine ⟨⟨he0, hU⟩, ?_⟩
+  · refine ⟨⟨he0, hU⟩, ?_⟩
     change (e.restr U) 0 ∈ affineChart.source
     rw [OpenPartialHomeomorph.restr_apply, he, exponential_zero, h0]
     simpa using zero_mem_affineSource
@@ -450,10 +428,9 @@ private def smoothSl2CLM : Coordinates →L[ℝ] Matrix (Fin 2) (Fin 2) ℂ :=
   LinearMap.toContinuousLinearMap
     { toFun := sl2Matrix, map_add' := sl2Matrix_add, map_smul' := sl2Matrix_smul }
 theorem exponential_continuous : Continuous exponential := by
-  have hc : Continuous (fun a => (NormedSpace.isUnit_exp (sl2Matrix a)).unit) := by
-    apply Units.isOpenEmbedding_val.isEmbedding.isInducing.continuous_iff.mpr
-    exact (NormedSpace.exp_continuous (𝔸 := Matrix (Fin 2) (Fin 2) ℂ)).comp smoothSl2CLM.continuous
-  exact QuotientGroup.continuous_mk.comp hc
+  apply QuotientGroup.continuous_mk.comp
+  apply Units.isOpenEmbedding_val.isEmbedding.isInducing.continuous_iff.mpr
+  exact (NormedSpace.exp_continuous).comp smoothSl2CLM.continuous
 
 theorem exponential_contMDiff {C : ChartedSpace Coordinates Group}
     (hC : ∀ g : Group, chartAt Coordinates g =
@@ -468,23 +445,17 @@ theorem exponential_contMDiff {C : ChartedSpace Coordinates Group}
   let g := exponential a
   let m := g.out⁻¹
   have hmg : Matrix.ProjGenLinGroup.mk m = g⁻¹ := by
-    change Matrix.ProjGenLinGroup.mk (g.out⁻¹) = g⁻¹
     rw [map_inv]
     exact congrArg Inv.inv (Quotient.out_eq g)
-  have hchart : ∀ x, ((affineChart.trans
-      (Homeomorph.mulLeft g).toOpenPartialHomeomorph).symm) (exponential x) =
-      affineChart.symm (g⁻¹ * exponential x) := by intro x; rfl
   simp only [Function.comp_def, PartialEquiv.refl_symm, PartialEquiv.refl_coe,
     Set.range_id]
-  change ContDiffWithinAt ℝ (⊤ : ℕ∞)
-    (fun x => affineChart.symm (g⁻¹ * exponential x)) Set.univ a
   let f (x : Coordinates) := m * (NormedSpace.isUnit_exp (sl2Matrix x)).unit
   have hclass (x : Coordinates) : Matrix.ProjGenLinGroup.mk (f x) =
-      g⁻¹ * exponential x := by change Matrix.ProjGenLinGroup.mk (m * _) = _; rw [map_mul, hmg]; rfl
+      g⁻¹ * exponential x := by rw [map_mul, hmg]; rfl
   have htarget : ∀ᶠ x in 𝓝 a, g⁻¹ * exponential x ∈ affineTarget := by
     have hopen : IsOpen affineTarget := by rw [← affineChart_target]; exact affineChart.open_target
-    have hone : g⁻¹ * exponential a ∈ affineTarget := by simpa [g] using one_mem_affineTarget
-    exact (continuous_const.mul exponential_continuous).continuousAt.eventually (hopen.mem_nhds hone)
+    refine (continuous_const.mul exponential_continuous).continuousAt.eventually (hopen.mem_nhds ?_)
+    simpa [g] using one_mem_affineTarget
   have heq : (fun x => affineChart.symm (g⁻¹ * exponential x)) =ᶠ[𝓝 a]
       (fun x => matrixRatios (m.val * NormedSpace.exp (sl2Matrix x))) := by
     filter_upwards [htarget] with x hx
@@ -493,20 +464,16 @@ theorem exponential_contMDiff {C : ChartedSpace Coordinates Group}
   apply ContDiffAt.contDiffWithinAt
   apply ContDiffAt.congr_of_eventuallyEq _ heq
   have hn : (m.val * NormedSpace.exp (sl2Matrix a)) 0 0 ≠ 0 := by
-    have ht : Matrix.ProjGenLinGroup.mk (f a) ∈ affineTarget := by
-      rw [hclass]; simpa [g] using one_mem_affineTarget
-    exact (mk_mem_affineTarget_iff (f a)).mp ht
-  have hm : ContDiffAt ℝ (⊤ : ℕ∞)
-      (fun x => m.val * NormedSpace.exp (sl2Matrix x)) a :=
-    contDiffAt_const.mul (((NormedSpace.exp_analytic (𝕂 := ℝ) (smoothSl2CLM a)).comp
-      (smoothSl2CLM.analyticAt a)).contDiffAt)
+    refine (mk_mem_affineTarget_iff (f a)).mp ?_
+    rw [hclass]; simpa [g] using one_mem_affineTarget
   have hen (i j : Fin 2) : ContDiffAt ℝ (⊤ : ℕ∞)
       (fun x => (m.val * NormedSpace.exp (sl2Matrix x)) i j) a :=
-    (entry i j).contDiff.contDiffAt.comp a hm
+    (entry i j).contDiff.contDiffAt.comp a (contDiffAt_const.mul (((NormedSpace.exp_analytic (smoothSl2CLM a)).comp
+      (smoothSl2CLM.analyticAt a)).contDiffAt))
   have hd (i j : Fin 2) : ContDiffAt ℝ (⊤ : ℕ∞)
       (fun x => (m.val * NormedSpace.exp (sl2Matrix x)) i j /
         (m.val * NormedSpace.exp (sl2Matrix x)) 0 0) a := by
-    simpa only [div_eq_mul_inv] using! (hen i j).mul ((hen 0 0).inv hn)
+    simpa using! (hen i j).mul ((hen 0 0).inv hn)
   apply contDiffAt_pi.mpr
   intro i
   fin_cases i <;> simp only [matrixRatios, Matrix.cons_val_zero,
@@ -642,10 +609,11 @@ private def readCoordinate (a : Fin 6) : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] �
       map_add' M N := by fin_cases a <;> simp [matrixCoordinates]
       map_smul' r M := by fin_cases a <;> simp [matrixCoordinates, Complex.real_smul] }
 
-theorem adjointMatrix_contMDiff {C : ChartedSpace Coordinates Group}
-    [LieGroup (𝓘(ℝ, Coordinates)) (⊤ : ℕ∞) Group]
-    (hC : ∀ g : Group, chartAt Coordinates g =
-      ((affineChart.trans (Homeomorph.mulLeft g).toOpenPartialHomeomorph).symm))
+variable {C : ChartedSpace Coordinates Group} [LieGroup (𝓘(ℝ, Coordinates)) (⊤ : ℕ∞) Group]
+    (hC : ∀ g : Group, chartAt Coordinates g = ((affineChart.trans (Homeomorph.mulLeft g).toOpenPartialHomeomorph).symm))
+
+include C hC in
+theorem adjointMatrix_contMDiff
     (a b : Fin 6) :
     ContMDiff (𝓘(ℝ, Coordinates)) (𝓘(ℝ, ℝ)) (⊤ : ℕ∞)
       (fun g => adjointMatrix g a b) := by
@@ -700,10 +668,8 @@ theorem adjointMatrix_contMDiff {C : ChartedSpace Coordinates Group}
     matrixCoordinates (f x * basisMatrix b * Ring.inverse (f x)) a
   rw [← hv, Ring.inverse_unit]
 
-theorem single_lie_exponential_data {C : ChartedSpace Coordinates Group}
-    [LieGroup (𝓘(ℝ, Coordinates)) (⊤ : ℕ∞) Group]
-    (hC : ∀ g : Group, chartAt Coordinates g =
-      ((affineChart.trans (Homeomorph.mulLeft g).toOpenPartialHomeomorph).symm)) :
+include C hC in
+theorem single_lie_exponential_data :
     ∃ D : HilbertLieExponentialData Group Coordinates (Fin 6),
       D.exponential = exponential ∧
       (∀ b c, D.basis b c = if c = b then 1 else 0) ∧
@@ -749,7 +715,11 @@ theorem productExponential_add_ray (a : ProductCoordinates ι) (s t : ℝ) :
     productExponential ι ((s+t) • a) = productExponential ι (s • a) * productExponential ι (t • a) := by
   funext v
   exact exponential_add_ray (fun j => a (v,j)) s t
-def productAdjointLinearEquiv (g : ProductGroup ι) : ProductCoordinates ι ≃ₗ[ℝ] ProductCoordinates ι where
+section
+
+variable (g : ProductGroup ι)
+
+def productAdjointLinearEquiv : ProductCoordinates ι ≃ₗ[ℝ] ProductCoordinates ι where
   toFun a c := adjointLinearEquiv (g c.1) (fun j => a (c.1,j)) c.2
   invFun a c := (adjointLinearEquiv (g c.1)).symm (fun j => a (c.1,j)) c.2
   map_add' a b := by
@@ -760,12 +730,12 @@ def productAdjointLinearEquiv (g : ProductGroup ι) : ProductCoordinates ι ≃�
     exact congrFun ((adjointLinearEquiv (g c.1)).map_smul r (fun j => a (c.1,j))) c.2
   left_inv a := by ext c; exact congrFun ((adjointLinearEquiv (g c.1)).symm_apply_apply (fun j => a (c.1,j))) c.2
   right_inv a := by ext c; exact congrFun ((adjointLinearEquiv (g c.1)).apply_symm_apply (fun j => a (c.1,j))) c.2
-theorem productExponential_adjoint (g : ProductGroup ι) (a : ProductCoordinates ι) :
+theorem productExponential_adjoint (a : ProductCoordinates ι) :
     g * productExponential ι a * g⁻¹ = productExponential ι (productAdjointLinearEquiv ι g a) := by
   funext v
   exact exponential_adjoint (g v) (fun j => a (v,j))
 
-theorem productAdjointLinearEquiv_basis (g : ProductGroup ι) (a b : ι × Fin 6) :
+theorem productAdjointLinearEquiv_basis (a b : ι × Fin 6) :
     (productAdjointLinearEquiv ι g ((Pi.basisFun ℝ (ι × Fin 6)) b)) a =
       productAdjointMatrix ι g a b := by
   classical
@@ -782,6 +752,8 @@ theorem productAdjointLinearEquiv_basis (g : ProductGroup ι) (a b : ι × Fin 6
       simp [Pi.basisFun_apply, Pi.single_apply, Prod.ext_iff, hab]
     rw [hslice, map_zero]
     simp [productAdjointMatrix, hab]
+
+end
 
 open Set in
 def productCoordinatesFlatten : (ι → Coordinates) ≃L[ℝ] ProductCoordinates ι :=
@@ -831,16 +803,14 @@ theorem productAffineIsManifold {C : ChartedSpace Coordinates Group}
         simp only [modelWithCornersSelf_coe, PartialEquiv.refl_symm,
           PartialEquiv.refl_coe, Set.preimage_id_eq, Set.range_id, Set.inter_univ] at ha
         change a ∈ ((productAffineChart ι e).symm.trans (productAffineChart ι f)).source at ha
-        have h1 := ha.1.2
-        have h2 := ha.2.1
-        exact ⟨h1 i (mem_univ i), h2 i (mem_univ i)⟩)
+        exact ⟨ha.1.2 i (mem_univ i), ha.2.1 i (mem_univ i)⟩)
   · exact mapsTo_univ _ _
 
 section Maps
 variable {ι} {C : ChartedSpace Coordinates Group}
-variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-variable {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H}
-variable {M : Type*} [TopologicalSpace M] [ChartedSpace H M]
+    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H}
+    {M : Type*} [TopologicalSpace M] [ChartedSpace H M]
 theorem product_contMDiff {f : M → ProductGroup ι} {n : ℕ∞ω}
     (hf : ∀ i, ContMDiff I (𝓘(ℝ, Coordinates)) n (fun x => f x i)) :
     letI := productAffineChartedSpace ι (C := C)
@@ -866,20 +836,11 @@ theorem product_projection_contMDiff [IsManifold (𝓘(ℝ, Coordinates)) (⊤ :
   refine ⟨(continuous_apply i).continuousAt, ?_⟩
   simp only [extChartAt_coe, modelWithCornersSelf_coe, Function.id_comp,
     Set.range_id]
-  change ContDiffWithinAt ℝ (⊤ : ℕ∞)
-    (fun a => chartAt Coordinates (g i) ((chartAt Coordinates (g i)).symm ((productCoordinatesFlatten ι).symm a i)))
-    Set.univ (productCoordinatesFlatten ι (fun j => chartAt Coordinates (g j) (g j)))
   let a0 := productCoordinatesFlatten ι (fun j => chartAt Coordinates (g j) (g j))
-  have ht : ((productCoordinatesFlatten ι).symm a0 i) ∈ (chartAt Coordinates (g i)).target :=
-    (chartAt Coordinates (g i)).map_source (mem_chart_source _ _)
-  have he : (fun a => chartAt Coordinates (g i) ((chartAt Coordinates (g i)).symm ((productCoordinatesFlatten ι).symm a i)))
-      =ᶠ[nhds a0] (fun a => (productCoordinatesFlatten ι).symm a i) := by
-    have hc : ContinuousAt (fun a => (productCoordinatesFlatten ι).symm a i) a0 :=
-      ((continuous_apply i).comp (productCoordinatesFlatten ι).symm.continuous).continuousAt
-    filter_upwards [hc.eventually ((chartAt Coordinates (g i)).open_target.mem_nhds ht)] with a ha
-    exact (chartAt Coordinates (g i)).right_inv ha
   apply ContDiffAt.contDiffWithinAt
-  exact (((contDiff_apply ℝ Coordinates i).comp (productCoordinatesFlatten ι).symm.contDiff).contDiffAt).congr_of_eventuallyEq he
+  refine (((contDiff_apply ℝ Coordinates i).comp (productCoordinatesFlatten ι).symm.contDiff).contDiffAt).congr_of_eventuallyEq ?_
+  filter_upwards [(((continuous_apply i).comp (productCoordinatesFlatten ι).symm.continuous).continuousAt).eventually ((chartAt Coordinates (g i)).open_target.mem_nhds ((chartAt Coordinates (g i)).map_source (mem_chart_source _ _)))] with a ha
+  exact (chartAt Coordinates (g i)).right_inv ha
 end Maps
 
 theorem productAffineLieGroup {C : ChartedSpace Coordinates Group}
@@ -887,12 +848,12 @@ theorem productAffineLieGroup {C : ChartedSpace Coordinates Group}
     letI := productAffineChartedSpace ι (C := C)
     LieGroup (𝓘(ℝ, ProductCoordinates ι)) (⊤ : ℕ∞) (ProductGroup ι) := by
   letI := productAffineChartedSpace ι (C := C)
-  letI := productAffineIsManifold ι (C := C)
+  letI := productAffineIsManifold ι
   letI : ContMDiffMul (𝓘(ℝ, ProductCoordinates ι)) (⊤ : ℕ∞) (ProductGroup ι) := {
-    contMDiff_mul := product_contMDiff (C := C) (fun i =>
+    contMDiff_mul := product_contMDiff (fun i =>
       ((product_projection_contMDiff i).comp contMDiff_fst).mul
         ((product_projection_contMDiff i).comp contMDiff_snd)) }
-  exact { contMDiff_inv := product_contMDiff (C := C) (fun i => (product_projection_contMDiff i).inv) }
+  exact { contMDiff_inv := product_contMDiff (fun i => (product_projection_contMDiff i).inv)}
 
 section ProductExponentialData
 variable {C : ChartedSpace Coordinates Group}
@@ -922,7 +883,7 @@ def productExponentialDiffeomorph : letI := productAffineChartedSpace ι (C := C
     PartialDiffeomorph (𝓘(ℝ, ProductCoordinates ι)) (𝓘(ℝ, ProductCoordinates ι))
       (ProductCoordinates ι) (ProductGroup ι) (⊤ : ℕ∞) := by
   letI := productAffineChartedSpace ι (C := C)
-  letI := productAffineLieGroup ι (C := C)
+  letI := productAffineLieGroup ι
   refine { (productExponentialHomeomorph ι D) with contMDiffOn_toFun := ?_, contMDiffOn_invFun := ?_ }
   · apply product_contMDiffOn ι
     intro i
@@ -958,7 +919,7 @@ theorem product_lie_exponential_data :
   obtain ⟨D₀, hD₀, _, _⟩ := single_lie_exponential_data hC
   let CP := productAffineChartedSpace ι (C := C)
   letI := CP
-  let LP := productAffineLieGroup ι (C := C)
+  let LP := productAffineLieGroup ι
   letI := LP
   let EP := productExponentialDiffeomorph ι D₀
   have hs : ContMDiff (𝓘(ℝ, ProductCoordinates ι)) (𝓘(ℝ, ProductCoordinates ι))
@@ -973,7 +934,7 @@ theorem product_lie_exponential_data :
         (fun g : ProductGroup ι => productAdjointMatrix ι g a b) := by
     by_cases hab : a.1 = b.1
     · have hh := (adjointMatrix_contMDiff hC a.2 b.2).comp
-          (product_projection_contMDiff (C := C) a.1)
+          (product_projection_contMDiff a.1)
       change ContMDiff (𝓘(ℝ, ProductCoordinates ι)) (𝓘(ℝ, ℝ)) (⊤ : ℕ∞)
         (fun g : ProductGroup ι => adjointMatrix (g a.1) a.2 b.2) at hh
       exact hh.congr (fun g => by simp [productAdjointMatrix, hab])

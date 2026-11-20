@@ -11,137 +11,20 @@ open DedekindZetaZeroFree NumberField
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 section Helpers
 
 open scoped Classical NumberField Topology
 open IsDedekindDomain Filter
 
-private theorem fpd_hasSum
-    (F : Type) [Field F] [NumberField F]
-    (W : Ideal (𝓞 F) → ℂ) (W0 : W ⊥ = 0)
-    (Wmul : ∀ a b, W (a * b) = W a * W b)
-    (L : ℂ) (hW : HasSum W L) (V : Finset (HeightOneSpectrum (𝓞 F))) :
-    HasSum (fun I => if ∃ v ∈ V, I ≤ v.asIdeal then 0 else W I)
-      (L * ∏ v ∈ V, (1 - W v.asIdeal)) := by
-  induction V using Finset.induction_on with
-  | empty => simpa using hW
-  | @insert p V hp ih =>
-    let G : Ideal (𝓞 F) → ℂ := fun I => if ∃ v ∈ V, I ≤ v.asIdeal then 0 else W I
-    have G0 : G ⊥ = 0 := by simp [G, W0]
-    have Gmul (I : Ideal (𝓞 F)) : G (I * p.asIdeal) = G I * W p.asIdeal := by
-      have he : (∃ v ∈ V, I * p.asIdeal ≤ v.asIdeal) ↔ ∃ v ∈ V, I ≤ v.asIdeal := by
-        constructor
-        · rintro ⟨v, hv, h⟩
-          have hprime := Ideal.prime_of_isPrime v.ne_bot v.isPrime
-          have hd : v.asIdeal ∣ I * p.asIdeal := Ideal.dvd_iff_le.mpr h
-          rcases hprime.dvd_or_dvd hd with hd | hd
-          · exact ⟨v, hv, Ideal.dvd_iff_le.mp hd⟩
-          · have heq : v = p := HeightOneSpectrum.ext ((Ideal.IsMaximal.eq_of_le p.isMaximal (Ideal.IsMaximal.ne_top v.isMaximal) (Ideal.dvd_iff_le.mp hd)).symm)
-            exact (hp (heq ▸ hv)).elim
-        · rintro ⟨v, hv, h⟩
-          exact ⟨v, hv, (Ideal.mul_le_left).trans h⟩
-      simp only [G, he]
-      split_ifs <;> simp [Wmul]
-    let H : Ideal (𝓞 F) → ℂ := fun I => if I ≤ p.asIdeal then G I else 0
-    have hH : HasSum H ((L * ∏ v ∈ V, (1 - W v.asIdeal)) * W p.asIdeal) := by
-      have hi : Function.Injective (fun I : Ideal (𝓞 F) => I * p.asIdeal) := mul_left_injective₀ p.ne_bot
-      apply (hi.hasSum_iff ?_).mp
-      · have heq : H ∘ (fun I : Ideal (𝓞 F) => I * p.asIdeal) = fun I => G I * W p.asIdeal := by
-          funext I
-          simp [H, Function.comp_def, Ideal.mul_le_right, Gmul]
-        rw [heq]
-        exact ih.mul_right _
-      · intro I hI
-        have hn : ¬ I ≤ p.asIdeal := by
-          intro h
-          obtain ⟨a, ha⟩ := Ideal.dvd_iff_le.mpr h
-          exact hI ⟨a, by simpa [mul_comm] using ha.symm⟩
-        simp [H, hn]
-    have hh := ih.sub hH
-    have heq : (fun I => (if ∃ v ∈ V, I ≤ v.asIdeal then 0 else W I) - H I) =
-        (fun I => if ∃ v ∈ insert p V, I ≤ v.asIdeal then 0 else W I) := by
-      funext I
-      by_cases hI : I ≤ p.asIdeal <;> by_cases hV : ∃ v ∈ V, I ≤ v.asIdeal <;>
-        simp [H, G, hI, hV, Finset.exists_mem_insert]
-    rw [heq] at hh
-    convert hh using 1
-    rw [Finset.prod_insert hp]
-    ring
+private alias fpd_hasSum := DedekindZetaZeroFree.Detector.FiniteEulerDeletion.finite_prime_delete_hasSum
 
 private theorem norm_power (q : ℝ) (hq : 0 < q) (s : ℂ) :
-    (q : ℂ) ^ s = comparisonRealPower q s := by
-  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hq.ne')]
-  rw [← Complex.ofReal_log hq.le]
-  unfold comparisonRealPower
-  congr 1
-  ring
+    (q : ℂ) ^ s = comparisonRealPower q s := by apply @DedekindZetaZeroFree.NormalizedProbe.TripleMellin.TermRace.cpow_positive <;> assumption
 
-private theorem L_eq_zeta (R : PrincipalMellin.ActualRecipe S η)
-    (s : ℂ) (hs : 1 < s.re) : R.L s = InitialSeparatedEuler.zetaS R.A s := by
-  let W : Ideal (𝓞 F) → ℂ := fun I => R.target I * (Ideal.absNorm I : ℂ) ^ (-s)
-  have hW0 : W ⊥ = 0 := by simp [W, (R.target.eq_zero_iff' ⊥).mpr (Or.inl rfl)]
-  have hWmul (a b : Ideal (𝓞 F)) : W (a*b) = W a * W b := by
-    dsimp [W]
-    rw [R.target.map_mul', map_mul Ideal.absNorm, Nat.cast_mul]
-    have hp : ((Ideal.absNorm a : ℂ) * (Ideal.absNorm b : ℂ)) ^ (-s) =
-        (Ideal.absNorm a : ℂ) ^ (-s) * (Ideal.absNorm b : ℂ) ^ (-s) := by
-      exact_mod_cast Complex.mul_cpow_ofReal_nonneg
-        (Nat.cast_nonneg (Ideal.absNorm a) : (0 : ℝ) ≤ Ideal.absNorm a)
-        (Nat.cast_nonneg (Ideal.absNorm b) : (0 : ℝ) ≤ Ideal.absNorm b) (-s)
-    rw [hp]; ring
-  have hdel := fpd_hasSum F W hW0 hWmul _
-    (R.continuation.series s hs) R.A.Sf
-  let g : Ideal (𝓞 F) → ℂ := fun I => if ∃ v ∈ R.A.Sf, I ≤ v.asIdeal then 0 else W I
-  have hg : Function.support g ⊆ {I | I ≠ ⊥ ∧ I ⊔ R.A.cS = ⊤} := by
-    intro I hI
-    have hi : I ≠ ⊥ := by intro h; subst I; simpa [g, W, hW0] using hI
-    refine ⟨hi, ?_⟩
-    apply (R.A.exterior_iff ⟨I, hi⟩).mpr
-    intro v hv
-    have hn : ¬ I ≤ v.asIdeal := by
-      intro h
-      exact hI (by simp [g, show ∃ v ∈ R.A.Sf, I ≤ v.asIdeal from ⟨v,hv,h⟩])
-    by_contra ht
-    have he := v.isMaximal.eq_of_le ht le_sup_right
-    exact hn (by rw [he]; exact le_sup_left)
-  have hext := (hasSum_subtype_iff_of_support_subset hg).mpr hdel
-  have heq (I : R.A.Exterior) : g I.val = (Ideal.absNorm I.val : ℂ)^(-s) := by
-    have hn : ¬ ∃ v ∈ R.A.Sf, I.val ≤ v.asIdeal := by
-      rintro ⟨v,hv,h⟩
-      have ht := (R.A.exterior_iff ⟨I.val,I.property.1⟩).mp I.property.2 v hv
-      have : I.val ⊔ v.asIdeal ≤ v.asIdeal := sup_le h le_rfl
-      rw [ht] at this
-      exact v.isMaximal.ne_top (top_unique this)
-    rw [show g I.val = W I.val by simp [g,hn]]
-    dsimp [W]
-    rw [R.probe.principal I.val I.property.1 ?_, one_mul]
-    by_contra h
-    obtain ⟨p,hp,hle⟩ := Ideal.exists_le_maximal (I.val ⊔ R.A.modulus) h
-    have hmod : R.A.modulus ≤ p := le_sup_right.trans hle
-    have hp0 : p ≠ ⊥ := ne_bot_of_le_ne_bot R.A.modulus_ne_zero hmod
-    let v : HeightOneSpectrum (𝓞 F) := ⟨p,hp.isPrime,hp0⟩
-    have ht := (R.A.exterior_iff ⟨I.val,I.property.1⟩).mp I.property.2 v
-      (R.A.modulus_support v hmod)
-    have : I.val ⊔ p ≤ p := sup_le (le_sup_left.trans hle) le_rfl
-    rw [ht] at this
-    exact hp.ne_top (top_unique this)
-  have hres := hext.tsum_eq.symm
-  simp only [Function.comp_def] at hres
-  change _ = ∑' I : R.A.Exterior, g I.val at hres
-  simp_rw [heq] at hres
-  convert hres using 1
-  · unfold PrincipalMellin.ActualRecipe.L comparisonPrincipalIncompleteL
-    congr 1
-    apply Finset.prod_congr rfl
-    intro v hv
-    dsimp [W, idealNorm]
-    rw [← norm_power (Ideal.absNorm v.asIdeal : ℝ) (by
-      exact_mod_cast (lt_trans Nat.zero_lt_one (NumberField.HeightOneSpectrum.one_lt_absNorm v)))]
-    simp only [Complex.ofReal_natCast]
-  · rfl
+private alias L_eq_zeta := DedekindZetaZeroFree.Quantitative.PoissonKernel.Kernel.rf_L_eq_zeta
 
 end Helpers
 
@@ -156,10 +39,8 @@ theorem euler_data {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ)
       Real.exp ((3 / 2 : ℝ) * ∑' I : NonzeroIdeal F, (idealNorm I.val) ^ (-σ)) ∧
     ‖(∑' I : ExteriorIdeal cS, ExteriorIdealEuler.summand a s I)⁻¹‖ ≤
       Real.exp ((3 / 2 : ℝ) * ∑' I : NonzeroIdeal F, (idealNorm I.val) ^ (-σ)) := by
-  have hs1 : 1 < s.re := lt_of_lt_of_le hσ hs
-  have h := HeckeLogProof.exp_eulerLog a ha s hs1
   have hL := HeckeLogProof.eulerLog_norm_le a ha σ hσ s hs
-  rw [← h]
+  rw [← (HeckeLogProof.exp_eulerLog a ha s (lt_of_lt_of_le hσ hs))]
   refine ⟨Complex.exp_ne_zero _, ?_, ?_⟩
   · rw [Complex.norm_exp]
     exact Real.exp_le_exp.mpr ((Complex.re_le_norm _).trans hL)
@@ -183,9 +64,8 @@ theorem incompleteL_plus_eq (U : CorrectionFactors.Frequency C) (s : ℂ) :
     change ¬ (I ≠ ⊥ ∧ I ⊔ A.cS = ⊤) at hn
     apply hI
     simp [MaskedHeckeMeromorphic.coefficient, FrequencyCharacterMasks.plusCoefficient, hn]
-  have he := (tsum_subtype_eq_of_support_subset hsupport).symm
   unfold MaskedHeckeMeromorphic.incompleteL
-  rw [he]
+  rw [((tsum_subtype_eq_of_support_subset hsupport).symm)]
   apply tsum_congr
   intro I
   simp [MaskedHeckeMeromorphic.coefficient, FrequencyCharacterMasks.plusCoefficient,
@@ -204,26 +84,33 @@ theorem incompleteL_minus_eq (U : CorrectionFactors.Frequency C) (s : ℂ) :
     apply hI
     simp [MaskedHeckeMeromorphic.coefficient, FrequencyCharacterMasks.plusCoefficient,
       FrequencyCharacterMasks.minusCoefficient, hn]
-  have he := (tsum_subtype_eq_of_support_subset hsupport).symm
   unfold MaskedHeckeMeromorphic.incompleteL
-  rw [he]
+  rw [((tsum_subtype_eq_of_support_subset hsupport).symm)]
   apply tsum_congr
   intro I
   simp [MaskedHeckeMeromorphic.coefficient, FrequencyCharacterMasks.plusCoefficient,
     FrequencyCharacterMasks.minusCoefficient, FrequencyCharacterMasks.minusExteriorCoefficient,
     I.property.1, I.property.2, ExteriorIdealEuler.summand]
 
-theorem Lpsi_eq_tsum (u : D.Row) (s : ℂ) (hs : 1 < s.re) :
+section
+
+variable (u : D.Row) (s : ℂ) (hs : 1 < s.re)
+
+include hs in
+theorem Lpsi_eq_tsum :
     D.Lpsi u s = ∑' I : D.recipe.A.Exterior, ExteriorIdealEuler.summand
       (FrequencyCharacterMasks.plusExteriorCoefficient u.toFrequency) s I := by
   rw [D.Lpsi_eq_raw u s hs]
   exact incompleteL_plus_eq u.toFrequency s
 
-theorem Llam_eq_tsum (u : D.Row) (s : ℂ) (hs : 1 < s.re) :
+include hs in
+theorem Llam_eq_tsum :
     D.Llam u s = ∑' I : D.recipe.A.Exterior, ExteriorIdealEuler.summand
       (FrequencyCharacterMasks.minusExteriorCoefficient u.toFrequency) s I := by
   rw [D.Llam_eq_raw u s hs]
   exact incompleteL_minus_eq u.toFrequency s
+
+end
 
 theorem zetaS_eq_tsum (s : ℂ) :
     D.zetaS s = ∑' I : D.recipe.A.Exterior,
@@ -233,13 +120,12 @@ theorem zetaS_eq_tsum (s : ℂ) :
 
 end Euler
 
-theorem zetaSCont_eq_zetaS (s : ℂ) (hs : 1 < s.re) : D.zetaSCont s = D.zetaS s :=
-  L_eq_zeta D.recipe s hs
+alias zetaSCont_eq_zetaS := DedekindZetaZeroFree.Quantitative.PrincipalResidueFormulas.zetaSCont_eq_zetaS
 
 theorem Llam_ne_zero_of_one_lt (u : D.Row) (s : ℂ) (hs : 1 < s.re) : D.Llam u s ≠ 0 := by
   rw [Llam_eq_tsum D u s hs]
   exact (euler_data _ (FrequencyCharacterMasks.actual_coefficients_multiplicative
-    u.toFrequency).2.1 s.re hs s le_rfl).1
+    u.toFrequency).2 s.re hs s le_rfl).1
 
 theorem zetaSCont_ne_zero_of_one_lt (s : ℂ) (hs : 1 < s.re) : D.zetaSCont s ≠ 0 := by
   rw [zetaSCont_eq_zetaS D s hs, zetaS_eq_tsum D s]
@@ -260,7 +146,7 @@ theorem Llam_inv_norm_le_right (a : ℝ) (ha : 1 < a) :
     Real.exp_pos _, fun u s hs => ?_⟩
   rw [Llam_eq_tsum D u s (lt_of_lt_of_le ha hs)]
   exact (euler_data _ (FrequencyCharacterMasks.actual_coefficients_multiplicative
-    u.toFrequency).2.1 a ha s hs).2.2
+    u.toFrequency).2 a ha s hs).2.2
 
 theorem zetaSCont_norm_le_right (a : ℝ) (ha : 1 < a) :
     ∃ C : ℝ, 0 < C ∧ ∀ s : ℂ, a ≤ s.re → ‖D.zetaSCont s‖ ≤ C := by
@@ -268,30 +154,11 @@ theorem zetaSCont_norm_le_right (a : ℝ) (ha : 1 < a) :
   exact ⟨B, hB, fun s hs => h s hs⟩
 
 theorem zetaSCont_inv_norm_le_right (a : ℝ) (ha : 1 < a) :
-    ∃ C : ℝ, 0 < C ∧ ∀ s : ℂ, a ≤ s.re → ‖(D.zetaSCont s)⁻¹‖ ≤ C := by
+    ∃ C : ℝ, ∀ s : ℂ, a ≤ s.re → ‖(D.zetaSCont s)⁻¹‖ ≤ C := by
   obtain ⟨B, hB, h⟩ := PrincipalNumerator.rightHalfPlane_reciprocal_bound D.recipe a ha
-  exact ⟨B, hB, fun s hs => h s hs⟩
+  exact ⟨B, fun s hs => h s hs⟩
 
-theorem zetaSCont_analyticOnNhd :
-    AnalyticOnNhd ℂ D.zetaSCont ({s : ℂ | 0 < s.re} \ {1}) := by
-  have hopen : IsOpen ({s : ℂ | 0 < s.re} \ {1}) :=
-    (isOpen_lt continuous_const Complex.continuous_re).sdiff isClosed_singleton
-  have hL : DifferentiableOn ℂ D.recipe.continuation.L ({s : ℂ | 0 < s.re} \ {1}) := by
-    refine D.recipe.continuation.L_holo.mono ?_
-    intro s hs
-    exact ⟨hs.1, hs.2⟩
-  have hLa := hL.analyticOnNhd hopen
-  intro s hs
-  have h1 : AnalyticAt ℂ D.recipe.continuation.L s := hLa s hs
-  have h2 : AnalyticAt ℂ (fun z : ℂ => ∏ v ∈ D.recipe.A.Sf,
-      (1 - D.recipe.target v.asIdeal *
-        comparisonRealPower (idealNorm v.asIdeal) (-z))) s := by
-    apply Finset.analyticAt_fun_prod
-    intro v _
-    refine analyticAt_const.sub (analyticAt_const.mul ?_)
-    unfold comparisonRealPower
-    exact ((analyticAt_id.neg).mul analyticAt_const).cexp
-  exact h1.mul h2
+alias zetaSCont_analyticOnNhd := DedekindZetaZeroFree.Quantitative.PrincipalResidueFormulas.zetaSCont_analytic
 
 theorem Lpsi_polynomial_growth_principal (u : D.Row) (hu : u.u = 1) (σ0 σ1 : ℝ)
     (h0 : 0 < σ0) (h01 : σ0 ≤ σ1) (h1 : 1 ∉ Set.Icc σ0 σ1) :
@@ -323,7 +190,7 @@ theorem Lpsi_polynomial_growth_principal (u : D.Row) (hu : u.u = 1) (σ0 σ1 : �
     have hσ1 : σ = 1 := by
       have := congrArg Complex.re h
       rw [hre] at this
-      simpa using this
+      exact this
     rw [← hσ1]
     exact hσ
   rw [PrincipalResidueFormulas.Lpsi_principal_eq D u hu _ hpos hne]

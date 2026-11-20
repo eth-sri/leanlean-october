@@ -63,16 +63,12 @@ lemma inverse_vertical_truncated (c T : ℝ) (hc : c≠0) :
 lemma inverse_vertical_limit_pos (c : ℝ) (hc : 0<c) :
     Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, ((c:ℂ)+t*I)⁻¹) atTop (𝓝 (Real.pi:ℂ)) := by
   simp_rw [inverse_vertical_truncated c _ hc.ne']
-  have ht := Real.tendsto_arctan_atTop.comp (Filter.tendsto_id.atTop_div_const hc)
-  have hh := Complex.continuous_ofReal.continuousAt.tendsto.comp ((ht.mono_right inf_le_left).const_mul 2)
-  convert hh using 1 <;> simp [Function.comp_def]; ring
+  convert (Complex.continuous_ofReal.continuousAt.tendsto.comp (((Real.tendsto_arctan_atTop.comp (Filter.tendsto_id.atTop_div_const hc)).mono_right inf_le_left).const_mul 2)) using 1 <;> simp [Function.comp_def]; ring
 
 lemma inverse_vertical_limit_neg (c : ℝ) (hc : c<0) :
     Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, ((c:ℂ)+t*I)⁻¹) atTop (𝓝 (-(Real.pi:ℂ))) := by
   simp_rw [inverse_vertical_truncated c _ hc.ne]
-  have ht := Real.tendsto_arctan_atBot.comp (Filter.tendsto_id.atTop_div_const_of_neg hc)
-  have hh := Complex.continuous_ofReal.continuousAt.tendsto.comp ((ht.mono_right inf_le_left).const_mul 2)
-  convert hh using 1 <;> simp [Function.comp_def]; ring
+  convert (Complex.continuous_ofReal.continuousAt.tendsto.comp (((Real.tendsto_arctan_atBot.comp (Filter.tendsto_id.atTop_div_const_of_neg hc)).mono_right inf_le_left).const_mul 2)) using 1 <;> simp [Function.comp_def]; ring
 
 lemma inverse_horizontal_limit (a b p : ℝ) (ε : ℝ) (hε : |ε| = 1) :
     Tendsto (fun T : ℝ => ∫ x : ℝ in a..b,
@@ -86,8 +82,7 @@ lemma inverse_horizontal_limit (a b p : ℝ) (ε : ℝ) (hε : |ε| = 1) :
     intro x hx
     rw [norm_inv]
     apply inv_anti₀ hT
-    have h := Complex.abs_im_le_norm ((x:ℂ)+(ε*T)*I-p)
-    simpa [abs_mul, hε, abs_of_pos hT] using h
+    simpa [abs_mul, hε, abs_of_pos hT] using (Complex.abs_im_le_norm ((x:ℂ)+(ε*T)*I-p))
   · simpa using (tendsto_inv_atTop_zero.mul_const |b-a|)
 
 lemma dslope_eq_sub_pole {A F : ℂ → ℂ} {p z : ℂ} (hz : z≠p)
@@ -105,9 +100,7 @@ lemma dslope_vertical_truncated (A F : ℂ → ℂ) (p x T : ℝ) (hx : x≠p)
         A p * (∫ t : ℝ in -T..T, (((x-p:ℝ):ℂ)+t*I)⁻¹) := by
   have he (t : ℝ) : dslope A (p:ℂ) ((x:ℂ)+t*I) =
       F ((x:ℂ)+t*I) - A p * ((((x-p:ℝ):ℂ)+t*I)⁻¹) := by
-    have hn : (x:ℂ)+t*I ≠ p := by
-      intro h
-      exact hx (by simpa using congrArg Complex.re h)
+    have hn : (x:ℂ)+t*I ≠ p := fun h => hx (by simpa using congrArg Complex.re h)
     have h := dslope_eq_sub_pole hn (hF _ (by simp))
     convert h using 1; push_cast; ring
   simp_rw [he]
@@ -133,8 +126,7 @@ lemma rectangle_limits (G : ℂ → ℂ) {a b : ℝ} (hab : a≤b)
     · simpa [smul_eq_mul] using h
     · intro z hz
       simpa [uIcc_of_le hab] using hz.1
-  have hlim := ((hbot.sub htop).add (hb.const_mul I)).sub (ha.const_mul I)
-  have hz : (0:ℂ)-0+I*Vb-I*Va=0 := tendsto_nhds_unique hlim
+  have hz : (0:ℂ)-0+I*Vb-I*Va=0 := tendsto_nhds_unique (((hbot.sub htop).add (hb.const_mul I)).sub (ha.const_mul I))
     (by simpa only [hrect] using (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0:ℂ)) atTop (𝓝 0)))
   exact (mul_left_cancel₀ I_ne_zero (show I*Vb=I*Va by simpa using sub_eq_zero.mp hz)).symm
 
@@ -148,10 +140,13 @@ lemma horizontal_quotient_continuousOn (A : ℂ → ℂ) {a b p y : ℝ}
     simpa [uIcc_of_le hab] using hx
   · fun_prop
   · intro x hx h
-    have hh := congrArg Complex.im h
-    exact hy (by simpa using hh)
+    exact hy (by simpa using (congrArg Complex.im h))
 
-lemma dslope_horizontal_limit (A F : ℂ → ℂ) {a b p : ℝ} (hab : a≤b)
+section
+
+variable (A F : ℂ → ℂ) {a b p : ℝ}
+
+lemma dslope_horizontal_limit (hab : a≤b)
     (hA : DifferentiableOn ℂ A {z : ℂ | a≤z.re ∧ z.re≤b})
     (hF : ∀ z : ℂ, a≤z.re → z.re≤b → z≠p → F z = A z/(z-p))
     (ε : ℝ) (hε : |ε|=1)
@@ -162,9 +157,7 @@ lemma dslope_horizontal_limit (A F : ℂ → ℂ) {a b p : ℝ} (hab : a≤b)
   apply hl.congr'
   filter_upwards [eventually_gt_atTop 0] with T hT
   have hy : ε*T≠0 := mul_ne_zero (by intro h; simp [h] at hε) hT.ne'
-  have hn (x : ℝ) : (x:ℂ)+(ε*T)*I≠p := by
-    intro h
-    exact hy (by simpa using congrArg Complex.im h)
+  have hn (x : ℝ) : (x:ℂ)+(ε*T)*I≠p := fun h => hy (by simpa using congrArg Complex.im h)
   have he (x : ℝ) (hx : x∈uIcc a b) := hF ((x:ℂ)+(ε*T)*I)
     (by have := (uIcc_of_le hab ▸ hx).1; simpa using this)
     (by have := (uIcc_of_le hab ▸ hx).2; simpa using this) (hn x)
@@ -182,7 +175,7 @@ lemma dslope_horizontal_limit (A F : ℂ → ℂ) {a b p : ℝ} (hab : a≤b)
   intro x hx
   exact (dslope_eq_sub_pole (hn x) (he x hx)).symm
 
-theorem simple_pole_of_boundary_control (A F : ℂ → ℂ) {a b p : ℝ}
+theorem simple_pole_of_boundary_control
     (hap : a<p) (hpb : p<b)
     (hA : DifferentiableOn ℂ A {z : ℂ | a≤z.re ∧ z.re≤b})
     (hF : ∀ z : ℂ, a≤z.re → z.re≤b → z≠p → F z = A z/(z-p))
@@ -226,9 +219,11 @@ theorem simple_pole_of_boundary_control (A F : ℂ → ℂ) {a b p : ℝ}
   unfold comparisonVerticalIntegral
   rw [he']
   push_cast
-  have hpi : (Real.pi:ℂ)≠0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hpi := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   field_simp
   simp only [mul_comm]
+
+end
 
 lemma integrable_tail (g : ℝ → ℂ) (C : ℝ) (hg : Continuous g)
     (hbound : ∀ t : ℝ, 1 ≤ |t| → ‖g t‖ ≤ C * (1 + |t|) ^ (-2 : ℝ)) :
@@ -270,13 +265,12 @@ lemma horizontal_decay_limit (F : ℂ → ℂ) (a b C ε : ℝ) (hab : a ≤ b)
 
 end ComparisonShiftProof
 
-theorem verticalIntegral_integrable_of_strip_decay
-    (a b C : ℝ) (f : ℂ → ℂ) (U : Set ℂ)
-    (hab : a < b) (hC : 0 ≤ C)
-    (hU : IsOpen U) (hstrip : comparisonClosedStrip a b ⊆ U)
-    (hhol : DifferentiableOn ℂ f U)
-    (hdecay : ∀ s ∈ comparisonClosedStrip a b,
-      ‖f s‖ ≤ C * (1 + |s.im|) ^ (-2 : ℝ)) :
+variable (a b C : ℝ) (f : ℂ → ℂ) (U : Set ℂ) (hab : a < b) (hC : 0 ≤ C) (hU : IsOpen U)
+    (hstrip : comparisonClosedStrip a b ⊆ U) (hhol : DifferentiableOn ℂ f U)
+    (hdecay : ∀ s ∈ comparisonClosedStrip a b, ‖f s‖ ≤ C * (1 + |s.im|) ^ (-2 : ℝ))
+
+include hab hC hU hstrip hhol hdecay in
+theorem verticalIntegral_integrable_of_strip_decay :
     ∀ σ ∈ Set.Icc a b, Integrable (fun t : ℝ => f ((σ : ℂ) + (t : ℂ) * I)) := by
   intro σ hσ
   have hc : Continuous (fun t : ℝ => f ((σ : ℂ) + (t : ℂ) * I)) :=
@@ -289,23 +283,16 @@ theorem verticalIntegral_integrable_of_strip_decay
   simpa using hdecay ((σ : ℂ) + (t : ℂ) * I)
     (by simpa [comparisonClosedStrip] using hσ)
 
-theorem verticalIntegral_eq_of_strip_decay
-    (a b C : ℝ) (f : ℂ → ℂ) (U : Set ℂ)
-    (hab : a < b) (hC : 0 ≤ C)
-    (hU : IsOpen U) (hstrip : comparisonClosedStrip a b ⊆ U)
-    (hhol : DifferentiableOn ℂ f U)
-    (hdecay : ∀ s ∈ comparisonClosedStrip a b,
-      ‖f s‖ ≤ C * (1 + |s.im|) ^ (-2 : ℝ)) :
+include hab hC hU hstrip hhol hdecay in
+theorem verticalIntegral_eq_of_strip_decay :
     (∫ t : ℝ, f ((a : ℂ) + (t : ℂ) * I)) =
       ∫ t : ℝ, f ((b : ℂ) + (t : ℂ) * I) := by
-  have hFs : DifferentiableOn ℂ f {s : ℂ | a ≤ s.re ∧ s.re ≤ b} :=
-    hhol.mono hstrip
   have hi := verticalIntegral_integrable_of_strip_decay a b C f U hab hC hU hstrip hhol hdecay
   have hbound : ∀ x ∈ Icc a b, ∀ y : ℝ, 1 ≤ |y| →
       ‖f ((x : ℂ) + y * I)‖ ≤ C * (1 + |y|) ^ (-2 : ℝ) := by
     intro x hx y hy
     simpa using hdecay ((x : ℂ) + y * I) (by simpa [comparisonClosedStrip] using hx)
-  exact ComparisonShiftProof.rectangle_limits f hab.le hFs
+  exact ComparisonShiftProof.rectangle_limits f hab.le (hhol.mono hstrip)
     (intervalIntegral_tendsto_integral (hi a ⟨le_rfl, hab.le⟩) tendsto_neg_atTop_atBot tendsto_id)
     (intervalIntegral_tendsto_integral (hi b ⟨hab.le, le_rfl⟩) tendsto_neg_atTop_atBot tendsto_id)
     (by simpa using ComparisonShiftProof.horizontal_decay_limit f a b C (-1) hab.le (by norm_num) hbound)

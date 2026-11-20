@@ -16,14 +16,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -38,7 +30,6 @@ open scoped NumberField WithZero Classical
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -69,22 +60,20 @@ theorem mem_primeToModulusIdeals_iff
           (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) = 0 :=
   Iff.rfl
 
+section
+
+variable (m : Modulus K) (v : HeightOneSpectrum (𝓞 K)) (hv : v ∉ m.finitePart.support)
+
 /-- A finite prime outside the support of `m`, regarded as an element of
 the group of fractional ideals prime to `m`. -/
-def primeToModulusIdeal
-    (m : Modulus K)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hv : v ∉ m.finitePart.support) :
+def primeToModulusIdeal :
     primeToModulusIdeals m :=
   ⟨FractionalIdealGroup.prime v, by
     intro w hw
-    have hwv : w ≠ v := by
-      intro h
-      exact hv (h ▸ hw)
+    have hwv : w ≠ v := fun h => hv (h ▸ hw)
     change
       FractionalIdeal.count K w
-          (v.asIdeal :
-            FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
+          v.asIdeal =
         0
     exact
       FractionalIdeal.count_maximal_coprime
@@ -93,14 +82,13 @@ def primeToModulusIdeal
 /-- Coercing a prime outside the modulus support recovers its prime
 fractional ideal. -/
 @[simp]
-theorem primeToModulusIdeal_coe
-    (m : Modulus K)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hv : v ∉ m.finitePart.support) :
+theorem primeToModulusIdeal_coe :
     (primeToModulusIdeal m v hv :
         FractionalIdealGroup K) =
       FractionalIdealGroup.prime v :=
   rfl
+
+end
 
 /-- Finite ideles satisfying the higher-unit condition at every prime in
 the support of the modulus. -/
@@ -121,22 +109,18 @@ def idelePrimeToModulusSubgroup (m : Modulus K) :
   m.infiniteCongruenceSubgroup.prod
     (finitePrimeToModulusSubgroup m)
 
-theorem localHigherUnitGroup_le_integralUnits
-    (v : HeightOneSpectrum (𝓞 K)) (n : ℕ) :
-    localHigherUnitGroup v n ≤
-      (v.adicCompletionIntegers K).units := by
-  intro x hx
-  rw [mem_localHigherUnitGroup_iff] at hx
-  obtain ⟨y, rfl, _⟩ := hx
-  exact y.property
+alias localHigherUnitGroup_le_integralUnits := localHigherUnitGroup_le_finiteLocalUnits
 
-theorem fractionalIdeal_mem_primeToModulusIdeals
-    (m : Modulus K) (a : IdeleGroup K)
+section
+
+variable (m : Modulus K)
+
+theorem fractionalIdeal_mem_primeToModulusIdeals (a : IdeleGroup K)
     (ha : a ∈ idelePrimeToModulusSubgroup m) :
     IdeleGroup.fractionalIdeal a ∈ primeToModulusIdeals m := by
   intro v hv
   change FractionalIdeal.count K v
-      (((FractionalIdealGroup.factorization (K := K))
+      (((FractionalIdealGroup.factorization)
         (FiniteIdeleGroup.valuationVector a.2) :
           FractionalIdealGroup K) :
         FractionalIdeal (nonZeroDivisors (𝓞 K)) K) = 0
@@ -146,7 +130,7 @@ theorem fractionalIdeal_mem_primeToModulusIdeals
   exact localHigherUnitGroup_le_integralUnits v (m.finitePart v) (ha.2 v hv)
 
 /-- The fractional-ideal map restricted to ideles prime to a modulus. -/
-def primeToIdealMap (m : Modulus K) :
+def primeToIdealMap :
     idelePrimeToModulusSubgroup m →*
       primeToModulusIdeals m where
   toFun a :=
@@ -162,7 +146,6 @@ def primeToIdealMap (m : Modulus K) :
 /-- A finite idele with a prescribed valuation vector away from the
 support of a modulus and value one on its support. -/
 def valuationVectorSectionPrimeTo
-    (m : Modulus K)
   (e : HeightOneSpectrum (𝓞 K) →₀ ℤ) :
     FiniteIdeleGroup K :=
   ⟨fun v =>
@@ -177,7 +160,6 @@ def valuationVectorSectionPrimeTo
       Finsupp.notMem_support_iff.mp he]⟩
 
 theorem valuationVector_valuationVectorSectionPrimeTo
-    (m : Modulus K)
     (e : HeightOneSpectrum (𝓞 K) →₀ ℤ)
     (he : ∀ v, v ∈ m.finitePart.support → e v = 0) :
     FiniteIdeleGroup.valuationVector
@@ -202,7 +184,7 @@ theorem valuationVector_valuationVectorSectionPrimeTo
     rw [ite_eq_right hv,
       FiniteIdeleGroup.localOrder_chosenLocalOrderSection]
 
-theorem primeToIdealMap_surjective (m : Modulus K) :
+theorem primeToIdealMap_surjective :
     Function.Surjective (primeToIdealMap m) := by
   intro I
   let e : HeightOneSpectrum (𝓞 K) →₀ ℤ :=
@@ -239,21 +221,18 @@ theorem primeToIdealMap_surjective (m : Modulus K) :
     FractionalIdealGroup.count_factorization]
   exact FractionalIdealGroup.countVector_apply I v
 
-theorem ideleCongruenceSubgroup_le_primeTo
-    (m : Modulus K) :
+theorem ideleCongruenceSubgroup_le_primeTo :
     m.ideleCongruenceSubgroup ≤
-      idelePrimeToModulusSubgroup m := by
-  intro a ha
-  exact ⟨ha.1, fun v _ => ha.2 v⟩
+      idelePrimeToModulusSubgroup m := fun a ha => ⟨ha.1, fun v _ => ha.2 v⟩
 
 /-- The congruence subgroup, viewed inside the subgroup of ideles prime
 to the modulus. -/
-def congruenceSubgroupInPrimeTo (m : Modulus K) :
+def congruenceSubgroupInPrimeTo :
     Subgroup (idelePrimeToModulusSubgroup m) :=
   m.ideleCongruenceSubgroup.subgroupOf
     (idelePrimeToModulusSubgroup m)
 
-theorem primeToIdealMap_ker (m : Modulus K) :
+theorem primeToIdealMap_ker :
     (primeToIdealMap m).ker =
       congruenceSubgroupInPrimeTo m := by
   ext a
@@ -283,32 +262,21 @@ theorem primeToIdealMap_ker (m : Modulus K) :
     intro v
     exact localHigherUnitGroup_le_integralUnits v (m.finitePart v) (ha.2 v)
 
-/-- The quotient of ideles prime to a modulus by the congruence subgroup,
-identified with fractional ideals prime to the modulus. -/
-def quotientCongruenceEquivPrimeToIdeals (m : Modulus K) :
-    idelePrimeToModulusSubgroup m ⧸
-        congruenceSubgroupInPrimeTo m ≃*
-      primeToModulusIdeals m := by
-  rw [← primeToIdealMap_ker m]
-  exact QuotientGroup.quotientKerEquivOfSurjective
-    (primeToIdealMap m) (primeToIdealMap_surjective m)
-
 /-- Principal ideles satisfying the modulus conditions, considered inside
 `I_K^(m)`. -/
-def principalSubgroupInPrimeTo (m : Modulus K) :
+def principalSubgroupInPrimeTo :
     Subgroup (idelePrimeToModulusSubgroup m) :=
   Subgroup.comap (idelePrimeToModulusSubgroup m).subtype
     (IdeleGroup.principalSubgroup K)
 
 /-- Principal ideals generated by a totally positive element congruent to
 one modulo the finite modulus. -/
-def principalRayIdealSubgroup (m : Modulus K) :
+def principalRayIdealSubgroup :
     Subgroup (primeToModulusIdeals m) :=
   Subgroup.map (primeToIdealMap m)
     (principalSubgroupInPrimeTo m)
 
-theorem mem_principalRayIdealSubgroup_iff
-    (m : Modulus K) (I : primeToModulusIdeals m) :
+theorem mem_principalRayIdealSubgroup_iff (I : primeToModulusIdeals m) :
     I ∈ principalRayIdealSubgroup m ↔
       ∃ x : Kˣ,
         ∃ _hx : IdeleGroup.principalIdele K x ∈
@@ -325,28 +293,26 @@ theorem mem_principalRayIdealSubgroup_iff
       change IdeleGroup.fractionalIdeal (a : IdeleGroup K) =
         (I : FractionalIdealGroup K) at hval
       rw [← IdeleGroup.fractionalIdeal_principalIdele]
-      exact (congrArg (IdeleGroup.fractionalIdeal (K := K)) hx).trans hval
+      exact (congrArg (IdeleGroup.fractionalIdeal) hx).trans hval
   · rintro ⟨x, hx, hideal⟩
     let a : idelePrimeToModulusSubgroup m :=
       ⟨IdeleGroup.principalIdele K x, hx⟩
     have ha : a ∈ principalSubgroupInPrimeTo m := by
-      change IdeleGroup.principalIdele K x ∈
-        IdeleGroup.principalSubgroup K
       exact ⟨x, rfl⟩
     refine ⟨a, ha, ?_⟩
     apply Subtype.ext
     change IdeleGroup.fractionalIdeal
         (IdeleGroup.principalIdele K x) =
-      (I : FractionalIdealGroup K)
+      I
     rw [IdeleGroup.fractionalIdeal_principalIdele, hideal]
 
 /-- The ideal-theoretic ray class group `J_K^m / P_K^m`. -/
-abbrev IdealRayClassGroup (m : Modulus K) :=
+abbrev IdealRayClassGroup :=
   primeToModulusIdeals m ⧸ principalRayIdealSubgroup m
 
 /-- The canonical projection from ideles prime to the modulus to the
 ideal-theoretic ray class group. -/
-def idealRayProjection (m : Modulus K) :
+def idealRayProjection :
     idelePrimeToModulusSubgroup m →*
       IdealRayClassGroup m :=
   (QuotientGroup.mk' (principalRayIdealSubgroup m)).comp
@@ -354,12 +320,12 @@ def idealRayProjection (m : Modulus K) :
 
 /-- The subgroup generated by congruence ideles and principal ideles
 inside the ideles prime to a modulus. -/
-def raySubgroupInPrimeTo (m : Modulus K) :
+def raySubgroupInPrimeTo :
     Subgroup (idelePrimeToModulusSubgroup m) :=
   congruenceSubgroupInPrimeTo m ⊔
     principalSubgroupInPrimeTo m
 
-theorem idealRayProjection_surjective (m : Modulus K) :
+theorem idealRayProjection_surjective :
     Function.Surjective (idealRayProjection m) := by
   intro c
   obtain ⟨I, rfl⟩ :=
@@ -368,7 +334,7 @@ theorem idealRayProjection_surjective (m : Modulus K) :
   obtain ⟨a, rfl⟩ := primeToIdealMap_surjective m I
   exact ⟨a, rfl⟩
 
-theorem idealRayProjection_ker (m : Modulus K) :
+theorem idealRayProjection_ker :
     (idealRayProjection m).ker =
       raySubgroupInPrimeTo m := by
   ext a
@@ -380,10 +346,9 @@ theorem idealRayProjection_ker (m : Modulus K) :
     rw [QuotientGroup.mk'_apply,
       QuotientGroup.eq_one_iff] at ha
     obtain ⟨p, hp, hpa⟩ := ha
-    let n : idelePrimeToModulusSubgroup m := a * p⁻¹
+    let n := a * p⁻¹
     have hn : n ∈ congruenceSubgroupInPrimeTo m := by
       rw [← primeToIdealMap_ker m, MonoidHom.mem_ker]
-      change primeToIdealMap m (a * p⁻¹) = 1
       rw [map_mul, map_inv, hpa]
       simp
     rw [raySubgroupInPrimeTo, Subgroup.mem_sup]
@@ -397,7 +362,7 @@ theorem idealRayProjection_ker (m : Modulus K) :
         (principalRayIdealSubgroup m)
         (primeToIdealMap m (n * p)) = 1
     rw [map_mul]
-    have hn' : primeToIdealMap m n = 1 :=
+    have hn' :=
       MonoidHom.mem_ker.mp
         ((primeToIdealMap_ker m).symm ▸ hn)
     rw [hn', one_mul]
@@ -407,8 +372,7 @@ theorem idealRayProjection_ker (m : Modulus K) :
 
 /-- The quotient of ideles prime to the modulus by the full ray subgroup,
 identified with the ideal-theoretic ray class group. -/
-def quotientRaySubgroupEquivIdealRayClassGroup
-    (m : Modulus K) :
+def quotientRaySubgroupEquivIdealRayClassGroup :
     idelePrimeToModulusSubgroup m ⧸
         raySubgroupInPrimeTo m ≃*
       IdealRayClassGroup m :=
@@ -421,15 +385,13 @@ def quotientRaySubgroupEquivIdealRayClassGroup
 /-- The quotient equivalence induced by the ideal-ray projection evaluates on
 the class of a prime-to-modulus idele as the original projection. -/
 @[simp]
-theorem quotientRaySubgroupEquivIdealRayClassGroup_mk
-    (m : Modulus K) (a : idelePrimeToModulusSubgroup m) :
+theorem quotientRaySubgroupEquivIdealRayClassGroup_mk (a : idelePrimeToModulusSubgroup m) :
     quotientRaySubgroupEquivIdealRayClassGroup m
         (QuotientGroup.mk' (raySubgroupInPrimeTo m) a) =
       idealRayProjection m a := by
-  rw [quotientRaySubgroupEquivIdealRayClassGroup,
-    MulEquiv.trans_apply, QuotientGroup.mk'_apply,
-    QuotientGroup.quotientMulEquivOfEq_mk]
   exact QuotientGroup.kerLift_mk (idealRayProjection m) a
+
+end
 
 /-! ### Simultaneous approximation at the places in a modulus -/
 
@@ -461,10 +423,9 @@ theorem adicAbv_not_isEquiv_of_ne
   intro h
   have hnotle : ¬ v.asIdeal ≤ w.asIdeal := by
     intro hvw_le
-    have htop_le : (⊤ : Ideal (𝓞 K)) ≤ w.asIdeal := by
-      rw [← (v.isCoprime_of_ne w hvw).sup_eq]
-      exact sup_le hvw_le le_rfl
-    exact w.isPrime.ne_top (top_unique htop_le)
+    refine w.isPrime.ne_top (top_unique ?_)
+    rw [← (v.isCoprime_of_ne w hvw).sup_eq]
+    exact sup_le hvw_le le_rfl
   obtain ⟨x, hxv, hxw⟩ := Set.not_subset.mp hnotle
   have hvlt :
       NumberField.HeightOneSpectrum.adicAbv K v
@@ -482,18 +443,15 @@ theorem adicAbv_not_isEquiv_infinitePlace
     (v : HeightOneSpectrum (𝓞 K)) (w : InfinitePlace K) :
     ¬ (NumberField.HeightOneSpectrum.adicAbv K v).IsEquiv w.1 := by
   intro h
-  have hle :
-      w.1 ((2 : ℕ) : K) ≤ 1 :=
-    h.le_one_iff.mp
-      (NumberField.HeightOneSpectrum.adicAbv_natCast_le_one K v 2)
-  have hw :
-      w.1 ((2 : ℕ) : K) = (2 : ℝ) :=
-    NumberField.InfinitePlace.map_natCast w 2
-  have hfalse : (2 : ℝ) ≤ 1 := hw ▸ hle
+  have hfalse := (NumberField.InfinitePlace.map_natCast w 2) ▸ (h.le_one_iff.mp
+    (NumberField.HeightOneSpectrum.adicAbv_natCast_le_one K v 2))
   norm_num at hfalse
 
-theorem approximationAbsoluteValue_isNontrivial
-    (m : Modulus K) :
+section
+
+variable (m : Modulus K)
+
+theorem approximationAbsoluteValue_isNontrivial :
     ∀ i, (approximationAbsoluteValue m i).IsNontrivial
   | Sum.inl v => by
       change
@@ -503,8 +461,7 @@ theorem approximationAbsoluteValue_isNontrivial
       change w.1.IsNontrivial
       exact w.isNontrivial
 
-theorem approximationAbsoluteValue_pairwise
-    (m : Modulus K) :
+theorem approximationAbsoluteValue_pairwise :
     Pairwise fun i j =>
       ¬ (approximationAbsoluteValue m i).IsEquiv
         (approximationAbsoluteValue m j) := by
@@ -528,15 +485,16 @@ theorem approximationAbsoluteValue_pairwise
           intro h
           apply hij
           congr
-          change v.1.IsEquiv w.1 at h
           exact
-            (InfinitePlace.eq_iff_isEquiv (K := K)).mpr h
+            (InfinitePlace.eq_iff_isEquiv).mpr h
 
 /-- The corresponding product of local completions. -/
-abbrev approximationCompletion (m : Modulus K) :
+abbrev approximationCompletion :
     ApproximationPlace m → Type _
   | Sum.inl v => v.1.adicCompletion K
   | Sum.inr w => w.Completion
+
+end
 
 noncomputable instance approximationCompletionTopologicalSpace
     (m : Modulus K) (i : ApproximationPlace m) :
@@ -600,15 +558,17 @@ theorem continuous_finiteApproximationCompletionMap
     FinitePlace.norm_embedding]
   rfl
 
-theorem denseRange_approximationCompletionMap
-    (m : Modulus K) :
+section
+
+variable (m : Modulus K)
+
+theorem denseRange_approximationCompletionMap :
     ∀ i, DenseRange (approximationCompletionMap m i)
   | Sum.inl v => denseRange_finiteApproximationCompletionMap v.1
   | Sum.inr w =>
       NumberField.InfinitePlace.Completion.denseRange_coe w
 
-theorem continuous_approximationCompletionMap
-    (m : Modulus K) :
+theorem continuous_approximationCompletionMap :
     ∀ i, Continuous (approximationCompletionMap m i)
   | Sum.inl v => continuous_finiteApproximationCompletionMap v.1
   | Sum.inr w =>
@@ -616,7 +576,7 @@ theorem continuous_approximationCompletionMap
 
 /-- The diagonal embedding into the finite product of the relevant
 completions. -/
-def approximationEmbedding (m : Modulus K) :
+def approximationEmbedding :
     K → (i : ApproximationPlace m) → approximationCompletion m i :=
   (Pi.map (approximationCompletionMap m)) ∘
     algebraMap K
@@ -624,28 +584,26 @@ def approximationEmbedding (m : Modulus K) :
         WithAbs (approximationAbsoluteValue m i))
 
 @[simp]
-theorem approximationEmbedding_finite
-    (m : Modulus K) (x : K) (v : ↥m.finitePart.support) :
+theorem approximationEmbedding_finite (x : K) (v : ↥m.finitePart.support) :
     approximationEmbedding m x (Sum.inl v) =
       FinitePlace.embedding v.1 x :=
   rfl
 
 @[simp]
-theorem approximationEmbedding_infinite
-    (m : Modulus K) (x : K) (w : InfinitePlace K) :
+theorem approximationEmbedding_infinite (x : K) (w : InfinitePlace K) :
     approximationEmbedding m x (Sum.inr w) =
       (x : w.Completion) :=
   rfl
 
-theorem denseRange_approximationEmbedding (m : Modulus K) :
-    DenseRange (approximationEmbedding m) := by
-  exact
-    (DenseRange.piMap
+theorem denseRange_approximationEmbedding :
+    DenseRange (approximationEmbedding m) := (DenseRange.piMap
       (denseRange_approximationCompletionMap m)).comp
       (AbsoluteValue.denseRange_algebraMap_pi
         (approximationAbsoluteValue_isNontrivial m)
         (approximationAbsoluteValue_pairwise m))
       (.piMap (continuous_approximationCompletionMap m))
+
+end
 
 /-- The open set of field elements whose ratio with a fixed unit lies in
 a prescribed open unit set. -/
@@ -667,11 +625,14 @@ theorem isOpen_unitRatioSet
 /-- The value of the distinguished unit belongs to its unit-ratio set. -/
 theorem val_mem_unitRatioSet
     {F : Type*} [Field F] (a : Fˣ) (U : Subgroup Fˣ) :
-    (a : F) ∈ unitRatioSet a U := by
-  exact ⟨a, by simp, rfl⟩
+    (a : F) ∈ unitRatioSet a U := ⟨a, by simp, rfl⟩
+
+section
+
+variable (m : Modulus K) (a : IdeleGroup K)
 
 /-- The open local conditions that make `a / x` prime to `m`. -/
-def approximationTarget (m : Modulus K) (a : IdeleGroup K) :
+def approximationTarget :
     ∀ i : ApproximationPlace m, Set (approximationCompletion m i)
   | Sum.inl v =>
       unitRatioSet (a.2 v.1)
@@ -681,8 +642,7 @@ def approximationTarget (m : Modulus K) (a : IdeleGroup K) :
         (ContinuousMulEquiv.piUnits a.1 w)
         (m.localInfiniteCongruenceSubgroup w)
 
-theorem isOpen_approximationTarget
-    (m : Modulus K) (a : IdeleGroup K) :
+theorem isOpen_approximationTarget :
     ∀ i, IsOpen (approximationTarget m a i)
   | Sum.inl v => by
       change IsOpen
@@ -707,6 +667,8 @@ theorem isOpen_approximationTarget
           exact isOpen_univ
       · rw [Modulus.localInfiniteCongruenceSubgroup, dite_eq_right hw]
         exact isOpen_univ
+
+end
 
 /-- The given idele itself lies in the product of its approximation
 neighborhoods. -/
@@ -735,18 +697,14 @@ theorem exists_principal_quotient_mem_primeTo
     ∃ x : Kˣ,
       a * (IdeleGroup.principalIdele K x)⁻¹ ∈
         idelePrimeToModulusSubgroup m := by
-  let U : Set
-      ((i : ApproximationPlace m) → approximationCompletion m i) :=
+  let U :=
     Set.univ.pi (approximationTarget m a)
-  have hUOpen : IsOpen U := by
-    exact isOpen_set_pi Set.finite_univ fun i _hi =>
+  have hUOpen := isOpen_set_pi Set.finite_univ fun i _hi =>
       isOpen_approximationTarget m a i
-  have hUNonempty : U.Nonempty :=
-    ⟨approximationTargetPoint m a,
-      approximationTargetPoint_mem m a⟩
   obtain ⟨x, hx⟩ :=
     (denseRange_approximationEmbedding m).exists_mem_open
-      hUOpen hUNonempty
+      hUOpen (⟨approximationTargetPoint m a,
+        approximationTargetPoint_mem m a⟩)
   let w₀ : InfinitePlace K := Classical.choice inferInstance
   have hxw₀ :=
     hx (Sum.inr w₀) (Set.mem_univ (Sum.inr w₀))
@@ -822,10 +780,11 @@ theorem exists_principal_quotient_mem_primeTo
     rw [hprincipal]
     exact hy
 
+variable (m : Modulus K)
+
 /-- Approximation identifies the idele group as
 `I_K = I_K^(m) Kˣ`. -/
-theorem idelePrimeToModulusSubgroup_sup_principalSubgroup
-    (m : Modulus K) :
+theorem idelePrimeToModulusSubgroup_sup_principalSubgroup :
     idelePrimeToModulusSubgroup m ⊔
         IdeleGroup.principalSubgroup K =
       ⊤ := by
@@ -841,7 +800,7 @@ theorem idelePrimeToModulusSubgroup_sup_principalSubgroup
 
 /-- The natural map from the prime-to-`m` ideles to the full idelic
 ray-class quotient. -/
-def primeToRayClassProjection (m : Modulus K) :
+def primeToRayClassProjection :
     idelePrimeToModulusSubgroup m →*
       IdeleGroup K ⧸
         (m.ideleCongruenceSubgroup ⊔
@@ -851,7 +810,7 @@ def primeToRayClassProjection (m : Modulus K) :
       IdeleGroup.principalSubgroup K)).comp
     (idelePrimeToModulusSubgroup m).subtype
 
-theorem primeToRayClassProjection_ker (m : Modulus K) :
+theorem primeToRayClassProjection_ker :
     (primeToRayClassProjection m).ker =
       raySubgroupInPrimeTo m := by
   ext a
@@ -865,20 +824,15 @@ theorem primeToRayClassProjection_ker (m : Modulus K) :
       exact MonoidHom.mem_ker.mp ha
     rw [Subgroup.mem_sup] at hN
     obtain ⟨c, hc, p, hp, hcp⟩ := hN
-    have hcA :
-        c ∈ idelePrimeToModulusSubgroup m :=
+    have hcA :=
       ideleCongruenceSubgroup_le_primeTo m hc
     have hpA :
         p ∈ idelePrimeToModulusSubgroup m := by
-      have haA :
-          (a : IdeleGroup K) ∈
-            idelePrimeToModulusSubgroup m :=
-        a.property
       have hmul :
-          c⁻¹ * (a : IdeleGroup K) ∈
+          c⁻¹ * a ∈
             idelePrimeToModulusSubgroup m :=
         (idelePrimeToModulusSubgroup m).mul_mem
-          ((idelePrimeToModulusSubgroup m).inv_mem hcA) haA
+          ((idelePrimeToModulusSubgroup m).inv_mem hcA) a.property
       rw [← hcp] at hmul
       simpa using hmul
     rw [raySubgroupInPrimeTo, Subgroup.mem_sup]
@@ -894,7 +848,7 @@ theorem primeToRayClassProjection_ker (m : Modulus K) :
       QuotientGroup.mk'
           (m.ideleCongruenceSubgroup ⊔
             IdeleGroup.principalSubgroup K)
-          (a : IdeleGroup K) =
+          a =
         1
     rw [QuotientGroup.mk'_apply,
       QuotientGroup.eq_one_iff]
@@ -912,7 +866,7 @@ theorem primeToRayClassProjection_ker (m : Modulus K) :
             m.ideleCongruenceSubgroup ⊔
               IdeleGroup.principalSubgroup K from le_sup_right) hp
 
-theorem primeToRayClassProjection_surjective (m : Modulus K) :
+theorem primeToRayClassProjection_surjective :
     Function.Surjective (primeToRayClassProjection m) := by
   intro q
   refine q.inductionOn' ?_
@@ -933,12 +887,6 @@ theorem primeToRayClassProjection_surjective (m : Modulus K) :
         (m.ideleCongruenceSubgroup ⊔
           IdeleGroup.principalSubgroup K) g
   rw [← hap, map_mul]
-  have hpN :
-      p ∈ m.ideleCongruenceSubgroup ⊔
-        IdeleGroup.principalSubgroup K :=
-    (show IdeleGroup.principalSubgroup K ≤
-        m.ideleCongruenceSubgroup ⊔
-          IdeleGroup.principalSubgroup K from le_sup_right) hp
   have hmkp :
       QuotientGroup.mk'
           (m.ideleCongruenceSubgroup ⊔
@@ -946,7 +894,9 @@ theorem primeToRayClassProjection_surjective (m : Modulus K) :
         1 := by
     rw [QuotientGroup.mk'_apply,
       QuotientGroup.eq_one_iff]
-    exact hpN
+    exact ((show IdeleGroup.principalSubgroup K ≤
+      m.ideleCongruenceSubgroup ⊔
+        IdeleGroup.principalSubgroup K from le_sup_right) hp)
   rw [hmkp]
   exact
     (mul_one
@@ -956,8 +906,7 @@ theorem primeToRayClassProjection_surjective (m : Modulus K) :
 
 /-- Restricting the full idelic ray-class quotient to prime-to-`m`
 ideles is an equivalence. -/
-def quotientRaySubgroupEquivIdeleRayQuotient
-    (m : Modulus K) :
+def quotientRaySubgroupEquivIdeleRayQuotient :
     idelePrimeToModulusSubgroup m ⧸
         raySubgroupInPrimeTo m ≃*
       IdeleGroup K ⧸
@@ -972,20 +921,15 @@ def quotientRaySubgroupEquivIdeleRayQuotient
 /-- The quotient equivalence induced by the idelic ray projection evaluates
 on a prime-to-modulus idele class as the original projection. -/
 @[simp]
-theorem quotientRaySubgroupEquivIdeleRayQuotient_mk
-    (m : Modulus K) (a : idelePrimeToModulusSubgroup m) :
+theorem quotientRaySubgroupEquivIdeleRayQuotient_mk (a : idelePrimeToModulusSubgroup m) :
     quotientRaySubgroupEquivIdeleRayQuotient m
         (QuotientGroup.mk' (raySubgroupInPrimeTo m) a) =
       primeToRayClassProjection m a := by
-  rw [quotientRaySubgroupEquivIdeleRayQuotient,
-    MulEquiv.trans_apply, QuotientGroup.mk'_apply,
-    QuotientGroup.quotientMulEquivOfEq_mk]
   exact QuotientGroup.kerLift_mk (primeToRayClassProjection m) a
 
 /-- The idelic and ideal-theoretic ray class
 groups are canonically multiplicatively equivalent. -/
-def rayClassGroupEquivIdealRayClassGroup
-    (m : Modulus K) :
+def rayClassGroupEquivIdealRayClassGroup :
     RayClassGroup m ≃* IdealRayClassGroup m :=
   (rayClassGroupEquivIdeleQuotient m).trans
     ((quotientRaySubgroupEquivIdeleRayQuotient m).symm.trans

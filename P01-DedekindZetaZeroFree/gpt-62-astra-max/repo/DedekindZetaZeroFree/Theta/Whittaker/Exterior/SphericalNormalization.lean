@@ -14,13 +14,13 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPLiteralRaw KPGlobalTorusFiniteStages ThetaExpansion TensorActionSource
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 variable (N : MomentSources.TraceHaarTransport R)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
@@ -52,12 +52,8 @@ theorem actualReference_spherical (q : KPFinitePlace F) (hq : q ∉ C.exceptiona
   rw [← actualCanonicalForwardLinear_intertwines]
   have hk : actualGoodCompactSplit F ζ hζ q ht a ∈
       (C.canonical q).iwasawa.compact.toOpenSubgroup := by
-    change _ ∈ ((C.canonical q).iwasawa.compact.toOpenSubgroup :
-      Subgroup (ActualCover F ζ hζ q))
-    have hm : actualGoodCompactSplit F ζ hζ q ht a ∈
-        (actualGoodCompactSplit F ζ hζ q ht).range := MonoidHom.mem_range.mpr ⟨a,rfl⟩
     exact Eq.mpr (congrArg (fun K : Subgroup (ActualCover F ζ hζ q) =>
-      actualGoodCompactSplit F ζ hζ q ht a ∈ K) (C.actual_compact q hq).choose_spec) hm
+      actualGoodCompactSplit F ζ hζ q ht a ∈ K) (C.actual_compact q hq).choose_spec) (MonoidHom.mem_range.mpr ⟨a,rfl⟩)
   rw [plusReference_fixed R.A P C q hq ⟨_,hk⟩]
   rfl
 

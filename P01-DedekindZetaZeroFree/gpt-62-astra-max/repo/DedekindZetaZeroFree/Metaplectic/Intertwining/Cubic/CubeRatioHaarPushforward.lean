@@ -14,7 +14,7 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (q : HeightOneSpectrum (𝓞 F))
+    (q : HeightOneSpectrum (𝓞 F))
 
 local notation "K" => q.adicCompletion F
 
@@ -42,7 +42,7 @@ private theorem cube_ratio_generic
   let _ := IsTopologicalAddGroup.rightUniformSpace L
   let _ := isUniformAddGroup_of_addCommGroup (G := L)
   let _ : BorelSpace Lˣ := ⟨by
-    change MeasurableSpace.comap Units.val (inferInstance : MeasurableSpace L) = borel Lˣ
+    change MeasurableSpace.comap Units.val inferInstance = borel Lˣ
     rw [@BorelSpace.measurable_eq L _ _ _,
       Units.isEmbedding_val₀.isInducing.eq_induced, borel_comap]⟩
   let _ := KPJointRegulator.MellinBetaIntegrability.localField_secondCountable L
@@ -54,7 +54,7 @@ private theorem cube_ratio_generic
   have hopen : IsOpen (KPCubicUnitIndices.Integers L : Set L) := by
     change IsOpen ((ValuativeRel.valuation L).integer : Set L)
     exact Valued.isOpen_integer L
-  have hpos : 0 < dx (KPCubicUnitIndices.Integers L : Set L) :=
+  have hpos :=
     hopen.measure_pos (μ := dx) ⟨0, by simp⟩
   let _ : μ.IsHaarMeasure := (kp_rankone_cubic_haar_power_measure L dx _
     (ENNReal.toReal_pos hpos.ne' hcompact.measure_lt_top.ne)
@@ -81,7 +81,7 @@ private theorem cube_ratio_generic
       Measure.prod_smul_right]
     congr 1
     rw [← Measure.prod_restrict, Measure.restrict_univ]
-  have hdis : DiscreteTopology (KPLocalTorus.CubeClasses Lˣ) :=
+  have hdis :=
     (KPRankOneCubicProjection.local_character_count L (κ : L)
       (hκ.map_of_injective (f := (KPCubicUnitIndices.Integers L).subtype) Subtype.val_injective)).1
   let _ := hdis
@@ -145,8 +145,7 @@ theorem actual_cube_ratio_pushforward
     μ.prod μ = ENNReal.ofReal (KPCubicHaar.abs K 3 / 3) •
       ∑ k : KPLocalTorus.CubeClasses Kˣ,
         Measure.map (fun xy : Kˣ × Kˣ =>
-          (xy.1 * xy.2 ^ 3, cRep k * xy.1)) (μ.prod μ) := by
-  exact cube_ratio_generic K dx κ hκ cRep hcRep
+          (xy.1 * xy.2 ^ 3, cRep k * xy.1)) (μ.prod μ) := cube_ratio_generic K dx κ hκ cRep hcRep
 
 end
 

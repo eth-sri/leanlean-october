@@ -12,14 +12,11 @@ open KPGlobalTorusFunctionData KPAdelicCoverRestrictedProduct
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 private theorem N_eq_pglN (x : KPAdeles F) :
-    KPGlobalTorusFunctionData.N F ζ hζ x = KPRationalAdelicSplitting.pglN F ζ hζ x := by
-  rfl
+    KPGlobalTorusFunctionData.N F ζ hζ x = KPRationalAdelicSplitting.pglN F ζ hζ x := rfl
 
 private theorem projection_pglA (y : KPGlobalTorusFunctionData.Ideles F) :
     pglProjection F ζ hζ (KPRationalAdelicSplitting.pglA F ζ hζ y) =
       KPGlobalCubicIdelePairing.diagonalPGL F y := by
-  change QuotientGroup.mk' (scalarSubgroup F)
-    (projection F ζ hζ (KPRationalAdelicSplitting.A F ζ hζ y)) = _
   change QuotientGroup.mk' (scalarSubgroup F) _ = QuotientGroup.mk' (scalarSubgroup F) _
   congr 1
   have hd (v : KPHilbert.Place F) : matrixEval F v (KPGlobalCubicIdelePairing.diagonalHom F y) =
@@ -33,12 +30,10 @@ private theorem projection_pglA (y : KPGlobalTorusFunctionData.Ideles F) :
   ext i j
   apply Prod.ext
   · funext w
-    have h := (KPRationalAdelicSplitting.projection_A F ζ hζ y (Sum.inl w)).trans (hd (Sum.inl w)).symm
-    exact congrArg (fun M : KPLocalCover.LocalGL2 F (Sum.inl w) => M i j) h
+    exact congrArg (fun M : KPLocalCover.LocalGL2 F (Sum.inl w) => M i j) ((KPRationalAdelicSplitting.projection_A F ζ hζ y (Sum.inl w)).trans (hd (Sum.inl w)).symm)
   · apply Subtype.ext
     funext q
-    have h := (KPRationalAdelicSplitting.projection_A F ζ hζ y (Sum.inr q)).trans (hd (Sum.inr q)).symm
-    exact congrArg (fun M : KPLocalCover.LocalGL2 F (Sum.inr q) => M i j) h
+    exact congrArg (fun M : KPLocalCover.LocalGL2 F (Sum.inr q) => M i j) ((KPRationalAdelicSplitting.projection_A F ζ hζ y (Sum.inr q)).trans (hd (Sum.inr q)).symm)
 
 private theorem torus_projection_diagonal (t : E F ζ hζ) :
     pglProjection F ζ hζ t.val = KPGlobalCubicIdelePairing.diagonalPGL F (p F ζ hζ t) := by
@@ -80,19 +75,15 @@ theorem actual_torus_root_reorder (t : E F ζ hζ) (x : KPAdeles F) :
     (x * (p F ζ hζ t : KPAdeles F)) (p F ζ hζ t)
   have hp : (x * (p F ζ hζ t : KPAdeles F)) * (↑(p F ζ hζ t)⁻¹ : KPAdeles F) = x := by
     rw [mul_assoc]
-    have hu : (p F ζ hζ t : KPAdeles F) * (↑(p F ζ hζ t)⁻¹ : KPAdeles F) = 1 :=
-      (p F ζ hζ t).mul_inv
-    rw [hu, mul_one]
+    rw [((p F ζ hζ t).mul_inv), mul_one]
   rw [hp, ← N_eq_pglN, ← N_eq_pglN] at hn
-  have hcomm := Subgroup.mem_center_iff.mp hc (KPGlobalTorusFunctionData.N F ζ hζ
-    (x * (p F ζ hζ t : KPAdeles F)))
+  let N₀ := KPGlobalTorusFunctionData.N F ζ hζ (x * (p F ζ hζ t : KPAdeles F))
   calc
-    t.val * KPGlobalTorusFunctionData.N F ζ hζ x =
+    _ =
       (t.val * a⁻¹) * (a * KPGlobalTorusFunctionData.N F ζ hζ x) := by group
-    _ = (t.val * a⁻¹) * (KPGlobalTorusFunctionData.N F ζ hζ
-      (x * (p F ζ hζ t : KPAdeles F)) * a) := by rw [← hn]
-    _ = KPGlobalTorusFunctionData.N F ζ hζ (x * (p F ζ hζ t : KPAdeles F)) * t.val := by
-      rw [← mul_assoc, ← hcomm]
+    _ = (t.val * a⁻¹) * (N₀ * a) := by rw [← hn]
+    _ = N₀ * t.val := by
+      rw [← mul_assoc, ← (Subgroup.mem_center_iff.mp hc (N₀))]
       group
 
 theorem val_torus_root_compact (K : Subgroup (G F ζ hζ))

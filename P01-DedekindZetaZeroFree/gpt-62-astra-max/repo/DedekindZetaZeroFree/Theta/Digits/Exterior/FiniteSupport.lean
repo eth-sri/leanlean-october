@@ -12,12 +12,12 @@ set_option backward.isDefEq.respectTransparency true
 namespace DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 open MomentSources NumberField IsDedekindDomain ThetaExpansion
 open scoped NumberField Classical
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_localAdele → eval_localAdele
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming order_finite_support → order_finite_support
+open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting (eval_localAdele)
+open _root_.DedekindZetaZeroFree.ThetaBranch (order_finite_support)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
 
  theorem parameter_offrow (m : ThetaReflectionData.Row R.A)
     (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property))
@@ -46,15 +46,13 @@ variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
  theorem finite_support (m : ThetaReflectionData.Row R.A) (x : Fˣ)
     (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property)) :
     Function.HasFiniteMulSupport (ThetaExpansion.SignedExpansion.exteriorDigitFactor R C m x d) := by
-  have hs := (((ThetaDigitAverage.rowPrimes R.A m.val m.property).finite_toSet).union
+  apply ((((ThetaDigitAverage.rowPrimes R.A m.val m.property).finite_toSet).union
     (order_finite_support x)).preimage
-      (f := fun p : ThetaBranch.ExteriorPrime R.A => p.val) Subtype.val_injective.injOn
-  apply hs.subset
+       Subtype.val_injective.injOn).subset
   intro p hp
   by_contra h
   have hh : p.val ∉ ThetaDigitAverage.rowPrimes R.A m.val m.property ∧ ThetaBranch.order p.val x = 0 := by
-    simpa only [Set.mem_preimage, Set.mem_union, Finset.mem_coe,
-      Set.mem_setOf_eq, not_or, not_not] using h
+    simpa using h
   apply hp
   rw [offrow_value R C m x d p hh.1]
   simp [ThetaBranch.sphericalFactor, hh.2, sexticSphericalCoefficient]

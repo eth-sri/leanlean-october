@@ -11,8 +11,8 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory KPAdelicCoverRestrictedProduct
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 abbrev rawToGroup : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12 →* Group R :=
   (scalarQuotient F R.A.zeta12 R.A.primitive_zeta12).comp
@@ -41,8 +41,6 @@ lemma diagonal_commute_exterior (y : R.A.G) (p : ThetaBranch.ExteriorPrime R.A)
     Commute (diagonal R y) (finiteLift R p.val b) := by
   apply group_commute_single R
     (KPRationalAdelicSplitting.ATuple F R.A.zeta12 R.A.primitive_zeta12 (MomentSources.localIdele R y)) p.val
-  change KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val)
-    (Units.map (adeleEval F (Sum.inr p.val)) (MomentSources.localIdele R y)) = 1
   have he := DigitMasks.localIdele_exterior R y p.val p.property
   change Units.map (adeleEval F (Sum.inr p.val)).toMonoidHom (MomentSources.localIdele R y) = 1 at he
   exact (congrArg (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val)) he).trans

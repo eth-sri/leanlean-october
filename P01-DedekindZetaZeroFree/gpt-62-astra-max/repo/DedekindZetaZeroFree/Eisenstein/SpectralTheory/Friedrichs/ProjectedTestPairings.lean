@@ -13,19 +13,23 @@ open KPContLocalNorm KPContActualChartRestrictionDensity
 open KPContSectorCoveredQuotientVocabulary KPContSectorPhaseComponentCharts
 open KPContSectorSmoothFramesSupport KPContSectorLineL2Isometry
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 private theorem overlap_mul (i : Fin (H.atlas U).componentCount)
     (γ δ : Component F ζ hζ U R P H i) (p : Space (KPCuspLogShape.dimension F * 3)) :
     overlapCoordinate F ζ hζ U R P H i (γ * δ) p =
       overlapCoordinate F ζ hζ U R P H i γ (overlapCoordinate F ζ hζ U R P H i δ p) := by
   simp only [overlapCoordinate, Homeomorph.apply_symm_apply, Subgroup.coe_mul, mul_smul]
 
-def reynolds (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
+section
+
+variable (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
     [Fintype (MulAction.stabilizer (Component F ζ hζ U R P H i) x)]
-    (φ : Space (KPCuspLogShape.dimension F * 3) → ℂ) :
+    (φ : Space (KPCuspLogShape.dimension F * 3) → ℂ)
+
+def reynolds :
     Space (KPCuspLogShape.dimension F * 3) → ℂ := fun p =>
   (Nat.card (MulAction.stabilizer (Component F ζ hζ U R P H i) x) : ℂ)⁻¹ *
     ∑ σ : MulAction.stabilizer (Component F ζ hζ U R P H i) x,
@@ -33,10 +37,7 @@ def reynolds (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
         (KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).starProjection
           (φ (overlapCoordinate F ζ hζ U R P H i σ.val p))
 
-theorem reynolds_covariant (i : Fin (H.atlas U).componentCount)
-    (x : SymmetricSpace F)
-    [Fintype (MulAction.stabilizer (Component F ζ hζ U R P H i) x)]
-    (φ : Space (KPCuspLogShape.dimension F * 3) → ℂ)
+theorem reynolds_covariant
     (δ : MulAction.stabilizer (Component F ζ hζ U R P H i) x)
     (p : Space (KPCuspLogShape.dimension F * 3)) :
     reynolds i x φ (overlapCoordinate F ζ hζ U R P H i δ.val p) =
@@ -56,13 +57,9 @@ theorem reynolds_covariant (i : Fin (H.atlas U).componentCount)
       (KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).starProjection
         (φ (overlapCoordinate F ζ hζ U R P H i (σ.val * δ.val) p)))
   rw [overlap_mul, map_mul, map_mul, Circle.coe_mul, mul_inv_rev]
-  have hd : (chi F ζ hζ (((H.atlas U).line i).rho δ.val) : ℂ) ≠ 0 := Circle.coe_ne_zero _
   field_simp
 
-theorem reynolds_mem_fiber (i : Fin (H.atlas U).componentCount)
-    (x : SymmetricSpace F)
-    [Fintype (MulAction.stabilizer (Component F ζ hζ U R P H i) x)]
-    (φ : Space (KPCuspLogShape.dimension F * 3) → ℂ)
+theorem reynolds_mem_fiber
     (p : Space (KPCuspLogShape.dimension F * 3)) :
     reynolds i x φ p ∈ KPCuspGenuineMonodromy.scalarFiber F ζ hζ U := by
   unfold reynolds
@@ -71,16 +68,17 @@ theorem reynolds_mem_fiber (i : Fin (H.atlas U).componentCount)
   intro σ _
   exact Submodule.smul_mem _ _ (Submodule.starProjection_apply_mem _ _)
 
-private theorem overlap_smooth (i : Fin (H.atlas U).componentCount)
-    (γ : Component F ζ hζ U R P H i) :
-    ContDiff ℝ (⊤ : ℕ∞) (overlapCoordinate F ζ hζ U R P H i γ) := by
-  exact (CoreChartLocalizers.CutoffConstruction.ChartDensityConstruction.coordinates_symm_contDiff _).comp
-    ((CoreChartLocalizers.CutoffConstruction.StabilizerLinearization.rational_action_contDiff F γ.val).comp
-      (CoreChartLocalizers.CutoffConstruction.ChartDensityConstruction.coordinates_contDiff _))
+end
 
-theorem reynolds_smooth (i : Fin (H.atlas U).componentCount)
+section
+
+variable (i : Fin (H.atlas U).componentCount)
+
+local notation "LevelComponent" => Component F ζ hζ U R P H
+
+theorem reynolds_smooth
     (x : SymmetricSpace F)
-    [Fintype (MulAction.stabilizer (Component F ζ hζ U R P H i) x)]
+    [Fintype (MulAction.stabilizer (LevelComponent i) x)]
     (φ : Space (KPCuspLogShape.dimension F * 3) → ℂ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) :
     ContDiff ℝ (⊤ : ℕ∞) (reynolds i x φ) := by
   apply ContDiff.mul contDiff_const
@@ -88,29 +86,31 @@ theorem reynolds_smooth (i : Fin (H.atlas U).componentCount)
   intro σ _
   apply ContDiff.mul contDiff_const
   exact ((KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).starProjection.restrictScalars ℝ).contDiff.comp
-    (hφ.comp (overlap_smooth i σ.val))
+    (hφ.comp (((CoreChartLocalizers.CutoffConstruction.ChartDensityConstruction.coordinates_symm_contDiff _).comp
+    ((CoreChartLocalizers.CutoffConstruction.StabilizerLinearization.rational_action_contDiff F σ.val.val).comp
+      (CoreChartLocalizers.CutoffConstruction.ChartDensityConstruction.coordinates_contDiff _)))))
 
-def overlapHomeomorph (i : Fin (H.atlas U).componentCount)
-    (γ : Component F ζ hζ U R P H i) :
+def overlapHomeomorph
+    (γ : LevelComponent i) :
     Space (KPCuspLogShape.dimension F * 3) ≃ₜ Space (KPCuspLogShape.dimension F * 3) := by
   letI : ContinuousConstSMul (KPCuspArithmetic.PGL2 F) (SymmetricSpace F) :=
     ⟨KPCuspSiegel.continuous_action F⟩
   exact ((coordinates F).trans (Homeomorph.smul γ.val)).trans (coordinates F).symm
 
-theorem reynolds_support (i : Fin (H.atlas U).componentCount)
+theorem reynolds_support
     (x : SymmetricSpace F)
-    [Fintype (MulAction.stabilizer (Component F ζ hζ U R P H i) x)]
+    [Fintype (MulAction.stabilizer (LevelComponent i) x)]
     (φ : Space (KPCuspLogShape.dimension F * 3) → ℂ) (hφ : HasCompactSupport φ) :
     HasCompactSupport (reynolds i x φ) ∧
-      tsupport (reynolds i x φ) ⊆ ⋃ σ : MulAction.stabilizer (Component F ζ hζ U R P H i) x,
+      tsupport (reynolds i x φ) ⊆ ⋃ σ : MulAction.stabilizer (LevelComponent i) x,
         overlapHomeomorph i σ.val⁻¹ '' tsupport φ := by
-  let K := ⋃ σ : MulAction.stabilizer (Component F ζ hζ U R P H i) x,
+  let K := ⋃ σ : MulAction.stabilizer (LevelComponent i) x,
     overlapHomeomorph i σ.val⁻¹ '' tsupport φ
   have hK : IsCompact K := isCompact_iUnion fun σ =>
     hφ.image (overlapHomeomorph i σ.val⁻¹).continuous
   have hz : ∀ p ∉ K, reynolds i x φ p = 0 := by
     intro p hp
-    have hzero : ∀ σ : MulAction.stabilizer (Component F ζ hζ U R P H i) x,
+    have hzero : ∀ σ : MulAction.stabilizer (LevelComponent i) x,
         φ (overlapCoordinate F ζ hζ U R P H i σ.val p) = 0 := by
       intro σ
       apply image_eq_zero_of_notMem_tsupport
@@ -129,8 +129,8 @@ theorem reynolds_support (i : Fin (H.atlas U).componentCount)
     exact hp (hz p hn)
   exact ⟨hK.of_isClosed_subset isClosed_closure hs, hs⟩
 
-theorem overlap_preserving (i : Fin (H.atlas U).componentCount)
-    (γ : Component F ζ hζ U R P H i) :
+theorem overlap_preserving
+    (γ : LevelComponent i) :
     MeasurePreserving (overlapCoordinate F ζ hζ U R P H i γ)
       (volume.withDensity (fun p => ENNReal.ofReal (density F p)))
       (volume.withDensity (fun p => ENNReal.ofReal (density F p))) := by
@@ -140,6 +140,8 @@ theorem overlap_preserving (i : Fin (H.atlas U).componentCount)
     ⟨(coordinates F).continuous.measurable, metric_volume F⟩
   exact (hc.symm (coordinates F).toMeasurableEquiv).comp
     ((KPFiniteAdelicCuspEnds.arch_smul_measurePreserving F γ.val).comp hc)
+
+end
 private theorem fiber_projection_pairing (w t : ℂ)
     (hw : w ∈ KPCuspGenuineMonodromy.scalarFiber F ζ hζ U) :
     w * star ((KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).starProjection t) =
@@ -147,12 +149,14 @@ private theorem fiber_projection_pairing (w t : ℂ)
   have h := Submodule.inner_starProjection_left_eq_right
     (KPCuspGenuineMonodromy.scalarFiber F ζ hζ U) w t
   rw [Submodule.starProjection_eq_self_iff.mpr hw] at h
-  have hc := congrArg star h
-  simpa only [RCLike.inner_apply', Complex.star_def, star_mul, map_mul, Complex.conj_conj, mul_comm] using hc.symm
+  simpa using (congrArg star h).symm
 
-private theorem chart_action_mem (i : Fin (H.atlas U).componentCount)
-    (x : SymmetricSpace F) (O : OrbifoldChart F ζ hζ U R P H i x)
-    (σ : MulAction.stabilizer (Component F ζ hζ U R P H i) x)
+section
+
+variable (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
+    (O : OrbifoldChart F ζ hζ U R P H i x) (σ : MulAction.stabilizer (Component F ζ hζ U R P H i) x)
+
+private theorem chart_action_mem
     (p : Space (KPCuspLogShape.dimension F * 3))
     (hp : p ∈ chartDomain F ζ hζ U R P H i x O) :
     overlapCoordinate F ζ hζ U R P H i σ.val p ∈ chartDomain F ζ hζ U R P H i x O := by
@@ -169,28 +173,31 @@ private theorem chart_action_mem (i : Fin (H.atlas U).componentCount)
   simpa only [chartDomain, Set.mem_preimage, overlapCoordinate,
     Homeomorph.apply_symm_apply, complexProjectiveEmbedding_smul] using h
 
-theorem chart_action_preserving (i : Fin (H.atlas U).componentCount)
-    (x : SymmetricSpace F) (O : OrbifoldChart F ζ hζ U R P H i x)
-    (σ : MulAction.stabilizer (Component F ζ hζ U R P H i) x) :
+theorem chart_action_preserving :
     MeasurePreserving (overlapCoordinate F ζ hζ U R P H i σ.val)
       ((volume.withDensity (fun p => ENNReal.ofReal (density F p))).restrict
         (chartDomain F ζ hζ U R P H i x O))
       ((volume.withDensity (fun p => ENNReal.ofReal (density F p))).restrict
         (chartDomain F ζ hζ U R P H i x O)) := by
+  let chartDomain₀ := chartDomain F ζ hζ U R P H i x O
   have he : overlapCoordinate F ζ hζ U R P H i σ.val ⁻¹'
-      chartDomain F ζ hζ U R P H i x O = chartDomain F ζ hζ U R P H i x O := by
+      chartDomain₀ = chartDomain₀ := by
     ext p
     constructor
     · intro hp
-      have h := chart_action_mem i x O σ⁻¹ _ hp
       simpa only [overlapCoordinate, Homeomorph.apply_symm_apply, Subgroup.coe_inv,
-        inv_smul_smul, Homeomorph.symm_apply_apply] using h
+        inv_smul_smul, Homeomorph.symm_apply_apply] using (chart_action_mem i x O σ⁻¹ _ hp)
     · exact chart_action_mem i x O σ p
   have h := (overlap_preserving i σ.val).restrict_preimage_emb
-    (overlapHomeomorph i σ.val).measurableEmbedding (chartDomain F ζ hζ U R P H i x O)
+    (overlapHomeomorph i σ.val).measurableEmbedding (chartDomain₀)
   rwa [he] at h
-private theorem reynolds_pairing_term (i : Fin (H.atlas U).componentCount)
-    (x : SymmetricSpace F)
+
+end
+section
+
+variable (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
+
+private theorem reynolds_pairing_term
     (φ w : Space (KPCuspLogShape.dimension F * 3) → ℂ)
     (hw : ∀ p, w p ∈ KPCuspGenuineMonodromy.scalarFiber F ζ hζ U)
     (hcov : ∀ σ : MulAction.stabilizer (Component F ζ hζ U R P H i) x, ∀ p,
@@ -203,18 +210,18 @@ private theorem reynolds_pairing_term (i : Fin (H.atlas U).componentCount)
         (φ (overlapCoordinate F ζ hζ U R P H i σ.val p))) =
     w (overlapCoordinate F ζ hζ U R P H i σ.val p) *
       star (φ (overlapCoordinate F ζ hζ U R P H i σ.val p)) := by
-  have hc : star (chi F ζ hζ (((H.atlas U).line i).rho σ.val) : ℂ)⁻¹ =
-      (chi F ζ hζ (((H.atlas U).line i).rho σ.val) : ℂ) := by
+  let chi₀ := chi F ζ hζ (((H.atlas U).line i).rho σ.val)
+  have hc : star (chi₀ : ℂ)⁻¹ =
+      (chi₀ : ℂ) := by
     rw [← Circle.coe_inv, Complex.star_def, ← Circle.coe_inv_eq_conj, inv_inv]
   rw [star_mul, hc, hcov]
   calc
-    _ = (chi F ζ hζ (((H.atlas U).line i).rho σ.val) : ℂ) *
+    _ = (chi₀ : ℂ) *
         (w p * star ((KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).starProjection
           (φ (overlapCoordinate F ζ hζ U R P H i σ.val p)))) := by ring
     _ = _ := by rw [fiber_projection_pairing _ _ (hw p)]; ring
 
-theorem reynolds_integral_pairing (i : Fin (H.atlas U).componentCount)
-    (x : SymmetricSpace F) (O : OrbifoldChart F ζ hζ U R P H i x)
+theorem reynolds_integral_pairing (O : OrbifoldChart F ζ hζ U R P H i x)
     [Fintype (MulAction.stabilizer (Component F ζ hζ U R P H i) x)]
     (φ w : Space (KPCuspLogShape.dimension F * 3) → ℂ)
     (hw : ∀ p, w p ∈ KPCuspGenuineMonodromy.scalarFiber F ζ hζ U)
@@ -239,7 +246,7 @@ theorem reynolds_integral_pairing (i : Fin (H.atlas U).componentCount)
     congr 1
     apply Finset.sum_congr rfl
     intro σ _
-    simpa only [Complex.star_def, map_mul, map_inv₀] using
+    simpa using
       reynolds_pairing_term i x φ w hw hcov σ p
   simp_rw [he]
   have hci : ∀ σ : G, Integrable (fun p =>
@@ -254,19 +261,15 @@ theorem reynolds_integral_pairing (i : Fin (H.atlas U).componentCount)
     (overlapHomeomorph i _).measurableEmbedding (fun p => w p * star (φ p))]
   simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
   rw [Nat.card_eq_fintype_card, ← mul_assoc,
-    inv_mul_cancel₀ (by exact_mod_cast (Fintype.card_pos : 0 < Fintype.card G).ne'), one_mul]
+    inv_mul_cancel₀ (by exact_mod_cast Fintype.card_pos.ne'), one_mul]
+
+end
 
 open KPContActualCotangentCountableShrinking KPContCotangentActualOverlap
 open KPContCotangentActualGenuineTwistIsotropy KPContCotangentOverlapRationalBranches
 open KPContActualSectorSmoothTestModules
 
-private theorem central_commute (ε : rootsOfUnity 3 F)
-    (c : KPCuspGenuineMonodromy.FiniteCover F ζ hζ) :
-    KPCuspGenuineMonodromy.central F ζ hζ ε * c =
-      c * KPCuspGenuineMonodromy.central F ζ hζ ε := by
-  apply Subtype.ext
-  exact (Subgroup.mem_center_iff.mp
-    (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩) c).symm
+private alias central_commute := DedekindZetaZeroFree.KPContCotangentActualOverlap.central_commute
 
 set_option maxHeartbeats 1000000 in
 private theorem root_ambiguity {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
@@ -299,19 +302,18 @@ private theorem root_ambiguity {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ :
     ← mul_assoc, ← mul_assoc, mul_inv_cancel₀ (Units.ne_zero _), one_mul] at hd
   exact hd
 
-private theorem labeledA_smooth :
-    ContDiff ℝ (⊤ : ℕ∞) (labeledA (placeEquiv F ζ hζ)) := by
-  unfold labeledA
-  fun_prop
+private alias labeledA_smooth := DedekindZetaZeroFree.KPContActualGlobalGreen.contDiff_labeledA
 
 private theorem labeledA_roundtrip (p : SymmetricSpace F) :
     labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) p) = p := by
   funext k
   simp [labeledA, labeledAInv]
 
+section
+
+variable (a : ShrunkChart F ζ hζ U R P H) (f : SymmetricSpace F → ℂ)
+
 private theorem lifted_scalar_covariant
-    (a : ShrunkChart F ζ hζ U R P H)
-    (f : SymmetricSpace F → ℂ)
     (hf : ∀ p, f p ∈ KPCuspGenuineMonodromy.scalarFiber F ζ hζ U)
     (he : ∀ σ : a.Isotropy, ∀ p,
       f ((σ.val : KPCuspArithmetic.PGL2 F) • p) =
@@ -319,25 +321,25 @@ private theorem lifted_scalar_covariant
     ScalarEquivariant a (fun p => f (labeledA (placeEquiv F ζ hζ) p.val)) := by
   intro γ p hp
   have h := he γ.val.1 (labeledA (placeEquiv F ζ hζ) p)
+  let f₀ := f (labeledA (placeEquiv F ζ hζ) p)
   have hr := root_ambiguity (isotropyArrow a γ)
-    (⟨f (labeledA (placeEquiv F ζ hζ) p), hf _⟩ : KPCuspGenuineMonodromy.scalarFiber F ζ hζ U)
+    (⟨f₀, hf _⟩ : KPCuspGenuineMonodromy.scalarFiber F ζ hζ U)
   change _ = (chi F ζ hζ (((H.atlas U).line a.component).rho γ.val.1.val) : ℂ) *
-      f (labeledA (placeEquiv F ζ hζ) p) at h
+      f₀ at h
   change (chi F ζ hζ (((H.atlas U).line a.component).rho γ.val.1.val) : ℂ) *
-    f (labeledA (placeEquiv F ζ hζ) p) =
-      (chi F ζ hζ γ.val.2 : ℂ) * f (labeledA (placeEquiv F ζ hζ) p) at hr
+    f₀ =
+      (chi F ζ hζ γ.val.2 : ℂ) * f₀ at hr
   rw [hr] at h
   simpa only [Arrow.psi, coordinateMap, isotropyArrow, isotropyChart,
     ChartKind.representative, inv_one, mul_one, one_mul,
     labeledA_roundtrip, Arrow.phase, mul_inv_cancel, map_one,
     chi_coe] using h
 
-private theorem local_support_compact (a : ShrunkChart F ζ hζ U R P H)
-    (f : SymmetricSpace F → ℂ) (hcompact : HasCompactSupport f)
+private theorem local_support_compact (hcompact : HasCompactSupport f)
     (hs : tsupport f ⊆ a.domain) :
     IsCompact (localSupport a (fun p => f (labeledA (placeEquiv F ζ hζ) p.val))) ∧
       localSupport a (fun p => f (labeledA (placeEquiv F ζ hζ) p.val)) ⊆ a.baseDomain := by
-  let projection : SymmetricSpace F → KPFiniteCuspAtlas.rawXU F ζ hζ U :=
+  let projection :=
     fun p => (H.atlas U).components ⟨a.component, Quotient.mk _ p⟩
   have hp : Continuous projection :=
     (H.atlas U).components.continuous.comp (continuous_sigmaMk.comp continuous_quot_mk)
@@ -357,8 +359,7 @@ private theorem local_support_compact (a : ShrunkChart F ζ hζ U R P H)
   simp only [projection, ShrunkChart.toBase, (H.atlas U).components_formula]
   rfl
 
-theorem local_test_of_coefficient (a : ShrunkChart F ζ hζ U R P H)
-    (f : SymmetricSpace F → ℂ) (hsm : ContDiff ℝ (⊤ : ℕ∞) f)
+theorem local_test_of_coefficient (hsm : ContDiff ℝ (⊤ : ℕ∞) f)
     (hcompact : HasCompactSupport f) (hs : tsupport f ⊆ a.domain)
     (hf : ∀ p, f p ∈ KPCuspGenuineMonodromy.scalarFiber F ζ hζ U)
     (he : ∀ σ : a.Isotropy, ∀ p,
@@ -368,11 +369,17 @@ theorem local_test_of_coefficient (a : ShrunkChart F ζ hζ U R P H)
   refine ⟨?_, lifted_scalar_covariant a f hf he, local_support_compact a f hcompact hs⟩
   exact ⟨_, (hsm.comp labeledA_smooth).contDiffOn, fun _ => rfl⟩
 
-theorem global_test_of_coefficient
-    (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ))
-    (hμG : μG.IsHaarMeasure) (hR : R.adelicHaar = μG)
+end
+
+section
+
+variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
+    (hR : R.adelicHaar = μG)
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
     (a : ShrunkChart F ζ hζ U R P H)
+
+include hμG hR realization in
+theorem global_test_of_coefficient
     (f : SymmetricSpace F → ℂ) (hsm : ContDiff ℝ (⊤ : ℕ∞) f)
     (hcompact : HasCompactSupport f) (hs : tsupport f ⊆ a.domain)
     (hf : ∀ p, f p ∈ KPCuspGenuineMonodromy.scalarFiber F ζ hζ U)
@@ -383,19 +390,15 @@ theorem global_test_of_coefficient
       (∀ p : omega a, t.val a p = f (labeledA (placeEquiv F ζ hζ) p.val)) ∧
       scalarSupport t.val ⊆ a.baseDomain := by
   let l : localScalarTests a := ⟨_, local_test_of_coefficient a f hsm hcompact hs hf he⟩
-  let t := scalarZeroExtension a l
   have h := kp_cont_actual_sector_smooth_test_modules F ζ hζ μG hμG U R hR P H realization
-  refine ⟨t, ?_, ?_⟩
+  refine ⟨(scalarZeroExtension a l), ?_, ?_⟩
   · intro p
     exact congrFun (h.scalar_restriction_extension a l) p
   · rw [h.scalar_extension_support a l]
     exact (local_support_compact a f hcompact hs).2
 
+include hμG hR realization in
 theorem reynolds_global_test
-    (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ))
-    (hμG : μG.IsHaarMeasure) (hR : R.adelicHaar = μG)
-    (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
-    (a : ShrunkChart F ζ hζ U R P H)
     [Fintype a.Isotropy]
     (φ : Space (KPCuspLogShape.dimension F * 3) → ℂ)
     (hsm : ContDiff ℝ (⊤ : ℕ∞) φ) (hc : HasCompactSupport φ)
@@ -419,9 +422,8 @@ theorem reynolds_global_test
     intro p hp
     obtain ⟨σ, q, hq, heq⟩ := Set.mem_iUnion.mp
       ((reynolds_support a.component a.center φ hc).2 hp)
-    have hqdom := hs (Set.mem_image_of_mem (coordinates F) hq)
     have hmem := Set.mem_image_of_mem
-      (fun p : SymmetricSpace F => (σ.val⁻¹ : KPCuspArithmetic.PGL2 F) • p) hqdom
+      (fun p : SymmetricSpace F => (σ.val⁻¹ : KPCuspArithmetic.PGL2 F) • p) (hs (Set.mem_image_of_mem (coordinates F) hq))
     have hinv := a.invariant σ⁻¹
     simp only [Subgroup.coe_inv] at hinv
     rw [hinv] at hmem
@@ -439,18 +441,9 @@ theorem reynolds_global_test
       reynolds_covariant a.component a.center φ σ ((coordinates F).symm p)
   exact global_test_of_coefficient μG hμG hR realization a f hfsm hfc hfs hff hfe
 
-private theorem sectionFields_apply (s : Sections F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : omega a) :
-    sectionFields s a x = (s a.component).val (labeledA (placeEquiv F ζ hζ) x.val) := by
-  have hcoe : (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).coefficient s x.val =
-      (KPCuspGenuineMonodromy.chi F ζ hζ
-          ((KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).splitting x.val) : ℂ) *
-        (s a.component).val
-          ((KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).kind.representative •
-            labeledA (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).places x.val) :=
-    rfl
-  rw [sectionFields, hcoe]
-  simp [KPContCotangentActualGenuineTwistIsotropy.isotropyChart, ChartKind.representative]
+end
+
+private alias sectionFields_apply := DedekindZetaZeroFree.KPContFriedrichsWeakGradientCoordinates.WeakGradientCoordinates.sectionFields_apply
 
 theorem reynolds_phase_test
     (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ))
@@ -467,7 +460,7 @@ theorem reynolds_phase_test
           reynolds a.component a.center φ p) ∧ scalarSupport t.val ⊆ a.baseDomain := by
   obtain ⟨ε, rfl⟩ := QuotientGroup.mk'_surjective (centralLevel F ζ hζ U) m
   obtain ⟨t, ht, hts⟩ := reynolds_global_test μG hμG hR realization a φ hsm hc hs
-  let t' : S_U F ζ hζ U R P H := (chi F ζ hζ ε : ℂ)⁻¹ • t
+  let t' := (chi F ζ hζ ε : ℂ)⁻¹ • t
   have hP := kp_cont_actual_sector_smooth_test_modules F ζ hζ μG hμG U R hR P H realization
   refine ⟨t', ?_, (hP.scalar_smul_support _ t).trans hts⟩
   intro p hp
@@ -482,7 +475,7 @@ theorem reynolds_phase_test
       funext k
       simp [KPContActualCotangentPieceHilbertSum.coordinates, labeledA, labeledAInv]
     rw [he] at hrep htval
-    simpa only [Homeomorph.symm_apply_apply] using hrep.trans htval
+    simpa using hrep.trans htval
   change frameCoefficient F ζ hζ U R P H (scalarCovered t') a.component
     (phaseClass F ζ hζ U ε) p = _
   rw [frameCoefficient_class, hP.covered_realization]
@@ -511,6 +504,8 @@ private theorem orbifold_action_mem (F : Type) [Field F] [NumberField F] (ζ : F
   rw [O.invariant τ] at h
   change complexProjectiveEmbedding F σ.val.val • y ∈ O.neighborhood at h
   simpa only [complexProjectiveEmbedding_smul] using h
+
+alias ProjectedTestPairings.orbifold_action_mem := orbifold_action_mem
 
 private theorem supplied_compact_shrinking (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
@@ -626,13 +621,7 @@ private theorem test_coefficient_zero_off_base
 open KPContActualSectorTestEmbeddings
 open TopologicalSpace
 
-private theorem scalarPairing_continuous_iff_isQuotientMap {X Y Z : Type*} [TopologicalSpace X]
-    [TopologicalSpace Y] [TopologicalSpace Z] {q : X → Y} (hq : IsQuotientMap q)
-    (f : Y → Z) : Continuous f ↔ Continuous (f ∘ q) := by
-  refine ⟨fun h => h.comp hq.continuous, fun h => ?_⟩
-  exact Continuous.mk fun s hs => by
-    rw [← hq.isOpen_preimage]
-    exact h.isOpen_preimage s hs
+private alias scalarPairing_continuous_iff_isQuotientMap := DedekindZetaZeroFree.KPContActualSectorMultiplier.CompactCutoffDifferentialBounds.continuous_iff_isQuotientMap
 
 private theorem scalarPairing_chi_unit (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity 3 F) :
     ‖(KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ)‖ = 1 :=
@@ -654,7 +643,7 @@ private theorem scalarPairing_scalarPair_covariant (s t : Sections F ζ hζ U R 
         ((t i).val ((γ : KPCuspArithmetic.PGL2 F) • x)) =
       inner ℂ ((s i).val x) ((t i).val x) := by
   rw [(s i).property.2 γ x, (t i).property.2 γ x]
-  exact scalarPairing_inner_mul_mul_of_norm_one _ _ _ (scalarPairing_chi_unit (H := H) i (((H.atlas U).line i).rho γ))
+  exact scalarPairing_inner_mul_mul_of_norm_one _ _ _ (scalarPairing_chi_unit i (((H.atlas U).line i).rho γ))
 
  theorem scalarPairing_scalarPair_invariant (s t : Sections F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount) (x y : SymmetricSpace F)
@@ -681,11 +670,7 @@ private theorem scalarPairing_scalarPairSections_components (s t : Sections F ζ
     (i : Fin (H.atlas U).componentCount) (z : SymmetricSpace F) :
     scalarPairing_scalarPairSections s t ((H.atlas U).components ⟨i, Quotient.mk _ z⟩) =
       inner ℂ ((s i).val z) ((t i).val z) := by
-  have h1 : scalarPairing_pairOnSigma s t
-      ((H.atlas U).components.symm ((H.atlas U).components ⟨i, Quotient.mk _ z⟩)) =
-      scalarPairing_pairOnSigma s t ⟨i, Quotient.mk _ z⟩ :=
-    congrArg (scalarPairing_pairOnSigma s t) (Homeomorph.symm_apply_apply _ _)
-  refine h1.trans ?_
+  refine (congrArg (scalarPairing_pairOnSigma s t) (Homeomorph.symm_apply_apply _ _)).trans ?_
   exact Quotient.lift_mk
     (s := MulAction.orbitRel
       (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i))
@@ -693,18 +678,7 @@ private theorem scalarPairing_scalarPairSections_components (s t : Sections F ζ
     (f := fun x => inner ℂ ((s i).val x) ((t i).val x))
     (h := scalarPairing_scalarPair_invariant s t i) z
 
-private theorem scalarPairing_sectionFields_apply (s : Sections F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : omega a) :
-    sectionFields s a x = (s a.component).val (labeledA (placeEquiv F ζ hζ) x.val) := by
-  have hcoe : (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).coefficient s x.val =
-      (KPCuspGenuineMonodromy.chi F ζ hζ
-          ((KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).splitting x.val) : ℂ) *
-        (s a.component).val
-          ((KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).kind.representative •
-            labeledA (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).places x.val) :=
-    rfl
-  rw [sectionFields, hcoe]
-  simp [KPContCotangentActualGenuineTwistIsotropy.isotropyChart, ChartKind.representative]
+private alias scalarPairing_sectionFields_apply := sectionFields_apply
 
 private theorem scalarPairing_scalarPairSections_chart (s t : Sections F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (x : omega a) :
@@ -718,12 +692,12 @@ private theorem scalarPairing_scalarPairSections_chart (s t : Sections F ζ hζ 
 
 private theorem scalarPairing_scalarPair_eq_sections (f g : S_U F ζ hζ U R P H) :
     scalarPair f g = scalarPairing_scalarPairSections (scalarSections f) (scalarSections g) := by
-  have hfs := Classical.choose_spec (scalar_gluing (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) f)
-  have hgs := Classical.choose_spec (scalar_gluing (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) g)
-  have hfsmooth : IsSmoothSections F ζ hζ U R P H (scalarSections f) := hfs.1.1
-  have hgsmooth : IsSmoothSections F ζ hζ U R P H (scalarSections g) := hgs.1.1
+  have hfs := Classical.choose_spec (scalar_gluing
+        f)
+  have hgs := Classical.choose_spec (scalar_gluing
+        g)
+  have hfsmooth := hfs.1.1
+  have hgsmooth := hgs.1.1
   have hfval : sectionFields (scalarSections f) = f.val := hfs.1.2.2
   have hgval : sectionFields (scalarSections g) = g.val := hgs.1.2.2
   have hcont : Continuous (scalarPairing_scalarPairSections (scalarSections f) (scalarSections g)) := by
@@ -939,7 +913,7 @@ theorem projected_scalar_pairing_on_tests
         (O.isOpen.preimage (coordinates F).continuous).measurableSet.nullMeasurableSet
         (Metric.ball_subset_closedBall.trans hA)
       filter_upwards with p hp
-      have hz : φ p = 0 := image_eq_zero_of_notMem_tsupport
+      have hz := image_eq_zero_of_notMem_tsupport
         (fun ht => hp.2 (φ.tsupport_subset ht))
       simp only [hz, star_zero, mul_zero]
     _ = _ := by
@@ -955,11 +929,9 @@ private theorem restriction_iota_ae (i : Fin (H.atlas U).componentCount) (x : Sy
     restriction F ζ hζ U R P H i x O m A hA (iota f) =ᵐ[volume.restrict A.carrier]
       frameCoefficient F ζ hζ U R P H (scalarCovered f) i m := by
   have hfcont : Continuous (scalarCovered f).val := by
-    change Continuous (scalarRepresentative F ζ hζ U R P H (scalarSections f)).val
     exact (KPContSectorLineL2Isometry.continuous_iff F ζ hζ U R P H _).mp
       (fun i => ((Classical.choose_spec (scalar_gluing f)).1.1 i).continuous)
-  let b : BorelL2Scalars F ζ hζ U R := ⟨scalarCovered f, hfcont.measurable, scalar_memLp f⟩
-  apply restriction_representative F ζ hζ U R P H i x O m A hA (iota f) b
+  apply restriction_representative F ζ hζ U R P H i x O m A hA (iota f) (⟨scalarCovered f, hfcont.measurable, scalar_memLp f⟩)
   apply Subtype.ext
   rw [scalarEmbedding_coe, scalar_represented]
 
@@ -991,7 +963,7 @@ theorem projected_scalar_pairing
         (isotropyOrder F ζ hζ U R P H i x : ℝ≥0∞)).toReal : ℂ) *
       ∫ p in A.carrier, (density F p : ℂ) *
         restriction F ζ hζ U R P H i x O m A hA w p * star (φ p) := by
-  let b : BallL2 A := (weighted_test_memLp A φ).toLp (fun p => (density F p : ℂ) * φ p)
+  let b := (weighted_test_memLp A φ).toLp (fun p => (density F p : ℂ) * φ p)
   have hb : ∀ v : BallL2 A, inner ℂ b v =
       ∫ p in A.carrier, (density F p : ℂ) * v p * star (φ p) := by
     intro v
@@ -1003,15 +975,11 @@ theorem projected_scalar_pairing
     have hreal : starRingEnd ℂ (density F p : ℂ) = (density F p : ℂ) := RCLike.conj_ofReal _
     rw [hreal]
     exact mul_right_comm (density F p : ℂ) (starRingEnd ℂ (φ p)) (v p)
-  let c : ℂ := (((H.disintegration U).componentWeight i /
-    (isotropyOrder F ζ hζ U R P H i x : ℝ≥0∞)).toReal : ℂ)
   have he : (fun v : KPContSectorClosedLpSubspace.H F ζ hζ R U => star (inner ℂ v (iota g))) =
-      (fun v => c * inner ℂ b (restriction F ζ hζ U R P H i x O m A hA v)) := by
+      (fun v => ((((H.disintegration U).componentWeight i /
+        (isotropyOrder F ζ hζ U R P H i x : ℝ≥0∞)).toReal : ℂ)) * inner ℂ b (restriction F ζ hζ U R P H i x O m A hA v)) := by
     apply (KPContActualSectorFriedrichsSynthesis.scalarDense F ζ hζ U R P H μG hμG hR realization).equalizer
-    · have h : Continuous (fun v : KPContSectorClosedLpSubspace.H F ζ hζ R U =>
-          inner ℂ (v : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R U) (iota g)) :=
-        continuous_subtype_val.inner continuous_const
-      exact h.star
+    · exact (continuous_subtype_val.inner continuous_const).star
     · exact continuous_const.mul (continuous_const.inner
         (restriction F ζ hζ U R P H i x O m A hA).continuous)
     · funext f
@@ -1065,14 +1033,13 @@ private theorem cotangent_decode_pair (p : Space (KPCuspLogShape.dimension F * 3
     Complex.conj_ofReal, RCLike.inner_apply']
   dsimp only [Matrix.vecHead, Matrix.vecTail, Function.comp_apply]
   simp only [Matrix.cons_val_succ, Matrix.cons_val_zero]
-  have he := cotangent_exp_cancel (coordinates F p ((placeEquiv F ζ hζ) i)).2
   calc
     _ = ((Real.exp (2 * (coordinates F p ((placeEquiv F ζ hζ) i)).2) : ℂ) *
       (Real.exp (-(coordinates F p ((placeEquiv F ζ hζ) i)).2) : ℂ) *
       (Real.exp (-(coordinates F p ((placeEquiv F ζ hζ) i)).2) : ℂ)) *
       (starRingEnd ℂ (w (i, 1)) * v (i, 1) + starRingEnd ℂ (w (i, 2)) * v (i, 2)) +
       starRingEnd ℂ (w (i, 0)) * v (i, 0) := by ring
-    _ = _ := by rw [he]; ring
+    _ = _ := by rw [(cotangent_exp_cancel (coordinates F p ((placeEquiv F ζ hζ) i)).2)]; ring
 
 private theorem shrinking_coordinate_integral (a : ShrunkChart F ζ hζ U R P H)
     (f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ) (hf : Measurable f) :
@@ -1110,7 +1077,7 @@ private theorem shrinking_coordinate_integral (a : ShrunkChart F ζ hζ U R P H)
     rw [he] at hb
     exact hb
   rw [integral_map (coordinates F).continuous.measurable.aemeasurable hmeas.aestronglyMeasurable]
-  have hD : MeasurableSet ((coordinates F) ⁻¹' a.domain) :=
+  have hD :=
     (coordinates F).continuous.measurable a.domain_open.measurableSet
   have hd := setIntegral_withDensity_eq_setIntegral_toReal_smul₀
     (μ := volume) (f := fun p => ENNReal.ofReal (density F p))
@@ -1129,8 +1096,7 @@ private theorem cotangent_pair_zero_off_support
     (b : KPFiniteCuspAtlas.rawXU F ζ hζ U) (hb : b ∉ cotangentSupport z) :
     pair r z b = 0 := by
   let cover := KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H
-  have hbcover : b ∈ ⋃ n, (cover.chart n).baseDomain := by rw [cover.covers]; trivial
-  obtain ⟨n, y, hy⟩ := Set.mem_iUnion.mp hbcover
+  obtain ⟨n, y, hy⟩ := Set.mem_iUnion.mp (by rw [cover.covers]; trivial)
   let a := cover.chart n
   let x := KPContActualCotangentPieceHilbertSum.coordinates a y
   have hq : q a x.val = b := by
@@ -1212,33 +1178,24 @@ private theorem projected_test_in_shrinking
   subst y
   let a : ShrunkChart F ζ hζ U R P H := ⟨i, x, O', V, hVo, hVc, hVsub, hVi⟩
   letI : Finite a.Isotropy := by
-    change Finite (MulAction.stabilizer (Component F ζ hζ U R P H i) x)
     exact chart_stabilizer_finite F ζ hζ U R P H i x O
   letI : Fintype a.Isotropy := Fintype.ofFinite a.Isotropy
-  have hs : coordinates F '' tsupport (fun p => φ p) ⊆ a.domain :=
+  have hs :=
     (Set.image_mono (φ.tsupport_subset.trans Metric.ball_subset_closedBall)).trans hK
   obtain ⟨t, ht, hts⟩ := reynolds_phase_test μG hμG hR realization a m φ φ.contDiff
     φ.hasCompactSupport hs
-  have hbase : a.baseDomain ⊆ baseChartImage F ζ hζ U R P H i x O := by
-    rintro z ⟨q, rfl⟩
-    refine ⟨Quotient.mk _ q.val, ⟨q.val, hdom q.property, rfl⟩, ?_⟩
-    simp only [ShrunkChart.toBase, (H.atlas U).components_formula]
-    rfl
   refine ⟨a, rfl, rfl, hK, hdom, t, ?_, hts⟩
   intro p hp
   by_cases hpa : coordinates F p ∈ a.domain
   · exact ht p hpa
-  have hb : basePoint F ζ hζ U R P H i p ∉ a.baseDomain := by
-    intro hb
-    exact hpa (shrinking_saturated a O hdom _ hp hb)
+  have hb : basePoint F ζ hζ U R P H i p ∉ a.baseDomain := fun hb => hpa (shrinking_saturated a O hdom _ hp hb)
   rw [test_coefficient_zero_off_base μG hμG hR realization t a hts m p hb]
   symm
   apply image_eq_zero_of_notMem_tsupport
   intro hpn
   obtain ⟨σ, q, hq, heq⟩ := Set.mem_iUnion.mp ((reynolds_support i x φ φ.hasCompactSupport).2 hpn)
-  have hqdom := hs (Set.mem_image_of_mem (coordinates F) hq)
   have hmem := Set.mem_image_of_mem
-    (fun p : SymmetricSpace F => (σ.val⁻¹ : KPCuspArithmetic.PGL2 F) • p) hqdom
+    (fun p : SymmetricSpace F => (σ.val⁻¹ : KPCuspArithmetic.PGL2 F) • p) (hs (Set.mem_image_of_mem (coordinates F) hq))
   have hinv := a.invariant σ⁻¹
   simp only [Subgroup.coe_inv] at hinv
   rw [hinv] at hmem
@@ -1267,8 +1224,6 @@ private theorem canonicalLinear_single (j : Fin (KPCuspLogShape.dimension F * 3)
   ext ik
   simp only [canonicalLinear, LinearIsometryEquiv.piLpCongrLeft_apply, HyperbolicChart.coordinateVector]
   simp only [EuclideanSpace.single, Equiv.piCongrLeft'_apply, PiLp.ofLp_single, Pi.single_apply]
-  change (if finProdFinEquiv ((placeEquiv F ζ hζ) ik.1,ik.2) = j then 1 else 0) =
-    (if ik = ((placeEquiv F ζ hζ).symm (finProdFinEquiv.symm j).1, (finProdFinEquiv.symm j).2) then 1 else 0)
   congr 1
   exact propext (Equiv.apply_eq_iff_eq_symm_apply
     (finProdFinEquiv.symm.trans (Equiv.prodCongr (placeEquiv F ζ hζ).symm (Equiv.refl (Fin 3)))).symm)
@@ -1336,7 +1291,6 @@ private theorem test_gradient_class
   have hh := A.le_closure.2 (x := ⟨iota f, LinearMap.mem_range_self iota f⟩)
     (y := KPContActualSectorFriedrichsSynthesis.formTest F ζ hζ U R P H μG hμG hR realization f) rfl
   refine Eq.trans ?_ hh
-  change j (D_U f) = A ⟨iota f, _⟩
   unfold A KPContActualSectorFriedrichsSynthesis.A_U
   exact (KPTestOperator.descend_image (S := S_U F ζ hζ U R P H) (T := T_U F ζ hζ U R P H)
     (iota (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H))
@@ -1448,10 +1402,10 @@ private theorem tensor_test_pairing
       simp only [← chi_coe, cotangentDecode, apply_ite, Complex.ofReal_one]
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 theorem projected_test_pairings (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ))
     (hμG : μG.IsHaarMeasure) (hR : R.adelicHaar = μG)
@@ -1467,15 +1421,6 @@ theorem projected_test_pairings (μG : Measure (KPMsFixedHaarDisintegration.Cove
       (isotropyOrder F ζ hζ U R P H i x : ℝ≥0∞)).toReal : ℝ)
     ∀ φ : TestFunction A.toOpens ℂ ⊤,
     ∃ f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H,
-      (∀ p ∈ chartDomain F ζ hζ U R P H i x O,
-        frameCoefficient F ζ hζ U R P H
-          (KPContActualSectorSmoothTestModules.scalarCovered f) i m p =
-        (Nat.card G : ℂ)⁻¹ * ∑ σ : G,
-          (chi F ζ hζ (((H.atlas U).line i).rho σ.val) : ℂ)⁻¹ *
-            (KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).starProjection
-              (φ (overlapCoordinate F ζ hζ U R P H i σ.val p))) ∧
-      KPContActualSectorSmoothTestModules.scalarSupport f.val ⊆
-        baseChartImage F ζ hζ U R P H i x O ∧
       (∀ w : KPContSectorClosedLpSubspace.H F ζ hζ R U,
         star (inner ℂ w (KPContActualSectorTestEmbeddings.iota f)) =
           c * ∫ p in A.carrier, (density F p : ℂ) *
@@ -1508,13 +1453,12 @@ theorem projected_test_pairings (μG : Measure (KPMsFixedHaarDisintegration.Cove
     subst i
     simp only [ShrunkChart.toBase, (H.atlas U).components_formula] at hy ⊢
     exact hy
-  refine ⟨f,hfc,hsbase,?_,?_⟩
+  refine ⟨f, ?_, ?_⟩
   · intro w
     exact projected_scalar_pairing μG hμG hR realization i x O m A hA φ f hfc hsbase w
   · intro v ξ hξ
     obtain ⟨ε,hε⟩ := QuotientGroup.mk'_surjective (centralLevel F ζ hζ U) m
-    have hl := kp_cont_actual_sector_form_weak_localization F ζ hζ μG hμG U R hR P H realization
-    obtain ⟨s,W,hs,hW,hweak⟩ := hl.closed_gradient v
+    obtain ⟨s,W,hs,hW,hweak⟩ := KPContActualSectorFormWeakLocalization.closedGradient_isActualWeak F ζ hζ U R P H μG hμG hR realization v
     have hsξ : (fun p => KPContLocalEnergy.value ξ p) =ᵐ[volume.restrict A.carrier]
         (fun p => (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) * (s.val a.component).val (coordinates F p)) := by
       let b := (borelS F ζ hζ U R P H).symm s
@@ -1539,8 +1483,8 @@ theorem projected_test_pairings (μG : Measure (KPMsFixedHaarDisintegration.Cove
       exact ht
     have hdecode := KPContFriedrichsWeakGradientCoordinates.coordinate_weak_gradient_decode s W.val hweak a A haA ε ξ hsξ
     have hgrad := test_gradient_class μG hμG hR realization f
-    have hform := (hl.form_integral v (KPContActualSectorFriedrichsSynthesis.formTest F ζ hζ U R P H μG hμG hR realization f)
-      W (cotangentSquareFamily (D_U f)) hW hgrad).2
+    have hform := KPContActualSectorFormWeakLocalization.closedGradientForm_eq_integral F ζ hζ U R P H μG hμG hR realization v (KPContActualSectorFriedrichsSynthesis.formTest F ζ hζ U R P H μG hμG hR realization f)
+      W (cotangentSquareFamily (D_U f)) hW hgrad
     letI : Finite a.Isotropy := chart_stabilizer_finite F ζ hζ U R P H a.component a.center a.larger
     letI : Fintype a.Isotropy := Fintype.ofFinite a.Isotropy
     have hft : ∀ p, coordinates F p ∈ a.domain →

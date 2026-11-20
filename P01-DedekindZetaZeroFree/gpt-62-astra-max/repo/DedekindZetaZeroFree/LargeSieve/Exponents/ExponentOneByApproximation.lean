@@ -23,22 +23,19 @@ theorem hasExponent_one_of_approximation (B : ℝ → ℝ → ℝ)
   refine ⟨2 * C₀, by linarith, ?_⟩
   intro M N hM hN
   rw [Real.rpow_one]
-  have hMpos : 0 < M := lt_of_lt_of_le zero_lt_one hM
-  have hNpos : 0 < N := lt_of_lt_of_le zero_lt_one hN
-  have hMNpos : 0 < M * N := mul_pos hMpos hNpos
+  have hMpos := lt_of_lt_of_le zero_lt_one hM
+  have hNpos := lt_of_lt_of_le zero_lt_one hN
+  have hMNpos := mul_pos hMpos hNpos
   have hMN1 : 1 ≤ M * N := by nlinarith
   have hhalf : 0 ≤ ε / 2 := le_of_lt hη
   have hp : 0 < (M * N) ^ (ε / 2) := Real.rpow_pos_of_pos hMNpos _
 
   have hNα : N ^ α ≤ N * (M * N) ^ (ε / 2) := by
-    have h1 : N ^ α ≤ N ^ (1 + ε / 2) := Real.rpow_le_rpow_of_exponent_le hN hα
+    have h1 := Real.rpow_le_rpow_of_exponent_le hN hα
     have h2 : N ^ (1 + ε / 2) = N * N ^ (ε / 2) := by
       rw [Real.rpow_add hNpos, Real.rpow_one]
-    have hNM : N ≤ M * N := by nlinarith
-    have h3 : N ^ (ε / 2) ≤ (M * N) ^ (ε / 2) :=
-      Real.rpow_le_rpow (le_of_lt hNpos) hNM hhalf
     rw [h2] at h1
-    exact le_trans h1 (mul_le_mul_of_nonneg_left h3 (le_of_lt hNpos))
+    exact le_trans h1 (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (le_of_lt hNpos) (by nlinarith) hhalf) (le_of_lt hNpos))
 
   have hMle : M ≤ (M + N) * (M * N) ^ (ε / 2) := by
     have h1 : 1 ≤ (M * N) ^ (ε / 2) := Real.one_le_rpow hMN1 hhalf

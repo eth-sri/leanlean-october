@@ -10,23 +10,9 @@ open NumberField Filter Set Topology
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalComplexSmoothAction.TranslatedGenerators.NativeApproximation
 open KPSpatialSmoothing.ArchKernel hiding G
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixClass → matrixClass
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixDomain → matrixDomain
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixDomain_open → matrixDomain_open
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixClass_mul → matrixClass_mul
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrix_pullback_smooth → matrix_pullback_smooth
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming joint_spatial_jets_on → joint_spatial_jets_on
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift → localMatrixLift
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift_continuousAt → localMatrixLift_continuousAt
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift_reconstruct → localMatrixLift_reconstruct
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift_eventually → localMatrixLift_eventually
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation.ArchRegularity renaming rightPolynomial → rightPolynomial
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation.ArchRegularity renaming rightPolynomial_smooth → rightPolynomial_smooth
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation.ArchRegularity renaming rightPolynomial_det → rightPolynomial_det
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation.ArchRegularity renaming rightPolynomial_class → rightPolynomial_class
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation.ArchRegularity renaming archDomain_open → archDomain_open
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming actualSmoothBridge → actualSmoothBridge
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming affineTarget_one → affineTarget_one
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel (matrixClass matrixDomain matrixDomain_open matrixClass_mul matrix_pullback_smooth joint_spatial_jets_on localMatrixLift localMatrixLift_continuousAt localMatrixLift_reconstruct localMatrixLift_eventually)
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation.ArchRegularity (rightPolynomial rightPolynomial_smooth rightPolynomial_det rightPolynomial_class archDomain_open)
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel (actualSmoothBridge affineTarget_one)
 set_option maxHeartbeats 1600000
 variable (F : Type) [Field F] [NumberField F]
  abbrev Mat := InfinitePlace F → Matrix (Fin 2) (Fin 2) ℂ
@@ -47,21 +33,28 @@ private theorem twoSidedMatrix_smooth : ContDiff ℝ (⊤ : ℕ∞) (twoSidedMat
   simp only [twoSidedMatrix, Matrix.mul_apply, Fin.sum_univ_two]
   fun_prop (disch := exact hp _ _)
 
-private theorem twoSidedMatrix_mem (l r : Mat F) (hl : l ∈ matrixDomain F)
-    (hr : r ∈ matrixDomain F) (x : ArchCoordinates F) (hx : x ∈ archDomain F) :
+section
+
+variable (l r : Mat F) (hl : l ∈ matrixDomain F) (hr : r ∈ matrixDomain F) (x : ArchCoordinates F)
+    (hx : x ∈ archDomain F)
+
+include hl hr hx in
+private theorem twoSidedMatrix_mem :
     twoSidedMatrix F ((l,r),x) ∈ matrixDomain F := by
   intro w
   change (l w * rightPolynomial F x w * r w).det ≠ 0
   rw [Matrix.det_mul, Matrix.det_mul, rightPolynomial_det]
   exact mul_ne_zero (mul_ne_zero (hl w) (hx w)) (hr w)
 
-private theorem twoSidedMatrix_class (l r : Mat F) (hl : l ∈ matrixDomain F)
-    (hr : r ∈ matrixDomain F) (x : ArchCoordinates F) (hx : x ∈ archDomain F) :
+include hl hr hx in
+private theorem twoSidedMatrix_class :
     matrixClass F (twoSidedMatrix F ((l,r),x)) = matrixClass F l *
       (fun w => Matrix.ProjGenLinGroup.mk (KPLiteralChamber.rightMatrix (x w))) * matrixClass F r := by
   change matrixClass F (fun w => l w * rightPolynomial F x w * r w) = _
   rw [matrixClass_mul F _ _ (fun w => by rw [Matrix.det_mul, rightPolynomial_det]; exact mul_ne_zero (hl w) (hx w)) hr,
     matrixClass_mul F _ _ hl (fun w => by rw [rightPolynomial_det]; exact hx w), rightPolynomial_class F x hx]
+
+end
 
 private theorem twoSidedMatrix_jets (f : L F → ℂ) (hf : AffineSmooth F f)
     (l r : Mat F) (hl : l ∈ matrixDomain F) (hr : r ∈ matrixDomain F)
@@ -99,12 +92,10 @@ theorem two_sided_parameter_jets {P : Type*} [TopologicalSpace P]
     (show (l p.2)⁻¹ * l p.2 ∈ gaussTarget F by simpa using affineTarget_one F)
   have hR := localMatrixLift_reconstruct F (r p.2) (r p.2)
     (show (r p.2)⁻¹ * r p.2 ∈ gaussTarget F by simpa using affineTarget_one F)
-  have hML : ContinuousAt (fun q : ArchCoordinates F × P => ML (l q.2)) p :=
-    (localMatrixLift_continuousAt F (l p.2)).comp_of_eq (hl.comp continuous_snd).continuousAt rfl
-  have hMR : ContinuousAt (fun q : ArchCoordinates F × P => MR (r q.2)) p :=
+  have hMR :=
     (localMatrixLift_continuousAt F (r p.2)).comp_of_eq (hr.comp continuous_snd).continuousAt rfl
   have hc := (twoSidedMatrix_jets F f hf _ _ hL.1 hR.1 _ hp.1 n).comp_of_eq
-    ((hML.prodMk hMR).prodMk continuousAt_fst) rfl
+    ((((localMatrixLift_continuousAt F (l p.2)).comp_of_eq (hl.comp continuous_snd).continuousAt rfl).prodMk hMR).prodMk continuousAt_fst) rfl
   have heL : ∀ᶠ q : ArchCoordinates F × P in 𝓝 p,
       ML (l q.2) ∈ matrixDomain F ∧ matrixClass F (ML (l q.2)) = l q.2 :=
     (hl.comp continuous_snd).continuousAt (localMatrixLift_eventually F (l p.2))

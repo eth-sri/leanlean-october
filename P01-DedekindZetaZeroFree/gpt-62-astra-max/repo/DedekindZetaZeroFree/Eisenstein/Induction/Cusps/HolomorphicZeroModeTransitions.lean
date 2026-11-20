@@ -13,12 +13,12 @@ namespace DedekindZetaZeroFree.KPContFlatCuspCoefficientTransition
 open KPContFlatCuspIncomingEvaluation
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (a : Cusps F ζ hζ C R P H U)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (a : Cusps F ζ hζ C R P H U)
 
 def zeroFiberEvaluation : ZeroFiber F ζ hζ C R P H U a →ₗ[ℂ] ℂ where
   toFun f := f.val 0
@@ -65,14 +65,15 @@ def frameCoefficient (shape : KPCuspCharts.Shape F) (s : ℂ) :
   ((zeroProjection F ζ hζ C R P H U a).comp
     (sheetEvaluation F ζ hζ C R P H U a ι s)).toContinuousLinearMap
 
-theorem frameCoefficient_formula (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
-    (v : S) (shape : KPCuspCharts.Shape F) :
-    frameCoefficient F ζ hζ C R P H U a ι shape s v =
-      (b F ζ hζ C R P H U a ι s hs v).val shape := by
-  rfl
+section
 
-theorem locally_parallel (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
-    (v : S) (j : Fin (geometry F ζ hζ C R P H U a).atlas.chartCount) :
+variable (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain) (v : S)
+
+theorem frameCoefficient_formula (shape : KPCuspCharts.Shape F) :
+    frameCoefficient F ζ hζ C R P H U a ι shape s v =
+      (b F ζ hζ C R P H U a ι s hs v).val shape := rfl
+
+theorem locally_parallel (j : Fin (geometry F ζ hζ C R P H U a).atlas.chartCount) :
     IsLocallyConstant (fun shape : (geometry F ζ hζ C R P H U a).atlas.shapeLift j =>
       (b F ζ hζ C R P H U a ι s hs v).val shape.val) := by
   have h : (fun shape : (geometry F ζ hζ C R P H U a).atlas.shapeLift j =>
@@ -83,6 +84,8 @@ theorem locally_parallel (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
   rw [h]
   exact IsLocallyConstant.const _
 
+end
+
 theorem transport_formula (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
     (v : S) (g : stabilizer F ζ hζ C R P H U a) (shape : KPCuspCharts.Shape F) :
     let shape' := shape + KPCuspLogShape.logarithm F H.totallyComplex
@@ -92,18 +95,9 @@ theorem transport_formula (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
     (b F ζ hζ C R P H U a ι s hs v).val shape' =
       (frequencies F ζ hζ C R P H U a).constantSystem.transport
         ((parabolic F ζ hζ C R P H U a).ratio g)
-        ((b F ζ hζ C R P H U a ι s hs v).val shape) ∧
-    ∀ z : KernelTorus F ζ hζ C R P H U a,
-      ((b F ζ hζ C R P H U a ι s hs v).val shape').val z =
-        (KPCuspGenuineMonodromy.chi F ζ hζ (rho F ζ hζ C R P H U a g) : ℂ) *
-          ((b F ζ hζ C R P H U a ι s hs v).val shape).val
-            ((monodromy F ζ hζ C R P H U a).monodromy g⁻¹ z) := by
+        ((b F ζ hζ C R P H U a ι s hs v).val shape) := by
   have h1 := (b F ζ hζ C R P H U a ι s hs v).property g shape
-  refine ⟨h1, ?_⟩
-  intro z
-  rw [h1]
-  exact (frequencies F ζ hζ C R P H U a).constantSystem.transition_formula g
-    ((b F ζ hζ C R P H U a ι s hs v).val shape) z
+  refine h1
 
  instance instFintypeCentralLevel
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ) :
@@ -151,10 +145,9 @@ private lemma differentiableOn_postcompose
   intro x hx
   obtain ⟨f', hf'⟩ := hf x hx
   refine ⟨T.comp f', ⟨?_⟩⟩
-  have h := (T.isBigOTVS_fun_comp
-    (f := fun p : E₀ × E₀ => f p.1 - f p.2 - f' (p.1 - p.2))).trans_isLittleOTVS
-    (HasFDerivAtFilter.isLittleOTVS hf')
-  simpa only [map_sub, ContinuousLinearMap.comp_apply] using h
+  simpa using ((T.isBigOTVS_fun_comp
+    ).trans_isLittleOTVS
+    (HasFDerivAtFilter.isLittleOTVS hf'))
 
 theorem frameCoefficient_holomorphic
     (j : Fin (geometry F ζ hζ C R P H U a).atlas.chartCount)

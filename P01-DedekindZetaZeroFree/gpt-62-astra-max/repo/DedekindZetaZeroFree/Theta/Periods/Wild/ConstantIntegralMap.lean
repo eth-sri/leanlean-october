@@ -27,10 +27,9 @@ variable (D : TensorActions R N) (W : Finset (KPFinitePlace F))
 theorem constant_integrable (z : AmbientTensor F W (fiber D W)) :
     Integrable (KPWildRawSourceConstruction.sourceFiber F R.A.zeta12 R.A.primitive_zeta12 b
       (globalMap D W s hW x z)) μ := by
-  have hc := KPWildKernelSource.rawBorelRootFiber_continuous F R.A.zeta12 R.A.primitive_zeta12
+  exact (KPWildKernelSource.rawBorelRootFiber_continuous F R.A.zeta12 R.A.primitive_zeta12
     (globalMap D W s hW x z) (globalMap_regular D W s hW x z).1
-    (globalMap_rational D W s hW x z) b
-  exact hc.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
+    (globalMap_rational D W s hW x z) b).integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
 
 def constantMap : AmbientTensor F W (fiber D W) →ₗ[ℂ] ℂ where
   toFun z := ∫ u, KPWildRawSourceConstruction.sourceFiber F R.A.zeta12 R.A.primitive_zeta12 b

@@ -33,7 +33,7 @@ theorem exteriorQuotientMap_injective (A : SArithmeticData F) (I : A.Exterior) :
           Ideal.le_comap_map)) := by
   classical
   apply Ideal.quotientMap_injective'
-  have hI : I.val ≠ (0 : Ideal (𝓞 F)) := I.property.1
+  have hI := I.property.1
   rw [← Ideal.iInf_maxPowDividing_eq hI]
   apply le_iInf
   intro v
@@ -41,17 +41,13 @@ theorem exteriorQuotientMap_injective (A : SArithmeticData F) (I : A.Exterior) :
   change (A.extendIdeal I).comap (algebraMap (𝓞 F) A.R) ≤ v.asIdeal ^ n
   by_cases hn : n = 0
   · simp [hn, Ideal.one_eq_top]
-  have hvI : I.val ≤ v.asIdeal :=
-    Ideal.dvd_iff_le.mp ((Associates.count_ne_zero_iff_dvd hI v.irreducible).mp hn)
   have hv : v ∉ A.Sf := by
     intro hvS
-    have hc : A.cS ≤ v.asIdeal := by
+    refine v.isPrime.ne_top (top_unique ?_)
+    rw [← I.property.2]
+    exact sup_le (Ideal.dvd_iff_le.mp ((Associates.count_ne_zero_iff_dvd hI v.irreducible).mp hn)) (by
       apply Ideal.prod_le_inf.trans
-      exact Finset.inf_le hvS
-    have ht : (⊤ : Ideal (𝓞 F)) ≤ v.asIdeal := by
-      rw [← I.property.2]
-      exact sup_le hvI hc
-    exact v.isPrime.ne_top (top_unique ht)
+      exact Finset.inf_le hvS)
   have hIn : I.val ≤ v.asIdeal ^ n := by
     rw [← Ideal.iInf_maxPowDividing_eq hI]
     exact iInf_le (fun w => w.maxPowDividing I.val) v

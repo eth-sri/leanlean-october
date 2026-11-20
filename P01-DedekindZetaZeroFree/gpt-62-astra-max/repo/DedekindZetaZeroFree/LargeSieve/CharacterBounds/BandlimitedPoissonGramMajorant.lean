@@ -22,7 +22,7 @@ private theorem inv_real_even (b : SchwartzMap W ℂ)
   apply Complex.conj_eq_iff_im.mp
   rw [SchwartzMap.fourierInv_coe, Real.fourierInv_eq', ← integral_conj]
   calc
-    (∫ v : W, (starRingEnd ℂ) (Complex.exp ((↑(2 * Real.pi * inner ℝ v w) * Complex.I)) • b v)) =
+    _ =
         ∫ v : W, Complex.exp ((↑(2 * Real.pi * inner ℝ (-v) w) * Complex.I)) • b (-v) := by
       apply integral_congr_ae
       filter_upwards [] with v
@@ -149,13 +149,12 @@ theorem euclidean_poisson_row
       (∀ α, ∑ β, ‖G α β‖ ≤
         (ZLattice.covolume L volume)⁻¹ * H * (T α).card) := by
   classical
-  let G : Matrix ι ι ℂ := fun α β => ∑' m : L,
+  let G := fun α β => ∑' m : L,
     f (m : E) * (𝐞 (inner ℝ (m : E) (b α - b β)) : ℂ)
   have hsum (α β : ι) : Summable (fun m : L =>
       f (m : E) * (𝐞 (inner ℝ (m : E) (b α - b β)) : ℂ)) := by
-    have h := (PoissonArch.summable_norm_poisson_lattice_shift_modulation
-      L f 0 (b α - b β)).1
-    simpa only [zero_add, Circle.smul_def, smul_eq_mul, mul_comm] using h.of_norm
+    simpa only [zero_add, Circle.smul_def, smul_eq_mul, mul_comm] using ((PoissonArch.summable_norm_poisson_lattice_shift_modulation
+      L f 0 (b α - b β)).1).of_norm
   have hpoisson (α β : ι) : G α β =
       (ZLattice.covolume L volume : ℂ)⁻¹ *
         ∑' w : PoissonArch.dualLattice L, (𝓕 f) ((w : E) - (b α - b β)) := by
@@ -173,17 +172,17 @@ theorem euclidean_poisson_row
     intro hs
     apply hz
     apply (hT α z).2
-    simpa only [Metric.mem_closedBall, dist_zero_right] using hsupp hs
+    simpa using hsupp hs
   have hnorm : Summable (fun z => ‖q z‖) :=
     summable_of_ne_finset_zero (s := T α) (fun z hz => by rw [hzero z hz, norm_zero])
-  have hcv : 0 ≤ (ZLattice.covolume L volume)⁻¹ :=
+  have hcv :=
     inv_nonneg.mpr (ZLattice.covolume_pos L volume).le
   have hc : ‖(ZLattice.covolume L volume : ℂ)⁻¹‖ =
       (ZLattice.covolume L volume)⁻¹ := by
     rw [norm_inv, Complex.norm_real, Real.norm_eq_abs,
       abs_of_pos (ZLattice.covolume_pos L volume)]
   calc
-    ∑ β, ‖G α β‖ ≤ ∑ β, (ZLattice.covolume L volume)⁻¹ *
+    _ ≤ ∑ β, (ZLattice.covolume L volume)⁻¹ *
         ∑' w : PoissonArch.dualLattice L, ‖q (β, w)‖ := by
       apply Finset.sum_le_sum
       intro β hβ
@@ -192,7 +191,7 @@ theorem euclidean_poisson_row
     _ = (ZLattice.covolume L volume)⁻¹ * ∑' z, ‖q z‖ := by
       rw [← Finset.mul_sum, hnorm.tsum_prod, tsum_fintype]
     _ = (ZLattice.covolume L volume)⁻¹ * ∑ z ∈ T α, ‖q z‖ := by
-      rw [tsum_eq_sum (s := T α) (fun z hz => by rw [hzero z hz, norm_zero])]
+      rw [tsum_eq_sum (fun z hz => by rw [hzero z hz, norm_zero])]
     _ ≤ (ZLattice.covolume L volume)⁻¹ * ∑ _z ∈ T α, H := by
       apply mul_le_mul_of_nonneg_left _ hcv
       exact Finset.sum_le_sum (fun z hz => hH _)
@@ -366,7 +365,7 @@ private theorem scale_fourier {W : Type*} [NormedAddCommGroup W] [InnerProductSp
   rw [Real.fourier_eq', SchwartzMap.fourier_coe, Real.fourier_eq']
   have hp (x : W) : inner ℝ (t⁻¹ • x) (t • w) = inner ℝ x w := by
     simp [inner_smul_left, inner_smul_right, ht.ne', mul_assoc]
-  have h := Measure.integral_comp_smul (volume : Measure W)
+  have h := Measure.integral_comp_smul volume
     (fun x => Complex.exp (-(↑(2 * Real.pi * inner ℝ x (t • w)) * Complex.I)) • φ x) t⁻¹
   simp only [hp, inv_inv, abs_of_pos ht, abs_pow] at h
   simpa only [inv_pow, inv_inv, abs_pow, abs_of_pos ht, neg_mul, Complex.ofReal_neg, neg_mul] using h
@@ -386,12 +385,11 @@ theorem balanced_bandlimited_majorant
   let d := Module.finrank ℚ F
   let c := R / a
   let M := SchwartzMap.seminorm ℂ 0 0 (𝓕 φ)
-  have hc : 0 < c := div_pos hR ha
-  have hM : 0 ≤ M := apply_nonneg _ _
-  refine ⟨c ^ d * M, 2 / c, mul_nonneg (pow_nonneg hc.le _) hM,
+  have hc := div_pos hR ha
+  refine ⟨c ^ d * M, 2 / c, mul_nonneg (pow_nonneg hc.le _) (apply_nonneg _ _),
     div_pos (by norm_num) hc, ?_⟩
   intro N hN
-  let s : ℝ := N ^ (1 / (d : ℝ))
+  let s := N ^ (1 / (d : ℝ))
   have hNpos : 0 < N := lt_of_lt_of_le zero_lt_one hN
   have hs : 0 < s := Real.rpow_pos_of_pos hNpos _
   have hd : (d : ℝ) ≠ 0 := by
@@ -401,7 +399,7 @@ theorem balanced_bandlimited_majorant
     simp [hd]
   let t := c * s
   have ht : 0 < t := mul_pos hc hs
-  let f : 𝓢(PoissonArch.Space F, ℂ) :=
+  let f :=
     SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
       (Units.mk0 t⁻¹ (inv_ne_zero ht.ne') • ContinuousLinearEquiv.refl ℝ _) φ
   have hf (x : PoissonArch.Space F) : f x = φ (t⁻¹ • x) := by
@@ -426,16 +424,13 @@ theorem balanced_bandlimited_majorant
   · intro w
     rw [hfour, norm_smul, Real.norm_eq_abs, abs_of_nonneg (pow_nonneg ht.le _), htd]
     calc
-      c ^ d * N * ‖(𝓕 φ) (t • w)‖ ≤ c ^ d * N * M :=
+      _ ≤ c ^ d * N * M :=
         mul_le_mul_of_nonneg_left (SchwartzMap.norm_le_seminorm ℂ (𝓕 φ) _)
           (mul_nonneg (pow_nonneg hc.le _) hNpos.le)
       _ = c ^ d * M * N := by ring
   · apply closure_minimal ?_ Metric.isClosed_closedBall
     intro w hw
-    have hw' : (𝓕 φ) (t • w) ≠ 0 := by
-      intro hz
-      exact hw (by rw [hfour, hz, smul_zero])
-    have hb := hφsupp (subset_tsupport _ hw')
+    have hb := hφsupp (subset_tsupport _ (fun hz => hw (by rw [hfour, hz, smul_zero])))
     simp only [Metric.mem_closedBall, dist_zero_right, norm_smul, Real.norm_eq_abs,
       abs_of_pos ht] at hb
     simp only [Metric.mem_closedBall, dist_zero_right]
@@ -455,8 +450,9 @@ noncomputable section
 open scoped Classical NumberField ComplexConjugate
 open IsDedekindDomain NumberField
 
+variable (F : Type) [Field F] [NumberField F]
+
 theorem arithmetic_majorant_gram
-    (F : Type) [Field F] [NumberField F]
     (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12)
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
@@ -511,10 +507,9 @@ theorem arithmetic_majorant_gram
     positivity
   · intro N V hN hV
     obtain ⟨f, hf, hfmajor, hfourier, hsupp⟩ := hmajorant N hN
-    let Φ := fun x : SLocalProduct F S =>
+    refine ⟨(fun x : SLocalProduct F S =>
       ((PoissonS.finiteBall F S k).indicator (fun _ => (1 : ℝ)) x.2) *
-        (f (PoissonArch.infiniteAdeleToSpace F x.1)).re
-    refine ⟨Φ, ?_, ?_, ?_, ?_⟩
+        (f (PoissonArch.infiniteAdeleToSpace F x.1)).re), ?_, ?_, ?_, ?_⟩
     · exact (hwindow.comp continuous_snd).mul
         (Complex.continuous_re.comp (f.continuous.comp
           ((PoissonArch.infiniteAdeleToSpace F).continuous.comp continuous_fst)))
@@ -531,15 +526,12 @@ theorem arithmetic_majorant_gram
       rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
       exact mul_le_mul_of_nonneg_left hyarch (by positivity)
     · intro p P hP
-      have hρ : 0 ≤ B / N ^ (1 / (Module.finrank ℚ F : ℝ)) := by positivity
-      have hcounts := hpacking V (B / N ^ (1 / (Module.finrank ℚ F : ℝ)))
-        hV hρ p P hP r hr
-      choose T hT hcount using hcounts
+      choose T hT hcount using (hpacking V (B / N ^ (1 / (Module.finrank ℚ F : ℝ)))
+        hV (by positivity) p P hP r hr)
       exact ArithmeticGramSteps.tensor_gram_assembly F S k hwindow χ r hphase E hE
         A B D N V hA hB hD hN hV f hf hfourier hsupp p P T hT hcount
 
 lemma trace_phase_norm
-    (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (χ : SLocalProduct F S → ℂ)

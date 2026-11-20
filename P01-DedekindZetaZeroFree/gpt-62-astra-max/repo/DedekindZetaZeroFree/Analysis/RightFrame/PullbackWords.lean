@@ -14,8 +14,8 @@ open scoped BigOperators
 namespace DedekindZetaZeroFree.RightFrame.PullbackWords
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-variable {P : Type*} [NormedAddCommGroup P] [NormedSpace ℝ P]
-variable {B : Type*}
+    {P : Type*} [NormedAddCommGroup P] [NormedSpace ℝ P]
+    {B : Type*}
 
 def directionalWord (fields : B → E → E) : List B → (E → ℂ) → E → ℂ
   | [], u => u
@@ -28,7 +28,11 @@ section TransportProof
 open Topology
 variable [FiniteDimensional ℝ E] [FiniteDimensional ℝ P] [Fintype B]
 
-private lemma inverse_coefficients (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOpen O)
+section
+
+variable (U : Set E)
+
+private lemma inverse_coefficients (O : Set P) (hU : IsOpen U) (hO : IsOpen O)
     (fields : B → E → E) (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
     (hframe : ∀ x ∈ U, ∃ e : Module.Basis B ℝ E, ∀ b, e b = fields b x)
     (ψ : P → E) (hψ : ContDiffOn ℝ (⊤ : ℕ∞) ψ O) (hψU : Set.MapsTo ψ O U)
@@ -60,7 +64,7 @@ private lemma inverse_coefficients (U : Set E) (O : Set P) (hU : IsOpen U) (hO :
       rw [he]
       exact contDiffAt_map_inverse e
     exact hInv.comp_contDiffWithinAt x (hA x hx)
-  let a : B → P → ℝ := fun b x => ContinuousLinearMap.inverse (A (ψ x)) (fderiv ℝ ψ x v) b
+  let a := fun b x => ContinuousLinearMap.inverse (A (ψ x)) (fderiv ℝ ψ x v) b
   refine ⟨a, ?_, ?_⟩
   · intro b
     exact (contDiff_apply ℝ ℝ b).comp_contDiffOn
@@ -69,9 +73,8 @@ private lemma inverse_coefficients (U : Set E) (O : Set P) (hU : IsOpen U) (hO :
     obtain ⟨e, he⟩ := hAe (ψ x) (hψU hx)
     have hh : A (ψ x) (ContinuousLinearMap.inverse (A (ψ x)) (fderiv ℝ ψ x v)) = fderiv ℝ ψ x v := by
       exact (show (A (ψ x)).IsInvertible from ⟨e, he.symm⟩).self_apply_inverse _
-    simpa only [A, a, ContinuousLinearMap.sum_apply, ContinuousLinearMap.smulRight_apply,
-      ContinuousLinearMap.proj_apply] using hh.symm
- lemma word_smooth (U : Set E) (hU : IsOpen U)
+    simpa [A] using hh.symm
+ lemma word_smooth (hU : IsOpen U)
     (fields : B → E → E) (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
     (r : List B) (u : E → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) :
     ContDiffOn ℝ (⊤ : ℕ∞) (directionalWord fields r u) U := by
@@ -80,7 +83,7 @@ private lemma inverse_coefficients (U : Set E) (O : Set P) (hU : IsOpen U) (hO :
   | cons b r ih =>
     exact (ih.fderiv_of_isOpen hU (by simp)).clm_apply (hfields b)
 
-private lemma term_derivative (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOpen O)
+private lemma term_derivative (O : Set P) (hU : IsOpen U) (hO : IsOpen O)
     (fields : B → E → E) (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
     (ψ : P → E) (hψ : ContDiffOn ℝ (⊤ : ℕ∞) ψ O) (hψU : Set.MapsTo ψ O U)
     (v : P) (a : B → P → ℝ)
@@ -90,10 +93,7 @@ private lemma term_derivative (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOp
     fderiv ℝ (fun y => c y • directionalWord fields r u (ψ y)) x v =
       fderiv ℝ c x v • directionalWord fields r u (ψ x) +
         ∑ b, (c x * a b x) • directionalWord fields (b :: r) u (ψ x) := by
-  have hdq := ((word_smooth U hU fields hfields r u hu).contDiffAt (hU.mem_nhds (hψU hx))).differentiableAt (by simp)
-  have hdψ := (hψ.contDiffAt (hO.mem_nhds hx)).differentiableAt (by simp)
-  have hdc := (hc.contDiffAt (hO.mem_nhds hx)).differentiableAt (by simp)
-  have hh := hdc.hasFDerivAt.smul (hdq.hasFDerivAt.comp x hdψ.hasFDerivAt)
+  have hh := ((hc.contDiffAt (hO.mem_nhds hx)).differentiableAt (by simp)).hasFDerivAt.smul ((((word_smooth U hU fields hfields r u hu).contDiffAt (hU.mem_nhds (hψU hx))).differentiableAt (by simp)).hasFDerivAt.comp x ((hψ.contDiffAt (hO.mem_nhds hx)).differentiableAt (by simp)).hasFDerivAt)
   change (fderiv ℝ (c • (directionalWord fields r u ∘ ψ)) x) v = _
   rw [hh.fderiv]
   simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smulRight_apply,
@@ -102,12 +102,14 @@ private lemma term_derivative (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOp
   simp only [map_smul, Finset.smul_sum, smul_smul, directionalWord, Function.comp_apply]
   exact add_comm _ _
 
+end
+
 private lemma list_derivative {α : Type*} (ts : List α) (f : α → P → ℂ) (x : P)
     (hf : ∀ t ∈ ts, DifferentiableAt ℝ (f t) x) :
     HasFDerivAt (fun y => (ts.map (fun t => f t y)).sum)
       (ts.map (fun t => fderiv ℝ (f t) x)).sum x := by
   induction ts with
-  | nil => simpa using hasFDerivAt_const (𝕜 := ℝ) (0 : ℂ) x
+  | nil => exact hasFDerivAt_const 0 x
   | cons t ts ih =>
     exact (hf t (by simp)).hasFDerivAt.fun_add (ih (fun r hr => hf r (by simp [hr])))
 private lemma list_transport (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOpen O)
@@ -127,8 +129,7 @@ private lemma list_transport (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOpe
       simp only [List.mem_singleton] at ht
       subst t
       exact ⟨contDiffOn_const, by simp⟩
-    · intro u hu x hx
-      simp [constantDirectionWord, directionalWord]
+    · simp [constantDirectionWord, directionalWord]
   | cons v w ih =>
     obtain ⟨ts,hts,heq⟩ := ih
     obtain ⟨a,has,ha⟩ := inverse_coefficients U O hU hO fields hfields hframe ψ hψ hψU v

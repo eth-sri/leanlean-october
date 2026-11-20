@@ -11,7 +11,7 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.LocalTorus
 open KPGlobalTorusFiniteStages
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 
  theorem finite (q : HeightOneSpectrum (𝓞 F))
     (u g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
@@ -75,18 +75,13 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
   rw [Complex.norm_exp] at hn
   have hnorm : KPLocalPrincipalSeries.localAbs (KPLocalExceptionalConstruction.LocalField F q) y =
       ((KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q) y : ℝ≥0) : ℝ) := by
-    have hh : ((KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q) y : ℝ≥0) : ℝ) ^ (1/6 : ℝ) =
-        (KPLocalPrincipalSeries.localAbs (KPLocalExceptionalConstruction.LocalField F q) y) ^ (1/6 : ℝ) := by
-      rw [Real.rpow_def_of_pos hlpos]
-      norm_num [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.rpow_pos_of_pos hgpos _),
-        Complex.mul_re, mul_comm] at hn ⊢
-      exact hn
-    exact ((Real.rpow_left_inj (le_of_lt hgpos) (le_of_lt hlpos)
-      (by norm_num : (1/6:ℝ) ≠ 0)).mp hh).symm
+    refine ((Real.rpow_left_inj (le_of_lt hgpos) (le_of_lt hlpos)
+      (by norm_num : (1/6:ℝ) ≠ 0)).mp ?_).symm
+    rw [Real.rpow_def_of_pos hlpos]
+    norm_num [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.rpow_pos_of_pos hgpos _),
+      Complex.mul_re, mul_comm] at hn ⊢
+    exact hn
   unfold KPLocalPrincipalSeries.normPower
-  change Complex.exp ((1/2 : ℂ) * (Real.log (KPLocalPrincipalSeries.localAbs
-    (KPLocalExceptionalConstruction.LocalField F q) y) : ℂ)) =
-    ((Real.rpow ((KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q) y : ℝ≥0) : ℝ) (1/2 : ℝ)) : ℂ)
   rw [hnorm, Real.rpow_eq_pow, Real.rpow_def_of_pos hgpos]
   simp only [Complex.ofReal_exp, Complex.ofReal_mul]
   congr 1

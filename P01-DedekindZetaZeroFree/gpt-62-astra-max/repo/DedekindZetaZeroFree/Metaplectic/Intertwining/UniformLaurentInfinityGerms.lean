@@ -15,8 +15,8 @@ open KPRankOneReverseRegulatorShellsRaw KPActualScalarBinding
 noncomputable section
 set_option maxHeartbeats 1000000
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-variable (S : ActualKPBinding F ζ hζ q)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
+    (S : ActualKPBinding F ζ hζ q)
 local notation "H₀" => KPExceptionalRaw.actualTorus F ζ hζ q
 
 variable (P : Polarization S.heisenberg) [DecidableEq S.D]

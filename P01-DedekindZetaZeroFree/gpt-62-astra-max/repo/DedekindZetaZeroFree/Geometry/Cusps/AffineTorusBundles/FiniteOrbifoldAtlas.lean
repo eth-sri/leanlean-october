@@ -9,23 +9,29 @@ noncomputable section
 open scoped Classical Matrix
 namespace DedekindZetaZeroFree.KPCuspChart
 
- def placeRing (F : Type*) [Field F] [NumberField F] : F →+* Horizontal F where
+ section
+
+variable (F : Type*) [Field F] [NumberField F]
+
+def placeRing : F →+* Horizontal F where
   toFun := embedding F
   map_zero' := (embedding F).map_zero
   map_add' := (embedding F).map_add
   map_one' := by ext i; simp [embedding]
   map_mul' := by intro x y; ext i; simp [embedding]
 
-theorem raw_translation_lattice_stable (F : Type*) [Field F] [NumberField F]
+theorem raw_translation_lattice_stable
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S) :
     ∀ (u : D.E) (x : F), x ∈ D.L → ((u : Fˣ) : F) * x ∈ D.L :=
   KPCuspLogShape.actual_translation_lattice_stable F S D.upper D.L D.E
     D.inclusion D.ratio D.surjective D.exact D.unipotentFormula D.ratioFormula
 
+end
+
 section
 variable (F : Type*) [Field F] [NumberField F]
-variable (L : AddSubgroup F) (E : Subgroup Fˣ)
-variable (hinv : ∀ (u : E) (x : F), x ∈ L → ((u : Fˣ) : F) * x ∈ L)
+    (L : AddSubgroup F) (E : Subgroup Fˣ)
+    (hinv : ∀ (u : E) (x : F), x ∈ L → ((u : Fˣ) : F) * x ∈ L)
 
  def scalarMap (u : E) : Torus F L →+ Torus F L :=
   QuotientAddGroup.map (translationLattice F L) (translationLattice F L)
@@ -110,9 +116,7 @@ theorem raw_parabolic_torus_kernel (F : Type*) [Field F] [NumberField F]
   obtain ⟨v, rfl⟩ := hgr
   obtain ⟨A, hA, hc⟩ := D.upper _ (D.inclusion v).property
   obtain ⟨_, hd, ht⟩ := D.unipotentFormula v.toAdd A hA
-  have hn : A 1 1 ≠ 0 := by
-    intro hz
-    exact A.det_ne_zero (by simp [Matrix.det_fin_two, hc, hz])
+  have hn : A 1 1 ≠ 0 := fun hz => A.det_ne_zero (by simp [Matrix.det_fin_two, hc, hz])
   have hv : A 0 1 / A 1 1 = (v.toAdd : F) := by rw [ht, hd, mul_div_cancel_right₀ _ hn]
   apply Homeomorph.ext
   intro z
@@ -134,10 +138,9 @@ theorem raw_ratio_torus_action (F : Type*) [Field F] [NumberField F]
           (fun i => embedding F ((D.ratio g : Fˣ) : F) i * x i +
             embedding F (A 0 1 / A 1 1) i) := by
   obtain ⟨α, hα⟩ := raw_parabolic_torus_action F S D
-  have hk := raw_parabolic_torus_kernel F S D α hα
   choose σ hσ using D.surjective
   have heq (g k : S) (h : D.ratio g = D.ratio k) : α g = α k :=
-    (α.eq_iff).mpr (hk ((D.ratio.eq_iff).mp h))
+    (α.eq_iff).mpr ((raw_parabolic_torus_kernel F S D α hα) ((D.ratio.eq_iff).mp h))
   let β : D.E →* (Torus F D.L ≃ₜ Torus F D.L) := {
     toFun := fun u => α (σ u)
     map_one' := by
@@ -177,9 +180,11 @@ private theorem upper_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     have hn : (‖g 1 1‖ ^ 2 : ℝ) = (g 1 1 * star (g 1 1) : ℂ) := by
       simpa [Complex.normSq_eq_norm_sq] using (Complex.mul_conj (g 1 1)).symm
     rw [hn, ha]
-    have hds : star (g 1 1) ≠ 0 := star_ne_zero.mpr hd
+    have hds := star_ne_zero.mpr hd
     field_simp
   · exact KPCuspLogShape.upper_action_snd g hc u hu ha z
+
+alias FiniteOrbifoldAtlas.upper_action := upper_action
 
 theorem raw_actual_cross_action (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -196,18 +201,19 @@ theorem raw_actual_cross_action (F : Type*) [Field F] [NumberField F]
   have hi : (Matrix.GeneralLinearGroup.map σ A) 1 0 = 0 := by
     change σ (A 1 0) = 0
     simp [hc]
-  have hu : σ ((D.ratio g : Fˣ) : F) ≠ 0 :=
+  let σ₀ := σ ((D.ratio g : Fˣ) : F)
+  have hu : σ₀ ≠ 0 :=
     (map_ne_zero σ).mpr (Units.ne_zero _)
   have ha : (Matrix.GeneralLinearGroup.map σ A) 0 0 =
-      σ ((D.ratio g : Fˣ) : F) * (Matrix.GeneralLinearGroup.map σ A) 1 1 := by
+      σ₀ * (Matrix.GeneralLinearGroup.map σ A) 1 1 := by
     change σ (A 0 0) = _
     rw [D.ratioFormula g A hA hc, map_mul]
     rfl
   change KPArch.action (Matrix.GeneralLinearGroup.map σ A) (toArch F (p, 0) i) = _
   rw [upper_action _ hi _ hu ha]
   apply Prod.ext
-  · change σ ((D.ratio g : Fˣ) : F) * p.1 i + σ (A 0 1) / σ (A 1 1) =
-      σ ((D.ratio g : Fˣ) : F) * p.1 i + σ (A 0 1 / A 1 1)
+  · change σ₀ * p.1 i + σ (A 0 1) / σ (A 1 1) =
+      σ₀ * p.1 i + σ (A 0 1 / A 1 1)
     rw [map_div₀]
   · change 0 + (p.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i + Real.log ‖σ _‖ =
       0 + ((p.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i +
@@ -235,7 +241,7 @@ theorem raw_cross_action (F : Type*) [Field F] [NumberField F]
           crossAffine F hF D.E D.integralUnits (D.ratio g) (A 0 1 / A 1 1) p := by
   obtain ⟨τ, hτ1, hτmul, hτformula⟩ :=
     KPCuspLogShape.upper_translation_cocycle F S D.upper D.E D.ratio D.ratioFormula
-  let b : S → Cross F → Cross F := fun g =>
+  let b := fun g =>
     crossAffine F hF D.E D.integralUnits (D.ratio g) (τ g)
   have hb1 (p : Cross F) : b 1 p = p := by
     ext i <;> simp [b, crossAffine, affine, embedding, hτ1]
@@ -305,9 +311,9 @@ namespace DedekindZetaZeroFree.KPCuspChart
 
 section
 variable (F : Type*) [Field F] [NumberField F]
-variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-variable (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
-variable (α : S →* (Cross F ≃ₜ Cross F))
+    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+    (α : S →* (Cross F ≃ₜ Cross F))
 variable (hα : ∀ (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F),
   Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) → A 1 0 = 0 →
   ∀ p : Cross F, α g p =
@@ -325,10 +331,7 @@ theorem raw_cross_action_translation (v : D.L) (p : Cross F) :
     α (D.inclusion (Multiplicative.ofAdd v)) p = (p.1 + embedding F v, p.2) := by
   obtain ⟨A, hA, hc⟩ := D.upper _ (D.inclusion (Multiplicative.ofAdd v)).property
   obtain ⟨_, hd, ht⟩ := D.unipotentFormula v A hA
-  have hn : A 1 1 ≠ 0 := by
-    intro hz
-    exact A.det_ne_zero (by simp [Matrix.det_fin_two, hc, hz])
-  have hv : A 0 1 / A 1 1 = (v : F) := by rw [ht, hd, mul_div_cancel_right₀ _ hn]
+  have hv : A 0 1 / A 1 1 = (v : F) := by rw [ht, hd, mul_div_cancel_right₀ _ (fun hz => A.det_ne_zero (by simp [Matrix.det_fin_two, hc, hz]))]
   have hr : D.ratio (D.inclusion (Multiplicative.ofAdd v)) = 1 := by
     apply MonoidHom.mem_ker.mp
     rw [← D.exact]
@@ -361,8 +364,7 @@ theorem raw_cross_eq_of_torus_eq (x y : Horizontal F) (b : Shape F)
   refine ⟨D.inclusion (Multiplicative.ofAdd (⟨v, hv⟩ : D.L)), ?_⟩
   rw [raw_cross_action_translation F hF S D α hα]
   apply Prod.ext
-  · change x + embedding F v = y
-    rw [hvec]
+  · rw [hvec]
     abel
   · rfl
 
@@ -403,9 +405,8 @@ def rawLift : Torus F D.L × Shape F → CrossQuotient F S := fun p =>
     rawLift F hF S D α hα (QuotientAddGroup.mk x, b) = Quotient.mk _ (x, b) := rfl
 
 theorem rawLift_open : IsOpenQuotientMap (rawLift F hF S D α hα) := by
-  have hq := (QuotientAddGroup.isOpenQuotientMap_mk (N := translationLattice F D.L)).prodMap
-    (IsOpenQuotientMap.id (X := Shape F))
-  exact hq.of_comp_iff.mp (raw_cross_quotient_open F hF S D α hα)
+  exact ((QuotientAddGroup.isOpenQuotientMap_mk).prodMap
+    (IsOpenQuotientMap.id)).of_comp_iff.mp (raw_cross_quotient_open F hF S D α hα)
 
 theorem rawProjection_lift (z : Torus F D.L) (b : Shape F) :
     rawProjection F hF S D α hα (rawLift F hF S D α hα (z, b)) = QuotientAddGroup.mk b := by
@@ -434,16 +435,9 @@ theorem rawLift_orbit_equivalence
     · simpa only [hg] using (raw_cross_action_shape F hF S D α hα g (x, b))
   · rintro ⟨u, hu, hb⟩
     obtain ⟨g, rfl⟩ := D.surjective u
-    have htor : (QuotientAddGroup.mk (α g (x, b)).1 : Torus F D.L) = QuotientAddGroup.mk y := by
-      rw [raw_cross_action_torus F hF S D α hα β hβ, hu]
-    have hs : (α g (x, b)).2 = b' :=
-      (raw_cross_action_shape F hF S D α hα g (x, b)).trans hb.symm
-    have he := raw_cross_eq_of_torus_eq F hF S D α hα (α g (x, b)).1 y b' htor
-    have he' : (Quotient.mk (crossRelation F S) (x, b) : CrossQuotient F S) =
-        Quotient.mk _ (α g (x, b)) :=
-      Quotient.sound ((raw_cross_relation_iff F hF S D α hα _ _).mpr ⟨g, rfl⟩)
     apply Quotient.exact
-    exact he'.trans (by simpa only [← hs] using he)
+    exact (Quotient.sound ((raw_cross_relation_iff F hF S D α hα _ _).mpr ⟨g, rfl⟩)).trans (by simpa only [← ((raw_cross_action_shape F hF S D α hα g (x, b)).trans hb.symm)] using (raw_cross_eq_of_torus_eq F hF S D α hα (α g (x, b)).1 y b' (by
+      rw [raw_cross_action_torus F hF S D α hα β hβ, hu])))
 end
 end DedekindZetaZeroFree.KPCuspChart
 
@@ -470,16 +464,14 @@ private theorem finite_local_charts {X Y : Type*} [TopologicalSpace X]
     rw [← hfe y, hx y] at h
     exact h
   obtain ⟨t, ht⟩ := isCompact_univ.elim_finite_subcover (fun y => (e y).target)
-    (fun y => (e y).open_target) (by
-      intro y _
-      exact Set.mem_iUnion.mpr ⟨y, hmem y⟩)
+    (fun y => (e y).open_target) (fun y _ => Set.mem_iUnion.mpr ⟨y, hmem y⟩)
   have htn : t.Nonempty := by
     obtain ⟨y⟩ := ‹Nonempty Y›
     have hy := ht (Set.mem_univ y)
     simp only [Set.mem_iUnion] at hy
     obtain ⟨z, hz, _⟩ := hy
     exact ⟨z, hz⟩
-  let a : Fin (Fintype.card t) ≃ t := (Fintype.equivFin t).symm
+  let a := (Fintype.equivFin t).symm
   refine ⟨Fintype.card t, by simpa using Finset.card_pos.mpr htn,
     fun i => e (a i).val, fun i => hfe _, fun i => ⟨x _, he _⟩, ?_⟩
   apply Set.Subset.antisymm (Set.subset_univ _)
@@ -519,11 +511,9 @@ theorem rawShapeCover_exists (F : Type*) [Field F] [NumberField F]
   letI := hdisc
   letI := (kp_cusp_log_unit_shape F hF E hE hindex).2.1
   let f : Shape F → Base F hF E hE := QuotientAddGroup.mk
-  have hf : IsLocalHomeomorph f :=
-    (Λ.toAddSubgroup.isAddQuotientCoveringMap_of_comm
-      DiscreteTopology.isDiscrete).isLocalHomeomorph
   obtain ⟨n, hn, e, hfe, hne, hcover⟩ :=
-    finite_local_charts f hf QuotientAddGroup.mk_surjective
+    finite_local_charts f ((Λ.toAddSubgroup.isAddQuotientCoveringMap_of_comm
+      DiscreteTopology.isDiscrete).isLocalHomeomorph) QuotientAddGroup.mk_surjective
   refine ⟨{
     chartCount := n
     positive_chartCount := hn
@@ -547,8 +537,7 @@ theorem rawShapeCover_exists (F : Type*) [Field F] [NumberField F]
       change (QuotientAddGroup.mk b : Base F hF E hE) = QuotientAddGroup.mk (b + _)
       rw [QuotientAddGroup.mk_add, (QuotientAddGroup.eq_zero_iff _).mpr hlog, add_zero]
     rw [hfe i] at heq
-    have hbb := (e i).injOn hb hb' heq
-    rw [← hbb] at h
+    rw [← ((e i).injOn hb hb' heq)] at h
     exact add_left_cancel (h.symm.trans (add_zero b).symm)
   · intro i
     change (e i).target = f '' (e i).source
@@ -569,10 +558,13 @@ noncomputable section
 open scoped Classical
 namespace DedekindZetaZeroFree.KPCuspChart
 
-theorem raw_coarse_eq_iff (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+section
+
+variable (F : Type*) [Field F] [NumberField F] (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (L : AddSubgroup F) (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
-    (β : E →* (Torus F L ≃ₜ Torus F L)) (z z' : Torus F L) :
+    (β : E →* (Torus F L ≃ₜ Torus F L))
+
+theorem raw_coarse_eq_iff (z z' : Torus F L) :
     coarseProjection F hF L E hE β z = coarseProjection F hF L E hE β z' ↔
       ∃ u : kernelUnits F hF E hE, β u.val z = z' := by
   letI := homeomorphAction (β.comp (kernelUnits F hF E hE).subtype)
@@ -582,29 +574,28 @@ theorem raw_coarse_eq_iff (F : Type*) [Field F] [NumberField F]
   rw [MulAction.mem_orbit_symm, MulAction.mem_orbit_iff]
   rfl
 
-theorem raw_coarse_open (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (L : AddSubgroup F) (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
-    (β : E →* (Torus F L ≃ₜ Torus F L)) :
+theorem raw_coarse_open :
     IsOpenQuotientMap (coarseProjection F hF L E hE β) := by
   letI := homeomorphAction (β.comp (kernelUnits F hF E hE).subtype)
   haveI : ContinuousConstSMul (kernelUnits F hF E hE) (Torus F L) :=
     ⟨fun u => (β u.val).continuous⟩
   exact MulAction.isOpenQuotientMap_quotientMk
 
+end
+
 section
 variable (F : Type*) [Field F] [NumberField F]
-variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-variable (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
-variable (β : D.E →* (Torus F D.L ≃ₜ Torus F D.L))
-variable (π : CrossQuotient F S → Base F hF D.E D.integralUnits)
-variable (l : Torus F D.L × Shape F → CrossQuotient F S)
-variable (hlopen : IsOpenQuotientMap l)
-variable (hπl : ∀ z b, π (l (z,b)) = QuotientAddGroup.mk b)
+    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+    (β : D.E →* (Torus F D.L ≃ₜ Torus F D.L))
+    (π : CrossQuotient F S → Base F hF D.E D.integralUnits)
+    (l : Torus F D.L × Shape F → CrossQuotient F S)
+    (hlopen : IsOpenQuotientMap l)
+    (hπl : ∀ z b, π (l (z,b)) = QuotientAddGroup.mk b)
 variable (heq : ∀ z z' b b', l (z,b) = l (z',b') ↔ ∃ u : D.E,
   β u z = z' ∧ b' = b + KPCuspLogShape.logarithm F hF D.E D.integralUnits (Additive.ofMul u))
 variable (V : Set (Shape F)) (W : Set (Base F hF D.E D.integralUnits))
-variable (hV : IsOpen V) (hW : W = QuotientAddGroup.mk '' V)
+    (hV : IsOpen V) (hW : W = QuotientAddGroup.mk '' V)
 variable (hsmall : ∀ b b' (u : D.E), b ∈ V → b' ∈ V →
   b' = b + KPCuspLogShape.logarithm F hF D.E D.integralUnits (Additive.ofMul u) →
   KPCuspLogShape.logarithm F hF D.E D.integralUnits (Additive.ofMul u) = 0)
@@ -627,7 +618,6 @@ private theorem chartLift_surjective : Function.Surjective (chartLift F hF S D �
   obtain ⟨u, hu⟩ := hm
   have hbu : b' = b + KPCuspLogShape.logarithm F hF D.E D.integralUnits u := by rw [hu]; abel
   refine ⟨(β u.toMul z, ⟨b', hb'⟩), Subtype.ext ?_⟩
-  change l (β u.toMul z, b') = c.val
   rw [← hz]
   exact ((heq z (β u.toMul z) b b').mpr ⟨u.toMul, rfl, hbu⟩).symm
 
@@ -636,8 +626,7 @@ include hsmall
     {c : CrossQuotient F S // π c ∈ W} := fun p =>
   Quotient.liftOn p.1 (fun z => chartLift F hF S D π l hπl V W hW (z,p.2)) (by
     intro z z' h
-    have hc := (raw_coarse_eq_iff F hF D.L D.E D.integralUnits β z z').mp (Quotient.sound h)
-    obtain ⟨u, hu⟩ := hc
+    obtain ⟨u, hu⟩ := ((raw_coarse_eq_iff F hF D.L D.E D.integralUnits β z z').mp (Quotient.sound h))
     apply Subtype.ext
     exact (heq z z' p.2.val p.2.val).mpr ⟨u.val, hu, by rw [u.property, add_zero]⟩)
 
@@ -646,8 +635,7 @@ private theorem coarseChartMap_injective :
   rintro ⟨c,b⟩ ⟨c',b'⟩ h
   obtain ⟨z, rfl⟩ := Quotient.mk_surjective c
   obtain ⟨z', rfl⟩ := Quotient.mk_surjective c'
-  have hh : l (z,b.val) = l (z',b'.val) := congrArg Subtype.val h
-  obtain ⟨u, hu, hb⟩ := (heq z z' b.val b'.val).mp hh
+  obtain ⟨u, hu, hb⟩ := (heq z z' b.val b'.val).mp (congrArg Subtype.val h)
   have hz := hsmall b.val b'.val u b.property b'.property hb
   have hbb : b' = b := Subtype.ext (by simpa only [hz, add_zero] using hb)
   apply Prod.ext
@@ -694,8 +682,11 @@ open scoped Classical Matrix
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPCuspChart
 
+section
+
+variable (F : Type*) [Field F] [NumberField F]
+
 theorem finite_kernelUnits_of_logarithm
-    (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F) :
     Finite (kernelUnits F hF E hE) := by
@@ -704,11 +695,9 @@ theorem finite_kernelUnits_of_logarithm
     (fun u : kernelUnits F hF E hE =>
       (⟨Additive.ofMul u.val, u.property⟩ : (KPCuspLogShape.logarithm F hF E hE).ker)) ?_
   intro u v huv
-  have h : Additive.ofMul u.val = Additive.ofMul v.val := congrArg Subtype.val huv
-  exact Subtype.ext (Additive.ofMul.injective h)
+  exact Subtype.ext (Additive.ofMul.injective (congrArg Subtype.val huv))
 
 theorem compact_torus_of_lattice
-    (F : Type*) [Field F] [NumberField F]
     (L : AddSubgroup F)
     (hdisc : DiscreteTopology (translationLattice F L).toIntSubmodule)
     (hlattice : letI := hdisc; IsZLattice ℝ (translationLattice F L).toIntSubmodule) :
@@ -718,12 +707,13 @@ theorem compact_torus_of_lattice
   exact KPCuspLogShape.compact_quotient_of_isZLattice (translationLattice F L).toIntSubmodule
 
 theorem compact_base_of_shape
-    (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
     (hindex : (E.subgroupOf (KPCuspArithmetic.rationalUnits F)).FiniteIndex) :
     CompactSpace (Base F hF E hE) :=
   (DedekindZetaZeroFree.kp_cusp_log_unit_shape F hF E hE hindex).2.1
+
+end
 
 theorem finite_affine_bundle_atlas
     (F : Type*) [Field F] [NumberField F]
@@ -738,12 +728,7 @@ theorem finite_affine_bundle_atlas
   let π := rawProjection F hF S D α hα
   let l := rawLift F hF S D α hα
   have hlopen : IsOpenQuotientMap l := rawLift_open F hF S D α hα
-  have hπl : ∀ z b, π (l (z,b)) = QuotientAddGroup.mk b :=
-    rawProjection_lift F hF S D α hα
   have heq := rawLift_orbit_equivalence F hF S D α hα β hβ
-  choose e he using fun i => raw_coarse_chart F hF S D β π l hlopen hπl heq
-    (C.shapeLift i) (C.baseOpen i) (C.open_shapeLift i) (C.baseOpen_formula i)
-    (C.small_shapeLift i)
   let A : AtlasData F hF S D β := {
     projection := π
     continuous_projection := rawProjection_continuous F hF S D α hα
@@ -753,19 +738,13 @@ theorem finite_affine_bundle_atlas
     lift_formula := fun x b => rfl
     orbit_equivalence := heq
     chartCount := C.chartCount
-    positive_chartCount := C.positive_chartCount
     shapeLift := C.shapeLift
     open_shapeLift := C.open_shapeLift
-    nonempty_shapeLift := C.nonempty_shapeLift
-    small_shapeLift := C.small_shapeLift
     baseOpen := C.baseOpen
     open_baseOpen := C.open_baseOpen
-    baseOpen_formula := C.baseOpen_formula
     cover := C.cover
     baseChart := C.baseChart
     baseChart_formula := C.baseChart_formula
-    coarseChart := e
-    coarseChart_formula := he
     transitions := by
       intro i j b b' hbb
       have hm : b'.val - b.val ∈
@@ -805,7 +784,6 @@ theorem finite_affine_bundle_atlas
     exact ⟨hfull ▸ hc.image hlopen.continuous⟩
   exact ⟨{
     compact_torus := inferInstance
-    compact_base := compact_base_of_shape F hF D.E D.integralUnits D.unitIndex
     finite_isotropy := finite_kernelUnits_of_logarithm F hF D.E D.integralUnits
     torusAction := β
     torusAction_formula := hβ

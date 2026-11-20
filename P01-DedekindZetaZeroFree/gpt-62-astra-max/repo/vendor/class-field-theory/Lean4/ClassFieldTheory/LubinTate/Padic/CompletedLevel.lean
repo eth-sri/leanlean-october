@@ -16,14 +16,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -58,10 +50,13 @@ open LocalFieldTheory.DiscreteValuationField.Examples.Qp
 open ValuationTheory.DiscreteValuationField
 open ValuationTheory.DiscreteValuationField.ValuedExtension
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+
 /-- The primitive standard Lubin--Tate polynomial over the canonical
 valuation ring of the completed-unramified field. -/
-noncomputable def padicCompletedPrimitivePolynomialInteger
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicCompletedPrimitivePolynomialInteger :
     Polynomial
       (padicCompletedUnramifiedCompleteDVF p).valuationSubring :=
   (standardLubinTatePrimitivePolynomial
@@ -71,8 +66,7 @@ noncomputable def padicCompletedPrimitivePolynomialInteger
 
 /-- The primitive standard Lubin--Tate polynomial after base change from
 `ℚ_[p]` to the completed-unramified fraction field. -/
-noncomputable def padicCompletedPrimitivePolynomial
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicCompletedPrimitivePolynomial :
     Polynomial (padicCompletedUnramifiedField p) :=
   (standardLubinTatePrimitivePolynomialOverField
       (padicLocalField p)
@@ -81,8 +75,7 @@ noncomputable def padicCompletedPrimitivePolynomial
 
 /-- Mapping the integral completed primitive polynomial to the fraction
 field gives the field-valued base change. -/
-theorem padicCompletedPrimitivePolynomialInteger_map
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitivePolynomialInteger_map :
     (padicCompletedPrimitivePolynomialInteger p n).map
         (algebraMap
           (padicCompletedUnramifiedCompleteDVF p).valuationSubring
@@ -94,7 +87,7 @@ theorem padicCompletedPrimitivePolynomialInteger_map
   let Q :=
     standardLubinTatePrimitivePolynomial
       (padicLocalField p)
-      (padicIntEquivValuationSubring p (p : ℤ_[p])) n
+      (padicIntEquivValuationSubring p p) n
   have hmaps :
       (algebraMap A E).comp
           (padicCompletedUnramifiedIntegerMap p) =
@@ -109,32 +102,29 @@ theorem padicCompletedPrimitivePolynomialInteger_map
   rw [Polynomial.map_map, Polynomial.map_map, hmaps]
 
 /-- The integral completed primitive polynomial is monic. -/
-theorem padicCompletedPrimitivePolynomialInteger_monic
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitivePolynomialInteger_monic :
     (padicCompletedPrimitivePolynomialInteger p n).Monic :=
   (standardLubinTatePrimitivePolynomial_monic
     (padicLocalField p)
     (padicIntEquivValuationSubring p (p : ℤ_[p])) n).map _
 
 /-- The field-valued completed primitive polynomial is monic. -/
-theorem padicCompletedPrimitivePolynomial_monic
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitivePolynomial_monic :
     (padicCompletedPrimitivePolynomial p n).Monic :=
   (standardLubinTatePrimitivePolynomialOverField_monic
     (padicLocalField p)
     (padicIntEquivValuationSubring p (p : ℤ_[p])) n).map _
 
 /-- The completed primitive polynomial has degree `(p - 1) * p ^ n`. -/
-theorem padicCompletedPrimitivePolynomial_natDegree
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitivePolynomial_natDegree :
     (padicCompletedPrimitivePolynomial p n).natDegree =
       (p - 1) * p ^ n := by
   have hcard :
       Nat.card (padicLocalField p).residueField = p := by
     simpa [padicLocalField] using
       padicCompleteDVF_residueField_card p
-  let π : (padicLocalField p).valuationSubring :=
-    padicIntEquivValuationSubring p (p : ℤ_[p])
+  let π :=
+    padicIntEquivValuationSubring p p
   calc
     (padicCompletedPrimitivePolynomial p n).natDegree =
         (standardLubinTatePrimitivePolynomialOverField
@@ -149,17 +139,17 @@ theorem padicCompletedPrimitivePolynomial_natDegree
     _ = (p - 1) * p ^ n := by rw [hcard]
 
 /-- The completed primitive polynomial remains separable after base change. -/
-theorem padicCompletedPrimitivePolynomial_separable
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitivePolynomial_separable :
     (padicCompletedPrimitivePolynomial p n).Separable :=
   (standardLubinTatePrimitivePolynomialOverField_separable
     (padicMultiplicativeLubinTateSeries_isUniformizer p) n).map
 
 /-- The actual finite splitting field over the completed-unramified
 coefficient field. -/
-def padicCompletedLevelField
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :=
+def padicCompletedLevelField :=
   (padicCompletedPrimitivePolynomial p n).SplittingField
+
+end
 
 @[reducible]
 instance padicCompletedLevelField_field
@@ -209,9 +199,12 @@ noncomputable instance padicCompletedLevelField_isGalois
     IsGalois.of_separable_splitting_field
       (padicCompletedPrimitivePolynomial_separable p n)
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+
 /-- The completed primitive polynomial splits over the completed level. -/
-theorem padicCompletedPrimitivePolynomial_splits
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitivePolynomial_splits :
     ((padicCompletedPrimitivePolynomial p n).map
       (algebraMap (padicCompletedUnramifiedField p)
         (padicCompletedLevelField p n))).Splits :=
@@ -220,8 +213,7 @@ theorem padicCompletedPrimitivePolynomial_splits
 
 /-- The roots of the completed primitive polynomial generate its splitting
 field. -/
-theorem padicCompletedPrimitivePolynomial_adjoin_rootSet
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitivePolynomial_adjoin_rootSet :
     Algebra.adjoin (padicCompletedUnramifiedField p)
         ((padicCompletedPrimitivePolynomial p n).rootSet
           (padicCompletedLevelField p n) :
@@ -230,22 +222,21 @@ theorem padicCompletedPrimitivePolynomial_adjoin_rootSet
   Polynomial.SplittingField.adjoin_rootSet
     (padicCompletedPrimitivePolynomial p n)
 
- theorem padicCompletedPrimitivePolynomial_map_degree_ne_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+ theorem padicCompletedPrimitivePolynomial_map_degree_ne_zero :
     ((padicCompletedPrimitivePolynomial p n).map
       (algebraMap (padicCompletedUnramifiedField p)
         (padicCompletedLevelField p n))).degree ≠ 0 := by
-  have hmonic :=
-    (padicCompletedPrimitivePolynomial_monic p n).map
-      (algebraMap (padicCompletedUnramifiedField p)
-        (padicCompletedLevelField p n))
-  rw [Polynomial.degree_eq_natDegree hmonic.ne_zero,
+  rw [Polynomial.degree_eq_natDegree ((padicCompletedPrimitivePolynomial_monic p n).map
+    (algebraMap (padicCompletedUnramifiedField p)
+      (padicCompletedLevelField p n))).ne_zero,
     (padicCompletedPrimitivePolynomial_monic p n).natDegree_map,
     padicCompletedPrimitivePolynomial_natDegree]
   exact_mod_cast
     (Nat.mul_pos
       (Nat.sub_pos_of_lt (Fact.out : p.Prime).one_lt)
       (Nat.pow_pos (Fact.out : p.Prime).pos)).ne'
+
+end
 
 /-- A chosen primitive standard division point in the completed level. -/
 noncomputable def padicCompletedPrimitiveRoot
@@ -276,8 +267,7 @@ theorem padicCompletedPrimitiveRoot_aeval_integerPolynomial
     Polynomial.aeval (padicCompletedPrimitiveRoot p n)
         (padicCompletedPrimitivePolynomialInteger p n) = 0 := by
   calc
-    Polynomial.aeval (padicCompletedPrimitiveRoot p n)
-        (padicCompletedPrimitivePolynomialInteger p n) =
+    _ =
       Polynomial.aeval (padicCompletedPrimitiveRoot p n)
         ((padicCompletedPrimitivePolynomialInteger p n).map
           (algebraMap
@@ -294,13 +284,16 @@ theorem padicCompletedPrimitiveRoot_aeval_integerPolynomial
         (padicCompletedPrimitivePolynomial p n) := by
       rw [padicCompletedPrimitivePolynomialInteger_map]
     _ = 0 := by
-      simpa [Polynomial.IsRoot, Polynomial.aeval_def] using
+      simpa using
         padicCompletedPrimitiveRoot_isRoot p n
+
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
 
 /-- The chosen primitive point is integral over the canonical Witt
 valuation ring. -/
-theorem padicCompletedPrimitiveRoot_isIntegral
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitiveRoot_isIntegral :
     IsIntegral
       (padicCompletedUnramifiedCompleteDVF p).valuationSubring
       (padicCompletedPrimitiveRoot p n) :=
@@ -308,8 +301,7 @@ theorem padicCompletedPrimitiveRoot_isIntegral
     padicCompletedPrimitivePolynomialInteger_monic p n,
     padicCompletedPrimitiveRoot_aeval_integerPolynomial p n⟩
 
- theorem padicCompletedLevelCompleteDVFData_exists
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+ theorem padicCompletedLevelCompleteDVFData_exists :
     ∃ target : CompleteDVF.{0, 0} (padicCompletedLevelField p n),
       ∃ hExt :
           (padicCompletedUnramifiedCompleteDVF p).valuation.HasExtension
@@ -324,29 +316,26 @@ theorem padicCompletedPrimitiveRoot_isIntegral
             ramificationIndex
                 (padicCompletedUnramifiedCompleteDVF p).toDVF target.toDVF *
               residueDegree
-                (padicCompletedUnramifiedCompleteDVF p).toDVF target.toDVF := by
-  exact
-    exists_integralClosure_standard_fundamental_identity
-      (K := padicCompletedUnramifiedField p)
-      (L := padicCompletedLevelField p n)
+                (padicCompletedUnramifiedCompleteDVF p).toDVF target.toDVF := exists_integralClosure_standard_fundamental_identity
+
       (padicCompletedUnramifiedCompleteDVF p)
 
 /-- The complete discrete valuation on the completed level selected from its
 actual integral closure over the Witt valuation ring. -/
-noncomputable def padicCompletedLevelCompleteDVF
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicCompletedLevelCompleteDVF :
     CompleteDVF.{0, 0} (padicCompletedLevelField p n) :=
   Classical.choose (padicCompletedLevelCompleteDVFData_exists p n)
 
 /-- The selected completed-level valuation extends the completed-unramified
 base valuation. -/
-theorem padicCompletedLevelCompleteDVF_hasExtension
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedLevelCompleteDVF_hasExtension :
     (padicCompletedUnramifiedCompleteDVF p).valuation.HasExtension
       (padicCompletedLevelCompleteDVF p n).valuation :=
   Classical.choose
     (Classical.choose_spec
       (padicCompletedLevelCompleteDVFData_exists p n))
+
+end
 
 noncomputable instance padicCompletedLevelCompleteDVF_hasExtensionInstance
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
@@ -354,10 +343,13 @@ noncomputable instance padicCompletedLevelCompleteDVF_hasExtensionInstance
       (padicCompletedLevelCompleteDVF p n).valuation :=
   padicCompletedLevelCompleteDVF_hasExtension p n
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+
 /-- The completed-level valuation ring is the actual integral closure of the
 completed-unramified valuation ring. -/
-theorem padicCompletedLevelCompleteDVF_isIntegralClosure
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedLevelCompleteDVF_isIntegralClosure :
     IsIntegralClosure
       (padicCompletedLevelCompleteDVF p n).valuationSubring
       (padicCompletedUnramifiedCompleteDVF p).valuationSubring
@@ -368,14 +360,10 @@ theorem padicCompletedLevelCompleteDVF_isIntegralClosure
 
 /-- The chosen completed primitive root belongs to the selected
 integral-closure valuation ring. -/
-theorem padicCompletedPrimitiveRoot_mem_valuationSubring
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitiveRoot_mem_valuationSubring :
     padicCompletedPrimitiveRoot p n ∈
       (padicCompletedLevelCompleteDVF p n).valuation.valuationSubring := by
-  let : IsIntegralClosure
-      (padicCompletedLevelCompleteDVF p n).valuationSubring
-      (padicCompletedUnramifiedCompleteDVF p).valuationSubring
-      (padicCompletedLevelField p n) :=
+  let :=
     padicCompletedLevelCompleteDVF_isIntegralClosure p n
   rcases
       (IsIntegralClosure.isIntegral_iff
@@ -392,8 +380,7 @@ theorem padicCompletedPrimitiveRoot_mem_valuationSubring
 
 /-- The chosen primitive point as an element of the completed-level
 valuation ring. -/
-noncomputable def padicCompletedPrimitiveRootInteger
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicCompletedPrimitiveRootInteger :
     (padicCompletedLevelCompleteDVF p n).valuationSubring :=
   ⟨padicCompletedPrimitiveRoot p n,
     padicCompletedPrimitiveRoot_mem_valuationSubring p n⟩
@@ -401,12 +388,13 @@ noncomputable def padicCompletedPrimitiveRootInteger
 /-- Coercing the integral primitive point returns the chosen splitting-field
 root. -/
 @[simp]
-theorem padicCompletedPrimitiveRootInteger_coe
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitiveRootInteger_coe :
     (padicCompletedPrimitiveRootInteger p n :
       padicCompletedLevelField p n) =
         padicCompletedPrimitiveRoot p n :=
   rfl
+
+end
 
 /-- The integral primitive polynomial annihilates the primitive point in
 the completed-level valuation ring. -/
@@ -416,15 +404,14 @@ theorem padicCompletedPrimitiveRootInteger_aeval
         (padicCompletedPrimitivePolynomialInteger p n) = 0 := by
   let base := padicCompletedUnramifiedCompleteDVF p
   let target := padicCompletedLevelCompleteDVF p n
-  let i : target.valuationSubring →ₐ[base.valuationSubring]
-      padicCompletedLevelField p n :=
+  let i :=
     IsScalarTower.toAlgHom base.valuationSubring target.valuationSubring
       (padicCompletedLevelField p n)
   apply Subtype.ext
   change
     i (Polynomial.aeval (padicCompletedPrimitiveRootInteger p n)
       (padicCompletedPrimitivePolynomialInteger p n)) = i 0
-  rw [← Polynomial.aeval_algHom_apply (f := i), map_zero]
+  simp [← Polynomial.aeval_algHom_apply]
   simpa [i] using
     padicCompletedPrimitiveRoot_aeval_integerPolynomial p n
 
@@ -451,32 +438,17 @@ theorem padicCompletedPrimitiveRootInteger_mem_maximalIdeal
   let target := padicCompletedLevelCompleteDVF p n
   let Q := padicCompletedPrimitivePolynomialInteger p n
   let lambda := padicCompletedPrimitiveRootInteger p n
-  have hlambdaPow :
-      lambda ^
-          ((Q.map
-            (algebraMap base.valuationSubring
-              target.valuationSubring)).natDegree) ∈
-        base.maximalIdeal.map
-          (algebraMap base.valuationSubring target.valuationSubring) :=
+  have hlambdaPow :=
     (padicCompletedPrimitivePolynomialInteger_isWeaklyEisensteinAt
       p n).pow_natDegree_le_of_aeval_zero_of_monic_mem_map
         (by
-          simpa [base, target, Q, lambda] using
-            padicCompletedPrimitiveRootInteger_aeval p n)
+          exact padicCompletedPrimitiveRootInteger_aeval p n)
         (by
-          simpa [Q] using
-            padicCompletedPrimitivePolynomialInteger_monic p n)
+          exact padicCompletedPrimitivePolynomialInteger_monic p n)
         _ le_rfl
-  have hlambdaPow' :
-      lambda ^
-          ((Q.map
-            (algebraMap base.valuationSubring
-              target.valuationSubring)).natDegree) ∈
-        target.maximalIdeal :=
-    (maximalIdeal_map_integerMap_le base.toDVF target.toDVF) hlambdaPow
   exact
     (IsLocalRing.maximalIdeal.isMaximal
-      target.valuationSubring).isPrime.mem_of_pow_mem _ hlambdaPow'
+      target.valuationSubring).isPrime.mem_of_pow_mem _ ((maximalIdeal_map_integerMap_le base.toDVF target.toDVF) hlambdaPow)
 
  noncomputable local instance (priority := 50)
     padicCompletedLevelWittUniformSpace
@@ -509,18 +481,20 @@ theorem padicCompletedPrimitiveRootInteger_mem_maximalIdeal
   have hadic : IsAdic target.maximalIdeal := rfl
   exact (hadic.isAdicComplete_iff.mp target.isAdicComplete).2
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+
 /-- The chosen completed primitive point is a genuine convergent evaluation
 point for Witt-coefficient power series. -/
-theorem padicCompletedPrimitiveRootInteger_hasEval
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitiveRootInteger_hasEval :
     PowerSeries.HasEval (padicCompletedPrimitiveRootInteger p n) := by
   apply WithIdeal.isTopologicallyNilpotent_of_mem
   exact padicCompletedPrimitiveRootInteger_mem_maximalIdeal p n
 
 /-- The canonical Witt-coefficient map into the valuation ring of the
 actual completed level. -/
-noncomputable def padicCompletedLevelWittCoefficientHom
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicCompletedLevelWittCoefficientHom :
     padicCompletedUnramifiedWittRing p →+*
       (padicCompletedLevelCompleteDVF p n).valuationSubring :=
   (integerMap
@@ -532,7 +506,6 @@ noncomputable def padicCompletedLevelWittCoefficientHom
 after coercion. -/
 @[simp]
 theorem padicCompletedLevelWittCoefficientHom_apply
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (a : padicCompletedUnramifiedWittRing p) :
     ((padicCompletedLevelWittCoefficientHom p n a :
         (padicCompletedLevelCompleteDVF p n).valuationSubring) :
@@ -540,15 +513,15 @@ theorem padicCompletedLevelWittCoefficientHom_apply
         algebraMap (padicCompletedUnramifiedField p)
           (padicCompletedLevelField p n)
           (algebraMap (padicCompletedUnramifiedWittRing p)
-            (padicCompletedUnramifiedField p) a) := by
-  rfl
+            (padicCompletedUnramifiedField p) a) := rfl
 
 /-- With the discrete coefficient topology, the canonical Witt map into
 the completed level is continuous. -/
-theorem padicCompletedLevelWittCoefficientHom_continuous
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedLevelWittCoefficientHom_continuous :
     Continuous (padicCompletedLevelWittCoefficientHom p n) :=
   continuous_of_discreteTopology
+
+end
 
  noncomputable local instance
     padicCompletedLevelWittAlgebra
@@ -568,37 +541,21 @@ noncomputable def padicCompletedLevelPowerSeriesEval
   PowerSeries.eval₂Hom
     (padicCompletedLevelWittCoefficientHom_continuous p n) hx
 
+variable (p : ℕ) [Fact p.Prime] (n : ℕ) (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
+    (hx : PowerSeries.HasEval x)
+
 /-- Completed-level evaluation sends the power-series variable to the
 chosen evaluation point. -/
 @[simp]
-theorem padicCompletedLevelPowerSeriesEval_X
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x) :
+theorem padicCompletedLevelPowerSeriesEval_X :
     padicCompletedLevelPowerSeriesEval p n x hx PowerSeries.X = x := by
   rw [padicCompletedLevelPowerSeriesEval,
     PowerSeries.coe_eval₂Hom, PowerSeries.eval₂_X]
-
-/-- Completed-level evaluation sends constants through the canonical Witt
-coefficient map. -/
-@[simp]
-theorem padicCompletedLevelPowerSeriesEval_C
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x)
-    (a : padicCompletedUnramifiedWittRing p) :
-    padicCompletedLevelPowerSeriesEval p n x hx (PowerSeries.C a) =
-      padicCompletedLevelWittCoefficientHom p n a := by
-  rw [padicCompletedLevelPowerSeriesEval,
-    PowerSeries.coe_eval₂Hom, PowerSeries.eval₂_C]
 
 /-- On polynomial power series, completed-level analytic evaluation agrees
 with ordinary polynomial evaluation. -/
 @[simp]
 theorem padicCompletedLevelPowerSeriesEval_coe
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x)
     (P : Polynomial (padicCompletedUnramifiedWittRing p)) :
     padicCompletedLevelPowerSeriesEval p n x hx
         (P : PowerSeries (padicCompletedUnramifiedWittRing p)) =
@@ -609,10 +566,7 @@ theorem padicCompletedLevelPowerSeriesEval_coe
 
 /-- Evaluation at a topologically nilpotent completed-level integer is
 continuous. -/
-theorem padicCompletedLevelPowerSeriesEval_continuous
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x) :
+theorem padicCompletedLevelPowerSeriesEval_continuous :
     Continuous (padicCompletedLevelPowerSeriesEval p n x hx) := by
   rw [padicCompletedLevelPowerSeriesEval,
     PowerSeries.coe_eval₂Hom]
@@ -622,9 +576,6 @@ theorem padicCompletedLevelPowerSeriesEval_continuous
 /-- Evaluating a Witt-coefficient series with zero constant coefficient
 produces another topologically nilpotent completed-level integer. -/
 theorem padicCompletedLevelPowerSeriesEval_hasEval
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x)
     (f : PowerSeries (padicCompletedUnramifiedWittRing p))
     (hf : PowerSeries.HasSubst f) :
     PowerSeries.HasEval
@@ -635,9 +586,6 @@ theorem padicCompletedLevelPowerSeriesEval_hasEval
 /-- Completed-level analytic evaluation commutes with one-variable formal
 substitution. -/
 theorem padicCompletedLevelPowerSeriesEval_subst
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x)
     (a f : PowerSeries (padicCompletedUnramifiedWittRing p))
     (ha : PowerSeries.HasSubst a)
     (haEval : PowerSeries.HasEval
@@ -657,9 +605,7 @@ theorem padicCompletedLevelPowerSeriesEval_subst
       (PowerSeries.eval₂ (algebraMap W S) x a) f
   simpa only [PowerSeries.eval₂, PowerSeries.subst,
     Function.const_apply] using
-      (MvPowerSeries.eval₂_subst
-        (R := W) (S := W) (T := S)
-        (a := fun _ : Unit ↦ a) ha.const
+      (MvPowerSeries.eval₂_subst ha.const
         (PowerSeries.hasEval hx) f)
 
 end LubinTate

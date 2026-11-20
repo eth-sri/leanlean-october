@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Analysis.EllipticEquations.DivergenceForm.H1TestContinuity
 
 public import DedekindZetaZeroFree.Analysis.EllipticEquations.DivergenceForm.WeakSolutions
 
@@ -43,15 +44,16 @@ private theorem raw_complex_quadratic_real {n : ℕ} (a : Matrix (Fin n) (Fin n)
     zero_mul, sub_zero, zero_add, Complex.star_def, Complex.conj_re, Complex.conj_im]
   ring
 
-theorem Raw.Coefficients.complex_ellipticity {n : ℕ} {B : LocalBall n}
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients B cρ Cρ κ Λ)
+section
+
+variable {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (D : Coefficients B cρ Cρ κ Λ)
+
+theorem Raw.Coefficients.complex_ellipticity
     (x : Space n) (hx : x ∈ B.carrier) (g : Fin n → ℂ) :
     κ * (∑ i, ‖g i‖ ^ 2) ≤
       (∑ i, ∑ j, (D.matrix x i j : ℂ) * g j * star (g i)).re := by
-  let reG : Space n := WithLp.toLp 2 (fun i => (g i).re)
-  let imG : Space n := WithLp.toLp 2 (fun i => (g i).im)
-  have hre := D.ellipticity x hx reG
-  have him := D.ellipticity x hx imG
+  have hre := D.ellipticity x hx (WithLp.toLp 2 (fun i => (g i).re))
+  have him := D.ellipticity x hx (WithLp.toLp 2 (fun i => (g i).im))
   rw [EuclideanSpace.real_norm_sq_eq] at hre him
   change κ * (∑ i, (g i).re ^ 2) ≤ _ at hre
   change κ * (∑ i, (g i).im ^ 2) ≤ _ at him
@@ -65,33 +67,23 @@ theorem Raw.Coefficients.complex_ellipticity {n : ℕ} {B : LocalBall n}
   rw [hn, mul_add]
   exact add_le_add hre him
 
-theorem Raw.Coefficients.matrix_entry_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (hκ : 0 ≤ κ)
+theorem Raw.Coefficients.matrix_entry_bound (hκ : 0 ≤ κ)
     (x : Space n) (hx : x ∈ B.carrier) (i j : Fin n) : |D.matrix x i j| ≤ Λ := by
   classical
   have hdi : κ ≤ D.matrix x i i := by
-    have hh := D.ellipticity x hx (EuclideanSpace.single i (1 : ℝ))
-    simpa [EuclideanSpace.norm_single, EuclideanSpace.single_apply, mul_ite, ite_mul] using hh
+    simpa [EuclideanSpace.norm_single, EuclideanSpace.single_apply, mul_ite, ite_mul] using (D.ellipticity x hx (EuclideanSpace.single i (1 : ℝ)))
   have hdiu : D.matrix x i i ≤ Λ := by
-    have hh := D.upper_bound x hx (EuclideanSpace.single i (1 : ℝ))
-    simpa [EuclideanSpace.norm_single, EuclideanSpace.single_apply, mul_ite, ite_mul] using hh
+    simpa [EuclideanSpace.norm_single, EuclideanSpace.single_apply, mul_ite, ite_mul] using (D.upper_bound x hx (EuclideanSpace.single i (1 : ℝ)))
   have hdju : D.matrix x j j ≤ Λ := by
-    have hh := D.upper_bound x hx (EuclideanSpace.single j (1 : ℝ))
-    simpa [EuclideanSpace.norm_single, EuclideanSpace.single_apply, mul_ite, ite_mul] using hh
+    simpa [EuclideanSpace.norm_single, EuclideanSpace.single_apply, mul_ite, ite_mul] using (D.upper_bound x hx (EuclideanSpace.single j (1 : ℝ)))
   by_cases hij : i = j
   · subst j
     rw [abs_of_nonneg (hκ.trans hdi)]
     exact hdiu
-  · have hplus := D.ellipticity x hx (EuclideanSpace.single i (1 : ℝ) + EuclideanSpace.single j (1 : ℝ))
-    have hminus := D.ellipticity x hx (EuclideanSpace.single i (1 : ℝ) - EuclideanSpace.single j (1 : ℝ))
-    have hp : 0 ≤ ∑ a, ∑ b, D.matrix x a b *
-        (EuclideanSpace.single i (1 : ℝ) + EuclideanSpace.single j (1 : ℝ)) a *
-        (EuclideanSpace.single i (1 : ℝ) + EuclideanSpace.single j (1 : ℝ)) b :=
-      (mul_nonneg hκ (sq_nonneg _)).trans hplus
-    have hm : 0 ≤ ∑ a, ∑ b, D.matrix x a b *
-        (EuclideanSpace.single i (1 : ℝ) - EuclideanSpace.single j (1 : ℝ)) a *
-        (EuclideanSpace.single i (1 : ℝ) - EuclideanSpace.single j (1 : ℝ)) b :=
-      (mul_nonneg hκ (sq_nonneg _)).trans hminus
+  · have hp :=
+      (mul_nonneg hκ (sq_nonneg _)).trans (D.ellipticity x hx (EuclideanSpace.single i (1 : ℝ) + EuclideanSpace.single j (1 : ℝ)))
+    have hm :=
+      (mul_nonneg hκ (sq_nonneg _)).trans (D.ellipticity x hx (EuclideanSpace.single i (1 : ℝ) - EuclideanSpace.single j (1 : ℝ)))
     simp only [PiLp.add_apply, PiLp.sub_apply, EuclideanSpace.single_apply,
       mul_add, add_mul, mul_sub, sub_mul, Finset.sum_add_distrib, Finset.sum_sub_distrib,
       mul_ite, ite_mul, mul_zero, zero_mul, mul_one, one_mul, Finset.sum_ite_eq,
@@ -101,15 +93,14 @@ theorem Raw.Coefficients.matrix_entry_bound {n : ℕ} {B : LocalBall n} {cρ Cρ
     rw [D.symmetric x hx j i] at hp hm
     exact abs_le.mpr ⟨by linarith, by linarith⟩
 
-theorem Raw.Coefficients.mixed_cutoff_form_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (hκ : 0 ≤ κ)
+theorem Raw.Coefficients.mixed_cutoff_form_bound (hκ : 0 ≤ κ)
     (x : Space n) (hx : x ∈ B.carrier) {K : ℝ} (hK : 0 ≤ K)
     (t : ℝ) (g d : Fin n → ℂ) (v : ℂ) (hd : ∀ i, ‖d i‖ ≤ K) :
     ‖∑ i, ∑ j, (D.matrix x i j : ℂ) * g j * star ((2 * (t : ℂ) * d i) * v)‖ ≤
       2 * |t| * K * Λ * (n : ℝ) * (∑ j, ‖g j‖) * ‖v‖ := by
   classical
   let i₀ : Fin n := ⟨0, B.dimension_pos⟩
-  have hΛ : 0 ≤ Λ := (abs_nonneg _).trans (D.matrix_entry_bound hκ x hx i₀ i₀)
+  have hΛ := (abs_nonneg _).trans (D.matrix_entry_bound hκ x hx i₀ i₀)
   calc
     ‖∑ i, ∑ j, (D.matrix x i j : ℂ) * g j * star ((2 * (t : ℂ) * d i) * v)‖ ≤
         ∑ i, ∑ j, ‖(D.matrix x i j : ℂ) * g j * star ((2 * (t : ℂ) * d i) * v)‖ :=
@@ -128,6 +119,8 @@ theorem Raw.Coefficients.mixed_cutoff_form_bound {n : ℕ} {B : LocalBall n} {c�
       simp only [← Finset.mul_sum, ← Finset.sum_mul, Finset.sum_const,
         Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
       ring
+
+end
 
 theorem uniform_cutoff_with_derivative_bound (n : ℕ) (r R : ℝ) (hr : 0 < r) (hrR : r < R) :
     ∃ K : ℝ, 0 < K ∧ ∀ (inner outer : LocalBall n),
@@ -149,15 +142,14 @@ theorem uniform_cutoff_with_derivative_bound (n : ℕ) (r R : ℝ) (hr : 0 < r) 
     change tsupport (b ∘ (Homeomorph.subRight outer.center)) ⊆ outer.carrier
     rw [tsupport_comp_eq_preimage, b.tsupport_eq]
     intro x hx
-    have hh : dist (x - outer.center) 0 ≤ (r + R) / 2 := hx
+    have hh := hx
     have hnorm : dist x outer.center ≤ (r + R) / 2 := by
       simpa [dist_eq_norm] using hh
     change dist x outer.center < outer.radius
     rw [hor]
     linarith
-  have hcompact : HasCompactSupport g := by
-    exact b.hasCompactSupport.comp_homeomorph (Homeomorph.subRight outer.center)
-  let η : TestFunction outer.toOpens ℝ ⊤ := ⟨g, hg, hcompact, hts⟩
+  let η : TestFunction outer.toOpens ℝ ⊤ := ⟨g, hg, by
+    exact b.hasCompactSupport.comp_homeomorph (Homeomorph.subRight outer.center), hts⟩
   refine ⟨η, ?_, ?_, ?_⟩
   · intro x hx
     change b (x - outer.center) = 1
@@ -194,21 +186,23 @@ private theorem young_sum {n : ℕ} (a T : ℝ) (ha : 0 < a) (g : Fin n → ℂ)
   have hp (j : Fin n) :
       T * |t| * ‖g j‖ * ‖v‖ ≤
         a / 2 * (t ^ 2 * ‖g j‖ ^ 2) + T ^ 2 / (2 * a) * ‖v‖ ^ 2 := by
-    have hh := sq_nonneg (a * |t| * ‖g j‖ - T * ‖v‖)
-    have ht : |t| ^ 2 = t ^ 2 := sq_abs t
     have hi : 0 < 2 * a := by positivity
     apply (mul_le_mul_iff_left₀ hi).mp
     have he : (a / 2 * (t ^ 2 * ‖g j‖ ^ 2) + T ^ 2 / (2 * a) * ‖v‖ ^ 2) * (2 * a) =
         a ^ 2 * (t ^ 2 * ‖g j‖ ^ 2) + T ^ 2 * ‖v‖ ^ 2 := by field_simp
-    rw [he, ← ht]
-    nlinarith [hh]
+    rw [he, ← (sq_abs t)]
+    nlinarith [(sq_nonneg (a * |t| * ‖g j‖ - T * ‖v‖))]
   have hh := Finset.sum_le_sum (s := Finset.univ) (fun j _ => hp j)
   simpa only [Finset.sum_add_distrib, ← Finset.mul_sum, Finset.sum_const,
     Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, ← Finset.sum_mul,
     mul_assoc, mul_div_assoc, mul_left_comm, mul_comm] using hh
 
-theorem pointwise_cutoff_coercivity {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (hcρ : 0 < cρ) (hκ : 0 < κ)
+section
+
+variable {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (D : Coefficients B cρ Cρ κ Λ) (hcρ : 0 < cρ)
+
+include hcρ in
+theorem pointwise_cutoff_coercivity (hκ : 0 < κ)
     (x : Space n) (hx : x ∈ B.carrier) {K : ℝ} (hK : 0 ≤ K)
     (t : ℝ) (g d : Fin n → ℂ) (v : ℂ) (hd : ∀ i, ‖d i‖ ≤ K) :
     (cρ * κ) / 2 * (t ^ 2 * ∑ i, ‖g i‖ ^ 2) ≤
@@ -263,15 +257,15 @@ theorem pointwise_cutoff_coercivity {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ :
     Complex.mul_im, zero_mul, mul_zero, sub_zero, zero_add]
   nlinarith
 
-theorem pointwise_cutoff_lower_order {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (hcρ : 0 < cρ)
+include hcρ in
+theorem pointwise_cutoff_lower_order
     (x : Space n) (hx : x ∈ B.carrier) {M : ℝ} (hM : 0 ≤ M)
     (z v h : ℂ) (hz : ‖z‖ ≤ M) (t : ℝ) (ht0 : 0 ≤ t) (ht1 : t ≤ 1) :
     (z * ((D.density x : ℂ) * v * star ((t : ℂ) ^ 2 * v)) +
       (D.density x : ℂ) * h * star ((t : ℂ) ^ 2 * v)).re ≤
       Cρ * (M + 1) * ‖v‖ ^ 2 + Cρ * ‖h‖ ^ 2 := by
   have hρ := D.density_bounds x hx
-  have hρ0 : 0 ≤ D.density x := hcρ.le.trans hρ.1
+  have hρ0 := hcρ.le.trans hρ.1
   have hCρ : 0 ≤ Cρ := hρ0.trans hρ.2
   have ht : ‖(t : ℂ) ^ 2 * v‖ ≤ ‖v‖ := by
     rw [norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht0]
@@ -297,6 +291,8 @@ theorem pointwise_cutoff_lower_order {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ 
   have hs' := mul_le_mul_of_nonneg_left hs hCρ
   nlinarith
 
+end
+
  theorem raw_index_cases {n : ℕ} (α : MultiIndex n 1) :
     α = zeroIndex n 1 ∨ ∃ i : Fin n, α = firstIndex i := by
   classical
@@ -310,13 +306,12 @@ theorem pointwise_cutoff_lower_order {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ 
     right
     refine ⟨i, ?_⟩
     have hs := Finset.sum_le_one_iff.mp α.property
-    have hone := (hs i i (Finset.mem_univ _) (Finset.mem_univ _) hi hi).2
     apply Subtype.ext
     funext j
     apply Fin.ext
     by_cases hji : j = i
     · subst j
-      simpa [firstIndex] using hone
+      simpa [firstIndex] using ((hs i i (Finset.mem_univ _) (Finset.mem_univ _) hi hi).2)
     · have hj : (α.val j).val = 0 := by
         by_contra hj
         exact hji (hs j i (Finset.mem_univ _) (Finset.mem_univ _) hj hi).1
@@ -325,14 +320,12 @@ theorem pointwise_cutoff_lower_order {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ 
  theorem raw_first_ne_zero {n : ℕ} (i : Fin n) :
     firstIndex i ≠ zeroIndex n 1 := by
   intro h
-  have hd := congrArg (fun α : MultiIndex n 1 => (α.val i).val) h
-  simpa [firstIndex, zeroIndex] using hd
+  simpa [firstIndex, zeroIndex] using (congrArg (fun α : MultiIndex n 1 => (α.val i).val) h)
  theorem raw_first_injective {n : ℕ} :
     Function.Injective (@firstIndex n) := by
   intro i j h
-  have he := congrArg (fun α : MultiIndex n 1 => (α.val i).val) h
   by_contra hij
-  simpa [firstIndex, hij] using he
+  simpa [firstIndex, hij] using (congrArg (fun α : MultiIndex n 1 => (α.val i).val) h)
  def raw_index_equiv (n : ℕ) : Option (Fin n) ≃ MultiIndex n 1 :=
   Equiv.ofBijective (fun i => i.elim (zeroIndex n 1) firstIndex) (by
     constructor
@@ -358,28 +351,16 @@ theorem raw_first_order_sum {n : ℕ} (F : MultiIndex n 1 → ℝ) :
   change (∑ i : Option (Fin n), F (i.elim (zeroIndex n 1) firstIndex)) = _
   simp [Fintype.sum_option]
 
-private theorem energy_density_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (hcρ : 0 < cρ) :
-    MemLp (fun x => (D.density x : ℂ)) ⊤ (volume.restrict B.carrier) := by
-  apply memLp_top_of_bound
-    ((Complex.continuous_ofReal.comp_continuousOn D.density_smooth.continuousOn).aestronglyMeasurable
-      Metric.isOpen_ball.measurableSet) Cρ
-  filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
-  simp only [Function.comp_apply, Complex.norm_real, Real.norm_eq_abs]
-  rw [abs_of_nonneg (hcρ.le.trans (D.density_bounds x hx).1)]
-  exact (D.density_bounds x hx).2
+private alias energy_density_memLp := H1TestContinuity.density_memLp
 
-private theorem energy_matrix_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (hκ : 0 < κ) (i j : Fin n) :
-    MemLp (fun x => (D.matrix x i j : ℂ)) ⊤ (volume.restrict B.carrier) := by
-  apply memLp_top_of_bound
-    ((Complex.continuous_ofReal.comp_continuousOn (D.matrix_smooth i j).continuousOn).aestronglyMeasurable
-      Metric.isOpen_ball.measurableSet) Λ
-  filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
-  simpa using D.matrix_entry_bound hκ.le x hx i j
+private alias energy_matrix_memLp := H1TestContinuity.matrix_memLp
 
-private theorem energy_integrable {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (hcρ : 0 < cρ) (hκ : 0 < κ)
+section
+
+variable {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (D : Coefficients B cρ Cρ κ Λ) (hcρ : 0 < cρ)
+
+include hcρ in
+private theorem energy_integrable (hκ : 0 < κ)
     (u w : IntegerSobolev B 1) :
     Integrable (fun x => (D.density x : ℂ) * ∑ i, ∑ j,
       (D.matrix x i j : ℂ) * gradient u j x * star (gradient w i x))
@@ -399,13 +380,15 @@ private theorem energy_integrable {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : �
   ext x
   simp [mul_assoc]
 
-private theorem mass_integrable {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (hcρ : 0 < cρ) (f g : BallL2 B) :
+include hcρ in
+private theorem mass_integrable (f g : BallL2 B) :
     Integrable (fun x => (D.density x : ℂ) * f x * star (g x))
       (volume.restrict B.carrier) := by
   have hm : MemLp (fun x => (D.density x : ℂ) * f x) 2
       (volume.restrict B.carrier) := (energy_density_memLp D hcρ).mul (Lp.memLp f)
   exact hm.integrable_mul (Lp.memLp g).star
+
+end
 
 set_option maxHeartbeats 800000 in
 
@@ -473,9 +456,7 @@ theorem cutoff_quadratic_form_bound (n : ℕ) (hn : 0 < n)
     have ht := hηrange x
     nlinarith
   have hcoer : ∀ᵐ x ∂μ, a * G x ≤ (E x).re + b * ‖value u x‖ ^ 2 := by
-    have hgall : ∀ᵐ x ∂μ, ∀ i : Fin n,
-        gradient w i x = (η x : ℂ) ^ 2 * gradient u i x +
-          (2 * (η x : ℂ) * coordinateDerivativeList [i] (fun y => (η y : ℂ)) x) * value u x :=
+    have hgall :=
       (ae_all_iff).mpr hgw
     filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet, hgall] with x hx hgx
     dsimp [E]
@@ -490,7 +471,7 @@ theorem cutoff_quadratic_form_bound (n : ℕ) (hn : 0 < n)
     exact pointwise_cutoff_lower_order D hcρ x hx hM z (value u x) (h x) hz (η x)
       (hηrange x).1 (hηrange x).2
   have hEre : Integrable (fun x => (E x).re) μ := Complex.reCLM.integrable_comp hEi
-  have hZH : Integrable (fun x => (z * V x + H x).re) μ :=
+  have hZH :=
     Complex.reCLM.integrable_comp ((hVi.const_mul z).add hHi)
   have hcoerint := integral_mono_ae (hGi.const_mul a) (hEre.add (hUi.const_mul b)) hcoer
   have hlowerint := integral_mono_ae hZH

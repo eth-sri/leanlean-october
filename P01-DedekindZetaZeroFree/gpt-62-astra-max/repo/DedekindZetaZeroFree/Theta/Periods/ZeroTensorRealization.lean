@@ -13,8 +13,8 @@ open MomentSources TensorActionSource
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 
 def zeroSeed (D : JointRealizedFlatSources R N) : TensorSeed R N := by
   letI : Infinite (KPFinitePlace F) := finitePlaces_infinite F

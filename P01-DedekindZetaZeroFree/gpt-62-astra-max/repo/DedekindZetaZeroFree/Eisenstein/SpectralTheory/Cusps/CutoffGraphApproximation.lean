@@ -110,7 +110,7 @@ theorem localLaplacian_is_section (s : smoothSections F ζ hζ hF U a) :
     ∀ i, localLaplacianComplex F ζ hζ hF U a s.val i ∈
       KPCuspGenuineMonodromy.sections F ζ hζ U (a.representative i) (a.line i).rho := by
   intro i
-  have hsm : ContDiff ℝ (⊤ : ℕ∞) ((s.val i).val ∘ toArch F) :=
+  have hsm :=
     (s.property i).comp (KPCuspCutoffGraphApproximation.cutoff_toArch_contDiff F)
   refine ⟨?_, ?_⟩
   · intro x
@@ -128,10 +128,10 @@ theorem localLaplacian_is_section (s : smoothSections F ζ hζ hF U a) :
     · rw [h]; trivial
   · intro γ x
     obtain ⟨A, hA⟩ := Matrix.ProjGenLinGroup.mk_surjective (γ : KPCuspArithmetic.PGL2 F)
-    let g : Fin (KPCuspLogShape.dimension F) → Matrix.GeneralLinearGroup (Fin 2) ℂ :=
+    let g :=
       fun j => Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F j).embedding A
     have ha (y : Arch F) : KPArch.productAction (KPCuspLogShape.dimension F) g y =
-        (γ : KPCuspArithmetic.PGL2 F) • y := by
+        γ • y := by
       change _ = KPCuspSiegel.action F _ y
       rw [← hA, KPCuspSiegel.action_mk]
       rfl
@@ -151,7 +151,6 @@ theorem localLaplacian_is_section (s : smoothSections F ζ hζ hF U a) :
       (KPCuspLogShape.dimension F) g ((s.val i).val ∘ toArch F) (fromArch F x)
       (KPCuspGenuineMonodromy.chi F ζ hζ ((a.line i).rho γ) : ℂ) hc
       (hsm.contDiffAt) (hsm.contDiffAt)
-    change HyperbolicChart.laplacian _ _ _ = _
     change HyperbolicChart.laplacian _ _
         (fromArch F (KPArch.productAction _ g (toArch F (fromArch F x)))) = _ at hl
     rw [hi, ha] at hl
@@ -232,30 +231,13 @@ def cotangentTests : Submodule ℂ (∀ i : Fin a.componentCount, Arch F → Cot
 private lemma arch_real (x : Arch F) : toArch F (fromArch F x) = x := by
   funext j; simp [fromArch, toArch]
 
-private lemma differential_smooth (d : ℕ) (f : HyperbolicChart.Space d → ℂ)
-    (hf : ContDiff ℝ ∞ f) : ContDiff ℝ ∞ (HyperbolicChart.differential d f) := by
-  apply contDiff_pi.mpr; intro j
-  apply contDiff_pi.mpr; intro k
-  have hd (l : Fin 3) : ContDiff ℝ ∞ (HyperbolicChart.coordinateDerivative d j l f) :=
-    (hf.fderiv_right (by simp)).clm_apply contDiff_const
-  have hr : ContDiff ℝ ∞ (fun p : HyperbolicChart.Space d => Real.exp (p (j,2))) :=
-    (PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d × Fin 3 => ℝ) (j,2)).contDiff.exp
-  have he : ContDiff ℝ ∞ (fun p : HyperbolicChart.Space d => (Real.exp (p (j,2)) : ℂ)) :=
-    Complex.ofRealCLM.contDiff.comp hr
-  fin_cases k
-  · simpa [HyperbolicChart.differential] using hd 2
-  · simpa [HyperbolicChart.differential] using he.mul (hd 0)
-  · simpa [HyperbolicChart.differential] using he.mul (hd 1)
+private alias differential_smooth := DedekindZetaZeroFree.KPCuspCutoffGraphApproximation.ScalarIsometry.CutoffDerivativeBounds.smooth_differential
 private lemma gradient_smooth (s : scalarTests F ζ hζ hF U a) (i : Fin a.componentCount) :
     ContDiff ℝ ∞ (fun x : Arch F => gradient F ζ hζ hF U a ⟨s.val,s.property.1⟩ ⟨i,x⟩) := by
   apply (contDiff_piLp 2).mpr
   intro ik
-  have hh := differential_smooth _ ((s.val i).val ∘ toArch F)
-    ((s.property.1 i).comp (archCLM F).contDiff)
-  have hc : ContDiff ℝ ∞ (fun x : Arch F => gradientComplex F ζ hζ hF U a s.val i x ik) :=
-    ((contDiff_pi.mp (contDiff_pi.mp hh ik.1) ik.2).comp (realCLM F).contDiff)
-  let P := (Fiber F ζ hζ U).orthogonalProjectionOnto
-  convert (P.restrictScalars ℝ).contDiff.comp hc using 1
+  convert (((Fiber F ζ hζ U).orthogonalProjectionOnto).restrictScalars ℝ).contDiff.comp (((contDiff_pi.mp (contDiff_pi.mp (differential_smooth _ ((s.val i).val ∘ toArch F)
+    ((s.property.1 i).comp (archCLM F).contDiff)) ik.1) ik.2).comp (realCLM F).contDiff)) using 1
   funext x
   exact (Submodule.orthogonalProjectionOnto_mem_subspace_eq_self _).symm
 private lemma clm_coordinate_sum (L : Coordinates F →L[ℝ] ℂ) (p : Coordinates F) :
@@ -280,11 +262,10 @@ private lemma covector_gradient (s : scalarTests F ζ hζ hF U a)
       (archCLM F).fderiv]
     change (fderiv ℝ (s.val i).val (toArch F (fromArch F x))).comp _ = _
     rw [arch_real]
-  have hh := clm_coordinate_sum F L (fromArch F v)
   have he : L (fromArch F v) = fderiv ℝ (s.val i).val x v := by
     rw [hL]; change (fderiv ℝ (s.val i).val x) (toArch F (fromArch F v)) = _
     rw [arch_real]
-  rw [← he, hh]
+  rw [← he, (clm_coordinate_sum F L (fromArch F v))]
   unfold covector
   apply Finset.sum_congr rfl; intro j _
   simp only [Fin.sum_univ_three, gradient, gradientComplex, WithLp.ofLp_toLp,
@@ -307,7 +288,7 @@ private lemma covector_gradient (s : scalarTests F ζ hζ hF U a)
 private lemma arithmetic_action_differentiable (γ : KPCuspArithmetic.PGL2 F) :
     Differentiable ℝ (fun x : Arch F => γ • x) := by
   obtain ⟨A,hA⟩ := Matrix.ProjGenLinGroup.mk_surjective γ
-  let g : Fin (KPCuspLogShape.dimension F) → Matrix.GeneralLinearGroup (Fin 2) ℂ :=
+  let g :=
     fun j => Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F j).embedding A
   have ha : (fun x : Arch F => γ • x) = KPArch.productAction _ g := by
     funext x
@@ -316,11 +297,7 @@ private lemma arithmetic_action_differentiable (γ : KPCuspArithmetic.PGL2 F) :
   rw [ha]
   exact (KPArch.productAction_contDiff _ g).differentiable (by simp)
 private lemma basePoint_continuous (i : Fin a.componentCount) :
-    Continuous (basePoint F ζ hζ hF U a i) := by
-  have h : Continuous (fun x : Arch F => a.components ⟨i, KPCuspSiegel.projection F _ x⟩) :=
-    a.components.continuous.comp (continuous_sigmaMk.comp (KPCuspSiegel.continuous_projection F _))
-  change Continuous (fun x : Arch F => basePoint F ζ hζ hF U a i x)
-  simpa only [basePoint, a.components_formula] using h
+    Continuous (basePoint F ζ hζ hF U a i) := by apply @DedekindZetaZeroFree.KPCuspCutoffGraphApproximation.GenericZeroExtension.CompactHeightSublevels.Q_cont <;> assumption
 
 theorem differential_test (s : scalarTests F ζ hζ hF U a) :
     IsCotangentTest F ζ hζ hF U a
@@ -401,12 +378,16 @@ def differential : scalarTests F ζ hζ hF U a →ₗ[ℂ] cotangentTests F ζ h
       (((s.property.1 i).comp (KPCuspCutoffGraphApproximation.cutoff_toArch_contDiff F)).differentiable (by simp))
       c (fromArch F x) ik.1 ik.2
 
-def divergenceComplex (W : cotangentTests F ζ hζ hF U a) (i : Fin a.componentCount)
+section
+
+variable (W : cotangentTests F ζ hζ hF U a)
+
+def divergenceComplex (i : Fin a.componentCount)
     (x : Arch F) : ℂ :=
   HyperbolicChart.codifferential (KPCuspLogShape.dimension F)
     (fun p j k => (W.val i (toArch F p) (j,k) : ℂ)) (fromArch F x)
 
-theorem divergence_is_section (W : cotangentTests F ζ hζ hF U a) :
+theorem divergence_is_section :
     ∀ i, divergenceComplex F ζ hζ hF U a W i ∈
       KPCuspGenuineMonodromy.sections F ζ hζ U (a.representative i) (a.line i).rho := by
   intro i
@@ -425,13 +406,15 @@ theorem divergence_is_section (W : cotangentTests F ζ hζ hF U a) :
     · rw [h]; trivial
   · intro γ x
     exact KPCuspCutoffGraphApproximation.arithmetic_codifferential_covariant F ζ hζ U (W.val i)
-      (W.property.1 i) (γ : KPCuspArithmetic.PGL2 F)
+      (W.property.1 i) γ
       (KPCuspGenuineMonodromy.chi F ζ hζ ((a.line i).rho γ) : ℂ)
       (W.property.2.1 i γ) x
 
-def divergenceSection (W : cotangentTests F ζ hζ hF U a) : Sections F ζ hζ hF U a :=
+def divergenceSection : Sections F ζ hζ hF U a :=
   fun i => ⟨divergenceComplex F ζ hζ hF U a W i,
     divergence_is_section F ζ hζ hF U a W i⟩
+
+end
 
 private theorem smooth_codifferential (d : ℕ)
     (W : HyperbolicChart.Space d → HyperbolicChart.Cotangent d)
@@ -452,10 +435,7 @@ private theorem cotangent_coefficient_smooth
     (W : cotangentTests F ζ hζ hF U a) (i : Fin a.componentCount)
     (j : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) :
     ContDiff ℝ ∞ (fun p : Coordinates F => (W.val i (toArch F p) (j,k) : ℂ)) := by
-  have h : ContDiff ℝ ∞ (fun p : Coordinates F => W.val i (toArch F p)) :=
-    (W.property.1 i).comp (archCLM F).contDiff
-  have hp := (contDiff_piLp 2).mp h (j,k)
-  exact ((Fiber F ζ hζ U).subtypeL.restrictScalars ℝ).contDiff.comp hp
+  exact ((Fiber F ζ hζ U).subtypeL.restrictScalars ℝ).contDiff.comp ((contDiff_piLp 2).mp ((W.property.1 i).comp (archCLM F).contDiff) (j,k))
 
 theorem divergence_test (W : cotangentTests F ζ hζ hF U a) :
     divergenceSection F ζ hζ hF U a W ∈ scalarTests F ζ hζ hF U a := by
@@ -524,8 +504,7 @@ set_option synthInstance.maxHeartbeats 200000 in
   have hP : ContDiff ℝ ∞ (fun p : Coordinates F => W.val i (toArch F p) (j,k)) := by
     simpa only [Function.comp_def, P, ContinuousLinearMap.coe_restrictScalars, PiLp.proj_apply] using
       P.contDiff.comp h
-  have h' : ContDiff ℝ ∞ (fun p : Coordinates F => (W.val i (toArch F p) (j,k) : ℂ)) := by
-    exact ((Fiber F ζ hζ U).subtypeL.restrictScalars ℝ).contDiff.comp hP
+  have h' := ((Fiber F ζ hζ U).subtypeL.restrictScalars ℝ).contDiff.comp hP
   exact h'.differentiable (by simp)
 
 def divergence : cotangentTests F ζ hζ hF U a →ₗ[ℂ] scalarTests F ζ hζ hF U a where
@@ -548,28 +527,10 @@ def divergence : cotangentTests F ζ hζ hF U a →ₗ[ℂ] scalarTests F ζ hζ
     exact codiff_smul _ _ (cotangent_coefficient_differentiable F ζ hζ hF U a W i)
       c (fromArch F x)
 
-private theorem toArch_contDiff : ContDiff ℝ ∞ (toArch F) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply ContDiff.prodMk
-  · have h : (fun p : Coordinates F => (⟨p (i,0), p (i,1)⟩ : ℂ)) =
-        fun p => Complex.ofRealCLM (p (i,0)) + Complex.ofRealCLM (p (i,1)) * Complex.I := by
-      funext p
-      rw [Complex.mk_eq_add_mul_I, Complex.ofRealCLM_apply, Complex.ofRealCLM_apply]
-    rw [h]; fun_prop
-  · fun_prop
-
 private theorem fromArch_toArch (p : Coordinates F) : fromArch F (toArch F p) = p := by
   ext ik
   rcases ik with ⟨i,k⟩
   fin_cases k <;> simp [fromArch, toArch]
-
-private theorem gradient_apply (s : scalarTests F ζ hζ hF U a) (i : Fin a.componentCount)
-    (p : Coordinates F) (j : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) :
-    (((differential F ζ hζ hF U a s).val i (toArch F p)) (j,k) : ℂ) =
-      HyperbolicChart.differential (KPCuspLogShape.dimension F)
-        (fun q : Coordinates F => (s.val i).val (toArch F q)) (fromArch F (toArch F p)) j k :=
-  rfl
 
 theorem divergence_differential_local (s : scalarTests F ζ hζ hF U a) :
     (divergence F ζ hζ hF U a (differential F ζ hζ hF U a s)).val =
@@ -577,10 +538,11 @@ theorem divergence_differential_local (s : scalarTests F ζ hζ hF U a) :
   funext i
   apply Subtype.ext
   funext x
-  have hd : 1 ≤ KPCuspLogShape.dimension F :=
+  have hd :=
     Nat.succ_le_of_lt (KPCuspLogShape.dimension_pos F hF)
   have hf : ContDiff ℝ ∞ (fun p : Coordinates F => (s.val i).val (toArch F p)) :=
-    (s.property.1 i).comp (toArch_contDiff F)
+    (s.property.1 i).comp (by
+      apply @DedekindZetaZeroFree.KPCuspCutoffGraphApproximation.cutoff_toArch_contDiff <;> assumption)
   show HyperbolicChart.codifferential (KPCuspLogShape.dimension F)
       (fun p : Coordinates F => fun j : Fin (KPCuspLogShape.dimension F) => fun k : Fin 3 =>
         (((differential F ζ hζ hF U a s).val i (toArch F p)) (j,k) : ℂ)) (fromArch F x)
@@ -592,7 +554,7 @@ theorem divergence_differential_local (s : scalarTests F ζ hζ hF U a) :
         HyperbolicChart.differential (KPCuspLogShape.dimension F)
           (fun q : Coordinates F => (s.val i).val (toArch F q)) (fromArch F (toArch F p)) j k) from by
     funext p j k
-    exact gradient_apply F ζ hζ hF U a s i p j k]
+    exact rfl]
   rw [show (fun p : Coordinates F => fun j : Fin (KPCuspLogShape.dimension F) => fun k : Fin 3 =>
         HyperbolicChart.differential (KPCuspLogShape.dimension F)
           (fun q : Coordinates F => (s.val i).val (toArch F q)) (fromArch F (toArch F p)) j k) =
@@ -620,20 +582,24 @@ def closedHighEnds (T : ℝ) : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U) :=
 def core : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U) :=
   Set.univ \ highEnds F ζ hζ hF U a a.threshold
 
-def scalarLift (r : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ) (i : Fin a.componentCount) :
+section
+
+variable (r : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ) (i : Fin a.componentCount)
+
+def scalarLift :
     Coordinates F → ℂ :=
   fun p => (r (basePoint F ζ hζ hF U a i (toArch F p)) : ℂ)
 
-def scalarGradientNorm (r : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
-    (i : Fin a.componentCount) (x : Arch F) : ℝ :=
+def scalarGradientNorm (x : Arch F) : ℝ :=
   Real.sqrt (∑ j : Fin (KPCuspLogShape.dimension F), ∑ k : Fin 3,
     ‖HyperbolicChart.differential (KPCuspLogShape.dimension F)
       (scalarLift F ζ hζ hF U a r i) (fromArch F x) j k‖ ^ 2)
 
-def scalarLaplacian (r : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
-    (i : Fin a.componentCount) (x : Arch F) : ℂ :=
+def scalarLaplacian (x : Arch F) : ℂ :=
   HyperbolicChart.laplacian (KPCuspLogShape.dimension F)
     (scalarLift F ζ hζ hF U a r i) (fromArch F x)
+
+end
 
 structure Cutoffs where
   rho : ℕ → KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ
@@ -644,8 +610,6 @@ structure Cutoffs where
   le_one : ∀ n x, rho n x ≤ 1
 
   height_bound : ℕ
-  above_atlas_threshold : a.threshold < (height_bound : ℝ)
-  on_core : ∀ n, height_bound ≤ n → ∀ x ∈ core F ζ hζ hF U a, rho n x = 1
   on_sublevel : ∀ n, height_bound ≤ n →
     ∀ x ∉ highEnds F ζ hζ hF U a n, rho n x = 1
   above_next : ∀ n, height_bound ≤ n →
@@ -666,24 +630,19 @@ theorem cutoffs_exist : Nonempty (Cutoffs F ζ hζ hF U a) := by
     nonnegative := fun n x => (KPCuspCutoffGraphApproximation.CutoffScalars.rho_bounds a n x).1
     le_one := fun n x => (KPCuspCutoffGraphApproximation.CutoffScalars.rho_bounds a n x).2
     height_bound := KPCuspCutoffGraphApproximation.CutoffScalars.heightBound a
-    above_atlas_threshold := KPCuspCutoffGraphApproximation.CutoffScalars.above_threshold a
-    on_core := ?_
     on_sublevel := ?_
     above_next := KPCuspCutoffGraphApproximation.CutoffScalars.rho_above_next a
     bound := B
     bound_nonnegative := hB
     derivative_bound := hbound }⟩
-  · intro n _ x hx
-    apply KPCuspCutoffGraphApproximation.CutoffScalars.rho_on_core
-    simpa only [core, highEnds, Set.mem_diff, Set.mem_univ, true_and,
-      KPCuspCutoffGraphApproximation.CutoffScalars.endRegion, Set.iUnion_sigma] using hx
   · intro n hn x hx
     apply KPCuspCutoffGraphApproximation.CutoffScalars.rho_on_integer_sublevel a n hn
     simpa only [highEnds, KPCuspCutoffGraphApproximation.CutoffScalars.endRegion,
       Set.iUnion_sigma] using hx
 
-theorem cutoff_is_section (r : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
-    (s : Sections F ζ hζ hF U a) :
+variable (r : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ) (s : Sections F ζ hζ hF U a)
+
+theorem cutoff_is_section :
     ∀ i, (fun x => (r (basePoint F ζ hζ hF U a i x) : ℂ) * (s i).val x) ∈
       KPCuspGenuineMonodromy.sections F ζ hζ U (a.representative i) (a.line i).rho := by
   intro i
@@ -699,8 +658,7 @@ theorem cutoff_is_section (r : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
   rw [hb, (s i).property.2 γ x]
   ring
 
-def cutoffSection (r : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
-    (s : Sections F ζ hζ hF U a) : Sections F ζ hζ hF U a :=
+def cutoffSection : Sections F ζ hζ hF U a :=
   fun i => ⟨fun x => (r (basePoint F ζ hζ hF U a i x) : ℂ) * (s i).val x,
     cutoff_is_section F ζ hζ hF U a r s i⟩
 

@@ -15,21 +15,20 @@ private theorem upper_local {K : Type*} [NormedField K]
   have hd : (GeneralLinearGroup.det A : K) = A 0 0 * A 1 1 := by
     simp [GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, h10]
   have hn : (GeneralLinearGroup.det A : K) ≠ 0 := Units.ne_zero _
-  have ha : A 0 0 ≠ 0 := by intro h; apply hn; simp [hd, h]
-  have hb : A 1 1 ≠ 0 := by intro h; apply hn; simp [hd, h]
-  have hdpos : 0 < ‖(GeneralLinearGroup.det A : K)‖ := norm_pos_iff.mpr hn
-  have hbpos : 0 < ‖A 1 1‖ := norm_pos_iff.mpr hb
+  have hdpos := norm_pos_iff.mpr hn
   rw [_root_.zpow_neg, zpow_ofNat]
-  have hs := Real.sq_sqrt (le_of_lt hdpos)
-  have hsqrt : Real.sqrt ‖(GeneralLinearGroup.det A : K)‖ ≠ 0 := (Real.sqrt_pos.mpr hdpos).ne'
-  rw [div_pow, hs, hd, norm_mul]
+  rw [div_pow, (Real.sq_sqrt (le_of_lt hdpos)), hd, norm_mul]
   field_simp
   <;> ring
 
 variable (F : Type) [Field F] [NumberField F]
 
+section
+
+variable (A : KPChamberHeight.AdelGL F) (h10 : A 1 0 = 0)
+
+include h10 in
 theorem finite_row_modulus
-    (A : KPChamberHeight.AdelGL F) (h10 : A 1 0 = 0)
     (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)) :
     (KPChamberHeight.finiteFactor F ![0, 1] A v) ^ (-2 : ℤ) =
       ‖KPChamberHeight.finiteEval F v (A 0 0)‖ /
@@ -45,8 +44,8 @@ theorem finite_row_modulus
   rw [he]
   exact upper_local Av hv
 
+include h10 in
 theorem infinite_row_modulus
-    (A : KPChamberHeight.AdelGL F) (h10 : A 1 0 = 0)
     (v : NumberField.InfinitePlace F) :
     (KPChamberHeight.infiniteFactor F ![0, 1] A v) ^ (-2 : ℤ) =
       (‖KPChamberHeight.infiniteEval F v (A 0 0)‖ /
@@ -74,6 +73,8 @@ theorem infinite_row_modulus
     upper_local Av hv, zpow_natCast]
   rfl
 
+end
+
 open scoped BigOperators
 
 theorem upper_rowHeight_modulus
@@ -90,14 +91,12 @@ theorem upper_rowHeight_modulus
     intro h
     have := congrFun h 1
     simpa using this
-  have hf : Function.HasFiniteMulSupport (KPChamberHeight.finiteFactor F ![0, 1] A) :=
-    Filter.eventually_cofinite.mp
-      (KPChamberHeight.finiteFactor_eventually_one F ![0, 1] hr A)
   unfold KPChamberHeight.rowHeight
   rw [mul_zpow, ← Finset.prod_zpow]
   simp_rw [infinite_row_modulus F A h10]
   congr 1
-  rw [_root_.zpow_neg, zpow_ofNat, finprod_pow hf, ← finprod_inv_distrib]
+  rw [_root_.zpow_neg, zpow_ofNat, finprod_pow (Filter.eventually_cofinite.mp
+    (KPChamberHeight.finiteFactor_eventually_one F ![0, 1] hr A)), ← finprod_inv_distrib]
   apply finprod_congr
   intro v
   exact finite_row_modulus F A h10 v

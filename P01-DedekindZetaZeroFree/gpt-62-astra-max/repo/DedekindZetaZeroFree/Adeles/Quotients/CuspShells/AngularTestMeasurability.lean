@@ -15,17 +15,14 @@ namespace DedekindZetaZeroFree.KPMsNativeOffsetMass.ShellTestFrames
 open KPMsActualAngularSource KPCompactStabilizerHaarSources
 open KPActualComponentHaarSources
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
 local instance : MulAction (KPCuspArithmetic.PGL2 F) (KPArch.Space (KPCuspLogShape.dimension F)) :=
   KPCuspSiegel.instMulActionPGL2SpaceDimension F
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeFullDomain → nativeFullDomain
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeDomainProjects → nativeDomainProjects
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeFrameInvariant → nativeFrameInvariant
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming actualFrame_spec → actualFrame_spec
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.ComponentFiber renaming spherical_fiber_formula → spherical_fiber_formula
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTransport → toRawTransport
+open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof (nativeFullDomain nativeDomainProjects nativeFrameInvariant actualFrame_spec)
+open _root_.DedekindZetaZeroFree.KPMsFixedHaar.ComponentFiber (spherical_fiber_formula)
+open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration (toRawTransport)
 
 def point
     (e : KPSmoothActualFlowData.GInfinity F ≃ₜ
@@ -86,13 +83,10 @@ theorem coordinate_on_point
     change KPSmoothActualFlowData.archimedeanInsertion F ζ hζ _ * z.2.val = _
     rw [hu]
     group
-  have hx := nativeDomainProjects F ζ hζ R P S V j _ _ hg
-  have hf := actualFrame_spec F ζ hζ R P S V j Y _ hx
+  have hf := actualFrame_spec F ζ hζ R P S V j Y _ (nativeDomainProjects F ζ hζ R P S V j _ _ hg)
   exact nativeFrameInvariant F ζ hζ R P S V j _ (hY j) _ _ hf.2 hg hf.1
 
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeDomainImage → nativeDomainImage
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeDomainOpen → nativeDomainOpen
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming fullCoordinate_continuousOn_end → fullCoordinate_continuousOn_end
+open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof (nativeDomainImage nativeDomainOpen fullCoordinate_continuousOn_end)
 
 theorem modulus_on_point
     (e : KPSmoothActualFlowData.GInfinity F ≃ₜ
@@ -149,7 +143,7 @@ theorem end_test_measurable
       (S.atlasLevel (cofinalLevel F ζ hζ V)) j
         (Y / (cuspOffset F ζ hζ R P S V j).val)).indicator
       (fun x => φ (fullCoordinate F ζ hζ R P S V j Y x))) := by
-  let E := KPMsActualCuspSource.cuspEnd (H := nativeFamily F ζ hζ R P)
+  let E := KPMsActualCuspSource.cuspEnd
     (S.atlasLevel (cofinalLevel F ζ hζ V)) j (Y / (cuspOffset F ζ hζ R P S V j).val)
   have hE : IsOpen E := by
     dsimp only [E]
@@ -158,17 +152,11 @@ theorem end_test_measurable
       (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
     exact isOpenMap_quotient_mk'_mul _ (nativeDomainOpen F ζ hζ R P S V j _)
   letI : BorelSpace (FullOmega F ζ hζ (nativeDatum F ζ hζ)) := ⟨rfl⟩
-  have hc := fullCoordinate_continuousOn_end F ζ hζ R P S V j Y hY
-  change Measurable (E.indicator (fun x => φ (fullCoordinate F ζ hζ R P S V j Y x)))
   apply measurable_of_restrict_of_restrict_compl hE.measurableSet
-  · have hh : Measurable (fun x : E => φ (fullCoordinate F ζ hζ R P S V j Y x)) :=
-      hφ.comp hc.domRestrict.measurable
-    convert hh using 1
+  · convert (hφ.comp (fullCoordinate_continuousOn_end F ζ hζ R P S V j Y hY).domRestrict.measurable) using 1
     funext x
     exact Set.indicator_of_mem x.property _
-  · have hh : Measurable (fun _ : (Eᶜ : Set (KPSmoothLocalQuotientCharts.X F ζ hζ)) =>
-        (0 : ℝ≥0∞)) := measurable_const
-    convert hh using 1
+  · convert measurable_const using 1
     funext x
     exact Set.indicator_of_notMem x.property _
 

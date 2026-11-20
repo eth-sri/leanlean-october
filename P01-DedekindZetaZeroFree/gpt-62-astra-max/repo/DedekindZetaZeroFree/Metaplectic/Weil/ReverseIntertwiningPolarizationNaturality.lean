@@ -23,8 +23,7 @@ private theorem finite_evaluation_coordinates
     ∃ (r : D → H) (c : D → ℂ), ∀ v : InducedModule P,
       l v = ∑ d : D, c d * v.val (r d) := by
   classical
-  let r : D → H := Function.surjInv T.quotient_surjective
-  have hr : ∀ d, T.π (r d) = d := Function.surjInv_eq T.quotient_surjective
+  let r := Function.surjInv T.quotient_surjective
   let ev : InducedModule P →ₗ[ℂ] (D → ℂ) :=
     { toFun := fun v d => v.val (r d)
       map_add' := by intros; rfl
@@ -36,7 +35,7 @@ private theorem finite_evaluation_coordinates
     let y := r (T.π x)
     have ha : x * y⁻¹ ∈ P.L.comap T.π := by
       change T.π (x * y⁻¹) ∈ P.L
-      rw [map_mul, map_inv, hr]
+      rw [map_mul, map_inv, (Function.surjInv_eq T.quotient_surjective)]
       simp
     let a : P.L.comap T.π := ⟨x * y⁻¹, ha⟩
     have hxy : (a : H) * y = x := by dsimp [a]; simp
@@ -96,7 +95,7 @@ private theorem compact_extension_naturality (ε : Sign) (s : ℂ)
   inducing_action_naturality F ζ hζ q S P Q e ε s
     (S.iwasawa.borelPart g) (φ.val (S.iwasawa.compactPart g))
 
-open _root_.DedekindZetaZeroFree.KPRankOneTranslatedMeromorphy renaming actual_coordinate_regular → actual_coordinate_regular
+open _root_.DedekindZetaZeroFree.KPRankOneTranslatedMeromorphy (actual_coordinate_regular)
 
 variable (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
   (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
@@ -136,8 +135,9 @@ private theorem actual_compact_svn_naturality (ε : Sign) (s₀ : ℂ)
     e ((actualCanonicalContinued F q ζ hζ S P μ hμ ε s₀ φ).val k) =
       (actualCanonicalContinued F q ζ hζ S Q μ hμ ε s₀
         (compact_svn_map F ζ hζ q S P Q e (sourceSign ε) φ)).val k := by
+  let canonical_compact_regular₀ := canonical_compact_regular F ζ hζ q S
   classical
-  let : Fintype S.D := Fintype.ofFinite S.D
+  let := Fintype.ofFinite S.D
   apply Subtype.ext
   funext h
   let l : InducedModule P →ₗ[ℂ] ℂ :=
@@ -155,16 +155,13 @@ private theorem actual_compact_svn_naturality (ε : Sign) (s₀ : ℂ)
     apply MeromorphicAt.fun_sum
     intro d hd
     exact (MeromorphicAt.const _ _).mul
-      ((canonical_compact_regular F ζ hζ q S P μ hμ ε φ k (r d)).1 s)
-  have hg : Meromorphic g := (canonical_compact_regular F ζ hζ q S Q μ hμ ε φQ k h).1
+      ((canonical_compact_regular₀ P μ hμ ε φ k (r d)).1 s)
   have hfc : ContinuousAt f s₀ := by
     apply DifferentiableAt.continuousAt (𝕜 := ℂ)
     apply DifferentiableAt.fun_sum
     intro d hd
-    exact (differentiableAt_const (𝕜 := ℂ) (c d)).mul
-      ((canonical_compact_regular F ζ hζ q S P μ hμ ε φ k (r d)).2 s₀ hs₀)
-  have hgc : ContinuousAt g s₀ :=
-    ((canonical_compact_regular F ζ hζ q S Q μ hμ ε φQ k h).2 s₀ hs₀).continuousAt
+    exact (differentiableAt_const (c d)).mul
+      ((canonical_compact_regular₀ P μ hμ ε φ k (r d)).2 s₀ hs₀)
   have he : ∀ s, convergenceHalfPlane ε s → f s = g s := by
     intro s hs
     dsimp only [f, g]
@@ -173,14 +170,14 @@ private theorem actual_compact_svn_naturality (ε : Sign) (s₀ : ℂ)
     let v := fun x : LocalField F q =>
       (compactTrivialization S.borel P S.iwasawa (sourceSign ε) (sourceParameter ε s) φ).val
         (kernelW (LocalField F q) S.borel ε *
-          S.borel.upperRoot (Multiplicative.ofAdd x) * (k : ActualCover F ζ hζ q))
+          S.borel.upperRoot (Multiplicative.ofAdd x) * k)
     have hi (d : S.D) : Integrable (fun x => (v x).val (r d)) μ :=
       actualCanonicalContinued_integrable F q ζ hζ S P μ hμ ε s hs
         (compactTrivialization S.borel P S.iwasawa (sourceSign ε) (sourceParameter ε s) φ) k (r d)
     have hv (x : LocalField F q) :
         ((compactTrivialization S.borel Q S.iwasawa (sourceSign ε) (sourceParameter ε s) φQ).val
           (kernelW (LocalField F q) S.borel ε *
-            S.borel.upperRoot (Multiplicative.ofAdd x) * (k : ActualCover F ζ hζ q))).val h =
+            S.borel.upperRoot (Multiplicative.ofAdd x) * k)).val h =
         ∑ d : S.D, c d * (v x).val (r d) := by
       rw [← compact_extension_naturality F ζ hζ q S P Q e]
       exact hc (v x)
@@ -189,10 +186,9 @@ private theorem actual_compact_svn_naturality (ε : Sign) (s₀ : ℂ)
     rw [integral_finsetSum _ (fun d _ => (hi d).const_mul (c d))]
     simp_rw [integral_const_mul]
     rfl
-  have H := KPRankOneChamberUniqueness.chamber_identity_value ε hf hg he s₀ hfc hgc
   change l ((actualCanonicalContinued F q ζ hζ S P μ hμ ε s₀ φ).val k) = g s₀
   rw [hc]
-  exact H
+  exact KPRankOneChamberUniqueness.chamber_identity_value ε hf ((canonical_compact_regular₀ Q μ hμ ε φQ k h).1) he s₀ hfc (((canonical_compact_regular₀ Q μ hμ ε φQ k h).2 s₀ hs₀).continuousAt)
 
 theorem actual_reverse_svn_naturality
     (fP : sectionSpace S.borel P .minus 0)
@@ -207,20 +203,21 @@ theorem actual_reverse_svn_naturality
     funext k
     exact hf k
   intro g
+  let actualCanonicalContinued₀ := actualCanonicalContinued F q ζ hζ S
   change e (inducingAction S.borel P .plus 0 (S.iwasawa.borelPart g)
-    ((actualCanonicalContinued F q ζ hζ S P μ hμ .minus 0 φ).val
+    ((actualCanonicalContinued₀ P μ hμ .minus 0 φ).val
       (S.iwasawa.compactPart g))) =
     inducingAction S.borel Q .plus 0 (S.iwasawa.borelPart g)
-      ((actualCanonicalContinued F q ζ hζ S Q μ hμ .minus 0
+      ((actualCanonicalContinued₀ Q μ hμ .minus 0
         ((compactTrivialization S.borel Q S.iwasawa .minus 0).symm fQ)).val
         (S.iwasawa.compactPart g))
   rw [inducing_action_naturality F ζ hζ q S P Q e]
   congr 1
   have H := actual_compact_svn_naturality F ζ hζ q S P Q e μ hμ .minus 0
     (denominator_ne_zero_at_zero (LocalField F q) .minus) φ (S.iwasawa.compactPart g)
-  change e ((actualCanonicalContinued F q ζ hζ S P μ hμ .minus 0 φ).val
+  change e ((actualCanonicalContinued₀ P μ hμ .minus 0 φ).val
     (S.iwasawa.compactPart g)) =
-    (actualCanonicalContinued F q ζ hζ S Q μ hμ .minus 0
+    (actualCanonicalContinued₀ Q μ hμ .minus 0
       (compact_svn_map F ζ hζ q S P Q e .minus φ)).val (S.iwasawa.compactPart g) at H
   rw [hφ] at H
   exact H
@@ -239,8 +236,7 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.ActualReverseMinorPolarization
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellContinuation KPRankOneShellRepair
-open _root_.DedekindZetaZeroFree.ActualReverseMinorSvN renaming inducing_action_naturality → inducing_action_naturality
-open _root_.DedekindZetaZeroFree.ActualReverseMinorSvN renaming actual_reverse_svn_naturality → actual_reverse_svn_naturality
+open _root_.DedekindZetaZeroFree.ActualReverseMinorSvN (inducing_action_naturality actual_reverse_svn_naturality)
 set_option autoImplicit false
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
@@ -250,7 +246,11 @@ variable (F : Type) [Field F] [NumberField F]
   (S : CanonicalFiniteInducingData F ζ hζ q)
   (P Q : Polarization S.heisenberg) (e : (tau P).Equiv (tau Q))
 
- def section_svn_map (ε : Sign) (s : ℂ) :
+ section
+
+variable (ε : Sign) (s : ℂ)
+
+def section_svn_map :
     sectionSpace S.borel P ε s →ₗ[ℂ] sectionSpace S.borel Q ε s where
   toFun f := ⟨fun g => e (f.val g), by
     constructor
@@ -266,14 +266,14 @@ variable (F : Type) [Field F] [NumberField F]
   map_add' := by intros; ext g; simp
   map_smul' := by intros; ext g; simp
 
-def section_svn_equiv (ε : Sign) (s : ℂ) :
+def section_svn_equiv :
     sectionSpace S.borel P ε s ≃ₗ[ℂ] sectionSpace S.borel Q ε s where
   toLinearMap := section_svn_map F ζ hζ q S P Q e ε s
   invFun := section_svn_map F ζ hζ q S Q P e.symm ε s
   left_inv := by intro f; apply Subtype.ext; funext g; exact e.symm_apply_apply (f.val g)
   right_inv := by intro f; apply Subtype.ext; funext g; exact e.apply_symm_apply (f.val g)
 
- def principal_svn_equiv (ε : Sign) (s : ℂ) :
+ def principal_svn_equiv :
     (principalSeries S.borel P ε s).Equiv (principalSeries S.borel Q ε s) where
   toLinearEquiv := section_svn_equiv F ζ hζ q S P Q e ε s
   isIntertwining' g := by
@@ -282,6 +282,8 @@ def section_svn_equiv (ε : Sign) (s : ℂ) :
     apply Subtype.ext
     funext x
     rfl
+
+end
 
 private theorem actual_reverse_square
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -344,32 +346,29 @@ theorem actual_reverse_pair_transport
         (actualCanonicalReverseMap F ζ hζ q S Q μ hμ
           (section_svn_equiv F ζ hζ q S P Q e .minus 0 v₂))] := by
   let E := section_root_equiv F ζ hζ q S P Q e .plus 0 n ψ
-  have H := h.map' E.toLinearMap (LinearMap.ker_eq_bot.mpr E.injective)
+  let actualCanonicalReverseMap₀ := actualCanonicalReverseMap F ζ hζ q S
   have he (v : sectionSpace S.borel P .minus 0) :
       E (rootCoinvariantsMk (IPlus S.borel P) n ψ
-        (actualCanonicalReverseMap F ζ hζ q S P μ hμ v)) =
+        (actualCanonicalReverseMap₀ P μ hμ v)) =
       rootCoinvariantsMk (IPlus S.borel Q) n ψ
-        (actualCanonicalReverseMap F ζ hζ q S Q μ hμ
+        (actualCanonicalReverseMap₀ Q μ hμ
           (section_svn_equiv F ζ hζ q S P Q e .minus 0 v)) := by
-    change rootCoinvariantsMk (IPlus S.borel Q) n ψ
-      (section_svn_equiv F ζ hζ q S P Q e .plus 0
-        (actualCanonicalReverseMap F ζ hζ q S P μ hμ v)) = _
     exact congrArg (rootCoinvariantsMk (IPlus S.borel Q) n ψ)
       (LinearMap.congr_fun (actual_reverse_square F ζ hζ q S P Q e μ hμ) v)
   have hv : E.toLinearMap ∘ ![
       rootCoinvariantsMk (IPlus S.borel P) n ψ
-        (actualCanonicalReverseMap F ζ hζ q S P μ hμ v₁),
+        (actualCanonicalReverseMap₀ P μ hμ v₁),
       rootCoinvariantsMk (IPlus S.borel P) n ψ
-        (actualCanonicalReverseMap F ζ hζ q S P μ hμ v₂)] = ![
+        (actualCanonicalReverseMap₀ P μ hμ v₂)] = ![
       rootCoinvariantsMk (IPlus S.borel Q) n ψ
-        (actualCanonicalReverseMap F ζ hζ q S Q μ hμ
+        (actualCanonicalReverseMap₀ Q μ hμ
           (section_svn_equiv F ζ hζ q S P Q e .minus 0 v₁)),
       rootCoinvariantsMk (IPlus S.borel Q) n ψ
-        (actualCanonicalReverseMap F ζ hζ q S Q μ hμ
+        (actualCanonicalReverseMap₀ Q μ hμ
           (section_svn_equiv F ζ hζ q S P Q e .minus 0 v₂))] := by
     funext i
     fin_cases i <;> exact he _
-  exact hv ▸ H
+  exact hv ▸ (h.map' E.toLinearMap (LinearMap.ker_eq_bot.mpr E.injective))
 
 end DedekindZetaZeroFree.ActualReverseMinorPolarization
 

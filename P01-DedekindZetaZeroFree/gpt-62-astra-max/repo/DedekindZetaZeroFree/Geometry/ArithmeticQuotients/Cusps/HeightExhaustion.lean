@@ -33,8 +33,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   let G := A.geometry c
   let Γ := KPCuspGenuineMonodromy.Component F ζ hζ U (a.representative i)
   let σ := A.representative c
-  let q := A.cusp c
-  let S := KPCuspArithmetic.conjugatedStabilizer F Γ q σ
+  let S := KPCuspArithmetic.conjugatedStabilizer F Γ (A.cusp c) σ
   let f := KPFiniteCuspAtlas.componentMap F ζ hζ U (a.representative i)
   by_cases hz : z ∈ f '' KPFiniteCuspAtlas.endSet F Γ σ A.threshold
   · obtain ⟨y, hy, rfl⟩ := hz
@@ -50,7 +49,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     have hpt : T < p.2 := by
       rw [← KPCuspCharts.toArch_meanHeight F G.positive_dimension p, hp]
       exact hw
-    have hpa : A.threshold < p.2 := lt_of_le_of_lt ((le_max_left _ _).trans hT) hpt
+    have hpa := lt_of_le_of_lt ((le_max_left _ _).trans hT) hpt
     let v' : KPCuspCharts.HighQuotient F S A.threshold := Quotient.mk _ ⟨p,hpa⟩
     have hv : v' = v := (A.end_embedding c).injective
       (component_injective F ζ hζ hF U a i (by
@@ -84,8 +83,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     intro i c
     obtain ⟨B,hB⟩ := end_height_bound F ζ hζ hF U a i c z
     exact (tendsto_natCast_atTop_atTop.eventually (eventually_ge_atTop B)).mono fun n hn => hB n hn
-  have hh' := Filter.eventually_all.mpr (fun i => Filter.eventually_all.mpr (hh i))
-  filter_upwards [hh'] with n hn
+  filter_upwards [(Filter.eventually_all.mpr (fun i => Filter.eventually_all.mpr (hh i)))] with n hn
   simpa only [highEnds, Set.mem_iUnion, not_exists] using hn
 end DedekindZetaZeroFree.KPCuspCutoffGraphApproximation.ExhaustionGeometry
 

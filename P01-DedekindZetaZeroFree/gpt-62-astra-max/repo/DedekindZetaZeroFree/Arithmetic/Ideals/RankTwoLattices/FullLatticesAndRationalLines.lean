@@ -55,8 +55,10 @@ def lineEquivalent (R : Type*) [CommRing R] [IsDedekindDomain R]
     Submodule.map (g.toLinearMap.restrictScalars R) M = M ∧
       Projectivization.map g.toLinearMap g.injective q = q'
 
-def latticeSetoid (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K] :
+variable (R : Type*) [CommRing R] [IsDedekindDomain R] (K : Type*) [Field K] [Algebra R K]
+    [IsFractionRing R K]
+
+def latticeSetoid :
     Setoid (FullLattice R K) where
   r M N := latticeEquivalent R K M.val N.val
   iseqv := {
@@ -80,8 +82,7 @@ def latticeSetoid (R : Type*) [CommRing R] [IsDedekindDomain R]
       rw [Submodule.map_comp, hg, hh]
   }
 
-def lineSetoid (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
+def lineSetoid
     (M : Submodule R (K × K)) : Setoid (RationalLine K) where
   r := lineEquivalent R K M
   iseqv := {

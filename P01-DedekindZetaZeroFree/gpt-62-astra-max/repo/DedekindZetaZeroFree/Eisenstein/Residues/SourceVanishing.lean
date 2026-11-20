@@ -12,17 +12,17 @@ open KPContFlatArchDiagonalMultiplier KPMsActualAngularSource
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1400000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "G" => KPGlobalTorusFunctionData.G F ζ hζ
 local notation "V" => RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C)
 local notation "Source" => KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ)
 
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CanonicalStageBounds renaming literal_bounded_entire_stage → literal_bounded_entire_stage
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CanonicalStageBounds (literal_bounded_entire_stage)
 
 theorem literal_source_zero_exists (K : Subgroup G)
     (hK : KPLiteralRaw.IwasawaCompact F ζ hζ K) (f : KPLiteralRaw.Flat F ζ hζ K) :

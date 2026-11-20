@@ -13,31 +13,7 @@ noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.SquarePoisson
 
-private lemma mobius_indicator {F : Type*} [Field F] [NumberField F] (m I : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hI : I ≠ ⊥) :
-    (∑ d ∈ idealDivisors m, if d ∣ I then (UniqueFactorizationMonoid.moebius d : ℂ) else 0) =
-      if I ⊔ m = ⊤ then 1 else 0 := by
-  let f : Ideal (𝓞 F) → ℂ := fun J => if J = I then 1 else 0
-  have hg : Function.HasFiniteSupport (fun J : Ideal (𝓞 F) => if J = ⊥ then (0 : ℂ) else f J) := by
-    apply (Set.finite_singleton I).subset
-    intro J hJ
-    have hJI : J = I := by
-      by_contra h
-      have : f J = 0 := by simp [f, h]
-      simp [Function.mem_support, this] at hJ
-    exact hJI
-  have h := DedekindZetaZeroFree.LargeSieve.PoissonCoprimeExact.coprimeFinsum_eq_moebiusMultiples f hg m hm
-  have hc : (∑ᶠ J : Ideal (𝓞 F), if J ≠ ⊥ ∧ J ⊔ m = ⊤ then f J else 0) =
-      if I ⊔ m = ⊤ then 1 else 0 := by
-    rw [finsum_eq_single (fun J : Ideal (𝓞 F) => if J ≠ ⊥ ∧ J ⊔ m = ⊤ then f J else 0) I (by intro J hJ; simp [f, hJ])]
-    simp [f, hI]
-  have hd (d : Ideal (𝓞 F)) :
-      (∑ᶠ J : Ideal (𝓞 F), if J ≠ ⊥ ∧ d ∣ J then f J else 0) =
-      if d ∣ I then 1 else 0 := by
-    rw [finsum_eq_single (fun J : Ideal (𝓞 F) => if J ≠ ⊥ ∧ d ∣ J then f J else 0) I (by intro J hJ; simp [f, hJ])]
-    simp [f, hI]
-  rw [hc] at h
-  simp_rw [hd] at h
-  simpa [mul_ite] using h.symm
+private alias mobius_indicator := DedekindZetaZeroFree.LargeSieve.PoissonCoprimeExact.MoebiusCoprimality.indicator
 
 private lemma multiples_tsum {F : Type} [Field F] [NumberField F]
     (g : ℝ → ℂ) (X : ℝ) (hX : 0 < X) (d : Ideal (𝓞 F)) (hd : d ≠ ⊥) :
@@ -45,7 +21,7 @@ private lemma multiples_tsum {F : Type} [Field F] [NumberField F]
       g ((Ideal.absNorm I : ℝ) / X) else 0) =
     ∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else
       g ((Ideal.absNorm I : ℝ) / (X / (Ideal.absNorm d : ℝ))) := by
-  let f : Ideal (𝓞 F) → ℂ := fun I => if I ≠ ⊥ ∧ d ∣ I then
+  let f := fun I => if I ≠ ⊥ ∧ d ∣ I then
       g ((Ideal.absNorm I : ℝ) / X) else 0
   have hi : Function.Injective (fun J : Ideal (𝓞 F) => d * J) :=
     fun J K h => mul_left_cancel₀ hd h
@@ -62,9 +38,7 @@ private lemma multiples_tsum {F : Type} [Field F] [NumberField F]
   intro J
   by_cases hJ : J = ⊥
   · simp [f, hJ]
-  · have hdN : (Ideal.absNorm d : ℝ) ≠ 0 := by
-      exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr hd)
-    have hmul : d * J ≠ ⊥ := mul_ne_zero hd hJ
+  · have hmul := mul_ne_zero hd hJ
     change (if d * J ≠ ⊥ ∧ d ∣ d * J then _ else 0) = _
     rw [if_pos ⟨hmul, dvd_mul_right d J⟩, if_neg hJ]
     congr 1
@@ -118,8 +92,7 @@ theorem finite_mobius_poisson
         (if I ≠ ⊥ ∧ d ∣ I then f I else 0) := by
     by_cases hI : I = ⊥
     · simp [hI]
-    · have hid := mobius_indicator m I hm hI
-      have he : (∑ d ∈ idealDivisors m, (UniqueFactorizationMonoid.moebius d : ℂ) *
+    · have he : (∑ d ∈ idealDivisors m, (UniqueFactorizationMonoid.moebius d : ℂ) *
           (if I ≠ ⊥ ∧ d ∣ I then f I else 0)) =
           (∑ d ∈ idealDivisors m, if d ∣ I then
             (UniqueFactorizationMonoid.moebius d : ℂ) else 0) * f I := by
@@ -127,7 +100,7 @@ theorem finite_mobius_poisson
         apply Finset.sum_congr rfl
         intro d hd
         by_cases hdI : d ∣ I <;> simp [hI, hdI]
-      rw [he, hid]
+      rw [he, (mobius_indicator m I hm hI)]
       by_cases hc : I ⊔ m = ⊤ <;> simp [hI, hc]
   change (∑' I, if I ≠ ⊥ ∧ I ⊔ m = ⊤ then f I else 0) = _
   simp_rw [hpoint]
@@ -284,8 +257,8 @@ private lemma origin_residue_eval
   let r := principalComplexPlaces F
   let data := principalHeckeData F hF
   let P := (originPolynomial D r h).comp (Polynomial.C (2 : ℂ) * Polynomial.X)
-  have hD : 0 < D := principalDiscriminant_pos F
-  have hr : 1 ≤ r := principalComplexPlaces_pos F hF
+  have hD := principalDiscriminant_pos F
+  have hr := principalComplexPlaces_pos F hF
   have hP : P.natDegree ≤ r - 1 := by
     apply (Polynomial.natDegree_comp_le).trans
     simpa using originPolynomial_natDegree_le D r h hD hr hh hc
@@ -302,11 +275,10 @@ private lemma origin_residue_eval
   rw [hEq, Finset.sum_eq_single (r - 1)]
   · rw [deriv_pow_mul le_rfl hV, if_pos rfl]
     simp only [Complex.cpow_zero, one_mul]
-    have hcoeff := originPolynomial_coeff_top D r h hD hr hh hc
     have hPcoeff : P.coeff (r - 1) =
         (originPolynomial D r h).coeff (r - 1) * (2 : ℂ) ^ (r - 1) := by
       simp [P]
-    rw [hPcoeff, hcoeff]
+    rw [hPcoeff, (originPolynomial_coeff_top D r h hD hr hh hc)]
     have hzero : data.zetaOriginFactor 0 = -data.E 1 / (2 : ℂ) ^ r := by
       dsimp [PrincipalHeckeData.zetaOriginFactor]
       rw [PrincipalHeckeData.E_zero_eq_one data]
@@ -324,15 +296,13 @@ private lemma origin_residue_eval
     rw [hhalf]
     change _ = -(2 : ℂ) ^ (r - 1) * (data.E 1 / ((Real.sqrt D : ℂ) * Complex.Gammaℂ 1 ^ r)) * mellin h 1
     rw [Complex.Gammaℂ_one]
-    have hfac : ((r - 1).factorial : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero _)
-    have hsq : (Real.sqrt D : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt (Real.sqrt_pos.mpr hD)
     have hpi : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
     have hsign : ((-1 : ℂ) ^ (r - 1)) ^ 2 = 1 := by
       rw [← pow_mul, mul_comm (r - 1) 2, pow_mul]
       norm_num
     push_cast
     rw [mul_pow]
-    field_simp [hfac, hsq, hpi]
+    field_simp [(Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero _)), by exact_mod_cast ne_of_gt (Real.sqrt_pos.mpr hD), hpi]
     ring_nf
     simp only [← pow_mul] at hsign
     rw [hsign, inv_pow]
@@ -421,18 +391,24 @@ open scoped NumberField Classical ContDiff Topology
 open Filter
 namespace DedekindZetaZeroFree.LargeSieve.SquareSecondPass
 
-def weight (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (x : ℝ) : ℂ :=
+section
+
+variable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
+
+def weight (x : ℝ) : ℂ :=
   fieldTransform D r h (x ^ 2)
 
-def spectrum (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (s : ℂ) : ℂ :=
+def spectrum (s : ℂ) : ℂ :=
   B D r h (s / 2) / 2
 
-def reflectedSpectrum (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (s : ℂ) : ℂ :=
+def reflectedSpectrum (s : ℂ) : ℂ :=
   (D : ℂ) ^ (s - 1 / 2) * Complex.Gammaℂ s ^ r *
     (Complex.Gammaℂ (1 - s))⁻¹ ^ r * spectrum D r h (1 - s)
 
-def reflectedTransform (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (x : ℝ) : ℂ :=
+def reflectedTransform (x : ℝ) : ℂ :=
   if 0 < x then mellinInv (3 / 2) (reflectedSpectrum D r h) x else 0
+
+end
 variable {F : Type} [Field F] [NumberField F]
 
 def kappa (data : PrincipalHeckeData F) : ℂ :=
@@ -447,8 +423,7 @@ theorem principal_summable (data : PrincipalHeckeData F)
         ((Ideal.absNorm I : ℝ) / X)‖) ∧
     Summable (fun I : Ideal (𝓞 F) => if I = ⊥ then (0 : ℝ) else
       ‖reflectedTransform (principalDiscriminant F) (principalComplexPlaces F) h
-        (X * (Ideal.absNorm I : ℝ))‖) := by
-  exact (SquarePoisson.reflected_and_ideal_estimates
+        (X * (Ideal.absNorm I : ℝ))‖) := (SquarePoisson.reflected_and_ideal_estimates
     (principalDiscriminant F) (principalComplexPlaces F) h
     (principalDiscriminant_pos F) (principalComplexPlaces_pos F hF) hh hc).2 F X hX
 
@@ -464,8 +439,7 @@ theorem principal_poisson
         (2 : ℂ) ^ (principalComplexPlaces F - 1) * kappa data * mellin h 1 +
       (X : ℂ) * ∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else
         reflectedTransform (principalDiscriminant F) (principalComplexPlaces F) h
-          (X * (Ideal.absNorm I : ℝ)) := by
-  exact SquarePoisson.square_log_poisson F hF h hh hc X hX
+          (X * (Ideal.absNorm I : ℝ)) := SquarePoisson.square_log_poisson F hF h hh hc X hX
 
 def coprimeOrigin (data : PrincipalHeckeData F) (h : ℝ → ℂ) (m : Ideal (𝓞 F)) : ℂ :=
   -(2 : ℂ) ^ (principalComplexPlaces F - 1) * kappa data * mellin h 1 *
@@ -501,9 +475,8 @@ theorem coprime_poisson
       (∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else g ((Ideal.absNorm I : ℝ) / Y)) =
       A * (Y : ℂ) + R + (Y : ℂ) *
         ∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else k (Y * (Ideal.absNorm I : ℝ)) := by
-    have hpo := principal_poisson F hF h hh hc Y hY
     dsimp [g, k, data, A, R] at *
-    convert hpo using 1 <;> ring
+    convert (principal_poisson F hF h hh hc Y hY) using 1 <;> ring
   have hmob := (SquarePoisson.finite_mobius_poisson
     F g k A R hsums hp X hX m hm).1
   dsimp [A, R, g, k, data] at hmob

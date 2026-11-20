@@ -40,19 +40,18 @@ private lemma exp_neg_mul_cube_le (t : ℝ) (ht : 0 ≤ t) :
     _ = 6 * (Real.exp (-t) * Real.exp t) := by ring
     _ = 6 := by rw [hexpmul]; ring
 
+alias SmoothingTail.exp_neg_mul_cube_le := exp_neg_mul_cube_le
+
 private lemma exp_half_mul_cube_le (N Y : ℝ) (hN : 0 ≤ N) (hY : 0 < Y) :
     Real.exp (-(N / (2 * Y))) * N ^ 3 ≤ 48 * Y ^ 3 := by
   obtain ⟨t, ht⟩ : ∃ t : ℝ, t = N / (2 * Y) := ⟨_, rfl⟩
-  have hY2 : (2 * Y) ≠ 0 := (mul_pos two_pos hY).ne'
   have hNt : N = t * (2 * Y) := by
-    rw [ht, div_mul_cancel₀ _ hY2]
-  have ht0 : 0 ≤ t := by
-    rw [ht]; exact div_nonneg hN (mul_pos two_pos hY).le
+    rw [ht, div_mul_cancel₀ _ ((mul_pos two_pos hY).ne')]
   rw [← ht, hNt]
-  have h1 := exp_neg_mul_cube_le t ht0
-  have hY3 : 0 ≤ Y ^ 3 := pow_nonneg hY.le 3
+  have hY3 := pow_nonneg hY.le 3
   calc Real.exp (-t) * (t * (2 * Y)) ^ 3 = (Real.exp (-t) * t ^ 3) * (8 * Y ^ 3) := by ring
-    _ ≤ 6 * (8 * Y ^ 3) := mul_le_mul_of_nonneg_right h1 (by linarith)
+    _ ≤ 6 * (8 * Y ^ 3) := mul_le_mul_of_nonneg_right (exp_neg_mul_cube_le t (by
+      rw [ht]; exact div_nonneg hN (mul_pos two_pos hY).le)) (by linarith)
     _ = 48 * Y ^ 3 := by ring
 
 private lemma term_bound (U β γ : ℝ) (ω : Detector.PrimitiveFrequencyCharacter F)
@@ -181,7 +180,7 @@ theorem smoothedTail_bound :
       2 ≤ U → DetectorDef.σ₀ ≤ β → β ≤ 1 →
         ‖smoothedTail F U β γ ω‖ ≤ C * U ^ A * Real.exp (-(U ^ (1 / 200 : ℝ)) / 2) := by
   obtain ⟨Ca, hCa, hA⟩ := DetectorCoefficients.abs_a_le F (1 / 10 : ℝ) (by norm_num)
-  have hsum : Summable (fun n : Ideal (𝓞 F) => (Ideal.absNorm n : ℝ) ^ (-2 : ℝ)) :=
+  have hsum :=
     Odlyzko.summable_ideal_absNorm_rpow F (σ := 2) (by norm_num)
   have hS0 : 0 ≤ ∑' n : Ideal (𝓞 F), (Ideal.absNorm n : ℝ) ^ (-2 : ℝ) :=
     tsum_nonneg fun n => Real.rpow_nonneg (Nat.cast_nonneg _) _
@@ -191,15 +190,14 @@ theorem smoothedTail_bound :
     linarith
   intro U β γ ω hU hβ hβ1
   have hU0 : (0 : ℝ) < U := by linarith
-  have hE : 0 ≤ Real.exp (-(U ^ (1 / 200 : ℝ)) / 2) := (Real.exp_pos _).le
-  have hYE : 0 ≤ U ^ (3 * DetectorDef.r) * Real.exp (-(U ^ (1 / 200 : ℝ)) / 2) :=
+  let exp₀ := Real.exp (-(U ^ (1 / 200 : ℝ)) / 2)
+  have hE : 0 ≤ exp₀ := (Real.exp_pos _).le
+  have hYE : 0 ≤ U ^ (3 * DetectorDef.r) * exp₀ :=
     mul_nonneg (Real.rpow_nonneg hU0.le _) hE
-  have hdom := hsum.hasSum.mul_left
-    (48 * Ca * U ^ (3 * DetectorDef.r) * Real.exp (-(U ^ (1 / 200 : ℝ)) / 2))
   unfold smoothedTail
-  have hb := tsum_of_norm_bounded hdom (fun n =>
-    term_bound U β γ ω hU hβ Ca hCa (fun n hn => hA U hU n hn) n)
-  refine le_trans hb ?_
+  refine le_trans (tsum_of_norm_bounded (hsum.hasSum.mul_left
+    (48 * Ca * U ^ (3 * DetectorDef.r) * exp₀)) (fun n =>
+    term_bound U β γ ω hU hβ Ca hCa (fun n hn => hA U hU n hn) n)) ?_
   nlinarith [hYE, hS0, hCa]
 
 theorem smoothedTail_tendsto_zero :
@@ -210,18 +208,17 @@ theorem smoothedTail_tendsto_zero :
   obtain ⟨C, A, hC, hbd⟩ := smoothedTail_bound (F := F)
   have hx : Tendsto (fun U : ℝ => U ^ (1 / 200 : ℝ)) atTop atTop :=
     tendsto_rpow_atTop (by norm_num)
-  have hT : Tendsto (fun x : ℝ => x ^ (200 * A) * Real.exp (-(1 / 2) * x)) atTop (𝓝 0) :=
+  have hT :=
     tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (200 * A) (1 / 2) (by norm_num)
   have hlim : Tendsto (fun U : ℝ => C * ((U ^ (1 / 200 : ℝ)) ^ (200 * A) *
       Real.exp (-(1 / 2) * U ^ (1 / 200 : ℝ)))) atTop (𝓝 0) := by
     have h := (hT.comp hx).const_mul C
     rw [mul_zero] at h
     exact h
-  have hev := hlim.eventually (gt_mem_nhds hε)
-  obtain ⟨U₁, hU₁⟩ := eventually_atTop.mp hev
+  obtain ⟨U₁, hU₁⟩ := eventually_atTop.mp (hlim.eventually (gt_mem_nhds hε))
   refine ⟨max U₁ 2, le_max_right _ _, ?_⟩
   intro U β γ ω hU hβ hβ1
-  have hU2 : 2 ≤ U := le_trans (le_max_right _ _) hU
+  have hU2 := le_trans (le_max_right _ _) hU
   have hU1 : U₁ ≤ U := le_trans (le_max_left _ _) hU
   have hU0 : (0 : ℝ) < U := by linarith
   have e1 : (U ^ (1 / 200 : ℝ)) ^ (200 * A) = U ^ A := by

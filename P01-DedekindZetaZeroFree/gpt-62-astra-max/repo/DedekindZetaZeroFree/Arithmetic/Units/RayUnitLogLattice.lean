@@ -71,15 +71,12 @@ private theorem sum_h (h : logHyperplane K) :
           (InfinitePlace.mult w.val : ℝ) * g.val w.val :=
       congrArg (fun x : logSpace K => ∑ w, x w) he
     rw [hsum] at hs
-    have heq : (InfinitePlace.mult (w₀ : InfinitePlace K) : ℝ) * h.val w₀ =
-        (InfinitePlace.mult (w₀ : InfinitePlace K) : ℝ) * g.val w₀ := by linarith
     subst v
-    exact mul_left_cancel₀ InfinitePlace.mult_coe_ne_zero heq
-  · have hh := congrFun he ⟨v, hv⟩
-    exact mul_left_cancel₀ InfinitePlace.mult_coe_ne_zero hh
+    exact mul_left_cancel₀ InfinitePlace.mult_coe_ne_zero (by linarith)
+  · exact mul_left_cancel₀ InfinitePlace.mult_coe_ne_zero (congrFun he ⟨v, hv⟩)
  theorem coords_surjective : Function.Surjective (coords K) := by
   intro x
-  let h : InfinitePlace K → ℝ := fun v =>
+  let h := fun v =>
     if hv : v = w₀ then -(∑ w, x w) / (InfinitePlace.mult v : ℝ)
     else x ⟨v, hv⟩ / (InfinitePlace.mult v : ℝ)
   have hh : h ∈ logHyperplane K := by
@@ -113,8 +110,7 @@ private theorem sum_h (h : logHyperplane K) :
     exact hu
 
 theorem rayUnitLogLattice_le_full (m : Ideal (𝓞 K)) :
-    rayUnitLogLattice K m ≤ fullUnitLogLattice K := by
-  exact LinearMap.range_comp_le_range _ _
+    rayUnitLogLattice K m ≤ fullUnitLogLattice K := LinearMap.range_comp_le_range _ _
 
 instance discreteTopology_fullUnitLogLattice :
     DiscreteTopology (fullUnitLogLattice K) := by
@@ -127,16 +123,18 @@ instance isZLattice_fullUnitLogLattice :
   constructor
   rw [full_eq_comap K]
   exact ZLattice.comap_span_top ℝ (unitLattice K)
-    (IsZLattice.span_top (K := ℝ)) (by
-      intro x _
-      exact LinearMap.mem_range.mpr ((coordEquiv K).surjective x))
+    (IsZLattice.span_top) (fun x _ => LinearMap.mem_range.mpr ((coordEquiv K).surjective x))
 
 instance discreteTopology_rayUnitLogLattice (m : Ideal (𝓞 K)) :
-    DiscreteTopology (rayUnitLogLattice K m) := by
-  exact DiscreteTopology.of_subset (inferInstance : DiscreteTopology (fullUnitLogLattice K))
+    DiscreteTopology (rayUnitLogLattice K m) := DiscreteTopology.of_subset (inferInstance : DiscreteTopology (fullUnitLogLattice K))
     (rayUnitLogLattice_le_full K m)
 
-theorem rayUnitLogLattice_span_eq_top (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
+section
+
+variable (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
+
+include hm in
+theorem rayUnitLogLattice_span_eq_top :
     Submodule.span ℝ (rayUnitLogLattice K m : Set (logHyperplane K)) = ⊤ := by
   apply top_unique
   rw [← IsZLattice.span_top (K := ℝ) (L := fullUnitLogLattice K)]
@@ -154,21 +152,26 @@ theorem rayUnitLogLattice_span_eq_top (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
     exact Submodule.subset_span ⟨_, rfl⟩
   exact (Submodule.smul_mem_iff _ (show (k : ℝ) ≠ 0 by exact_mod_cast hk.ne')).mp hh
 
-theorem isZLattice_rayUnitLogLattice (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
-    IsZLattice ℝ (rayUnitLogLattice K m) := by
-  exact ⟨rayUnitLogLattice_span_eq_top K m hm⟩
+include hm in
+theorem isZLattice_rayUnitLogLattice :
+    IsZLattice ℝ (rayUnitLogLattice K m) := ⟨rayUnitLogLattice_span_eq_top K m hm⟩
+
+end
 
 theorem finrank_logHyperplane :
     Module.finrank ℝ (logHyperplane K) = NumberField.Units.rank K := by
   rw [(coordEquiv K).finrank_eq]
   exact Units.finrank_eq_rank K
 
-theorem finrank_rayUnitLogLattice (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
+variable (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
+
+include hm in
+theorem finrank_rayUnitLogLattice :
     Module.finrank ℤ (rayUnitLogLattice K m) = NumberField.Units.rank K := by
   letI := isZLattice_rayUnitLogLattice K m hm
   rw [ZLattice.rank ℝ, finrank_logHyperplane K]
 
-def rayUnitLogBasis (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
+def rayUnitLogBasis :
     Basis (Fin (NumberField.Units.rank K)) ℤ (rayUnitLogLattice K m) := by
   letI := isZLattice_rayUnitLogLattice K m hm
   letI := ZLattice.module_finite ℝ (rayUnitLogLattice K m)

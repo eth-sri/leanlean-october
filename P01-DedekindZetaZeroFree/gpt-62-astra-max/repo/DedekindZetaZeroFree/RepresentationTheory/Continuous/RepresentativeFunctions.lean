@@ -83,7 +83,7 @@ variable {𝕜 G : Type*} [RCLike 𝕜] [Monoid G] [TopologicalSpace G]
 variable (𝕜 G) in
 
 theorem isRepresentative_zero : IsRepresentative (0 : C(G, 𝕜)) := by
-  simpa only [matrixCoeff_zero_left (ContRepresentation.trivial 𝕜 G 𝕜) continuous_const] using
+  simpa using
     isRepresentative_matrixCoeff (ContRepresentation.trivial 𝕜 G 𝕜) continuous_const
       (0 : 𝕜) (0 : 𝕜)
 

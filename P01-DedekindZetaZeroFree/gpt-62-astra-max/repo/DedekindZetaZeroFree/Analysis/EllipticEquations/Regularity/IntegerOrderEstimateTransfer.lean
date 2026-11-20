@@ -13,25 +13,27 @@ namespace DedekindZetaZeroFree.KPContLocalRegularity.SobolevIteration.Iteration
 
 open KPContLocalNorm KPContLocalEnergy.SobolevEnergyEstimates.Raw
 
- def castIndex {n j k : ℕ} (hjk : j ≤ k) (α : MultiIndex n j) : MultiIndex n k :=
+ section
+
+variable {n j k : ℕ} (hjk : j ≤ k) (α : MultiIndex n j)
+
+def castIndex : MultiIndex n k :=
   ⟨fun i => Fin.castLE (Nat.succ_le_succ hjk) (α.val i), by
-    have hsum : (∑ i, (Fin.castLE (Nat.succ_le_succ hjk) (α.val i)).val) =
-        ∑ i, (α.val i).val :=
-      Finset.sum_congr rfl fun i _ => Fin.val_castLE _ _
-    rw [hsum]
+    rw [(Finset.sum_congr rfl fun i _ => Fin.val_castLE _ _)]
     exact le_trans α.property hjk⟩
 
-private theorem directions_castIndex {n j k : ℕ} (hjk : j ≤ k) (α : MultiIndex n j) :
+private theorem directions_castIndex :
     (castIndex hjk α).directions = α.directions := by
   simp only [MultiIndex.directions, castIndex]
   apply List.flatMap_congr
   intro i _
   rw [Fin.val_castLE]
 
-private theorem coordinateDerivative_castIndex {n j k : ℕ} (hjk : j ≤ k)
-    (α : MultiIndex n j) (u : Space n → ℂ) :
+private theorem coordinateDerivative_castIndex (u : Space n → ℂ) :
     coordinateDerivative (castIndex hjk α) u = coordinateDerivative α u := by
   simp only [coordinateDerivative, directions_castIndex]
+
+end
 
 theorem coefficient_bound_lower_order {n j k : ℕ} {B : LocalBall n}
     {cρ Cρ κ Λ L : ℝ} (D : Coefficients B cρ Cρ κ Λ)
@@ -58,18 +60,17 @@ open MeasureTheory KPContLocalNorm KPContLocalEnergy.SobolevEnergyEstimates.Raw
 
  def lowerIndex {n k l : ℕ} (hkl : k ≤ l) (α : MultiIndex n k) : MultiIndex n l :=
   ⟨fun i => ⟨(α.val i).val, by have := (α.val i).isLt; omega⟩, α.property.trans hkl⟩
- def lowerSobolev {n k l : ℕ} {B : LocalBall n} (hkl : k ≤ l)
-    (u : IntegerSobolev B l) : IntegerSobolev B k where
+ section
+
+variable {n k l : ℕ} {B : LocalBall n} (hkl : k ≤ l) (u : IntegerSobolev B l)
+
+def lowerSobolev : IntegerSobolev B k where
   derivatives α := u.derivatives (lowerIndex hkl α)
   weak_derivatives α := u.weak_derivatives (lowerIndex hkl α)
-private theorem lower_value {n k l : ℕ} {B : LocalBall n} (hkl : k ≤ l)
-    (u : IntegerSobolev B l) : value (lowerSobolev hkl u) = value u := rfl
-private theorem lower_norm {n k l : ℕ} {B : LocalBall n} (hkl : k ≤ l)
-    (u : IntegerSobolev B l) : (lowerSobolev hkl u).sobolevNorm ≤ u.sobolevNorm := by
+private theorem lower_value : value (lowerSobolev hkl u) = value u := rfl
+private theorem lower_norm : (lowerSobolev hkl u).sobolevNorm ≤ u.sobolevNorm := by
   classical
   apply Real.sqrt_le_sqrt
-  change (∑ α : MultiIndex n k, ‖u.derivatives (lowerIndex hkl α)‖ ^ 2) ≤
-    ∑ α : MultiIndex n l, ‖u.derivatives α‖ ^ 2
   apply Finset.sum_le_sum_of_injOn (lowerIndex hkl)
   · intro α _ β _ hab
     apply Subtype.ext
@@ -79,6 +80,8 @@ private theorem lower_norm {n k l : ℕ} {B : LocalBall n} (hkl : k ≤ l)
   · intro α _; exact Finset.mem_univ _
   · intro α _; exact le_rfl
   · intro α _ _; exact sq_nonneg _
+
+end
 
 theorem compose_nested_integer_gain {n r : ℕ}
     {inner mid outer : LocalBall n} {cρ Cρ κ Λ M C K : ℝ}
@@ -102,7 +105,7 @@ theorem compose_nested_integer_gain {n r : ℕ}
   obtain ⟨u₁, g, hu₁, hg, hu₁norm, hgnorm, heqMid⟩ :=
     restrict_weak_equation hmo D z u (value h) heq
   let hm := KPContLocalEnergy.restrictSobolev hmo h
-  have hu₁value : Represents u₁ (fun x => value u x) :=
+  have hu₁value :=
     hu₁ (zeroIndex n 1)
   change (fun x => value u₁ x) =ᵐ[volume.restrict mid.carrier]
     (fun x => value u x) at hu₁value
@@ -117,12 +120,9 @@ theorem compose_nested_integer_gain {n r : ℕ}
   obtain ⟨w, hw, hwnorm⟩ := hbootstrap z hz u₁ v hm
     (Filter.EventuallyEq.trans hv hu₁value.symm) heqMid
   refine ⟨w, ?_, ?_⟩
-  · have hi : (fun x => value u₁ x) =ᵐ[volume.restrict inner.carrier]
-        (fun x => value u x) :=
-      ae_mono (Measure.restrict_mono him le_rfl) hu₁value
-    exact Filter.EventuallyEq.trans hw hi
+  · exact Filter.EventuallyEq.trans hw (ae_mono (Measure.restrict_mono him le_rfl) hu₁value)
   · have hlowNorm : hlow.sobolevNorm ≤ h.sobolevNorm := lower_norm (by omega) h
-    have hmNorm : hm.sobolevNorm ≤ h.sobolevNorm :=
+    have hmNorm :=
       KPContLocalEnergy.sobolevNorm_restrictSobolev_le hmo h
     calc
       w.sobolevNorm ≤ K * (v.sobolevNorm + hm.sobolevNorm) := hwnorm
@@ -149,42 +149,16 @@ namespace DedekindZetaZeroFree.KPContLocalRegularity.SobolevIteration.Iteration
 
 open MeasureTheory KPContLocalNorm KPContLocalEnergy.SobolevEnergyEstimates.Raw
 
- theorem list_smooth {n : ℕ} (l : List (Fin n)) {f : Space n → ℂ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞) (coordinateDerivativeList l f) := by
-  induction l with
-  | nil => exact hf
-  | cons i l ih => exact (ih.fderiv_right (by simp)).clm_apply contDiff_const
+ alias list_smooth := DedekindZetaZeroFree.WeakJets.Raw.list_smooth
 
-private theorem list_perm {n : ℕ} {l k : List (Fin n)} (hp : l.Perm k)
-    {f : Space n → ℂ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    coordinateDerivativeList l f = coordinateDerivativeList k f := by
-  induction hp with
-  | nil => rfl
-  | cons i hp ih => simp only [coordinateDerivativeList, ih]
-  | swap i j l =>
-    have hs := list_smooth l hf
-    funext x
-    simp only [coordinateDerivativeList]
-    have hd : Differentiable ℝ (fderiv ℝ (coordinateDerivativeList l f)) :=
-      (hs.fderiv_right (m := (1 : ℕ∞)) (by simp)).differentiable (by norm_num)
-    simpa [fderiv_clm_apply (hd x) (differentiableAt_const _)] using
-      (hs.contDiffAt (x := x) |>.isSymmSndFDerivAt (by simp)).eq
-        (EuclideanSpace.single j 1) (EuclideanSpace.single i 1)
-  | trans hp hq ih ij => exact ih.trans ij
+private alias list_perm := DedekindZetaZeroFree.WeakJets.Raw.MultiIndexLeibnizRule.list_perm
 
 private theorem list_append {n : ℕ} (l k : List (Fin n)) (f : Space n → ℂ) :
     coordinateDerivativeList (l ++ k) f =
-      coordinateDerivativeList l (coordinateDerivativeList k f) := by
-  induction l with
-  | nil => rfl
-  | cons i l ih => simp only [List.cons_append, coordinateDerivativeList, ih]
+      coordinateDerivativeList l (coordinateDerivativeList k f) := by apply @DedekindZetaZeroFree.KPContLocalNorm.CompactOpenHolomorphyAndMeromorphy.list_append <;> assumption
 
 private theorem directions_count {n k : ℕ} (α : MultiIndex n k) (i : Fin n) :
-    α.directions.count i = counts α i := by
-  rw [MultiIndex.directions, List.count_flatMap,
-    ← List.sum_toFinset _ (List.nodup_finRange n)]
-  simp [Function.comp_def, List.count_replicate, counts]
+    α.directions.count i = counts α i := by apply @DedekindZetaZeroFree.WeakJets.Raw.MultiIndexLeibnizRule.directions_count <;> assumption
 
 private theorem counts_index {n k : ℕ} (γ : Counts n) (hγ : (∑ i, γ i) ≤ k) :
     counts (indexOfCounts γ hγ) = γ := rfl
@@ -193,12 +167,7 @@ private theorem coordinate_add {n a b k : ℕ} (α : MultiIndex n a) (β : Multi
     (hab : (∑ i, (counts α + counts β) i) ≤ k) {f : Space n → ℂ}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     coordinateDerivative α (coordinateDerivative β f) =
-      coordinateDerivative (indexOfCounts (counts α + counts β) hab) f := by
-  rw [coordinateDerivative, coordinateDerivative, ← list_append]
-  apply list_perm _ hf
-  apply List.perm_iff_count.mpr
-  intro i
-  simp only [List.count_append, directions_count, counts_index, Pi.add_apply]
+      coordinateDerivative (indexOfCounts (counts α + counts β) hab) f := by apply @DedekindZetaZeroFree.WeakJets.Raw.MultiIndexLeibnizRule.coordinate_add <;> assumption
 
  def derivativeTest {n k : ℕ} {B : LocalBall n} (α : MultiIndex n k)
     (φ : TestFunction B.toOpens ℂ ⊤) : TestFunction B.toOpens ℂ ⊤ :=
@@ -242,8 +211,9 @@ private theorem counts_ext {n k : ℕ} {α β : MultiIndex n k}
   apply Fin.ext
   exact congrFun h i
 
-private theorem compose_weak {n r s : ℕ} {B : LocalBall n}
-    (u : IntegerSobolev B r) (w : IntegerSobolev B s)
+variable {n r s : ℕ} {B : LocalBall n} (u : IntegerSobolev B r)
+
+private theorem compose_weak (w : IntegerSobolev B s)
     (α : MultiIndex n r) (β : MultiIndex n s)
     (hw : Represents w (fun x => u.derivatives α x))
     (γ : MultiIndex n (r+s)) (hγ : counts γ = counts α + counts β) :
@@ -277,13 +247,13 @@ private theorem compose_weak {n r s : ℕ} {B : LocalBall n}
   rw [h₂, ← mul_assoc, ← pow_add, ← hd] at h₁
   exact h₁
 
-theorem collect_shifted_sobolev_jets {n r s : ℕ} {B : LocalBall n}
-    (u : IntegerSobolev B r) (q : MultiIndex n r → IntegerSobolev B s)
+theorem collect_shifted_sobolev_jets (q : MultiIndex n r → IntegerSobolev B s)
     (hq : ∀ α : MultiIndex n r,
       Represents (q α) (fun x => u.derivatives α x)) :
     ∃ v : IntegerSobolev B (r + s),
       Represents v (fun x => value u x) ∧
       v.sobolevNorm ≤ Real.sqrt (∑ α : MultiIndex n r, (q α).sobolevNorm ^ 2) := by
+  let zeroIndex₀ := zeroIndex n (r+s)
   classical
   have hex (γ : MultiIndex n (r+s)) :
       ∃ p : MultiIndex n r × MultiIndex n s, counts γ = counts p.1 + counts p.2 := by
@@ -293,37 +263,36 @@ theorem collect_shifted_sobolev_jets {n r s : ℕ} {B : LocalBall n}
   have hf (γ : MultiIndex n (r+s)) : counts γ = counts (f γ).1 + counts (f γ).2 :=
     Classical.choose_spec (hex γ)
   let d (γ : MultiIndex n (r+s)) : BallL2 B := (q (f γ).1).derivatives (f γ).2
-  have hzα : (f (zeroIndex n (r+s))).1 = zeroIndex n r := by
+  have hzα : (f (zeroIndex₀)).1 = zeroIndex n r := by
     apply counts_ext
     funext i
-    have hh := congrFun (hf (zeroIndex n (r+s))) i
-    change 0 = counts (f (zeroIndex n (r+s))).1 i +
-      counts (f (zeroIndex n (r+s))).2 i at hh
-    change counts (f (zeroIndex n (r+s))).1 i = 0
+    have hh := congrFun (hf (zeroIndex₀)) i
+    change 0 = counts (f (zeroIndex₀)).1 i +
+      counts (f (zeroIndex₀)).2 i at hh
+    change counts (f (zeroIndex₀)).1 i = 0
     omega
-  have hzβ : (f (zeroIndex n (r+s))).2 = zeroIndex n s := by
+  have hzβ : (f (zeroIndex₀)).2 = zeroIndex n s := by
     apply counts_ext
     funext i
-    have hh := congrFun (hf (zeroIndex n (r+s))) i
-    change 0 = counts (f (zeroIndex n (r+s))).1 i +
-      counts (f (zeroIndex n (r+s))).2 i at hh
-    change counts (f (zeroIndex n (r+s))).2 i = 0
+    have hh := congrFun (hf (zeroIndex₀)) i
+    change 0 = counts (f (zeroIndex₀)).1 i +
+      counts (f (zeroIndex₀)).2 i at hh
+    change counts (f (zeroIndex₀)).2 i = 0
     omega
-  have hz : d (zeroIndex n (r+s)) = value u := by
+  have hz : d (zeroIndex₀) = value u := by
     dsimp only [d]
     rw [hzα, hzβ]
     exact Lp.ext (hq (zeroIndex n r))
   let v : IntegerSobolev B (r+s) := ⟨d, by
     intro γ
-    change IsWeakDerivative B γ (d (zeroIndex n (r+s))) (d γ)
+    change IsWeakDerivative B γ (d (zeroIndex₀)) (d γ)
     rw [hz]
     exact compose_weak u (q (f γ).1) (f γ).1 (f γ).2 (hq _) γ (hf γ)⟩
   refine ⟨v, ?_, ?_⟩
-  · change ∀ᵐ x ∂volume.restrict B.carrier, d (zeroIndex n (r+s)) x = value u x
+  · change ∀ᵐ x ∂volume.restrict B.carrier, d (zeroIndex₀) x = value u x
     rw [hz]
     exact Filter.Eventually.of_forall (fun _ => rfl)
   · apply Real.sqrt_le_sqrt
-    change (∑ γ : MultiIndex n (r+s), ‖d γ‖ ^ 2) ≤ _
     have hinj : Function.Injective f := by
       intro γ δ h
       apply counts_ext
@@ -361,12 +330,16 @@ open MeasureTheory KPContLocalNorm KPContLocalEnergy.SobolevEnergyEstimates.Raw
  def L2Bound {n : ℕ} (B : LocalBall n) (f : Space n → ℂ) (C : ℝ) : Prop :=
   ∃ hf : MemLp f 2 (volume.restrict B.carrier), ‖hf.toLp f‖ ≤ C
 
-private theorem bound_mono {n : ℕ} {B : LocalBall n} {f : Space n → ℂ} {C C' : ℝ}
+section
+
+variable {n : ℕ} {B : LocalBall n}
+
+private theorem bound_mono {f : Space n → ℂ} {C C' : ℝ}
     (hf : L2Bound B f C) (h : C ≤ C') : L2Bound B f C' := by
   obtain ⟨hf, hn⟩ := hf
   exact ⟨hf, hn.trans h⟩
 
-private theorem bound_add {n : ℕ} {B : LocalBall n} {f g : Space n → ℂ} {C D : ℝ}
+private theorem bound_add {f g : Space n → ℂ} {C D : ℝ}
     (hf : L2Bound B f C) (hg : L2Bound B g D) :
     L2Bound B (fun x => f x + g x) (C + D) := by
   obtain ⟨hf, hn⟩ := hf
@@ -376,28 +349,27 @@ private theorem bound_add {n : ℕ} {B : LocalBall n} {f g : Space n → ℂ} {C
   rw [MemLp.toLp_add hf hg]
   exact (norm_add_le _ _).trans (add_le_add hn hm)
 
-private theorem bound_sum {n : ℕ} {B : LocalBall n} {ι : Type*}
+private theorem bound_sum {ι : Type*}
     (s : Finset ι) (f : ι → Space n → ℂ) (C : ι → ℝ)
     (hf : ∀ i ∈ s, L2Bound B (f i) (C i)) :
     L2Bound B (fun x => ∑ i ∈ s, f i x) (∑ i ∈ s, C i) := by
   classical
   induction s using Finset.induction_on with
-  | empty => exact ⟨by simpa using (MemLp.zero' : MemLp (fun _ : Space n => (0 : ℂ)) 2 (volume.restrict B.carrier)), by simp⟩
+  | empty => exact ⟨by exact MemLp.zero', by simp⟩
   | @insert i s hi ih =>
     simpa [Finset.sum_insert hi] using
       bound_add (hf i (by simp)) (ih (fun j hj => hf j (by simp [hj])))
 
-private theorem bound_mul {n : ℕ} {B : LocalBall n} {a f : Space n → ℂ} {A C : ℝ}
+private theorem bound_mul {a f : Space n → ℂ} {A C : ℝ}
     (hA : 0 ≤ A) (ha : AEStronglyMeasurable a (volume.restrict B.carrier))
     (hab : ∀ x ∈ B.carrier, ‖a x‖ ≤ A) (hf : L2Bound B f C) :
     L2Bound B (fun x => a x * f x) (A * C) := by
   obtain ⟨hf, hn⟩ := hf
-  have hmeas := ha.mul hf.aestronglyMeasurable
   have hle : ∀ᵐ x ∂volume.restrict B.carrier, ‖a x * f x‖ ≤ A * ‖f x‖ := by
     filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
     rw [norm_mul]
     exact mul_le_mul_of_nonneg_right (hab x hx) (norm_nonneg _)
-  have hm := hf.of_le_mul hmeas hle
+  have hm := hf.of_le_mul (ha.mul hf.aestronglyMeasurable) hle
   refine ⟨hm, ?_⟩
   have hh : ∀ᵐ x ∂volume.restrict B.carrier,
       ‖hm.toLp (fun x => a x * f x) x‖ ≤ A * ‖hf.toLp f x‖ := by
@@ -407,6 +379,8 @@ private theorem bound_mul {n : ℕ} {B : LocalBall n} {a f : Space n → ℂ} {A
     exact hx
   exact (Lp.norm_le_mul_norm_of_ae_le_mul hh).trans
     (mul_le_mul_of_nonneg_left hn hA)
+
+end
 
 private theorem bound_jet {n k : ℕ} {B : LocalBall n}
     (u : IntegerSobolev B k) (γ : Counts n) :
@@ -440,8 +414,7 @@ private theorem coeff_smooth {n : ℕ} {B : LocalBall n} (γ : Counts n)
 private theorem coeff_bound {n k : ℕ} {B : LocalBall n} {L : ℝ}
     {f : Space n → ℂ} (hf : ∀ α : MultiIndex n k, ∀ x ∈ B.carrier,
       ‖coordinateDerivative α f x‖ ≤ L) (γ : Counts n) (hγ : (∑ i, γ i) ≤ k) :
-    ∀ x ∈ B.carrier, ‖coefficientJet γ f x‖ ≤ L := by
-  exact hf (indexOfCounts γ hγ)
+    ∀ x ∈ B.carrier, ‖coefficientJet γ f x‖ ≤ L := hf (indexOfCounts γ hγ)
 
 private theorem bound_sum_uniform {n : ℕ} {B : LocalBall n} {ι : Type*} [Fintype ι]
     (s : Finset ι) (f : ι → Space n → ℂ) {C : ℝ} (hC : 0 ≤ C)
@@ -453,10 +426,6 @@ private theorem bound_sum_uniform {n : ℕ} {B : LocalBall n} {ι : Type*} [Fint
 
 private theorem counts_bound {n k : ℕ} (α : MultiIndex n k) :
     (∑ i, counts α i) ≤ k := α.property
-
-private theorem counts_unit_bound {n k : ℕ} (α : MultiIndex n k) (j : Fin n) :
-    (∑ i, (counts α + unitCount j) i) ≤ k + 1 := by
-  simpa [Pi.add_apply, unitCount, Finset.sum_add_distrib] using Nat.add_le_add_right (counts_bound α) 1
 
 theorem commutatorSource_memLp_bound (n r : ℕ) (cρ Cρ κ Λ L M : ℝ)
     (hcρ : 0 < cρ) (hL : 0 ≤ L) (hM : 0 ≤ M) :
@@ -553,7 +522,8 @@ theorem commutatorSource_memLp_bound (n r : ℕ) (cρ Cρ κ Λ L M : ℝ)
     apply bound_sum_uniform positive _ (by positivity)
     intro β hβ
     have ht1 := hterm β (counts β + unitCount i) (b i j) _ (hb i j)
-      (hbb i j _ (counts_unit_bound β i)) (hjetu (counts α - counts β + unitCount j))
+      (hbb i j _ (by
+        simpa [Pi.add_apply, unitCount, Finset.sum_add_distrib] using Nat.add_le_add_right (counts_bound β) 1)) (hjetu (counts α - counts β + unitCount j))
     have ht2 := hterm β (counts β) (b i j) _ (hb i j)
       (hbb i j _ (hd β)) (hjetu (counts α - counts β + unitCount i + unitCount j))
     simpa only [mul_add, two_mul, mul_assoc] using bound_add ht1 ht2
@@ -624,17 +594,6 @@ private theorem first_derivative_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ �
   change ‖fderiv ℝ (fun y => (f y : ℂ)) x (EuclideanSpace.single k 1)‖ ≤ L at h
   rw [heq] at h
   simpa using h
-
-private theorem jet_norm_le {n k : ℕ} {B : LocalBall n}
-    (u : IntegerSobolev B k) (γ : Counts n) : ‖jet u γ‖ ≤ u.sobolevNorm := by
-  have hu : 0 ≤ u.sobolevNorm := Real.sqrt_nonneg _
-  unfold jet
-  split_ifs with hγ
-  · have hs : ‖u.derivatives (indexOfCounts γ hγ)‖ ^ 2 ≤ u.normSq :=
-      Finset.single_le_sum (fun α _ => sq_nonneg ‖u.derivatives α‖) (Finset.mem_univ _)
-    have := u.sobolevNorm_sq
-    nlinarith [norm_nonneg (u.derivatives (indexOfCounts γ hγ))]
-  · simpa using hu
 
 private theorem finite_sqrt_bound {ι : Type*} [Fintype ι] (f : ι → ℝ)
     {T : ℝ} (hT : 0 ≤ T) (hf : ∀ i, 0 ≤ f i ∧ f i ≤ T) :
@@ -718,7 +677,7 @@ theorem quantitative_shifted_jet_gain (n r : ℕ) (hn : 0 < n)
         (fun δ => ⟨norm_nonneg _, ?_⟩))
       have he : t.derivatives δ = jet u (counts α + counts δ) := Lp.ext (ht δ)
       rw [he]
-      exact jet_norm_le u _
+      apply @DedekindZetaZeroFree.KPLocalCubeSobolevJets.Interior.CutoffZeroExtension.jet_norm_le <;> assumption
     obtain ⟨v, hv, hvnorm⟩ := hh2 inner outer hc hi ho (canonicalCoefficients D)
       (first_derivative_bound D (coefficient_bound_lower_order D (by omega) hD))
       z hz t (hg.toLp (commutatorSource D z u h α)) hteq
@@ -768,7 +727,11 @@ namespace DedekindZetaZeroFree.KPContLocalRegularity.SobolevIteration
 
 open MeasureTheory KPContLocalNorm KPContLocalEnergy.SobolevEnergyEstimates KPContLocalEnergy.SobolevEnergyEstimates.Raw
 
-private theorem derivative_unique {n k : ℕ} (B : LocalBall n) (α : MultiIndex n k)
+section
+
+variable {n k : ℕ}
+
+private theorem derivative_unique (B : LocalBall n) (α : MultiIndex n k)
     (f g v : BallL2 B) (hg : IsWeakDerivative B α f g)
     (hv : IsWeakDerivative B α f v) : g = v := by
   apply Lp.ext
@@ -796,7 +759,7 @@ private theorem derivative_unique {n k : ℕ} (B : LocalBall n) (α : MultiIndex
     heq, heq]
   exact h
 
-private theorem smooth_norm {n k : ℕ} (B : LocalBall n) (u : Space n → ℂ)
+private theorem smooth_norm (B : LocalBall n) (u : Space n → ℂ)
     (v : IntegerSobolev B k) (hv : RepresentsClassicalDerivatives v u) :
     v.sobolevNorm = Raw.functionSobolevNorm B k u := by
   unfold IntegerSobolev.sobolevNorm IntegerSobolev.normSq Raw.functionSobolevNorm
@@ -805,7 +768,7 @@ private theorem smooth_norm {n k : ℕ} (B : LocalBall n) (u : Space n → ℂ)
   intro α _
   rw [l2_norm_eq_functionL2Norm_of_ae B (v.derivatives α) (coordinateDerivative α u) (hv α)]
 
-private theorem represents_classical {n k : ℕ} {B : LocalBall n} (u : Space n → ℂ)
+private theorem represents_classical {B : LocalBall n} (u : Space n → ℂ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier)
     (hL2 : ∀ α : MultiIndex n k, MemLp (coordinateDerivative α u) 2 (volume.restrict B.carrier))
     (v : IntegerSobolev B k) (hv : Represents v u) :
@@ -830,6 +793,8 @@ private theorem represents_classical {n k : ℕ} {B : LocalBall n} (u : Space n 
   rw [hder]
   exact hrep α
 
+end
+
  def canonicalCoefficients {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (D : Coefficients B cρ Cρ κ Λ) : KPContLocalEnergy.Coefficients B cρ Cρ κ Λ where
   density := D.density
@@ -843,22 +808,13 @@ private theorem represents_classical {n k : ℕ} {B : LocalBall n} (u : Space n 
 
 private theorem first_derivative_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ L : ℝ}
     (D : Coefficients B cρ Cρ κ Λ) (hD : Raw.BoundedCoefficientDerivatives D 1 L) :
-    KPContLocalDifference.BoundedFirstDerivatives (canonicalCoefficients D) L := by
-  intro x hx i j k
-  have h := (hD (firstIndex k) x hx).2 i j
-  simp only [coordinateDerivative, firstIndex_directions, coordinateDerivativeList] at h
-  let f : Space n → ℝ := fun y => D.density y * D.matrix y i j
-  have hf : DifferentiableAt ℝ f x :=
-    ((D.density_smooth.mul (D.matrix_smooth i j)).differentiableOn (by simp)).differentiableAt
-      (Metric.isOpen_ball.mem_nhds hx)
-  have heq : fderiv ℝ (fun y => (f y : ℂ)) x = Complex.ofRealCLM.comp (fderiv ℝ f x) :=
-    (Complex.ofRealCLM.hasFDerivAt.comp x hf.hasFDerivAt).fderiv
-  change ‖fderiv ℝ f x (EuclideanSpace.single k 1)‖ ≤ L
-  change ‖fderiv ℝ (fun y => (f y : ℂ)) x (EuclideanSpace.single k 1)‖ ≤ L at h
-  rw [heq] at h
-  simpa using h
+    KPContLocalDifference.BoundedFirstDerivatives (canonicalCoefficients D) L := by apply @Iteration.first_derivative_bound <;> assumption
 
-private theorem value_norm_le {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k) :
+section
+
+variable {n k : ℕ} {B : LocalBall n}
+
+private theorem value_norm_le (u : IntegerSobolev B k) :
     ‖value u‖ ≤ u.sobolevNorm := by
   have hh : ‖value u‖ ^ 2 ≤ u.normSq :=
     Finset.single_le_sum (fun α _ => sq_nonneg ‖u.derivatives α‖)
@@ -867,18 +823,19 @@ private theorem value_norm_le {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev 
   have hp : 0 ≤ u.sobolevNorm := Real.sqrt_nonneg _
   nlinarith [norm_nonneg (value u)]
 
-private theorem sobolev_unique {n k : ℕ} {B : LocalBall n}
+private theorem sobolev_unique
     (u v : IntegerSobolev B k) (heq : Represents u (fun x => value v x)) : u = v := by
   have hd : u.derivatives = v.derivatives := by
     funext α
     exact derivative_unique B α (value u) _ _ (u.weak_derivatives α)
       (by
-        have h0 : value u = value v := Lp.ext heq
-        rw [h0]
+        rw [(Lp.ext heq)]
         exact v.weak_derivatives α)
   cases u
   cases v
   simp_all
+
+end
 
 private theorem quantitative_weak_zero_gain (n : ℕ) (hn : 0 < n)
     (a R cρ Cρ κ Λ L M : ℝ) (ha : 0 < a) (haR : a < R)
@@ -888,7 +845,7 @@ private theorem quantitative_weak_zero_gain (n : ℕ) (hn : 0 < n)
       ∀ D : Coefficients outer cρ Cρ κ Λ,
         Raw.BoundedCoefficientDerivatives D 1 L →
         Raw.WeakIntegerEstimate inner outer D 0 M C := by
-  let b : ℝ := (a + R) / 2
+  let b := (a + R) / 2
   have hb : 0 < b := by dsimp [b]; linarith
   have hab : a < b := by dsimp [b]; linarith
   have hbR : b < R := by dsimp [b]; linarith
@@ -908,12 +865,12 @@ private theorem quantitative_weak_zero_gain (n : ℕ) (hn : 0 < n)
   obtain ⟨v, hv, hvnorm⟩ := (henergy mid outer rfl rfl ho (canonicalCoefficients D)).1
     z hz u (value h) heq
   obtain ⟨w, g, hw, hg, hwnorm, hgnorm, hweq⟩ := restrict_weak_equation hmo D z u (value h) heq
-  have hw0 : Represents w (fun x => value u x) := hw (zeroIndex n 1)
-  have hvw : v = w := sobolev_unique v w (Filter.EventuallyEq.trans hv (Filter.EventuallyEq.symm hw0))
+  have hvw := sobolev_unique v w (Filter.EventuallyEq.trans hv (Filter.EventuallyEq.symm (hw (zeroIndex n 1))))
   let Dm := restrictCoefficients hmo D
-  have hDm : Raw.BoundedCoefficientDerivatives Dm 1 L := fun α x hx => hD α x (hmo hx)
+  have hDm := fun α x hx => hD α x (hmo hx)
   obtain ⟨q, hq, hqnorm⟩ := hh2 inner mid hc hi rfl (canonicalCoefficients Dm)
-    (first_derivative_bound Dm hDm) z hz v g (by rw [hvw]; exact hweq)
+    (by
+      apply @Iteration.first_derivative_bound <;> assumption) z hz v g (by rw [hvw]; exact hweq)
   refine ⟨q, Filter.EventuallyEq.trans hq (ae_restrict_of_ae_restrict_of_subset him hv), ?_⟩
   have hh : ‖value h‖ ≤ h.sobolevNorm := value_norm_le h
   have hu : 0 ≤ ‖value u‖ := norm_nonneg _
@@ -940,7 +897,7 @@ theorem quantitative_weak_integer_gain (n r : ℕ) (hn : 0 < n)
       ha haR hcρ hκ hL hM
     exact ⟨C, hC, fun inner outer hc hi ho D _hnear hD => hest inner outer hc hi ho D hD⟩
   | succ r ih =>
-    let b : ℝ := (a + R) / 2
+    let b := (a + R) / 2
     have hb : 0 < b := by dsimp [b]; linarith
     have hab : a < b := by dsimp [b]; linarith
     have hbR : b < R := by dsimp [b]; linarith
@@ -958,15 +915,10 @@ theorem quantitative_weak_integer_gain (n r : ℕ) (hn : 0 < n)
       change Metric.ball inner.center inner.radius ⊆ Metric.ball outer.center b
       rw [hc, hi]
       exact Metric.ball_subset_ball hab.le
-    have hDlow : Raw.BoundedCoefficientDerivatives D (r + 1) L :=
-      Iteration.coefficient_bound_lower_order D (by omega) hD
-    have hprev := hprevious mid outer rfl rfl ho D hnear hDlow
-    apply Iteration.compose_nested_integer_gain hmo him D hC.le hK.le hprev
+    apply Iteration.compose_nested_integer_gain hmo him D hC.le hK.le (hprevious mid outer rfl rfl ho D hnear (Iteration.coefficient_bound_lower_order D (by omega) hD))
     intro z hz u₁ u h hu heq
-    have hDm : Raw.BoundedCoefficientDerivatives (restrictCoefficients hmo D) (r + 1 + 1) L :=
-      fun α x hx => hD α x (hmo hx)
     obtain ⟨w, q, hw, hq, hqnorm⟩ := hshift inner mid hc hi rfl
-      (restrictCoefficients hmo D) hDm z hz u₁ u h hu heq
+      (restrictCoefficients hmo D) (fun α x hx => hD α x (hmo hx)) z hz u₁ u h hu heq
     obtain ⟨v, hv, hvnorm⟩ := Iteration.collect_shifted_sobolev_jets w q hq
     exact ⟨v, Filter.EventuallyEq.trans hv hw, hvnorm.trans hqnorm⟩
 

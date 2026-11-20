@@ -16,7 +16,7 @@ section FieldExpansion
 open RightFrame.PullbackWords
 open scoped Topology
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-variable [FiniteDimensional ℝ E] {A : Type*}
+    [FiniteDimensional ℝ E] {A : Type*}
 
 private theorem word_smooth (O : Set E) (hO : IsOpen O) (fields : A → E → E)
     (hfields : ∀ a, ContDiffOn ℝ (⊤ : ℕ∞) (fields a) O)
@@ -32,11 +32,14 @@ private theorem sum_derivative {T : Type*} (ts : List T) (f : T → E → ℂ)
     HasFDerivAt (fun y => (ts.map (fun t => f t y)).sum)
       (ts.map (fun t => fderiv ℝ (f t) x)).sum x := by
   induction ts with
-  | nil => simpa using hasFDerivAt_const (𝕜 := ℝ) (0 : ℂ) x
+  | nil => exact hasFDerivAt_const (0 : ℂ) x
   | cons t ts ih =>
     exact (hf t (by simp)).hasFDerivAt.fun_add (ih (fun r hr => hf r (by simp [hr])))
 
- theorem list_expansion (O : Set E) (hO : IsOpen O)
+ variable (O : Set E) (hO : IsOpen O)
+
+include hO in
+theorem list_expansion
     (fields : A → E → E) (hfields : ∀ a, ContDiffOn ℝ (⊤ : ℕ∞) (fields a) O)
     (w : List A) :
     let e := Module.finBasis ℝ E
@@ -119,7 +122,8 @@ private theorem sum_derivative {T : Type*} (ts : List T) (f : T → E → ℂ)
       intro t ht
       exact hterm t ht
 
- theorem constant_word_iterated (O : Set E) (hO : IsOpen O)
+ include hO in
+theorem constant_word_iterated
     (u : E → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u O)
     (n : ℕ) (v : Fin n → E) (x : E) (hx : x ∈ O) :
     constantDirectionWord (List.ofFn v) u x = iteratedFDeriv ℝ n u x v := by
@@ -127,7 +131,7 @@ private theorem sum_derivative {T : Type*} (ts : List T) (f : T → E → ℂ)
   | zero => simp [constantDirectionWord, directionalWord]
   | succ n ih =>
     rw [((hu x hx).contDiffAt (hO.mem_nhds hx)).differentiableAt_iteratedFDeriv
-      (m := n) (WithTop.coe_lt_coe.mpr (ENat.natCast_lt_top n)) |>.iteratedFDeriv_succ_apply_left']
+       (WithTop.coe_lt_coe.mpr (ENat.natCast_lt_top n)) |>.iteratedFDeriv_succ_apply_left']
     have he : (fun y => constantDirectionWord (List.ofFn (Fin.tail v)) u y) =ᶠ[𝓝 x]
         (fun y => iteratedFDeriv ℝ n u y (Fin.tail v)) :=
       Filter.Eventually.mono (hO.mem_nhds hx) (fun y hy => ih (Fin.tail v) y hy)
@@ -140,12 +144,7 @@ end FieldExpansion
 section WordAlgebra
 open RightFrame.PullbackWords
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
- theorem directional_map {A B : Type*} (fields : B → E → E)
-    (f : A → B) (w : List A) (u : E → ℂ) :
-    directionalWord fields (w.map f) u = directionalWord (fun a => fields (f a)) w u := by
-  induction w with
-  | nil => rfl
-  | cons a w ih => simp only [List.map_cons, directionalWord, ih]
+ alias directional_map := DedekindZetaZeroFree.KPGlobalResidualConstruction.NativePositiveChart.PositiveNativeCharts.directional_map
 
 end WordAlgebra
 

@@ -17,10 +17,9 @@ open DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 structure DenominatorFamily (R : PrincipalMellin.ActualRecipe S η) where
-
   omega : Frequency R → Detector.PrimitiveFrequencyCharacter F
 
   distinct : ∀ u v : Frequency R,
@@ -93,11 +92,6 @@ theorem raw_conductor_sieve_finsum :
   obtain ⟨B, hmem⟩ : ∃ B : Finset (Ideal (𝓞 F)),
       ∀ I, I ∈ B ↔ I ≠ ⊥ ∧ Ideal.absNorm I ≤ ⌊N⌋₊ :=
     ⟨hfin.toFinset, fun I => hfin.mem_toFinset⟩
-  have hB : ∀ I ∈ B, I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ N := by
-    intro I hI
-    obtain ⟨h1, h2⟩ := (hmem I).1 hI
-    refine ⟨h1, le_trans ?_ (Nat.floor_le (by linarith : (0 : ℝ) ≤ N))⟩
-    exact Nat.cast_le.mpr h2
   have hsupp : ∀ I, b I ≠ 0 → I ∈ B := by
     intro I hI
     obtain ⟨h1, h2⟩ := hb I hI
@@ -108,19 +102,17 @@ theorem raw_conductor_sieve_finsum :
     intro u
     apply finsum_eq_sum_of_support_subset
     intro I hI
-    have h1 : b I * ((denominatorFamily R).omega u).character I ≠ 0 := hI
-    exact Finset.mem_coe.mpr (hsupp I (left_ne_zero_of_mul h1))
+    exact Finset.mem_coe.mpr (hsupp I (left_ne_zero_of_mul hI))
   have hs2 : ∑ᶠ I : Ideal (𝓞 F), ‖b I‖ ^ 2 = ∑ I ∈ B, ‖b I‖ ^ 2 := by
     apply finsum_eq_sum_of_support_subset
     intro I hI
-    have h1 : ‖b I‖ ^ 2 ≠ 0 := hI
-    have h2 : b I ≠ 0 := fun h0 => h1 (by simp [h0])
-    exact Finset.mem_coe.mpr (hsupp I h2)
-  have hA : ∑ u ∈ J, ‖∑ᶠ I : Ideal (𝓞 F), b I * ((denominatorFamily R).omega u).character I‖ ^ 2
-      = ∑ u ∈ J, ‖∑ I ∈ B, b I * ((denominatorFamily R).omega u).character I‖ ^ 2 :=
-    Finset.sum_congr rfl (fun u _ => by rw [hs1 u])
-  rw [hA, hs2]
-  exact h U N hU hN J hJ B hB b
+    exact Finset.mem_coe.mpr (hsupp I (fun h0 => hI (by simp [h0])))
+  rw [(Finset.sum_congr rfl (fun u _ => by rw [hs1 u])), hs2]
+  refine h U N hU hN J hJ B ?_ b
+  intro I hI
+  obtain ⟨h1, h2⟩ := (hmem I).1 hI
+  refine ⟨h1, le_trans ?_ (Nat.floor_le (by linarith : (0 : ℝ) ≤ N))⟩
+  exact Nat.cast_le.mpr h2
 
 end
 

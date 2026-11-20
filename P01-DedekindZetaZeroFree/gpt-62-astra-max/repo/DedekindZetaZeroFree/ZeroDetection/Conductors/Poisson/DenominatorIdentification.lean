@@ -17,18 +17,17 @@ open DedekindZetaZeroFree.Quantitative.RawFixed
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
 theorem primMinus_eq_denominator (u : Frequency D.recipe) :
     FixedData.primMinus D u = (RawDenominatorFamily31.denominatorFamily D.recipe).omega u := by
-  have h := (RawDenominatorFamily31.denominatorFamily D.recipe).raw_minus u
-    (FixedData.rawFrequency D u) (FixedData.rawFrequency_u D u)
   exact MinusArithmetic.deleted_primitive_inducers_eq D.recipe.A
     (RawHeckeRows.rawDeletionSet (FixedData.rawFrequency D u))
     (RawDenominatorExistence.rawDeletionSet_finite D.recipe (FixedData.rawFrequency D u))
     (RawDenominatorExistence.Sf_subset_rawDeletionSet D.recipe (FixedData.rawFrequency D u))
-    _ _ (fun I => ((FixedData.pkg D).minus_mask u I).symm.trans (h I))
+    _ _ (fun I => ((FixedData.pkg D).minus_mask u I).symm.trans (((RawDenominatorFamily31.denominatorFamily D.recipe).raw_minus u
+      (FixedData.rawFrequency D u) (FixedData.rawFrequency_u D u)) I))
 
 theorem primMinus_character_eq (u : Frequency D.recipe) (I : Ideal (𝓞 F)) :
     (FixedData.primMinus D u).character I =

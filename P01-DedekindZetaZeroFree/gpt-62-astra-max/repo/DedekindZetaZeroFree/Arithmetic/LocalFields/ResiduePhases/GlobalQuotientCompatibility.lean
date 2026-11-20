@@ -11,11 +11,12 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.CompatiblePrimeRawLocal
 open LocalFiniteSums CRTRawLocalModel
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-theorem psi_residueMap_eq_negativeTrace (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (x : A.R) :
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+
+theorem psi_residueMap_eq_negativeTrace (n : ℕ) (x : A.R) :
     psi C p n (residueMap C p n x) =
       (negativeTrace p (algebraMap F (LocalField p) (x : F) / uniformizer C p ^ n) : ℂ) := by
 
@@ -23,8 +24,7 @@ theorem psi_residueMap_eq_negativeTrace (C : A.GeneralArithmeticContext σ η hS
   exact congrArg (fun z : Circle => (z : ℂ))
     (LocalFiniteSumCompatibility.quotientTrace_mk C p n x)
 
-theorem canonicalNumeratorCongruence_iff (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t k J : ℕ) (d : Residue C p k) :
+theorem canonicalNumeratorCongruence_iff (t k J : ℕ) (d : Residue C p k) :
     numeratorCongruence C p t k J 1 1 (canonicalLocalRepresentative C p k d) ↔
       residueMap C p k (generator C p ^ J) =
         residueMap C p k (generator C p ^ t) * d := by

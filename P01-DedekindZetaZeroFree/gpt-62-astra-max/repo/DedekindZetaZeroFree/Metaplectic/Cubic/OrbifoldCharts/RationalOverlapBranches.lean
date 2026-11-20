@@ -14,20 +14,26 @@ open KPContActualCotangentCountableShrinking KPContCotangentActualOverlap
 open KPContCotangentActualGenuineTwistIsotropy
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-def omega (a : ShrunkChart F ζ hζ U R P H) : Set (M F) :=
+section
+
+variable (a : ShrunkChart F ζ hζ U R P H)
+
+def omega : Set (M F) :=
   labeledA (placeEquiv F ζ hζ) ⁻¹' a.domain
 
-def q (a : ShrunkChart F ζ hζ U R P H) (x : M F) :
+def q (x : M F) :
     KPFiniteCuspAtlas.rawXU F ζ hζ U :=
   KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component)
     (KPCuspSiegel.projection F
       (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)
       (labeledA (placeEquiv F ζ hζ) x))
+
+end
 
 def targetChart (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component) :
@@ -116,9 +122,13 @@ private theorem la (x : KPCuspGenuineMonodromy.SymmetricSpace F) :
     labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) x) = x := by
   funext k
   simp [labeledA, labeledAInv]
+
+alias RationalOverlapBranches.la := la
 private theorem al (x : M F) :
     labeledAInv (placeEquiv F ζ hζ) (labeledA (placeEquiv F ζ hζ) x) = x := by
   simp [labeledA, labeledAInv]
+
+alias RationalOverlapBranches.al := al
  def coord (g : KPCuspArithmetic.PGL2 F) (x : M F) :=
   labeledAInv (placeEquiv F ζ hζ) (g • labeledA (placeEquiv F ζ hζ) x)
 local notation "cmap" => coord (ζ:=ζ) (hζ:=hζ)
@@ -135,8 +145,11 @@ local notation "cmap" => coord (ζ:=ζ) (hζ:=hζ)
     apply continuous_pi
     intro k
     exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous))
- theorem chart_coord (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component)
+ section
+
+variable (a b : ShrunkChart F ζ hζ U R P H) (h : a.component = b.component)
+
+theorem chart_coord
     (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
     coordinateMap (isotropyChart a) (targetChart a b h) g = cmap g.val := by
   rcases a with ⟨i,ca,oa,da,dao,dac,das,dai⟩
@@ -145,30 +158,32 @@ local notation "cmap" => coord (ζ:=ζ) (hζ:=hζ)
   subst j
   funext x
   simp [coordinateMap, isotropyChart, targetChart, ChartKind.representative, coord]
- theorem chart_omega (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component) :
+ theorem chart_omega :
     (targetChart a b h).omega = (isotropyChart b).omega := by
   rcases a with ⟨i,ca,oa,da,dao,dac,das,dai⟩
   rcases b with ⟨j,cb,ob,db,dbo,dbc,dbs,dbi⟩
   dsimp at h
   subst j
   rfl
- theorem omega_open (a : ShrunkChart F ζ hζ U R P H) : IsOpen (omega a) := by
+
+end
+ section
+
+variable (a : ShrunkChart F ζ hζ U R P H)
+
+theorem omega_open : IsOpen (omega a) := by
   apply a.domain_open.preimage
   apply continuous_pi
   intro k
   exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
- theorem omega_subset (a : ShrunkChart F ζ hζ U R P H) :
-    omega a ⊆ (isotropyChart a).omega := by
-  intro x hx
-  exact a.closure_subset (subset_closure hx)
+ theorem omega_subset :
+    omega a ⊆ (isotropyChart a).omega := fun x hx => a.closure_subset (subset_closure hx)
+
+end
  def make (a b : ShrunkChart F ζ hζ U R P H) (h : a.component = b.component)
     (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
     ActualBranch a b := by
   let he := KPCuspGenuineMonodromy.finiteComparison_exists F ζ hζ U _ g
-  let r := he.choose
-  let u := he.choose_spec.choose
-  have hu := he.choose_spec.choose_spec
   have ht : Set.MapsTo (coordinateMap (isotropyChart a) (targetChart a b h) g)
       (omega a ∩ cmap g.val ⁻¹' omega b) (isotropyChart b).omega := by
     rw [chart_coord a b h g]
@@ -176,8 +191,8 @@ local notation "cmap" => coord (ζ:=ζ) (hζ:=hζ)
   exact {
     component_eq := h
     arrow := {
-      gamma := g, root := r⁻¹, levelLift := u,
-      finite_comparison := by simpa only [inv_inv] using hu
+      gamma := g, root := he.choose⁻¹, levelLift := he.choose_spec.choose,
+      finite_comparison := by simpa using he.choose_spec.choose_spec
       domain := omega a ∩ cmap g.val ⁻¹' omega b
       isOpen_domain := (omega_open a).inter ((omega_open b).preimage (coord_continuous g.val))
       source := fun _ hx => omega_subset a hx.1
@@ -192,7 +207,7 @@ local notation "cmap" => coord (ζ:=ζ) (hζ:=hζ)
 private theorem coord_smooth (g : KPCuspArithmetic.PGL2 F) :
     ContDiff ℝ (⊤ : ℕ∞) (cmap g) := by
   obtain ⟨B, rfl⟩ := Matrix.ProjGenLinGroup.mk_surjective g
-  let G : Fin (d F) → Matrix.GeneralLinearGroup (Fin 2) ℂ := fun k =>
+  let G := fun k =>
     Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F ((placeEquiv F ζ hζ) k)).embedding B
   have he : cmap (Matrix.ProjGenLinGroup.mk B) =
       fun x => (CotangentLogCoframe.A (d F)).symm
@@ -227,13 +242,16 @@ private theorem q_coord (a b : ShrunkChart F ζ hζ U R P H)
   simp only [coord, la]
   apply Quotient.sound
   exact ⟨g, rfl⟩
-private theorem make_psi (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component)
-    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
+
+alias RationalOverlapBranches.q_coord := q_coord
+section
+
+variable (a b : ShrunkChart F ζ hζ U R P H) (h : a.component = b.component)
+    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component))
+
+private theorem make_psi :
     (make a b h g).arrow.psi = cmap g.val := chart_coord a b h g
-private theorem make_inverse (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component)
-    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
+private theorem make_inverse :
     Branch.inverse (some (make a b h g)) = cmap g.val⁻¹ := by
   rcases a with ⟨i,ca,oa,da,dao,dac,das,dai⟩
   rcases b with ⟨j,cb,ob,db,dbo,dbc,dbs,dbi⟩
@@ -241,9 +259,7 @@ private theorem make_inverse (a b : ShrunkChart F ζ hζ U R P H)
   subst j
   funext x
   simp [Branch.inverse, coordinateMap, isotropyChart, targetChart, ChartKind.representative, coord, make]
-private theorem make_properties (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component)
-    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
+private theorem make_properties :
     Branch.Properties (some (make a b h g)) := by
   have hp : Branch.psi (some (make a b h g)) = cmap g.val := make_psi a b h g
   have hd : Branch.domain (some (make a b h g)) = omega a ∩ cmap g.val ⁻¹' omega b := rfl
@@ -263,7 +279,13 @@ private theorem make_properties (a b : ShrunkChart F ζ hζ U R P H)
   · rw [hp]; exact (coord_smooth g.val).contDiffOn
   · rw [hi]; exact (coord_smooth g.val⁻¹).contDiffOn
   · rw [hp]; exact fun x _ => q_coord a b h g x
-private theorem overlap_component (a b : ShrunkChart F ζ hζ U R P H)
+
+end
+section
+
+variable (a b : ShrunkChart F ζ hζ U R P H)
+
+private theorem overlap_component
     (x : M F) (hx : q a x ∈ b.baseDomain) : a.component = b.component := by
   obtain ⟨y, hy⟩ := hx
   have hh : (H.atlas U).components
@@ -275,7 +297,7 @@ private theorem overlap_component (a b : ShrunkChart F ζ hζ U R P H)
           (labeledA (placeEquiv F ζ hζ) x)⟩ := by
     simpa only [(H.atlas U).components_formula, ShrunkChart.toBase, q] using hy
   exact (congrArg Sigma.fst ((H.atlas U).components.injective hh)).symm
-private theorem overlap_iff (a b : ShrunkChart F ζ hζ U R P H)
+private theorem overlap_iff
     (h : a.component = b.component) (x : M F) :
     (x ∈ omega a ∧ q a x ∈ b.baseDomain) ↔
       ∃ g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component),
@@ -303,18 +325,14 @@ private theorem overlap_iff (a b : ShrunkChart F ζ hζ U R P H)
   · rintro ⟨g,hx,hg⟩
     refine ⟨hx, ⟨⟨labeledA (placeEquiv F ζ hζ) (cmap g.val x), hg⟩, ?_⟩⟩
     exact q_coord _ _ rfl g x
-private theorem none_properties (a b : ShrunkChart F ζ hζ U R P H) :
+private theorem none_properties :
     Branch.Properties (none : Branch a b) := by
   refine ⟨isOpen_empty, ?_, Set.empty_subset _, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   all_goals simp [Branch.targetDomain, Branch.psi, Branch.inverse, Branch.domain, Set.MapsTo,
     contDiffOn_empty]
-private theorem central_comm (r : rootsOfUnity 3 F)
-    (c : KPCuspGenuineMonodromy.FiniteCover F ζ hζ) :
-    KPCuspGenuineMonodromy.central F ζ hζ r * c =
-      c * KPCuspGenuineMonodromy.central F ζ hζ r := by
-  apply Subtype.ext
-  exact (Subgroup.mem_center_iff.mp
-    (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨r,rfl⟩) c).symm
+
+end
+
 private theorem comparison_delta {i : Fin (H.atlas U).componentCount}
     {a b : LiftedChart (F:=F) (ζ:=ζ) (hζ:=hζ) (U:=U) (R:=R) (P:=P) (H:=H) i}
     (k l : Arrow a b) :
@@ -328,8 +346,7 @@ private theorem comparison_delta {i : Fin (H.atlas U).componentCount}
   let c := KPCuspGenuineMonodromy.central F ζ hζ
   let t := (H.atlas U).representative i
   have hk : f k.gamma = c k.root⁻¹ * t * k.levelLift.val * t⁻¹ := by
-    have hh := congrArg (fun z => z * t⁻¹) k.finite_comparison
-    simpa [t, mul_assoc] using hh
+    simpa [t, mul_assoc] using (congrArg (fun z => z * t⁻¹) k.finite_comparison)
   have hl : f l.gamma = c l.root⁻¹ * t * l.levelLift.val * t⁻¹ := by
     have hh := congrArg (fun z => z * t⁻¹) l.finite_comparison
     simpa [t, mul_assoc] using hh
@@ -337,7 +354,8 @@ private theorem comparison_delta {i : Fin (H.atlas U).componentCount}
   simp only [Subgroup.coe_mul, Subgroup.coe_inv, map_mul, map_inv]
   rw [hk, hl]
   simp only [mul_inv_rev, inv_inv, map_mul, map_inv, Subgroup.coe_mul, Subgroup.coe_inv]
-  have hc (z : KPCuspGenuineMonodromy.FiniteCover F ζ hζ) : c k.root * z = z * c k.root := central_comm k.root z
+  have hc (z : KPCuspGenuineMonodromy.FiniteCover F ζ hζ) : c k.root * z = z * c k.root := (by
+    apply @DedekindZetaZeroFree.KPMsActualCuspSource.central_comm <;> assumption)
   have hc2 : c k.root * (c l.root)⁻¹ = (c l.root)⁻¹ * c k.root := hc _
   change _ = c k.root * (c l.root)⁻¹ * t * (l.levelLift.val * k.levelLift.val⁻¹)
   calc
@@ -351,23 +369,21 @@ private theorem separated (b : ShrunkChart F ζ hζ U R P H)
   open KPContSectorPhaseComponentCharts in
     let g' : ArchComponent F ζ hζ U R P H b.component :=
       ⟨complexProjectiveEmbedding F g.val, Subgroup.mem_map.mpr ⟨g.val,g.property,rfl⟩⟩
-    have hh : g' ∈ MulAction.stabilizer _ b.center :=
-      b.larger.separated g' ⟨g • x,
-        ⟨x,b.closure_subset (subset_closure hx),complexProjectiveEmbedding_smul F g.val x⟩,
-        b.closure_subset (subset_closure hg)⟩
     apply MulAction.mem_stabilizer_iff.mpr
-    have ht := MulAction.mem_stabilizer_iff.mp hh
+    have ht := MulAction.mem_stabilizer_iff.mp (b.larger.separated g' ⟨g • x,
+      ⟨x,b.closure_subset (subset_closure hx),complexProjectiveEmbedding_smul F g.val x⟩,
+      b.closure_subset (subset_closure hg)⟩)
     change complexProjectiveEmbedding F g.val • b.center = b.center at ht
     rwa [complexProjectiveEmbedding_smul] at ht
 private theorem T_labels {i : Fin (H.atlas U).componentCount}
     {a b : LiftedChart (F:=F) (ζ:=ζ) (hζ:=hζ) (U:=U) (R:=R) (P:=P) (H:=H) i}
     (k l : Arrow a b) (hg : k.gamma = l.gamma) (hr : k.root = l.root)
-    (x : M F) (hk : x ∈ k.domain) (hl : x ∈ l.domain) : T k x hk = T l x hl := by
-  apply LinearIsometryEquiv.ext
-  intro v
-  change twistedOperator k x v = twistedOperator l x v
-  simp only [twistedOperator, Q, Arrow.phase, Arrow.psi, hg, hr]
-private theorem make_comparison (a b : ShrunkChart F ζ hζ U R P H)
+    (x : M F) (hk : x ∈ k.domain) (hl : x ∈ l.domain) : T k x hk = T l x hl := by apply @DedekindZetaZeroFree.KPContCotangentActualGenuineTwistIsotropy.T_same_labels <;> assumption
+section
+
+variable (a b : ShrunkChart F ζ hζ U R P H)
+
+private theorem make_comparison
     (h : a.component = b.component)
     (g f : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component))
     (x : M F) (hx : x ∈ (make a b h g).arrow.domain ∩ (make a b h f).arrow.domain) :
@@ -392,10 +408,11 @@ private theorem make_comparison (a b : ShrunkChart F ζ hζ U R P H)
     rw [← coord_mul]
     congr 1
     simp [δ, mul_assoc]
+  let labeledA₀ := labeledA (placeEquiv F ζ hζ) (cmap g.val x)
   have hs : δ ∈ b.Isotropy := separated b δ
-    (labeledA (placeEquiv F ζ hζ) (cmap g.val x)) hx.1.2 (by
-      change δ.val • labeledA (placeEquiv F ζ hζ) (cmap g.val x) ∈ b.domain
-      rw [← la (δ.val • labeledA (placeEquiv F ζ hζ) (cmap g.val x))]
+    (labeledA₀) hx.1.2 (by
+      change δ.val • labeledA₀ ∈ b.domain
+      rw [← la (δ.val • labeledA₀)]
       change labeledA (placeEquiv F ζ hζ) (cmap δ.val (cmap g.val x)) ∈ b.domain
       rw [hδ]
       exact hx.2.2)
@@ -414,7 +431,7 @@ private theorem make_comparison (a b : ShrunkChart F ζ hζ U R P H)
       group
     · change l.root = (l.root * k.root⁻¹) * k.root
       group
-private theorem build (a b : ShrunkChart F ζ hζ U R P H) : Nonempty (Enumeration a b) := by
+private theorem build : Nonempty (Enumeration a b) := by
   by_cases h : a.component = b.component
   · let G := KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)
     letI : Countable G := component_countable a.component
@@ -448,9 +465,9 @@ private theorem build (a b : ShrunkChart F ζ hζ U R P H) : Nonempty (Enumerati
     · intro k l x hx
       exact False.elim hx.1
 
-theorem enumeration_exists (a b : ShrunkChart F ζ hζ U R P H) :
-    Nonempty (Enumeration a b) :=
-  build a b
+end
+
+alias enumeration_exists := build
 
 end DedekindZetaZeroFree.KPContCotangentOverlapRationalBranches
 
@@ -468,8 +485,7 @@ theorem kp_cont_cotangent_overlap_rational_branches
     (cover : KPContActualCotangentCountableShrinking.CountableCover F ζ hζ U R P H)
     (a : KPContActualCotangentCountableShrinking.ShrunkChart F ζ hζ U R P H)
     (ha : a.Properties) (n : ℕ) :
-    Nonempty (KPContCotangentOverlapRationalBranches.Enumeration a (cover.chart n)) := by
-  exact KPContCotangentOverlapRationalBranches.build a (cover.chart n)
+    Nonempty (KPContCotangentOverlapRationalBranches.Enumeration a (cover.chart n)) := KPContCotangentOverlapRationalBranches.build a (cover.chart n)
 
 end DedekindZetaZeroFree
 

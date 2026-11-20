@@ -8,21 +8,21 @@ open scoped nonZeroDivisors
 
 namespace DedekindZetaZeroFree
 
-theorem kp_cusp_ideal_bezout_row
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0) :
+variable (R : Type*) [CommRing R] [IsDedekindDomain R] (K : Type*) [Field K] [Algebra R K]
+    [IsFractionRing R K] (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0)
+
+include hI hJ in
+theorem kp_cusp_ideal_bezout_row :
     ∃ a b u v : K, a ∈ I⁻¹ ∧ b ∈ J⁻¹ ∧ u ∈ I ∧ v ∈ J ∧ a * u + b * v = 1 := by
   obtain ⟨a₀, ha₀, haI⟩ := FractionalIdeal.exists_ne_zero_mem_isInteger
     (show I⁻¹ ≠ 0 by simpa using hI)
   let a := algebraMap R K a₀
-  have ha : a ∈ I⁻¹ := haI
-  have ha' : a ≠ 0 := IsFractionRing.to_map_eq_zero_iff.not.mpr ha₀
+  have ha := haI
   have hA : FractionalIdeal.spanSingleton R⁰ a * I ≤ 1 := by
     rw [FractionalIdeal.spanSingleton_mul_le_iff]
     exact (FractionalIdeal.mem_inv_iff hI).mp ha
   obtain ⟨b, hab⟩ := IsDedekindDomain.exists_add_spanSingleton_mul_eq hA
-    (mul_ne_zero (FractionalIdeal.spanSingleton_ne_zero_iff.mpr ha') hI) hJ
+    (mul_ne_zero (FractionalIdeal.spanSingleton_ne_zero_iff.mpr (IsFractionRing.to_map_eq_zero_iff.not.mpr ha₀)) hI) hJ
   have hb : b ∈ J⁻¹ := by
     apply (FractionalIdeal.mem_inv_iff hJ).mpr
     intro y hy
@@ -30,19 +30,15 @@ theorem kp_cusp_ideal_bezout_row
     exact (FractionalIdeal.mem_add _ _ _).mpr
       ⟨0, FractionalIdeal.zero_mem _, b * y, FractionalIdeal.mem_singleton_mul.mpr ⟨y, hy, rfl⟩,
         zero_add _⟩
-  have hone : (1 : K) ∈ FractionalIdeal.spanSingleton R⁰ a * I +
-      FractionalIdeal.spanSingleton R⁰ b * J := by
+  obtain ⟨x, hx, y, hy, hxy⟩ := (FractionalIdeal.mem_add _ _ _).mp (by
     rw [hab]
-    exact FractionalIdeal.one_mem_one R⁰
-  obtain ⟨x, hx, y, hy, hxy⟩ := (FractionalIdeal.mem_add _ _ _).mp hone
+    exact FractionalIdeal.one_mem_one R⁰)
   obtain ⟨u, hu, rfl⟩ := FractionalIdeal.mem_singleton_mul.mp hx
   obtain ⟨v, hv, rfl⟩ := FractionalIdeal.mem_singleton_mul.mp hy
   exact ⟨a, b, u, v, ha, hb, hu, hv, hxy⟩
 
+include hI hJ in
 theorem kp_cusp_ideal_steinitz_equiv_of_bezout
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0)
     (a b u v : K) (ha : a ∈ I⁻¹) (hb : b ∈ J⁻¹)
     (hu : u ∈ I) (hv : v ∈ J) (hrow : a * u + b * v = 1) :
     ∃ e : (R × (I * J)) ≃ₗ[R] (I × J),
@@ -54,11 +50,9 @@ theorem kp_cusp_ideal_steinitz_equiv_of_bezout
         (e.symm (x, y)).2.1 = u * y.1 - v * x.1) := by
   classical
   have hbt (t : I * J) : b * t.1 ∈ I := by
-    have h := FractionalIdeal.mul_mem_mul hb t.property
-    simpa [mul_left_comm J⁻¹ I J, inv_mul_cancel₀ hJ] using h
+    simpa [mul_left_comm J⁻¹ I J, inv_mul_cancel₀ hJ] using (FractionalIdeal.mul_mem_mul hb t.property)
   have hat (t : I * J) : a * t.1 ∈ J := by
-    have h := FractionalIdeal.mul_mem_mul ha t.property
-    simpa [← mul_assoc, inv_mul_cancel₀ hI] using h
+    simpa [← mul_assoc, inv_mul_cancel₀ hI] using (FractionalIdeal.mul_mem_mul ha t.property)
   let f : (R × (I * J)) →ₗ[R] (I × J) :=
     { toFun := fun p =>
         (⟨algebraMap R K p.1 * u - b * p.2.1,
@@ -83,14 +77,14 @@ theorem kp_cusp_ideal_steinitz_equiv_of_bezout
       b * (algebraMap R K p.1 * v + a * p.2.1) = _
     calc
       _ = algebraMap R K p.1 * (a * u + b * v) := by ring
-      _ = _ := by rw [hrow, mul_one]
+      _ = _ := by simp [hrow]
   have hsecond (p : R × (I * J)) :
       u * (f p).2.1 - v * (f p).1.1 = p.2.1 := by
     change u * (algebraMap R K p.1 * v + a * p.2.1) -
       v * (algebraMap R K p.1 * u - b * p.2.1) = _
     calc
       _ = p.2.1 * (a * u + b * v) := by ring
-      _ = _ := by rw [hrow, mul_one]
+      _ = _ := by simp [hrow]
   have hbij : Function.Bijective f := by
     constructor
     · intro p q hpq
@@ -100,28 +94,26 @@ theorem kp_cusp_ideal_steinitz_equiv_of_bezout
       · apply Subtype.ext
         rw [← hsecond p, ← hsecond q, hpq]
     · rintro ⟨x, y⟩
-      have hmem : a * x.1 + b * y.1 ∈ (1 : FractionalIdeal R⁰ K) :=
-        (1 : FractionalIdeal R⁰ K).1.add_mem
-          ((FractionalIdeal.mem_inv_iff hI).mp ha x.1 x.property)
-          ((FractionalIdeal.mem_inv_iff hJ).mp hb y.1 y.property)
-      obtain ⟨r, hr⟩ := (FractionalIdeal.mem_one_iff R⁰).mp hmem
+      obtain ⟨r, hr⟩ := (FractionalIdeal.mem_one_iff R⁰).mp ((1 : FractionalIdeal R⁰ K).1.add_mem
+        ((FractionalIdeal.mem_inv_iff hI).mp ha x.1 x.property)
+        ((FractionalIdeal.mem_inv_iff hJ).mp hb y.1 y.property))
       have ht : u * y.1 - v * x.1 ∈ I * J := by
         apply (I * J : FractionalIdeal R⁰ K).1.sub_mem
         · exact FractionalIdeal.mul_mem_mul hu y.property
         · change v * x.1 ∈ I * J
-          simpa only [mul_comm v] using FractionalIdeal.mul_mem_mul x.property hv
+          simpa [mul_comm v] using FractionalIdeal.mul_mem_mul x.property hv
       refine ⟨(r, ⟨u * y.1 - v * x.1, ht⟩), ?_⟩
       apply Prod.ext <;> apply Subtype.ext
       · change algebraMap R K r * u - b * (u * y.1 - v * x.1) = x.1
         rw [hr]
         calc
           _ = x.1 * (a * u + b * v) := by ring
-          _ = _ := by rw [hrow, mul_one]
+          _ = _ := by simp [hrow]
       · change algebraMap R K r * v + a * (u * y.1 - v * x.1) = y.1
         rw [hr]
         calc
           _ = y.1 * (a * u + b * v) := by ring
-          _ = _ := by rw [hrow, mul_one]
+          _ = _ := by simp [hrow]
   let e := LinearEquiv.ofBijective f hbij
   refine ⟨e, ?_, ?_⟩
   · intro r t
@@ -132,10 +124,8 @@ theorem kp_cusp_ideal_steinitz_equiv_of_bezout
     · rw [← hfirst (e.symm (x, y)), he]
     · rw [← hsecond (e.symm (x, y)), he]
 
-theorem kp_cusp_ideal_steinitz_nonempty
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0) :
+include hI hJ in
+theorem kp_cusp_ideal_steinitz_nonempty :
     Nonempty ((I × J) ≃ₗ[R] (R × (I * J))) := by
   obtain ⟨a, b, u, v, ha, hb, hu, hv, hrow⟩ := kp_cusp_ideal_bezout_row R K I J hI hJ
   obtain ⟨e, _⟩ := kp_cusp_ideal_steinitz_equiv_of_bezout R K I J hI hJ

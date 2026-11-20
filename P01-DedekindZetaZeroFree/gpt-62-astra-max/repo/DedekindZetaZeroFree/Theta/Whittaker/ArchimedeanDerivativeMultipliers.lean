@@ -9,12 +9,12 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 open scoped NumberField Classical Topology
 open NumberField MeasureTheory
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_localIdele → eval_localIdele
+open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting (eval_localIdele)
 namespace DedekindZetaZeroFree.RootDerivatives
 open MomentSources ThetaExpansion KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem localIdele_arch (y : R.A.G) (w : InfinitePlace F) :
     adeleEval F (Sum.inl w) (MomentSources.localIdele R y : KPAdeles F) = (y.1 w : w.Completion) := by
@@ -103,36 +103,27 @@ theorem fourier_upperLieDerivative (dq : Measure (KPAdditiveQuotient F))
       ((complexCoordinate y w * direction b).re : ℂ)).cexp.mul_const
         (MomentSources.fourier R dq f (diagonal R y))
   have hd' := fourier_upperCurve_hasDeriv R dq hprob f hf hr w b (diagonal R y)
-  have hfuns : (fun t => MomentSources.fourier R dq f (diagonal R y * upperCurve R w b t)) =
-      fun t : ℝ => Complex.exp (Complex.I * (4 * Real.pi : ℂ) * (t : ℂ) *
-        ((complexCoordinate y w * direction b).re : ℂ)) * MomentSources.fourier R dq f (diagonal R y) := funext hcurve
-  rw [hfuns] at hd'
-  have hh := hd'.unique hd
-  simpa only [Complex.ofRealCLM_apply, Complex.ofReal_zero, mul_zero, zero_mul, Complex.exp_zero,
-    one_mul, Complex.ofReal_one, mul_one] using hh
+  rw [(funext hcurve)] at hd'
+  simpa using (hd'.unique hd)
 
 theorem angular_multiplier (y : R.A.G) (w : InfinitePlace F) (e : ℤ) (he : e = 1 ∨ e = -1) :
     (‖(y.1 w : w.Completion)‖ : ℂ) * DHCubic.angular (complexCoordinate y w) ^ e =
       if e = 1 then complexCoordinate y w else star (complexCoordinate y w) := by
   have hn : ‖complexCoordinate y w‖ = ‖(y.1 w : w.Completion)‖ := by
-    have h := (InfinitePlace.Completion.isometry_extensionEmbedding w).dist_eq
-      (y.1 w : w.Completion) 0
-    simpa only [map_zero, dist_zero_right, complexCoordinate] using h
+    simpa only [map_zero, dist_zero_right, complexCoordinate] using ((InfinitePlace.Completion.isometry_extensionEmbedding w).dist_eq
+      (y.1 w : w.Completion) 0)
   have hz : complexCoordinate y w ≠ 0 := by
     intro hz
-    have he := (InfinitePlace.Completion.isometry_extensionEmbedding w).injective
-    have hzero : InfinitePlace.Completion.extensionEmbedding w (0 : w.Completion) = 0 := map_zero _
-    exact (y.1 w).ne_zero (he (hz.trans hzero.symm))
-  have hnorm : (‖complexCoordinate y w‖ : ℂ) ≠ 0 :=
+    exact (y.1 w).ne_zero (((InfinitePlace.Completion.isometry_extensionEmbedding w).injective) (hz.trans (map_zero _).symm))
+  have hnorm :=
     Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr hz)
   rw [← hn]
   rcases he with rfl | rfl
   · simp only [DHCubic.angular, zpow_one, ite_true]
     field_simp
   · simp only [DHCubic.angular, zpow_neg_one, show (-1 : ℤ) ≠ 1 by norm_num, ite_false]
-    have hm := Complex.mul_conj' (complexCoordinate y w)
     field_simp
-    exact hm.symm
+    exact (Complex.mul_conj' (complexCoordinate y w)).symm
 
 theorem fourier_firstRootLocalDerivative (dq : Measure (KPAdditiveQuotient F))
     (hHaar : dq.IsAddHaarMeasure) (hprob : dq Set.univ = 1) (f : Functions R)
@@ -142,12 +133,6 @@ theorem fourier_firstRootLocalDerivative (dq : Measure (KPAdditiveQuotient F))
     MomentSources.fourier R dq (firstRootLocalDerivative R w e f) (diagonal R y) =
       ((‖(y.1 w : w.Completion)‖ : ℂ) * DHCubic.angular (complexCoordinate y w) ^ e) *
         MomentSources.fourier R dq f (diagonal R y) := by
-  have hR := upperLieDerivative_smooth R w false f hf
-  have hI := upperLieDerivative_smooth R w true f hf
-  have hiR := fourier_integrable R dq hprob _ hR.1
-    (fun γ => upperLieDerivative_left_invariant R w false f _ (hr γ)) (diagonal R y)
-  have hiI := fourier_integrable R dq hprob _ hI.1
-    (fun γ => upperLieDerivative_left_invariant R w true f _ (hr γ)) (diagonal R y)
   have hlin : MomentSources.fourier R dq (firstRootLocalDerivative R w e f) (diagonal R y) =
     (Complex.I * (4 * Real.pi : ℂ))⁻¹ *
       (MomentSources.fourier R dq (upperLieDerivative R w false f) (diagonal R y) +
@@ -158,14 +143,14 @@ theorem fourier_firstRootLocalDerivative (dq : Measure (KPAdditiveQuotient F))
     rw [integral_const_mul]
     congr 1
     calc
-      _ = _ := integral_add hiR (hiI.const_mul _)
+      _ = _ := integral_add (fourier_integrable R dq hprob _ (upperLieDerivative_smooth R w false f hf).1
+        (fun γ => upperLieDerivative_left_invariant R w false f _ (hr γ)) (diagonal R y)) ((fourier_integrable R dq hprob _ (upperLieDerivative_smooth R w true f hf).1
+        (fun γ => upperLieDerivative_left_invariant R w true f _ (hr γ)) (diagonal R y)).const_mul _)
       _ = _ := by rw [integral_const_mul]; rfl
   rw [hlin, fourier_upperLieDerivative R dq hHaar hprob f hf hr,
     fourier_upperLieDerivative R dq hHaar hprob f hf hr, angular_multiplier R y w e he]
   simp only [direction, Bool.false_eq_true, if_false, if_true, mul_one, Complex.mul_I_re,
     Complex.ofReal_neg]
-  have hpi : (4 * Real.pi : ℂ) ≠ 0 :=
-    mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_pos.ne')
   have hparts := Complex.re_add_im (complexCoordinate y w)
   rcases he with rfl | rfl
   · simp only [ite_true]

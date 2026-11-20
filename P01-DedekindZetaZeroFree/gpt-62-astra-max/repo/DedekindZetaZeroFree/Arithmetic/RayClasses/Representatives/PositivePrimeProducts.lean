@@ -17,9 +17,9 @@ private lemma ideal_pow_ne_bot {R : Type*} [CommRing R] [NoZeroDivisors R] [Nont
   | zero => rw [pow_zero, Ideal.one_eq_top]; exact fun h => bot_ne_top h.symm
   | succ n ih => rw [pow_succ]; exact fun h => (Ideal.mul_eq_bot.mp h).elim ih hP
 
-private lemma prime_coprime_modulus
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) (v : HeightOneSpectrum (𝓞 K))
+variable (K : Type) [Field K] [NumberField K] (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
+
+private lemma prime_coprime_modulus (v : HeightOneSpectrum (𝓞 K))
     (hv : v ∉ (narrowIdealModulus K m hm).finitePart.support) :
     v.asIdeal ⊔ m = ⊤ := by
   have hnot : ¬ m ≤ v.asIdeal := by
@@ -30,12 +30,9 @@ private lemma prime_coprime_modulus
     exact Multiset.count_ne_zero.mpr
       ((Ideal.mem_normalizedFactors_iff hm).mpr ⟨v.isPrime, hle⟩)
   by_contra hne
-  have heq := v.isMaximal.eq_of_le hne le_sup_left
-  exact hnot (heq ▸ le_sup_right)
+  exact hnot ((v.isMaximal.eq_of_le hne le_sup_left) ▸ le_sup_right)
 
 private lemma rayIdealClass_pow
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
     (P : Ideal (𝓞 K)) (c : RayIdealClass K m hm)
     (hc : rayIdealClass K m hm P = some c) (n : ℕ) :
     rayIdealClass K m hm (P ^ n) = some (c ^ n) := by
@@ -46,8 +43,6 @@ private lemma rayIdealClass_pow
       simp
 
 private lemma rayIdealClass_prod
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
     {ι : Type*} (s : Finset ι) (P : ι → Ideal (𝓞 K))
     (c : ι → RayIdealClass K m hm)
     (hne : ∀ i ∈ s, P i ≠ ⊥)
@@ -72,23 +67,19 @@ private lemma rayIdealClass_prod
           ih (fun i hi => hne i (Finset.mem_insert_of_mem hi))
             (fun i hi => hcop i (Finset.mem_insert_of_mem hi))
             (fun i hi => hcl i (Finset.mem_insert_of_mem hi))
-        have hvne : P v ≠ ⊥ := hne v (Finset.mem_insert_self v s)
-        have hvcop : P v ⊔ m = ⊤ := hcop v (Finset.mem_insert_self v s)
-        have hvcl : rayIdealClass K m hm (P v) = some (c v) := hcl v (Finset.mem_insert_self v s)
+        have hvcop := hcop v (Finset.mem_insert_self v s)
         refine ⟨?_, ?_, ?_⟩
         · intro h
           rcases Ideal.mul_eq_bot.mp h with h' | h'
-          · exact hvne h'
+          · exact (hne v (Finset.mem_insert_self v s)) h'
           · exact ihne h'
         · rw [← Ideal.isCoprime_iff_sup_eq] at hvcop ihcop ⊢
           exact hvcop.mul_left ihcop
-        · rw [rayIdealClass_mul K m hm (P v) (∏ i ∈ s, P i), hvcl, ihcl]
+        · rw [rayIdealClass_mul K m hm (P v) (∏ i ∈ s, P i), (hcl v (Finset.mem_insert_self v s)), ihcl]
           simp
   exact key s hne hcop hcl
 
-theorem rayPositivePrimeProduct
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
+theorem rayPositivePrimeProduct :
     let μ := narrowIdealModulus K m hm
     let V := {v : IsDedekindDomain.HeightOneSpectrum (𝓞 K) //
       v ∉ μ.finitePart.support}

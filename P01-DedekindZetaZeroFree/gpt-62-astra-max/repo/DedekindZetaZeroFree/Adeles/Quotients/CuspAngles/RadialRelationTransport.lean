@@ -12,9 +12,9 @@ namespace DedekindZetaZeroFree.KPMsActualAngularFixedRadiusRelationSource
 open KPMsActualAngularSource KPMsActualAngularDomainSource KPMsActualAngularDescentSource
 open KPMsActualCuspSource
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 theorem radial_s_commute
     (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
@@ -22,8 +22,7 @@ theorem radial_s_commute
     Commute (KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r)
       (KPGlobalTorusFunctionData.s F ζ hζ y).val := by
   obtain ⟨z,hz⟩ := radialSection_mem_center F ζ hζ B r
-  have hc := ((Subgroup.mem_center_iff.mp z.property (KPGlobalTorusFunctionData.s F ζ hζ y))).symm
-  have h := congrArg (fun t : KPGlobalTorusFunctionData.E F ζ hζ => t.val) hc
+  have h := congrArg (fun t : KPGlobalTorusFunctionData.E F ζ hζ => t.val) (((Subgroup.mem_center_iff.mp z.property (KPGlobalTorusFunctionData.s F ζ hζ y))).symm)
   change _ * _ = _ * _ at h
   change _ * _ = _ * _
   simpa only [hz] using h

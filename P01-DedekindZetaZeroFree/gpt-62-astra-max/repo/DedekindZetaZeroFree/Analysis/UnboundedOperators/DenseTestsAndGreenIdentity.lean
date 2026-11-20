@@ -13,10 +13,11 @@ variable {S T H V : Type*}
   [NormedAddCommGroup H] [InnerProductSpace ℂ H]
   [NormedAddCommGroup V] [InnerProductSpace ℂ V]
 
-theorem laplacian_pairing
-    (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
-    (j : T →ₗ[ℂ] V) (hj : Function.Injective j)
+variable (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι) (j : T →ₗ[ℂ] V) (hj : Function.Injective j)
     (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S)
+
+include hj in
+theorem laplacian_pairing
     (hgreen : ∀ f : S, ∀ w : T,
       inner ℂ (j (A f)) (j w) = inner ℂ (ι f) (ι (B w)))
     (f g : KPTestOperator.testDomain ι) :
@@ -28,9 +29,6 @@ theorem laplacian_pairing
     ⟨KPTestOperator.descend ι hι j A g, KPTestOperator.descend_mem ι hι j A g⟩
 
 theorem descend_dense_green
-    (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
-    (j : T →ₗ[ℂ] V) (hj : Function.Injective j)
-    (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S)
     (hscalar : DenseRange ι) (hcotangent : DenseRange j)
     (hgreen : ∀ f : S, ∀ w : T,
       inner ℂ (j (A f)) (j w) = inner ℂ (ι f) (ι (B w))) :
@@ -45,12 +43,7 @@ theorem descend_dense_green
         inner ℂ (KPTestOperator.descend ι hι j A f)
             (KPTestOperator.descend ι hι j A g) =
           inner ℂ (f : H) (KPTestOperator.laplacian ι hι A B g)) := by
-  have hs : Dense (KPTestOperator.testDomain ι : Set H) := by
-    simpa only [KPTestOperator.testDomain, LinearMap.coe_range, DenseRange] using hscalar
-  have ht : Dense (KPTestOperator.testDomain j : Set V) := by
-    simpa only [KPTestOperator.testDomain, LinearMap.coe_range, DenseRange] using hcotangent
-  have hf := KPTestOperator.descend_formalAdjoint ι hι j hj A B hgreen
-  exact ⟨hs, ht, hf, hf, laplacian_pairing ι hι j hj A B hgreen⟩
+  exact ⟨id hscalar, ⟨id hcotangent, ⟨KPTestOperator.descend_formalAdjoint ι hι j hj A B hgreen, ⟨KPTestOperator.descend_formalAdjoint ι hι j hj A B hgreen, laplacian_pairing ι hι j hj A B hgreen⟩⟩⟩⟩
 
 end KPTestGreenTransfer
 end DedekindZetaZeroFree

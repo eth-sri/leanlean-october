@@ -22,10 +22,9 @@ theorem generator_residue_unit (J : A.Exterior) (v : A.R)
   letI : Field (A.R ⧸ A.extendIdeal (primeIdeal p)) := Ideal.Quotient.field _
   apply isUnit_iff_ne_zero.mpr
   intro hzero
-  have hmem := Ideal.Quotient.eq_zero_iff_mem.mp hzero
   have hle : A.extendIdeal J ≤ A.extendIdeal (primeIdeal p) := by
     rw [← hv.2]
-    exact Ideal.span_le.mpr (Set.singleton_subset_iff.mpr hmem)
+    exact Ideal.span_le.mpr (Set.singleton_subset_iff.mpr (Ideal.Quotient.eq_zero_iff_mem.mp hzero))
   have hle' : J.val ≤ p.val.asIdeal := by
     have hh := Ideal.comap_mono (f := algebraMap (𝓞 F) A.R) hle
     change J.val ≤ (primeIdeal p).val

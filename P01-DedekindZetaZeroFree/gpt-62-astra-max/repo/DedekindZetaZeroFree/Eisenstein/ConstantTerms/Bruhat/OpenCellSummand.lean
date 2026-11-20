@@ -15,8 +15,8 @@ abbrev Cover := KPGlobalTorusFunctionData.G F ζ hζ
 abbrev ForwardWeyl := KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
     (KPCubicCoverConstruction.adelicW F ζ hζ)
 variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
 
 theorem scalar_continuous (s : ℂ) (v : S) :
     Continuous (KPContActualSphericalFlatStage.L F ζ hζ U ι s v) := by
@@ -33,15 +33,16 @@ theorem chamber_lift_eq_rational (q : KPChamberBruhatTwoCells.RationalQuotient F
       (Quotient.out q)) = _
   rw [KPGlobalResidualKernel.RawStageL2.Outgoing.ChamberQuotient.rationalEquiv_lift]
 
-theorem standard_measurable (s : ℂ) (v : S) (g : Cover F ζ hζ) :
+variable (s : ℂ) (v : S) (g : Cover F ζ hζ)
+
+theorem standard_measurable :
     Measurable (fun x : Adeles F => KPContActualSphericalFlatStage.L F ζ hζ U ι s v
       (ForwardWeyl F ζ hζ * KPGlobalTorusFunctionData.N F ζ hζ x * g)) := by
   letI := (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
-  have hN := KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous F ζ hζ
   exact ((scalar_continuous F ζ hζ U ι s v).comp
-    ((continuous_const.mul hN).mul continuous_const)).measurable
+    ((continuous_const.mul (KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous F ζ hζ)).mul continuous_const)).measurable
 
-theorem open_cell_term (s : ℂ) (v : S) (g : Cover F ζ hζ)
+theorem open_cell_term
     (t : F) (x : Adeles F) :
     KPContActualSphericalFlatStage.L F ζ hζ U ι s v
       (KPContActualChamberNormalSeries.lift F ζ hζ (KPChamberBruhatTwoCells.cellIndex F (some t)) *

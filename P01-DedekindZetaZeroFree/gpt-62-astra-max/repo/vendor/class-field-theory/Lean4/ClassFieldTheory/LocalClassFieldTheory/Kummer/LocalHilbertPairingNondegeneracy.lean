@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -56,8 +53,7 @@ private theorem maximalLocalKummerPairing_eq_transpose
           (maximalLocalKummerNormResidueAutomorphism K n hnK hmu a)
           (maximalRestrictedRadicalQuotientEquiv K n
             (QuotientGroup.mk'
-              (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range b))) := by
-  rfl
+              (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range b))) := rfl
 
 /-- An element in the left kernel of every local Hilbert-symbol character
 is exactly an `n`-th power. -/
@@ -80,14 +76,14 @@ theorem localHilbertSymbol_left_kernel
       (K := K) (Omega := SeparableClosure K) n hmu Delta.1
   constructor
   · intro h
-    let sigma : Gal(E / K) :=
+    let sigma :=
       maximalLocalKummerNormResidueAutomorphism K n hnK hmu a
     have hsigma : sigma = 1 := by
       apply
         (restrictedKummerTranspose_injective_of_adjoin
           n hmu Delta hDelta
           (kummerRadicalExtension_internalRoots_adjoin_eq_top
-            (K := K) (Omega := SeparableClosure K) n Delta))
+              n Delta))
       rw [map_one]
       apply MonoidHom.ext
       intro q
@@ -126,7 +122,6 @@ theorem localHilbertSymbol_left_kernel
     change localHilbertSymbolHom K n hnK hmu b (c ^ (n : ℕ)) = 1
     rw [map_pow]
     apply Subtype.ext
-    change (↑(localHilbertSymbol K n hnK hmu c b) : Kˣ) ^ (n : ℕ) = 1
     exact (KummerTheory.mem_nthRootsSubgroup_iff K).mp
       (localHilbertSymbol K n hnK hmu c b).property
 
@@ -144,9 +139,11 @@ theorem localHilbertSymbol_right_kernel
   · intro h a
     rw [localHilbertSymbol_skew K n hnK hmu a b, h a, inv_one]
 
- noncomputable def localHilbertRightPowerClassHom
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a : Kˣ) :
+ section
+
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+
+noncomputable def localHilbertRightPowerClassHom (a : Kˣ) :
     (Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range) →*
       nthRootsSubgroup K (n : ℕ) :=
   QuotientGroup.lift
@@ -154,7 +151,7 @@ theorem localHilbertSymbol_right_kernel
     (maximalLocalKummerPairingRightHom K n hnK hmu a) (by
       intro b hb
       rw [MonoidHom.mem_ker]
-      obtain ⟨c, rfl⟩ := (MonoidHom.mem_range (G := Kˣ)).1 hb
+      obtain ⟨c, rfl⟩ := (MonoidHom.mem_range).1 hb
       rw [powMonoidHom_apply, map_pow]
       apply Subtype.ext
       change
@@ -164,18 +161,14 @@ theorem localHilbertSymbol_right_kernel
         (maximalLocalKummerPairingRightHom K n hnK hmu a c).property)
 
 @[simp]
-private theorem localHilbertRightPowerClassHom_mk
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
+private theorem localHilbertRightPowerClassHom_mk (a b : Kˣ) :
     localHilbertRightPowerClassHom K n hnK hmu a
         (QuotientGroup.mk'
           (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range b) =
       maximalLocalKummerPairingRightHom K n hnK hmu a b :=
   rfl
 
- noncomputable def localHilbertPowerClassLeftHom
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+ noncomputable def localHilbertPowerClassLeftHom :
     Kˣ →*
       ((Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range) →*
         nthRootsSubgroup K (n : ℕ)) where
@@ -203,16 +196,14 @@ private theorem localHilbertRightPowerClassHom_mk
       maximalLocalKummerPairingRightHom_eq_localHilbertSymbolHom]
     exact map_mul (localHilbertSymbolHom K n hnK hmu b) a c
 
- theorem powMonoidHom_range_le_localHilbertPowerClassLeftHom_ker
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+ theorem powMonoidHom_range_le_localHilbertPowerClassLeftHom_ker :
     (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range ≤
       MonoidHom.ker (localHilbertPowerClassLeftHom K n hnK hmu) := by
   intro a ha
   rw [MonoidHom.mem_ker]
-  obtain ⟨c, hc⟩ := (MonoidHom.mem_range (G := Kˣ)).1 ha
+  obtain ⟨c, hc⟩ := (MonoidHom.mem_range).1 ha
   have hca : c ^ (n : ℕ) = a := by
-    simpa only [powMonoidHom_apply] using hc
+    simpa using hc
   apply MonoidHom.ext
   intro q
   obtain ⟨b, rfl⟩ := QuotientGroup.mk'_surjective
@@ -221,9 +212,10 @@ private theorem localHilbertRightPowerClassHom_mk
   rw [← hca, maximalLocalKummerPairingRightHom_eq_localHilbertSymbolHom]
   rw [map_pow]
   apply Subtype.ext
-  change (↑(localHilbertSymbol K n hnK hmu c b) : Kˣ) ^ (n : ℕ) = 1
   exact (KummerTheory.mem_nthRootsSubgroup_iff K).mp
     (localHilbertSymbol K n hnK hmu c b).property
+
+end
 
 /-- The local Hilbert symbol descended in both variables to the local
 power-class group. -/
@@ -239,42 +231,35 @@ noncomputable def localHilbertPairing
     (powMonoidHom_range_le_localHilbertPowerClassLeftHom_ker
       K n hnK hmu)
 
+section
+
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+
 /-- Evaluation of the descended pairing agrees with the original local
 Hilbert symbol on representatives. -/
 @[simp]
-theorem localHilbertPairing_apply
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
+theorem localHilbertPairing_apply (a b : Kˣ) :
     localHilbertPairing K n hnK hmu
         (QuotientGroup.mk'
           (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range a)
         (QuotientGroup.mk'
           (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range b) =
       localHilbertSymbol K n hnK hmu a b := by
-  change maximalLocalKummerPairingRightHom K n hnK hmu a b =
-    localHilbertSymbol K n hnK hmu a b
-  exact maximalLocalKummerPairingRightHom_eq_localHilbertSymbolHom
-    K n hnK hmu a b
+  solve_by_elim [maximalLocalKummerPairingRightHom_eq_localHilbertSymbolHom]
 
 /-- The transposed descended pairing, viewed as a homomorphism into the
 character group. -/
-noncomputable def localHilbertPairingFlip
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+noncomputable def localHilbertPairingFlip :
     (Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range) →*
       ((Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range) →*
         nthRootsSubgroup K (n : ℕ)) where
   toFun b :=
     { toFun := fun a => localHilbertPairing K n hnK hmu a b
       map_one' := by
-        change localHilbertPairing K n hnK hmu 1 b = 1
         rw [map_one]
         rfl
       map_mul' := by
         intro a c
-        change localHilbertPairing K n hnK hmu (a * c) b =
-          localHilbertPairing K n hnK hmu a b *
-            localHilbertPairing K n hnK hmu c b
         rw [map_mul]
         rfl }
   map_one' := by
@@ -286,6 +271,8 @@ noncomputable def localHilbertPairingFlip
     apply MonoidHom.ext
     intro a
     exact map_mul (localHilbertPairing K n hnK hmu a) b c
+
+end
 
 /-- The descended local Hilbert pairing separates power classes in its
 left variable. -/
@@ -304,28 +291,26 @@ theorem localHilbertPairing_injective_left
   change
     maximalLocalKummerPairingRightHom K n hnK hmu a b =
       maximalLocalKummerPairingRightHom K n hnK hmu c b at hv
+  let localHilbertSymbolHom₀ := localHilbertSymbolHom K n hnK hmu b
   have hvSymbol :
-      localHilbertSymbolHom K n hnK hmu b a =
-        localHilbertSymbolHom K n hnK hmu b c := by
-    change localHilbertSymbol K n hnK hmu a b =
-      localHilbertSymbol K n hnK hmu c b
+      localHilbertSymbolHom₀ a =
+        localHilbertSymbolHom₀ c := by
     exact
       (maximalLocalKummerPairingRightHom_eq_localHilbertSymbolHom
         K n hnK hmu a b).symm.trans
         (hv.trans
           (maximalLocalKummerPairingRightHom_eq_localHilbertSymbolHom
             K n hnK hmu c b))
-  change localHilbertSymbolHom K n hnK hmu b (a / c) = 1
   calc
-    localHilbertSymbolHom K n hnK hmu b (a / c) =
-        localHilbertSymbolHom K n hnK hmu b a /
-          localHilbertSymbolHom K n hnK hmu b c :=
-      map_div (localHilbertSymbolHom K n hnK hmu b) a c
-    _ = localHilbertSymbolHom K n hnK hmu b c /
-        localHilbertSymbolHom K n hnK hmu b c :=
+    _ =
+        localHilbertSymbolHom₀ a /
+          localHilbertSymbolHom₀ c :=
+      map_div (localHilbertSymbolHom₀) a c
+    _ = localHilbertSymbolHom₀ c /
+        localHilbertSymbolHom₀ c :=
       congrArg
-        (fun z => z / localHilbertSymbolHom K n hnK hmu b c) hvSymbol
-    _ = 1 := div_self' (localHilbertSymbolHom K n hnK hmu b c)
+        (fun z => z / localHilbertSymbolHom₀ c) hvSymbol
+    _ = 1 := div_self' (localHilbertSymbolHom₀ c)
 
 /-- The descended local Hilbert pairing separates power classes in its
 right variable. -/
@@ -346,24 +331,25 @@ theorem localHilbertPairing_injective_right
         (QuotientGroup.mk' P a) (QuotientGroup.mk' P b) =
       localHilbertPairing K n hnK hmu
         (QuotientGroup.mk' P a) (QuotientGroup.mk' P c) at hv
+  let maximalLocalKummerPairingRightHom₀ := maximalLocalKummerPairingRightHom K n hnK hmu a
   change
-      maximalLocalKummerPairingRightHom K n hnK hmu a b =
-        maximalLocalKummerPairingRightHom K n hnK hmu a c at hv
+      maximalLocalKummerPairingRightHom₀ b =
+        maximalLocalKummerPairingRightHom₀ c at hv
   calc
-    localHilbertSymbol K n hnK hmu a (b / c) =
-        maximalLocalKummerPairingRightHom K n hnK hmu a (b / c) :=
+    _ =
+        maximalLocalKummerPairingRightHom₀ (b / c) :=
       (maximalLocalKummerPairingRightHom_eq_localHilbertSymbolHom
         K n hnK hmu a (b / c)).symm
-    _ = maximalLocalKummerPairingRightHom K n hnK hmu a b /
-        maximalLocalKummerPairingRightHom K n hnK hmu a c :=
-      map_div (maximalLocalKummerPairingRightHom K n hnK hmu a) b c
-    _ = maximalLocalKummerPairingRightHom K n hnK hmu a c /
-        maximalLocalKummerPairingRightHom K n hnK hmu a c :=
+    _ = maximalLocalKummerPairingRightHom₀ b /
+        maximalLocalKummerPairingRightHom₀ c :=
+      map_div (maximalLocalKummerPairingRightHom₀) b c
+    _ = maximalLocalKummerPairingRightHom₀ c /
+        maximalLocalKummerPairingRightHom₀ c :=
       congrArg
         (fun z =>
-          z / maximalLocalKummerPairingRightHom K n hnK hmu a c) hv
+          z / maximalLocalKummerPairingRightHom₀ c) hv
     _ = 1 := div_self'
-      (maximalLocalKummerPairingRightHom K n hnK hmu a c)
+      (maximalLocalKummerPairingRightHom₀ c)
 
 /-- The local Hilbert pairing on power classes is nondegenerate in both
 variables. -/

@@ -12,9 +12,9 @@ open NumberField MeasureTheory Filter
 namespace DedekindZetaZeroFree.CompactPeriodAnalyticity.CompactPeriod
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η}
-variable {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η}
+    {Q : AdmissibleFlatSources R}
 
 theorem cleared_rational (T : Realization R Q) (v : R.A.UnitQuotient)
     (s : ℂ) (hs : s ∈ Metric.ball (0 : ℂ) T.radius)
@@ -22,11 +22,9 @@ theorem cleared_rational (T : Realization R Q) (v : R.A.UnitQuotient)
     T.cleared v s (KPLiteralRaw.rationalLift F R.A.zeta12 R.A.primitive_zeta12 γ * g) =
       T.cleared v s g := by
   let a := KPLiteralRaw.rationalLift F R.A.zeta12 R.A.primitive_zeta12 γ * g
-  have hopen : IsOpen {z : ℂ | (1 : ℝ) / 3 < z.re} :=
-    isOpen_lt continuous_const Complex.continuous_re
   have h1 : (1 : ℂ) ∈ {z : ℂ | (1 : ℝ) / 3 < z.re} := by norm_num
   have hnear : (fun z => T.E v z a) =ᶠ[𝓝[≠] (1 : ℂ)] (fun z => T.E v z g) := by
-    filter_upwards [nhdsWithin_le_nhds (hopen.mem_nhds h1)] with z hz
+    filter_upwards [nhdsWithin_le_nhds ((isOpen_lt continuous_const Complex.continuous_re).mem_nhds h1)] with z hz
     rw [T.chamber v z hz a, T.chamber v z hz g]
     exact KPLiteralExceptionalResidue.ResidueAutomorphy.eisenstein_rational
       F R.A.zeta12 R.A.primitive_zeta12 Q.K (Q.flat v) z hz γ g
@@ -49,10 +47,9 @@ theorem cleared_rational (T : Realization R Q) (v : R.A.UnitQuotient)
     rw [ha, hb, sub_eq_zero.mp he]
   have ha := T.analytic v a
   have hb := T.analytic v g
-  have he := ((ha 0 hz).continuousAt.eventuallyEq_nhds_iff_eventuallyEq_nhdsNE
-    (hb 0 hz).continuousAt).mp hcleared
   exact ha.eqOn_of_preconnected_of_eventuallyEq hb (convex_ball (0 : ℂ) T.radius).isPreconnected
-    hz he hs
+    hz (((ha 0 hz).continuousAt.eventuallyEq_nhds_iff_eventuallyEq_nhdsNE
+      (hb 0 hz).continuousAt).mp hcleared) hs
 
 theorem cleared_integrand_mk (T : Realization R Q) (v : R.A.UnitQuotient)
     (s : ℂ) (hs : s ∈ Metric.ball (0 : ℂ) T.radius) (x : KPAdeles F) (g : Group R) :

@@ -13,8 +13,7 @@ open scoped Classical NumberField Topology NNReal ENNReal
 open MeasureTheory
 namespace DedekindZetaZeroFree.CurrentNativeBoundaryFrame
 open KPMsActualAngularSource KPMsNativeOffsetMass
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeFullDomain → nativeFullDomain
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming actualFrame_spec → actualFrame_spec
+open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof (actualFrame_spec)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 private theorem actual_ray_right_compact
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
@@ -122,7 +121,7 @@ theorem native_frame_average
   simp_rw [hp]
   rw [integral_const_mul]
   congr 1
-  exact integral_mul_left_eq_self (μ := dk)
+  exact integral_mul_left_eq_self
     (fun k => φ (KPMsGreenFlux.compactInsertion F ζ hζ k *
       (KPBoundedCuspFrames.actualFiniteRepresentative A j).val)) κ
 end DedekindZetaZeroFree.CurrentNativeBoundaryFrame

@@ -14,12 +14,12 @@ set_option maxHeartbeats 4000000
 set_option maxRecDepth 4000
 namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 open MomentSources TensorActionSource KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct KPLiteralChamber
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_right → sectionTuple_right
+open _root_.DedekindZetaZeroFree.KPLiteralChamber (sectionTuple_right)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 
 theorem archValue_chart_smooth (g : Raw R) (w : InfinitePlace F)
@@ -112,7 +112,7 @@ theorem scalarSource_chart_smooth (x : PlusCore R N P C) (g : Group R) :
             intro p
             cases p with
             | inl w => rfl
-            | inr q => change g (Sum.inr q) * 1 = g (Sum.inr q); exact mul_one _
+            | inr q => exact mul_one _
           have heq : EisensteinReferenceSections.FiniteSourceTopology.finiteQuotient F R.A.zeta12 R.A.primitive_zeta12
               (g * sectionTuple F R.A.zeta12 R.A.primitive_zeta12 (fun w => rightMatrix (a w))) =
               EisensteinReferenceSections.FiniteSourceTopology.finiteQuotient F R.A.zeta12 R.A.primitive_zeta12 g := by

@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 namespace ClassFormation
@@ -33,7 +30,7 @@ noncomputable section
 
 -- Mathlib's `Rep ℤ G` currently fixes the acting group to universe zero.
 variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
-variable {D : DegreeData G} {A : Rep ℤ G}
+    {D : DegreeData G} {A : Rep ℤ G}
 
 /-- Conjugating an abstract field does not change its degree image. -/
 theorem DegreeData.fieldImage_conjugate
@@ -49,7 +46,7 @@ theorem DegreeData.fieldImage_conjugate
     refine ⟨k.1, k.2, ?_⟩
     simp [k, map_mul, mul_assoc]
   · rintro ⟨k, hk, rfl⟩
-    let x : G := σ⁻¹ * k * σ
+    let x := σ⁻¹ * k * σ
     have hx : x ∈ conjugateClosedSubgroup K σ := by
       rw [conjugateClosedSubgroup_mem]
       change σ * x * σ⁻¹ ∈ K.toSubgroup
@@ -70,28 +67,25 @@ noncomputable def DegreeData.FiniteResidueAbstractField.conjugate
     rw [D.fieldImage_conjugate K.field σ]
     exact K.finiteResidueQuotient
 
+section
+
+variable {G : Type*} [Group G] [TopologicalSpace G]
+
 /-- Conjugation preserves the positive absolute residue degree at the
 residue-finite boundary. -/
-theorem DegreeData.FiniteResidueAbstractField.residueDegree_conjugate
-    {G : Type*} [Group G] [TopologicalSpace G] {D : DegreeData G}
+theorem DegreeData.FiniteResidueAbstractField.residueDegree_conjugate {D : DegreeData G}
     [ContinuousMul G] (K : DegreeData.FiniteResidueAbstractField D) (σ : G) :
     (K.conjugate σ).residueDegree = K.residueDegree := by
   apply PNat.eq
-  change Nat.card
-      (D.residueQuotient (conjugateClosedSubgroup K.field σ)) =
-    Nat.card (D.residueQuotient K.field)
-  unfold DegreeData.residueQuotient
-  have himage := D.fieldImage_conjugate K.field σ
   apply Nat.card_congr
   exact Subgroup.quotientEquivOfEq
     (congrArg
       (fun H : Subgroup ZHatMul => H.subgroupOf (⊤ : Subgroup ZHatMul))
-      himage)
+      (D.fieldImage_conjugate K.field σ))
 
 /-- Conjugate a finite abstract field without separating the transported
 finiteness proof from the field. -/
 noncomputable def FiniteAbstractField.conjugate
-    {G : Type*} [Group G] [TopologicalSpace G]
     [ContinuousMul G] (K : FiniteAbstractField G) (σ : G) :
     FiniteAbstractField G where
   field := conjugateClosedSubgroup K.field σ
@@ -102,7 +96,6 @@ noncomputable def FiniteAbstractField.conjugate
 
 /-- Conjugation preserves the positive absolute residue degree. -/
 theorem FiniteAbstractField.residueDegree_conjugate
-    {G : Type*} [Group G] [TopologicalSpace G]
     [ContinuousMul G] (K : FiniteAbstractField G)
     (D : DegreeData G) (σ : G) :
     (K.conjugate σ).residueDegree D = K.residueDegree D := by
@@ -111,12 +104,13 @@ theorem FiniteAbstractField.residueDegree_conjugate
       (D.residueQuotient (conjugateClosedSubgroup K.field σ)) =
     Nat.card (D.residueQuotient K.field)
   unfold DegreeData.residueQuotient
-  have himage := D.fieldImage_conjugate K.field σ
   apply Nat.card_congr
   exact Subgroup.quotientEquivOfEq
     (congrArg
       (fun H : Subgroup ZHatMul => H.subgroupOf (⊤ : Subgroup ZHatMul))
-      himage)
+      (D.fieldImage_conjugate K.field σ))
+
+end
 
 namespace ValuationData
 
@@ -153,17 +147,13 @@ theorem normalizedValuation_conjugate [ContinuousMul G]
       congr 1
       apply Subtype.ext
       calc
-        ((normToBase A (conjugateClosedSubgroup K.field σ)
-            (conjugateFixedElement A K.field σ a) :
-              ambientFixedAddSubgroup A (baseField G)) : A.V) =
+        _ =
           A.ρ σ⁻¹
             ((normToBase A K.field a :
               ambientFixedAddSubgroup A (baseField G)) : A.V) := by
-                simpa [normToBase] using
-                  (relativeNorm_absoluteConjugate_apply A K.field σ a)
+                apply relativeNorm_absoluteConjugate_apply
         _ = ((normToBase A K.field a :
-              ambientFixedAddSubgroup A (baseField G)) : A.V) := by
-                exact (normToBase A K.field a).2 ⟨σ⁻¹, trivial⟩
+              ambientFixedAddSubgroup A (baseField G)) : A.V) := (normToBase A K.field a).2 ⟨σ⁻¹, trivial⟩
     _ = (K.residueDegree D : ℕ) • v.dividedAt K a :=
       (v.residueDegree_nsmul_dividedAt K a).symm
 
@@ -192,10 +182,6 @@ theorem normalizedValuation_tower (v : ValuationData D A)
         (relativeNorm A E.base.field E.field.field E.below a)
   rw [v.residueDegree_nsmul_dividedAt E.field,
     v.residueDegree_nsmul_dividedAt E.base]
-  change v.toAddMonoidHom (normToBase A E.field.field a) =
-    v.toAddMonoidHom
-      (normToBase A E.base.field
-        (relativeNorm A E.base.field E.field.field E.below a))
   let T : DegreeData.FiniteTower G := {
     top := E.field.field
     middle := E.base.field
@@ -205,7 +191,7 @@ theorem normalizedValuation_tower (v : ValuationData D A)
     finiteTopQuotient := E.finiteQuotient
     finiteBaseQuotient := E.base.finite }
   exact congrArg v.toAddMonoidHom
-    (by simpa [T, normToBase] using (T.norm_trans_apply A a).symm)
+    (by exact (T.norm_trans_apply A a).symm)
 
 end ValuationData
 

@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Analysis.Gamma.ReflectionAndReciprocalStripBounds
 
 public import DedekindZetaZeroFree.Analysis.Gamma.QuotientBounds
 public import DedekindZetaZeroFree.Analysis.Gamma.ReciprocalRecurrenceAndRisingProducts
@@ -14,11 +15,7 @@ noncomputable section
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-private lemma gamma_ne_zero_of_im_ne (z : ℂ) (hz : z.im ≠ 0) : Complex.Gamma z ≠ 0 := by
-  intro h
-  rw [Complex.Gamma_eq_zero_iff] at h
-  obtain ⟨m, rfl⟩ := h
-  simpa using hz
+private alias gamma_ne_zero_of_im_ne := DedekindZetaZeroFree.GammaBounds.Gamma_ne_zero_of_im_ne_zero
 
 private lemma sqrt_pi_ne_zero : ((Real.sqrt Real.pi : ℝ) : ℂ) ≠ 0 :=
   Complex.ofReal_ne_zero.mpr (ne_of_gt (Real.sqrt_pos.2 Real.pi_pos))
@@ -92,27 +89,14 @@ private lemma gamma_half_differentiableAt (s : ℂ) (hs : 0 < s.re) :
 
 theorem reflectedSquareGammaContinuation_differentiableOn :
     DifferentiableOn ℂ reflectedSquareGammaContinuation {s : ℂ | 0 < s.re} := by
-  have h1 : DifferentiableOn ℂ (fun s : ℂ => (2 : ℂ) ^ (2 * s - 1)) {s : ℂ | 0 < s.re} :=
-    DifferentiableOn.const_cpow (f := fun s : ℂ => 2 * s - 1)
-      ((differentiable_id.const_mul 2).sub_const 1).differentiableOn (Or.inl two_ne_zero)
   have h2 : DifferentiableOn ℂ (fun s : ℂ => Complex.Gammaℂ (s / 2)) {s : ℂ | 0 < s.re} := by
-    change DifferentiableOn ℂ
-      (fun s : ℂ => 2 * (2 * (Real.pi : ℂ)) ^ (-(s / 2)) * Complex.Gamma (s / 2))
-      {s : ℂ | 0 < s.re}
-    have hA2 : DifferentiableOn ℂ (fun s : ℂ => (2 * (Real.pi : ℂ)) ^ (-(s / 2)))
-        {s : ℂ | 0 < s.re} :=
-      DifferentiableOn.const_cpow (f := fun s : ℂ => -(s / 2))
-        ((differentiable_id.div_const (2 : ℂ)).neg).differentiableOn (Or.inl two_pi_ne_zero)
-    have hG : DifferentiableOn ℂ (fun s : ℂ => Complex.Gamma (s / 2)) {s : ℂ | 0 < s.re} :=
-      fun s hs => (gamma_half_differentiableAt s hs).differentiableWithinAt
-    exact ((differentiable_const (c := (2 : ℂ))).differentiableOn.mul hA2).mul hG
-  have h3 : DifferentiableOn ℂ (fun s : ℂ => (Complex.Gammaℂ (1 - s / 2))⁻¹)
-      {s : ℂ | 0 < s.re} :=
-    (Complex.differentiable_Gammaℂ_inv.comp
-      ((differentiable_const (1 : ℂ)).sub (differentiable_id.div_const (2 : ℂ)))).differentiableOn
+    exact ((differentiable_const (c := (2 : ℂ))).differentiableOn.mul (DifferentiableOn.const_cpow
+      ((differentiable_id.div_const (2 : ℂ)).neg).differentiableOn (Or.inl two_pi_ne_zero))).mul (fun s hs => (gamma_half_differentiableAt s hs).differentiableWithinAt)
   change DifferentiableOn ℂ (fun s : ℂ => (2 : ℂ) ^ (2 * s - 1) * Complex.Gammaℂ (s / 2) *
       (Complex.Gammaℂ (1 - s / 2))⁻¹) {s : ℂ | 0 < s.re}
-  exact (h1.mul h2).mul h3
+  exact ((DifferentiableOn.const_cpow
+    ((differentiable_id.const_mul 2).sub_const 1).differentiableOn (Or.inl two_ne_zero)).mul h2).mul ((Complex.differentiable_Gammaℂ_inv.comp
+    ((differentiable_const (1 : ℂ)).sub (differentiable_id.div_const (2 : ℂ)))).differentiableOn)
 
 end DedekindZetaZeroFree.LargeSieve.Vendor
 

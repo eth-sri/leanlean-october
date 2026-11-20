@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -39,23 +34,18 @@ theorem polynomial_eval₂_sub_mem_of_sub_mem
     P.eval₂ f x - P.eval₂ f y ∈ I := by
   induction P using Polynomial.induction_on' with
   | add P Q hP hQ =>
-      rw [Polynomial.eval₂_add, Polynomial.eval₂_add]
-      have hsum : (P.eval₂ f x - P.eval₂ f y) +
-          (Q.eval₂ f x - Q.eval₂ f y) ∈ I :=
-        Ideal.add_mem I hP hQ
-      convert hsum using 1
+      simp
+      convert (Ideal.add_mem I hP hQ) using 1
       ring
   | monomial n a =>
-      rw [Polynomial.eval₂_monomial, Polynomial.eval₂_monomial]
-      have hpow : x ^ n - y ^ n ∈ I := by
-        rcases sub_dvd_pow_sub_pow x y n with ⟨c, hc⟩
-        rw [hc]
-        exact Ideal.mul_mem_right c I hxy
+      simp
       have hrewrite : f a * x ^ n - f a * y ^ n =
           f a * (x ^ n - y ^ n) := by
         ring
       rw [hrewrite]
-      exact Ideal.mul_mem_left I (f a) hpow
+      refine Ideal.mul_mem_left I (f a) ?_
+      rcases sub_dvd_pow_sub_pow x y n with ⟨c, hc⟩
+      grind [Ideal.mul_mem_right]
 
 end Higher
 end RamificationTheory.HilbertRamification

@@ -34,16 +34,15 @@ theorem spectralJacquet_integrable (f : PrincipalSeries positiveParameter)
     (s : ℂ) (hs : s ∈ chamber) (g : ComplexGL2) :
     Integrable (fun x : ℂ => plusValue f s (weyl * upperUnipotent x * g) *
       star (character (standardComplexParameter : ℂ) x : ℂ))
-      (characterHaar standardComplexParameter) := by
-  exact (chamber_integrable standardComplexParameter s hs f g).mul_bdd
+      (characterHaar standardComplexParameter) := (chamber_integrable standardComplexParameter s hs f g).mul_bdd
     (by fun_prop : Continuous (fun x : ℂ =>
       star (character (standardComplexParameter : ℂ) x : ℂ))).aestronglyMeasurable
     (c := 1) (Filter.Eventually.of_forall (fun x => by simp))
 
 theorem spectralJacquet_analytic (f : PrincipalSeries positiveParameter)
     (g : ComplexGL2) : AnalyticOnNhd ℂ (fun s => spectralJacquet f s g) chamber := by
-  let l : ℂ → ℝ := fun x => Real.log (height (weyl * upperUnipotent x * g))
-  let c : ℂ → ℂ := fun x => f (weyl * upperUnipotent x * g) *
+  let l := fun x => Real.log (height (weyl * upperUnipotent x * g))
+  let c := fun x => f (weyl * upperUnipotent x * g) *
     star (character (standardComplexParameter : ℂ) x : ℂ)
   have he (s : ℂ) (x : ℂ) :
       Complex.exp (s * (l x : ℂ)) * c x =
@@ -57,9 +56,6 @@ theorem spectralJacquet_analytic (f : PrincipalSeries positiveParameter)
     simpa only [he] using spectralJacquet_integrable f s (by
       change (-1 / 6 : ℝ) < s.re
       linarith) g
-  have ha := (exponential_integral_differentiable
-    (characterHaar standardComplexParameter) l c (-(1/6)) hi).analyticOnNhd
-      (isOpen_lt continuous_const Complex.continuous_re)
   have hf : (fun s => spectralJacquet f s g) =
       (fun s => ∫ x, Complex.exp (s * (l x : ℂ)) * c x
         ∂characterHaar standardComplexParameter) := by
@@ -67,7 +63,9 @@ theorem spectralJacquet_analytic (f : PrincipalSeries positiveParameter)
     unfold spectralJacquet
     exact integral_congr_ae (Filter.Eventually.of_forall (fun x => (he s x).symm))
   rw [hf]
-  convert ha using 1
+  convert ((exponential_integral_differentiable
+    (characterHaar standardComplexParameter) l c (-(1/6)) hi).analyticOnNhd
+      (isOpen_lt continuous_const Complex.continuous_re)) using 1
   ext s
   simp only [chamber, Set.mem_setOf_eq]
   norm_num

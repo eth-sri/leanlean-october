@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources EisensteinSmoothGerms Filter
 open scoped Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 def selectedScalarNumerator
     {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
@@ -27,9 +27,7 @@ theorem selectedScalarNumerator_analytic
     ∀ g, AnalyticOnNhd ℂ (fun s => selectedScalarNumerator D r s g)
       (Metric.ball (0 : ℂ) r) := by
   intro g s hs
-  have hm : MeromorphicOn (fun z => z * D.E z g) (Metric.ball (0 : ℂ) r) := by
-    intro z hz
-    exact analyticAt_id.meromorphicAt.mul ((D.normal g (hb hz)).meromorphicAt)
+  have hm : MeromorphicOn (fun z => z * D.E z g) (Metric.ball (0 : ℂ) r) := fun z hz => analyticAt_id.meromorphicAt.mul ((D.normal g (hb hz)).meromorphicAt)
   apply (meromorphicNFOn_toMeromorphicNFOn (fun z => z * D.E z g) _ hs).meromorphicOrderAt_nonneg_iff_analyticAt.mp
   rw [meromorphicOrderAt_toMeromorphicNFOn hm hs]
   by_cases hs0 : s = 0
@@ -51,9 +49,7 @@ theorem selectedScalarNumerator_clears
     (s : ℂ) (hs : s ∈ Metric.ball (0 : ℂ) r) (hs0 : s ≠ 0) :
     selectedScalarNumerator D r s = s • D.E s := by
   funext g
-  have hm : MeromorphicOn (fun z => z * D.E z g) (Metric.ball (0 : ℂ) r) := by
-    intro z hz
-    exact analyticAt_id.meromorphicAt.mul ((D.normal g (hb hz)).meromorphicAt)
+  have hm : MeromorphicOn (fun z => z * D.E z g) (Metric.ball (0 : ℂ) r) := fun z hz => analyticAt_id.meromorphicAt.mul ((D.normal g (hb hz)).meromorphicAt)
   unfold selectedScalarNumerator
   rw [toMeromorphicNFOn_eq_toMeromorphicNFAt hm hs]
   exact congrFun (toMeromorphicNFAt_eq_self.mpr

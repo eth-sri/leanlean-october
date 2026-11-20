@@ -30,7 +30,7 @@ instance quotientHaar_isAddHaarMeasure (F : Type) [Field F] [NumberField F] :
 
 instance quotientHaar_isProbabilityMeasure (F : Type) [Field F] [NumberField F] :
     IsProbabilityMeasure (quotientHaar F) :=
-  ⟨by exact Measure.addHaarMeasure_self⟩
+  ⟨Measure.addHaarMeasure_self⟩
 
 end DedekindZetaZeroFree.KPWildKernelUpperBound
 
@@ -73,18 +73,15 @@ theorem invariant_linearMap_zero_of_coinvariants_subsingleton
     (hcoinvariants : Subsingleton (Representation.Coinvariants ρ))
     (L : U →ₗ[ℂ] E) (hL : ∀ a, L.comp (ρ a) = L) :
     L = 0 := by
-  have hker : Representation.Coinvariants.ker ρ = ⊤ :=
-    Submodule.Quotient.subsingleton_iff.1 hcoinvariants
   have hle : Representation.Coinvariants.ker ρ ≤ LinearMap.ker L := by
     rw [Representation.Coinvariants.ker]
     apply Submodule.span_le.2
     rintro _ ⟨⟨a, x⟩, rfl⟩
     simp only [SetLike.mem_coe, LinearMap.mem_ker, map_sub, sub_eq_zero]
-    simpa using LinearMap.congr_fun (hL a) x
-  have htop : LinearMap.ker L = ⊤ := le_top.antisymm (hker ▸ hle)
+    exact LinearMap.congr_fun (hL a) x
   ext u
-  have : u ∈ LinearMap.ker L := htop ▸ Submodule.mem_top
-  simpa using this
+  have : u ∈ LinearMap.ker L := (le_top.antisymm ((Submodule.Quotient.subsingleton_iff.1 hcoinvariants) ▸ hle)) ▸ Submodule.mem_top
+  exact this
 
 end DedekindZetaZeroFree.KPWildKernelSource
 

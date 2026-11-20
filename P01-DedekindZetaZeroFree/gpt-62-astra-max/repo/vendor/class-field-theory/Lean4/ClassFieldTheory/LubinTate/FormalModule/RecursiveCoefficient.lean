@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -34,33 +32,29 @@ namespace SameUniformizer
 open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
-variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
-variable {σ : Type w} [Fintype σ]
+    {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    {σ : Type w} [Fintype σ]
+
+section
+
+variable (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (e ebar : LubinTateSeries F π)
+    {H : MvPowerSeries σ F.valuationSubring} {L : σ → F.valuationSubring} (hH : HasLinearTerm H L)
+    (d : σ →₀ ℕ)
 
 /-- The coefficient of an intertwining defect after removing one factor of
 the chosen uniformizer. -/
-noncomputable def normalizedDefectCoefficient
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (e ebar : LubinTateSeries F π)
-    {H : MvPowerSeries σ F.valuationSubring}
-    {L : σ → F.valuationSubring} (hH : HasLinearTerm H L)
-    (d : σ →₀ ℕ) :
+noncomputable def normalizedDefectCoefficient :
     F.valuationSubring :=
   Classical.choose (uniformizer_dvd_coeff_defect hπ e ebar hH d)
 
 /-- Multiplying the normalized defect coefficient by the uniformizer recovers
 the original coefficient. -/
-theorem uniformizer_mul_normalizedDefectCoefficient
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (e ebar : LubinTateSeries F π)
-    {H : MvPowerSeries σ F.valuationSubring}
-    {L : σ → F.valuationSubring} (hH : HasLinearTerm H L)
-    (d : σ →₀ ℕ) :
+theorem uniformizer_mul_normalizedDefectCoefficient :
     π * normalizedDefectCoefficient hπ e ebar hH d =
-      MvPowerSeries.coeff d (defect e ebar H) := by
-  exact
-    (Classical.choose_spec
+      MvPowerSeries.coeff d (defect e ebar H) := (Classical.choose_spec
       (uniformizer_dvd_coeff_defect hπ e ebar hH d)).symm
+
+end
 
 /-- The coefficient added in total degree `d.degree` by the recursive
 same-uniformizer intertwiner construction.
@@ -90,31 +84,10 @@ theorem correctionCoefficient_spec
     (d : σ →₀ ℕ) (hd : 2 ≤ d.degree) :
     (1 - π ^ (d.degree - 1)) *
         correctionCoefficient hπ e ebar hH d hd =
-      -normalizedDefectCoefficient hπ e ebar hH d := by
-  exact
-    (Classical.choose_spec
+      -normalizedDefectCoefficient hπ e ebar hH d := (Classical.choose_spec
       (existsUnique_one_sub_uniformizer_pow_mul_eq hπ
         (by omega : d.degree - 1 ≠ 0)
         (-normalizedDefectCoefficient hπ e ebar hH d))).1
-
-/-- The defining scalar equation determines the recursive correction
-coefficient uniquely. -/
-theorem correctionCoefficient_unique
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (e ebar : LubinTateSeries F π)
-    {H : MvPowerSeries σ F.valuationSubring}
-    {L : σ → F.valuationSubring} (hH : HasLinearTerm H L)
-    (d : σ →₀ ℕ) (hd : 2 ≤ d.degree)
-    {c : F.valuationSubring}
-    (hc :
-      (1 - π ^ (d.degree - 1)) * c =
-        -normalizedDefectCoefficient hπ e ebar hH d) :
-    c = correctionCoefficient hπ e ebar hH d hd := by
-  exact
-    (Classical.choose_spec
-      (existsUnique_one_sub_uniformizer_pow_mul_eq hπ
-        (by omega : d.degree - 1 ≠ 0)
-        (-normalizedDefectCoefficient hπ e ebar hH d))).2 c hc
 
 end SameUniformizer
 end LubinTate

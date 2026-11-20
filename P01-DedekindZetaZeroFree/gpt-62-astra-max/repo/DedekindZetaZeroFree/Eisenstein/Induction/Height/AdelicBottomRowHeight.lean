@@ -86,16 +86,18 @@ theorem adelicHeightProjection_continuous : Continuous (adelicHeightProjection F
     (KPAdelicCoverRestrictedProduct.scalarSubgroup F)).continuous_iff.mpr
   exact QuotientGroup.continuous_mk
 
-def coveredHeightProjection (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
+variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+
+def coveredHeightProjection :
     KPLiteralRaw.G F ζ hζ →* KPChamberHeight.AdelPGL F :=
   (adelicHeightProjection F).comp (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ)
 
-theorem coveredHeightProjection_continuous (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
+theorem coveredHeightProjection_continuous :
     Continuous (coveredHeightProjection F ζ hζ) :=
   (adelicHeightProjection_continuous F).comp
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous
 
-theorem coveredHeightProjection_rationalLift (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+theorem coveredHeightProjection_rationalLift
     (γ : Matrix.ProjGenLinGroup (Fin 2) F) :
     coveredHeightProjection F ζ hζ (KPLiteralRaw.rationalLift F ζ hζ γ) =
       KPChamberHeight.rationalDiagonal F γ := by
@@ -106,10 +108,7 @@ theorem coveredHeightProjection_rationalLift (ζ : F) (hζ : IsPrimitiveRoot ζ 
       (KPAdelicCoverRestrictedProduct.projection F ζ hζ
         (KPAdelicCoverRestrictedProduct.rationalSection F ζ hζ (Quotient.out γ)))) = _
   rw [KPAdelicCoverRestrictedProduct.projection_rationalSection]
-  change Matrix.ProjGenLinGroup.mk
-    (KPAdelicCoverRestrictedProduct.rationalBase F (Quotient.out γ)) = _
-  have he : Matrix.ProjGenLinGroup.mk (Quotient.out γ) = γ := Quotient.out_eq γ
-  conv_rhs => rw [← he]
+  conv_rhs => rw [← (Quotient.out_eq γ)]
   rfl
 
 end DedekindZetaZeroFree.KPLiteralExceptionalResidue

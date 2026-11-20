@@ -49,27 +49,25 @@ private theorem range_coinvariants_map
     (n : N →* G) (ψ : N →* ℂˣ) (f : ρ.IntertwiningMap σ) :
     LinearMap.range (rootCoinvariantsMap ρ σ n ψ f) =
       (LinearMap.range f.toLinearMap).map (rootCoinvariantsMk σ n ψ) := by
-  have h := rootCoinvariantsMap_comp_mk ρ σ n ψ f
-  calc LinearMap.range (rootCoinvariantsMap ρ σ n ψ f)
+  calc _
       = LinearMap.range
           ((rootCoinvariantsMap ρ σ n ψ f).comp (rootCoinvariantsMk ρ n ψ)) := by
         rw [LinearMap.range_comp,
           LinearMap.range_eq_top.mpr (rootCoinvariantsMk_surjective ρ n ψ), Submodule.map_top]
-    _ = LinearMap.range ((rootCoinvariantsMk σ n ψ).comp f.toLinearMap) := by rw [h]
+    _ = LinearMap.range ((rootCoinvariantsMk σ n ψ).comp f.toLinearMap) := by rw [(rootCoinvariantsMap_comp_mk ρ σ n ψ f)]
     _ = (LinearMap.range f.toLinearMap).map (rootCoinvariantsMk σ n ψ) :=
       LinearMap.range_comp f.toLinearMap (rootCoinvariantsMk σ n ψ)
 
-theorem standard_coinvariant_rank_le_one
-    (ht : (3 : (valuation (LocalField F q)).integer) ∉
-      IsLocalRing.maximalIdeal (valuation (LocalField F q)).integer) :
+variable
+    (ht : (3 : (valuation (LocalField F q)).integer) ∉ IsLocalRing.maximalIdeal (valuation (LocalField F q)).integer)
+
+include ht in
+theorem standard_coinvariant_rank_le_one :
     Module.rank ℂ (RootCoinvariants
       (actualCanonicalImageRepresentation F ζ hζ q S P μ hμ)
       (KPLocalJacquetImage.root S.borel)
       (KPKirillovProjectorGerms.frequencyCharacter F q 1)) ≤ 1 := by
   have htchar := residue_char_ne_three F q ht
-  have hroot : ∃ ξ : LocalField F q, IsPrimitiveRoot ξ 12 :=
-    ⟨algebraMap F (LocalField F q) ζ,
-      hζ.map_of_injective (FaithfulSMul.algebraMap_injective F (LocalField F q))⟩
   let ρ := actualCanonicalImageRepresentation F ζ hζ q S P μ hμ
   let χ := KPKirillovProjectorGerms.frequencyCharacter F q 1
   let n := KPLocalJacquetImage.root S.borel
@@ -87,11 +85,9 @@ theorem standard_coinvariant_rank_le_one
   have hz : p.comp i = 0 := by
     apply Representation.Coinvariants.hom_ext
     ext v
-    change rootCoinvariantsMk ρ n χ (Q (R v)) = 0
-    have hQR : Q (R v) = 0 := by
-      apply Subtype.ext
-      exact LinearMap.congr_fun (actual_zero_opposite_compositions F ζ hζ q S P μ hμ).1 v
-    exact congrArg (rootCoinvariantsMk ρ n χ) hQR |>.trans (map_zero _)
+    refine congrArg (rootCoinvariantsMk ρ n χ) ?_ |>.trans (map_zero _)
+    apply Subtype.ext
+    exact LinearMap.congr_fun (actual_zero_opposite_compositions F ζ hζ q S P μ hμ).1 v
   have hi : 2 ≤ Module.rank ℂ (LinearMap.range i) := by
     obtain ⟨v₀, v₂, h⟩ := exists_reverse_independent_columns F ζ hζ q S P μ hμ htchar
     obtain ⟨ell₀, ell₂, h00, h02, h20, h22⟩ :=
@@ -103,17 +99,16 @@ theorem standard_coinvariant_rank_le_one
       v₀ v₂ ell₀ ell₂ 1 1 one_ne_zero one_ne_zero h00 h02 h20 h22
   apply Uniqueness.rank_le_of_surjective_zero_composition i p hp hz 1 2 _ hi
   exact Uniqueness.standard_plus_coinvariant_rank_le_three F ζ hζ q
-    (actualRawInducing F ζ hζ q S) P hroot htchar
+    (actualRawInducing F ζ hζ q S) P (⟨algebraMap F (LocalField F q) ζ,
+      hζ.map_of_injective (FaithfulSMul.algebraMap_injective F (LocalField F q))⟩) htchar
 
+include ht in
 theorem coinvariant_rank_le_one
-    (ht : (3 : (valuation (LocalField F q)).integer) ∉
-      IsLocalRing.maximalIdeal (valuation (LocalField F q)).integer)
     (ψ : Multiplicative (LocalField F q) →ₜ* ℂˣ) (hne : ψ.toMonoidHom ≠ 1) :
     Module.rank ℂ (RootCoinvariants
       (actualCanonicalImageRepresentation F ζ hζ q S P μ hμ)
       (KPLocalJacquetImage.root S.borel) ψ.toMonoidHom) ≤ 1 := by
-  let χ : AddChar (LocalField F q) ℂˣ := AddChar.toMonoidHomEquiv.symm ψ.toMonoidHom
-  have hχ : Continuous χ := ψ.continuous.comp continuous_ofAdd
+  let χ := AddChar.toMonoidHomEquiv.symm ψ.toMonoidHom
   have hnχ : χ ≠ 1 := by
     intro he
     apply hne
@@ -123,7 +118,7 @@ theorem coinvariant_rank_le_one
     ext x
     exact (S.openCell P).upper_eq (Multiplicative.toAdd x)
   obtain ⟨e⟩ := RawTransport.actual_character_quotient F ζ hζ q
-    (actualCanonicalImageRepresentation F ζ hζ q S P μ hμ) χ hχ hnχ
+    (actualCanonicalImageRepresentation F ζ hζ q S P μ hμ) χ (ψ.continuous.comp continuous_ofAdd) hnχ
   change Module.rank ℂ (RootCoinvariants
     (actualCanonicalImageRepresentation F ζ hζ q S P μ hμ)
     (KPLocalJacquetImage.root S.borel) χ.toMonoidHom) ≤ 1

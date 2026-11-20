@@ -42,9 +42,6 @@ theorem insideActions_group (W : Finset (KPFinitePlace F))
       KPKirillovGenuineSectionCharts.P F R.A.zeta12 R.A.primitive_zeta12 q.val) :
     insideGroup (insideActions W a ha) = rawGlobal (R := R) (insideRaw W a) := by
   let e : W → KPHilbert.Place F := fun q ↦ Sum.inr q.val
-  have hinj : Function.Injective e := by
-    intro q r h
-    exact Subtype.ext (Sum.inr_injective h)
   have hword (l : List W) :
       insideGroup (l.map (fun q ↦ (⟨q, a (Sum.inr q.val), ha q⟩ : BorelAction R W))) =
         rawWord (R := R) a (l.map e) := by
@@ -53,9 +50,9 @@ theorem insideActions_group (W : Finset (KPFinitePlace F))
     | cons q l ih => simpa only [List.map_cons, insideGroup, rawWord] using congrArg (fun z ↦
         scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
           (localInjection F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val) (a (Sum.inr q.val))) * z) ih
-  have hn : ((Finset.univ.toList : List W).map e).Nodup :=
-    (Finset.nodup_toList Finset.univ).map hinj
-  have hs : ((Finset.univ.toList : List W).map e).toFinset = places W := by
+  have hn : (Finset.univ.toList.map e).Nodup :=
+    (Finset.nodup_toList Finset.univ).map (fun q r h => Subtype.ext (Sum.inr_injective h))
+  have hs : (Finset.univ.toList.map e).toFinset = places W := by
     ext p
     simp only [List.mem_toFinset, List.mem_map, Finset.mem_toList, Finset.mem_univ, true_and]
     cases p with
@@ -63,13 +60,12 @@ theorem insideActions_group (W : Finset (KPFinitePlace F))
     | inr q =>
       constructor
       · rintro ⟨r, hr⟩
-        have he : r.val = q := Sum.inr_injective hr
-        exact Finset.mem_image.mpr ⟨r.val, r.property, congrArg Sum.inr he⟩
+        exact Finset.mem_image.mpr ⟨r.val, r.property, congrArg Sum.inr (Sum.inr_injective hr)⟩
       · intro hq
-        have hq' : q ∈ W := by simpa [places] using hq
-        exact ⟨⟨q, hq'⟩, rfl⟩
+        refine ⟨⟨q, ?_⟩, rfl⟩
+        simpa [places] using hq
   rw [insideActions, hword, rawWord_eq]
-  apply congrArg (rawGlobal (R := R))
+  apply congrArg (rawGlobal)
   have ht := WildRestrictedTruncation.truncate_list _
     (compact F R.A.zeta12 R.A.primitive_zeta12) a _ hn
   rw [hs] at ht
@@ -105,7 +101,7 @@ theorem raw_split (W : Finset (KPFinitePlace F))
     rawGlobal (R := R) (outsideRaw W a) * insideGroup (insideActions W a ha) =
       rawGlobal (R := R) a := by
   rw [insideActions_group, ← map_mul]
-  apply congrArg (rawGlobal (R := R))
+  apply congrArg (rawGlobal)
   exact inv_mul_cancel_right a (insideRaw W a)
 end DedekindZetaZeroFree.FourierContinuation.WildFiniteExteriorAssembly
 

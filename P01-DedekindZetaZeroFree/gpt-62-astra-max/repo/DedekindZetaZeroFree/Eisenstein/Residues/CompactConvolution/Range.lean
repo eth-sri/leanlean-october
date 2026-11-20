@@ -11,7 +11,7 @@ open scoped Classical NumberField Topology
 open MeasureTheory Filter
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualCompactConvolution
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator renaming finite_literal_compact_numerator → finite_literal_compact_numerator
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator (finite_literal_compact_numerator)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 set_option maxHeartbeats 2400000
 set_option backward.isDefEq.respectTransparency false

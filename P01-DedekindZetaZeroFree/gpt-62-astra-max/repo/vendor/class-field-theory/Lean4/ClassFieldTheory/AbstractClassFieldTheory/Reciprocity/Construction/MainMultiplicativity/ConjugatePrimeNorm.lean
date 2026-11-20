@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -84,10 +81,10 @@ theorem exists_primeElement_frobeniusActionConjugate_norm_eq
   dsimp only
   let KR := K.toFiniteResidueAbstractField D
   let hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
+    assumption
   let hLfiniteKR : Finite
       (KR.field.toSubgroup ⧸ extensionSubgroup KR.field L hLK) := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLfinite
+    assumption
   let σ' := D.frobeniusActionConjugate KR L hLK φ σ m
   let S := D.frobeniusFixedField KR L hLK σ
   let S' := D.frobeniusFixedField KR L hLK σ'
@@ -135,7 +132,7 @@ theorem exists_primeElement_frobeniusActionConjugate_norm_eq
       ((baseField G).toSubgroup ⧸
         extensionSubgroup (baseField G) S (le_baseField S))
       (by
-        simpa [C, baseField] using
+        simpa using
           (absoluteConjugateCosetEquiv S s).symm)
   let SigmaC : FiniteAbstractField G := Sigma.conjugate s
   let πC : ambientFixedAddSubgroup A C :=
@@ -205,23 +202,24 @@ theorem exists_primeElement_frobeniusActionConjugate_norm_eq
         ambientFixedAddSubgroup A Kc) : A.V) := by
     exact (relativeNorm_transport Kc K.field C S' hCS hS'K
       hKc hC πC π' rfl).symm
+  let relativeNorm₀ := relativeNorm A K.field S hSK π
   calc
     ((relativeNorm A K.field S' hS'K π' :
         ambientFixedAddSubgroup A K.field) : A.V) =
         ((relativeNorm A Kc C hCS πC :
           ambientFixedAddSubgroup A Kc) : A.V) := hleft
     _ = ((conjugateFixedElement A K.field s
-        (relativeNorm A K.field S hSK π) :
+        (relativeNorm₀) :
           ambientFixedAddSubgroup A Kc) : A.V) :=
       congrArg Subtype.val hnormC
-    _ = ((relativeNorm A K.field S hSK π :
+    _ = ((relativeNorm₀ :
         ambientFixedAddSubgroup A K.field) : A.V) := by
-      rw [conjugateFixedElement_coe]
+      simp
       have hs : s⁻¹ = k.1 := by simp [s]
       rw [hs]
-      change A.ρ k.1 (relativeNorm A K.field S hSK π).1 =
-        (relativeNorm A K.field S hSK π).1
-      exact (relativeNorm A K.field S hSK π).2 k
+      change A.ρ k.1 (relativeNorm₀).1 =
+        (relativeNorm₀).1
+      exact (relativeNorm₀).2 k
 
 end DegreeData
 

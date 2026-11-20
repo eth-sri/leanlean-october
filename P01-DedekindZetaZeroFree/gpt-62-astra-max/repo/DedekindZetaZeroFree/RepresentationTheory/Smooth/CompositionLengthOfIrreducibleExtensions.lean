@@ -20,16 +20,11 @@ theorem length_two_of_short_exact
   haveI : IsSimpleModule (MonoidAlgebra k G) σ.asModule := inferInstance
   haveI : IsSimpleModule (MonoidAlgebra k G) τ.asModule := inferInstance
 
-  let i' : σ.asModule →ₗ[MonoidAlgebra k G] ρ.asModule :=
+  let i' :=
     Representation.IntertwiningMap.equivLinearMapAsModule σ ρ i
-  let p' : ρ.asModule →ₗ[MonoidAlgebra k G] τ.asModule :=
+  let p' :=
     Representation.IntertwiningMap.equivLinearMapAsModule ρ τ p
-  have hi' : Function.Injective i' := hi
-  have hp' : Function.Surjective p' := hp
-  have he' : Function.Exact i' p' := he
-  have h := Module.length_eq_add_of_exact i' p' hi' hp' he'
-  rw [Module.length_eq_one (MonoidAlgebra k G) σ.asModule,
-    Module.length_eq_one (MonoidAlgebra k G) τ.asModule] at h
+  have h := Module.length_eq_add_of_exact i' p' hi hp he
   rw [h]
   norm_num
 

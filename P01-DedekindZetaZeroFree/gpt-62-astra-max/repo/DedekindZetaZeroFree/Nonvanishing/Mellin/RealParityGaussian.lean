@@ -26,25 +26,35 @@ private theorem parity_odd_kernel (s : ℂ) (q a : ℝ) (hq : 0 < q) :
     Complex.cpow_one, Complex.ofReal_mul]
   ring
 
-private theorem parity_sign_abs (a : ℝ) (ha : a ≠ 0) :
+section
+
+variable (a : ℝ) (ha : a ≠ 0)
+
+include ha in
+private theorem parity_sign_abs :
     Real.sign a * |a| = a := by
   rcases ha.lt_or_gt with h | h
   · rw [Real.sign_of_neg h, abs_of_neg h]
     ring
   · rw [Real.sign_of_pos h, abs_of_pos h, one_mul]
 
-private theorem parity_odd_cpow (a : ℝ) (ha : a ≠ 0) (s : ℂ) :
+include ha in
+private theorem parity_odd_cpow (s : ℂ) :
     (a : ℂ) * ((a ^ 2 : ℝ) : ℂ) ^ (-(s + 1) / 2) =
       (Real.sign a : ℂ) * ((|a| : ℝ) : ℂ) ^ (-s) := by
-  have habs : ((|a| : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (abs_ne_zero.mpr ha)
+  have habs := Complex.ofReal_ne_zero.mpr (abs_ne_zero.mpr ha)
   have hsign : (a : ℂ) = (Real.sign a : ℂ) * ((|a| : ℝ) : ℂ) := by
     rw [← Complex.ofReal_mul, parity_sign_abs a ha]
   rw [parity_square_cpow, show -(s + 1) = -s - 1 by ring,
     Complex.cpow_sub _ _ habs, Complex.cpow_one, hsign]
   field_simp
 
-theorem real_parityGaussian_integrableOn
-    (s : ℂ) (hs : 0 < s.re) (a : ℝ) (ha : a ≠ 0) (e : Bool) :
+end
+
+variable (s : ℂ) (hs : 0 < s.re) (a : ℝ) (ha : a ≠ 0) (e : Bool)
+
+include hs ha in
+theorem real_parityGaussian_integrableOn :
     IntegrableOn (fun q : ℝ =>
       (if e then ((q * a : ℝ) : ℂ) else 1) * (q : ℂ) ^ (s - 1) *
         Complex.exp (-((Real.pi * a ^ 2 * q ^ 2 : ℝ) : ℂ)))
@@ -53,18 +63,16 @@ theorem real_parityGaussian_integrableOn
   | false =>
     simpa using integrableOn_gaussian_real_place_mellin s (a ^ 2) hs (sq_pos_of_ne_zero ha)
   | true =>
-    have hs' : 0 < (s + 1).re := by simpa using (by linarith : 0 < s.re + 1)
-    have h := (integrableOn_gaussian_real_place_mellin (s + 1) (a ^ 2)
-      hs' (sq_pos_of_ne_zero ha)).const_mul (a : ℂ)
-    apply IntegrableOn.congr_fun h _ measurableSet_Ioi
+    apply IntegrableOn.congr_fun ((integrableOn_gaussian_real_place_mellin (s + 1) (a ^ 2)
+      (by exact (by linarith : 0 < s.re + 1)) (sq_pos_of_ne_zero ha)).const_mul (a : ℂ)) _ measurableSet_Ioi
     intro q hq
     dsimp only
     simp only [Bool.true_eq, ↓reduceIte]
     rw [parity_odd_kernel s q a hq]
     ring
 
-theorem real_parityGaussian_mellin
-    (s : ℂ) (hs : 0 < s.re) (a : ℝ) (ha : a ≠ 0) (e : Bool) :
+include hs ha in
+theorem real_parityGaussian_mellin :
     let η : ℂ := if e then 1 else 0
     let χ : ℂ := if e then (Real.sign a : ℂ) else 1
     (∫ q : ℝ in Set.Ioi 0,
@@ -78,7 +86,7 @@ theorem real_parityGaussian_mellin
     ring
   | true =>
     simp only [Bool.true_eq, ↓reduceIte]
-    have hs' : 0 < (s + 1).re := by simpa using (by linarith : 0 < s.re + 1)
+    have hs' : 0 < (s + 1).re := by exact (by linarith : 0 < s.re + 1)
     have hk : (∫ q : ℝ in Set.Ioi 0,
         ((q * a : ℝ) : ℂ) * (q : ℂ) ^ (s - 1) *
           Complex.exp (-((Real.pi * a ^ 2 * q ^ 2 : ℝ) : ℂ))) =

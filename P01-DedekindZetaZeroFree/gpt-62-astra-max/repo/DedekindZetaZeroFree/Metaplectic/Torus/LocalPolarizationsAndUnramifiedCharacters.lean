@@ -43,7 +43,7 @@ theorem canonical_good_compact_model_exists (q : HeightOneSpectrum (𝓞 F)) :
           openCell := S.openCell, openCell_ordinary := S.openCell_ordinary }
     · intro hg
       exact absurd hbad hg
-  · have ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3 :=
+  · have ht :=
       (not_or.mp hbad).2
     obtain ⟨I, hI⟩ :=
       KPExceptionalRaw.FiniteSource.GoodSphericalVector.actual_split_compact_iwasawa
@@ -65,16 +65,14 @@ theorem canonical_good_compact_model_exists (q : HeightOneSpectrum (𝓞 F)) :
       refine ⟨ht, ?_, ?_⟩
       · simpa [KPLocalExceptionalConstruction.actualGoodCompactSplit] using hI
       · intro b hb
-        have hbSubI : (b : KPExceptionalRaw.ActualCover F ζ hζ q) ∈
-            (I.compact.toOpenSubgroup : Subgroup (KPExceptionalRaw.ActualCover F ζ hζ q)) := hb
         have hS : ((KPExceptionalRaw.FiniteSource.GoodSphericalVector.actual_split_compact_level
             F ζ hζ q ht).toOpenSubgroup : Subgroup (KPExceptionalRaw.ActualCover F ζ hζ q)) =
-            (I.compact.toOpenSubgroup : Subgroup (KPExceptionalRaw.ActualCover F ζ hζ q)) := by
+            I.compact.toOpenSubgroup := by
           rw [KPExceptionalRaw.FiniteSource.GoodSphericalVector.actual_split_compact_level_subgroup, hI]
         have hbSub : (b : KPExceptionalRaw.ActualCover F ζ hζ q) ∈
             ((KPExceptionalRaw.FiniteSource.GoodSphericalVector.actual_split_compact_level
               F ζ hζ q ht).toOpenSubgroup : Subgroup (KPExceptionalRaw.ActualCover F ζ hζ q)) := by
-          rw [hS]; exact hbSubI
+          rw [hS]; exact hb
         have hb' : (b : KPExceptionalRaw.ActualCover F ζ hζ q) ∈
             (KPExceptionalRaw.FiniteSource.GoodSphericalVector.actual_split_compact_level
               F ζ hζ q ht).toOpenSubgroup := hbSub
@@ -101,52 +99,12 @@ noncomputable section
 attribute [local instance] KPGlobalProductPolarizationCharacter.localCoverTopology
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem continuous_of_isOpen_ker {G H : Type*} [Group G] [TopologicalSpace G]
-    [ContinuousMul G] [Group H] [TopologicalSpace H] [DiscreteTopology H]
-    (f : G →* H) (h : IsOpen (f.ker : Set G)) : Continuous f := by
-  rw [continuous_discrete_rng]
-  intro b
-  by_cases hb : b ∈ Set.range f
-  · obtain ⟨g, hg⟩ := hb
-    have heq : f ⁻¹' {b} = (fun x => g⁻¹ * x) ⁻¹' (f.ker : Set G) := by
-      ext x
-      simp only [Set.mem_preimage, Set.mem_singleton_iff, SetLike.mem_coe, MonoidHom.mem_ker]
-      constructor
-      · intro hx
-        rw [map_mul, map_inv, hx, hg, inv_mul_cancel]
-      · intro hx
-        rw [map_mul, map_inv] at hx
-        rw [← inv_mul_eq_one.mp hx, hg]
-    rw [heq]
-    exact h.preimage (continuous_const.mul continuous_id)
-  · rw [show f ⁻¹' {b} = ∅ from ?_]
-    · exact isOpen_empty
-    · ext x
-      simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_empty_iff_false, iff_false]
-      exact fun hx => hb ⟨x, hx⟩
+variable (v : KPHilbert.Place F)
 
-private theorem local_discrete (v : KPHilbert.Place F) :
-    DiscreteTopology (KPGlobalCubicIdelePairing.LocalD F v) := by
-  cases v with
-  | inl w =>
-    letI := KPGlobalCubicIdelePairing.local_complex_trivial F w
-    infer_instance
-  | inr q =>
-    let K := q.adicCompletion F
-    letI : ValuativeRel K := ClassFieldTheory.finitePlaceCompletionValuativeRel F q
-    letI : IsNonarchimedeanLocalField K :=
-      ClassFieldTheory.finitePlaceCompletionIsNonarchimedeanLocalField F q
-    obtain ⟨E, hE⟩ :=
-      LocalClassFieldTheory.exists_finiteGalois_normSubgroup_le_powMonoidHom_range K 3
-        (Nat.cast_ne_zero.mpr (by decide))
-    letI : FiniteDimensional K (E : IntermediateField K (SeparableClosure K)) := E.finiteDimensional
-    letI : IsGalois K (E : IntermediateField K (SeparableClosure K)) := E.isGalois
-    have hopen : IsOpen ((powMonoidHom 3 : Kˣ →* Kˣ).range : Set Kˣ) :=
-      Subgroup.isOpen_mono hE (LocalClassFieldTheory.localNormSubgroup_isOpen K
-        (E : IntermediateField K (SeparableClosure K)))
-    exact QuotientGroup.discreteTopology hopen
+private theorem local_discrete :
+    DiscreteTopology (KPGlobalCubicIdelePairing.LocalD F v) := by apply @DedekindZetaZeroFree.ProductPolarization.FiniteAdjustmentSupport.local_discrete <;> assumption
 
-private theorem localProjection_continuous (v : KPHilbert.Place F) :
+private theorem localProjection_continuous :
     Continuous (KPGlobalProductPolarizationCharacter.localProjection F ζ hζ v) := by
   cases v with
   | inl w =>
@@ -158,11 +116,29 @@ private theorem localProjection_continuous (v : KPHilbert.Place F) :
   | inr q =>
     haveI : DiscreteTopology (KPGlobalCubicIdelePairing.LocalD F (Sum.inr q)) :=
       local_discrete F (Sum.inr q)
-    exact continuous_of_isOpen_ker
-      (KPGlobalProductPolarizationCharacter.localProjection F ζ hζ (Sum.inr q))
-      (ProductPolarization.finite_local_center_open F ζ hζ q)
+    let f := (KPGlobalProductPolarizationCharacter.localProjection F ζ hζ (Sum.inr q))
+    rw [continuous_discrete_rng]
+    intro b
+    by_cases hb : b ∈ Set.range f
+    · obtain ⟨g, hg⟩ := hb
+      have heq : f ⁻¹' {b} = (fun x => g⁻¹ * x) ⁻¹' f.ker := by
+        ext x
+        simp only [Set.mem_preimage, Set.mem_singleton_iff, SetLike.mem_coe, MonoidHom.mem_ker]
+        constructor
+        · intro hx
+          rw [map_mul, map_inv, hx, hg, inv_mul_cancel]
+        · intro hx
+          rw [map_mul, map_inv] at hx
+          rw [← inv_mul_eq_one.mp hx, hg]
+      rw [heq]
+      exact (ProductPolarization.finite_local_center_open F ζ hζ q).preimage (continuous_const.mul continuous_id)
+    · rw [show f ⁻¹' {b} = ∅ from ?_]
+      · exact isOpen_empty
+      · ext x
+        simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_empty_iff_false, iff_false]
+        exact fun hx => hb ⟨x, hx⟩
 
-theorem adjusted_local_character_exists (v : KPHilbert.Place F)
+theorem adjusted_local_character_exists
     (Q : KPGlobalProductPolarizationCharacter.LocalPolarization F ζ hζ v)
     (χ : Q.L →ₜ* ℂˣ) :
     ∃ psi : KPGlobalProductPolarizationCharacter.localPreimage F ζ hζ v Q.L →ₜ* ℂˣ,
@@ -192,7 +168,11 @@ noncomputable section
 attribute [local instance] KPGlobalProductPolarizationCharacter.localCoverTopology
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
- theorem actual_eq (q : HeightOneSpectrum (𝓞 F)) :
+ section
+
+variable (q : HeightOneSpectrum (𝓞 F))
+
+theorem actual_eq :
     KPLocalExceptionalConstruction.actualTorus F ζ hζ q =
       KPGlobalProductPolarizationCharacter.localTorus F ζ hζ (Sum.inr q) := by
   letI : (KPPGLLocalCover.scalarSubgroup F (Sum.inr q)).Normal :=
@@ -201,16 +181,13 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   apply le_antisymm
   · intro g hg
     obtain ⟨y, hy⟩ := hg
-    change KPLocalSmoothRepresentation.projection F ζ hζ q g ∈ KPRankOneInduction.diagonalTorus F q
     refine ⟨KPGlobalProductPolarizationCharacter.diagonalHom F (Sum.inr q) y, ?_, ?_, ?_⟩
     · exact congrArg (KPLocalSmoothRepresentation.ordinaryPGLMap F q) hy
     · simp [KPGlobalProductPolarizationCharacter.diagonalHom, KubotaRankTwo.d]
     · simp [KPGlobalProductPolarizationCharacter.diagonalHom, KubotaRankTwo.d]
   · intro g hg
     let h : ActualFiniteTorus.H F ζ hζ q := ⟨g,hg⟩
-    have hn := (ActualFiniteTorus.actual_torus_normal_form F ζ hζ q).2.2.1 h
-    change KPPGLLocalCover.projection F ζ hζ (Sum.inr q) g ∈ KPGlobalProductPolarizationCharacter.localOrdinaryTorus F (Sum.inr q)
-    rw [show g = ActualFiniteTorus.normalWord F ζ hζ q _ _ from hn]
+    rw [show g = ActualFiniteTorus.normalWord F ζ hζ q _ _ from ((ActualFiniteTorus.actual_torus_normal_form F ζ hζ q).2.2.1 h)]
     refine ⟨ActualFiniteTorus.coordinate F ζ hζ q h, ?_⟩
     simp only [ActualFiniteTorus.normalWord, map_mul]
     have hp : KPPGLLocalCover.projection F ζ hζ (Sum.inr q)
@@ -220,9 +197,9 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
       exact ⟨_, rfl⟩
     rw [hp, one_mul]
     rfl
- def torusEquiv (q : HeightOneSpectrum (𝓞 F)) :=
+ def torusEquiv :=
   MulEquiv.subgroupCongr (actual_eq F ζ hζ q)
-private theorem coordinate_ratio (q : HeightOneSpectrum (𝓞 F))
+private theorem coordinate_ratio
     (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
     ActualFiniteTorus.coordinate F ζ hζ q t =
       KPGlobalProductPolarizationCharacter.localRatio F ζ hζ (Sum.inr q) (torusEquiv F ζ hζ q t) := by
@@ -233,14 +210,14 @@ private theorem coordinate_ratio (q : HeightOneSpectrum (𝓞 F))
   · exact congrArg (KPLocalSmoothRepresentation.ordinaryPGLMap F q)
       (ProductPolarization.localRatioValue_spec F ζ hζ (Sum.inr q) (torusEquiv F ζ hζ q t))
   · simp [KPGlobalProductPolarizationCharacter.diagonalHom, KubotaRankTwo.d]
-private theorem projection_eq (q : HeightOneSpectrum (𝓞 F))
+private theorem projection_eq
     (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
     ActualFiniteTorus.π F ζ hζ q t =
       KPGlobalProductPolarizationCharacter.localProjection F ζ hζ (Sum.inr q) (torusEquiv F ζ hζ q t) := by
   change QuotientGroup.mk' _ (ActualFiniteTorus.coordinate F ζ hζ q t) = _
   rw [coordinate_ratio]
   rfl
-private theorem pairing_eq (q : HeightOneSpectrum (𝓞 F))
+private theorem pairing_eq
     (x y : KPGlobalCubicIdelePairing.LocalD F (Sum.inr q)) :
     ActualFiniteTorus.pairing F ζ hζ q x y =
       ActualFiniteTorus.ordinaryMu3 F ζ hζ (KPGlobalCubicIdelePairing.localPairing F ζ hζ (Sum.inr q) x y) := by
@@ -251,6 +228,8 @@ private theorem pairing_eq (q : HeightOneSpectrum (𝓞 F))
         ActualFiniteTorus.ordinaryMu3 F ζ hζ (KPHilbert.B3 F ζ hζ (Sum.inr q) x y)
       rw [KPHilbert.B3_canonical]
       rfl
+
+end
 private theorem mu3_eq_one (e : rootsOfUnity 3 F) :
     ActualFiniteTorus.ordinaryMu3 F ζ hζ e = 1 ↔ e = 1 := by
   constructor
@@ -263,7 +242,9 @@ private theorem mu3_eq_one (e : rootsOfUnity 3 F) :
     simpa [KPLocalCover.threeToSix] using congrArg (fun x : rootsOfUnity 6 F => (x.val : F)) hh
   · rintro rfl
     exact map_one _
-private theorem preimage_maximal (q : HeightOneSpectrum (𝓞 F))
+variable (q : HeightOneSpectrum (𝓞 F))
+
+private theorem preimage_maximal
     (Q : KPGlobalProductPolarizationCharacter.LocalPolarization F ζ hζ (Sum.inr q)) :
     KPLocalPolarization.IsMaximalAbelian
       (Q.L.comap (ActualFiniteTorus.π F ζ hζ q)) := by
@@ -281,14 +262,14 @@ private theorem preimage_maximal (q : HeightOneSpectrum (𝓞 F))
     apply (mu3_eq_one F ζ hζ _).mp
     rw [← pairing_eq]
     exact hN x hx y hy
-private theorem center_value (q : HeightOneSpectrum (𝓞 F))
+private theorem center_value
     (S : KPLocalExceptionalConstruction.CanonicalFiniteInducingData F ζ hζ q)
     (a : S.heisenberg.C)
     (z : KPGlobalProductPolarizationCharacter.localCenter F ζ hζ (Sum.inr q))
     (haz : a.val.val = z.val.val) :
     S.heisenberg.ω a = KPGlobalProductPolarizationCharacter.localOmega F ζ hζ (Sum.inr q) z := by
   obtain ⟨e, x, y, rfl⟩ := S.center_parameterization a
-  let u : (q.adicCompletion F)ˣ := x / y
+  let u := x / y
   let g := KPLocalCover.centralInjection F ζ hζ (Sum.inr q) e *
     KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) (u ^ 3)
   have hg : KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) g = z.val.val := by
@@ -297,22 +278,18 @@ private theorem center_value (q : HeightOneSpectrum (𝓞 F))
     rw [S.central_actual, S.cube_actual]
     exact map_mul _ _ _
   rw [KPGlobalProductPolarizationCharacter.localOmega_raw_formula F ζ hζ _ z g hg]
-  have hu : u ^ 3 ∈ CubicCharacters.cubes (KPHilbert.Completion F (Sum.inr q))ˣ := ⟨u, rfl⟩
   rw [show g = KPLocalCover.centralInjection F ζ hζ (Sum.inr q) e *
-    KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) (⟨u ^ 3, hu⟩ : CubicCharacters.cubes (KPHilbert.Completion F (Sum.inr q))ˣ).val from rfl,
+    KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) (⟨u ^ 3, (⟨u, rfl⟩)⟩ : CubicCharacters.cubes (KPHilbert.Completion F (Sum.inr q))ˣ).val from rfl,
     KPGlobalCenterRationalCharacter.localValue_finite_cube,
     ProductPolarization.fullnorm_bridgefinite]
   apply Units.ext
   rw [S.prescribed_center]
-  change _ = (KPLocalExceptionalConstruction.ordinaryIota F ζ hζ e : ℂ) *
-    KPLocalPrincipalSeries.normPower (q.adicCompletion F) (u ^ 3) (1 / 6)
   congr 1
   congr 1
   dsimp [u]
   exact (div_pow x y 3).symm
 
 theorem transport_local_polarization_character
-    (q : HeightOneSpectrum (𝓞 F))
     (S : KPLocalExceptionalConstruction.CanonicalFiniteInducingData F ζ hζ q)
     (Q : KPGlobalProductPolarizationCharacter.LocalPolarization F ζ hζ (Sum.inr q))
     (psi : KPGlobalProductPolarizationCharacter.localPreimage F ζ hζ (Sum.inr q)
@@ -388,7 +365,6 @@ theorem transport_local_polarization_character
         exact hb
       exact Subgroup.mem_map.mpr ⟨a, ha, rfl⟩
   · intro a b hab
-    change psi (f a) = psi b
     apply congrArg psi
     apply Subtype.ext
     apply Subtype.ext
@@ -422,13 +398,13 @@ private theorem pgl_diagonal_injective (K : Type*) [Field K] (u v : Kˣ)
     (huv : Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d K u 1) =
       Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d K v 1)) : u = v := by
   obtain ⟨c, hc⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp huv
-  have h11 := congrArg (fun g : GL (Fin 2) K => (g : Matrix (Fin 2) (Fin 2) K) 1 1) hc
-  have h00 := congrArg (fun g : GL (Fin 2) K => (g : Matrix (Fin 2) (Fin 2) K) 0 0) hc
+  have h11 := congrArg (fun g : GL (Fin 2) K => g 1 1) hc
+  have h00 := congrArg (fun g : GL (Fin 2) K => g 0 0) hc
   simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.scalar, Matrix.diagonal_apply] at h11 h00
   apply Units.ext
   calc
-    (u : K) = (u : K) * (c : K) := by simp [h11]
+    _ = (u : K) * (c : K) := by simp [h11]
     _ = (v : K) := h00
 
 private lemma unit_lift_compact (v : HeightOneSpectrum (𝓞 F))
@@ -467,17 +443,18 @@ private lemma compact_coordinate_unit (v : HeightOneSpectrum (𝓞 F))
     obtain ⟨r, hr⟩ := QuotientGroup.mk_surjective (t : ActualCover F ζ hζ v)
     have hpr := (S.openCell S.polarization).projection_eq r
     change S.borel.projection (QuotientGroup.mk r) = _ at hpr
-    have he : S.borel.projection (t : ActualCover F ζ hζ v) =
-        KPLocalSmoothRepresentation.projection F ζ hζ v (t : ActualCover F ζ hζ v) := by
+    have he : S.borel.projection t =
+        KPLocalSmoothRepresentation.projection F ζ hζ v t := by
       rw [← hr]
       exact hpr
-    change (actualGoodCompactSplit F ζ hζ v ht) k = (t : ActualCover F ζ hζ v) at hk
+    change (actualGoodCompactSplit F ζ hζ v ht) k = t at hk
     rw [he, ← hk]
     rfl
   obtain ⟨c, hc⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hp
-  have h10 := congrArg (fun g : GL (Fin 2) (LocalField F v) => g 1 0) hc
-  have h00 := congrArg (fun g : GL (Fin 2) (LocalField F v) => g 0 0) hc
-  have h11 := congrArg (fun g : GL (Fin 2) (LocalField F v) => g 1 1) hc
+  let GL₀ := GL (Fin 2) (LocalField F v)
+  have h10 := congrArg (fun g : GL₀ => g 1 0) hc
+  have h00 := congrArg (fun g : GL₀ => g 0 0) hc
+  have h11 := congrArg (fun g : GL₀ => g 1 1) hc
   simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.scalar, Matrix.diagonal_apply] at h10 h00 h11
   have hk10 : k 1 0 = 0 := by
@@ -491,20 +468,20 @@ private lemma compact_coordinate_unit (v : HeightOneSpectrum (𝓞 F))
   refine ⟨a / b, ?_⟩
   apply Units.ext
   simp only [map_div, Units.val_div_eq_div_val]
-  change ((a : KPTameCompact.O F v) : LocalField F v) /
-    ((b : KPTameCompact.O F v) : LocalField F v) = (S.borel.coordinate t : LocalField F v)
+  change (a : LocalField F v) /
+    (b : LocalField F v) = (S.borel.coordinate t : LocalField F v)
   rw [(isUnit_of_mul_isUnit_left hdet).unit_spec,
     (isUnit_of_mul_isUnit_right hdet).unit_spec]
-  have ha : ((k 0 0 : KPTameCompact.O F v) : LocalField F v) * (c : LocalField F v) =
+  have ha : ((k 0 0 : KPTameCompact.O F v) : LocalField F v) * c =
       (S.borel.coordinate t : LocalField F v) := by
     simpa [KPTameCompact.inclusion, KPLocalCube.integerInclusion,
       Matrix.GeneralLinearGroup.map_apply] using h00
-  have hb : ((k 1 1 : KPTameCompact.O F v) : LocalField F v) * (c : LocalField F v) = 1 := by
+  have hb : ((k 1 1 : KPTameCompact.O F v) : LocalField F v) * c = 1 := by
     simpa [KPTameCompact.inclusion, KPLocalCube.integerInclusion,
       Matrix.GeneralLinearGroup.map_apply] using h11
   calc
-    _ = (((k 0 0 : KPTameCompact.O F v) : LocalField F v) * (c : LocalField F v)) /
-        (((k 1 1 : KPTameCompact.O F v) : LocalField F v) * (c : LocalField F v)) :=
+    _ = (((k 0 0 : KPTameCompact.O F v) : LocalField F v) * c) /
+        (((k 1 1 : KPTameCompact.O F v) : LocalField F v) * c) :=
       (mul_div_mul_right _ _ c.ne_zero).symm
     _ = _ := by rw [ha, hb, div_one]
 
@@ -523,12 +500,7 @@ private lemma matching_coordinate (q : HeightOneSpectrum (𝓞 F))
   change KPLocalSmoothRepresentation.ordinaryPGLMap F q
     (KPPGLLocalCover.projection F ζ hζ (Sum.inr q) (QuotientGroup.mk r)) = _
   rw [hr, hab]
-  have hs : KPPGLLocalCover.baseQuotient F (Sum.inr q)
-      (KPGlobalProductPolarizationCharacter.diagonalHom F (Sum.inr q)
-        (KPGlobalProductPolarizationCharacter.localRatio F ζ hζ (Sum.inr q) b)) =
-      KPPGLLocalCover.projection F ζ hζ (Sum.inr q) b.val :=
-    Classical.choose_spec b.property
-  rw [← hs]
+  rw [← (Classical.choose_spec b.property)]
   rfl
 
 theorem unramified_of_local_matching (q : HeightOneSpectrum (𝓞 F))
@@ -599,17 +571,7 @@ theorem unramified_of_local_matching (q : HeightOneSpectrum (𝓞 F))
     change S.heisenberg.π a ∈ R.L at ha
     rw [he] at ha
     exact ha
-  refine ⟨?_, ?_, ?_, hretract⟩
-  · letI : (KPTameCompact.p F q).IsMaximal := IsLocalRing.maximalIdeal.isMaximal _
-    letI : Field (KPTameCompact.O F q ⧸ KPTameCompact.p F q) := Ideal.Quotient.field _
-    let m := Ideal.Quotient.mk (KPTameCompact.p F q)
-    letI : IsLocalHom m := IsLocalHom.of_surjective m Ideal.Quotient.mk_surjective
-    have hu : IsUnit (3 : KPTameCompact.O F q) := by
-      apply isUnit_of_map_unit m
-      apply isUnit_iff_ne_zero.mpr
-      simpa only [m, map_ofNat, Nat.cast_ofNat] using
-        CharP.cast_ne_zero_of_ne_of_prime (KPTameCompact.O F q ⧸ KPTameCompact.p F q) Nat.prime_three ht
-    exact IsLocalRing.notMem_maximalIdeal.mpr hu
+  refine ⟨?_, ?_, hretract⟩
   · apply le_antisymm
     · rintro d ⟨t, ht', rfl⟩
       obtain ⟨u, hu⟩ := compact_coordinate_unit F ζ hζ q S ht t ((hcomp t).mp ht')
@@ -741,9 +703,7 @@ theorem maximal_abelian_image_isotropic
     have hAN : A ≤ N.comap U.π := by
       rw [← hpre]
       exact Subgroup.comap_mono hN
-    have he : N.comap U.π = A := hA.2 _ hAN (by
-      intro x hx y hy
-      exact (U.detects_commutation x y).mpr (hNI _ hx _ hy))
+    have he : N.comap U.π = A := hA.2 _ hAN (fun x hx y hy => (U.detects_commutation x y).mpr (hNI _ hx _ hy))
     apply le_antisymm ?_ hN
     intro d hd
     obtain ⟨x, rfl⟩ := U.quotient_surjective d
@@ -763,17 +723,13 @@ theorem polarization_matching_maximal_abelian
     { toFun := fun a => ⟨a.val, (le_of_eq hpre) a.property⟩
       map_one' := rfl
       map_mul' := fun _ _ => rfl }
-  have he : Continuous e := continuous_subtype_val.subtype_mk _
-  let χL : (A.map U.π).comap U.π →ₜ* ℂˣ :=
-    χ.comp ⟨e, he⟩
   let P : Polarization U :=
     { L := A.map U.π
       maximal := hL
-      ωL := χL
+      ωL := (χ.comp ⟨e, (continuous_subtype_val.subtype_mk _)⟩)
       extends_center := fun a ha => hχ (e a) ha }
   refine ⟨P, hpre, ?_⟩
   intro a b hab
-  change χ (e a) = χ b
   exact congrArg χ (Subtype.ext hab)
 
 end

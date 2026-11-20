@@ -9,9 +9,7 @@ noncomputable section
 open scoped Topology NNReal Matrix.Norms.Elementwise
 namespace DedekindZetaZeroFree.FourierContinuation.ComplexLines
 open KPGlobalResidualConstruction KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
-open _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts renaming evaluation_principalSeries_barrelled_complex → evaluation_principalSeries_barrelled_complex
-open _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts renaming evaluation_linearMap_continuous_of_point_evaluations → evaluation_linearMap_continuous_of_point_evaluations
-open _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts renaming evaluation_point_eval_continuous → evaluation_point_eval_continuous
+open _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts (evaluation_principalSeries_barrelled_complex evaluation_linearMap_continuous_of_point_evaluations evaluation_point_eval_continuous)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1500000
 
@@ -45,8 +43,7 @@ theorem actualDerivative_continuous (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ) :
   exact (continuousLinearMapOfTendsto D ht).continuous
 
 theorem native_operators_continuous (i : Fin 6) :
-    Continuous (NativeComplexHCOperators.operators i) := by
-  exact ((actualDerivative_continuous negativeParameter (KPSmoothActualFlowData.basisMatrix i)).comp
+    Continuous (NativeComplexHCOperators.operators i) := ((actualDerivative_continuous negativeParameter (KPSmoothActualFlowData.basisMatrix i)).comp
     continuous_subtype_val).subtype_mk _
 
 theorem complexGenerator_continuous (a : HCGeneration.ComplexGenerator) :
@@ -71,9 +68,7 @@ theorem complexWord_seminorm_bound (a : List HCGeneration.ComplexGenerator) (ord
       ∀ v : complexCore, (orders.sup coreSeminorm) (HCGeneration.complexWord a v) ≤
         B * (inputOrders.sup coreSeminorm) v := by
   let Q : Seminorm ℂ complexCore := (orders.sup coreSeminorm).comp (HCGeneration.complexWord a)
-  have hQ : Continuous Q :=
-    (Seminorm.continuous_finsetSup (fun i _ => core_withSeminorms.continuous_seminorm i)).comp (complexWord_continuous a)
-  exact Seminorm.bound_of_continuous core_withSeminorms Q hQ
+  exact Seminorm.bound_of_continuous core_withSeminorms Q ((Seminorm.continuous_finsetSup (fun i _ => core_withSeminorms.continuous_seminorm i)).comp (complexWord_continuous a))
 end DedekindZetaZeroFree.FourierContinuation.ComplexLines
 
 end

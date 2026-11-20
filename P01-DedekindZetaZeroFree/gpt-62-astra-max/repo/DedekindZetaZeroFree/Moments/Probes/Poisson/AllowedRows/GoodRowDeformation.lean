@@ -13,8 +13,8 @@ open DedekindZetaZeroFree NumberField MeasureTheory DedekindZetaZeroFree.Quantit
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def Jtail (C : Set D.Row) (x y v T Z : ℝ) : ℂ :=
   ∑ᶠ u ∈ C, (2 * (Real.pi : ℂ))⁻¹ *
@@ -43,8 +43,8 @@ theorem row_good_deform (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpone
           Jhoriz D C 1 Scales.goodLine Scales.rightLine Scales.wLine Scales.zLine (U ^ ρ) Z +
           Jhoriz D C (-1) Scales.rightLine Scales.goodLine Scales.wLine Scales.zLine (U ^ ρ) Z +
           Jtail D C Scales.rightLine Scales.wLine Scales.zLine (U ^ ρ) Z := by
-  obtain ⟨U₁, hU₁, hrect⟩ := DedekindZetaZeroFree.Quantitative.RowRectangleDeformation.row_rectangle_deformation_decomp D A_F ρ hA hconv hρ
-  obtain ⟨U₂, hU₂, hpw⟩ :=
+  obtain ⟨U₁, hrect⟩ := DedekindZetaZeroFree.Quantitative.RowRectangleDeformation.row_rectangle_deformation_decomp D A_F ρ hA hconv hρ
+  obtain ⟨U₂, hpw⟩ :=
     DedekindZetaZeroFree.Quantitative.RowRectangleDeformation.row_pointwise_integrable D A_F ρ hA hconv hρ
   refine ⟨max (max 2 U₁) U₂, le_trans (le_max_left 2 U₁) (le_max_left _ _), ?_⟩
   intro U hU C hC hCmem Z hZ

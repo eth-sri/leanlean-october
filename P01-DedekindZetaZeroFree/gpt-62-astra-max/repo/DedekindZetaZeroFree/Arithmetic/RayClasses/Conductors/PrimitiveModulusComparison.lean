@@ -54,8 +54,6 @@ theorem rayCharacter_primitive_modulus_le {m f q : Ideal (𝓞 F)}
       rw [this]
       exact Submodule.sub_mem_sup (Ideal.mem_span_singleton_self a) hab
 
-  have hsup_b0_m : Ideal.span {b0} ⊔ m = ⊤ := by
-    rw [key hb0α, hαcop]
   have hsup_b0_f : Ideal.span {b0} ⊔ f = ⊤ := by
     rw [Ideal.eq_top_iff_one]
     have : (1 : 𝓞 F) = b0 - (b0 - 1) := by ring
@@ -67,7 +65,8 @@ theorem rayCharacter_primitive_modulus_le {m f q : Ideal (𝓞 F)}
     · exact hm hc
     · exact hf hc
   have hsup_b0_mf : Ideal.span {b0} ⊔ (m * f) = ⊤ := by
-    rw [Ideal.sup_mul_eq_of_coprime_left (I := Ideal.span {b0}) (J := m) (K := f) hsup_b0_m,
+    rw [Ideal.sup_mul_eq_of_coprime_left (by
+      rw [key hb0α, hαcop]),
       hsup_b0_f]
 
   obtain ⟨b, hb0, hbb0, hbcop, hbpos⟩ :=
@@ -75,19 +74,14 @@ theorem rayCharacter_primitive_modulus_le {m f q : Ideal (𝓞 F)}
   have hb_α : b - α ∈ m := by
     have : b - α = (b - b0) + (b0 - α) := by ring
     rw [this]
-    exact add_mem (Ideal.mul_le_left (I := m) (J := f) hbb0) hb0α
+    exact add_mem (Ideal.mul_le_left hbb0) hb0α
   have hb_1 : b - 1 ∈ f := by
     have : b - 1 = (b - b0) + (b0 - 1) := by ring
     rw [this]
-    exact add_mem (Ideal.mul_le_right (I := m) (J := f) hbb0) hb0f
+    exact add_mem (Ideal.mul_le_right hbb0) hb0f
 
-  have hres : η (Ideal.span {α}) = η (Ideal.span {b}) :=
-    rayCharacter_span_eq_of_residue hm η α b hα0 hb0 (by
-      have : α - b = -(b - α) := by ring
-      rw [this]; exact neg_mem hb_α) hαcop hαpos hbpos
-  have hspanb_ne : Ideal.span {b} ≠ ⊥ := fun hc => hb0 (Ideal.span_singleton_eq_bot.mp hc)
-  have hηb : η (Ideal.span {b}) = θ (Ideal.span {b}) := h _ hspanb_ne hbcop
-  have hθb : θ (Ideal.span {b}) = 1 := θ.map_span' b hb0 hb_1 hbpos
-  exact hηα (hres.trans (hηb.trans hθb))
+  exact hηα ((rayCharacter_span_eq_of_residue hm η α b hα0 hb0 (by
+    have : α - b = -(b - α) := by ring
+    rw [this]; exact neg_mem hb_α) hαcop hαpos hbpos).trans ((h _ (fun hc => hb0 (Ideal.span_singleton_eq_bot.mp hc)) hbcop).trans (θ.map_span' b hb0 hb_1 hbpos)))
 
 end DedekindZetaZeroFree.LargeSieve

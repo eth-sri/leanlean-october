@@ -34,6 +34,8 @@ private theorem rational_root_invariant
   rw [he]
   exact hθ _ g
 
+alias TraceFrequencyReduction.rational_root_invariant := rational_root_invariant
+
 theorem borel_nontrivial_fourier_zero_iff_standard_trace_zero
     (μ : Measure (KPCompactFourier.AdditiveQuotient F))
     [μ.IsAddHaarMeasure] [IsProbabilityMeasure μ]

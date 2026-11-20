@@ -9,13 +9,19 @@ namespace DedekindZetaZeroFree.KPTameGauss
 
 variable {k : Type*} [Field k] [Fintype k]
 
-noncomputable def cubicGaussSum (κ : MulChar k ℂ) (ψ : AddChar k ℂ)
+section
+
+variable (κ : MulChar k ℂ) (ψ : AddChar k ℂ)
+
+noncomputable def cubicGaussSum
     (j : ZMod 3) : ℂ :=
   FiniteGauss.gaussPower κ ψ j.val
 
-theorem cubicGaussSum_zero (κ : MulChar k ℂ) (ψ : AddChar k ℂ) (hψ : ψ ≠ 1) :
+theorem cubicGaussSum_zero (hψ : ψ ≠ 1) :
     cubicGaussSum κ ψ 0 = -1 := by
   simpa [cubicGaussSum, FiniteGauss.gaussPower] using gaussSum_one_left hψ
+
+end
 
 section LocalShell
 
@@ -64,7 +70,7 @@ theorem exists_residue_addChar (π : 𝒪[K]) (hπ : Irreducible π)
   let χ : AddChar 𝓀[K] ℂ :=
     { toFun := fun x => ψ ((s x : K) / (π : K))
       map_zero_eq_one' := by
-        rw [hfiber (s 0) 0 (by simpa using hs 0)]
+        rw [hfiber (s 0) 0 (by exact hs 0)]
         simp
       map_add_eq_mul' := by
         intro x y

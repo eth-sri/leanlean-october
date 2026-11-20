@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.DifferentialOperators.MetricCodifferentialDescent
 
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspEnergy.RadialGreenIdentity
 public import DedekindZetaZeroFree.Metaplectic.Cubic.GenuineSector.SmoothScalarAndCotangentTests
@@ -16,10 +17,10 @@ open KPContCotangentActualOverlap KPContCotangentActualGenuineTwistIsotropy
 open KPContCotangentOverlapRationalBranches KPContActualCotangentMeasurableFamilies
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
  def zext (a : ActualChart (U := U) (H := H)) (f : omega a → ℂ) : M F → ℂ :=
   fun x => if hx : x ∈ omega a then f ⟨x, hx⟩ else 0
@@ -27,12 +28,7 @@ variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
  def rext (a : ActualChart (U := U) (H := H)) (f : omega a → ℝ) : M F → ℝ :=
   fun x => if hx : x ∈ omega a then f ⟨x, hx⟩ else 0
 
-private theorem continuous_labeledA_self :
-    Continuous (labeledA (placeEquiv F ζ hζ) : M F → KPCuspGenuineMonodromy.SymmetricSpace F) := by
-  apply continuous_pi
-  intro k
-  exact (continuous_apply (placeEquiv F ζ hζ |>.symm k)).comp
-    (CotangentLogCoframe.A (d F)).continuous
+private alias continuous_labeledA_self := DedekindZetaZeroFree.KPContActualCotangentChartZeroExtension.continuous_labeledA_placeEquiv
 
 private theorem isOpen_omega (a : ActualChart (U := U) (H := H)) : IsOpen (omega a) :=
   a.domain_open.preimage continuous_labeledA_self
@@ -41,23 +37,21 @@ private theorem contDiffAt_zext {a : ActualChart (U := U) (H := H)} {f : omega a
     (hf : SmoothOnLift a f) (x : omega a) :
     ContDiffAt ℝ (⊤ : ℕ∞) (zext a f) x.val := by
   obtain ⟨g, hg, hge⟩ := hf
-  have hmem : omega a ∈ 𝓝 x.val := (isOpen_omega a).mem_nhds x.2
-  have heq : zext a f =ᶠ[𝓝 x.val] g := by
-    filter_upwards [hmem] with y hy
-    simp only [zext, dif_pos hy]
-    exact (hge ⟨y, hy⟩).symm
-  exact (hg.contDiffAt hmem).congr_of_eventuallyEq heq
+  have hmem := (isOpen_omega a).mem_nhds x.2
+  refine (hg.contDiffAt hmem).congr_of_eventuallyEq ?_
+  filter_upwards [hmem] with y hy
+  simp only [zext, dif_pos hy]
+  exact (hge ⟨y, hy⟩).symm
 
 private theorem contDiffAt_rext {a : ActualChart (U := U) (H := H)} {f : omega a → ℝ}
     (hf : SmoothOnLift a f) (x : omega a) :
     ContDiffAt ℝ (⊤ : ℕ∞) (rext a f) x.val := by
   obtain ⟨g, hg, hge⟩ := hf
-  have hmem : omega a ∈ 𝓝 x.val := (isOpen_omega a).mem_nhds x.2
-  have heq : rext a f =ᶠ[𝓝 x.val] g := by
-    filter_upwards [hmem] with y hy
-    simp only [rext, dif_pos hy]
-    exact (hge ⟨y, hy⟩).symm
-  exact (hg.contDiffAt hmem).congr_of_eventuallyEq heq
+  have hmem := (isOpen_omega a).mem_nhds x.2
+  refine (hg.contDiffAt hmem).congr_of_eventuallyEq ?_
+  filter_upwards [hmem] with y hy
+  simp only [rext, dif_pos hy]
+  exact (hge ⟨y, hy⟩).symm
 
 private lemma zext_add (a : ActualChart (U := U) (H := H)) (f g : omega a → ℂ) :
     zext a (f + g) = zext a f + zext a g := by
@@ -71,7 +65,11 @@ private lemma zext_ofReal (a : ActualChart (U := U) (H := H)) (η : omega a → 
     zext a (fun y => (η y : ℂ)) = fun y => ((rext a η) y : ℂ) := by
   funext y; by_cases hy : y ∈ omega a <;> simp [zext, rext, hy]
 
-private lemma differential_add (d : ℕ) (φ ψ : HyperbolicChart.Space d → ℂ)
+section
+
+variable (d : ℕ)
+
+private lemma differential_add (φ ψ : HyperbolicChart.Space d → ℂ)
     (p : HyperbolicChart.Space d) (hφ : DifferentiableAt ℝ φ p) (hψ : DifferentiableAt ℝ ψ p) :
     HyperbolicChart.differential d (φ + ψ) p =
       HyperbolicChart.differential d φ p + HyperbolicChart.differential d ψ p := by
@@ -84,7 +82,7 @@ private lemma differential_add (d : ℕ) (φ ψ : HyperbolicChart.Space d → �
       ContinuousLinearMap.add_apply]
   fin_cases k <;> simp [HyperbolicChart.differential, h1, mul_add]
 
-private lemma differential_smul (d : ℕ) (c : ℂ) (φ : HyperbolicChart.Space d → ℂ)
+private lemma differential_smul (c : ℂ) (φ : HyperbolicChart.Space d → ℂ)
     (p : HyperbolicChart.Space d) (hφ : DifferentiableAt ℝ φ p) :
     HyperbolicChart.differential d (c • φ) p = c • HyperbolicChart.differential d φ p := by
   funext i k
@@ -95,7 +93,7 @@ private lemma differential_smul (d : ℕ) (c : ℂ) (φ : HyperbolicChart.Space 
       ContinuousLinearMap.smul_apply, smul_eq_mul]
   fin_cases k <;> simp [HyperbolicChart.differential, h1] <;> ring
 
-private lemma differential_mul (d : ℕ) (φ ψ : HyperbolicChart.Space d → ℂ)
+private lemma differential_mul (φ ψ : HyperbolicChart.Space d → ℂ)
     (p : HyperbolicChart.Space d) (hφ : DifferentiableAt ℝ φ p) (hψ : DifferentiableAt ℝ ψ p) :
     HyperbolicChart.differential d (φ * ψ) p =
       φ p • HyperbolicChart.differential d ψ p + ψ p • HyperbolicChart.differential d φ p := by
@@ -108,22 +106,24 @@ private lemma differential_mul (d : ℕ) (φ ψ : HyperbolicChart.Space d → �
       ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, Pi.mul_apply, smul_eq_mul]
   fin_cases k <;> simp [HyperbolicChart.differential, h1] <;> ring_nf
 
-private lemma coordinateDerivative_ofReal_im (d : ℕ) (i : Fin d) (k : Fin 3)
+private lemma coordinateDerivative_ofReal_im (i : Fin d) (k : Fin 3)
     (ψ : HyperbolicChart.Space d → ℝ) (p : HyperbolicChart.Space d)
     (hψ : DifferentiableAt ℝ ψ p) :
     (HyperbolicChart.coordinateDerivative d i k (fun y => (ψ y : ℂ)) p).im = 0 := by
   have h : fderiv ℝ (fun y : HyperbolicChart.Space d => (ψ y : ℂ)) p =
-      (Complex.ofRealCLM : ℝ →L[ℝ] ℂ).comp (fderiv ℝ ψ p) :=
+      Complex.ofRealCLM.comp (fderiv ℝ ψ p) :=
     (Complex.ofRealCLM.hasFDerivAt.comp p hψ.hasFDerivAt).fderiv
   simp only [HyperbolicChart.coordinateDerivative, h, ContinuousLinearMap.comp_apply]
   simp
 
-private lemma differential_ofReal_im (d : ℕ) (ψ : HyperbolicChart.Space d → ℝ)
+private lemma differential_ofReal_im (ψ : HyperbolicChart.Space d → ℝ)
     (p : HyperbolicChart.Space d) (hψ : DifferentiableAt ℝ ψ p) (i : Fin d) (k : Fin 3) :
     ((HyperbolicChart.differential d (fun y => (ψ y : ℂ)) p) i k).im = 0 := by
   fin_cases k <;>
     simp [HyperbolicChart.differential, coordinateDerivative_ofReal_im d i _ ψ p hψ,
       Complex.mul_im]
+
+end
 
  def zcplx (a : ActualChart (U := U) (H := H)) (η : omega a → ℝ) : M F → ℂ :=
   fun y => ((rext a η) y : ℂ)
@@ -152,23 +152,13 @@ private theorem smoothOnLift_component {a : ActualChart (U := U) (H := H)} {W : 
     SmoothOnLift a (fun y => W y (i,k)) := by
   obtain ⟨G, hG, hGe⟩ := hW
   refine ⟨fun y => G y (i,k), ?_, ?_⟩
-  · exact ((EuclideanSpace.proj (𝕜 := ℂ) (i,k)).restrictScalars ℝ).contDiff.comp_contDiffOn hG
+  · exact ((EuclideanSpace.proj (i,k)).restrictScalars ℝ).contDiff.comp_contDiffOn hG
   · intro y; show (G y.val) (i,k) = (W y) (i,k); rw [hGe y]
 
 private lemma codifferential_congr (d : ℕ)
     {W W' : HyperbolicChart.Space d → HyperbolicChart.Cotangent d}
     {p : HyperbolicChart.Space d} (h : W =ᶠ[𝓝 p] W') :
-    HyperbolicChart.codifferential d W p = HyperbolicChart.codifferential d W' p := by
-  simp only [HyperbolicChart.codifferential, HyperbolicChart.coordinateDerivative]
-  apply Finset.sum_congr rfl
-  intro i hi
-  have h0 : (fun q => W q i 0) =ᶠ[𝓝 p] (fun q => W' q i 0) :=
-    h.mono fun q hq => by show W q i 0 = W' q i 0; rw [hq]
-  have h1 : (fun q => W q i 1) =ᶠ[𝓝 p] (fun q => W' q i 1) :=
-    h.mono fun q hq => by show W q i 1 = W' q i 1; rw [hq]
-  have h2 : (fun q => W q i 2) =ᶠ[𝓝 p] (fun q => W' q i 2) :=
-    h.mono fun q hq => by show W q i 2 = W' q i 2; rw [hq]
-  rw [h0.fderiv_eq, h1.fderiv_eq, h2.fderiv_eq, h.self_of_nhds]
+    HyperbolicChart.codifferential d W p = HyperbolicChart.codifferential d W' p := by apply @MetricCodifferentialDescent.codifferential_congr <;> assumption
 
 private lemma star_of_im_zero {z : ℂ} (h : z.im = 0) : star z = z := by
   rw [Complex.star_def, Complex.conj_eq_iff_im.mpr h]
@@ -181,7 +171,11 @@ private lemma pairing_eq_ctr' (A : HyperbolicChart.Cotangent (d F)) (W : E F)
   apply Finset.sum_congr rfl; intro k _
   rw [star_of_im_zero (hA i k)]
 
-private lemma coordinateDerivative_add (d : ℕ) (i : Fin d) (k : Fin 3)
+section
+
+variable (d : ℕ) (i : Fin d) (k : Fin 3)
+
+private lemma coordinateDerivative_add
     (f g : HyperbolicChart.Space d → ℂ) (p : HyperbolicChart.Space d)
     (hf : DifferentiableAt ℝ f p) (hg : DifferentiableAt ℝ g p) :
     HyperbolicChart.coordinateDerivative d i k (f + g) p =
@@ -189,13 +183,15 @@ private lemma coordinateDerivative_add (d : ℕ) (i : Fin d) (k : Fin 3)
         HyperbolicChart.coordinateDerivative d i k g p := by
   simp only [HyperbolicChart.coordinateDerivative, fderiv_add hf hg, ContinuousLinearMap.add_apply]
 
-private lemma coordinateDerivative_smul (d : ℕ) (i : Fin d) (k : Fin 3) (c : ℂ)
+private lemma coordinateDerivative_smul (c : ℂ)
     (f : HyperbolicChart.Space d → ℂ) (p : HyperbolicChart.Space d)
     (hf : DifferentiableAt ℝ f p) :
     HyperbolicChart.coordinateDerivative d i k (c • f) p =
       c * HyperbolicChart.coordinateDerivative d i k f p := by
   simp only [HyperbolicChart.coordinateDerivative, fderiv_const_smul hf,
     ContinuousLinearMap.smul_apply, smul_eq_mul]
+
+end
 
 private lemma codifferential_add (d : ℕ)
     (A B : HyperbolicChart.Space d → HyperbolicChart.Cotangent d) (p : HyperbolicChart.Space d)
@@ -316,17 +312,17 @@ private lemma ZC_smul (a : ActualChart (U := U) (H := H)) (c : ℂ) (W : omega a
 private lemma ZC_ZD (a : ActualChart (U := U) (H := H)) (f : omega a → ℂ)
     (hf : SmoothOnLift a f) (x : omega a) :
     ZC a (ZD a f) x = HyperbolicChart.laplacian (d F) (zext a f) x.val := by
-  have hmem : omega a ∈ 𝓝 x.val := (isOpen_omega a).mem_nhds x.2
+  let differential₀ := HyperbolicChart.differential (d F) (zext a f)
   have hΨ : zcot a (ZD a f) = fun y : M F =>
-      if hy : y ∈ omega a then HyperbolicChart.differential (d F) (zext a f) y else 0 := by
+      if hy : y ∈ omega a then differential₀ y else 0 := by
     funext y
     by_cases hy : y ∈ omega a
     · rw [zcot_apply a (ZD a f) y hy, ZD, LinearEquiv.symm_apply_apply, dif_pos hy]
     · simp [zcot, dif_neg hy]
   have heq : (fun y : M F => if hy : y ∈ omega a then
-        HyperbolicChart.differential (d F) (zext a f) y else 0)
-      =ᶠ[𝓝 x.val] HyperbolicChart.differential (d F) (zext a f) := by
-    filter_upwards [hmem] with y hy
+        differential₀ y else 0)
+      =ᶠ[𝓝 x.val] differential₀ := by
+    filter_upwards [((isOpen_omega a).mem_nhds x.2)] with y hy
     exact dif_pos hy
   simp only [ZC, hΨ]
   rw [codifferential_congr (d F) heq]
@@ -336,19 +332,17 @@ private lemma ZC_ZD (a : ActualChart (U := U) (H := H)) (f : omega a → ℂ)
 private lemma ZD_ofReal_im (a : ActualChart (U := U) (H := H)) (η : omega a → ℝ)
     (hη : SmoothOnLift a η) (x : omega a) (i : Fin (d F)) (k : Fin 3) :
     (ZD a (fun y => (η y : ℂ)) x (i,k)).im = 0 := by
-  have hd : DifferentiableAt ℝ (rext a η) x.val :=
-    (contDiffAt_rext hη x).differentiableAt (by simp)
   simp only [ZD, CotangentLogCoframe.j_apply, zext_ofReal]
-  exact differential_ofReal_im (d F) (rext a η) x.val hd i k
+  exact differential_ofReal_im (d F) (rext a η) x.val ((contDiffAt_rext hη x).differentiableAt (by simp)) i k
 
 private lemma ZD_mul (a : ActualChart (U := U) (H := H)) (η : omega a → ℝ) (f : omega a → ℂ)
     (hη : SmoothOnLift a η) (hf : SmoothOnLift a f) (x : omega a) :
     ZD a (fun y => (η y : ℂ) * f y) x =
       (η x : ℂ) • ZD a f x + f x • ZD a (fun y => (η y : ℂ)) x := by
-  have hdη : DifferentiableAt ℝ (rext a η) x.val := (contDiffAt_rext hη x).differentiableAt (by simp)
-  have hdηc : DifferentiableAt ℝ (fun y => ((rext a η) y : ℂ)) x.val :=
+  have hdη := (contDiffAt_rext hη x).differentiableAt (by simp)
+  have hdηc :=
     Complex.ofRealCLM.differentiableAt.comp x.val hdη
-  have hdf : DifferentiableAt ℝ (zext a f) x.val := (contDiffAt_zext hf x).differentiableAt (by simp)
+  have hdf := (contDiffAt_zext hf x).differentiableAt (by simp)
   have hze : zext a (fun y => (η y : ℂ) * f y) =
       (fun y => ((rext a η) y : ℂ)) * zext a f := by
     funext y; by_cases hy : y ∈ omega a <;> simp [zext, rext, hy]
@@ -362,18 +356,11 @@ private lemma ZC_smul_mul (a : ActualChart (U := U) (H := H)) (η : omega a → 
     (W : omega a → E F) (hη : SmoothOnLift a η) (hW : SmoothOnLift a W) (x : omega a) :
     ZC a (fun y => (η y : ℂ) • W y) x =
       (η x : ℂ) * ZC a W x - ctr (ZD a (fun y => (η y : ℂ)) x) (W x) := by
-  have hdη : DifferentiableAt ℝ (rext a η) x.val := (contDiffAt_rext hη x).differentiableAt (by simp)
-  have hdφ : DifferentiableAt ℝ (zcplx a η) x.val :=
-    Complex.ofRealCLM.differentiableAt.comp x.val hdη
+  have hdη := (contDiffAt_rext hη x).differentiableAt (by simp)
   have hdΨ : ∀ i k, DifferentiableAt ℝ (fun q => zcot a W q i k) x.val := by
     intro i k
     rw [zcot_apply_eq_zext]
     exact (contDiffAt_zext (smoothOnLift_component hW i k) x).differentiableAt (by simp)
-  have hφstar : ∀ q, star (zcplx a η q) = zcplx a η q := by
-    intro q
-    have hz : (zcplx a η q).im = 0 := by
-      simp only [zcplx, rext]; split <;> simp
-    rw [Complex.star_def, Complex.conj_eq_iff_im.mpr hz]
   have hArg : zcot a (fun y => (η y : ℂ) • W y)
       = fun q i k => star (zcplx a η q) * zcot a W q i k := by
     funext q i k
@@ -382,14 +369,12 @@ private lemma ZC_smul_mul (a : ActualChart (U := U) (H := H)) (η : omega a → 
       rw [show zcplx a η q = (η ⟨q, hq⟩ : ℂ) from by simp only [zcplx, rext, dif_pos hq]]
       rw [show star ((η ⟨q, hq⟩ : ℂ)) = (η ⟨q, hq⟩ : ℂ) from by
         rw [Complex.star_def, Complex.conj_eq_iff_im]; simp]
-      simp only [Pi.smul_apply, smul_eq_mul]
+      simp
     · simp only [zcot, dif_neg hq, zcplx, rext, dif_neg hq]; simp
   have hpair : HyperbolicChart.pairing (d F)
       (HyperbolicChart.differential (d F) (zcplx a η) x.val)
       (zcot a W x.val) = ctr (ZD a (fun y => (η y : ℂ)) x) (W x) := by
-    have hA : ∀ i k, ((HyperbolicChart.differential (d F) (zcplx a η) x.val) i k).im = 0 := by
-      intro i k
-      exact differential_ofReal_im (d F) (rext a η) x.val hdη i k
+    have hA : ∀ i k, ((HyperbolicChart.differential (d F) (zcplx a η) x.val) i k).im = 0 := fun i k => differential_ofReal_im (d F) (rext a η) x.val hdη i k
     rw [show zcot a W x.val = fun i k => (W x) (i,k) from by
       funext i k
       rw [zcot_apply a W x.val x.2,
@@ -398,9 +383,8 @@ private lemma ZC_smul_mul (a : ActualChart (U := U) (H := H)) (η : omega a → 
     rw [pairing_eq_ctr' _ _ hA]
     simp only [ctr, ZD, zext_ofReal, CotangentLogCoframe.j_apply]
     rfl
-  have hstar := KPCompactGreen.GreenFlux.codifferential_star_mul (d F) (zcplx a η)
-    (zcot a W) x.val hdφ hdΨ
-  rw [ZC, hArg, hstar, hpair, ZC]
+  rw [ZC, hArg, (KPCompactGreen.GreenFlux.codifferential_star_mul (d F) (zcplx a η)
+    (zcot a W) x.val (Complex.ofRealCLM.differentiableAt.comp x.val hdη) hdΨ), hpair, ZC]
   have h1 : star (zcplx a η x.val) = (η x : ℂ) := by
     have hz : (zcplx a η x.val).im = 0 := by
       simp only [zcplx, rext]; split <;> simp

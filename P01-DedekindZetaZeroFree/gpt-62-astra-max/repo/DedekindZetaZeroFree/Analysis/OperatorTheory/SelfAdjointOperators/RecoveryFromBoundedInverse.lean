@@ -15,22 +15,22 @@ def resolventSet {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     (∀ f : H, ∃ hf : R f ∈ A.domain, A ⟨R f, hf⟩ - z • R f = f) ∧
     (∀ u : A.domain, R (A u - z • (u : H)) = (u : H))}
 
-def fromBoundedInverse {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    (B : H →L[ℂ] H) (hB : Function.Injective B) : H →ₗ.[ℂ] H where
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] (B : H →L[ℂ] H)
+    (hB : Function.Injective B)
+
+def fromBoundedInverse : H →ₗ.[ℂ] H where
   domain := LinearMap.range B.toLinearMap
   toFun := (LinearEquiv.ofInjective B.toLinearMap hB).symm.toLinearMap -
     (LinearMap.range B.toLinearMap).subtype
 
-theorem fromBoundedInverse_domain {H : Type*} [NormedAddCommGroup H]
-    [InnerProductSpace ℂ H] (B : H →L[ℂ] H) (hB : Function.Injective B) :
+theorem fromBoundedInverse_domain :
     (fromBoundedInverse B hB).domain = LinearMap.range B.toLinearMap := rfl
 
-theorem fromBoundedInverse_apply {H : Type*} [NormedAddCommGroup H]
-    [InnerProductSpace ℂ H] (B : H →L[ℂ] H) (hB : Function.Injective B) (f : H) :
+theorem fromBoundedInverse_apply (f : H) :
     fromBoundedInverse B hB ⟨B f, ⟨f, rfl⟩⟩ = f - B f := by
   change (LinearEquiv.ofInjective B.toLinearMap hB).symm
     ((LinearEquiv.ofInjective B.toLinearMap hB) f) - B f = f - B f
-  rw [LinearEquiv.symm_apply_apply]
+  simp
 
 end ResolventOperator
 
@@ -58,7 +58,6 @@ theorem kp_cont_resolvent_selfadjoint_operator
     erw [ResolventOperator.fromBoundedInverse_apply,
       ResolventOperator.fromBoundedInverse_apply, inner_sub_left, inner_sub_right]
     exact congrArg (fun t : ℂ => t - inner ℂ (B f) (B g)) (hsym f g).symm
-  have hforward : Δ ≤ Δ.adjoint := hform.le_adjoint hD
   have hback : Δ.adjoint ≤ Δ := by
     have hrecover (z : Δ.adjoint.domain) : (z : H) = B ((z : H) + Δ.adjoint z) := by
       apply ext_inner_right ℂ
@@ -70,7 +69,7 @@ theorem kp_cont_resolvent_selfadjoint_operator
           rw [hh]
           abel
         _ = inner ℂ (B ((z : H) + Δ.adjoint z)) f := by
-          rw [map_add, inner_add_left, hsym (z : H) f, hsym (Δ.adjoint z) f]
+          simp [map_add, inner_add_left, hsym]
     refine ⟨?_, ?_⟩
     · intro z hz
       exact ⟨z + Δ.adjoint ⟨z, hz⟩, (hrecover ⟨z, hz⟩).symm⟩
@@ -79,8 +78,7 @@ theorem kp_cont_resolvent_selfadjoint_operator
         Subtype.ext (hzu.symm.trans (hrecover z))
       rw [hu, ResolventOperator.fromBoundedInverse_apply, ← hrecover z]
       abel
-  have hself : IsSelfAdjoint Δ := by
-    exact (LinearPMap.isSelfAdjoint_def).mpr (le_antisymm hback hforward)
+  have hself := (LinearPMap.isSelfAdjoint_def).mpr (le_antisymm hback (hform.le_adjoint hD))
   have hpositive : ∀ u : Δ.domain, 0 ≤ (inner ℂ (u : H) (Δ u)).re := by
     rintro ⟨u, hu⟩
     rcases hu with ⟨f, rfl⟩
@@ -107,9 +105,9 @@ theorem kp_cont_resolvent_selfadjoint_operator
   · intro f
     obtain ⟨hf, heq⟩ := hleft f
     refine ⟨hf, ?_⟩
-    simpa only [neg_smul, one_smul, sub_neg_eq_add, add_comm] using heq
+    simpa [add_comm] using heq
   · intro u
-    simpa only [neg_smul, one_smul, sub_neg_eq_add, add_comm] using hright u
+    simpa [add_comm] using hright u
 
 end DedekindZetaZeroFree
 

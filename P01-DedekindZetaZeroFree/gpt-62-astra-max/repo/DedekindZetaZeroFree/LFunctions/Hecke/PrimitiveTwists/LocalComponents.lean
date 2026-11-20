@@ -12,36 +12,21 @@ namespace DedekindZetaZeroFree.Detector.Conductor
 
 namespace LocalCertification
 
-theorem idealAwayPrimePart_coprime (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (I : Ideal (𝓞 F)) :
-    v.asIdeal ⊔ Raw.idealAwayPrimePart F v I = ⊤ := by
-  classical
-  apply Ideal.sup_multiset_prod_eq_top
-  intro p hp
-  obtain ⟨hpf, hpv⟩ := Multiset.mem_filter.mp hp
-  have hpprime := UniqueFactorizationMonoid.prime_of_normalized_factor p hpf
-  exact v.isMaximal.coprime_of_ne
-    ((Ideal.isPrime_of_prime hpprime).isMaximal hpprime.ne_zero) hpv.symm
-
-private theorem exists_sub_mem_pair {R : Type*} [CommRing R] (I J : Ideal R) (h : I ⊔ J = ⊤) (b : R) :
-    ∃ a : R, a - b ∈ I ∧ a - 1 ∈ J := by
-  obtain ⟨i, hi, j, hj, hij⟩ := (Ideal.isCoprime_iff_sup_eq.mpr h).exists
-  refine ⟨b * j + i, ?_, ?_⟩
-  · have heq : b * j + i - b = (1 - b) * i := by linear_combination b * hij
-    rw [heq]
-    exact I.mul_mem_left _ hi
-  · have heq : b * j + i - 1 = (b - 1) * j := by linear_combination hij
-    rw [heq]
-    exact J.mul_mem_left _ hj
+alias idealAwayPrimePart_coprime := DedekindZetaZeroFree.Detector.Conductor.LocalTwistSteps.LocalComponentUniqueness.away_coprime
 
 theorem exists_integral_away_congruent
     (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (I : Ideal (𝓞 F)) (n : ℕ)
     (b : 𝓞 F) : ∃ a : 𝓞 F,
       a - b ∈ v.asIdeal ^ n ∧ a - 1 ∈ Raw.idealAwayPrimePart F v I := by
-  have h : v.asIdeal ^ n ⊔ Raw.idealAwayPrimePart F v I = ⊤ :=
-    Ideal.pow_sup_eq_top (idealAwayPrimePart_coprime F v I)
-  exact exists_sub_mem_pair (v.asIdeal ^ n) (Raw.idealAwayPrimePart F v I) h b
+  obtain ⟨i, hi, j, hj, hij⟩ := (Ideal.isCoprime_iff_sup_eq.mpr (Ideal.pow_sup_eq_top (idealAwayPrimePart_coprime F v I))).exists
+  refine ⟨b * j + i, ?_, ?_⟩
+  · have heq : b * j + i - b = (1 - b) * i := by linear_combination b * hij
+    rw [heq]
+    exact (v.asIdeal ^ n).mul_mem_left _ hi
+  · have heq : b * j + i - 1 = (b - 1) * j := by linear_combination hij
+    rw [heq]
+    exact (Raw.idealAwayPrimePart F v I).mul_mem_left _ hj
 
 end LocalCertification
 
@@ -52,9 +37,7 @@ private theorem idelic_hom_ext_at_modulus
     (hp : ∀ (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ m.finitePart.support),
       f (QuotientGroup.mk' (IdeleGroup.principalSubgroup F) (IdeleGroup.finitePrimeIdele v)) =
       g (QuotientGroup.mk' (IdeleGroup.principalSubgroup F) (IdeleGroup.finitePrimeIdele v))) : f = g := by
-  let fl := QuotientGroup.lift m.congruenceSubgroup f hf
-  let gl := QuotientGroup.lift m.congruenceSubgroup g hg
-  have hl : fl = gl := by
+  have hl : (QuotientGroup.lift m.congruenceSubgroup f hf) = (QuotientGroup.lift m.congruenceSubgroup g hg) := by
     apply GlobalClassFieldTheory.GlobalClassFields.rayClassGroup_hom_ext_finitePrime m
     intro v hv
     exact hp v hv

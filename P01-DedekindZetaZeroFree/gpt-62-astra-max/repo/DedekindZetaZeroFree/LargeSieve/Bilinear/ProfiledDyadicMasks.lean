@@ -13,12 +13,15 @@ open scoped NumberField Classical
 namespace RMMaskedDyadic
 open MeasureTheory
 
-theorem finite_integral_l2 {I : Type*} [Fintype I]
-    (g : ℝ → I → ℂ) (hg : ∀ i, Integrable (fun t => g t i)) :
+section
+
+variable {I : Type*} [Fintype I] (g : ℝ → I → ℂ) (hg : ∀ i, Integrable (fun t => g t i))
+
+include hg in
+theorem finite_integral_l2 :
     Real.sqrt (∑ i, ‖∫ t, g t i‖ ^ 2) ≤
       ∫ t, Real.sqrt (∑ i, ‖g t i‖ ^ 2) := by
-  let G : ℝ → EuclideanSpace ℂ I := fun t => WithLp.toLp 2 (g t)
-  have hG : Integrable G := integrable_piLp_iff.mpr hg
+  let G := fun t => WithLp.toLp 2 (g t)
   have he : (∫ t, G t) = WithLp.toLp 2 (fun i => ∫ t, g t i) := by
     ext i
     exact eval_integral_piLp hg i
@@ -26,8 +29,8 @@ theorem finite_integral_l2 {I : Type*} [Fintype I]
   rw [he, EuclideanSpace.norm_eq] at hb
   simpa only [EuclideanSpace.norm_eq, G, PiLp.toLp_apply] using hb
 
-theorem finite_integral_l2_bound {I : Type*} [Fintype I]
-    (g : ℝ → I → ℂ) (hg : ∀ i, Integrable (fun t => g t i))
+include hg in
+theorem finite_integral_l2_bound
     (W : ℝ → ℂ) (hW : Integrable W) (B : ℝ)
     (hbound : ∀ t, Real.sqrt (∑ i, ‖g t i‖ ^ 2) ≤ ‖W t‖ * B) :
     Real.sqrt (∑ i, ‖∫ t, g t i‖ ^ 2) ≤ (∫ t, ‖W t‖) * B := by
@@ -39,6 +42,8 @@ theorem finite_integral_l2_bound {I : Type*} [Fintype I]
       (Filter.Eventually.of_forall fun t => EuclideanSpace.norm_eq _)
   · exact hW.norm.mul_const B
   · exact hbound
+
+end
 
 set_option maxHeartbeats 1000000 in
 theorem finite_separated_sieve {I U : Type*} [Fintype I] [Fintype U]
@@ -101,12 +106,11 @@ theorem finite_separated_sieve {I U : Type*} [Fintype I] [Fintype U]
   haveI := (normBoundedIdeals_finite F (2 * C)).fintype
   have hcard : (u.card : ℝ) ≤ K * (2 * C) := by
     have hn := Fintype.card_le_of_injective f hf
-    have hn' : u.card ≤ (normBoundedIdeals F (2 * C)).ncard := by
-      rw [Fintype.card_coe, ← Nat.card_eq_fintype_card, Nat.card_coe_set_eq] at hn
-      exact hn
     have hk := (hcount Set.univ).1 (2 * C) (by linarith)
     simp only [Set.univ_inter] at hk
-    exact (Nat.cast_le.mpr hn').trans hk
+    refine (Nat.cast_le.mpr ?_).trans hk
+    rw [Fintype.card_coe, ← Nat.card_eq_fintype_card, Nat.card_coe_set_eq] at hn
+    exact hn
   calc
     ∑ c ∈ u, (Ideal.absNorm c : ℝ)⁻¹ ≤ ∑ c ∈ u, C⁻¹ := by
       apply Finset.sum_le_sum
@@ -179,7 +183,7 @@ open RMFourierProfile
     norm_num [Real.rpow_neg_one]
   rw [he]
   have ha2 : ‖a‖ ^ 2 ≤ 1 := by nlinarith [norm_nonneg a]
-  simpa only [one_mul] using mul_le_mul_of_nonneg_right ha2 (by positivity : 0 ≤ q⁻¹)
+  simpa using mul_le_mul_of_nonneg_right ha2 (by positivity : 0 ≤ q⁻¹)
 
  theorem sqrt_hgl_dyadic (L H C D b : ℝ) (hL : 0 ≤ L) (hH : 0 ≤ H)
     (hC : 0 < C) (hD : 0 < D) :
@@ -219,7 +223,7 @@ theorem finite_row_column_phased_hgl
   intro C D t u r lam ρ hC hD hu hr hlam hρ
   have hCp : 0 < C := by linarith
   have hDp : 0 < D := by linarith
-  let a : Ideal (𝓞 F) → ℂ := fun c => lam c *
+  let a := fun c => lam c *
     Complex.ofReal ((Ideal.absNorm c : ℝ) ^ (-(1 / 2 : ℝ))) *
       normPhase t ((Ideal.absNorm c : ℝ) / C)
   have hms : ∑ c ∈ u, ‖a c‖ ^ 2 ≤ H := by
@@ -228,12 +232,10 @@ theorem finite_row_column_phased_hgl
     intro c hc
     apply phased_coeff_sq_le _ (hCp.trans_le (hu c hc).2.2.1) _ _ (hlam c)
     exact norm_normPhase _ _ (div_pos (hCp.trans_le (hu c hc).2.2.1) hCp)
-  have hbnd := hbound (2 * D) (2 * C) u r a ρ (by linarith) (by linarith)
+  have hs := Real.sqrt_le_sqrt ((hbound (2 * D) (2 * C) u r a ρ (by linarith) (by linarith)
     (fun c hc => ⟨(hu c hc).1, (hu c hc).2.1, (hu c hc).2.2.2.le⟩)
-    (fun d hd => ⟨(hr d hd).1, (hr d hd).2.1, (hr d hd).2.2.2.le⟩) hρ
-  have hm' := mul_le_mul_of_nonneg_left hms
-    (by positivity : 0 ≤ L * ((2 * D) * (2 * C)) ^ b * (2 * D + 2 * C))
-  have hs := Real.sqrt_le_sqrt (hbnd.trans hm')
+    (fun d hd => ⟨(hr d hd).1, (hr d hd).2.1, (hr d hd).2.2.2.le⟩) hρ).trans (mul_le_mul_of_nonneg_left hms
+    (by positivity : 0 ≤ L * ((2 * D) * (2 * C)) ^ b * (2 * D + 2 * C))))
   rw [sqrt_hgl_dyadic L H C D b hL.le hH.le hCp hDp] at hs
   exact hs
 
@@ -293,7 +295,7 @@ theorem finite_profiled_hgl
   have hp : ∀ c d, P c d = ∫ t, W t * cp t c * rp t d := by
     intro c d
     simpa only [P, W, cp, rp, zpow_neg, zpow_ofNat, div_eq_mul_inv] using (hsep c d).2
-  have hpint : ∀ c d, Integrable (fun t => W t * cp t c * rp t d) :=
+  have hpint :=
     fun c d => (hsep c d).1
   have hrp : ∀ t d, ‖rp t d‖ = 1 := by
     intro t d

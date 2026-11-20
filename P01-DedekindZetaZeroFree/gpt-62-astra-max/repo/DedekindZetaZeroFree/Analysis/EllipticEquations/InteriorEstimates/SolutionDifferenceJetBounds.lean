@@ -11,14 +11,18 @@ open MeasureTheory KPContLocalNorm KPContLocalOrbifold
 open KPContLocalEnergy
 open KPContLocalHolomorphyUpgrade.CauchyAssembly
 
-private lemma pair_integrable {n : ℕ} {B : LocalBall n}
-    {a : Space n → ℂ} (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier)
+section
+
+variable {n : ℕ} {B : LocalBall n} {a : Space n → ℂ} (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier)
+
+include ha in
+private lemma pair_integrable
     (q : BallL2 B) (φ : TestFunction B.toOpens ℂ ⊤) :
     Integrable (fun x => a x * q x * star (φ x)) (volume.restrict B.carrier) :=
   WeakJets.Raw.jet_localTest_integrable ha (WeakJets.Raw.conjugateTest φ) q
 
-private lemma pair_sub {n : ℕ} {B : LocalBall n}
-    {a : Space n → ℂ} (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier)
+include ha in
+private lemma pair_sub
     (q r : BallL2 B) (φ : TestFunction B.toOpens ℂ ⊤) :
     (∫ x in B.carrier, a x * (q-r) x * star (φ x)) =
       (∫ x in B.carrier, a x * q x * star (φ x)) -
@@ -27,6 +31,8 @@ private lemma pair_sub {n : ℕ} {B : LocalBall n}
   apply integral_congr_ae
   filter_upwards [Lp.coeFn_sub q r] with x hx
   simp only [hx, Pi.sub_apply, mul_sub, sub_mul]
+
+end
 
 private lemma difference_equation {n k : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (D : Coefficients B cρ Cρ κ Λ) (a₁ a₀ : ℂ)

@@ -10,13 +10,13 @@ open scoped Classical NumberField Topology ENNReal NNReal
 namespace DedekindZetaZeroFree.KPMsResidualTailRestoration.SharpConstantTerm.FiberStability
 open KPMsClearedTruncationL2
 variable {F : Type} [Field F] [NumberField F]
-variable {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {C : ModelData F ζ hζ} {D : Iwasawa F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable {A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ C D R P H}
-variable {U : Level F ζ hζ}
+    {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
+    {C : ModelData F ζ hζ} {D : Iwasawa F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ C D R P H}
+    {U : Level F ζ hζ}
 
  theorem level_frame_algebra {G : Type} [Group G] (h a f c e u : G)
     (hfa : Commute f a) (he : ∀ g : G, g * e = e * g) :

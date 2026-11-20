@@ -32,7 +32,6 @@ theorem hasProd_finsupp_euler {P : Type u} (w : (P →₀ ℕ) → ℂ)
     by_cases h : e.support ⊆ S
     · simp [g, h]
     · simp [g, h]
-  have hconv := tendsto_tsum_of_dominated_convergence habs hlim hbound
   have heq (S : Finset P) :
       (∑' e : P →₀ ℕ, g S e) = ∏ p ∈ S, (1 - w (Finsupp.single p 1))⁻¹ := by
     rw [← (hasSum_finsupp_supported w hzero hadd habs S).tsum_eq]
@@ -40,6 +39,6 @@ theorem hasProd_finsupp_euler {P : Type u} (w : (P →₀ ℕ) → ℂ)
       first | rfl | simp only [g, Set.indicator_apply, Set.mem_setOf_eq]
   change Filter.Tendsto (fun S : Finset P => ∏ p ∈ S,
     (1 - w (Finsupp.single p 1))⁻¹) Filter.atTop (nhds (∑' e : P →₀ ℕ, w e))
-  simpa only [heq] using hconv
+  simpa only [heq] using (tendsto_tsum_of_dominated_convergence habs hlim hbound)
 
 end DedekindZetaZeroFree.LargeSieve.IdealEuler

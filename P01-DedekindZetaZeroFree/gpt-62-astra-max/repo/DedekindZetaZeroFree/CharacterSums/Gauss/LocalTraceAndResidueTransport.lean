@@ -13,7 +13,7 @@ open scoped NumberField Classical ValuativeRel
 open NumberField IsDedekindDomain ValuativeRel
 namespace DedekindZetaZeroFree.ExteriorWhittakerValues.ShellArithmetic
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem allowedGenerator_integer_irreducible (R : PrincipalMellin.ActualRecipe S η)
     (p : ThetaBranch.ExteriorPrime R.A) :
@@ -24,11 +24,10 @@ theorem allowedGenerator_integer_irreducible (R : PrincipalMellin.ActualRecipe S
     rw [← UnitCovarianceCompletion.ordinaryValuation_eq_order]
     exact UnitCovarianceCompletion.exterior_completion_generator_ordinary_valuation R p
   have hv : p.val.valuation F (x : F) = WithZero.exp (-1 : ℤ) := by
-    have hn := (Valuation.ne_zero_iff (p.val.valuation F)).mpr x.ne_zero
     have hl : WithZero.log (p.val.valuation F (x : F)) = -1 := by
       unfold ThetaBranch.order at ho
       omega
-    rw [← WithZero.exp_log hn, hl]
+    rw [← WithZero.exp_log ((Valuation.ne_zero_iff (p.val.valuation F)).mpr x.ne_zero), hl]
   have hc : Valued.v (ThetaExpansion.exteriorCompletionGenerator R p : p.val.adicCompletion F) =
       WithZero.exp (-1 : ℤ) :=
     (p.val.valuedAdicCompletion_eq_valuation' (K := F) (x : F)).trans hv
@@ -44,9 +43,8 @@ theorem allowedGenerator_integer_irreducible (R : PrincipalMellin.ActualRecipe S
       Valuation.IsRankOneDiscrete.generator_eq_exp_neg_one_of_surjective
         (p.val.valuedAdicCompletion_surjective F)]
     exact hc
-  have hi : Irreducible π := (IsDiscreteValuationRing.irreducible_iff_uniformizer π).mpr hu.is_generator
   let J := LocalFiniteSumCompatibility.integerRingEquiv (UnitCovarianceCompletion.localPrime p)
-  exact ⟨J π, (MulEquiv.irreducible_iff (f := J)).mpr hi, rfl⟩
+  exact ⟨J π, (MulEquiv.irreducible_iff (f := J)).mpr ((IsDiscreteValuationRing.irreducible_iff_uniformizer π).mpr hu.is_generator), rfl⟩
 
 def tracePsi (p : KPFinitePlace F) : AddChar (p.adicCompletion F) ℂ where
   toFun x := (ResidueTrace.localTraceCharacter p x : ℂ)
@@ -68,28 +66,20 @@ theorem tracePsi_conductorZero (R : PrincipalMellin.ActualRecipe S η)
   · intro u
     have ht := (R.traceBad p.val p.property (1 : p.val.adicCompletion F)).mpr (by simp)
     have h := ht (J.symm u)
-    change (ResidueTrace.localTraceCharacter p.val (u : p.val.adicCompletion F) : ℂ) = 1
+    change (ResidueTrace.localTraceCharacter p.val u : ℂ) = 1
     have hu : ((J.symm u : p.val.adicCompletionIntegers F) : p.val.adicCompletion F) =
         (u : p.val.adicCompletion F) := by
       exact congrArg (fun a : (valuation (p.val.adicCompletion F)).integer =>
         (a : p.val.adicCompletion F)) (J.apply_symm_apply u)
     simpa only [one_mul, hu, Circle.coe_one] using congrArg (fun z : Circle => (z : ℂ)) h
-  · have hπ0 : (π : p.val.adicCompletion F) ≠ 0 := by
-      intro h
-      exact hπ.ne_zero (Subtype.ext h)
-    have hnot : (π : p.val.adicCompletion F)⁻¹ ∉ p.val.adicCompletionIntegers F := by
+  · have hnot : (π : p.val.adicCompletion F)⁻¹ ∉ p.val.adicCompletionIntegers F := by
       intro hh
-      let z := J ⟨(π : p.val.adicCompletion F)⁻¹, hh⟩
       apply hπ.not_isUnit
       apply isUnit_iff_exists_inv.mpr
-      refine ⟨z, ?_⟩
+      refine ⟨(J ⟨π⁻¹, hh⟩), ?_⟩
       apply Subtype.ext
-      exact mul_inv_cancel₀ hπ0
-    have hex : ∃ o : p.val.adicCompletionIntegers F,
-        ResidueTrace.localTraceCharacter p.val
-          ((π : p.val.adicCompletion F)⁻¹ * (o : p.val.adicCompletion F)) ≠ 1 :=
-      not_forall.mp (fun h => hnot ((R.traceBad p.val p.property _).mp h))
-    obtain ⟨o, ho⟩ := hex
+      exact mul_inv_cancel₀ (fun h => hπ.ne_zero (Subtype.ext h))
+    obtain ⟨o, ho⟩ := (not_forall.mp (fun h => hnot ((R.traceBad p.val p.property _).mp h)))
     refine ⟨J o, ?_⟩
     intro h
     apply ho
@@ -115,11 +105,6 @@ theorem residueChi_unitCharacter (R : PrincipalMellin.ActualRecipe S η)
   let q := Units.map E.symm.toMonoidHom r
   obtain ⟨x, hx⟩ := Ideal.Quotient.mk_surjective (q : R.A.R ⧸ R.A.extendIdeal
     (LocalFiniteSums.primeIdeal (UnitCovarianceCompletion.localPrime p)))
-  have he : IsLocalRing.residue _ u.val = E (Ideal.Quotient.mk _ x) := by
-    rw [hx]
-    exact (E.apply_symm_apply r.val).symm
-  have hh := UnitCovarianceCompletion.chi_eq_residueSixCharacter_of_residue
-    (σ := R.σ) (UnitCovarianceCompletion.localPrime p) x u he
   have hr := hR (KPHilbert.residueSixCharacter F p.val R.A.zeta12 R.A.primitive_zeta12
     (exterior_good_six p) u)
   have hroot : KPLocalCover.coefficientEmbedding F S.zeta12 S.primitive_zeta12 =
@@ -130,9 +115,12 @@ theorem residueChi_unitCharacter (R : PrincipalMellin.ActualRecipe S η)
   unfold KPExteriorUnitShellIntegrals.unitCharacter residueChi
   change MulChar.ofUnitHom _ r.val = _
   rw [MulChar.ofUnitHom_coe]
-  change LocalFiniteSums.chi (σ := R.σ) (UnitCovarianceCompletion.localPrime p) q.val = _
+  change LocalFiniteSums.chi (UnitCovarianceCompletion.localPrime p) q.val = _
   rw [← hx]
-  exact hh.trans hr
+  exact (UnitCovarianceCompletion.chi_eq_residueSixCharacter_of_residue
+    (UnitCovarianceCompletion.localPrime p) x u (by
+     rw [hx]
+     exact (E.apply_symm_apply r.val).symm)).trans hr
 
 theorem exterior_tame_char (R : PrincipalMellin.ActualRecipe S η)
     (p : ThetaBranch.ExteriorPrime R.A) :
@@ -160,8 +148,7 @@ theorem residueEquiv_mk (R : PrincipalMellin.ActualRecipe S η)
       IsLocalRing.residue _ (LocalFiniteSumCompatibility.integerRingEquiv
         (UnitCovarianceCompletion.localPrime p)
           (LocalFiniteSumCompatibility.integerMap (UnitCovarianceCompletion.localPrime p)
-            (algebraMap (𝓞 F) R.A.R t))) := by
-  exact LocalFiniteSumCompatibility.cftResidueEquiv_mk _ _
+            (algebraMap (𝓞 F) R.A.R t))) := LocalFiniteSumCompatibility.cftResidueEquiv_mk _ _
 
 def residuePsi (R : PrincipalMellin.ActualRecipe S η)
     (p : ThetaBranch.ExteriorPrime R.A) :
@@ -181,7 +168,7 @@ theorem residuePsi_trace (R : PrincipalMellin.ActualRecipe S η)
     (UnitCovarianceCompletion.localPrime p)
       (LocalFiniteSumCompatibility.integerMap (UnitCovarianceCompletion.localPrime p)
         (algebraMap (𝓞 F) R.A.R t))
-  have ha : (a : p.val.adicCompletion F) = algebraMap (𝓞 F) (p.val.adicCompletion F) t := by
+  have ha : a = algebraMap (𝓞 F) (p.val.adicCompletion F) t := by
     exact IsScalarTower.algebraMap_apply (𝓞 F) F (p.val.adicCompletion F) t |>.symm
   have hr : IsLocalRing.residue _ a = IsLocalRing.residue _ u := by
     rw [← residueEquiv_mk R p t, ht, RingEquiv.apply_symm_apply]
@@ -192,10 +179,6 @@ theorem residuePsi_trace (R : PrincipalMellin.ActualRecipe S η)
   rw [← ht, TraceHaarTransport.divided_negative_trace R p t, ← hphase]
   apply congrArg (fun x : p.val.adicCompletion F => (ResidueTrace.localTraceCharacter p.val x : ℂ))
   rw [hp, ha, map_neg, map_div₀, ← IsScalarTower.algebraMap_apply (𝓞 F) F]
-  change -(algebraMap (𝓞 F) (p.val.adicCompletion F) t /
-    (ThetaExpansion.exteriorCompletionGenerator R p : p.val.adicCompletion F)) =
-      (-(ThetaExpansion.exteriorCompletionGenerator R p : p.val.adicCompletion F))⁻¹ *
-        algebraMap (𝓞 F) (p.val.adicCompletion F) t
   simp [div_eq_mul_inv, mul_comm]
 
 theorem residueChi_transport (R : PrincipalMellin.ActualRecipe S η)
@@ -205,16 +188,15 @@ theorem residueChi_transport (R : PrincipalMellin.ActualRecipe S η)
   by_cases hx : x = 0
   · subst x
     rw [map_zero (residueEquiv R p), map_zero (ArithGaussCRT.exteriorQuotientEquiv R.A (ThetaBranch.primeIdeal R.A p))]
-    exact (residueChi R p).map_zero.trans (LocalFiniteSums.chi (σ := R.σ) (UnitCovarianceCompletion.localPrime p)).map_zero.symm
-  · let E := ArithGaussCRT.exteriorQuotientEquiv R.A (ThetaBranch.primeIdeal R.A p)
-    let u := Units.map E.toMonoidHom (Units.mk0 x hx)
+    exact (residueChi R p).map_zero.trans (LocalFiniteSums.chi (UnitCovarianceCompletion.localPrime p)).map_zero.symm
+  · let u := Units.map (ArithGaussCRT.exteriorQuotientEquiv R.A (ThetaBranch.primeIdeal R.A p)).toMonoidHom (Units.mk0 x hx)
     let e := LocalFiniteSumCompatibility.cftResidueEquiv (UnitCovarianceCompletion.localPrime p)
     let r := Units.map e.toMonoidHom u
-    change residueChi R p r.val = LocalFiniteSums.chi (σ := R.σ)
+    change residueChi R p r.val = LocalFiniteSums.chi
       (UnitCovarianceCompletion.localPrime p) u.val
     unfold residueChi
     rw [MulChar.ofUnitHom_coe]
-    change LocalFiniteSums.chi (σ := R.σ) (UnitCovarianceCompletion.localPrime p)
+    change LocalFiniteSums.chi (UnitCovarianceCompletion.localPrime p)
       (e.symm (e u.val)) = _
     rw [e.symm_apply_apply]
 

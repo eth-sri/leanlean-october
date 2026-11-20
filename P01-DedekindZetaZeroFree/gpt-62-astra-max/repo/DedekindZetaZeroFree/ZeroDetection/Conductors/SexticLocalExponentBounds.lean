@@ -9,8 +9,11 @@ open IsDedekindDomain UniqueFactorizationMonoid
 
 namespace DedekindZetaZeroFree.Detector.Conductor.LocalExponent
 
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
 theorem principal_value_eq_one_of_sixth_power_congr
-    (F : Type) [Field F] [NumberField F]
     (m : Ideal (𝓞 F)) (hmt : m ≠ ⊤) (χ : RayClassCharacter F m)
     (hχ : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ m = ⊤ → χ I ^ (6 : ℕ) = 1)
     (a b : 𝓞 F) (ha : a ≠ 0)
@@ -28,22 +31,21 @@ theorem principal_value_eq_one_of_sixth_power_congr
   have hac : a * c ^ (6 : ℕ) - 1 ∈ m := by
     apply Ideal.Quotient.eq.mp
     have hab' : Ideal.Quotient.mk m a = Ideal.Quotient.mk m b ^ (6 : ℕ) := by
-      simpa only [map_pow] using (Ideal.Quotient.eq.mpr hab)
-    have had' : Ideal.Quotient.mk m a * Ideal.Quotient.mk m d = 1 := by
-      simpa only [map_mul, map_one] using (Ideal.Quotient.eq.mpr had)
+      simpa using (Ideal.Quotient.eq.mpr hab)
     have hbc : Ideal.Quotient.mk m b * Ideal.Quotient.mk m c = 1 := by
       dsimp [c]
       simp only [map_mul, map_pow]
       calc
-        Ideal.Quotient.mk m b * (Ideal.Quotient.mk m b ^ 5 * Ideal.Quotient.mk m d) =
+        _ =
             Ideal.Quotient.mk m b ^ 6 * Ideal.Quotient.mk m d := by ring
-        _ = 1 := by rw [← hab']; exact had'
+        _ = 1 := by rw [← hab']; exact (by
+          simpa using (Ideal.Quotient.eq.mpr had))
     simp only [map_mul, map_pow, map_one]
     rw [hab', ← mul_pow, hbc, one_pow]
   have hac0 : a * c ^ (6 : ℕ) ≠ 0 := by
     intro hz
-    have h1 : (1 : 𝓞 F) ∈ m := by simpa [hz] using m.neg_mem hac
-    exact hmt (Ideal.eq_top_of_isUnit_mem m h1 isUnit_one)
+    refine hmt (Ideal.eq_top_of_isUnit_mem m ?_ isUnit_one)
+    simpa [hz] using m.neg_mem hac
   have hc0 : c ≠ 0 := by
     intro hz
     simp [hz] at hac0
@@ -53,18 +55,14 @@ theorem principal_value_eq_one_of_sixth_power_congr
       apply Ideal.mem_sup_left
       exact Ideal.mul_mem_left _ _
         (Ideal.pow_mem_of_mem (Ideal.span {c}) (Ideal.mem_span_singleton_self c) 6 (by decide))
-    have hsub : a * c ^ (6 : ℕ) - 1 ∈ Ideal.span {c} ⊔ m := Ideal.mem_sup_right hac
-    simpa using (Ideal.span {c} ⊔ m).sub_mem hprod hsub
+    simpa using (Ideal.span {c} ⊔ m).sub_mem hprod (Ideal.mem_sup_right hac)
   have hval : χ (Ideal.span {a * c ^ (6 : ℕ)}) = 1 := by
     apply χ.map_span' _ hac0 hac
     intro φ
     change 0 < φ ((a : F) * (c : F) ^ (6 : ℕ))
     rw [map_mul, map_pow]
     apply mul_pos (hpos φ)
-    have hcF : (c : F) ≠ 0 := (NumberField.RingOfIntegers.coe_ne_zero_iff).mpr hc0
-    have hφ : φ (c : F) ≠ 0 := by
-      intro hz
-      exact hcF (φ.injective (by simpa using hz))
+    have hφ : φ (c : F) ≠ 0 := fun hz => ((NumberField.RingOfIntegers.coe_ne_zero_iff).mpr hc0) (φ.injective (by simpa using hz))
     positivity
   rw [← Ideal.span_singleton_mul_span_singleton, χ.map_mul',
     ← Ideal.span_singleton_pow] at hval
@@ -72,11 +70,10 @@ theorem principal_value_eq_one_of_sixth_power_congr
     induction 6 with
     | zero => simpa using χ.map_top'
     | succ n ih => rw [pow_succ, χ.map_mul', ih, pow_succ]
-  rw [hpow, hχ _ (by simpa [Ideal.span_singleton_eq_bot] using hc0) hccop, mul_one] at hval
+  rw [hpow, hχ _ (by simpa using hc0) hccop, mul_one] at hval
   exact hval
 
 theorem primitive_modulus_not_lt_of_sixth_power_lifting
-    (F : Type) [Field F] [NumberField F]
     (χ : PrimitiveFrequencyCharacter F)
     (hχ : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ χ.conductor = ⊤ →
       χ.character I ^ (6 : ℕ) = 1)
@@ -86,13 +83,14 @@ theorem primitive_modulus_not_lt_of_sixth_power_lifting
       ∃ b : 𝓞 F, a - b ^ (6 : ℕ) ∈ χ.conductor) :
     ¬ χ.conductor < f := by
   intro hlt
-  have hmt : χ.conductor ≠ ⊤ := by
-    intro heq
-    simpa [heq] using hlt
   obtain ⟨a, ha, haf, hpos, hcop, hne⟩ := χ.primitive f hlt
   obtain ⟨b, hab⟩ := hlift a ha haf hpos hcop
-  exact hne (principal_value_eq_one_of_sixth_power_congr F χ.conductor hmt
+  refine hne (principal_value_eq_one_of_sixth_power_congr F χ.conductor ?_
     χ.character hχ a b ha hpos hcop hab)
+  intro heq
+  simpa [heq] using hlt
+
+end
 
 set_option maxHeartbeats 800000 in
 
@@ -116,7 +114,7 @@ theorem sixth_power_lifting_at_wild_maximal
       have hb0 : b ∉ p := by
         intro h
         exact hpm.ne_top ((Ideal.eq_top_iff_one p).mpr (by simpa using p.sub_mem h hb))
-      have hb5 : b ^ (5 : ℕ) ∉ p := fun h => hb0 (hp.mem_of_pow_mem 5 h)
+      have hb5 := fun h => hb0 (hp.mem_of_pow_mem 5 h)
       obtain ⟨c, d, hd, hcd⟩ := Ideal.IsMaximal.exists_inv_pow p hb5 (m + 1)
       have hdecomp : p ^ m = Ideal.span {(6 : R)} * p ^ r ⊔ p ^ (m + 1) := by
         calc
@@ -126,26 +124,23 @@ theorem sixth_power_lifting_at_wild_maximal
             rw [Ideal.sup_mul, ← pow_add]
             congr 2
             omega
-      have herrc : (a - b ^ (6 : ℕ)) * c ∈ p ^ m := Ideal.mul_mem_right c _ herror
+      have herrc := Ideal.mul_mem_right c _ herror
       rw [hdecomp] at herrc
       obtain ⟨z, hz, y, hy, hzy⟩ := Submodule.mem_sup.mp herrc
       obtain ⟨t, ht, rfl⟩ := Ideal.mem_span_singleton_mul.mp hz
-      have ht0 : t ∈ p := Ideal.pow_le_self (show r ≠ 0 by dsimp [r]; omega) ht
       refine ⟨b + t, ?_, ?_⟩
-      · convert p.add_mem hb ht0 using 1 <;> ring
+      · convert p.add_mem hb (Ideal.pow_le_self (show r ≠ 0 by dsimp [r]; omega) ht) using 1 <;> ring
       have hlin : a - b ^ (6 : ℕ) - 6 * b ^ (5 : ℕ) * t ∈ p ^ (m + 1) := by
-        have hmem := (p ^ (m + 1)).add_mem
+        convert ((p ^ (m + 1)).add_mem
           (Ideal.mul_mem_left _ (a - b ^ (6 : ℕ)) hd)
-          (Ideal.mul_mem_left _ (b ^ (5 : ℕ)) hy)
-        convert hmem using 1
+          (Ideal.mul_mem_left _ (b ^ (5 : ℕ)) hy)) using 1
         linear_combination -(a - b ^ (6 : ℕ)) * hcd - b ^ (5 : ℕ) * hzy
       have ht2 : t ^ 2 ∈ p ^ (m + 1) := by
-        apply Ideal.pow_le_pow_right (show m + 1 ≤ r + r by dsimp [m, r]; omega)
+        apply Ideal.pow_le_pow_right (show m + 1 ≤ r + r by omega)
         simpa only [pow_add, pow_two] using Ideal.mul_mem_mul ht ht
-      have hrem := Ideal.mul_mem_right
+      convert (p ^ (m + 1)).sub_mem hlin (Ideal.mul_mem_right
         ((15 : R) * b ^ 4 + 20 * b ^ 3 * t + 15 * b ^ 2 * t ^ 2 + 6 * b * t ^ 3 + t ^ 4)
-        (p ^ (m + 1)) ht2
-      convert (p ^ (m + 1)).sub_mem hlin hrem using 1
+        (p ^ (m + 1)) ht2) using 1
       ring
   obtain ⟨b, hb, hab⟩ := lift n
   exact ⟨b, hb, Ideal.pow_le_pow_right (by omega) hab⟩
@@ -169,14 +164,12 @@ theorem sixth_power_lift_glue
   rw [Ideal.mul_eq_inf_of_isCoprime hcop]
   constructor
   · apply Ideal.Quotient.eq.mp
-    have hbc' := Ideal.Quotient.eq.mpr hbc
-    have hac' := Ideal.Quotient.eq.mpr hac
-    simpa only [map_pow] using hac'.trans (congrArg (fun t => t ^ (6 : ℕ)) hbc').symm
+    simpa using (Ideal.Quotient.eq.mpr hac).trans (congrArg (fun t => t ^ (6 : ℕ)) (Ideal.Quotient.eq.mpr hbc)).symm
   · apply Ideal.Quotient.eq.mp
     have hb1' := Ideal.Quotient.eq.mpr hb1
     have haq' := Ideal.Quotient.eq.mpr haq
     simp only [map_one] at hb1' haq'
-    simpa only [map_pow] using haq'.trans (by rw [hb1', one_pow])
+    simpa using haq'.trans (by simp [hb1'])
 
 set_option maxHeartbeats 800000 in
 
@@ -191,18 +184,14 @@ theorem sextic_exponent_le_of_local_lifting
     (normalizedFactors χ.conductor).count v.asIdeal ≤ B := by
   classical
   let k := (normalizedFactors χ.conductor).count v.asIdeal
-  have hfin : FiniteMultiplicity v.asIdeal χ.conductor :=
-    finiteMultiplicity_of_emultiplicity_eq_natCast
-      (emultiplicity_eq_count_normalizedFactors v.irreducible χ.conductor_ne_zero)
-  obtain ⟨q, hq, hqnot⟩ := hfin.exists_eq_pow_mul_and_not_dvd
+  obtain ⟨q, hq, hqnot⟩ := (finiteMultiplicity_of_emultiplicity_eq_natCast
+    (emultiplicity_eq_count_normalizedFactors v.irreducible χ.conductor_ne_zero)).exists_eq_pow_mul_and_not_dvd
   rw [← v.count_normalizedFactors_eq_multiplicity χ.conductor_ne_zero] at hq
   change χ.conductor = v.asIdeal ^ k * q at hq
   have hpq : v.asIdeal ⊔ q = ⊤ := by
     by_contra h
-    have hpqeq := v.isMaximal.eq_of_le h le_sup_left
-    exact hqnot (Ideal.dvd_iff_le.mpr (hpqeq ▸ le_sup_right))
+    exact hqnot (Ideal.dvd_iff_le.mpr ((v.isMaximal.eq_of_le h le_sup_left) ▸ le_sup_right))
   by_contra hk
-  have hkB : B < k := by omega
   have hle : χ.conductor ≤ v.asIdeal ^ B * q := by
     rw [hq]
     simpa only [mul_comm] using
@@ -210,11 +199,7 @@ theorem sextic_exponent_le_of_local_lifting
   have hlt : χ.conductor < v.asIdeal ^ B * q := by
     apply lt_of_le_of_ne hle
     intro heq
-    have hq0 : q ≠ 0 := by intro h; simp [h] at hq; exact χ.conductor_ne_zero hq
-    have heq' : v.asIdeal ^ k = v.asIdeal ^ B :=
-      mul_right_cancel₀ hq0 (hq.symm.trans heq)
-    have heq'' := congrArg (fun I : Ideal (𝓞 F) => (normalizedFactors I).count v.asIdeal) heq'
-    have hk1 : k = B := by simpa [v.irreducible.normalizedFactors_pow] using heq''
+    have hk1 : k = B := by simpa [v.irreducible.normalizedFactors_pow] using (congrArg (fun I : Ideal (𝓞 F) => (normalizedFactors I).count v.asIdeal) (mul_right_cancel₀ (by intro h; simp [h] at hq; exact χ.conductor_ne_zero hq) (hq.symm.trans heq)))
     omega
   exact primitive_modulus_not_lt_of_sixth_power_lifting F χ hχ (v.asIdeal ^ B * q)
     (fun a _ ha _ _ => by
@@ -231,15 +216,12 @@ theorem principal_sup_next_prime_power
     v.asIdeal ^ e = Ideal.span {a} ⊔ v.asIdeal ^ (e + 1) := by
   classical
   have hI : Ideal.span {a} ≠ 0 := by simpa [Ideal.span_singleton_eq_bot] using ha
-  have hfin : FiniteMultiplicity v.asIdeal (Ideal.span {a}) :=
-    finiteMultiplicity_of_emultiplicity_eq_natCast
-      (emultiplicity_eq_count_normalizedFactors v.irreducible hI)
-  obtain ⟨q, hq, hqnot⟩ := hfin.exists_eq_pow_mul_and_not_dvd
+  obtain ⟨q, hq, hqnot⟩ := (finiteMultiplicity_of_emultiplicity_eq_natCast
+    (emultiplicity_eq_count_normalizedFactors v.irreducible hI)).exists_eq_pow_mul_and_not_dvd
   rw [← v.count_normalizedFactors_eq_multiplicity hI] at hq
   have hpq : v.asIdeal ⊔ q = ⊤ := by
     by_contra h
-    have hpqeq := v.isMaximal.eq_of_le h le_sup_left
-    exact hqnot (Ideal.dvd_iff_le.mpr (hpqeq ▸ le_sup_right))
+    exact hqnot (Ideal.dvd_iff_le.mpr ((v.isMaximal.eq_of_le h le_sup_left) ▸ le_sup_right))
   dsimp only
   conv_rhs => lhs; rw [hq]
   rw [pow_succ, ← Ideal.mul_sup, sup_comm q, hpq]
@@ -248,7 +230,6 @@ theorem principal_sup_next_prime_power
 theorem six_not_mem_of_absNorm_coprime
     (F : Type) [Field F] [NumberField F] (v : HeightOneSpectrum (𝓞 F))
     (hv : (Ideal.absNorm v.asIdeal).Coprime 6) : (6 : 𝓞 F) ∉ v.asIdeal := by
-  letI : v.asIdeal.IsMaximal := v.isMaximal
   have hcop : IsCoprime (Ideal.absNorm v.asIdeal : 𝓞 F) (6 : 𝓞 F) := by
     simpa using hv.isCoprime.map (Int.castRingHom (𝓞 F))
   exact Ideal.IsPrime.notMem_of_isCoprime_of_mem hcop (Ideal.absNorm_mem v.asIdeal)
@@ -269,17 +250,14 @@ theorem sextic_conductor_exponent_bounds
     fun v => (normalizedFactors (Ideal.span {(6 : 𝓞 F)})).count v.asIdeal
   refine ⟨fun v => 2 * e v + 1, ?_, ?_⟩
   · intro v hv
-    have h6 := six_not_mem_of_absNorm_coprime F v hv
     have he0 : e v = 0 := by
       dsimp [e]
       apply Multiset.count_eq_zero.mpr
       intro h
-      have hd := dvd_of_mem_normalizedFactors h
-      exact h6 ((Ideal.span_singleton_le_iff_mem _).mp (Ideal.dvd_iff_le.mp hd))
+      exact (six_not_mem_of_absNorm_coprime F v hv) ((Ideal.span_singleton_le_iff_mem _).mp (Ideal.dvd_iff_le.mp (dvd_of_mem_normalizedFactors h)))
     change 2 * e v + 1 = 1
     rw [he0]
   · intro χ hχ v
-    letI : v.asIdeal.IsMaximal := v.isMaximal
     apply sextic_exponent_le_of_local_lifting F χ hχ v
     intro a ha n
     obtain ⟨c, _, hc⟩ := sixth_power_lifting_at_wild_maximal v.asIdeal (e v)

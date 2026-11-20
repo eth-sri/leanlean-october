@@ -17,47 +17,11 @@ set_option maxRecDepth 2000
 set_option maxHeartbeats 800000
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-theorem inducedFunctions_fiber_eval (P : Polarization F ζ hζ)
-    (f : InducedFunctions F ζ hζ P) (g₀ : G F ζ hζ) (t : E F ζ hζ) :
-    (f.val g₀).val.val t = (KPGlobalTorusFunctionData.deltaHalf F ζ hζ t)⁻¹ *
-      (f.val (t.val * g₀)).val.val 1 := by
-  have hc := f.property t 0 g₀
-  have he := congrArg (fun v : Smooth F ζ hζ P => v.val.val 1) hc
-  have hd : KPGlobalTorusFunctionData.deltaHalf F ζ hζ t ≠ 0 := by
-    unfold KPGlobalTorusFunctionData.deltaHalf
-    exact_mod_cast (ne_of_gt (Real.sqrt_pos.2
-      (NNReal.coe_pos.2 (pos_iff_ne_zero.2
-        (Units.ne_zero (KPGlobalTorusFunctionData.delta F ζ hζ t))))))
-  have hn : KPGlobalTorusFunctionData.N F ζ hζ (0 : KPGlobalTorusFunctionData.Adeles F) = 1 :=
-    (KPGlobalTorusFunctionData.Nhom F ζ hζ).map_one
-  simp only [hn, mul_one, KPGlobalTorusPeriodizationInverse.rightAction_formula,
-    Submodule.coe_smul, Pi.smul_apply, smul_eq_mul, one_mul] at he
-  calc (f.val g₀).val.val t
-      = (KPGlobalTorusFunctionData.deltaHalf F ζ hζ t)⁻¹ *
-          (KPGlobalTorusFunctionData.deltaHalf F ζ hζ t * (f.val g₀).val.val t) := by
-        rw [← mul_assoc, inv_mul_cancel₀ hd, one_mul]
-    _ = _ := congrArg (fun z : ℂ => (KPGlobalTorusFunctionData.deltaHalf F ζ hζ t)⁻¹ * z)
-        he.symm
+alias inducedFunctions_fiber_eval := WeightedChartExtension.fiber_formula
 
-theorem groupArchChart_commutes_finite (a : G F ζ hζ)
-    (ha : a ∈ KPGlobalTorusFunctionData.finitePart F ζ hζ) (z : GroupArch F) :
-    Commute (groupArchChart F ζ hζ z) a := by
-  obtain ⟨b, hb, rfl⟩ := ha
-  have hc : Commute (groupArchTuple F ζ hζ z) b := by
-    show (groupArchTuple F ζ hζ z) * b = b * (groupArchTuple F ζ hζ z)
-    apply RestrictedProduct.ext
-    intro v
-    cases v with
-    | inl w =>
-      have hw : b (Sum.inl w) = 1 := (Subgroup.mem_iInf.mp hb) w
-      simp [hw]
-    | inr q =>
-      change 1 * b (Sum.inr q) = b (Sum.inr q) * 1
-      simp
-  exact hc.map ((KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp
-    (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ))
+alias groupArchChart_commutes_finite := WeightedChartExtension.finite_commutes
 
 theorem complex_diagonal_chart_absorption (w : InfinitePlace F)
     (a y : (KPHilbert.Completion F (Sum.inl w))ˣ)
@@ -82,12 +46,16 @@ theorem complex_diagonal_chart_absorption (w : InfinitePlace F)
   · field_simp
   · left; field_simp
 
-def groupArchDiagonalTransport (a : InfinitePlace F → ℂˣ) (z : GroupArch F) :
+section
+
+variable (a : InfinitePlace F → ℂˣ)
+
+def groupArchDiagonalTransport (z : GroupArch F) :
     GroupArch F := fun w i =>
   if i = 0 then z w i / (a w : ℂ) else
   if i = 1 then (a w : ℂ) * z w i else z w i
 
-theorem groupArchDiagonalTransport_contDiff (a : InfinitePlace F → ℂˣ) :
+theorem groupArchDiagonalTransport_contDiff :
     ContDiff ℝ (⊤ : ℕ∞) (groupArchDiagonalTransport F a) := by
   apply contDiff_pi.mpr
   intro w
@@ -102,13 +70,13 @@ theorem groupArchDiagonalTransport_contDiff (a : InfinitePlace F → ℂˣ) :
     · simp only [groupArchDiagonalTransport, hi0, hi1, ↓reduceIte]
       exact (contDiff_apply ℝ _ i).comp (contDiff_apply ℝ _ w)
 
-theorem groupArchDiagonalTransport_domain (a : InfinitePlace F → ℂˣ)
+theorem groupArchDiagonalTransport_domain
     (z : GroupArch F) :
     groupArchDiagonalTransport F a z ∈ groupArchDomain F ↔
       z ∈ groupArchDomain F := by
   simp [groupArchDomain, groupArchDiagonalTransport, Units.ne_zero]
 
-def groupArchDiagonalTransport_compact (a : InfinitePlace F → ℂˣ)
+def groupArchDiagonalTransport_compact
     (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F)) :
     KPGlobalTorusFunctionData.JetCompact (groupArchDomain F) where
   set := groupArchDiagonalTransport F a '' K.set
@@ -117,7 +85,7 @@ def groupArchDiagonalTransport_compact (a : InfinitePlace F → ℂˣ)
     rintro _ ⟨z, hz, rfl⟩
     exact (groupArchDiagonalTransport_domain F a z).2 (K.inside hz)
 
-theorem groupArchDiagonalTransport_absorption (a : InfinitePlace F → ℂˣ)
+theorem groupArchDiagonalTransport_absorption
     (z : GroupArch F) (hz : z ∈ groupArchDomain F) :
     KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ (fun w => (a w : ℂ)) *
       groupArchChart F ζ hζ z =
@@ -136,7 +104,6 @@ theorem groupArchDiagonalTransport_absorption (a : InfinitePlace F → ℂˣ)
   | inr q => simp [KPGlobalTorusFunctionData.archDiagonalTuple, groupArchTuple]
   | inl w =>
     have hz0 := hz w
-    have haz0 : (a w : ℂ) * z w 1 ≠ 0 := mul_ne_zero (Units.ne_zero _) hz0
     let e := InfinitePlace.Completion.ringEquivComplexOfIsComplex
       (KPHilbert.infinite_isComplex F ζ hζ w)
     change KPStandardLocalRootLifts.A F ζ hζ (Sum.inl w)
@@ -149,16 +116,16 @@ theorem groupArchDiagonalTransport_absorption (a : InfinitePlace F → ℂˣ)
         KPStandardLocalRootLifts.A F ζ hζ (Sum.inl w)
           (if h : (a w : ℂ) * z w 1 = 0 then 1 else Units.mk0 (e.symm ((a w : ℂ) * z w 1)) _) *
         KPStandardLocalRootLifts.N F ζ hζ (Sum.inl w) (e.symm (z w 2))
-    simp only [hz0, haz0, Units.ne_zero, ↓reduceDIte]
+    simp only [hz0, (mul_ne_zero (Units.ne_zero _) hz0), Units.ne_zero, ↓reduceDIte]
     rw [complex_diagonal_chart_absorption F ζ hζ]
     congr 2
     · apply congrArg
-      simp only [map_div₀, Units.val_mk0]
+      simp
     · apply congrArg
       apply Units.ext
-      simp only [Units.val_mul, Units.val_mk0, map_mul]
+      simp
 
-def groupArchDiagonalTransportCLM (a : InfinitePlace F → ℂˣ) :
+def groupArchDiagonalTransportCLM :
     GroupArch F →L[ℝ] GroupArch F where
   toFun := groupArchDiagonalTransport F a
   map_add' := by
@@ -173,6 +140,8 @@ def groupArchDiagonalTransportCLM (a : InfinitePlace F → ℂˣ) :
     split_ifs <;> ring
   cont := (groupArchDiagonalTransport_contDiff F a).continuous
 
+end
+
 theorem inducedJet_pointwise (P : Polarization F ζ hζ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (g : G F ζ hζ) (n : ℕ)
@@ -181,7 +150,6 @@ theorem inducedJet_pointwise (P : Polarization F ζ hζ)
     ‖iteratedFDerivWithin ℝ n
       (fun y => (f.val.val (groupArchChart F ζ hζ y * g)).val.val 1)
       (groupArchDomain F) z‖ ≤ inducedJet F ζ hζ P J g n K f := by
-  change _ ≤ inducedJetBound F ζ hζ P J g n K f
   apply le_csSup _ (Set.mem_image_of_mem _ hz)
   apply K.compact.bddAbove_image
   apply ContinuousOn.mono _ K.inside
@@ -207,13 +175,10 @@ theorem groupArchDiagonalTransport_jet_bound (a : InfinitePlace F → ℂˣ)
   have hpre : L ⁻¹' groupArchDomain F = groupArchDomain F := by
     ext y
     exact groupArchDiagonalTransport_domain F a y
-  have hx : L z ∈ groupArchDomain F :=
-    (groupArchDiagonalTransport_domain F a z).2 (K.inside hz)
-  have hpreDiff : UniqueDiffOn ℝ (L ⁻¹' groupArchDomain F) := by
-    rw [hpre]
-    exact (groupArchDomain_open F).uniqueDiffOn
   have hid := L.iteratedFDerivWithin_comp_right (f.property.1 g)
-    (groupArchDomain_open F).uniqueDiffOn hpreDiff hx (i := n) (by simp)
+    (groupArchDomain_open F).uniqueDiffOn (by
+      rw [hpre]
+      exact (groupArchDomain_open F).uniqueDiffOn) ((groupArchDiagonalTransport_domain F a z).2 (K.inside hz)) (i := n) (by simp)
   change ‖iteratedFDerivWithin ℝ n (H ∘ L) (groupArchDomain F) z‖ ≤ _
   rw [hpre] at hid
   rw [hid]
@@ -225,7 +190,11 @@ theorem groupArchDiagonalTransport_jet_bound (a : InfinitePlace F → ℂˣ)
   exact inducedJet_pointwise F ζ hζ P J g n
     (groupArchDiagonalTransport_compact F a K) f (L z) (Set.mem_image_of_mem _ hz)
 
-theorem weightedChartIntegrand_representative (C : ModelData F ζ hζ) (s : ℂ)
+section
+
+variable (C : ModelData F ζ hζ) (s : ℂ)
+
+theorem weightedChartIntegrand_representative
     (r : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (f : InducedFunctions F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s))
     (g : G F ζ hζ) (z : GroupArch F)
@@ -238,10 +207,9 @@ theorem weightedChartIntegrand_representative (C : ModelData F ζ hζ) (s : ℂ)
   let r' : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C :=
     { lift := fun y => if y = x then b else r.lift y
       projects := fun y => by split_ifs with h; exact hb.trans h.symm; exact r.projects y }
-  have h := congrFun (weightedChartIntegrand_independent F ζ hζ C s r r' f g z) x
-  simpa only [weightedChartIntegrand, r', ↓reduceIte] using h
+  simpa only [weightedChartIntegrand, r', ↓reduceIte] using (congrFun (weightedChartIntegrand_independent F ζ hζ C s r r' f g z) x)
 
-theorem finite_representative_level_formula (C : ModelData F ζ hζ) (s : ℂ)
+theorem finite_representative_level_formula
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (r : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (f : InducedLevel F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J)
@@ -270,14 +238,17 @@ theorem finite_representative_level_formula (C : ModelData F ζ hζ) (s : ℂ)
   rw [hm, f.property.2 _ j]
   ring
 
+end
+
 theorem inducedJet_le_finite_sup (P : Polarization F ζ hζ) (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
  (A : Finset (G F ζ hζ)) (n : ℕ) (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
  (a : G F ζ hζ) (ha : a ∈ A) (f : InducedLevel F ζ hζ P J) :
  inducedJet F ζ hζ P J a n K f ≤
- ((A.image (fun a => (a,n,K))).sup (fun i => inducedJet F ζ hζ P J i.1 i.2.1 i.2.2)) f := by
-  exact Finset.le_sup (s := A.image (fun a => (a,n,K))) (f := fun i => inducedJet F ζ hζ P J i.1 i.2.1 i.2.2)
+ ((A.image (fun a => (a,n,K))).sup (fun i => inducedJet F ζ hζ P J i.1 i.2.1 i.2.2)) f := Finset.le_sup (s := A.image (fun a => (a,n,K))) (f := fun i => inducedJet F ζ hζ P J i.1 i.2.1 i.2.2)
     (Finset.mem_image.mpr ⟨a,ha,rfl⟩) f
-theorem finite_representative_jet_estimate (C : ModelData F ζ hζ) (s : ℂ)
+variable (C : ModelData F ζ hζ)
+
+theorem finite_representative_jet_estimate (s : ℂ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (r : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (f : InducedLevel F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J)
@@ -295,15 +266,12 @@ theorem finite_representative_jet_estimate (C : ModelData F ζ hζ) (s : ℂ)
     ‖(((((twist F ζ hζ (productModel F ζ hζ C) s).character b)⁻¹ : ℂˣ) : ℂ) *
       (KPGlobalTorusFunctionData.deltaHalf F ζ hζ b.val)⁻¹)‖ *
       inducedJet F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J a n K f := by
-  let c : ℂ := (((twist F ζ hζ (productModel F ζ hζ C) s).character b)⁻¹ : ℂˣ) *
+  let c := (((twist F ζ hζ (productModel F ζ hζ C) s).character b)⁻¹ : ℂˣ) *
       (KPGlobalTorusFunctionData.deltaHalf F ζ hζ b.val)⁻¹
   have he : (fun y => weightedChartIntegrand F ζ hζ C s r f.val g y x) =
       c • (fun y => (f.val.val (groupArchChart F ζ hζ y * a)).val.val 1) := by
     funext y
     exact finite_representative_level_formula F ζ hζ C s J r f g a x b hb hbfin j hj y
-  have hf : ContDiffWithinAt ℝ n
-      (fun y => (f.val.val (groupArchChart F ζ hζ y * a)).val.val 1)
-      (groupArchDomain F) z := (f.property.1 a z (K.inside hz)).of_le (by simp)
   calc
     _ = ‖iteratedFDerivWithin ℝ n
         (c • (fun y => (f.val.val (groupArchChart F ζ hζ y * a)).val.val 1))
@@ -312,13 +280,12 @@ theorem finite_representative_jet_estimate (C : ModelData F ζ hζ) (s : ℂ)
     _ = ‖c‖ * ‖iteratedFDerivWithin ℝ n
         (fun y => (f.val.val (groupArchChart F ζ hζ y * a)).val.val 1)
         (groupArchDomain F) z‖ := by
-      rw [iteratedFDerivWithin_const_smul_apply (R := ℂ) hf
+      rw [iteratedFDerivWithin_const_smul_apply ((f.property.1 a z (K.inside hz)).of_le (by simp))
         (groupArchDomain_open F).uniqueDiffOn (K.inside hz), norm_smul]
     _ ≤ _ := mul_le_mul_of_nonneg_left
       (inducedJet_pointwise F ζ hζ _ J a n K f z hz) (norm_nonneg c)
 
-theorem compact_finite_conjugated_level_partition
-    (C : ModelData F ζ hζ) (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+theorem compact_finite_conjugated_level_partition (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (g : G F ζ hζ) (T : Set (KPGlobalTorusPeriodizationInverse.B F ζ hζ C))
     (hT : IsCompact T)
     (hfin : ∀ b ∈ T, b.val.val ∈ KPGlobalTorusFunctionData.finitePart F ζ hζ) :
@@ -371,7 +338,7 @@ theorem compact_finite_conjugated_level_partition
   rw [hj]
   group
 
-theorem weightedChart_source_jet_bound (C : ModelData F ζ hζ) (s : ℂ)
+theorem weightedChart_source_jet_bound (s : ℂ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (r : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (g : G F ζ hζ) (n : ℕ)
@@ -393,14 +360,10 @@ theorem weightedChart_source_jet_bound (C : ModelData F ζ hζ) (s : ℂ)
       KPGlobalTorusPeriodizationInverse.averagingClass F ζ hζ C '' T = Set.univ :=
     actual_finite_compact_averaging_representatives F ζ hζ C
   obtain ⟨T, hTc, hTf, hTx⟩ := hh
-  have hhA : ∃ A : Finset (G F ζ hζ), ∀ b ∈ T, ∃ a ∈ A,
-      ∃ j : KPGlobalTorusFunctionData.globalLevel F ζ hζ J,
-        b.val.val * g = a * j.val :=
+  have hhA :=
     compact_finite_conjugated_level_partition F ζ hζ C J g T hTc hTf
   obtain ⟨A, hA⟩ := hhA
-  have hhB : ∃ B : ℝ, 0 ≤ B ∧ ∀ b ∈ T,
-      ‖(((((twist F ζ hζ (productModel F ζ hζ C) s).character b)⁻¹ : ℂˣ) : ℂ) *
-        (KPGlobalTorusFunctionData.deltaHalf F ζ hζ b.val)⁻¹)‖ ≤ B :=
+  have hhB :=
     RepresentationTheory.torus_weighted_chart_quantitative_prove.compact_normalized_weight_bound
       F ζ hζ C s T hTc
   obtain ⟨B, hB, hBw⟩ := hhB
@@ -410,9 +373,7 @@ theorem weightedChart_source_jet_bound (C : ModelData F ζ hζ) (s : ℂ)
     rw [hTx]
     exact Set.mem_univ x
   obtain ⟨b, hb, hbx⟩ := hx
-  have hAa : ∃ a : G F ζ hζ, a ∈ A ∧
-      ∃ j : KPGlobalTorusFunctionData.globalLevel F ζ hζ J,
-        b.val.val * g = a * j.val := hA b hb
+  have hAa := hA b hb
   obtain ⟨a, ha, j, hj⟩ := hAa
   have hjb := finite_representative_jet_estimate F ζ hζ C s J r f g a n K
     x b hbx (hTf b hb) j hj z hz
@@ -420,8 +381,7 @@ theorem weightedChart_source_jet_bound (C : ModelData F ζ hζ) (s : ℂ)
     (twist F ζ hζ (rationalModel F ζ hζ) s) J A n K a ha f
   have hp := inducedJet_pointwise F ζ hζ
     (twist F ζ hζ (rationalModel F ζ hζ) s) J a n K f z hz
-  have hnonneg : 0 ≤ inducedJet F ζ hζ
-      (twist F ζ hζ (rationalModel F ζ hζ) s) J a n K f :=
+  have hnonneg :=
     (norm_nonneg _).trans hp
   exact hjb.trans (mul_le_mul (hBw b hb) hjs hnonneg hB)
 

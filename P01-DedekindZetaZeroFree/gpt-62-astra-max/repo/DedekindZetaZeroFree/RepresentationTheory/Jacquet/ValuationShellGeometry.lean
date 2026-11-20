@@ -15,7 +15,7 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (v : HeightOneSpectrum (𝓞 F))
+    (v : HeightOneSpectrum (𝓞 F))
 
 private theorem scaled_integer_eq (a : LocalField F v) (ha : a ≠ 0) :
     {x : LocalField F v | ∃ u : (valuation (LocalField F v)).integer,
@@ -33,24 +33,30 @@ private theorem scaled_integer_eq (a : LocalField F v) (ha : a ≠ 0) :
       exact (inv_mul_le_one₀ ((valuation (LocalField F v)).pos_iff.mpr ha)).mpr hx
     exact ⟨⟨a⁻¹ * x, hu⟩, by simp [ha]⟩
 
-theorem sphericalBall_eq_valuation_ball
-    (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π) (e : ℕ) :
+section
+
+variable (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π) (e : ℕ)
+
+include hπ in
+theorem sphericalBall_eq_valuation_ball :
     sphericalBall F v π e =
       {x | valuation (LocalField F v) x ≤
         valuation (LocalField F v) ((π : LocalField F v) ^ e)} := by
   apply scaled_integer_eq
   exact pow_ne_zero _ (uniformizerUnit F v π hπ).ne_zero
 
-theorem isCompact_sphericalBall
-    (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π) (e : ℕ) :
+include hπ in
+theorem isCompact_sphericalBall :
     IsCompact (sphericalBall F v π e) := by
   rw [sphericalBall_eq_valuation_ball F v π hπ e]
   exact IsNonarchimedeanLocalField.isCompact_closedBall _ _
 
-theorem measurableSet_sphericalBall
-    (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π) (e : ℕ) :
+include hπ in
+theorem measurableSet_sphericalBall :
     MeasurableSet (sphericalBall F v π e) :=
   (isCompact_sphericalBall F v π hπ e).isClosed.measurableSet
+
+end
 
 theorem integerUnitShell_eq_valuation_sphere :
     KPTameGauss.integerUnitShell (LocalField F v) =
@@ -64,8 +70,10 @@ theorem integerUnitShell_eq_valuation_sphere :
     exact ⟨⟨x, hx.le⟩, rfl,
       (Valuation.integer.integers (valuation (LocalField F v))).isUnit_iff_valuation_eq_one.mpr hx⟩
 
-theorem sphericalShell_eq_valuation_sphere
-    (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π) (e : ℕ) (l : ℤ) :
+variable (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π) (e : ℕ) (l : ℤ)
+
+include hπ in
+theorem sphericalShell_eq_valuation_sphere :
     sphericalShell F v π e l =
       {x | valuation (LocalField F v) x =
         valuation (LocalField F v) ((π : LocalField F v) ^ ((e : ℤ) - l))} := by
@@ -84,20 +92,20 @@ theorem sphericalShell_eq_valuation_sphere
     rw [map_mul, map_inv₀, hx]
     exact inv_mul_cancel₀ ((valuation (LocalField F v)).ne_zero_iff.mpr ha)
 
-theorem isCompact_sphericalShell
-    (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π) (e : ℕ) (l : ℤ) :
+include hπ in
+theorem isCompact_sphericalShell :
     IsCompact (sphericalShell F v π e l) := by
   rw [sphericalShell_eq_valuation_sphere F v π hπ e l]
   apply (IsNonarchimedeanLocalField.isCompact_closedBall (LocalField F v)
-    (valuation (LocalField F v) ((π : LocalField F v) ^ ((e : ℤ) - l)))).of_isClosed_subset
+    (valuation (LocalField F v) (π ^ ((e : ℤ) - l)))).of_isClosed_subset
   · simpa only [← (valuation (LocalField F v)).restrict_inj] using
       (valuation (LocalField F v)).isClosed_sphere
         ((valuation (LocalField F v)).restrict ((π : LocalField F v) ^ ((e : ℤ) - l)))
   · intro x hx
     exact hx.le
 
-theorem measurableSet_sphericalShell
-    (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π) (e : ℕ) (l : ℤ) :
+include hπ in
+theorem measurableSet_sphericalShell :
     MeasurableSet (sphericalShell F v π e l) :=
   (isCompact_sphericalShell F v π hπ e l).isClosed.measurableSet
 

@@ -40,15 +40,13 @@ theorem joint_kernel_finite_raw (D : TensorDetected R N)
         (depth (R := R) W) (depth_valid (R := R) W) (character W)
         (fiber D.toTensorActions W) (action D.toTensorActions W) (localData D.toTensorActions W)
         (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] e))) (rawGlobal (R := R) a) = 0 := by
-  have hzero := joint_kernel_raw_borel_word D W s hW x hx (outsideRaw W a)
-    (outsideRaw_support W a harch ht) (insideActions W a hb) f e he
-  let θ : Functions R := globalMap D.toTensorActions W s hW x
+  let θ := globalMap D.toTensorActions W s hW x
     (tensorEmbedding F R.A.zeta12 R.A.primitive_zeta12 W
-      (depth (R := R) W) (depth_valid (R := R) W) (character W)
+      (depth W) (depth_valid W) (character W)
       (fiber D.toTensorActions W) (action D.toTensorActions W) (localData D.toTensorActions W)
       (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] e))
-  have hsame := congrArg (fourier R D.sources.dq θ) (raw_split (R := R) W a hb)
-  exact hsame.symm.trans hzero
+  exact (congrArg (fourier R D.sources.dq θ) (raw_split W a hb)).symm.trans (joint_kernel_raw_borel_word D W s hW x hx (outsideRaw W a)
+    (outsideRaw_support W a harch ht) (insideActions W a hb) f e he)
 end DedekindZetaZeroFree.FourierContinuation.WildFiniteExteriorAssembly
 
 end

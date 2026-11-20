@@ -12,8 +12,9 @@ open scoped NumberField Classical
 
 variable {F : Type} [Field F] [NumberField F]
 
-def characterFromRayGroup (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (ψ : ClassFieldTheory.RayClassGroup (fullModulus m hm) →* ℂˣ) :
+variable (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ψ : ClassFieldTheory.RayClassGroup (fullModulus m hm) →* ℂˣ)
+
+def characterFromRayGroup :
     DedekindZetaZeroFree.RayClassCharacter F m where
   toFun I := if hI : I = ⊥ then 0
     else if hcop : I ⊔ m = ⊤ then
@@ -29,7 +30,7 @@ def characterFromRayGroup (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     · subst hJ
       rw [Ideal.mul_bot]
       simp
-    have hIJ : I * J ≠ ⊥ := ideal_mul_ne_bot I J hI hJ
+    have hIJ := ideal_mul_ne_bot I J hI hJ
     by_cases hIJm : (I * J) ⊔ m = ⊤
     · have hIm : I ⊔ m = ⊤ := by
         by_contra h
@@ -49,8 +50,7 @@ def characterFromRayGroup (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     · rw [dif_neg hIJ, dif_neg hIJm]
       by_cases hIm : I ⊔ m = ⊤
       · rw [dif_neg hI, dif_pos hIm, dif_neg hJ]
-        have hJm : J ⊔ m ≠ ⊤ := fun h => hIJm (ideal_mul_coprime m I J hIm h)
-        rw [dif_neg hJm]
+        rw [dif_neg (fun h => hIJm (ideal_mul_coprime m I J hIm h))]
         simp
       · rw [dif_neg hI, dif_neg hIm]
         simp
@@ -78,14 +78,11 @@ def characterFromRayGroup (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
         simp [hI, hcop]
   map_span' := by
     intro α hα hcong hpos
-    have hne : Ideal.span {α} ≠ ⊥ := mt Ideal.span_singleton_eq_bot.mp hα
-    have hcop : Ideal.span {α} ⊔ m = ⊤ := integral_span_coprime m α hcong
-    rw [dif_neg hne, dif_pos hcop]
+    rw [dif_neg (mt Ideal.span_singleton_eq_bot.mp hα), dif_pos (integral_span_coprime m α hcong)]
     rw [idealClass_integral_principal m hm α hα hcong hpos]
     simp
 
-theorem characterFromRayGroup_apply (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (ψ : ClassFieldTheory.RayClassGroup (fullModulus m hm) →* ℂˣ)
+theorem characterFromRayGroup_apply
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ m = ⊤) :
     (characterFromRayGroup m hm ψ) I =
       (ψ (idealClass m hm I hI hcop) : ℂ) := by

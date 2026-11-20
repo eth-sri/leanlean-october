@@ -12,8 +12,8 @@ open NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.HCGeneration
 open MomentSources KPGlobalResidualConstruction KPRankOneShellRepair
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (M : ∀ q, LocalImageData R q)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (M : ∀ q, LocalImageData R q)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2400000
 
@@ -40,7 +40,7 @@ theorem actualLocalAlgebra_simple (v : KPHilbert.Place F) :
   | inr q =>
     letI := (ActualSourcePredicates.actual_images_irreducible_of_length F R.A.zeta12
       R.A.primitive_zeta12 q (M q).inducing (M q).inducing.polarization
-      (M q).haar (M q).haar_integer).1.2
+      (M q).haar (M q).haar_integer).2
     exact NativeRepresentationAlgebra.simple (actualFiniteRepresentation R M q)
 
 instance actualLocalAlgebra_nontrivial (v : KPHilbert.Place F) : Nontrivial (actualLocal R M v) := by
@@ -58,7 +58,7 @@ theorem actualFiniteAlgebra_scalar (q : KPFinitePlace F) :
   let P := (M q).inducing.polarization
   let ρ := actualFiniteRepresentation R M q
   letI := (ActualSourcePredicates.actual_images_irreducible_of_length F R.A.zeta12
-    R.A.primitive_zeta12 q (M q).inducing P (M q).haar (M q).haar_integer).1.2
+    R.A.primitive_zeta12 q (M q).inducing P (M q).haar (M q).haar_integer).2
   letI : T2Space (KPLocalExceptionalConstruction.ActualCover F R.A.zeta12 R.A.primitive_zeta12 q) :=
     (KPPGLLocalCover.finite_topological_cover F R.A.zeta12 R.A.primitive_zeta12 q
       (KPAdelicCoverRestrictedProduct.depth F R.A.zeta12 R.A.primitive_zeta12 q)

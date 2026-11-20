@@ -12,8 +12,8 @@ namespace DedekindZetaZeroFree.CompactPeriodAnalyticity
 open MomentSources
 open ThetaExpansion.ChamberPeriods
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 
 theorem selected_chamber_period_integrable (C : JointForwardIdentitySources R N) (v : R.A.UnitQuotient)
     (s : ℂ) (hs : (1 / 3 : ℝ) < s.re) (g : Group R) :
@@ -36,8 +36,8 @@ namespace DedekindZetaZeroFree.CompactPeriodAnalyticity
 open MomentSources
 open ThetaExpansion.ChamberPeriods
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 
 theorem selected_chamber_period_analytic (C : JointForwardIdentitySources R N) (v : R.A.UnitQuotient)
     (g : Group R) : AnalyticOnNhd ℂ (fun s => chamberPeriod C v s g)

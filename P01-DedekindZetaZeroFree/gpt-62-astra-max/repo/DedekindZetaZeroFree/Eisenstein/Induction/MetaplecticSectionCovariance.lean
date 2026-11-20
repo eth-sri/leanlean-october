@@ -30,7 +30,9 @@ private theorem delta_pos (r : KPGlobalCenterRationalCharacter.R F ζ hζ) :
   NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr
     (Units.ne_zero (KPGlobalTorusFunctionData.delta F ζ hζ r.val)))
 
-theorem norm_val_covariance (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K) (s : ℂ)
+variable (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K) (s : ℂ)
+
+theorem norm_val_covariance
     (r : KPGlobalCenterRationalCharacter.R F ζ hζ) (x : KPAdeles F) (g : G F ζ hζ) :
     ‖f.val s ((r.val.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g)‖ =
       (((KPGlobalTorusFunctionData.delta F ζ hζ r.val : NNReal) : ℝ)) ^
@@ -42,11 +44,10 @@ theorem norm_val_covariance (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K) (s
     rw [Complex.add_re]; norm_num; ring
   rw [hexp]
 
-theorem val_N_invariant (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K) (s : ℂ)
+theorem val_N_invariant
     (x : KPAdeles F) (g : G F ζ hζ) :
     f.val s (KPGlobalTorusFunctionData.N F ζ hζ x * g) = f.val s g := by
-  have h := (f.property.1 s).2 (1 : KPGlobalCenterRationalCharacter.R F ζ hζ) x g
-  simpa [KPGlobalExceptionalParameter.realLogPower] using h
+  simpa [KPGlobalExceptionalParameter.realLogPower] using ((f.property.1 s).2 (1 : KPGlobalCenterRationalCharacter.R F ζ hζ) x g)
 
 end DedekindZetaZeroFree.KPLiteralExceptionalResidue
 

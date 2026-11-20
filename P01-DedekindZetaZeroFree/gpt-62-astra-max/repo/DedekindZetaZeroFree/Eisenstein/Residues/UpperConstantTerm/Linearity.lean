@@ -10,10 +10,10 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPLiteralRaw ThetaExpansion TensorActionSource
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "V" => RestrictedTensorSimple.Core (Plus R.A P C)
@@ -25,7 +25,7 @@ theorem coreResidue_upper_integrable (x : V)
     (μ : Measure (KPAdditiveQuotient F)) (hμ : μ.IsAddHaarMeasure) (g : G F ζ hζ) :
     Integrable (fun u : KPAdditiveQuotient F => coreResidue R P C x
       (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out u) * g)) μ := by
-  obtain ⟨r, B, hr, _, _, hB⟩ := core_compact_period_clearing R P C x μ hμ g
+  obtain ⟨r, B, hr, hB⟩ := core_compact_period_clearing R P C x μ hμ g
   have hres : coreResidue R P C x =
       (ownedLiteralResidueFamily (full_product_compact_iwasawa R)).cleared
         (asLiteralFlat (coreFlatInsertion R P C x)) 0 := by

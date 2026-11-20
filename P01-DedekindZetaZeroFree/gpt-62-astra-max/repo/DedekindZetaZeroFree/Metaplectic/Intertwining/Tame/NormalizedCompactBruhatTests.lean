@@ -48,9 +48,8 @@ theorem eventual_base_minus_test_exists
   · intro g hg
     obtain ⟨b, k, hk, rfl⟩ := (htest.1 0).2 hg
     exact ⟨b, k, hk, by rw [heta]⟩
-  · have h := htest.2.2 0 (1 : ActualCover F ζ hζ q) h1
-    rw [← heta]
-    simpa using h
+  · rw [← heta]
+    simpa using (htest.2.2 0 (1 : ActualCover F ζ hζ q) h1)
 
 end DedekindZetaZeroFree.KPTameTransposeLiteralMass
 

@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -86,7 +84,7 @@ noncomputable def localBlockFamilyHerbrandHMinusOneEquiv
     localBlockFamilyDecompositionFintype d
   exact
     (herbrandHMinusOnePiEquiv
-      (G := L ≃ₐ[K] L)
+
       (fun i ↦ LocalPlaceBlock
         (d i).base (d i).base_isNontrivial
         (d i).extension) σ).trans

@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Analysis.PoincareInequalities.BoxVariance
 
 public import DedekindZetaZeroFree.Analysis.WeakH2.FluxIdentity
 public import DedekindZetaZeroFree.Analysis.EllipticEquations.EnergyEstimates.CutoffQuadraticForms
@@ -38,7 +39,11 @@ private theorem gradient_norm_le_sobolevNorm {n : ℕ} {outer : LocalBall n}
   have hu : 0 ≤ u.sobolevNorm := Real.sqrt_nonneg _
   nlinarith [norm_nonneg (gradient u k)]
 
-private theorem l2_pairing_bound {X : Type*} [MeasurableSpace X] {μ : Measure X}
+section
+
+variable {X : Type*} [MeasurableSpace X] {μ : Measure X}
+
+private theorem l2_pairing_bound
     (f g : X → ℂ) (hf : MemLp f 2 μ) (hg : MemLp g 2 μ) :
     ‖∫ x, f x * star (g x) ∂μ‖ ≤ ‖hf.toLp f‖ * ‖hg.toLp g‖ := by
   have he : (∫ x, f x * star (g x) ∂μ) = inner ℂ (hg.toLp g) (hf.toLp f) := by
@@ -49,7 +54,7 @@ private theorem l2_pairing_bound {X : Type*} [MeasurableSpace X] {μ : Measure X
   rw [he]
   exact (norm_inner_le_norm _ _).trans_eq (mul_comm _ _)
 
-private theorem l2_multiplier_bound {X : Type*} [MeasurableSpace X] {μ : Measure X}
+private theorem l2_multiplier_bound
     (a f : X → ℂ) (hf : MemLp f 2 μ) (ha : MemLp a ⊤ μ)
     (C : ℝ) (hC : 0 ≤ C) (hab : ∀ᵐ x ∂μ, ‖a x‖ ≤ C) :
     ‖(show MemLp (fun x => a x * f x) 2 μ from ha.fun_mul hf).toLp (fun x => a x * f x)‖ ≤ C * ‖hf.toLp f‖ := by
@@ -59,7 +64,13 @@ private theorem l2_multiplier_bound {X : Type*} [MeasurableSpace X] {μ : Measur
   rw [hx, hy, norm_mul]
   exact mul_le_mul_of_nonneg_right hb (norm_nonneg _)
 
-private theorem component_norm_le_sobolevNorm {n : ℕ} {outer : LocalBall n}
+end
+
+section
+
+variable {n : ℕ}
+
+private theorem component_norm_le_sobolevNorm {outer : LocalBall n}
     (u : IntegerSobolev outer 1) (α : MultiIndex n 1) :
     ‖u.derivatives α‖ ≤ u.sobolevNorm := by
   have hs : ‖u.derivatives α‖ ^ 2 ≤ u.sobolevNorm ^ 2 := by
@@ -68,7 +79,7 @@ private theorem component_norm_le_sobolevNorm {n : ℕ} {outer : LocalBall n}
   have hu : 0 ≤ u.sobolevNorm := Real.sqrt_nonneg _
   nlinarith [norm_nonneg (u.derivatives α)]
 
-private theorem compact_sobolev_extension {n : ℕ} (B T : LocalBall n)
+private theorem compact_sobolev_extension (B T : LocalBall n)
     (v : IntegerSobolev B 1) (K : Set (Space n)) (hK : IsCompact K)
     (hKB : K ⊆ B.carrier) (hKT : K ⊆ T.carrier)
     (hv : ∀ᵐ x ∂volume.restrict B.carrier, x ∉ K → value v x = 0) :
@@ -134,7 +145,7 @@ private theorem compact_sobolev_extension {n : ℕ} (B T : LocalBall n)
   change ‖d α‖ = _
   rw [Lp.norm_toLp, Lp.norm_def, he]
 
-private theorem compact_difference_value_norm_le {n : ℕ} (B outer : LocalBall n)
+private theorem compact_difference_value_norm_le (B outer : LocalBall n)
     (v : IntegerSobolev B 1) (K : Set (Space n)) (hK : IsCompact K)
     (hKB : K ⊆ B.carrier) (hKO : K ⊆ outer.carrier)
     (hv : ∀ᵐ x ∂volume.restrict B.carrier, x ∉ K → value v x = 0)
@@ -180,7 +191,7 @@ private theorem compact_difference_value_norm_le {n : ℕ} (B outer : LocalBall 
   rw [he, norm_neg]
   exact hb.trans_eq (hV (firstIndex k)).2
 
-private theorem cutoff_leibniz_norm_bound {n : ℕ} (B : LocalBall n)
+private theorem cutoff_leibniz_norm_bound (B : LocalBall n)
     (η : TestFunction B.toOpens ℝ ⊤) (q v : IntegerSobolev B 1)
     (hη : ∀ x, 0 ≤ η x ∧ η x ≤ 1) (G : ℝ) (hG : 0 ≤ G)
     (hd : ∀ (j : Fin n) x,
@@ -248,17 +259,16 @@ private theorem cutoff_leibniz_norm_bound {n : ℕ} (B : LocalBall n)
     rw [hsq]
     exact Finset.single_le_sum (f := fun j : Fin n => ∫ x in B.carrier, ‖(η x : ℂ) * gradient q j x‖ ^ 2)
       (fun j _ => integral_nonneg (fun x => sq_nonneg _)) (Finset.mem_univ k)
-  have hEn : 0 ≤ ∑ j : Fin n, ∫ x in B.carrier,
-      ‖(η x : ℂ) * gradient q j x‖ ^ 2 := le_trans (sq_nonneg _) hE
+  have hEn := le_trans (sq_nonneg _) hE
   have han : ‖ha.toLp a‖ ≤ Real.sqrt (∑ j : Fin n, ∫ x in B.carrier,
       ‖(η x : ℂ) * gradient q j x‖ ^ 2) := by
     nlinarith [Real.sq_sqrt hEn, Real.sqrt_nonneg (∑ j : Fin n, ∫ x in B.carrier,
       ‖(η x : ℂ) * gradient q j x‖ ^ 2), norm_nonneg (ha.toLp a)]
   simp only [one_mul] at haa
   rw [he]
-  exact (norm_add_le _ _).trans (by simpa only [one_mul, hqn] using add_le_add (haa.trans han) hba)
+  exact (norm_add_le _ _).trans (by simpa using add_le_add (haa.trans han) hba)
 
-private theorem difference_test_value_norm_bound {n : ℕ} (mid outer : LocalBall n)
+private theorem difference_test_value_norm_bound (mid outer : LocalBall n)
     (hsub : mid.carrier ⊆ outer.carrier) (η : TestFunction mid.toOpens ℝ ⊤)
     (q : IntegerSobolev mid 1) (hη : ∀ x, 0 ≤ η x ∧ η x ≤ 1)
     (G : ℝ) (hG : 0 ≤ G)
@@ -272,12 +282,7 @@ private theorem difference_test_value_norm_bound {n : ℕ} (mid outer : LocalBal
       ‖(η x : ℂ) * gradient q j x‖ ^ 2) + 2 * G * ‖value q‖ := by
   obtain ⟨v, hv, hvg⟩ := KPContLocalEnergy.SobolevEnergyEstimates.multiply_smooth_compact mid η q
   let K := tsupport (fun x => η x)
-  have hK : IsCompact K := η.hasCompactSupport
-  have hKB : K ⊆ mid.carrier := η.tsupport_subset
-  have hvs : ∀ᵐ x ∂volume.restrict mid.carrier, x ∉ K → value v x = 0 := by
-    filter_upwards [hv] with x hx hn
-    rw [hx, image_eq_zero_of_notMem_tsupport hn]
-    simp
+  have hKB := η.tsupport_subset
   have hext := FluxRaw.DifferenceTestAtoms.global_indicator_ae K hKB (value v)
     (fun x => (η x : ℂ) ^ 2 * value q x) hv (fun x hn => by
       rw [image_eq_zero_of_notMem_tsupport hn]
@@ -289,27 +294,25 @@ private theorem difference_test_value_norm_bound {n : ℕ} (mid outer : LocalBal
       ((-t) • EuclideanSpace.single k 1)).quasiMeasurePreserving.ae_eq_comp hext] with x hx hy
     simp only [differenceQuotient, Function.comp_apply, FluxRaw.cutoffValue] at *
     rw [hx, hy]
-  have hwb : ∀ᵐ x ∂volume.restrict outer.carrier, value w x =
-      -differenceQuotient k (-t)
-        (KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.compactZeroExtension K (value v)) x := by
-    filter_upwards [hw, hquot.filter_mono (ae_mono Measure.restrict_le_self)] with x hx hy
+  refine (compact_difference_value_norm_le mid outer v K η.hasCompactSupport hKB
+    (hKB.trans hsub) ?_ k t ht w ?_).trans
+      (cutoff_leibniz_norm_bound mid η q v hη G hG hd ?_ k)
+  · filter_upwards [hv] with x hx hn
+    rw [hx, image_eq_zero_of_notMem_tsupport hn]
+    simp
+  · filter_upwards [hw, hquot.filter_mono (ae_mono Measure.restrict_le_self)] with x hx hy
     exact hx.trans (congrArg Neg.neg hy.symm)
-  have hvg' : ∀ j : Fin n, ∀ᵐ x ∂volume.restrict mid.carrier,
-      gradient v j x = (η x : ℂ) ^ 2 * gradient q j x +
-        2 * (η x : ℂ) * coordinateDerivativeList [j] (fun y => (η y : ℂ)) x * value q x := by
-    intro j
+  · intro j
     filter_upwards [hvg j] with x hx
     exact hx
-  exact (compact_difference_value_norm_le mid outer v K hK hKB
-    (hKB.trans hsub) hvs k t ht w hwb).trans
-      (cutoff_leibniz_norm_bound mid η q v hη G hG hd hvg' k)
+
+end
 
 private theorem bounded_l2_pairing {X : Type*} [MeasurableSpace X] {μ : Measure X}
     (a f g : X → ℂ) (ha : MemLp a ⊤ μ) (hf : MemLp f 2 μ) (hg : MemLp g 2 μ)
     (C : ℝ) (hC : 0 ≤ C) (hab : ∀ᵐ x ∂μ, ‖a x‖ ≤ C) :
     ‖∫ x, a x * f x * star (g x) ∂μ‖ ≤ C * ‖hf.toLp f‖ * ‖hg.toLp g‖ := by
-  have haf : MemLp (fun x => a x * f x) 2 μ := ha.fun_mul hf
-  exact (l2_pairing_bound _ _ haf hg).trans
+  exact (l2_pairing_bound _ _ (ha.fun_mul hf) hg).trans
     (mul_le_mul_of_nonneg_right (l2_multiplier_bound a f hf ha C hC hab) (norm_nonneg _))
 
 private theorem density_pairing_bound {n : ℕ} {outer : LocalBall n}
@@ -339,7 +342,7 @@ private theorem density_pairing_bound {n : ℕ} {outer : LocalBall n}
   have hgn : (Lp.memLp g).toLp (fun x => g x) = g := by
     apply Lp.ext
     exact MemLp.coeFn_toLp _
-  simpa only [hfn, hgn] using bounded_l2_pairing _ _ _ hρ (Lp.memLp f) (Lp.memLp g) Cρ hC hbound
+  simpa using bounded_l2_pairing _ _ _ hρ (Lp.memLp f) (Lp.memLp g) Cρ hC hbound
 
 private theorem difference_lower_order_bound {n : ℕ} (mid outer : LocalBall n)
     (hsub : mid.carrier ⊆ outer.carrier) (η : TestFunction mid.toOpens ℝ ⊤)
@@ -387,21 +390,20 @@ private theorem difference_lower_order_bound {n : ℕ} (mid outer : LocalBall n)
       · exact hg.trans (by gcongr)
     _ = _ := by dsimp [N, E]; ring
 
-private theorem norm_toLp_self {X : Type*} [MeasurableSpace X] {μ : Measure X}
+section
+
+variable {X : Type*} [MeasurableSpace X] {μ : Measure X}
+
+private theorem norm_toLp_self
     (f : Lp ℂ 2 μ) : (Lp.memLp f).toLp (fun x => f x) = f := by
   apply Lp.ext
   exact MemLp.coeFn_toLp _
 
-private theorem l2_sq_integral {X : Type*} [MeasurableSpace X] {μ : Measure X}
+private theorem l2_sq_integral
     (f : X → ℂ) (hf : MemLp f 2 μ) :
-    ‖hf.toLp f‖ ^ 2 = ∫ x, ‖f x‖ ^ 2 ∂μ := by
-  rw [← real_inner_self_eq_norm_sq, L2.inner_def]
-  simp only [real_inner_self_eq_norm_sq]
-  apply integral_congr_ae
-  filter_upwards [hf.coeFn_toLp] with x hx
-  rw [hx]
+    ‖hf.toLp f‖ ^ 2 = ∫ x, ‖f x‖ ^ 2 ∂μ := by apply @DedekindZetaZeroFree.KPCubeAverageError.BoxVariance.norm_toLp_sq <;> assumption
 
-private theorem integrated_flux_bound {X : Type*} [MeasurableSpace X] {μ : Measure X}
+private theorem integrated_flux_bound
     (n : ℕ) (a b : Fin n → Fin n → X → ℂ) (F H S U : Fin n → X → ℂ)
     (ha : ∀ i j, MemLp (a i j) ⊤ μ) (hb : ∀ i j, MemLp (b i j) ⊤ μ)
     (hF : ∀ j, MemLp (F j) 2 μ) (hH : ∀ j, MemLp (H j) 2 μ)
@@ -423,7 +425,7 @@ private theorem integrated_flux_bound {X : Type*} [MeasurableSpace X] {μ : Meas
   classical
   let p := fun i j x => a i j x * F j x * star (F i x)
   let e := fun i j x => a i j x * F j x * star (H i x) + b i j x * U j x * star (S i x)
-  have hp : ∀ i j, Integrable (p i j) μ := fun i j =>
+  have hp := fun i j =>
     (show MemLp (fun x => a i j x * F j x) 2 μ from (ha i j).fun_mul (hF j)).integrable_mul (hF i).star
   have he : ∀ i j, Integrable (e i j) μ := fun i j =>
     ((show MemLp (fun x => a i j x * F j x) 2 μ from (ha i j).fun_mul (hF j)).integrable_mul (hH i).star).add
@@ -468,13 +470,15 @@ private theorem integrated_flux_bound {X : Type*} [MeasurableSpace X] {μ : Meas
       (∫ x, ∑ i, ∑ j, p i j x ∂μ) + ∫ x, ∑ i, ∑ j, e i j x ∂μ := by
     simp_rw [Finset.sum_add_distrib]
     exact integral_add hpi hei
-  have hre : -(∫ x, ∑ i, ∑ j, e i j x ∂μ).re ≤ (n : ℝ)^2 * (K * V * W + L * T * (V + W)) :=
+  have hre :=
     (neg_le_abs _).trans ((Complex.abs_re_le_norm _).trans herr)
   have hz := congrArg Complex.re hsplit
   simp only [Complex.add_re] at hz
   dsimp only [p, e] at hz hmain hre
   simp only [add_assoc] at hz ⊢
   linarith
+
+end
 
 set_option maxHeartbeats 1600000 in
 

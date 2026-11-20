@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -83,15 +80,11 @@ theorem
   dsimp only
   let i :=
     j.comp (IsScalarTower.toAlgHom K F E)
-  let : Algebra F (SeparableClosure K) :=
+  let :=
     i.toRingHom.toAlgebra
   intro e tau
-  let jF : E →ₐ[F] SeparableClosure K :=
-    { j with commutes' := fun x => rfl }
-  let jI : E →ₐ[F] SeparableClosure F :=
-    e.symm.toAlgHom.comp jF
   let EI :=
-    finiteGaloisAbstractExtensionOfEmbedding F E jI
+    finiteGaloisAbstractExtensionOfEmbedding F E (e.symm.toAlgHom.comp ({ j with commutes' := fun x => rfl}))
   let H₀ :=
     closedFixingSubgroup K (SeparableClosure K)
       (AlgHom.fieldRange i)
@@ -108,13 +101,7 @@ theorem
       (AlgHom.fieldRange j).fixingSubgroup ≤
         (AlgHom.fieldRange i).fixingSubgroup
     exact (AlgHom.fieldRange i).fixingSubgroup_le hRange
-  let hHabsolute : Finite
-      ((baseField
-        Gal(SeparableClosure K / K)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+  let hHabsolute := ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, ambientEmbeddedAbsoluteQuotientFinite K F i⟩
@@ -147,48 +134,34 @@ theorem
     refine
       ⟨(intrinsicExtensionSubgroup_iff_ambientEmbeddedField
         K F E j e tau).1 htauExtension, ?_⟩
-    have htauRF :
-        tauRF ∈
-          (localResidueDatum F).fieldInertiaWithin RF.field := by
-      exact htauInertia
     have hnormalizedRF :
         (localResidueDatum F).normalizedDegree RF tauRF = 1 := by
       change
         tauRF ∈
           ((localResidueDatum F).normalizedDegree RF).toMonoidHom.ker
       rw [(localResidueDatum F).normalizedDegree_ker RF]
-      exact htauRF
-    have hnormalizedRH :
-        (localResidueDatum K).normalizedDegree RH psiTauRH = 1 :=
-      hdegree.symm.trans hnormalizedRF
+      exact htauInertia
     change
       psiTauRH ∈
         (localResidueDatum K).fieldInertiaWithin RH.field
     rw [← (localResidueDatum K).normalizedDegree_ker RH]
-    exact hnormalizedRH
+    exact hdegree.symm.trans hnormalizedRF
   · rintro ⟨hpsiExtension, hpsiInertia⟩
     refine
       ⟨(intrinsicExtensionSubgroup_iff_ambientEmbeddedField
         K F E j e tau).2 hpsiExtension, ?_⟩
-    have hpsiTauRH :
-        psiTauRH ∈
-          (localResidueDatum K).fieldInertiaWithin RH.field := by
-      exact hpsiInertia
     have hnormalizedRH :
         (localResidueDatum K).normalizedDegree RH psiTauRH = 1 := by
       change
         psiTauRH ∈
           ((localResidueDatum K).normalizedDegree RH).toMonoidHom.ker
       rw [(localResidueDatum K).normalizedDegree_ker RH]
-      exact hpsiTauRH
-    have hnormalizedRF :
-        (localResidueDatum F).normalizedDegree RF tauRF = 1 :=
-      hdegree.trans hnormalizedRH
+      exact hpsiInertia
     change
       tauRF ∈
         (localResidueDatum F).fieldInertiaWithin RF.field
     rw [← (localResidueDatum F).normalizedDegree_ker RF]
-    exact hnormalizedRF
+    exact hdegree.trans hnormalizedRH
 
 /-- The embedded-field base equivalence maps the intrinsic extension-inertia
 subgroup for `E / F` onto the corresponding ambient extension-inertia subgroup. -/
@@ -243,29 +216,9 @@ theorem
   dsimp only
   let i :=
     j.comp (IsScalarTower.toAlgHom K F E)
-  let : Algebra F (SeparableClosure K) :=
+  let :=
     i.toRingHom.toAlgebra
   intro e
-  let jF : E →ₐ[F] SeparableClosure K :=
-    { j with commutes' := fun x => rfl }
-  let jI : E →ₐ[F] SeparableClosure F :=
-    e.symm.toAlgHom.comp jF
-  let EI :=
-    finiteGaloisAbstractExtensionOfEmbedding F E jI
-  let H₀ :=
-    closedFixingSubgroup K (SeparableClosure K)
-      (AlgHom.fieldRange i)
-  let J₀ :=
-    closedFixingSubgroup K (SeparableClosure K)
-      (AlgHom.fieldRange j)
-  let hJH : J₀.toSubgroup ≤ H₀.toSubgroup := by
-    change
-      (AlgHom.fieldRange j).fixingSubgroup ≤
-        (AlgHom.fieldRange i).fixingSubgroup
-    apply (AlgHom.fieldRange i).fixingSubgroup_le
-    intro x hx
-    rcases hx with ⟨y, rfl⟩
-    exact ⟨algebraMap F E y, rfl⟩
   let psi :=
     intrinsicBaseEquivAmbientEmbeddedField K F i e
   ext sigma
@@ -275,16 +228,13 @@ theorem
       (intrinsicExtensionInertia_iff_ambientEmbeddedField
         K F E j e tau).1 htau
   · intro hsigma
-    let tau :
-        (intrinsicAbstractBase F).toSubgroup :=
+    let tau :=
       psi.symm sigma
     refine ⟨tau, ?_, psi.apply_symm_apply sigma⟩
     apply
       (intrinsicExtensionInertia_iff_ambientEmbeddedField
         K F E j e tau).2
-    have htauImage : psi tau = sigma :=
-      psi.apply_symm_apply sigma
-    rw [htauImage]
+    rw [(psi.apply_symm_apply sigma)]
     exact hsigma
 
 end LocalClassFieldTheory

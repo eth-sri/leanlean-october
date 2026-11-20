@@ -9,10 +9,10 @@ namespace DedekindZetaZeroFree.OrbitFrequencies
 open MomentSources NumberField
 open scoped Classical NumberField
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
-variable (D : SourceFactorization R Q T)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    (D : SourceFactorization R Q T)
 abbrev localRho (p : KPFinitePlace F) :=
   KPRankOneShellRepair.actualCanonicalImageRepresentation F R.A.zeta12 R.A.primitive_zeta12
     p (D.finiteData p).inducing (D.finiteData p).inducing.polarization
@@ -27,8 +27,7 @@ lemma local_ell_left_root_norm (p : KPFinitePlace F) (t : p.adicCompletion F)
     (φ : actualLocal R D.finiteData (Sum.inr p)) :
     ‖D.ell (Sum.inr p) (localRho R D p
       (KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) t * g) φ)‖ =
-    ‖D.ell (Sum.inr p) (localRho R D p g φ)‖ := by
-  exact norm_rep_left (localRho R D p) (D.ell (Sum.inr p)) _ g φ _
+    ‖D.ell (Sum.inr p) (localRho R D p g φ)‖ := norm_rep_left (localRho R D p) (D.ell (Sum.inr p)) _ g φ _
     (ExteriorWhittakerValues.StoredWhittaker.ell_finite_root R D p t (localRho R D p g φ))
     (Circle.norm_coe _)
 end DedekindZetaZeroFree.OrbitFrequencies
@@ -41,10 +40,10 @@ namespace DedekindZetaZeroFree.OrbitFrequencies
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
-variable (D : SourceFactorization R Q T)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    (D : SourceFactorization R Q T)
 
 private lemma norm_rep_central {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) (ell : V →ₗ[ℂ] ℂ) (a b z c : G) (φ : V) (u : ℂ)
@@ -94,23 +93,23 @@ theorem local_ell_bruhat_norm (p : KPFinitePlace F) (x H : (p.adicCompletion F)�
         (KPPGLLocalCover.LowerN F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p)
           (H⁻¹ : (p.adicCompletion F)ˣ)) φ))‖ := by
   have hcomm := KPCorrectedBruhatLifts.quotient_upper_diagonal F R.A.zeta12
-    R.A.primitive_zeta12 (Sum.inr p) ((H⁻¹ : p.adicCompletion F) * (x : p.adicCompletion F)) x
-  have hx : (H⁻¹ : p.adicCompletion F) * (x : p.adicCompletion F) /
-      (x : p.adicCompletion F) = (H⁻¹ : p.adicCompletion F) := by simp
+    R.A.primitive_zeta12 (Sum.inr p) ((H⁻¹ : p.adicCompletion F) * x) x
+  have hx : (H⁻¹ : p.adicCompletion F) * x /
+      x = (H⁻¹ : p.adicCompletion F) := by simp
   rw [hx] at hcomm
   have he :
       KPPGLLocalCover.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) x *
       KPPGLLocalCover.W F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) *
-      KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) (H : p.adicCompletion F) =
+      KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) H =
       KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p)
-        ((H⁻¹ : p.adicCompletion F) * (x : p.adicCompletion F)) *
+        ((H⁻¹ : p.adicCompletion F) * x) *
       (KPPGLLocalCover.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) x *
        KPPGLLocalCover.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) (-(H⁻¹ ^ 2)) *
        KPPGLLocalCover.LowerN F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) (H⁻¹ : (p.adicCompletion F)ˣ)) := by
     rw [mul_assoc, KPCorrectedBruhatLifts.quotient_weyl_upper]
     simp only [← mul_assoc]
     rw [hcomm]
-    simp only [mul_assoc, Units.val_inv_eq_inv_val]
+    simp
   exact norm_rep_bruhat (localRho R D p) (D.ell (Sum.inr p)) _ _ _ _ _ _ _ φ he
     (local_ell_left_root_norm R D p _ _ φ)
     (local_ell_torus_product_norm R D p x (-(H⁻¹ ^ 2)) _)
@@ -120,7 +119,7 @@ private lemma norm_rep_map_three {G H V : Type*} [Group G] [Group H]
     (ell : V →ₗ[ℂ] ℂ) (a b c d : G) (φ : V)
     (h : ‖ell (ρ (f a * f b * f c) φ)‖ = ‖ell (ρ (f d) φ)‖) :
     ‖ell (ρ (f (a * b * c)) φ)‖ = ‖ell (ρ (f d) φ)‖ := by
-  simpa only [map_mul] using h
+  simpa using h
 
 theorem local_ell_bruhat_norm_of_compact (p : ThetaBranch.ExteriorPrime R.A)
     (x H : (p.val.adicCompletion F)ˣ)
@@ -151,10 +150,10 @@ namespace DedekindZetaZeroFree.OrbitFrequencies
 open MomentSources NumberField
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
-variable (D : SourceFactorization R Q T)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    (D : SourceFactorization R Q T)
 
 lemma exterior_upper_mem (p : ThetaBranch.ExteriorPrime R.A) (t : KPTameCompact.O F p.val) :
     KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) t ∈
@@ -167,21 +166,9 @@ lemma exterior_upper_mem (p : ThetaBranch.ExteriorPrime R.A) (t : KPTameCompact.
 
 lemma exterior_lower_mem (p : ThetaBranch.ExteriorPrime R.A) (t : KPTameCompact.O F p.val) :
     KPStandardLocalRootLifts.LowerN F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) t ∈
-      KPAdelicCoverRestrictedProduct.compact F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) := by
-  change _ ∈ KPAdelicCoverRestrictedProduct.finiteCompact F R.A.zeta12 R.A.primitive_zeta12 p.val
-  rw [KPAdelicCoverRestrictedProduct.finiteCompact, dite_eq_right (ExteriorWhittakerValues.exterior_not_bad p)]
-  refine ⟨KPStandardLocalRootLifts.integralLowerN F p.val t, ?_⟩
-  exact (KPStandardLocalRootLifts.LowerN_eq_compact F R.A.zeta12 R.A.primitive_zeta12 p.val
-    (fun h => ExteriorWhittakerValues.exterior_not_bad p (Or.inr h)) t).symm
+      KPAdelicCoverRestrictedProduct.compact F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) := by apply @DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits.lower_compact <;> assumption
 
-lemma exterior_weyl_mem (p : ThetaBranch.ExteriorPrime R.A) :
-    KPStandardLocalRootLifts.W F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) ∈
-      KPAdelicCoverRestrictedProduct.compact F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) := by
-  change _ ∈ KPAdelicCoverRestrictedProduct.finiteCompact F R.A.zeta12 R.A.primitive_zeta12 p.val
-  rw [KPAdelicCoverRestrictedProduct.finiteCompact, dite_eq_right (ExteriorWhittakerValues.exterior_not_bad p)]
-  refine ⟨KPStandardLocalRootLifts.integralW F p.val, ?_⟩
-  exact (KPStandardLocalRootLifts.W_eq_compact F R.A.zeta12 R.A.primitive_zeta12 p.val
-    (fun h => ExteriorWhittakerValues.exterior_not_bad p (Or.inr h))).symm
+alias exterior_weyl_mem := DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits.weyl_compact
 
 private lemma slot_right_fixed {G H V : Type*} [Group G] [Group H]
     [AddCommGroup V] [Module ℂ V] (f : G →* H) (ρ : Representation ℂ H V)
@@ -197,16 +184,14 @@ theorem exterior_integral_digit_value (p : ThetaBranch.ExteriorPrime R.A)
        KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) t) =
     OrbitExpansion.exteriorSlotValue R D p.val
       (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) x) := by
-  have hc := (KPAdelicCoverRestrictedProduct.compact F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val)).mul_mem
-    (exterior_weyl_mem R p) (exterior_upper_mem R p t)
-  have hf := (D.spherical_reference p.val p.property).2 _ hc
   have h := slot_right_fixed
     (KPPGLLocalCover.coverQuotient F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val))
     (localRho R D p.val) (D.ell (Sum.inr p.val))
     (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) x)
     (KPStandardLocalRootLifts.W F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) *
      KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) t)
-    (D.references (Sum.inr p.val)) hf
+    (D.references (Sum.inr p.val)) ((D.spherical_reference p.val p.property).2 _ ((KPAdelicCoverRestrictedProduct.compact F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val)).mul_mem
+      (exterior_weyl_mem R p) (exterior_upper_mem R p t)))
   simpa only [mul_assoc] using h
 
 theorem exterior_nonintegral_digit_norm (p : ThetaBranch.ExteriorPrime R.A)
@@ -219,6 +204,6 @@ theorem exterior_nonintegral_digit_norm (p : ThetaBranch.ExteriorPrime R.A)
     ‖OrbitExpansion.exteriorSlotValue R D p.val
       (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) (x * -(H⁻¹ ^ 2)))‖ :=
   local_ell_bruhat_norm_of_compact R D p x H (by
-    simpa only [Units.val_inv_eq_inv_val] using exterior_lower_mem R p ⟨_, hH⟩)
+    simpa using exterior_lower_mem R p ⟨_, hH⟩)
 end DedekindZetaZeroFree.OrbitFrequencies
 end

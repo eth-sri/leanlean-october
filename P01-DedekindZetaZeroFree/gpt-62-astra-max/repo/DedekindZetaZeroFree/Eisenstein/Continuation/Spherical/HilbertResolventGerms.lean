@@ -12,21 +12,25 @@ open MeasureTheory Topology
 
 namespace DedekindZetaZeroFree
 
-private lemma analyticAt_clm_apply' {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
-    {A : ℂ → E →L[ℂ] E} {B : ℂ → E} {x : ℂ}
+section
+
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] {A : ℂ → E →L[ℂ] E} {B : ℂ → E} {x : ℂ}
+
+private lemma analyticAt_clm_apply'
     (hA : AnalyticAt ℂ A x) (hB : AnalyticAt ℂ B x) :
     AnalyticAt ℂ (fun z => A z (B z)) x :=
   (ContinuousLinearMap.analyticAt_bilinear (ContinuousLinearMap.id ℂ (E →L[ℂ] E))
     (A x, B x)).comp₂ hA hB
 
-private lemma meromorphicAt_clm_apply' {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
-    {A : ℂ → E →L[ℂ] E} {B : ℂ → E} {x : ℂ}
+private lemma meromorphicAt_clm_apply'
     (hA : MeromorphicAt A x) (hB : AnalyticAt ℂ B x) :
     MeromorphicAt (fun z => A z (B z)) x := by
   obtain ⟨n, hn⟩ := hA
   refine ⟨n, (analyticAt_clm_apply' hn hB).congr ?_⟩
   filter_upwards with z
   simp [ContinuousLinearMap.smul_apply]
+
+end
 
 open Filter
 
@@ -38,29 +42,33 @@ private lemma analyticAt_clear {A : ℂ → E} {x : ℂ} (hA : AnalyticAt ℂ A 
 
 private lemma clear_zero (A : E) (x : ℂ) : (x-x) • A = 0 := by simp
 
-private lemma analytic_cleared_source {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
+section
+
+variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
+
+private lemma analytic_cleared_source
     {G : ℂ → V →L[ℂ] V} {h : ℂ → V} {x : ℂ}
     (hG : AnalyticAt ℂ G x) (hh : AnalyticAt ℂ h x) :
     AnalyticAt ℂ (fun s => -(G s (h s))) x := (analyticAt_clm_apply' hG hh).neg
 
-private lemma cleared_source_eq {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
+private lemma cleared_source_eq
     (G A : V →L[ℂ] V) (u : V) (c : ℂ) (heq : c • A = G) :
     -(G u) = c • (-(A u)) := by rw [← heq]; simp
 
-private lemma cleared_source_center {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
+private lemma cleared_source_center
     (G P : V →L[ℂ] V) (u : V) (c : ℂ) (heq : G = -c • P) :
     -(G u) = c • P u := by rw [heq]; simp
 
-private lemma cleared_source_zero {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
+private lemma cleared_source_zero
     (G : V →L[ℂ] V) (u : V) (heq : G = 0) : -(G u) = 0 := by rw [heq]; simp
+
+end
 
 private lemma clear_simple {A : ℂ → E} {x : ℂ} {L : E}
     (hA : MeromorphicAt A x) (ho : (-1 : WithTop ℤ) ≤ meromorphicOrderAt A x)
     (hl : Tendsto (fun s => (s-x) • A s) (𝓝[≠] x) (𝓝 L)) :
     ∃ G : ℂ → E, AnalyticAt ℂ G x ∧
       (fun s => (s-x) • A s) =ᶠ[𝓝[≠] x] G ∧ G x = L := by
-  have hm : MeromorphicAt (fun s => (s-x) • A s) x :=
-    (show AnalyticAt ℂ (fun s => s-x) x by fun_prop).meromorphicAt.smul hA
   have hn : 0 ≤ meromorphicOrderAt (fun s => (s-x) • A s) x := by
     change 0 ≤ meromorphicOrderAt ((fun s => s-x) • A) x
     rw [meromorphicOrderAt_smul (show MeromorphicAt (fun s => s-x) x from
@@ -69,7 +77,7 @@ private lemma clear_simple {A : ℂ → E} {x : ℂ} {L : E}
     calc
       0 = (1 : WithTop ℤ) + (-1) := by norm_num
       _ ≤ 1 + meromorphicOrderAt A x := add_le_add_right ho _
-  obtain ⟨G, hG, heq⟩ := hm.meromorphicOrderAt_nonneg_iff.mp hn
+  obtain ⟨G, hG, heq⟩ := ((show AnalyticAt ℂ (fun s => s-x) x by fun_prop).meromorphicAt.smul hA).meromorphicOrderAt_nonneg_iff.mp hn
   refine ⟨G, hG, heq, ?_⟩
   exact tendsto_nhds_unique (hG.continuousAt.tendsto.mono_left nhdsWithin_le_nhds)
     (hl.congr' heq)
@@ -89,15 +97,16 @@ private lemma pull_limit {A : ℂ → E} {a : ℂ → ℂ} {x : ℂ} {L : E}
   have ht := (ha.tendsto_slope.inv₀ hne).smul (hl.comp hat)
   apply ht.congr'
   filter_upwards [eventually_mem_nhdsWithin, hat.eventually eventually_mem_nhdsWithin] with s hs hsa
-  have hs' : s-x ≠ 0 := sub_ne_zero.mpr hs
-  have hsa' : a s-a x ≠ 0 := sub_ne_zero.mpr hsa
+  have hs' := sub_ne_zero.mpr hs
+  have hsa' := sub_ne_zero.mpr hsa
   change ((s-x)⁻¹ * (a s-a x))⁻¹ • ((a s-a x) • A (a s)) = (s-x) • A (a s)
   rw [← mul_smul]
   congr 1
   field_simp
 
-private lemma exists_ball_inter_subset_singleton {α : Type*} [MetricSpace α]
-    {S : Set α} {z : α} {r : ℝ} (hr : 0 < r)
+variable {α : Type*} [MetricSpace α] {S : Set α} {z : α}
+
+private lemma exists_ball_inter_subset_singleton {r : ℝ} (hr : 0 < r)
     (hfin : (S ∩ Metric.closedBall z r).Finite) (hz : z ∈ S) :
     ∃ r' : ℝ, 0 < r' ∧ S ∩ Metric.ball z r' ⊆ {z} := by
   by_cases hempty : (S ∩ Metric.closedBall z r) \ {z} = ∅
@@ -111,28 +120,24 @@ private lemma exists_ball_inter_subset_singleton {α : Type*} [MetricSpace α]
     refine ⟨r / 2, by linarith, ?_⟩
     intro w hw
     obtain ⟨hwS, hwb⟩ := hw
-    have hd : dist w z < r / 2 := Metric.mem_ball.mp hwb
+    have hd := Metric.mem_ball.mp hwb
     exact hsub ⟨hwS, Metric.mem_closedBall.mpr (by linarith)⟩
-  · have hne : ((S ∩ Metric.closedBall z r) \ {z}).Nonempty :=
-      Set.nonempty_iff_ne_empty.mpr hempty
-    obtain ⟨a, ha, hmin⟩ := Set.exists_min_image ((S ∩ Metric.closedBall z r) \ {z})
-      (fun w => dist w z) (hfin.subset Set.sdiff_subset) hne
-    have haz : a ≠ z := by
-      intro h; exact ha.2 (by simpa [Set.mem_singleton_iff, h] using rfl)
+  · obtain ⟨a, ha, hmin⟩ := Set.exists_min_image ((S ∩ Metric.closedBall z r) \ {z})
+      (fun w => dist w z) (hfin.subset Set.sdiff_subset) (Set.nonempty_iff_ne_empty.mpr hempty)
+    have haz : a ≠ z := fun h => ha.2 (by simpa [Set.mem_singleton_iff, h] using rfl)
     have hpos : 0 < dist a z := dist_pos.mpr haz
     refine ⟨min (dist a z) r / 2, by positivity, ?_⟩
     intro w hw
     by_contra hwz
     obtain ⟨hwS, hwb⟩ := hw
-    have hd : dist w z < min (dist a z) r / 2 := Metric.mem_ball.mp hwb
+    have hd := Metric.mem_ball.mp hwb
     have hwa : w ∈ (S ∩ Metric.closedBall z r) \ {z} :=
       ⟨⟨hwS, Metric.mem_closedBall.mpr (by linarith [min_le_right (dist a z) r])⟩,
         by simpa [Set.mem_singleton_iff] using hwz⟩
     have := hmin w hwa
     linarith [hd, this, min_le_left (dist a z) r]
 
-private lemma exists_ball_disjoint_of_finite {α : Type*} [MetricSpace α]
-    {S : Set α} {z : α} (hfin : S.Finite) (hz : z ∉ S) :
+private lemma exists_ball_disjoint_of_finite (hfin : S.Finite) (hz : z ∉ S) :
     ∃ r : ℝ, 0 < r ∧ S ∩ Metric.ball z r = ∅ := by
   by_cases hempty : S = ∅
   · exact ⟨1, one_pos, by rw [hempty]; simp⟩
@@ -144,7 +149,7 @@ private lemma exists_ball_disjoint_of_finite {α : Type*} [MetricSpace α]
     rw [Set.eq_empty_iff_forall_notMem]
     intro w hw
     obtain ⟨hwS, hwb⟩ := hw
-    have hd : dist w z < dist a z / 2 := Metric.mem_ball.mp hwb
+    have hd := Metric.mem_ball.mp hwb
     have := hmin w hwS
     linarith [hd, this]
 
@@ -153,11 +158,11 @@ end DedekindZetaZeroFree
 namespace DedekindZetaZeroFree.KPContActualHilbertSimpleGerms
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 local notation "level" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 local notation "Hactual" => KPContActualAllCuspSource.Sector F ζ hζ C R P H U
@@ -165,7 +170,7 @@ local notation "d" => (Module.finrank ℚ F / 2 : ℕ)
 local notation "a" => KPContinuation.spectralCoordinate (d : ℤ)
 
 variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
-variable (hR : R.adelicHaar = μG)
+    (hR : R.adelicHaar = μG)
 variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ
   (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H)
 
@@ -175,13 +180,13 @@ local notation "Δactual" => KPContActualSectorFriedrichsSynthesis.Δ_U
   F ζ hζ level R P H μG hμG hR realization
 
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable {T : ℝ}
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    {T : ℝ}
 variable (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H T)
 variable (Ω : Set ℂ) (f : ℂ → S)
-variable (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-variable (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer Ω f χ)
+    (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
+    (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer Ω f χ)
 
 def v (s : ℂ) : Hactual :=
   -(KPResolventPencil.shiftedResolvent Bactual (a s) (source.h s))
@@ -193,7 +198,6 @@ local notation "vactual" => v F ζ hζ C R P H U μG hμG hR realization ι buff
 local notation "Σactual" => Sigma F ζ hζ C R P H U μG hμG hR realization Ω
 
 structure Properties : Prop where
-
   poles_locally_finite : ∀ s₀ ∈ Ω, ∃ r : ℝ, 0 < r ∧
     Metric.ball s₀ r ⊆ Ω ∧ (Σactual ∩ Metric.closedBall s₀ r).Finite
   hilbert_meromorphic : MeromorphicOn vactual Ω
@@ -216,7 +220,6 @@ structure Properties : Prop where
 set_option synthInstance.maxSize 256 in
 private theorem aux
     (hι : Function.Injective ι)
-    (hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (hΩopen : IsOpen Ω) (hΩ : Ω ⊆ KPContinuation.spectralDomain)
     (hf : DifferentiableOn ℂ f Ω) :
     Properties F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source := by
@@ -441,7 +444,6 @@ theorem kp_cont_actual_hilbert_simple_germs
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
     (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (_hι : Function.Injective ι)
-    (_hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (Ω : Set ℂ) (_hΩopen : IsOpen Ω) (_hΩ : Ω ⊆ KPContinuation.spectralDomain)
     (f : ℂ → S) (_hf : DifferentiableOn ℂ f Ω)
     {T : ℝ}
@@ -452,7 +454,7 @@ theorem kp_cont_actual_hilbert_simple_germs
     KPContActualHilbertSimpleGerms.Properties
       F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source := by
   exact KPContActualHilbertSimpleGerms.aux F ζ hζ C R P H U μG hμG hR realization
-    ι buffer Ω f χ source _hι _hStage _hΩopen _hΩ _hf
+    ι buffer Ω f χ source _hι _hΩopen _hΩ _hf
 end DedekindZetaZeroFree
 
 end

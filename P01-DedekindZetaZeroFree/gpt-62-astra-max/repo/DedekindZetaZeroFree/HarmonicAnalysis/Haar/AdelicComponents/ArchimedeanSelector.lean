@@ -13,12 +13,7 @@ namespace DedekindZetaZeroFree.KPActualComponentHaarSources
 
 open KPMsFixedHaar
 
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar renaming rationalLift_split → rationalLift_split
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar renaming rationalLift → rationalLift
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar renaming rationalLift_arch → rationalLift_arch
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar renaming rationalLift_finite → rationalLift_finite
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar renaming actual_split → actual_split
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar renaming archProjection_compare → archProjection_compare
+open _root_.DedekindZetaZeroFree.KPMsFixedHaar (rationalLift_split rationalLift rationalLift_arch rationalLift_finite actual_split archProjection_compare)
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 private theorem restricted_discrete
@@ -138,20 +133,18 @@ theorem actual_component_arch_group_selector
     exact mul_right_cancel (hg.trans (one_mul x).symm)
   obtain ⟨D, hD, hfund⟩ :=
     KPCuspChart.SectionConstruction.measurable_fundamental_domain_of_properly_discontinuous_ae_free
-      (H := Γ) Measure.count hfree
+       Measure.count hfree
   refine ⟨hclosed, inferInstance, D, hD, ?_⟩
   intro x
   obtain ⟨g, hg⟩ := Measure.ae_count_iff.mp hfund.ae_covers x
   refine ⟨g, hg, ?_⟩
   intro a ha
   by_contra hne
-  have hd := hfund.aedisjoint (show a⁻¹ ≠ g⁻¹ from fun h => hne (inv_injective h))
-  have hempty : a⁻¹ • D ∩ g⁻¹ • D = ∅ := Measure.count_eq_zero_iff.mp hd
   have hx : x ∈ a⁻¹ • D ∩ g⁻¹ • D := by
     constructor
     · exact ⟨a • x, ha, by simp⟩
     · exact ⟨g • x, hg, by simp⟩
-  rw [hempty] at hx
+  rw [(Measure.count_eq_zero_iff.mp (hfund.aedisjoint (show a⁻¹ ≠ g⁻¹ from fun h => hne (inv_injective h))))] at hx
   exact hx
 
 end DedekindZetaZeroFree.KPActualComponentHaarSources

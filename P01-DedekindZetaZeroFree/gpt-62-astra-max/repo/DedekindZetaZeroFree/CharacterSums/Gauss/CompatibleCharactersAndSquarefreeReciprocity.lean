@@ -16,9 +16,7 @@ private theorem support_symbol_eq_residue (A : SArithmeticData F)
     (d c : A.Exterior) (hd : Squarefree d.val)
     (r : A.R) (hr : (G.generator c : F) = (r : F)) :
     ThetaPhaseSeparation.idealSymbol A σ d (G.generator c) = σ (A.sexticResidue d r) := by
-  have hr0 : r ≠ 0 := by
-    intro h
-    exact (G.generator c).ne_zero (hr.trans (by simp [h]))
+  have hr0 : r ≠ 0 := fun h => (G.generator c).ne_zero (hr.trans (by simp [h]))
   have he : ThetaReflectionData.rowUnit A ⟨r, hr0⟩ = G.generator c := Units.ext hr.symm
   have hchar : A.sexticResiduePowerChar σ d 1
       (Ideal.Quotient.mk (A.extendIdeal d) r) = σ (A.sexticResidue d r) := by
@@ -57,19 +55,15 @@ theorem squarefree_source_generator_reciprocity
   rw [support_symbol_eq_residue R.A R.probe.allowed R.σ d c hd b heb,
     support_symbol_eq_residue R.A R.probe.allowed R.σ c d hc a hea]
   apply congrArg R.σ
-  have hdallow : R.A.IsAllowed R.probe.correction.B (R.probe.allowed.generator d) := by
-    change R.A.sClass (R.probe.allowed.generator d) ∈ R.probe.correction.B
-    rw [← R.probe.sameComplement]
-    exact R.probe.allowed.allowed d
-  have hcallow : R.A.IsAllowed R.probe.correction.B (R.probe.allowed.generator c) := by
-    change R.A.sClass (R.probe.allowed.generator c) ∈ R.probe.correction.B
-    rw [← R.probe.sameComplement]
-    exact R.probe.allowed.allowed c
-  exact (ArithmeticContext.actual_hilbert_sextic_reciprocity R.A
+  refine (ArithmeticContext.actual_hilbert_sextic_reciprocity R.A
     R.probe.correction.H R.probe.correction.B R.probe.correction.H_actual
     R.probe.correction.B_complement).1 d c a b
       (R.probe.allowed.generator d) (R.probe.allowed.generator c)
-      ha hb hea heb hdallow hcallow hcop
+      ha hb hea heb ?_ ?_ hcop
+  · rw [← R.probe.sameComplement]
+    exact R.probe.allowed.allowed d
+  · rw [← R.probe.sameComplement]
+    exact R.probe.allowed.allowed c
 
 end DedekindZetaZeroFree.PrincipalMellinSource
 
@@ -84,16 +78,7 @@ open NumberField IsDedekindDomain
 
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem archPhase_eq_trace (A : SArithmeticData F) (x : InfiniteAdeleRing F) :
-    ProbeAdditive.archPhase F x = ∏ w, (archTraceCharacter w (x w) : ℂ) := by
-  simp only [archTraceCharacter_of_isComplex _ (A.complex_place _), Circle.coe_exp,
-    InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply]
-  rw [ProbeAdditive.archPhase, ← Complex.exp_sum]
-  congr 1
-  simp only [Complex.ofReal_sum, Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
-  apply Finset.sum_congr rfl
-  intro w hw
-  ring
+private alias archPhase_eq_trace := DedekindZetaZeroFree.CodifferentResidueSieve.archPhase_eq_trace
 
 private theorem phase_eq_eS (A : SArithmeticData F) (y : SLocalProduct F A.Sf) :
     ProbeAdditive.phase F A.Sf (fun v => ResidueTrace.localTraceCharacter v.val) y =
@@ -105,29 +90,23 @@ private theorem phase_eq_eS (A : SArithmeticData F) (y : SLocalProduct F A.Sf) :
     rfl
   rw [ProbeAdditive.phase, archPhase_eq_trace A, key]
 
-theorem additiveCharacter_eq_eS
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η) (x : F) :
+variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+
+theorem additiveCharacter_eq_eS (x : F) :
     R.probe.coefficients.additiveCharacter x =
       (R.A.eS (sLocalDiagonal F R.A.Sf x) : ℂ) := by
   rw [R.probe.sameTrace]
-  have hft : R.probe.finiteTrace =
-      (fun v : ↥R.A.Sf => ResidueTrace.localTraceCharacter v.val) :=
-    funext fun v => NormalizedProbe.PrincipalData.finiteTrace_eq_localTraceCharacter
-      R.A R.σ R.target R.traceBad R.probe v
-  rw [hft]
+  rw [(funext fun v => NormalizedProbe.PrincipalData.finiteTrace_eq_localTraceCharacter
+    R.A R.σ R.target R.traceBad R.probe v)]
   exact phase_eq_eS R.A _
 
-theorem additiveCharacter_eq_fieldTrace
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η) (x : F) :
+theorem additiveCharacter_eq_fieldTrace (x : F) :
     R.probe.coefficients.additiveCharacter x = (R.A.fieldTraceCharacter x : ℂ) := by
   rw [additiveCharacter_eq_eS R x]
   rfl
 
 def SourceCharacterCompatibility
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η)
     (ψ : ∀ p : ThetaBranch.ExteriorPrime R.A, AddChar (DHCubic.Residue F p.val) ℂ)
     (L : R.A.UnitQuotient → Fˣ →* ℂ) : Prop :=
   (∀ (p : ThetaBranch.ExteriorPrime R.A) (t : 𝓞 F),
@@ -140,9 +119,7 @@ def SourceCharacterCompatibility
         R.probe.correction.η_id (R.A.diagonal x) : ℂ) *
       R.σ ((R.A.H_S (R.A.diagonal ε.val) (R.A.diagonal x) : Fˣ) : F)
 
- noncomputable def representativeSourceCharacter
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η) (ε : R.A.U) : Fˣ →* ℂ where
+ noncomputable def representativeSourceCharacter (ε : R.A.U) : Fˣ →* ℂ where
   toFun x :=
     (R.A.correctionLS R.probe.correction.Λ R.probe.correction.G
       R.probe.correction.η_id (R.A.diagonal x) : ℂ) *
@@ -164,15 +141,12 @@ def SourceCharacterCompatibility
     ring
   map_one' := by
     have hH : R.A.H_S (R.A.diagonal ε.val) 1 = 1 := by
-      have h := R.A.H_S_mul_right (R.A.diagonal ε.val) 1 1
       exact mul_left_cancel (show R.A.H_S (R.A.diagonal ε.val) 1 *
         R.A.H_S (R.A.diagonal ε.val) 1 = R.A.H_S (R.A.diagonal ε.val) 1 * 1 by
-          simpa using h.symm)
+          simpa using (R.A.H_S_mul_right (R.A.diagonal ε.val) 1 1).symm)
     simp [SArithmeticData.correctionLS, SArithmeticData.ideleSInverseProduct, hH]
 
-private theorem representativeSourceCharacter_eq
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η) (ε δ : R.A.U)
+private theorem representativeSourceCharacter_eq (ε δ : R.A.U)
     (h : (QuotientGroup.mk ε : R.A.UnitQuotient) = QuotientGroup.mk δ) :
     representativeSourceCharacter R ε = representativeSourceCharacter R δ := by
   have hc := congrArg R.A.unitQuotientClass h
@@ -186,9 +160,7 @@ private theorem representativeSourceCharacter_eq
     _ * R.σ (R.probe.correction.H (R.A.sClass δ.val) _ : F)
   rw [hc]
 
-theorem exists_rational_source_characters
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η) :
+theorem exists_rational_source_characters :
     ∃ L : R.A.UnitQuotient → Fˣ →* ℂ,
       (∀ v x, ‖L v x‖ = 1) ∧
       ∀ (ε : R.A.U) (x : Fˣ),
@@ -197,7 +169,7 @@ theorem exists_rational_source_characters
             R.probe.correction.η_id (R.A.diagonal x) : ℂ) *
             R.σ ((R.A.H_S (R.A.diagonal ε.val) (R.A.diagonal x) : Fˣ) : F) := by
   classical
-  let rep : R.A.UnitQuotient → R.A.U := fun v =>
+  let rep := fun v =>
     Classical.choose (QuotientGroup.mk'_surjective R.A.unitSixthPowers v)
   have hrep (v : R.A.UnitQuotient) : (QuotientGroup.mk (rep v) : R.A.UnitQuotient) = v :=
     Classical.choose_spec (QuotientGroup.mk'_surjective R.A.unitSixthPowers v)
@@ -206,9 +178,8 @@ theorem exists_rational_source_characters
     have hp : R.σ ((R.A.H_S (R.A.diagonal (rep v).val)
         (R.A.diagonal x) : Fˣ) : F) ^ 6 = 1 := by
       rw [← map_pow]
-      have hr := (R.A.H_S (R.A.diagonal (rep v).val) (R.A.diagonal x)).property
-      simpa only [mem_rootsOfUnity, Units.val_pow_eq_pow_val, Units.val_one, map_one] using
-        congrArg (fun u : Fˣ => R.σ (u : F)) hr
+      simpa using
+        congrArg (fun u : Fˣ => R.σ (u : F)) ((R.A.H_S (R.A.diagonal (rep v).val) (R.A.diagonal x)).property)
     have hn : ‖R.σ ((R.A.H_S (R.A.diagonal (rep v).val)
         (R.A.diagonal x) : Fˣ) : F)‖ = 1 := by
       apply (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by decide : 6 ≠ 0)).mp
@@ -220,9 +191,7 @@ theorem exists_rational_source_characters
     exact (DFunLike.congr_fun
       (representativeSourceCharacter_eq R (rep (QuotientGroup.mk ε)) ε (hrep _)) x)
 
-theorem exists_primitive_source_characters
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : PrincipalMellin.ActualRecipe S η) :
+theorem exists_primitive_source_characters :
     ∃ ψ : ∀ p : ThetaBranch.ExteriorPrime R.A,
         AddChar (DHCubic.Residue F p.val) ℂ,
       (∀ p, (ψ p).IsPrimitive) ∧
@@ -241,13 +210,11 @@ theorem exists_primitive_source_characters
     obtain ⟨r, hr, he⟩ := R.probe.allowed.generates I
     let e := ArithGaussCRT.exteriorQuotientEquiv R.A I
     let χ := R.A.residueTraceCharacter R.traceBad I r hr
-    let φ : AddChar (DHCubic.Residue F p.val) Circle := χ.compAddMonoidHom e.toAddMonoidHom
-    have hχ : χ.IsPrimitive := R.A.residueTraceCharacter_squarefree_primitive
-      R.traceBad R.probe.allowed.B I p.val.prime.squarefree r hr
-      (R.probe.allowed.generator I) he (R.probe.allowed.allowed I)
-    have hφ : φ.IsPrimitive := SArithmeticData.traceCharacter_isPrimitive_of_equiv e φ χ hχ (fun x => rfl)
+    let φ := χ.compAddMonoidHom e.toAddMonoidHom
     refine ⟨Circle.coeHom.compAddChar φ,
-      hφ.compMulHom_of_isPrimitive Subtype.val_injective, ?_⟩
+      (SArithmeticData.traceCharacter_isPrimitive_of_equiv e φ χ (R.A.residueTraceCharacter_squarefree_primitive
+        R.traceBad R.probe.allowed.B I p.val.prime.squarefree r hr
+        (R.probe.allowed.generator I) he (R.probe.allowed.allowed I)) (fun x => rfl)).compMulHom_of_isPrimitive Subtype.val_injective, ?_⟩
     intro t
     change (R.A.residueTraceCharacter R.traceBad I r hr
       (ArithGaussCRT.exteriorQuotientEquiv R.A I (Ideal.Quotient.mk I.val t)) : ℂ) = _

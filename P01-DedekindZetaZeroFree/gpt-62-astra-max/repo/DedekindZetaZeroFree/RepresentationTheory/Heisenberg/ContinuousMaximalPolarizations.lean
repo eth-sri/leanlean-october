@@ -72,12 +72,11 @@ theorem continuous_character_extension {H : Type*} [Group H]
       rw [h, zero_pow (Nat.pos_of_ne_zero hn).ne'] at hz
       exact a.toMul.ne_zero hz.symm
     refine ⟨Additive.ofMul (Units.mk0 z hz0), ?_⟩
-    change Additive.ofMul ((Units.mk0 z hz0) ^ n) = a
     apply congrArg Additive.ofMul
     apply Units.ext
     exact hz)
   letI : DivisibleBy (Additive ℂˣ) ℤ := AddGroup.divisibleByIntOfDivisibleByNat _
-  let i : C →* A := Subgroup.inclusion hCA
+  let i := Subgroup.inclusion hCA
   have hi : Function.Injective i := by
     intro x y h
     apply Subtype.ext

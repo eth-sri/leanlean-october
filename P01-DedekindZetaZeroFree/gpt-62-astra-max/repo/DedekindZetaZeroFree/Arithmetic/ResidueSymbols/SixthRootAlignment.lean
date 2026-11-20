@@ -15,20 +15,17 @@ theorem aligned_embedding_exists (S : SArithmeticData F) :
     ∃ σ : F →+* ℂ, ∀ z : rootsOfUnity 6 F,
       σ ((z : Fˣ) : F) =
         (KPLocalCover.coefficientEmbedding F S.zeta12 S.primitive_zeta12 z : ℂ) := by
-  let w : ℂ := Complex.exp (2 * (Real.pi : ℂ) * Complex.I / 12)
-  have hw : IsPrimitiveRoot w 12 := Complex.isPrimitiveRoot_exp 12 (by norm_num)
+  let w := Complex.exp (2 * (Real.pi : ℂ) * Complex.I / 12)
   have hw2 : w ^ 2 = (KPLocalCover.complexSixthGenerator : ℂ) := by
-    calc Complex.exp (2 * (Real.pi : ℂ) * Complex.I / 12) ^ 2
+    calc _
         = Complex.exp ((2:ℕ) * (2 * (Real.pi : ℂ) * Complex.I / 12)) := by
           rw [Complex.exp_nat_mul]
       _ = Complex.exp (2 * (Real.pi : ℂ) * Complex.I / 6) := by congr 1; ring
-  have hmin : minpoly ℚ S.zeta12 = cyclotomic 12 ℚ :=
-    (cyclotomic_eq_minpoly_rat S.primitive_zeta12 (by norm_num)).symm
   have hroot : aeval w (minpoly ℚ S.zeta12) = 0 := by
-    rw [hmin, aeval_def, eval₂_eq_eval_map, map_cyclotomic, ← IsRoot.def, isRoot_cyclotomic_iff]
-    exact hw
+    rw [((cyclotomic_eq_minpoly_rat S.primitive_zeta12 (by norm_num)).symm), aeval_def, eval₂_eq_eval_map, map_cyclotomic, ← IsRoot.def, isRoot_cyclotomic_iff]
+    exact (Complex.isPrimitiveRoot_exp 12 (by norm_num))
   obtain ⟨φ, hφ⟩ := IntermediateField.exists_algHom_of_adjoin_splits_of_aeval
-    (F := ℚ) (E := F) (K := ℂ) (S := Set.univ) (x := S.zeta12) (y := w)
+
     (fun s _ => ⟨Algebra.IsIntegral.isIntegral s, IsAlgClosed.splits _⟩)
     (IntermediateField.adjoin_univ ℚ F) hroot
   refine ⟨φ.toRingHom, fun z => ?_⟩
@@ -92,18 +89,24 @@ def RootAligned {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 namespace Characters
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    (R : PrincipalMellin.ActualRecipe S η)
 
-def psi (p : ThetaBranch.ExteriorPrime R.A) : AddChar (DHCubic.Residue F p.val) ℂ :=
+section
+
+variable (p : ThetaBranch.ExteriorPrime R.A)
+
+def psi : AddChar (DHCubic.Residue F p.val) ℂ :=
   (PrincipalMellinSource.exists_primitive_source_characters R).choose p
 
-theorem primitive (p : ThetaBranch.ExteriorPrime R.A) : (psi R p).IsPrimitive :=
+theorem primitive : (psi R p).IsPrimitive :=
   (PrincipalMellinSource.exists_primitive_source_characters R).choose_spec.1 p
 
-theorem psi_apply (p : ThetaBranch.ExteriorPrime R.A) (t : 𝓞 F) :
+theorem psi_apply (t : 𝓞 F) :
     psi R p (Ideal.Quotient.mk p.val.asIdeal t) = R.probe.coefficients.additiveCharacter
       ((t : F) / (R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p) : F)) :=
   (PrincipalMellinSource.exists_primitive_source_characters R).choose_spec.2 p t
+
+end
 
 def L : R.A.UnitQuotient → Fˣ →* ℂ :=
   (PrincipalMellinSource.exists_rational_source_characters R).choose

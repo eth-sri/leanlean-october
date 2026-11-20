@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -39,19 +33,19 @@ namespace GlobalClassFieldTheory.ClassFieldAxiom
 
 variable {K : Type} [Field K] [NumberField K]
 
+section
+
+variable (n : ℕ+) (S T : Finset (HeightOneSpectrum (𝓞 K)))
+
 /-- The subgroup `C_K(S,T) = h(S,T)Kˣ/Kˣ` inside the idele class
 group. -/
-def ideleClassPowerLocalUnitSubgroup
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+def ideleClassPowerLocalUnitSubgroup :
     Subgroup (IdeleClassGroup K) :=
   (idelePowerLocalUnitSubgroup (K := K) n S T).map
     (QuotientGroup.mk' (IdeleGroup.principalSubgroup K))
 
 /-- Elementwise form of `C_K(S,T)=h(S,T)Kˣ/Kˣ`. -/
 theorem mem_ideleClassPowerLocalUnitSubgroup_iff
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
     (c : IdeleClassGroup K) :
     c ∈ ideleClassPowerLocalUnitSubgroup (K := K) n S T ↔
       ∃ a : IdeleGroup K,
@@ -61,11 +55,11 @@ theorem mem_ideleClassPowerLocalUnitSubgroup_iff
 
 /-- The quotient whose cardinality is the index
 `[C_K : C_K(S,T)]`. -/
-abbrev IdeleClassPowerLocalUnitQuotient
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :=
+abbrev IdeleClassPowerLocalUnitQuotient :=
   IdeleClassGroup K ⧸
     ideleClassPowerLocalUnitSubgroup (K := K) n S T
+
+end
 
 omit [NumberField K] in
 /-- If the exponent is even, or the place is complex, every local
@@ -80,7 +74,7 @@ theorem nthPowerSubgroup_le_infinitePositiveSubgroup
   intro x hx
   obtain ⟨y, hy⟩ :=
     (MonoidHom.mem_range
-      (G := w.Completionˣ)).mp hx
+      ).mp hx
   rw [powMonoidHom_apply] at hy
   subst x
   rw [RayClass.mem_infinitePositiveSubgroup_iff]
@@ -89,14 +83,12 @@ theorem nthPowerSubgroup_le_infinitePositiveSubgroup
   · rcases hnEven with ⟨m, hm⟩
     let emb :=
       NumberField.InfinitePlace.Completion.extensionEmbeddingOfIsReal hw
-    have hyne : emb (y : w.Completion) ≠ 0 := by
-      intro hzero
-      apply y.ne_zero
-      apply emb.injective
-      simp at hzero
-    change 0 < emb (((y ^ (n : ℕ) : w.Completionˣ) : w.Completion))
     rw [Units.val_pow_eq_pow_val, map_pow, hm, pow_add, ← pow_two]
-    exact sq_pos_of_ne_zero (pow_ne_zero m hyne)
+    refine sq_pos_of_ne_zero (pow_ne_zero m ?_)
+    intro hzero
+    apply y.ne_zero
+    apply emb.injective
+    simp at hzero
   · exact False.elim (hwNotReal hw)
 
 /-- The sign of a unit at a real infinite place. -/
@@ -125,25 +117,13 @@ theorem realInfinitePlaceSignHom_ker
   rw [RayClass.mem_infinitePositiveSubgroup_iff]
   constructor
   · intro hx hw'
-    have hxval := congrArg Units.val hx
-    have hxsign :
-        SignType.sign
-          (NumberField.InfinitePlace.Completion.extensionEmbeddingOfIsReal
-            hw (x : w.Completion)) =
-          1 := by
-      simpa [realInfinitePlaceSignHom] using hxval
     have hproof : hw' = hw := Subsingleton.elim _ _
     subst hproof
-    exact sign_eq_one_iff.mp hxsign
+    refine sign_eq_one_iff.mp ?_
+    simpa [realInfinitePlaceSignHom] using (congrArg Units.val hx)
   · intro hx
-    have hxsign :
-        SignType.sign
-            (NumberField.InfinitePlace.Completion.extensionEmbeddingOfIsReal
-              hw (x : w.Completion)) =
-          1 :=
-      sign_eq_one_iff.mpr (hx hw)
     apply Units.ext
-    simpa [realInfinitePlaceSignHom] using hxsign
+    simp_all [realInfinitePlaceSignHom]
 
 omit [NumberField K] in
 /-- Both signs occur at a real infinite place. -/
@@ -151,7 +131,7 @@ theorem realInfinitePlaceSignHom_surjective
     (w : InfinitePlace K)
     (hw : w.IsReal) :
     Function.Surjective (realInfinitePlaceSignHom w hw) := by
-  let eu : w.Completionˣ ≃* ℝˣ :=
+  let eu :=
     Units.mapEquiv
       (NumberField.InfinitePlace.Completion.ringEquivRealOfIsReal
         hw).toMulEquiv
@@ -191,9 +171,7 @@ theorem card_realInfinitePositiveQuotient
           RayClass.infinitePositiveSubgroup w) =
       2 := by
   calc
-    Nat.card
-        (w.Completionˣ ⧸
-          RayClass.infinitePositiveSubgroup w) =
+    _ =
         Nat.card SignTypeˣ :=
       Nat.card_congr
         (realInfinitePositiveQuotientEquivSign w hw).toEquiv
@@ -212,17 +190,14 @@ theorem nthPowerSubgroup_eq_infinitePositiveSubgroup
         w.Completionˣ →* w.Completionˣ).range =
       RayClass.infinitePositiveSubgroup w := by
   apply le_antisymm
-  · exact
-      nthPowerSubgroup_le_infinitePositiveSubgroup
-        n w harch
+  · solve_by_elim [nthPowerSubgroup_le_infinitePositiveSubgroup]
   · intro x hx
     obtain ⟨y, hy⟩ :=
       _root_.exists_infinitePositiveSubgroup_nthRoot
         w (n : ℕ) n.pos x hx
     exact
       (MonoidHom.mem_range
-        (G := w.Completionˣ)).mpr ⟨y, by
-          rw [powMonoidHom_apply]
+        ).mpr ⟨y, by
           exact hy⟩
 
 omit [NumberField K] in
@@ -258,9 +233,8 @@ theorem nthPowerSubgroup_eq_top_of_real_odd
       _root_.exists_infinitePositiveSubgroup_nthRoot
         w (n : ℕ) n.pos x hxPositive
     exact ⟨y, by
-      rw [powMonoidHom_apply]
       exact hy⟩
-  · have hxneg : emb (x : w.Completion) < 0 :=
+  · have hxneg :=
       lt_of_le_of_ne (le_of_not_gt hxpos) hx0
     have hnegPositive :
         -x ∈ RayClass.infinitePositiveSubgroup w := by
@@ -296,31 +270,15 @@ theorem card_infinitePlace_nthPowerQuotient
           n w (Or.inl hn)]
       simpa [hw, hn] using
         card_realInfinitePositiveQuotient w hw
-    · have hodd : Odd (n : ℕ) :=
-        (Nat.even_or_odd (n : ℕ)).resolve_left hn
-      rw [nthPowerSubgroup_eq_top_of_real_odd n w hw hodd]
-      let :
-          Subsingleton
-            (w.Completionˣ ⧸ (⊤ : Subgroup w.Completionˣ)) :=
-        QuotientGroup.subsingleton_quotient_top
+    · rw [nthPowerSubgroup_eq_top_of_real_odd n w hw ((Nat.even_or_odd (n : ℕ)).resolve_left hn)]
       simp [hw, hn]
-  · have hpower :
-        (powMonoidHom (n : ℕ) :
-            w.Completionˣ →* w.Completionˣ).range =
-          RayClass.infinitePositiveSubgroup w :=
-      nthPowerSubgroup_eq_infinitePositiveSubgroup
-        n w (Or.inr hw)
-    have hpositive :
+  · have hpositive :
         RayClass.infinitePositiveSubgroup w = ⊤ := by
       ext x
       simp [RayClass.mem_infinitePositiveSubgroup_iff, hw]
-    rw [hpower, hpositive]
-    let :
-        Subsingleton
-          (w.Completionˣ ⧸ (⊤ : Subgroup w.Completionˣ)) :=
-      QuotientGroup.subsingleton_quotient_top
+    rw [(nthPowerSubgroup_eq_infinitePositiveSubgroup
+      n w (Or.inr hw)), hpositive]
     simp [hw]
-
 
 end GlobalClassFieldTheory.ClassFieldAxiom
 

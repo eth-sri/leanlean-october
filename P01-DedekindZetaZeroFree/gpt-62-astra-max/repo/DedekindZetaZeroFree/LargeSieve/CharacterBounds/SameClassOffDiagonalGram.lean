@@ -20,32 +20,24 @@ theorem initial_same_class_gram
         ∀ b1 ∈ paperShell F c N, ∀ b2 ∈ paperShell F c N,
           Q.cls b1 = Q.cls b2 → b1 ≠ b2 →
             ‖initialGram F Q M b1 b2‖ ≤ H * Real.rpow N (1 + ε) := by
-  have hδ : (0 : ℝ) < ε / 2 := by linarith
-  obtain ⟨A, hA, hbound⟩ := initial_imprimitive_smooth_sum F hF (ε / 2) hδ
+  obtain ⟨A, hA, hbound⟩ := initial_imprimitive_smooth_sum F hF (ε / 2) (by linarith)
   obtain ⟨L, hL1, hLgrowth⟩ := initial_family_conductor_growth hc Q
-  have hL0 : 0 ≤ L := le_trans zero_le_one hL1
+  have hL0 := le_trans zero_le_one hL1
   refine ⟨A * (2 * L) ^ (1 + ε), mul_nonneg hA (Real.rpow_nonneg (by linarith) _), ?_⟩
   intro M N hM hN b1 hb1 b2 hb2 hcls hne
   rw [mem_paperShell] at hb1 hb2
   obtain ⟨hb1sf, hb1c, -, hb1hi⟩ := hb1
   obtain ⟨hb2sf, hb2c, -, hb2hi⟩ := hb2
-  have hm1 : Q.cond b1 ≠ ⊥ := (Q.primitive b1 hb1sf hb1c).1
-  have hm2 : Q.cond b2 ≠ ⊥ := (Q.primitive b2 hb2sf hb2c).1
-  have hm : Q.cond b1 * Q.cond b2 ≠ ⊥ :=
-    fun h => (Ideal.mul_eq_bot.mp h).elim hm1 hm2
-  have hnonprin :
-      ¬ (RayOperations.mul (Q.χ b1) (RayOperations.conjugate (Q.χ b2))).IsPrincipal :=
-    initial_family_sameClass_nonprincipal hc Q b1 b2 hb1sf hb1c hb2sf hb2c hcls hne
   have hgram : initialGram F Q M b1 b2 =
       initialTheta F (RayOperations.mul (Q.χ b1) (RayOperations.conjugate (Q.χ b2))) M := rfl
 
   have hb1' : (Ideal.absNorm (Q.cond b1) : ℝ) ≤ 2 * L * N := by
-    calc (Ideal.absNorm (Q.cond b1) : ℝ) ≤ L * (Ideal.absNorm b1 : ℝ) :=
+    calc _ ≤ L * (Ideal.absNorm b1 : ℝ) :=
           hLgrowth b1 hb1sf hb1c
       _ ≤ L * (2 * N) := mul_le_mul_of_nonneg_left hb1hi hL0
       _ = 2 * L * N := by ring
   have hb2' : (Ideal.absNorm (Q.cond b2) : ℝ) ≤ 2 * L * N := by
-    calc (Ideal.absNorm (Q.cond b2) : ℝ) ≤ L * (Ideal.absNorm b2 : ℝ) :=
+    calc _ ≤ L * (Ideal.absNorm b2 : ℝ) :=
           hLgrowth b2 hb2sf hb2c
       _ ≤ L * (2 * N) := mul_le_mul_of_nonneg_left hb2hi hL0
       _ = 2 * L * N := by ring
@@ -65,9 +57,9 @@ theorem initial_same_class_gram
     have hexp : (1 : ℝ) / 2 + ε / 2 + (1 / 2 + ε / 2) = 1 + ε := by ring
     rwa [hexp] at h1
   rw [hgram]
-  calc ‖initialTheta F (RayOperations.mul (Q.χ b1) (RayOperations.conjugate (Q.χ b2))) M‖
+  calc _
       ≤ A * (Ideal.absNorm (Q.cond b1 * Q.cond b2) : ℝ) ^ (1 / 2 + ε / 2) :=
-        hbound (Q.cond b1 * Q.cond b2) hm _ hnonprin M (by linarith)
+        hbound (Q.cond b1 * Q.cond b2) (fun h => (Ideal.mul_eq_bot.mp h).elim ((Q.primitive b1 hb1sf hb1c).1) ((Q.primitive b2 hb2sf hb2c).1)) _ (initial_family_sameClass_nonprincipal hc Q b1 b2 hb1sf hb1c hb2sf hb2c hcls hne) M (by linarith)
     _ ≤ A * (2 * L * N) ^ (1 + ε) := mul_le_mul_of_nonneg_left hstep hA
     _ = A * (2 * L) ^ (1 + ε) * N ^ (1 + ε) := by
         rw [Real.mul_rpow (by linarith : (0 : ℝ) ≤ 2 * L) hN0]

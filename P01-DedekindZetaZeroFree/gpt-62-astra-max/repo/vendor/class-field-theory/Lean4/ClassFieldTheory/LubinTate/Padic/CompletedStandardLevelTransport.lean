@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -121,10 +118,13 @@ open SameUniformizer
   have hadic : IsAdic target.maximalIdeal := rfl
   exact (hadic.isAdicComplete_iff.mp target.isAdicComplete).2
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+
 /-- The standard finite-level embedding restricted to the actual valuation
 rings. -/
-noncomputable def padicStandardLevelIntegerEmbedding
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicStandardLevelIntegerEmbedding :
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
     (standardLubinTateLevelCompleteDVF hπ n).valuationSubring →+*
       (padicCompletedLevelCompleteDVF p n).valuationSubring := by
@@ -135,17 +135,17 @@ noncomputable def padicStandardLevelIntegerEmbedding
   let A := padicCompletedUnramifiedCompleteDVF p
   let E := padicCompletedLevelField p n
   let target := padicCompletedLevelCompleteDVF p n
-  let ι : L →ₐ[ℚ_[p]] E := padicStandardLevelEmbedding p n
+  let ι := padicStandardLevelEmbedding p n
   letI : F.valuation.HasExtension source.valuation :=
     standardLubinTateLevelCompleteDVF_hasExtension
-      (F := padicLocalField p)
-      (π := padicIntEquivValuationSubring p (p : ℤ_[p])) hπ n
+
+       hπ n
   letI : Algebra F.valuationSubring source.valuationSubring :=
     Valuation.HasExtension.instAlgebra_valuationSubring
       (padicLocalField p).valuation
       (standardLubinTateLevelCompleteDVF
-        (F := padicLocalField p)
-        (π := padicIntEquivValuationSubring p (p : ℤ_[p])) hπ n).valuation
+
+         hπ n).valuation
   letI : IsScalarTower F.valuationSubring source.valuationSubring L :=
     IsScalarTower.of_algebraMap_eq' rfl
   letI : IsIntegralClosure
@@ -156,9 +156,7 @@ noncomputable def padicStandardLevelIntegerEmbedding
   letI : IsIntegralClosure
       target.valuationSubring A.valuationSubring E :=
     padicCompletedLevelCompleteDVF_isIntegralClosure p n
-  let f : source.valuationSubring →+* E :=
-    ι.toRingHom.comp source.valuation.valuationSubring.subtype
-  apply RingHom.codRestrict f target.valuation.valuationSubring
+  apply RingHom.codRestrict (ι.toRingHom.comp source.valuation.valuationSubring.subtype) target.valuation.valuationSubring
   intro x
   have hxIntegral :
       IsIntegral F.valuationSubring (x.val : L) :=
@@ -207,7 +205,6 @@ noncomputable def padicStandardLevelIntegerEmbedding
 recovers the field embedding. -/
 @[simp]
 theorem padicStandardLevelIntegerEmbedding_coe
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (x :
       (standardLubinTateLevelCompleteDVF
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n
@@ -218,36 +215,31 @@ theorem padicStandardLevelIntegerEmbedding_coe
         padicStandardLevelEmbedding p n
           (x.val :
             standardLubinTateLevelField
-              (padicMultiplicativeLubinTateSeries_isUniformizer p) n) := by
-  rfl
+              (padicMultiplicativeLubinTateSeries_isUniformizer p) n) := rfl
 
 /-- The integral embedding sends the finite primitive point to the chosen
 completed primitive point. -/
 @[simp]
-theorem padicStandardLevelIntegerEmbedding_apply_primitivePoint
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicStandardLevelIntegerEmbedding_apply_primitivePoint :
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
     padicStandardLevelIntegerEmbedding p n
         (standardLubinTatePrimitivePointInteger hπ n) =
       padicCompletedPrimitiveRootInteger p n := by
-  let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
   apply Subtype.ext
   rw [padicStandardLevelIntegerEmbedding_coe,
     padicCompletedPrimitiveRootInteger_coe]
-  have hpoint := congrArg (padicStandardLevelEmbedding p n)
+  exact (congrArg (padicStandardLevelEmbedding p n)
     (standardLubinTatePrimitivePointInteger_coe
-      (F := padicLocalField p) hπ n)
-  exact hpoint.trans (padicStandardLevelEmbedding_apply_gen p n)
+       (padicMultiplicativeLubinTateSeries_isUniformizer p) n)).trans (padicStandardLevelEmbedding_apply_gen p n)
 
 /-- The integral standard-level embedding is continuous for the two
 maximal-ideal adic topologies. -/
-theorem padicStandardLevelIntegerEmbedding_continuous
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicStandardLevelIntegerEmbedding_continuous :
     Continuous (padicStandardLevelIntegerEmbedding p n) := by
   let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
   let source := standardLubinTateLevelCompleteDVF hπ n
   let target := padicCompletedLevelCompleteDVF p n
-  let f : source.valuationSubring →+* target.valuationSubring :=
+  let f :=
     padicStandardLevelIntegerEmbedding p n
   have hmap :
       Ideal.map f source.maximalIdeal ≤ target.maximalIdeal := by
@@ -264,18 +256,15 @@ theorem padicStandardLevelIntegerEmbedding_continuous
     rw [padicStandardLevelIntegerEmbedding_apply_primitivePoint]
     exact padicCompletedPrimitiveRootInteger_mem_maximalIdeal p n
   exact
-    (WithIdeal.uniformContinuous_of_map_le (f := f) hmap).continuous
+    (WithIdeal.uniformContinuous_of_map_le hmap).continuous
 
 /-- The integral embedding commutes with the canonical maps of p-adic
 integer coefficients. -/
-theorem padicStandardLevelIntegerEmbedding_comp_coefficientHom
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicStandardLevelIntegerEmbedding_comp_coefficientHom :
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
     (padicStandardLevelIntegerEmbedding p n).comp
         (standardLubinTateLevelCoefficientHom hπ n) =
       padicCompletedLevelPadicIntegerCoefficientHom p n := by
-  let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-  let L := standardLubinTateLevelField hπ n
   let E := padicCompletedLevelField p n
   ext a
   simp only [RingHom.comp_apply,
@@ -283,10 +272,10 @@ theorem padicStandardLevelIntegerEmbedding_comp_coefficientHom
     padicCompletedLevelPadicIntegerCoefficientHom_coe]
   change
     padicStandardLevelEmbedding p n
-        (algebraMap ℚ_[p] L (a : ℚ_[p])) =
+        (algebraMap ℚ_[p] (standardLubinTateLevelField (padicMultiplicativeLubinTateSeries_isUniformizer p) n) a) =
       algebraMap (padicCompletedUnramifiedField p) E
         (algebraMap ℚ_[p]
-          (padicCompletedUnramifiedField p) (a : ℚ_[p]))
+          (padicCompletedUnramifiedField p) a)
   rw [(padicStandardLevelEmbedding p n).commutes,
     ← IsScalarTower.algebraMap_apply ℚ_[p]
       (padicCompletedUnramifiedField p) E]
@@ -294,7 +283,6 @@ theorem padicStandardLevelIntegerEmbedding_comp_coefficientHom
 /-- Evaluation after extending p-adic coefficients to the completed Witt
 ring is evaluation through the direct p-adic coefficient map. -/
 theorem padicCompletedLevelPowerSeriesEval_map_padicCoefficients
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
     (hx : PowerSeries.HasEval x)
     (f : PowerSeries (padicLocalField p).valuationSubring) :
@@ -303,18 +291,17 @@ theorem padicCompletedLevelPowerSeriesEval_map_padicCoefficients
           (padicValuationSubringToCompletedUnramifiedWittRing p) f) =
       PowerSeries.eval₂
         (padicCompletedLevelPadicIntegerCoefficientHom p n) x f := by
-  have hpadic :
-      Continuous (padicCompletedLevelPadicIntegerCoefficientHom p n) :=
-    continuous_of_discreteTopology
   rw [padicCompletedLevelPowerSeriesEval,
     PowerSeries.coe_eval₂Hom,
     PowerSeries.eval₂_eq_tsum
       (padicCompletedLevelWittCoefficientHom_continuous p n) hx,
-    PowerSeries.eval₂_eq_tsum hpadic hx]
+    PowerSeries.eval₂_eq_tsum continuous_of_discreteTopology hx]
   apply tsum_congr
   intro d
   rw [PowerSeries.coeff_map]
   rfl
+
+end
 
 /-- Analytic evaluation in the finite standard level commutes with its
 integral embedding into the completed level. -/
@@ -351,10 +338,9 @@ theorem padicStandardLevelIntegerEmbedding_powerSeriesEval
           (padicCompletedLevelPadicIntegerCoefficientHom p n)
           (j x) f := by
     rw [← padicStandardLevelIntegerEmbedding_comp_coefficientHom p n]
-    simpa only [Function.comp_apply] using hraw
+    simpa using hraw
   calc
-    j
-        (standardLubinTateLevelPowerSeriesEval hπ n x hx f) =
+    _ =
         PowerSeries.eval₂
           (padicCompletedLevelPadicIntegerCoefficientHom p n)
           (j x) f := by
@@ -370,13 +356,13 @@ theorem padicStandardLevelIntegerEmbedding_powerSeriesEval
         (hx.map (padicStandardLevelIntegerEmbedding_continuous p n))
         f).symm
 
+variable (p : ℕ) [Fact p.Prime] (n : ℕ) (u : (padicLocalField p).valuationSubringˣ)
+
 /-- The integral embedding carries the finite analytic unit action to the
 direct completed analytic unit action with the same unit. -/
 @[simp]
 theorem
-    padicStandardLevelIntegerEmbedding_apply_primitivePointUnitAction
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
+    padicStandardLevelIntegerEmbedding_apply_primitivePointUnitAction :
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
     padicStandardLevelIntegerEmbedding p n
         (standardLubinTatePrimitivePointIntegerAction hπ n u) =
@@ -387,7 +373,7 @@ theorem
       (standardLubinTatePrimitivePointInteger hπ n)
       (standardLubinTatePrimitivePointInteger_hasEval hπ n)
       (standardLubinTateEndomorphism hπ
-        (u : (padicLocalField p).valuationSubring))
+        u)
   simpa only [
     standardLubinTatePrimitivePointIntegerAction,
     standardLubinTateEndomorphismValue,
@@ -399,9 +385,7 @@ theorem
 
 /-- At the finite p-adic level, the parameter class of a unit realizes
 exactly its direct analytic action. -/
-theorem padicStandardUnitParameterLevelRoot_class
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicStandardUnitParameterLevelRoot_class :
     let F := padicLocalField p
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
     standardLubinTateUnitParameterLevelRoot F hπ n
@@ -414,15 +398,13 @@ theorem padicStandardUnitParameterLevelRoot_class
     (standardLubinTateUnitParameterClass F n u)).trans
       ((standardLubinTateUnitParameterRoot_class F hπ n u).trans
         (standardLubinTatePrimitiveLevelAction_coe
-          (F := F) hπ n u).symm)
+           hπ n u).symm)
 
 /-- The direct completed unit action is the completed realization of the
 same finite unit-parameter class. -/
 @[simp]
 theorem
-    padicCompletedStandardPrimitivePointUnitAction_eq_unitParameterRoot
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
+    padicCompletedStandardPrimitivePointUnitAction_eq_unitParameterRoot :
     ((padicCompletedStandardPrimitivePointUnitAction p n u :
         (padicCompletedLevelCompleteDVF p n).valuationSubring) :
       padicCompletedLevelField p n) =
@@ -430,23 +412,19 @@ theorem
           (standardLubinTateUnitParameterClass
             (padicLocalField p) n u) := by
   let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-  let source := standardLubinTateLevelCompleteDVF hπ n
   calc
-    ((padicCompletedStandardPrimitivePointUnitAction p n u :
-        (padicCompletedLevelCompleteDVF p n).valuationSubring) :
-      padicCompletedLevelField p n) =
+    _ =
         ((padicStandardLevelIntegerEmbedding p n
             (standardLubinTatePrimitivePointIntegerAction hπ n u) :
           (padicCompletedLevelCompleteDVF p n).valuationSubring) :
             padicCompletedLevelField p n) := by
-      rw [
-        padicStandardLevelIntegerEmbedding_apply_primitivePointUnitAction]
+      simp
     _ =
         padicStandardLevelEmbedding p n
           ((standardLubinTatePrimitivePointIntegerAction hπ n u :
-            source.valuationSubring).val :
+            (standardLubinTateLevelCompleteDVF hπ n).valuationSubring).val :
               standardLubinTateLevelField hπ n) := by
-      rw [padicStandardLevelIntegerEmbedding_coe]
+      rfl
     _ =
         padicStandardLevelEmbedding p n
           (standardLubinTateUnitParameterLevelRoot
@@ -470,8 +448,6 @@ theorem
 /-- The completed unit-indexed Frobenius lift restricts to the finite
 standard-level automorphism with the same unit-parameter class. -/
 theorem padicCompletedUnitFrobeniusLiftEquiv_standardLevelEmbedding
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
     (x :
       standardLubinTateLevelField
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n) :
@@ -486,7 +462,7 @@ theorem padicCompletedUnitFrobeniusLiftEquiv_standardLevelEmbedding
   let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
   let L := standardLubinTateLevelField hπ n
   let E := padicCompletedLevelField p n
-  let ι : L →ₐ[ℚ_[p]] E := padicStandardLevelEmbedding p n
+  let ι := padicStandardLevelEmbedding p n
   let δ : E →ₐ[ℚ_[p]] E :=
     { toRingHom :=
         (padicCompletedUnitFrobeniusLiftEquiv p n u).toRingHom
@@ -502,7 +478,7 @@ theorem padicCompletedUnitFrobeniusLiftEquiv_standardLevelEmbedding
                 (padicCompletedUnramifiedField p) b)
         rw [padicCompletedUnitFrobeniusLiftEquiv_algebraMap,
           (padicCompletedUnramifiedFrobenius p).commutes] }
-  let σ : L ≃ₐ[ℚ_[p]] L :=
+  let σ :=
     standardLubinTateUnitParameterAlgEquiv
       (padicLocalField p) hπ n
       (standardLubinTateUnitParameterClass
@@ -514,10 +490,7 @@ theorem padicCompletedUnitFrobeniusLiftEquiv_standardLevelEmbedding
           (padicStandardLevelEmbedding p n
             (standardLubinTateLevelPowerBasis hπ n).gen) =
         padicStandardLevelEmbedding p n
-          (standardLubinTateUnitParameterAlgEquiv
-            (padicLocalField p) hπ n
-            (standardLubinTateUnitParameterClass
-              (padicLocalField p) n u)
+          (σ
             (standardLubinTateLevelPowerBasis hπ n).gen)
     rw [padicStandardLevelEmbedding_apply_gen,
       padicCompletedUnitFrobeniusLiftEquiv_primitiveRoot]
@@ -532,8 +505,6 @@ theorem padicCompletedUnitFrobeniusLiftEquiv_standardLevelEmbedding
 /-- The inverse completed unit-indexed Frobenius lift restricts to the
 inverse finite unit-parameter automorphism. -/
 theorem padicCompletedUnitFrobeniusLiftEquiv_symm_standardLevelEmbedding
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
     (x :
       standardLubinTateLevelField
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n) :
@@ -561,8 +532,6 @@ the orientation used by the actual local Artin map after changed-uniformizer
 descent. -/
 theorem
     padicCompletedInverseUnitFrobeniusLiftEquiv_standardLevelEmbedding
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
     (x :
       standardLubinTateLevelField
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n) :
@@ -576,39 +545,24 @@ theorem
             (padicLocalField p) n u) x) := by
   rw [
     padicCompletedUnitFrobeniusLiftEquiv_symm_standardLevelEmbedding]
-  have hclass :
-      standardLubinTateUnitParameterClass
-          (padicLocalField p) n u⁻¹ =
-        (standardLubinTateUnitParameterClass
-          (padicLocalField p) n u)⁻¹ :=
-    (standardLubinTateUnitParameterClass
-      (padicLocalField p) n).map_inv u
+  let standardLubinTateUnitParameterClass₀ := standardLubinTateUnitParameterClass (padicLocalField p) n
   have hparameter :
       standardLubinTateUnitParameterAlgEquiv
           (padicLocalField p)
           (padicMultiplicativeLubinTateSeries_isUniformizer p) n
-          (standardLubinTateUnitParameterClass
-            (padicLocalField p) n u⁻¹) =
+          (standardLubinTateUnitParameterClass₀ u⁻¹) =
         (standardLubinTateUnitParameterAlgEquiv
           (padicLocalField p)
           (padicMultiplicativeLubinTateSeries_isUniformizer p) n
-          (standardLubinTateUnitParameterClass
-            (padicLocalField p) n u))⁻¹ := by
+          (standardLubinTateUnitParameterClass₀ u))⁻¹ := by
+    let standardLubinTateUnitParameterEquivGal₀ := standardLubinTateUnitParameterEquivGal (padicLocalField p) (padicMultiplicativeLubinTateSeries_isUniformizer p) n
     change
-      standardLubinTateUnitParameterEquivGal
-          (padicLocalField p)
-          (padicMultiplicativeLubinTateSeries_isUniformizer p) n
-          (standardLubinTateUnitParameterClass
-            (padicLocalField p) n u⁻¹) =
-        (standardLubinTateUnitParameterEquivGal
-          (padicLocalField p)
-          (padicMultiplicativeLubinTateSeries_isUniformizer p) n
-          (standardLubinTateUnitParameterClass
-            (padicLocalField p) n u))⁻¹
-    rw [hclass,
-      (standardLubinTateUnitParameterEquivGal
-        (padicLocalField p)
-        (padicMultiplicativeLubinTateSeries_isUniformizer p) n).map_inv]
+      standardLubinTateUnitParameterEquivGal₀
+          (standardLubinTateUnitParameterClass₀ u⁻¹) =
+        (standardLubinTateUnitParameterEquivGal₀
+          (standardLubinTateUnitParameterClass₀ u))⁻¹
+    rw [((standardLubinTateUnitParameterClass₀).map_inv u),
+      (standardLubinTateUnitParameterEquivGal₀).map_inv]
   rw [hparameter]
   rfl
 

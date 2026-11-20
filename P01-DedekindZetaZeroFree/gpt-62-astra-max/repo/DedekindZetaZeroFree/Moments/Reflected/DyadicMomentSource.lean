@@ -21,7 +21,6 @@ structure SelectedMomentSource
   primitive : ∀ p, (psi p).IsPrimitive
   L : R.A.UnitQuotient → Fˣ →* ℂ
   norm_one : ∀ v x, ‖L v x‖ = 1
-  characters_compatible : PrincipalMellinSource.SourceCharacterCompatibility R psi L
   H : R.A.UnitQuotient → R.A.V → ℝ → ℂ
   profiles : RMSeparatedExpansion.FiniteProfileFamily R.A H
   reflected_domination : ∀ u ∈ Ur, ∀ h d : R.A.Exterior,

@@ -12,9 +12,9 @@ theorem power_mul_stretchedExp_le (a p : ℝ) (ha : 0 < a) (hp : 0 < p)
     Real.rpow t R * Real.exp (-a * Real.rpow t p) ≤
       Real.exp ((R / p) * Real.log L) * Real.exp (-(a / 2) * Real.rpow t p) := by
   dsimp only
-  let L : ℝ := 2 + 2 * R / (a * p)
-  let q : ℝ := R / p
-  let y : ℝ := Real.rpow t p
+  let L := 2 + 2 * R / (a * p)
+  let q := R / p
+  let y := Real.rpow t p
   have htpos : 0 < t := lt_of_lt_of_le zero_lt_one ht
   have hy : 0 < y := Real.rpow_pos_of_pos htpos p
   have hq : 0 ≤ q := div_nonneg hR hp.le
@@ -42,13 +42,11 @@ theorem power_mul_stretchedExp_le (a p : ℝ) (ha : 0 < a) (hp : 0 < p)
     rw [hlogy]
     dsimp [q]
     field_simp
-  change Real.rpow t R * Real.exp (-a * y) ≤
-    Real.exp (q * Real.log L) * Real.exp (-(a / 2) * y)
   have hpow : Real.rpow t R = Real.exp (Real.log t * R) :=
     Real.rpow_def_of_pos htpos R
   rw [hpow, ← Real.exp_add, ← Real.exp_add]
   apply Real.exp_le_exp.mpr
-  rw [hqlog] at hexponent
+  simp at hexponent
   linarith
 
 end DedekindZetaZeroFree.Hecke

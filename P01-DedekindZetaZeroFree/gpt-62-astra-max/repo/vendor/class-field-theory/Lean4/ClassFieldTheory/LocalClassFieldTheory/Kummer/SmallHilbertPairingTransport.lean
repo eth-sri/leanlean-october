@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -30,27 +27,27 @@ namespace ClassFieldTheory
 
 universe u v
 
+section
+
+variable {F : Type u} {G : Type v} [Field F] [Field G] (e : F ≃+* G) (n : ℕ+)
+
 /-- A field equivalence identifies the groups of `n`-th power classes. -/
-noncomputable def powerClassGroupEquivOfRingEquiv
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+) :
+noncomputable def powerClassGroupEquivOfRingEquiv :
     PowerClassGroup F n ≃* PowerClassGroup G n := by
-  let eu : Fˣ ≃* Gˣ := Units.mapEquiv e.toMulEquiv
-  let NF : Subgroup Fˣ := (powMonoidHom (n : ℕ) : Fˣ →* Fˣ).range
-  let NG : Subgroup Gˣ := (powMonoidHom (n : ℕ) : Gˣ →* Gˣ).range
+  let eu := Units.mapEquiv e.toMulEquiv
+  let NF := (powMonoidHom (n : ℕ) : Fˣ →* Fˣ).range
+  let NG := (powMonoidHom (n : ℕ) : Gˣ →* Gˣ).range
   have hfg : NF ≤ NG.comap eu.toMonoidHom := by
     intro x hx
     obtain ⟨y, rfl⟩ := hx
-    change eu (y ^ (n : ℕ)) ∈ NG
     exact ⟨eu y, by simp⟩
   have hgf : NG ≤ NF.comap eu.symm.toMonoidHom := by
     intro x hx
     obtain ⟨y, rfl⟩ := hx
-    change eu.symm (y ^ (n : ℕ)) ∈ NF
     exact ⟨eu.symm y, by simp⟩
-  let fwd : Fˣ ⧸ NF →* Gˣ ⧸ NG :=
+  let fwd :=
     QuotientGroup.map NF NG eu.toMonoidHom hfg
-  let bwd : Gˣ ⧸ NG →* Fˣ ⧸ NF :=
+  let bwd :=
     QuotientGroup.map NG NF eu.symm.toMonoidHom hgf
   change (Fˣ ⧸ NF) ≃* (Gˣ ⧸ NG)
   refine MonoidHom.toMulEquiv fwd bwd ?_ ?_
@@ -61,25 +58,18 @@ noncomputable def powerClassGroupEquivOfRingEquiv
 
 /-- A field equivalence identifies the `n`-th roots of unity. -/
 noncomputable def rootsOfUnityEquivOfRingEquiv
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+)
     (hmu : (primitiveRoots (n : ℕ) F).Nonempty) :
     rootsOfUnity (n : ℕ) F ≃* rootsOfUnity (n : ℕ) G := by
   letI : NeZero (n : ℕ) := ⟨n.pos.ne'⟩
   exact rootsOfUnityEquivOfPrimitiveRoots e.injective hmu
 
 /-- The image of a representative under the induced power-class equivalence. -/
-theorem powerClassGroupEquivOfRingEquiv_powerClass
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+) (a : Fˣ) :
+theorem powerClassGroupEquivOfRingEquiv_powerClass (a : Fˣ) :
     powerClassGroupEquivOfRingEquiv e n (powerClass F n a) =
-      powerClass G n (Units.mapEquiv e.toMulEquiv a) := by
-  rfl
+      powerClass G n (Units.mapEquiv e.toMulEquiv a) := rfl
 
 /-- A representative pulled back from the target power-class group. -/
-theorem powerClassGroupEquivOfRingEquiv_symm_powerClass
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+) (a : Gˣ) :
+theorem powerClassGroupEquivOfRingEquiv_symm_powerClass (a : Gˣ) :
     (powerClassGroupEquivOfRingEquiv e n).symm (powerClass G n a) =
       powerClass F n ((Units.mapEquiv e.toMulEquiv).symm a) := by
   apply (powerClassGroupEquivOfRingEquiv e n).injective
@@ -88,47 +78,39 @@ theorem powerClassGroupEquivOfRingEquiv_symm_powerClass
 
 /-- Kummer-algebra norm membership is invariant under a field equivalence,
 even when the Kummer polynomial is reducible. -/
-theorem isKummerNorm_iff_of_ringEquiv
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+) (a b : Fˣ) :
+theorem isKummerNorm_iff_of_ringEquiv (a b : Fˣ) :
     IsKummerNorm F n a b ↔
       IsKummerNorm G n
         (Units.mapEquiv e.toMulEquiv a)
         (Units.mapEquiv e.toMulEquiv b) := by
-  let eu : Fˣ ≃* Gˣ := Units.mapEquiv e.toMulEquiv
-  let pF : Polynomial F := Polynomial.X ^ (n : ℕ) - Polynomial.C (a : F)
-  let pG : Polynomial G := Polynomial.X ^ (n : ℕ) - Polynomial.C (eu a : G)
+  let eu := Units.mapEquiv e.toMulEquiv
+  let pF := Polynomial.X ^ (n : ℕ) - Polynomial.C (a : F)
+  let pG := Polynomial.X ^ (n : ℕ) - Polynomial.C (eu a : G)
   have hpmap : pF.map e.toRingHom = pG := by
     simp [pF, pG, eu, Polynomial.map_sub, Polynomial.map_pow,
       Polynomial.map_X, Polynomial.map_C, Units.coe_mapEquiv]
-  let eqv : AdjoinRoot pF ≃+* AdjoinRoot pG :=
+  let eqv :=
     AdjoinRoot.mapRingEquiv e pF pG (Associated.of_eq hpmap)
-  have hcomp : RingHom.comp (algebraMap G (AdjoinRoot pG)) e.toRingHom =
-      RingHom.comp eqv.toRingHom (algebraMap F (AdjoinRoot pF)) := by
-    ext x
-    simp [eqv, AdjoinRoot.algebraMap_eq]
   have hnorm (y : AdjoinRoot pF) :
       e (Algebra.norm F y) = Algebra.norm G (eqv y) := by
-    have h := Algebra.norm_eq_of_equiv_equiv e eqv hcomp y
-    exact (congrArg e h).trans (e.apply_symm_apply _)
-  change (∃ y : (AdjoinRoot pF)ˣ, Algebra.norm F (y : AdjoinRoot pF) = (b : F)) ↔
-    ∃ z : (AdjoinRoot pG)ˣ, Algebra.norm G (z : AdjoinRoot pG) = (eu b : G)
+    exact (congrArg e (Algebra.norm_eq_of_equiv_equiv e eqv (by
+      ext x
+      simp [eqv, AdjoinRoot.algebraMap_eq]) y)).trans (e.apply_symm_apply _)
   constructor
   · rintro ⟨y, hy⟩
-    let z : (AdjoinRoot pG)ˣ := Units.mapEquiv eqv.toMulEquiv y
-    refine ⟨z, ?_⟩
-    change Algebra.norm G (eqv (y : AdjoinRoot pF)) = (eu b : G)
+    refine ⟨(Units.mapEquiv eqv.toMulEquiv y), ?_⟩
+    change Algebra.norm G (eqv y) = (eu b : G)
     calc
-      Algebra.norm G (eqv (y : AdjoinRoot pF)) =
+      _ =
           e (Algebra.norm F (y : AdjoinRoot pF)) := (hnorm _).symm
       _ = e (b : F) := congrArg e hy
       _ = (eu b : G) := by simp [eu]
   · rintro ⟨z, hz⟩
-    let y : (AdjoinRoot pF)ˣ := (Units.mapEquiv eqv.toMulEquiv).symm z
+    let y := (Units.mapEquiv eqv.toMulEquiv).symm z
     refine ⟨y, ?_⟩
     apply e.injective
     calc
-      e (Algebra.norm F (y : AdjoinRoot pF)) =
+      _ =
           Algebra.norm G (eqv (y : AdjoinRoot pF)) := hnorm _
       _ = Algebra.norm G (z : AdjoinRoot pG) := by
             congr 1
@@ -136,12 +118,15 @@ theorem isKummerNorm_iff_of_ringEquiv
       _ = (eu b : G) := hz
       _ = e (b : F) := by simp [eu]
 
+end
+
+section
+
+variable {F : Type u} {G : Type v} [Field F] [Field G] (e : F ≃+* G) (n : ℕ+)
+    (hmu : (primitiveRoots (n : ℕ) F).Nonempty) (B : HilbertPairing F n)
+
 /-- Pull a pairing on power classes across an equivalence of base fields. -/
-noncomputable def hilbertPairingOfRingEquiv
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
-    (B : HilbertPairing F n) : HilbertPairing G n :=
+noncomputable def hilbertPairingOfRingEquiv : HilbertPairing G n :=
   let pF := PowerClassGroup F n
   let pG := PowerClassGroup G n
   let rF := rootsOfUnity (n : ℕ) F
@@ -154,23 +139,14 @@ noncomputable def hilbertPairingOfRingEquiv
 
 /-- Evaluation of a transported Hilbert pairing. -/
 theorem hilbertPairingOfRingEquiv_apply
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
-    (B : HilbertPairing F n)
     (x y : PowerClassGroup G n) :
     hilbertPairingOfRingEquiv e n hmu B x y =
       rootsOfUnityEquivOfRingEquiv e n hmu
         (B ((powerClassGroupEquivOfRingEquiv e n).symm x)
-          ((powerClassGroupEquivOfRingEquiv e n).symm y)) := by
-  rfl
+          ((powerClassGroupEquivOfRingEquiv e n).symm y)) := rfl
 
 /-- The Steinberg relation is preserved by base-field equivalence. -/
-theorem hilbertPairingOfRingEquiv_isSteinberg
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
-    (B : HilbertPairing F n) (hB : B.IsSteinberg) :
+theorem hilbertPairingOfRingEquiv_isSteinberg (hB : B.IsSteinberg) :
     (hilbertPairingOfRingEquiv e n hmu B).IsSteinberg := by
   let eu : Fˣ ≃* Gˣ := Units.mapEquiv e.toMulEquiv
   let er := rootsOfUnityEquivOfRingEquiv e n hmu
@@ -195,16 +171,14 @@ theorem hilbertPairingOfRingEquiv_isSteinberg
   rw [hB a0 ha0, map_one]
 
 /-- Skew-symmetry is preserved by base-field equivalence. -/
-theorem hilbertPairingOfRingEquiv_isSkewSymmetric
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
-    (B : HilbertPairing F n) (hB : B.IsSkewSymmetric) :
+theorem hilbertPairingOfRingEquiv_isSkewSymmetric (hB : B.IsSkewSymmetric) :
     (hilbertPairingOfRingEquiv e n hmu B).IsSkewSymmetric := by
   intro x y
   rw [hilbertPairingOfRingEquiv_apply, hilbertPairingOfRingEquiv_apply]
   rw [hB ((powerClassGroupEquivOfRingEquiv e n).symm x)
       ((powerClassGroupEquivOfRingEquiv e n).symm y), map_inv]
+
+end
 
 /-- Nondegeneracy in both variables is preserved by field equivalence. -/
 theorem hilbertPairingOfRingEquiv_isNondegenerate
@@ -223,7 +197,7 @@ theorem hilbertPairingOfRingEquiv_isNondegenerate
       have hxy := hx (ep y)
       rw [hilbertPairingOfRingEquiv_apply, ep.symm_apply_apply] at hxy
       apply er.injective
-      simpa only [map_one] using hxy
+      simpa using hxy
     calc
       x = ep (ep.symm x) := (ep.apply_symm_apply x).symm
       _ = ep 1 := congrArg ep hx0
@@ -235,18 +209,17 @@ theorem hilbertPairingOfRingEquiv_isNondegenerate
       have hxy := hy (ep x)
       rw [hilbertPairingOfRingEquiv_apply, ep.symm_apply_apply] at hxy
       apply er.injective
-      simpa only [map_one] using hxy
+      simpa using hxy
     calc
       y = ep (ep.symm y) := (ep.apply_symm_apply y).symm
       _ = ep 1 := congrArg ep hy0
       _ = 1 := map_one ep
 
+variable {F : Type u} {G : Type v} [Field F] [Field G] (e : F ≃+* G) (n : ℕ+)
+    (hmu : (primitiveRoots (n : ℕ) F).Nonempty) (B : HilbertPairing F n)
+
 /-- The canonical Kummer norm-residue law is preserved by field equivalence. -/
-theorem hilbertPairingOfRingEquiv_satisfiesNormResidueCriterion
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
-    (B : HilbertPairing F n) (hB : B.SatisfiesNormResidueCriterion) :
+theorem hilbertPairingOfRingEquiv_satisfiesNormResidueCriterion (hB : B.SatisfiesNormResidueCriterion) :
     (hilbertPairingOfRingEquiv e n hmu B).SatisfiesNormResidueCriterion := by
   let eu : Fˣ ≃* Gˣ := Units.mapEquiv e.toMulEquiv
   let er := rootsOfUnityEquivOfRingEquiv e n hmu
@@ -277,14 +250,9 @@ theorem hilbertPairingOfRingEquiv_satisfiesNormResidueCriterion
 /-- All public local-pairing properties are invariant under a field
 equivalence. -/
 theorem hilbertPairingOfRingEquiv_isLocalHilbertPairing
-    {F : Type u} {G : Type v} [Field F] [Field G]
-    (e : F ≃+* G) (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
-    (B : HilbertPairing F n)
     (hB : HilbertPairing.IsLocalHilbertPairing B) :
     HilbertPairing.IsLocalHilbertPairing
-      (hilbertPairingOfRingEquiv e n hmu B) := by
-  exact ⟨hilbertPairingOfRingEquiv_isSteinberg e n hmu B hB.1,
+      (hilbertPairingOfRingEquiv e n hmu B) := ⟨hilbertPairingOfRingEquiv_isSteinberg e n hmu B hB.1,
     hilbertPairingOfRingEquiv_isSkewSymmetric e n hmu B hB.2.1,
     hilbertPairingOfRingEquiv_isNondegenerate e n hmu B hB.2.2.1,
     hilbertPairingOfRingEquiv_satisfiesNormResidueCriterion e n hmu B hB.2.2.2⟩

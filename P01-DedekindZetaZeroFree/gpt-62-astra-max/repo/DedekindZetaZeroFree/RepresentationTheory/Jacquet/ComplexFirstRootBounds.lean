@@ -14,7 +14,7 @@ open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxActualImage
 open KPInterface.ResidueConstruction.Raw
 local instance : AddCommGroup (Theta frequency) := inferInstance
 variable {F : Type} [Field F] [NumberField F]
-variable (A : SArithmeticData F) (w : InfinitePlace F)
+    (A : SArithmeticData F) (w : InfinitePlace F)
 
 theorem complexJacquet_mem :
     KPCplxJacquetFunctional.thetaJacquetFunctional frequency ∈
@@ -44,13 +44,7 @@ theorem complexWhittaker_scalar
     (hell : ell ∈ localWhittakerSpace _ (Theta frequency) (complexRootAction A w)
       (complexRawPsi w).toAddChar.toMonoidHom) (hne : ell ≠ 0) :
     ∃ t : ℂ, t ≠ 0 ∧ ell = t • KPCplxJacquetFunctional.thetaJacquetFunctional frequency := by
-  have hd : Module.finrank ℂ (localWhittakerSpace _ (Theta frequency) (complexRootAction A w)
-      (complexRawPsi w).toAddChar.toMonoidHom) = 1 := complex_whittakerLine A w
-  have hmem : KPCplxJacquetFunctional.thetaJacquetFunctional frequency ∈
-      localWhittakerSpace (Multiplicative (KPHilbert.Completion F (Sum.inl w)))
-        (Theta frequency) (complexRootAction A w)
-        (complexRawPsi w).toAddChar.toMonoidHom := complexJacquet_mem A w
-  exact scalar_of_line _ hd _ hmem
+  exact scalar_of_line _ (complex_whittakerLine A w) _ (complexJacquet_mem A w)
     (KPCplxJacquetFunctional.thetaJacquetFunctional_ne_zero frequency) ell hell hne
 
 theorem complexJacquet_actualDiagonal (h : Theta frequency) (y : ℂˣ) :

@@ -10,23 +10,24 @@ open scoped nonZeroDivisors
 
 namespace DedekindZetaZeroFree
 
-theorem kp_cusp_coefficientSubmodule_fg
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (M : FullLattice R K) (v : K × K) (hv : v ≠ 0) :
+section
+
+variable (R : Type*) [CommRing R] [IsDedekindDomain R] (K : Type*) [Field K] [Algebra R K]
+    [IsFractionRing R K] (M : FullLattice R K) (v : K × K) (hv : v ≠ 0)
+
+include hv in
+theorem kp_cusp_coefficientSubmodule_fg :
     (coefficientSubmodule R K M.val v).FG := by
-  let f := (LinearMap.toSpanSingleton K (K × K) v).restrictScalars R
-  apply Submodule.fg_of_fg_map_injective f (smul_left_injective K hv)
+  apply Submodule.fg_of_fg_map_injective ((LinearMap.toSpanSingleton K (K × K) v).restrictScalars R) (smul_left_injective K hv)
   apply Submodule.FG.of_le M.property.fg
   rintro x ⟨t, ht, rfl⟩
   exact ht
 
-theorem kp_cusp_coefficientSubmodule_isFractional
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (M : FullLattice R K) (v : K × K) (hv : v ≠ 0) :
-    IsFractional R⁰ (coefficientSubmodule R K M.val v) := by
-  exact FractionalIdeal.isFractional_of_fg (kp_cusp_coefficientSubmodule_fg R K M v hv)
+include hv in
+theorem kp_cusp_coefficientSubmodule_isFractional :
+    IsFractional R⁰ (coefficientSubmodule R K M.val v) := FractionalIdeal.isFractional_of_fg (kp_cusp_coefficientSubmodule_fg R K M v hv)
+
+end
 
 theorem kp_cusp_coefficientSubmodule_ne_bot
     (R : Type*) [CommRing R] [IsDedekindDomain R]
@@ -37,19 +38,15 @@ theorem kp_cusp_coefficientSubmodule_ne_bot
   obtain ⟨r, hr, hrv⟩ := kp_cusp_full_lattice_clear_denominators R K (K × K) M.val v
   intro h
   have hm : algebraMap R K r ∈ coefficientSubmodule R K M.val v := hrv
-  rw [h, Submodule.mem_bot] at hm
-  exact hr ((IsFractionRing.injective R K) (by simpa using hm))
+  simp_all
 
 private theorem det_zero_coeff
     {K : Type*} [Field K] (v x : K × K) (hv : v ≠ 0)
     (h : det₂ K v x = 0) : ∃ s : K, x = s • v := by
   by_cases h₁ : v.1 = 0
-  · have h₂ : v.2 ≠ 0 := by
-      intro h₂
-      exact hv (Prod.ext h₁ h₂)
+  · have h₂ : v.2 ≠ 0 := fun h₂ => hv (Prod.ext h₁ h₂)
     have hx : x.1 = 0 := by
-      have hh : v.2 * x.1 = 0 := by simpa [det₂, h₁] using h
-      exact (mul_eq_zero.mp hh).resolve_left h₂
+      exact (mul_eq_zero.mp (by simpa [det₂, h₁] using h)).resolve_left h₂
     refine ⟨x.2 / v.2, Prod.ext ?_ ?_⟩
     · simp [hx, h₁]
     · simp [smul_eq_mul, h₂]
@@ -57,9 +54,7 @@ private theorem det_zero_coeff
     · simp [smul_eq_mul, h₁]
     · change x.2 = (x.1 / v.1) * v.2
       rw [div_mul_eq_mul_div, eq_div_iff h₁]
-      have hh := sub_eq_zero.mp h
-      change v.1 * x.2 = v.2 * x.1 at hh
-      simpa [mul_comm] using hh
+      simpa [mul_comm] using sub_eq_zero.mp h
 
 theorem kp_cusp_line_adapted_ideal_splitting
     (R : Type*) [CommRing R] [IsDedekindDomain R]
@@ -98,7 +93,7 @@ theorem kp_cusp_line_adapted_ideal_splitting
   have hI : I ≠ 0 := by
     intro h
     exact kp_cusp_coefficientSubmodule_ne_bot R K M v hv
-      (by simpa only [I, FractionalIdeal.coe_mk, FractionalIdeal.coe_zero] using congrArg (fun L : FractionalIdeal R⁰ K => (L : Submodule R K)) h)
+      (by simpa [I] using congrArg (fun L : FractionalIdeal R⁰ K => (L : Submodule R K)) h)
   have hJ : J ≠ 0 := by
     obtain ⟨r, hr, hru⟩ := kp_cusp_full_lattice_clear_denominators R K (K × K) M.val u
     have hp : p ((algebraMap R K r) • u) ≠ 0 := by
@@ -142,10 +137,7 @@ theorem kp_cusp_line_adapted_ideal_splitting
         simp only [Prod.fst_add, Prod.snd_add, Submodule.coe_add, add_smul, map_add]
         abel
       map_smul' := by
-        intro r x
-        apply Subtype.ext
-        simp only [Prod.smul_fst, Prod.smul_snd, Submodule.coe_smul, map_smul,
-          smul_add, smul_assoc, RingHom.id_apply] }
+        simp}
   have hfval (s : I) (t : J) : (f (s,t)).val = s.val • v + t.val • w := by
     dsimp [f]
     rw [hσw]
@@ -155,7 +147,7 @@ theorem kp_cusp_line_adapted_ideal_splitting
   have hfinj : Function.Injective f := by
     intro x y h
     have ht : x.2 = y.2 := Subtype.ext (by
-      simpa only [hpf] using congrArg (fun z : M.val => p z.val) h)
+      simpa [hpf] using congrArg (fun z : M.val => p z.val) h)
     apply Prod.ext _ ht
     apply Subtype.ext
     have hh := congrArg Subtype.val h

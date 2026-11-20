@@ -11,10 +11,14 @@ noncomputable section
 open Filter Topology
 open scoped ContDiff
 
-private def compactifiedChart (f : PrincipalSeries positiveParameter) (p : ℝ × ℂ) : ℂ :=
+section
+
+variable (f : PrincipalSeries positiveParameter)
+
+private def compactifiedChart (p : ℝ × ℂ) : ℂ :=
   ((‖p.2‖ ^ (-(8 / 3 : ℝ)) : ℝ) : ℂ) * infinityCoordinate f ((p.1 : ℂ) / p.2)
 
-private lemma compactifiedChart_smooth (f : PrincipalSeries positiveParameter) :
+private lemma compactifiedChart_smooth :
     ContDiffOn ℝ (⊤ : ℕ∞) (compactifiedChart f) {p | p.2 ≠ 0} := by
   intro p hp
   apply ContDiffAt.contDiffWithinAt
@@ -27,7 +31,7 @@ private lemma compactifiedChart_smooth (f : PrincipalSeries positiveParameter) :
     · exact Complex.ofRealCLM.contDiff.contDiffAt.comp p contDiff_fst.contDiffAt
     · exact (contDiffAt_inv (𝕜 := ℝ) hp).comp p contDiff_snd.contDiffAt
 
-private lemma openChart_rescaling (f : PrincipalSeries positiveParameter)
+private lemma openChart_rescaling
     (R : ℝ) (hR : 0 < R) (z : ℂ) (hz : z ≠ 0) :
     openCoordinate f ((R : ℂ) * z) =
       ((R ^ (-(8 / 3 : ℝ)) : ℝ) : ℂ) * compactifiedChart f (R⁻¹, z) := by
@@ -73,7 +77,13 @@ private lemma openChart_rescaling (f : PrincipalSeries positiveParameter)
       rw [he', hz']
       simp
 
-private lemma compactifiedChart_uniform_jets (f : PrincipalSeries positiveParameter) (n : ℕ) :
+end
+
+section
+
+variable (f : PrincipalSeries positiveParameter) (n : ℕ)
+
+private lemma compactifiedChart_uniform_jets :
     ∃ C : ℝ, 0 < C ∧ ∀ (t : ℝ) (z : ℂ), t ∈ Set.Icc 0 1 → ‖z‖ = 1 →
       ‖iteratedFDeriv ℝ n (compactifiedChart f) (t, z)‖ ≤ C := by
   let s : Set (ℝ × ℂ) := Set.Icc 0 1 ×ˢ Metric.sphere (0 : ℂ) 1
@@ -82,7 +92,7 @@ private lemma compactifiedChart_uniform_jets (f : PrincipalSeries positiveParame
   have hsub : s ⊆ {p : ℝ × ℂ | p.2 ≠ 0} := by
     rintro ⟨t, z⟩ ⟨ht, hz⟩
     have hn : ‖z‖ = 1 := by simpa using hz
-    exact norm_ne_zero_iff.mp (by rw [hn]; norm_num)
+    exact norm_ne_zero_iff.mp (by positivity)
   have hc := ContinuousOn.continuousOn_iteratedFDeriv (compactifiedChart_smooth f) ho
     (show (n : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)
   obtain ⟨C, hC⟩ := (hs.bddAbove_image (hc.norm.mono hsub))
@@ -91,8 +101,7 @@ private lemma compactifiedChart_uniform_jets (f : PrincipalSeries positiveParame
   have hm : (t, z) ∈ s := ⟨ht, by simpa using hz⟩
   exact (hC ⟨(t, z), hm, rfl⟩).trans (by linarith [le_max_left C 0])
 
-private lemma compactifiedChart_slice_jet_le (f : PrincipalSeries positiveParameter)
-    (n : ℕ) (t : ℝ) (z : ℂ) (hz : z ≠ 0) :
+private lemma compactifiedChart_slice_jet_le (t : ℝ) (z : ℂ) (hz : z ≠ 0) :
     ‖iteratedFDeriv ℝ n (fun w : ℂ => compactifiedChart f (t, w)) z‖ ≤
       ‖iteratedFDeriv ℝ n (compactifiedChart f) (t, z)‖ := by
   let L : ℂ →L[ℝ] ℝ × ℂ := ContinuousLinearMap.inr ℝ ℝ ℂ
@@ -124,8 +133,7 @@ private lemma compactifiedChart_slice_jet_le (f : PrincipalSeries positiveParame
   rw [hfun, he, ← heH]
   exact hb.trans (by nlinarith [norm_nonneg (iteratedFDeriv ℝ n H (L z))])
 
-private lemma openChart_scaled_jet_norm (f : PrincipalSeries positiveParameter)
-    (n : ℕ) (R : ℝ) (hR : 0 < R) (z : ℂ) (hz : z ≠ 0) :
+private lemma openChart_scaled_jet_norm (R : ℝ) (hR : 0 < R) (z : ℂ) (hz : z ≠ 0) :
     R ^ n * ‖iteratedFDeriv ℝ n (openCoordinate f) ((R : ℂ) * z)‖ =
       R ^ (-(8 / 3 : ℝ)) *
         ‖iteratedFDeriv ℝ n (fun w : ℂ => compactifiedChart f (R⁻¹, w)) z‖ := by
@@ -136,13 +144,14 @@ private lemma openChart_scaled_jet_norm (f : PrincipalSeries positiveParameter)
   have hEq : (fun w : ℂ => openCoordinate f (R • w)) =ᶠ[nhds z]
       (fun w : ℂ => R ^ (-(8 / 3 : ℝ)) • compactifiedChart f (R⁻¹, w)) := by
     filter_upwards [isOpen_ne.mem_nhds hz] with w hw
-    simpa only [Complex.real_smul] using openChart_rescaling f R hR w hw
+    simpa using openChart_rescaling f R hR w hw
   have hj := (hEq.iteratedFDeriv (𝕜 := ℝ) n).eq_of_nhds
   rw [iteratedFDeriv_comp_const_smul R (f.property.2.1.of_le (by simp)),
     iteratedFDeriv_const_smul_apply' (hG.of_le (by simp))] at hj
-  have hnorm := congrArg norm hj
   simpa only [norm_smul, Real.norm_eq_abs, abs_of_pos (pow_pos hR n),
-    abs_of_pos (Real.rpow_pos_of_pos hR _), Complex.real_smul] using hnorm
+    abs_of_pos (Real.rpow_pos_of_pos hR _), Complex.real_smul] using (congrArg norm hj)
+
+end
 
 lemma norm_iteratedFDeriv_openCoordinate_le_of_one_le
     (f : PrincipalSeries positiveParameter) (n : ℕ) :
@@ -153,44 +162,39 @@ lemma norm_iteratedFDeriv_openCoordinate_le_of_one_le
   refine ⟨C, hC, ?_⟩
   intro x hx
   have hR : 0 < ‖x‖ := by linarith
-  let z : ℂ := (‖x‖ : ℂ)⁻¹ * x
+  let z := (‖x‖ : ℂ)⁻¹ * x
   have hz : ‖z‖ = 1 := by
     dsimp [z]
     rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hR,
       inv_mul_cancel₀ hR.ne']
-  have hz0 : z ≠ 0 := norm_ne_zero_iff.mp (by rw [hz]; norm_num)
+  have hz0 := norm_ne_zero_iff.mp (by rw [hz]; norm_num)
   have hmul : (‖x‖ : ℂ) * z = x := by
     dsimp [z]
     rw [← mul_assoc, mul_inv_cancel₀ (by exact_mod_cast hR.ne'), one_mul]
-  have hb := hjets ‖x‖⁻¹ z ⟨inv_nonneg.mpr hR.le, inv_le_one_of_one_le₀ hx⟩ hz
-  have hb' := (compactifiedChart_slice_jet_le f n ‖x‖⁻¹ z hz0).trans hb
   have he := openChart_scaled_jet_norm f n ‖x‖ hR z hz0
   rw [hmul] at he
-  have hbound : ‖x‖ ^ n * ‖iteratedFDeriv ℝ n (openCoordinate f) x‖ ≤
-      ‖x‖ ^ (-(8 / 3 : ℝ)) * C := by
-    rw [he]
-    exact mul_le_mul_of_nonneg_left hb' (Real.rpow_nonneg hR.le _)
   apply (le_of_mul_le_mul_left ?_ (pow_pos hR n))
   calc
-    ‖x‖ ^ n * ‖iteratedFDeriv ℝ n (openCoordinate f) x‖ ≤
-        ‖x‖ ^ (-(8 / 3 : ℝ)) * C := hbound
+    _ ≤
+        ‖x‖ ^ (-(8 / 3 : ℝ)) * C := (by
+          rw [he]
+          exact mul_le_mul_of_nonneg_left ((compactifiedChart_slice_jet_le f n ‖x‖⁻¹ z hz0).trans (hjets ‖x‖⁻¹ z ⟨inv_nonneg.mpr hR.le, inv_le_one_of_one_le₀ hx⟩ hz)) (Real.rpow_nonneg hR.le _))
     _ = ‖x‖ ^ n * (C * ‖x‖ ^ (-(8 / 3 : ℝ) - (n : ℝ))) := by
       rw [← Real.rpow_natCast ‖x‖ n]
       rw [mul_left_comm, ← Real.rpow_add hR,
         show (n : ℝ) + (-(8 / 3 : ℝ) - (n : ℝ)) = -(8 / 3 : ℝ) by ring]
-      exact mul_comm _ _
+      apply mul_comm
 
 lemma norm_iteratedFDeriv_openCoordinate_le (f : PrincipalSeries positiveParameter) (n : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ x : ℂ,
       ‖iteratedFDeriv ℝ n (openCoordinate f) x‖ ≤
         C * (1 + ‖x‖ ^ 2) ^ (-(4 / 3 : ℝ) - (n : ℝ) / 2) := by
   obtain ⟨C, hC, hlarge⟩ := norm_iteratedFDeriv_openCoordinate_le_of_one_le f n
-  let a : ℝ := (4 / 3 : ℝ) + (n : ℝ) / 2
+  let a := (4 / 3 : ℝ) + (n : ℝ) / 2
   have ha : 0 ≤ a := by dsimp [a]; positivity
-  have hs := (isCompact_closedBall (0 : ℂ) 1).bddAbove_image
-    ((f.property.2.1.continuous_iteratedFDeriv (m := n) (by simp)).norm.continuousOn)
-  obtain ⟨M, hM⟩ := hs
-  let D : ℝ := max (max M 0) C
+  obtain ⟨M, hM⟩ := ((isCompact_closedBall (0 : ℂ) 1).bddAbove_image
+    ((f.property.2.1.continuous_iteratedFDeriv (by simp)).norm.continuousOn))
+  let D := max (max M 0) C
   have hD : 0 < D := lt_of_lt_of_le hC (le_max_right _ _)
   refine ⟨D * (2 : ℝ) ^ a, mul_pos hD (Real.rpow_pos_of_pos (by norm_num) _), ?_⟩
   intro x
@@ -210,9 +214,7 @@ lemma norm_iteratedFDeriv_openCoordinate_le (f : PrincipalSeries positiveParamet
       _ ≤ D := hv
       _ ≤ D * ((2 : ℝ) ^ a * (1 + ‖x‖ ^ 2) ^ (-a)) := by nlinarith
       _ = _ := by ring
-  · have hx1 : 1 ≤ ‖x‖ := le_of_lt (lt_of_not_ge hx)
-    have hxpos : 0 < ‖x‖ := by linarith
-    have hv := hlarge x hx1
+  · have hxpos : 0 < ‖x‖ := by linarith
     have hp : ‖x‖ ^ (-(8 / 3 : ℝ) - (n : ℝ)) ≤
         (2 : ℝ) ^ a * (1 + ‖x‖ ^ 2) ^ (-a) := by
       have hbase : 1 + ‖x‖ ^ 2 ≤ 2 * ‖x‖ ^ 2 := by nlinarith
@@ -225,7 +227,7 @@ lemma norm_iteratedFDeriv_openCoordinate_le (f : PrincipalSeries positiveParamet
       apply (inv_mul_le_iff₀ (Real.rpow_pos_of_pos hxpos (2 * a))).mpr
       simpa [mul_comm] using hp
     calc
-      _ ≤ C * ‖x‖ ^ (-(8 / 3 : ℝ) - (n : ℝ)) := hv
+      _ ≤ C * ‖x‖ ^ (-(8 / 3 : ℝ) - (n : ℝ)) := (hlarge x (le_of_lt (lt_of_not_ge hx)))
       _ ≤ D * ‖x‖ ^ (-(8 / 3 : ℝ) - (n : ℝ)) :=
         mul_le_mul_of_nonneg_right (le_max_right _ _) (Real.rpow_nonneg hxpos.le _)
       _ ≤ D * ((2 : ℝ) ^ a * (1 + ‖x‖ ^ 2) ^ (-a)) :=

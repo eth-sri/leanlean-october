@@ -10,33 +10,26 @@ open scoped Pointwise ENNReal
 open ComplexFractionalInverse.RawSphereProjection
 open KPCplxCharacterHaar
 
-noncomputable def denominator (z : ℂ) : ℝ := 1 + ‖z‖ ^ 2
+section
 
-private theorem denominator_pos (z : ℂ) : 0 < denominator z := by
+variable (z : ℂ)
+
+noncomputable def denominator : ℝ := 1 + ‖z‖ ^ 2
+
+private theorem denominator_pos : 0 < denominator z := by
   unfold denominator
   positivity
 
-noncomputable def sigmaVector (z : ℂ) : rawAmbient :=
+noncomputable def sigmaVector : rawAmbient :=
   WithLp.toLp 2 ![2 * z.re / denominator z, -2 * z.im / denominator z,
     (1 - ‖z‖ ^ 2) / denominator z]
 
-theorem sigmaVector_norm (z : ℂ) : ‖sigmaVector z‖ = 1 := by
-  have hn : z.re ^ 2 + z.im ^ 2 = ‖z‖ ^ 2 := by
-    simpa only [Complex.normSq_apply, ← sq] using (Complex.normSq_eq_norm_sq z)
-  have hD := (denominator_pos z).ne'
-  have hs : ‖sigmaVector z‖ ^ 2 = 1 := by
-    rw [EuclideanSpace.real_norm_sq_eq]
-    simp only [sigmaVector, Fin.sum_univ_three, PiLp.toLp_apply,
-      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two]
-    change (2 * z.re / denominator z)^2 + (-2 * z.im / denominator z)^2 +
-      ((1 - ‖z‖^2) / denominator z)^2 = 1
-    dsimp [denominator] at *
-    field_simp
-    nlinarith
-  nlinarith [norm_nonneg (sigmaVector z)]
+theorem sigmaVector_norm : ‖sigmaVector z‖ = 1 := by exact RawCone.sigmaVector_norm z
 
-noncomputable def sigma (z : ℂ) : rawSphere :=
+noncomputable def sigma : rawSphere :=
   ⟨sigmaVector z, mem_sphere_zero_iff_norm.mpr (sigmaVector_norm z)⟩
+
+end
 
 noncomputable def planeProbability : Measure ℂ :=
   euclideanArea.withDensity
@@ -56,8 +49,6 @@ theorem stereographic_measure_transport :
       withDensity_apply _ (RawCone.sigma_continuous.measurable hs)]
     rw [rawSphereArea, Measure.smul_apply, smul_eq_mul, raw_mass,
       Measure.toSphere_apply' _ hs, RawCone.cone_volume_stereographic s hs]
-    have hd : ∀ z : ℂ, 0 ≤ denominator z ^ (-2 : ℝ) := fun z => Real.rpow_nonneg
-      (by unfold denominator; positivity) _
     simp_rw [ENNReal.ofReal_div_of_pos Real.pi_pos]
     simp_rw [div_eq_mul_inv]
     rw [lintegral_mul_const' _ _ (by simp [Real.pi_pos])]

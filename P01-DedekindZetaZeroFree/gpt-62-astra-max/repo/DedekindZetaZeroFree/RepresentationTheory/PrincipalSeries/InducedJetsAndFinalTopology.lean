@@ -15,7 +15,7 @@ set_option maxHeartbeats 800000
 set_option synthInstance.maxHeartbeats 100000
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 local instance smoothTopology2 (P : Polarization F ζ hζ) :
     TopologicalSpace (Smooth F ζ hζ P) :=
@@ -59,7 +59,11 @@ def groupArchChart (z : GroupArch F) : G F ζ hζ :=
   intro w
   exact isOpen_ne_fun ((continuous_apply 1).comp (continuous_apply w)) continuous_const
 
-def InducedFunctions (P : Polarization F ζ hζ) :
+section
+
+variable (P : Polarization F ζ hζ)
+
+def InducedFunctions :
     Submodule ℂ (G F ζ hζ → Smooth F ζ hζ P) where
   carrier := {f | ∀ (t : E F ζ hζ) (x : KPGlobalTorusFunctionData.Adeles F) (g : G F ζ hζ),
     f ((t.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) =
@@ -76,7 +80,7 @@ def InducedFunctions (P : Polarization F ζ hζ) :
     simp only [Pi.smul_apply, hf t x g, map_smul]
     exact smul_comm _ _ _
 
-def InducedLevel (P : Polarization F ζ hζ)
+def InducedLevel
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
     Submodule ℂ (InducedFunctions F ζ hζ P) where
   carrier := {f | (∀ g, ContDiffOn ℝ (⊤ : ℕ∞)
@@ -102,8 +106,10 @@ def InducedLevel (P : Polarization F ζ hζ)
       change c • f.val (g * j.val) = c • f.val g
       rw [hf.2 g j]
 
-def Induced (P : Polarization F ζ hζ) : Submodule ℂ (InducedFunctions F ζ hζ P) :=
+def Induced : Submodule ℂ (InducedFunctions F ζ hζ P) :=
   ⨆ J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ, InducedLevel F ζ hζ P J
+
+end
 
 local instance inducedFunctionsAddGroup (P : Polarization F ζ hζ) :
     AddCommGroup (InducedFunctions F ζ hζ P) := @Submodule.addCommGroup ℂ (G F ζ hζ → Smooth F ζ hζ P)
@@ -118,20 +124,17 @@ local instance inducedAddGroup (P : Polarization F ζ hζ) :
     AddCommGroup (Induced F ζ hζ P) := @Submodule.addCommGroup ℂ (InducedFunctions F ζ hζ P)
       inferInstance inferInstance inferInstance (Induced F ζ hζ P)
 
-def inducedJetBound (P : Polarization F ζ hζ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (g : G F ζ hζ) (n : ℕ)
-    (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
-    (f : InducedLevel F ζ hζ P J) : ℝ :=
+section
+
+variable (P : Polarization F ζ hζ) (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) (g : G F ζ hζ)
+    (n : ℕ) (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F)) (f : InducedLevel F ζ hζ P J)
+
+def inducedJetBound : ℝ :=
   sSup ((fun z => ‖iteratedFDerivWithin ℝ n
     (fun y => (f.val.val (groupArchChart F ζ hζ y * g)).val.val 1)
     (groupArchDomain F) z‖) '' K.set)
 
-private theorem jet_image_bdd (P : Polarization F ζ hζ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (g : G F ζ hζ) (n : ℕ)
-    (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
-    (f : InducedLevel F ζ hζ P J) :
+private theorem jet_image_bdd :
     BddAbove ((fun z => ‖iteratedFDerivWithin ℝ n
       (fun y => (f.val.val (groupArchChart F ζ hζ y * g)).val.val 1)
       (groupArchDomain F) z‖) '' K.set) := by
@@ -139,6 +142,10 @@ private theorem jet_image_bdd (P : Polarization F ζ hζ)
   apply ContinuousOn.mono _ K.inside
   exact ((f.property.1 g).continuousOn_iteratedFDerivWithin (by simp)
     (groupArchDomain_open F).uniqueDiffOn).norm
+
+end
+
+alias InducedJetsAndFinalTopology.jet_image_bdd := jet_image_bdd
 
  theorem inducedJetBound_add_le (P : Polarization F ζ hζ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
@@ -162,20 +169,23 @@ private theorem jet_image_bdd (P : Polarization F ζ hζ)
     exact (norm_add_le _ _).trans (add_le_add
       (le_csSup (jet_image_bdd F ζ hζ P J g n K f) (Set.mem_image_of_mem _ hz))
       (le_csSup (jet_image_bdd F ζ hζ P J g n K h) (Set.mem_image_of_mem _ hz)))
-  · have hE : K.set = ∅ := Set.not_nonempty_iff_eq_empty.mp hK
-    simp [inducedJetBound, hE, Real.sSup_empty]
+  · simp [inducedJetBound, (Set.not_nonempty_iff_eq_empty.mp hK), Real.sSup_empty]
 
 private theorem norm_jet_smul {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
     {s : Set V} {v : V} {n : ℕ} {f : V → ℂ} (c : ℂ)
     (hf : ContDiffWithinAt ℝ n f s v) (hs : UniqueDiffOn ℝ s) (hv : v ∈ s) :
     ‖iteratedFDerivWithin ℝ n (c • f) s v‖ =
       ‖c‖ * ‖iteratedFDerivWithin ℝ n f s v‖ := by
-  rw [iteratedFDerivWithin_const_smul_apply (R := ℂ) hf hs hv, norm_smul]
+  rw [iteratedFDerivWithin_const_smul_apply hf hs hv, norm_smul]
 
- theorem inducedJetBound_smul (P : Polarization F ζ hζ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (g : G F ζ hζ) (n : ℕ)
-    (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
+alias InducedJetsAndFinalTopology.norm_jet_smul := norm_jet_smul
+
+ section
+
+variable (P : Polarization F ζ hζ) (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) (g : G F ζ hζ)
+    (n : ℕ) (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
+
+theorem inducedJetBound_smul
     (c : ℂ) (f : InducedLevel F ζ hζ P J) :
     inducedJetBound F ζ hζ P J g n K (c • f) = ‖c‖ * inducedJetBound F ζ hζ P J g n K f := by
   unfold inducedJetBound
@@ -191,44 +201,40 @@ private theorem norm_jet_smul {V : Type*} [NormedAddCommGroup V] [NormedSpace �
     rw [Set.image_image]
     apply Set.image_congr
     intro z hz
-    change ‖iteratedFDerivWithin ℝ n
-      (c • (fun y => (f.val.val (groupArchChart F ζ hζ y * g)).val.val 1))
-      (groupArchDomain F) z‖ = ‖c‖ * ‖iteratedFDerivWithin ℝ n
-      (fun y => (f.val.val (groupArchChart F ζ hζ y * g)).val.val 1)
-      (groupArchDomain F) z‖
     exact norm_jet_smul c
       ((f.property.1 g z (K.inside hz)).of_le (by simp))
       (groupArchDomain_open F).uniqueDiffOn (K.inside hz)
   rw [hEq]
   exact Real.sSup_smul_of_nonneg (α := ℝ) (norm_nonneg c) _
 
-def inducedJet (P : Polarization F ζ hζ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (g : G F ζ hζ) (n : ℕ)
-    (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F)) :
+def inducedJet :
     Seminorm ℂ (InducedLevel F ζ hζ P J) :=
   Seminorm.of (inducedJetBound F ζ hζ P J g n K)
     (inducedJetBound_add_le F ζ hζ P J g n K) (inducedJetBound_smul F ζ hζ P J g n K)
 
-def inducedLevelTopology (P : Polarization F ζ hζ)
+end
+
+variable (P : Polarization F ζ hζ)
+
+def inducedLevelTopology
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
     TopologicalSpace (InducedLevel F ζ hζ P J) :=
   (SeminormFamily.moduleFilterBasis
     (fun i : G F ζ hζ × ℕ × KPGlobalTorusFunctionData.JetCompact (groupArchDomain F) =>
       inducedJet F ζ hζ P J i.1 i.2.1 i.2.2)).topology
 
-def inducedStageInclusion (P : Polarization F ζ hζ)
+def inducedStageInclusion
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
     InducedLevel F ζ hζ P J →ₗ[ℂ] Induced F ζ hζ P :=
   Submodule.inclusion (le_iSup (fun J => InducedLevel F ζ hζ P J) J)
 
-def inducedFinalSeminorms (P : Polarization F ζ hζ) :=
+def inducedFinalSeminorms :=
   {q : Seminorm ℂ (Induced F ζ hζ P) // ∀ J,
     @Continuous (InducedLevel F ζ hζ P J) ℝ
       (inducedLevelTopology F ζ hζ P J) inferInstance
       (q ∘ inducedStageInclusion F ζ hζ P J)}
 
-def inducedTopology (P : Polarization F ζ hζ) : TopologicalSpace (Induced F ζ hζ P) :=
+def inducedTopology : TopologicalSpace (Induced F ζ hζ P) :=
   (SeminormFamily.moduleFilterBasis
     (fun q : inducedFinalSeminorms F ζ hζ P => q.val)).topology
 

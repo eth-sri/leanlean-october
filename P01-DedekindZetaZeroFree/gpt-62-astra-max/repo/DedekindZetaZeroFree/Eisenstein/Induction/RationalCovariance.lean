@@ -12,7 +12,7 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.RationalCovariance
 open KPGlobalTorusFiniteStages KPGlobalTorusPeriodizationInverse
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 
  theorem scalar_torus (r : KPGlobalCenterRationalCharacter.R F ζ hζ)
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :
@@ -32,9 +32,6 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
   change f.val.val (r.val*1) = (rationalUnitCharacter F ζ hζ r : ℂ)*f.val.val 1 at hc
   rw [mul_one] at hc
   rw [hc]
-  have hr := KPGlobalCenterRationalCharacter.nu_positive F ζ hζ r.val
-  have hn : ((KPGlobalCenterRationalCharacter.nu F ζ hζ r.val : ℝ≥0) : ℂ) ≠ 0 := by
-    exact_mod_cast hr.ne'
   have hchar : (rationalUnitCharacter F ζ hζ r : ℂ) =
       (KPGlobalCenterRationalCharacter.lambdaR F ζ hζ r : ℂ) /
         ((KPGlobalCenterRationalCharacter.nu F ζ hζ r.val : ℝ≥0) : ℂ) := by

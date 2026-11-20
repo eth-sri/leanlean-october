@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem diagonal_one (R : PrincipalMellin.ActualRecipe S η) :
     diagonal R (1 : R.A.G) = 1 := by

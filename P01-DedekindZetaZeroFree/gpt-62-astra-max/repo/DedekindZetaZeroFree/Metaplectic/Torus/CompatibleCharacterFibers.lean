@@ -90,10 +90,10 @@ theorem exists_fibers (P : CompatibleModelData F ζ hζ)
 
 theorem exists_model_fibers (hCl : Subsingleton (ClassGroup A.R)) :
     ∃ (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P),
-      P.adjustment.S = A.Sf ∧ C.exceptional = A.Sf := by
+      C.exceptional = A.Sf := by
   obtain ⟨P, hS, hP⟩ := FrozenAdjustment.exists_model A hCl
   obtain ⟨C, hC⟩ := exists_fibers A P hS hP
-  exact ⟨P, C, hS, hC⟩
+  exact ⟨P, C, hC⟩
 
 end DedekindZetaZeroFree.EisensteinReferenceSections.FrozenFibers
 

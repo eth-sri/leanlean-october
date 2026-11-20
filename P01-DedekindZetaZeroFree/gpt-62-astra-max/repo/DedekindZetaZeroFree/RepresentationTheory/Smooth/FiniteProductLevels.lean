@@ -23,33 +23,42 @@ structure ProductLevelData where
   cofinally_standard : ∀ᶠ q in Filter.cofinite,
     (localLevel q).toOpenSubgroup.toSubgroup = pglCompact F ζ hζ (Sum.inr q)
 
-def productTuples (J : ProductLevelData F ζ hζ) : Subgroup (RestrictedCover F ζ hζ) :=
+section
+
+variable (J : ProductLevelData F ζ hζ)
+
+def productTuples : Subgroup (RestrictedCover F ζ hζ) :=
   finiteTuples F ζ hζ ⊓ ⨅ q : HeightOneSpectrum (𝓞 F),
     ((J.localLevel q).toOpenSubgroup.toSubgroup).comap
       ((KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp
         (RestrictedProduct.evalMonoidHom (KPLocalCover.CubicGL2Raw F ζ hζ)
           (B := compact F ζ hζ) (Sum.inr q)))
 
-def productSubgroup (J : ProductLevelData F ζ hζ) : Subgroup (Cover F ζ hζ) :=
+def productSubgroup : Subgroup (Cover F ζ hζ) :=
   (productTuples F ζ hζ J).map
     ((scalarQuotient F ζ hζ).comp (amalgamation F ζ hζ))
 
-theorem productSubgroup_le_finite (J : ProductLevelData F ζ hζ) :
+theorem productSubgroup_le_finite :
     productSubgroup F ζ hζ J ≤ finiteSubgroup F ζ hζ := by
   rw [finiteSubgroup_eq_tupleFactor]
   exact Subgroup.map_mono inf_le_left
+
+end
 
  theorem sum_eventually {P : HeightOneSpectrum (𝓞 F) → Prop}
     (h : ∀ᶠ q in Filter.cofinite, P q) :
     ∀ᶠ v : KPHilbert.Place F in Filter.cofinite, (match v with | Sum.inl _ => True | Sum.inr q => P q) := by
   apply Filter.eventually_cofinite.mpr
-  have hh := Filter.eventually_cofinite.mp h
-  apply (hh.image (Sum.inr : HeightOneSpectrum (𝓞 F) → KPHilbert.Place F)).subset
+  apply ((Filter.eventually_cofinite.mp h).image Sum.inr).subset
   rintro (w | q) hw
   · simp at hw
   · exact ⟨q, hw, rfl⟩
 
- def levelTuple (J : ProductLevelData F ζ hζ)
+ section
+
+variable (J : ProductLevelData F ζ hζ)
+
+def levelTuple
     (x : ∀ q, (J.localLevel q).toOpenSubgroup) : RestrictedPGLCover F ζ hζ :=
   ⟨fun v => match v with | Sum.inl _ => 1 | Sum.inr q => (x q).val, by
     filter_upwards [sum_eventually F J.cofinally_standard] with v hv
@@ -57,12 +66,12 @@ theorem productSubgroup_le_finite (J : ProductLevelData F ζ hζ) :
     | inl w => exact Subgroup.one_mem _
     | inr q => rw [← hv]; exact (x q).property⟩
 
-private theorem levelTuple_continuous (J : ProductLevelData F ζ hζ) :
+private theorem levelTuple_continuous :
     Continuous (levelTuple F ζ hζ J) := by
   let S : Set (KPHilbert.Place F) := {v | match v with
     | Sum.inl _ => True
     | Sum.inr q => (J.localLevel q).toOpenSubgroup.toSubgroup = pglCompact F ζ hζ (Sum.inr q)}
-  have hS : Filter.cofinite ≤ Filter.principal S :=
+  have hS :=
     Filter.le_principal_iff.mpr (sum_eventually F J.cofinally_standard)
   let t (x : ∀ q, (J.localLevel q).toOpenSubgroup) :
       RestrictedProduct (fun v => KPPGLLocalCover.CubicPGL2 F ζ hζ v)
@@ -84,7 +93,7 @@ private theorem levelTuple_continuous (J : ProductLevelData F ζ hζ) :
     | inr q => exact continuous_subtype_val.comp (continuous_apply q)
   exact (RestrictedProduct.continuous_inclusion hS).comp ht
 
-private theorem levelTuple_lift (J : ProductLevelData F ζ hζ)
+private theorem levelTuple_lift
     (x : ∀ q, (J.localLevel q).toOpenSubgroup) :
     ∃ y ∈ productTuples F ζ hζ J,
       restrictedPGLQuotient F ζ hζ y = levelTuple F ζ hζ J x := by
@@ -117,13 +126,12 @@ private theorem levelTuple_lift (J : ProductLevelData F ζ hζ)
     | inl w => change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inl w) 1 = 1; exact map_one _
     | inr q => exact hg q
 
-private theorem compact_half (J : ProductLevelData F ζ hζ) :
+private theorem compact_half :
     IsCompact ((productSubgroup F ζ hζ J).comap
       (finiteSubgroup F ζ hζ).subtype : Set (finiteSubgroup F ζ hζ)) := by
   obtain ⟨e, he, hei, herule⟩ := scalar_quotient_commutes_with_amalgamation F ζ hζ
-  let f : (∀ q, (J.localLevel q).toOpenSubgroup) → Cover F ζ hζ :=
+  let f :=
     fun x => e.symm (QuotientGroup.mk' (pglM F ζ hζ) (levelTuple F ζ hζ J x))
-  have hf : Continuous f := hei.comp (QuotientGroup.continuous_mk.comp (levelTuple_continuous F ζ hζ J))
   have hmem (x : ∀ q, (J.localLevel q).toOpenSubgroup) : f x ∈ productSubgroup F ζ hζ J := by
     obtain ⟨y, hy, hye⟩ := levelTuple_lift F ζ hζ J x
     refine ⟨y, hy, ?_⟩
@@ -132,7 +140,6 @@ private theorem compact_half (J : ProductLevelData F ζ hζ) :
     rw [herule, hye, e.apply_symm_apply]
   let ff : (∀ q, (J.localLevel q).toOpenSubgroup) → finiteSubgroup F ζ hζ :=
     fun x => ⟨f x, productSubgroup_le_finite F ζ hζ J (hmem x)⟩
-  have hff : Continuous ff := hf.subtype_mk _
   letI : ∀ q, CompactSpace (J.localLevel q).toOpenSubgroup := fun q =>
     isCompact_iff_compactSpace.mp (J.localLevel q).isCompact
   have hsurj : Set.range ff = ((productSubgroup F ζ hζ J).comap
@@ -141,16 +148,11 @@ private theorem compact_half (J : ProductLevelData F ζ hζ) :
     constructor
     · rintro ⟨x, rfl⟩; exact hmem x
     · rintro ⟨y, hy, hye⟩
-      have hq : ∀ q, KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (y (Sum.inr q)) ∈
-          (J.localLevel q).toOpenSubgroup := by
-        exact fun q => (Subgroup.mem_iInf.mp hy.2 q)
-      let x : ∀ q, (J.localLevel q).toOpenSubgroup := fun q => ⟨_, hq q⟩
+      let x : ∀ q, (J.localLevel q).toOpenSubgroup := fun q => ⟨_, (fun q => (Subgroup.mem_iInf.mp hy.2 q)) q⟩
       refine ⟨x, Subtype.ext ?_⟩
-      change f x = u.val
       change scalarQuotient F ζ hζ (amalgamation F ζ hζ y) = u.val at hye
       rw [← hye]
       apply e.injective
-      change e (e.symm _) = e (scalarQuotient F ζ hζ (amalgamation F ζ hζ y))
       rw [herule, e.apply_symm_apply]
       congr 1
       ext v
@@ -158,7 +160,9 @@ private theorem compact_half (J : ProductLevelData F ζ hζ) :
       | inl w => change 1 = KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inl w) (y (Sum.inl w)); rw [hy.1 w, map_one]
       | inr q => rfl
   rw [← hsurj]
-  exact isCompact_range hff
+  exact isCompact_range ((hei.comp (QuotientGroup.continuous_mk.comp (levelTuple_continuous F ζ hζ J))).subtype_mk _)
+
+end
 
 private theorem restricted_forall_open {ι : Type*} {R : ι → Type*}
     [∀ i, TopologicalSpace (R i)] (B U : ∀ i, Set (R i))
@@ -167,10 +171,7 @@ private theorem restricted_forall_open {ι : Type*} {R : ι → Type*}
   simp_rw +instances [RestrictedProduct.topologicalSpace_eq_iSup Filter.cofinite,
     isOpen_iSup_iff, isOpen_coinduced]
   intro S hS
-  let T : Set ι := Sᶜ ∪ {i | ¬ B i ⊆ U i}
-  have hT : T.Finite :=
-    (Filter.eventually_cofinite.mp (Filter.le_principal_iff.mp hS)).union
-      (Filter.eventually_cofinite.mp hBU)
+  let T := Sᶜ ∪ {i | ¬ B i ⊆ U i}
   have heq : {x : RestrictedProduct R B (Filter.principal S) | ∀ i, x i ∈ U i} =
       (fun x : RestrictedProduct R B (Filter.principal S) => x.val) ⁻¹' Set.pi T U := by
     ext x
@@ -179,15 +180,13 @@ private theorem restricted_forall_open {ι : Type*} {R : ι → Type*}
     · intro hx i
       by_cases hi : i ∈ T
       · exact hx i hi
-      · have hiS : i ∈ S := by
-          by_contra h
-          exact hi (Or.inl h)
-        have hiB : B i ⊆ U i := by
-          exact not_not.mp (fun h => hi (Or.inr h))
-        exact hiB (Filter.eventually_principal.mp x.property i hiS)
+      · refine (not_not.mp (fun h => hi (Or.inr h))) (Filter.eventually_principal.mp x.property i ?_)
+        by_contra h
+        exact hi (Or.inl h)
   change IsOpen {x : RestrictedProduct R B (Filter.principal S) | ∀ i, x i ∈ U i}
   rw [heq]
-  exact (isOpen_set_pi hT (fun i _ => hU i)).preimage RestrictedProduct.continuous_coe
+  exact (isOpen_set_pi ((Filter.eventually_cofinite.mp (Filter.le_principal_iff.mp hS)).union
+    (Filter.eventually_cofinite.mp hBU)) (fun i _ => hU i)).preimage RestrictedProduct.continuous_coe
 
  instance raw_group (v : KPHilbert.Place F) :
     IsTopologicalGroup (KPLocalCover.CubicGL2Raw F ζ hζ v) := by
@@ -196,7 +195,11 @@ private theorem restricted_forall_open {ι : Type*} {R : ι → Type*}
   | inr q => exact (KPLocalChartTopology.finite_topological_group F ζ hζ q _
       (depth_admissible F ζ hζ q)).2.2
 
-private theorem raw_open (J : ProductLevelData F ζ hζ) :
+section
+
+variable (J : ProductLevelData F ζ hζ)
+
+private theorem raw_open :
     IsOpen {x : RestrictedCover F ζ hζ |
       (∀ w : InfinitePlace F, (x (Sum.inl w)).epsilon = 1) ∧
       (∀ q : HeightOneSpectrum (𝓞 F), KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
@@ -211,32 +214,28 @@ private theorem raw_open (J : ProductLevelData F ζ hζ) :
     | inl w =>
       letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
       letI : DiscreteTopology (rootsOfUnity 3 F) := ⟨rfl⟩
-      have hc : Continuous (KPLocalChartTopology.complexCoordinates F ζ hζ w) := continuous_induced_dom
-      exact isOpen_discrete ({1} : Set (rootsOfUnity 3 F)) |>.preimage (continuous_snd.comp hc)
+      exact isOpen_discrete ({1} : Set (rootsOfUnity 3 F)) |>.preimage (continuous_snd.comp continuous_induced_dom)
     | inr q => exact (J.localLevel q).toOpenSubgroup.isOpen.preimage QuotientGroup.continuous_mk
   have hBU : ∀ᶠ v in Filter.cofinite, (compact F ζ hζ v : Set _) ⊆ U v := by
     have hq : ∀ᶠ q in Filter.cofinite, (compact F ζ hζ (Sum.inr q) : Set _) ⊆ U (Sum.inr q) := by
       filter_upwards [J.cofinally_standard] with q hq
       intro g hg
-      change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) g ∈ (J.localLevel q).toOpenSubgroup
       change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) g ∈ (J.localLevel q).toOpenSubgroup.toSubgroup
       rw [hq]
       exact ⟨g, hg, rfl⟩
     apply Filter.eventually_cofinite.mpr
-    have hh := Filter.eventually_cofinite.mp hq
-    apply ((Set.finite_range (Sum.inl : InfinitePlace F → KPHilbert.Place F)).union
-      (hh.image (Sum.inr : HeightOneSpectrum (𝓞 F) → KPHilbert.Place F))).subset
+    apply ((Set.finite_range Sum.inl).union
+      ((Filter.eventually_cofinite.mp hq).image Sum.inr)).subset
     rintro (w | q) hw
     · exact Or.inl ⟨w, rfl⟩
     · exact Or.inr ⟨q, hw, rfl⟩
-  have ho := restricted_forall_open (fun v => (compact F ζ hζ v : Set _)) U hU hBU
-  convert ho using 1
+  convert (restricted_forall_open (fun v => (compact F ζ hζ v : Set _)) U hU hBU) using 1
   ext x
   constructor
   · rintro ⟨hw, hq⟩ (w | q); exact hw w; exact hq q
   · intro hx; exact ⟨fun w => hx (Sum.inl w), fun q => hx (Sum.inr q)⟩
 
-private theorem remove_arch (J : ProductLevelData F ζ hζ) (x : RestrictedCover F ζ hζ)
+private theorem remove_arch (x : RestrictedCover F ζ hζ)
     (hx : scalarQuotient F ζ hζ (amalgamation F ζ hζ x) ∈ finiteSubgroup F ζ hζ)
     (heps : ∀ w : InfinitePlace F, (x (Sum.inl w)).epsilon = 1)
     (hlevel : ∀ q : HeightOneSpectrum (𝓞 F), KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
@@ -278,8 +277,7 @@ private theorem remove_arch (J : ProductLevelData F ζ hζ) (x : RestrictedCover
     have hscalar : scalarCoordinates F ζ hζ z (Sum.inl w) = x (Sum.inl w) := by
       change KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inl w) (Units.map (adeleEval F (Sum.inl w)) z) = _
       rw [hz]
-      have hg : (KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inl w) (s w)).g =
-          (x (Sum.inl w)).g := (hs w).symm
+      have hg := (hs w).symm
       have hep : (KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inl w) (s w)).epsilon =
           (x (Sum.inl w)).epsilon := (heps w).symm
       cases h : x (Sum.inl w)
@@ -302,7 +300,7 @@ private theorem remove_arch (J : ProductLevelData F ζ hζ) (x : RestrictedCover
     change scalarQuotient F ζ hζ (amalgamation F ζ hζ x) *
       (scalarQuotient F ζ hζ (scalarHom F ζ hζ z))⁻¹ = _
     rw [hscalar, inv_one, mul_one]
-private theorem open_half (J : ProductLevelData F ζ hζ) :
+private theorem open_half :
     IsOpen ((productSubgroup F ζ hζ J).comap
       (finiteSubgroup F ζ hζ).subtype : Set (finiteSubgroup F ζ hζ)) := by
   letI : Fact (∀ v : KPHilbert.Place F, IsOpen (compact F ζ hζ v : Set (KPLocalCover.CubicGL2Raw F ζ hζ v))) := ⟨fun v => compact_open F ζ hζ v⟩
@@ -311,8 +309,6 @@ private theorem open_half (J : ProductLevelData F ζ hζ) :
       (∀ q : HeightOneSpectrum (𝓞 F), KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
         (x (Sum.inr q)) ∈ (J.localLevel q).toOpenSubgroup)}
   let q := (scalarQuotient F ζ hζ).comp (amalgamation F ζ hζ)
-  have ho : IsOpen (q '' A) :=
-    (QuotientGroup.isOpenMap_coe.comp QuotientGroup.isOpenMap_coe) _ (raw_open F ζ hζ J)
   have he : ((productSubgroup F ζ hζ J).comap
       (finiteSubgroup F ζ hζ).subtype : Set (finiteSubgroup F ζ hζ)) =
       Subtype.val ⁻¹' (q '' A) := by
@@ -332,14 +328,15 @@ private theorem open_half (J : ProductLevelData F ζ hζ) :
       rw [hxu]
       exact u.property
   rw [he]
-  exact ho.preimage continuous_subtype_val
+  exact ((QuotientGroup.isOpenMap_coe.comp QuotientGroup.isOpenMap_coe) _ (raw_open F ζ hζ J)).preimage continuous_subtype_val
 
-theorem productSubgroup_compact_open (J : ProductLevelData F ζ hζ) :
+theorem productSubgroup_compact_open :
     IsCompact ((productSubgroup F ζ hζ J).comap
       (finiteSubgroup F ζ hζ).subtype : Set (finiteSubgroup F ζ hζ)) ∧
     IsOpen ((productSubgroup F ζ hζ J).comap
-      (finiteSubgroup F ζ hζ).subtype : Set (finiteSubgroup F ζ hζ)) := by
-  exact ⟨compact_half F ζ hζ J, open_half F ζ hζ J⟩
+      (finiteSubgroup F ζ hζ).subtype : Set (finiteSubgroup F ζ hζ)) := ⟨compact_half F ζ hζ J, open_half F ζ hζ J⟩
+
+end
 
 private theorem pgl_standard (q : HeightOneSpectrum (𝓞 F)) :
     IsCompact (pglCompact F ζ hζ (Sum.inr q) : Set (KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q))) ∧
@@ -348,15 +345,10 @@ private theorem pgl_standard (q : HeightOneSpectrum (𝓞 F)) :
   letI : IsTopologicalGroup (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) :=
     (KPLocalChartTopology.finite_topological_group F ζ hζ q _
       (depth_admissible F ζ hζ q)).2.2
-  change IsCompact ((finiteCompact F ζ hζ q).map
-    (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)) : Set (KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q))) ∧ _
   exact ⟨(finiteCompact_compact_open F ζ hζ q).1.image QuotientGroup.continuous_mk,
     QuotientGroup.isOpenMap_coe _ (finiteCompact_compact_open F ζ hζ q).2⟩
 
-theorem pgl_standard_compact_open (q : HeightOneSpectrum (𝓞 F)) :
-    IsCompact (pglCompact F ζ hζ (Sum.inr q) : Set (KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q))) ∧
-      IsOpen (pglCompact F ζ hζ (Sum.inr q) : Set (KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q))) :=
-  pgl_standard F ζ hζ q
+alias pgl_standard_compact_open := pgl_standard
 
 private theorem local_basis (q : HeightOneSpectrum (𝓞 F))
     (U : Set (KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q))) (hU : U ∈ 𝓝 1) :

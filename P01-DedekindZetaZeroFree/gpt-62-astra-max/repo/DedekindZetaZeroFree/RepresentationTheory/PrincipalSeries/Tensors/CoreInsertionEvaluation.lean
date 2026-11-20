@@ -16,11 +16,11 @@ namespace DedekindZetaZeroFree.FourierContinuation.CurrentNativeStage
 open LiteralSource NativeScalarMixedTensorGeneration KPLiteralChamber
 open KPLiteralScalarHCFiniteDecomposition KPLiteralScalarHCCompactOrbit
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "M" => CurrentFiniteFamily.nativeInducingData A P C
 variable (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming normalized_reference → normalized_reference
+open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource (normalized_reference)
 
 theorem reference_tail_localValue (hT : C.exceptional ⊆ T)
     (r : Raw A) (hc : ∀ q, q ∉ T → KPPGLLocalCover.coverQuotient F A.zeta12 A.primitive_zeta12
@@ -34,11 +34,10 @@ theorem reference_tail_localValue (hT : C.exceptional ⊆ T)
   | inl w => exact False.elim (hv (by simp [fullStage]))
   | inr q =>
     have hq : q ∉ T := by simpa [fullStage] using hv
-    have he : q ∉ C.exceptional := fun h => hq (hT h)
-    have hfix := plusReference_fixed A P C q he
+    have he := fun h => hq (hT h)
+    have hval := congrArg (fun f : Plus A P C (Sum.inr q) => f.val 1) (plusReference_fixed A P C q he
       ⟨KPPGLLocalCover.coverQuotient F A.zeta12 A.primitive_zeta12
-        (Sum.inr q) (r (Sum.inr q)), hc q hq⟩
-    have hval := congrArg (fun f : Plus A P C (Sum.inr q) => f.val 1) hfix
+        (Sum.inr q) (r (Sum.inr q)), hc q hq⟩)
     change (plusReference A P C (Sum.inr q)).val
       (1 * KPPGLLocalCover.coverQuotient F A.zeta12 A.primitive_zeta12
         (Sum.inr q) (r (Sum.inr q))) = _ at hval

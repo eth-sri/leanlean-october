@@ -37,17 +37,15 @@ theorem continuous_eval : Continuous (adeleEval F (Sum.inr q)) :=
 
 theorem continuous_single : Continuous (single F q) := by
   let s : Set (HeightOneSpectrum (𝓞 F)) := {q}ᶜ
-  have hs : Filter.cofinite ≤ Filter.principal s :=
-    Filter.le_principal_iff.mpr (Set.finite_singleton q).compl_mem_cofinite
   let f : q.adicCompletion F → RestrictedProduct (fun w => w.adicCompletion F)
       (fun w => (w.adicCompletionIntegers F : Set _)) (Filter.principal s) := fun x =>
     ⟨Pi.single q x, by
       intro w hw
-      have hwq : w ≠ q := hw
+      have hwq := hw
       simpa [Pi.single_eq_of_ne hwq] using (w.adicCompletionIntegers F).zero_mem⟩
   have hf : Continuous f := RestrictedProduct.continuous_rng_of_principal.mpr
     (_root_.continuous_single q)
-  exact continuous_const.prodMk ((RestrictedProduct.continuous_inclusion hs).comp hf)
+  exact continuous_const.prodMk ((RestrictedProduct.continuous_inclusion (Filter.le_principal_iff.mpr (Set.finite_singleton q).compl_mem_cofinite)).comp hf)
 
 theorem away_isClosed : IsClosed (Away F q : Set (KPAdeles F)) :=
   isClosed_singleton.preimage (continuous_eval F q)
@@ -103,12 +101,16 @@ local instance : (KPAdditiveHaar.adelicMeasure F).IsAddHaarMeasure :=
 local instance : (Measure.map (join F q).symm (KPAdditiveHaar.adelicMeasure F)).IsAddHaarMeasure :=
   (join F q).symm.isAddHaarMeasure_map _ (continuous_join_symm F q) (continuous_join F q)
 
-def awayMeasure (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure] : Measure (Away F q) :=
+section
+
+variable (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure]
+
+def awayMeasure : Measure (Away F q) :=
   (Measure.addHaarScalarFactor
     (Measure.map (join F q).symm (KPAdditiveHaar.adelicMeasure F))
     ((Measure.addHaar : Measure (Away F q)).prod μ) : ℝ≥0∞) • Measure.addHaar
 
-theorem split_measure (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure] :
+theorem split_measure :
     Measure.map (join F q).symm (KPAdditiveHaar.adelicMeasure F) =
       (awayMeasure F q μ).prod μ := by
   letI := KPAdditiveHaar.adelicMeasure_isAddHaarMeasure F
@@ -117,13 +119,15 @@ theorem split_measure (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure] 
   rw [awayMeasure, Measure.prod_smul_left]
   exact Measure.isAddLeftInvariant_eq_smul _ _
 
+end
+
 instance awayMeasure_isAddHaarMeasure (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure] :
     (awayMeasure F q μ).IsAddHaarMeasure := by
   unfold awayMeasure
   apply Measure.IsAddHaarMeasure.smul
   · exact_mod_cast (Measure.addHaarScalarFactor_pos_of_isAddHaarMeasure
       (Measure.map (join F q).symm (KPAdditiveHaar.adelicMeasure F))
-      ((Measure.addHaar : Measure (Away F q)).prod μ)).ne'
+      (Measure.addHaar.prod μ)).ne'
   · exact ENNReal.coe_ne_top
 
 theorem join_measurePreserving (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure] :

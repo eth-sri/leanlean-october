@@ -9,7 +9,7 @@ noncomputable section
 open scoped Classical NumberField Topology BigOperators
 namespace DedekindZetaZeroFree.KPLiteralExceptionalResidue.CanonicalStageRaising
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CanonicalStageBounds renaming literal_bounded_entire_stage → literal_bounded_entire_stage
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CanonicalStageBounds (literal_bounded_entire_stage)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 
@@ -37,9 +37,9 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     KPGlobalResidualConstruction.ActualRaisingGeometry.actual_cleared_spherical_derivative_reconstruction
       F ζ hζ (ι (Pi.single i 1))
   choose U m v w q b hq hq0 hb he using hrec
-  let Q : ℂ → ℂ := fun s => ∏ i : Fin n, q i s
-  let C : Fin n → ℂ → ℂ := fun i s => ∏ k ∈ Finset.univ.erase i, q k s
-  let B : ∀ i, Fin (m i) → ℂ → ℂ := fun i j s => p s i * C i s * b i j s
+  let Q := fun s => ∏ i : Fin n, q i s
+  let C := fun i s => ∏ k ∈ Finset.univ.erase i, q k s
+  let B := fun i j s => p s i * C i s * b i j s
   have hQ : AnalyticOnNhd ℂ Q KPContinuation.spectralDomain :=
     Finset.univ.analyticOnNhd_fun_prod (fun i _ => hq i)
   have hQ0 : Q 0 = 1 := by simp [Q, hq0]
@@ -65,7 +65,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   intro s hs g
   have hi : ι (p s) = ∑ i : Fin n, (p s i) • ι (Pi.single i 1) := by
     calc
-      ι (p s) = ι (∑ i : Fin n, Pi.single i (p s i)) :=
+      _ = ι (∑ i : Fin n, Pi.single i (p s i)) :=
         congrArg ι (LinearMap.sum_single_apply (fun _ : Fin n => ℂ) (p s)).symm
       _ = _ := by
         rw [map_sum]
@@ -80,8 +80,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     rw [← hpin s g]
     change (KPContFlatSourceRecipe.flatR F ζ hζ s (ι (p s))).val g = _
     rw [hi]
-    simp only [map_sum, map_smul, Submodule.coe_sum, Submodule.coe_smul,
-      Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
+    simp
   rw [hf, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro i _

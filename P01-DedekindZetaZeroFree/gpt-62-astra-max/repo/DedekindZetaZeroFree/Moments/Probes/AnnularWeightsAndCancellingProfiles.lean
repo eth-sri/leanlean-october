@@ -16,14 +16,12 @@ namespace RadialCancellingProfile
 private theorem phi_smooth : ContDiff ℝ (⊤ : ℕ∞) phi := by
   apply Complex.ofRealCLM.contDiff.comp
   apply bump.contDiff.comp
-  change ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ => z.re * z.re + z.im * z.im)
   exact (Complex.reCLM.contDiff.mul Complex.reCLM.contDiff).add
     (Complex.imCLM.contDiff.mul Complex.imCLM.contDiff)
 private theorem phi_annulus : tsupport phi ⊆ {z : ℂ | 1 ≤ ‖z‖ ∧ ‖z‖ ≤ 2} := by
   apply closure_minimal
   · intro z hz
-    have hb : bump (Complex.normSq z) ≠ 0 := by simpa [Function.mem_support, phi] using hz
-    have hb' := (bump.support_eq ▸ hb : Complex.normSq z ∈ Metric.ball (9 / 4 : ℝ) 1)
+    have hb' := (bump.support_eq ▸ (by simpa [Function.mem_support, phi] using hz) : Complex.normSq z ∈ Metric.ball (9 / 4 : ℝ) 1)
     rw [Metric.mem_ball, Real.dist_eq, abs_lt] at hb'
     rw [Complex.normSq_eq_norm_sq] at hb'
     dsimp [bump] at hb'
@@ -45,11 +43,9 @@ private theorem phi_mellin_ne : complexNormMellin phi (5 / 6) ≠ 0 := by
     intro z
     left
     exact ne_of_gt (lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) (le_max_right _ _))
-  let g : ℂ → ℝ := fun z => (phi z).re * w z
-  have hc : Continuous g := (Complex.reCLM.continuous.comp phi_smooth.continuous).mul hw
-  have hk : HasCompactSupport g := phi_annular.2.1.comp_left (g := Complex.reCLM) (by simp) |>.mul_right
+  let g := fun z => (phi z).re * w z
   have hp : 0 < ∫ z : ℂ, g z := by
-    apply hc.integral_pos_of_hasCompactSupport_nonneg_nonzero hk
+    apply ((Complex.reCLM.continuous.comp phi_smooth.continuous).mul hw).integral_pos_of_hasCompactSupport_nonneg_nonzero (phi_annular.2.1.comp_left (by simp) |>.mul_right)
     · intro z; exact mul_nonneg bump.nonneg (Real.rpow_nonneg (le_max_right _ _ |>.trans' (by norm_num)) _)
     · show g ((3 / 2 : ℝ) : ℂ) ≠ 0
       have hb : bump (Complex.normSq ((3 / 2 : ℝ) : ℂ)) = 1 := by
@@ -69,13 +65,11 @@ private theorem phi_mellin_ne : complexNormMellin phi (5 / 6) ≠ 0 := by
       simp [complexNormMellinIntegrand, hz0, g, w, max_eq_left hsq, phi]
       norm_num
   rw [complexNormMellin, he]
-  change (Real.pi : ℂ)⁻¹ * (∫ x : ℂ, (g x : ℂ)) ≠ 0
   rw [integral_complex_ofReal]
   exact mul_ne_zero (inv_ne_zero (by exact_mod_cast Real.pi_ne_zero))
     (by exact_mod_cast hp.ne')
  def dil (z : ℂ) : ℂ := phi ((1 / 2 : ℝ) • z)
 private theorem dil_annular : IsComplexAnnular dil := by
-  have hs : ContDiff ℝ (⊤ : ℕ∞) dil := phi_smooth.comp (contDiff_id.const_smul (1 / 2 : ℝ))
   have ha : tsupport dil ⊆ {z : ℂ | 2 ≤ ‖z‖ ∧ ‖z‖ ≤ 4} := by
     apply closure_minimal
     · intro z hz
@@ -83,7 +77,7 @@ private theorem dil_annular : IsComplexAnnular dil := by
       norm_num [norm_smul, Real.norm_eq_abs] at h
       constructor <;> linarith [h.1, h.2]
     · exact (isClosed_le continuous_const continuous_norm).inter (isClosed_le continuous_norm continuous_const)
-  refine ⟨hs, ?_, 2, 4, by norm_num, by norm_num, ha⟩
+  refine ⟨(phi_smooth.comp (contDiff_id.const_smul (1 / 2 : ℝ))), ?_, 2, 4, by norm_num, by norm_num, ha⟩
   apply IsCompact.of_isClosed_subset (isCompact_closedBall (0 : ℂ) 4) isClosed_closure
   intro z hz
   simpa using (ha hz).2
@@ -105,10 +99,8 @@ private theorem f_annular : IsComplexAnnular f := by
       constructor <;> linarith [h'.1, h'.2]
   · exact (isClosed_le continuous_const continuous_norm).inter (isClosed_le continuous_norm continuous_const)
 private theorem f_integral_zero : (∫ z : ℂ, f z) = 0 := by
-  have hi : Integrable phi volume := phi_smooth.continuous.integrable_of_hasCompactSupport phi_annular.2.1
-  have hj : Integrable dil volume := dil_annular.1.continuous.integrable_of_hasCompactSupport dil_annular.2.1
   change (∫ z : ℂ, phi z - (1 / 4 : ℂ) * dil z) = 0
-  rw [integral_sub hi (hj.const_mul _), integral_const_mul]
+  rw [integral_sub (phi_smooth.continuous.integrable_of_hasCompactSupport phi_annular.2.1) ((dil_annular.1.continuous.integrable_of_hasCompactSupport dil_annular.2.1).const_mul _), integral_const_mul]
   have he : (∫ z : ℂ, dil z) = (4 : ℂ) * ∫ z : ℂ, phi z := by
     have h := Measure.integral_comp_smul volume phi (1 / 2 : ℝ)
     norm_num [dil, Complex.finrank_real_complex, Complex.real_smul] at h ⊢
@@ -147,7 +139,6 @@ private theorem dil_mellin : complexNormMellin dil (5 / 6) =
   have hd := Measure.integral_comp_smul volume (complexNormMellinIntegrand phi (5 / 6)) (1 / 2 : ℝ)
   simp only [Complex.finrank_real_complex] at hd
   norm_num only [one_div, inv_pow, inv_inv, abs_pow, abs_of_pos (by norm_num : (0 : ℝ) < 2), Complex.real_smul] at hd
-  change (Real.pi : ℂ)⁻¹ * ((((2 : ℝ) ^ (-1 / 3 : ℝ) : ℝ) : ℂ) * ∫ a : ℂ, complexNormMellinIntegrand phi (5 / 6) ((1 / 2 : ℝ) • a)) = _
   simp only [Complex.real_smul]
   rw [hd]
   have hp : (2 : ℝ) ^ (-1 / 3 : ℝ) * 4 = 2 ^ (5 / 3 : ℝ) := by
@@ -180,8 +171,7 @@ private theorem f_mellin_ne : complexNormMellin f (5 / 6) ≠ 0 := by
       _ < (2 : ℝ) ^ (2 : ℝ) := Real.rpow_lt_rpow_of_exponent_lt (by norm_num) (by norm_num)
       _ = 4 := by norm_num
   have hn : (1 : ℂ) - (1 / 4 : ℂ) * (((2 : ℝ) ^ (5 / 3 : ℝ) : ℝ) : ℂ) ≠ 0 := by
-    have h : (1 : ℝ) - (1 / 4 : ℝ) * (2 : ℝ) ^ (5 / 3 : ℝ) ≠ 0 := by linarith
-    have hc : ((1 - (1 / 4 : ℝ) * (2 : ℝ) ^ (5 / 3 : ℝ) : ℝ) : ℂ) ≠ 0 := by exact_mod_cast h
+    have hc : ((1 - (1 / 4 : ℝ) * (2 : ℝ) ^ (5 / 3 : ℝ) : ℝ) : ℂ) ≠ 0 := by exact_mod_cast (by linarith)
     push_cast at hc
     norm_num at hc ⊢
     exact hc
@@ -206,12 +196,7 @@ end RadialCancellingProfile
  def radialBumpProfile : ContDiffBump (3 / 2 : ℝ) :=
   ⟨1 / 4, 1 / 2, by norm_num, by norm_num⟩
 
-theorem exists_radial_complex_cancelling_profile :
-    ∃ f : ℂ → ℂ, IsComplexAnnular f ∧
-      (∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w) ∧
-      (∫ z : ℂ, f z ∂(volume : Measure ℂ)) = 0 ∧
-      complexNormMellin (complexTraceFourier f) (1 / 6 : ℝ) ≠ 0 := by
-  exact RadialCancellingProfile.profile_exists
+alias exists_radial_complex_cancelling_profile := RadialCancellingProfile.profile_exists
 
 end
 end DedekindZetaZeroFree
@@ -226,7 +211,7 @@ open scoped Classical NumberField
 open NumberField IsDedekindDomain MeasureTheory
 
 variable (F : Type) [Field F] [NumberField F]
-variable (S : Finset (HeightOneSpectrum (𝓞 F)))
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
 
 structure AnnularCoordinates where
   fReal : (v : {v : InfinitePlace F // v.IsReal}) → ℝ → ℂ
@@ -266,11 +251,14 @@ theorem complex_profile_ne_zero (f : ℂ → ℂ)
   simp [complexNormMellin, complexNormMellinIntegrand, complexTraceFourier]
 
 theorem arithmetic_complex_place (A : SArithmeticData F) :
-    Nonempty {v : InfinitePlace F // v.IsComplex} := by
-  exact ⟨⟨Classical.arbitrary (InfinitePlace F), A.infinite_isComplex _⟩⟩
+    Nonempty {v : InfinitePlace F // v.IsComplex} := ⟨⟨Classical.arbitrary (InfinitePlace F), A.infinite_isComplex _⟩⟩
 
-def shellCoordinates (A : SArithmeticData F) (f : ℂ → ℂ) (hf : IsComplexAnnular f)
-    (hrad : ∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w) : AnnularCoordinates F A.Sf where
+section
+
+variable (A : SArithmeticData F) (f : ℂ → ℂ) (hf : IsComplexAnnular f)
+    (hrad : ∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w)
+
+def shellCoordinates : AnnularCoordinates F A.Sf where
   fReal := fun _ _ => 0
   fComplex := fun _ => f
   fFinite := fun v => TateFiniteShell.annularTest F v.val
@@ -294,8 +282,7 @@ def shellCoordinates (A : SArithmeticData F) (f : ℂ → ℂ) (hf : IsComplexAn
     have := (TateFiniteShell.mem_unitShell_iff F v.val 0).mp (ht h)
     simpa using this
 
-theorem shellCoordinates_tensor_eq (A : SArithmeticData F) (f : ℂ → ℂ)
-    (hf : IsComplexAnnular f) (hrad : ∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w)
+theorem shellCoordinates_tensor_eq
     [NumberField.IsTotallyComplex F] :
     tensor F A.Sf (shellCoordinates F A f hf hrad) =
       TateTensorProfile.coordinateTensor F A.Sf (fun _ => f) := by
@@ -305,9 +292,7 @@ theorem shellCoordinates_tensor_eq (A : SArithmeticData F) (f : ℂ → ℂ)
   simp [tensor, shellCoordinates, TateTensorProfile.coordinateTensor,
     TateTensorProfile.archTensor, PoissonArch.infiniteAdeleToSpace_coordinates]
 
-theorem shellCoordinates_canonical_pairings (A : SArithmeticData F)
-    (f : ℂ → ℂ) (hf : IsComplexAnnular f)
-    (hrad : ∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w)
+theorem shellCoordinates_canonical_pairings
     (hcancel : (∫ z : ℂ, f z) = 0)
     (hmoment : complexNormMellin (complexTraceFourier f) (1 / 6 : ℝ) ≠ 0)
     [NumberField.IsTotallyComplex F] :
@@ -319,28 +304,21 @@ theorem shellCoordinates_canonical_pairings (A : SArithmeticData F)
   rw [shellCoordinates_tensor_eq]
   refine ⟨?_, TateTensorProfile.coordinateTensor_ne_zero F A.Sf (fun _ => f)
     (fun _ => complex_profile_ne_zero f hmoment), ?_⟩
-  · have hz := TateTensorProfile.coordinateTensor_fourier_zero F A.Sf (fun _ => f)
-      (Classical.choice (arithmetic_complex_place F A)) hcancel
-    simpa [TateTensorProfile.fourier] using hz
+  · simpa [TateTensorProfile.fourier] using (TateTensorProfile.coordinateTensor_fourier_zero F A.Sf (fun _ => f)
+      (Classical.choice (arithmetic_complex_place F A)) hcancel)
   · exact TateTensorProfile.coordinateTensor_normMellin_ne_zero_of_factors F A.Sf
       (fun _ => f) (1 / 6) (by norm_num) (fun _ => hmoment)
       (fun v => TateFiniteShellFourierIntegrals.finiteShell_weighted_fourier_integral_ne_zero F v.val
         (1 / 6) (by norm_num) (by norm_num))
+
+end
 
  instance instMeasurableSpaceAnnularTensorInfiniteAdeleRing : MeasurableSpace (InfiniteAdeleRing F) := borel _
  instance instBorelSpaceAnnularTensorInfiniteAdeleRing : BorelSpace (InfiniteAdeleRing F) := ⟨rfl⟩
  instance instMeasurableSpaceAnnularTensorAdicCompletion (v : HeightOneSpectrum (𝓞 F)) : MeasurableSpace (v.adicCompletion F) := borel _
  instance instBorelSpaceAnnularTensorAdicCompletion (v : HeightOneSpectrum (𝓞 F)) : BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-theorem tensorAdditiveHaar [NumberField.IsTotallyComplex F] :
-    (TateTensorProfile.additiveMeasure F S).IsAddHaarMeasure := by
-  letI := PoissonArch.traceMeasure_isAddHaarMeasure F
-  letI : ∀ v : S, (localNormalizedHaar F v.val).IsAddHaarMeasure :=
-    fun v => localNormalizedHaar_isAddHaarMeasure F v.val
-  letI := (PoissonArch.infiniteAdeleToSpace F).symm.isAddHaarMeasure_map
-    (PoissonArch.traceMeasure F)
-  unfold TateTensorProfile.additiveMeasure
-  infer_instance
+alias tensorAdditiveHaar := DedekindZetaZeroFree.TateSLocalComparison.HaarMellinComparison.canonical_additive_haar
 
 theorem shellCoordinates_additive_cancel (A : SArithmeticData F)
     (f : ℂ → ℂ) (hf : IsComplexAnnular f)
@@ -356,9 +334,8 @@ theorem shellCoordinates_additive_cancel (A : SArithmeticData F)
     fun v => PoissonS.completion_secondCountable F v.val
   letI : SecondCountableTopology (InfiniteAdeleRing F) :=
     (PoissonArch.infiniteAdeleToSpace F).toHomeomorph.secondCountableTopology
-  have heq := BorelSpace.measurable_eq (α := SLocalProduct F A.Sf)
   revert μ hμ
-  rw [← heq]
+  rw [← (BorelSpace.measurable_eq)]
   intro μ hμ
   letI := hμ
   rw [Measure.isAddLeftInvariant_eq_smul μ (TateTensorProfile.additiveMeasure F A.Sf)]
@@ -375,20 +352,18 @@ theorem modulus_eq_canonical (S : Finset (HeightOneSpectrum (𝓞 F)))
   intro v hv
   rw [(NumberField.IsTotallyComplex.isComplex v).mult_eq_two]
 
-theorem exists_tensor_from_haar_comparison (A : SArithmeticData F)
-    (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
-    (he : ∀ v, Continuous (e v))
-    (htrace : ProbeAdditive.TraceCompatible F A.Sf e)
+variable (A : SArithmeticData F) (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
+    (he : ∀ v, Continuous (e v)) (htrace : ProbeAdditive.TraceCompatible F A.Sf e)
     (μ : @Measure (SLocalProduct F A.Sf) (borel _))
-    (ν : @Measure (SLocalProduct F A.Sf)ˣ
-      (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)))
+    (ν : @Measure (SLocalProduct F A.Sf)ˣ (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)))
     (hμ : @Measure.IsAddHaarMeasure (SLocalProduct F A.Sf) _ _ (borel _) μ)
-    (hν : @Measure.IsHaarMeasure (SLocalProduct F A.Sf)ˣ _ _
-      (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)) ν)
-    (f : ℂ → ℂ) (hf : IsComplexAnnular f)
-    (hrad : ∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w)
+    (hν : @Measure.IsHaarMeasure (SLocalProduct F A.Sf)ˣ _ _ (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)) ν)
+    (f : ℂ → ℂ) (hf : IsComplexAnnular f) (hrad : ∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w)
     (hcancel : (∫ z : ℂ, f z ∂(volume : Measure ℂ)) = 0)
     (hmoment : complexNormMellin (complexTraceFourier f) (1 / 6 : ℝ) ≠ 0)
+
+include he htrace hμ hν hf hrad hcancel hmoment in
+theorem exists_tensor_from_haar_comparison
     (hphase : ∀ x, ProbeAdditive.phase F A.Sf e x =
       (sLocalTraceCharacter F A.Sf x : ℂ))
     (hcomparison : ∃ a : ℝ, 0 < a ∧ ∀ (W : SLocalProduct F A.Sf → ℂ) (s : ℝ),
@@ -403,8 +378,7 @@ theorem exists_tensor_from_haar_comparison (A : SArithmeticData F)
       fourierMellin F A.Sf e μ ν (tensor F A.Sf c) (1 / 6) ≠ 0 := by
   letI : NumberField.IsTotallyComplex F := ⟨A.infinite_isComplex⟩
   let c := shellCoordinates F A f hf hrad
-  let vc := Classical.choice (arithmetic_complex_place F A)
-  refine ⟨c, vc, rfl,
+  refine ⟨c, (Classical.choice (arithmetic_complex_place F A)), rfl,
     shellCoordinates_additive_cancel F A f hf hrad hcancel hmoment μ hμ,
     (shellCoordinates_canonical_pairings F A f hf hrad hcancel hmoment).2.1, ?_⟩
   obtain ⟨a, ha, hcomp⟩ := hcomparison
@@ -417,20 +391,8 @@ theorem exists_tensor_from_haar_comparison (A : SArithmeticData F)
   exact mul_ne_zero (Complex.ofReal_ne_zero.mpr ha.ne')
     (shellCoordinates_canonical_pairings F A f hf hrad hcancel hmoment).2.2
 
-theorem exists_tensor_from_complex_profile (A : SArithmeticData F)
-    (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
-    (he : ∀ v, Continuous (e v))
-    (htrace : ProbeAdditive.TraceCompatible F A.Sf e)
-    (μ : @Measure (SLocalProduct F A.Sf) (borel _))
-    (ν : @Measure (SLocalProduct F A.Sf)ˣ
-      (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)))
-    (hμ : @Measure.IsAddHaarMeasure (SLocalProduct F A.Sf) _ _ (borel _) μ)
-    (hν : @Measure.IsHaarMeasure (SLocalProduct F A.Sf)ˣ _ _
-      (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)) ν)
-    (f : ℂ → ℂ) (hf : IsComplexAnnular f)
-    (hrad : ∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w)
-    (hcancel : (∫ z : ℂ, f z ∂(volume : Measure ℂ)) = 0)
-    (hmoment : complexNormMellin (complexTraceFourier f) (1 / 6 : ℝ) ≠ 0) :
+include he htrace hμ hν hf hrad hcancel hmoment in
+theorem exists_tensor_from_complex_profile :
     ∃ (c : AnnularCoordinates F A.Sf)
       (vc : {v : InfinitePlace F // v.IsComplex}),
       c.fComplex vc = f ∧
@@ -481,27 +443,19 @@ theorem tensor_compactSupport_and_unit_support
   let e := (supportMixedHomeo F).prodCongr
     (Homeomorph.refl ((v : ↥S) → v.val.adicCompletion F))
   let K := e ⁻¹' ((Kr ×ˢ Kc) ×ˢ Kf)
-  have hr : IsCompact Kr := isCompact_univ_pi (fun v => (c.real_regular v).2.1)
-  have hc : IsCompact Kc := isCompact_univ_pi (fun v => (c.complex_regular v).2.1)
-  have hf : IsCompact Kf := isCompact_univ_pi (fun v => (c.finite_regular v).2.1)
-  have hK : IsCompact K := e.isCompact_preimage.mpr ((hr.prod hc).prod hf)
+  have hK := e.isCompact_preimage.mpr (((isCompact_univ_pi (fun v => (c.real_regular v).2.1)).prod (isCompact_univ_pi (fun v => (c.complex_regular v).2.1))).prod (isCompact_univ_pi (fun v => (c.finite_regular v).2.1)))
   have hs : Function.support (tensor F S c) ⊆ K := by
     intro x hx
-    have hn : tensor F S c x ≠ 0 := hx
+    have hn := hx
     unfold tensor at hn
-    have hrn := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hn).1).1
-    have hcn := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hn).1).2
-    have hfn := (mul_ne_zero_iff.mp hn).2
-    change ((InfiniteAdeleRing.ringEquiv_mixedSpace F x.1).1 ∈ Kr ∧
-      (InfiniteAdeleRing.ringEquiv_mixedSpace F x.1).2 ∈ Kc) ∧ x.2 ∈ Kf
     refine ⟨⟨?_, ?_⟩, ?_⟩
     · intro v hv
-      exact subset_tsupport _ ((Finset.prod_ne_zero_iff.mp hrn) v (Finset.mem_univ v))
+      exact subset_tsupport _ ((Finset.prod_ne_zero_iff.mp ((mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hn).1).1)) v (Finset.mem_univ v))
     · intro v hv
-      exact subset_tsupport _ ((Finset.prod_ne_zero_iff.mp hcn) v (Finset.mem_univ v))
+      exact subset_tsupport _ ((Finset.prod_ne_zero_iff.mp ((mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hn).1).2)) v (Finset.mem_univ v))
     · intro v hv
-      exact subset_tsupport _ ((Finset.prod_ne_zero_iff.mp hfn) v (Finset.mem_univ v))
-  have ht : tsupport (tensor F S c) ⊆ K :=
+      exact subset_tsupport _ ((Finset.prod_ne_zero_iff.mp ((mul_ne_zero_iff.mp hn).2)) v (Finset.mem_univ v))
+  have ht :=
     closure_minimal hs hK.isClosed
   refine ⟨hK.of_isClosed_subset (isClosed_tsupport _) ht, ?_⟩
   intro x hx
@@ -591,10 +545,8 @@ theorem probeRealWeightMellin_one_ne_zero (W : ProbeRealAnnularWeight) :
     apply W.nonzero
     ext x
     simpa using not_exists.mp h x
-  have hp : 0 < ∫ v : ℝ, W v :=
-    W.smooth.continuous.integral_pos_of_hasCompactSupport_nonneg_nonzero
-      W.compactSupport W.nonnegative hx
-  exact_mod_cast (ne_of_gt hp)
+  exact_mod_cast (ne_of_gt (W.smooth.continuous.integral_pos_of_hasCompactSupport_nonneg_nonzero
+    W.compactSupport W.nonnegative hx))
 
 def probeBump : ContDiffBump (1 : ℝ) := ⟨1 / 4, 1 / 2, by norm_num, by norm_num⟩
 
@@ -618,7 +570,7 @@ theorem probeBump_nonzero : (probeBump : ℝ → ℝ) ≠ 0 := by
     ContDiffBump.one_of_mem_closedBall (f := probeBump) (x := (1 : ℝ)) (by
       rw [Metric.mem_closedBall, dist_self]
       exact probeBump.rIn_pos.le)
-  have h2 : probeBump (1 : ℝ) = 0 := congrFun h 1
+  have h2 := congrFun h 1
   rw [h1] at h2
   exact one_ne_zero h2
 
@@ -632,7 +584,7 @@ def probeRealBumpWeight : ProbeRealAnnularWeight where
 
 namespace ProbeWeight
 variable (F : Type) [Field F] [NumberField F]
-variable (S : Finset (HeightOneSpectrum (𝓞 F)))
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
 
 local instance : MeasurableSpace (SLocalProduct F S) := borel _
 
@@ -670,7 +622,9 @@ def fourierMellin (e : (v : ↥S) → AddChar (v.val.adicCompletion F) Circle)
 
 end ProbeWeight
 
-theorem ProbeWeight.fourier_zero (F : Type) [Field F] [NumberField F]
+variable (F : Type) [Field F] [NumberField F]
+
+theorem ProbeWeight.fourier_zero
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (e : (v : ↥S) → AddChar (v.val.adicCompletion F) Circle)
     (μ : @Measure (SLocalProduct F S) (borel _))
@@ -684,7 +638,7 @@ theorem ProbeWeight.fourier_zero (F : Type) [Field F] [NumberField F]
   rw [ProbeWeight.fourier]
   simp only [mul_zero, neg_zero, h0, mul_one]
 
-theorem probe_fixed_weight_construction (F : Type) [Field F] [NumberField F]
+theorem probe_fixed_weight_construction
     (A : SArithmeticData F)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (he : ∀ v, Continuous (e v)) (htrace : ProbeAdditive.TraceCompatible F A.Sf e)
@@ -727,7 +681,7 @@ open scoped Classical NumberField
 open NumberField IsDedekindDomain MeasureTheory
 
 variable (F : Type) [Field F] [NumberField F]
-variable (S : Finset (HeightOneSpectrum (𝓞 F)))
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
 
 end
 end DedekindZetaZeroFree.ProbeAnnularTensorWeights

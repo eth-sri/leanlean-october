@@ -14,10 +14,10 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.CompactSource
 open KPAdelicCoverRestrictedProduct KPGlobalTorusFiniteStages
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 
@@ -32,8 +32,7 @@ theorem arch_fixed (w : InfinitePlace F)
     mul_mem' := by intro k l hk hl g; rw [← mul_assoc, hl, hk]
     inv_mem' := by
       intro k hk g
-      have h := hk (g * k⁻¹)
-      simpa using h.symm }
+      simpa using (hk (g * k⁻¹)).symm}
   have hJ : ThetaExpansion.complexSU2Compact R w ≤ J := by
     apply (Subgroup.closure_le J).2
     rintro k ⟨a, rfl⟩ g

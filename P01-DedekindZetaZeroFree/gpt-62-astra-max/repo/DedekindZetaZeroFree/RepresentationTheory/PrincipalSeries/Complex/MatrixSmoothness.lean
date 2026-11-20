@@ -14,34 +14,45 @@ noncomputable def upperTriangular (a d : ℂˣ) (b : ℂ) : ComplexGL2 :=
     simpa [Matrix.det_fin_two] using mul_ne_zero a.ne_zero d.ne_zero)
 noncomputable def inductionWeight (s : ℝ) (a d : ℂˣ) : ℝ :=
   Real.rpow (‖(a : ℂ) / (d : ℂ)‖ ^ 2) (1 / 2 + s)
-noncomputable def openCoordinate (f : ComplexGL2 → ℂ) (x : ℂ) : ℂ :=
+section
+
+variable (f : ComplexGL2 → ℂ)
+
+noncomputable def openCoordinate (x : ℂ) : ℂ :=
   f (weyl * upperUnipotent x)
-noncomputable def infinityCoordinate (f : ComplexGL2 → ℂ) (u : ℂ) : ℂ :=
+noncomputable def infinityCoordinate (u : ℂ) : ℂ :=
   f (lowerUnipotent u)
-noncomputable def matrixFunction (f : ComplexGL2 → ℂ)
+noncomputable def matrixFunction
     (g : Matrix (Fin 2) (Fin 2) ℂ) : ℂ :=
   if h : g.det ≠ 0 then f (Matrix.GeneralLinearGroup.mkOfDetNeZero g h) else 0
+
+end
 private lemma upperTriangular_coe_matrix (a d : ℂˣ) (b : ℂ) :
     (upperTriangular a d b : Matrix (Fin 2) (Fin 2) ℂ) = !![(a : ℂ), b; 0, (d : ℂ)] := rfl
-private lemma chart_formula (s : ℝ) (f : ComplexGL2 → ℂ)
-    (hcov : ∀ (a d : ℂˣ) (b : ℂ) (g : ComplexGL2),
-      f (upperTriangular a d b * g) = (inductionWeight s a d : ℂ) * f g)
-    (hopen : ContDiff ℝ (⊤ : ℕ∞) (openCoordinate f))
-    (hinf : ContDiff ℝ (⊤ : ℕ∞) (infinityCoordinate f)) (g : ComplexGL2)
+
+alias MatrixSmoothness.upperTriangular_coe_matrix := upperTriangular_coe_matrix
+section
+
+variable (s : ℝ) (f : ComplexGL2 → ℂ)
+    (hcov : ∀ (a d : ℂˣ) (b : ℂ) (g : ComplexGL2), f (upperTriangular a d b * g) = (inductionWeight s a d : ℂ) * f g)
+    (hopen : ContDiff ℝ (⊤ : ℕ∞) (openCoordinate f)) (hinf : ContDiff ℝ (⊤ : ℕ∞) (infinityCoordinate f))
+
+include hcov hopen hinf in
+private lemma chart_formula (g : ComplexGL2)
     (north : Bool) (h : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1) ≠ 0) :
     f g = (Real.rpow (‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
       ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)‖ ^ 2) (1 + 2*s) : ℂ) *
       (if north then openCoordinate f else infinityCoordinate f)
       ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 1 else 0) /
        (g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)) := by
-  let d : ℂˣ := Units.mk0 ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)) h
-  let a : ℂˣ := (if north then -Matrix.GeneralLinearGroup.det g else Matrix.GeneralLinearGroup.det g) / d
+  let d := Units.mk0 (g 1 (if north then 0 else 1)) h
+  let a := (if north then -Matrix.GeneralLinearGroup.det g else Matrix.GeneralLinearGroup.det g) / d
   have hg : g = upperTriangular a d
-      ((g : Matrix (Fin 2) (Fin 2) ℂ) 0 (if north then 0 else 1)) *
+      (g 0 (if north then 0 else 1)) *
       (if north then weyl * upperUnipotent
-        ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 / (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0)
+        (g 1 1 / g 1 0)
        else lowerUnipotent
-        ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 / (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1)) := by
+        (g 1 0 / g 1 1)) := by
     apply Matrix.GeneralLinearGroup.ext
     intro i j
     cases north <;> fin_cases i <;> fin_cases j <;>
@@ -54,27 +65,24 @@ private lemma chart_formula (s : ℝ) (f : ComplexGL2 → ℂ)
   conv_lhs => rw [hg, hcov]
   have hw : inductionWeight s a d =
       Real.rpow (‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
-        ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)‖ ^ 2) (1 + 2*s) := by
+        ‖g 1 (if north then 0 else 1)‖ ^ 2) (1 + 2*s) := by
     unfold inductionWeight
     have he : ‖(a : ℂ) / (d : ℂ)‖ = ‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
-        ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)‖ ^ 2 := by
+        ‖g 1 (if north then 0 else 1)‖ ^ 2 := by
       cases north <;> simp [a, d, norm_div, norm_neg, div_div, sq]
     rw [he]
     calc
       _ = Real.rpow (‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
-          ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)‖ ^ 2)
+          ‖g 1 (if north then 0 else 1)‖ ^ 2)
           ((2 : ℕ) * (1/2+s)) :=
         (Real.rpow_natCast_mul (show 0 ≤ ‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
-          ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)‖ ^ 2 by positivity) 2 (1/2+s)).symm
-      _ = _ := by congr 1; norm_num; ring
+          ‖g 1 (if north then 0 else 1)‖ ^ 2 by positivity) 2 (1/2+s)).symm
+      _ = _ := by ring
   rw [hw]
   cases north <;> rfl
 
-private lemma matrix_chart_smooth (s : ℝ) (f : ComplexGL2 → ℂ)
-    (hcov : ∀ (a d : ℂˣ) (b : ℂ) (g : ComplexGL2),
-      f (upperTriangular a d b * g) = (inductionWeight s a d : ℂ) * f g)
-    (hopen : ContDiff ℝ (⊤ : ℕ∞) (openCoordinate f))
-    (hinf : ContDiff ℝ (⊤ : ℕ∞) (infinityCoordinate f))
+include hcov hopen hinf in
+private lemma matrix_chart_smooth
     (m : Matrix (Fin 2) (Fin 2) ℂ) (hm : m.det ≠ 0)
     (north : Bool) (hc : m 1 (if north then 0 else 1) ≠ 0) :
     ContDiffAt ℝ (⊤ : ℕ∞) (matrixFunction f) m := by
@@ -120,13 +128,10 @@ private lemma matrix_chart_smooth (s : ℝ) (f : ComplexGL2 → ℂ)
     he.continuous.continuousAt (isOpen_ne.mem_nhds hc)
   filter_upwards [hmd, hmc] with g hg hg'
   rw [matrixFunction, dif_pos hg]
-  exact chart_formula s f hcov hopen hinf (Matrix.GeneralLinearGroup.mkOfDetNeZero g hg) north hg'
+  apply chart_formula <;> assumption
 
-theorem covariant_matrix_smooth (s : ℝ) (f : ComplexGL2 → ℂ)
-    (hcov : ∀ (a d : ℂˣ) (b : ℂ) (g : ComplexGL2),
-      f (upperTriangular a d b * g) = (inductionWeight s a d : ℂ) * f g)
-    (hopen : ContDiff ℝ (⊤ : ℕ∞) (openCoordinate f))
-    (hinf : ContDiff ℝ (⊤ : ℕ∞) (infinityCoordinate f)) :
+include hcov hopen hinf in
+theorem covariant_matrix_smooth :
     ContDiffOn ℝ (⊤ : ℕ∞) (matrixFunction f)
       {g : Matrix (Fin 2) (Fin 2) ℂ | g.det ≠ 0} := by
   intro m hm
@@ -138,6 +143,8 @@ theorem covariant_matrix_smooth (s : ℝ) (f : ComplexGL2 → ℂ)
     exact (matrix_chart_smooth s f hcov hopen hinf m hm false h').contDiffWithinAt
   · exact (matrix_chart_smooth s f hcov hopen hinf m hm true h).contDiffWithinAt
 
+end
+
 lemma matrixFunction_coe (f : ComplexGL2 → ℂ) (g : ComplexGL2) : matrixFunction f (g : Matrix (Fin 2) (Fin 2) ℂ) = f g := by
   unfold matrixFunction
   split_ifs with h
@@ -148,31 +155,25 @@ lemma matrix_smooth_charts (f : ComplexGL2 → ℂ)
       {g : Matrix (Fin 2) (Fin 2) ℂ | g.det ≠ 0}) :
     ContDiff ℝ (⊤ : ℕ∞) (openCoordinate f) ∧
       ContDiff ℝ (⊤ : ℕ∞) (infinityCoordinate f) := by
-  have hu : ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ => (upperUnipotent z : Matrix (Fin 2) (Fin 2) ℂ)) := by
-    change ContDiff ℝ (⊤ : ℕ∞) ((Matrix.ofLinearEquiv ℝ : (Fin 2 → Fin 2 → ℂ) ≃ₗ[ℝ] Matrix (Fin 2) (Fin 2) ℂ) ∘
-      (fun z : ℂ => fun i j => !![1, z; 0, 1] i j))
-    apply ((Matrix.ofLinearEquiv ℝ : (Fin 2 → Fin 2 → ℂ) ≃ₗ[ℝ] Matrix (Fin 2) (Fin 2) ℂ).toLinearMap.toContinuousLinearMap.contDiff).comp
+  let Matrix₀ := Matrix (Fin 2) (Fin 2) ℂ
+  have hu : ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ => (upperUnipotent z : Matrix₀)) := by
+    apply ((Matrix.ofLinearEquiv ℝ : (Fin 2 → Fin 2 → ℂ) ≃ₗ[ℝ] Matrix₀).toLinearMap.toContinuousLinearMap.contDiff).comp
     rw [contDiff_pi]; intro i; rw [contDiff_pi]; intro j
     fin_cases i <;> fin_cases j <;> simp
     all_goals first | exact contDiff_const | exact contDiff_id
-  have hi : ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ => (lowerUnipotent z : Matrix (Fin 2) (Fin 2) ℂ)) := by
-    change ContDiff ℝ (⊤ : ℕ∞) ((Matrix.ofLinearEquiv ℝ : (Fin 2 → Fin 2 → ℂ) ≃ₗ[ℝ] Matrix (Fin 2) (Fin 2) ℂ) ∘
-      (fun z : ℂ => fun i j => !![1, 0; z, 1] i j))
-    apply ((Matrix.ofLinearEquiv ℝ : (Fin 2 → Fin 2 → ℂ) ≃ₗ[ℝ] Matrix (Fin 2) (Fin 2) ℂ).toLinearMap.toContinuousLinearMap.contDiff).comp
+  have hi : ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ => (lowerUnipotent z : Matrix₀)) := by
+    apply ((Matrix.ofLinearEquiv ℝ : (Fin 2 → Fin 2 → ℂ) ≃ₗ[ℝ] Matrix₀).toLinearMap.toContinuousLinearMap.contDiff).comp
     rw [contDiff_pi]; intro i; rw [contDiff_pi]; intro j
     fin_cases i <;> fin_cases j <;> simp
     all_goals first | exact contDiff_const | exact contDiff_id
-  have ho : ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ => (weyl * upperUnipotent z : Matrix (Fin 2) (Fin 2) ℂ)) := by
-    exact (LinearMap.mulLeft ℝ (weyl : Matrix (Fin 2) (Fin 2) ℂ)).toContinuousLinearMap.contDiff.comp hu
+  have ho : ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ => (weyl * upperUnipotent z : Matrix₀)) := (LinearMap.mulLeft ℝ (weyl : Matrix₀)).toContinuousLinearMap.contDiff.comp hu
   constructor
-  · have h := hf.comp ho.contDiffOn (s := Set.univ) (by intro z hz; exact Matrix.GeneralLinearGroup.det_ne_zero (weyl * upperUnipotent z))
-    apply contDiffOn_univ.mp
-    convert h using 1
+  · apply contDiffOn_univ.mp
+    convert (hf.comp ho.contDiffOn (fun z hz => Matrix.GeneralLinearGroup.det_ne_zero (weyl * upperUnipotent z))) using 1
     funext z
     exact (matrixFunction_coe f _).symm
-  · have h := hf.comp hi.contDiffOn (s := Set.univ) (by intro z hz; exact Matrix.GeneralLinearGroup.det_ne_zero (lowerUnipotent z))
-    apply contDiffOn_univ.mp
-    convert h using 1
+  · apply contDiffOn_univ.mp
+    convert (hf.comp hi.contDiffOn (fun z hz => Matrix.GeneralLinearGroup.det_ne_zero (lowerUnipotent z))) using 1
     funext z
     exact (matrixFunction_coe f _).symm
 end DedekindZetaZeroFree.KPCplxPrincipalSeriesMatrixSmooth

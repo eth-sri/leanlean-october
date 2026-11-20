@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Analysis.EllipticEquations.DivergenceForm.ClassicalToWeakSolutions
 
 public import DedekindZetaZeroFree.Analysis.EllipticEquations.DivergenceForm.WeakSolutions
 
@@ -13,10 +14,14 @@ open MeasureTheory KPContLocalNorm Raw Filter Topology
 private theorem norm_sq_integral {α : Type*} [MeasurableSpace α] {μ : Measure α}
     (v : Lp ℂ 2 μ) : ‖v‖ ^ 2 = ∫ x, ‖v x‖ ^ 2 ∂μ := by
   rw [← real_inner_self_eq_norm_sq, L2.inner_def]
-  simp only [real_inner_self_eq_norm_sq]
-private theorem lp_tendsto {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    (f : ℕ → α → ℂ) (hf : ∀ m, MemLp (f m) 2 μ) (w : Lp ℂ 2 μ)
-    (ht : Tendsto (fun m => ∫ x, ‖f m x - w x‖ ^ 2 ∂μ) atTop (𝓝 0)) :
+  simp
+section
+
+variable {α : Type*} [MeasurableSpace α] {μ : Measure α} (f : ℕ → α → ℂ) (hf : ∀ m, MemLp (f m) 2 μ)
+    (w : Lp ℂ 2 μ) (ht : Tendsto (fun m => ∫ x, ‖f m x - w x‖ ^ 2 ∂μ) atTop (𝓝 0))
+
+include ht in
+private theorem lp_tendsto :
     Tendsto (fun m => (hf m).toLp (f m)) atTop (𝓝 w) := by
   apply tendsto_iff_norm_sub_tendsto_zero.mpr
   have he (m : ℕ) : ‖(hf m).toLp (f m) - w‖ ^ 2 =
@@ -30,9 +35,8 @@ private theorem lp_tendsto {α : Type*} [MeasurableSpace α] {μ : Measure α}
     simpa only [he] using ht
   simpa only [Function.comp_def, Real.sqrt_sq_eq_abs, abs_norm, Real.sqrt_zero] using
     (Real.continuous_sqrt.tendsto 0).comp ht'
-private theorem integral_tendsto {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    (f : ℕ → α → ℂ) (hf : ∀ m, MemLp (f m) 2 μ) (w : Lp ℂ 2 μ)
-    (ht : Tendsto (fun m => ∫ x, ‖f m x - w x‖ ^ 2 ∂μ) atTop (𝓝 0))
+include hf ht in
+private theorem integral_tendsto
     (g : α → ℂ) (hg : MemLp g 2 μ) :
     Tendsto (fun m => ∫ x, g x * star (f m x) ∂μ) atTop
       (𝓝 (∫ x, g x * star (w x) ∂μ)) := by
@@ -49,6 +53,8 @@ private theorem integral_tendsto {α : Type*} [MeasurableSpace α] {μ : Measure
     simp [RCLike.inner_apply, hx]
   simp only [he, hw]
   exact (lp_tendsto f hf w ht).inner tendsto_const_nhds
+
+end
 private theorem test_derivative_memLp {n : ℕ} (B : LocalBall n)
     (φ : TestFunction B.toOpens ℂ ⊤) (l : List (Fin n)) :
     MemLp (coordinateDerivativeList l (fun y => φ y)) 2 (volume.restrict B.carrier) := by
@@ -61,35 +67,7 @@ private theorem test_derivative_memLp {n : ℕ} (B : LocalBall n)
       exact (ih.2.fderiv ℝ).comp_left (g := fun f => f (EuclideanSpace.single i 1)) (by simp)
   exact (hs.1.continuous.memLp_of_hasCompactSupport hs.2).mono_measure Measure.restrict_le_self
 
-private theorem first_directions {n : ℕ} (i : Fin n) : (firstIndex i).directions = [i] := by
-  classical
-  have aux : ∀ (l : List (Fin n)), l.Nodup → i ∈ l →
-      l.flatMap (fun j => if j = i then [j] else []) = [i] := by
-    intro l hn hi
-    induction l with
-    | nil => simp at hi
-    | cons a l ih =>
-      simp only [List.nodup_cons] at hn
-      simp only [List.mem_cons] at hi
-      by_cases h : a = i
-      · subst a
-        rw [List.flatMap_cons, if_pos rfl]
-        have hz : l.flatMap (fun j => if j = i then [j] else []) = [] := by
-          apply List.flatMap_eq_nil_iff.mpr
-          intro j hj
-          rw [if_neg]
-          exact fun e => hn.1 (e ▸ hj)
-        simp [hz]
-      · rw [List.flatMap_cons, if_neg h]
-        simpa using ih hn.2 (hi.resolve_left (Ne.symm h))
-  unfold MultiIndex.directions firstIndex
-  simp only [apply_ite Fin.val, Fin.val_one, Fin.val_zero]
-  have he : (fun j : Fin n => List.replicate (if j = i then 1 else 0) j) =
-      (fun j => if j = i then [j] else []) := by
-    funext j
-    split_ifs <;> simp
-  rw [he]
-  exact aux (List.finRange n) (List.nodup_finRange _) (List.mem_finRange i)
+private alias first_directions := firstIndex_directions
 
 private theorem matrix_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (D : Coefficients B cρ Cρ κ Λ)
     (hκ : 0 < κ) (x : Space n) (hx : x ∈ B.carrier) (i j : Fin n) :
@@ -100,8 +78,7 @@ private theorem matrix_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (
     simp [EuclideanSpace.norm_single, EuclideanSpace.single_apply] at h
     linarith
   have hu (k : Fin n) : D.matrix x k k ≤ Λ := by
-    have h := D.upper_bound x hx (EuclideanSpace.single k 1)
-    simpa [EuclideanSpace.norm_single, EuclideanSpace.single_apply] using h
+    simpa [EuclideanSpace.norm_single, EuclideanSpace.single_apply] using (D.upper_bound x hx (EuclideanSpace.single k 1))
   by_cases hij : i = j
   · subst j
     rw [abs_of_nonneg (hd i)]
@@ -122,6 +99,8 @@ private theorem matrix_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (
   apply abs_le.mpr
   constructor <;> nlinarith [hq 1, hq (-1), hd i, hd j, le_abs_self Λ]
 
+alias H1TestContinuity.matrix_bound := matrix_bound
+
 private theorem density_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (D : Coefficients B cρ Cρ κ Λ) (hcρ : 0 < cρ) :
     MemLp (fun x => (D.density x : ℂ)) ⊤ (volume.restrict B.carrier) := by
@@ -133,6 +112,8 @@ private theorem density_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
   rw [abs_of_nonneg (le_trans hcρ.le (D.density_bounds x hx).1)]
   exact (D.density_bounds x hx).2
 
+alias H1TestContinuity.density_memLp := density_memLp
+
 private theorem matrix_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (D : Coefficients B cρ Cρ κ Λ) (hκ : 0 < κ) (i j : Fin n) :
     MemLp (fun x => (D.matrix x i j : ℂ)) ⊤ (volume.restrict B.carrier) := by
@@ -141,6 +122,8 @@ private theorem matrix_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
       Metric.isOpen_ball.measurableSet) |Λ|
   filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
   simpa using matrix_bound D hκ x hx i j
+
+alias H1TestContinuity.matrix_memLp := matrix_memLp
 
 private theorem zero_directions (n k : ℕ) : (zeroIndex n k).directions = [] := by
   simp [MultiIndex.directions, zeroIndex]
@@ -174,7 +157,7 @@ theorem weakEquation_of_test_limit {n : ℕ} (B : LocalBall n)
   have hder (i : Fin n) (m : ℕ) :
       MemLp (coordinateDerivativeList [i] (fun y => φ m y)) 2 μ :=
     test_derivative_memLp B (φ m) [i]
-  let g := fun (i j : Fin n) (x : Space n) =>
+  let g := fun (i j : Fin n) x =>
     (D.density x : ℂ) * (D.matrix x i j : ℂ) * gradient u j x
   have hg (i j : Fin n) : MemLp (g i j) 2 μ := by
     have ht : MemLp (fun x => (D.density x : ℂ) *
@@ -184,11 +167,6 @@ theorem weakEquation_of_test_limit {n : ℕ} (B : LocalBall n)
     simpa only [mul_assoc, g] using ht
   have hv : MemLp (fun x => (D.density x : ℂ) * value u x) 2 μ :=
     hρ.mul (Lp.memLp (value u))
-  have hh : MemLp (fun x => (D.density x : ℂ) * h x) 2 μ := hρ.mul (Lp.memLp h)
-  have hV := integral_tendsto (fun m x => φ m x) htests (value w) hzero
-    (fun x => (D.density x : ℂ) * value u x) hv
-  have hH := integral_tendsto (fun m x => φ m x) htests (value w) hzero
-    (fun x => (D.density x : ℂ) * h x) hh
   have hG (i j : Fin n) := integral_tendsto
     (fun m => coordinateDerivativeList [i] (fun y => φ m y)) (hder i)
     (gradient w i) (hfirst i) (g i j) (hg i j)
@@ -213,8 +191,10 @@ theorem weakEquation_of_test_limit {n : ℕ} (B : LocalBall n)
     simp only [hsum _ (fun i => Lp.memLp (gradient w i)),
       hsum _ (fun i => hder i _)]
     exact tendsto_finset_sum _ (fun i hi => tendsto_finset_sum _ (fun j hj => hG i j))
-  exact tendsto_nhds_unique (hE.sub (tendsto_const_nhds.mul hV))
-    (hH.congr (fun m => (heq (φ m)).symm))
+  exact tendsto_nhds_unique (hE.sub (tendsto_const_nhds.mul (integral_tendsto (fun m x => φ m x) htests (value w) hzero
+    (fun x => (D.density x : ℂ) * value u x) hv)))
+    ((integral_tendsto (fun m x => φ m x) htests (value w) hzero
+      (fun x => (D.density x : ℂ) * h x) (hρ.mul (Lp.memLp h))).congr (fun m => (heq (φ m)).symm))
 
 end DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates
 

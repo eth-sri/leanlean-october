@@ -13,7 +13,7 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.RawSource
 open KPAdelicCoverRestrictedProduct KPGlobalTorusFiniteStages
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 
 def archProduct (g : RestrictedCover F ζ hζ) : ℂ :=
   ∏ w, LocalCovariance.arch F ζ hζ w (g (Sum.inl w))
@@ -25,7 +25,7 @@ def value (g : RestrictedCover F ζ hζ) :
 
 @[simp] theorem archProduct_one : archProduct F ζ hζ 1 = 1 := by
   unfold archProduct
-  simp only [RestrictedProduct.one_apply, LocalCovariance.arch_one, Finset.prod_const_one]
+  simp
 
 @[simp] theorem value_one : value F ζ hζ P C 1 =
     TorusReference.finiteReference F ζ hζ P C C.exceptional le_rfl := by
@@ -71,25 +71,25 @@ theorem evaluated_central (g : RestrictedCover F ζ hζ) (e : CentralTuples F) :
     (∏ᶠ q, (KPSourceConvention.ordinaryGenuineCharacter F ζ hζ (e (Sum.inr q)) : ℂ)) •
       SourceTensor.realization F ζ hζ P C (SourceTensor.evaluatedTensor F ζ hζ P C g) := by
   let t := SourceTensor.evaluatedStage F ζ hζ P C g
-  have hefin : {q : HeightOneSpectrum (𝓞 F) | e (Sum.inr q) ≠ 1}.Finite :=
+  have hefin :=
     (centralTuples_finiteSupport F e).preimage Sum.inr_injective.injOn
   let u : RestrictedTensorSimple.Level C.exceptional :=
     ⟨t.val ∪ hefin.toFinset, t.property.trans Finset.subset_union_left⟩
+  let finite₀ := LocalSeed.finite F ζ hζ P C
   have htail q (hq : q ∉ u.val) :
-      (LocalSeed.finite F ζ hζ P C q).val
+      (finite₀ q).val
         (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (g (Sum.inr q))) =
-        localReference F ζ hζ P C q := by
-    exact SourceTensor.evaluatedStage_tail F ζ hζ P C g q
+        localReference F ζ hζ P C q := SourceTensor.evaluatedStage_tail F ζ hζ P C g q
       (fun h => hq (Finset.mem_union_left _ h))
   have hetail q (hq : q ∉ u.val) : e (Sum.inr q) = 1 := by
     by_contra h
     exact hq (Finset.mem_union_right _ (hefin.mem_toFinset.mpr h))
   have htail' q (hq : q ∉ u.val) :
-      (LocalSeed.finite F ζ hζ P C q).val
+      (finite₀ q).val
         (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
           ((centralTupleMap F ζ hζ e * g) (Sum.inr q))) =
         localReference F ζ hζ P C q := by
-    change (LocalSeed.finite F ζ hζ P C q).val
+    change (finite₀ q).val
       (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
         (KPLocalCover.centralInjection F ζ hζ (Sum.inr q) (e (Sum.inr q)) * g (Sum.inr q))) = _
     rw [LocalCovariance.finite_central, hetail q hq, map_one, Units.val_one, one_smul]
@@ -97,19 +97,18 @@ theorem evaluated_central (g : RestrictedCover F ζ hζ) (e : CentralTuples F) :
   rw [SourceTensor.evaluatedTensor_stage F ζ hζ P C _ u htail',
     SourceTensor.evaluatedTensor_stage F ζ hζ P C g u htail,
     SourceTensor.realization_stage, SourceTensor.realization_stage]
-  have hv : (fun q : u.val => (LocalSeed.finite F ζ hζ P C q.val).val
+  have hv : (fun q : u.val => (finite₀ q.val).val
       (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q.val)
         ((centralTupleMap F ζ hζ e * g) (Sum.inr q.val)))) =
       fun q : u.val => (KPSourceConvention.ordinaryGenuineCharacter F ζ hζ (e (Sum.inr q.val)) : ℂ) •
-        (LocalSeed.finite F ζ hζ P C q.val).val
+        (finite₀ q.val).val
           (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q.val) (g (Sum.inr q.val))) := by
     funext q
     exact LocalCovariance.finite_central F ζ hζ P C q.val _ _
   rw [hv, MultilinearMap.map_smul_univ, map_smul]
   congr 1
-  have hp := Finset.prod_coe_sort u.val
-    (fun q => (KPSourceConvention.ordinaryGenuineCharacter F ζ hζ (e (Sum.inr q)) : ℂ))
-  refine hp.trans ?_
+  refine (Finset.prod_coe_sort u.val
+    (fun q => (KPSourceConvention.ordinaryGenuineCharacter F ζ hζ (e (Sum.inr q)) : ℂ))).trans ?_
   symm
   apply finprod_eq_prod_of_mulSupport_subset
   intro q hq
@@ -169,11 +168,9 @@ theorem value_amalgamation (g : RestrictedCover F ζ hζ) (m : KPAdelicCoverRest
  theorem value_amalgamation_eq (g h : RestrictedCover F ζ hζ)
     (he : amalgamation F ζ hζ g = amalgamation F ζ hζ h) :
     value F ζ hζ P C g = value F ζ hζ P C h := by
-  have hm : g⁻¹ * h ∈ KPAdelicCoverRestrictedProduct.M F ζ hζ := QuotientGroup.eq.mp he
-  have hc := M_central F ζ hζ hm
+  have hm := QuotientGroup.eq.mp he
   have hh : (⟨g⁻¹ * h, hm⟩ : KPAdelicCoverRestrictedProduct.M F ζ hζ).val * g = h := by
-    change (g⁻¹ * h) * g = h
-    rw [← Subgroup.mem_center_iff.mp hc g, ← mul_assoc, mul_inv_cancel, one_mul]
+    rw [← Subgroup.mem_center_iff.mp (M_central F ζ hζ hm) g, ← mul_assoc, mul_inv_cancel, one_mul]
   have hi := value_amalgamation F ζ hζ P C g ⟨_, hm⟩
   rw [hh] at hi
   exact hi.symm
@@ -193,16 +190,14 @@ theorem amalgamatedValue_scalar (z : Ideles F) (g : CubicGL2Adelic F ζ hζ) :
     change amalgamatedValue F ζ hζ P C
       (amalgamation F ζ hζ (scalarTuple F ζ hζ z) * amalgamation F ζ hζ g) = _
     rw [← map_mul, amalgamatedValue_raw]
-    change value F ζ hζ P C (scalarTuple F ζ hζ z * g) = value F ζ hζ P C g
     exact value_scalar F ζ hζ P C g z
 
  theorem amalgamatedValue_quotient_eq (g h : CubicGL2Adelic F ζ hζ)
     (he : scalarQuotient F ζ hζ g = scalarQuotient F ζ hζ h) :
     amalgamatedValue F ζ hζ P C g = amalgamatedValue F ζ hζ P C h := by
   obtain ⟨z, hz⟩ := QuotientGroup.eq.mp he
-  have hc := scalarHom_central F ζ hζ (MonoidHom.mem_range.mpr ⟨z, rfl⟩)
   have hh : scalarHom F ζ hζ z * g = h := by
-    rw [← Subgroup.mem_center_iff.mp hc g, hz, ← mul_assoc, mul_inv_cancel, one_mul]
+    rw [← Subgroup.mem_center_iff.mp (scalarHom_central F ζ hζ (MonoidHom.mem_range.mpr ⟨z, rfl⟩)) g, hz, ← mul_assoc, mul_inv_cancel, one_mul]
   have hi := amalgamatedValue_scalar F ζ hζ P C z g
   rw [hh] at hi
   exact hi.symm
@@ -294,10 +289,12 @@ theorem quotientValue_upper (y : Adeles F) (g : KPGlobalTorusFunctionData.G F ζ
       rw [← map_mul, ← map_mul, quotientValue_raw]
       exact value_upper F ζ hζ P C g y
 
-theorem quotientValue_right_spherical (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ C.exceptional)
-    (k : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
-    (hk : k ∈ compact F ζ hζ (Sum.inr q)) (hb : ¬ Bad F q)
-    (g : KPGlobalTorusFunctionData.G F ζ hζ) :
+variable (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ C.exceptional)
+    (k : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) (hk : k ∈ compact F ζ hζ (Sum.inr q))
+    (hb : ¬ Bad F q) (g : KPGlobalTorusFunctionData.G F ζ hζ)
+
+include hq hk hb in
+theorem quotientValue_right_spherical :
     quotientValue F ζ hζ P C (g * scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inr q) k)) =
       quotientValue F ζ hζ P C g := by
   induction g using QuotientGroup.induction_on with
@@ -310,10 +307,8 @@ theorem quotientValue_right_spherical (q : HeightOneSpectrum (𝓞 F)) (hq : q �
       rw [← map_mul, ← map_mul, quotientValue_raw]
       exact value_right_spherical F ζ hζ P C q hq k hk hb g
 
-theorem scalarValue_right_spherical (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ C.exceptional)
-    (k : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
-    (hk : k ∈ compact F ζ hζ (Sum.inr q)) (hb : ¬ Bad F q)
-    (g : KPGlobalTorusFunctionData.G F ζ hζ) :
+include hq hk hb in
+theorem scalarValue_right_spherical :
     scalarValue F ζ hζ P C (g * scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inr q) k)) =
       scalarValue F ζ hζ P C g := by
   rw [scalarValue, scalarValue, quotientValue_right_spherical F ζ hζ P C q hq k hk hb g]

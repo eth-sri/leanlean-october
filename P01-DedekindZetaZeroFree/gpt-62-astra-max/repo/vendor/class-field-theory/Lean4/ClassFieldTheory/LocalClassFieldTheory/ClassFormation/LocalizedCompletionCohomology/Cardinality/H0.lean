@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -76,40 +74,25 @@ theorem localHerbrandH0_card_eq_localDegree
   let := localizedCompletionBaseAlgebra vK w
   let := localizedCompletionGlobalAlgebra vK w
   let := localizedCompletionIsScalarTower vK w
-  let : FiniteDimensional vK.Completion
-      (LocalizedCompletion vK w) :=
+  let :=
     localizedCompletionFiniteDimensional vK hvK w
-  let : IsGalois vK.Completion
-      (LocalizedCompletion vK w) :=
+  let :=
     localizedCompletionIsGalois vK w
   let := localizedCompletionDecompositionGroupFintype vK w
   let :=
     decompositionGroupLocalUnitsAction vK hvK w
-  let : Finite
-      (HerbrandH0
-        (absoluteValueDecompositionGroup k w.1)
-        (LocalizedCompletion vK w)ˣ) :=
+  let :=
     localHerbrandH0Finite vK hvK w σ hgen
-  let g :=
-    localizedCompletionGaloisGenerator
-      vK hvK w σ hgen
-  let hg :=
-    localizedCompletionGaloisGenerator_generates
-      vK hvK w σ hgen
   let hcard :=
     finiteExtensionUnits_tate_card_of_generator
       vK.Completion (LocalizedCompletion vK w)
-      g hg
-  let : Finite
-      (tateCohomology
-        (Rep.ofAlgebraAutOnUnits vK.Completion
-          (LocalizedCompletion vK w)) 0) :=
+      (localizedCompletionGaloisGenerator
+        vK hvK w σ hgen) (localizedCompletionGaloisGenerator_generates
+        vK hvK w σ hgen)
+  let :=
     hcard.finiteH0
   calc
-    Nat.card
-        (HerbrandH0
-          (absoluteValueDecompositionGroup k w.1)
-          (LocalizedCompletion vK w)ˣ) =
+    _ =
       Nat.card
         (Multiplicative
           (tateCohomology
@@ -125,7 +108,6 @@ theorem localHerbrandH0_card_eq_localDegree
     _ = Module.finrank vK.Completion
         (LocalizedCompletion vK w) :=
       hcard.cardH0
-
 
 end LocalTateComparison
 

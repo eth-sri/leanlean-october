@@ -38,61 +38,9 @@ local instance (F : Type) [Field F] [NumberField F]
   continuous_toFun := ((mixedHomeo F).prodCongr (Homeomorph.refl _)).continuous
   continuous_invFun := ((mixedHomeo F).prodCongr (Homeomorph.refl _)).symm.continuous
 
-private lemma archPhase_coordinates {F : Type} [Field F] [NumberField F]
-    (x : InfiniteAdeleRing F) :
-    ProbeAdditive.archPhase F x =
-      (∏ v : {v : InfinitePlace F // v.IsReal},
-        Complex.exp (2 * (Real.pi : ℂ) * Complex.I *
-          (2 * (InfiniteAdeleRing.ringEquiv_mixedSpace F x).1 v))) *
-      ∏ v : {v : InfinitePlace F // v.IsComplex},
-        Complex.exp (2 * (Real.pi : ℂ) * Complex.I *
-          (2 * ((InfiniteAdeleRing.ringEquiv_mixedSpace F x).2 v).re)) := by
-  unfold ProbeAdditive.archPhase
-  rw [Finset.mul_sum, Complex.exp_sum]
-  rw [← Fintype.prod_subtype_mul_prod_subtype (fun v : InfinitePlace F => v.IsReal)]
-  congr 1
-  · apply Finset.prod_congr rfl
-    intro v _
-    simp only [InfiniteAdeleRing.ringEquiv_mixedSpace_apply,
-      ← InfinitePlace.Completion.extensionEmbeddingOfIsReal_apply v.2,
-      Complex.ofReal_re, Complex.ofReal_mul, Complex.ofReal_ofNat]
-  · apply Fintype.prod_equiv
-      (Equiv.subtypeEquivRight (fun _ => InfinitePlace.not_isReal_iff_isComplex))
-    intro v
-    rfl
+private alias archPhase_coordinates := DedekindZetaZeroFree.ProbeSheetVerticalDecay.TraceSchwartzTensors.archPhase_coordinates
 
-private lemma local_schwartz_transforms
-    (fR : SchwartzMap ℝ ℂ) (fC : SchwartzMap ℂ ℂ) :
-    (∃ g : SchwartzMap ℝ ℂ, ∀ y,
-      g y = ∫ x : ℝ, fR x * Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (2 * (-x * y)))) ∧
-    (∃ g : SchwartzMap ℂ ℂ, ∀ y,
-      g y = ∫ x : ℂ, fC x * Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (2 * (-x * y).re))) := by
-  obtain ⟨gR, hgR⟩ := ArchSelfDual.realFourier_schwartz fR
-  obtain ⟨gC, hgC⟩ := ArchSelfDual.complexTraceFourier_schwartz fC
-  constructor
-  · refine ⟨SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
-      ((LinearEquiv.smulOfNeZero ℝ ℝ 2 (by norm_num)).toContinuousLinearEquiv) gR, ?_⟩
-    intro y
-    simp only [SchwartzMap.compCLMOfContinuousLinearEquiv_apply, Function.comp_apply,
-      LinearEquiv.coe_toContinuousLinearEquiv, LinearEquiv.smulOfNeZero_apply, smul_eq_mul,
-      hgR, ArchSelfDual.realFourier, ArchSelfDual.realMeasure]
-    apply integral_congr_ae
-    filter_upwards with x
-    congr 2
-    change ((-2 * Real.pi * (x * (2 * y)) : ℝ) : ℂ) * Complex.I = _
-    push_cast
-    ring
-  · refine ⟨(2 : ℂ)⁻¹ • gC, ?_⟩
-    intro y
-    simp only [SchwartzMap.smul_apply, hgC, ArchSelfDual.complexTraceFourier_eq_integral,
-      ArchSelfDual.complexMeasure, integral_smul_measure, ENNReal.toReal_ofNat, smul_eq_mul]
-    simp only [Complex.real_smul, Complex.ofReal_ofNat]
-    rw [← mul_assoc]
-    norm_num
-    apply integral_congr_ae
-    filter_upwards with x
-    congr 2
-    ring
+private alias local_schwartz_transforms := DedekindZetaZeroFree.ProbeSheetVerticalDecay.TraceSchwartzTensors.local_schwartz_transforms
 
  def ContinuousSchwartzTensor (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (h : SLocalProduct F S → ℂ) : Prop :=
@@ -222,28 +170,34 @@ private theorem fourier_tensor
     rw [hpR, hpC, hpF]
     simp only [hgR, hgC, gF, kR, kC, kF]
     rfl
- def complexEuler (g : SchwartzMap ℂ ℂ) : SchwartzMap ℂ ℂ :=
+ section
+
+variable (g : SchwartzMap ℂ ℂ)
+
+def complexEuler : SchwartzMap ℂ ℂ :=
   (1 / 2 : ℝ) • SchwartzMap.bilinLeftCLM
     (ContinuousLinearMap.apply (E := ℂ) ℝ ℂ).flip
     (Function.HasTemperateGrowth.id') (SchwartzMap.fderivCLM ℝ ℂ ℂ g)
 
-@[simp] private theorem complexEuler_apply (g : SchwartzMap ℂ ℂ) (z : ℂ) :
+@[simp] private theorem complexEuler_apply (z : ℂ) :
     complexEuler g z = (1 / 2 : ℝ) • fderiv ℝ g z z := rfl
 
-private theorem hasDerivAt_complexNormFlow (g : SchwartzMap ℂ ℂ) (z : ℂ) (u : ℝ) :
+private theorem hasDerivAt_complexNormFlow (z : ℂ) (u : ℝ) :
     HasDerivAt (fun v : ℝ => g ((Real.exp (v / 2) : ℂ) * z))
       (complexEuler g ((Real.exp (u / 2) : ℂ) * z)) u := by
   have h : HasDerivAt (fun v : ℝ => Real.exp (v / 2))
       (Real.exp (u / 2) / 2) u :=
     by simpa [div_eq_mul_inv] using ((hasDerivAt_id u).div_const 2).exp
-  have hc := h.ofReal_comp.mul_const z
-  have hd := g.differentiableAt.hasFDerivAt.comp_hasDerivAt u hc
-  convert hd using 1
+  convert (g.differentiableAt.hasFDerivAt.comp_hasDerivAt u (h.ofReal_comp.mul_const z)) using 1
   · rfl
   · rw [complexEuler_apply, ← map_smul]
     congr 1
     simp [smul_eq_mul]
     ring
+
+end
+
+alias LogarithmicDerivativeContinuity.hasDerivAt_complexNormFlow := hasDerivAt_complexNormFlow
 
 private theorem iteratedDeriv_complexNormFlow (g : SchwartzMap ℂ ℂ) (k : ℕ) (z : ℂ) (u : ℝ) :
     iteratedDeriv k (fun v : ℝ => g ((Real.exp (v / 2) : ℂ) * z)) u =
@@ -252,10 +206,10 @@ private theorem iteratedDeriv_complexNormFlow (g : SchwartzMap ℂ ℂ) (k : ℕ
   | zero => simp
   | succ k ih =>
     rw [iteratedDeriv_succ]
-    have hf : iteratedDeriv k (fun v : ℝ => g ((Real.exp (v / 2) : ℂ) * z)) =
-        fun v : ℝ => ((complexEuler^[k]) g) ((Real.exp (v / 2) : ℂ) * z) := funext ih
-    rw [hf, (hasDerivAt_complexNormFlow ((complexEuler^[k]) g) z u).deriv,
+    rw [(funext ih), (hasDerivAt_complexNormFlow ((complexEuler^[k]) g) z u).deriv,
       Function.iterate_succ_apply']
+
+alias LogarithmicDerivativeContinuity.iteratedDeriv_complexNormFlow := iteratedDeriv_complexNormFlow
 private theorem mixed_flow_complex (A : SArithmeticData F) (w : InfinitePlace F)
     (u : ℝ) (x : SLocalProduct F A.Sf) (v : {v : InfinitePlace F // v.IsComplex}) :
     (InfiniteAdeleRing.ringEquiv_mixedSpace F (complexNormFlowRaw A w u x).1).2 v =
@@ -281,6 +235,8 @@ private theorem real_places_empty (A : SArithmeticData F) :
     IsEmpty {v : InfinitePlace F // v.IsReal} :=
   ⟨fun v => (InfinitePlace.not_isReal_iff_isComplex.mpr (A.complex_place v.val)) v.property⟩
 
+alias LogarithmicDerivativeContinuity.real_places_empty := real_places_empty
+
 private theorem tensor_flow_factor (A : SArithmeticData F) (w : InfinitePlace F)
     (g : (v : {v : InfinitePlace F // v.IsComplex}) → SchwartzMap ℂ ℂ)
     (u : ℝ) (x : SLocalProduct F A.Sf) :
@@ -294,10 +250,10 @@ private theorem tensor_flow_factor (A : SArithmeticData F) (w : InfinitePlace F)
   · rw [mixed_flow_complex]; simp
   · apply Finset.prod_congr rfl
     intro v hv
-    have hne : v.val ≠ w := by
-      intro h
-      exact (Finset.mem_erase.mp hv).1 (Subtype.ext h)
+    have hne : v.val ≠ w := fun h => (Finset.mem_erase.mp hv).1 (Subtype.ext h)
     rw [mixed_flow_complex, if_neg hne]
+
+alias LogarithmicDerivativeContinuity.tensor_flow_factor := tensor_flow_factor
 
  private theorem derivative_tensor (A : SArithmeticData F) (w : InfinitePlace F)
     (k : ℕ) (f : SLocalProduct F A.Sf → ℂ)
@@ -377,8 +333,7 @@ theorem raw_fourier_log_derivative_continuous
     (W0 : SLocalProduct F A.Sf → ℂ)
     (hW0 : ProbeWeight.IsAnnularTensor F A.Sf W0)
     (hcompact : HasCompactSupport W0) :
-    Continuous (logDerivativeRaw A w k (ProbeWeight.fourier F A.Sf e μ W0)) := by
-  exact DerivativeContinuityProof.tensor_continuous A _
+    Continuous (logDerivativeRaw A w k (ProbeWeight.fourier F A.Sf e μ W0)) := DerivativeContinuityProof.tensor_continuous A _
     (DerivativeContinuityProof.derivative_tensor A w k _
       (DerivativeContinuityProof.fourier_tensor A.Sf e he μ hμ W0 hW0 hcompact))
 

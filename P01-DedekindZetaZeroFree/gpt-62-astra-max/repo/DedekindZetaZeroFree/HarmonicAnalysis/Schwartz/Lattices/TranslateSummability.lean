@@ -12,9 +12,9 @@ open Filter
 
 namespace DedekindZetaZeroFree.PoissonArch
 
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
+
 theorem summable_norm_schwartz_translate
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V]
     (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
     (f : 𝓢(V, ℂ)) (a : V) :
     Summable (fun v : L => ‖f (a + (v : V))‖) := by
@@ -51,14 +51,11 @@ theorem summable_norm_schwartz_translate
         have : a + (v : V) = (v : V) - (-a) := by rw [sub_neg_eq_add, add_comm]
         rw [this]
 
-theorem summable_norm_fourier_schwartz_translate
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
+theorem summable_norm_fourier_schwartz_translate [MeasurableSpace V] [BorelSpace V]
     (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
     (f : 𝓢(V, ℂ)) (b : V) :
     Summable (fun w : dualLattice L => ‖(𝓕 (f : V → ℂ)) (b + (w : V))‖) := by
-  have h := summable_norm_schwartz_translate (dualLattice L) (𝓕 f) b
-  simpa only [SchwartzMap.fourier_coe] using h
+  simpa only [SchwartzMap.fourier_coe] using (summable_norm_schwartz_translate (dualLattice L) (𝓕 f) b)
 
 end DedekindZetaZeroFree.PoissonArch
 

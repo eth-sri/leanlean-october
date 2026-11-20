@@ -9,8 +9,8 @@ open scoped NumberField Classical ENNReal
 open NumberField MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.FourierContinuation
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η}
 
 theorem integer_eq_normBall (q : KPFinitePlace F) :
     ((valuation (q.adicCompletion F)).integer : Set (q.adicCompletion F)) =
@@ -30,7 +30,7 @@ theorem finiteHaar_transport (N : MomentSources.TraceHaarTransport R)
   rw [M.haar_integer, integer_eq_normBall q, N.finite_mass q] at h
   have hc : (N.finiteHaar q).addHaarScalarFactor M.haar =
       ENNReal.ofReal (PoissonS.integerVolume F q) := by
-    simpa only [ENNReal.smul_def, smul_eq_mul, mul_one] using h.symm
+    simpa using h.symm
   rw [Measure.isAddLeftInvariant_eq_smul (N.finiteHaar q) M.haar,
     ← Measure.coe_nnreal_smul, hc]
 

@@ -12,10 +12,10 @@ set_option maxHeartbeats 2400000
 namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 open MomentSources KPGlobalTorusFiniteStages KPLocalPrincipalSeries
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 
 def parameterValue (g : Raw R) (z : ℂ) (p : KPHilbert.Place F) :
     Plus R N P C p →ₗ[ℂ] Fiber R P C p :=
@@ -83,7 +83,7 @@ theorem sourceFlat_parameter_raw (s : RestrictedTensorSimple.Level (bad R P C))
     rw [quotientCoreVector_raw, rawCoreVector_stage R N P C s g hg]
     rfl
   rw [sourceFlat_value, height_eq_stage_localLog R P C s g htail, he, parameterValue_tensor]
-  simp only [map_smul, Submodule.coe_smul, Pi.smul_apply, smul_eq_mul, Complex.ofReal_sum]
+  simp
 
 end DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 

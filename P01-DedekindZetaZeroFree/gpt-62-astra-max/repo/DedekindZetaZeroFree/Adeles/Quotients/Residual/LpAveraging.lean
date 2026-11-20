@@ -19,9 +19,7 @@ local instance : IsTopologicalGroup G := (KPAdelicCoverRestrictedProduct.adelic_
 
 theorem action_continuous : Continuous (fun p : G × X =>
     KPSmoothActualFlowData.rightTranslate F ζ hζ p.1 p.2) := by
-  have hq : IsOpenQuotientMap (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ) :=
-    MulAction.isOpenQuotientMap_quotientMk
-  apply ((IsOpenQuotientMap.id.prodMap hq).isQuotientMap.continuous_iff).mpr
+  apply ((IsOpenQuotientMap.id.prodMap MulAction.isOpenQuotientMap_quotientMk).isQuotientMap.continuous_iff).mpr
   exact continuous_quotient_mk'.comp (continuous_snd.mul continuous_fst)
 
 local instance (K : Subgroup G) : MeasurableSpace K := borel K
@@ -39,15 +37,11 @@ theorem average_memLp (K : Subgroup G) (hK : IsCompact (K : Set G))
   letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).1
   letI : BorelSpace X := ⟨rfl⟩
   let Γ := KPSmoothActualFlowData.rationalSubgroup F ζ hζ
-  have hopen : IsOpenQuotientMap (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ) :=
-    MulAction.isOpenQuotientMap_quotientMk
-  have hΓ : IsClosed (Γ : Set G) :=
-    (ActualQuotient.actual_rational_closed_discrete F ζ hζ).1
   letI : T2Space X :=
-    (t2Space_iff_of_isOpenQuotientMap hopen).mpr (by
-      convert hΓ.preimage (continuous_snd.mul continuous_fst.inv) using 1
+    (t2Space_iff_of_isOpenQuotientMap MulAction.isOpenQuotientMap_quotientMk).mpr (by
+      convert ((ActualQuotient.actual_rational_closed_discrete F ζ hζ).1).preimage (continuous_snd.mul continuous_fst.inv) using 1
       ext p
-      exact Quotient.eq.trans (QuotientGroup.rightRel_apply (s := Γ)))
+      exact Quotient.eq.trans (QuotientGroup.rightRel_apply))
   letI : IsFiniteMeasureOnCompacts R.quotientHaar := ⟨fun K hK =>
     lt_top_iff_ne_top.mpr
       (KPGlobalResidualKernel.RawStageL2.TruncatedEstimate.CompactCore.ArchimedeanGeometry.quotientHaar_compact_ne_top R K hK)⟩

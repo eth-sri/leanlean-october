@@ -60,7 +60,7 @@ theorem flatScalarResidue_nonempty (K : Subgroup (G F ζ hζ))
   obtain ⟨L⟩ := KPGlobalProductPolarizationCharacter.exists_compatible_local_data F ζ hζ
   obtain ⟨C, _⟩ := KPGlobalTorusFiniteStages.compatibleModelData_exists F ζ hζ L
   obtain ⟨Haar, _, _, P, ⟨H⟩⟩ := kp_ms_fixed_haar_disintegration F ζ hζ
-    (Measure.haar : Measure (G F ζ hζ)) inferInstance
+    Measure.haar inferInstance
   exact flatScalarResidue_exists F ζ hζ C Haar P H K hK f
 
 variable {F ζ hζ}
@@ -96,7 +96,7 @@ theorem flat_translate_residue {K : Subgroup (G F ζ hζ)}
     _ hexp g
   have hB := flat_finite_residue hK B Finset.univ w C (fun _ _ => 1)
     (fun _ _ => analyticOnNhd_const) 1 (fun z g => by
-      simpa only [mul_one, one_mul] using hv z g) g
+      simpa using hv z g) g
   simp only [mul_one, zero_mul, Complex.exp_zero, one_mul] at hA hB
   exact hB.trans hA.symm
 
@@ -112,8 +112,7 @@ theorem flat_local_sum_residue {K : Subgroup (G F ζ hζ)}
       ∀ g, B.numerator 0 g = ∑ i ∈ s, c i * A.numerator 0
         (g * KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
           (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ (Sum.inr q) (a i))) := by
-  have he := fun i => flat_translate_residue hK A q (a i)
-  choose v B hv hB using he
+  choose v B hv hB using (fun i => flat_translate_residue hK A q (a i))
   let w := FiniteWhittakerProjectors.FlatFiniteSum.sum F ζ hζ s c v
   let C := Classical.choice (flatScalarResidue_nonempty F ζ hζ K hK w)
   refine ⟨w,C,?_,?_⟩

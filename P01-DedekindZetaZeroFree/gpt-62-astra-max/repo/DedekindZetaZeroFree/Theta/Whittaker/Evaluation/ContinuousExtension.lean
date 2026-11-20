@@ -15,7 +15,7 @@ local instance : TopologicalSpace complexCore := instTopologicalSpaceSubtype
 local instance : IsUniformAddGroup (PrincipalSeries negativeParameter) := isUniformAddGroup_of_addCommGroup
 local instance : IsUniformAddGroup complexCore := complexCore.toAddSubgroup.isUniformAddGroup
 variable {α : Type*} [TopologicalSpace α]
-variable (E : complexCore →ₗ[ℂ] (α → ℂ))
+    (E : complexCore →ₗ[ℂ] (α → ℂ))
 
 def CompactBound : Prop := ∀K : Set α, IsCompact K →
   ∃ orders : Finset ℕ, ∃ B : ℝ≥0, ∀v a, a∈K → ‖E v a‖ ≤ B*(orders.sup coreSeminorm) v

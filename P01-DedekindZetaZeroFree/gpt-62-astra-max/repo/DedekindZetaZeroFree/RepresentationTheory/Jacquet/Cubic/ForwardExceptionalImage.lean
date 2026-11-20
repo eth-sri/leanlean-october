@@ -66,15 +66,15 @@ private theorem jacquet_minus_length_two :
 private theorem simple_of_length_two {R M : Type*} [Ring R] [AddCommGroup M]
     [Module R M] (h : Module.length R M = 2) (N : Submodule R M)
     [Nontrivial N] (hN : N ≠ ⊤) : IsSimpleModule R N := by
-  have hf : IsFiniteLength R M := Module.length_ne_top_iff.mp (by rw [h]; norm_num)
-  obtain ⟨hn, ha⟩ := isFiniteLength_iff_isNoetherian_isArtinian.mp hf
+  obtain ⟨hn, ha⟩ := isFiniteLength_iff_isNoetherian_isArtinian.mp (Module.length_ne_top_iff.mp (by rw [h]; norm_num))
   letI := hn
   letI := ha
   apply Module.length_eq_one_iff.mp
   have hl := Submodule.length_lt hN
   rw [h] at hl
-  have hp := Module.length_pos (R := R) (M := N)
-  exact le_antisymm (by simpa using hl) (ENat.one_le_iff_ne_zero.mpr hp.ne')
+  exact le_antisymm (by simpa using hl) (ENat.one_le_iff_ne_zero.mpr (Module.length_pos).ne')
+
+alias ForwardExceptionalImage.simple_of_length_two := simple_of_length_two
 
 private theorem range_irreducible {G V W : Type*} [Group G] [AddCommGroup V]
     [Module ℂ V] [AddCommGroup W] [Module ℂ W]
@@ -82,10 +82,8 @@ private theorem range_irreducible {G V W : Type*} [Group G] [AddCommGroup V]
     (f : ρ.IntertwiningMap σ) (g : σ.IntertwiningMap ρ)
     (hf : f ≠ 0) (hg : g ≠ 0) (hc : g.toLinearMap.comp f.toLinearMap = 0)
     (hl : Module.length ℂ[G] σ.asModule = 2) : f.range.toRepresentation.IsIrreducible := by
-  have hf' : f.toLinearMap ≠ 0 := fun he => hf (Representation.IntertwiningMap.ext he)
   haveI : Nontrivial f.range.toSubmodule := Submodule.nontrivial_iff_ne_bot.mpr (by
-    change f.toLinearMap.range ≠ ⊥
-    exact fun he => hf' (LinearMap.range_eq_bot.mp he))
+    exact fun he => (fun he => hf (Representation.IntertwiningMap.ext he)) (LinearMap.range_eq_bot.mp he))
   have hp : f.range ≠ ⊤ := by
     intro he
     apply hg
@@ -109,11 +107,10 @@ private theorem range_irreducible {G V W : Type*} [Group G] [AddCommGroup V]
   letI : Nontrivial f.range.toRepresentation.asModule :=
     inferInstanceAs (Nontrivial f.range.toSubmodule)
   letI : Nontrivial j.range := (LinearEquiv.ofInjective j hj).symm.toEquiv.nontrivial
-  have hs := simple_of_length_two hl j.range hN
   apply (Representation.irreducible_iff_isSimpleModule_asModule _).mpr
   apply Module.length_eq_one_iff.mp
   rw [(LinearEquiv.ofInjective j hj).length_eq]
-  exact Module.length_eq_one_iff.mpr hs
+  exact Module.length_eq_one_iff.mpr (simple_of_length_two hl j.range hN)
 
 theorem actual_forward_image_jacquet_factor :
     Nonempty ((KPLocalJacquetImage.jacquetRepresentation S.borel
@@ -121,25 +118,24 @@ theorem actual_forward_image_jacquet_factor :
         (KPJacquetExceptionalFactorSeparation.factorMinus S.borel P)) := by
   letI : AddCommGroup (sectionSpace S.borel P .plus 0) := inferInstance
   letI : AddCommGroup (sectionSpace S.borel P .minus 0) := inferInstance
-  have hA : actualCanonicalForwardMap F ζ hζ q S P μ hμ ≠ 0 :=
+  have hA :=
     (actual_zero_maps_nonzero F ζ hζ q S P μ hμ).1
-  have hB : actualCanonicalReverseMap F ζ hζ q S P μ hμ ≠ 0 :=
-    (actual_zero_maps_nonzero F ζ hζ q S P μ hμ).2
-  have hBA : (actualCanonicalReverseMap F ζ hζ q S P μ hμ).toLinearMap.comp
-      (actualCanonicalForwardMap F ζ hζ q S P μ hμ).toLinearMap = 0 :=
+  have hBA :=
     (actual_zero_opposite_compositions F ζ hζ q S P μ hμ).2
+  let actualCanonicalForwardMap₀ := actualCanonicalForwardMap F ζ hζ q S P μ hμ
   let fJ := KPLocalJacquetImage.jacquetMap
-    (V := sectionSpace S.borel P .plus 0) (W := sectionSpace S.borel P .minus 0)
-    S.borel (ρ := IPlus S.borel P) (σ := IMinus S.borel P)
-    (actualCanonicalForwardMap F ζ hζ q S P μ hμ)
+
+    S.borel
+    (actualCanonicalForwardMap₀)
+  let actualCanonicalReverseMap₀ := actualCanonicalReverseMap F ζ hζ q S P μ hμ
   let gJ := KPLocalJacquetImage.jacquetMap
-    (V := sectionSpace S.borel P .minus 0) (W := sectionSpace S.borel P .plus 0)
-    S.borel (ρ := IMinus S.borel P) (σ := IPlus S.borel P)
-    (actualCanonicalReverseMap F ζ hζ q S P μ hμ)
+
+    S.borel
+    (actualCanonicalReverseMap₀)
   have hfJ : fJ ≠ 0 := by
     intro hz
     apply jacquetEvaluation_comp_ne_zero S.borel P .minus
-      (IPlus S.borel P) (actualCanonicalForwardMap F ζ hζ q S P μ hμ) hA
+      (IPlus S.borel P) (actualCanonicalForwardMap₀) hA
     show (principalSeriesJacquetEvaluation S.borel P .minus).comp fJ = 0
     rw [hz]
     apply Representation.IntertwiningMap.ext
@@ -149,7 +145,7 @@ theorem actual_forward_image_jacquet_factor :
   have hgJ : gJ ≠ 0 := by
     intro hz
     apply jacquetEvaluation_comp_ne_zero S.borel P .plus
-      (IMinus S.borel P) (actualCanonicalReverseMap F ζ hζ q S P μ hμ) hB
+      (IMinus S.borel P) (actualCanonicalReverseMap₀) ((actual_zero_maps_nonzero F ζ hζ q S P μ hμ).2)
     show (principalSeriesJacquetEvaluation S.borel P .plus).comp gJ = 0
     rw [hz]
     apply Representation.IntertwiningMap.ext
@@ -162,21 +158,21 @@ theorem actual_forward_image_jacquet_factor :
     intro v
     change Representation.Coinvariants.mk
       ((IPlus S.borel P).comp (KPLocalJacquetImage.root S.borel))
-      ((actualCanonicalReverseMap F ζ hζ q S P μ hμ)
-        ((actualCanonicalForwardMap F ζ hζ q S P μ hμ) v)) = 0
+      ((actualCanonicalReverseMap₀)
+        ((actualCanonicalForwardMap₀) v)) = 0
     have he := LinearMap.congr_fun hBA v
-    change (actualCanonicalReverseMap F ζ hζ q S P μ hμ)
-      ((actualCanonicalForwardMap F ζ hζ q S P μ hμ) v) = 0 at he
+    change (actualCanonicalReverseMap₀)
+      ((actualCanonicalForwardMap₀) v) = 0 at he
     rw [he, map_zero]
-  haveI hfJirr : fJ.range.toRepresentation.IsIrreducible :=
+  haveI hfJirr :=
     range_irreducible fJ gJ hfJ hgJ hcJ (jacquet_minus_length_two F ζ hζ q S P)
-  haveI hfac : (KPJacquetExceptionalFactorSeparation.factorMinus S.borel P).IsIrreducible :=
+  haveI hfac :=
     (KPJacquetExceptionalFactorSeparation.exceptional_factors_simple S.borel P).2.2
   let e := jacquetRangeEvaluation S.borel P .minus
-    (IPlus S.borel P) (actualCanonicalForwardMap F ζ hζ q S P μ hμ)
+    (IPlus S.borel P) (actualCanonicalForwardMap₀)
   have hsurj : Function.Surjective e :=
     jacquetRangeEvaluation_surjective S.borel P .minus
-      (IPlus S.borel P) (actualCanonicalForwardMap F ζ hζ q S P μ hμ) hA
+      (IPlus S.borel P) (actualCanonicalForwardMap₀) hA
   haveI hnt : Nontrivial (KPLocalStoneVonNeumann.InducedModule P) :=
     (KPJacquetExceptionalFactorSeparation.exceptional_factors_simple S.borel P).1
   have hne : e ≠ 0 := by
@@ -184,19 +180,17 @@ theorem actual_forward_image_jacquet_factor :
     obtain ⟨v, hv⟩ := exists_ne (0 : KPLocalStoneVonNeumann.InducedModule P)
     obtain ⟨x, hx⟩ := hsurj v
     rw [hz] at hx
-    exact hv (by simpa using hx.symm)
-  have hinj : Function.Injective e :=
-    (Representation.IsIrreducible.injective_or_eq_zero e).resolve_right hne
+    exact hv (by exact hx.symm)
   have htarget : Nonempty ((KPLocalJacquetImage.jacquetMap
-      (V := sectionSpace S.borel P .plus 0) (W := sectionSpace S.borel P .minus 0)
-      S.borel (ρ := IPlus S.borel P) (σ := IMinus S.borel P)
-      (actualCanonicalForwardMap F ζ hζ q S P μ hμ)).range.toRepresentation.Equiv
+
+      S.borel
+      (actualCanonicalForwardMap₀)).range.toRepresentation.Equiv
         (KPJacquetExceptionalFactorSeparation.factorMinus S.borel P)) :=
-    ⟨e.ofBijective ⟨hinj, hsurj⟩⟩
+    ⟨e.ofBijective ⟨((Representation.IsIrreducible.injective_or_eq_zero e).resolve_right hne), hsurj⟩⟩
   obtain ⟨e0⟩ := KPExceptionalRaw.FiniteSource.RankoneSteps.jacquet_image_equiv
-    (V := sectionSpace S.borel P .plus 0) (W := sectionSpace S.borel P .minus 0) S.borel
-    (ρ := IPlus S.borel P) (σ := IMinus S.borel P)
-    (actualCanonicalForwardMap F ζ hζ q S P μ hμ)
+      S.borel
+
+    (actualCanonicalForwardMap₀)
     (principalSeries_smooth S.borel P .minus 0)
   exact ⟨e0.trans htarget.some⟩
 

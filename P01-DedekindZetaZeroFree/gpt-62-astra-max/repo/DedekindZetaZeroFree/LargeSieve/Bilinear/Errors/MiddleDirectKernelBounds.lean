@@ -17,7 +17,7 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.MiddleDirect.Geometry
 open ErrorRectangles
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 def admissibleRectangles (C : Context Q) (B : ℝ) : Finset (ℝ × ℝ) :=
   (ErrorRectangles.rectangles C).filter (fun P =>
@@ -35,37 +35,46 @@ noncomputable section
 open scoped NumberField Classical ContDiff
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.MiddleDirectKernelUniformity
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
-private lemma square_source_smooth (W : ℝ → ℝ) (hW : Sieve.SieveWeight W) :
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+section
+
+variable (W : ℝ → ℝ) (hW : Sieve.SieveWeight W)
+
+include hW in
+private lemma square_source_smooth :
     ContDiff ℝ ∞ (fun x : ℝ => (W (x ^ 2) : ℂ)) :=
   Complex.ofRealCLM.contDiff.comp (hW.smooth.comp (contDiff_id.pow 2))
-private lemma square_source_support (W : ℝ → ℝ) (hW : Sieve.SieveWeight W) :
+include hW in
+private lemma square_source_support :
     Function.support (fun x : ℝ => (W (x ^ 2) : ℂ)) ⊆ Set.Icc (-2 : ℝ) 2 := by
   intro x hx
   have hs : x ^ 2 ∈ Set.Icc (1 / 2 : ℝ) (5 / 2) := by
     by_contra hs
     exact hx (by simp [hW.zero_outside _ hs])
   constructor <;> nlinarith [hs.2]
-theorem originalKernelUniform
-    (hF : NumberField.IsTotallyComplex F) (W : ℝ → ℝ) (hW : Sieve.SieveWeight W) :
+
+end
+variable (hF : NumberField.IsTotallyComplex F) (W : ℝ → ℝ) (hW : Sieve.SieveWeight W)
+
+include hF hW in
+theorem originalKernelUniform :
     ∃ A : ℝ, 0 < A ∧ ∀ C : Context Q, C.W = W →
       ∀ R x : ℝ, 1 ≤ R → 0 < x → R⁻¹ ≤ x →
         ‖C.originalKernel x‖ ≤ A * R := by
-  let h : ℝ → ℂ := fun x => (W (x ^ 2) : ℂ)
-  have hh : ContDiff ℝ ∞ h := square_source_smooth W hW
+  let h := fun x => (W (x ^ 2) : ℂ)
+  have hh := square_source_smooth W hW
   have hs := square_source_support W hW
-  have hc : HasCompactSupport h :=
+  have hc :=
     HasCompactSupport.of_support_subset_isCompact isCompact_Icc hs
   have hb : Vendor.PositiveSideSupport 2 h := by
     intro x hx
     by_contra hn
-    have hxmem := hs hn
-    exact (not_le_of_gt hx) hxmem.2
+    exact (not_le_of_gt hx) (hs hn).2
   obtain ⟨N, A₀, hA₀, hbound⟩ := fieldTransform_uniform_euler_two_ended_bound
     (principalDiscriminant F) (principalComplexPlaces F) 2 0 0 1
     (principalDiscriminant_pos F) (principalComplexPlaces_pos F hF)
     (by norm_num) (by norm_num)
-  have hS : 0 ≤ Vendor.S 2 N h := Vendor.S_nonneg 2 (by norm_num) N h hh
+  have hS := Vendor.S_nonneg 2 (by norm_num) N h hh
   let A := A₀ * Vendor.S 2 N h + 1
   have hA : 0 < A := by dsimp [A]; positivity
   refine ⟨A, hA, ?_⟩
@@ -75,22 +84,20 @@ theorem originalKernelUniform
     funext y
     simp [Context.originalKernel, Context.source, h, hCW]
   rw [hk]
-  have hR0 : 0 < R := by linarith
   have hcoeff : A₀ * Vendor.S 2 N h ≤ A := by dsimp [A]; linarith
   have hbounds := hbound h hh hc hb
   by_cases hx1 : x ≤ 1
-  · have hinv : x⁻¹ ≤ R := by
-      simpa only [inv_inv] using (inv_le_inv₀ hx (inv_pos.mpr hR0)).mpr hxR
-    have hh := hbounds.1 x hx hx1
+  · have hh := hbounds.1 x hx hx1
     norm_num [Vendor.EulerIter_zero, Real.rpow_neg_one] at hh
     calc
       _ ≤ A₀ * Vendor.S 2 N h * x⁻¹ := hh
-      _ ≤ A * R := mul_le_mul hcoeff hinv (inv_nonneg.mpr hx.le) hA.le
+      _ ≤ A * R := mul_le_mul hcoeff (by
+        simpa using (inv_le_inv₀ hx (inv_pos.mpr (by linarith))).mpr hxR) (inv_nonneg.mpr hx.le) hA.le
   · have hh := hbounds.2 x (le_of_not_ge hx1)
     norm_num [Vendor.EulerIter_zero, Real.rpow_zero] at hh
     exact hh.trans (hcoeff.trans (le_mul_of_one_le_right hA.le hR))
-theorem originalKernel_middle_uniform
-    (hF : NumberField.IsTotallyComplex F) (W : ℝ → ℝ) (hW : Sieve.SieveWeight W) :
+include hF hW in
+theorem originalKernel_middle_uniform :
     ∃ A : ℝ, 0 < A ∧ ∀ C : Context Q, C.W = W →
       ∀ B : ℝ, 1 ≤ C.M → 1 ≤ C.N → 0 < C.δ → 1 ≤ B →
       ∀ a f b : Ideal (𝓞 F), 0 < norm a → norm a ≤ 2 * B →
@@ -146,7 +153,7 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.MiddleDirectKernelUniformity
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 theorem finiteDualKernel_uniform
     (hF : NumberField.IsTotallyComplex F) (W : ℝ → ℝ) (hW : Sieve.SieveWeight W) :
@@ -169,17 +176,14 @@ theorem finiteDualKernel_uniform
     change 1 ≤ 8 * Real.rpow (C.M * C.N) (2 * C.δ)
     linarith
   let S := (boundedNormIdeals F C.L2).filter (fun b => b ≠ ⊥)
-  have hcard : (S.card : ℝ) ≤ I * C.L2 := by
-    exact (Nat.cast_le.mpr (Finset.card_filter_le _ _)).trans (hc C.L2 hL)
+  have hcard : (S.card : ℝ) ≤ I * C.L2 := (Nat.cast_le.mpr (Finset.card_filter_le _ _)).trans (hc C.L2 hL)
   have hterm : ∀ b ∈ S,
       ‖C.originalKernel (norm b * Real.sqrt (C.M / norm a) / norm f)‖ ≤
         A * Real.rpow (C.M * C.N) C.δ := by
     intro b hb
-    have hb0 : b ≠ ⊥ := (Finset.mem_filter.mp hb).2
-    have hbn : 1 ≤ norm b := by
-      unfold norm
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hb0)
-    exact hk C hCW B hM hN hδ hB a f b ha0 ha hf0 hf hbn
+    apply hk C hCW B hM hN hδ hB a f b ha0 ha hf0 hf
+    unfold norm
+    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr ((Finset.mem_filter.mp hb).2))
   calc
     _ ≤ ∑ b ∈ S, ‖C.originalKernel (norm b * Real.sqrt (C.M / norm a) / norm f)‖ :=
       norm_sum_le _ _
@@ -208,7 +212,7 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.MiddleDirectKernelUniformity
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 theorem prefactored_finiteDualKernel_uniform
     (hF : NumberField.IsTotallyComplex F) (W : ℝ → ℝ) (hW : Sieve.SieveWeight W) :
@@ -220,27 +224,20 @@ theorem prefactored_finiteDualKernel_uniform
           ‖∑ b ∈ (boundedNormIdeals F C.L2).filter (fun b => b ≠ ⊥),
             C.originalKernel (norm b * Real.sqrt (C.M / norm a) / norm f)‖ ≤
           J * Real.rpow (C.M * C.N) (3 * C.δ) * Real.sqrt (C.M / B) / norm f := by
-  obtain ⟨J, hJ, hbound⟩ := finiteDualKernel_uniform (Q := Q) hF W hW
+  obtain ⟨J, hJ, hbound⟩ := finiteDualKernel_uniform hF W hW
   refine ⟨J, hJ, ?_⟩
   intro C hCW B hM hN hδ hB a f hBa ha hf0 hf
   have hB0 : 0 < B := by linarith
-  have ha0 : 0 < norm a := lt_of_lt_of_le hB0 hBa
-  have hM0 : 0 ≤ C.M := by linarith
-  have hsqrt : Real.sqrt (C.M / norm a) ≤ Real.sqrt (C.M / B) := by
-    apply Real.sqrt_le_sqrt
-    exact div_le_div_of_nonneg_left hM0 hB0 hBa
-  have hkernel := hbound C hCW B hM hN hδ hB a f ha0 ha hf0 hf
-  have hscale : 0 ≤ J * Real.rpow (C.M * C.N) (3 * C.δ) := by
-    exact mul_nonneg hJ.le (Real.rpow_nonneg (by positivity) _)
-  have hleft : 0 ≤ Real.sqrt (C.M / norm a) / norm f := by positivity
   calc
     _ ≤ (Real.sqrt (C.M / norm a) / norm f) *
           (J * Real.rpow (C.M * C.N) (3 * C.δ)) :=
-      mul_le_mul_of_nonneg_left hkernel hleft
+      mul_le_mul_of_nonneg_left (hbound C hCW B hM hN hδ hB a f (lt_of_lt_of_le hB0 hBa) ha hf0 hf) (by positivity)
     _ ≤ (Real.sqrt (C.M / B) / norm f) *
           (J * Real.rpow (C.M * C.N) (3 * C.δ)) := by
-      apply mul_le_mul_of_nonneg_right _ hscale
-      exact div_le_div_of_nonneg_right hsqrt hf0.le
+      apply mul_le_mul_of_nonneg_right _ (mul_nonneg hJ.le (Real.rpow_nonneg (by positivity) _))
+      exact div_le_div_of_nonneg_right (by
+        apply Real.sqrt_le_sqrt
+        exact div_le_div_of_nonneg_left (by linarith) hB0 hBa) hf0.le
     _ = J * Real.rpow (C.M * C.N) (3 * C.δ) * Real.sqrt (C.M / B) /
         norm f := by ring
 
@@ -259,7 +256,7 @@ theorem rowKernel_uniform
         0 < norm f → norm f ≤ C.Z2 B →
         ‖rowKernel C a f‖ ≤
           J * Real.rpow (C.M * C.N) (3 * C.δ) * Real.sqrt (C.M / B) / norm f := by
-  obtain ⟨J, hJ, hbound⟩ := prefactored_finiteDualKernel_uniform (Q := Q) hF W hW
+  obtain ⟨J, hJ, hbound⟩ := prefactored_finiteDualKernel_uniform hF W hW
   refine ⟨J, hJ, ?_⟩
   intro C hCW B unit hunit hM hN hδ hB a ha f hf0 hf
   have hBa : B ≤ norm a ∧ norm a ≤ 2 * B := by
@@ -267,7 +264,7 @@ theorem rowKernel_uniform
     · have hn := (Sieve.mem_paperShell F (c * C.d) B a).mp
         (Finset.mem_filter.mp ha).1
       exact ⟨hn.2.2.1.le, hn.2.2.2⟩
-    · have ha' : a = ⊤ := Finset.mem_singleton.mp (Finset.mem_filter.mp ha).1
+    · have ha' := Finset.mem_singleton.mp (Finset.mem_filter.mp ha).1
       subst a
       simp [norm, hunit rfl]
   have hmoebius : ‖(UniqueFactorizationMonoid.moebius f : ℂ)‖ ≤ 1 := by
@@ -275,16 +272,16 @@ theorem rowKernel_uniform
     split_ifs
     · rw [Int.cast_pow, Int.cast_neg, Int.cast_one, norm_pow, norm_neg, norm_one, one_pow]
     · simp
-  have hfrac : 0 ≤ Real.sqrt (C.M / norm a) / norm f := by positivity
-  have hnorm : ‖(Real.sqrt (C.M / norm a) / norm f : ℂ)‖ =
-      Real.sqrt (C.M / norm a) / norm f := by
-    rw [← Complex.ofReal_div, Complex.norm_real, Real.norm_of_nonneg hfrac]
+  let sqrt₀ := Real.sqrt (C.M / norm a)
+  have hnorm : ‖(sqrt₀ / norm f : ℂ)‖ =
+      sqrt₀ / norm f := by
+    rw [← Complex.ofReal_div, Complex.norm_real, Real.norm_of_nonneg (by positivity)]
   unfold rowKernel
   rw [norm_mul, norm_mul, hnorm]
   calc
-    _ ≤ 1 * (Real.sqrt (C.M / norm a) / norm f) *
+    _ ≤ 1 * (sqrt₀ / norm f) *
           ‖∑ b ∈ (boundedNormIdeals F C.L2).filter (fun b => b ≠ ⊥),
-            C.originalKernel (norm b * Real.sqrt (C.M / norm a) / norm f)‖ := by
+            C.originalKernel (norm b * sqrt₀ / norm f)‖ := by
       gcongr
     _ ≤ _ := by
       rw [one_mul]
@@ -301,12 +298,9 @@ noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.MiddleDirectWindow
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
-private lemma rel {a b : Ideal (𝓞 F)} (h : a ⊔ b = ⊤) : IsRelPrime a b := by
-  intro z hza hzb
-  rw [Ideal.isUnit_iff]
-  exact le_antisymm le_top (h ▸ sup_le (Ideal.dvd_iff_le.mp hza) (Ideal.dvd_iff_le.mp hzb))
+private lemma rel {a b : Ideal (𝓞 F)} (h : a ⊔ b = ⊤) : IsRelPrime a b := by apply @DedekindZetaZeroFree.LargeSieve.SquarefreeGcd.SquarefreeGcdDecomposition.isRelPrime_of_sup_eq_top <;> assumption
 
 theorem moebius_triple (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F))
     (hp : C.ValidPair p) (K : Ideal (𝓞 F) → ℂ) :
@@ -315,22 +309,19 @@ theorem moebius_triple (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F))
       ∑ e ∈ C.mobiusDivisors, ∑ f₁ ∈ idealDivisors p.1, ∑ f₂ ∈ idealDivisors p.2,
         (UniqueFactorizationMonoid.moebius (e * (f₁ * f₂)) : ℂ) * K (e * (f₁ * f₂)) := by
   open UniqueFactorizationMonoid in
-  have hcd0 : c * C.d ≠ ⊥ := mul_ne_zero C.D.original_ne_bot C.hd0
-  have huv0 : p.1 * p.2 ≠ ⊥ := mul_ne_zero hp.hu0 hp.hv0
+  have hcd0 := mul_ne_zero C.D.original_ne_bot C.hd0
   have hcuv : c ⊔ (p.1 * p.2) = ⊤ := by
     rw [Ideal.sup_mul_eq_of_coprime_left (by simpa [sup_comm] using hp.huc)]
     simpa [sup_comm] using hp.hvc
   have hfixed : (c * C.d) ⊔ (p.1 * p.2) = ⊤ := by
     rw [sup_comm, Ideal.sup_mul_eq_of_coprime_left (by simpa [sup_comm] using hcuv)]
     simpa [sup_comm] using hp.hduv
-  rw [LargeDirectDictionary.sum_divisors_mul _ _ hcd0 huv0 hfixed]
+  rw [LargeDirectDictionary.sum_divisors_mul _ _ hcd0 (mul_ne_zero hp.hu0 hp.hv0) hfixed]
   simp_rw [LargeDirectDictionary.sum_divisors_mul _ _ hp.hu0 hp.hv0 hp.huv]
   have hfrel : ∀ e ∈ idealDivisors (c * C.d), ∀ f₁ ∈ idealDivisors p.1,
       ∀ f₂ ∈ idealDivisors p.2,
       UniqueFactorizationMonoid.moebius (e * (f₁ * f₂)) =
-        UniqueFactorizationMonoid.moebius e * UniqueFactorizationMonoid.moebius (f₁ * f₂) := by
-    intro e he f₁ hf₁ f₂ hf₂
-    exact ((rel hfixed).of_dvd_left ((mem_idealDivisors hcd0).mp he) |>.of_dvd_right
+        UniqueFactorizationMonoid.moebius e * UniqueFactorizationMonoid.moebius (f₁ * f₂) := fun e he f₁ hf₁ f₂ hf₂ => ((rel hfixed).of_dvd_left ((mem_idealDivisors hcd0).mp he) |>.of_dvd_right
       (mul_dvd_mul ((mem_idealDivisors hp.hu0).mp hf₁)
         ((mem_idealDivisors hp.hv0).mp hf₂))).moebius_mul
   have hterm : ∀ e ∈ idealDivisors (c * C.d),
@@ -354,9 +345,8 @@ theorem moebius_triple (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F))
     have := Ideal.le_radical (I := c * C.d)
     rw [h] at this
     exact hcd0 (le_bot_iff.mp this)
-  have hedvd : e ∣ c * C.d := ((mem_idealDivisors he0).mp he).trans
-    (Ideal.dvd_iff_le.mpr Ideal.le_radical)
-  exact (hterm e ((mem_idealDivisors hcd0).mpr hedvd)).symm
+  exact (hterm e ((mem_idealDivisors hcd0).mpr (((mem_idealDivisors he0).mp he).trans
+    (Ideal.dvd_iff_le.mpr Ideal.le_radical)))).symm
 
 theorem middle_triple (C : Context Q) (B : ℝ) (a : Ideal (𝓞 F))
     (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : C.ValidPair p) :
@@ -387,26 +377,23 @@ noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.MiddleDirectWindow
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
-private lemma norm_mul (a b : Ideal (𝓞 F)) : norm (a*b) = norm a * norm b := by
-  simp [norm, map_mul]
+private alias norm_mul := DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.LargeDual.DualDyadicRectangles.norm_mul
 private lemma norm_le_of_dvd {a b : Ideal (𝓞 F)} (hb : b ≠ ⊥) (h : a ∣ b) :
-    norm a ≤ norm b := by
-  unfold norm
-  exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hb))
-    (Ideal.absNorm_dvd_absNorm_of_le (Ideal.dvd_iff_le.mp h))
+    norm a ≤ norm b := by apply @DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.LocalTailGeometry.norm_le_of_dvd <;> assumption
 
-private lemma norm_nonneg (a : Ideal (𝓞 F)) : 0 ≤ norm a := by
-  unfold norm; positivity
+private alias norm_nonneg := DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.LargeDirectGeometry.DirectExpansionAndRectangleBounds.norm_nonneg
 
-private lemma bin_admissible (C : Context Q) (B : ℝ)
+variable (C : Context Q) (B : ℝ)
+
+private lemma bin_admissible
     (hn : 1 ≤ norm C.d) {e : Ideal (𝓞 F)} (he : e ∈ C.mobiusDivisors)
     {P : ℝ × ℝ} (hrect : P ∈ ErrorRectangles.rectangles C)
     {a b : Ideal (𝓞 F)} (ha : ErrorRectangles.InBin P.1 a)
     (hb : ErrorRectangles.InBin P.2 b) (hl : C.Y2 B < norm (e * (a*b))) :
     P ∈ MiddleDirect.Geometry.admissibleRectangles C B := by
-  have hcd0 : c * C.d ≠ ⊥ := mul_ne_zero C.D.original_ne_bot C.hd0
+  have hcd0 := mul_ne_zero C.D.original_ne_bot C.hd0
   have hed : e ∣ c * C.d := by
     have hr0 : (c * C.d).radical ≠ ⊥ := by
       intro h
@@ -420,14 +407,11 @@ private lemma bin_admissible (C : Context Q) (B : ℝ)
   have hP := ErrorRectangles.rectangle_endpoints C P hrect
   have hh : norm (e * (a*b)) ≤ (max 1 (norm c) * norm C.d) * (4 * (P.1*P.2)) := by
     rw [norm_mul, norm_mul]
-    have hab : norm a * norm b ≤ (2*P.1)*(2*P.2) :=
-      mul_le_mul ha.2.2 hb.2.2 (norm_nonneg b) (by linarith [hP.1])
     calc
       _ ≤ (norm c * norm C.d) * ((2*P.1)*(2*P.2)) :=
-        mul_le_mul hen hab (mul_nonneg (norm_nonneg a) (norm_nonneg b))
+        mul_le_mul hen (mul_le_mul ha.2.2 hb.2.2 (norm_nonneg b) (by linarith [hP.1])) (mul_nonneg (norm_nonneg a) (norm_nonneg b))
           (mul_nonneg (norm_nonneg c) (norm_nonneg C.d))
-      _ ≤ (max 1 (norm c) * norm C.d) * ((2*P.1)*(2*P.2)) := by
-        exact mul_le_mul_of_nonneg_right
+      _ ≤ (max 1 (norm c) * norm C.d) * ((2*P.1)*(2*P.2)) := mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right (le_max_right 1 (norm c)) (norm_nonneg C.d))
           (by nlinarith [hP.1, hP.2.1])
       _ = _ := by ring
@@ -458,7 +442,7 @@ private lemma bin_admissible (C : Context Q) (B : ℝ)
       (mul_nonpos_of_nonneg_of_nonpos (mul_nonneg (by unfold ErrorRectangles.lowerConstant; positivity)
         (Real.sqrt_nonneg _)) (le_of_not_ge hr)) (by linarith)) hp0
 
-private lemma bucket_bins (C : Context Q) (B : ℝ)
+private lemma bucket_bins
     (hn : 1 ≤ norm C.d) (hnN : norm C.d ≤ 2 * C.N)
     (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : p ∈ C.pairs)
     (e : Ideal (𝓞 F)) (he : e ∈ C.mobiusDivisors)
@@ -478,8 +462,7 @@ private lemma bucket_bins (C : Context Q) (B : ℝ)
   have had := (mem_idealDivisors hpv.hu0).mp ha
   have hbd := (mem_idealDivisors hpv.hv0).mp hb
   by_cases hl : C.Y2 B < norm (e*(a*b)) ∧ norm (e*(a*b)) ≤ C.Z2 B
-  · have hpp := (Finset.mem_filter.mp hp).1
-    obtain ⟨hu,hv⟩ := Finset.mem_product.mp hpp
+  · obtain ⟨hu,hv⟩ := Finset.mem_product.mp ((Finset.mem_filter.mp hp).1)
     have huN : norm p.1 ≤ 2*C.N / norm C.d :=
       ((Sieve.mem_idealAdmissibleFinset F c _ _).mp (Finset.mem_filter.mp hu).1).2.2
     have hvN : norm p.2 ≤ 2*C.N / norm C.d :=
@@ -495,7 +478,6 @@ private lemma bucket_bins (C : Context Q) (B : ℝ)
       apply Finset.mem_filter.mpr
       refine ⟨Finset.mem_product.mpr ⟨hP₁s,hP₂s⟩,hP₁,hP₂,?_,?_,p,hp,a,b,had,hbd,hP₁a,hP₂b⟩ <;>
         simpa [mul_div_assoc] using (by assumption : _)
-    have hAdm := bin_admissible C B hn he hrect hP₁a hP₂b hl.1
     symm
     rw [Finset.sum_eq_single (P₁,P₂)]
     · simp [hP₁a, hP₂b]
@@ -503,16 +485,14 @@ private lemma bucket_bins (C : Context Q) (B : ℝ)
       have hRs := (Finset.mem_product.mp (Finset.mem_filter.mp (Finset.mem_filter.mp hR).1).1)
       by_cases hRa : ErrorRectangles.InBin R.1 a
       · by_cases hRb : ErrorRectangles.InBin R.2 b
-        · have h1 := DivisorBins.bin_unique hRs.1 hP₁s hRa hP₁a
-          have h2 := DivisorBins.bin_unique hRs.2 hP₂s hRb hP₂b
-          exact (hne (Prod.ext h1 h2)).elim
+        · exact (hne (Prod.ext (DivisorBins.bin_unique hRs.1 hP₁s hRa hP₁a) (DivisorBins.bin_unique hRs.2 hP₂s hRb hP₂b))).elim
         · simp [hRb]
       · simp [hRa]
     · intro hnmem
-      exact (hnmem hAdm).elim
+      exact (hnmem (bin_admissible C B hn he hrect hP₁a hP₂b hl.1)).elim
   · simp [hk e a b hl]
 
-theorem window_bucket_partition (C : Context Q) (B : ℝ)
+theorem window_bucket_partition
     (hN : 1 ≤ C.N) (hn : 1 ≤ norm C.d) (hnN : norm C.d ≤ 2 * C.N)
     (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : p ∈ C.pairs)
     (k : Ideal (𝓞 F) → Ideal (𝓞 F) → Ideal (𝓞 F) → ℂ)
@@ -562,26 +542,11 @@ noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.MiddleDirectWindow
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
-private lemma pairSum_mul (C : Context Q) (z : ℂ)
-    (f : (p : Ideal (𝓞 F) × Ideal (𝓞 F)) → C.ValidPair p → ℂ) :
-    C.pairSum (fun p hp => z * f p hp) = z * C.pairSum f := by
-  unfold Context.pairSum
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro p hp
-  split_ifs <;> simp
+private alias pairSum_mul := DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.LargeDirectAssembly.DirectExpansionAndRectangleBounds.pairSum_mul
 
-private lemma pairSum_sum {α : Type*} (C : Context Q) (s : Finset α)
-    (f : α → (p : Ideal (𝓞 F) × Ideal (𝓞 F)) → C.ValidPair p → ℂ) :
-    C.pairSum (fun p hp => ∑ i ∈ s, f i p hp) =
-      ∑ i ∈ s, C.pairSum (f i) := by
-  unfold Context.pairSum
-  conv_rhs => rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro p hp
-  split_ifs <;> simp
+private alias pairSum_sum := DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.LargeDirectAssembly.DirectExpansionAndRectangleBounds.pairSum_sum
 
 theorem middle_window_assembly (C : Context Q) (B : ℝ) (unit : Bool)
     (H : ℝ) (hH : 0 ≤ H)
@@ -609,8 +574,8 @@ theorem middle_window_assembly (C : Context Q) (B : ℝ) (unit : Bool)
     if f₁ ∣ p.1 ∧ f₂ ∣ p.2 then C.coefficient p * C.primitive p hp a else 0)
   have heq : E5 C B unit =
       ∑ e ∈ C.mobiusDivisors, ∑ P ∈ S,
-        ∑ f₁ ∈ LargeDirect.divisorBin (F := F) P.1,
-          ∑ f₂ ∈ LargeDirect.divisorBin (F := F) P.2,
+        ∑ f₁ ∈ LargeDirect.divisorBin P.1,
+          ∑ f₂ ∈ LargeDirect.divisorBin P.2,
             ∑ a ∈ R, w e f₁ f₂ a * v f₁ f₂ a := by
     unfold E5
     have hreplace : C.pairSum (fun p hp => C.coefficient p *
@@ -619,8 +584,8 @@ theorem middle_window_assembly (C : Context Q) (B : ℝ) (unit : Bool)
             (Real.sqrt (C.M / norm a)) (C.Y2 B) (C.Z2 B) C.L2) =
       C.pairSum (fun p hp => C.coefficient p * ∑ a ∈ R, C.primitive p hp a *
         (∑ e ∈ C.mobiusDivisors, ∑ P ∈ S,
-          ∑ f₁ ∈ LargeDirect.divisorBin (F := F) P.1,
-            ∑ f₂ ∈ LargeDirect.divisorBin (F := F) P.2,
+          ∑ f₁ ∈ LargeDirect.divisorBin P.1,
+            ∑ f₂ ∈ LargeDirect.divisorBin P.2,
               w e f₁ f₂ a * (if f₁ ∣ p.1 ∧ f₂ ∣ p.2 then 1 else 0))) := by
       unfold Context.pairSum
       apply Finset.sum_congr rfl
@@ -702,7 +667,7 @@ noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.MiddleDirectKernelUniformity
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 def middleDivisorRectangles (C : Context Q) (B : ℝ) : Finset (ℝ × ℝ) :=
   (ErrorRectangles.rectangles C).filter (fun P =>
     ErrorRectangles.lowerConstant c / 2 * Real.sqrt (C.M / B) *
@@ -731,20 +696,17 @@ theorem middle_divisor_expansion (C : Context Q) (B : ℝ) (unit : Bool)
   · intro e he P hP f₁ hf₁ f₂ hf₂ a ha
     dsimp [w]
     split_ifs with hwin
-    · have he0 : e ≠ ⊥ := ne_bot_of_mem_idealDivisors he
-      have hf₁b := (Finset.mem_filter.mp hf₁).2
+    · have hf₁b := (Finset.mem_filter.mp hf₁).2
       have hf₂b := (Finset.mem_filter.mp hf₂).2
-      have hf₁0 : f₁ ≠ ⊥ := hf₁b.1
-      have hf₂0 : f₂ ≠ ⊥ := hf₂b.1
       have hepos : 0 < norm e := by
         unfold norm
-        exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr he0)
+        exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (ne_bot_of_mem_idealDivisors he))
       have hf₁pos : 0 < norm f₁ := by
         unfold norm
-        exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hf₁0)
+        exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hf₁b.1)
       have hf₂pos : 0 < norm f₂ := by
         unfold norm
-        exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hf₂0)
+        exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hf₂b.1)
       have hfnorm : norm (e * (f₁ * f₂)) = norm e * (norm f₁ * norm f₂) := by
         simp [norm, map_mul]
       have hfpos : 0 < norm (e * (f₁ * f₂)) := by rw [hfnorm]; positivity
@@ -757,16 +719,12 @@ theorem middle_divisor_expansion (C : Context Q) (B : ℝ) (unit : Bool)
         by_cases hh : P.2 = 1
         · simpa [hh] using hf₂b.2.1
         · exact (by simpa [hh] using hf₂b.2.1 : P.2 < norm f₂).le
-      have hPpos : 0 < P.1 * P.2 := by
-        exact mul_pos (by linarith [hPe.1]) (by linarith [hPe.2.1])
-      have hprod : P.1 * P.2 ≤ norm f₁ * norm f₂ :=
-        mul_le_mul hPl hPr (by linarith [hPe.2.1]) hf₁pos.le
       calc
         ‖rowKernel C a (e * (f₁ * f₂))‖ ≤ H / norm (e * (f₁ * f₂)) :=
           hkernel a ha _ hfpos hwin.2
         _ = (H / norm e) / (norm f₁ * norm f₂) := by rw [hfnorm]; ring
         _ ≤ (H / norm e) / (P.1 * P.2) :=
-          div_le_div_of_nonneg_left (div_nonneg hH hepos.le) hPpos hprod
+          div_le_div_of_nonneg_left (div_nonneg hH hepos.le) (mul_pos (by linarith [hPe.1]) (by linarith [hPe.2.1])) (mul_le_mul hPl hPr (by linarith [hPe.2.1]) hf₁pos.le)
     · simp only [norm_zero]
       have he' := ErrorRectangles.rectangle_endpoints C P (Finset.mem_filter.mp hP).1
       apply div_nonneg (div_nonneg hH (show 0 ≤ norm e by unfold norm; positivity))
@@ -787,33 +745,9 @@ namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.MiddleDirectKer
 open LargeDirect
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
-private theorem fixed_mass_le (C : Context Q) : fixedDivisorMass C ≤ (idealDivisorCount (c * C.d) : ℝ) := by
-  have hc : c ≠ ⊥ := by simpa only [C.core] using C.D.bad_ne_bot
-  have hcd : c * C.d ≠ ⊥ := mul_ne_zero hc C.hd0
-  have hsub : C.mobiusDivisors ⊆ idealDivisors (c * C.d) := by
-    intro f hf
-    apply (mem_idealDivisors hcd).mpr
-    have hr : (c * C.d).radical ≠ ⊥ := by
-      intro h
-      have := Ideal.le_radical (I := c * C.d)
-      rw [h] at this
-      exact hcd (le_bot_iff.mp this)
-    exact ((mem_idealDivisors hr).mp hf).trans (Ideal.dvd_iff_le.mpr Ideal.le_radical)
-  calc
-    fixedDivisorMass C ≤ ∑ f ∈ C.mobiusDivisors, (1 : ℝ) := by
-      apply Finset.sum_le_sum
-      intro f hf
-      have hf0 := ne_bot_of_mem_idealDivisors hf
-      have hn : 1 ≤ norm f := by
-        have hp : 0 < Ideal.absNorm f := Nat.pos_of_ne_zero (by simpa [Ideal.absNorm_eq_zero_iff] using hf0)
-        change 1 ≤ (Ideal.absNorm f : ℝ)
-        exact_mod_cast (Nat.succ_le_of_lt hp : 1 ≤ Ideal.absNorm f)
-      exact (div_le_one (by linarith : 0 < norm f)).mpr hn
-    _ = (C.mobiusDivisors.card : ℝ) := by simp
-    _ ≤ (idealDivisorCount (c * C.d) : ℝ) := by
-      exact_mod_cast Finset.card_le_card hsub
+private alias fixed_mass_le := DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.LargeDirect.LargeDirectRectangles.fixed_mass_le
 private theorem rectangle_card_le (C : Context Q) (B : ℝ) :
     ((middleDivisorRectangles C B).card : ℝ) ≤
       (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 : ℝ) ^ 2 := by
@@ -824,12 +758,10 @@ private theorem rectangle_card_le (C : Context Q) (B : ℝ) :
     intro P hP
     exact (Finset.mem_filter.mp (Finset.mem_filter.mp hP).1).1
   have hs : (ErrorRectangles.scales (C.N / norm C.d)).card ≤
-      Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 := by
-    exact (Finset.card_insert_le _ _).trans (Nat.add_le_add_right
+      Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 := (Finset.card_insert_le _ _).trans (Nat.add_le_add_right
       ((Finset.card_image_le).trans (by rw [Finset.card_range])) 1)
   have hd : (middleDivisorRectangles C B).card ≤
-      (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1) ^ 2 := by
-    exact h12.trans (by
+      (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1) ^ 2 := h12.trans (by
       rw [Finset.card_product, pow_two]
       exact Nat.mul_le_mul hs hs)
   exact_mod_cast hd
@@ -847,14 +779,11 @@ theorem fixed_cost_epsilon
   let L := 2 + 1 / (e * Real.log 2)
   let H := L * (2 : ℝ) ^ e
   have hT : 0 < T := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hL : 0 < L := Vendor.dyadicLength_small_power_constant_pos he
-  have hH : 0 < H := mul_pos hL (Real.rpow_pos_of_pos (by norm_num) _)
+  have hL := Vendor.dyadicLength_small_power_constant_pos he
   refine ⟨(A * T ^ e) * H ^ 2, by positivity, ?_⟩
   intro C hM hN hn B
   let Z := C.M * C.N * norm C.d
-  have hMN : 1 ≤ C.M * C.N := one_le_mul_of_one_le_of_one_le hM hN
-  have hZ : 1 ≤ Z := one_le_mul_of_one_le_of_one_le hMN hn
-  have hnZ : norm C.d ≤ Z := le_mul_of_one_le_left (by linarith) hMN
+  have hMN := one_le_mul_of_one_le_of_one_le hM hN
   have hNZ : C.N ≤ Z := by
     dsimp [Z]
     calc C.N ≤ C.M * C.N := le_mul_of_one_le_left (by linarith) hM
@@ -864,15 +793,14 @@ theorem fixed_cost_epsilon
       simp [norm, map_mul]
     have hb : norm (c * C.d) ≤ T * Z := by
       rw [hnorm]
-      exact mul_le_mul (le_max_right _ _) hnZ (by dsimp [norm]; positivity) hT.le
+      exact mul_le_mul (le_max_right _ _) (le_mul_of_one_le_left (by linarith) hMN) (by dsimp [norm]; positivity) hT.le
     calc fixedDivisorMass C ≤ (idealDivisorCount (c * C.d) : ℝ) := fixed_mass_le C
       _ ≤ A * (norm (c * C.d)) ^ e := hdiv _
       _ ≤ A * (T * Z) ^ e := mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow (by dsimp [norm]; positivity) hb he.le) (by linarith)
       _ = (A * T ^ e) * Z ^ e := by rw [Real.mul_rpow hT.le (by linarith)]; ring
   have hx : 2 * max 1 (C.N / norm C.d) ≤ 2 * Z := by
-    have hd : C.N / norm C.d ≤ C.N := (div_le_self (by linarith) hn)
-    exact mul_le_mul_of_nonneg_left (max_le hZ (hd.trans hNZ)) (by norm_num)
+    exact mul_le_mul_of_nonneg_left (max_le (one_le_mul_of_one_le_of_one_le hMN hn) (((div_le_self (by linarith) hn)).trans hNZ)) (by norm_num)
   have hl : (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 : ℝ) ≤ H * Z ^ e := by
     calc _ ≤ L * (2 * max 1 (C.N / norm C.d)) ^ e :=
         Vendor.dyadicLength_small_power he (by
@@ -880,14 +808,9 @@ theorem fixed_cost_epsilon
       _ ≤ L * (2 * Z) ^ e := mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow (by positivity) hx he.le) hL.le
       _ = H * Z ^ e := by dsimp [H]; rw [Real.mul_rpow (by norm_num) (by linarith)]; ring
-  have hc : ((middleDivisorRectangles C B).card : ℝ) ≤ (H * Z ^ e) ^ 2 :=
-    (rectangle_card_le C B).trans (pow_le_pow_left₀ (by positivity) hl 2)
-  have hf0 : 0 ≤ fixedDivisorMass C := by
-    unfold fixedDivisorMass
-    exact Finset.sum_nonneg (fun f _ => by dsimp [norm]; positivity)
-  calc fixedDivisorMass C * ((middleDivisorRectangles C B).card : ℝ)
+  calc _
       ≤ ((A * T ^ e) * Z ^ e) * (H * Z ^ e) ^ 2 :=
-        mul_le_mul hf hc (by positivity) (by positivity)
+        mul_le_mul hf ((rectangle_card_le C B).trans (pow_le_pow_left₀ (by positivity) hl 2)) (by positivity) (by positivity)
     _ = ((A * T ^ e) * H ^ 2) * Z ^ η := by
       have hp : Z ^ e * Z ^ e * Z ^ e = Z ^ η := by
         rw [← Real.rpow_add (by linarith : 0 < Z), ← Real.rpow_add (by linarith : 0 < Z)]
@@ -916,7 +839,7 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 namespace ErrorRectangles
 
@@ -1033,40 +956,41 @@ theorem bilinear_error_middle_direct
     congr 1
     dsimp [η]
     ring
+  let sqrt₀ := Real.sqrt (C.M / B)
   have hkernelC : ∀ a ∈ C.originalRows B unit, ∀ f : Ideal (𝓞 F),
       0 < norm f → norm f ≤ C.Z2 B →
       ‖MiddleDirectKernelUniformity.rowKernel C a f‖ ≤
-        (H * Real.rpow (C.M * C.N) (3 * C.δ) * Real.sqrt (C.M / B)) / norm f :=
+        (H * Real.rpow (C.M * C.N) (3 * C.δ) * sqrt₀) / norm f :=
     hkernel C hCW B unit hunit hM hN hδC hB
   have hpMN : 0 ≤ Real.rpow (C.M * C.N) (3 * C.δ) := Real.rpow_nonneg hMN0 _
-  have hscale : 0 ≤ H * Real.rpow (C.M * C.N) (3 * C.δ) * Real.sqrt (C.M / B) :=
+  have hscale : 0 ≤ H * Real.rpow (C.M * C.N) (3 * C.δ) * sqrt₀ :=
     mul_nonneg (mul_nonneg hH.le hpMN) (Real.sqrt_nonneg _)
   have hExp := MiddleDirectKernelUniformity.middle_divisor_expansion C B unit
     hunit hM hN hδC hB hBK hKM hn hnN
-    (H * Real.rpow (C.M * C.N) (3 * C.δ) * Real.sqrt (C.M / B))
+    (H * Real.rpow (C.M * C.N) (3 * C.δ) * sqrt₀)
     (by positivity) hkernelC
   calc
-    ‖E5 C B unit‖ ≤ (H * Real.rpow (C.M * C.N) (3 * C.δ) * Real.sqrt (C.M / B)) *
+    ‖E5 C B unit‖ ≤ (H * Real.rpow (C.M * C.N) (3 * C.δ) * sqrt₀) *
         (LargeDirect.fixedDivisorMass C *
           ∑ P ∈ T, LargeDirect.rectangleMass C B unit P / (P.1 * P.2)) := hExp
-    _ ≤ (H * Real.rpow (C.M * C.N) (3 * C.δ) * Real.sqrt (C.M / B)) *
+    _ ≤ (H * Real.rpow (C.M * C.N) (3 * C.δ) * sqrt₀) *
         (LargeDirect.fixedDivisorMass C *
           ((T.card : ℝ) * (A₀ * Real.rpow X η * V * (I * Real.rpow X η * E)))) := by
       gcongr
     _ = (LargeDirect.fixedDivisorMass C * (T.card : ℝ)) *
         (H * Real.rpow (C.M * C.N) (3 * C.δ) *
-          Real.sqrt (C.M / B) * A₀ * Real.rpow X η * V * (I * Real.rpow X η * E)) := by ring
+          sqrt₀ * A₀ * Real.rpow X η * V * (I * Real.rpow X η * E)) := by ring
     _ ≤ (J * Real.rpow X η) *
         (H * Real.rpow (C.M * C.N) (3 * C.δ) *
-          Real.sqrt (C.M / B) * A₀ * Real.rpow X η * V * (I * Real.rpow X η * E)) := by
+          sqrt₀ * A₀ * Real.rpow X η * V * (I * Real.rpow X η * E)) := by
       apply mul_le_mul_of_nonneg_right hcost
       positivity
     _ = (H * A₀ * I * J) * Real.rpow (C.M * C.N * norm C.d) ε *
         Real.rpow (C.M * C.N) (3 * δ) *
-        Real.sqrt (C.M / B) * ErrorRectangles.middleEnvelope C B *
+        sqrt₀ * ErrorRectangles.middleEnvelope C B *
           Sieve.energy F c C.N C.lam := by
       change _ = (H * A₀ * I * J) * Real.rpow X ε *
-        Real.rpow (C.M * C.N) (3 * δ) * Real.sqrt (C.M / B) * V * E
+        Real.rpow (C.M * C.N) (3 * δ) * sqrt₀ * V * E
       rw [← hpows, hCδ]
       ring
 

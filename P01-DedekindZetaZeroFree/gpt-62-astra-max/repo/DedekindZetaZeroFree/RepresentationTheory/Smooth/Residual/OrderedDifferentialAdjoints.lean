@@ -12,10 +12,8 @@ open scoped Classical NumberField Topology
 open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualWeakEnergy
 open KPMsClearedTruncationL2
-open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualWeakEnergy renaming word_flow_hasDerivAt → word_flow_hasDerivAt
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.WeakCutoffSources renaming nativeFlow → nativeFlow
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.WeakCutoffSources renaming nativeFlow_zero → nativeFlow_zero
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.WeakCutoffSources renaming nativeFlow_add → nativeFlow_add
+open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualWeakEnergy (word_flow_hasDerivAt)
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.WeakCutoffSources (nativeFlow nativeFlow_zero nativeFlow_add)
 private theorem continuous_slice {Y : Type*} [TopologicalSpace Y]
     (q : ℝ → Y → Y) (hq : Continuous (Function.uncurry q)) (t : ℝ) :
     Continuous (q t) := hq.comp (continuous_const.prodMk continuous_id)
@@ -35,15 +33,11 @@ theorem smooth_word_adjoint_transfer
   letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).1
   letI : BorelSpace (X F ζ hζ) := ⟨rfl⟩
   let Γ := KPSmoothActualFlowData.rationalSubgroup F ζ hζ
-  have hopen : IsOpenQuotientMap (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ) :=
-    MulAction.isOpenQuotientMap_quotientMk
-  have hΓ : IsClosed (Γ : Set (G F ζ hζ)) :=
-    (ActualQuotient.actual_rational_closed_discrete F ζ hζ).1
   letI : T2Space (X F ζ hζ) :=
-    (t2Space_iff_of_isOpenQuotientMap hopen).mpr (by
-      convert hΓ.preimage (continuous_snd.mul continuous_fst.inv) using 1
+    (t2Space_iff_of_isOpenQuotientMap MulAction.isOpenQuotientMap_quotientMk).mpr (by
+      convert ((ActualQuotient.actual_rational_closed_discrete F ζ hζ).1).preimage (continuous_snd.mul continuous_fst.inv) using 1
       ext p
-      exact Quotient.eq.trans (QuotientGroup.rightRel_apply (s := Γ)))
+      exact Quotient.eq.trans (QuotientGroup.rightRel_apply))
   letI : IsFiniteMeasureOnCompacts R.quotientHaar := ⟨fun K hK =>
     lt_top_iff_ne_top.mpr
       (KPGlobalResidualKernel.RawStageL2.TruncatedEstimate.CompactCore.ArchimedeanGeometry.quotientHaar_compact_ne_top R K hK)⟩
@@ -61,17 +55,15 @@ theorem smooth_word_adjoint_transfer
     exact hh
   letI : SigmaFinite R.quotientHaar := SigmaFinite.of_isFiniteMeasureOnCompacts _
   let q : ℝ → X F ζ hζ → X F ζ hζ := nativeFlow (F := F) (ζ := ζ) (hζ := hζ) b.1 b.2
-  have hq : Continuous (Function.uncurry q) :=
+  have hq :=
     (KPSmoothQuotientTranslationFlow.continuous_rightTranslation Γ).comp
       (((KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1.comp
         (KPSmoothActualFlowData.flow_properties F b).2.2).comp continuous_fst |>.prodMk continuous_snd)
   have qzero (x : X F ζ hζ) : q 0 x = x := nativeFlow_zero b.1 b.2 x
   have qadd (s t : ℝ) (x : X F ζ hζ) : q (s+t) x = q t (q s x) :=
     nativeFlow_add b.1 b.2 s t x
-  have qleft (t : ℝ) (x : X F ζ hζ) : q (-t) (q t x) = x := by
-    exact (qadd t (-t) x).symm.trans ((congrArg (fun s => q s x) (add_neg_cancel t)).trans (qzero x))
-  have qright (t : ℝ) (x : X F ζ hζ) : q t (q (-t) x) = x := by
-    exact (qadd (-t) t x).symm.trans ((congrArg (fun s => q s x) (neg_add_cancel t)).trans (qzero x))
+  have qleft (t : ℝ) (x : X F ζ hζ) : q (-t) (q t x) = x := (qadd t (-t) x).symm.trans ((congrArg (fun s => q s x) (add_neg_cancel t)).trans (qzero x))
+  have qright (t : ℝ) (x : X F ζ hζ) : q t (q (-t) x) = x := (qadd (-t) t x).symm.trans ((congrArg (fun s => q s x) (neg_add_cancel t)).trans (qzero x))
   have qc (t : ℝ) : Continuous (q t) := continuous_slice q hq t
   let a : ℝ → X F ζ hζ ≃ₜ X F ζ hζ := fun t =>
     { toFun := q t
@@ -80,7 +72,7 @@ theorem smooth_word_adjoint_transfer
       right_inv := qright t
       continuous_toFun := qc t
       continuous_invFun := qc (-t) }
-  exact ResidualGlobalFlowIBP.invariant_flow_l2_ibp (μ := R.quotientHaar) a hq
+  exact ResidualGlobalFlowIBP.invariant_flow_l2_ibp a hq
     (fun x => nativeFlow_zero b.1 b.2 x)
     (fun t => KPMsGreenFlux.ActualSharpStokes.quotient_flow_measurePreserving R b.1 b.2 t)
     (adjointWordDerivative w₁ f.val) (adjointWordDerivative (b :: w₁) f.val) (adjointWordDerivative w₂ g.val) (adjointWordDerivative (b :: w₂) g.val)

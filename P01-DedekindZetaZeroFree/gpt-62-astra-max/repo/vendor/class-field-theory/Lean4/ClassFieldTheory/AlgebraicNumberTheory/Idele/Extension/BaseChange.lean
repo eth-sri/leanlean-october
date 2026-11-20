@@ -16,14 +16,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -38,7 +30,6 @@ open scoped NumberField TensorProduct
 open NumberField
 
 noncomputable section
-
 
 variable
     (K L : Type*) [Field K] [NumberField K]
@@ -83,17 +74,6 @@ def inclusion :
   (Units.map (adeleInclusion K L)).comp
     (IdeleGroup.equivAdeleRingUnits (K := K)).toMonoidHom
 
-omit [NumberField L] in
-theorem inclusion_injective :
-    Function.Injective (inclusion K L) := by
-  exact
-    (Units.map_injective
-      (Algebra.TensorProduct.includeLeft_injective
-        (R := K) (S := K)
-        (A := NumberField.AdeleRing (𝓞 K) K) (B := L)
-        (FaithfulSMul.algebraMap_injective K L))).comp
-      (IdeleGroup.equivAdeleRingUnits (K := K)).injective
-
 /-- The diagonal copy of `Lˣ` inside the relative idele group. -/
 def principalIdele :
     Lˣ →* RelativeIdeleGroup K L :=
@@ -133,21 +113,22 @@ omit [NumberField L] in
 theorem norm_inclusion (a : IdeleGroup K) :
     norm K L (inclusion K L a) =
       a ^ Module.finrank K L := by
-  apply (IdeleGroup.equivAdeleRingUnits (K := K)).injective
+  apply (IdeleGroup.equivAdeleRingUnits).injective
   simp only [norm, inclusion, MonoidHom.comp_apply]
   apply Units.ext
+  let AdeleRing₀ := NumberField.AdeleRing (𝓞 K) K
   change
-    Algebra.norm (NumberField.AdeleRing (𝓞 K) K)
+    Algebra.norm (AdeleRing₀)
         (algebraMap
-          (NumberField.AdeleRing (𝓞 K) K)
+          (AdeleRing₀)
           (RelativeAdeleRing K L)
-          ((IdeleGroup.equivAdeleRingUnits (K := K) a :
-            (NumberField.AdeleRing (𝓞 K) K)ˣ) :
-            NumberField.AdeleRing (𝓞 K) K)) =
-      (((IdeleGroup.equivAdeleRingUnits (K := K) a) ^
+          ((IdeleGroup.equivAdeleRingUnits a :
+            (AdeleRing₀)ˣ) :
+            AdeleRing₀)) =
+      (((IdeleGroup.equivAdeleRingUnits a) ^
           Module.finrank K L :
-        (NumberField.AdeleRing (𝓞 K) K)ˣ) :
-        NumberField.AdeleRing (𝓞 K) K)
+        (AdeleRing₀)ˣ) :
+        AdeleRing₀)
   rw [Algebra.norm_algebraMap,
     Module.finrank_baseChange]
   rfl
@@ -182,7 +163,7 @@ theorem norm_principalIdele (x : Lˣ) :
     norm K L (principalIdele K L x) =
       IdeleGroup.principalIdele K
         (Units.map (Algebra.norm K) x) := by
-  apply (IdeleGroup.equivAdeleRingUnits (K := K)).injective
+  apply (IdeleGroup.equivAdeleRingUnits).injective
   apply Units.ext
   change
     Algebra.norm (NumberField.AdeleRing (𝓞 K) K)
@@ -205,8 +186,7 @@ theorem conjugation_tmul
     (σ : L ≃ₐ[K] L)
     (a : NumberField.AdeleRing (𝓞 K) K) (x : L) :
     conjugation K L σ (a ⊗ₜ[K] x) =
-      a ⊗ₜ[K] σ x := by
-  rfl
+      a ⊗ₜ[K] σ x := rfl
 
 /-- Galois conjugation on relative ideles. -/
 def conjugationIdele
@@ -230,14 +210,10 @@ theorem conjugation_one
     conjugation K L (1 : L ≃ₐ[K] L) a = a := by
   change
     Algebra.TensorProduct.congr
-        (AlgEquiv.refl :
-          NumberField.AdeleRing (𝓞 K) K ≃ₐ[
-            NumberField.AdeleRing (𝓞 K) K]
-            NumberField.AdeleRing (𝓞 K) K)
-        (AlgEquiv.refl : L ≃ₐ[K] L) a =
+        AlgEquiv.refl
+        AlgEquiv.refl a =
       a
-  rw [Algebra.TensorProduct.congr_refl]
-  rfl
+  simp
 
 omit [NumberField L] [FiniteDimensional K L] in
 theorem conjugation_mul
@@ -245,10 +221,11 @@ theorem conjugation_mul
     (a : RelativeAdeleRing K L) :
     conjugation K L (σ * τ) a =
       conjugation K L σ (conjugation K L τ a) := by
+  let AdeleRing₀ := NumberField.AdeleRing (𝓞 K) K
   let e :
-      NumberField.AdeleRing (𝓞 K) K ≃ₐ[
-        NumberField.AdeleRing (𝓞 K) K]
-        NumberField.AdeleRing (𝓞 K) K :=
+      AdeleRing₀ ≃ₐ[
+        AdeleRing₀]
+        AdeleRing₀ :=
     AlgEquiv.refl
   have he : e.trans e = e := by
     ext
@@ -263,7 +240,7 @@ theorem conjugation_mul
   exact congrArg
     (fun f :
       RelativeAdeleRing K L ≃ₐ[
-        NumberField.AdeleRing (𝓞 K) K]
+        AdeleRing₀]
         RelativeAdeleRing K L ↦ f a) h
 
 /-- The natural Galois action on relative ideles. -/
@@ -303,19 +280,6 @@ theorem smul_inclusion
     (σ : L ≃ₐ[K] L) (a : IdeleGroup K) :
     σ • inclusion K L a = inclusion K L a := by
   apply Units.ext
-  change conjugation K L σ
-      (algebraMap
-        (NumberField.AdeleRing (𝓞 K) K)
-        (RelativeAdeleRing K L)
-        ((IdeleGroup.equivAdeleRingUnits (K := K) a :
-          (NumberField.AdeleRing (𝓞 K) K)ˣ) :
-          NumberField.AdeleRing (𝓞 K) K)) =
-    algebraMap
-      (NumberField.AdeleRing (𝓞 K) K)
-      (RelativeAdeleRing K L)
-      ((IdeleGroup.equivAdeleRingUnits (K := K) a :
-        (NumberField.AdeleRing (𝓞 K) K)ˣ) :
-        NumberField.AdeleRing (𝓞 K) K)
   exact (conjugation K L σ).commutes _
 
 omit [NumberField L] [FiniteDimensional K L] in
@@ -325,9 +289,6 @@ theorem smul_principalIdele
     σ • principalIdele K L x =
       principalIdele K L (Units.map σ.toRingEquiv.toMonoidHom x) := by
   apply Units.ext
-  change conjugation K L σ
-      (Algebra.TensorProduct.includeRight (x : L)) =
-    Algebra.TensorProduct.includeRight (σ (x : L))
   change conjugation K L σ (1 ⊗ₜ[K] (x : L)) =
     1 ⊗ₜ[K] σ (x : L)
   rw [conjugation_tmul]
@@ -348,11 +309,7 @@ theorem galoisAverage_eq_of_fixed
     galoisAverage K L z = z := by
   rw [galoisAverage]
   simp_rw [hz]
-  rw [Finset.sum_const, Finset.card_univ,
-    ← Nat.cast_smul_eq_nsmul K, ← mul_smul,
-    inv_mul_cancel₀
-      (Nat.cast_ne_zero.mpr Fintype.card_ne_zero),
-    one_smul]
+  simp [Finset.sum_const, Finset.card_univ, ← Nat.cast_smul_eq_nsmul K]
 
 omit [NumberField L] in
 theorem galoisAverage_tmul
@@ -399,9 +356,7 @@ theorem galoisAverage_mem_adeleInclusion_range
       obtain ⟨a, ha⟩ := hx
       obtain ⟨b, hb⟩ := hy
       refine ⟨a + b, ?_⟩
-      rw [map_add, ha, hb]
-      simp [galoisAverage, Finset.sum_add_distrib,
-        smul_add]
+      simp [map_add, ha, hb, galoisAverage, Finset.sum_add_distrib, smul_add]
 
 omit [NumberField L] in
 theorem exists_adele_eq_of_galois_fixed
@@ -433,16 +388,9 @@ theorem inclusion_range_eq_galoisFixedSubgroup
   · rintro ⟨a, rfl⟩ σ
     exact smul_inclusion K L σ a
   · intro hu
-    have hfixed :
-        ∀ σ : L ≃ₐ[K] L,
-          conjugation K L σ
-              (u : RelativeAdeleRing K L) =
-            (u : RelativeAdeleRing K L) := by
-      intro σ
-      exact congrArg Units.val (hu σ)
     obtain ⟨a, ha⟩ :=
       exists_adele_eq_of_galois_fixed K L
-        (u : RelativeAdeleRing K L) hfixed
+        u (fun σ => congrArg Units.val (hu σ))
     have hfixedInv :
         ∀ σ : L ≃ₐ[K] L,
           conjugation K L σ
@@ -477,26 +425,21 @@ theorem inclusion_range_eq_galoisFixedSubgroup
         inv := b
         val_inv := by
           apply
-            (Algebra.TensorProduct.includeLeft_injective
-              (R := K) (S := K)
+            (Algebra.TensorProduct.includeLeft_injective (S := K)
               (A := NumberField.AdeleRing (𝓞 K) K) (B := L)
               (FaithfulSMul.algebraMap_injective K L))
           rw [map_mul, ha, hb]
           exact u.val_inv
         inv_val := by
           apply
-            (Algebra.TensorProduct.includeLeft_injective
-              (R := K) (S := K)
+            (Algebra.TensorProduct.includeLeft_injective (S := K)
               (A := NumberField.AdeleRing (𝓞 K) K) (B := L)
               (FaithfulSMul.algebraMap_injective K L))
           rw [map_mul, hb, ha]
           exact u.inv_val }
     refine ⟨(IdeleGroup.equivAdeleRingUnits
-      (K := K)).symm q, ?_⟩
+      ).symm q, ?_⟩
     apply Units.ext
-    change adeleInclusion K L (q :
-      NumberField.AdeleRing (𝓞 K) K) =
-        (u : RelativeAdeleRing K L)
     exact ha
 
 end RelativeIdeleGroup

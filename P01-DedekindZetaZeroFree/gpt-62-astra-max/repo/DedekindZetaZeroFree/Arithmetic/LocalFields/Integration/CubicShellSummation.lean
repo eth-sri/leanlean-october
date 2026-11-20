@@ -11,15 +11,13 @@ open KPLocalPrincipalSeries
 noncomputable section
 set_option autoImplicit false
 
-def negativeValuationShell
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (n : ℕ) : Set K :=
+variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+
+def negativeValuationShell (n : ℕ) : Set K :=
   {x | IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K x) =
     WithZero.exp ((n + 1 : ℕ) : ℤ)}
 
-theorem integral_eq_integer_ball_of_cubic_shells
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K]
+theorem integral_eq_integer_ball_of_cubic_shells [MeasurableSpace K] [BorelSpace K]
     (μ : Measure K) (H : K → ℂ) (a : ℂ)
     (hInt : Integrable H μ)
     (hBall : (∫ x in ((valuation K).integer : Set K), H x ∂μ) = a)
@@ -49,9 +47,7 @@ theorem integral_eq_integer_ball_of_cubic_shells
     intro n m hnm
     apply Set.disjoint_left.mpr
     intro x hxn hxm
-    have hh : WithZero.exp ((n + 1 : ℕ) : ℤ) =
-        WithZero.exp ((m + 1 : ℕ) : ℤ) := hxn.symm.trans hxm
-    have hh' := WithZero.exp_injective hh
+    have hh' := WithZero.exp_injective (hxn.symm.trans hxm)
     omega
   have hc : (⋃ n : ℕ, negativeValuationShell K n) =
       ((valuation K).integer : Set K)ᶜ := by
@@ -66,15 +62,14 @@ theorem integral_eq_integer_ball_of_cubic_shells
         rw [hn, ← WithZero.exp_zero, WithZero.exp_lt_exp]
         omega
       apply (map_lt_map_iff e).mp
-      simpa only [map_one] using he
+      simpa using he
     · intro hx
       have he : 1 < e (valuation K x) := by
-        simpa only [map_one] using (e.strictMono hx)
-      have hne : e (valuation K x) ≠ 0 := ne_of_gt (lt_trans zero_lt_one he)
+        simpa using (e.strictMono hx)
+      have hne := ne_of_gt (lt_trans zero_lt_one he)
       let z := WithZero.log (e (valuation K x))
       have hz : 0 < z := by
-        have hh := WithZero.exp_log hne
-        rw [← hh, ← WithZero.exp_zero, WithZero.exp_lt_exp] at he
+        rw [← (WithZero.exp_log hne), ← WithZero.exp_zero, WithZero.exp_lt_exp] at he
         exact he
       refine ⟨z.toNat - 1, ?_⟩
       change e (valuation K x) = WithZero.exp (((z.toNat - 1) + 1 : ℕ) : ℤ)
@@ -83,19 +78,18 @@ theorem integral_eq_integer_ball_of_cubic_shells
         omega
       rw [hzn]
       exact (WithZero.exp_log hne).symm
-  let r : ℂ := (residueCardinality K : ℂ)⁻¹
-  have hq : (1 : ℝ) < residueCardinality K := by
-    exact_mod_cast (Finite.one_lt_card (α := 𝓀[K]))
+  let r := (residueCardinality K : ℂ)⁻¹
   have hr : ‖r‖ < 1 := by
     dsimp [r]
     rw [norm_inv, Complex.norm_natCast]
-    exact inv_lt_one_of_one_lt₀ hq
+    exact inv_lt_one_of_one_lt₀ (by
+      exact_mod_cast (Finite.one_lt_card))
   have hr1 : 1 - r ≠ 0 := by
     intro h
     have he : r = 1 := by linear_combination -h
     simpa [he] using hr
-  let f : ℕ → ℂ := fun n => if 3 ∣ n + 1 then (1 - r) * r ^ ((n + 1) / 3) * a else 0
-  let j : ℕ → ℕ := fun k => 3 * (k + 1) - 1
+  let f := fun n => if 3 ∣ n + 1 then (1 - r) * r ^ ((n + 1) / 3) * a else 0
+  let j := fun k => 3 * (k + 1) - 1
   have hj : Function.Injective j := by
     intro k l h
     dsimp [j] at h
@@ -107,7 +101,6 @@ theorem integral_eq_integer_ball_of_cubic_shells
     intro hdvd
     apply hn
     refine ⟨(n + 1) / 3 - 1, ?_⟩
-    have hh := Nat.div_mul_cancel hdvd
     dsimp [j]
     omega
   have hfj (k : ℕ) : f (j k) = (1 - r) * r ^ (k + 1) * a := by
@@ -123,13 +116,11 @@ theorem integral_eq_integer_ball_of_cubic_shells
   have hf : HasSum f (r * a) := by
     apply (hj.hasSum_iff hf0).mp
     simpa only [Function.comp_def, hfj] using hg
-  have hsum := hasSum_integral_iUnion hm hd (hInt.integrableOn)
   have hsum' : HasSum f (∫ x in ((valuation K).integer : Set K)ᶜ, H x ∂μ) := by
-    simpa only [hc, hShell, f, r] using hsum
+    simpa only [hc, hShell, f, r] using (hasSum_integral_iUnion hm hd (hInt.integrableOn))
   have ht : (∫ x in ((valuation K).integer : Set K)ᶜ, H x ∂μ) = r * a :=
     hsum'.unique hf
   rw [← integral_add_compl ((valuation K).isOpen_integer.measurableSet) hInt, hBall, ht]
-  change a + r * a = (1 + r) * a
   ring
 
 end

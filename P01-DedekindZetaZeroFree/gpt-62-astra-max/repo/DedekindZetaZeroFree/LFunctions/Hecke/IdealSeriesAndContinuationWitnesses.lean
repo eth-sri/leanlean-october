@@ -39,19 +39,17 @@ structure PrincipalHeckeWitness {F : Type} [Field F] [NumberField F] {f : Ideal 
     (η : DedekindZetaZeroFree.RayClassCharacter F f) where
   Λ : ℂ → ℂ
   U : ℂ → ℂ
-  differentiableOn : DifferentiableOn ℂ Λ {s | s ≠ 0 ∧ s ≠ 1}
   differentiable_U : Differentiable ℂ U
   hasSum : ∀ s : ℂ, 1 < s.re → HasSum (fun I : Ideal (𝓞 F) =>
     heckeCompletionFactor F f s * (η I * (Ideal.absNorm I : ℂ) ^ (-s))) (Λ s)
   functionalEquation : ∀ s : ℂ, s ≠ 0 → s ≠ 1 → Λ s = Λ (1 - s)
   poleClearing : ∀ s : ℂ, s ≠ 0 → s ≠ 1 → U s = s * (s - 1) * Λ s
-  growth : ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, ∀ s : ℂ,
-    ‖U s‖ ≤ C * Real.exp (‖s‖ ^ (1 + ε))
 
+variable {F : Type} [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) {f : Ideal (𝓞 F)}
+    (hf : f ≠ ⊥) (η : DedekindZetaZeroFree.RayClassCharacter F f) (hp : η.IsPrimitive)
+
+include hF hf hp in
 theorem exists_entireHeckeWitness
-    {F : Type} [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    {f : Ideal (𝓞 F)} (hf : f ≠ ⊥)
-    (η : DedekindZetaZeroFree.RayClassCharacter F f) (hp : η.IsPrimitive)
     (hn : ¬ η.IsPrincipal) : Nonempty (EntireHeckeWitness η) := by
   obtain ⟨Λ, Λdual, W, hdiff, hdiff_dual, hW, hsum, hsum_dual, hfe, hgrowth⟩ :=
     (DedekindZetaZeroFree.Hecke.heckeFunctionalEquation F hF f hf η hp).1 hn
@@ -59,16 +57,14 @@ theorem exists_entireHeckeWitness
            differentiable_dual := hdiff_dual, norm_W := hW, hasSum := hsum,
            hasSum_dual := hsum_dual, functionalEquation := hfe, growth := hgrowth }⟩
 
+include hF hf hp in
 theorem exists_principalHeckeWitness
-    {F : Type} [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    {f : Ideal (𝓞 F)} (hf : f ≠ ⊥)
-    (η : DedekindZetaZeroFree.RayClassCharacter F f) (hp : η.IsPrimitive)
     (hn : η.IsPrincipal) : Nonempty (PrincipalHeckeWitness η) := by
   obtain ⟨Λ, U, hdiffOn, hdiffU, hsum, hfe, hpole, hgrowth⟩ :=
     (DedekindZetaZeroFree.Hecke.heckeFunctionalEquation F hF f hf η hp).2 hn
-  exact ⟨{ Λ := Λ, U := U, differentiableOn := hdiffOn, differentiable_U := hdiffU,
+  exact ⟨{ Λ := Λ, U := U, differentiable_U := hdiffU,
            hasSum := hsum, functionalEquation := hfe, poleClearing := hpole,
-           growth := hgrowth }⟩
+            }⟩
 
 end
 

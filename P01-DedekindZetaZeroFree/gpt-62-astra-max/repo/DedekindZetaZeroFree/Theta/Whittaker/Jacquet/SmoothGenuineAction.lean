@@ -24,9 +24,7 @@ variable (v : HeightOneSpectrum (RingOfIntegers F))
 abbrev standardCharacter := KPKirillovOrbitMapFaithful.ψ F v
 
 theorem standardCharacter_properties :
-    IsLocallyConstant (standardCharacter F v) ∧ standardCharacter F v ≠ 1 ∧
-    Continuous (standardCharacter F v) ∧
-    ∀ b, ‖((standardCharacter F v b : ℂˣ) : ℂ)‖ = 1 := by
+    IsLocallyConstant (standardCharacter F v) ∧ standardCharacter F v ≠ 1 := by
   have hlc : IsLocallyConstant (standardCharacter F v) := by
     change IsLocallyConstant (fun x : Multiplicative (v.adicCompletion F) =>
       Circle.toUnits (localFiniteCharacter F v (1 * x.toAdd)))
@@ -34,7 +32,7 @@ theorem standardCharacter_properties :
       ((isLocallyConstant_localFiniteCharacter F v).comp_continuous
         (show Continuous (Multiplicative.toAdd : Multiplicative (v.adicCompletion F) → _)
           from continuous_id)).comp Circle.toUnits
-  refine ⟨hlc, ?_, ?_, ?_⟩
+  refine ⟨hlc, ?_⟩
   · obtain ⟨x, hx⟩ := Algebra.trace_surjective
       ℚ_[PlaceTraceAdapter.prime F v] (v.adicCompletion F)
       (((PlaceTraceAdapter.prime F v).1 : ℚ)⁻¹ : ℚ_[PlaceTraceAdapter.prime F v])
@@ -46,16 +44,6 @@ theorem standardCharacter_properties :
         KPKirillovProjectorGerms.frequencyCharacter] using he
     apply rationalPadicCharacter_inv_prime_ne_one (PlaceTraceAdapter.prime F v)
     simpa only [localFiniteCharacter_apply, PlaceTraceAdapter.trace, hx] using hc
-  · apply Continuous.of_coeHom_comp
-    change Continuous (fun x : Multiplicative (v.adicCompletion F) =>
-      (localFiniteCharacter F v (1 * x.toAdd) : ℂ))
-    simpa only [one_mul] using
-      (show Continuous (fun x : Multiplicative (v.adicCompletion F) =>
-        (localFiniteCharacter F v x.toAdd : ℂ)) from continuous_subtype_val.comp ((continuous_localFiniteCharacter F v).comp
-        (show Continuous (Multiplicative.toAdd : Multiplicative (v.adicCompletion F) → _)
-          from continuous_id)))
-  · intro b
-    exact Circle.norm_coe _
 
 variable (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F v m)
 

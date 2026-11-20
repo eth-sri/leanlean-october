@@ -15,30 +15,17 @@ open KPContCotangentActualOverlap KPContCotangentActualGenuineTwistIsotropy
 open KPContCotangentOverlapRationalBranches KPContActualCotangentMeasurableFamilies
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem continuous_labeledA_self :
-    Continuous (labeledA (placeEquiv F ζ hζ) : M F → KPCuspGenuineMonodromy.SymmetricSpace F) := by
-  apply continuous_pi
-  intro k
-  exact (continuous_apply (placeEquiv F ζ hζ |>.symm k)).comp
-    (CotangentLogCoframe.A (d F)).continuous
+private alias continuous_labeledA_self := DedekindZetaZeroFree.KPContActualCotangentChartZeroExtension.continuous_labeledA_placeEquiv
 
 private theorem isOpen_omega (a : ActualChart (U := U) (H := H)) : IsOpen (omega a) :=
   a.domain_open.preimage continuous_labeledA_self
 
-private theorem continuous_q (a : ActualChart (U := U) (H := H)) : Continuous (q a) := by
-  have hp : Continuous (KPCuspSiegel.projection F
-      (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)) :=
-    continuous_quotient_mk'
-  have hc : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
-      ((H.atlas U).representative a.component)) := by
-    have hh := (H.atlas U).components.continuous.comp (continuous_sigmaMk (i := a.component))
-    simpa only [Function.comp_def, (H.atlas U).components_formula] using hh
-  exact hc.comp (hp.comp continuous_labeledA_self)
+private theorem continuous_q (a : ActualChart (U := U) (H := H)) : Continuous (q a) := by apply @DedekindZetaZeroFree.KPContActualCotangentChartZeroExtension.ChartZeroExtension.continuous_q <;> assumption
 
  def scalarDifferentialZeroExtension (a : ActualChart (U := U) (H := H)) (f : omega a → ℂ) : M F → ℂ :=
   fun x => if hx : x ∈ omega a then f ⟨x, hx⟩ else 0
@@ -46,9 +33,11 @@ private theorem continuous_q (a : ActualChart (U := U) (H := H)) : Continuous (q
 private theorem smooth_zext {a : ActualChart (U := U) (H := H)} {f : omega a → ℂ}
     (hf : SmoothOnLift a f) : ContDiffOn ℝ (⊤ : ℕ∞) (scalarDifferentialZeroExtension a f) (omega a) := by
   obtain ⟨g, hg, he⟩ := hf
-  refine hg.congr (f₁ := scalarDifferentialZeroExtension a f) ?_
+  refine hg.congr ?_
   intro x hx
   simpa [scalarDifferentialZeroExtension, hx] using (he ⟨x, hx⟩).symm
+
+alias ScalarDifferentialDescent.smooth_zext := smooth_zext
 
 private theorem smooth_differential {a : ActualChart (U := U) (H := H)} {f : omega a → ℂ}
     (hf : SmoothOnLift a f) : SmoothOnLift a (fun x => CotangentLogCoframe.j (d F)
@@ -57,10 +46,9 @@ private theorem smooth_differential {a : ActualChart (U := U) (H := H)} {f : ome
     (HyperbolicChart.differential (d F) (scalarDifferentialZeroExtension a f) x), ?_, fun _ => rfl⟩
   rw [contDiffOn_piLp]
   rintro ⟨i, k⟩
-  have hd := (smooth_zext hf).fderiv_of_isOpen (isOpen_omega a) (m := (⊤ : ℕ∞)) (by simp)
   have hcd (k : Fin 3) : ContDiffOn ℝ (⊤ : ℕ∞)
       (HyperbolicChart.coordinateDerivative (d F) i k (scalarDifferentialZeroExtension a f)) (omega a) :=
-    hd.clm_apply contDiffOn_const
+    ((smooth_zext hf).fderiv_of_isOpen (isOpen_omega a) (by simp)).clm_apply contDiffOn_const
   have hexp : ContDiffOn ℝ (⊤ : ℕ∞)
       (fun x : M F => (Real.exp (x (i, 2)) : ℂ)) (omega a) :=
     Complex.ofRealCLM.contDiff.comp_contDiffOn
@@ -70,27 +58,25 @@ private theorem smooth_differential {a : ActualChart (U := U) (H := H)} {f : ome
   · simpa [CotangentLogCoframe.j, HyperbolicChart.differential] using hexp.mul (hcd 0)
   · simpa [CotangentLogCoframe.j, HyperbolicChart.differential] using hexp.mul (hcd 1)
 
+alias ScalarDifferentialDescent.smooth_differential := smooth_differential
+
 private theorem measurable_smooth {W : Type*} [NormedAddCommGroup W] [NormedSpace ℝ W]
     [MeasurableSpace W] [BorelSpace W]
     {a : ActualChart (U := U) (H := H)} {f : omega a → W} (hf : SmoothOnLift a f) :
     Measurable f := by
   obtain ⟨g, hg, he⟩ := hf
-  have h : f = (omega a).domRestrict g := funext (fun x => (he x).symm)
-  rw [h]
+  rw [(funext (fun x => (he x).symm))]
   exact hg.continuousOn.restrict.measurable
 
-private theorem smooth_mul {a : ActualChart (U := U) (H := H)} {f g : omega a → ℂ}
-    (hf : SmoothOnLift a f) (hg : SmoothOnLift a g) :
-    SmoothOnLift a (fun x => f x * g x) := by
-  obtain ⟨f', hf', he⟩ := hf
-  obtain ⟨g', hg', he'⟩ := hg
-  exact ⟨fun x => f' x * g' x, hf'.mul hg', fun x => by dsimp; rw [he x, he' x]⟩
+alias ScalarDifferentialDescent.measurable_smooth := measurable_smooth
 
 private theorem smooth_ofReal {a : ActualChart (U := U) (H := H)} {f : omega a → ℝ}
     (hf : SmoothOnLift a f) : SmoothOnLift a (fun x => (f x : ℂ)) := by
   obtain ⟨g, hg, he⟩ := hf
   exact ⟨fun x => (g x : ℂ), Complex.ofRealCLM.contDiff.comp_contDiffOn hg,
     fun x => by dsimp; rw [he x]⟩
+
+alias ScalarDifferentialDescent.smooth_ofReal := smooth_ofReal
 
 private theorem differential_zero_germ {d : ℕ} {f : HyperbolicChart.Space d → ℂ}
     {x : HyperbolicChart.Space d} (h : f =ᶠ[𝓝 x] 0) :
@@ -106,24 +92,21 @@ private theorem differential_support (f : ScalarFields F ζ hζ U R P H)
   apply closure_minimal _ isClosed_closure
   rintro x ⟨a, y, hq, hne⟩
   rw [← hq]
-  let A : Set (M F) := {z | ∃ hz : z ∈ omega a, f a ⟨z, hz⟩ ≠ 0}
+  let A := {z | ∃ hz : z ∈ omega a, f a ⟨z, hz⟩ ≠ 0}
   have hy : y.val ∈ closure A := by
     by_contra hn
     have he : scalarDifferentialZeroExtension a (f a) =ᶠ[𝓝 y.val] 0 := by
       filter_upwards [(isClosed_closure.isOpen_compl.inter (isOpen_omega a)).mem_nhds
         ⟨hn, y.property⟩] with z hz
-      have hzA : z ∉ A := fun h => hz.1 (subset_closure h)
       have hfz : f a ⟨z, hz.2⟩ = 0 := by
         by_contra hfz
-        exact hzA ⟨hz.2, hfz⟩
+        exact (fun h => hz.1 (subset_closure h)) ⟨hz.2, hfz⟩
       simp [scalarDifferentialZeroExtension, hz.2, hfz]
     apply hne
     change CotangentLogCoframe.j (d F)
       (HyperbolicChart.differential (d F) (scalarDifferentialZeroExtension a (f a)) y.val) = 0
     rw [differential_zero_germ he, map_zero]
-  have himg := image_closure_subset_closure_image (s := A) (continuous_q a)
-  apply closure_mono (t := {x | ∃ (b : ActualChart (U := U) (H := H)) (z : omega b),
-    q b z.val = x ∧ f b z ≠ 0}) _ (himg (Set.mem_image_of_mem (q a) hy))
+  apply closure_mono _ ((image_closure_subset_closure_image (continuous_q a)) (Set.mem_image_of_mem (q a) hy))
   rintro x ⟨z, ⟨hz, hne⟩, rfl⟩
   exact ⟨a, ⟨z, hz⟩, rfl, hne⟩
 
@@ -143,30 +126,19 @@ private theorem q_isotropy (a : ActualChart (U := U) (H := H)) (γ : Gamma a) (x
   apply Quotient.sound
   exact ⟨γ.val.1.val, rfl⟩
 
+alias ScalarDifferentialDescent.q_isotropy := q_isotropy
+
 private theorem q_branch {a b : ActualChart (U := U) (H := H)} (e : ActualBranch a b)
-    (x : M F) : q b (e.arrow.psi x) = q a x := by
-  rcases e with ⟨h, e, hs, ht, hl⟩
-  rcases a with ⟨i, ca, oa, da, dao, dac, das, dai⟩
-  rcases b with ⟨j, cb, ob, db, dbo, dbc, dbs, dbi⟩
-  dsimp at h
-  subst j
-  apply congrArg (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative i))
-  have hA (y : KPCuspGenuineMonodromy.SymmetricSpace F) :
-      labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) y) = y := by
-    funext k
-    simp [labeledA, labeledAInv]
-  change KPCuspSiegel.projection F _
-    (labeledA (placeEquiv F ζ hζ) (coordinateMap _ _ e.gamma x)) = _
-  simp only [coordinateMap, targetChart, isotropyChart, ChartKind.representative,
-    inv_one, one_mul, mul_one, hA]
-  apply Quotient.sound
-  exact ⟨e.gamma, rfl⟩
+    (x : M F) : q b (e.arrow.psi x) = q a x := by apply @DedekindZetaZeroFree.KPContActualCotangentChartZeroExtension.q_actualBranch <;> assumption
 
 private theorem scalar_cutoff (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
     (hη : ∀ a : ActualChart (U := U) (H := H), SmoothOnLift a (fun x => η (q a x.val)))
     (f : S_U F ζ hζ U R P H) :
     (fun a x => (η (q a x.val) : ℂ) * f.val a x) ∈ scalarTests := by
-  refine ⟨fun a => smooth_mul (smooth_ofReal (hη a)) (f.property.1 a), ?_, ?_⟩
+  refine ⟨fun a => (by
+    obtain ⟨f', hf', he⟩ := (smooth_ofReal (hη a))
+    obtain ⟨g', hg', he'⟩ := (f.property.1 a)
+    exact ⟨fun x => f' x * g' x, hf'.mul hg', fun x => by dsimp; rw [he x, he' x]⟩), ?_, ?_⟩
   · refine ⟨?_, ?_⟩
     · intro a γ x hx
       dsimp
@@ -223,6 +195,8 @@ private theorem differential_frame (f : M F → ℂ) (x : M F) (k : Fin (d F) ×
     simp [CotangentLogCoframe.j, HyperbolicChart.differential,
       HyperbolicChart.coordinateDerivative, RCLike.real_smul_eq_coe_mul]
 
+alias ScalarDifferentialDescent.differential_frame := differential_frame
+
 private theorem differential_frame_sum (f : M F → ℂ) (x : M F) (v : V F) :
     fderiv ℝ f x (CotangentLogCoframe.H (d F) x v) =
       ∑ k, (v k : ℂ) *
@@ -231,6 +205,8 @@ private theorem differential_frame_sum (f : M F → ℂ) (x : M F) (v : V F) :
   simp only [EuclideanSpace.basisFun_repr, map_sum, map_smul, differential_frame,
     RCLike.real_smul_eq_coe_mul]
   rfl
+
+alias ScalarDifferentialDescent.differential_frame_sum := differential_frame_sum
 
 private theorem differential_arrow_const {i : Fin (H.atlas U).componentCount}
     {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) i}
@@ -282,6 +258,8 @@ private theorem differential_arrow_const {i : Fin (H.atlas U).componentCount}
       EuclideanSpace.basisFun_apply, Pi.single_apply] using hi.symm
   rw [hv]
 
+alias ScalarDifferentialDescent.differential_arrow_const := differential_arrow_const
+
 private theorem differential_arrow {i : Fin (H.atlas U).componentCount}
     {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) i}
     (e : Arrow a b) (f g : M F → ℂ) (x : M F) (hx : x ∈ e.domain)
@@ -290,15 +268,10 @@ private theorem differential_arrow {i : Fin (H.atlas U).componentCount}
     CotangentLogCoframe.j (d F) (HyperbolicChart.differential (d F) g (e.psi x)) =
       T e x hx (CotangentLogCoframe.j (d F) (HyperbolicChart.differential (d F) f x)) := by
   have hp : e.phase =ᶠ[𝓝 x] fun _ => e.phase x := by
-    have hopen := e.isOpen_domain.isOpenMap_subtype_val _
-      ((unitary_phase e).1.isOpen_fiber (e.phase x))
-    have hmem : x ∈ (Subtype.val : e.domain → M F) '' {y | e.phase y.val = e.phase x} :=
-      ⟨⟨x, hx⟩, rfl, rfl⟩
-    filter_upwards [hopen.mem_nhds hmem] with y hy
+    filter_upwards [(e.isOpen_domain.isOpenMap_subtype_val _
+      ((unitary_phase e).1.isOpen_fiber (e.phase x))).mem_nhds (⟨⟨x, hx⟩, rfl, rfl⟩)] with y hy
     rcases hy with ⟨z, hz, rfl⟩
     exact hz
-  change _ = e.phase x •
-    KPContCotangentRealOrthogonalComplexification.operatorComplexification _ (Q e x) _
   apply differential_arrow_const e (e.phase x) f g x hx hf hg
   filter_upwards [he, hp] with y hy hpy
   simpa [hpy] using hy
@@ -308,6 +281,8 @@ private theorem differentiable_zext {a : ActualChart (U := U) (H := H)}
     DifferentiableAt ℝ (scalarDifferentialZeroExtension a f) x.val :=
   ((smooth_zext hf).differentiableOn (by simp) x.val x.property).differentiableAt
     ((isOpen_omega a).mem_nhds x.property)
+
+alias ScalarDifferentialDescent.differentiable_zext := differentiable_zext
 
 private theorem differential_measurable (f : ScalarFields F ζ hζ U R P H)
     (hf : ∀ a, SmoothOnLift a (f a)) (hc : ScalarCompatible f) :
@@ -382,7 +357,11 @@ private theorem cutoff_cotangent (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → �
     rw [q_branch, W.val.property.2.2 a b e x hx, map_smul]
     rfl
 
-private theorem smul_support_left (f : ScalarFields F ζ hζ U R P H)
+section
+
+variable (f : ScalarFields F ζ hζ U R P H)
+
+private theorem smul_support_left
     (v : ChartFields F ζ hζ U R P H)
     (hv : IsMeasurableCotangentFamily (fun a x => f a x • v a x)) :
     cotangentSupport ⟨_, hv⟩ ⊆ scalarSupport f := by
@@ -390,13 +369,15 @@ private theorem smul_support_left (f : ScalarFields F ζ hζ U R P H)
   rintro x ⟨a, y, hq, hn⟩
   exact ⟨a, y, hq, (smul_ne_zero_iff.mp hn).1⟩
 
-private theorem smul_support_right (f : ScalarFields F ζ hζ U R P H)
+private theorem smul_support_right
     (v : Family (U := U) (H := H))
     (hv : IsMeasurableCotangentFamily (fun a x => f a x • coefficient v a x)) :
     cotangentSupport ⟨_, hv⟩ ⊆ cotangentSupport v := by
   apply closure_mono
   rintro x ⟨a, y, hq, hn⟩
   exact ⟨a, y, hq, (smul_ne_zero_iff.mp hn).2⟩
+
+end
 
 private theorem cutoff_gradient (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
     (hη : ∀ a : ActualChart (U := U) (H := H), SmoothOnLift a (fun x => η (q a x.val)))
@@ -476,11 +457,9 @@ theorem scalar_differential_descent :
       refine ⟨cutoff_cotangent η hη W, ?_⟩
       intro hv
       refine ⟨fun a => smooth_smul (smooth_ofReal (hη a)) (W.property.1 a), ?_⟩
-      have hs := smul_support_right (fun a x => (η (q a x.val) : ℂ)) W.val hv
-      have hK : IsCompact (cotangentSupport W.val) := by
-        rw [← support_normSquare]
-        exact W.property.2
-      exact compact_family_of_support ⟨_, hv⟩ hK hs
+      refine compact_family_of_support ⟨_, hv⟩ ?_ (smul_support_right (fun a x => (η (q a x.val) : ℂ)) W.val hv)
+      rw [← support_normSquare]
+      exact W.property.2
     · intro f
       refine ⟨cutoff_gradient η hη f, ?_⟩
       intro hv

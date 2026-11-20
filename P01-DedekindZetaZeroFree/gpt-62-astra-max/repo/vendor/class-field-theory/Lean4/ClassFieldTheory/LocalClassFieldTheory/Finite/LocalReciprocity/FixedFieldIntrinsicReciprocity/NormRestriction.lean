@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -30,57 +27,31 @@ open LocalFieldTheory RamificationTheory CyclicCohomology KummerTheory
 open ClassFormation
 open scoped IsMulCommutative ValuativeRel
 
-/-- A compatible restriction of concrete embedded Galois actions induces the
-corresponding restriction map on ambient finite quotient representatives. -/
-theorem AmbientEmbeddedFixedFieldPresentation.quotientRestriction
-    (K K' L L' : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field K'] [ValuativeRel K'] [TopologicalSpace K']
-    [IsNonarchimedeanLocalField K']
-    [Field L] [Field L']
-    [Algebra K K'] [Algebra K L] [Algebra K L']
-    [Algebra K' L'] [Algebra L L']
-    [IsScalarTower K K' L'] [IsScalarTower K L L']
+section
+
+variable (K K' L L' : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K] [Field K'] [ValuativeRel K'] [TopologicalSpace K']
+    [IsNonarchimedeanLocalField K'] [Field L] [Field L'] [Algebra K K'] [Algebra K L] [Algebra K L']
+    [Algebra K' L'] [Algebra L L'] [IsScalarTower K K' L'] [IsScalarTower K L L']
     [FiniteDimensional K K'] [Algebra.IsSeparable K K']
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation K')]
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    [FiniteDimensional K' L'] [IsAbelianGalois K' L']
-    {jLower : L →ₐ[K] SeparableClosure K}
-    {jUpper : L' →ₐ[K] SeparableClosure K}
+    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation K')]
+    [FiniteDimensional K L] [IsAbelianGalois K L] [FiniteDimensional K' L'] [IsAbelianGalois K' L']
+    {jLower : L →ₐ[K] SeparableClosure K} {jUpper : L' →ₐ[K] SeparableClosure K}
     (lower : AmbientEmbeddedFixedFieldPresentation K K L jLower)
     (upper : AmbientEmbeddedFixedFieldPresentation K K' L' jUpper)
     (hH'H : upper.base.field.toSubgroup ≤ lower.base.field.toSubgroup)
-    (hJ'J : upper.extension.field.toSubgroup ≤
-      lower.extension.field.toSubgroup)
-    [hJnormal :
-      (extensionSubgroup lower.base.field lower.extension.field
-        lower.extension.below).Normal]
-    [_hJfinite : Finite
-      (lower.base.field.toSubgroup ⧸
-        extensionSubgroup lower.base.field lower.extension.field
-          lower.extension.below)]
-    [hJ'normal :
-      (extensionSubgroup upper.base.field upper.extension.field
-        upper.extension.below).Normal]
-    [_hJ'finite : Finite
-      (upper.base.field.toSubgroup ⧸
-        extensionSubgroup upper.base.field upper.extension.field
-          upper.extension.below)]
-    [_hHabsolute : Finite
-      ((baseField Gal(SeparableClosure K / K)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField Gal(SeparableClosure K / K))
-          lower.base.field (le_baseField lower.base.field))]
-    [_hH'absolute : Finite
-      ((baseField Gal(SeparableClosure K / K)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField Gal(SeparableClosure K / K))
-          upper.base.field (le_baseField upper.base.field))]
-    [_hH'finite : Finite
-      (lower.base.field.toSubgroup ⧸
-        extensionSubgroup lower.base.field upper.base.field hH'H)]
+    (hJ'J : upper.extension.field.toSubgroup ≤ lower.extension.field.toSubgroup)
+    [hJnormal : (extensionSubgroup lower.base.field lower.extension.field lower.extension.below).Normal]
+    [_hJfinite : Finite (lower.base.field.toSubgroup ⧸ extensionSubgroup lower.base.field lower.extension.field lower.extension.below)]
+    [hJ'normal : (extensionSubgroup upper.base.field upper.extension.field upper.extension.below).Normal]
+    [_hJ'finite : Finite (upper.base.field.toSubgroup ⧸ extensionSubgroup upper.base.field upper.extension.field upper.extension.below)]
+    [_hHabsolute : Finite ((baseField Gal(SeparableClosure K / K)).toSubgroup ⧸ extensionSubgroup (baseField Gal(SeparableClosure K / K)) lower.base.field (le_baseField lower.base.field))]
+    [_hH'absolute : Finite ((baseField Gal(SeparableClosure K / K)).toSubgroup ⧸ extensionSubgroup (baseField Gal(SeparableClosure K / K)) upper.base.field (le_baseField upper.base.field))]
+    [_hH'finite : Finite (lower.base.field.toSubgroup ⧸ extensionSubgroup lower.base.field upper.base.field hH'H)]
+
+/-- A compatible restriction of concrete embedded Galois actions induces the
+corresponding restriction map on ambient finite quotient representatives. -/
+theorem AmbientEmbeddedFixedFieldPresentation.quotientRestriction
     (restrictActual : Gal(L' / K') →* Gal(L / K))
     (hbase : ∀ x : L,
       jUpper (algebraMap L L' x) = jLower x)
@@ -113,10 +84,10 @@ theorem AmbientEmbeddedFixedFieldPresentation.quotientRestriction
   obtain ⟨sigma, rfl⟩ := QuotientGroup.mk_surjective q
   change
     restrictActual
-        ((Abelianization.equivOfComm (H := Gal(L' / K'))).symm
+        ((Abelianization.equivOfComm).symm
           (qUpper.abelianizationCongr
             (Abelianization.of (QuotientGroup.mk sigma)))) =
-      (Abelianization.equivOfComm (H := Gal(L / K))).symm
+      (Abelianization.equivOfComm).symm
         (qLower.abelianizationCongr
           (normResidueNaturalityAbelianizedRestriction
             lower.base.field upper.base.field
@@ -133,12 +104,7 @@ theorem AmbientEmbeddedFixedFieldPresentation.quotientRestriction
         upper.quotientEquiv
           (upper.extension.extensionQuotientMk sigma) := by
     dsimp [qUpper]
-    have hmk :
-        upper.extension.extensionQuotientMulEquiv.symm
-            (QuotientGroup.mk sigma) =
-          upper.extension.extensionQuotientMk sigma := by
-      exact
-        upper.extension.extensionQuotientMulEquiv.symm_apply_eq.mpr
+    have hmk := upper.extension.extensionQuotientMulEquiv.symm_apply_eq.mpr
           (upper.extension.extensionQuotientMk_apply sigma).symm
     rw [hmk]
   have hqLower_mk :
@@ -147,13 +113,7 @@ theorem AmbientEmbeddedFixedFieldPresentation.quotientRestriction
           (lower.extension.extensionQuotientMk
             (Subgroup.inclusion hH'H sigma)) := by
     dsimp [qLower]
-    have hmk :
-        lower.extension.extensionQuotientMulEquiv.symm
-            (QuotientGroup.mk (Subgroup.inclusion hH'H sigma)) =
-          lower.extension.extensionQuotientMk
-            (Subgroup.inclusion hH'H sigma) := by
-      exact
-        lower.extension.extensionQuotientMulEquiv.symm_apply_eq.mpr
+    have hmk := lower.extension.extensionQuotientMulEquiv.symm_apply_eq.mpr
           (lower.extension.extensionQuotientMk_apply
             (Subgroup.inclusion hH'H sigma)).symm
     rw [hmk]
@@ -161,9 +121,7 @@ theorem AmbientEmbeddedFixedFieldPresentation.quotientRestriction
   intro x
   apply jLower.injective
   calc
-    jLower
-        (restrictActual
-          (qUpper (QuotientGroup.mk sigma)) x) =
+    _ =
         jUpper
           ((qUpper (QuotientGroup.mk sigma))
             (algebraMap L L' x)) :=
@@ -179,7 +137,6 @@ theorem AmbientEmbeddedFixedFieldPresentation.quotientRestriction
     _ = (Subgroup.inclusion hH'H sigma).1.1
         (jLower x) := by
       rw [hbase x]
-      change sigma.1.1 (jLower x) = sigma.1.1 (jLower x)
       rfl
     _ = jLower
         (lower.quotientEquiv
@@ -195,54 +152,6 @@ theorem AmbientEmbeddedFixedFieldPresentation.quotientRestriction
 /-- The actual abstract fixed-field norm-residue symbols commute with norm and
 restriction through the canonical quotient equivalences of the presentations. -/
 theorem AmbientEmbeddedFixedFieldPresentation.fixedFieldNormResidueTransport
-    (K K' L L' : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field K'] [ValuativeRel K'] [TopologicalSpace K']
-    [IsNonarchimedeanLocalField K']
-    [Field L] [Field L']
-    [Algebra K K'] [Algebra K L] [Algebra K L']
-    [Algebra K' L'] [Algebra L L']
-    [IsScalarTower K K' L'] [IsScalarTower K L L']
-    [FiniteDimensional K K'] [Algebra.IsSeparable K K']
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation K')]
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    [FiniteDimensional K' L'] [IsAbelianGalois K' L']
-    {jLower : L →ₐ[K] SeparableClosure K}
-    {jUpper : L' →ₐ[K] SeparableClosure K}
-    (lower : AmbientEmbeddedFixedFieldPresentation K K L jLower)
-    (upper : AmbientEmbeddedFixedFieldPresentation K K' L' jUpper)
-    (hH'H : upper.base.field.toSubgroup ≤ lower.base.field.toSubgroup)
-    (hJ'J : upper.extension.field.toSubgroup ≤
-      lower.extension.field.toSubgroup)
-    [hJnormal :
-      (extensionSubgroup lower.base.field lower.extension.field
-        lower.extension.below).Normal]
-    [_hJfinite : Finite
-      (lower.base.field.toSubgroup ⧸
-        extensionSubgroup lower.base.field lower.extension.field
-          lower.extension.below)]
-    [hJ'normal :
-      (extensionSubgroup upper.base.field upper.extension.field
-        upper.extension.below).Normal]
-    [_hJ'finite : Finite
-      (upper.base.field.toSubgroup ⧸
-        extensionSubgroup upper.base.field upper.extension.field
-          upper.extension.below)]
-    [_hHabsolute : Finite
-      ((baseField Gal(SeparableClosure K / K)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField Gal(SeparableClosure K / K))
-          lower.base.field (le_baseField lower.base.field))]
-    [_hH'absolute : Finite
-      ((baseField Gal(SeparableClosure K / K)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField Gal(SeparableClosure K / K))
-          upper.base.field (le_baseField upper.base.field))]
-    [_hH'finite : Finite
-      (lower.base.field.toSubgroup ⧸
-        extensionSubgroup lower.base.field upper.base.field hH'H)]
     (hbase : ∀ x : L,
       jUpper (algebraMap L L' x) = jLower x)
     (a : K'ˣ) :
@@ -280,8 +189,8 @@ theorem AmbientEmbeddedFixedFieldPresentation.fixedFieldNormResidueTransport
   let H' := upper.base.field
   let J := lower.extension.field
   let J' := upper.extension.field
-  let hJH : J.toSubgroup ≤ H.toSubgroup := lower.extension.below
-  let hJ'H' : J'.toSubgroup ≤ H'.toSubgroup := upper.extension.below
+  let hJH := lower.extension.below
+  let hJ'H' := upper.extension.below
   let qActualLower :=
     lower.extension.extensionQuotientMulEquiv.symm.trans
       lower.fixedFieldQuotientEquiv
@@ -290,7 +199,7 @@ theorem AmbientEmbeddedFixedFieldPresentation.fixedFieldNormResidueTransport
       upper.fixedFieldQuotientEquiv
   let FLower :=
     abstractFixedField K (SeparableClosure K) H
-  let phiLower : K ≃ₐ[K] FLower :=
+  let phiLower :=
     lower.baseEquiv
   let FUpper :=
     abstractFixedField K (SeparableClosure K) H'
@@ -298,7 +207,7 @@ theorem AmbientEmbeddedFixedFieldPresentation.fixedFieldNormResidueTransport
     RingHom.toAlgebra
       (IntermediateField.inclusion
         (abstractFixedField_le K (SeparableClosure K) hH'H))
-  let phiUpper : K' ≃ₐ[K] FUpper :=
+  let phiUpper :=
     upper.baseEquiv
   have hphiComm :
       RingHom.comp (algebraMap FLower FUpper)
@@ -317,15 +226,15 @@ theorem AmbientEmbeddedFixedFieldPresentation.fixedFieldNormResidueTransport
       jLower (algebraMap K L x) =
         jUpper (algebraMap K' L' (algebraMap K K' x))
     calc
-      jLower (algebraMap K L x) =
+      _ =
           jUpper (algebraMap L L' (algebraMap K L x)) :=
         (hbase (algebraMap K L x)).symm
       _ = jUpper (algebraMap K' L' (algebraMap K K' x)) := by
         rw [← IsScalarTower.algebraMap_apply K L L',
           ← IsScalarTower.algebraMap_apply K K' L']
-  let aUpper : FUpperˣ :=
+  let aUpper :=
     Units.mapEquiv phiUpper.toMulEquiv a
-  let aLower : FLowerˣ :=
+  let aLower :=
     Units.mapEquiv phiLower.toMulEquiv (normUnits K K' a)
   have hbaseNorm :
       abstractFixedFieldNormUnits
@@ -391,9 +300,10 @@ theorem AmbientEmbeddedFixedFieldPresentation.fixedFieldNormResidueTransport
         Additive.toMul
           (symbolLower (Additive.ofMul aLower)) at hmul
     exact qActualLower.abelianizationCongr.eq_symm_apply.mpr hmul
-  simpa only [H, H', J, J', hJH, hJ'H', qActualLower, qActualUpper,
-    aUpper, aLower, symbolUpper, symbolLower] using
+  simpa using
     hrawActual
+
+end
 
 /-- Canonical ambient fixed-field norm-residue values commute with restriction
 and norm in an arbitrary finite square of nonarchimedean local fields. -/
@@ -486,17 +396,13 @@ theorem ambientEmbeddedNormResidueElement_norm_restriction
         hRangeJJ
   let hJH : J.toSubgroup ≤ H.toSubgroup := lower.extension.below
   let hJ'H' : J'.toSubgroup ≤ H'.toSubgroup := upper.extension.below
-  let hJnormal :
-      (extensionSubgroup H J hJH).Normal :=
+  let hJnormal :=
     lower.extension.normal
-  let hJfinite : Finite
-      (H.toSubgroup ⧸ extensionSubgroup H J hJH) :=
+  let hJfinite :=
     lower.extension.finite
-  let hJ'normal :
-      (extensionSubgroup H' J' hJ'H').Normal :=
+  let hJ'normal :=
     upper.extension.normal
-  let hJ'finite : Finite
-      (H'.toSubgroup ⧸ extensionSubgroup H' J' hJ'H') :=
+  let hJ'finite :=
     upper.extension.finite
   let hHabsolute : Finite
       ((baseField
@@ -573,9 +479,9 @@ theorem ambientEmbeddedNormResidueElement_norm_restriction
   let lowerQuotientValue :=
     lower.fixedFieldQuotientEquiv.abelianizationCongr.symm
       lowerSymbolValue
+  let normResidueNaturalityAbelianizedRestriction₀ := normResidueNaturalityAbelianizedRestriction H H' J J' hJH hJ'H' hH'H hJ'J
   have hraw :
-      normResidueNaturalityAbelianizedRestriction
-          H H' J J' hJH hJ'H' hH'H hJ'J
+      normResidueNaturalityAbelianizedRestriction₀
           ((upper.extension.extensionQuotientMulEquiv.symm.trans
             upper.fixedFieldQuotientEquiv).abelianizationCongr.symm
             upperSymbolValue) =
@@ -596,8 +502,7 @@ theorem ambientEmbeddedNormResidueElement_norm_restriction
         (Abelianization.equivOfComm (H := Gal(L / K))).symm
           (lower.quotientEquiv.abelianizationCongr
             (lower.extension.extensionQuotientMulEquiv.abelianizationCongr.symm
-              (normResidueNaturalityAbelianizedRestriction
-                H H' J J' hJH hJ'H' hH'H hJ'J
+              (normResidueNaturalityAbelianizedRestriction₀
                 (upper.extension.extensionQuotientMulEquiv.abelianizationCongr
                   z)))) := by
     simpa only [← abelianizationCongr_trans,
@@ -609,20 +514,17 @@ theorem ambientEmbeddedNormResidueElement_norm_restriction
         (upper.extension.extensionQuotientMulEquiv.abelianizationCongr z)
   have hambient :
       lower.extension.extensionQuotientMulEquiv.abelianizationCongr.symm
-          (normResidueNaturalityAbelianizedRestriction
-            H H' J J' hJH hJ'H' hH'H hJ'J
+          (normResidueNaturalityAbelianizedRestriction₀
             (upper.extension.extensionQuotientMulEquiv.abelianizationCongr
               upperQuotientValue)) =
         lowerQuotientValue := by
     refine
       lower.extension.extensionQuotientMulEquiv.abelianizationCongr.symm_apply_eq.mpr ?_
     calc
-      normResidueNaturalityAbelianizedRestriction
-          H H' J J' hJH hJ'H' hH'H hJ'J
+      normResidueNaturalityAbelianizedRestriction₀
           (upper.extension.extensionQuotientMulEquiv.abelianizationCongr
             upperQuotientValue) =
-          normResidueNaturalityAbelianizedRestriction
-            H H' J J' hJH hJ'H' hH'H hJ'J
+          normResidueNaturalityAbelianizedRestriction₀
             ((upper.extension.extensionQuotientMulEquiv.symm.trans
               upper.fixedFieldQuotientEquiv).abelianizationCongr.symm
               upperSymbolValue) := by
@@ -671,8 +573,7 @@ theorem ambientEmbeddedNormResidueElement_norm_restriction
         (Abelianization.equivOfComm (H := Gal(L / K))).symm
             (lower.quotientEquiv.abelianizationCongr
               (lower.extension.extensionQuotientMulEquiv.abelianizationCongr.symm
-                (normResidueNaturalityAbelianizedRestriction
-                  H H' J J' hJH hJ'H' hH'H hJ'J
+                (normResidueNaturalityAbelianizedRestriction₀
                   (upper.extension.extensionQuotientMulEquiv.abelianizationCongr
                     upperQuotientValue)))) :=
         htarget upperQuotientValue
@@ -712,15 +613,15 @@ theorem abelianLocalArtinMonoidHom_norm_restriction
         (normUnits K K') := by
   apply MonoidHom.ext
   intro a
-  let : FiniteDimensional K L' :=
+  let :=
     FiniteDimensional.trans K K' L'
-  let : Algebra.IsSeparable K L' :=
+  let :=
     Algebra.IsSeparable.trans K K' L'
   let j : L' →ₐ[K] SeparableClosure K :=
     IsSepClosed.lift
-  let jLower : L →ₐ[K] SeparableClosure K :=
+  let jLower :=
     j.comp (IsScalarTower.toAlgHom K L L')
-  let iLower : K →ₐ[K] SeparableClosure K :=
+  let iLower :=
     jLower.comp (IsScalarTower.toAlgHom K K L)
   let eLower :
       @AlgEquiv K (SeparableClosure K) (SeparableClosure K)
@@ -734,9 +635,8 @@ theorem abelianLocalArtinMonoidHom_norm_restriction
       iLower.toRingHom.toAlgebra
       (RingEquiv.refl (SeparableClosure K)) ?_
     intro x
-    change algebraMap K (SeparableClosure K) x = iLower x
     exact (iLower.commutes x).symm
-  let iUpper : K' →ₐ[K] SeparableClosure K :=
+  let iUpper :=
     j.comp (IsScalarTower.toAlgHom K K' L')
   let eUpper :
       letI : Algebra K' (SeparableClosure K) :=
@@ -756,20 +656,12 @@ theorem abelianLocalArtinMonoidHom_norm_restriction
       Gal(L' / K') →* Gal(L / K) :=
     (AlgEquiv.restrictNormalHom L).comp
       (AlgEquiv.restrictScalarsHom K)
-  let aNorm : Kˣ :=
+  let aNorm :=
     normUnits K K' a
-  let ambientUpper : Gal(L' / K') :=
+  let ambientUpper :=
     ambientEmbeddedNormResidueElement K K' L' j eUpper a
-  let ambientLower : Gal(L / K) :=
+  let ambientLower :=
     ambientEmbeddedNormResidueElement K K L jLower eLower aNorm
-  have hUpper :
-      abelianLocalArtinMonoidHom K' L' a = ambientUpper :=
-    abelianLocalArtin_eq_ambientEmbeddedNormResidueSymbol_of_equiv
-      K K' L' j eUpper a
-  have hLower :
-      abelianLocalArtinMonoidHom K L aNorm = ambientLower :=
-    abelianLocalArtin_eq_ambientEmbeddedNormResidueSymbol_of_equiv
-      K K L jLower eLower aNorm
   have htransport :
       restrictActual ambientUpper = ambientLower := by
     simpa only [restrictActual, ambientUpper, ambientLower, aNorm, jLower] using
@@ -779,11 +671,12 @@ theorem abelianLocalArtinMonoidHom_norm_restriction
     restrictActual (abelianLocalArtinMonoidHom K' L' a) =
       abelianLocalArtinMonoidHom K L aNorm
   calc
-    restrictActual (abelianLocalArtinMonoidHom K' L' a) =
-        restrictActual ambientUpper := by
-      exact congrArg restrictActual hUpper
+    _ =
+        restrictActual ambientUpper := congrArg restrictActual (abelianLocalArtin_eq_ambientEmbeddedNormResidueSymbol_of_equiv
+        K K' L' j eUpper a)
     _ = ambientLower := htransport
-    _ = abelianLocalArtinMonoidHom K L aNorm := hLower.symm
+    _ = abelianLocalArtinMonoidHom K L aNorm := (abelianLocalArtin_eq_ambientEmbeddedNormResidueSymbol_of_equiv
+      K K L jLower eLower aNorm).symm
 
 end LocalClassFieldTheory
 

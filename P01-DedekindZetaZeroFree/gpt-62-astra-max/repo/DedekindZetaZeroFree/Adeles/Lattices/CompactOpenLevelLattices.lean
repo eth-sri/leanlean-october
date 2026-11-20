@@ -17,65 +17,75 @@ def integralFiniteAdeles (F : Type*) [Field F] [NumberField F] :
   add_mem' := by intro x y hx hy v; exact (v.adicCompletionIntegers F).toSubring.add_mem (hx v) (hy v)
   neg_mem' := by intro x hx v; exact (v.adicCompletionIntegers F).toSubring.neg_mem (hx v)
 
-def integerScaleHom {A : Type*} [AddCommGroup A] (n : ℤ) : A →+ A where
+section
+
+variable {A : Type*} [AddCommGroup A] (n : ℤ)
+
+def integerScaleHom : A →+ A where
   toFun x := n • x
   map_zero' := by simp
   map_add' := by intros; simp [smul_add]
 
-def integerScaledSubgroup {A : Type*} [AddCommGroup A] (n : ℤ) (H : AddSubgroup A) :
+def integerScaledSubgroup (H : AddSubgroup A) :
     AddSubgroup A := H.map (integerScaleHom n)
+
+end
 
 def integerFieldSubgroup (F : Type*) [Field F] [NumberField F] : AddSubgroup F :=
   (algebraMap (𝓞 F) F).toAddMonoidHom.range
 
-def finiteLevelFieldSubgroup {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F)) : AddSubgroup F :=
+section
+
+variable {F : Type*} [Field F] [NumberField F] (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
+
+def finiteLevelFieldSubgroup : AddSubgroup F :=
   K.comap (algebraMap F (FiniteAdeleRing (𝓞 F) F)).toAddMonoidHom
 
-def finiteLevelLattice {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F)) :
+def finiteLevelLattice :
     Submodule ℤ (NumberField.mixedEmbedding.mixedSpace F) :=
   (finiteLevelFieldSubgroup K).toIntSubmodule.map
     (NumberField.mixedEmbedding F).toIntAlgHom.toLinearMap
 
-theorem mem_finiteLevelLattice_iff {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
+theorem mem_finiteLevelLattice_iff
     (x : NumberField.mixedEmbedding.mixedSpace F) :
     x ∈ finiteLevelLattice K ↔ ∃ lam : F,
       algebraMap F (FiniteAdeleRing (𝓞 F) F) lam ∈ K ∧ NumberField.mixedEmbedding F lam = x := by
   rfl
 
-def finiteLevelDiagonal {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F)) : finiteLevelFieldSubgroup K →+ K where
+def finiteLevelDiagonal : finiteLevelFieldSubgroup K →+ K where
   toFun x := ⟨algebraMap F (FiniteAdeleRing (𝓞 F) F) x, x.property⟩
   map_zero' := by ext; simp
   map_add' := by intros; ext; simp
 
+end
+
 namespace FiniteLevelHelpers
 
-theorem integral_diagonal_iff {F : Type*} [Field F] [NumberField F] (x : F) :
+section
+
+variable {F : Type*} [Field F] [NumberField F]
+
+theorem integral_diagonal_iff (x : F) :
     algebraMap F (FiniteAdeleRing (𝓞 F) F) x ∈ integralFiniteAdeles F ↔
       x ∈ integerFieldSubgroup F := by
   constructor
   · intro hx
     apply HeightOneSpectrum.mem_integers_of_valuation_le_one F x
     intro v
-    have hv := hx v
     simpa only [FiniteAdeleRing.algebraMap_apply,
       HeightOneSpectrum.mem_adicCompletionIntegers,
-      HeightOneSpectrum.valuedAdicCompletion_eq_valuation'] using hv
+      HeightOneSpectrum.valuedAdicCompletion_eq_valuation'] using (hx v)
   · rintro ⟨z, rfl⟩ v
-    change ((algebraMap (𝓞 F) F z : F) : v.adicCompletion F) ∈ v.adicCompletionIntegers F
     exact HeightOneSpectrum.coe_mem_adicCompletionIntegers v z
 
-theorem scaled_integral_diagonal_iff {F : Type*} [Field F] [NumberField F]
+theorem scaled_integral_diagonal_iff
     (a : ℕ) (ha : 0 < a) (x : F) :
     algebraMap F (FiniteAdeleRing (𝓞 F) F) x ∈
         integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F) ↔
       x ∈ integerScaledSubgroup (a : ℤ) (integerFieldSubgroup F) := by
   constructor
   · rintro ⟨y, hy, heq⟩
-    let z : F := (a : F)⁻¹ * x
+    let z := (a : F)⁻¹ * x
     have hz : (a : ℤ) • z = x := by
       simp [z, zsmul_eq_mul, show (a : F) ≠ 0 by exact_mod_cast ha.ne']
     have hdiag : algebraMap F (FiniteAdeleRing (𝓞 F) F) z = y := by
@@ -92,6 +102,8 @@ theorem scaled_integral_diagonal_iff {F : Type*} [Field F] [NumberField F]
     rw [← map_zsmul]
     exact congrArg (algebraMap F (FiniteAdeleRing (𝓞 F) F)) heq
 
+end
+
  theorem compact_open_bound {A : Type*} [AddCommGroup A] [TopologicalSpace A]
     [IsTopologicalAddGroup A] (H K : AddSubgroup A)
     (hH : IsCompact (H : Set A)) (hK : IsOpen (K : Set A)) :
@@ -99,7 +111,6 @@ theorem scaled_integral_diagonal_iff {F : Type*} [Field F] [NumberField F]
   let q := QuotientAddGroup.mk' K
   letI : DiscreteTopology (A ⧸ K) := QuotientAddGroup.discreteTopology hK
   have hc : IsCompact (H.map q : Set (A ⧸ K)) := by
-    change IsCompact (q '' (H : Set A))
     exact hH.image QuotientAddGroup.continuous_mk
   letI : Finite (H.map q) := hc.finite_of_discrete.to_subtype
   refine ⟨Nat.card (H.map q), Nat.card_pos, ?_⟩
@@ -111,8 +122,7 @@ theorem scaled_integral_diagonal_iff {F : Type*} [Field F] [NumberField F]
   simpa only [map_zsmul, natCast_zsmul, map_nsmul] using hh'
 
  theorem integral_isOpen (F : Type*) [Field F] [NumberField F] :
-    IsOpen (integralFiniteAdeles F : Set (FiniteAdeleRing (𝓞 F) F)) := by
-  exact RestrictedProduct.isOpen_forall_mem (fun _ => Valued.isOpen_valuationSubring _)
+    IsOpen (integralFiniteAdeles F : Set (FiniteAdeleRing (𝓞 F) F)) := RestrictedProduct.isOpen_forall_mem (fun _ => Valued.isOpen_valuationSubring _)
 
 set_option backward.isDefEq.respectTransparency false in
  theorem integral_isCompact (F : Type*) [Field F] [NumberField F] :
@@ -120,7 +130,6 @@ set_option backward.isDefEq.respectTransparency false in
   letI : ∀ v : HeightOneSpectrum (𝓞 F), CompactSpace (v.adicCompletionIntegers F) :=
     fun v => by
       apply isCompact_iff_compactSpace.mp
-      change IsCompact ((Valued.integer (v.adicCompletion F)) : Set (v.adicCompletion F))
       exact isCompact_iff_compactSpace.mpr
         (Valued.integer.properSpace_iff_compactSpace_integer.mp inferInstance)
   have h := isCompact_range (RestrictedProduct.isEmbedding_structureMap
@@ -173,10 +182,14 @@ theorem finiteLevel_integer_bounds {F : Type*} [Field F] [NumberField F]
     rw [map_zsmul]
     exact hupp _ hx
 
-theorem finiteLevelLattice_discrete {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
+section
+
+variable {F : Type*} [Field F] [NumberField F] (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
-    (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F))) :
+    (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F)))
+
+include hcompact hopen in
+theorem finiteLevelLattice_discrete :
     DiscreteTopology (finiteLevelLattice K) := by
   obtain ⟨a, b, ha, hb, h₁, h₂, h₃, h₄⟩ := finiteLevel_integer_bounds K hcompact hopen
   let g : finiteLevelLattice K → mixedEmbedding.integerLattice F := fun x =>
@@ -196,20 +209,18 @@ theorem finiteLevelLattice_discrete {F : Type*} [Field F] [NumberField F]
     exact smul_right_injective (mixedEmbedding.mixedSpace F)
       (show (b : ℤ) ≠ 0 by exact_mod_cast hb.ne') (congrArg Subtype.val hxy)
 
-theorem finiteLevelLattice_full_rank {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
-    (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
-    (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F))) :
+theorem finiteLevelLattice_full_rank :
     letI := finiteLevelLattice_discrete K hcompact hopen
     IsZLattice ℝ (finiteLevelLattice K) ∧
       Module.finrank ℤ (finiteLevelLattice K) = Module.finrank ℚ F := by
   letI := finiteLevelLattice_discrete K hcompact hopen
   obtain ⟨a, b, ha, hb, h₁, h₂, h₃, h₄⟩ := finiteLevel_integer_bounds K hcompact hopen
+  let span₀ := Submodule.span ℝ (finiteLevelLattice K : Set (mixedEmbedding.mixedSpace F))
   have hspan : Submodule.span ℝ (mixedEmbedding.integerLattice F : Set (mixedEmbedding.mixedSpace F)) ≤
-      Submodule.span ℝ (finiteLevelLattice K : Set (mixedEmbedding.mixedSpace F)) := by
+      span₀ := by
     apply Submodule.span_le.mpr
     intro x hx
-    change x ∈ Submodule.span ℝ (finiteLevelLattice K : Set (mixedEmbedding.mixedSpace F))
+    change x ∈ span₀
     obtain ⟨z, hz⟩ := hx
     change mixedEmbedding F (algebraMap (𝓞 F) F z) = x at hz
     have hax : (a : ℤ) • x ∈ finiteLevelLattice K := by
@@ -217,7 +228,7 @@ theorem finiteLevelLattice_full_rank {F : Type*} [Field F] [NumberField F]
       refine ⟨(a : ℤ) • algebraMap (𝓞 F) F z, h₃ ?_, ?_⟩
       · exact ⟨algebraMap (𝓞 F) F z, ⟨z, rfl⟩, rfl⟩
       · rw [map_zsmul, hz]
-    have hs := (Submodule.span ℝ (finiteLevelLattice K : Set (mixedEmbedding.mixedSpace F))).smul_mem
+    have hs := (span₀).smul_mem
       ((a : ℝ)⁻¹) (Submodule.subset_span hax)
     simpa only [natCast_zsmul, ← Nat.cast_smul_eq_nsmul ℝ a x,
       smul_smul, inv_mul_cancel₀ (show (a : ℝ) ≠ 0 by exact_mod_cast ha.ne'), one_smul] using hs
@@ -227,6 +238,8 @@ theorem finiteLevelLattice_full_rank {F : Type*} [Field F] [NumberField F]
     exact hspan⟩
   exact ⟨inferInstance, (ZLattice.rank ℝ (finiteLevelLattice K)).trans
     (mixedEmbedding.finrank F)⟩
+
+end
 
 open FiniteLevelHelpers in
 
@@ -250,7 +263,7 @@ theorem finiteLevel_quotient_comparison {F : Type*} [Field F] [NumberField F]
   letI : DiscreteTopology (K ⧸ U) := QuotientAddGroup.discreteTopology
     ((scaled_integral_isOpen a ha).preimage continuous_subtype_val)
   letI : Finite (K ⧸ U) := finite_of_compact_of_discrete
-  let φ : finiteLevelFieldSubgroup K →+ (K ⧸ U) :=
+  let φ :=
     (QuotientAddGroup.mk' U).comp (finiteLevelDiagonal K)
   have hker : H = φ.ker := by
     ext x
@@ -263,14 +276,13 @@ theorem finiteLevel_quotient_comparison {F : Type*} [Field F] [NumberField F]
     obtain ⟨x, rfl⟩ := QuotientAddGroup.mk_surjective q
     let V := {y : FiniteAdeleRing (𝓞 F) F |
       y - x.val ∈ integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F)}
-    have hV : IsOpen V := (scaled_integral_isOpen a ha).preimage (continuous_id.sub continuous_const)
     have hxV : x.val ∈ V := by
       change x.val - x.val ∈ integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F)
       simp
-    obtain ⟨lam, hlam⟩ := (finiteAdele_dense F).exists_mem_open hV ⟨x.val, hxV⟩
+    obtain ⟨lam, hlam⟩ := (finiteAdele_dense F).exists_mem_open ((scaled_integral_isOpen a ha).preimage (continuous_id.sub continuous_const)) ⟨x.val, hxV⟩
     have hlamK : algebraMap F (FiniteAdeleRing (𝓞 F) F) lam ∈ K := by
       have ht := K.add_mem (hlevel hlam) x.property
-      simpa only [sub_add_cancel] using ht
+      simpa using ht
     refine ⟨⟨lam, hlamK⟩, ?_⟩
     change QuotientAddGroup.mk (finiteLevelDiagonal K ⟨lam, hlamK⟩) = QuotientAddGroup.mk x
     apply QuotientAddGroup.eq.mpr
@@ -280,11 +292,10 @@ theorem finiteLevel_quotient_comparison {F : Type*} [Field F] [NumberField F]
         integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F) :=
       (integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F)).neg_mem hlam
     simpa only [sub_eq_add_neg, neg_add_rev, neg_neg, add_comm] using ht
-  let e : (finiteLevelFieldSubgroup K ⧸ H) ≃+ (K ⧸ U) :=
+  let e :=
     (QuotientAddGroup.quotientAddEquivOfEq hker).trans
       (QuotientAddGroup.quotientKerEquivOfSurjective φ hsurj)
-  have hfin : Finite (finiteLevelFieldSubgroup K ⧸ H) := Finite.of_equiv _ e.symm.toEquiv
-  refine ⟨hfin, inferInstance, e, ?_⟩
+  refine ⟨(Finite.of_equiv _ e.symm.toEquiv), inferInstance, e, ?_⟩
   intro x
   change QuotientAddGroup.kerLift φ
     (QuotientAddGroup.quotientAddEquivOfEq hker (QuotientAddGroup.mk x)) = _

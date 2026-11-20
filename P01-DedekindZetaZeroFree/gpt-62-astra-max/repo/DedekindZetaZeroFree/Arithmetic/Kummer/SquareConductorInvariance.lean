@@ -22,8 +22,9 @@ private theorem ideal_eq_of_exponents (F : Type) [Field F] [NumberField F]
     HeightOneSpectrum.maxPowDividing_eq_pow_multiset_count v hJ]
   exact congrArg (fun n => v.asIdeal ^ n) (h v)
 
-theorem isLeast_mul_sq_iff (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x y : Fˣ)
+variable (F : Type) [Field F] [NumberField F] (h12 : (primitiveRoots 12 F).Nonempty)
+
+theorem isLeast_mul_sq_iff (x y : Fˣ)
     (v : HeightOneSpectrum (𝓞 F)) (n : ℕ) :
     IsLeast (fun k : ℕ =>
       ClassFieldTheory.rayLocalHigherUnitGroup v k ≤
@@ -38,43 +39,31 @@ theorem isLeast_mul_sq_iff (F : Type) [Field F] [NumberField F]
     exact RMKummerLocalSquareLaws.lambda_mul_sq F h12 x y v t
   rw [hchar]
 
-theorem finiteExponent_mul_sq (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x y : Fˣ)
+theorem finiteExponent_mul_sq (x y : Fˣ)
     (v : HeightOneSpectrum (𝓞 F)) :
     (M F (RMKummerConductor.m F h12 (x * y ^ 2))
       (RMKummerConductor.m_ne_bot F h12 (x * y ^ 2))).finitePart v =
     (M F (RMKummerConductor.m F h12 x)
-      (RMKummerConductor.m_ne_bot F h12 x)).finitePart v := by
-  exact ((isLeast_mul_sq_iff F h12 x y v _).mp
+      (RMKummerConductor.m_ne_bot F h12 x)).finitePart v := ((isLeast_mul_sq_iff F h12 x y v _).mp
     (RMKummerLeastLocalExponent.finiteExponent_isLeast F h12 (x * y ^ 2) v)).unique
       (RMKummerLeastLocalExponent.finiteExponent_isLeast F h12 x v)
 
-theorem m_mul_sq (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x y : Fˣ) :
+theorem m_mul_sq (x y : Fˣ) :
     RMKummerConductor.m F h12 (x * y ^ 2) = RMKummerConductor.m F h12 x := by
   apply ideal_eq_of_exponents F _ _
     (RMKummerConductor.m_ne_bot F h12 (x * y ^ 2))
     (RMKummerConductor.m_ne_bot F h12 x)
   intro v
-  simpa only [RMKummerLeastLocalExponent.finiteExponent_eq_ord] using
+  simpa using
     finiteExponent_mul_sq F h12 x y v
 
-theorem m_one (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) :
+theorem m_one :
     RMKummerConductor.m F h12 (1 : Fˣ) = ⊤ := by
   apply ideal_eq_of_exponents F _ _ (RMKummerConductor.m_ne_bot F h12 1) top_ne_bot
   intro v
   have hzero : ClassFieldTheory.rayLocalHigherUnitGroup v 0 ≤
-      (RMKummerLocalNormCharacter.lambda F h12 1 v).ker := by
-    intro t _
-    exact MonoidHom.mem_ker.mpr (RMKummerLocalSquareLaws.lambda_one F h12 v t)
-  have hle := (RMKummerLeastLocalExponent.finiteExponent_isLeast F h12 1 v).2 hzero
-  rw [RMKummerLeastLocalExponent.finiteExponent_eq_ord] at hle
-  have heq := Nat.eq_zero_of_le_zero hle
-  rw [heq]
-  unfold idealPrimeExponent
-  rw [← Ideal.one_eq_top, UniqueFactorizationMonoid.normalizedFactors_one,
-    Multiset.count_zero]
+      (RMKummerLocalNormCharacter.lambda F h12 1 v).ker := fun t _ => MonoidHom.mem_ker.mpr (RMKummerLocalSquareLaws.lambda_one F h12 v t)
+  simpa [Ideal.one_eq_top, UniqueFactorizationMonoid.normalizedFactors_one, Multiset.count_zero, idealPrimeExponent, RMKummerLeastLocalExponent.finiteExponent_eq_ord] using (RMKummerLeastLocalExponent.finiteExponent_isLeast F h12 1 v).2 hzero
 
 end
 end DedekindZetaZeroFree.RMKummerSquareConductor

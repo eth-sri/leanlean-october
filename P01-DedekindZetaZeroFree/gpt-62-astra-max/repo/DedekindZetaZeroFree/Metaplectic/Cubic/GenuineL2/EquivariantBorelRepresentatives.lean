@@ -14,8 +14,8 @@ open KPContSectorCoveredQuotientVocabulary KPContSectorFixedPushforwardSupport
 open KPContSectorClosedLpSubspace
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
 
 local instance : Fintype (rootsOfUnity 3 F) := Fintype.ofFinite _
 
@@ -26,7 +26,6 @@ def average (g : CoveredSpherical F ζ hζ U → ℂ) :
 
 private lemma z_mul (ε ε' : rootsOfUnity 3 F) (v : CoveredSpherical F ζ hζ U) :
     z F ζ hζ U (ε * ε') v = z F ζ hζ U ε (z F ζ hζ U ε' v) := by
-  change (ε * ε') • v = ε • (ε' • v)
   exact mul_smul ε ε' v
 
 theorem average_measurable (g : CoveredSpherical F ζ hζ U → ℂ)
@@ -73,7 +72,6 @@ theorem average_represents (u : H F ζ hζ R U)
     (g : CoveredSpherical F ζ hζ U → ℂ) (hg : Measurable g)
     (hgLp : MemLp g 2 (coveredMeasure F ζ hζ R U))
     (hgu : hgLp.toLp g = (u : CoveredL2 F ζ hζ R U)) :
-    average F ζ hζ U g =ᵐ[coveredMeasure F ζ hζ R U] g ∧
     ∃ hf : MemLp (average F ζ hζ U g) 2 (coveredMeasure F ζ hζ R U),
       hf.toLp (average F ζ hζ U g) = (u : CoveredL2 F ζ hζ R U) := by
   set μ : Measure (CoveredSpherical F ζ hζ U) := coveredMeasure F ζ hζ R U
@@ -113,7 +111,6 @@ theorem average_represents (u : H F ζ hζ R U)
     have hsum : (∑ _ : rootsOfUnity 3 F, g w) = (3 : ℂ) * g w := by
       rw [Finset.sum_const, Finset.card_univ, hcard, nsmul_eq_mul, Nat.cast_ofNat]
     rw [hsum, ← mul_assoc, inv_mul_cancel₀ (by norm_num : (3 : ℂ) ≠ 0), one_mul]
-  refine ⟨havg, ?_⟩
   have hfLp : MemLp (average F ζ hζ U g) 2 μ := (memLp_congr_ae havg).mpr hgLp
   refine ⟨hfLp, ?_⟩
   rw [MemLp.toLp_congr hfLp hgLp havg]
@@ -127,22 +124,17 @@ theorem equivariant_vanish_of_fixed (f : CoveredSpherical F ζ hζ U → ℂ)
     f v = 0 := by
   have h := hf ε v
   rw [hfixed] at h
-  have h0 : ((chi F ζ hζ ε : ℂ) - 1) * f v = 0 := by
-    rw [sub_mul, one_mul, ← h, sub_self]
-  exact (mul_eq_zero.mp h0).resolve_left (sub_ne_zero.mpr hchi)
+  refine (mul_eq_zero.mp ?_).resolve_left (sub_ne_zero.mpr hchi)
+  rw [sub_mul, one_mul, ← h, sub_self]
 
 theorem exists_exact_borel_representative (u : H F ζ hζ R U) :
     ∃ (g : CoveredSpherical F ζ hζ U → ℂ) (hg : Measurable g)
       (hgLp : MemLp g 2 (coveredMeasure F ζ hζ R U)),
-      hgLp.toLp g = (u : CoveredL2 F ζ hζ R U) ∧
       ∃ (f : CoveredSpherical F ζ hζ U → ℂ) (hf : Measurable f)
         (hfLp : MemLp f 2 (coveredMeasure F ζ hζ R U)),
-        f = average F ζ hζ U g ∧
         hfLp.toLp f = (u : CoveredL2 F ζ hζ R U) ∧
         (∀ (ε : rootsOfUnity 3 F) (v : CoveredSpherical F ζ hζ U),
-          f (z F ζ hζ U ε v) = (chi F ζ hζ ε : ℂ) * f v) ∧
-        (∀ (ε : rootsOfUnity 3 F) (v : CoveredSpherical F ζ hζ U),
-          z F ζ hζ U ε v = v → (chi F ζ hζ ε : ℂ) ≠ 1 → f v = 0) := by
+          f (z F ζ hζ U ε v) = (chi F ζ hζ ε : ℂ) * f v) := by
   set μ : Measure (CoveredSpherical F ζ hζ U) := coveredMeasure F ζ hζ R U
   set v : CoveredL2 F ζ hζ R U := (u : CoveredL2 F ζ hζ R U)
   have hvLp : MemLp (v : CoveredSpherical F ζ hζ U → ℂ) 2 μ := Lp.memLp v
@@ -156,13 +148,10 @@ theorem exists_exact_borel_representative (u : H F ζ hζ R U) :
     rw [MemLp.toLp_congr hgLp hvLp hg_ae]
     exact Lp.toLp_coeFn v hvLp
   have hfmeas : Measurable (average F ζ hζ U g) := average_measurable F ζ hζ U g hg
-  obtain ⟨havg, hfLp, hfLp_toLp⟩ := average_represents F ζ hζ R U u g hg hgLp hgu
-  refine ⟨g, hg, hgLp, hgu, average F ζ hζ U g, hfmeas, hfLp, rfl, hfLp_toLp, ?_, ?_⟩
+  obtain ⟨hfLp, hfLp_toLp⟩ := average_represents F ζ hζ R U u g hg hgLp hgu
+  refine ⟨g, hg, hgLp, average F ζ hζ U g, hfmeas, hfLp, hfLp_toLp, ?_⟩
   · intro ε w
     exact average_equivariant F ζ hζ U g ε w
-  · intro ε w hfixed hchi
-    exact equivariant_vanish_of_fixed F ζ hζ U (average F ζ hζ U g)
-      (fun ε w => average_equivariant F ζ hζ U g ε w) ε w hfixed hchi
 
 end DedekindZetaZeroFree.KPContSectorExactBorelRepresentatives
 

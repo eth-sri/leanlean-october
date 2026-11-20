@@ -23,10 +23,14 @@ local instance dualAbsoluteG1Borel (A : SArithmeticData F) : BorelSpace A.G1 := 
 
 namespace ProbePoissonDualAbsolute
 
-abbrev Index (A : SArithmeticData F) :=
+section
+
+variable (A : SArithmeticData F)
+
+abbrev Index :=
   A.Exterior × ExteriorSquarefreeIdeal A.cS × A.Exterior × ThetaReflectionData.Row A
 
-def kernel (A : SArithmeticData F)
+def kernel
     (D : ComparisonPoissonCoefficientData F A)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (μ : Measure (SLocalProduct F A.Sf))
@@ -45,20 +49,20 @@ def kernel (A : SArithmeticData F)
         ProbePoissonSheet.frequency A X (D.generator s)
           (ThetaReflectionData.forwardModulus A D c n) h)
 
-def term (A : SArithmeticData F) (σ : F →+* ℂ)
+def term (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : NormalizedProbe.PrincipalData A σ η hS)
     (X Y Z : ℝ) (i : Index A) (t : A.G1) : ℂ :=
   kernel A P.coefficients P.finiteTrace P.additiveMeasure P.W0 P.W1
     X Y Z i.1 i.2.1 i.2.2.1 i.2.2.2.val t
 
-theorem principalNorm_generator (A : SArithmeticData F)
+theorem principalNorm_generator
     (D : ComparisonPoissonCoefficientData F A) (s : A.Exterior) :
     ProbePoissonSheet.principalNorm A (D.generator s) = A.exteriorNorm s := by
   rw [(ProbePoissonSheet.principalNorm_eq_modulus A _ (D.generates s).1).1]
   exact ProbeJointAbsoluteMass.q_generator A D s
 
-theorem term_eq_kernel (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem term_eq_kernel (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : NormalizedProbe.PrincipalData A σ η hS)
     (X Y Z : ℝ) (i : Index A) (t : A.G1) :
@@ -75,15 +79,14 @@ theorem term_eq_kernel (A : SArithmeticData F) (σ : F →+* ℂ)
   push_cast
   ring_nf
 
-theorem summable_sumOrbit (A : SArithmeticData F) (ρ : ℝ) (hρ : 1 < ρ) :
+theorem summable_sumOrbit (ρ : ℝ) (hρ : 1 < ρ) :
     Summable (fun o : ProbeOrbitNormSum.Orbit A =>
       (ProbeOrbitNormSum.orbitNorm A o) ^ (-ρ)) :=
   ProbeOrbitNormSum.orbit_norm_rpow_summable A ρ hρ
 
-theorem summable_sumS (A : SArithmeticData F) (W1 : ProbeRealAnnularWeight)
-    (Y : ℝ) (hY : 0 < Y) :
-    Summable (fun s : A.Exterior => |W1 (A.exteriorNorm s / Y)| * A.exteriorNorm s) :=
-  ProbeJointAbsoluteMass.summable_outerMoment A W1 Y hY
+end
+
+alias summable_sumS := DedekindZetaZeroFree.ProbeJointAbsoluteMass.summable_outerMoment
 
 theorem summable_sumCN (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -97,7 +100,7 @@ theorem summable_sumCN (A : SArithmeticData F) (ι : F →+* ℂ)
           (A.exteriorNorm i.1.val * A.exteriorNorm i.2 ^ 3 / Z)| *
         (A.exteriorNorm i.1.val * A.exteriorNorm i.2 ^ 3) ^ ρ /
         (Real.sqrt (A.exteriorNorm i.1.val) * A.exteriorNorm i.2)) := by
-  obtain ⟨C, hC, hk⟩ :=
+  obtain ⟨C, hk⟩ :=
     ProbePoissonGaussianRowBound.gaussian_row_domination A ι η hS ρ Z hρ hZ
   have hrow : Summable (fun i : ExteriorSquarefreeIdeal A.cS × A.Exterior =>
       ProbePoissonGaussianRowBound.rowMass A P.coefficients ρ Z i.1 i.2) :=
@@ -122,15 +125,10 @@ theorem term_continuous (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : NormalizedProbe.PrincipalData A ι η hS)
     (X Y Z : ℝ) (i : Index A) : Continuous (term A ι η hS P X Y Z i) := by
-  have hf := ProbeSheetFourierMellinBounds.raw_fourier_continuous A P.finiteTrace P.continuousTrace
-    P.additiveMeasure P.additiveHaar P.W0 P.annular P.compactSupport
-  have hl : Continuous (fun t : A.G1 => (ProbeSheet.localUnits A t.val).val) :=
-    Units.continuous_val.comp ((ProbeSheet.continuous_localUnits A).comp continuous_subtype_val)
-  have he : term A ι η hS P X Y Z i = ProbeJointAbsoluteMass.kernel A ι η hS P X Y Z i :=
-    funext (term_eq_kernel A ι η hS P X Y Z i)
-  rw [he]
+  rw [(funext (term_eq_kernel A ι η hS P X Y Z i))]
   unfold ProbeJointAbsoluteMass.kernel
-  exact continuous_const.mul (hf.comp (hl.mul continuous_const))
+  exact continuous_const.mul ((ProbeSheetFourierMellinBounds.raw_fourier_continuous A P.finiteTrace P.continuousTrace
+    P.additiveMeasure P.additiveHaar P.W0 P.annular P.compactSupport).comp ((Units.continuous_val.comp ((ProbeSheet.continuous_localUnits A).comp continuous_subtype_val)).mul continuous_const))
 
 theorem rowMass_eq (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (ρ Z : ℝ) (c : ExteriorSquarefreeIdeal A.cS) (n : A.Exterior) :
@@ -344,12 +342,9 @@ theorem probe_poisson_dual_absolute (F : Type) [Field F] [NumberField F]
       hi i⟩), hs, hfinite, hbound, hex.1, hex.2.1, hex.2.2.1.of_norm,
     hex.2.2.2.1, ?_⟩
   intro J e
-  have hs' : Summable (fun j : J => ∫ t in P.domain.domain, ‖k (e j) t‖ ∂P.domain.measure) :=
-    e.summable_iff.mpr hs
-  have heint : (∑' j : J, ∫ t in P.domain.domain, k (e j) t ∂P.domain.measure) =
-      ∑' i : ProbePoissonDualAbsolute.Index A, ∫ t in P.domain.domain, k i t ∂P.domain.measure :=
+  have heint :=
     e.tsum_eq (fun i => ∫ t in P.domain.domain, k i t ∂P.domain.measure)
-  exact ⟨hs', (hex.2.2.2.2.1 J e).trans heint.symm, heint⟩
+  exact ⟨(e.summable_iff.mpr hs), (hex.2.2.2.2.1 J e).trans heint.symm, heint⟩
 
 end
 end DedekindZetaZeroFree

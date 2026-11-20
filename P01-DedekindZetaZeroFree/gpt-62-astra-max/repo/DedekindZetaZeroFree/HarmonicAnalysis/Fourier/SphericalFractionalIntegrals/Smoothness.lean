@@ -9,8 +9,7 @@ namespace DedekindZetaZeroFree.ComplexFractionalInverse.RotationCalculus
 noncomputable def rawRadialExtension (F : Sphere → ℂ) (x : Ambient) : ℂ :=
   if hx : x ≠ 0 then
     F ⟨‖x‖⁻¹ • x, by
-      rw [Metric.mem_sphere, dist_zero_right, norm_smul, Real.norm_eq_abs,
-        abs_inv, abs_norm, inv_mul_cancel₀ (norm_ne_zero_iff.mpr hx)]⟩
+      simp_all [Metric.mem_sphere, dist_zero_right, norm_smul, Real.norm_eq_abs, abs_inv, abs_norm, inv_mul_cancel₀]⟩
   else 0
 
 def RawSphereSmooth (F : Sphere → ℂ) : Prop :=
@@ -41,8 +40,13 @@ private lemma local_bound {s : Set P} (hs : IsOpen s) {x : P} (hx : x ∈ s)
   intro z hz y
   exact hC (mem_image_of_mem _ ⟨hz,y.property⟩)
 
-private lemma sphere_cont {s : Set P} {g : P × Ambient → E}
-    (hg : ContinuousOn g (s ×ˢ {y : Ambient | y ≠ 0})) {x : P} (hx : x ∈ s) :
+section
+
+variable {s : Set P} {g : P × Ambient → E} (hg : ContinuousOn g (s ×ˢ {y : Ambient | y ≠ 0})) {x : P}
+    (hx : x ∈ s)
+
+include hg hx in
+private lemma sphere_cont :
     Continuous (fun y : Sphere => g (x,y)) := by
   apply hg.comp_continuous (continuous_const.prodMk continuous_subtype_val)
   intro y
@@ -50,24 +54,29 @@ private lemma sphere_cont {s : Set P} {g : P × Ambient → E}
   have hy := mem_sphere_zero_iff_norm.mp y.property
   intro he; change (y : Ambient) = 0 at he; simp [he] at hy
 
-private lemma sphere_integrable {s : Set P} {g : P × Ambient → E}
-    (hg : ContinuousOn g (s ×ˢ {y : Ambient | y ≠ 0})) {x : P} (hx : x ∈ s)
+include hg hx in
+private lemma sphere_integrable
     {k : Sphere → ℝ} (hk : Integrable k sphereArea) :
     Integrable (fun y : Sphere => k y • g (x,y)) sphereArea := by
   have hc := sphere_cont hg hx
-  have hb := isCompact_univ.bddAbove_image hc.norm.continuousOn
-  obtain ⟨C,hC⟩ := hb
+  obtain ⟨C,hC⟩ := (isCompact_univ.bddAbove_image hc.norm.continuousOn)
   exact hk.smul_bdd C hc.aestronglyMeasurable
     (Filter.Eventually.of_forall (fun y => hC (mem_image_of_mem _ (mem_univ y))))
 
-private lemma integral_continuous {s : Set P} (hs : IsOpen s)
-    {g : P × Ambient → E} (hg : ContinuousOn g (s ×ˢ {y : Ambient | y ≠ 0}))
+end
+
+section
+
+variable {s : Set P} (hs : IsOpen s) {g : P × Ambient → E}
+
+include hs in
+private lemma integral_continuous (hg : ContinuousOn g (s ×ˢ {y : Ambient | y ≠ 0}))
     {k : Sphere → ℝ} (hk : Integrable k sphereArea) :
     ContinuousOn (fun x => ∫ y : Sphere, k y • g (x,y) ∂sphereArea) s := by
   intro x hx
   obtain ⟨u, hu, hus, C, hC⟩ := local_bound hs hx hg
   apply ContinuousAt.continuousWithinAt
-  apply tendsto_integral_filter_of_dominated_convergence (bound := fun y => ‖k y‖ * C)
+  apply tendsto_integral_filter_of_dominated_convergence
   · filter_upwards [hu] with z hz
     exact (sphere_integrable hg (hus hz) hk).aestronglyMeasurable
   · filter_upwards [hu] with z hz
@@ -76,7 +85,6 @@ private lemma integral_continuous {s : Set P} (hs : IsOpen s)
   · exact hk.norm.mul_const C
   · apply Eventually.of_forall
     intro y
-    change Tendsto (fun z : P => k y • g (z,(y : Ambient))) (𝓝 x) (𝓝 (k y • g (x,y)))
     apply (continuousAt_const.smul _)
     have hn : (y : Ambient) ≠ 0 := by
       have hn := mem_sphere_zero_iff_norm.mp y.property
@@ -86,20 +94,19 @@ private lemma integral_continuous {s : Set P} (hs : IsOpen s)
         (show ContinuousAt (fun z : P => (z,(y : Ambient))) x from continuousAt_id.prodMk continuousAt_const)
     exact hc
 
-private lemma integral_hasFDerivAt {s : Set P} (hs : IsOpen s)
-    {g : P × Ambient → E} (hg : ContDiffOn ℝ 1 g (s ×ˢ {y : Ambient | y ≠ 0}))
+include hs in
+private lemma integral_hasFDerivAt (hg : ContDiffOn ℝ 1 g (s ×ˢ {y : Ambient | y ≠ 0}))
     {k : Sphere → ℝ} (hk : Integrable k sphereArea) {x : P} (hx : x ∈ s) :
     HasFDerivAt (fun x => ∫ y : Sphere, k y • g (x,y) ∂sphereArea)
       (∫ y : Sphere, k y • (fderiv ℝ g (x,y)).comp (ContinuousLinearMap.inl ℝ P Ambient)
         ∂sphereArea) x := by
-  let g' : P × Ambient → P →L[ℝ] E := fun q =>
+  let g' := fun q =>
     (fderiv ℝ g q).comp (ContinuousLinearMap.inl ℝ P Ambient)
-  have hgc : ContinuousOn g' (s ×ˢ {y : Ambient | y ≠ 0}) := by
-    exact (hg.continuousOn_fderiv_of_isOpen (hs.prod isOpen_ne) le_rfl).clm_comp
+  have hgc : ContinuousOn g' (s ×ˢ {y : Ambient | y ≠ 0}) := (hg.continuousOn_fderiv_of_isOpen (hs.prod isOpen_ne) le_rfl).clm_comp
       continuousOn_const
   obtain ⟨u, hu, hus, C, hC⟩ := local_bound hs hx hgc
-  apply hasFDerivAt_integral_of_dominated_of_fderiv_le (s := u)
-    (F' := fun z y => k y • g' (z,y)) (bound := fun y => ‖k y‖ * C) hu
+  apply hasFDerivAt_integral_of_dominated_of_fderiv_le
+      hu
   · filter_upwards [hu] with z hz
     exact (sphere_integrable hg.continuousOn (hus hz) hk).aestronglyMeasurable
   · exact sphere_integrable hg.continuousOn hx hk
@@ -117,24 +124,24 @@ private lemma integral_hasFDerivAt {s : Set P} (hs : IsOpen s)
     exact (hd.hasFDerivAt.comp z
       ((hasFDerivAt_id z).prodMk (hasFDerivAt_const (y : Ambient) z))).const_smul (k y)
 
-theorem weighted_sphere_integral_contDiff {s : Set P} (hs : IsOpen s)
-    {g : P × Ambient → E} {n : ℕ∞}
+include hs in
+theorem weighted_sphere_integral_contDiff {n : ℕ∞}
     (hg : ContDiffOn ℝ n g (s ×ˢ {y : Ambient | y ≠ 0}))
     {k : Sphere → ℝ} (hk : Integrable k sphereArea) :
     ContDiffOn ℝ n (fun x => ∫ y : Sphere, k y • g (x,y) ∂sphereArea) s := by
   induction n using ENat.nat_induction generalizing E with
   | zero => exact contDiffOn_zero.mpr (integral_continuous hs hg.continuousOn hk)
   | succ n ih =>
-    let g' : P × Ambient → P →L[ℝ] E := fun q =>
+    let g' := fun q =>
       (fderiv ℝ g q).comp (ContinuousLinearMap.inl ℝ P Ambient)
-    have hg' : ContDiffOn ℝ (n : ℕ∞) g' (s ×ˢ {y : Ambient | y ≠ 0}) := by
+    have hg' : ContDiffOn ℝ n g' (s ×ˢ {y : Ambient | y ≠ 0}) := by
       exact ((ContinuousLinearMap.compL ℝ P (P × Ambient) E).contDiff.comp_contDiffOn
-        (hg.fderiv_of_isOpen (m := (n : ℕ∞)) (hs.prod isOpen_ne) (by simp))).clm_apply contDiffOn_const
+        (hg.fderiv_of_isOpen (m := n) (hs.prod isOpen_ne) (by simp))).clm_apply contDiffOn_const
     have hd : ∀ x ∈ s, HasFDerivAt
         (fun x => ∫ y : Sphere, k y • g (x,y) ∂sphereArea)
         (∫ y : Sphere, k y • g' (x,y) ∂sphereArea) x :=
       fun x hx => integral_hasFDerivAt hs (hg.of_le (by exact_mod_cast Nat.succ_pos n)) hk hx
-    change ContDiffOn ℝ (((n : ℕ∞) : WithTop ℕ∞) + 1)
+    change ContDiffOn ℝ ((n : WithTop ℕ∞) + 1)
       (fun x => ∫ y : Sphere, k y • g (x,y) ∂sphereArea) s
     rw [contDiffOn_succ_iff_fderiv_of_isOpen hs]
     refine ⟨fun x hx => (hd x hx).differentiableAt.differentiableWithinAt, by simp, ?_⟩
@@ -143,18 +150,25 @@ theorem weighted_sphere_integral_contDiff {s : Set P} (hs : IsOpen s)
     rw [contDiffOn_infty] at hg ⊢
     exact fun n => ih n (hg n)
 
+end
+
 open MeasureTheory Set Filter Metric
 open scoped Topology Pointwise RealInnerProductSpace
 private theorem sphere_norm (x : Sphere) : ‖(x : Ambient)‖ = 1 :=
   mem_sphere_zero_iff_norm.mp x.property
+
+alias Smoothness.sphere_norm := sphere_norm
 private theorem sphere_ne (x : Sphere) : (x : Ambient) ≠ 0 := by
-  intro h; have := sphere_norm x; simp [h] at this
+  intro h; simpa [h] using sphere_norm x
+
+alias Smoothness.sphere_ne := sphere_ne
 private theorem radial_sphere (F : Sphere → ℂ) (x : Sphere) : rawRadialExtension F x = F x := by
   simp only [rawRadialExtension, dif_pos (sphere_ne x), sphere_norm, inv_one, one_smul]
+
+alias Smoothness.radial_sphere := radial_sphere
 noncomputable def ortho (e : Ambient ≃ₗᵢ[ℝ] Ambient) : Sphere ≃ₜ Sphere :=
   e.toHomeomorph.subtype (fun x => by
-    change ‖x - 0‖ = 1 ↔ ‖e x - 0‖ = 1
-    simp only [sub_zero, e.norm_map])
+    simp)
 private theorem ortho_mp (e : Ambient ≃ₗᵢ[ℝ] Ambient) :
     MeasurePreserving (ortho e) sphereArea sphereArea := by
   have hraw : MeasurePreserving (ortho e) volume.toSphere volume.toSphere := by
@@ -176,6 +190,8 @@ private theorem ortho_mp (e : Ambient ≃ₗᵢ[ℝ] Ambient) :
     rw [hset]
     exact e.measurePreserving.measure_preimage_emb e.toHomeomorph.measurableEmbedding _
   exact hraw.smul_measure _
+
+alias Smoothness.ortho_mp := ortho_mp
 private theorem integral_ortho (α : ℝ) (e : Ambient ≃ₗᵢ[ℝ] Ambient)
     (F : Sphere → ℂ) (x : Sphere) :
     fractionalIntegral α F (ortho e x) =
@@ -190,18 +206,23 @@ private theorem integral_ortho (α : ℝ) (e : Ambient ≃ₗᵢ[ℝ] Ambient)
     change α * Real.rpow ((1 - inner ℝ (e x) (e y)) / 2) (α - 1) = _
     rw [e.inner_map_map]
   rw [hk]
+
+alias Smoothness.integral_ortho := integral_ortho
 noncomputable def normalize (x : Ambient) : Ambient := ‖x‖⁻¹ • x
 private theorem normalize_smooth :
-    ContDiffOn ℝ (⊤ : ℕ∞) normalize {x : Ambient | x ≠ 0} := by
-  intro x hx
-  exact (((contDiffAt_norm ℝ hx).inv (norm_ne_zero_iff.mpr hx)).smul contDiffAt_id).contDiffWithinAt
+    ContDiffOn ℝ (⊤ : ℕ∞) normalize {x : Ambient | x ≠ 0} := fun x hx => (((contDiffAt_norm ℝ hx).inv (norm_ne_zero_iff.mpr hx)).smul contDiffAt_id).contDiffWithinAt
 private theorem normalize_norm {x : Ambient} (hx : x ≠ 0) : ‖normalize x‖ = 1 := by
-  simp only [normalize, norm_smul, Real.norm_eq_abs, abs_inv, abs_norm,
-    inv_mul_cancel₀ (norm_ne_zero_iff.mpr hx)]
-noncomputable def localOrthogonal (z : Sphere) (x : Ambient) : Ambient ≃ₗᵢ[ℝ] Ambient :=
+  simp_all [normalize, norm_smul, Real.norm_eq_abs, abs_inv, abs_norm, inv_mul_cancel₀]
+section
+
+variable (z : Sphere)
+
+noncomputable def localOrthogonal (x : Ambient) : Ambient ≃ₗᵢ[ℝ] Ambient :=
   (ℝ ∙ ((z : Ambient) - normalize x))ᗮ.reflection
-def sectionDomain (z : Sphere) : Set Ambient :=
+def sectionDomain : Set Ambient :=
   {x | x ≠ 0 ∧ (z : Ambient) - normalize x ≠ 0}
+
+end
 private theorem section_smooth (z : Sphere) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun q : Ambient × Ambient => localOrthogonal z q.1 q.2)
       (sectionDomain z ×ˢ {y : Ambient | y ≠ 0}) := by
@@ -211,32 +232,28 @@ private theorem section_smooth (z : Sphere) :
   have hv : ContDiffOn ℝ (⊤ : ℕ∞) (fun q : Ambient × Ambient => (z : Ambient) - normalize q.1)
       (sectionDomain z ×ˢ {y : Ambient | y ≠ 0}) := contDiffOn_const.sub hn
   have hnv : ContDiffOn ℝ (⊤ : ℕ∞) (fun q : Ambient × Ambient => ‖(z : Ambient) - normalize q.1‖)
-      (sectionDomain z ×ˢ {y : Ambient | y ≠ 0}) := by
-    intro q hq
-    exact (contDiffAt_norm ℝ hq.1.2).comp_contDiffWithinAt q (hv q hq)
-  have hh := hv.inner ℝ contDiffOn_snd
-  have hi := (hnv.pow 2).inv (fun q hq => pow_ne_zero 2 (norm_ne_zero_iff.mpr hq.1.2))
-  have H := contDiffOn_snd.sub (((hh.mul hi).smul hv).const_smul (2 : ℝ))
-  apply H.congr
+      (sectionDomain z ×ˢ {y : Ambient | y ≠ 0}) := fun q hq => (contDiffAt_norm ℝ hq.1.2).comp_contDiffWithinAt q (hv q hq)
+  apply (contDiffOn_snd.sub ((((hv.inner ℝ contDiffOn_snd).mul ((hnv.pow 2).inv (fun q hq => pow_ne_zero 2 (norm_ne_zero_iff.mpr hq.1.2)))).smul hv).const_smul (2 : ℝ))).congr
   intro q hq
   simp only [localOrthogonal, Submodule.reflection_orthogonal_apply, Submodule.reflection_singleton_apply]
   change -(2 • ((inner ℝ ((z : Ambient) - normalize q.1) q.2 / ‖(z : Ambient) - normalize q.1‖ ^ 2) • ((z : Ambient) - normalize q.1)) - q.2) =
     q.2 - 2 • ((inner ℝ ((z : Ambient) - normalize q.1) q.2 * (‖(z : Ambient) - normalize q.1‖ ^ 2)⁻¹) • ((z : Ambient) - normalize q.1))
   simp only [div_eq_mul_inv]
   module
-private theorem section_open (z : Sphere) : IsOpen (sectionDomain z) := by
+section
+
+variable (z : Sphere)
+
+private theorem section_open : IsOpen (sectionDomain z) := by
   rw [isOpen_iff_mem_nhds]
   intro x hx
   obtain ⟨hx, hv⟩ := hx
-  have hn : ContinuousAt normalize x :=
-    (normalize_smooth.contDiffAt (isOpen_ne.mem_nhds hx)).continuousAt
-  have ht : (fun x : Ambient => (z : Ambient) - normalize x) x ≠ 0 := hv
-  have h := (continuousAt_const.sub hn).eventually_ne ht
-  filter_upwards [isOpen_ne.mem_nhds hx, h] with x hx hv
+  filter_upwards [isOpen_ne.mem_nhds hx, ((continuousAt_const.sub ((normalize_smooth.contDiffAt (isOpen_ne.mem_nhds hx)).continuousAt)).eventually_ne hv)] with x hx hv
   exact ⟨hx, hv⟩
-private theorem section_maps (z : Sphere) (x : Ambient) (hx : x ∈ sectionDomain z) :
-    localOrthogonal z x z = normalize x := by
-  exact Submodule.reflection_sub (by rw [sphere_norm, normalize_norm hx.1])
+private theorem section_maps (x : Ambient) (hx : x ∈ sectionDomain z) :
+    localOrthogonal z x z = normalize x := Submodule.reflection_sub (by rw [sphere_norm, normalize_norm hx.1])
+
+end
 
 theorem fractionalIntegral_raw_smooth (α : ℝ) (hα : 0 < α)
     (F : Sphere → ℂ) (hF : RawSphereSmooth F) :
@@ -261,7 +278,6 @@ theorem fractionalIntegral_raw_smooth (α : ℝ) (hα : 0 < α)
   have hg : ContDiffOn ℝ (⊤ : ℕ∞) g (sectionDomain z ×ˢ {y : Ambient | y ≠ 0}) := by
     apply hF.comp (section_smooth z)
     intro q hq
-    change localOrthogonal z q.1 q.2 ≠ 0
     intro he
     have := congrArg (localOrthogonal z q.1).symm he
     exact hq.2 (by simpa using this)

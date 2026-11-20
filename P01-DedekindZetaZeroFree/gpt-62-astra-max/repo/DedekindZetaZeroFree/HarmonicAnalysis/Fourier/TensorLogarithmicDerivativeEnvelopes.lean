@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.LogarithmicDerivativeContinuity
 
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.NormSheetLogarithmicOperators
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.TraceSchwartzTensors
@@ -13,40 +14,27 @@ variable {F : Type} [Field F] [NumberField F]
 
 namespace FourierEnvelopePrivate
 
-def complexEuler (g : SchwartzMap ℂ ℂ) : SchwartzMap ℂ ℂ :=
+section
+
+variable (g : SchwartzMap ℂ ℂ)
+
+def complexEuler : SchwartzMap ℂ ℂ :=
   (1 / 2 : ℝ) • SchwartzMap.bilinLeftCLM
     (ContinuousLinearMap.apply (E := ℂ) ℝ ℂ).flip
     (Function.HasTemperateGrowth.id') (SchwartzMap.fderivCLM ℝ ℂ ℂ g)
 
-@[simp] theorem complexEuler_apply (g : SchwartzMap ℂ ℂ) (z : ℂ) :
+@[simp] theorem complexEuler_apply (z : ℂ) :
     complexEuler g z = (1 / 2 : ℝ) • fderiv ℝ g z z := rfl
 
-theorem hasDerivAt_complexNormFlow (g : SchwartzMap ℂ ℂ) (z : ℂ) (u : ℝ) :
+theorem hasDerivAt_complexNormFlow (z : ℂ) (u : ℝ) :
     HasDerivAt (fun v : ℝ => g ((Real.exp (v / 2) : ℂ) * z))
-      (complexEuler g ((Real.exp (u / 2) : ℂ) * z)) u := by
-  have h : HasDerivAt (fun v : ℝ => Real.exp (v / 2))
-      (Real.exp (u / 2) / 2) u :=
-    by simpa [div_eq_mul_inv] using ((hasDerivAt_id u).div_const 2).exp
-  have hc := h.ofReal_comp.mul_const z
-  have hd := g.differentiableAt.hasFDerivAt.comp_hasDerivAt u hc
-  convert hd using 1
-  · rfl
-  · rw [complexEuler_apply, ← map_smul]
-    congr 1
-    simp [smul_eq_mul]
-    ring
+      (complexEuler g ((Real.exp (u / 2) : ℂ) * z)) u := by apply @DedekindZetaZeroFree.ProbeSheetFourierMellinBounds.DerivativeContinuityProof.LogarithmicDerivativeContinuity.hasDerivAt_complexNormFlow <;> assumption
 
-theorem iteratedDeriv_complexNormFlow (g : SchwartzMap ℂ ℂ) (k : ℕ) (z : ℂ) (u : ℝ) :
+theorem iteratedDeriv_complexNormFlow (k : ℕ) (z : ℂ) (u : ℝ) :
     iteratedDeriv k (fun v : ℝ => g ((Real.exp (v / 2) : ℂ) * z)) u =
-      ((complexEuler^[k]) g) ((Real.exp (u / 2) : ℂ) * z) := by
-  induction k generalizing u with
-  | zero => simp
-  | succ k ih =>
-    rw [iteratedDeriv_succ]
-    have hf : iteratedDeriv k (fun v : ℝ => g ((Real.exp (v / 2) : ℂ) * z)) =
-        fun v : ℝ => ((complexEuler^[k]) g) ((Real.exp (v / 2) : ℂ) * z) := funext ih
-    rw [hf, (hasDerivAt_complexNormFlow ((complexEuler^[k]) g) z u).deriv,
-      Function.iterate_succ_apply']
+      ((complexEuler^[k]) g) ((Real.exp (u / 2) : ℂ) * z) := by apply @DedekindZetaZeroFree.ProbeSheetFourierMellinBounds.DerivativeContinuityProof.LogarithmicDerivativeContinuity.iteratedDeriv_complexNormFlow <;> assumption
+
+end
 
 set_option backward.isDefEq.respectTransparency false in
 private theorem mixed_flow_complex (A : SArithmeticData F) (w : InfinitePlace F)
@@ -70,27 +58,9 @@ private theorem mixed_flow_complex (A : SArithmeticData F) (w : InfinitePlace F)
   · rw [Function.update_of_ne hv, if_neg hv]
     rfl
 
-private theorem real_places_empty (A : SArithmeticData F) :
-    IsEmpty {v : InfinitePlace F // v.IsReal} :=
-  ⟨fun v => (InfinitePlace.not_isReal_iff_isComplex.mpr (A.complex_place v.val)) v.property⟩
+private alias real_places_empty := DedekindZetaZeroFree.ProbeSheetFourierMellinBounds.DerivativeContinuityProof.LogarithmicDerivativeContinuity.real_places_empty
 
-private theorem tensor_flow_factor (A : SArithmeticData F) (w : InfinitePlace F)
-    (g : (v : {v : InfinitePlace F // v.IsComplex}) → SchwartzMap ℂ ℂ)
-    (u : ℝ) (x : SLocalProduct F A.Sf) :
-    (∏ v, g v ((InfiniteAdeleRing.ringEquiv_mixedSpace F (complexNormFlowRaw A w u x).1).2 v)) =
-      g ⟨w, A.complex_place w⟩ ((Real.exp (u / 2) : ℂ) *
-        (InfiniteAdeleRing.ringEquiv_mixedSpace F x.1).2 ⟨w, A.complex_place w⟩) *
-      ∏ v ∈ Finset.univ.erase ⟨w, A.complex_place w⟩,
-        g v ((InfiniteAdeleRing.ringEquiv_mixedSpace F x.1).2 v) := by
-  rw [← Finset.mul_prod_erase _ _ (Finset.mem_univ ⟨w, A.complex_place w⟩)]
-  congr 1
-  · rw [mixed_flow_complex]; simp
-  · apply Finset.prod_congr rfl
-    intro v hv
-    have hne : v.val ≠ w := by
-      intro h
-      exact (Finset.mem_erase.mp hv).1 (Subtype.ext h)
-    rw [mixed_flow_complex, if_neg hne]
+private alias tensor_flow_factor := DedekindZetaZeroFree.ProbeSheetFourierMellinBounds.DerivativeContinuityProof.LogarithmicDerivativeContinuity.tensor_flow_factor
 
  theorem logDerivative_isSchwartzTensor (A : SArithmeticData F) (w : InfinitePlace F)
     (k : ℕ) (f : SLocalProduct F A.Sf → ℂ)
@@ -133,8 +103,7 @@ private theorem schwartz_envelope (g : SchwartzMap ℂ ℂ) (N : ℕ) :
       ‖g z‖ ≤ C * (1 + ‖z‖ ^ 2) ^ (-(N : ℝ)) := by
   let C := (2 : ℝ) ^ N *
     (SchwartzMap.seminorm ℂ 0 0 g + SchwartzMap.seminorm ℂ (2*N) 0 g)
-  have hC : 0 ≤ C := by dsimp [C]; positivity
-  refine ⟨C, hC, ?_⟩
+  refine ⟨C, by dsimp [C]; positivity, ?_⟩
   intro z
   have hpos : 0 < (1 + ‖z‖ ^ 2) ^ N := by positivity
   rw [Real.rpow_neg (by positivity), Real.rpow_natCast, ← div_eq_mul_inv,
@@ -142,11 +111,11 @@ private theorem schwartz_envelope (g : SchwartzMap ℂ ℂ) (N : ℕ) :
   by_cases hz : ‖z‖ ≤ 1
   · have hp : (1 + ‖z‖ ^ 2) ^ N ≤ (2 : ℝ) ^ N := by
       apply pow_le_pow_left₀ (by positivity)
-      have : ‖z‖ ^ 2 ≤ (1 : ℝ) ^ 2 := pow_le_pow_left₀ (norm_nonneg _) hz 2
+      have := pow_le_pow_left₀ (norm_nonneg _) hz 2
       norm_num only [one_pow] at this
       linarith
     calc
-      ‖g z‖ * (1 + ‖z‖ ^ 2) ^ N ≤
+      _ ≤
           SchwartzMap.seminorm ℂ 0 0 g * (2 : ℝ) ^ N :=
         mul_le_mul (g.norm_le_seminorm ℂ z) hp (by positivity) (apply_nonneg _ _)
       _ ≤ C := by dsimp [C]; nlinarith [apply_nonneg (SchwartzMap.seminorm ℂ (2*N) 0) g,
@@ -154,13 +123,12 @@ private theorem schwartz_envelope (g : SchwartzMap ℂ ℂ) (N : ℕ) :
   · have hr : 1 ≤ ‖z‖ ^ 2 := by nlinarith [norm_nonneg z, lt_of_not_ge hz]
     have hp : (1 + ‖z‖ ^ 2) ^ N ≤ (2 * ‖z‖ ^ 2) ^ N :=
       pow_le_pow_left₀ (by positivity) (by linarith) N
-    have hb := g.norm_pow_mul_le_seminorm ℂ (2*N) z
     calc
       ‖g z‖ * (1 + ‖z‖ ^ 2) ^ N ≤ ‖g z‖ * (2 * ‖z‖ ^ 2) ^ N :=
         mul_le_mul_of_nonneg_left hp (norm_nonneg _)
       _ = (2 : ℝ) ^ N * (‖z‖ ^ (2*N) * ‖g z‖) := by rw [mul_pow, ← pow_mul]; ring
       _ ≤ (2 : ℝ) ^ N * SchwartzMap.seminorm ℂ (2*N) 0 g :=
-        mul_le_mul_of_nonneg_left hb (by positivity)
+        mul_le_mul_of_nonneg_left (g.norm_pow_mul_le_seminorm ℂ (2*N) z) (by positivity)
       _ ≤ C := by dsimp [C]; nlinarith [apply_nonneg (SchwartzMap.seminorm ℂ 0 0) g,
         (show (0 : ℝ) ≤ 2 ^ N by positivity)]
 

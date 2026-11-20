@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.ZeroDetection.ExceptionalZeros.Poisson.RowFiniteness
 
 public import DedekindZetaZeroFree.ZeroDetection.Conductors.Poisson.DenominatorIdentification
 
@@ -14,8 +15,8 @@ open DedekindZetaZeroFree.Quantitative.RawFixed
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def rowMaximalSum (U N T : ℝ) (b : Ideal (𝓞 F) → ℂ) : ℝ :=
   ∑ᶠ u : Frequency D.recipe,
@@ -24,19 +25,13 @@ def rowMaximalSum (U N T : ℝ) (b : Ideal (𝓞 F) → ℂ) : ℝ :=
       detectorHeightPrefixMaximum F b (fun J => (FixedData.primMinus D u).character J) N T
     else 0
 
-theorem detectorHeightPrefixMaximum_nonneg' (b ω : Ideal (𝓞 F) → ℂ) (N T : ℝ) :
-    0 ≤ detectorHeightPrefixMaximum F b ω N T := by
-  unfold detectorHeightPrefixMaximum
-  apply Real.sSup_nonneg
-  rintro v ⟨t, -, rfl⟩
-  unfold detectorPrefixMaximum
-  apply Real.sSup_nonneg
-  rintro w ⟨y, -, rfl⟩
-  positivity
+alias detectorHeightPrefixMaximum_nonneg' := DedekindZetaZeroFree.Quantitative.DetectRows.RowFiniteness.heightMax_nonneg
+
+local notation "IntegerIdeal" => Ideal (𝓞 F)
 
 theorem detector_maximal_sieve :
     ∃ Clog : ℝ, 0 ≤ Clog ∧ ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧
-      ∀ (U N T : ℝ) (b : Ideal (𝓞 F) → ℂ), 2 ≤ U → 2 ≤ N → 1 ≤ T →
+      ∀ (U N T : ℝ) (b : IntegerIdeal → ℂ), 2 ≤ U → 2 ≤ N → 1 ≤ T →
         detectorDyadicSupport F b N →
         rowMaximalSum D U N T b ≤
           C * (T + 1) * (N + U ^ 2) * (N * U) ^ ε * Real.log (2 * N) ^ Clog *
@@ -49,34 +44,28 @@ theorem detector_maximal_sieve :
   intro U N T b hU hN hT hsupp
   rw [Real.rpow_zero, mul_one]
   have hN0 : 0 ≤ N := by linarith
-  have hT0 : (0 : ℝ) ≤ T + 1 := by linarith
-  have hK : 0 ≤ C * (T + 1) * (N + U ^ 2) * (N * U) ^ ε *
-      detectorDyadicCoefficientMass F b N :=
-    mul_nonneg (mul_nonneg (mul_nonneg (mul_nonneg hC.le hT0) (add_nonneg hN0 (sq_nonneg U)))
-      (Real.rpow_nonneg (mul_nonneg hN0 (by linarith)) ε))
-      (detectorDyadicCoefficientMass_nonneg F b N)
   have hSieve : ∀ J : Finset (Frequency D.recipe),
       (∀ u ∈ J, U ≤ frequencyNorm D.recipe u ∧ frequencyNorm D.recipe u < 2 * U) →
-      ∀ (M : ℝ) (c : Ideal (𝓞 F) → ℂ), 2 ≤ M →
+      ∀ (M : ℝ) (c : IntegerIdeal → ℂ), 2 ≤ M →
         (∀ I, ¬ (I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ M) → c I = 0) →
-        (∑ u : {x // x ∈ J}, ‖∑ᶠ I : Ideal (𝓞 F),
+        (∑ u : {x // x ∈ J}, ‖∑ᶠ I : IntegerIdeal,
             if I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ M then
               c I * (FixedData.primMinus D u.1).character I else 0‖ ^ 2) ≤
           C₀ * (M + U ^ 2) * (M * U) ^ (ε / 2) *
-            (∑ᶠ I : Ideal (𝓞 F), if I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ M then ‖c I‖ ^ 2 else 0) := by
+            (∑ᶠ I : IntegerIdeal, if I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ M then ‖c I‖ ^ 2 else 0) := by
     intro J hJ M c hM _hc
-    set c' : Ideal (𝓞 F) → ℂ :=
+    set c' : IntegerIdeal → ℂ :=
       fun I => if I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ M then c I else 0 with hc'
     have e1 : ∀ u : Frequency D.recipe,
-        (∑ᶠ I : Ideal (𝓞 F), if I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ M then
+        (∑ᶠ I : IntegerIdeal, if I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ M then
             c I * (FixedData.primMinus D u).character I else 0) =
-          ∑ᶠ I : Ideal (𝓞 F), c' I * (FixedData.primMinus D u).character I := by
+          ∑ᶠ I : IntegerIdeal, c' I * (FixedData.primMinus D u).character I := by
       intro u
       refine finsum_congr fun I => ?_
       simp only [hc']
       split_ifs <;> simp
-    have e2 : (∑ᶠ I : Ideal (𝓞 F), if I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ M then ‖c I‖ ^ 2 else 0) =
-        ∑ᶠ I : Ideal (𝓞 F), ‖c' I‖ ^ 2 := by
+    have e2 : (∑ᶠ I : IntegerIdeal, if I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ M then ‖c I‖ ^ 2 else 0) =
+        ∑ᶠ I : IntegerIdeal, ‖c' I‖ ^ 2 := by
       refine finsum_congr fun I => ?_
       simp only [hc']
       split_ifs <;> simp
@@ -86,16 +75,16 @@ theorem detector_maximal_sieve :
       apply hI
       simp only [hc']
       rw [if_neg h]
-    calc (∑ u : {x // x ∈ J}, ‖∑ᶠ I : Ideal (𝓞 F),
+    calc (∑ u : {x // x ∈ J}, ‖∑ᶠ I : IntegerIdeal,
             if I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ M then
               c I * (FixedData.primMinus D u.1).character I else 0‖ ^ 2)
-        = ∑ u : {x // x ∈ J}, ‖∑ᶠ I : Ideal (𝓞 F),
+        = ∑ u : {x // x ∈ J}, ‖∑ᶠ I : IntegerIdeal,
             c' I * (FixedData.primMinus D u.1).character I‖ ^ 2 :=
           Finset.sum_congr rfl (fun u _ => by rw [e1 u.1])
-      _ = ∑ u ∈ J, ‖∑ᶠ I : Ideal (𝓞 F), c' I * (FixedData.primMinus D u).character I‖ ^ 2 :=
+      _ = ∑ u ∈ J, ‖∑ᶠ I : IntegerIdeal, c' I * (FixedData.primMinus D u).character I‖ ^ 2 :=
           Finset.sum_coe_sort J
-            (fun u => ‖∑ᶠ I : Ideal (𝓞 F), c' I * (FixedData.primMinus D u).character I‖ ^ 2)
-      _ ≤ C₀ * (M + U ^ 2) * (M * U) ^ (ε / 2) * ∑ᶠ I : Ideal (𝓞 F), ‖c' I‖ ^ 2 :=
+            (fun u => ‖∑ᶠ I : IntegerIdeal, c' I * (FixedData.primMinus D u).character I‖ ^ 2)
+      _ ≤ C₀ * (M + U ^ 2) * (M * U) ^ (ε / 2) * ∑ᶠ I : IntegerIdeal, ‖c' I‖ ^ 2 :=
           hact U M hU hM J hJ c' hb'
       _ = _ := by rw [e2]
   have hJsum : ∀ J : Finset (Frequency D.recipe),
@@ -123,27 +112,22 @@ theorem detector_maximal_sieve :
           frequencyNorm D.recipe u < 2 * U then
         detectorHeightPrefixMaximum F b (fun I => (FixedData.primMinus D u).character I) N T
       else 0).Finite
-  · have hsub : Function.support (fun u : Frequency D.recipe =>
-        if u ≠ principalFrequency D.recipe ∧ U ≤ frequencyNorm D.recipe u ∧
-            frequencyNorm D.recipe u < 2 * U then
-          detectorHeightPrefixMaximum F b (fun I => (FixedData.primMinus D u).character I) N T
-        else 0) ⊆ ↑hfin.toFinset :=
-      fun u hu => Finset.mem_coe.2 ((Set.Finite.mem_toFinset hfin).2 hu)
-    rw [finsum_eq_sum_of_support_subset _ hsub]
+  · rw [finsum_eq_sum_of_support_subset _ (fun u hu => Finset.mem_coe.2 ((Set.Finite.mem_toFinset hfin).2 hu))]
     refine hJsum _ (fun u hu => ?_)
-    have h1 := (Set.Finite.mem_toFinset hfin).1 hu
     by_contra hn
-    exact h1 (if_neg hn)
+    exact ((Set.Finite.mem_toFinset hfin).1 hu) (if_neg hn)
   · rw [finsum_of_infinite_support hfin]
-    exact hK
+    exact (mul_nonneg (mul_nonneg (mul_nonneg (mul_nonneg hC.le (by linarith)) (add_nonneg hN0 (sq_nonneg U)))
+      (Real.rpow_nonneg (mul_nonneg hN0 (by linarith)) ε))
+      (detectorDyadicCoefficientMass_nonneg F b N))
 
-theorem card_dyad_le_rowMaximalSum (U N T δ : ℝ) (b : Ideal (𝓞 F) → ℂ) (hU : 1 ≤ U)
+theorem card_dyad_le_rowMaximalSum (U N T δ : ℝ) (b : IntegerIdeal → ℂ) (hU : 1 ≤ U)
     (hδ : 0 ≤ δ) (s : Set (Frequency D.recipe))
     (hs : ∀ u ∈ s, u ≠ principalFrequency D.recipe ∧ U ≤ frequencyNorm D.recipe u ∧
       frequencyNorm D.recipe u < 2 * U ∧
       δ ≤ detectorHeightPrefixMaximum F b (fun J => (FixedData.primMinus D u).character J) N T) :
     s.Finite ∧ (s.ncard : ℝ) * δ ≤ rowMaximalSum D U N T b := by
-  obtain ⟨K, hK, hcount⟩ := RawFrequencyCount.frequency_dyad_count_nonprincipal D.recipe
+  obtain ⟨K, hcount⟩ := RawFrequencyCount.frequency_dyad_count_nonprincipal D.recipe
   obtain ⟨hfin, -⟩ := hcount U hU
   have hsub : s ⊆ {u : Frequency D.recipe | u ≠ principalFrequency D.recipe ∧
       U ≤ frequencyNorm D.recipe u ∧ frequencyNorm D.recipe u < 2 * U} :=

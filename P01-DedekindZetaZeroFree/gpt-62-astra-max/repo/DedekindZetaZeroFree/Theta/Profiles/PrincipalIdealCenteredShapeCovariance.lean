@@ -14,18 +14,26 @@ open Classical NumberField.InfinitePlace NumberField.Units.dirichletUnitTheorem
 open NumberField.mixedEmbedding.fundamentalCone
 open DedekindZetaZeroFree.AbelianQuotient.Theta
 
-private theorem covariance_exp_add {F : Type} [Field F] [NumberField F]
+section
+
+variable {F : Type} [Field F] [NumberField F]
+
+private theorem covariance_exp_add
     (x y : mixedEmbedding.realSpace F) :
     expMapBasis (x + y) = expMapBasis x * expMapBasis y := by
   simp only [expMapBasis_apply, map_add, expMap_add]
 
-private theorem covariance_covolume_pos {F : Type} [Field F] [NumberField F]
+private theorem covariance_covolume_pos
     (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) : 0 < mixedThetaCovolume F I := by
   apply mul_pos
   · exact_mod_cast lt_of_le_of_ne (FractionalIdeal.absNorm_nonneg _)
       (Ne.symm (fun h => Units.ne_zero I (FractionalIdeal.absNorm_eq_zero_iff.mp h)))
   · apply Real.sqrt_pos.mpr
     exact abs_pos.mpr (by exact_mod_cast discr_ne_zero F)
+
+end
+
+alias PrincipalIdealCenteredShapeCovariance.covariance_covolume_pos := covariance_covolume_pos
 
 private theorem covariance_reindex {F : Type} [Field F] [NumberField F]
     (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (a : Fˣ)
@@ -35,18 +43,17 @@ private theorem covariance_reindex {F : Type} [Field F] [NumberField F]
     (∑' x : ↥((J : FractionalIdeal (𝓞 F)⁰ F) : Submodule (𝓞 F) F), f (x : F)) =
     ∑' x : ↥((I : FractionalIdeal (𝓞 F)⁰ F) : Submodule (𝓞 F) F), f ((a : F) * x) := by
   have h := FractionalIdeal.eq_spanSingleton_mul.mp hJ
-  let m : ↥((I : FractionalIdeal (𝓞 F)⁰ F) : Submodule (𝓞 F) F) →
-      ↥((J : FractionalIdeal (𝓞 F)⁰ F) : Submodule (𝓞 F) F) :=
+  let m : ↥(I : Submodule (𝓞 F) F) →
+      ↥(J : Submodule (𝓞 F) F) :=
     fun x => ⟨(a : F) * x, h.2 x x.2⟩
-  have hm : Function.Bijective m := by
-    constructor
-    · intro x y hxy
-      apply Subtype.ext
-      exact mul_left_cancel₀ (Units.ne_zero a) (congrArg Subtype.val hxy)
-    · intro y
-      obtain ⟨x, hx, he⟩ := h.1 y y.2
-      exact ⟨⟨x, hx⟩, Subtype.ext he⟩
-  exact ((Equiv.ofBijective m hm).tsum_eq (fun x => f (x : F))).symm
+  refine ((Equiv.ofBijective m ?_).tsum_eq (fun x => f (x : F))).symm
+  constructor
+  · intro x y hxy
+    apply Subtype.ext
+    exact mul_left_cancel₀ (Units.ne_zero a) (congrArg Subtype.val hxy)
+  · intro y
+    obtain ⟨x, hx, he⟩ := h.1 y y.2
+    exact ⟨⟨x, hx⟩, Subtype.ext he⟩
 
 theorem principalCenteredShapeCovariance (F : Type) [Field F] [NumberField F]
     (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (a : Fˣ)
@@ -60,10 +67,8 @@ theorem principalCenteredShapeCovariance (F : Type) [Field F] [NumberField F]
             DedekindZetaZeroFree.AbelianQuotient.Theta.mixedRadialTheta F I t (u + d) := by
   classical
   let A : mixedEmbedding.realSpace F := fun v => v (a : F)
-  let L : mixedEmbedding.realSpace F := expMapBasis.symm A
-  have hA : ∀ v, 0 < A v := by
-    intro v
-    exact InfinitePlace.pos_iff.mpr (Units.ne_zero a)
+  let L := expMapBasis.symm A
+  have hA : ∀ v, 0 < A v := fun v => InfinitePlace.pos_iff.mpr (Units.ne_zero a)
   have hL : expMapBasis L = A := by
     apply expMapBasis.right_inv
     change A ∈ expMap.target

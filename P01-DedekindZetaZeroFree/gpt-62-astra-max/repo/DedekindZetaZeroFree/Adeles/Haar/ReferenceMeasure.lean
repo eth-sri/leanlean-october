@@ -19,13 +19,6 @@ instance infiniteAdeles_measurableSpace : MeasurableSpace (InfiniteAdeleRing F) 
 
 instance infiniteAdeles_borelSpace : BorelSpace (InfiniteAdeleRing F) := ⟨rfl⟩
 
-private theorem halfDifferentFactor_eq_one_of_not_mem
-    (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (hS : localDifferentSupport F ⊆ (S : Set (HeightOneSpectrum (𝓞 F))))
-    (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ S) :
-    localHalfDifferentFactor F v = 1 := by
-  simp [localHalfDifferentFactor, localDifferentExponent_eq_zero_of_not_mem F S hS v hv]
-
 def referenceMass : ℝ :=
   ∏ᶠ v : HeightOneSpectrum (𝓞 F), localHalfDifferentFactor F v
 
@@ -37,7 +30,8 @@ theorem referenceMass_eq_prod
   apply finprod_eq_prod_of_mulSupport_subset
   intro v hv
   by_contra h
-  exact hv (halfDifferentFactor_eq_one_of_not_mem F S hS v h)
+  exact hv (by
+    simp [localHalfDifferentFactor, localDifferentExponent_eq_zero_of_not_mem F S hS v h])
 
 theorem referenceMass_pos : 0 < referenceMass F := by
   rw [referenceMass_eq_prod F (finite_localDifferentSupport F).toFinset (by simp)]
@@ -111,7 +105,6 @@ instance adelicMeasure_isAddHaarMeasure : (adelicMeasure F).IsAddHaarMeasure := 
     (PoissonArch.infiniteAdeleToSpace F).toHomeomorph.isEmbedding.secondCountableTopology
   let e : (InfiniteAdeleRing F × KPAdelicTopology.FiniteAdeles F) ≃+
       KPAdelicTopology.Adeles F := AddEquiv.refl _
-  change (Measure.map e ((infiniteMeasure F).prod (finiteMeasure F))).IsAddHaarMeasure
   exact e.isAddHaarMeasure_map _ continuous_id continuous_id
 
 instance adelicMeasure_regular : (adelicMeasure F).Regular := by

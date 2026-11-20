@@ -15,13 +15,12 @@ set_option maxRecDepth 4000
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.SourceSmooth
 open KPAdelicCoverRestrictedProduct KPGlobalTorusFiniteStages KPLiteralChamber
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_right → sectionTuple_right
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+open _root_.DedekindZetaZeroFree.KPLiteralChamber (sectionTuple_right)
 
  theorem complexMatrix_section (w : InfinitePlace F) (M : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     LocalCovariance.complexMatrix F ζ hζ w (sectionTuple F ζ hζ (fun _ => M) (Sum.inl w)) = M := by
   unfold LocalCovariance.complexMatrix sectionTuple
-  change Matrix.GeneralLinearGroup.map _ (Matrix.GeneralLinearGroup.map _ M) = M
   apply Units.ext
   ext i j
   simp [Matrix.GeneralLinearGroup.map]
@@ -97,7 +96,7 @@ open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_right �
       intro v
       cases v with
       | inl w => rfl
-      | inr q => change g (Sum.inr q) * 1 = g (Sum.inr q); exact mul_one _
+      | inr q => exact mul_one _
 
  theorem scalar_induced : KPLiteralRaw.Induced F ζ hζ 0 (RawSource.scalarValue F ζ hζ P C) := by
   refine ⟨⟨SourceContinuity.scalar_continuous F ζ hζ P C,

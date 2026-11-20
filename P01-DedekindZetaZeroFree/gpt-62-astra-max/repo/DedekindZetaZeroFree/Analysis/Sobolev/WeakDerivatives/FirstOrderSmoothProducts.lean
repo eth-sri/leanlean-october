@@ -1,4 +1,7 @@
 module
+public import DedekindZetaZeroFree.Analysis.EllipticEquations.DivergenceForm.ClassicalToWeakSolutions
+public import DedekindZetaZeroFree.Analysis.EllipticEquations.EnergyEstimates.CutoffQuadraticForms
+public import DedekindZetaZeroFree.Analysis.Sobolev.Approximation.CompactInteriorH1Density
 
 public import DedekindZetaZeroFree.Analysis.EllipticEquations.DivergenceForm.WeakSolutions
 
@@ -10,62 +13,29 @@ open MeasureTheory KPContLocalNorm Raw
 open scoped Topology
 private theorem zero_dirs (n k : ℕ) : (zeroIndex n k).directions = [] := by
   simp [MultiIndex.directions, zeroIndex]
-private theorem first_dirs {n : ℕ} (i : Fin n) : (firstIndex i).directions = [i] := by
-  classical
-  simp only [MultiIndex.directions, firstIndex, apply_ite Fin.val, Fin.val_one,
-    Fin.val_zero, List.replicate_one, List.replicate_zero]
-  have h : ∀ l : List (Fin n), l.flatMap (fun j => if j = i then [j] else []) = l.filter (· = i) := by
-    intro l; induction l with
-    | nil => rfl
-    | cons j l ih => by_cases hj : j = i <;> simp [hj, ih]
-  have hrep : ∀ j : Fin n, List.replicate (if j = i then 1 else 0) j =
-      if j = i then [j] else [] := by intro j; split_ifs <;> simp
-  simp_rw [hrep]
-  rw [h, List.filter_eq]
-  simp
-private theorem cases_idx {n : ℕ} (α : MultiIndex n 1) :
-    α = zeroIndex n 1 ∨ ∃ i : Fin n, α = firstIndex i := by
-  classical
-  by_cases hz : ∀ i, (α.val i).val = 0
-  · left; apply Subtype.ext; funext i; apply Fin.ext; exact hz i
-  · obtain ⟨i, hi⟩ := not_forall.mp hz
-    right; refine ⟨i, ?_⟩
-    have hs := Finset.sum_le_one_iff.mp α.property
-    have hone := (hs i i (Finset.mem_univ _) (Finset.mem_univ _) hi hi).2
-    apply Subtype.ext; funext j; apply Fin.ext
-    by_cases hji : j = i
-    · subst j; simpa [firstIndex] using hone
-    · have hj : (α.val j).val = 0 := by
-        by_contra hj
-        exact hji (hs j i (Finset.mem_univ _) (Finset.mem_univ _) hj hi).1
-      simpa [firstIndex, hji] using hj
-private theorem first_degree {n : ℕ} (i : Fin n) : (firstIndex i).degree = 1 := by
-  simp only [firstIndex, MultiIndex.degree, apply_ite Fin.val, Fin.val_one, Fin.val_zero]
-  simp
-private theorem first_ne_zero {n : ℕ} (i : Fin n) : firstIndex i ≠ zeroIndex n 1 := by
-  intro h
-  have he := congrArg (fun α : MultiIndex n 1 => (α.val i).val) h
-  simpa [firstIndex, zeroIndex] using he
-private theorem first_inj {n : ℕ} : Function.Injective (@firstIndex n) := by
-  intro i j h
-  have he := congrArg (fun α : MultiIndex n 1 => (α.val i).val) h
-  by_contra hij
-  simpa [firstIndex, hij] using he
+private alias first_dirs := firstIndex_directions
+private alias cases_idx := raw_index_cases
+private alias first_degree := CompactApproximation.CompactInteriorH1Density.first_degree
 
- def productTest {n : ℕ} {B : LocalBall n}
+alias FirstOrderSmoothProducts.first_degree := first_degree
+private alias first_ne_zero := raw_first_ne_zero
+private alias first_inj := raw_first_injective
+
+ section
+
+variable {n : ℕ} {B : LocalBall n}
+
+def productTest
     (a φ : TestFunction B.toOpens ℂ ⊤) : TestFunction B.toOpens ℂ ⊤ :=
   ⟨fun x => a x * φ x, a.contDiff.mul φ.contDiff,
     a.hasCompactSupport.mul_right, tsupport_mul_subset_left.trans a.tsupport_subset⟩
- def partialTest {n : ℕ} {B : LocalBall n}
+ def partialTest
     (a : TestFunction B.toOpens ℂ ⊤) (i : Fin n) : TestFunction B.toOpens ℂ ⊤ :=
   TestFunction.lineDerivCLM ℝ (EuclideanSpace.single i 1) a
-private theorem partialTest_eq {n : ℕ} {B : LocalBall n}
+private theorem partialTest_eq
     (a : TestFunction B.toOpens ℂ ⊤) (i : Fin n) (x : Space n) :
-    partialTest a i x = coordinateDerivativeList [i] (fun y => a y) x := by
-  rw [partialTest, TestFunction.lineDerivCLM_eq_fderivCLM]
-  rw [TestFunction.fderivCLM_apply_of_le _ (by simp)]
-  rfl
-private theorem product_deriv {n : ℕ} {B : LocalBall n}
+    partialTest a i x = coordinateDerivativeList [i] (fun y => a y) x := by apply @derivativeTest_apply <;> assumption
+private theorem product_deriv
     (a φ : TestFunction B.toOpens ℂ ⊤) (i : Fin n) (x : Space n) :
     coordinateDerivativeList [i] (fun y => productTest a φ y) x =
       partialTest a i x * φ x + a x * partialTest φ i x := by
@@ -75,18 +45,19 @@ private theorem product_deriv {n : ℕ} {B : LocalBall n}
   simp only [partialTest_eq, coordinateDerivativeList, ContinuousLinearMap.add_apply,
     ContinuousLinearMap.smul_apply, smul_eq_mul]
   ring
-private theorem test_mul_mem {n : ℕ} {B : LocalBall n}
-    (a : TestFunction B.toOpens ℂ ⊤) (u : BallL2 B) :
-    MemLp (fun x => a x * u x) 2 (volume.restrict B.carrier) := by
-  exact a.memLp_top.fun_mul (Lp.memLp u)
-private theorem test_mul_integrable {n : ℕ} {B : LocalBall n}
-    (a : TestFunction B.toOpens ℂ ⊤) (u : BallL2 B) :
-    Integrable (fun x => u x * a x) (volume.restrict B.carrier) := by
-  exact (Lp.memLp u).integrable_mul
+
+end
+section
+
+variable {n : ℕ} {B : LocalBall n} (a : TestFunction B.toOpens ℂ ⊤)
+
+private theorem test_mul_mem (u : BallL2 B) :
+    MemLp (fun x => a x * u x) 2 (volume.restrict B.carrier) := a.memLp_top.fun_mul (Lp.memLp u)
+private theorem test_mul_integrable (u : BallL2 B) :
+    Integrable (fun x => u x * a x) (volume.restrict B.carrier) := (Lp.memLp u).integrable_mul
     (a.continuous.memLp_of_hasCompactSupport (p := 2) a.hasCompactSupport)
 
-private theorem weak_product {n : ℕ} {B : LocalBall n}
-    (a : TestFunction B.toOpens ℂ ⊤) (u : IntegerSobolev B 1)
+private theorem weak_product (u : IntegerSobolev B 1)
     (v : BallL2 B) (g : Fin n → BallL2 B)
     (hv : ∀ᵐ x ∂volume.restrict B.carrier, v x = a x * value u x)
     (hg : ∀ i, ∀ᵐ x ∂volume.restrict B.carrier,
@@ -135,8 +106,7 @@ private theorem weak_product {n : ℕ} {B : LocalBall n}
   rw [hleft, hright]
   linear_combination hw
 
-private theorem multiply_test {n : ℕ} {B : LocalBall n}
-    (a : TestFunction B.toOpens ℂ ⊤) (u : IntegerSobolev B 1) :
+private theorem multiply_test (u : IntegerSobolev B 1) :
     ∃ w : IntegerSobolev B 1,
       (∀ᵐ x ∂volume.restrict B.carrier, value w x = a x * value u x) ∧
       ∀ i : Fin n, ∀ᵐ x ∂volume.restrict B.carrier,
@@ -150,7 +120,7 @@ private theorem multiply_test {n : ℕ} {B : LocalBall n}
   have hg : ∀ i, ∀ᵐ x ∂volume.restrict B.carrier,
       g i x = a x * gradient u i x + partialTest a i x * value u x :=
     fun i => MemLp.coeFn_toLp _
-  let d : MultiIndex n 1 → BallL2 B := fun α =>
+  let d := fun α =>
     if h : ∃ i, α = firstIndex i then g h.choose else v
   have dz : d (zeroIndex n 1) = v := by
     simp only [d]
@@ -186,6 +156,8 @@ private theorem multiply_test {n : ℕ} {B : LocalBall n}
     rw [di]
     exact hg i
 
+end
+
 theorem multiply_smooth_compact {n : ℕ} (B : LocalBall n)
     (η : TestFunction B.toOpens ℝ ⊤) (u : IntegerSobolev B 1) :
     ∃ w : IntegerSobolev B 1,
@@ -195,7 +167,7 @@ theorem multiply_smooth_compact {n : ℕ} (B : LocalBall n)
         gradient w i x = (η x : ℂ) ^ 2 * gradient u i x +
           (2 * (η x : ℂ) *
             coordinateDerivativeList [i] (fun y => (η y : ℂ)) x) * value u x := by
-  let a : TestFunction B.toOpens ℂ ⊤ := TestFunction.postcompCLM Complex.ofRealCLM η
+  let a := TestFunction.postcompCLM Complex.ofRealCLM η
   obtain ⟨w, hv, hg⟩ := multiply_test (productTest a a) u
   refine ⟨w, ?_, ?_⟩
   · simpa only [productTest, TestFunction.coe_mk, a,

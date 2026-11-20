@@ -37,10 +37,9 @@ theorem exists_eq_smul_one_of_isIrreducible
     ∃ c : 𝕜, f = c • 1 := by
   obtain ⟨c, hc⟩ :=
     (Representation.IsIrreducible.algebraMap_intertwiningMap_bijective_of_isAlgClosed
-      (ρ := π.toRepresentation)).2 f.toIntertwiningMap
+      ).2 f.toIntertwiningMap
   refine ⟨c, ContIntertwiningMap.ext <| ContinuousLinearMap.ext fun v ↦ ?_⟩
-  simpa [Algebra.algebraMap_eq_smul_one, ContIntertwiningMap.smul_apply,
-    ContIntertwiningMap.one_apply] using congr($hc.symm v)
+  exact congr($hc.symm v)
 
 theorem eq_finrank_inv_mul_trace_smul_id_of_isIrreducible
     (hdim : (Module.finrank 𝕜 V : 𝕜) ≠ 0)

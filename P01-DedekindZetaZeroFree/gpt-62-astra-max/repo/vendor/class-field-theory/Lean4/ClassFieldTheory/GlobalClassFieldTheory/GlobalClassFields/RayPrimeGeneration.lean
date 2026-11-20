@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -50,8 +47,7 @@ theorem rayClassGroup_hom_ext_finitePrime
               (IdeleGroup.finitePrimeIdele v)))) :
     f = g := by
   let e := RayClass.rayClassGroupEquivIdealRayClassGroup m
-  let q : RayClass.primeToModulusIdeals m →*
-      RayClass.IdealRayClassGroup m :=
+  let q :=
     QuotientGroup.mk' (RayClass.principalRayIdealSubgroup m)
   have hprimeIdeal (v : HeightOneSpectrum (𝓞 K))
       (hv : v ∉ m.finitePart.support) :
@@ -62,7 +58,7 @@ theorem rayClassGroup_hom_ext_finitePrime
     apply e.injective
     rw [e.apply_symm_apply]
     calc
-      q (RayClass.primeToModulusIdeal m v hv) =
+      _ =
           RayClass.idealRayProjection m
             ⟨IdeleGroup.finitePrimeIdele v,
               finitePrimeIdele_mem_idelePrimeToModulusSubgroup m v hv⟩ :=

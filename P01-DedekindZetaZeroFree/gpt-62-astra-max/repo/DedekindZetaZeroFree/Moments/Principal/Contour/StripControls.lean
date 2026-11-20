@@ -16,23 +16,29 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonK
 open scoped Classical Topology
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def DecayOn (f : ℂ → ℂ) (a b : ℝ) : Prop :=
   ∀ B : ℝ, 0 < B → ∃ C T0 : ℝ, ∀ x ∈ Icc a b, ∀ y : ℝ, T0 ≤ |y| →
     ‖f ((x : ℂ) + (y : ℂ) * I)‖ ≤ C * (1 + |y|) ^ (-B)
 
-def kern (u : D.Row) (Z : ℝ) (ξ w z : ℂ) : ℂ := kernelWith D (rowContLocal D) u ξ w z Z
+section
 
-def Iz (u : D.Row) (Z v : ℝ) (ξ w : ℂ) : ℂ :=
+variable (u : D.Row)
+
+def kern (Z : ℝ) (ξ w z : ℂ) : ℂ := kernelWith D (rowContLocal D) u ξ w z Z
+
+def Iz (Z v : ℝ) (ξ w : ℂ) : ℂ :=
   comparisonVerticalIntegral v (fun z => kern D u Z ξ w z)
 
-def Iwz (u : D.Row) (Z y v : ℝ) (ξ : ℂ) : ℂ :=
+def Iwz (Z y v : ℝ) (ξ : ℂ) : ℂ :=
   comparisonVerticalIntegral y (fun w => Iz D u Z v ξ w)
 
-def wResidueExplicit (u : D.Row) (ξ z : ℂ) (Z : ℝ) : ℂ :=
+def wResidueExplicit (ξ z : ℂ) (Z : ℝ) : ℂ :=
   Spectral.RS D * D.W1Hat 1 * PrincipalResidueFormulas.remainingKernel D u ξ z Z
+
+end
 
 def zResidueExplicit (ξ : ℂ) (Z : ℝ) : ℂ :=
   Spectral.c₀ D * (Z : ℂ) ^ (ξ - 61 / 100) * Spectral.G D ξ
@@ -73,7 +79,7 @@ theorem kern_w_tendsto (u : D.Row) (hu : u.u = 1) (ξ z : ℂ) (Z : ℝ) (hZ : 0
     simp only [EulerDomain.pad] at hz
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
   have hHu : ContinuousAt (fun w : ℂ => EulerDomain.Hu D u ξ w z) 1 := by
-    have hd := (EulerDomain.Hu_normal_convergence D u).2.2.1
+    have hd := (EulerDomain.Hu_normal_convergence D u).2
     have hat : DifferentiableAt ℂ
         (fun p : EulerDomain.Coordinates => EulerDomain.Hu D u p.1 p.2.1 p.2.2) (ξ, 1, z) :=
       hd.differentiableAt (EulerDomain.OmegaStar_isOpen.mem_nhds hmem)
@@ -129,7 +135,7 @@ theorem wResidue_tendsto (u : D.Row) (hu : u.u = 1) (ξ : ℂ) (hξ : 1 < ξ.re)
     simp only [EulerDomain.OmegaStar, Set.mem_setOf_eq, Complex.one_re, h16re]
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
   have hHuz : ContinuousAt (fun z : ℂ => EulerDomain.Hu D u ξ 1 z) (1 / 6) := by
-    have hd := (EulerDomain.Hu_normal_convergence D u).2.2.1
+    have hd := (EulerDomain.Hu_normal_convergence D u).2
     have hat : DifferentiableAt ℂ
         (fun p : EulerDomain.Coordinates => EulerDomain.Hu D u p.1 p.2.1 p.2.2)
         (ξ, 1, 1 / 6) :=
@@ -203,18 +209,13 @@ theorem zetaSCont_six_diffAt (z : ℂ) (h0 : 0 < z.re) (hz6 : 6 * z ≠ 1) :
     show (0 : ℝ) < (6 * z).re
     have : (6 * z).re = 6 * z.re := by simp
     rw [this]; linarith
-  have h1 := (PrincipalResidueFormulas.zetaSCont_analytic D (6 * z) hm).differentiableAt
-  have h2 : DifferentiableAt ℂ (fun z : ℂ => 6 * z) z :=
-    (differentiableAt_id.const_mul (6 : ℂ))
-  have h3 : DifferentiableAt ℂ (D.zetaSCont ∘ (fun z : ℂ => 6 * z)) z :=
-    DifferentiableAt.comp z h1 h2
-  exact h3
+  exact DifferentiableAt.comp z ((PrincipalResidueFormulas.zetaSCont_analytic D (6 * z) hm).differentiableAt) ((differentiableAt_id.const_mul (6 : ℂ)))
 
 set_option maxHeartbeats 1000000 in
 theorem Hu_diffAt_w (u : D.Row) (ξ w z : ℂ)
     (hmem : ((ξ, w, z) : EulerDomain.Coordinates) ∈ EulerDomain.OmegaStar) :
     DifferentiableAt ℂ (fun w : ℂ => EulerDomain.Hu D u ξ w z) w := by
-  have hd := (EulerDomain.Hu_normal_convergence D u).2.2.1
+  have hd := (EulerDomain.Hu_normal_convergence D u).2
   have h1 : DifferentiableAt ℂ
       (fun p : EulerDomain.Coordinates => EulerDomain.Hu D u p.1 p.2.1 p.2.2) (ξ, w, z) :=
     hd.differentiableAt (EulerDomain.OmegaStar_isOpen.mem_nhds hmem)
@@ -231,18 +232,10 @@ theorem kern_diffAt_w (u : D.Row) (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ)
     (hmem : ((ξ, w, z) : EulerDomain.Coordinates) ∈ EulerDomain.OmegaStar)
     (hw0 : 0 < w.re) (hw1 : w ≠ 1) :
     DifferentiableAt ℂ (fun w => kern D u Z ξ w z) w := by
-  have hZc : (Z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hZ.ne'
-  have hW : Differentiable ℂ D.W1Hat :=
-    ProbeSheet.MellinProof.realWeight_mellin_differentiable D.recipe.probe.W1
-  have hL : DifferentiableAt ℂ (D.Lpsi u) w := (D.Lpsi_analyticOnNhd u w ⟨hw0, hw1⟩).differentiableAt
-  have hHu := Hu_diffAt_w D u ξ w z hmem
-  have hpow : DifferentiableAt ℂ (fun w : ℂ => (Z : ℂ) ^ ((Scales.xExponent / 2 : ℝ) + ξ - 1 +
-      (Scales.smoothingExponent : ℂ) * z + (Scales.yExponent : ℂ) * (w - 1))) w :=
-    DifferentiableAt.const_cpow (by fun_prop) (Or.inl hZc)
   unfold kern kernelWith rowContLocal
-  exact ((((hpow.mul (differentiableAt_const _)).mul (differentiableAt_const _)).mul
-    (hW w)).mul (differentiableAt_const _)).mul
-    ((((differentiableAt_const _).mul hL).mul hHu).div_const _)
+  exact (((((DifferentiableAt.const_cpow (by fun_prop) (Or.inl (Complex.ofReal_ne_zero.mpr hZ.ne'))).mul (differentiableAt_const _)).mul (differentiableAt_const _)).mul
+    ((ProbeSheet.MellinProof.realWeight_mellin_differentiable D.recipe.probe.W1) w)).mul (differentiableAt_const _)).mul
+    ((((differentiableAt_const _).mul ((D.Lpsi_analyticOnNhd u w ⟨hw0, hw1⟩).differentiableAt)).mul (Hu_diffAt_w D u ξ w z hmem)).div_const _)
 
 set_option maxHeartbeats 1000000 in
 theorem kern_diffAt_z (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ)
@@ -257,7 +250,7 @@ theorem kern_diffAt_z (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ w z 
     D.M_differentiableOn.differentiableAt (hMopen.mem_nhds hz0)
   have hζ := zetaSCont_six_diffAt D z hz0 hz6
   have hHu : DifferentiableAt ℂ (fun z : ℂ => EulerDomain.Hu D u ξ w z) z := by
-    have hd := (EulerDomain.Hu_normal_convergence D u).2.2.1
+    have hd := (EulerDomain.Hu_normal_convergence D u).2
     have h1 : DifferentiableAt ℂ
         (fun p : EulerDomain.Coordinates => EulerDomain.Hu D u p.1 p.2.1 p.2.2) (ξ, w, z) :=
       hd.differentiableAt (EulerDomain.OmegaStar_isOpen.mem_nhds hmem)
@@ -283,9 +276,8 @@ theorem kern_z_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : 
     (hξ : ξ.re ∈ Icc Scales.rightLine 4) (hw : w.re ∈ Icc Scales.rightLine 4) :
     DifferentiableOn ℂ (fun z => kern D u Z ξ w z)
       (comparisonClosedStrip (1 / 6 + Scales.contourOffset) 2) := by
-  have hZpos : 0 < Z := by linarith
   have hx1 := one_lt_x₁
-  have hξ1 : Scales.rightLine ≤ ξ.re := hξ.1
+  have hξ1 := hξ.1
   have hw1 : Scales.rightLine ≤ w.re := hw.1
   intro z hz
   have hz1 : 1 / 6 + Scales.contourOffset ≤ z.re := hz.1
@@ -296,7 +288,7 @@ theorem kern_z_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : 
   have hmem : ((ξ, w, z) : EulerDomain.Coordinates) ∈ EulerDomain.OmegaStar := by
     simp only [EulerDomain.OmegaStar, Set.mem_setOf_eq]
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
-  exact (kern_diffAt_z D u hu Z hZpos ξ w z hmem (by linarith) hz6).differentiableWithinAt
+  exact (kern_diffAt_z D u hu Z (by linarith) ξ w z hmem (by linarith) hz6).differentiableWithinAt
 
 theorem kern_z_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : ℂ)
     (hξ : ξ.re ∈ Icc Scales.rightLine 4) (hw : w.re ∈ Icc Scales.rightLine 4) :
@@ -328,7 +320,6 @@ theorem kern_w_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s t : �
       (fun w => kern D u Z ((Scales.rightLine : ℂ) + (s : ℂ) * I) w
         (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I))
       (comparisonClosedStrip (9 / 10) Scales.rightLine \ {1}) := by
-  have hZpos : 0 < Z := by linarith
   have hx1 := one_lt_x₁
   have hδ : (0 : ℝ) < Scales.contourOffset := by unfold Scales.contourOffset; norm_num
   have hξre := re_x₁_line s
@@ -341,7 +332,7 @@ theorem kern_w_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s t : �
       EulerDomain.OmegaStar := by
     simp only [EulerDomain.OmegaStar, Set.mem_setOf_eq, hξre, hzre]
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
-  exact (kern_diffAt_w D u Z hZpos _ w _ hmem (by linarith) hw0).differentiableWithinAt
+  exact (kern_diffAt_w D u Z (by linarith) _ w _ hmem (by linarith) hw0).differentiableWithinAt
 
 theorem kern_w_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s t : ℝ) :
     DecayOn
@@ -356,19 +347,18 @@ theorem kern_w_residue (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s t 
       (𝓝[≠] (1 : ℂ))
       (𝓝 (wResidueExplicit D u ((Scales.rightLine : ℂ) + (s : ℂ) * I)
         (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I) Z)) := by
-  have hz6 : 6 * (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I) ≠ 1 := by
-    apply six_mul_ne_one_of_re
-    rw [re_z_line]
-    unfold Scales.contourOffset
-    norm_num
-  exact kern_w_tendsto u hu _ _ Z (by linarith) (by rw [re_x₁_line]; exact one_lt_x₁)
-    (by rw [re_z_line]; unfold EulerDomain.pad Scales.contourOffset; norm_num) hz6
+  refine kern_w_tendsto u hu _ _ Z (by linarith) (by rw [re_x₁_line]; exact one_lt_x₁)
+    (by rw [re_z_line]; unfold EulerDomain.pad Scales.contourOffset; norm_num) ?_
+  apply six_mul_ne_one_of_re
+  rw [re_z_line]
+  unfold Scales.contourOffset
+  norm_num
 
 set_option maxHeartbeats 1000000 in
 theorem Hu_diffAt_z (u : D.Row) (ξ z : ℂ)
     (hmem : ((ξ, (1 : ℂ), z) : EulerDomain.Coordinates) ∈ EulerDomain.OmegaStar) :
     DifferentiableAt ℂ (fun z : ℂ => EulerDomain.Hu D u ξ 1 z) z := by
-  have hd := (EulerDomain.Hu_normal_convergence D u).2.2.1
+  have hd := (EulerDomain.Hu_normal_convergence D u).2
   have h1 : DifferentiableAt ℂ
       (fun p : EulerDomain.Coordinates => EulerDomain.Hu D u p.1 p.2.1 p.2.2) (ξ, 1, z) :=
     hd.differentiableAt (EulerDomain.OmegaStar_isOpen.mem_nhds hmem)
@@ -388,18 +378,7 @@ theorem wResidueExplicit_diffAt (u : D.Row) (Z : ℝ) (hZ : 0 < Z) (ξ z : ℂ)
         ((Z : ℂ) ^ ((Scales.xExponent / 2 : ℝ) + ξ - 1 + (Scales.smoothingExponent : ℂ) * z) *
           Complex.exp ((ξ + z - 1) ^ 2) * D.M z *
             (D.zetaSCont (6 * z) * EulerDomain.Hu D u ξ 1 z / D.Llam u ξ))) z := by
-  have hZc : (Z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hZ.ne'
-  have hMopen : IsOpen {z : ℂ | 0 < z.re} := isOpen_lt continuous_const Complex.continuous_re
-  have hHu := Hu_diffAt_z D u ξ z hmem
-  have hM : DifferentiableAt ℂ D.M z :=
-    D.M_differentiableOn.differentiableAt (hMopen.mem_nhds hz0)
-  have hζ := zetaSCont_six_diffAt D z hz0 hz6
-  have hpow : DifferentiableAt ℂ (fun z : ℂ => (Z : ℂ) ^ ((Scales.xExponent / 2 : ℝ) + ξ - 1 +
-      (Scales.smoothingExponent : ℂ) * z)) z :=
-    DifferentiableAt.const_cpow (by fun_prop) (Or.inl hZc)
-  have hexp : DifferentiableAt ℂ (fun z : ℂ => Complex.exp ((ξ + z - 1) ^ 2)) z :=
-    DifferentiableAt.cexp (by fun_prop)
-  exact (((hpow.mul hexp).mul hM).mul ((hζ.mul hHu).div_const _)).const_mul _
+  exact ((((DifferentiableAt.const_cpow (by fun_prop) (Or.inl (Complex.ofReal_ne_zero.mpr hZ.ne'))).mul (DifferentiableAt.cexp (by fun_prop))).mul (D.M_differentiableOn.differentiableAt ((isOpen_lt continuous_const Complex.continuous_re).mem_nhds hz0))).mul (((zetaSCont_six_diffAt D z hz0 hz6).mul (Hu_diffAt_z D u ξ z hmem)).div_const _)).const_mul _
 
 set_option maxHeartbeats 1000000 in
 theorem wResidue_z_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s : ℝ) :
@@ -417,7 +396,7 @@ theorem wResidue_z_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s :
             (D.zetaSCont (6 * z) * EulerDomain.Hu D u ((Scales.rightLine : ℂ) + (s : ℂ) * I) 1 z /
               D.Llam u ((Scales.rightLine : ℂ) + (s : ℂ) * I)))) z := by
     intro z hz
-    have hz1 : 1 / 20 ≤ z.re := hz.1.1
+    have hz1 := hz.1.1
     have hz6 : 6 * z ≠ 1 := by
       intro h
       apply hz.2
@@ -457,10 +436,10 @@ theorem zResidue_xi_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
     DifferentiableOn ℂ (fun ξ => zResidueLocal D u ξ Z)
       (comparisonClosedStrip Scales.rightLine 2) := by
   have hZpos : 0 < Z := by linarith
-  have hZ0 : (Z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hZpos.ne'
+  have hZ0 := Complex.ofReal_ne_zero.mpr hZpos.ne'
   have hsub : comparisonClosedStrip Scales.rightLine 2 ⊆ {s : ℂ | 1 < s.re} :=
     fun s hs => strip_re_one_lt le_rfl hs
-  have hG : DifferentiableOn ℂ (Spectral.G D) {s : ℂ | 1 < s.re} :=
+  have hG :=
     SpectralData.G_differentiableOn D
   have hpow : Differentiable ℂ (fun ξ : ℂ => (Z : ℂ) ^ (ξ - 61 / 100)) := fun ξ =>
     (differentiableAt_id.sub_const _).const_cpow (Or.inl hZ0)
@@ -476,7 +455,7 @@ theorem zResidue_xi_gaussian_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 
   have hZpos : 0 < Z := by linarith
   have hx1 := one_lt_x₁
   obtain ⟨CH, hCH, hH⟩ := EulerSubpower.Hu_subpower D (1 / 10) (by norm_num) 1 (by norm_num)
-  obtain ⟨Cz, hCz, hz⟩ := RightHeckeBounds.zetaSCont_inv_norm_le_right D Scales.rightLine hx1
+  obtain ⟨Cz, hz⟩ := RightHeckeBounds.zetaSCont_inv_norm_le_right D Scales.rightLine hx1
   have h16 : (1 / 6 : ℂ) = ((1 / 6 : ℝ) : ℂ) := by
     first | norm_num | simp | (push_cast; ring)
   have h16re : ((1 / 6 : ℂ)).re = 1 / 6 := by rw [h16, Complex.ofReal_re]

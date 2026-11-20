@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -56,9 +53,9 @@ theorem chosenSimpleKummerExtension_le_of_dvd
     intro hz
     rw [hz, zero_pow n.pos.ne'] at hαn
     exact ((map_ne_zero (algebraMap K Ω)).2 (Units.ne_zero a)) hαn.symm
-  let um : Ωˣ := Units.mk0 αm hαmne
-  let un : Ωˣ := Units.mk0 αn hαnne
-  let ι : Kˣ →* Ωˣ := Units.map (algebraMap K Ω).toMonoidHom
+  let um := Units.mk0 αm hαmne
+  let un := Units.mk0 αn hαnne
+  let ι := Units.map (algebraMap K Ω).toMonoidHom
   have humpow : um ^ (m : ℕ) = ι a := by
     apply Units.ext
     exact hαm
@@ -67,39 +64,31 @@ theorem chosenSimpleKummerExtension_le_of_dvd
     exact hαn
   have hqm : q * (m : ℕ) = (n : ℕ) := by
     rw [mul_comm, ← hq]
-  let u : Ωˣ := un ^ q / um
+  let u := un ^ q / um
   have hu : u ^ (m : ℕ) = 1 := by
     change (un ^ q / um) ^ (m : ℕ) = 1
     rw [div_pow, ← pow_mul, hqm, hunpow, humpow, div_self']
   obtain ⟨ζ, hζ⟩ :=
     KummerTheory.nthRootsOfUnityInBase_of_primitiveRoots
-      (K := K) (L := Ω) m hmuM u hu
+        m hmuM u hu
   have hζmul : ι ζ * um = un ^ q := by
     rw [hζ]
     exact div_mul_cancel (un ^ q) um
   have hum : um = (ι ζ)⁻¹ * un ^ q := by
     calc
       um = (ι ζ)⁻¹ * (ι ζ * um) := by
-        rw [← mul_assoc, inv_mul_cancel, one_mul]
+        simp
       _ = (ι ζ)⁻¹ * un ^ q := by rw [hζmul]
   have hαmval : αm = (algebraMap K Ω (ζ : K))⁻¹ * αn ^ q := by
     have h := congrArg Units.val hum
     dsimp only [um, un, ι] at h
-    simpa only [Units.val_mul, Units.val_inv_eq_inv_val,
-      Units.val_pow_eq_pow_val, Units.coe_map, Units.val_mk0,
-      RingHom.toMonoidHom_eq_coe, MonoidHom.coe_ofClass] using h
+    simpa using h
   have hαmmem : αm ∈ En := by
     rw [hαmval]
-    have hζmem : algebraMap K Ω (ζ : K) ∈ En :=
-      En.algebraMap_mem (ζ : K)
-    have hαnmem : αn ∈ En :=
-      IntermediateField.subset_adjoin K {αn} (Set.mem_singleton αn)
-    exact mul_mem (inv_mem hζmem) (pow_mem hαnmem q)
-  change IntermediateField.adjoin K {αm} ≤ En
+    exact mul_mem (inv_mem (En.algebraMap_mem (ζ : K))) (pow_mem (IntermediateField.subset_adjoin K {αn} (Set.mem_singleton αn)) q)
   apply IntermediateField.adjoin_le_iff.mpr
   intro x hx
-  have hx' : x = αm := Set.mem_singleton_iff.mp hx
-  rw [hx']
+  rw [(Set.mem_singleton_iff.mp hx)]
   exact hαmmem
 
 end LocalClassFieldTheory.Kummer

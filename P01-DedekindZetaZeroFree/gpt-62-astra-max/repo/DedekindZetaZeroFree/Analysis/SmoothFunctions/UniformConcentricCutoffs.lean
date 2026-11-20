@@ -39,7 +39,7 @@ theorem uniform_concentric_cutoff (n : ℕ) (r R : ℝ)
   let g : Space n → ℝ := fun x => b (x - outer.center)
   have hg : ContDiff ℝ (⊤ : ℕ∞) g :=
     b.contDiff.comp (contDiff_id.sub contDiff_const)
-  have hgc : HasCompactSupport g :=
+  have hgc :=
     b.hasCompactSupport.comp_homeomorph (Homeomorph.subRight outer.center)
   have hgs : tsupport g = Metric.closedBall outer.center s := by
     change tsupport ((fun x => b x) ∘ Homeomorph.subRight outer.center) = _

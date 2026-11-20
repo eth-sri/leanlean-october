@@ -16,31 +16,27 @@ set_option backward.isDefEq.respectTransparency true
 set_option maxHeartbeats 8000000
 set_option diagnostics true
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 local notation "Raw" => KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ
 variable (s : RestrictedTensorSimple.Level (bad A P C))
-variable (x : ∀ j : s.val, Plus A P C j.val)
+    (x : ∀ j : s.val, Plus A P C j.val)
 
 theorem finiteSection_locallyConstant (q : KPFinitePlace F)
     (f : Plus A P C (Sum.inr q)) : IsLocallyConstant f.val := by
   obtain ⟨J, hJ⟩ := f.property.2
   rw [IsLocallyConstant.iff_eventually_eq]
   intro g
-  have hc : Continuous (fun y : KPLocalExceptionalConstruction.ActualCover F ζ hζ q => g⁻¹ * y) :=
-    continuous_const.mul continuous_id
   have hm : ∀ᶠ y in nhds g, g⁻¹ * y ∈ J :=
-    hc.continuousAt.preimage_mem_nhds (by simpa using J.isOpen.mem_nhds J.one_mem)
+    (continuous_const.mul continuous_id).continuousAt.preimage_mem_nhds (by simpa using J.isOpen.mem_nhds J.one_mem)
   filter_upwards [hm] with y hy
-  have he := congrFun (hJ (g⁻¹ * y) hy) g
-  simpa [KPLocalPrincipalSeries.vectorRightTranslation] using he
+  simpa [KPLocalPrincipalSeries.vectorRightTranslation] using (congrFun (hJ (g⁻¹ * y) hy) g)
 
 theorem finiteTuple_locallyConstant : IsLocallyConstant (finiteTuple A P C s x) := by
   have hl (q : s.val.toRight) : IsLocallyConstant
-      (fun g : Raw => finiteTuple A P C s x g q) := by
-    exact (finiteSection_locallyConstant A P C q.val
+      (fun g : Raw => finiteTuple A P C s x g q) := (finiteSection_locallyConstant A P C q.val
       (x ⟨Sum.inr q.val, Finset.mem_toRight.mp q.property⟩)).comp_continuous
         (QuotientGroup.continuous_mk.comp (RestrictedProduct.continuous_eval _))
   rw [IsLocallyConstant.iff_eventually_eq]
@@ -111,23 +107,16 @@ theorem archComplement_continuous (w : InfinitePlace F) : Continuous
 
 theorem coefficient_continuous (w : InfinitePlace F) : Continuous
     (fun g : Raw => coefficient A P C s x g w) := by
-  change Continuous (fun g : Raw => archComplement A P C s x g w * finiteScalar A P C s x g *
-    (KPSourceConvention.ordinaryGenuineCharacter F ζ hζ (g (Sum.inl w)).epsilon : ℂ))
   exact ((archComplement_continuous A P C s x w).mul
     (finiteScalar_locallyConstant A P C s x).continuous).mul
       ((phase_continuous A w).comp (RestrictedProduct.continuous_eval _))
 
 theorem negative_raw_joint (w : InfinitePlace F) : Continuous
     (fun p : PrincipalSeries negativeParameter × Raw => negative A P C s x p.2 w p.1) := by
-  have harg : Continuous (fun p : PrincipalSeries negativeParameter × Raw =>
-      (NativeStageSlot.inverse p.1, matrix A w (p.2 (Sum.inl w)))) :=
-    (NativeStageSlot.inverse.continuous.comp continuous_fst).prodMk
-      ((matrix_continuous A w).comp ((RestrictedProduct.continuous_eval _).comp continuous_snd))
-  change Continuous (fun p : PrincipalSeries negativeParameter × Raw =>
-    coefficient A P C s x p.2 w * (NativeStageSlot.inverse p.1) (matrix A w (p.2 (Sum.inl w))))
   exact ((coefficient_continuous A P C s x w).comp continuous_snd).mul
     ((KPActualReflectionData.LiteralProductPointBound.principalSeries_matrix_evaluation_joint
-      positiveParameter).comp harg)
+      positiveParameter).comp ((NativeStageSlot.inverse.continuous.comp continuous_fst).prodMk
+        ((matrix_continuous A w).comp ((RestrictedProduct.continuous_eval _).comp continuous_snd))))
 
 theorem negative_raw_compact_bound (w : InfinitePlace F) (K : Set Raw) (hK : IsCompact K) :
     ∃ orders : Finset ℕ, ∃ B : ℝ≥0, B ≠ 0 ∧

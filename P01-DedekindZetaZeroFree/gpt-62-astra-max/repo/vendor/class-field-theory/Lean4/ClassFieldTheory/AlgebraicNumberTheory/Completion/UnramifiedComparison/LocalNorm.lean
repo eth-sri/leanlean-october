@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -56,7 +53,7 @@ theorem adicCompletionIntegerUnits_le_chosenFinitePlaceLocalNormSubgroup
   let :
       IsNonarchimedeanLocalField.IsUnramifiedValuedExtension
         vK.Completion E := by
-    simpa [ChosenFinitePlaceIsUnramified] using hunram
+    exact hunram
   intro x hx
   let e :=
     finitePlaceCompletionUnitsContinuousMulEquiv v₀

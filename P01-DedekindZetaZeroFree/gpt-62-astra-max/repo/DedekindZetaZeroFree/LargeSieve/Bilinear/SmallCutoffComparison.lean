@@ -11,63 +11,60 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical
 
-private lemma squarefreeKernel_ne_bot {F : Type} [Field F] [NumberField F]
-    {a : Ideal (𝓞 F)} (ha : a ≠ ⊥) : squarefreeKernel a ≠ ⊥ := by
+section
+
+variable {F : Type} [Field F] [NumberField F] {a : Ideal (𝓞 F)}
+
+private lemma squarefreeKernel_ne_bot (ha : a ≠ ⊥) : squarefreeKernel a ≠ ⊥ := by
   have h : squarefreeKernel a ≠ 0 := by
     rw [squarefreeKernel, if_neg ha, Finset.prod_ne_zero_iff]
     intro p hp
-    have hp' : p ∈ UniqueFactorizationMonoid.normalizedFactors a :=
-      UniqueFactorizationMonoid.mem_primeFactors.mp (Finset.mem_filter.mp hp).1
-    exact (UniqueFactorizationMonoid.prime_of_normalized_factor p hp').ne_zero
+    exact (UniqueFactorizationMonoid.prime_of_normalized_factor p (UniqueFactorizationMonoid.mem_primeFactors.mp (Finset.mem_filter.mp hp).1)).ne_zero
   rwa [Ideal.zero_eq_bot] at h
 
-private lemma one_le_s {F : Type} [Field F] [NumberField F]
-    {a : Ideal (𝓞 F)} (ha : a ≠ ⊥) : 1 ≤ s a := by
-  have hz : Ideal.absNorm (squarefreeKernel a) ≠ 0 :=
-    Ideal.absNorm_eq_zero_iff.not.mpr (squarefreeKernel_ne_bot ha)
-  have h1 : 1 ≤ Ideal.absNorm (squarefreeKernel a) := Nat.one_le_iff_ne_zero.mpr hz
+private lemma one_le_s (ha : a ≠ ⊥) : 1 ≤ s a := by
   unfold s
-  exact_mod_cast h1
+  exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (squarefreeKernel_ne_bot ha)))
 
-private lemma s_eq_one_iff {F : Type} [Field F] [NumberField F]
-    {a : Ideal (𝓞 F)} : s a = 1 ↔ squarefreeKernel a = ⊤ := by
+private lemma s_eq_one_iff : s a = 1 ↔ squarefreeKernel a = ⊤ := by
   unfold s
   rw [Nat.cast_eq_one, Ideal.absNorm_eq_one_iff]
 
-private lemma prod_primes_eq_top {F : Type} [Field F] [NumberField F]
+end
+
+section
+
+variable {F : Type} [Field F] [NumberField F]
+
+private lemma prod_primes_eq_top
     {S : Finset (Ideal (𝓞 F))} (hS : ∀ p ∈ S, Prime p)
     (h : ∏ p ∈ S, p = ⊤) : S = ∅ := by
   by_contra hne
   obtain ⟨p, hp⟩ := Finset.nonempty_iff_ne_empty.mpr hne
-  have hdvd : p ∣ ∏ q ∈ S, q := Finset.dvd_prod_of_mem (fun q => q) hp
+  have hdvd := Finset.dvd_prod_of_mem (fun q => q) hp
   rw [h] at hdvd
   exact (hS p hp).not_unit (isUnit_of_dvd_one (by simpa [Ideal.one_eq_top] using hdvd))
 
-private lemma exists_sq_of_squarefreeKernel_eq_top {F : Type} [Field F] [NumberField F]
+private lemma exists_sq_of_squarefreeKernel_eq_top
     {a : Ideal (𝓞 F)} (h : squarefreeKernel a = ⊤) : ∃ t, t ^ 2 = a := by
   by_cases ha : a = ⊥
   · exact ⟨⊥, by rw [ha]; simp⟩
-  have ha0 : a ≠ 0 := by simpa [Ideal.zero_eq_bot] using ha
   set s := UniqueFactorizationMonoid.normalizedFactors a with hs
-  have hker : (∏ p ∈ s.toFinset.filter (fun p => s.count p % 2 = 1), p) = ⊤ := by
-    simpa [squarefreeKernel, if_neg ha, hs] using h
-  have hS : ∀ p ∈ s.toFinset.filter (fun p => s.count p % 2 = 1), Prime p := by
-    intro p hp
-    exact UniqueFactorizationMonoid.prime_of_normalized_factor p
+  have hS : ∀ p ∈ s.toFinset.filter (fun p => s.count p % 2 = 1), Prime p := fun p hp => UniqueFactorizationMonoid.prime_of_normalized_factor p
       (by rw [← hs]; exact UniqueFactorizationMonoid.mem_primeFactors.mp (Finset.mem_filter.mp hp).1)
-  have hempty := prod_primes_eq_top hS hker
   have heven : ∀ p ∈ s.toFinset, s.count p % 2 = 0 := by
     intro p hp
     by_contra hc
     have : p ∈ s.toFinset.filter (fun p => s.count p % 2 = 1) := by
       rw [Finset.mem_filter]; exact ⟨hp, by omega⟩
-    rw [hempty] at this
+    rw [(prod_primes_eq_top hS (by
+      simpa [squarefreeKernel, if_neg ha, hs] using h))] at this
     exact absurd this (Finset.notMem_empty p)
   refine ⟨∏ p ∈ s.toFinset, p ^ (s.count p / 2), ?_⟩
   have h1 : a = ∏ p ∈ s.toFinset, p ^ (s.count p) := by
     rw [← Finset.prod_multiset_count]
     exact associated_iff_eq.mp
-      (by simpa [hs] using (UniqueFactorizationMonoid.prod_normalizedFactors ha0).symm)
+      (by simpa [hs] using (UniqueFactorizationMonoid.prod_normalizedFactors (by simpa [Ideal.zero_eq_bot] using ha)).symm)
   rw [h1, ← Finset.prod_pow]
   apply Finset.prod_congr rfl
   intro p hp
@@ -78,29 +75,35 @@ private lemma exists_sq_of_squarefreeKernel_eq_top {F : Type} [Field F] [NumberF
   congr 1
   omega
 
+end
+
 private lemma exists_weight_bound (W : ℝ → ℝ) (hW : SieveWeight W) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ t : ℝ, ‖W t‖ ≤ B := by
-  obtain ⟨B, hB⟩ := (isCompact_Icc (a := (1/2:ℝ)) (b := (5/2:ℝ))).exists_bound_of_continuousOn
+  obtain ⟨B, hB⟩ := (isCompact_Icc).exists_bound_of_continuousOn
     hW.smooth.continuous.continuousOn
   refine ⟨max B 0, le_max_right _ _, fun t => ?_⟩
   by_cases ht : t ∈ Set.Icc (1/2:ℝ) (5/2)
   · exact le_trans (hB t ht) (le_max_left _ _)
   · rw [hW.zero_outside t ht]; simp
 
-def smallCutoffSquareRows (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (M : ℝ) : Finset (Ideal (𝓞 F)) :=
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+local notation "IntegerIdeal" => Ideal (𝓞 F)
+
+def smallCutoffSquareRows
+    (c : IntegerIdeal) (M : ℝ) : Finset IntegerIdeal :=
   (boundedNormIdeals F ((5 / 2) * M)).filter
     (fun a => a ≠ ⊥ ∧ a ⊔ c = ⊤ ∧ squarefreeKernel a = ⊤)
 
-private lemma exists_squareRows_card_bound (F : Type) [Field F] [NumberField F] :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ (c : Ideal (𝓞 F)) (M : ℝ), 1 ≤ M →
+private lemma exists_squareRows_card_bound :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ (c : IntegerIdeal) (M : ℝ), 1 ≤ M →
       ((smallCutoffSquareRows F c M).card : ℝ) ≤ C * Real.sqrt M := by
   obtain ⟨C₀, hC₀, hglob, hfin⟩ := DedekindZetaZeroFree.LargeSieve.exists_ideal_count_bound_finset F
   refine ⟨C₀ * Real.sqrt (5/2), by positivity, ?_⟩
   intro c M hM
   set X : ℝ := Real.sqrt ((5/2) * M) with hX
-  have hX1 : 1 ≤ X := by
-    rw [hX]; apply Real.one_le_sqrt.mpr; nlinarith [hM]
   have hsub : smallCutoffSquareRows F c M
       ⊆ (DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F X).image (fun t => t^2) := by
     intro a ha
@@ -110,31 +113,30 @@ private lemma exists_squareRows_card_bound (F : Type) [Field F] [NumberField F] 
     rw [Finset.mem_image]
     refine ⟨t, ?_, ht⟩
     rw [DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals]
-    have hna : (Ideal.absNorm a : ℝ) ≤ (5/2)*M := by
-      rw [DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals] at hain; exact hain
     have hsqN : Ideal.absNorm (t^2) = Ideal.absNorm t * Ideal.absNorm t := by
       rw [sq]; exact map_mul Ideal.absNorm t t
     have hsq : (Ideal.absNorm t : ℝ) * (Ideal.absNorm t : ℝ) = (Ideal.absNorm a : ℝ) := by
       rw [← ht, hsqN]; push_cast; ring
     calc (Ideal.absNorm t : ℝ)
         = Real.sqrt ((Ideal.absNorm t : ℝ)^2) := (Real.sqrt_sq (Nat.cast_nonneg _)).symm
-      _ ≤ Real.sqrt ((5/2)*M) := Real.sqrt_le_sqrt (by nlinarith [hsq, hna])
+      _ ≤ Real.sqrt ((5/2)*M) := Real.sqrt_le_sqrt (by nlinarith [hsq, (by
+        rw [DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals] at hain; exact hain)])
       _ = X := hX.symm
-  calc ((smallCutoffSquareRows F c M).card : ℝ)
+  calc _
       ≤ (((DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F X).image (fun t => t^2)).card : ℝ) := by
         exact_mod_cast Finset.card_le_card hsub
     _ ≤ ((DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F X).card : ℝ) := by
         exact_mod_cast Finset.card_image_le
-    _ ≤ C₀ * X := hglob X hX1
+    _ ≤ C₀ * X := hglob X (by
+      rw [hX]; apply Real.one_le_sqrt.mpr; nlinarith [hM])
     _ = C₀ * Real.sqrt (5/2) * Real.sqrt M := by
         rw [hX, Real.sqrt_mul (by norm_num : (0:ℝ) ≤ 5/2)]
         ring
 
 theorem smallCutoff_T3_difference
-    (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
+    (c : IntegerIdeal) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (W : ℝ → ℝ) (M N K : ℝ) (hK : 0 < K) (hK1 : K < 1)
-    (d : Ideal (𝓞 F)) (g : Q.G) (lam : Ideal (𝓞 F) → ℂ) :
+    (d : IntegerIdeal) (g : Q.G) (lam : IntegerIdeal → ℂ) :
     T3 F c Q W M N K d g lam - T3 F c Q W M N 1 d g lam =
       ∑ b1 ∈ paperShell F c N, ∑ b2 ∈ paperShell F c N,
         if b1 ⊔ b2 = d ∧ Q.cls b1 = g ∧ Q.cls b2 = g then
@@ -164,9 +166,8 @@ theorem smallCutoff_T3_difference
     intro a ha1 ha2
     rw [kernelRows, Finset.mem_filter] at ha1
     rw [smallCutoffSquareRows, Finset.mem_filter] at ha2
-    have h1 : 1 < s a := ha1.2.2.2
-    have h2 : squarefreeKernel a = ⊤ := ha2.2.2.2
-    rw [(s_eq_one_iff).mpr h2] at h1
+    have h1 := ha1.2.2.2
+    rw [(s_eq_one_iff).mpr ha2.2.2.2] at h1
     exact lt_irrefl 1 h1
   unfold T3
   rw [← Finset.sum_sub_distrib]
@@ -183,12 +184,11 @@ theorem smallCutoff_T3_difference
     ring
 
 theorem smallCutoff_T3_comparison
-    (F : Type) [Field F] [NumberField F]
     (W : ℝ → ℝ) (hW : SieveWeight W) :
     ∃ C : ℝ, 0 ≤ C ∧
-      ∀ (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
+      ∀ (c : IntegerIdeal) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
         (M N K : ℝ), 1 ≤ M → 1 ≤ N → 0 < K → K < 1 →
-      ∀ (d : Ideal (𝓞 F)) (g : Q.G) (lam : Ideal (𝓞 F) → ℂ),
+      ∀ (d : IntegerIdeal) (g : Q.G) (lam : IntegerIdeal → ℂ),
         ‖T3 F c Q W M N K d g lam - T3 F c Q W M N 1 d g lam‖ ≤
             C * Real.sqrt M * N * energy F c N lam := by
   obtain ⟨C₀, hC₀, hglob, hfin⟩ := DedekindZetaZeroFree.LargeSieve.exists_ideal_count_bound_finset F
@@ -203,10 +203,10 @@ theorem smallCutoff_T3_comparison
       ‖∑ a ∈ S, (W ((Ideal.absNorm a : ℝ) / M) : ℂ) * (Q.χ b1) a *
           (starRingEnd ℂ) ((Q.χ b2) a)‖ ≤ B * (S.card : ℝ) := by
     intro b1 hb1 b2 hb2
-    have hb1sf : Squarefree b1 := ((mem_paperShell F c N b1).mp hb1).1
-    have hb1c : b1 ⊔ c = ⊤ := ((mem_paperShell F c N b1).mp hb1).2.1
-    have hb2sf : Squarefree b2 := ((mem_paperShell F c N b2).mp hb2).1
-    have hb2c : b2 ⊔ c = ⊤ := ((mem_paperShell F c N b2).mp hb2).2.1
+    have hb1sf := ((mem_paperShell F c N b1).mp hb1).1
+    have hb1c := ((mem_paperShell F c N b1).mp hb1).2.1
+    have hb2sf := ((mem_paperShell F c N b2).mp hb2).1
+    have hb2c := ((mem_paperShell F c N b2).mp hb2).2.1
     calc ‖∑ a ∈ S, (W ((Ideal.absNorm a : ℝ) / M) : ℂ) * (Q.χ b1) a *
             (starRingEnd ℂ) ((Q.χ b2) a)‖
         ≤ ∑ a ∈ S, ‖(W ((Ideal.absNorm a : ℝ) / M) : ℂ) * (Q.χ b1) a *
@@ -216,7 +216,7 @@ theorem smallCutoff_T3_comparison
           intro a _
           have hWle : ‖(W ((Ideal.absNorm a : ℝ) / M) : ℂ)‖ ≤ B := by
             simpa [Complex.norm_real, Real.norm_eq_abs] using hB _
-          have hχ1 : ‖(Q.χ b1) a‖ ≤ 1 := quadraticFamily_norm_le_one Q hb1sf hb1c a
+          have hχ1 := quadraticFamily_norm_le_one Q hb1sf hb1c a
           have hχ2 : ‖(Q.χ b2) a‖ ≤ 1 := quadraticFamily_norm_le_one Q hb2sf hb2c a
           calc ‖(W ((Ideal.absNorm a : ℝ) / M) : ℂ) * (Q.χ b1) a *
                   (starRingEnd ℂ) ((Q.χ b2) a)‖
@@ -322,20 +322,20 @@ theorem smallCutoff_T3_comparison
     _ = B * Cs * (C₀ * 2) * Real.sqrt M * N * energy F c N lam := by ring
 
 theorem smallCutoff_B3_comparison
-    (F : Type) [Field F] [NumberField F]
     (W : ℝ → ℝ) (hW : SieveWeight W) :
     ∃ C : ℝ, 0 ≤ C ∧
-      ∀ (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
+      ∀ (c : IntegerIdeal) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
         (M N K : ℝ), 1 ≤ M → 1 ≤ N → 0 < K → K < 1 →
-      ∀ d : Ideal (𝓞 F),
+      ∀ d : IntegerIdeal,
           B3 F c Q W M N K d ≤ B3 F c Q W M N 1 d + C * Real.sqrt M * N := by
   obtain ⟨C₁, hC₁, hT3⟩ := smallCutoff_T3_comparison F W hW
   refine ⟨C₁, hC₁, ?_⟩
   intro c Q M N K hM hN hK hK1 d
   have hCnn : 0 ≤ C₁ * Real.sqrt M * N :=
     mul_nonneg (mul_nonneg hC₁ (Real.sqrt_nonneg M)) (by linarith)
-  rw [show B3 F c Q W M N K d = sSup ({0} ∪ {x : ℝ | ∃ (g : Q.G) (lam : Ideal (𝓞 F) → ℂ),
-      energy F c N lam ≤ 1 ∧ x = ‖T3 F c Q W M N K d g lam‖}) from rfl]
+  let T3₀ := T3 F c Q W M N
+  rw [show B3 F c Q W M N K d = sSup ({0} ∪ {x : ℝ | ∃ (g : Q.G) (lam : IntegerIdeal → ℂ),
+      energy F c N lam ≤ 1 ∧ x = ‖T3₀ K d g lam‖}) from rfl]
   apply csSup_le
   · exact ⟨0, Or.inl rfl⟩
   · intro x hx
@@ -343,29 +343,30 @@ theorem smallCutoff_B3_comparison
     · rw [Set.mem_singleton_iff] at hx0; rw [hx0]
       have := B3_nonneg Q W M N 1 d
       linarith
-    · have hsplit : ‖T3 F c Q W M N K d g lam‖ ≤
+    · have hsplit : ‖T3₀ K d g lam‖ ≤
           B3 F c Q W M N 1 d + C₁ * Real.sqrt M * N := by
-        have hdecomp : T3 F c Q W M N K d g lam
-            = T3 F c Q W M N 1 d g lam +
-              (T3 F c Q W M N K d g lam - T3 F c Q W M N 1 d g lam) := by ring
-        calc ‖T3 F c Q W M N K d g lam‖
-            = ‖T3 F c Q W M N 1 d g lam +
-                (T3 F c Q W M N K d g lam - T3 F c Q W M N 1 d g lam)‖ := by
+        have hdecomp : T3₀ K d g lam
+            = T3₀ 1 d g lam +
+              (T3₀ K d g lam - T3₀ 1 d g lam) := by ring
+        calc ‖T3₀ K d g lam‖
+            = ‖T3₀ 1 d g lam +
+                (T3₀ K d g lam - T3₀ 1 d g lam)‖ := by
                 conv_lhs => rw [hdecomp]
-          _ ≤ ‖T3 F c Q W M N 1 d g lam‖ +
-                ‖T3 F c Q W M N K d g lam - T3 F c Q W M N 1 d g lam‖ := norm_add_le _ _
+          _ ≤ ‖T3₀ 1 d g lam‖ +
+                ‖T3₀ K d g lam - T3₀ 1 d g lam‖ := norm_add_le _ _
           _ ≤ B3 F c Q W M N 1 d * energy F c N lam +
                 C₁ * Real.sqrt M * N * energy F c N lam :=
               add_le_add (norm_T3_le_B3_mul_energy Q W M N 1 d g lam)
                 (hT3 c Q M N K hM hN hK hK1 d g lam)
           _ ≤ B3 F c Q W M N 1 d + C₁ * Real.sqrt M * N := by
-              have hb : 0 ≤ B3 F c Q W M N 1 d := B3_nonneg Q W M N 1 d
-              have h1 : B3 F c Q W M N 1 d * energy F c N lam ≤ B3 F c Q W M N 1 d :=
-                mul_le_of_le_one_right hb hen
-              have h2 : C₁ * Real.sqrt M * N * energy F c N lam ≤ C₁ * Real.sqrt M * N :=
+              have h1 :=
+                mul_le_of_le_one_right (B3_nonneg Q W M N 1 d) hen
+              have h2 :=
                 mul_le_of_le_one_right hCnn hen
               linarith
       exact hsplit
+
+end
 
 def smallCutoffEnvelope (α M N K : ℝ) : ℝ :=
   M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) + Real.sqrt (M / K) * N
@@ -377,10 +378,10 @@ theorem smallCutoff_range_bridge
     (hupper : K ≤ M * Real.rpow (M * N) (-ε)) :
     (N ^ (2 : ℕ) / M) * Real.rpow (M * N) ε ≤ 1 ∧
       1 ≤ M * Real.rpow (M * N) (-ε) := by
-  have hM0 : 0 < M := lt_of_lt_of_le zero_lt_one hM
-  have hN0 : 0 < N := lt_of_lt_of_le zero_lt_one hN
-  have hMNpos : 0 < M * N := mul_pos hM0 hN0
-  have hRpos : 0 < Real.rpow (M * N) ε := Real.rpow_pos_of_pos hMNpos ε
+  have hM0 := lt_of_lt_of_le zero_lt_one hM
+  have hN0 := lt_of_lt_of_le zero_lt_one hN
+  have hMNpos := mul_pos hM0 hN0
+  have hRpos := Real.rpow_pos_of_pos hMNpos ε
   have hN2pos : 0 < N ^ (2:ℕ) := by positivity
   have hApos : 0 < (N ^ (2:ℕ) / M) * Real.rpow (M*N) ε :=
     mul_pos (div_pos hN2pos hM0) hRpos
@@ -403,17 +404,18 @@ theorem smallCutoff_envelope_comparison
     (hM : 1 ≤ M) (hN : 1 ≤ N) (hK : 0 < K) (hK1 : K < 1) :
     smallCutoffEnvelope α M N 1 ≤ 2 * smallCutoffEnvelope α M N K ∧
       Real.sqrt M * N ≤ smallCutoffEnvelope α M N K := by
-  have hM0 : 0 < M := lt_of_lt_of_le zero_lt_one hM
-  have hsMnn : 0 ≤ Real.sqrt M := Real.sqrt_nonneg M
+  have hM0 := lt_of_lt_of_le zero_lt_one hM
+  have hsMnn := Real.sqrt_nonneg M
   have hMK : M ≤ M / K := by rw [le_div_iff₀ hK]; nlinarith [hM0, hK1, hK]
-  have hsM_le : Real.sqrt M ≤ Real.sqrt (M/K) := Real.sqrt_le_sqrt hMK
-  have hsMKnn : 0 ≤ Real.sqrt (M/K) := Real.sqrt_nonneg _
+  let sqrt₀ := Real.sqrt (M/K)
+  have hsM_le : Real.sqrt M ≤ sqrt₀ := Real.sqrt_le_sqrt hMK
+  have hsMKnn : 0 ≤ sqrt₀ := Real.sqrt_nonneg _
   have hr : 0 ≤ Real.rpow K (α - 1/2) := Real.rpow_nonneg hK.le _
   have h2N : 1 + N ≤ 2*N := by linarith
-  have hterm : Real.sqrt M + Real.sqrt M * N ≤ 2 * Real.sqrt (M/K) * N := by
-    calc Real.sqrt M + Real.sqrt M * N = Real.sqrt M * (1+N) := by ring
+  have hterm : Real.sqrt M + Real.sqrt M * N ≤ 2 * sqrt₀ * N := by
+    calc _ = Real.sqrt M * (1+N) := by ring
       _ ≤ Real.sqrt M * (2*N) := mul_le_mul_of_nonneg_left h2N hsMnn
-      _ ≤ 2 * Real.sqrt (M/K) * N := by nlinarith [hsM_le, hsMnn, hsMKnn, hN]
+      _ ≤ 2 * sqrt₀ * N := by nlinarith [hsM_le, hsMnn, hsMKnn, hN]
   have h1 : smallCutoffEnvelope α M N 1 = M + N + Real.sqrt M + Real.sqrt M * N := by
     simp [smallCutoffEnvelope]
   constructor
@@ -423,10 +425,10 @@ theorem smallCutoff_envelope_comparison
   · unfold smallCutoffEnvelope
     nlinarith [hsM_le, hsMnn, hsMKnn, hr, hN, hM0]
 
-theorem smallCutoff_B3_bottom
-    (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (W : ℝ → ℝ) (M N K : ℝ) :
+variable (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
+    (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (W : ℝ → ℝ)
+
+theorem smallCutoff_B3_bottom (M N K : ℝ) :
     B3 F c Q W M N K ⊥ = 0 := by
   apply le_antisymm
   · unfold B3
@@ -443,16 +445,11 @@ theorem smallCutoff_B3_bottom
           intro b2 hb2
           rw [if_neg]
           rintro ⟨hsup, -, -⟩
-          have hb1ne : b1 ≠ ⊥ :=
-            SquarefreeGcd.ne_bot_of_squarefree ((mem_paperShell F c N b1).mp hb1).1
-          exact hb1ne (sup_eq_bot_iff.mp hsup).1
+          exact (SquarefreeGcd.ne_bot_of_squarefree ((mem_paperShell F c N b1).mp hb1).1) (sup_eq_bot_iff.mp hsup).1
         rw [hT]; simp
   · exact B3_nonneg Q W M N K ⊥
 
-theorem smallCutoff_extend_bound
-    (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (W : ℝ → ℝ) (hW : SieveWeight W)
+theorem smallCutoff_extend_bound (hW : SieveWeight W)
     (α ε A : ℝ) (hα : 1 ≤ α) (hα2 : α ≤ 2) (hε : 0 < ε) (hA : 0 ≤ A)
     (hatOne : ∀ (M N : ℝ), 1 ≤ M → 1 ≤ N →
       (N ^ (2 : ℕ) / M) * Real.rpow (M * N) ε ≤ 1 →
@@ -473,12 +470,11 @@ theorem smallCutoff_extend_bound
   refine ⟨2*A + Cb, by linarith, ?_⟩
   intro M N K hM hN hK hK1 hl hu d hd
   have hbr := smallCutoff_range_bridge ε M N K hε hM hN hK hK1 hl hu
-  have hb1 := hB3 c Q M N K hM hN hK hK1 d
   have hhat := hatOne M N hM hN hbr.1 hbr.2 d hd
   have henv := smallCutoff_envelope_comparison α M N K hα hα2 hM hN hK hK1
   have hNd : (1:ℝ) ≤ (Ideal.absNorm d : ℝ) := by
-    have hz : Ideal.absNorm d ≠ 0 := Ideal.absNorm_eq_zero_iff.not.mpr hd
-    have h1 : 1 ≤ Ideal.absNorm d := Nat.one_le_iff_ne_zero.mpr hz
+    have hz := Ideal.absNorm_eq_zero_iff.not.mpr hd
+    have h1 := Nat.one_le_iff_ne_zero.mpr hz
     exact_mod_cast h1
   have hMN0 : 0 ≤ M * N := by nlinarith [hM, hN]
   have hMN : (1:ℝ) ≤ Real.rpow (M * N) ε := Real.one_le_rpow (by nlinarith [hM, hN]) hε.le
@@ -499,8 +495,8 @@ theorem smallCutoff_extend_bound
     linarith
   have hAenv : 0 ≤ A * (Ideal.absNorm d : ℝ) ^ (4:ℕ) * Real.rpow (M * N) ε :=
     mul_nonneg (mul_nonneg hA (by positivity)) (Real.rpow_nonneg hMN0 _)
-  calc B3 F c Q W M N K d
-      ≤ B3 F c Q W M N 1 d + Cb * Real.sqrt M * N := hb1
+  calc _
+      ≤ B3 F c Q W M N 1 d + Cb * Real.sqrt M * N := (hB3 c Q M N K hM hN hK hK1 d)
     _ ≤ A * (Ideal.absNorm d : ℝ) ^ (4:ℕ) * Real.rpow (M * N) ε *
           smallCutoffEnvelope α M N 1 + Cb * Real.sqrt M * N := by linarith [hhat]
     _ ≤ A * (Ideal.absNorm d : ℝ) ^ (4:ℕ) * Real.rpow (M * N) ε *
@@ -511,22 +507,12 @@ theorem smallCutoff_extend_bound
         linarith [hCbN]
     _ ≤ A * (Ideal.absNorm d : ℝ) ^ (4:ℕ) * Real.rpow (M * N) ε *
           (2 * smallCutoffEnvelope α M N K) + Cb * smallCutoffEnvelope α M N K := by
-        have hterm : A * (Ideal.absNorm d : ℝ) ^ (4:ℕ) * Real.rpow (M * N) ε *
-              smallCutoffEnvelope α M N 1
-            ≤ A * (Ideal.absNorm d : ℝ) ^ (4:ℕ) * Real.rpow (M * N) ε *
-              (2 * smallCutoffEnvelope α M N K) :=
-          mul_le_mul_of_nonneg_left henv.1 hAenv
-        linarith [hterm]
+        linarith [(mul_le_mul_of_nonneg_left henv.1 hAenv)]
     _ ≤ (2*A + Cb) * (Ideal.absNorm d : ℝ) ^ (4:ℕ) * Real.rpow (M * N) ε *
           smallCutoffEnvelope α M N K := by
-        have hCb_le : Cb ≤ Cb * ((Ideal.absNorm d : ℝ) ^ (4:ℕ) * Real.rpow (M * N) ε) := by
+        nlinarith [(mul_le_mul_of_nonneg_right (by
           have := mul_le_mul_of_nonneg_left hprod hCb
-          simpa using this
-        have h2 : Cb * smallCutoffEnvelope α M N K ≤
-            Cb * ((Ideal.absNorm d : ℝ) ^ (4:ℕ) * Real.rpow (M * N) ε) *
-              smallCutoffEnvelope α M N K :=
-          mul_le_mul_of_nonneg_right hCb_le hEnvKnn
-        nlinarith [h2, hAenv, hEnvKnn]
+          exact this) hEnvKnn), hAenv, hEnvKnn]
 
 end DedekindZetaZeroFree.LargeSieve.Sieve
 

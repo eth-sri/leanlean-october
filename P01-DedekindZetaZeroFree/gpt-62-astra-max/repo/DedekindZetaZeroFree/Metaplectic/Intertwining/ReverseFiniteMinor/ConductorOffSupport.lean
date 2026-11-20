@@ -12,13 +12,9 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel Set Filter
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPTameJacquetTestDuality KPTameTransposeKernelUnfolding KPTameValuationCoordinates
 open KPRankOneShellContinuation KPRankOneShellRepair
-open _root_.DedekindZetaZeroFree.ActualReverseMinorLowShell renaming numerator_family → numerator_family
-open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming actualTestFamily → actualTestFamily
-open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming testDeformation → testDeformation
-open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming testCompact → testCompact
-open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming actual_test_family_zero → actual_test_family_zero
-open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming actual_test_family_chamber → actual_test_family_chamber
-open _root_.DedekindZetaZeroFree.KPTameConductorOneBruhat.StandardIntegral renaming offlabel_standard_zero → offlabel_standard_zero
+open _root_.DedekindZetaZeroFree.ActualReverseMinorLowShell (numerator_family)
+open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral (actualTestFamily testDeformation testCompact actual_test_family_zero actual_test_family_chamber)
+open _root_.DedekindZetaZeroFree.KPTameConductorOneBruhat.StandardIntegral (offlabel_standard_zero)
 
 set_option autoImplicit false
 set_option maxHeartbeats 1000000
@@ -31,10 +27,11 @@ variable (F : Type) [Field F] [NumberField F]
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
   (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
 
+variable (π : (LocalField F q)ˣ)
+    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
+
+include hπ in
 private theorem actual_conductor_coordinate_zero_of_affineLabel_ne_zero
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
     (i : Fin 3) (a : DiagonalValuations)
     (hne : ((a.1 - a.2 + (i.val : ℤ) + 2 : ℤ) : ZMod 3) ≠ 0)
     (m : ℕ) (hm : 0 < m) (f : scalarSections F ζ hζ q S P hP .minus)
@@ -50,15 +47,14 @@ private theorem actual_conductor_coordinate_zero_of_affineLabel_ne_zero
   have hz (s : ℂ) (hs : convergenceHalfPlane .minus s) :
       ((actualTestFamily F ζ hζ q S P μ hμ f₀ s).val g).val 1 = 0 := by
     rw [actual_test_family_chamber F ζ hζ q S P μ hμ f₀ s hs g 1]
-    have he := offlabel_standard_zero F ζ hζ q S P hP
-      (scalarCoordinateEquiv F ζ hζ q S P hP) (by intros; rfl)
-      μ π hπ i a hne m hm f hf s x hx
     have hroot (u : LocalField F q) :
         (S.borel.upperRoot (Multiplicative.ofAdd u) : ActualCover F ζ hζ q) =
           KPPGLLocalCover.N F ζ hζ (Sum.inr q) u := by
       simpa only [KPRankOneOpenCellKernel.nLift] using (S.openCell P).upper_eq u
     simpa only [standardIntegralCoordinate, sourceSign, id_eq, testDeformation, testCompact, f₀, g, hroot]
-      using he
+      using (offlabel_standard_zero F ζ hζ q S P hP
+        (scalarCoordinateEquiv F ζ hζ q S P hP) (by intros; rfl)
+        μ π hπ i a hne m hm f hf s x hx)
   obtain ⟨H, _, hH, heH⟩ := numerator_family F ζ hζ q S P μ hμ f₀
   have hev : H g =ᶠ[𝓝 (-1 : ℂ)] (fun _ => (0 : ℂ)) := by
     have hn : ∀ᶠ s : ℂ in 𝓝 (-1 : ℂ), s.re < -(1/6 : ℝ) :=
@@ -74,10 +70,8 @@ private theorem actual_conductor_coordinate_zero_of_affineLabel_ne_zero
   simp_rw [actual_test_family_zero F ζ hζ q S P μ hμ f₀] at he
   exact (mul_eq_zero.mp he).resolve_left hd
 
+include hπ in
 theorem eventual_actual_conductor_shell_off_support
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
     (ψ : Multiplicative (LocalField F q) →* ℂˣ) :
     ∃ M : ℕ, ∀ m ≥ M, ∀ (i j : Fin 3)
       (f : scalarSections F ζ hζ q S P hP .minus),

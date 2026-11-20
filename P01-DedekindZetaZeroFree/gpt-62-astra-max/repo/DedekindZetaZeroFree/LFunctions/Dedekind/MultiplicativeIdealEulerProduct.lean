@@ -26,23 +26,19 @@ theorem genericIdealEulerProduct
       (fun P : IsDedekindDomain.HeightOneSpectrum (𝓞 K) => (1 - g P.asIdeal)⁻¹)
       (∑' I : Ideal (𝓞 K), g I) := by
   obtain ⟨F, hF1, hF2⟩ := multiplicativeIdealEncoding K g
-  have hsumm_nz : Summable (fun I : Odlyzko.NonzeroIdeal K => ‖g (I : Ideal (𝓞 K))‖) :=
-    hg.comp_injective Subtype.val_injective
   have hnorm : ∀ n, ‖F n‖ = Odlyzko.extendByZero (Odlyzko.idealPrimeCode K)
-      (fun I : Odlyzko.NonzeroIdeal K => ‖g (I : Ideal (𝓞 K))‖) n := by
+      (fun I : Odlyzko.NonzeroIdeal K => ‖g I‖) n := by
     intro n
     rw [hF1 n]
     exact norm_extendByZero _ (Odlyzko.idealPrimeCode_injective K) _ n
   have hsumm_F : Summable (fun n => ‖F n‖) := by
     rw [show (fun n => ‖F n‖) = Odlyzko.extendByZero (Odlyzko.idealPrimeCode K)
-        (fun I : Odlyzko.NonzeroIdeal K => ‖g (I : Ideal (𝓞 K))‖) from funext hnorm]
-    exact Odlyzko.summable_extendByZero _ (Odlyzko.idealPrimeCode_injective K) hsumm_nz
-  have hsub : Function.support g ⊆ {I : Ideal (𝓞 K) | I ≠ 0} := by
-    intro I hI h0
-    exact hI (by rw [h0, map_zero])
-  have hsumm_nz_g : Summable (fun I : Odlyzko.NonzeroIdeal K => g (I : Ideal (𝓞 K))) :=
+        (fun I : Odlyzko.NonzeroIdeal K => ‖g I‖) from funext hnorm]
+    exact Odlyzko.summable_extendByZero _ (Odlyzko.idealPrimeCode_injective K) (hg.comp_injective Subtype.val_injective)
+  have hsub : Function.support g ⊆ {I : Ideal (𝓞 K) | I ≠ 0} := fun I hI h0 => hI (by rw [h0, map_zero])
+  have hsumm_nz_g : Summable (fun I : Odlyzko.NonzeroIdeal K => g I) :=
     (hg.of_norm).comp_injective Subtype.val_injective
-  have hts : (∑' I : Odlyzko.NonzeroIdeal K, g (I : Ideal (𝓞 K))) =
+  have hts : (∑' I : Odlyzko.NonzeroIdeal K, g I) =
       ∑' I : Ideal (𝓞 K), g I := tsum_subtype_eq_of_support_subset hsub
   have hhasSum_nz : HasSum (fun I : Odlyzko.NonzeroIdeal K => g (I : Ideal (𝓞 K)))
       (∑' I : Ideal (𝓞 K), g I) := by
@@ -51,11 +47,8 @@ theorem genericIdealEulerProduct
     exact h
   have hhasSum_F : HasSum (fun n => F n) (∑' I : Ideal (𝓞 K), g I) := by
     rw [show (fun n => F n) = Odlyzko.extendByZero (Odlyzko.idealPrimeCode K)
-        (fun I : Odlyzko.NonzeroIdeal K => g (I : Ideal (𝓞 K))) from funext hF1]
+        (fun I : Odlyzko.NonzeroIdeal K => g I) from funext hF1]
     exact Odlyzko.hasSum_extendByZero _ (Odlyzko.idealPrimeCode_injective K) hhasSum_nz
-  have htsum : (∑' n, F n) = ∑' I : Ideal (𝓞 K), g I := hhasSum_F.tsum_eq
-  have hEuler : HasProd (fun p : Nat.Primes => (1 - F p)⁻¹) (∑' n, F n) :=
-    EulerProduct.eulerProduct_completely_multiplicative_hasProd hsumm_F
   have hout : ∀ p : Nat.Primes, p ∉ Set.range (Odlyzko.primeIdealCodeEmbedding K) →
       (1 - F p)⁻¹ = 1 := by
     intro p hp
@@ -66,10 +59,7 @@ theorem genericIdealEulerProduct
           exact absurd ⟨P, Subtype.ext ((Odlyzko.primeIdealAtCode_eq_some_iff K).1 h)⟩ hp
     rw [hF2 p, hnone]
     simp
-  have hcodes : HasProd ((fun p : Nat.Primes => (1 - F p)⁻¹) ∘ Odlyzko.primeIdealCodeEmbedding K)
-      (∑' n, F n) :=
-    ((Odlyzko.primeIdealCodeEmbedding K).injective.hasProd_iff hout).2 hEuler
-  refine (htsum ▸ hcodes).congr_fun (fun P => ?_)
+  refine (hhasSum_F.tsum_eq ▸ (((Odlyzko.primeIdealCodeEmbedding K).injective.hasProd_iff hout).2 (EulerProduct.eulerProduct_completely_multiplicative_hasProd hsumm_F))).congr_fun (fun P => ?_)
   simp only [Function.comp_apply]
   have hval : (Odlyzko.primeIdealCodeEmbedding K P : ℕ) = Odlyzko.primeIdealCode K P := rfl
   rw [hF2 (Odlyzko.primeIdealCodeEmbedding K P), hval,

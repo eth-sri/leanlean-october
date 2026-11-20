@@ -16,10 +16,10 @@ open NumberField KPLiteralRaw KPAdelicCoverRestrictedProduct KPLiteralScalarHCEx
 open KPLiteralScalarHCCompactOrbit KPLiteralScalarHCFiniteDecomposition KPLiteralScalarHCFiniteProduct
 open KPLiteralScalarHCFiniteOutside KPLiteralChamber
 open CurrentFiniteFamily CurrentNativeStage NativeScalarMixedTensorGeneration
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_insertion → sectionTuple_insertion
+open _root_.DedekindZetaZeroFree.KPLiteralChamber (sectionTuple_insertion)
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 theorem groupDecomposition (g : KPLiteralRaw.G F A.zeta12 A.primitive_zeta12) :
     ∃ (r : RestrictedCover F A.zeta12 A.primitive_zeta12)
       (m : InfinitePlace F → KPCplxCharacterHaar.ComplexGL2),
@@ -57,13 +57,11 @@ theorem rawStage (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
   let B := (Filter.eventually_cofinite.mp r.property).toFinset.toRight
   refine ⟨T ∪ B, Finset.subset_union_left, ?_⟩
   intro q hq
-  have hb : q ∉ B := fun h => hq (Finset.mem_union_right T h)
-  have hc : r (Sum.inr q) ∈ compact F A.zeta12 A.primitive_zeta12 (Sum.inr q) := by
-    by_contra h
-    apply hb
-    simp only [B, Finset.mem_toRight, Set.Finite.mem_toFinset, Set.mem_ofPred_eq]
-    exact h
-  exact Subgroup.mem_map.mpr ⟨_, hc, rfl⟩
+  refine Subgroup.mem_map.mpr ⟨_, ?_, rfl⟩
+  by_contra h
+  apply (fun h => hq (Finset.mem_union_right T h))
+  simp only [B, Finset.mem_toRight, Set.Finite.mem_toFinset, Set.mem_ofPred_eq]
+  exact h
 
 theorem standard_compact_mem_canonical
     (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) (he : q ∉ C.exceptional)
@@ -115,15 +113,13 @@ theorem remove_tail_at_stage
     exact hout q hq
   let d : KPGlobalTorusFunctionData.finitePart F A.zeta12 A.primitive_zeta12 :=
     ⟨scalarQuotient F A.zeta12 A.primitive_zeta12 (amalgamation F A.zeta12 A.primitive_zeta12 o), o, ho.1, rfl⟩
-  have hd : d ∈ outsideStage F A.zeta12 A.primitive_zeta12 T := ⟨o, ho, rfl⟩
-  have hcomm := (outsideStage_commute_product F A.zeta12 A.primitive_zeta12 T ⟨d, hd⟩ a).eq
   have hr : scalarQuotient F A.zeta12 A.primitive_zeta12 (amalgamation F A.zeta12 A.primitive_zeta12 r) =
       (finiteProductInsertion F A.zeta12 A.primitive_zeta12 T a).val * d.val := by
     have hraw : r = o * stageRawInsertion F A.zeta12 A.primitive_zeta12 T (fun q => r (Sum.inr q.val)) := by
       dsimp [o, rawOutside]; group
     conv_lhs => rw [hraw]
     rw [map_mul, map_mul, stageRawInsertion_quotient]
-    exact congrArg Subtype.val hcomm
+    exact congrArg Subtype.val ((outsideStage_commute_product F A.zeta12 A.primitive_zeta12 T ⟨d, (⟨o, ho, rfl⟩)⟩ a).eq)
   rw [hr, mul_assoc, ← (KPLiteralScalarHCSliceCharts.archMatrixInsertion_commutes_finite F A.zeta12 A.primitive_zeta12 m d).eq,
     ← mul_assoc]
   exact hT o hoa hot hoc _
@@ -143,7 +139,7 @@ theorem extractTensor (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
   obtain ⟨x,hx⟩ := CurrentFiniteFamily.productHCFamily_all_slot_tensor A P C K hK f T 1
   refine ⟨x, ?_⟩
   intro m a
-  simpa only [OneMemClass.coe_one,one_mul] using hx m a
+  simpa using hx m a
 end DedekindZetaZeroFree.FourierContinuation.CurrentGlobalSource
 
 end

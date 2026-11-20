@@ -12,19 +12,19 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualFiniteAnchor
 open KPMsActualAngularSource KPMsNativeOffsetMass KPMsNativeOffsetComparison
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable (V : Level F ζ hζ)
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    (V : Level F ζ hζ)
 
-theorem anchorAverage_sum_of_slices (dk : Measure (KPMsGreenFlux.K F)) [IsFiniteMeasure dk]
-    {ι : Type*} [Fintype ι] (a : ι → ℂ) (φ : ι → G F ζ hζ → ℂ)
-    (hφ : ∀i j, Continuous (fun k : KPMsGreenFlux.K F =>
-      φ i (KPMsGreenFlux.compactInsertion F ζ hζ k *
-        (KPBoundedCuspFrames.actualFiniteRepresentative
-          (nativeAtlas F ζ hζ R P (nativeRecipe F ζ hζ R P) V) j).val))) (ω) :
+variable (dk : Measure (KPMsGreenFlux.K F)) [IsFiniteMeasure dk] {ι : Type*} [Fintype ι] (a : ι → ℂ)
+    (φ : ι → G F ζ hζ → ℂ)
+    (hφ : ∀i j, Continuous (fun k : KPMsGreenFlux.K F => φ i (KPMsGreenFlux.compactInsertion F ζ hζ k * (KPBoundedCuspFrames.actualFiniteRepresentative (nativeAtlas F ζ hζ R P (nativeRecipe F ζ hζ R P) V) j).val)))
+
+include hφ in
+theorem anchorAverage_sum_of_slices (ω) :
     anchorAverage (R:=R) (P:=P) V dk (fun g => ∑i, a i * φ i g) ω =
       ∑i, a i * anchorAverage (R:=R) (P:=P) V dk (φ i) ω := by
-  let : CompactSpace KPCplxPrincipalSeriesCharts.compactSubgroup :=
+  let :=
     isCompact_iff_compactSpace.mp KPCplxPrincipalSeriesCharts.compactSubgroup_isCompact
   unfold anchorAverage
   rw [integral_finsetSum]
@@ -33,12 +33,8 @@ theorem anchorAverage_sum_of_slices (dk : Measure (KPMsGreenFlux.K F)) [IsFinite
     exact ((hφ i ω.1).const_mul (a i)).integrable_of_hasCompactSupport
       (HasCompactSupport.of_compactSpace _)
 
-theorem anchorIntegral_sum_of_slices (dk : Measure (KPMsGreenFlux.K F)) [IsFiniteMeasure dk]
-    {ι : Type*} [Fintype ι] (a : ι → ℂ) (φ : ι → G F ζ hζ → ℂ)
-    (hφ : ∀i j, Continuous (fun k : KPMsGreenFlux.K F =>
-      φ i (KPMsGreenFlux.compactInsertion F ζ hζ k *
-        (KPBoundedCuspFrames.actualFiniteRepresentative
-          (nativeAtlas F ζ hζ R P (nativeRecipe F ζ hζ R P) V) j).val))) :
+include hφ in
+theorem anchorIntegral_sum_of_slices :
     (∫ω, anchorAverage (R:=R) (P:=P) V dk (fun g => ∑i, a i * φ i g) ω
       ∂(nativeDisintegration F ζ hζ R P (nativeRecipe F ζ hζ R P) V).beta) =
       ∑i, a i * ∫ω, anchorAverage (R:=R) (P:=P) V dk (φ i) ω

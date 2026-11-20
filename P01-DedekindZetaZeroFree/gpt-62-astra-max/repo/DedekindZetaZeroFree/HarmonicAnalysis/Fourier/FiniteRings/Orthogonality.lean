@@ -31,12 +31,11 @@ theorem finiteRingFourier_orthogonality (e : AddChar R ℂ)
       have hJ : Ideal.span ({y} : Set R) = ⊥ := he _ (by
         intro x hx
         obtain ⟨a, rfl⟩ := Ideal.mem_span_singleton'.mp hx
-        have ha := congrArg (fun c : AddChar R ℂ => c a) h
-        simpa [AddChar.mulShift_apply, mul_comm] using ha)
+        simpa [mul_comm] using (congrArg (fun c : AddChar R ℂ => c a) h))
       have hyJ := Ideal.mem_span_singleton_self y
       rw [hJ, Ideal.mem_bot] at hyJ
       exact hy hyJ
-    simpa [AddChar.mulShift_apply, mul_comm] using
+    simpa [mul_comm] using
       (AddChar.sum_eq_zero_of_ne_one hn)
 
 include hR in
@@ -49,7 +48,7 @@ theorem finiteRingFourier_parseval (e : AddChar R ℂ)
   push_cast
   simp only [← Complex.mul_conj']
   calc
-    ∑ k : R, finiteRingFourier e f k * starRingEnd ℂ (finiteRingFourier e f k) =
+    _ =
         ∑ k : R, ∑ x : R, ∑ z : R,
           (f x * starRingEnd ℂ (f z)) * e (k * (x - z)) := by
       simp only [finiteRingFourier, map_sum, map_mul, Finset.sum_mul, Finset.mul_sum]
@@ -61,7 +60,7 @@ theorem finiteRingFourier_parseval (e : AddChar R ℂ)
       apply Finset.sum_congr rfl
       intro z hz
       calc
-        (f x * e (k * x)) * (starRingEnd ℂ (f z) * starRingEnd ℂ (e (k * z))) =
+        _ =
             (f x * starRingEnd ℂ (f z)) * (e (k * x) * starRingEnd ℂ (e (k * z))) := by ring
         _ = _ := by
           rw [← e.map_neg_eq_conj, ← e.map_add_eq_mul]

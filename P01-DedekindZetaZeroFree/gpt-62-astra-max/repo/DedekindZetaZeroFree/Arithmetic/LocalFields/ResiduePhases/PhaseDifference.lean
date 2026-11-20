@@ -10,12 +10,11 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.CRTRawLocalPhaseAlgebra
 open LocalFiniteSums
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 theorem uniformizer_ne_zero (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) : uniformizer C p ≠ 0 := by
-  change algebraMap F (LocalField p) (generator C p : F) ≠ 0
   apply (map_ne_zero (algebraMap F (LocalField p))).2
   exact_mod_cast (generator_generates C p).1
 

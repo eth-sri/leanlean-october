@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 /-!
 Provides the public declarations in the
@@ -33,12 +30,7 @@ theorem unitsTateHminusOne_card_eq_one
     (K L : Type) [Field K] [Field L] [Algebra K L] [FiniteDimensional K L]
     (g : Gal(L / K)) (hg : ∀ σ : Gal(L / K), σ ∈ Subgroup.zpowers g) :
     Nat.card (tateCohomology (Rep.ofAlgebraAutOnUnits K L) (-1)) = 1 := by
-  calc
-    Nat.card (tateCohomology (Rep.ofAlgebraAutOnUnits K L) (-1)) =
-        Nat.card (groupCohomology.H1 (Rep.ofAlgebraAutOnUnits K L)) :=
-      Nat.card_congr
-        (unitsH1IsoTateHminusOne K L g hg).symm.toLinearEquiv.toEquiv
-    _ = 1 := Nat.card_unique
+  exact Trans.trans (Nat.card_congr (unitsH1IsoTateHminusOne K L g hg).symm.toLinearEquiv.toEquiv) Nat.card_unique
 
 end
 end LocalClassFieldTheory

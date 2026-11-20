@@ -10,10 +10,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.CurrentSphericalReduction
 open MeasureTheory ValuativeRel KPLocalPrincipalSeries KPLocalStoneVonNeumann
 open KPLocalGoodSphericalImage KPRankOneTameSphericalFactor KPRankOneShellContinuation
 open KPLocalExceptionalConstruction KPLocalTameIntertwiningBlock KPRankOneShellRepair
-open _root_.DedekindZetaZeroFree.KPLocalTameIntertwiningBlock renaming compact_extension_one → compact_extension_one
+open _root_.DedekindZetaZeroFree.KPLocalTameIntertwiningBlock (compact_extension_one)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-variable (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
+    (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 theorem actual_spherical_chamber
@@ -40,14 +40,12 @@ theorem actual_spherical_chamber
   have hf := minus_compact_level_formula (LocalField F q) S.borel P S.iwasawa hu hW φm (B φp) hm hlevel
   have he := actualCanonicalContinued_chamber F q ζ hζ S P μ hμ .plus s hs φp 1 1
   simp only [transportToSections, LinearMap.comp_apply, LinearEquiv.coe_coe, LinearEquiv.symm_apply_apply] at he
-  have hv := congrArg (fun v : InducedModule P => v.val 1)
-    (compact_extension_one (LocalField F q) S.borel P S.iwasawa .minus (-s) (B φp))
   change ((compactTrivialization S.borel P S.iwasawa .minus (-s) (B φp)).val 1).val 1 = _ at he
-  erw [hv, hscalar s hs] at he
+  erw [(congrArg (fun v : InducedModule P => v.val 1)
+    (compact_extension_one (LocalField F q) S.borel P S.iwasawa .minus (-s) (B φp))), hscalar s hs] at he
   rw [he] at hf
   rw [← actualCanonicalContinued_chamber F q ζ hζ S P μ hμ .plus s hs φp g h]
   simp only [transportToSections, LinearMap.comp_apply, LinearEquiv.coe_coe, LinearEquiv.symm_apply_apply]
-  change ((compactTrivialization S.borel P S.iwasawa .minus (-s) (B φp)).val g).val h = _
   rw [hf, map_smul]
   rfl
 end DedekindZetaZeroFree.FourierContinuation.CurrentSphericalReduction

@@ -13,8 +13,8 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
 
 abbrev chartDepth : ℕ := KPAdelicCoverRestrictedProduct.depth F ζ hζ q
 
@@ -71,7 +71,7 @@ theorem actual_openCell_binding :
       ((ActualFiniteTorus.actualHeisenberg F ζ hζ q).ω
         (ActualFiniteTorus.cubeLift F ζ hζ q y) : ℂ) =
       normPower (q.adicCompletion F) (y ^ 3) (1 / 6) := by
-    have hv := (ActualFiniteTorus.prescribed_center_character F ζ hζ q).2.2.2.2.1 1 y
+    have hv := ActualFiniteTorus.center_character_word F ζ hζ q 1 y
     change (ActualFiniteTorus.rawCenterValue F ζ hζ q
       (ActualFiniteTorus.cubeLift F ζ hζ q y) : ℂ) = _
     simpa using hv
@@ -84,7 +84,6 @@ theorem actual_openCell_binding :
     torus_injective := by
       intro x y h
       exact Subtype.ext (congrArg (fun b : actualBorel F ζ hζ q => b.val) h)
-    torus_continuous := continuous_subtype_val.subtype_mk _
     retract := KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ q
     retract_continuous := KPLocalInductionJacquetReciprocity.borelRetraction_continuous
       F ζ hζ q (chartDepth F ζ hζ q) (chartDepth_admissible F ζ hζ q)
@@ -93,20 +92,6 @@ theorem actual_openCell_binding :
     upperRoot := root
     upperRoot_continuous := ((KPPGLLocalCover.finite_lifts_continuous F ζ hζ q
       (chartDepth F ζ hζ q) (chartDepth_admissible F ζ hζ q)).1.comp continuous_toAdd).subtype_mk _
-    upperRoot_injective := by
-      intro x y h
-      have he := congrArg (fun b : actualBorel F ζ hζ q =>
-        KPLocalSmoothRepresentation.projection F ζ hζ q b.val) h
-      change Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n _ x.toAdd) =
-        Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n _ y.toAdd) at he
-      obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp he
-      have h11 := congrArg (fun B => B 1 1) hu
-      have h01 := congrArg (fun B => B 0 1) hu
-      simp [KubotaRankTwo.n, Matrix.GeneralLinearGroup.mkOfDetNeZero,
-        Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
-        Matrix.scalar] at h11 h01
-      apply Multiplicative.toAdd.injective
-      simpa [h11] using h01
     upperRoot_projection := fun _ => rfl
     retract_upperRoot := KPLocalInductionJacquetReciprocity.borelRetraction_upperRoot F ζ hζ q
     borel_decomposition := by
@@ -154,17 +139,12 @@ theorem actual_openCell_binding :
         simp [ActualFiniteTorus.central, ActualFiniteTorus.normalWord, KPPGLLocalCover.A,
           KPStandardLocalRootLifts.A_one]
       eta := ActualFiniteTorus.ordinaryIota F ζ hζ
-      eta_injective := by
-        intro x y h
-        apply Subtype.ext
-        exact congrArg (fun z : rootsOfUnity 6 F => (z : Fˣ))
-          (KPLocalCover.coefficientEmbedding_injective F ζ hζ h)
       genuine := by
         intro ε e V
         have hv : ((ActualFiniteTorus.actualHeisenberg F ζ hζ q).ω
             (ActualFiniteTorus.centerInjection F ζ hζ q e) : ℂ) =
             (ActualFiniteTorus.ordinaryIota F ζ hζ e : ℂ) := by
-          have hh := (ActualFiniteTorus.prescribed_center_character F ζ hζ q).2.2.2.2.1 e 1
+          have hh := ActualFiniteTorus.center_character_word F ζ hζ q e 1
           change (ActualFiniteTorus.rawCenterValue F ζ hζ q
             (ActualFiniteTorus.centerInjection F ζ hζ q e) : ℂ) = _
           simpa [normPower, localAbs_one] using hh

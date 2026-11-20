@@ -1,4 +1,5 @@
 module
+public import ClassFieldTheory.LubinTate.FormalModule.DegreeStabilization
 
 public import ClassFieldTheory.LubinTate.FormalModule.RecursiveCoefficient
 
@@ -9,8 +10,6 @@ Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
-
-
 
 set_option autoImplicit false
 
@@ -67,194 +66,15 @@ private theorem degree_le_order_monomial
   · simp [hc]
   · rw [MvPowerSeries.order_monomial_of_ne_zero hc]
 
-private theorem natCast_le_order_pow_of_one_le_order
-    {R : Type*} [CommRing R] {τ : Type*}
-    (f : MvPowerSeries τ R) (n : ℕ)
-    (hf : (1 : ℕ∞) ≤ f.order) :
-    (n : ℕ∞) ≤ (f ^ n).order := by
-  calc
-    (n : ℕ∞) = n • (1 : ℕ∞) := by simp
-    _ ≤ n • f.order := nsmul_le_nsmul_right hf n
-    _ ≤ (f ^ n).order := MvPowerSeries.le_order_pow n
+private alias natCast_le_order_pow_of_one_le_order := DegreeStabilization.natCast_le_order_pow_of_one_le_order_stabilization
 
-private theorem le_order_finset_sum
-    {R : Type*} [CommRing R] {τ ι : Type*}
-    {s : Finset ι} {f : ι → MvPowerSeries τ R} {m : ℕ∞}
-    (h : ∀ i ∈ s, m ≤ (f i).order) :
-    m ≤ (∑ i ∈ s, f i).order := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simp
-  | @insert i s hi ih =>
-      rw [Finset.sum_insert hi]
-      exact
-        (le_min
-          (h i (Finset.mem_insert_self i s))
-          (ih fun j hj => h j (Finset.mem_insert_of_mem hj))).trans
-        MvPowerSeries.min_order_le_add
+private alias le_order_finset_sum := DegreeStabilization.le_order_finset_sum_stabilization
 
-private theorem natCast_sum_le_order_finset_prod_pow
-    {R : Type*} [CommRing R] {τ ι : Type*}
-    {s : Finset ι} (f : ι → MvPowerSeries τ R) (n : ι → ℕ)
-    (hf : ∀ i ∈ s, (1 : ℕ∞) ≤ (f i).order) :
-    ((∑ i ∈ s, n i : ℕ) : ℕ∞) ≤
-      (∏ i ∈ s, (f i) ^ n i).order := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simp
-  | @insert i s hi ih =>
-      rw [Finset.sum_insert hi, Finset.prod_insert hi]
-      calc
-        ((n i + ∑ j ∈ s, n j : ℕ) : ℕ∞) =
-            (n i : ℕ∞) + ((∑ j ∈ s, n j : ℕ) : ℕ∞) := by
-          norm_cast
-        _ ≤ ((f i) ^ n i).order +
-            (∏ j ∈ s, (f j) ^ n j).order :=
-          add_le_add
-            (natCast_le_order_pow_of_one_le_order
-              (f i) (n i) (hf i (Finset.mem_insert_self i s)))
-            (ih fun j hj => hf j (Finset.mem_insert_of_mem hj))
-        _ ≤ ((f i) ^ n i * ∏ j ∈ s, (f j) ^ n j).order :=
-          MvPowerSeries.le_order_mul
+private alias natCast_sum_le_order_finset_prod_pow := DegreeStabilization.natCast_sum_le_order_finset_prod_pow_stabilization
 
-private theorem order_sub_add_pred_le_order_pow_sub_pow
-    {R : Type*} [CommRing R] {τ : Type*}
-    (f g : MvPowerSeries τ R)
-    (hf : (1 : ℕ∞) ≤ f.order)
-    (hg : (1 : ℕ∞) ≤ g.order)
-    (n : ℕ) :
-    (f - g).order + ((n - 1 : ℕ) : ℕ∞) ≤
-      (f ^ n - g ^ n).order := by
-  let q :=
-    ∑ i ∈ Finset.range n, f ^ i * g ^ (n - 1 - i)
-  have hq : ((n - 1 : ℕ) : ℕ∞) ≤ q.order := by
-    apply le_order_finset_sum
-    intro i hi
-    have hi' : i < n := Finset.mem_range.mp hi
-    calc
-      ((n - 1 : ℕ) : ℕ∞) =
-          (i : ℕ∞) + ((n - 1 - i : ℕ) : ℕ∞) := by
-        norm_cast
-        omega
-      _ ≤ (f ^ i).order + (g ^ (n - 1 - i)).order :=
-        add_le_add
-          (natCast_le_order_pow_of_one_le_order f i hf)
-          (natCast_le_order_pow_of_one_le_order
-            g (n - 1 - i) hg)
-      _ ≤ (f ^ i * g ^ (n - 1 - i)).order :=
-        MvPowerSeries.le_order_mul
-  have hfactor :
-      (f - g) * q = f ^ n - g ^ n := by
-    exact (Commute.all f g).mul_geom_sum₂ n
-  calc
-    (f - g).order + ((n - 1 : ℕ) : ℕ∞) ≤
-        (f - g).order + q.order :=
-      add_le_add (le_refl _) hq
-    _ ≤ ((f - g) * q).order :=
-      MvPowerSeries.le_order_mul
-    _ = (f ^ n - g ^ n).order :=
-      congrArg (fun h : MvPowerSeries τ R => h.order) hfactor
+private alias order_sub_add_pred_le_order_pow_sub_pow := DegreeStabilization.order_sub_add_pred_le_order_pow_sub_pow_stabilization
 
-private theorem natCast_sum_add_one_le_order_prod_pow_sub_prod_pow
-    {R : Type*} [CommRing R] {τ ι : Type*}
-    {s : Finset ι}
-    (f g : ι → MvPowerSeries τ R) (n : ι → ℕ)
-    (hn : ∀ i ∈ s, n i ≠ 0)
-    (hf : ∀ i ∈ s, (1 : ℕ∞) ≤ (f i).order)
-    (hg : ∀ i ∈ s, (1 : ℕ∞) ≤ (g i).order)
-    (hfg : ∀ i ∈ s, (2 : ℕ∞) ≤ (f i - g i).order) :
-    (((∑ i ∈ s, n i) + 1 : ℕ) : ℕ∞) ≤
-      ((∏ i ∈ s, (f i) ^ n i) -
-        ∏ i ∈ s, (g i) ^ n i).order := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simp
-  | @insert i s hi ih =>
-      have hni : n i ≠ 0 :=
-        hn i (Finset.mem_insert_self i s)
-      have hpowDifference :
-          ((n i + 1 : ℕ) : ℕ∞) ≤
-            ((f i) ^ n i - (g i) ^ n i).order := by
-        calc
-          ((n i + 1 : ℕ) : ℕ∞) =
-              (2 : ℕ∞) + ((n i - 1 : ℕ) : ℕ∞) := by
-            norm_cast
-            omega
-          _ ≤ (f i - g i).order +
-              ((n i - 1 : ℕ) : ℕ∞) :=
-            add_le_add
-              (hfg i (Finset.mem_insert_self i s)) (le_refl _)
-          _ ≤ ((f i) ^ n i - (g i) ^ n i).order :=
-            order_sub_add_pred_le_order_pow_sub_pow
-              (f i) (g i)
-              (hf i (Finset.mem_insert_self i s))
-              (hg i (Finset.mem_insert_self i s))
-              (n i)
-      have hprodF :
-          ((∑ j ∈ s, n j : ℕ) : ℕ∞) ≤
-            (∏ j ∈ s, (f j) ^ n j).order :=
-        natCast_sum_le_order_finset_prod_pow f n
-          (fun j hj => hf j (Finset.mem_insert_of_mem hj))
-      have hpowG :
-          (n i : ℕ∞) ≤ ((g i) ^ n i).order :=
-        natCast_le_order_pow_of_one_le_order
-          (g i) (n i) (hg i (Finset.mem_insert_self i s))
-      have hprodDifference :
-          (((∑ j ∈ s, n j) + 1 : ℕ) : ℕ∞) ≤
-            ((∏ j ∈ s, (f j) ^ n j) -
-              ∏ j ∈ s, (g j) ^ n j).order :=
-        ih
-          (fun j hj => hn j (Finset.mem_insert_of_mem hj))
-          (fun j hj => hf j (Finset.mem_insert_of_mem hj))
-          (fun j hj => hg j (Finset.mem_insert_of_mem hj))
-          (fun j hj => hfg j (Finset.mem_insert_of_mem hj))
-      have hleft :
-          (((n i + ∑ j ∈ s, n j) + 1 : ℕ) : ℕ∞) ≤
-            (((f i) ^ n i - (g i) ^ n i) *
-              ∏ j ∈ s, (f j) ^ n j).order := by
-        calc
-          (((n i + ∑ j ∈ s, n j) + 1 : ℕ) : ℕ∞) =
-              ((n i + 1 : ℕ) : ℕ∞) +
-                ((∑ j ∈ s, n j : ℕ) : ℕ∞) := by
-            norm_cast
-            omega
-          _ ≤ ((f i) ^ n i - (g i) ^ n i).order +
-              (∏ j ∈ s, (f j) ^ n j).order :=
-            add_le_add hpowDifference hprodF
-          _ ≤ (((f i) ^ n i - (g i) ^ n i) *
-              ∏ j ∈ s, (f j) ^ n j).order :=
-            MvPowerSeries.le_order_mul
-      have hright :
-          (((n i + ∑ j ∈ s, n j) + 1 : ℕ) : ℕ∞) ≤
-            ((g i) ^ n i *
-              ((∏ j ∈ s, (f j) ^ n j) -
-                ∏ j ∈ s, (g j) ^ n j)).order := by
-        calc
-          (((n i + ∑ j ∈ s, n j) + 1 : ℕ) : ℕ∞) =
-              (n i : ℕ∞) +
-                (((∑ j ∈ s, n j) + 1 : ℕ) : ℕ∞) := by
-            norm_cast
-          _ ≤ ((g i) ^ n i).order +
-              ((∏ j ∈ s, (f j) ^ n j) -
-                ∏ j ∈ s, (g j) ^ n j).order :=
-            add_le_add hpowG hprodDifference
-          _ ≤ ((g i) ^ n i *
-              ((∏ j ∈ s, (f j) ^ n j) -
-                ∏ j ∈ s, (g j) ^ n j)).order :=
-            MvPowerSeries.le_order_mul
-      rw [Finset.sum_insert hi, Finset.prod_insert hi,
-        Finset.prod_insert hi]
-      rw [show
-        (f i) ^ n i * (∏ j ∈ s, (f j) ^ n j) -
-            (g i) ^ n i * (∏ j ∈ s, (g j) ^ n j) =
-          ((f i) ^ n i - (g i) ^ n i) *
-              (∏ j ∈ s, (f j) ^ n j) +
-            (g i) ^ n i *
-              ((∏ j ∈ s, (f j) ^ n j) -
-                ∏ j ∈ s, (g j) ^ n j) by ring]
-      exact
-        (le_min hleft hright).trans
-          MvPowerSeries.min_order_le_add
+private alias natCast_sum_add_one_le_order_prod_pow_sub_prod_pow := DegreeStabilization.natCast_sum_add_one_le_order_prod_pow_sub_prod_pow_stabilization
 
 /-- The linear part of `e(X_i)` for a same-uniformizer Lubin--Tate series. -/
  noncomputable def linearInVariable
@@ -266,30 +86,7 @@ omit [Fintype σ] in
 private theorem linearInVariable_constantCoeff
     (π : F.valuationSubring) (i : σ) :
     MvPowerSeries.constantCoeff (linearInVariable π i) = 0 := by
-  rw [linearInVariable, map_mul,
-    MvPowerSeries.constantCoeff_C,
-    ← MvPowerSeries.coeff_zero_eq_constantCoeff_apply,
-    MvPowerSeries.coeff_zero_X, mul_zero]
-
-private theorem linearInVariable_hasSubst
-    (π : F.valuationSubring) :
-    MvPowerSeries.HasSubst (linearInVariable (σ := σ) π) :=
-  MvPowerSeries.hasSubst_of_constantCoeff_zero
-    (linearInVariable_constantCoeff π)
-
-omit [Fintype σ] in
-private theorem one_le_order_inVariable
-    (ebar : LubinTateSeries F π) (i : σ) :
-    (1 : ℕ∞) ≤ (inVariable ebar i).order :=
-  MvPowerSeries.one_le_order_iff_constCoeff_eq_zero.mpr
-    (constantCoeff_inVariable ebar i)
-
-omit [Fintype σ] in
-private theorem one_le_order_linearInVariable
-    (π : F.valuationSubring) (i : σ) :
-    (1 : ℕ∞) ≤ (linearInVariable π i).order :=
-  MvPowerSeries.one_le_order_iff_constCoeff_eq_zero.mpr
-    (linearInVariable_constantCoeff π i)
+  simp [linearInVariable]
 
 omit [Fintype σ] in
 private theorem two_le_order_inVariable_sub_linearInVariable
@@ -347,15 +144,18 @@ private theorem degree_add_one_le_order_subst_monomial_sub_linear
         (linearInVariable (σ := σ) π)
         (fun i => d i)
         (fun i hi => Finsupp.mem_support_iff.mp hi)
-        (fun i _ => one_le_order_inVariable ebar i)
-        (fun i _ => one_le_order_linearInVariable π i)
+        (fun i _ => (MvPowerSeries.one_le_order_iff_constCoeff_eq_zero.mpr
+    (constantCoeff_inVariable ebar i)))
+        (fun i _ => (MvPowerSeries.one_le_order_iff_constCoeff_eq_zero.mpr
+    (linearInVariable_constantCoeff π i)))
         (fun i _ =>
           two_le_order_inVariable_sub_linearInVariable ebar i)
   rw [
     MvPowerSeries.subst_monomial
       (inVariable_hasSubst ebar) d c,
     MvPowerSeries.subst_monomial
-      (linearInVariable_hasSubst (σ := σ) π) d c,
+      ((MvPowerSeries.hasSubst_of_constantCoeff_zero
+    (linearInVariable_constantCoeff π))) d c,
     ← MvPowerSeries.c_eq_algebraMap]
   rw [show
     MvPowerSeries.C c *
@@ -396,19 +196,17 @@ private theorem coeff_subst_inVariables_monomial
         (MvPowerSeries.subst (fun i : σ => inVariable ebar i)
           (MvPowerSeries.monomial d c)) =
       π ^ d.degree * c := by
-  have horder :=
-    degree_add_one_le_order_subst_monomial_sub_linear ebar d c
   have hlt :
-      (d.degree : ℕ∞) <
+      d.degree <
         (MvPowerSeries.subst (fun i : σ => inVariable ebar i)
             (MvPowerSeries.monomial d c) -
-          MvPowerSeries.subst (linearInVariable (σ := σ) π)
+          MvPowerSeries.subst (linearInVariable π)
             (MvPowerSeries.monomial d c)).order :=
     by
       have hdegree_lt :
-          (d.degree : ℕ∞) < ((d.degree + 1 : ℕ) : ℕ∞) := by
+          d.degree < ((d.degree + 1 : ℕ) : ℕ∞) := by
         exact_mod_cast Nat.lt_succ_self d.degree
-      exact hdegree_lt.trans_le horder
+      exact hdegree_lt.trans_le (degree_add_one_le_order_subst_monomial_sub_linear ebar d c)
   have hcoeff :=
     MvPowerSeries.coeff_of_lt_order hlt
   rw [map_sub, sub_eq_zero] at hcoeff
@@ -429,13 +227,7 @@ private theorem coeff_subst_inVariables_add_monomial
     map_add,
     coeff_subst_inVariables_monomial]
 
-private theorem constantCoeff_monomial_eq_zero
-    {R : Type*} [CommRing R] {τ : Type*}
-    {d : τ →₀ ℕ} (hd : d ≠ 0) (c : R) :
-    MvPowerSeries.constantCoeff (MvPowerSeries.monomial d c) = 0 := by
-  rw [← MvPowerSeries.coeff_zero_eq_constantCoeff_apply,
-    MvPowerSeries.coeff_monomial_ne]
-  exact Ne.symm hd
+private alias constantCoeff_monomial_eq_zero := DegreeStabilization.constantCoeff_monomial_eq_zero_stabilization
 
 private theorem coeff_pow_add_monomial_sub_pow
     {R : Type*} [CommRing R] {τ : Type*}
@@ -451,8 +243,7 @@ private theorem coeff_pow_add_monomial_sub_pow
     subst d
     simp at hd
   by_cases hn : n = 1
-  · subst n
-    simp [MvPowerSeries.coeff_monomial_same]
+  · simp_all [MvPowerSeries.coeff_monomial_same]
   · rcases n with _ | n
     · simp
     · have hn0 : n ≠ 0 := by
@@ -467,8 +258,6 @@ private theorem coeff_pow_add_monomial_sub_pow
       have hAconstant :
           MvPowerSeries.constantCoeff A = 0 := by
         simp [A, hH, hMconstant]
-      have hHorder : (1 : ℕ∞) ≤ H.order :=
-        MvPowerSeries.one_le_order_iff_constCoeff_eq_zero.mpr hH
       have hAorder : (1 : ℕ∞) ≤ A.order :=
         MvPowerSeries.one_le_order_iff_constCoeff_eq_zero.mpr hAconstant
       have hpow :
@@ -476,31 +265,27 @@ private theorem coeff_pow_add_monomial_sub_pow
             (A ^ (n + 1) - H ^ (n + 1)).order := by
         simpa [A, M, add_sub_cancel_left] using
           order_sub_add_pred_le_order_pow_sub_pow
-            A H hAorder hHorder (n + 1)
-      have hdegree : (d.degree : ℕ∞) ≤ M.order :=
-        degree_le_order_monomial d c
-      have hn' : (1 : ℕ∞) ≤ (n : ℕ∞) := by
-        exact_mod_cast Nat.one_le_iff_ne_zero.mpr hn0
+            A H hAorder (MvPowerSeries.one_le_order_iff_constCoeff_eq_zero.mpr hH) (n + 1)
       have horder :
           ((d.degree + 1 : ℕ) : ℕ∞) ≤
             (A ^ (n + 1) - H ^ (n + 1)).order := by
         calc
-          ((d.degree + 1 : ℕ) : ℕ∞) =
+          _ =
               (d.degree : ℕ∞) + 1 := by norm_cast
           _ ≤ M.order + (n : ℕ∞) :=
-            add_le_add hdegree hn'
+            add_le_add (degree_le_order_monomial d c) (by
+              exact_mod_cast Nat.one_le_iff_ne_zero.mpr hn0)
           _ ≤ (A ^ (n + 1) - H ^ (n + 1)).order :=
             hpow
       have hlt :
-          (d.degree : ℕ∞) <
+          d.degree <
             (A ^ (n + 1) - H ^ (n + 1)).order :=
         by
           have hdegree_lt :
-              (d.degree : ℕ∞) < ((d.degree + 1 : ℕ) : ℕ∞) := by
+              d.degree < ((d.degree + 1 : ℕ) : ℕ∞) := by
             exact_mod_cast Nat.lt_succ_self d.degree
           exact hdegree_lt.trans_le horder
-      have hzero := MvPowerSeries.coeff_of_lt_order hlt
-      simpa [A, M, hn0] using hzero
+      grind [MvPowerSeries.coeff_of_lt_order]
 
 private theorem coeff_pow_add_monomial
     {R : Type*} [CommRing R] {τ : Type*}
@@ -511,10 +296,7 @@ private theorem coeff_pow_add_monomial
         ((H + MvPowerSeries.monomial d c) ^ n) =
       MvPowerSeries.coeff d (H ^ n) +
         if n = 1 then c else 0 := by
-  have h :=
-    coeff_pow_add_monomial_sub_pow hH d hd c n
-  rw [map_sub, sub_eq_iff_eq_add] at h
-  simpa [add_comm] using h
+  simpa [add_comm, map_sub, sub_eq_iff_eq_add] using coeff_pow_add_monomial_sub_pow hH d hd c n
 
 private theorem coeff_subst_lubinTateSeries_add_monomial
     (e : LubinTateSeries F π)
@@ -533,22 +315,12 @@ private theorem coeff_subst_lubinTateSeries_add_monomial
     intro h
     subst d
     simp at hd
-  have hMconstant :
-      MvPowerSeries.constantCoeff
-          (MvPowerSeries.monomial d c) = 0 :=
-    constantCoeff_monomial_eq_zero hd0 c
-  have hHconstant :
-      MvPowerSeries.constantCoeff H = 0 :=
+  have hHconstant :=
     hH.constantCoeff_eq_zero
-  have hnewSubst :
-      PowerSeries.HasSubst
-        (H + MvPowerSeries.monomial d c) :=
-    PowerSeries.HasSubst.of_constantCoeff_zero (by
-      simp [hHconstant, hMconstant])
-  let oldTerm : ℕ → F.valuationSubring := fun n =>
+  let oldTerm := fun n =>
     PowerSeries.coeff n e.toPowerSeries •
       MvPowerSeries.coeff d (H ^ n)
-  let deltaTerm : ℕ → F.valuationSubring := fun n =>
+  let deltaTerm := fun n =>
     PowerSeries.coeff n e.toPowerSeries •
       if n = 1 then c else 0
   have hold : Function.HasFiniteSupport oldTerm := by
@@ -564,13 +336,11 @@ private theorem coeff_subst_lubinTateSeries_add_monomial
     apply hn
     simp [deltaTerm, hne]
   rw [
-    PowerSeries.coeff_subst hnewSubst e.toPowerSeries d,
+    PowerSeries.coeff_subst (PowerSeries.HasSubst.of_constantCoeff_zero (by
+      simp [hHconstant, (constantCoeff_monomial_eq_zero hd0 c)])) e.toPowerSeries d,
     PowerSeries.coeff_subst hH.hasSubst e.toPowerSeries d]
   calc
-    ∑ᶠ n : ℕ,
-        PowerSeries.coeff n e.toPowerSeries •
-          MvPowerSeries.coeff d
-            ((H + MvPowerSeries.monomial d c) ^ n) =
+    _ =
         ∑ᶠ n : ℕ, (oldTerm n + deltaTerm n) := by
       apply finsum_congr
       intro n
@@ -583,11 +353,11 @@ private theorem coeff_subst_lubinTateSeries_add_monomial
         PowerSeries.coeff 1 e.toPowerSeries * c := by
       congr 1
       rw [finsum_eq_single _ 1]
-      · simp [deltaTerm, smul_eq_mul]
+      · rfl
       · intro n hn
         simp [deltaTerm, hn]
     _ = (∑ᶠ n : ℕ, oldTerm n) + π * c := by
-      rw [LubinTateSeries.coeff_one_eq_uniformizer]
+      simp
 
 private theorem coeff_defect_add_monomial
     (e ebar : LubinTateSeries F π)
@@ -599,13 +369,12 @@ private theorem coeff_defect_add_monomial
         (defect e ebar (H + MvPowerSeries.monomial d c)) =
       MvPowerSeries.coeff d (defect e ebar H) +
         π * ((1 - π ^ (d.degree - 1)) * c) := by
-  have hdegree : d.degree = (d.degree - 1) + 1 := by
-    omega
   have hpow :
       π ^ d.degree = π * π ^ (d.degree - 1) := by
     calc
       π ^ d.degree = π ^ ((d.degree - 1) + 1) :=
-        congrArg (fun n : ℕ => π ^ n) hdegree
+        congrArg (fun n : ℕ => π ^ n) (by
+          omega)
       _ = π ^ (d.degree - 1) * π := by
         rw [pow_succ]
       _ = π * π ^ (d.degree - 1) := by
@@ -628,19 +397,16 @@ theorem correctedIntertwiner_hasLinearTerm
     (d : σ →₀ ℕ) (hd : 2 ≤ d.degree) :
     HasLinearTerm (correctedIntertwiner hπ e ebar hH d hd) L := by
   rw [correctedIntertwiner, HasLinearTerm]
-  have hd' : (2 : ℕ∞) ≤ (d.degree : ℕ∞) := by
+  have hd' : (2 : ℕ∞) ≤ d.degree := by
     exact_mod_cast hd
-  have hcorrection :
-      (2 : ℕ∞) ≤ (monomialCorrection hπ e ebar hH d hd).order :=
-    hd'.trans
-      (degree_le_order_monomial d
-        (correctionCoefficient hπ e ebar hH d hd))
   rw [show
     H + monomialCorrection hπ e ebar hH d hd - linearForm L =
       (H - linearForm L) +
         monomialCorrection hπ e ebar hH d hd by ring]
   exact
-    (le_min hH hcorrection).trans
+    (le_min hH (hd'.trans
+      (degree_le_order_monomial d
+        (correctionCoefficient hπ e ebar hH d hd)))).trans
       MvPowerSeries.min_order_le_add
 
 /-- The recursively selected degree-`d` monomial cancels the degree-`d`

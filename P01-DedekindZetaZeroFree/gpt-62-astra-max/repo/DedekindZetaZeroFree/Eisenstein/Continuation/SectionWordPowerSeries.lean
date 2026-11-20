@@ -13,10 +13,10 @@ open KPContActualCommonDiskRightHolomorphy KPContSectorSmoothFramesSupport
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1200000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 def sectionLift : smoothSections F ζ hζ U R P H →ₗ[ℂ] space F ζ hζ :=
   ((ActualSectionLift.scalarLift F ζ hζ U R P H).comp

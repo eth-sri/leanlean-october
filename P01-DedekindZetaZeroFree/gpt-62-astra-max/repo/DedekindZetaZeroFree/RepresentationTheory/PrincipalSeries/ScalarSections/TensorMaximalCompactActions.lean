@@ -9,10 +9,10 @@ open scoped Classical NumberField TensorProduct
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open NumberField IsDedekindDomain KPGlobalTorusFiniteStages
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 
 def localMaxAction (v : KPHilbert.Place F) :
     ThetaExpansion.iwasawaCompactFactor R v → Plus R.A P C v →ₗ[ℂ] Plus R.A P C v :=
@@ -43,7 +43,7 @@ theorem stageMax_finite_subspace (s : RestrictedTensorSimple.Level (bad R.A P C)
   induction x using PiTensorProduct.induction_on with
   | smul_tprod c x =>
     choose U hfinite hx hstable using fun j : s.val => localMax_finite_subspace R P C j.val (x j)
-    let : ∀ j, Module.Finite ℂ (U j) := hfinite
+    let := hfinite
     refine ⟨(PiTensorProduct.mapIncl U).range, inferInstance, ?_, ?_⟩
     · apply Submodule.smul_mem
       exact ⟨PiTensorProduct.tprod ℂ (fun j => (⟨x j, hx j⟩ : U j)), by
@@ -62,8 +62,8 @@ theorem stageMax_finite_subspace (s : RestrictedTensorSimple.Level (bad R.A P C)
   | add x y hx hy =>
     obtain ⟨U, hU, hxU, hUs⟩ := hx
     obtain ⟨V, hV, hyV, hVs⟩ := hy
-    let : Module.Finite ℂ U := hU
-    let : Module.Finite ℂ V := hV
+    let := hU
+    let := hV
     refine ⟨U ⊔ V, inferInstance, Submodule.add_mem_sup hxU hyV, ?_⟩
     intro k z hz
     obtain ⟨u, hu, v, hv, rfl⟩ := Submodule.mem_sup.mp hz
@@ -138,18 +138,13 @@ theorem rawCoreInsertion_maxAction (s : RestrictedTensorSimple.Level (bad R.A P 
   let t : RestrictedTensorSimple.Level (bad R.A P C) := ⟨s.val ∪ u.val ∪ v.val,
     (s.property.trans Finset.subset_union_left).trans Finset.subset_union_left⟩
   have hst : s ≤ t := Finset.subset_union_left.trans Finset.subset_union_left
-  have ht : ∀ j, j ∉ t.val → localValue R.A P C j (g j) (plusReference R.A P C j) = reference R.A P C j :=
-    fun j hj => hu j (fun h => hj (Finset.mem_union_left _ (Finset.mem_union_right _ h)))
-  have ht' : ∀ j, j ∉ t.val → localValue R.A P C j ((g * k.val) j)
-      (plusReference R.A P C j) = reference R.A P C j :=
-    fun j hj => hv j (fun h => hj (Finset.mem_union_right _ h))
   have hstep (y : RestrictedTensorSimple.Stage (Plus R.A P C) s.val) :
       RestrictedTensorSimple.stageInclusion (Plus R.A P C) (plusReference R.A P C) (bad R.A P C) s y =
       RestrictedTensorSimple.stageInclusion (Plus R.A P C) (plusReference R.A P C) (bad R.A P C) t
         (RestrictedTensorSimple.transition (Plus R.A P C) (plusReference R.A P C) (bad R.A P C) s t hst y) :=
     Module.DirectLimit.of_f.symm
-  rw [hstep, hstep, rawCoreInsertion_stage R.A P C t _ g ht,
-    rawCoreInsertion_stage R.A P C t _ (g * k.val) ht',
+  rw [hstep, hstep, rawCoreInsertion_stage R.A P C t _ g (fun j hj => hu j (fun h => hj (Finset.mem_union_left _ (Finset.mem_union_right _ h)))),
+    rawCoreInsertion_stage R.A P C t _ (g * k.val) (fun j hj => hv j (fun h => hj (Finset.mem_union_right _ h))),
     ← stageMaxAction_transition R P C s t hst k hfix]
   exact rawStageValue_maxAction R P C t k g _
 

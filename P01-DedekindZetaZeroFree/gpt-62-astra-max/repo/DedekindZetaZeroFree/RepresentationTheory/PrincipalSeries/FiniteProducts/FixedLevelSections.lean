@@ -9,24 +9,18 @@ set_option backward.isDefEq.respectTransparency false
 open scoped NumberField Classical TensorProduct Topology
 open NumberField
 namespace DedekindZetaZeroFree.NativeScalarFiniteProductFixedLevel
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Cover → Cover
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Fiber → Fiber
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Source → Source
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductCover → ProductCover
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductFiber → ProductFiber
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductFunctions → ProductFunctions
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming productCovariance → productCovariance
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteCompactRestriction renaming CompactCover → CompactCover
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteCompactRestriction renaming productCompactRestriction_injective → productCompactRestriction_injective
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductStabilizer renaming CompactCosets → CompactCosets
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductStabilizer renaming compactCosets_finite → compactCosets_finite
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductStabilizer renaming compactRestriction_representatives → compactRestriction_representatives
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductStabilizer renaming productSection_rectangular_level → productSection_rectangular_level
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation (Cover Fiber Source ProductCover ProductFiber ProductFunctions productCovariance)
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteCompactRestriction (productCompactRestriction_injective)
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductStabilizer (CompactCosets compactCosets_finite compactRestriction_representatives productSection_rectangular_level)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (M : FourierContinuation.SourceReconstruction.InducingData F ζ hζ)
-variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
+    (M : FourierContinuation.SourceReconstruction.InducingData F ζ hζ)
+    (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
 
- def productFixedLevel (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) :
+ section
+
+variable (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
+
+def productFixedLevel :
     Submodule ℂ (ProductFunctions F ζ hζ M S) where
   carrier := { f | f ∈ productCovariance F ζ hζ M S ∧
     ∀ (j : ProductCover F ζ hζ S), (∀ q, j q ∈ U q) → ∀ g, f (g * j) = f g }
@@ -42,15 +36,14 @@ variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
     intro j hj g
     exact congrArg (c • ·) (hf.2 j hj g)
 
- def compactCosetSampling (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) :
+ def compactCosetSampling :
     productFixedLevel F ζ hζ M S U →ₗ[ℂ]
       (CompactCosets F ζ hζ M S U → ProductFiber F ζ hζ M S) where
   toFun f c := f.val (fun q => ((c q).out : Cover F ζ hζ S q))
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
 
- theorem compactCosetSampling_injective
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) :
+ theorem compactCosetSampling_injective :
     Function.Injective (compactCosetSampling F ζ hζ M S U) := by
   intro f h heq
   apply Subtype.ext
@@ -65,23 +58,23 @@ variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
     compactRestriction_representatives F ζ hζ M S h.val U h.property.2 k] at he
   exact he
 
-private theorem productFixedLevel_finite
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) :
+private theorem productFixedLevel_finite :
     Module.Finite ℂ (productFixedLevel F ζ hζ M S U) := by
   let (q : S) : Module.Finite ℂ (Fiber F ζ hζ M S q) :=
     KPLocalStoneVonNeumann.tau_moduleFinite (M q.val).heisenberg
       (M q.val).polarization
-  let : Finite (CompactCosets F ζ hζ M S U) := compactCosets_finite F ζ hζ M S U
+  let := compactCosets_finite F ζ hζ M S U
   let : Module.Finite ℂ (ProductFiber F ζ hζ M S) := by
     unfold ProductFiber
     infer_instance
   let : Module.Finite ℂ (CompactCosets F ζ hζ M S U → ProductFiber F ζ hζ M S) :=
     inferInstance
-  let : IsNoetherian ℂ (CompactCosets F ζ hζ M S U → ProductFiber F ζ hζ M S) := by
-    exact isNoetherian_of_isNoetherianRing_of_finite ℂ
+  let := isNoetherian_of_isNoetherianRing_of_finite ℂ
       (CompactCosets F ζ hζ M S U → ProductFiber F ζ hζ M S)
   exact Module.Finite.of_injective (compactCosetSampling F ζ hζ M S U)
     (compactCosetSampling_injective F ζ hζ M S U)
+
+end
 
  theorem productSection_mem_finite_level
     (f : ProductFunctions F ζ hζ M S)

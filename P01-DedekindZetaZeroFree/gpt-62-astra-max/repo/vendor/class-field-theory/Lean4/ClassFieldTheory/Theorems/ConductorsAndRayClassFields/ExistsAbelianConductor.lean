@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -28,11 +25,6 @@ its conclusion is an existence statement, so this name reflects its type.
 namespace ClassFieldTheory
 
 /-- A finite abelian extension of number fields has a conductor. -/
-theorem exists_abelianConductor
-    (K : Type) [Field K] [NumberField K]
-    (L : Type) [Field L] [NumberField L]
-    [Algebra K L] [IsAbelianGalois K L] :
-    ∃ c : RayClassModulus K, IsAbelianConductor K L c :=
-  embedsInRayClassField_iff_conductor_le K L
+alias exists_abelianConductor := embedsInRayClassField_iff_conductor_le
 
 end ClassFieldTheory

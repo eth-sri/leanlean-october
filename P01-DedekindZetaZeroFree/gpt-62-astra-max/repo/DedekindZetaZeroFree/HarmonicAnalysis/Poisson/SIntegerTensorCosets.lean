@@ -12,7 +12,11 @@ open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.PoissonS.ScaleShift
 
- theorem adapter_mem_dual (F : Type) [Field F] [NumberField F]
+ section
+
+variable (F : Type) [Field F] [NumberField F]
+
+theorem adapter_mem_dual
     (I : PoissonArch.NonzeroFractionalIdeal F) (y : PoissonArch.Space F) :
     PoissonArch.traceAdapter F y ∈ PoissonArch.dualLattice (PoissonArch.idealLattice F I) ↔
       y ∈ PoissonArch.idealTraceDual F I := by
@@ -30,14 +34,14 @@ namespace DedekindZetaZeroFree.PoissonS.ScaleShift
     change ∃ n : ℤ, (n : ℝ) = _
     simpa only [real_inner_comm, ← PoissonArch.tracePairing_eq_inner] using (show ∃ n : ℤ, (n : ℝ) = PoissonArch.tracePairing F (PoissonArch.minkowskiEmbedding F x) y from h x hx)
 
- def adapterDualEquiv (F : Type) [Field F] [NumberField F]
+ def adapterDualEquiv
     (I : PoissonArch.NonzeroFractionalIdeal F) :
     PoissonArch.idealLattice F (PoissonArch.codifferentIdeal F * I⁻¹) ≃
       PoissonArch.dualLattice (PoissonArch.idealLattice F I) where
   toFun y := ⟨PoissonArch.traceAdapter F y, (adapter_mem_dual F I y).mpr
     (by rw [PoissonArch.idealTraceDual_eq]; exact y.property)⟩
   invFun w := ⟨(PoissonArch.traceAdapter F).symm w, by
-    change (PoissonArch.traceAdapter F).symm (w : PoissonArch.Space F) ∈
+    change (PoissonArch.traceAdapter F).symm w ∈
       (PoissonArch.idealLattice F (PoissonArch.codifferentIdeal F * I⁻¹) :
         Set (PoissonArch.Space F))
     rw [← PoissonArch.idealTraceDual_eq, ← adapter_mem_dual]
@@ -45,7 +49,7 @@ namespace DedekindZetaZeroFree.PoissonS.ScaleShift
   left_inv y := by ext; simp
   right_inv w := by ext; simp
 
-theorem trace_ideal_coset_poisson (F : Type) [Field F] [NumberField F]
+theorem trace_ideal_coset_poisson
     (I : PoissonArch.NonzeroFractionalIdeal F)
     (f : 𝓢(PoissonArch.Space F, ℂ)) (a : PoissonArch.Space F) :
     (∑' x : PoissonArch.idealLattice F I, f (a + x)) =
@@ -73,7 +77,7 @@ theorem trace_ideal_coset_poisson (F : Type) [Field F] [NumberField F]
     exact_mod_cast ne_of_gt (PoissonArch.haarScalar_pos F)
   field_simp
 
-theorem local_valuation_ball_fourier (F : Type) [Field F] [NumberField F]
+theorem local_valuation_ball_fourier
     (v : HeightOneSpectrum (RingOfIntegers F))
     (e : AddChar (v.adicCompletion F) Circle)
     (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
@@ -116,9 +120,14 @@ theorem local_valuation_ball_fourier (F : Type) [Field F] [NumberField F]
     exact local_ball_volume F v μ hnorm k
   · rfl
 
-theorem tensor_ball_fourier (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+end
+
+section
+
+variable (F : Type) [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
+
+theorem tensor_ball_fourier
     (μ : (v : S) → Measure (v.val.adicCompletion F))
     [hμ : ∀ v, (μ v).IsAddHaarMeasure]
     (hconductor : TraceConductor F S e) (hnorm : LocalNormalization F S μ)
@@ -161,23 +170,17 @@ theorem tensor_ball_fourier (F : Type) [Field F] [NumberField F]
   rw [hi]
   ring
 
- def kernel (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
+ def kernel
     (x y : Space F S) : ℂ :=
     Complex.exp (-2 * (Real.pi : ℂ) * Complex.I *
       (PoissonArch.tracePairing F x.1 y.1 : ℂ)) *
         ∏ v : S, (e v (-x.2 v * y.2 v) : ℂ)
-private theorem kernel_norm (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
+private theorem kernel_norm
     (x y : Space F S) : ‖kernel F S e x y‖ = 1 := by
   simp only [kernel, norm_mul, norm_prod, Circle.norm_coe, Finset.prod_const_one, mul_one]
   rw [Complex.norm_exp]
   simp [Complex.mul_re, Complex.mul_im]
-private theorem kernel_continuous (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
+private theorem kernel_continuous
     (he : ∀ v, Continuous (e v)) (y : Space F S) :
     Continuous (fun x => kernel F S e x y) := by
   unfold kernel
@@ -193,13 +196,18 @@ private theorem kernel_continuous (F : Type) [Field F] [NumberField F]
     exact continuous_subtype_val.comp ((he v).comp
       ((continuous_apply v |>.comp continuous_snd).neg.mul continuous_const))
 
-theorem fourierIntegral_finset_sum (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+end
+
+section
+
+variable (F : Type) [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
-    (μ : (v : S) → Measure (v.val.adicCompletion F))
-    (he : ∀ v, Continuous (e v))
-    {ι : Type*} (T : Finset ι) (c : ι → ℂ) (f : ι → Space F S → ℂ)
-    (hf : ∀ i ∈ T, Integrable (f i) (productMeasure F S μ)) (y : Space F S) :
+    (μ : (v : S) → Measure (v.val.adicCompletion F)) (he : ∀ v, Continuous (e v)) {ι : Type*}
+    (T : Finset ι) (c : ι → ℂ) (f : ι → Space F S → ℂ)
+    (hf : ∀ i ∈ T, Integrable (f i) (productMeasure F S μ))
+
+include he hf in
+theorem fourierIntegral_finset_sum (y : Space F S) :
     fourierIntegral F S e μ (fun x => ∑ i ∈ T, c i * f i x) y =
       ∑ i ∈ T, c i * fourierIntegral F S e μ (f i) y := by
   letI : MeasurableSpace (Space F S) := Prod.instMeasurableSpace
@@ -219,13 +227,8 @@ theorem fourierIntegral_finset_sum (F : Type) [Field F] [NumberField F]
   rw [integral_finset_sum T hi]
   simp_rw [integral_const_mul]
 
-theorem poisson_finset_sum (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
-    (μ : (v : S) → Measure (v.val.adicCompletion F))
-    (he : ∀ v, Continuous (e v))
-    {ι : Type*} (T : Finset ι) (c : ι → ℂ) (f : ι → Space F S → ℂ)
-    (hf : ∀ i ∈ T, Integrable (f i) (productMeasure F S μ))
+include he hf in
+theorem poisson_finset_sum
     (hs : ∀ i ∈ T, Summable (fun m : lattice F S 1 => f i m))
     (hfs : ∀ i ∈ T, Summable (fun h : lattice F S 1 => fourierIntegral F S e μ (f i) h))
     (hp : ∀ i ∈ T, (∑' m : lattice F S 1, f i m) =
@@ -239,6 +242,8 @@ theorem poisson_finset_sum (F : Type) [Field F] [NumberField F]
   apply Finset.sum_congr rfl
   intro i hi
   rw [tsum_mul_left, tsum_mul_left, hp i hi]
+
+end
 
 theorem tensor_uniform_ball_expansion (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
@@ -255,9 +260,7 @@ theorem tensor_uniform_ball_expansion (F : Type) [Field F] [NumberField F]
   have hl : IsLocallyConstant ψ := by
     apply (IsLocallyConstant.iff_eventually_eq ψ).mpr
     intro x
-    have h : ∀ v : S, ∀ᶠ y in nhds x, φ v (y v) = φ v (x v) := by
-      intro v
-      exact ((hlocal v).comp_continuous (continuous_apply v)).eventually_eq x
+    have h : ∀ v : S, ∀ᶠ y in nhds x, φ v (y v) = φ v (x v) := fun v => ((hlocal v).comp_continuous (continuous_apply v)).eventually_eq x
     filter_upwards [Filter.eventually_all.mpr h] with y hy
     exact Finset.prod_congr rfl (fun v _ => hy v)
   have hc : HasCompactSupport ψ := by
@@ -274,49 +277,15 @@ theorem tensor_uniform_ball_expansion (F : Type) [Field F] [NumberField F]
   intro j _
   ring
 
-private theorem ideal_le_of_counts (F : Type) [Field F] [NumberField F]
-    (I J : FractionalIdeal (RingOfIntegers F)⁰ F) (hI : I ≠ 0) (hJ : J ≠ 0)
-    (h : ∀ v, FractionalIdeal.count F v J ≤ FractionalIdeal.count F v I) : I ≤ J := by
-  rw [← FractionalIdeal.finprod_heightOneSpectrum_factorization' F hI,
-    ← FractionalIdeal.finprod_heightOneSpectrum_factorization' F hJ]
-  have hs (A : FractionalIdeal (RingOfIntegers F)⁰ F) :
-      Function.HasFiniteMulSupport (fun v : HeightOneSpectrum (RingOfIntegers F) =>
-        (FractionalIdeal.coeIdeal v.asIdeal : FractionalIdeal (RingOfIntegers F)⁰ F) ^
-          FractionalIdeal.count F v A) := by
-    apply Set.Finite.subset (Filter.eventually_cofinite.mp (FractionalIdeal.finite_factors A))
-    intro v hv hz
-    exact hv (by simp [hz])
-  apply finprod_le_finprod (hs I) (hs J)
-  intro v
-  apply zpow_le_zpow_right_of_le_one₀ _ _ (h v)
-  · exact bot_lt_iff_ne_bot.mpr (FractionalIdeal.coeIdeal_ne_zero.mpr v.ne_bot)
-  · exact FractionalIdeal.coeIdeal_le_one
+private alias ideal_le_of_counts := DedekindZetaZeroFree.PoissonFinite.BallExpansion.IdealCosetDecomposition.le_of_counts
 
-theorem fractionalIdeal_mem_iff_valuations (F : Type) [Field F] [NumberField F]
-    (I : FractionalIdeal (RingOfIntegers F)⁰ F) (hI : I ≠ 0) (x : F) :
-    x ∈ I ↔ ∀ v, v.valuation F x ≤ WithZero.exp (-FractionalIdeal.count F v I) := by
-  by_cases hx : x = 0
-  · subst x
-    simp only [FractionalIdeal.zero_mem, true_iff]
-    intro v
-    simp
-  let P := FractionalIdeal.spanSingleton (RingOfIntegers F)⁰ x
-  have hP : P ≠ 0 := FractionalIdeal.spanSingleton_ne_zero_iff.mpr hx
-  have hv (v : HeightOneSpectrum (RingOfIntegers F)) :
-      v.valuation F x = WithZero.exp (-FractionalIdeal.count F v P) :=
-    SUnitGroup.valuation_eq_exp_neg_count (Units.mk0 x hx) v
-  rw [← FractionalIdeal.spanSingleton_le_iff_mem]
-  constructor
-  · intro h v
-    rw [hv, WithZero.exp_le_exp, neg_le_neg_iff]
-    exact FractionalIdeal.count_mono F v hP h
-  · intro h
-    apply ideal_le_of_counts F P I hP hI
-    intro v
-    simpa only [hv, WithZero.exp_le_exp, neg_le_neg_iff] using h v
+alias fractionalIdeal_mem_iff_valuations := DedekindZetaZeroFree.PoissonFinite.BallExpansion.IdealCosetDecomposition.mem_iff_valuations
 
-theorem count_ballFractionalIdeal (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : S → ℤ)
+section
+
+variable (F : Type) [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+
+theorem count_ballFractionalIdeal (k : S → ℤ)
     (w : HeightOneSpectrum (RingOfIntegers F)) :
     FractionalIdeal.count F w (ballFractionalIdeal F S k) =
       if h : w ∈ S then k ⟨w, h⟩ else 0 := by
@@ -337,8 +306,7 @@ theorem count_ballFractionalIdeal (F : Type) [Field F] [NumberField F]
   · intro v _
     exact zpow_ne_zero _ (FractionalIdeal.coeIdeal_ne_zero.mpr v.val.ne_bot)
 
-theorem ballFractionalIdeal_le_sIntegers (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : S → ℤ)
+theorem ballFractionalIdeal_le_sIntegers (k : S → ℤ)
     {x : F} (hx : x ∈ ballFractionalIdeal F S k) :
     x ∈ (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F := by
   intro w hw
@@ -346,8 +314,7 @@ theorem ballFractionalIdeal_le_sIntegers (F : Type) [Field F] [NumberField F]
   have hw' : w ∉ S := hw
   simpa [count_ballFractionalIdeal, hw'] using h
 
-theorem dual_ballFractionalIdeal (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (hS : ContainsDifferent F S)
+theorem dual_ballFractionalIdeal (hS : ContainsDifferent F S)
     (k : S → ℤ) :
     (PoissonArch.codifferentIdeal F : FractionalIdeal (RingOfIntegers F)⁰ F) *
         (ballFractionalIdeal F S k)⁻¹ =
@@ -359,23 +326,24 @@ theorem dual_ballFractionalIdeal (F : Type) [Field F] [NumberField F]
     norm_cast
     by_contra hc
     exact hv (hS v ((Associates.count_ne_zero_iff_dvd hD v.irreducible).mp hc))
+  let FractionalIdeal₀ := FractionalIdeal (RingOfIntegers F)⁰ F
   have hfactor : (∏ v : S, (FractionalIdeal.coeIdeal v.val.asIdeal) ^
       differentExponent F v.val) =
       (FractionalIdeal.coeIdeal (differentIdeal ℤ (RingOfIntegers F)) :
-        FractionalIdeal (RingOfIntegers F)⁰ F) := by
+        FractionalIdeal₀) := by
     rw [show (∏ v : S, (FractionalIdeal.coeIdeal v.val.asIdeal :
-      FractionalIdeal (RingOfIntegers F)⁰ F) ^ differentExponent F v.val) =
+      FractionalIdeal₀) ^ differentExponent F v.val) =
       ∏ v ∈ S, (FractionalIdeal.coeIdeal v.asIdeal :
-      FractionalIdeal (RingOfIntegers F)⁰ F) ^ differentExponent F v from
+      FractionalIdeal₀) ^ differentExponent F v from
       Finset.prod_coe_sort S (fun v => (FractionalIdeal.coeIdeal v.asIdeal :
-        FractionalIdeal (RingOfIntegers F)⁰ F) ^ differentExponent F v)]
+        FractionalIdeal₀) ^ differentExponent F v)]
     rw [← FractionalIdeal.finprod_heightOneSpectrum_factorization' (K := F)
       (FractionalIdeal.coeIdeal_ne_zero.mpr hD)]
     symm
     apply finprod_eq_finsetProd_of_mulSupport_subset
     intro v hv
     by_contra h
-    exact hv (by change (_ : FractionalIdeal (RingOfIntegers F)⁰ F) ^ differentExponent F v = 1; rw [hd v h, zpow_zero])
+    exact hv (by change _ ^ differentExponent F v = 1; rw [hd v h, zpow_zero])
   rw [PoissonArch.codifferentIdeal_eq_inv_different, ← hfactor]
   simp only [ballFractionalIdeal, ← Finset.prod_inv_distrib, ← Finset.prod_mul_distrib]
   apply Finset.prod_congr rfl
@@ -384,12 +352,15 @@ theorem dual_ballFractionalIdeal (F : Type) [Field F] [NumberField F]
   congr 1
   ring
 
- theorem embedding_injective (F : Type) [Field F] [NumberField F] :
-    Function.Injective (PoissonArch.minkowskiEmbedding F) :=
-  (NumberField.mixedEmbedding.euclidean.toMixed F).symm.injective.comp
-    (NumberField.mixedEmbedding_injective F)
+end
 
-theorem norm_ball_iff_valuation (F : Type) [Field F] [NumberField F]
+ alias embedding_injective := DedekindZetaZeroFree.PoissonS.TensorTransformsAndLatticeSummability.mk_injective
+
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+theorem norm_ball_iff_valuation
     (v : HeightOneSpectrum (RingOfIntegers F)) (k : ℤ) (x : v.adicCompletion F) :
     ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ (-k) ↔ Valued.v x ≤ WithZero.exp (-k) := by
   obtain ⟨a, ha⟩ := HeightOneSpectrum.valuedAdicCompletion_surjective F v (WithZero.exp (-k))
@@ -400,7 +371,7 @@ theorem norm_ball_iff_valuation (F : Type) [Field F] [NumberField F]
   rw [← hna, ← ha]
   exact Valued.toNormedField.norm_le_iff
 
-theorem finiteBall_diagonal_mem (F : Type) [Field F] [NumberField F]
+theorem finiteBall_diagonal_mem
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : S → ℤ)
     (m : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F) :
     PoissonFinite.diagonal F S (m : F) ∈ finiteBall F S k ↔
@@ -416,12 +387,11 @@ theorem finiteBall_diagonal_mem (F : Type) [Field F] [NumberField F]
   · intro h w
     by_cases hw : w ∈ S
     · simpa [count_ballFractionalIdeal, hw] using h ⟨w, hw⟩
-    · have hh := m.property w hw
-      simpa [count_ballFractionalIdeal, hw] using hh
+    · simpa [count_ballFractionalIdeal, hw] using (m.property w hw)
   · intro h v
     simpa [count_ballFractionalIdeal, v.property] using h v.val
 
-def diagonalLatticeEquiv (F : Type) [Field F] [NumberField F]
+def diagonalLatticeEquiv
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :
     (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F ≃ lattice F S 1 :=
   Equiv.ofBijective (fun m => ⟨diagonalHom F S (m : F), by
@@ -437,10 +407,10 @@ def diagonalLatticeEquiv (F : Type) [Field F] [NumberField F]
       obtain ⟨x, hx, he⟩ := m.property
       refine ⟨⟨x, hx⟩, ?_⟩
       apply Subtype.ext
-      change diagonalHom F S (1 * x) = (m : Space F S) at he
-      simpa only [one_mul] using he)
+      change diagonalHom F S (1 * x) = m at he
+      simpa using he)
 
-def idealEmbeddingEquiv (F : Type) [Field F] [NumberField F]
+def idealEmbeddingEquiv
     (I : PoissonArch.NonzeroFractionalIdeal F) :
     {x : F // x ∈ (I : FractionalIdeal (RingOfIntegers F)⁰ F)} ≃ PoissonArch.idealLattice F I :=
   Equiv.ofBijective (fun x => ⟨PoissonArch.minkowskiEmbedding F x,
@@ -452,7 +422,7 @@ def idealEmbeddingEquiv (F : Type) [Field F] [NumberField F]
       obtain ⟨a, ha, he⟩ := (PoissonArch.mem_idealLattice F I x).mp x.property
       exact ⟨⟨a, ha⟩, Subtype.ext he⟩)
 
-def idealCosetEquiv (F : Type) [Field F] [NumberField F]
+def idealCosetEquiv
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : S → ℤ)
     (t : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F) :
     {x : F // x ∈ ballFractionalIdeal F S k} ≃
@@ -464,11 +434,11 @@ def idealCosetEquiv (F : Type) [Field F] [NumberField F]
   left_inv x := by ext; simp
   right_inv m := by ext; simp
 
- abbrev R (F : Type) [Field F] [NumberField F]
+ abbrev R
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :=
   (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F
 
-theorem tsum_ideal_coset (F : Type) [Field F] [NumberField F]
+theorem tsum_ideal_coset
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : S → ℤ)
     (t : R F S) (f : F → ℂ) :
     (∑' m : R F S, f m * (if (m : F) - (t : F) ∈ ballFractionalIdeal F S k then 1 else 0)) =
@@ -485,7 +455,7 @@ theorem tsum_ideal_coset (F : Type) [Field F] [NumberField F]
   intro m
   split_ifs with hm <;> simp [A, hm]
 
-theorem trace_field_coset_poisson (F : Type) [Field F] [NumberField F]
+theorem trace_field_coset_poisson
     (I : PoissonArch.NonzeroFractionalIdeal F)
     (f : 𝓢(PoissonArch.Space F, ℂ)) (a : PoissonArch.Space F) :
     (∑' x : {x : F // x ∈ (I : FractionalIdeal (RingOfIntegers F)⁰ F)},
@@ -501,8 +471,13 @@ theorem trace_field_coset_poisson (F : Type) [Field F] [NumberField F]
     ← (idealEmbeddingEquiv F (PoissonArch.codifferentIdeal F * I⁻¹)).tsum_eq] at h
   exact h
 
-theorem rawPhase_diagonal_mul (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+end
+
+section
+
+variable (F : Type) [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+
+theorem rawPhase_diagonal_mul
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle) (a b : F) :
     rawPhase F S e (diagonalHom F S a) (diagonalHom F S b) =
       rawPhase F S e (diagonalHom F S (a*b)) (diagonalHom F S 1) := by
@@ -523,12 +498,10 @@ theorem rawPhase_diagonal_mul (F : Type) [Field F] [NumberField F]
       algebraMap F (v.val.adicCompletion F) (a*b) * algebraMap F (v.val.adicCompletion F) 1
     simp
 
- abbrev RR (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :=
+ abbrev RR :=
   (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F
 
-theorem diagonal_phase_cancel (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+theorem diagonal_phase_cancel
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (hd : ∀ r : sIntegerRing F S,
       rawPhase F S e (diagonalHom F S (r : F)) (diagonalHom F S 1) = 1)
@@ -548,8 +521,7 @@ theorem diagonal_phase_cancel (F : Type) [Field F] [NumberField F]
   rw [Finset.prod_inv_distrib]
   exact eq_inv_of_mul_eq_one_left h
 
-theorem ball_trace_covolume_inv (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (hS : ContainsDifferent F S)
+theorem ball_trace_covolume_inv (hS : ContainsDifferent F S)
     (k : S → ℤ) (μ : (v : S) → Measure (v.val.adicCompletion F))
     [hμ : ∀ v, (μ v).IsAddHaarMeasure] (hnorm : LocalNormalization F S μ) :
     (PoissonArch.covolume F (Units.mk0 (ballFractionalIdeal F S k)
@@ -559,8 +531,7 @@ theorem ball_trace_covolume_inv (F : Type) [Field F] [NumberField F]
   simpa only [PoissonArch.covolume, Complex.ofReal_inv] using
     (congrArg (fun r : ℝ => (r : ℂ)) h).symm
 
-theorem centered_ball_poisson (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (hS : ContainsDifferent F S)
+theorem centered_ball_poisson (hS : ContainsDifferent F S)
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (μ : (v : S) → Measure (v.val.adicCompletion F)) [hμ : ∀ v, (μ v).IsAddHaarMeasure]
     (hconductor : TraceConductor F S e) (hnorm : LocalNormalization F S μ)
@@ -637,6 +608,8 @@ theorem centered_ball_poisson (F : Type) [Field F] [NumberField F]
   congr 1
   simpa only [Subalgebra.coe_zero, zero_add] using (tsum_ideal_coset F S l 0 g).symm
 
+end
+
 theorem local_ball_test (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F)) (k : ℤ) (b : v.adicCompletion F) :
     IsLocallyConstant (fun z => if ‖z-b‖ ≤ (v.asIdeal.absNorm : ℝ) ^ (-k) then (1 : ℂ) else 0) ∧
@@ -667,17 +640,14 @@ theorem local_ball_test (F : Type) [Field F] [NumberField F]
       exact hz (if_neg h)
     simpa only [Metric.mem_closedBall, dist_eq_norm] using hh
 
-theorem traceConductor_nontrivial (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+variable (F : Type) [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+
+theorem traceConductor_nontrivial
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (hc : TraceConductor F S e) : ∀ v, ∃ x, e v x ≠ 1 := by
   intro v
   by_contra h
   push Not at h
-  have hh : ∀ y : v.val.adicCompletion F, ‖y‖ ≤
-      (v.val.asIdeal.absNorm : ℝ) ^ differentExponent F v.val := fun y =>
-    (hc v y).mp (fun z _ => h _)
-
   obtain ⟨a, ha⟩ := HeightOneSpectrum.valuedAdicCompletion_surjective F v.val
     (WithZero.exp (differentExponent F v.val + 1))
   have hna : ‖a‖ = (v.val.asIdeal.absNorm : ℝ) ^ (differentExponent F v.val + 1) := by
@@ -687,12 +657,12 @@ theorem traceConductor_nontrivial (F : Type) [Field F] [NumberField F]
   have hq : (1 : ℝ) < (v.val.asIdeal.absNorm : ℝ) := by exact_mod_cast
     NumberField.RingOfIntegers.HeightOneSpectrum.one_lt_absNorm v.val
   have hp := zpow_pos (lt_trans zero_lt_one hq) (differentExponent F v.val)
-  have hl := hh a
+  have hl := (fun y =>
+    (hc v y).mp (fun z _ => h _)) a
   rw [hna, zpow_add₀ (ne_of_gt (lt_trans zero_lt_one hq)), zpow_one] at hl
   nlinarith
 
-theorem exists_rational_ball_center (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : S → ℤ)
+theorem exists_rational_ball_center (k : S → ℤ)
     (b : PoissonFinite.Space F S) :
     ∃ t : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F,
       ∀ v : S, ∀ z : v.val.adicCompletion F,
@@ -715,8 +685,7 @@ theorem exists_rational_ball_center (F : Type) [Field F] [NumberField F]
     rw [he]
     exact Valuation.map_add_le _ hz (hc v)
 
-theorem translated_ball_poisson (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (hS : ContainsDifferent F S)
+theorem translated_ball_poisson (hS : ContainsDifferent F S)
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (μ : (v : S) → Measure (v.val.adicCompletion F)) [hμ : ∀ v, (μ v).IsAddHaarMeasure]
     (hconductor : TraceConductor F S e) (hnorm : LocalNormalization F S μ)
@@ -738,8 +707,7 @@ theorem translated_ball_poisson (F : Type) [Field F] [NumberField F]
   rw [he]
   exact centered_ball_poisson F S hS e μ hconductor hnorm hd f k t
 
-theorem tensor_ball_expansion (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+theorem tensor_ball_expansion
     (f : 𝓢(PoissonArch.Space F, ℂ))
     (φ : (v : S) → v.val.adicCompletion F → ℂ)
     (hlocal : ∀ v, IsLocallyConstant (φ v))
@@ -757,8 +725,6 @@ theorem tensor_ball_expansion (F : Type) [Field F] [NumberField F]
     Finset.prod_const_one, Finset.mem_univ, forall_const]
 
 theorem normalized_tensor_poisson
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (hS : ContainsDifferent F S)
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (μ : (v : S) → Measure (v.val.adicCompletion F))
@@ -793,8 +759,7 @@ theorem normalized_tensor_poisson
         (fun v => (htest j v).1) (fun v => (htest j v).2) 1 one_ne_zero).of_norm
       change Summable (fun h : lattice F S ((1 : F)⁻¹) =>
         fourierIntegral F S e μ (g j) h) at h
-      have hone : ((1 : F)⁻¹) = 1 := inv_one
-      rw [hone] at h
+      rw [inv_one] at h
       exact h
   have hp (j : Fin n) : (∑' m : lattice F S 1, g j m) =
       ∑' h : lattice F S 1, fourierIntegral F S e μ (g j) h :=

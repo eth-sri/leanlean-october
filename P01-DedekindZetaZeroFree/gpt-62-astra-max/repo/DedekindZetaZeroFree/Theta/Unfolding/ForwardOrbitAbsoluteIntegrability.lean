@@ -13,34 +13,34 @@ namespace DedekindZetaZeroFree.OrbitFrequencies
 open MomentSources NumberField MeasureTheory ThetaProfileHaarSheets ThetaSheetExactUnfolding
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
-variable (D : SourceFactorization R Q T)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    (D : SourceFactorization R Q T)
 include D
 
 lemma rationalValue_left_root (v : R.A.UnitQuotient) (a : Fˣ) (g : Group R) (t : KPAdeles F) :
     rationalValue R T v a (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 t * g) =
       (adelicTraceCharacter F (algebraMap F (KPAdeles F) (a : F) * t) : ℂ) * rationalValue R T v a g := by
+  let algebraMap₀ := algebraMap F (KPAdeles F)
   let A := KPRationalAdelicSplitting.pglA F R.A.zeta12 R.A.primitive_zeta12
-    (Units.map (algebraMap F (KPAdeles F)).toMonoidHom a)
+    (Units.map (algebraMap₀).toMonoidHom a)
   have hc := KPRationalAdelicSplitting.quotient_upper_diagonal F R.A.zeta12 R.A.primitive_zeta12
-    (algebraMap F (KPAdeles F) (a : F) * t)
-    (Units.map (algebraMap F (KPAdeles F)).toMonoidHom a)
-  have he : (algebraMap F (KPAdeles F) (a : F) * t) * algebraMap F (KPAdeles F) (a⁻¹ : Fˣ) = t := by
+    (algebraMap₀ (a : F) * t)
+    (Units.map (algebraMap₀).toMonoidHom a)
+  have he : (algebraMap₀ (a : F) * t) * algebraMap₀ (a⁻¹ : Fˣ) = t := by
     rw [mul_right_comm, ← map_mul, Units.mul_inv, map_one, one_mul]
   change KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
-    (algebraMap F (KPAdeles F) (a : F) * t) * A = A *
+    (algebraMap₀ (a : F) * t) * A = A *
       KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
-        ((algebraMap F (KPAdeles F) (a : F) * t) * algebraMap F (KPAdeles F) (a⁻¹ : Fˣ)) at hc
+        ((algebraMap₀ (a : F) * t) * algebraMap₀ (a⁻¹ : Fˣ)) at hc
   rw [he] at hc
   rw [rationalValue_eq_fourier R T, ← mul_assoc, ← hc, mul_assoc]
   letI := Q.quotientHaar
   rw [ExteriorWhittakerValues.StoredWhittaker.fourier_left_root R Q.dq (T.theta v)
     (ExteriorWhittakerValues.StoredWhittaker.core_rational_root R D (D.selected v) |>
       fun h => by simpa only [D.selected_eq] using h) _ (A * g) (D.period_integrable v (A * g))]
-  have hχ := adelicTraceQuotientCharacter_mk F (algebraMap F (KPAdeles F) (a : F) * t)
-  refine congrArg₂ (fun z : Circle => fun c : ℂ => (z : ℂ) * c) hχ ?_
+  refine congrArg₂ (fun z : Circle => fun c : ℂ => (z : ℂ) * c) (adelicTraceQuotientCharacter_mk F (algebraMap₀ (a : F) * t)) ?_
   exact (rationalValue_eq_fourier R T v a g).symm
 
 lemma orbit_forward_digit_norm (v : R.A.UnitQuotient)
@@ -48,12 +48,11 @@ lemma orbit_forward_digit_norm (v : R.A.UnitQuotient)
     (y : R.A.G) (m : ThetaReflectionData.Row R.A) (d : ThetaDigitAverage.Dig (RowPrime R m)) :
     ‖orbitFrequencyValue R Q T v i (signedArgument R m true y d)‖ =
       ‖rationalValue R T v (Quotient.out i.1 * i.2.val) (diagonal R y)‖ := by
-  change ‖rationalValue R T v (Quotient.out i.1 * i.2.val) (signedArgument R m true y d)‖ = _
   simp only [signedArgument, ite_eq_left, one_mul]
   change ‖rationalValue R T v (Quotient.out i.1 * i.2.val)
     (diagonal R y * KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (digitParameter R m d))‖ = _
   rw [(OrbitExpansion.diagonal_commute_digit_root R y m d).eq, rationalValue_left_root R D, norm_mul]
-  simp only [Circle.norm_coe, one_mul]
+  simp
 
 lemma rational_diagonal_norm_list (v : R.A.UnitQuotient) (a : Fˣ) (y : R.A.G)
     (L : List (ThetaBranch.ExteriorPrime R.A)) (hL : L.Nodup)
@@ -77,7 +76,7 @@ lemma rational_diagonal_norm_list (v : R.A.UnitQuotient) (a : Fˣ) (y : R.A.G)
   · simp_rw [OrbitExpansion.exteriorLiftValue_rational]
     rw [norm_mul]
     congr 1
-    simpa only [mul_one] using fourier_diagonal_mul_norm R (T := T) v (R.A.diagonal a) y 1
+    simpa using fourier_diagonal_mul_norm R v (R.A.diagonal a) y 1
   · intro p hp t
     exact (OrbitExpansion.diagonal_commute_exterior_root R _ p t).mul_left
       (OrbitExpansion.diagonal_commute_exterior_root R _ p t)
@@ -103,7 +102,7 @@ lemma rational_diagonal_norm (E : ExteriorCoefficients R Q T D) (P : Packet R Q)
     apply (OrbitExpansion.order_eq_zero_iff _ _).mp
     simpa only [s, Set.Finite.mem_toFinset, Set.mem_ofPred_eq, not_not] using hp
   rw [rational_diagonal_norm_list R D v a y s.toList s.nodup_toList
-    (by simpa only [Finset.mem_toList] using ha), hf]
+    (by simpa using ha), hf]
   congr 2
   rw [Finset.prod_map_toList]
   symm
@@ -177,8 +176,8 @@ lemma positiveAxis_le_secondMoment (V : PositiveAxis → ℝ)
   nlinarith [hlow.trans hupp]
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 lemma positiveSheet_inverse_square_bound (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
     (P : Packet R Q) : ∃ B : ℝ, 0 ≤ B ∧ ∀ x : PositiveAxis, P.positiveSheet x ≤ B / x.val ^ 2 := by
@@ -189,10 +188,8 @@ lemma positiveSheet_inverse_square_bound (N : TraceHaarTransport R) {Q : Admissi
     apply integral_mono (GaussianSmoothing.sheet_integrable N P y) ((GaussianSmoothing.sheet_integrable N P x).const_mul _)
     intro z
     exact GaussianSmoothing.radial_section_le P P.v₀ x y hxy z.val
-  · have hi := (GaussianSmoothing.sheet_mellin N P 2 (by norm_num)).1
-    have hr := Complex.reCLM.integrable_comp hi
-    simpa only [Complex.cpow_ofNat, Complex.reCLM_apply, ← Complex.ofReal_pow,
-      ← Complex.ofReal_mul, Complex.ofReal_re] using hr
+  · simpa only [Complex.cpow_ofNat, Complex.reCLM_apply, ← Complex.ofReal_pow,
+      ← Complex.ofReal_mul, Complex.ofReal_re] using (Complex.reCLM.integrable_comp ((GaussianSmoothing.sheet_mellin N P 2 (by norm_num)).1))
 end DedekindZetaZeroFree.OrbitFrequencies
 end
 
@@ -203,8 +200,8 @@ namespace DedekindZetaZeroFree.OrbitFrequencies
 open MomentSources NumberField MeasureTheory ThetaProfileHaarSheets ThetaSheetExactUnfolding
 open scoped NumberField Classical Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 lemma positive_profile_norm {Q : AdmissibleFlatSources R} (P : Packet R Q)
     (v : R.A.UnitQuotient) (y : R.A.G) : ‖P.forwardProfile v y‖ = GaussianSmoothing.radial P y := by
@@ -212,8 +209,11 @@ lemma positive_profile_norm {Q : AdmissibleFlatSources R} (P : Packet R Q)
   change ‖(GaussianSmoothing.radial P y : ℂ)‖ = GaussianSmoothing.radial P y
   simp only [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (GaussianSmoothing.radial_nonneg P y)]
 
-lemma positive_full_sheet_integrable (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
-    (P : Packet R Q) (l : PositiveAxis) :
+section
+
+variable (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R} (P : Packet R Q)
+
+lemma positive_full_sheet_integrable (l : PositiveAxis) :
     letI := N.groupHaar_isHaar;
     Integrable (fun y : Sheet R.A l => (GaussianSmoothing.radial P y.val : ℂ)) (sheetHaar R.A P.v₀ N.groupHaar l) := by
   letI := N.groupHaar_isHaar
@@ -221,8 +221,7 @@ lemma positive_full_sheet_integrable (N : TraceHaarTransport R) {Q : AdmissibleF
   exact (sheetTranslation R.A P.v₀ l).measurableEmbedding.integrable_map_iff.mpr
     (Complex.ofRealCLM.integrable_comp (GaussianSmoothing.sheet_integrable N P l))
 
-lemma positive_full_sheet_integral (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
-    (P : Packet R Q) (l : PositiveAxis) :
+lemma positive_full_sheet_integral (l : PositiveAxis) :
     letI := N.groupHaar_isHaar;
     (∫ y : Sheet R.A l, (GaussianSmoothing.radial P y.val : ℂ) ∂sheetHaar R.A P.v₀ N.groupHaar l) =
       (P.positiveSheet l : ℂ) := by
@@ -232,8 +231,7 @@ lemma positive_full_sheet_integral (N : TraceHaarTransport R) {Q : AdmissibleFla
     GaussianSmoothing.positiveSheet_eq N P]
   rfl
 
-lemma positive_orbit_sheet_mass (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (P : Packet R Q) (a : Fˣ) (l : PositiveAxis) :
+lemma positive_orbit_sheet_mass (a : Fˣ) (l : PositiveAxis) :
     letI := N.groupHaar_isHaar;
     Summable (fun γ : ThetaReflectionData.rationalGamma R.A =>
       ∫ y : Sheet R.A l, GaussianSmoothing.radial P (R.A.diagonal (γ.val * a) * y.val)
@@ -248,38 +246,45 @@ lemma positive_orbit_sheet_mass (N : TraceHaarTransport R)
   have hs := hu.1.map Complex.reCLM Complex.reCLM.continuous
   simp only [Function.comp_def, integral_complex_ofReal, Complex.reCLM_apply, Complex.ofReal_re] at hs
   refine ⟨?_, ?_⟩
-  · have h := hs.comp_injective (gammaEquiv R).injective
-    simpa only [Function.comp_def, gammaEquiv_val, ← map_mul, pregroupingSheetHaar] using h
+  · simpa only [Function.comp_def, gammaEquiv_val, ← map_mul, pregroupingSheetHaar] using (hs.comp_injective (gammaEquiv R).injective)
   · have hc := hu.1.hasSum.map Complex.reCLM Complex.reCLM.continuous
     rw [hu.2, positive_full_sheet_integral R N P] at hc
     have hv : (∑' γ : R.A.Gamma1, ∫ y in pregroupingSheet R.A P.v₀ l,
         GaussianSmoothing.radial P (γ.val.val * R.A.diagonal a * y.val) ∂sheetHaar R.A P.v₀ N.groupHaar l) =
         P.positiveSheet (q R.A a * l) := by
       simpa only [Function.comp_def, integral_complex_ofReal, Complex.reCLM_apply, Complex.ofReal_re] using hc.tsum_eq
-    have ht := (gammaEquiv R).toEquiv.tsum_eq (fun γ : R.A.Gamma1 =>
-      ∫ y in pregroupingSheet R.A P.v₀ l, GaussianSmoothing.radial P (γ.val.val * R.A.diagonal a * y.val)
-        ∂sheetHaar R.A P.v₀ N.groupHaar l)
     have hval (γ : ThetaReflectionData.rationalGamma R.A) :
       ((gammaEquiv R).toEquiv γ).val.val = R.A.diagonal γ.val := rfl
-    simpa only [hval, ← map_mul, pregroupingSheetHaar] using ht.trans hv
+    simpa only [hval, ← map_mul, pregroupingSheetHaar] using ((gammaEquiv R).toEquiv.tsum_eq (fun γ : R.A.Gamma1 =>
+      ∫ y in pregroupingSheet R.A P.v₀ l, GaussianSmoothing.radial P (γ.val.val * R.A.diagonal a * y.val)
+        ∂sheetHaar R.A P.v₀ N.groupHaar l)).trans hv
 
-lemma forwardExterior_norm_le_one {Q : AdmissibleFlatSources R} {T : Realization R Q}
-    (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D) (a : Fˣ) :
+end
+
+section
+
+variable {Q : AdmissibleFlatSources R} {T : Realization R Q} (D : SourceFactorization R Q T)
+    (E : ExteriorCoefficients R Q T D) (a : Fˣ)
+
+include E in
+lemma forwardExterior_norm_le_one :
     ‖forwardExterior R D a‖ ≤ 1 := by
   have ht := finprod_eq_prod_of_mulSupport_subset (f := fun p : ThetaBranch.ExteriorPrime R.A => D.exteriorValue R p a)
     (s := (forwardExterior_finite R D E a).toFinset)
-    (by intro p hp; exact (forwardExterior_finite R D E a).mem_toFinset.mpr hp)
+    (fun p hp => (forwardExterior_finite R D E a).mem_toFinset.mpr hp)
   rw [forwardExterior, ht, norm_prod]
   exact Finset.prod_le_one₀ (fun _ _ => norm_nonneg _) (fun p _ => exteriorValue_norm_le_one R D E p a)
 
-lemma forwardExterior_zero_nonintegral {Q : AdmissibleFlatSources R} {T : Realization R Q}
-    (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D) (a : Fˣ)
+include E in
+lemma forwardExterior_zero_nonintegral
     (ha : (a : F) ∉ R.A.R) : forwardExterior R D a = 0 := by
   change ¬ (∀ p, p ∉ R.A.Sf → p.valuation F (a : F) ≤ 1) at ha
   push Not at ha
   obtain ⟨p, hp, hv⟩ := ha
   apply finprod_eq_zero _ (⟨p, hp⟩ : ThetaBranch.ExteriorPrime R.A) _ (forwardExterior_finite R D E a)
   exact exteriorValue_zero_of_order_neg R D E _ _ (OrbitExpansion.order_negative_of_valuation_gt_one p a hv)
+
+end
 
 lemma orbitMass_forward_bound (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
     (T : Realization R Q) (P : Packet R Q) (D : SourceFactorization R Q T)
@@ -318,12 +323,10 @@ lemma orbit_forward_zero_off_support {Q : AdmissibleFlatSources R} {T : Realizat
   have hx : (Quotient.out ξ : Fˣ).val ∉ R.A.R := by
     intro hx
     apply h
-    have hm : (ThetaReflectionData.rowUnit R.A m : F) ∈ R.A.R := m.val.property
-    exact R.A.R.mul_mem (R.A.R.pow_mem hm 2) hx
-  have ha : ((Quotient.out ξ * γ.val : Fˣ) : F) ∉ R.A.R := fun ha => hx ((gamma_integral_iff R γ _).mp ha)
+    exact R.A.R.mul_mem (R.A.R.pow_mem m.val.property 2) hx
   apply norm_eq_zero.mp
   rw [orbit_forward_digit_norm R D, rational_diagonal_norm R D E P hf,
-    forwardExterior_zero_nonintegral R D E _ ha, norm_zero, zero_mul]
+    forwardExterior_zero_nonintegral R D E _ (fun ha => hx ((gamma_integral_iff R γ _).mp ha)), norm_zero, zero_mul]
 
  theorem orbitMass_forward_summable_bound (N : TraceHaarTransport R)
     {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
@@ -338,7 +341,7 @@ lemma orbit_forward_zero_off_support {Q : AdmissibleFlatSources R} {T : Realizat
   letI := N.groupHaar_isHaar
   by_cases hx : ((ThetaReflectionData.rowUnit R.A m ^ 2 * Quotient.out ξ : Fˣ) : F) ∈ R.A.R
   · have hs := positive_orbit_sheet_mass R N P (Quotient.out ξ) l
-    have ht : Summable (fun γ => orbitMass R N T P v m true ξ γ d l) :=
+    have ht :=
       Summable.of_nonneg_of_le (fun γ => orbitMass_nonneg R N T P v m true ξ γ d l)
         (fun γ => orbitMass_forward_bound R N T P D E hf v ξ γ m d l) hs.1
     refine ⟨ht, ?_⟩
@@ -346,8 +349,7 @@ lemma orbit_forward_zero_off_support {Q : AdmissibleFlatSources R} {T : Realizat
     rw [hs.2] at hle
     refine hle.trans ((hb (q R.A (Quotient.out ξ) * l)).trans_eq ?_)
     have hn : (q R.A (Quotient.out ξ)).val = ThetaReflectionData.frequencyNorm R.A ξ := by
-      have he := ThetaReflectionData.frequencyNorm_mk R.A (Quotient.out ξ)
-      simpa only [Quotient.out_eq, q] using he.symm
+      simpa only [Quotient.out_eq, q] using (ThetaReflectionData.frequencyNorm_mk R.A (Quotient.out ξ)).symm
     simp only [frequencyMajorant, ite_eq_left hx, zpow_neg, zpow_ofNat]
     change K / ((q R.A (Quotient.out ξ)).val * l.val) ^ 2 = _
     rw [hn]; simp only [mul_pow, div_eq_mul_inv, mul_inv_rev]; ring
@@ -366,21 +368,21 @@ namespace DedekindZetaZeroFree.OrbitFrequencies
 open MomentSources NumberField MeasureTheory ThetaProfileHaarSheets ThetaSheetExactUnfolding
 open scoped NumberField Classical Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 lemma orbitMass_forward_joint_bound (N : TraceHaarTransport R)
     {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
     (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D)
     (hf : ForwardIdentity R Q T P) :
-    ∃ K : ℝ, 0 ≤ K ∧ ∀ v m d (l : PositiveAxis),
+    ∃ K : ℝ, ∀ v m d (l : PositiveAxis),
       Summable (fun i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A =>
         orbitMass R N T P v m true i.1 i.2 d l) ∧
       (∑' i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A,
         orbitMass R N T P v m true i.1 i.2 d l) ≤
         K * (l.val ^ 2)⁻¹ * (∑' ξ, frequencyMajorant R m ξ) := by
   obtain ⟨K, hK, hb⟩ := orbitMass_forward_summable_bound R N T P D E hf
-  refine ⟨K, hK, ?_⟩
+  refine ⟨K, ?_⟩
   intro v m d l
   have hξ : Summable (fun ξ => ∑' γ, orbitMass R N T P v m true ξ γ d l) :=
     Summable.of_nonneg_of_le (fun ξ => tsum_nonneg (fun γ => orbitMass_nonneg R N T P v m true ξ γ d l))
@@ -392,8 +394,11 @@ lemma orbitMass_forward_joint_bound (N : TraceHaarTransport R)
   exact Summable.tsum_le_tsum (fun ξ => (hb v m ξ d l).2) hξ
     ((frequencyMajorant_summable R m).mul_left (K * (l.val ^ 2)⁻¹))
 
-lemma orbitMass_forward_smoothed (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
+section
+
+variable (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
+
+lemma orbitMass_forward_smoothed
     (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D)
     (hf : ForwardIdentity R Q T P)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
@@ -404,7 +409,7 @@ lemma orbitMass_forward_smoothed (N : TraceHaarTransport R)
     Summable (fun i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A =>
       ∫ t : PositiveAxis, ‖P.kernel t.val‖ * ‖digitWeight R m d‖ *
         orbitMass R N T P v m true i.1 i.2 d ⟨t.val / Z, div_pos t.property hZ⟩ ∂positiveHaar) := by
-  obtain ⟨K, hK, hb⟩ := orbitMass_forward_joint_bound R N T P D E hf
+  obtain ⟨K, hb⟩ := orbitMass_forward_joint_bound R N T P D E hf
   let C : ℝ := ‖digitWeight R m d‖ * K * Z ^ 2 * (∑' ξ, frequencyMajorant R m ξ)
   apply dominated_nonnegative_series
     (g := fun t : PositiveAxis => C * (‖P.kernel t.val‖ * (t.val ^ 2)⁻¹))
@@ -428,8 +433,7 @@ lemma orbitMass_forward_smoothed (N : TraceHaarTransport R)
     ring
   · exact (kernel_inverse_square_moment_integrable R N P).const_mul C
 
-lemma orbit_product_integrable_of_mass (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
+lemma orbit_product_integrable_of_mass
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) b Z (hZ : 0 < Z)
     (i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A)
     (d : ThetaDigitAverage.Dig (RowPrime R m))
@@ -460,11 +464,14 @@ lemma orbit_product_integrable_of_mass (N : TraceHaarTransport R)
     simp_rw [he, orbitMass_weighted_eq R N T P]
     exact hi
 
- theorem forward_orbit_product_integrable (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
-    (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D)
-    (hf : ForwardIdentity R Q T P)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) Z (hZ : 0 < Z)
+end
+
+ variable (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
+    (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D) (hf : ForwardIdentity R Q T P)
+    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
+
+include E hf in
+theorem forward_orbit_product_integrable Z (hZ : 0 < Z)
     (i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A)
     (d : ThetaDigitAverage.Dig (RowPrime R m)) :
     letI := N.groupHaar_isHaar;
@@ -476,11 +483,8 @@ lemma orbit_product_integrable_of_mass (N : TraceHaarTransport R)
   orbit_product_integrable_of_mass R N T P v m true Z hZ i d
     ((orbitMass_forward_smoothed R N T P D E hf v m d Z hZ).1 i)
 
- theorem forward_orbit_pregrouping (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
-    (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D)
-    (hf : ForwardIdentity R Q T P)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) Z (hZ : 0 < Z) :
+ include E hf in
+theorem forward_orbit_pregrouping Z (hZ : 0 < Z) :
     letI := N.groupHaar_isHaar;
     Summable (fun i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A =>
       ∑ d : ThetaDigitAverage.Dig (RowPrime R m),
@@ -498,8 +502,8 @@ noncomputable section
 namespace DedekindZetaZeroFree.OrbitFrequencies
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem reverseAbsolute (N : TraceHaarTransport R)
     {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)

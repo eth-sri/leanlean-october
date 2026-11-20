@@ -69,7 +69,7 @@ instance infiniteMeasurableSpace (F : Type*) [Field F] [NumberField F] :
 instance instSigmaFiniteTraceInversionRealMeasure : SigmaFinite realMeasure := inferInstanceAs (SigmaFinite (volume : Measure ℝ))
 
 instance instSigmaFiniteTraceInversionComplexMeasure : SigmaFinite complexMeasure := by
-  change SigmaFinite ((2 : ℝ≥0) • (volume : Measure ℂ))
+  change SigmaFinite ((2 : ℝ≥0) • volume)
   infer_instance
 
 public theorem pi_complexMeasure_eq_smul_volume (ι : Type*) [Fintype ι] :

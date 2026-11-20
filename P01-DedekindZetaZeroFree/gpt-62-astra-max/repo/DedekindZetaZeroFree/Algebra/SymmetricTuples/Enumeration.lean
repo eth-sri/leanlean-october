@@ -26,11 +26,6 @@ namespace Sym
 
 variable {X Y : Type*} {d e : ℕ}
 
-@[simp]
-theorem map_append (f : X → Y) (s : Sym X d) (t : Sym X e) :
-    Sym.map f (s.append t) = (Sym.map f s).append (Sym.map f t) :=
-  Subtype.ext <| by simp [Multiset.map_add]
-
 end Sym
 
 namespace DedekindZetaZeroFree.TauCeti
@@ -53,30 +48,12 @@ theorem count_coe_ofFn [DecidableEq α] (f : Fin n → α) (a : α) :
   rw [hmap, Multiset.count_map, ← Finset.filter_val, Finset.card_val]
   simp only [eq_comm]
 
-@[simp]
-theorem mem_ofFn {a : α} {f : Fin n → α} : a ∈ ofFn f ↔ ∃ i, f i = a := by
-  rw [← _root_.Sym.mem_coe, coe_ofFn]
-  simp
-
 theorem ofFn_surjective : Function.Surjective (ofFn : (Fin n → α) → Sym α n) := by
   rintro ⟨s, hs⟩
-  obtain ⟨l, rfl⟩ : ∃ l : List α, (l : Multiset α) = s := ⟨s.toList, s.coe_toList⟩
-  have hlen : l.length = n := by simpa using hs
+  obtain ⟨l, rfl⟩ : ∃ l : List α, l = s := ⟨s.toList, s.coe_toList⟩
+  have hlen : l.length = n := by exact hs
   subst hlen
   exact ⟨l.get, Subtype.ext (by simp)⟩
-
-@[simp]
-theorem ofFn_cons (a : α) (f : Fin n → α) : ofFn (Fin.cons a f) = a ::ₛ ofFn f :=
-  Subtype.ext <| by simp [Sym.coe_cons, List.ofFn_succ]
-
-@[simp]
-theorem map_ofFn (f : α → β) (g : Fin n → α) : Sym.map f (ofFn g) = ofFn (f ∘ g) :=
-  Sym.coe_injective <| by simp [Sym.coe_map]
-
-@[simp]
-theorem ofFn_fin_append (f : Fin m → α) (g : Fin n → α) :
-    ofFn (Fin.append f g) = (ofFn f).append (ofFn g) :=
-  Sym.coe_injective <| by simp [Sym.coe_append, List.ofFn_fin_append]
 
 theorem ofFn_comp_perm (σ : Equiv.Perm (Fin n)) (f : Fin n → α) : ofFn (f ∘ σ) = ofFn f :=
   Sym.coe_injective <| by simpa using Multiset.coe_eq_coe.2 (σ.ofFn_comp_perm f)
@@ -90,8 +67,7 @@ theorem ofFn_eq_ofFn_iff {f g : Fin n → α} :
       rw [Fintype.card_subtype, Fintype.card_subtype, ← count_coe_ofFn g c, ← count_coe_ofFn f c, h]
     exact ⟨Equiv.ofFiberEquiv fun c => Fintype.equivOfCardEq (hcard c),
       funext fun i => Equiv.ofFiberEquiv_map _ i⟩
-  · rintro ⟨σ, rfl⟩
-    exact (ofFn_comp_perm σ f).symm
+  · grind [ofFn_comp_perm]
 
 end Sym
 

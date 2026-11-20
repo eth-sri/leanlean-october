@@ -23,13 +23,13 @@ private theorem rowDyad_finite (A : SArithmeticData F) (h : A.Exterior) (D : ℝ
     exact congrArg (fun x : NonzeroIdeal F => x.val) he
   · exact normBoundedIdeals_finite F (2 * D)
 
+alias DyadicSquareSum.rowDyad_finite := rowDyad_finite
+
 private theorem rowDyad_count (A : SArithmeticData F) (h : A.Exterior) (D C : ℝ)
     (hc : ∀ X : ℝ, 1 ≤ X → ((normBoundedIdeals F X).ncard : ℝ) ≤ C * X)
     (hD : 1 ≤ D) : ((RMTailCutoff.rowDyad A h D).ncard : ℝ) ≤ 2 * C * D := by
-  let f : ExteriorSquarefreeIdeal A.cS → NonzeroIdeal F :=
-    fun d => ⟨d.val.val, d.val.property.1⟩
   have hn : (RMTailCutoff.rowDyad A h D).ncard ≤ (normBoundedIdeals F (2 * D)).ncard := by
-    apply Set.ncard_le_ncard_of_injOn f (ht := normBoundedIdeals_finite F (2 * D))
+    apply Set.ncard_le_ncard_of_injOn (fun d => ⟨d.val.val, d.val.property.1⟩) (ht := normBoundedIdeals_finite F (2 * D))
     · intro d hd
       exact hd.2.1.le
     · intro d _ e _ he
@@ -57,12 +57,10 @@ theorem bounded_dyad_square_sum (A : SArithmeticData F) :
     simpa using (hc Set.univ).1
   refine ⟨Cp * (2 * Cd), by positivity, ?_⟩
   intro P D hP hD b B hB hb
-  have hV : 0 ≤ B ^ 2 := sq_nonneg B
+  have hV := sq_nonneg B
   have hterm : ∀ h : {h : A.Exterior // h ∈ exteriorPowerfulDyad A.cS P},
       ∀ d : {d : ExteriorSquarefreeIdeal A.cS // d ∈ RMTailCutoff.rowDyad A h.val D},
-      ‖b h d‖ ^ 2 ≤ B ^ 2 := by
-    intro h d
-    exact pow_le_pow_left₀ (norm_nonneg _) (hb h d) 2
+      ‖b h d‖ ^ 2 ≤ B ^ 2 := fun h d => pow_le_pow_left₀ (norm_nonneg _) (hb h d) 2
   letI := (exteriorPowerfulDyad_finite A.cS P).fintype
   have hrow : ∀ h : {h : A.Exterior // h ∈ exteriorPowerfulDyad A.cS P},
       (∑' d : {d : ExteriorSquarefreeIdeal A.cS // d ∈ RMTailCutoff.rowDyad A h.val D},

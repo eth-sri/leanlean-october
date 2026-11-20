@@ -15,6 +15,7 @@ theorem exists_positive_mem_congruent_one
     (B : Ideal (𝓞 F)) (hB : B ≠ ⊥) (hBm : B ⊔ m = ⊤) :
     ∃ b : 𝓞 F, b ≠ 0 ∧ b ∈ B ∧ b - 1 ∈ m ∧
       ∀ φ : F →+* ℝ, 0 < φ (b : F) := by
+  let algebraMap₀ := algebraMap (𝓞 F) F
   classical
 
   have h1 : (1 : 𝓞 F) ∈ B ⊔ m := by rw [hBm]; exact Submodule.mem_top
@@ -40,11 +41,11 @@ theorem exists_positive_mem_congruent_one
   have hd_mem_m : (d : 𝓞 F) ∈ m := Ideal.mul_le_right hd_mem_mul
 
   have hcoe_add : ∀ x y : 𝓞 F, ((x + y : 𝓞 F) : F) = (x : F) + (y : F) :=
-    fun x y => map_add (algebraMap (𝓞 F) F) x y
+    fun x y => map_add (algebraMap₀) x y
   have hcoe_mul : ∀ x y : 𝓞 F, ((x * y : 𝓞 F) : F) = (x : F) * (y : F) :=
-    fun x y => map_mul (algebraMap (𝓞 F) F) x y
+    fun x y => map_mul (algebraMap₀) x y
   have hcoe_nat : ∀ n : ℕ, ((n : 𝓞 F) : F) = (n : F) :=
-    fun n => map_natCast (algebraMap (𝓞 F) F) n
+    fun n => map_natCast (algebraMap₀) n
 
   set C : ℝ := ∑ φ : F →+* ℝ, |φ (b0 : F)| with hC
   obtain ⟨N, hN⟩ := exists_nat_gt (C / (d : ℝ))
@@ -83,7 +84,7 @@ theorem exists_positive_mem_congruent_one
       have h2 : ((b1 + (d : 𝓞 F) : 𝓞 F) : F) = (b1 : F) + (d : F) := by
         rw [hcoe_add, hcoe_nat]
       have hz : φ (b1 : F) = 0 := by
-        rw [hb1z, show ((0 : 𝓞 F) : F) = (0 : F) from map_zero (algebraMap (𝓞 F) F),
+        rw [hb1z, show ((0 : 𝓞 F) : F) = (0 : F) from map_zero (algebraMap₀),
           map_zero]
       rw [h2, map_add, hz, zero_add]
       simpa only [hcoe_nat d, map_natCast] using hdR

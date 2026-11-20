@@ -1,5 +1,4 @@
 module
-
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.EmbedsInRayClassField
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.FractionalIdealNormExponentMap
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.FractionalIdealNorm
@@ -21,35 +20,3 @@ public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassS
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassSubgroupQuotientEquiv
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayLocalHigherUnitGroup
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayPrincipalIdealSubgroup
-
-@[expose] public section
-
-/-
-Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
--/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false

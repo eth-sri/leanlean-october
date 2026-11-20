@@ -12,8 +12,8 @@ noncomputable section
 namespace DedekindZetaZeroFree.CanonicalLocalGaussTable
 open LocalFiniteSums
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 instance primeResidueMaximal (p : ExteriorPrime A) :
     (A.extendIdeal (primeIdeal p)).IsMaximal := by
@@ -30,23 +30,26 @@ local instance primeResidueFinite (p : ExteriorPrime A) :
 local instance primeResidueFintype (p : ExteriorPrime A) :
     Fintype (A.R ⧸ A.extendIdeal (primeIdeal p)) := Fintype.ofFinite _
 
-def depthOneEquiv (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) :
+section
+
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+
+def depthOneEquiv :
     Residue C p 1 ≃+* (A.R ⧸ A.extendIdeal (primeIdeal p)) :=
   Ideal.quotEquivOfEq (by
     change Ideal.span {(generator C p ^ 1 : A.R)} = A.extendIdeal (primeIdeal p)
     simpa using (generator_generates C p).2)
 
-def primeTrace (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) :
+def primeTrace :
     AddChar (A.R ⧸ A.extendIdeal (primeIdeal p)) ℂ :=
   Circle.coeHom.compAddChar
     ((quotientTrace C p 1).compAddMonoidHom (depthOneEquiv C p).symm.toAddMonoidHom)
 
-theorem primeTrace_ne_one (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) :
+theorem primeTrace_ne_one :
     primeTrace C p ≠ 1 := by
   have hx : (1 : Residue C p 1) ≠ 0 := by
     intro h
-    have hh := congrArg (depthOneEquiv C p) h
-    simpa using hh
+    simpa using (congrArg (depthOneEquiv C p) h)
   obtain ⟨y, hy⟩ := LocalFiniteSumCompatibility.quotientTrace_primitive C p 1 1 hx
   intro h
   apply hy
@@ -56,8 +59,7 @@ theorem primeTrace_ne_one (C : A.GeneralArithmeticContext σ η hS) (p : Exterio
   change (quotientTrace C p 1 ((depthOneEquiv C p).symm (depthOneEquiv C p y)) : ℂ) = 1 at he
   simpa using he
 
-theorem T_eq_finiteField (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (a : ℤ) (y : Residue C p 1) :
+theorem T_eq_finiteField (a : ℤ) (y : Residue C p 1) :
     T C p a y = FiniteGaussTable.T (chi (σ := σ) p) (primeTrace C p)
       (SArithmeticData.sexticExponent a) (depthOneEquiv C p y) := by
   have hr (x : Residue C p 1) : reduction C p 1 (by decide) x = depthOneEquiv C p x := by
@@ -73,10 +75,10 @@ theorem T_eq_finiteField (C : A.GeneralArithmeticContext σ η hS)
       (depthOneEquiv C p y * depthOneEquiv C p x)) : ℂ)
   rw [← map_mul, RingEquiv.symm_apply_apply]
 
+end
+
 private theorem exponent_dvd (a : ℤ) :
     (6 : ℕ) ∣ SArithmeticData.sexticExponent a ↔ (6 : ℤ) ∣ a := by
-  have h₀ := Int.emod_nonneg a (by decide : (6 : ℤ) ≠ 0)
-  have h₁ := Int.emod_lt_of_pos a (by decide : (0 : ℤ) < 6)
   have he : SArithmeticData.sexticExponent a < 6 := by
     unfold SArithmeticData.sexticExponent
     omega
@@ -111,12 +113,14 @@ theorem chi_unit_sixth (p : ExteriorPrime A)
     pow_one, MulChar.ofUnitHom_coe]
   change σ ((A.sexticResidueFamily (primeIdeal p) hx.unit : Fˣ) : F) ^ 6 = 1
   rw [← map_pow]
-  have h := congrArg (fun x : Fˣ => (x : F))
-    (A.sexticResidueFamily_normalized.1 (primeIdeal p) hx.unit)
-  simpa using congrArg σ h
+  simpa using congrArg σ (congrArg (fun x : Fˣ => (x : F))
+    (A.sexticResidueFamily_normalized.1 (primeIdeal p) hx.unit))
 
-theorem T_ne_zero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
-    (a : ℤ) (y : Residue C p 1) (hy : y ≠ 0) :
+section
+
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (a : ℤ)
+
+theorem T_ne_zero (y : Residue C p 1) (hy : y ≠ 0) :
     T C p a y = (chi (σ := σ) p (depthOneEquiv C p y))⁻¹ ^ a * tau C p a := by
   have hy' : depthOneEquiv C p y ≠ 0 := by
     intro h
@@ -126,7 +130,7 @@ theorem T_ne_zero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A
   let v := (chi (σ := σ) p).toUnitHom u
   have hv : v ^ (6 : ℕ) = 1 := by
     apply Units.ext
-    change (chi (σ := σ) p (depthOneEquiv C p y)) ^ 6 = 1
+    change (chi p (depthOneEquiv C p y)) ^ 6 = 1
     exact
       chi_unit_sixth (σ := σ) p (depthOneEquiv C p y) (isUnit_iff_ne_zero.mpr hy')
   have hp : (chi (σ := σ) p (depthOneEquiv C p y))⁻¹ ^ SArithmeticData.sexticExponent a =
@@ -145,19 +149,17 @@ theorem T_ne_zero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A
   unfold tau FiniteGaussTable.tau
   rw [T_eq_finiteField, map_one]
 
-theorem norm_tau_of_not_six_dvd (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (a : ℤ) (ha : ¬ (6 : ℤ) ∣ a) :
+theorem norm_tau_of_not_six_dvd (ha : ¬ (6 : ℤ) ∣ a) :
     ‖tau C p a‖ = Real.sqrt (Q p) := by
   unfold tau
   rw [T_eq_finiteField, map_one]
-  change ‖FiniteGaussTable.tau (chi (σ := σ) p) (primeTrace C p)
+  change ‖FiniteGaussTable.tau (chi p) (primeTrace C p)
     (SArithmeticData.sexticExponent a)‖ = Real.sqrt (Q p)
   rw [FiniteGaussTable.norm_tau_of_not_six_dvd _ _
     (LocalFiniteSumCompatibility.chi_exact_order p) (primeTrace_ne_one C p) _
     (fun h => ha ((exponent_dvd a).mp h)), prime_card]
 
-theorem T_generator_power (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (a : ℤ) (n : ℕ) :
+theorem T_generator_power (n : ℕ) :
     T C p a (residueMap C p 1 (generator C p ^ n)) =
       if n = 0 then tau C p a
       else if (6 : ℤ) ∣ a then (Q p : ℂ) - 1 else 0 := by
@@ -166,10 +168,11 @@ theorem T_generator_power (C : A.GeneralArithmeticContext σ η hS)
     simp [tau]
   · rw [if_neg hn]
     have hg : residueMap C p 1 (generator C p) = 0 := by
-      change Ideal.Quotient.mk (Ideal.span {generator C p ^ 1}) (generator C p) = 0
       apply Ideal.Quotient.eq_zero_iff_mem.mpr
       simpa using Ideal.subset_span (Set.mem_singleton (generator C p))
     rw [map_pow, hg, zero_pow hn, T_zero]
+
+end
 
 theorem chi_neg_one (p : ExteriorPrime A) : chi (σ := σ) p (-1) = 1 := by
   have h := congrArg σ (A.sexticResidue_neg_one (primeIdeal p))
@@ -182,8 +185,7 @@ theorem chi_neg_one (p : ExteriorPrime A) : chi (σ := σ) p (-1) = 1 := by
   rw [MulChar.ofUnitHom_coe]
   rw [show (-1 : A.R ⧸ A.extendIdeal (primeIdeal p)) =
     ((-1 : (A.R ⧸ A.extendIdeal (primeIdeal p))ˣ) : _) by simp, MulChar.ofUnitHom_coe] at h
-  change σ ((A.sexticResidueFamily (primeIdeal p) (-1) : Fˣ) : F) = 1
-  simpa only [map_one] using h
+  simpa using h
 
 end DedekindZetaZeroFree.CanonicalLocalGaussTable
 

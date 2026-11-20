@@ -12,13 +12,13 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages MomentSources HCGeneration KPGlobalResidualConstruction
 open KPContActualSphericalRightFieldIdentification
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 local notation "H" => actualImageData R P C μ hμ
 local notation "W" => actualLocal R H
 local notation "E" => bad R.A P C
@@ -46,7 +46,7 @@ private theorem tensorSlot_smul_id {ι : Type*} [Fintype ι] [DecidableEq ι]
   intro x
   simp only [LinearMap.compMultilinearMap_apply, LinearMap.smul_apply,
     LinearMap.id_apply, tensorSlot_tprod]
-  simpa only [Function.update_eq_self] using
+  simpa using
     (PiTensorProduct.tprod ℂ).map_update_smul x i c (x i)
 
 theorem actualCoreResidue_generator_zero (N : TraceHaarTransport R)
@@ -178,9 +178,8 @@ private theorem kernel_slot_stable (N : TraceHaarTransport R)
   have hz : RestrictedTensorSimple.stageInclusion W e E t z = x := by
     rw [← hy]
     exact Module.DirectLimit.of_f
-  have ht : j ∈ t.val := Finset.mem_insert_self j s.val
   rw [← hz, slotAction_stage]
-  exact stage_kernel_algebra R P C μ hμ N t ⟨j,ht⟩ a z (hz.symm ▸ hx)
+  exact stage_kernel_algebra R P C μ hμ N t ⟨j,(Finset.mem_insert_self j s.val)⟩ a z (hz.symm ▸ hx)
 
 theorem actualCoreResidue_kernel_stable (N : TraceHaarTransport R)
     (a : RestrictedTensorSimple.actionAlgebra W (fun v => ↥(A v)) e E)
@@ -189,9 +188,7 @@ theorem actualCoreResidue_kernel_stable (N : TraceHaarTransport R)
     actualCoreResidue R P C μ hμ N (a • x) = 0 := by
   let K := LinearMap.ker (actualCoreResidue R P C μ hμ N)
   change x ∈ K at hx
-  change a.val x ∈ K
   obtain ⟨a,ha⟩ := a
-  change a x ∈ K
   induction ha using Algebra.adjoin_induction generalizing x with
   | mem a ha =>
     obtain ⟨j,b,rfl⟩ := ha

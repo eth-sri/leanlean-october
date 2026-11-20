@@ -12,7 +12,7 @@ open DedekindZetaZeroFree.ThetaProfileHaarSheets DedekindZetaZeroFree.ThetaSheet
 namespace DedekindZetaZeroFree.ThetaExpansion.QuotientDescent
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem selected_upper_quotient_integrable
     (R : PrincipalMellin.ActualRecipe S η) {N : TraceHaarTransport R}

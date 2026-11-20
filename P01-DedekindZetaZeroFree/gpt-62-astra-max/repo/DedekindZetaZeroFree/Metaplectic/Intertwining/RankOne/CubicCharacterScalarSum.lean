@@ -22,7 +22,11 @@ noncomputable def betaFactor
 
 noncomputable local instance : Fintype CubicCharacters.Mu3 := Fintype.ofFinite _
 
-private lemma moments {F : Type*} [Field F] (c : ℂ →+* F) (n : ℕ) :
+section
+
+variable {F : Type*} [Field F]
+
+private lemma moments (c : ℂ →+* F) (n : ℕ) :
     (∑ ζ : CubicCharacters.Mu3, c (((ζ : ℂˣ) : ℂ)) ^ n) =
       if 3 ∣ n then (3 : F) else 0 := by
   have h := KPCubicExpansion.sum_mu3_zpow (n : ℤ)
@@ -31,7 +35,7 @@ private lemma moments {F : Type*} [Field F] (c : ℂ →+* F) (n : ℕ) :
   simp only [zpow_natCast, hn] at h
   simpa only [Units.val_pow_eq_pow_val, map_sum, map_pow, map_ofNat, map_zero, apply_ite] using congrArg c h
 
-private lemma root_sum {F : Type*} [Field F] (c : ℂ →+* F) (u : F)
+private lemma root_sum (c : ℂ →+* F) (u : F)
     (hu : 1-u^3 ≠ 0) :
     (∑ ζ : CubicCharacters.Mu3, c (((ζ : ℂˣ) : ℂ)) * u / (1-c (((ζ : ℂˣ) : ℂ))*u)^2) =
       9*u^3/(1-u^3)^2 := by
@@ -59,21 +63,27 @@ private lemma root_sum {F : Type*} [Field F] (c : ℂ →+* F) (u : F)
   norm_num
   ring
 
-private lemma unr {F : Type*} [Field F] (a b : F) (hb : b ≠ 0) (hb1 : 1-b ≠ 0) :
+private lemma unr (a b : F) (hb : b ≠ 0) (hb1 : 1-b ≠ 0) :
     unramifiedFactor a b = a - (1-a)^2*b/(1-b)^2 := by
   have hi : 1-b⁻¹ ≠ 0 := by
     intro h
     have : b⁻¹ = 1 := by linear_combination -h
-    have : b = 1 := inv_eq_one.mp this
+    have := inv_eq_one.mp this
     exact hb1 (by rw [this]; ring)
   unfold unramifiedFactor
   have hm : b - 1 ≠ 0 := sub_ne_zero.mpr (fun h => hb1 (by rw [h]; ring))
   field_simp [hb, hb1, hi, hm]
   <;> ring
 
-private lemma char_sum (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (ω : K) (hω : IsPrimitiveRoot ω 3)
+end
+
+section
+
+variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K] (ω : K) (hω : IsPrimitiveRoot ω 3)
+
+include hω in
+private lemma char_sum
     {F : Type*} [Field F] [CharZero F] (c : ℂ →+* F) (u : F)
     (hu : u ≠ 0) (hu3 : 1-u^3 ≠ 0) :
     (1/9 : F) * (∑ᶠ ξ : CubicUnitCharacters.Character K,
@@ -86,12 +96,10 @@ private lemma char_sum (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   have hsum : (∑ ξ : CubicUnitCharacters.Character K,
       (CubicUnitCharacters.residueCard K : F)⁻¹ ^ CubicUnitCharacters.conductor K ξ) =
       1 + 2*(CubicUnitCharacters.residueCard K : F)⁻¹ := by
-    have hh := congrArg (c.comp Complex.ofRealHom) hs
     simpa only [map_sum, map_pow, map_inv₀, map_natCast, map_add, map_mul,
-      map_one, map_ofNat] using hh
-  have hcond : CubicUnitCharacters.conductor K 1 = 0 := (hc 1).mpr rfl
+      map_one, map_ofNat] using (congrArg (c.comp Complex.ofRealHom) hs)
   have hz0 (ζ : CubicCharacters.Mu3) : c (((ζ : ℂˣ) : ℂ)) ≠ 0 := by
-    simpa only [map_zero] using c.injective.ne (Units.ne_zero (ζ : ℂˣ))
+    simpa using c.injective.ne (Units.ne_zero (ζ : ℂˣ))
   have hz1 (ζ : CubicCharacters.Mu3) : 1-c (((ζ : ℂˣ) : ℂ))*u ≠ 0 := by
     intro he
     have he1 : c (((ζ : ℂˣ) : ℂ))*u = 1 := by linear_combination -he
@@ -109,7 +117,7 @@ private lemma char_sum (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
             (c (((ζ : ℂˣ) : ℂ))*u / (1-c (((ζ : ℂˣ) : ℂ))*u)^2) else 0 := by
     by_cases he : ξ = 1
     · subst ξ
-      simp only [betaFactor, if_pos rfl, hcond, pow_zero, ↓reduceIte]
+      simp only [betaFactor, if_pos rfl, ((hc 1).mpr rfl), pow_zero, ↓reduceIte]
       rw [unr _ _ (mul_ne_zero (hz0 ζ) hu) (hz1 ζ)]
       ring
     · simp [betaFactor, he]
@@ -125,17 +133,17 @@ private lemma char_sum (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     unr _ _ (pow_ne_zero 3 hu) hu3]
   ring
 
+include hω in
 theorem cubic_character_sum
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (ω : K) (hω : IsPrimitiveRoot ω 3)
     (z t : ℂ) (hz : z ≠ 0) (hzt : z ^ 3 = t) (ht : t ≠ 1) :
     (1 / 9 : ℂ) *
       (∑ᶠ ξ : CubicUnitCharacters.Character K,
         ∑ᶠ ζ : CubicCharacters.Mu3, betaFactor K ξ (((ζ : ℂˣ) : ℂ) * z)) =
       unramifiedFactor (CubicUnitCharacters.residueCard K : ℂ)⁻¹ t := by
-  have hu3 : 1-z^3 ≠ 0 := sub_ne_zero.mpr (fun h => ht (hzt.symm.trans h.symm))
   simpa only [hzt, RingHom.id_apply] using
-    char_sum K ω hω (RingHom.id ℂ) z hz hu3
+    char_sum K ω hω (RingHom.id ℂ) z hz (sub_ne_zero.mpr (fun h => ht (hzt.symm.trans h.symm)))
+
+end
 
 noncomputable def finiteScalar
     (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
@@ -144,23 +152,21 @@ noncomputable def finiteScalar
     (∑ᶠ ξ : CubicUnitCharacters.Character K,
       ∑ᶠ ζ : CubicCharacters.Mu3, betaFactor K ξ (((ζ : ℂˣ) : ℂ) * z))
 
-theorem finiteScalar_eq
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (ω : K) (hω : IsPrimitiveRoot ω 3)
-    (m j : ℝ) (z t : ℂ) (hz : z ≠ 0) (hzt : z ^ 3 = t) (ht : t ≠ 1) :
+variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K] (ω : K) (hω : IsPrimitiveRoot ω 3) (m j : ℝ)
+
+include hω in
+theorem finiteScalar_eq (z t : ℂ) (hz : z ≠ 0) (hzt : z ^ 3 = t) (ht : t ≠ 1) :
     finiteScalar K m j z = ((m ^ 2 * j : ℝ) : ℂ) *
       ((1 - (CubicUnitCharacters.residueCard K : ℂ)⁻¹ * t) *
         (1 - (CubicUnitCharacters.residueCard K : ℂ)⁻¹ * t⁻¹) /
           ((1 - t) * (1 - t⁻¹))) := by
-  have h := cubic_character_sum K ω hω z t hz hzt ht
   unfold finiteScalar
-  rw [show ((m^2*j : ℝ) : ℂ)/9 = ((m^2*j : ℝ) : ℂ)*(1/9) by ring, mul_assoc, h]
+  rw [show ((m^2*j : ℝ) : ℂ)/9 = ((m^2*j : ℝ) : ℂ)*(1/9) by ring, mul_assoc, (cubic_character_sum K ω hω z t hz hzt ht)]
   rfl
 
-theorem finiteScalar_cube_root_independent
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (ω : K) (hω : IsPrimitiveRoot ω 3)
-    (m j : ℝ) (z z' t : ℂ) (hz : z ≠ 0) (hz' : z' ≠ 0)
+include hω in
+theorem finiteScalar_cube_root_independent (z z' t : ℂ) (hz : z ≠ 0) (hz' : z' ≠ 0)
     (hzt : z ^ 3 = t) (hz't : z' ^ 3 = t) (ht : t ≠ 1) :
     finiteScalar K m j z = finiteScalar K m j z' := by
   rw [finiteScalar_eq K ω hω m j z t hz hzt ht,

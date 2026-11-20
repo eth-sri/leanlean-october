@@ -28,20 +28,10 @@ def diagonalSection (u : InfinitePlace F → ℝ) : KPSmoothActualFlowData.GInfi
   fun w => Matrix.ProjGenLinGroup.mk
     (KubotaRankTwo.d ℂ (Units.mk0 ((Real.exp (u w) : ℝ) : ℂ) (by simp)) 1)
 
-private theorem hyperbolicGLSection_factor (z : KPArch.H3) :
-    KPArithmeticAction.hyperbolicGLSection z =
-      KubotaRankTwo.n ℂ z.1 *
-        KubotaRankTwo.d ℂ (Units.mk0 ((Real.exp z.2 : ℝ) : ℂ) (by simp)) 1 := by
-  apply Units.ext
-  ext i j
-  fin_cases i <;> fin_cases j <;>
-    simp [KPArithmeticAction.hyperbolicGLSection, KPArch.height, KubotaRankTwo.coe_n,
-      KubotaRankTwo.coe_d]
-
  def archUnit (z : InfinitePlace F → ℂ) (w : InfinitePlace F) : w.Completionˣ :=
   let e := InfinitePlace.Completion.ringEquivComplexOfIsComplex (KPHilbert.infinite_isComplex F ζ hζ w)
   if h : z w = 0 then 1 else Units.mk0 (e.symm (z w))
-    (by exact fun h0 => h (by simpa using congrArg e h0))
+    (fun h0 => h (by simpa using congrArg e h0))
 
 private theorem map_diagonal {K L : Type} [Field K] [Field L] (e : K →+* L)
     (y : Kˣ) : Matrix.GeneralLinearGroup.map e (KubotaRankTwo.d K y 1) =
@@ -82,8 +72,7 @@ theorem arch_diagonal_insertion (z : InfinitePlace F → ℂ) (hz : ∀ w, z w �
         intro v hv _
         simp [p, f, localToRestricted, RestrictedProduct.mulSingleMonoidHom_apply,
           RestrictedProduct.coe_mulSingle_apply, hv])]
-      have hc : l.count w = 1 := List.count_eq_one_of_mem (Finset.nodup_toList _) (by simp [l])
-      rw [hc, pow_one]
+      rw [(List.count_eq_one_of_mem (Finset.nodup_toList _) (by simp [l])), pow_one]
       simp [p, f, localToRestricted, RestrictedProduct.mulSingleMonoidHom_apply,
         RestrictedProduct.coe_mulSingle_apply, KPGlobalTorusFunctionData.archDiagonalTuple, archUnit]
     | inr q =>
@@ -127,8 +116,12 @@ theorem iwasawaSection_factor (x : KPArch.Space (KPCuspLogShape.dimension F)) :
           (by simp)) 1)
   rw [← map_mul]
   exact congrArg Matrix.ProjGenLinGroup.mk
-    (hyperbolicGLSection_factor
-      (x (KPContSectorArchSphericalFibers.infinitePlaceEquiv F ζ hζ w)))
+    (by
+      apply Units.ext
+      ext i j
+      fin_cases i <;> fin_cases j <;>
+        simp [KPArithmeticAction.hyperbolicGLSection, KPArch.height, KubotaRankTwo.coe_n,
+          KubotaRankTwo.coe_d])
 
 theorem iwasawa_insertion (x : KPArch.Space (KPCuspLogShape.dimension F)) :
     KPSmoothActualFlowData.archimedeanInsertion F ζ hζ

@@ -19,16 +19,22 @@ def coordinates (d : ℕ) : Euclidean d ≃ₗ[ℝ] (Fin d → ℂ) :=
 def shapeEnergy {d : ℕ} (b : KPCuspLogShape.hyperplane d) (ξ : Euclidean d) : ℝ :=
   ∑ i, Real.exp (2 * (b : Fin d → ℝ) i) * ‖coordinates d ξ i‖ ^ 2
 
-def horizontalEnergy {d : ℕ} (t : ℝ) (b : KPCuspLogShape.hyperplane d)
+section
+
+variable {d : ℕ} (t : ℝ) (b : KPCuspLogShape.hyperplane d)
+
+def horizontalEnergy
     (ξ : Euclidean d) : ℝ :=
   4 * Real.pi ^ 2 * Real.exp (2 * t) * shapeEnergy b ξ
 
-def horizontalLaplacian {d : ℕ} (t : ℝ) (b : KPCuspLogShape.hyperplane d)
+def horizontalLaplacian
     (f : (Fin d → ℂ) → ℂ) (y : Fin d → ℂ) : ℂ :=
   -∑ i, (Real.exp (2 * (t + (b : Fin d → ℝ) i)) : ℂ) *
     (fderiv ℝ (fun x => fderiv ℝ f x (Pi.single i 1)) y (Pi.single i 1) +
       fderiv ℝ (fun x => fderiv ℝ f x (Pi.single i Complex.I)) y
         (Pi.single i Complex.I))
+
+end
 
 theorem uniform_shortest_frequency (d : ℕ) (L : Submodule ℤ (Euclidean d))
     [DiscreteTopology L] [IsZLattice ℝ L]
@@ -51,20 +57,18 @@ theorem uniform_shortest_frequency (d : ℕ) (L : Submodule ℤ (Euclidean d))
       simpa using hlt
     have h0 : ξ = 0 := by
       have := hε hmem
-      simpa using this
+      exact this
     exact hξ (by simpa [h0])
 
   have hbound : ∀ i : Fin d, ∃ m : ℝ, ∀ b ∈ B, m ≤ (b : Fin d → ℝ) i := by
     intro i
-    have hc : Continuous (fun b : KPCuspLogShape.hyperplane d => (b : Fin d → ℝ) i) :=
-      (continuous_apply i).comp continuous_subtype_val
-    obtain ⟨mm, hmm⟩ := (hB.image hc).bddBelow
+    obtain ⟨mm, hmm⟩ := (hB.image ((continuous_apply i).comp continuous_subtype_val)).bddBelow
     exact ⟨mm, fun b hb => hmm ⟨b, hb, rfl⟩⟩
   choose m hm using hbound
   set M : ℝ := ∑ i, |m i| with hM
   have hbge : ∀ b ∈ B, ∀ i, -M ≤ (b : Fin d → ℝ) i := by
     intro b hb i
-    have h1 : m i ≤ (b : Fin d → ℝ) i := hm i b hb
+    have h1 := hm i b hb
     have h2 : -|m i| ≤ m i := neg_abs_le _
     have h3 : |m i| ≤ M := by
       rw [hM]
@@ -95,9 +99,9 @@ theorem uniform_shortest_frequency (d : ℕ) (L : Submodule ℤ (Euclidean d))
 
 section Cusp
 variable {F : Type} [Field F] [NumberField F]
-variable {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable (S : Subgroup (KPCuspArithmetic.PGL2 F))
-variable (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
+    {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
+    (S : Subgroup (KPCuspArithmetic.PGL2 F))
+    (D : KPCuspCharts.ParabolicData F S) (ρ : S →* rootsOfUnity 3 F)
 
 def kernelEuclideanLattice : Submodule ℤ (Euclidean (KPCuspLogShape.dimension F)) :=
   ((KPCuspCharts.translationLattice F
@@ -106,33 +110,37 @@ def kernelEuclideanLattice : Submodule ℤ (Euclidean (KPCuspLogShape.dimension 
 
 abbrev Frequency := PoissonArch.dualLattice (kernelEuclideanLattice S D ρ)
 
-def fourierCharacter (ξ : Euclidean (KPCuspLogShape.dimension F))
+section
+
+variable (ξ : Euclidean (KPCuspLogShape.dimension F))
+
+def fourierCharacter
     (y : KPCuspCharts.Horizontal F) : ℂ :=
   Complex.exp ((2 * Real.pi * inner ℝ ξ
     ((coordinates (KPCuspLogShape.dimension F)).symm y) : ℝ) * Complex.I)
 
- def exponentLinear (ξ : Euclidean (KPCuspLogShape.dimension F)) :
+ def exponentLinear :
     KPCuspCharts.Horizontal F →L[ℝ] ℂ :=
   (Complex.ofRealCLM.comp ((innerSL ℝ ξ).comp ((coordinates _).symm.toLinearMap.toContinuousLinearMap))).smulRight ((2 * Real.pi : ℂ) * Complex.I)
-private theorem exponent_apply (ξ : Euclidean (KPCuspLogShape.dimension F)) (y : KPCuspCharts.Horizontal F) :
+private theorem exponent_apply (y : KPCuspCharts.Horizontal F) :
     exponentLinear ξ y = (2 * Real.pi * inner ℝ ξ ((coordinates _).symm y) : ℝ) * Complex.I := by
   change ((inner ℝ ξ ((coordinates _).symm y) : ℝ) : ℂ) * ((2 * Real.pi : ℂ) * Complex.I) = _
   push_cast
   ring
-private theorem fourier_deriv (ξ : Euclidean (KPCuspLogShape.dimension F)) (y : KPCuspCharts.Horizontal F) :
+private theorem fourier_deriv (y : KPCuspCharts.Horizontal F) :
     fderiv ℝ (fourierCharacter ξ) y = fourierCharacter ξ y • exponentLinear ξ := by
-  have he : (fun x => Complex.exp (exponentLinear ξ x)) = fourierCharacter (F := F) ξ := by
+  have he : (fun x => Complex.exp (exponentLinear ξ x)) = fourierCharacter ξ := by
     funext x; rw [exponent_apply]; rfl
   have hh := ((exponentLinear ξ).hasFDerivAt (x := y)).cexp.fderiv
   rw [he] at hh
   rw [show Complex.exp (exponentLinear ξ y) = fourierCharacter ξ y from congrFun he y] at hh
   exact hh
-private theorem fourier_second (ξ : Euclidean (KPCuspLogShape.dimension F)) (v y : KPCuspCharts.Horizontal F) :
+private theorem fourier_second (v y : KPCuspCharts.Horizontal F) :
     fderiv ℝ (fun x => fderiv ℝ (fourierCharacter ξ) x v) y v =
       fourierCharacter ξ y * (exponentLinear ξ v)^2 := by
   simp_rw [fourier_deriv, ContinuousLinearMap.smul_apply, smul_eq_mul]
   have hh := (((exponentLinear ξ).hasFDerivAt (x := y)).cexp).mul_const (exponentLinear ξ v)
-  have he : (fun x => Complex.exp (exponentLinear ξ x)) = fourierCharacter (F := F) ξ := by
+  have he : (fun x => Complex.exp (exponentLinear ξ x)) = fourierCharacter ξ := by
     funext x; rw [exponent_apply]; rfl
   change HasFDerivAt (fun x => (fun x => Complex.exp (exponentLinear ξ x)) x * exponentLinear ξ v) _ y at hh
   rw [he] at hh
@@ -140,7 +148,7 @@ private theorem fourier_second (ξ : Euclidean (KPCuspLogShape.dimension F)) (v 
   rw [hh.fderiv]
   simp only [ContinuousLinearMap.smul_apply, smul_eq_mul]
   ring
-private theorem exponent_single (ξ : Euclidean (KPCuspLogShape.dimension F)) (i : Fin (KPCuspLogShape.dimension F)) (z : ℂ) :
+private theorem exponent_single (i : Fin (KPCuspLogShape.dimension F)) (z : ℂ) :
     exponentLinear ξ (Pi.single i z) =
       (2 * Real.pi : ℂ) * Complex.I * ((star (coordinates _ ξ i) * z).re : ℝ) := by
   rw [exponent_apply]
@@ -158,6 +166,8 @@ private theorem exponent_single (ξ : Euclidean (KPCuspLogShape.dimension F)) (i
   · intro b hb hbi
     simp [hbi]
   · simp
+
+end
 private theorem eigen_test (t : ℝ) (b : KPCuspCharts.Shape F)
     (ξ : Euclidean (KPCuspLogShape.dimension F)) (y : KPCuspCharts.Horizontal F) :
     horizontalLaplacian t b (fourierCharacter ξ) y =
@@ -179,9 +189,6 @@ private theorem eigen_test (t : ℝ) (b : KPCuspCharts.Shape F)
   simp only [Complex.normSq_apply]
   simp only [show ∀ z : ℂ, (star z).re = z.re from fun z => rfl,
     show ∀ z : ℂ, (star z).im = -z.im from fun z => rfl, neg_neg]
-  change -((Real.exp (2*t) : ℂ) * (Real.exp (2 * (b : Fin _ → ℝ) i) : ℂ) *
-    (fourierCharacter ξ y * ((2 * (Real.pi : ℂ) * Complex.I * (coordinates _ ξ i).re)^2) +
-      fourierCharacter ξ y * ((2 * (Real.pi : ℂ) * Complex.I * (coordinates _ ξ i).im)^2))) = _
   simp only [mul_pow, Complex.I_sq]
   push_cast
   ring
@@ -235,11 +242,8 @@ def torusMode (ξ : Frequency S D ρ) :
   Quotient.lift (fourierCharacter (F := F) (ξ : Euclidean (KPCuspLogShape.dimension F)))
     (by
       intro a b hab
-      have hab' : -a + b ∈ KPCuspCharts.translationLattice F
-          (KPCuspGenuineMonodromy.kernelLattice S D ρ) :=
-        QuotientAddGroup.leftRel_apply.mp hab
       have hb : b = a + (-a + b) := by abel
-      rw [hb, fourierCharacter_add, fourierCharacter_translation S D ρ ξ (-a + b) hab', mul_one])
+      rw [hb, fourierCharacter_add, fourierCharacter_translation S D ρ ξ (-a + b) (QuotientAddGroup.leftRel_apply.mp hab), mul_one])
 
 def constantSections (V : Submodule ℂ ℂ) :
     Submodule ℂ (KPCuspGenuineMonodromy.KernelTorus S D ρ → ℂ) where
@@ -250,9 +254,7 @@ def constantSections (V : Submodule ℂ ℂ) :
     intro f g hf hg
     exact ⟨Submodule.add_mem _ hf.1 hg.1,
       by intro z; rw [Pi.add_apply, Pi.add_apply, hf.2 z, hg.2 z]⟩
-  smul_mem' := by
-    intro a f hf
-    exact ⟨Submodule.smul_mem _ a hf.1,
+  smul_mem' := fun a f hf => ⟨Submodule.smul_mem _ a hf.1,
       by intro z; rw [Pi.smul_apply, Pi.smul_apply, hf.2 z]⟩
 
 private theorem character_add (ξ : Euclidean (KPCuspLogShape.dimension F)) (x y : KPCuspCharts.Horizontal F) :
@@ -300,37 +302,39 @@ private theorem mode_equiv_test (V : Submodule ℂ ℂ) (ξ : Frequency S D ρ) 
       · intro x y
         simp only [mode_lift, character_add, hallowed x]
         ring
-private theorem zero_mode_test (V : Submodule ℂ ℂ) (f : constantSections (ζ := ζ) (hζ := hζ) S D ρ V) z :
+section
+
+variable (V : Submodule ℂ ℂ)
+
+private theorem zero_mode_test (f : constantSections (ζ := ζ) (hζ := hζ) S D ρ V) z :
     f.val z = f.val 0 * torusMode S D ρ 0 z := by
   induction z using Quotient.inductionOn with
   | h y => simp [mode_lift, fourierCharacter, f.property.2]
-private theorem zero_holonomy_test (V : Submodule ℂ ℂ) (h : ∃ x : D.L,
+private theorem zero_holonomy_test (h : ∃ x : D.L,
     KPCuspGenuineMonodromy.chi F ζ hζ (ρ (D.inclusion (Multiplicative.ofAdd x))) ≠ 1) :
     constantSections (ζ := ζ) (hζ := hζ) S D ρ V = ⊥ := by
   obtain ⟨x, hx⟩ := h
   apply le_antisymm _ bot_le
   intro f hf
-  change f = 0
   funext z
   have hh := hf.1.2 x 0
   simp only [hf.2] at hh
-  have hchi : (KPCuspGenuineMonodromy.chi F ζ hζ (ρ (D.inclusion (Multiplicative.ofAdd x))) : ℂ) ≠ 1 := by
-    intro h; apply hx; exact Units.ext h
   have hz : f 0 = 0 := by
     have he : ((KPCuspGenuineMonodromy.chi F ζ hζ (ρ (D.inclusion (Multiplicative.ofAdd x))) : ℂ) - 1) * f 0 = 0 := by linear_combination -hh
-    exact (mul_eq_zero.mp he).resolve_left (sub_ne_zero.mpr hchi)
+    exact (mul_eq_zero.mp he).resolve_left (sub_ne_zero.mpr (by
+      intro h; apply hx; exact Units.ext h))
   exact (hf.2 z).trans hz
 
- def evalConstant (V : Submodule ℂ ℂ) : constantSections (ζ := ζ) (hζ := hζ) S D ρ V →ₗ[ℂ] ℂ where
+ def evalConstant : constantSections (ζ := ζ) (hζ := hζ) S D ρ V →ₗ[ℂ] ℂ where
   toFun f := f.val 0
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
-private theorem eval_injective (V : Submodule ℂ ℂ) : Function.Injective (evalConstant (ζ := ζ) (hζ := hζ) S D ρ V) := by
+private theorem eval_injective : Function.Injective (evalConstant (ζ := ζ) (hζ := hζ) S D ρ V) := by
   intro f g h
   apply Subtype.ext
   funext z
   exact (f.property.2 z).trans (h.trans (g.property.2 z).symm)
- def scalarAction (V : Submodule ℂ ℂ) : S →* (constantSections (ζ := ζ) (hζ := hζ) S D ρ V ≃ₗ[ℂ]
+ def scalarAction : S →* (constantSections (ζ := ζ) (hζ := hζ) S D ρ V ≃ₗ[ℂ]
     constantSections (ζ := ζ) (hζ := hζ) S D ρ V) where
   toFun s := LinearEquiv.smulOfUnit (KPCuspGenuineMonodromy.chi F ζ hζ (ρ s))
   map_one' := by
@@ -343,7 +347,7 @@ private theorem eval_injective (V : Submodule ℂ ℂ) : Function.Injective (eva
       (KPCuspGenuineMonodromy.chi F ζ hζ (ρ s) : ℂ) *
         ((KPCuspGenuineMonodromy.chi F ζ hζ (ρ t) : ℂ) * f.val z)
     simp [mul_assoc]
-private theorem scalar_ker (V : Submodule ℂ ℂ) : D.ratio.ker ≤ (scalarAction (ζ := ζ) (hζ := hζ) S D ρ V).ker := by
+private theorem scalar_ker : D.ratio.ker ≤ (scalarAction (ζ := ζ) (hζ := hζ) S D ρ V).ker := by
   intro s hs
   rw [← D.exact] at hs
   obtain ⟨x, rfl⟩ := hs
@@ -357,6 +361,8 @@ private theorem scalar_ker (V : Submodule ℂ ℂ) : D.ratio.ker ≤ (scalarActi
   change f.val _ = (KPCuspGenuineMonodromy.chi F ζ hζ (ρ (D.inclusion x)) : ℂ) * f.val _ at heq
   simpa only [hc, zero_add] using heq.symm
 
+end
+
 structure ConstantLocalSystem (V : Submodule ℂ ℂ)
     (O : KPCuspGenuineMonodromy.CuspOutput (ζ := ζ) (hζ := hζ) S D ρ V) where
   finiteDimensional : FiniteDimensional ℂ (constantSections (ζ := ζ) (hζ := hζ) S D ρ V)
@@ -367,13 +373,6 @@ structure ConstantLocalSystem (V : Submodule ℂ ℂ)
     (f : constantSections (ζ := ζ) (hζ := hζ) S D ρ V) z,
     (transport (D.ratio s) f).val z =
       (KPCuspGenuineMonodromy.chi F ζ hζ (ρ s) : ℂ) * f.val (O.monodromy s⁻¹ z)
-  unitary : ∀ u (f : constantSections (ζ := ζ) (hζ := hζ) S D ρ V),
-    ‖(transport u f).val 0‖ = ‖f.val 0‖
-  locally_constant : ∀ u (f : constantSections (ζ := ζ) (hζ := hζ) S D ρ V),
-    IsLocallyConstant (fun _ : KPCuspCharts.Shape F => transport u f)
-  translation_trivial : ∀ (x : D.L)
-    (f : constantSections (ζ := ζ) (hζ := hζ) S D ρ V),
-    transport (D.ratio (D.inclusion (Multiplicative.ofAdd x))) f = f
 
 private theorem constantSystem_test (V : Submodule ℂ ℂ)
     (O : KPCuspGenuineMonodromy.CuspOutput (ζ := ζ) (hζ := hζ) S D ρ V) :
@@ -389,33 +388,12 @@ private theorem constantSystem_test (V : Submodule ℂ ℂ)
             rank_le_one := ?_
             transport := τ
             transition_formula := ?_
-            unitary := ?_
-            locally_constant := fun u f => IsLocallyConstant.const _
-            translation_trivial := ?_ }⟩
+             }⟩
   · simpa using (LinearMap.finrank_le_finrank_of_injective (eval_injective (ζ := ζ) (hζ := hζ) S D ρ V))
   · intro s f z
     rw [ht]
     change (KPCuspGenuineMonodromy.chi F ζ hζ (ρ s) : ℂ) * f.val z = _
     rw [f.property.2 z, f.property.2 (O.monodromy s⁻¹ z)]
-  · intro u f
-    obtain ⟨s, rfl⟩ := D.surjective u
-    rw [ht]
-    change ‖(KPCuspGenuineMonodromy.chi F ζ hζ (ρ s) : ℂ) * f.val 0‖ = _
-    rw [norm_mul]
-    have hp : (KPCuspGenuineMonodromy.chi F ζ hζ (ρ s) : ℂ) ^ 3 = 1 := by
-      rw [← Units.val_pow_eq_pow_val, ← map_pow]
-      have hpow : ρ s ^ 3 = 1 := by
-        apply Subtype.ext
-        exact (ρ s).property
-      rw [hpow, map_one, Units.val_one]
-    rw [Complex.norm_eq_one_of_pow_eq_one hp (by norm_num), one_mul]
-  · intro x f
-    have hx : D.ratio (D.inclusion (Multiplicative.ofAdd x)) = 1 := by
-      change D.inclusion (Multiplicative.ofAdd x) ∈ D.ratio.ker
-      rw [← D.exact]
-      exact ⟨_, rfl⟩
-    rw [hx, map_one]
-    rfl
 
 private theorem triple_kernel (x : D.L) : (3 : ℤ) • (x : F) ∈ KPCuspGenuineMonodromy.kernelLattice S D ρ := by
   refine ⟨D.L.zsmul_mem x.property 3, ?_⟩
@@ -424,11 +402,14 @@ private theorem triple_kernel (x : D.L) : (3 : ℤ) • (x : F) ∈ KPCuspGenuin
   rw [he]
   change ρ (D.inclusion ((Multiplicative.ofAdd x) ^ (3 : ℤ))) = 1
   rw [map_zpow, map_zpow]
-  change ρ (D.inclusion (Multiplicative.ofAdd x)) ^ (3 : ℕ) = 1
   apply Subtype.ext
   exact (ρ (D.inclusion (Multiplicative.ofAdd x))).property
-private theorem kernel_horiz_full (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (G : KPCuspCharts.ChartOutput F hF S D) :
+section
+
+variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (G : KPCuspCharts.ChartOutput F hF S D)
+
+include G in
+private theorem kernel_horiz_full :
     ∃ hd : DiscreteTopology (KPCuspCharts.translationLattice F (KPCuspGenuineMonodromy.kernelLattice S D ρ)).toIntSubmodule,
     letI := hd; IsZLattice ℝ (KPCuspCharts.translationLattice F (KPCuspGenuineMonodromy.kernelLattice S D ρ)).toIntSubmodule := by
   obtain ⟨hd, hf⟩ := G.lattice
@@ -446,17 +427,14 @@ private theorem kernel_horiz_full (hF : NumberField.InfinitePlace.nrRealPlaces F
   apply Submodule.span_le.mpr
   intro y hy
   obtain ⟨x, hx, rfl⟩ := hy
-  have hm : (3 : ℤ) • KPCuspCharts.embedding F x ∈
-      KPCuspCharts.translationLattice F (KPCuspGenuineMonodromy.kernelLattice S D ρ) := by
+  have hh := Submodule.smul_mem (Submodule.span ℝ (KPCuspCharts.translationLattice F (KPCuspGenuineMonodromy.kernelLattice S D ρ) : Set (KPCuspCharts.Horizontal F))) (1/3 : ℝ) (Submodule.subset_span (by
     refine ⟨(3 : ℤ) • x, triple_kernel S D ρ ⟨x,hx⟩, ?_⟩
-    exact map_zsmul _ _ _
-  have hs := Submodule.subset_span (R := ℝ) hm
-  have hh := Submodule.smul_mem (Submodule.span ℝ (KPCuspCharts.translationLattice F (KPCuspGenuineMonodromy.kernelLattice S D ρ) : Set (KPCuspCharts.Horizontal F))) (1/3 : ℝ) hs
+    exact map_zsmul _ _ _))
   rw [← Int.cast_smul_eq_zsmul ℝ, smul_smul] at hh
   norm_num at hh
   exact hh
-private theorem kernel_euclidean_full (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (G : KPCuspCharts.ChartOutput F hF S D) :
+include G in
+private theorem kernel_euclidean_full :
     ∃ hd : DiscreteTopology (kernelEuclideanLattice S D ρ), letI := hd; IsZLattice ℝ (kernelEuclideanLattice S D ρ) := by
   obtain ⟨hd, hf⟩ := kernel_horiz_full S D ρ hF G
   letI := hd
@@ -467,7 +445,6 @@ private theorem kernel_euclidean_full (hF : NumberField.InfinitePlace.nrRealPlac
     ext y
     constructor
     · rintro ⟨z, hz, hzy⟩
-      change e y ∈ (KPCuspCharts.translationLattice F (KPCuspGenuineMonodromy.kernelLattice S D ρ)).toIntSubmodule
       subst y
       exact hz
     · intro hy
@@ -475,12 +452,15 @@ private theorem kernel_euclidean_full (hF : NumberField.InfinitePlace.nrRealPlac
   rw [he]
   exact ⟨inferInstance, inferInstance⟩
 
+end
+
  def linearScale (u : Fˣ) : Euclidean (KPCuspLogShape.dimension F) →ₗ[ℝ] Euclidean (KPCuspLogShape.dimension F) where
   toFun x := (coordinates _).symm (fun i => star (KPCuspCharts.embedding F (u : F) i) * coordinates _ x i)
   map_add' x y := by
     ext i
-    change star (KPCuspCharts.embedding F (u : F) i) * (coordinates _ (x+y) i) =
-      star (KPCuspCharts.embedding F (u : F) i) * coordinates _ x i + star (KPCuspCharts.embedding F (u : F) i) * coordinates _ y i
+    let star₀ := star (KPCuspCharts.embedding F (u : F) i)
+    change star₀ * (coordinates _ (x+y) i) =
+      star₀ * coordinates _ x i + star₀ * coordinates _ y i
     simp [mul_add]
   map_smul' a x := by
     ext i
@@ -493,11 +473,12 @@ private theorem scale_pair (u : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F
   simp only [PiLp.inner_apply (𝕜 := ℝ)]
   apply Finset.sum_congr rfl
   intro i hi
-  change inner ℝ (star (KPCuspCharts.embedding F (u : F) i) * coordinates _ ξ i) (y i) =
-    inner ℝ (coordinates _ ξ i) (KPCuspCharts.embedding F (u : F) i * y i)
+  let embedding₀ := KPCuspCharts.embedding F (u : F) i
+  change inner ℝ (star (embedding₀) * coordinates _ ξ i) (y i) =
+    inner ℝ (coordinates _ ξ i) (embedding₀ * y i)
   simp_rw [real_inner_eq_re_inner ℂ, RCLike.inner_apply]
-  change (y i * star (star (KPCuspCharts.embedding F (u : F) i) * coordinates _ ξ i)).re =
-    ((KPCuspCharts.embedding F (u : F) i * y i) * star (coordinates _ ξ i)).re
+  change (y i * star (star (embedding₀) * coordinates _ ξ i)).re =
+    ((embedding₀ * y i) * star (coordinates _ ξ i)).re
   simp [mul_comm, mul_left_comm, mul_assoc]
  theorem scale_mul (u v : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F)) :
     linearScale (u*v) ξ = linearScale u (linearScale v ξ) := by
@@ -509,7 +490,11 @@ private theorem scale_pair (u : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F
   ext i
   change star (KPCuspCharts.embedding F (1 : F) i) * coordinates _ ξ i = coordinates _ ξ i
   simp [KPCuspCharts.embedding]
- theorem scale_dual (V : Submodule ℂ ℂ)
+ section
+
+variable (V : Submodule ℂ ℂ)
+
+theorem scale_dual
     (O : KPCuspGenuineMonodromy.CuspOutput (ζ := ζ) (hζ := hζ) S D ρ V)
     (s : S) (ξ : Frequency S D ρ) : linearScale (D.ratio s : Fˣ) ξ ∈ Frequency S D ρ := by
   apply (LinearMap.BilinForm.mem_dualSubmodule _).mpr
@@ -527,7 +512,7 @@ private theorem scale_pair (u : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F
     congr 1
     funext i
     simp [KPCuspCharts.embedding]
- def dualScale (V : Submodule ℂ ℂ)
+ def dualScale
     (O : KPCuspGenuineMonodromy.CuspOutput (ζ := ζ) (hζ := hζ) S D ρ V) (s : S) :
     AddAut (Frequency S D ρ) where
   toFun ξ := ⟨linearScale (D.ratio s : Fˣ) ξ, scale_dual S D ρ V O s ξ⟩
@@ -545,7 +530,7 @@ private theorem scale_pair (u : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F
     simp only [map_inv, Subgroup.coe_inv, mul_inv_cancel]
     exact scale_one _
   map_add' ξ η := by apply Subtype.ext; exact (linearScale _).map_add _ _
- def frequencyTransport (V : Submodule ℂ ℂ)
+ def frequencyTransport
     (O : KPCuspGenuineMonodromy.CuspOutput (ζ := ζ) (hζ := hζ) S D ρ V) :
     S →* Multiplicative (AddAut (Frequency S D ρ)) where
   toFun s := Multiplicative.ofAdd (dualScale S D ρ V O s)
@@ -562,6 +547,8 @@ private theorem scale_pair (u : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F
     apply Subtype.ext
     change linearScale (D.ratio (s*t) : Fˣ) ξ = linearScale (D.ratio s : Fˣ) (linearScale (D.ratio t : Fˣ) ξ)
     rw [map_mul, Subgroup.coe_mul, scale_mul]
+
+end
 private theorem translation_conjugate (s : S) (x : D.L) :
     ∃ y : D.L, (y : F) = ((D.ratio s : Fˣ) : F) * x ∧
       D.inclusion (Multiplicative.ofAdd y) = s * D.inclusion (Multiplicative.ofAdd x) * s⁻¹ := by
@@ -622,7 +609,6 @@ private theorem preserves_allowed_test (V : Submodule ℂ ℂ)
   · intro h
     have hh := preserves_allowed_forward S D ρ V O s⁻¹ _ h
     have he : frequencyTransport S D ρ V O s⁻¹ (frequencyTransport S D ρ V O s ξ) = ξ := by
-      change (dualScale S D ρ V O s⁻¹) ((dualScale S D ρ V O s) ξ) = ξ
       apply Subtype.ext
       change linearScale (D.ratio s⁻¹ : Fˣ) (linearScale (D.ratio s : Fˣ) ξ) = ξ
       rw [← scale_mul]
@@ -636,34 +622,6 @@ structure CuspOutput (V : Submodule ℂ ℂ)
     (O : KPCuspGenuineMonodromy.CuspOutput (ζ := ζ) (hζ := hζ) S D ρ V) where
   kernel_discrete : DiscreteTopology (kernelEuclideanLattice S D ρ)
   kernel_full : letI := kernel_discrete; IsZLattice ℝ (kernelEuclideanLattice S D ρ)
-  dual_discrete : DiscreteTopology (Frequency S D ρ)
-  dual_full : letI := dual_discrete; IsZLattice ℝ (Frequency S D ρ)
-  mode_lift_formula : ∀ (ξ : Frequency S D ρ) (y : KPCuspCharts.Horizontal F),
-    torusMode S D ρ ξ (QuotientAddGroup.mk y) =
-      fourierCharacter (ξ : Euclidean (KPCuspLogShape.dimension F)) y
-  frequency_transport : S →* Multiplicative (AddAut (Frequency S D ρ))
-  frequency_transport_formula : ∀ (s : S) (ξ : Frequency S D ρ) i,
-    coordinates (KPCuspLogShape.dimension F) (frequency_transport s ξ) i =
-      star (KPCuspCharts.embedding F ((D.ratio s : Fˣ) : F) i) *
-        coordinates (KPCuspLogShape.dimension F) ξ i
-  preserves_allowed : ∀ (s : S) (ξ : Frequency S D ρ),
-    allowedFrequency (ζ := ζ) (hζ := hζ) S D ρ (frequency_transport s ξ) ↔
-      allowedFrequency (ζ := ζ) (hζ := hζ) S D ρ ξ
-  individual_mode_eigenvalue : ∀ (t : ℝ) (b : KPCuspCharts.Shape F)
-    (ξ : Frequency S D ρ) (y : KPCuspCharts.Horizontal F),
-    horizontalLaplacian t b
-      (fourierCharacter (F := F) (ξ : Euclidean (KPCuspLogShape.dimension F))) y =
-        (horizontalEnergy t b ξ : ℂ) *
-          fourierCharacter (ξ : Euclidean (KPCuspLogShape.dimension F)) y
-  mode_equivariance : ∀ (ξ : Frequency S D ρ) (a : ℂ),
-    (fun z => a * torusMode S D ρ ξ z) ∈
-      KPCuspGenuineMonodromy.torusSections (ζ := ζ) (hζ := hζ) S D ρ V ↔
-      a ∈ V ∧ (a = 0 ∨ allowedFrequency (ζ := ζ) (hζ := hζ) S D ρ ξ)
-  zero_mode : ∀ (f : constantSections (ζ := ζ) (hζ := hζ) S D ρ V) z,
-    f.val z = f.val 0 * torusMode S D ρ 0 z
-  zero_if_holonomy : (∃ x : D.L,
-    KPCuspGenuineMonodromy.chi F ζ hζ (ρ (D.inclusion (Multiplicative.ofAdd x))) ≠ 1) →
-    constantSections (ζ := ζ) (hζ := hζ) S D ρ V = ⊥
   constantSystem : ConstantLocalSystem (ζ := ζ) (hζ := hζ) S D ρ V O
   gap : ∀ (B : Set (KPCuspCharts.Shape F)), IsCompact B →
     ∃ c : ℝ, 0 < c ∧ ∀ b ∈ B, ∀ ξ : Frequency S D ρ,
@@ -682,16 +640,6 @@ theorem cusp_frequency_gap
   obtain ⟨C⟩ := constantSystem_test S D ρ V O
   refine ⟨{ kernel_discrete := hdisc
             kernel_full := hfull
-            dual_discrete := inferInstance
-            dual_full := inferInstance
-            mode_lift_formula := mode_lift S D ρ
-            frequency_transport := frequencyTransport S D ρ V O
-            frequency_transport_formula := fun s ξ i => rfl
-            preserves_allowed := preserves_allowed_test S D ρ V O
-            individual_mode_eigenvalue := fun t b ξ y => eigen_test t b ξ y
-            mode_equivariance := mode_equiv_test S D ρ V
-            zero_mode := zero_mode_test S D ρ V
-            zero_if_holonomy := zero_holonomy_test S D ρ V
             constantSystem := C
             gap := ?_ }⟩
   intro B hB

@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem first_root_flat_preimages_exists
     (R : PrincipalMellin.ActualRecipe S η) (hR : RootAligned R)
@@ -49,9 +49,7 @@ theorem first_root_realization_exists
     ∃ (Q : AdmissibleFlatSources R) (T : Realization R Q),
       Q.dq = J.base.sources.dq ∧
       (∀ v, T.theta v = firstRootDerivatives R J.cutoffs (J.base.realization.theta v)) ∧
-      (∀ v, (Q.flat v).val 0 ≠ 0) ∧ (∀ v, T.theta v ≠ 0) ∧
-      (∀ v, fourier R Q.dq (T.theta v) 1 ≠ 0) ∧
-      Nontrivial (KPLiteralRaw.Flat F R.A.zeta12 R.A.primitive_zeta12 Q.K) := by
+      (∀ v, (Q.flat v).val 0 ≠ 0) ∧ (∀ v, fourier R Q.dq (T.theta v) 1 ≠ 0) := by
   obtain ⟨Q, hdq, hnt, hC⟩ := first_root_flat_preimages_exists  R hR N A B J
   let P : JointRootAlignedSources R N := ⟨hR, N, rfl, Q⟩
   obtain ⟨C₀, ⟨H⟩⟩ := selected_scalar_source_exists  R P
@@ -63,9 +61,7 @@ theorem first_root_realization_exists
     exact (funext (fun g => RootDerivatives.FlatScalarResidue.value_unique
       (RootDerivatives.realizationScalarResidue T v) C g)).trans hpin
   have hn := first_root_derivatives_nondegenerate R N A B J
-  exact ⟨Q, T, hdq, hp, fun v => (hC v).choose_spec.2.1,
-    fun v => by rw [hp]; exact hn.2.1 v,
-    fun v => by rw [hdq, hp]; exact hn.1 v, hnt⟩
+  exact ⟨Q, T, hdq, hp, fun v => (hC v).choose_spec.2.1, fun v => by rw [hdq, hp]; exact hn.1 v⟩
 
 end DedekindZetaZeroFree.ThetaExpansion
 

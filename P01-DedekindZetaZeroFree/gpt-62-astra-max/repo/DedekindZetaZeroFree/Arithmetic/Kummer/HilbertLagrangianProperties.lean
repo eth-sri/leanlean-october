@@ -31,34 +31,31 @@ private lemma selfOrth_of_split {G C : Type*} [CommGroup G] [CommGroup C]
     have hb (y : G) (hy : y ∈ L) : P y (b : G) = 1 := by
       have := hx y hy
       simpa only [map_mul, hL y hy e e.property, one_mul] using this
-    have hb1 : (b : G) = 1 := hn b (by
+    have hb1 := hn b (by
       intro y
       obtain ⟨u, v, rfl⟩ := hsplit y
-      change P ((u : G) * v) (b : G) = 1
-      rw [map_mul, MonoidHom.mul_apply, hb u u.property, hM v v.property b b.property,
-        one_mul])
+      simp [hb u u.property, hM v v.property b b.property, one_mul])
     simpa [hb1] using e.property
 
-private lemma primary_mem (A : SArithmeticData F) (ℓ : ℕ) (L : Subgroup A.V)
+variable (A : SArithmeticData F)
+
+private lemma primary_mem (ℓ : ℕ) (L : Subgroup A.V)
     (x : A.PrimarySpace ℓ) : x ∈ A.primarySubspace ℓ L ↔ x.val.toMul ∈ L := Iff.rfl
 
-private lemma primary_pow (A : SArithmeticData F) (ℓ : ℕ) (x : A.PrimarySpace ℓ) :
+private lemma primary_pow (ℓ : ℕ) (x : A.PrimarySpace ℓ) :
     x.val.toMul ^ ℓ = 1 := by
-  have hx : (ℓ : ℤ) • x.val = 0 := x.property
+  have hx := x.property
   change Additive.ofMul (x.val.toMul ^ (ℓ : ℤ)) = 0 at hx
   have h := congrArg Additive.toMul hx
   change x.val.toMul ^ (ℓ : ℤ) = 1 at h
-  simpa only [zpow_natCast] using h
+  simpa using h
 
-private lemma primary_mk (A : SArithmeticData F) (ℓ : ℕ) (x : A.V) (hx : x ^ ℓ = 1) :
+private lemma primary_mk (ℓ : ℕ) (x : A.V) (hx : x ^ ℓ = 1) :
     Additive.ofMul x ∈ A.PrimarySpace ℓ := by
-  change (ℓ : ℤ) • Additive.ofMul x = 0
-  change Additive.ofMul (x ^ (ℓ : ℤ)) = 0
   apply Additive.toMul.injective
-  change x ^ (ℓ : ℤ) = 1
-  simpa only [zpow_natCast] using hx
+  simpa using hx
 
-private lemma primary_selfOrth (A : SArithmeticData F) (P : A.V →* A.V →* Fˣ)
+private lemma primary_selfOrth (P : A.V →* A.V →* Fˣ)
     (L : Subgroup A.V) (hL : A.IsSelfOrthogonal (fun x y => P x y) L)
     (ℓ k t : ℕ) (hk : k = 1 + t * ℓ) (h6 : 6 ∣ k * ℓ) :
     ∀ x : A.PrimarySpace ℓ, x ∈ A.primarySubspace ℓ L ↔
@@ -75,17 +72,16 @@ private lemma primary_selfOrth (A : SArithmeticData F) (P : A.V →* A.V →* F�
       obtain ⟨d, hd⟩ := h6
       rw [hd, pow_mul, powerQuotient_pow_eq_one A.G 6 y, one_pow]
     let z : A.PrimarySpace ℓ := ⟨Additive.ofMul (y ^ k), primary_mk A ℓ _ hyk⟩
-    have hz : z ∈ A.primarySubspace ℓ L := (primary_mem A ℓ L z).mpr (L.pow_mem hy k)
     have hzP : P y x.val.toMul ^ k = 1 := by
-      have h := hx z hz
+      have h := hx z ((primary_mem A ℓ L z).mpr (L.pow_mem hy k))
       change P (y ^ k) x.val.toMul = 1 at h
-      simpa only [map_pow, MonoidHom.pow_apply] using h
+      simpa using h
     have hp : P y x.val.toMul ^ ℓ = 1 := by
       rw [← map_pow, primary_pow, map_one]
     rw [hk, pow_add, pow_one, Nat.mul_comm t ℓ, pow_mul, hp, one_pow, mul_one] at hzP
     exact hzP
 
-private lemma primary_compl (A : SArithmeticData F) (L M : Subgroup A.V)
+private lemma primary_compl (L M : Subgroup A.V)
     (hc : IsCompl L M) (ℓ : ℕ)
     (hsplit : ∀ x : A.V, ∃ e : L, ∃ b : M, (e : A.V) * b = x) :
     IsCompl (A.primarySubspace ℓ L) (A.primarySubspace ℓ M) := by
@@ -94,7 +90,6 @@ private lemma primary_compl (A : SArithmeticData F) (L M : Subgroup A.V)
     intro x hx hy
     apply Subtype.ext
     apply Additive.toMul.injective
-    change x.val.toMul = 1
     exact Subgroup.disjoint_def.mp hc.disjoint
       ((primary_mem A ℓ L x).mp hx) ((primary_mem A ℓ M x).mp hy)
   · apply codisjoint_iff.mpr
@@ -103,20 +98,18 @@ private lemma primary_compl (A : SArithmeticData F) (L M : Subgroup A.V)
     obtain ⟨e, b, he⟩ := hsplit x.val.toMul
     have hp : (e : A.V) ^ ℓ * (b : A.V) ^ ℓ = 1 := by
       calc
-        (e : A.V) ^ ℓ * (b : A.V) ^ ℓ = ((e : A.V) * (b : A.V)) ^ ℓ :=
+        _ = ((e : A.V) * (b : A.V)) ^ ℓ :=
           (mul_pow (e : A.V) (b : A.V) ℓ).symm
         _ = x.val.toMul ^ ℓ := congrArg (fun a : A.V => a ^ ℓ) he
         _ = 1 := primary_pow A ℓ x
     have hep : (e : A.V) ^ ℓ = 1 := by
       apply Subgroup.disjoint_def.mp hc.disjoint (L.pow_mem e.property ℓ)
-      have heq : (e : A.V) ^ ℓ = ((b : A.V) ^ ℓ)⁻¹ := (eq_inv_iff_mul_eq_one).mpr hp
-      rw [heq]
+      rw [((eq_inv_iff_mul_eq_one).mpr hp)]
       exact M.inv_mem (M.pow_mem b.property ℓ)
-    have hbp : (b : A.V) ^ ℓ = 1 := by
-      rw [hep] at hp
-      exact (one_mul ((b : A.V) ^ ℓ)).symm.trans hp
     let u : A.PrimarySpace ℓ := ⟨Additive.ofMul (e : A.V), primary_mk A ℓ _ hep⟩
-    let v : A.PrimarySpace ℓ := ⟨Additive.ofMul (b : A.V), primary_mk A ℓ _ hbp⟩
+    let v : A.PrimarySpace ℓ := ⟨Additive.ofMul (b : A.V), primary_mk A ℓ _ (by
+      rw [hep] at hp
+      exact (one_mul ((b : A.V) ^ ℓ)).symm.trans hp)⟩
     have huv : u + v = x := by
       apply Subtype.ext
       apply Additive.toMul.injective
@@ -125,7 +118,7 @@ private lemma primary_compl (A : SArithmeticData F) (L M : Subgroup A.V)
     exact Submodule.add_mem_sup ((primary_mem A ℓ L u).mpr e.property)
       ((primary_mem A ℓ M v).mpr b.property)
 
-theorem actual_hilbert_lagrangian_properties (A : SArithmeticData F)
+theorem actual_hilbert_lagrangian_properties
     (hCl : Subsingleton (ClassGroup A.R))
     (H : A.V → A.V → Fˣ) (B : Subgroup A.V)
     (hActual : ∀ x y : A.G,
@@ -153,9 +146,8 @@ theorem actual_hilbert_lagrangian_properties (A : SArithmeticData F)
     intro y
     apply Subtype.ext
     have hxy : P x y = 1 := by rw [hswap, hx, inv_one]
-    change (A.H_S6 x y : Fˣ) = (A.H_S6 1 y : Fˣ)
     change (A.H_S6 x y : Fˣ) = 1 at hxy
-    simpa only [map_one, MonoidHom.one_apply, OneMemClass.coe_one] using hxy
+    simpa using hxy
   have hE : ∀ x ∈ A.E, ∀ y ∈ A.E, P x y = 1 := by
     intro x hx y hy
     obtain ⟨a, ha, rfl⟩ := Subgroup.mem_map.mp hx
@@ -191,7 +183,7 @@ theorem actual_hilbert_lagrangian_properties (A : SArithmeticData F)
     · simpa only [hP] using primary_selfOrth A P B hBL ℓ k t hk h6
   refine ⟨?_, hprim 2 3 1 (by decide) (by decide), hprim 3 4 1 (by decide) (by decide)⟩
   intro x
-  simpa only [hP] using hEL x
+  simpa [hP] using hEL x
 
 end
 end DedekindZetaZeroFree.ArithmeticContext

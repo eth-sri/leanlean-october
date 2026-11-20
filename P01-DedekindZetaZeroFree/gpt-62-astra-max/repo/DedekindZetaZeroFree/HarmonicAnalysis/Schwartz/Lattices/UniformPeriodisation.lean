@@ -14,11 +14,10 @@ def periodisation
     (L : Submodule ℤ V) (f : 𝓢(V, ℂ)) (x : V) : ℂ :=
   ∑' v : L, f (x + (v : V))
 
-theorem summable_norm_schwartz_translate_restrict
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V]
-    (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-    (f : 𝓢(V, ℂ)) (K : TopologicalSpace.Compacts V) :
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
+    (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L] (f : 𝓢(V, ℂ))
+
+theorem summable_norm_schwartz_translate_restrict (K : TopologicalSpace.Compacts V) :
     Summable (fun v : L =>
       ‖(f.toContinuousMap.comp (ContinuousMap.addRight (v : V))).restrict K‖) := by
   classical
@@ -44,7 +43,7 @@ theorem summable_norm_schwartz_translate_restrict
   apply (ContinuousMap.norm_le _ (by positivity)).mpr
   intro x
   change ‖f ((x : V) + (v : V))‖ ≤ C * 2 ^ n * ‖(v : V)‖⁻¹ ^ n
-  have hvpos : 0 < ‖(v : V)‖ := lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1)
+  have hvpos := lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1)
     ((le_max_right _ _).trans hv)
   have htriangle : ‖(v : V)‖ ≤ 2 * ‖(x : V) + (v : V)‖ := by
     have ht := norm_add_le ((x : V) + (v : V)) (-(x : V))
@@ -65,11 +64,7 @@ theorem summable_norm_schwartz_translate_restrict
     (le_div_iff₀ (pow_pos hvpos n)).mpr (by simpa only [mul_comm] using hp)
   simpa only [div_eq_mul_inv, inv_pow] using hh
 
-theorem continuous_periodisation
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V]
-    (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-    (f : 𝓢(V, ℂ)) : Continuous (periodisation L f) := by
+theorem continuous_periodisation : Continuous (periodisation L f) := by
   let F : L → C(V, ℂ) := fun v => f.toContinuousMap.comp (ContinuousMap.addRight (v : V))
   have hF : Summable F := ContinuousMap.summable_of_locally_summable_norm
     (summable_norm_schwartz_translate_restrict L f)
@@ -80,15 +75,10 @@ theorem continuous_periodisation
   rw [heq]
   exact (∑' v, F v).continuous
 
-theorem periodisation_add_lattice
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V]
-    (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-    (f : 𝓢(V, ℂ)) (x : V) (v : L) :
+theorem periodisation_add_lattice (x : V) (v : L) :
     periodisation L f (x + (v : V)) = periodisation L f x := by
   unfold periodisation
-  have he := (Equiv.addLeft v).tsum_eq (fun w : L => f (x + (w : V)))
-  simpa only [Equiv.coe_addLeft, Submodule.coe_add, add_assoc] using he
+  simpa only [Equiv.coe_addLeft, Submodule.coe_add, add_assoc] using ((Equiv.addLeft v).tsum_eq (fun w : L => f (x + (w : V))))
 
 end DedekindZetaZeroFree.PoissonArch
 

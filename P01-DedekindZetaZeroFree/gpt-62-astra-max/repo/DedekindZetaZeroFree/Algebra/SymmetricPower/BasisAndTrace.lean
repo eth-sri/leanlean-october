@@ -53,7 +53,7 @@ theorem tprodOfSym_ofFn (v : κ → M) (f : Fin n → κ) :
     tprodOfSym R v (DedekindZetaZeroFree.TauCeti.Sym.ofFn f) = ⨂ₛ[R] i, v (f i) := by
   obtain ⟨σ, hσ⟩ := DedekindZetaZeroFree.TauCeti.Sym.ofFn_eq_ofFn_iff.1 (ofFn_orderOfSym (DedekindZetaZeroFree.TauCeti.Sym.ofFn f))
   conv_rhs => rw [← hσ]
-  exact (tprod_equiv (R := R) σ fun i => v (orderOfSym (DedekindZetaZeroFree.TauCeti.Sym.ofFn f) i)).symm
+  exact (tprod_equiv σ fun i => v (orderOfSym (DedekindZetaZeroFree.TauCeti.Sym.ofFn f) i)).symm
 
 variable (b : Basis κ R M)
 
@@ -69,9 +69,7 @@ private theorem toFinsuppAux_reindex (e : Equiv.Perm (Fin n)) :
     (toFinsuppAux b) ∘ₗ (PiTensorProduct.reindex R (fun _ : Fin n => M) e).toLinearMap =
       toFinsuppAux b := by
   refine (Basis.piTensorProduct fun _ : Fin n => b).ext fun f => ?_
-  rw [LinearMap.comp_apply, LinearEquiv.coe_coe, Basis.piTensorProduct_apply,
-    PiTensorProduct.reindex_tprod, toFinsuppAux_tprod_basis b fun i => f (e.symm i),
-    toFinsuppAux_tprod_basis b f]
+  simp [PiTensorProduct.reindex_tprod, toFinsuppAux_tprod_basis b fun i => f (e.symm i), toFinsuppAux_tprod_basis b f]
   exact congrArg (Finsupp.single · (1 : R)) (DedekindZetaZeroFree.TauCeti.Sym.ofFn_comp_perm e.symm f)
 
 noncomputable def toFinsuppMultilinear :
@@ -82,8 +80,8 @@ theorem toFinsuppMultilinear_domDomCongr (e : Equiv.Perm (Fin n)) :
     (toFinsuppMultilinear b).domDomCongr e = toFinsuppMultilinear b := by
   refine MultilinearMap.ext fun m => ?_
   have h := congrFun (congrArg DFunLike.coe (toFinsuppAux_reindex b e.symm)) (⨂ₜ[R] i, m i)
-  rw [LinearMap.comp_apply, LinearEquiv.coe_coe, PiTensorProduct.reindex_tprod] at h
-  simpa [toFinsuppMultilinear] using h
+  simp at h
+  exact h
 
 variable (n) in
 
@@ -92,8 +90,7 @@ noncomputable def toFinsupp : Sym[R]^n M →ₗ[R] (Sym κ n →₀ R) :=
 
 theorem toFinsupp_tprod_basis (f : Fin n → κ) :
     toFinsupp n b (⨂ₛ[R] i, b (f i)) = Finsupp.single (DedekindZetaZeroFree.TauCeti.Sym.ofFn f) 1 := by
-  rw [toFinsupp, lift_tprod, toFinsuppMultilinear, LinearMap.compMultilinearMap_apply,
-    toFinsuppAux_tprod_basis]
+  simp [toFinsupp, lift_tprod, toFinsuppMultilinear, toFinsuppAux_tprod_basis]
 
 variable (n) in
 

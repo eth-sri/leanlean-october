@@ -19,14 +19,18 @@ namespace DedekindZetaZeroFree.LargeSieve.Vendor.FiniteOperator
 variable {r s k l : Type*} [Fintype r] [Fintype s]
   [DecidableEq r] [DecidableEq s]
 
-theorem operator_conjTranspose_norm (A : Matrix r s ℂ) :
+section
+
+variable (A : Matrix r s ℂ)
+
+theorem operator_conjTranspose_norm :
     ‖A.conjTranspose.toEuclideanLin.toContinuousLinearMap‖ =
       ‖A.toEuclideanLin.toContinuousLinearMap‖ := by
   rw [Matrix.toEuclideanLin_conjTranspose_eq_adjoint,
     LinearMap.adjoint_toContinuousLinearMap]
   exact ContinuousLinearMap.adjoint.norm_map _
 
-private theorem operator_conj_norm_le (A : Matrix r s ℂ) :
+private theorem operator_conj_norm_le :
     ‖(Matrix.toEuclideanLin (fun i j => star (A i j) : Matrix r s ℂ)).toContinuousLinearMap‖ ≤
       ‖A.toEuclideanLin.toContinuousLinearMap‖ := by
   apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg _)
@@ -48,7 +52,7 @@ private theorem operator_conj_norm_le (A : Matrix r s ℂ) :
   rw [hz, ← hy]
   exact A.toEuclideanLin.toContinuousLinearMap.le_opNorm y
 
-theorem operator_transpose_norm (A : Matrix r s ℂ) :
+theorem operator_transpose_norm :
     ‖A.transpose.toEuclideanLin.toContinuousLinearMap‖ =
       ‖A.toEuclideanLin.toContinuousLinearMap‖ := by
   have h (B : Matrix r s ℂ) :
@@ -64,11 +68,12 @@ theorem operator_transpose_norm (A : Matrix r s ℂ) :
         exact h
       _ = _ := operator_conjTranspose_norm B
   apply le_antisymm (h A)
-  have h' := operator_conj_norm_le A.transpose.conjTranspose
   calc
     _ ≤ ‖A.transpose.conjTranspose.toEuclideanLin.toContinuousLinearMap‖ := by
-      simpa [Matrix.transpose, Matrix.conjTranspose] using h'
+      simpa [Matrix.transpose, Matrix.conjTranspose] using (operator_conj_norm_le A.transpose.conjTranspose)
     _ = _ := operator_conjTranspose_norm A.transpose
+
+end
 
 namespace Auxiliary
 
@@ -175,7 +180,7 @@ theorem separated_phase_norm_le [Fintype k]
   classical
   have h := Auxiliary.separated_decomposition_norm_le A A'.transpose (fun _ : k => 1)
     (fun a i => if κ i = a then 1 else 0) (fun a j => φ a (ν j))
-    (by intro a i; split_ifs <;> simp) (by intro a j; exact hφ a (ν j))
+    (by intro a i; split_ifs <;> simp) (fun a j => hφ a (ν j))
     (by
       intro i j
       simp only [one_mul, Matrix.transpose_apply]

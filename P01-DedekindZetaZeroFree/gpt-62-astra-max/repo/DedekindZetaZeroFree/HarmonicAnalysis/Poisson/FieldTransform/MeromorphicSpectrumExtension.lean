@@ -20,15 +20,12 @@ private lemma differentiableAt_Gammaℂ {s : ℂ} (hs : ∀ m : ℕ, s ≠ -m) :
       fun z : ℂ => 2 * (2 * (Real.pi : ℂ)) ^ (-z) * Complex.Gamma z := by
     funext z; rw [Complex.Gammaℂ_def]
   rw [hfun]
-  have hbase : (2 * (Real.pi : ℂ)) ≠ 0 :=
-    mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)
   refine DifferentiableAt.mul ?_ (Complex.differentiableAt_Gamma s hs)
-  exact (differentiableAt_const _).mul ((differentiableAt_id.neg).const_cpow (Or.inl hbase))
+  exact (differentiableAt_const _).mul ((differentiableAt_id.neg).const_cpow (Or.inl (mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))))
 
 private lemma Gammaℂ_mul_add_one {s : ℂ} (hs : s ≠ 0) :
     ((2 * Real.pi : ℝ) : ℂ) * Complex.Gammaℂ (s + 1) = Complex.Gammaℂ s * s := by
   rw [Complex.Gammaℂ_add_one hs, div_eq_mul_inv, div_eq_mul_inv]
-  have hpi : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   push_cast
   field_simp
 
@@ -42,31 +39,25 @@ private lemma differentiableAt_A (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (hD : 0 <
     have h2 : (s + 1).re = s.re + 1 := by simp
     have hm : (0 : ℝ) ≤ (m : ℝ) := Nat.cast_nonneg m
     linarith
-  have hDcp : DifferentiableAt ℂ (fun z : ℂ => (D : ℂ) ^ (z - 1 / 2)) s :=
-    ((differentiableAt_id.sub_const (1 / 2 : ℂ))).const_cpow (Or.inl hDne)
-  have hG : DifferentiableAt ℂ
-      (fun z : ℂ => (((2 * Real.pi : ℝ) : ℂ) * Complex.Gammaℂ (z + 1)) ^ r) s :=
-    (((differentiableAt_const (((2 * Real.pi : ℝ) : ℂ))).mul
-      ((differentiableAt_Gammaℂ hs1).comp s (differentiableAt_id.add_const 1)))).pow r
-  have hG2 : DifferentiableAt ℂ (fun z : ℂ => ((Complex.Gammaℂ (1 - z))⁻¹) ^ (r - 1)) s :=
-    ((Complex.differentiable_Gammaℂ_inv.differentiableAt.comp s
-      ((differentiableAt_const (1 : ℂ)).sub differentiableAt_id))).pow (r - 1)
-  have hQ : DifferentiableAt ℂ (fun z : ℂ => Vendor.originMellinQ h (1 - z)) s :=
-    (Vendor.originMellinQ_differentiable h hh hhc).differentiableAt.comp s
-      ((differentiableAt_const (1 : ℂ)).sub differentiableAt_id)
-  exact (((hDcp.mul hG).mul hG2).mul hQ)
+  exact ((((((differentiableAt_id.sub_const (1 / 2 : ℂ))).const_cpow (Or.inl hDne)).mul ((((differentiableAt_const (((2 * Real.pi : ℝ) : ℂ))).mul
+    ((differentiableAt_Gammaℂ hs1).comp s (differentiableAt_id.add_const 1)))).pow r)).mul (((Complex.differentiable_Gammaℂ_inv.differentiableAt.comp s
+    ((differentiableAt_const (1 : ℂ)).sub differentiableAt_id))).pow (r - 1))).mul ((Vendor.originMellinQ_differentiable h hh hhc).differentiableAt.comp s
+    ((differentiableAt_const (1 : ℂ)).sub differentiableAt_id)))
 
-theorem A_analyticOnNhd (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) :
+section
+
+variable (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
+    (hhc : HasCompactSupport h)
+
+include hD hr hh hhc in
+theorem A_analyticOnNhd :
     AnalyticOnNhd ℂ (A D r h) {s : ℂ | -1 < s.re} :=
   DifferentiableOn.analyticOnNhd
     (fun s hs => (differentiableAt_A D r h hD hh hhc hs).differentiableWithinAt)
     (isOpen_lt continuous_const Complex.continuous_re)
 
-theorem B_eq_A_div (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) (s : ℂ) (hs : -1 < s.re) (hs0 : s ≠ 0) :
+include hD hr hh hhc in
+theorem B_eq_A_div (s : ℂ) (hs : -1 < s.re) (hs0 : s ≠ 0) :
     B D r h s = A D r h s / s ^ r := by
   have hpow : (((2 * Real.pi : ℝ) : ℂ) * Complex.Gammaℂ (s + 1)) ^ r =
       Complex.Gammaℂ s ^ r * s ^ r := by
@@ -74,20 +65,26 @@ theorem B_eq_A_div (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
   simp only [B, A, hpow]
   field_simp
 
-theorem A_div_analyticOnNhd (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) :
+include hD hr hh hhc in
+theorem A_div_analyticOnNhd :
     AnalyticOnNhd ℂ (fun s : ℂ => A D r h s / s ^ r)
       {s : ℂ | -1 < s.re ∧ s ≠ 0} := by
   refine AnalyticOnNhd.div ?_ ?_ ?_
   · exact (A_analyticOnNhd D r h hD hr hh hhc).mono (fun s hs => hs.1)
-  · exact (analyticOnNhd_id (𝕜 := ℂ) (s := {s : ℂ | -1 < s.re ∧ s ≠ 0})).pow r
+  · exact (analyticOnNhd_id).pow r
   · intro x hx; exact pow_ne_zero r hx.2
 
-private lemma A_zero_aux (D : ℝ) (r : ℕ) (hr : 1 ≤ r) (m : ℂ) :
-    (D : ℂ) ^ (-(1 / 2 : ℂ)) * (((2 * Real.pi : ℝ) : ℂ) * Complex.Gammaℂ 1) ^ r *
-      ((Complex.Gammaℂ 1)⁻¹) ^ (r - 1) * (m / Complex.Gammaℂ 1) =
-    (D : ℂ) ^ (-(1 / 2 : ℂ)) * (((2 * Real.pi : ℝ) : ℂ) ^ r) * m := by
+end
+
+variable (D : ℝ) (r : ℕ)
+
+theorem A_zero (h : ℝ → ℂ)
+    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
+    (hhc : HasCompactSupport h) :
+    A D r h 0 = (D : ℂ) ^ (-(1 / 2 : ℂ)) *
+      (((2 * Real.pi : ℝ) : ℂ) ^ r) * mellin h 1 := by
+  simp only [A, zero_sub, zero_add, sub_zero, (Vendor.originMellinQ_eq_mellin_div_Gammaℂ h hh hhc 1 (by norm_num))]
+  let m := (mellin h 1)
   rw [Complex.Gammaℂ_one]
   have h2 : ((2 * Real.pi : ℝ) : ℂ) * (1 / (Real.pi : ℂ)) = 2 := by
     push_cast
@@ -105,17 +102,7 @@ private lemma A_zero_aux (D : ℝ) (r : ℕ) (hr : 1 ≤ r) (m : ℂ) :
   rw [← hpow]
   ring
 
-theorem A_zero (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) :
-    A D r h 0 = (D : ℂ) ^ (-(1 / 2 : ℂ)) *
-      (((2 * Real.pi : ℝ) : ℂ) ^ r) * mellin h 1 := by
-  have hQ1 : Vendor.originMellinQ h 1 = mellin h 1 / Complex.Gammaℂ 1 :=
-    Vendor.originMellinQ_eq_mellin_div_Gammaℂ h hh hhc 1 (by norm_num)
-  simp only [A, zero_sub, zero_add, sub_zero, hQ1]
-  exact A_zero_aux D r hr (mellin h 1)
-
-theorem A_uniform_disk_bound (D : ℝ) (r : ℕ) (b : ℝ)
+theorem A_uniform_disk_bound (b : ℝ)
     (hD : 0 < D) (hr : 1 ≤ r) (hb : 0 < b) :
     ∃ (N : ℕ) (C : ℝ), 0 < C ∧
       ∀ h : ℝ → ℂ, ContDiff ℝ ∞ h → HasCompactSupport h →

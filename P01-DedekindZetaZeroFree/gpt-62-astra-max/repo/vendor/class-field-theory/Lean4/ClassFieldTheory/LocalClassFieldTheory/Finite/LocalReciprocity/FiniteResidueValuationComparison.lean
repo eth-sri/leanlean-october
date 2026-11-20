@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -50,20 +47,16 @@ theorem ValuationSubring.restrictIntermediateField_eq_of_finite_separable
     (C : ValuationSubring E) [base.valuation.HasExtension C.valuation] :
     A.restrictIntermediateField E = C := by
   let B := A.restrictIntermediateField E
-  let : base.valuation.HasExtension B.valuation :=
+  let :=
     RamificationTheory.ValuationSubring.restrictIntermediateField_hasExtension
       base.valuation A E
   obtain ⟨target, hExt, _hIntegralClosure, _hFundamental⟩ :=
     DiscreteValuationField.ValuedExtension.exists_integralClosure_standard_fundamental_identity
       (K := K) (L := E) base
-  let : base.valuation.HasExtension target.valuation := hExt
-  have hB : target.valuation.valuationSubring = B :=
-    DiscreteValuationField.ValuedExtension.target_valuationSubring_eq_of_finite_separable
-      base target B
-  have hC : target.valuation.valuationSubring = C :=
-    DiscreteValuationField.ValuedExtension.target_valuationSubring_eq_of_finite_separable
-      base target C
-  exact hB.symm.trans hC
+  let := hExt
+  exact (DiscreteValuationField.ValuedExtension.target_valuationSubring_eq_of_finite_separable
+    base target B).symm.trans (DiscreteValuationField.ValuedExtension.target_valuationSubring_eq_of_finite_separable
+    base target C)
 
 end
 end LocalClassFieldTheory

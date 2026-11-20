@@ -26,29 +26,33 @@ namespace DedekindZetaZeroFree.Odlyzko
 
 variable {α β E : Type*}
 
-noncomputable def extendByZero [AddCommMonoid E] (e : α → β) (f : α → E) (b : β) : E :=
+section
+
+variable [AddCommMonoid E] (e : α → β)
+
+noncomputable def extendByZero (f : α → E) (b : β) : E :=
   Function.extend e f 0 b
 
-lemma extendByZero_apply [AddCommMonoid E] (e : α → β) (he : Function.Injective e)
+lemma extendByZero_apply (he : Function.Injective e)
     (f : α → E) (a : α) :
-    extendByZero e f (e a) = f a := by
-  exact he.extend_apply f 0 a
+    extendByZero e f (e a) = f a := he.extend_apply f 0 a
 
-lemma extendByZero_eq_zero_of_not_mem_range [AddCommMonoid E] (e : α → β) (f : α → E)
+lemma extendByZero_eq_zero_of_not_mem_range (f : α → E)
     {b : β} (hb : b ∉ Set.range e) :
-    extendByZero e f b = 0 := by
-  exact Function.extend_apply' (f := e) f 0 b hb
+    extendByZero e f b = 0 := Function.extend_apply' (f := e) f 0 b hb
 
-theorem hasSum_extendByZero [AddCommMonoid E] [TopologicalSpace E]
-    (e : α → β) (he : Function.Injective e)
-    {f : α → E} {a : E} (hf : HasSum f a) :
+end
+
+variable [AddCommMonoid E] [TopologicalSpace E] (e : α → β) (he : Function.Injective e) {f : α → E}
+
+include he in
+theorem hasSum_extendByZero {a : E} (hf : HasSum f a) :
     HasSum (extendByZero e f) a := by
   unfold extendByZero
   simp_all
 
-theorem summable_extendByZero [AddCommMonoid E] [TopologicalSpace E]
-    (e : α → β) (he : Function.Injective e)
-    {f : α → E} (hf : Summable f) :
+include he in
+theorem summable_extendByZero (hf : Summable f) :
     Summable (extendByZero e f) := by
   unfold extendByZero
   simp_all
@@ -65,16 +69,18 @@ namespace DedekindZetaZeroFree.Odlyzko
 
 variable (K : Type*) [Field K] [NumberField K]
 
-theorem absNorm_idealOfPrimeFactors
-    (m : Multiset (HeightOneSpectrum (𝓞 K))) :
+section
+
+variable (m : Multiset (HeightOneSpectrum (𝓞 K)))
+
+theorem absNorm_idealOfPrimeFactors :
     absNorm (idealOfPrimeFactors K m : Ideal (𝓞 K)) =
       (m.map (primeIdealNorm K)).prod := by
   rw [idealOfPrimeFactors_coe, map_multiset_prod]
   rw [Multiset.map_map]
   rfl
 
-theorem inverseNormPower_idealOfPrimeFactors
-    (m : Multiset (HeightOneSpectrum (𝓞 K))) (s : ℂ) :
+theorem inverseNormPower_idealOfPrimeFactors (s : ℂ) :
     ((absNorm (idealOfPrimeFactors K m : Ideal (𝓞 K)) : ℂ) ^ (-s)) =
       (m.map (fun P ↦ inverseNormPower (primeIdealNorm K P) s)).prod := by
   rw [absNorm_idealOfPrimeFactors]
@@ -93,6 +99,8 @@ theorem inverseNormPower_idealOfPrimeFactors
           (Nat.cast_nonneg (m.map (primeIdealNorm K)).prod) (-s)]
       rw [ih]
       rfl
+
+end
 
 theorem inverseNormPower_nonzeroIdealEquivPrimeFactors
     (I : NonzeroIdeal K) (s : ℂ) :
@@ -115,7 +123,9 @@ namespace DedekindZetaZeroFree.Odlyzko
 
 variable {M : Type*} [CommMonoidWithZero M]
 
-noncomputable def primeValueHom (a : ℕ → M) : ℕ →*₀ M where
+variable (a : ℕ → M)
+
+noncomputable def primeValueHom : ℕ →*₀ M where
   toFun n :=
     if n = 0 then 0 else
       n.factorization.prod fun p e ↦ a p ^ e
@@ -129,27 +139,26 @@ noncomputable def primeValueHom (a : ℕ → M) : ℕ →*₀ M where
     simp only [hm, hn, mul_ne_zero hm hn, ↓reduceIte]
     rw [Nat.factorization_mul hm hn]
     exact Finsupp.prod_add_index'
-      (f := m.factorization) (g := n.factorization)
-      (h := fun p e ↦ a p ^ e)
+
       (fun p ↦ pow_zero (a p))
       (fun p e₁ e₂ ↦ pow_add (a p) e₁ e₂)
 
-@[simp] theorem primeValueHom_one (a : ℕ → M) :
+@[simp] theorem primeValueHom_one :
     primeValueHom a 1 = 1 :=
   map_one _
 
-@[simp] theorem primeValueHom_apply_of_prime (a : ℕ → M) {p : ℕ}
+@[simp] theorem primeValueHom_apply_of_prime {p : ℕ}
     (hp : p.Prime) :
     primeValueHom a p = a p := by
   rw [primeValueHom]
   simp [hp.ne_zero, hp.factorization]
 
-@[simp] theorem primeValueHom_apply_prime_subtype (a : ℕ → M)
+@[simp] theorem primeValueHom_apply_prime_subtype
     (p : Nat.Primes) :
     primeValueHom a p = a p :=
   primeValueHom_apply_of_prime a p.prop
 
-theorem primeValueHom_multiset_prod_of_prime (a : ℕ → M)
+theorem primeValueHom_multiset_prod_of_prime
     {m : Multiset ℕ} (hm : ∀ p ∈ m, p.Prime) :
     primeValueHom a m.prod = (m.map a).prod := by
   induction m using Multiset.induction_on with
@@ -175,7 +184,7 @@ noncomputable instance countableIdealRingOfIntegers :
     (Ideal.finite_setOfPred_absNorm_eq n).fintype
   exact Countable.of_equiv
     ((n : ℕ) × {I : Ideal (𝓞 K) // absNorm I = n})
-    (Equiv.sigmaFiberEquiv (absNorm : Ideal (𝓞 K) → ℕ))
+    (Equiv.sigmaFiberEquiv absNorm)
 
 noncomputable instance countableHeightOneSpectrum :
     Countable (HeightOneSpectrum (𝓞 K)) :=
@@ -216,21 +225,27 @@ namespace DedekindZetaZeroFree.Odlyzko
 
 variable (K : Type*) [Field K] [NumberField K]
 
-noncomputable def idealPrimeCode (I : NonzeroIdeal K) : ℕ :=
+section
+
+variable (I : NonzeroIdeal K)
+
+noncomputable def idealPrimeCode : ℕ :=
   ((idealPrimeFactors K I).map (primeIdealCode K)).prod
 
-lemma prime_mem_idealPrimeCode_factors (I : NonzeroIdeal K) :
+lemma prime_mem_idealPrimeCode_factors :
     ∀ p ∈ (idealPrimeFactors K I).map (primeIdealCode K), p.Prime := by
   intro p hp
   obtain ⟨P, -, rfl⟩ := Multiset.mem_map.mp hp
   exact prime_primeIdealCode K P
 
-lemma normalizedFactors_idealPrimeCode (I : NonzeroIdeal K) :
+lemma normalizedFactors_idealPrimeCode :
     normalizedFactors (idealPrimeCode K I) =
       (idealPrimeFactors K I).map (primeIdealCode K) := by
   apply normalizedFactors_prod_of_prime
   intro p hp
   exact Nat.prime_iff.mp (prime_mem_idealPrimeCode_factors K I p hp)
+
+end
 
 lemma idealPrimeCode_injective :
     Function.Injective (idealPrimeCode K) := by
@@ -281,24 +296,26 @@ lemma primeIdealAtCode_eq_some_iff {p : ℕ} {P : HeightOneSpectrum (𝓞 K)} :
     primeIdealAtCode K (primeIdealCode K P) = some P :=
   primeIdealAtCode_eq_some_iff K |>.2 rfl
 
-noncomputable def encodedPrimeIdealWeight (s : ℂ) (p : ℕ) : ℂ :=
+section
+
+variable (s : ℂ)
+
+noncomputable def encodedPrimeIdealWeight (p : ℕ) : ℂ :=
   (primeIdealAtCode K p).elim 0 fun P ↦
     inverseNormPower (primeIdealNorm K P) s
 
-@[simp] lemma encodedPrimeIdealWeight_primeIdealCode
-    (s : ℂ) (P : HeightOneSpectrum (𝓞 K)) :
+@[simp] lemma encodedPrimeIdealWeight_primeIdealCode (P : HeightOneSpectrum (𝓞 K)) :
     encodedPrimeIdealWeight K s (primeIdealCode K P) =
       inverseNormPower (primeIdealNorm K P) s := by
   simp [encodedPrimeIdealWeight]
 
-private lemma inverseNormPower_primeIdeal_ne_zero
-    (s : ℂ) (P : HeightOneSpectrum (𝓞 K)) :
+private lemma inverseNormPower_primeIdeal_ne_zero (P : HeightOneSpectrum (𝓞 K)) :
     inverseNormPower (primeIdealNorm K P) s ≠ 0 := by
   rw [inverseNormPower, Complex.cpow_ne_zero_iff]
   left
   exact_mod_cast (Nat.zero_lt_of_lt (one_lt_primeIdealNorm K P)).ne'
 
-lemma encodedPrimeIdealWeight_ne_zero_iff (s : ℂ) (p : ℕ) :
+lemma encodedPrimeIdealWeight_ne_zero_iff (p : ℕ) :
     encodedPrimeIdealWeight K s p ≠ 0 ↔
       ∃ P, primeIdealCode K P = p := by
   constructor
@@ -311,11 +328,10 @@ lemma encodedPrimeIdealWeight_ne_zero_iff (s : ℂ) (p : ℕ) :
       (primeIdealAtCode_eq_some_iff K).2 hP]
     exact inverseNormPower_primeIdeal_ne_zero K s P
 
-noncomputable def encodedIdealSummand (s : ℂ) : ℕ →*₀ ℂ :=
+noncomputable def encodedIdealSummand : ℕ →*₀ ℂ :=
   primeValueHom (encodedPrimeIdealWeight K s)
 
-lemma encodedIdealSummand_idealPrimeCode
-    (s : ℂ) (I : NonzeroIdeal K) :
+lemma encodedIdealSummand_idealPrimeCode (I : NonzeroIdeal K) :
     encodedIdealSummand K s (idealPrimeCode K I) =
       ((absNorm (I : Ideal (𝓞 K)) : ℂ) ^ (-s)) := by
   rw [encodedIdealSummand, idealPrimeCode,
@@ -329,6 +345,8 @@ lemma encodedIdealSummand_idealPrimeCode
       ((idealPrimeFactors K I).map
         (fun P ↦ inverseNormPower (primeIdealNorm K P) s)).prod
   simp
+
+end
 
 lemma exists_idealPrimeCode_eq_of_primeFactors {n : ℕ} (hn : n ≠ 0)
     (hcodes : ∀ p ∈ (n.primeFactorsList : Multiset ℕ),
@@ -344,8 +362,8 @@ lemma exists_idealPrimeCode_eq_of_primeFactors {n : ℕ} (hn : n ≠ 0)
       m.map (primeIdealCode K) = (n.primeFactorsList : Multiset ℕ) := by
 
     change (Multiset.pmap (fun p hp ↦ Classical.choose (hcodes p hp))
-        (n.primeFactorsList : Multiset ℕ) (fun p hp ↦ hp)).map (primeIdealCode K) =
-      (n.primeFactorsList : Multiset ℕ)
+        n.primeFactorsList (fun p hp ↦ hp)).map (primeIdealCode K) =
+      n.primeFactorsList
     rw [Multiset.map_pmap]
     calc
       Multiset.pmap
@@ -406,9 +424,6 @@ theorem summable_nonzeroIdeal_norm_inverseNormPower {s : ℂ} (hs : 1 < s.re) :
   have hreal :
       Summable (fun I : NonzeroIdeal K ↦
         (absNorm (I : Ideal (𝓞 K)) : ℝ) ^ (-s.re)) := by
-    change Summable
-      ((fun I : Ideal (𝓞 K) ↦ (absNorm I : ℝ) ^ (-s.re)) ∘
-        Subtype.val)
     exact (summable_ideal_absNorm_rpow K hs).comp_injective
       Subtype.val_injective
   apply hreal.congr
@@ -525,19 +540,11 @@ theorem dedekindZeta_primeIdeal_eulerProduct_hasProd {s : ℂ} (hs : 1 < s.re) :
     HasProd
       (fun P : HeightOneSpectrum (𝓞 K) ↦ primeIdealFactor K P s)
       (NumberField.dedekindZeta K s) := by
-  have hEuler :
-      HasProd (encodedIdealFactor K s)
-        (∑' n, encodedIdealSummand K s n) := by
-    exact EulerProduct.eulerProduct_completely_multiplicative_hasProd
+  have hEuler := EulerProduct.eulerProduct_completely_multiplicative_hasProd
       (summable_norm_encodedIdealSummand K hs)
   rw [(hasSum_encodedIdealSummand K hs).tsum_eq] at hEuler
-  have hcodes :
-      HasProd
-        (encodedIdealFactor K s ∘ primeIdealCodeEmbedding K)
-        (NumberField.dedekindZeta K s) :=
-    ((primeIdealCodeEmbedding K).injective.hasProd_iff
-      (encodedIdealFactor_eq_one_of_not_mem_range K s)).2 hEuler
-  exact hcodes.congr_fun fun P ↦
+  exact (((primeIdealCodeEmbedding K).injective.hasProd_iff
+    (encodedIdealFactor_eq_one_of_not_mem_range K s)).2 hEuler).congr_fun fun P ↦
     (encodedIdealFactor_primeIdealCode K s P).symm
 
 end DedekindZetaZeroFree.Odlyzko

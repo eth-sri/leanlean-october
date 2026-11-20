@@ -13,22 +13,28 @@ open MeasureTheory
 
 variable {F : Type} [Field F] [NumberField F]
 
-def asLocalPoint (A : SArithmeticData F) (t : A.G) : SLocalProduct F A.Sf :=
+section
+
+variable (A : SArithmeticData F)
+
+def asLocalPoint (t : A.G) : SLocalProduct F A.Sf :=
   A.localToAdditive t
 
-def rowB (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+def rowB (D : ComparisonPoissonCoefficientData F A)
     (m : A.R) (Z : ℝ) : ℂ :=
   if hm : m = 0 then 0 else ThetaReflectionData.forwardB A D ⟨m, hm⟩ Z
 
-def gaussRow (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+def gaussRow (D : ComparisonPoissonCoefficientData F A)
     (s : A.Exterior) (m : A.R) : ℂ := by
   letI := D.finiteResidue (D.generator s) (D.generates s).1
   exact (Real.sqrt (A.exteriorNorm s) : ℂ)⁻¹ *
     FiniteTransform.gaussSum A.R.toSubring (D.generator s)
       (D.character (D.generator s)) D.additiveCharacter (-m)
 
-def radialSection (A : SArithmeticData F) (T : ℝ) : A.G :=
+def radialSection (T : ℝ) : A.G :=
   if hT : 0 < T then A.radialSection T hT else 1
+
+end
 
 structure DomainData (A : SArithmeticData F) where
   domain : Set A.G1
@@ -64,9 +70,6 @@ structure FrequencyRepresentatives (A : SArithmeticData F)
   sixthFree : ∀ u ∈ reps, ∀ p : ThetaBranch.ExteriorPrime A,
     0 ≤ ThetaBranch.order p.val (ThetaReflectionData.rowUnit A u) ∧
       ThetaBranch.order p.val (ThetaReflectionData.rowUnit A u) < 6
-  unitClasses : ∀ ε : A.UnitQuotient, ∃ u ∈ reps, ∃ γ : A.U,
-    ThetaReflectionData.rowUnit A u =
-      (U.representative ε).val * γ.val ^ 6
   factorization : ∀ h : ThetaReflectionData.Row A,
     ∃! x : {u // u ∈ reps} × A.Exterior,
       ∃ γ : A.U, ThetaReflectionData.rowUnit A h =
@@ -121,7 +124,6 @@ structure PrincipalData (A : SArithmeticData F) (σ : F →+* ℂ)
   annular : ProbeWeight.IsAnnularTensor F A.Sf W0
   compactSupport : HasCompactSupport W0
   supportUnits : tsupport W0 ⊆ {x | IsUnit x}
-  nonzero : W0 ≠ 0
   zeroFrequency : ProbeWeight.fourier F A.Sf finiteTrace additiveMeasure W0 0 = 0
   nonzeroMellin : ProbeWeight.fourierMellin F A.Sf finiteTrace additiveMeasure
     multiplicativeMeasure W0 (1 / 6) ≠ 0
@@ -131,17 +133,19 @@ def principalProbe (A : SArithmeticData F) (σ : F →+* ℂ)
     (P : PrincipalData A σ η hS) (X Y Z : {x : ℝ // 0 < x}) : ℂ :=
   probe A P.coefficients P.domain P.W0 P.W1 X.val Y.val Z.val
 
-def separatedMellinSeries (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A)
-    (u : A.R) (ξ w z : ℂ) : ℂ :=
+section
+
+variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A) (u : A.R) (ξ w z : ℂ)
+
+def separatedMellinSeries : ℂ :=
   comparisonEulerPoissonSeries F A D u ξ w z
 
-theorem separatedMellinSeries_eq_tsum (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A)
-    (u : A.R) (ξ w z : ℂ) :
+theorem separatedMellinSeries_eq_tsum :
     separatedMellinSeries A D u ξ w z =
       ∑' i : ExteriorSquarefreeIdeal A.cS × A.Exterior × A.Exterior × A.Exterior,
         comparisonEulerPoissonSummand F A D u ξ w z i.1 i.2.1 i.2.2.1 i.2.2.2 := rfl
+
+end
 
 def principalSeparatedMellinSeries (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)

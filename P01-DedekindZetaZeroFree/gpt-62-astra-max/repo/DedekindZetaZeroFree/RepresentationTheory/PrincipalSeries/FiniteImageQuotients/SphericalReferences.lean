@@ -14,16 +14,16 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPLiteralRaw KPRankOneShellRepair
 open KPLocalPrincipalSeries KPLocalExceptionalConstruction KPLocalStoneVonNeumann
 open KPExceptionalRaw.FiniteSource.GoodSphericalVector
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming normalized_reference → normalized_reference
-open _root_.DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.GoodSphericalVector renaming spherical_integrand_on_integer_ring → spherical_integrand_on_integer_ring
+open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource (normalized_reference)
+open _root_.DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.GoodSphericalVector (spherical_integrand_on_integer_ring)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((valuation (q.adicCompletion F)).integer : Set _) = 1)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((valuation (q.adicCompletion F)).integer : Set _) = 1)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -44,7 +44,7 @@ theorem finite_spherical_forward_coordinate (q : KPFinitePlace F)
   rw [actualCanonicalForwardMap_eq_integral]
   simp only [mul_one]
   apply integral_eq_integer_ball_of_cubic_shells
-  · simpa only [mul_one] using actualCanonicalForwardMap_integrable F ζ hζ q
+  · simpa using actualCanonicalForwardMap_integrable F ζ hζ q
       (C.canonical q) (C.polarization q) (μ q) (hμ q) f 1 t
   · calc
       _ = ∫ x in ((valuation (LocalField F q)).integer : Set (LocalField F q)),
@@ -70,15 +70,9 @@ theorem finiteQuotientReference_one (q : KPFinitePlace F) (hq : q ∉ C.exceptio
         (((KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp
           (KPGoodCompactSplitting.kStar F ζ hζ q ht)) k)
         (plusReference R.A P C (Sum.inr q)) = plusReference R.A P C (Sum.inr q) := by
-    have hk : actualGoodCompactSplit F ζ hζ q ht k ∈
-        (C.canonical q).iwasawa.compact.toOpenSubgroup := by
-      change _ ∈ ((C.canonical q).iwasawa.compact.toOpenSubgroup :
-        Subgroup (ActualCover F ζ hζ q))
-      have hm : actualGoodCompactSplit F ζ hζ q ht k ∈
-          (actualGoodCompactSplit F ζ hζ q ht).range := MonoidHom.mem_range.mpr ⟨k,rfl⟩
-      exact Eq.mpr (congrArg (fun K : Subgroup (ActualCover F ζ hζ q) =>
-        actualGoodCompactSplit F ζ hζ q ht k ∈ K) (C.actual_compact q hq).choose_spec) hm
-    exact plusReference_fixed R.A P C q hq ⟨_,hk⟩
+    refine plusReference_fixed R.A P C q hq ⟨_,?_⟩
+    exact Eq.mpr (congrArg (fun K : Subgroup (ActualCover F ζ hζ q) =>
+    actualGoodCompactSplit F ζ hζ q ht k ∈ K) (C.actual_compact q hq).choose_spec) (MonoidHom.mem_range.mpr ⟨k,rfl⟩)
   apply Subtype.ext
   funext t
   change ((actualCanonicalForwardMap F ζ hζ q (C.canonical q) (C.polarization q)

@@ -9,15 +9,17 @@ open MeasureTheory
 open scoped ENNReal Pointwise
 namespace DedekindZetaZeroFree.KPSmoothAutomorphicEvaluation.OrbitTubeComparison
 
-theorem compact_orbit_count_bound {G : Type*} [Group G] [TopologicalSpace G]
-    [IsTopologicalGroup G] [T2Space G]
-    (Γ : Subgroup G) (hΓ : IsClosed (Γ : Set G)) (dΓ : IsDiscrete (Γ : Set G))
-    (C : Set G) (hC : IsCompact C) :
+section
+
+variable {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [T2Space G] (Γ : Subgroup G)
+    (hΓ : IsClosed (Γ : Set G)) (dΓ : IsDiscrete (Γ : Set G)) (C : Set G) (hC : IsCompact C)
+
+include hΓ dΓ hC in
+theorem compact_orbit_count_bound :
     ∃ N : ℕ, ∀ x : G, ∀ S : Finset Γ,
       (∀ γ ∈ S, (γ : G) * x ∈ C) → S.card ≤ N := by
   classical
-  let T := (Γ : Set G) ∩ (C * C⁻¹)
-  have hT : T.Finite := ((hC.mul hC.inv).inter_left hΓ).finite
+  have hT := ((hC.mul hC.inv).inter_left hΓ).finite
     (dΓ.mono Set.inter_subset_left)
   refine ⟨hT.toFinset.card, ?_⟩
   intro x S hS
@@ -34,15 +36,13 @@ theorem compact_orbit_count_bound {G : Type*} [Group G] [TopologicalSpace G]
       refine ⟨Γ.mul_mem γ.property (Γ.inv_mem γ₀.property), ?_⟩
       apply Set.mem_mul.mpr
       refine ⟨(γ : G) * x, hS γ hγ, ((γ₀ : G) * x)⁻¹, ?_, ?_⟩
-      · simpa only [Set.mem_inv, inv_inv] using hS γ₀ hγ₀
+      · simpa using hS γ₀ hγ₀
       · simp [j, mul_assoc]
     exact Finset.card_le_card_of_injOn j hjT (hj.injOn)
   · simp_all
 
-theorem compact_orbit_indicator_bound {G : Type*} [Group G] [TopologicalSpace G]
-    [IsTopologicalGroup G] [T2Space G]
-    (Γ : Subgroup G) (hΓ : IsClosed (Γ : Set G)) (dΓ : IsDiscrete (Γ : Set G))
-    (C : Set G) (hC : IsCompact C) :
+include hΓ dΓ hC in
+theorem compact_orbit_indicator_bound :
     ∃ N : ℕ, ∀ x : G,
       (∑' γ : Γ, C.indicator (fun _ => (1 : ℝ≥0∞)) ((γ : G) * x)) ≤ N := by
   classical
@@ -53,14 +53,14 @@ theorem compact_orbit_indicator_bound {G : Type*} [Group G] [TopologicalSpace G]
   apply iSup_le
   intro S
   let S' : Finset Γ := S.filter (fun γ => (γ : G) * x ∈ C)
-  have hc : S'.card ≤ N := hN x S' (by
-    intro γ hγ
-    exact (Finset.mem_filter.mp hγ).2)
+  have hc := hN x S' (fun γ hγ => (Finset.mem_filter.mp hγ).2)
   calc
     (∑ γ ∈ S, C.indicator (fun _ => (1 : ℝ≥0∞)) ((γ : G) * x)) =
         (S'.card : ℝ≥0∞) := by
       simp [S', Set.indicator, Finset.sum_boole]
     _ ≤ N := by exact_mod_cast hc
+
+end
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 

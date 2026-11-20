@@ -13,16 +13,12 @@ open scoped Classical NumberField Topology ENNReal NNReal BigOperators
 open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualWeakEnergy
 open KPMsClearedTruncationL2
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.NativeWeakEnergy renaming weak_diagonal_energy_finite → weak_diagonal_energy_finite
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.NativeCutoffExhaustion renaming cutoff → cutoff
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.NativeCutoffExhaustion renaming cutoff_regular → cutoff_regular
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.NativeCutoffExhaustion renaming cutoff_tendsto_one → cutoff_tendsto_one
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.WeakCutoffSources renaming nativeFlow → nativeFlow
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.WeakCutoffSources renaming nativeFlow_zero → nativeFlow_zero
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.WeakCutoffSources renaming nativeFlow_add → nativeFlow_add
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.NativeWeakEnergy (weak_diagonal_energy_finite)
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.NativeCutoffExhaustion (cutoff cutoff_regular cutoff_tendsto_one)
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.WeakCutoffSources (nativeFlow nativeFlow_zero nativeFlow_add)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
  abbrev cutoffEnergyWordDerivative := KPSmoothActualFlowData.wordDerivative F ζ hζ
  abbrev FD := KPSmoothActualFlowData.flowDerivative F ζ hζ
 
@@ -36,7 +32,7 @@ variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
       (cutoffEnergyWordDerivative (b :: word) f (KPSmoothActualFlowData.rightTranslate F ζ hζ
         (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
           (KPSmoothActualFlowData.flow F b t)) x)) t := by
-  let q : ℝ → X F ζ hζ → X F ζ hζ := fun s y =>
+  let q := fun s y =>
     KPSmoothActualFlowData.rightTranslate F ζ hζ
       (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
         (KPSmoothActualFlowData.flow F b s)) y
@@ -47,12 +43,10 @@ variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
     exact congrFun (KPSmoothQuotientTranslationFlow.rightTranslation_mul
       (KPSmoothActualFlowData.rationalSubgroup F ζ hζ) _ _) y
   have hsm (y : X F ζ hζ) : ContDiff ℝ (⊤ : ℕ∞) (fun s => cutoffEnergyWordDerivative word f (q s y)) := by
-    have hc : ContDiff ℝ (⊤ : ℕ∞)
-        (fun s : ℝ => fun c : KPSmoothActualFlowData.B F => if c = b then s else 0) := by
-      apply contDiff_pi.mpr
-      intro c
-      split_ifs <;> fun_prop
-    exact (ActualWordLinearity.word_orbit_contDiff F ζ hζ f hf word y).comp hc
+    refine (ActualWordLinearity.word_orbit_contDiff F ζ hζ f hf word y).comp ?_
+    apply contDiff_pi.mpr
+    intro c
+    split_ifs <;> fun_prop
   exact KPSmoothQuotientTranslationFlow.scalar_orbit_derivative q hadd (cutoffEnergyWordDerivative word f) hsm x t
 
 theorem original_diagonal_energy_finite
@@ -71,15 +65,11 @@ theorem original_diagonal_energy_finite
   letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).1
   letI : BorelSpace (X F ζ hζ) := ⟨rfl⟩
   let Γ := KPSmoothActualFlowData.rationalSubgroup F ζ hζ
-  have hopen : IsOpenQuotientMap (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ) :=
-    MulAction.isOpenQuotientMap_quotientMk
-  have hΓ : IsClosed (Γ : Set (G F ζ hζ)) :=
-    (ActualQuotient.actual_rational_closed_discrete F ζ hζ).1
   letI : T2Space (X F ζ hζ) :=
-    (t2Space_iff_of_isOpenQuotientMap hopen).mpr (by
-      convert hΓ.preimage (continuous_snd.mul continuous_fst.inv) using 1
+    (t2Space_iff_of_isOpenQuotientMap MulAction.isOpenQuotientMap_quotientMk).mpr (by
+      convert ((ActualQuotient.actual_rational_closed_discrete F ζ hζ).1).preimage (continuous_snd.mul continuous_fst.inv) using 1
       ext p
-      exact Quotient.eq.trans (QuotientGroup.rightRel_apply (s := Γ)))
+      exact Quotient.eq.trans (QuotientGroup.rightRel_apply))
   letI : IsFiniteMeasureOnCompacts R.quotientHaar := ⟨fun K hK =>
     lt_top_iff_ne_top.mpr
       (KPGlobalResidualKernel.RawStageL2.TruncatedEstimate.CompactCore.ArchimedeanGeometry.quotientHaar_compact_ne_top R K hK)⟩
@@ -101,9 +91,8 @@ theorem original_diagonal_energy_finite
     (KPSmoothQuotientTranslationFlow.continuous_rightTranslation Γ).comp
       (((KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1.comp
         (KPSmoothActualFlowData.flow_properties F b).2.2).comp continuous_fst |>.prodMk continuous_snd)
-  let χ : ℕ → X F ζ hζ → ℝ := fun n x => (cutoff A R P D Y n x).re
-  have hχeq (n : ℕ) (x : X F ζ hζ) : (χ n x : ℂ) = cutoff A R P D Y n x := by
-    rfl
+  let χ := fun n x => (cutoff A R P D Y n x).re
+  have hχeq (n : ℕ) (x : X F ζ hζ) : (χ n x : ℂ) = cutoff A R P D Y n x := rfl
   have hχ (n : ℕ) : Continuous (χ n) := Complex.continuous_re.comp (cutoff_regular A R P D Y hY n).1
   have hχc (n : ℕ) : HasCompactSupport (χ n) :=
     (cutoff_regular A R P D Y hY n).2.1.comp_left (show Complex.re 0 = 0 by rfl)

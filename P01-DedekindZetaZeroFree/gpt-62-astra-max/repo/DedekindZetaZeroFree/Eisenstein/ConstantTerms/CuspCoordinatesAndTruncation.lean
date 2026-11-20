@@ -25,11 +25,11 @@ abbrev Iwasawa := KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ
 abbrev ModelData := KPMsRationalCompactCrossPairing.ModelData F ζ hζ
 
 variable (C : ModelData F ζ hζ) (D : Iwasawa F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ C D R P H)
-variable (U : Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ C D R P H)
+    (U : Level F ζ hζ)
 
 abbrev Stage (T : KPGlobalEisensteinData.CompactTypeStage
     ((KPGlobalTorusFunctionData.borelRightTranslation F ζ hζ
@@ -37,8 +37,7 @@ abbrev Stage (T : KPGlobalEisensteinData.CompactTypeStage
   KPMsRationalCompactCrossPairing.sourceStage F ζ hζ D U T
 
 def stageToFixedPlus (T) : Stage F ζ hζ D U T →ₗ[ℂ]
-    KPMsRationalCompactCrossPairing.fixedPlus F ζ hζ D U := by
-  exact { toFun := fun v => ⟨⟨v.val, Submodule.mem_iSup_of_mem U (Submodule.mem_iSup_of_mem T v.property)⟩, by intro g u; obtain ⟨j, hj, heq⟩ := u.property; have hh := v.property.1.2 ⟨j, hj⟩; have h := congrArg (fun f => f.val g) hh; change v.val.val (g * j.val) = v.val.val g at h; change j.val = u.val at heq; rwa [heq] at h⟩, map_add' := by intros; rfl, map_smul' := by intros; rfl }
+    KPMsRationalCompactCrossPairing.fixedPlus F ζ hζ D U := { toFun := fun v => ⟨⟨v.val, Submodule.mem_iSup_of_mem U (Submodule.mem_iSup_of_mem T v.property)⟩, by intro g u; obtain ⟨j, hj, heq⟩ := u.property; have h := congrArg (fun f => f.val g) (v.property.1.2 ⟨j, hj⟩); change v.val.val (g * j.val) = v.val.val g at h; change j.val = u.val at heq; rwa [heq] at h⟩, map_add' := by intros; rfl, map_smul' := by intros; rfl}
 
 def smoothSpace : Submodule ℂ (X F ζ hζ → ℂ) where
   carrier := {f | KPSmoothActualFlowData.SmoothAutomorphic F ζ hζ f ∧
@@ -52,7 +51,7 @@ def smoothSpace : Submodule ℂ (X F ζ hζ → ℂ) where
         f (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g))}
   zero_mem' := by refine ⟨⟨continuous_const, fun x => contDiff_const⟩, ?_, ?_⟩ <;> simp
   add_mem' := by intro f g hf hg; exact ⟨⟨hf.1.1.add hg.1.1, fun x => (hf.1.2 x).add (hg.1.2 x)⟩, fun x u => congrArg₂ (· + ·) (hf.2.1 x u) (hg.2.1 x u), fun x ε => by change f _ + g _ = _ * (f _ + g _); rw [hf.2.2 x ε, hg.2.2 x ε, mul_add]⟩
-  smul_mem' := by intro c f hf; exact ⟨⟨continuous_const.smul hf.1.1, fun x => contDiff_const.smul (hf.1.2 x)⟩, fun x u => congrArg (c • ·) (hf.2.1 x u), fun x ε => by change c * f _ = _ * (c * f _); rw [hf.2.2 x ε]; ring⟩
+  smul_mem' := fun c f hf => ⟨⟨continuous_const.smul hf.1.1, fun x => contDiff_const.smul (hf.1.2 x)⟩, fun x u => congrArg (c • ·) (hf.2.1 x u), fun x ε => by change c * f _ = _ * (c * f _); rw [hf.2.2 x ε]; ring⟩
 
 def smoothDerivatives : List (KPSmoothActualFlowData.B F) →
     smoothSpace F ζ hζ U →ₗ[ℂ] C(X F ζ hζ, ℂ) := fun w =>
@@ -76,7 +75,7 @@ def rationalLift (γ : Matrix.ProjGenLinGroup (Fin 2) F) : G F ζ hζ :=
 theorem rationalLift_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
     rationalLift F ζ hζ (Matrix.ProjGenLinGroup.mk m) =
       KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-        (KPAdelicCoverRestrictedProduct.rationalHom F ζ hζ m) := by let n := Classical.choose (Matrix.ProjGenLinGroup.mk_surjective (Matrix.ProjGenLinGroup.mk m)); have hn : Matrix.ProjGenLinGroup.mk n = Matrix.ProjGenLinGroup.mk m := Classical.choose_spec (Matrix.ProjGenLinGroup.mk_surjective (Matrix.ProjGenLinGroup.mk m)); obtain ⟨z, hz⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hn; let φ := (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp (KPAdelicCoverRestrictedProduct.rationalHom F ζ hζ); have hscalar : φ (Matrix.GeneralLinearGroup.scalar (Fin 2) z) = 1 := KPRationalAdelicSplitting.rationalScalars_le_ker F ζ hζ ⟨z, rfl⟩; change φ n = φ m; rw [← hz, map_mul, hscalar, mul_one]
+        (KPAdelicCoverRestrictedProduct.rationalHom F ζ hζ m) := by let n := Classical.choose (Matrix.ProjGenLinGroup.mk_surjective (Matrix.ProjGenLinGroup.mk m)); obtain ⟨z, hz⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp (Classical.choose_spec (Matrix.ProjGenLinGroup.mk_surjective (Matrix.ProjGenLinGroup.mk m))); let φ := (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp (KPAdelicCoverRestrictedProduct.rationalHom F ζ hζ); have hscalar := KPRationalAdelicSplitting.rationalScalars_le_ker F ζ hζ ⟨z, rfl⟩; change φ n = φ m; rw [← hz, map_mul, hscalar, mul_one]
 
 def rationalCosetLift (q : KPChamberBruhatTwoCells.RationalQuotient F) : G F ζ hζ :=
   rationalLift F ζ hζ (Quotient.out q)
@@ -137,8 +136,6 @@ structure Continuation (T) where
 variable {F ζ hζ C D R P H A U}
 variable {T} (B : Continuation F ζ hζ C D R P H A U T)
 
-def g (f : ℂ → Stage F ζ hζ D U T) (s : ℂ) := B.clearedM s (f s)
-
 abbrev Atlas := H.atlas (A.atlasLevel U)
 abbrev Cusp := KPMsFixedHaarDisintegration.CuspIndex (Atlas (A := A) (U := U))
 
@@ -172,7 +169,7 @@ theorem cuspLift_exists (j : Cusp (A := A) (U := U)) (Y : ℝ)
         g = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a *
           ((Atlas (A := A) (U := U)).representative j.1).val *
           KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val := by
-  obtain ⟨g, hg, hframe⟩ := KPMsActualCuspSource.cusp_lift_exists (H := H) (A.atlasLevel U) (A.level_matching U) j Y x hx
+  obtain ⟨g, hg, hframe⟩ := KPMsActualCuspSource.cusp_lift_exists (A.atlasLevel U) (A.level_matching U) j Y x hx
   exact ⟨g, hg, hframe.2⟩
 
 def cuspLift (j : Cusp (A := A) (U := U)) (Y : ℝ)
@@ -186,7 +183,7 @@ def cuspRadius (j : Cusp (A := A) (U := U)) (Y : ℝ)
       (Atlas (A := A) (U := U)) Y) (x : X F ζ hζ) :
     KPMsFixedHaarDisintegration.Radius :=
   ⟨((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D
-    ((cuspRepresentative j)⁻¹ * cuspLift j Y hY x) : ℝ≥0) : ℝ), by exact NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr (Units.ne_zero _))⟩
+    ((cuspRepresentative j)⁻¹ * cuspLift j Y hY x) : ℝ≥0) : ℝ), NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr (Units.ne_zero _))⟩
 
  theorem iwasawaNorm_torus_mul (t : KPGlobalTorusFunctionData.E F ζ hζ)
     (g : G F ζ hζ) :

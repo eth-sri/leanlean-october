@@ -17,15 +17,9 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualDifferentialData
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-theorem archDomain_isOpen : IsOpen (archDomain F) := by
-  change IsOpen {x : ArchCoordinates F | ∀ w, x w 1 ≠ 0}
-  have he : {x : ArchCoordinates F | ∀ w, x w 1 ≠ 0} =
-      ⋂ w, {x | x w 1 ≠ 0} := by ext x; simp
-  rw [he]
-  exact isOpen_iInter_of_finite (fun w => isOpen_ne.preimage
-    ((continuous_apply 1).comp (continuous_apply w)))
+theorem archDomain_isOpen : IsOpen (archDomain F) := by apply @DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.groupArchDomain_open <;> assumption
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualDifferentialData
 
@@ -45,18 +39,24 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualNativeActionGe
 variable {E F X : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   [NormedAddCommGroup F] [NormedSpace ℝ F] [TopologicalSpace X] [CompactSpace X]
 
-def flip (a : C(X, E →L[ℝ] F)) : E →L[ℝ] C(X, F) :=
+section
+
+variable (a : C(X, E →L[ℝ] F))
+
+def flip : E →L[ℝ] C(X, F) :=
   LinearMap.mkContinuous
     { toFun := fun v => ⟨fun y => a y v, (ContinuousLinearMap.apply ℝ F v).continuous.comp a.continuous⟩
       map_add' := by intro v w; ext y; exact (a y).map_add v w
       map_smul' := by intro c v; ext y; exact (a y).map_smul c v }
     ‖a‖ (by
       intro v
-      apply (ContinuousMap.norm_le (C := ‖a‖ * ‖v‖) _ (mul_nonneg (norm_nonneg a) (norm_nonneg v))).mpr
+      apply (ContinuousMap.norm_le _ (mul_nonneg (norm_nonneg a) (norm_nonneg v))).mpr
       intro y
       exact (a y).le_opNorm v |>.trans (mul_le_mul_of_nonneg_right (a.norm_coe_le_norm y) (norm_nonneg v)))
 
-@[simp] theorem flip_apply (a : C(X, E →L[ℝ] F)) (v : E) (y : X) : flip a v y = a y v := rfl
+@[simp] theorem flip_apply (v : E) (y : X) : flip a v y = a y v := rfl
+
+end
 
 def flipL : C(X, E →L[ℝ] F) →L[ℝ] (E →L[ℝ] C(X, F)) :=
   LinearMap.mkContinuous
@@ -66,10 +66,9 @@ def flipL : C(X, E →L[ℝ] F) →L[ℝ] (E →L[ℝ] C(X, F)) :=
     1 (by
       intro a
       rw [one_mul]
-      change ‖flip a‖ ≤ ‖a‖
       apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg a)
       intro v
-      apply (ContinuousMap.norm_le (C := ‖a‖ * ‖v‖) _ (mul_nonneg (norm_nonneg a) (norm_nonneg v))).mpr
+      apply (ContinuousMap.norm_le _ (mul_nonneg (norm_nonneg a) (norm_nonneg v))).mpr
       intro y
       exact (a y).le_opNorm v |>.trans (mul_le_mul_of_nonneg_right (a.norm_coe_le_norm y) (norm_nonneg v)))
 
@@ -90,20 +89,26 @@ open Filter
 variable {E V K : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   [NormedAddCommGroup V] [NormedSpace ℝ V] [TopologicalSpace K] [CompactSpace K]
 
- def compactDerivativeLinear (q : C(K, E →L[ℝ] V)) : E →ₗ[ℝ] C(K,V) where
+ section
+
+variable (q : C(K, E →L[ℝ] V))
+
+def compactDerivativeLinear : E →ₗ[ℝ] C(K,V) where
   toFun v := ⟨fun k => q k v, q.continuous.clm_apply continuous_const⟩
   map_add' v w := by ext k; exact (q k).map_add v w
   map_smul' c v := by ext k; exact (q k).map_smul c v
 
- def compactDerivative (q : C(K, E →L[ℝ] V)) : E →L[ℝ] C(K,V) :=
+ def compactDerivative : E →L[ℝ] C(K,V) :=
   (compactDerivativeLinear q).mkContinuous ‖q‖ (by
     intro v
     apply (ContinuousMap.norm_le _ (mul_nonneg (norm_nonneg q) (norm_nonneg v))).2
     intro k
     exact (q k).le_opNorm v |>.trans (mul_le_mul_of_nonneg_right (q.norm_coe_le_norm k) (norm_nonneg _)))
 
- lemma compactDerivative_apply (q : C(K, E →L[ℝ] V)) (v : E) (k : K) :
+ lemma compactDerivative_apply (v : E) (k : K) :
     compactDerivative q v k = q k v := rfl
+
+end
 
  def compactDerivativeMap : C(K,E →L[ℝ] V) →L[ℝ] E →L[ℝ] C(K,V) := by
   let A : C(K,E →L[ℝ] V) →ₗ[ℝ] E →L[ℝ] C(K,V) :=
@@ -111,8 +116,7 @@ variable {E V K : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
       map_add' := by intro q r; ext v k; simp [compactDerivative_apply]
       map_smul' := by intro c q; ext v k; simp [compactDerivative_apply] }
   refine LinearMap.mkContinuous (E := C(K,E →L[ℝ] V)) (F := E →L[ℝ] C(K,V)) A 1 ?_
-  intro (q : C(K,E →L[ℝ] V))
-  change ‖compactDerivative q‖ ≤ 1 * ‖q‖
+  intro q
   simp only [one_mul]
   apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg q)
   intro v
@@ -133,24 +137,19 @@ private theorem compact_family_hasFDerivAt
   intro ε hε
   have hcont := (hq x hx).continuousAt (hU.mem_nhds hx)
   have hsubq : ContinuousAt (fun y => q y - q x) x := hcont.sub continuousAt_const
-  have hnq : ContinuousAt (fun y => ‖q y - q x‖) x := by
-    exact ContinuousAt.norm (E := C(K,E →L[ℝ] V)) hsubq
+  have hnq : ContinuousAt (fun y => ‖q y - q x‖) x := ContinuousAt.norm (E := C(K,E →L[ℝ] V)) hsubq
   have hnε : {y | ‖q y - q x‖ < ε} ∈ nhds x := by
     have hε' : ‖q x - q x‖ < ε := by
       rw [sub_self]
-      change ‖(0 : C(K,E →L[ℝ] V))‖ < ε
       rw [@norm_zero C(K,E →L[ℝ] V) inferInstance]
       exact hε
     exact hnq (gt_mem_nhds hε')
-  have hn : {y | ‖q y - q x‖ < ε} ∩ U ∈ nhds x :=
-    inter_mem hnε (hU.mem_nhds hx)
-  obtain ⟨δ,hδ,hsub⟩ := Metric.mem_nhds_iff.mp hn
+  obtain ⟨δ,hδ,hsub⟩ := Metric.mem_nhds_iff.mp (inter_mem hnε (hU.mem_nhds hx))
   filter_upwards [Metric.ball_mem_nhds x hδ] with y hy
   apply (ContinuousMap.norm_le _ (mul_nonneg hε.le (norm_nonneg _))).2
   intro k
   have hb (z : E) (hz : z ∈ Metric.ball x δ) :
-      ‖q z k - q x k‖ ≤ ε := by
-    exact ((q z - q x).norm_coe_le_norm k).trans (hsub hz).1.le
+      ‖q z k - q x k‖ ≤ ε := ((q z - q x).norm_coe_le_norm k).trans (hsub hz).1.le
   have hd (z : E) (hz : z ∈ Metric.ball x δ) :
       HasFDerivWithinAt (fun y => f y k) (q z k) (Metric.ball x δ) z :=
     (hf z (hsub hz).2 k).hasFDerivWithinAt
@@ -165,16 +164,17 @@ theorem compact_family_continuousOn (f : E → C(K,V)) (U : Set E)
     ContinuousOn f U := by
   rw [continuousOn_iff_continuous_domRestrict]
   apply ContinuousMap.continuous_of_continuous_uncurry
-  have h := hf.comp (continuous_subtype_val.prodMap continuous_id).continuousOn
-    (show Set.MapsTo (fun p : U × K => (p.1.val,p.2)) Set.univ (U ×ˢ Set.univ) from
-      fun p _ => ⟨p.1.property, Set.mem_univ _⟩)
   have hh : Continuous (fun p : U × K => f p.1.val p.2) := by
-    simpa [Function.comp_def, continuousOn_univ] using h
+    simpa [Function.comp_def, continuousOn_univ] using (hf.comp (continuous_subtype_val.prodMap continuous_id).continuousOn
+      (show Set.MapsTo (fun p : U × K => (p.1.val,p.2)) Set.univ (U ×ˢ Set.univ) from
+        fun p _ => ⟨p.1.property, Set.mem_univ _⟩))
   exact hh
 
-theorem compact_family_contDiffOn
-    (f : E → C(K,V)) (U : Set E) (hU : IsOpen U)
+variable (f : E → C(K,V)) (U : Set E) (hU : IsOpen U)
     (hf : ∀ k, ContDiffOn ℝ (⊤ : ℕ∞) (fun x => f x k) U)
+
+include hU hf in
+theorem compact_family_contDiffOn
     (J : ∀ m : ℕ, E → C(K,ContinuousMultilinearMap ℝ (fun _ : Fin m => E) V))
     (hJ : ∀ m, ContinuousOn (J m) U)
     (hbind : ∀ m x, x ∈ U → ∀ k, J m x k = iteratedFDeriv ℝ m (fun y => f y k) x) :
@@ -188,23 +188,21 @@ theorem compact_family_contDiffOn
       let : NormedAddCommGroup (ContinuousMultilinearMap ℝ (fun _ : Fin m => E) V) := inferInstance
       let : NormedSpace ℝ (ContinuousMultilinearMap ℝ (fun _ : Fin m => E) V) := inferInstance
       let : NormedAddCommGroup (E →L[ℝ] ContinuousMultilinearMap ℝ (fun _ : Fin m => E) V) := inferInstance
-      let L : ContinuousMultilinearMap ℝ (fun _ : Fin (m+1) => E) V →L[ℝ] E →L[ℝ] ContinuousMultilinearMap ℝ (fun _ : Fin m => E) V := (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (m+1) => E) V).toContinuousLinearEquiv.toContinuousLinearMap
+      let L := (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (m+1) => E) V).toContinuousLinearEquiv.toContinuousLinearMap
       let q := fun x => ContinuousLinearMap.compLeftContinuous ℝ K L (J (m+1) x)
-      have hq : ContDiffOn ℝ n q U := by
-        exact (ContinuousLinearMap.compLeftContinuous ℝ K L).contDiff.comp_contDiffOn (ih (m+1))
+      have hq := (ContinuousLinearMap.compLeftContinuous ℝ K L).contDiff.comp_contDiffOn (ih (m+1))
       have hd (x : E) (hx : x ∈ U) : HasFDerivAt (J m) (compactDerivative (q x)) x := by
         refine compact_family_hasFDerivAt (J m) q U hU hq.continuousOn ?_ x hx
         intro y hy k
-        have hs := (hf k).contDiffAt (hU.mem_nhds hy)
-        have ht := (hs.iteratedFDeriv_right (m := (⊤ : ℕ∞)) (i := m) (by simp)).differentiableAt (by simp)
-        have he : (fun z => J m z k) =ᶠ[nhds y] iteratedFDeriv ℝ m (fun z => f z k) :=
+        have ht := (((hf k).contDiffAt (hU.mem_nhds hy)).iteratedFDeriv_right (m := (⊤ : ℕ∞)) (i := m) (by simp)).differentiableAt (by simp)
+        have he :=
           Filter.Eventually.mono (hU.mem_nhds hy) (fun z hz => hbind m z hz k)
         have hd := ht.hasFDerivAt.congr_of_eventuallyEq he
         convert hd using 1
         change L (J (m+1) y k) = _
         rw [hbind (m+1) y hy k]
         rfl
-      rw [show ((n+1 : ℕ) : WithTop ℕ∞) = (n : WithTop ℕ∞)+1 by simp]
+      rw [show ((n+1 : ℕ) : WithTop ℕ∞) = n+1 by simp]
       apply (contDiffOn_succ_iff_hasFDerivWithinAt_of_uniqueDiffOn hU.uniqueDiffOn).2
       refine ⟨by simp, fun x => compactDerivative (q x), ?_, fun x hx => (hd x hx).hasFDerivWithinAt⟩
       simpa only [Function.comp_def, compactDerivativeMap_apply] using
@@ -212,18 +210,15 @@ theorem compact_family_contDiffOn
   let : NormedAddCommGroup (ContinuousMultilinearMap ℝ (fun _ : Fin 0 => E) V) := inferInstance
   let : NormedSpace ℝ (ContinuousMultilinearMap ℝ (fun _ : Fin 0 => E) V) := inferInstance
   let Z := (continuousMultilinearCurryFin0 ℝ E V).toContinuousLinearEquiv.toContinuousLinearMap
-  have h0 : ContDiffOn ℝ (⊤ : ℕ∞) (J 0) U := contDiffOn_infty.mpr (fun n => hjets n 0)
-  have hZ := (ContinuousLinearMap.compLeftContinuous ℝ K Z).contDiff.comp_contDiffOn h0
-  apply hZ.congr
+  apply ((ContinuousLinearMap.compLeftContinuous ℝ K Z).contDiff.comp_contDiffOn (contDiffOn_infty.mpr (fun n => hjets n 0))).congr
   intro x hx
   ext k
   change f x k = Z (J 0 x k)
   rw [hbind 0 x hx k]
   simp [Z]
 
+include hU hf in
 theorem compact_family_contDiffOn_of_joint_jets
-    (f : E → C(K,V)) (U : Set E) (hU : IsOpen U)
-    (hf : ∀ k, ContDiffOn ℝ (⊤ : ℕ∞) (fun x => f x k) U)
     (hjets : ∀ m : ℕ, ContinuousOn
       (fun p : E × K => iteratedFDeriv ℝ m (fun y => f y p.2) p.1)
       (U ×ˢ Set.univ)) : ContDiffOn ℝ (⊤ : ℕ∞) f U := by
@@ -232,10 +227,9 @@ theorem compact_family_contDiffOn_of_joint_jets
     fun m x => if hx : x ∈ U then
       ⟨fun k => iteratedFDeriv ℝ m (fun y => f y k) x,
         by
-          have h := (hjets m).comp (continuous_const.prodMk continuous_id).continuousOn
+          simpa [continuousOn_univ, Function.comp_def] using ((hjets m).comp (continuous_const.prodMk continuous_id).continuousOn
             (show Set.MapsTo (fun k : K => (x,k)) Set.univ (U ×ˢ Set.univ) from
-              fun k _ => ⟨hx,Set.mem_univ _⟩)
-          simpa [continuousOn_univ, Function.comp_def] using h⟩
+              fun k _ => ⟨hx,Set.mem_univ _⟩))⟩
       else 0
   have hb (m : ℕ) (x : E) (hx : x ∈ U) (k : K) :
       J m x k = iteratedFDeriv ℝ m (fun y => f y k) x := by simp only [J, dite_eq_left hx, ContinuousMap.coe_mk]
@@ -265,10 +259,9 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualDifferentialData
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-theorem archBase_mem_domain : archBase F ∈ archDomain F := by
-  intro w; simp [archBase]
+alias archBase_mem_domain := DedekindZetaZeroFree.KPLiteralChamber.JointProfile.ArchChartProduct.ArchimedeanChartMultiplication.base_domain
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualDifferentialData
 

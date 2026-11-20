@@ -14,126 +14,17 @@ namespace DedekindZetaZeroFree.NonarchimedeanHaarScaling
 variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K]
 
-theorem residue_index_measure (μ : Measure K) [μ.IsAddHaarMeasure] :
-    (Nat.card (IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer) : ℝ≥0∞) *
-      μ ((ValuativeRel.valuation K).integer.subtype ''
-        (IsLocalRing.maximalIdeal ↥(ValuativeRel.valuation K).integer :
-          Set ↥(ValuativeRel.valuation K).integer)) =
-      μ ((ValuativeRel.valuation K).integer : Set K) := by
-  classical
-  let R := (ValuativeRel.valuation K).integer
-  let κ := IsLocalRing.ResidueField R
-  let r : R →+* κ := IsLocalRing.residue R
-  letI : Fintype κ := Fintype.ofFinite κ
-  letI : MeasurableSpace κ := ⊤
-  letI := IsTopologicalAddGroup.rightUniformSpace K
-  haveI := isUniformAddGroup_of_addCommGroup (G := K)
-  have hR : MeasurableSet (R : Set K) := (Valued.isClosed_integer K).measurableSet
-  let ν : Measure R := μ.comap R.subtype
-  haveI : ν.IsAddLeftInvariant := Measure.IsAddLeftInvariant.comap μ
-    (f := R.subtype.toAddMonoidHom) (MeasurableEmbedding.subtype_coe hR)
-  have hr : Measurable r := by
-    apply measurable_to_countable
-    intro y
-    have he : r ⁻¹' {r y} =
-        (fun u : R => u - y) ⁻¹' (IsLocalRing.maximalIdeal R : Set R) := by
-      ext u
-      change r u = r y ↔ u - y ∈ IsLocalRing.maximalIdeal R
-      rw [← IsLocalRing.residue_eq_zero_iff, map_sub, sub_eq_zero]
-    rw [he]
-    exact (IsNoetherianRing.isClosed_ideal _).measurableSet.preimage (by fun_prop)
-  let ρ : Measure κ := ν.map r
-  haveI : ρ.IsAddLeftInvariant := isAddLeftInvariant_map r.toAddMonoidHom.toAddHom hr
-    IsLocalRing.residue_surjective
-  have hmass : ρ Set.univ = μ (R : Set K) := by
-    rw [Measure.map_apply hr MeasurableSet.univ, Set.preimage_univ]
-    calc
-      ν Set.univ = μ (Subtype.val '' (Set.univ : Set R)) := by
-        exact comap_subtype_coe_apply hR μ Set.univ
-      _ = μ (R : Set K) := by congr 1; ext x; simp
-  have hsingle (x : κ) : ρ {x} = ρ {0} := by
-    have he : (fun y : κ => -x + y) ⁻¹' {0} = {x} := by
-      ext y
-      simp only [Set.mem_preimage, Set.mem_singleton_iff]
-      constructor <;> intro h
-      · linear_combination h
-      · rw [h]; simp
-    rw [← he, measure_preimage_add]
-  have hsum : (Fintype.card κ : ℝ≥0∞) * ρ {0} = ρ Set.univ := by
-    have H := sum_measure_singleton (μ := ρ) (s := Finset.univ)
-    simp only [hsingle, Finset.sum_const, Finset.card_univ, nsmul_eq_mul] at H
-    simpa using H
-  have hzero : ρ {0} = μ (R.subtype '' (IsLocalRing.maximalIdeal R : Set R)) := by
-    rw [Measure.map_apply hr (MeasurableSet.singleton 0)]
-    have hset : r ⁻¹' {0} = (IsLocalRing.maximalIdeal R : Set R) := by
-      ext x
-      exact IsLocalRing.residue_eq_zero_iff x
-    rw [hset]
-    exact comap_subtype_coe_apply hR μ _
-  simpa only [Nat.card_eq_fintype_card, hzero, hmass] using hsum
+alias residue_index_measure := DedekindZetaZeroFree.IntrinsicHaarScaling.residue_index_measure
 
-theorem uniformizer_image_integerRing
-    (π : ↥(ValuativeRel.valuation K).integer) (hπ : Irreducible π) :
-    (fun x : K => (π : K) * x) '' ((ValuativeRel.valuation K).integer : Set K) =
-      (ValuativeRel.valuation K).integer.subtype ''
-        (IsLocalRing.maximalIdeal ↥(ValuativeRel.valuation K).integer :
-          Set ↥(ValuativeRel.valuation K).integer) := by
-  let R := (ValuativeRel.valuation K).integer
-  change (fun x : K => (π : K) * x) '' (R : Set K) =
-    R.subtype '' (IsLocalRing.maximalIdeal R : Set R)
-  ext x
-  constructor
-  · rintro ⟨y, hy, rfl⟩
-    refine ⟨π * (⟨y, hy⟩ : R), ?_, rfl⟩
-    rw [hπ.maximalIdeal_eq]
-    rw [SetLike.mem_coe, Ideal.mem_span_singleton]
-    exact dvd_mul_right _ _
-  · rintro ⟨y, hy, rfl⟩
-    rw [hπ.maximalIdeal_eq] at hy
-    rw [SetLike.mem_coe, Ideal.mem_span_singleton] at hy
-    obtain ⟨z, rfl⟩ := hy
-    exact ⟨z, z.property, rfl⟩
+alias uniformizer_image_integerRing := DedekindZetaZeroFree.IntrinsicHaarScaling.uniformizer_image_integerRing
 
-theorem uniformizer_image_measure (μ : Measure K) [μ.IsAddHaarMeasure]
-    (π : ↥(ValuativeRel.valuation K).integer) (hπ : Irreducible π) :
-    μ ((fun x : K => (π : K) * x) '' ((ValuativeRel.valuation K).integer : Set K)) =
-      μ ((ValuativeRel.valuation K).integer : Set K) /
-        (Nat.card (IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer) : ℝ≥0∞) := by
-  rw [uniformizer_image_integerRing K π hπ]
-  apply (ENNReal.eq_div_iff ?_ (ENNReal.natCast_ne_top _)).mpr
-  · exact residue_index_measure K μ
-  · exact_mod_cast Nat.card_pos (α := IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer).ne'
+alias uniformizer_image_measure := DedekindZetaZeroFree.IntrinsicHaarScaling.uniformizer_image_measure
 
-private lemma pseudo : TopologicalSpace.PseudoMetrizableSpace K := by
-  letI := IsTopologicalAddGroup.rightUniformSpace K
-  haveI := isUniformAddGroup_of_addCommGroup (G := K)
-  letI : (Valued.v (R := K)).RankOne :=
-  { hom' := ValuativeRel.IsRankLeOne.nonempty.some.emb (R := K).comp MonoidWithZeroHom.ValueGroup₀.embedding
-    strictMono' := ValuativeRel.IsRankLeOne.nonempty.some.strictMono.comp MonoidWithZeroHom.ValueGroup₀.embedding_strictMono }
-  letI : NormedField K := Valued.toNormedField K (ValuativeRel.ValueGroupWithZero K)
-  infer_instance
-private lemma sigma : SigmaCompactSpace K := by
-  let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-  apply SigmaCompactSpace_iff_exists_compact_covering.mpr
-  refine ⟨fun n => {x | ValuativeRel.valuation K x ≤ e.symm (WithZero.exp (n : ℤ))}, fun n => IsNonarchimedeanLocalField.isCompact_closedBall K _, ?_⟩
-  apply Set.eq_univ_of_forall
-  intro x
-  by_cases hx : x = 0
-  · subst x; simp
-  have hv : e (ValuativeRel.valuation K x) ≠ 0 := by simpa [e] using hx
-  let l := WithZero.log (e (ValuativeRel.valuation K x))
-  refine Set.mem_iUnion.mpr ⟨l.toNat, ?_⟩
-  change ValuativeRel.valuation K x ≤ e.symm (WithZero.exp (l.toNat : ℤ))
-  rw [← e.toOrderIso.le_iff_le]
-  change e (ValuativeRel.valuation K x) ≤ e (e.symm (WithZero.exp (l.toNat : ℤ)))
-  rw [e.apply_symm_apply, ← WithZero.exp_log hv, WithZero.exp_le_exp]
-  change l ≤ (l.toNat : ℤ)
-  omega
+private alias pseudo := DedekindZetaZeroFree.IntrinsicHaarScaling.ResidueFieldScaling.pseudo
+private alias sigma := DedekindZetaZeroFree.IntrinsicHaarScaling.ResidueFieldScaling.sigma
  abbrev q := Nat.card (IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer)
-private lemma q_pos : (0 : ℝ) < q K := by exact_mod_cast (Nat.card_pos (α := IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer))
-private lemma q_gt : (1 : ℝ) < q K := by
-  letI := Fintype.ofFinite (IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer)
-  exact_mod_cast (show 1 < q K from by simpa only [q, Nat.card_eq_fintype_card] using Fintype.one_lt_card (α := IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer))
+private lemma q_pos : (0 : ℝ) < q K := by apply @DedekindZetaZeroFree.IntrinsicHaarScaling.ResidueFieldScaling.q_pos <;> assumption
+
 private lemma apos {x : K} (hx : x ≠ 0) : 0 < KPCubicHaar.abs K x := by
   simp only [KPCubicHaar.abs, if_neg hx]
   exact zpow_pos (q_pos K) _
@@ -142,11 +33,9 @@ private lemma amul (x y : K) : KPCubicHaar.abs K (x*y) = KPCubicHaar.abs K x * K
   · subst x; simp [KPCubicHaar.abs]
   by_cases hy : y = 0
   · subst y; simp [KPCubicHaar.abs]
-  have hvx : ValuativeRel.valuation K x ≠ 0 := by simpa using hx
-  have hvy : ValuativeRel.valuation K y ≠ 0 := by simpa using hy
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-  have hex : e (ValuativeRel.valuation K x) ≠ 0 := by simpa [e] using hvx
-  have hey : e (ValuativeRel.valuation K y) ≠ 0 := by simpa [e] using hvy
+  have hex : e (ValuativeRel.valuation K x) ≠ 0 := by simpa [e] using (by exact hx)
+  have hey : e (ValuativeRel.valuation K y) ≠ 0 := by simpa [e] using (by exact hy)
   simp only [KPCubicHaar.abs, if_neg hx, if_neg hy, if_neg (mul_ne_zero hx hy), _root_.map_mul]
   rw [WithZero.log_mul hex hey, zpow_add₀]
   exact (q_pos K).ne'
@@ -159,7 +48,8 @@ private lemma ale {x y : K} (hy : y ≠ 0) :
   have hey : e (ValuativeRel.valuation K y) ≠ 0 := by simpa [e] using hy
   simp only [KPCubicHaar.abs, if_neg hx, if_neg hy]
   change (q K : ℝ) ^ WithZero.log (e (ValuativeRel.valuation K x)) ≤ (q K : ℝ) ^ WithZero.log (e (ValuativeRel.valuation K y)) ↔ _
-  rw [zpow_le_zpow_iff_right₀ (q_gt K)]
+  rw [zpow_le_zpow_iff_right₀ (by
+    apply @DedekindZetaZeroFree.IntrinsicHaarScaling.ResidueFieldScaling.q_gt <;> assumption)]
   change WithZero.log (e (ValuativeRel.valuation K x)) ≤ WithZero.log (e (ValuativeRel.valuation K y)) ↔ _
   rw [← e.toOrderIso.le_iff_le]
   change WithZero.log (e (ValuativeRel.valuation K x)) ≤ WithZero.log (e (ValuativeRel.valuation K y)) ↔ e (ValuativeRel.valuation K x) ≤ e (ValuativeRel.valuation K y)
@@ -231,15 +121,11 @@ private lemma mass_scale (μ : Measure K) [μ.IsAddHaarMeasure] (d : Kˣ) :
   change μ (d • ((ValuativeRel.valuation K).integer : Set K)) = (distribHaarChar K d : ℝ≥0∞) * μ ((ValuativeRel.valuation K).integer : Set K) at h
   rw [ball_image K] at h
   exact h
-private lemma mass_pos (μ : Measure K) [μ.IsAddHaarMeasure] :
-    0 < μ.real ((ValuativeRel.valuation K).integer : Set K) := by
-  letI := IsTopologicalAddGroup.rightUniformSpace K
-  haveI := isUniformAddGroup_of_addCommGroup (G := K)
-  exact ENNReal.toReal_pos ((Valued.isOpen_integer K).measure_ne_zero μ ⟨0, by simp⟩) (IsNonarchimedeanLocalField.isCompact_closedBall K 1).measure_lt_top.ne
+private alias mass_pos := DedekindZetaZeroFree.IntrinsicHaarScaling.ResidueFieldScaling.mass_pos
 private lemma pi_char (μ : Measure K) [μ.IsAddHaarMeasure]
     (π : ↥(ValuativeRel.valuation K).integer) (hπ : Irreducible π) :
     (distribHaarChar K (Units.mk0 (π : K) (by exact_mod_cast hπ.ne_zero)) : ℝ) = (q K : ℝ)⁻¹ := by
-  let d : Kˣ := Units.mk0 (π : K) (by exact_mod_cast hπ.ne_zero)
+  let d := Units.mk0 (π : K) (by exact_mod_cast hπ.ne_zero)
   have h := uniformizer_image_measure K μ π hπ
   have hset : (fun x : K => (π : K) * x) '' ((ValuativeRel.valuation K).integer : Set K) = d • ((ValuativeRel.valuation K).integer : Set K) := rfl
   rw [hset, ball_image K, mass_scale K] at h
@@ -251,7 +137,7 @@ private lemma pi_char (μ : Measure K) [μ.IsAddHaarMeasure]
 lemma char_abs (μ : Measure K) [μ.IsAddHaarMeasure] (c : Kˣ) :
     (distribHaarChar K c : ℝ) = KPCubicHaar.abs K (c : K) := by
   obtain ⟨π, hπ, ha⟩ := exists_pi K
-  let d : Kˣ := Units.mk0 (π : K) (by exact_mod_cast hπ.ne_zero)
+  let d := Units.mk0 (π : K) (by exact_mod_cast hπ.ne_zero)
   have hd : KPCubicHaar.abs K (d : K) = (q K : ℝ) ^ (-1 : ℤ) := ha
   have hc := pi_char K μ π hπ
   let k := -WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (ValuativeRel.valuation K (c : K)))
@@ -262,12 +148,12 @@ lemma char_abs (μ : Measure K) [μ.IsAddHaarMeasure] (c : Kˣ) :
   simp only [ENNReal.toReal_mul, ENNReal.coe_toReal] at hm hn
   rw [hca] at hm
   rw [hdk, _root_.map_zpow, NNReal.coe_zpow, hc, ← zpow_neg_one, ← zpow_mul, neg_one_mul] at hn
-  have H := hm.symm.trans hn
-  have H' := mul_right_cancel₀ (mass_pos K μ).ne' H
   rw [hca]
-  exact H'
+  exact mul_right_cancel₀ (mass_pos K μ).ne' (hm.symm.trans hn)
 
-theorem map_mul (μ : Measure K) [μ.IsAddHaarMeasure] (c : K) (hc : c ≠ 0) :
+variable (μ : Measure K) [μ.IsAddHaarMeasure]
+
+theorem map_mul (c : K) (hc : c ≠ 0) :
     Measure.map (fun x : K => c * x) μ =
       (ENNReal.ofReal (KPCubicHaar.abs K c))⁻¹ • μ := by
   let d := Units.mk0 c hc
@@ -290,14 +176,14 @@ theorem map_mul (μ : Measure K) [μ.IsAddHaarMeasure] (c : K) (hc : c ≠ 0) :
   simp only [Measure.smul_apply, NNReal.smul_def, ENNReal.smul_def, smul_eq_mul,
     ENNReal.coe_inv (ne_of_gt distribHaarChar_pos), hchar]
 
-theorem closedBall_measure (μ : Measure K) [μ.IsAddHaarMeasure] (k : ℤ) :
+theorem closedBall_measure (k : ℤ) :
     μ {x : K | KPCubicHaar.abs K x ≤
         (Nat.card (IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer) : ℝ) ^ k} =
       ENNReal.ofReal
         ((Nat.card (IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer) : ℝ) ^ k) *
           μ ((ValuativeRel.valuation K).integer : Set K) := by
   obtain ⟨π, hπ, ha⟩ := exists_pi K
-  let d : Kˣ := Units.mk0 (π : K) (by exact_mod_cast hπ.ne_zero)
+  let d := Units.mk0 (π : K) (by exact_mod_cast hπ.ne_zero)
   have hd : KPCubicHaar.abs K (d : K) = (q K : ℝ) ^ (-1 : ℤ) := ha
   have hdk : KPCubicHaar.abs K (↑(d ^ (-k)) : K) = (q K : ℝ) ^ k := by
     rw [azpow K, hd, ← zpow_mul]; simp

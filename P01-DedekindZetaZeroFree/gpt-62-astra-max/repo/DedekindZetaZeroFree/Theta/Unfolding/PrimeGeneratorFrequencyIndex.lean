@@ -16,12 +16,10 @@ open _root_.DedekindZetaZeroFree.ThetaBranch.CanonicalCoordinateProof renaming i
 open _root_.DedekindZetaZeroFree.ThetaBranch.CanonicalCoordinateProof renaming order_eq_of_frequency_eq → ThetaBranch.CanonicalCoordinateProof.order_eq_of_frequency_eq
 open _root_.DedekindZetaZeroFree.ThetaBranch.CanonicalCoordinateProof renaming exterior_ideal_of_exponents → ThetaBranch.CanonicalCoordinateProof.exterior_ideal_of_exponents
 open _root_.DedekindZetaZeroFree.ThetaBranch.CanonicalCoordinateProof renaming squarefree_of_exponents_le_one → ThetaBranch.CanonicalCoordinateProof.squarefree_of_exponents_le_one
-open _root_.DedekindZetaZeroFree.ExteriorWhittakerValues.NumericalSpherical renaming ord_prod → ord_prod
-open _root_.DedekindZetaZeroFree.ExteriorWhittakerValues.NumericalSpherical renaming ord_pow → ord_pow
-open _root_.DedekindZetaZeroFree.ExteriorWhittakerValues.NumericalSpherical renaming prime_ord → prime_ord
+open _root_.DedekindZetaZeroFree.ExteriorWhittakerValues.NumericalSpherical (ord_prod ord_pow prime_ord)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 abbrev ForwardIndex := ExteriorSquarefreeIdeal R.A.cS × R.A.Exterior
 
@@ -33,14 +31,12 @@ lemma forwardFrequency_injective : Function.Injective (forwardFrequency R) := by
   have ho (p : ThetaBranch.ExteriorPrime R.A) :=
     ThetaBranch.CanonicalCoordinateProof.order_eq_of_frequency_eq R.A _ _ he p
   simp only [forwardGenerator_order] at ho
-  have hj := ExteriorWhittakerValues.NumericalSpherical.squarefree_exps R.A j.1
-  have hk := ExteriorWhittakerValues.NumericalSpherical.squarefree_exps R.A k.1
   have hex (p : ThetaBranch.ExteriorPrime R.A) :
       idealPrimeExponent p.val.asIdeal j.1.val.val = idealPrimeExponent p.val.asIdeal k.1.val.val ∧
       idealPrimeExponent p.val.asIdeal j.2.val = idealPrimeExponent p.val.asIdeal k.2.val := by
     have := ho p
-    have := hj p
-    have := hk p
+    have := (ExteriorWhittakerValues.NumericalSpherical.squarefree_exps R.A j.1) p
+    have := (ExteriorWhittakerValues.NumericalSpherical.squarefree_exps R.A k.1) p
     omega
   apply Prod.ext
   · apply Subtype.ext
@@ -58,12 +54,8 @@ lemma forwardFrequency_exists (a : Fˣ)
     ∃ j : ForwardIndex R, forwardFrequency R j = QuotientGroup.mk a := by
   let e := fun p : ThetaBranch.ExteriorPrime R.A => (ThetaBranch.order p.val a).toNat % 3
   let f := fun p : ThetaBranch.ExteriorPrime R.A => (ThetaBranch.order p.val a).toNat / 3
-  have he : {p | e p ≠ 0}.Finite := (exterior_order_support_finite R a).subset (by
-    intro p hp hn; exact hp (by simp [e, hn]))
-  have hf : {p | f p ≠ 0}.Finite := (exterior_order_support_finite R a).subset (by
-    intro p hp hn; exact hp (by simp [f, hn]))
-  obtain ⟨c, hc⟩ := ThetaBranch.CanonicalCoordinateProof.exterior_ideal_of_exponents R.A e he
-  obtain ⟨n, hn⟩ := ThetaBranch.CanonicalCoordinateProof.exterior_ideal_of_exponents R.A f hf
+  obtain ⟨c, hc⟩ := ThetaBranch.CanonicalCoordinateProof.exterior_ideal_of_exponents R.A e ((exterior_order_support_finite R a).subset (fun p hp hn => hp (by simp [e, hn])))
+  obtain ⟨n, hn⟩ := ThetaBranch.CanonicalCoordinateProof.exterior_ideal_of_exponents R.A f ((exterior_order_support_finite R a).subset (fun p hp hn => hp (by simp [f, hn])))
   have hsf : Squarefree c.val := by
     apply ThetaBranch.CanonicalCoordinateProof.squarefree_of_exponents_le_one R.A c
     intro p
@@ -72,8 +64,7 @@ lemma forwardFrequency_exists (a : Fˣ)
     have h := ho p
     have ht := Int.toNat_of_nonneg h.1
     omega
-  let j : ForwardIndex R := (⟨c, hsf⟩, n)
-  refine ⟨j, ?_⟩
+  refine ⟨((⟨c, hsf⟩, n)), ?_⟩
   apply allowed_frequency_eq R
   · rw [R.probe.sameComplement]; exact forwardGenerator_allowed R _ _
   · rwa [R.probe.sameComplement]
@@ -87,9 +78,7 @@ lemma forwardExterior_supported {N : TraceHaarTransport R} (C : JointUpperVanish
     (a : Fˣ) (ha : forwardExterior R C a ≠ 0) (p : ThetaBranch.ExteriorPrime R.A) :
     0 ≤ ThetaBranch.order p.val a ∧
       (ThetaBranch.order p.val a % 3 = 0 ∨ ThetaBranch.order p.val a % 3 = 1) := by
-  have hp : C.factorization.exteriorValue R p a ≠ 0 := by
-    intro hz
-    exact ha (finprod_eq_zero _ p hz (forwardExterior_finite R C a))
+  have hp : C.factorization.exteriorValue R p a ≠ 0 := fun hz => ha (finprod_eq_zero _ p hz (forwardExterior_finite R C a))
   rw [C.exterior.rational_exact] at hp
   unfold ThetaBranch.sphericalFactor sexticSphericalCoefficient at hp
   split_ifs at hp <;> simp_all <;> omega
@@ -110,7 +99,7 @@ lemma forwardGenerator_primeProduct (c : ExteriorSquarefreeIdeal R.A.cS) (n : R.
             (idealPrimeExponent p.val.asIdeal c.val.val + 3 * idealPrimeExponent p.val.asIdeal n.val))) ∈
           R.probe.allowed.B := by
       induction T using Finset.induction_on with
-      | empty => simpa using R.probe.allowed.B.one_mem
+      | empty => exact R.probe.allowed.B.one_mem
       | @insert p T hp ih =>
         rw [Finset.prod_insert hp]
         apply R.probe.allowed.B.mul_mem
@@ -191,7 +180,7 @@ lemma forwardExterior_generator {N : TraceHaarTransport R} (C : JointUpperVanish
       (by simpa only [ThetaBranch.extSupport, ThetaBranch.CanonicalCoefficientProof.mem_extSupport] using h))
   let b := ∏ p ∈ P, R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p) ^
         (idealPrimeExponent p.val.asIdeal c.val.val + 3 * idealPrimeExponent p.val.asIdeal n.val)
-  have he : (QuotientGroup.mk (forwardGenerator R c n) : ThetaReflectionData.Frequency R.A) = QuotientGroup.mk b :=
+  have he :=
     forwardGenerator_primeProduct R c n P hc hn
   rw [forwardExterior_eq_of_frequency_eq R C _ b he]
   rw [forwardExterior_eq_prod R C b P (by

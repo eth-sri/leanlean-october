@@ -45,8 +45,6 @@ theorem arch_invariant_of_sl2_invariant
     funext w
     exact (exists_sl2_representative (k w)).choose_spec.symm
   rw [hk, (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.2.2]
-  change θ (((Finset.univ : Finset (InfinitePlace F)).toList.map
-    (fun w => KPLiteralPeriod.complexSL2 F ζ hζ w (a w))).prod * g) = θ g
   suffices H : ∀ (l : List (InfinitePlace F)) g,
       θ ((l.map (fun w => KPLiteralPeriod.complexSL2 F ζ hζ w (a w))).prod * g) = θ g by
     exact H _ g

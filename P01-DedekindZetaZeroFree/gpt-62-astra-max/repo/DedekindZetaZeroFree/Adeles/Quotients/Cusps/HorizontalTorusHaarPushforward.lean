@@ -32,7 +32,7 @@ theorem mixedToHorizontal_surjective : Function.Surjective (mixedToHorizontal F)
   simp [mixedToHorizontal]
 
 variable (K : AddSubgroup (IsDedekindDomain.FiniteAdeleRing (𝓞 F) F))
-variable (L : AddSubgroup F)
+    (L : AddSubgroup F)
 variable (h : (finiteLevelLattice K).toAddSubgroup ≤
   (KPCuspCharts.translationLattice F L).comap (mixedToHorizontal F))
 

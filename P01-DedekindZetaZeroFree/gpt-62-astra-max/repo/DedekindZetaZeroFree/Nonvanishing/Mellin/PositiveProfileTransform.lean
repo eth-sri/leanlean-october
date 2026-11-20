@@ -10,13 +10,11 @@ open scoped NumberField Classical ENNReal
 open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.GaussianSmoothing
 open MomentSources ThetaProfileHaarSheets ThetaPositiveSheetMellin
-open _root_.DedekindZetaZeroFree renaming radial_integrable → radial_integrable
-open _root_.DedekindZetaZeroFree.ThetaPositiveSheetMellin renaming PA → PA
-open _root_.DedekindZetaZeroFree.ThetaPositiveSheetMellin renaming polarEquiv → polarEquiv
-open _root_.DedekindZetaZeroFree.ThetaPositiveSheetMellin renaming polarEquiv_eq → polarEquiv_eq
+open _root_.DedekindZetaZeroFree (radial_integrable)
+open _root_.DedekindZetaZeroFree.ThetaPositiveSheetMellin (PA polarEquiv polarEquiv_eq)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 
 theorem compact_subgroup_norm_one {K : Type*} [NormedField K]
     (U : Subgroup Kˣ) (hU : IsCompact (U : Set Kˣ)) (z : Kˣ) (hz : z ∈ U) :
@@ -38,12 +36,16 @@ def radial (P : Packet R Q) (y : R.A.G) : ℝ :=
   (if ∀ p : R.A.Sf, y.2 p ∈ P.cutoff p then 1 else 0) *
     ∏ w : InfinitePlace F, thirdBesselRadialProfile (P.scale w) (‖(y.1 w : w.Completion)‖ ^ 2)
 
-def polarC0 (N : TraceHaarTransport R) (P : Packet R Q) : ℝ :=
+section
+
+variable (N : TraceHaarTransport R) (P : Packet R Q)
+
+def polarC0 : ℝ :=
   (∏ p : R.A.Sf, (N.finiteMultHaar p (P.cutoff p : Set (p.val.adicCompletion F)ˣ)).toReal) *
   (∏ w : InfinitePlace F, (N.angularHaar w Set.univ).toReal) *
     ∏ w : InfinitePlace F, (2 / P.scale w ^ 2)
 
-theorem polarC0_pos (N : TraceHaarTransport R) (P : Packet R Q) : 0 < polarC0 N P := by
+theorem polarC0_pos : 0 < polarC0 N P := by
   letI := N.finiteMultHaar_isHaar
   letI := N.angularHaar_isHaar
   unfold polarC0
@@ -58,6 +60,8 @@ theorem polarC0_pos (N : TraceHaarTransport R) (P : Packet R Q) : 0 < polarC0 N 
       exact ENNReal.toReal_pos (isOpen_univ.measure_ne_zero _ Set.univ_nonempty)
         isCompact_univ.measure_ne_top
   · exact Finset.prod_pos (fun w _ => div_pos (by norm_num) (sq_pos_of_pos (P.scale_pos w)))
+
+end
 
 theorem radial_nonneg (P : Packet R Q) (y : R.A.G) : 0 ≤ radial P y := by
   unfold radial
@@ -84,13 +88,16 @@ theorem continuous_radial (P : Packet R Q) : Continuous (radial P) := by
   intro w _
   have ht : Continuous (fun y : R.A.G => ‖(y.1 w : w.Completion)‖ ^ 2) :=
     ((Units.continuous_val.comp ((continuous_apply w).comp continuous_fst)).norm).pow 2
-  have harg : Continuous (fun y : R.A.G => P.scale w * Real.sqrt (‖(y.1 w : w.Completion)‖ ^ 2)) :=
-    continuous_const.mul (Real.continuous_sqrt.comp ht)
-  exact ht.mul (KThird_continuousOn.comp_continuous harg (fun y =>
+  exact ht.mul (KThird_continuousOn.comp_continuous (continuous_const.mul (Real.continuous_sqrt.comp ht)) (fun y =>
     mul_pos (P.scale_pos w) (Real.sqrt_pos.mpr
       (sq_pos_of_pos (norm_pos_iff.mpr (y.1 w).ne_zero)))))
 
-lemma axis_radial_integrable (c : ℝ) (hc : 0 < c) (s : ℂ) (hs : -(5/6 : ℝ) < s.re) :
+section
+
+variable (c : ℝ) (hc : 0 < c) (s : ℂ) (hs : -(5/6 : ℝ) < s.re)
+
+include hc hs in
+lemma axis_radial_integrable :
     Integrable (fun t : PositiveAxis => (thirdBesselRadialProfile c t.val : ℂ) * (t.val : ℂ)^s)
       positiveHaar := by
   let g := fun t : ℝ => (thirdBesselRadialProfile c t : ℂ) * (t : ℂ)^s
@@ -101,13 +108,13 @@ lemma axis_radial_integrable (c : ℝ) (hc : 0 < c) (s : ℂ) (hs : -(5/6 : ℝ)
     positiveHaar_map_val, restrict_withDensity measurableSet_Ioi,
     integrable_withDensity_iff_integrable_smul' (by fun_prop)
       (Filter.Eventually.of_forall (fun _ => ENNReal.ofReal_lt_top))]
-  have hi := radial_integrable c hc s hs
-  apply hi.congr
+  apply (radial_integrable c hc s hs).congr
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
   simp [g, ENNReal.toReal_ofReal (inv_nonneg.mpr ht.le),
     Complex.real_smul, div_eq_mul_inv, mul_comm, mul_left_comm]
 
-lemma axis_radial_mellin (c : ℝ) (hc : 0 < c) (s : ℂ) (hs : -(5/6 : ℝ) < s.re) :
+include hc hs in
+lemma axis_radial_mellin :
     (∫ t : PositiveAxis, (thirdBesselRadialProfile c t.val : ℂ) * (t.val : ℂ)^s ∂positiveHaar) =
       (2 / c^2 : ℝ) * (4 / c^2 : ℝ)^ (s : ℂ) * Complex.Gamma (s+5/6) * Complex.Gamma (s+7/6) := by
   have he : MeasurableEmbedding (Subtype.val : PositiveAxis → ℝ) :=
@@ -122,7 +129,13 @@ lemma axis_radial_mellin (c : ℝ) (hc : 0 < c) (s : ℂ) (hs : -(5/6 : ℝ) < s
   simp [ENNReal.toReal_ofReal (inv_nonneg.mpr ht.le), smul_eq_mul, Complex.real_smul]
   ring
 
-lemma norm_sq_sqrtUnit (A : SArithmeticData F) (w : InfinitePlace F) (x : PositiveAxis) :
+end
+
+section
+
+variable (A : SArithmeticData F) (w : InfinitePlace F)
+
+lemma norm_sq_sqrtUnit (x : PositiveAxis) :
     ‖(sqrtUnit A w x : w.Completion)‖ ^ 2 = x.val := by
   have h := (InfinitePlace.Completion.isometry_extensionEmbedding w).dist_eq
     (sqrtUnit A w x : w.Completion) 0
@@ -136,7 +149,7 @@ lemma norm_sq_sqrtUnit (A : SArithmeticData F) (w : InfinitePlace F) (x : Positi
   rw [← h]
   simp [abs_of_pos (Real.sqrt_pos.mpr x.property), Real.sq_sqrt x.property.le]
 
-lemma polarUnit_norm_sq (A : SArithmeticData F) (w : InfinitePlace F) (p : PositiveAxis × Circle) :
+lemma polarUnit_norm_sq (p : PositiveAxis × Circle) :
     ‖(polarUnit A w p : w.Completion)‖ ^ 2 = p.1.val := by
   rw [polarUnit, Units.val_mul, norm_mul, mul_pow, norm_sq_sqrtUnit]
   have h := (InfinitePlace.Completion.isometry_extensionEmbedding w).dist_eq
@@ -151,15 +164,20 @@ lemma polarUnit_norm_sq (A : SArithmeticData F) (w : InfinitePlace F) (p : Posit
   simp only [map_zero, dist_zero_right, he, Circle.norm_coe] at h
   rw [← h]; simp
 
-lemma arch_integrable (A : SArithmeticData F) (w : InfinitePlace F)
-    (ν : Measure Circle) [ν.IsHaarMeasure] (c : ℝ) (hc : 0 < c)
-    (s : ℂ) (hs : -(5/6 : ℝ) < s.re) :
+end
+
+section
+
+variable (A : SArithmeticData F) (w : InfinitePlace F) (ν : Measure Circle) [ν.IsHaarMeasure] (c : ℝ)
+    (hc : 0 < c) (s : ℂ) (hs : -(5/6 : ℝ) < s.re)
+
+include hc hs in
+lemma arch_integrable :
     Integrable (fun z : w.Completionˣ =>
       (thirdBesselRadialProfile c (‖(z : w.Completion)‖ ^ 2) : ℂ) *
         ((‖(z : w.Completion)‖ ^ 2 : ℝ) : ℂ)^s) (archHaar A w ν) := by
-  have hp : polarUnit A w = polarEquiv A w := funext (fun p => (polarEquiv_eq A w p).symm)
   unfold archHaar
-  rw [hp]
+  rw [(funext (fun p => (polarEquiv_eq A w p).symm))]
   apply (polarEquiv A w).toHomeomorph.measurableEmbedding.integrable_map_iff.mpr
   change Integrable (fun p : PA × Circle =>
     (thirdBesselRadialProfile c (‖(polarEquiv A w p : w.Completion)‖ ^ 2) : ℂ) *
@@ -167,29 +185,27 @@ lemma arch_integrable (A : SArithmeticData F) (w : InfinitePlace F)
   simp_rw [polarEquiv_eq, polarUnit_norm_sq]
   exact (axis_radial_integrable c hc s hs).comp_fst (ν := ν)
 
-lemma arch_mellin (A : SArithmeticData F) (w : InfinitePlace F)
-    (ν : Measure Circle) [ν.IsHaarMeasure] (c : ℝ) (hc : 0 < c)
-    (s : ℂ) (hs : -(5/6 : ℝ) < s.re) :
+include hc hs in
+lemma arch_mellin :
     (∫ z : w.Completionˣ, (thirdBesselRadialProfile c (‖(z : w.Completion)‖ ^ 2) : ℂ) *
       ((‖(z : w.Completion)‖ ^ 2 : ℝ) : ℂ)^s ∂archHaar A w ν) =
       (ν Set.univ).toReal * (2 / c^2 : ℝ) * (4 / c^2 : ℝ)^(s : ℂ) *
         (Complex.Gamma (s+5/6) * Complex.Gamma (s+7/6)) := by
-  have hp : polarUnit A w = polarEquiv A w := funext (fun p => (polarEquiv_eq A w p).symm)
   unfold archHaar
-  rw [hp]
+  rw [(funext (fun p => (polarEquiv_eq A w p).symm))]
   have ht : (⇑(polarEquiv A w)) = ⇑(polarEquiv A w).toHomeomorph := rfl
   rw [ht, (polarEquiv A w).toHomeomorph.measurableEmbedding.integral_map]
   change (∫ p : PA × Circle,
     (thirdBesselRadialProfile c (‖(polarEquiv A w p : w.Completion)‖ ^ 2) : ℂ) *
       ((‖(polarEquiv A w p : w.Completion)‖ ^ 2 : ℝ) : ℂ)^s ∂_) = _
   simp_rw [polarEquiv_eq, polarUnit_norm_sq]
-  change (∫ p : PA × Circle, (fun t : PA =>
-    (thirdBesselRadialProfile c t.val : ℂ) * (t.val : ℂ)^s) p.1 ∂_) = _
-  rw [integral_fun_fst (μ := positiveHaar) (ν := ν)
+  rw [integral_fun_fst
     (fun t : PA => (thirdBesselRadialProfile c t.val : ℂ) * (t.val : ℂ)^s),
     axis_radial_mellin c hc s hs]
   simp only [smul_eq_mul, Complex.real_smul, measureReal_def]
   ring
+
+end
 
 private lemma ofReal_prod_cpow {ι : Type*} (t : Finset ι) (a : ι → ℝ)
     (ha : ∀ i, 0 ≤ a i) (s : ℂ) :

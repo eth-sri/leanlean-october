@@ -30,14 +30,18 @@ noncomputable def openCoordinate (f : ComplexGL2 → ℂ) (x : ℂ) : ℂ :=
 noncomputable def infinityCoordinate (f : ComplexGL2 → ℂ) (u : ℂ) : ℂ :=
   f (lowerUnipotent u)
 
-noncomputable def transitionWeight (s : ℝ) (u : ℂ) : ℝ :=
+section
+
+variable (s : ℝ)
+
+noncomputable def transitionWeight (u : ℂ) : ℝ :=
   Real.rpow ‖u‖ (-2 * (1 + 2 * s))
 
-def HasCovariance (s : ℝ) (f : ComplexGL2 → ℂ) : Prop :=
+def HasCovariance (f : ComplexGL2 → ℂ) : Prop :=
   ∀ (a d : ℂˣ) (b : ℂ) (g : ComplexGL2),
     f (upperTriangular a d b * g) = (inductionWeight s a d : ℂ) * f g
 
-noncomputable def principalSeriesSubmodule (s : ℝ) : Submodule ℂ (ComplexGL2 → ℂ) where
+noncomputable def principalSeriesSubmodule : Submodule ℂ (ComplexGL2 → ℂ) where
   carrier := {f | HasCovariance s f ∧
     ContDiff ℝ (⊤ : ℕ∞) (openCoordinate f) ∧
       ContDiff ℝ (⊤ : ℕ∞) (infinityCoordinate f)}
@@ -57,7 +61,9 @@ noncomputable def principalSeriesSubmodule (s : ℝ) : Submodule ℂ (ComplexGL2
     simp only [Pi.smul_apply, smul_eq_mul, hf a d b h]
     ring
 
-abbrev PrincipalSeries (s : ℝ) := ↥(principalSeriesSubmodule s)
+abbrev PrincipalSeries := ↥(principalSeriesSubmodule s)
+
+end
 
 instance principalSeriesCoeFun (s : ℝ) : CoeFun (PrincipalSeries s) (fun _ => ComplexGL2 → ℂ) :=
   ⟨fun f => f.1⟩
@@ -90,8 +96,8 @@ theorem central_invariance (s : ℝ) (f : PrincipalSeries s) (c : ℂˣ) (g : Co
 
 theorem coordinate_transition (s : ℝ) (f : PrincipalSeries s) (u : ℂ) (hu : u ≠ 0) :
     infinityCoordinate f u = (transitionWeight s u : ℂ) * openCoordinate f u⁻¹ := by
-  let d : ℂˣ := Units.mk0 u hu
-  let a : ℂˣ := -(d⁻¹)
+  let d := Units.mk0 u hu
+  let a := -(d⁻¹)
   have hm : lowerUnipotent u = upperTriangular a d 1 * (weyl * upperUnipotent u⁻¹) := by
     apply Units.ext
     ext i j
@@ -106,9 +112,8 @@ theorem coordinate_transition (s : ℝ) (f : PrincipalSeries s) (u : ℂ) (hu : 
   congr 1
   simp only [Real.rpow_eq_pow]
   rw [← Real.rpow_two (‖u‖⁻¹ / ‖u‖), ← Real.rpow_mul (by positivity)]
-  have hn : 0 < ‖u‖ := norm_pos_iff.mpr hu
   have hbase : ‖u‖⁻¹ / ‖u‖ = ‖u‖ ^ (-2 : ℝ) := by
-    rw [Real.rpow_neg (le_of_lt hn), Real.rpow_two]
+    rw [Real.rpow_neg (le_of_lt (norm_pos_iff.mpr hu)), Real.rpow_two]
     field_simp
   rw [hbase, ← Real.rpow_mul (by positivity)]
   congr 2
@@ -120,21 +125,17 @@ def ExtendsSmoothly (s : ℝ) (F : ℂ → ℂ) : Prop :=
 
  lemma row_nonzero (g : ComplexGL2) :
     (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 ≠ 0 ∨ (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 ≠ 0 := by
-  have h := Matrix.GeneralLinearGroup.det_ne_zero g
   by_contra! hh
-  apply h
+  apply Matrix.GeneralLinearGroup.det_ne_zero g
   simp [Matrix.det_fin_two, hh.1, hh.2]
  lemma open_bruhat (g : ComplexGL2) (hg : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 ≠ 0) :
     ∃ (a d : ℂˣ) (b x : ℂ), g = upperTriangular a d b * (weyl * upperUnipotent x) := by
-  let M : Matrix (Fin 2) (Fin 2) ℂ := g
+  let M := g
   have ha : M 0 1 - M 0 0 * (M 1 1 / M 1 0) ≠ 0 := by
     intro ha
-    have hd := Matrix.GeneralLinearGroup.det_ne_zero g
-    apply hd
+    apply Matrix.GeneralLinearGroup.det_ne_zero g
     rw [Matrix.det_fin_two]
-    change M 0 0 * M 1 1 - M 0 1 * M 1 0 = 0
-    have he := (sub_eq_zero.mp ha)
-    rw [he]
+    rw [((sub_eq_zero.mp ha))]
     field_simp [show M 1 0 ≠ 0 from hg]
     ring
   refine ⟨Units.mk0 _ ha, Units.mk0 (M 1 0) hg, M 0 0, M 1 1 / M 1 0, ?_⟩
@@ -144,15 +145,12 @@ def ExtendsSmoothly (s : ℝ) (F : ℂ → ℂ) : Prop :=
     simp [upperTriangular, weyl, upperUnipotent, Matrix.mul_apply, Fin.sum_univ_two, M, hg, mul_div_cancel₀]
  lemma infinity_bruhat (g : ComplexGL2) (hg : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 ≠ 0) :
     ∃ (a d : ℂˣ) (b x : ℂ), g = upperTriangular a d b * lowerUnipotent x := by
-  let M : Matrix (Fin 2) (Fin 2) ℂ := g
+  let M := g
   have ha : M 0 0 - M 0 1 * (M 1 0 / M 1 1) ≠ 0 := by
     intro ha
-    have hd := Matrix.GeneralLinearGroup.det_ne_zero g
-    apply hd
+    apply Matrix.GeneralLinearGroup.det_ne_zero g
     rw [Matrix.det_fin_two]
-    change M 0 0 * M 1 1 - M 0 1 * M 1 0 = 0
-    have he := (sub_eq_zero.mp ha)
-    rw [he]
+    rw [((sub_eq_zero.mp ha))]
     field_simp [show M 1 1 ≠ 0 from hg]
     ring
   refine ⟨Units.mk0 _ ha, Units.mk0 (M 1 1) hg, M 0 1, M 1 0 / M 1 1, ?_⟩
@@ -169,15 +167,12 @@ theorem openCoordinate_injective (s : ℝ) :
     funext u
     by_cases hu : u = 0
     · subst u
-      have hc : Continuous (infinityCoordinate f - infinityCoordinate h) := f.property.2.2.continuous.sub h.property.2.2.continuous
       have he : ∀ u ∈ ({0}ᶜ : Set ℂ), (infinityCoordinate f - infinityCoordinate h) u = 0 := by
         intro u hu
         simp only [mem_compl_iff, mem_singleton_iff] at hu
         simp [Pi.sub_apply, coordinate_transition s f u hu, coordinate_transition s h u hu, hfh]
-      have hd : Dense ({0}ᶜ : Set ℂ) := by exact dense_compl_singleton 0
-      have hz := Continuous.ext_on hd hc continuous_const he
-      exact sub_eq_zero.mp (congrFun hz 0)
-    · rw [coordinate_transition s f u hu, coordinate_transition s h u hu, hfh]
+      exact sub_eq_zero.mp (congrFun (Continuous.ext_on (dense_compl_singleton 0) (f.property.2.2.continuous.sub h.property.2.2.continuous) continuous_const he) 0)
+    · simp_all [coordinate_transition]
   apply Subtype.ext
   funext g
   rcases row_nonzero g with hg | hg
@@ -193,18 +188,14 @@ theorem openCoordinate_range (s : ℝ) (F : ℂ → ℂ) :
   constructor
   · rintro ⟨f, rfl⟩
     exact ⟨f.property.2.1, infinityCoordinate f, f.property.2.2,
-      fun u hu => coordinate_transition s f u hu⟩
+      (coordinate_transition s f)⟩
   · rintro ⟨hF, H, hH, htrans⟩
     let f := KPCplxPrincipalSeriesReconstruction.reconstruct s F H
     have ho : openCoordinate f = F :=
       KPCplxPrincipalSeriesReconstruction.reconstruct_open s F H
     have hi : infinityCoordinate f = H :=
       KPCplxPrincipalSeriesReconstruction.reconstruct_infinity s F H htrans
-    have hc : HasCovariance s f :=
-      KPCplxPrincipalSeriesReconstruction.reconstruct_covariance s F H
-    have hm : f ∈ principalSeriesSubmodule s := by
-      exact ⟨hc, ho.symm ▸ hF, hi.symm ▸ hH⟩
-    exact ⟨⟨f, hm⟩, ho⟩
+    exact Exists.intro ⟨f, ⟨KPCplxPrincipalSeriesReconstruction.reconstruct_covariance s F H, ⟨Eq.symm ho ▸ hF, Eq.symm hi ▸ hH⟩⟩⟩ ho
 
 abbrev ComplexProjectiveLine := Projectivization ℂ (Fin 2 → ℂ)
 
@@ -324,7 +315,6 @@ theorem principalSeries_t2 (s : ℝ) : T2Space (PrincipalSeries s) := by
       exact norm_le_zero_iff.mp hle
     apply openCoordinate_injective s
     funext z
-    change openCoordinate f z = 0
     by_cases hzball : z ∈ Metric.closedBall (0 : ℂ) 1
     · exact ho z hzball
     have hzn : z ≠ 0 := by intro h; subst z; simp at hzball
@@ -334,14 +324,13 @@ theorem principalSeries_t2 (s : ℝ) : T2Space (PrincipalSeries s) := by
       exact inv_le_one_of_one_le₀ (le_of_lt (lt_of_not_ge hzball))
     have htr := coordinate_transition s f z⁻¹ (inv_ne_zero hzn)
     rw [inv_inv, hi _ hzi] at htr
-    have hw : (transitionWeight s z⁻¹ : ℂ) ≠ 0 := by
-      apply Complex.ofReal_ne_zero.mpr
-      exact ne_of_gt (Real.rpow_pos_of_pos (norm_pos_iff.mpr (inv_ne_zero hzn)) _)
-    exact (mul_eq_zero.mp htr.symm).resolve_left hw)
+    refine (mul_eq_zero.mp htr.symm).resolve_left ?_
+    apply Complex.ofReal_ne_zero.mpr
+    exact ne_of_gt (Real.rpow_pos_of_pos (norm_pos_iff.mpr (inv_ne_zero hzn)) _))
   infer_instance
 
 theorem principalSeries_metrizable (s : ℝ) : TopologicalSpace.MetrizableSpace (PrincipalSeries s) := by
-  have ht : FirstCountableTopology (PrincipalSeries s) :=
+  have ht :=
     (show WithSeminorms (chartSeminorm s) from ⟨rfl⟩).firstCountableTopology
   have hu : (uniformity (PrincipalSeries s)).IsCountablyGenerated := by
     change (Filter.comap (fun p : PrincipalSeries s × PrincipalSeries s => p.2 + -p.1)
@@ -352,7 +341,12 @@ theorem principalSeries_metrizable (s : ℝ) : TopologicalSpace.MetrizableSpace 
 
 open Filter Topology KPCplxPrincipalSeriesJets
 
-private lemma seq_jet_cauchy (s : ℝ) (f : ℕ → PrincipalSeries s) (hc : CauchySeq f) :
+section
+
+variable (s : ℝ) (f : ℕ → PrincipalSeries s) (hc : CauchySeq f)
+
+include hc in
+private lemma seq_jet_cauchy :
     ∀ n : ℕ, ∀ ε > 0, ∃ N : ℕ, ∀ i ≥ N, ∀ j ≥ N, chartSeminorm s n (f i - f j) < ε := by
   have ht : WithSeminorms (chartSeminorm s) := ⟨rfl⟩
   haveI : IsUniformAddGroup (PrincipalSeries s) := isUniformAddGroup_of_addCommGroup
@@ -363,7 +357,8 @@ private lemma seq_jet_cauchy (s : ℝ) (f : ℕ → PrincipalSeries s) (hc : Cau
     exact h.eventually (gt_mem_nhds (by simpa using hε))
   rw [prod_atTop_atTop_eq, eventually_atTop_prod_self'] at he
   exact he
-private lemma finite_jet_cauchy (s : ℝ) (f : ℕ → PrincipalSeries s) (hc : CauchySeq f)
+include hc in
+private lemma finite_jet_cauchy
     (n : ℕ) : ∀ ε > 0, ∃ N : ℕ, ∀ i ≥ N, ∀ j ≥ N,
     ∑ k ∈ Finset.range (n+1), (jetSup k (openCoordinate (f i) - openCoordinate (f j)) +
       jetSup k (infinityCoordinate (f i) - infinityCoordinate (f j))) < ε := by
@@ -380,7 +375,6 @@ private lemma finite_jet_cauchy (s : ℝ) (f : ℕ → PrincipalSeries s) (hc : 
     _ ≤ ∑ k ∈ Finset.range (n+1), 2 * chartSeminorm s k (f i - f j) := by
       apply Finset.sum_le_sum
       intro k hk
-      change jetSup k (openCoordinate (f i - f j)) + jetSup k (infinityCoordinate (f i - f j)) ≤ _
       exact (add_le_add (le_max_left _ _) (le_max_right _ _)).trans_eq (two_mul _).symm
     _ < ∑ k ∈ Finset.range (n+1), 2 * (ε / (2 * (n+1 : ℝ))) := by
       apply Finset.sum_lt_sum
@@ -388,7 +382,13 @@ private lemma finite_jet_cauchy (s : ℝ) (f : ℕ → PrincipalSeries s) (hc : 
         exact (mul_lt_mul_of_pos_left (hle k hk) (by norm_num)).le
       · exact ⟨0, by simp, mul_lt_mul_of_pos_left (hle 0 (by simp)) (by norm_num)⟩
     _ = ε := by simp; field_simp
-private lemma open_transition (s : ℝ) (f : PrincipalSeries s) (z : ℂ) (hz : z ≠ 0) :
+
+end
+section
+
+variable (s : ℝ)
+
+private lemma open_transition (f : PrincipalSeries s) (z : ℂ) (hz : z ≠ 0) :
     openCoordinate f z = (Real.rpow ‖z‖ (-2*(1+2*s)) : ℂ) * infinityCoordinate f z⁻¹ := by
   have h := coordinate_transition s f z⁻¹ (inv_ne_zero hz)
   rw [inv_inv] at h
@@ -399,11 +399,11 @@ private lemma open_transition (s : ℝ) (f : PrincipalSeries s) (z : ℂ) (hz : 
   have hw : (transitionWeight s z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr
     (ne_of_gt (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) _))
   change openCoordinate f z = (transitionWeight s z : ℂ) * infinityCoordinate f z⁻¹
-  rw [h, Complex.ofReal_inv, mul_inv_cancel_left₀ hw]
+  simp_all [h]
 
-theorem principalSeries_complete (s : ℝ) : CompleteSpace (PrincipalSeries s) := by
+theorem principalSeries_complete : CompleteSpace (PrincipalSeries s) := by
   open Filter Topology KPCplxPrincipalSeriesJets in
-  have ht : FirstCountableTopology (PrincipalSeries s) := (show WithSeminorms (chartSeminorm s) from ⟨rfl⟩).firstCountableTopology
+  have ht := (show WithSeminorms (chartSeminorm s) from ⟨rfl⟩).firstCountableTopology
   have hu : (uniformity (PrincipalSeries s)).IsCountablyGenerated := by
     change (Filter.comap (fun p : PrincipalSeries s × PrincipalSeries s => p.2 + -p.1)
       (nhds (0 : PrincipalSeries s))).IsCountablyGenerated
@@ -412,8 +412,8 @@ theorem principalSeries_complete (s : ℝ) : CompleteSpace (PrincipalSeries s) :
   intro f hc
   let F := fun i => openCoordinate (f i)
   let H := fun i => infinityCoordinate (f i)
-  have hF : ∀ i, ContDiff ℝ (⊤ : ℕ∞) (F i) := fun i => (f i).property.2.1
-  have hH : ∀ i, ContDiff ℝ (⊤ : ℕ∞) (H i) := fun i => (f i).property.2.2
+  have hF := fun i => (f i).property.2.1
+  have hH := fun i => (f i).property.2.2
   have hfC n R := KPCplxPrincipalSeriesTransitionBounds.uniformCauchy_on_enlargedBall
     (-2*(1+2*s)) R n F H hF hH (fun i z hz => open_transition s (f i) z hz)
     (finite_jet_cauchy s f hc n)
@@ -423,17 +423,13 @@ theorem principalSeries_complete (s : ℝ) : CompleteSpace (PrincipalSeries s) :
   obtain ⟨G, hG, hGl⟩ := KPCplxPrincipalSeriesGlobalLimits.global_smooth_jet_limit F hF hfC
   obtain ⟨J, hJ, hJl⟩ := KPCplxPrincipalSeriesGlobalLimits.global_smooth_jet_limit H hH hhC
   have hgpt (z : ℂ) : Tendsto (fun i => F i z) atTop (𝓝 (G z)) := by
-    have h := (hGl 0 (‖z‖+1)).tendsto_at (show z ∈ Metric.closedBall 0 (‖z‖+1) by
-      simp only [Metric.mem_closedBall, dist_zero_right]; linarith)
-    exact (continuousMultilinearCurryFin0 ℝ ℂ ℂ).continuous.tendsto _ |>.comp h |>.congr' (by
-      filter_upwards [] with i
-      simp [iteratedFDeriv_zero_eq_comp])
+    exact (continuousMultilinearCurryFin0 ℝ ℂ ℂ).continuous.tendsto _ |>.comp ((hGl 0 (‖z‖+1)).tendsto_at (show z ∈ Metric.closedBall 0 (‖z‖+1) by
+      simp)) |>.congr' (by
+      solve_by_elim [univ_mem'])
   have hjpt (z : ℂ) : Tendsto (fun i => H i z) atTop (𝓝 (J z)) := by
-    have h := (hJl 0 (‖z‖+1)).tendsto_at (show z ∈ Metric.closedBall 0 (‖z‖+1) by
-      simp only [Metric.mem_closedBall, dist_zero_right]; linarith)
-    exact (continuousMultilinearCurryFin0 ℝ ℂ ℂ).continuous.tendsto _ |>.comp h |>.congr' (by
-      filter_upwards [] with i
-      simp [iteratedFDeriv_zero_eq_comp])
+    exact (continuousMultilinearCurryFin0 ℝ ℂ ℂ).continuous.tendsto _ |>.comp ((hJl 0 (‖z‖+1)).tendsto_at (show z ∈ Metric.closedBall 0 (‖z‖+1) by
+      simp)) |>.congr' (by
+      solve_by_elim [univ_mem'])
   have htrans : ∀ z : ℂ, z ≠ 0 → J z = (transitionWeight s z : ℂ) * G z⁻¹ := by
     intro z hz
     have hl := (hgpt z⁻¹).const_mul (transitionWeight s z : ℂ)
@@ -446,16 +442,14 @@ theorem principalSeries_complete (s : ℝ) : CompleteSpace (PrincipalSeries s) :
   have hj : infinityCoordinate g = J := by
     apply Continuous.ext_on (dense_compl_singleton 0) g.property.2.2.continuous hJ.continuous
     intro z hz
-    rw [coordinate_transition s g z (by simpa using hz), hg, htrans z (by simpa using hz)]
+    rw [coordinate_transition s g z (by exact hz), hg, htrans z (by exact hz)]
   refine ⟨g, ?_⟩
   rw [(show WithSeminorms (chartSeminorm s) from ⟨rfl⟩).tendsto_nhds]
   intro n ε hε
   have hopen := (hGl n 1)
   have hinf := (hJl n 1)
   rw [Metric.tendstoUniformlyOn_iff] at hopen hinf
-  have ho := hopen (ε/2) (by positivity)
-  have hi := hinf (ε/2) (by positivity)
-  filter_upwards [ho, hi] with i hiO hiI
+  filter_upwards [(hopen (ε/2) (by positivity)), (hinf (ε/2) (by positivity))] with i hiO hiI
   change max (jetSup n (openCoordinate (f i - g))) (jetSup n (infinityCoordinate (f i - g))) < ε
   have hbO : jetSup n (openCoordinate (f i - g)) ≤ ε/2 := by
     apply jetSupLe
@@ -471,11 +465,10 @@ theorem principalSeries_complete (s : ℝ) : CompleteSpace (PrincipalSeries s) :
     exact (by simpa [dist_eq_norm, norm_sub_rev] using (hiI x hx).le)
   exact (max_le hbO hbI).trans_lt (by linarith)
 
-theorem principalSeries_locallyConvex (s : ℝ) : LocallyConvexSpace ℝ (PrincipalSeries s) := by
-  have h : WithSeminorms (chartSeminorm s) := ⟨rfl⟩
-  exact h.toLocallyConvexSpace
+theorem principalSeries_locallyConvex : LocallyConvexSpace ℝ (PrincipalSeries s) := by
+  exact WithSeminorms.toLocallyConvexSpace { topology_eq_withSeminorms := rfl}
 
-noncomputable def rightTranslate (s : ℝ) (g : ComplexGL2)
+noncomputable def rightTranslate (g : ComplexGL2)
     (f : PrincipalSeries s) : PrincipalSeries s :=
   ⟨fun h => f (h * g), by
     apply (principalSeries_mem_iff s _).mpr
@@ -484,46 +477,47 @@ noncomputable def rightTranslate (s : ℝ) (g : ComplexGL2)
       dsimp only
       rw [mul_assoc, f.property.1]
     have hf := ((principalSeries_mem_iff s f).mp f.property).2
-    have hc : ContDiff ℝ (⊤ : ℕ∞) (fun h : Matrix (Fin 2) (Fin 2) ℂ => h * (g : Matrix (Fin 2) (Fin 2) ℂ)) := by
-      exact (LinearMap.mulRight ℝ (g : Matrix (Fin 2) (Fin 2) ℂ)).toContinuousLinearMap.contDiff
-    have hmap : MapsTo (fun h : Matrix (Fin 2) (Fin 2) ℂ => h * (g : Matrix (Fin 2) (Fin 2) ℂ))
-        {h | h.det ≠ 0} {h | h.det ≠ 0} := by
-      intro h hh
-      exact (Matrix.det_mul h (g : Matrix (Fin 2) (Fin 2) ℂ)).trans_ne (mul_ne_zero hh (Matrix.GeneralLinearGroup.det_ne_zero g))
+    let Matrix₀ := Matrix (Fin 2) (Fin 2) ℂ
+    have hc : ContDiff ℝ (⊤ : ℕ∞) (fun h : Matrix₀ => h * g) := (LinearMap.mulRight ℝ (g : Matrix₀)).toContinuousLinearMap.contDiff
+    have hmap : MapsTo (fun h : Matrix₀ => h * g)
+        {h | h.det ≠ 0} {h | h.det ≠ 0} := fun h hh => (Matrix.det_mul h g).trans_ne (mul_ne_zero hh (Matrix.GeneralLinearGroup.det_ne_zero g))
     apply (hf.comp hc.contDiffOn hmap).congr
     intro h hh
-    change matrixFunction (fun h => f (h * g)) h = matrixFunction f (h * (g : Matrix (Fin 2) (Fin 2) ℂ))
+    change matrixFunction (fun h => f (h * g)) h = matrixFunction f (h * g)
     have hh' : h.det ≠ 0 := hh
-    have hm' : (h * (g : Matrix (Fin 2) (Fin 2) ℂ)).det ≠ 0 := hmap hh
+    have hm' : (h * (g : Matrix₀)).det ≠ 0 := hmap hh
     unfold matrixFunction
     split_ifs
     exact congrArg f (Units.ext rfl)⟩
 
+end
+
 noncomputable instance complexPGL2Topology : TopologicalSpace ComplexPGL2 :=
   TopologicalSpace.coinduced Matrix.ProjGenLinGroup.mk inferInstance
 
-noncomputable def pi (s : ℝ) (g : ComplexPGL2) (f : PrincipalSeries s) : PrincipalSeries s :=
+section
+
+variable (s : ℝ)
+
+noncomputable def pi (g : ComplexPGL2) (f : PrincipalSeries s) : PrincipalSeries s :=
   Quotient.liftOn g (fun h : ComplexGL2 => rightTranslate s h f) (by
     intro a b hab
-    have hab' : Matrix.ProjGenLinGroup.mk a = Matrix.ProjGenLinGroup.mk b := Quotient.sound hab
-    rcases Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hab' with ⟨c, hc⟩
+    rcases Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp (Quotient.sound hab) with ⟨c, hc⟩
     apply Subtype.ext
     funext h
     change f (h * a) = f (h * b)
     rw [← hc, ← mul_assoc, ← Matrix.GeneralLinearGroup.scalar_commute]
     exact (central_invariance s f c (h * a)).symm)
 
-theorem pi_mk (s : ℝ) (g : ComplexGL2) (f : PrincipalSeries s) :
-    pi s (Matrix.ProjGenLinGroup.mk g) f = rightTranslate s g f := by
-  rfl
+theorem pi_mk (g : ComplexGL2) (f : PrincipalSeries s) :
+    pi s (Matrix.ProjGenLinGroup.mk g) f = rightTranslate s g f := rfl
 
-theorem pi_one (s : ℝ) (f : PrincipalSeries s) : pi s 1 f = f := by
-  change rightTranslate s 1 f = f
+theorem pi_one (f : PrincipalSeries s) : pi s 1 f = f := by
   apply Subtype.ext
   funext g
   exact congrArg f (mul_one g)
 
-theorem pi_mul (s : ℝ) (g h : ComplexPGL2) (f : PrincipalSeries s) :
+theorem pi_mul (g h : ComplexPGL2) (f : PrincipalSeries s) :
     pi s (g * h) f = pi s g (pi s h f) := by
   induction g using Quotient.inductionOn with | h g =>
   induction h using Quotient.inductionOn with | h h =>
@@ -531,7 +525,7 @@ theorem pi_mul (s : ℝ) (g h : ComplexPGL2) (f : PrincipalSeries s) :
   funext a
   exact congrArg f (mul_assoc a g h).symm
 
-private lemma evaluation_principalSeries_barrelled (s : ℝ) : BarrelledSpace ℝ (PrincipalSeries s) := by
+private lemma evaluation_principalSeries_barrelled : BarrelledSpace ℝ (PrincipalSeries s) := by
   letI := principalSeries_t2 s
   letI := principalSeries_metrizable s
   letI := principalSeries_complete s
@@ -545,6 +539,10 @@ private lemma evaluation_principalSeries_barrelled (s : ℝ) : BarrelledSpace �
   letI : IsUniformAddGroup (PrincipalSeries s) := isUniformAddGroup_of_addCommGroup
   letI := IsUniformAddGroup.uniformity_countably_generated (α := PrincipalSeries s)
   infer_instance
+
+end
+
+alias ComplexChartsAndSphericalSections.evaluation_principalSeries_barrelled := evaluation_principalSeries_barrelled
  lemma evaluation_principalSeries_barrelled_complex (s : ℝ) : BarrelledSpace ℂ (PrincipalSeries s) := by
   letI := principalSeries_t2 s
   letI := principalSeries_metrizable s
@@ -565,8 +563,7 @@ open KPCplxPrincipalSeriesEvaluationContinuity
   letI : ContinuousSMul ℝ (PrincipalSeries s) := ⟨by
     have hh := (Complex.continuous_ofReal.comp continuous_fst).smul (continuous_snd :
       Continuous (fun p : ℝ × PrincipalSeries s => p.2))
-    change Continuous (fun p : ℝ × PrincipalSeries s => (algebraMap ℝ ℂ) p.1 • p.2) at hh
-    simpa only [IsScalarTower.algebraMap_smul] using hh⟩
+    assumption⟩
   letI : IsUniformAddGroup (PrincipalSeries s) := isUniformAddGroup_of_addCommGroup
   let O : PrincipalSeries s →ₗ[ℝ] (ℂ → ℂ) :=
     { toFun := fun f => openCoordinate (T f)
@@ -588,13 +585,17 @@ open KPCplxPrincipalSeriesEvaluationContinuity
   unfold chartSeminormValue
   apply LowerSemicontinuous.sup
   · apply closedDiscSup_lowerSemicontinuous
-    · intro x; exact (ho n x).norm
+    · intro x; fun_prop
     · intro f; exact ((T f).property.2.1.continuous_iteratedFDeriv (by simp)).norm
   · apply closedDiscSup_lowerSemicontinuous
-    · intro x; exact (hi n x).norm
+    · intro x; fun_prop
     · intro f; exact ((T f).property.2.2.continuous_iteratedFDeriv (by simp)).norm
 
-private lemma evaluation_disc_eval_continuous (s : ℝ) (x : ℂ) (hx : x ∈ Metric.closedBall (0 : ℂ) 1)
+section
+
+variable (s : ℝ)
+
+private lemma evaluation_disc_eval_continuous (x : ℂ) (hx : x ∈ Metric.closedBall (0 : ℂ) 1)
     (north : Bool) : Continuous (fun f : PrincipalSeries s =>
       (if north then openCoordinate f else infinityCoordinate f) x) := by
   have ht : WithSeminorms (chartSeminorm s) := ⟨rfl⟩
@@ -607,7 +608,6 @@ private lemma evaluation_disc_eval_continuous (s : ℝ) (x : ℂ) (hx : x ∈ Me
   refine ⟨{0}, 1, ?_⟩
   rw [Finset.sup_singleton, Seminorm.le_def]
   intro f
-  change ‖(if north then openCoordinate f else infinityCoordinate f) x‖ ≤ _
   simp only [one_smul]
   cases north
   · have h := KPCplxPrincipalSeriesJets.jetLe 0 (infinityCoordinate f) f.property.2.2 x hx
@@ -617,33 +617,31 @@ private lemma evaluation_disc_eval_continuous (s : ℝ) (x : ℂ) (hx : x ∈ Me
     rw [norm_iteratedFDeriv_zero] at h
     exact h.trans (le_max_left _ _)
 
-private lemma evaluation_infinity_eval_continuous (s : ℝ) (x : ℂ) :
+private lemma evaluation_infinity_eval_continuous (x : ℂ) :
     Continuous (fun f : PrincipalSeries s => infinityCoordinate f x) := by
   by_cases hx : x ∈ Metric.closedBall (0 : ℂ) 1
   · exact evaluation_disc_eval_continuous s x hx false
-  have hxn : x ≠ 0 := by intro h; subst x; simp at hx
-  have hxi : x⁻¹ ∈ Metric.closedBall (0 : ℂ) 1 := by
-    simp only [Metric.mem_closedBall, dist_zero_right] at hx ⊢
+  refine (continuous_const.mul (evaluation_disc_eval_continuous s x⁻¹ ?_ true)).congr
+    (fun f => (coordinate_transition s f x ?_).symm)
+  · simp only [Metric.mem_closedBall, dist_zero_right] at hx ⊢
     rw [norm_inv]
-    exact inv_le_one_of_one_le₀ (le_of_lt (lt_of_not_ge hx))
-  exact (continuous_const.mul (evaluation_disc_eval_continuous s x⁻¹ hxi true)).congr
-    (fun f => (coordinate_transition s f x hxn).symm)
+    grind [inv_le_one_of_one_le₀]
+  · intro h; subst x; simp at hx
 
-private lemma evaluation_open_eval_continuous (s : ℝ) (x : ℂ) :
+private lemma evaluation_open_eval_continuous (x : ℂ) :
     Continuous (fun f : PrincipalSeries s => openCoordinate f x) := by
   by_cases hx : x = 0
   · subst x; exact evaluation_disc_eval_continuous s 0 (by simp) true
-  have hw : (transitionWeight s x⁻¹ : ℂ) ≠ 0 := by
-    exact Complex.ofReal_ne_zero.mpr (ne_of_gt
+  have hw : (transitionWeight s x⁻¹ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt
       (Real.rpow_pos_of_pos (norm_pos_iff.mpr (inv_ne_zero hx)) _))
   apply (continuous_const.mul (evaluation_infinity_eval_continuous s x⁻¹)).congr
   intro f
   have h := coordinate_transition s f x⁻¹ (inv_ne_zero hx)
   rw [inv_inv] at h
   show (transitionWeight s x⁻¹ : ℂ)⁻¹ * infinityCoordinate f x⁻¹ = openCoordinate f x
-  rw [h, ← mul_assoc, inv_mul_cancel₀ hw, one_mul]
+  simp_all [h]
 
- lemma evaluation_point_eval_continuous (s : ℝ) (g : ComplexGL2) :
+ lemma evaluation_point_eval_continuous (g : ComplexGL2) :
     Continuous (fun f : PrincipalSeries s => f g) := by
   rcases row_nonzero g with hg | hg
   · rcases open_bruhat g hg with ⟨a,d,b,x,rfl⟩
@@ -653,12 +651,14 @@ private lemma evaluation_open_eval_continuous (s : ℝ) (x : ℂ) :
     exact (continuous_const.mul (evaluation_infinity_eval_continuous s x)).congr
       (fun f => (f.property.1 a d b _).symm)
 
-private lemma evaluation_fixedg_continuous (s : ℝ) (g : ComplexGL2) : Continuous (rightTranslate s g) := by
+private lemma evaluation_fixedg_continuous (g : ComplexGL2) : Continuous (rightTranslate s g) := by
   let T : PrincipalSeries s →ₗ[ℂ] PrincipalSeries s :=
     { toFun := rightTranslate s g
       map_add' := by intros; apply Subtype.ext; rfl
       map_smul' := by intros; apply Subtype.ext; rfl }
   exact evaluation_linearMap_continuous_of_point_evaluations s s T (fun h => evaluation_point_eval_continuous s (h*g))
+
+end
 
 abbrev OrbitMat := Matrix (Fin 2) (Fin 2) ℂ
 noncomputable def orbit_mulL : OrbitMat →ₗ[ℝ] OrbitMat →L[ℝ] OrbitMat where
@@ -680,14 +680,12 @@ private lemma partial_jets_smooth {P E F : Type*} [NormedAddCommGroup P] [Normed
   | zero =>
     intro p hp z
     simp only [iteratedFDeriv_zero_eq_comp, Function.comp_apply]
-    exact (hH p hp z).continuousLinearMap_comp
-      ((continuousMultilinearCurryFin0 ℝ E F).symm : F →L[ℝ] E [×0]→L[ℝ] F)
+    fun_prop
   | succ n ih =>
     intro p hp z
     simp only [iteratedFDeriv_succ_eq_comp_left, Function.comp_apply]
-    let J : P → E → E [×n]→L[ℝ] F := fun p z => iteratedFDeriv ℝ n (H p) z
     have hcomp : ContDiffAt ℝ (⊤ : ℕ∞)
-        (Function.uncurry (fun q : P × E => J q.1)) ((p,z),z) := by
+        (Function.uncurry (fun q : P × E => (fun p z => iteratedFDeriv ℝ n (H p) z) q.1)) ((p,z),z) := by
       have hm : ContDiff ℝ (⊤ : ℕ∞) (fun q : (P × E) × E => (q.1.1,q.2)) := by fun_prop
       exact (ih p hp z).comp ((p,z),z) hm.contDiffAt
     have hder := hcomp.fderiv
@@ -728,13 +726,13 @@ private lemma rawChart_eq (north : Bool) (z : ℂ) : rawChart north z =
 private theorem evaluation_continuous_rightTranslate_chart_jets (s : ℝ) (n : ℕ) (f : PrincipalSeries s)
     (north : Bool) : Continuous (fun p : ComplexGL2 × ℂ => iteratedFDeriv ℝ n
       (selectedCoordinate north (rightTranslate s p.1 f).val) p.2) := by
-  let H : Matrix (Fin 2) (Fin 2) ℂ → ℂ → ℂ :=
+  let H :=
     fun m z => matrixFunction f (rawChart north z * m)
-  have hH : ∀ m ∈ {m : Matrix (Fin 2) (Fin 2) ℂ | m.det ≠ 0}, ∀ z,
+  let Matrix₀ := Matrix (Fin 2) (Fin 2) ℂ
+  have hH : ∀ m ∈ {m : Matrix₀ | m.det ≠ 0}, ∀ z,
       ContDiffAt ℝ (⊤ : ℕ∞) (Function.uncurry H) (m,z) := by
     intro m hm z
-    have hs : ContDiff ℝ (⊤ : ℕ∞) (fun q : Matrix (Fin 2) (Fin 2) ℂ × ℂ =>
-        rawChart north q.2 * q.1) := by
+    have hs := by
       exact ((orbit_mulCLM.contDiff.comp ((rawChart_smooth north).comp contDiff_snd)).clm_apply contDiff_fst)
     have hmem : (rawChart north z * m).det ≠ 0 := by
       rw [Matrix.det_mul, rawChart_eq]
@@ -742,7 +740,7 @@ private theorem evaluation_continuous_rightTranslate_chart_jets (s : ℝ) (n : �
     exact (((principalSeries_mem_iff s f).mp f.property).2 _ hmem).contDiffAt
       (matrix_locus_open.mem_nhds hmem) |>.comp (m,z) hs.contDiffAt
   have hjet := partial_jets_smooth H _ matrix_locus_open hH n
-  have he (g : ComplexGL2) : H (g : Matrix (Fin 2) (Fin 2) ℂ) =
+  have he (g : ComplexGL2) : H (g : Matrix₀) =
       selectedCoordinate north (rightTranslate s g f).val := by
     funext z
     dsimp only [H]
@@ -762,12 +760,12 @@ private theorem evaluation_continuous_rightTranslate_chart_jets (s : ℝ) (n : �
   apply continuous_iff_continuousAt.mpr
   intro p
   have hm : Continuous (fun q : ComplexGL2 × ℂ =>
-      ((q.1 : Matrix (Fin 2) (Fin 2) ℂ),q.2)) := by fun_prop
+      ((q.1 : Matrix₀),q.2)) := by fun_prop
   have hj : ContinuousAt (fun q : OrbitMat × ℂ => iteratedFDeriv ℝ n (H q.1) q.2)
       ((p.1 : OrbitMat), p.2) :=
     (hjet (p.1 : OrbitMat) (Matrix.GeneralLinearGroup.det_ne_zero p.1) p.2).continuousAt
   simpa only [Function.comp_def, he] using
-    (hj.comp (x := p) (f := fun q : ComplexGL2 × ℂ => ((q.1 : OrbitMat), q.2)) hm.continuousAt)
+    (hj.comp (f := fun q : ComplexGL2 × ℂ => ((q.1 : OrbitMat), q.2)) hm.continuousAt)
 
  theorem evaluation_rightTranslate_orbit_continuous (s : ℝ) (f : PrincipalSeries s) :
     Continuous (fun g : ComplexGL2 => rightTranslate s g f) := by
@@ -780,7 +778,6 @@ private theorem evaluation_continuous_rightTranslate_chart_jets (s : ℝ) (n : �
   have hc (north : Bool) : Continuous (fun g : ComplexGL2 =>
       KPCplxPrincipalSeriesJets.jetSup n
         (selectedCoordinate north (rightTranslate s g f - rightTranslate s g₀ f).val)) := by
-    have hj := evaluation_continuous_rightTranslate_chart_jets s n f north
     have hfixed : Continuous (fun p : ComplexGL2 × ℂ => iteratedFDeriv ℝ n
         (selectedCoordinate north (rightTranslate s g₀ f).val) p.2) := by
       cases north
@@ -788,7 +785,7 @@ private theorem evaluation_continuous_rightTranslate_chart_jets (s : ℝ) (n : �
       · exact ((rightTranslate s g₀ f).property.2.1.continuous_iteratedFDeriv (by simp)).comp continuous_snd
     have hd : Continuous (fun p : ComplexGL2 × ℂ => ‖iteratedFDeriv ℝ n
         (selectedCoordinate north (rightTranslate s p.1 f - rightTranslate s g₀ f).val) p.2‖) := by
-      convert (hj.sub hfixed).norm using 1
+      convert ((evaluation_continuous_rightTranslate_chart_jets s n f north).sub hfixed).norm using 1
       funext p
       congr 1
       cases north
@@ -799,11 +796,9 @@ private theorem evaluation_continuous_rightTranslate_chart_jets (s : ℝ) (n : �
           (((rightTranslate s p.1 f).property.2.1.of_le (by simp)).contDiffAt)
           (((rightTranslate s g₀ f).property.2.1.of_le (by simp)).contDiffAt)
     exact (isCompact_closedBall (0 : ℂ) 1).continuous_sSup hd
-  have hc' : Continuous (fun g : ComplexGL2 =>
-      chartSeminorm s n (rightTranslate s g f - rightTranslate s g₀ f)) := by
-    exact (hc true).max (hc false)
+  have hc' := (hc true).max (hc false)
   have hv : chartSeminorm s n (rightTranslate s g₀ f - rightTranslate s g₀ f) < ε := by
-    simpa only [sub_self, map_zero] using hε
+    simpa using hε
   exact hc'.continuousAt.preimage_mem_nhds (Iio_mem_nhds hv)
 
 theorem pi_continuous (s : ℝ) :
@@ -815,12 +810,8 @@ theorem pi_continuous (s : ℝ) :
     { toFun := rightTranslate s g
       map_add' := by intros; apply Subtype.ext; rfl
       map_smul' := by intros; apply Subtype.ext; rfl }
-  have h : Continuous (fun p : ComplexGL2 × PrincipalSeries s => rightTranslate s p.1 p.2) :=
-    KPCplxPrincipalSeriesJointBS.joint_continuous (chartSeminorm s) ⟨rfl⟩ T
-      (evaluation_fixedg_continuous s) (evaluation_rightTranslate_orbit_continuous s)
-  have hq : IsOpenQuotientMap (Matrix.ProjGenLinGroup.mk : ComplexGL2 → ComplexPGL2) :=
-    QuotientGroup.isOpenQuotientMap_mk
-  exact (hq.prodMap IsOpenQuotientMap.id).continuous_comp_iff.mp h
+  exact (QuotientGroup.isOpenQuotientMap_mk.prodMap IsOpenQuotientMap.id).continuous_comp_iff.mp (KPCplxPrincipalSeriesJointBS.joint_continuous (chartSeminorm s) ⟨rfl⟩ T
+    (evaluation_fixedg_continuous s) (evaluation_rightTranslate_orbit_continuous s))
 
 noncomputable def compactSubgroup : Subgroup ComplexPGL2 :=
   (Matrix.ProjGenLinGroup.mk.comp complexSU2Embedding).range
@@ -834,10 +825,9 @@ noncomputable def sphericalFunction (s : ℝ) (g : ComplexGL2) : ℂ :=
     (1 + 2 * s) : ℂ)
 
 lemma bottom_pos (g : ComplexGL2) : 0 < bottomRowNormSq g := by
-  have hd := Matrix.GeneralLinearGroup.det_ne_zero g
-  have hh : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 ≠ 0 ∨ (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 ≠ 0 := by
+  have hh : g 1 0 ≠ 0 ∨ g 1 1 ≠ 0 := by
     by_contra! h
-    apply hd
+    apply (Matrix.GeneralLinearGroup.det_ne_zero g)
     simp [Matrix.det_fin_two, h.1, h.2]
   unfold bottomRowNormSq
   rcases hh with h | h <;> positivity
@@ -910,14 +900,13 @@ private lemma gram_norm (g : ComplexGL2) :
   have hk : Matrix.GeneralLinearGroup.det (complexSU2Embedding k) = 1 := by
     apply Units.ext
     exact (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2
+  let Matrix₀ := Matrix (Fin 2) (Fin 2) ℂ
   have hb : bottomRowNormSq (g * complexSU2Embedding k) = bottomRowNormSq g := by
     apply Complex.ofReal_injective
     rw [← gram_norm, ← gram_norm]
-    have hk' : (k : Matrix (Fin 2) (Fin 2) ℂ) * star (k : Matrix (Fin 2) (Fin 2) ℂ) = 1 :=
-      Matrix.mem_unitaryGroup_iff.mp ((Matrix.mem_specialUnitaryGroup_iff.mp k.property).1)
-    change ((g : Matrix (Fin 2) (Fin 2) ℂ) * (k : Matrix (Fin 2) (Fin 2) ℂ) *
-      star ((g : Matrix (Fin 2) (Fin 2) ℂ) * (k : Matrix (Fin 2) (Fin 2) ℂ))) 1 1 = _
-    rw [star_mul, Matrix.mul_assoc, ← Matrix.mul_assoc (k : Matrix (Fin 2) (Fin 2) ℂ), hk', Matrix.one_mul]
+    change ((g : Matrix₀) * (k : Matrix₀) *
+      star ((g : Matrix₀) * (k : Matrix₀))) 1 1 = _
+    rw [star_mul, Matrix.mul_assoc, ← Matrix.mul_assoc (k : Matrix₀), (Matrix.mem_unitaryGroup_iff.mp ((Matrix.mem_specialUnitaryGroup_iff.mp k.property).1)), Matrix.one_mul]
   simp [sphericalFunction, map_mul, hk, hb]
 
 theorem sphericalSection_fixed (s : ℝ) (k : compactSubgroup) :
@@ -927,8 +916,7 @@ theorem sphericalSection_fixed (s : ℝ) (k : compactSubgroup) :
   rw [← hk', pi_mk]
   apply Subtype.ext
   funext g
-  change sphericalFunction s (g * complexSU2Embedding k') = sphericalFunction s g
-  exact spherical_su2 s g k'
+  apply spherical_su2
 
  lemma compact_chart (z : ℂ) :
     ∃ (a d : ℂˣ) (b : ℂ) (k : ComplexSU2),
@@ -977,13 +965,10 @@ theorem sphericalSection_spans_fixed (s : ℝ) (f : PrincipalSeries s)
   rcases compact_chart z with ⟨a, d, b, k, hk⟩
   have hmem : Matrix.ProjGenLinGroup.mk (complexSU2Embedding k) ∈ compactSubgroup :=
     ⟨k, rfl⟩
-  have hfixed := hf ⟨_, hmem⟩
   have hfk : f (complexSU2Embedding k) = f 1 := by
-    have hv := congrArg (fun v : PrincipalSeries s => v 1) hfixed
-    simpa [pi_mk, rightTranslate] using hv
+    simpa [pi_mk, rightTranslate] using (congrArg (fun v : PrincipalSeries s => v 1) (hf ⟨_, hmem⟩))
   have hsk : sphericalSection s (complexSU2Embedding k) = 1 := by
-    have hv := congrArg (fun v : PrincipalSeries s => v 1) (sphericalSection_fixed s ⟨_, hmem⟩)
-    simpa [pi_mk, rightTranslate, sphericalSection_one] using hv
+    simpa [pi_mk, rightTranslate, sphericalSection_one] using (congrArg (fun v : PrincipalSeries s => v 1) (sphericalSection_fixed s ⟨_, hmem⟩))
   change f (weyl * upperUnipotent z) = f 1 * sphericalSection s (weyl * upperUnipotent z)
   rw [hk, f.property.1, (sphericalSection s).property.1, hfk, hsk]
   ring
@@ -1030,7 +1015,7 @@ theorem compactSubgroup_isCompact : IsCompact (compactSubgroup : Set ComplexPGL2
   have he : Continuous complexSU2Embedding := by
     apply Units.continuous_iff.mpr
     constructor
-    · exact continuous_subtype_val
+    · fun_prop
     · have hi (k : ComplexSU2) :
           (↑(complexSU2Embedding k)⁻¹ : Matrix (Fin 2) (Fin 2) ℂ) =
             star (k : Matrix (Fin 2) (Fin 2) ℂ) := by
@@ -1040,9 +1025,6 @@ theorem compactSubgroup_isCompact : IsCompact (compactSubgroup : Set ComplexPGL2
       exact continuous_subtype_val.star
   have hq : Continuous (Matrix.ProjGenLinGroup.mk : ComplexGL2 → ComplexPGL2) :=
     continuous_coinduced_rng
-  have hr : (compactSubgroup : Set ComplexPGL2) = Set.range (fun k : ComplexSU2 =>
-      Matrix.ProjGenLinGroup.mk (complexSU2Embedding k)) := rfl
-  rw [hr]
   exact isCompact_range (hq.comp he)
 
 end DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts

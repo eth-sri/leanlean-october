@@ -8,17 +8,23 @@ namespace DedekindZetaZeroFree
 
 variable {G V : Type*} [Group G] [TopologicalSpace G] [AddCommGroup V] [Module ℂ V]
 
-def SmoothVector (ρ : Representation ℂ G V) (v : V) : Prop :=
+section
+
+variable (ρ : Representation ℂ G V)
+
+def SmoothVector (v : V) : Prop :=
   ∃ J : OpenSubgroup G, ∀ j ∈ J, ρ j v = v
 
-def SmoothRepresentation (ρ : Representation ℂ G V) : Prop :=
+def SmoothRepresentation : Prop :=
   ∀ v, SmoothVector ρ v
 
-def fixedSubmodule (ρ : Representation ℂ G V) (J : Subgroup G) : Submodule ℂ V where
+def fixedSubmodule (J : Subgroup G) : Submodule ℂ V where
   carrier := {v | ∀ j : J, ρ (j : G) v = v}
   zero_mem' := by intro j; simp
   add_mem' := by intro x y hx hy j; simp [hx j, hy j]
   smul_mem' := by intro a x hx j; simp [hx j]
+
+end
 
 structure CompactOpenLevel (G : Type*) [Group G] [TopologicalSpace G] where
   toOpenSubgroup : OpenSubgroup G

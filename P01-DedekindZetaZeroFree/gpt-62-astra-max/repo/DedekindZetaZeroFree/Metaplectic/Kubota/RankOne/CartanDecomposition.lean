@@ -33,18 +33,24 @@ def K0 : Subgroup (KPPGLLocalCover.LocalPGL2 F (Sum.inr w)) :=
 def coveredK0 : Subgroup (KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr w)) :=
   (K0 F w).comap (KPPGLLocalCover.projection F ζ hζ (Sum.inr w))
 
-def diagonalLift (π : (w.adicCompletion F)ˣ) (n : ℕ) :
+section
+
+variable (π : (w.adicCompletion F)ˣ)
+
+def diagonalLift (n : ℕ) :
     KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr w) :=
   KPPGLLocalCover.A F ζ hζ (Sum.inr w) (π ^ n)
 
-def doubleCoset (π : (w.adicCompletion F)ˣ) (n : ℕ) :
+def doubleCoset (n : ℕ) :
     Set (KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr w)) :=
   {g | ∃ k₁ k₂ : coveredK0 F ζ hζ w,
     g = k₁.val * diagonalLift F ζ hζ w π n * k₂.val}
 
-def cartanTruncation (π : (w.adicCompletion F)ˣ) (M : ℕ) :
+def cartanTruncation (M : ℕ) :
     Set (KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr w)) :=
   ⋃ n ≤ M, doubleCoset F ζ hζ w π n
+
+end
 
 theorem finite_kernel_proper {G H : Type*} [Group G] [Group H]
     [TopologicalSpace G] [TopologicalSpace H] [IsTopologicalGroup G]
@@ -61,7 +67,7 @@ theorem finite_kernel_proper {G H : Type*} [Group G] [Group H]
     · rintro ⟨s, hs, he⟩
       apply Set.mem_iUnion₂.mpr
       refine ⟨s⁻¹ * x, ?_, s, hs, ?_⟩
-      · simp only [Set.mem_preimage, Set.mem_singleton_iff, map_mul, map_inv, he, inv_mul_cancel]
+      · simp_all
       · simp
     · intro hx
       obtain ⟨k, hk, s, hs, rfl⟩ := Set.mem_iUnion₂.mp hx
@@ -87,24 +93,15 @@ theorem coveredK0_compact_open (m : ℕ)
   letI : CompactSpace (Matrix (Fin 2) (Fin 2) (KPTameCompact.O F w)) :=
     inferInstanceAs (CompactSpace (Fin 2 → Fin 2 → KPTameCompact.O F w))
   letI : CompactSpace (KPTameCompact.K0 F w) := inferInstance
-  have hi : Topology.IsOpenEmbedding (KPTameCompact.O F w).subtype :=
+  have hi :=
     (ValuativeRel.valuation (KPTameCompact.K F w)).isOpen_integer.isOpenEmbedding_subtypeVal
-  have hc : Continuous (KPTameCompact.inclusion F w) := hi.continuous.generalLinearGroup_map
-  have ho : IsOpenMap (KPTameCompact.inclusion F w) :=
-    Units.isOpenMap_map hi.matrix_map.injective hi.matrix_map.isOpenMap
-  have hqc : Continuous (KPPGLLocalCover.baseQuotient F (Sum.inr w)) :=
-    QuotientGroup.continuous_mk
-  have hqo : IsOpenMap (KPPGLLocalCover.baseQuotient F (Sum.inr w)) :=
-    QuotientGroup.isOpenQuotientMap_mk.isOpenMap
   have hKc : IsCompact (↑(K0 F w) : Set (KPPGLLocalCover.LocalPGL2 F (Sum.inr w))) := by
-    change IsCompact (Set.range ((KPPGLLocalCover.baseQuotient F (Sum.inr w)).comp
-      (KPTameCompact.inclusion F w)))
-    exact isCompact_range (hqc.comp hc)
+    exact isCompact_range (QuotientGroup.continuous_mk.comp hi.continuous.generalLinearGroup_map)
   have hKo : IsOpen (↑(K0 F w) : Set (KPPGLLocalCover.LocalPGL2 F (Sum.inr w))) := by
     change IsOpen (Set.range ((KPPGLLocalCover.baseQuotient F (Sum.inr w)).comp
       (KPTameCompact.inclusion F w)))
     rw [← Set.image_univ]
-    exact (hqo.comp ho) _ isOpen_univ
+    exact (QuotientGroup.isOpenQuotientMap_mk.isOpenMap.comp (Units.isOpenMap_map hi.matrix_map.injective hi.matrix_map.isOpenMap)) _ isOpen_univ
   have hf (y : KPPGLLocalCover.LocalPGL2 F (Sum.inr w)) :
       (KPPGLLocalCover.projection F ζ hζ (Sum.inr w) ⁻¹' {y}).Finite := by
     change Set.Finite {x : KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr w) |
@@ -123,9 +120,10 @@ local instance cartanValuationCompatible :
 
 private theorem mem_integer_valuation (x : w.adicCompletion F) :
     x ∈ KPTameCompact.O F w ↔ Valued.v x ≤ 1 := by
-  rw [Valuation.mem_integer_iff]
-  exact ((ValuativeRel.isEquiv (Valued.v : Valuation (w.adicCompletion F) (WithZero (Multiplicative ℤ)))
-    (ValuativeRel.valuation (w.adicCompletion F))).le_iff_le (x := x) (y := 1)).symm.trans (by simp)
+  exact ((ValuativeRel.isEquiv Valued.v
+    (ValuativeRel.valuation (w.adicCompletion F))).le_iff_le).symm.trans (by simp)
+
+alias CartanDecomposition.mem_integer_valuation := mem_integer_valuation
 theorem nonzero_integer_unit_times_uniformizer_pow (π : (w.adicCompletion F)ˣ)
     (hπ : Valued.v (π : w.adicCompletion F) = WithZero.exp (-1 : ℤ))
     (x : w.adicCompletion F) (hx : x ≠ 0) (hv : Valued.v x ≤ 1) :
@@ -156,8 +154,8 @@ theorem nonzero_integer_unit_times_uniformizer_pow (π : (w.adicCompletion F)ˣ)
   let u : (KPTameCompact.O F w)ˣ :=
     { val := ⟨t, (mem_integer_valuation F w t).mpr ht.le⟩
       inv := ⟨t⁻¹, (mem_integer_valuation F w t⁻¹).mpr hti.le⟩
-      val_inv := by apply Subtype.ext; change t * t⁻¹ = 1; exact mul_inv_cancel₀ htn
-      inv_val := by apply Subtype.ext; change t⁻¹ * t = 1; exact inv_mul_cancel₀ htn }
+      val_inv := by apply Subtype.ext; exact mul_inv_cancel₀ htn
+      inv_val := by apply Subtype.ext; exact inv_mul_cancel₀ htn}
   exact ⟨n, u, (div_mul_cancel₀ x (pow_ne_zero n π.ne_zero)).symm⟩
 
 private theorem pivot_data (g : KPLocalCover.LocalGL2 F (Sum.inr w))
@@ -181,17 +179,20 @@ private theorem pivot_data (g : KPLocalCover.LocalGL2 F (Sum.inr w))
     exact hmax i j
   have hx : g 1 1 / g 0 0 - (g 1 0 / g 0 0) * (g 0 1 / g 0 0) ≠ 0 := by
     intro hx
-    have hdet : (g : Matrix (Fin 2) (Fin 2) (w.adicCompletion F)).det = 0 := by
-      rw [Matrix.det_fin_two]
-      field_simp [ha] at hx
-      linear_combination hx
-    exact Matrix.GeneralLinearGroup.det_ne_zero g hdet
+    apply Matrix.GeneralLinearGroup.det_ne_zero g
+    rw [Matrix.det_fin_two]
+    field_simp [ha] at hx
+    linear_combination hx
   refine ⟨ha, hdiv 0 1, hdiv 1 0, hx, ?_⟩
   apply (v.map_sub _ _).trans
   apply max_le (hdiv 1 1)
   rw [map_mul]
   exact mul_le_one₀ (hdiv 1 0) zero_le (hdiv 0 1)
-private theorem pivot_factor (π : (w.adicCompletion F)ˣ)
+section
+
+variable (π : (w.adicCompletion F)ˣ)
+
+private theorem pivot_factor
     (hπ : Valued.v (π : w.adicCompletion F) = WithZero.exp (-1 : ℤ))
     (g : KPLocalCover.LocalGL2 F (Sum.inr w))
     (hmax : ∀ i j : Fin 2, Valued.v (g i j) ≤ Valued.v (g 0 0)) :
@@ -210,7 +211,7 @@ private theorem pivot_factor (π : (w.adicCompletion F)ˣ)
   let l := KPStandardLocalRootLifts.integralLowerN F w c * W *
     KPStandardLocalRootLifts.integralA F w u
   let r := W * KPStandardLocalRootLifts.integralN F w b
-  let a : (w.adicCompletion F)ˣ := Units.mk0 (g 0 0) ha
+  let a := Units.mk0 (g 0 0) ha
   have he : g = KPScalarSplitCentral.scalarMatrix F (Sum.inr w) a *
       KPTameCompact.inclusion F w l * KubotaRankTwo.d (w.adicCompletion F) (π ^ n) 1 *
       KPTameCompact.inclusion F w r := by
@@ -226,11 +227,10 @@ private theorem pivot_factor (π : (w.adicCompletion F)ˣ)
     all_goals dsimp [x] at *; field_simp [ha] at hu ⊢ <;> first | assumption | linear_combination hu | ring
   letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
   have hs : KPPGLLocalCover.baseQuotient F (Sum.inr w)
-      (KPScalarSplitCentral.scalarMatrix F (Sum.inr w) a) = 1 := by
-    exact (QuotientGroup.eq_one_iff _).mpr ⟨a, rfl⟩
+      (KPScalarSplitCentral.scalarMatrix F (Sum.inr w) a) = 1 := (QuotientGroup.eq_one_iff _).mpr ⟨a, rfl⟩
   refine ⟨n, l, r, ?_⟩
   rw [he, map_mul, map_mul, map_mul, hs, one_mul]
-private theorem unpermute_factor (π : (w.adicCompletion F)ˣ)
+private theorem unpermute_factor
     (g : KPLocalCover.LocalGL2 F (Sum.inr w)) (L R : KPTameCompact.K0 F w)
     (h : ∃ n : ℕ, ∃ l r : KPTameCompact.K0 F w,
       KPPGLLocalCover.baseQuotient F (Sum.inr w)
@@ -255,7 +255,7 @@ private theorem unpermute_factor (π : (w.adicCompletion F)ˣ)
         KPPGLLocalCover.baseQuotient F (Sum.inr w) (KPTameCompact.inclusion F w R)) *
       (KPPGLLocalCover.baseQuotient F (Sum.inr w) (KPTameCompact.inclusion F w R))⁻¹ := by group
     _ = _ := by rw [h]; group
-theorem ordinary_matrix_cartan_factorization (π : (w.adicCompletion F)ˣ)
+theorem ordinary_matrix_cartan_factorization
     (hπ : Valued.v (π : w.adicCompletion F) = WithZero.exp (-1 : ℤ))
     (g : KPLocalCover.LocalGL2 F (Sum.inr w)) :
     ∃ n : ℕ, ∃ l r : KPTameCompact.K0 F w,
@@ -303,7 +303,7 @@ theorem ordinary_matrix_cartan_factorization (π : (w.adicCompletion F)ˣ)
       | simpa [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two, entry] using hmax' 1 0
       | simpa [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two, entry] using hmax' 1 1
 
-theorem lift_projected_factorization (π : (w.adicCompletion F)ˣ) (n : ℕ)
+theorem lift_projected_factorization (n : ℕ)
     (g : KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr w))
     (b₁ b₂ : K0 F w)
     (hg : KPPGLLocalCover.projection F ζ hζ (Sum.inr w) g =
@@ -329,7 +329,7 @@ theorem lift_projected_factorization (π : (w.adicCompletion F)ˣ) (n : ℕ)
   dsimp [k']
   group
 
-theorem cartan_decomposition (π : (w.adicCompletion F)ˣ)
+theorem cartan_decomposition
     (hπ : Valued.v (π : w.adicCompletion F) = WithZero.exp (-1 : ℤ))
     (g : KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr w)) :
     ∃ n : ℕ, ∃ k₁ k₂ : coveredK0 F ζ hζ w,
@@ -337,14 +337,14 @@ theorem cartan_decomposition (π : (w.adicCompletion F)ˣ)
   obtain ⟨G, hG⟩ := QuotientGroup.mk_surjective
     (KPPGLLocalCover.projection F ζ hζ (Sum.inr w) g)
   obtain ⟨n, l, r, h⟩ := ordinary_matrix_cartan_factorization F w π hπ G
-  let b₁ : K0 F w := ⟨KPPGLLocalCover.baseQuotient F (Sum.inr w)
-    (KPTameCompact.inclusion F w l), ⟨l, rfl⟩⟩
-  let b₂ : K0 F w := ⟨KPPGLLocalCover.baseQuotient F (Sum.inr w)
-    (KPTameCompact.inclusion F w r), ⟨r, rfl⟩⟩
   refine ⟨n, ?_⟩
-  apply lift_projected_factorization F ζ hζ w π n g b₁ b₂
+  apply lift_projected_factorization F ζ hζ w π n g (⟨KPPGLLocalCover.baseQuotient F (Sum.inr w)
+    (KPTameCompact.inclusion F w l), ⟨l, rfl⟩⟩) (⟨KPPGLLocalCover.baseQuotient F (Sum.inr w)
+    (KPTameCompact.inclusion F w r), ⟨r, rfl⟩⟩)
   rw [← hG]
   exact h
+
+end
 
 theorem cartanTruncation_compact (m : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F w m)

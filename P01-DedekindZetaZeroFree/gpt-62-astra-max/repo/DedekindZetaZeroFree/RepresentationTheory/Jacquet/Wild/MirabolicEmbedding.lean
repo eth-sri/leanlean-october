@@ -29,13 +29,13 @@ theorem image_smooth (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m
   exact actualCanonicalImage_smooth F ζ hζ q S P μ hμ
 
 theorem image_genuine :
-    KPLocalSmoothRepresentation.genuine F ζ hζ q (rho F ζ hζ q S P μ hμ) := by
-  intro e v
-  exact actualCanonicalImage_ordinary_genuine F ζ hζ q S P μ hμ e v
+    KPLocalSmoothRepresentation.genuine F ζ hζ q (rho F ζ hζ q S P μ hμ) := by apply @DedekindZetaZeroFree.KPRankOneShellRepair.actualCanonicalImage_ordinary_genuine <;> assumption
 
 abbrev Jacquet := KPKirillovOrbitMapFaithful.J F ζ hζ q (rho F ζ hζ q S P μ hμ)
 
-def embedding (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m) :
+variable (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m)
+
+def embedding :
     (KPKirillovGenuineSectionCharts.Sections F ζ hζ q m
       (KPKirillovOrbitMapFaithful.ψ F q) ℂ ⊗[ℂ] Jacquet F ζ hζ q S P μ hμ) →ₗ[ℂ]
       actualCanonicalImageModule F ζ hζ q S P μ hμ :=
@@ -44,13 +44,13 @@ def embedding (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m) :
     (image_genuine F ζ hζ q S P μ hμ)
     (KPWildCompactProjectorKirillov.ActualInput.standardCharacter_properties F q).1
 
-theorem embedding_injective (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m) :
+theorem embedding_injective :
     Function.Injective (embedding F ζ hζ q S P μ hμ m hm) :=
   KPWildCompactProjectorKirillov.Intrinsic.embedding_injective F ζ hζ q
     (rho F ζ hζ q S P μ hμ) m hm (image_smooth F ζ hζ q S P μ hμ m hm)
     (image_genuine F ζ hζ q S P μ hμ)
     (KPWildCompactProjectorKirillov.ActualInput.standardCharacter_properties F q).1
-theorem embedding_equivariant (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m)
+theorem embedding_equivariant
     (p : KPKirillovGenuineSectionCharts.P F ζ hζ q)
     (x : KPKirillovGenuineSectionCharts.Sections F ζ hζ q m
       (KPKirillovOrbitMapFaithful.ψ F q) ℂ ⊗[ℂ] Jacquet F ζ hζ q S P μ hμ) :
@@ -63,7 +63,7 @@ theorem embedding_equivariant (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDe
     (image_genuine F ζ hζ q S P μ hμ)
     (KPWildCompactProjectorKirillov.ActualInput.standardCharacter_properties F q).1 p x
 
-theorem embedding_evaluation (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m)
+theorem embedding_evaluation
     (s : KPKirillovGenuineSectionCharts.Sections F ζ hζ q m
       (KPKirillovOrbitMapFaithful.ψ F q) ℂ) (e : Jacquet F ζ hζ q S P μ hμ) :
     rootCoinvariantsMk (rho F ζ hζ q S P μ hμ)

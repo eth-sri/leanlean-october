@@ -15,13 +15,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -59,83 +52,6 @@ def finitePlaceLocalNormCondition
       (K := K) (L := L) v.1).comap
         (IdeleGroup.finiteComponent v.1)
 
-/-- Elementwise form of the finite family of local norm conditions. -/
-theorem mem_finitePlaceLocalNormCondition_iff
-    {K L : Type}
-    [Field K] [NumberField K]
-    [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (a : IdeleGroup K) :
-    a ∈ finitePlaceLocalNormCondition
-        (K := K) (L := L) S ↔
-      ∀ v : ↥S,
-        IdeleGroup.finiteComponent v.1 a ∈
-          _root_.chosenFinitePlaceLocalNormSubgroup
-            (K := K) (L := L) v.1 := by
-  simp [finitePlaceLocalNormCondition]
-
-/-- At every finite place in `S`, the `n`-power condition defining
-`h(S,T)` implies the actual local norm condition for an exponent-`n`
-Kummer extension. -/
-theorem idelePowerLocalUnitSubgroup_le_finitePlaceLocalNormCondition
-    {K L : Type}
-    [Field K] [NumberField K]
-    [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    (n : ℕ+) (r : ℕ)
-    (eG :
-      (L ≃ₐ[K] L) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
-    idelePowerLocalUnitSubgroup (K := K) n S T ≤
-      finitePlaceLocalNormCondition
-        (K := K) (L := L) S := by
-  intro a ha
-  rw [mem_finitePlaceLocalNormCondition_iff]
-  intro v
-  apply
-    nthPowerSubgroup_le_chosenFinitePlaceLocalNormSubgroup
-      (K := K) (L := L) n r eG v.1
-  exact
-    ((mem_idelePowerLocalUnitSubgroup_iff
-      (K := K) n S T a).mp ha).2.1 v.1 v.2
-
-/-- The finite components of `h(S,T)` at `S ∪ T` are actual local norms:
-at `S` this follows from the exponent-`n` Galois structure, while at `T`
-it follows from complete splitting. -/
-theorem idelePowerLocalUnitSubgroup_le_unionLocalNormCondition
-    {K L : Type}
-    [Field K] [NumberField K]
-    [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    (n : ℕ+) (r : ℕ)
-    (eG :
-      (L ≃ₐ[K] L) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
-    (hT :
-      ∀ v, v ∈ T →
-        _root_.FinitePlaceSplitsCompletely
-          (K := K) (L := L) v) :
-    idelePowerLocalUnitSubgroup (K := K) n S T ≤
-      finitePlaceLocalNormCondition
-        (K := K) (L := L) (S ∪ T) := by
-  intro a ha
-  rw [mem_finitePlaceLocalNormCondition_iff]
-  intro v
-  rcases Finset.mem_union.mp v.2 with hvS | hvT
-  · apply
-      nthPowerSubgroup_le_chosenFinitePlaceLocalNormSubgroup
-        (K := K) (L := L) n r eG v.1
-    exact
-      ((mem_idelePowerLocalUnitSubgroup_iff
-        (K := K) n S T a).mp ha).2.1 v.1 hvS
-  · rw [
-      _root_.chosenFinitePlaceLocalNormSubgroup_eq_top_of_splitsCompletely
-        (K := K) (L := L) v.1 (hT v.1 hvT)]
-    exact Subgroup.mem_top _
-
 /-- The simultaneous local norm condition at every finite place. -/
 def allFinitePlaceLocalNormCondition
     {K L : Type}
@@ -148,13 +64,14 @@ def allFinitePlaceLocalNormCondition
       (K := K) (L := L) v).comap
         (IdeleGroup.finiteComponent v)
 
+section
+
+variable {K L : Type} [Field K] [NumberField K] [Field L] [NumberField L] [Algebra K L]
+    [FiniteDimensional K L] [IsGalois K L]
+
 /-- Under the concrete splitting and unramifiedness conditions, every finite
 component of `h(S,T)` is an actual local norm. -/
 theorem idelePowerLocalUnitSubgroup_le_allFinitePlaceLocalNormCondition
-    {K L : Type}
-    [Field K] [NumberField K]
-    [Field L] [NumberField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
     (n : ℕ+) (r : ℕ)
     (eG :
       (L ≃ₐ[K] L) ≃*
@@ -179,28 +96,24 @@ theorem idelePowerLocalUnitSubgroup_le_allFinitePlaceLocalNormCondition
   · rcases Finset.mem_union.mp hv with hvS | hvT
     · apply
         nthPowerSubgroup_le_chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) n r eG v
+            n r eG v
       exact
         ((mem_idelePowerLocalUnitSubgroup_iff
-          (K := K) n S T a).mp ha).2.1 v hvS
+           n S T a).mp ha).2.1 v hvS
     · rw [
         _root_.chosenFinitePlaceLocalNormSubgroup_eq_top_of_splitsCompletely
-          (K := K) (L := L) v (hT v hvT)]
+            v (hT v hvT)]
       exact Subgroup.mem_top _
   · apply
       _root_.adicCompletionIntegerUnits_le_chosenFinitePlaceLocalNormSubgroup
-        (K := K) (L := L) v (hAway v hv)
+          v (hAway v hv)
     exact
       ((mem_idelePowerLocalUnitSubgroup_iff
-        (K := K) n S T a).mp ha).2.2 v hv
+         n S T a).mp ha).2.2 v hv
 
 /-- Every global relative-idele norm satisfies all of the actual
 finite-place local norm conditions. -/
-theorem relativeIdeleNorm_range_le_allFinitePlaceLocalNormCondition
-    {K L : Type}
-    [Field K] [NumberField K]
-    [Field L] [NumberField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L] :
+theorem relativeIdeleNorm_range_le_allFinitePlaceLocalNormCondition :
     (RelativeIdeleGroup.norm K L).range ≤
       allFinitePlaceLocalNormCondition
         (K := K) (L := L) := by
@@ -210,7 +123,9 @@ theorem relativeIdeleNorm_range_le_allFinitePlaceLocalNormCondition
   intro v
   exact
     _root_.relativeIdeleNorm_finiteComponent_mem_chosenLocalNormSubgroup
-      (K := K) (L := L) v b
+        v b
+
+end
 
 /-- Equality between the power/local-unit subgroup and the everywhere-local
 norm condition for the Kummer-selected prime set.  Starting from an arbitrary
@@ -250,6 +165,7 @@ theorem
         p v hp hv hn r eG S₀
     principalIdelePowerLocalUnitSubgroup (K := K) n S' T =
       sUnitNthPowersInField (K := K) n (S' ∪ T) := by
+  let Set₀ := Set (HeightOneSpectrum (𝓞 K))
   classical
   dsimp only
   let hnK : ((n : ℕ) : K) ≠ 0 := by
@@ -282,15 +198,15 @@ theorem
         p v hp hv hn r eG S₀
   have hCanonical :
       (IdeleGroup.sufficientlyLargeFiniteSet (K := K) :
-          Set (HeightOneSpectrum (𝓞 K))) ⊆
-        (S₀ : Set (HeightOneSpectrum (𝓞 K))) := by
+          Set₀) ⊆
+        (S₀ : Set₀) := by
     intro w hw
     exact
       Finset.mem_union_left _
         (Finset.mem_union_right _ hw)
   have hS₀ :
       IdeleGroup.supportedAt
-            (K := K) (S₀ : Set (HeightOneSpectrum (𝓞 K))) ⊔
+            (K := K) (S₀ : Set₀) ⊔
           IdeleGroup.principalSubgroup K =
         ⊤ := by
     apply top_unique
@@ -304,7 +220,7 @@ theorem
         le_rfl
   have hLarge :
       IdeleGroup.supportedAt
-            (K := K) (S' : Set (HeightOneSpectrum (𝓞 K))) ⊔
+            (K := K) (S' : Set₀) ⊔
           IdeleGroup.principalSubgroup K =
         ⊤ := by
     simpa only [S'] using
@@ -415,7 +331,7 @@ theorem
           a ∈
             IdeleGroup.supportedAt
                 (K := K)
-                (S' : Set (HeightOneSpectrum (𝓞 K))) ⊔
+                (S' : Set₀) ⊔
               IdeleGroup.principalSubgroup K := by
         rw [hLarge]
         exact Subgroup.mem_top a
@@ -430,7 +346,7 @@ theorem
           ⟨IdeleGroup.finiteComponent w.1 u,
             (IdeleGroup.mem_supportedAt_iff
               (K := K)
-              (S' : Set (HeightOneSpectrum (𝓞 K))) u).mp
+              (S' : Set₀) u).mp
                 hu w.1 (by simpa using hT_not_mem_S w)⟩
       let target :
           ∀ w : T,
@@ -449,7 +365,7 @@ theorem
           IdeleGroup.principalIdele K (s : Kˣ) ∈
             IdeleGroup.supportedAt
               (K := K)
-              (S' : Set (HeightOneSpectrum (𝓞 K))) :=
+              (S' : Set₀) :=
         (_root_.principalIdele_mem_supportedAt_iff_sUnit
           (L := K) S' (s : Kˣ)).2 s.2
       let sLocalUnit (w : T) :
@@ -459,7 +375,7 @@ theorem
               (IdeleGroup.principalIdele K (s : Kˣ)),
             (IdeleGroup.mem_supportedAt_iff
               (K := K)
-              (S' : Set (HeightOneSpectrum (𝓞 K)))
+              (S' : Set₀)
               (IdeleGroup.principalIdele K (s : Kˣ))).mp
                 hsSupported w.1 (by simpa using hT_not_mem_S w)⟩
       let d : IdeleGroup K :=
@@ -468,16 +384,16 @@ theorem
           d ∈
             IdeleGroup.supportedAt
               (K := K)
-              (S' : Set (HeightOneSpectrum (𝓞 K))) := by
+              (S' : Set₀) := by
         dsimp only [d]
         exact
           (IdeleGroup.supportedAt
             (K := K)
-            (S' : Set (HeightOneSpectrum (𝓞 K)))).mul_mem
+            (S' : Set₀)).mul_mem
               hu
               ((IdeleGroup.supportedAt
                 (K := K)
-                (S' : Set (HeightOneSpectrum (𝓞 K)))).inv_mem
+                (S' : Set₀)).inv_mem
                   hsSupported)
       have hTpower (w : T) :
           IdeleGroup.finiteComponent w.1 d ∈
@@ -576,7 +492,7 @@ theorem
             exact
               (IdeleGroup.mem_supportedAt_iff
                 (K := K)
-                (S' : Set (HeightOneSpectrum (𝓞 K))) d).mp
+                (S' : Set₀) d).mp
                   hdSupported w (by simpa using hwS)
       have hdNorm :
           d ∈ (RelativeIdeleGroup.norm K M).range :=
@@ -676,7 +592,6 @@ theorem
   · exact
       sUnitNthPowersInField_le_principalIdelePowerLocalUnitSubgroup
         (K := K) n S' T
-
 
 end GlobalClassFieldTheory.ClassFieldAxiom
 

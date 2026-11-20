@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -47,14 +44,11 @@ theorem IsAbelianConductor.mem_finiteSupport_iff_exists_ramified
   constructor
   · intro hv
     by_contra hnone
-    have hall : ∀ W : HeightOneSpectrum (𝓞 L),
-        W.asIdeal.LiesOver v.asIdeal →
-          Algebra.IsUnramifiedAt (𝓞 K) W.asIdeal := by
-      intro W hW
-      by_contra hn
-      exact hnone ⟨W, hW, hn⟩
-    exact (Finsupp.mem_support_iff.mp hv)
-      ((hc.finiteExponent_eq_zero_iff_unramified v).mpr hall)
+    refine (Finsupp.mem_support_iff.mp hv)
+      ((hc.finiteExponent_eq_zero_iff_unramified v).mpr ?_)
+    intro W hW
+    by_contra hn
+    exact hnone ⟨W, hW, hn⟩
   · rintro ⟨W, hW, hn⟩
     apply Finsupp.mem_support_iff.mpr
     intro hz

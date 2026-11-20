@@ -33,7 +33,7 @@ theorem principalRayHeckeData_exists
     simp only [L, R]
     rw [hE]
     field_simp
-  refine ⟨L, R, Λ₀, E₀, ?_, ?_, hΛ_holo, hE_entire, ?_, ?_, ?_, ?_,
+  refine ⟨L, R, Λ₀, E₀, ?_, ?_, hE_entire, ?_, ?_, ?_, ?_,
     hreflection, horder⟩
   ·
     have hR_holo : DifferentiableOn ℂ R {s : ℂ | 0 < s.re} := by

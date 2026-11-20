@@ -13,14 +13,17 @@ def IsolatedPoles (O P : Set ℂ) : Prop :=
   ∀ z ∈ O, ∃ r : ℝ, 0 < r ∧ Metric.ball z r ⊆ O ∧
     ∀ s ∈ Metric.ball z r, s ∈ P → s = z
 
-theorem IsolatedPoles.mono {O P Q : Set ℂ} (hP : IsolatedPoles O P)
+variable {O P Q : Set ℂ} (hP : IsolatedPoles O P)
+
+include hP in
+theorem IsolatedPoles.mono
     (hQP : Q ⊆ P) : IsolatedPoles O Q := by
   intro z hz
   obtain ⟨r, hr, hb, hi⟩ := hP z hz
   exact ⟨r, hr, hb, fun s hs hq => hi s hs (hQP hq)⟩
 
-theorem IsolatedPoles.union {O P Q : Set ℂ}
-    (hP : IsolatedPoles O P) (hQ : IsolatedPoles O Q) :
+include hP in
+theorem IsolatedPoles.union (hQ : IsolatedPoles O Q) :
     IsolatedPoles O (P ∪ Q) := by
   intro z hz
   obtain ⟨r, hr, hb, hi⟩ := hP z hz

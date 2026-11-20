@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -173,7 +168,6 @@ theorem complexFourthRootField_map_complexConjugation :
     rcases hz with ⟨n, hn, hn0, hz⟩
     refine ⟨n, hn, hn0, ?_⟩
     rw [← star_pow, hz, star_one]
-    change star (star z) = z
     exact star_star z
 
 /-- The chosen infinite place of the rational complexification is
@@ -184,7 +178,7 @@ theorem rationalComplexification_chosenInfinitePlace_isRamified :
       Rat.infinitePlace).IsRamified ℚ := by
   rw [InfinitePlace.isRamified_iff,
     chosenInfinitePlaceAbove_comap
-      (L := rationalComplexificationCyclotomicField)
+
       Rat.infinitePlace]
   exact
     ⟨IsTotallyComplex.isComplex _, Rat.isReal_infinitePlace⟩
@@ -232,7 +226,7 @@ theorem
   rw [InfinitePlace.Completion.ringEquivRealOfIsReal_apply]
   rw [IdeleGroup.infiniteComponent_principalIdele]
   rw [InfinitePlace.Completion.extensionEmbeddingOfIsReal_coe]
-  simp only [WithAbs.equiv_apply, eq_ratCast]
+  simp
 
 /-- A rational principal idele with positive numerator has trivial
 infinite Artin factor in the rational complexification. -/
@@ -249,8 +243,7 @@ theorem
       1 := by
   apply
     chosenInfinitePlaceArtinMonoidHom_eq_one_of_real_pos
-      (K := ℚ)
-      (L := rationalComplexificationCyclotomicField)
+
       Rat.infinitePlace Rat.isReal_infinitePlace
   rw [rationalPrincipalInfiniteComponent_realCoordinate]
   exact_mod_cast Rat.num_pos.mp hx
@@ -283,22 +276,21 @@ theorem
         infiniteTensorNormSubgroup
           (K := ℚ) (L := E) v := by
     rw [← chosenInfinitePlaceArtinMonoidHom_ker
-      (K := ℚ) (L := E) v]
+        v]
     exact htrivial
   rw [infiniteTensorNormSubgroup_eq_localNormSubgroup
-    (K := ℚ) (L := E) v w hw] at hnorm
+      v w hw] at hnorm
   obtain ⟨z, hz⟩ := hnorm
   have hpositive :=
     infinitePlace_normUnits_real_complex_pos
-      (K := ℚ) v w hw
+       v w hw
       Rat.isReal_infinitePlace
       rationalComplexification_chosenInfinitePlace_isRamified.isComplex
       z
   rw [hz] at hpositive
   rw [rationalPrincipalInfiniteComponent_realCoordinate] at hpositive
-  have hxReal : (((x : ℚ) : ℝ) ≤ 0) := by
-    exact_mod_cast (Rat.num_neg.mp hx).le
-  exact (not_lt_of_ge hxReal) hpositive
+  refine (not_lt_of_ge ?_) hpositive
+  exact_mod_cast (Rat.num_neg.mp hx).le
 
 /-- The cyclotomic character of the rational fourth-root field. -/
  noncomputable def rationalComplexificationCharacter :
@@ -342,23 +334,20 @@ private theorem rationalComplexificationFiniteArtin_character
     MonoidHom.map_finprod
       rationalComplexificationCharacter.toMonoidHom
       (finitePlaceArtinFactors_hasFiniteMulSupport
-        (K := ℚ)
-        (L := rationalComplexificationCyclotomicField)
+
         (IdeleGroup.principalIdele ℚ x))
   calc
     rationalComplexificationCharacter
           (∏ᶠ v : HeightOneSpectrum (𝓞 ℚ),
             chosenFinitePlaceArtinMonoidHom
-              (K := ℚ)
-              (L := rationalComplexificationCyclotomicField)
+
               v
               (IdeleGroup.finiteComponent v
                 (IdeleGroup.principalIdele ℚ x))) =
         ∏ᶠ v : HeightOneSpectrum (𝓞 ℚ),
           rationalComplexificationCharacter
             (chosenFinitePlaceArtinMonoidHom
-              (K := ℚ)
-              (L := rationalComplexificationCyclotomicField)
+
               v
               (IdeleGroup.finiteComponent v
                 (IdeleGroup.principalIdele ℚ x))) :=
@@ -392,16 +381,6 @@ private theorem rationalComplexification_signCharacter_ne_one_of_num_neg
   rw [Int.sign_eq_neg_one_of_neg hx] at hval
   norm_num [rationalComplexificationPrime] at hval
   exact (by decide : (-1 : ZMod (2 ^ 2)) ≠ 1) hval
-
-private theorem rationalComplexification_signCharacter_eq_one_of_num_pos
-    (x : ℚˣ) (hx : 0 < (x : ℚ).num) :
-    Units.map (PadicInt.toZModPow 2).toMonoidHom
-        (rationalSignPadicUnit x rationalComplexificationPrime) =
-      1 := by
-  apply Units.ext
-  rw [rationalSignPadicUnit_toZModPow_val]
-  rw [Int.sign_eq_one_of_pos hx]
-  norm_num
 
 /-- The chosen global Artin product for the actual rational
 complexification is trivial on every rational principal idele. -/
@@ -440,7 +419,7 @@ theorem rationalComplexificationGlobalArtin_principalIdele
           (rationalSignPadicUnit x rationalComplexificationPrime) := by
     simpa only [character, finiteFactor] using
       rationalComplexificationFiniteArtin_character x
-  have hnum : (x : ℚ).num ≠ 0 :=
+  have hnum :=
     Rat.num_ne_zero.mpr x.ne_zero
   have hunique :=
     rationalComplexification_existsUnique_nontrivial
@@ -449,10 +428,7 @@ theorem rationalComplexificationGlobalArtin_principalIdele
       simpa only [infiniteFactor, u] using
         rationalComplexificationPrincipalInfiniteArtin_ne_one_of_num_neg
           x hnegative
-    have hsign :
-        Units.map (PadicInt.toZModPow 2).toMonoidHom
-            (rationalSignPadicUnit x rationalComplexificationPrime) ≠
-          1 :=
+    have hsign :=
       rationalComplexification_signCharacter_ne_one_of_num_neg
         x hnegative
     have hfinite : finiteFactor ≠ 1 := by
@@ -478,8 +454,11 @@ theorem rationalComplexificationGlobalArtin_principalIdele
         Units.map (PadicInt.toZModPow 2).toMonoidHom
             (rationalSignPadicUnit x rationalComplexificationPrime) =
           1 :=
-      rationalComplexification_signCharacter_eq_one_of_num_pos
-        x hpositive
+      (by
+        apply Units.ext
+        rw [rationalSignPadicUnit_toZModPow_val]
+        rw [Int.sign_eq_one_of_pos hpositive]
+        norm_num)
     have hfinite : finiteFactor = 1 := by
       apply character.injective
       rw [hfiniteCharacter, hsign, map_one]

@@ -241,15 +241,13 @@ lemma gamma_norm_le_add_nat {s : ℂ} (hs : 1 ≤ |s.im|) (n : ℕ) :
   induction n with
   | zero => simp
   | succ n ih =>
-    have him : (s+(n:ℂ)).im = s.im := by simp
     have hn : 1 ≤ ‖s+(n:ℂ)‖ := hs.trans (by simpa using Complex.abs_im_le_norm (s+(n:ℂ)))
-    have hne : s+(n:ℂ) ≠ 0 := norm_pos_iff.mp (lt_of_lt_of_le zero_lt_one hn)
     calc
       _ ≤ ‖Complex.Gamma (s+n)‖ := ih
       _ ≤ ‖s+(n:ℂ)‖*‖Complex.Gamma (s+n)‖ :=
         le_mul_of_one_le_left (_root_.norm_nonneg _) hn
       _ = ‖Complex.Gamma (s+(n+1:ℕ))‖ := by
-        rw [Nat.cast_add, Nat.cast_one, ← add_assoc, Complex.Gamma_add_one _ hne, norm_mul]
+        simp [← add_assoc, Complex.Gamma_add_one _ (norm_pos_iff.mp (lt_of_lt_of_le zero_lt_one hn)), norm_mul]
 
 lemma complex_sin_norm_le_exp_im (s : ℂ) :
     ‖Complex.sin s‖ ≤ Real.exp |s.im| := by

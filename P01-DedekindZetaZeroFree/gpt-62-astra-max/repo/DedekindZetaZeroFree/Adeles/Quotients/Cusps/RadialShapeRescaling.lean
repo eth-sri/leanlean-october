@@ -15,9 +15,9 @@ open KPMsActualAngularSource KPMsActualAngularDomainSource
 
 open KPMsResidualTailRestoration.SharpConstantTerm.FiberStability
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 open KPMsActualAngularFixedRadiusRelationSource KPMsActualAngularDescentSource
 
@@ -45,15 +45,16 @@ private theorem positive_diagonal_action (c : ℝ) (hc : 0 < c) (q : KPArch.H3) 
       KPMsFixedHaarDisintegration.radialSection F ζ hζ w r := by
   apply KPContinuation.ChamberFlatCasimir.arch_diagonal_insertion
 
-def radialCross (w : NumberField.InfinitePlace F)
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (r : KPMsFixedHaarDisintegration.Radius) (p : KPCuspCharts.Cross F) : KPCuspCharts.Cross F :=
+section
+
+variable (w : NumberField.InfinitePlace F) (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+    (r : KPMsFixedHaarDisintegration.Radius) (p : KPCuspCharts.Cross F)
+
+def radialCross : KPCuspCharts.Cross F :=
   (fun i => KPMsFixedHaarDisintegration.positiveSlots F w r (KPCusp.complexPlace F i) * p.1 i,
     p.2 + KPMsFixedHaarDisintegration.sectionShape F hF w r)
 
- theorem radialArch_action (w : NumberField.InfinitePlace F)
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (r : KPMsFixedHaarDisintegration.Radius) (p : KPCuspCharts.Cross F) (t : ℝ) :
+ theorem radialArch_action (t : ℝ) :
     (fun i => KPArch.action (radialArch w r (KPCusp.complexPlace F i)).out
       (KPCuspCharts.toArch F (p,t) i)) =
       KPCuspCharts.toArch F
@@ -90,6 +91,8 @@ def radialCross (w : NumberField.InfinitePlace F)
         KPMsFixedHaarDisintegration.logHeight, hi, ite_false, Real.log_one]
       ring
 
+end
+
  theorem archBasepoint_radial_rescale
     (σ : KPCuspArithmetic.PGL2 F) (a : KPSmoothActualFlowData.GInfinity F)
     (w : NumberField.InfinitePlace F) (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -120,8 +123,7 @@ def radialCross (w : NumberField.InfinitePlace F)
       (archRational σ * radialArch w r * (archRational σ)⁻¹) := by
   obtain ⟨v,hv⟩ := rationalLift_split F ζ hζ σ
   change KPMsActualCuspSource.rationalLift F ζ hζ σ = _ at hv
-  rw [hv, ← radialArch_insertion (ζ := ζ) (hζ := hζ)]
-  have hc := insertion_commutes_cover F ζ hζ (radialArch w r) v
+  rw [hv, ← radialArch_insertion]
   have hmul := (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1
   let I : KPSmoothActualFlowData.GInfinity F →* KPSmoothActualFlowData.G F ζ hζ :=
     { toFun := KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
@@ -135,7 +137,7 @@ def radialCross (w : NumberField.InfinitePlace F)
     _ = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (archRational σ) *
       (v.val * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (radialArch w r)) *
       (v.val⁻¹ * (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (archRational σ))⁻¹) := by group
-    _ = _ := by rw [← hc.eq]; group
+    _ = _ := by rw [← (insertion_commutes_cover F ζ hζ (radialArch w r) v).eq]; group
 
  theorem sectionShape_mul
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -143,17 +145,7 @@ def radialCross (w : NumberField.InfinitePlace F)
     KPMsFixedHaarDisintegration.sectionShape F hF w
       ⟨r.val * t.val, mul_pos r.property t.property⟩ =
       KPMsFixedHaarDisintegration.sectionShape F hF w r +
-        KPMsFixedHaarDisintegration.sectionShape F hF w t := by
-  apply Subtype.ext
-  funext i
-  change ((if KPCusp.complexPlace F i = w then Real.log (r.val * t.val) / 2 else 0) -
-    Real.log (r.val * t.val) / (2 * (KPCuspLogShape.dimension F : ℝ))) =
-    ((if KPCusp.complexPlace F i = w then Real.log r.val / 2 else 0) -
-      Real.log r.val / (2 * (KPCuspLogShape.dimension F : ℝ))) +
-    ((if KPCusp.complexPlace F i = w then Real.log t.val / 2 else 0) -
-      Real.log t.val / (2 * (KPCuspLogShape.dimension F : ℝ)))
-  rw [Real.log_mul r.property.ne' t.property.ne']
-  split_ifs <;> ring
+        KPMsFixedHaarDisintegration.sectionShape F hF w t := by apply @DedekindZetaZeroFree.KPMsFixedHaar.RadiusShift.RadialRescaling.sectionShape_mul <;> assumption
 
 end DedekindZetaZeroFree.KPMsActualAngularRadialShapeSource
 

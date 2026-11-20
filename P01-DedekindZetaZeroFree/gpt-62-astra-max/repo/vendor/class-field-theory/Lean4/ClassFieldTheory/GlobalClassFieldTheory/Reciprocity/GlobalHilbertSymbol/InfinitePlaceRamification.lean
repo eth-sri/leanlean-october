@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -47,11 +45,11 @@ theorem chosenSimpleKummerExtension_chosenInfinitePlace_isRamified_of_real_of_ra
     letI : NumberField L := NumberField.of_module_finite K L
     (chosenInfinitePlaceAbove (L := L) v).IsRamified K := by
   let L := chosenSimpleKummerExtension K n hnK b
-  let : FiniteDimensional K L :=
+  let :=
     chosenSimpleKummerExtension_finiteDimensional K n hnK b
-  let : IsAbelianGalois K L :=
+  let :=
     chosenSimpleKummerExtension_isAbelianGalois K n hnK hmu b
-  let beta : L :=
+  let beta :=
     (chosenSimpleKummerRootUnit K n hnK b : Lˣ)
   have hbeta : beta ^ 2 = algebraMap K L (b : K) := by
     have hunit := congrArg Units.val
@@ -64,12 +62,11 @@ theorem chosenSimpleKummerExtension_chosenInfinitePlace_isRamified_of_real_of_ra
   have hwComplex : w.IsComplex := by
     apply InfinitePlace.not_isReal_iff_isComplex.mp
     intro hwReal
-    have hcomapReal : (w.comap (algebraMap K L)).IsReal := by
-      rw [hw]
-      exact hv
     have hcomplexComp :=
       InfinitePlace.comap_embedding_of_isReal
-        (algebraMap K L) hcomapReal
+        (algebraMap K L) (by
+          rw [hw]
+          exact hv)
     have hrealComp :
         (InfinitePlace.embedding_of_isReal hwReal).comp
             (algebraMap K L) =
@@ -88,13 +85,12 @@ theorem chosenSimpleKummerExtension_chosenInfinitePlace_isRamified_of_real_of_ra
         (InfinitePlace.embedding_of_isReal hwReal beta) ^ 2 =
           InfinitePlace.embedding_of_isReal hv (b : K) := by
       calc
-        (InfinitePlace.embedding_of_isReal hwReal beta) ^ 2 =
+        _ =
             InfinitePlace.embedding_of_isReal hwReal (beta ^ 2) := by
           rw [map_pow]
         _ = InfinitePlace.embedding_of_isReal hwReal
             (algebraMap K L (b : K)) := by rw [hbeta]
-        _ = InfinitePlace.embedding_of_isReal hv (b : K) := by
-          exact DFunLike.congr_fun hrealComp (b : K)
+        _ = InfinitePlace.embedding_of_isReal hv (b : K) := DFunLike.congr_fun hrealComp (b : K)
     nlinarith [sq_nonneg
       (InfinitePlace.embedding_of_isReal hwReal beta)]
   apply InfinitePlace.isRamified_iff.mpr

@@ -13,7 +13,11 @@ open scoped Classical
 open UniqueFactorizationMonoid RayClassBridge
 open ClassFieldTheory.GlobalClassFieldComparison
 
-private theorem count_nf (F : Type) [Field F] [NumberField F]
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+private theorem count_nf
     (v : HeightOneSpectrum (𝓞 F)) {I : Ideal (𝓞 F)} (hI : I ≠ 0) :
     FractionalIdeal.count F v (I : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
       (Multiset.count v.asIdeal (normalizedFactors I) : ℤ) := by
@@ -23,10 +27,9 @@ private theorem count_nf (F : Type) [Field F] [NumberField F]
  rw [factors_mk _ hI, count_some (irreducible_mk.mpr v.irreducible),
     ← Multiset.count_map_eq_count' _ _ Subtype.val_injective, map_subtype_coe_factors',
     factors_eq_normalizedFactors, ← Multiset.count_map_eq_count' _ _ (mk_injective (M := Ideal (𝓞 F)))]
-private theorem away_ne_zero (F : Type) [Field F] [NumberField F]
- (v : HeightOneSpectrum (𝓞 F)) (I : Ideal (𝓞 F)) : Raw.idealAwayPrimePart F v I ≠ 0 := by
- exact prod_ne_zero_of_subset_normalizedFactors (Multiset.filter_subset _ _)
-private theorem away_count (F : Type) [Field F] [NumberField F]
+private theorem away_ne_zero
+ (v : HeightOneSpectrum (𝓞 F)) (I : Ideal (𝓞 F)) : Raw.idealAwayPrimePart F v I ≠ 0 := prod_ne_zero_of_subset_normalizedFactors (Multiset.filter_subset _ _)
+private theorem away_count
  (v w : HeightOneSpectrum (𝓞 F)) (I : Ideal (𝓞 F)) :
  FractionalIdeal.count F w (Raw.idealAwayPrimePart F v I : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
    if w = v then 0 else (Multiset.count w.asIdeal (normalizedFactors I) : ℤ) := by
@@ -37,7 +40,7 @@ private theorem away_count (F : Type) [Field F] [NumberField F]
    simp
  · have h' : w.asIdeal ≠ v.asIdeal := fun he => h (HeightOneSpectrum.ext he)
    simp [h, h']
-private theorem away_le_pow (F : Type) [Field F] [NumberField F]
+private theorem away_le_pow
  (v w : HeightOneSpectrum (𝓞 F)) (hw : w ≠ v) (I : Ideal (𝓞 F)) (hI : I ≠ 0) :
  Raw.idealAwayPrimePart F v I ≤ w.asIdeal ^ (narrowIdealModulus F I hI).finitePart w := by
  have hdiv : w.asIdeal ^ (narrowIdealModulus F I hI).finitePart w ∣ Raw.idealAwayPrimePart F v I := by
@@ -57,7 +60,7 @@ private theorem away_le_pow (F : Type) [Field F] [NumberField F]
        (s := (normalizedFactors I).filter (fun p => p ≠ v.asIdeal))
        (n := (normalizedFactors I).count w.asIdeal)).mp (by simp [h'])
  exact Ideal.dvd_iff_le.mp hdiv
-private theorem away_idele_primeTo (F : Type) [Field F] [NumberField F]
+private theorem away_idele_primeTo
  (hc : NumberField.IsTotallyComplex F) (v : HeightOneSpectrum (𝓞 F))
  (m : Ideal (𝓞 F)) (hm : m ≠ 0) (a : 𝓞 F) (ha : a ≠ 0)
  (hcong : a - 1 ∈ Raw.idealAwayPrimePart F v m) :
@@ -72,18 +75,19 @@ private theorem away_idele_primeTo (F : Type) [Field F] [NumberField F]
    intro w hw
    exact False.elim ((NumberField.InfinitePlace.not_isReal_iff_isComplex.mpr
      (NumberField.IsTotallyComplex.isComplex w.1)) w.2)
+ let mk0₀ := Units.mk0 (a : F) (by exact_mod_cast ha)
  · intro w hw
    change IdeleGroup.finiteComponent w
-     (IdeleGroup.principalIdele F (Units.mk0 (a : F) (by exact_mod_cast ha)) /
+     (IdeleGroup.principalIdele F (mk0₀) /
        IdeleGroup.finitePlaceIdele v (Raw.integralElementLocalUnit F v a ha)) ∈ _
    rw [map_div]
    change ClassFieldTheory.finitePlaceUnitEmbedding w
-     (Units.mk0 (a : F) (by exact_mod_cast ha)) / _ ∈ _
+     (mk0₀) / _ ∈ _
    by_cases h : w = v
    · subst w
      rw [IdeleGroup.finitePlaceIdele_finiteComponent_same]
      have he : ClassFieldTheory.finitePlaceUnitEmbedding v
-         (Units.mk0 (a : F) (by exact_mod_cast ha)) = Raw.integralElementLocalUnit F v a ha := by
+         (mk0₀) = Raw.integralElementLocalUnit F v a ha := by
        apply Units.ext
        rfl
      rw [he]
@@ -94,47 +98,49 @@ private theorem away_idele_primeTo (F : Type) [Field F] [NumberField F]
      apply (integral_mem_rayLocalHigherUnitGroup_iff F w _
        (Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hw)) a ha _ rfl).mpr
      exact away_le_pow F v w h m hm hcong
-private theorem away_idele_ideal (F : Type) [Field F] [NumberField F]
+private theorem away_idele_ideal
  (v : HeightOneSpectrum (𝓞 F)) (a : 𝓞 F) (ha : a ≠ 0) :
  IdeleGroup.fractionalIdeal
    (IdeleGroup.principalIdele F (Units.mk0 (a : F) (by exact_mod_cast ha)) /
      IdeleGroup.finitePlaceIdele v (Raw.integralElementLocalUnit F v a ha)) =
  integralUnit F (Raw.idealAwayPrimePart F v (Ideal.span {a}))
    (away_ne_zero F v _) := by
+ let mk0₀ := Units.mk0 (a : F) (by exact_mod_cast ha)
  have he (w : HeightOneSpectrum (𝓞 F)) : ClassFieldTheory.finitePlaceUnitEmbedding w
-     (Units.mk0 (a : F) (by exact_mod_cast ha)) = Raw.integralElementLocalUnit F w a ha := by
+     (mk0₀) = Raw.integralElementLocalUnit F w a ha := by
    apply Units.ext
    rfl
+ let FractionalIdeal₀ := FractionalIdeal (nonZeroDivisors (𝓞 F)) F
  have hp : IdeleGroup.fractionalIdeal
-     (IdeleGroup.principalIdele F (Units.mk0 (a : F) (by exact_mod_cast ha))) =
+     (IdeleGroup.principalIdele F (mk0₀)) =
      integralUnit F (Ideal.span {a}) (by simpa using ha) := by
    rw [IdeleGroup.fractionalIdeal_principalIdele]
    apply Units.ext
    rw [coe_toPrincipalIdeal]
    change FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 F)) (a : F) =
-     (Ideal.span {a} : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)
+     (Ideal.span {a} : FractionalIdeal₀)
    rw [FractionalIdeal.coeIdeal_span_singleton]
  have hc (z : IdeleGroup F) (w : HeightOneSpectrum (𝓞 F)) :
      FractionalIdeal.count F w
-       (IdeleGroup.fractionalIdeal z : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
+       (IdeleGroup.fractionalIdeal z : FractionalIdeal₀) =
        (FiniteIdeleGroup.localOrder w (IdeleGroup.finiteComponent w z)).toAdd := by
    change FractionalIdeal.count F w
-     (((FractionalIdealGroup.factorization (K := F)) (FiniteIdeleGroup.valuationVector z.2) :
-       FractionalIdealGroup F) : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) = _
+     (((FractionalIdealGroup.factorization) (FiniteIdeleGroup.valuationVector z.2) :
+       FractionalIdealGroup F) : FractionalIdeal₀) = _
    rw [FractionalIdealGroup.count_factorization, FiniteIdeleGroup.valuationVector_apply]
    rfl
  apply FractionalIdealGroup.ext_count
  intro w
  rw [hc]
  change _ = FractionalIdeal.count F w
-   (Raw.idealAwayPrimePart F v (Ideal.span {a}) : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)
+   (Raw.idealAwayPrimePart F v (Ideal.span {a}) : FractionalIdeal₀)
  rw [away_count]
  rw [map_div]
  by_cases hw : w = v
  · subst w
    rw [IdeleGroup.finitePlaceIdele_finiteComponent_same]
    change (FiniteIdeleGroup.localOrder v (ClassFieldTheory.finitePlaceUnitEmbedding v
-     (Units.mk0 (a : F) (by exact_mod_cast ha)) / Raw.integralElementLocalUnit F v a ha)).toAdd = _
+     (mk0₀) / Raw.integralElementLocalUnit F v a ha)).toAdd = _
    rw [he, div_self', map_one]
    simp
  · rw [IdeleGroup.finitePlaceIdele_finiteComponent_of_ne v w _ hw, div_one]
@@ -142,7 +148,7 @@ private theorem away_idele_ideal (F : Type) [Field F] [NumberField F]
    rw [← hc, hp]
    rfl
 
-private theorem primeTo_idele_evaluation (F : Type) [Field F] [NumberField F] (hc : NumberField.IsTotallyComplex F)
+private theorem primeTo_idele_evaluation (hc : NumberField.IsTotallyComplex F)
  (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (η : RayClassCharacter F m)
  (a : IdeleGroup F) (ha : a ∈ RayClass.idelePrimeToModulusSubgroup
   (rayClassModulusToOriginal F (narrowIdealModulus F m hm))) :
@@ -163,8 +169,7 @@ private theorem primeTo_idele_evaluation (F : Type) [Field F] [NumberField F] (h
       MulEquiv.apply_symm_apply]
    have hI : rayClassGroupEquivOriginal F M
        (QuotientGroup.mk' (ClassFieldTheory.rayPrincipalIdealSubgroupInPrimeTo M) I) =
-       RayClass.idealRayProjection M' A := by
-     rfl
+       RayClass.idealRayProjection M' A := rfl
    rw [hI]
    symm
    rw [RayClass.rayClassGroupEquivIdealRayClassGroup, MulEquiv.trans_apply,
@@ -172,8 +177,7 @@ private theorem primeTo_idele_evaluation (F : Type) [Field F] [NumberField F] (h
    have hproj : RayClass.rayClassGroupEquivIdeleQuotient M'
        (QuotientGroup.mk' M'.congruenceSubgroup
          (QuotientGroup.mk' (IdeleGroup.principalSubgroup F) a)) =
-       RayClass.primeToRayClassProjection M' A := by
-     rfl
+       RayClass.primeToRayClassProjection M' A := rfl
    rw [hproj, ← RayClass.quotientRaySubgroupEquivIdeleRayQuotient_mk,
      MulEquiv.symm_apply_apply, RayClass.quotientRaySubgroupEquivIdealRayClassGroup_mk]
    exact (MulEquiv.apply_symm_apply _ _).symm
@@ -183,6 +187,10 @@ private theorem primeTo_idele_evaluation (F : Type) [Field F] [NumberField F] (h
        (QuotientGroup.mk' (IdeleGroup.principalSubgroup F) a))) = _
  rw [← he, MulEquiv.symm_apply_apply]
  exact DFunLike.congr_fun (rayCharacter_comp_quotient F hc m hm η) I
+
+end
+
+alias IdelicLocalRestriction.primeTo_idele_evaluation := primeTo_idele_evaluation
 
 theorem idelic_restriction_is_raw_local_component
     (F : Type) [Field F] [NumberField F] (hc : NumberField.IsTotallyComplex F)
@@ -195,7 +203,7 @@ theorem idelic_restriction_is_raw_local_component
     Raw.IsFrequencyLocalComponent F χ v δ := by
   classical
   intro a ha hcong
-  let x : Fˣ := Units.mk0 (a : F) (by exact_mod_cast ha)
+  let x := Units.mk0 (a : F) (by exact_mod_cast ha)
   let u := Raw.integralElementLocalUnit F v a ha
   let z := IdeleGroup.principalIdele F x / IdeleGroup.finitePlaceIdele v u
   let I := Raw.idealAwayPrimePart F v (Ideal.span {a})
@@ -229,7 +237,6 @@ theorem idelic_restriction_is_raw_local_component
   rw [hzclass, map_inv] at heval
   have hcval := congrArg (fun y : ℂˣ => (y : ℂ)) heval
   rw [fractionalCharacter_integral] at hcval
-  change (δ u : ℂ) = (χ.character I)⁻¹
   rw [hδ]
   rw [Units.val_inv_eq_inv_val] at hcval
   exact inv_eq_iff_eq_inv.mp hcval

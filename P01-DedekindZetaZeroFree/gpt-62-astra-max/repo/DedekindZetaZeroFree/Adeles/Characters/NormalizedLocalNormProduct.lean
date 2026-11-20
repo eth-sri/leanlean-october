@@ -11,12 +11,14 @@ namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacterModulus
 noncomputable section
 set_option autoImplicit false
 
-def localAbsUnit (F : Type) [Field F] [NumberField F]
+variable (F : Type) [Field F] [NumberField F]
+
+def localAbsUnit
     (v : KPHilbert.Place F) (y : (KPHilbert.Completion F v)ˣ) : (ℝ≥0)ˣ :=
   Units.mk0 (KPGlobalCenterRationalCharacterExtension.localAbs F v y)
     (ne_of_gt (KPGlobalCenterRationalCharacterExtension.localAbs_pos F v y))
 
-theorem idele_abs_finite_product (F : Type) [Field F] [NumberField F]
+theorem idele_abs_finite_product
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (u : KPGlobalTorusFunctionData.Ideles F) :
     Function.HasFiniteMulSupport (fun v =>

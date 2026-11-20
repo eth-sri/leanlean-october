@@ -16,9 +16,12 @@ variable {F : Type} [Field F] [NumberField F]
 section Generic
 
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-theorem goodFactor_sub_one_le_five_terms (δ' : ℝ) (hδ' : 0 < δ') :
+variable (δ' : ℝ) (hδ' : 0 < δ')
+
+include hδ' in
+theorem goodFactor_sub_one_le_five_terms :
     ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ (C : A.GeneralArithmeticContext σ η hS)
       (pr : LocalFiniteSums.ExteriorPrime A) (uu : A.R), ∀ p ∈ OmegaStarMargin δ',
         ‖CorrectionFactors.goodFactor C pr uu p.1 p.2.1 p.2.2 - 1‖ ≤
@@ -28,7 +31,7 @@ theorem goodFactor_sub_one_le_five_terms (δ' : ℝ) (hδ' : 0 < δ') :
             LocalFiniteSums.Q pr * (LocalFiniteSums.Q pr ^ (-p.1.re) *
               LocalFiniteSums.Q pr ^ (-p.2.1.re) * LocalFiniteSums.Q pr ^ (-(6 * p.2.2.re))) +
             LocalFiniteSums.Q pr ^ (4 - 6 * p.1.re - 6 * p.2.2.re)) := by
-  have hρ : ((2 : ℝ) ^ δ')⁻¹ < 1 := inv_two_rpow_lt_one δ' hδ'
+  have hρ := inv_two_rpow_lt_one δ' hδ'
   have hρ0 : 0 < 1 - ((2 : ℝ) ^ δ')⁻¹ := by linarith
   refine ⟨6 / ((1 - ((2 : ℝ) ^ δ')⁻¹) * (1 - ((2 : ℝ) ^ δ')⁻¹)),
     div_pos (by norm_num) (mul_pos hρ0 hρ0), ?_⟩
@@ -42,7 +45,8 @@ theorem goodFactor_sub_one_le_five_terms (δ' : ℝ) (hδ' : 0 < δ') :
       (rpow_le_two_inv δ' hδ' _ hQ2 _ (by linarith))
       (rpow_le_two_inv δ' hδ' _ hQ2 _ (by linarith))
 
-theorem goodFactor_sub_one_le (δ' : ℝ) (hδ' : 0 < δ') :
+include hδ' in
+theorem goodFactor_sub_one_le :
     ∃ C : ℝ, 0 < C ∧ ∀ (C' : A.GeneralArithmeticContext σ η hS)
       (pr : LocalFiniteSums.ExteriorPrime A) (uu : A.R), ∀ p ∈ OmegaStarMargin δ',
         ‖CorrectionFactors.goodFactor C' pr uu p.1 p.2.1 p.2.2 - 1‖ ≤
@@ -95,21 +99,25 @@ end Generic
 section Raw
 
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    (D : FixedData S η)
 
 open AllRowEuler.InitialSeparation
 
-theorem j_val_eq (U : RawFrequency D.recipe.A)
-    (pr : LocalFiniteSums.ExteriorPrime D.recipe.A) :
+section
+
+variable (U : RawFrequency D.recipe.A) (pr : LocalFiniteSums.ExteriorPrime D.recipe.A)
+
+theorem j_val_eq :
     (U.j pr).val = idealPrimeExponent pr.val.asIdeal U.ideal.val := rfl
 
-theorem localCorrection_good_eq (U : RawFrequency D.recipe.A)
-    (pr : LocalFiniteSums.ExteriorPrime D.recipe.A) (hj : (U.j pr).val = 0)
+theorem localCorrection_good_eq (hj : (U.j pr).val = 0)
     (ξ w z : ℂ) :
     AllRowEuler.InitialSeparation.localCorrection D.context U pr ξ w z =
       CorrectionFactors.goodFactor D.context pr U.u ξ w z := by
   unfold AllRowEuler.InitialSeparation.localCorrection
   rw [if_pos hj]
+
+end
 
 theorem localCorrection_good_sub_one_le (δ' : ℝ) (hδ' : 0 < δ') :
     ∃ C δ : ℝ, 0 < C ∧ 0 < δ ∧

@@ -29,11 +29,11 @@ end DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 namespace DedekindZetaZeroFree.KPContActualHilbertSimpleGerms
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 local notation "level" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 local notation "Hactual" => KPContActualAllCuspSource.Sector F ζ hζ C R P H U
@@ -41,7 +41,7 @@ local notation "d" => (Module.finrank ℚ F / 2 : ℕ)
 local notation "a" => KPContinuation.spectralCoordinate (d : ℤ)
 
 variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
-variable (hR : R.adelicHaar = μG)
+    (hR : R.adelicHaar = μG)
 variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ
   (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H)
 
@@ -51,19 +51,18 @@ local notation "Δactual" => KPContActualSectorFriedrichsSynthesis.Δ_U
   F ζ hζ level R P H μG hμG hR realization
 
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable {T : ℝ}
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    {T : ℝ}
 variable (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H T)
 variable (Ω : Set ℂ) (f : ℂ → S)
-variable (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-variable (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer Ω f χ)
+    (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
+    (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer Ω f χ)
 
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 theorem actual_simple_germs_zero_eigentest_pairing
     (hι : Function.Injective ι)
-    (hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (hΩopen : IsOpen Ω) (hΩ : Ω ⊆ KPContinuation.spectralDomain)
     (hf : DifferentiableOn ℂ f Ω) (hc : (0 : ℂ) ∈ Ω) :
     ∃ r : ℝ, 0 < r ∧ Metric.ball (0 : ℂ) r ⊆ Ω ∧
@@ -74,7 +73,7 @@ theorem actual_simple_germs_zero_eigentest_pairing
           inner ℂ t (source.h 0) = deriv a 0 * inner ℂ t (w 0)) := by
   obtain ⟨r, hr, hb, w, hw, he, hg⟩ :=
     actual_simple_germs_first_graph F ζ hζ C R P H U μG hμG hR realization
-      ι buffer Ω f χ source hι hStage hΩopen hΩ hf 0 hc
+      ι buffer Ω f χ source hι hΩopen hΩ hf 0 hc
   refine ⟨r,hr,hb,w,hw,?_,?_⟩
   · simpa only [sub_zero] using he
   · intro t ht

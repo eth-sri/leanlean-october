@@ -33,7 +33,7 @@ private theorem local_factor (v : KPHilbert.Place F)
     · refine ⟨KPLocalCover.sectionMap F ζ hζ (Sum.inr q) (KPTameCompact.inclusion F q r⁻¹), ?_, ?_⟩
       · simp only [localCompactFactorMax, if_pos hb]
         exact ⟨r⁻¹,rfl⟩
-      · simpa only [KPLocalCover.sectionMap_g, map_inv, inv_inv] using hr
+      · simpa using hr
     · let k := KPGoodCompactSplitting.kStar F ζ hζ q (fun h3 => hb (Or.inr h3)) r⁻¹
       refine ⟨k,?_,?_⟩
       · simp only [localCompactFactorMax, if_neg hb, KPAdelicCoverRestrictedProduct.finiteCompact]
@@ -45,13 +45,7 @@ private theorem local_factor (v : KPHilbert.Place F)
 
 private theorem adele_ext {a b : KPAdelicCoverRestrictedProduct.Adeles F}
     (h : ∀ v, KPAdelicCoverRestrictedProduct.adeleEval F v a =
-      KPAdelicCoverRestrictedProduct.adeleEval F v b) : a = b := by
-  apply Prod.ext
-  · funext w
-    exact h (Sum.inl w)
-  · apply RestrictedProduct.ext
-    intro q
-    exact h (Sum.inr q)
+      KPAdelicCoverRestrictedProduct.adeleEval F v b) : a = b := by apply @DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.GL2Projection.adele_ext <;> assumption
 
 theorem base_pgl_iwasawa_max (g : KPAdelicCoverRestrictedProduct.AdelicPGL2 F) :
     ∃ b : KPGlobalTorusFunctionData.ordinaryBorel F,
@@ -65,7 +59,7 @@ theorem base_pgl_iwasawa_max (g : KPAdelicCoverRestrictedProduct.AdelicPGL2 F) :
       filter_upwards [localCompactFactorMax_eq_compact_eventually F ζ hζ] with v hv
       rw [← hv]
       exact hk v⟩
-  have hy : y ∈ fullCompactPreimageMax F ζ hζ := hk
+  have hy := hk
   let K := (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ)
     (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ y)
   have hK : K ∈ iwasawaCompactSubgroupMax F ζ hζ := ⟨y,hy,rfl⟩

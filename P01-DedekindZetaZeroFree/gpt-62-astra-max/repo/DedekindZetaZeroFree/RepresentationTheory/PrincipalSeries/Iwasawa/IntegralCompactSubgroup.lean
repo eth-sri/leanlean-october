@@ -25,7 +25,7 @@ theorem finiteCompact_le_integralRawCompact (q : HeightOneSpectrum (𝓞 F)) :
    exact ⟨k,hkg⟩
  · obtain ⟨k,rfl⟩ := hr
    exact ⟨k,rfl⟩
-open _root_.DedekindZetaZeroFree.KPRankOneCartanGeometry renaming finite_kernel_proper → finite_kernel_proper
+open _root_.DedekindZetaZeroFree.KPRankOneCartanGeometry (finite_kernel_proper)
 local instance rawTopology (q : HeightOneSpectrum (𝓞 F)) :
  TopologicalSpace (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) :=
  KPAdelicCoverRestrictedProduct.localTopology F ζ hζ (Sum.inr q)
@@ -51,9 +51,8 @@ theorem integralRawCompact_compact_open (q : HeightOneSpectrum (𝓞 F)) :
   change Set.Finite {r : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q) | KPLocalCover.projection F ζ hζ (Sum.inr q) r = y}
   haveI := Nat.finite_of_card_ne_zero (ht.2.2.2.2.2 y ▸ (by decide : (3 : ℕ) ≠ 0))
   exact Set.toFinite _
- have hp := finite_kernel_proper (KPLocalCover.projection F ζ hζ (Sum.inr q)) ht.2.2.2.1
-  (fun y => ⟨⟨y,1⟩,rfl⟩) hf
- exact ⟨hp.isCompact_preimage hKc,hKo.preimage ht.2.2.2.1.continuous⟩
+ exact ⟨(finite_kernel_proper (KPLocalCover.projection F ζ hζ (Sum.inr q)) ht.2.2.2.1
+   (fun y => ⟨⟨y,1⟩,rfl⟩) hf).isCompact_preimage hKc,hKo.preimage ht.2.2.2.1.continuous⟩
 
 end DedekindZetaZeroFree.PrincipalOfKP
 
@@ -69,7 +68,6 @@ namespace DedekindZetaZeroFree.PrincipalOfKP
 set_option linter.style.haveILetI false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-open _root_.DedekindZetaZeroFree.KPRankOneCartanGeometry renaming finite_kernel_proper → finite_kernel_proper
 
 local instance baseGroup (q : HeightOneSpectrum (𝓞 F)) : Group (KPPGLLocalCover.LocalPGL2 F (Sum.inr q)) :=
  @QuotientGroup.Quotient.group _ _ (KPPGLLocalCover.scalarSubgroup F (Sum.inr q))
@@ -93,7 +91,6 @@ theorem integralRawCompact_projection (q : HeightOneSpectrum (𝓞 F)) :
    let r' := r * (KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inr q) u)⁻¹
    refine ⟨r',?_,?_⟩
    · refine ⟨k,?_⟩
-     change KPTameCompact.inclusion F q k = KPLocalCover.projection F ζ hζ (Sum.inr q) r'
      dsimp only [r']
      rw [map_mul,map_inv,KPScalarSplitCentral.projection_scalarHom]
      change KPTameCompact.inclusion F q k = r.g * (KPScalarSplitCentral.scalarMatrix F (Sum.inr q) u)⁻¹

@@ -17,8 +17,7 @@ local notation "rt" => KPCplxPrincipalSeriesCharts.rightTranslate
 
 def harmonicPlusDerivative (i : Fin 6) : Module.End ℂ harmonicPlus :=
   (derivative positiveParameter (KPSmoothActualFlowData.basisMatrix i)).restrict
-    (fun f hf => by
-      exact derivative_preserves_harmonic_core positiveParameter _
+    (fun f hf => derivative_preserves_harmonic_core positiveParameter _
         (basisMatrix_trace_zero i) f hf)
 
 theorem standardIntertwiner_native_orbit_derivative (β : ℂˣ)
@@ -67,25 +66,21 @@ open scoped Matrix.Norms.Operator in
 theorem native_exponential_curve_smooth (X : Matrix (Fin 2) (Fin 2) ℂ) :
     ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ =>
       (KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X) : Matrix (Fin 2) (Fin 2) ℂ)) := by
-  letI : NormedAddCommGroup (Matrix (Fin 2) (Fin 2) ℂ) := Matrix.linftyOpNormedAddCommGroup
-  letI : NormedSpace ℝ (Matrix (Fin 2) (Fin 2) ℂ) := Matrix.linftyOpNormedSpace
-  letI : NormedRing (Matrix (Fin 2) (Fin 2) ℂ) := Matrix.linftyOpNormedRing
-  letI : NormedAlgebra ℝ (Matrix (Fin 2) (Fin 2) ℂ) := Matrix.linftyOpNormedAlgebra
-  have h : ContDiff ℝ (⊤ : ℕ∞) (NormedSpace.exp : Matrix (Fin 2) (Fin 2) ℂ → _) :=
-    (show AnalyticOnNhd ℝ (NormedSpace.exp : Matrix (Fin 2) (Fin 2) ℂ → _) Set.univ from
-      fun _ _ => NormedSpace.exp_analytic _).contDiff
-  have hs : ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ => (t : ℂ) • X) :=
-    Complex.ofRealCLM.contDiff.smul contDiff_const
-  have hc := h.comp hs
+  let Matrix₀ := Matrix (Fin 2) (Fin 2) ℂ
+  letI : NormedAddCommGroup (Matrix₀) := Matrix.linftyOpNormedAddCommGroup
+  letI : NormedSpace ℝ (Matrix₀) := Matrix.linftyOpNormedSpace
+  letI : NormedRing (Matrix₀) := Matrix.linftyOpNormedRing
+  letI : NormedAlgebra ℝ (Matrix₀) := Matrix.linftyOpNormedAlgebra
   apply contDiff_pi.mpr
   intro i
   apply contDiff_pi.mpr
   intro j
-  let ev : Matrix (Fin 2) (Fin 2) ℂ →ₗ[ℝ] ℂ :=
+  let ev : Matrix₀ →ₗ[ℝ] ℂ :=
     { toFun := fun m => m i j
       map_add' := by intros; rfl
       map_smul' := by intros; rfl }
-  exact ev.toContinuousLinearMap.contDiff.comp hc
+  exact ev.toContinuousLinearMap.contDiff.comp (((show AnalyticOnNhd ℝ NormedSpace.exp Set.univ from
+    fun _ _ => NormedSpace.exp_analytic _).contDiff).comp (Complex.ofRealCLM.contDiff.smul contDiff_const))
 
 theorem harmonicPlusDerivative_intertwines (i : Fin 6) (f : harmonicPlus) :
     harmonicQuotient (harmonicPlusDerivative i f) =

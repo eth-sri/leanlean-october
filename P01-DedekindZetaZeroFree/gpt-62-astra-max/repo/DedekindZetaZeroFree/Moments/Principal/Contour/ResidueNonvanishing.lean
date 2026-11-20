@@ -9,9 +9,9 @@ namespace DedekindZetaZeroFree.Quantitative.ResidueNonzero
 noncomputable section
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : DedekindZetaZeroFree.SArithmeticData F}
-variable {η : DedekindZetaZeroFree.RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : DedekindZetaZeroFree.SArithmeticData F}
+    {η : DedekindZetaZeroFree.RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem RS_ne_zero : Spectral.RS D ≠ 0 := by
   unfold Spectral.RS DedekindZetaZeroFree.comparisonPrincipalResidue

@@ -13,9 +13,9 @@ open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η}
-variable {N : TraceHaarTransport R} {C : JointDigitDescentSources R N}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η}
+    {N : TraceHaarTransport R} {C : JointDigitDescentSources R N}
 
 def archCoefficient (v : R.A.UnitQuotient) (w : InfinitePlace F) (g : ComplexGL2) : ℂ :=
   fourier R C.sources.dq (C.realization.theta v)
@@ -48,19 +48,18 @@ theorem FrozenTensor.compact_mixed_product {v : R.A.UnitQuotient} (X : FrozenTen
   have hp := X.mixed_word_exact k a
   rw [X.mixed_word_geometry k a] at hp
   rw [hp]
-  have hratio : (∏ p : X.level.val, C.factorization.ell p (mixedAction (C := C) k a p.val (X.component p))) =
+  have hratio : (∏ p : X.level.val, C.factorization.ell p (mixedAction k a p.val (X.component p))) =
       (∏ p : X.level.val, C.factorization.ell p (X.component p)) *
-      ∏ p : X.level.val, C.factorization.ell p (mixedAction (C := C) k a p.val (X.component p)) /
+      ∏ p : X.level.val, C.factorization.ell p (mixedAction k a p.val (X.component p)) /
         C.factorization.ell p (X.component p) := by
     rw [← Finset.prod_mul_distrib]
     apply Finset.prod_congr rfl
     intro p _
     field_simp [X.local_forward_ne_zero p]
   rw [hratio,← X.forward_exact]
-  have he := Equiv.prod_comp X.placeEquiv (fun p : X.level.val =>
-    C.factorization.ell p (mixedAction (C := C) k a p.val (X.component p)) /
-      C.factorization.ell p (X.component p))
-  rw [← he,Fintype.prod_sum_type]
+  rw [← (Equiv.prod_comp X.placeEquiv (fun p : X.level.val =>
+    C.factorization.ell p (mixedAction k a p.val (X.component p)) /
+      C.factorization.ell p (X.component p))),Fintype.prod_sum_type]
   have hc : (∏ w : InfinitePlace F,
       C.factorization.ell (Sum.inl w) (mixedAction (C := C) k a (Sum.inl w) (X.component (X.placeEquiv (Sum.inl w)))) /
         C.factorization.ell (Sum.inl w) (X.component (X.placeEquiv (Sum.inl w)))) =
@@ -72,7 +71,7 @@ theorem FrozenTensor.compact_mixed_product {v : R.A.UnitQuotient} (X : FrozenTen
     simpa only [FrozenTensor.compactUpdate,Function.update_self,mixedAction,FrozenTensor.placeEquiv,
       Equiv.coe_fn_mk] using (X.compact_normalized_single w (k w)).symm
   have hfin : (∏ q : R.A.Sf,
-      C.factorization.ell (Sum.inr q.val) (mixedAction (C := C) k a (Sum.inr q.val) (X.component (X.placeEquiv (Sum.inr q)))) /
+      C.factorization.ell (Sum.inr q.val) (mixedAction k a (Sum.inr q.val) (X.component (X.placeEquiv (Sum.inr q)))) /
         C.factorization.ell (Sum.inr q.val) (X.component (X.placeEquiv (Sum.inr q)))) =
       ∏ q : R.A.Sf, fourier R C.sources.dq (C.realization.theta v) (finiteLift q.val (a q.val)) /
         fourier R C.sources.dq (C.realization.theta v) 1 := by
@@ -94,13 +93,13 @@ theorem fullMatrix_product (v : R.A.UnitQuotient)
         (∏ q : R.A.Sf, fourier R C.sources.dq (C.realization.theta v) (finiteLift q.val (a q.val)) /
           fourier R C.sources.dq (C.realization.theta v) 1) *
         ∏ w : InfinitePlace F, archCoefficient (C := C) v w (g w) := by
-  let P := fun g : InfinitePlace F → ComplexGL2 => fourier R C.sources.dq (C.realization.theta v)
-    ((finiteBase (R := R) a).val * archMatrixInsertion F R.A.zeta12 R.A.primitive_zeta12 g)
-  let b := fourier R C.sources.dq (C.realization.theta v) 1 *
-    ∏ q : R.A.Sf, fourier R C.sources.dq (C.realization.theta v) (finiteLift q.val (a q.val)) /
-      fourier R C.sources.dq (C.realization.theta v) 1
+  let fourier₀ := fourier R C.sources.dq (C.realization.theta v)
+  let b := fourier₀ 1 *
+    ∏ q : R.A.Sf, fourier₀ (finiteLift q.val (a q.val)) /
+      fourier₀ 1
   let Q := fun g : InfinitePlace F → ComplexGL2 => b * ∏ w, archCoefficient (C := C) v w (g w)
-  have he : P = Q := by
+  have he : (fun g : InfinitePlace F → ComplexGL2 => fourier₀
+    ((finiteBase a).val * archMatrixInsertion F R.A.zeta12 R.A.primitive_zeta12 g)) = Q := by
     apply product_eq_of_compact_slices
     · intro w g₀
       obtain ⟨f,hf⟩ := finiteBase_residue_jacquet_image R C.sources C.realization v w

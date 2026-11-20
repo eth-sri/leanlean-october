@@ -12,7 +12,7 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.CurrentBoundaryFrame
 open KPMsGreenFlux KPContFlatArchDiagonalMultiplier KPMsActualAngularSource
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable (φ : KPGlobalTorusFunctionData.G F ζ hζ → ℂ)
+    (φ : KPGlobalTorusFunctionData.G F ζ hζ → ℂ)
 variable (ha : ∀ (u : NumberField.InfinitePlace F → ℝ) g,
   φ ((aInfinity F ζ hζ u).val * g) =
     Complex.exp ((2:ℂ) * ((∑v, u v : ℝ):ℂ)) * φ g)

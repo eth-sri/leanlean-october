@@ -43,7 +43,7 @@ theorem finite_subrange_bound {α β : Type*} [DecidableEq α] [DecidableEq β]
     intro a
     simpa only [hlam'] using finite_subrange_mask_sum_mul S S' hS K lam a
   have hnorm : (∑ b ∈ S, ‖lam' b‖ ^ 2) = ∑ b ∈ S', ‖lam b‖ ^ 2 := by
-    simpa only [hlam'] using finite_subrange_mask_sum_norm_sq S S' hS lam
+    simpa using finite_subrange_mask_sum_norm_sq S S' hS lam
   calc (∑ a ∈ R', ‖∑ b ∈ S', lam b * K b a‖ ^ 2)
       = ∑ a ∈ R', ‖∑ b ∈ S, lam' b * K b a‖ ^ 2 :=
         Finset.sum_congr rfl fun a _ => by rw [hmul a]

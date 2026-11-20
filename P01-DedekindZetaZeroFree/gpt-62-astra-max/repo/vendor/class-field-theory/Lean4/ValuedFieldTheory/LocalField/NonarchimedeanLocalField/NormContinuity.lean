@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -38,40 +33,36 @@ namespace LocalFieldTheory
 open scoped ValuativeRel
 open _root_.LocalFieldTheory.IsNonarchimedeanLocalField
 
+section
+
+variable (K : Type u) (L : Type v) [NontriviallyNormedField K] [NormedField L] [Algebra K L]
+    [FiniteDimensional K L] [CompleteSpace K] [ContinuousSMul K L]
+
 /-- The field norm of a finite-dimensional normed algebra over a complete
 nontrivially normed field is continuous. -/
-theorem algebraNorm_continuous_of_finiteDimensional
-    (K : Type u) (L : Type v)
-    [NontriviallyNormedField K] [NormedField L]
-    [Algebra K L] [FiniteDimensional K L] [CompleteSpace K]
-    [ContinuousSMul K L] :
+theorem algebraNorm_continuous_of_finiteDimensional :
     Continuous (Algebra.norm K : L → K) := by
   classical
   let b := Module.Free.chooseBasis K L
   rw [show (Algebra.norm K : L → K) =
       fun x => (Algebra.leftMulMatrix b x).det by
-    funext x
-    exact Algebra.norm_eq_matrix_det b x]
+    grind [Algebra.norm_eq_matrix_det]]
   apply Continuous.matrix_det
   exact (Algebra.leftMulMatrix b).toLinearMap.continuous_of_finiteDimensional
 
 /-- The field norm induced on unit groups is continuous. -/
-theorem normUnits_continuous_of_finiteDimensional
-    (K : Type u) (L : Type v)
-    [NontriviallyNormedField K] [NormedField L]
-    [Algebra K L] [FiniteDimensional K L] [CompleteSpace K]
-    [ContinuousSMul K L] :
+theorem normUnits_continuous_of_finiteDimensional :
     Continuous (normUnits K L) := by
-  unfold normUnits
   exact Continuous.units_map (Algebra.norm K : L →* K)
     (algebraNorm_continuous_of_finiteDimensional K L)
+
+end
 
 /-- The canonical inclusion from valuation-ring units to field units is
 continuous for the subtype topologies. -/
 theorem integerUnitsToFieldUnits_continuous
     (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K] :
     Continuous (integerUnitsToFieldUnits K) := by
-  unfold IsNonarchimedeanLocalField.integerUnitsToFieldUnits
   exact Continuous.units_map
     ((algebraMap 𝒪[K] K).toMonoidHom) continuous_subtype_val
 

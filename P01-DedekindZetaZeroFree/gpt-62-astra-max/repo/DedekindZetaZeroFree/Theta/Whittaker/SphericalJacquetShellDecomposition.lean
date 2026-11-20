@@ -19,11 +19,11 @@ open KPLocalExceptionalConstruction KPLocalPrincipalSeries KPLocalStoneVonNeuman
 open KPExteriorUnitShellIntegrals
 noncomputable section
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (v : HeightOneSpectrum (𝓞 F))
-variable (S : CanonicalFiniteInducingData F ζ hζ v)
-variable (P : Polarization S.heisenberg)
-variable (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (v : HeightOneSpectrum (𝓞 F))
+    (S : CanonicalFiniteInducingData F ζ hζ v)
+    (P : Polarization S.heisenberg)
+    (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
 abbrev VMinus := InducedModule P
 abbrev IMinusActual := sectionSpace S.borel P .minus 0
 def truncationBall (π : (valuation (LocalField F v)).integer) (R : ℕ) : Set (LocalField F v) :=
@@ -61,61 +61,49 @@ theorem compact_integrability
     obtain ⟨J, hJ⟩ := f.property.2
     rw [IsLocallyConstant.iff_eventually_eq]
     intro g
-    have hc : Continuous (fun y : ActualCover F ζ hζ v => g⁻¹ * y) :=
-      continuous_const.mul continuous_id
     have hmem : ∀ᶠ y in nhds g, g⁻¹ * y ∈ J :=
-      hc.continuousAt.preimage_mem_nhds
+      (continuous_const.mul continuous_id).continuousAt.preimage_mem_nhds
         (by simpa using J.isOpen.mem_nhds J.one_mem)
     filter_upwards [hmem] with y hy
     have he := congrFun (hJ (g⁻¹ * y) hy) g
     simpa [vectorRightTranslation] using he
-  have hopen : Continuous (fun x : LocalField F v =>
-      S.borel.liftedW *
-        (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ v)) :=
-    continuous_const.mul (continuous_subtype_val.comp
-      (S.borel.upperRoot_continuous.comp continuous_ofAdd))
   have hphase : IsLocallyConstant (fun x : LocalField F v => star (ψ x)) := by
-    apply IsLocallyConstant.comp (g := star)
+    apply IsLocallyConstant.comp
     rw [IsLocallyConstant.iff_eventually_eq]
     intro x
-    have hc : Continuous (fun y : LocalField F v => y - x) :=
-      continuous_id.sub continuous_const
     have hmem : ∀ᶠ y in nhds x,
         y - x ∈ (valuation (LocalField F v)).integer :=
-      hc.continuousAt.preimage_mem_nhds
+      (continuous_id.sub continuous_const).continuousAt.preimage_mem_nhds
         (by simpa using ((Valuation.isOpen_integer (v := valuation (LocalField F v))).mem_nhds ((valuation (LocalField F v)).integer.zero_mem)))
     filter_upwards [hmem] with y hy
     have he := ψ.map_add_eq_mul (y - x) x
     rw [hcond.1 ⟨y - x, hy⟩] at he
     simpa using he
-  have hint : Continuous (jacquetIntegrand F ζ hζ v S P ψ f) :=
-    (hphase.comp₂ (hf.comp_continuous hopen) (fun c b => c • b)).continuous
-  have hball : IsCompact (truncationBall F v π R) := by
-    have hO : IsCompact ((valuation (LocalField F v)).integer : Set (LocalField F v)) :=
-      IsNonarchimedeanLocalField.isCompact_closedBall (LocalField F v) 1
-    have himg := hO.image (f := fun x => (π : LocalField F v) ^ (-(R : ℤ)) * x)
-      (continuous_const.mul continuous_id)
-    convert himg using 1
-    ext x
-    simp only [truncationBall, Set.mem_image]
-    constructor
-    · rintro ⟨u, rfl⟩
-      exact ⟨u, u.property, rfl⟩
-    · rintro ⟨u, hu, rfl⟩
-      exact ⟨⟨u, hu⟩, rfl⟩
-  exact hint.continuousOn.integrableOn_compact hball
+  refine ((hphase.comp₂ (hf.comp_continuous (continuous_const.mul (continuous_subtype_val.comp
+    (S.borel.upperRoot_continuous.comp continuous_ofAdd)))) (fun c b => c • b)).continuous).continuousOn.integrableOn_compact ?_
+  convert ((IsNonarchimedeanLocalField.isCompact_closedBall (LocalField F v) 1).image
+    (continuous_const.mul continuous_id)) using 1
+  ext x
+  simp only [truncationBall, Set.mem_image]
+  constructor
+  · rintro ⟨u, rfl⟩
+    exact ⟨u, u.property, rfl⟩
+  · rintro ⟨u, hu, rfl⟩
+    exact ⟨⟨u, hu⟩, rfl⟩
 
 end
 noncomputable section
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (v : HeightOneSpectrum (𝓞 F))
-variable (S : CanonicalFiniteInducingData F ζ hζ v)
-variable (P : Polarization S.heisenberg)
-variable (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (v : HeightOneSpectrum (𝓞 F))
+    (S : CanonicalFiniteInducingData F ζ hζ v)
+    (P : Polarization S.heisenberg)
+    (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
+
+local notation "LocalCompletion" => LocalField F v
 
 theorem unipotent_difference_identity (f : IMinusActual F ζ hζ v S P)
-    (t : LocalField F v) :
+    (t : LocalCompletion) :
     (IMinus S.borel P
       (S.borel.upperRoot (Multiplicative.ofAdd t) : ActualCover F ζ hζ v) f - f).val 1 = 0 := by
   change f.val (1 * (S.borel.upperRoot (Multiplicative.ofAdd t) : ActualCover F ζ hζ v)) - f.val 1 = 0
@@ -124,7 +112,7 @@ theorem unipotent_difference_identity (f : IMinusActual F ζ hζ v S P)
     f.property.1, upperRoot_trivial, sub_self]
 
 theorem unipotent_open_coordinate (f : IMinusActual F ζ hζ v S P)
-    (t x : LocalField F v) :
+    (t x : LocalCompletion) :
     (IMinus S.borel P
       (S.borel.upperRoot (Multiplicative.ofAdd t) : ActualCover F ζ hζ v) f).val
       (S.borel.liftedW *
@@ -136,10 +124,9 @@ theorem unipotent_open_coordinate (f : IMinusActual F ζ hζ v S P)
   rfl
 
 private theorem kernel_compact (f : IMinusActual F ζ hζ v S P) (hf : f.val 1 = 0) :
-    HasCompactSupport (fun x : LocalField F v => f.val (S.borel.liftedW *
+    HasCompactSupport (fun x : LocalCompletion => f.val (S.borel.liftedW *
       (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ v))) := by
   classical
-  let B := S.openCell P
   have hproj : S.borel.projection =
       KPLocalSmoothRepresentation.projection F ζ hζ v := by
     apply MonoidHom.ext
@@ -147,12 +134,12 @@ private theorem kernel_compact (f : IMinusActual F ζ hζ v S P) (hf : f.val 1 =
     obtain ⟨r, hr⟩ := QuotientGroup.mk'_surjective
       (KPPGLLocalCover.splitScalarSubgroup F ζ hζ (Sum.inr v)) g
     rw [← hr]
-    exact B.projection_eq r
+    exact (S.openCell P).projection_eq r
   obtain ⟨J, hJ⟩ := f.property.2
   have hL := (KPPGLLocalCover.finite_lifts_continuous F ζ hζ v
     (KPAdelicCoverRestrictedProduct.depth F ζ hζ v)
     (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ v)).2.1
-  have hn : {y : LocalField F v | KPLocalSmoothRepresentation.lowerRoot F ζ hζ v
+  have hn : {y : LocalCompletion | KPLocalSmoothRepresentation.lowerRoot F ζ hζ v
       (Multiplicative.ofAdd y) ∈ J} ∈ nhds 0 := by
     apply hL.continuousAt.preimage_mem_nhds
     have hz : KPPGLLocalCover.LowerN F ζ hζ (Sum.inr v) 0 = 1 :=
@@ -160,12 +147,11 @@ private theorem kernel_compact (f : IMinusActual F ζ hζ v S P) (hf : f.val 1 =
     rw [hz]
     exact J.isOpen.mem_nhds J.one_mem
   obtain ⟨ε, hε, he⟩ := Metric.mem_nhds_iff.mp hn
-  have hzero : ∀ y : LocalField F v, ‖y‖ < ε →
+  have hzero : ∀ y : LocalCompletion, ‖y‖ < ε →
       f.val (KPLocalSmoothRepresentation.lowerRoot F ζ hζ v (Multiplicative.ofAdd y)) = 0 := by
     intro y hy
-    have hj := congrFun (hJ _ (he (by simpa [Metric.mem_ball, dist_zero_right] using hy))) 1
-    simpa [vectorRightTranslation, hf] using hj
-  have hlarge : ∀ x : LocalField F v, ε⁻¹ < ‖x‖ →
+    simpa [vectorRightTranslation, hf] using (congrFun (hJ _ (he (by simpa [Metric.mem_ball, dist_zero_right] using hy))) 1)
+  have hlarge : ∀ x : LocalCompletion, ε⁻¹ < ‖x‖ →
       f.val (S.borel.liftedW *
         (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ v)) = 0 := by
     intro x hx
@@ -176,7 +162,7 @@ private theorem kernel_compact (f : IMinusActual F ζ hζ v S P) (hf : f.val 1 =
       exact (inv_lt_comm₀ (norm_pos_iff.mpr hx0) hε).mpr hx
     let g := S.borel.liftedW *
       (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ v)
-    let A := KubotaRankTwo.w (LocalField F v) * KubotaRankTwo.n (LocalField F v) x
+    let A := KubotaRankTwo.w LocalCompletion * KubotaRankTwo.n LocalCompletion x
     have hA : Matrix.ProjGenLinGroup.mk A = KPLocalSmoothRepresentation.projection F ζ hζ v g := by
       rw [← hproj]
       change Matrix.ProjGenLinGroup.mk (_ * _) = _
@@ -208,53 +194,46 @@ private theorem kernel_compact (f : IMinusActual F ζ hζ v S P) (hf : f.val 1 =
     apply hlarge x
     simpa [Metric.mem_closedBall, dist_zero_right, not_le] using hx
 
-private theorem valuation_norm_le (x y : LocalField F v) :
-    valuation (LocalField F v) x ≤ valuation (LocalField F v) y ↔ ‖x‖ ≤ ‖y‖ := by
+private theorem valuation_norm_le (x y : LocalCompletion) :
+    valuation LocalCompletion x ≤ valuation LocalCompletion y ↔ ‖x‖ ≤ ‖y‖ := by
   rw [← Valuation.Compatible.vle_iff_le]
-  change Valued.v x ≤ Valued.v y ↔ _
   exact (Valued.toNormedField.norm_le_iff).symm
 
-private theorem ball_norm (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π)
-    (R : ℕ) (x : LocalField F v) :
-    x ∈ truncationBall F v π R ↔ ‖x‖ ≤ ‖(π : LocalField F v)‖ ^ (-(R : ℤ)) := by
-  have hp : (π : LocalField F v) ≠ 0 := by
-    intro h; exact hπ.ne_zero (Subtype.ext h)
-  have hm : ∀ y : LocalField F v, y ∈ (valuation (LocalField F v)).integer ↔ ‖y‖ ≤ 1 := by
+private theorem ball_norm (π : (valuation LocalCompletion).integer) (hπ : Irreducible π)
+    (R : ℕ) (x : LocalCompletion) :
+    x ∈ truncationBall F v π R ↔ ‖x‖ ≤ ‖(π : LocalCompletion)‖ ^ (-(R : ℤ)) := by
+  have hp : (π : LocalCompletion) ≠ 0 := fun h => hπ.ne_zero (Subtype.ext h)
+  have hm : ∀ y : LocalCompletion, y ∈ (valuation LocalCompletion).integer ↔ ‖y‖ ≤ 1 := by
     intro y
-    rw [Valuation.mem_integer_iff, ← map_one (valuation (LocalField F v)), valuation_norm_le]
+    rw [Valuation.mem_integer_iff, ← map_one (valuation LocalCompletion), valuation_norm_le]
     simp
-  change (∃ u : (valuation (LocalField F v)).integer,
-    x = (π : LocalField F v) ^ (-(R : ℤ)) * (u : LocalField F v)) ↔ _
   constructor
   · rintro ⟨u, rfl⟩
     rw [norm_mul, norm_zpow]
     exact mul_le_of_le_one_right (by positivity) ((hm _).mp u.property)
   · intro hx
-    have hz : ‖(π : LocalField F v) ^ (-(R : ℤ))‖ ≠ 0 := norm_ne_zero_iff.mpr (zpow_ne_zero _ hp)
-    refine ⟨⟨x / (π : LocalField F v) ^ (-(R : ℤ)), (hm _).mpr ?_⟩, ?_⟩
+    have hz : ‖(π : LocalCompletion) ^ (-(R : ℤ))‖ ≠ 0 := norm_ne_zero_iff.mpr (zpow_ne_zero _ hp)
+    refine ⟨⟨x / π ^ (-(R : ℤ)), (hm _).mpr ?_⟩, ?_⟩
     · rw [norm_div, div_le_one (lt_of_le_of_ne (norm_nonneg _) (Ne.symm hz)), norm_zpow]
       exact hx
     · exact (mul_div_cancel₀ x (zpow_ne_zero _ hp)).symm
 
-private theorem compact_cutoff (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π)
-    {E : Type*} [Zero E] (q : LocalField F v → E) (hq : HasCompactSupport q)
-    (t : LocalField F v) :
+private theorem compact_cutoff (π : (valuation LocalCompletion).integer) (hπ : Irreducible π)
+    {E : Type*} [Zero E] (q : LocalCompletion → E) (hq : HasCompactSupport q)
+    (t : LocalCompletion) :
     ∃ R₀ : ℕ, ∀ R ≥ R₀,
       t ∈ truncationBall F v π R ∧ ∀ x ∉ truncationBall F v π R, q x = 0 := by
   obtain ⟨C, hC⟩ := isBounded_iff_forall_norm_le.mp hq.isBounded
-  have hp : ‖(π : LocalField F v)‖ < 1 := by
-    have h := (Valuation.integer.integers (valuation (LocalField F v))).valuation_irreducible_lt_one hπ
-    change valuation (LocalField F v) (π : LocalField F v) < 1 at h
-    have hh : ¬ valuation (LocalField F v) 1 ≤ valuation (LocalField F v) (π : LocalField F v) := by
-      simpa using (not_le.mpr h)
+  have hp : ‖π‖ < 1 := by
+    have h := (Valuation.integer.integers (valuation LocalCompletion)).valuation_irreducible_lt_one hπ
+    change valuation LocalCompletion π < 1 at h
+    have hh : ¬ valuation LocalCompletion 1 ≤ valuation LocalCompletion π := by
+      exact (not_le.mpr h)
     rw [valuation_norm_le] at hh
     simpa using (not_le.mp hh)
-  have hp0 : 0 < ‖(π : LocalField F v)‖ := norm_pos_iff.mpr (by
-    intro h; exact hπ.ne_zero (Subtype.ext h))
-  have ht := tendsto_pow_atTop_atTop_of_one_lt (one_lt_inv₀ hp0 |>.mpr hp)
-  obtain ⟨R₀, hR₀⟩ := Filter.eventually_atTop.mp (ht.eventually (Filter.eventually_ge_atTop (max C ‖t‖)))
+  obtain ⟨R₀, hR₀⟩ := Filter.eventually_atTop.mp ((tendsto_pow_atTop_atTop_of_one_lt (one_lt_inv₀ (norm_pos_iff.mpr (fun h => hπ.ne_zero (Subtype.ext h))) |>.mpr hp)).eventually (Filter.eventually_ge_atTop (max C ‖t‖)))
   refine ⟨R₀, fun R hR => ?_⟩
-  have hbound : max C ‖t‖ ≤ ‖(π : LocalField F v)‖ ^ (-(R : ℤ)) := by
+  have hbound : max C ‖t‖ ≤ ‖π‖ ^ (-(R : ℤ)) := by
     simpa [zpow_neg, zpow_natCast, inv_pow] using hR₀ R hR
   refine ⟨(ball_norm F v π hπ R t).mpr ((le_max_right _ _).trans hbound), ?_⟩
   intro x hx
@@ -263,26 +242,25 @@ private theorem compact_cutoff (π : (valuation (LocalField F v)).integer) (hπ 
   apply (ball_norm F v π hπ R x).mpr
   exact (hC x (subset_closure hz)).trans ((le_max_left _ _).trans hbound)
 
-private theorem ball_translate (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π)
-    (R : ℕ) (t : LocalField F v) (ht : t ∈ truncationBall F v π R) (x : LocalField F v) :
+private theorem ball_translate (π : (valuation LocalCompletion).integer) (hπ : Irreducible π)
+    (R : ℕ) (t : LocalCompletion) (ht : t ∈ truncationBall F v π R) (x : LocalCompletion) :
     x + t ∈ truncationBall F v π R ↔ x ∈ truncationBall F v π R := by
   simp only [ball_norm F v π hπ] at *
   constructor
   · intro hx
-    have h := IsUltrametricDist.norm_add_le_max (x + t) (-t)
-    simpa using h.trans (max_le hx (by simpa using ht))
+    simpa using (IsUltrametricDist.norm_add_le_max (x + t) (-t)).trans (max_le hx (by simpa using ht))
   · intro hx
     exact (IsUltrametricDist.norm_add_le_max x t).trans (max_le hx ht)
 
 private theorem integral_translate {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π)
-    (R : ℕ) (t : LocalField F v) (ht : t ∈ truncationBall F v π R)
-    (q : LocalField F v → E) :
+    (π : (valuation LocalCompletion).integer) (hπ : Irreducible π)
+    (R : ℕ) (t : LocalCompletion) (ht : t ∈ truncationBall F v π R)
+    (q : LocalCompletion → E) :
     (∫ x in truncationBall F v π R, q (x + t) ∂μ) =
       ∫ x in truncationBall F v π R, q x ∂μ := by
   classical
   have hs : MeasurableSet (truncationBall F v π R) := by
-    have he : truncationBall F v π R = Metric.closedBall 0 (‖(π : LocalField F v)‖ ^ (-(R : ℤ))) := by
+    have he : truncationBall F v π R = Metric.closedBall 0 (‖π‖ ^ (-(R : ℤ))) := by
       ext x; simp [ball_norm F v π hπ, Metric.mem_closedBall, dist_zero_right]
     rw [he]; exact Metric.isClosed_closedBall.measurableSet
   rw [← integral_indicator hs, ← integral_indicator hs]
@@ -298,13 +276,13 @@ private theorem integral_translate {E : Type*} [NormedAddCommGroup E] [NormedSpa
 end
 noncomputable section
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (v : HeightOneSpectrum (𝓞 F))
-variable (S : CanonicalFiniteInducingData F ζ hζ v)
-variable (P : Polarization S.heisenberg)
-variable (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
-variable (N : AddGroupNorm (VMinus F ζ hζ v S P))
-variable (hN : ∀ (c : ℂ) (b : VMinus F ζ hζ v S P), N (c • b) = ‖c‖ * N b)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (v : HeightOneSpectrum (𝓞 F))
+    (S : CanonicalFiniteInducingData F ζ hζ v)
+    (P : Polarization S.heisenberg)
+    (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
+    (N : AddGroupNorm (VMinus F ζ hζ v S P))
+    (hN : ∀ (c : ℂ) (b : VMinus F ζ hζ v S P), N (c • b) = ‖c‖ * N b)
 
 theorem open_cell_stabilization_compatible
     (hgood : valuation (LocalField F v) (6 : LocalField F v) = 1)
@@ -323,13 +301,11 @@ theorem open_cell_stabilization_compatible
   letI := CompatibleFiniteNorm.topology N
   obtain ⟨u, hu⟩ := hcond.2
   let t : LocalField F v := (π : LocalField F v)⁻¹ * u
-  have ht : ψ t ≠ 1 := hu
+  have ht := hu
   let f' := IMinus S.borel P
     (S.borel.upperRoot (Multiplicative.ofAdd t) : ActualCover F ζ hζ v) f
   let d := f' - f
-  have hd : d.val 1 = 0 := unipotent_difference_identity F ζ hζ v S P f t
-  have hcompact := kernel_compact F ζ hζ v S P d hd
-  obtain ⟨R₀, hR₀⟩ := compact_cutoff F v π hπ _ hcompact t
+  obtain ⟨R₀, hR₀⟩ := compact_cutoff F v π hπ _ (kernel_compact F ζ hζ v S P d (unipotent_difference_identity F ζ hζ v S P f t)) t
   have hphase (x : LocalField F v) : star (ψ x) = ψ t * star (ψ (x + t)) := by
     have h1 : ψ x = ψ (x + t) * ψ (-t) := by
       conv_lhs => rw [show x = (x + t) + (-t) by ring]
@@ -350,7 +326,7 @@ theorem open_cell_stabilization_compatible
           ψ t • jacquetIntegrand F ζ hζ v S P ψ f (x + t) ∂μ := by
         apply setIntegral_congr_fun
         · have he : truncationBall F v π R =
-              Metric.closedBall 0 (‖(π : LocalField F v)‖ ^ (-(R : ℤ))) := by
+              Metric.closedBall 0 (‖π‖ ^ (-(R : ℤ))) := by
             ext x; simp [ball_norm F v π hπ, Metric.mem_closedBall, dist_zero_right]
           rw [he]; exact Metric.isClosed_closedBall.measurableSet
         · intro x hx
@@ -466,10 +442,8 @@ theorem stableJacquet_unipotent
   obtain ⟨Rb, hRb⟩ := compact_cutoff F v π hπ
     (fun _ : LocalField F v => (0 : ℂ)) HasCompactSupport.zero t
   let R := max Rb (max Rf Rt)
-  have hb : t ∈ truncationBall F v π R := (hRb R (le_max_left _ _)).1
   rw [← hRt R ((le_max_right _ _).trans (le_max_right _ _)),
     ← hRf R ((le_max_left _ _).trans (le_max_right _ _))]
-  change truncatedIntegral F ζ hζ v S P μ ψ π R ft = _
   unfold truncatedIntegral
   calc
     _ = ∫ x in truncationBall F v π R,
@@ -479,7 +453,7 @@ theorem stableJacquet_unipotent
       exact integrand_translate F ζ hζ v S P ψ hψunitary f t x
     _ = ψ t • ∫ x in truncationBall F v π R,
         jacquetIntegrand F ζ hζ v S P ψ f (x + t) ∂μ := integral_smul (ψ t) _
-    _ = _ := by rw [integral_translate F v μ π hπ R t hb]
+    _ = _ := by rw [integral_translate F v μ π hπ R t ((hRb R (le_max_left _ _)).1)]
 
 end
 end DedekindZetaZeroFree.ExteriorWhittakerValues.ActualJacquet
@@ -491,8 +465,8 @@ open KPLocalExceptionalConstruction KPLocalPrincipalSeries KPLocalStoneVonNeuman
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
-variable (inducingData : CanonicalFiniteInducingData F ζ hζ v) (P : Polarization inducingData.heisenberg)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
+    (inducingData : CanonicalFiniteInducingData F ζ hζ v) (P : Polarization inducingData.heisenberg)
 abbrev Fiber := InducedModule P
 abbrev Action := weylConjugate P inducingData.borel.weyl
 abbrev Sections := sectionSpace inducingData.borel P .minus 0
@@ -529,8 +503,8 @@ noncomputable section
 set_option autoImplicit false
 set_option maxHeartbeats 1000000
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
-variable (inducingData : CanonicalFiniteInducingData F ζ hζ v) (P : Polarization inducingData.heisenberg)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
+    (inducingData : CanonicalFiniteInducingData F ζ hζ v) (P : Polarization inducingData.heisenberg)
 
  lemma split_action_compact
     (I : IwasawaData inducingData.borel)
@@ -556,7 +530,7 @@ variable (inducingData : CanonicalFiniteInducingData F ζ hζ v) (P : Polarizati
     constructor
     · intro b k k' he
       have hb : (b : ActualCover F ζ hζ v) ∈ I.compact.toOpenSubgroup := by
-        have hb' : (b : ActualCover F ζ hζ v) = k'.val * k.val⁻¹ := by
+        have hb' : b = k'.val * k.val⁻¹ := by
           rw [he]; simp [mul_assoc]
         rw [hb']
         exact I.compact.toOpenSubgroup.mul_mem k'.property
@@ -570,8 +544,7 @@ variable (inducingData : CanonicalFiniteInducingData F ζ hζ v) (P : Polarizati
 private lemma split_picture_constant
     (I : IwasawaData inducingData.borel)
     (φ : compactLevel inducingData.borel P I .minus I.compact)
-    (k : I.compact.toOpenSubgroup) : φ.val.val k = φ.val.val 1 := by
-  exact φ.property k 1 k (by simp)
+    (k : I.compact.toOpenSubgroup) : φ.val.val k = φ.val.val 1 := φ.property k 1 k (by simp)
 
 private lemma split_picture_fixed
     (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
@@ -688,8 +661,6 @@ private lemma split_factor
       KPPGLLocalCover.baseQuotient F (Sum.inr v) (KPTameCompact.inclusion F v r⁻¹) := rfl
   have hb : g * k⁻¹ ∈ inducingData.borel.B := by
     rw [inducingData.borel_eq]
-    change KPLocalSmoothRepresentation.projection F ζ hζ v (g * k⁻¹) ∈
-      KPRankOneInduction.upperBorel F v
     refine ⟨G * KPTameCompact.inclusion F v r, ?_, hr⟩
     change Matrix.ProjGenLinGroup.mk (G * KPTameCompact.inclusion F v r) =
       KPLocalSmoothRepresentation.ordinaryPGLMap F v
@@ -724,9 +695,8 @@ private lemma split_retract
       Matrix.GeneralLinearGroup.map_apply] using hz
   have hdet : IsUnit (k 0 0 * k 1 1) := by
     simpa [Matrix.det_fin_two, hki] using k.det.isUnit
-  let a : (KPTameCompact.O F v)ˣ := (isUnit_of_mul_isUnit_left hdet).unit
-  have ha : (a : KPTameCompact.O F v) = k 0 0 := (isUnit_of_mul_isUnit_left hdet).unit_spec
-  let t : KPTameCompact.O F v := - (a⁻¹ : (KPTameCompact.O F v)ˣ) * k 0 1
+  let a := (isUnit_of_mul_isUnit_left hdet).unit
+  let t := - (a⁻¹ : (KPTameCompact.O F v)ˣ) * k 0 1
   let d := k * KPStandardLocalRootLifts.integralN F v t
   have hd10 : (KPTameCompact.inclusion F v d) 1 0 = 0 := by
     simp [d, map_mul, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply,
@@ -734,7 +704,7 @@ private lemma split_retract
       KPLocalCube.integerInclusion, Matrix.GeneralLinearGroup.map_apply, hki]
   have hd01 : (KPTameCompact.inclusion F v d) 0 1 = 0 := by
     have hai : k 0 0 * ((a⁻¹ : (KPTameCompact.O F v)ˣ) : KPTameCompact.O F v) = 1 := by
-      rw [← ha]; exact Units.mul_inv a
+      rw [← ((isUnit_of_mul_isUnit_left hdet).unit_spec)]; exact Units.mul_inv a
     have hdt : k 0 0 * t + k 0 1 = 0 := by
       dsimp [t]
       rw [← mul_assoc, mul_neg, hai]
@@ -745,15 +715,13 @@ private lemma split_retract
         KPStandardLocalRootLifts.integralN] using hdt]
     rfl
   let D := actualGoodCompactSplit F ζ hζ v ht d
-  have hD : D ∈ actualTorus F ζ hζ v := by
-    exact ⟨KPTameCompact.inclusion F v d, rfl, hd10, hd01⟩
-  let j : actualTorus F ζ hζ v := ⟨D, hD⟩
+  let j : actualTorus F ζ hζ v := ⟨D, ⟨KPTameCompact.inclusion F v d, rfl, hd10, hd01⟩⟩
   have hn : (inducingData.borel.upperRoot (Multiplicative.ofAdd (t : LocalField F v)) :
       ActualCover F ζ hζ v) = actualGoodCompactSplit F ζ hζ v ht
         (KPStandardLocalRootLifts.integralN F v t) := by
     rw [(inducingData.openCell P).upper_eq]
     change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr v)
-      (KPStandardLocalRootLifts.N F ζ hζ (Sum.inr v) (t : LocalField F v)) = _
+      (KPStandardLocalRootLifts.N F ζ hζ (Sum.inr v) t) = _
     rw [KPStandardLocalRootLifts.N_eq_compact F ζ hζ v ht t]
     rfl
   have hbj : b * inducingData.borel.upperRoot (Multiplicative.ofAdd (t : LocalField F v)) =
@@ -767,7 +735,6 @@ private lemma split_retract
     have h := congrArg inducingData.borel.retract hbj
     simpa only [map_mul, inducingData.borel.retract_upperRoot, mul_one,
       inducingData.borel.retract_torus] using h
-  change (inducingData.borel.retract b : ActualCover F ζ hζ v) ∈ Compact F ζ hζ v ht
   rw [hr]
   exact ⟨d, rfl⟩
 
@@ -790,9 +757,8 @@ private lemma split_ratio (b : inducingData.borel.B) :
   have hG : Matrix.ProjGenLinGroup.mk G =
       KPLocalSmoothRepresentation.projection F ζ hζ v b.val := by
     rw [← split_projection F ζ hζ v inducingData P]
-    have hp := congrArg (fun c : inducingData.borel.B => inducingData.borel.projection c.val) hx
     simpa only [G, y, Subgroup.coe_mul, map_mul, inducingData.borel.torus_projection,
-      inducingData.borel.upperRoot_projection] using hp.symm
+      inducingData.borel.upperRoot_projection] using (congrArg (fun c : inducingData.borel.B => inducingData.borel.projection c.val) hx).symm
   have h10 : G 1 0 = 0 := by
     simp [G, KubotaRankTwo.d, KubotaRankTwo.n, Matrix.GeneralLinearGroup.coe_mul,
       Matrix.mul_apply, Fin.sum_univ_two]
@@ -876,8 +842,8 @@ open KPLocalExceptionalConstruction KPLocalStoneVonNeumann
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
-variable (inducingData : CanonicalFiniteInducingData F ζ hζ v) (P : Polarization inducingData.heisenberg)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
+    (inducingData : CanonicalFiniteInducingData F ζ hζ v) (P : Polarization inducingData.heisenberg)
 
 theorem normalized_orbit_period
     (π : (LocalField F v)ˣ)
@@ -936,8 +902,8 @@ open KPLocalExceptionalConstruction KPLocalStoneVonNeumann
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
-variable (inducingData : CanonicalFiniteInducingData F ζ hζ v) (P : Polarization inducingData.heisenberg)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
+    (inducingData : CanonicalFiniteInducingData F ζ hζ v) (P : Polarization inducingData.heisenberg)
 
 private lemma unit_lift_compact
     (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
@@ -968,13 +934,11 @@ private lemma dimension_three
     Module.finrank ℂ (Fiber F ζ hζ v inducingData P) = 3 := by
   have h3 : (3 : (valuation (LocalField F v)).integer) ∉
       IsLocalRing.maximalIdeal (valuation (LocalField F v)).integer := by
-    change (3 : KPTameCompact.O F v) ∉ KPTameCompact.p F v
     intro h
-    have hzero : (3 : KPTameCompact.O F v ⧸ KPTameCompact.p F v) = 0 := by
-      exact Ideal.Quotient.eq_zero_iff_mem.mpr h
     letI : Nontrivial (KPTameCompact.O F v ⧸ KPTameCompact.p F v) :=
       Ideal.Quotient.nontrivial_iff.mpr (IsLocalRing.maximalIdeal.isMaximal (KPTameCompact.O F v)).ne_top
-    exact ht (CharP.ringChar_of_prime_eq_zero Nat.prime_three hzero)
+    refine ht (CharP.ringChar_of_prime_eq_zero Nat.prime_three ?_)
+    exact Ideal.Quotient.eq_zero_iff_mem.mpr h
   rw [(finite_heisenberg_induction inducingData.heisenberg P).2.2.2.2.2]
   rw [Nat.card_congr inducingData.cubeClassEquiv.toEquiv]
   rw [KPLocalTorus.card_cubeClasses_tame (LocalField F v) (algebraMap F (LocalField F v) (ζ ^ 4))
@@ -995,7 +959,7 @@ private lemma unit_of_exp_zero (y : (LocalField F v)ˣ)
       IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v) 1
     rw [map_one, ← WithZero.exp_log hn]
     have hl : WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)
-        (valuation (LocalField F v) (y : LocalField F v))) = 0 := neg_eq_zero.mp h
+        (valuation (LocalField F v) y)) = 0 := neg_eq_zero.mp h
     rw [hl, WithZero.exp_zero]
   let a : (valuation (LocalField F v)).integer := ⟨(y : LocalField F v), hv.le⟩
   have ha : IsUnit a := (Valuation.Integers.isUnit_iff_valuation_eq_one
@@ -1053,12 +1017,11 @@ private lemma orbit_span_top {H V : Type*} [Group H] [AddCommGroup V] [Module �
       obtain ⟨a, rfl⟩ := hx
       exact Submodule.subset_span ⟨g * a, by simp⟩
     | zero => simp
-    | add x y hx hy ihx ihy => simpa only [map_add] using Submodule.add_mem _ ihx ihy
-    | smul a x hx ih => simpa only [map_smul] using Submodule.smul_mem _ a ih⟩
+    | add x y hx hy ihx ihy => simpa using Submodule.add_mem _ ihx ihy
+    | smul a x hx ih => simpa using Submodule.smul_mem _ a ih⟩
   letI : ρ.IsIrreducible := hirr
   rcases eq_bot_or_eq_top S with h | h
-  · have hmem : b ∈ S.toSubmodule := by
-      exact Submodule.subset_span ⟨1, by simp⟩
+  · have hmem : b ∈ S.toSubmodule := Submodule.subset_span ⟨1, by simp⟩
     rw [h] at hmem
     exact (hb hmem).elim
   · exact congrArg Subrepresentation.toSubmodule h
@@ -1073,9 +1036,8 @@ private lemma normalized_span
   let S := Submodule.span ℂ (Set.range (fun i : Fin 3 => Orbit F ζ hζ v inducingData P π b (i.val : ℤ)))
   have hprops := weyl_conjugate_properties inducingData.heisenberg P
     inducingData.borel.weyl inducingData.borel.weylCenter inducingData.borel.weylCenter_coe
-  have htop := orbit_span_top (Action F ζ hζ v inducingData P) hprops.2.2.1 b hne
   apply top_unique
-  rw [← htop]
+  rw [← (orbit_span_top (Action F ζ hζ v inducingData P) hprops.2.2.1 b hne)]
   apply Submodule.span_le.mpr
   rintro _ ⟨g, rfl⟩
   obtain ⟨j, u, hu⟩ := class_decomposition F v π hπ (inducingData.borel.coordinate g)
@@ -1084,18 +1046,13 @@ private lemma normalized_span
   have he : inducingData.heisenberg.π g = inducingData.heisenberg.π t := by
     apply inducingData.cubeClassEquiv.injective
     rw [inducingData.cube_class, inducingData.cube_class]
-    change _ = QuotientGroup.mk' (CubicCharacters.cubes (LocalField F v)ˣ)
-      (inducingData.borel.coordinate (_ * _))
     rw [inducingData.borel.coordinate.map_mul]
     rw [inducingData.coordinate_lift (Lift F ζ hζ v (π ^ (j.val : ℤ))) _ rfl,
       inducingData.coordinate_lift (Lift F ζ hζ v (KPTameCompact.unitInclusion F v u)) _ rfl]
     exact hu
   have hc : g * t⁻¹ ∈ inducingData.heisenberg.C := by
     rw [← inducingData.heisenberg.quotient_kernel]
-    change inducingData.heisenberg.π (g * t⁻¹) = 1
     simp [he]
-  have huact : Action F ζ hζ v inducingData P (Lift F ζ hζ v (KPTameCompact.unitInclusion F v u)) b = b :=
-    hb ⟨_, unit_lift_compact F ζ hζ v ht u⟩
   have hg : Action F ζ hζ v inducingData P g b =
       (inducingData.heisenberg.ω (inducingData.borel.weylCenter ⟨g * t⁻¹, hc⟩) : ℂ) •
       Action F ζ hζ v inducingData P (Lift F ζ hζ v (π ^ (j.val : ℤ))) b := by
@@ -1103,8 +1060,7 @@ private lemma normalized_span
     simp only [Subgroup.coe_mk, ← Module.End.mul_apply, ← map_mul, inv_mul_cancel_right] at h
     rw [h]
     congr 1
-    change Action F ζ hζ v inducingData P (_ * _) b = _
-    rw [map_mul, Module.End.mul_apply, huact]
+    rw [map_mul, Module.End.mul_apply, (hb ⟨_, unit_lift_compact F ζ hζ v ht u⟩)]
   change Action F ζ hζ v inducingData P g b ∈ S
   rw [hg]
   apply Submodule.smul_mem
@@ -1112,11 +1068,8 @@ private lemma normalized_span
     apply Complex.ofReal_ne_zero.mpr
     apply ne_of_gt
     exact Real.rpow_pos_of_pos (by
-      change (Nat.card (IsLocalRing.ResidueField (valuation (LocalField F v)).integer) : ℝ) > 0
       exact_mod_cast Nat.card_pos) _
-  have hj : Orbit F ζ hζ v inducingData P π b (j.val : ℤ) ∈ S := Submodule.subset_span ⟨j, rfl⟩
-  have hj' := S.smul_mem (QPower F v (-(j.val : ℝ) / 6))⁻¹ hj
-  simpa [Orbit, smul_smul, hn] using hj'
+  simpa [Orbit, smul_smul, hn] using (S.smul_mem (QPower F v (-(j.val : ℝ) / 6))⁻¹ (Submodule.subset_span ⟨j, rfl⟩))
 
 theorem normalized_orbit_basis
     (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
@@ -1145,9 +1098,9 @@ open NumberField IsDedekindDomain ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 noncomputable section
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
-variable (inducingData : CanonicalFiniteInducingData F ζ hζ v)
-variable (P : Polarization inducingData.heisenberg)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
+    (inducingData : CanonicalFiniteInducingData F ζ hζ v)
+    (P : Polarization inducingData.heisenberg)
 
 def bZero (φ : Sections F ζ hζ v inducingData P) : Fiber F ζ hζ v inducingData P := φ.val 1
 
@@ -1196,9 +1149,9 @@ open NumberField IsDedekindDomain ValuativeRel
 open KPLocalExceptionalConstruction KPLocalPrincipalSeries KPLocalStoneVonNeumann ActualSpherical
 noncomputable section
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
-variable (inducingData : CanonicalFiniteInducingData F ζ hζ v)
-variable (P : Polarization inducingData.heisenberg)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
+    (inducingData : CanonicalFiniteInducingData F ζ hζ v)
+    (P : Polarization inducingData.heisenberg)
 def uniformizerUnit (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π) :
     (LocalField F v)ˣ :=
   Units.mk0 (π : LocalField F v) (by
@@ -1281,8 +1234,6 @@ private lemma lower_compact (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompac
     (x : (valuation (LocalField F v)).integer) :
     KPPGLLocalCover.LowerN F ζ hζ (Sum.inr v) x =
       actualGoodCompactSplit F ζ hζ v ht (KPStandardLocalRootLifts.integralLowerN F v x) := by
-  change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr v) _ =
-    KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr v) _
   apply congrArg (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr v))
   exact KPStandardLocalRootLifts.LowerN_eq_compact F ζ hζ v ht x
 
@@ -1310,8 +1261,7 @@ private lemma right_fixed (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.
     (k : ActualCover F ζ hζ v) (hk : k ∈ Compact F ζ hζ v ht)
     (g : ActualCover F ζ hζ v) :
     φ.val (g * k) =
-      φ.val g := by
-  exact congrArg (fun f : Sections F ζ hζ v inducingData P => f.val g)
+      φ.val g := congrArg (fun f : Sections F ζ hζ v inducingData P => f.val g)
     (hφ ⟨k, hk⟩)
 
 private lemma central_eval (φ : Sections F ζ hζ v inducingData P)
@@ -1319,7 +1269,6 @@ private lemma central_eval (φ : Sections F ζ hζ v inducingData P)
     φ.val
       (KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr v) z * g) =
       (ordinaryIota F ζ hζ z : ℂ) • φ.val g := by
-  change φ.val (KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr v) z * g) = _
   rw [← (inducingData.openCell P).central_eq z, φ.property.1]
   change inducingScalar inducingData.borel 0 (inducingData.borel.torus ((inducingData.openCell P).centralTorus z)) •
     borelAction inducingData.borel P .minus (inducingData.borel.torus ((inducingData.openCell P).centralTorus z))
@@ -1349,14 +1298,14 @@ private lemma uniformizer_normPower (π : (valuation (LocalField F v)).integer) 
     unfold residueCardinality
     exact_mod_cast Nat.card_pos
   have hpi : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)
-      (valuation (LocalField F v) (π : LocalField F v)) = WithZero.exp (-1 : ℤ) := by
+      (valuation (LocalField F v) π) = WithZero.exp (-1 : ℤ) := by
     simpa only [WithZero.exp] using
       LocalFieldTheory.valueGroupWithZeroIsoInt_of_integerRing_irreducible (LocalField F v) π hπ
   have hlog : WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)
       (valuation (LocalField F v) ↑(uniformizerUnit F v π hπ ^ j))) = -j := by
     rw [Units.val_zpow_eq_zpow_val, map_zpow₀, map_zpow₀]
     change WithZero.log ((IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)
-      (valuation (LocalField F v) (π : LocalField F v))) ^ j) = _
+      (valuation (LocalField F v) π)) ^ j) = _
     rw [hpi]
     simp
   unfold normPower localAbs
@@ -1564,10 +1513,10 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalPrincipalSeries KPLocalStoneVonNeumann ActualSpherical
 noncomputable section
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
-variable (inducingData : CanonicalFiniteInducingData F ζ hζ v)
-variable (P : Polarization inducingData.heisenberg)
-variable (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
+    (inducingData : CanonicalFiniteInducingData F ζ hζ v)
+    (P : Polarization inducingData.heisenberg)
+    (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
 abbrev sphericalBall (π : (valuation (LocalField F v)).integer) (e : ℕ) :=
   KPExteriorActualJacquetShellsRaw.sphericalBall F v π e
 abbrev sphericalShell (π : (valuation (LocalField F v)).integer) (e : ℕ) (l : ℤ) :=
@@ -1611,20 +1560,19 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   (v : HeightOneSpectrum (𝓞 F)) (inducingData : CanonicalFiniteInducingData F ζ hζ v)
   (P : Polarization inducingData.heisenberg)
 variable (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
-variable (N : AddGroupNorm (Fiber F ζ hζ v inducingData P))
-variable (hN : ∀ (c : ℂ) (b : Fiber F ζ hζ v inducingData P), N (c • b) = ‖c‖ * N b)
+    (N : AddGroupNorm (Fiber F ζ hζ v inducingData P))
+    (hN : ∀ (c : ℂ) (b : Fiber F ζ hζ v inducingData P), N (c • b) = ‖c‖ * N b)
 
 private lemma qPower_mul (a b : ℝ) :
     QPower F v a *
       QPower F v b =
         QPower F v (a + b) := by
-  have hq : 0 < (residueCardinality (LocalField F v) : ℝ) := by
-    unfold residueCardinality
-    exact_mod_cast Nat.card_pos
   unfold QPower
   rw [← Complex.ofReal_mul]
   congr 1
-  exact (Real.rpow_add hq a b).symm
+  refine (Real.rpow_add ?_ a b).symm
+  unfold residueCardinality
+  exact_mod_cast Nat.card_pos
 
 theorem ball_contribution_of_constant_value
     (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π)
@@ -1645,11 +1593,11 @@ theorem ball_contribution_of_constant_value
         bCoordinate F ζ hζ v inducingData P (uniformizerUnit F v π hπ) φ (-(e : ℤ)) := by
   let := CompatibleFiniteNorm.normedAddCommGroup N
   let := CompatibleFiniteNorm.normedSpace N hN
-  let : UniformSpace (Fiber F ζ hζ v inducingData P) :=
+  let :=
     (CompatibleFiniteNorm.normedAddCommGroup N).toMetricSpace.toPseudoMetricSpace.toUniformSpace
-  let : TopologicalSpace (Fiber F ζ hζ v inducingData P) := CompatibleFiniteNorm.topology N
+  let := CompatibleFiniteNorm.topology N
   let := inducingData.finiteD
-  let : Module.Finite ℂ (Fiber F ζ hζ v inducingData P) :=
+  let :=
     tau_moduleFinite inducingData.heisenberg P
   let : CompleteSpace (Fiber F ζ hζ v inducingData P) := FiniteDimensional.complete ℂ _
   unfold ballContribution
@@ -1684,7 +1632,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   (v : HeightOneSpectrum (𝓞 F)) (inducingData : CanonicalFiniteInducingData F ζ hζ v)
   (P : Polarization inducingData.heisenberg)
 variable (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
-variable (N : AddGroupNorm (Fiber F ζ hζ v inducingData P))
+    (N : AddGroupNorm (Fiber F ζ hζ v inducingData P))
   (hN : ∀ (c : ℂ) (b : Fiber F ζ hζ v inducingData P), N (c • b) = ‖c‖ * N b)
 
 theorem compatible_shell_contribution_of_scaled_value
@@ -1832,12 +1780,11 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   (v : HeightOneSpectrum (𝓞 F)) (inducingData : CanonicalFiniteInducingData F ζ hζ v)
   (P : Polarization inducingData.heisenberg)
 variable (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
-variable (hμ : μ ((valuation (LocalField F v)).integer : Set (LocalField F v)) = 1)
+    (hμ : μ ((valuation (LocalField F v)).integer : Set (LocalField F v)) = 1)
 private lemma compact_N (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
     (u : (valuation (LocalField F v)).integer) :
     KPPGLLocalCover.N F ζ hζ (Sum.inr v) u ∈ Compact F ζ hζ v ht := by
   refine ⟨KPStandardLocalRootLifts.integralN F v u, ?_⟩
-  change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr v) _ = _
   rw [KPPGLLocalCover.N, KPStandardLocalRootLifts.N_eq_compact F ζ hζ v ht u]
   rfl
 private lemma compact_A (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
@@ -1845,18 +1792,15 @@ private lemma compact_A (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p 
     KPPGLLocalCover.A F ζ hζ (Sum.inr v) (KPTameCompact.unitInclusion F v u) ∈
       Compact F ζ hζ v ht := by
   refine ⟨KPStandardLocalRootLifts.integralA F v u, ?_⟩
-  change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr v) _ = _
   rw [KPPGLLocalCover.A, KPStandardLocalRootLifts.A_eq_compact F ζ hζ v ht u]
   rfl
 private lemma compact_W (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3) :
     KPPGLLocalCover.W F ζ hζ (Sum.inr v) ∈ Compact F ζ hζ v ht := by
   refine ⟨KPStandardLocalRootLifts.integralW F v, ?_⟩
-  change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr v) _ = _
   rw [KPPGLLocalCover.W, KPStandardLocalRootLifts.W_eq_compact F ζ hζ v ht]
   rfl
 private lemma signedW_eq : KPRankOneOpenCellKernel.signedWeyl F ζ hζ v =
-    KPPGLLocalCover.A F ζ hζ (Sum.inr v) (-1) * KPPGLLocalCover.W F ζ hζ (Sum.inr v) := by
-  rfl
+    KPPGLLocalCover.A F ζ hζ (Sum.inr v) (-1) * KPPGLLocalCover.W F ζ hζ (Sum.inr v) := rfl
 include P in
 private lemma compact_signedW (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3) :
     inducingData.borel.liftedW ∈ Compact F ζ hζ v ht := by
@@ -1869,8 +1813,7 @@ private lemma right_fixed (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.
     (k : ActualCover F ζ hζ v) (hk : k ∈ Compact F ζ hζ v ht)
     (g : ActualCover F ζ hζ v) :
     φ.val (g * k) =
-      φ.val g := by
-  exact congrArg (fun f : Sections F ζ hζ v inducingData P => f.val g)
+      φ.val g := congrArg (fun f : Sections F ζ hζ v inducingData P => f.val g)
     (hφ ⟨k, hk⟩)
 private lemma minus_eval (φ : Sections F ζ hζ v inducingData P)
     (t : actualTorus F ζ hζ v) (g : ActualCover F ζ hζ v) :
@@ -1929,16 +1872,15 @@ theorem spherical_ball_section_evaluation (ht : ringChar (KPTameCompact.O F v �
       (compact_N F ζ hζ v ht u)) 1
   simp only [one_mul] at hf
   rw [hf]
-  have hcoord := inducingData.coordinate_lift
+  rw [(inducingData.coordinate_lift
     (Lift F ζ hζ v (uniformizerUnit F v π hπ ^ (-(e : ℤ))))
-    (uniformizerUnit F v π hπ ^ (-(e : ℤ))) rfl
-  rw [hcoord]
+    (uniformizerUnit F v π hπ ^ (-(e : ℤ))) rfl)]
   rfl
 private lemma pi_value (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π) :
     IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)
       (valuation (LocalField F v) (π : LocalField F v)) = WithZero.exp (-1 : ℤ) := by
   let E := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)
-  have hlt : valuation (LocalField F v) (π : LocalField F v) < 1 :=
+  have hlt : valuation (LocalField F v) π < 1 :=
     (Valuation.integer.integers (valuation (LocalField F v))).valuation_irreducible_lt_one hπ
   have hpos : E (valuation (LocalField F v) (π : LocalField F v)) ≠ 0 := by
     intro he
@@ -1957,8 +1899,7 @@ private lemma pi_value (π : (valuation (LocalField F v)).integer) (hπ : Irredu
   have hm : (⟨x, hv.le⟩ : (valuation (LocalField F v)).integer) ∈
       IsLocalRing.maximalIdeal ((valuation (LocalField F v)).integer) := by
     intro hu
-    have hv1 := (Valuation.integer.integers (valuation (LocalField F v))).isUnit_iff_valuation_eq_one.mp hu
-    exact hv.ne hv1
+    exact hv.ne ((Valuation.integer.integers (valuation (LocalField F v))).isUnit_iff_valuation_eq_one.mp hu)
   rw [hπ.maximalIdeal_eq, Ideal.mem_span_singleton] at hm
   obtain ⟨u, hu⟩ := hm
   have hxle : valuation (LocalField F v) x ≤ valuation (LocalField F v) (π : LocalField F v) := by
@@ -1967,7 +1908,7 @@ private lemma pi_value (π : (valuation (LocalField F v)).integer) (hπ : Irredu
     rw [he, map_mul]
     exact mul_le_of_le_one_right bot_le u.property
   have hle := E.toOrderIso.monotone hxle
-  change E (valuation (LocalField F v) x) ≤ E (valuation (LocalField F v) (π : LocalField F v)) at hle
+  change E (valuation (LocalField F v) x) ≤ E (valuation (LocalField F v) π) at hle
   rw [hx, E.apply_symm_apply, ← WithZero.exp_log hpos, WithZero.exp_le_exp] at hle
   have hlog : WithZero.log (E (valuation (LocalField F v) (π : LocalField F v))) = -1 := by omega
   rw [← WithZero.exp_log hpos, hlog]
@@ -1982,7 +1923,7 @@ theorem uniformizer_normPower (π : (valuation (LocalField F v)).integer) (hπ :
       (valuation (LocalField F v) ↑(uniformizerUnit F v π hπ ^ j))) = -j := by
     rw [Units.val_zpow_eq_zpow_val, map_zpow₀, map_zpow₀]
     change WithZero.log ((IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)
-      (valuation (LocalField F v) (π : LocalField F v))) ^ j) = _
+      (valuation (LocalField F v) π)) ^ j) = _
     rw [pi_value F v π hπ]
     simp
   unfold normPower localAbs
@@ -1994,7 +1935,7 @@ theorem uniformizer_normPower (π : (valuation (LocalField F v)).integer) (hπ :
   push_cast
   ring
 variable (N : AddGroupNorm (Fiber F ζ hζ v inducingData P))
-variable (hN : ∀ (c : ℂ) (b : Fiber F ζ hζ v inducingData P), N (c • b) = ‖c‖ * N b)
+    (hN : ∀ (c : ℂ) (b : Fiber F ζ hζ v inducingData P), N (c • b) = ‖c‖ * N b)
 
 theorem spherical_ball_integrand_evaluation (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
     (φ : Sections F ζ hζ v inducingData P) (hφ : φ ∈ SectionLine F ζ hζ v inducingData P ht)
@@ -2006,7 +1947,7 @@ theorem spherical_ball_integrand_evaluation (ht : ringChar (KPTameCompact.O F v 
         ActualSpherical.Action F ζ hζ v inducingData P (Lift F ζ hζ v (uniformizerUnit F v π hπ ^ (-(e : ℤ))))
           (bZero F ζ hζ v inducingData P φ) := by
   obtain ⟨u, rfl⟩ := hx
-  have hphase : ψ ((π : LocalField F v)^e * u) = 1 := by
+  have hphase : ψ (π^e * u) = 1 := by
     exact hcond.1 (π ^ e * u)
   unfold jacquetIntegrand
   rw [hphase, star_one, one_smul, spherical_ball_section_evaluation F ζ hζ v inducingData P ht φ hφ π hπ e u]
@@ -2021,7 +1962,7 @@ include hμ in
 theorem spherical_ball_mass_toReal (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π) (e : ℕ) :
     (μ (sphericalBall F v π e)).toReal =
       (residueCardinality (LocalField F v) : ℝ) ^ (-(e : ℝ)) := by
-  let c : LocalField F v := (π : LocalField F v) ^ e
+  let c := (π : LocalField F v) ^ e
   have hc : c ≠ 0 := pow_ne_zero e (uniformizerUnit F v π hπ).ne_zero
   have he : sphericalBall F v π e = (fun x : LocalField F v => c * x) ''
       ((valuation (LocalField F v)).integer : Set (LocalField F v)) := by
@@ -2039,7 +1980,7 @@ theorem spherical_ball_mass_toReal (π : (valuation (LocalField F v)).integer) (
     rw [if_neg hc]
     change (residueCardinality (LocalField F v) : ℝ) ^ WithZero.log
       (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)
-        (valuation (LocalField F v) ((π : LocalField F v)^e))) = _
+        (valuation (LocalField F v) (π^e))) = _
     rw [map_pow, map_pow, pi_value F v π hπ]
     simp [← Real.rpow_intCast]
   have hpre : (fun x : LocalField F v => c * x) ⁻¹' sphericalBall F v π e =
@@ -2111,12 +2052,12 @@ open KPLocalExceptionalConstruction KPLocalPrincipalSeries KPLocalStoneVonNeuman
 open ActualSpherical ActualJacquet KPExteriorUnitShellIntegrals
 noncomputable section
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (v : HeightOneSpectrum (𝓞 F)) (inducingData : CanonicalFiniteInducingData F ζ hζ v)
-variable (P : Polarization inducingData.heisenberg)
-variable (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
-variable (hμ : μ ((valuation (LocalField F v)).integer : Set (LocalField F v)) = 1)
-variable (N : AddGroupNorm (Fiber F ζ hζ v inducingData P))
-variable (hN : ∀ (c : ℂ) (b : Fiber F ζ hζ v inducingData P), N (c • b) = ‖c‖ * N b)
+    (v : HeightOneSpectrum (𝓞 F)) (inducingData : CanonicalFiniteInducingData F ζ hζ v)
+    (P : Polarization inducingData.heisenberg)
+    (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
+    (hμ : μ ((valuation (LocalField F v)).integer : Set (LocalField F v)) = 1)
+    (N : AddGroupNorm (Fiber F ζ hζ v inducingData P))
+    (hN : ∀ (c : ℂ) (b : Fiber F ζ hζ v inducingData P), N (c • b) = ‖c‖ * N b)
 include hμ N hN
 theorem spherical_truncated_decomposition
     (hgood : valuation (LocalField F v) (6 : LocalField F v) = 1)
@@ -2281,9 +2222,8 @@ theorem stableJacquet_spherical_coordinates
     hψunitary hcond J hJ φ hφ hne e]
   rw [spherical_ball_contribution F ζ hζ v inducingData P μ hμ N hN ht hgood π hπ ψ hψcont
     hψunitary hcond φ hφ hne e]
-  have hsum := KPExteriorActualJacquetShells.finite_shell_coordinate_identity
-    (K := LocalField F v) χκ hχ ψbar e
-  have hmap := congrArg Eφ hsum
+  have hmap := congrArg Eφ (KPExteriorActualJacquetShells.finite_shell_coordinate_identity
+    χκ hχ ψbar e)
   simp only [map_add, map_sum, map_smul, hEφ] at hmap
   simp only [KPExteriorUnitShellIntegrals.qPower, ← Nat.card_eq_fintype_card] at hmap
   change QPower F v (-2 * (e : ℝ) / 3) •

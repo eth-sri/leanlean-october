@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.CharacterAverageOrbitClosure
 
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.SU2CharacterBounds
 
@@ -45,55 +46,39 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicExtraction.CasimirTransfer.Transfer
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts MeasureTheory
 open scoped Matrix.Norms.Elementwise
 
-private theorem su2HarmonicCharacter_continuous_aux (ℓ : ℕ) :
-    Continuous (su2HarmonicCharacter ℓ) := by
-  have htrace : ∀ n : ℕ, Continuous (fun k : ComplexSU2 =>
-      KPCompactHarmonic.symmetricPowerTrace n
-        ⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
-          (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩) := by
-    intro n
-    induction n using Nat.twoStepInduction with
-    | zero => simpa [KPCompactHarmonic.symmetricPowerTrace] using
-        (continuous_const : Continuous (fun _ : ComplexSU2 => (1 : ℂ)))
-    | one => simp only [KPCompactHarmonic.symmetricPowerTrace]; fun_prop
-    | more n hn hn1 =>
-        simp only [KPCompactHarmonic.symmetricPowerTrace]
-        exact ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.trace (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn1).sub
-          ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.det (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn)
-  unfold su2HarmonicCharacter KPCompactHarmonic.rankOneCharacter
-  simp only [(Matrix.mem_specialUnitaryGroup_iff.mp (Subtype.prop _)).2, one_pow, div_one]
-  exact htrace (2 * ℓ)
+private alias su2HarmonicCharacter_continuous_aux := DedekindZetaZeroFree.KPCplxHarmonicExtraction.CharacterAverageOrbitClosure.char_cont
 
 private theorem orbit_continuous (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2) :
     Continuous (fun k : ComplexSU2 => f (g * complexSU2Embedding k)) := by
-  have hfd : ContDiffOn ℝ (⊤ : ℕ∞) (matrixFunction (f : ComplexGL2 → ℂ))
-      {A : Matrix (Fin 2) (Fin 2) ℂ | A.det ≠ 0} :=
+  have hfd :=
     ((principalSeries_mem_iff s (f : ComplexGL2 → ℂ)).mp f.property).2
+  let Matrix₀ := Matrix (Fin 2) (Fin 2) ℂ
   have hφ : Continuous (fun k : ComplexSU2 =>
-      (g : Matrix (Fin 2) (Fin 2) ℂ) * (k : Matrix (Fin 2) (Fin 2) ℂ)) :=
+      (g : Matrix₀) * (k : Matrix₀)) :=
     continuous_const.mul continuous_subtype_val
   have hmaps : ∀ k : ComplexSU2,
-      ((g : Matrix (Fin 2) (Fin 2) ℂ) * (k : Matrix (Fin 2) (Fin 2) ℂ)).det ≠ 0 := by
+      ((g : Matrix₀) * (k : Matrix₀)).det ≠ 0 := by
     intro k
     rw [Matrix.det_mul, (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2, mul_one]
     exact Matrix.GeneralLinearGroup.det_ne_zero g
   refine (hfd.continuousOn.comp_continuous hφ hmaps).congr (fun k => ?_)
   simp only [Function.comp_apply]
-  have hd : ((g : Matrix (Fin 2) (Fin 2) ℂ) * (k : Matrix (Fin 2) (Fin 2) ℂ)).det ≠ 0 :=
+  have hd : ((g : Matrix₀) * (k : Matrix₀)).det ≠ 0 :=
     hmaps k
   rw [matrixFunction, dif_pos hd]
   have harg : Matrix.GeneralLinearGroup.mkOfDetNeZero
-      ((g : Matrix (Fin 2) (Fin 2) ℂ) * (k : Matrix (Fin 2) (Fin 2) ℂ)) hd =
+      ((g : Matrix₀) * (k : Matrix₀)) hd =
       g * complexSU2Embedding k := by
     apply Matrix.GeneralLinearGroup.ext
     intro i j
     rfl
   rw [harg]
 
-private theorem characterAverage_integrable_finite (s : ℝ) (μ : Measure ComplexSU2)
-    [IsFiniteMeasure μ] (ℓ : ℕ) (f : PrincipalSeries s) (g : ComplexGL2) :
+alias CompactCasimirTransfer.orbit_continuous := orbit_continuous
+
+variable (s : ℝ) (μ : Measure ComplexSU2) [IsFiniteMeasure μ] (ℓ : ℕ)
+
+private theorem characterAverage_integrable_finite (f : PrincipalSeries s) (g : ComplexGL2) :
     Integrable (fun k : ComplexSU2 =>
       star (su2HarmonicCharacter ℓ k) * f (g * complexSU2Embedding k)) μ := by
   letI : CompactSpace ComplexSU2 := isCompact_iff_compactSpace.mp (by
@@ -103,8 +88,7 @@ private theorem characterAverage_integrable_finite (s : ℝ) (μ : Measure Compl
     (orbit_continuous s f g)).integrable_of_hasCompactSupport
       (HasCompactSupport.of_compactSpace _))
 
-theorem characterAverage_linear_exists (s : ℝ) (μ : Measure ComplexSU2)
-    [IsFiniteMeasure μ] (ℓ : ℕ) (g : ComplexGL2) :
+theorem characterAverage_linear_exists (g : ComplexGL2) :
     ∃ A : PrincipalSeries s →ₗ[ℂ] ℂ,
       ∀ f : PrincipalSeries s, A f = characterAverage s μ ℓ f g := by
   have hInt := fun f : PrincipalSeries s => characterAverage_integrable_finite s μ ℓ f g
@@ -170,12 +154,11 @@ private theorem raw_sym (n : ℕ) (u : RepresentationTheory.KPCompactHarmonicTru
       KPCompactHarmonic.symmetricPowerTrace, h, h']
 private theorem char_eq (n : ℕ) (k : ComplexSU2) :
     su2HarmonicCharacter n k = chebR n ((k.val.trace)^2) := by
-  have h := rawRankOneCharacter_eq_chebR n
-    (⟨k.val, (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩ :
-      RepresentationTheory.KPCompactHarmonicTruncation.RawU2)
   simpa [su2HarmonicCharacter, RepresentationTheory.KPCompactHarmonicTruncation.rawRankOneCharacter,
     KPCompactHarmonic.rankOneCharacter, raw_sym,
-    (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2] using h
+    (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2] using (rawRankOneCharacter_eq_chebR n
+      (⟨k.val, (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩ :
+        RepresentationTheory.KPCompactHarmonicTruncation.RawU2))
 open scoped Matrix.Norms.Elementwise in
 private theorem section_eval (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
     matrixFunction f g.val = f g := by
@@ -211,7 +194,6 @@ private theorem section_path (j : Fin 3) (s : ℝ) (f v : PrincipalSeries s) (hv
   have hh := hdiff.hasFDerivAt.comp_hasDerivAt_of_eq t hmat (he t)
   simp only [← he] at hh
   rw [hv]
-  change HasDerivAt _ ((fderiv ℝ (matrixFunction f) q.val) (q.val * compactBasis 0 j)) t
   convert hh using 1
   · funext r
     exact (section_eval f _).symm
@@ -219,7 +201,7 @@ private theorem section_path (j : Fin 3) (s : ℝ) (f v : PrincipalSeries s) (hv
 noncomputable def charP (n : ℕ) (m : Matrix (Fin 2) (Fin 2) ℂ) : ℂ := star (chebR n (m.trace ^ 2))
 open scoped Matrix.Norms.Elementwise in
 private theorem charP_smooth (n : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (charP n) := by
-  apply (Complex.conjCLE : ℂ ≃L[ℝ] ℂ).contDiff.comp
+  apply Complex.conjCLE.contDiff.comp
   have ht : ContDiff ℝ (⊤ : ℕ∞) (fun m : Matrix (Fin 2) (Fin 2) ℂ => m.trace) := by
     simp only [Matrix.trace, Matrix.diag, Fin.sum_univ_two]
     fun_prop
@@ -280,15 +262,13 @@ private theorem second_weight (n : ℕ) (j : Fin 3) (k : ComplexSU2) :
   simp_rw [he, (weight_path j (charP n) (charP_smooth n) (k * compactCurve j _) 0).deriv]
   have hz : compactCurve j 0 = 1 := by
     apply Subtype.ext
-    change (basisExp compactBasis compactBasis_skew (0,j) 0).val = (1 : Matrix (Fin 2) (Fin 2) ℂ)
-    simpa using congrArg (fun u : RepresentationTheory.KPCompactHarmonicTruncation.RawU2 => u.val)
+    exact congrArg (fun u : RepresentationTheory.KPCompactHarmonicTruncation.RawU2 => u.val)
       (basisExp_zero compactBasis compactBasis_skew (0,j))
   simp only [hz, mul_one]
   exact (weight_path j (weightD j (charP n)) (weightD_smooth j _ (charP_smooth n)) k 0).deriv.trans (by rw [hz, mul_one])
 private theorem curve_zero (j : Fin 3) : compactCurve j 0 = 1 := by
   apply Subtype.ext
-  change (basisExp compactBasis compactBasis_skew (0,j) 0).val = (1 : Matrix (Fin 2) (Fin 2) ℂ)
-  simpa using congrArg (fun u : RepresentationTheory.KPCompactHarmonicTruncation.RawU2 => u.val)
+  exact congrArg (fun u : RepresentationTheory.KPCompactHarmonicTruncation.RawU2 => u.val)
     (basisExp_zero compactBasis compactBasis_skew (0,j))
 private theorem curve_neg (j : Fin 3) (t : ℝ) : compactCurve j (-t) = (compactCurve j t)⁻¹ := by
   rw [← Matrix.star_eq_inv]
@@ -318,7 +298,6 @@ private theorem first_transfer
     ((ha.comp continuous_snd).mul (hb.comp (continuous_snd.mul (hc.comp continuous_fst))))
     ((ha.comp continuous_snd).mul (hdb.comp (continuous_snd.mul (hc.comp continuous_fst))))
     (fun t k => (hdb' t k).const_mul (a k)) 0
-  have hn := hright.2.scomp_of_eq 0 (hasDerivAt_neg (0 : ℝ)) (neg_zero.symm)
   have heq : (fun t => ∫ k, a (k * c t) * b k ∂μ) =
       (fun t => ∫ k, a k * b (k * c (-t)) ∂μ) := by
     funext t
@@ -326,7 +305,7 @@ private theorem first_transfer
       (fun k => a k * b (k * c (-t))) (c t)
     simpa only [hcneg, mul_inv_cancel_right] using h
   rw [heq] at hleft
-  have h := hleft.2.unique hn
+  have h := hleft.2.unique (hright.2.scomp_of_eq 0 (hasDerivAt_neg (0 : ℝ)) (neg_zero.symm))
   simp only [hc0, mul_one, neg_smul, one_smul, neg_zero] at h
   calc
     _ = - (-(∫ k, a k * db k ∂μ)) := (neg_neg _).symm
@@ -334,13 +313,10 @@ private theorem first_transfer
 open scoped Matrix.Norms.Elementwise in
 private theorem section_cont (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2) :
     Continuous (fun k : ComplexSU2 => f (g * complexSU2Embedding k)) := by
-  have hf := ((principalSeries_mem_iff s f).mp f.property).2.continuousOn
   have hm : Continuous (fun k : ComplexSU2 => ((g * complexSU2Embedding k : ComplexGL2) : Matrix (Fin 2) (Fin 2) ℂ)) := by
     simp only [Matrix.GeneralLinearGroup.coe_mul]
-    change Continuous (fun k : ComplexSU2 => g.val * k.val)
     fun_prop
-  have hc := hf.comp_continuous hm (fun k => Matrix.GeneralLinearGroup.det_ne_zero (g * complexSU2Embedding k))
-  simpa only [Function.comp_def, section_eval] using hc
+  simpa only [Function.comp_def, section_eval] using ((((principalSeries_mem_iff s f).mp f.property).2.continuousOn).comp_continuous hm (fun k => Matrix.GeneralLinearGroup.det_ne_zero (g * complexSU2Embedding k)))
 open scoped Matrix.Norms.Elementwise in
 
 theorem characterAverage_compact_second_derivative_transfer
@@ -357,7 +333,6 @@ theorem characterAverage_compact_second_derivative_transfer
     exact Subtype.range_coe.symm)
   letI : ContinuousInv ComplexSU2 := ⟨by
     apply continuous_induced_rng.mpr
-    change Continuous (fun k : ComplexSU2 => star k.val)
     exact continuous_star.comp continuous_subtype_val⟩
   letI : IsTopologicalGroup ComplexSU2 := {}
   letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) ℂ) :=
@@ -369,22 +344,19 @@ theorem characterAverage_compact_second_derivative_transfer
     Measure.isHaarMeasure_eq_of_isProbabilityMeasure (μ.map (· * k)) μ⟩
   have hc : Continuous (compactCurve j) := by
     apply Continuous.subtype_mk
-    change Continuous (fun t : ℝ => NormedSpace.exp ((t : ℂ) • compactBasis 0 j))
     exact (differentiable_exp_smul_const ℂ _).continuous.comp Complex.continuous_ofReal
   let a := fun k : ComplexSU2 => charP ℓ k.val
   let da := fun k : ComplexSU2 => weightD j (charP ℓ) k.val
   let dda := fun k : ComplexSU2 => weightD j (weightD j (charP ℓ)) k.val
-  have ha : Continuous a := (charP_smooth ℓ).continuous.comp continuous_subtype_val
   have hda : Continuous da := (weightD_smooth j _ (charP_smooth ℓ)).continuous.comp continuous_subtype_val
-  have hdda : Continuous dda := (weightD_smooth j _ (weightD_smooth j _ (charP_smooth ℓ))).continuous.comp continuous_subtype_val
   have h₁ := first_transfer μ (compactCurve j) hc (curve_zero j) (curve_neg j)
     a da (fun k => v (g * complexSU2Embedding k)) (fun k => w (g * complexSU2Embedding k))
-    ha hda (section_cont s v g) (section_cont s w g)
+    ((charP_smooth ℓ).continuous.comp continuous_subtype_val) hda (section_cont s v g) (section_cont s w g)
     (fun t k => weight_path j _ (charP_smooth ℓ) k t)
     (fun t k => section_path j s v w hw g k t)
   have h₂ := first_transfer μ (compactCurve j) hc (curve_zero j) (curve_neg j)
     da dda (fun k => f (g * complexSU2Embedding k)) (fun k => v (g * complexSU2Embedding k))
-    hda hdda (section_cont s f g) (section_cont s v g)
+    hda ((weightD_smooth j _ (weightD_smooth j _ (charP_smooth ℓ))).continuous.comp continuous_subtype_val) (section_cont s f g) (section_cont s v g)
     (fun t k => weight_path j _ (weightD_smooth j _ (charP_smooth ℓ)) k t)
     (fun t k => section_path j s f v hv g k t)
   rw [characterAverage_formula]
@@ -408,26 +380,10 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicExtraction.CasimirTransfer.Transfer
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts MeasureTheory
 open scoped BigOperators Matrix.Norms.Elementwise
 
-private theorem rawSymmetricPowerTrace_eq_sym (n : ℕ)
-    (u : RepresentationTheory.KPCompactHarmonicTruncation.RawU2) :
-    RepresentationTheory.KPCompactHarmonicTruncation.rawSymmetricPowerTrace n u =
-      KPCompactHarmonic.symmetricPowerTrace n u := by
-  induction n using Nat.twoStepInduction with
-  | zero => rfl
-  | one => rfl
-  | more n h0 h1 => simp only [RepresentationTheory.KPCompactHarmonicTruncation.rawSymmetricPowerTrace,
-      KPCompactHarmonic.symmetricPowerTrace, h0, h1]
-
-private theorem rawRankOneCharacter_eq_sym (ℓ : ℕ)
-    (u : RepresentationTheory.KPCompactHarmonicTruncation.RawU2) :
-    RepresentationTheory.KPCompactHarmonicTruncation.rawRankOneCharacter ℓ u =
-      KPCompactHarmonic.rankOneCharacter ℓ u := by
-  rw [RepresentationTheory.KPCompactHarmonicTruncation.rawRankOneCharacter, KPCompactHarmonic.rankOneCharacter,
-    rawSymmetricPowerTrace_eq_sym]
+private alias rawSymmetricPowerTrace_eq_sym := raw_sym
 
 private theorem compactBasis_trace (j : Fin 1) (a : Fin 3) :
-    Matrix.trace (compactBasis j a) = 0 := by
-  fin_cases a <;> simp [compactBasis, Matrix.trace, Fin.sum_univ_two]
+    Matrix.trace (compactBasis j a) = 0 := by apply @basis_trace <;> assumption
 
 private theorem compactBasis_orth (j : Fin 1) (a b : Fin 3) :
     -(Matrix.trace (compactBasis j a * compactBasis j b)).re = if a = b then 1 else 0 := by
@@ -437,29 +393,16 @@ private theorem compactBasis_orth (j : Fin 1) (a b : Fin 3) :
   all_goals nlinarith [Real.sq_sqrt (show (0:ℝ) ≤ 2 by norm_num)]
 
 private theorem matrixFunction_eval_here (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
-    matrixFunction f (g : Matrix (Fin 2) (Fin 2) ℂ) = f g := by
-  rw [matrixFunction, dif_pos (Matrix.GeneralLinearGroup.det_ne_zero g)]
-  congr 1
-  apply Units.ext
-  rfl
+    matrixFunction f (g : Matrix (Fin 2) (Fin 2) ℂ) = f g := by apply @DedekindZetaZeroFree.KPCplxPrincipalSeriesMatrixSmooth.matrixFunction_coe <;> assumption
 
-private theorem orbit_continuous_here (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2) :
-    Continuous (fun k : ComplexSU2 => f (g * complexSU2Embedding k)) := by
-  have hf := ((principalSeries_mem_iff s f).mp f.property).2.continuousOn
-  have hm : Continuous (fun k : ComplexSU2 =>
-      ((g * complexSU2Embedding k : ComplexGL2) : Matrix (Fin 2) (Fin 2) ℂ)) := by
-    simp only [Matrix.GeneralLinearGroup.coe_mul]
-    change Continuous (fun k : ComplexSU2 =>
-      (g : Matrix (Fin 2) (Fin 2) ℂ) * (k : Matrix (Fin 2) (Fin 2) ℂ))
-    fun_prop
-  have hc := hf.comp_continuous hm (fun k =>
-    Matrix.GeneralLinearGroup.det_ne_zero (g * complexSU2Embedding k))
-  simpa only [Function.comp_def, matrixFunction_eval_here] using hc
+private alias orbit_continuous_here := orbit_continuous
+
+local notation "Mat₂ℂ" => Matrix (Fin 2) (Fin 2) ℂ
 
 private theorem characterSecondDerivative_one_eq (ℓ : ℕ) (j : Fin 3) (k : ComplexSU2) :
     RepresentationTheory.KPCompactHarmonicTruncation.Casimir.characterSecondDerivative
         compactBasis compactBasis_skew (fun _ : Fin 1 => ℓ) (0, j)
-        (fun _ => (⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
+        (fun _ => (⟨(k : Mat₂ℂ),
           (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩ :
             RepresentationTheory.KPCompactHarmonicTruncation.RawU2)) =
       compactCharacterSecondDerivative ℓ j k := by
@@ -468,21 +411,22 @@ private theorem characterSecondDerivative_one_eq (ℓ : ℕ) (j : Fin 3) (k : Co
 
 private theorem su2HarmonicCharacter_eq_raw (ℓ : ℕ) (k : ComplexSU2) :
     RepresentationTheory.KPCompactHarmonicTruncation.rawRankOneCharacter ℓ
-        (⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
+        (⟨(k : Mat₂ℂ),
           (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩ :
             RepresentationTheory.KPCompactHarmonicTruncation.RawU2) =
       su2HarmonicCharacter ℓ k := by
   rw [su2HarmonicCharacter]
-  exact rawRankOneCharacter_eq_sym ℓ _
+  rw [RepresentationTheory.KPCompactHarmonicTruncation.rawRankOneCharacter, KPCompactHarmonic.rankOneCharacter,
+    rawSymmetricPowerTrace_eq_sym]
 
 theorem compactCharacter_integrated_laplacian (s : ℝ) (μ : Measure ComplexSU2)
     [IsFiniteMeasure μ] (ℓ : ℕ) (f : PrincipalSeries s) (g : ComplexGL2) :
     (∑ j : Fin 3, ((2 * ℓ + 1 : ℕ) : ℂ) * ∫ k : ComplexSU2,
       compactCharacterSecondDerivative ℓ j k * f (g * complexSU2Embedding k) ∂μ) =
       -(2 * (ℓ : ℂ) * ((ℓ : ℂ) + 1)) * characterAverage s μ ℓ f g := by
-  have hcompact : IsCompact (ComplexSU2 : Set (Matrix (Fin 2) (Fin 2) ℂ)) := by
-    have heq : Set.range (fun k : ComplexSU2 => (k : Matrix (Fin 2) (Fin 2) ℂ)) =
-        (ComplexSU2 : Set (Matrix (Fin 2) (Fin 2) ℂ)) := Subtype.range_coe
+  have hcompact : IsCompact (ComplexSU2 : Set Mat₂ℂ) := by
+    have heq : Set.range (fun k : ComplexSU2 => (k : Mat₂ℂ)) =
+        (ComplexSU2 : Set Mat₂ℂ) := Subtype.range_coe
     rw [← heq]
     exact complexSU2_isCompact
   letI : CompactSpace ComplexSU2 := isCompact_iff_compactSpace.mp hcompact
@@ -494,7 +438,7 @@ theorem compactCharacter_integrated_laplacian (s : ℝ) (μ : Measure ComplexSU2
       Continuous (fun k : ComplexSU2 => compactCharacterSecondDerivative ℓ j k) := by
     intro j
     have hu : Continuous (fun k : ComplexSU2 =>
-        (⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
+        (⟨(k : Mat₂ℂ),
           (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩ :
             RepresentationTheory.KPCompactHarmonicTruncation.RawU2)) :=
       Continuous.subtype_mk continuous_subtype_val _
@@ -514,13 +458,13 @@ theorem compactCharacter_integrated_laplacian (s : ℝ) (μ : Measure ComplexSU2
     intro k
     have h := RepresentationTheory.KPCompactHarmonicTruncation.Casimir.rankOneSecondDerivative_sum
       compactBasis compactBasis_skew compactBasis_trace compactBasis_orth ℓ (0 : Fin 1)
-      (⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
+      (⟨(k : Mat₂ℂ),
         (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩ :
           RepresentationTheory.KPCompactHarmonicTruncation.RawU2)
     have h' : (∑ j : Fin 3, compactCharacterSecondDerivative ℓ j k) =
         -(2 * (ℓ : ℂ) * ((ℓ : ℂ) + 1)) *
           star (RepresentationTheory.KPCompactHarmonicTruncation.rawRankOneCharacter ℓ
-            (⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
+            (⟨(k : Mat₂ℂ),
               (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩ :
                 RepresentationTheory.KPCompactHarmonicTruncation.RawU2)) := h
     rw [h', su2HarmonicCharacter_eq_raw]
@@ -592,9 +536,8 @@ private theorem matrix_path_diff (g : ComplexGL2)
       (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) *
         NormedSpace.exp ((t : ℂ) • M)) i j) 0 := by
   have hmat : DifferentiableAt ℝ
-      (fun t : ℝ => (g : Matrix (Fin 2) (Fin 2) ℂ) *
-        NormedSpace.exp ((t : ℂ) • M)) 0 := by
-    exact (differentiableAt_const _).mul
+      (fun t : ℝ => g *
+        NormedSpace.exp ((t : ℂ) • M)) 0 := (differentiableAt_const _).mul
       ((differentiable_exp_smul_const ℂ M).differentiableAt.restrictScalars ℝ |>.comp 0
         Complex.ofRealCLM.differentiableAt)
   intro i j
@@ -608,82 +551,74 @@ private theorem matrix_path_hasDeriv_components (g : ComplexGL2)
       (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) *
         NormedSpace.exp ((t : ℂ) • M)) i j)
       (((g : Matrix (Fin 2) (Fin 2) ℂ) * M) i j) 0 := by
-  have h := ((hasDerivAt_exp_smul_const (𝕂 := ℂ) M ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt
-    (f := fun t : ℝ => (t : ℂ)) 0 Complex.ofRealCLM.hasDerivAt
+  have h := ((hasDerivAt_exp_smul_const M ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt
+     0 Complex.ofRealCLM.hasDerivAt
   have hmat := h.const_mul (g : Matrix (Fin 2) (Fin 2) ℂ)
   simp only [Complex.ofRealCLM_apply, Complex.ofReal_one,
     ContinuousLinearMap.coe_restrictScalars,
     ContinuousLinearMap.toSpanSingleton_apply, one_smul, zero_smul,
     NormedSpace.exp_zero, mul_one, one_mul] at hmat
   intro i j
-  have hi := (ContinuousLinearMap.proj i :
-    Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt 0 hmat
-  have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt 0 hi
+  have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt 0 ((ContinuousLinearMap.proj i :
+    Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt 0 hmat)
   change HasDerivAt
-    (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) *
+    (fun t : ℝ => (g *
       NormedSpace.exp ((t : ℂ) • M)) i j)
-    (((g : Matrix (Fin 2) (Fin 2) ℂ) *
+    ((g *
       (ContinuousLinearMap.restrictScalars ℝ
         (ContinuousLinearMap.toSpanSingleton ℂ
           (NormedSpace.exp (((0 : ℝ) : ℂ) • M) * M))) 1) i j) 0 at hj
   simpa using hj
 
-private theorem path_eq (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2)
-    (M : Matrix (Fin 2) (Fin 2) ℂ) :
+section
+
+variable (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2) (M : Matrix (Fin 2) (Fin 2) ℂ)
+
+private theorem path_eq :
     (fun t : ℝ => f (g * matExp ((t : ℂ) • M))) =
       matrixFunction f.val ∘
         (fun t : ℝ => (g : Matrix (Fin 2) (Fin 2) ℂ) *
           NormedSpace.exp ((t : ℂ) • M)) := by
   funext t
-  have hu := Matrix.GeneralLinearGroup.det_ne_zero (g * matExp ((t : ℂ) • M))
-  have he : ((g * matExp ((t : ℂ) • M)) : Matrix (Fin 2) (Fin 2) ℂ) =
-      (g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M) := by
+  let matExp₀ := matExp ((t : ℂ) • M)
+  have he : ((g * matExp₀) : Matrix (Fin 2) (Fin 2) ℂ) =
+      g * NormedSpace.exp ((t : ℂ) • M) := by
     rw [matExp_coe]
   dsimp only [Function.comp_def]
   rw [← he]
   unfold KPCplxPrincipalSeriesCharts.matrixFunction
-  rw [dif_pos (show ((g : Matrix (Fin 2) (Fin 2) ℂ) *
-    (matExp ((t : ℂ) • M) : Matrix (Fin 2) (Fin 2) ℂ)).det ≠ 0 from by
-      simpa only [Units.val_mul] using hu)]
+  rw [dif_pos (show (g *
+    (matExp₀ : Matrix (Fin 2) (Fin 2) ℂ)).det ≠ 0 from by
+      simpa using (Matrix.GeneralLinearGroup.det_ne_zero (g * matExp₀)))]
   apply congrArg f.val
   apply Units.ext
   rfl
 
-private theorem path_differentiable (s : ℝ) (f : PrincipalSeries s)
-    (g : ComplexGL2) (M : Matrix (Fin 2) (Fin 2) ℂ) :
+private theorem path_differentiable :
     DifferentiableAt ℝ (fun t : ℝ => f (g * matExp ((t : ℂ) • M))) 0 := by
-  have hf := ((principalSeries_mem_iff s f.val).mp f.property).2
   have hmat : DifferentiableAt ℝ
-      (fun t : ℝ => (g : Matrix (Fin 2) (Fin 2) ℂ) *
+      (fun t : ℝ => g *
         NormedSpace.exp ((t : ℂ) • M)) 0 :=
     differentiableAt_pi.mpr (fun i => differentiableAt_pi.mpr (matrix_path_diff g M i))
   have hdet : ((g : Matrix (Fin 2) (Fin 2) ℂ) *
       NormedSpace.exp (((0 : ℝ) : ℂ) • M)).det ≠ 0 := by
     simpa using Matrix.GeneralLinearGroup.det_ne_zero g
   have hcont : Continuous (fun m : Matrix (Fin 2) (Fin 2) ℂ => m.det) := by fun_prop
-  have hh := (hf.differentiableOn (by simp)).differentiableAt
+  have hh := ((((principalSeries_mem_iff s f.val).mp f.property).2).differentiableOn (by simp)).differentiableAt
     ((isOpen_ne.preimage hcont).mem_nhds hdet)
   have hc := hh.comp 0 hmat
   convert hc using 1
   exact path_eq s f g M
 
-private theorem raw_derivative_eq (s : ℝ) (f : PrincipalSeries s)
-    (g : ComplexGL2) (M : Matrix (Fin 2) (Fin 2) ℂ) :
+private theorem raw_derivative_eq :
     deriv (fun t : ℝ => f (g * matExp ((t : ℂ) • M))) 0 =
       fderiv ℝ (matrixFunction f.val) (g : Matrix (Fin 2) (Fin 2) ℂ)
         ((g : Matrix (Fin 2) (Fin 2) ℂ) * M) := by
-  have hf := ((principalSeries_mem_iff s f.val).mp f.property).2
-  have hmat : HasDerivAt
-      (fun t : ℝ => (g : Matrix (Fin 2) (Fin 2) ℂ) *
-        NormedSpace.exp ((t : ℂ) • M))
-      ((g : Matrix (Fin 2) (Fin 2) ℂ) * M) 0 :=
-    hasDerivAt_pi.mpr (fun i => hasDerivAt_pi.mpr (matrix_path_hasDeriv_components g M i))
-  have hcont : Continuous (fun m : Matrix (Fin 2) (Fin 2) ℂ => m.det) := by fun_prop
-  have hh := (hf.differentiableOn (by simp)).differentiableAt
-    ((isOpen_ne.preimage hcont).mem_nhds (Matrix.GeneralLinearGroup.det_ne_zero g))
-  have hc := hh.hasFDerivAt.comp_hasDerivAt_of_eq 0 hmat (by simp)
   rw [path_eq s f g M]
-  exact hc.deriv
+  exact ((((((principalSeries_mem_iff s f.val).mp f.property).2).differentiableOn (by simp)).differentiableAt
+    ((isOpen_ne.preimage (by fun_prop)).mem_nhds (Matrix.GeneralLinearGroup.det_ne_zero g))).hasFDerivAt.comp_hasDerivAt_of_eq 0 (hasDerivAt_pi.mpr (fun i => hasDerivAt_pi.mpr (matrix_path_hasDeriv_components g M i))) (by simp)).deriv
+
+end
 
 private theorem local_derivative_mem (s : ℝ) (M : Matrix (Fin 2) (Fin 2) ℂ)
     (f : PrincipalSeries s) :
@@ -702,17 +637,12 @@ private theorem local_derivative_mem (s : ℝ) (M : Matrix (Fin 2) (Fin 2) ℂ)
     rw [he]
     exact deriv_const_smul (inductionWeight s a d : ℂ)
       (path_differentiable s f g M)
-  · have hf := ((principalSeries_mem_iff s f.val).mp f.property).2
-    have hcont : Continuous (fun m : Matrix (Fin 2) (Fin 2) ℂ => m.det) := by fun_prop
-    have hs : IsOpen {m : Matrix (Fin 2) (Fin 2) ℂ | m.det ≠ 0} :=
-      isOpen_ne.preimage hcont
-    have hd := hf.fderiv_of_isOpen hs (m := (⊤ : ℕ∞)) (by simp)
-    have hm : ContDiff ℝ (⊤ : ℕ∞)
+  · have hm : ContDiff ℝ (⊤ : ℕ∞)
         (fun m : Matrix (Fin 2) (Fin 2) ℂ => m * M) := by
       change ContDiff ℝ (⊤ : ℕ∞)
         (fun m : Matrix (Fin 2) (Fin 2) ℂ => fun i j => ∑ k, m i k * M k j)
       fun_prop
-    apply (hd.clm_apply hm.contDiffOn).congr
+    apply (((((principalSeries_mem_iff s f.val).mp f.property).2).fderiv_of_isOpen (isOpen_ne.preimage (by fun_prop)) (by simp)).clm_apply hm.contDiffOn).congr
     intro m hm
     unfold KPCplxPrincipalSeriesCharts.matrixFunction
     rw [dif_pos (show m.det ≠ 0 from hm)]
@@ -745,12 +675,12 @@ theorem exists_shiftedCasimir_transfer_section (s : ℝ) (f : PrincipalSeries s)
         characterAverage s μ ℓ w g =
           (((1 + (ℓ : ℝ) * (ℓ + 1) : ℝ) : ℂ) * characterAverage s μ ℓ f g) := by
   classical
-  let v : Fin 3 → PrincipalSeries s := fun j =>
+  let v := fun j =>
     (Transfer.compactRawDerivative_section_exists s j f).choose
   have hv (j : Fin 3) (g : ComplexGL2) :
       v j g = Transfer.compactRawDerivative j f g :=
     (Transfer.compactRawDerivative_section_exists s j f).choose_spec g
-  let u : Fin 3 → PrincipalSeries s := fun j =>
+  let u := fun j =>
     (Transfer.compactRawDerivative_section_exists s j (v j)).choose
   have hu (j : Fin 3) (g : ComplexGL2) :
       u j g = Transfer.compactRawDerivative j (v j) g :=

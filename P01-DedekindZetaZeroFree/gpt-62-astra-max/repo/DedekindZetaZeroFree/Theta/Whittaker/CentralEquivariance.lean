@@ -11,14 +11,13 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory KPAdelicCoverRestrictedProduct
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 lemma rawToGroup_local_center (w : KPHilbert.Place F) (e : rootsOfUnity 3 F) :
     rawToGroup R (localToRestricted F R.A.zeta12 R.A.primitive_zeta12 w
       (KPLocalCover.centralInjection F R.A.zeta12 R.A.primitive_zeta12 w e)) =
-      pglCentralInjection F R.A.zeta12 R.A.primitive_zeta12 e := by
-  exact congrArg (scalarQuotient F R.A.zeta12 R.A.primitive_zeta12)
+      pglCentralInjection F R.A.zeta12 R.A.primitive_zeta12 e := congrArg (scalarQuotient F R.A.zeta12 R.A.primitive_zeta12)
     (localInjection_central F R.A.zeta12 R.A.primitive_zeta12 w e)
 
 lemma fourier_center {Q : AdmissibleFlatSources R} (T : Realization R Q)
@@ -30,10 +29,9 @@ lemma fourier_center {Q : AdmissibleFlatSources R} (T : Realization R Q)
   rw [← integral_const_mul]
   apply integral_congr_ae
   filter_upwards [] with q
-  have hc := Subgroup.mem_center_iff.mp
+  rw [← mul_assoc, (Subgroup.mem_center_iff.mp
     (pglCentralInjection_central F R.A.zeta12 R.A.primitive_zeta12 ⟨e, rfl⟩)
-    (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q))
-  rw [← mul_assoc, hc, mul_assoc]
+    (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q))), mul_assoc]
   exact (congrArg (fun z : ℂ => z * star (adelicTraceQuotientCharacter F q : ℂ))
     ((T.automorphic v).2.2 e _)).trans (mul_assoc _ _ _)
 
@@ -41,7 +39,7 @@ lemma rawToGroup_central_tuple (e : CentralTuples F) :
     rawToGroup R (centralTupleMap F R.A.zeta12 R.A.primitive_zeta12 e) =
       pglCentralInjection F R.A.zeta12 R.A.primitive_zeta12 (centralProduct F e) := by
   let w := distinguishedPlace F
-  let s : CentralTuples F := RestrictedProduct.mulSingle
+  let s := RestrictedProduct.mulSingle
     (fun _ => (⊥ : Subgroup (rootsOfUnity 3 F))) w (centralProduct F e)
   have hs : centralProduct F s = centralProduct F e := by
     change (∏ᶠ v, s v) = _

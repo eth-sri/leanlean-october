@@ -11,8 +11,8 @@ set_option maxRecDepth 10000
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualSphericalMetric
 open KPSmoothActualFlowData
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.NormalCoefficient renaming flow_apply → flow_apply
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes.IwasawaFieldJets renaming pgl_action_out → pgl_action_out
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.NormalCoefficient (flow_apply)
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes.IwasawaFieldJets (pgl_action_out)
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 

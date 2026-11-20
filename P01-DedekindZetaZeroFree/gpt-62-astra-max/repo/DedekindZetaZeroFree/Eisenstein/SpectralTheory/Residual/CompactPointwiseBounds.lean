@@ -16,10 +16,10 @@ open KPContActualSphericalRightFieldIdentification KPMsGreenFlux KPContLocalNorm
 open KPContLocalCubeEmbedding KPMsClearedTruncationL2.NativeWordBridge
 open KPGlobalResidualConstruction.CanonicalWholeCoreNative.NativeWordInverse.ActualInverseValue
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 local notation "q" => KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
 local notation "X" => KPSmoothLocalQuotientCharts.X F ζ hζ
 def quotientWord (w : List (Fin (groupDimension F))) (f : X → ℂ) : X → ℂ :=
@@ -57,7 +57,7 @@ theorem exists_original_ball_l2_bound
     Measure.restrict_mono Metric.ball_subset_closedBall le_rfl
   refine ⟨hLp.mono_measure hμ,?_⟩
   exact (ENNReal.toReal_mono hLp.eLpNorm_ne_top
-    (eLpNorm_mono_measure (p := 2) _ hμ)).trans hn
+    (eLpNorm_mono_measure _ hμ)).trans hn
 
 theorem exists_original_compact_point_bound
     (chart : GroupChart F ζ hζ U R P H) (A : LocalBall (groupDimension F))
@@ -86,12 +86,9 @@ theorem exists_original_compact_point_bound
   obtain ⟨u,hu,hn⟩ := hsob (fun g => f (q g)) hs hLp (D*M) (mul_nonneg hD.le hM) (by
     intro w hw
     rw [Lp.norm_toLp]
-    have hb := (hlocal w hw).2.trans (mul_le_mul_of_nonneg_left (hm w hw) hD.le)
-    simpa only [quotientWord_lift, lpNorm] using hb)
+    simpa only [quotientWord_lift, lpNorm] using ((hlocal w hw).2.trans (mul_le_mul_of_nonneg_left (hm w hw) hD.le)))
   intro x hx
-  have hc : ContinuousOn (fun x => f (q (chart.groupLift x))) B.carrier :=
-    hs.continuousOn.mono (fun y hy => hBT (Metric.ball_subset_closedBall hy))
-  exact (hev _ hc u hu x hx).trans ((mul_le_mul_of_nonneg_left hn hE.le).trans_eq (by ring))
+  exact (hev _ (hs.continuousOn.mono (fun y hy => hBT (Metric.ball_subset_closedBall hy))) u hu x hx).trans ((mul_le_mul_of_nonneg_left hn hE.le).trans_eq (by ring))
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualOutputSobolev
 

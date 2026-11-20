@@ -13,25 +13,28 @@ noncomputable section
 set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
-private lemma outside_prime_good (A : SArithmeticData F) (w : HeightOneSpectrum (𝓞 F))
-    (hw : w ∉ A.Sf) : ¬ (ResidueTrace.rationalPrimeBelow w).val ∣ 6 := by
+section
+
+variable (A : SArithmeticData F) (w : HeightOneSpectrum (𝓞 F)) (hw : w ∉ A.Sf)
+
+include hw in
+private lemma outside_prime_good : ¬ (ResidueTrace.rationalPrimeBelow w).val ∣ 6 := by
   intro hd
   apply hw
   apply A.above_six
   apply (Ideal.Quotient.eq_zero_iff_mem).mp
-  have hz := (CharP.cast_eq_zero_iff (𝓞 F ⧸ w.asIdeal)
-    (ringChar (𝓞 F ⧸ w.asIdeal)) 6).mpr hd
-  simpa only [map_ofNat, Nat.cast_ofNat] using hz
-private lemma outside_prime_ideal (A : SArithmeticData F) (w : HeightOneSpectrum (𝓞 F))
-    (hw : w ∉ A.Sf) : ∃ J : A.Exterior, J.val = w.asIdeal := by
+  simpa only [map_ofNat, Nat.cast_ofNat] using ((CharP.cast_eq_zero_iff (𝓞 F ⧸ w.asIdeal)
+    (ringChar (𝓞 F ⧸ w.asIdeal)) 6).mpr hd)
+include hw in
+private lemma outside_prime_ideal : ∃ J : A.Exterior, J.val = w.asIdeal := by
   refine ⟨⟨w.asIdeal, w.ne_bot, ?_⟩, rfl⟩
   apply (A.exterior_iff ⟨w.asIdeal, w.ne_bot⟩).mpr
   intro v hv
   apply w.isMaximal.coprime_of_ne v.isMaximal
   intro he
   exact hw (HeightOneSpectrum.asIdeal_injective he ▸ hv)
-private lemma outside_unit_index (A : SArithmeticData F) (w : HeightOneSpectrum (𝓞 F))
-    (hw : w ∉ A.Sf) (hS : A.ContainsTraceBadPlaces)
+include hw in
+private lemma outside_unit_index (hS : A.ContainsTraceBadPlaces)
     (b : (w.adicCompletion F)ˣ) (hb : Valued.v (b : w.adicCompletion F) = 1) :
     A.finiteWeilIndex w b = 1 := by
   obtain ⟨J,hJ⟩ := outside_prime_ideal A w hw
@@ -44,6 +47,8 @@ private lemma outside_unit_index (A : SArithmeticData F) (w : HeightOneSpectrum 
     rfl
   rw [← hu]
   exact A.finiteWeilIndex_exterior_unit J w hJ (outside_prime_good A w hw) (hS w hw) u
+
+end
 
 theorem weilSCorrection_diagonal_prime (A : SArithmeticData F)
     (σ : F →+* ℂ) (hS : A.ContainsTraceBadPlaces) (B : Subgroup A.V)

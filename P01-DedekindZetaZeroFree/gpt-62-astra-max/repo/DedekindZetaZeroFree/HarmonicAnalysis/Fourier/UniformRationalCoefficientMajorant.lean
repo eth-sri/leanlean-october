@@ -13,14 +13,16 @@ namespace DedekindZetaZeroFree.ThetaRationalFourierSummation
 open NumberField IsDedekindDomain MeasureTheory
 open scoped NumberField Classical
 
-def rationalFrequency (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F)) (ν : F)
+section
+
+variable (F : Type) [Field F] [NumberField F] (ψ : ContinuousAddChar (KPAdditiveQuotient F)) (ν : F)
+
+def rationalFrequency
     (q : KPAdditiveQuotient F) : ℂ :=
   ψ.toAddChar (QuotientAddGroup.mk
     (-(algebraMap F (KPAdeles F) ν * Quotient.out q)))
 
-theorem rationalFrequency_mk (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F)) (ν : F) (x : KPAdeles F) :
+theorem rationalFrequency_mk (x : KPAdeles F) :
     rationalFrequency F ψ ν (QuotientAddGroup.mk x) =
       ψ.toAddChar (QuotientAddGroup.mk (-(algebraMap F (KPAdeles F) ν * x))) := by
   unfold rationalFrequency
@@ -34,8 +36,7 @@ theorem rationalFrequency_mk (F : Type) [Field F] [NumberField F]
   rw [map_mul, hs]
   ring
 
-theorem rationalFrequency_add (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F)) (ν : F)
+theorem rationalFrequency_add
     (q r : KPAdditiveQuotient F) :
     rationalFrequency F ψ ν (q + r) =
       rationalFrequency F ψ ν q * rationalFrequency F ψ ν r := by
@@ -45,8 +46,7 @@ theorem rationalFrequency_add (F : Type) [Field F] [NumberField F]
     rationalFrequency_mk, mul_add, neg_add, QuotientAddGroup.mk_add,
     ψ.toAddChar.map_add_eq_mul]
 
-theorem rationalFrequency_continuous (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F)) (ν : F) :
+theorem rationalFrequency_continuous :
     Continuous (rationalFrequency F ψ ν) := by
   apply (QuotientAddGroup.isQuotientMap_mk
     (AdeleRing.principalSubgroup (𝓞 F) F)).continuous_iff.mpr
@@ -54,6 +54,8 @@ theorem rationalFrequency_continuous (F : Type) [Field F] [NumberField F]
   simp_rw [rationalFrequency_mk]
   exact ψ.continuous_toFun.comp (QuotientAddGroup.continuous_mk.comp
     ((continuous_const.mul continuous_id).neg))
+
+end
 
 theorem compactTorus_family_derivative_bound {d P : Type*} [Fintype d]
     [TopologicalSpace P] [CompactSpace P]
@@ -78,26 +80,22 @@ theorem compactTorus_family_derivative_bound {d P : Type*} [Fintype d]
       iteratedFDeriv ℝ k (compactTorusLift (f p)) (x + fun i => (m i : ℝ)) =
         iteratedFDeriv ℝ k (compactTorusLift (f p)) x := by
     rw [← iteratedFDeriv_comp_add_right, htranslate]
-  have hc : IsCompact ((Set.univ : Set P) ×ˢ Set.Icc (0 : d → ℝ) 1) :=
-    isCompact_univ.prod isCompact_Icc
   have hb : ∀ k : Fin (N + 1), ∃ C : ℝ, ∀ z ∈
-      ((Set.univ : Set P) ×ˢ Set.Icc (0 : d → ℝ) 1),
+      (Set.univ ×ˢ Set.Icc (0 : d → ℝ) 1),
       ‖iteratedFDeriv ℝ k (compactTorusLift (f z.1)) z.2‖ ≤ C := by
     intro k
-    obtain ⟨C, hC⟩ := hc.bddAbove_image
+    obtain ⟨C, hC⟩ := (isCompact_univ.prod isCompact_Icc).bddAbove_image
       ((hderivatives k (Nat.le_of_lt_succ k.isLt)).norm.continuousOn)
     exact ⟨C, fun z hz => hC (Set.mem_image_of_mem _ hz)⟩
   choose B hB using hb
   refine ⟨max 0 (Finset.univ.sup' Finset.univ_nonempty B), le_max_left _ _, ?_⟩
   intro p k hk x
-  let y : d → ℝ := fun i => Int.fract (x i)
-  have hy : y ∈ Set.Icc (0 : d → ℝ) 1 :=
-    ⟨fun i => Int.fract_nonneg _, fun i => (Int.fract_lt_one _).le⟩
+  let y := fun i => Int.fract (x i)
   have hx : x = y + fun i => (Int.floor (x i) : ℝ) := by
     funext i
     exact (Int.fract_add_floor (x i)).symm
   rw [hx, hjettranslate]
-  exact (hB ⟨k, Nat.lt_succ_of_le hk⟩ (p, y) ⟨Set.mem_univ _, hy⟩).trans
+  exact (hB ⟨k, Nat.lt_succ_of_le hk⟩ (p, y) ⟨Set.mem_univ _, (⟨fun i => Int.fract_nonneg _, fun i => (Int.fract_lt_one _).le⟩)⟩).trans
     ((Finset.le_sup' B (Finset.mem_univ _)).trans (le_max_right _ _))
 
 private theorem majorant_lattice_coordinates {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -136,8 +134,7 @@ private theorem majorant_lattice_coordinates {E : Type*} [NormedAddCommGroup E] 
       apply (AddCircle.coe_eq_zero_iff (1 : ℝ)).mpr
       exact ⟨n, by simpa [c, f, Module.Basis.equivFun_apply] using hn⟩
     · intro hx i
-      have hi : (c.equivFun x i : UnitAddCircle) = 0 := congrFun hx i
-      obtain ⟨n, hn⟩ := (AddCircle.coe_eq_zero_iff (1 : ℝ)).mp hi
+      obtain ⟨n, hn⟩ := (AddCircle.coe_eq_zero_iff (1 : ℝ)).mp (congrFun hx i)
       exact ⟨n, by simpa [Module.Basis.equivFun_apply] using hn⟩
   let e := QuotientAddGroup.liftEquiv L.toAddSubgroup hs hk
   have he : Continuous e := by
@@ -150,7 +147,7 @@ private theorem majorant_lattice_coordinates {E : Type*} [NormedAddCommGroup E] 
       QuotientAddGroup.continuous_mk (by
         intro z w hw
         rw [QuotientAddGroup.mk_add, (QuotientAddGroup.eq_zero_iff w).mpr hw, add_zero])
-    simpa only [Set.range_eq_univ.mpr QuotientAddGroup.mk_surjective] using hp
+    simpa using hp
   letI := hcomp
   exact ⟨c.equivFun.toContinuousLinearEquiv,
     { e with continuous_toFun := he
@@ -195,7 +192,7 @@ theorem exists_uniform_smooth_coordinates
     exact descend_mk K _ (hl p) _
   have hf (p : P) : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞)
       (fun x => f (p, smoothArchInclusion F x)) := by
-    simpa only [zero_add] using (hs.2.1 p).2.1 0
+    simpa using (hs.2.1 p).2.1 0
   have hjet (p : P) (n : ℕ) (x : mixedEmbedding.mixedSpace F) :
       iteratedFDeriv ℝ n (fun x => f (p, smoothArchInclusion F x)) x =
         smoothArchJet n (fun q => f (p, q)) (smoothArchInclusion F x) := by
@@ -205,16 +202,14 @@ theorem exists_uniform_smooth_coordinates
       let i : mixedEmbedding.mixedSpace F →+ KPAdeles F :=
         { toFun := fun x => ((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x, 0)
           map_zero' := by
-            change (_, _) = ((0, 0) : InfiniteAdeleRing F × _)
             exact Prod.ext (map_zero _) rfl
           map_add' := by
             intro x y
-            change (_, _) = ((_, _) + (_, _) : InfiniteAdeleRing F × _)
             exact Prod.ext (map_add _ x y) (zero_add _).symm }
       exact ((QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F)).comp i).map_add x y
     simp_rw [← hi]
-    simpa only [add_zero] using (iteratedFDeriv_comp_add_left n x 0
-      (f := fun x => f (p, smoothArchInclusion F x))).symm
+    simpa using (iteratedFDeriv_comp_add_left n x 0
+      ).symm
   have hinc : Continuous (smoothArchInclusion F) := by
     let m : InfiniteAdeleRing F ≃ₜ mixedEmbedding.mixedSpace F :=
       (Homeomorph.piEquivPiSubtypeProd (fun v : InfinitePlace F => InfinitePlace.IsReal v)
@@ -255,25 +250,25 @@ theorem rationalFrequency_injective (F : Type) [Field F] [NumberField F]
   by_contra hne
   obtain ⟨q, hq⟩ := hψ
   obtain ⟨x, rfl⟩ := QuotientAddGroup.mk_surjective q
-  have hd : ν - η ≠ 0 := sub_ne_zero.mpr hne
-  let y : KPAdeles F := -(algebraMap F (KPAdeles F) (ν - η)⁻¹ * x)
+  let algebraMap₀ := algebraMap F (KPAdeles F)
+  let y := -(algebraMap₀ (ν - η)⁻¹ * x)
   have hh := congrFun h (QuotientAddGroup.mk y)
   simp only [rationalFrequency_mk] at hh
   have hz : ψ.toAddChar (QuotientAddGroup.mk
-      (-(algebraMap F (KPAdeles F) (ν - η) * y))) = 1 := by
-    have he : -(algebraMap F (KPAdeles F) (ν - η) * y) =
-        -(algebraMap F (KPAdeles F) ν * y) -
-          -(algebraMap F (KPAdeles F) η * y) := by rw [map_sub]; ring
+      (-(algebraMap₀ (ν - η) * y))) = 1 := by
+    have he : -(algebraMap₀ (ν - η) * y) =
+        -(algebraMap₀ ν * y) -
+          -(algebraMap₀ η * y) := by rw [map_sub]; ring
     rw [he, QuotientAddGroup.mk_sub, ψ.toAddChar.map_sub_eq_div, hh]
     exact div_self (by
       intro hz
-      have hn := ψ.unitary (QuotientAddGroup.mk (-(algebraMap F (KPAdeles F) η * y)))
+      have hn := ψ.unitary (QuotientAddGroup.mk (-(algebraMap₀ η * y)))
       change ‖ψ.toAddChar _‖ = 1 at hn
       rw [hz, norm_zero] at hn
       norm_num at hn)
-  have he : -(algebraMap F (KPAdeles F) (ν - η) * y) = x := by
+  have he : -(algebraMap₀ (ν - η) * y) = x := by
     dsimp [y]
-    rw [mul_neg, neg_neg, ← mul_assoc, ← map_mul, mul_inv_cancel₀ hd, map_one, one_mul]
+    rw [mul_neg, neg_neg, ← mul_assoc, ← map_mul, mul_inv_cancel₀ (sub_ne_zero.mpr hne), map_one, one_mul]
   rw [he] at hz
   exact hq hz
 
@@ -302,18 +297,21 @@ local instance : Measure.IsAddHaarMeasure (volume : Measure UnitAddCircle) :=
 local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
   inferInstanceAs (IsProbabilityMeasure AddCircle.haarAddCircle)
 
-private theorem mFourier_add_point {d : Type*} [Fintype d]
-    (n : d → ℤ) (q r : UnitAddTorus d) :
+section
+
+variable {d : Type*} [Fintype d] (n : d → ℤ)
+
+private theorem mFourier_add_point (q r : UnitAddTorus d) :
     UnitAddTorus.mFourier n (q + r) =
       UnitAddTorus.mFourier n q * UnitAddTorus.mFourier n r := by
   simp only [UnitAddTorus.mFourier, ContinuousMap.coe_mk, Pi.add_apply,
     fourier_apply, smul_add, AddCircle.toCircle_add, Circle.coe_mul,
     Finset.prod_mul_distrib]
 
-private theorem mFourier_norm_point {d : Type*} [Fintype d]
-    (n : d → ℤ) (q : UnitAddTorus d) : ‖UnitAddTorus.mFourier n q‖ = 1 := by
-  simp only [UnitAddTorus.mFourier, ContinuousMap.coe_mk, fourier_apply,
-    norm_prod, Circle.norm_coe, Finset.prod_const_one]
+private theorem mFourier_norm_point (q : UnitAddTorus d) : ‖UnitAddTorus.mFourier n q‖ = 1 := by
+  simp [UnitAddTorus.mFourier]
+
+end
 
 theorem uniform_majorant_partial_matching {I J P : Type*}
     (R : I → J → Prop) (hunique : ∀ i j k, R i j → R i k → j = k)
@@ -322,23 +320,18 @@ theorem uniform_majorant_partial_matching {I J P : Type*}
     ∃ B : J → ℝ, Summable B ∧ (∀ j, 0 ≤ B j) ∧
       ∀ p j, ‖∑' i, if R i j then c p i else 0‖ ≤ B j := by
   classical
-  let g : I → Option J := fun i => if h : ∃ j, R i j then some h.choose else none
+  let g := fun i => if h : ∃ j, R i j then some h.choose else none
   have hg (i : I) (j : J) : g i = some j ↔ R i j := by
     dsimp [g]
     split_ifs with h
     · constructor
-      · intro he
-        have hh := Option.some.inj he
-        exact hh ▸ h.choose_spec
+      · grind [Option.some.inj]
       · intro hr
         exact congrArg some (hunique i _ _ h.choose_spec hr)
-    · simp only [Option.noConfusion, false_iff]
-      exact fun hr => h ⟨j, hr⟩
+    · simp_all [Option.noConfusion]
   have hp := (summable_partition (show 0 ≤ b from hpos)
-    (s := fun j : Option J => g ⁻¹' {j}) (by
-      intro i
-      exact ⟨g i, rfl, fun j hj => hj.symm⟩)).mp hb
-  let B : J → ℝ := fun j => ∑' i : {i // g i = some j}, b i
+    (s := fun j : Option J => g ⁻¹' {j}) (fun i => ⟨g i, rfl, fun j hj => hj.symm⟩)).mp hb
+  let B := fun j => ∑' i : {i // g i = some j}, b i
   refine ⟨B, hp.2.comp_injective (Option.some_injective J), ?_, ?_⟩
   · intro j
     exact tsum_nonneg (fun _ => hpos _)
@@ -384,8 +377,8 @@ theorem rational_fourier_uniform_majorant
   let d := Fin (Module.finrank ℚ F)
   let π : KPAdditiveQuotient F →+ UnitAddTorus d :=
     ThetaAdditiveFourier.FiniteLevelDescent.coordinateMap K e
-  have hπ : Continuous π := e.continuous.comp QuotientAddGroup.continuous_mk
-  have hπsur : Function.Surjective π := e.surjective.comp QuotientAddGroup.mk_surjective
+  have hπ := e.continuous.comp QuotientAddGroup.continuous_mk
+  have hπsur := e.surjective.comp QuotientAddGroup.mk_surjective
   let u : P → C(UnitAddTorus d, ℂ) := fun p =>
     ⟨ThetaAdditiveFourier.FiniteLevelDescent.torusFamily K e f p,
       (ThetaAdditiveFourier.FiniteLevelDescent.continuous_torusFamily K e f hlevel

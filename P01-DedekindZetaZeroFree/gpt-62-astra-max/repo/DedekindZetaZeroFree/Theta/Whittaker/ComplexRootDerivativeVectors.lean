@@ -35,31 +35,29 @@ private theorem unipotent_affine (z : ℂ) (t : ℝ) :
   ext i j
   fin_cases i <;> fin_cases j <;> simp [upperUnipotent, Matrix.one_apply, Complex.real_smul, Matrix.smul_apply]
 private theorem invertible_open : IsOpen {p : Mat × ℂ | p.1.det ≠ 0} := by
-  have hc : Continuous (fun p : Mat × ℂ => p.1.det) := by
-    simp only [Matrix.det_fin_two]; fun_prop
-  exact isOpen_ne_fun hc continuous_const
+  refine isOpen_ne_fun ?_ continuous_const
+  simp only [Matrix.det_fin_two]; fun_prop
 private theorem smooth_slice (F : Mat × ℂ → ℂ)
     (hF : ContDiffOn ℝ ∞ F {p | p.1.det ≠ 0}) (X : Mat) :
     ContDiff ℝ ∞ (fun x : ℂ => deriv (fun t : ℝ => F (1 + t • X, x)) 0) := by
   have hd := hF.fderiv_of_isOpen invertible_open (m := ∞) (by simp)
-  have hi : ContDiff ℝ ∞ (fun x : ℂ => ((1 : Mat), x)) := contDiff_const.prodMk contDiff_id
   have hm : ∀ x : ℂ, ((1 : Mat), x) ∈ {p : Mat × ℂ | p.1.det ≠ 0} := by
     intro x; simp
   have hh : ContDiff ℝ ∞ (fun x : ℂ => fderiv ℝ F (1,x) (X,0)) :=
-    (hd.comp_contDiff hi hm).clm_apply contDiff_const
+    (hd.comp_contDiff (contDiff_const.prodMk contDiff_id) hm).clm_apply contDiff_const
   convert hh using 1
   funext x
-  have hx : DifferentiableAt ℝ F ((1 : Mat), x) :=
-    (hF.contDiffAt (invertible_open.mem_nhds (hm x))).differentiableAt (by simp)
-  have ht : HasDerivAt (fun t : ℝ => ((1 : Mat) + t • X, x)) (X, 0) 0 := by
-    apply HasDerivAt.prodMk
-    · convert ((hasDerivAt_id (0 : ℝ)).smul_const X).const_add (1 : Mat) using 1 <;> simp
-    · exact hasDerivAt_const (0 : ℝ) x
-  exact (hx.hasFDerivAt.comp_hasDerivAt_of_eq 0 ht (by simp)).deriv
+  refine (((hF.contDiffAt (invertible_open.mem_nhds (hm x))).differentiableAt (by simp)).hasFDerivAt.comp_hasDerivAt_of_eq 0 ?_ (by simp)).deriv
+  apply HasDerivAt.prodMk
+  · convert ((hasDerivAt_id (0 : ℝ)).smul_const X).const_add (1 : Mat) using 1 <;> simp
+  · exact hasDerivAt_const (0 : ℝ) x
 
-theorem realUpperRootDerivativeFunction_mem (β : ℂˣ) (z : ℂ) (h : Theta β) :
+section
+
+variable (β : ℂˣ) (z : ℂ) (h : Theta β)
+
+theorem realUpperRootDerivativeFunction_mem :
     realUpperRootDerivativeFunction β z h ∈ principalSeriesSubmodule negativeParameter := by
-  change HasCovariance negativeParameter _ ∧ ContDiff ℝ ∞ (openCoordinate _) ∧ ContDiff ℝ ∞ (infinityCoordinate _)
   refine ⟨?_, ?_, ?_⟩
   · intro a d b g
     unfold realUpperRootDerivativeFunction
@@ -71,8 +69,7 @@ theorem realUpperRootDerivativeFunction_mem (β : ℂˣ) (z : ℂ) (h : Theta β
       rw [mul_assoc]
       exact h.val.property.1 a d b _
     rw [he, deriv_const_mul_field]
-  · have hh := smooth_slice _ (image_smooth β h).1 !![0,z;0,0]
-    convert hh using 1
+  · convert (smooth_slice _ (image_smooth β h).1 !![0,z;0,0]) using 1
     funext x
     unfold openCoordinate realUpperRootDerivativeFunction
     congr 1
@@ -85,8 +82,7 @@ theorem realUpperRootDerivativeFunction_mem (β : ℂˣ) (z : ℂ) (h : Theta β
     apply congrArg (h : PrincipalSeries negativeParameter)
     apply Units.ext
     rfl
-  · have hh := smooth_slice _ (image_smooth β h).2 !![0,z;0,0]
-    convert hh using 1
+  · convert (smooth_slice _ (image_smooth β h).2 !![0,z;0,0]) using 1
     funext x
     unfold infinityCoordinate realUpperRootDerivativeFunction
     congr 1
@@ -100,18 +96,20 @@ theorem realUpperRootDerivativeFunction_mem (β : ℂˣ) (z : ℂ) (h : Theta β
     apply Units.ext
     rfl
 
-noncomputable def ambientRealUpperRootDerivative (β : ℂˣ) (z : ℂ) (h : Theta β) :
+noncomputable def ambientRealUpperRootDerivative :
     PrincipalSeries negativeParameter :=
   ⟨realUpperRootDerivativeFunction β z h, realUpperRootDerivativeFunction_mem β z h⟩
 
-theorem ambientRealUpperRootDerivative_mem_image (β : ℂˣ) (z : ℂ) (h : Theta β) :
+theorem ambientRealUpperRootDerivative_mem_image :
     ambientRealUpperRootDerivative β z h ∈ imageSubmodule β := by
   rw [imageSubmodule_eq_top]
   trivial
 
-noncomputable def dPiRealUpperRoot (β : ℂˣ) (z : ℂ) (h : Theta β) : Theta β :=
+noncomputable def dPiRealUpperRoot : Theta β :=
   ⟨ambientRealUpperRootDerivative β z h,
     ambientRealUpperRootDerivative_mem_image β z h⟩
+
+end
 
 noncomputable def dPiComplexUpperRoot (β : ℂˣ) (X : ComplexifiedUpperRoot)
     (h : Theta β) : Theta β :=
@@ -184,10 +182,8 @@ theorem whittaker_upperRootOrbit_hasDerivAt (c : ℝ) (β : ℂˣ) (hβ : (β : 
     congr 1
     simp [Complex.mul_re, Complex.mul_im]
     ring
-  have ht := ((Complex.ofRealCLM.hasDerivAt (x := (0 : ℝ))).mul_const
-    (Complex.I * (c : ℂ) * (((y : ℂ) * z).re : ℂ))).cexp
-  have hmul := ht.mul_const (whittakerValue β h y)
-  convert hmul using 1
+  convert ((((Complex.ofRealCLM.hasDerivAt).mul_const
+    (Complex.I * (c : ℂ) * (((y : ℂ) * z).re : ℂ))).cexp).mul_const (whittakerValue β h y)) using 1
   · funext t
     rw [congrFun he t]
     rfl
@@ -201,9 +197,7 @@ noncomputable def whittakerCLM (β : ℂˣ) (y : ℂˣ) : Theta β →L[ℂ] ℂ
         apply Subtype.ext
         apply Subtype.ext
         rfl
-      map_smul' := by
-        intro a h
-        exact imageAction_smul β _ a h }
+      map_smul' := fun a h => imageAction_smul β _ a h}
   exact (thetaJacquetFunctional β).comp
     { toLinearMap := T
       cont := (imageAction_continuous β).comp
@@ -218,7 +212,6 @@ theorem whittaker_realUpperRootDerivative_of_tendsto (c : ℝ)
       Complex.I * (c : ℂ) * (((y : ℂ) * z).re : ℂ) * whittakerValue β h y := by
   let L := whittakerCLM β y
   have hl := (L.continuous.tendsto _).comp hd
-  have hs := (whittaker_upperRootOrbit_hasDerivAt c β hβ z h y).tendsto_slope
   have he : (fun t : ℝ => L ((t⁻¹ : ℂ) •
       (imageAction β (Matrix.ProjGenLinGroup.mk (upperUnipotent ((t : ℂ) * z))) h - h))) =
       slope (fun t : ℝ => whittakerValue β
@@ -238,23 +231,19 @@ theorem whittaker_realUpperRootDerivative_of_tendsto (c : ℝ)
         (upperUnipotent ((0 : ℂ) * z))) h) y)
     simp only [sub_zero, Complex.real_smul, Complex.ofReal_inv]
     congr 2
-    change whittakerValue β h y = whittakerValue β
-      (imageAction β (Matrix.ProjGenLinGroup.mk (upperUnipotent ((0 : ℂ) * z))) h) y
     rw [whittakerValue_upperUnipotent]
     simp [character]
   change Filter.Tendsto (fun t : ℝ => L ((t⁻¹ : ℂ) •
     (imageAction β (Matrix.ProjGenLinGroup.mk (upperUnipotent ((t : ℂ) * z))) h - h)))
     (nhdsWithin 0 {0}ᶜ) (nhds (L (dPiRealUpperRoot β z h))) at hl
   rw [he] at hl
-  exact tendsto_nhds_unique hl hs
+  exact tendsto_nhds_unique hl ((whittaker_upperRootOrbit_hasDerivAt c β hβ z h y).tendsto_slope)
 
 private theorem realUpperRootDerivative_hasDerivAt (β : ℂˣ) (z : ℂ)
     (h : Theta β) (g : ComplexGL2) :
     HasDerivAt (fun t : ℝ => (h : PrincipalSeries negativeParameter)
       (g * upperUnipotent ((t : ℂ) * z)))
       (ambientRealUpperRootDerivative β z h g) 0 := by
-  have hf := ((principalSeries_mem_iff negativeParameter
-    (h : PrincipalSeries negativeParameter)).mp h.val.property).2
   have hM : ContDiff ℝ ∞ (fun t : ℝ =>
       (g : Mat) * ((1 : Mat) + t • !![0,z;0,0])) := by
     change ContDiff ℝ ∞ (fun t : ℝ => (fun i j =>
@@ -269,7 +258,8 @@ private theorem realUpperRootDerivative_hasDerivAt (β : ℂˣ) (z : ℂ)
     intro t
     rw [← unipotent_affine, ← Matrix.GeneralLinearGroup.coe_mul]
     exact Matrix.GeneralLinearGroup.det_ne_zero _
-  have hc := hf.comp_contDiff hM hm
+  have hc := (((principalSeries_mem_iff negativeParameter
+    h).mp h.val.property).2).comp_contDiff hM hm
   have he : (fun t : ℝ => matrixFunction (h : PrincipalSeries negativeParameter)
       ((g : Mat) * ((1 : Mat) + t • !![0,z;0,0]))) =
       fun t : ℝ => (h : PrincipalSeries negativeParameter)
@@ -281,15 +271,15 @@ private theorem realUpperRootDerivative_hasDerivAt (β : ℂˣ) (z : ℂ)
     apply congrArg (h : PrincipalSeries negativeParameter)
     apply Units.ext
     rfl
-  change ContDiff ℝ ∞ (fun t : ℝ => matrixFunction (h : PrincipalSeries negativeParameter)
+  change ContDiff ℝ ∞ (fun t : ℝ => matrixFunction h
     ((g : Mat) * ((1 : Mat) + t • !![0,z;0,0]))) at hc
   rw [he] at hc
-  have hc' : ContDiff ℝ ∞ (fun t : ℝ => (h : PrincipalSeries negativeParameter)
-    (g * upperUnipotent ((t : ℂ) * z))) := hc
-  exact (hc'.differentiable (by simp) (0 : ℝ)).hasDerivAt
+  exact (hc.differentiable (by simp) (0 : ℝ)).hasDerivAt
 
-theorem whittaker_realUpperRootDerivative (c : ℝ) (hc : 0 < c)
-    (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) (z : ℂ) (h : Theta β) (y : ℂˣ) :
+variable (c : ℝ) (hc : 0 < c) (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ))
+
+include hc hβ in
+theorem whittaker_realUpperRootDerivative (z : ℂ) (h : Theta β) (y : ℂˣ) :
     whittakerValue β (dPiRealUpperRoot β z h) y =
       Complex.I * (c : ℂ) * (((y : ℂ) * z).re : ℂ) * whittakerValue β h y := by
   apply whittaker_realUpperRootDerivative_of_tendsto c β hβ z h y
@@ -299,8 +289,8 @@ theorem whittaker_realUpperRootDerivative (c : ℝ) (hc : 0 < c)
     β h z (ambientRealUpperRootDerivative β z h)
     (realUpperRootDerivative_hasDerivAt β z h)
 
-theorem whittaker_complexUpperRootDerivatives (c : ℝ) (hc : 0 < c)
-    (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) (h : Theta β) (y : ℂˣ) :
+include hc hβ in
+theorem whittaker_complexUpperRootDerivatives (h : Theta β) (y : ℂˣ) :
     whittakerValue β (dPiComplexUpperRoot β Z_plus h) y =
         (Complex.I * (c : ℂ) / 2) * (y : ℂ) * whittakerValue β h y ∧
     whittakerValue β (dPiComplexUpperRoot β Z_minus h) y =
@@ -315,15 +305,15 @@ theorem whittaker_complexUpperRootDerivatives (c : ℝ) (hc : 0 < c)
   constructor <;> apply Complex.ext <;>
     simp [Complex.mul_re, Complex.mul_im, Complex.div_re, Complex.div_im] <;> ring
 
-theorem whittaker_vZero (c : ℝ) (hc : 0 < c)
-    (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) (y : ℂˣ) :
+include hc hβ in
+theorem whittaker_vZero (y : ℂˣ) :
     whittakerValue β (vZero c β) y =
       ((radius y * besselKThird (c * radius y) : ℝ) : ℂ) := by
   rw [vZero, whittakerValue_smul]
   unfold whittakerValue
   rw [← intertwinerToImage_equivariant, thetaJacquetFunctional_intertwiner,
     jacquet_spherical_diagonal_eq_bessel c hc β hβ y]
-  have hb : (besselCoefficient c : ℂ) ≠ 0 :=
+  have hb :=
     Complex.ofReal_ne_zero.mpr (ne_of_gt (besselCoefficient_pos c hc))
   simp only [Complex.ofReal_mul, radius]
   field_simp

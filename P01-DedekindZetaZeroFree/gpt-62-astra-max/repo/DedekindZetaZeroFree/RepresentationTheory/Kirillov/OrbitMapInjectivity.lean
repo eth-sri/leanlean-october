@@ -61,22 +61,23 @@ def rawOrbitMap : V →ₗ[ℂ] (P F ζ hζ w → J F ζ hζ w ρ) where
 def ordinaryKernelRepresentation :
     Representation ℂ (P F ζ hζ w) (ordinaryKernel F ζ hζ w ρ) :=
   Representation.subrepresentation (ρ.comp (P F ζ hζ w).subtype)
-    (ordinaryKernel F ζ hζ w ρ) (by
-      intro p v hv
-      exact ordinaryKernel_borel_stable F ζ hζ w ρ p v hv)
+    (ordinaryKernel F ζ hζ w ρ) (fun p v hv => ordinaryKernel_borel_stable F ζ hζ w ρ p v hv)
 
 variable (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F w m)
   (hρ : IsSmooth F ζ hζ w m ρ)
   (hgen : KPLocalSmoothRepresentation.genuine F ζ hζ w ρ)
 
-private theorem borel_conjugates_root (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F w m) (p : P F ζ hζ w) (x : K F w) :
+section
+
+variable (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F w m) (p : P F ζ hζ w)
+
+include hm in
+private theorem borel_conjugates_root (x : K F w) :
     p.val * KPLocalSmoothRepresentation.upperRoot F ζ hζ w (Multiplicative.ofAdd x) *
       p.val⁻¹ = KPLocalSmoothRepresentation.upperRoot F ζ hζ w
         (Multiplicative.ofAdd ((slope F ζ hζ w p : K F w) * x)) := by
   obtain ⟨⟨a, b⟩, hp, _⟩ := KPLocalInductionJacquetReciprocity.borel_factorization F ζ hζ w p
-  let aa : P F ζ hζ w := KPJacquetClosedCellBump.torusInBorel F ζ hζ w m hm a
-  have hps : p = aa * n F ζ hζ w b.toAdd := Subtype.ext hp
+  have hps : p = (KPJacquetClosedCellBump.torusInBorel F ζ hζ w m hm a) * n F ζ hζ w b.toAdd := Subtype.ext hp
   have hs : slope F ζ hζ w p = KPJacquetOpenCell.r F ζ hζ w m hm a := by
     rw [hps, map_mul]
     have hn := n_mem_H F ζ hζ w b.toAdd
@@ -84,17 +85,16 @@ private theorem borel_conjugates_root (m : ℕ)
     rw [hn, mul_one]
     rfl
   rw [hs, hp]
-  have hc := (KPLocalSmoothRepresentation.upperRoot F ζ hζ w).map_mul b
-    (Multiplicative.ofAdd x)
-  have hc' := (KPLocalSmoothRepresentation.upperRoot F ζ hζ w).map_mul
-    (Multiplicative.ofAdd x) b
+  let upperRoot₀ := KPLocalSmoothRepresentation.upperRoot F ζ hζ w (Multiplicative.ofAdd x)
   have hcomm : KPLocalSmoothRepresentation.upperRoot F ζ hζ w b *
-      KPLocalSmoothRepresentation.upperRoot F ζ hζ w (Multiplicative.ofAdd x) =
-      KPLocalSmoothRepresentation.upperRoot F ζ hζ w (Multiplicative.ofAdd x) *
+      upperRoot₀ =
+      upperRoot₀ *
         KPLocalSmoothRepresentation.upperRoot F ζ hζ w b := by
-    rw [← hc, ← hc', mul_comm]
+    rw [← ((KPLocalSmoothRepresentation.upperRoot F ζ hζ w).map_mul b
+      (Multiplicative.ofAdd x)), ← ((KPLocalSmoothRepresentation.upperRoot F ζ hζ w).map_mul
+      (Multiplicative.ofAdd x) b), mul_comm]
   calc
-    _ = a.val * KPLocalSmoothRepresentation.upperRoot F ζ hζ w (Multiplicative.ofAdd x) *
+    _ = a.val * upperRoot₀ *
         a.val⁻¹ := by
       dsimp only [Prod.fst, Prod.snd]
       rw [mul_inv_rev, ← mul_assoc, mul_assoc a.val
@@ -102,8 +102,7 @@ private theorem borel_conjugates_root (m : ℕ)
       group
     _ = _ := KPJacquetOpenCell.torus_conjugates_root F ζ hζ w m hm a x
 
-private def quotientTransport (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F w m) (p : P F ζ hζ w)
+private def quotientTransport
     (t s : K F w) (h : t * (slope F ζ hζ w p : K F w) = s) :
     Fiber F ζ hζ w ρ s →ₗ[ℂ] Fiber F ζ hζ w ρ t :=
   rootCoinvariantsLift ρ (KPLocalSmoothRepresentation.upperRoot F ζ hζ w)
@@ -112,18 +111,19 @@ private def quotientTransport (m : ℕ)
       change quotientMap F ζ hζ w ρ t (ρ p.val
         (ρ (KPLocalSmoothRepresentation.upperRoot F ζ hζ w x) v)) = _
       have hc := borel_conjugates_root F ζ hζ w m hm p x.toAdd
+      let ofAdd₀ := Multiplicative.ofAdd ((slope F ζ hζ w p : K F w) * x.toAdd)
       have hc' : p.val * KPLocalSmoothRepresentation.upperRoot F ζ hζ w x =
           KPLocalSmoothRepresentation.upperRoot F ζ hζ w
-            (Multiplicative.ofAdd ((slope F ζ hζ w p : K F w) * x.toAdd)) * p.val := by
+            (ofAdd₀) * p.val := by
         rw [← hc, mul_assoc, inv_mul_cancel, mul_one]
         rfl
       rw [← Module.End.mul_apply, ← map_mul, hc', map_mul, Module.End.mul_apply]
       change rootCoinvariantsMk ρ (KPLocalSmoothRepresentation.upperRoot F ζ hζ w)
         (frequencyCharacter F w t) (ρ (KPLocalSmoothRepresentation.upperRoot F ζ hζ w
-          (Multiplicative.ofAdd ((slope F ζ hζ w p : K F w) * x.toAdd))) (ρ p.val v)) = _
+          (ofAdd₀)) (ρ p.val v)) = _
       rw [rootCoinvariantsMk_equivariant]
       have he : frequencyCharacter F w t
-          (Multiplicative.ofAdd ((slope F ζ hζ w p : K F w) * x.toAdd)) =
+          (ofAdd₀) =
           frequencyCharacter F w s x := by
         change Circle.toUnits (localFiniteCharacter F w
           (t * ((slope F ζ hζ w p : K F w) * x.toAdd))) =
@@ -132,8 +132,8 @@ private def quotientTransport (m : ℕ)
       rw [he]
       rfl⟩
 
-private theorem quotient_orbit_zero_iff (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F w m) (p : P F ζ hζ w) (v : V) :
+include hm in
+private theorem quotient_orbit_zero_iff (v : V) :
     quotientMap F ζ hζ w ρ 1 (ρ p.val v) = 0 ↔
       quotientMap F ζ hζ w ρ (slope F ζ hζ w p : K F w) v = 0 := by
   constructor
@@ -149,14 +149,15 @@ private theorem quotient_orbit_zero_iff (m : ℕ)
     have hh := congrArg L hv
     change quotientMap F ζ hζ w ρ (slope F ζ hζ w p : K F w)
       (ρ p⁻¹.val (ρ p.val v)) = L 0 at hh
-    simpa only [Subgroup.coe_inv, ← Module.End.mul_apply, ← map_mul,
-      inv_mul_cancel, map_one, Module.End.one_apply, map_zero] using hh
+    simpa using hh
   · intro hv
     let L := quotientTransport F ζ hζ w ρ m hm p 1
       (slope F ζ hζ w p : K F w) (one_mul _)
     have hh := congrArg L hv
     change quotientMap F ζ hζ w ρ 1 (ρ p.val v) = L 0 at hh
-    simpa only [map_zero] using hh
+    simpa using hh
+
+end
 
 include hgen in
 
@@ -190,7 +191,6 @@ def orbitSectionMap (hm : KPLocalChartTopology.MatrixChartDepth F w m)
     toFun := fun v => ⟨⟨⟨rawOrbitMap F ζ hζ w ρ v.val, by
       intro h p
       obtain ⟨⟨b, e⟩, he, _⟩ := H_decomposition F ζ hζ w h
-      change rawOrbitMap F ζ hζ w ρ v.val (h.val * p) = _
       have hc := rawOrbitMap_covariance F ζ hζ w ρ hgen v.val b e p
       rw [← he] at hc
       rw [hc]
@@ -220,7 +220,7 @@ def orbitSectionMap (hm : KPLocalChartTopology.MatrixChartDepth F w m)
       rintro q ⟨p, hp, rfl⟩
       change e (Quotient.mk (QuotientGroup.rightRel (H F ζ hζ w)) p) ∈ C
       rw [quotientHomeomorph_mk]
-      have hp' : quotientMap F ζ hζ w ρ 1 (ρ p.val v.val) ≠ 0 := hp
+      have hp' := hp
       have ht : quotientMap F ζ hζ w ρ (slope F ζ hζ w p : K F w) v.val ≠ 0 := by
         intro hz
         exact hp' ((quotient_orbit_zero_iff F ζ hζ w ρ m hm p v.val).mpr hz)
@@ -242,7 +242,6 @@ def orbitSectionMap (hm : KPLocalChartTopology.MatrixChartDepth F w m)
       apply Subtype.ext
       apply Subtype.ext
       funext p
-      change rawOrbitMap F ζ hζ w ρ (c • a.val) p = _
       exact congrFun ((rawOrbitMap F ζ hζ w ρ).map_smul c a.val) p }
 
 @[simp] theorem orbitSectionMap_value (v : ordinaryKernel F ζ hζ w ρ)
@@ -266,7 +265,7 @@ theorem orbitSectionMap_intertwines (p : P F ζ hζ w)
       (rightAction F ζ hζ w m hm (ψ F w) (J F ζ hζ w ρ) p
         (orbitSectionMap F ζ hζ w ρ m hm hρ hgen v)) a
   rw [rightAction_apply, orbitSectionMap_value]
-  simp only [Subgroup.coe_mul, map_mul, Module.End.mul_apply]
+  simp
 
 set_option maxHeartbeats 1500000 in
 
@@ -283,7 +282,7 @@ theorem orbitSectionMap_injective :
   · subst t
     rw [map_sub, (quotientMap_zero_eq_zero_iff F ζ hζ w ρ a.val).mpr a.property,
       (quotientMap_zero_eq_zero_iff F ζ hζ w ρ b.val).mpr b.property, sub_self]
-  · let c : (K F w)ˣ := Units.mk0 t ht
+  · let c := Units.mk0 t ht
     obtain ⟨q, hq⟩ := (quotientHomeomorph F ζ hζ w m hm).surjective c
     obtain ⟨p, rfl⟩ := Quotient.exists_rep q
     have hp : slope F ζ hζ w p = c := by
@@ -303,7 +302,7 @@ theorem orbitSectionMap_injective :
         (orbitSectionMap F ζ hζ w ρ m hm hρ hgen v) 1 =
       quotientMap F ζ hζ w ρ 1 v.val := by
   rw [orbitSectionMap_value]
-  simp only [Subgroup.coe_one, map_one, Module.End.one_apply]
+  simp
 
 def frequencyCoset (u : ℤ) (t₀ : (K F w)ˣ) : Set (K F w) :=
   {t | t - (t₀ : K F w) ∈ localFiniteAnnihilator F w (finiteCompletionBall F w u)}
@@ -323,7 +322,9 @@ private theorem quotientMap_projector_indicator (u : ℤ) (t s : K F w) (v : V) 
       (projector F ζ hζ w ρ m hm hρ u s v) = 0 at hh
     rw [hh, map_zero]
 
-theorem rawOrbitMap_projector_chart (u : ℤ) (t₀ : (K F w)ˣ)
+variable (u : ℤ) (t₀ : (K F w)ˣ)
+
+theorem rawOrbitMap_projector_chart
     (v : V) (c : LocalChart F ζ hζ w m) (t : c.ball.domain) :
     rawOrbitMap F ζ hζ w ρ (projector F ζ hζ w ρ m hm hρ u (t₀ : K F w) v)
         (c.lift t) =
@@ -331,15 +332,12 @@ theorem rawOrbitMap_projector_chart (u : ℤ) (t₀ : (K F w)ˣ)
         rawOrbitMap F ζ hζ w ρ v (c.lift t) else 0 := by
   classical
   let p := c.lift t
-  have hp : (slope F ζ hζ w p : K F w) = (t.val : K F w) :=
-    congrArg (fun a : (K F w)ˣ => (a : K F w)) (c.slope_lift t)
-  let L := quotientTransport F ζ hζ w ρ m hm p 1 (t.val : K F w)
-    (by rw [one_mul, hp])
-  have hh := congrArg L
+  have hh := congrArg (quotientTransport F ζ hζ w ρ m hm p 1 t.val
+    (by rw [one_mul, (congrArg (fun a : (K F w)ˣ => a) (c.slope_lift t))]))
     (quotientMap_projector_indicator F ζ hζ w ρ m hm hρ u
-      (t.val : K F w) (t₀ : K F w) v)
+      t.val t₀ v)
   change rawOrbitMap F ζ hζ w ρ
-    (projector F ζ hζ w ρ m hm hρ u (t₀ : K F w) v) p = _ at hh
+    (projector F ζ hζ w ρ m hm hρ u t₀ v) p = _ at hh
   change _ = if (t.val : K F w) - (t₀ : K F w) ∈
       localFiniteAnnihilator F w (finiteCompletionBall F w u) then _ else _
   split_ifs with h
@@ -348,7 +346,7 @@ theorem rawOrbitMap_projector_chart (u : ℤ) (t₀ : (K F w)ˣ)
   · rw [if_neg h, map_zero] at hh
     exact hh
 
-theorem projector_mem_ordinaryKernel (u : ℤ) (t₀ : (K F w)ˣ)
+theorem projector_mem_ordinaryKernel
     (hzero : (0 : K F w) ∉ frequencyCoset F w u t₀) (v : V) :
     projector F ζ hζ w ρ m hm hρ u (t₀ : K F w) v ∈
       ordinaryKernel F ζ hζ w ρ := by
@@ -357,48 +355,49 @@ theorem projector_mem_ordinaryKernel (u : ℤ) (t₀ : (K F w)ˣ)
       localFiniteAnnihilator F w (finiteCompletionBall F w u) := by
     simpa only [frequencyCoset, Set.mem_setOf_eq, zero_sub] using hzero
   have hx : ∃ x ∈ finiteCompletionBall F w u,
-      localFiniteCharacter F w (x * -(t₀ : K F w)) ≠ 1 := by
+      localFiniteCharacter F w (x * -t₀) ≠ 1 := by
     classical
     simpa only [mem_localFiniteAnnihilator, not_forall, exists_prop] using ht
   obtain ⟨x, hx, hχ⟩ := hx
   have hχ' : (localFiniteCharacter F w ((t₀ : K F w) * x) : ℂ) ≠ 1 := by
     intro he
     apply hχ
-    have he' : localFiniteCharacter F w ((t₀ : K F w) * x) = 1 := Subtype.ext he
+    have he' : localFiniteCharacter F w (t₀ * x) = 1 := Subtype.ext he
     rw [mul_neg, mul_comm x, AddChar.map_neg_eq_inv, he', inv_one]
-  have he := congrArg (quotientMap F ζ hζ w ρ 0)
-    (projector_eigen F ζ hζ w ρ m hm hρ u (t₀ : K F w) x hx v)
-  change quotientMap F ζ hζ w ρ 0
+  let quotientMap₀ := quotientMap F ζ hζ w ρ 0
+  have he := congrArg (quotientMap₀)
+    (projector_eigen F ζ hζ w ρ m hm hρ u t₀ x hx v)
+  let projector₀ := projector F ζ hζ w ρ m hm hρ u t₀ v
+  change quotientMap₀
       (ρ (KPLocalSmoothRepresentation.upperRoot F ζ hζ w (Multiplicative.ofAdd x))
-        (projector F ζ hζ w ρ m hm hρ u (t₀ : K F w) v)) = _ at he
+        (projector₀)) = _ at he
   have hq := rootCoinvariantsMk_equivariant ρ
     (KPLocalSmoothRepresentation.upperRoot F ζ hζ w) (frequencyCharacter F w 0)
-    (Multiplicative.ofAdd x) (projector F ζ hζ w ρ m hm hρ u (t₀ : K F w) v)
-  change quotientMap F ζ hζ w ρ 0 _ = _ at hq
+    (Multiplicative.ofAdd x) (projector₀)
+  change quotientMap₀ _ = _ at hq
   rw [hq, map_smul] at he
   have hphase : (frequencyCharacter F w 0 (Multiplicative.ofAdd x) : ℂ) = 1 := by
     change (localFiniteCharacter F w (0 * x) : ℂ) = 1
     rw [zero_mul, AddChar.map_zero_eq_one]
     rfl
   rw [hphase, one_smul] at he
-  have hz : ((localFiniteCharacter F w ((t₀ : K F w) * x) : ℂ) - 1) •
-      quotientMap F ζ hζ w ρ 0
-        (projector F ζ hζ w ρ m hm hρ u (t₀ : K F w) v) = 0 := by
+  have hz : ((localFiniteCharacter F w (t₀ * x) : ℂ) - 1) •
+      quotientMap₀
+        (projector₀) = 0 := by
     rw [sub_smul, one_smul, ← he]
     exact sub_self _
   exact (smul_eq_zero.mp hz).resolve_left (sub_ne_zero.mpr hχ')
 
-theorem projector_preserves_ordinaryKernel (u : ℤ) (t₀ : (K F w)ˣ)
+theorem projector_preserves_ordinaryKernel
     (v : ordinaryKernel F ζ hζ w ρ) :
     projector F ζ hζ w ρ m hm hρ u (t₀ : K F w) v.val ∈
       ordinaryKernel F ζ hζ w ρ := by
   apply (quotientMap_zero_eq_zero_iff F ζ hζ w ρ _).mp
   rw [quotientMap_projector_indicator F ζ hζ w ρ m hm hρ]
-  have hv := (quotientMap_zero_eq_zero_iff F ζ hζ w ρ v.val).mpr v.property
-  rw [hv]
+  rw [((quotientMap_zero_eq_zero_iff F ζ hζ w ρ v.val).mpr v.property)]
   split_ifs <;> rfl
 
-theorem orbitSectionMap_projector_chart (u : ℤ) (t₀ : (K F w)ˣ)
+theorem orbitSectionMap_projector_chart
     (v : ordinaryKernel F ζ hζ w ρ) (c : LocalChart F ζ hζ w m)
     (t : c.ball.domain) :
     chartValue F ζ hζ w m (ψ F w) c
@@ -408,10 +407,6 @@ theorem orbitSectionMap_projector_chart (u : ℤ) (t₀ : (K F w)ˣ)
       if (t.val : K F w) ∈ frequencyCoset F w u t₀ then
         chartValue F ζ hζ w m (ψ F w) c
           (orbitSectionMap F ζ hζ w ρ m hm hρ hgen v) t else 0 := by
-  change rawOrbitMap F ζ hζ w ρ
-    (projector F ζ hζ w ρ m hm hρ u (t₀ : K F w) v.val) (c.lift t) =
-    if (t.val : K F w) ∈ frequencyCoset F w u t₀ then
-      rawOrbitMap F ζ hζ w ρ v.val (c.lift t) else 0
   exact rawOrbitMap_projector_chart F ζ hζ w ρ m hm hρ u t₀ v.val c t
 
 end DedekindZetaZeroFree.KPKirillovOrbitMapFaithful

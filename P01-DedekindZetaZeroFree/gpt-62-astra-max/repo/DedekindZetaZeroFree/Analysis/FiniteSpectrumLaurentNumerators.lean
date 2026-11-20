@@ -53,10 +53,14 @@ private theorem chamber_evaluation_infinite
   cases ε <;> simp only [a, convergenceHalfPlane, if_true, if_false,
     reduceCtorEq, Complex.ofReal_re] <;> linarith
 
- def scalarLaurent (Q : ℤ →₀ ℂ) : LaurentPolynomial ℂ :=
+ section
+
+variable (Q : ℤ →₀ ℂ)
+
+def scalarLaurent : LaurentPolynomial ℂ :=
   Q.sum (fun n c => LaurentPolynomial.C c * LaurentPolynomial.T n)
 
-private theorem scalarLaurent_coeff (Q : ℤ →₀ ℂ) (n : ℤ) :
+private theorem scalarLaurent_coeff (n : ℤ) :
     (scalarLaurent Q).coeff n = Q n := by
   classical
   simp only [scalarLaurent, ← LaurentPolynomial.single_eq_C_mul_T,
@@ -69,7 +73,7 @@ private theorem scalarLaurent_coeff (Q : ℤ →₀ ℂ) (n : ℤ) :
   · intro hn
     simp [Finsupp.notMem_support_iff.mp hn]
 
-private theorem scalarLaurent_eval (Q : ℤ →₀ ℂ) (u : ℂˣ) :
+private theorem scalarLaurent_eval (u : ℂˣ) :
     LaurentPolynomial.eval₂ (RingHom.id ℂ) u (scalarLaurent Q) =
       Q.sum (fun n c => (u : ℂ) ^ n * c) := by
   classical
@@ -79,6 +83,8 @@ private theorem scalarLaurent_eval (Q : ℤ →₀ ℂ) (u : ℂˣ) :
   intro n hn
   exact mul_comm _ _
 
+end
+
 theorem scalar_laurent_chamber_unique
     (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
@@ -87,7 +93,7 @@ theorem scalar_laurent_chamber_unique
       Q.sum (fun n c => (evaluationUnit K ε s : ℂ) ^ n * c) =
         R.sum (fun n c => (evaluationUnit K ε s : ℂ) ^ n * c)) :
     Q = R := by
-  let p : LaurentPolynomial ℂ := scalarLaurent Q - scalarLaurent R
+  let p := scalarLaurent Q - scalarLaurent R
   have hp : ∀ u ∈ {u : ℂˣ | ∃ s : ℂ,
       convergenceHalfPlane ε s ∧ evaluationUnit K ε s = u},
       LaurentPolynomial.eval₂ (RingHom.id ℂ) u p = 0 := by
@@ -97,14 +103,13 @@ theorem scalar_laurent_chamber_unique
   obtain ⟨n, f, hf⟩ := LaurentPolynomial.exists_T_pow p
   have hroots : {x : ℂ | f.eval x = (0 : Polynomial ℂ).eval x}.Infinite := by
     apply ((chamber_evaluation_infinite K ε).image
-      (f := fun u : ℂˣ => (u : ℂ)) Units.val_injective.injOn).mono
+       Units.val_injective.injOn).mono
     rintro x ⟨u, hu, rfl⟩
     have he := congrArg (LaurentPolynomial.eval₂ (RingHom.id ℂ) u) hf
     simp only [map_mul, LaurentPolynomial.eval₂_toLaurent, Polynomial.eval₂_id,
       hp u hu, zero_mul, Polynomial.eval_zero] at he ⊢
     exact he
-  have hz := Polynomial.eq_of_infinite_eval_eq f 0 hroots
-  rw [hz, map_zero] at hf
+  rw [(Polynomial.eq_of_infinite_eval_eq f 0 hroots), map_zero] at hf
   have hpzero : p = 0 :=
     (IsUnit.mul_left_inj (LaurentPolynomial.isUnit_T (R := ℂ) (n : ℤ))).mp
       (by simpa using hf.symm)

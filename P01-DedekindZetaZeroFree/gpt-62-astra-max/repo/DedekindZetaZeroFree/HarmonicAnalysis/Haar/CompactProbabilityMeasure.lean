@@ -39,17 +39,13 @@ variable (G : Type*) [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
 theorem haar_univ_ne_zero : (Measure.haar : Measure G) univ ≠ 0 :=
   (Measure.measure_pos_of_nonempty_interior (μ := Measure.haar) (by simp)).ne'
 
-theorem isMulRightInvariant_of_isHaarMeasure_of_isProbabilityMeasure (μ : Measure G)
-    [μ.IsHaarMeasure] [IsProbabilityMeasure μ] : μ.IsMulRightInvariant where
+variable (μ : Measure G) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
+
+theorem isMulRightInvariant_of_isHaarMeasure_of_isProbabilityMeasure : μ.IsMulRightInvariant where
   map_mul_right_eq_self g := by
-    have : (Measure.map (· * g) μ).IsHaarMeasure :=
-      Measure.isHaarMeasure_map_mul_right μ g
-    have : IsProbabilityMeasure (Measure.map (· * g) μ) :=
-      inferInstance
     exact Measure.isHaarMeasure_eq_of_isProbabilityMeasure _ _
 
-theorem isInvInvariant_of_isHaarMeasure_of_isProbabilityMeasure (μ : Measure G)
-    [μ.IsHaarMeasure] [IsProbabilityMeasure μ] : μ.IsInvInvariant := by
+theorem isInvInvariant_of_isHaarMeasure_of_isProbabilityMeasure : μ.IsInvInvariant := by
   have : μ.IsMulRightInvariant :=
     isMulRightInvariant_of_isHaarMeasure_of_isProbabilityMeasure (G := G) μ
   constructor
@@ -60,7 +56,7 @@ theorem isInvInvariant_of_isHaarMeasure_of_isProbabilityMeasure (μ : Measure G)
   let : IsProbabilityMeasure μ.inv := by
     rw [Measure.inv_def]
     infer_instance
-  exact Measure.isHaarMeasure_eq_of_isProbabilityMeasure _ _
+  apply Measure.isHaarMeasure_eq_of_isProbabilityMeasure
 
 end LocallyCompactGroup
 
@@ -94,8 +90,7 @@ theorem haarProb_def :
     · rfl
     · exact (FiniteMeasure.mass_nonzero_iff (haarFinite G)).mpr (haarFinite_ne_zero G)
 
-instance isProbabilityMeasure_haarProb : IsProbabilityMeasure (haarProb G) := by
-  exact (haarFinite G).normalize.property
+instance isProbabilityMeasure_haarProb : IsProbabilityMeasure (haarProb G) := (haarFinite G).normalize.property
 
 instance isMulLeftInvariant_haarProb : (haarProb G).IsMulLeftInvariant := by
   rw [haarProb_def]

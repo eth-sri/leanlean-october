@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -38,10 +35,7 @@ theorem isOpen_rayLocalHigherUnitGroup
     {K : Type u} [Field K] [NumberField K]
     (v : HeightOneSpectrum (𝓞 K)) (n : ℕ) :
     IsOpen ((rayLocalHigherUnitGroup v n :
-      Subgroup (v.adicCompletion K)ˣ) : Set (v.adicCompletion K)ˣ) := by
-  change IsOpen ((RayClass.localHigherUnitGroup v n :
-    Subgroup (v.adicCompletion K)ˣ) : Set (v.adicCompletion K)ˣ)
-  exact RayClass.isOpen_localHigherUnitGroup v n
+      Subgroup (v.adicCompletion K)ˣ) : Set (v.adicCompletion K)ˣ) := by apply @RayClass.isOpen_localHigherUnitGroup <;> assumption
 
 end ClassFieldTheory
 

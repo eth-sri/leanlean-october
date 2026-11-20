@@ -31,10 +31,8 @@ private theorem cm_cont {X : Type*} [TopologicalSpace X] (n : ℕ)
     (h : ∀ m, ContinuousOn (fun x => F x m) S) : ContinuousOn F S := by
   induction n with
   | zero =>
-    have hh := (continuousMultilinearCurryFin0 ℝ E ℂ).symm.continuous.comp_continuousOn
-      (h 0)
-    simpa only [Function.comp_def, ← continuousMultilinearCurryFin0_apply,
-      LinearIsometryEquiv.symm_apply_apply] using hh
+    simpa [Function.comp_def] using ((continuousMultilinearCurryFin0 ℝ E ℂ).symm.continuous.comp_continuousOn
+        (h 0))
   | succ n ih =>
     let L := continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => E) ℂ
     have hh : ContinuousOn (fun x => L (F x)) S := by
@@ -43,17 +41,17 @@ private theorem cm_cont {X : Type*} [TopologicalSpace X] (n : ℕ)
       apply ih
       intro m
       exact h (Fin.cons v m)
-    simpa only [Function.comp_def, LinearIsometryEquiv.symm_apply_apply] using
+    simpa [Function.comp_def] using
       L.symm.continuous.comp_continuousOn hh
 
 private theorem jet_word (n : ℕ) (u : E → ℂ) (U : Set E) (hU : IsOpen U)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (x : E) (hx : x ∈ U) (m : Fin n → E) :
     iteratedFDeriv ℝ n u x m = constantDirectionWord (List.ofFn m) u x := by
   induction n generalizing x with
-  | zero => simp [constantDirectionWord, directionalWord, iteratedFDeriv_zero_apply]
+  | zero => rfl
   | succ n ih =>
     rw [((hu x hx).contDiffAt (hU.mem_nhds hx)).differentiableAt_iteratedFDeriv
-      (m := n) (WithTop.coe_lt_coe.mpr (ENat.natCast_lt_top n)) |>.iteratedFDeriv_succ_apply_left']
+       (WithTop.coe_lt_coe.mpr (ENat.natCast_lt_top n)) |>.iteratedFDeriv_succ_apply_left']
     have heq : (fun y => iteratedFDeriv ℝ n u y (Fin.tail m)) =ᶠ[𝓝 x]
         constantDirectionWord (List.ofFn (Fin.tail m)) u :=
       eventually_of_mem (hU.mem_nhds hx) fun y hy => ih y hy _
@@ -85,7 +83,7 @@ private theorem jet_joint {B : Type*} [Fintype B]
   intro p hp
   dsimp only
   rw [jet_word n (h p.1) U hU (hsp p.1 hp.1) p.2 (hKU hp.2) m]
-  simpa [Function.comp_def] using (heq (h p.1) (hsp p.1 hp.1) p.2 (hKU hp.2))
+  exact (heq (h p.1) (hsp p.1 hp.1) p.2 (hKU hp.2))
 
 private theorem word_smooth {B : Type*} (U : Set E) (hU : IsOpen U)
     (fields : B → E → E) (hf : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
@@ -120,19 +118,16 @@ private theorem dominated_jets
       ((continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n + 1) => E) ℂ) (A (n + 1) u)) u := by
     let L := continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n + 1) => E) ℂ
     obtain ⟨s, b, hs, hsS, hb, h⟩ := hbound (n + 1) u hu
-    have hf'm : AEStronglyMeasurable (fun x =>
-        fderivWithin ℝ (iteratedFDerivWithin ℝ n (fun v => F v x) S) S u) μ := by
-      exact L.continuous.comp_aestronglyMeasurable (hmeas (n + 1) u hu)
     have hh := hasFDerivAt_integral_of_dominated_of_fderiv_le (𝕜 := ℝ)
       (F := fun v x => iteratedFDerivWithin ℝ n (fun w => F w x) S v)
       (F' := fun v x => fderivWithin ℝ (iteratedFDerivWithin ℝ n (fun w => F w x) S) S v)
-      hs (Filter.eventually_of_mem (hS.mem_nhds hu) (fun v hv => hmeas n v hv)) (hint n u hu) hf'm
+      hs (Filter.eventually_of_mem (hS.mem_nhds hu) ((hmeas n))) (hint n u hu) (L.continuous.comp_aestronglyMeasurable (hmeas (n + 1) u hu))
       (h.mono fun x hx v hv => by
         change ‖L (iteratedFDerivWithin ℝ (n + 1) (fun w => F w x) S v)‖ ≤ b x
         rw [L.norm_map]
         exact hx v hv) hb
       (Eventually.of_forall fun x v hv =>
-        (((hsmooth x).differentiableOn_iteratedFDerivWithin (m := n)
+        (((hsmooth x).differentiableOn_iteratedFDerivWithin
           (WithTop.coe_lt_coe.mpr (ENat.natCast_lt_top n)) hS.uniqueDiffOn v (hsS hv)).hasFDerivWithinAt
           |>.hasFDerivAt (hS.mem_nhds (hsS hv))))
     have heq : (∫ x, fderivWithin ℝ (iteratedFDerivWithin ℝ n (fun v => F v x) S) S u ∂μ) =
@@ -185,18 +180,14 @@ private theorem integral_core {B : Type*} [Fintype B]
       fderiv ℝ (fun y => ∫ t, a t * h (q t) y ∂volume.restrict (Set.Ioc 0 (2*Real.pi))) x v =
         ∫ t, a t * fderiv ℝ (h (q t)) x v ∂volume.restrict (Set.Ioc 0 (2*Real.pi)) := by
   let μ := volume.restrict (Set.Ioc 0 (2*Real.pi))
-  let F : E → ℝ → ℂ := fun x t => a t * h (q t) x
+  let F := fun x t => a t * h (q t) x
   let J (n : ℕ) (p : ℝ × E) := iteratedFDerivWithin ℝ n (fun x => F x p.1) U p.2
   have hsm (t : ℝ) : ContDiffOn ℝ (⊤ : ℕ∞) (fun x => F x t) U :=
     contDiffOn_const.mul (hsp _ (hqD t))
   have hJ (n : ℕ) (K : Set E) (hK : IsCompact K) (hKU : K ⊆ U) :
       ContinuousOn (J n) (Set.univ ×ˢ K) := by
-    have hbase := jet_joint U hU fields hfields hframe D h hsp hj n K hK hKU
-    have hcomp : ContinuousOn (fun p : ℝ × E => iteratedFDeriv ℝ n (h (q p.1)) p.2)
-        (Set.univ ×ˢ K) := hbase.comp ((hq.comp continuous_fst).prodMk continuous_snd).continuousOn
-      (fun p hp => ⟨hqD _, hp.2⟩)
-    have hprod := ((ha.comp continuous_fst).continuousOn).smul hcomp
-    apply hprod.congr
+    apply (((ha.comp continuous_fst).continuousOn).smul ((jet_joint U hU fields hfields hframe D h hsp hj n K hK hKU).comp ((hq.comp continuous_fst).prodMk continuous_snd).continuousOn
+      (fun p hp => ⟨hqD _, hp.2⟩))).congr
     intro p hp
     dsimp [J, F]
     change iteratedFDerivWithin ℝ n (a p.1 • h (q p.1)) U p.2 = _
@@ -205,17 +196,16 @@ private theorem integral_core {B : Type*} [Fintype B]
       iteratedFDerivWithin_of_isOpen n hU (hKU hp.2)]
 
   have hm (n : ℕ) (x : E) (hx : x ∈ U) : AEStronglyMeasurable (fun t => J n (t,x)) μ := by
-    have hc : ContinuousOn (fun t => J n (t,x)) Set.univ := (hJ n {x} (isCompact_singleton : IsCompact {x}) (Set.singleton_subset_iff.mpr hx)).comp
+    exact (((hJ n {x} isCompact_singleton (Set.singleton_subset_iff.mpr hx)).comp
       (continuous_id.prodMk continuous_const).continuousOn
-      (fun t _ => ⟨Set.mem_univ t, Set.mem_singleton x⟩)
-    exact (hc.mono (Set.subset_univ _)).aestronglyMeasurable measurableSet_Ioc
+      (fun t _ => ⟨Set.mem_univ t, Set.mem_singleton x⟩)).mono (Set.subset_univ _)).aestronglyMeasurable measurableSet_Ioc
   have hb (n : ℕ) (x : E) (hx : x ∈ U) : ∃ s b,
       s ∈ nhds x ∧ s ⊆ U ∧ Integrable b μ ∧
       ∀ᵐ t ∂μ, ∀ v ∈ s, ‖J n (t,v)‖ ≤ b t := by
     obtain ⟨ε,hε,hεU⟩ := Metric.isOpen_iff.mp hU x hx
     let K := Metric.closedBall x (ε/2)
-    have hKU : K ⊆ U := fun v hv => hεU (lt_of_le_of_lt (show dist v x ≤ ε/2 from hv) (by linarith))
-    obtain ⟨C,hC⟩ := ((isCompact_Icc : IsCompact (Set.Icc 0 (2*Real.pi))).prod
+    have hKU := fun v hv => hεU (lt_of_le_of_lt (show dist v x ≤ ε/2 from hv) (by linarith))
+    obtain ⟨C,hC⟩ := (isCompact_Icc.prod
       (isCompact_closedBall x (ε/2))).exists_bound_of_continuousOn
       ((hJ n K (isCompact_closedBall _ _) hKU).mono
         (Set.prod_mono (Set.subset_univ _) (Set.Subset.refl K)))
@@ -261,7 +251,9 @@ private theorem coeff_integral (h : ℂ → E → ℂ) (s₀ : ℂ) (r : ℝ) (k
   simp only [smul_eq_mul]
   ring
 
-private theorem coeff_core {B : Type*} [Fintype B]
+variable {B : Type*}
+
+private theorem coeff_core [Fintype B]
     (U : Set E) (hU : IsOpen U) (fields : B → E → E)
     (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
     (hframe : ∀ x ∈ U, ∃ e : Module.Basis B ℝ E, ∀ b, e b = fields b x)
@@ -277,8 +269,7 @@ private theorem coeff_core {B : Type*} [Fintype B]
     change Continuous (fun t => deriv (circleMap s₀ r) t)
     simp only [deriv_circleMap]
     exact (continuous_circleMap 0 r).mul continuous_const
-  have hn (t : ℝ) : circleMap s₀ r t - s₀ ≠ 0 := by
-    exact sub_ne_zero.mpr (circleMap_ne_mem_ball (Metric.mem_ball_self hr) t)
+  have hn (t : ℝ) : circleMap s₀ r t - s₀ ≠ 0 := sub_ne_zero.mpr (circleMap_ne_mem_ball (Metric.mem_ball_self hr) t)
   have ha : Continuous (fun t : ℝ =>
       (2*(Real.pi:ℂ)*Complex.I)⁻¹ * deriv (circleMap s₀ r) t *
         (circleMap s₀ r t - s₀)^(-((k:ℤ)+1))) :=
@@ -293,13 +284,13 @@ private theorem coeff_core {B : Type*} [Fintype B]
   rw [hc.2 x hx (fields b x), coeff_integral]
   rfl
 
-private theorem word_append {B : Type*} (fields : B → E → E) (v w : List B) (u : E → ℂ) :
+private theorem word_append (fields : B → E → E) (v w : List B) (u : E → ℂ) :
     directionalWord fields v (directionalWord fields w u) = directionalWord fields (v++w) u := by
   induction v with
   | nil => rfl
   | cons b v ih => simp only [List.cons_append, directionalWord, ih]
 
-private theorem commute_core {B : Type*} [Fintype B]
+private theorem commute_core [Fintype B]
     (U : Set E) (hU : IsOpen U) (fields : B → E → E)
     (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
     (hframe : ∀ x ∈ U, ∃ e : Module.Basis B ℝ E, ∀ b, e b = fields b x)
@@ -316,42 +307,35 @@ private theorem commute_core {B : Type*} [Fintype B]
     intro x hx
     have heq : directionalWord fields w (cauchyCoefficient h s₀ r k) =ᶠ[𝓝 x]
         cauchyCoefficient (fun z => directionalWord fields w (h z)) s₀ r k :=
-      eventually_of_mem (hU.mem_nhds hx) fun y hy => ih y hy
+      eventually_of_mem (hU.mem_nhds hx) ih
     have hh := coeff_core U hU fields hfields hframe s₀ r hr
       (fun z => directionalWord fields w (h z))
       (fun z hz => word_smooth U hU fields hfields (h z) (hsp z hz) w)
-      (fun v K hK hKU => by simpa only [word_append] using hj (v++w) K hK hKU) k
+      (fun v K hK hKU => by simpa [word_append] using hj (v++w) K hK hKU) k
     dsimp only [directionalWord]
     rw [heq.fderiv_eq, hh.2 x hx b]
     rfl
 
 end
 
-theorem coefficient_smooth [FiniteDimensional ℝ E] [Fintype B]
-    (U : Set E) (hU : IsOpen U) (fields : B → E → E)
+variable [FiniteDimensional ℝ E] [Fintype B] (U : Set E) (hU : IsOpen U) (fields : B → E → E)
     (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
-    (hframe : ∀ x ∈ U, ∃ e : Module.Basis B ℝ E, ∀ b, e b = fields b x)
-    (Ω : Set ℂ) (hΩ : IsOpen Ω) (h : ℂ → E → ℂ)
-    (s₀ : ℂ) (r : ℝ) (hr : 0 < r)
-    (hdisk : Metric.closedBall s₀ r ⊆ Ω)
+    (hframe : ∀ x ∈ U, ∃ e : Module.Basis B ℝ E, ∀ b, e b = fields b x) (Ω : Set ℂ) (hΩ : IsOpen Ω)
+    (h : ℂ → E → ℂ) (s₀ : ℂ) (r : ℝ) (hr : 0 < r) (hdisk : Metric.closedBall s₀ r ⊆ Ω)
     (hspatial : ∀ z ∈ Ω, ContDiffOn ℝ (⊤ : ℕ∞) (h z) U)
+
+include hU hfields hframe hΩ hr hdisk hspatial in
+theorem coefficient_smooth
     (hjoint : ∀ (w : List B) (K : Set E), IsCompact K → K ⊆ U →
       ContinuousOn (fun p : ℂ × E => directionalWord fields w (h p.1) p.2)
         (Metric.closedBall s₀ r ×ˢ K))
     (hholomorphic : ∀ x ∈ U, DifferentiableOn ℂ (fun z => h z x) Ω)
     (k : ℕ) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (cauchyCoefficient h s₀ r k) U := by
-  exact (coeff_core U hU fields hfields hframe s₀ r hr h
+    ContDiffOn ℝ (⊤ : ℕ∞) (cauchyCoefficient h s₀ r k) U := (coeff_core U hU fields hfields hframe s₀ r hr h
     (fun z hz => hspatial z (hdisk hz)) hjoint k).1
 
-theorem word_commute [FiniteDimensional ℝ E] [Fintype B]
-    (U : Set E) (hU : IsOpen U) (fields : B → E → E)
-    (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
-    (hframe : ∀ x ∈ U, ∃ e : Module.Basis B ℝ E, ∀ b, e b = fields b x)
-    (Ω : Set ℂ) (hΩ : IsOpen Ω) (h : ℂ → E → ℂ)
-    (s₀ : ℂ) (r : ℝ) (hr : 0 < r)
-    (hdisk : Metric.closedBall s₀ r ⊆ Ω)
-    (hspatial : ∀ z ∈ Ω, ContDiffOn ℝ (⊤ : ℕ∞) (h z) U)
+include hU hfields hframe hΩ hr hdisk hspatial in
+theorem word_commute
     (hjoint : ∀ (v : List B) (K : Set E), IsCompact K → K ⊆ U →
       ContinuousOn (fun p : ℂ × E => directionalWord fields v (h p.1) p.2)
         (Metric.closedBall s₀ r ×ˢ K))
@@ -361,8 +345,7 @@ theorem word_commute [FiniteDimensional ℝ E] [Fintype B]
       (2 * (Real.pi : ℂ) * Complex.I)⁻¹ *
         circleIntegral
           (fun z => (z - s₀) ^ (-((k : ℤ) + 1)) * directionalWord fields w (h z) x)
-          s₀ r := by
-  exact commute_core U hU fields hfields hframe s₀ r hr h
+          s₀ r := commute_core U hU fields hfields hframe s₀ r hr h
     (fun z hz => hspatial z (hdisk hz)) hjoint k w
 
 end DedekindZetaZeroFree.RightFrame.CauchyCoefficient

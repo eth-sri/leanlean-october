@@ -37,18 +37,24 @@ def real (d : ℕ) (p : KPArch.Space d) : HyperbolicChart.Space d :=
 namespace Representative
 variable {T : ℝ} (v : Representative ζ hζ S ρ V T)
 
-def scalar (p : KPCuspCharts.Coordinates F) : ℂ := v.val (KPCuspCharts.toArch F p)
+section
 
-def gradientSq (p : KPCuspCharts.Coordinates F) : ℝ :=
+variable (p : KPCuspCharts.Coordinates F)
+
+def scalar : ℂ := v.val (KPCuspCharts.toArch F p)
+
+def gradientSq : ℝ :=
   let w := HyperbolicChart.differential (KPCuspLogShape.dimension F)
     (v.val ∘ arch (KPCuspLogShape.dimension F))
     (real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F p))
   ∑ i, ∑ k, ‖w i k‖ ^ 2
 
-def laplacian (p : KPCuspCharts.Coordinates F) : ℂ :=
+def laplacian : ℂ :=
   HyperbolicChart.laplacian (KPCuspLogShape.dimension F)
     (v.val ∘ arch (KPCuspLogShape.dimension F))
     (real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F p))
+
+end
 
 def horizontalSlice (G : KPCuspCharts.ChartOutput F hF S D)
     (b : KPCuspCharts.Shape F) (t : Set.Ioi T) :
@@ -92,8 +98,6 @@ structure StructuralInputs (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
   fiberMeasure : Measure (KPCuspGenuineMonodromy.KernelTorus S D ρ)
   fiberHaar : fiberMeasure.IsAddHaarMeasure
   fiberProbability : IsProbabilityMeasure fiberMeasure
-  slice_integrable : ∀ {T : ℝ} (v : Representative ζ hζ S ρ V T) b t,
-    Integrable (v.torusSlice G H b t) fiberMeasure
   compact_integrable : ∀ {T : ℝ} (v : Representative ζ hζ S ρ V T)
     (η : ℝ → ℝ), CompactRadialTest T η →
     Integrable (fun p => η p.2 ^ 2 * v.gradientSq p) (chartMeasure G) ∧

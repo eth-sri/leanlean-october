@@ -24,7 +24,7 @@ local instance stageBorelSpace (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨
 def sourceH : (KPSpatialSmoothing.P0 F ζ hζ).H →* R F ζ hζ :=
   Subgroup.inclusion (le_of_eq (targetH_eq_R F ζ hζ))
 
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing renaming cToBorel → cToBorel
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing (cToBorel)
 
 lemma sourceH_coordinate_hN (r : (KPSpatialSmoothing.P0 F ζ hζ).H) (x : KPAdeles F)
     (c : KPSpatialSmoothing.actualC F ζ hζ)
@@ -54,8 +54,11 @@ lemma sourceCharacter_hN (r : (KPSpatialSmoothing.P0 F ζ hζ).H) (x : KPAdeles 
     sourceH_coordinate_hN F ζ hζ r x c hc, Units.coeHom_apply, Units.val_mul]
   rfl
 
-lemma source_covariant (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (μ : Measure K) (f : Flat F ζ hζ K) (a : G F ζ hζ) (s : ℂ) (h : C(K, ℂ))
+section
+
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K) (μ : Measure K)
+
+lemma source_covariant (f : Flat F ζ hζ K) (a : G F ζ hζ) (s : ℂ) (h : C(K, ℂ))
     (c : KPSpatialSmoothing.actualC F ζ hζ) (g : G F ζ hζ) :
     source F ζ hζ K hK μ f a s h (c.val * g) =
       sourceCharacter F ζ hζ c * source F ζ hζ K hK μ f a s h g := by
@@ -63,8 +66,7 @@ lemma source_covariant (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ
   rw [sourceCharacter_hN F ζ hζ r x c hc, hc]
   exact source_covariance F ζ hζ K hK μ f a s h (sourceH F ζ hζ r) x g
 
-def levelSource (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (μ : Measure K) [IsFiniteMeasure μ] (f : Flat F ζ hζ K) (a : G F ζ hζ)
+def levelSource [IsFiniteMeasure μ] (f : Flat F ζ hζ K) (a : G F ζ hζ)
     (J : Subgroup (G F ζ hζ))
     (hJ : ∀ (s : ℂ) (h : C(K, ℂ)) (g : G F ζ hζ) (j : J),
       source F ζ hζ K hK μ f a s h (g * j.val) = source F ζ hζ K hK μ f a s h g)
@@ -73,8 +75,7 @@ def levelSource (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
   (sourceMap F ζ hζ K hK μ f a s).codRestrict _ (fun h =>
     ⟨source_covariant F ζ hζ K hK μ f a s h, fun j g => hJ s h g j⟩)
 
-def levelIntertwiner (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
+def levelIntertwiner [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (f : Flat F ζ hζ K) (a : G F ζ hζ)
     (J : Subgroup (G F ζ hζ))
     (hn : ∀ (b : K) (j : J), b.val⁻¹ * j.val * b.val ∈ J)
@@ -90,6 +91,8 @@ def levelIntertwiner (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K
       apply Subtype.ext
       exact source_intertwines F ζ hζ K hK μ f a s w.val b)
 
+end
+
 def evaluateIntertwiner {G₀ : Type*} [Group G₀] (C K J : Subgroup G₀) (chi : C →* ℂ)
     (hn : ∀ (b : K) (j : J), b.val⁻¹ * j.val * b.val ∈ J)
     {W : Type*} [AddCommGroup W] [Module ℂ W] (tau : Representation ℂ K W) :
@@ -99,19 +102,20 @@ def evaluateIntertwiner {G₀ : Type*} [Group G₀] (C K J : Subgroup G₀) (chi
   map_add' := by intros; ext; rfl
   map_smul' := by intros; ext; rfl
 
-def sourceStage (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (μ : Measure K) (f : Flat F ζ hζ K) (a : G F ζ hζ)
+section
+
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K) (μ : Measure K)
+
+def sourceStage (f : Flat F ζ hζ K) (a : G F ζ hζ)
     (W : Submodule ℂ C(K, ℂ)) : Submodule ℂ (Functions F ζ hζ) :=
   Submodule.span ℂ (Set.range (fun p : ℂ × W => source F ζ hζ K hK μ f a p.1 p.2.val))
 
-lemma sourceStage_contains (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (μ : Measure K) (f : Flat F ζ hζ K) (a : G F ζ hζ)
+lemma sourceStage_contains (f : Flat F ζ hζ K) (a : G F ζ hζ)
     (W : Submodule ℂ C(K, ℂ)) (s : ℂ) (w : W) :
     source F ζ hζ K hK μ f a s w.val ∈ sourceStage F ζ hζ K hK μ f a W :=
   Submodule.subset_span ⟨(s,w), rfl⟩
 
-lemma sourceStage_finite (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
+lemma sourceStage_finite [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (f : Flat F ζ hζ K) (a : G F ζ hζ)
     (J : Subgroup (G F ζ hζ))
     (hn : ∀ (b : K) (j : J), b.val⁻¹ * j.val * b.val ∈ J)
@@ -130,8 +134,7 @@ lemma sourceStage_finite (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ h
     CovariantSampling.intertwiningMap_finiteDimensional C K J chi n r hc hn (W := W) tau
   let L := evaluateIntertwiner C K J chi hn (W := W) tau
   let M := Submodule.map₂ L ⊤ ⊤
-  have hM : M.FG := Submodule.FG.map₂ L (Module.Finite.fg_top) (Module.Finite.fg_top)
-  letI : Module.Finite ℂ M := Module.Finite.of_fg hM
+  letI : Module.Finite ℂ M := Module.Finite.of_fg (Submodule.FG.map₂ L (Module.Finite.fg_top) (Module.Finite.fg_top))
   apply Module.Finite.of_injective
     (Submodule.inclusion (show sourceStage F ζ hζ K hK μ f a W ≤ M from ?_))
     (Submodule.inclusion_injective _)
@@ -140,8 +143,7 @@ lemma sourceStage_finite (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ h
   exact Submodule.apply_mem_map₂ L (show levelIntertwiner F ζ hζ K hK μ f a J hn hJ W hi s ∈ ⊤ from trivial)
     (show w ∈ ⊤ from trivial)
 
-lemma sourceStage_continuous (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (μ : Measure K) [IsFiniteMeasure μ] (f : Flat F ζ hζ K) (a : G F ζ hζ)
+lemma sourceStage_continuous [IsFiniteMeasure μ] (f : Flat F ζ hζ K) (a : G F ζ hζ)
     (W : Submodule ℂ C(K, ℂ)) (v : Functions F ζ hζ)
     (hv : v ∈ sourceStage F ζ hζ K hK μ f a W) : Continuous v := by
   induction hv using Submodule.span_induction with
@@ -152,8 +154,7 @@ lemma sourceStage_continuous (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F 
   | add v w _ _ hv hw => exact hv.add hw
   | smul c v _ hv => exact continuous_const.smul hv
 
-lemma sourceStage_covariant (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (μ : Measure K) (f : Flat F ζ hζ K) (a : G F ζ hζ)
+lemma sourceStage_covariant (f : Flat F ζ hζ K) (a : G F ζ hζ)
     (W : Submodule ℂ C(K, ℂ)) (v : Functions F ζ hζ)
     (hv : v ∈ sourceStage F ζ hζ K hK μ f a W)
     (c : KPSpatialSmoothing.actualC F ζ hζ) (g : G F ζ hζ) :
@@ -166,8 +167,7 @@ lemma sourceStage_covariant (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F �
   | add v w _ _ hv hw => simp only [Pi.add_apply, hv, hw, mul_add]
   | smul z v _ hv => simp only [Pi.smul_apply, smul_eq_mul, hv, mul_left_comm z]
 
-lemma sourceStage_right_fixed (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (μ : Measure K) (f : Flat F ζ hζ K) (a : G F ζ hζ)
+lemma sourceStage_right_fixed (f : Flat F ζ hζ K) (a : G F ζ hζ)
     (J : Subgroup (G F ζ hζ))
     (hJ : ∀ (s : ℂ) (h : C(K, ℂ)) (g : G F ζ hζ) (j : J),
       source F ζ hζ K hK μ f a s h (g * j.val) = source F ζ hζ K hK μ f a s h g)
@@ -180,8 +180,7 @@ lemma sourceStage_right_fixed (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F
   | add v w _ _ hv hw => simp only [Pi.add_apply, hv, hw]
   | smul c v _ hv => simp only [Pi.smul_apply, hv]
 
-lemma sourceStage_invariant (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
+lemma sourceStage_invariant [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (f : Flat F ζ hζ K) (a : G F ζ hζ)
     (W : Submodule ℂ C(K, ℂ))
     (hi : ∀ b : K, ∀ h ∈ W, kernelTranslate F ζ hζ K b h ∈ W)
@@ -197,27 +196,22 @@ lemma sourceStage_invariant (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F �
   | add v w _ _ hv hw => rw [map_add]; exact Submodule.add_mem _ hv hw
   | smul c v _ hv => rw [map_smul]; exact Submodule.smul_mem _ c hv
 
+end
+
 lemma actual_finite_parameter_stage
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (f : Flat F ζ hζ K) (a : G F ζ hζ)
     (h : C(K, ℂ)) (hh : h ∈ TauCeti.representativeSubmodule ℂ K) :
     ∃ (W : Submodule ℂ C(K, ℂ)) (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ),
-      Module.Finite ℂ W ∧ h ∈ W ∧
+      h ∈ W ∧
       Module.Finite ℂ (sourceStage F ζ hζ K hK μ f a W) ∧
-      (∀ s, source F ζ hζ K hK μ f a s h ∈ sourceStage F ζ hζ K hK μ f a W) ∧
       (∀ (b : K) (v : Functions F ζ hζ), v ∈ sourceStage F ζ hζ K hK μ f a W →
-        rightAction F ζ hζ b.val v ∈ sourceStage F ζ hζ K hK μ f a W) ∧
-      (∀ (v : Functions F ζ hζ), v ∈ sourceStage F ζ hζ K hK μ f a W → Continuous v) ∧
-      (∀ (v : Functions F ζ hζ), v ∈ sourceStage F ζ hζ K hK μ f a W →
-        ∀ (c : KPSpatialSmoothing.actualC F ζ hζ) (g : G F ζ hζ),
-          v (c.val * g) = sourceCharacter F ζ hζ c * v g) ∧
-      (∀ (v : Functions F ζ hζ), v ∈ sourceStage F ζ hζ K hK μ f a W →
-        ∀ g (j : KPGlobalTorusFunctionData.globalLevel F ζ hζ J), v (g * j.val) = v g) := by
+        rightAction F ζ hζ b.val v ∈ sourceStage F ζ hζ K hK μ f a W) := by
   obtain ⟨W, hW, hhW, hi⟩ := representative_kernelFinite F ζ hζ K h hh
   let := hW
   obtain ⟨U, hU⟩ := CommonLevel.source_uniform_level F ζ hζ K hK f a
-  obtain ⟨J, n, r, hle, hn, hc, _⟩ := KPSpatialSmoothing.actual_covariant_finite_cover F ζ hζ
+  obtain ⟨J, n, r, hle, hn, hc⟩ := KPSpatialSmoothing.actual_covariant_finite_cover F ζ hζ
     (KPLiteralChamber.literalIwasawa F ζ hζ K hK) U
   have hJ (s : ℂ) (l : C(K, ℂ)) (g : G F ζ hζ)
       (j : KPGlobalTorusFunctionData.globalLevel F ζ hζ J) :
@@ -229,13 +223,7 @@ lemma actual_finite_parameter_stage
     obtain ⟨i, t, x, b, j, hg⟩ := hc g
     exact ⟨i, ⟨t.val.val * KPGlobalTorusFunctionData.N F ζ hζ x,
       (KPSpatialSmoothing.mem_actualC_iff F ζ hζ _).mpr ⟨t,x,rfl⟩⟩, b, j, hg⟩
-  refine ⟨W, J, hW, hhW,
-    sourceStage_finite F ζ hζ K hK μ f a _ hn hJ n (fun i => (r i).val) hcover W hi,
-    fun s => sourceStage_contains F ζ hζ K hK μ f a W s ⟨h,hhW⟩,
-    sourceStage_invariant F ζ hζ K hK μ f a W hi,
-    sourceStage_continuous F ζ hζ K hK μ f a W,
-    sourceStage_covariant F ζ hζ K hK μ f a W,
-    fun v hv g j => sourceStage_right_fixed F ζ hζ K hK μ f a _ hJ W v hv g j⟩
+  refine ⟨W, J, hhW, sourceStage_finite F ζ hζ K hK μ f a _ hn hJ n (fun i => (r i).val) hcover W hi, sourceStage_invariant F ζ hζ K hK μ f a W hi⟩
 
 private lemma functional_mem_evaluations {X : Type*} (V : Submodule ℂ (X → ℂ))
     [FiniteDimensional ℂ V] (L : V →ₗ[ℂ] ℂ) :
@@ -276,8 +264,7 @@ lemma sourceStage_entire_expansion
   · intro i
     exact functional_entire V v (b.coord i) (fun g => normalized_source_entire F ζ hζ K hK μ f a h g)
   · intro s
-    have he := congrArg Subtype.val (b.sum_repr (v s))
-    simpa only [Submodule.coe_sum, Submodule.coe_smul, Module.Basis.coord_apply, v] using he.symm
+    simpa only [Submodule.coe_sum, Submodule.coe_smul, Module.Basis.coord_apply, v] using (congrArg Subtype.val (b.sum_repr (v s))).symm
 
 lemma original_integral_finite_expansion
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
@@ -358,9 +345,8 @@ lemma flatten_continuous (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ h
     (W : Submodule ℂ C(K, ℂ)) (v : Functions F ζ hζ)
     (hv : v ∈ sourceStage F ζ hζ K hK μ f a W) (s : ℂ) :
     Continuous (flatten F ζ hζ K hK v s) := by
-  have ha : Continuous (alpha F ζ hζ K hK) := Complex.continuous_ofReal.comp
-    (KPLiteralChamber.JointProfile.literal_log_modulus_continuous F ζ hζ K hK)
-  exact (continuous_const.mul ha).cexp.mul (sourceStage_continuous F ζ hζ K hK μ f a W v hv)
+  exact (continuous_const.mul (Complex.continuous_ofReal.comp
+    (KPLiteralChamber.JointProfile.literal_log_modulus_continuous F ζ hζ K hK))).cexp.mul (sourceStage_continuous F ζ hζ K hK μ f a W v hv)
 
 lemma flatten_common_level (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (μ : Measure K) (f : Flat F ζ hζ K) (a : G F ζ hζ)
@@ -382,12 +368,11 @@ lemma flatten_common_level (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ
     exact ⟨⟨u,hu.1,he⟩,⟨u,hu.2,he⟩⟩
   refine ⟨J,?_⟩
   intro s v hv g j
-  have hvJ : v (g * j.val) = v g := sourceStage_right_fixed F ζ hζ K hK μ f a _
-    (fun s h g j => hU μ s h g j.val j.property) W v hv g ⟨j.val,(hle j).1⟩
   have ha : alpha F ζ hζ K hK (g * j.val) = alpha F ζ hζ K hK g := by
     unfold alpha
     rw [hV g ⟨j.val,(hle j).2⟩]
-  simp only [flatten,ha,hvJ]
+  simp only [flatten,ha,(sourceStage_right_fixed F ζ hζ K hK μ f a _
+    (fun s h g j => hU μ s h g j.val j.property) W v hv g ⟨j.val,(hle j).1⟩)]
 
 end DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation.ConvolutionSpan.ActualSourceStage.ParameterStage
 

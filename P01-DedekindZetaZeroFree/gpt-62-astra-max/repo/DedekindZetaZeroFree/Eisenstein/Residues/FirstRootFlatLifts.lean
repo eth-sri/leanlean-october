@@ -15,7 +15,7 @@ set_option maxHeartbeats 4000000
 set_option maxRecDepth 4000
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 end DedekindZetaZeroFree.ThetaExpansion
 
@@ -28,7 +28,7 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem first_root_flat_lift_exists
     (R : PrincipalMellin.ActualRecipe S η) (hR : RootAligned R)
@@ -36,10 +36,10 @@ theorem first_root_flat_lift_exists
     (J : FirstRootProjected R N A B)
     (hNative : RootDerivatives.SourceNativeLie R J.base.factorization) : Nonempty (FirstRootLift R N A B J) := by
   classical
-  obtain ⟨Q, T, hdq, hpin, hsource, htheta, hperiod, hflat⟩ :=
+  obtain ⟨Q, T, hdq, hpin, hsource, hperiod⟩ :=
     first_root_realization_exists  R hR N A B J
-  obtain ⟨hcore, hfrozen⟩ := first_root_fixed_stage_tensors_exists R N A B J hNative
-  obtain ⟨hhc, _, _⟩ := first_root_hc_span_recovery R N A B J hNative T
+  have hfrozen := first_root_fixed_stage_tensors_exists R N A B J hNative
+  have hhc := first_root_hc_span_recovery R N A B J hNative T
     hdq hpin hsource hperiod hfrozen
   choose s x hs hx hell hnx hpx using hfrozen
   let D := J.base.factorization

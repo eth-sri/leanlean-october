@@ -12,10 +12,10 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.DigitMasks
 open MomentSources NumberField IsDedekindDomain
 open scoped Classical Topology
-open _root_.DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw renaming char_mem → char_mem
+open _root_.DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw (char_mem)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem exterior_not_bad (p : KPFinitePlace F) (hp : p ∉ R.A.Sf) :
     ¬ KPAdelicCoverRestrictedProduct.Bad F p := by

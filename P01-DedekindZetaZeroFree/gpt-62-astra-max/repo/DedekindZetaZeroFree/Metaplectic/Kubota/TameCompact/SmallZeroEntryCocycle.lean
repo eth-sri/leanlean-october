@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Metaplectic.Kubota.TameCompact.MixedEntryCocycle
 
 public import DedekindZetaZeroFree.Metaplectic.Kubota.TameCompact.CorrectionAndDeterminantTwist
 
@@ -13,54 +14,49 @@ noncomputable section
 set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
-private lemma entry_c (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (g h : K0 F v) :
-    c F v (g * h) = c F v g * a F v h + d F v g * c F v h := by
-  simp [c, a, d, Matrix.mul_apply, Fin.sum_univ_two]
+private alias entry_c := MixedEntryCocycle.c_mul
 
-private lemma entry_a (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (g h : K0 F v) :
+section
+
+variable (F : Type) [Field F] [NumberField F] (v : HeightOneSpectrum (𝓞 F))
+
+private lemma entry_a (g h : K0 F v) :
     a F v (g * h) = a F v g * a F v h + b F v g * c F v h := by
   simp [c, a, b, Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma entry_d (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (g h : K0 F v) :
+private lemma entry_d (g h : K0 F v) :
     d F v (g * h) = c F v g * b F v h + d F v g * d F v h := by
   simp [c, b, d, Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma X_zero (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (g : K0 F v) (hc : c F v g = 0)
+private lemma X_zero (g : K0 F v) (hc : c F v g = 0)
     (D : (K F v)ˣ) (hD : (D : K F v) = d F v g) :
     KubotaRankTwo.X (K F v) (inclusion F v g) = D := by
   apply Units.ext
-  simpa [KubotaRankTwo.X, KubotaRankTwo.x, inclusion,
-    KPLocalCube.integerInclusion, hc] using hD.symm
+  simp_all [KubotaRankTwo.X, KubotaRankTwo.x, inclusion, KPLocalCube.integerInclusion, hc]
 
-private lemma X_nonzero (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (g : K0 F v) (hc : c F v g ≠ 0)
+private lemma X_nonzero (g : K0 F v) (hc : c F v g ≠ 0)
     (C : (K F v)ˣ) (hC : (C : K F v) = c F v g) :
     KubotaRankTwo.X (K F v) (inclusion F v g) = C := by
   apply Units.ext
-  simpa [KubotaRankTwo.X, KubotaRankTwo.x, inclusion,
-    KPLocalCube.integerInclusion, hc] using hC.symm
+  simp_all [KubotaRankTwo.X, KubotaRankTwo.x, inclusion, KPLocalCube.integerInclusion, hc]
 
-private lemma kappa_raw (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
+end
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (v : HeightOneSpectrum (𝓞 F))
+
+private lemma kappa_raw
     (g : K0 F v) (hc : c F v g ≠ 0) (hn : ‖c F v g‖ < 1)
     (C D : (K F v)ˣ) (hC : (C : K F v) = c F v g)
     (hD : (D : K F v) = d F v g) :
     kappa F v ζ hζ g = KPHilbert.B3 F ζ hζ (Sum.inr v) C
       (D / Matrix.GeneralLinearGroup.det (inclusion F v g)) := by
-  have hd : d F v g ≠ 0 := hD ▸ D.ne_zero
-  simp only [kappa, dif_pos hc, dif_pos hd, dif_pos hn]
+  simp only [kappa, dif_pos hc, dif_pos (hD ▸ D.ne_zero), dif_pos hn]
   congr 1
   · apply Units.ext; exact hC.symm
   · apply Units.ext; simp [hD]
 
 theorem kappa_mul_small_zero
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (v : HeightOneSpectrum (𝓞 F))
     (hv : ringChar (O F v ⧸ p F v) ≠ 3)
     (g h : K0 F v)
     (hc : ‖c F v g‖ < 1) (he : ‖c F v h‖ < 1)
@@ -121,7 +117,7 @@ theorem kappa_mul_small_zero
         ‖d F v g‖ * ‖c F v h‖ ≤ 1 * ‖c F v h‖ :=
           mul_le_mul_of_nonneg_right ((det_norm_and_entries F v g).2 1 1) (norm_nonneg _)
         _ < 1 := by simpa using he
-    rw [kappa_zero F v ζ hζ g hcg, one_mul]
+    simp [kappa_zero F v ζ hζ g hcg]
     by_cases hch : c F v h = 0
     · have hz : c F v (g * h) = 0 := by rw [hzg, hch, mul_zero]
       rw [kappa_zero F v ζ hζ h hch, kappa_zero F v ζ hζ (g*h) hz, one_mul]
@@ -159,7 +155,7 @@ theorem kappa_mul_small_zero
         ‖c F v g‖ * ‖a F v h‖ ≤ ‖c F v g‖ * 1 :=
           mul_le_mul_of_nonneg_left ((det_norm_and_entries F v h).2 0 0) (norm_nonneg _)
         _ < 1 := by simpa using hc
-    rw [kappa_zero F v ζ hζ h hch, mul_one]
+    simp [kappa_zero F v ζ hζ h hch]
     by_cases hcg : c F v g = 0
     · have hz : c F v (g*h) = 0 := by rw [hzg, hcg, zero_mul]
       rw [kappa_zero F v ζ hζ g hcg, kappa_zero F v ζ hζ (g*h) hz, one_mul]

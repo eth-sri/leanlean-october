@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 namespace ClassFormation
@@ -33,8 +31,12 @@ noncomputable section
 variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 variable {D : DegreeData G} {A : Rep ℤ G}
 
+section
+
+variable (A : Rep ℤ G)
+
 /-- Inclusion `A_K → A_L` for an extension `L | K`. -/
-def fixedFieldInclusion (A : Rep ℤ G) (K L : ClosedSubgroup G)
+def fixedFieldInclusion (K L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.toSubgroup) :
     ambientFixedAddSubgroup A K →+ ambientFixedAddSubgroup A L where
   toFun a := ⟨a.1, fun l => a.2 ⟨l.1, hLK l.2⟩⟩
@@ -46,15 +48,14 @@ Establishes the identity `((fixedFieldInclusion A K L hLK a : ambientFixedAddSub
 = a.1`.
 -/
 @[simp]
-theorem fixedFieldInclusion_coe (A : Rep ℤ G) (K L : ClosedSubgroup G)
+theorem fixedFieldInclusion_coe (K L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.toSubgroup)
     (a : ambientFixedAddSubgroup A K) :
     ((fixedFieldInclusion A K L hLK a : ambientFixedAddSubgroup A L) : A.V) = a.1 :=
   rfl
 
 /-- The norm of an element already fixed over `K` is its `[L:K]`-fold sum. -/
-theorem relativeNorm_fixedFieldInclusion
-    (A : Rep ℤ G) (E : DegreeData.FiniteAbstractExtension G)
+theorem relativeNorm_fixedFieldInclusion (E : DegreeData.FiniteAbstractExtension G)
     (a : ambientFixedAddSubgroup A E.base) :
     relativeNorm A E.base E.field E.below
         (fixedFieldInclusion A E.base E.field E.below a) =
@@ -82,8 +83,7 @@ theorem relativeNorm_fixedFieldInclusion
 
 /-- The norm of the trivial extension is the identity. -/
 @[simp]
-theorem relativeNorm_self
-    (A : Rep ℤ G) (K : ClosedSubgroup G)
+theorem relativeNorm_self (K : ClosedSubgroup G)
     [Finite (K.toSubgroup ⧸ extensionSubgroup K K le_rfl)]
     (a : ambientFixedAddSubgroup A K) :
     relativeNorm A K K le_rfl a = a := by
@@ -99,45 +99,50 @@ theorem relativeNorm_self
     exact a.2 k
   simp only [relativeNorm_apply_coe, relativeNormValue]
   simp_rw [hterm]
-  rw [Finset.sum_const, Finset.card_univ]
+  simp
   have htop : extensionSubgroup K K le_rfl = ⊤ := by
-    change K.toSubgroup.subgroupOf K.toSubgroup = ⊤
     exact Subgroup.subgroupOf_self _
   have hcard :
       Fintype.card (K.toSubgroup ⧸ extensionSubgroup K K le_rfl) = 1 := by
     rw [← Nat.card_eq_fintype_card,
       ← Subgroup.index_eq_card (extensionSubgroup K K le_rfl),
       htop, Subgroup.index_top]
-  rw [hcard, one_nsmul]
+  simp [hcard]
+
+end
 
 namespace ValuationData
 
+section
+
+variable (v : ValuationData D A)
+
 /-- The value `1` belongs to `Z`, by the valuation-quotient axiom. -/
-def oneValue (v : ValuationData D A) : v.valueGroup :=
+def oneValue : v.valueGroup :=
   ⟨1, by
     obtain ⟨a, ha⟩ := v.integers_mem 1
     exact ⟨a, by simpa using ha⟩⟩
 
 /-- Establishes the identity `(v.oneValue : ZHat) = 1`. -/
 @[simp]
-theorem oneValue_coe (v : ValuationData D A) :
+theorem oneValue_coe :
     (v.oneValue : ZHat) = 1 :=
   rfl
 
 /-- **the prime-element definition.** A prime element has normalized value `1`. -/
-def IsPrimeElement (v : ValuationData D A) (K : FiniteAbstractField G)
+def IsPrimeElement (K : FiniteAbstractField G)
     (π : ambientFixedAddSubgroup A K.field) : Prop :=
   v.valuationAt K π = v.oneValue
 
 /-- **the prime-element definition.** The additive form of the unit group
 `U_K = {u | v_K(u)=0}`. -/
-def unitAddSubgroup (v : ValuationData D A) (K : FiniteAbstractField G) :
+def unitAddSubgroup (K : FiniteAbstractField G) :
     AddSubgroup (ambientFixedAddSubgroup A K.field) :=
   (v.valuationAt K).ker
 
 /-- Characterizes `u ∈ v.unitAddSubgroup K` by the equivalent condition `v.valuationAt K u = 0`. -/
 @[simp]
-theorem mem_unitAddSubgroup_iff (v : ValuationData D A)
+theorem mem_unitAddSubgroup_iff
     (K : FiniteAbstractField G)
     (u : ambientFixedAddSubgroup A K.field) :
     u ∈ v.unitAddSubgroup K ↔ v.valuationAt K u = 0 :=
@@ -146,7 +151,6 @@ theorem mem_unitAddSubgroup_iff (v : ValuationData D A)
 /-- Over an unramified extension, the normalized valuation restricts to the
 valuation below. -/
 theorem valuationAt_fixedFieldInclusion_of_unramified
-    (v : ValuationData D A)
     (E : FiniteAbstractFieldExtension G)
     (hUn : E.IsUnramified D)
     (a : ambientFixedAddSubgroup A E.base.field) :
@@ -154,15 +158,10 @@ theorem valuationAt_fixedFieldInclusion_of_unramified
         (fixedFieldInclusion A E.base.field E.field.field E.below a) =
       v.valuationAt E.base a := by
   let EF := E.toFiniteAbstractExtension
-  have hfeq : (E.residueDegree D : ℕ) = (E.degree : ℕ) :=
-    E.residueDegree_eq_degree_of_isUnramified D hUn
   apply Subtype.ext
   apply zHatMulNat_injective (E.residueDegree D).property
   calc
-    (E.residueDegree D : ℕ) •
-        ((v.valuationAt E.field
-          (fixedFieldInclusion A E.base.field E.field.field E.below a) :
-          v.valueGroup) : ZHat) =
+    _ =
       ((v.valuationAt E.base
         (relativeNorm A E.base.field E.field.field E.below
           (fixedFieldInclusion A E.base.field E.field.field E.below a)) :
@@ -178,12 +177,13 @@ theorem valuationAt_fixedFieldInclusion_of_unramified
               FiniteAbstractFieldExtension.degree] using
                 relativeNorm_fixedFieldInclusion A EF a]
     _ = (E.degree : ℕ) •
-        ((v.valuationAt E.base a : v.valueGroup) : ZHat) := by
-          exact congrArg Subtype.val
+        ((v.valuationAt E.base a : v.valueGroup) : ZHat) := congrArg Subtype.val
             (map_nsmul (v.valuationAt E.base) (E.degree : ℕ) a)
     _ = (E.residueDegree D : ℕ) •
         ((v.valuationAt E.base a : v.valueGroup) : ZHat) := by
-          rw [hfeq]
+          rw [(E.residueDegree_eq_degree_of_isUnramified D hUn)]
+
+end
 
 /-- A prime element remains prime in an unramified extension. -/
 theorem prime_of_unramified (v : ValuationData D A)

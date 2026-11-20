@@ -17,8 +17,8 @@ open DedekindZetaZeroFree.Quantitative.RawFixed DedekindZetaZeroFree.Quantitativ
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
 private theorem L6_line_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℂ, z.re = Scales.zLine → ‖D.recipe.L (6 * z)‖ ≤ C := by
@@ -56,17 +56,14 @@ private theorem minus_inv_rect (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexity
   have hU0 : 0 < U := by linarith
   have hxg : (8801 / 10000 : ℝ) ≤ ξ.re := by simpa [Scales.goodLine] using hξ
   have hξ0 : 0 < ξ.re := by linarith
-  have hnp := ((FixedData.pkg D).nonprincipal u hu).2
-  obtain ⟨g, hg, hgeq⟩ := RowHeckeBridge.hecke_exists_entire D.recipe.A (FixedData.primMinus D u) hnp
-  have hgL : ∀ s : ℂ, 1 < s.re → g s = Detector.idealLSeries F (FixedData.primMinus D u).character s :=
-    fun s hs => (hgeq s (by linarith)).trans
-      (RowHeckeBridge.hecke_eq_idealLSeries _ _ _ s hs)
+  obtain ⟨g, hg, hgeq⟩ := RowHeckeBridge.hecke_exists_entire D.recipe.A (FixedData.primMinus D u) (((FixedData.pkg D).nonprincipal u hu).2)
   have hmin : (FixedData.pkg D).minus u ξ =
       g ξ * Detector.finiteEulerDeletionMask F
           (RawHeckeRows.rawDeletionSet (FixedData.rawFrequency D u))
           (fun v => (FixedData.primMinus D u).character v.asIdeal) ξ := by
     rw [RawHeckeIdentification31.minus_eq_hecke_mul_mask D u hu ξ hξ0, ← hgeq ξ hξ0]
-  obtain ⟨-, hginv⟩ := h1 U hU u hu hq1 hq2 hex g hg hgL ξ hxg him
+  obtain ⟨-, hginv⟩ := h1 U hU u hu hq1 hq2 hex g hg (fun s hs => (hgeq s (by linarith)).trans
+    (RowHeckeBridge.hecke_eq_idealLSeries _ _ _ s hs)) ξ hxg him
   obtain ⟨-, -, hmask⟩ := h2 u ξ hξ
   rw [hmin, mul_inv]
   have hq : frequencyNorm D.recipe u ^ (ε / 2) ≤ 2 ^ (ε / 2) * U ^ (ε / 2) := by
@@ -93,15 +90,13 @@ private theorem rawKernel_norm_eq (u : Frequency D.recipe) (hq : 0 < frequencyNo
         ‖FixedData.rawFactor D u ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I)
           ((v : ℂ) + (p.1 : ℂ) * Complex.I)‖ := by
   unfold FixedData.rawKernel
-  have hZc : (0 : ℝ) < Z := hZ
-  have hqc : (0 : ℝ) < frequencyNorm D.recipe u := hq
   have hre : ∀ A B C X E R : ℂ, A * B * C * X * E * R = A * E * (B * C * X) * R := by
     intro A B C X E R; ring
   have hkey : ∀ A E X R : ℂ, ‖A * E * X * R‖ = ‖A‖ * ‖E‖ * ‖X‖ * ‖R‖ := by
-    intro A E X R; simp only [norm_mul]
+    intro A E X R; simp
   rw [hre, hkey]
   unfold WeightConvolution.weightModulus
-  rw [Complex.norm_cpow_eq_rpow_re_of_pos hZc, Complex.norm_cpow_eq_rpow_re_of_pos hqc]
+  rw [Complex.norm_cpow_eq_rpow_re_of_pos hZ, Complex.norm_cpow_eq_rpow_re_of_pos hq]
   simp only [Complex.add_re, Complex.sub_re, Complex.mul_re, Complex.ofReal_re,
     Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.add_im, Complex.sub_im,
     Complex.mul_im, Complex.one_re, Complex.one_im, Complex.neg_re, Complex.neg_im,
@@ -109,6 +104,8 @@ private theorem rawKernel_norm_eq (u : Frequency D.recipe) (hq : 0 < frequencyNo
   simp only [zero_mul, mul_zero, sub_zero, add_zero, zero_add, zero_sub]
   unfold Scales.kernelExponent
   try ring_nf
+
+alias GoodKernelBounds.rawKernel_norm_eq := rawKernel_norm_eq
 
 private theorem rawFactor_combine (u : Frequency D.recipe) (U : ℝ) (hU : 0 < U)
     (hq : frequencyNorm D.recipe u < 2 * U) (hq0 : 0 < frequencyNorm D.recipe u) (ε : ℝ)
@@ -135,8 +132,7 @@ private theorem rawFactor_combine (u : Frequency D.recipe) (U : ℝ) (hU : 0 < U
     rw [← Real.rpow_add hU, ← Real.rpow_add hU]
     congr 1
     ring
-  have hcorr' : ‖AllRowEuler.InitialSeparation.correctionProduct D.context
-        (FixedData.rawFrequency D u) ξ w z‖ ≤ C3 * (2 ^ (ε / 3) * U ^ (ε / 3)) :=
+  have hcorr' :=
     hcorr.trans (mul_le_mul_of_nonneg_left hq2 hC3)
   have hA : 0 ≤ C1 * (C2 * U ^ ((11 / 25 : ℝ) + ε / 3) * P) := by positivity
   have hB : 0 ≤ C1 * (C2 * U ^ ((11 / 25 : ℝ) + ε / 3) * P) *
@@ -163,7 +159,7 @@ private theorem rawKernel_majorant_aux (u : Frequency D.recipe) (U : ℝ) (hU0 :
         ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I) Z‖ ≤
       C * Z ^ (Scales.kernelExponent ξ.re Scales.wLine Scales.zLine) * U ^ ((1 / 25 : ℝ) + ε) *
         (WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p * (2 + |p.2|) ^ A) := by
-  have hq0 : 0 < frequencyNorm D.recipe u := lt_of_lt_of_le hU0 hqU
+  have hq0 := lt_of_lt_of_le hU0 hqU
   rw [rawKernel_norm_eq D u hq0 ξ Scales.zLine Scales.wLine p Z hZ]
   unfold Scales.kernelExponent
   have hqz : frequencyNorm D.recipe u ^ (-Scales.zLine) ≤ U ^ (-Scales.zLine) :=
@@ -177,16 +173,13 @@ private theorem rawKernel_majorant_aux (u : Frequency D.recipe) (U : ℝ) (hU0 :
   have hW : 0 ≤ WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p := by
     unfold WeightConvolution.weightModulus
     exact norm_nonneg _
-  have hZp : 0 ≤ Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * Scales.zLine +
-      Scales.yExponent * (Scales.wLine - 1)) := Real.rpow_nonneg hZ.le _
-  have hUz : 0 ≤ U ^ (-Scales.zLine) := Real.rpow_nonneg hU0.le _
   have h1 : Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * Scales.zLine + Scales.yExponent * (Scales.wLine - 1)) *
         frequencyNorm D.recipe u ^ (-Scales.zLine) *
         WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p ≤
       Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * Scales.zLine + Scales.yExponent * (Scales.wLine - 1)) *
         U ^ (-Scales.zLine) *
         WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p :=
-    mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hqz hZp) hW
+    mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hqz (Real.rpow_nonneg hZ.le _)) hW
   have h2 : 0 ≤ C * U ^ ((11 / 25 : ℝ) + ε) * (2 + |p.2|) ^ A := by positivity
   calc _ ≤ Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * Scales.zLine + Scales.yExponent * (Scales.wLine - 1)) *
         U ^ (-Scales.zLine) *
@@ -213,18 +206,15 @@ theorem rawKernel_majorant_rect (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexit
   obtain ⟨C4, hC4, U4, hU4, h4⟩ := minus_inv_rect D A ρ hA hconv hρ (ε / 3) (by positivity)
   refine ⟨C1 * C2 * C3 * C4 * 2 ^ (ε / 3), by positivity, U4, hU4, ?_⟩
   intro U hU u hu hqU hqU2 hex ξ Z p hZ hξ1 _ hξim
-  have hU2 : 2 ≤ U := hU4.trans hU
   have hU0 : 0 < U := by linarith
-  have hq0 : 0 < frequencyNorm D.recipe u := by linarith
   have hw : (((Scales.wLine : ℝ) : ℂ) + (p.2 : ℂ) * Complex.I).re = Scales.wLine := by simp
   have hz : (((Scales.zLine : ℝ) : ℂ) + (p.1 : ℂ) * Complex.I).re = Scales.zLine := by simp
-  have hinv := h4 U hU u hu hqU hqU2 hex ξ hξ1 hξim
-  have hR := rawFactor_combine D u U hU0 hqU2 hq0 ε hε ξ
+  have hR := rawFactor_combine D u U hU0 hqU2 (by linarith) ε hε ξ
     (((Scales.wLine : ℝ) : ℂ) + (p.2 : ℂ) * Complex.I)
     (((Scales.zLine : ℝ) : ℂ) + (p.1 : ℂ) * Complex.I) C1 C2 C3 C4 ((2 + |p.2|) ^ A)
     hC1.le hC2.le hC3.le hC4.le (by positivity) (h1 _ hz)
-    (h2 u hu U hU2 hqU hqU2 p.2)
-    (h3 u ξ _ _ hξ1 hw.ge hz.ge) hinv
+    (h2 u hu U (hU4.trans hU) hqU hqU2 p.2)
+    (h3 u ξ _ _ hξ1 hw.ge hz.ge) (h4 U hU u hu hqU hqU2 hex ξ hξ1 hξim)
   exact rawKernel_majorant_aux D u U hU0 hqU ε A _ (by positivity) ξ Z hZ p hR
 
 theorem rawKernel_majorant_right (A : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
@@ -244,22 +234,18 @@ theorem rawKernel_majorant_right (A : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityE
   refine ⟨C1 * C2 * C3 * C4 * 2 ^ (ε / 3), by positivity, ?_⟩
   intro U hU2 u hu hqU hqU2 ξ Z p hZ hξ
   have hU0 : 0 < U := by linarith
-  have hq0 : 0 < frequencyNorm D.recipe u := by linarith
   have hxg : Scales.goodLine ≤ ξ.re := by
     rw [hξ, Scales.rightLine_eq]
     unfold Scales.goodLine
     norm_num
   have hw : (((Scales.wLine : ℝ) : ℂ) + (p.2 : ℂ) * Complex.I).re = Scales.wLine := by simp
   have hz : (((Scales.zLine : ℝ) : ℂ) + (p.1 : ℂ) * Complex.I).re = Scales.zLine := by simp
-  have hUe : 1 ≤ U ^ (ε / 3) := Real.one_le_rpow (by linarith) (by positivity)
-  have hinv : ‖((FixedData.pkg D).minus u ξ)⁻¹‖ ≤ C4 * U ^ (ε / 3) :=
-    (h4 u hu ξ hξ.ge).2.trans (le_mul_of_one_le_right hC4.le hUe)
-  have hR := rawFactor_combine D u U hU0 hqU2 hq0 ε hε ξ
+  have hR := rawFactor_combine D u U hU0 hqU2 (by linarith) ε hε ξ
     (((Scales.wLine : ℝ) : ℂ) + (p.2 : ℂ) * Complex.I)
     (((Scales.zLine : ℝ) : ℂ) + (p.1 : ℂ) * Complex.I) C1 C2 C3 C4 ((2 + |p.2|) ^ A)
     hC1.le hC2.le hC3.le hC4.le (by positivity) (h1 _ hz)
     (h2 u hu U hU2 hqU hqU2 p.2)
-    (h3 u ξ _ _ hxg hw.ge hz.ge) hinv
+    (h3 u ξ _ _ hxg hw.ge hz.ge) ((h4 u hu ξ hξ.ge).2.trans (le_mul_of_one_le_right hC4.le (Real.one_le_rpow (by linarith) (by positivity))))
   have := rawKernel_majorant_aux D u U hU0 hqU ε A _ (by positivity) ξ Z hZ p hR
   rwa [hξ] at this
 

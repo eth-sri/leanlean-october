@@ -39,7 +39,6 @@ theorem coe_toGL (g : SU2) :
 theorem toGL_torusHom (z : Circle) :
     toGL (torusHom z) = diagGL ![Circle.toUnits z, (Circle.toUnits z)⁻¹] := by
   refine Units.ext (Matrix.ext fun i j => ?_)
-  rw [coe_toGL, coe_torusHom, diagGL_coe]
   fin_cases i <;> fin_cases j <;>
     simp [torusMatrix_apply_zero_zero, torusMatrix_apply_zero_one, torusMatrix_apply_one_zero,
       torusMatrix_apply_one_one, Matrix.diagonal_apply_eq, Matrix.diagonal_apply_ne,
@@ -55,19 +54,17 @@ theorem symPower_apply (g : SU2) : symPower d g = symPowerRep ℂ 2 d (toGL g) :
 
 theorem symPower_apply_tprod (g : SU2) (v : Fin d → (Fin 2 → ℂ)) :
     symPower d g (⨂ₛ[ℂ] i, v i) = ⨂ₛ[ℂ] i, (g : Matrix (Fin 2) (Fin 2) ℂ) *ᵥ v i := by
-  simp only [symPower_apply, symPowerRep, Representation.symmetricPower_apply_tprod,
-    stdRep_apply_apply, coe_toGL]
+  simp
 
 @[simp]
 theorem finrank_symPower : Module.finrank ℂ (Sym[ℂ]^d (Fin 2 → ℂ)) = d + 1 := by
-  rw [SymmetricPower.finrank_eq, Module.finrank_fin_fun, Nat.multichoose_two]
+  simp [SymmetricPower.finrank_eq]
 
 theorem character_symPower_torusHom (z : Circle) :
     (symPower d).character (torusHom z)
       = ∑ i ∈ range (d + 1), (z : ℂ) ^ i * ((z : ℂ)⁻¹) ^ (d - i) := by
   rw [Representation.character, symPower_apply, toGL_torusHom, ← Representation.character,
     char_symPowerRep_diagonal, eval_hsymm_fin_two]
-  refine sum_congr rfl fun i _ => ?_
   simp
 
 theorem character_symPower_torusHom_zpow (z : Circle) :

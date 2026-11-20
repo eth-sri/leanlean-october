@@ -9,7 +9,7 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources EisensteinSmoothGerms Filter
 open scoped Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem selected_scalar_numerator_zero_continuous
     (R : PrincipalMellin.ActualRecipe S η) {N : TraceHaarTransport R} (B : JointRootAlignedSources R N)
@@ -20,8 +20,7 @@ theorem selected_scalar_numerator_zero_continuous
     (r : ℝ) (hr : 0 < r)
     (hb : Metric.ball (0 : ℂ) r ⊆ KPContinuation.spectralDomain)
     (hp : ∀ s ∈ Metric.ball (0 : ℂ) r, s ∈ P.poles → s = 0) :
-    Continuous (selectedScalarNumerator D r 0) := by
-  exact ResidueContinuity.selected_residue_continuous D P hjoint horder r hr hb hp
+    Continuous (selectedScalarNumerator D r 0) := by apply @DedekindZetaZeroFree.ResidueContinuity.selected_residue_continuous <;> assumption
 
 end DedekindZetaZeroFree.ThetaExpansion
 

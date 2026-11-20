@@ -8,11 +8,14 @@ public import Mathlib.Analysis.Complex.Basic
 noncomputable section
 open scoped Classical BigOperators
 namespace DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.FiniteScalarEvaluation
- def pointEvaluation {X : Type*} (S : Submodule ℂ (X → ℂ)) (x : X) :
+ section
+
+variable {X : Type*} (S : Submodule ℂ (X → ℂ))
+
+def pointEvaluation (x : X) :
     Module.Dual ℂ S := (LinearMap.proj x).comp S.subtype
 
-private theorem finite_evaluation_dual_span {X : Type*}
-    (S : Submodule ℂ (X → ℂ)) [FiniteDimensional ℂ S] :
+private theorem finite_evaluation_dual_span [FiniteDimensional ℂ S] :
     ∃ (m : ℕ) (x : Fin m → X),
       Submodule.span ℂ (Set.range (fun i => pointEvaluation S (x i))) = ⊤ := by
   have htop : Submodule.span ℂ (Set.range (pointEvaluation S)) = ⊤ := by
@@ -26,17 +29,14 @@ private theorem finite_evaluation_dual_span {X : Type*}
       exact hn x
     obtain ⟨x, hx⟩ := hx
     exact ⟨pointEvaluation S x, ⟨x, rfl⟩, hx⟩
-  have hfg : (Submodule.span ℂ (Set.range (pointEvaluation S))).FG := by
+  obtain ⟨s, hs, he⟩ := (Submodule.fg_span_iff_fg_span_finset_subset _).mp (by
     rw [htop]
-    exact Module.Finite.fg_top
-  obtain ⟨s, hs, he⟩ := (Submodule.fg_span_iff_fg_span_finset_subset _).mp hfg
-  have hx : ∀ e : s, ∃ x, pointEvaluation S x = e.val := by
-    intro e
-    exact hs e.property
+    exact Module.Finite.fg_top)
+  have hx : ∀ e : s, ∃ x, pointEvaluation S x = e.val := fun e => hs e.property
   choose x hx using hx
   let E := Fintype.equivFin s
   refine ⟨Fintype.card s, fun i => x (E.symm i), ?_⟩
-  have hr : Set.range (fun i => pointEvaluation S (x (E.symm i))) = (s : Set (Module.Dual ℂ S)) := by
+  have hr : Set.range (fun i => pointEvaluation S (x (E.symm i))) = s := by
     ext e
     constructor
     · rintro ⟨i, rfl⟩
@@ -48,6 +48,10 @@ private theorem finite_evaluation_dual_span {X : Type*}
       simp only [Equiv.symm_apply_apply]
       exact hx ⟨e, he⟩
   rw [hr, ← he, htop]
+
+end
+
+alias FiniteEvaluationReconstruction.finite_evaluation_dual_span := finite_evaluation_dual_span
 
  theorem finite_evaluation_reconstruction {X : Type*}
     (S : Submodule ℂ (X → ℂ)) [FiniteDimensional ℂ S] :
@@ -72,10 +76,7 @@ private theorem finite_evaluation_dual_span {X : Type*}
   apply Finset.sum_congr rfl
   intro j _
   congr 1
-  have he := congrArg (fun e : Module.Dual ℂ S => e h) (hA j)
-  simpa only [LinearMap.sum_apply, LinearMap.smul_apply, smul_eq_mul,
-    pointEvaluation, LinearMap.comp_apply, LinearMap.proj_apply,
-    Submodule.subtype_apply, Module.Basis.coord_apply] using he.symm
+  simpa [smul_eq_mul, pointEvaluation] using (congrArg (fun e : Module.Dual ℂ S => e h) (hA j)).symm
 
 end DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.FiniteScalarEvaluation
 

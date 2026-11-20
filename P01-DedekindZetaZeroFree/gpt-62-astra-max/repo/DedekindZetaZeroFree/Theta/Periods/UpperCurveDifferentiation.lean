@@ -12,8 +12,8 @@ open NumberField MeasureTheory Filter
 namespace DedekindZetaZeroFree.RootDerivatives
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem integrand_joint_continuous (f : Functions R) (hf : Continuous f)
     (hr : ∀ γ g, f (KPLiteralRaw.rationalLift F R.A.zeta12 R.A.primitive_zeta12 γ * g) = f g) :
@@ -24,8 +24,8 @@ theorem integrand_joint_continuous (f : Functions R) (hf : Continuous f)
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F R.A.zeta12 R.A.primitive_zeta12).2.2.1
   have hc : Continuous (fun p : Group R × KPAdditiveQuotient F =>
       f (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out p.2) * p.1)) := by
-    apply ((IsOpenQuotientMap.id (X := Group R)).prodMap
-      (QuotientAddGroup.isOpenQuotientMap_mk (N := AdeleRing.principalSubgroup (𝓞 F) F))).continuous_comp_iff.mp
+    apply ((IsOpenQuotientMap.id).prodMap
+      (QuotientAddGroup.isOpenQuotientMap_mk)).continuous_comp_iff.mp
     convert hf.comp (((KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous
       F R.A.zeta12 R.A.primitive_zeta12).comp continuous_snd).mul continuous_fst) using 1
     funext p
@@ -54,7 +54,7 @@ theorem upperCurve_continuous (w : InfinitePlace F) (b : Bool) : Continuous (upp
         intro x y
         simpa only [RingEquiv.apply_symm_apply] using (hi (e.symm x) (e.symm y)).symm
       convert ((hs.continuous.comp Complex.continuous_ofReal).mul
-        (continuous_const (y := upperLieDirection R w b))) using 1
+        (continuous_const)) using 1
       funext t; exact Pi.single_eq_same w _
     · simp only [Pi.single_eq_of_ne hv]; exact continuous_const
   exact (KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous

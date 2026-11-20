@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Metaplectic.Torus.WeylCoordinateInversion
 
 public import DedekindZetaZeroFree.RepresentationTheory.Jacquet.OrdinaryBruhatCellFiltration
 public import DedekindZetaZeroFree.RepresentationTheory.Jacquet.TwistedOpenCellIsomorphism
@@ -29,13 +30,13 @@ private theorem pgl_diagonal_injective (K : Type*) [Field K] (u v : Kˣ)
     (huv : Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d K u 1) =
       Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d K v 1)) : u = v := by
   obtain ⟨c, hc⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp huv
-  have h11 := congrArg (fun g : GL (Fin 2) K => (g : Matrix (Fin 2) (Fin 2) K) 1 1) hc
-  have h00 := congrArg (fun g : GL (Fin 2) K => (g : Matrix (Fin 2) (Fin 2) K) 0 0) hc
+  have h11 := congrArg (fun g : GL (Fin 2) K => g 1 1) hc
+  have h00 := congrArg (fun g : GL (Fin 2) K => g 0 0) hc
   simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.scalar, Matrix.diagonal_apply] at h11 h00
   apply Units.ext
   calc
-    (u : K) = (u : K) * (c : K) := by simp [h11]
+    _ = (u : K) * (c : K) := by simp [h11]
     _ = (v : K) := h00
 
 private theorem pgl_weyl_diagonal (K : Type*) [Field K] (u : Kˣ) :
@@ -52,6 +53,8 @@ private theorem pgl_weyl_diagonal (K : Type*) [Field K] (u : Kˣ) :
     simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.scalar, Matrix.diagonal_apply]
 
+alias TamePolarizationsAndTwistedCoinvariants.pgl_weyl_diagonal := pgl_weyl_diagonal
+
 private theorem weyl_coordinate (h : actualTorus F ζ hζ q) :
     S.borel.coordinate (S.borel.weyl h) = (S.borel.coordinate h)⁻¹ := by
   apply pgl_diagonal_injective
@@ -62,15 +65,17 @@ private theorem weyl_coordinate (h : actualTorus F ζ hζ q) :
   simp only [← mul_assoc, mul_inv_cancel, one_mul]
   exact (pgl_weyl_diagonal (LocalField F q) (S.borel.coordinate h)).symm
 
+alias TamePolarizationsAndTwistedCoinvariants.weyl_coordinate := weyl_coordinate
+
 theorem weyl_preserves_HL (hP : IsTamePolarization F ζ hζ q S P)
     (h : HL F ζ hζ q S P) :
     S.borel.weyl (h : actualTorus F ζ hζ q) ∈ HL F ζ hζ q S P := by
-  have hm : S.cubeClassEquiv (S.heisenberg.π (h : actualTorus F ζ hζ q)) ∈
+  have hm : S.cubeClassEquiv (S.heisenberg.π h) ∈
       KPTameValuationCoordinates.unitCubeClasses (LocalField F q) := by
     rw [← hP]
     exact ⟨S.heisenberg.π h, h.property, rfl⟩
   have hw : S.cubeClassEquiv (S.heisenberg.π (S.borel.weyl h)) =
-      (S.cubeClassEquiv (S.heisenberg.π (h : actualTorus F ζ hζ q)))⁻¹ := by
+      (S.cubeClassEquiv (S.heisenberg.π h))⁻¹ := by
     rw [S.cube_class, S.cube_class, weyl_coordinate F ζ hζ q S]
     exact map_inv (QuotientGroup.mk' _) _
   change S.heisenberg.π (S.borel.weyl h) ∈ P.L
@@ -108,18 +113,22 @@ def retractL (b : BL F ζ hζ q S P) : HL F ζ hζ q S P :=
     rw [he']
     exact ha⟩
 
-def chiH (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+section
+
+variable (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+
+def chiH
     (h : HL F ζ hζ q S P) : ℂ :=
   (match ε with
     | .plus => (P.ωL h : ℂ)
     | .minus => (P.ωL (weylHL F ζ hζ q S P hP h) : ℂ)) *
     normPower (LocalField F q) (S.borel.coordinate h) (1 / 2)
 
-def chi (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+def chi
     (b : BL F ζ hζ q S P) : ℂ :=
   chiH F ζ hζ q S P hP ε (retractL F ζ hζ q S P b)
 
-def scalarSections (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
+def scalarSections :
     Submodule ℂ (ActualCover F ζ hζ q → ℂ) where
   carrier := {f | (∀ (b : BL F ζ hζ q S P) (g : ActualCover F ζ hζ q),
     f ((b : ActualCover F ζ hζ q) * g) = chi F ζ hζ q S P hP ε b * f g) ∧
@@ -139,22 +148,23 @@ def scalarSections (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
     simp only [Pi.smul_apply, smul_eq_mul, hf.1]
     ring
 
- theorem scalarSections_stable
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) (g : ActualCover F ζ hζ q) :
+ theorem scalarSections_stable (g : ActualCover F ζ hζ q) :
     scalarSections F ζ hζ q S P hP ε ≤
       (scalarSections F ζ hζ q S P hP ε).comap (rightTranslationRepresentation g) := by
   intro f hf
   refine ⟨?_, (mem_smoothSubmodule _ _).mp (smoothSubmodule_stable _ g
     ((mem_smoothSubmodule _ _).mpr hf.2))⟩
   intro b x
-  change f (((b : ActualCover F ζ hζ q) * x) * g) = _
+  change f ((b * x) * g) = _
   rw [mul_assoc, hf.1]
   rfl
 
-def scalarAction (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
+def scalarAction :
     Representation ℂ (ActualCover F ζ hζ q) (scalarSections F ζ hζ q S P hP ε) :=
   rightTranslationRepresentation.subrepresentation _
     (scalarSections_stable F ζ hζ q S P hP ε)
+
+end
 
 def eta (π : (LocalField F q)ˣ) (j : Fin 3) : ActualCover F ζ hζ q :=
   KPPGLLocalCover.A F ζ hζ (Sum.inr q) (π ^ j.val)
@@ -174,9 +184,11 @@ run_cmd Lean.Elab.Command.liftTermElabM do
     ``DedekindZetaZeroFree.KPTameJacquetBruhatTests.Raw.jacquetIntegrand
   pure ()
 
+local notation "LocalCompletion" => LocalField F q
+
 def HasStableValue (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (π : (LocalField F q)ˣ) (ψ : Multiplicative (LocalField F q) →* ℂˣ)
-    (μ : Measure (LocalField F q)) (a : ActualCover F ζ hζ q)
+    (π : LocalCompletionˣ) (ψ : Multiplicative LocalCompletion →* ℂˣ)
+    (μ : Measure LocalCompletion) (a : ActualCover F ζ hζ q)
     (f : scalarSections F ζ hζ q S P hP ε) (z : ℂ) : Prop :=
   ∃ r₀ : ℕ, ∀ r ≥ r₀,
     IntegrableOn (jacquetIntegrand F ζ hζ q S P hP ε ψ a f)
@@ -184,30 +196,30 @@ def HasStableValue (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
     (∫ x in expandingBall F q π r,
       jacquetIntegrand F ζ hζ q S P hP ε ψ a f x ∂μ) = z
 
-def HasConductorIntegers (ψ : Multiplicative (LocalField F q) →* ℂˣ) : Prop :=
-  ∀ y : LocalField F q,
-    (∀ x : 𝒪[LocalField F q], ψ (Multiplicative.ofAdd ((x : LocalField F q) * y)) = 1) ↔
-      y ∈ (valuation (LocalField F q)).integer
+def HasConductorIntegers (ψ : Multiplicative LocalCompletion →* ℂˣ) : Prop :=
+  ∀ y : LocalCompletion,
+    (∀ x : 𝒪[LocalCompletion], ψ (Multiplicative.ofAdd ((x : LocalCompletion) * y)) = 1) ↔
+      y ∈ (valuation LocalCompletion).integer
 
 def splitCongruenceSet (m : ℕ) : Set (ActualCover F ζ hζ q) :=
   Set.range (fun k : KPLocalCube.Gamma F q m =>
     KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
       (KPLocalCover.sectionMap F ζ hζ (Sum.inr q) k.val))
 
-def rootLevelSet (m : ℕ) : Set (LocalField F q) :=
+def rootLevelSet (m : ℕ) : Set LocalCompletion :=
   {x | KPPGLLocalCover.N F ζ hζ (Sum.inr q) x ∈ splitCongruenceSet F ζ hζ q m}
 
-def rootMass (μ : Measure (LocalField F q)) (m : ℕ) : ℝ :=
+def rootMass (μ : Measure LocalCompletion) (m : ℕ) : ℝ :=
   (μ (rootLevelSet F ζ hζ q m)).toReal
 
-def bruhatSupport (π : (LocalField F q)ˣ) (j : Fin 3) (m : ℕ) :
+def bruhatSupport (π : LocalCompletionˣ) (j : Fin 3) (m : ℕ) :
     Set (ActualCover F ζ hζ q) :=
   {g | ∃ (b : BL F ζ hζ q S P) (k : ActualCover F ζ hζ q),
     k ∈ splitCongruenceSet F ζ hζ q m ∧
       g = b * eta F ζ hζ q π j * k * KPPGLLocalCover.W F ζ hζ (Sum.inr q)}
 
 abbrev whittakerSpace (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ) :=
+    (ψ : Multiplicative LocalCompletion →* ℂˣ) :=
   algebraicWhittaker (scalarAction F ζ hζ q S P hP ε)
     (KPLocalSmoothRepresentation.upperRoot F ζ hζ q) ψ
 

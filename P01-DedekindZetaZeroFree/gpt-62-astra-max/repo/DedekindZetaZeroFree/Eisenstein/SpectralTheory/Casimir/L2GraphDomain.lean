@@ -13,10 +13,10 @@ open KPContSectorSmoothFramesSupport KPContSectorLineL2Isometry KPContActualSect
 set_option backward.isDefEq.respectTransparency true
 set_option maxHeartbeats 1000000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 theorem graph_eigen_of_threeL2
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
@@ -26,7 +26,7 @@ theorem graph_eigen_of_threeL2
       KPContActualSmoothLineGluing.Represents F ζ hζ U R P H Z.val z ∧
       (z,a • z) ∈ (KPContActualSectorFriedrichsSynthesis.Δ_U F ζ hζ U R P H
         R.adelicHaar R.adelic_isHaar rfl realization).graph := by
-  let W : GraphSection (U := U) (H := H) := ⟨Z,h3⟩
+  let W : GraphSection := ⟨Z,h3⟩
   obtain ⟨r,hr⟩ := kp_cont_actual_sector_cutoff_graph_limit.{0} F ζ hζ
     R.adelicHaar R.adelic_isHaar U R rfl P H realization
   obtain ⟨hd,hdv⟩ := hr.closed_graph_consequence W
@@ -37,13 +37,10 @@ theorem graph_eigen_of_threeL2
     apply Subtype.ext
     exact he
   refine ⟨sectionClass W, ?_, ?_⟩
-  · let B : BorelL2Sections F ζ hζ U R P H :=
-      ⟨Z.val, ⟨fun i => (Z.property i).continuous.measurable, h3.1⟩⟩
-    refine ⟨representative_memLp F ζ hζ U R P H B, ?_⟩
+  · refine ⟨representative_memLp F ζ hζ U R P H (⟨Z.val, ⟨fun i => (Z.property i).continuous.measurable, h3.1⟩⟩), ?_⟩
     rfl
-  · have hg := (KPContActualSectorFriedrichsSynthesis.Δ_U F ζ hζ U R P H
-        R.adelicHaar R.adelic_isHaar rfl realization).mem_graph ⟨sectionClass W, hd⟩
-    simpa only [hdv, hl] using hg
+  · simpa only [hdv, hl] using ((KPContActualSectorFriedrichsSynthesis.Δ_U F ζ hζ U R P H
+      R.adelicHaar R.adelic_isHaar rfl realization).mem_graph ⟨sectionClass W, hd⟩)
 end DedekindZetaZeroFree.FourierContinuation.ResidualAverageDomain
 
 end

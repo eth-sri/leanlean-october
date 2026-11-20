@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 namespace ClassFormation
@@ -63,9 +60,8 @@ theorem abstractReciprocity_sylow_lowerQuotient_isPGroup
         extensionSubgroup
           (L.intermediateField (P : Subgroup L.extensionQuotient)) L.field
           (L.field_le_intermediateField
-            (P : Subgroup L.extensionQuotient))) := by
-  exact P.isPGroup'.of_equiv
-    (L.lowerQuotientEquiv (P : Subgroup L.extensionQuotient)).symm
+            (P : Subgroup L.extensionQuotient))) := P.isPGroup'.of_equiv
+    (L.lowerQuotientEquiv P).symm
 
 section SylowSolvability
 
@@ -83,26 +79,11 @@ theorem abstractReciprocity_sylow_lowerQuotient_isSolvable
           (L.intermediateField (P : Subgroup L.extensionQuotient)) L.field
           (L.field_le_intermediateField
             (P : Subgroup L.extensionQuotient))) := by
-  let : Finite
-      ((L.intermediateField (P : Subgroup L.extensionQuotient)).toSubgroup ⧸
-        extensionSubgroup
-          (L.intermediateField (P : Subgroup L.extensionQuotient)) L.field
-          (L.field_le_intermediateField
-            (P : Subgroup L.extensionQuotient))) :=
+  let :=
     L.extension_over_intermediate_finite
-      (P : Subgroup L.extensionQuotient)
-  let : Group.IsNilpotent
-      ((L.intermediateField (P : Subgroup L.extensionQuotient)).toSubgroup ⧸
-        extensionSubgroup
-          (L.intermediateField (P : Subgroup L.extensionQuotient)) L.field
-          (L.field_le_intermediateField
-            (P : Subgroup L.extensionQuotient))) :=
+      P
+  let :=
     (L.abstractReciprocity_sylow_lowerQuotient_isPGroup P).isNilpotent
-  change Group.IsSolvable
-    ((L.intermediateField (P : Subgroup L.extensionQuotient)).toSubgroup ⧸
-      extensionSubgroup
-        (L.intermediateField (P : Subgroup L.extensionQuotient)) L.field
-        (L.field_le_intermediateField (P : Subgroup L.extensionQuotient)))
   infer_instance
 
 end SylowSolvability
@@ -117,13 +98,13 @@ theorem abstractReciprocity_sylow_intermediateDegree_eq_index
       (P : Subgroup L.extensionQuotient)).degree =
       (P : Subgroup L.extensionQuotient).index := by
   rw [← (L.intermediateFiniteAbstractExtension
-    (P : Subgroup L.extensionQuotient)).extensionSubgroup_index_eq_degree]
+    P).extensionSubgroup_index_eq_degree]
   change (extensionSubgroup K
-    (L.intermediateField (P : Subgroup L.extensionQuotient))
-      (L.intermediateField_le_base (P : Subgroup L.extensionQuotient))).index = _
+    (L.intermediateField P)
+      (L.intermediateField_le_base P)).index = _
   rw [L.extensionSubgroup_intermediateField_eq
     (P : Subgroup L.extensionQuotient)]
-  exact (P : Subgroup L.extensionQuotient).index_comap_of_surjective
+  exact P.index_comap_of_surjective
     (QuotientGroup.mk'_surjective
       (extensionSubgroup K L.field L.below))
 
@@ -157,12 +138,12 @@ theorem sylowAddSubgroup_le_nsmul_range_of_coprime
       (nsmulAddMonoidHom (α := B) n).range := by
   intro x hx
   let xS : S := ⟨Multiplicative.ofAdd x, hx⟩
-  let e : S ≃ S := S.isPGroup'.powEquiv hn.symm
-  let yS : S := e.symm xS
+  let e := S.isPGroup'.powEquiv hn.symm
+  let yS := e.symm xS
   refine ⟨yS.1.toAdd, ?_⟩
   have hy : yS ^ n = xS := e.apply_symm_apply xS
   have hyval : yS.1 ^ n = xS.1 := congrArg Subtype.val hy
-  simpa [xS] using congrArg Multiplicative.toAdd hyval
+  assumption
 
 /-- The exact specialization: for `M = L^P`, every Sylow
 `p`-subgroup of an abelian group `B` lies in the image of the
@@ -177,8 +158,7 @@ theorem abstractReciprocity_sylowAddSubgroup_le_intermediateDegree_nsmul_range
         (S : Subgroup (Multiplicative B)) ≤
       (nsmulAddMonoidHom (α := B)
         (L.intermediateFiniteAbstractExtension
-          (P : Subgroup L.extensionQuotient)).degree).range := by
-  exact sylowAddSubgroup_le_nsmul_range_of_coprime S
+          (P : Subgroup L.extensionQuotient)).degree).range := sylowAddSubgroup_le_nsmul_range_of_coprime S
     (L.abstractReciprocity_sylow_intermediateDegree_coprime P)
 
 end FiniteGaloisSubextension

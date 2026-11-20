@@ -40,10 +40,8 @@ theorem finite_local_subspace (f : KPLiteralTensor.harmonicPlus) :
   obtain ⟨V, hV, hfV, hinv, hle⟩ :=
     KPLiteralScalarArchHarmonicCore.finite_invariant_subspace
       positiveParameter f.val f.property
-  let : Module.Finite ℂ V := hV
-  let inc : V →ₗ[ℂ] KPLiteralTensor.harmonicPlus :=
-    V.inclusion hle
-  refine ⟨inc.range, inferInstance, ?_, ?_⟩
+  let := hV
+  refine ⟨(V.inclusion hle).range, inferInstance, ?_, ?_⟩
   · exact ⟨⟨f.val, hfV⟩, Subtype.ext rfl⟩
   · intro k v hv
     obtain ⟨w, rfl⟩ := hv

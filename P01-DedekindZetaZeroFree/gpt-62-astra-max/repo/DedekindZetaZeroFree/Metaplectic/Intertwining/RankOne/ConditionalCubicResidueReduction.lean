@@ -20,19 +20,25 @@ variable {G H D : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [Group H] [TopologicalSpace H] [IsTopologicalGroup H] [CommGroup D] [Finite D]
 variable {T : LocalHeisenbergData H D}
 
-def integerMass (dx : Measure K) : ℝ :=
+section
+
+variable (dx : Measure K)
+
+def integerMass : ℝ :=
   (dx ((valuation K).integer : Set K)).toReal
 
-def rationalResidueScalar (dx : Measure K) : RatFunc ℂ :=
+def rationalResidueScalar : RatFunc ℂ :=
   RatFunc.C (((integerMass K dx ^ 2 * KPCubicHaar.abs K (3 : K) : ℝ) : ℂ) / 9) *
     (∑ᶠ ξ : CubicUnitCharacters.Character K,
       ∑ᶠ ζ : CubicCharacters.Mu3,
         KPRankoneCubicScalarSum.betaFactor K ξ
           (RatFunc.C ((ζ : ℂˣ) : ℂ) * RatFunc.X ^ 2))
 
-def residueScalar (dx : Measure K) (z : ℂ) : ℂ :=
+def residueScalar (z : ℂ) : ℂ :=
   KPRankoneCubicScalarSum.finiteScalar K (integerMass K dx)
     (KPCubicHaar.abs K (3 : K)) z
+
+end
 
 def RegularPointResidueOutput
     (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)

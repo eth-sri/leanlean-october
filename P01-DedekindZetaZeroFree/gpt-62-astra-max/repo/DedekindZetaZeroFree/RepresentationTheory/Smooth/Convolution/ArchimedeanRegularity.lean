@@ -30,18 +30,16 @@ theorem right_translate_arch_slice_smooth
     obtain ⟨O, q, hO, hzO, hq, hqO, heq⟩ :=
       KPLiteralChamber.literal_group_chart_local_transition F ζ hζ b z₀ hz₀
     refine ⟨O, hO, hzO, ?_⟩
-    have hc := (hu.2.1
-      (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z₀ * b)).comp hq hqO
-    exact (hc.congr (fun z hz => congrArg u (heq z hz))).mono
+    exact (((hu.2.1
+      (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z₀ * b)).comp hq hqO).congr (fun z hz => congrArg u (heq z hz))).mono
       Set.inter_subset_right
   apply contDiffOn_of_locally_contDiffOn
   intro x₀ hx₀
   obtain ⟨O, q, hO, hxO, hq, hqO, heq⟩ :=
     KPLiteralChamber.literal_right_to_left_chart_local_transition F ζ hζ g x₀ hx₀
   refine ⟨O, hO, hxO, ?_⟩
-  have hc := (hleft ((g * KPGlobalResidualConstruction.archChart F ζ hζ x₀) * a)).comp
-    hq hqO
-  apply (hc.congr (fun x hx => ?_)).mono Set.inter_subset_right
+  apply (((hleft ((g * KPGlobalResidualConstruction.archChart F ζ hζ x₀) * a)).comp
+    hq hqO).congr (fun x hx => ?_)).mono Set.inter_subset_right
   rw [heq x hx, mul_assoc]
   rfl
 

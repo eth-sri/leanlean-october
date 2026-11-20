@@ -15,25 +15,24 @@ set_option maxHeartbeats 1600000
  def primeAbove {F : Type} [Field F] [NumberField F] (p : Nat.Primes) :
     HeightOneSpectrum (𝓞 F) := by
   letI : Fact p.val.Prime := ⟨p.property⟩
-  let P : Ideal ℤ := Ideal.span {(p.val : ℤ)}
+  let P := Ideal.span {(p.val : ℤ)}
   letI : P.IsPrime := inferInstanceAs (Ideal.span {(p.val : ℤ)}).IsPrime
   let Q := Classical.choice (Ideal.nonempty_primesOver (S := 𝓞 F) P)
   refine ⟨Q.val, Q.property.1, ?_⟩
   intro hQ
   have he := Q.property.2.over
   rw [hQ, Ideal.under_bot] at he
-  have hp0 := Ideal.span_singleton_eq_bot.mp he
-  exact (by exact_mod_cast p.property.ne_zero : (p.val : ℤ) ≠ 0) hp0
+  exact (by exact_mod_cast p.property.ne_zero : (p.val : ℤ) ≠ 0) (Ideal.span_singleton_eq_bot.mp he)
 
 private theorem primeAbove_under {F : Type} [Field F] [NumberField F] (p : Nat.Primes) :
     Ideal.under ℤ (primeAbove (F := F) p).asIdeal = Ideal.span {(p.val : ℤ)} := by
   letI : Fact p.val.Prime := ⟨p.property⟩
-  exact (Classical.choice (Ideal.nonempty_primesOver (S := 𝓞 F)
+  exact (Classical.choice (Ideal.nonempty_primesOver
     (Ideal.span {(p.val : ℤ)}))).property.2.over.symm
 
 theorem finitePlaces_infinite (F : Type) [Field F] [NumberField F] :
     Infinite (KPFinitePlace F) := by
-  apply Infinite.of_injective (primeAbove (F := F))
+  apply Infinite.of_injective (primeAbove)
   intro p q hpq
   have he := congrArg (fun P : HeightOneSpectrum (𝓞 F) => Ideal.under ℤ P.asIdeal) hpq
   rw [primeAbove_under, primeAbove_under] at he

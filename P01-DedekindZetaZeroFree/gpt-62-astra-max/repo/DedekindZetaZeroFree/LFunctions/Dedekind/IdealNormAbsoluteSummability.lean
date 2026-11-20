@@ -10,26 +10,29 @@ namespace DedekindZetaZeroFree
 noncomputable section
 open scoped NumberField Classical
 
-def idealAbsoluteWeight (F : Type) [Field F] [NumberField F] (σ : ℝ)
-    (I : Ideal (𝓞 F)) : ℝ :=
+variable (F : Type) [Field F] [NumberField F] (σ : ℝ)
+
+local notation "IntegerIdeal" => Ideal (𝓞 F)
+
+def idealAbsoluteWeight
+    (I : IntegerIdeal) : ℝ :=
   if I = ⊥ then 0 else (Ideal.absNorm I : ℝ) ^ (-σ)
 
-def idealAbsoluteSum (F : Type) [Field F] [NumberField F] (σ : ℝ) : ℝ :=
-  ∑' I : Ideal (𝓞 F), idealAbsoluteWeight F σ I
+def idealAbsoluteSum : ℝ :=
+  ∑' I : IntegerIdeal, idealAbsoluteWeight F σ I
 
-theorem idealAbsoluteSum_converges (F : Type) [Field F] [NumberField F]
-    (σ : ℝ) (hσ : 1 < σ) :
+theorem idealAbsoluteSum_converges (hσ : 1 < σ) :
     Summable (idealAbsoluteWeight F σ) ∧
-      (∀ I : Ideal (𝓞 F), 0 ≤ idealAbsoluteWeight F σ I) ∧
+      (∀ I : IntegerIdeal, 0 ≤ idealAbsoluteWeight F σ I) ∧
       0 < idealAbsoluteSum F σ ∧
       HasSum (idealAbsoluteWeight F σ) (idealAbsoluteSum F σ) := by
   classical
-  have hnonneg (I : Ideal (𝓞 F)) : 0 ≤ idealAbsoluteWeight F σ I := by
+  have hnonneg (I : IntegerIdeal) : 0 ≤ idealAbsoluteWeight F σ I := by
     unfold idealAbsoluteWeight
     split_ifs
     · exact le_rfl
-    · exact Real.rpow_nonneg (Nat.cast_nonneg _) _
-  let a : ℕ → ℝ := fun n => Nat.card {I : Ideal (𝓞 F) // Ideal.absNorm I = n}
+    · positivity
+  let a := fun n => Nat.card {I : IntegerIdeal // Ideal.absNorm I = n}
   have hlim : Filter.Tendsto
       (fun n : ℕ => (∑ k ∈ Finset.Icc 1 n, a k) / (n : ℝ))
       Filter.atTop (nhds (NumberField.dedekindZeta_residue F)) := by
@@ -39,7 +42,7 @@ theorem idealAbsoluteSum_converges (F : Type) [Field F] [NumberField F]
     congr
     rw [← add_left_inj 1, ← Ideal.card_norm_le_eq_card_norm_le_add_one,
       show Finset.Icc 1 n = Finset.Ioc 0 n from Finset.Icc_succ_left_eq_Ioc _ _,
-      show 1 = Nat.card {I : Ideal (𝓞 F) // Ideal.absNorm I = 0} by
+      show 1 = Nat.card {I : IntegerIdeal // Ideal.absNorm I = 0} by
         simp [Ideal.absNorm_eq_zero_iff],
       Finset.sum_Ioc_add_eq_sum_Icc (n.zero_le),
       ← Finset.card_preimage_eq_sum_card_image_eq
@@ -49,24 +52,23 @@ theorem idealAbsoluteSum_converges (F : Type) [Field F] [NumberField F]
     apply LSeriesSummable_of_sum_norm_bigO_and_nonneg (r := 1)
     · exact Asymptotics.isBigO_atTop_natCast_rpow_of_tendsto_div_rpow
         (by simpa using hlim)
-    · intro n
-      exact Nat.cast_nonneg _
+    · simp
     · exact zero_le_one
     · simpa using hσ
   have hfiber (n : ℕ) :
-      (∑' I : {I : Ideal (𝓞 F) // Ideal.absNorm I = n},
+      (∑' I : {I : IntegerIdeal // Ideal.absNorm I = n},
         idealAbsoluteWeight F σ I.val) =
       ‖LSeries.term (fun n => (a n : ℂ)) (σ : ℂ) n‖ := by
     rw [LSeries.norm_term_eq]
     by_cases hn : n = 0
     · subst n
       simp only [if_pos rfl]
-      have hz (I : {I : Ideal (𝓞 F) // Ideal.absNorm I = 0}) :
+      have hz (I : {I : IntegerIdeal // Ideal.absNorm I = 0}) :
           idealAbsoluteWeight F σ I.val = 0 := by
         simp [idealAbsoluteWeight, Ideal.absNorm_eq_zero_iff.mp I.property]
       simp [hz]
     · rw [if_neg hn]
-      have hweight (I : {I : Ideal (𝓞 F) // Ideal.absNorm I = n}) :
+      have hweight (I : {I : IntegerIdeal // Ideal.absNorm I = n}) :
           idealAbsoluteWeight F σ I.val = (n : ℝ) ^ (-σ) := by
         have hI : I.val ≠ ⊥ := by
           intro h
@@ -84,12 +86,11 @@ theorem idealAbsoluteSum_converges (F : Type) [Field F] [NumberField F]
         letI := (Ideal.finite_setOfPred_absNorm_eq (S := 𝓞 F) n).fintype
         exact summable_of_finite_support (Set.toFinite _)
       · exact hL.norm.congr (fun n => (hfiber n).symm)
-    · intro I
-      exact ⟨Ideal.absNorm I, rfl, fun n hn => hn.symm⟩
+    · simp
   refine ⟨hs, hnonneg, ?_, hs.hasSum⟩
-  have htop : idealAbsoluteWeight F σ (⊤ : Ideal (𝓞 F)) = 1 := by
+  have htop : idealAbsoluteWeight F σ (⊤ : IntegerIdeal) = 1 := by
     simp [idealAbsoluteWeight]
-  have hle := hs.le_tsum (⊤ : Ideal (𝓞 F)) (fun I _ => hnonneg I)
+  have hle := hs.le_tsum (⊤ : IntegerIdeal) (fun I _ => hnonneg I)
   rw [htop] at hle
   exact lt_of_lt_of_le zero_lt_one hle
 

@@ -16,14 +16,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -52,10 +44,13 @@ attribute [local instance]
   padicCompletedMultiplicativeTargetCompleteSpace
   padicCompletedMultiplicativeTargetT2Space
 
+section
+
+variable (p : ℕ) [Fact p.Prime]
+
 /-- The standard-to-multiplicative intertwiner after extending its
 `ℚ_p`-integral coefficients to the completed unramified Witt ring. -/
-noncomputable def padicCompletedStandardToMultiplicativeIntertwiner
-    (p : ℕ) [Fact p.Prime] :
+noncomputable def padicCompletedStandardToMultiplicativeIntertwiner :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
   PowerSeries.map
     (padicValuationSubringToCompletedUnramifiedWittRing p)
@@ -64,35 +59,26 @@ noncomputable def padicCompletedStandardToMultiplicativeIntertwiner
 /-- Witt Frobenius fixes the completed standard-to-multiplicative
 intertwiner because all of its coefficients descend from the p-adic
 valuation ring. -/
-theorem padicCompletedStandardToMultiplicativeIntertwiner_frobenius
-    (p : ℕ) [Fact p.Prime] :
+theorem padicCompletedStandardToMultiplicativeIntertwiner_frobenius :
     PowerSeries.map WittVector.frobenius
         (padicCompletedStandardToMultiplicativeIntertwiner p) =
       padicCompletedStandardToMultiplicativeIntertwiner p := by
-  apply PowerSeries.ext
-  intro m
-  simp [padicCompletedStandardToMultiplicativeIntertwiner,
-    PowerSeries.coeff_map,
-    padicValuationSubringToCompletedUnramifiedWittRing_frobenius]
+  ext <;> simp [padicCompletedStandardToMultiplicativeIntertwiner, PowerSeries.coeff_map, padicValuationSubringToCompletedUnramifiedWittRing_frobenius]
 
 /-- The completed standard-to-multiplicative intertwiner has zero constant
 coefficient. -/
-theorem padicCompletedStandardToMultiplicativeIntertwiner_constantCoeff
-    (p : ℕ) [Fact p.Prime] :
+theorem padicCompletedStandardToMultiplicativeIntertwiner_constantCoeff :
     PowerSeries.constantCoeff
         (padicCompletedStandardToMultiplicativeIntertwiner p) = 0 := by
-  have hconstant :=
-    (padicStandardToMultiplicativeIntertwiner_hasLinearTerm p).constantCoeff_eq_zero
   change
     padicValuationSubringToCompletedUnramifiedWittRing p
         (PowerSeries.constantCoeff
           (padicStandardToMultiplicativeIntertwiner p)) = 0
-  rw [PowerSeries.constantCoeff_eq, hconstant, map_zero]
+  rw [PowerSeries.constantCoeff_eq, ((padicStandardToMultiplicativeIntertwiner_hasLinearTerm p).constantCoeff_eq_zero), map_zero]
 
 /-- The completed standard-to-multiplicative intertwiner admits formal
 substitution and convergent evaluation at topologically nilpotent points. -/
-theorem padicCompletedStandardToMultiplicativeIntertwiner_hasSubst
-    (p : ℕ) [Fact p.Prime] :
+theorem padicCompletedStandardToMultiplicativeIntertwiner_hasSubst :
     PowerSeries.HasSubst
       (padicCompletedStandardToMultiplicativeIntertwiner p) :=
   PowerSeries.HasSubst.of_constantCoeff_zero'
@@ -100,8 +86,7 @@ theorem padicCompletedStandardToMultiplicativeIntertwiner_hasSubst
 
 /-- Evaluation of the completed standard-to-multiplicative comparison is
 injective on topologically nilpotent completed-level integers. -/
-theorem padicCompletedStandardToMultiplicativeIntertwiner_eval_injective
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+theorem padicCompletedStandardToMultiplicativeIntertwiner_eval_injective (n : ℕ)
     {x y : (padicCompletedLevelCompleteDVF p n).valuationSubring}
     (hx : PowerSeries.HasEval x) (hy : PowerSeries.HasEval y)
     (hxy :
@@ -124,7 +109,6 @@ theorem padicCompletedStandardToMultiplicativeIntertwiner_eval_injective
 /-- A standard p-adic Lubin--Tate scalar endomorphism after extending its
 coefficients to the completed unramified Witt ring. -/
 noncomputable def padicCompletedStandardScalarEndomorphism
-    (p : ℕ) [Fact p.Prime]
     (a : (padicLocalField p).valuationSubring) :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
   PowerSeries.map
@@ -135,26 +119,22 @@ noncomputable def padicCompletedStandardScalarEndomorphism
 /-- Completed standard scalar endomorphisms have zero constant
 coefficient. -/
 theorem padicCompletedStandardScalarEndomorphism_constantCoeff
-    (p : ℕ) [Fact p.Prime]
     (a : (padicLocalField p).valuationSubring) :
     PowerSeries.constantCoeff
         (padicCompletedStandardScalarEndomorphism p a) =
       0 := by
-  have hconstant :=
-    (standardLubinTateEndomorphism_hasLinearTerm
-      (padicMultiplicativeLubinTateSeries_isUniformizer p) a
-      ).constantCoeff_eq_zero
   change
     padicValuationSubringToCompletedUnramifiedWittRing p
         (PowerSeries.constantCoeff
           (standardLubinTateEndomorphism
             (padicMultiplicativeLubinTateSeries_isUniformizer p) a)) =
       0
-  rw [PowerSeries.constantCoeff_eq, hconstant, map_zero]
+  rw [PowerSeries.constantCoeff_eq, ((standardLubinTateEndomorphism_hasLinearTerm
+    (padicMultiplicativeLubinTateSeries_isUniformizer p) a
+    ).constantCoeff_eq_zero), map_zero]
 
 /-- Completed standard scalar endomorphisms support formal substitution. -/
 theorem padicCompletedStandardScalarEndomorphism_hasSubst
-    (p : ℕ) [Fact p.Prime]
     (a : (padicLocalField p).valuationSubring) :
     PowerSeries.HasSubst
       (padicCompletedStandardScalarEndomorphism p a) :=
@@ -164,7 +144,6 @@ theorem padicCompletedStandardScalarEndomorphism_hasSubst
 /-- Multiplication of standard p-adic scalars is composition after
 completed coefficient extension. -/
 theorem padicCompletedStandardScalarEndomorphism_mul
-    (p : ℕ) [Fact p.Prime]
     (a b : (padicLocalField p).valuationSubring) :
     padicCompletedStandardScalarEndomorphism p (a * b) =
       PowerSeries.subst
@@ -176,17 +155,12 @@ theorem padicCompletedStandardScalarEndomorphism_mul
   let A := standardLubinTateEndomorphism hπ a
   let B := standardLubinTateEndomorphism hπ b
   calc
-    padicCompletedStandardScalarEndomorphism p (a * b) =
-        PowerSeries.map f (PowerSeries.subst B A) := by
-      exact congrArg (PowerSeries.map f)
+    _ =
+        PowerSeries.map f (PowerSeries.subst B A) := congrArg (PowerSeries.map f)
         (standardLubinTateEndomorphism_mul hπ a b)
     _ =
         PowerSeries.subst (PowerSeries.map f B)
           (PowerSeries.map f A) := by
-      change
-        MvPowerSeries.map f (PowerSeries.subst B A) =
-          PowerSeries.subst (PowerSeries.map f B)
-            (PowerSeries.map f A)
       exact
         PowerSeries.map_subst
           (standardLubinTateEndomorphism_hasLinearTerm hπ b
@@ -194,14 +168,12 @@ theorem padicCompletedStandardScalarEndomorphism_mul
     _ =
         PowerSeries.subst
           (padicCompletedStandardScalarEndomorphism p b)
-          (padicCompletedStandardScalarEndomorphism p a) := by
-      rfl
+          (padicCompletedStandardScalarEndomorphism p a) := rfl
 
 /-- The completed standard-to-multiplicative comparison intertwines the
 actual completed scalar endomorphisms. -/
 theorem
     padicCompletedStandardToMultiplicativeIntertwiner_endomorphism
-    (p : ℕ) [Fact p.Prime]
     (a : (padicLocalField p).valuationSubring) :
     PowerSeries.subst
         (padicCompletedStandardScalarEndomorphism p a)
@@ -220,14 +192,8 @@ theorem
       (padicMultiplicativeLubinTateSeries p)
       (fun _ : Unit => a)
   calc
-    PowerSeries.subst
-        (padicCompletedStandardScalarEndomorphism p a)
-        (padicCompletedStandardToMultiplicativeIntertwiner p) =
+    _ =
         PowerSeries.map f (PowerSeries.subst S H) := by
-      change
-        PowerSeries.subst (PowerSeries.map f S)
-            (PowerSeries.map f H) =
-          PowerSeries.map f (PowerSeries.subst S H)
       symm
       change
         MvPowerSeries.map f (PowerSeries.subst S H) =
@@ -243,20 +209,20 @@ theorem
         PowerSeries.subst
           (padicCompletedStandardToMultiplicativeIntertwiner p)
           (padicCompletedMultiplicativeScalarEndomorphism p a) := by
-      change
-        MvPowerSeries.map f (PowerSeries.subst H M) =
-          PowerSeries.subst (PowerSeries.map f H)
-            (PowerSeries.map f M)
       exact
         PowerSeries.map_subst
           (padicStandardToMultiplicativeIntertwiner_hasSubst p) M
 
+end
+
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ) (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
+    (hx : PowerSeries.HasEval x)
+
 /-- Analytic action of a completed standard scalar endomorphism on a
 topologically nilpotent point. -/
 noncomputable def padicCompletedStandardScalarEndomorphismValue
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x)
     (a : (padicLocalField p).valuationSubring) :
     (padicCompletedLevelCompleteDVF p n).valuationSubring :=
   padicCompletedLevelPowerSeriesEval p n x hx
@@ -265,9 +231,6 @@ noncomputable def padicCompletedStandardScalarEndomorphismValue
 /-- A completed standard scalar value remains a convergent evaluation
 point. -/
 theorem padicCompletedStandardScalarEndomorphismValue_hasEval
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x)
     (a : (padicLocalField p).valuationSubring) :
     PowerSeries.HasEval
       (padicCompletedStandardScalarEndomorphismValue p n x hx a) :=
@@ -278,9 +241,6 @@ theorem padicCompletedStandardScalarEndomorphismValue_hasEval
 /-- Multiplication of standard scalars is composition of their completed
 analytic actions. -/
 theorem padicCompletedStandardScalarEndomorphismValue_mul
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x)
     (a b : (padicLocalField p).valuationSubring) :
     padicCompletedStandardScalarEndomorphismValue p n x hx (a * b) =
       padicCompletedStandardScalarEndomorphismValue p n
@@ -294,17 +254,20 @@ theorem padicCompletedStandardScalarEndomorphismValue_mul
       (padicCompletedStandardScalarEndomorphism p b)
       (padicCompletedStandardScalarEndomorphism p a)
       (padicCompletedStandardScalarEndomorphism_hasSubst p b)
-      (padicCompletedStandardScalarEndomorphismValue_hasEval
-        p n x hx b)
+      ((by apply padicCompletedStandardScalarEndomorphismValue_hasEval))
+
+end
+
+section
+
+variable (p : ℕ) [Fact p.Prime]
 
 /-- The scalar `1` acts by the identity series after completed coefficient
 extension. -/
 @[simp]
-theorem padicCompletedStandardScalarEndomorphism_one
-    (p : ℕ) [Fact p.Prime] :
+theorem padicCompletedStandardScalarEndomorphism_one :
     padicCompletedStandardScalarEndomorphism p 1 =
-      PowerSeries.X := by
-  exact (congrArg
+      PowerSeries.X := (congrArg
     (PowerSeries.map (padicValuationSubringToCompletedUnramifiedWittRing p))
     (standardLubinTateEndomorphism_one
       (padicMultiplicativeLubinTateSeries_isUniformizer p))).trans
@@ -312,54 +275,51 @@ theorem padicCompletedStandardScalarEndomorphism_one
 
 /-- The standard uniformizer acts by the defining standard Lubin--Tate
 series after completed coefficient extension. -/
-theorem padicCompletedStandardScalarEndomorphism_uniformizer
-    (p : ℕ) [Fact p.Prime] :
+theorem padicCompletedStandardScalarEndomorphism_uniformizer :
     padicCompletedStandardScalarEndomorphism p
         (padicIntEquivValuationSubring p (p : ℤ_[p])) =
       PowerSeries.map
         (padicValuationSubringToCompletedUnramifiedWittRing p)
         (standardLubinTateSeries
           (padicMultiplicativeLubinTateSeries_isUniformizer p)
-          ).toPowerSeries := by
-  exact congrArg
+          ).toPowerSeries := congrArg
     (PowerSeries.map (padicValuationSubringToCompletedUnramifiedWittRing p))
     (SameUniformizer.standardLubinTateEndomorphism_uniformizer
       (padicMultiplicativeLubinTateSeries_isUniformizer p))
 
 /-- The completed analytic action of scalar `1` fixes its input. -/
 @[simp]
-theorem padicCompletedStandardScalarEndomorphismValue_one
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+theorem padicCompletedStandardScalarEndomorphismValue_one (n : ℕ)
     (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
     (hx : PowerSeries.HasEval x) :
     padicCompletedStandardScalarEndomorphismValue p n x hx 1 =
       x := by
-  rw [padicCompletedStandardScalarEndomorphismValue,
-    padicCompletedStandardScalarEndomorphism_one,
-    padicCompletedLevelPowerSeriesEval_X]
+  simp [padicCompletedStandardScalarEndomorphismValue]
 
 /-- Every completed standard scalar endomorphism fixes the zero point. -/
-theorem padicCompletedStandardScalarEndomorphismValue_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+theorem padicCompletedStandardScalarEndomorphismValue_zero (n : ℕ)
     (a : (padicLocalField p).valuationSubring) :
     padicCompletedStandardScalarEndomorphismValue p n
         0 PowerSeries.HasEval.zero a =
       0 := by
   obtain ⟨B, hB⟩ :
-      (PowerSeries.X :
-          PowerSeries (padicCompletedUnramifiedWittRing p)) ∣
+      PowerSeries.X ∣
         padicCompletedStandardScalarEndomorphism p a := by
     rw [PowerSeries.X_dvd_iff]
-    exact padicCompletedStandardScalarEndomorphism_constantCoeff p a
+    apply padicCompletedStandardScalarEndomorphism_constantCoeff
   rw [padicCompletedStandardScalarEndomorphismValue,
     hB, map_mul, padicCompletedLevelPowerSeriesEval_X, zero_mul]
+
+end
+
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ) (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
+    (hx : PowerSeries.HasEval x)
 
 /-- Evaluating a coefficient-extended polynomial as a completed power
 series agrees with integral polynomial evaluation. -/
 theorem padicCompletedLevelPowerSeriesEval_map_polynomial
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x)
     (P : Polynomial (padicLocalField p).valuationSubring) :
     padicCompletedLevelPowerSeriesEval p n x hx
         (PowerSeries.map
@@ -374,10 +334,7 @@ theorem padicCompletedLevelPowerSeriesEval_map_polynomial
 
 /-- Evaluating the scalar `π ^ r` on any completed-level nilpotent point
 is evaluation of the `r`-fold standard division-polynomial iterate. -/
-theorem padicCompletedStandardScalarEndomorphismValue_uniformizer_pow
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x) (r : ℕ) :
+theorem padicCompletedStandardScalarEndomorphismValue_uniformizer_pow (r : ℕ) :
     padicCompletedStandardScalarEndomorphismValue p n x hx
         ((padicIntEquivValuationSubring p (p : ℤ_[p])) ^ r) =
       Polynomial.eval₂
@@ -396,10 +353,7 @@ theorem padicCompletedStandardScalarEndomorphismValue_uniformizer_pow
           (padicLocalField p) π r)
   induction r with
   | zero =>
-      rw [pow_zero,
-        padicCompletedStandardScalarEndomorphismValue_one,
-        standardLubinTatePolynomialIterate_zero,
-        Polynomial.eval₂_X]
+      simp
   | succ r ih =>
       rw [pow_succ',
         padicCompletedStandardScalarEndomorphismValue_mul]
@@ -413,9 +367,6 @@ theorem padicCompletedStandardScalarEndomorphismValue_uniformizer_pow
 
 /-- Analytic action of a completed multiplicative scalar endomorphism. -/
 noncomputable def padicCompletedMultiplicativeScalarEndomorphismValue
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x)
     (a : (padicLocalField p).valuationSubring) :
     (padicCompletedLevelCompleteDVF p n).valuationSubring :=
   padicCompletedLevelPowerSeriesEval p n x hx
@@ -424,9 +375,6 @@ noncomputable def padicCompletedMultiplicativeScalarEndomorphismValue
 /-- A completed multiplicative scalar value remains a convergent
 evaluation point. -/
 theorem padicCompletedMultiplicativeScalarEndomorphismValue_hasEval
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x)
     (a : (padicLocalField p).valuationSubring) :
     PowerSeries.HasEval
       (padicCompletedMultiplicativeScalarEndomorphismValue
@@ -438,9 +386,6 @@ theorem padicCompletedMultiplicativeScalarEndomorphismValue_hasEval
 /-- Multiplication of multiplicative scalars is composition of their
 completed analytic actions. -/
 theorem padicCompletedMultiplicativeScalarEndomorphismValue_mul
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x)
     (a b : (padicLocalField p).valuationSubring) :
     padicCompletedMultiplicativeScalarEndomorphismValue
         p n x hx (a * b) =
@@ -456,24 +401,24 @@ theorem padicCompletedMultiplicativeScalarEndomorphismValue_mul
       (padicCompletedMultiplicativeScalarEndomorphism p b)
       (padicCompletedMultiplicativeScalarEndomorphism p a)
       (padicCompletedMultiplicativeScalarEndomorphism_hasSubst p b)
-      (padicCompletedMultiplicativeScalarEndomorphismValue_hasEval
-        p n x hx b)
+      ((by apply padicCompletedMultiplicativeScalarEndomorphismValue_hasEval))
+
+end
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
 
 /-- Every completed multiplicative scalar endomorphism fixes the zero
 point. -/
 theorem padicCompletedMultiplicativeScalarEndomorphismValue_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (a : (padicLocalField p).valuationSubring) :
     padicCompletedMultiplicativeScalarEndomorphismValue p n
         0 PowerSeries.HasEval.zero a =
       0 := by
   obtain ⟨B, hB⟩ :
-      (PowerSeries.X :
-          PowerSeries (padicCompletedUnramifiedWittRing p)) ∣
+      PowerSeries.X ∣
         padicCompletedMultiplicativeScalarEndomorphism p a := by
     rw [PowerSeries.X_dvd_iff]
-    exact
-      padicCompletedMultiplicativeScalarEndomorphism_constantCoeff p a
+    apply padicCompletedMultiplicativeScalarEndomorphism_constantCoeff
   rw [padicCompletedMultiplicativeScalarEndomorphismValue,
     hB, map_mul, padicCompletedLevelPowerSeriesEval_X, zero_mul]
 
@@ -481,7 +426,6 @@ theorem padicCompletedMultiplicativeScalarEndomorphismValue_zero
 completed-level integers. -/
 theorem
     padicCompletedMultiplicativeScalarEndomorphismValue_unit_injective
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ)
     {x y : (padicCompletedLevelCompleteDVF p n).valuationSubring}
     (hx : PowerSeries.HasEval x) (hy : PowerSeries.HasEval y)
@@ -495,22 +439,17 @@ theorem
     padicCompletedLevelPowerSeriesEval_injective_of_unitLinearCoefficient
       p n
       (padicCompletedMultiplicativeScalarEndomorphism p
-        (u : (padicLocalField p).valuationSubring))
+        u)
       (padicCompletedMultiplicativeScalarEndomorphism_constantCoeff p
-        (u : (padicLocalField p).valuationSubring))
+        u)
       ?_ hx hy hxy
-  rw [padicCompletedMultiplicativeScalarEndomorphism_coeff_one]
-  change IsUnit
-    (((padicValuationUnitToCompletedUnramifiedWittUnit p u :
-      (padicCompletedUnramifiedWittRing p)ˣ) :
-        padicCompletedUnramifiedWittRing p))
+  simp
   exact (padicValuationUnitToCompletedUnramifiedWittUnit p u).isUnit
 
 /-- The scalar-one completed multiplicative endomorphism fixes every
 topologically nilpotent completed-level integer. -/
 @[simp]
 theorem padicCompletedMultiplicativeScalarEndomorphismValue_one
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
     (hx : PowerSeries.HasEval x) :
     padicCompletedMultiplicativeScalarEndomorphismValue p n x hx 1 =
@@ -520,7 +459,7 @@ theorem padicCompletedMultiplicativeScalarEndomorphismValue_one
       p n (1 : (padicLocalField p).valuationSubringˣ)
       (padicCompletedMultiplicativeScalarEndomorphismValue_hasEval
         p n x hx 1) hx
-  simpa only [Units.val_one, one_mul] using
+  simpa using
     (padicCompletedMultiplicativeScalarEndomorphismValue_mul
       p n x hx
         (1 : (padicLocalField p).valuationSubring)
@@ -530,7 +469,6 @@ theorem padicCompletedMultiplicativeScalarEndomorphismValue_one
 itself recovers every topologically nilpotent completed-level integer. -/
 theorem
     padicCompletedMultiplicativeScalarEndomorphismValue_unit_after_inverse
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
     (hx : PowerSeries.HasEval x)
     (u : (padicLocalField p).valuationSubringˣ) :
@@ -544,31 +482,13 @@ theorem
             (padicLocalField p).valuationSubring))
         (u : (padicLocalField p).valuationSubring) =
       x := by
-  calc
-    _ =
-        padicCompletedMultiplicativeScalarEndomorphismValue p n x hx
-          ((u : (padicLocalField p).valuationSubring) *
-            ((u⁻¹ : (padicLocalField p).valuationSubringˣ) :
-              (padicLocalField p).valuationSubring)) :=
-      (padicCompletedMultiplicativeScalarEndomorphismValue_mul
-        p n x hx
-          (u : (padicLocalField p).valuationSubring)
-          ((u⁻¹ : (padicLocalField p).valuationSubringˣ) :
-            (padicLocalField p).valuationSubring)).symm
-    _ = x := by
-      rw [show
-        (u : (padicLocalField p).valuationSubring) *
-            ((u⁻¹ : (padicLocalField p).valuationSubringˣ) :
-              (padicLocalField p).valuationSubring) = 1 by
-          simp,
-        padicCompletedMultiplicativeScalarEndomorphismValue_one]
+  simpa [show u * ((u⁻¹ : (padicLocalField p).valuationSubringˣ) : (padicLocalField p).valuationSubring) = 1 by simp, padicCompletedMultiplicativeScalarEndomorphismValue_one] using (padicCompletedMultiplicativeScalarEndomorphismValue_mul p n x hx u ((u⁻¹ : (padicLocalField p).valuationSubringˣ) : (padicLocalField p).valuationSubring)).symm
 
 /-- Completed analytic evaluation of the standard-to-multiplicative
 comparison carries every standard scalar action to the actual
 multiplicative scalar action. -/
 theorem
     padicCompletedStandardToMultiplicativeIntertwiner_eval_endomorphism
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
     (hx : PowerSeries.HasEval x)
     (a : (padicLocalField p).valuationSubring) :
@@ -589,17 +509,15 @@ theorem
   let M := padicCompletedMultiplicativeScalarEndomorphism p a
   let xS := padicCompletedStandardScalarEndomorphismValue p n x hx a
   let xH := padicCompletedLevelPowerSeriesEval p n x hx H
-  let hxS : PowerSeries.HasEval xS :=
+  let hxS :=
     padicCompletedStandardScalarEndomorphismValue_hasEval p n x hx a
-  let hxH : PowerSeries.HasEval xH :=
+  let hxH :=
     padicCompletedLevelPowerSeriesEval_hasEval p n x hx H
       (padicCompletedStandardToMultiplicativeIntertwiner_hasSubst p)
   calc
-    padicCompletedLevelPowerSeriesEval p n xS hxS H =
+    _ =
         padicCompletedLevelPowerSeriesEval p n x hx
-          (PowerSeries.subst S H) := by
-      exact
-        (padicCompletedLevelPowerSeriesEval_subst p n x hx
+          (PowerSeries.subst S H) := (padicCompletedLevelPowerSeriesEval_subst p n x hx
           S H (padicCompletedStandardScalarEndomorphism_hasSubst p a)
           hxS).symm
     _ =
@@ -608,9 +526,7 @@ theorem
       rw [
         padicCompletedStandardToMultiplicativeIntertwiner_endomorphism]
     _ =
-        padicCompletedLevelPowerSeriesEval p n xH hxH M := by
-      exact
-        padicCompletedLevelPowerSeriesEval_subst p n x hx
+        padicCompletedLevelPowerSeriesEval p n xH hxH M := padicCompletedLevelPowerSeriesEval_subst p n x hx
           H M
           (padicCompletedStandardToMultiplicativeIntertwiner_hasSubst p)
           hxH
@@ -620,7 +536,6 @@ Lubin--Tate endomorphism on all topologically nilpotent completed-level
 integers. -/
 theorem
     padicCompletedStandardScalarEndomorphismValue_unit_injective
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ)
     {x y : (padicCompletedLevelCompleteDVF p n).valuationSubring}
     (hx : PowerSeries.HasEval x) (hy : PowerSeries.HasEval y)
@@ -633,73 +548,64 @@ theorem
   let H := padicCompletedStandardToMultiplicativeIntertwiner p
   let xH := padicCompletedLevelPowerSeriesEval p n x hx H
   let yH := padicCompletedLevelPowerSeriesEval p n y hy H
-  let hxH : PowerSeries.HasEval xH :=
+  let hxH :=
     padicCompletedLevelPowerSeriesEval_hasEval p n x hx H
       (padicCompletedStandardToMultiplicativeIntertwiner_hasSubst p)
-  let hyH : PowerSeries.HasEval yH :=
+  let hyH :=
     padicCompletedLevelPowerSeriesEval_hasEval p n y hy H
       (padicCompletedStandardToMultiplicativeIntertwiner_hasSubst p)
   have hmult :
       padicCompletedMultiplicativeScalarEndomorphismValue p n xH hxH
-          (u : (padicLocalField p).valuationSubring) =
+          u =
         padicCompletedMultiplicativeScalarEndomorphismValue p n yH hyH
-          (u : (padicLocalField p).valuationSubring) := by
+          u := by
     calc
       _ =
           padicCompletedLevelPowerSeriesEval p n
             (padicCompletedStandardScalarEndomorphismValue
-              p n x hx (u : (padicLocalField p).valuationSubring))
+              p n x hx u)
             (padicCompletedStandardScalarEndomorphismValue_hasEval
-              p n x hx (u : (padicLocalField p).valuationSubring))
+              p n x hx u)
             H := by
         symm
         exact
           padicCompletedStandardToMultiplicativeIntertwiner_eval_endomorphism
-            p n x hx (u : (padicLocalField p).valuationSubring)
+            p n x hx u
       _ =
           padicCompletedLevelPowerSeriesEval p n
             (padicCompletedStandardScalarEndomorphismValue
-              p n y hy (u : (padicLocalField p).valuationSubring))
+              p n y hy u)
             (padicCompletedStandardScalarEndomorphismValue_hasEval
-              p n y hy (u : (padicLocalField p).valuationSubring))
-            H := by
-        exact
-          padicCompletedLevelPowerSeriesEval_congr_point p n
+              p n y hy u)
+            H := padicCompletedLevelPowerSeriesEval_congr_point p n
             (padicCompletedStandardScalarEndomorphismValue_hasEval
-              p n x hx (u : (padicLocalField p).valuationSubring))
+              p n x hx u)
             (padicCompletedStandardScalarEndomorphismValue_hasEval
-              p n y hy (u : (padicLocalField p).valuationSubring))
+              p n y hy u)
             hxy H
       _ =
           padicCompletedMultiplicativeScalarEndomorphismValue p n yH hyH
-            (u : (padicLocalField p).valuationSubring) :=
+            u :=
         padicCompletedStandardToMultiplicativeIntertwiner_eval_endomorphism
-          p n y hy (u : (padicLocalField p).valuationSubring)
-  have hH : xH = yH := by
-    exact
-      padicCompletedMultiplicativeScalarEndomorphismValue_unit_injective
+          p n y hy u
+  apply padicCompletedStandardToMultiplicativeIntertwiner_eval_injective
+      p n hx hy
+  exact padicCompletedMultiplicativeScalarEndomorphismValue_unit_injective
         p n u hxH hyH hmult
-  exact
-    padicCompletedStandardToMultiplicativeIntertwiner_eval_injective
-      p n hx hy hH
 
 /-- The completed standard-to-multiplicative comparison evaluates to zero
 at the zero point. -/
-theorem padicCompletedStandardToMultiplicativeIntertwiner_eval_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedStandardToMultiplicativeIntertwiner_eval_zero :
     padicCompletedLevelPowerSeriesEval p n
         0 PowerSeries.HasEval.zero
         (padicCompletedStandardToMultiplicativeIntertwiner p) =
       0 := by
   obtain ⟨B, hB⟩ :
-      (PowerSeries.X :
-          PowerSeries (padicCompletedUnramifiedWittRing p)) ∣
+      PowerSeries.X ∣
         padicCompletedStandardToMultiplicativeIntertwiner p := by
     rw [PowerSeries.X_dvd_iff]
-    exact
-      padicCompletedStandardToMultiplicativeIntertwiner_constantCoeff p
-  rw [hB, map_mul,
-    padicCompletedLevelPowerSeriesEval_X, zero_mul]
+    apply padicCompletedStandardToMultiplicativeIntertwiner_constantCoeff
+  simp [hB]
 
 end LubinTate
 

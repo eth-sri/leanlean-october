@@ -10,7 +10,6 @@ open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.RawWordKFinite
 open KPGlobalResidualConstruction KPLiteralChamber KPSmoothActualFlowData
 open KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming invertibleProducts_open → invertibleProducts_open
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
@@ -48,8 +47,7 @@ theorem expLift_smooth (f : G → ℂ) (hf : NativeSmooth f) (g : G) :
     ContDiff ℝ (⊤ : ℕ∞) (expLift f g) := by
   let e : LieCoordinates F → MatrixProduct F := fun a v =>
     NormedSpace.exp (sl2Matrix (fun j => a (v,j)))
-  have he : ContDiff ℝ (⊤ : ℕ∞) e := by
-    exact contDiff_pi.mpr (fun v => contDiff_pi.mpr (fun i => contDiff_pi.mpr (fun j => matrixExpEntry_smooth v i j)))
+  have he : ContDiff ℝ (⊤ : ℕ∞) e := contDiff_pi.mpr (fun v => contDiff_pi.mpr (fun i => contDiff_pi.mpr (fun j => matrixExpEntry_smooth v i j)))
   have hi (a) : e a ∈ invertibleProducts := by
     intro v
     exact Matrix.GeneralLinearGroup.det_ne_zero (matrixExponential (sl2Matrix (fun j => a (v,j))))
@@ -66,9 +64,8 @@ theorem expLift_smooth (f : G → ℂ) (hf : NativeSmooth f) (g : G) :
   apply Units.ext
   rfl
 
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming word → word
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction renaming actual_eq_word → actual_eq_word
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction renaming native_word_smooth → native_word_smooth
+open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets (word)
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction (actual_eq_word native_word_smooth)
 open KPContActualSphericalRightFieldIdentification
 open KPSmoothAutomorphicEvaluation.AmbientApproximation.OrbitSmoothing.Reconstruction.LocalSobolev.Scalar.CoordinateSource
 
@@ -92,10 +89,8 @@ def jet (a : LieCoordinates F) (f : G → ℂ) (g : G) : ℂ :=
 theorem direction_hasDerivAt (f : G → ℂ) (hf : NativeSmooth f) (g : G)
     (a : LieCoordinates F) :
     HasDerivAt (fun t : ℝ => expLift f g (t • a)) (jet a f g) 0 := by
-  have hd := (hasDerivAt_id (0 : ℝ)).smul_const a
-  have hs := ((expLift_smooth f hf g).differentiable (by simp) 0).hasFDerivAt
-  have hs' : HasFDerivAt (expLift f g) (fderiv ℝ (expLift f g) 0) ((0 : ℝ) • a) := by simpa using hs
-  convert hs'.comp_hasDerivAt 0 hd using 1 <;> simp [jet, Function.comp_def]
+  have hs' : HasFDerivAt (expLift f g) (fderiv ℝ (expLift f g) 0) ((0 : ℝ) • a) := by simpa using (((expLift_smooth f hf g).differentiable (by simp) 0).hasFDerivAt)
+  convert hs'.comp_hasDerivAt 0 ((hasDerivAt_id (0 : ℝ)).smul_const a) using 1 <;> simp [jet, Function.comp_def]
 
 theorem derivative_eq_jet (f : G → ℂ) (hf : NativeSmooth f) (g : G) (b : B F) :
     KPMsGreenFlux.rightDerivative F ζ hζ b.1 b.2 f g = jet (Pi.single b 1) f g := by
@@ -182,7 +177,7 @@ def scalarSpace : Submodule ℂ (G → ℂ) where
     change ContDiffOn ℝ (⊤ : ℕ∞) (fun x => c * f (g * archChart F ζ hζ x)) (archDomain F)
     exact contDiffOn_const.mul (hf g)
 
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming rightWord_hasDerivAt_of_chart_smooth → rightWord_hasDerivAt_of_chart_smooth
+open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets (rightWord_hasDerivAt_of_chart_smooth)
 
 def derivative (b : B F) : scalarSpace (F := F) (ζ := ζ) (hζ := hζ) →ₗ[ℂ] scalarSpace (F := F) (ζ := ζ) (hζ := hζ) where
   toFun f := ⟨KPMsGreenFlux.rightDerivative F ζ hζ b.1 b.2 f.val,
@@ -278,14 +273,12 @@ theorem sixWord_kFinite (f : G → ℂ) (hf : NativeSmooth f)
     (hk : ∀ (k : KPMsGreenFlux.K F) g,
       f (g * KPMsGreenFlux.compactInsertion F ζ hζ k) = f g)
     (w : List (B F)) : KPMsGreenFlux.KFinite F ζ hζ (sixWord w f) := by
-  let v : scalarSpace (F := F) (ζ := ζ) (hζ := hζ) := ⟨f, hf⟩
+  let v : scalarSpace := ⟨f, hf⟩
   let W := wordSpace w.length v
-  let W' := W.map (scalarSpace (F := F) (ζ := ζ) (hζ := hζ)).subtype
-  have hfg : W.FG := Submodule.fg_span ((words (F := F) w.length).finite_toSet.image _)
-  letI : Module.Finite ℂ W' := Module.Finite.of_fg (hfg.map _)
-  let S := Submodule.span ℂ (Set.range (fun k : KPMsGreenFlux.K F =>
-    fun g => sixWord w f (g * KPMsGreenFlux.compactInsertion F ζ hζ k)))
-  have hle : S ≤ W' := by
+  let W' := W.map (scalarSpace).subtype
+  letI : Module.Finite ℂ W' := Module.Finite.of_fg ((Submodule.fg_span ((words w.length).finite_toSet.image _)).map _)
+  have hle : (Submodule.span ℂ (Set.range (fun k : KPMsGreenFlux.K F =>
+    fun g => sixWord w f (g * KPMsGreenFlux.compactInsertion F ζ hζ k)))) ≤ W' := by
     apply Submodule.span_le.mpr
     rintro u ⟨k, rfl⟩
     have hkv : translation (fun a => (k a).val) v = v := by

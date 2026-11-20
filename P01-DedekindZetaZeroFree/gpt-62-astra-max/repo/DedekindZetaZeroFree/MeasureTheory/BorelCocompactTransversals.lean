@@ -28,7 +28,7 @@ theorem exists_measurable_relativelyCompact_exact_transversal_of_finite_slices
       x ∈ Rem i ↔ ∃ (j : Fin n) (_ : j < i) (γ : Γ), (γ : G) * x ∈ V j := by
     intro i x
     rw [hRem]
-    simp only [mem_iUnion, mem_setOf_eq]
+    simp
   have hRem_open : ∀ i : Fin n, IsOpen (Rem i) := by
     intro i
     rw [hRem]
@@ -36,31 +36,28 @@ theorem exists_measurable_relativelyCompact_exact_transversal_of_finite_slices
     exact (hopen j).preimage (continuous_const.mul continuous_id)
   refine ⟨D, ?_, ?_, ?_⟩
   ·
-    rw [hD]
     refine MeasurableSet.iUnion (fun i => ?_)
     exact ((hopen i).measurableSet.diff (hRem_open i).measurableSet)
   ·
-    have hsub : D ⊆ ⋃ i : Fin n, closure (V i) := by
-      rw [hD]
-      refine iUnion_mono (fun i => ?_)
-      exact Subset.trans diff_subset subset_closure
-    exact IsCompact.of_isClosed_subset (isCompact_iUnion (fun i => hcompact i))
-      isClosed_closure (closure_minimal hsub (isClosed_iUnion_of_finite fun i => isClosed_closure))
+    refine IsCompact.of_isClosed_subset (isCompact_iUnion (fun i => hcompact i))
+      isClosed_closure (closure_minimal ?_ (isClosed_iUnion_of_finite fun i => isClosed_closure))
+    rw [hD]
+    refine iUnion_mono (fun i => ?_)
+    exact Subset.trans diff_subset subset_closure
   ·
     intro y
     have hex : ∃ i : Fin n, (QuotientGroup.mk : G → G ⧸ Γ) y ∈
         (QuotientGroup.mk : G → G ⧸ Γ) '' V i := by
-      have h : (QuotientGroup.mk y) ∈ ⋃ i : Fin n, (QuotientGroup.mk : G → G ⧸ Γ) '' V i := by
-        rw [hcover]
-        exact Set.mem_univ _
-      exact Set.mem_iUnion.mp h
+      refine Set.mem_iUnion.mp ?_
+      rw [hcover]
+      exact Set.mem_univ _
 
     obtain ⟨i₀, hi₀mem, hi₀min⟩ :
-        ∃ i : Fin n, (QuotientGroup.mk : G → G ⧸ Γ) y ∈ (QuotientGroup.mk : G → G ⧸ Γ) '' V i ∧
-          ∀ j : Fin n, j < i → (QuotientGroup.mk : G → G ⧸ Γ) y ∉
-            (QuotientGroup.mk : G → G ⧸ Γ) '' V j :=
-      ⟨Fin.find (fun i : Fin n => (QuotientGroup.mk : G → G ⧸ Γ) y ∈
-          (QuotientGroup.mk : G → G ⧸ Γ) '' V i) hex,
+        ∃ i : Fin n, QuotientGroup.mk y ∈ QuotientGroup.mk '' V i ∧
+          ∀ j : Fin n, j < i → QuotientGroup.mk y ∉
+            QuotientGroup.mk '' V j :=
+      ⟨Fin.find (fun i : Fin n => QuotientGroup.mk y ∈
+          QuotientGroup.mk '' V i) hex,
         Fin.find_spec hex, fun j hj => Fin.find_min hex hj⟩
     obtain ⟨v, hv, hqv⟩ := hi₀mem
 
@@ -74,9 +71,8 @@ theorem exists_measurable_relativelyCompact_exact_transversal_of_finite_slices
         rw [hRem_mem]
         rintro ⟨j, hj, γ, hγ⟩
         refine hi₀min j hj ⟨(γ : G) * v, hγ, ?_⟩
-        have h1 : ((γ : G) : G ⧸ Γ) = 1 := (QuotientGroup.eq_one_iff (γ : G)).mpr γ.2
-        simpa only [QuotientGroup.mk_mul, h1, one_mul] using hqv
-      simpa only [Subtype.coe_mk, mul_assoc, inv_mul_cancel, mul_one] using hvD
+        simpa only [QuotientGroup.mk_mul, ((QuotientGroup.eq_one_iff (γ : G)).mpr γ.2), one_mul] using hqv
+      simpa using hvD
     · intro γ' hγ'
       rw [hD] at hγ'
       obtain ⟨i', hi'V, hi'not⟩ := Set.mem_iUnion.mp hγ'
@@ -86,21 +82,18 @@ theorem exists_measurable_relativelyCompact_exact_transversal_of_finite_slices
         rcases lt_or_gt_of_ne hne with hlt | hlt
         ·
           refine hi₀min i' hlt ⟨(γ' : G) * y, hi'V, ?_⟩
-          have h1 : ((γ' : G) : G ⧸ Γ) = 1 := (QuotientGroup.eq_one_iff (γ' : G)).mpr γ'.2
-          simpa only [QuotientGroup.mk_mul, h1, one_mul]
+          simpa
         ·
           refine hi'not ⟨i₀, hlt, ⟨(⟨v * y⁻¹, hmemΓ⟩ : Γ) * γ'⁻¹, ?_⟩⟩
           have hprod : (((⟨v * y⁻¹, hmemΓ⟩ : Γ) * γ'⁻¹ : Γ) : G) * ((γ' : G) * y) = v := by
-            simp only [Subgroup.coe_mul, Subgroup.coe_inv, Subtype.coe_mk, mul_assoc,
-              inv_mul_cancel_left, inv_mul_cancel, mul_one]
+            simp
           rwa [hprod]
       rw [hii] at hi'V
       have hEq : (γ' : G) * y = v := by
         refine (hinj i₀) hi'V hv ?_
-        have h1 : ((γ' : G) : G ⧸ Γ) = 1 := (QuotientGroup.eq_one_iff (γ' : G)).mpr γ'.2
-        simpa only [QuotientGroup.mk_mul, h1, one_mul] using hqv.symm
+        simpa only [QuotientGroup.mk_mul, ((QuotientGroup.eq_one_iff (γ' : G)).mpr γ'.2), one_mul] using hqv.symm
       have hvy : ((⟨v * y⁻¹, hmemΓ⟩ : Γ) : G) * y = v := by
-        simp only [Subtype.coe_mk, mul_assoc, inv_mul_cancel, mul_one]
+        simp
       exact Subtype.ext (mul_right_cancel (hEq.trans hvy.symm))
 
 end DedekindZetaZeroFree

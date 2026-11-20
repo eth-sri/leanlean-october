@@ -13,12 +13,12 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 set_option linter.unusedSectionVars false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-variable (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
-variable (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
-variable (φ : ∀ q : E, compactPicture (C₀.canonical q.val).borel (C₀.polarization q.val) (C₀.canonical q.val).iwasawa .plus)
-variable (k : ∀ q : E, (C₀.canonical q.val).iwasawa.compact.toOpenSubgroup)
-variable (t : ∀ q : E, actualTorus F ζ hζ q.val)
+    (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
+    (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
+    (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
+    (φ : ∀ q : E, compactPicture (C₀.canonical q.val).borel (C₀.polarization q.val) (C₀.canonical q.val).iwasawa .plus)
+    (k : ∀ q : E, (C₀.canonical q.val).iwasawa.compact.toOpenSubgroup)
+    (t : ∀ q : E, actualTorus F ζ hζ q.val)
 
 def complexIntegrand (s : ℂ) (x : ℂ) : ℂ :=
   KPComplexIntertwinerParameterMajorant.forwardSection s
@@ -76,7 +76,7 @@ def adelicBox : Set (A F) :=
       (fun a => a) := e.measurableEmbedding
   rw [KPAdditiveHaar.adelicMeasure, he.restrict_map]
   have hpre : (fun a : NumberField.InfiniteAdeleRing F ×
-      IsDedekindDomain.FiniteAdeleRing (𝓞 F) F => (a : A F)) ⁻¹' adelicBox F E =
+      IsDedekindDomain.FiniteAdeleRing (𝓞 F) F => a) ⁻¹' adelicBox F E =
       Set.univ ×ˢ Set.range (KPAdditiveHaar.chartMap F E) := by
     ext a
     exact (and_iff_right (Set.mem_univ a.1)).symm

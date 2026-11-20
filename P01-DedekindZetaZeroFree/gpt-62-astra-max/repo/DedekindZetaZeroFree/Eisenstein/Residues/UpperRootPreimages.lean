@@ -12,8 +12,8 @@ namespace DedekindZetaZeroFree.RootDerivatives
 open KPLiteralRaw hiding G
 open KPGlobalResidualConstruction KPContActualSphericalRightFieldIdentification SharedSource
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 set_option maxHeartbeats 1800000
 set_option backward.isDefEq.respectTransparency false
 
@@ -41,7 +41,7 @@ theorem upper_flat_residue (w : InfinitePlace F) (b : Bool)
   let K := (KPContFlatSourceRecipe.D F R.A.zeta12 R.A.primitive_zeta12).K
   have hK : IwasawaCompact F R.A.zeta12 R.A.primitive_zeta12 K :=
     PrincipalOfKP.iwasawaCompactSubgroupMax_isIwasawa F R.A.zeta12 R.A.primitive_zeta12
-  obtain ⟨v,u,hv0,hv,hu,haff⟩ := upper_flat_affine R w b f hflat
+  obtain ⟨v, u, hv0, hv, haff⟩ := upper_flat_affine R w b f hflat
   let Cv := Classical.choice (flatScalarResidue_nonempty F R.A.zeta12 R.A.primitive_zeta12 K hK v)
   let Cu := Classical.choice (flatScalarResidue_nonempty F R.A.zeta12 R.A.primitive_zeta12 K hK u)
   letI : T2Space (MomentSources.Group R) :=
@@ -54,7 +54,7 @@ theorem upper_flat_residue (w : InfinitePlace F) (b : Bool)
   obtain ⟨M,_⟩ := KPGlobalTorusFiniteStages.compatibleModelData_exists F R.A.zeta12 R.A.primitive_zeta12 L
   obtain ⟨μ,_,_,P,⟨H⟩⟩ := kp_ms_fixed_haar_disintegration F R.A.zeta12 R.A.primitive_zeta12
     (Measure.haar : Measure (MomentSources.Group R)) inferInstance
-  obtain ⟨q,A,N,r,hq,hq0,hAs,hAm,hAc,hr,hball,hNs,hNa,hclear⟩ :=
+  obtain ⟨q, A, N, r, hq, hq0, hAs, hAm, hAc, hr, hNs, hNa, hclear⟩ :=
     literal_allWord_numerator F R.A.zeta12 R.A.primitive_zeta12 M μ P H K hK f
   have hzero : (0 : ℂ) ∈ KPContinuation.spectralDomain := by norm_num [KPContinuation.spectralDomain]
   have hpin : N 0 = Cf.numerator 0 := by

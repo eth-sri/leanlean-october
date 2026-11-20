@@ -10,15 +10,10 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.ActualProjectedFlatExpansion
 open KPLiteralRaw
 open KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation.ConvolutionSpan.ActualSourceStage
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.NormalizedFiniteSource renaming target_subgroup_eq → target_subgroup_eq
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.NormalizedFiniteSource renaming sourceH → sourceH
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.NormalizedFiniteSource renaming sourceChi → sourceChi
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.NormalizedFiniteSource renaming sourceChi_hN → sourceChi_hN
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.NormalizedFiniteSource renaming source_covariant → source_covariant
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.NormalizedFiniteSource renaming normalized_entire_finite_expansion → normalized_entire_finite_expansion
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.SourceSpatialRegularity renaming covariant_source_smooth → covariant_source_smooth
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming normalized_multiplier → normalized_multiplier
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing renaming cToBorel → cToBorel
+open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.NormalizedFiniteSource (target_subgroup_eq sourceH sourceChi sourceChi_hN source_covariant normalized_entire_finite_expansion)
+open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.SourceSpatialRegularity (covariant_source_smooth)
+open _root_.DedekindZetaZeroFree.KPLiteralChamber (normalized_multiplier)
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing (cToBorel)
 set_option maxHeartbeats 1600000
 set_option synthInstance.maxHeartbeats 200000
 set_option backward.isDefEq.respectTransparency false
@@ -103,10 +98,8 @@ private theorem reweight_continuous
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (s : ℂ) (v : Functions F ζ hζ) (hv : Continuous v) :
     Continuous (reweight F ζ hζ K hK s v) := by
-  have ha : Continuous (alpha F ζ hζ K hK) :=
-    Complex.continuous_ofReal.comp
-      (KPLiteralChamber.JointProfile.literal_log_modulus_continuous F ζ hζ K hK)
-  exact ((continuous_const.mul ha).cexp).mul hv
+  exact ((continuous_const.mul (Complex.continuous_ofReal.comp
+    (KPLiteralChamber.JointProfile.literal_log_modulus_continuous F ζ hζ K hK))).cexp).mul hv
 
 private theorem reweight_kfinite
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
@@ -177,23 +170,18 @@ private theorem reweight_uniform_level
       ∀ s g (j : KPGlobalTorusFunctionData.globalLevel F ζ hζ J'),
         reweight F ζ hζ K hK s v (g * j.val) =
           reweight F ζ hζ K hK s v g := by
-  let D := KPLiteralChamber.literalIwasawa F ζ hζ K hK
   obtain ⟨U, hU⟩ :=
-    KPGlobalResidualKernel.ResidualChamberConstruction.RegularSymmetrySteps.exists_iwasawaNorm_right_level D
+    KPGlobalResidualKernel.ResidualChamberConstruction.RegularSymmetrySteps.exists_iwasawaNorm_right_level (KPLiteralChamber.literalIwasawa F ζ hζ K hK)
   let J' : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ :=
     ⟨J.toOpenSubgroup ⊓ U.toOpenSubgroup,
       J.isCompact.inter_right U.toOpenSubgroup.isClosed⟩
   refine ⟨J', ?_⟩
   intro s g j
-  have hJ : j.val ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ J :=
-    Subgroup.map_mono (by dsimp [J']; exact inf_le_left) j.property
-  have hU' : j.val ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U :=
-    Subgroup.map_mono (by dsimp [J']; exact inf_le_right) j.property
   change Complex.exp (s * alpha F ζ hζ K hK (g * j.val)) * v (g * j.val) =
     Complex.exp (s * alpha F ζ hζ K hK g) * v g
-  rw [hv g j.val hJ]
+  rw [hv g j.val (Subgroup.map_mono (by dsimp [J']; exact inf_le_left) j.property)]
   unfold alpha
-  rw [hU g ⟨j.val, hU'⟩]
+  rw [hU g ⟨j.val, (Subgroup.map_mono (by dsimp [J']; exact inf_le_right) j.property)⟩]
 
 private theorem reweight_mem_flat
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
@@ -272,7 +260,6 @@ private theorem reweight_mem_flat
         (hJ _ (hv j)).2.1 (hJ _ (hv j)).2.2.2 J (hJ _ (hv j)).2.2.1⟩
   refine ⟨n, b, c, hc, ?_⟩
   intro s g
-  have hEq := congrArg (fun v : Functions F ζ hζ => reweight F ζ hζ K hK s v g) (he s)
   have hn : reweight F ζ hζ K hK s (source F ζ hζ K hK μ f a s h) g =
       ∫ k : K, h k * f.val s (g * k.val * a) ∂μ := by
     change Complex.exp (s * alpha F ζ hζ K hK g) *
@@ -281,7 +268,7 @@ private theorem reweight_mem_flat
     simp
 
   simpa only [map_sum, map_smul, Finset.sum_apply, Pi.smul_apply, smul_eq_mul, b,
-    LinearMap.sum_apply, hn] using hEq
+    LinearMap.sum_apply, hn] using (congrArg (fun v : Functions F ζ hζ => reweight F ζ hζ K hK s v g) (he s))
 
 end DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.ActualProjectedFlatExpansion
 

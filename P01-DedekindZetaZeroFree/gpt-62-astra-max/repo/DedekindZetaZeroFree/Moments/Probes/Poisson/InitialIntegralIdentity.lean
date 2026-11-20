@@ -12,8 +12,8 @@ open DedekindZetaZeroFree NumberField MeasureTheory PoissonKernel
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def initialRowIntegrand (u : D.Row) (Z : ℝ) (t : ℝ × ℝ × ℝ) : ℂ :=
   K D u ((4 : ℂ) + (t.1 : ℂ) * Complex.I) ((4 : ℂ) + (t.2.1 : ℂ) * Complex.I)
@@ -31,11 +31,15 @@ def toProbeFrequency (u : D.Row) : PrincipalMellinComparison.Frequency D.recipe 
 theorem toProbeFrequency_injective : Function.Injective (toProbeFrequency D) := by
   intro u v h
   apply FixedData.Row.u_unique
-  have h2 := congrArg
+  exact congrArg
     (fun f : PrincipalMellinComparison.Frequency D.recipe => (f.val.val : D.recipe.A.R)) h
-  exact h2
 
-theorem initial_majorant (Z : ℝ) (hZ : 0 < Z) :
+section
+
+variable (Z : ℝ) (hZ : 0 < Z)
+
+include hZ in
+theorem initial_majorant :
     Integrable (NormalizedProbe.initialAbsoluteMellinMajorant D.recipe.probe
       (Scales.xScale Z) (Scales.yScale Z) Z) ∧
     (∀ i : NormalizedProbe.MellinSeriesIndex D.recipe.probe,
@@ -47,7 +51,8 @@ theorem initial_majorant (Z : ℝ) (hZ : 0 < Z) :
   NormalizedProbe.tripleMellin_integrable_majorant D.recipe.probe _ _ _
     (Scales.xScale_pos Z hZ) (Scales.yScale_pos Z hZ) hZ
 
-theorem tripleMellinWeight_eq (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ) :
+include hZ in
+theorem tripleMellinWeight_eq (ξ w z : ℂ) :
     NormalizedProbe.tripleMellinWeight D.recipe.probe (Scales.xScale Z) (Scales.yScale Z) Z ξ w z =
       (Z : ℂ) ^ ((Scales.xExponent / 2 : ℝ) + ξ - 1 + (Scales.smoothingExponent : ℂ) * z +
         (Scales.yExponent : ℂ) * (w - 1)) *
@@ -75,7 +80,6 @@ theorem tripleMellinWeight_eq (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ) :
     congr 1
     push_cast
     ring
-  have hZ1 : comparisonRealPower Z (ξ + z - 1) = (Z : ℂ) ^ (ξ + z - 1) := (key _).symm
   have hh : (Scales.smoothingExponent : ℂ) = 1 - (Scales.xExponent : ℂ) := by
     unfold Scales.smoothingExponent Scales.xExponent
     push_cast
@@ -87,8 +91,10 @@ theorem tripleMellinWeight_eq (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ) :
     push_cast
     ring
   unfold NormalizedProbe.tripleMellinWeight
-  rw [hX, hY, hZ1, hexp, Complex.cpow_add _ _ hZc, Complex.cpow_add _ _ hZc]
+  rw [hX, hY, ((key _).symm), hexp, Complex.cpow_add _ _ hZc, Complex.cpow_add _ _ hZc]
   rfl
+
+end
 
 theorem q_pos (u : D.Row) : 0 < D.q u := by
   letI := D.recipe.probe.coefficients.finiteResidue u.toFrequency.u (FixedData.Row.u_ne_zero u)
@@ -152,8 +158,7 @@ private theorem majorant_antitone' (i : NormalizedProbe.MellinSeriesIndex D.reci
   letI := D.recipe.probe.coefficients.finiteResidue i.1.val.val i.1.val.property
   have hu : (1 : ℝ) ≤ (FiniteTransform.exteriorNorm D.recipe.A.R.toSubring i.1.val.val : ℝ) := by
     simp only [FiniteTransform.exteriorNorm, Nat.card_eq_fintype_card]
-    exact_mod_cast Fintype.card_pos_iff.mpr (inferInstance : Nonempty
-      (FiniteTransform.Residue D.recipe.A.R.toSubring i.1.val.val))
+    exact_mod_cast Fintype.card_pos_iff.mpr inferInstance
   unfold NormalizedProbe.separatedSeriesMajorant
   apply mul_le_mul
   · apply mul_le_mul
@@ -235,42 +240,27 @@ theorem rowFactor_continuousOn (u : D.Row) :
     simp at hs
   have hz6 : (6 * p.2.2).re = 6 * p.2.2.re := by simp
   have hZ : ContinuousAt (fun p : ℂ × ℂ × ℂ => D.zetaSCont (6 * p.2.2)) p := by
-    have hg : ContinuousAt D.zetaSCont (6 * p.2.2) :=
-      (RightHeckeBounds.zetaSCont_analyticOnNhd D (6 * p.2.2)
-        ⟨by simp only [Set.mem_setOf_eq]; rw [hz6]; linarith,
-         hne1 _ (by rw [hz6]; linarith)⟩).continuousAt
-    have hf : ContinuousAt (fun p : ℂ × ℂ × ℂ => 6 * p.2.2) p := by fun_prop
-    exact ContinuousAt.comp (g := D.zetaSCont) (f := fun p : ℂ × ℂ × ℂ => 6 * p.2.2) hg hf
-  have hP : ContinuousAt (fun p : ℂ × ℂ × ℂ => D.Lpsi u p.2.1) p := by
-    have hg : ContinuousAt (D.Lpsi u) p.2.1 :=
-      (D.Lpsi_analyticOnNhd u p.2.1
-        ⟨by simp only [Set.mem_setOf_eq]; linarith, hne1 _ h2⟩).continuousAt
-    have hf : ContinuousAt (fun p : ℂ × ℂ × ℂ => p.2.1) p := by fun_prop
-    exact ContinuousAt.comp (g := D.Lpsi u) (f := fun p : ℂ × ℂ × ℂ => p.2.1) hg hf
-  have hL : ContinuousAt (fun p : ℂ × ℂ × ℂ => D.Llam u p.1) p := by
-    have hg : ContinuousAt (D.Llam u) p.1 :=
-      (D.Llam_analyticOnNhd u p.1
-        ⟨by simp only [Set.mem_setOf_eq]; linarith, hne1 _ h1⟩).continuousAt
-    have hf : ContinuousAt (fun p : ℂ × ℂ × ℂ => p.1) p := by fun_prop
-    exact ContinuousAt.comp (g := D.Llam u) (f := fun p : ℂ × ℂ × ℂ => p.1) hg hf
-  have hLne : D.Llam u p.1 ≠ 0 := RightHeckeBounds.Llam_ne_zero_of_one_lt D u p.1 (by linarith)
-  have hH : ContinuousAt (fun p : ℂ × ℂ × ℂ => EulerDomain.Hu D u p.1 p.2.1 p.2.2) p := by
-    have hmem : p ∈ EulerDomain.OmegaStar := by
-      simp only [EulerDomain.OmegaStar, Set.mem_setOf_eq]
-      refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
-    exact (EulerContinuation.Hu_differentiableOn D u).continuousOn.continuousAt
-      (EulerDomain.OmegaStar_isOpen.mem_nhds hmem)
-  exact ((hZ.mul hP).div hL hLne).mul hH
+    refine ContinuousAt.comp ((RightHeckeBounds.zetaSCont_analyticOnNhd D (6 * p.2.2)
+      ⟨by simp only [Set.mem_setOf_eq]; rw [hz6]; linarith,
+       hne1 _ (by rw [hz6]; linarith)⟩).continuousAt) ?_
+    fun_prop
+  refine ((hZ.mul ?_).div ?_ (RightHeckeBounds.Llam_ne_zero_of_one_lt D u p.1 (by linarith))).mul ?_
+  · refine ContinuousAt.comp ((D.Lpsi_analyticOnNhd u p.2.1
+      ⟨by simp only [Set.mem_setOf_eq]; linarith, hne1 _ h2⟩).continuousAt) ?_
+    fun_prop
+  · refine ContinuousAt.comp ((D.Llam_analyticOnNhd u p.1
+      ⟨by simp only [Set.mem_setOf_eq]; linarith, hne1 _ h1⟩).continuousAt) ?_
+    fun_prop
+  · refine (EulerContinuation.Hu_differentiableOn D u).continuousOn.continuousAt
+      (EulerDomain.OmegaStar_isOpen.mem_nhds ?_)
+    simp only [EulerDomain.OmegaStar, Set.mem_setOf_eq]
+    refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
 
 theorem rowFactor_eq_raw_initial (u : D.Row) (ξ w z : ℂ) (hξ : 4 ≤ ξ.re) (hw : 4 ≤ w.re)
     (hz : 2 ≤ z.re) : rowFactor D u ξ w z = rawRowFactor D u ξ w z := by
-  have hEq : Set.EqOn (fun p : ℂ × ℂ × ℂ => rowFactor D u p.1 p.2.1 p.2.2)
-      (fun p : ℂ × ℂ × ℂ => rawRowFactor D u p.1 p.2.1 p.2.2) strictRegion :=
-    fun p hp => rowFactor_eq_raw D u p.1 p.2.1 p.2.2 hp.1 hp.2.1 hp.2.2
-  have h := Set.EqOn.of_subset_closure hEq (rowFactor_continuousOn D u)
-    (rawRowFactor_continuousOn D u) strictRegion_subset closedRegion_subset_closure
   have hmem : ((ξ, w, z) : ℂ × ℂ × ℂ) ∈ closedRegion := ⟨hξ, hw, hz⟩
-  have h2 := h hmem
+  have h2 := (Set.EqOn.of_subset_closure (fun p hp => rowFactor_eq_raw D u p.1 p.2.1 p.2.2 hp.1 hp.2.1 hp.2.2) (rowFactor_continuousOn D u)
+    (rawRowFactor_continuousOn D u) strictRegion_subset closedRegion_subset_closure) hmem
   simp only at h2
   exact h2
 
@@ -296,7 +286,12 @@ private theorem aIndex_countable' :
     infer_instance
   infer_instance
 
-theorem K_eq_tsum_aux (u : D.Row) (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ)
+section
+
+variable (u : D.Row) (Z : ℝ) (hZ : 0 < Z)
+
+include hZ in
+theorem K_eq_tsum_aux (ξ w z : ℂ)
     (hξ : (4 : ℝ) ≤ ξ.re) (hw : (4 : ℝ) ≤ w.re) (hz : (2 : ℝ) ≤ z.re) :
     K D u ξ w z Z = ∑' a : ExteriorSquarefreeIdeal D.recipe.A.cS × D.recipe.A.Exterior ×
         D.recipe.A.Exterior × D.recipe.A.Exterior,
@@ -313,7 +308,8 @@ theorem K_eq_tsum_aux (u : D.Row) (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ)
   rw [hc, tripleMellinWeight_eq D Z hZ ξ w z]
   ring
 
-theorem rowIntegrand_eq_tsum (u : D.Row) (Z : ℝ) (hZ : 0 < Z) (t : ℝ × ℝ × ℝ) :
+include hZ in
+theorem rowIntegrand_eq_tsum (t : ℝ × ℝ × ℝ) :
     initialRowIntegrand D u Z t =
       ∑' a, NormalizedProbe.initialTripleMellinSummand D.recipe.probe
         (Scales.xScale Z) (Scales.yScale Z) Z (toProbeFrequency D u, a) t := by
@@ -327,35 +323,30 @@ theorem rowIntegrand_eq_tsum (u : D.Row) (Z : ℝ) (hZ : 0 < Z) (t : ℝ × ℝ 
     (NormalizedProbe.initialMellinPoint t).2.2 Z = _
   exact K_eq_tsum_aux D u Z hZ _ _ _ h1.ge h2.ge h3.ge
 
-theorem rowIntegrand_integrable (u : D.Row) (Z : ℝ) (hZ : 0 < Z) :
+include hZ in
+theorem rowIntegrand_integrable :
     Integrable (initialRowIntegrand D u Z) := by
   obtain ⟨hmaj, hint, hsum⟩ := initial_majorant D Z hZ
   letI := aIndex_countable' D
-  have heq : initialRowIntegrand D u Z = fun t => ∑' a,
-      NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-        (Scales.xScale Z) (Scales.yScale Z) Z (toProbeFrequency D u, a) t :=
-    funext fun t => rowIntegrand_eq_tsum D u Z hZ t
-  rw [heq]
+  rw [(funext fun t => rowIntegrand_eq_tsum D u Z hZ t)]
   refine hmaj.mono' (AEStronglyMeasurable.tsum (fun a => (hint (toProbeFrequency D u, a)).1)) ?_
   refine Filter.Eventually.of_forall (fun t => ?_)
   have hd : NormalizedProbe.initialMellinPoint t ∈ NormalizedProbe.separatedSeriesDomain := by
     norm_num [NormalizedProbe.initialMellinPoint, NormalizedProbe.separatedSeriesDomain,
       Complex.mul_re, Complex.add_re, Complex.ofReal_re, Complex.ofReal_im]
-  have hn := (NormalizedProbe.separatedSeries_absolute_locallyUniform D.recipe.probe).1
-    (NormalizedProbe.initialMellinPoint t) hd
   have htn : Summable (fun i : NormalizedProbe.MellinSeriesIndex D.recipe.probe =>
       ‖NormalizedProbe.initialTripleMellinSummand D.recipe.probe
         (Scales.xScale Z) (Scales.yScale Z) Z i t‖) := by
     simpa only [NormalizedProbe.initialTripleMellinSummand, norm_mul] using
-      hn.mul_left (‖NormalizedProbe.tripleMellinWeight D.recipe.probe (Scales.xScale Z) (Scales.yScale Z) Z
+      ((NormalizedProbe.separatedSeries_absolute_locallyUniform D.recipe.probe).1
+        (NormalizedProbe.initialMellinPoint t) hd).mul_left (‖NormalizedProbe.tripleMellinWeight D.recipe.probe (Scales.xScale Z) (Scales.yScale Z) Z
         (NormalizedProbe.initialMellinPoint t).1
         (NormalizedProbe.initialMellinPoint t).2.1 (NormalizedProbe.initialMellinPoint t).2.2‖)
   have hinj : Function.Injective (fun a : ExteriorSquarefreeIdeal D.recipe.A.cS ×
       D.recipe.A.Exterior × D.recipe.A.Exterior × D.recipe.A.Exterior =>
       ((toProbeFrequency D u, a) : NormalizedProbe.MellinSeriesIndex D.recipe.probe)) :=
     fun a b h => (Prod.mk.inj h).2
-  calc ‖∑' a, NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-          (Scales.xScale Z) (Scales.yScale Z) Z (toProbeFrequency D u, a) t‖
+  calc _
       ≤ ∑' a, ‖NormalizedProbe.initialTripleMellinSummand D.recipe.probe
           (Scales.xScale Z) (Scales.yScale Z) Z (toProbeFrequency D u, a) t‖ :=
         norm_tsum_le_tsum_norm (htn.comp_injective hinj)
@@ -369,13 +360,15 @@ theorem rowIntegrand_integrable (u : D.Row) (Z : ℝ) (hZ : 0 < Z) :
       simp only [NormalizedProbe.initialTripleMellinSummand,
         NormalizedProbe.initialAbsoluteMellinMajorant, norm_mul, tsum_mul_left]
 
+end
+
 theorem integrable_tsum_norm_bound {ι α : Type*} [Countable ι] [MeasurableSpace α]
     {μ : Measure α} (F : ι → α → ℂ) (hint : ∀ i, Integrable (F i) μ)
     (hsum : Summable fun i => ∫ a, ‖F i a‖ ∂μ) :
     Integrable (fun a => ∑' i, F i a) μ ∧
       ∫ a, ‖∑' i, F i a‖ ∂μ ≤ ∑' i, ∫ a, ‖F i a‖ ∂μ := by
   have hl : ∫⁻ a, ‖∑' i, F i a‖ₑ ∂μ ≤ ∑' i, ENNReal.ofReal (∫ a, ‖F i a‖ ∂μ) := by
-    calc ∫⁻ a, ‖∑' i, F i a‖ₑ ∂μ ≤ ∫⁻ a, ∑' i, ‖F i a‖ₑ ∂μ :=
+    calc _ ≤ ∫⁻ a, ∑' i, ‖F i a‖ₑ ∂μ :=
           lintegral_mono fun a => enorm_tsum_le_tsum_enorm
       _ = ∑' i, ∫⁻ a, ‖F i a‖ₑ ∂μ :=
           lintegral_tsum (fun i => (hint i).aestronglyMeasurable.enorm)
@@ -383,38 +376,28 @@ theorem integrable_tsum_norm_bound {ι α : Type*} [Countable ι] [MeasurableSpa
           congr 1
           ext i
           exact (ofReal_integral_norm_eq_lintegral_enorm (hint i)).symm
-  have hfin : ∑' i, ENNReal.ofReal (∫ a, ‖F i a‖ ∂μ) =
-      ENNReal.ofReal (∑' i, ∫ a, ‖F i a‖ ∂μ) :=
+  have hfin :=
     (ENNReal.ofReal_tsum_of_nonneg (fun i => integral_nonneg fun a => norm_nonneg _) hsum).symm
   have hm : AEStronglyMeasurable (fun a => ∑' i, F i a) μ :=
     AEStronglyMeasurable.tsum (fun i => (hint i).1)
-  have hlt : ∫⁻ a, ‖∑' i, F i a‖ₑ ∂μ < ⊤ :=
-    lt_of_le_of_lt hl (by rw [hfin]; exact ENNReal.ofReal_lt_top)
-  refine ⟨⟨hm, hlt⟩, ?_⟩
+  refine ⟨⟨hm, (lt_of_le_of_lt hl (by rw [hfin]; exact ENNReal.ofReal_lt_top))⟩, ?_⟩
   rw [integral_norm_eq_lintegral_enorm hm]
-  have h0 : (0 : ℝ) ≤ ∑' i, ∫ a, ‖F i a‖ ∂μ :=
-    tsum_nonneg fun i => integral_nonneg fun a => norm_nonneg _
-  calc (∫⁻ a, ‖∑' i, F i a‖ₑ ∂μ).toReal
+  calc _
       ≤ (ENNReal.ofReal (∑' i, ∫ a, ‖F i a‖ ∂μ)).toReal :=
         ENNReal.toReal_mono ENNReal.ofReal_ne_top (hl.trans_eq hfin)
-    _ = _ := ENNReal.toReal_ofReal h0
+    _ = _ := ENNReal.toReal_ofReal (tsum_nonneg fun i => integral_nonneg fun a => norm_nonneg _)
 
 theorem rowIntegrand_norm_summable (Z : ℝ) (hZ : 0 < Z) :
     Summable (fun u : D.Row => ∫ t : ℝ × ℝ × ℝ, ‖initialRowIntegrand D u Z t‖) := by
   obtain ⟨hmaj, hint, hsum⟩ := initial_majorant D Z hZ
   letI := aIndex_countable' D
-  have hfib : ∀ u : D.Row, ∫ t : ℝ × ℝ × ℝ, ‖initialRowIntegrand D u Z t‖ ≤
-      ∑' a, ∫ t : ℝ × ℝ × ℝ, ‖NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-        (Scales.xScale Z) (Scales.yScale Z) Z (toProbeFrequency D u, a) t‖ := by
-    intro u
-    simp_rw [rowIntegrand_eq_tsum D u Z hZ]
-    exact (integrable_tsum_norm_bound
-      (fun a => NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-        (Scales.xScale Z) (Scales.yScale Z) Z (toProbeFrequency D u, a))
-      (fun a => hint _) (hsum.prod_factor _)).2
-  have hs := hsum.prod
-  have hs2 := hs.comp_injective (toProbeFrequency_injective D)
-  exact Summable.of_nonneg_of_le (fun u => integral_nonneg fun t => norm_nonneg _) hfib hs2
+  refine Summable.of_nonneg_of_le (fun u => integral_nonneg fun t => norm_nonneg _) ?_ (hsum.prod.comp_injective (toProbeFrequency_injective D))
+  intro u
+  simp_rw [rowIntegrand_eq_tsum D u Z hZ]
+  exact (integrable_tsum_norm_bound
+    (fun a => NormalizedProbe.initialTripleMellinSummand D.recipe.probe
+      (Scales.xScale Z) (Scales.yScale Z) Z (toProbeFrequency D u, a))
+    (fun a => hint _) (hsum.prod_factor _)).2
 
 end
 

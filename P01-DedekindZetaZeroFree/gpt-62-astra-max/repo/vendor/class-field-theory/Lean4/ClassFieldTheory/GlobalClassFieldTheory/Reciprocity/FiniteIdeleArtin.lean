@@ -22,20 +22,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -83,7 +69,6 @@ theorem finprod_fibers_eq_sigma
       (s := s.subtype fun x => g x = b)]
     · simp only [Finset.prod_subtype_eq_prod_filter]
     · intro x hx
-      change x ∈ s.subtype (fun x => g x = b)
       change f x.1 ≠ 1 at hx
       exact Finset.mem_subtype.mpr (hf.mem_toFinset.2 hx)
   calc
@@ -97,51 +82,10 @@ theorem finprod_fibers_eq_sigma
         (s.mulSupport_of_fiberwise_prod_subset_image f g)]
       exact
         Finset.prod_fiberwise_of_maps_to
-          (t := s.image g)
+
           (fun x hx => Finset.mem_image_of_mem g hx) f
     _ = ∏ᶠ x : α, f x :=
       (finprod_eq_prod f hf).symm
-
-/-- A local norm of an integral unit at a finite place is again an
-integral unit at the place below. -/
-theorem normUnits_mem_finitePlaceIntegerUnits
-    {M : Type}
-    [Field M] [NumberField M] [Algebra K M]
-    (v : HeightOneSpectrum (𝓞 K))
-    (w : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K v) M)
-    (x :
-      ((finitePlaceExtensionCentre
-        (K := K) (L := M) v w).adicCompletion M)ˣ)
-    (hx :
-      x ∈
-        ((finitePlaceExtensionCentre
-          (K := K) (L := M) v w).adicCompletionIntegers M).units) :
-    letI : Algebra (v.adicCompletion K)
-        ((finitePlaceExtensionCentre
-          (K := K) (L := M) v w).adicCompletion M) :=
-      (finitePlaceAdicCompletionMap K M v
-        ⟨finitePlaceExtensionCentre (K := K) (L := M) v w,
-          finitePlaceBelow_finitePlaceExtensionCentre
-            (K := K) (L := M) v w⟩).toAlgebra
-    LocalFieldTheory.normUnits
-        (v.adicCompletion K)
-        ((finitePlaceExtensionCentre
-          (K := K) (L := M) v w).adicCompletion M) x ∈
-      (v.adicCompletionIntegers K).units := by
-  let W : {W : HeightOneSpectrum (𝓞 M) //
-      _root_.finitePlaceBelow (K := K) W = v} :=
-    ⟨finitePlaceExtensionCentre (K := K) (L := M) v w,
-      finitePlaceBelow_finitePlaceExtensionCentre
-        (K := K) (L := M) v w⟩
-  let : Algebra (v.adicCompletion K)
-      ((finitePlaceExtensionCentre
-        (K := K) (L := M) v w).adicCompletion M) :=
-    (finitePlaceAdicCompletionMap K M v W).toAlgebra
-  let z : (W.1.adicCompletionIntegers M).units := ⟨x, hx⟩
-  simpa only [W, z, Subgroup.coe_subtype] using
-    IdeleGroup.finitePlace_normUnits_mem_integerUnits
-      (K := K) (L := M) v W z
 
 /-- The finite local Artin factors of an idele have finite multiplicative
 support.  This is the support input for applying homomorphisms to the
@@ -153,39 +97,29 @@ theorem finitePlaceArtinFactors_hasFiniteMulSupport
         chosenFinitePlaceArtinMonoidHom
           (K := K) (L := L) v
           (IdeleGroup.finiteComponent v a)) := by
-  let S : Set (HeightOneSpectrum (𝓞 K)) :=
+  let S :=
     {v | a.2 v ∉ (v.adicCompletionIntegers K).units}
   let T : Set (HeightOneSpectrum (𝓞 K)) :=
     {v | ∃ W : HeightOneSpectrum (𝓞 L),
       W.asIdeal.LiesOver v.asIdeal ∧
         ¬ Algebra.IsUnramifiedAt (𝓞 K) W.asIdeal}
-  have hS : S.Finite :=
-    Filter.eventually_cofinite.mp
-      (FiniteIdeleGroup.eventually_mem_localUnits a.2)
-  have hT : T.Finite :=
-    AlgebraicNumberTheory.Ramification.finite_ramified_base_heightOne_primes
-      (𝓞 K) (𝓞 L)
   rw [HasFiniteMulSupport]
-  apply (hS.union hT).subset
+  apply ((Filter.eventually_cofinite.mp
+    (FiniteIdeleGroup.eventually_mem_localUnits a.2)).union (AlgebraicNumberTheory.Ramification.finite_ramified_base_heightOne_primes
+    (𝓞 K) (𝓞 L))).subset
   rw [mulSupport_subset_iff']
   intro v hv
-  have hvS : v ∉ S := by
-    intro hvS
-    exact hv (Set.mem_union_left T hvS)
-  have hvT : v ∉ T := by
-    intro hvT
-    exact hv (Set.mem_union_right S hvT)
   have hNorm :
       IdeleGroup.finiteComponent v a ∈
         chosenFinitePlaceLocalNormSubgroup
           (K := K) (L := L) v := by
     apply
       adicCompletionIntegerUnits_le_chosenFinitePlaceLocalNormSubgroup
-        (K := K) (L := L) v
+          v
         (chosenFinitePlaceIsUnramified_of_isUnramifiedAt
-          (K := K) (L := L) v (by
+            v (by
             by_contra hram
-            apply hvT
+            apply (fun hvT => hv (Set.mem_union_right S hvT))
             change
               ∃ W : HeightOneSpectrum (𝓞 L),
                 W.asIdeal.LiesOver v.asIdeal ∧
@@ -193,18 +127,17 @@ theorem finitePlaceArtinFactors_hasFiniteMulSupport
                     (𝓞 K) W.asIdeal
             exact
               ⟨finitePlaceExtensionCentre
-                  (K := K) (L := L) v
+                    v
                   (chosenFinitePlaceExtension
-                    (L := L) v),
+                     v),
                 finitePlaceExtensionCentre_liesOver
-                  (K := K) (L := L) v
+                    v
                   (chosenFinitePlaceExtension
-                    (L := L) v),
+                     v),
                 hram⟩))
-    simpa only [S, Set.mem_ofPred_eq, not_not,
-      IdeleGroup.finiteComponent_apply] using hvS
+    simpa using (fun hvS => hv (Set.mem_union_left T hvS))
   rw [← chosenFinitePlaceArtinMonoidHom_ker
-    (K := K) (L := L) v] at hNorm
+      v] at hNorm
   exact MonoidHom.mem_ker.mp hNorm
 
 /-- At an unramified finite place, the chosen local Artin map kills
@@ -230,12 +163,12 @@ theorem chosenFinitePlaceArtinMonoidHom_eq_one_of_integral_of_unramifiedAt
           (K := K) (L := L) v := by
     apply
       adicCompletionIntegerUnits_le_chosenFinitePlaceLocalNormSubgroup
-        (K := K) (L := L) v
+          v
         (chosenFinitePlaceIsUnramified_of_isUnramifiedAt
-          (K := K) (L := L) v hunram)
+            v hunram)
     exact ha
   rw [← chosenFinitePlaceArtinMonoidHom_ker
-    (K := K) (L := L) v] at hNorm
+      v] at hNorm
   exact MonoidHom.mem_ker.mp hNorm
 
 private theorem chosenFinitePlaceArtinMonoidHom_eq_one_of_mem_localNorm
@@ -245,7 +178,7 @@ private theorem chosenFinitePlaceArtinMonoidHom_eq_one_of_mem_localNorm
       (K := K) (L := L) v) :
     chosenFinitePlaceArtinMonoidHom (K := K) (L := L) v x = 1 := by
   rw [← chosenFinitePlaceArtinMonoidHom_ker
-    (K := K) (L := L) v] at hx
+      v] at hx
   exact MonoidHom.mem_ker.mp hx
 
 /-- The product over all finite places of the actual local Artin
@@ -267,9 +200,9 @@ noncomputable def finitePlaceGlobalArtinMonoidHom :
     exact
       finprod_mul_distrib
         (finitePlaceArtinFactors_hasFiniteMulSupport
-          (K := K) (L := L) a)
+            a)
         (finitePlaceArtinFactors_hasFiniteMulSupport
-          (K := K) (L := L) b)
+            b)
 
 /-- The finite-place global Artin homomorphism is continuous for the
 restricted-product topology on ideles and the finite Krull topology on
@@ -387,11 +320,9 @@ theorem finitePlaceGlobalArtinMonoidHom_norm_eq_finprod_fibers
           finitePlaceBelow (K := K) W = v} :=
       fun v => by
         let vK := HeightOneSpectrum.adicAbv K v
-        let hvK : vK.IsNontrivial :=
-          RayClass.adicAbv_isNontrivial v
         letI :=
           completionTensorDecomposition_extensionFintype
-            (K := K) (L := M) vK hvK
+            (K := K) (L := M) vK (RayClass.adicAbv_isNontrivial v)
         exact
           Fintype.ofEquiv (AbsoluteValueExtension vK M)
             (finitePlaceExtensionEquivAbove
@@ -422,20 +353,14 @@ theorem finitePlaceGlobalArtinMonoidHom_norm_eq_finprod_fibers
         finitePlaceBelow (K := K) W = v} :=
     fun v => by
       let vK := HeightOneSpectrum.adicAbv K v
-      let hvK : vK.IsNontrivial :=
-        RayClass.adicAbv_isNontrivial v
       letI :=
         completionTensorDecomposition_extensionFintype
-          (K := K) (L := M) vK hvK
+          (K := K) (L := M) vK (RayClass.adicAbv_isNontrivial v)
       exact
         Fintype.ofEquiv (AbsoluteValueExtension vK M)
           (finitePlaceExtensionEquivAbove
-            (K := K) (L := M) v)
-  let : ∀ v : HeightOneSpectrum (𝓞 K),
-      ∀ W : {W : HeightOneSpectrum (𝓞 M) //
-        finitePlaceBelow (K := K) W = v},
-        Algebra (v.adicCompletion K)
-          (W.1.adicCompletion M) :=
+              v)
+  let :=
     fun v W =>
       (finitePlaceAdicCompletionMap
         K M v W).toAlgebra
@@ -445,10 +370,11 @@ theorem finitePlaceGlobalArtinMonoidHom_norm_eq_finprod_fibers
   rw [IdeleGroup.finiteComponent_norm_eq_prod]
   rw [map_prod]
 
+section
+
+variable {M : Type} [Field M] [NumberField M] [Algebra K M] (a : IdeleGroup M)
+
 private theorem finitePlaceNormArtinFactor_eq_one_of_component_unit_of_unramified
-    {M : Type}
-    [Field M] [NumberField M] [Algebra K M]
-    (a : IdeleGroup M)
     (W : HeightOneSpectrum (𝓞 M))
     (hComponentUnit :
       IdeleGroup.finiteComponent W a ∈
@@ -467,11 +393,11 @@ private theorem finitePlaceNormArtinFactor_eq_one_of_component_unit_of_unramifie
   let v := finitePlaceBelow (K := K) W
   let Wv :
       {Q : HeightOneSpectrum (𝓞 M) //
-        finitePlaceBelow (K := K) Q = v} :=
+        finitePlaceBelow Q = v} :=
     ⟨W, rfl⟩
   let z : (W.adicCompletionIntegers M).units :=
     ⟨IdeleGroup.finiteComponent W a, hComponentUnit⟩
-  let : Algebra (v.adicCompletion K) (W.adicCompletion M) :=
+  let :=
     (finitePlaceAdicCompletionMap K M v Wv).toAlgebra
   have hNormUnit :
       LocalFieldTheory.normUnits
@@ -484,18 +410,15 @@ private theorem finitePlaceNormArtinFactor_eq_one_of_component_unit_of_unramifie
         (K := K) (L := M) v Wv z
   apply
     chosenFinitePlaceArtinMonoidHom_eq_one_of_mem_localNorm
-      (K := K) (L := L) v
+        v
   apply
     adicCompletionIntegerUnits_le_chosenFinitePlaceLocalNormSubgroup
-      (K := K) (L := L) v hunram
+        v hunram
   exact hNormUnit
 
 /-- The local Artin factors obtained after an idele norm have finite
 multiplicative support. -/
-theorem finitePlaceNormArtinFactors_hasFiniteMulSupport
-    {M : Type}
-    [Field M] [NumberField M] [Algebra K M]
-    (a : IdeleGroup M) :
+theorem finitePlaceNormArtinFactors_hasFiniteMulSupport :
     HasFiniteMulSupport
       (fun W : HeightOneSpectrum (𝓞 M) =>
         let v :=
@@ -510,7 +433,7 @@ theorem finitePlaceNormArtinFactors_hasFiniteMulSupport
             (v.adicCompletion K)
             (W.adicCompletion M)
             (IdeleGroup.finiteComponent W a))) := by
-  let S : Set (HeightOneSpectrum (𝓞 M)) :=
+  let S :=
     {W | a.2 W ∉ (W.adicCompletionIntegers M).units}
   let T : Set (HeightOneSpectrum (𝓞 K)) :=
     {v | ∃ V : HeightOneSpectrum (𝓞 L),
@@ -518,23 +441,14 @@ theorem finitePlaceNormArtinFactors_hasFiniteMulSupport
         ¬ Algebra.IsUnramifiedAt (𝓞 K) V.asIdeal}
   let U : Set (HeightOneSpectrum (𝓞 M)) :=
     {W | finitePlaceBelow (K := K) W ∈ T}
-  have hS : S.Finite :=
-    Filter.eventually_cofinite.mp
-      (FiniteIdeleGroup.eventually_mem_localUnits a.2)
-  have hT : T.Finite :=
-    AlgebraicNumberTheory.Ramification.finite_ramified_base_heightOne_primes
-      (𝓞 K) (𝓞 L)
-  have hU : U.Finite := by
-    exact
-      Set.Finite.preimage_finitePlaceBelow
-        (K := K) (L := M) hT
+  have hU : U.Finite := Set.Finite.preimage_finitePlaceBelow
+        (K := K) (L := M) (AlgebraicNumberTheory.Ramification.finite_ramified_base_heightOne_primes
+          (𝓞 K) (𝓞 L))
   rw [HasFiniteMulSupport]
-  apply (hS.union hU).subset
+  apply ((Filter.eventually_cofinite.mp
+    (FiniteIdeleGroup.eventually_mem_localUnits a.2)).union hU).subset
   rw [mulSupport_subset_iff']
   intro W hW
-  have hWS : W ∉ S := by
-    intro hWS
-    exact hW (Set.mem_union_left U hWS)
   have hWU : W ∉ U := by
     intro hWU
     exact hW (Set.mem_union_right S hWU)
@@ -543,27 +457,28 @@ theorem finitePlaceNormArtinFactors_hasFiniteMulSupport
   have hComponentUnit :
       IdeleGroup.finiteComponent W a ∈
         (W.adicCompletionIntegers M).units := by
-    simpa only [S, Set.mem_ofPred_eq, not_not,
-      IdeleGroup.finiteComponent_apply] using hWS
+    simpa using (fun hWS => hW (Set.mem_union_left U hWS))
   have hvT : v ∉ T := by
     intro hvT
     apply hWU
     exact hvT
   apply
     finitePlaceNormArtinFactor_eq_one_of_component_unit_of_unramified
-      (K := K) (L := L) a W hComponentUnit
+        a W hComponentUnit
   apply chosenFinitePlaceIsUnramified_of_isUnramifiedAt
-    (K := K) (L := L) v
+      v
   by_contra hram
   apply hvT
   exact
     ⟨finitePlaceExtensionCentre
-        (K := K) (L := L) v
-        (chosenFinitePlaceExtension (L := L) v),
+          v
+        (chosenFinitePlaceExtension v),
       finitePlaceExtensionCentre_liesOver
-        (K := K) (L := L) v
-        (chosenFinitePlaceExtension (L := L) v),
+          v
+        (chosenFinitePlaceExtension v),
       hram⟩
+
+end
 
 /-- The finite Artin product after an idele norm, indexed directly by
 the actual finite places upstairs.  This is the flattened finite-place
@@ -610,7 +525,7 @@ theorem finitePlaceGlobalArtinMonoidHom_norm_eq_finprod
         finitePlaceBelow (K := K) W = v} :=
     fun v => by
       let vK := HeightOneSpectrum.adicAbv K v
-      let hvK : vK.IsNontrivial :=
+      let hvK :=
         RayClass.adicAbv_isNontrivial v
       letI :=
         completionTensorDecomposition_extensionFintype
@@ -755,10 +670,10 @@ theorem finitePlaceGlobalArtinMonoidHom_finitePlaceIdele
   change
     (∏ᶠ w : HeightOneSpectrum (𝓞 K),
       chosenFinitePlaceArtinMonoidHom
-        (K := K) (L := L) w
+          w
         (IdeleGroup.finiteComponent w (finitePlaceIdele v x))) =
       chosenFinitePlaceArtinMonoidHom
-        (K := K) (L := L) v x
+          v x
   rw [finprod_eq_single _ v]
   · rw [finitePlaceIdele_finiteComponent_same]
   · intro w hw

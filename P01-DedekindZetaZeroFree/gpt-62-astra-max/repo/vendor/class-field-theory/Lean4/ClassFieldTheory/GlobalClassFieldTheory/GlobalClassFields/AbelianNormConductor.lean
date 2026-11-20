@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -64,17 +60,14 @@ theorem
         (K := K) (L := L) v := by
   constructor
   · intro hzero
-    have hadic :
-        (v.adicCompletionIntegers K).units ≤
-          _root_.chosenFinitePlaceLocalNormSubgroup
-            (K := K) (L := L) v :=
+    have hadic :=
       (ideleClassNormLocalHigherUnitExponent_eq_zero_iff
         (K := K) (L := L) v).1 hzero
     let vK := HeightOneSpectrum.adicAbv K v
     let w := _root_.chosenFinitePlaceExtension (L := L) v
     let hvK : vK.IsNontrivial :=
       RayClass.adicAbv_isNontrivial v
-    let hvKna : IsNonarchimedean (vK : K → ℝ) :=
+    let hvKna : IsNonarchimedean vK :=
       HeightOneSpectrum.isNonarchimedean_adicAbv K v
     let hK :=
       AbsoluteValue.extensionCompletionAlgebra
@@ -234,20 +227,13 @@ theorem
           (LocalFieldTheory.localNormSubgroup
             vK.Completion E).map e.toMonoidHom at heNorm
       rcases heNorm with ⟨z, hz, hze⟩
-      have hzEq :
-          z =
-            LocalFieldTheory.IsNonarchimedeanLocalField.integerUnitsToFieldUnits
-              vK.Completion u :=
+      have hzEq :=
         e.injective hze
       exact hzEq ▸ hz
-    have hlocalConductor :
-        LocalClassFieldTheory.localConductorExponent
-            vK.Completion E = 0 :=
+    have hlocalConductor :=
       (LocalClassFieldTheory.localConductorExponent_eq_zero_iff
         vK.Completion E).2 hfield
-    have hunramified :
-        IsNonarchimedeanLocalField.IsUnramifiedValuedExtension
-          vK.Completion E :=
+    have hunramified :=
       (LocalClassFieldTheory.isUnramifiedValuedExtension_iff_localConductorExponent_eq_zero
         vK.Completion E).2 hlocalConductor
     simpa [_root_.ChosenFinitePlaceIsUnramified] using
@@ -272,9 +258,9 @@ theorem
   exact
     not_congr
       ((ideleClassNormLocalHigherUnitExponent_eq_zero_iff
-          (K := K) (L := L) v).symm.trans
+            v).symm.trans
         (ideleClassNormLocalHigherUnitExponent_eq_zero_iff_chosenFinitePlaceIsUnramified
-          (K := K) (L := L) v))
+            v))
 
 end GlobalClassFields
 end GlobalClassFieldTheory

@@ -17,8 +17,6 @@ open KPLocalPrincipalSeries KPLocalExceptionalConstruction KPLocalStoneVonNeuman
 open KPRankOneShellRepair KPRankOneShellContinuation ActualOutputAnalytic
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 open ActualCofactor LocalCompactChange
-open _root_.DedekindZetaZeroFree.KPGlobalResidualKernel.IntertwinerRegularization.FactorizationSources.NormalizedCoordinateAnalyticity.ActualOutputAnalytic renaming multilinear_coordinate_analytic → multilinear_coordinate_analytic
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor renaming actualFiberCoordinates → actualFiberCoordinates
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
@@ -50,8 +48,7 @@ theorem finite_corrected_full_right_coordinate_analytic
     rw [correctedCompact_expansion, map_sum]
     simp only [map_smul, smul_eq_mul]
     rfl
-  have hf : (fun s => M s (correctedCompact F ζ hζ q S S.iwasawa J P s φ)) =
-      (fun s => ∑ r ∈ N, Complex.exp (s * (r : ℂ)) * M s (v r)) := funext he
+  have hf := funext he
   change AnalyticOnNhd ℂ (fun s => M s (correctedCompact F ζ hζ q S S.iwasawa J P s φ)) _
   rw [hf]
   intro s hs
@@ -61,13 +58,13 @@ theorem finite_corrected_full_right_coordinate_analytic
     (finite_full_right_coordinate_analytic F ζ hζ q S P μ hμ (v r) g t s hs)
 
 variable (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-variable (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
-variable (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (hE : C₀.exceptional ⊆ E)
-variable (J : ∀ q : E, IwasawaData (C₀.canonical q.val).borel)
-variable (φfin : ∀ q : E, compactPicture (C₀.canonical q.val).borel (C₀.polarization q.val)
+    (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
+    (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (hE : C₀.exceptional ⊆ E)
+    (J : ∀ q : E, IwasawaData (C₀.canonical q.val).borel)
+    (φfin : ∀ q : E, compactPicture (C₀.canonical q.val).borel (C₀.polarization q.val)
   (C₀.canonical q.val).iwasawa .plus)
 variable (gfin : ∀ q : E, ActualCover F ζ hζ q.val)
-variable (t : KPGlobalTorusFunctionData.E F ζ hζ)
+    (t : KPGlobalTorusFunctionData.E F ζ hζ)
 
 variable (φarch : {w : NumberField.InfinitePlace F // w.IsComplex} →
   KPComplexIntertwinerParameterMajorant.CompactPicture)

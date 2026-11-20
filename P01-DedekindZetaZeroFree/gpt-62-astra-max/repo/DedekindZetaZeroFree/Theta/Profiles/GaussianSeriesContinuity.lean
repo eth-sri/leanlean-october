@@ -32,7 +32,7 @@ theorem continuous_tsum_of_compact_gaussian_bound
     intro i h hh
     rw [norm_mul]
     calc
-      ‖c i‖ * ‖k h (y i)‖ ≤ C * (P * Real.exp (-a * ‖y i‖ ^ 2)) :=
+      _ ≤ C * (P * Real.exp (-a * ‖y i‖ ^ 2)) :=
         mul_le_mul (hc i) (hb h hh i) (norm_nonneg _) hC
       _ = (C * P) * Real.exp (-a * ‖y i‖ ^ 2) := by ring
   exact (continuousOn_tsum (fun i => ((continuous_const).mul (hcont i)).continuousOn)
@@ -52,23 +52,22 @@ theorem continuous_tsum_thetaParityShape
         (DedekindZetaZeroFree.AbelianQuotient.RayParity.Q K
           (DedekindZetaZeroFree.AbelianQuotient.RayTheta.q K u h) (y i))) := by
   apply continuous_tsum_of_compact_gaussian_bound y hs c hC hc
-    (fun (h : DedekindZetaZeroFree.AbelianQuotient.RayCoset.logHyperplane K) z =>
+    (fun h z =>
       DedekindZetaZeroFree.AbelianQuotient.RayParity.gδ K δ
         (DedekindZetaZeroFree.AbelianQuotient.RayParity.Q K
           (DedekindZetaZeroFree.AbelianQuotient.RayTheta.q K u h) z))
   · intro i
-    have he := DedekindZetaZeroFree.continuousOn_thetaParityShape K δ
     have hm : Continuous (fun h : DedekindZetaZeroFree.AbelianQuotient.RayCoset.logHyperplane K =>
         (u, (h, y i))) := continuous_const.prodMk (continuous_id.prodMk continuous_const)
     unfold DedekindZetaZeroFree.AbelianQuotient.RayTheta.q
-    simpa only [Function.comp_def, one_div] using he.comp_continuous hm (fun h => hu)
+    simpa only [Function.comp_def, one_div] using (DedekindZetaZeroFree.continuousOn_thetaParityShape K δ).comp_continuous hm (fun h => hu)
   · intro S hS
     obtain ⟨P, a, hP, ha, hb⟩ := DedekindZetaZeroFree.thetaParityShapeBounds K δ S hS
     refine ⟨P, a * u ^ (2 / (Module.finrank ℚ K : ℝ)), hP.le,
       mul_pos ha (Real.rpow_pos_of_pos hu _), ?_⟩
     intro h hh i
     unfold DedekindZetaZeroFree.AbelianQuotient.RayTheta.q
-    simpa only [one_div, neg_mul, mul_assoc] using (hb u hu h hh (y i)).1
+    simpa using (hb u hu h hh (y i)).1
 
 end DedekindZetaZeroFree.Hecke.AnalyticTailHelper
 

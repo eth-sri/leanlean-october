@@ -11,8 +11,8 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.FourierContinuation.DetectedDictionary
 open MomentSources TensorActionSource
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (M : ∀ q, LocalImageData R q)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (M : ∀ q, LocalImageData R q)
 
 abbrev ReferencePoint : KPHilbert.Place F → Type
   | Sum.inl _ => KPCplxCharacterHaar.ComplexGL2

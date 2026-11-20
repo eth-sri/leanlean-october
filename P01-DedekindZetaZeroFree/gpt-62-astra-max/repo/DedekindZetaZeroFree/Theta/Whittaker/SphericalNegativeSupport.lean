@@ -12,18 +12,17 @@ set_option maxHeartbeats 8000000
 set_option backward.isDefEq.respectTransparency true
 local notation "ℤᵐ⁰" => WithZero (Multiplicative ℤ)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem exterior_completion_generator_valuation (R : PrincipalMellin.ActualRecipe S η)
     (p : ThetaBranch.ExteriorPrime R.A) :
     Valued.v (exteriorCompletionGenerator R p : p.val.adicCompletion F) =
       WithZero.exp (-1 : ℤ) := by
   obtain ⟨r, hr, he⟩ := R.probe.allowed.generates (ThetaBranch.primeIdeal R.A p)
-  have hv := SIntegerLocalization.generator_completion_valuation R.A.Sf
-    (ThetaBranch.primeIdeal R.A p).val (ThetaBranch.primeIdeal R.A p).property.1
-    r hr.1 hr.2 _ he p.val p.property
   simpa [ThetaBranch.primeIdeal, idealPrimeExponent,
-    UniqueFactorizationMonoid.normalizedFactors_irreducible p.val.irreducible] using hv
+    UniqueFactorizationMonoid.normalizedFactors_irreducible p.val.irreducible] using (SIntegerLocalization.generator_completion_valuation R.A.Sf
+      (ThetaBranch.primeIdeal R.A p).val (ThetaBranch.primeIdeal R.A p).property.1
+      r hr.1 hr.2 _ he p.val p.property)
 
 theorem exterior_trace_detects_nonintegral_diagonal (R : PrincipalMellin.ActualRecipe S η)
     (p : ThetaBranch.ExteriorPrime R.A) (y : (p.val.adicCompletion F)ˣ)
@@ -62,12 +61,10 @@ theorem exterior_prime_not_bad (R : PrincipalMellin.ActualRecipe S η)
   apply p.property
   apply R.A.above_six
   rcases h with h | h
-  · have hm := residueChar_mem p.val 2 h
-    have hh := p.val.asIdeal.mul_mem_right (3 : 𝓞 F) hm
+  · have hh := p.val.asIdeal.mul_mem_right (3 : 𝓞 F) (residueChar_mem p.val 2 h)
     norm_num at hh ⊢
     exact hh
-  · have hm := residueChar_mem p.val 3 h
-    have hh := p.val.asIdeal.mul_mem_left (2 : 𝓞 F) hm
+  · have hh := p.val.asIdeal.mul_mem_left (2 : 𝓞 F) (residueChar_mem p.val 3 h)
     norm_num at hh ⊢
     exact hh
 
@@ -109,7 +106,7 @@ theorem exterior_whittaker_value_eq_zero_of_neg (R : PrincipalMellin.ActualRecip
     rw [hyval, ← WithZero.exp_zero, WithZero.exp_le_exp] at hh
     omega
   obtain ⟨o, ho⟩ := exterior_trace_detects_nonintegral_diagonal R p y hy
-  let z : p.val.adicCompletion F := y.val * o.val
+  let z := y.val * o.val
   have hzdiv : z / y.val = o.val := by
     dsimp [z]
     exact mul_div_cancel_left₀ o.val y.ne_zero
@@ -121,19 +118,18 @@ theorem exterior_whittaker_value_eq_zero_of_neg (R : PrincipalMellin.ActualRecip
   have hconj : n * a = a * n₀ := by
     dsimp [n, a, n₀]
     rw [KPCorrectedBruhatLifts.quotient_upper_diagonal, hzdiv]
-  have hs : ρ n₀ b = b := (C.factorization.spherical_reference p.val p.property).2
-    (KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) o.val)
-    (exterior_integral_root_mem_compact R p o)
   have hfix : ρ n (ρ a b) = ρ a b := by
     calc
       ρ n (ρ a b) = ρ (n * a) b := (LinearMap.congr_fun (ρ.map_mul n a) b).symm
       _ = ρ (a * n₀) b := congrArg (fun g => ρ g b) hconj
       _ = ρ a (ρ n₀ b) := LinearMap.congr_fun (ρ.map_mul a n₀) b
-      _ = ρ a b := congrArg (ρ a) hs
+      _ = ρ a b := congrArg (ρ a) ((C.factorization.spherical_reference p.val p.property).2
+        (KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) o.val)
+        (exterior_integral_root_mem_compact R p o))
   have hphase : (ResidueTrace.localTraceCharacter p.val z : ℂ) ≠ 1 := by
     intro hh
     apply ho
-    exact Circle.coe_injective (by simpa using hh)
+    exact Circle.coe_injective (by exact hh)
   have hw := hW p z (ρ a b)
   change C.factorization.ell (Sum.inr p.val) (ρ n (ρ a b)) =
     (ResidueTrace.localTraceCharacter p.val z : ℂ) *
@@ -143,10 +139,8 @@ theorem exterior_whittaker_value_eq_zero_of_neg (R : PrincipalMellin.ActualRecip
     unfold exteriorWhittakerValue
     rw [exterior_diagonal_eq_standard_lift]
   rw [hv] at hw
-  have hzval : ((ResidueTrace.localTraceCharacter p.val z : ℂ) - 1) *
-      exteriorWhittakerValue R C p y = 0 := by
-    rw [sub_mul, one_mul, ← hw, sub_self]
-  exact (mul_eq_zero.mp hzval).resolve_left (sub_ne_zero.mpr hphase)
+  exact (mul_eq_zero.mp (by
+    rw [sub_mul, one_mul, ← hw, sub_self])).resolve_left (sub_ne_zero.mpr hphase)
 
 end DedekindZetaZeroFree.ThetaExpansion
 

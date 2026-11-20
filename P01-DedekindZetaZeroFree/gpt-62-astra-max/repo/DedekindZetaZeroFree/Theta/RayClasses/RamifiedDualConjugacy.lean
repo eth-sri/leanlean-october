@@ -14,8 +14,8 @@ open DedekindZetaZeroFree.AbelianQuotient
 namespace DedekindZetaZeroFree.Hecke.Theta
 
 variable {F : Type} [Field F] [instNF : NumberField F]
-variable {m : Ideal (𝓞 F)} {hm : m ≠ ⊥}
-variable {η : DedekindZetaZeroFree.RayClassCharacter F m}
+    {m : Ideal (𝓞 F)} {hm : m ≠ ⊥}
+    {η : DedekindZetaZeroFree.RayClassCharacter F m}
 
 include instNF
 
@@ -34,10 +34,11 @@ include instNF
     · intro h
       apply MonoidHom.ext
       intro c
-      have hc := DFunLike.congr_fun h c
-      simpa using congrArg (starRingEnd ℂ) hc
+      simpa using congrArg (starRingEnd ℂ) (DFunLike.congr_fun h c)
 
-private theorem primal_sum (hF : NumberField.IsTotallyComplex F) (hmt : m ≠ ⊤)
+variable (hF : NumberField.IsTotallyComplex F) (hmt : m ≠ ⊤)
+
+private theorem primal_sum
     (η : DedekindZetaZeroFree.RayClassCharacter F m)
     (χ : RayCharacterData F m hm η) (D : RayThetaRepresentatives F m hm)
     (u : ℝ) (hu : 0 < u) :
@@ -53,17 +54,16 @@ private theorem primal_sum (hF : NumberField.IsTotallyComplex F) (hmt : m ≠ �
   apply Finset.sum_congr rfl
   intro C hC
   let a := inverseOrdinaryClassCoprimeRepresentative F m hm C
-  have ha : (a : Ideal (𝓞 F)) ≠ ⊥ := nonZeroDivisors.ne_zero a.property
-  have hclass : ClassGroup.mk F (rayIdealFractionalIdeal F (a : Ideal (𝓞 F)) ha) = C⁻¹ :=
-    mk_inverseOrdinaryClassCoprimeRepresentative F m hm C
-  have haeq : rayIdealFractionalIdeal F (a : Ideal (𝓞 F)) ha = FractionalIdeal.mk0 F a := by
+  have ha := nonZeroDivisors.ne_zero a.property
+  have haeq : rayIdealFractionalIdeal F a ha = FractionalIdeal.mk0 F a := by
     apply Units.ext
     rfl
   simpa only [haeq, a, mk_inverseOrdinaryClassCoprimeRepresentative, inv_inv] using
     rayTheta_primal_fiber_eq_weightedIdealBlock hF m (a : Ideal (𝓞 F)) hm ha
       (inverseOrdinaryClassCoprimeRepresentative_coprime F m hm C) hmt η χ D u hu
 
-private theorem uniform_aux (hF : NumberField.IsTotallyComplex F) (hmt : m ≠ ⊤)
+include hF hmt in
+private theorem uniform_aux
     {η : DedekindZetaZeroFree.RayClassCharacter F m}
     (χ : RayCharacterData F m hm η) (hprim : η.IsPrimitive) :
     ∃ w : ℂ, w ≠ 0 ∧ ‖w‖ = 1 ∧
@@ -79,9 +79,9 @@ private theorem uniform_aux (hF : NumberField.IsTotallyComplex F) (hmt : m ≠ �
       (rayTraceQuotient m) (fractionalIdealQuotientMk _ (codifferentFractionalIdeal F) β)) := by
     rw [hlift]
     exact rayTraceQuotientGenerator_bijective m hm
-  have hbimage : (b : FractionalIdeal (𝓞 F)⁰ F) =
+  have hbimage : b =
       FractionalIdeal.spanSingleton (𝓞 F)⁰ (β : F) *
-        (m : FractionalIdeal (𝓞 F)⁰ F) * (codifferentFractionalIdeal F)⁻¹ := by
+        m * (codifferentFractionalIdeal F)⁻¹ := by
     simpa only [rayDifferentFrac, rayCodifferent, codifferentFractionalIdeal,
       traceDualFractionalIdeal] using himage
   let e := rayTraceGeneratorChar m hm
@@ -146,8 +146,8 @@ private theorem uniform_aux (hF : NumberField.IsTotallyComplex F) (hmt : m ≠ �
       ((conductorScale F m : ℂ) * (τ * η b / (RayCoset.modulusCovolume F m : ℂ))) * ∑ C, B C := by ring
     _ = _ := by rw [hfactor]; ring
 
+include hF hmt in
 theorem normalizedRayDualTheta_eq_ramified_conjugate
-    (hF : NumberField.IsTotallyComplex F) (hmt : m ≠ ⊤)
     (D : RayThetaRepresentatives F m hm) (χ : RayCharacterData F m hm η)
     (hprim : η.IsPrimitive) (hη : ¬ η.IsPrincipal) :
     ∃ w : ℂ, w ≠ 0 ∧ ∀ t : ℝ, 0 < t →

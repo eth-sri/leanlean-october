@@ -10,7 +10,7 @@ open NumberField
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem sextic_fourier_mask_inversion (R : PrincipalMellin.ActualRecipe S η)
     (p : ThetaBranch.ExteriorPrime R.A) (j : Fin 6) (t : DHCubic.Residue F p.val) :
@@ -44,8 +44,7 @@ theorem selected_digit_phase (R : PrincipalMellin.ActualRecipe S η)
       (algebraMap F (KPAdeles F) (a : F) * digitParameter R m d) : ℂ) =
     ∏ p : ThetaDigitAverage.rowPrimes R.A m.val m.property,
       let hp := ((ThetaDigitAverage.rowPrimes_finite R.A m.val m.property).mem_toFinset.mp p.property).1
-      Characters.psi R ⟨p.val, hp⟩ (ThetaBranch.unitResidue p.val a * d p) := by
-  exact DedekindZetaZeroFree.DigitMasks.digitParameter_rational_phase R m a ha d
+      Characters.psi R ⟨p.val, hp⟩ (ThetaBranch.unitResidue p.val a * d p) := DedekindZetaZeroFree.DigitMasks.digitParameter_rational_phase R m a ha d
 
 end QuotientDescent
 end DedekindZetaZeroFree.ThetaExpansion

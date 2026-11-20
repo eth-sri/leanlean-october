@@ -18,19 +18,17 @@ theorem archDiagonalIdele_ideleAbs (u : NumberField.InfinitePlace F → ℝ) :
       Real.exp (2 * ∑ w, u w) := by
   let a := archDiagonalIdele F ζ hζ u
   have hf : ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm a).2 = 1 := by
-    apply (IdeleGroup.finiteEquivFiniteAdeleUnits (K := F)).injective
+    apply (IdeleGroup.finiteEquivFiniteAdeleUnits).injective
     apply Units.ext
-    have he := congrArg (fun u : KPAdelicCoverRestrictedProduct.Ideles F => u.val.2)
+    exact congrArg (fun u : KPAdelicCoverRestrictedProduct.Ideles F => u.val.2)
       ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).apply_symm_apply a)
-    exact he
   have hw (w : NumberField.InfinitePlace F) :
       ((InfiniteIdeleGroup.component w
         ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm a).1 : w.Completionˣ) : w.Completion) =
         (NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
           (KPHilbert.infinite_isComplex F ζ hζ w)).symm (Real.exp (u w) : ℂ) := by
-    have he := congrArg (fun u : KPAdelicCoverRestrictedProduct.Ideles F => u.val.1 w)
+    exact congrArg (fun u : KPAdelicCoverRestrictedProduct.Ideles F => u.val.1 w)
       ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).apply_symm_apply a)
-    exact he
   change (((IdeleGroup.absoluteNorm
     ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm a))⁻¹ : ℝ≥0ˣ) : ℝ) = _
   rw [IdeleGroup.absoluteNorm_apply, hf, map_one, one_mul, inv_inv,
@@ -40,9 +38,8 @@ theorem archDiagonalIdele_ideleAbs (u : NumberField.InfinitePlace F → ℝ) :
   have hn (w : NumberField.InfinitePlace F) :
       ‖(NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
         (KPHilbert.infinite_isComplex F ζ hζ w)).symm (Real.exp (u w) : ℂ)‖ = Real.exp (u w) := by
-    let e := NumberField.InfinitePlace.Completion.isometryEquivComplexOfIsComplex
-      (KPHilbert.infinite_isComplex F ζ hζ w)
-    have h := e.symm.isometry.dist_eq (Real.exp (u w) : ℂ) 0
+    have h := (NumberField.InfinitePlace.Completion.isometryEquivComplexOfIsComplex
+      (KPHilbert.infinite_isComplex F ζ hζ w)).symm.isometry.dist_eq (Real.exp (u w) : ℂ) 0
     change dist ((NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
       (KPHilbert.infinite_isComplex F ζ hζ w)).symm (Real.exp (u w) : ℂ))
       ((NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex

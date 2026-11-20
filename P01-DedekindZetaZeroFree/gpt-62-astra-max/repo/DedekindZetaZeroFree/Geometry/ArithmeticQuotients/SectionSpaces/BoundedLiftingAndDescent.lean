@@ -11,15 +11,18 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.CoreChartLocalizers
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
+    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+    (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
  instance subsingletonLp {α : Type*} [MeasurableSpace α] {μ : Measure α} {E : Type*}
     [NormedAddCommGroup E] [Subsingleton E] {p : ℝ≥0∞} : Subsingleton (Lp E p μ) :=
   ⟨fun f g => Lp.ext (Filter.Eventually.of_forall fun _ => Subsingleton.elim _ _)⟩
 
+section
+
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+
 private theorem bounded_local_operators_rank_zero
-    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
     (hK : MeasurableSet K) (C : FiniteCutoffs F ζ hζ hF U A K)
     (P : FrameComparison F ζ hζ hF U A M C) (hV : V F ζ hζ U = ⊥) :
@@ -51,7 +54,7 @@ private theorem bounded_local_operators_rank_zero
         exact Lp.coeFn_zero ℂ 2
           (volume.restrict (cube (C.chart i).n (C.chart i).a))⟩ }⟩
 
-theorem chartMeasure_pullback_ae (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+theorem chartMeasure_pullback_ae
     {K : Set (X F ζ hζ U)} (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count)
     {p : X F ζ hζ U → Prop}
     (hp : ∀ᵐ x ∂quotientMeasure F ζ hζ hF U A, p x) :
@@ -60,41 +63,29 @@ theorem chartMeasure_pullback_ae (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   letI : BorelSpace (X F ζ hζ U) := ⟨rfl⟩
   have hc : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
       (A.representative (C.chart i).component)) := by
-    have hh := A.components.continuous.comp (continuous_sigmaMk (i := (C.chart i).component))
-    simpa only [Function.comp_def, A.components_formula] using hh
-  have hproj : Continuous (KPCuspSiegel.projection F
-      (KPCuspGenuineMonodromy.Component F ζ hζ U
-        (A.representative (C.chart i).component))) :=
-    continuous_quot_mk
-  have hb := ((hc.comp hproj).comp_continuousOn
+    simpa only [Function.comp_def, A.components_formula] using (A.components.continuous.comp (continuous_sigmaMk))
+  have hb := ((hc.comp continuous_quot_mk).comp_continuousOn
     ((C.chart i).smooth_coordinates.continuousOn.mono
       (Set.Subset.trans subset_closure (C.chart i).closed_ball_in_extension))).aemeasurable
         Metric.isOpen_ball.measurableSet (μ := volume)
-  have hw := ((C.chart i).smooth_weight.continuousOn.mono
-    (Set.Subset.trans subset_closure (C.chart i).closed_ball_in_extension)).aemeasurable
-      Metric.isOpen_ball.measurableSet (μ := volume)
-  have hd := hb.mono_ac (withDensity_absolutelyContinuous _
-    (fun x => ENNReal.ofReal ((C.chart i).weight x)))
   have hmap := ae_restrict_of_ae hp (s := (C.chart i).O F ζ hζ hF U)
   rw [← C.chart_measure i] at hmap
-  have hpull := ae_of_ae_map (hd.smul_measure _) hmap
-  have hn : (Fintype.card ((C.chart i).G F ζ hζ hF U) : ℝ≥0∞)⁻¹ ≠ 0 := by simp
-  have hh := (Measure.ae_ennreal_smul_measure_iff hn).mp hpull
-  have hpos := (ae_withDensity_iff' (hw.ennreal_ofReal)).mp hh
-  filter_upwards [hpos, ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx hball
+  filter_upwards [((ae_withDensity_iff' ((((C.chart i).smooth_weight.continuousOn.mono
+    (Set.Subset.trans subset_closure (C.chart i).closed_ball_in_extension)).aemeasurable
+      Metric.isOpen_ball.measurableSet).ennreal_ofReal)).mp ((Measure.ae_ennreal_smul_measure_iff (by simp)).mp (ae_of_ae_map ((hb.mono_ac (withDensity_absolutelyContinuous _
+    (fun x => ENNReal.ofReal ((C.chart i).weight x)))).smul_measure _) hmap))), ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx hball
   apply hx
   exact ne_of_gt (ENNReal.ofReal_pos.mpr
     (lt_of_lt_of_le (C.chart i).positive_lower
       ((C.chart i).finite_bounds x (subset_closure hball)).1))
 
-theorem chartMeasure_volume_le (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+theorem chartMeasure_volume_le
     (D : Chart F ζ hζ hF U A) :
     volume.restrict (Metric.ball 0 D.radius) ≤
       ((Fintype.card (D.G F ζ hζ hF U) : ℝ≥0∞) * (ENNReal.ofReal D.lower)⁻¹) •
       ((Fintype.card (D.G F ζ hζ hF U) : ℝ≥0∞)⁻¹ •
         (volume.restrict (Metric.ball 0 D.radius)).withDensity
           (fun x => ENNReal.ofReal (D.weight x))) := by
-  have hl : ENNReal.ofReal D.lower ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr D.positive_lower)
   have h : (ENNReal.ofReal D.lower) • volume.restrict (Metric.ball 0 D.radius) ≤
       (volume.restrict (Metric.ball 0 D.radius)).withDensity
           (fun x => ENNReal.ofReal (D.weight x)) := by
@@ -103,28 +94,24 @@ theorem chartMeasure_volume_le (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
     exact ENNReal.ofReal_le_ofReal (D.finite_bounds x (subset_closure hx)).1
   have h' := smul_le_smul_left ((ENNReal.ofReal D.lower)⁻¹) h
-  rw [smul_smul, ENNReal.inv_mul_cancel hl ENNReal.ofReal_ne_top, one_smul] at h'
+  rw [smul_smul, ENNReal.inv_mul_cancel (ne_of_gt (ENNReal.ofReal_pos.mpr D.positive_lower)) ENNReal.ofReal_ne_top, one_smul] at h'
   rw [smul_smul, mul_right_comm, ENNReal.mul_inv_cancel
     (by simp : (Fintype.card (D.G F ζ hζ hF U) : ℝ≥0∞) ≠ 0) (by simp), one_mul]
   exact h'
 
-private theorem chart_toBase_aemeasurable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+private theorem chart_toBase_aemeasurable
     (D : Chart F ζ hζ hF U A) :
     AEMeasurable (D.toBase F ζ hζ hF U) (volume.restrict (Metric.ball 0 D.radius)) := by
   letI : BorelSpace (X F ζ hζ U) := ⟨rfl⟩
   have hc : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
       (A.representative D.component)) := by
-    have hh := A.components.continuous.comp (continuous_sigmaMk (i := D.component))
-    simpa only [Function.comp_def, A.components_formula] using hh
-  have hproj : Continuous (KPCuspSiegel.projection F
-      (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative D.component))) :=
-    continuous_quot_mk
-  exact ((hc.comp hproj).comp_continuousOn
+    simpa only [Function.comp_def, A.components_formula] using (A.components.continuous.comp (continuous_sigmaMk))
+  exact ((hc.comp continuous_quot_mk).comp_continuousOn
     (D.smooth_coordinates.continuousOn.mono
       (Set.Subset.trans subset_closure D.closed_ball_in_extension))).aemeasurable
-        Metric.isOpen_ball.measurableSet (μ := volume)
+        Metric.isOpen_ball.measurableSet
 
-theorem chart_pullback_memLp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+theorem chart_pullback_memLp
     {K : Set (X F ζ hζ U)} (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count)
     (v : H F ζ hζ hF U A) :
     MemLp (fun x => (v ((C.chart i).toBase F ζ hζ hF U x) : ℂ)) 2
@@ -147,22 +134,24 @@ theorem chart_pullback_memLp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       (ENNReal.inv_ne_top.mpr (ne_of_gt (ENNReal.ofReal_pos.mpr D.positive_lower))))
     (chartMeasure_volume_le F ζ hζ hF U A D)
 
- def cutoffLiftFunction (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) (v : H F ζ hζ hF U A) : E (C.chart i).n → ℂ :=
+end
+
+ section
+
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
+    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C) (i : Fin C.count)
+    (v : H F ζ hζ hF U A)
+
+def cutoffLiftFunction : E (C.chart i).n → ℂ :=
   (Metric.ball 0 (C.chart i).radius).indicator (fun x =>
     (C.phi i ((C.chart i).toBase F ζ hζ hF U x) : ℂ) * (P.phase i x : ℂ) *
       (v ((C.chart i).toBase F ζ hζ hF U x) : ℂ))
 
- theorem cutoffLiftFunction_memLp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) (v : H F ζ hζ hF U A) :
+ theorem cutoffLiftFunction_memLp :
     MemLp (cutoffLiftFunction F ζ hζ hF U A M C P i v) 2
       (volume.restrict (cube (C.chart i).n (C.chart i).a)) := by
   let D := C.chart i
-  have hball : Metric.ball (0 : E D.n) D.radius ⊆ cube D.n D.a :=
+  have hball :=
     Set.Subset.trans subset_closure (Set.Subset.trans D.closed_ball_in_cube interior_subset)
   apply (memLp_indicator_iff_restrict Metric.isOpen_ball.measurableSet.nullMeasurableSet).mpr
   rw [Measure.restrict_restrict_of_subset hball]
@@ -185,6 +174,8 @@ theorem chart_pullback_memLp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
   rw [C.cutoff_formula, Set.indicator_of_mem hx]
 
+end
+
 theorem chart_pullback_eLpNorm_le (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     {K : Set (X F ζ hζ U)} (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count)
     (v : H F ζ hζ hF U A) :
@@ -197,22 +188,23 @@ theorem chart_pullback_eLpNorm_le (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   let ν := (Fintype.card (D.G F ζ hζ hF U) : ℝ≥0∞)⁻¹ •
     (volume.restrict (Metric.ball 0 D.radius)).withDensity
       (fun x => ENNReal.ofReal (D.weight x))
-  have hb : AEMeasurable (D.toBase F ζ hζ hF U) ν :=
+  let toBase₀ := D.toBase F ζ hζ hF U
+  have hb : AEMeasurable (toBase₀) ν :=
     ((chart_toBase_aemeasurable F ζ hζ hF U A D).mono_ac
       (withDensity_absolutelyContinuous _ _)).smul_measure _
   have hv : MemLp (fun x => (v x : ℂ)) 2 (quotientMeasure F ζ hζ hF U A) :=
     (V F ζ hζ U).subtypeL.comp_memLp' (Lp.memLp v)
   have hm : AEStronglyMeasurable (fun x => (v x : ℂ))
-      (Measure.map (D.toBase F ζ hζ hF U) ν) := by
+      (Measure.map (toBase₀) ν) := by
     rw [C.chart_measure i]
     exact hv.aestronglyMeasurable.restrict
-  have h := eLpNorm_le_of_measure_le_smul (f := fun x => (v (D.toBase F ζ hζ hF U x) : ℂ))
+  have h := eLpNorm_le_of_measure_le_smul (f := fun x => (v (toBase₀ x) : ℂ))
     (p := 2) (chartMeasure_volume_le F ζ hζ hF U A D)
-  change eLpNorm (fun x => (v (D.toBase F ζ hζ hF U x) : ℂ)) 2
+  change eLpNorm (fun x => (v (toBase₀ x) : ℂ)) 2
     (volume.restrict (Metric.ball 0 D.radius)) ≤
     ((Fintype.card (D.G F ζ hζ hF U) : ℝ≥0∞) * (ENNReal.ofReal D.lower)⁻¹) ^
       (1 / (2 : ℝ≥0∞)).toReal *
-      eLpNorm (fun x => (v (D.toBase F ζ hζ hF U x) : ℂ)) 2 ν at h
+      eLpNorm (fun x => (v (toBase₀ x) : ℂ)) 2 ν at h
   have heq := eLpNorm_map_measure (p := 2) hm hb
   simp only [Function.comp_def] at heq
   rw [← heq] at h
@@ -222,9 +214,12 @@ theorem chart_pullback_eLpNorm_le (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   exact eLpNorm_congr_norm_ae hv.aestronglyMeasurable (Lp.aestronglyMeasurable v)
     (Filter.Eventually.of_forall fun x => rfl)
 
-private theorem cutoffLiftFunction_eLpNorm_le (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
+section
+
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
     (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
+
+private theorem cutoffLiftFunction_eLpNorm_le
     (i : Fin C.count) {B : ℝ} (hB : ∀ x, ‖C.cutoff i x‖ ≤ B) (v : H F ζ hζ hF U A) :
     eLpNorm (cutoffLiftFunction F ζ hζ hF U A M C P i v) 2
       (volume.restrict (cube (C.chart i).n (C.chart i).a)) ≤
@@ -232,13 +227,10 @@ private theorem cutoffLiftFunction_eLpNorm_le (A : KPFiniteCuspAtlas.Atlas F ζ 
         (ENNReal.ofReal (C.chart i).lower)⁻¹) ^ (1 / (2 : ℝ≥0∞)).toReal) *
       eLpNorm v 2 (quotientMeasure F ζ hζ hF U A) := by
   let D := C.chart i
-  have hball : Metric.ball (0 : E D.n) D.radius ⊆ cube D.n D.a :=
-    Set.Subset.trans subset_closure (Set.Subset.trans D.closed_ball_in_cube interior_subset)
-  have hl := (cutoffLiftFunction_memLp F ζ hζ hF U A M C P i v).aestronglyMeasurable
-  have hh := eLpNorm_le_mul_eLpNorm_of_ae_le_mul (c := B) hl
+  have hh := eLpNorm_le_mul_eLpNorm_of_ae_le_mul (c := B) ((cutoffLiftFunction_memLp F ζ hζ hF U A M C P i v).aestronglyMeasurable)
     (g := (Metric.ball 0 D.radius).indicator (fun x => (v (D.toBase F ζ hζ hF U x) : ℂ))) ?_ 2
   · rw [eLpNorm_indicator_eq_eLpNorm_restrict Metric.isOpen_ball.measurableSet.nullMeasurableSet,
-      Measure.restrict_restrict_of_subset hball] at hh
+      Measure.restrict_restrict_of_subset (Set.Subset.trans subset_closure (Set.Subset.trans D.closed_ball_in_cube interior_subset))] at hh
     refine hh.trans ?_
     rw [mul_assoc]
     exact mul_le_mul_right (chart_pullback_eLpNorm_le F ζ hζ hF U A C i v) _
@@ -249,19 +241,18 @@ private theorem cutoffLiftFunction_eLpNorm_le (A : KPFiniteCuspAtlas.Atlas F ζ 
       have hc : C.cutoff i x = C.phi i (D.toBase F ζ hζ hF U x) := by
         rw [C.cutoff_formula, Set.indicator_of_mem hx]
       rw [← hc]
-      simpa only [Complex.norm_real, Real.norm_eq_abs] using
+      simpa using
         mul_le_mul_of_nonneg_right (hB x) (norm_nonneg (v (D.toBase F ζ hζ hF U x) : ℂ))
     · simp [cutoffLiftFunction, Set.indicator_of_notMem hx]
 
- def cutoffLiftLinear (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
+ def cutoffLiftLinear
     (i : Fin C.count) : H F ζ hζ hF U A →ₗ[ℂ]
       Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a)) where
   toFun v := (cutoffLiftFunction_memLp F ζ hζ hF U A M C P i v).toLp _
   map_add' v w := by
     apply Lp.ext
-    refine ((cutoffLiftFunction_memLp F ζ hζ hF U A M C P i (v + w)).coeFn_toLp).trans ?_
+    let cutoffLiftFunction_memLp₀ := cutoffLiftFunction_memLp F ζ hζ hF U A M C P i
+    refine ((cutoffLiftFunction_memLp₀ (v + w)).coeFn_toLp).trans ?_
     apply Filter.EventuallyEq.trans _ (Lp.coeFn_add _ _).symm
     have hp := chartMeasure_pullback_ae F ζ hζ hF U A C i (Lp.coeFn_add v w)
     have hi : (Metric.ball (0 : E (C.chart i).n) (C.chart i).radius).indicator
@@ -274,8 +265,8 @@ private theorem cutoffLiftFunction_eLpNorm_le (A : KPFiniteCuspAtlas.Atlas F ζ 
           (Set.Subset.trans subset_closure (Set.Subset.trans (C.chart i).closed_ball_in_cube interior_subset))]
         exact hp)
     filter_upwards [hi,
-      (cutoffLiftFunction_memLp F ζ hζ hF U A M C P i v).coeFn_toLp,
-      (cutoffLiftFunction_memLp F ζ hζ hF U A M C P i w).coeFn_toLp] with x hx hv hw
+      (cutoffLiftFunction_memLp₀ v).coeFn_toLp,
+      (cutoffLiftFunction_memLp₀ w).coeFn_toLp] with x hx hv hw
     simp only [Pi.add_apply]
     rw [hv, hw]
     by_cases hxb : x ∈ Metric.ball 0 (C.chart i).radius
@@ -306,30 +297,22 @@ private theorem cutoffLiftFunction_eLpNorm_le (A : KPFiniteCuspAtlas.Atlas F ζ 
       simp [cutoffLiftFunction, Set.indicator_of_mem hxb, hx, mul_left_comm]
     · simp [cutoffLiftFunction, Set.indicator_of_notMem hxb]
 
- theorem cutoffLiftLinear_bound (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
+ theorem cutoffLiftLinear_bound
     (i : Fin C.count) {B : ℝ} (hB : ∀ x, ‖C.cutoff i x‖ ≤ B) (v : H F ζ hζ hF U A) :
     ‖cutoffLiftLinear F ζ hζ hF U A M C P i v‖ ≤
       (B * ((Fintype.card ((C.chart i).G F ζ hζ hF U) : ℝ≥0∞) *
         (ENNReal.ofReal (C.chart i).lower)⁻¹).toReal ^ (1 / (2 : ℝ≥0∞)).toReal) * ‖v‖ := by
-  have hB0 : 0 ≤ B := (norm_nonneg (C.cutoff i 0)).trans (hB 0)
   change ‖(cutoffLiftFunction_memLp F ζ hζ hF U A M C P i v).toLp _‖ ≤ _
   rw [Lp.norm_def, eLpNorm_congr_ae (cutoffLiftFunction_memLp F ζ hζ hF U A M C P i v).coeFn_toLp]
-  have hh := ENNReal.toReal_mono (b :=
-    (ENNReal.ofReal B * ((Fintype.card ((C.chart i).G F ζ hζ hF U) : ℝ≥0∞) *
-      (ENNReal.ofReal (C.chart i).lower)⁻¹) ^ (1 / (2 : ℝ≥0∞)).toReal) *
-    eLpNorm v 2 (quotientMeasure F ζ hζ hF U A)) ?_ (cutoffLiftFunction_eLpNorm_le F ζ hζ hF U A M C P i hB v)
-  · simpa only [ENNReal.toReal_mul, ← ENNReal.toReal_rpow, ENNReal.toReal_ofReal hB0, Lp.norm_def] using hh
+  have hh := ENNReal.toReal_mono ?_ (cutoffLiftFunction_eLpNorm_le F ζ hζ hF U A M C P i hB v)
+  · simpa only [ENNReal.toReal_mul, ← ENNReal.toReal_rpow, ENNReal.toReal_ofReal ((norm_nonneg (C.cutoff i 0)).trans (hB 0)), Lp.norm_def] using hh
   · apply ENNReal.mul_ne_top _ (Lp.eLpNorm_ne_top v)
     apply ENNReal.mul_ne_top ENNReal.ofReal_ne_top
     apply ENNReal.rpow_ne_top_of_nonneg (by positivity)
     exact ENNReal.mul_ne_top (by simp) (ENNReal.inv_ne_top.mpr
       (ne_of_gt (ENNReal.ofReal_pos.mpr (C.chart i).positive_lower)))
 
- def cutoffLiftMap (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
+ def cutoffLiftMap
     (i : Fin C.count) : H F ζ hζ hF U A →L[ℂ]
       Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a)) := by
   let h := (C.compact_cutoff i).exists_bound_of_continuous (C.smooth_cutoff i).continuous
@@ -340,18 +323,14 @@ private theorem cutoffLiftFunction_eLpNorm_le (A : KPFiniteCuspAtlas.Atlas F ζ 
       (ENNReal.ofReal (C.chart i).lower)⁻¹).toReal ^ (1 / (2 : ℝ≥0∞)).toReal) ?_
   exact cutoffLiftLinear_bound F ζ hζ hF U A M C P i h.choose_spec
 
-private theorem cutoffLiftMap_formula (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
+private theorem cutoffLiftMap_formula
     (i : Fin C.count) (v : H F ζ hζ hF U A) :
     cutoffLiftMap F ζ hζ hF U A M C P i v =ᵐ[
       volume.restrict (cube (C.chart i).n (C.chart i).a)]
       cutoffLiftFunction F ζ hζ hF U A M C P i v :=
   (cutoffLiftFunction_memLp F ζ hζ hF U A M C P i v).coeFn_toLp
 
-private theorem cutoffLiftMap_smooth_core (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
+private theorem cutoffLiftMap_smooth_core
     (i : Fin C.count) (v : H F ζ hζ hF U A) (hv : v ∈ core F ζ hζ hF U A M) :
     ∃ f : E (C.chart i).n → ℂ,
       ContDiff ℝ (⊤ : ℕ∞) f ∧ HasCompactSupport f ∧
@@ -399,17 +378,13 @@ private theorem cutoffLiftMap_smooth_core (A : KPFiniteCuspAtlas.Atlas F ζ hζ 
       rw [Measure.restrict_restrict_of_subset hball]
       exact heq
     have hh := (ae_eq_restrict_iff_indicator_ae_eq Metric.isOpen_ball.measurableSet).mp heq'
-    have hsupp : Function.support f ⊆ Metric.ball 0 (C.chart i).radius :=
+    have hsupp :=
       Set.Subset.trans (subset_tsupport f) (Set.Subset.trans hsupport (C.support_cutoff i))
     dsimp only [D] at hh
     simpa only [cutoffLiftFunction, Set.indicator_indicator, Set.inter_self,
       Set.indicator_eq_self.mpr hsupp] using hh
 
-theorem bounded_cutoff_lifting
-    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K)
-    (P : FrameComparison F ζ hζ hF U A M C) :
+theorem bounded_cutoff_lifting :
     ∃ T : ∀ i, H F ζ hζ hF U A →L[ℂ]
         Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a)),
       (∀ i v, T i v =ᵐ[volume.restrict (cube (C.chart i).n (C.chart i).a)]
@@ -425,28 +400,29 @@ theorem bounded_cutoff_lifting
     cutoffLiftMap_formula F ζ hζ hF U A M C P,
     cutoffLiftMap_smooth_core F ζ hζ hF U A M C P⟩
 
-theorem chart_orthogonal_measurePreserving (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (D : Chart F ζ hζ hF U A) (g : D.G F ζ hζ hF U) :
+end
+
+section
+
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (D : Chart F ζ hζ hF U A)
+
+theorem chart_orthogonal_measurePreserving (g : D.G F ζ hζ hF U) :
     MeasurePreserving (D.orthogonal g)
       (volume.restrict (Metric.ball (0 : E D.n) D.radius))
       (volume.restrict (Metric.ball (0 : E D.n) D.radius)) := by
   have he : (D.orthogonal g) ⁻¹' Metric.ball (0 : E D.n) D.radius = Metric.ball (0 : E D.n) D.radius := by
     ext x
-    simp only [Set.mem_preimage, Metric.mem_ball, dist_zero_right,
-      LinearIsometryEquiv.norm_map]
+    simp
   have hr := (LinearIsometryEquiv.measurePreserving (D.orthogonal g)).restrict_preimage
     (s := Metric.ball (0 : E D.n) D.radius) Metric.isOpen_ball.measurableSet
   rw [he] at hr
   exact hr
 
-private theorem chart_rho_norm (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (D : Chart F ζ hζ hF U A) (g : D.G F ζ hζ hF U) :
-    ‖(D.rho F ζ hζ hF U g : ℂ)‖ = 1 := by
-  exact (((Units.coeHom ℂ).comp (D.rho F ζ hζ hF U)).isOfFinOrder
+private theorem chart_rho_norm (g : D.G F ζ hζ hF U) :
+    ‖(D.rho F ζ hζ hF U g : ℂ)‖ = 1 := (((Units.coeHom ℂ).comp (D.rho F ζ hζ hF U)).isOfFinOrder
     (isOfFinOrder_of_finite g)).norm_eq_one
 
- def chartAverageBall (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (D : Chart F ζ hζ hF U A) :
+ def chartAverageBall :
     Lp ℂ 2 (volume.restrict (Metric.ball (0 : E D.n) D.radius)) →L[ℂ]
       Lp ℂ 2 (volume.restrict (Metric.ball (0 : E D.n) D.radius)) :=
   (Fintype.card (D.G F ζ hζ hF U) : ℂ)⁻¹ •
@@ -454,17 +430,17 @@ private theorem chart_rho_norm (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       (Lp.compMeasurePreservingₗᵢ ℂ (D.orthogonal g)
         (chart_orthogonal_measurePreserving F ζ hζ hF U A D g)).toContinuousLinearMap
 
-private theorem chartAverageBall_formula (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (D : Chart F ζ hζ hF U A)
+private theorem chartAverageBall_formula
     (f : Lp ℂ 2 (volume.restrict (Metric.ball (0 : E D.n) D.radius))) :
     chartAverageBall F ζ hζ hF U A D f =ᵐ[volume.restrict (Metric.ball (0 : E D.n) D.radius)]
       D.average F ζ hζ hF U f := by
   let c : ℂ := (Fintype.card (D.G F ζ hζ hF U) : ℂ)⁻¹
-  let t : D.G F ζ hζ hF U → Lp ℂ 2 (volume.restrict (Metric.ball (0 : E D.n) D.radius)) := fun g =>
+  let restrict₀ := volume.restrict (Metric.ball (0 : E D.n) D.radius)
+  let t : D.G F ζ hζ hF U → Lp ℂ 2 (restrict₀) := fun g =>
     (((D.rho F ζ hζ hF U g)⁻¹ : ℂˣ) : ℂ) •
       Lp.compMeasurePreserving (D.orthogonal g)
         (chart_orthogonal_measurePreserving F ζ hζ hF U A D g) f
-  have ht : ∀ g, t g =ᵐ[volume.restrict (Metric.ball (0 : E D.n) D.radius)] fun x =>
+  have ht : ∀ g, t g =ᵐ[restrict₀] fun x =>
       (((D.rho F ζ hζ hF U g)⁻¹ : ℂˣ) : ℂ) * f (D.orthogonal g x) := by
     intro g
     filter_upwards [Lp.coeFn_smul (((D.rho F ζ hζ hF U g)⁻¹ : ℂˣ) : ℂ)
@@ -474,7 +450,7 @@ private theorem chartAverageBall_formula (A : KPFiniteCuspAtlas.Atlas F ζ hζ h
         (chart_orthogonal_measurePreserving F ζ hζ hF U A D g)] with x h₁ h₂
     simp only [t, h₁, Pi.smul_apply, smul_eq_mul, Function.comp_apply, h₂]
   simp only [chartAverageBall, ContinuousLinearMap.smul_apply, ContinuousLinearMap.sum_apply]
-  change (c • ∑ g, t g) =ᵐ[volume.restrict (Metric.ball (0 : E D.n) D.radius)] _
+  change (c • ∑ g, t g) =ᵐ[restrict₀] _
   filter_upwards [Lp.coeFn_smul c (∑ g, t g), Lp.coeFn_finsetSum Finset.univ t,
     Filter.eventually_all.mpr ht, ae_restrict_mem Metric.isOpen_ball.measurableSet]
       with x hc hs hx hxb
@@ -486,8 +462,7 @@ private theorem chartAverageBall_formula (A : KPFiniteCuspAtlas.Atlas F ζ hζ h
   congr 1
   exact Finset.sum_congr rfl (fun g _ => hx g)
 
-private theorem chartAverageBall_bound (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (D : Chart F ζ hζ hF U A)
+private theorem chartAverageBall_bound
     (f : Lp ℂ 2 (volume.restrict (Metric.ball (0 : E D.n) D.radius))) :
     ‖chartAverageBall F ζ hζ hF U A D f‖ ≤ ‖f‖ := by
   have hn : (Fintype.card (D.G F ζ hζ hF U) : ℝ) ≠ 0 := by
@@ -511,8 +486,7 @@ private theorem chartAverageBall_bound (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
     norm_inv, Complex.norm_natCast]
   rw [← mul_assoc, inv_mul_cancel₀ hn, one_mul]
 
- def chartRestrictBall (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (D : Chart F ζ hζ hF U A) :
+ def chartRestrictBall :
     Lp ℂ 2 (volume.restrict (cube D.n D.a)) →L[ℂ]
       Lp ℂ 2 (volume.restrict (Metric.ball (0 : E D.n) D.radius)) := by
   let L : Lp ℂ 2 (volume.restrict (cube D.n D.a)) →ₗ[ℂ]
@@ -541,8 +515,7 @@ private theorem chartAverageBall_bound (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
       (Measure.restrict_mono (Set.Subset.trans subset_closure
         (Set.Subset.trans D.closed_ball_in_cube interior_subset)) le_rfl))
 
-theorem bounded_character_averaging (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (D : Chart F ζ hζ hF U A) :
+theorem bounded_character_averaging :
     ∃ Q : Lp ℂ 2 (volume.restrict (cube D.n D.a)) →L[ℂ]
         Lp ℂ 2 (volume.restrict (Metric.ball (0 : E D.n) D.radius)),
       (∀ f, Q f =ᵐ[volume.restrict (Metric.ball (0 : E D.n) D.radius)]
@@ -573,10 +546,14 @@ theorem bounded_character_averaging (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       (Measure.restrict_mono (Set.Subset.trans subset_closure
         (Set.Subset.trans D.closed_ball_in_cube interior_subset)) le_rfl))
 
- theorem inversePhase_memLp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) (f : Lp ℂ 2 (volume.restrict (Metric.ball (0 : E (C.chart i).n)
+end
+
+ section
+
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
+    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C) (i : Fin C.count)
+
+theorem inversePhase_memLp (f : Lp ℂ 2 (volume.restrict (Metric.ball (0 : E (C.chart i).n)
       (C.chart i).radius))) :
     MemLp (fun x => (((P.phase i x)⁻¹ : ℂˣ) : ℂ) * f x) 2
       (volume.restrict (Metric.ball (0 : E (C.chart i).n) (C.chart i).radius)) := by
@@ -590,10 +567,7 @@ theorem bounded_character_averaging (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   simp only [norm_mul, Units.val_inv_eq_inv_val, norm_inv, P.unitary_phase,
     inv_one, one_mul, le_refl]
 
- def inversePhaseLinear (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) :
+ def inversePhaseLinear :
     Lp ℂ 2 (volume.restrict (Metric.ball (0 : E (C.chart i).n) (C.chart i).radius)) →ₗ[ℂ]
       Lp ℂ 2 (volume.restrict (Metric.ball (0 : E (C.chart i).n) (C.chart i).radius)) where
   toFun f := (inversePhase_memLp F ζ hζ hF U A M C P i f).toLp _
@@ -608,36 +582,28 @@ theorem bounded_character_averaging (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     filter_upwards [Lp.coeFn_smul c f] with x hx
     simp only [hx, Pi.smul_apply, smul_eq_mul, mul_left_comm, RingHom.id_apply]
 
- theorem inversePhaseLinear_norm (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) (f : Lp ℂ 2 (volume.restrict (Metric.ball (0 : E (C.chart i).n)
+ theorem inversePhaseLinear_norm (f : Lp ℂ 2 (volume.restrict (Metric.ball (0 : E (C.chart i).n)
       (C.chart i).radius))) :
     ‖inversePhaseLinear F ζ hζ hF U A M C P i f‖ = ‖f‖ := by
-  change ‖(inversePhase_memLp F ζ hζ hF U A M C P i f).toLp _‖ = ‖f‖
+  let inversePhase_memLp₀ := inversePhase_memLp F ζ hζ hF U A M C P i f
+  change ‖(inversePhase_memLp₀).toLp _‖ = ‖f‖
   rw [Lp.norm_def, Lp.norm_def,
-    eLpNorm_congr_ae (inversePhase_memLp F ζ hζ hF U A M C P i f).coeFn_toLp]
+    eLpNorm_congr_ae (inversePhase_memLp₀).coeFn_toLp]
   congr 1
   apply eLpNorm_congr_norm_ae
-    (inversePhase_memLp F ζ hζ hF U A M C P i f).aestronglyMeasurable
+    (inversePhase_memLp₀).aestronglyMeasurable
     (Lp.aestronglyMeasurable f)
   filter_upwards with x
   simp only [norm_mul, Units.val_inv_eq_inv_val, norm_inv, P.unitary_phase,
     inv_one, one_mul]
 
- def inversePhaseMap (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) :
+ def inversePhaseMap :
     Lp ℂ 2 (volume.restrict (Metric.ball (0 : E (C.chart i).n) (C.chart i).radius)) →L[ℂ]
       Lp ℂ 2 (volume.restrict (Metric.ball (0 : E (C.chart i).n) (C.chart i).radius)) :=
   (inversePhaseLinear F ζ hζ hF U A M C P i).mkContinuous 1 (fun f => by
     rw [one_mul, inversePhaseLinear_norm])
 
-theorem bounded_untwisted_averaging (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) :
+theorem bounded_untwisted_averaging :
     ∃ S : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a)) →L[ℂ]
         Lp ℂ 2 (volume.restrict (Metric.ball (0 : E (C.chart i).n) (C.chart i).radius)),
       (∀ f, S f =ᵐ[volume.restrict (Metric.ball (0 : E (C.chart i).n) (C.chart i).radius)]
@@ -654,15 +620,22 @@ theorem bounded_untwisted_averaging (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     rw [inversePhaseLinear_norm]
     exact hQnorm f
 
-theorem chart_average_equivariance (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+end
+
+section
+
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+
+theorem chart_average_equivariance
     (D : Chart F ζ hζ hF U A) (f : E D.n → ℂ)
     (h : D.G F ζ hζ hF U) (x : E D.n) :
     D.average F ζ hζ hF U f (D.orthogonal h x) =
       (D.rho F ζ hζ hF U h : ℂ) * D.average F ζ hζ hF U f x := by
   have hb : D.orthogonal h x ∈ Metric.ball (0 : E D.n) D.radius ↔
       x ∈ Metric.ball (0 : E D.n) D.radius := by
-    simp only [Metric.mem_ball, dist_zero_right, LinearIsometryEquiv.norm_map]
+    simp
   by_cases hx : x ∈ Metric.ball (0 : E D.n) D.radius
+  let rho₀ := D.rho F ζ hζ hF U
   · simp only [Chart.average, Set.indicator_of_mem hx, Set.indicator_of_mem (hb.mpr hx)]
     rw [mul_left_comm]
     congr 1
@@ -672,18 +645,18 @@ theorem chart_average_equivariance (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     have ho : D.orthogonal (g * h) x = D.orthogonal g (D.orthogonal h x) := by
       rw [map_mul]
       rfl
-    change _ = (D.rho F ζ hζ hF U h : ℂ) *
-      ((((D.rho F ζ hζ hF U (g * h))⁻¹ : ℂˣ) : ℂ) * f (D.orthogonal (g * h) x))
+    change _ = (rho₀ h : ℂ) *
+      ((((rho₀ (g * h))⁻¹ : ℂˣ) : ℂ) * f (D.orthogonal (g * h) x))
     rw [ho, map_mul, mul_inv_rev, Units.val_mul]
-    have hc : (D.rho F ζ hζ hF U h : ℂ) *
-        (((D.rho F ζ hζ hF U h)⁻¹ : ℂˣ) : ℂ) = 1 := by
+    have hc : (rho₀ h : ℂ) *
+        (((rho₀ h)⁻¹ : ℂˣ) : ℂ) = 1 := by
       rw [← Units.val_mul, mul_inv_cancel]
       rfl
     rw [← mul_assoc, ← mul_assoc, hc, one_mul]
   · simp only [Chart.average, Set.indicator_of_notMem hx,
       Set.indicator_of_notMem (mt hb.mp hx), mul_zero]
 
-theorem untwisted_average_invariant_ae (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+theorem untwisted_average_invariant_ae
     (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
     (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
     (i : Fin C.count) (f : E (C.chart i).n → ℂ) (g : (C.chart i).G F ζ hζ hF U) :
@@ -696,11 +669,10 @@ theorem untwisted_average_invariant_ae (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
   simp only [Units.val_inv_eq_inv_val]
   rw [hx, mul_inv_rev]
   have hc : ((C.chart i).rho F ζ hζ hF U g : ℂ)⁻¹ *
-      ((C.chart i).rho F ζ hζ hF U g : ℂ) = 1 := by
-    exact inv_mul_cancel₀ (Units.ne_zero _)
+      ((C.chart i).rho F ζ hζ hF U g : ℂ) = 1 := inv_mul_cancel₀ (Units.ne_zero _)
   rw [mul_assoc, ← mul_assoc ((↑((C.chart i).rho F ζ hζ hF U g) : ℂ)⁻¹), hc, one_mul]
 
-theorem chartMeasure_le_volume (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+theorem chartMeasure_le_volume
     (D : Chart F ζ hζ hF U A) :
     (Fintype.card (D.G F ζ hζ hF U) : ℝ≥0∞)⁻¹ •
       (volume.restrict (Metric.ball (0 : E D.n) D.radius)).withDensity
@@ -717,7 +689,7 @@ theorem chartMeasure_le_volume (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   simpa only [smul_smul] using
     smul_le_smul_left ((Fintype.card (D.G F ζ hζ hF U) : ℝ≥0∞)⁻¹) h
 
-theorem untwisted_average_memLp_weighted (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+theorem untwisted_average_memLp_weighted
     (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
     (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
     (i : Fin C.count) (f : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a))) :
@@ -727,12 +699,12 @@ theorem untwisted_average_memLp_weighted (A : KPFiniteCuspAtlas.Atlas F ζ hζ h
         (volume.restrict (Metric.ball (0 : E (C.chart i).n) (C.chart i).radius)).withDensity
           (fun x => ENNReal.ofReal ((C.chart i).weight x))) := by
   obtain ⟨S, hS, _⟩ := bounded_untwisted_averaging F ζ hζ hF U A M C P i
-  have hmem := (Lp.memLp (S f)).ae_eq (hS f)
-  exact hmem.of_measure_le_smul
+  exact ((Lp.memLp (S f)).ae_eq (hS f)).of_measure_le_smul
     (ENNReal.mul_ne_top (ENNReal.inv_ne_top.mpr (by simp)) ENNReal.ofReal_ne_top)
     (chartMeasure_le_volume F ζ hζ hF U A (C.chart i))
 
-theorem chart_quotient_secondCountable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
+include A in
+theorem chart_quotient_secondCountable :
     SecondCountableTopology (X F ζ hζ U) := by
   letI (i : Fin A.componentCount) : SecondCountableTopology
       (KPCuspSiegel.OrbitQuotient F
@@ -743,23 +715,18 @@ theorem chart_quotient_secondCountable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
         KPCuspSiegel.isOpenMap_projection F _⟩).secondCountableTopology
   exact A.components.symm.isEmbedding.secondCountableTopology
 
-private theorem chart_toBase_continuous_ball (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+private theorem chart_toBase_continuous_ball
     (D : Chart F ζ hζ hF U A) :
     Continuous (Set.restrict (Metric.ball (0 : E D.n) D.radius)
       (D.toBase F ζ hζ hF U)) := by
-  have hc : Continuous (fun z : KPFiniteCuspAtlas.SymmetricSpace F =>
-      A.components ⟨D.component, KPCuspSiegel.projection F
-        (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative D.component)) z⟩) :=
-    A.components.continuous.comp (continuous_sigmaMk.comp continuous_quot_mk)
-  have hh := continuousOn_iff_continuous_restrict.mp
-    (hc.comp_continuousOn (D.smooth_coordinates.continuousOn.mono
-      (Set.Subset.trans subset_closure D.closed_ball_in_extension)))
-  convert hh using 1
+  convert (continuousOn_iff_continuous_restrict.mp
+    ((A.components.continuous.comp (continuous_sigmaMk.comp continuous_quot_mk)).comp_continuousOn (D.smooth_coordinates.continuousOn.mono
+      (Set.Subset.trans subset_closure D.closed_ball_in_extension)))) using 1
   funext x
   simp only [Set.restrict, Set.domRestrict_apply, Function.comp_apply, Chart.toBase]
   exact (A.components_formula D.component _).symm
 
-theorem chart_measurable_descent (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+theorem chart_measurable_descent
     (D : Chart F ζ hζ hF U A) (b : E D.n → ℂ) (hb : Measurable b)
     (hi : ∀ (g : D.G F ζ hζ hF U) x,
       x ∈ Metric.ball (0 : E D.n) D.radius → b (D.orthogonal g x) = b x) :
@@ -773,30 +740,31 @@ theorem chart_measurable_descent (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   let B := Metric.ball (0 : E D.n) D.radius
   letI : PolishSpace B := Metric.isOpen_ball.polishSpace
   let O := D.O F ζ hζ hF U
+  let toBase₀ := D.toBase F ζ hζ hF U
   have hO : IsOpen O := by
     have h := CutoffConstruction.chart_ball_toBase_isOpenMap F ζ hζ hF U A D
       Set.univ isOpen_univ
     convert h using 1
     ext x
-    change (∃ y ∈ B, D.toBase F ζ hζ hF U y = x) ↔
-      (∃ y : B, y ∈ Set.univ ∧ D.toBase F ζ hζ hF U y.val = x)
+    change (∃ y ∈ B, toBase₀ y = x) ↔
+      (∃ y : B, y ∈ Set.univ ∧ toBase₀ y.val = x)
     simp only [Set.mem_univ, true_and]
     exact ⟨fun ⟨y, hy, he⟩ => ⟨⟨y, hy⟩, he⟩,
       fun ⟨y, he⟩ => ⟨y.val, y.property, he⟩⟩
   let lift : O → E D.n := fun x => x.property.choose
-  have hl : ∀ x : O, lift x ∈ B ∧ D.toBase F ζ hζ hF U (lift x) = x :=
+  have hl : ∀ x : O, lift x ∈ B ∧ toBase₀ (lift x) = x :=
     fun x => x.property.choose_spec
   let f : X F ζ hζ U → ℂ := fun x => if hx : x ∈ O then b (lift ⟨x, hx⟩) else 0
-  have hf : ∀ x ∈ B, f (D.toBase F ζ hζ hF U x) = b x := by
+  have hf : ∀ x ∈ B, f (toBase₀ x) = b x := by
     intro x hx
-    have hpx : D.toBase F ζ hζ hF U x ∈ O := ⟨x, hx, rfl⟩
-    rw [show f (D.toBase F ζ hζ hF U x) = b (lift ⟨_, hpx⟩) by simp [f, hpx]]
+    have hpx : toBase₀ x ∈ O := ⟨x, hx, rfl⟩
+    rw [show f (toBase₀ x) = b (lift ⟨_, hpx⟩) by simp [f, hpx]]
     obtain ⟨g, hg⟩ := (CutoffConstruction.chart_base_fibers F ζ hζ hF U A D
       (D.closed_ball_in_extension (subset_closure (hl ⟨_, hpx⟩).1))
       (D.closed_ball_in_extension (subset_closure hx))).mp (hl ⟨_, hpx⟩).2
     exact (hi g _ (hl ⟨_, hpx⟩).1).symm.trans (congrArg b hg)
   have hmeas : Measurable (Set.restrict O f) := by
-    let p : B → O := fun x => ⟨D.toBase F ζ hζ hF U x, x.val, x.property, rfl⟩
+    let p : B → O := fun x => ⟨toBase₀ x, x.val, x.property, rfl⟩
     have hp : Measurable p := by
       exact Measurable.subtype_mk
         (chart_toBase_continuous_ball F ζ hζ hF U A D).measurable
@@ -819,10 +787,15 @@ theorem chart_measurable_descent (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     have hxO : x ∉ O := hx
     simp [f, hxO]
 
-theorem untwisted_average_measurable_invariant (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) (f : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a))) :
+end
+
+section
+
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
+    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C) (i : Fin C.count)
+    (f : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a)))
+
+theorem untwisted_average_measurable_invariant :
     ∃ b : E (C.chart i).n → ℂ, Measurable b ∧
       (∀ (g : (C.chart i).G F ζ hζ hF U) x, b ((C.chart i).orthogonal g x) = b x) ∧
       b =ᵐ[volume.restrict (Metric.ball (0 : E (C.chart i).n) (C.chart i).radius)]
@@ -830,40 +803,32 @@ theorem untwisted_average_measurable_invariant (A : KPFiniteCuspAtlas.Atlas F ζ
           (C.chart i).average F ζ hζ hF U f x) := by
   let D := C.chart i
   let μ := volume.restrict (Metric.ball (0 : E D.n) D.radius)
-  let t : E D.n → ℂ := fun x => (((P.phase i x)⁻¹ : ℂˣ) : ℂ) * D.average F ζ hζ hF U f x
+  let t := fun x => (((P.phase i x)⁻¹ : ℂˣ) : ℂ) * D.average F ζ hζ hF U f x
   obtain ⟨S, hS, _⟩ := bounded_untwisted_averaging F ζ hζ hF U A M C P i
-  have hm : AEStronglyMeasurable t μ := ((Lp.memLp (S f)).ae_eq (hS f)).aestronglyMeasurable
+  have hm := ((Lp.memLp (S f)).ae_eq (hS f)).aestronglyMeasurable
   let m := hm.mk t
-  let b : E D.n → ℂ := fun x => (Fintype.card (D.G F ζ hζ hF U) : ℂ)⁻¹ *
-    ∑ g : D.G F ζ hζ hF U, m (D.orthogonal g x)
-  have he : ∀ g : D.G F ζ hζ hF U, (fun x => m (D.orthogonal g x)) =ᵐ[μ] t := by
+  let G₀ := D.G F ζ hζ hF U
+  have he : ∀ g : G₀, (fun x => m (D.orthogonal g x)) =ᵐ[μ] t := by
     intro g
-    have hmk : (fun x => m (D.orthogonal g x)) =ᵐ[μ] (fun x => t (D.orthogonal g x)) :=
-      (chart_orthogonal_measurePreserving F ζ hζ hF U A D g).quasiMeasurePreserving.ae_eq_comp
-        (hm.ae_eq_mk.symm)
-    exact hmk.trans (untwisted_average_invariant_ae F ζ hζ hF U A M C P i f g)
-  refine ⟨b, ?_, ?_, ?_⟩
+    exact ((chart_orthogonal_measurePreserving F ζ hζ hF U A D g).quasiMeasurePreserving.ae_eq_comp
+      (hm.ae_eq_mk.symm)).trans (untwisted_average_invariant_ae F ζ hζ hF U A M C P i f g)
+  refine ⟨(fun x => (Fintype.card (G₀) : ℂ)⁻¹ *
+    ∑ g : G₀, m (D.orthogonal g x)), ?_, ?_, ?_⟩
   · exact measurable_const.mul (Finset.measurable_sum _ (fun g _ =>
       hm.measurable_mk.comp (D.orthogonal g).continuous.measurable))
   · intro g x
-    apply congrArg ((Fintype.card (D.G F ζ hζ hF U) : ℂ)⁻¹ * ·)
-    apply Fintype.sum_bijective (fun h : D.G F ζ hζ hF U => h * g)
+    apply congrArg ((Fintype.card (G₀) : ℂ)⁻¹ * ·)
+    apply Fintype.sum_bijective (fun h : G₀ => h * g)
       (Group.mulRight_bijective g)
     intro h
     rw [map_mul]
     rfl
-  · have hall : ∀ᵐ x ∂μ, ∀ g : D.G F ζ hζ hF U, m (D.orthogonal g x) = t x :=
-      (ae_all_iff.mpr he)
-    filter_upwards [hall] with x hx
-    change (Fintype.card (D.G F ζ hζ hF U) : ℂ)⁻¹ * ∑ g, m (D.orthogonal g x) = t x
+  · filter_upwards [((ae_all_iff.mpr he))] with x hx
     rw [Finset.sum_congr rfl (fun g _ => hx g)]
     simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
     rw [← mul_assoc, inv_mul_cancel₀ (by exact_mod_cast Fintype.card_ne_zero), one_mul]
 
-theorem untwisted_average_measurable_descent (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) (f : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a))) :
+theorem untwisted_average_measurable_descent :
     ∃ r : X F ζ hζ U → ℂ, Measurable r ∧
       (fun x => r ((C.chart i).toBase F ζ hζ hF U x)) =ᵐ[
         volume.restrict (Metric.ball (0 : E (C.chart i).n) (C.chart i).radius)]
@@ -877,7 +842,13 @@ theorem untwisted_average_measurable_descent (A : KPFiniteCuspAtlas.Atlas F ζ h
   filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet, he] with x hx hxe
   exact (hf x hx).trans hxe
 
-private theorem chart_image_measurable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+end
+
+section
+
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+
+private theorem chart_image_measurable
     (D : Chart F ζ hζ hF U A) : MeasurableSet (D.O F ζ hζ hF U) := by
   letI : BorelSpace (X F ζ hζ U) := ⟨rfl⟩
   have h := CutoffConstruction.chart_ball_toBase_isOpenMap F ζ hζ hF U A D Set.univ isOpen_univ
@@ -892,7 +863,7 @@ private theorem chart_image_measurable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
       exact ⟨⟨y, hy⟩, rfl⟩
   exact (he ▸ h).measurableSet
 
-theorem untwisted_average_global_memLp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+theorem untwisted_average_global_memLp
     (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
     (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
     (i : Fin C.count) (f : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a)))
@@ -908,19 +879,14 @@ theorem untwisted_average_global_memLp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
       (fun x => ENNReal.ofReal (D.weight x))
   have hac : ν ≪ volume.restrict (Metric.ball (0 : E D.n) D.radius) :=
     (withDensity_absolutelyContinuous _ _).smul_left _
-  have hb : AEMeasurable (D.toBase F ζ hζ hF U) ν :=
-    (chart_toBase_aemeasurable F ζ hζ hF U A D).mono_ac hac
-  have hmem : MemLp (r ∘ D.toBase F ζ hζ hF U) 2 ν :=
-    (untwisted_average_memLp_weighted F ζ hζ hF U A M C P i f).ae_eq (he.symm.filter_mono hac.ae_le)
-  have hp : MemLp r 2 ((quotientMeasure F ζ hζ hF U A).restrict (D.O F ζ hζ hF U)) := by
-    rw [← C.chart_measure i]
-    exact (memLp_map_measure_iff hr.aestronglyMeasurable hb).mpr hmem
-  have hs : (D.O F ζ hζ hF U).indicator r = r :=
+  have hs :=
     Set.indicator_eq_self.mpr (by intro x hx; by_contra hn; exact hx (hz x hn))
   rw [← hs]
-  exact (memLp_indicator_iff_restrict (chart_image_measurable F ζ hζ hF U A D).nullMeasurableSet).mpr hp
+  refine (memLp_indicator_iff_restrict (chart_image_measurable F ζ hζ hF U A D).nullMeasurableSet).mpr ?_
+  rw [← C.chart_measure i]
+  exact (memLp_map_measure_iff hr.aestronglyMeasurable ((chart_toBase_aemeasurable F ζ hζ hF U A D).mono_ac hac)).mpr ((untwisted_average_memLp_weighted F ζ hζ hF U A M C P i f).ae_eq (he.symm.filter_mono hac.ae_le))
 
- theorem chart_descent_ae_unique (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+ theorem chart_descent_ae_unique
     {K : Set (X F ζ hζ U)} (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count)
     {r s : X F ζ hζ U → ℂ} (hr : Measurable r) (hs : Measurable s)
     (he : (r ∘ (C.chart i).toBase F ζ hζ hF U) =ᵐ[
@@ -935,28 +901,26 @@ theorem untwisted_average_global_memLp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
       (fun x => ENNReal.ofReal (D.weight x))
   have hac : ν ≪ volume.restrict (Metric.ball (0 : E D.n) D.radius) :=
     (withDensity_absolutelyContinuous _ _).smul_left _
-  have hb : AEMeasurable (D.toBase F ζ hζ hF U) ν :=
-    (chart_toBase_aemeasurable F ζ hζ hF U A D).mono_ac hac
   have hp : r =ᵐ[(quotientMeasure F ζ hζ hF U A).restrict (D.O F ζ hζ hF U)] s := by
     rw [← C.chart_measure i]
-    exact (ae_map_iff hb (measurableSet_eq_fun hr hs)).mpr (he.filter_mono hac.ae_le)
-  have hh := (ae_restrict_iff' (chart_image_measurable F ζ hζ hF U A D)).mp hp
-  filter_upwards [hh] with x hx
+    exact (ae_map_iff ((chart_toBase_aemeasurable F ζ hζ hF U A D).mono_ac hac) (measurableSet_eq_fun hr hs)).mpr (he.filter_mono hac.ae_le)
+  filter_upwards [((ae_restrict_iff' (chart_image_measurable F ζ hζ hF U A D)).mp hp)] with x hx
   by_cases hxO : x ∈ D.O F ζ hζ hF U
   · exact hx hxO
   · rw [hzr x hxO, hzs x hxO]
 
- def scalarDescent (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) (f : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a))) :
+end
+
+ section
+
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
+    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C) (i : Fin C.count)
+
+def scalarDescent (f : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a))) :
     X F ζ hζ U → ℂ :=
   (untwisted_average_measurable_descent F ζ hζ hF U A M C P i f).choose
 
- theorem scalarDescent_spec (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) (f : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a))) :
+ theorem scalarDescent_spec (f : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a))) :
     Measurable (scalarDescent F ζ hζ hF U A M C P i f) ∧
     (fun x => scalarDescent F ζ hζ hF U A M C P i f ((C.chart i).toBase F ζ hζ hF U x)) =ᵐ[
       volume.restrict (Metric.ball (0 : E (C.chart i).n) (C.chart i).radius)]
@@ -964,18 +928,12 @@ theorem untwisted_average_global_memLp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
     (∀ x, x ∉ (C.chart i).O F ζ hζ hF U → scalarDescent F ζ hζ hF U A M C P i f x = 0) :=
   (untwisted_average_measurable_descent F ζ hζ hF U A M C P i f).choose_spec
 
- theorem scalarDescent_memLp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) (f : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a))) :
+ theorem scalarDescent_memLp (f : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a))) :
     MemLp (scalarDescent F ζ hζ hF U A M C P i f) 2 (quotientMeasure F ζ hζ hF U A) := by
   have h := scalarDescent_spec F ζ hζ hF U A M C P i f
   exact untwisted_average_global_memLp F ζ hζ hF U A M C P i f _ h.1 h.2.1 h.2.2
 
- theorem scalarDescent_comp_S (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count)
+ theorem scalarDescent_comp_S
     (S : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a)) →L[ℂ]
       Lp ℂ 2 (volume.restrict (Metric.ball (0 : E (C.chart i).n) (C.chart i).radius)))
     (hS : ∀ f, S f =ᵐ[volume.restrict (Metric.ball (0 : E (C.chart i).n) (C.chart i).radius)]
@@ -985,10 +943,7 @@ theorem untwisted_average_global_memLp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
       volume.restrict (Metric.ball (0 : E (C.chart i).n) (C.chart i).radius)] S f :=
   (scalarDescent_spec F ζ hζ hF U A M C P i f).2.1.trans (hS f).symm
 
- def scalarDescentLinear (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a)) →ₗ[ℂ]
+ def scalarDescentLinear : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a)) →ₗ[ℂ]
       Lp ℂ 2 (quotientMeasure F ζ hζ hF U A) where
   toFun f := (scalarDescent_memLp F ζ hζ hF U A M C P i f).toLp _
   map_add' f g := by
@@ -1018,10 +973,7 @@ theorem untwisted_average_global_memLp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
     · intro x hx
       simp [(hr f).2.2 x hx]
 
- theorem scalarDescentLinear_bound (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) (f : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a))) :
+ theorem scalarDescentLinear_bound (f : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a))) :
     ‖scalarDescentLinear F ζ hζ hF U A M C P i f‖ ≤
       (((Fintype.card ((C.chart i).G F ζ hζ hF U) : ℝ≥0∞)⁻¹ *
         ENNReal.ofReal (C.chart i).upper) ^ (1 / (2 : ℝ≥0∞)).toReal).toReal * ‖f‖ := by
@@ -1034,7 +986,7 @@ theorem untwisted_average_global_memLp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
   have hc : c ≠ ∞ := ENNReal.mul_ne_top (ENNReal.inv_ne_top.mpr (by simp)) ENNReal.ofReal_ne_top
   have hac : ν ≪ volume.restrict (Metric.ball (0 : E D.n) D.radius) :=
     (withDensity_absolutelyContinuous _ _).smul_left _
-  have hb : AEMeasurable (D.toBase F ζ hζ hF U) ν :=
+  have hb :=
     (chart_toBase_aemeasurable F ζ hζ hF U A D).mono_ac hac
   obtain ⟨S, hS, hSnorm⟩ := bounded_untwisted_averaging F ζ hζ hF U A M C P i
   have he : eLpNorm r 2 (quotientMeasure F ζ hζ hF U A) = eLpNorm (S f) 2 ν := by
@@ -1066,13 +1018,12 @@ theorem untwisted_average_global_memLp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
     rw [ENNReal.toReal_mul]
     exact mul_le_mul_of_nonneg_left (hSnorm f) ENNReal.toReal_nonneg)
 
- def scalarDescentMap (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a)) →L[ℂ]
+ def scalarDescentMap : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a)) →L[ℂ]
       Lp ℂ 2 (quotientMeasure F ζ hζ hF U A) :=
   (scalarDescentLinear F ζ hζ hF U A M C P i).mkContinuous _
     (scalarDescentLinear_bound F ζ hζ hF U A M C P i)
+
+end
 
  def restrictGlobalMap (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (K : Set (X F ζ hζ U)) : H F ζ hζ hF U A →L[ℂ] HK F ζ hζ hF U A K := by
@@ -1093,43 +1044,46 @@ theorem untwisted_average_global_memLp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
   rw [one_mul, Lp.norm_def, Lp.norm_def, eLpNorm_congr_ae (MemLp.coeFn_toLp _)]
   exact ENNReal.toReal_mono (Lp.eLpNorm_ne_top _) (eLpNorm_mono_measure _ Measure.restrict_le_self)
 
- def descentMap (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a)) →L[ℂ]
+ section
+
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
+    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C) (i : Fin C.count)
+
+def descentMap : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a)) →L[ℂ]
       HK F ζ hζ hF U A K :=
   (restrictGlobalMap F ζ hζ hF U A K).comp
     (((V F ζ hζ U).orthogonalProjectionOnto.compLpL 2 (quotientMeasure F ζ hζ hF U A)).comp
       (scalarDescentMap F ζ hζ hF U A M C P i))
 
-private theorem descentMap_formula_global (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
-    (i : Fin C.count) (f : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a))) :
+private theorem descentMap_formula_global (f : Lp ℂ 2 (volume.restrict (cube (C.chart i).n (C.chart i).a))) :
     descentMap F ζ hζ hF U A M C P i f =ᵐ[(quotientMeasure F ζ hζ hF U A).restrict K]
       (fun x => (V F ζ hζ U).orthogonalProjectionOnto
         (scalarDescent F ζ hζ hF U A M C P i f x)) := by
+  let scalarDescentMap₀ := scalarDescentMap F ζ hζ hF U A M C P i f
   have hp := (V F ζ hζ U).orthogonalProjectionOnto.coeFn_compLpL
-    (scalarDescentMap F ζ hζ hF U A M C P i f)
-  have hs : scalarDescentMap F ζ hζ hF U A M C P i f =ᵐ[quotientMeasure F ζ hζ hF U A]
+    (scalarDescentMap₀)
+  let quotientMeasure₀ := quotientMeasure F ζ hζ hF U A
+  have hs : scalarDescentMap₀ =ᵐ[quotientMeasure₀]
       scalarDescent F ζ hζ hF U A M C P i f :=
     MemLp.coeFn_toLp (scalarDescent_memLp F ζ hζ hF U A M C P i f)
   have hres : descentMap F ζ hζ hF U A M C P i f =ᵐ[
-      (quotientMeasure F ζ hζ hF U A).restrict K]
-      ((V F ζ hζ U).orthogonalProjectionOnto.compLpL 2 (quotientMeasure F ζ hζ hF U A)
-        (scalarDescentMap F ζ hζ hF U A M C P i f)) := by
+      (quotientMeasure₀).restrict K]
+      ((V F ζ hζ U).orthogonalProjectionOnto.compLpL 2 (quotientMeasure₀)
+        (scalarDescentMap₀)) := by
     exact MemLp.coeFn_toLp ((Lp.memLp
-      ((V F ζ hζ U).orthogonalProjectionOnto.compLpL 2 (quotientMeasure F ζ hζ hF U A)
-        (scalarDescentMap F ζ hζ hF U A M C P i f))).restrict K)
+      ((V F ζ hζ U).orthogonalProjectionOnto.compLpL 2 (quotientMeasure₀)
+        (scalarDescentMap₀))).restrict K)
   filter_upwards [hres, ae_mono Measure.restrict_le_self hp, ae_mono Measure.restrict_le_self hs]
     with x h₁ h₂ h₃
   rw [h₁, h₂, h₃]
 
-private theorem bounded_local_operators_rank_one
-    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (hK : MeasurableSet K) (C : FiniteCutoffs F ζ hζ hF U A K)
-    (P : FrameComparison F ζ hζ hF U A M C) (hV : V F ζ hζ U = ⊤) :
+end
+
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
+    (hK : MeasurableSet K) (C : FiniteCutoffs F ζ hζ hF U A K) (P : FrameComparison F ζ hζ hF U A M C)
+
+include hK in
+private theorem bounded_local_operators_rank_one (hV : V F ζ hζ U = ⊤) :
     Nonempty (LocalOperators F ζ hζ hF U A M C P) := by
   obtain ⟨T, hT, hTsmooth⟩ := bounded_cutoff_lifting F ζ hζ hF U A M C P
 
@@ -1145,11 +1099,8 @@ private theorem bounded_local_operators_rank_one
         x ∉ (C.chart i).O F ζ hζ hF U → R i f x = 0) := by
     refine ⟨descentMap F ζ hζ hF U A M C P, ?_, ?_⟩
     · intro i f
-      have hg := (ae_restrict_iff' hK).mp
-        (descentMap_formula_global F ζ hζ hF U A M C P i f)
-      have hp := chartMeasure_pullback_ae F ζ hζ hF U A C i hg
-      have hs := (scalarDescent_spec F ζ hζ hF U A M C P i f).2.1
-      filter_upwards [hp, hs] with x hx hsx
+      filter_upwards [(chartMeasure_pullback_ae F ζ hζ hF U A C i ((ae_restrict_iff' hK).mp
+        (descentMap_formula_global F ζ hζ hF U A M C P i f))), ((scalarDescent_spec F ζ hζ hF U A M C P i f).2.1)] with x hx hsx
       intro hxK
       rw [hx hxK, hsx]
     · intro i f
@@ -1159,10 +1110,8 @@ private theorem bounded_local_operators_rank_one
   obtain ⟨R, hRformula, hRzero⟩ := hR
   exact ⟨⟨T, hT, R, hRformula, hRzero, hTsmooth⟩⟩
 
-theorem bounded_local_operators (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (hK : MeasurableSet K) (C : FiniteCutoffs F ζ hζ hF U A K)
-    (P : FrameComparison F ζ hζ hF U A M C) :
+include hK in
+theorem bounded_local_operators :
     Nonempty (LocalOperators F ζ hζ hF U A M C P) := by
   rcases IsSimpleOrder.eq_bot_or_eq_top (V F ζ hζ U) with hV | hV
   · exact bounded_local_operators_rank_zero F ζ hζ hF U A M hK C P hV

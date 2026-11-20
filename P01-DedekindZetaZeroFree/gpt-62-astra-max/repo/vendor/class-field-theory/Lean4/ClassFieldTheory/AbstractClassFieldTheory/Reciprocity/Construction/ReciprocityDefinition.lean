@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 universe u
@@ -71,22 +66,22 @@ theorem frobeniusFixedField_absoluteFinite (D : DegreeData G)
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (σ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK
       (hLnormal := by
-        simpa only [FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal)) :
+        exact hLnormal)) :
     Finite ((baseField G).toSubgroup ⧸
       extensionSubgroup (baseField G)
         (D.frobeniusFixedField (K.toFiniteResidueAbstractField D) L hLK
           (hLnormal := by
-            simpa only [FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal) σ)
+            exact hLnormal) σ)
         (le_baseField
           (D.frobeniusFixedField (K.toFiniteResidueAbstractField D) L hLK
             (hLnormal := by
-              simpa only [FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal) σ))) := by
+              exact hLnormal) σ))) := by
   let KR := K.toFiniteResidueAbstractField D
   let hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
+    assumption
   let hLfiniteKR : Finite
       (KR.field.toSubgroup ⧸ extensionSubgroup KR.field L hLK) := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLfinite
+    assumption
   let : Finite (K.field.toSubgroup ⧸
       extensionSubgroup K.field (D.frobeniusFixedField KR L hLK σ)
         (D.frobeniusFixedField_le KR L hLK σ)) :=
@@ -103,7 +98,7 @@ section reciprocityValues
 
 -- Mathlib's `Rep ℤ G` currently fixes the acting group to universe zero.
 variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
-variable {D : DegreeData G} {A : Rep ℤ G}
+    {D : DegreeData G} {A : Rep ℤ G}
 
 namespace DegreeData
 
@@ -155,10 +150,8 @@ def reciprocityMap (D : DegreeData G) (A : Rep ℤ G)
           (D.frobeniusFixedField KR L hLK σ)
           (le_baseField (D.frobeniusFixedField KR L hLK σ))) :=
       D.frobeniusFixedField_absoluteFinite K L hLK σ
-    let Sigma : FiniteAbstractField G :=
-      ⟨D.frobeniusFixedField KR L hLK σ, inferInstance⟩
     exact D.reciprocityValueOfPrime A KR L hLK σ
-      (v.chosenPrimeElement Sigma)
+      (v.chosenPrimeElement (⟨D.frobeniusFixedField KR L hLK σ, inferInstance⟩))
 
 /--
 The reciprocity map at a Frobenius element is represented by the chosen prime element in its
@@ -174,22 +167,19 @@ theorem reciprocityMap_eq_chosenPrime (D : DegreeData G) (A : Rep ℤ G)
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (σ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK
       (hLnormal := by
-        simpa only [FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal)) :
+        exact hLnormal)) :
     D.reciprocityMap A v K L hLK σ = by
       let KR := K.toFiniteResidueAbstractField D
       letI : (extensionSubgroup KR.field L hLK).Normal := by
-        simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
+        exact hLnormal
       letI hLfiniteKR : Finite
           (KR.field.toSubgroup ⧸ extensionSubgroup KR.field L hLK) := by
-        simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLfinite
-      letI : Finite ((baseField G).toSubgroup ⧸
-          extensionSubgroup (baseField G)
-            (D.frobeniusFixedField KR L hLK σ)
-            (le_baseField (D.frobeniusFixedField KR L hLK σ))) :=
+        exact hLfinite
+      letI :=
         D.frobeniusFixedField_absoluteFinite K L hLK σ
       let Sigma : FiniteAbstractField G :=
         ⟨D.frobeniusFixedField KR L hLK σ, inferInstance⟩
-      simpa only [Sigma, KR, FiniteAbstractField.toFiniteResidueAbstractField] using
+      simpa [Sigma, KR, FiniteAbstractField.toFiniteResidueAbstractField] using
         (D.reciprocityValueOfPrime A KR L hLK σ
           (v.chosenPrimeElement Sigma)) :=
   rfl

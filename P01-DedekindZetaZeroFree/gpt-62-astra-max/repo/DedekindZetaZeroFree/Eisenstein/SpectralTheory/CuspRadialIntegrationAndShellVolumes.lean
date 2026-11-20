@@ -58,7 +58,12 @@ theorem probability_section_lintegral (f : CrossSection A → ℝ≥0∞) (hf : 
   rw [beta_probability_lintegral]
   exact (D.section_disintegration f hf).symm
 
-theorem endMap_embedding (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ T) :
+section
+
+variable (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ T)
+
+include hT in
+theorem endMap_embedding :
     Topology.IsEmbedding (KPFiniteCuspAtlas.endMap F
       (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative j.1))
       ((A.cuspAtlas j.1).cusp j.2) ((A.cuspAtlas j.1).representative j.2) T) := by
@@ -66,17 +71,15 @@ theorem endMap_embedding (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ T) :
   let G := C.geometry j.2
   let Γ := KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative j.1)
   let eT := KPFiniteCuspAtlas.endMap F Γ (C.cusp j.2) (C.representative j.2) T
-  let e₀ := KPFiniteCuspAtlas.endMap F Γ (C.cusp j.2) (C.representative j.2) C.threshold
   let inc : Set.Ioi T → Set.Ioi C.threshold := fun t =>
     ⟨t.val, by
-      change C.threshold < t.val
       rw [show C.threshold = A.threshold from A.common_threshold j.1]
       exact lt_of_le_of_lt hT t.property⟩
   have hinc : Topology.IsEmbedding inc := by
     apply Topology.IsEmbedding.of_comp (continuous_subtype_val.subtype_mk _) continuous_subtype_val
     exact Topology.IsEmbedding.subtypeVal
   have heq : eT ∘ G.highPresentation T =
-      e₀ ∘ G.highPresentation C.threshold ∘ Prod.map id inc := by
+      (KPFiniteCuspAtlas.endMap F Γ (C.cusp j.2) (C.representative j.2) C.threshold) ∘ G.highPresentation C.threshold ∘ Prod.map id inc := by
     funext x
     rcases x with ⟨p,t⟩
     induction p using Quotient.inductionOn with
@@ -92,11 +95,12 @@ theorem endMap_embedding (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ T) :
   have hfinal := hcomp.comp (G.highPresentation T).symm.isEmbedding
   have heq' : (eT ∘ G.highPresentation T) ∘ (G.highPresentation T).symm = eT := by
     funext x
-    simp only [Function.comp_apply, Homeomorph.apply_symm_apply]
+    simp
   rw [heq'] at hfinal
   exact hfinal
 
-theorem end_volume_at_cutoff (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ T) :
+include hT in
+theorem end_volume_at_cutoff :
     Measure.map (KPFiniteCuspAtlas.endMap F
       (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative j.1))
       ((A.cuspAtlas j.1).cusp j.2) ((A.cuspAtlas j.1).representative j.2) T)
@@ -109,15 +113,16 @@ theorem end_volume_at_cutoff (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ T
       (A.cuspAtlas j.1).fundamentalDomain).restrict
         (KPFiniteCuspAtlas.endSet F
           (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative j.1))
-          ((A.cuspAtlas j.1).representative j.2) T) := by
-  exact KPFiniteAdelicCuspEnds.embedded_cusp_end_volume F hF _ _ _
+          ((A.cuspAtlas j.1).representative j.2) T) := KPFiniteAdelicCuspEnds.embedded_cusp_end_volume F hF _ _ _
     ((A.cuspAtlas j.1).representative_formula j.2) T (Parabolic A j) (Geometry A j) _
     (fun _ => rfl) (endMap_embedding A j T hT) _
     (A.cuspAtlas j.1).measurable_fundamentalDomain (A.cuspAtlas j.1).isFundamentalDomain
 
+end
+
 theorem spherical_open_positive : (sphericalMeasure F ζ hζ R P U).IsOpenPosMeasure := by
   letI : BorelSpace (X F ζ hζ) := ⟨rfl⟩
-  letI := (KPSmoothLocalQuotientCharts.quotient_full_support F ζ hζ R).1
+  letI := (KPSmoothLocalQuotientCharts.quotient_full_support F ζ hζ R)
   apply (P.continuous U).isOpenPosMeasure_map
   intro x
   induction x using Quotient.inductionOn with
@@ -203,9 +208,8 @@ theorem end_section_lintegral (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ 
         (KPCuspCharts.radialMeasure (KPCuspLogShape.dimension F)) := by
   let G := Geometry A j
   let σ := (A.cuspAtlas j.1).representative j.2
-  let Γ := KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative j.1)
-  let f : KPCuspCharts.Coordinates F → ℝ≥0∞ := fun p =>
-    φ (KPCuspSiegel.projection F Γ (σ • KPCuspCharts.toArch F p))
+  let f := fun p =>
+    φ (KPCuspSiegel.projection F (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative j.1)) (σ • KPCuspCharts.toArch F p))
   have hf : Measurable f := hφ.comp (measurable_quotient_mk''.comp
     ((KPCuspCharts.projectiveHomeomorph F σ).continuous.measurable.comp
       (KPCuspCharts.toArchHomeomorph F G.positive_dimension).continuous.measurable))
@@ -236,7 +240,7 @@ theorem end_section_lintegral (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ 
     rw [(Geometry A j).highPresentation_formula]
     rfl
   · apply measurable_from_quotient.mpr
-    convert hf.comp (measurable_id.prodMk (measurable_const (a := t.val))) using 1
+    convert hf.comp (measurable_id.prodMk (measurable_const)) using 1
     funext p
     simp only [Function.comp_apply]
     rw [(Geometry A j).highPresentation_formula]
@@ -270,10 +274,6 @@ theorem shape_shift_fundamental_lintegral (j : CuspIndex A) (b : KPCuspCharts.Sh
     Matrix.ProjGenLinGroup.mk_surjective.countable
   let e := (Homeomorph.refl (KPCuspCharts.Horizontal F)).prodCongr (Homeomorph.addRight b)
   letI := G.haar_shapeMeasure
-  have hp : MeasurePreserving e (volume.prod G.shapeMeasure) (volume.prod G.shapeMeasure) :=
-    (MeasurePreserving.id volume).prod (measurePreserving_add_right G.shapeMeasure b)
-  have hm : MeasurePreserving e.symm (volume.prod G.shapeMeasure) (volume.prod G.shapeMeasure) :=
-    (MeasurePreserving.id volume).prod (measurePreserving_add_right G.shapeMeasure (-b))
   have hc : ∀ g : S, Function.Semiconj e (g • ·) (g • ·) := by
     intro g p
     obtain ⟨M,hM,hupper⟩ := (Parabolic A j).upper g g.property
@@ -283,12 +283,11 @@ theorem shape_shift_fundamental_lintegral (j : CuspIndex A) (b : KPCuspCharts.Sh
     · rfl
     · change (p.2 + _)+ b = (p.2+b)+ _
       abel
-  have hd := G.isFundamentalDomain.image_of_equiv e.toEquiv hm.quasiMeasurePreserving
-    (Equiv.refl S) hc
   calc
     _ = ∫⁻ p in e '' G.fundamentalDomain, f p ∂volume.prod G.shapeMeasure :=
-      hp.setLIntegral_comp_emb e.measurableEmbedding f G.fundamentalDomain
-    _ = _ := hd.setLIntegral_eq G.isFundamentalDomain f hinv
+      ((MeasurePreserving.id volume).prod (measurePreserving_add_right G.shapeMeasure b)).setLIntegral_comp_emb e.measurableEmbedding f G.fundamentalDomain
+    _ = _ := (G.isFundamentalDomain.image_of_equiv e.toEquiv ((MeasurePreserving.id volume).prod (measurePreserving_add_right G.shapeMeasure (-b))).quasiMeasurePreserving
+      (Equiv.refl S) hc).setLIntegral_eq G.isFundamentalDomain f hinv
 
 theorem radial_log_substitution (d : ℕ) (hd : 0 < d) (Y : ℝ) (hY : 0 < Y)
     (f : ℝ → ℝ≥0∞) :
@@ -355,7 +354,6 @@ theorem quotient_cross_action (j : CuspIndex A) (g) (p : KPCuspCharts.Cross F) :
         ((A.cuspAtlas j.1).cusp j.2) ((A.cuspAtlas j.1).representative j.2))) =
       Quotient.mk _ p := by
   apply Quotient.sound
-  change MulAction.orbitRel _ _ (KPCuspCharts.toArch F (_,0)) (KPCuspCharts.toArch F (p,0))
   apply MulAction.orbitRel_apply.mpr
   apply MulAction.mem_orbit_iff.mpr
   refine ⟨g, ?_⟩
@@ -408,8 +406,7 @@ private theorem ends_subset (j : CuspIndex A) {T₀ T : ℝ} (hT : T₀ ≤ T) :
     component A j.1 ⁻¹' (component A j.1 '' ends A j T) = ends A j T :=
   Set.preimage_image_eq _ (component_injective A j.1)
  theorem end_measurable (j : CuspIndex A) (T : ℝ) :
-    MeasurableSet (component A j.1 '' ends A j T) := by
-  exact ((component_open A j.1) _
+    MeasurableSet (component A j.1 '' ends A j T) := ((component_open A j.1) _
     (KPFiniteAdelicCuspEnds.component_open_end F _ _ T)).measurableSet
 private theorem end_disjoint (T : ℝ) (hT : A.threshold ≤ T) :
     Pairwise (fun j k : CuspIndex A => Disjoint
@@ -450,11 +447,9 @@ theorem cusp_component_lintegral (Y : ℝ) (hY : AdmissibleCutoff A Y)
   intro j hj
   let E := component A j.1 '' ends A j (logHeight (F := F) Y)
   have hE : MeasurableSet E := end_measurable A j _
-  have hsub : E ⊆ Set.range (component A j.1) := Set.image_subset_range _ _
   have heq : ((sphericalMeasure F ζ hζ R P U).restrict (Set.range (component A j.1))).restrict E =
       (sphericalMeasure F ζ hζ R P U).restrict E := by
-    rw [Measure.restrict_restrict hE, Set.inter_eq_left.mpr hsub]
-  change (∫⁻ x, φ x ∂(sphericalMeasure F ζ hζ R P U).restrict E) = _
+    rw [Measure.restrict_restrict hE, Set.inter_eq_left.mpr (Set.image_subset_range _ _)]
   rw [← heq, D.component_measure]
   rw [Measure.restrict_smul]
   rw [Measure.restrict_map (component_continuous A j.1).measurable hE]
@@ -513,9 +508,8 @@ theorem pinned_section (j : CuspIndex A) (Y : ℝ) (hY : AdmissibleCutoff A Y)
 def expRadius (d : ℕ) (hd : 0 < d) (Y : ℝ) (hY : 0 < Y)
     (t : Set.Ioi (Real.log Y/(2*(d:ℝ)))) : Set.Ioi Y :=
   ⟨Real.exp (2*(d:ℝ)*t.val), by
-    have hc : 0 < 2*(d:ℝ) := mul_pos (by norm_num) (by exact_mod_cast hd)
     have hh : Real.log Y < 2*(d:ℝ)*t.val := by
-      simpa only [mul_comm] using (div_lt_iff₀ hc).mp t.property
+      simpa only [mul_comm] using (div_lt_iff₀ (mul_pos (by norm_num) (by exact_mod_cast hd))).mp t.property
     simpa only [Real.exp_log hY, Set.mem_Ioi] using Real.exp_lt_exp.mpr hh⟩
 theorem radial_subtype_substitution (d : ℕ) (hd : 0 < d) (Y : ℝ) (hY : 0 < Y)
     (g : Set.Ioi Y → ℝ≥0∞) :
@@ -523,7 +517,7 @@ theorem radial_subtype_substitution (d : ℕ) (hd : 0 < d) (Y : ℝ) (hY : 0 < Y
     ENNReal.ofReal (2*(d:ℝ)) * ∫⁻ t, g (expRadius d hd Y hY t)
       ∂Measure.comap (Subtype.val : Set.Ioi (Real.log Y/(2*(d:ℝ))) → ℝ)
         (KPCuspCharts.radialMeasure d) := by
-  let f : ℝ → ℝ≥0∞ := Function.extend (Subtype.val : Set.Ioi Y → ℝ) g (fun _ => 0)
+  let f := Function.extend Subtype.val g (fun _ => 0)
   have hfg : ∀ r : Set.Ioi Y, f r.val = g r :=
     Subtype.val_injective.extend_apply g _
   calc
@@ -573,7 +567,7 @@ theorem cusp_integration (Y : ℝ) (hY : AdmissibleCutoff A Y)
     D.beta Set.univ * ∫⁻ r : Set.Ioi Y, ∫⁻ ω, ∫⁻ x,
       φ (D.chart Y hY (x,r)) ∂D.unipotent ω ∂probability A D.beta
       ∂Measure.comap (Subtype.val : Set.Ioi Y → ℝ) radialMeasure := by
-  let g : CuspIndex A → Set.Ioi Y → ℝ≥0∞ := fun j r =>
+  let g := fun j r =>
     ∫⁻ p, φ (D.chart Y hY (⟨j,p⟩,r)) ∂(Geometry A j).sectionMeasure
   have hg : ∀ j, Measurable (g j) := by
     intro j
@@ -588,9 +582,7 @@ theorem cusp_integration (Y : ℝ) (hY : AdmissibleCutoff A Y)
   have heq : ∀ r : Set.Ioi Y,
       D.beta Set.univ * (∫⁻ ω, ∫⁻ x, φ (D.chart Y hY (x,r))
         ∂D.unipotent ω ∂probability A D.beta) =
-      ∑ j : CuspIndex A, (D.componentWeight j.1 / ENNReal.ofReal (2*(KPCuspLogShape.dimension F:ℝ))) * g j r := by
-    intro r
-    exact probability_section_lintegral A R P D _
+      ∑ j : CuspIndex A, (D.componentWeight j.1 / ENNReal.ofReal (2*(KPCuspLogShape.dimension F:ℝ))) * g j r := fun r => probability_section_lintegral A R P D _
       (hφ.comp ((D.measurable_chart Y hY).comp (measurable_id.prodMk measurable_const)))
   simp_rw [heq]
   rw [lintegral_finsetSum]
@@ -665,10 +657,9 @@ theorem shell_eval (Y : ℝ) (hY : AdmissibleCutoff A Y)
     exact hi
   rw [hi', hrad]
   have hpos : 0 < 2*Y := mul_pos (by norm_num) hY.1
-  have hmul := ENNReal.mul_inv_cancel_left (ENNReal.ofReal_ne_zero_iff.mpr hpos)
-    ENNReal.ofReal_ne_top (b := D.beta Set.univ)
   calc
-    _ = ENNReal.ofReal (2*Y) * ((ENNReal.ofReal (2*Y))⁻¹ * D.beta Set.univ) := hmul.symm
+    _ = ENNReal.ofReal (2*Y) * ((ENNReal.ofReal (2*Y))⁻¹ * D.beta Set.univ) := (ENNReal.mul_inv_cancel_left (ENNReal.ofReal_ne_zero_iff.mpr hpos)
+      ENNReal.ofReal_ne_top).symm
     _ = _ := by rw [ENNReal.ofReal_inv_of_pos hpos, mul_comm (D.beta Set.univ)]
 
 end RadialIntegrationSteps

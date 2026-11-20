@@ -11,15 +11,16 @@ set_option maxHeartbeats 1000000
 open scoped Classical Topology ENNReal NNReal BigOperators
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.NativeWeakEnergy
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.WeakCutoffSources renaming compact_flow_weak_ibp → compact_flow_weak_ibp
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.WeakCutoffSources renaming flow_ae_differentiable → flow_ae_differentiable
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.Caccioppoli renaming cutoff_young → cutoff_young
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.Caccioppoli renaming finite_energy_of_cutoff_bound → finite_energy_of_cutoff_bound
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.WeakCutoffSources (compact_flow_weak_ibp flow_ae_differentiable)
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.Caccioppoli (cutoff_young finite_energy_of_cutoff_bound)
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [MeasurableSpace X]
   [BorelSpace X] {μ : Measure X} [IsFiniteMeasureOnCompacts μ] [SFinite μ]
 
-private theorem weak_cutoff_derivative
-    (q : ℝ → X → X) (hq : Continuous (Function.uncurry q))
+section
+
+variable (q : ℝ → X → X)
+
+private theorem weak_cutoff_derivative (hq : Continuous (Function.uncurry q))
     (hμ : ∀ t, MeasurePreserving (q t) μ μ)
     (hz : ∀ x, q 0 x = x) (ha : ∀ s t x, q (s+t) x = q t (q s x))
     (χ : X → ℝ) (hχ : Continuous χ) (L : ℝ≥0)
@@ -28,18 +29,16 @@ private theorem weak_cutoff_derivative
       (deriv (fun t => (χ (q t x) : ℂ)) 0).re 0) ∧
     ∀ x, |(deriv (fun t => (χ (q t x) : ℂ)) 0).re| ≤ L := by
   constructor
-  · have hd := flow_ae_differentiable μ q hq hμ hz ha
+  · filter_upwards [(flow_ae_differentiable μ q hq hμ hz ha
       (fun x => (χ x : ℂ)) (Complex.continuous_ofReal.comp hχ) L
-      (fun x => (hLip x).lipschitzOnWith)
-    filter_upwards [hd] with x hx
+      (fun x => (hLip x).lipschitzOnWith))] with x hx
     convert Complex.reCLM.hasFDerivAt.comp_hasDerivAt 0 hx.hasDerivAt using 1
     · funext t; rfl
     · rfl
   · intro x
     exact (Complex.abs_re_le_norm _).trans (norm_deriv_le_of_lipschitz (hLip x))
 
-private theorem squared_cutoff_lipschitz
-    (q : ℝ → X → X) (χ : X → ℝ) (L : ℝ≥0)
+private theorem squared_cutoff_lipschitz (χ : X → ℝ) (L : ℝ≥0)
     (hχb : ∀ x, |χ x| ≤ 1)
     (hLip : ∀ x, LipschitzWith L (fun t => (χ (q t x) : ℂ))) (x : X) :
     LipschitzWith (2 * L) (fun t => ((χ (q t x) ^ 2 : ℝ) : ℂ)) := by
@@ -56,8 +55,7 @@ private theorem squared_cutoff_lipschitz
   norm_num only [NNReal.coe_mul, NNReal.coe_ofNat]
   nlinarith [abs_nonneg (χ (q s x) - χ (q t x))]
 
-private theorem weak_real_cutoff_identity
-    (q : ℝ → X → X) (hq : Continuous (Function.uncurry q))
+private theorem weak_real_cutoff_identity (hq : Continuous (Function.uncurry q))
     (hμ : ∀ t, MeasurePreserving (q t) μ μ)
     (hz : ∀ x, q 0 x = x) (ha : ∀ s t x, q (s+t) x = q t (q s x))
     (χ dχ : X → ℝ) (u du ddu : X → ℂ)
@@ -129,14 +127,14 @@ private theorem weak_real_cutoff_identity
   rw [hrCross] at he
   linarith
 
+end
+
+variable {ι : Type*} [Fintype ι] (q : ι → ℝ → X → X) (hq : ∀ i, Continuous (Function.uncurry (q i)))
+    (hμ : ∀ i t, MeasurePreserving (q i t) μ μ) (hz : ∀ i x, q i 0 x = x)
+    (ha : ∀ i s t x, q i (s+t) x = q i t (q i s x)) (c : ι → ℝ) (hc : ∀ i, 0 ≤ c i)
+
+include hq hμ hz ha hc in
 private theorem weak_diagonal_cutoff_estimate
-    {ι : Type*} [Fintype ι]
-    (q : ι → ℝ → X → X)
-    (hq : ∀ i, Continuous (Function.uncurry (q i)))
-    (hμ : ∀ i t, MeasurePreserving (q i t) μ μ)
-    (hz : ∀ i x, q i 0 x = x)
-    (ha : ∀ i s t x, q i (s+t) x = q i t (q i s x))
-    (c : ι → ℝ) (hc : ∀ i, 0 ≤ c i)
     (χ : X → ℝ) (dχ : ι → X → ℝ)
     (u : X → ℂ) (du ddu : ι → X → ℂ)
     (hχ : Continuous χ) (hu : Continuous u)
@@ -249,14 +247,8 @@ private theorem weak_diagonal_cutoff_estimate
   dsimp only [E, V, D] at *
   linarith [neg_le_abs C]
 
- theorem weak_diagonal_energy_finite
-    {ι : Type*} [Fintype ι]
-    (q : ι → ℝ → X → X)
-    (hq : ∀ i, Continuous (Function.uncurry (q i)))
-    (hμ : ∀ i t, MeasurePreserving (q i t) μ μ)
-    (hz : ∀ i x, q i 0 x = x)
-    (ha : ∀ i s t x, q i (s+t) x = q i t (q i s x))
-    (c : ι → ℝ) (hc : ∀ i, 0 ≤ c i)
+ include hq hμ hz ha hc in
+theorem weak_diagonal_energy_finite
     (u v : X → ℂ) (du ddu : ι → X → ℂ)
     (hu : Continuous u) (hdu : ∀ i, Continuous (du i))
     (hddu : ∀ i, Continuous (ddu i))
@@ -270,9 +262,9 @@ private theorem weak_diagonal_cutoff_estimate
     (hχlim : ∀ x, Filter.Tendsto (fun n => χ n x) Filter.atTop (𝓝 1))
     (L : ℝ≥0) (hLip : ∀ n i x, LipschitzWith L (fun t => (χ n (q i t x) : ℂ))) :
     (∫⁻ x, ENNReal.ofReal (∑ i, c i * ‖du i x‖ ^ 2) ∂μ) < ⊤ := by
-  let dχ : ℕ → ι → X → ℝ := fun n i x =>
+  let dχ := fun n i x =>
     (deriv (fun t => (χ n (q i t x) : ℂ)) 0).re
-  let A : ℝ := ∑ i, c i * (L : ℝ) ^ 2
+  let A := ∑ i, c i * (L : ℝ) ^ 2
   have hD (n : ℕ) (i : ι) := weak_cutoff_derivative (q i) (hq i) (hμ i)
     (hz i) (ha i) (χ n) (hχ n) L (hLip n i)
   have hA (n : ℕ) (x : X) : (∑ i, c i * dχ n i x ^ 2) ≤ A := by
@@ -280,7 +272,7 @@ private theorem weak_diagonal_cutoff_estimate
     intro i hi
     apply mul_le_mul_of_nonneg_left _ (hc i)
     have hh := (hD n i).2 x
-    simpa only [sq_abs] using (sq_le_sq₀ (abs_nonneg _) L.coe_nonneg).mpr hh
+    simpa using (sq_le_sq₀ (abs_nonneg _) L.coe_nonneg).mpr hh
   have hE : Continuous (fun x => ∑ i, c i * ‖du i x‖ ^ 2) :=
     continuous_finsetSum _ (fun i _ => continuous_const.mul ((hdu i).norm.pow 2))
   have hp : Integrable (fun x => ‖u x‖ * ‖v x‖) μ := hu2.norm.integrable_mul hv2.norm

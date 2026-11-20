@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -141,7 +139,7 @@ noncomputable instance closedFiniteIndexClassFieldIsGaloisOverOriginal
         (K := K) H hclosed) := by
   let e :=
     closedFiniteIndexClassFieldBaseEquiv
-      (K := K) H hclosed
+       H hclosed
   apply IsGalois.of_equiv_equiv
     (F := closedFiniteIndexClassFieldBase
       (K := K) H hclosed)
@@ -156,24 +154,24 @@ noncomputable instance closedFiniteIndexClassFieldIsGaloisOverOriginal
   calc
     ((algebraMap K
         (closedFiniteIndexClassField
-          (K := K) H hclosed)).comp e.symm.toRingEquiv) x =
+           H hclosed)).comp e.symm.toRingEquiv) x =
         algebraMap K
           (closedFiniteIndexClassField
-            (K := K) H hclosed) (e.symm x) := rfl
+             H hclosed) (e.symm x) := rfl
     _ = algebraMap
           (closedFiniteIndexClassFieldBase
-            (K := K) H hclosed)
+             H hclosed)
           (closedFiniteIndexClassField
-            (K := K) H hclosed)
+             H hclosed)
           (closedFiniteIndexClassFieldBaseEquiv
-            (K := K) H hclosed (e.symm x)) :=
+             H hclosed (e.symm x)) :=
       closedFiniteIndexClassField_algebraMap_original
-        (K := K) H hclosed (e.symm x)
+         H hclosed (e.symm x)
     _ = algebraMap
           (closedFiniteIndexClassFieldBase
-            (K := K) H hclosed)
+             H hclosed)
           (closedFiniteIndexClassField
-            (K := K) H hclosed) x := by
+             H hclosed) x := by
       simpa only [e] using
         congrArg
           (algebraMap
@@ -185,12 +183,12 @@ noncomputable instance closedFiniteIndexClassFieldIsGaloisOverOriginal
             (K := K) H hclosed).apply_symm_apply x)
     _ = ((RingEquiv.refl
           (closedFiniteIndexClassField
-            (K := K) H hclosed)).toRingHom.comp
+             H hclosed)).toRingHom.comp
         (algebraMap
           (closedFiniteIndexClassFieldBase
-            (K := K) H hclosed)
+             H hclosed)
           (closedFiniteIndexClassField
-            (K := K) H hclosed))) x := rfl
+             H hclosed))) x := rfl
 
 noncomputable instance
     closedFiniteIndexClassFieldIsAbelianGaloisOverOriginal
@@ -217,40 +215,36 @@ theorem closedFiniteIndexClassField_ideleClassNorm_range
         (K := K) H hclosed)).range = H := by
   let e :=
     closedFiniteIndexClassFieldBaseEquiv
-      (K := K) H hclosed
+       H hclosed
   let g := (ideleClassCongr e).toMonoidHom
   have hCanonical :
       (_root_.ideleClassNorm
         (closedFiniteIndexClassFieldBase
-          (K := K) H hclosed)
+           H hclosed)
         (closedFiniteIndexClassField
-          (K := K) H hclosed)).range =
+           H hclosed)).range =
         H.map g := by
     simpa only [e, g] using
       (closedFiniteIndexClassField_ideleClassNorm_range_over_base
         (K := K) H hclosed)
   apply
     Subgroup.map_injective
-      (f := g) (ideleClassCongr e).injective
+       (ideleClassCongr e).injective
   calc
     ((_root_.ideleClassNorm K
       (closedFiniteIndexClassField
-        (K := K) H hclosed)).range).map g =
+         H hclosed)).range).map g =
         (_root_.ideleClassNorm
           (closedFiniteIndexClassFieldBase
-            (K := K) H hclosed)
+             H hclosed)
           (closedFiniteIndexClassField
-            (K := K) H hclosed)).range := by
-      exact
-        ordinaryIdeleClassNorm_range_map_congrOfAlgEquiv
+             H hclosed)).range := ordinaryIdeleClassNorm_range_map_congrOfAlgEquiv
           e
           (AlgEquiv.refl
-            (R := ℚ)
-            (A₁ := closedFiniteIndexClassField
-              (K := K) H hclosed))
-          (fun x => by
-            exact closedFiniteIndexClassField_algebraMap_original
-              (K := K) H hclosed x)
+
+            )
+          (fun x => closedFiniteIndexClassField_algebraMap_original
+               H hclosed x)
     _ = H.map g := hCanonical
 end GlobalClassFields
 end GlobalClassFieldTheory

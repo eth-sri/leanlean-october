@@ -27,52 +27,15 @@ private lemma dyad_card_bound (X Y : ℝ) (hY : 1 ≤ Y) (hXY : X ≤ Y) :
     apply Finset.mem_product.mpr
     exact ⟨Finset.mem_range.mpr (hi pq.1 (by nlinarith)),
       Finset.mem_range.mpr (hi pq.2 (by nlinarith))⟩
-  have hc := Finset.card_le_card hs
   have hn := Nat.floor_le hlog
   calc
     ((dyadIndices X).card : ℝ) ≤ ((⌊Real.log Y / Real.log 2⌋₊ + 1 : ℕ) : ℝ) ^ 2 := by
       exact_mod_cast (show (dyadIndices X).card ≤ (⌊Real.log Y / Real.log 2⌋₊ + 1) ^ 2 by
-        simpa [Finset.card_product, pow_two] using hc)
+        simpa [Finset.card_product, pow_two] using (Finset.card_le_card hs))
     _ ≤ (1 + Real.log Y / Real.log 2) ^ 2 := by
       apply pow_le_pow_left₀ (by positivity)
       push_cast
       linarith
-
-private lemma dyad_weight_bound (M D Z : ℝ) (hM : 1 ≤ M) (hD : 0 ≤ D)
-    (hZ : 1 ≤ Z) (pq : ℕ × ℕ) (hpq : pq ∈ dyadIndices (D * Z ^ M)) :
-    Real.sqrt ((2 : ℝ) ^ pq.1) *
-      ((2 : ℝ) ^ pq.2 + ((2 : ℝ) ^ pq.2) ^ 2 * (2 : ℝ) ^ pq.1 / Z) ≤
-      (D + D ^ 2) * Z ^ (2 * M - 1) := by
-  have hz : 0 < Z := by linarith
-  have hP : 1 ≤ (2 : ℝ) ^ pq.1 := one_le_pow₀ (by norm_num)
-  have hQ : 1 ≤ (2 : ℝ) ^ pq.2 := one_le_pow₀ (by norm_num)
-  have hp := (Finset.mem_filter.mp hpq).2
-  have hs : Real.sqrt ((2 : ℝ) ^ pq.1) ≤ (2 : ℝ) ^ pq.1 := by
-    nlinarith [Real.sq_sqrt (show 0 ≤ (2 : ℝ) ^ pq.1 by positivity),
-      Real.sqrt_nonneg ((2 : ℝ) ^ pq.1)]
-  have he : Z ^ M ≤ Z ^ (2 * M - 1) :=
-    Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
-  have hsq : ((2 : ℝ) ^ pq.1 * (2 : ℝ) ^ pq.2) ^ 2 ≤ (D * Z ^ M) ^ 2 :=
-    pow_le_pow_left₀ (by positivity) hp 2
-  have hpow : (Z ^ M) ^ 2 / Z = Z ^ (2 * M - 1) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_mul hz.le]
-    conv_lhs => rhs; rw [← Real.rpow_one Z]
-    rw [← Real.rpow_sub hz]
-    congr 1
-    norm_num
-    ring
-  calc
-    _ ≤ (2 : ℝ) ^ pq.1 *
-        ((2 : ℝ) ^ pq.2 + ((2 : ℝ) ^ pq.2) ^ 2 * (2 : ℝ) ^ pq.1 / Z) :=
-      mul_le_mul_of_nonneg_right hs (by positivity)
-    _ = (2 : ℝ) ^ pq.1 * (2 : ℝ) ^ pq.2 +
-        ((2 : ℝ) ^ pq.1 * (2 : ℝ) ^ pq.2) ^ 2 / Z := by ring
-    _ ≤ D * Z ^ M + (D * Z ^ M) ^ 2 / Z :=
-      add_le_add hp (div_le_div_of_nonneg_right hsq hz.le)
-    _ = D * Z ^ M + D ^ 2 * Z ^ (2 * M - 1) := by
-      rw [mul_pow, mul_div_assoc, hpow]
-    _ ≤ (D + D ^ 2) * Z ^ (2 * M - 1) := by
-      nlinarith [mul_le_mul_of_nonneg_left he hD]
 
 theorem sum_dyad_weights_bound
     (M Cstar : ℝ) (hM : 1 ≤ M) (hCstar : 0 < Cstar) :
@@ -116,7 +79,36 @@ theorem sum_dyad_weights_bound
         (Cstar + Cstar ^ 2) * Z ^ (2 * M - 1) := by
       apply Finset.sum_le_sum
       intro pq hpq
-      exact dyad_weight_bound M Cstar Z hM hCstar.le hZ pq hpq
+      have hz : 0 < Z := by linarith
+      have hP : 1 ≤ (2 : ℝ) ^ pq.1 := one_le_pow₀ (by norm_num)
+      have hQ : 1 ≤ (2 : ℝ) ^ pq.2 := one_le_pow₀ (by norm_num)
+      have hp := (Finset.mem_filter.mp hpq).2
+      have hs : Real.sqrt ((2 : ℝ) ^ pq.1) ≤ (2 : ℝ) ^ pq.1 := by
+        nlinarith [Real.sq_sqrt (show 0 ≤ (2 : ℝ) ^ pq.1 by positivity),
+          Real.sqrt_nonneg ((2 : ℝ) ^ pq.1)]
+      have he : Z ^ M ≤ Z ^ (2 * M - 1) :=
+        Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
+      have hsq : ((2 : ℝ) ^ pq.1 * (2 : ℝ) ^ pq.2) ^ 2 ≤ (Cstar * Z ^ M) ^ 2 :=
+        pow_le_pow_left₀ (by positivity) hp 2
+      have hpow : (Z ^ M) ^ 2 / Z = Z ^ (2 * M - 1) := by
+        rw [← Real.rpow_natCast, ← Real.rpow_mul hz.le]
+        conv_lhs => rhs; rw [← Real.rpow_one Z]
+        rw [← Real.rpow_sub hz]
+        congr 1
+        norm_num
+        ring
+      calc
+        _ ≤ (2 : ℝ) ^ pq.1 *
+            ((2 : ℝ) ^ pq.2 + ((2 : ℝ) ^ pq.2) ^ 2 * (2 : ℝ) ^ pq.1 / Z) :=
+          mul_le_mul_of_nonneg_right hs (by positivity)
+        _ = (2 : ℝ) ^ pq.1 * (2 : ℝ) ^ pq.2 +
+            ((2 : ℝ) ^ pq.1 * (2 : ℝ) ^ pq.2) ^ 2 / Z := by ring
+        _ ≤ Cstar * Z ^ M + (Cstar * Z ^ M) ^ 2 / Z :=
+          add_le_add hp (div_le_div_of_nonneg_right hsq hz.le)
+        _ = Cstar * Z ^ M + Cstar ^ 2 * Z ^ (2 * M - 1) := by
+          rw [mul_pow, mul_div_assoc, hpow]
+        _ ≤ (Cstar + Cstar ^ 2) * Z ^ (2 * M - 1) := by
+          nlinarith [mul_le_mul_of_nonneg_left he hCstar.le]
     _ = ((dyadIndices (Cstar * Z ^ M)).card : ℝ) *
         ((Cstar + Cstar ^ 2) * Z ^ (2 * M - 1)) := by
       simp only [Finset.sum_const, nsmul_eq_mul]

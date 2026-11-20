@@ -26,18 +26,16 @@ private lemma compact_shell (a : ℝ) (ha : 0 < a) (n : ℕ) : IsCompact (shell 
     constructor
     · rintro ⟨u, hu, rfl⟩; exact hu
     · intro hx
-      have hx0 : x ≠ 0 := by
-        intro h; simp [h] at hx
-        exact (not_le_of_gt (pow_pos ha n)) hx.1
-      exact ⟨Units.mk0 x hx0, hx, rfl⟩
+      refine ⟨Units.mk0 x ?_, hx, rfl⟩
+      intro h; simp [h] at hx
+      exact (not_le_of_gt (pow_pos ha n)) hx.1
   rw [he]
-  have h := (isCompact_closedBall (0 : ℝ) (2 * a ^ n)).inter_left
-    (isClosed_le continuous_const continuous_norm : IsClosed {x : ℝ | a ^ n ≤ ‖x‖})
-  simpa only [Metric.closedBall, dist_zero_right, setOf_and] using h
+  simpa only [Metric.closedBall, dist_zero_right, setOf_and] using ((isCompact_closedBall (0 : ℝ) (2 * a ^ n)).inter_left
+    (isClosed_le continuous_const continuous_norm : IsClosed {x : ℝ | a ^ n ≤ ‖x‖}))
 
 private lemma measure_shell (ν : Measure ℝˣ) [ν.IsHaarMeasure]
     (a : ℝ) (ha : 0 < a) (n : ℕ) : ν (shell a n) = ν (shell a 0) := by
-  let u : ℝˣ := Units.mk0 (a ^ n) (ne_of_gt (pow_pos ha n))
+  let u := Units.mk0 (a ^ n) (ne_of_gt (pow_pos ha n))
   have he : (fun x : ℝˣ => u * x) ⁻¹' shell a n = shell a 0 := by
     ext x
     simp only [shell, mem_preimage, mem_setOf_eq, Units.val_mul, u, Units.val_mk0,
@@ -64,41 +62,45 @@ private lemma shell_integrable (ν : Measure ℝˣ) [ν.IsHaarMeasure]
   apply Summable.of_nonneg_of_le (fun n => integral_nonneg (fun x => norm_nonneg _))
     (fun n => ?_) ((summable_geometric_of_lt_one hr0 hr).mul_left (ν.real (shell a 0) * B))
   calc
-    (∫ x in shell a n, ‖f x‖ ∂ν) ≤ ∫ _ in shell a n, B * r ^ n ∂ν :=
+    _ ≤ ∫ _ in shell a n, B * r ^ n ∂ν :=
       integral_mono_ae (hi n).norm (integrableOn_const (hc n).measure_lt_top.ne)
         ((ae_restrict_mem (hc n).measurableSet).mono (fun x hx => hb n x hx))
     _ = (ν.real (shell a 0) * B) * r ^ n := by
       simp [measureReal_def, measure_shell ν a ha n, mul_assoc]
 
-private lemma weight_norm (g : SchwartzMap ℝ ℂ) (z : ℂ) (x : ℝˣ) :
+section
+
+variable (g : SchwartzMap ℝ ℂ) (z : ℂ) (x : ℝˣ)
+
+private lemma weight_norm :
     ‖g x.val * ((‖x.val‖ ^ 2 : ℝ) : ℂ) ^ z‖ = ‖g x.val‖ * ‖x.val‖ ^ (2 * z.re) := by
   rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (pow_pos (norm_pos_iff.mpr x.ne_zero) 2)]
   congr 1
   exact (Real.rpow_natCast_mul (norm_nonneg _) 2 z.re).symm
 
-private lemma weighted_bound (g : SchwartzMap ℝ ℂ) (z : ℂ) (x : ℝˣ) (k : ℕ) :
+private lemma weighted_bound (k : ℕ) :
     ‖g x.val * ((‖x.val‖ ^ 2 : ℝ) : ℂ) ^ z‖ ≤
       SchwartzMap.seminorm ℝ k 0 g * ‖x.val‖ ^ (2 * z.re - k) := by
   rw [weight_norm]
-  have hx : 0 < ‖x.val‖ := norm_pos_iff.mpr x.ne_zero
-  have h := mul_le_mul_of_nonneg_right (g.norm_pow_mul_le_seminorm ℝ k x.val)
-    (Real.rpow_nonneg hx.le (2 * z.re - k))
+  have hx := norm_pos_iff.mpr x.ne_zero
   calc
-    ‖g x.val‖ * ‖x.val‖ ^ (2 * z.re) =
+    _ =
         (‖x.val‖ ^ k * ‖g x.val‖) * ‖x.val‖ ^ (2 * z.re - k) := by
       rw [← Real.rpow_natCast, mul_right_comm, ← Real.rpow_add hx,
         show (k : ℝ) + (2 * z.re - k) = 2 * z.re by ring]
       exact mul_comm _ _
-    _ ≤ _ := h
+    _ ≤ _ := (mul_le_mul_of_nonneg_right (g.norm_pow_mul_le_seminorm ℝ k x.val)
+      (Real.rpow_nonneg hx.le (2 * z.re - k)))
+
+end
 
 private lemma cover : (⋃ n, shell (1/2) n) ∪ (⋃ n, shell 2 n) = (univ : Set ℝˣ) := by
   apply eq_univ_of_forall
   intro x
-  have hx : 0 < ‖x.val‖ := norm_pos_iff.mpr x.ne_zero
   by_cases hx1 : 1 ≤ ‖x.val‖
   · obtain ⟨n, hn, hn'⟩ := exists_nat_pow_near hx1 (by norm_num : (1 : ℝ) < 2)
     exact Or.inr (mem_iUnion.mpr ⟨n, hn, by simpa [pow_succ, mul_comm] using hn'.le⟩)
-  · obtain ⟨n, hn, hn'⟩ := exists_nat_pow_near_of_lt_one hx (le_of_not_ge hx1)
+  · obtain ⟨n, hn, hn'⟩ := exists_nat_pow_near_of_lt_one (norm_pos_iff.mpr x.ne_zero) (le_of_not_ge hx1)
       (by norm_num : (0 : ℝ) < 1/2) (by norm_num : (1/2 : ℝ) < 1)
     exact Or.inl (mem_iUnion.mpr ⟨n+1, hn.le, by
       have he : (2 : ℝ) * (1/2) ^ (n+1) = (1/2) ^ n := by rw [pow_succ]; ring
@@ -109,7 +111,7 @@ theorem schwartz_realUnitsMellin_integrable
     (z : ℂ) (hz : 0 < z.re) :
     Integrable (fun x : ℝˣ => g x.val * ((‖x.val‖ ^ 2 : ℝ) : ℂ) ^ z) ν := by
   let f : ℝˣ → ℂ := fun x => g x.val * ((‖x.val‖ ^ 2 : ℝ) : ℂ) ^ z
-  have hf : Continuous f := g.continuous.comp Units.continuous_val |>.mul
+  have hf := g.continuous.comp Units.continuous_val |>.mul
     ((Complex.continuous_ofReal_cpow_const hz).comp (Units.continuous_val.norm.pow 2))
   have hs : 0 < 2 * z.re := by positivity
   have hsmall : IntegrableOn f (⋃ n, shell (1/2) n) ν := by
@@ -118,10 +120,9 @@ theorem schwartz_realUnitsMellin_integrable
       (by positivity) (by positivity) (Real.rpow_lt_one (by norm_num) (by norm_num) hs)
     intro n x hx
     change (1/2 : ℝ) ^ n ≤ ‖x.val‖ ∧ ‖x.val‖ ≤ 2 * (1/2) ^ n at hx
-    change ‖g x.val * ((‖x.val‖ ^ 2 : ℝ) : ℂ) ^ z‖ ≤ _
     rw [weight_norm]
     calc
-      ‖g x.val‖ * ‖x.val‖ ^ (2 * z.re) ≤
+      _ ≤
           SchwartzMap.seminorm ℝ 0 0 g * (2 * (1/2 : ℝ) ^ n) ^ (2 * z.re) :=
         mul_le_mul (g.norm_le_seminorm ℝ x.val)
           (Real.rpow_le_rpow (norm_nonneg _) hx.2 hs.le) (by positivity) (by positivity)
@@ -208,8 +209,10 @@ private lemma cpow_prod {ι : Type*} (s : Finset ι) (a : ι → ℝ)
   | @insert i s hi ih =>
     rw [Finset.prod_insert hi, Complex.ofReal_mul,
       Complex.mul_cpow_ofReal_nonneg (ha i (by simp))
-      (Finset.prod_nonneg (s := s) (fun j hj => ha j (by simp [hj]))),
+      (Finset.prod_nonneg (fun j hj => ha j (by simp [hj]))),
       ih (fun j hj => ha j (by simp [hj])), Finset.prod_insert hi]
+
+alias LocalUnitsTensorIntegrability.cpow_prod := cpow_prod
 
 private lemma archNormProd (a : InfiniteAdeleRing F) :
     (∏ v : InfinitePlace F, ‖a v‖ ^ 2) =
@@ -356,8 +359,11 @@ open scoped Classical NumberField
 open NumberField IsDedekindDomain MeasureTheory
 variable {F : Type} [Field F] [NumberField F]
 
+section
+
+variable (g : SchwartzMap ℂ ℂ) (μ : Measure ℂ) [μ.IsAddHaarMeasure]
+
 theorem schwartz_complexNormMellin_integrable
-    (g : SchwartzMap ℂ ℂ) (μ : Measure ℂ) [μ.IsAddHaarMeasure]
     (s : ℝ) (hs : 0 < s) :
     Integrable (complexNormMellinIntegrand g s) μ := by
   have hmeas : AEStronglyMeasurable (complexNormMellinIntegrand g s) μ := by
@@ -399,7 +405,6 @@ theorem schwartz_complexNormMellin_integrable
   simpa using hnear.union hfar
 
 theorem schwartz_complexMellin_withDensity_integrable
-    (g : SchwartzMap ℂ ℂ) (μ : Measure ℂ) [μ.IsAddHaarMeasure]
     (z : ℂ) (hz : 0 < z.re) :
     Integrable (fun x : ℂ => g x * ((‖x‖ ^ 2 : ℝ) : ℂ) ^ z)
       ((μ : Measure ℂ).withDensity
@@ -414,8 +419,7 @@ theorem schwartz_complexMellin_withDensity_integrable
     exact (by fun_prop : Measurable (fun x : ℂ => (Real.pi * ‖x‖ ^ 2)⁻¹)).smul
       (g.continuous.mul ((Complex.continuous_ofReal_cpow_const hz).comp
         (continuous_norm.pow 2))).measurable
-  have hbound := (schwartz_complexNormMellin_integrable g μ z.re hz).norm.const_mul Real.pi⁻¹
-  apply hbound.mono' ?_ ?_
+  apply ((schwartz_complexNormMellin_integrable g μ z.re hz).norm.const_mul Real.pi⁻¹).mono' ?_ ?_
   · convert hm using 1
     funext x
     rw [ENNReal.toReal_ofReal (by positivity)]
@@ -425,7 +429,7 @@ theorem schwartz_complexMellin_withDensity_integrable
     by_cases hx : x = 0
     · subst x
       simp [complexNormMellinIntegrand]
-    · have hn : 0 < ‖x‖ ^ 2 := pow_pos (norm_pos_iff.mpr hx) 2
+    · have hn := pow_pos (norm_pos_iff.mpr hx) 2
       simp only [norm_smul, Real.norm_eq_abs,
         abs_of_nonneg (by positivity : 0 ≤ (Real.pi * ‖x‖ ^ 2)⁻¹), norm_mul,
         Complex.norm_cpow_eq_rpow_re_of_pos hn, complexNormMellinIntegrand,
@@ -435,19 +439,17 @@ theorem schwartz_complexMellin_withDensity_integrable
       exact le_of_eq (by ring)
 
 theorem schwartz_complexUnitsMellin_integrable
-    (g : SchwartzMap ℂ ℂ) (μ : Measure ℂ) [μ.IsAddHaarMeasure]
     (z : ℂ) (hz : 0 < z.re) :
     Integrable (fun x : ℂˣ => g x.val * ((‖x.val‖ ^ 2 : ℝ) : ℂ) ^ z)
       (Measure.comap Units.val
         (μ.withDensity (fun x => ENNReal.ofReal ((Real.pi * ‖x‖ ^ 2)⁻¹)))) := by
   letI : BorelSpace ℂˣ := ⟨by
-    change MeasurableSpace.comap Units.val (inferInstance : MeasurableSpace ℂ) = borel ℂˣ
-    rw [(Units.isEmbedding_val₀ (G₀ := ℂ)).eq_induced, borel_comap]
+    rw [(Units.isEmbedding_val₀).eq_induced, borel_comap]
     rfl⟩
-  have he : MeasurableEmbedding (Units.val : ℂˣ → ℂ) :=
-    IsOpenUnits.isOpenEmbedding_unitsVal.measurableEmbedding
-  exact he.integrableOn_range_iff_comap.mp
+  exact IsOpenUnits.isOpenEmbedding_unitsVal.measurableEmbedding.integrableOn_range_iff_comap.mp
     (schwartz_complexMellin_withDensity_integrable g μ z hz).integrableOn
+
+end
 
 theorem integrable_of_isHaarMeasure
     {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
@@ -457,9 +459,13 @@ theorem integrable_of_isHaarMeasure
   rw [Measure.isMulLeftInvariant_eq_smul ν μ]
   exact hf.smul_measure ENNReal.coe_ne_top
 
-private theorem complex_addHaar_map_mul (μ : Measure ℂ) [μ.IsAddHaarMeasure] (c : ℂ) (hc : c ≠ 0) :
+section
+
+variable (μ : Measure ℂ) [μ.IsAddHaarMeasure]
+
+private theorem complex_addHaar_map_mul (c : ℂ) (hc : c ≠ 0) :
     μ.map (fun x => c*x) = (ENNReal.ofReal (‖c‖ ^ 2))⁻¹ • μ := by
-  let L : ℂ →ₗ[ℝ] ℂ := Algebra.lmul ℝ ℂ c
+  let L := Algebra.lmul ℝ ℂ c
   have hdet : L.det = ‖c‖ ^ 2 := by
     rw [← LinearMap.det_toMatrix Complex.basisOneI]
     have hmat : LinearMap.toMatrix Complex.basisOneI Complex.basisOneI L =
@@ -469,18 +475,16 @@ private theorem complex_addHaar_map_mul (μ : Measure ℂ) [μ.IsAddHaarMeasure]
         simp [LinearMap.toMatrix_apply, L, Complex.basisOneI]
     rw [hmat, Matrix.det_fin_two, Complex.sq_norm]
     simp [Complex.normSq_apply]
-  have hmap := Measure.map_linearMap_addHaar_eq_smul_addHaar μ
-    (f := L) (by rw [hdet]; positivity)
-  convert hmap using 1
+  convert (Measure.map_linearMap_addHaar_eq_smul_addHaar μ
+    (by rw [hdet]; positivity)) using 1
   · rfl
   · rw [hdet, abs_of_nonneg (by positivity), ENNReal.ofReal_inv_of_pos (by positivity)]
 
-private theorem complexUnits_density_left (μ : Measure ℂ) [μ.IsAddHaarMeasure] :
+private theorem complexUnits_density_left :
     (Measure.comap Units.val
       (μ.withDensity (fun x : ℂ => ENNReal.ofReal ((Real.pi * ‖x‖ ^ 2)⁻¹)))).IsMulLeftInvariant := by
   letI : BorelSpace ℂˣ := ⟨by
-    change MeasurableSpace.comap Units.val (inferInstance : MeasurableSpace ℂ) = borel ℂˣ
-    rw [(Units.isEmbedding_val₀ (G₀ := ℂ)).eq_induced, borel_comap]
+    rw [(Units.isEmbedding_val₀).eq_induced, borel_comap]
     rfl⟩
   let ev := (IsOpenUnits.isOpenEmbedding_unitsVal (M := ℂ)).measurableEmbedding
   let D := fun x : ℂ => ENNReal.ofReal ((Real.pi * ‖x‖ ^ 2)⁻¹)
@@ -489,8 +493,6 @@ private theorem complexUnits_density_left (μ : Measure ℂ) [μ.IsAddHaarMeasur
   intro g
   ext s hs
   rw [Measure.map_apply (by fun_prop) hs]
-  change (μ.withDensity D).comap Units.val ((fun x => g * x) ⁻¹' s) =
-    (μ.withDensity D).comap Units.val s
   rw [ev.comap_apply, ev.comap_apply]
   have hpre : Units.val '' ((fun x => g * x) ⁻¹' s) =
       (fun x : ℂ => (g : ℂ) * x) ⁻¹' (Units.val '' s) := by
@@ -500,12 +502,10 @@ private theorem complexUnits_density_left (μ : Measure ℂ) [μ.IsAddHaarMeasur
     · rintro ⟨u, hu, he⟩
       refine ⟨g⁻¹ * u, ?_, ?_⟩
       · simpa using hu
-      · change ((g⁻¹ * u : ℂˣ) : ℂ) = x
-        simp only [Units.val_mul]
+      · simp only [Units.val_mul]
         rw [he]; simp
-  rw [hpre, withDensity_apply _ (by exact (ev.measurableSet_image.mpr hs).preimage (by fun_prop)),
+  rw [hpre, withDensity_apply _ ((ev.measurableSet_image.mpr hs).preimage (by fun_prop)),
     withDensity_apply _ (ev.measurableSet_image.mpr hs)]
-  have hscale := complex_addHaar_map_mul μ (g : ℂ) g.ne_zero
   have hmul (x : ℂ) : D ((g : ℂ) * x) = (ENNReal.ofReal (‖(g : ℂ)‖ ^ 2))⁻¹ * D x := by
     dsimp [D]
     rw [norm_mul, mul_pow, show Real.pi * (‖(g : ℂ)‖ ^ 2 * ‖x‖ ^ 2) =
@@ -514,18 +514,17 @@ private theorem complexUnits_density_left (μ : Measure ℂ) [μ.IsAddHaarMeasur
         (pow_pos (norm_pos_iff.mpr g.ne_zero) 2)]
   have hm := setLIntegral_map (μ := μ) (g := fun x : ℂ => (g : ℂ) * x)
     (s := Units.val '' s) (ev.measurableSet_image.mpr hs) hD (by fun_prop)
-  rw [hscale, Measure.restrict_smul, lintegral_smul_measure] at hm
+  rw [(complex_addHaar_map_mul μ (g : ℂ) g.ne_zero), Measure.restrict_smul, lintegral_smul_measure] at hm
   simp only [ENNReal.smul_def, smul_eq_mul] at hm
   simp_rw [hmul] at hm
   rw [lintegral_const_mul _ hD] at hm
   exact (ENNReal.mul_right_inj (by simp) (by simp [norm_pos_iff.mpr g.ne_zero])).mp hm.symm
 
-theorem complexUnits_density_isHaarMeasure (μ : Measure ℂ) [μ.IsAddHaarMeasure] :
+theorem complexUnits_density_isHaarMeasure :
     (Measure.comap Units.val
       (μ.withDensity (fun x : ℂ => ENNReal.ofReal ((Real.pi * ‖x‖ ^ 2)⁻¹)))).IsHaarMeasure := by
   letI : BorelSpace ℂˣ := ⟨by
-    change MeasurableSpace.comap Units.val (inferInstance : MeasurableSpace ℂ) = borel ℂˣ
-    rw [(Units.isEmbedding_val₀ (G₀ := ℂ)).eq_induced, borel_comap]
+    rw [(Units.isEmbedding_val₀).eq_induced, borel_comap]
     rfl⟩
   let ev := (IsOpenUnits.isOpenEmbedding_unitsVal (M := ℂ)).measurableEmbedding
   let D := fun x : ℂ => ENNReal.ofReal ((Real.pi * ‖x‖ ^ 2)⁻¹)
@@ -543,30 +542,28 @@ theorem complexUnits_density_isHaarMeasure (μ : Measure ℂ) [μ.IsAddHaarMeasu
       exact (ENNReal.ofReal_pos.mpr (inv_pos.mpr (mul_pos Real.pi_pos
         (pow_pos (norm_pos_iff.mpr u.ne_zero) 2)))).ne'
     rw [heq]
-    have hpos : 0 < μ (Units.val '' interior K) :=
-      (IsOpenUnits.isOpenEmbedding_unitsVal.isOpenMap _ isOpen_interior).measure_pos μ
-        (hint.image _)
-    exact (hpos.trans_le (measure_mono (Set.image_mono interior_subset))).ne'
+    exact (((IsOpenUnits.isOpenEmbedding_unitsVal.isOpenMap _ isOpen_interior).measure_pos μ
+      (hint.image _)).trans_le (measure_mono (Set.image_mono interior_subset))).ne'
   · rw [ev.comap_apply, withDensity_apply _ ((hK.image Units.continuous_val).measurableSet)]
     have hc : ContinuousOn (fun x : ℂ => (Real.pi * ‖x‖ ^ 2)⁻¹) (Units.val '' K) := by
       apply ContinuousOn.inv₀ (by fun_prop)
       rintro x ⟨u, hu, rfl⟩
       exact (mul_pos Real.pi_pos (pow_pos (norm_pos_iff.mpr u.ne_zero) 2)).ne'
-    have hi := ContinuousOn.integrableOn_compact (μ := μ) (hK.image Units.continuous_val) hc
-    rw [← ofReal_integral_eq_lintegral_ofReal hi (Filter.Eventually.of_forall (fun x => by positivity))]
+    rw [← ofReal_integral_eq_lintegral_ofReal (ContinuousOn.integrableOn_compact (hK.image Units.continuous_val) hc) (Filter.Eventually.of_forall (fun x => by positivity))]
     exact ENNReal.ofReal_ne_top
+
+end
 
 theorem schwartz_complexUnitsMellin_integrable_of_isHaarMeasure
     (g : SchwartzMap ℂ ℂ) (ν : Measure ℂˣ) [ν.IsHaarMeasure]
     (z : ℂ) (hz : 0 < z.re) :
     Integrable (fun x : ℂˣ => g x.val * ((‖x.val‖ ^ 2 : ℝ) : ℂ) ^ z) ν := by
   letI : BorelSpace ℂˣ := ⟨by
-    change MeasurableSpace.comap Units.val (inferInstance : MeasurableSpace ℂ) = borel ℂˣ
-    rw [(Units.isEmbedding_val₀ (G₀ := ℂ)).eq_induced, borel_comap]
+    rw [(Units.isEmbedding_val₀).eq_induced, borel_comap]
     rfl⟩
   letI : SecondCountableTopology ℂˣ :=
-    (Units.isEmbedding_val₀ (G₀ := ℂ)).secondCountableTopology
-  let μ₀ : Measure ℂˣ := Measure.comap Units.val
+    (Units.isEmbedding_val₀).secondCountableTopology
+  let μ₀ := Measure.comap Units.val
     (volume.withDensity (fun x : ℂ => ENNReal.ofReal ((Real.pi * ‖x‖ ^ 2)⁻¹)))
   letI : μ₀.IsHaarMeasure := complexUnits_density_isHaarMeasure volume
   exact integrable_of_isHaarMeasure μ₀ ν

@@ -13,8 +13,7 @@ noncomputable def zonalPolynomial (N : ℕ) (p : Ambient × Ambient) : ℂ :=
   ((N + 1 : ℂ) / 2^N) * ((1 + inner ℝ p.1 p.2) : ℂ)^N
 
 private theorem zonalPolynomial_smooth (N : ℕ) :
-    ContDiff ℝ (⊤ : ℕ∞) (zonalPolynomial N) := by
-  exact contDiff_const.mul ((contDiff_const.add (Complex.ofRealCLM.contDiff.comp
+    ContDiff ℝ (⊤ : ℕ∞) (zonalPolynomial N) := contDiff_const.mul ((contDiff_const.add (Complex.ofRealCLM.contDiff.comp
     (contDiff_fst.inner ℝ contDiff_snd))).pow N)
 
 instance instCompactSpaceZonalRotationSphere : CompactSpace Sphere :=
@@ -29,19 +28,16 @@ private theorem zonal_ambient_differentiable (N : ℕ) {F : Sphere → ℂ}
   let K := zonalPolynomial N
   let D (z : Ambient) (y : Sphere) : Ambient →L[ℝ] ℂ :=
     F y • (fderiv ℝ K (z, y)).comp (ContinuousLinearMap.inl ℝ Ambient Ambient)
-  have hD : Continuous (fun p : Ambient × Sphere => D p.1 p.2) := by
-    exact (hF.comp continuous_snd).smul
+  have hD : Continuous (fun p : Ambient × Sphere => D p.1 p.2) := (hF.comp continuous_snd).smul
       ((((zonalPolynomial_smooth N).continuous_fderiv (by simp)).comp
         (continuous_fst.prodMk (continuous_subtype_val.comp continuous_snd))).clm_comp
           continuous_const)
   have hK (z : Ambient) : Continuous (fun y : Sphere => K (z, y) * F y) :=
     (((zonalPolynomial_smooth N).continuous.comp
       (continuous_const.prodMk continuous_subtype_val)).mul hF)
-  obtain ⟨C, hC⟩ := (isCompact_closedBall x 1 |>.prod (isCompact_univ : IsCompact (univ : Set Sphere))).bddAbove_image hD.norm.continuousOn
-  have hb : ∀ y z, z ∈ Metric.closedBall x 1 → ‖D z y‖ ≤ C := by
-    intro y z hz
-    exact hC (show ‖D z y‖ ∈ (fun p : Ambient × Sphere => ‖D p.1 p.2‖) ''
-      (Metric.closedBall x 1 ×ˢ (univ : Set Sphere)) from ⟨(z, y), ⟨hz, mem_univ y⟩, rfl⟩)
+  obtain ⟨C, hC⟩ := (isCompact_closedBall x 1 |>.prod isCompact_univ).bddAbove_image hD.norm.continuousOn
+  have hb : ∀ y z, z ∈ Metric.closedBall x 1 → ‖D z y‖ ≤ C := fun y z hz => hC (show ‖D z y‖ ∈ (fun p : Ambient × Sphere => ‖D p.1 p.2‖) ''
+      (Metric.closedBall x 1 ×ˢ univ) from ⟨(z, y), ⟨hz, mem_univ y⟩, rfl⟩)
   have hd : ∀ (y : Sphere) (z : Ambient), HasFDerivAt (fun z => K (z, y) * F y) (D z y) z := by
     intro y z
     have hp : HasFDerivAt (fun z : Ambient => (z, (y : Ambient)))
@@ -91,10 +87,14 @@ private theorem zonal_orthogonal (N : ℕ) (e : Ambient ≃ₗᵢ[ℝ] Ambient)
   unfold rawZonalIntegral
   rw [← (sphereOrthogonal_measurePreserving e).integral_comp
     (sphereOrthogonal e).measurableEmbedding]
-  simp only [sphereOrthogonal_coe, e.inner_map_map]
+  simp
 
-private theorem zonal_flow_derivative (N : ℕ) (i : Fin 3) {F : Sphere → ℂ}
-    (hF : IsSphereSmooth F) (x : Sphere) (t : ℝ) :
+section
+
+variable (N : ℕ) (i : Fin 3) {F : Sphere → ℂ} (hF : IsSphereSmooth F)
+
+include hF in
+private theorem zonal_flow_derivative (x : Sphere) (t : ℝ) :
     HasDerivAt (fun t => rawZonalIntegral N F (sphereOrthogonal (rotationFlow i t) x))
       (rawZonalIntegral N (rotationDeriv i F) (sphereOrthogonal (rotationFlow i t) x)) t := by
   letI := sphereArea_isProbabilityMeasure
@@ -139,8 +139,8 @@ private theorem zonal_flow_derivative (N : ℕ) (i : Fin 3) {F : Sphere → ℂ}
     (zonal_orthogonal N (rotationFlow i t) (rotationDeriv i F) x).symm
   simpa only [heq, heq'] using h.2
 
-private theorem zonal_rotationDeriv (N : ℕ) (i : Fin 3) {F : Sphere → ℂ}
-    (hF : IsSphereSmooth F) :
+include hF in
+private theorem zonal_rotationDeriv :
     rotationDeriv i (rawZonalIntegral N F) = rawZonalIntegral N (rotationDeriv i F) := by
   funext x
   have hf : HasFDerivAt (radialExtension (rawZonalIntegral N F))
@@ -148,7 +148,6 @@ private theorem zonal_rotationDeriv (N : ℕ) (i : Fin 3) {F : Sphere → ℂ}
       (rotationFlow i 0 (x : Ambient)) := by
     simpa only [rotationFlow_zero] using
       (zonal_radial_differentiable N hF.continuous x).hasFDerivAt
-  have hd := hf.comp_hasDerivAt 0 (rotationFlow_hasDerivAt i (x : Ambient) 0)
   have he : sphereOrthogonal (rotationFlow i 0) x = x := by
     apply Subtype.ext
     exact rotationFlow_zero i x
@@ -156,10 +155,12 @@ private theorem zonal_rotationDeriv (N : ℕ) (i : Fin 3) {F : Sphere → ℂ}
       (fun t => rawZonalIntegral N F (sphereOrthogonal (rotationFlow i t) x))
       (rotationDeriv i (rawZonalIntegral N F) x) 0 := by
     simpa only [Function.comp_def, ← sphereOrthogonal_coe, radialExtension_sphere,
-      he, rotationDeriv] using hd
+      he, rotationDeriv] using (hf.comp_hasDerivAt 0 (rotationFlow_hasDerivAt i (x : Ambient) 0))
   have hc := zonal_flow_derivative N i hF x 0
   rw [he] at hc
   exact hd'.unique hc
+
+end
 
 theorem rawZonalIntegral_rotationWord (N : ℕ) (F : Sphere → ℂ)
     (hF : IsSphereSmooth F) (w : List (Fin 3)) :

@@ -15,11 +15,11 @@ namespace DedekindZetaZeroFree.CompactChartRestriction
 open KPContSectorCoveredQuotientVocabulary KPContSectorScalarLineAlgebra
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 local notation "V" => KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U
 local notation "X" => KPContLocalNorm.Space (KPContActualCutoffChartJetHolomorphy.dimension F)
@@ -55,36 +55,17 @@ structure FiniteChartCover where
 
 private theorem continuous_labeledA_of
     (places : Fin (KPContCotangentActualOverlap.d F) ≃ Fin (KPCuspLogShape.dimension F)) :
-    Continuous (KPContCotangentActualOverlap.labeledA places) := by
-  apply continuous_pi
-  intro k
-  exact (continuous_apply (places.symm k)).comp
-    (CotangentLogCoframe.A (KPContCotangentActualOverlap.d F)).continuous
-
-private theorem continuous_labeledAInv_of
-    (places : Fin (KPContCotangentActualOverlap.d F) ≃ Fin (KPCuspLogShape.dimension F)) :
-    Continuous (KPContCotangentActualOverlap.labeledAInv places) := by
-  apply (CotangentLogCoframe.A (KPContCotangentActualOverlap.d F)).symm.continuous.comp
-  apply continuous_pi
-  intro k
-  exact continuous_apply (places k)
+    Continuous (KPContCotangentActualOverlap.labeledA places) := by apply @DedekindZetaZeroFree.KPContCotangentActualOverlap.OverlapMetricAndPhase.continuous_labeledA <;> assumption
 
 private theorem labeledA_labeledAInv_of
     (places : Fin (KPContCotangentActualOverlap.d F) ≃ Fin (KPCuspLogShape.dimension F))
     (z : KPCuspGenuineMonodromy.SymmetricSpace F) :
     KPContCotangentActualOverlap.labeledA places
-      (KPContCotangentActualOverlap.labeledAInv places z) = z := by
-  funext k
-  simp only [KPContCotangentActualOverlap.labeledA, KPContCotangentActualOverlap.labeledAInv,
-    ContinuousLinearEquiv.apply_symm_apply, Equiv.apply_symm_apply]
+      (KPContCotangentActualOverlap.labeledAInv places z) = z := by apply @DedekindZetaZeroFree.KPContCotangentActualOverlap.OverlapMetricAndPhase.labeledA_labeledAInv <;> assumption
 
  def coordsInv (m : KPContCotangentActualOverlap.M F) : X :=
   WithLp.toLp 2 (fun j : Fin (KPContActualCutoffChartJetHolomorphy.dimension F) =>
     m (finProdFinEquiv.symm j))
-
-private theorem continuous_coordsInv : Continuous (coordsInv F) := by
-  unfold coordsInv
-  fun_prop
 
 private theorem continuous_coordinates :
     Continuous (KPContActualCutoffChartJetHolomorphy.coordinates F) := by
@@ -144,7 +125,13 @@ theorem finiteChartCover_exists
     ⟨coordsInv F '' (KPContCotangentActualOverlap.labeledAInv places ''
         closure (cov.chart (nOf j)).domain),
       ((cov.chart (nOf j)).closure_compact.image
-        (continuous_labeledAInv_of F places)).image (continuous_coordsInv F)⟩
+        (by
+          apply (CotangentLogCoframe.A (KPContCotangentActualOverlap.d F)).symm.continuous.comp
+          apply continuous_pi
+          intro k
+          exact continuous_apply (places k))).image (by
+          unfold coordsInv
+          fun_prop)⟩
   have outer_contained : ∀ j, (outer j : Set X) ⊆
       KPContActualCutoffChartJetHolomorphy.chartDomain F ζ hζ C R P H U (chart j) := by
     intro j x hx
@@ -359,8 +346,7 @@ theorem isometry_differentiableOn {E Y : Type*}
     (g : ℂ → E) (Ω : Set ℂ) (hΩ : IsOpen Ω)
     (hg : DifferentiableOn ℂ (fun s => T (g s)) Ω) : DifferentiableOn ℂ g Ω := by
   intro s hs
-  have hd := (hg s hs).differentiableAt (hΩ.mem_nhds hs)
-  have ht := hd.hasDerivAt.tendsto_slope
+  have ht := ((hg s hs).differentiableAt (hΩ.mem_nhds hs)).hasDerivAt.tendsto_slope
   have hr : deriv (fun s => T (g s)) s ∈ Set.range T := by
     apply hc.mem_of_tendsto ht
     exact Filter.Eventually.of_forall fun t =>
@@ -371,8 +357,7 @@ theorem isometry_differentiableOn {E Y : Type*}
     · funext t
       simp only [slope_def_module, map_smul, map_sub]
     · rw [hd']
-  have hl := T.isometry.isEmbedding.isInducing.tendsto_nhds_iff.mpr hlim
-  exact (hasDerivAt_iff_tendsto_slope.mpr hl).differentiableAt.differentiableWithinAt
+  exact (hasDerivAt_iff_tendsto_slope.mpr (T.isometry.isEmbedding.isInducing.tendsto_nhds_iff.mpr hlim)).differentiableAt.differentiableWithinAt
 
 end DedekindZetaZeroFree.CompactChartRestriction
 

@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -90,32 +87,11 @@ abbrev LocalPlaceBlock
     inferInstance
     (decompositionGroupLocalUnitsAction vK hvK w)
 
-/-- In cyclic coordinates, the local block is a finite product
-of conjugate copies of the chosen completion. -/
-noncomputable def localPlaceBlockEquivProduct
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L)
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ) :
-    letI :=
-      decompositionGroupLocalUnitsAction vK hvK w
-    LocalPlaceBlock vK hvK w ≃*
-      (Fin (absoluteValueDecompositionGroup K w.1).index →
-        (LocalizedCompletion vK w)ˣ) :=
-  by
-    letI :=
-      decompositionGroupLocalUnitsAction vK hvK w
-    exact inducedCoordinatesOfFiniteCyclic
-      (absoluteValueDecompositionGroup K w.1) σ hgen
+variable (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) (w : AbsoluteValueExtension vK L)
+    (σ : L ≃ₐ[K] L) (hgen : ∀ τ : L ≃ₐ[K] L, τ ∈ Subgroup.zpowers σ)
 
 /-- Degree-zero cohomology for one local block. -/
-noncomputable def localPlaceBlockHerbrandH0Equiv
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L)
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ) :
+noncomputable def localPlaceBlockHerbrandH0Equiv :
     letI :=
       decompositionGroupLocalUnitsAction vK hvK w
     letI : Fintype (absoluteValueDecompositionGroup K w.1) :=
@@ -133,12 +109,7 @@ noncomputable def localPlaceBlockHerbrandH0Equiv
       (absoluteValueDecompositionGroup K w.1) σ hgen
 
 /-- Degree-minus-one cohomology for one local block. -/
-noncomputable def localPlaceBlockHerbrandHMinusOneEquiv
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L)
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ) :
+noncomputable def localPlaceBlockHerbrandHMinusOneEquiv :
     letI :=
       decompositionGroupLocalUnitsAction vK hvK w
     letI : Fintype (absoluteValueDecompositionGroup K w.1) :=

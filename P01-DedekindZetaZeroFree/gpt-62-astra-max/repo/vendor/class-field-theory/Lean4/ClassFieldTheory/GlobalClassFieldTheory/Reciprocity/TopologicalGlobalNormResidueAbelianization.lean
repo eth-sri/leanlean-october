@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -75,7 +70,6 @@ theorem ideleClassNormAbelianizationQuotient_discreteTopology :
   apply QuotientGroup.discreteTopology
   exact
     GlobalClassFields.ideleClassNorm_range_isOpen
-      (K := K) (L := L)
 
 omit [NumberField K] [NumberField L] [IsGalois K L] in
 /-- The abelianization of a finite Krull Galois group carries the
@@ -83,10 +77,6 @@ discrete quotient topology. -/
 theorem finiteGaloisAbelianization_discreteTopology :
     DiscreteTopology
       (Abelianization (Gal(L / K))) := by
-  change
-    DiscreteTopology
-      (Gal(L / K) ⧸
-        commutator (Gal(L / K)))
   apply QuotientGroup.discreteTopology
   exact isOpen_discrete _
 
@@ -110,14 +100,9 @@ noncomputable def globalNormResidueAbelianizationContinuousMulEquiv :
     (IdeleClassGroup K ⧸
         (_root_.ideleClassNorm K L).range) ≃ₜ*
       Abelianization (Gal(L / K)) := by
-  let e :
-      (IdeleClassGroup K ⧸
-          (_root_.ideleClassNorm K L).range) ≃*
-        Abelianization (Gal(L / K)) :=
-    AddEquiv.toMultiplicative
-      (globalNormResidueAbelianizationEquiv K L)
   exact
-    { e with
+    { (AddEquiv.toMultiplicative
+      (globalNormResidueAbelianizationEquiv K L)) with
       continuous_toFun := continuous_of_discreteTopology
       continuous_invFun := continuous_of_discreteTopology }
 
@@ -132,8 +117,7 @@ theorem globalNormResidueAbelianizationContinuousMulEquiv_apply
     globalNormResidueAbelianizationContinuousMulEquiv K L c =
       Additive.toMul
         (globalNormResidueAbelianizationEquiv K L
-          (Additive.ofMul c)) := by
-  rfl
+          (Additive.ofMul c)) := rfl
 
 /-- Global reciprocity for a finite Galois extension in the direction
 used by the class-field correspondence:
@@ -153,8 +137,7 @@ theorem globalReciprocityAbelianizationContinuousMulEquiv_apply
     globalReciprocityAbelianizationContinuousMulEquiv K L σ =
       Additive.toMul
         ((globalNormResidueAbelianizationEquiv K L).symm
-          (Additive.ofMul σ)) := by
-  rfl
+          (Additive.ofMul σ)) := rfl
 
 /-- The native quotient projection
 `C_K → C_K / N_{L/K}(C_L)` as a continuous homomorphism. -/
@@ -184,17 +167,7 @@ norm-residue map recovers the previously constructed actual symbol. -/
 theorem globalNormResidueAbelianizationContinuousMonoidHom_apply
     (c : IdeleClassGroup K) :
     globalNormResidueAbelianizationContinuousMonoidHom K L c =
-      globalNormResidueAbelianizationMonoidHom K L c := by
-  rfl
-
-/-- The actual finite-Galois norm-residue symbol is continuous. -/
-theorem globalNormResidueAbelianizationMonoidHom_continuous :
-    Continuous
-      (globalNormResidueAbelianizationMonoidHom K L) :=
-  (globalNormResidueAbelianizationContinuousMonoidHom K L).continuous.congr
-    (fun c =>
-      globalNormResidueAbelianizationContinuousMonoidHom_apply
-        K L c)
+      globalNormResidueAbelianizationMonoidHom K L c := rfl
 
 end Reciprocity
 end GlobalClassFieldTheory

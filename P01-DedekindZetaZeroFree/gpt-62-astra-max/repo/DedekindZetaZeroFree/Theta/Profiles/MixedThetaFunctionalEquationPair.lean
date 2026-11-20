@@ -13,7 +13,9 @@ open scoped nonZeroDivisors
 
 namespace DedekindZetaZeroFree.AbelianQuotient.Theta
 
-theorem mixedThetaPair_primal_integrable (K : Type) [Field K] [NumberField K] :
+variable (K : Type) [Field K] [NumberField K]
+
+theorem mixedThetaPair_primal_integrable :
     MeasureTheory.LocallyIntegrableOn (fun t ↦ (alpha K : ℂ) *
       ∑ C : ClassGroup (𝓞 K), mixedAngularAverage K
         (FractionalIdeal.mk0 K (inverseClassIdealRepresentative K C)) t) (Set.Ioi 0) := by
@@ -26,7 +28,7 @@ theorem mixedThetaPair_primal_integrable (K : Type) [Field K] [NumberField K] :
     (FractionalIdeal.mk0 K (inverseClassIdealRepresentative K C))).integrableOn_compact_subset
       hs hsc
 
-theorem mixedThetaPair_dual_integrable (K : Type) [Field K] [NumberField K] :
+theorem mixedThetaPair_dual_integrable :
     MeasureTheory.LocallyIntegrableOn (fun t ↦ (alpha K : ℂ) *
       ∑ C : ClassGroup (𝓞 K), mixedNegAngularAverage K
         (traceDualIdealUnit K
@@ -41,7 +43,7 @@ theorem mixedThetaPair_dual_integrable (K : Type) [Field K] [NumberField K] :
       (FractionalIdeal.mk0 K (inverseClassIdealRepresentative K C)))).integrableOn_compact_subset
         hs hsc
 
-def mixedThetaPair (K : Type) [Field K] [NumberField K] : WeakFEPair ℂ where
+def mixedThetaPair : WeakFEPair ℂ where
   f := fun t ↦ (alpha K : ℂ) *
     ∑ C : ClassGroup (𝓞 K),
       mixedAngularAverage K
@@ -83,7 +85,7 @@ def mixedThetaPair (K : Type) [Field K] [NumberField K] : WeakFEPair ℂ where
     simpa only [Finset.sum_apply, Finset.sum_sub_distrib, Finset.sum_const,
       Finset.card_univ, nsmul_eq_mul, mul_one, mul_sub] using h
 
-@[simp] theorem mixedThetaPair_k (K : Type) [Field K] [NumberField K] :
+@[simp] theorem mixedThetaPair_k :
     (mixedThetaPair K).k = 1 := rfl
 
 end DedekindZetaZeroFree.AbelianQuotient.Theta

@@ -47,8 +47,9 @@ def principalSeriesJacquetEvaluation :
 
 variable {V : Type*} [AddCommGroup V] [Module ℂ V]
 
-theorem jacquetEvaluation_comp_ne_zero (ρ : Representation ℂ G V)
-  (f : ρ.IntertwiningMap (principalSeries A P ε 0)) (hf : f ≠ 0) :
+variable (ρ : Representation ℂ G V) (f : ρ.IntertwiningMap (principalSeries A P ε 0))
+
+theorem jacquetEvaluation_comp_ne_zero (hf : f ≠ 0) :
   (principalSeriesJacquetEvaluation A P ε).comp (jacquetMap (V := V) (W := sectionSpace A P ε 0) A f) ≠ 0 := by
   intro hz
   apply hf
@@ -57,13 +58,12 @@ theorem jacquetEvaluation_comp_ne_zero (ρ : Representation ℂ G V)
   intro v
   apply Subtype.ext
   funext g
-  have h := congrArg (fun l : (jacquetRepresentation (V := V) A ρ).IntertwiningMap ((inducingAction A P ε 0).comp A.torus) => l (Representation.Coinvariants.mk (ρ.comp (root A)) (ρ g v))) hz
+  have h := congrArg (fun l : (jacquetRepresentation A ρ).IntertwiningMap ((inducingAction A P ε 0).comp A.torus) => l (Representation.Coinvariants.mk (ρ.comp (root A)) (ρ g v))) hz
   change (f (ρ g v)).val 1 = 0 at h
   rw [f.isIntertwining] at h
   simpa [principalSeries, vectorRightTranslation] using h
 
-def jacquetRangeEvaluation (ρ : Representation ℂ G V)
-  (f : ρ.IntertwiningMap (principalSeries A P ε 0)) :
+def jacquetRangeEvaluation :
   (jacquetMap (V := V) (W := sectionSpace A P ε 0) A f).range.toRepresentation.IntertwiningMap
   ((inducingAction A P ε 0).comp A.torus) where
   toLinearMap := {
@@ -75,8 +75,7 @@ def jacquetRangeEvaluation (ρ : Representation ℂ G V)
     intro v
     exact LinearMap.congr_fun ((principalSeriesJacquetEvaluation A P ε).isIntertwining' h) v.val
 
-theorem jacquetRangeEvaluation_surjective (ρ : Representation ℂ G V)
-  (f : ρ.IntertwiningMap (principalSeries A P ε 0)) (hf : f ≠ 0)
+theorem jacquetRangeEvaluation_surjective (hf : f ≠ 0)
   [Representation.IsIrreducible ((inducingAction A P ε 0).comp A.torus)] :
   Function.Surjective (jacquetRangeEvaluation A P ε ρ f) := by
   apply (Representation.IsIrreducible.surjective_or_eq_zero (jacquetRangeEvaluation A P ε ρ f)).resolve_right

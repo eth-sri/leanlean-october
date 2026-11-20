@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -62,13 +60,16 @@ theorem mem_formalLogOnePlusProductArgumentBasicFactorLabelCountChoices
   classical
   simp [formalLogOnePlusProductArgumentBasicFactorLabelCountChoices]
 
+section
+
+variable {m : Fin 2 →₀ ℕ} (hm : formalLogOnePlusProductArgumentBasicFactor m)
+
+include hm in
 /--
 Establishes the identity `m (0 : Fin 2) = (if m = Finsupp.single (0 : Fin 2) 1 then 1 else 0) +
 (if m = Finsupp.single (0 : Fin 2) 1 + Finsupp.single (1 : Fin 2) 1 then 1 else 0)`.
 -/
-theorem formalLogOnePlusProductArgumentBasicFactor_left_coord
-    {m : Fin 2 →₀ ℕ}
-    (hm : formalLogOnePlusProductArgumentBasicFactor m) :
+theorem formalLogOnePlusProductArgumentBasicFactor_left_coord :
     m (0 : Fin 2) =
       (if m = Finsupp.single (0 : Fin 2) 1 then 1 else 0) +
         (if m =
@@ -77,25 +78,15 @@ theorem formalLogOnePlusProductArgumentBasicFactor_left_coord
           then 1 else 0) := by
   rcases hm with hleft | hright | hmixed
   · simp [hleft]
-  · have hrightLeft :
-        Finsupp.single (1 : Fin 2) 1 ≠
-          Finsupp.single (0 : Fin 2) 1 :=
-      finsupp_fin_two_single_left_ne_single_right.symm
-    simp [hright, hrightLeft]
-  · have hmixedLeft :
-        Finsupp.single (0 : Fin 2) 1 +
-            Finsupp.single (1 : Fin 2) 1 ≠
-          Finsupp.single (0 : Fin 2) 1 :=
-      finsupp_fin_two_single_left_ne_mixed.symm
-    simp [hmixed, hmixedLeft]
+  · simp [hright, finsupp_fin_two_single_left_ne_single_right.symm]
+  · simp [hmixed]
 
+include hm in
 /--
 Establishes the identity `m (1 : Fin 2) = (if m = Finsupp.single (1 : Fin 2) 1 then 1 else 0) +
 (if m = Finsupp.single (0 : Fin 2) 1 + Finsupp.single (1 : Fin 2) 1 then 1 else 0)`.
 -/
-theorem formalLogOnePlusProductArgumentBasicFactor_right_coord
-    {m : Fin 2 →₀ ℕ}
-    (hm : formalLogOnePlusProductArgumentBasicFactor m) :
+theorem formalLogOnePlusProductArgumentBasicFactor_right_coord :
     m (1 : Fin 2) =
       (if m = Finsupp.single (1 : Fin 2) 1 then 1 else 0) +
         (if m =
@@ -105,21 +96,15 @@ theorem formalLogOnePlusProductArgumentBasicFactor_right_coord
   rcases hm with hleft | hright | hmixed
   · simp [hleft, finsupp_fin_two_single_left_ne_single_right]
   · simp [hright]
-  · have hmixedRight :
-        Finsupp.single (0 : Fin 2) 1 +
-            Finsupp.single (1 : Fin 2) 1 ≠
-          Finsupp.single (1 : Fin 2) 1 :=
-      finsupp_fin_two_single_right_ne_mixed.symm
-    simp [hmixed, hmixedRight]
+  · simp [hmixed]
 
+include hm in
 /--
 Establishes the identity `(if m = Finsupp.single (0 : Fin 2) 1 then 1 else 0) + (if m =
 Finsupp.single (1 : Fin 2) 1 then 1 else 0) + (if m = Finsupp.single (0 : Fin 2) 1 +
 Finsupp.single (1 : Fin 2) 1 then 1 else 0) = 1`.
 -/
-theorem formalLogOnePlusProductArgumentBasicFactor_total_indicator
-    {m : Fin 2 →₀ ℕ}
-    (hm : formalLogOnePlusProductArgumentBasicFactor m) :
+theorem formalLogOnePlusProductArgumentBasicFactor_total_indicator :
     (if m = Finsupp.single (0 : Fin 2) 1 then 1 else 0) +
           (if m = Finsupp.single (1 : Fin 2) 1 then 1 else 0) +
         (if m =
@@ -129,32 +114,23 @@ theorem formalLogOnePlusProductArgumentBasicFactor_total_indicator
       1 := by
   rcases hm with hleft | hright | hmixed
   · simp [hleft, finsupp_fin_two_single_left_ne_single_right]
-  · have hrightLeft :
-        Finsupp.single (1 : Fin 2) 1 ≠
-          Finsupp.single (0 : Fin 2) 1 :=
-      finsupp_fin_two_single_left_ne_single_right.symm
-    simp [hright, hrightLeft]
-  · have hmixedLeft :
-        Finsupp.single (0 : Fin 2) 1 +
-            Finsupp.single (1 : Fin 2) 1 ≠
-          Finsupp.single (0 : Fin 2) 1 :=
-      finsupp_fin_two_single_left_ne_mixed.symm
-    have hmixedRight :
-        Finsupp.single (0 : Fin 2) 1 +
-            Finsupp.single (1 : Fin 2) 1 ≠
-          Finsupp.single (1 : Fin 2) 1 :=
-      finsupp_fin_two_single_right_ne_mixed.symm
-    simp [hmixed, hmixedLeft, hmixedRight]
+  · simp [hright, finsupp_fin_two_single_left_ne_single_right.symm]
+  simp_all
 
+end
+
+section
+
+variable {q : ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
+    (hbasic : ∀ i ∈ Finset.range q, formalLogOnePlusProductArgumentBasicFactor (l i))
+
+include hbasic in
 /--
 Establishes the identity `(∑ i ∈ Finset.range q, l i (0 : Fin 2)) =
 formalLogOnePlusProductArgumentLeftChoiceCount q l +
 formalLogOnePlusProductArgumentMixedChoiceCount q l`.
 -/
-theorem formalLogOnePlusProductArgument_leftCoord_sum_eq_choiceCounts
-    {q : ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hbasic : ∀ i ∈ Finset.range q,
-      formalLogOnePlusProductArgumentBasicFactor (l i)) :
+theorem formalLogOnePlusProductArgument_leftCoord_sum_eq_choiceCounts :
     (∑ i ∈ Finset.range q, l i (0 : Fin 2)) =
       formalLogOnePlusProductArgumentLeftChoiceCount q l +
         formalLogOnePlusProductArgumentMixedChoiceCount q l := by
@@ -162,17 +138,15 @@ theorem formalLogOnePlusProductArgument_leftCoord_sum_eq_choiceCounts
     formalLogOnePlusProductArgumentMixedChoiceCount, ← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
   intro i hi
-  exact formalLogOnePlusProductArgumentBasicFactor_left_coord (hbasic i hi)
+  grind [formalLogOnePlusProductArgumentBasicFactor_left_coord]
 
+include hbasic in
 /--
 Establishes the identity `(∑ i ∈ Finset.range q, l i (1 : Fin 2)) =
 formalLogOnePlusProductArgumentRightChoiceCount q l +
 formalLogOnePlusProductArgumentMixedChoiceCount q l`.
 -/
-theorem formalLogOnePlusProductArgument_rightCoord_sum_eq_choiceCounts
-    {q : ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hbasic : ∀ i ∈ Finset.range q,
-      formalLogOnePlusProductArgumentBasicFactor (l i)) :
+theorem formalLogOnePlusProductArgument_rightCoord_sum_eq_choiceCounts :
     (∑ i ∈ Finset.range q, l i (1 : Fin 2)) =
       formalLogOnePlusProductArgumentRightChoiceCount q l +
         formalLogOnePlusProductArgumentMixedChoiceCount q l := by
@@ -180,17 +154,15 @@ theorem formalLogOnePlusProductArgument_rightCoord_sum_eq_choiceCounts
     formalLogOnePlusProductArgumentMixedChoiceCount, ← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
   intro i hi
-  exact formalLogOnePlusProductArgumentBasicFactor_right_coord (hbasic i hi)
+  grind [formalLogOnePlusProductArgumentBasicFactor_right_coord]
 
+include hbasic in
 /--
 Establishes the identity `formalLogOnePlusProductArgumentLeftChoiceCount q l +
 formalLogOnePlusProductArgumentRightChoiceCount q l +
 formalLogOnePlusProductArgumentMixedChoiceCount q l = q`.
 -/
-theorem formalLogOnePlusProductArgument_totalChoiceCount_eq
-    {q : ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hbasic : ∀ i ∈ Finset.range q,
-      formalLogOnePlusProductArgumentBasicFactor (l i)) :
+theorem formalLogOnePlusProductArgument_totalChoiceCount_eq :
     formalLogOnePlusProductArgumentLeftChoiceCount q l +
         formalLogOnePlusProductArgumentRightChoiceCount q l +
       formalLogOnePlusProductArgumentMixedChoiceCount q l =
@@ -208,46 +180,42 @@ theorem formalLogOnePlusProductArgument_totalChoiceCount_eq
                 Finsupp.single (1 : Fin 2) 1
           then 1 else 0))) =
         (∑ i ∈ Finset.range q, (1 : ℕ)) := by
-      apply Finset.sum_congr rfl
-      intro i hi
-      exact formalLogOnePlusProductArgumentBasicFactor_total_indicator
-        (hbasic i hi)
+      grind [Finset.sum_congr, formalLogOnePlusProductArgumentBasicFactor_total_indicator]
     _ = q := by simp
 
+end
+
+variable {q : ℕ} {e : Fin 2 →₀ ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
+    (hl : l ∈ Finset.finsuppAntidiag (Finset.range q) e)
+    (hbasic : ∀ i ∈ Finset.range q, formalLogOnePlusProductArgumentBasicFactor (l i))
+
+include hl hbasic in
 /--
 Establishes the identity `formalLogOnePlusProductArgumentLeftChoiceCount q l +
 formalLogOnePlusProductArgumentMixedChoiceCount q l = e (0 : Fin 2)`.
 -/
-theorem formalLogOnePlusProductArgument_choiceCounts_left_add_mixed_eq
-    {q : ℕ} {e : Fin 2 →₀ ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hl : l ∈ Finset.finsuppAntidiag (Finset.range q) e)
-    (hbasic : ∀ i ∈ Finset.range q,
-      formalLogOnePlusProductArgumentBasicFactor (l i)) :
+theorem formalLogOnePlusProductArgument_choiceCounts_left_add_mixed_eq :
     formalLogOnePlusProductArgumentLeftChoiceCount q l +
       formalLogOnePlusProductArgumentMixedChoiceCount q l =
         e (0 : Fin 2) := by
   rw [← formalLogOnePlusProductArgument_leftCoord_sum_eq_choiceCounts hbasic]
-  have hsum := (Finset.mem_finsuppAntidiag.mp hl).1
-  simpa [Finsupp.finsetSum_apply] using
-    congrArg (fun m : Fin 2 →₀ ℕ => m (0 : Fin 2)) hsum
+  simpa using
+    congrArg (fun m : Fin 2 →₀ ℕ => m (0 : Fin 2)) ((Finset.mem_finsuppAntidiag.mp hl).1)
 
+include hl hbasic in
 /--
 Establishes the identity `formalLogOnePlusProductArgumentRightChoiceCount q l +
 formalLogOnePlusProductArgumentMixedChoiceCount q l = e (1 : Fin 2)`.
 -/
-theorem formalLogOnePlusProductArgument_choiceCounts_right_add_mixed_eq
-    {q : ℕ} {e : Fin 2 →₀ ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hl : l ∈ Finset.finsuppAntidiag (Finset.range q) e)
-    (hbasic : ∀ i ∈ Finset.range q,
-      formalLogOnePlusProductArgumentBasicFactor (l i)) :
+theorem formalLogOnePlusProductArgument_choiceCounts_right_add_mixed_eq :
     formalLogOnePlusProductArgumentRightChoiceCount q l +
       formalLogOnePlusProductArgumentMixedChoiceCount q l =
         e (1 : Fin 2) := by
   rw [← formalLogOnePlusProductArgument_rightCoord_sum_eq_choiceCounts hbasic]
-  have hsum := (Finset.mem_finsuppAntidiag.mp hl).1
-  simpa [Finsupp.finsetSum_apply] using
-    congrArg (fun m : Fin 2 →₀ ℕ => m (1 : Fin 2)) hsum
+  simpa using
+    congrArg (fun m : Fin 2 →₀ ℕ => m (1 : Fin 2)) ((Finset.mem_finsuppAntidiag.mp hl).1)
 
+include hl hbasic in
 /--
 Establishes the identity `formalLogOnePlusProductArgumentLeftChoiceCount q l +
 formalLogOnePlusProductArgumentMixedChoiceCount q l = e (0 : Fin 2) ∧
@@ -257,11 +225,7 @@ formalLogOnePlusProductArgumentLeftChoiceCount q l +
 formalLogOnePlusProductArgumentRightChoiceCount q l +
 formalLogOnePlusProductArgumentMixedChoiceCount q l = q`.
 -/
-theorem formalLogOnePlusProductArgument_choiceCounts_system
-    {q : ℕ} {e : Fin 2 →₀ ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hl : l ∈ Finset.finsuppAntidiag (Finset.range q) e)
-    (hbasic : ∀ i ∈ Finset.range q,
-      formalLogOnePlusProductArgumentBasicFactor (l i)) :
+theorem formalLogOnePlusProductArgument_choiceCounts_system :
     formalLogOnePlusProductArgumentLeftChoiceCount q l +
           formalLogOnePlusProductArgumentMixedChoiceCount q l =
         e (0 : Fin 2) ∧
@@ -271,14 +235,11 @@ theorem formalLogOnePlusProductArgument_choiceCounts_system
       formalLogOnePlusProductArgumentLeftChoiceCount q l +
             formalLogOnePlusProductArgumentRightChoiceCount q l +
           formalLogOnePlusProductArgumentMixedChoiceCount q l =
-        q := by
-  exact
-    ⟨formalLogOnePlusProductArgument_choiceCounts_left_add_mixed_eq
+        q := ⟨formalLogOnePlusProductArgument_choiceCounts_left_add_mixed_eq
         hl hbasic,
       formalLogOnePlusProductArgument_choiceCounts_right_add_mixed_eq
         hl hbasic,
       formalLogOnePlusProductArgument_totalChoiceCount_eq hbasic⟩
-
 
 end MultiplicativeIntegerValuation
 end LocalFieldTheory.DiscreteValuationField

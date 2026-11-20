@@ -22,7 +22,7 @@ theorem hasProd_tprod_finite_fibers
     intro p
     letI : Fintype {q : Q // c q = p} := Fintype.ofFinite _
     simpa using hasProd_fintype (fun q : {q : Q // c q = p} => A q.val)
-  have hsigma : HasProd (fun x : Σ p : P, {q : Q // c q = p} => A x.2.val) z :=
+  have hsigma :=
     ((Equiv.sigmaFiberEquiv c).hasProd_iff).mpr hA
   exact HasProd.sigma hsigma hfib
 

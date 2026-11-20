@@ -22,52 +22,47 @@ private lemma eq_one (x : K) : KPCubicHaar.abs K x = 1 ↔ valuation K x = 1 := 
   · intro h
     have hn : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K x) ≠ 0 := by simpa using hx
     have he := WithZero.exp_log hn
-    rw [h, WithZero.exp_zero] at he
+    simp [h] at he
     exact (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K).injective (he.symm.trans (map_one _).symm)
   · intro h; simp [h]
 local instance : UniformSpace K := IsTopologicalAddGroup.rightUniformSpace K
 local instance : IsUniformAddGroup K := isUniformAddGroup_of_addCommGroup (G := K)
 private lemma measurable_ball : MeasurableSet {x : K | valuation K x < 1} := by
-  have h := (valuation K).isOpen_ball 1
-  convert h.measurableSet using 1
+  convert ((valuation K).isOpen_ball 1).measurableSet using 1
   ext x
-  exact (valuation K).restrict_lt_one_iff.symm
+  simp
 private lemma ball_ideal : {x : K | valuation K x < 1} =
     (𝒪[K]).subtype '' (IsLocalRing.maximalIdeal (𝒪[K]) : Set (𝒪[K])) := by
   ext x
   constructor
   · intro hx
     have hx' : valuation K x < 1 := hx
-    let y : 𝒪[K] := ⟨x, hx'.le⟩
-    refine ⟨y, ?_, rfl⟩
-    change ¬ IsUnit y
-    exact (Valuation.Integer.not_isUnit_iff_valuation_lt_one).mpr hx
+    exact Exists.intro ⟨x, LT.lt.le hx'⟩ ⟨Valuation.Integer.not_isUnit_iff_valuation_lt_one.mpr hx, rfl⟩
   · rintro ⟨y, hy, rfl⟩
     exact (Valuation.Integer.not_isUnit_iff_valuation_lt_one).mp hy
 local instance : BorelSpace Kˣ := ⟨by
-    change MeasurableSpace.comap Units.val ‹MeasurableSpace K› = borel Kˣ
     calc
-      MeasurableSpace.comap Units.val ‹MeasurableSpace K› =
+      _ =
           MeasurableSpace.comap Units.val (borel K) :=
         congrArg (MeasurableSpace.comap Units.val)
-          (BorelSpace.measurable_eq (α := K))
+          (BorelSpace.measurable_eq)
       _ = borel Kˣ := by
-        rw [(Units.isEmbedding_val₀ (G₀ := K)).isInducing.eq_induced, borel_comap]⟩
+        rw [(Units.isEmbedding_val₀).isInducing.eq_induced, borel_comap]⟩
 private lemma embedding : MeasurableEmbedding (Units.val : Kˣ → K) := by
-  apply (Units.isEmbedding_val₀ (G₀ := K)).measurableEmbedding
+  apply (Units.isEmbedding_val₀).measurableEmbedding
   have he : Set.range (Units.val : Kˣ → K) = {0}ᶜ := by
     ext x
     simp only [Set.mem_range, Set.mem_compl_iff, Set.mem_singleton_iff]
     exact ⟨by rintro ⟨u, rfl⟩; exact u.ne_zero, fun h => ⟨Units.mk0 x h, rfl⟩⟩
-  rw [he]
-  exact (MeasurableSet.singleton 0).compl
+  simp [he]
+
+alias UnramifiedBetaResidueRegion.embedding := embedding
 private lemma integrand_one (b u : ℂˣ) (y : Kˣ) (hy : y ∈ residue K) :
     rawIntegrand K b u y = 1 := by
-  have hv : valuation K (y : K) = 1 := (eq_one K _).mp hy.1
-  have hw : valuation K (1 - (y : K)) = 1 := (eq_one K _).mp hy.2
+  have hw := (eq_one K _).mp hy.2
   have hn : 1 - (y : K) ≠ 0 := by intro h; simp [h] at hw
   have he : KPCubicExpansion.valuationExponent K y = 0 := by
-    simp [KPCubicExpansion.valuationExponent, hv]
+    simp [KPCubicExpansion.valuationExponent, ((eq_one K _).mp hy.1)]
   have hf : KPCubicExpansion.valuationExponent K (Units.mk0 (1 - (y : K)) hn) = 0 := by
     simp [KPCubicExpansion.valuationExponent, hw]
   simp [rawIntegrand, hn, KPRankOneCubicProjection.eta, he, hf, hy.2]
@@ -75,21 +70,19 @@ private lemma integrand_one (b u : ℂˣ) (y : Kˣ) (hy : y ∈ residue K) :
 private lemma R_diff : R K = (𝒪[K] : Set K) \
     ({x : K | valuation K x < 1} ∪ {x : K | valuation K (1-x) < 1}) := by
   ext x
-  change (valuation K x = 1 ∧ valuation K (1-x) = 1) ↔
-    (valuation K x ≤ 1 ∧ ¬ (valuation K x < 1 ∨ valuation K (1-x) < 1))
-  have hv : valuation K (1-x) ≤ max 1 (valuation K x) := by simpa using (valuation K).map_sub 1 x
+  let valuation₀ := valuation K (1-x)
+  change (valuation K x = 1 ∧ valuation₀ = 1) ↔
+    (valuation K x ≤ 1 ∧ ¬ (valuation K x < 1 ∨ valuation₀ < 1))
+  have hv : valuation₀ ≤ max 1 (valuation K x) := by simpa using (valuation K).map_sub 1 x
   constructor
   · rintro ⟨h1,h2⟩; simp [h1,h2]
-  · rintro ⟨h1,h2⟩
-    have hn := not_or.mp h2
-    have h3 : valuation K (1-x) ≤ 1 := by simpa [max_eq_left h1] using hv
-    exact ⟨le_antisymm h1 (not_lt.mp hn.1), le_antisymm h3 (not_lt.mp hn.2)⟩
+  · grind
 private lemma R_measurable : MeasurableSet (R K) := by
   rw [R_diff]
   exact (Valued.isClosed_integer K).measurableSet.diff
     ((measurable_ball K).union ((measurable_ball K).preimage (by fun_prop)))
 private lemma residue_measurable : MeasurableSet (residue K) := by
-  have he : residue K = (Units.val : Kˣ → K) ⁻¹' R K := by
+  have he : residue K = Units.val ⁻¹' R K := by
     ext y; exact and_congr (eq_one K _) (eq_one K _)
   rw [he]
   exact (R_measurable K).preimage (embedding K).measurable
@@ -98,8 +91,8 @@ private lemma residue_image : (Units.val : Kˣ → K) '' residue K = R K := by
   constructor
   · rintro ⟨y,hy,rfl⟩; exact ⟨(eq_one K _).mp hy.1, (eq_one K _).mp hy.2⟩
   · intro hx
-    have hn : x ≠ 0 := by intro h; have := hx.1; simp [h] at this
-    exact ⟨Units.mk0 x hn, ⟨(eq_one K _).mpr hx.1,(eq_one K _).mpr hx.2⟩,rfl⟩
+    refine ⟨Units.mk0 x ?_, ⟨(eq_one K _).mpr hx.1,(eq_one K _).mpr hx.2⟩,rfl⟩
+    intro h; have := hx.1; simp [h] at this
 private lemma residue_mass (dx : Measure K) :
     KPCubicHaar.multiplicativeHaar K dx (residue K) = dx (R K) := by
   rw [KPCubicHaar.multiplicativeHaar, (embedding K).comap_apply, residue_image,
@@ -108,8 +101,11 @@ private lemma residue_mass (dx : Measure K) :
     _ = ∫⁻ x in R K, (1 : ℝ≥0∞) ∂dx := setLIntegral_congr_fun (R_measurable K) (by
       intro x hx; simp [(eq_one K x).mpr hx.1])
     _ = _ := by simp
-private lemma R_volume (dx : Measure K) [dx.IsAddHaarMeasure]
-    (m : ℝ) (hm : 0 < m) (hvol : dx (𝒪[K] : Set K) = ENNReal.ofReal m) :
+variable (dx : Measure K) [dx.IsAddHaarMeasure] (m : ℝ) (hm : 0 < m)
+    (hvol : dx (𝒪[K] : Set K) = ENNReal.ofReal m)
+
+include hm hvol in
+private lemma R_volume :
     dx.real (R K) = m * (1 - 2 * (KPCubicUnitIndices.residueCard K : ℝ)⁻¹) := by
   let B : Set K := {x | valuation K x < 1}
   let C : Set K := {x | valuation K (1-x) < 1}
@@ -160,9 +156,8 @@ private lemma R_volume (dx : Measure K) [dx.IsAddHaarMeasure]
     hU, hCmass, hBmass, measureReal_def, hvol, ENNReal.toReal_ofReal hm.le]
   ring
 
-theorem residue_region (dx : Measure K) [dx.IsAddHaarMeasure]
-    (m : ℝ) (hm : 0 < m)
-    (hvol : dx (𝒪[K] : Set K) = ENNReal.ofReal m)
+include hm hvol in
+theorem residue_region
     (b u : ℂˣ) :
     IntegrableOn (rawIntegrand K b u) (residue K)
         (KPCubicHaar.multiplicativeHaar K dx) ∧
@@ -172,9 +167,9 @@ theorem residue_region (dx : Measure K) [dx.IsAddHaarMeasure]
   have hfinite : KPCubicHaar.multiplicativeHaar K dx (residue K) ≠ ⊤ := by
     rw [residue_mass]
     have hR : R K ⊆ (𝒪[K] : Set K) := fun x hx => hx.1.le
-    exact ne_top_of_le_ne_top (by rw [hvol]; exact ENNReal.ofReal_ne_top) (measure_mono hR)
+    exact ne_top_of_le_ne_top (by rw [hvol]; simp) (measure_mono hR)
   have he : Set.EqOn (rawIntegrand K b u) (fun _ => (1 : ℂ)) (residue K) :=
-    fun y hy => integrand_one K b u y hy
+    (integrand_one K b u)
   refine ⟨(integrableOn_const hfinite (C := (1 : ℂ))).congr_fun he.symm (residue_measurable K), ?_⟩
   rw [setIntegral_congr_fun (residue_measurable K) he, integral_const]
   simp only [Measure.real, Measure.restrict_apply_univ, residue_mass,

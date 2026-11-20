@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Theta.Whittaker.Borel.TraceFrequencyReduction
 
 public import DedekindZetaZeroFree.Theta.Whittaker.Borel.RootFibersAndHaar
 public import DedekindZetaZeroFree.Theta.Periods.PartialPeriodSourcesAndRootCoinvariants
@@ -14,20 +15,7 @@ set_option maxHeartbeats 1800000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem rational_root_invariant
-    (θ : G F ζ hζ → ℂ)
-    (hθ : ∀ γ g, θ (KPRationalAdelicSplitting.rationalPGLHom F ζ hζ γ * g) = θ g)
-    (t : F) (g : G F ζ hζ) :
-    θ (N F ζ hζ (algebraMap F (Adeles F) t) * g) = θ g := by
-  have he : N F ζ hζ (algebraMap F (Adeles F) t) =
-      KPRationalAdelicSplitting.rationalPGLHom F ζ hζ
-        (KPRationalAdelicSplitting.rationalPGLQuotient F (KubotaRankTwo.n F t)) := by
-    change KPRationalAdelicSplitting.pglN F ζ hζ _ = _
-    rw [KPRationalAdelicSplitting.rationalPGLHom_mk]
-    unfold KPRationalAdelicSplitting.pglN
-    rw [KPRationalAdelicSplitting.N_rational]
-  rw [he]
-  exact hθ _ g
+private alias rational_root_invariant := DedekindZetaZeroFree.KPWildBorelFrequencyReduction.TraceFrequencyReduction.rational_root_invariant
 
 private theorem fiber_mk
     (θ : G F ζ hζ → ℂ)
@@ -35,8 +23,7 @@ private theorem fiber_mk
     (b : borel F ζ hζ) (z : Adeles F) :
     KPWildRawSourceConstruction.sourceFiber F ζ hζ b θ (QuotientAddGroup.mk z) =
       θ (N F ζ hζ z * b.val) := by
-  let R := AdeleRing.principalSubgroup (𝓞 F) F
-  obtain ⟨r, hr⟩ := QuotientAddGroup.mk_out_eq_add R z
+  obtain ⟨r, hr⟩ := QuotientAddGroup.mk_out_eq_add (AdeleRing.principalSubgroup (𝓞 F) F) z
   obtain ⟨s, hs⟩ := r.property
   change θ (N F ζ hζ (Quotient.out (QuotientAddGroup.mk z)) * b.val) = _
   rw [hr, ← hs, add_comm, N_add, mul_assoc, rational_root_invariant F ζ hζ θ hθ]
@@ -45,7 +32,6 @@ private theorem borel_root_commutes (b : borel F ζ hζ) (y : Adeles F) :
     ∃ z : Adeles F, b.val * N F ζ hζ y = N F ζ hζ z * b.val := by
   obtain ⟨t, a, hb⟩ := KPGlobalTorusBorelTwistCompatibility.actual_borel_factorization F ζ hζ b
   refine ⟨(p F ζ hζ t : Adeles F) * y, ?_⟩
-  have hconj := ActualBorelRetraction.torus_conjugates_root F ζ hζ t y
   have hn : N F ζ hζ a * N F ζ hζ y = N F ζ hζ y * N F ζ hζ a := by
     rw [← N_add, ← N_add, add_comm]
   rw [hb]
@@ -53,7 +39,7 @@ private theorem borel_root_commutes (b : borel F ζ hζ) (y : Adeles F) :
     (t.val * N F ζ hζ a) * N F ζ hζ y = t.val * N F ζ hζ y * N F ζ hζ a := by
       rw [mul_assoc, hn, ← mul_assoc]
     _ = N F ζ hζ ((p F ζ hζ t : Adeles F) * y) * (t.val * N F ζ hζ a) := by
-      rw [← hconj]
+      rw [← (ActualBorelRetraction.torus_conjugates_root F ζ hζ t y)]
       group
 
 theorem integral_right_root_eq

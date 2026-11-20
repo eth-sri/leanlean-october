@@ -13,14 +13,14 @@ namespace DedekindZetaZeroFree.FourierContinuation.CurrentOutputExtension
 open MomentSources KPGlobalTorusFiniteStages KPGlobalResidualConstruction KPCplxPrincipalSeriesCharts ComplexLines
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 
 variable (s : RestrictedTensorSimple.Level (LiteralSource.bad R.A P C))
-variable (x : ∀j : s.val,LiteralSource.Plus R.A P C j.val)
-variable (w : InfinitePlace F) (hw : Sum.inl w∈s.val)
+    (x : ∀j : s.val,LiteralSource.Plus R.A P C j.val)
+    (w : InfinitePlace F) (hw : Sum.inl w∈s.val)
 
 open KPContActualSphericalRightFieldIdentification KPMsClearedTruncationL2.NativeWordBridge
 open KPSmoothActualFlowData
@@ -64,18 +64,19 @@ theorem canonicalOutput_projective_action (a : KPCplxCharacterHaar.ComplexPGL2)
     (g : MomentSources.Group R) (v : PrincipalSeries negativeParameter) :
     canonicalOutput R N P C  s x w hw (g*projectiveSlot R w a) v=
       canonicalOutput R N P C  s x w hw g (KPCplxPrincipalSeriesCharts.pi negativeParameter a v) := by
+  let canonicalOutput₀ := canonicalOutput R N P C s x w hw
   have H : ∀a : KPCplxCharacterHaar.ComplexPGL2, ∀g v,
-      canonicalOutput R N P C  s x w hw (g*projectiveSlot R w a) v=
-        canonicalOutput R N P C  s x w hw g (KPCplxPrincipalSeriesCharts.pi negativeParameter a v) := by
+      canonicalOutput₀ (g*projectiveSlot R w a) v=
+        canonicalOutput₀ g (KPCplxPrincipalSeriesCharts.pi negativeParameter a v) := by
     intro a
     apply projective_transvection_induction (fun a=>∀g v,
-      canonicalOutput R N P C  s x w hw (g*projectiveSlot R w a) v=
-        canonicalOutput R N P C  s x w hw g (KPCplxPrincipalSeriesCharts.pi negativeParameter a v))
+      canonicalOutput₀ (g*projectiveSlot R w a) v=
+        canonicalOutput₀ g (KPCplxPrincipalSeriesCharts.pi negativeParameter a v))
     · intro i j hij z g v
-      change canonicalOutput R N P C  s x w hw
+      change canonicalOutput₀
         (g*projectiveSlot R w (Matrix.ProjGenLinGroup.mk (Matrix.SpecialLinearGroup.toGL (Matrix.SpecialLinearGroup.transvection hij z)))) v=_
       rw [projectiveSlot_mk]
-      change _ = canonicalOutput R N P C  s x w hw g
+      change _ = canonicalOutput₀ g
         (KPCplxPrincipalSeriesCharts.rightTranslate negativeParameter
           (Matrix.SpecialLinearGroup.toGL (Matrix.SpecialLinearGroup.transvection hij z)) v)
       fin_cases i <;> fin_cases j

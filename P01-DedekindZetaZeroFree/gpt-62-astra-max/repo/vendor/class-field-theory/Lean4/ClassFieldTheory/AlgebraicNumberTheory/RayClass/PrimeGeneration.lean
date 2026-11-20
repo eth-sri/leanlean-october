@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -63,8 +61,8 @@ theorem primeToModulusIdeals_hom_ext
     exact FractionalIdealGroup.countVector_apply (I : FractionalIdealGroup K) v
   have hI : I = c.prod (fun v e => p v ^ e) := by
     apply Subtype.ext
-    change (I : FractionalIdealGroup K) =
-      (P.subtype : P →* FractionalIdealGroup K)
+    change I =
+      P.subtype
         (c.prod (fun v e => p v ^ e))
     rw [← hfactor]
     change FractionalIdealGroup.factorization (Multiplicative.ofAdd c) =
@@ -74,7 +72,7 @@ theorem primeToModulusIdeals_hom_ext
     change c.support.prod
         (fun v => FractionalIdealGroup.prime v ^ c v) =
       c.support.prod
-        (fun v => (P.subtype : P →* FractionalIdealGroup K) (p v ^ c v))
+        (fun v => P.subtype (p v ^ c v))
     apply Finset.prod_congr rfl
     intro v hv
     have hv' : v ∉ m.finitePart.support := by

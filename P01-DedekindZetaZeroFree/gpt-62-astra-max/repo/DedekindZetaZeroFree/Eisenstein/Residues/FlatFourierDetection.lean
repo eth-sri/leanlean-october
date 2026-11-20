@@ -12,10 +12,10 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPLiteralRaw KPGlobalTorusFiniteStages ThetaExpansion TensorActionSource
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -24,7 +24,6 @@ set_option maxHeartbeats 2400000
 include P C in
 theorem exists_owned_flat_standard_fourier_ne_zero :
     ∃ b : Flat F ζ hζ (fullProductCompact R),
-      Automorphic F ζ hζ ((ownedLiteralResidueFamily (full_product_compact_iwasawa R)).cleared b 0) ∧
       MomentSources.fourier R (KPWildKernelUpperBound.quotientHaar F)
         ((ownedLiteralResidueFamily (full_product_compact_iwasawa R)).cleared b 0) 1 ≠ 0 := by
   obtain ⟨x,g,hg⟩ := exists_coreResidue_period_ne_zero R P C
@@ -43,7 +42,7 @@ theorem exists_owned_flat_standard_fourier_ne_zero :
     (asLiteralFlat (coreFlatInsertion R P C x)) hauto
     (PrincipalOfKP.standardCharacter F) (PrincipalOfKP.standardCharacter_nontrivial F)
     (KPWildKernelUpperBound.quotientHaar F) inferInstance g hg
-  refine ⟨b,hb,?_⟩
+  refine ⟨b, ?_⟩
   have hp : KPLiteralRaw.period F ζ hζ (PrincipalOfKP.standardCharacter F)
       (KPWildKernelUpperBound.quotientHaar F)
       ((ownedLiteralResidueFamily (full_product_compact_iwasawa R)).cleared b 0) =

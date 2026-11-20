@@ -15,7 +15,9 @@ namespace DedekindZetaZeroFree.KPMsResidualTailRestoration.SharpConstantTerm
 variable (F : Type) [Field F] [NumberField F]
 local instance : MulAction (KPCuspArithmetic.PGL2 F) (KPArch.Space (KPCuspLogShape.dimension F)) := KPCuspSiegel.instMulActionPGL2SpaceDimension F
 
-theorem arithmetic_dense_free (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) [Countable Γ]
+variable (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) [Countable Γ]
+
+theorem arithmetic_dense_free
     (s : Set (KPArch.Space (KPCuspLogShape.dimension F)))
     (hs : IsFundamentalDomain Γ s (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F))) :
     Dense {x : KPArch.Space (KPCuspLogShape.dimension F) | ∀ g : Γ, g • x = x → g = 1} := by
@@ -46,7 +48,7 @@ theorem arithmetic_dense_free (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) [Countab
       (Filter.Eventually.of_forall hpos)
   exact Measure.dense_of_ae (hac.ae_le (KPFiniteAdelicCuspEnds.fd_ae_free _ s hs))
 
-theorem high_overlap_stabilizes_cusp (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) [Countable Γ]
+theorem high_overlap_stabilizes_cusp
     (q : KPCuspArithmetic.Cusp F) (σ : KPCuspArithmetic.PGL2 F) (T : ℝ)
     (hd : 0 < KPCuspLogShape.dimension F)
     (s : Set (KPArch.Space (KPCuspLogShape.dimension F)))
@@ -62,10 +64,8 @@ theorem high_overlap_stabilizes_cusp (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) [
     apply isOpen_lt continuous_const
     unfold KPCuspLogShape.meanHeight
     fun_prop
-  have hpre : IsOpen ((fun x => γ • x) ⁻¹' V) :=
-    hopen.preimage (KPCuspCharts.projectiveHomeomorph F γ.val).continuous
   obtain ⟨w, hwfree, hw, hγw⟩ := (arithmetic_dense_free F Γ s hs).exists_mem_open
-    (hopen.inter hpre) ⟨z, hz, hγz⟩
+    (hopen.inter (hopen.preimage (KPCuspCharts.projectiveHomeomorph F γ.val).continuous)) ⟨z, hz, hγz⟩
   let e := KPCuspCharts.highCoordinatesHomeomorph F hd σ T
   let p := e.symm ⟨w, hw⟩
   let r := e.symm ⟨γ • w, hγw⟩
@@ -95,24 +95,21 @@ theorem high_overlap_stabilizes_cusp (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) [
     simp only [mul_smul, inv_smul_smul]
     exact congrArg (fun x => σ • x) ht
   have hδγ : δ = γ := by
-    have hfix : (δ⁻¹ * γ) • w = w := by
-      rw [mul_smul, ← hδw, inv_smul_smul]
-    exact inv_mul_eq_one.mp (hwfree _ hfix)
+    refine inv_mul_eq_one.mp (hwfree _ ?_)
+    rw [mul_smul, ← hδw, inv_smul_smul]
   rw [← hδγ]
   obtain ⟨k, hk, hkt⟩ := Subgroup.mem_map.mp t.property
   have hkt' : σ⁻¹ * k * σ = t.val := by
-    simpa only [MulEquiv.toMonoidHom_eq_coe, MonoidHom.coe_coe,
-      MulAut.conj_apply, inv_inv] using hkt
-  change (KPCuspGenuineMonodromy.cuspInclusion F Γ q σ t : KPCuspArithmetic.PGL2 F) • q = q
+    simpa using hkt
   rw [KPCuspGenuineMonodromy.cuspInclusion_formula, ← hkt']
   simpa only [mul_assoc, mul_inv_cancel, mul_one, mul_inv_cancel_left] using (MulAction.mem_stabilizer_iff.mp hk.2)
 end DedekindZetaZeroFree.KPMsResidualTailRestoration.SharpConstantTerm
 
 namespace DedekindZetaZeroFree.KPMsResidualTailRestoration.SharpConstantTerm
 variable {F : Type} [Field F] [NumberField F]
-variable {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ)}
+    {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+    {U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ)}
 set_option maxHeartbeats 1000000 in
 
 theorem atlas_high_overlap_stabilizes_cusp (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)

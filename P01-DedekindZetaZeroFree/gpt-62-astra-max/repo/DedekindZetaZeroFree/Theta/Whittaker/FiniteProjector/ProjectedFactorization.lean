@@ -11,13 +11,13 @@ open MomentSources ThetaExpansion NumberField
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2400000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {N : TraceHaarTransport R} (A : JointExteriorCoefficientSources R N)
-variable (I : R.A.Sf → Type) [∀ q, Fintype (I q)]
-variable (c : ∀ q, I q → ℂ) (t : ∀ q, I q → q.val.adicCompletion F)
-variable {Q' : AdmissibleFlatSources R} (T' : Realization R Q')
-variable (hdq : Q'.dq = A.sources.dq)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {N : TraceHaarTransport R} (A : JointExteriorCoefficientSources R N)
+    (I : R.A.Sf → Type) [∀ q, Fintype (I q)]
+    (c : ∀ q, I q → ℂ) (t : ∀ q, I q → q.val.adicCompletion F)
+    {Q' : AdmissibleFlatSources R} (T' : Realization R Q')
+    (hdq : Q'.dq = A.sources.dq)
 variable (hpin : ∀ v, T'.theta v = rootProjectorWord R I c t
   (Finset.univ : Finset R.A.Sf).toList (A.realization.theta v))
 
@@ -46,15 +46,13 @@ theorem projected_rows_recovery
     rw [hy', ← hdq]
     exact hn v
   have hny (p : s.val) : y p ≠ 0 := by
-    have he : D.ell p (y p) ≠ 0 := (Finset.prod_ne_zero_iff.mp hp) p (Finset.mem_univ p)
-    exact fun h => he (by rw [h,map_zero])
+    exact fun h => ((Finset.prod_ne_zero_iff.mp hp) p (Finset.mem_univ p)) (by rw [h,map_zero])
   let C : Finset s.val := Finset.univ.filter (fun p => ∃ q : KPFinitePlace F, p.val = Sum.inr q)
   have hC (p : s.val) (hp : p ∈ C) : ∃ q : KPFinitePlace F, p.val = Sum.inr q :=
     (Finset.mem_filter.mp hp).2
-  have hm : tensorFunction R D s y ∈ finiteTranslateSpan R T' := by
+  have hr := tensor_slots_recovery R D T' s x y C hC (fun p _ => hny p) (by
     rw [hy']
-    exact Submodule.subset_span ⟨v,1,by simp⟩
-  have hr := tensor_slots_recovery R D T' s x y C hC (fun p _ => hny p) hm
+    exact Submodule.subset_span ⟨v,1,by simp⟩)
   have he : (fun p : s.val => if p ∈ C then x p else y p) = x := by
     funext p
     obtain ⟨p,hp⟩ := p
@@ -64,9 +62,7 @@ theorem projected_rows_recovery
       rw [if_neg hpc]
       exact rootTensorWord_arch R D I c t s hS l x w hp
     | inr q =>
-      have hpc : (⟨Sum.inr q,hp⟩ : s.val) ∈ C :=
-        Finset.mem_filter.mpr ⟨Finset.mem_univ _,⟨q,rfl⟩⟩
-      rw [if_pos hpc]
+      rw [if_pos (Finset.mem_filter.mpr ⟨Finset.mem_univ _,⟨q,rfl⟩⟩)]
   rw [he,hx'] at hr
   exact hr
 

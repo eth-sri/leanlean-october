@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -71,7 +66,7 @@ theorem fullSUnitKummerExtension_ideleClassNormRange_eq_powerLocalUnit
       ideleClassPowerLocalUnitSubgroup (K := K) n S ∅ := by
   classical
   dsimp only
-  let S := sUnitKummerNormSupport (K := K) n seed
+  let S := sUnitKummerNormSupport n seed
   let E :=
     KummerTheory.fullSUnitKummerExtension
       (K := K) (Omega := Omega) n S
@@ -83,13 +78,13 @@ theorem fullSUnitKummerExtension_ideleClassNormRange_eq_powerLocalUnit
   let : IsGalois K E :=
     KummerTheory.fullSUnitKummerExtension_isGalois
       (K := K) (Omega := Omega) n S
-  let : NumberField E :=
+  let :=
     NumberField.of_module_finite K E
-  let r := totalPlaceCard (K := K) S
+  let r := totalPlaceCard S
   let eG :
       Gal(E/K) ≃*
         (Fin r → Multiplicative (ZMod (n : ℕ))) := by
-    simpa only [E, r] using
+    simpa using
       (KummerTheory.fullSUnitKummerExtensionGaloisEquivPiZMod
         (K := K) (Omega := Omega) n hnK hmu S)
   let : IsAbelianGalois K E :=
@@ -97,9 +92,7 @@ theorem fullSUnitKummerExtension_ideleClassNormRange_eq_powerLocalUnit
         apply eG.injective
         simpa only [map_mul] using
           mul_comm (eG σ) (eG τ) }
-  have harch :
-      Even (n : ℕ) ∨
-        ∀ w : InfinitePlace K, ¬ w.IsReal :=
+  have harch :=
     even_or_no_realInfinitePlace_of_primitiveRoots
       (K := K) n hmu hn
   have hAway :
@@ -109,49 +102,45 @@ theorem fullSUnitKummerExtension_ideleClassNormRange_eq_powerLocalUnit
           (K := K) (L := E) v := by
     intro v hv
     have hvS : v ∉ S := by
-      simpa only [Finset.union_empty] using hv
+      simpa using hv
     have hnv :
         v.valuation K ((n : ℕ) : K) = 1 := by
-      simpa only [S] using
+      simpa using
         valuation_natCast_eq_one_of_not_mem_sUnitKummerNormSupport
-          (K := K) n seed hvS
-    simpa only [E] using
+           n seed hvS
+    simpa using
       (KummerTheory.fullSUnitKummerExtension_chosenFinitePlaceIsUnramified_of_not_mem
-        (K := K) (Omega := Omega)
+
         n hnK hmu S v hvS hnv)
   have hPowerLeRelative :
       ideleClassPowerLocalUnitSubgroup
-          (K := K) n S ∅ ≤
+           n S ∅ ≤
         (RelativeIdeleGroup.Cohomology.ideleClassNorm K E).range := by
     apply
       ideleClassPowerLocalUnitSubgroup_le_ideleClassNorm_range
-        (K := K) (L := E) n r eG S ∅ harch
+          n r eG S ∅ harch
     · intro v hv
       simp at hv
     · exact hAway
   have hPowerLe :
       ideleClassPowerLocalUnitSubgroup
-          (K := K) n S ∅ ≤
+           n S ∅ ≤
         (_root_.ideleClassNorm K E).range := by
     rw [
       ordinaryIdeleClassNorm_range_eq_relative
-        (K := K) (L := E)]
+         ]
     exact hPowerLeRelative
   have hPowerIndex :
       (ideleClassPowerLocalUnitSubgroup
-          (K := K) n S ∅).index =
+           n S ∅).index =
         Module.finrank K E := by
     rw [Subgroup.index_eq_card]
-    simpa only [S, E] using
+    simpa using
       (card_ideleClassPowerLocalUnitQuotient_eq_finrank_fullSUnitKummerExtension
-        (K := K) (Omega := Omega) n hmu seed)
-  have hNormIndex :
-      (_root_.ideleClassNorm K E).range.index =
-        Module.finrank K E :=
-    Reciprocity.ideleClassNorm_index_eq_finrank_abelian K E
+          n hmu seed)
   apply
     (LubinTate.subgroup_eq_of_le_of_index_eq_of_ne_zero
-      hPowerLe (hPowerIndex.trans hNormIndex.symm)
+      hPowerLe (hPowerIndex.trans (Reciprocity.ideleClassNorm_index_eq_finrank_abelian K E).symm)
       (by
         rw [hPowerIndex]
         exact Nat.ne_of_gt Module.finrank_pos)).symm

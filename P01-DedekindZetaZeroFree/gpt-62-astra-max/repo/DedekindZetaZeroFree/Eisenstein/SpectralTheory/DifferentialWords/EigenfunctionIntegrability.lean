@@ -10,8 +10,8 @@ open scoped Classical NumberField
 open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualWeakEnergy
 open KPMsClearedTruncationL2
-open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualCompactSecondL2 renaming compactAction → compactAction
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalWordRegularity renaming word_mem_smoothSpace → word_mem_smoothSpace
+open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualCompactSecondL2 (compactAction)
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalWordRegularity (word_mem_smoothSpace)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
  abbrev integrableEigenfunctionWordDerivative := KPSmoothActualFlowData.wordDerivative F ζ hζ
 
@@ -35,9 +35,8 @@ theorem eigen_all_word_memLp
   induction w with
   | nil => exact hf
   | cons b w ih =>
-    let fw : smoothSpace F ζ hζ U₀ := ⟨integrableEigenfunctionWordDerivative w f.val, word_mem_smoothSpace f w⟩
     letI := hk w
-    exact eigen_first_derivative_memLp A R P D Y hY fw eig (he w) ih b
+    exact eigen_first_derivative_memLp A R P D Y hY (⟨integrableEigenfunctionWordDerivative w f.val, word_mem_smoothSpace f w⟩) eig (he w) ih b
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualWeakEnergy
 

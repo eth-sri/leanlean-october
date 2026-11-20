@@ -14,19 +14,15 @@ open scoped Matrix.Norms.Elementwise Pointwise ContDiff
 abbrev Mat := Matrix (Fin 2) (Fin 2) ℂ
 
 private lemma matrixFunction_coe (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
-    matrixFunction f (g : Mat) = f g := by
-  unfold matrixFunction
-  have hd : (g : Mat).det ≠ 0 := (Matrix.GeneralLinearGroup.det g).ne_zero
-  rw [dif_pos hd]
-  congr 1
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  rfl
+    matrixFunction f (g : Mat) = f g := by apply @DedekindZetaZeroFree.KPCplxPrincipalSeriesMatrixSmooth.matrixFunction_coe <;> assumption
 
-private lemma slice_iteratedFDeriv_eq {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    [NormedAddCommGroup F] [NormedSpace ℝ F]
-    (Φ : E × F → ℂ) (U : Set (E × F)) (hU : IsOpen U) (hΦ : ContDiffOn ℝ ∞ Φ U)
-    (n : ℕ) (p : E × F) (hp : p ∈ U) :
+section
+
+variable {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F]
+    (Φ : E × F → ℂ) (U : Set (E × F)) (hU : IsOpen U) (hΦ : ContDiffOn ℝ ∞ Φ U) (n : ℕ)
+
+include hU hΦ in
+private lemma slice_iteratedFDeriv_eq (p : E × F) (hp : p ∈ U) :
     iteratedFDeriv ℝ n (fun z => Φ (z, p.2)) p.1 =
       (iteratedFDeriv ℝ n Φ p).compContinuousLinearMap
         (fun _ => ContinuousLinearMap.inl ℝ E F) := by
@@ -66,7 +62,7 @@ private lemma slice_iteratedFDeriv_eq {E F : Type*} [NormedAddCommGroup E] [Norm
       iteratedFDeriv ℝ n (fun z => Φ (z, p.2)) p.1 := by
     rw [← hcomp]
     exact (iteratedFDerivWithin_of_isOpen n ht)
-      (by simp only [t, Set.mem_preimage]; simpa using hx)
+      (by simp only [t, Set.mem_preimage]; exact hx)
   have hright : iteratedFDerivWithin ℝ n (fun q : E × F => Φ (q + c)) s
       ((ContinuousLinearMap.inl ℝ E F) p.1) = iteratedFDeriv ℝ n Φ p := by
     rw [iteratedFDerivWithin_comp_add_right]
@@ -77,19 +73,14 @@ private lemma slice_iteratedFDeriv_eq {E F : Type*} [NormedAddCommGroup E] [Norm
     exact (iteratedFDerivWithin_of_isOpen n hU) hp
   rw [← hleft, hkey, hright]
 
-private lemma continuousOn_slice_iteratedFDeriv {E F : Type*} [NormedAddCommGroup E]
-    [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F]
-    (Φ : E × F → ℂ) (U : Set (E × F)) (hU : IsOpen U) (hΦ : ContDiffOn ℝ ∞ Φ U) (n : ℕ) :
+include hU hΦ in
+private lemma continuousOn_slice_iteratedFDeriv :
     ContinuousOn (fun p : E × F => iteratedFDeriv ℝ n (fun z => Φ (z, p.2)) p.1) U := by
-  have hcont : ContinuousOn (fun p : E × F => iteratedFDeriv ℝ n Φ p) U :=
-    (hΦ.continuousOn_iteratedFDerivWithin (by simp) hU.uniqueDiffOn).congr
-      (fun p hp => (iteratedFDerivWithin_of_isOpen n hU hp).symm)
-  have hcont2 : ContinuousOn (fun p : E × F =>
-      (iteratedFDeriv ℝ n Φ p).compContinuousLinearMap
-        (fun _ => ContinuousLinearMap.inl ℝ E F)) U :=
-    (ContinuousMultilinearMap.continuous_precomp
-      (fun _ : Fin n => ContinuousLinearMap.inl ℝ E F)).comp_continuousOn hcont
-  exact hcont2.congr (fun p hp => slice_iteratedFDeriv_eq Φ U hU hΦ n p hp)
+  exact ((ContinuousMultilinearMap.continuous_precomp
+    (fun _ : Fin n => ContinuousLinearMap.inl ℝ E F)).comp_continuousOn ((hΦ.continuousOn_iteratedFDerivWithin (by simp) hU.uniqueDiffOn).congr
+      (fun p hp => (iteratedFDerivWithin_of_isOpen n hU hp).symm))).congr (fun p hp => slice_iteratedFDeriv_eq Φ U hU hΦ n p hp)
+
+end
 
 theorem translated_chart_smooth_jets (s : ℝ) (f : PrincipalSeries s)
     (g : ℂ → ComplexGL2)
@@ -99,8 +90,7 @@ theorem translated_chart_smooth_jets (s : ℝ) (f : PrincipalSeries s)
       (fun z => f (g z * complexSU2Embedding k))) ∧
     (∀ n : ℕ, Continuous (fun p : ComplexSU2 × ℂ =>
       iteratedFDeriv ℝ n (fun z => f (g z * complexSU2Embedding p.1)) p.2)) := by
-  have hf := ((principalSeries_mem_iff s (f : ComplexGL2 → ℂ)).mp f.property).2
-  have hgm : ContDiff ℝ ∞ (fun p : ℂ × Mat => (g p.1 : Mat)) := hg.comp contDiff_fst
+  have hf := ((principalSeries_mem_iff s f).mp f.property).2
   have hmul : ContDiff ℝ ∞ (fun p : ℂ × Mat => (g p.1 : Mat) * p.2) := by
     apply contDiff_pi.mpr
     intro i
@@ -109,48 +99,40 @@ theorem translated_chart_smooth_jets (s : ℝ) (f : PrincipalSeries s)
     simp only [Matrix.mul_apply]
     apply ContDiff.sum
     intro l hl
-    exact (contDiff_pi.mp (contDiff_pi.mp hgm i) l).mul
+    exact (contDiff_pi.mp (contDiff_pi.mp (hg.comp contDiff_fst) i) l).mul
       (contDiff_pi.mp (contDiff_pi.mp contDiff_snd l) j)
   refine ⟨?_, ?_⟩
   · intro k
-    have hk : ContDiff ℝ ∞ (fun z : ℂ =>
-        (g z : Mat) * ((complexSU2Embedding k : ComplexGL2) : Mat)) :=
-      hmul.comp (contDiff_id.prodMk contDiff_const)
     have hmap : ∀ z : ℂ,
         ((g z : Mat) * ((complexSU2Embedding k : ComplexGL2) : Mat)).det ≠ 0 := by
       intro z
       rw [Matrix.det_mul]
       exact mul_ne_zero (Matrix.GeneralLinearGroup.det (g z)).ne_zero
         (Matrix.GeneralLinearGroup.det (complexSU2Embedding k)).ne_zero
-    have h := hf.comp_contDiff hk hmap
-    have he : (fun z : ℂ => matrixFunction (f : ComplexGL2 → ℂ)
+    have he : (fun z : ℂ => matrixFunction f
         ((g z : Mat) * ((complexSU2Embedding k : ComplexGL2) : Mat))) =
         (fun z : ℂ => f (g z * complexSU2Embedding k)) := by
       funext z
       rw [← Matrix.GeneralLinearGroup.coe_mul]
-      exact matrixFunction_coe (f : ComplexGL2 → ℂ) (g z * complexSU2Embedding k)
+      exact matrixFunction_coe f (g z * complexSU2Embedding k)
     rw [← he]
-    exact h
+    exact hf.comp_contDiff (hmul.comp (contDiff_id.prodMk contDiff_const)) hmap
   · intro n
     let Φ : ℂ × Mat → ℂ := fun p => matrixFunction (f : ComplexGL2 → ℂ) ((g p.1 : Mat) * p.2)
     let U : Set (ℂ × Mat) := {p | p.2.det ≠ 0}
-    have hU : IsOpen U := isOpen_ne.preimage (by
-      simp_rw [Matrix.det_fin_two]; fun_prop)
     have hΦ : ContDiffOn ℝ ∞ Φ U := by
       refine hf.comp hmul.contDiffOn ?_
       intro p hp
       change ((g p.1 : Mat) * p.2).det ≠ 0
       rw [Matrix.det_mul]
       exact mul_ne_zero (Matrix.GeneralLinearGroup.det (g p.1)).ne_zero hp
-    have hcont := continuousOn_slice_iteratedFDeriv Φ U hU hΦ n
-    have hψ : Continuous (fun p : ComplexSU2 × ℂ => (p.2, (p.1 : Mat))) :=
-      continuous_snd.prodMk (continuous_subtype_val.comp continuous_fst)
     have hmaps : ∀ p : ComplexSU2 × ℂ, (p.2, (p.1 : Mat)) ∈ U := by
       intro p
       simp only [U, Set.mem_setOf_eq]
       rw [(Matrix.mem_specialUnitaryGroup_iff.mp p.1.property).2]
       exact one_ne_zero
-    have hcont2 := hcont.comp_continuous hψ hmaps
+    have hcont2 := (continuousOn_slice_iteratedFDeriv Φ U (isOpen_ne.preimage (by
+      simp_rw [Matrix.det_fin_two]; fun_prop)) hΦ n).comp_continuous (continuous_snd.prodMk (continuous_subtype_val.comp continuous_fst)) hmaps
     have he : (fun p : ComplexSU2 × ℂ =>
         iteratedFDeriv ℝ n (fun z => Φ (z, (p.1 : Mat))) p.2) =
         (fun p : ComplexSU2 × ℂ =>
@@ -159,10 +141,7 @@ theorem translated_chart_smooth_jets (s : ℝ) (f : PrincipalSeries s)
       congr 1
       funext z
       simp only [Φ]
-      change matrixFunction (f : ComplexGL2 → ℂ)
-        ((g z * complexSU2Embedding p.1 : ComplexGL2) : Mat) =
-        f (g z * complexSU2Embedding p.1)
-      exact matrixFunction_coe (f : ComplexGL2 → ℂ) (g z * complexSU2Embedding p.1)
+      exact matrixFunction_coe f (g z * complexSU2Embedding p.1)
     rw [← he]
     exact hcont2
 
@@ -202,16 +181,11 @@ theorem compact_weighted_integral_jet_bound
     have h := iteratedFDeriv_const_smul_apply' (𝕜 := ℝ) (i := m)
       (a := a q) (f := fun v => F v q) (x := u) ((hsmooth q).contDiffAt.of_le (by simp))
     simpa only [smul_eq_mul] using h
-  have hsmooth' : ∀ q : Q, ContDiff ℝ (⊤ : ℕ∞) (fun u => a q * F u q) :=
-    fun q => contDiff_const.mul (hsmooth q)
-
   have hmeas : ∀ m : ℕ, ∀ u : ℂ,
       AEStronglyMeasurable (fun q => iteratedFDeriv ℝ m (fun v => a q * F v q) u) μ := by
     intro m u
     apply Continuous.aestronglyMeasurable_of_compactSpace
-    have hcont : Continuous (fun q => iteratedFDeriv ℝ m (fun v => F v q) u) :=
-      (hjets m).comp (continuous_id.prodMk continuous_const)
-    convert (ha.smul hcont) using 1
+    convert (ha.smul ((hjets m).comp (continuous_id.prodMk continuous_const))) using 1
     funext q
     exact hsmul m q u
 
@@ -225,23 +199,23 @@ theorem compact_weighted_integral_jet_bound
       integrable_const _, ?_⟩
     filter_upwards with q v hv
     rw [hsmul m q v, norm_smul]
-    calc ‖a q‖ * ‖iteratedFDeriv ℝ m (fun v => F v q) v‖
+    calc _
         ≤ A * K' := by
           apply mul_le_mul (hAa q) _ (norm_nonneg _) hA
           exact hK' (q, v) ⟨Set.mem_univ _, Metric.ball_subset_closedBall hv⟩
       _ ≤ A * max K' 0 := mul_le_mul_of_nonneg_left (le_max_left _ _) hA
   obtain ⟨hcd, hformula⟩ :=
     KPCplxHarmonicIntertwinerSpectrum.integral_contDiff_of_locally_dominated_jets
-      μ (fun u q => a q * F u q) hsmooth' hmeas hbound
+      μ (fun u q => a q * F u q) (fun q => contDiff_const.mul (hsmooth q)) hmeas hbound
   refine ⟨hcd, ?_⟩
   intro z hz
   rw [hformula n z]
-  calc ‖∫ q, iteratedFDeriv ℝ n (fun v => a q * F v q) z ∂μ‖
+  calc _
       ≤ (max K 0) * A * μ.real Set.univ := by
         apply norm_integral_le_of_norm_le_const
         filter_upwards with q
         rw [hsmul n q z, norm_smul]
-        calc ‖a q‖ * ‖iteratedFDeriv ℝ n (fun v => F v q) z‖
+        calc _
             ≤ A * K := by
               apply mul_le_mul (hAa q) _ (norm_nonneg _) hA
               exact hK (q, z) ⟨Set.mem_univ _, hz⟩
@@ -262,8 +236,11 @@ open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts MeasureTheory
 open ChartDerivativeBounds
 open scoped Matrix.Norms.Elementwise
 
-private theorem chart_average_bound (s : ℝ) (μ : Measure ComplexSU2)
-    (hprob : IsProbabilityMeasure μ) (f : PrincipalSeries s) (n : ℕ)
+variable (s : ℝ) (μ : Measure ComplexSU2) (hprob : IsProbabilityMeasure μ) (f : PrincipalSeries s)
+    (n : ℕ)
+
+include hprob in
+private theorem chart_average_bound
     (g : ℂ → ComplexGL2)
     (hg : ContDiff ℝ (⊤ : ℕ∞) (fun z => (g z : Matrix (Fin 2) (Fin 2) ℂ))) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ ℓ : ℕ, ∀ z ∈ Metric.closedBall (0 : ℂ) 1,
@@ -281,7 +258,7 @@ private theorem chart_average_bound (s : ℝ) (μ : Measure ComplexSU2)
   obtain ⟨hc, hn⟩ := su2_character_continuous_norm_bound ℓ
   obtain ⟨hI, hIb⟩ := hbound (fun k => star (su2HarmonicCharacter ℓ k))
     ((2 * ℓ + 1 : ℕ) : ℝ) hc.star (by positivity)
-    (fun k => by simpa only [norm_star] using hn k)
+    (fun k => by simpa using hn k)
   have heq : (fun w => characterAverage s μ ℓ f (g w)) =
       (((2 * ℓ + 1 : ℕ) : ℂ) • (fun w => ∫ k : ComplexSU2,
         star (su2HarmonicCharacter ℓ k) * f (g w * complexSU2Embedding k) ∂μ)) := by
@@ -296,9 +273,8 @@ private theorem chart_average_bound (s : ℝ) (μ : Measure ComplexSU2)
       mul_le_mul_of_nonneg_left (hIb z hz) (by positivity)
     _ = _ := by ring
 
-theorem characterAverage_disc_derivative_quadratic_bound
-    (s : ℝ) (μ : Measure ComplexSU2) (hprob : IsProbabilityMeasure μ)
-    (f : PrincipalSeries s) (n : ℕ) :
+include hprob in
+theorem characterAverage_disc_derivative_quadratic_bound :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ ℓ : ℕ,
       (∀ x ∈ Metric.closedBall (0 : ℂ) 1,
         ‖iteratedFDeriv ℝ n (openCoordinate (characterAverage s μ ℓ f)) x‖ ≤
@@ -309,8 +285,6 @@ theorem characterAverage_disc_derivative_quadratic_bound
   have hgo : ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ =>
       (weyl * upperUnipotent z : Matrix (Fin 2) (Fin 2) ℂ)) := by
     unfold upperUnipotent
-    change ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ =>
-      (weyl : Matrix (Fin 2) (Fin 2) ℂ) * !![1, z; 0, 1])
     apply contDiff_pi.mpr
     intro i
     apply contDiff_pi.mpr
@@ -320,7 +294,6 @@ theorem characterAverage_disc_derivative_quadratic_bound
   have hgi : ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ =>
       (lowerUnipotent z : Matrix (Fin 2) (Fin 2) ℂ)) := by
     unfold lowerUnipotent
-    change ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ => !![1, 0; z, 1])
     apply contDiff_pi.mpr
     intro i
     apply contDiff_pi.mpr
@@ -357,14 +330,15 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicExtraction.ChartRemainder
 
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts MeasureTheory
 
-theorem chartSeminorm_le_of_disc_derivative_bound (s : ℝ) (n : ℕ)
+variable (s : ℝ)
+
+theorem chartSeminorm_le_of_disc_derivative_bound (n : ℕ)
     (f : PrincipalSeries s) (B : ℝ)
     (hopen : ∀ x ∈ Metric.closedBall (0 : ℂ) 1,
       ‖iteratedFDeriv ℝ n (openCoordinate f) x‖ ≤ B)
     (hinfty : ∀ u ∈ Metric.closedBall (0 : ℂ) 1,
       ‖iteratedFDeriv ℝ n (infinityCoordinate f) u‖ ≤ B) :
     chartSeminorm s n f ≤ B := by
-  change max _ _ ≤ B
   apply max_le
   · apply csSup_le
     · exact ⟨_, ⟨0, by simp, rfl⟩⟩
@@ -375,21 +349,19 @@ theorem chartSeminorm_le_of_disc_derivative_bound (s : ℝ) (n : ℕ)
     · rintro _ ⟨u, hu, rfl⟩
       exact hinfty u hu
 
-theorem chartSeminorm_summable_of_inverseSquare_bound (s : ℝ) (n : ℕ)
+theorem chartSeminorm_summable_of_inverseSquare_bound (n : ℕ)
     (a : ℕ → PrincipalSeries s) (C : ℝ)
     (hbound : ∀ ℓ, chartSeminorm s n (a ℓ) ≤ C / (ℓ + 1 : ℝ) ^ 2) :
     Summable (fun ℓ => chartSeminorm s n (a ℓ)) := by
-  have hp : Summable (fun ℓ : ℕ => 1 / (ℓ : ℝ) ^ 2) :=
-    Real.summable_one_div_nat_pow.mpr (by norm_num)
   have hs : Summable (fun ℓ : ℕ => 1 / (ℓ + 1 : ℝ) ^ 2) := by
-    simpa only [Nat.cast_add, Nat.cast_one] using
-      (summable_nat_add_iff 1).mpr hp
+    simpa using
+      (summable_nat_add_iff 1).mpr (Real.summable_one_div_nat_pow.mpr (by norm_num))
   have hC : Summable (fun ℓ : ℕ => C / (ℓ + 1 : ℝ) ^ 2) := by
     simpa only [mul_one_div] using hs.mul_left C
   exact hC.of_nonneg_of_le
     (fun ℓ => apply_nonneg (chartSeminorm s n) (a ℓ)) hbound
 
-theorem chartSeminorm_summable_of_shiftedCasimirSquare (s : ℝ) (n : ℕ)
+theorem chartSeminorm_summable_of_shiftedCasimirSquare (n : ℕ)
     (a b : ℕ → PrincipalSeries s) (C : ℝ)
     (hb : ∀ ℓ, chartSeminorm s n (b ℓ) ≤ C * (ℓ + 1 : ℝ) ^ 2)
     (he : ∀ ℓ, b ℓ = (((1 + (ℓ : ℝ) * (ℓ + 1)) ^ 2 : ℝ) : ℂ) • a ℓ) :
@@ -418,12 +390,11 @@ theorem chartSeminorm_summable_of_shiftedCasimirSquare (s : ℝ) (n : ℕ)
   change C * t ^ 2 / q ^ 2 ≤ 4 * C / t ^ 2
   apply (div_le_div_iff₀ (sq_pos_of_pos hq) (sq_pos_of_pos ht)).mpr
   calc
-    C * t ^ 2 * t ^ 2 = C * (t ^ 2 * t ^ 2) := by ring
+    _ = C * (t ^ 2 * t ^ 2) := by ring
     _ ≤ C * (4 * q ^ 2) := mul_le_mul_of_nonneg_left hsq hC
     _ = 4 * C * q ^ 2 := by ring
 
-theorem characterAverage_chartSeminorm_summable_of_shiftedCasimirSquare
-    (s : ℝ) (μ : Measure ComplexSU2) (f w : PrincipalSeries s)
+theorem characterAverage_chartSeminorm_summable_of_shiftedCasimirSquare (μ : Measure ComplexSU2) (f w : PrincipalSeries s)
     (a b : ℕ → PrincipalSeries s)
     (ha : ∀ ℓ g, a ℓ g = characterAverage s μ ℓ f g)
     (hb : ∀ ℓ g, b ℓ g = characterAverage s μ ℓ w g)
@@ -442,7 +413,7 @@ theorem characterAverage_chartSeminorm_summable_of_shiftedCasimirSquare
   rw [hb ℓ g, ha ℓ g]
   exact htransfer ℓ g
 
-theorem characterAverage_chartSeminorm_summable (s : ℝ) (μ : Measure ComplexSU2)
+theorem characterAverage_chartSeminorm_summable (μ : Measure ComplexSU2)
     (hhaar : μ.IsHaarMeasure) (hprob : IsProbabilityMeasure μ)
     (f : PrincipalSeries s) (a : ℕ → PrincipalSeries s)
     (ha : ∀ ℓ g, a ℓ g = characterAverage s μ ℓ f g) :
@@ -469,13 +440,9 @@ theorem characterAverage_chartSeminorm_summable (s : ℝ) (μ : Measure ComplexS
         s μ hprob w n
     refine ⟨C, fun ℓ => ?_⟩
     apply chartSeminorm_le_of_disc_derivative_bound
-    · have he : openCoordinate (b ℓ) = openCoordinate (characterAverage s μ ℓ w) :=
-        congrArg openCoordinate (funext (hb ℓ))
-      rw [he]
+    · rw [(congrArg openCoordinate (funext (hb ℓ)))]
       exact (hC ℓ).1
-    · have he : infinityCoordinate (b ℓ) = infinityCoordinate (characterAverage s μ ℓ w) :=
-        congrArg infinityCoordinate (funext (hb ℓ))
-      rw [he]
+    · rw [(congrArg infinityCoordinate (funext (hb ℓ)))]
       exact (hC ℓ).2
 
 end DedekindZetaZeroFree.KPCplxHarmonicExtraction.ChartRemainder

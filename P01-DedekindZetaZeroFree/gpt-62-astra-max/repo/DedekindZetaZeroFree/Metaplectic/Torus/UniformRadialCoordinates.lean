@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Theta.Periods.WeightedQuotientIntegrability
 
 public import DedekindZetaZeroFree.Theta.Profiles.RadialSheetPhases
 public import DedekindZetaZeroFree.Theta.Whittaker.FourierPeriodRegularity
@@ -13,10 +14,10 @@ set_option synthInstance.maxHeartbeats 200000
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.SheetRescaling
 open MomentSources KPGlobalResidualConstruction KPAdelicCoverRestrictedProduct
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_localIdele → eval_localIdele
+open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting (eval_localIdele)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem localIdele_eval_arch (y : R.A.G) (w : InfinitePlace F) :
     Units.map (adeleEval F (Sum.inl w)) (localIdele R y) = y.1 w := by
@@ -117,12 +118,10 @@ theorem diagonal_uniform_radial (y : R.A.G) (t : ℝ) :
             ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
               (KPHilbert.infinite_isComplex F R.A.zeta12 R.A.primitive_zeta12 w)).symm (uniformCoordinates R t w 2)))
     rw [localIdele_eval_arch, localIdele_eval_arch]
-    have hne : (Real.exp (t / (2 * (InfinitePlace.nrComplexPlaces F : ℝ))) : ℂ) ≠ 0 :=
-      Complex.ofReal_ne_zero.mpr (Real.exp_ne_zero _)
     simp only [Prod.fst_mul, Pi.mul_apply, uniformCoordinates, ↓reduceIte,
       show (0 : Fin 3) ≠ 1 by decide, show (2 : Fin 3) ≠ 1 by decide, map_zero,
       KPStandardLocalRootLifts.N_zero, KPStandardLocalRootLifts.LowerN_zero, one_mul, mul_one,
-      dif_neg hne]
+      dif_neg (Complex.ofReal_ne_zero.mpr (Real.exp_ne_zero _))]
     rw [KPStandardLocalRootLifts.A_mul]
     simp only [KPHilbert.B3, KPHilbert.B6_infinite, map_one, one_pow, one_mul]
     congr 1
@@ -140,7 +139,6 @@ theorem diagonal_uniform_radial (y : R.A.G) (t : ℝ) :
     apply Finset.prod_congr rfl
     intro p hp
     congr 1
-    change y.2 p * 1 = y.2 p
     exact mul_one _
 
 theorem localIdele_eval_continuous (v : KPHilbert.Place F) :
@@ -161,52 +159,7 @@ theorem localIdele_eval_continuous (v : KPHilbert.Place F) :
     exact ((continuous_apply (Sum.inr q)).comp (continuous_mulSingle (Sum.inr p.val))).comp
       ((continuous_apply p).comp continuous_snd)
 
-theorem diagonal_continuous : Continuous (diagonal R) := by
-  letI : ∀ v : KPHilbert.Place F, TopologicalSpace (KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 v) :=
-    localTopology F R.A.zeta12 R.A.primitive_zeta12
-  let U : Set (KPHilbert.Place F) := {v | match v with
-    | .inl _ => False
-    | .inr q => q ∉ R.A.Sf}
-  have hU : Filter.cofinite ≤ Filter.principal U := by
-    rw [Filter.le_principal_iff]
-    change ∀ᶠ v in Filter.cofinite, v ∈ U
-    rw [Filter.eventually_cofinite, ← Set.finite_preimage_inl_and_inr]
-    exact ⟨Set.toFinite _, by simpa [U] using R.A.Sf.finite_toSet⟩
-  have hm (y : R.A.G) (v : KPHilbert.Place F) (hv : v ∈ U) :
-      KPRationalAdelicSplitting.ATuple F R.A.zeta12 R.A.primitive_zeta12 (localIdele R y) v ∈
-        compact F R.A.zeta12 R.A.primitive_zeta12 v := by
-    cases v with
-    | inl w => exact False.elim hv
-    | inr q =>
-      change KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q)
-        (Units.map (adeleEval F (Sum.inr q)) (localIdele R y)) ∈ _
-      rw [localIdele_eval_finite]
-      have he : (∏ p : R.A.Sf, Pi.mulSingle (M := fun v => (KPHilbert.Completion F v)ˣ)
-          (Sum.inr p.val) (y.2 p) (Sum.inr q)) = 1 := by
-        apply Finset.prod_eq_one
-        intro p hp
-        exact Pi.mulSingle_eq_of_ne (Sum.inr_injective.ne (by
-          intro h; exact hv (h.symm ▸ p.property))) _
-      rw [he, KPStandardLocalRootLifts.A_one]
-      exact (compact F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q)).one_mem
-  let f : R.A.G → RestrictedProduct
-      (fun v => KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 v)
-      (fun v => (compact F R.A.zeta12 R.A.primitive_zeta12 v : Set _)) (Filter.principal U) :=
-    fun y => ⟨KPRationalAdelicSplitting.ATuple F R.A.zeta12 R.A.primitive_zeta12 (localIdele R y), hm y⟩
-  have hf : Continuous f := by
-    apply RestrictedProduct.continuous_rng_of_principal.mpr
-    apply continuous_pi
-    intro v
-    have ha : Continuous (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 v) := by
-      cases v with
-      | inl w => exact KPStandardLocalRootLifts.complex_A_continuous F R.A.zeta12 R.A.primitive_zeta12 w
-      | inr q =>
-        exact KPStandardLocalRootLifts.finite_A_continuous F R.A.zeta12 R.A.primitive_zeta12 q
-          (depth F R.A.zeta12 R.A.primitive_zeta12 q)
-          (depth_admissible F R.A.zeta12 R.A.primitive_zeta12 q)
-    exact ha.comp (localIdele_eval_continuous R v)
-  exact QuotientGroup.continuous_mk.comp
-    (QuotientGroup.continuous_mk.comp ((RestrictedProduct.continuous_inclusion hU).comp hf))
+alias diagonal_continuous := DedekindZetaZeroFree.DigitMasks.diagonal_selected_continuous
 end DedekindZetaZeroFree.SheetRescaling
 
 end

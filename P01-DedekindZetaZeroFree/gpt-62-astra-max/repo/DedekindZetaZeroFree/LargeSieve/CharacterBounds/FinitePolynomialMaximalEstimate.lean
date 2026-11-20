@@ -9,25 +9,24 @@ noncomputable section
 open scoped BigOperators
 open MeasureTheory
 
-def maxSq {κ : Type*} [Fintype κ] [Nonempty κ] (P : κ → ℝ → ℂ) (t : ℝ) : ℝ :=
+section
+
+variable {κ : Type*} [Fintype κ] [Nonempty κ] (P : κ → ℝ → ℂ)
+
+def maxSq (t : ℝ) : ℝ :=
   Finset.univ.sup' Finset.univ_nonempty (fun k => ‖P k t‖ ^ 2)
 
-lemma maxSq_continuous {κ : Type*} [Fintype κ] [Nonempty κ]
-    (P : κ → ℝ → ℂ) (hP : ∀ k, Continuous (P k)) : Continuous (maxSq P) := by
+lemma maxSq_continuous (hP : ∀ k, Continuous (P k)) : Continuous (maxSq P) := by
   apply Continuous.finset_sup'_apply
   intro k _
   exact (hP k).norm.pow 2
 
-lemma le_maxSq {κ : Type*} [Fintype κ] [Nonempty κ]
-    (P : κ → ℝ → ℂ) (t : ℝ) (k : κ) : ‖P k t‖ ^ 2 ≤ maxSq P t := by
-  exact Finset.le_sup' (f := fun k => ‖P k t‖ ^ 2) (Finset.mem_univ k)
+lemma le_maxSq (t : ℝ) (k : κ) : ‖P k t‖ ^ 2 ≤ maxSq P t := Finset.le_sup' (f := fun k => ‖P k t‖ ^ 2) (Finset.mem_univ k)
 
-lemma maxSq_nonneg {κ : Type*} [Fintype κ] [Nonempty κ]
-    (P : κ → ℝ → ℂ) (t : ℝ) : 0 ≤ maxSq P t :=
+lemma maxSq_nonneg (t : ℝ) : 0 ≤ maxSq P t :=
   (sq_nonneg _).trans (le_maxSq P t (Classical.arbitrary κ))
 
-theorem maxSq_sobolev {κ : Type*} [Fintype κ] [Nonempty κ]
-    (P : κ → ℝ → ℂ) (hP : ∀ k, ContDiff ℝ 1 (P k))
+theorem maxSq_sobolev (hP : ∀ k, ContDiff ℝ 1 (P k))
     (T : ℝ) (hT : 0 ≤ T) :
     sSup (maxSq P '' Set.Icc (-T) T) ≤
       2 * ∫ t in (-T - 1)..(T + 1),
@@ -36,7 +35,7 @@ theorem maxSq_sobolev {κ : Type*} [Fintype κ] [Nonempty κ]
   let D := maxSq (fun k => deriv (P k))
   let H := fun t => M t + D t
   have hMc : Continuous M := maxSq_continuous P (fun k => (hP k).continuous)
-  have hDc : Continuous D := maxSq_continuous _
+  have hDc := maxSq_continuous _
     (fun k => (hP k).continuous_deriv (by norm_num))
   have hHc : Continuous H := hMc.add hDc
   have hHnonneg : ∀ x, 0 ≤ H x := fun x =>
@@ -64,7 +63,7 @@ theorem maxSq_sobolev {κ : Type*} [Fintype κ] [Nonempty κ]
     let I : ℝ := ∫ x in (-T - 1)..(T + 1), H x
     have hx : ∀ x ∈ Set.Icc t (t + 1), M t ≤ M x + I := by
       intro x hx
-      have hd : Differentiable ℝ (P k) := (hP k).differentiable (by norm_num)
+      have hd := (hP k).differentiable (by norm_num)
       have he := norm_sub_le_integral_of_norm_deriv_le_of_le hx.1
         ((hP k).continuous.norm.pow 2).continuousOn
         (hd.norm_sq ℂ).differentiableOn
@@ -108,14 +107,15 @@ theorem maxSq_sobolev {κ : Type*} [Fintype κ] [Nonempty κ]
   · rintro y ⟨t, ht, rfl⟩
     exact hpoint t ht
 
+end
+
 def phase (q t : ℝ) : ℂ :=
   Complex.exp (-Complex.I * (t : ℂ) * (Real.log q : ℂ))
 
 lemma phase_norm (q t : ℝ) : ‖phase q t‖ = 1 := by
   simp [phase, Complex.norm_exp]
 
-lemma phase_contDiff (q : ℝ) : ContDiff ℝ 1 (phase q) := by
-  exact Complex.contDiff_exp.comp
+lemma phase_contDiff (q : ℝ) : ContDiff ℝ 1 (phase q) := Complex.contDiff_exp.comp
     ((contDiff_const.mul Complex.ofRealCLM.contDiff).mul contDiff_const)
 
 lemma phase_hasDerivAt (q t : ℝ) :
@@ -127,8 +127,11 @@ lemma phase_hasDerivAt (q t : ℝ) :
       (Real.log q : ℂ) using 1 <;> simp only [id_eq, mul_one]
   exact hlin.cexp
 
-lemma prefix_contDiff {m : ℕ} (a b : Fin m → ℂ) (q : Fin m → ℝ)
-    (l : Fin (m+1)) :
+section
+
+variable {m : ℕ} (a b : Fin m → ℂ) (q : Fin m → ℝ) (l : Fin (m+1))
+
+lemma prefix_contDiff :
     ContDiff ℝ 1 (fun t => detector_prefixSum a (fun k => b k * phase (q k) t) l) := by
   apply ContDiff.sum
   intro k _
@@ -138,8 +141,7 @@ lemma prefix_contDiff {m : ℕ} (a b : Fin m → ℂ) (q : Fin m → ℝ)
   · simp only [if_neg h]
     exact contDiff_const
 
-lemma prefix_deriv {m : ℕ} (a b : Fin m → ℂ) (q : Fin m → ℝ)
-    (l : Fin (m+1)) (t : ℝ) :
+lemma prefix_deriv (t : ℝ) :
     deriv (fun t => detector_prefixSum a (fun k => b k * phase (q k) t) l) t =
       detector_prefixSum a
         (fun k => ((-Complex.I * (Real.log (q k) : ℂ)) * b k) * phase (q k) t) l := by
@@ -155,6 +157,8 @@ lemma prefix_deriv {m : ℕ} (a b : Fin m → ℂ) (q : Fin m → ℝ)
   · simp only [if_neg h]
     exact hasDerivAt_const t 0
 
+end
+
 theorem finite_polynomial_maximal :
     ∃ C : ℝ, 0 < C ∧ ∀ (m : ℕ) (ι : Type) [Fintype ι]
       (A : ι → Fin m → ℂ) (q : Fin m → ℝ) (K L T : ℝ),
@@ -169,12 +173,10 @@ theorem finite_polynomial_maximal :
   obtain ⟨C₁, hC₁, hprefix⟩ := detector_prefix_maximal
   refine ⟨4 * C₁, by positivity, ?_⟩
   intro m ι _ A q K L T hK hL hT hq hop b
-  let P := fun i (l : Fin (m+1)) t =>
+  let P := fun i l t =>
     detector_prefixSum (A i) (fun k => b k * phase (q k) t) l
   let H := fun i t => maxSq (P i) t + maxSq (fun l => deriv (P i l)) t
-  have hc : ∀ i, Continuous (H i) := by
-    intro i
-    exact (maxSq_continuous (P i) (fun l => (prefix_contDiff _ _ _ l).continuous)).add
+  have hc : ∀ i, Continuous (H i) := fun i => (maxSq_continuous (P i) (fun l => (prefix_contDiff _ _ _ l).continuous)).add
       (maxSq_continuous _ (fun l => (prefix_contDiff _ _ _ l).continuous_deriv (by norm_num)))
   have hheight := Finset.sum_le_sum (fun i (_ : i ∈ Finset.univ) =>
     maxSq_sobolev (P i) (fun l => prefix_contDiff _ _ _ l) T hT)
@@ -185,7 +187,6 @@ theorem finite_polynomial_maximal :
     (fun i _ => (hc i).intervalIntegrable _ _)] at hheight
   let E := ∑ k, ‖b k‖ ^ 2
   let R := C₁ * K * (1 + Real.log (m+1)) ^ 2
-  have hE : 0 ≤ E := Finset.sum_nonneg (fun _ _ => sq_nonneg _)
   have hR : 0 ≤ R := by dsimp [R]; positivity
   have hpoint : ∀ t, (∑ i, H i t) ≤ R * (1 + L ^ 2) * E := by
     intro t

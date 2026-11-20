@@ -13,8 +13,8 @@ open MomentSources KPAdelicCoverRestrictedProduct
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def finiteInjection (q : KPFinitePlace F)
     (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q)) : Group R :=
@@ -27,7 +27,6 @@ theorem finiteInjection_commute (q p : KPFinitePlace F) (hpq : p ≠ q)
     Commute (finiteInjection R q a) (finiteInjection R p b) := by
   have hc : Commute (localToRestricted F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) a)
       (localToRestricted F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) b) := by
-    change _ * _ = _ * _
     ext v
     by_cases hv : v = Sum.inr q
     · subst v

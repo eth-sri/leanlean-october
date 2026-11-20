@@ -36,7 +36,7 @@ theorem thetaDominatedAngularContinuity
     have hcontS : ∀ t ∈ Set.Icc a b,
         ContinuousOn (fun h : H => ∑' i : ι, F t h i) S := by
       intro t ht
-      refine continuousOn_tsum (u := u) (fun i => ?_) hu_sum
+      refine continuousOn_tsum (fun i => ?_) hu_sum
         (fun i h hh => hu_bound t ht h hh i)
       exact (hF i).comp ((continuous_const.prodMk continuous_id).continuousOn)
         (fun h hh => ⟨lt_of_lt_of_le ha ht.1, hh⟩)
@@ -47,7 +47,7 @@ theorem thetaDominatedAngularContinuity
         ∀ᵐ h ∂(ν.restrict D), ‖∑' i : ι, F t h i‖ ≤ ∑' i : ι, u i := by
       intro t ht
       filter_upwards [ae_restrict_mem hD] with h hh
-      have hS' : h ∈ S := hDS hh
+      have hS' := hDS hh
       have hn : Summable (fun i : ι => ‖F t h i‖) :=
         Summable.of_norm_bounded hu_sum (fun i => by simpa using hu_bound t ht h hS' i)
       calc ‖∑' i : ι, F t h i‖ ≤ ∑' i : ι, ‖F t h i‖ := norm_tsum_le_tsum_norm hn
@@ -59,7 +59,7 @@ theorem thetaDominatedAngularContinuity
     have hcont_ae : ∀ᵐ h ∂(ν.restrict D),
         ContinuousOn (fun t : ℝ => ∑' i : ι, F t h i) (Set.Icc a b) := by
       filter_upwards [ae_restrict_mem hD] with h hh
-      have hS' : h ∈ S := hDS hh
+      have hS' := hDS hh
       refine continuousOn_tsum (u := u) (fun i => ?_) hu_sum
         (fun i t ht => hu_bound t ht h hS' i)
       exact (hF i).comp ((continuous_id.prodMk continuous_const).continuousOn)
@@ -82,7 +82,7 @@ theorem thetaDominatedAngularContinuity
   · intro t ht
     obtain ⟨u, hu_sum, -, hu_bound⟩ := hmajorant t t ht le_rfl
     have hcont : ContinuousOn (fun h : H => ∑' i : ι, F t h i) S := by
-      refine continuousOn_tsum (u := u) (fun i => ?_) hu_sum
+      refine continuousOn_tsum (fun i => ?_) hu_sum
         (fun i h hh => hu_bound t ⟨le_rfl, le_rfl⟩ h hh i)
       exact (hF i).comp ((continuous_const.prodMk continuous_id).continuousOn)
         (fun h hh => ⟨ht, hh⟩)

@@ -18,16 +18,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -58,17 +48,19 @@ section NormSubgroupTopology
 
 universe u
 
+section
+
+variable (K L : Type u) [Field K] [Field L] [Algebra K L] [ValuativeRel L]
+
 /-- The norm map restricted to valuation-ring units upstairs. -/
- def integerUnitNormMap
-    (K L : Type u) [Field K] [Field L] [Algebra K L]
-    [ValuativeRel L] : 𝒪[L]ˣ →* Kˣ :=
+ def integerUnitNormMap : 𝒪[L]ˣ →* Kˣ :=
   (LocalFieldTheory.normUnits K L).comp (integerUnitsToFieldUnits L)
 
 /-- The image of valuation-ring units under the field norm. -/
- def integerUnitNormSubgroup
-    (K L : Type u) [Field K] [Field L] [Algebra K L]
-    [ValuativeRel L] : Subgroup Kˣ :=
+ def integerUnitNormSubgroup : Subgroup Kˣ :=
   MonoidHom.range (integerUnitNormMap K L)
+
+end
 
 private theorem integerUnitNormSubgroup_isCompact
     (K L : Type u) [NontriviallyNormedField K] [NormedField L]
@@ -103,35 +95,23 @@ private theorem integerUnitNormSubgroup_eq_localNormSubgroup_inf_baseUnits
     apply Units.ext
     rfl
   · rintro ⟨⟨y, hy⟩, ⟨a, ha⟩⟩
-    have hxv : v K (Additive.ofMul x) = 0 := by
-      rw [← ha]
-      exact v_integerUnitsToFieldUnits K a
     have hnorm := v_normUnits_eq_residue_finrank_mul_of_isSeparable K L y
     change v K (Additive.ofMul (LocalFieldTheory.normUnits K L y)) =
       (@Module.finrank 𝓀[K] 𝓀[L] _ _
-        (IsLocalRing.ResidueField.instModule (R := 𝒪[K]) (S := 𝒪[L])) : Int) *
+        (IsLocalRing.ResidueField.instModule) : Int) *
         v L (Additive.ofMul y) at hnorm
-    have hproduct :
-        (@Module.finrank 𝓀[K] 𝓀[L] _ _
-          (IsLocalRing.ResidueField.instModule (R := 𝒪[K]) (S := 𝒪[L])) : Int) *
-          v L (Additive.ofMul y) = 0 := by
-      rw [← hnorm, hy]
-      exact hxv
     have hfinrank :
         (@Module.finrank 𝓀[K] 𝓀[L] _ _
-          (IsLocalRing.ResidueField.instModule (R := 𝒪[K]) (S := 𝒪[L])) : Int) ≠ 0 := by
-      have hnat :
-          @Module.finrank 𝓀[K] 𝓀[L] _ _
-            (IsLocalRing.ResidueField.instModule (R := 𝒪[K]) (S := 𝒪[L])) ≠ 0 :=
-        Nat.ne_of_gt Module.finrank_pos
-      exact_mod_cast hnat
-    have hyv : v L (Additive.ofMul y) = 0 :=
-      (mul_eq_zero.mp hproduct).resolve_left hfinrank
-    have hyvaluation : valuationMap L (Additive.ofMul y) = 0 := by
-      rw [valuationMap_apply]
-      exact hyv
+          (IsLocalRing.ResidueField.instModule) : Int) ≠ 0 := by
+      exact_mod_cast (Nat.ne_of_gt Module.finrank_pos)
     obtain ⟨b, hb⟩ :=
-      (integerUnitsToFieldUnits_mem_range_iff_valuationMap_eq_zero L y).2 hyvaluation
+      (integerUnitsToFieldUnits_mem_range_iff_valuationMap_eq_zero L y).2 (by
+        rw [valuationMap_apply]
+        exact ((mul_eq_zero.mp (by
+          rw [← hnorm, hy]
+          exact (by
+            rw [← ha]
+            exact v_integerUnitsToFieldUnits K a))).resolve_left hfinrank))
     refine ⟨b, ?_⟩
     change LocalFieldTheory.normUnits K L (integerUnitsToFieldUnits L b) = x
     rw [hb, hy]
@@ -147,22 +127,15 @@ private theorem localNormSubgroup_isOpen_of_compatibleLocalField
       (ValuativeRel.valuation L)]
     [IsIntegralClosure 𝒪[L] 𝒪[K] L] :
     IsOpen (localNormSubgroup K L : Set Kˣ) := by
-  have hintersection :
-      integerUnitNormSubgroup K L =
-        localNormSubgroup K L ⊓ localBaseUnitSubgroup K :=
+  have hintersection :=
     integerUnitNormSubgroup_eq_localNormSubgroup_inf_baseUnits K L
-  have hcompact : IsCompact (integerUnitNormSubgroup K L : Set Kˣ) :=
-    integerUnitNormSubgroup_isCompact K L
-  have hclosed : IsClosed (integerUnitNormSubgroup K L : Set Kˣ) :=
-    hcompact.isClosed
-
   let : Finite (Gal(L / K)) := by
     apply Nat.finite_of_card_ne_zero
     rw [IsGalois.card_aut_eq_finrank K L]
     exact Nat.ne_of_gt Module.finrank_pos
   let : Finite (Abelianization (Gal(L / K))) :=
     Finite.of_surjective Abelianization.of QuotientGroup.mk_surjective
-  let : Finite (NormQuotient K L) :=
+  let :=
     Finite.of_equiv
       (Abelianization (Gal(L / K)))
       (abelianizationEquivNormQuotient K L).toEquiv
@@ -178,29 +151,20 @@ private theorem localNormSubgroup_isOpen_of_compatibleLocalField
       IsClosed
         ((localNormSubgroup K L).subgroupOf (localBaseUnitSubgroup K) :
           Set (localBaseUnitSubgroup K)) := by
-    have hpreimage :
-        IsClosed ((fun z : localBaseUnitSubgroup K => (z : Kˣ)) ⁻¹'
-          (integerUnitNormSubgroup K L : Set Kˣ)) :=
-      hclosed.preimage continuous_subtype_val
     rw [show
         ((localNormSubgroup K L).subgroupOf (localBaseUnitSubgroup K) :
             Set (localBaseUnitSubgroup K)) =
           (fun z : localBaseUnitSubgroup K => (z : Kˣ)) ⁻¹'
             (integerUnitNormSubgroup K L : Set Kˣ) by
       ext z
-      change (z : Kˣ) ∈ localNormSubgroup K L ↔
-        (z : Kˣ) ∈ integerUnitNormSubgroup K L
       rw [hintersection]
       constructor
       · intro hz
         exact ⟨hz, z.property⟩
       · exact fun hz => hz.1]
-    exact hpreimage
+    exact (integerUnitNormSubgroup_isCompact K L).isClosed.preimage continuous_subtype_val
 
-  have hrelativeOpen :
-      IsOpen
-        ((localNormSubgroup K L).subgroupOf (localBaseUnitSubgroup K) :
-          Set (localBaseUnitSubgroup K)) :=
+  have hrelativeOpen :=
     Subgroup.isOpen_of_isClosed_of_finiteIndex _ hrelativeClosed
   have himageOpen :
       IsOpen (Subtype.val ''
@@ -224,8 +188,8 @@ private theorem localNormSubgroup_isOpen_of_compatibleLocalField
   rw [himage] at himageOpen
 
   apply Subgroup.isOpen_mono
-    (H₁ := integerUnitNormSubgroup K L)
-    (H₂ := localNormSubgroup K L) ?_ himageOpen
+
+     ?_ himageOpen
   intro x hx
   rw [hintersection] at hx
   exact hx.1
@@ -265,7 +229,7 @@ theorem localNormSubgroup_isOpen
   let : Valued L ℝ≥0 := NormedField.toValued
   let vL : Valuation L ℝ≥0 := Valued.v
   let : vL.IsNontrivial :=
-    (inferInstance : (NormedField.valuation (K := L)).IsNontrivial)
+    (inferInstance : (NormedField.valuation).IsNontrivial)
   let : ValuativeRel L := ValuativeRel.ofValuation vL
   let : vL.Compatible := Valuation.Compatible.ofValuation vL
   let : ValuativeRel.IsNontrivial L :=
@@ -303,8 +267,7 @@ theorem localNormSubgroup_isOpen
         simpa [vL, NormedField.valuation_apply] using hyv
       exact_mod_cast hynormNN
     change spectralNorm K L (y : L) ≤ 1 at hynorm
-    have hcoeffNorm :
-        ∀ n : ℕ, ‖(minpoly K (y : L)).coeff n‖ ≤ 1 :=
+    have hcoeffNorm :=
       (spectralValue_le_one_iff
         (minpoly.monic (Algebra.IsIntegral.isIntegral (y : L)))).1
         (by simpa [spectralNorm] using hynorm)
@@ -337,9 +300,7 @@ theorem localNormSubgroup_isOpen
       (ValuativeRel.valuation L).valuationSubring := by
     change Algebra.IsIntegral 𝒪[K] 𝒪[L]
     infer_instance
-  let hIntegralClosure : IsIntegralClosure
-      (ValuativeRel.valuation L).valuationSubring
-      (ValuativeRel.valuation K).valuationSubring L :=
+  let hIntegralClosure :=
     ValuationTheory.DiscreteValuationField.Valuation.valuationSubring_isIntegralClosure_of_isIntegral
       (ValuativeRel.valuation K) (ValuativeRel.valuation L)
   let : IsIntegralClosure 𝒪[L] 𝒪[K] L := by
@@ -357,10 +318,8 @@ theorem normQuotient_discrete
     [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] :
     DiscreteTopology (NormQuotient K L) := by
-  let N := localNormSubgroup K L
-  change DiscreteTopology (Kˣ ⧸ N)
   apply QuotientGroup.discreteTopology
-  simpa only [N] using localNormSubgroup_isOpen K L
+  simpa using localNormSubgroup_isOpen K L
 
 end NormSubgroupTopology
 
@@ -375,17 +334,14 @@ variable (K L : Type) [Field K] [Field L] [Algebra K L]
     [DiscreteTopology G] :
     Subgroup.topologicalClosure (commutator G) = commutator G := by
   apply le_antisymm
-  · exact Subgroup.topologicalClosure_minimal _ le_rfl (isClosed_discrete _)
+  · solve_by_elim [Subgroup.topologicalClosure_minimal]
   · exact Subgroup.le_topologicalClosure _
 
 /-- For a finite-dimensional Galois extension, algebraic and topological
 abelianization agree as multiplicative groups. -/
 noncomputable def topologicalAbelianization_finite_equiv :
     Abelianization (Gal(L / K)) ≃* TopologicalAbelianization (Gal(L / K)) := by
-  let h : Subgroup.topologicalClosure (commutator (Gal(L / K))) =
-      commutator (Gal(L / K)) :=
-    commutator_topologicalClosure_eq (Gal(L / K))
-  exact QuotientGroup.quotientMulEquivOfEq h.symm
+  exact QuotientGroup.quotientMulEquivOfEq (commutator_topologicalClosure_eq (Gal(L / K))).symm
 
 /-- Finite local reciprocity as a homeomorphic group isomorphism from the
 norm quotient to the topological abelianization of the Krull Galois group. -/
@@ -394,21 +350,11 @@ noncomputable def localReciprocityEquiv :
   letI : DiscreteTopology (NormQuotient K L) := normQuotient_discrete K L
   letI : DiscreteTopology (TopologicalAbelianization (Gal(L / K))) :=
     QuotientGroup.discreteTopology (isOpen_discrete _)
-  let e : NormQuotient K L ≃* TopologicalAbelianization (Gal(L / K)) :=
-    (abelianizationEquivNormQuotient K L).symm.trans
-      (topologicalAbelianization_finite_equiv K L)
   exact
-    { e with
+    { ((abelianizationEquivNormQuotient K L).symm.trans
+      (topologicalAbelianization_finite_equiv K L)) with
       continuous_toFun := continuous_of_discreteTopology
       continuous_invFun := continuous_of_discreteTopology }
-
-/-- The underlying multiplicative equivalence is the algebraic reciprocity
-isomorphism followed by the finite abelianization comparison. -/
-theorem localReciprocityEquiv_toMulEquiv :
-    (localReciprocityEquiv K L).toMulEquiv =
-      (abelianizationEquivNormQuotient K L).symm.trans
-        (topologicalAbelianization_finite_equiv K L) := by
-  rfl
 
 /-- The quotient map to the norm quotient, bundled as a continuous
 homomorphism for the native quotient topology. -/
@@ -423,60 +369,11 @@ noncomputable def localArtinMap :
   (ContinuousMonoidHom.toContinuousMonoidHom (localReciprocityEquiv K L)).comp
     (normClassContinuous K L)
 
-/-- Forgetting the topology and comparing finite abelianizations recovers the
-algebraic local Artin homomorphism. -/
-theorem localArtinMap_toMonoidHom :
-    (topologicalAbelianization_finite_equiv K L).symm.toMonoidHom.comp
-        (localArtinMap K L).toMonoidHom =
-      localArtinMonoidHom K L := by
-  ext x
-  change
-    (topologicalAbelianization_finite_equiv K L).symm
-        (localReciprocityEquiv K L (normClass K L x)) =
-      (abelianizationEquivNormQuotient K L).symm
-        (normClass K L x)
-  rw [show localReciprocityEquiv K L (normClass K L x) =
-      topologicalAbelianization_finite_equiv K L
-        ((abelianizationEquivNormQuotient K L).symm
-          (normClass K L x)) by
-    change (localReciprocityEquiv K L).toMulEquiv
-        (normClass K L x) = _
-    rw [localReciprocityEquiv_toMulEquiv]
-    rfl]
-  exact (topologicalAbelianization_finite_equiv K L).symm_apply_apply _
-
-/-- The continuous local Artin map is canonical: after forgetting topology,
-it agrees with the reciprocity symbol computed from any realization of the
-extension in the fixed separable closure. -/
-theorem localArtinMap_embedding_independent
-    (i : L →ₐ[K] SeparableClosure K) :
-    (topologicalAbelianization_finite_equiv K L).symm.toMonoidHom.comp
-        (localArtinMap K L).toMonoidHom =
-      concreteNormResidueSymbolOfEmbedding K L i
-        (localResidueDatum K)
-        (localHenselianValuation K)
-        (separableClosureUnits_isClassFormation K) := by
-  rw [localArtinMap_toMonoidHom,
-    localArtinMonoidHom_eq_of_embedding K L i]
-
 /-- The continuous finite local Artin map is surjective. -/
 theorem localArtinMap_surjective :
     Function.Surjective (localArtinMap K L) :=
   (localReciprocityEquiv K L).surjective.comp
     (QuotientGroup.mk'_surjective (localNormSubgroup K L))
-
-/-- The kernel of the continuous finite local Artin map is the norm
-subgroup. -/
-theorem localArtinMap_ker :
-    (localArtinMap K L).toMonoidHom.ker = localNormSubgroup K L := by
-  ext x
-  rw [MonoidHom.mem_ker]
-  change
-    localReciprocityEquiv K L (normClass K L x) = 1 ↔
-      x ∈ localNormSubgroup K L
-  rw [← map_one (localReciprocityEquiv K L)]
-  rw [(localReciprocityEquiv K L).apply_eq_iff_eq]
-  exact normClass_eq_one_iff_mem K L x
 
 /-- The canonical first-isomorphism equivalence induced by the continuous
 local Artin map. -/
@@ -491,8 +388,7 @@ image under the local Artin map. -/
 @[simp]
 theorem localArtinMap_quotientKerEquiv_mk (x : Kˣ) :
     localArtinMap_quotientKerEquiv K L (QuotientGroup.mk x) =
-      localArtinMap K L x := by
-  rfl
+      localArtinMap K L x := rfl
 
 end TopologicalReciprocity
 

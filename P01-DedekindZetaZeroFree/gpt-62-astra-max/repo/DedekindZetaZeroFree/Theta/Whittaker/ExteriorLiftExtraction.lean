@@ -11,10 +11,10 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
-variable (D : SourceFactorization R Q T)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    (D : SourceFactorization R Q T)
 
 lemma selected_exterior_stage (v : R.A.UnitQuotient) (p : ThetaBranch.ExteriorPrime R.A) :
     ∃ (s : RestrictedTensorSimple.Level D.bad)
@@ -92,11 +92,8 @@ lemma finiteLift_commute_distinct (p q : KPFinitePlace F) (hpq : p ≠ q)
     (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p))
     (b : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q)) :
     Commute (finiteLift R p a) (finiteLift R q b) := by
-  have he : (KPAdelicCoverRestrictedProduct.localToRestricted F R.A.zeta12 R.A.primitive_zeta12
-      (Sum.inr p) a) (Sum.inr q) = 1 := by
-    change Pi.mulSingle (Sum.inr p) a (Sum.inr q) = 1
-    exact Pi.mulSingle_eq_of_ne (Sum.inr_injective.ne hpq.symm) a
-  exact group_commute_single R _ q he b
+  refine group_commute_single R _ q ?_ b
+  exact Pi.mulSingle_eq_of_ne (Sum.inr_injective.ne hpq.symm) a
 
 end DedekindZetaZeroFree.OrbitExpansion
 

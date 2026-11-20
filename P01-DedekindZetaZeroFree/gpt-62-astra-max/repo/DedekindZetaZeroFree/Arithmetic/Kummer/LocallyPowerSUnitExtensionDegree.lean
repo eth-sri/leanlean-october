@@ -32,7 +32,7 @@ theorem arith_sunit_kummer_degree_one
     Module.finrank F (KummerTheory.chosenSimpleKummerExtension F n hnF a) = 1 := by
   classical
   have hcases : (n : ℕ) = 2 ∨ (n : ℕ) = 3 ∨ (n : ℕ) = 6 := by
-    simpa only [Finset.mem_insert, Finset.mem_singleton] using hn
+    simpa using hn
   have hmu : (primitiveRoots (n : ℕ) F).Nonempty := by
     rcases hcases with hn2 | hn3 | hn6
     · rw [hn2]
@@ -45,7 +45,7 @@ theorem arith_sunit_kummer_degree_one
       exact A.primitive_sixth_root
   have hdiv : (n : ℕ) ∣ 6 := by
     rcases hcases with hn2 | hn3 | hn6 <;> simp [*]
-  let a : Fˣ := (ε : Fˣ)
+  let a := (ε : Fˣ)
   let L := KummerTheory.chosenSimpleKummerExtension F n hnF a
   letI : FiniteDimensional F L :=
     KummerTheory.chosenSimpleKummerExtension_finiteDimensional F n hnF a
@@ -64,18 +64,14 @@ theorem arith_sunit_kummer_degree_one
         refine ⟨(k : 𝓞 F), ?_⟩
         simpa only [Nat.cast_mul, Nat.cast_ofNat] using
           congrArg (Nat.cast : ℕ → 𝓞 F) hk
-      have hnnot : ((n : ℕ) : 𝓞 F) ∉ v.asIdeal := by
-        intro hmem
-        exact hv (A.above_six v (v.asIdeal.mem_of_dvd hndvd hmem))
-      simpa only [map_natCast] using
-        (v.valuation_eq_one_iff_notMem (K := F)).2 hnnot
-    have haval : v.valuation F (a : F) = 1 := ε.property v hv
+      have hnnot : ((n : ℕ) : 𝓞 F) ∉ v.asIdeal := fun hmem => hv (A.above_six v (v.asIdeal.mem_of_dvd hndvd hmem))
+      simpa using
+        (v.valuation_eq_one_iff_notMem).2 hnnot
+    have haval := ε.property v hv
     exact KummerTheory.chosenSimpleKummerExtension_chosenFinitePlaceIsUnramified_of_valuation_eq_one
       n hnF hmu a v haval hnval
   have hInf : ∀ w : NumberField.InfinitePlace F,
-      _root_.infiniteTensorNormSubgroup (K := F) (L := L) w = ⊤ := by
-    intro w
-    exact KummerTheory.chosenSimpleKummerExtension_infiniteTensorNormSubgroup_eq_top_of_mem_nthPowerSubgroup
+      _root_.infiniteTensorNormSubgroup w = ⊤ := fun w => KummerTheory.chosenSimpleKummerExtension_infiniteTensorNormSubgroup_eq_top_of_mem_nthPowerSubgroup
       n hnF hmu a w (hlocal (Sum.inl w))
   exact (ideleClassNorm_range_top_and_finrank_eq_one_of_supportedAt F L A.Sf
     hSplit hAway hInf

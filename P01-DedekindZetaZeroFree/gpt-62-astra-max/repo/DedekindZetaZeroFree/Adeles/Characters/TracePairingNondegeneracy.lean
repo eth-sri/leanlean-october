@@ -16,13 +16,14 @@ variable (F : Type) [Field F] [NumberField F]
 theorem localFiniteCharacter_left_nondegenerate (v : HeightOneSpectrum (𝓞 F))
     (x : v.adicCompletion F) (hx : x ≠ 0) :
     ∃ y : v.adicCompletion F, localFiniteCharacter F v (x * y) ≠ 1 := by
-  have hn : (Module.finrank ℚ_[PlaceTraceAdapter.prime F v] (v.adicCompletion F) :
+  let finrank₀ := Module.finrank ℚ_[PlaceTraceAdapter.prime F v] (v.adicCompletion F)
+  have hn : (finrank₀ :
       ℚ_[PlaceTraceAdapter.prime F v]) ≠ 0 := by
     exact_mod_cast (ne_of_gt (Module.finrank_pos
-      (R := ℚ_[PlaceTraceAdapter.prime F v]) (M := v.adicCompletion F)))
-  let t : ℚ_[PlaceTraceAdapter.prime F v] :=
+       ))
+  let t :=
     ((PlaceTraceAdapter.prime F v).1 : ℚ_[PlaceTraceAdapter.prime F v])⁻¹ /
-      (Module.finrank ℚ_[PlaceTraceAdapter.prime F v] (v.adicCompletion F) :
+      (finrank₀ :
         ℚ_[PlaceTraceAdapter.prime F v])
   refine ⟨x⁻¹ * algebraMap ℚ_[PlaceTraceAdapter.prime F v] (v.adicCompletion F) t, ?_⟩
   rw [← mul_assoc, mul_inv_cancel₀ hx, one_mul, localFiniteCharacter_apply]
@@ -30,7 +31,7 @@ theorem localFiniteCharacter_left_nondegenerate (v : HeightOneSpectrum (𝓞 F))
     (Algebra.trace ℚ_[PlaceTraceAdapter.prime F v] (v.adicCompletion F)
       (algebraMap ℚ_[PlaceTraceAdapter.prime F v] (v.adicCompletion F) t)) ≠ 1
   rw [Algebra.trace_algebraMap, nsmul_eq_mul]
-  have ht : (Module.finrank ℚ_[PlaceTraceAdapter.prime F v] (v.adicCompletion F) :
+  have ht : (finrank₀ :
       ℚ_[PlaceTraceAdapter.prime F v]) * t =
       ((PlaceTraceAdapter.prime F v).1 : ℚ_[PlaceTraceAdapter.prime F v])⁻¹ := by
     dsimp [t]

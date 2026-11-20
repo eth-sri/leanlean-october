@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.LFunctions.Hecke.OmittedEulerProductBounds
 
 public import DedekindZetaZeroFree.Arithmetic.Units.PrincipalizingRayCharacterContext
 
@@ -12,16 +13,7 @@ open UniqueFactorizationMonoid Filter
 
 private theorem pcSmall_support_norm_le {F : Type} [Field F] [NumberField F]
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
-    (∏ p ∈ idealPrimeSupport I, idealNorm p) ≤ idealNorm I := by
-  have hd : (∏ p ∈ idealPrimeSupport I, p) ∣ I := by
-    have hd' : (normalizedFactors I).dedup.prod ∣ (normalizedFactors I).prod :=
-      Multiset.prod_dvd_prod_of_le (Multiset.dedup_le _)
-    simpa only [idealPrimeSupport, Finset.prod_eq_multiset_prod, Multiset.map_id',
-      Multiset.toFinset_val, Ideal.prod_normalizedFactors_eq_self hI] using hd'
-  have hn := Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI))
-    (map_dvd Ideal.absNorm hd)
-  simpa [idealNorm, map_prod, Nat.cast_prod] using (show
-    ((Ideal.absNorm (∏ p ∈ idealPrimeSupport I, p) : ℕ) : ℝ) ≤ (Ideal.absNorm I : ℝ) by exact_mod_cast hn)
+    (∏ p ∈ idealPrimeSupport I, idealNorm p) ≤ idealNorm I := by apply @OmittedEulerProductBounds.support_norm_prod_le <;> assumption
 
 private theorem pcSmall_local_bound (C δ ε : ℝ) (hC : 0 ≤ C) (hδ : 0 < δ) (hε : 0 < ε) :
     ∃ B : ℝ, ∀ Q : ℝ, B ≤ Q → 1 ≤ Q → 1 + C * Q ^ (-δ) ≤ Q ^ ε := by
@@ -51,19 +43,14 @@ theorem fixed_small_prime_subpower
   refine ⟨K, ?_, ?_⟩
   · exact Finset.prod_pos (fun p _ => lt_of_lt_of_le zero_lt_one (hf p))
   · intro I
-    have hp : ∀ p ∈ idealPrimeSupport I.val, Prime p := by
-      intro p hp
-      exact prime_of_normalized_factor p (by
+    have hp : ∀ p ∈ idealPrimeSupport I.val, Prime p := fun p hp => prime_of_normalized_factor p (by
         simpa only [idealPrimeSupport, Multiset.mem_toFinset] using hp)
-    have hq : ∀ p ∈ idealPrimeSupport I.val, 1 ≤ idealNorm p := by
-      intro p h
-      exact le_trans (by norm_num) (idealNorm_prime_ge_two p (hp p h))
+    have hq : ∀ p ∈ idealPrimeSupport I.val, 1 ≤ idealNorm p := fun p h => le_trans (by norm_num) (idealNorm_prime_ge_two p (hp p h))
     have hs : ∀ p, p ∉ s → B ≤ idealNorm p := by
       intro p h
-      have hn : ¬ Ideal.absNorm p ≤ ⌈B⌉₊ := by simpa [s] using h
       have hn' : (⌈B⌉₊ : ℝ) < idealNorm p := by
         unfold idealNorm
-        exact_mod_cast (lt_of_not_ge hn)
+        exact_mod_cast (lt_of_not_ge (by simpa [s] using h))
       exact (Nat.le_ceil B).trans hn'.le
     have hloc : ∀ p ∈ idealPrimeSupport I.val,
         f p ≤ (if p ∈ s then f p else 1) * idealNorm p ^ ε := by

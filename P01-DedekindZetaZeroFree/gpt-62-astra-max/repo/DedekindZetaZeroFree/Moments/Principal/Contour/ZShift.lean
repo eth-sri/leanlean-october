@@ -12,8 +12,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonK
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def Rz (Z : ℝ) : ℂ :=
   ∑ᶠ u ∈ principalRows D, comparisonVerticalIntegral Scales.rightLine (fun ξ =>

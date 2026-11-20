@@ -27,19 +27,17 @@ theorem integral_inversion (β : ℂˣ) (f : ℂ → ℂ) :
       Algebra.norm_complex_eq, Complex.normSq_eq_norm_sq, norm_neg, norm_inv,
       norm_pow, ← pow_mul, Real.rpow_neg (norm_nonneg z)]
   have he := integral_image_eq_integral_abs_det_fderiv_smul (characterHaar β)
-    (s := {0}ᶜ) (isClosed_singleton.isOpen_compl.measurableSet)
-    (fun z hz => (hd z (by simpa using hz)).hasFDerivWithinAt)
+     (isClosed_singleton.isOpen_compl.measurableSet)
+    (fun z hz => (hd z (by exact hz)).hasFDerivWithinAt)
     (inv_injective.injOn) f
   have him : (fun z : ℂ => z⁻¹) '' ({0}ᶜ : Set ℂ) = {0}ᶜ := by
     ext z
     constructor
-    · rintro ⟨x,hx,rfl⟩
-      simpa using inv_ne_zero (show x ≠ 0 by simpa using hx)
-    · intro hz
-      exact ⟨z⁻¹,by simpa using inv_ne_zero (show z ≠ 0 by simpa using hz),inv_inv z⟩
+    · simp
+    · simp
   rw [him] at he
   simp only [hdet,Complex.real_smul] at he
-  simpa only [restrict_compl_singleton] using he.symm
+  simpa using he.symm
 
 theorem pairing_weyl_invariant (β : ℂˣ) (s : ℝ)
     (f : PrincipalSeries s) (g : PrincipalSeries (-s)) :
@@ -56,11 +54,9 @@ theorem pairing_weyl_invariant (β : ℂˣ) (s : ℝ)
     letI := characterHaar_isAddHaarMeasure β
     exact ae_iff.mpr (by simp)
   change (∫ z, star (infinityCoordinate f z) * infinityCoordinate g z ∂characterHaar β) = _
-  rw [integral_congr_ae (hae.mono fun z hz => product_transition s f g z hz)]
+  rw [integral_congr_ae (hae.mono (product_transition s f g))]
   exact integral_inversion β (fun z => star (openCoordinate f z) * openCoordinate g z)
-open _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts renaming open_bruhat → open_bruhat
-open _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts renaming infinity_bruhat → infinity_bruhat
-open _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts renaming row_nonzero → row_nonzero
+open _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts (open_bruhat infinity_bruhat row_nonzero)
 
 private theorem translated_mul (s : ℝ) (a b : ComplexGL2) (f : PrincipalSeries s) :
     rightTranslate s (a*b) f = rightTranslate s a (rightTranslate s b f) := by
@@ -78,7 +74,7 @@ theorem pairing_group_invariant (β : ℂˣ) (s : ℝ) (h : ComplexGL2)
     rw [translated_mul,translated_mul,ha,hb]
   have hu (a d : ℂˣ) (b : ℂ) : Q (upperTriangular a d b) :=
     fun f g => pairing_upper_invariant β s f g a d b
-  have hw : Q weyl := fun f g => pairing_weyl_invariant β s f g
+  have hw := (pairing_weyl_invariant β s)
   have hn (x : ℂ) : Q (upperUnipotent x) := hu 1 1 x
   have hl (x : ℂ) : Q (lowerUnipotent x) := by
     have he : lowerUnipotent x = weyl*upperUnipotent x*weyl := by

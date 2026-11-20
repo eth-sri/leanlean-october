@@ -11,12 +11,12 @@ open scoped NumberField Classical BigOperators ENNReal
 open MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.TransportedRationalCofactor
 open KPLocalPrincipalSeries KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPRankOneShellRepair
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor renaming actual_rational_family_regular → actual_rational_family_regular
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor (actual_rational_family_regular)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
-variable (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (hE : C.exceptional ⊆ E)
-variable (J : ∀ q : E, IwasawaData (C.canonical q.val).borel)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
+    (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (hE : C.exceptional ⊆ E)
+    (J : ∀ q : E, IwasawaData (C.canonical q.val).borel)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
@@ -102,7 +102,7 @@ theorem exists_transported_norm_one_cofactor :
   dsimp only
   let μ : ∀ q : E, Measure (LocalField F q.val) := fun q =>
     Measure.addHaarMeasure (finiteCompletionIntegersPositiveCompacts F q.val)
-  obtain ⟨φ,t,b₀,ht,hm₀,ha₀,hn₀,hb₀⟩ := NormOneCofactor.exists_norm_one_rational_cofactor F ζ hζ P C E hE
+  obtain ⟨φ, t, b₀, ht, hn₀, hb₀⟩ := NormOneCofactor.exists_norm_one_rational_cofactor F ζ hζ P C E hE
   let c (s : ℂ) := ActualCofactor.rationalStageEval F ζ hζ P C E hE t
     (fun q => (localHalfDifferentFactor F q.val : ℂ) •
       (actualCanonicalContinued F q.val ζ hζ (C.canonical q.val) (C.polarization q.val)
@@ -132,7 +132,7 @@ theorem exists_transported_norm_one_cofactor :
     exact (hb₀ 0).symm
   exact he.symm ▸ hn₀
 
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor renaming actual_arch_trace_spherical_parameter_integral → actual_arch_trace_spherical_parameter_integral
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor (actual_arch_trace_spherical_parameter_integral)
 
 theorem exists_transported_integral_cofactor :
     ∃ (φ : ∀ q : E, compactPicture (C.canonical q.val).borel (C.polarization q.val)

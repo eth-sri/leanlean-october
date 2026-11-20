@@ -13,10 +13,10 @@ set_option maxHeartbeats 4000000
 namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 open MomentSources TensorActionSource KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "π₀" => fun g : Raw R => scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
   (amalgamation F R.A.zeta12 R.A.primitive_zeta12 g)
 
@@ -100,7 +100,7 @@ theorem scalarSource_raw_finite_space (x : PlusCore R N P C) :
     intro k
     convert U.smul_mem c (hu k) using 1
     ext g
-    simp only [map_smul, Pi.smul_apply]
+    simp
   | add x y hx hy =>
     obtain ⟨U, hU, hu⟩ := hx
     obtain ⟨V, hV, hv⟩ := hy
@@ -111,15 +111,14 @@ theorem scalarSource_raw_finite_space (x : PlusCore R N P C) :
     convert (U ⊔ V).add_mem
       (Submodule.mem_sup_left (hu k)) (Submodule.mem_sup_right (hv k)) using 1
     ext g
-    simp only [map_add, Pi.add_apply]
+    simp
 
 theorem scalarSource_kfinite (x : PlusCore R N P C) :
     KPLiteralRaw.KFinite F R.A.zeta12 R.A.primitive_zeta12 (ThetaExpansion.fullProductCompact R)
       (scalarSourceEvaluator R N P C x) := by
   let f := scalarSourceEvaluator R N P C x
-  let O := Set.range (fun k : ThetaExpansion.fullProductCompact R =>
-    KPLiteralRaw.rightAction F R.A.zeta12 R.A.primitive_zeta12 k.val f)
-  let W := Submodule.span ℂ O
+  let W := Submodule.span ℂ (Set.range (fun k : ThetaExpansion.fullProductCompact R =>
+    KPLiteralRaw.rightAction F R.A.zeta12 R.A.primitive_zeta12 k.val f))
   obtain ⟨U, hU, hu⟩ := scalarSource_raw_finite_space R N P C x
   letI := hU
   have hle : W.map (rawPullback R) ≤ U := by
@@ -130,7 +129,6 @@ theorem scalarSource_kfinite (x : PlusCore R N P C) :
     have heq : rawPullback R (KPLiteralRaw.rightAction F R.A.zeta12 R.A.primitive_zeta12 k.val f) =
         (fun g : Raw R => scalarSourceEvaluator R N P C x (π₀ (g*a))) := by
       funext g
-      change f (π₀ g * k.val) = f (π₀ (g*a))
       rw [← he]
       change f ((scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
         (amalgamation F R.A.zeta12 R.A.primitive_zeta12 g)) *
@@ -164,9 +162,9 @@ theorem scalarSource_kfinite (x : PlusCore R N P C) :
         KPLiteralRaw.rightAction F R.A.zeta12 R.A.primitive_zeta12 k.val
           (KPLiteralRaw.rightAction F R.A.zeta12 R.A.primitive_zeta12 l.val f)
       rw [map_mul, Module.End.mul_apply]
-    | zero => simpa using W.zero_mem
-    | add a b ha hb hia hib => simpa using W.add_mem hia hib
-    | smul c a ha hi => simpa using W.smul_mem c hi
+    | zero => exact W.zero_mem
+    | add a b ha hb hia hib => exact W.add_mem hia hib
+    | smul c a ha hi => exact W.smul_mem c hi
 
 end DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 

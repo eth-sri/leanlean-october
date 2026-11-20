@@ -11,15 +11,14 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.CoreChartLocalizers.CutoffConstruction
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
+    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+    (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
 structure FiniteSmoothChartPartition (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (K : Set (X F ζ hζ U)) where
   count : ℕ
   empty_case : K = ∅ → count = 0
   chart : Fin count → Chart F ζ hζ hF U A
-  chart_open : ∀ i, IsOpen ((chart i).O F ζ hζ hF U)
   phi : Fin count → X F ζ hζ U → ℝ
   nonnegative_phi : ∀ i x, 0 ≤ phi i x
   compact_phi : ∀ i, HasCompactSupport (phi i)
@@ -40,12 +39,13 @@ theorem chart_base_fibers (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     C.toBase F ζ hζ hF U x = C.toBase F ζ hζ hF U y ↔
       ∃ g : C.G F ζ hζ hF U, C.orthogonal g x = y := by
   constructor
+  let Component₀ := KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative C.component)
   · intro h
     have hb : KPCuspSiegel.projection F
-          (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative C.component))
+          (Component₀)
           (C.coordinates x) =
         KPCuspSiegel.projection F
-          (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative C.component))
+          (Component₀)
           (C.coordinates y) := by
       have he := A.components.injective
         ((A.components_formula C.component _).trans
@@ -53,8 +53,7 @@ theorem chart_base_fibers (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       exact eq_of_heq (Sigma.mk.inj he).2
     obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp
       (MulAction.orbitRel_apply.mp (Quotient.exact hb))
-    have hγ' : ((γ⁻¹ : KPCuspGenuineMonodromy.Component F ζ hζ U
-        (A.representative C.component)) : KPCuspArithmetic.PGL2 F) •
+    have hγ' : ((γ⁻¹ : Component₀) : KPCuspArithmetic.PGL2 F) •
         C.coordinates x = C.coordinates y := by
       change γ⁻¹ • C.coordinates x = C.coordinates y
       rw [← hγ]
@@ -99,48 +98,39 @@ theorem chart_invariant_coordinate_bump (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF
       (∀ y, 0 ≤ b y) ∧ 0 < b x ∧
       ∀ (g : C.G F ζ hζ hF U) y, b (C.orthogonal g y) = b y := by
   obtain ⟨f, hs, hc, hd, hb, hfx⟩ :=
-    exists_contDiff_tsupport_subset (n := (⊤ : ℕ∞)) (Metric.isOpen_ball.mem_nhds hx)
-  let b : E C.n → ℝ := fun y => ∑ g : C.G F ζ hζ hF U, f (C.orthogonal g y)
-  have hb0 : ∀ y, 0 ≤ b y := by
-    intro y
-    exact Finset.sum_nonneg (fun g _ => (hb ⟨C.orthogonal g y, rfl⟩).1)
+    exists_contDiff_tsupport_subset (Metric.isOpen_ball.mem_nhds hx)
+  let G₀ := C.G F ζ hζ hF U
+  let b := fun y => ∑ g : G₀, f (C.orthogonal g y)
   have hbs : tsupport b ⊆ Metric.ball 0 C.radius := by
-    have hfc : ∀ g : C.G F ζ hζ hF U,
-        tsupport (fun y => f (C.orthogonal g y)) ⊆ Metric.ball 0 C.radius := by
-      intro g y hy
-      have ht : C.orthogonal g y ∈ tsupport f := by
-        have hcont : Continuous (fun y : E C.n => C.orthogonal g y) :=
-          (C.orthogonal g).continuous
-        exact (hcont.closure_preimage_subset (Function.support f)) hy
-      have hh := hs ht
-      simpa only [Metric.mem_ball, dist_zero_right, LinearIsometryEquiv.norm_map] using hh
-    have hsub : tsupport b ⊆ ⋃ g : C.G F ζ hζ hF U,
+    have hsub : tsupport b ⊆ ⋃ g : G₀,
         tsupport (fun y => f (C.orthogonal g y)) := by
       apply closure_minimal
       · intro y hy
         by_contra hn
-        have hz : ∀ g : C.G F ζ hζ hF U, f (C.orthogonal g y) = 0 := by
+        have hz : ∀ g : G₀, f (C.orthogonal g y) = 0 := by
           intro g
           by_contra hnz
           exact hn (Set.mem_iUnion.mpr ⟨g, subset_tsupport _ hnz⟩)
         exact hy (by simp [b, hz])
       · exact isClosed_iUnion_of_finite (fun _ => isClosed_tsupport _)
-    exact hsub.trans (Set.iUnion_subset hfc)
-  refine ⟨b, ?_, ?_, hbs, hb0, ?_, ?_⟩
+    refine hsub.trans (Set.iUnion_subset ?_)
+    intro g y hy
+    have ht : C.orthogonal g y ∈ tsupport f := by
+      exact (((C.orthogonal g).continuous).closure_preimage_subset (Function.support f)) hy
+    simpa using (hs ht)
+  refine ⟨b, ?_, ?_, hbs, fun y => Finset.sum_nonneg (fun g _ => (hb ⟨C.orthogonal g y, rfl⟩).1), ?_, ?_⟩
   · exact ContDiff.sum (fun g _ => hd.comp (C.orthogonal g).contDiff)
-  · have hh : ∀ g : C.G F ζ hζ hF U,
-        HasCompactSupport (fun y => f (C.orthogonal g y)) := by
-      intro g
-      exact hc.comp_homeomorph (C.orthogonal g).toHomeomorph
-    convert (HasCompactSupport.finset_sum (s := Finset.univ) (fun g _ => hh g)) using 1
+  · have hh : ∀ g : G₀,
+        HasCompactSupport (fun y => f (C.orthogonal g y)) := fun g => hc.comp_homeomorph (C.orthogonal g).toHomeomorph
+    convert (HasCompactSupport.finset_sum (fun g _ => hh g)) using 1
     ext y
     exact (Finset.sum_apply y Finset.univ (fun g y => f (C.orthogonal g y))).symm
-  · have hle : f (C.orthogonal 1 x) ≤ b x :=
+  · have hle :=
       Finset.single_le_sum (fun g _ => (hb ⟨C.orthogonal g x, rfl⟩).1) (Finset.mem_univ 1)
     have h1 : f (C.orthogonal 1 x) = 1 := by simpa using hfx
     linarith
   · intro g y
-    apply Fintype.sum_bijective (fun h : C.G F ζ hζ hF U => h * g)
+    apply Fintype.sum_bijective (fun h : G₀ => h * g)
       (Group.mulRight_bijective g)
     intro h
     rw [map_mul]
@@ -161,21 +151,15 @@ theorem chart_ball_toBase_isOpenMap (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       exact ⟨y.val, y.property, rfl⟩
     · rintro ⟨y, hy, rfl⟩
       exact ⟨⟨y, hy⟩, rfl⟩
-  have hb : Metric.ball (0 : E C.n) C.radius ⊆ C.extendedDomain :=
-    fun _ hx => C.closed_ball_in_extension (subset_closure hx)
   have hcoord : IsOpenMap
       (Set.restrict (Metric.ball (0 : E C.n) C.radius) C.coordinates) := by
-    have hh := he.isOpenMap.comp (Metric.isOpen_ball.isOpenMap_inclusion hb)
-    exact hh
+    exact he.isOpenMap.comp (Metric.isOpen_ball.isOpenMap_inclusion (fun _ hx => C.closed_ball_in_extension (subset_closure hx)))
   have hmap := A.components.isOpenMap.comp
-    ((isOpenMap_sigmaMk (i := C.component)).comp
+    ((isOpenMap_sigmaMk).comp
       ((KPCuspSiegel.isOpenMap_projection F
         (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative C.component))).comp hcoord))
   convert hmap using 1
   funext y
-  change KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative C.component)
-    (KPCuspSiegel.projection F _ (C.coordinates y.val)) =
-    A.components ⟨C.component, KPCuspSiegel.projection F _ (C.coordinates y.val)⟩
   exact (A.components_formula C.component (KPCuspSiegel.projection F
       (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative C.component))
       (C.coordinates y.val))).symm
@@ -183,11 +167,7 @@ theorem chart_ball_toBase_isOpenMap (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 private theorem chart_toBase_continuousOn (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (C : Chart F ζ hζ hF U A) :
     ContinuousOn (C.toBase F ζ hζ hF U) C.extendedDomain := by
-  have h : Continuous (fun z : KPFiniteCuspAtlas.SymmetricSpace F =>
-      A.components ⟨C.component, KPCuspSiegel.projection F
-        (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative C.component)) z⟩) :=
-    A.components.continuous.comp (continuous_sigmaMk.comp continuous_quot_mk)
-  convert h.comp_continuousOn C.smooth_coordinates.continuousOn using 1
+  convert (A.components.continuous.comp (continuous_sigmaMk.comp continuous_quot_mk)).comp_continuousOn C.smooth_coordinates.continuousOn using 1
   funext z
   exact (A.components_formula C.component _).symm
 
@@ -209,14 +189,15 @@ theorem chart_descend_coordinate_bump (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
   have hBe : B ⊆ C.extendedDomain := fun _ hy =>
     C.closed_ball_in_extension (subset_closure hy)
   have hp := chart_toBase_continuousOn F ζ hζ hF U A C
-  let lift : C.O F ζ hζ hF U → E C.n := fun x => x.property.choose
-  have hl : ∀ x : C.O F ζ hζ hF U, lift x ∈ B ∧ p (lift x) = x :=
+  let O₀ := C.O F ζ hζ hF U
+  let lift : O₀ → E C.n := fun x => x.property.choose
+  have hl : ∀ x : O₀, lift x ∈ B ∧ p (lift x) = x :=
     fun x => x.property.choose_spec
   let f : X F ζ hζ U → ℝ := fun x =>
-    if hx : x ∈ C.O F ζ hζ hF U then b (lift ⟨x, hx⟩) else 0
+    if hx : x ∈ O₀ then b (lift ⟨x, hx⟩) else 0
   have hformula : ∀ y ∈ B, f (p y) = b y := by
     intro y hy
-    have hpy : p y ∈ C.O F ζ hζ hF U := ⟨y, hy, rfl⟩
+    have hpy : p y ∈ O₀ := ⟨y, hy, rfl⟩
     rw [show f (p y) = b (lift ⟨p y, hpy⟩) by simp [f, hpy]]
     obtain ⟨g, hg⟩ := (chart_base_fibers F ζ hζ hF U A C
       (hBe (hl ⟨p y, hpy⟩).1) (hBe hy)).mp (hl ⟨p y, hpy⟩).2
@@ -225,7 +206,7 @@ theorem chart_descend_coordinate_bump (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
     hc.image_of_continuousOn (hp.mono (hs.trans hBe))
   have hsupport : Function.support f ⊆ p '' tsupport b := by
     intro x hx
-    by_cases hxO : x ∈ C.O F ζ hζ hF U
+    by_cases hxO : x ∈ O₀
     · refine ⟨lift ⟨x, hxO⟩, ?_, (hl ⟨x, hxO⟩).2⟩
       apply subset_tsupport
       simpa [f, hxO] using hx
@@ -235,7 +216,7 @@ theorem chart_descend_coordinate_bump (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
   have hcont : Continuous f := by
     rw [continuous_iff_continuousAt]
     intro x
-    by_cases hxO : x ∈ C.O F ζ hζ hF U
+    by_cases hxO : x ∈ O₀
     · let y : B := ⟨lift ⟨x, hxO⟩, (hl ⟨x, hxO⟩).1⟩
       have hpB : Continuous (Set.restrict B p) :=
         continuousOn_iff_continuous_restrict.mp (hp.mono hBe)
@@ -268,7 +249,7 @@ theorem chart_descend_coordinate_bump (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
   · intro y hy
     by_cases hyB : y ∈ B
     · exact hformula y hyB
-    · have hpy : p y ∉ C.O F ζ hζ hF U := by
+    · have hpy : p y ∉ O₀ := by
         rintro ⟨z, hz, heq⟩
         have hnorm := chart_base_fiber_norm F ζ hζ hF U A C hy (hBe hz) heq.symm
         apply hyB
@@ -309,7 +290,7 @@ theorem chart_descended_bump_smooth (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     ContDiff ℝ (⊤ : ℕ∞) (fun z =>
       f (KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative j)
         (KPCuspSiegel.projection F _ z))) := by
-  let q : KPFiniteCuspAtlas.SymmetricSpace F → X F ζ hζ U := fun z =>
+  let q := fun z =>
     KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative j)
       (KPCuspSiegel.projection F _ z)
   have hq : Continuous q := by
@@ -326,14 +307,10 @@ theorem chart_descended_bump_smooth (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     have heq := A.components.injective
       ((A.components_formula C.component _).trans
         (he.trans (A.components_formula j _).symm))
-    have hj : C.component = j := (Sigma.mk.inj heq).1
+    have hj := (Sigma.mk.inj heq).1
     subst j
-    have he' : KPCuspSiegel.projection F
-        (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative C.component))
-        (C.coordinates y) = KPCuspSiegel.projection F _ z :=
-      eq_of_heq (Sigma.mk.inj heq).2
     obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp
-      (MulAction.orbitRel_apply.mp (Quotient.exact he'))
+      (MulAction.orbitRel_apply.mp (Quotient.exact (eq_of_heq (Sigma.mk.inj heq).2)))
     obtain ⟨inv, hinv, hleft⟩ := C.smooth_inverse
     let act : KPFiniteCuspAtlas.SymmetricSpace F → KPFiniteCuspAtlas.SymmetricSpace F :=
       fun w => (γ : KPCuspArithmetic.PGL2 F) • w
@@ -341,7 +318,7 @@ theorem chart_descended_bump_smooth (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     have haz : act z ∈ C.coordinates '' C.extendedDomain := by
       refine ⟨y, C.closed_ball_in_extension (subset_closure hy), ?_⟩
       exact hγ.symm
-    have hs : ContDiffAt ℝ (⊤ : ℕ∞) (fun w => b (inv (act w))) z :=
+    have hs :=
       hb.contDiffAt.comp z
         ((hinv.contDiffAt (C.coordinates_open.mem_nhds haz)).comp z ha.contDiffAt)
     apply hs.congr_of_eventuallyEq
@@ -354,7 +331,7 @@ theorem chart_descended_bump_smooth (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     change f (q w) = f (q (C.coordinates v))
     rw [hev]
     exact congrArg f (component_projection_invariant F ζ hζ hF U A C.component γ w).symm
-  · apply (contDiffAt_const (c := (0 : ℝ))).congr_of_eventuallyEq
+  · apply (contDiffAt_const).congr_of_eventuallyEq
     filter_upwards [hq.continuousAt.preimage_mem_nhds
       ((isClosed_tsupport f).isOpen_compl.mem_nhds hz)] with w hw
     exact image_eq_zero_of_notMem_tsupport hw
@@ -390,7 +367,6 @@ theorem finite_smooth_chart_partition (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
   · refine ⟨{ count := 0
               empty_case := fun _ => rfl
               chart := Fin.elim0
-              chart_open := fun i => Fin.elim0 i
               phi := Fin.elim0
               nonnegative_phi := fun i => Fin.elim0 i
               compact_phi := fun i => Fin.elim0 i
@@ -452,7 +428,6 @@ theorem finite_smooth_chart_partition (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
   refine ⟨{ count := Fintype.card s
             empty_case := fun hk => False.elim (hKe hk)
             chart := fun i => C (e i)
-            chart_open := fun i => hCo (e i)
             phi := phi
             nonnegative_phi := fun i x => div_nonneg (hn (e i) x) (hDpos _ (hS0 x)).le
             compact_phi := fun i => (hc (e i)).of_isClosed_subset

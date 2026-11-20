@@ -17,15 +17,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -43,7 +34,6 @@ open scoped Classical NumberField TensorProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable
     {K L : Type}
@@ -91,10 +81,8 @@ theorem finitePlaceBelow_finitePlaceEquiv
   conv_lhs => rw [← hfix]
   exact
     (Ideal.apply_mem_of_equiv_iff
-      (I := W.asIdeal)
-      (f :=
-        (NumberField.RingOfIntegers.mapAlgEquiv σ).toRingEquiv)
-      (x := algebraMap (𝓞 K) (𝓞 L) x))
+
+      )
 
 omit [FiniteDimensional K L] [IsGalois K L] in
 /-- The full set of extension places above a base support is stable
@@ -106,8 +94,8 @@ theorem finitePlacesAbove_isGaloisStable
   intro σ W
   simp only [mem_finitePlacesAbove_iff]
   change
-    finitePlaceBelow (K := K) W ∈ S ↔
-      finitePlaceBelow (K := K)
+    finitePlaceBelow W ∈ S ↔
+      finitePlaceBelow
         (finitePlaceEquiv K L σ W) ∈ S
   rw [finitePlaceBelow_finitePlaceEquiv]
 
@@ -129,18 +117,16 @@ theorem relativeIdeleBaseChange_mem_supportedAt_iff
   constructor
   · intro hz W hW
     have hbelow :
-        finitePlaceBelow (K := K) W ∉ S := by
-      intro hmem
-      exact hW ((mem_finitePlacesAbove_iff
-        (K := K) (L := L) S W).2 hmem)
+        finitePlaceBelow W ∉ S := fun hmem => hW ((mem_finitePlacesAbove_iff
+          S W).2 hmem)
     have hlocal :=
       (relativeLocalTensorDecompositionIntegralUnitAt_iff_aboveAdic
-        (K := K) (L := L)
-        (finitePlaceBelow (K := K) W)
+
+        (finitePlaceBelow W)
         (RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L)
-          (finitePlaceBelow (K := K) W) z)).1
-        (hz (finitePlaceBelow (K := K) W) hbelow) ⟨W, rfl⟩
+
+          (finitePlaceBelow W) z)).1
+        (hz (finitePlaceBelow W) hbelow) ⟨W, rfl⟩
     rw [relativeIdeleBaseChangeMulEquiv_finite,
       relativeFiniteIdeleToFiniteIdele_apply,
       relativeFiniteTensorPiMulEquiv_apply]
@@ -148,17 +134,15 @@ theorem relativeIdeleBaseChange_mem_supportedAt_iff
   · intro hz w hw
     apply
       (relativeLocalTensorDecompositionIntegralUnitAt_iff_aboveAdic
-        (K := K) (L := L) w
+          w
         (RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L) w z)).2
+            w z)).2
     intro W
     rcases W with ⟨W, hWbelow⟩
     subst w
     have hW :
         W ∉ (finitePlacesAbove (K := K) (L := L) S :
-          Set (HeightOneSpectrum (𝓞 L))) := by
-      intro hmem
-      exact hw ((mem_finitePlacesAbove_iff
+          Set (HeightOneSpectrum (𝓞 L))) := fun hmem => hw ((mem_finitePlacesAbove_iff
         (K := K) (L := L) S W).1 hmem)
     have hlocal := hz W hW
     rw [relativeIdeleBaseChangeMulEquiv_finite,
@@ -182,17 +166,17 @@ theorem relativeIdeleLocalTensorDecompositionSupportedSubgroup_map_baseChange
   · rintro ⟨z, hz, rfl⟩
     exact
       (relativeIdeleBaseChange_mem_supportedAt_iff
-        (K := K) (L := L) S z).1 hz
+          S z).1 hz
   · intro hy
     refine ⟨(relativeIdeleBaseChangeMulEquiv
-      (K := K) (L := L)).symm y, ?_, ?_⟩
+       ).symm y, ?_, ?_⟩
     · apply
         (relativeIdeleBaseChange_mem_supportedAt_iff
-          (K := K) (L := L) S _).2
+            S _).2
       simpa using hy
     · exact
         (relativeIdeleBaseChangeMulEquiv
-          (K := K) (L := L)).apply_symm_apply y
+           ).apply_symm_apply y
 
 omit [IsGalois K L] in
 /-- If the supported ordinary ideles and principal ideles generate
@@ -221,9 +205,9 @@ theorem relativeIdeleSupported_sup_principal_eq_top
     hOrdinary,
     Subgroup.map_top_of_surjective
       (relativeIdeleBaseChangeMulEquiv
-        (K := K) (L := L)).toMonoidHom
+         ).toMonoidHom
       (relativeIdeleBaseChangeMulEquiv
-        (K := K) (L := L)).surjective]
+         ).surjective]
 
 /-- A diagonal idele is supported at `T` exactly when its defining
 field unit is a `T`-unit. -/
@@ -236,7 +220,7 @@ theorem principalIdele_mem_supportedAt_iff_sUnit
   rw [IdeleGroup.mem_supportedAt_iff, mem_SUnitGroup_iff]
   constructor
   · intro hx W hW
-    have hunit := hx W (by simpa using hW)
+    have hunit := hx W (by exact hW)
     rw [
       HeightOneSpectrum.adicCompletionIntegers.mem_units_iff_valued_eq_one]
         at hunit
@@ -260,12 +244,15 @@ theorem principalIdele_mem_supportedAt_iff_sUnit
             W.adicCompletion L)) = 1
     rw [IdeleGroup.finiteComponent_principalIdele,
       HeightOneSpectrum.valuedAdicCompletion_eq_valuation']
-    exact hx W (by simpa using hW)
+    exact hx W (by exact hW)
+
+section
+
+variable (S : Finset (HeightOneSpectrum (𝓞 K)))
 
 /-- The diagonal map from extension-field `S`-units into the
 intersection of the relative principal and supported subgroups. -/
-noncomputable def sUnitToRelativePrincipalSupportedIntersection
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def sUnitToRelativePrincipalSupportedIntersection :
     SUnitGroup (K := L)
         (finitePlacesAbove (K := K) (L := L) S) →*
       (RelativeIdeleGroup.principalSubgroup K L).subgroupOf
@@ -283,10 +270,10 @@ noncomputable def sUnitToRelativePrincipalSupportedIntersection
     have hRelative :
         RelativeIdeleGroup.principalIdele K L (x : Lˣ) ∈
           relativeIdeleLocalTensorDecompositionSupportedSubgroup
-            (K := K) (L := L) S := by
+              S := by
       apply
         (relativeIdeleBaseChange_mem_supportedAt_iff
-          (K := K) (L := L) S _).2
+            S _).2
       simpa using hOrdinary
     exact
       ⟨⟨RelativeIdeleGroup.principalIdele K L (x : Lˣ),
@@ -304,8 +291,7 @@ noncomputable def sUnitToRelativePrincipalSupportedIntersection
 /-- The intersection of the relative principal ideles with the
 relative `S`-idele subgroup is precisely the ordinary group of
 `S`-units of `L`. -/
-noncomputable def sUnitEquivRelativePrincipalSupportedIntersection
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def sUnitEquivRelativePrincipalSupportedIntersection :
     SUnitGroup (K := L)
         (finitePlacesAbove (K := K) (L := L) S) ≃*
       (RelativeIdeleGroup.principalSubgroup K L).subgroupOf
@@ -323,10 +309,8 @@ noncomputable def sUnitEquivRelativePrincipalSupportedIntersection
           (fun z :
             (RelativeIdeleGroup.principalSubgroup K L).subgroupOf
               (relativeIdeleLocalTensorDecompositionSupportedSubgroup
-                (K := K) (L := L) S) =>
-            ((z :
-                relativeIdeleLocalTensorDecompositionSupportedSubgroup
-                  (K := K) (L := L) S) :
+                  S) =>
+            (z :
               RelativeIdeleGroup K L))
           hxy
       change
@@ -336,118 +320,32 @@ noncomputable def sUnitEquivRelativePrincipalSupportedIntersection
       have hOrdinary :=
         congrArg
           (relativeIdeleBaseChangeMulEquiv
-            (K := K) (L := L))
+             )
           hRelative
       simpa using hOrdinary,
     by
       intro y
       obtain ⟨x, hx⟩ := y.property
-      have hRelative :
-          RelativeIdeleGroup.principalIdele K L x ∈
-            relativeIdeleLocalTensorDecompositionSupportedSubgroup
-              (K := K) (L := L) S := by
-        rw [hx]
-        exact y.1.property
       have hOrdinary :=
         (relativeIdeleBaseChange_mem_supportedAt_iff
-          (K := K) (L := L) S
-          (RelativeIdeleGroup.principalIdele K L x)).1 hRelative
+            S
+          (RelativeIdeleGroup.principalIdele K L x)).1 (by
+            rw [hx]
+            exact y.1.property)
       have hxS :
-          x ∈ SUnitGroup (K := L)
-            (finitePlacesAbove (K := K) (L := L) S) := by
+          x ∈ SUnitGroup
+            (finitePlacesAbove S) := by
         apply
           (principalIdele_mem_supportedAt_iff_sUnit
-            (L := L)
-            (finitePlacesAbove (K := K) (L := L) S) x).1
+
+            (finitePlacesAbove S) x).1
         simpa using hOrdinary
       refine ⟨⟨x, hxS⟩, ?_⟩
       apply Subtype.ext
       apply Subtype.ext
       exact hx⟩
 
-/-- The restricted Galois action on the intersection of the relative
-principal and supported subgroups. -/
-@[reducible]
-noncomputable def relativePrincipalSupportedIntersectionAction
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    MulDistribMulAction (L ≃ₐ[K] L)
-      ((RelativeIdeleGroup.principalSubgroup K L).subgroupOf
-        (relativeIdeleLocalTensorDecompositionSupportedSubgroup
-          (K := K) (L := L) S)) := by
-  letI :=
-    relativeIdeleLocalTensorDecompositionSupportedSubgroupAction
-      (K := K) (L := L) S
-  exact
-    CyclicCohomology.stableSubgroupMulDistribMulAction
-      ((RelativeIdeleGroup.principalSubgroup K L).subgroupOf
-        (relativeIdeleLocalTensorDecompositionSupportedSubgroup
-          (K := K) (L := L) S))
-      (by
-        intro σ z hz
-        change
-          (((σ • z :
-              relativeIdeleLocalTensorDecompositionSupportedSubgroup
-                (K := K) (L := L) S) :
-            RelativeIdeleGroup K L)) ∈
-              RelativeIdeleGroup.principalSubgroup K L
-        rw [
-          relativeIdeleLocalTensorDecompositionSupportedSubgroupAction_coe]
-        obtain ⟨x, hx⟩ := hz
-        refine
-          ⟨Units.map σ.toRingEquiv.toMonoidHom x, ?_⟩
-        calc
-          RelativeIdeleGroup.principalIdele K L
-              (Units.map σ.toRingEquiv.toMonoidHom x) =
-              σ • RelativeIdeleGroup.principalIdele K L x :=
-            (RelativeIdeleGroup.smul_principalIdele
-              K L σ x).symm
-          _ = σ • (z : RelativeIdeleGroup K L) :=
-            congrArg (fun a : RelativeIdeleGroup K L => σ • a) hx)
-
-omit [IsGalois K L] in
-/-- The `S`-unit description of the principal-supported intersection
-is equivariant for the genuine Galois actions. -/
-theorem
-    sUnitEquivRelativePrincipalSupportedIntersection_smul
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (σ : L ≃ₐ[K] L)
-    (x :
-      SUnitGroup (K := L)
-        (finitePlacesAbove (K := K) (L := L) S)) :
-    letI :=
-      sUnitMulDistribMulAction K L
-        (finitePlacesAbove (K := K) (L := L) S)
-        (finitePlacesAbove_isGaloisStable
-          (K := K) (L := L) S)
-    letI :=
-      relativePrincipalSupportedIntersectionAction
-        (K := K) (L := L) S
-    sUnitEquivRelativePrincipalSupportedIntersection
-        (K := K) (L := L) S (σ • x) =
-      σ •
-        sUnitEquivRelativePrincipalSupportedIntersection
-          (K := K) (L := L) S x := by
-  let :=
-    sUnitMulDistribMulAction K L
-      (finitePlacesAbove (K := K) (L := L) S)
-      (finitePlacesAbove_isGaloisStable
-        (K := K) (L := L) S)
-  let :=
-    relativePrincipalSupportedIntersectionAction
-      (K := K) (L := L) S
-  apply Subtype.ext
-  apply Subtype.ext
-  change
-    RelativeIdeleGroup.principalIdele K L
-        (((σ • x :
-          SUnitGroup (K := L)
-            (finitePlacesAbove (K := K) (L := L) S)) :
-          Lˣ)) =
-      σ • RelativeIdeleGroup.principalIdele K L (x : Lˣ)
-  rw [sUnit_smul_coe]
-  exact
-    (RelativeIdeleGroup.smul_principalIdele
-      K L σ (x : Lˣ)).symm
+end
 
 /-- The finite base places at which at least one extension prime is
 ramified. -/
@@ -469,10 +367,7 @@ theorem mem_ramifiedBaseFinitePlaces_iff
 /-- The idele-class Herbrand support: contractions of a sufficiently large support
 for `I_L`, together with every ramified base finite place. -/
 noncomputable def ideleClassHerbrandSupport :
-    Finset (HeightOneSpectrum (𝓞 K)) := by
-  classical
-  exact
-    (IdeleGroup.sufficientlyLargeFiniteSet (K := L)).image
+    Finset (HeightOneSpectrum (𝓞 K)) := (IdeleGroup.sufficientlyLargeFiniteSet (K := L)).image
         (finitePlaceBelow (K := K)) ∪
       ramifiedBaseFinitePlaces (K := K) (L := L)
 
@@ -489,8 +384,8 @@ theorem sufficientlyLargeFiniteSet_subset_finitePlacesAbove_support :
         Set (HeightOneSpectrum (𝓞 L))) := by
   intro W hW
   change W ∈ finitePlacesAbove
-    (K := K) (L := L)
-    (ideleClassHerbrandSupport (K := K) (L := L))
+
+    (ideleClassHerbrandSupport)
   rw [mem_finitePlacesAbove_iff]
   apply Finset.mem_union_left
   exact Finset.mem_image.mpr ⟨W, hW, rfl⟩
@@ -506,11 +401,11 @@ theorem supportedAboveHerbrandSupport_sup_principal_eq_top :
       IdeleGroup.principalSubgroup L = ⊤ := by
   apply top_unique
   rw [← IdeleGroup.supportedAt_sup_principalSubgroup_eq_top
-    (K := L)]
+    ]
   exact sup_le_sup
     (IdeleGroup.supportedAt_mono
       (sufficientlyLargeFiniteSet_subset_finitePlacesAbove_support
-      (K := K) (L := L)))
+       ))
     le_rfl
 
 omit [IsGalois K L] in

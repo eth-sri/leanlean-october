@@ -24,7 +24,7 @@ theorem poisson_summation_lattice_shift
           𝐞 (inner ℝ a (w : V)) • (𝓕 (f : V → ℂ)) (w : V) := by
   classical
   let ι := Fin (Module.finrank ℤ L)
-  let b : Basis ι ℤ L := Module.finBasis ℤ L
+  let b := Module.finBasis ℤ L
   let e : (ι → ℤ) ≃ dualLattice L := (dualVector_b L b : (ι → ℤ) ≃+ dualLattice L)
   set x : ι → UnitAddCircle := fun i => (((b.ofZLatticeBasis ℝ L).repr a) i : UnitAddCircle) with hx
   have hconjgen : ∀ z : ℝ, (starRingEnd ℂ) (((𝐞 z : Circle)) : ℂ) = (((𝐞 (-z) : Circle)) : ℂ) := by
@@ -33,13 +33,11 @@ theorem poisson_summation_lattice_shift
   have hchar : ∀ n : ι → ℤ, UnitAddTorus.mFourier n x =
       ((𝐞 (inner ℝ a (((dualVector_b L b n : dualLattice L) : V))) : Circle) : ℂ) := by
     intro n
-    have h2 : UnitAddTorus.mFourier (-n) x =
-        ((𝐞 (-inner ℝ a (((dualVector_b L b n : dualLattice L) : V))) : Circle) : ℂ) := by
-      rw [hx]; exact (dualVector_b_fourierChar L b a n).symm
     have h3 : (starRingEnd ℂ) (UnitAddTorus.mFourier n x) =
         ((𝐞 (-inner ℝ a (((dualVector_b L b n : dualLattice L) : V))) : Circle) : ℂ) := by
       rw [← UnitAddTorus.mFourier_neg]
-      exact h2
+      exact (by
+        exact (dualVector_b_fourierChar L b a n).symm)
     rw [show UnitAddTorus.mFourier n x
           = (starRingEnd ℂ) ((starRingEnd ℂ) (UnitAddTorus.mFourier n x)) from by simp, h3]
     simpa using hconjgen (-inner ℝ a (((dualVector_b L b n : dualLattice L) : V)))
@@ -52,26 +50,15 @@ theorem poisson_summation_lattice_shift
     rw [hsymm]
     rfl
   have hnorm : Summable (fun w : dualLattice L => ‖(𝓕 (f : V → ℂ)) (w : V)‖) := by
-    have h := summable_norm_fourier_schwartz_translate L f 0
-    simpa using h
+    simpa using (summable_norm_fourier_schwartz_translate L f 0)
   have hcov : Summable (fun w : dualLattice L =>
-      (ZLattice.covolume L volume : ℂ)⁻¹ * (𝓕 (f : V → ℂ)) (w : V)) :=
+      (ZLattice.covolume L volume : ℂ)⁻¹ * (𝓕 f) (w : V)) :=
     (Summable.of_norm hnorm).mul_left _
   have hreindex_norm : Summable (fun n : ι → ℤ =>
-      ‖(𝓕 (f : V → ℂ)) (((dualVector_b L b n : dualLattice L) : V))‖) := by
+      ‖(𝓕 f) (((dualVector_b L b n : dualLattice L) : V))‖) := by
     refine (Function.Injective.summable_iff (dualVector_b L b).injective ?_).mpr hnorm
     intro x hx
     exact absurd (Set.mem_range.mpr ((dualVector_b L b).surjective x)) hx
-  have hreindex_c : Summable (fun n : ι → ℤ =>
-      (𝓕 (f : V → ℂ)) (((dualVector_b L b n : dualLattice L) : V))) :=
-    Summable.of_norm hreindex_norm
-  have hreindex : Summable (fun n : ι → ℤ =>
-      (ZLattice.covolume L volume : ℂ)⁻¹ *
-        (𝓕 (f : V → ℂ)) (((dualVector_b L b n : dualLattice L) : V))) :=
-    hreindex_c.mul_left _
-  have hsumm : Summable (UnitAddTorus.mFourierCoeff (torusPeriodisation b f : UnitAddTorus ι → ℂ)) :=
-    hreindex.congr (fun n => (torusPeriodisation_mFourierCoeff L b f n).symm)
-  have hs := UnitAddTorus.hasSum_mFourier_series_apply_of_summable hsumm x
   have hterm : ∀ n : ι → ℤ,
       UnitAddTorus.mFourierCoeff (torusPeriodisation b f : UnitAddTorus ι → ℂ) n •
           UnitAddTorus.mFourier n x
@@ -81,12 +68,11 @@ theorem poisson_summation_lattice_shift
     intro n
     rw [torusPeriodisation_mFourierCoeff L b f n, hchar n, smul_eq_mul, Circle.smul_def]
     ring
-  rw [← hxval, ← hs.tsum_eq]
+  rw [← hxval, ← (UnitAddTorus.hasSum_mFourier_series_apply_of_summable (((Summable.of_norm hreindex_norm).mul_left _).congr (fun n => (torusPeriodisation_mFourierCoeff L b f n).symm)) x).tsum_eq]
   rw [tsum_congr hterm]
   rw [tsum_mul_left]
   congr 1
-  exact Equiv.tsum_eq e
-    (fun w : dualLattice L => 𝐞 (inner ℝ a (w : V)) • (𝓕 (f : V → ℂ)) (w : V))
+  exact Equiv.tsum_eq e fun w => 𝐞 (inner ℝ a ↑w) • 𝓕 ⇑f ↑w
 
 end DedekindZetaZeroFree.PoissonArch
 

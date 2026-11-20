@@ -9,8 +9,8 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources MeasureTheory ThetaProfileHaarSheets ThetaSheetExactUnfolding
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem quotientNonconstant_integrable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool) (l : PositiveAxis) :
@@ -67,8 +67,7 @@ theorem thetaAverage_sub_upperAverage_domain {N : TraceHaarTransport R} (C : Joi
   rw [C.descent.quotientTheta_projection R]
   congr 1
   unfold quotientUpper
-  have h := Quotient.exact (Quotient.out_eq (sheetProjection R.A l y))
-  obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp h)
+  obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp (Quotient.exact (Quotient.out_eq (sheetProjection R.A l y))))
   have hv := congrArg Subtype.val hγ
   change γ.val.val * y.val = (Quotient.out (sheetProjection R.A l y)).val at hv
   rw [← hv]

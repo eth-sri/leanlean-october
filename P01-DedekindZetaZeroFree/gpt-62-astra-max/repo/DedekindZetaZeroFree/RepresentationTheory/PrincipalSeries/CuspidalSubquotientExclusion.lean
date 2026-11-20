@@ -66,24 +66,22 @@ theorem actual_cover_compact_open_basis :
     (fun g hg h hh => KPDeepRawSplitting.sigmaTwo_eq_one_on_Gamma F ζ hζ w m hm.2 g h hg hh)
   have he : IsOpenEmbedding s := by
     have he := KPLocalChartTopology.translatedChart_isOpenEmbedding F ζ hζ w m hm 1
-    have hse : (s : _ → _) = KPLocalChartTopology.translatedChart F ζ hζ w m 1 := by
+    have hse : s = KPLocalChartTopology.translatedChart F ζ hζ w m 1 := by
       funext x; simp [hs, KPLocalChartTopology.translatedChart]
     rwa [← hse] at he
   let q := KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr w)
   letI := finiteCoverTopology F ζ hζ w m
   have hq : Continuous q := QuotientGroup.continuous_mk
-  have hqo : IsOpenMap q := QuotientGroup.isOpenMap_coe
   intro N hN
   have hn : (q.comp s) ⁻¹' N ∈ nhds 1 := by
-    have h := (hq.comp he.continuous).tendsto 1
-    simpa only [Filter.mem_map, MonoidHom.coe_comp, Function.comp_apply, map_one] using h (by simpa only [Function.comp_apply, map_one] using hN)
+    simpa using ((hq.comp he.continuous).tendsto 1) (by simpa using hN)
   obtain ⟨U, hU⟩ := NonarchimedeanGroup.is_nonarchimedean _ hn
   let J : OpenSubgroup (FiniteCover F ζ hζ w) :=
     { Subgroup.map (q.comp s) U.toSubgroup with
       isOpen' := by
-        change IsOpen ((q.comp s) '' (U : Set _))
+        change IsOpen ((q.comp s) '' U)
         rw [MonoidHom.coe_comp, Set.image_comp]
-        exact hqo _ (he.isOpenMap _ U.isOpen) }
+        exact QuotientGroup.isOpenMap_coe _ (he.isOpenMap _ U.isOpen)}
   refine ⟨⟨J, ?_⟩, ?_⟩
   · exact (IsClosed.isCompact U.isClosed).image (hq.comp he.continuous)
   · exact Set.image_subset_iff.mpr hU

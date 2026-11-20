@@ -54,7 +54,11 @@ private theorem class_units : unitCubeClasses (LocalField F q) =
  rw [hz, sup_bot_eq]
  exact (MonoidHom.range_comp _ _).symm
 
- def unitLift (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) : (KPTameCompact.O F q)ˣ →* actualTorus F ζ hζ q where
+ section
+
+variable (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
+
+def unitLift : (KPTameCompact.O F q)ˣ →* actualTorus F ζ hζ q where
  toFun u := aLift F ζ hζ q (KPTameCompact.unitInclusion F q u)
  map_one' := by
    apply Subtype.ext
@@ -72,22 +76,21 @@ private theorem class_units : unitCubeClasses (LocalField F q) =
      KPTameCompact.B3_units F q ζ hζ ht u v]
    simp
 
-private theorem unit_center_value
- (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) (u : (KPTameCompact.O F q)ˣ)
+private theorem unit_center_value (u : (KPTameCompact.O F q)ˣ)
  (hu : (unitLift F ζ hζ q S ht u) ∈ S.heisenberg.C) :
  S.heisenberg.ω ⟨unitLift F ζ hζ q S ht u, hu⟩ = 1 := by
+ let unitLift₀ := unitLift F ζ hζ q S ht u
  have hc : QuotientGroup.mk' (CubicCharacters.cubes (LocalField F q)ˣ)
    (KPTameCompact.unitInclusion F q u) = 1 := by
-   have hk : S.heisenberg.π (unitLift F ζ hζ q S ht u) = 1 := by
-     change unitLift F ζ hζ q S ht u ∈ S.heisenberg.π.ker
+   have hk : S.heisenberg.π (unitLift₀) = 1 := by
+     change unitLift₀ ∈ S.heisenberg.π.ker
      rwa [S.heisenberg.quotient_kernel]
-   have h := S.cube_class (unitLift F ζ hζ q S ht u)
+   have h := S.cube_class (unitLift₀)
    rw [hk, map_one, S.coordinate_lift _ _ rfl] at h
    exact h.symm
- have hm := (QuotientGroup.eq_one_iff _).mp hc
- obtain ⟨y, hy⟩ := hm
+ obtain ⟨y, hy⟩ := ((QuotientGroup.eq_one_iff _).mp hc)
  have hy' : y ^ 3 = KPTameCompact.unitInclusion F q u := hy
- have he : (⟨unitLift F ζ hζ q S ht u, hu⟩ : S.heisenberg.C) = S.borel.cubeLift y := by
+ have he : (⟨unitLift₀, hu⟩ : S.heisenberg.C) = S.borel.cubeLift y := by
    apply Subtype.ext
    apply Subtype.ext
    rw [S.cube_actual, hy']
@@ -96,11 +99,14 @@ private theorem unit_center_value
  rw [he, S.borel.exceptional_cube, hy']
  simp [normPower, abs_unit F q u]
 
+end
+
 theorem normalized_extension_exists
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) :
     ∃ P' : Polarization S.heisenberg,
       IsTamePolarization F ζ hζ q S P' ∧
         RawNormalizedExtension F ζ hζ q S P' := by
+ let A₀ := KPPGLLocalCover.A F ζ hζ (Sum.inr q)
  classical
  obtain ⟨Q, hQ⟩ := KPLocalTameValuationWhittakerBasis.exists_canonical_tame_polarization F ζ hζ q S htame
  have hmap : Q.L.map S.cubeClassEquiv.toMonoidHom = unitCubeClasses (LocalField F q) := by
@@ -193,10 +199,10 @@ theorem normalized_extension_exists
      (Subgroup.mem_center_iff.mp (S.heisenberg.central (S.borel.cubeLift y).property) (U u)).symm
    have hc' := congrArg (fun t : actualTorus F ζ hζ q => (t : ActualCover F ζ hζ q)) hc.eq
    simp only [Subgroup.coe_mul, S.cube_actual] at hc'
-   change KPPGLLocalCover.A F ζ hζ (Sum.inr q) (y ^ 3) *
-     KPPGLLocalCover.A F ζ hζ (Sum.inr q) ((KPTameCompact.unitInclusion F q) u) =
-     KPPGLLocalCover.A F ζ hζ (Sum.inr q) ((KPTameCompact.unitInclusion F q) u) *
-     KPPGLLocalCover.A F ζ hζ (Sum.inr q) (y ^ 3) at hc'
+   change A₀ (y ^ 3) *
+     A₀ ((KPTameCompact.unitInclusion F q) u) =
+     A₀ ((KPTameCompact.unitInclusion F q) u) *
+     A₀ (y ^ 3) at hc'
    rw [mul_assoc, mul_assoc, ← hc']
    rfl
  change (ωnew h : ℂ) = _

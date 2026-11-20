@@ -76,9 +76,8 @@ theorem exists_compactOpen_translation_level (φ : CcLC K E)
     (fun x => additiveCoset (B x) x) hc (fun x _ =>
       Set.mem_iUnion.mpr ⟨x, by simp [additiveCoset]⟩)
   let O : Set K := (U : Set K) ∩ ⋂ x ∈ t, (B x : Set K)
-  have hOo : IsOpen O := hUopen.inter (isOpen_biInter_finset fun x _ => hBo x)
   have hO0 : (0 : K) ∈ O := by simp [O]
-  obtain ⟨H, hHo, hHc, hHO⟩ := small_level O (hOo.mem_nhds hO0)
+  obtain ⟨H, hHo, hHc, hHO⟩ := small_level O ((hUopen.inter (isOpen_biInter_finset fun x _ => hBo x)).mem_nhds hO0)
   have hlev (x : K) (hx : x ∈ tsupport (φ.val : K → E)) (h : K) (hh : h ∈ H) :
       value φ (x + h) = value φ x := by
     obtain ⟨a, hat, hxa⟩ := Set.mem_iUnion₂.mp (ht hx)
@@ -89,13 +88,11 @@ theorem exists_compactOpen_translation_level (φ : CcLC K E)
     exact (hB a _ hxh).trans (hB a _ hxa').symm
   refine ⟨H, fun h hh => (hHO hh).1, hHo, hHc, ?_⟩
   intro x h hh
-  by_cases hx : x ∈ tsupport (φ.val : K → E)
+  by_cases hx : x ∈ tsupport φ.val
   · exact hlev x hx h hh
-  by_cases hxh : x + h ∈ tsupport (φ.val : K → E)
+  by_cases hxh : x + h ∈ tsupport φ.val
   · simpa using (hlev (x + h) hxh (-h) (H.neg_mem hh)).symm
-  · have hx0 := image_eq_zero_of_notMem_tsupport hx
-    have hxh0 := image_eq_zero_of_notMem_tsupport hxh
-    exact hxh0.trans hx0.symm
+  · exact (image_eq_zero_of_notMem_tsupport hxh).trans (image_eq_zero_of_notMem_tsupport hx).symm
 
 theorem finite_coset_expansion (φ : CcLC K E) (H : AddSubgroup K)
     (hHopen : IsOpen (H : Set K)) (hHcompact : IsCompact (H : Set K))
@@ -106,9 +103,8 @@ theorem finite_coset_expansion (φ : CcLC K E) (H : AddSubgroup K)
         ∑ i : Fin n, (additiveCoset H (a i)).indicator (fun _ => e i) x) := by
   classical
   letI : DiscreteTopology (K ⧸ H) := QuotientAddGroup.discreteTopology hHopen
-  let S : Set (K ⧸ H) := QuotientAddGroup.mk' H '' tsupport (φ.val : K → E)
-  have hS : S.Finite := (φ.property.image QuotientAddGroup.continuous_mk).finite_of_discrete
-  letI : Fintype S := hS.fintype
+  let S := QuotientAddGroup.mk' H '' tsupport φ.val
+  letI : Fintype S := ((φ.property.image QuotientAddGroup.continuous_mk).finite_of_discrete).fintype
   let a : S → K := fun q => Quotient.out q.val
   have ha (q : S) : QuotientAddGroup.mk' H (a q) = q.val := Quotient.out_eq q.val
   have hmem (q : S) (x : K) : x ∈ additiveCoset H (a q) ↔
@@ -145,7 +141,7 @@ theorem finite_coset_expansion (φ : CcLC K E) (H : AddSubgroup K)
       apply Set.indicator_of_notMem
       intro hm
       exact hx (((hmem q x).mp hm).symm ▸ q.property)
-  let r : Fin (Fintype.card S) ≃ S := (Fintype.equivFin S).symm
+  let r := (Fintype.equivFin S).symm
   refine ⟨Fintype.card S, a ∘ r, (fun q => value φ (a q)) ∘ r, ?_, ?_⟩
   · intro i j hij
     apply r.injective
@@ -160,9 +156,7 @@ private theorem compact_character_unitary
     (U : AddSubgroup K) (hUc : IsCompact (U : Set K))
     (ψ : Multiplicative K →* ℂˣ) (hψ : Continuous ψ) (u : K) (hu : u ∈ U) :
     ‖(ψ (Multiplicative.ofAdd u) : ℂ)‖ = 1 := by
-  have hc : Continuous (fun x : K => (ψ (Multiplicative.ofAdd x) : ℂ)) :=
-    Units.continuous_val.comp (hψ.comp continuous_ofAdd)
-  obtain ⟨C, hC⟩ := (hUc.image hc).isBounded.exists_norm_le
+  obtain ⟨C, hC⟩ := (hUc.image (Units.continuous_val.comp (hψ.comp continuous_ofAdd))).isBounded.exists_norm_le
   have hle (x : K) (hx : x ∈ U) : ‖(ψ (Multiplicative.ofAdd x) : ℂ)‖ ≤ 1 := by
     by_contra hn
     obtain ⟨n, hn⟩ := pow_unbounded_of_one_lt C (lt_of_not_ge hn)
@@ -176,8 +170,7 @@ private theorem compact_character_unitary
   have hp : ψ (Multiplicative.ofAdd (-u)) = (ψ (Multiplicative.ofAdd u))⁻¹ := by
     rw [ofAdd_neg, map_inv]
   rw [hp, Units.val_inv_eq_inv_val, norm_inv] at hi
-  have hn : 0 < ‖(ψ (Multiplicative.ofAdd u) : ℂ)‖ := norm_pos_iff.mpr (Units.ne_zero _)
-  exact le_antisymm (hle u hu) ((inv_le_one₀ hn).mp hi)
+  exact le_antisymm (hle u hu) ((inv_le_one₀ (norm_pos_iff.mpr (Units.ne_zero _))).mp hi)
 
 theorem exists_character_adapted_expansion (φ : CcLC K E)
     (U : AddSubgroup K) (hUopen : IsOpen (U : Set K))
@@ -233,8 +226,7 @@ variable [MeasurableSpace K] [BorelSpace K]
 theorem compactOpen_volume_pos_lt_top (μ : Measure K) [μ.IsAddHaarMeasure]
     (H : AddSubgroup K) (hHopen : IsOpen (H : Set K))
     (hHcompact : IsCompact (H : Set K)) :
-    0 < μ (H : Set K) ∧ μ (H : Set K) < ⊤ := by
-  exact ⟨hHopen.measure_pos μ ⟨0, H.zero_mem⟩, hHcompact.measure_lt_top⟩
+    0 < μ (H : Set K) ∧ μ (H : Set K) < ⊤ := ⟨hHopen.measure_pos μ ⟨0, H.zero_mem⟩, hHcompact.measure_lt_top⟩
 
 end LocalField
 
@@ -246,8 +238,7 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
   [FiniteDimensional ℂ E]
 
 theorem integrable (φ : CcLC K E) (μ : Measure K) [μ.IsAddHaarMeasure] :
-    Integrable (value φ) μ := by
-  exact φ.val.continuous.integrable_of_hasCompactSupport φ.property
+    Integrable (value φ) μ := φ.val.continuous.integrable_of_hasCompactSupport φ.property
 
 theorem integrable_inverse_character_smul (φ : CcLC K E)
     (ψ : Multiplicative K →* ℂˣ) (hψ : Continuous ψ)
@@ -257,7 +248,7 @@ theorem integrable_inverse_character_smul (φ : CcLC K E)
     simpa only [Function.comp_def, Pi.inv_apply, Units.val_inv_eq_inv_val] using
       ((Units.continuous_val.comp (hψ.inv)).comp continuous_ofAdd)
   exact (hc.smul φ.val.continuous).integrable_of_hasCompactSupport
-    (φ.property.smul_left (f := fun x => ((ψ (Multiplicative.ofAdd x) : ℂ)⁻¹)))
+    (φ.property.smul_left)
 
 end Integrability
 

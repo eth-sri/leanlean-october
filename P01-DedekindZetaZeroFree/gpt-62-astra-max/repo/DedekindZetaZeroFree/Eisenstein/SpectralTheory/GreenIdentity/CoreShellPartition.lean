@@ -9,9 +9,9 @@ open scoped Classical NumberField ENNReal NNReal Topology BigOperators
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabCoreShell
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
 theorem isClosed_quotientCore
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ) (Y : ℝ) :
@@ -45,9 +45,7 @@ theorem endSet_antitone (j : Cusps A) {Y T : ℝ} (hY : 0 < Y) (hYT : Y ≤ T) :
 theorem quotientCore_mono
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     {Y T : ℝ} (hY : 0 < Y) (hYT : Y ≤ T) :
-    quotientCore A P Y ⊆ quotientCore A P T := by
-  intro x hx j hj
-  exact hx j (endSet_antitone A j hY hYT hj)
+    quotientCore A P Y ⊆ quotientCore A P T := fun x hx j hj => hx j (endSet_antitone A j hY hYT hj)
 
 end DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabCoreShell
 

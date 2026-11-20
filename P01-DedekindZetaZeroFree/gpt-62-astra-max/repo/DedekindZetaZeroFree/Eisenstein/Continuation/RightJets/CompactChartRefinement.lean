@@ -16,10 +16,10 @@ open KPContSectorSmoothFramesSupport KPContSectorScalarLineAlgebra KPContSectorL
 open KPContSectorCoveredQuotientVocabulary KPContSectorPhaseComponentCharts
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 structure Piece where
   group : GroupChart F ζ hζ U R P H
@@ -31,8 +31,6 @@ structure Piece where
   isCompact : IsCompact compact
   compact_inside : compact ⊆ openSet
   projection : Space (groupDimension F) → Space (KPCuspLogShape.dimension F * 3)
-  projection_eq : projection = fun x => (KPContActualChartRestrictionDensity.coordinates F).symm
-    (baseCoordinates F (group.π x))
   smooth_projection : ContDiffOn ℝ (⊤ : ℕ∞) projection openSet
   projection_inside : Set.MapsTo projection openSet chart.ball.carrier
   compact_projection : IsCompact (projection '' compact)
@@ -120,7 +118,6 @@ private lemma local_piece (D : GroupChart F ζ hζ U R P H) :
     isCompact := hK
     compact_inside := hKT
     projection := canonicalProjection E
-    projection_eq := rfl
     smooth_projection := canonicalProjection_smooth E
     projection_inside := hinside
     compact_projection := hK.image_of_continuousOn ((canonicalProjection_smooth E).continuousOn.mono hKT)
@@ -149,7 +146,7 @@ theorem compact_refinement
   choose p hp hn using (fun g => local_piece (D g))
   obtain ⟨S, _, hS⟩ := hC.elim_nhds_subcover (fun g => (p g).group.piece (p g).compact)
     (fun g _ => by simpa only [hD] using hn g)
-  let e : Fin S.card ≃ S := S.equivFin.symm
+  let e := S.equivFin.symm
   refine ⟨S.card, fun j => p (e j).val, ?_⟩
   intro g hg
   obtain ⟨x, hx, hgx⟩ := Set.mem_iUnion₂.mp (hS hg)

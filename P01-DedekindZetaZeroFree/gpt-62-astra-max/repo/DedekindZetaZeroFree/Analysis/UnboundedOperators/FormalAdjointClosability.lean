@@ -12,8 +12,8 @@ theorem formalAdjoint_gradient_closable
     (D : H →ₗ.[ℂ] V) (δ : V →ₗ.[ℂ] H)
     (hδ : Dense (δ.domain : Set V)) (hformal : D.IsFormalAdjoint δ) :
     D ≤ δ.adjoint ∧ D.IsClosable ∧ D.closure.IsClosed := by
-  have hle : D ≤ δ.adjoint := hformal.symm.le_adjoint hδ
-  have hcl : D.IsClosable := (LinearPMap.adjoint_isClosed hδ).isClosable.leIsClosable hle
+  have hle := hformal.symm.le_adjoint hδ
+  have hcl := (LinearPMap.adjoint_isClosed hδ).isClosable.leIsClosable hle
   exact ⟨hle, hcl, hcl.closure_isClosed⟩
 
 end DedekindZetaZeroFree

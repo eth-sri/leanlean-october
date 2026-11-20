@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -110,21 +105,20 @@ theorem finiteAbelianExtensionInMaximalAbelianExtension_ideleClassNorm_range
     (_root_.ideleClassNorm K E).range =
       (_root_.ideleClassNorm K L).range := by
   let E := finiteAbelianExtensionInMaximalAbelianExtension K L
-  let e : L ≃ₐ[K] E :=
+  let e :=
     finiteAbelianExtensionEquivInMaximalAbelianExtension K L
-  let hE : NumberField E := NumberField.of_module_finite K E
-  let : NumberField E := hE
+  let := (NumberField.of_module_finite K E)
   have htransport :=
     ordinaryIdeleClassNorm_range_map_congrOfAlgEquiv
-      (K := K) (K' := K) (L := L) (L' := E)
-      (AlgEquiv.refl : K ≃ₐ[ℚ] K)
+
+      AlgEquiv.refl
       (e.restrictScalars ℚ)
       (fun x => e.commutes x)
   calc
-    (_root_.ideleClassNorm K E).range =
+    _ =
         (_root_.ideleClassNorm K L).range.map
           (ideleClassCongr
-            (AlgEquiv.refl : K ≃ₐ[ℚ] K)).toMonoidHom :=
+            AlgEquiv.refl).toMonoidHom :=
       htransport.symm
     _ = (_root_.ideleClassNorm K L).range := by
       ext c
@@ -147,20 +141,20 @@ theorem maximalAbelianGlobalArtin_ker :
     obtain ⟨H, hHclosed, hHfinite, _, hcH⟩ :=
       exists_closedFiniteIndexSubgroup_not_mem_of_not_mem_identityComponent
         K c hcIdentity
-    let : H.FiniteIndex := hHfinite
-    let L := closedFiniteIndexClassField (K := K) H hHclosed
-    let : NumberField L := NumberField.of_module_finite K L
+    let := hHfinite
+    let L := closedFiniteIndexClassField H hHclosed
+    let := NumberField.of_module_finite K L
     let E := finiteAbelianExtensionInMaximalAbelianExtension K L
-    let : NumberField E := NumberField.of_module_finite K E
+    let := NumberField.of_module_finite K E
     have hNormE : (_root_.ideleClassNorm K E).range = H := by
       calc
-        (_root_.ideleClassNorm K E).range =
+        _ =
             (_root_.ideleClassNorm K L).range :=
           finiteAbelianExtensionInMaximalAbelianExtension_ideleClassNorm_range
             K L
         _ = H :=
           closedFiniteIndexClassField_ideleClassNorm_range
-            (K := K) H hHclosed
+             H hHclosed
     obtain ⟨a, rfl⟩ :=
       QuotientGroup.mk'_surjective
         (IdeleGroup.principalSubgroup K) c
@@ -173,76 +167,25 @@ theorem maximalAbelianGlobalArtin_ker :
         ← maximalAbelianGlobalArtin_finiteProjection K a E]
       change
         (AlgEquiv.restrictNormalHom
-          (F := K) (K₁ := maximalAbelianExtension K) E)
+            E)
             ((maximalAbelianGlobalArtin K).toMonoidHom
               (QuotientGroup.mk'
                 (IdeleGroup.principalSubgroup K) a)) = 1
       calc
         _ = (AlgEquiv.restrictNormalHom
-              (F := K) (K₁ := maximalAbelianExtension K) E) 1 :=
+                E) 1 :=
           congrArg
             (AlgEquiv.restrictNormalHom
-              (F := K) (K₁ := maximalAbelianExtension K) E) hc
+                E) hc
         _ = 1 := map_one _
-    have hNormMem :
-        QuotientGroup.mk'
-            (IdeleGroup.principalSubgroup K) a ∈
-          (_root_.ideleClassNorm K E).range :=
+    have hNormMem :=
       (globalIdeleClassArtinMonoidHom_eq_one_iff
-        (K := K) (L := E) _).mp hFiniteArtin
+          _).mp hFiniteArtin
     rw [hNormE] at hNormMem
     exact hcH hNormMem
   · exact
       ideleClassIdentityComponent_le_ker K
         (maximalAbelianGlobalArtin K)
-
-/-- Maximal abelian reciprocity identifies the component quotient of the
-idele class group with the maximal abelian Galois group. -/
-noncomputable def ideleClassComponentQuotientEquivMaximalAbelianGalois :
-    ideleClassComponentQuotient K ≃ₜ*
-      Gal(maximalAbelianExtension K / K) := by
-  let e : ideleClassComponentQuotient K ≃*
-      Gal(maximalAbelianExtension K / K) :=
-    QuotientGroup.liftEquiv
-      (ideleClassIdentityComponent K)
-      (maximalAbelianGlobalArtin_surjective K)
-      (maximalAbelianGlobalArtin_ker K).symm
-  have heContinuous : Continuous e := by
-    apply
-      (QuotientGroup.isQuotientMap_mk
-        (ideleClassIdentityComponent K)).continuous_iff.mpr
-    refine
-      (maximalAbelianGlobalArtin K).continuous_toFun.congr
-        (fun c => ?_)
-    exact
-      (QuotientGroup.liftEquiv_coe
-        (ideleClassIdentityComponent K)
-        (maximalAbelianGlobalArtin_surjective K)
-        (maximalAbelianGlobalArtin_ker K).symm c).symm
-  let h := heContinuous.homeoOfEquivCompactToT2
-  exact
-    { toMulEquiv := e
-      continuous_toFun := h.continuous
-      continuous_invFun := h.symm.continuous }
-
-/-- Evaluation of component-quotient reciprocity on an idele class is the
-maximal abelian global Artin map. -/
-@[simp]
-theorem ideleClassComponentQuotientEquivMaximalAbelianGalois_mk
-    (c : IdeleClassGroup K) :
-    ideleClassComponentQuotientEquivMaximalAbelianGalois K
-        (QuotientGroup.mk'
-          (ideleClassIdentityComponent K) c) =
-      maximalAbelianGlobalArtin K c := by
-  change
-    QuotientGroup.liftEquiv
-        (ideleClassIdentityComponent K)
-        (maximalAbelianGlobalArtin_surjective K)
-        (maximalAbelianGlobalArtin_ker K).symm
-        (QuotientGroup.mk'
-          (ideleClassIdentityComponent K) c) =
-      maximalAbelianGlobalArtin K c
-  exact QuotientGroup.liftEquiv_coe _ _ _ _
 
 end Reciprocity
 end GlobalClassFieldTheory

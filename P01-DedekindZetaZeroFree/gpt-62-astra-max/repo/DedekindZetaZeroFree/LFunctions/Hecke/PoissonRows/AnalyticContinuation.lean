@@ -14,8 +14,8 @@ open DedekindZetaZeroFree NumberField
 open scoped Classical NumberField
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem Lpsi_eq_J_mul_mask (u : D.Row)
     (hnp : ¬ (D.inducers u).plus.character.IsPrincipal) (s : ℂ) :
@@ -39,33 +39,26 @@ theorem Llam_eq_J_mul_mask (u : D.Row)
     exact if_neg hnp
   rw [h0, pow_zero, div_one]
 
-theorem Lpsi_analyticOnNhd (u : D.Row) (hu : u.u ≠ 1) :
+section
+
+variable (u : D.Row) (hu : u.u ≠ 1)
+
+include hu in
+theorem Lpsi_analyticOnNhd :
     AnalyticOnNhd ℂ (D.Lpsi u) {s : ℂ | 0 < s.re} := by
-  have hnp := (RowNonprincipal.inducers_nonprincipal D u hu).1
   intro s hs
-  have hJ := (D.rowContinuation u .plus).J_holomorphic s hs
-  have hB := (D.rowContinuation u .plus).B_holomorphic s hs
-  have hfun : D.Lpsi u = fun s => (D.rowContinuation u .plus).J s *
-      Detector.finiteEulerDeletionMask F (D.rowDeletionSet u .plus)
-        (fun p => (D.inducers u).plus.character p.asIdeal) s :=
-    funext (Lpsi_eq_J_mul_mask D u hnp)
-  rw [hfun]
-  exact hJ.mul hB
+  rw [(funext (Lpsi_eq_J_mul_mask D u ((RowNonprincipal.inducers_nonprincipal D u hu).1)))]
+  exact ((D.rowContinuation u .plus).J_holomorphic s hs).mul ((D.rowContinuation u .plus).B_holomorphic s hs)
 
-theorem Llam_analyticOnNhd (u : D.Row) (hu : u.u ≠ 1) :
+include hu in
+theorem Llam_analyticOnNhd :
     AnalyticOnNhd ℂ (D.Llam u) {s : ℂ | 0 < s.re} := by
-  have hnp := (RowNonprincipal.inducers_nonprincipal D u hu).2
   intro s hs
-  have hJ := (D.rowContinuation u .minus).J_holomorphic s hs
-  have hB := (D.rowContinuation u .minus).B_holomorphic s hs
-  have hfun : D.Llam u = fun s => (D.rowContinuation u .minus).J s *
-      Detector.finiteEulerDeletionMask F (D.rowDeletionSet u .minus)
-        (fun p => (D.omega u).character p.asIdeal) s :=
-    funext (Llam_eq_J_mul_mask D u hnp)
-  rw [hfun]
-  exact hJ.mul hB
+  rw [(funext (Llam_eq_J_mul_mask D u ((RowNonprincipal.inducers_nonprincipal D u hu).2)))]
+  exact ((D.rowContinuation u .minus).J_holomorphic s hs).mul ((D.rowContinuation u .minus).B_holomorphic s hs)
 
-theorem exists_entire_numerator (u : D.Row) (hu : u.u ≠ 1) :
+include hu in
+theorem exists_entire_numerator :
     ∃ g : ℂ → ℂ, Differentiable ℂ g ∧ ∀ s : ℂ, 1 < s.re → g s = D.Lpsi u s := by
   have hnp := (RowNonprincipal.inducers_nonprincipal D u hu).1
   obtain ⟨h, hh, hh'⟩ :=
@@ -79,18 +72,20 @@ theorem exists_entire_numerator (u : D.Row) (hu : u.u ≠ 1) :
     have h2 := hh' s (by linarith)
     simp only [h1, h2]
 
-theorem eq_Lpsi_of_analyticOn (u : D.Row) (hu : u.u ≠ 1) {g : ℂ → ℂ}
+include hu in
+theorem eq_Lpsi_of_analyticOn {g : ℂ → ℂ}
     (hg : AnalyticOnNhd ℂ g {z : ℂ | 0 < z.re})
     (h : ∀ s : ℂ, 1 < s.re → g s = D.Lpsi u s) :
     ∀ s : ℂ, 0 < s.re → g s = D.Lpsi u s :=
   RowHeckeBridge.eqOn_halfPlane_of_eq_right hg (Lpsi_analyticOnNhd D u hu) h
 
-theorem entire_eq_Lpsi (u : D.Row) (hu : u.u ≠ 1) {g : ℂ → ℂ} (hg : Differentiable ℂ g)
+include hu in
+theorem entire_eq_Lpsi {g : ℂ → ℂ} (hg : Differentiable ℂ g)
     (h : ∀ s : ℂ, 1 < s.re → g s = D.Lpsi u s) :
     ∀ s : ℂ, 0 < s.re → g s = D.Lpsi u s :=
   eq_Lpsi_of_analyticOn D u hu (fun z _ => hg.analyticAt z) h
 
-theorem Llam_eq_mask_mul_hecke (u : D.Row) (hu : u.u ≠ 1) (s : ℂ) (hs : 0 < s.re) :
+theorem Llam_eq_mask_mul_hecke (s : ℂ) (hs : 0 < s.re) :
     D.Llam u s =
       Detector.finiteEulerDeletionMask F (RowHeckeBridge.deletionSet D u)
         (fun v => (D.omega u).character v.asIdeal) s *
@@ -103,6 +98,8 @@ theorem Llam_eq_mask_mul_hecke (u : D.Row) (hu : u.u ≠ 1) (s : ℂ) (hs : 0 < 
     (RowHeckeBridge.deletionSet_finite D u)).analyticAt z).mul
     (RowHeckeBridge.hecke_analyticOn D.recipe.A (D.omega u) hnp z hz)
 
+end
+
 theorem Llam_ne_zero_of_not_exceptional (ρ U : ℝ) (u : D.Row) (hu : u.u ≠ 1)
     (hU1 : U ≤ D.q u) (hU2 : D.q u < 2 * U)
     (hexc : u ∉ DetectorDef.exceptionalSet D ρ U) (ξ : ℂ)
@@ -114,22 +111,21 @@ theorem Llam_ne_zero_of_not_exceptional (ρ U : ℝ) (u : D.Row) (hu : u.u ≠ 1
     unfold DetectorDef.σ₀
     norm_num
   have hpos : 0 < ξ.re := lt_of_lt_of_le hσ hre
-  have hzero : (RowHeckeBridge.heckeOmega D u hnp).L ξ = 0 := by
-    have e := Llam_eq_mask_mul_hecke D u hu ξ hpos
-    rw [h0] at e
-    exact (mul_eq_zero.mp e.symm).resolve_left
-      (RowHeckeBridge.mask_ne_zero (D.omega u) _ (RowHeckeBridge.deletionSet_finite D u) ξ hpos)
   simp only [DetectorDef.exceptionalSet, Set.mem_setOf_eq]
-  exact ⟨hu, hU1, hU2, ξ, ⟨hpos, (RowHeckeBridge.heckeOmega D u hnp).L,
+  refine ⟨hu, hU1, hU2, ξ, ⟨hpos, (RowHeckeBridge.heckeOmega D u hnp).L,
     RowHeckeBridge.hecke_analyticOn D.recipe.A (D.omega u) hnp,
     fun z hz => RowHeckeBridge.hecke_eq_idealLSeries D.recipe.A (D.omega u) hnp z hz,
-    hzero⟩, hre, him⟩
+    ?_⟩, hre, him⟩
+  have e := Llam_eq_mask_mul_hecke D u hu ξ hpos
+  rw [h0] at e
+  exact (mul_eq_zero.mp e.symm).resolve_left
+    (RowHeckeBridge.mask_ne_zero (D.omega u) _ (RowHeckeBridge.deletionSet_finite D u) ξ hpos)
 
 theorem Llam_ne_zero_central (ρ U : ℝ) (hU : 0 ≤ U) (u : D.Row) (hu : u.u ≠ 1)
     (hU1 : U ≤ D.q u) (hU2 : D.q u < 2 * U)
     (hexc : u ∉ DetectorDef.exceptionalSet D ρ U) (ξ : ℂ)
     (hx : Scales.goodLine ≤ ξ.re) (him : |ξ.im| ≤ U ^ ρ) : D.Llam u ξ ≠ 0 := by
-  have hnn : 0 ≤ U ^ ρ := Real.rpow_nonneg hU ρ
+  have hnn := Real.rpow_nonneg hU ρ
   refine Llam_ne_zero_of_not_exceptional D ρ U u hu hU1 hU2 hexc ξ ?_ (by linarith)
   unfold DetectorDef.σ₀
   unfold Scales.goodLine at hx
@@ -141,11 +137,10 @@ theorem W1Hat_differentiable : Differentiable ℂ D.W1Hat := by
     obtain ⟨x, hx⟩ := D.recipe.probe.finiteTrace_ne_one D.recipe.A D.recipe.σ D.recipe.target
       D.recipe.traceBad v
     exact hx (by rw [he]; rfl)
-  let w : NumberField.InfinitePlace F := Classical.choice inferInstance
   obtain ⟨dt, hdt, hdis, hsheet⟩ := probe_sheet_mellin_estimates F D.recipe.A
     D.recipe.probe.finiteTrace D.recipe.probe.continuousTrace D.recipe.probe.traceCompatible hne
     D.recipe.probe.additiveMeasure D.recipe.probe.multiplicativeMeasure
-    D.recipe.probe.additiveHaar D.recipe.probe.multiplicativeHaar w
+    D.recipe.probe.additiveHaar D.recipe.probe.multiplicativeHaar (Classical.choice inferInstance)
     D.recipe.probe.W0 D.recipe.probe.W1 D.recipe.probe.annular D.recipe.probe.compactSupport
     D.recipe.probe.supportUnits
   rcases hsheet with ⟨_, _, _, _, _, hW, _, _⟩
@@ -184,7 +179,7 @@ theorem rowFactor_differentiableAt (u : D.Row) (hu : u.u ≠ 1) (ξ w z : ℂ)
     (Llam_analyticOnNhd D u hu ξ hξ0).differentiableAt
   have hHu : DifferentiableAt ℂ
       (fun p : ℂ × ℂ × ℂ => EulerDomain.Hu D u p.1 p.2.1 p.2.2) (ξ, w, z) :=
-    (EulerDomain.Hu_normal_convergence D u).2.2.1.differentiableAt
+    (EulerDomain.Hu_normal_convergence D u).2.differentiableAt
       (EulerDomain.OmegaStar_isOpen.mem_nhds hmem)
   have e1 : DifferentiableAt ℂ (fun p : ℂ × ℂ × ℂ => D.zetaSCont (6 * p.2.2)) (ξ, w, z) :=
     hcomp D.zetaSCont (fun p => 6 * p.2.2) (by fun_prop) hzeta
@@ -201,44 +196,29 @@ theorem rowFactor_differentiableAt (u : D.Row) (hu : u.u ≠ 1) (ξ w z : ℂ)
   simp only [div_eq_mul_inv]
   exact e4.mul hHu
 
-theorem K_differentiableAt (u : D.Row) (hu : u.u ≠ 1) (hq : 0 < D.q u) (Z : ℝ) (hZ : 0 < Z)
-    (ξ w z : ℂ) (hmem : (ξ, w, z) ∈ EulerDomain.OmegaStar) (hz1 : 6 * z ≠ 1)
-    (hξ : D.Llam u ξ ≠ 0) :
+section
+
+variable (u : D.Row) (hu : u.u ≠ 1) (hq : 0 < D.q u) (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ)
+    (hmem : (ξ, w, z) ∈ EulerDomain.OmegaStar) (hz1 : 6 * z ≠ 1) (hξ : D.Llam u ξ ≠ 0)
+
+include hu hq hZ hmem hz1 hξ in
+theorem K_differentiableAt :
     DifferentiableAt ℂ
       (fun p : ℂ × ℂ × ℂ => PoissonKernel.K D u p.1 p.2.1 p.2.2 Z) (ξ, w, z) := by
-  have hz0 : 0 < z.re := hmem.2.2.1
   have hcomp : ∀ (g : ℂ → ℂ) (f : ℂ × ℂ × ℂ → ℂ), DifferentiableAt ℂ f (ξ, w, z) →
       DifferentiableAt ℂ g (f (ξ, w, z)) →
       DifferentiableAt ℂ (fun p => g (f p)) (ξ, w, z) :=
     fun g f hf hg => hg.comp (ξ, w, z) hf
-  have hZ0 : (Z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hZ.ne'
-  have hq0 : (D.q u : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hq.ne'
-  have a1 : DifferentiableAt ℂ (fun p : ℂ × ℂ × ℂ =>
-      (Z : ℂ) ^ (((Scales.xExponent / 2 : ℝ) : ℂ) + p.1 - 1 + (Scales.smoothingExponent : ℂ) * p.2.2 +
-        (Scales.yExponent : ℂ) * (p.2.1 - 1))) (ξ, w, z) :=
-    DifferentiableAt.const_cpow (by fun_prop) (Or.inl hZ0)
-  have a2 : DifferentiableAt ℂ (fun p : ℂ × ℂ × ℂ => Complex.exp ((p.1 + p.2.2 - 1) ^ 2))
-      (ξ, w, z) :=
-    DifferentiableAt.cexp (by fun_prop)
-  have hMd : DifferentiableAt ℂ D.M z :=
-    D.M_differentiableOn.differentiableAt ((RowHeckeBridge.isOpen_re_gt 0).mem_nhds hz0)
-  have a3 : DifferentiableAt ℂ (fun p : ℂ × ℂ × ℂ => D.M p.2.2) (ξ, w, z) :=
-    hcomp D.M (fun p => p.2.2) (by fun_prop) hMd
-  have a4 : DifferentiableAt ℂ (fun p : ℂ × ℂ × ℂ => D.W1Hat p.2.1) (ξ, w, z) :=
-    hcomp D.W1Hat (fun p => p.2.1) (by fun_prop) ((W1Hat_differentiable D) w)
-  have a5 : DifferentiableAt ℂ (fun p : ℂ × ℂ × ℂ => (D.q u : ℂ) ^ (-p.2.2)) (ξ, w, z) :=
-    DifferentiableAt.const_cpow (by fun_prop) (Or.inl hq0)
-  have a6 := rowFactor_differentiableAt D u hu ξ w z hmem hz1 hξ
   unfold PoissonKernel.K PoissonKernel.kernelWith
-  exact (((((a1.mul a2).mul a3).mul a4).mul a5).mul a6)
+  exact ((((((DifferentiableAt.const_cpow (by fun_prop) (Or.inl (Complex.ofReal_ne_zero.mpr hZ.ne'))).mul (DifferentiableAt.cexp (by fun_prop))).mul (hcomp D.M (fun p => p.2.2) (by fun_prop) (D.M_differentiableOn.differentiableAt ((RowHeckeBridge.isOpen_re_gt 0).mem_nhds hmem.2.2.1)))).mul (hcomp D.W1Hat (fun p => p.2.1) (by fun_prop) ((W1Hat_differentiable D) w))).mul (DifferentiableAt.const_cpow (by fun_prop) (Or.inl (Complex.ofReal_ne_zero.mpr hq.ne')))).mul (rowFactor_differentiableAt D u hu ξ w z hmem hz1 hξ))
 
-theorem K_differentiableAt_xi (u : D.Row) (hu : u.u ≠ 1) (hq : 0 < D.q u) (Z : ℝ) (hZ : 0 < Z)
-    (ξ w z : ℂ) (hmem : (ξ, w, z) ∈ EulerDomain.OmegaStar) (hz1 : 6 * z ≠ 1)
-    (hξ : D.Llam u ξ ≠ 0) :
+include hu hq hZ hmem hz1 hξ in
+theorem K_differentiableAt_xi :
     DifferentiableAt ℂ (fun x : ℂ => PoissonKernel.K D u x w z Z) ξ := by
-  have h := K_differentiableAt D u hu hq Z hZ ξ w z hmem hz1 hξ
   have hc : DifferentiableAt ℂ (fun x : ℂ => ((x, w, z) : ℂ × ℂ × ℂ)) ξ := by fun_prop
-  exact h.comp ξ hc
+  exact (K_differentiableAt D u hu hq Z hZ ξ w z hmem hz1 hξ).comp ξ hc
+
+end
 
 theorem K_continuous_heights (u : D.Row) (hu : u.u ≠ 1) (hq : 0 < D.q u) (Z : ℝ) (hZ : 0 < Z)
     (ξ : ℂ) (hx : Scales.goodLine - EulerDomain.pad ≤ ξ.re) (hξ : D.Llam u ξ ≠ 0) :
@@ -248,9 +228,7 @@ theorem K_continuous_heights (u : D.Row) (hu : u.u ≠ 1) (hq : 0 < D.q u) (Z : 
       (fun p : ℂ × ℂ × ℂ => PoissonKernel.K D u p.1 p.2.1 p.2.2 Z)
       (ξ, (Scales.wLine : ℂ) + (s : ℂ) * Complex.I, (Scales.zLine : ℂ) + (t : ℂ) * Complex.I) := by
     intro s t
-    have hw : ((Scales.wLine : ℂ) + (s : ℂ) * Complex.I).re = Scales.wLine := by simp
-    have hz : ((Scales.zLine : ℂ) + (t : ℂ) * Complex.I).re = Scales.zLine := by simp
-    refine K_differentiableAt D u hu hq Z hZ ξ _ _ (mem_OmegaStar_of_re ξ _ _ hx hw hz) ?_ hξ
+    refine K_differentiableAt D u hu hq Z hZ ξ _ _ (mem_OmegaStar_of_re ξ _ _ hx (by simp) (by simp)) ?_ hξ
     intro h
     have := congrArg Complex.re h
     have h6 : (6 * ((Scales.zLine : ℂ) + (t : ℂ) * Complex.I)).re = 6 * Scales.zLine := by simp

@@ -18,12 +18,7 @@ namespace DedekindZetaZeroFree.KPLiteralChamber
 open KPLiteralRaw
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-theorem literal_raw_group_chart_contDiffOn (h : Functions F ζ hζ) (hh : Smooth F ζ hζ h)
-    (g : G F ζ hζ) :
-    ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun z => h (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g))
-      (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) := by
-  exact literal_raw_group_chart_contDiffOn_source F ζ hζ h hh g
+alias literal_raw_group_chart_contDiffOn := literal_raw_group_chart_contDiffOn_source
 
 end DedekindZetaZeroFree.KPLiteralChamber
 
@@ -82,11 +77,9 @@ private theorem half_smooth : ContDiffOn ℝ (⊤ : ℕ∞)
     exact he.norm_sq ℝ
   have hn (z : KPGlobalTorusFunctionData.TorusArch F)
       (hz : z ∈ KPGlobalTorusFunctionData.torusArchDomain F) :
-      (∏ w, ‖z w‖ ^ 2) ≠ 0 := by
-    exact Finset.prod_ne_zero_iff.mpr
+      (∏ w, ‖z w‖ ^ 2) ≠ 0 := Finset.prod_ne_zero_iff.mpr
       (fun w _ => pow_ne_zero _ (norm_ne_zero_iff.mpr (hz w)))
-  have hc := Complex.ofRealCLM.contDiff.comp_contDiffOn (hd.contDiffOn.sqrt hn)
-  apply hc.congr
+  apply (Complex.ofRealCLM.contDiff.comp_contDiffOn (hd.contDiffOn.sqrt hn)).congr
   intro z hz
   simp only [KPGlobalTorusFunctionData.deltaHalf,
     KPGlobalTorusBorelNormTwistTransport.AnalyticInputs.delta_chart_formula F ζ hζ z hz]
@@ -100,9 +93,7 @@ theorem literal_raw_torus_fiber_contDiffOn_source (h : Functions F ζ hζ) (hh :
         h ((KPGlobalTorusFunctionData.torusArchChart F ζ hζ z * t).val * g))
       (KPGlobalTorusFunctionData.torusArchDomain F) := by
   have hmap : Set.MapsTo (diagonalCoordinates F) (KPGlobalTorusFunctionData.torusArchDomain F)
-      (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) := by
-    intro z hz w
-    exact hz w
+      (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) := fun z hz w => hz w
   have hv := (literal_raw_group_chart_contDiffOn_source F ζ hζ h hh (t.val * g)).comp
     (diagonalCoordinates_smooth F).contDiffOn hmap
   have hv' : ContDiffOn ℝ (⊤ : ℕ∞)
@@ -113,9 +104,8 @@ theorem literal_raw_torus_fiber_contDiffOn_source (h : Functions F ζ hζ) (hh :
     intro z hz
     have hp (a : KPGlobalTorusFunctionData.E F ζ hζ) :
         KPGlobalTorusFunctionData.deltaHalf F ζ hζ a ≠ 0 := by
-      have hn : 0 < (((KPGlobalTorusFunctionData.delta F ζ hζ a : NNReal) : ℝ)) := by
-        exact_mod_cast (pos_iff_ne_zero.mpr (Units.ne_zero _))
-      exact Complex.ofReal_ne_zero.mpr (ne_of_gt (Real.sqrt_pos.mpr hn))
+      refine Complex.ofReal_ne_zero.mpr (ne_of_gt (Real.sqrt_pos.mpr ?_))
+      exact_mod_cast (pos_iff_ne_zero.mpr (Units.ne_zero _))
     exact mul_ne_zero (hp _) (hp t))
   convert hm.mul hv' using 1
   funext z
@@ -140,10 +130,7 @@ private theorem half_mul (a b : KPGlobalTorusFunctionData.E F ζ hζ) :
     KPGlobalTorusFunctionData.deltaHalf F ζ hζ (a*b) =
     KPGlobalTorusFunctionData.deltaHalf F ζ hζ a * KPGlobalTorusFunctionData.deltaHalf F ζ hζ b := by
   simp [KPGlobalTorusFunctionData.deltaHalf, map_mul, Real.sqrt_mul]
-private theorem half_ne (a : KPGlobalTorusFunctionData.E F ζ hζ) : KPGlobalTorusFunctionData.deltaHalf F ζ hζ a ≠ 0 := by
-  have hp : 0 < (((KPGlobalTorusFunctionData.delta F ζ hζ a : NNReal) : ℝ)) := by
-    exact_mod_cast (pos_iff_ne_zero.mpr (Units.ne_zero _))
-  exact Complex.ofReal_ne_zero.mpr (ne_of_gt (Real.sqrt_pos.mpr hp))
+private theorem half_ne (a : KPGlobalTorusFunctionData.E F ζ hζ) : KPGlobalTorusFunctionData.deltaHalf F ζ hζ a ≠ 0 := by apply @DedekindZetaZeroFree.KPSpatialSmoothing.half_ne_zero <;> assumption
 private def fiber (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K) (g : G F ζ hζ) :
     KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) := by
   refine ⟨fun t => (KPGlobalTorusFunctionData.deltaHalf F ζ hζ t)⁻¹ * f.val 0 (t.val * g), ?_⟩
@@ -163,24 +150,6 @@ private def fiber (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K) (g : G F ζ 
   rw [half_mul, mul_assoc, h]
   field_simp [half_ne F ζ hζ r.val, half_ne F ζ hζ t]
   <;> rfl
-
-private theorem fiber_borel_cov (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K)
-    (a t : KPGlobalTorusFunctionData.E F ζ hζ) (x : KPAdeles F) (g : G F ζ hζ) :
-    (fiber F ζ hζ K f ((a.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g)).val t =
-      KPGlobalTorusFunctionData.deltaHalf F ζ hζ a * (fiber F ζ hζ K f g).val (t * a) := by
-  change (KPGlobalTorusFunctionData.deltaHalf F ζ hζ t)⁻¹ *
-    f.val 0 (t.val * ((a.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g)) = _
-  have he : t.val * ((a.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) =
-      KPGlobalTorusFunctionData.N F ζ hζ ((KPGlobalTorusFunctionData.p F ζ hζ (t*a) : KPAdeles F) * x) * ((t*a).val * g) := by
-    rw [← mul_assoc, ← mul_assoc]
-    change (t*a).val * KPGlobalTorusFunctionData.N F ζ hζ x * g = _
-    rw [coveredTorus_normalizes_upperRoot]
-    simp [mul_assoc]
-  rw [he, literal_unipotent_invariance]
-  change _ = KPGlobalTorusFunctionData.deltaHalf F ζ hζ a *
-    ((KPGlobalTorusFunctionData.deltaHalf F ζ hζ (t*a))⁻¹ * f.val 0 ((t*a).val*g))
-  rw [half_mul]
-  field_simp [half_ne F ζ hζ t, half_ne F ζ hζ a]
 
 private theorem fiber_level (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K) (g : G F ζ hζ) :
     ∃ U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ,
@@ -206,14 +175,7 @@ private theorem fiber_level (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K) (g
   rw [he]
   exact hJ _ _ (hU u)
 
-theorem literal_raw_torus_fiber_contDiffOn (h : Functions F ζ hζ) (hh : Smooth F ζ hζ h)
-    (g : G F ζ hζ) (t : KPGlobalTorusFunctionData.E F ζ hζ) :
-    ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun z => (KPGlobalTorusFunctionData.deltaHalf F ζ hζ
-          (KPGlobalTorusFunctionData.torusArchChart F ζ hζ z * t))⁻¹ *
-        h ((KPGlobalTorusFunctionData.torusArchChart F ζ hζ z * t).val * g))
-      (KPGlobalTorusFunctionData.torusArchDomain F) := by
-  exact literal_raw_torus_fiber_contDiffOn_source F ζ hζ h hh g t
+alias literal_raw_torus_fiber_contDiffOn := literal_raw_torus_fiber_contDiffOn_source
 
 theorem literal_zero_induced_lift (K : Subgroup (G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) :
@@ -237,7 +199,19 @@ theorem literal_zero_induced_lift (K : Subgroup (G F ζ hζ))
       apply Subtype.ext
       apply Subtype.ext
       funext t
-      exact fiber_borel_cov F ζ hζ K f a t x g⟩
+      change (KPGlobalTorusFunctionData.deltaHalf F ζ hζ t)⁻¹ *
+        f.val 0 (t.val * ((a.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g)) = _
+      have he : t.val * ((a.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) =
+          KPGlobalTorusFunctionData.N F ζ hζ ((KPGlobalTorusFunctionData.p F ζ hζ (t*a) : KPAdeles F) * x) * ((t*a).val * g) := by
+        rw [← mul_assoc, ← mul_assoc]
+        change (t*a).val * KPGlobalTorusFunctionData.N F ζ hζ x * g = _
+        rw [coveredTorus_normalizes_upperRoot]
+        simp [mul_assoc]
+      rw [he, literal_unipotent_invariance]
+      change _ = KPGlobalTorusFunctionData.deltaHalf F ζ hζ a *
+        ((KPGlobalTorusFunctionData.deltaHalf F ζ hζ (t*a))⁻¹ * f.val 0 ((t*a).val*g))
+      rw [half_mul]
+      field_simp [half_ne F ζ hζ t, half_ne F ζ hζ a]⟩
   obtain ⟨J, hJ⟩ := (f.property.1 0).1.2.2
   have hp : p ∈ KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ
       (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) := by
@@ -286,26 +260,20 @@ theorem literal_zero_finite_stage (K : Subgroup (G F ζ hζ))
     { toFun := fun v => v.val
       map_add' := by intros; rfl
       map_smul' := by intros; rfl }
-  have he : Function.Injective e := by
-    intro v w h
-    exact Subtype.ext h
   obtain ⟨S, hS, hfS, hstable⟩ := f.property.2.2
   letI : Module.Finite ℂ S := hS
   let T : KPGlobalEisensteinData.CompactTypeStage
       ((KPGlobalTorusFunctionData.borelRightTranslation F ζ hζ
         (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0)).comp K.subtype) :=
     { space := S.comap e
-      finiteDimensional := by
-        exact FiniteDimensional.of_injective
+      finiteDimensional := FiniteDimensional.of_injective
           (e.restrict (fun _ hv => hv : ∀ v ∈ S.comap e, e v ∈ S))
           (by
             intro v w h
             apply Subtype.ext
-            apply he
+            apply (fun v w h => Subtype.ext h)
             exact congrArg (fun x : S => (x : Functions F ζ hζ)) h)
-      invariant := by
-        intro k v hv
-        exact hstable k (e v) hv }
+      invariant := fun k v hv => hstable k (e v) hv}
   obtain ⟨U, hU⟩ := (f.property.1 0).1.2.2
   refine ⟨U, T, ?_, hfS⟩
   intro u
@@ -313,26 +281,23 @@ theorem literal_zero_finite_stage (K : Subgroup (G F ζ hζ))
   funext g
   exact hU g u.val.val (Subgroup.mem_map.mpr ⟨u.val, u.property, rfl⟩)
 
-theorem literal_zero_mem_sourceCore (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) :
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K)
+
+theorem literal_zero_mem_sourceCore :
     literalSource F ζ hζ K f 0 ∈
       KPMsRationalCompactCrossPairing.sourceCore F ζ hζ
         (literalIwasawa F ζ hζ K hK) := by
   obtain ⟨p, hp⟩ := literal_zero_induced_lift F ζ hζ K hK f
-  have hs : literalSource F ζ hζ K f 0 ∈
-      KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ
-        (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) := by
-    refine ⟨p, ?_⟩
-    apply Subtype.ext
-    funext g
-    rw [KPGlobalTorusBorelTwistCompatibility.scalarSection_formula, hp]
-    simp [KPGlobalTorusFunctionData.deltaHalf, literalSource]
   obtain ⟨U, T, hU, hT⟩ := literal_zero_finite_stage F ζ hζ K f
-  exact Submodule.mem_iSup_of_mem U
-    (Submodule.mem_iSup_of_mem T ⟨⟨hs, hU⟩, hT⟩)
+  refine Submodule.mem_iSup_of_mem U
+    (Submodule.mem_iSup_of_mem T ⟨⟨?_, hU⟩, hT⟩)
+  refine ⟨p, ?_⟩
+  apply Subtype.ext
+  funext g
+  rw [KPGlobalTorusBorelTwistCompatibility.scalarSection_formula, hp]
+  simp [KPGlobalTorusFunctionData.deltaHalf, literalSource]
 
-def literalCore (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) :
+def literalCore :
     KPMsRationalCompactCrossPairing.Vplus F ζ hζ (literalIwasawa F ζ hζ K hK) :=
   ⟨literalSource F ζ hζ K f 0, literal_zero_mem_sourceCore F ζ hζ K hK f⟩
 end DedekindZetaZeroFree.KPLiteralChamber

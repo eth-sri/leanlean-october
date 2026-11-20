@@ -15,7 +15,7 @@ namespace DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison
 open KPContSectorCoveredQuotientVocabulary
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : CompactOpenLevel (FiniteCover F ζ hζ))
+    (U : CompactOpenLevel (FiniteCover F ζ hζ))
 
  theorem doubleCoset_open {G : Type*} [Group G] [TopologicalSpace G]
     [IsTopologicalGroup G] (Γ K : Subgroup G) : IsOpenMap (DoubleCoset.mk Γ K) := by
@@ -54,8 +54,7 @@ variable (U : CompactOpenLevel (FiniteCover F ζ hζ))
 
  theorem productEquiv_apply (a : KPSmoothActualFlowData.GInfinity F)
     (c : FiniteCover F ζ hζ) : productEquiv F ζ hζ (a, c) =
-    KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c := by
-  exact (PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ).choose_spec.1 a
+    KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c := (PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ).choose_spec.1 a
     (finiteEquiv F ζ hζ c)
 
  theorem K_U_eq : K_U F ζ hζ U =
@@ -85,8 +84,6 @@ variable (U : CompactOpenLevel (FiniteCover F ζ hζ))
 
  theorem K_U_compact : IsCompact (K_U F ζ hζ U : Set (ActualCover F ζ hζ)) := by
   rw [K_U_eq]
-  change IsCompact ((productEquiv F ζ hζ) ''
-    ((KPContSectorArchSphericalFibers.KInfinity F : Set _) ×ˢ (U.toOpenSubgroup : Set _)))
   exact ((KPContSectorArchSphericalFibers.KInfinity_compact F ζ hζ).prod U.isCompact).image
     (productEquiv F ζ hζ).continuous
 
@@ -131,9 +128,10 @@ private theorem productEquiv_rational (σ : KPCuspArithmetic.PGL2 F) :
     change b = (archRational σ * a) * t at ha
     change d = KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ σ * c * u at hc
     refine ⟨σ, ⟨u,hu⟩, ?_, hc⟩
-    have hf := (KPContSectorArchSphericalFibers.archBasepoint_eq_iff F
-      (archRational σ * a) b).mpr ⟨⟨t,ht⟩,ha⟩
-    exact hf.symm.trans (archBasepoint_rational F σ a)
+    exact ((KPContSectorArchSphericalFibers.archBasepoint_eq_iff F
+      (archRational σ * a) b).mpr ⟨⟨t,ht⟩,ha⟩).symm.trans (by
+        rw [archBasepoint_mul, archRational_action]
+        rfl)
   · rintro ⟨σ,u,hx,hc⟩
     have hf : KPMsFixedHaarDisintegration.archBasepoint F (archRational σ * a) =
         KPMsFixedHaarDisintegration.archBasepoint F b := by
@@ -186,8 +184,6 @@ def e : CoveredActual F ζ hζ U ≃ₜ CoveredSpherical F ζ hζ U where
     change Quotient.lift (sectionMap F ζ hζ U) _
       (presentationMap F ζ hζ U (productEquiv F ζ hζ (a,c))) = _
     rw [presentationMap_product]
-    change sectionMap F ζ hζ U
-      (KPMsFixedHaarDisintegration.archBasepoint F a,c) = _
     apply (relation_comparison F ζ hζ U _ _ _ _).mpr
     rw [KPContSectorArchSphericalFibers.archBasepoint_iwasawaSection]
   right_inv := by
@@ -229,8 +225,7 @@ theorem piTilde_quotientMap
         (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a *
           (c : ActualCover F ζ hζ))) =
       Quotient.mk (coveredRelation F ζ hζ U)
-        (KPMsFixedHaarDisintegration.archBasepoint F a, c) := by
-  exact e_mk F ζ hζ U a c
+        (KPMsFixedHaarDisintegration.archBasepoint F a, c) := e_mk F ζ hζ U a c
 
 theorem piTilde_continuous : Continuous (piTilde F ζ hζ U) := by
   rw [piTilde]
@@ -290,7 +285,7 @@ theorem q_eq_iff (v w : CoveredSpherical F ζ hζ U) :
     intro h
     change Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U) p =
       Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U) p' at h
-    have hs : (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U).r p p' := Quotient.exact h
+    have hs := Quotient.exact h
     obtain ⟨γ, ε, u, hx, hc⟩ := hs
     refine ⟨ε, ?_⟩
     rw [z_mk]
@@ -368,10 +363,8 @@ instance instLocallyCompactSpaceCoveredSpherical : LocallyCompactSpace (CoveredS
 instance instPolishSpaceCoveredSpherical : PolishSpace (CoveredSpherical F ζ hζ U) := by
   letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.2
   letI := ActualQuotient.actual_cover_secondCountable F ζ hζ
-  have ho : IsOpenMap (DoubleCoset.mk (Gamma F ζ hζ) (K_U F ζ hζ U)) :=
-    doubleCoset_open _ _
   letI : SecondCountableTopology (CoveredActual F ζ hζ U) :=
-    (IsOpenQuotientMap.of_isOpenMap_isQuotientMap ho isQuotientMap_quotient_mk').secondCountableTopology
+    (IsOpenQuotientMap.of_isOpenMap_isQuotientMap (doubleCoset_open _ _) isQuotientMap_quotient_mk').secondCountableTopology
   letI := (e F ζ hζ U).symm.secondCountableTopology
   exact ActualQuotient.lcsc_polish _
 
@@ -400,9 +393,8 @@ instance instLocallyCompactSpaceRawXU :
     (q_isQuotientMap F ζ hζ U)).locallyCompactSpace
 
 instance instPolishSpaceRawXU : PolishSpace (KPFiniteCuspAtlas.rawXU F ζ hζ U) := by
-  have hq := q_isQuotientMap F ζ hζ U
   letI : SecondCountableTopology (KPFiniteCuspAtlas.rawXU F ζ hζ U) :=
-    (IsOpenQuotientMap.of_isOpenMap_isQuotientMap (q_isOpenMap F ζ hζ U) hq).secondCountableTopology
+    (IsOpenQuotientMap.of_isOpenMap_isQuotientMap (q_isOpenMap F ζ hζ U) (q_isQuotientMap F ζ hζ U)).secondCountableTopology
   exact ActualQuotient.lcsc_polish _
 
 instance instBorelSpaceRawXU : BorelSpace (KPFiniteCuspAtlas.rawXU F ζ hζ U) :=

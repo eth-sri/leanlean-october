@@ -16,10 +16,14 @@ noncomputable def idealDivisorCount (F : Type) [Field F] [NumberField F]
     (n : Ideal (𝓞 F)) : ℕ :=
   Set.ncard {d : Ideal (𝓞 F) | d ≠ ⊥ ∧ d ∣ n}
 
-noncomputable def idealNormCount (F : Type) [Field F] [NumberField F] (X : ℝ) : ℕ :=
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+noncomputable def idealNormCount (X : ℝ) : ℕ :=
   Set.ncard {n : Ideal (𝓞 F) | n ≠ ⊥ ∧ (Ideal.absNorm n : ℝ) ≤ X}
 
-theorem ideal_divisors_finite (F : Type) [Field F] [NumberField F]
+theorem ideal_divisors_finite
     (n : Ideal (𝓞 F)) (hn : n ≠ ⊥) :
     {d : Ideal (𝓞 F) | d ≠ ⊥ ∧ d ∣ n}.Finite := by
   obtain ⟨x, hx, hx0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot hn
@@ -27,13 +31,13 @@ theorem ideal_divisors_finite (F : Type) [Field F] [NumberField F]
   intro d hd
   exact Ideal.le_of_dvd hd.2 hx
 
-theorem ideals_bounded_norm_finite (F : Type) [Field F] [NumberField F] (X : ℝ) :
+theorem ideals_bounded_norm_finite (X : ℝ) :
     {n : Ideal (𝓞 F) | n ≠ ⊥ ∧ (Ideal.absNorm n : ℝ) ≤ X}.Finite := by
-  refine (Ideal.finite_setOfPred_absNorm_le (S := 𝓞 F) ⌊X⌋₊).subset ?_
+  refine (Ideal.finite_setOfPred_absNorm_le ⌊X⌋₊).subset ?_
   intro n hn
   exact Nat.le_floor hn.2
 
-private theorem divisor_card (F : Type) [Field F] [NumberField F] (n : Ideal (𝓞 F)) (hn : n ≠ ⊥) :
+private theorem divisor_card (n : Ideal (𝓞 F)) (hn : n ≠ ⊥) :
     idealDivisorCount F n ≤ ∏ p ∈ (normalizedFactors n).toFinset, ((normalizedFactors n).count p + 1) := by
   classical
   let s := (normalizedFactors n).toFinset
@@ -49,13 +53,9 @@ private theorem divisor_card (F : Type) [Field F] [NumberField F] (n : Ideal (�
       intro p
       by_cases hp : p ∈ s
       · exact congrArg Fin.val (congrFun hab ⟨p, hp⟩)
-      · have hpa : p ∉ normalizedFactors a.val := by
-          intro H
-          exact hp (Multiset.mem_toFinset.mpr (Multiset.mem_of_le
+      · have hpa : p ∉ normalizedFactors a.val := fun H => hp (Multiset.mem_toFinset.mpr (Multiset.mem_of_le
             ((dvd_iff_normalizedFactors_le_normalizedFactors a.property.1 hn).mp a.property.2) H))
-        have hpb : p ∉ normalizedFactors b.val := by
-          intro H
-          exact hp (Multiset.mem_toFinset.mpr (Multiset.mem_of_le
+        have hpb : p ∉ normalizedFactors b.val := fun H => hp (Multiset.mem_toFinset.mpr (Multiset.mem_of_le
             ((dvd_iff_normalizedFactors_le_normalizedFactors b.property.1 hn).mp b.property.2) H))
         rw [Multiset.count_eq_zero.mpr hpa, Multiset.count_eq_zero.mpr hpb]
     apply Subtype.ext
@@ -67,6 +67,8 @@ private theorem divisor_card (F : Type) [Field F] [NumberField F] (n : Ideal (�
   change Fintype.card D ≤ ∏ p : s, ((normalizedFactors n).count p.val + 1) at hc
   rw [Finset.prod_coe_sort s (fun p => (normalizedFactors n).count p + 1)] at hc
   simpa only [idealDivisorCount, D, ← Nat.card_eq_fintype_card, Nat.card_coe_set_eq, s] using hc
+
+end
 private theorem local_bound (a : ℝ) (ha : 1 < a) (k : ℕ) :
     (k + 1 : ℝ) ≤ (1 + (a-1)⁻¹) * a^k := by
   have h := k.cast_le_pow_div_sub ha
@@ -80,7 +82,6 @@ private theorem local_large (a : ℝ) (ha : 2 ≤ a) (k : ℕ) :
     | zero => simp
     | succ k ih =>
       rw [pow_succ]
-      have hp : 1 ≤ (2:ℝ)^k := one_le_pow₀ (by norm_num)
       norm_num only [Nat.cast_add, Nat.cast_one]
       nlinarith
   exact h.trans (pow_le_pow_left₀ (by norm_num) ha k)
@@ -90,12 +91,12 @@ theorem ideal_divisor_bound (F : Type) [Field F] [NumberField F]
     ∃ C : ℝ, 0 < C ∧ ∀ n : Ideal (𝓞 F), n ≠ ⊥ →
       (idealDivisorCount F n : ℝ) ≤ C * (Ideal.absNorm n : ℝ) ^ ε := by
   classical
-  let a : ℝ := (2:ℝ)^ε
+  let a := (2:ℝ)^ε
   have ha : 1 < a := Real.one_lt_rpow (by norm_num) hε
-  let B : ℝ := 1 + (a-1)⁻¹
+  let B := 1 + (a-1)⁻¹
   have hB : 1 ≤ B := by dsimp [B]; have := inv_nonneg.mpr (sub_nonneg.mpr ha.le); linarith
-  let T : ℝ := (2:ℝ)^ε⁻¹
-  let e : Finset (Ideal (𝓞 F)) := (ideals_bounded_norm_finite F T).toFinset
+  let T := (2:ℝ)^ε⁻¹
+  let e := (ideals_bounded_norm_finite F T).toFinset
   refine ⟨B^e.card, pow_pos (lt_of_lt_of_le zero_lt_one hB) _, ?_⟩
   intro n hn
   let s := (normalizedFactors n).toFinset
@@ -104,25 +105,20 @@ theorem ideal_divisor_bound (F : Type) [Field F] [NumberField F]
   have hlocal (p : Ideal (𝓞 F)) (hps : p ∈ s) :
       (((normalizedFactors n).count p + 1 : ℕ) : ℝ) ≤
       (if p ∈ e then B else 1) * ((Ideal.absNorm p : ℝ)^ε)^((normalizedFactors n).count p) := by
-    have hNp : 2 ≤ (Ideal.absNorm p : ℝ) := idealNorm_prime_ge_two p (hp p hps)
-    have hap : a ≤ (Ideal.absNorm p : ℝ)^ε := Real.rpow_le_rpow (by norm_num) hNp hε.le
     by_cases hpe : p ∈ e
     · rw [if_pos hpe]
-      have hb := local_bound a ha ((normalizedFactors n).count p)
       norm_num only [Nat.cast_add, Nat.cast_one]
-      exact hb.trans (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) hap _) (by linarith : 0 ≤ B))
+      exact (local_bound a ha ((normalizedFactors n).count p)).trans (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) (Real.rpow_le_rpow (by norm_num) (idealNorm_prime_ge_two p (hp p hps)) hε.le) _) (by linarith : 0 ≤ B))
     · rw [if_neg hpe, one_mul]
       have hT : T ≤ (Ideal.absNorm p : ℝ) := by
         by_contra H
         apply hpe
         apply (ideals_bounded_norm_finite F T).mem_toFinset.mpr
         exact ⟨(hp p hps).ne_zero, le_of_lt (lt_of_not_ge H)⟩
-      have htwo : (2:ℝ) ≤ (Ideal.absNorm p : ℝ)^ε := by
-        have H := Real.rpow_le_rpow (show 0 ≤ T by positivity) hT hε.le
-        have he : T^ε = (2:ℝ) := Real.rpow_inv_rpow (by norm_num) hε.ne'
-        rwa [he] at H
       norm_num only [Nat.cast_add, Nat.cast_one]
-      exact local_large _ htwo _
+      refine local_large _ ?_ _
+      have H := Real.rpow_le_rpow (show 0 ≤ T by positivity) hT hε.le
+      rwa [(Real.rpow_inv_rpow (by norm_num) hε.ne')] at H
   have hconst : (∏ p ∈ s, if p ∈ e then B else 1) ≤ B^e.card := by
     rw [Finset.prod_ite, Finset.prod_const_one, mul_one, Finset.prod_const]
     apply pow_le_pow_right₀ hB
@@ -132,8 +128,7 @@ theorem ideal_divisor_bound (F : Type) [Field F] [NumberField F]
   have hnorm : (∏ p ∈ s, (Ideal.absNorm p : ℝ)^((normalizedFactors n).count p)) = (Ideal.absNorm n : ℝ) := by
     have hid := Ideal.prod_normalizedFactors_eq_self hn
     rw [Finset.prod_multiset_count] at hid
-    have H := congrArg (fun I : Ideal (𝓞 F) => (Ideal.absNorm I : ℝ)) hid
-    simpa only [map_prod, map_pow, Nat.cast_prod, Nat.cast_pow, s] using H
+    simpa only [map_prod, map_pow, Nat.cast_prod, Nat.cast_pow, s] using (congrArg (fun I : Ideal (𝓞 F) => (Ideal.absNorm I : ℝ)) hid)
   have heq : (∏ p ∈ s, ((Ideal.absNorm p : ℝ)^ε)^((normalizedFactors n).count p)) =
       (Ideal.absNorm n : ℝ)^ε := by
     calc
@@ -158,8 +153,7 @@ private theorem sqrt_sum (N : ℕ) : (∑ i ∈ Finset.range N, ((i+1:ℕ):ℝ)^
   have step (i : ℕ) : ((i+1:ℕ):ℝ)^(-(1/2:ℝ)) ≤ 2 * (Real.sqrt (i+1) - Real.sqrt i) := by
     rw [Real.rpow_neg (by positivity), ← Real.sqrt_eq_rpow]
     norm_num only [Nat.cast_add, Nat.cast_one]
-    have hp : 0 < Real.sqrt (i+1) := Real.sqrt_pos.2 (by positivity)
-    rw [inv_eq_one_div, div_le_iff₀ hp]
+    rw [inv_eq_one_div, div_le_iff₀ (Real.sqrt_pos.2 (by positivity))]
     have h1 := Real.sq_sqrt (show 0 ≤ (i:ℝ)+1 by positivity)
     have h0 := Real.sq_sqrt (show 0 ≤ (i:ℝ) by positivity)
     have hd := sq_nonneg (Real.sqrt (i+1) - Real.sqrt i)
@@ -173,49 +167,7 @@ private theorem sqrt_sum (N : ℕ) : (∑ i ∈ Finset.range N, ((i+1:ℕ):ℝ)^
     norm_num only [Nat.cast_add, Nat.cast_one] at *
     linarith
 
-private theorem weighted {F : Type} [Field F] [NumberField F] (K : ℝ)
-    (hK : ∀ X : ℝ, 1 ≤ X → ((normBoundedIdeals F X).ncard : ℝ) ≤ K * X)
-    (u : Finset (NonzeroIdeal F)) (N : ℕ)
-    (hN : ∀ I ∈ u, Ideal.absNorm I.val ≤ N)
-    (g : ℕ → ℝ) (hg0 : 0 ≤ g) (hg : Antitone g) :
-    ∑ I ∈ u, g (Ideal.absNorm I.val - 1) ≤ K * ∑ i ∈ Finset.range N, g i := by
-  let f : ℕ → ℝ := fun i => ((u.filter (fun I => Ideal.absNorm I.val - 1 = i)).card : ℝ)
-  have hsum (k : ℕ) : ∑ i ∈ Finset.range k, f i =
-      ((u.filter (fun I => Ideal.absNorm I.val - 1 < k)).card : ℝ) := by
-    simp only [f, ← Finset.sum_boole]
-    rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro I hI
-    simp
-  have hfc (k : ℕ) (hk : k ≤ N) : ∑ i ∈ Finset.range k, f i ≤
-      ∑ i ∈ Finset.range k, K := by
-    rw [hsum, Finset.sum_const, Finset.card_range, nsmul_eq_mul, mul_comm]
-    by_cases hk0 : k = 0
-    · simp [hk0]
-    have hsub : (↑(u.filter (fun I => Ideal.absNorm I.val - 1 < k)) : Set (NonzeroIdeal F)) ⊆
-        normBoundedIdeals F k := by
-      intro I hI
-      have hi := (Finset.mem_filter.mp hI).2
-      have hp := (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr I.property))
-      change (Ideal.absNorm I.val : ℝ) ≤ (k : ℝ)
-      exact_mod_cast (show Ideal.absNorm I.val ≤ k by omega)
-    have hc := Set.ncard_le_ncard hsub (normBoundedIdeals_finite F k)
-    have hb := hK k (by exact_mod_cast (Nat.one_le_iff_ne_zero.mpr hk0))
-    exact (by exact_mod_cast hc : ((u.filter (fun I => Ideal.absNorm I.val - 1 < k)).card : ℝ) ≤
-      ((normBoundedIdeals F k).ncard : ℝ)).trans hb
-  have he : ∑ I ∈ u, g (Ideal.absNorm I.val - 1) = ∑ i ∈ Finset.range N, f i * g i := by
-    rw [← Finset.sum_fiberwise_of_maps_to (g := fun I : NonzeroIdeal F => Ideal.absNorm I.val - 1)
-      (t := Finset.range N) (fun I hI => Finset.mem_range.mpr (by have := hN I hI; have := (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr I.property)); omega))]
-    apply Finset.sum_congr rfl
-    intro i hi
-    calc ∑ I ∈ u with Ideal.absNorm I.val - 1 = i, g (Ideal.absNorm I.val - 1)
-        = ∑ I ∈ u with Ideal.absNorm I.val - 1 = i, g i := by
-            apply Finset.sum_congr rfl
-            intro I hI
-            rw [(Finset.mem_filter.mp hI).2]
-         _ = f i * g i := by simp [f, nsmul_eq_mul]
-  rw [he, Finset.mul_sum]
-  exact Finset.sum_mul_le_sum_mul_of_sum_range_le hfc hg0 (hg.antitoneOn _)
+private alias weighted := DedekindZetaZeroFree.CountsProof.NormSeries.weighted
 
 theorem ideal_norm_summation_bounds (F : Type) [Field F] [NumberField F] :
     ∃ C : ℝ, 0 < C ∧ ∀ X : ℝ, 1 ≤ X →

@@ -69,8 +69,7 @@ private theorem mask_reindex (A : SArithmeticData F) (P Q : ℝ)
           P ≤ A.exteriorNorm h ∧ A.exteriorNorm h < 2 * P ∧
           Q ≤ A.exteriorNorm d ∧ A.exteriorNorm d < 2 * Q then f h d else 0) = 0 := by
       intro d
-      have hhh : ¬ (Powerful h.val ∧ P ≤ A.exteriorNorm h ∧
-          A.exteriorNorm h < 2 * P) := hh
+      have hhh := hh
       split_ifs with hm
       · exact False.elim (hhh ⟨hm.1, hm.2.2.2.1, hm.2.2.2.2.1⟩)
       · rfl
@@ -124,8 +123,7 @@ private theorem dyadicBound_general
           Finset.sum_congr rfl (fun _ _ => Finset.sum_comm)
         _ = _ := Finset.sum_comm
     _ ≤ ∑ _v : R.A.UnitQuotient,
-        K * Z ^ δ * Real.sqrt P * (Q + Q ^ 2 * P / Z) := by
-      exact Finset.sum_le_sum (fun v _ => hb v Z P Q hZ hP hQ hPQ)
+        K * Z ^ δ * Real.sqrt P * (Q + Q ^ 2 * P / Z) := Finset.sum_le_sum (fun v _ => hb v Z P Q hZ hP hQ hPQ)
     _ ≤ _ := by
       simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
       have hscale : 0 ≤ K * Z ^ δ * Real.sqrt P * (Q + Q ^ 2 * P / Z) := by
@@ -141,8 +139,10 @@ namespace DedekindZetaZeroFree.Quantitative
 open DedekindZetaZeroFree
 open scoped NumberField Classical
 
-theorem FixedData.moment {F : Type} [Field F] [NumberField F]
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus} (D : FixedData S η)
+variable {F : Type} [Field F] [NumberField F] {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
+
+theorem FixedData.moment
     (m : ℝ) (hm : 1 < m) (B : Set D.recipe.A.G) (hB : IsCompact B)
     (Cstar : ℝ) (hCstar : 0 < Cstar) (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z →
@@ -162,8 +162,7 @@ theorem FixedData.moment {F : Type} [Field F] [NumberField F]
   intro Z hZ rows hrows
   exact hbound Z (by linarith) rows hrows
 
-theorem FixedData.moment_m₀ {F : Type} [Field F] [NumberField F]
-    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus} (D : FixedData S η)
+theorem FixedData.moment_m₀
     (B : Set D.recipe.A.G) (hB : IsCompact B)
     (Cstar : ℝ) (hCstar : 0 < Cstar) (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z →

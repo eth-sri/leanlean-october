@@ -12,9 +12,9 @@ namespace DedekindZetaZeroFree.FourierContinuation.ResidualSphericalAverage
 open KPContSectorCoveredQuotientVocabulary KPContSectorScalarLineAlgebra KPContSectorSmoothFramesSupport
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
-open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison renaming K_U_compact → K_U_compact
+open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison (K_U_compact)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
 local notation "G" => ActualCover F ζ hζ
 local instance : MeasurableSpace (K_U F ζ hζ U) := borel (K_U F ζ hζ U)
 local instance : BorelSpace (K_U F ζ hζ U) := ⟨rfl⟩
@@ -34,8 +34,6 @@ theorem exists_smooth_average (ν : Measure (K_U F ζ hζ U))
           (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)) =
       ResidualRawAverage.average F ζ hζ (K_U F ζ hζ U) ν f g := by
   let a := ResidualRawAverage.average F ζ hζ (K_U F ζ hζ U) ν f
-  have ha := ResidualRawAverage.average_smooth F ζ hζ (K_U F ζ hζ U)
-    (K_U_compact F ζ hζ U) ν f hf
   have har (γ : Gamma F ζ hζ) (g : G) : a (γ.val*g)=a g := by
     apply integral_congr_ae
     filter_upwards with k
@@ -47,8 +45,8 @@ theorem exists_smooth_average (ν : Measure (K_U F ζ hζ U))
     dsimp [a, ResidualRawAverage.average]
     simp_rw [mul_assoc, hc]
     exact integral_const_mul _ _
-  let d := ResidualAverageDescent.smoothDescent F ζ hζ U a ha.2.1 har hak hac
-  refine ⟨smoothS F ζ hζ U R P H d, ?_⟩
+  refine ⟨smoothS F ζ hζ U R P H (ResidualAverageDescent.smoothDescent F ζ hζ U a (ResidualRawAverage.average_smooth F ζ hζ (K_U F ζ hζ U)
+    (K_U_compact F ζ hζ U) ν f hf).2.1 har hak hac), ?_⟩
   intro g
   rw [smoothS_apply, LinearEquiv.symm_apply_apply]
   exact ResidualAverageDescent.descend_pin F ζ hζ U a har hak g

@@ -32,9 +32,9 @@ theorem disk_subset_zero_free_region (ρ : ℝ) (hρ : 0 < ρ) :
         {s : ℂ | σ₀ < s.re ∧ |s.im| < 4 * U ^ ρ} := by
   refine ⟨2, le_refl _, fun U hU t ht s hs => ?_⟩
   rw [Metric.mem_ball, dist_eq_norm] at hs
-  have hre : |(s - ((2 : ℂ) + (t : ℂ) * Complex.I)).re| < R₀ :=
+  have hre :=
     lt_of_le_of_lt (Complex.abs_re_le_norm _) hs
-  have him : |(s - ((2 : ℂ) + (t : ℂ) * Complex.I)).im| < R₀ :=
+  have him :=
     lt_of_le_of_lt (Complex.abs_im_le_norm _) hs
   have e1 : (s - ((2 : ℂ) + (t : ℂ) * Complex.I)).re = s.re - 2 := by simp
   have e2 : (s - ((2 : ℂ) + (t : ℂ) * Complex.I)).im = s.im - t := by simp
@@ -53,7 +53,7 @@ theorem disk_subset_zero_free_region (ρ : ℝ) (hρ : 0 < ρ) :
     constructor <;> linarith
 
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    (D : FixedData S η)
 
 theorem reciprocal_log_disk (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) :

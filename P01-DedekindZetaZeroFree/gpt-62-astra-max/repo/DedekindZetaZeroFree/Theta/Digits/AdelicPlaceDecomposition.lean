@@ -11,11 +11,10 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open scoped Classical NumberField
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_rationalUnit → eval_rationalUnit
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_localIdele → eval_localIdele
+open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting (eval_rationalUnit eval_localIdele)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def restrictTuple (E : Set (KPHilbert.Place F)) :
     KPAdelicCoverRestrictedProduct.RestrictedCover F R.A.zeta12 R.A.primitive_zeta12 →*
@@ -46,8 +45,7 @@ abbrev sRestriction := restrictTuple R (exteriorPlaces R)ᶜ
 @[simp] theorem exteriorPlaces_finite (p : KPFinitePlace F) : Sum.inr p ∈ exteriorPlaces R ↔ p ∉ R.A.Sf := by
   constructor
   · rintro ⟨q, h⟩
-    have he : p = q.val := Sum.inr_injective h
-    exact he.symm ▸ q.property
+    exact (Sum.inr_injective h).symm ▸ q.property
   · intro hp; exact ⟨⟨p, hp⟩, rfl⟩
 
 theorem splitTuple (a : KPAdelicCoverRestrictedProduct.RestrictedCover F R.A.zeta12 R.A.primitive_zeta12) :
@@ -80,18 +78,14 @@ theorem reverseTuple_exterior (x : Fˣ) (y : R.A.G) (m : ThetaReflectionData.Row
   rw [sDiagonal_exterior R y p.val p.property, mul_one]
   rw [← mul_assoc]
   congr 2
-  change KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) _ =
-    KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) _
-  have hr := eval_rationalUnit F (Sum.inr p.val) x
   have hl := eval_localIdele F (Sum.inr p.val) (Sum.inr p.val)
     (Units.map (algebraMap F (p.val.adicCompletion F)).toMonoidHom x)
   simp only [Pi.mulSingle_eq_same] at hl
-  exact congrArg (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val)) (hr.trans hl.symm)
+  exact congrArg (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val)) ((eval_rationalUnit F (Sum.inr p.val) x).trans hl.symm)
 
 theorem reverseTuple_period {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (x : Fˣ) (y : R.A.G) (m : ThetaReflectionData.Row R.A)
     (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property)) :
-    Function.HasFiniteMulSupport (ThetaExpansion.SignedExpansion.exteriorDigitFactor R C m x d) ∧
     fourier R C.sources.dq (C.realization.theta v) (restrictedLift R (reverseTuple R x y m d)) =
       (∏ᶠ p : ThetaBranch.ExteriorPrime R.A, ThetaExpansion.SignedExpansion.exteriorDigitFactor R C m x d p) *
       fourier R C.sources.dq (C.realization.theta v)
@@ -111,7 +105,6 @@ theorem reverseTuple_period {N : TraceHaarTransport R} (C : JointUpperVanishingS
     rw [reverseTuple_exterior]
     rfl
   simp_rw [he] at h
-  refine ⟨h.1, ?_⟩
   have hb := congrArg (restrictedLift R) (splitTuple R b)
   rw [map_mul] at hb
   rw [hb]

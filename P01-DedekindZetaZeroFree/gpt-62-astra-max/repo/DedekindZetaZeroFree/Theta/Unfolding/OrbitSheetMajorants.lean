@@ -10,8 +10,8 @@ open MomentSources MeasureTheory ThetaProfileHaarSheets ThetaSheetExactUnfolding
 open ThetaExpansion.SignedExpansion
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem branch_norm_one {Q : AdmissibleFlatSources R} (P : Packet R Q)
     (v : R.A.UnitQuotient) (y : R.A.G) : ‖P.branch v y‖ = 1 := by
@@ -39,7 +39,7 @@ theorem orbitSheet_norm_le {N : TraceHaarTransport R} (C : JointUpperVanishingSo
   unfold orbitSheet
   split_ifs
   · simp only [one_mul, norm_mul, norm_inv, branch_norm_one, inv_one]
-    simpa only [one_mul, norm_mul] using norm_sum_le Finset.univ (fun d : ThetaDigitAverage.Dig
+    simpa using norm_sum_le Finset.univ (fun d : ThetaDigitAverage.Dig
       (ThetaDigitAverage.rowPrimes R.A m.val m.property) =>
       digitWeight R m d * orbitFrequencyValue R C.sources C.realization v i
         (signedArgument R m b z.val d))

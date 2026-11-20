@@ -37,7 +37,7 @@ theorem product_eq_of_compact_slices {I : Type*} [Fintype I] [DecidableEq I]
     induction s using Finset.induction_on with
     | empty =>
       intro g k
-      simpa only [Finset.notMem_empty, ite_false] using he k
+      simpa using he k
     | @insert w s hw ih =>
       intro g k
       let a := fun u => if u ∈ s then g u else complexSU2Embedding (k u)
@@ -68,7 +68,7 @@ theorem product_eq_of_compact_slices {I : Type*} [Fintype I] [DecidableEq I]
       rw [ha] at hx
       exact hx
   funext g
-  simpa only [Finset.mem_univ, ite_true] using hs Finset.univ g (fun _ => 1)
+  simpa using hs Finset.univ g (fun _ => 1)
 
 end DedekindZetaZeroFree.SheetRescaling.WeylTensorTransport
 

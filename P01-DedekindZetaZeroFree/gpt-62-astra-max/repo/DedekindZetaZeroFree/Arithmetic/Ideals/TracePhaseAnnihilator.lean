@@ -18,8 +18,10 @@ namespace DedekindZetaZeroFree.Hecke
 
 variable {F : Type} [Field F] [NumberField F]
 
-theorem mem_traceDualFractionalIdeal_iff_tracePhase_eq_one
-    (I : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hI : I ≠ 0) (z : F) :
+variable (I : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hI : I ≠ 0)
+
+include hI in
+theorem mem_traceDualFractionalIdeal_iff_tracePhase_eq_one (z : F) :
     z ∈ traceDualFractionalIdeal I ↔
       ∀ x : F, x ∈ I → rationalTracePhase (Algebra.trace ℚ F (x * z)) = 1 := by
   rw [traceDualFractionalIdeal, FractionalIdeal.mem_dual hI]
@@ -27,21 +29,18 @@ theorem mem_traceDualFractionalIdeal_iff_tracePhase_eq_one
     rationalTracePhase_eq_one_iff]
   rfl
 
+include hI in
 theorem tracePhase_eq_one_of_mem_dual
-    (I : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hI : I ≠ 0)
     {x z : F} (hx : x ∈ I) (hz : z ∈ traceDualFractionalIdeal I) :
-    rationalTracePhase (Algebra.trace ℚ F (x * z)) = 1 := by
-  exact (mem_traceDualFractionalIdeal_iff_tracePhase_eq_one I hI z).mp hz x hx
+    rationalTracePhase (Algebra.trace ℚ F (x * z)) = 1 := (mem_traceDualFractionalIdeal_iff_tracePhase_eq_one I hI z).mp hz x hx
 
-@[simp] theorem traceDualFractionalIdeal_traceDualFractionalIdeal
-    (I : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hI : I ≠ 0) :
-    traceDualFractionalIdeal (traceDualFractionalIdeal I) = I := by
-  exact FractionalIdeal.dual_dual ℤ ℚ I
+include hI in
+@[simp] theorem traceDualFractionalIdeal_traceDualFractionalIdeal :
+    traceDualFractionalIdeal (traceDualFractionalIdeal I) = I := FractionalIdeal.dual_dual ℤ ℚ I
 
-theorem traceDualFractionalIdeal_ne_zero
-    (I : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hI : I ≠ 0) :
-    traceDualFractionalIdeal I ≠ 0 := by
-  exact FractionalIdeal.dual_ne_zero ℤ ℚ hI
+include hI in
+theorem traceDualFractionalIdeal_ne_zero :
+    traceDualFractionalIdeal I ≠ 0 := FractionalIdeal.dual_ne_zero ℤ ℚ hI
 
 end DedekindZetaZeroFree.Hecke
 

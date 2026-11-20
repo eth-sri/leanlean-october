@@ -18,11 +18,9 @@ theorem exists_offset_source_recipe
   obtain ⟨L, hL⟩ := matching_levels F ζ hζ
   refine ⟨{ atlasLevel := L, level_matching := hL, height_normalized := ?_ }⟩
   intro U j a p t ε u ha
-  have hu : u.val ∈ (L U).toOpenSubgroup.toSubgroup.map
-      (KPFiniteCuspAtlas.FiniteCover F ζ hζ).subtype := by
+  obtain ⟨v, hv, he⟩ := Subgroup.mem_map.mp (by
     rw [← hL U]
-    exact u.property
-  obtain ⟨v, hv, he⟩ := Subgroup.mem_map.mp hu
+    exact u.property)
   change v.val = u.val at he
   have hcentral : (KPCuspGenuineMonodromy.central F ζ hζ ε).val =
       KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε := rfl

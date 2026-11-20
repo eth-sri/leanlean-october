@@ -22,25 +22,33 @@ def Covariant (B : Subgroup G) (σ : Representation ℂ B V) (f : G → V) : Pro
   (∀ (b : B) (g : G), f ((b : G) * g) = σ b (f g)) ∧
   SmoothVector rightTranslation f
 
-def CompactCovariant (B : Subgroup G) (L : OpenSubgroup G)
-    (σ : Representation ℂ B V) (φ : L → V) : Prop :=
+section
+
+variable (B : Subgroup G) (L : OpenSubgroup G) (σ : Representation ℂ B V)
+
+def CompactCovariant (φ : L → V) : Prop :=
   (∀ (b : B) (k k' : L), (k' : G) = (b : G) * (k : G) → φ k' = σ b (φ k)) ∧
   SmoothVector rightTranslation φ
 
-def compactExtension (B : Subgroup G) (L : OpenSubgroup G)
-    (σ : Representation ℂ B V) (r : G → B) (k : G → L) (φ : L → V) : G → V :=
+def compactExtension (r : G → B) (k : G → L) (φ : L → V) : G → V :=
   fun g => σ (r g) (φ (k g))
+
+end
 
 def CompactFixed (L : OpenSubgroup G) (J : OpenSubgroup G) (φ : L → V) : Prop :=
   ∀ (j : J) (k k' : L), (k' : G) = (k : G) * (j : G) → φ k' = φ k
 
-private theorem extension_restrict (B : Subgroup G) (L : OpenSubgroup G)
+section
+
+variable (B : Subgroup G) (L : OpenSubgroup G)
+
+private theorem extension_restrict
     (σ : Representation ℂ B V) (r : G → B) (k : G → L)
     (hr : ∀ l : L, r (l : G) = 1) (hk : ∀ l : L, k (l : G) = l)
     (φ : L → V) (l : L) : compactExtension B L σ r k φ l = φ l := by
   simp [compactExtension, hr, hk]
 
-private theorem extension_covariance (B : Subgroup G) (L : OpenSubgroup G)
+private theorem extension_covariance
     (σ₀ σ : Representation ℂ B V) (r : G → B) (k : G → L)
     (hdec : ∀ g : G, g = (r g : G) * (k g : G))
     (hagree : ∀ b : B, (b : G) ∈ L → σ b = σ₀ b)
@@ -48,29 +56,30 @@ private theorem extension_covariance (B : Subgroup G) (L : OpenSubgroup G)
     ∀ (b : B) (g : G), compactExtension B L σ r k φ ((b : G) * g) =
       σ b (compactExtension B L σ r k φ g) := by
   intro b g
-  let a : B := (r ((b : G) * g))⁻¹ * b * r g
-  have heq : (k ((b : G) * g) : G) = (a : G) * (k g : G) := by
+  let r₀ := r ((b : G) * g)
+  let a := (r₀)⁻¹ * b * r g
+  let k₀ := k ((b : G) * g)
+  have heq : (k₀ : G) = (a : G) * (k g : G) := by
     have h := hdec ((b : G) * g)
     conv at h => lhs; rhs; rw [hdec g]
     dsimp [a]
-    apply (mul_left_cancel (a := (r ((b : G) * g) : G)))
+    apply (mul_left_cancel (a := (r₀ : G)))
     simpa [mul_assoc] using h.symm
   have ha : (a : G) ∈ L := by
-    have hh : (a : G) = (k ((b : G) * g) : G) * (k g : G)⁻¹ := by
+    have hh : (a : G) = (k₀ : G) * (k g : G)⁻¹ := by
       rw [heq]; group
     rw [hh]
     exact L.mul_mem (k _).property (L.inv_mem (k _).property)
-  have hv := hφ.1 a (k g) (k ((b : G) * g)) heq
   unfold compactExtension
-  rw [hv, ← hagree a ha]
-  change (σ (r ((b : G) * g)) * σ a) (φ (k g)) =
+  rw [(hφ.1 a (k g) (k₀) heq), ← hagree a ha]
+  change (σ (r₀) * σ a) (φ (k g)) =
     (σ b * σ (r g)) (φ (k g))
   rw [← map_mul, ← map_mul]
   congr 2
   dsimp [a]
   group
 
-private theorem extension_fixed (B : Subgroup G) (L : OpenSubgroup G)
+private theorem extension_fixed
     (σ : Representation ℂ B V) (r : G → B) (k : G → L)
     (hdec : ∀ g : G, g = (r g : G) * (k g : G))
     (hr : ∀ l : L, r (l : G) = 1) (hk : ∀ l : L, k (l : G) = l)
@@ -98,7 +107,7 @@ private theorem extension_fixed (B : Subgroup G) (L : OpenSubgroup G)
       extension_restrict B L σ r k hr hk φ l] at hh
     exact hh
 
-theorem fixed_iwasawa_laws (B : Subgroup G) (L : OpenSubgroup G)
+theorem fixed_iwasawa_laws
     (σ₀ σ : Representation ℂ B V) (r : G → B) (k : G → L)
     (hdec : ∀ g : G, g = (r g : G) * (k g : G))
     (hr : ∀ l : L, r (l : G) = 1) (hk : ∀ l : L, k (l : G) = l)
@@ -187,6 +196,8 @@ theorem fixed_iwasawa_laws (B : Subgroup G) (L : OpenSubgroup G)
   · intro J hJ φ hφ
     exact extension_fixed B L σ r k hdec hr hk φ (hext φ hφ).1 J hJ
 
+end
+
 def compactFixedSpace (B : Subgroup G) (L J : OpenSubgroup G)
     (σ₀ : Representation ℂ B V) : Submodule ℂ (L → V) where
   carrier := {φ | CompactCovariant B L σ₀ φ ∧ CompactFixed L J φ}
@@ -237,13 +248,11 @@ theorem finite_level_and_holomorphic [IsTopologicalGroup G]
       Differentiable ℂ (fun s => eval (compactExtension B L (σ s) r k φ.val (x * g)))) := by
   constructor
   · intro U _ _ ev hev
-    let K : Subgroup L := (J : Subgroup G).subgroupOf (L : Subgroup G)
-    have hK : IsOpen (K : Set L) :=
-      (J.isOpen).preimage continuous_subtype_val
+    let K := J.subgroupOf L
     haveI : IsTopologicalGroup L :=
-      Topology.IsInducing.subtypeVal.isTopologicalGroup (L : Subgroup G).subtype
+      Topology.IsInducing.subtypeVal.isTopologicalGroup L.subtype
     haveI : CompactSpace L := isCompact_iff_compactSpace.mp hL
-    haveI : Finite (L ⧸ K) := Subgroup.quotient_finite_of_isOpen K hK
+    haveI : Finite (L ⧸ K) := Subgroup.quotient_finite_of_isOpen K ((J.isOpen).preimage continuous_subtype_val)
     let E : compactFixedSpace B L J σ₀ →ₗ[ℂ] ((L ⧸ K) → V) :=
       { toFun := fun φ q => φ.val (Quotient.out q)
         map_add' := by intros; rfl
@@ -254,14 +263,12 @@ theorem finite_level_and_holomorphic [IsTopologicalGroup G]
       funext l
       let q : L ⧸ K := QuotientGroup.mk l
       have hj : ((l : G)⁻¹ * (Quotient.out q : L)) ∈ J := by
-        have hmem : l⁻¹ * Quotient.out q ∈ K :=
+        have hmem :=
           QuotientGroup.eq.mp (Quotient.out_eq q).symm
         exact hmem
       have hprod : (Quotient.out q : L) = (l : G) *
           ((⟨_, hj⟩ : J) : G) := by simp
-      have hφ := φ.property.2 ⟨_, hj⟩ l (Quotient.out q) hprod
-      have hψ := ψ.property.2 ⟨_, hj⟩ l (Quotient.out q) hprod
-      exact hφ.symm.trans ((congrFun he q).trans hψ)
+      exact (φ.property.2 ⟨_, hj⟩ l (Quotient.out q) hprod).symm.trans ((congrFun he q).trans (ψ.property.2 ⟨_, hj⟩ l (Quotient.out q) hprod))
     haveI : Module.Finite ℂ ((L ⧸ K) → V) := inferInstance
     haveI : Module.Finite ℂ (compactFixedSpace B L J σ₀) :=
       Module.Finite.of_injective E hE

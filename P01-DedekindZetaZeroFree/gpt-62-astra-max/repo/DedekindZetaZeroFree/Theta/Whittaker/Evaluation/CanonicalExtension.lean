@@ -12,14 +12,14 @@ namespace DedekindZetaZeroFree.FourierContinuation.CurrentOutputExtension
 open MomentSources KPGlobalTorusFiniteStages KPGlobalResidualConstruction KPCplxPrincipalSeriesCharts ComplexLines
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 
 variable (s : RestrictedTensorSimple.Level (LiteralSource.bad R.A P C))
-variable (x : ∀j : s.val,LiteralSource.Plus R.A P C j.val)
-variable (w : InfinitePlace F) (hw : Sum.inl w∈s.val)
+    (x : ∀j : s.val,LiteralSource.Plus R.A P C j.val)
+    (w : InfinitePlace F) (hw : Sum.inl w∈s.val)
 
 include N  in
 theorem actualSlot_bound : CompactBound (actualSlot R P C s x w hw) := by

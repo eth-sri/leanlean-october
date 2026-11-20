@@ -30,9 +30,8 @@ theorem right_automorphic (f : Functions F ζ hζ) (hf : Automorphic F ζ hζ f)
   · intro g
     exact ArchRegularity.right_translate_arch_slice_smooth F ζ hζ f hf.1 g a
   · intro g b hb
-    have hc := hV a (Set.mem_singleton a) b hb
     change f ((g*b)*a) = f (g*a)
-    rw [show (g*b)*a = (g*a)*(a⁻¹*b*a) by group, hU _ _ hc]
+    rw [show (g*b)*a = (g*a)*(a⁻¹*b*a) by group, hU _ _ (hV a (Set.mem_singleton a) b hb)]
   · intro γ g
     simpa only [mul_assoc] using hf.2.1 γ (g*a)
   · intro ε g
@@ -67,7 +66,7 @@ theorem flat_root_approximation
       ((TensorActionSource.literalZeroProfileEquiv hK).symm v)) = _
     rw [LinearEquiv.apply_symm_apply]
     exact hv
-  have hauto := (representative_convolution_automorphic_kfinite F ζ hζ K hK.1 μ h hh φ hφ).1
+  have hauto := convolution_automorphic F ζ hζ K hK.1 μ h φ hφ
   refine ⟨b, hb ▸ hauto, ?_⟩
   intro x
   obtain ⟨y,hy,heval⟩ := hrep x
@@ -101,9 +100,8 @@ theorem exists_flat_period_ne_zero
     A.cleared b.val 0 (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out x))
   have hv : ∀ b:I, Integrable (fun x => v b x * star (ψ.toAddChar x)) μ := by
     intro b
-    have hb := (KPLiteralPeriod.haar_fourier_vanishing_forces_root_invariance
-      F ζ hζ ψ hψ μ hμ (A.cleared b.val 0) b.property).2.2.1 (1:G F ζ hζ)
-    simpa only [v,mul_one] using hb
+    simpa using ((KPLiteralPeriod.haar_fourier_vanishing_forces_root_invariance
+      F ζ hζ ψ hψ μ hμ (A.cleared b.val 0) b.property).2.2.1 (1:G F ζ hζ))
   have happrox : ∀ ε:ℝ, 0 < ε → ∃ b:I, ∀ x,
       ‖v b x - A.cleared f 0 (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out x)*a)‖ < ε := by
     intro ε hε

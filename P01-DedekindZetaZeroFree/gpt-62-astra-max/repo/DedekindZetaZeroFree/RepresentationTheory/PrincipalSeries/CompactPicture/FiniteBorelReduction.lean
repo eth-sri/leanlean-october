@@ -13,8 +13,8 @@ open KPLiteralRaw KPAdelicCoverRestrictedProduct KPLiteralScalarHCFiniteInsertio
 open KPLiteralScalarHCFiniteRoot KPLiteralScalarHCFiniteProduct KPLiteralScalarHCFiniteOutside
 open KPLiteralScalarHCCompactOrbit KPCplxCharacterHaar
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-variable (S : KPLocalExceptionalConstruction.CanonicalFiniteInducingData F ζ hζ q)
+    (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+    (S : KPLocalExceptionalConstruction.CanonicalFiniteInducingData F ζ hζ q)
 
 theorem canonical_borel_root_torus (b : S.borel.B) :
     ∃ u : q.adicCompletion F,
@@ -51,7 +51,7 @@ theorem canonical_borel_half_torus (b : S.borel.B) :
   simp only [KPLocalPrincipalSeries.deltaHalf, S.borel.retract_torus]
 
 variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-variable (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)
+    (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)
 
 variable (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
 

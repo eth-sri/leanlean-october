@@ -10,28 +10,16 @@ set_option backward.isDefEq.respectTransparency false
 open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalWordRegularity
 open KPMsClearedTruncationL2
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalFiniteLevelSmooth renaming upstairs_smooth_finiteLevel_rawSmooth → upstairs_smooth_finiteLevel_rawSmooth
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : Level F ζ hζ}
+    {U : Level F ζ hζ}
 
 private theorem finitePart_eq : KPGlobalTorusFunctionData.finitePart F ζ hζ =
-    ActualQuotient.finiteSubgroup F ζ hζ := by
-  unfold KPGlobalTorusFunctionData.finitePart ActualQuotient.finiteSubgroup
-  congr 1
-  ext x
-  simp [ActualQuotient.finiteTuples, Subgroup.mem_iInf, MonoidHom.mem_ker]
+    ActualQuotient.finiteSubgroup F ζ hζ := by apply @DedekindZetaZeroFree.KPMsClearedTruncationL2.ActualWordSpatial.finitePart_eq <;> assumption
 
-private theorem word_smoothAutomorphic (v : smoothSpace F ζ hζ U)
-    (w : List (KPSmoothActualFlowData.B F)) :
-    KPSmoothActualFlowData.SmoothAutomorphic F ζ hζ
-      (KPSmoothActualFlowData.wordDerivative F ζ hζ w v.val) := by
-  exact ⟨ActualWordSpatial.word_continuous F ζ hζ U v.val v.property.1
-    v.property.2.1 w,
-    ActualWordLinearity.word_orbit_contDiff F ζ hζ v.val v.property.1 w⟩
+variable (v : smoothSpace F ζ hζ U) (w : List (KPSmoothActualFlowData.B F))
 
 private theorem word_centre_covariant
-    (v : smoothSpace F ζ hζ U) (w : List (KPSmoothActualFlowData.B F))
     (g : G F ζ hζ) (ε : rootsOfUnity 3 F) :
     KPSmoothActualFlowData.wordDerivative F ζ hζ w v.val
       (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
@@ -59,10 +47,11 @@ private theorem word_centre_covariant
     simp only [SmoothDescent.rightTranslate_quotientMap]
     rw [he, deriv_const_mul_field]
 
- theorem word_mem_smoothSpace (v : smoothSpace F ζ hζ U)
-    (w : List (KPSmoothActualFlowData.B F)) :
+ theorem word_mem_smoothSpace :
     KPSmoothActualFlowData.wordDerivative F ζ hζ w v.val ∈ smoothSpace F ζ hζ U := by
-  refine ⟨word_smoothAutomorphic v w, ?_, word_centre_covariant v w⟩
+  refine ⟨(⟨ActualWordSpatial.word_continuous F ζ hζ U v.val v.property.1
+    v.property.2.1 w,
+    ActualWordLinearity.word_orbit_contDiff F ζ hζ v.val v.property.1 w⟩), ?_, word_centre_covariant v w⟩
   intro g u
   exact ActualWordSpatial.word_right_invariant F ζ hζ v.val u.val
     (fun a => RepresentationTheory.ArchFiniteSplitting.insertion_commutes_finite F ζ hζ a

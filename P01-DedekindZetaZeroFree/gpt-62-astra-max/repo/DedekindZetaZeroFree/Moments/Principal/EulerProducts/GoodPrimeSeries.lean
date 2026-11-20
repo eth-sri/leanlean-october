@@ -13,16 +13,17 @@ namespace DedekindZetaZeroFree.LocalFiniteSums
 set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 private lemma good_series_Q_gt_one (p : ExteriorPrime A) : 1 < Q p := by
   change 1 < (Ideal.absNorm p.val.asIdeal : ℝ)
   exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm p.val
+
+alias GoodPrimeSeries.good_series_Q_gt_one := good_series_Q_gt_one
 private lemma good_series_Ctk_bound (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (t k J : ℕ) : ‖Ctk C p t k J‖ ≤ Q p ^ (t+k) := by
   have hQ := good_series_Q_gt_one p
-  have hQ0 : 0 < Q p := lt_trans zero_lt_one hQ
   rcases t with _ | t
   · rcases k with _ | k
     · simp [Ctk_zero_zero]
@@ -31,7 +32,7 @@ private lemma good_series_Ctk_bound (C : A.GeneralArithmeticContext σ η hS) (p
       · exact one_le_pow₀ hQ.le
       · positivity
   · rcases k with _ | _ | k
-    · simpa using norm_Ctk_zero_le C p (t+1) J (by omega)
+    · exact norm_Ctk_zero_le C p (t+1) J (by omega)
     · refine (norm_Ctk_one_le C p (t+1) J (by omega)).trans ?_
       rw [← Real.rpow_natCast]
       apply Real.rpow_le_rpow_of_exponent_le hQ.le
@@ -40,11 +41,16 @@ private lemma good_series_Ctk_bound (C : A.GeneralArithmeticContext σ η hS) (p
     · rw [Ctk_eq_zero_of_two_le C p (t+1) (k+2) J (by omega) (by omega)]
       simp only [norm_zero]
       positivity
-private lemma good_series_vartheta_norm (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) : ‖vartheta C p‖ = 1 := by
-  exact Circle.norm_coe _
+
+alias GoodPrimeSeries.good_series_Ctk_bound := good_series_Ctk_bound
+private lemma good_series_vartheta_norm (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) : ‖vartheta C p‖ = 1 := Circle.norm_coe _
+
+alias GoodPrimeSeries.good_series_vartheta_norm := good_series_vartheta_norm
 private lemma good_series_qPower_norm (p : ExteriorPrime A) (s : ℂ) :
     ‖qPower p s‖ = Real.exp (s.re * Real.log (Q p)) := by
   simp [qPower, Complex.norm_exp]
+
+alias GoodPrimeSeries.good_series_qPower_norm := good_series_qPower_norm
 private lemma good_series_term_bound (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1}) (e : Fin 2) (l k m : ℕ) (ξ w z : ℂ) :
     ‖seriesTerm C p j θ e l k m ξ w z‖ ≤
@@ -52,11 +58,10 @@ private lemma good_series_term_bound (C : A.GeneralArithmeticContext σ η hS) (
       (Real.exp ((2 - 3 * ξ.re) * Real.log (Q p))) ^ l *
       (Real.exp ((1 - w.re) * Real.log (Q p))) ^ k *
       (Real.exp ((-6 * z.re) * Real.log (Q p))) ^ m := by
-  have hQ0 : 0 < Q p := lt_trans zero_lt_one (good_series_Q_gt_one p)
   have hc := good_series_Ctk_bound C p (e.val + 3*l) k (j.val+6*m)
   have hpow : Q p ^ (e.val+3*l+k) =
       Real.exp (((e.val+3*l+k : ℕ) : ℝ) * Real.log (Q p)) := by
-    rw [Real.exp_nat_mul, Real.exp_log hQ0]
+    rw [Real.exp_nat_mul, Real.exp_log (lt_trans zero_lt_one (good_series_Q_gt_one p))]
   unfold seriesTerm
   simp only [norm_mul, norm_pow, norm_zpow, θ.property, one_zpow, good_series_vartheta_norm,
     one_pow, mul_one, good_series_qPower_norm]
@@ -72,6 +77,8 @@ private lemma good_series_term_bound (C : A.GeneralArithmeticContext σ η hS) (
       simp
       push_cast
       ring
+
+alias GoodPrimeSeries.good_series_term_bound := good_series_term_bound
 
 theorem good_euler_series_summable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1})
@@ -130,18 +137,22 @@ private lemma good_strict_tau_period (C : A.GeneralArithmeticContext σ η hS) (
   unfold tau
   rw [T_eq_finiteField, T_eq_finiteField]
   simp only [SArithmeticData.sexticExponent, h]
+
+alias GoodPrimeSeries.good_strict_tau_period := good_strict_tau_period
 private lemma good_strict_shell_six_kzero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (d m : ℕ) (hd : 0 < d) :
     Ctk C p (6*d) 0 (6*m) =
       if d ≤ m then (Q p : ℂ)^(6*d-1)*((Q p : ℂ)-1) else 0 := by
   rw [Ctk_pos_zero C p _ _ (by omega), T_generator_power]
-  have hdvd : (6 : ℤ) ∣ (6*d : ℕ) := by exact ⟨(d : ℤ), by push_cast; ring⟩
+  have hdvd : (6 : ℤ) ∣ (6*d : ℕ) := ⟨(d : ℤ), by push_cast; ring⟩
   simp only [hdvd, if_true]
   have hle : 6*d-1 ≤ 6*m ↔ d ≤ m := by omega
   by_cases hdm : d ≤ m
   · have hne : 6*m-(6*d-1) ≠ 0 := by omega
     simp [hle, hdm, hne]
   · simp [hle, hdm]
+
+alias GoodPrimeSeries.good_strict_shell_six_kzero := good_strict_shell_six_kzero
 private lemma good_strict_shell_six_kone (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (d m : ℕ) (hd : 0 < d) :
     Ctk C p (6*d) 1 (6*m) =
@@ -161,6 +172,8 @@ private lemma good_strict_shell_six_kone (C : A.GeneralArithmeticContext σ η h
     · have hne : 6*m-6*d ≠ 0 := by omega
       simp [hdm, hle, hne]
     · simp [hdm, hle]
+
+alias GoodPrimeSeries.good_strict_shell_six_kone := good_strict_shell_six_kone
 private lemma good_strict_shell_one_kzero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (d m : ℕ) :
     Ctk C p (6*d+1) 0 (6*m) =
@@ -177,19 +190,22 @@ private lemma good_strict_shell_one_kzero (C : A.GeneralArithmeticContext σ η 
     · have hne : 6*m-6*d ≠ 0 := by omega
       simp [hdm, hle, hne]
     · simp [hdm, hle]
+
+alias GoodPrimeSeries.good_strict_shell_one_kzero := good_strict_shell_one_kzero
 private lemma good_strict_shell_one_kone (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (d m : ℕ) :
     Ctk C p (6*d+1) 1 (6*m) =
       if d < m then tau C p 1 * (Q p : ℂ)^(6*d)*((Q p : ℂ)-1) else 0 := by
   rw [Ctk_one C p _ _ (by omega), T_generator_power]
-  have hdvd : (6 : ℤ) ∣ (6*d+1 : ℕ)-1 := by
-    exact ⟨(d : ℤ), by push_cast; ring⟩
+  have hdvd : (6 : ℤ) ∣ (6*d+1 : ℕ)-1 := ⟨(d : ℤ), by push_cast; ring⟩
   have hle : 6*d+1 ≤ 6*m ↔ d < m := by omega
   simp only [Nat.add_sub_cancel, hdvd, if_true, hle]
   by_cases hdm : d < m
   · have hne : 6*m-(6*d+1) ≠ 0 := by omega
     simp [hdm, hne]
   · simp [hdm]
+
+alias GoodPrimeSeries.good_strict_shell_one_kone := good_strict_shell_one_kone
 private lemma good_strict_shell_odd_zero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (e : Fin 2) (d k m : ℕ) : Ctk C p (e.val+3*(2*d+1)) k (6*m) = 0 := by
   have ht : 0 < e.val+3*(2*d+1) := by omega
@@ -201,8 +217,7 @@ private lemma good_strict_shell_odd_zero (C : A.GeneralArithmeticContext σ η h
   rcases k with _ | _ | k
   · rw [Ctk_pos_zero C p _ _ ht, T_generator_power]
     by_cases hle : e.val+3*(2*d+1)-1 ≤ 6*m
-    · have he := e.isLt
-      have hne : 6*m-(e.val+3*(2*d+1)-1) ≠ 0 := by omega
+    · have hne : 6*m-(e.val+3*(2*d+1)-1) ≠ 0 := by omega
       simp [hle, hne, hndvd]
     · simp [hle]
   · rw [Ctk_one C p _ _ ht, T_generator_power]
@@ -211,16 +226,24 @@ private lemma good_strict_shell_odd_zero (C : A.GeneralArithmeticContext σ η h
       simp [hle, hne, hndvd']
     · simp [hle]
   · exact Ctk_eq_zero_of_two_le C p _ _ _ ht (by omega)
+
+alias GoodPrimeSeries.good_strict_shell_odd_zero := good_strict_shell_odd_zero
 private lemma good_strict_qp_add (p : ExteriorPrime A) (s t : ℂ) : qPower p (s+t) = qPower p s * qPower p t := by
   unfold qPower; rw [add_mul, Complex.exp_add]
+
+alias GoodPrimeSeries.good_strict_qp_add := good_strict_qp_add
 private lemma good_strict_qp_nat_mul (p : ExteriorPrime A) (s : ℂ) (n : ℕ) : qPower p (n*s) = qPower p s ^ n := by
   unfold qPower; rw [mul_assoc, Complex.exp_nat_mul]
+
+alias GoodPrimeSeries.good_strict_qp_nat_mul := good_strict_qp_nat_mul
 private lemma good_strict_qp_nat (p : ExteriorPrime A) (n : ℕ) : qPower p n = (Q p : ℂ)^n := by
   have hQ : 0 < Q p := by
     change 0 < (Ideal.absNorm p.val.asIdeal : ℝ)
     exact_mod_cast lt_trans (by decide : 0 < 1) (NumberField.HeightOneSpectrum.one_lt_absNorm p.val)
   rw [show (n : ℂ) = n*(1 : ℂ) by ring, good_strict_qp_nat_mul]
   simp [qPower, ← Complex.ofReal_exp, Real.exp_log hQ]
+
+alias GoodPrimeSeries.good_strict_qp_nat := good_strict_qp_nat
 private lemma good_strict_weight_even (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (θ : {θ : ℂ // ‖θ‖ = 1}) (hθ6 : θ.val^6 = 1)
     (e : Fin 2) (d k m : ℕ) (ξ w z : ℂ) :
@@ -244,6 +267,8 @@ private lemma good_strict_weight_even (C : A.GeneralArithmeticContext σ η hS) 
   rw [hpow, hq, pow_add, pow_mul]
   simp only [mul_pow]
   ring
+
+alias GoodPrimeSeries.good_strict_weight_even := good_strict_weight_even
 private lemma good_strict_geom_tail (V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) :
     (∑' m : ℕ, if d ≤ m then V^m else 0) = V^d/(1-V) := by
   have hi : Function.Injective (fun n : ℕ => n+d) := by intro a b h; dsimp at h; omega
@@ -256,9 +281,13 @@ private lemma good_strict_geom_tail (V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) :
   simp only [Nat.le_add_left, if_true, pow_add, tsum_mul_right,
     tsum_geometric_of_norm_lt_one hV, div_eq_mul_inv]
   ring
+
+alias GoodPrimeSeries.good_strict_geom_tail := good_strict_geom_tail
 private lemma good_strict_geom_strict_tail (V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) :
     (∑' m : ℕ, if d < m then V^m else 0) = V^(d+1)/(1-V) := by
-  simpa only [Nat.succ_le_iff] using good_strict_geom_tail V hV (d+1)
+  simpa using good_strict_geom_tail V hV (d+1)
+
+alias GoodPrimeSeries.good_strict_geom_strict_tail := good_strict_geom_strict_tail
 private lemma good_strict_even_shell_sum_zero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (B W V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) (hd : 0 < d) :
     (∑' k : ℕ, ∑' m : ℕ, B^d*W^k*V^m*Ctk C p (6*d) k (6*m)) =
@@ -298,6 +327,8 @@ private lemma good_strict_even_shell_sum_zero (C : A.GeneralArithmeticContext σ
   simp only [mul_pow, ← pow_mul]
   field_simp
   <;> ring
+
+alias GoodPrimeSeries.good_strict_even_shell_sum_zero := good_strict_even_shell_sum_zero
 private lemma good_strict_even_shell_sum_one (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (H B W V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) :
     (∑' k : ℕ, ∑' m : ℕ, H*B^d*W^k*V^m*Ctk C p (6*d+1) k (6*m)) =
@@ -324,12 +355,16 @@ private lemma good_strict_even_shell_sum_one (C : A.GeneralArithmeticContext σ 
   rw [ht]
   simp only [mul_pow, ← pow_mul, pow_succ, div_eq_mul_inv]
   ring
+
+alias GoodPrimeSeries.good_strict_even_shell_sum_one := good_strict_even_shell_sum_one
 private lemma good_strict_BQV (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (ξ z : ℂ) :
     (vartheta C p^6*qPower p (-2-6*ξ))*(Q p : ℂ)^6*qPower p (-6*z) =
       vartheta C p^6*qPower p (4-6*ξ)*qPower p (-6*z) := by
   rw [← good_strict_qp_nat p 6]
   rw [mul_assoc (vartheta C p^6), ← good_strict_qp_add]
   congr 2; congr 1; ring
+
+alias GoodPrimeSeries.good_strict_BQV := good_strict_BQV
 private lemma good_strict_Htau (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (θ : {θ : ℂ // ‖θ‖ = 1}) (ξ : ℂ) :
     (gammaTwo C p*vartheta C p*θ.val⁻¹*qPower p (-1/2-ξ))*tau C p 1 =
@@ -339,10 +374,11 @@ private lemma good_strict_Htau (C : A.GeneralArithmeticContext σ η hS) (p : Ex
     rw [RCLike.star_def, Complex.mul_conj', θ.property]
     norm_num
   rw [show (-1/2-ξ : ℂ) = -1/2+(-ξ) by ring, good_strict_qp_add]
-  have hh := CanonicalGaussCorrection.gammaTwo_vartheta_tau_one C p
   calc
     _ = (gammaTwo C p*vartheta C p*tau C p 1*qPower p (-1/2))*θ.val⁻¹*qPower p (-ξ) := by ring
-    _ = _ := by rw [hh, hinv]; ring
+    _ = _ := by rw [(CanonicalGaussCorrection.gammaTwo_vartheta_tau_one C p), hinv]; ring
+
+alias GoodPrimeSeries.good_strict_Htau := good_strict_Htau
 private lemma good_strict_even_shell_sum_origin (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (W V : ℂ) (hW : ‖W‖ < 1) (hV : ‖V‖ < 1) :
     (∑' k : ℕ, ∑' m : ℕ, W^k*V^m*Ctk C p 0 k (6*m)) = 1/(1-V)+W/(1-W) := by
@@ -359,14 +395,15 @@ private lemma good_strict_even_shell_sum_origin (C : A.GeneralArithmeticContext 
     · simp [hk, tsum_geometric_of_norm_lt_one hV, div_eq_mul_inv]
     · simp [hk]
   simp_rw [hinner]
-  have hs : Summable (fun k : ℕ => if k=0 then 1/(1-V) else W^k) := by
-    exact (summable_geometric_of_norm_lt_one hW).congr_cofinite (by
+  have hs : Summable (fun k : ℕ => if k=0 then 1/(1-V) else W^k) := (summable_geometric_of_norm_lt_one hW).congr_cofinite (by
       filter_upwards [Filter.eventually_cofinite_ne 0] with k hk
       simp [hk])
   rw [hs.tsum_eq_zero_add]
   simp only [if_true, Nat.succ_ne_zero, if_false, pow_succ,
     tsum_mul_right, tsum_geometric_of_norm_lt_one hW, div_eq_mul_inv]
   ring
+
+alias GoodPrimeSeries.good_strict_even_shell_sum_origin := good_strict_even_shell_sum_origin
 private lemma good_strict_boundary_norms (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (θ : {θ : ℂ // ‖θ‖ = 1}) (ξ w z : ℂ) (hξ : 4 < ξ.re) (hw : 4 < w.re) (hz : 2 < z.re) :
     ‖qPower p (-6*z)‖ < 1 ∧ ‖θ.val*qPower p (-w)‖ < 1 ∧
@@ -387,19 +424,23 @@ private lemma good_strict_boundary_norms (C : A.GeneralArithmeticContext σ η h
   · simp only [norm_mul, norm_pow, hv, one_pow, one_mul, hn, ← Real.exp_add]
     apply Real.exp_lt_one_iff.mpr
     simp; nlinarith
-private lemma good_strict_ib_evaluation (C : A.GeneralArithmeticContext σ η hS)
+
+theorem good_euler_series (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (u : A.R)
     (hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u))
     (θ : {θ : ℂ // ‖θ‖ = 1})
-    (hθ : θ.val = chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u))
+    (hθ : θ.val = chi (σ := σ) p
+      (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u))
     (ξ w z : ℂ) (hξ : 4 < ξ.re) (hw : 4 < w.re) (hz : 2 < z.re) :
-    let V := qPower p (-6*z)
-    let W := θ.val*qPower p (-w)
-    let D := η p.val.asIdeal*star θ.val*qPower p (-ξ)
-    let E := vartheta C p^6*qPower p (4-6*ξ)*V
-    f C p 0 θ ξ w z = 1/(1-V)+W/(1-W)+
-      E/(1-E)*((1-(Q p : ℂ)⁻¹)/(1-V)+W)-
-      D/(1-E)*(1+((Q p : ℂ)-1)*W*V/(1-V)) := by
+    let V := qPower p (-6 * z)
+    let W := θ.val * qPower p (-w)
+    let D := η p.val.asIdeal * star θ.val * qPower p (-ξ)
+    let E := vartheta C p ^ 6 * qPower p (4 - 6 * ξ) * V
+    f C p 0 θ ξ w z =
+      1 / (1 - V) + W / (1 - W) +
+        E / (1 - E) * ((1 - (Q p : ℂ)⁻¹) / (1 - V) + W) -
+        D / (1 - E) * (1 + ((Q p : ℂ) - 1) * W * V / (1 - V)) := by
+  dsimp only
   let V := qPower p (-6*z)
   let W := θ.val*qPower p (-w)
   let D := η p.val.asIdeal*star θ.val*qPower p (-ξ)
@@ -476,27 +517,6 @@ private lemma good_strict_ib_evaluation (C : A.GeneralArithmeticContext σ η hS
         (∑' d : ℕ, D*E^d*(1+((Q p : ℂ)-1)*W*V/(1-V)))) by ring]
   rw [← sp.tsum_sub sg, good_euler_geometric_shell_sum V W D E (Q p : ℂ) hE]
   ring
-
-theorem good_euler_series (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (u : A.R)
-    (hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u))
-    (θ : {θ : ℂ // ‖θ‖ = 1})
-    (hθ : θ.val = chi (σ := σ) p
-      (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u))
-    (ξ w z : ℂ) (hξ : 4 < ξ.re) (hw : 4 < w.re) (hz : 2 < z.re) :
-    let V := qPower p (-6 * z)
-    let W := θ.val * qPower p (-w)
-    let D := η p.val.asIdeal * star θ.val * qPower p (-ξ)
-    let E := vartheta C p ^ 6 * qPower p (4 - 6 * ξ) * V
-    Summable (fun i : Fin 2 × ℕ × ℕ × ℕ =>
-      ‖seriesTerm C p 0 θ i.1 i.2.1 i.2.2.1 i.2.2.2 ξ w z‖) ∧
-    f C p 0 θ ξ w z =
-      1 / (1 - V) + W / (1 - W) +
-        E / (1 - E) * ((1 - (Q p : ℂ)⁻¹) / (1 - V) + W) -
-        D / (1 - E) * (1 + ((Q p : ℂ) - 1) * W * V / (1 - V)) := by
-  dsimp only
-  refine ⟨good_euler_series_summable C p 0 θ ξ w z hξ hw hz, ?_⟩
-  exact good_strict_ib_evaluation C p u hu θ hθ ξ w z hξ hw hz
 
 end DedekindZetaZeroFree.LocalFiniteSums
 

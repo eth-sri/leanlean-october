@@ -158,20 +158,13 @@ private theorem one_add_rpow_le_quadratic (c : ℝ) (hc : 0 < c) :
   · have h1u : (1 + u) ^ (3 / 2 : ℝ) ≤ (2 * u) ^ (3 / 2 : ℝ) := by
       refine Real.rpow_le_rpow (by positivity) ?_ (by norm_num)
       linarith
-    have hmul : (2 * u) ^ (3 / 2 : ℝ) = 2 ^ (3 / 2 : ℝ) * u ^ (3 / 2 : ℝ) :=
-      Real.mul_rpow (by norm_num) hu
-    rw [hmul] at h1u
-    have hkey := rpow_three_halves_le_weighted d u hdpos hu
-    have hmul2 := mul_le_mul_of_nonneg_left hkey (le_of_lt h2pos)
+    rw [(Real.mul_rpow (by norm_num) hu)] at h1u
+    have hmul2 := mul_le_mul_of_nonneg_left (rpow_three_halves_le_weighted d u hdpos hu) (le_of_lt h2pos)
     have hexp : 2 ^ (3 / 2 : ℝ) * (3 / 4 * d * u ^ 2 + 1 / (4 * d ^ 3))
         = c * u ^ 2 + 2 ^ (3 / 2 : ℝ) / (4 * d ^ 3) := by
       rw [← hcd]
       ring
     rw [hexp] at hmul2
-    have hk : 2 ^ (3 / 2 : ℝ) / (4 * d ^ 3)
-        ≤ 2 ^ (3 / 2 : ℝ) + 2 ^ (3 / 2 : ℝ) / (4 * d ^ 3) := by
-      have : (0 : ℝ) ≤ 2 ^ (3 / 2 : ℝ) := le_of_lt h2pos
-      linarith
     linarith
 
 theorem subquadratic_quadratic_absorption (A ε : ℝ) (hA : 0 ≤ A) (hε : 0 < ε) :
@@ -307,33 +300,26 @@ theorem gaussianRegulator_bounded_tails {a b : ℝ} (f : ℂ → ℂ)
     have h1 := hσ.1
     have h2 := hσ.2
     rcases le_total 0 σ with h | h
-    · have hb : 0 ≤ b := le_trans h h2
-      nlinarith [sq_nonneg a, sq_nonneg b, le_max_right (a ^ 2) (b ^ 2), hb, h, h2]
-    · have ha : a ≤ 0 := le_trans h1 h
-      nlinarith [sq_nonneg a, sq_nonneg b, le_max_left (a ^ 2) (b ^ 2), ha, h1, h]
+    · nlinarith [sq_nonneg a, sq_nonneg b, le_max_right (a ^ 2) (b ^ 2), (le_trans h h2), h, h2]
+    · nlinarith [sq_nonneg a, sq_nonneg b, le_max_left (a ^ 2) (b ^ 2), (le_trans h1 h), h1, h]
   refine ⟨C * Real.exp (ε * M + K), by positivity, ?_⟩
   intro σ t hσ ht
-  have hfbound := hf σ t hσ ht
-  have habs := hAbs |t| (abs_nonneg t)
-  have ht2 : (0 : ℝ) ≤ t ^ 2 := sq_nonneg t
-  have hσ2 := hσM σ hσ
-  have hexpσ : Real.exp (ε * (σ ^ 2 - t ^ 2)) ≤ Real.exp (ε * M - ε * t ^ 2) := by
-    apply Real.exp_le_exp.mpr
-    nlinarith [hε, hσ2]
-  calc ‖gaussianRegulator f ε ((σ : ℂ) + (t : ℂ) * Complex.I)‖
+  calc _
       = ‖f ((σ : ℂ) + (t : ℂ) * Complex.I)‖ *
           ‖Complex.exp ((ε : ℂ) * ((σ : ℂ) + (t : ℂ) * Complex.I) ^ 2)‖ := by
         rw [gaussianRegulator, norm_mul]
     _ = ‖f ((σ : ℂ) + (t : ℂ) * Complex.I)‖ * Real.exp (ε * (σ ^ 2 - t ^ 2)) := by
         rw [Complex.norm_exp, hre]
     _ ≤ (C * Real.exp (A * (1 + |t|) ^ (3 / 2 : ℝ))) * Real.exp (ε * M - ε * t ^ 2) :=
-        mul_le_mul hfbound hexpσ (Real.exp_nonneg _) (by positivity)
+        mul_le_mul (hf σ t hσ ht) (by
+          apply Real.exp_le_exp.mpr
+          nlinarith [hε, (hσM σ hσ)]) (Real.exp_nonneg _) (by positivity)
     _ = C * Real.exp (ε * M + (A * (1 + |t|) ^ (3 / 2 : ℝ) - ε * t ^ 2)) := by
         rw [mul_assoc, ← Real.exp_add]; ring_nf
     _ ≤ C * Real.exp (ε * M + K) := by
         apply mul_le_mul_of_nonneg_left _ hC
         apply Real.exp_le_exp.mpr
-        have h := habs
+        have h := (hAbs |t| (abs_nonneg t))
         rw [sq_abs t] at h
         have hpos : 0 ≤ ε / 2 * t ^ 2 := by positivity
         nlinarith [h, hpos]
@@ -350,11 +336,6 @@ open Filter
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
 open Subquadratic
-
-private lemma gaussianRegulator_differentiableAt (f : ℂ → ℂ) (ε : ℝ) (s : ℂ)
-    (hf : DifferentiableAt ℂ f s) : DifferentiableAt ℂ (gaussianRegulator f ε) s := by
-  unfold gaussianRegulator
-  exact hf.mul (by fun_prop)
 
 theorem integral_eq_of_subquadratic_strip_growth {a b : ℝ} (hab : a ≤ b)
     (f : ℂ → ℂ)
@@ -373,14 +354,10 @@ theorem integral_eq_of_subquadratic_strip_growth {a b : ℝ} (hab : a ≤ b)
         verticalIntegral b (gaussianRegulator f ε) := by
     intro ε hε
     have hdiff : ∀ s : ℂ, a ≤ s.re → s.re ≤ b →
-        DifferentiableAt ℂ (gaussianRegulator f ε) s := by
-      intro s hsa hsb
-      exact gaussianRegulator_differentiableAt f ε s (hf s hsa hsb)
-    have hcont : ContinuousOn (gaussianRegulator f ε)
-        {s : ℂ | s.re ∈ Set.Icc a b} := by
-      intro s hs
-      exact (hdiff s hs.1 hs.2).continuousAt.continuousWithinAt
-    obtain ⟨B, hB, hbound⟩ := strip_bound_of_tail_bound (gaussianRegulator f ε) hcont
+        DifferentiableAt ℂ (gaussianRegulator f ε) s := fun s hsa hsb => (by
+          unfold gaussianRegulator
+          exact (hf s hsa hsb).mul (by fun_prop))
+    obtain ⟨B, hB, hbound⟩ := strip_bound_of_tail_bound (gaussianRegulator f ε) (fun s hs => (hdiff s hs.1 hs.2).continuousAt.continuousWithinAt)
       (gaussianRegulator_bounded_tails f hgrowth ε hε)
     apply integral_eq_of_exponential_strip_growth hab (gaussianRegulator f ε)
       hdiff (hIntA ε hε.le) (hIntB ε hε.le)

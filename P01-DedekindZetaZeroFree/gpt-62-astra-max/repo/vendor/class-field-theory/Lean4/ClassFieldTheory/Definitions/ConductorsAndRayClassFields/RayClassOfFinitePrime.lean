@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -38,9 +33,7 @@ universe u
     (m : RayClassModulus K)
     (v : HeightOneSpectrum (𝓞 K))
     (hv : v ∉ m.finitePart.support) :
-    finitePrimeFractionalIdeal v ∈ rayClassPrimeToIdeals m := by
-  intro w hw
-  exact FractionalIdeal.count_maximal_coprime K w fun h => (h ▸ hv) hw
+    finitePrimeFractionalIdeal v ∈ rayClassPrimeToIdeals m := fun w hw => FractionalIdeal.count_maximal_coprime K w fun h => (h ▸ hv) hw
 
 /-- The class in the ray class group represented by a finite prime away from
 the modulus. -/
@@ -51,22 +44,6 @@ def rayClassOfFinitePrime
     (hv : v ∉ m.finitePart.support) : RayClassGroup m :=
   QuotientGroup.mk' (rayPrincipalIdealSubgroupInPrimeTo m)
     ⟨finitePrimeFractionalIdeal v, finitePrimeFractionalIdeal_mem_primeTo m v hv⟩
-
-/-- The ordinary ideal class represented by a finite prime. -/
-def ordinaryRayClassOfFinitePrime
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K)) :
-    RayClassGroup (ordinaryRayClassModulus K) :=
-  rayClassOfFinitePrime (ordinaryRayClassModulus K) v (by
-    simp [ordinaryRayClassModulus])
-
-/-- The narrow ideal class represented by a finite prime. -/
-def narrowRayClassOfFinitePrime
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K)) :
-    RayClassGroup (narrowRayClassModulus K) :=
-  rayClassOfFinitePrime (narrowRayClassModulus K) v (by
-    simp [narrowRayClassModulus])
 
 end ClassFieldTheory
 

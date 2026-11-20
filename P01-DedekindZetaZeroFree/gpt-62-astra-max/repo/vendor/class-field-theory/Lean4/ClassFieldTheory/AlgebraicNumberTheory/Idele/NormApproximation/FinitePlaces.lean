@@ -21,19 +21,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -59,7 +46,6 @@ noncomputable section
 
 open LocalClassFieldTheory
 
-
 open AlgebraicNumberTheory.Valuations
 open LocalClassFieldTheory
 open LocalFieldTheory
@@ -69,10 +55,13 @@ variable {K L : Type}
     [Field L] [Algebra K L]
     [FiniteDimensional K L] [IsGalois K L]
 
+section
+
+variable (v : HeightOneSpectrum (𝓞 K))
+
 /-- The canonical dense embedding used to compare the absolute-value
 completion at `v` with the concrete adic completion. -/
-noncomputable def finitePlaceCompletionBaseMap
-    (v : HeightOneSpectrum (𝓞 K)) :
+noncomputable def finitePlaceCompletionBaseMap :
     WithAbs (NumberField.HeightOneSpectrum.adicAbv K v) →+*
       v.adicCompletion K :=
   (FinitePlace.embedding v).comp
@@ -81,7 +70,6 @@ noncomputable def finitePlaceCompletionBaseMap
 
 @[simp]
 theorem finitePlaceCompletionBaseMap_apply
-    (v : HeightOneSpectrum (𝓞 K))
     (x : WithAbs
       (NumberField.HeightOneSpectrum.adicAbv K v)) :
     finitePlaceCompletionBaseMap v x =
@@ -91,7 +79,6 @@ theorem finitePlaceCompletionBaseMap_apply
   rfl
 
 theorem finitePlaceCompletionBaseMap_norm
-    (v : HeightOneSpectrum (𝓞 K))
     (x : WithAbs
       (NumberField.HeightOneSpectrum.adicAbv K v)) :
     ‖finitePlaceCompletionBaseMap v x‖ = ‖x‖ := by
@@ -100,15 +87,13 @@ theorem finitePlaceCompletionBaseMap_norm
   rfl
 
 /-- The base embedding is an isometry. -/
-theorem finitePlaceCompletionBaseMap_isometry
-    (v : HeightOneSpectrum (𝓞 K)) :
+theorem finitePlaceCompletionBaseMap_isometry :
     Isometry (finitePlaceCompletionBaseMap v) :=
   AddMonoidHomClass.isometry_of_norm _
     (finitePlaceCompletionBaseMap_norm v)
 
 /-- Extension of the base embedding to the absolute-value completion. -/
-noncomputable def finitePlaceCompletionRingHom
-    (v : HeightOneSpectrum (𝓞 K)) :
+noncomputable def finitePlaceCompletionRingHom :
     (NumberField.HeightOneSpectrum.adicAbv K v).Completion →+*
       v.adicCompletion K :=
   UniformSpace.Completion.extensionHom
@@ -117,7 +102,6 @@ noncomputable def finitePlaceCompletionRingHom
 
 @[simp]
 theorem finitePlaceCompletionRingHom_coe
-    (v : HeightOneSpectrum (𝓞 K))
     (x : WithAbs
       (NumberField.HeightOneSpectrum.adicAbv K v)) :
     finitePlaceCompletionRingHom v
@@ -128,28 +112,20 @@ theorem finitePlaceCompletionRingHom_coe
     (finitePlaceCompletionBaseMap v)
     (finitePlaceCompletionBaseMap_isometry v).continuous x
 
-theorem finitePlaceCompletionRingHom_isometry
-    (v : HeightOneSpectrum (𝓞 K)) :
+theorem finitePlaceCompletionRingHom_isometry :
     Isometry (finitePlaceCompletionRingHom v) :=
   (finitePlaceCompletionBaseMap_isometry v).completion_extension
 
 /-- The completed comparison map is onto the concrete adic
 completion. -/
-theorem finitePlaceCompletionRingHom_surjective
-    (v : HeightOneSpectrum (𝓞 K)) :
+theorem finitePlaceCompletionRingHom_surjective :
     Function.Surjective (finitePlaceCompletionRingHom v) := by
   let f := finitePlaceCompletionRingHom v
-  have hrangeClosed : IsClosed (Set.range f) :=
-    (finitePlaceCompletionRingHom_isometry v).isClosedEmbedding.isClosed_range
-  have hdense :
-      DenseRange (algebraMap K (v.adicCompletion K)) :=
-    v.denseRange_algebraMap K
   have hrange :
       Set.range (algebraMap K (v.adicCompletion K)) ⊆
         Set.range f := by
     rintro _ ⟨x, rfl⟩
-    let x' : WithAbs
-        (NumberField.HeightOneSpectrum.adicAbv K v) :=
+    let x' :=
       (WithAbs.equiv
         (NumberField.HeightOneSpectrum.adicAbv K v)).symm x
     refine
@@ -162,13 +138,12 @@ theorem finitePlaceCompletionRingHom_surjective
   have hx :
       x ∈ closure
         (Set.range (algebraMap K (v.adicCompletion K))) := by
-    rw [hdense.closure_range]
+    rw [(v.denseRange_algebraMap K).closure_range]
     trivial
-  exact closure_minimal hrange hrangeClosed hx
+  exact closure_minimal hrange ((finitePlaceCompletionRingHom_isometry v).isClosedEmbedding.isClosed_range) hx
 
 /-- The two concrete models of `K_v` are canonically isomorphic. -/
-noncomputable def finitePlaceCompletionRingEquiv
-    (v : HeightOneSpectrum (𝓞 K)) :
+noncomputable def finitePlaceCompletionRingEquiv :
     (NumberField.HeightOneSpectrum.adicAbv K v).Completion ≃+*
       v.adicCompletion K :=
   RingEquiv.ofBijective (finitePlaceCompletionRingHom v)
@@ -176,8 +151,7 @@ noncomputable def finitePlaceCompletionRingEquiv
       finitePlaceCompletionRingHom_surjective v⟩
 
 /-- The preceding ring equivalence, with its native topologies. -/
-noncomputable def finitePlaceCompletionContinuousMulEquiv
-    (v : HeightOneSpectrum (𝓞 K)) :
+noncomputable def finitePlaceCompletionContinuousMulEquiv :
     (NumberField.HeightOneSpectrum.adicAbv K v).Completion ≃ₜ*
       v.adicCompletion K where
   __ := (finitePlaceCompletionRingEquiv v).toMulEquiv
@@ -189,8 +163,7 @@ noncomputable def finitePlaceCompletionContinuousMulEquiv
 
 /-- The induced topological multiplicative equivalence on unit
 groups. -/
-noncomputable def finitePlaceCompletionUnitsContinuousMulEquiv
-    (v : HeightOneSpectrum (𝓞 K)) :
+noncomputable def finitePlaceCompletionUnitsContinuousMulEquiv :
     (NumberField.HeightOneSpectrum.adicAbv K v).Completionˣ ≃ₜ*
       (v.adicCompletion K)ˣ :=
   Units.mapContinuousMulEquiv
@@ -199,8 +172,7 @@ noncomputable def finitePlaceCompletionUnitsContinuousMulEquiv
 /-- The chosen extension of the `v`-adic absolute value to `L`.
 The embedding is supplied by algebraic closedness of the completion's
 algebraic closure. -/
-noncomputable def chosenFinitePlaceExtension
-    (v : HeightOneSpectrum (𝓞 K)) :
+noncomputable def chosenFinitePlaceExtension :
     AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K v) L :=
   pullbackAbsoluteValueExtension
@@ -209,11 +181,12 @@ noncomputable def chosenFinitePlaceExtension
     IsAlgClosed.lift
 
 /-- The chosen actual localization `L_w` above the finite place `v`. -/
-abbrev ChosenFinitePlaceLocalizedCompletion
-    (v : HeightOneSpectrum (𝓞 K)) :=
+abbrev ChosenFinitePlaceLocalizedCompletion :=
   LocalizedCompletion
     (NumberField.HeightOneSpectrum.adicAbv K v)
     (chosenFinitePlaceExtension (L := L) v)
+
+end
 
 /-- The concrete local norm subgroup at `v`.  It is first formed in the
 absolute-value completion model and then transported to the adic
@@ -230,13 +203,9 @@ noncomputable def chosenFinitePlaceLocalNormSubgroup
   letI : SMul K w.1.Completion := hK.toSMul
   letI : Algebra vK.Completion w.1.Completion :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
-  let E := LocalizedCompletion vK w
-  let e :
-      vK.Completionˣ ≃ₜ* (v.adicCompletion K)ˣ :=
-    finitePlaceCompletionUnitsContinuousMulEquiv v
   exact
-    (localNormSubgroup vK.Completion E).map
-      e.toMonoidHom
+    (localNormSubgroup vK.Completion (LocalizedCompletion vK w)).map
+      (finitePlaceCompletionUnitsContinuousMulEquiv v).toMonoidHom
 
 /-- The local norm subgroup transported to the actual finite idele
 coordinate is open. -/
@@ -282,7 +251,7 @@ theorem chosenFinitePlaceLocalNormSubgroup_isOpen
   let : vC.IsNontrivial :=
     (inferInstance :
       (NormedField.valuation
-        (K := vK.Completion)).IsNontrivial)
+        ).IsNontrivial)
   let : ValuativeRel vK.Completion :=
     ValuativeRel.ofValuation vC
   let : vC.Compatible :=
@@ -300,10 +269,7 @@ theorem chosenFinitePlaceLocalNormSubgroup_isOpen
   let e :
       vK.Completionˣ ≃ₜ* (v.adicCompletion K)ˣ :=
     finitePlaceCompletionUnitsContinuousMulEquiv v
-  have hN :
-      IsOpen
-        (localNormSubgroup vK.Completion E :
-          Set vK.Completionˣ) :=
+  have hN :=
     LocalClassFieldTheory.localNormSubgroup_isOpen
       vK.Completion E
   change IsOpen
@@ -330,7 +296,7 @@ noncomputable def ChosenFinitePlaceIntrinsicNormQuotient
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) w.1
   let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   exact
     NormQuotient vK.Completion
@@ -360,24 +326,18 @@ noncomputable def chosenFinitePlaceNormQuotientEquiv
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) w.1
   let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   let E := LocalizedCompletion vK w
-  let e :
-      vK.Completionˣ ≃* (v.adicCompletion K)ˣ :=
+  let e :=
     finitePlaceCompletionUnitsContinuousMulEquiv v
   let N := localNormSubgroup vK.Completion E
-  have heq :
-      N.map e.toMonoidHom =
-        chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v :=
-    rfl
   exact
     (normQuotientConcreteEquiv vK.Completion E).trans
       (QuotientGroup.congr N
         (chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v)
-        e heq)
+            v)
+        e rfl)
 
 omit [FiniteDimensional K L] in
 @[simp]
@@ -409,22 +369,9 @@ theorem chosenFinitePlaceNormQuotientEquiv_normClass
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) w.1
   let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   rfl
-
-/-- Product comparison over a finite set of places. -/
-noncomputable def chosenFinitePlaceNormQuotientFamilyEquiv
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    (∀ v : ↥S,
-        ChosenFinitePlaceIntrinsicNormQuotient
-          (K := K) (L := L) v.1) ≃*
-      (∀ v : ↥S,
-        ChosenFinitePlaceNormQuotient
-          (K := K) (L := L) v.1) :=
-  MulEquiv.piCongrRight fun v ↦
-    chosenFinitePlaceNormQuotientEquiv
-      (K := K) (L := L) v.1
 
 /-- The diagonal map from global units to the chosen finite family of
 actual local norm quotients. -/
@@ -449,96 +396,6 @@ theorem principalLocalNormQuotientMap_apply
         (chosenFinitePlaceLocalNormSubgroup
           (K := K) (L := L) v.1)
         ((IdeleGroup.principalIdele K x).2 v.1) :=
-  rfl
-
-/-- Actual multiplicative local norm approximation: every prescribed
-finite family of classes modulo `N(L_wˣ)` is represented by one global
-element of `Kˣ`. -/
-theorem principalLocalNormQuotientMap_surjective
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    Function.Surjective
-      (principalLocalNormQuotientMap
-        (K := K) (L := L) S) :=
-  IdeleGroup.principalLocalQuotientMap_surjective
-    S
-    (fun v ↦ chosenFinitePlaceLocalNormSubgroup
-      (K := K) (L := L) v.1)
-    (fun v ↦
-      chosenFinitePlaceLocalNormSubgroup_isOpen
-        (K := K) (L := L) v.1)
-
-/-- The same diagonal approximation map with target written directly as
-a product of `LocalFieldTheory.NormQuotient`s. -/
-noncomputable def principalIntrinsicLocalNormQuotientMap
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    Kˣ →*
-      (∀ v : ↥S,
-        ChosenFinitePlaceIntrinsicNormQuotient
-          (K := K) (L := L) v.1) :=
-  (chosenFinitePlaceNormQuotientFamilyEquiv
-    (K := K) (L := L) S).symm.toMonoidHom.comp
-      (principalLocalNormQuotientMap
-        (K := K) (L := L) S)
-
-/-- Surjectivity in the intrinsic `NormQuotient` model. -/
-theorem principalIntrinsicLocalNormQuotientMap_surjective
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    Function.Surjective
-      (principalIntrinsicLocalNormQuotientMap
-        (K := K) (L := L) S) := by
-  intro q
-  let E :=
-    chosenFinitePlaceNormQuotientFamilyEquiv
-      (K := K) (L := L) S
-  obtain ⟨x, hx⟩ :=
-    principalLocalNormQuotientMap_surjective
-      (K := K) (L := L) S (E q)
-  refine ⟨x, ?_⟩
-  change E.symm
-      (principalLocalNormQuotientMap
-        (K := K) (L := L) S x) = q
-  rw [hx, E.symm_apply_apply]
-
-omit [FiniteDimensional K L] in
-/-- Kernel membership has the expected simultaneous local-norm
-description. -/
-theorem mem_ker_principalLocalNormQuotientMap_iff
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (x : Kˣ) :
-    x ∈
-        (principalLocalNormQuotientMap
-          (K := K) (L := L) S).ker ↔
-      ∀ v : ↥S,
-        (IdeleGroup.principalIdele K x).2 v.1 ∈
-          chosenFinitePlaceLocalNormSubgroup
-            (K := K) (L := L) v.1 := by
-  rw [MonoidHom.mem_ker]
-  constructor
-  · intro hx v
-    exact
-      (QuotientGroup.eq_one_iff _).mp
-        (congrFun hx v)
-  · intro hx
-    funext v
-    exact
-      (QuotientGroup.eq_one_iff _).mpr
-        (hx v)
-
-omit [FiniteDimensional K L] in
-/-- The kernel is the intersection of the pullbacks of the actual local
-norm subgroups. -/
-theorem principalLocalNormQuotientMap_ker
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    (principalLocalNormQuotientMap
-      (K := K) (L := L) S).ker =
-      ⨅ v : ↥S,
-        (chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v.1).comap
-          ((IdeleGroup.finiteComponent v.1).comp
-            (IdeleGroup.principalIdele K)) := by
-  ext x
-  rw [mem_ker_principalLocalNormQuotientMap_iff]
-  simp only [Subgroup.mem_iInf, Subgroup.mem_comap]
   rfl
 
 end

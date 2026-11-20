@@ -10,9 +10,9 @@ open scoped Topology
 namespace DedekindZetaZeroFree.ResidueContinuity.ScalarSourceJointContinuity
 open MomentSources ThetaExpansion
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
-variable {B : JointRootAlignedSources R N} {v : R.A.UnitQuotient}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {B : JointRootAlignedSources R N} {v : R.A.UnitQuotient}
 
 theorem selected_regular_joint_at_of_circle
     (D : SelectedScalarBranch R B v) (P : SelectedPoleSet D)
@@ -20,11 +20,8 @@ theorem selected_regular_joint_at_of_circle
     (hclosed : Metric.closedBall s t ⊆ KPContinuation.spectralDomain \ P.poles)
     (hc : Continuous (fun p : Metric.sphere s t × Group R => D.E p.1 p.2))
     (g : Group R) : ContinuousAt (fun p : ℂ × Group R => D.E p.1 p.2) (s, g) := by
-  have hf : ∀ x, DifferentiableOn ℂ (fun z => D.E z x) (Metric.closedBall s t) := by
-    intro x z hz
-    exact (P.regular z (hclosed hz).1 (hclosed hz).2 x).differentiableAt.differentiableWithinAt
-  have hj := joint_continuousOn_ball_of_continuous_circle (fun z g => D.E z g) s t ht hf hc
-  exact hj.continuousAt ((Metric.isOpen_ball.prod isOpen_univ).mem_nhds
+  have hf : ∀ x, DifferentiableOn ℂ (fun z => D.E z x) (Metric.closedBall s t) := fun x z hz => (P.regular z (hclosed hz).1 (hclosed hz).2 x).differentiableAt.differentiableWithinAt
+  exact (joint_continuousOn_ball_of_continuous_circle (fun z g => D.E z g) s t ht hf hc).continuousAt ((Metric.isOpen_ball.prod isOpen_univ).mem_nhds
     ⟨Metric.mem_ball_self ht, Set.mem_univ g⟩)
 
 theorem selected_regular_joint_at_of_punctured

@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -61,9 +57,6 @@ noncomputable def padicMultiplicativeLubinTateSeries
       simp
     exact hcoeff.trans (map_natCast (padicIntEquivValuationSubring p) p).symm
   map_residue_eq_frobenius := by
-    let eO : ℤ_[p] ≃+*
-        (padicDVRValuation p).valuationSubring :=
-      padicIntEquivValuationSubring p
     let eRes :
         (padicLocalField p).residueField ≃+* ZMod p := by
       change
@@ -71,7 +64,7 @@ noncomputable def padicMultiplicativeLubinTateSeries
             (padicDVRValuation p).valuationSubring ≃+*
           ZMod p
       exact
-        (IsLocalRing.ResidueField.mapEquiv eO).symm.trans
+        (IsLocalRing.ResidueField.mapEquiv (padicIntEquivValuationSubring p)).symm.trans
           (padicIntResidueFieldEquivZMod p)
     let : CharP (padicLocalField p).residueField p :=
       charP_of_injective_ringHom
@@ -83,7 +76,7 @@ noncomputable def padicMultiplicativeLubinTateSeries
         Nat.card (padicLocalField p).residueField = p := by
       simpa [padicLocalField] using
         padicCompleteDVF_residueField_card p
-    rw [hcard, PowerSeries.binomialSeries_nat (R := ℤ)]
+    rw [hcard, PowerSeries.binomialSeries_nat]
     simp only [map_sub, map_pow, map_add, map_one, PowerSeries.map_X]
     rw [add_pow_char]
     simp
@@ -109,11 +102,7 @@ theorem padicMultiplicativeLubinTateSeries_isUniformizer
     (padicLocalField p).toCompleteDVF.valuation.IsUniformizer
       ((padicIntEquivValuationSubring p (p : ℤ_[p]) :
           (padicLocalField p).valuationSubring) : ℚ_[p]) := by
-  change
-    (padicDVRValuation p).IsUniformizer
-      ((padicIntEquivValuationSubring p (p : ℤ_[p]) :
-          (padicDVRValuation p).valuationSubring) : ℚ_[p])
-  simpa using padicDVRValuation_isUniformizer_p p
+  exact padicDVRValuation_isUniformizer_p p
 
 end LubinTate
 

@@ -15,9 +15,9 @@ open MeasureTheory Filter Set Topology
 open scoped NumberField Classical Topology Matrix.Norms.Elementwise
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-open _root_.DedekindZetaZeroFree.RepresentationTheory.ArchFiniteSplitting renaming projective_t2 → projective_t2
+open _root_.DedekindZetaZeroFree.RepresentationTheory.ArchFiniteSplitting (projective_t2)
 local instance : T2Space (Matrix.ProjGenLinGroup (Fin 2) ℂ) := projective_t2
 
 local instance : LocallyCompactSpace (Matrix (Fin 2) (Fin 2) ℂ) := by
@@ -25,7 +25,6 @@ local instance : LocallyCompactSpace (Matrix (Fin 2) (Fin 2) ℂ) := by
   infer_instance
 
 local instance : LocallyCompactSpace (Matrix.ProjGenLinGroup (Fin 2) ℂ) := by
-  change LocallyCompactSpace (Matrix.GeneralLinearGroup (Fin 2) ℂ ⧸ Subgroup.center _)
   infer_instance
 local instance : SecondCountableTopology (Matrix (Fin 2) (Fin 2) ℂ) := by
   change SecondCountableTopology (Fin 2 → Fin 2 → ℂ)
@@ -35,7 +34,6 @@ local instance : SecondCountableTopology ((Matrix (Fin 2) (Fin 2) ℂ)ᵐᵒᵖ)
 local instance : SecondCountableTopology (Matrix.GeneralLinearGroup (Fin 2) ℂ) :=
   Units.isEmbedding_embedProduct.secondCountableTopology
 local instance : SecondCountableTopology (Matrix.ProjGenLinGroup (Fin 2) ℂ) := by
-  change SecondCountableTopology (Matrix.GeneralLinearGroup (Fin 2) ℂ ⧸ Subgroup.center _)
   infer_instance
 local instance : LocallyCompactSpace (L F) :=
   @Pi.locallyCompactSpace_of_finite (NumberField.InfinitePlace F)
@@ -50,15 +48,9 @@ local instance : SecondCountableTopology (L F) :=
     (fun _ => Matrix.ProjGenLinGroup (Fin 2) ℂ) inferInstance
     (fun _ => inferInstance) (fun _ => inferInstance)
 
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming averaged_kernel_smooth → averaged_kernel_smooth
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel (averaged_kernel_smooth)
 
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming averaged_support_subset → averaged_support_subset
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming averaged_hasCompactSupport → averaged_hasCompactSupport
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming averaged_continuous → averaged_continuous
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming conjugation_saturation_shrinks → conjugation_saturation_shrinks
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming averaged_integrable_parameter → averaged_integrable_parameter
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming averaged_conjugation_invariant → averaged_conjugation_invariant
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming averaged_mass → averaged_mass
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel (averaged_hasCompactSupport averaged_continuous conjugation_saturation_shrinks averaged_integrable_parameter averaged_conjugation_invariant averaged_mass)
 
 def kappa (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
     (μL : Measure (L F)) (μK : Measure D.K)
@@ -78,20 +70,13 @@ theorem actual_compact_averaged_kernels
     (fun a : L F =>
       (PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ k.val)⁻¹ * a *
         PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ k.val) μL = μL) ∧
-  (∀ m a, Integrable (fun k : D.K => eta F μL (b m)
-    ((PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ k.val)⁻¹ * a *
-      PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ k.val)) μK) ∧
-  (∀ m, Continuous (kappa F ζ hζ D μL μK (b m)) ∧
+  ∀ m, Continuous (kappa F ζ hζ D μL μK (b m)) ∧
     KernelSmooth F (kappa F ζ hζ D μL μK (b m)) ∧
     HasCompactSupport (kappa F ζ hζ D μL μK (b m)) ∧
-    (∀ a, 0 ≤ kappa F ζ hζ D μL μK (b m) a) ∧
-    (∫ a, kappa F ζ hζ D μL μK (b m) a ∂μL) = 1 ∧
-    (∀ (k : D.K) (a : L F), kappa F ζ hζ D μL μK (b m)
+    ∀ (k : D.K) (a : L F), kappa F ζ hζ D μL μK (b m)
       ((PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ k.val)⁻¹ * a *
         PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ k.val) =
-      kappa F ζ hζ D μL μK (b m) a)) ∧
-  (∀ O ∈ 𝓝 (1 : L F), ∀ᶠ m in atTop,
-    tsupport (kappa F ζ hζ D μL μK (b m)) ⊆ O) := by
+      kappa F ζ hζ D μL μK (b m) a := by
   letI : CompactSpace D.K := isCompact_iff_compactSpace.mp D.compact
   letI : T2Space (G F ζ hζ) := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).1
   letI : IsTopologicalGroup (G F ζ hζ) :=
@@ -102,27 +87,12 @@ theorem actual_compact_averaged_kernels
     (RepresentationTheory.ArchFiniteSplitting.splitting_maps_continuous F ζ hζ).2.comp continuous_subtype_val
   have hmap : ∀ k : D.K, Measure.map (fun a : L F => (π k)⁻¹ * a * π k) μL = μL :=
     CompactHaar.map_conjugation_compact π hπ μL
-  refine ⟨hmap, ?_, ?_, ?_⟩
-  · intro m a
-    exact averaged_integrable_parameter π hπ μK (hb.2.2.2.1 m).1 a
-  · intro m
-    obtain ⟨hc, hd, hs, hn, hi⟩ := hb.2.2.2.1 m
-    refine ⟨averaged_continuous π hπ μK hc, ?_,
-      averaged_hasCompactSupport π hπ μK hs, ?_, ?_, ?_⟩
-    · exact averaged_kernel_smooth F μK π hπ (eta F μL (b m)) hd
-    · intro a
-      exact integral_nonneg (fun k => hn _)
-    · change (∫ a, (∫ k, eta F μL (b m) ((π k)⁻¹ * a * π k) ∂μK) ∂μL) = 1
-      rw [averaged_mass π hπ μL μK hmap hc hs, hi]
-    · intro k a
-      exact averaged_conjugation_invariant π μK (eta F μL (b m)) k a
-  · intro O hO
-    obtain ⟨U, hU, hsat⟩ := conjugation_saturation_shrinks π hπ hO
-    filter_upwards [hb.2.2.2.2 U hU] with m hm
-    intro a ha
-    obtain ⟨⟨k, x⟩, hx, rfl⟩ :=
-      averaged_support_subset π hπ μK (hb.2.2.2.1 m).2.2.1 ha
-    exact hsat k x (hm hx.2)
+  refine ⟨hmap, fun m => ?_⟩
+  obtain ⟨hc, hd, hs, _, _⟩ := hb.2.2.2.1 m
+  exact ⟨averaged_continuous π hπ μK hc,
+    averaged_kernel_smooth F μK π hπ (eta F μL (b m)) hd,
+    averaged_hasCompactSupport π hπ μK hs,
+    averaged_conjugation_invariant π μK (eta F μL (b m))⟩
 
 end DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel
 

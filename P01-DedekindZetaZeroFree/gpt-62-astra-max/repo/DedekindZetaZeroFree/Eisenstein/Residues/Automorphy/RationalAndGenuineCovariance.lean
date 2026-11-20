@@ -56,9 +56,11 @@ open scoped NumberField Classical
 open NumberField MeasureTheory ValuativeRel KPLiteralRaw
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-theorem residue_covariance (K : Subgroup (G F ζ hζ))
-    (E cleared : Flat F ζ hζ K → ℂ → Functions F ζ hζ)
+variable (K : Subgroup (G F ζ hζ)) (E cleared : Flat F ζ hζ K → ℂ → Functions F ζ hζ)
     (hGerm : ExceptionalGerm F ζ hζ K E cleared) (f : Flat F ζ hζ K)
+
+include hGerm in
+theorem residue_covariance
     (g₁ g₂ : G F ζ hζ) (c : ℂ)
     (hchamber : ∀ s : ℂ, (1 : ℝ) / 3 < s.re →
       eisenstein F ζ hζ K f s g₁ = c * eisenstein F ζ hζ K f s g₂) :
@@ -74,13 +76,12 @@ theorem residue_covariance (K : Subgroup (G F ζ hζ))
     rw [hGerm.1 f s hs g₁, hGerm.1 f s hs g₂]
     exact hchamber s hs
   · intro s hs hne
-    simpa only [Pi.smul_apply, smul_eq_mul] using congrFun (hclear s hs hne) g₁
+    simpa using congrFun (hclear s hs hne) g₁
   · intro s hs hne
-    simpa only [Pi.smul_apply, smul_eq_mul] using congrFun (hclear s hs hne) g₂
+    simpa using congrFun (hclear s hs hne) g₂
 
-theorem residue_rational (K : Subgroup (G F ζ hζ))
-    (E cleared : Flat F ζ hζ K → ℂ → Functions F ζ hζ)
-    (hGerm : ExceptionalGerm F ζ hζ K E cleared) (f : Flat F ζ hζ K)
+include hGerm in
+theorem residue_rational
     (γ : Matrix.ProjGenLinGroup (Fin 2) F) (g : G F ζ hζ) :
     cleared f 0 (rationalLift F ζ hζ γ * g) = cleared f 0 g := by
   simpa using residue_covariance F ζ hζ K E cleared hGerm f

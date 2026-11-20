@@ -13,14 +13,20 @@ set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 
-abbrev ExteriorPrime (A : SArithmeticData F) :=
+section
+
+variable (A : SArithmeticData F)
+
+abbrev ExteriorPrime :=
   {p : HeightOneSpectrum (𝓞 F) // p.asIdeal ⊔ A.cS = ⊤}
 
-def primeIdeal (A : SArithmeticData F) (p : ExteriorPrime A) : A.Exterior :=
+def primeIdeal (p : ExteriorPrime A) : A.Exterior :=
   ⟨p.val.asIdeal, p.val.ne_bot, p.property⟩
 
-def fieldUnit (A : SArithmeticData F) (a : A.R) (ha : a ≠ 0) : Fˣ :=
+def fieldUnit (a : A.R) (ha : a ≠ 0) : Fˣ :=
   Units.mk0 (a : F) (by exact_mod_cast ha)
+
+end
 
 structure ArithmeticCompatibility (A : SArithmeticData F)
     (D : ComparisonPoissonCoefficientData F A) (σ : F →+* ℂ)
@@ -49,19 +55,16 @@ theorem support_factor (A : SArithmeticData F) (I : A.Exterior)
   let Q := P.image (fun p => p.val.asIdeal)
   have hsub : idealPrimeSupport I.val ⊆ Q := by
     intro p hp
-    have hp' : p ∈ normalizedFactors I.val := Multiset.mem_toFinset.mp hp
+    have hp' := Multiset.mem_toFinset.mp hp
     have hprime := prime_of_normalized_factor p hp'
-    let v : HeightOneSpectrum (𝓞 F) := ⟨p, Ideal.isPrime_of_prime hprime, hprime.ne_zero⟩
     have hv : p ⊔ A.cS = ⊤ := by
       apply top_unique
       rw [← I.property.2]
       exact sup_le_sup_right (Ideal.dvd_iff_le.mp (dvd_of_mem_normalizedFactors hp')) _
-    let ep : ExteriorPrime A := ⟨v, hv⟩
-    have hep : ep ∈ P := by
-      by_contra hn
-      have hz := hP ep hn
-      exact Multiset.count_ne_zero.mpr hp' hz
-    exact Finset.mem_image.mpr ⟨ep, hep, rfl⟩
+    let ep : ExteriorPrime A := ⟨(⟨p, Ideal.isPrime_of_prime hprime, hprime.ne_zero⟩), hv⟩
+    refine Finset.mem_image.mpr ⟨ep, ?_, rfl⟩
+    by_contra hn
+    exact Multiset.count_ne_zero.mpr hp' (hP ep hn)
   have hq : I.val = ∏ p ∈ Q, p ^ idealPrimeExponent p I.val := by
     calc
       I.val = ∏ p ∈ idealPrimeSupport I.val, p ^ idealPrimeExponent p I.val :=
@@ -73,27 +76,29 @@ theorem support_factor (A : SArithmeticData F) (I : A.Exterior)
         rw [show idealPrimeExponent p I.val = 0 from Multiset.count_eq_zero.mpr
           (by simpa only [idealPrimeSupport, Multiset.mem_toFinset] using hpn), pow_zero]
   refine hq.trans ?_
-  exact Finset.prod_image (f := fun p => p ^ idealPrimeExponent p I.val)
-    (g := fun p : ExteriorPrime A => p.val.asIdeal) (fun a ha b hb hab => by
+  exact Finset.prod_image
+     (fun a ha b hb hab => by
       apply Subtype.ext
       exact HeightOneSpectrum.asIdeal_injective hab)
 
-theorem ls_mul (A : SArithmeticData F)
-    (Φ : A.ArithmeticIdeleClasses →* Circle) (x y : A.G) :
+section
+
+variable (A : SArithmeticData F) (Φ : A.ArithmeticIdeleClasses →* Circle)
+
+theorem ls_mul (x y : A.G) :
     A.ideleSInverseProduct Φ (x * y) =
       A.ideleSInverseProduct Φ x * A.ideleSInverseProduct Φ y := by
   simp only [SArithmeticData.ideleSInverseProduct, Prod.fst_mul, Prod.snd_mul,
     Pi.mul_apply, map_mul, mul_inv, Finset.prod_mul_distrib]
   ac_rfl
 
-def thetaHom (A : SArithmeticData F) (Φ : A.ArithmeticIdeleClasses →* Circle) : Fˣ →* ℂ :=
+def thetaHom : Fˣ →* ℂ :=
   Circle.coeHom.comp (({
     toFun := A.ideleSInverseProduct Φ
     map_one' := by simp [SArithmeticData.ideleSInverseProduct]
     map_mul' := ls_mul A Φ } : A.G →* Circle).comp A.diagonal)
 
-theorem thetaHom_unit (A : SArithmeticData F)
-    (Φ : A.ArithmeticIdeleClasses →* Circle)
+theorem thetaHom_unit
     (hu : ∀ ε : A.U, A.ideleSInverseProduct Φ (A.diagonal ε.val) = 1)
     (v : A.Rˣ) : thetaHom A Φ (fieldUnit A (v : A.R) v.ne_zero) = 1 := by
   have he : fieldUnit A (v : A.R) v.ne_zero = (A.unitEquiv.symm v).val := by
@@ -102,8 +107,7 @@ theorem thetaHom_unit (A : SArithmeticData F)
   change (A.ideleSInverseProduct Φ (A.diagonal _) : ℂ) = 1
   rw [he, hu, Circle.coe_one]
 
-theorem theta_associated (A : SArithmeticData F)
-    (Φ : A.ArithmeticIdeleClasses →* Circle)
+theorem theta_associated
     (hu : ∀ ε : A.U, A.ideleSInverseProduct Φ (A.diagonal ε.val) = 1)
     (a b : A.R) (ha : a ≠ 0) (hb : b ≠ 0)
     (hab : Ideal.span {a} = Ideal.span {b}) :
@@ -111,11 +115,16 @@ theorem theta_associated (A : SArithmeticData F)
   obtain ⟨v, hv⟩ := Ideal.span_singleton_eq_span_singleton.mp hab
   have he : fieldUnit A b hb = fieldUnit A a ha * fieldUnit A (v : A.R) v.ne_zero := by
     apply Units.ext
-    change (b : F) = (a : F) * (v : A.R)
     exact congrArg (fun t : A.R => (t : F)) hv.symm
   rw [he, map_mul, thetaHom_unit A Φ hu, mul_one]
 
-theorem span_prod (A : SArithmeticData F) {ι : Type*} (P : Finset ι) (f : ι → A.R) :
+end
+
+section
+
+variable (A : SArithmeticData F)
+
+theorem span_prod {ι : Type*} (P : Finset ι) (f : ι → A.R) :
     Ideal.span {∏ p ∈ P, f p} = ∏ p ∈ P, Ideal.span {f p} := by
   induction P using Finset.induction_on with
   | empty => simp [Ideal.span_singleton_one, Ideal.one_eq_top]
@@ -123,7 +132,7 @@ theorem span_prod (A : SArithmeticData F) {ι : Type*} (P : Finset ι) (f : ι �
     rw [Finset.prod_insert hp, Finset.prod_insert hp,
       ← Ideal.span_singleton_mul_span_singleton, ih]
 
-theorem generator_prod_span (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+theorem generator_prod_span (D : ComparisonPoissonCoefficientData F A)
     (I : A.Exterior) (P : Finset (ExteriorPrime A))
     (hf : I.val = ∏ p ∈ P, p.val.asIdeal ^ idealPrimeExponent p.val.asIdeal I.val) :
     Ideal.span {D.generator I} = Ideal.span
@@ -139,17 +148,18 @@ theorem generator_prod_span (A : SArithmeticData F) (D : ComparisonPoissonCoeffi
   rw [Ideal.map_pow, ← Ideal.span_singleton_pow, (D.generates (primeIdeal A p)).2]
   rfl
 
-theorem fieldUnit_mul (A : SArithmeticData F) (a b : A.R) (ha : a ≠ 0) (hb : b ≠ 0) :
+theorem fieldUnit_mul (a b : A.R) (ha : a ≠ 0) (hb : b ≠ 0) :
     fieldUnit A (a * b) (mul_ne_zero ha hb) = fieldUnit A a ha * fieldUnit A b hb := by
   apply Units.ext
   rfl
+
+end
 
 theorem fieldUnit_prod {ι : Type*} (A : SArithmeticData F) (P : Finset ι)
     (f : ι → A.R) (hf : ∀ p, f p ≠ 0) :
     fieldUnit A (∏ p ∈ P, f p) (Finset.prod_ne_zero_iff.mpr (fun p _ => hf p)) =
     ∏ p ∈ P, fieldUnit A (f p) (hf p) := by
   apply Units.ext
-  change ((∏ p ∈ P, f p : A.R) : F) = _
   change ((∏ p ∈ P, f p : A.R) : F) =
     (Units.coeHom F) (∏ p ∈ P, fieldUnit A (f p) (hf p))
   rw [map_prod]
@@ -179,8 +189,11 @@ theorem theta_factor (A : SArithmeticData F) (D : ComparisonPoissonCoefficientDa
   rw [he, map_pow, hD.theta_recipe _ (D.generates _).1]
   rfl
 
-theorem norm_factor (A : SArithmeticData F) (I : A.Exterior) (P : Finset (ExteriorPrime A))
-    (hf : I.val = ∏ p ∈ P, p.val.asIdeal ^ idealPrimeExponent p.val.asIdeal I.val) :
+variable (A : SArithmeticData F) (I : A.Exterior) (P : Finset (ExteriorPrime A))
+    (hf : I.val = ∏ p ∈ P, p.val.asIdeal ^ idealPrimeExponent p.val.asIdeal I.val)
+
+include hf in
+theorem norm_factor :
     A.exteriorNorm I = ∏ p ∈ P,
       A.exteriorNorm (primeIdeal A p) ^ idealPrimeExponent p.val.asIdeal I.val := by
   unfold SArithmeticData.exteriorNorm idealNorm
@@ -190,8 +203,8 @@ theorem norm_factor (A : SArithmeticData F) (I : A.Exterior) (P : Finset (Exteri
   simp only [map_pow, Nat.cast_pow]
   rfl
 
-theorem power_factor (A : SArithmeticData F) (I : A.Exterior) (P : Finset (ExteriorPrime A))
-    (hf : I.val = ∏ p ∈ P, p.val.asIdeal ^ idealPrimeExponent p.val.asIdeal I.val) (a : ℂ) :
+include hf in
+theorem power_factor (a : ℂ) :
     comparisonRealPower (A.exteriorNorm I) a = ∏ p ∈ P,
       comparisonRealPower (A.exteriorNorm (primeIdeal A p))
         ((idealPrimeExponent p.val.asIdeal I.val : ℂ) * a) := by

@@ -11,13 +11,10 @@ set_option backward.isDefEq.respectTransparency true
 namespace DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 open MomentSources NumberField IsDedekindDomain ThetaExpansion ValuativeRel
 open scoped NumberField Classical
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming reduction_spec → reduction_spec
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming reduction_mul → reduction_mul
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming reduction_pow → reduction_pow
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming reduction_one → reduction_one
+open _root_.DedekindZetaZeroFree.ThetaBranch (reduction_spec reduction_mul reduction_pow reduction_one)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem order_mul (p : KPFinitePlace F) (x y : Fˣ) :
     ThetaBranch.order p (x * y) = ThetaBranch.order p x + ThetaBranch.order p y := by
@@ -46,8 +43,7 @@ theorem generator_order (p : ThetaBranch.ExteriorPrime R.A) :
 
 theorem reduction_inv (p : KPFinitePlace F) (x : Fˣ) (hx : ThetaBranch.order p x = 0) :
     ThetaBranch.unitResidue p x⁻¹ = (ThetaBranch.unitResidue p x)⁻¹ := by
-  have hi : ThetaBranch.order p x⁻¹ = 0 := by rw [order_inv, hx, neg_zero]
-  have hm := reduction_mul p x x⁻¹ hx hi
+  have hm := reduction_mul p x x⁻¹ hx (by rw [order_inv, hx, neg_zero])
   rw [mul_inv_cancel, reduction_one] at hm
   exact eq_inv_of_mul_eq_one_right hm.symm
 

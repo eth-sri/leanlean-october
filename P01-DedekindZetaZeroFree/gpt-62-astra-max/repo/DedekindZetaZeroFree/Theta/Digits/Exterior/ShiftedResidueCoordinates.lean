@@ -11,11 +11,10 @@ set_option backward.isDefEq.respectTransparency true
 namespace DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 open MomentSources NumberField IsDedekindDomain ThetaExpansion ValuativeRel
 open scoped NumberField Classical
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming reduction_mul → reduction_mul
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming reduction_pow → reduction_pow
+open _root_.DedekindZetaZeroFree.ThetaBranch (reduction_mul reduction_pow)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem digit_coordinates (p : ThetaBranch.ExteriorPrime R.A) (x V : Fˣ)
     (hV : ThetaBranch.order p.val V = 0) :

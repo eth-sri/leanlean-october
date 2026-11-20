@@ -44,17 +44,23 @@ private theorem rootCoord_eq (b : upperBorel F w) (A : GL2 F w)
   unfold rootCoord
   rw [← heq]
   have hs (i j : Fin 2) : (A * Matrix.GeneralLinearGroup.scalar (Fin 2) u) i j =
-      A i j * (u : LocalField F w) := by
+      A i j * u := by
     simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.mul_diagonal]
   dsimp only
   rw [hs, hs]
   exact mul_div_mul_right _ _ u.ne_zero
 
-def affineMatrix (p : (LocalField F w)ˣ × LocalField F w) : GL2 F w :=
+alias BorelModularCharacter.rootCoord_eq := rootCoord_eq
+
+section
+
+variable (p : (LocalField F w)ˣ × LocalField F w)
+
+def affineMatrix : GL2 F w :=
   diagonalMatrix F w p.1 * upperRootMatrix F w p.2
 
-theorem affineMatrix_entries (p : (LocalField F w)ˣ × LocalField F w) :
+theorem affineMatrix_entries :
     (affineMatrix F w p : Matrix (Fin 2) (Fin 2) (LocalField F w)) =
       !![(p.1 : LocalField F w), (p.1 : LocalField F w) * p.2; 0, 1] := by
   ext i j
@@ -63,29 +69,29 @@ theorem affineMatrix_entries (p : (LocalField F w)ˣ × LocalField F w) :
       Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.mkOfDetNeZero,
       Matrix.mul_apply, Fin.sum_univ_two]
 
-def affine (p : (LocalField F w)ˣ × LocalField F w) : upperBorel F w :=
+def affine : upperBorel F w :=
   ⟨Matrix.ProjGenLinGroup.mk (affineMatrix F w p),
     ⟨affineMatrix F w p, rfl, by rw [affineMatrix_entries]; simp⟩⟩
 
-theorem affine_ratio (p : (LocalField F w)ˣ × LocalField F w) :
+theorem affine_ratio :
     borelRatio F w (affine F w p) = p.1 := by
   apply Units.ext
   rw [borelRatio_eq F w _ (affineMatrix F w p) rfl]
   · rw [affineMatrix_entries]; simp
   · rw [affineMatrix_entries]; simp
 
-theorem affine_root (p : (LocalField F w)ˣ × LocalField F w) :
+theorem affine_root :
     rootCoord F w (affine F w p) = p.2 := by
   rw [rootCoord_eq F w _ (affineMatrix F w p) rfl, affineMatrix_entries]
   simp [p.1.ne_zero]
 
+end
+
 theorem affine_inverse (b : upperBorel F w) :
     affine F w (borelRatio F w b, rootCoord F w b) = b := by
   obtain ⟨A, hA, h10⟩ := b.property
-  have h00 := (diag_nz F w A h10).1
   have h11 := (diag_nz F w A h10).2
   apply Subtype.ext
-  change Matrix.ProjGenLinGroup.mk _ = b.val
   rw [← hA]
   apply Matrix.ProjGenLinGroup.mk_eq_mk_iff.mpr
   refine ⟨Units.mk0 (A 1 1) h11, ?_⟩
@@ -94,17 +100,15 @@ theorem affine_inverse (b : upperBorel F w) :
     affineMatrix_entries, borelRatio_eq F w b A hA h10, rootCoord_eq F w b A hA]
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_diagonal, h10, h11, h00]
+    simp [Matrix.mul_diagonal, h10, h11, ((diag_nz F w A h10).1)]
 
 theorem coords_continuous :
     Continuous (fun b : upperBorel F w => (borelRatio F w b, rootCoord F w b)) := by
   let S : Set (PGL2 F w) := upperBorel F w
   let p : GL2 F w → PGL2 F w := Matrix.ProjGenLinGroup.mk
   let f := S.restrictPreimage p
-  have hq : Topology.IsQuotientMap f :=
-    (QuotientGroup.isOpenQuotientMap_mk.restrictPreimage S).isQuotientMap
-  apply hq.continuous_iff.mpr
-  have hu (A : p ⁻¹' S) : (A.val : GL2 F w) 1 0 = 0 :=
+  apply ((QuotientGroup.isOpenQuotientMap_mk.restrictPreimage S).isQuotientMap).continuous_iff.mpr
+  have hu (A : p ⁻¹' S) : A.val 1 0 = 0 :=
     representative_upper F w A.val A.property
   have hn (A : p ⁻¹' S) := diag_nz F w A.val (hu A)
   have hentry (i j : Fin 2) : Continuous (fun A : p ⁻¹' S => (A.val : GL2 F w) i j) :=
@@ -113,16 +117,15 @@ theorem coords_continuous :
     apply Units.continuous_iff.mpr
     constructor
     · have he : (fun A : p ⁻¹' S => (borelRatio F w (f A) : LocalField F w)) =
-          fun A => (A.val : GL2 F w) 0 0 / (A.val : GL2 F w) 1 1 := by
+          fun A => A.val 0 0 / A.val 1 1 := by
         funext A
         exact borelRatio_eq F w (f A) A.val rfl (hu A)
       change Continuous (fun A : p ⁻¹' S => (borelRatio F w (f A) : LocalField F w))
       rw [he]
       exact (hentry 0 0).div (hentry 1 1) (fun A => (hn A).2)
     · have he : (fun A : p ⁻¹' S => ((borelRatio F w (f A))⁻¹ : LocalField F w)) =
-          fun A => (A.val : GL2 F w) 1 1 / (A.val : GL2 F w) 0 0 := by
+          fun A => A.val 1 1 / A.val 0 0 := by
         funext A
-        change (borelRatio F w (f A) : LocalField F w)⁻¹ = _
         rw [borelRatio_eq F w (f A) A.val rfl (hu A), inv_div]
       change Continuous (fun A : p ⁻¹' S => (borelRatio F w (f A) : LocalField F w)⁻¹)
       rw [he]
@@ -149,7 +152,7 @@ theorem affine_continuous : Continuous (affine F w) := by
     · have he : (fun p => Units.val ((affineMatrix F w p)⁻¹)) =
           fun p => !![Units.val (p.1⁻¹), -p.2; 0, 1] := by
         funext p
-        have hh : (affineMatrix F w p)⁻¹ = affineMatrix F w (p.1⁻¹, -(p.1 : LocalField F w) * p.2) := by
+        have hh : (affineMatrix F w p)⁻¹ = affineMatrix F w (p.1⁻¹, -p.1 * p.2) := by
           apply inv_eq_of_mul_eq_one_left
           apply Units.ext
           rw [Matrix.GeneralLinearGroup.coe_mul, affineMatrix_entries, affineMatrix_entries]

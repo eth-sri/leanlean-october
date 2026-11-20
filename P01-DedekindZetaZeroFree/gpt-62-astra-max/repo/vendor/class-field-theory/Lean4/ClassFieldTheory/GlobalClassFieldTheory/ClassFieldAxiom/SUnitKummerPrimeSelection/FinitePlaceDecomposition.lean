@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -68,64 +63,45 @@ theorem
       (L := L) q
   let W :=
     _root_.finitePlaceExtensionCentre
-      (K := M) (L := L) q wM
-  have hWM :
-      _root_.finitePlaceBelow (K := M) W =
-        q :=
-    _root_.finitePlaceBelow_finitePlaceExtensionCentre
-      (K := M) (L := L) q wM
+        q wM
   have hWF :
       _root_.finitePlaceBelow (K := F) W =
         p := by
     rw [
       ← _root_.finitePlaceBelow_finitePlaceBelow
         (K := F) (M := M) (L := L) W,
-      hWM, hq]
+      (_root_.finitePlaceBelow_finitePlaceExtensionCentre
+        q wM), hq]
   let Wp :
       {W : HeightOneSpectrum (𝓞 L) //
-        _root_.finitePlaceBelow (K := F) W = p} :=
+        _root_.finitePlaceBelow W = p} :=
     ⟨W, hWF⟩
   let wF :=
     (_root_.finitePlaceExtensionEquivAbove
-      (K := F) (L := L) p).symm Wp
+        p).symm Wp
   have hwFcentre :
       _root_.finitePlaceExtensionCentre
-          (K := F) (L := L) p wF =
+            p wF =
         W := by
-    have hh :=
-      (_root_.finitePlaceExtensionEquivAbove
-        (K := F) (L := L) p).apply_symm_apply Wp
     simpa only [wF, Wp, finitePlaceExtensionEquivAbove_coe] using
       congrArg
         (fun T :
           {W : HeightOneSpectrum (𝓞 L) //
             _root_.finitePlaceBelow (K := F) W = p} =>
-          (T : HeightOneSpectrum (𝓞 L))) hh
+          (T : HeightOneSpectrum (𝓞 L))) ((_root_.finitePlaceExtensionEquivAbove
+            p).apply_symm_apply Wp)
   have hequiv : wM.1.IsEquiv wF.1 := by
     apply
       _root_.finitePlaceExtensions_isEquiv_of_centres_eq
-        (F := M) (M := F) q p wM wF
+          q p wM wF
     simpa [W] using hwFcentre.symm
-  have hDvalue :
-      HilbertRamification.absoluteValueDecompositionGroup
-          F wM.1 =
-        HilbertRamification.absoluteValueDecompositionGroup
-          F wF.1 :=
-    absoluteValueDecompositionGroup_eq_of_absoluteValue_isEquiv
-      wM.1 wF.1 hequiv
-  have hDchosen :
-      HilbertRamification.absoluteValueDecompositionGroup
-          F wF.1 =
-        HilbertRamification.absoluteValueDecompositionGroup
-          F
-          (_root_.chosenFinitePlaceExtension
-            (L := L) p).1 :=
+  have hDchosen :=
     absoluteValueDecompositionGroup_eq_of_exactExtensions_of_isMulCommutative
       (HeightOneSpectrum.adicAbv F p)
       (RayClass.adicAbv_isNontrivial p)
       wF
       (_root_.chosenFinitePlaceExtension
-        (L := L) p)
+         p)
   have htauM :
       tau ∈
         HilbertRamification.absoluteValueDecompositionGroup
@@ -133,7 +109,7 @@ theorem
     change
       tau ∈
         _root_.finitePlaceDecompositionGroup
-          (K := M) (L := L) q
+            q
     rw [hfull]
     exact Subgroup.mem_top tau
   let rho :=
@@ -151,8 +127,9 @@ theorem
       HilbertRamification.absoluteValueDecompositionGroup
         F
         (_root_.chosenFinitePlaceExtension
-          (L := L) p).1
-  rw [← hDchosen, ← hDvalue]
+           p).1
+  rw [← hDchosen, ← (absoluteValueDecompositionGroup_eq_of_absoluteValue_isEquiv
+    wM.1 wF.1 hequiv)]
   exact hrho
 
 /-- An unramified chosen finite-place decomposition group is cyclic. -/
@@ -170,14 +147,14 @@ theorem finitePlaceDecompositionGroup_isCyclic_of_chosenUnramified
         (K := F) (L := L) v) := by
   let Fv :=
     _root_.ChosenFinitePlaceBaseCompletion
-      (K := F) v
+       v
   let Lv :=
     _root_.ChosenFinitePlaceLocalizedCompletion
       (K := F) (L := L) v
   let :
       LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension
         Fv Lv := by
-    simpa [Fv, Lv, _root_.ChosenFinitePlaceIsUnramified] using hunram
+    exact hunram
   let eLocal :
       _root_.finitePlaceDecompositionGroup
           (K := F) (L := L) v ≃*

@@ -15,8 +15,8 @@ set_option maxHeartbeats 2000000
 namespace DedekindZetaZeroFree.FiniteWhittakerProjectors
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def finiteRoot (q : KPFinitePlace F) (t : q.adicCompletion F) : Group R :=
   KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
@@ -31,15 +31,12 @@ theorem selected_root_fixed_near_zero {Q : AdmissibleFlatSources R}
   have hq : Sum.inr q.val ∈ s.val := by
     rw [hs]
     exact (D.bad_exact _).mpr (Or.inr ⟨q.val, rfl, q.property⟩)
-  have hn : Continuous (fun t : q.val.adicCompletion F =>
-      KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val) t) :=
-    (KPPGLLocalCover.finite_lifts_continuous F R.A.zeta12 R.A.primitive_zeta12 q.val _
-      (KPAdelicCoverRestrictedProduct.depth_admissible F R.A.zeta12 R.A.primitive_zeta12 q.val)).1
   have he : ∀ᶠ t in nhds (0 : q.val.adicCompletion F),
       actualFiniteAction R D q.val
         (KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val) t)
           (x ⟨Sum.inr q.val, hq⟩) = x ⟨Sum.inr q.val, hq⟩ := by
-    apply ((stabilizer_open R D q.val _).preimage hn).mem_nhds
+    apply ((stabilizer_open R D q.val _).preimage ((KPPGLLocalCover.finite_lifts_continuous F R.A.zeta12 R.A.primitive_zeta12 q.val _
+      (KPAdelicCoverRestrictedProduct.depth_admissible F R.A.zeta12 R.A.primitive_zeta12 q.val)).1)).mem_nhds
     simp [KPPGLLocalCover.N, KPStandardLocalRootLifts.N_zero]
   filter_upwards [he] with t ht g
   rw [← D.selected_eq v, hx]
@@ -61,8 +58,7 @@ theorem common_root_sublevel {Q : AdmissibleFlatSources R} {T : Realization R Q}
       (∀ j ∈ J, (actualFiniteCharacter q.val).toAddChar j = 1) ∧
       ∀ j ∈ J, ∀ v g, T.theta v (g * finiteRoot R q.val j) = T.theta v g := by
   letI := Q.finite_companions
-  have hfix : ∀ᶠ t in nhds (0 : q.val.adicCompletion F), ∀ v g,
-      T.theta v (g * finiteRoot R q.val t) = T.theta v g :=
+  have hfix :=
     Filter.eventually_all.mpr (selected_root_fixed_near_zero R D q)
   obtain ⟨r, hr, hball⟩ := Metric.eventually_nhds_iff.mp hfix
   let B : AddSubgroup (q.val.adicCompletion F) := {
@@ -91,7 +87,6 @@ theorem trace_finite_diagonal (y : R.A.G) (q : R.A.Sf) (t : q.val.adicCompletion
       KPRationalAdelicSplitting.localAdele F (Sum.inr q.val) ((y.2 q : q.val.adicCompletion F) * t) := by
     apply Prod.ext
     · funext w
-      change (localIdele R y : KPAdeles F).1 w * 0 = 0
       exact mul_zero _
     · apply RestrictedProduct.ext
       intro p
@@ -106,13 +101,10 @@ theorem trace_finite_diagonal (y : R.A.G) (q : R.A.Sf) (t : q.val.adicCompletion
         simp only [RestrictedProduct.single_eq_same, hy]
       · simp [RestrictedProduct.single, Pi.single_eq_of_ne hp]
   rw [he]
-  change (adelicTraceCharacter F (KPRationalAdelicSplitting.localAdele F
-    (Sum.inr q.val) ((y.2 q : q.val.adicCompletion F) * t)) : ℂ) = _
-  have ht := adelicTraceCharacter_finite_single F q.val ((y.2 q : q.val.adicCompletion F) * t)
-  have hh := CodifferentResidueSieve.localTraceCharacter_eq_localFiniteCharacter (F := F) q.val
+  have hh := CodifferentResidueSieve.localTraceCharacter_eq_localFiniteCharacter q.val
   change (adelicTraceCharacter F _ : ℂ) = (ResidueTrace.localTraceCharacter q.val _ : ℂ)
   rw [hh]
-  exact congrArg (fun z : Circle => (z : ℂ)) ht
+  exact congrArg (fun z : Circle => (z : ℂ)) (adelicTraceCharacter_finite_single F q.val ((y.2 q : q.val.adicCompletion F) * t))
 
 theorem selected_phase_on_support {N : TraceHaarTransport R} (A : JointExteriorCoefficientSources R N)
     (q : R.A.Sf) (J : AddSubgroup (q.val.adicCompletion F))
@@ -133,8 +125,7 @@ theorem selected_phase_on_support {N : TraceHaarTransport R} (A : JointExteriorC
     (KPLiteralRaw.rightAction F R.A.zeta12 R.A.primitive_zeta12 (finiteRoot R q.val j)
       (A.realization.theta v)) (diagonal R y) = _ at ht
   rw [he, trace_finite_diagonal] at ht
-  have hp : (actualFiniteCharacter q.val).toAddChar ((y.2 q : q.val.adicCompletion F) * j) = 1 := by
-    exact (mul_right_cancel₀ hy (ht.symm.trans (one_mul _).symm))
+  have hp := (mul_right_cancel₀ hy (ht.symm.trans (one_mul _).symm))
   have hs : ((y.2 q : q.val.adicCompletion F) - 1) * j + j = (y.2 q : q.val.adicCompletion F) * j := by ring
   have h := congrArg (actualFiniteCharacter q.val).toAddChar hs
   rw [AddChar.map_add_eq_mul, hχ j hj, mul_one, hp] at h

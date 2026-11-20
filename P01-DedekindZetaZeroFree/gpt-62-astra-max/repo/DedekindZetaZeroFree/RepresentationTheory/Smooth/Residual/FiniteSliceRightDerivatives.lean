@@ -24,9 +24,7 @@ theorem finiteSlicePoint_flow (c : KPGlobalTorusFunctionData.finitePart F ζ hζ
         (a b.1 * matrixExponential ((t : ℂ) • basisMatrix b.2))) := by
   let d : InfinitePlace F → ComplexGL2 := Function.update (fun _ => 1) b.1
     (matrixExponential ((t : ℂ) • basisMatrix b.2))
-  have hf : flow F b t = fun w => Matrix.ProjGenLinGroup.mk (d w) := flow_matrix_update F b t
-  have hc := finite_section_commute F ζ hζ c d
-  rw [finiteSlicePoint,hf,mul_assoc,←hc.eq,←mul_assoc]
+  rw [finiteSlicePoint,(flow_matrix_update F b t),mul_assoc,←(finite_section_commute F ζ hζ c d).eq,←mul_assoc]
   rw [←(archimedean_insertion_properties F ζ hζ).2.1]
   congr 1
   apply congrArg (archimedeanInsertion F ζ hζ)
@@ -36,7 +34,6 @@ theorem finiteSlicePoint_flow (c : KPGlobalTorusFunctionData.finitePart F ζ hζ
     simp only [d,Function.update_self,Pi.mul_apply]
     rfl
   · simp only [d,Function.update_of_ne hv,Pi.mul_apply]
-    change Matrix.ProjGenLinGroup.mk (a v) * Matrix.ProjGenLinGroup.mk 1 = _
     simp
 
 theorem actualRightWord_finiteSlice (c : KPGlobalTorusFunctionData.finitePart F ζ hζ)
@@ -51,9 +48,6 @@ theorem actualRightWord_finiteSlice (c : KPGlobalTorusFunctionData.finitePart F 
       (finiteSlicePoint F ζ hζ c a * archimedeanInsertion F ζ hζ
         (KPSmoothLocalQuotientCharts.matrixExp F (t • Pi.single (lieEnumeration F b) 1)))) 0 = _
     simp only [matrixExp_eq_flow]
-    change deriv (fun t : ℝ => actualRightWord F ζ hζ w f
-      (finiteSlicePoint F ζ hζ c a * archimedeanInsertion F ζ hζ
-        (flow F (wordIndexEquiv F b) t))) 0 = _
     simp_rw [finiteSlicePoint_flow,hw]
     rfl
 end DedekindZetaZeroFree.FourierContinuation.ResidualPrincipalSlices

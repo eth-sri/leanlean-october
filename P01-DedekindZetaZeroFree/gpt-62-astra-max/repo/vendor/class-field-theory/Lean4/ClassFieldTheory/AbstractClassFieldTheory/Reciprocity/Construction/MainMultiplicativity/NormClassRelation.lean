@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -106,36 +103,17 @@ theorem relativeNorm_frobeniusPowerSum_alternating
   let S₁ := D.frobeniusFixedField K L hLK σ₁
   let S₃ := D.frobeniusFixedField K L hLK σ₃
   let S₄ := D.frobeniusFixedField K L hLK σ₄
-  let hS₁K := D.frobeniusFixedField_le K L hLK σ₁
-  let hS₃K := D.frobeniusFixedField_le K L hLK σ₃
   let hS₄K := D.frobeniusFixedField_le K L hLK σ₄
-  let p₁ := fixedFieldInclusion A S₁ (D.maximalUnramifiedField L)
-    (D.fieldInertia_le_frobeniusFixedField K L hLK σ₁) π₁
-  let p₃ := fixedFieldInclusion A S₃ (D.maximalUnramifiedField L)
-    (D.fieldInertia_le_frobeniusFixedField K L hLK σ₃) π₃
-  let p₄ := fixedFieldInclusion A S₄ (D.maximalUnramifiedField L)
-    (D.fieldInertia_le_frobeniusFixedField K L hLK σ₄) π₄
   let s₁ := D.frobeniusPowerSum A K.field L hLK φ.1
-    (D.frobeniusExponent K L hLK σ₁) p₁
+    (D.frobeniusExponent K L hLK σ₁) (fixedFieldInclusion A S₁ (D.maximalUnramifiedField L)
+      (D.fieldInertia_le_frobeniusFixedField K L hLK σ₁) π₁)
   let s₃ := D.frobeniusPowerSum A K.field L hLK φ.1
-    (D.frobeniusExponent K L hLK σ₃) p₃
+    (D.frobeniusExponent K L hLK σ₃) (fixedFieldInclusion A S₃ (D.maximalUnramifiedField L)
+      (D.fieldInertia_le_frobeniusFixedField K L hLK σ₃) π₃)
   let s₄ := D.frobeniusPowerSum A K.field L hLK φ.1
-    (D.frobeniusExponent K L hLK σ₄) p₄
-  let u := s₄ + s₁ - s₃
-  let hS₁finite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field S₁ hS₁K) :=
-    D.frobeniusFixedField_finite K L hLK σ₁
-  let hS₃finite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field S₃ hS₃K) :=
-    D.frobeniusFixedField_finite K L hLK σ₃
-  let hS₄finite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field S₄ hS₄K) :=
-    D.frobeniusFixedField_finite K L hLK σ₄
-  let hIfinite : Finite
-      ((D.maximalUnramifiedField K.field).toSubgroup ⧸
-        extensionSubgroup (D.maximalUnramifiedField K.field)
-          (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK)) :=
+    (D.frobeniusExponent K L hLK σ₄) (fixedFieldInclusion A S₄ (D.maximalUnramifiedField L)
+      (D.fieldInertia_le_frobeniusFixedField K L hLK σ₄) π₄)
+  let hIfinite :=
     D.maximalUnramifiedExtension_finite K.field L hLK
   have h₁ := (D.frobeniusNormIdentities A K L hLK φ σ₁ hφ π₁).1
   have h₃ := (D.frobeniusNormIdentities A K L hLK φ σ₃ hφ π₃).1
@@ -188,7 +166,7 @@ theorem maximalUnramifiedNormClass_add_eq_of_relativeNorm
     exact haK
   have hzero := (D.maximalUnramifiedNormClass_eq_zero_iff
     A K.field L (r₁ + r₂ - r₃)).2 hmem
-  rw [map_sub, map_add] at hzero
+  simp at hzero
   exact sub_eq_zero.mp hzero
 
 /-- Prime-choice independence converts an equality of the three explicit
@@ -254,32 +232,11 @@ theorem reciprocityMap_mul_of_primeNormClass_eq
       D.reciprocityMap A v K L hLK σ₁ +
         D.reciprocityMap A v K L hLK σ₂ := by
   let KR := K.toFiniteResidueAbstractField D
-  let hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
-  let hLfiniteKR : Finite
-      (KR.field.toSubgroup ⧸ extensionSubgroup KR.field L hLK) := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLfinite
-  let hS₁finite : Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field
-      (D.frobeniusFixedField KR L hLK σ₁)
-      (D.frobeniusFixedField_le KR L hLK σ₁)) :=
-    D.frobeniusFixedField_finite KR L hLK σ₁
-  let hS₂finite : Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field
-      (D.frobeniusFixedField KR L hLK σ₂)
-      (D.frobeniusFixedField_le KR L hLK σ₂)) :=
-    D.frobeniusFixedField_finite KR L hLK σ₂
-  let hS₃finite : Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field
-      (D.frobeniusFixedField KR L hLK (σ₁ * σ₂))
-      (D.frobeniusFixedField_le KR L hLK (σ₁ * σ₂))) :=
-    D.frobeniusFixedField_finite KR L hLK (σ₁ * σ₂)
-  have h₁ := D.reciprocityValueOfPrime_eq_reciprocityMap
-    A v hAxiom K L hLK σ₁ π₁ hπ₁
-  have h₂ := D.reciprocityValueOfPrime_eq_reciprocityMap
-    A v hAxiom K L hLK σ₂ π₂ hπ₂
-  have h₃ := D.reciprocityValueOfPrime_eq_reciprocityMap
-    A v hAxiom K L hLK (σ₁ * σ₂) π₃ hπ₃
-  rw [← h₃, ← h₁, ← h₂]
-  simpa only [reciprocityValueOfPrime, KR,
-    FiniteAbstractField.toFiniteResidueAbstractField] using hclasses.symm
+  rw [← (D.reciprocityValueOfPrime_eq_reciprocityMap
+    A v hAxiom K L hLK (σ₁ * σ₂) π₃ hπ₃), ← (D.reciprocityValueOfPrime_eq_reciprocityMap
+    A v hAxiom K L hLK σ₁ π₁ hπ₁), ← (D.reciprocityValueOfPrime_eq_reciprocityMap
+    A v hAxiom K L hLK σ₂ π₂ hπ₂)]
+  exact hclasses.symm
 
 end DegreeData
 

@@ -7,12 +7,8 @@ public import DedekindZetaZeroFree.Eisenstein.Residues.NormalizerClearingValues
 @[expose] public section
 
 noncomputable section
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.TraceBox renaming adelic_measure_box → adelic_measure_box
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.TraceBox renaming finite_measure_sigmaFinite → finite_measure_sigmaFinite
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.TraceBox renaming arch_measure_sigmaFinite → arch_measure_sigmaFinite
 local instance cofactorNonzeroArchMeasurable (F : Type) [Field F] [NumberField F] : MeasurableSpace (NumberField.InfiniteAdeleRing F) := borel _
 local instance cofactorNonzeroArchBorel (F : Type) [Field F] [NumberField F] : BorelSpace (NumberField.InfiniteAdeleRing F) := ⟨rfl⟩
-open _root_.DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant renaming forwardSection_real_formula → forwardSection_real_formula
 open scoped Classical NumberField TensorProduct BigOperators Topology
 open Filter
 open NumberField MeasureTheory ValuativeRel
@@ -21,10 +17,10 @@ open KPLocalPrincipalSeries KPGlobalTorusFiniteStages KPLocalExceptionalConstruc
 open KPGlobalResidualConstruction
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -41,7 +37,7 @@ theorem exists_current_nonzero_upper  :
   have hD : localDifferentSupport F ⊆ (E : Set _) := by
     intro q hq
     exact Finset.mem_union_right _ ((finite_localDifferentSupport F).mem_toFinset.mpr hq)
-  obtain ⟨φ,t,b,ht,hm,ha,hn,hfactor⟩ := exists_current_global_cofactor R P C  E hE hD
+  obtain ⟨φ, t, b, hm, ha, hn, hfactor⟩ := exists_current_global_cofactor R P C E hE hD
   let x := cofactorSourceCore R P C E hE φ
   let g := NormOneTorusAlgebra.rightEvaluation F ζ hζ t
   obtain ⟨M,B,r,hM,hMch,hr,hrb,hB,hclear,hcenter⟩ := core_scattering_continuation R P C x g
@@ -56,7 +52,7 @@ theorem exists_current_nonzero_upper  :
     h0 ha.continuousAt hb0.continuousAt (fun s hs => (hMch s hs).trans (hfactor s hs)) hnear
   have hnrm : KPGlobalFiniteSIntertwiner.residueNormalizer F  ζ hζ E ≠ 0 := by
     intro he
-    have hp := (KPGlobalFiniteSIntertwiner.residueNormalizer_pos F  ζ hζ E).2
+    have hp := (KPGlobalFiniteSIntertwiner.residueNormalizer_pos F ζ hζ E)
     rw [he, Complex.zero_re] at hp
     exact (lt_irrefl 0) hp
   refine ⟨x,g,?_⟩

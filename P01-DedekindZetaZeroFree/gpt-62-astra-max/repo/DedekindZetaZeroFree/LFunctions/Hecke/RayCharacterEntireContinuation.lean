@@ -22,13 +22,11 @@ theorem rayCharacterEntire
   classical
 
   obtain ⟨ψ, hψdesc, hψprinc⟩ := rayCharacterDescent K m hm χ
-  have hψ : ψ ≠ 1 := fun h => hχ (hψprinc.mpr h)
-
   obtain ⟨ρ, F, hF, hpartial⟩ := partialRayZetaRegularization K m hm
   haveI : Fintype (RayIdealClass K m hm) := Fintype.ofFinite _
 
   obtain ⟨f, hfdiff, hfsum⟩ := finiteCharacterEntireAssembly (rayIdealClass K m hm)
-    (fun I s => (Ideal.absNorm I : ℂ) ^ (-s)) ψ hψ ρ F hF (fun c s hs =>
+    (fun I s => (Ideal.absNorm I : ℂ) ^ (-s)) ψ (fun h => hχ (hψprinc.mpr h)) ρ F hF (fun c s hs =>
       (hpartial c s hs).congr_fun fun a => by
         by_cases hp : rayIdealClass K m hm a = some c <;> simp [hp])
   refine ⟨f, hfdiff, fun s hs => ?_⟩

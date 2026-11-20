@@ -58,8 +58,8 @@ private lemma actualStandardIntegrand_add_smul
   funext x
   have hcoe : ((a • φ + b • ψ : compactLevel S.borel P S.iwasawa (sourceSign ε) J) :
       compactPicture S.borel P S.iwasawa (sourceSign ε)) =
-      a • (φ : compactPicture S.borel P S.iwasawa (sourceSign ε)) +
-        b • (ψ : compactPicture S.borel P S.iwasawa (sourceSign ε)) := rfl
+      a • φ +
+        b • ψ := rfl
   simp only [actualStandardIntegrand, hcoe, map_add, map_smul, Pi.add_apply, Pi.smul_apply]
   try simp
 
@@ -84,49 +84,44 @@ private lemma standardIntegralCoordinate_add_smul
       b * standardIntegralCoordinate (LocalField F q) S.borel P S.iwasawa μ ε s
           (ψ : compactPicture S.borel P S.iwasawa (sourceSign ε))
           (k : ActualCover F ζ hζ q) h := by
-  have h1 := actual_standard_integral_coordinate_integrable F ζ hζ q S P J hJ' μ hμ' π' hπ'
-    ε s hs φ k h
-  have h2 := actual_standard_integral_coordinate_integrable F ζ hζ q S P J hJ' μ hμ' π' hπ'
-    ε s hs ψ k h
-  have hlin := actualStandardIntegrand_add_smul F ζ hζ q S P J ε s k h a b φ ψ
-  have hcongr : (fun x => actualStandardIntegrand F ζ hζ q S P ε s
+  let actualStandardIntegrand₀ := actualStandardIntegrand F ζ hζ q S P ε s
+  have hcongr : (fun x => actualStandardIntegrand₀
         ((a • φ + b • ψ : compactLevel S.borel P S.iwasawa (sourceSign ε) J) :
           compactPicture S.borel P S.iwasawa (sourceSign ε)) k h x) =
-      fun x => a * actualStandardIntegrand F ζ hζ q S P ε s
-          (φ : compactPicture S.borel P S.iwasawa (sourceSign ε)) k h x +
-        b * actualStandardIntegrand F ζ hζ q S P ε s
-          (ψ : compactPicture S.borel P S.iwasawa (sourceSign ε)) k h x := by
+      fun x => a * actualStandardIntegrand₀
+          φ k h x +
+        b * actualStandardIntegrand₀
+          ψ k h x := by
     funext x
-    simpa only [Pi.add_apply, Pi.smul_apply, smul_eq_mul] using congrFun hlin x
+    simpa using congrFun (actualStandardIntegrand_add_smul F ζ hζ q S P J ε s k h a b φ ψ) x
   rw [standardIntegralCoordinate_eq_integral, standardIntegralCoordinate_eq_integral,
     standardIntegralCoordinate_eq_integral, hcongr,
-    integral_add (h1.const_mul a) (h2.const_mul b), integral_const_mul, integral_const_mul]
+    integral_add ((actual_standard_integral_coordinate_integrable F ζ hζ q S P J hJ' μ hμ' π' hπ'
+      ε s hs φ k h).const_mul a) ((actual_standard_integral_coordinate_integrable F ζ hζ q S P J hJ' μ hμ' π' hπ'
+      ε s hs ψ k h).const_mul b), integral_const_mul, integral_const_mul]
 
 private lemma finsupp_eval_add_smul (u : ℂ) (a b : ℂ) (p1 p2 : ℤ →₀ ℂ) :
     (a • p1 + b • p2).sum (fun n c => u ^ n * c) =
       a * p1.sum (fun n c => u ^ n * c) + b * p2.sum (fun n c => u ^ n * c) := by
-  let ev : (ℤ →₀ ℂ) →ₗ[ℂ] ℂ :=
-    Finsupp.lsum ℂ fun n : ℤ => LinearMap.mulLeft ℂ (u ^ n)
-  have hev : ∀ p : ℤ →₀ ℂ, ev p = p.sum (fun n c => u ^ n * c) := by
+  have hev : ∀ p : ℤ →₀ ℂ, (Finsupp.lsum ℂ fun n : ℤ => LinearMap.mulLeft ℂ (u ^ n)) p = p.sum (fun n c => u ^ n * c) := by
     intro p
     rw [Finsupp.lsum_apply]
     rfl
   rw [← hev (a • p1 + b • p2), ← hev p1, ← hev p2, map_add, map_smul, map_smul,
     smul_eq_mul, smul_eq_mul]
 
+variable (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q)
+
 private theorem actualScalarNumerator_add_smul
-    (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q)
     (a b : ℂ)
     (φ ψ : compactLevel S.borel P S.iwasawa (sourceSign ε) J) :
     actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε (a • φ + b • ψ) k h =
       a • actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε φ k h +
       b • actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε ψ k h := by
-  have hp := Classical.choose_spec (actual_scalar_numerator_coordinate F ζ hζ q S P J hJ μ hμ
-    π hπ ε φ k h)
-  have hp' := Classical.choose_spec (actual_scalar_numerator_coordinate F ζ hζ q S P J hJ μ hμ
-    π hπ ε ψ k h)
-  have hpq := Classical.choose_spec (actual_scalar_numerator_coordinate F ζ hζ q S P J hJ μ hμ
-    π hπ ε (a • φ + b • ψ) k h)
+  let actual_scalar_numerator_coordinate₀ := actual_scalar_numerator_coordinate F ζ hζ q S P J hJ μ hμ π hπ ε
+  have hp := Classical.choose_spec (actual_scalar_numerator_coordinate₀ φ k h)
+  have hp' := Classical.choose_spec (actual_scalar_numerator_coordinate₀ ψ k h)
+  have hpq := Classical.choose_spec (actual_scalar_numerator_coordinate₀ (a • φ + b • ψ) k h)
   refine DedekindZetaZeroFree.KPTameTransposeUnitNumeratorSteps.Augmentation.scalar_laurent_chamber_unique
     (LocalField F q) ε _ _ ?_
   intro s hs
@@ -136,8 +131,7 @@ private theorem actualScalarNumerator_add_smul
       (k := k) (h := h) (a := a) (b := b) (φ := φ) (ψ := ψ) (s := s) (hs := hs)]
   ring
 
-theorem actual_scalar_numerator_linear
-    (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q) :
+theorem actual_scalar_numerator_linear :
     IsLinearMap ℂ
       (fun φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J =>
         actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε φ k h) := by

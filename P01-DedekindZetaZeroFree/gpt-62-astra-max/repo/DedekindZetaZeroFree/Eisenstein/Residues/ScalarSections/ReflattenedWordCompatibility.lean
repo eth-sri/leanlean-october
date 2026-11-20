@@ -60,7 +60,7 @@ theorem LiteralResidueFamily.residue_eq_certificate
     (B : _root_.DedekindZetaZeroFree.RootDerivatives.FlatScalarResidue F ζ hζ f) (hzero : p.val = f.val 0) :
     A.residue p = B.numerator 0 := by
   let g := (literalZeroProfileEquiv hK).symm p
-  have hp : literalZeroProfileEquiv hK g = p :=
+  have hp :=
     (literalZeroProfileEquiv hK).apply_symm_apply p
   rw [← hp, A.residue_flat]
   exact flatScalarResidue_eq_of_zero hK hL (asLiteralFlat g) f
@@ -74,7 +74,7 @@ theorem LiteralResidueFamily.residue_word_of_zero
     (hzero : q.val = actualRightWord F ζ hζ w p.val) :
     A.residue q = actualRightWord F ζ hζ w (A.residue p) := by
   let f := (literalZeroProfileEquiv hK).symm p
-  have hp : literalZeroProfileEquiv hK f = p :=
+  have hp :=
     (literalZeroProfileEquiv hK).apply_symm_apply p
   have hf0 : (asLiteralFlat f).val 0 = p.val := congrArg Subtype.val hp
   obtain ⟨v, Cv, hv0, _, hCv⟩ := native_word_flat_residue F ζ hζ hK

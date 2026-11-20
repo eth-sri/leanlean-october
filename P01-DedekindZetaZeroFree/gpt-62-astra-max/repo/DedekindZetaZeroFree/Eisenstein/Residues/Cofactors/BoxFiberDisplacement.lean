@@ -5,17 +5,17 @@ public import DedekindZetaZeroFree.Eisenstein.Continuation.Cofactors.HeightAndTa
 @[expose] public section
 
 noncomputable section
-open _root_.DedekindZetaZeroFree.RestrictedTensorSimple renaming inclusion_insert → inclusion_insert
+open _root_.DedekindZetaZeroFree.RestrictedTensorSimple (inclusion_insert)
 open scoped Classical NumberField TensorProduct BigOperators
 open NumberField MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource.CofactorChamber
 open KPLocalPrincipalSeries KPGlobalTorusFiniteStages KPLocalExceptionalConstruction
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -31,19 +31,16 @@ theorem source_extend (E : Finset (KPFinitePlace F)) (hE : C.exceptional ⊆ E)
         (bad R.A P C) t (PiTensorProduct.tprod ℂ (cofactorExtendedTuple R P C E hE φ t)) := by
   let s := cofactorSourceLevel R P C E hE
   let y := cofactorExtendedTuple R P C E hE φ t
-  have ht := RestrictedTensorSimple.insert_pure (Plus R.A P C) (plusReference R.A P C)
-    s.val t.val hst (cofactorSourceTuple R P C E hE φ)
-  have hh := congrArg (RestrictedTensorSimple.stageInclusion (Plus R.A P C)
-    (plusReference R.A P C) (bad R.A P C) t) ht
   change RestrictedTensorSimple.stageInclusion _ _ _ s _ = _
   calc
     _ = RestrictedTensorSimple.stageInclusion (Plus R.A P C) (plusReference R.A P C)
         (bad R.A P C) t (RestrictedTensorSimple.insert (Plus R.A P C)
           (plusReference R.A P C) s.val t.val hst
-          (PiTensorProduct.tprod ℂ (cofactorSourceTuple R P C E hE φ))) := by
-      exact (LinearMap.congr_fun (inclusion_insert (Plus R.A P C) (plusReference R.A P C) (bad R.A P C) s t hst) _).symm
+          (PiTensorProduct.tprod ℂ (cofactorSourceTuple R P C E hE φ))) := (LinearMap.congr_fun (inclusion_insert (Plus R.A P C) (plusReference R.A P C) (bad R.A P C) s t hst) _).symm
     _ = _ := by
-      refine hh.trans ?_
+      refine (congrArg (RestrictedTensorSimple.stageInclusion (Plus R.A P C)
+        (plusReference R.A P C) (bad R.A P C) t) (RestrictedTensorSimple.insert_pure (Plus R.A P C) (plusReference R.A P C)
+          s.val t.val hst (cofactorSourceTuple R P C E hE φ))).trans ?_
       congr 1
       apply congrArg (PiTensorProduct.tprod ℂ)
       funext j
@@ -95,7 +92,6 @@ theorem box_fiber_parameter (E Q : Finset (KPFinitePlace F)) (hE : C.exceptional
             (chamberRaw F ζ hζ x) j.val : ℂ)) •
           localValue R.A P C j.val (chamberRaw F ζ hζ x j.val) (y j))))).val.val t := by
   let v := cofactorSourceLevel R P C Q (hE.trans hEQ)
-  let y := cofactorExtendedTuple R P C E hE φ v
   dsimp only
   rw [box_fiber_stage R P C E Q hE hEQ φ x hx z t,
     chamber_height_stage R P C Q (hE.trans hEQ) x hx]

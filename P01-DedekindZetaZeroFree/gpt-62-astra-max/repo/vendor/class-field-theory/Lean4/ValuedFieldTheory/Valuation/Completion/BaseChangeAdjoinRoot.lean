@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -37,11 +32,12 @@ universe u v w
 
 open scoped TensorProduct Polynomial
 
+section
+
+variable {K A L : Type*} [Field K] [Field A] [Field L] [Algebra K A] [Algebra K L] (pb : PowerBasis K L)
+
 /-- Scalar extension of a power basis. -/
-noncomputable def powerBasisBaseChange
-    {K A L : Type*} [Field K] [Field A] [Field L]
-    [Algebra K A] [Algebra K L]
-    (pb : PowerBasis K L) : PowerBasis A (A ⊗[K] L) where
+noncomputable def powerBasisBaseChange : PowerBasis A (A ⊗[K] L) where
   gen := 1 ⊗ₜ[K] pb.gen
   dim := pb.dim
   basis := Algebra.TensorProduct.basis A pb.basis
@@ -51,56 +47,39 @@ noncomputable def powerBasisBaseChange
 
 /-- The generator of a base-changed power basis is the tensor of one with the old generator. -/
 @[simp]
-theorem powerBasisBaseChange_gen
-    {K A L : Type*} [Field K] [Field A] [Field L]
-    [Algebra K A] [Algebra K L]
-    (pb : PowerBasis K L) :
+theorem powerBasisBaseChange_gen :
     (powerBasisBaseChange (A := A) pb).gen = 1 ⊗ₜ[K] pb.gen :=
   rfl
 
 /-- The mapped primitive polynomial vanishes at `1 ⊗ α`. -/
-theorem minpoly_map_aeval_one_tmul
-    {K A L : Type*} [Field K] [Field A] [Field L]
-    [Algebra K A] [Algebra K L]
-    (pb : PowerBasis K L) :
+theorem minpoly_map_aeval_one_tmul :
     Polynomial.aeval (1 ⊗ₜ[K] pb.gen : A ⊗[K] L)
       ((minpoly K pb.gen).map (algebraMap K A)) = 0 := by
-  rw [Polynomial.aeval_map_algebraMap]
+  simp
   show Polynomial.aeval
-      ((Algebra.TensorProduct.includeRight : L →ₐ[K] A ⊗[K] L) pb.gen)
+      (Algebra.TensorProduct.includeRight pb.gen)
         (minpoly K pb.gen) = 0
   rw [Polynomial.aeval_algHom_apply, minpoly.aeval, map_zero]
 
 /-- The canonical algebra map from the mapped primitive quotient to the
 scalar extension. -/
-noncomputable def adjoinRootToBaseChange
-    {K A L : Type*} [Field K] [Field A] [Field L]
-    [Algebra K A] [Algebra K L]
-    (pb : PowerBasis K L) :
+noncomputable def adjoinRootToBaseChange :
     AdjoinRoot ((minpoly K pb.gen).map (algebraMap K A)) →ₐ[A]
       A ⊗[K] L :=
   AdjoinRoot.liftAlgHom _ (Algebra.ofId A (A ⊗[K] L))
     (1 ⊗ₜ[K] pb.gen) (by
-      change Polynomial.aeval (1 ⊗ₜ[K] pb.gen : A ⊗[K] L)
-        ((minpoly K pb.gen).map (algebraMap K A)) = 0
-      exact minpoly_map_aeval_one_tmul (A := A) pb)
+      exact minpoly_map_aeval_one_tmul pb)
 
 /-- The map from an adjoined-root algebra to its base change sends root to root. -/
 @[simp]
-theorem adjoinRootToBaseChange_root
-    {K A L : Type*} [Field K] [Field A] [Field L]
-    [Algebra K A] [Algebra K L]
-    (pb : PowerBasis K L) :
+theorem adjoinRootToBaseChange_root :
     adjoinRootToBaseChange (A := A) pb
         (AdjoinRoot.root ((minpoly K pb.gen).map (algebraMap K A))) =
       1 ⊗ₜ[K] pb.gen := by
   simp [adjoinRootToBaseChange]
 
 /-- The canonical map from the adjoined-root algebra onto its base change is surjective. -/
-theorem adjoinRootToBaseChange_surjective
-    {K A L : Type*} [Field K] [Field A] [Field L]
-    [Algebra K A] [Algebra K L]
-    (pb : PowerBasis K L) :
+theorem adjoinRootToBaseChange_surjective :
     Function.Surjective (adjoinRootToBaseChange (A := A) pb) := by
   let q := (minpoly K pb.gen).map (algebraMap K A)
   let e := adjoinRootToBaseChange (A := A) pb
@@ -115,27 +94,23 @@ theorem adjoinRootToBaseChange_surjective
   change e (AdjoinRoot.root q ^ (i : ℕ)) = b i
   rw [map_pow, (powerBasisBaseChange (A := A) pb).basis_eq_pow,
     adjoinRootToBaseChange_root]
-  rw [powerBasisBaseChange_gen, Algebra.TensorProduct.tmul_pow, one_pow]
+  rfl
 
 /-- The mapped primitive quotient and scalar extension have equal dimension. -/
-theorem adjoinRoot_baseChange_finrank_eq
-    {K A L : Type*} [Field K] [Field A] [Field L]
-    [Algebra K A] [Algebra K L]
-    (pb : PowerBasis K L) :
+theorem adjoinRoot_baseChange_finrank_eq :
     Module.finrank A
         (AdjoinRoot ((minpoly K pb.gen).map (algebraMap K A))) =
       Module.finrank A (A ⊗[K] L) := by
   let q := (minpoly K pb.gen).map (algebraMap K A)
-  let hq : q.Monic :=
-    (minpoly.monic pb.isIntegral_gen).map (algebraMap K A)
-  let qpb : PowerBasis A (AdjoinRoot q) := AdjoinRoot.powerBasis' hq
   calc
-    Module.finrank A (AdjoinRoot q) = q.natDegree := qpb.finrank
+    _ = q.natDegree := (AdjoinRoot.powerBasis' ((minpoly.monic pb.isIntegral_gen).map (algebraMap K A))).finrank
     _ = (minpoly K pb.gen).natDegree :=
       (minpoly.monic pb.isIntegral_gen).natDegree_map (algebraMap K A)
     _ = pb.dim := pb.natDegree_minpoly
     _ = Module.finrank A (A ⊗[K] L) :=
-      (powerBasisBaseChange (A := A) pb).finrank.symm
+      (powerBasisBaseChange pb).finrank.symm
+
+end
 
 /-- Canonical scalar-extension presentation, in the quotient-to-tensor
 direction. -/
@@ -146,11 +121,9 @@ noncomputable def adjoinRootEquivBaseChange
     AdjoinRoot ((minpoly K pb.gen).map (algebraMap K A)) ≃ₐ[A]
       A ⊗[K] L := by
   let q := (minpoly K pb.gen).map (algebraMap K A)
-  let hq : q.Monic :=
-    (minpoly.monic pb.isIntegral_gen).map (algebraMap K A)
-  letI : Module.Finite A (AdjoinRoot q) := hq.finite_adjoinRoot
+  letI : Module.Finite A (AdjoinRoot q) := ((minpoly.monic pb.isIntegral_gen).map (algebraMap K A)).finite_adjoinRoot
   letI : Module.Finite A (A ⊗[K] L) :=
-    (powerBasisBaseChange (A := A) pb).finite
+    (powerBasisBaseChange pb).finite
   exact AlgEquiv.ofBijective (adjoinRootToBaseChange (A := A) pb)
     ⟨(LinearMap.injective_iff_surjective_of_finrank_eq_finrank
         (adjoinRoot_baseChange_finrank_eq (A := A) pb)
@@ -158,40 +131,29 @@ noncomputable def adjoinRootEquivBaseChange
       (adjoinRootToBaseChange_surjective (A := A) pb),
       adjoinRootToBaseChange_surjective (A := A) pb⟩
 
+variable {K A L : Type*} [Field K] [Field A] [Field L] [Algebra K A] [Algebra K L] (pb : PowerBasis K L)
+
 /-- The adjoined-root/base-change equivalence preserves the distinguished root. -/
 @[simp]
-theorem adjoinRootEquivBaseChange_root
-    {K A L : Type*} [Field K] [Field A] [Field L]
-    [Algebra K A] [Algebra K L]
-    (pb : PowerBasis K L) :
+theorem adjoinRootEquivBaseChange_root :
     adjoinRootEquivBaseChange (A := A) pb
         (AdjoinRoot.root ((minpoly K pb.gen).map (algebraMap K A))) =
       1 ⊗ₜ[K] pb.gen := by
-  change adjoinRootToBaseChange (A := A) pb
-      (AdjoinRoot.root ((minpoly K pb.gen).map (algebraMap K A))) = _
-  exact adjoinRootToBaseChange_root (A := A) pb
+  apply adjoinRootToBaseChange_root
 
 /-- Canonical scalar-extension presentation of a primitive field extension. -/
-noncomputable def baseChangeEquivAdjoinRoot
-    {K A L : Type*} [Field K] [Field A] [Field L]
-    [Algebra K A] [Algebra K L]
-    (pb : PowerBasis K L) :
+noncomputable def baseChangeEquivAdjoinRoot :
     A ⊗[K] L ≃ₐ[A]
       AdjoinRoot ((minpoly K pb.gen).map (algebraMap K A)) :=
   (adjoinRootEquivBaseChange (A := A) pb).symm
 
 /-- The inverse base-change equivalence sends `1 ⊗ gen` to the adjoined root. -/
 @[simp]
-theorem baseChangeEquivAdjoinRoot_one_tmul_gen
-    {K A L : Type*} [Field K] [Field A] [Field L]
-    [Algebra K A] [Algebra K L]
-    (pb : PowerBasis K L) :
+theorem baseChangeEquivAdjoinRoot_one_tmul_gen :
     baseChangeEquivAdjoinRoot (A := A) pb (1 ⊗ₜ[K] pb.gen) =
       AdjoinRoot.root ((minpoly K pb.gen).map (algebraMap K A)) := by
-  change (adjoinRootEquivBaseChange (A := A) pb).symm
-      (1 ⊗ₜ[K] pb.gen) = _
   rw [← adjoinRootEquivBaseChange_root]
-  exact (adjoinRootEquivBaseChange (A := A) pb).symm_apply_apply _
+  apply AlgEquiv.symm_apply_apply
 
 end Completion
 end ValuationTheory

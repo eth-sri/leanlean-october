@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -139,9 +135,6 @@ theorem rationalPositiveArchimedeanIdele_absoluteNorm
     IdeleGroup.absoluteNorm
         (rationalPositiveArchimedeanIdele r) =
       r⁻¹ := by
-  have hcomponent :=
-    congrArg Units.val
-      (rationalPositiveArchimedeanIdele_infiniteComponent r)
   have hcomponent' :
       InfinitePlace.Completion.ringEquivRealOfIsReal
           Rat.isReal_infinitePlace
@@ -149,8 +142,9 @@ theorem rationalPositiveArchimedeanIdele_absoluteNorm
             (rationalPositiveArchimedeanIdele r) :
               Rat.infinitePlace.Completionˣ) :
             Rat.infinitePlace.Completion) =
-        ((r : ℝ≥0ˣ) : ℝ) := by
-    simpa using hcomponent
+        (r : ℝ) := by
+    exact (congrArg Units.val
+      (rationalPositiveArchimedeanIdele_infiniteComponent r))
   have hlocalNorm :
       ‖((IdeleGroup.infiniteComponent Rat.infinitePlace
           (rationalPositiveArchimedeanIdele r) :
@@ -160,10 +154,7 @@ theorem rationalPositiveArchimedeanIdele_absoluteNorm
     apply NNReal.eq
     simp only [coe_nnnorm]
     calc
-      ‖((IdeleGroup.infiniteComponent Rat.infinitePlace
-          (rationalPositiveArchimedeanIdele r) :
-            Rat.infinitePlace.Completionˣ) :
-          Rat.infinitePlace.Completion)‖ =
+      _ =
           ‖InfinitePlace.Completion.ringEquivRealOfIsReal
             Rat.isReal_infinitePlace
             ((IdeleGroup.infiniteComponent Rat.infinitePlace
@@ -187,7 +178,7 @@ theorem rationalPositiveArchimedeanIdele_absoluteNorm
     rw [InfiniteIdeleGroup.archimedeanNorm_apply,
       Fintype.prod_unique]
     rw [show
-      (default : InfinitePlace ℚ) = Rat.infinitePlace by
+      default = Rat.infinitePlace by
         exact Subsingleton.elim _ _,
       InfinitePlace.mult_isReal
       ⟨Rat.infinitePlace, Rat.isReal_infinitePlace⟩,
@@ -213,9 +204,6 @@ theorem globalArtinMonoidHom_rationalPositiveArchimedeanIdele
         (K := ℚ) (L := L)
         (rationalPositiveArchimedeanIdele r) =
       1 := by
-  have hcomponent :=
-    congrArg Units.val
-      (rationalPositiveArchimedeanIdele_infiniteComponent r)
   have hpos :
       0 <
         InfinitePlace.Completion.ringEquivRealOfIsReal
@@ -231,8 +219,9 @@ theorem globalArtinMonoidHom_rationalPositiveArchimedeanIdele
               (rationalPositiveArchimedeanIdele r) :
                 Rat.infinitePlace.Completionˣ) :
               Rat.infinitePlace.Completion) =
-          ((r : ℝ≥0ˣ) : ℝ) := by
-      simpa using hcomponent
+          (r : ℝ) := by
+      exact (congrArg Units.val
+        (rationalPositiveArchimedeanIdele_infiniteComponent r))
     rw [hvalue]
     exact
       NNReal.coe_pos.mpr
@@ -247,11 +236,11 @@ theorem globalArtinMonoidHom_rationalPositiveArchimedeanIdele
         1 := by
     rw [Fintype.prod_unique,
       show
-        (default : InfinitePlace ℚ) = Rat.infinitePlace by
+        default = Rat.infinitePlace by
           exact Subsingleton.elim _ _]
     exact
       chosenInfinitePlaceArtinMonoidHom_eq_one_of_real_pos
-        (K := ℚ) (L := L)
+
         Rat.infinitePlace Rat.isReal_infinitePlace _ hpos
   have hfinite :
       (∏ᶠ v : HeightOneSpectrum (𝓞 ℚ),
@@ -275,11 +264,13 @@ Artin homomorphisms, and compatibility is restriction in a finite
 abelian tower.
 -/
 
+section
+
+variable (K Ω : Type) [Field K] [NumberField K] [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
+
 /-- The compatible family of finite global Artin symbols attached to
 an idele, regarded as a point of the finite-Galois inverse limit. -/
 noncomputable def infiniteGlobalArtinLimitPoint
-    (K Ω : Type) [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
     (a : IdeleGroup K) :
     limit
       (InfiniteGalois.asProfiniteGaloisGroupFunctor
@@ -292,7 +283,7 @@ noncomputable def infiniteGlobalArtinLimitPoint
   exact
     { val := fun E =>
         globalArtinMonoidHom
-          (K := K) (L := E.unop) a
+            a
       property := by
         intro E F f
         algebraize [Subsemiring.inclusion <| leOfHom f.1]
@@ -301,19 +292,17 @@ noncomputable def infiniteGlobalArtinLimitPoint
         change
           AlgEquiv.restrictNormalHom F.unop
               (globalArtinMonoidHom
-                (K := K) (L := E.unop) a) =
+                  a) =
             globalArtinMonoidHom
-              (K := K) (L := F.unop) a
+                a
         exact
           DFunLike.congr_fun
             (globalArtinMonoidHom_restrict_tower
-              (K := K) (E := F.unop) (L := E.unop)) a }
+                ) a}
 
 /-- The continuous global Artin homomorphism into the finite-Galois
 inverse limit, before transport to the Krull-topological Galois group. -/
-noncomputable def infiniteGlobalArtinToLimit
-    (K Ω : Type) [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω] :
+noncomputable def infiniteGlobalArtinToLimit :
     IdeleGroup K →ₜ*
       limit
         (InfiniteGalois.asProfiniteGaloisGroupFunctor
@@ -331,14 +320,14 @@ noncomputable def infiniteGlobalArtinToLimit
         funext E
         exact
           (globalArtinMonoidHom
-            (K := K) (L := E.unop)).map_one
+             ).map_one
       map_mul' := by
         intro x y
         apply Subtype.ext
         funext E
         exact
           (globalArtinMonoidHom
-            (K := K) (L := E.unop)).map_mul x y
+             ).map_mul x y
       continuous_toFun := by
         have hcontinuous
             (E :
@@ -365,7 +354,7 @@ noncomputable def infiniteGlobalArtinToLimit
               (IdeleGroup K) (E.unop ≃ₐ[K] E.unop)
               inferInstance inferInstance
               (globalArtinMonoidHom
-                (K := K) (L := E.unop))
+                 )
           rw [show
             (inferInstance :
               TopologicalSpace (E.unop ≃ₐ[K] E.unop)) =
@@ -383,9 +372,7 @@ noncomputable def infiniteGlobalArtinToLimit
 /-- The continuous global Artin homomorphism of an arbitrary abelian
 Galois extension of a number field.  Its finite coordinates are the
 finite global Artin homomorphisms. -/
-noncomputable def infiniteGlobalArtinMonoidHom
-    (K Ω : Type) [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω] :
+noncomputable def infiniteGlobalArtinMonoidHom :
     IdeleGroup K →ₜ* (Ω ≃ₐ[K] Ω) :=
   (ContinuousMonoidHom.toContinuousMonoidHom
     (InfiniteGalois.continuousMulEquivToLimit
@@ -397,8 +384,6 @@ Galois intermediate field is exactly that field's finite global Artin
 homomorphism, using a caller-supplied number-field witness. -/
 @[simp]
 theorem restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField
-    (K Ω : Type) [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
     (a : IdeleGroup K)
     (E : FiniteGaloisIntermediateField K Ω)
     (hE : NumberField E) :
@@ -407,11 +392,11 @@ theorem restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField
         (infiniteGlobalArtinMonoidHom K Ω a) =
       globalArtinMonoidHom
         (K := K) (L := E) a := by
-  let : NumberField E := hE
+  let := hE
   have hcomponent :=
     congrArg
       (InfiniteGalois.proj
-        (k := K) (K := Ω) E)
+          E)
       ((InfiniteGalois.continuousMulEquivToLimit
         K Ω).apply_symm_apply
           (infiniteGlobalArtinToLimit K Ω a))
@@ -421,8 +406,6 @@ theorem restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField
 This is useful when a concrete tower already has named canonical witnesses
 and must not resynthesize them while checking the projected Artin endpoint. -/
 theorem restrictNormalHom_infiniteGlobalArtinMonoidHom_of_structures
-    (K Ω : Type) [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
     (a : IdeleGroup K)
     (E : FiniteGaloisIntermediateField K Ω)
     (hE : NumberField E)
@@ -433,8 +416,8 @@ theorem restrictNormalHom_infiniteGlobalArtinMonoidHom_of_structures
         (infiniteGlobalArtinMonoidHom K Ω a) =
       globalArtinMonoidHom
         (K := K) (L := E) a := by
-  let : NumberField E := hE
-  let : IsAbelianGalois K E := hAbelian
+  let := hE
+  let := hAbelian
   exact
     restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField
       K Ω a E hE
@@ -443,8 +426,6 @@ theorem restrictNormalHom_infiniteGlobalArtinMonoidHom_of_structures
 Galois structures supplied separately.  This avoids packaging a concrete
 dependent field into `FiniteGaloisIntermediateField` at every call site. -/
 theorem restrictNormalHom_infiniteGlobalArtinMonoidHom_of_intermediateField
-    (K Ω : Type) [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
     (a : IdeleGroup K) (E : IntermediateField K Ω)
     [FiniteDimensional K E] [IsGalois K E]
     (hE : NumberField E)
@@ -458,8 +439,8 @@ theorem restrictNormalHom_infiniteGlobalArtinMonoidHom_of_intermediateField
     { toIntermediateField := E
       finiteDimensional := inferInstance
       isGalois := inferInstance }
-  let : NumberField E := hE
-  let : IsAbelianGalois K E := hAbelian
+  let := hE
+  let := hAbelian
   exact
     restrictNormalHom_infiniteGlobalArtinMonoidHom_of_structures
       K Ω a G hE hAbelian
@@ -467,45 +448,18 @@ theorem restrictNormalHom_infiniteGlobalArtinMonoidHom_of_intermediateField
 /-- Finite projection for a plain intermediate field when its structures are
 already installed as ambient instances. -/
 theorem restrictNormalHom_infiniteGlobalArtinMonoidHom_intermediateField
-    (K Ω : Type) [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
     (a : IdeleGroup K) (E : IntermediateField K Ω)
     [FiniteDimensional K E] [NumberField E] [IsAbelianGalois K E] :
     AlgEquiv.restrictNormalHom E
         (infiniteGlobalArtinMonoidHom K Ω a) =
-      globalArtinMonoidHom (K := K) (L := E) a := by
-  exact
-    restrictNormalHom_infiniteGlobalArtinMonoidHom_of_intermediateField
-      K Ω a E (inferInstance : NumberField E)
-        (inferInstance : IsAbelianGalois K E)
-
-/-- Pointwise form of finite projection of the infinite global Artin map.
-This is the stable interface when a concrete finite layer carries algebra
-instances propositionally, but not definitionally, equal to the canonical
-intermediate-field instances. -/
-theorem restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField_apply
-    (K Ω : Type) [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
-    (a : IdeleGroup K)
-    (E : FiniteGaloisIntermediateField K Ω)
-    (hE : NumberField E)
-    (x : E) :
-    letI : NumberField E := hE
-    AlgEquiv.restrictNormalHom E
-        (infiniteGlobalArtinMonoidHom K Ω a) x =
-      globalArtinMonoidHom
-        (K := K) (L := E) a x := by
-  let : NumberField E := hE
-  exact DFunLike.congr_fun
-    (restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField
-      K Ω a E hE) x
+      globalArtinMonoidHom (K := K) (L := E) a := restrictNormalHom_infiniteGlobalArtinMonoidHom_of_intermediateField
+      K Ω a E inferInstance
+        inferInstance
 
 /-- Postcomposition of a finite projection of the infinite global Artin map.
 Keeping `congrArg` at this generic level prevents large concrete towers from
 being normalized merely to infer the endpoints of the mapped equality. -/
 theorem map_restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField
-    (K Ω : Type) [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
     (a : IdeleGroup K)
     (E : FiniteGaloisIntermediateField K Ω)
     (hE : NumberField E)
@@ -515,41 +469,16 @@ theorem map_restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField
         (infiniteGlobalArtinMonoidHom K Ω a)) =
       f (globalArtinMonoidHom
         (K := K) (L := E) a) := by
-  let : NumberField E := hE
+  let := hE
   exact congrArg f
     (restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField
       K Ω a E hE)
-
-/-- Postcomposition of a finite projection with both finite-layer structures
-supplied explicitly.  This avoids resynthesizing proposition-valued instances
-when the finite field is a concrete dependent intermediate field. -/
-theorem map_restrictNormalHom_infiniteGlobalArtinMonoidHom_of_structures
-    (K Ω : Type) [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
-    (a : IdeleGroup K)
-    (E : FiniteGaloisIntermediateField K Ω)
-    (hE : NumberField E)
-    (hAbelian : IsAbelianGalois K E)
-    {M : Type} (f : (E ≃ₐ[K] E) → M) :
-    letI : NumberField E := hE
-    letI : IsAbelianGalois K E := hAbelian
-    f (AlgEquiv.restrictNormalHom E
-        (infiniteGlobalArtinMonoidHom K Ω a)) =
-      f (globalArtinMonoidHom
-        (K := K) (L := E) a) := by
-  let : NumberField E := hE
-  let : IsAbelianGalois K E := hAbelian
-  exact congrArg f
-    (restrictNormalHom_infiniteGlobalArtinMonoidHom_of_structures
-      K Ω a E hE hAbelian)
 
 /-- Postcomposition of the finite projection for a plain intermediate field.
 The explicit structures keep concrete cyclotomic levels out of instance
 normalization at the consumer. -/
 theorem
     map_restrictNormalHom_infiniteGlobalArtinMonoidHom_of_intermediateField
-    (K Ω : Type) [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
     (a : IdeleGroup K) (E : IntermediateField K Ω)
     [FiniteDimensional K E] [IsGalois K E]
     (hE : NumberField E)
@@ -560,11 +489,13 @@ theorem
     f (AlgEquiv.restrictNormalHom E
         (infiniteGlobalArtinMonoidHom K Ω a)) =
       f (globalArtinMonoidHom (K := K) (L := E) a) := by
-  let : NumberField E := hE
-  let : IsAbelianGalois K E := hAbelian
+  let := hE
+  let := hAbelian
   exact congrArg f
     (restrictNormalHom_infiniteGlobalArtinMonoidHom_of_intermediateField
       K Ω a E hE hAbelian)
+
+end
 
 /-- The finite global Artin homomorphism with its number-field witness fixed
 as an explicit argument.  Concrete intermediate-field towers can share this
@@ -575,7 +506,7 @@ noncomputable def globalArtinMonoidHomOfNumberField
     (hL : NumberField L) :
     IdeleGroup K →* (L ≃ₐ[K] L) := by
   letI : NumberField L := hL
-  exact globalArtinMonoidHom (K := K) (L := L)
+  exact globalArtinMonoidHom
 
 /-- Norm-restriction naturality with the upper finite global Artin homomorphism
 expressed through an explicit number-field witness. -/
@@ -595,25 +526,24 @@ theorem globalArtinMonoidHomOfNumberField_norm_restriction
         (globalArtinMonoidHomOfNumberField K' L' hL') =
       (globalArtinMonoidHom (K := K) (L := L)).comp
         (IdeleGroup.norm K K') := by
-  let : NumberField L' := hL'
+  let := hL'
   exact globalArtinMonoidHom_norm_restriction
+
+section
+
+variable (K Ω : Type) [Field K] [NumberField K] [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
+    (a : IdeleGroup K) (E : FiniteGaloisIntermediateField K Ω) (hE : NumberField E) {M : Type} [Monoid M]
+    (f : (E ≃ₐ[K] E) →* M)
 
 /-- Monoid-hom postcomposition of a finite projection, stated at the hom
 application level.  This keeps concrete consumers from unfolding
 `MonoidHom.comp` merely to join the projection and finite Artin endpoints. -/
-theorem comp_restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField
-    (K Ω : Type) [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
-    (a : IdeleGroup K)
-    (E : FiniteGaloisIntermediateField K Ω)
-    (hE : NumberField E)
-    {M : Type} [Monoid M]
-    (f : (E ≃ₐ[K] E) →* M) :
+theorem comp_restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField :
     letI : NumberField E := hE
     f (AlgEquiv.restrictNormalHom E
         (infiniteGlobalArtinMonoidHom K Ω a)) =
       (f.comp (globalArtinMonoidHomOfNumberField K E hE)) a := by
-  let : NumberField E := hE
+  let := hE
   exact
     (map_restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField
       K Ω a E hE f).trans rfl
@@ -623,14 +553,7 @@ both endpoints fixed while the ambient field instances are still generic.
 Concrete towers can reuse the package without asking the elaborator to
 normalize those instances while checking the equality again. -/
 noncomputable def
-    compRestrictNormalHomInfiniteGlobalArtinDataOfNumberField
-    (K Ω : Type) [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
-    (a : IdeleGroup K)
-    (E : FiniteGaloisIntermediateField K Ω)
-    (hE : NumberField E)
-    {M : Type} [Monoid M]
-    (f : (E ≃ₐ[K] E) →* M) :
+    compRestrictNormalHomInfiniteGlobalArtinDataOfNumberField :
     letI : NumberField E := hE
     {x : M //
       x = (f.comp
@@ -641,6 +564,8 @@ noncomputable def
         (infiniteGlobalArtinMonoidHom K Ω a)),
       comp_restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField
         K Ω a E hE f⟩
+
+end
 
 /-- The mapped infinite projection transported through a supplied naturality
 square.  The intermediate finite Artin hom is the explicit-witness version,
@@ -661,21 +586,20 @@ noncomputable def
     letI : NumberField E := hE
     {x : M // x = g a} := by
   letI : NumberField E := hE
-  have hprojection :=
-    comp_restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField
-      K Ω a E hE f
   exact
     ⟨f (AlgEquiv.restrictNormalHom E
         (infiniteGlobalArtinMonoidHom K Ω a)),
-      hprojection.trans (DFunLike.congr_fun hnat a)⟩
+      (comp_restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField
+        K Ω a E hE f).trans (DFunLike.congr_fun hnat a)⟩
+
+section
+
+variable (K Ω : Type) [Field K] [NumberField K] [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
+    (a : IdeleGroup K) (E : FiniteGaloisIntermediateField K Ω)
 
 /-- Postcomposition of a finite projection when the finite layer's number
 field structure is already installed as the ambient instance. -/
 theorem map_restrictNormalHom_infiniteGlobalArtinMonoidHom
-    (K Ω : Type) [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
-    (a : IdeleGroup K)
-    (E : FiniteGaloisIntermediateField K Ω)
     [NumberField E]
     {M : Type} (f : (E ≃ₐ[K] E) → M) :
     f (AlgEquiv.restrictNormalHom E
@@ -690,20 +614,16 @@ theorem map_restrictNormalHom_infiniteGlobalArtinMonoidHom
 Galois intermediate field, with its canonical module-finite number-field
 structure. -/
 @[simp]
-theorem restrictNormalHom_infiniteGlobalArtinMonoidHom
-    (K Ω : Type) [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω]
-    (a : IdeleGroup K)
-    (E : FiniteGaloisIntermediateField K Ω) :
+theorem restrictNormalHom_infiniteGlobalArtinMonoidHom :
     letI : NumberField E :=
       NumberField.of_module_finite K E
     AlgEquiv.restrictNormalHom E
         (infiniteGlobalArtinMonoidHom K Ω a) =
       globalArtinMonoidHom
-        (K := K) (L := E) a := by
-  exact
-    restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField
+        (K := K) (L := E) a := restrictNormalHom_infiniteGlobalArtinMonoidHom_of_numberField
       K Ω a E (NumberField.of_module_finite K E)
+
+end
 
 /-- Restriction of the infinite global Artin map along an abstract finite
 abelian scalar tower.  Unlike the intermediate-field projection theorem, this
@@ -719,18 +639,18 @@ theorem restrictNormalHom_infiniteGlobalArtinMonoidHom_of_scalarTower
     AlgEquiv.restrictNormalHom E
         (infiniteGlobalArtinMonoidHom K Ω a) =
       globalArtinMonoidHom (K := K) (L := E) a := by
-  let j : E →ₐ[K] Ω := IsScalarTower.toAlgHom K E Ω
+  let j := IsScalarTower.toAlgHom K E Ω
   let G : FiniteGaloisIntermediateField K Ω :=
     { toIntermediateField := j.fieldRange
       finiteDimensional :=
         j.equivFieldRange.toLinearEquiv.finiteDimensional
       isGalois := IsGalois.of_algEquiv j.equivFieldRange }
-  let _ : FiniteDimensional K G := G.finiteDimensional
-  let _ : NumberField G :=
+  let _ := G.finiteDimensional
+  let _ :=
     NumberField.of_module_finite K G
-  let _ : IsAbelianGalois K G :=
+  let _ :=
     IsAbelianGalois.of_algHom G.toIntermediateField.val
-  let _ : Algebra E G :=
+  let _ :=
     j.equivFieldRange.toRingHom.toAlgebra
   let _ : SMul E G := Algebra.toSMul
   let _ : IsScalarTower K E G :=
@@ -739,26 +659,20 @@ theorem restrictNormalHom_infiniteGlobalArtinMonoidHom_of_scalarTower
     IntermediateField.isScalarTower_mid G.toIntermediateField
   let _ : IsScalarTower E G Ω :=
     IsScalarTower.of_algebraMap_eq fun _ => rfl
-  have hProjection :
-      AlgEquiv.restrictNormalHom G
-          (infiniteGlobalArtinMonoidHom K Ω a) =
-        globalArtinMonoidHom (K := K) (L := G) a :=
-    restrictNormalHom_infiniteGlobalArtinMonoidHom K Ω a G
   calc
-    AlgEquiv.restrictNormalHom E
-          (infiniteGlobalArtinMonoidHom K Ω a) =
+    _ =
         AlgEquiv.restrictNormalHom E
           (AlgEquiv.restrictNormalHom G
             (infiniteGlobalArtinMonoidHom K Ω a)) :=
       IsScalarTower.AlgEquiv.restrictNormalHom_comp_apply E G
         (infiniteGlobalArtinMonoidHom K Ω a)
     _ = AlgEquiv.restrictNormalHom E
-          (globalArtinMonoidHom (K := K) (L := G) a) :=
-      congrArg (AlgEquiv.restrictNormalHom E) hProjection
-    _ = globalArtinMonoidHom (K := K) (L := E) a :=
+          (globalArtinMonoidHom a) :=
+      congrArg (AlgEquiv.restrictNormalHom E) (restrictNormalHom_infiniteGlobalArtinMonoidHom K Ω a G)
+    _ = globalArtinMonoidHom a :=
       DFunLike.congr_fun
         (globalArtinMonoidHom_restrict_tower
-          (K := K) (L := G) (E := E)) a
+            ) a
 
 /-- Finite global reciprocity at every coordinate makes the infinite
 global Artin homomorphism dense in the Krull topology. -/
@@ -768,25 +682,18 @@ theorem infiniteGlobalArtinMonoidHom_denseRange
     DenseRange (infiniteGlobalArtinMonoidHom K Ω) := by
   apply dense_iff_inter_open.mpr
   rintro U hU ⟨σ, hσU⟩
-  let V : Set (Ω ≃ₐ[K] Ω) :=
+  let V :=
     (Homeomorph.mulLeft σ) ⁻¹' U
-  have hVopen : IsOpen V :=
-    hU.preimage (Homeomorph.mulLeft σ).continuous
-  have hVone : (1 : Ω ≃ₐ[K] Ω) ∈ V := by
-    change σ * 1 ∈ U
-    simpa using hσU
-  have hVnhds :
-      V ∈ 𝓝 (1 : Ω ≃ₐ[K] Ω) :=
-    hVopen.mem_nhds hVone
   obtain ⟨E, hEV⟩ :=
     (InfiniteGalois.krullTopology_mem_nhds_one_iff_of_isGalois
-        (k := K) (K := Ω) V).mp
-      hVnhds
-  let : NumberField E :=
+          V).mp
+      ((hU.preimage (Homeomorph.mulLeft σ).continuous).mem_nhds (by
+        exact hσU))
+  let :=
     NumberField.of_module_finite K E
   obtain ⟨a, ha⟩ :=
     globalArtinMonoidHom_surjective
-      (K := K) (L := E)
+
       (AlgEquiv.restrictNormalHom E σ)
   have hfix :
       σ⁻¹ * infiniteGlobalArtinMonoidHom K Ω a ∈
@@ -796,13 +703,10 @@ theorem infiniteGlobalArtinMonoidHom_denseRange
       map_mul, map_inv,
       restrictNormalHom_infiniteGlobalArtinMonoidHom,
       ha, inv_mul_cancel]
-  have hmemV :
-      σ⁻¹ * infiniteGlobalArtinMonoidHom K Ω a ∈ V :=
-    hEV hfix
   refine
     ⟨infiniteGlobalArtinMonoidHom K Ω a, ?_,
       ⟨a, rfl⟩⟩
-  simpa [V, mul_assoc] using hmemV
+  simpa [V, mul_assoc] using (hEV hfix)
 
 /-- The actual continuous global Artin homomorphism from rational ideles
 to the Galois group of the `ZHat`-extension of `ℚ`. -/
@@ -819,19 +723,17 @@ private theorem
         ℚ rationalCyclotomicZHatField
         (rationalCyclotomicZHatGlobalArtin a) =
       infiniteGlobalArtinToLimit
-        ℚ rationalCyclotomicZHatField a := by
-  exact
-    (InfiniteGalois.continuousMulEquivToLimit
+        ℚ rationalCyclotomicZHatField a := (InfiniteGalois.continuousMulEquivToLimit
       ℚ rationalCyclotomicZHatField).apply_symm_apply _
+
+section
+
+variable (a : IdeleGroup ℚ) (E : FiniteGaloisIntermediateField ℚ rationalCyclotomicZHatField)
 
 /-- Projection of the rational `ZHat` Artin homomorphism is the finite
 global Artin homomorphism. -/
 @[simp]
-theorem restrictNormalHom_rationalCyclotomicZHatGlobalArtin
-    (a : IdeleGroup ℚ)
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+theorem restrictNormalHom_rationalCyclotomicZHatGlobalArtin :
     letI : NumberField E :=
       NumberField.of_module_finite ℚ E
     letI : IsAbelianGalois ℚ E :=
@@ -846,10 +748,6 @@ theorem restrictNormalHom_rationalCyclotomicZHatGlobalArtin
 /-- Rational cyclotomic projection with caller-supplied finite-layer
 structures. -/
 theorem restrictNormalHom_rationalCyclotomicZHatGlobalArtin_of_structures
-    (a : IdeleGroup ℚ)
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField)
     (hE : NumberField E)
     (hAbelian : IsAbelianGalois ℚ E) :
     letI : NumberField E := hE
@@ -858,11 +756,13 @@ theorem restrictNormalHom_rationalCyclotomicZHatGlobalArtin_of_structures
         (rationalCyclotomicZHatGlobalArtin a) =
       globalArtinMonoidHom
         (K := ℚ) (L := E) a := by
-  let : NumberField E := hE
-  let : IsAbelianGalois ℚ E := hAbelian
+  let := hE
+  let := hAbelian
   exact
     restrictNormalHom_infiniteGlobalArtinMonoidHom_of_structures
       ℚ rationalCyclotomicZHatField a E hE hAbelian
+
+end
 
 /-- A mapped relative infinite Artin projection, the corresponding rational
 finite Artin value, and the rational infinite projection, packaged with both
@@ -900,24 +800,18 @@ noncomputable def
   let relativeData :=
     compRestrictNormalHomInfiniteGlobalArtinNaturalityDataOfNumberField
       K Ω a E' hE' f
-      ((globalArtinMonoidHom (K := ℚ) (L := E)).comp
+      ((globalArtinMonoidHom).comp
         (IdeleGroup.norm ℚ K))
       hnat
-  have hcomp :
-      ((globalArtinMonoidHom (K := ℚ) (L := E)).comp
-        (IdeleGroup.norm ℚ K)) a =
-        globalArtinMonoidHom (K := ℚ) (L := E)
-          (IdeleGroup.norm ℚ K a) :=
-    rfl
   exact
     ⟨(relativeData.1,
-        ((globalArtinMonoidHom (K := ℚ) (L := E)).comp
+        ((globalArtinMonoidHom).comp
           (IdeleGroup.norm ℚ K)) a,
         AlgEquiv.restrictNormalHom E
           (rationalCyclotomicZHatGlobalArtin
             (IdeleGroup.norm ℚ K a))),
       relativeData.2,
-      hcomp.trans
+      rfl.trans
         (restrictNormalHom_rationalCyclotomicZHatGlobalArtin_of_structures
           (IdeleGroup.norm ℚ K a) E hE hAbelian).symm⟩
 
@@ -958,7 +852,7 @@ theorem
   funext E
   exact
     globalArtinMonoidHom_rationalPositiveArchimedeanIdele
-      (L := E.unop) r
+       r
 
 /-- Every rational idele has the same infinite Artin symbol as a
 norm-one idele. -/

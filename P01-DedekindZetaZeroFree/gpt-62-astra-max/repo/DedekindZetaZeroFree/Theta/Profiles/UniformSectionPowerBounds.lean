@@ -11,7 +11,7 @@ open MomentSources NumberField MeasureTheory ThetaProfileHaarSheets
 open scoped Classical Topology
 open ThetaRawSheetEnvelope.WeightedWhittakerSheets
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem uniform_power_bound_aux (A : SArithmeticData F)
     (w : InfinitePlace F) (μ : Measure A.G) [μ.IsHaarMeasure]
@@ -32,7 +32,7 @@ theorem uniform_power_bound_aux (A : SArithmeticData F)
   obtain ⟨E, hE, hbound⟩ := product_power_majorant_sheet_bound A w μ M B s hM hs hBs
   refine ⟨E, hE.le, ?_⟩
   intro x
-  let f : A.G → ℝ := productPowerMajorant A M B
+  let f := productPowerMajorant A M B
   have hi' : Integrable (fun y : A.G1 => f (normSection A w x * y.val)) dt := by
     have hp := (integrable_map_equiv
       (sheetTranslation A w x).toMeasurableEquiv
@@ -76,7 +76,7 @@ theorem uniform_power_bound (R : PrincipalMellin.ActualRecipe S η)
   have h := uniform_power_bound_aux R.A w N.groupHaar s B M hs hBs hM
   letI : MeasurableSpace R.A.G1 := Subtype.instMeasurableSpace
   have hmb : (@Subtype.instMeasurableSpace R.A.G (fun y => y ∈ R.A.G1)
-      (inferInstance : MeasurableSpace R.A.G)) = borel R.A.G1 := BorelSpace.measurable_eq
+      inferInstance) = borel R.A.G1 := BorelSpace.measurable_eq
   rw [hmb] at h
   exact h R.probe.domain.measure R.probe.domain.haar (N.disintegration w)
 

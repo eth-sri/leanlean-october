@@ -35,9 +35,8 @@ theorem conductorKernel (hc : NumberField.IsTotallyComplex F)
   classical
   obtain ⟨n, hn, hpow⟩ := ho
   letI : NeZero n := ⟨Nat.ne_of_gt hn⟩
-  have hclosed : IsClosed ((Φ.toMonoidHom.ker : Subgroup (IdeleClassGroup F)) :
-      Set (IdeleClassGroup F)) := by
-    exact isClosed_singleton.preimage Φ.continuous
+  have hclosed : IsClosed (Φ.toMonoidHom.ker :
+      Set (IdeleClassGroup F)) := isClosed_singleton.preimage Φ.continuous
   have hrange : Φ.toMonoidHom.range ≤ rootsOfUnity n ℂ := by
     rintro _ ⟨c, rfl⟩
     exact (mem_rootsOfUnity n (Φ c)).mpr (hpow c)
@@ -77,7 +76,6 @@ theorem conductorKernel (hc : NumberField.IsTotallyComplex F)
     · intro k hk
       apply H.narrowFiniteLocalConductorExponent_le v
       rintro _ ⟨t, ht, rfl⟩
-      change Φ (IdeleGroup.finitePlaceIdeleClass v t) = 1
       apply hk t
       rwa [ClassFieldTheory.rayLocalHigherUnitGroup_eq_rayClass]
 

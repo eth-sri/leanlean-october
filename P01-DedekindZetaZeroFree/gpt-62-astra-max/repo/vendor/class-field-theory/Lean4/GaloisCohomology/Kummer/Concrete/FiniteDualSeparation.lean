@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -67,16 +65,12 @@ theorem exists_nthRoots_character_apply_ne_one
     ∃ χ : G →* nthRootsSubgroup K (n : ℕ), χ g ≠ 1 := by
   let : NeZero (n : ℕ) := ⟨n.ne_zero⟩
   obtain ⟨zeta, hzeta⟩ := hmu
-  have hzeta_primitive : IsPrimitiveRoot zeta (n : ℕ) :=
-    (mem_primitiveRoots n.pos).1 hzeta
   let : HasEnoughRootsOfUnity K (n : ℕ) :=
-    { prim := ⟨zeta, hzeta_primitive⟩
+    { prim := ⟨zeta, ((mem_primitiveRoots n.pos).1 hzeta)⟩
       cyc := rootsOfUnity.isCyclic K (n : ℕ) }
-  have hexponent_dvd : Monoid.exponent G ∣ (n : ℕ) :=
-    Monoid.exponent_dvd_of_forall_pow_eq_one (fun q => by
-      simpa only using hexponent q)
-  let : HasEnoughRootsOfUnity K (Monoid.exponent G) :=
-    HasEnoughRootsOfUnity.of_dvd K hexponent_dvd
+  let :=
+    HasEnoughRootsOfUnity.of_dvd K (Monoid.exponent_dvd_of_forall_pow_eq_one (fun q => by
+      exact hexponent q))
   obtain ⟨φ, hφ⟩ :=
     CommGroup.exists_apply_ne_one_of_hasEnoughRootsOfUnity G K hg
   refine ⟨characterToNthRoots n hexponent φ, ?_⟩
@@ -84,9 +78,12 @@ theorem exists_nthRoots_character_apply_ne_one
   apply hφ
   exact congrArg Subtype.val h
 
+section
+
+variable (K L : Type*) [Field K] [Field L] [Algebra K L] (n : ℕ)
+
 /-- Algebraic extension maps carry `μₙ(K)` injectively into `μₙ(L)`. -/
-def nthRootsSubgroupMap
-    (K L : Type*) [Field K] [Field L] [Algebra K L] (n : ℕ) :
+def nthRootsSubgroupMap :
     nthRootsSubgroup K n →* nthRootsSubgroup L n where
   toFun z :=
     ⟨Units.map (algebraMap K L).toMonoidHom z.1, by
@@ -104,14 +101,15 @@ def nthRootsSubgroupMap
     exact map_mul (Units.map (algebraMap K L).toMonoidHom) z.1 w.1
 
 /-- The canonical map from roots of unity into the `n`th-roots subgroup is injective. -/
-theorem nthRootsSubgroupMap_injective
-    (K L : Type*) [Field K] [Field L] [Algebra K L] (n : ℕ) :
+theorem nthRootsSubgroupMap_injective :
     Function.Injective (nthRootsSubgroupMap K L n) := by
   intro z w h
   apply Subtype.ext
-  apply (Units.map_injective (f := (algebraMap K L).toMonoidHom)
+  apply (Units.map_injective
     (algebraMap K L).injective)
   exact congrArg Subtype.val h
+
+end
 
 /-- The locally defined `nthRootsSubgroup` is canonically the same group as
 mathlib's `rootsOfUnity`. -/
@@ -142,19 +140,19 @@ def nthRootsSubgroupEquivOfPrimitiveRoots
       intro u
       obtain ⟨zeta, hzeta⟩ :=
         nthRootsOfUnityInBase_of_primitiveRoots
-          (K := K) (L := L) n hmu u.1 u.2
-      have hzeta_pow : zeta ^ (n : ℕ) = 1 := by
-        apply (Units.map_injective (f := (algebraMap K L).toMonoidHom)
-          (algebraMap K L).injective)
-        calc
-          Units.map (algebraMap K L).toMonoidHom (zeta ^ (n : ℕ)) =
-              (Units.map (algebraMap K L).toMonoidHom zeta) ^ (n : ℕ) :=
-            map_pow (Units.map (algebraMap K L).toMonoidHom) zeta (n : ℕ)
-          _ = u.1 ^ (n : ℕ) := by rw [hzeta]
-          _ = 1 := u.2
-          _ = Units.map (algebraMap K L).toMonoidHom 1 :=
-            (map_one (Units.map (algebraMap K L).toMonoidHom)).symm
-      exact ⟨⟨zeta, hzeta_pow⟩, Subtype.ext hzeta⟩⟩
+            n hmu u.1 u.2
+      refine ⟨⟨zeta, ?_⟩, Subtype.ext hzeta⟩
+      apply (Units.map_injective
+        (algebraMap K L).injective)
+      let map₀ := Units.map (algebraMap K L).toMonoidHom
+      calc
+        _ =
+            (map₀ zeta) ^ (n : ℕ) :=
+          map_pow (map₀) zeta (n : ℕ)
+        _ = u.1 ^ (n : ℕ) := by rw [hzeta]
+        _ = 1 := u.2
+        _ = map₀ 1 :=
+          (map_one (map₀)).symm⟩
 
 /-- For a group killed by `n`, restricting a `Kˣ`-valued character to
 `μₙ(K)` loses no information. -/
@@ -190,16 +188,12 @@ theorem finiteNthRootsCharacterDuality
   let rootsEquiv := nthRootsSubgroupEquivOfPrimitiveRoots K L n hmu
   let : NeZero (n : ℕ) := ⟨n.ne_zero⟩
   obtain ⟨zeta, hzeta⟩ := hmu
-  have hzeta_primitive : IsPrimitiveRoot zeta (n : ℕ) :=
-    (mem_primitiveRoots n.pos).1 hzeta
   let : HasEnoughRootsOfUnity K (n : ℕ) :=
-    { prim := ⟨zeta, hzeta_primitive⟩
+    { prim := ⟨zeta, ((mem_primitiveRoots n.pos).1 hzeta)⟩
       cyc := rootsOfUnity.isCyclic K (n : ℕ) }
-  have hexponent_dvd : Monoid.exponent G ∣ (n : ℕ) :=
-    Monoid.exponent_dvd_of_forall_pow_eq_one (fun g => by
-      simpa only using hexponent g)
-  let : HasEnoughRootsOfUnity K (Monoid.exponent G) :=
-    HasEnoughRootsOfUnity.of_dvd K hexponent_dvd
+  let :=
+    HasEnoughRootsOfUnity.of_dvd K (Monoid.exponent_dvd_of_forall_pow_eq_one (fun g => by
+      exact hexponent g))
   obtain ⟨dual⟩ := CommGroup.monoidHom_mulEquiv_of_hasEnoughRootsOfUnity G K
   exact ⟨(rootsEquiv.monoidHomCongrRight (M := G)).symm |>.trans
     (unitCharactersEquivNthRoots n hexponent).symm |>.trans dual⟩
@@ -221,10 +215,12 @@ theorem exists_nthRoots_character_apply_ne_one_in_extension
   apply nthRootsSubgroupMap_injective K L (n : ℕ)
   simpa using h
 
+section
+
+variable {G R M : Type*} [CommGroup G] [CommGroup R] [CommGroup M] (e : R ≃* (G →* M))
+
 /-- Transpose a character equivalence by evaluation. -/
-def transposeCharacterEquiv
-    {G R M : Type*} [CommGroup G] [CommGroup R] [CommGroup M]
-    (e : R ≃* (G →* M)) : G →* (R →* M) where
+def transposeCharacterEquiv : G →* (R →* M) where
   toFun g :=
     { toFun := fun r => e r g
       map_one' := by simp
@@ -242,11 +238,11 @@ def transposeCharacterEquiv
     exact map_mul (e r) g h
 
 /-- The transposed character equivalence evaluates by pairing with the original character. -/
-@[simp] theorem transposeCharacterEquiv_apply
-    {G R M : Type*} [CommGroup G] [CommGroup R] [CommGroup M]
-    (e : R ≃* (G →* M)) (g : G) (r : R) :
+@[simp] theorem transposeCharacterEquiv_apply (g : G) (r : R) :
     transposeCharacterEquiv e g r = e r g :=
   rfl
+
+end
 
 /-- Nondegeneracy on the Galois side of the finite Kummer pairing.  This is
 the injectivity source needed before the cardinality step can upgrade the
@@ -262,8 +258,7 @@ theorem transposeCharacterEquiv_injective
   apply div_eq_one.mp
   by_contra hdiv
   obtain ⟨χ, hχ⟩ :=
-    exists_nthRoots_character_apply_ne_one_in_extension
-      (G := G) (K := K) (L := L) n hmu hexponent hdiv
+    exists_nthRoots_character_apply_ne_one_in_extension (K := K) (L := L) n hmu hexponent hdiv
   obtain ⟨r, hr⟩ := e.surjective χ
   have hquotient : transposeCharacterEquiv e (g / h) = 1 := by
     rw [map_div, hgh]
@@ -272,25 +267,26 @@ theorem transposeCharacterEquiv_injective
     (fun ψ : R →* nthRootsSubgroup L (n : ℕ) => ψ r) hquotient
   change e r (g / h) = 1 at hvalue
   apply hχ
-  simpa only [hr] using hvalue
+  simpa [hr] using hvalue
 
+variable {G R K L : Type*} [CommGroup G] [Finite G] [CommGroup R] [Field K] [Field L] [Algebra K L]
+    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (hexponent : ∀ g : G, g ^ (n : ℕ) = 1)
+    (e : R ≃* (G →* nthRootsSubgroup L (n : ℕ)))
+
+include hmu hexponent in
 /-- The finite cardinality step upgrades nondegeneracy of the transposed
 Kummer pairing to surjectivity.  The needed equality of cardinalities is
 produced by finite abelian duality; it is not assumed. -/
-theorem transposeCharacterEquiv_surjective
-    {G R K L : Type*} [CommGroup G] [Finite G] [CommGroup R]
-    [Field K] [Field L] [Algebra K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (hexponent : ∀ g : G, g ^ (n : ℕ) = 1)
-    (e : R ≃* (G →* nthRootsSubgroup L (n : ℕ))) :
+theorem transposeCharacterEquiv_surjective :
     Function.Surjective (transposeCharacterEquiv e) := by
   let : NeZero (n : ℕ) := ⟨n.ne_zero⟩
-  let : Finite (G →* nthRootsSubgroup L (n : ℕ)) :=
+  let nthRootsSubgroup₀ := nthRootsSubgroup L (n : ℕ)
+  let : Finite (G →* nthRootsSubgroup₀) :=
     Finite.of_injective
-      (fun χ : G →* nthRootsSubgroup L (n : ℕ) =>
-        (χ : G → nthRootsSubgroup L (n : ℕ))) DFunLike.coe_injective
+      (fun χ : G →* nthRootsSubgroup₀ =>
+        (χ : G → nthRootsSubgroup₀)) DFunLike.coe_injective
   let : Finite R := Finite.of_equiv
-    (G →* nthRootsSubgroup L (n : ℕ)) e.symm.toEquiv
+    (G →* nthRootsSubgroup₀) e.symm.toEquiv
   have hRexponent : ∀ r : R, r ^ (n : ℕ) = 1 := by
     intro r
     apply e.injective
@@ -299,24 +295,15 @@ theorem transposeCharacterEquiv_surjective
     intro g
     apply Subtype.ext
     exact (e r g).2
-  obtain ⟨dualR⟩ := finiteNthRootsCharacterDuality
-    (G := R) (K := K) (L := L) n hmu hRexponent
-  obtain ⟨dualG⟩ := finiteNthRootsCharacterDuality
-    (G := G) (K := K) (L := L) n hmu hexponent
-  let targetEquivG : (R →* nthRootsSubgroup L (n : ℕ)) ≃ G :=
-    dualR.toEquiv.trans (e.toEquiv.trans dualG.toEquiv)
+  obtain ⟨dualR⟩ := finiteNthRootsCharacterDuality (K := K) (L := L) n hmu hRexponent
+  obtain ⟨dualG⟩ := finiteNthRootsCharacterDuality (K := K) (L := L) n hmu hexponent
   exact (transposeCharacterEquiv_injective n hmu hexponent e).surjective_of_finite
-    targetEquivG.symm
+    (dualR.toEquiv.trans (e.toEquiv.trans dualG.toEquiv)).symm
 
 /-- The canonical finite Kummer transpose equivalence.  This is the finite
 perfect-pairing equivalence underlying the Galois-group isomorphism; it
 does not yet assert the subgroup/extension lattice endpoint. -/
-def transposeCharacterMulEquiv
-    {G R K L : Type*} [CommGroup G] [Finite G] [CommGroup R]
-    [Field K] [Field L] [Algebra K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (hexponent : ∀ g : G, g ^ (n : ℕ) = 1)
-    (e : R ≃* (G →* nthRootsSubgroup L (n : ℕ))) :
+def transposeCharacterMulEquiv :
     G ≃* (R →* nthRootsSubgroup L (n : ℕ)) :=
   MulEquiv.ofBijective (transposeCharacterEquiv e)
     ⟨transposeCharacterEquiv_injective n hmu hexponent e,

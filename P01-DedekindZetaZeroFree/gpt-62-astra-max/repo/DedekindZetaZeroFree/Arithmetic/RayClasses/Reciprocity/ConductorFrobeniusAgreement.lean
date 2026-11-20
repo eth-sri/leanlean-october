@@ -29,20 +29,11 @@ theorem conductor_frobenius_agreement
       ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ (f * g) = ⊤ → η I = θ I := by
   classical
   intro g θ hθ I hI hIcop
-  have hg : g ≠ ⊥ := finiteModulusIdeal_ne_bot c
+  have hg := finiteModulusIdeal_ne_bot c
 
   have hprime : ∀ p : HeightOneSpectrum (𝓞 F),
       p.asIdeal ⊔ (f * g) = ⊤ → η p.asIdeal = θ p.asIdeal := by
     intro p hp
-    have hpf : p.asIdeal ⊔ f = ⊤ := by
-      refine le_antisymm le_top ?_
-      calc (⊤ : Ideal (𝓞 F)) = p.asIdeal ⊔ f * g := hp.symm
-        _ ≤ p.asIdeal ⊔ f := sup_le_sup_left Ideal.mul_le_left _
-    have hpg : p.asIdeal ⊔ g = ⊤ := by
-      refine le_antisymm le_top ?_
-      calc (⊤ : Ideal (𝓞 F)) = p.asIdeal ⊔ f * g := hp.symm
-        _ ≤ p.asIdeal ⊔ g := sup_le_sup_left Ideal.mul_le_right _
-
     obtain ⟨Q, hQmax, hQlies⟩ :=
       Ideal.exists_maximal_ideal_liesOver_of_isIntegral (S := 𝓞 d.extension) p.asIdeal
     have hQne : Q ≠ ⊥ := by
@@ -52,8 +43,14 @@ theorem conductor_frobenius_agreement
         exact Ideal.under_bot (𝓞 F) (𝓞 d.extension)
       exact p.ne_bot (by rw [hQlies.over, h1])
     let Q' : HeightOneSpectrum (𝓞 d.extension) := ⟨Q, hQmax.isPrime, hQne⟩
-    have hlies' : Q'.asIdeal.LiesOver p.asIdeal := hQlies
-    exact (d.frobenius p hpf Q' hlies').symm.trans (hθ p hpg Q' hlies').symm
+    have hlies' := hQlies
+    refine (d.frobenius p ?_ Q' hlies').symm.trans (hθ p ?_ Q' hlies').symm
+    · refine le_antisymm le_top ?_
+      calc _ = p.asIdeal ⊔ f * g := hp.symm
+        _ ≤ p.asIdeal ⊔ f := sup_le_sup_left Ideal.mul_le_left _
+    · refine le_antisymm le_top ?_
+      calc _ = p.asIdeal ⊔ f * g := hp.symm
+        _ ≤ p.asIdeal ⊔ g := sup_le_sup_left Ideal.mul_le_right _
   exact prime_agreement hf hg
     (fun h => (Ideal.mul_eq_bot.mp h).elim hf hg)
     η θ hprime I hI hIcop

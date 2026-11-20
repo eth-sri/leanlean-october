@@ -112,7 +112,7 @@ theorem fixed_haar_recipe
     domain_measurable := hΩmeas
     domain_fundamental := hΩfund
     quotient_normalization := rfl }
-  exact ⟨R, rfl, (KPSmoothLocalQuotientCharts.quotient_full_support F ζ hζ R).1⟩
+  exact ⟨R, rfl, (KPSmoothLocalQuotientCharts.quotient_full_support F ζ hζ R)⟩
 
 end DedekindZetaZeroFree.KPMsFixedHaar
 
@@ -132,7 +132,7 @@ private theorem affine_probability_haar
     (e : T ≃ₜ T) (he : ∀ x y, e (x + y) = e x + e y - e 0)
     (ν : Measure T) [ν.IsAddHaarMeasure] [IsProbabilityMeasure ν] :
     Measure.map e ν = ν := by
-  let h : T ≃ₜ T := e.trans (Homeomorph.subRight (e 0))
+  let h := e.trans (Homeomorph.subRight (e 0))
   let a : T ≃ₜ+ T := {
     toHomeomorph := h
     map_add' := fun x y => by
@@ -219,12 +219,11 @@ private theorem measurable_on_sigma
     · intro hx
       obtain ⟨j, y, hy, he⟩ := Set.mem_iUnion.mp hx
       change f ⟨j,y⟩ ∈ E at hy
-      change f ⟨i,x⟩ ∈ E
       rw [he] at hy
       exact hy
   rw [heq]
   exact MeasurableSet.iUnion fun i =>
-    (Topology.IsOpenEmbedding.sigmaMk (i := i)).measurableEmbedding.measurableSet_image.mpr
+    (Topology.IsOpenEmbedding.sigmaMk).measurableEmbedding.measurableSet_image.mpr
       (hf i hE)
 
 local instance torusMeasurable (F : Type*) [Field F] [NumberField F] (L : AddSubgroup F) :
@@ -252,9 +251,8 @@ private theorem probability_torus_haar
   haveI : IsClosed (KPCuspCharts.translationLattice F D.L : Set (KPCuspCharts.Horizontal F)) :=
     AddSubgroup.isClosed_of_discreteTopology
   haveI : CompactSpace (KPCuspCharts.Torus F D.L) := G.compact_torus
-  let ν : Measure (KPCuspCharts.Torus F D.L) := Measure.addHaarMeasure ⊤
-  refine ⟨ν, inferInstance, ⟨?_⟩⟩
-  exact Measure.addHaarMeasure_self (K₀ := ⊤)
+  refine ⟨(Measure.addHaarMeasure ⊤), inferInstance, ⟨?_⟩⟩
+  exact Measure.addHaarMeasure_self
 
 theorem probability_fiber_kernel
     {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
@@ -337,7 +335,7 @@ theorem probability_fiber_kernel
     intro i
     let b : (G j).atlas.baseOpen i → KPCuspCharts.Shape F :=
       fun q => ((G j).atlas.baseChart i).symm q |>.val
-    have hb : Continuous b :=
+    have hb :=
       continuous_subtype_val.comp ((G j).atlas.baseChart i).symm.continuous
     have hbq (q : (G j).atlas.baseOpen i) :
         (QuotientAddGroup.mk (b q) : KPCuspCharts.Base F hF (D j).E
@@ -444,10 +442,6 @@ def radialSection (w : NumberField.InfinitePlace F) (r : Radius) : Cover F ζ h�
 structure RadialData where
   slot : NumberField.InfinitePlace F
   ell : Radius → KPGlobalTorusFunctionData.Ideles F
-  continuous_ell : Continuous ell
-  ell_one : ell ⟨1, by norm_num⟩ = 1
-  ell_mul : ∀ r s : Radius,
-    ell ⟨r.val * s.val, mul_pos r.property s.property⟩ = ell r * ell s
   ell_cube : ∀ r, ∃ u : KPGlobalTorusFunctionData.Ideles F, u ^ 3 = ell r
   ell_slots : ∀ r v,
     KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inl v) (ell r : KPAdeles F) =
@@ -478,7 +472,7 @@ def radialMeasure : Measure ℝ :=
 section Atlas
 variable {F ζ hζ}
 variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : Level F ζ hζ} (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {U : Level F ζ hζ} (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
 abbrev CuspIndex := Σ i : Fin A.componentCount, Fin (A.cuspAtlas i).cuspCount
 
@@ -603,33 +597,7 @@ structure LevelCompatibility
     (AV : KPFiniteCuspAtlas.Atlas F ζ hζ hF V)
     (AU : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (DV : Disintegration AV R P) (DU : Disintegration AU R P) where
-  cuspForget : CuspIndex AV → CuspIndex AU
-  radiusScale : CuspIndex AV → Radius
-  angularForget : Omega AV → Omega AU
-  measurable_angularForget : Measurable angularForget
-  angular_label : ∀ ω, (angularForget ω).1 = cuspForget ω.1
-  crossForget : CrossSection AV → CrossSection AU
-  measurable_crossForget : Measurable crossForget
-  cross_label : ∀ x, (crossForget x).1 = cuspForget x.1
-  projection_commutes : ∀ x,
-    angularProjection AU (crossForget x) = angularForget (angularProjection AV x)
-  induced_angular : Measure.map angularForget
-      (DV.beta.withDensity (fun ω => ENNReal.ofReal (radiusScale ω.1).val)) = DU.beta
-  induced_probability : Measure.map angularForget
-      (probability AV (DV.beta.withDensity
-        (fun ω => ENNReal.ofReal (radiusScale ω.1).val))) = probability AU DU.beta
-  coefficient : kappa AU R P DU =
-    ((DV.beta.withDensity (fun ω => ENNReal.ofReal (radiusScale ω.1).val)) Set.univ).toReal
   common_slot : DV.radial.slot = DU.radial.slot
-  chart_commutes : ∀ YV YU (hV : AdmissibleCutoff AV YV) (hU : AdmissibleCutoff AU YU)
-      (x : CrossSection AV) (r : Set.Ioi YV)
-      (hr : YU < (radiusScale x.1).val * r.val),
-    P.forget V U h (DV.chart YV hV (x,r)) =
-      DU.chart YU hU (crossForget x, ⟨(radiusScale x.1).val * r.val,hr⟩)
-  induced_kernel : ∀ f : CrossSection AU → ℝ≥0∞, Measurable f →
-    (∫⁻ ω, ENNReal.ofReal (radiusScale ω.1).val *
-      ∫⁻ x, f (crossForget x) ∂DV.unipotent ω ∂DV.beta) =
-      ∫⁻ ω, ∫⁻ x, f x ∂DU.unipotent ω ∂DU.beta
 
 structure AllLevels (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : SphericalTransport F ζ hζ) where
@@ -644,9 +612,6 @@ def fromRawRadial (D : KPMsFixedHaar.RadialData F ζ hζ) :
     RadialData F ζ hζ where
   slot := D.slot
   ell := D.ell
-  continuous_ell := D.continuous_ell
-  ell_one := D.ell_one
-  ell_mul := D.ell_mul
   ell_cube := D.ell_cube
   ell_slots := D.ell_slots
   ell_finite := D.ell_finite
@@ -708,29 +673,14 @@ def fromRawRadial (D : KPMsFixedHaar.RadialData F ζ hζ) :
     LevelCompatibility F ζ hζ R P h AV AU
       (fromRawDisintegration F ζ hζ AV R P DV)
       (fromRawDisintegration F ζ hζ AU R P DU) where
-  cuspForget := C.cuspForget
-  radiusScale := C.radiusScale
-  angular_label := C.angular_label
-  cross_label := C.cross_label
-  angularForget := C.angularForget
-  measurable_angularForget := C.measurable_angularForget
-  crossForget := C.crossForget
-  measurable_crossForget := C.measurable_crossForget
-  projection_commutes := C.projection_commutes
-  induced_angular := C.induced_angular
-  induced_probability := C.induced_probability
-  coefficient := C.coefficient
   common_slot := C.common_slot
-  chart_commutes := C.chart_commutes
-  induced_kernel := C.induced_kernel
 
 theorem disintegration_at_fixed_haar
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : SphericalTransport F ζ hζ) : Nonempty (AllLevels F ζ hζ R P) := by
-  let kernels := fun hF U (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) =>
-    (KPMsFixedHaar.probability_fiber_kernel A).some
   obtain ⟨D, _⟩ := KPMsFixedHaar.coherent_cusp_geometry F ζ hζ R
-    (toRawTransport F ζ hζ P) kernels
+    (toRawTransport F ζ hζ P) (fun hF U A =>
+      (KPMsFixedHaar.probability_fiber_kernel A).some)
   refine ⟨{
     totallyComplex := D.totallyComplex
     atlas := D.atlas

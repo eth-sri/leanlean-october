@@ -10,8 +10,8 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources MeasureTheory ThetaProfileHaarSheets ThetaSheetExactUnfolding
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 lemma packet_branch_rational {Q : AdmissibleFlatSources R} (P : Packet R Q)
     (v : R.A.UnitQuotient) (x : Fˣ) :
@@ -43,11 +43,10 @@ lemma packet_branch_gamma {Q : AdmissibleFlatSources R} (P : Packet R Q)
     obtain ⟨u, hu, he⟩ := Subgroup.mem_map.mp γ.property
     rw [← he]
     exact R.A.U.pow_mem hu 6
-  have hθ := R.probe.correction.theta_unit ⟨γ.val, hunit⟩
   have hH : R.A.H_S (R.A.diagonal (R.probe.unitReps.representative v).val)
       (R.A.diagonal γ.val) = 1 := by
     rw [← R.A.H_S6_on_representatives, rational_gamma_class, map_one]
-  simp only [SArithmeticData.correctionLS, hθ, hH, OneMemClass.coe_one,
+  simp only [SArithmeticData.correctionLS, (R.probe.correction.theta_unit ⟨γ.val, hunit⟩), hH, OneMemClass.coe_one,
     Units.val_one, map_one, Circle.coe_one, mul_one]
 
 lemma packet_branch_ne_zero {Q : AdmissibleFlatSources R} (P : Packet R Q)

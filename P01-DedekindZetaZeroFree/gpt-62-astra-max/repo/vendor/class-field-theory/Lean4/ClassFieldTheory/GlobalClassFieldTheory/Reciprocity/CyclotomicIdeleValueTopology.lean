@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -57,63 +53,13 @@ theorem rationalCyclotomicZHatIdeleValueContinuousAdd_apply
         (rationalCyclotomicZHatIdeleValue a) :=
   rfl
 
-/-- The continuous additive rational cyclotomic value has dense image. -/
-theorem rationalCyclotomicZHatIdeleValueContinuousAdd_denseRange :
-    DenseRange rationalCyclotomicZHatIdeleValueContinuousAdd := by
-  have hToAdd :
-      Function.Surjective
-        (Multiplicative.toAdd :
-          Multiplicative ZHat → ZHat) :=
-    fun z => ⟨Multiplicative.ofAdd z, rfl⟩
-  have hToMul :
-      Function.Surjective
-        (Additive.toMul :
-          Additive (IdeleGroup ℚ) → IdeleGroup ℚ) :=
-    fun a => ⟨Additive.ofMul a, rfl⟩
-  have hAfterToAdd :
-      DenseRange
-        (fun a : IdeleGroup ℚ =>
-          Multiplicative.toAdd
-            (rationalCyclotomicZHatIdeleValue a)) :=
-    hToAdd.denseRange.comp
-      rationalCyclotomicZHatIdeleValue_denseRange
-      continuous_toAdd
-  change
-    DenseRange
-      (fun a : Additive (IdeleGroup ℚ) =>
-        Multiplicative.toAdd
-          (rationalCyclotomicZHatIdeleValue
-            (Additive.toMul a)))
-  exact
-    hAfterToAdd.comp hToMul.denseRange
-      (continuous_toAdd.comp
-        rationalCyclotomicZHatIdeleValue.continuous_toFun)
+section
 
-/-- The kernel of the continuous additive rational cyclotomic value is
-closed.  This is the Hausdorffness input for its eventual quotient descent. -/
-theorem rationalCyclotomicZHatIdeleValueContinuousAdd_isClosed_ker :
-    IsClosed
-      (((ContinuousAddMonoidHom.toAddMonoidHom
-          rationalCyclotomicZHatIdeleValueContinuousAdd).ker :
-        AddSubgroup (Additive (IdeleGroup ℚ))) :
-        Set (Additive (IdeleGroup ℚ))) := by
-  rw [show
-    (((ContinuousAddMonoidHom.toAddMonoidHom
-        rationalCyclotomicZHatIdeleValueContinuousAdd).ker :
-      AddSubgroup (Additive (IdeleGroup ℚ))) :
-      Set (Additive (IdeleGroup ℚ))) =
-        rationalCyclotomicZHatIdeleValueContinuousAdd ⁻¹'
-          ({0} : Set ZHat) by
-    ext a
-    simp]
-  exact
-    isClosed_singleton.preimage
-      rationalCyclotomicZHatIdeleValueContinuousAdd.continuous_toFun
+variable (n : ℕ) (hn : 0 < n)
 
 /-- Reduction of the rational cyclotomic idele value modulo a positive
 integer, as an actual continuous additive homomorphism. -/
-noncomputable def rationalCyclotomicZHatIdeleValueReduction
-    (n : ℕ) (hn : 0 < n) :
+noncomputable def rationalCyclotomicZHatIdeleValueReduction :
     Additive (IdeleGroup ℚ) →ₜ+ ZMod n :=
   (zHatReduction n hn).comp
     rationalCyclotomicZHatIdeleValueContinuousAdd
@@ -121,8 +67,7 @@ noncomputable def rationalCyclotomicZHatIdeleValueReduction
 /-- Evaluation of a finite reduction is reduction of the original
 cyclotomic value. -/
 @[simp]
-theorem rationalCyclotomicZHatIdeleValueReduction_apply
-    (n : ℕ) (hn : 0 < n) (a : IdeleGroup ℚ) :
+theorem rationalCyclotomicZHatIdeleValueReduction_apply (a : IdeleGroup ℚ) :
     rationalCyclotomicZHatIdeleValueReduction n hn
         (Additive.ofMul a) =
       zHatReduction n hn
@@ -130,54 +75,7 @@ theorem rationalCyclotomicZHatIdeleValueReduction_apply
           (rationalCyclotomicZHatIdeleValue a)) :=
   rfl
 
-/-- Every residue class modulo a positive integer occurs as a finite
-reduction of the rational cyclotomic idele value. -/
-theorem rationalCyclotomicZHatIdeleValueReduction_surjective
-    (n : ℕ) (hn : 0 < n) :
-    Function.Surjective
-      (rationalCyclotomicZHatIdeleValueReduction n hn) := by
-  have hReductionSurjective :
-      Function.Surjective (zHatReduction n hn) := by
-    intro z
-    obtain ⟨a, rfl⟩ := ZMod.intCast_surjective z
-    exact ⟨(a : ZHat), zHatReduction_intCast n hn a⟩
-  have hDense :
-      DenseRange
-        (rationalCyclotomicZHatIdeleValueReduction n hn) := by
-    exact
-      hReductionSurjective.denseRange.comp
-        rationalCyclotomicZHatIdeleValueContinuousAdd_denseRange
-        (zHatReduction n hn).continuous_toFun
-  intro z
-  have hz :
-      z ∈ closure
-        (Set.range
-          (rationalCyclotomicZHatIdeleValueReduction n hn)) :=
-    hDense z
-  rw [closure_discrete] at hz
-  exact hz
-
-/-- The finite reduction kernels are open.  They are the concrete open
-congruence subgroups available for the later idele-class quotient map. -/
-theorem rationalCyclotomicZHatIdeleValueReduction_isOpen_ker
-    (n : ℕ) (hn : 0 < n) :
-    IsOpen
-      (((ContinuousAddMonoidHom.toAddMonoidHom
-          (rationalCyclotomicZHatIdeleValueReduction n hn)).ker :
-        AddSubgroup (Additive (IdeleGroup ℚ))) :
-        Set (Additive (IdeleGroup ℚ))) := by
-  rw [show
-    (((ContinuousAddMonoidHom.toAddMonoidHom
-        (rationalCyclotomicZHatIdeleValueReduction n hn)).ker :
-      AddSubgroup (Additive (IdeleGroup ℚ))) :
-      Set (Additive (IdeleGroup ℚ))) =
-        rationalCyclotomicZHatIdeleValueReduction n hn ⁻¹'
-          ({0} : Set (ZMod n)) by
-    ext a
-    simp]
-  exact
-    (isOpen_discrete ({0} : Set (ZMod n))).preimage
-      (rationalCyclotomicZHatIdeleValueReduction n hn).continuous_toFun
+end
 
 variable (K : Type) [Field K] [NumberField K]
 
@@ -288,7 +186,7 @@ theorem normalizedCyclotomicZHatIdeleValue_normOne_denseRange :
     exists_normOneIdele_same_normalizedCyclotomicZHatIdeleValue
       K (Additive.toMul a)
   refine ⟨b, ?_⟩
-  simpa using hb
+  exact hb
 
 end Reciprocity
 end GlobalClassFieldTheory

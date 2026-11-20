@@ -21,11 +21,13 @@ theorem finiteMeasure (G : KPCuspCharts.ChartOutput F hF S D) :
   have h := measure_lt_top G.sectionMeasure Set.univ
   rw [G.sectionMeasure_formula,
     Measure.map_apply measurable_quotient_mk'' MeasurableSet.univ] at h
-  simpa using h
+  exact h
 
-theorem bounded (G : KPCuspCharts.ChartOutput F hF S D)
-    (f : KPCuspCharts.Cross F → ℝ) (hf : Continuous f)
-    (hinv : ∀ (s : S) (x : KPCuspCharts.Cross F), f (G.crossAction s x) = f x) :
+variable (G : KPCuspCharts.ChartOutput F hF S D) (f : KPCuspCharts.Cross F → ℝ) (hf : Continuous f)
+    (hinv : ∀ (s : S) (x : KPCuspCharts.Cross F), f (G.crossAction s x) = f x)
+
+include hf hinv in
+theorem bounded :
     ∃ C : ℝ, ∀ x, ‖f x‖ ≤ C := by
   have hrel : ∀ x y, KPCuspCharts.crossRelation F S x y → f x = f y := by
     intro x y hxy
@@ -36,21 +38,18 @@ theorem bounded (G : KPCuspCharts.ChartOutput F hF S D)
     change KPCuspSiegel.action F s.val (KPCuspCharts.toArch F (y, 0)) =
       KPCuspCharts.toArch F (x, 0) at hs
     rw [G.actual_action s A hA hc] at hs
-    have hp := (KPCuspCharts.toArchHomeomorph F G.positive_dimension).injective hs
     have hx : G.crossAction s y = x := by
       rw [G.crossAction_formula s A hA hc]
-      exact congrArg Prod.fst hp
+      exact congrArg Prod.fst ((KPCuspCharts.toArchHomeomorph F G.positive_dimension).injective hs)
     rw [← hx]
     exact hinv s y
-  let q : KPCuspCharts.CrossQuotient F S → ℝ := Quotient.lift f hrel
-  have hq : Continuous q := hf.quotient_lift _
+  have hq : Continuous (Quotient.lift f hrel) := hf.quotient_lift _
   letI := G.compact_cross
   obtain ⟨C, hC⟩ := isCompact_univ.exists_bound_of_continuousOn hq.continuousOn
   exact ⟨C, fun x => hC (Quotient.mk _ x) (Set.mem_univ _)⟩
 
-theorem integrable (G : KPCuspCharts.ChartOutput F hF S D)
-    (f : KPCuspCharts.Cross F → ℝ) (hf : Continuous f)
-    (hinv : ∀ (s : S) (x : KPCuspCharts.Cross F), f (G.crossAction s x) = f x)
+include hf hinv in
+theorem integrable
     (ν : Measure (KPCuspCharts.Cross F)) [IsFiniteMeasure ν] : Integrable f ν := by
   obtain ⟨C, hC⟩ := bounded G f hf hinv
   exact ⟨hf.aestronglyMeasurable,
@@ -106,15 +105,13 @@ theorem actual_rectangle_integral_comparison (G : KPCuspCharts.ChartOutput F hF 
    simp only [Set.univ_inter]
    rw [Measure.prod_prod A B]
    exact ENNReal.mul_lt_top hAb.measure_lt_top hBb.measure_lt_top
- have hc : (ENat.card (KPCuspCharts.kernelUnits F hF D.E D.integralUnits) : ℝ≥0∞) =
-     (Nat.card (KPCuspCharts.kernelUnits F hF D.E D.integralUnits) : ℝ≥0∞) := by
-   simp [ENat.card_eq_coe_natCard]
  have heq := OrbitMultiplicity.integral_comparison (volume.prod G.shapeMeasure)
    G.isFundamentalDomain (hAm.prod hBm)
    (Nat.card (KPCuspCharts.kernelUnits F hF D.E D.integralUnits)) (by simp)
-   (Filter.Eventually.of_forall fun x => (rectangle_orbit_multiplicity G A hA B hB x).trans hc)
+   (Filter.Eventually.of_forall fun x => (rectangle_orbit_multiplicity G A hA B hB x).trans (by
+     simp [ENat.card_eq_coe_natCard]))
    f hinv (ActualDomain.integrable G f hf hinv _) (ActualDomain.integrable G f hf hinv _)
- simpa using heq
+ exact heq
 end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection
 
 end
@@ -188,8 +185,6 @@ theorem full_torus_zero_mean_descent
     ∃ ν : Measure (KPCuspCharts.Torus F D.L),
       ν.IsAddHaarMeasure ∧ IsProbabilityMeasure ν ∧
       ∃ g : KPCuspCharts.Torus F D.L → KPCuspCharts.Shape F → ℝ,
-        Continuous (fun x : KPCuspCharts.Cross F =>
-          g (QuotientAddGroup.mk x.1) x.2) ∧
         (∀ x b, g (QuotientAddGroup.mk x) b = f (QuotientAddGroup.mk x) b) ∧
         (∀ b, AEStronglyMeasurable (fun z => g z b) ν) ∧
         (∀ b, (∫ z, g z b ∂ν) = 0) := by
@@ -198,18 +193,16 @@ theorem full_torus_zero_mean_descent
   obtain ⟨hd, _⟩ := G.lattice
   letI := hd
   letI : DiscreteTopology (KPCuspCharts.translationLattice F D.L) := hd
-  have hle : KPCuspCharts.translationLattice F (KPCuspGenuineMonodromy.kernelLattice S D ρ) ≤
+  let translationLattice₀ := KPCuspCharts.translationLattice F (KPCuspGenuineMonodromy.kernelLattice S D ρ)
+  have hle : translationLattice₀ ≤
       KPCuspCharts.translationLattice F D.L := by
     intro y hy
     obtain ⟨a, ha, rfl⟩ := hy
     exact ⟨a, ha.1, rfl⟩
-  letI : DiscreteTopology (KPCuspCharts.translationLattice F
-      (KPCuspGenuineMonodromy.kernelLattice S D ρ)).toIntSubmodule :=
+  letI : DiscreteTopology (translationLattice₀).toIntSubmodule :=
     DiscreteTopology.of_subset hd hle
-  letI : DiscreteTopology (KPCuspCharts.translationLattice F
-      (KPCuspGenuineMonodromy.kernelLattice S D ρ)) :=
-    ‹DiscreteTopology (KPCuspCharts.translationLattice F
-      (KPCuspGenuineMonodromy.kernelLattice S D ρ)).toIntSubmodule›
+  letI : DiscreteTopology (translationLattice₀) :=
+    ‹DiscreteTopology (translationLattice₀).toIntSubmodule›
   let q : KPCuspGenuineMonodromy.KernelTorus S D ρ →+ KPCuspCharts.Torus F D.L :=
     QuotientAddGroup.map _ _ (AddMonoidHom.id _) hle
   have hqmk (x : KPCuspCharts.Horizontal F) :
@@ -256,8 +249,7 @@ theorem full_torus_zero_mean_descent
   have hgm (b : KPCuspCharts.Shape F) : Measurable (fun z => g z b) := by
     apply measurable_from_quotient.mpr
     exact (hf.comp (continuous_id.prodMk continuous_const)).measurable
-  refine ⟨ν, inferInstance, inferInstance, g, ?_, hgmk, fun b => (hgm b).aestronglyMeasurable, ?_⟩
-  · exact hf
+  refine ⟨ν, inferInstance, inferInstance, g, hgmk, fun b => (hgm b).aestronglyMeasurable, ?_⟩
   · intro b
     rw [integral_map hqc.measurable.aemeasurable (hgm b).aestronglyMeasurable]
     simpa only [hgq] using hzero b
@@ -283,7 +275,7 @@ theorem horizontal_exact_domain_integral_zero
       y + KPCuspCharts.embedding F l.val ∈ A)
     (b : KPCuspCharts.Shape F) :
     (∫ y in A, f (QuotientAddGroup.mk y) b) = 0 := by
-  obtain ⟨ν, hν, hνprob, g, _, hgmk, hgm, hgzero⟩ :=
+  obtain ⟨ν, hν, hνprob, g, hgmk, hgm, hgzero⟩ :=
     full_torus_zero_mean_descent G μ hμ hprob f hf hinv hzero
   letI := hν
   letI := hνprob
@@ -335,22 +327,7 @@ open scoped Classical ENNReal
 
 namespace DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection
 
-theorem crossAction_inclusion
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)}
-    {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    (l : D.L) (x : KPCuspCharts.Cross F) :
-    G.crossAction (D.inclusion (Multiplicative.ofAdd l)) x =
-      (x.1 + KPCuspCharts.embedding F l.val, x.2) := by
-  let s := D.inclusion (Multiplicative.ofAdd l)
-  obtain ⟨A, hA, hc⟩ := D.upper s.val s.property
-  have h := G.actual_action s A hA hc (x, 0)
-  rw [G.unipotent_action l (x, 0)] at h
-  have hp := (KPCuspCharts.toArchHomeomorph F G.positive_dimension).injective h
-  rw [G.crossAction_formula s A hA hc]
-  exact (congrArg Prod.fst hp).symm
+alias crossAction_inclusion := ExactRectangles.actual_translation_action
 
 theorem invariant_zero_mean_fiber_integral
     {F : Type} [Field F] [NumberField F]
@@ -371,7 +348,7 @@ theorem invariant_zero_mean_fiber_integral
       ∂(volume.prod G.shapeMeasure).restrict G.fundamentalDomain) = 0 := by
   obtain ⟨A, B, hAm, hAb, hBm, hBb, hA, hB⟩ := actual_exact_comparison_rectangle G
   let k : KPCuspCharts.Cross F → ℝ := fun x => f (QuotientAddGroup.mk x.1) x.2
-  have hkinv : ∀ (s : S) (x : KPCuspCharts.Cross F), k (G.crossAction s x) = k x := hinv
+  have hkinv := hinv
   letI := G.haar_shapeMeasure
   letI := G.finite_isotropy
   letI : IsFiniteMeasure ((volume.prod G.shapeMeasure).restrict (A ×ˢ B)) := by
@@ -382,17 +359,14 @@ theorem invariant_zero_mean_fiber_integral
     exact ENNReal.mul_lt_top hAb.measure_lt_top hBb.measure_lt_top
   have hkint := ActualDomain.integrable G k hf hkinv
     ((volume.prod G.shapeMeasure).restrict (A ×ˢ B))
-  have hrect : (∫ x in A ×ˢ B, k x ∂volume.prod G.shapeMeasure) = 0 := by
-    rw [← Measure.prod_restrict] at hkint ⊢
+  refine (mul_eq_zero.mp ((actual_rectangle_integral_comparison G A B hAm hAb hBm hBb hA hB k hf hkinv).symm.trans ?_)).resolve_left ?_
+  · rw [← Measure.prod_restrict] at hkint ⊢
     rw [integral_prod_symm k hkint]
     have hz (b : KPCuspCharts.Shape F) : (∫ y in A, k (y, b)) = 0 :=
       horizontal_exact_domain_integral_zero G μ hμ hprob f hf hinv hzero hAm hAb hA b
     simp_rw [hz]
     simp
-  have heq := actual_rectangle_integral_comparison G A B hAm hAb hBm hBb hA hB k hf hkinv
-  have hcard : (Nat.card (KPCuspCharts.kernelUnits F hF D.E D.integralUnits) : ℝ) ≠ 0 := by
-    exact_mod_cast (Nat.card_pos.ne' : Nat.card (KPCuspCharts.kernelUnits F hF D.E D.integralUnits) ≠ 0)
-  exact (mul_eq_zero.mp (heq.symm.trans hrect)).resolve_left hcard
+  · exact_mod_cast Nat.card_pos.ne'
 
 end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection
 

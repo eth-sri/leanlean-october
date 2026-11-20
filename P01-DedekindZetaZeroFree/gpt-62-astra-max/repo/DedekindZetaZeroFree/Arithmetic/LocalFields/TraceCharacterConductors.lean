@@ -17,27 +17,10 @@ set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 private theorem primeBelow_eq_adapter (v : HeightOneSpectrum (𝓞 F)) :
-    ResidueTrace.rationalPrimeBelow v = PlaceTraceAdapter.prime F v := by
-  apply Subtype.ext
-  change ringChar (𝓞 F ⧸ v.asIdeal) = _
-  apply CharP.ringChar_of_prime_eq_zero (PlaceTraceAdapter.prime F v).2
-  apply Ideal.Quotient.eq_zero_iff_mem.mpr
-  have h : ((PlaceTraceAdapter.prime F v).1 : 𝓞 ℚ) ∈
-      (PlaceTraceAdapter.rationalPlace F v).asIdeal := by
-    have hgen := Rat.HeightOneSpectrum.natGenerator_dvd_iff
-      (PlaceTraceAdapter.rationalPlace F v) (n := (PlaceTraceAdapter.prime F v).1)
-    have hh := hgen.mp (dvd_refl _)
-    rw [Ideal.mem_map_iff_of_surjective _ (Rat.IsIntegralClosure.intEquiv (𝓞 ℚ)).surjective] at hh
-    obtain ⟨x, hx, he⟩ := hh
-    have he' : x = ((PlaceTraceAdapter.prime F v).1 : 𝓞 ℚ) :=
-      (Rat.IsIntegralClosure.intEquiv (𝓞 ℚ)).injective (by simpa using he)
-    exact he' ▸ hx
-  have h' : (algebraMap (𝓞 ℚ) (𝓞 F) ((PlaceTraceAdapter.prime F v).1 : 𝓞 ℚ)) ∈ v.asIdeal := h
-  simpa using h'
+    ResidueTrace.rationalPrimeBelow v = PlaceTraceAdapter.prime F v := by exact ResidueTraceFactorProductFormula.GlobalTraceProductFormula.residuePrime_eq_adapter v
 
 private theorem character_eq_adapter (v : HeightOneSpectrum (𝓞 F)) :
     ResidueTrace.localTraceCharacter v = localFiniteCharacter F v := by
-  letI (p : Nat.Primes) : Fact p.1.Prime := ⟨p.2⟩
   have hp := primeBelow_eq_adapter v
   have hgeneral (p : Nat.Primes) (m : ℚ_[p] →+* v.adicCompletion F)
       (hmc : Continuous m)
@@ -56,11 +39,13 @@ private theorem character_eq_adapter (v : HeightOneSpectrum (𝓞 F)) :
         exact (finitePlaceAdicCompletionMap_continuous ℚ F _ _).comp
           (Rat.HeightOneSpectrum.adicCompletion.padicEquiv (PlaceTraceAdapter.rationalPlace F v)).symm.continuous
       · funext q
-        exact (hmq q).trans (by simp [PlaceTraceAdapter.padicMap, map_ratCast])
+        exact (hmq q).trans (by simp)
     subst m
     rfl
   exact hgeneral _ _ (ResidueTrace.baseEmbedding_spec v).1
     (ResidueTrace.baseEmbedding_spec v).2 hp
+
+alias TraceCharacterConductors.character_eq_adapter := character_eq_adapter
 
 private theorem codifferent_eq_integers_of_good (v : HeightOneSpectrum (𝓞 F))
     (hv : ¬ v.asIdeal ∣ differentIdeal ℤ (𝓞 F)) :
@@ -80,34 +65,35 @@ private theorem codifferent_eq_integers_of_good (v : HeightOneSpectrum (𝓞 F))
   ext x
   change x ∈ (1 : Submodule (LocalConductor.target F v).valuationSubring (v.adicCompletion F)) ↔ _
   rw [Submodule.mem_one]
-  change (∃ z : (LocalConductor.target F v).valuationSubring, (z : v.adicCompletion F) = x) ↔ _
   rw [← LocalConductor.target_integerRing_eq F v]
   exact ⟨fun ⟨z, hz⟩ => hz ▸ z.property, fun h => ⟨⟨x,h⟩,rfl⟩⟩
 
-private theorem actual_selfDual_of_good (v : HeightOneSpectrum (𝓞 F))
-    (hv : ¬ v.asIdeal ∣ differentIdeal ℤ (𝓞 F)) : ResidueTrace.IsSelfDual v := by
+theorem exists_trace_exclusion_set (F : Type) [Field F] [NumberField F] :
+    ∃ T : Finset (HeightOneSpectrum (𝓞 F)),
+      ∀ v : HeightOneSpectrum (𝓞 F), v ∉ T → ResidueTrace.IsSelfDual v := by
+  classical
+  have hfin : {v : HeightOneSpectrum (𝓞 F) | v.asIdeal ∣ differentIdeal ℤ (𝓞 F)}.Finite :=
+    Ideal.finite_factors differentIdeal_ne_bot
+  refine ⟨hfin.toFinset, ?_⟩
+  intro v hv
   intro x
   rw [character_eq_adapter]
-  change (∀ o : v.adicCompletionIntegers F, localFiniteCharacter F v (x * o) = 1) ↔ _
-  have hcod := codifferent_eq_integers_of_good v hv
   change (∀ o : v.adicCompletionIntegers F, localFiniteCharacter F v (x * o) = 1) ↔ x ∈ (v.adicCompletionIntegers F : Set (v.adicCompletion F))
-  rw [← hcod]
+  rw [← (codifferent_eq_integers_of_good v (by simpa using hv))]
   change (∀ o : v.adicCompletionIntegers F, localFiniteCharacter F v (x * o) = 1) ↔ x ∈ localCodifferent F v
   unfold localCodifferent
   rw [RamificationTheory.DiscreteValuationField.ValuedExtension.mem_codifferentSubmodule_iff_trace_mul_integral_of_finite_separable]
   have ha (a : v.adicCompletion F) : a ∈ (1 : Submodule (LocalConductor.target F v).valuationSubring (v.adicCompletion F)) ↔
       a ∈ v.adicCompletionIntegers F := by
     rw [Submodule.mem_one]
-    change (∃ z : (LocalConductor.target F v).valuationSubring, (z : v.adicCompletion F) = a) ↔ a ∈ (v.adicCompletionIntegers F : Set (v.adicCompletion F))
+    change (∃ z : (LocalConductor.target F v).valuationSubring, z = a) ↔ a ∈ (v.adicCompletionIntegers F : Set (v.adicCompletion F))
     rw [← LocalConductor.target_integerRing_eq F v]
     exact ⟨fun ⟨z, hz⟩ => hz ▸ z.property, fun h => ⟨⟨a,h⟩,rfl⟩⟩
   have hb (t : ℚ_[PlaceTraceAdapter.prime F v]) :
       IsIntegral (LocalConductor.base F v).valuationSubring t ↔
         rationalPadicCharacter (PlaceTraceAdapter.prime F v) t = 1 := by
     rw [rationalPadicCharacter_eq_one_iff, IsIntegrallyClosed.isIntegral_iff]
-    change (∃ z : (LocalConductor.base F v).valuationSubring, (z : ℚ_[PlaceTraceAdapter.prime F v]) = t) ↔ ∃ z : ℤ_[PlaceTraceAdapter.prime F v], (z : ℚ_[PlaceTraceAdapter.prime F v]) = t
     have hmem (z : ℚ_[PlaceTraceAdapter.prime F v]) : z ∈ (LocalConductor.base F v).valuation.valuationSubring ↔ ‖z‖ ≤ 1 := by
-      change (LocalConductor.base F v).valuation z ≤ 1 ↔ _
       simp only [LocalConductor.base, localCompleteDVF_valuation_eq]
       exact LocalFieldTheory.Padic.integer_mem_iff_norm_le_one _ z
     exact ⟨fun ⟨z,hz⟩ => ⟨⟨z, (hmem z).mp z.property⟩,hz⟩,
@@ -118,16 +104,6 @@ private theorem actual_selfDual_of_good (v : HeightOneSpectrum (𝓞 F))
     exact h ⟨a, ha⟩
   · intro h o
     exact h o o.property
-
-theorem exists_trace_exclusion_set (F : Type) [Field F] [NumberField F] :
-    ∃ T : Finset (HeightOneSpectrum (𝓞 F)),
-      ∀ v : HeightOneSpectrum (𝓞 F), v ∉ T → ResidueTrace.IsSelfDual v := by
-  classical
-  have hfin : {v : HeightOneSpectrum (𝓞 F) | v.asIdeal ∣ differentIdeal ℤ (𝓞 F)}.Finite :=
-    Ideal.finite_factors differentIdeal_ne_bot
-  refine ⟨hfin.toFinset, ?_⟩
-  intro v hv
-  exact actual_selfDual_of_good v (by simpa only [Set.Finite.mem_toFinset, Set.mem_setOf_eq] using hv)
 
 end
 end DedekindZetaZeroFree.ArithmeticContext

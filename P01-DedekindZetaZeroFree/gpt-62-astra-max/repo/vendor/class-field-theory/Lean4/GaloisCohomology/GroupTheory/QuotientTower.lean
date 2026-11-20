@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -47,14 +45,12 @@ def quotientSubgroupOfEquiv {H K M : Subgroup G} (hHK : H ≤ K) :
   left_inv q := by
     refine Quotient.inductionOn' q ?_
     intro x
-    change Quotient.map' _ _ (Quotient.map' _ _ (Quotient.mk'' x)) = Quotient.mk'' x
-    simpa only [Quotient.map'_mk''] using
+    simpa using
       congrArg Quotient.mk'' ((subgroupOfEquivOfLe hHK).symm_apply_apply x)
   right_inv q := by
     refine Quotient.inductionOn' q ?_
     intro x
-    change Quotient.map' _ _ (Quotient.map' _ _ (Quotient.mk'' x)) = Quotient.mk'' x
-    simpa only [Quotient.map'_mk''] using
+    simpa using
       congrArg Quotient.mk'' ((subgroupOfEquivOfLe hHK).apply_symm_apply x)
 
 /-- A quotient by the bottom of a subgroup tower is equivalent to the product

@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -53,21 +48,20 @@ theorem orderOf_arithmeticFrobeniusAt_eq_inertiaDegree
     orderOf (arithmeticFrobeniusAt (K := K) w) =
       w.asIdeal.inertiaDeg (𝓞 K) := by
   classical
-  let P : Ideal (𝓞 K) := v.asIdeal
-  let Q : Ideal (𝓞 L) := w.asIdeal
+  let P := v.asIdeal
+  let Q := w.asIdeal
   let G := L ≃ₐ[K] L
-  let g : G := arithmeticFrobeniusAt (K := K) w
-  let : Q.LiesOver P := hw
-  let : Algebra.IsUnramifiedAt (𝓞 K) Q := hunram
-  let : Field ((𝓞 K) ⧸ P) := Ideal.Quotient.field P
-  let : Field ((𝓞 L) ⧸ Q) := Ideal.Quotient.field Q
-  let : Finite ((𝓞 K) ⧸ P) :=
+  let g : G := arithmeticFrobeniusAt w
+  let := hw
+  let := hunram
+  let := Ideal.Quotient.field P
+  let := Ideal.Quotient.field Q
+  let :=
     Ring.HasFiniteQuotients.finiteQuotient v.ne_bot
-  let : Finite ((𝓞 L) ⧸ Q) :=
+  let :=
     Ring.HasFiniteQuotients.finiteQuotient w.ne_bot
   let : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
   have hF : IsArithFrobAt (𝓞 K) g Q := by
-    change IsArithFrobAt (𝓞 K) (arithFrobAt (𝓞 K) G Q) Q
     exact IsArithFrobAt.arithFrobAt (𝓞 K) G Q
   let gs : MulAction.stabilizer G Q := ⟨g, hF.mem_stabilizer⟩
   have hImage :
@@ -80,8 +74,7 @@ theorem orderOf_arithmeticFrobeniusAt_eq_inertiaDegree
     rw [Ideal.Quotient.stabilizerHom_apply]
     simp only [FiniteField.coe_frobeniusAlgEquivOfAlgebraic]
     have h := hF.mk_apply y
-    have hQP : Q.under (𝓞 K) = P := hw.over.symm
-    rw [hQP, Nat.card_eq_fintype_card] at h
+    rw [hw.over.symm, Nat.card_eq_fintype_card] at h
     exact h
   have hImageOrder :
       orderOf (Ideal.Quotient.stabilizerHom Q P G gs) =
@@ -90,19 +83,16 @@ theorem orderOf_arithmeticFrobeniusAt_eq_inertiaDegree
     exact (Ideal.inertiaDeg_eq_of_isMaximal P Q).symm
   have hCard : Nat.card (MulAction.stabilizer G Q) =
       Q.inertiaDeg (𝓞 K) := by
-    rw [Ideal.card_stabilizer_eq (G := G) P Q,
+    rw [Ideal.card_stabilizer_eq P Q,
       Ideal.ramificationIdxIn_eq_ramificationIdx P Q G,
       Ideal.inertiaDegIn_eq_inertiaDeg P Q G,
       Ideal.ramificationIdx_eq_one Q (𝓞 K), one_mul]
-  have hUpper : orderOf gs ∣ Q.inertiaDeg (𝓞 K) := by
-    rw [← hCard]
+  refine (Subgroup.orderOf_coe gs).trans
+    (Nat.dvd_antisymm ?_ ?_)
+  · rw [← hCard]
     exact orderOf_dvd_natCard gs
-  have hLower : Q.inertiaDeg (𝓞 K) ∣ orderOf gs := by
-    rw [← hImageOrder]
+  · rw [← hImageOrder]
     exact orderOf_map_dvd (Ideal.Quotient.stabilizerHom Q P G) gs
-  change orderOf g = Q.inertiaDeg (𝓞 K)
-  exact (Subgroup.orderOf_coe gs).trans
-    (Nat.dvd_antisymm hUpper hLower)
 
 end ClassFieldTheory
 

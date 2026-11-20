@@ -16,10 +16,10 @@ namespace DedekindZetaZeroFree.KPMsActualAngularTransitionSource
 open KPMsActualAngularSource KPMsActualCuspSource
 open KPMsResidualTailRestoration.SharpConstantTerm KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (S : SourceRecipe F ζ hζ R P H) (U : KPMsActualAngularSource.Level F ζ hζ)
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    (S : SourceRecipe F ζ hζ R P H) (U : KPMsActualAngularSource.Level F ζ hζ)
 
 theorem finiteProjection_centre (ε : rootsOfUnity 3 F) :
     KPCuspGenuineMonodromy.finiteProjection F ζ hζ
@@ -94,14 +94,17 @@ namespace DedekindZetaZeroFree.KPMsActualAngularDescentSource
 open KPMsActualAngularSource KPMsActualAngularDomainSource KPMsActualAngularTransitionSource
 open KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 section Radial
 variable (F ζ hζ)
-theorem radialSection_eq_diagonalLift (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
-    (r : KPMsFixedHaarDisintegration.Radius) :
+section
+
+variable (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ) (r : KPMsFixedHaarDisintegration.Radius)
+
+theorem radialSection_eq_diagonalLift :
     KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r =
       KPGlobalCenterRationalCharacter.diagonalLift F ζ hζ (B.ell r) := by
   unfold KPMsFixedHaarDisintegration.radialSection KPGlobalTorusFunctionData.archDiagonalLift
@@ -133,43 +136,46 @@ theorem radialSection_eq_diagonalLift (B : KPMsFixedHaarDisintegration.RadialDat
     rw [he]
     simp
 
-theorem radialSection_mem_center (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
-    (r : KPMsFixedHaarDisintegration.Radius) :
+theorem radialSection_mem_center :
     ∃ t : KPGlobalTorusFunctionData.Z F ζ hζ,
       t.val.val = KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r := by
-  let y : CubicCharacters.cubes (KPGlobalTorusFunctionData.Ideles F) :=
-    ⟨B.ell r, B.ell_cube r⟩
-  refine ⟨KPGlobalCenterRationalCharacter.cubeLift F ζ hζ y, ?_⟩
+  refine ⟨KPGlobalCenterRationalCharacter.cubeLift F ζ hζ (⟨B.ell r, B.ell_cube r⟩), ?_⟩
   rw [KPGlobalCenterRationalCharacter.cubeLift_formula, radialSection_eq_diagonalLift F ζ hζ]
 
-def framedNormOne (D : Iwasawa F ζ hζ) (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+end
+
+section
+
+variable (D : Iwasawa F ζ hζ) (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+
+def framedNormOne
     (σ g : G F ζ hζ) : NormOne F ζ hζ D :=
   ⟨framedNormalization F ζ hζ D B σ g,
     (framedNormalization_normOne_continuous F ζ hζ D B σ).1 g⟩
-def framedFullAngular (D : Iwasawa F ζ hζ) (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+def framedFullAngular
     (σ g : G F ζ hζ) : FullOmega F ζ hζ D := Quotient.mk _ (framedNormOne F ζ hζ D B σ g)
 
-theorem framedFullAngular_continuous (D : Iwasawa F ζ hζ)
-    (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ) (σ : G F ζ hζ) :
+theorem framedFullAngular_continuous (σ : G F ζ hζ) :
     Continuous (framedFullAngular F ζ hζ D B σ) :=
   continuous_quotient_mk'.comp
     ((framedNormalization_normOne_continuous F ζ hζ D B σ).2.subtype_mk _)
 
-theorem framedFullAngular_upper_transition (D : Iwasawa F ζ hζ) (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+theorem framedFullAngular_upper_transition
     (σ : G F ζ hζ) (g h : KPMsActualAngularSource.G F ζ hζ)
     (y : Fˣ) (x : KPGlobalTorusFunctionData.Adeles F)
     (hh : σ⁻¹ * h = (KPGlobalTorusFunctionData.s F ζ hζ y).val *
       KPGlobalTorusFunctionData.N F ζ hζ x * (σ⁻¹ * g)) :
     framedFullAngular F ζ hζ D B σ h = framedFullAngular F ζ hζ D B σ g := by
-  have hr : framedRadius F ζ hζ D σ h = framedRadius F ζ hζ D σ g := by
+  let framedRadius₀ := framedRadius F ζ hζ D σ
+  have hr : framedRadius₀ h = framedRadius₀ g := by
     apply Subtype.ext
-    exact congrArg (fun r : (ℝ≥0)ˣ => ((r : ℝ≥0) : ℝ))
+    exact congrArg (fun r : (ℝ≥0)ˣ => (r : ℝ))
         (by
           rw [hh]
           have hm := KPGlobalTorusBorelTwistCompatibility.iwasawaNorm_borel_mul
             F ζ hζ D (KPGlobalTorusFunctionData.s F ζ hζ y) x (σ⁻¹ * g)
           simpa only [KPGlobalTorusBorelNormTwistTransport.delta_rational, one_mul] using hm)
-  let r := framedRadius F ζ hζ D σ g
+  let r := framedRadius₀ g
   let t := KPGlobalTorusFunctionData.torusArchChart F ζ hζ
     (KPMsFixedHaarDisintegration.positiveSlots F B.slot r)
   have ht : t.val = KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r := rfl
@@ -187,7 +193,7 @@ theorem framedFullAngular_upper_transition (D : Iwasawa F ζ hζ) (B : KPMsFixed
   apply Relation.EqvGen.rel
   refine ⟨y, (KPGlobalTorusFunctionData.p F ζ hζ t⁻¹ : KPGlobalTorusFunctionData.Adeles F) * x, ?_⟩
   change (KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot
-    (framedRadius F ζ hζ D σ h))⁻¹ * (σ⁻¹ * h) = _
+    (framedRadius₀ h))⁻¹ * (σ⁻¹ * h) = _
   rw [hr, hh]
   change t.val⁻¹ * ((KPGlobalTorusFunctionData.s F ζ hζ y).val *
     KPGlobalTorusFunctionData.N F ζ hζ x * (σ⁻¹ * g)) =
@@ -197,6 +203,8 @@ theorem framedFullAngular_upper_transition (D : Iwasawa F ζ hζ) (B : KPMsFixed
   simp only [← mul_assoc]
   rw [hcc]
   group
+
+end
 theorem rational_upper_literal_factorization (g : KPCuspArithmetic.PGL2 F)
     (hg : KPCuspArithmetic.IsUpperTriangular F g) :
     ∃ (y : Fˣ) (x : KPGlobalTorusFunctionData.Adeles F),
@@ -206,10 +214,10 @@ theorem rational_upper_literal_factorization (g : KPCuspArithmetic.PGL2 F)
   have hdet := Matrix.GeneralLinearGroup.det_ne_zero M
   rw [Matrix.det_fin_two, hM, mul_zero, sub_zero] at hdet
   obtain ⟨ha, hd⟩ := mul_ne_zero_iff.mp hdet
-  let a : Fˣ := Units.mk0 ((M : Matrix (Fin 2) (Fin 2) F) 0 0) ha
-  let d : Fˣ := Units.mk0 ((M : Matrix (Fin 2) (Fin 2) F) 1 1) hd
-  let y : Fˣ := a / d
-  let b : F := (M : Matrix (Fin 2) (Fin 2) F) 0 1 / (a : F)
+  let a := Units.mk0 (M 0 0) ha
+  let d := Units.mk0 (M 1 1) hd
+  let y := a / d
+  let b := M 0 1 / (a : F)
   have heq : M = Matrix.GeneralLinearGroup.scalar (Fin 2) d *
       KubotaRankTwo.d F y 1 * KubotaRankTwo.n F b := by
     apply Units.ext
@@ -247,9 +255,7 @@ theorem full_quotient_eq_iff_rational_left (g h : G F ζ hζ) :
     ∃ γ : KPCuspArithmetic.PGL2 F, h = KPMsActualCuspSource.rationalLift F ζ hζ γ * g := by
   constructor
   · intro he
-    have hm : h * g⁻¹ ∈ KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ :=
-      QuotientGroup.rightRel_apply.mp (Quotient.exact he)
-    obtain ⟨γ, hγ⟩ := rationalSubgroup_exists_lift F ζ hζ _ hm
+    obtain ⟨γ, hγ⟩ := rationalSubgroup_exists_lift F ζ hζ _ (QuotientGroup.rightRel_apply.mp (Quotient.exact he))
     refine ⟨γ, ?_⟩
     rw [hγ]
     group
@@ -262,7 +268,7 @@ theorem full_quotient_eq_iff_rational_left (g h : G F ζ hζ) :
       exact ⟨KPRationalAdelicSplitting.rationalPGLQuotient F m,
         (KPRationalAdelicSplitting.rationalPGLHom_mk F ζ hζ m).trans
           (KPMsActualCuspSource.rationalLift_mk F ζ hζ m).symm⟩
-    simpa only [mul_assoc, mul_inv_cancel, mul_one] using hm
+    simpa using hm
 
 end CuspDescent
 end DedekindZetaZeroFree.KPMsActualAngularDescentSource

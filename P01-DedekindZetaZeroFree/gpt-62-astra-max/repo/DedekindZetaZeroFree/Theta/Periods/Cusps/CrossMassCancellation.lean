@@ -12,9 +12,9 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.CurrentBoundaryShapeTransport
 open KPMsActualAngularSource KPMsNativeOffsetMass KPMsNativeOffsetComparison
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable (M : NativeMeasuredSource F ζ hζ R P) (V : Level F ζ hζ)
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    (M : NativeMeasuredSource F ζ hζ R P) (V : Level F ζ hζ)
 
 theorem weighted_cross_cancel (φ : G F ζ hζ → ℂ)
     (dk : Measure (KPMsGreenFlux.K F)) :
@@ -25,23 +25,20 @@ theorem weighted_cross_cancel (φ : G F ζ hζ → ℂ)
         (nativeAtlas F ζ hζ R P (nativeRecipe F ζ hζ R P) V) ω.1).val) ∂dk
       ∂(nativeDisintegration F ζ hζ R P (nativeRecipe F ζ hζ R P) V).beta := by
   unfold weightedBeta
-  have hm : Measurable (fun ω : KPMsFixedHaarDisintegration.Omega
-      (nativeAtlas F ζ hζ R P (nativeRecipe F ζ hζ R P) V) =>
-      ENNReal.ofReal (cuspOffset F ζ hζ R P (nativeRecipe F ζ hζ R P) V ω.1).val) :=
-    KPMsActualNativeWeightedShapeMeasure.cuspDensity_measurable
-      (nativeAtlas F ζ hζ R P (nativeRecipe F ζ hζ R P) V)
-      (fun j => ENNReal.ofReal (cuspOffset F ζ hζ R P (nativeRecipe F ζ hζ R P) V j).val)
-  rw [integral_withDensity_eq_integral_toReal_smul hm
+  let cuspOffset₀ := cuspOffset F ζ hζ R P (nativeRecipe F ζ hζ R P) V
+  rw [integral_withDensity_eq_integral_toReal_smul (KPMsActualNativeWeightedShapeMeasure.cuspDensity_measurable
+    (nativeAtlas F ζ hζ R P (nativeRecipe F ζ hζ R P) V)
+    (fun j => ENNReal.ofReal (cuspOffset₀ j).val))
     (Filter.Eventually.of_forall (fun _ => ENNReal.ofReal_lt_top))]
   apply integral_congr_ae
   filter_upwards [] with ω
   simp only [crossTest,integral_const_mul,
-    ENNReal.toReal_ofReal (cuspOffset F ζ hζ R P (nativeRecipe F ζ hζ R P) V ω.1).property.le,
+    ENNReal.toReal_ofReal (cuspOffset₀ ω.1).property.le,
     RCLike.real_smul_eq_coe_mul,← mul_assoc]
-  change (((cuspOffset F ζ hζ R P (nativeRecipe F ζ hζ R P) V ω.1).val:ℂ) *
-    ((cuspOffset F ζ hζ R P (nativeRecipe F ζ hζ R P) V ω.1).val:ℂ)⁻¹) * _ = _
-  rw [mul_inv_cancel₀ (show ((cuspOffset F ζ hζ R P (nativeRecipe F ζ hζ R P) V ω.1).val:ℂ) ≠ 0 by
-    exact_mod_cast (cuspOffset F ζ hζ R P (nativeRecipe F ζ hζ R P) V ω.1).property.ne'),one_mul]
+  change (((cuspOffset₀ ω.1).val:ℂ) *
+    ((cuspOffset₀ ω.1).val:ℂ)⁻¹) * _ = _
+  rw [mul_inv_cancel₀ (show ((cuspOffset₀ ω.1).val:ℂ) ≠ 0 by
+    exact_mod_cast (cuspOffset₀ ω.1).property.ne'),one_mul]
 
 theorem full_mass_cross_cancel (φ : G F ζ hζ → ℂ) (hφ : Continuous φ)
     (dk : Measure (KPMsGreenFlux.K F)) [IsFiniteMeasure dk] :

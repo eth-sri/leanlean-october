@@ -11,9 +11,9 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η}
-variable {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η}
+    {Q : AdmissibleFlatSources R}
 
 theorem theta_orbit_continuous (T : Realization R Q) (v : R.A.UnitQuotient)
     (g : Group R) :
@@ -44,10 +44,10 @@ theorem sameResidue_orbit_continuous (T : Realization R Q) {f : Functions R}
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover
       F R.A.zeta12 R.A.primitive_zeta12).2.2.1
   apply (QuotientAddGroup.isOpenQuotientMap_mk
-    (N := AdeleRing.principalSubgroup (𝓞 F) F)).continuous_comp_iff.mp
+    ).continuous_comp_iff.mp
   convert hf.2.1.comp
     ((KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous
-      F R.A.zeta12 R.A.primitive_zeta12).mul (continuous_const (y := g))) using 1
+      F R.A.zeta12 R.A.primitive_zeta12).mul (continuous_const)) using 1
   funext a
   obtain ⟨r, he⟩ := QuotientAddGroup.mk_out_eq_add
     (AdeleRing.principalSubgroup (𝓞 F) F) a
@@ -79,9 +79,9 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η}
-variable {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η}
+    {Q : AdmissibleFlatSources R}
 
 def translateSpan (T : Realization R Q) : Submodule ℂ (Functions R) :=
   Submodule.span ℂ {f : Functions R | ∃ v a,
@@ -110,14 +110,6 @@ theorem translateSpan_period_integrable (T : Realization R Q) {f : Functions R}
   exact ((translateSpan_orbit_continuous T hf g).mul trace_weight_continuous).integrable_of_hasCompactSupport
     (HasCompactSupport.of_compactSpace _)
 
-def orbit (T : Realization R Q) (g : Group R) :
-    translateSpan T →ₗ[ℂ] C(KPAdditiveQuotient F, ℂ) where
-  toFun f := ⟨fun q => f.val
-    (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g),
-    translateSpan_orbit_continuous T f.property g⟩
-  map_add' := by intros; rfl
-  map_smul' := by intros; rfl
-
 def period (T : Realization R Q) (g : Group R) : translateSpan T →ₗ[ℂ] ℂ where
   toFun f := MomentSources.fourier R Q.dq f.val g
   map_add' f h := by
@@ -145,12 +137,8 @@ theorem fourier_cleared_continuousOn (T : Realization R Q) (v : R.A.UnitQuotient
       (Metric.ball (0 : ℂ) T.radius) := by
   letI : IsProbabilityMeasure Q.dq := ⟨Q.probability⟩
   rw [continuousOn_iff_continuous_restrict]
-  change Continuous (fun s : Metric.ball (0 : ℂ) T.radius => ∫ q : KPAdditiveQuotient F,
-    T.cleared v s.val
-      (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g) *
-        star (adelicTraceQuotientCharacter F q : ℂ) ∂Q.dq)
   apply continuousOn_univ.mp
-  apply continuousOn_integral_of_compact_support (k := Set.univ) isCompact_univ
+  apply continuousOn_integral_of_compact_support isCompact_univ
   · exact ((CompactPeriodAnalyticity.CompactPeriod.cleared_quotient_joint_continuous T v g).mul
       (trace_weight_continuous.comp continuous_snd)).continuousOn
   · intro p q hp hq

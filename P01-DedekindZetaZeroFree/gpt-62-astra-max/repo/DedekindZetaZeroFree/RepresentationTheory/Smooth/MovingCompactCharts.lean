@@ -26,7 +26,6 @@ private theorem continuous_chartMatrix :
           Matrix (Fin 2) (Fin 2) ℂ) i j) := by
       funext x
       rw [chartMatrix_val x.val x.property]
-    change Continuous (fun x : {x : Fin 3 → ℂ // x 1 ≠ 0} => (chartMatrix x.val).val i j)
     rw [he]
     fin_cases i <;> fin_cases j <;> simp
     · exact (hc 1).add ((hc 0).mul (hc 2))
@@ -35,13 +34,11 @@ private theorem continuous_chartMatrix :
     · exact continuous_const
   apply Units.continuous_iff.mpr
   refine ⟨hval, ?_⟩
-  change Continuous (fun x : {x : Fin 3 → ℂ // x 1 ≠ 0} => ((chartMatrix x.val)⁻¹).val)
   simp_rw [Matrix.GeneralLinearGroup.coe_inv]
   rw [continuous_iff_continuousAt]
   intro x
   apply (continuousAt_matrix_inv _ ?_).comp hval.continuousAt
-  have he : (Ring.inverse : ℂ → ℂ) = Inv.inv := funext Ring.inverse_eq_inv
-  rw [he]
+  rw [(funext Ring.inverse_eq_inv)]
   exact continuousAt_inv₀ (Matrix.GeneralLinearGroup.det_ne_zero (chartMatrix x.val))
 
 theorem archChart_continuousOn

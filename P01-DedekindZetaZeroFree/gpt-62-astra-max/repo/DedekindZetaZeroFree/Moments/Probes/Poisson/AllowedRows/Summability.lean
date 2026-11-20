@@ -13,8 +13,8 @@ open DedekindZetaZeroFree NumberField
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def nonprincipalDyad (k : ℕ) : Set D.Row :=
   {u | u.u ≠ 1} ∩ PoissonKernel.dyadRows D ((2 : ℝ) ^ k)
@@ -66,11 +66,11 @@ theorem nonprincipalSum_bound :
   obtain ⟨A_F, ρ, hA, hconv, hρ⟩ := DetectorHeight.detector_height_exists D
   have hρpos : 0 < ρ := hρ.1
   obtain ⟨Cs, hCs, hS⟩ := RowsSmall.rows_small D (1 / 10000) (by norm_num)
-  obtain ⟨Ce, hCe, Ze, hZe, hE⟩ :=
+  obtain ⟨Ce, hCe, Ze, hE⟩ :=
     RowsExceptional.rows_exceptional D A_F ρ hA hconv hρ (1 / 10000) (by norm_num)
-  obtain ⟨Cg, hCg, Zg, hZg, hG⟩ :=
+  obtain ⟨Cg, hCg, Zg, hG⟩ :=
     RowsGoodCentral.rows_good_central D A_F ρ hA hconv hρ (1 / 10000) (by norm_num)
-  obtain ⟨Ch, hCh, Zh, hZh, hH⟩ :=
+  obtain ⟨Ch, hCh, Zh, hH⟩ :=
     RowsHeightErrors.rows_height_errors D A_F ρ hA hconv hρ (10 / ρ + 1) (by linarith)
   obtain ⟨Cl, hCl, hL⟩ := RowsLarge.rows_large D (1 / 10000) (by norm_num)
   obtain ⟨U₀, hU₀, hsplit⟩ := RowDyadDecomposition.good_dyad_split D A_F ρ hA hconv hρ
@@ -109,7 +109,7 @@ theorem nonprincipalSum_bound :
             RowsHeightErrors.heightErrors D ρ ((2 : ℝ) ^ k) Z := by
       rw [← Finset.sum_add_distrib]
       exact Finset.sum_congr rfl fun k hk => hsplit _ Z (hU k hk) hZ
-    obtain ⟨_, heq⟩ := RowDyadDecomposition.dyad_five_piece D ρ Z hZ
+    have heq := RowDyadDecomposition.dyad_five_piece D ρ Z hZ
     have hns : nonprincipalSum D Z = ∑' k : ℕ,
         PoissonKernel.J D (PoissonKernel.dyadRows D ((2 : ℝ) ^ k) \ PoissonKernel.principalRows D)
           4 4 2 Z := by

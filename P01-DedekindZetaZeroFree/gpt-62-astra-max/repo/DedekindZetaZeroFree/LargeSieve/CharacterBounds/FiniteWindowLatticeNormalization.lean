@@ -13,7 +13,9 @@ noncomputable section
 open NumberField IsDedekindDomain Topology
 open scoped Classical FourierTransform nonZeroDivisors
 
- theorem arch_pairing_complex (F : Type) [Field F] [NumberField F]
+ variable (F : Type) [Field F] [NumberField F]
+
+theorem arch_pairing_complex
     [IsTotallyComplex F] (x y : InfiniteAdeleRing F) :
     PoissonArch.tracePairing F (PoissonArch.infiniteAdeleToSpace F x)
       (PoissonArch.infiniteAdeleToSpace F y) =
@@ -34,7 +36,7 @@ open scoped Classical FourierTransform nonZeroDivisors
   simp only [map_mul]
   rfl
 
- theorem trace_modulation_of_shifts (F : Type) [Field F] [NumberField F]
+ theorem trace_modulation_of_shifts
     [IsTotallyComplex F] (S : Finset (HeightOneSpectrum (𝓞 F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (χ : SLocalProduct F S → ℂ)
@@ -99,7 +101,7 @@ open scoped Classical FourierTransform nonZeroDivisors
   congr 1
   ring
 
-theorem finite_window_phase_representatives (F : Type) [Field F] [NumberField F]
+theorem finite_window_phase_representatives
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (he : ∀ v, Continuous (e v)) (k : S → ℤ) :
@@ -148,7 +150,7 @@ theorem finite_window_phase_representatives (F : Type) [Field F] [NumberField F]
     · simp
   exact Circle.coe_injective (by simpa using hh)
 
-theorem finite_window_lattice_equiv (F : Type) [Field F] [NumberField F]
+theorem finite_window_lattice_equiv
     (S : Finset (HeightOneSpectrum (𝓞 F))) (k : S → ℤ) :
     ∃ E : {m : ProbeSeparation.Integers F S //
       (sLocalDiagonal F S (m : F)).2 ∈ PoissonS.finiteBall F S k} ≃
@@ -166,9 +168,9 @@ theorem finite_window_lattice_equiv (F : Type) [Field F] [NumberField F]
       (sLocalDiagonal F S (m : F)).2 ∈ PoissonS.finiteBall F S k ↔
         (m : F) ∈ PoissonS.ballFractionalIdeal F S k :=
     PoissonS.ScaleShift.finiteBall_diagonal_mem F S k m
-  let I : PoissonArch.NonzeroFractionalIdeal F :=
+  let I :=
     Units.mk0 (PoissonS.ballFractionalIdeal F S k) (PoissonS.ballFractionalIdeal_ne_zero F S k)
-  have hlat : PoissonS.ballArchLattice F S k = PoissonArch.idealLattice F I :=
+  have hlat :=
     PoissonS.ballArchLattice_eq F S k
   let f : {m : ProbeSeparation.Integers F S //
       (sLocalDiagonal F S (m : F)).2 ∈ PoissonS.finiteBall F S k} →
@@ -182,14 +184,12 @@ theorem finite_window_lattice_equiv (F : Type) [Field F] [NumberField F]
       apply Subtype.ext
       apply Subtype.ext
       apply mixedEmbedding_injective F
-      have h' := congrArg (fun y : PoissonS.ballArchLattice F S k =>
-        mixedEmbedding.euclidean.toMixed F (y : PoissonArch.Space F)) h
-      simpa [f, PoissonArch.minkowskiEmbedding] using h'
+      simpa [f, PoissonArch.minkowskiEmbedding] using (congrArg (fun y : PoissonS.ballArchLattice F S k =>
+        mixedEmbedding.euclidean.toMixed F y) h)
     · intro y
-      have hy : (y : PoissonArch.Space F) ∈ PoissonArch.idealLattice F I := by
+      obtain ⟨a, ha, he⟩ := (PoissonArch.mem_idealLattice F I _).mp (by
         rw [← hlat]
-        exact y.property
-      obtain ⟨a, ha, he⟩ := (PoissonArch.mem_idealLattice F I _).mp hy
+        exact y.property)
       let m : ProbeSeparation.Integers F S :=
         ⟨a, PoissonS.ScaleShift.ballFractionalIdeal_le_sIntegers F S k ha⟩
       exact ⟨⟨m, (hmem m).mpr ha⟩, Subtype.ext he⟩
@@ -198,7 +198,6 @@ theorem finite_window_lattice_equiv (F : Type) [Field F] [NumberField F]
   exact (hcoord _).symm
 
 theorem finite_window_lattice_normalization
-    (F : Type) [Field F] [NumberField F]
     (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12)
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)

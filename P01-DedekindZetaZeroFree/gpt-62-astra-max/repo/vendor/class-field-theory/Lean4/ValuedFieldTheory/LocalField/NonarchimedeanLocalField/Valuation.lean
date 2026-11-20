@@ -11,8 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 /-!
 # Integer-valued valuations
 
@@ -39,11 +37,11 @@ theorem valuation_integer_membership
     x ∈ 𝒪[K] ↔ ValuativeRel.valuation K x ≤ 1 :=
   (Valuation.mem_integer_iff (ValuativeRel.valuation K) x).symm
 
+variable (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+
 /-- The normalized integer valuation, packaged as the
 `MultiplicativeIntegerValuation` used by the value-group layer. -/
-def multiplicativeIntegerValuation
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] :
+def multiplicativeIntegerValuation :
     MultiplicativeIntegerValuation Kˣ where
   val x := LocalFieldTheory.IsNonarchimedeanLocalField.v K (Additive.ofMul x)
   map_one := by
@@ -53,28 +51,22 @@ def multiplicativeIntegerValuation
 
 /-- The multiplicative integer valuation records the additive integer exponent of the original
 valuation. -/
-@[simp] theorem multiplicativeIntegerValuation_val
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (x : Kˣ) :
+@[simp] theorem multiplicativeIntegerValuation_val (x : Kˣ) :
     (multiplicativeIntegerValuation K).val x =
       LocalFieldTheory.IsNonarchimedeanLocalField.v K (Additive.ofMul x) :=
   rfl
 
 /-- The normalized integer valuation is onto `ℤ`. -/
-theorem multiplicativeIntegerValuation_surjective
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] :
+theorem multiplicativeIntegerValuation_surjective :
     Function.Surjective (multiplicativeIntegerValuation K).val := by
   intro n
   rcases LocalFieldTheory.IsNonarchimedeanLocalField.v_surjective K n with ⟨x, hx⟩
   refine ⟨Additive.toMul x, ?_⟩
-  simpa [multiplicativeIntegerValuation] using hx
+  exact hx
 
 /-- A nonarchimedean local field has a multiplicative element of normalized value one
 for the value-group API. -/
-theorem multiplicativeIntegerValuation_exists_uniformizer
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] :
+theorem multiplicativeIntegerValuation_exists_uniformizer :
     ∃ ϖ : Kˣ, (multiplicativeIntegerValuation K).IsUniformizer ϖ :=
   (multiplicativeIntegerValuation K).exists_uniformizer_of_surjective
     (multiplicativeIntegerValuation_surjective K)

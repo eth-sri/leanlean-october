@@ -14,19 +14,19 @@ namespace DedekindZetaZeroFree.KPContActualChamberDomainEquations
 open KPContActualChamberThreeL2Tails
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
-variable (hR : R.adelicHaar = μG)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
+    (hR : R.adelicHaar = μG)
 variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ
   (level F ζ hζ C R P H U) R P H)
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable (hι : Function.Injective ι) (f : ℂ → S)
-variable (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (hι : Function.Injective ι) (f : ℂ → S)
+    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
 variable {T : ℝ} (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (level F ζ hζ C R P H U) R P H T)
 variable (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
@@ -44,18 +44,6 @@ structure Properties
     (r : KPContActualSectorCutoffGraphLimit.Cutoffs
       (U := level F ζ hζ C R P H U) (H := H)) : Prop where
   mem_domain : ∀ (k : ℕ) (s : ℂ), s ∈ V → u k s ∈ (Δ).domain
-
-  local_action : ∀ (k : ℕ) (s : ℂ) (hs : s ∈ V),
-    (Δ) ⟨u k s, mem_domain k s hs⟩ = dloc k s
-  equation : ∀ (k : ℕ) (s : ℂ) (hs : s ∈ V),
-    (Δ) ⟨u k s, mem_domain k s hs⟩ -
-      KPContActualChamberCasimirJets.lambda F s • u k s =
-    -h k s + ∑ j ∈ Finset.Icc 1 (min k 2),
-      ((Nat.choose k j : ℂ) * KPContActualChamberCasimirJets.lambdaJet F j s) • u (k-j) s
-
-  uniform_bounds : ∀ (L : Set ℂ), IsCompact L → ∀ (hL : L ⊆ V) (k : ℕ),
-    ∃ B : ℝ, 0 ≤ B ∧ ∀ (s : ℂ) (hs : s ∈ L),
-      ‖u k s‖ ≤ B ∧ ‖u k s‖ + ‖(Δ) ⟨u k s, mem_domain k s (hL hs)⟩‖ ≤ B
 
   uniform_graph_limit : ∀ (L : Set ℂ), IsCompact L → ∀ (hL : L ⊆ V) (k : ℕ),
     ∀ ε : ℝ, 0 < ε → ∃ N : ℕ, ∀ n : ℕ, N ≤ n → ∀ (s : ℂ) (hs : s ∈ L),
@@ -78,53 +66,61 @@ structure Properties
     (U := level F ζ hζ C R P H U) (H := H)
 
    def gs (k : ℕ) (s : ℂ) (hs : s ∈ V) : GS F ζ hζ C R P H U :=
-    ⟨smoothG F ζ hζ C R P H U ι f buffer χ source hι hf k s, by
-       exact (integrability F ζ hζ C R P H U ι f buffer χ source hι hf k s).1.2,
-     by exact (integrability F ζ hζ C R P H U ι f buffer χ source hι hf k s).2.2.2,
-     by exact (integrability F ζ hζ C R P H U ι f buffer χ source hι hf k s).2.2.1.2⟩
+    ⟨smoothG F ζ hζ C R P H U ι f buffer χ source hι hf k s, (integrability F ζ hζ C R P H U ι f buffer χ source hι hf k s).1.2,
+     (integrability F ζ hζ C R P H U ι f buffer χ source hι hf k s).2.2.2,
+     (integrability F ζ hζ C R P H U ι f buffer χ source hι hf k s).2.2.1.2⟩
 
-  private lemma sectionClass_gs (k : ℕ) (s : ℂ) (hs : s ∈ V) :
+  section
+
+variable (k : ℕ) (s : ℂ) (hs : s ∈ V)
+
+private lemma sectionClass_gs :
       KPContActualSectorCutoffGraphLimit.sectionClass
         (U := level F ζ hζ C R P H U) (H := H)
         (gs F ζ hζ C R P H U ι hι f hf buffer χ source k s hs) = u k s := rfl
 
-  private lemma laplacianClass_gs (k : ℕ) (s : ℂ) (hs : s ∈ V) :
+  private lemma laplacianClass_gs :
       KPContActualSectorCutoffGraphLimit.laplacianClass
         (U := level F ζ hζ C R P H U) (H := H)
         (gs F ζ hζ C R P H U ι hι f hf buffer χ source k s hs) = dloc k s := rfl
 
-  private lemma toSector_ofReal_norm_sq
+end
+
+  local notation "cuspLevel" => level F ζ hζ C R P H U
+
+private lemma toSector_ofReal_norm_sq
       (x : KPContSectorLineL2Isometry.BorelL2Sections F ζ hζ
-        (level F ζ hζ C R P H U) R P H) :
+        cuspLevel R P H) :
       ENNReal.ofReal (‖KPContSectorLineL2Isometry.toSector F ζ hζ
-        (level F ζ hζ C R P H U) R P H x‖ ^ 2) =
+        cuspLevel R P H x‖ ^ 2) =
         KPContSectorLineL2Isometry.normIntegral F ζ hζ
-          (level F ζ hζ C R P H U) R P H x.val := by
+          cuspLevel R P H x.val := by
+    let level₀ := cuspLevel
     have h2 : (KPContSectorLineL2Isometry.sectorLineIsometry F ζ hζ
-        (level F ζ hζ C R P H U) R P H)
+        (level₀) R P H)
         (KPContSectorLineL2Isometry.toSector F ζ hζ
-          (level F ζ hζ C R P H U) R P H x) =
-        KPContSectorLineL2Isometry.mk F ζ hζ (level F ζ hζ C R P H U) R P H x := by
+          (level₀) R P H x) =
+        KPContSectorLineL2Isometry.mk F ζ hζ (level₀) R P H x := by
       have hline : KPContSectorLineL2Isometry.lineToSector F ζ hζ
-          (level F ζ hζ C R P H U) R P H
-          (KPContSectorLineL2Isometry.mk F ζ hζ (level F ζ hζ C R P H U) R P H x) =
+          (level₀) R P H
+          (KPContSectorLineL2Isometry.mk F ζ hζ (level₀) R P H x) =
           KPContSectorLineL2Isometry.toSector F ζ hζ
-            (level F ζ hζ C R P H U) R P H x := rfl
+            (level₀) R P H x := rfl
       rw [← hline]
       exact LinearEquiv.symm_apply_apply _ _
     have hnorm : ‖KPContSectorLineL2Isometry.toSector F ζ hζ
-        (level F ζ hζ C R P H U) R P H x‖ =
-        ‖KPContSectorLineL2Isometry.mk F ζ hζ (level F ζ hζ C R P H U) R P H x‖ := by
+        (level₀) R P H x‖ =
+        ‖KPContSectorLineL2Isometry.mk F ζ hζ (level₀) R P H x‖ := by
       rw [← h2]
       exact (LinearIsometryEquiv.norm_map _ _).symm
     rw [hnorm]
-    exact KPContSectorLineL2Isometry.ofReal_norm_sq F ζ hζ (level F ζ hζ C R P H U) R P H x
+    exact KPContSectorLineL2Isometry.ofReal_norm_sq F ζ hζ (level₀) R P H x
 
   private lemma UJet_ofReal_norm_sq (k : ℕ) (s : ℂ) :
       ENNReal.ofReal (‖u k s‖ ^ 2) =
         squareIntegral F ζ hζ C R P H U ι f buffer χ source hι hf 0 k s := by
     rw [show u k s = KPContSectorLineL2Isometry.toSector F ζ hζ
-        (level F ζ hζ C R P H U) R P H
+        cuspLevel R P H
         (borelG F ζ hζ C R P H U ι f buffer χ source hι hf k s) from rfl]
     rw [toSector_ofReal_norm_sq]
     simp [squareIntegral, squaredDensity, baseMeasure, KPContSectorLineL2Isometry.normIntegral,
@@ -134,7 +130,7 @@ structure Properties
       ENNReal.ofReal (‖dloc k s‖ ^ 2) =
         squareIntegral F ζ hζ C R P H U ι f buffer χ source hι hf 2 k s := by
     rw [show dloc k s = KPContSectorLineL2Isometry.toSector F ζ hζ
-        (level F ζ hζ C R P H U) R P H
+        cuspLevel R P H
         (borelDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s) from rfl]
     rw [toSector_ofReal_norm_sq]
     simp [squareIntegral, squaredDensity, baseMeasure, KPContSectorLineL2Isometry.normIntegral,
@@ -147,15 +143,16 @@ structure Properties
         (level F ζ hζ C R P H U) R P H μG hμG hR realization r)
       (k : ℕ) (s : ℂ) (hs : s ∈ V) :
       ∃ hw : u k s ∈ (Δ).domain, (Δ) ⟨u k s, hw⟩ = dloc k s := by
+    let gs₀ := gs F ζ hζ C R P H U ι hι f hf buffer χ source k s hs
     obtain ⟨hw, hact⟩ := hr.closed_graph_consequence
-      (gs F ζ hζ C R P H U ι hι f hf buffer χ source k s hs)
+      (gs₀)
     refine ⟨sectionClass_gs F ζ hζ C R P H U ι hι f hf buffer χ source k s hs ▸ hw, ?_⟩
-    calc (Δ) ⟨u k s, _⟩
+    calc _
         = (Δ) ⟨KPContActualSectorCutoffGraphLimit.sectionClass
-              (gs F ζ hζ C R P H U ι hι f hf buffer χ source k s hs), hw⟩ := by
+              (gs₀), hw⟩ := by
           congr 1
       _ = KPContActualSectorCutoffGraphLimit.laplacianClass
-            (gs F ζ hζ C R P H U ι hι f hf buffer χ source k s hs) := hact
+            (gs₀) := hact
       _ = dloc k s :=
           laplacianClass_gs F ζ hζ C R P H U ι hι f hf buffer χ source k s hs
 
@@ -173,31 +170,25 @@ structure Properties
       obtain ⟨_hA, hAll⟩ := hA'
       refine ⟨Nat.ceil A, ?_⟩
       intro n hn i
-      have hAn : A ≤ (n : ℝ) := le_trans (Nat.le_ceil A) (by exact_mod_cast hn)
-      have hsq := hAll (n : ℝ) hAn (0 : Fin 3) i.1.1 i.1.2
       refine lt_of_le_of_lt ?_
         ((ENNReal.ofReal_lt_ofReal_iff (p := ε / 2) (q := ε) (by positivity : (0 : ℝ) < ε)).mpr (by linarith))
-      exact hsq
+      exact hAll (n : ℝ) (le_trans (Nat.le_ceil A) (by exact_mod_cast hn)) (0 : Fin 3) i.1.1 i.1.2
     · intro ε hε
       obtain ⟨A, hA'⟩ := htail.uniform_tails L hL hLsub k (ε / 2) (by positivity)
       obtain ⟨_hA, hAll⟩ := hA'
       refine ⟨Nat.ceil A, ?_⟩
       intro n hn i
-      have hAn : A ≤ (n : ℝ) := le_trans (Nat.le_ceil A) (by exact_mod_cast hn)
-      have hsq := hAll (n : ℝ) hAn (1 : Fin 3) i.1.1 i.1.2
       refine lt_of_le_of_lt ?_
         ((ENNReal.ofReal_lt_ofReal_iff (p := ε / 2) (q := ε) (by positivity : (0 : ℝ) < ε)).mpr (by linarith))
-      exact hsq
+      exact hAll (n : ℝ) (le_trans (Nat.le_ceil A) (by exact_mod_cast hn)) (1 : Fin 3) i.1.1 i.1.2
     · intro ε hε
       obtain ⟨A, hA'⟩ := htail.uniform_tails L hL hLsub k (ε / 2) (by positivity)
       obtain ⟨_hA, hAll⟩ := hA'
       refine ⟨Nat.ceil A, ?_⟩
       intro n hn i
-      have hAn : A ≤ (n : ℝ) := le_trans (Nat.le_ceil A) (by exact_mod_cast hn)
-      have hsq := hAll (n : ℝ) hAn (2 : Fin 3) i.1.1 i.1.2
       refine lt_of_le_of_lt ?_
         ((ENNReal.ofReal_lt_ofReal_iff (p := ε / 2) (q := ε) (by positivity : (0 : ℝ) < ε)).mpr (by linarith))
-      exact hsq
+      exact hAll (n : ℝ) (le_trans (Nat.le_ceil A) (by exact_mod_cast hn)) (2 : Fin 3) i.1.1 i.1.2
 
   private lemma main_assembly
       (htail : KPContActualChamberThreeL2Tails.Properties F ζ hζ C R P H U
@@ -224,23 +215,6 @@ structure Properties
       intro k s hs
       rw [hactfun k s hs, htail.differential_rhs_class k s hs]
       abel
-    have hboundfun : ∀ (L : Set ℂ), IsCompact L → ∀ (hL : L ⊆ V) (k : ℕ),
-        ∃ B : ℝ, 0 ≤ B ∧ ∀ (s : ℂ) (hs : s ∈ L),
-          ‖u k s‖ ≤ B ∧ ‖u k s‖ + ‖(Δ) ⟨u k s, hmemfun k s (hL hs)⟩‖ ≤ B := by
-      intro L hL hLsub k
-      obtain ⟨B, hB0, hB⟩ := htail.uniform_bounds L hL hLsub k
-      refine ⟨2 * Real.sqrt B + 1, by positivity, ?_⟩
-      intro s hs
-      have h0 := hB 0 s hs
-      have h2 := hB 2 s hs
-      rw [← UJet_ofReal_norm_sq F ζ hζ C R P H U ι hι f hf buffer χ source k s] at h0
-      rw [← DeltaJet_ofReal_norm_sq F ζ hζ C R P H U ι hι f hf buffer χ source k s] at h2
-      have hs0 : ‖u k s‖ ^ 2 ≤ B := (ENNReal.ofReal_le_ofReal_iff hB0).mp h0
-      have hs2 : ‖dloc k s‖ ^ 2 ≤ B := (ENNReal.ofReal_le_ofReal_iff hB0).mp h2
-      have hn0 : ‖u k s‖ ≤ Real.sqrt B := Real.le_sqrt_of_sq_le hs0
-      have hn2 : ‖dloc k s‖ ≤ Real.sqrt B := Real.le_sqrt_of_sq_le hs2
-      rw [hactfun k s (hLsub hs)]
-      exact ⟨by linarith [Real.sqrt_nonneg B], by linarith [Real.sqrt_nonneg B]⟩
     have hgraphfun : ∀ (L : Set ℂ), IsCompact L → ∀ (hL : L ⊆ V) (k : ℕ),
         ∀ ε : ℝ, 0 < ε → ∃ N : ℕ, ∀ n : ℕ, N ≤ n → ∀ (s : ℂ) (hs : s ∈ L),
           dist (KPContActualSectorCutoffGraphLimit.graphPair μG hμG hR realization r n (w k s))
@@ -297,7 +271,7 @@ structure Properties
           simp [KPContActualChamberThreeL2Tails.h, iteratedDerivWithin_zero]
         rw [← hh']
         exact hh.2.1
-    exact ⟨hmemfun, hactfun, heqfun, hboundfun, hgraphfun, hzerofun, hzerorepfun⟩
+    exact ⟨hmemfun, hgraphfun, hzerofun, hzerorepfun⟩
 
 end DedekindZetaZeroFree.KPContActualChamberDomainEquations
 
@@ -329,10 +303,9 @@ theorem kp_cont_actual_chamber_domain_equations
         (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H μG hμG hR realization r ∧
       KPContActualChamberDomainEquations.Properties F ζ hζ C R P H U μG hμG hR realization
         ι hι f hf buffer χ source r := by
-  have htail := kp_cont_actual_chamber_three_l2_tails F ζ hζ C R P H U realization
-    ι hι f hf buffer χ source
   exact KPContActualChamberDomainEquations.main_assembly F ζ hζ C R P H U μG hμG hR
-    realization ι hι f hf buffer χ source htail
+    realization ι hι f hf buffer χ source (kp_cont_actual_chamber_three_l2_tails F ζ hζ C R P H U realization
+      ι hι f hf buffer χ source)
 
 end DedekindZetaZeroFree
 

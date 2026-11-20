@@ -10,68 +10,42 @@ namespace DedekindZetaZeroFree.ThetaRationalFourierSummation
 open NumberField IsDedekindDomain MeasureTheory
 open scoped NumberField Classical
 
-def freq (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F)) (ν : F) (q : KPAdditiveQuotient F) : ℂ :=
+section
+
+variable (F : Type) [Field F] [NumberField F] (ψ : ContinuousAddChar (KPAdditiveQuotient F))
+
+def freq (ν : F) (q : KPAdditiveQuotient F) : ℂ :=
   ψ.toAddChar (QuotientAddGroup.mk (-(algebraMap F (KPAdeles F) ν * Quotient.out q)))
 
-private theorem freq_mk (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F)) (ν : F) (x : KPAdeles F) :
+private theorem freq_mk (ν : F) (x : KPAdeles F) :
     freq F ψ ν (QuotientAddGroup.mk x) =
-      ψ.toAddChar (QuotientAddGroup.mk (-(algebraMap F (KPAdeles F) ν * x))) := by
-  unfold freq
-  obtain ⟨r, hr⟩ := QuotientAddGroup.mk_out_eq_add
-    (NumberField.AdeleRing.principalSubgroup (𝓞 F) F) x
-  obtain ⟨s, hs⟩ := r.property
-  rw [hr]
-  apply congrArg ψ.toAddChar
-  apply QuotientAddGroup.eq.mpr
-  refine ⟨ν * s, ?_⟩
-  rw [map_mul, hs]
-  ring
+      ψ.toAddChar (QuotientAddGroup.mk (-(algebraMap F (KPAdeles F) ν * x))) := by apply @rationalFrequency_mk <;> assumption
 
-private theorem freq_add (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F)) (ν : F) (q r : KPAdditiveQuotient F) :
-    freq F ψ ν (q + r) = freq F ψ ν q * freq F ψ ν r := by
-  obtain ⟨x, rfl⟩ := QuotientAddGroup.mk_surjective q
-  obtain ⟨y, rfl⟩ := QuotientAddGroup.mk_surjective r
-  rw [← QuotientAddGroup.mk_add, freq_mk, freq_mk, freq_mk, mul_add, neg_add,
-    QuotientAddGroup.mk_add, ψ.toAddChar.map_add_eq_mul]
+private theorem freq_add (ν : F) (q r : KPAdditiveQuotient F) :
+    freq F ψ ν (q + r) = freq F ψ ν q * freq F ψ ν r := by apply @rationalFrequency_add <;> assumption
 
-private theorem freq_zero_scalar (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F)) (q : KPAdditiveQuotient F) :
+private theorem freq_zero_scalar (q : KPAdditiveQuotient F) :
     freq F ψ 0 q = 1 := by
   obtain ⟨x, rfl⟩ := QuotientAddGroup.mk_surjective q
   simp only [freq_mk, map_zero, zero_mul, neg_zero, QuotientAddGroup.mk_zero,
     ψ.toAddChar.map_zero_eq_one]
 
-private theorem freq_zero (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F)) (ν : F) : freq F ψ ν 0 = 1 := by
-  simpa only [mul_zero, neg_zero, QuotientAddGroup.mk_zero,
-    ψ.toAddChar.map_zero_eq_one] using
+private theorem freq_zero (ν : F) : freq F ψ ν 0 = 1 := by
+  simpa using
     freq_mk F ψ ν (0 : KPAdeles F)
 
-private theorem norm_freq (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F)) (ν : F) (q : KPAdditiveQuotient F) :
+private theorem norm_freq (ν : F) (q : KPAdditiveQuotient F) :
     ‖freq F ψ ν q‖ = 1 := ψ.unitary _
 
-private theorem freq_continuous (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F)) (ν : F) : Continuous (freq F ψ ν) := by
-  apply (QuotientAddGroup.isQuotientMap_mk
-    (NumberField.AdeleRing.principalSubgroup (𝓞 F) F)).continuous_iff.mpr
-  change Continuous (fun x : KPAdeles F => freq F ψ ν (QuotientAddGroup.mk x))
-  simp_rw [freq_mk]
-  exact ψ.continuous_toFun.comp
-    (QuotientAddGroup.continuous_mk.comp ((continuous_const.mul continuous_id).neg))
+private theorem freq_continuous (ν : F) : Continuous (freq F ψ ν) := by apply @rationalFrequency_continuous <;> assumption
 
-private theorem freq_add_scalar (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F)) (ν η : F) (q : KPAdditiveQuotient F) :
+private theorem freq_add_scalar (ν η : F) (q : KPAdditiveQuotient F) :
     freq F ψ (ν + η) q = freq F ψ ν q * freq F ψ η q := by
   obtain ⟨x, rfl⟩ := QuotientAddGroup.mk_surjective q
   rw [freq_mk, freq_mk, freq_mk, map_add, add_mul, neg_add, QuotientAddGroup.mk_add,
     ψ.toAddChar.map_add_eq_mul]
 
-private theorem freq_integral_zero (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F))
+private theorem freq_integral_zero
     (hψ : KPReflectionSpec.NontrivialCharacter ψ)
     [MeasurableSpace (KPAdditiveQuotient F)] [BorelSpace (KPAdditiveQuotient F)]
     (μ : Measure (KPAdditiveQuotient F)) [μ.IsAddHaarMeasure] [IsProbabilityMeasure μ]
@@ -79,7 +53,7 @@ private theorem freq_integral_zero (F : Type) [Field F] [NumberField F]
     (∫ q, freq F ψ ν q ∂μ) = 0 := by
   obtain ⟨q, hq⟩ := hψ
   obtain ⟨x, rfl⟩ := QuotientAddGroup.mk_surjective q
-  let y : KPAdeles F := -(algebraMap F (KPAdeles F) ν⁻¹ * x)
+  let y := -(algebraMap F (KPAdeles F) ν⁻¹ * x)
   have hy : freq F ψ ν (QuotientAddGroup.mk y) ≠ 1 := by
     rw [freq_mk]
     have heq : -(algebraMap F (KPAdeles F) ν * y) = x := by
@@ -93,13 +67,11 @@ private theorem freq_integral_zero (F : Type) [Field F] [NumberField F]
   by_contra hn
   exact hy ((mul_eq_left₀ hn).mp hi)
 
-private theorem freq_exhaustion (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F))
+private theorem freq_exhaustion
     (hψ : KPReflectionSpec.NontrivialCharacter ψ)
     (χ : AddChar (KPAdditiveQuotient F) Circle)
     (hc : Continuous χ) (hne : χ ≠ 1) :
     ∃ ν : F, ν ≠ 0 ∧ ∀ q, (χ q : ℂ) = freq F ψ ν q := by
-  let S := NumberField.AdeleRing.principalSubgroup (𝓞 F) F
   let ψA : AddChar (KPAdeles F) Circle :=
     { toFun := fun x => ⟨ψ.toAddChar (QuotientAddGroup.mk x),
         mem_sphere_zero_iff_norm.mpr (ψ.unitary (QuotientAddGroup.mk x))⟩
@@ -109,9 +81,7 @@ private theorem freq_exhaustion (F : Type) [Field F] [NumberField F]
         ext
         change ψ.toAddChar (QuotientAddGroup.mk (x + y)) =
           ψ.toAddChar (QuotientAddGroup.mk x) * ψ.toAddChar (QuotientAddGroup.mk y)
-        rw [QuotientAddGroup.mk_add, ψ.toAddChar.map_add_eq_mul] }
-  have hcont : Continuous ψA :=
-    (ψ.continuous_toFun.comp QuotientAddGroup.continuous_mk).subtype_mk _
+        simp [ψ.toAddChar.map_add_eq_mul]}
   have hnA : ψA ≠ 1 := by
     obtain ⟨q, hq⟩ := hψ
     obtain ⟨x, rfl⟩ := QuotientAddGroup.mk_surjective q
@@ -123,18 +93,22 @@ private theorem freq_exhaustion (F : Type) [Field F] [NumberField F]
     ext
     change ψ.toAddChar (QuotientAddGroup.mk (algebraMap F (KPAdeles F) t)) = 1
     rw [hz, ψ.toAddChar.map_zero_eq_one]
-  obtain ⟨t, ⟨ht, hf⟩, _⟩ := kp_adelic_character_exhaustion F ψA hcont hnA hF χ hc hne
+  obtain ⟨t, ⟨ht, hf⟩, _⟩ := kp_adelic_character_exhaustion F ψA ((ψ.continuous_toFun.comp QuotientAddGroup.continuous_mk).subtype_mk _) hnA hF χ hc hne
   refine ⟨-t, neg_ne_zero.mpr ht, ?_⟩
   intro q
   obtain ⟨x, rfl⟩ := QuotientAddGroup.mk_surjective q
-  rw [freq_mk, map_neg, neg_mul, neg_neg]
+  simp [freq_mk]
   exact congrArg (fun z : Circle => (z : ℂ)) (hf x)
 
-private theorem series_integral (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F))
-    (hψ : KPReflectionSpec.NontrivialCharacter ψ)
-    [MeasurableSpace (KPAdditiveQuotient F)] [BorelSpace (KPAdditiveQuotient F)]
-    (μ : Measure (KPAdditiveQuotient F)) [μ.IsAddHaarMeasure] [IsProbabilityMeasure μ]
+end
+
+variable (F : Type) [Field F] [NumberField F] (ψ : ContinuousAddChar (KPAdditiveQuotient F))
+    (hψ : KPReflectionSpec.NontrivialCharacter ψ) [MeasurableSpace (KPAdditiveQuotient F)]
+    [BorelSpace (KPAdditiveQuotient F)] (μ : Measure (KPAdditiveQuotient F)) [μ.IsAddHaarMeasure]
+    [IsProbabilityMeasure μ]
+
+include hψ in
+private theorem series_integral
     (c : F → ℂ) (hs : Summable (fun ν => ‖c ν‖)) (η : F) :
     (∫ q, (∑' ν, c ν * freq F ψ (-ν) q) * freq F ψ η q ∂μ) = c η := by
   letI : Countable F := (Module.finBasis ℚ F).repr.injective.countable
@@ -152,29 +126,23 @@ private theorem series_integral (F : Type) [Field F] [NumberField F]
       (∑' ν, t ν q) = (∑' ν, c ν * freq F ψ (-ν) q) * freq F ψ η q := by
     have hp : Summable (fun ν => c ν * freq F ψ (-ν) q) :=
       hs.of_norm_bounded (fun ν => by
-        simp only [norm_mul, norm_freq, mul_one]; exact le_rfl)
+        simp [norm_mul, norm_freq, mul_one])
     exact hp.tsum_mul_right _
   rw [← integral_congr_ae (Filter.Eventually.of_forall hsum),
     ← integral_tsum_of_summable_integral_norm hti hn]
   have hm (ν : F) : (∫ q, t ν q ∂μ) = if ν = η then c η else 0 := by
     simp_rw [t, mul_assoc, ← freq_add_scalar, integral_const_mul]
     by_cases h : ν = η
-    · subst ν
-      simp only [neg_add_cancel, freq_zero_scalar, integral_const, probReal_univ,
-        one_smul, mul_one, if_pos rfl, ↓reduceIte]
+    · simp_all [neg_add_cancel, freq_zero_scalar, integral_const]
     · rw [freq_integral_zero F ψ hψ μ _ (by
-        intro hh
-        exact h (sub_eq_zero.mp (by simpa only [neg_add_eq_sub] using hh)).symm)]
+        grind)]
       simp [h]
   simp_rw [hm]
   rw [tsum_eq_single η (fun ν hν => by simp [hν])]
   simp
 
-theorem hasSum_of_summable_coefficients (F : Type) [Field F] [NumberField F]
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F))
-    (hψ : KPReflectionSpec.NontrivialCharacter ψ)
-    [MeasurableSpace (KPAdditiveQuotient F)] [BorelSpace (KPAdditiveQuotient F)]
-    (μ : Measure (KPAdditiveQuotient F)) [μ.IsAddHaarMeasure] [IsProbabilityMeasure μ]
+include hψ in
+theorem hasSum_of_summable_coefficients
     (f : KPAdditiveQuotient F → ℂ) (hf : Continuous f)
     (hs : Summable (fun ν : F => ‖∫ q, f q * freq F ψ ν q ∂μ‖)) :
     HasSum (fun ν : F => ∫ q, f q * freq F ψ ν q ∂μ) (f 0) := by

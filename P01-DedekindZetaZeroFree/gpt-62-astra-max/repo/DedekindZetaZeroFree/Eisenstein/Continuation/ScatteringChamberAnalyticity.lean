@@ -15,7 +15,7 @@ private lemma exp_derivative_bound (x y l r : ℝ) (hr : 0 < r)
     (hxy : |x - y| < r) :
     |l| * Real.exp (x * l) ≤ r⁻¹ *
       (Real.exp ((y + 2 * r) * l) + Real.exp ((y - 2 * r) * l)) := by
-  have hi : 0 ≤ r⁻¹ := le_of_lt (inv_pos.mpr hr)
+  have hi := le_of_lt (inv_pos.mpr hr)
   have hb : |l| * Real.exp (x * l) ≤ r⁻¹ * Real.exp (x * l + r * |l|) := by
     have hl : |l| ≤ r⁻¹ * Real.exp (r * |l|) := by
       have h := Real.add_one_le_exp (r * |l|)
@@ -53,7 +53,7 @@ lemma exponential_integral_differentiable
       {s : ℂ | b < s.re} := by
   intro z hz
   change b < z.re at hz
-  let F : ℂ → X → ℂ := fun s a => Complex.exp (s * (l a : ℂ)) * c a
+  let F := fun s a => Complex.exp (s * (l a : ℂ)) * c a
   let F' : ℂ → X → ℂ := fun s a => (l a : ℂ) * F s a
   have hd (s : ℂ) (a : X) : HasDerivAt (fun t => F t a) (F' s a) s := by
     dsimp [F, F']
@@ -83,33 +83,24 @@ lemma exponential_integral_differentiable
       simp only [Complex.add_re]
       linarith
     · exact ae_of_all μ fun a => (hd z a).tendsto_slope_zero.comp hq
-  let r : ℝ := (z.re - b) / 4
+  let r := (z.re - b) / 4
   have hr : 0 < r := by dsimp [r]; linarith
-  have hp : b < (z + (2 * r : ℝ)).re := by simp only [add_re, ofReal_re]; linarith
-  have hn : b < (z - (2 * r : ℝ)).re := by simp only [sub_re, ofReal_re]; dsimp [r]; linarith
-  let B : X → ℝ := fun a => r⁻¹ * (‖F (z + (2 * r : ℝ)) a‖ + ‖F (z - (2 * r : ℝ)) a‖)
-  have hB : Integrable B μ :=
-    (((hint _ hp).norm).add ((hint _ hn).norm)).const_mul _
+  let B := fun a => r⁻¹ * (‖F (z + (2 * r : ℝ)) a‖ + ‖F (z - (2 * r : ℝ)) a‖)
   have hball : ∀ s ∈ Metric.ball z r, b < s.re := by
     intro s hs
-    have hnorm : |s.re - z.re| < r :=
-      (abs_re_le_norm (s - z)).trans_lt (by simpa [Metric.mem_ball, dist_eq_norm] using hs)
-    have := (abs_lt.mp hnorm).1
+    have := (abs_lt.mp ((abs_re_le_norm (s - z)).trans_lt (by simpa [Metric.mem_ball, dist_eq_norm] using hs))).1
     dsimp [r] at this
     linarith
   have hbnd : ∀ a s, s ∈ Metric.ball z r → ‖F' s a‖ ≤ B a := by
     intro a s hs
-    have hnorm : |s.re - z.re| < r :=
-      (abs_re_le_norm (s - z)).trans_lt (by simpa [Metric.mem_ball, dist_eq_norm] using hs)
-    have he := mul_le_mul_of_nonneg_right
-      (exp_derivative_bound s.re z.re (l a) r hr hnorm) (norm_nonneg (c a))
     simpa [F', F, B, norm_mul, Complex.norm_exp, Complex.mul_re,
-      mul_add, add_mul, mul_assoc, Real.norm_eq_abs] using he
+      mul_add, add_mul, mul_assoc, Real.norm_eq_abs] using (mul_le_mul_of_nonneg_right
+        (exp_derivative_bound s.re z.re (l a) r hr ((abs_re_le_norm (s - z)).trans_lt (by simpa [Metric.mem_ball, dist_eq_norm] using hs))) (norm_nonneg (c a)))
   have hder := (hasDerivAt_integral_of_dominated_loc_of_deriv_le
-    (F := F) (F' := F') (bound := B) (Metric.ball_mem_nhds z hr)
+       (Metric.ball_mem_nhds z hr)
     (Filter.eventually_of_mem (Metric.ball_mem_nhds z hr)
       (fun s hs => (hint s (hball s hs)).aestronglyMeasurable))
-    (hint z hz) hm (ae_of_all μ fun a s hs => hbnd a s hs) hB
+    (hint z hz) hm (ae_of_all μ fun a s hs => hbnd a s hs) ((((hint _ (by simp only [add_re, ofReal_re]; linarith)).norm).add ((hint _ (by simp only [sub_re, ofReal_re]; dsimp [r]; linarith)).norm)).const_mul _)
     (ae_of_all μ fun a s _ => hd s a)).2
   exact hder.differentiableAt.differentiableWithinAt
 

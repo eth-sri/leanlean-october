@@ -20,7 +20,10 @@ def archMatrices (h : RestrictedCover F ζ hζ) (w : InfinitePlace F) :=
     (InfinitePlace.Completion.ringEquivComplexOfIsComplex (KPHilbert.infinite_isComplex F ζ hζ w)).toRingHom
     (h (Sum.inl w)).g
 
-theorem section_g (h : RestrictedCover F ζ hζ) (hf : ∀q:KPFinitePlace F,h (Sum.inr q)=1)
+variable (h : RestrictedCover F ζ hζ) (hf : ∀q:KPFinitePlace F,h (Sum.inr q)=1)
+
+include hf in
+theorem section_g
     (v : KPHilbert.Place F) :
     (KPContFlatLogNormSmooth.sectionTuple F ζ hζ (archMatrices F ζ hζ h) v).g=(h v).g := by
   cases v with
@@ -30,7 +33,8 @@ theorem section_g (h : RestrictedCover F ζ hζ) (hf : ∀q:KPFinitePlace F,h (S
     simp
   | inr q => simp [KPContFlatLogNormSmooth.sectionTuple,hf]
 
-theorem projection_section (h : RestrictedCover F ζ hζ) (hf : ∀q:KPFinitePlace F,h (Sum.inr q)=1) :
+include hf in
+theorem projection_section :
     restrictedProjection F ζ hζ (KPContFlatLogNormSmooth.sectionTuple F ζ hζ (archMatrices F ζ hζ h))=
     restrictedProjection F ζ hζ h := by
   apply Units.ext
@@ -42,7 +46,8 @@ theorem projection_section (h : RestrictedCover F ζ hζ) (hf : ∀q:KPFinitePla
     intro q
     exact congrArg (fun g=>g i j) (section_g F ζ hζ h hf (Sum.inr q))
 
-theorem raw_arch_center (h : RestrictedCover F ζ hζ) (hf : ∀q:KPFinitePlace F,h (Sum.inr q)=1) :
+include hf in
+theorem raw_arch_center :
     ∃ε : rootsOfUnity 3 F,
     scalarQuotient F ζ hζ (amalgamation F ζ hζ h)=
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
@@ -68,7 +73,6 @@ theorem raw_arch_center (h : RestrictedCover F ζ hζ) (hf : ∀q:KPFinitePlace 
     rw [map_mul,map_inv,hp,inv_mul_cancel]
   obtain ⟨ε,he⟩ := hk
   refine ⟨ε,?_⟩
-  change g=a*pglCentralInjection F ζ hζ ε
   rw [he,mul_inv_cancel_left]
 end DedekindZetaZeroFree.FourierContinuation.CurrentRawArchCenter
 

@@ -15,7 +15,7 @@ theorem quadraticCharacter_quotient_card_two
   have hval : ∀ g, ((ψ g : ℂ)) ^ 2 = 1 := by
     intro g
     have := congrArg (fun u : ℂˣ => (u : ℂ)) (hsq g)
-    simpa using this
+    exact this
   have hmem : ∀ g, ψ g = 1 ∨ ψ g = -1 := by
     intro g
     rcases sq_eq_one_iff.mp (hval g) with h | h
@@ -23,8 +23,7 @@ theorem quadraticCharacter_quotient_card_two
     · exact Or.inr (Units.ext h)
   obtain ⟨g₀, hg₀⟩ : ∃ g, ψ g ≠ 1 := by
     obtain ⟨g, hg⟩ := DFunLike.exists_ne hn
-    exact ⟨g, by simpa using hg⟩
-  have hg₀' : ψ g₀ = -1 := (hmem g₀).resolve_left hg₀
+    exact ⟨g, by exact hg⟩
   have hrange : Set.range ψ = ({1, -1} : Set ℂˣ) := by
     ext x
     constructor
@@ -34,14 +33,12 @@ theorem quadraticCharacter_quotient_card_two
       · exact Or.inr h
     · rintro (rfl | rfl)
       · exact ⟨1, map_one ψ⟩
-      · exact ⟨g₀, hg₀'⟩
-  have hne : (1 : ℂˣ) ≠ -1 := fun h => by
-    have h' : (1 : ℂ) = -1 := congrArg Units.val h
-    norm_num at h'
-  have hcard : Nat.card (Set.range ψ) = 2 := by
-    rw [Nat.card_coe_set_eq, hrange, Set.ncard_pair hne]
-  calc Nat.card (G ⧸ ψ.ker) = Nat.card (Set.range ψ) :=
+      · exact ⟨g₀, ((hmem g₀).resolve_left hg₀)⟩
+  calc _ = Nat.card (Set.range ψ) :=
         Nat.card_congr (QuotientGroup.quotientKerEquivRange ψ).toEquiv
-    _ = 2 := hcard
+    _ = 2 := (by
+      rw [Nat.card_coe_set_eq, hrange, Set.ncard_pair (fun h => by
+        have h' := congrArg Units.val h
+        norm_num at h')])
 
 end DedekindZetaZeroFree.LargeSieve

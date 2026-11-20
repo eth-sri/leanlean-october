@@ -29,51 +29,13 @@ def rowMass (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     |thetaReflectionGaussian (A.exteriorNorm c.val * A.exteriorNorm n ^ 3 / Z)|
 
 private theorem mulChar_bound {R : Type*} [CommRing R] [Fintype R]
-    (χ : MulChar R ℂ) (r : R) : ‖χ r‖ ≤ 1 := by
-  by_cases hr : IsUnit r
-  · obtain ⟨u, rfl⟩ := hr
-    exact (Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)).le
-  · simp [χ.map_nonunit hr]
+    (χ : MulChar R ℂ) (r : R) : ‖χ r‖ ≤ 1 := by apply @DedekindZetaZeroFree.FiniteTransform.ResidueRowFourierTransform.char_norm_le_one <;> assumption
 private theorem phase_norm (A : SArithmeticData F)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (x : SLocalProduct F A.Sf) : ‖ProbeAdditive.phase F A.Sf e x‖ = 1 := by
   simp [ProbeAdditive.phase, ProbeAdditive.archPhase, norm_mul, norm_prod,
     Complex.norm_exp]
-private theorem gamma_bound (A : SArithmeticData F) (ι : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A ι η hS)
-    (c : ExteriorSquarefreeIdeal A.cS) :
-    ‖P.coefficients.gammaTwo c‖ ≤ Real.sqrt (A.exteriorNorm c.val) := by
-  let D := P.coefficients
-  letI := D.finiteResidue (D.generator c.val) (D.generates c.val).1
-  have hc : (Fintype.card (FiniteTransform.Residue A.R.toSubring (D.generator c.val)) : ℝ) =
-      A.exteriorNorm c.val := by
-    rw [Fintype.card_eq_nat_card]
-    change (Nat.card (A.R ⧸ Ideal.span {D.generator c.val}) : ℝ) = _
-    rw [(D.generates c.val).2, A.exteriorResidue_card]
-    rfl
-  have hsum : ‖FiniteTransform.gaussSum A.R.toSubring (D.generator c.val)
-      (D.character (D.generator c.val) ^ 2) D.additiveCharacter 1‖ ≤ A.exteriorNorm c.val := by
-    unfold FiniteTransform.gaussSum FiniteTransform.gaussSumWithLifts
-    refine (norm_sum_le _ _).trans ?_
-    calc
-      _ ≤ ∑ _ : FiniteTransform.Residue A.R.toSubring (D.generator c.val), (1 : ℝ) := by
-        apply Finset.sum_le_sum
-        intro d hd
-        rw [norm_mul, P.sameTrace, phase_norm, mul_one]
-        exact mulChar_bound _ _
-      _ = _ := by simpa using hc
-  rw [P.gammaTwo_recipe c]
-  change ‖(Real.sqrt (A.exteriorNorm c.val) : ℂ)⁻¹ * _‖ ≤ _
-  rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg (Real.sqrt_nonneg _)]
-  have hq := A.exteriorNorm_pos c.val
-  have hsq := Real.sqrt_pos.mpr hq
-  calc
-    _ ≤ (Real.sqrt (A.exteriorNorm c.val))⁻¹ * A.exteriorNorm c.val :=
-      mul_le_mul_of_nonneg_left hsum (inv_nonneg.mpr hsq.le)
-    _ = _ := by
-      apply (inv_mul_eq_iff_eq_mul₀ hsq.ne').mpr
-      exact (Real.sq_sqrt hq.le).symm.trans (by ring)
+
 private theorem numeric_bound (σ Z qc qn : ℝ) (hZ : 0 < Z)
     (hc : 1 ≤ qc) (hn : 1 ≤ qn) :
     (1 / qn) * (qc * qn ^ 3) ^ σ *
@@ -93,7 +55,6 @@ private theorem numeric_bound (σ Z qc qn : ℝ) (hZ : 0 < Z)
     rw [div_mul_eq_mul_div, div_mul_cancel₀ _ (Real.rpow_pos_of_pos hZ (σ + 3)).ne'] at hh
     simpa [mul_comm] using hh
   let C := Real.exp ((σ + 3) ^ 2) / (2 * Real.sqrt Real.pi) * Z ^ (σ + 3)
-  have hC : 0 ≤ C := by dsimp [C]; positivity
   calc
     _ ≤ (1 / qn) * (qc * qn ^ 3) ^ σ * (C / (qc * qn ^ 3) ^ (σ + 3)) :=
       mul_le_mul_of_nonneg_left hb (by positivity)
@@ -111,7 +72,7 @@ private theorem numeric_bound (σ Z qc qn : ℝ) (hZ : 0 < Z)
     _ ≤ _ := by
       apply mul_le_mul
       · exact mul_le_mul_of_nonneg_left
-          (Real.rpow_le_rpow_of_exponent_le hc (by norm_num)) hC
+          (Real.rpow_le_rpow_of_exponent_le hc (by norm_num)) (by dsimp [C]; positivity)
       · exact Real.rpow_le_rpow_of_exponent_le hn (by norm_num)
       · positivity
       · positivity
@@ -123,14 +84,41 @@ private theorem row_bound (A : SArithmeticData F) (ι : F →+* ℂ)
       (Real.exp ((σ + 3) ^ 2) / (2 * Real.sqrt Real.pi) * Z ^ (σ + 3)) *
         (A.exteriorNorm c.val) ^ (-(5 / 2 : ℝ)) * (A.exteriorNorm n) ^ (-(7 : ℝ)) := by
   have htheta : ‖P.coefficients.theta (ThetaReflectionData.forwardModulus A P.coefficients c n)‖ = 1 := by
-    let m : ThetaReflectionData.Row A :=
-      ⟨ThetaReflectionData.forwardModulus A P.coefficients c n,
-        mul_ne_zero (P.coefficients.generates c.val).1 (pow_ne_zero _ (P.coefficients.generates n).1)⟩
-    exact (congrArg norm (P.theta_principal m)).trans (Circle.norm_coe _)
+    exact (congrArg norm (P.theta_principal (⟨ThetaReflectionData.forwardModulus A P.coefficients c n,
+      mul_ne_zero (P.coefficients.generates c.val).1 (pow_ne_zero _ (P.coefficients.generates n).1)⟩))).trans (Circle.norm_coe _)
   have hw : ‖ThetaReflectionData.forwardArithmeticWeight A P.coefficients c n‖ ≤
       Real.sqrt (A.exteriorNorm c.val) := by
     rw [ThetaReflectionData.forwardArithmeticWeight, norm_mul, htheta, mul_one]
-    exact gamma_bound A ι η hS P c
+    let D := P.coefficients
+    letI := D.finiteResidue (D.generator c.val) (D.generates c.val).1
+    have hc : (Fintype.card (FiniteTransform.Residue A.R.toSubring (D.generator c.val)) : ℝ) =
+        A.exteriorNorm c.val := by
+      rw [Fintype.card_eq_nat_card]
+      change (Nat.card (A.R ⧸ Ideal.span {D.generator c.val}) : ℝ) = _
+      rw [(D.generates c.val).2, A.exteriorResidue_card]
+      rfl
+    have hsum : ‖FiniteTransform.gaussSum A.R.toSubring (D.generator c.val)
+        (D.character (D.generator c.val) ^ 2) D.additiveCharacter 1‖ ≤ A.exteriorNorm c.val := by
+      unfold FiniteTransform.gaussSum FiniteTransform.gaussSumWithLifts
+      refine (norm_sum_le _ _).trans ?_
+      calc
+        _ ≤ ∑ _ : FiniteTransform.Residue A.R.toSubring (D.generator c.val), (1 : ℝ) := by
+          apply Finset.sum_le_sum
+          intro d hd
+          rw [norm_mul, P.sameTrace, phase_norm, mul_one]
+          exact mulChar_bound _ _
+        _ = _ := by simpa using hc
+    rw [P.gammaTwo_recipe c]
+    change ‖(Real.sqrt (A.exteriorNorm c.val) : ℂ)⁻¹ * _‖ ≤ _
+    rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg (Real.sqrt_nonneg _)]
+    have hq := A.exteriorNorm_pos c.val
+    have hsq := Real.sqrt_pos.mpr hq
+    calc
+      _ ≤ (Real.sqrt (A.exteriorNorm c.val))⁻¹ * A.exteriorNorm c.val :=
+        mul_le_mul_of_nonneg_left hsum (inv_nonneg.mpr hsq.le)
+      _ = _ := by
+        apply (inv_mul_eq_iff_eq_mul₀ hsq.ne').mpr
+        exact (Real.sq_sqrt hq.le).symm.trans (by ring)
   have hc := A.exteriorNorm_pos c.val
   have hn := A.exteriorNorm_pos n
   have hd : ‖ThetaReflectionData.forwardArithmeticWeight A P.coefficients c n‖ /
@@ -150,8 +138,7 @@ theorem gaussian_row_domination
     (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (σ Z : ℝ) (hσ : 1 < σ) (hZ : 0 < Z) :
-    ∃ C : ℝ, 0 < C ∧
-      ∀ P : NormalizedProbe.PrincipalData A ι η hS,
+    ∃ C : ℝ, ∀ P : NormalizedProbe.PrincipalData A ι η hS,
         (∀ (c : ExteriorSquarefreeIdeal A.cS) (n : A.Exterior),
           rowMass A P.coefficients σ Z c n ≤
             C * (A.exteriorNorm c.val) ^ (-(5 / 2 : ℝ)) *
@@ -168,7 +155,7 @@ theorem gaussian_row_domination
             (∑' n : A.Exterior, (A.exteriorNorm n) ^ (-(7 : ℝ))) := by
   let C := Real.exp ((σ + 3) ^ 2) / (2 * Real.sqrt Real.pi) * Z ^ (σ + 3)
   have hC : 0 < C := by dsimp [C]; positivity
-  refine ⟨C, hC, ?_⟩
+  refine ⟨C, ?_⟩
   intro P
   have hb := row_bound A ι η hS P σ Z hZ
   let f : ExteriorSquarefreeIdeal A.cS → ℝ := fun c => (A.exteriorNorm c.val) ^ (-(5 / 2 : ℝ))

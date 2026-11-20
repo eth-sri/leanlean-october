@@ -20,18 +20,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -62,8 +50,7 @@ open KummerTheory
 /-- The fixed rational separable closure, with the intermediate-field algebra
 structure used by Mathlib's `IsSepClosure` construction. -/
 noncomputable instance rationalSeparableClosure_isGalois :
-    IsGalois ℚ (SeparableClosure ℚ) := by
-  exact @IsSepClosure.isGalois
+    IsGalois ℚ (SeparableClosure ℚ) := @IsSepClosure.isGalois
     ℚ _ (SeparableClosure ℚ) _
     ((separableClosure ℚ (AlgebraicClosure ℚ)).algebra)
     (separableClosure.isSepClosure ℚ (AlgebraicClosure ℚ))
@@ -80,8 +67,7 @@ def rationalCyclotomicZHatField :
   IntermediateField.lift rationalCyclotomicTorsionFixedField
 
 noncomputable instance rationalCyclotomicZHatField_isAbelianGalois :
-    IsAbelianGalois ℚ rationalCyclotomicZHatField := by
-  exact @IsAbelianGalois.of_algHom
+    IsAbelianGalois ℚ rationalCyclotomicZHatField := @IsAbelianGalois.of_algHom
     ℚ rationalCyclotomicZHatField rationalCyclotomicTorsionFixedField
     _ _ _ _ _
     (IntermediateField.liftAlgEquiv
@@ -93,8 +79,7 @@ noncomputable instance rationalCyclotomicZHatField_isAbelianGalois :
 restriction maps out of the fixed rational separable closure. -/
 theorem rationalCyclotomicZHatField_normal :
     @Normal ℚ rationalCyclotomicZHatField _ _
-      rationalCyclotomicZHatField.algebra' := by
-  exact @IsGalois.to_normal
+      rationalCyclotomicZHatField.algebra' := @IsGalois.to_normal
     ℚ _ rationalCyclotomicZHatField _
       rationalCyclotomicZHatField.algebra'
     (@IsAbelianGalois.of_algHom
@@ -116,22 +101,12 @@ noncomputable def rationalCyclotomicZHatFieldGalEquivZHat :
     (rationalCyclotomicZHatField ≃ₐ[ℚ]
       rationalCyclotomicZHatField) ≃ₜ*
         Multiplicative ZHat := by
-  let _ : T2Space
-      (rationalCyclotomicZHatField ≃ₐ[ℚ]
-        rationalCyclotomicZHatField) :=
-    krullTopology_t2
   let e :=
     IntermediateField.liftAlgEquiv
       rationalCyclotomicTorsionFixedField
-  let c :
-      (rationalCyclotomicTorsionFixedField ≃ₐ[ℚ]
-          rationalCyclotomicTorsionFixedField) ≃ₜ*
-        (rationalCyclotomicZHatField ≃ₐ[ℚ]
-          rationalCyclotomicZHatField) :=
-    LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.continuousMulEquivOfCompactToT2
-        (AlgEquiv.autCongr e)
-        (continuous_algEquiv_autCongr e)
-  exact c.symm.trans
+  exact (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.continuousMulEquivOfCompactToT2
+    (AlgEquiv.autCongr e)
+    (continuous_algEquiv_autCongr e)).symm.trans
     rationalCyclotomicTorsionFixedFieldGalEquivZHat
 
 /-- Restriction from the full rational cyclotomic field to its actual
@@ -169,11 +144,7 @@ theorem rationalCyclotomicZHatFieldGalEquivZHat_fullRestriction
   let e :=
     IntermediateField.liftAlgEquiv
       KummerTheory.rationalCyclotomicTorsionFixedField
-  let c :
-      (KummerTheory.rationalCyclotomicTorsionFixedField ≃ₐ[ℚ]
-          KummerTheory.rationalCyclotomicTorsionFixedField) ≃ₜ*
-        (rationalCyclotomicZHatField ≃ₐ[ℚ]
-          rationalCyclotomicZHatField) :=
+  let c :=
     LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.continuousMulEquivOfCompactToT2
       (AlgEquiv.autCongr e)
       (continuous_algEquiv_autCongr e)
@@ -188,8 +159,7 @@ theorem rationalCyclotomicZHatFieldGalEquivZHat_fullRestriction
       (KummerTheory.zHatUnitsDecomposition
         (KummerTheory.rationalCyclotomicCharacterContinuousMulEquiv
           σ)).1
-  rw [c.symm_apply_apply,
-    rationalCyclotomicTorsionFixedFieldGalEquivZHat_restrictNormal]
+  simp
 
 /-- Restriction from the actual absolute Galois group of `ℚ` to the
 cyclotomic `ZHat`-extension. -/
@@ -205,8 +175,7 @@ noncomputable def
       rationalCyclotomicZHatField.algebra' _ _
       rationalCyclotomicZHatField_normal
   continuous_toFun := by
-    let : @Normal ℚ rationalCyclotomicZHatField _ _
-        rationalCyclotomicZHatField.algebra' :=
+    let :=
       rationalCyclotomicZHatField_normal
     exact
       InfiniteGalois.restrictNormalHom_continuous
@@ -224,8 +193,7 @@ noncomputable def rationalCyclotomicDegreeData :
         rationalAbsoluteGaloisRestrictionToCyclotomicZHat
   degree_surjective :=
     by
-      let : @Normal ℚ rationalCyclotomicZHatField _ _
-          rationalCyclotomicZHatField.algebra' :=
+      let :=
         rationalCyclotomicZHatField_normal
       exact
         rationalCyclotomicZHatFieldGalEquivZHat.surjective.comp
@@ -240,8 +208,7 @@ theorem rationalCyclotomicDegreeData_inertia :
     rationalCyclotomicDegreeData.inertia =
       RamificationTheory.closedFixingSubgroup ℚ (SeparableClosure ℚ)
         rationalCyclotomicZHatField := by
-  let : @Normal ℚ rationalCyclotomicZHatField _ _
-      rationalCyclotomicZHatField.algebra' :=
+  let :=
     rationalCyclotomicZHatField_normal
   let r := rationalAbsoluteGaloisRestrictionToCyclotomicZHat
   have hrker : r.toMonoidHom.ker =
@@ -263,7 +230,7 @@ theorem rationalCyclotomicDegreeData_inertia :
     σ ∈ rationalCyclotomicDegreeData.inertia ↔
       σ ∈ RamificationTheory.closedFixingSubgroup ℚ (SeparableClosure ℚ)
         rationalCyclotomicZHatField
-  rw [rationalCyclotomicDegreeData.mem_inertia_iff]
+  simp
   change
     rationalCyclotomicZHatFieldGalEquivZHat
         (r σ) =
@@ -285,25 +252,7 @@ theorem rationalCyclotomicDegreeData_inertia :
         σ ∈ r.toMonoidHom.ker := by
       rw [hrker]
       exact hσ
-    change
-      rationalCyclotomicZHatFieldGalEquivZHat
-          (r σ) =
-        1
-    have hzero : r σ = 1 :=
-      MonoidHom.mem_ker.mp hker
-    rw [hzero, map_one]
-
-/-- The field fixed by cyclotomic inertia is the actual cyclotomic
-`ZHat`-extension inside the chosen rational separable closure. -/
-theorem rationalCyclotomicDegreeData_fixedField_inertia :
-    LocalClassFieldTheory.abstractFixedField
-        ℚ (SeparableClosure ℚ)
-        rationalCyclotomicDegreeData.inertia =
-      rationalCyclotomicZHatField := by
-  rw [rationalCyclotomicDegreeData_inertia]
-  exact
-    InfiniteGalois.fixedField_fixingSubgroup
-      rationalCyclotomicZHatField
+    simpa using MonoidHom.mem_ker.mp hker
 
 /-- For every abstract rational fixed field `F`, the field fixed by
 its cyclotomic inertia is the genuine compositum `Fℚ̃` in
@@ -325,7 +274,7 @@ theorem
       (rationalCyclotomicDegreeData.fieldInertia H).toSubgroup =
         (F ⊔ rationalCyclotomicZHatField).fixingSubgroup := by
     calc
-      (rationalCyclotomicDegreeData.fieldInertia H).toSubgroup =
+      _ =
           H.toSubgroup ⊓
             rationalCyclotomicDegreeData.inertia.toSubgroup :=
         rfl
@@ -341,14 +290,7 @@ theorem
       _ =
           (F ⊔ rationalCyclotomicZHatField).fixingSubgroup :=
         IntermediateField.fixingSubgroup_sup.symm
-  change
-    IntermediateField.fixedField
-        (rationalCyclotomicDegreeData.fieldInertia H).toSubgroup =
-      F ⊔ rationalCyclotomicZHatField
-  rw [hsubgroup]
-  exact
-    InfiniteGalois.fixedField_fixingSubgroup
-      (F ⊔ rationalCyclotomicZHatField)
+  grind [InfiniteGalois.fixedField_fixingSubgroup]
 
 /-- Restricting a closed subgroup of the rational absolute Galois group
 to the cyclotomic `ZHat`-extension gives exactly the subgroup fixing the
@@ -378,18 +320,17 @@ theorem
         rationalCyclotomicZHatField) :=
     { toSubgroup := H.toSubgroup.map r
       isClosed' := by
-        change IsClosed (r '' H.carrier)
         exact
           (H.isClosed'.isCompact.image
             r.continuous).isClosed }
   let F :=
     LocalClassFieldTheory.abstractFixedField
       ℚ (SeparableClosure ℚ) H
-  let J : IntermediateField ℚ (SeparableClosure ℚ) :=
+  let J :=
     F ⊓ rationalCyclotomicZHatField
   let hJT : J ≤ rationalCyclotomicZHatField :=
     inf_le_right
-  let E : IntermediateField ℚ rationalCyclotomicZHatField :=
+  let E :=
     J.restrict hJT
   have hE :
       E = IntermediateField.fixedField R.toSubgroup := by
@@ -402,19 +343,6 @@ theorem
       _ =
           IntermediateField.lift
             (IntermediateField.fixedField R.toSubgroup) := by
-        dsimp only [F, J, R, r]
-        change
-          IntermediateField.fixedField H.toSubgroup ⊓
-              rationalCyclotomicZHatField =
-            IntermediateField.lift
-              (IntermediateField.fixedField
-                (Subgroup.map
-                  (@AlgEquiv.restrictNormalHom
-                    ℚ _ (SeparableClosure ℚ) _ _
-                    rationalCyclotomicZHatField _
-                    rationalCyclotomicZHatField.algebra' _ _
-                    rationalCyclotomicZHatField_normal)
-                  H.toSubgroup))
         exact
           @InfiniteGalois.restrict_fixedField
             ℚ (SeparableClosure ℚ) _ _ _ H.toSubgroup
@@ -463,13 +391,15 @@ theorem
   rw [← Subgroup.map_map,
     rationalAbsoluteGaloisRestriction_image_eq_intersection_fixingSubgroup]
 
+section
+
+variable (H : FiniteAbstractField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+
 /-- For a finite abstract rational field, the residue degree supplied
 by the actual cyclotomic degree datum is the degree of the concrete
 intersection with the cyclotomic `ZHat`-extension. -/
 theorem
-    rationalCyclotomicDegreeData_residueDegree_eq_intersection_finrank
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)) :
+    rationalCyclotomicDegreeData_residueDegree_eq_intersection_finrank :
     (H.residueDegree rationalCyclotomicDegreeData : ℕ) =
       Module.finrank ℚ
         ((LocalClassFieldTheory.abstractFixedField
@@ -479,29 +409,27 @@ theorem
   let F :=
     LocalClassFieldTheory.abstractFixedField
       ℚ (SeparableClosure ℚ) H.field
-  let J : IntermediateField ℚ (SeparableClosure ℚ) :=
+  let J :=
     F ⊓ rationalCyclotomicZHatField
   let hJT : J ≤ rationalCyclotomicZHatField :=
     inf_le_right
-  let E : IntermediateField ℚ rationalCyclotomicZHatField :=
+  let E :=
     J.restrict hJT
-  let : FiniteDimensional ℚ F :=
+  let :=
     LocalClassFieldTheory.abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) H.field H.finite
-  let : FiniteDimensional ℚ J :=
+  let :=
     FiniteDimensional.of_injective
       (IntermediateField.inclusion
         (show J ≤ F from inf_le_left)).toLinearMap
       (IntermediateField.inclusion
         (show J ≤ F from inf_le_left)).injective
-  let : FiniteDimensional ℚ E :=
+  let :=
     ((IntermediateField.restrictAlgEquiv hJT).toLinearEquiv).finiteDimensional
   let HR :=
     H.toFiniteResidueAbstractField
       rationalCyclotomicDegreeData
-  let : Finite
-      (rationalCyclotomicDegreeData.residueQuotient
-        H.field) :=
+  let :=
     HR.finiteResidueQuotient
   have hindex :
       (rationalCyclotomicDegreeData.fieldImage
@@ -515,15 +443,13 @@ theorem
         rationalCyclotomicZHatFieldGalEquivZHat.toMonoidHom).index =
           Module.finrank ℚ J
     calc
-      (E.fixingSubgroup.map
-          rationalCyclotomicZHatFieldGalEquivZHat.toMonoidHom).index =
+      _ =
           E.fixingSubgroup.index :=
         Subgroup.index_map_equiv E.fixingSubgroup
           rationalCyclotomicZHatFieldGalEquivZHat.toMulEquiv
       _ = Module.finrank ℚ E :=
         (IntermediateField.finrank_eq_fixingSubgroup_index rationalCyclotomicZHatField E).symm
       _ = Module.finrank ℚ J := by
-        change Module.finrank ℚ (J.restrict hJT) = Module.finrank ℚ J
         exact
           ((IntermediateField.restrictAlgEquiv hJT).toLinearEquiv).finrank_eq.symm
   let :
@@ -550,8 +476,7 @@ theorem
       (show rationalCyclotomicDegreeData.fieldImage HR.field ≤
         (⊤ : Subgroup ZHatMul) from le_top)]
   norm_cast
-  simpa only [HR, FiniteAbstractField.toFiniteResidueAbstractField,
-    Subgroup.relIndex_top_right] using hindex
+  simpa [HR, FiniteAbstractField.toFiniteResidueAbstractField, Subgroup.relIndex_top_right] using hindex
 
 /-- The degree of the intersection with the rational cyclotomic
 `ZHat`-extension does not depend on the chosen embedding of an
@@ -563,8 +488,6 @@ because the latter is normal over `ℚ`, and hence carries the canonical
 intersection onto the intersection formed with the chosen image. -/
 theorem
     abstractFixedFieldCyclotomicZHatIntersection_finrank_eq_of_embedding
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (ι :
       LocalClassFieldTheory.abstractFixedField
           ℚ (SeparableClosure ℚ) H.field →ₐ[ℚ]
@@ -581,38 +504,37 @@ theorem
     LocalClassFieldTheory.abstractFixedField
       ℚ (SeparableClosure ℚ) H.field
   let T := rationalCyclotomicZHatField
-  let J : IntermediateField ℚ (SeparableClosure ℚ) :=
+  let J :=
     K ⊓ T
-  let Jι : IntermediateField ℚ (SeparableClosure ℚ) :=
+  let Jι :=
     ι.fieldRange ⊓ T
-  let : FiniteDimensional ℚ K :=
+  let :=
     LocalClassFieldTheory.abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) H.field H.finite
-  let : FiniteDimensional ℚ J :=
+  let :=
     FiniteDimensional.of_injective
       (IntermediateField.inclusion
         (show J ≤ K from inf_le_left)).toLinearMap
       (IntermediateField.inclusion
         (show J ≤ K from inf_le_left)).injective
-  let : FiniteDimensional ℚ ι.fieldRange :=
+  let :=
     (ι.equivFieldRange.toLinearEquiv).finiteDimensional
-  let : FiniteDimensional ℚ Jι :=
+  let :=
     FiniteDimensional.of_injective
       (IntermediateField.inclusion
         (show Jι ≤ ι.fieldRange from inf_le_left)).toLinearMap
       (IntermediateField.inclusion
         (show Jι ≤ ι.fieldRange from inf_le_left)).injective
-  let σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ :=
+  let σ :=
     AlgEquiv.ofBijective
       (ι.liftNormal (SeparableClosure ℚ))
       (AlgHom.normal_bijective
         ℚ (SeparableClosure ℚ) (SeparableClosure ℚ) _)
   have hσK (x : K) :
-      σ (x : SeparableClosure ℚ) = ι x := by
+      σ x = ι x := by
     dsimp only [σ]
     rw [AlgEquiv.ofBijective_apply]
-    simpa only [IntermediateField.algebraMap_apply,
-      Algebra.algebraMap_self, RingHom.id_apply] using
+    simpa using
       ι.liftNormal_commutes (SeparableClosure ℚ) x
   have hmapK :
       K.map σ.toAlgHom = ι.fieldRange := by
@@ -628,21 +550,16 @@ theorem
       rintro ⟨x, hxy⟩
       rw [IntermediateField.mem_map]
       exact
-        ⟨(x : SeparableClosure ℚ), x.property,
+        ⟨x, x.property,
           (hσK x).trans hxy⟩
-  have hmapT :
-      T.map σ.toAlgHom = T :=
-    (IntermediateField.normal_iff_forall_map_eq'.1
-      (by
-        simpa only [T] using rationalCyclotomicZHatField_normal)) σ
-  have hmapJ :
-      J.map σ.toAlgHom = Jι := by
-    dsimp only [J, Jι]
-    rw [IntermediateField.map_inf, hmapK, hmapT]
-  let e : J ≃ₐ[ℚ] Jι :=
-    (IntermediateField.equivMap J σ.toAlgHom).trans
-      (IntermediateField.equivOfEq hmapJ)
-  exact e.toLinearEquiv.finrank_eq.symm
+  exact ((IntermediateField.equivMap J σ.toAlgHom).trans
+    (IntermediateField.equivOfEq (by
+      dsimp only [J, Jι]
+      rw [IntermediateField.map_inf, hmapK, ((IntermediateField.normal_iff_forall_map_eq'.1
+        (by
+          simpa using rationalCyclotomicZHatField_normal)) σ)]))).toLinearEquiv.finrank_eq.symm
+
+end
 
 /-- The Galois group of the actual `ZHat`-extension of `ℚ` is
 torsion-free.  This is the property that removes every archimedean
@@ -685,17 +602,15 @@ theorem numberFieldCyclotomicZHatIntersectionEmbedding_commutes
         ((IntermediateField.inclusion inf_le_left) x)) :
         numberFieldInRationalSeparableClosure K) :
       SeparableClosure ℚ) =
-        (x : SeparableClosure ℚ)
-  rw [AlgEquiv.apply_symm_apply]
+        x
+  simp
   rfl
 
 noncomputable instance
     numberFieldCyclotomicZHatIntersection_finiteDimensional :
     FiniteDimensional ℚ
       (numberFieldCyclotomicZHatIntersection K) := by
-  let f :
-      numberFieldCyclotomicZHatIntersection K →ₐ[ℚ]
-        numberFieldInRationalSeparableClosure K :=
+  let f :=
     (IntermediateField.inclusion
       (show
         numberFieldCyclotomicZHatIntersection K ≤
@@ -712,8 +627,7 @@ noncomputable instance
 noncomputable instance
     numberFieldCyclotomicZHatIntersection_isAbelianGalois :
     IsAbelianGalois ℚ
-      (numberFieldCyclotomicZHatIntersection K) := by
-  exact @IsAbelianGalois.of_algHom
+      (numberFieldCyclotomicZHatIntersection K) := @IsAbelianGalois.of_algHom
     ℚ (numberFieldCyclotomicZHatIntersection K)
       rationalCyclotomicZHatField
     _ _ _ _ _
@@ -749,33 +663,7 @@ theorem
       Module.finrank ℚ
         ((F ⊓ rationalCyclotomicZHatField :
           IntermediateField ℚ (SeparableClosure ℚ))) := by
-  dsimp only
-  let F :=
-    LocalClassFieldTheory.abstractFixedField
-      ℚ (SeparableClosure ℚ) H.field
-  let : FiniteDimensional ℚ F :=
-    LocalClassFieldTheory.abstractFixedField_finiteDimensional
-      ℚ (SeparableClosure ℚ) H.field H.finite
-  let : NumberField F :=
-    NumberField.of_module_finite ℚ F
-  change
-    Module.finrank ℚ
-        (numberFieldCyclotomicZHatIntersection F) =
-      Module.finrank ℚ
-        ((F ⊓ rationalCyclotomicZHatField :
-          IntermediateField ℚ (SeparableClosure ℚ)))
-  change
-    Module.finrank ℚ
-        (((numberFieldSeparableClosureEmbedding F).fieldRange ⊓
-          rationalCyclotomicZHatField :
-          IntermediateField ℚ (SeparableClosure ℚ))) =
-      Module.finrank ℚ
-        ((LocalClassFieldTheory.abstractFixedField
-          ℚ (SeparableClosure ℚ) H.field ⊓ rationalCyclotomicZHatField :
-          IntermediateField ℚ (SeparableClosure ℚ)))
-  exact
-    abstractFixedFieldCyclotomicZHatIntersection_finrank_eq_of_embedding
-      H (numberFieldSeparableClosureEmbedding F)
+  apply abstractFixedFieldCyclotomicZHatIntersection_finrank_eq_of_embedding
 
 /-- The concrete intersection degree of an abstract fixed field,
 formed using the arbitrary chosen number-field embedding, is exactly
@@ -793,9 +681,7 @@ theorem
     letI : NumberField F :=
       NumberField.of_module_finite ℚ F
     cyclotomicZHatIntersectionDegree F =
-      (H.residueDegree rationalCyclotomicDegreeData : ℕ) := by
-  exact
-    (cyclotomicZHatIntersectionDegree_abstractFixedField_eq_intersection_finrank
+      (H.residueDegree rationalCyclotomicDegreeData : ℕ) := (cyclotomicZHatIntersectionDegree_abstractFixedField_eq_intersection_finrank
       H).trans
       (rationalCyclotomicDegreeData_residueDegree_eq_intersection_finrank
         H).symm
@@ -823,7 +709,7 @@ theorem cyclotomicZHatIntersectionDegree_dvd_finrank :
   rw [numberFieldInRationalSeparableClosure] at h
   rw [←
     ((numberFieldSeparableClosureEmbedding K).equivFieldRange.toLinearEquiv).finrank_eq] at h
-  simpa only [cyclotomicZHatIntersectionDegree] using h
+  assumption
 
 /-- Under the actual Galois identification with `ZHat`, the
 subgroup fixing `K ∩ ℚ̃` is precisely
@@ -842,7 +728,7 @@ theorem
       numberFieldCyclotomicZHatIntersection K ≤
         rationalCyclotomicZHatField :=
     inf_le_right
-  let E : IntermediateField ℚ rationalCyclotomicZHatField :=
+  let E :=
     (numberFieldCyclotomicZHatIntersection K).restrict hle
   let e :=
     rationalCyclotomicZHatFieldGalEquivZHat
@@ -860,15 +746,11 @@ theorem
     (E.fixingSubgroup.map e.toMonoidHom).index =
       cyclotomicZHatIntersectionDegree K
   calc
-    (E.fixingSubgroup.map e.toMonoidHom).index = E.fixingSubgroup.index :=
+    _ = E.fixingSubgroup.index :=
       Subgroup.index_map_equiv E.fixingSubgroup e.toMulEquiv
     _ = Module.finrank ℚ E :=
       (IntermediateField.finrank_eq_fixingSubgroup_index rationalCyclotomicZHatField E).symm
     _ = cyclotomicZHatIntersectionDegree K := by
-      change
-        Module.finrank ℚ
-            ((numberFieldCyclotomicZHatIntersection K).restrict hle) =
-          Module.finrank ℚ (numberFieldCyclotomicZHatIntersection K)
       exact
         ((IntermediateField.restrictAlgEquiv hle).toLinearEquiv).finrank_eq.symm
 
@@ -889,7 +771,7 @@ noncomputable instance
         ℚ rationalCyclotomicZHatField) :
     FiniteDimensional ℚ
       (numberFieldCyclotomicZHatFiniteCompositum K E) := by
-  let : FiniteDimensional ℚ (IntermediateField.lift E.toIntermediateField) :=
+  let :=
     ((IntermediateField.liftAlgEquiv E.toIntermediateField).toLinearEquiv).finiteDimensional
   exact
     IntermediateField.finiteDimensional_sup
@@ -990,11 +872,9 @@ theorem
       numberFieldCyclotomicZHatIntersection K := by
   let C :=
     numberFieldCyclotomicZHatFiniteCompositum K E
-  let eK : K →ₐ[ℚ] C :=
-    numberFieldCyclotomicZHatFiniteCompositumEmbedding K E
-  let eE : E →ₐ[ℚ] C :=
+  let eE :=
     rationalCyclotomicZHatFiniteLayerCompositumEmbedding K E
-  change eE x ∈ eK.fieldRange at hx
+  change eE x ∈ (numberFieldCyclotomicZHatFiniteCompositumEmbedding K E).fieldRange at hx
   rw [AlgHom.mem_fieldRange] at hx
   obtain ⟨k, hk⟩ := hx
   have hkΩ :
@@ -1008,7 +888,7 @@ theorem
     exact h
   constructor
   · exact ⟨k, hkΩ⟩
-  · exact ((x : E) : rationalCyclotomicZHatField).property
+  · apply Subtype.property
 
 instance
     numberFieldCyclotomicZHatFiniteCompositum_scalarTower
@@ -1047,15 +927,13 @@ noncomputable instance
         ℚ rationalCyclotomicZHatField) :
     FiniteDimensional E
       (numberFieldCyclotomicZHatFiniteCompositum K E) := by
-  let : NumberField E := NumberField.of_module_finite ℚ E
-  let : Algebra E
-      (numberFieldCyclotomicZHatFiniteCompositum K E) :=
+  let := NumberField.of_module_finite ℚ E
+  let :=
     ((rationalCyclotomicZHatFiniteLayerCompositumEmbedding K E).toRingHom).toAlgebra
   let : Module E
       (numberFieldCyclotomicZHatFiniteCompositum K E) :=
     Algebra.toModule
-  let : IsScalarTower ℚ E
-      (numberFieldCyclotomicZHatFiniteCompositum K E) :=
+  let :=
     rationalCyclotomicZHatFiniteLayerCompositum_scalarTower K E
   exact
     FiniteDimensional.right ℚ E
@@ -1071,7 +949,7 @@ noncomputable instance
   let C :=
     numberFieldCyclotomicZHatFiniteCompositum K E
   let : Algebra ℚ C := C.algebra'
-  let A : IntermediateField ℚ C :=
+  let A :=
     (numberFieldInRationalSeparableClosure K).restrict
       (show
         numberFieldInRationalSeparableClosure K ≤ C from
@@ -1086,14 +964,14 @@ noncomputable instance
   let eE : E ≃ₐ[ℚ] B :=
     (IntermediateField.liftAlgEquiv E.toIntermediateField).trans
       (IntermediateField.restrictAlgEquiv le_sup_right)
-  let hE : IsGalois ℚ E := E.isGalois
-  let : IsGalois ℚ E := hE
-  let hfiniteB : FiniteDimensional ℚ B :=
+  let hE := E.isGalois
+  let := hE
+  let hfiniteB :=
     eE.toLinearEquiv.finiteDimensional
-  let hB : IsGalois ℚ B :=
+  let hB :=
     @IsGalois.of_algEquiv ℚ E _ _ B _ _ _ hE eE
-  let : FiniteDimensional ℚ B := hfiniteB
-  let : IsGalois ℚ B := hB
+  let := hfiniteB
+  let := hB
   have hsup : B ⊔ A = ⊤ := by
     apply IntermediateField.lift_injective C
     rw [IntermediateField.lift_sup,
@@ -1101,7 +979,7 @@ noncomputable instance
       IntermediateField.lift_restrict,
       IntermediateField.lift_top]
     exact sup_comm _ _
-  let : IsGalois A C :=
+  let :=
     @IsGalois.sup_right ℚ _ C _ _ B A hB hfiniteB hsup
   refine
     @IsGalois.of_equiv_equiv A C _ _ _ K C _ _ _ (by infer_instance)
@@ -1112,7 +990,7 @@ noncomputable instance
     apply Subtype.ext
     rfl
   simpa using
-    congrArg (fun z : C => (z : SeparableClosure ℚ)) (heK (eK.symm x))
+    congrArg (fun z : C => z) (heK (eK.symm x))
 
 noncomputable instance
     numberFieldCyclotomicZHatFiniteCompositum_isAbelianGalois
@@ -1139,7 +1017,7 @@ noncomputable instance
   let eE : E ≃ₐ[ℚ] B :=
     (IntermediateField.liftAlgEquiv E.toIntermediateField).trans
       (IntermediateField.restrictAlgEquiv le_sup_right)
-  let hE : IsGalois ℚ E := E.isGalois
+  let hE := E.isGalois
   let : IsGalois ℚ E := hE
   let hfiniteB : FiniteDimensional ℚ B :=
     eE.toLinearEquiv.finiteDimensional
@@ -1225,32 +1103,30 @@ theorem
     (IntermediateField.restrictRestrictAlgEquivMapHom
         ℚ E K C).range =
       (numberFieldCyclotomicZHatFiniteIntersection K E).fixingSubgroup := by
-  let : Normal ℚ E := E.isGalois.to_normal
+  let := E.isGalois.to_normal
   let C :=
     numberFieldCyclotomicZHatFiniteCompositum K E
   let : Algebra ℚ C := C.algebra'
-  let : Algebra K C :=
+  let :=
     numberFieldCyclotomicZHatFiniteCompositum_algebra K E
-  let : IsScalarTower ℚ K C :=
+  let :=
     numberFieldCyclotomicZHatFiniteCompositum_scalarTower K E
-  let : Algebra E C :=
+  let :=
     rationalCyclotomicZHatFiniteLayerCompositum_algebra K E
-  let : IsScalarTower ℚ E C :=
+  let :=
     rationalCyclotomicZHatFiniteLayerCompositum_scalarTower K E
-  let eK : K →ₐ[ℚ] C :=
+  let eK :=
     numberFieldCyclotomicZHatFiniteCompositumEmbedding K E
-  let eE : E →ₐ[ℚ] C :=
+  let eE :=
     rationalCyclotomicZHatFiniteLayerCompositumEmbedding K E
-  let r :
-      (C ≃ₐ[K] C) →* (E ≃ₐ[ℚ] E) :=
+  let r :=
     IntermediateField.restrictRestrictAlgEquivMapHom
       ℚ E K C
-  let J : IntermediateField ℚ E :=
+  let J :=
     numberFieldCyclotomicZHatFiniteIntersection K E
   have restriction_commutes
       (τ : C ≃ₐ[K] C) (x : E) :
       eE (r τ x) = τ (eE x) := by
-    change algebraMap E C (r τ x) = τ (algebraMap E C x)
     change
       algebraMap E C
           ((AlgEquiv.restrictNormal
@@ -1270,21 +1146,12 @@ theorem
       have hfixed :
           ∀ τ : C ≃ₐ[K] C, τ (eE x) = eE x := by
         intro τ
-        have hxτ :
-            r τ x = x :=
-          hx (r τ) ⟨τ, rfl⟩
-        have hrestrict :
-            eE (r τ x) = τ (eE x) := by
-          exact restriction_commutes τ x
-        exact hrestrict.symm.trans (congrArg eE hxτ)
-      have hmem :
-          eE x ∈ Set.range (algebraMap K C) :=
-        (IsGalois.mem_range_algebraMap_iff_fixed
-          (eE x)).2 hfixed
+        have hrestrict := restriction_commutes τ x
+        exact hrestrict.symm.trans (congrArg eE (hx (r τ) ⟨τ, rfl⟩))
       rw [AlgHom.mem_fieldRange]
-      obtain ⟨k, hk⟩ := hmem
+      obtain ⟨k, hk⟩ := ((IsGalois.mem_range_algebraMap_iff_fixed
+        (eE x)).2 hfixed)
       refine ⟨k, ?_⟩
-      change algebraMap K C k = eE x
       exact hk
     · intro hx σ hσ
       obtain ⟨τ, rfl⟩ := hσ
@@ -1296,7 +1163,6 @@ theorem
           eE (r τ x) = τ (eE x) := by
         exact restriction_commutes τ x
       rw [hrestrict, ← hk]
-      change τ (algebraMap K C k) = algebraMap K C k
       exact τ.commutes k
   calc
     r.range =
@@ -1533,13 +1399,14 @@ noncomputable instance
           _ = changeBase (τ * σ) :=
             (changeBase.map_mul τ σ).symm }
 
+section
+
+variable (E : FiniteGaloisIntermediateField ℚ rationalCyclotomicZHatField)
+
 /-- Inclusion of a finite cyclotomic compositum into the full
 cyclotomic `ZHat`-compositum. -/
 noncomputable def
-    numberFieldCyclotomicZHatFiniteCompositumInclusion
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+    numberFieldCyclotomicZHatFiniteCompositumInclusion :
     numberFieldCyclotomicZHatFiniteCompositum K E →ₐ[ℚ]
       numberFieldCyclotomicZHatCompositum K :=
   IntermediateField.inclusion
@@ -1548,16 +1415,11 @@ noncomputable def
 
 /-- The same finite-layer inclusion, over the chosen copy of `K`. -/
 noncomputable def
-    numberFieldCyclotomicZHatFiniteCompositumInclusionOverBase
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+    numberFieldCyclotomicZHatFiniteCompositumInclusionOverBase :
     numberFieldCyclotomicZHatFiniteCompositum K E →ₐ[K]
       numberFieldCyclotomicZHatCompositum K := by
-  let f :=
-    numberFieldCyclotomicZHatFiniteCompositumInclusion K E
   exact
-    { f.toRingHom with
+    { (numberFieldCyclotomicZHatFiniteCompositumInclusion K E).toRingHom with
       commutes' := by
         intro x
         rfl }
@@ -1565,13 +1427,12 @@ noncomputable def
 /-- The finite cyclotomic compositum, as an intermediate field of the
 full compositum over `K`. -/
 noncomputable def
-    numberFieldCyclotomicZHatFiniteLayerInCompositum
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+    numberFieldCyclotomicZHatFiniteLayerInCompositum :
     IntermediateField K
       (numberFieldCyclotomicZHatCompositum K) :=
   (numberFieldCyclotomicZHatFiniteCompositumInclusionOverBase K E).fieldRange
+
+end
 
 noncomputable instance
     numberFieldCyclotomicZHatFiniteLayerInCompositum_finiteDimensional
@@ -1617,9 +1478,6 @@ instance
   apply IsScalarTower.of_algebraMap_eq
   intro x
   apply Subtype.ext
-  change algebraMap ℚ (numberFieldCyclotomicZHatCompositum K) x =
-    algebraMap K (numberFieldCyclotomicZHatCompositum K)
-      (algebraMap ℚ K x)
   exact
     IsScalarTower.algebraMap_apply
       ℚ K (numberFieldCyclotomicZHatCompositum K) x
@@ -1632,9 +1490,7 @@ noncomputable def
       FiniteGaloisIntermediateField
         ℚ rationalCyclotomicZHatField) :
     E →ₐ[ℚ]
-      numberFieldCyclotomicZHatFiniteLayerInCompositum K E := by
-  exact
-    (AlgEquiv.toAlgHom
+      numberFieldCyclotomicZHatFiniteLayerInCompositum K E := (AlgEquiv.toAlgHom
       (AlgEquiv.restrictScalars ℚ
         (AlgHom.equivFieldRange
           (numberFieldCyclotomicZHatFiniteCompositumInclusionOverBase K E)))).comp
@@ -1724,7 +1580,7 @@ theorem numberFieldCyclotomicZHatCompositumRestriction_injective :
       (IntermediateField.restrictAlgEquiv le_sup_left)
   let eT : rationalCyclotomicZHatField ≃ₐ[ℚ] B :=
     IntermediateField.restrictAlgEquiv le_sup_right
-  let hB : IsAbelianGalois ℚ B :=
+  let hB :=
     @IsAbelianGalois.of_algHom ℚ B rationalCyclotomicZHatField
       _ _ _ _ _ eT.symm.toAlgHom
       rationalCyclotomicZHatField_isAbelianGalois
@@ -1809,7 +1665,7 @@ theorem numberFieldCyclotomicZHatCompositumRestriction_injective :
                 ((numberFieldCyclotomicZHatCompositumRestriction K σ).trans eT))
                   (eT y) : C) =
                 (eT ((numberFieldCyclotomicZHatCompositumRestriction K σ) y) : C)
-            simp only [AlgEquiv.trans_apply, AlgEquiv.symm_apply_apply]
+            simp
       _ = σ (eT y : C) := raw_restriction_commutes σ y
       _ = changeBase σ (eT y : C) := rfl
       _ = (rB (changeBase σ) (eT y) : C) := hBrestrict.symm
@@ -1837,14 +1693,10 @@ theorem
     letI : Normal ℚ E := E.isGalois.to_normal
     letI : Normal K
         (numberFieldCyclotomicZHatFiniteLayerInCompositum K E) := by
-      let : IsAbelianGalois K
-          (numberFieldCyclotomicZHatFiniteLayerInCompositum K E) :=
-        numberFieldCyclotomicZHatFiniteLayerInCompositum_isAbelianGalois K E
       exact IsGalois.to_normal
     letI : IsScalarTower K
         (numberFieldCyclotomicZHatFiniteLayerInCompositum K E)
-        (numberFieldCyclotomicZHatCompositum K) := by
-      exact IntermediateField.isScalarTower_mid
+        (numberFieldCyclotomicZHatCompositum K) := IntermediateField.isScalarTower_mid
         (numberFieldCyclotomicZHatFiniteLayerInCompositum K E)
     AlgEquiv.restrictNormalHom E
         (numberFieldCyclotomicZHatCompositumRestriction K σ) =
@@ -1854,44 +1706,38 @@ theorem
         (AlgEquiv.restrictNormalHom
           (numberFieldCyclotomicZHatFiniteLayerInCompositum K E)
           σ) := by
-  let : Normal ℚ E := E.isGalois.to_normal
+  let := E.isGalois.to_normal
   let : Algebra ℚ (numberFieldCyclotomicZHatCompositum K) :=
     (numberFieldCyclotomicZHatCompositum K).algebra'
-  let : Algebra K (numberFieldCyclotomicZHatCompositum K) :=
+  let :=
     numberFieldCyclotomicZHatCompositum_algebra K
-  let : IsScalarTower ℚ K (numberFieldCyclotomicZHatCompositum K) :=
+  let :=
     numberFieldCyclotomicZHatCompositum_scalarTower K
   let : Normal K
       (numberFieldCyclotomicZHatFiniteLayerInCompositum K E) := by
-    let : IsAbelianGalois K
-        (numberFieldCyclotomicZHatFiniteLayerInCompositum K E) :=
-      numberFieldCyclotomicZHatFiniteLayerInCompositum_isAbelianGalois K E
     exact IsGalois.to_normal
   let : IsScalarTower K
       (numberFieldCyclotomicZHatFiniteLayerInCompositum K E)
-      (numberFieldCyclotomicZHatCompositum K) := by
-    exact IntermediateField.isScalarTower_mid
+      (numberFieldCyclotomicZHatCompositum K) := IntermediateField.isScalarTower_mid
       (numberFieldCyclotomicZHatFiniteLayerInCompositum K E)
   let C := numberFieldCyclotomicZHatCompositum K
   let T := rationalCyclotomicZHatField
-  let P : IntermediateField K C :=
+  let P :=
     numberFieldCyclotomicZHatFiniteLayerInCompositum K E
-  let : Algebra T C := rationalCyclotomicZHatCompositum_algebra K
-  let : IsScalarTower ℚ T C :=
+  let := rationalCyclotomicZHatCompositum_algebra K
+  let :=
     rationalCyclotomicZHatCompositum_scalarTower K
-  let : Algebra E P :=
+  let :=
     rationalCyclotomicZHatFiniteLayerInCompositum_algebra K E
-  let : IsScalarTower ℚ E P :=
+  let :=
     rationalCyclotomicZHatFiniteLayerInCompositum_scalarTower K E
   let : IsAbelianGalois K P := by
-    change IsAbelianGalois K
-      (numberFieldCyclotomicZHatFiniteLayerInCompositum K E)
-    exact numberFieldCyclotomicZHatFiniteLayerInCompositum_isAbelianGalois K E
+    apply numberFieldCyclotomicZHatFiniteLayerInCompositum_isAbelianGalois
   let : Normal K P := IsGalois.to_normal
-  let eEP : E →ₐ[ℚ] P :=
+  let eEP :=
     rationalCyclotomicZHatFiniteLayerInCompositumEmbedding K E
-  let iP : P →ₐ[K] C := IntermediateField.val P
-  let iT : T →ₐ[ℚ] C := rationalCyclotomicZHatCompositumEmbedding K
+  let iP := IntermediateField.val P
+  let iT := rationalCyclotomicZHatCompositumEmbedding K
   have hEmbedding (z : E) :
       iP (eEP z) = iT (z : T) := by
     apply Subtype.ext
@@ -1940,15 +1786,14 @@ theorem
         (MulSemiringAction.toAlgEquiv K C σ) (algebraMap P C z)
     exact AlgEquiv.restrictNormal_commutes
       (MulSemiringAction.toAlgEquiv K C σ) P z
+  let restrictRestrictAlgEquivMapHom₀ := IntermediateField.restrictRestrictAlgEquivMapHom ℚ E K P (AlgEquiv.restrictNormalHom P σ)
   have hQ (z : E) :
       eEP
-          (IntermediateField.restrictRestrictAlgEquivMapHom
-            ℚ E K P (AlgEquiv.restrictNormalHom P σ) z) =
+          (restrictRestrictAlgEquivMapHom₀ z) =
         (AlgEquiv.restrictNormalHom P σ) (eEP z) := by
     change
       algebraMap E P
-          (IntermediateField.restrictRestrictAlgEquivMapHom
-            ℚ E K P (AlgEquiv.restrictNormalHom P σ) z) =
+          (restrictRestrictAlgEquivMapHom₀ z) =
         (AlgEquiv.restrictNormalHom P σ) (algebraMap E P z)
     change
       algebraMap E P
@@ -1965,9 +1810,7 @@ theorem
   apply eEP.injective
   apply iP.injective
   calc
-    iP (eEP
-        (AlgEquiv.restrictNormalHom E
-          (numberFieldCyclotomicZHatCompositumRestriction K σ) x)) =
+    _ =
         iT (((AlgEquiv.restrictNormalHom E
           (numberFieldCyclotomicZHatCompositumRestriction K σ) x) : T)) :=
       hEmbedding _
@@ -1978,8 +1821,7 @@ theorem
     _ = σ (iP (eEP x)) := congrArg σ (hEmbedding x).symm
     _ = iP (AlgEquiv.restrictNormalHom P σ (eEP x)) := (hP (eEP x)).symm
     _ = iP (eEP
-        (IntermediateField.restrictRestrictAlgEquivMapHom
-          ℚ E K P (AlgEquiv.restrictNormalHom P σ) x)) :=
+        (restrictRestrictAlgEquivMapHom₀ x)) :=
       congrArg iP (hQ x).symm
 
 /-- Restriction from the full cyclotomic compositum to its rational
@@ -1992,7 +1834,7 @@ theorem numberFieldCyclotomicZHatCompositumRestriction_continuous :
   intro U hU
   rw [krullTopology_mem_nhds_one_iff] at hU
   obtain ⟨M, hMfinite, hMU⟩ := hU
-  let : FiniteDimensional ℚ M := hMfinite
+  let := hMfinite
   let E :
       FiniteGaloisIntermediateField
         ℚ rationalCyclotomicZHatField :=
@@ -2005,7 +1847,7 @@ theorem numberFieldCyclotomicZHatCompositumRestriction_continuous :
       isGalois :=
         IsGalois.normalClosure
           ℚ M rationalCyclotomicZHatField }
-  let : Normal ℚ E := E.isGalois.to_normal
+  let := E.isGalois.to_normal
   let P :=
     numberFieldCyclotomicZHatFiniteLayerInCompositum K E
   let : IsAbelianGalois K P :=
@@ -2033,14 +1875,11 @@ theorem numberFieldCyclotomicZHatCompositumRestriction_continuous :
       restrictNormalHom_numberFieldCyclotomicZHatCompositumRestriction,
       hfixP,
       map_one]
-  have hfixE :
-      (numberFieldCyclotomicZHatCompositumRestriction K σ) ∈
-        (E : IntermediateField ℚ rationalCyclotomicZHatField).fixingSubgroup := by
-    rw [← IntermediateField.restrictNormalHom_ker]
-    exact hkerE
   apply hMU
-  exact IntermediateField.fixingSubgroup_antitone
-    (IntermediateField.le_normalClosure M) hfixE
+  refine IntermediateField.fixingSubgroup_antitone
+    (IntermediateField.le_normalClosure M) ?_
+  rw [← IntermediateField.restrictNormalHom_ker]
+  exact hkerE
 
 end Reciprocity
 end GlobalClassFieldTheory

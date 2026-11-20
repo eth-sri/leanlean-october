@@ -27,6 +27,8 @@ private theorem vector_expansion (d : ℕ) (u : Space d) :
     intro k _
     simp [hi, Ne.symm hi, Prod.ext_iff]
   · simp
+
+alias LaplacianNaturality.vector_expansion := vector_expansion
 private theorem realGrad_duality (d : ℕ) (f : Space d → ℝ) (x u : Space d) :
     metric d x (realGrad d f x) u = fderiv ℝ f x u := by
   have he (i : Fin d) : Real.exp (-2 * x (i,2)) * Real.exp (2 * x (i,2)) = 1 := by
@@ -44,6 +46,8 @@ private theorem realGrad_duality (d : ℕ) (f : Space d → ℝ) (x u : Space d)
       (Real.exp (-2 * x (i,2)) * Real.exp (2 * x (i,2))) *
         (fderiv ℝ f x (coordinateVector d i 0) * u (i,0) + fderiv ℝ f x (coordinateVector d i 1) * u (i,1)) := by ring
        _ = _ := by rw [he]; ring
+
+alias LaplacianNaturality.realGrad_duality := realGrad_duality
 private theorem realGrad_smoothAt (d : ℕ) (f : Space d → ℝ) (x : Space d)
     (hf : ContDiffAt ℝ 2 f x) : ContDiffAt ℝ 1 (realGrad d f) x := by
   apply (contDiffAt_piLp 2).mpr
@@ -51,7 +55,7 @@ private theorem realGrad_smoothAt (d : ℕ) (f : Space d → ℝ) (x : Space d)
   dsimp only [realGrad, WithLp.ofLp_toLp]
   apply ContDiffAt.mul
   · split_ifs <;> fun_prop
-  · exact (hf.fderiv_right (m := 1) (by norm_num)).clm_apply contDiffAt_const
+  · exact (hf.fderiv_right (by norm_num)).clm_apply contDiffAt_const
 private theorem metric_separates (d : ℕ) (x v w : Space d)
     (h : ∀ u, metric d x v u = metric d x w u) : v = w := by
   have he : ∀ u, inner ℝ (CotangentLogCoframe.C d x v) (CotangentLogCoframe.C d x u) =
@@ -62,7 +66,13 @@ private theorem metric_separates (d : ℕ) (x v w : Space d)
   apply ext_inner_right ℝ
   intro u
   simpa [CotangentLogCoframe.H] using he (CotangentLogCoframe.H d x u)
-private theorem realGrad_pushforward (d : ℕ) (ψ : Space d → Space d)
+
+alias LaplacianNaturality.metric_separates := metric_separates
+section
+
+variable (d : ℕ)
+
+private theorem realGrad_pushforward (ψ : Space d → Space d)
     (hψ : ContDiff ℝ ∞ ψ) (hm : ∀ x u v, metric d (ψ x) (fderiv ℝ ψ x u) (fderiv ℝ ψ x v) = metric d x u v)
     (f : Space d → ℝ) (x : Space d) (hf : DifferentiableAt ℝ f (ψ x)) :
     realGrad d f (ψ x) = fderiv ℝ ψ x (realGrad d (f ∘ ψ) x) := by
@@ -78,7 +88,7 @@ private theorem realGrad_pushforward (d : ℕ) (ψ : Space d → Space d)
   rw [hm, realGrad_duality, realGrad_duality]
   rw [fderiv_comp x hf (hψ.differentiable (by simp) _)]
   rfl
-private theorem projected_laplacian (d : ℕ) (f : Space d → ℂ) (L : ℂ →L[ℝ] ℝ) (x : Space d) (hf : ContDiffAt ℝ (⊤ : ℕ∞) f x) :
+private theorem projected_laplacian (f : Space d → ℂ) (L : ℂ →L[ℝ] ℝ) (x : Space d) (hf : ContDiffAt ℝ (⊤ : ℕ∞) f x) :
     L (laplacian d f x) =
       ∑ i : Fin d, (-(fderiv ℝ (fun y => realGrad d (L ∘ f) y (i,2)) x (coordinateVector d i 2)) +
         2 * realGrad d (L ∘ f) x (i,2) -
@@ -140,15 +150,12 @@ private theorem projected_laplacian (d : ℕ) (f : Space d → ℂ) (L : ℂ →
   rw [h2mul]
   ring
 
-theorem isometry_pullback_at (d : ℕ) (ψ : Space d → Space d)
+theorem isometry_pullback_at (ψ : Space d → Space d)
     (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
     (hm : ∀ y u v, metric d (ψ y) (fderiv ℝ ψ y u) (fderiv ℝ ψ y v) = metric d y u v)
     (f : Space d → ℂ) (x : Space d) (hf : ContDiffAt ℝ (⊤ : ℕ∞) f (ψ x)) :
     laplacian d (f ∘ ψ) x = laplacian d f (ψ x) := by
   have hcomp := hf.comp x hψ.contDiffAt
-  have hnear : ∀ᶠ y in nhds (ψ x), DifferentiableAt ℝ f y :=
-    ((hf.of_le (show (1 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)).mono
-      (fun y hy => hy.differentiableAt (by simp))
   have hproj (L : ℂ →L[ℝ] ℝ) :
       L (laplacian d (f ∘ ψ) x) = L (laplacian d f (ψ x)) := by
     rw [projected_laplacian d (f ∘ ψ) L x hcomp, projected_laplacian d f L (ψ x) hf]
@@ -158,16 +165,20 @@ theorem isometry_pullback_at (d : ℕ) (ψ : Space d → Space d)
       (realGrad_smoothAt d _ x ((L.contDiff.contDiffAt.comp x hcomp).of_le (by simp)))
       (realGrad_smoothAt d _ (ψ x) ((L.contDiff.contDiffAt.comp (ψ x) hf).of_le (by simp)))
       (Filter.Eventually.of_forall (fun y => hm y))
-    filter_upwards [hψ.continuous.continuousAt.eventually hnear] with y hy
+    filter_upwards [hψ.continuous.continuousAt.eventually (((hf.of_le (show (1 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)).mono
+      (fun y hy => hy.differentiableAt (by simp)))] with y hy
     exact realGrad_pushforward d ψ hψ hm (L ∘ f) y (L.differentiableAt.comp (ψ y) hy)
   exact Complex.ext (hproj Complex.reCLM) (hproj Complex.imCLM)
 
- def act (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) : Space d → Space d :=
+ def act (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) : Space d → Space d :=
     fun x => (CotangentLogCoframe.A d).symm (KPArch.productAction d g (CotangentLogCoframe.A d x))
-private theorem act_smooth (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) : ContDiff ℝ ∞ (act d g) := by
-  exact (CotangentLogCoframe.A d).symm.contDiff.comp
+private theorem act_smooth (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) : ContDiff ℝ ∞ (act d g) := (CotangentLogCoframe.A d).symm.contDiff.comp
     (((KPArch.productAction_contDiff d g).of_le (show (⊤ : ℕ∞) ≤ (⊤ : ℕ∞ω) from le_top)).comp
       (CotangentLogCoframe.A d).contDiff)
+
+end
+
+alias LaplacianNaturality.act_smooth := act_smooth
 private theorem act_metric (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (x u v : Space d) : metric d (act d g x) (fderiv ℝ (act d g) x u) (fderiv ℝ (act d g) x v) = metric d x u v := by
   have hquad (w : Space d) : metric d (act d g x) (fderiv ℝ (act d g) x w) (fderiv ℝ (act d g) x w) = metric d x w w := by
@@ -189,6 +200,8 @@ private theorem act_metric (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (F
   have he := hquad (u+v)
   rw [map_add, hpol, hpol, hquad, hquad] at he
   linarith
+
+alias LaplacianNaturality.act_metric := act_metric
 
 theorem productAction_pullback_at (d : ℕ)
     (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)

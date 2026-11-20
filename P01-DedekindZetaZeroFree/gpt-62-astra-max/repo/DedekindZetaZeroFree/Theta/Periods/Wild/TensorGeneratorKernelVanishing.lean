@@ -57,9 +57,8 @@ theorem induced_image_zero_of_arch_exterior
       (depth (R := R) W) (character W) (fiber D.toTensorActions W) (action D.toTensorActions W) E) :
     jointImage D W s hW x E z = 0 := by
   let L := jointImage D W s hW x E
-  change L z = 0
   have hp (f : ∀ v, ScalarSections F R.A.zeta12 R.A.primitive_zeta12 W
-      (depth (R := R) W) (character W) v) (e : E) :
+      (depth W) (character W) v) (e : E) :
       L (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] e) = 0 := by
     apply globalMap_image_zero_of_all_borel D.toTensorActions W s hW x E q
       (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] e)

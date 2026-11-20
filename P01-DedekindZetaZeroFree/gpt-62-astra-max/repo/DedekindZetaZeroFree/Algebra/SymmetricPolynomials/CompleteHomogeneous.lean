@@ -37,8 +37,6 @@ theorem eval_hsymm_fin_two {R : Type*} [CommSemiring R] (f : Fin 2 → R) (d : �
       = ∑ i ∈ Finset.range (d + 1), f 0 ^ i * f 1 ^ (d - i) := by
   rw [eval_hsymm, ← Fin.sum_univ_eq_sum_range _ (d + 1),
     ← Equiv.sum_comp (symFinTwoEquiv d).symm]
-  refine Fintype.sum_congr _ _ fun i => ?_
-  rw [coe_symFinTwoEquiv_symm_apply]
   simp
 
 end DedekindZetaZeroFree.TauCeti

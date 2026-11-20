@@ -11,8 +11,8 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory KPAdelicCoverRestrictedProduct
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
  def sDefect (x y : R.A.G) : CentralTuples F :=
   ⟨fun w => match w with
@@ -36,11 +36,9 @@ private lemma sDefect_arch (x y : R.A.G) (w : InfinitePlace F) :
 private lemma sDefect_finite (x y : R.A.G) (p : KPFinitePlace F) (hp : p ∈ R.A.Sf) :
     sDefect R x y (Sum.inr p) =
       KPHilbert.B3 F R.A.zeta12 R.A.primitive_zeta12 (.inr p) (x.2 ⟨p, hp⟩) (y.2 ⟨p, hp⟩) ^ 2 := by
-  change (if h : p ∈ R.A.Sf then _ else _) = _
   exact dif_pos hp
 private lemma sDefect_exterior (x y : R.A.G) (p : KPFinitePlace F) (hp : p ∉ R.A.Sf) :
     sDefect R x y (Sum.inr p) = 1 := by
-  change (if h : p ∈ R.A.Sf then _ else _) = _
   exact dif_neg hp
 
 lemma raw_diagonal_mul (x y : R.A.G) :
@@ -107,7 +105,7 @@ lemma sDefect_product (x y : R.A.G) :
         (x.2 p) (y.2 p) ^ 2 := by
   change (∏ᶠ w, sDefect R x y w) = _
   rw [finprod_eq_prod_of_mulSupport_subset _ (s := R.A.Sf.image Sum.inr)]
-  · rw [Finset.prod_image (by intro p hp q hq he; exact Sum.inr.inj he),
+  · rw [Finset.prod_image (fun p hp q hq he => Sum.inr.inj he),
       ← Finset.prod_coe_sort]
     apply Finset.prod_congr rfl
     intro p hp
@@ -141,7 +139,7 @@ lemma fourier_diagonal_mul_actual {N : TraceHaarTransport R} (C : JointUpperVani
       exact R.sameRoot.symm
     rwa [hr] at h
   rw [← ha, C.forward]
-  simp only [zpow_neg, zpow_ofNat]
+  simp
 
 end DedekindZetaZeroFree.OrbitExpansion
 

@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -90,8 +85,12 @@ noncomputable def multiplicativeZModProductEquivPiSucc
     · rfl
     · rfl
 
+section
+
+variable (d n : ℕ)
+
 /-- Coordinatewise reduction of a finite free `ℤ`-module modulo `n`. -/
-def finsuppModHom (d n : ℕ) :
+def finsuppModHom :
     (Fin d →₀ ℤ) →+ (Fin d → ZMod n) where
   toFun x i := x i
   map_zero' := by
@@ -102,19 +101,17 @@ def finsuppModHom (d n : ℕ) :
     simp
 
 /-- Every vector over `ZMod n` has an integral lift. -/
-theorem finsuppModHom_surjective (d n : ℕ) :
+theorem finsuppModHom_surjective :
     Function.Surjective (finsuppModHom d n) := by
   intro y
   choose x hx using fun i => ZMod.intCast_surjective (y i)
-  let x' : Fin d →₀ ℤ :=
-    (Finsupp.equivFunOnFinite).symm x
-  refine ⟨x', ?_⟩
+  refine ⟨((Finsupp.equivFunOnFinite).symm x), ?_⟩
   ext i
   exact hx i
 
 /-- The kernel of coordinatewise reduction is exactly the subgroup of
 `n`-fold multiples. -/
-theorem finsuppModHom_ker (d n : ℕ) :
+theorem finsuppModHom_ker :
     (finsuppModHom d n).ker =
       LocalFieldTheory.nsmulAddSubgroup (Fin d →₀ ℤ) n := by
   ext x
@@ -122,17 +119,13 @@ theorem finsuppModHom_ker (d n : ℕ) :
   · intro hx
     rw [AddMonoidHom.mem_ker] at hx
     rw [LocalFieldTheory.mem_nsmulAddSubgroup_iff]
-    let y : Fin d → ℤ := fun i => (x i) / n
-    let y' : Fin d →₀ ℤ :=
-      (Finsupp.equivFunOnFinite).symm y
-    refine ⟨y', ?_⟩
+    refine ⟨((Finsupp.equivFunOnFinite).symm (fun i => (x i) / n)), ?_⟩
     ext i
-    have hdiv : (n : ℤ) ∣ x i := by
-      rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
-      exact congrFun hx i
     change (n : ℤ) * (x i / n) = x i
     rw [mul_comm]
-    exact Int.ediv_mul_cancel hdiv
+    refine Int.ediv_mul_cancel ?_
+    rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
+    exact congrFun hx i
   · intro hx
     rw [LocalFieldTheory.mem_nsmulAddSubgroup_iff] at hx
     obtain ⟨y, rfl⟩ := hx
@@ -141,8 +134,7 @@ theorem finsuppModHom_ker (d n : ℕ) :
     simp [finsuppModHom]
 
 /-- The finite-free quotient `(ℤ^d) / n(ℤ^d)` is `(ZMod n)^d`. -/
-noncomputable def finsuppNsmulQuotientEquivPiZMod
-    (d n : ℕ) :
+noncomputable def finsuppNsmulQuotientEquivPiZMod :
     (Fin d →₀ ℤ) ⧸
         LocalFieldTheory.nsmulAddSubgroup (Fin d →₀ ℤ) n ≃+
       (Fin d → ZMod n) := by
@@ -153,8 +145,7 @@ noncomputable def finsuppNsmulQuotientEquivPiZMod
 
 /-- In multiplicative notation, the free integral quotient by `n`-th
 powers is a product of copies of `ZMod n`. -/
-noncomputable def multiplicativeFinsuppNthPowerQuotientEquivPiZMod
-    (d n : ℕ) :
+noncomputable def multiplicativeFinsuppNthPowerQuotientEquivPiZMod :
     Multiplicative (Fin d →₀ ℤ) ⧸
         (powMonoidHom n :
           Multiplicative (Fin d →₀ ℤ) →*
@@ -164,6 +155,8 @@ noncomputable def multiplicativeFinsuppNthPowerQuotientEquivPiZMod
     LocalFieldTheory.powMonoidHom_range_multiplicative_eq_nsmulAddSubgroup_toSubgroup]
   exact (finsuppNsmulQuotientEquivPiZMod d n).toMultiplicative
 
+end
+
 /-- The quotient of a finite free integral module by a positive multiple
 is finite. -/
 noncomputable instance finite_finsupp_nsmulQuotient
@@ -172,7 +165,6 @@ noncomputable instance finite_finsupp_nsmulQuotient
       ((Fin d →₀ ℤ) ⧸
         LocalFieldTheory.nsmulAddSubgroup
           (Fin d →₀ ℤ) (n : ℕ)) := by
-  let _ : NeZero (n : ℕ) := ⟨n.ne_zero⟩
   exact Finite.of_equiv
     (Fin d → ZMod (n : ℕ))
     (finsuppNsmulQuotientEquivPiZMod d n).symm
@@ -185,7 +177,6 @@ theorem card_finsupp_nsmulQuotient
           LocalFieldTheory.nsmulAddSubgroup
             (Fin d →₀ ℤ) (n : ℕ)) =
       (n : ℕ) ^ d := by
-  let _ : NeZero (n : ℕ) := ⟨n.ne_zero⟩
   rw [Nat.card_congr
     (finsuppNsmulQuotientEquivPiZMod d n).toEquiv,
     Nat.card_pi]
@@ -198,19 +189,16 @@ theorem n_dvd_numberField_torsionOrder
     (n : ℕ+)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
     (n : ℕ) ∣ NumberField.Units.torsionOrder K := by
-  let _ : NeZero (n : ℕ) := ⟨n.ne_zero⟩
   obtain ⟨ζ, hζ⟩ := hmu
-  have hζprim : IsPrimitiveRoot ζ (n : ℕ) :=
+  have hζprim :=
     (mem_primitiveRoots n.pos).mp hζ
-  let ζO : 𝓞 K := hζprim.toInteger
-  have hζOprim : IsPrimitiveRoot ζO (n : ℕ) :=
+  let ζO := hζprim.toInteger
+  have hζOprim :=
     hζprim.toInteger_isPrimitiveRoot
-  let hu : IsUnit ζO := hζOprim.isUnit n.ne_zero
-  let u : (𝓞 K)ˣ := hu.unit
-  have huval : (u : 𝓞 K) = ζO :=
-    hu.unit_spec
+  let hu := hζOprim.isUnit n.ne_zero
+  let u := hu.unit
   have huprim : IsPrimitiveRoot u (n : ℕ) := by
-    rw [← IsPrimitiveRoot.coe_units_iff, huval]
+    rw [← IsPrimitiveRoot.coe_units_iff, hu.unit_spec]
     exact hζOprim
   have hutorsion : u ∈ NumberField.Units.torsion K := by
     rw [NumberField.Units.torsion,
@@ -241,38 +229,23 @@ theorem card_numberField_torsion_nthPowerQuotient
   let T := NumberField.Units.torsion K
   let P :=
     (powMonoidHom (n : ℕ) : T →* T).range
-  have hcardP :
-      Nat.card P =
-        Nat.card T / (Nat.card T).gcd (n : ℕ) := by
-    exact IsCyclic.card_powMonoidHom_range T (n : ℕ)
-  have hgcd_dvd : (Nat.card T).gcd (n : ℕ) ∣ Nat.card T :=
-    Nat.gcd_dvd_left _ _
-  have hcard_factor :
-      (Nat.card T).gcd (n : ℕ) *
-          (Nat.card T / (Nat.card T).gcd (n : ℕ)) =
-        Nat.card T :=
-    Nat.mul_div_cancel' hgcd_dvd
   have hquotient :
       Nat.card (T ⧸ P) *
           (Nat.card T / (Nat.card T).gcd (n : ℕ)) =
         Nat.card T := by
-    rw [← hcardP]
+    rw [← (IsCyclic.card_powMonoidHom_range T (n : ℕ))]
     exact (Subgroup.card_eq_card_quotient_mul_card_subgroup P).symm
   have hfactor_pos :
       0 < Nat.card T / (Nat.card T).gcd (n : ℕ) := by
     rw [Nat.div_pos_iff]
     have hTpos : 0 < Nat.card T := Nat.card_pos
     exact ⟨Nat.gcd_pos_of_pos_left _ hTpos,
-      Nat.gcd_le_left (m := Nat.card T) (n : ℕ) hTpos⟩
-  have hcard :
-      Nat.card (T ⧸ P) =
-        (Nat.card T).gcd (n : ℕ) := by
-    exact Nat.eq_of_mul_eq_mul_right hfactor_pos
-      (hquotient.trans hcard_factor.symm)
-  change Nat.card (T ⧸ P) = (n : ℕ)
+      Nat.gcd_le_left (n : ℕ) hTpos⟩
+  have hcard := Nat.eq_of_mul_eq_mul_right hfactor_pos
+      (hquotient.trans (Nat.mul_div_cancel' (Nat.gcd_dvd_left _ _)).symm)
   rw [hcard, Nat.gcd_eq_right]
   simpa [T, NumberField.Units.torsionOrder] using
-    n_dvd_numberField_torsionOrder (K := K) n hmu
+    n_dvd_numberField_torsionOrder n hmu
 
 /-- The roots-of-unity contribution to the `S`-unit quotient is one
 copy of `ZMod n`. -/
@@ -297,7 +270,7 @@ noncomputable def numberFieldTorsionNthPowerQuotientEquivZMod
       (QuotientGroup.mk'_surjective _)
   apply mulEquivOfCyclicCardEq
   rw [card_numberField_torsion_nthPowerQuotient
-    (K := K) n hmu]
+     n hmu]
   simp
 
 /-- The `n`-th-power quotient of an `S`-unit group is finite. -/
@@ -309,12 +282,12 @@ noncomputable instance finite_sUnit_nthPowerQuotient
           SUnitGroup (K := K) S →*
             SUnitGroup (K := K) S).range) := by
   apply LocalFieldTheory.finite_nthPowerQuotient_of_mulEquiv
-    (SUnitGroup (K := K) S)
+    (SUnitGroup S)
     (NumberField.Units.torsion K ×
       Multiplicative
-        (Fin (SUnitGroup.logRank (K := K) S) →₀ ℤ))
+        (Fin (SUnitGroup.logRank S) →₀ ℤ))
     (n : ℕ)
-    (SUnitGroup.decomposition (K := K) S)
+    (SUnitGroup.decomposition S)
 
 /-- The `S`-unit theorem in the form used in the finite S-unit preparation argument:
 
@@ -331,18 +304,16 @@ theorem card_sUnit_nthPowerQuotient
               SUnitGroup (K := K) S).range) =
       (n : ℕ) ^ totalPlaceCard (K := K) S := by
   let F :=
-    Fin (SUnitGroup.logRank (K := K) S) →₀ ℤ
+    Fin (SUnitGroup.logRank S) →₀ ℤ
   let _ : NeZero (n : ℕ) := ⟨n.ne_zero⟩
   have hfree :
       Nat.card
           (Multiplicative F ⧸
             (powMonoidHom (n : ℕ) :
               Multiplicative F →* Multiplicative F).range) =
-        (n : ℕ) ^ SUnitGroup.logRank (K := K) S := by
-    have htransport :=
-      LocalFieldTheory.card_multiplicative_nthPowerQuotient_eq_additive_nsmulQuotient
-        F (n : ℕ)
-    rw [htransport]
+        (n : ℕ) ^ SUnitGroup.logRank S := by
+    rw [(LocalFieldTheory.card_multiplicative_nthPowerQuotient_eq_additive_nsmulQuotient
+      F (n : ℕ))]
     exact card_finsupp_nsmulQuotient
       (SUnitGroup.logRank (K := K) S) n
   have hplace :
@@ -355,22 +326,21 @@ theorem card_sUnit_nthPowerQuotient
     omega
   calc
     Nat.card
-        (SUnitGroup (K := K) S ⧸
+        (SUnitGroup S ⧸
           (powMonoidHom (n : ℕ) :
-            SUnitGroup (K := K) S →*
-              SUnitGroup (K := K) S).range) =
+            SUnitGroup S →*
+              SUnitGroup S).range) =
         Nat.card
           ((NumberField.Units.torsion K × Multiplicative F) ⧸
             (powMonoidHom (n : ℕ) :
               NumberField.Units.torsion K × Multiplicative F →*
                 NumberField.Units.torsion K ×
-                  Multiplicative F).range) := by
-      exact Nat.card_congr
+                  Multiplicative F).range) := Nat.card_congr
         (LocalFieldTheory.nthPowerQuotientEquivOfMulEquiv
-          (SUnitGroup (K := K) S)
+          (SUnitGroup S)
           (NumberField.Units.torsion K × Multiplicative F)
           (n : ℕ)
-          (SUnitGroup.decomposition (K := K) S)).toEquiv
+          (SUnitGroup.decomposition S)).toEquiv
     _ =
         Nat.card
           ((NumberField.Units.torsion K ⧸
@@ -379,25 +349,26 @@ theorem card_sUnit_nthPowerQuotient
                   NumberField.Units.torsion K).range) ×
             (Multiplicative F ⧸
               (powMonoidHom (n : ℕ) :
-                Multiplicative F →* Multiplicative F).range)) := by
-      exact Nat.card_congr
+                Multiplicative F →* Multiplicative F).range)) := Nat.card_congr
         (LocalFieldTheory.nthPowerProductQuotientEquiv
           (NumberField.Units.torsion K) (Multiplicative F)
           (n : ℕ)).toEquiv
     _ =
         (n : ℕ) *
-          (n : ℕ) ^ SUnitGroup.logRank (K := K) S := by
+          (n : ℕ) ^ SUnitGroup.logRank S := by
       rw [Nat.card_prod,
-        card_numberField_torsion_nthPowerQuotient (K := K) n hmu,
+        card_numberField_torsion_nthPowerQuotient n hmu,
         hfree]
-    _ = (n : ℕ) ^ totalPlaceCard (K := K) S := by
+    _ = (n : ℕ) ^ totalPlaceCard S := by
       rw [hplace, pow_succ']
+
+section
+
+variable (S : Finset (HeightOneSpectrum (𝓞 K))) (n : ℕ+)
 
 /-- The full `S`-unit quotient has one torsion coordinate and one
 coordinate for every logarithmic free generator. -/
 noncomputable def sUnitNthPowerQuotientCoordinates
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (n : ℕ+)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
     SUnitGroup (K := K) S ⧸
         (powMonoidHom (n : ℕ) :
@@ -428,9 +399,7 @@ noncomputable def sUnitNthPowerQuotientCoordinates
 /-- If a positive power of a global unit is an `S`-unit, then the unit
 itself is an `S`-unit.  This is the valuation-theoretic saturation needed
 to compare the abstract Kummer quotient with `Kˢ / Kˢⁿ`. -/
-theorem mem_sUnitGroup_of_pow_mem
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (n : ℕ+) (x : Kˣ)
+theorem mem_sUnitGroup_of_pow_mem (x : Kˣ)
     (hx : x ^ (n : ℕ) ∈ SUnitGroup (K := K) S) :
     x ∈ SUnitGroup (K := K) S := by
   rw [mem_SUnitGroup_iff] at hx ⊢
@@ -442,7 +411,9 @@ theorem mem_sUnitGroup_of_pow_mem
   rw [map_pow] at hpow
   exact
     (pow_eq_one_iff_left
-      (a := v.valuation K ((x : Kˣ) : K)) n.ne_zero).mp hpow
+       n.ne_zero).mp hpow
+
+end
 
 /-- The admissible subgroup
 
@@ -489,16 +460,16 @@ theorem nthPowerSubgroup_le_ker_sUnitToFullSUnitRadicalQuotient
   intro x hx
   obtain ⟨y, hy⟩ :=
     (MonoidHom.mem_range
-      (G := SUnitGroup (K := K) S)).mp hx
+      ).mp hx
   rw [powMonoidHom_apply] at hy
   subst x
   rw [MonoidHom.mem_ker, map_pow]
   apply
     (KummerTheory.restrictedRadicalQuotientMk_eq_one_iff
-      n (fullSUnitKummerSubgroup (K := K) n S) _).2
+      n (fullSUnitKummerSubgroup n S) _).2
   exact
     (KummerTheory.mem_restrictedNthPowersSubgroup_iff
-      n (fullSUnitKummerSubgroup (K := K) n S)).2
+      n (fullSUnitKummerSubgroup n S)).2
       ⟨(y : Kˣ), rfl⟩
 
 /-- The canonical comparison
@@ -531,35 +502,37 @@ theorem sUnitNthPowerQuotientToFullSUnitRadicalQuotient_surjective
   intro q
   obtain ⟨x, rfl⟩ :=
     KummerTheory.restrictedRadicalQuotientMk_surjective
-      n (fullSUnitKummerSubgroup (K := K) n S) q
+      n (fullSUnitKummerSubgroup n S) q
   obtain ⟨y, hy, z, hz, hyz⟩ :=
     Subgroup.mem_sup.1 x.property
-  let yS : SUnitGroup (K := K) S := ⟨y, hy⟩
+  let yS : SUnitGroup S := ⟨y, hy⟩
   refine
     ⟨QuotientGroup.mk'
         (powMonoidHom (n : ℕ) :
-          SUnitGroup (K := K) S →*
-            SUnitGroup (K := K) S).range yS, ?_⟩
+          SUnitGroup S →*
+            SUnitGroup S).range yS, ?_⟩
   change
     KummerTheory.restrictedRadicalQuotientMk
-        n (fullSUnitKummerSubgroup (K := K) n S)
-        (sUnitToFullSUnitKummerSubgroup (K := K) n S yS) =
+        n (fullSUnitKummerSubgroup n S)
+        (sUnitToFullSUnitKummerSubgroup n S yS) =
       KummerTheory.restrictedRadicalQuotientMk
-        n (fullSUnitKummerSubgroup (K := K) n S) x
+        n (fullSUnitKummerSubgroup n S) x
   apply
     (KummerTheory.restrictedRadicalQuotientMk_eq_iff
-      n (fullSUnitKummerSubgroup (K := K) n S) _ _).2
+      n (fullSUnitKummerSubgroup n S) _ _).2
   change y / x.1 ∈ KummerTheory.unitNthPowersSubgroup K n
   rw [← hyz]
   simpa using
     (KummerTheory.unitNthPowersSubgroup K n).inv_mem hz
 
+section
+
+variable (n : ℕ+) (S : Finset (HeightOneSpectrum (𝓞 K)))
+
 /-- The canonical comparison from `Kˢ / Kˢⁿ` is injective.  The only
 arithmetic point is saturation of the `S`-unit group under positive
 powers, proved above from valuations. -/
-theorem sUnitNthPowerQuotientToFullSUnitRadicalQuotient_injective
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem sUnitNthPowerQuotientToFullSUnitRadicalQuotient_injective :
     Function.Injective
       (sUnitNthPowerQuotientToFullSUnitRadicalQuotient
         (K := K) n S) := by
@@ -572,33 +545,27 @@ theorem sUnitNthPowerQuotientToFullSUnitRadicalQuotient_injective
           have hglobal :
               ((x : Kˣ) / (y : Kˣ)) ∈
                 KummerTheory.unitNthPowersSubgroup K n := by
-            have hrestricted :=
-              (KummerTheory.restrictedRadicalQuotientMk_eq_iff
-                n (fullSUnitKummerSubgroup (K := K) n S) _ _).1 hqr
             exact
               (KummerTheory.mem_restrictedNthPowersSubgroup_iff
-                n (fullSUnitKummerSubgroup (K := K) n S)).1 hrestricted
+                n (fullSUnitKummerSubgroup n S)).1 ((KummerTheory.restrictedRadicalQuotientMk_eq_iff
+                  n (fullSUnitKummerSubgroup n S) _ _).1 hqr)
           obtain ⟨z, hz⟩ :=
             (KummerTheory.mem_unitNthPowersSubgroup_iff n).mp hglobal
           have hzpow :
-              z ^ (n : ℕ) ∈ SUnitGroup (K := K) S := by
+              z ^ (n : ℕ) ∈ SUnitGroup S := by
             rw [hz]
-            exact (SUnitGroup (K := K) S).div_mem x.property y.property
-          let zS : SUnitGroup (K := K) S :=
-            ⟨z, mem_sUnitGroup_of_pow_mem (K := K) S n z hzpow⟩
+            exact (SUnitGroup S).div_mem x.property y.property
           apply
             (MonoidHom.mem_range
-              (G := SUnitGroup (K := K) S)).2
-          refine ⟨zS, ?_⟩
+              ).2
+          refine ⟨(⟨z, mem_sUnitGroup_of_pow_mem S n z hzpow⟩), ?_⟩
           rw [powMonoidHom_apply]
           apply Subtype.ext
           exact hz
 
 /-- The exact quotient identification used to define
 `N = K(√[n]{Kˢ})`. -/
-noncomputable def sUnitNthPowerQuotientEquivFullSUnitRadicalQuotient
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def sUnitNthPowerQuotientEquivFullSUnitRadicalQuotient :
     SUnitGroup (K := K) S ⧸
         (powMonoidHom (n : ℕ) :
           SUnitGroup (K := K) S →*
@@ -612,6 +579,8 @@ noncomputable def sUnitNthPowerQuotientEquivFullSUnitRadicalQuotient
         (K := K) n S,
       sUnitNthPowerQuotientToFullSUnitRadicalQuotient_surjective
         (K := K) n S⟩
+
+end
 
 /-- The full `S`-unit radical quotient is finite. -/
 noncomputable instance finite_fullSUnitRadicalQuotient
@@ -637,10 +606,10 @@ theorem card_fullSUnitRadicalQuotient
         (KummerTheory.RestrictedRadicalQuotient
           n (fullSUnitKummerSubgroup (K := K) n S)) =
       (n : ℕ) ^ totalPlaceCard (K := K) S := by
-  rw [← card_sUnit_nthPowerQuotient (K := K) S n hmu]
+  rw [← card_sUnit_nthPowerQuotient S n hmu]
   exact Nat.card_congr
     (sUnitNthPowerQuotientEquivFullSUnitRadicalQuotient
-      (K := K) n S).symm.toEquiv
+       n S).symm.toEquiv
 
 end KummerTheory
 

@@ -26,13 +26,13 @@ theorem fixed_section_eq_identity_scalar
     (h₀ : (f₀.val 1).val 1 = 1) :
     f = (f.val 1).val 1 • f₀ := by
   let : AddCommGroup (sectionSpace B P .plus 0) := Module.addCommMonoidToAddCommGroup ℂ
-  let U := fixedSubmodule (V := sectionSpace B P .plus 0)
-    (IPlus B P) (I.compact.toOpenSubgroup : Subgroup G)
+  let U := fixedSubmodule
+    (IPlus B P) I.compact.toOpenSubgroup
   obtain ⟨hfinite, hrank⟩ := plus_compact_fixed_line B P I h
-  let : Module.Finite ℂ U := hfinite
+  let := hfinite
   have hn : (⟨f₀, hf₀⟩ : U) ≠ 0 := by
     intro he
-    have hz : (f₀.val 1).val 1 = 0 := congrArg (fun u : U => (u.val.val 1).val 1) he
+    have hz := congrArg (fun u : U => (u.val.val 1).val 1) he
     rw [h₀] at hz
     exact one_ne_zero hz
   obtain ⟨c, hc⟩ := exists_smul_eq_of_finrank_eq_one hrank hn (⟨f, hf⟩ : U)
@@ -45,8 +45,8 @@ theorem fixed_section_eq_identity_scalar
 end Local
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
 
 end DedekindZetaZeroFree.KPLiteralScalarCanonicalReferenceComparison
 

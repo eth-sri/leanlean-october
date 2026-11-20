@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -58,15 +54,13 @@ private theorem mem_fixingSubgroup_iff_restrictNormalHom_eq_one
     apply AlgEquiv.ext
     intro x
     apply Subtype.ext
-    change ((AlgEquiv.restrictNormalHom E sigma x : E) : Omega) = (x : Omega)
     rw [AlgEquiv.restrictNormalHom_apply]
     exact hsigma x x.property
   · intro hsigma
     rw [IntermediateField.mem_fixingSubgroup_iff]
     intro x hx
     let y : E := ⟨x, hx⟩
-    have hy := congrArg (fun tau : E ≃ₐ[k] E => tau y) hsigma
-    have hyval := congrArg Subtype.val hy
+    have hyval := congrArg Subtype.val (congrArg (fun tau : E ≃ₐ[k] E => tau y) hsigma)
     rw [AlgEquiv.restrictNormalHom_apply] at hyval
     simpa [y] using hyval
 
@@ -81,19 +75,13 @@ theorem residueDatumIn_fieldImage_closedFixingSubgroup
   let : Finite E := Module.finite_of_finite k
   constructor
   · rintro ⟨sigma, rfl⟩
-    change (residueAbsoluteDegreeIn k Omega sigma.1).toAdd ∈
-      (zHatMulNat (Module.finrank k E)).toAddMonoidHom.range
     rw [zHatMulNat_range_eq_ker_reduction
       (Module.finrank k E) Module.finrank_pos]
-    change zHatReduction (Module.finrank k E) Module.finrank_pos
-      (residueAbsoluteDegreeIn k Omega sigma.1).toAdd = 0
-    have hrestrict : AlgEquiv.restrictNormalHom E sigma.1 = 1 :=
-      (mem_fixingSubgroup_iff_restrictNormalHom_eq_one
-        k Omega E sigma.1).1 sigma.2
     have hcoordinate :=
       finiteResidueFrobeniusExponentEquiv_symm_restrict_in
         k Omega sigma.1 E
-    rw [hrestrict, map_one] at hcoordinate
+    rw [((mem_fixingSubgroup_iff_restrictNormalHom_eq_one
+      k Omega E sigma.1).1 sigma.2), map_one] at hcoordinate
     exact congrArg Multiplicative.toAdd hcoordinate |>.symm
   · intro hz
     change z.toAdd ∈
@@ -106,9 +94,6 @@ theorem residueDatumIn_fieldImage_closedFixingSubgroup
       rw [restrictNormalHom_residueAbsoluteFrobenius]
       change finiteResidueFrobeniusFromZHat k E z = 1
       rw [finiteResidueFrobeniusFromZHat_apply]
-      change finiteResidueFrobeniusExponentHom k E
-        (Multiplicative.ofAdd
-          (zHatReduction (Module.finrank k E) Module.finrank_pos z.toAdd)) = 1
       rw [show zHatReduction (Module.finrank k E) Module.finrank_pos z.toAdd = 0
         from hz]
       simp

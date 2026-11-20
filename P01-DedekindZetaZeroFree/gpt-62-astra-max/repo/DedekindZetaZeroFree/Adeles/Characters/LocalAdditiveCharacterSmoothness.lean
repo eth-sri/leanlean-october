@@ -12,15 +12,16 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPJacquetCharacter
 
 variable (F : Type) [Field F] [NumberField F]
-variable (v : HeightOneSpectrum (𝓞 F))
+    (v : HeightOneSpectrum (𝓞 F))
 
 abbrev AdditiveCharacter := AddChar (v.adicCompletion F) ℂˣ
 
-private theorem character_norm_le_one (ψ : AdditiveCharacter F v)
-    (hψ : Continuous ψ) (x : v.adicCompletion F) : ‖(ψ x : ℂ)‖ ≤ 1 := by
-  have hc := (isCompact_closedBall (0 : v.adicCompletion F) ‖x‖).image
-    (Units.continuous_val.comp hψ)
-  obtain ⟨C, hC⟩ := (Metric.isBounded_iff_subset_closedBall (0 : ℂ)).mp hc.isBounded
+variable (ψ : AdditiveCharacter F v) (hψ : Continuous ψ)
+
+include hψ in
+private theorem character_norm_le_one (x : v.adicCompletion F) : ‖(ψ x : ℂ)‖ ≤ 1 := by
+  obtain ⟨C, hC⟩ := (Metric.isBounded_iff_subset_closedBall (0 : ℂ)).mp ((isCompact_closedBall (0 : v.adicCompletion F) ‖x‖).image
+    (Units.continuous_val.comp hψ)).isBounded
   by_contra h
   obtain ⟨n, hn⟩ := pow_unbounded_of_one_lt C (lt_of_not_ge h)
   have hx : n • x ∈ Metric.closedBall (0 : v.adicCompletion F) ‖x‖ := by
@@ -33,15 +34,15 @@ private theorem character_norm_le_one (ψ : AdditiveCharacter F v)
     simpa only [AddChar.map_nsmul_eq_pow, Units.val_pow_eq_pow_val, norm_pow] using hb
   exact (not_lt_of_ge hpow) hn
 
-theorem character_unitary (ψ : AdditiveCharacter F v) (hψ : Continuous ψ)
+include hψ in
+theorem character_unitary
     (x : v.adicCompletion F) : ‖(ψ x : ℂ)‖ = 1 := by
   apply le_antisymm (character_norm_le_one F v ψ hψ x)
   have hi := character_norm_le_one F v ψ hψ (-x)
   rw [AddChar.map_neg_eq_inv, Units.val_inv_eq_inv_val, norm_inv] at hi
-  have hp : 0 < ‖(ψ x : ℂ)‖ := norm_pos_iff.mpr (ψ x).ne_zero
-  exact (inv_le_one₀ hp).mp hi
+  exact (inv_le_one₀ (norm_pos_iff.mpr (ψ x).ne_zero)).mp hi
 
-def circleCharacter (ψ : AdditiveCharacter F v) (hψ : Continuous ψ) :
+def circleCharacter :
     AddChar (v.adicCompletion F) Circle where
   toFun x := ⟨(ψ x : ℂ), by
     exact mem_sphere_zero_iff_norm.2 (character_unitary F v ψ hψ x)⟩
@@ -53,22 +54,23 @@ def circleCharacter (ψ : AdditiveCharacter F v) (hψ : Continuous ψ) :
     change (ψ (x + y) : ℂ) = (ψ x : ℂ) * (ψ y : ℂ)
     simp [AddChar.map_add_eq_mul]
 
-@[simp] theorem circleCharacter_coe (ψ : AdditiveCharacter F v) (hψ : Continuous ψ)
+@[simp] theorem circleCharacter_coe
     (x : v.adicCompletion F) : (circleCharacter F v ψ hψ x : ℂ) = (ψ x : ℂ) := rfl
 
-theorem continuous_circleCharacter (ψ : AdditiveCharacter F v) (hψ : Continuous ψ) :
-    Continuous (circleCharacter F v ψ hψ) := by
-  exact (Units.continuous_val.comp hψ).subtype_mk _
+theorem continuous_circleCharacter :
+    Continuous (circleCharacter F v ψ hψ) := (Units.continuous_val.comp hψ).subtype_mk _
 
-theorem character_trivial_near_zero (ψ : AdditiveCharacter F v) (hψ : Continuous ψ) :
+include hψ in
+theorem character_trivial_near_zero :
     ∃ r : ℝ, 0 < r ∧ ∀ x : v.adicCompletion F, ‖x‖ < r → ψ x = 1 := by
   obtain ⟨r, hr, hb⟩ := KPFiniteLocal.character_trivial_near_zero
     (circleCharacter F v ψ hψ) (continuous_circleCharacter F v ψ hψ)
   refine ⟨r, hr, fun x hx => ?_⟩
   apply Units.ext
-  simpa using congrArg (fun z : Circle => (z : ℂ)) (hb x hx)
+  exact congrArg (fun z : Circle => (z : ℂ)) (hb x hx)
 
-theorem character_locallyConstant (ψ : AdditiveCharacter F v) (hψ : Continuous ψ) :
+include hψ in
+theorem character_locallyConstant :
     IsLocallyConstant ψ := by
   obtain ⟨r, hr, hb⟩ := character_trivial_near_zero F v ψ hψ
   apply (IsLocallyConstant.iff_eventually_eq _).2

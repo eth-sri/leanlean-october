@@ -14,19 +14,22 @@ noncomputable def su2HarmonicCharacter (ℓ : ℕ) (k : ComplexSU2) : ℂ :=
     ⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
       (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩
 
-noncomputable def characterAverage (s : ℝ) (μ : Measure ComplexSU2)
-    (ℓ : ℕ) (f : PrincipalSeries s) (g : ComplexGL2) : ℂ :=
+section
+
+variable (s : ℝ) (μ : Measure ComplexSU2) (ℓ : ℕ) (f : PrincipalSeries s) (g : ComplexGL2)
+
+noncomputable def characterAverage : ℂ :=
   ((2 * ℓ + 1 : ℕ) : ℂ) *
     ∫ k : ComplexSU2, star (su2HarmonicCharacter ℓ k) *
       f (g * complexSU2Embedding k) ∂μ
 
-theorem characterAverage_formula (s : ℝ) (μ : Measure ComplexSU2)
-    (ℓ : ℕ) (f : PrincipalSeries s) (g : ComplexGL2) :
+theorem characterAverage_formula :
     characterAverage s μ ℓ f g =
       ((2 * ℓ + 1 : ℕ) : ℂ) *
         ∫ k : ComplexSU2, star (su2HarmonicCharacter ℓ k) *
-          f (g * complexSU2Embedding k) ∂μ := by
-  rfl
+          f (g * complexSU2Embedding k) ∂μ := rfl
+
+end
 
 theorem exists_su2_probability_haar :
     ∃ μ : Measure ComplexSU2, μ.IsHaarMeasure ∧ IsProbabilityMeasure μ := by
@@ -35,7 +38,6 @@ theorem exists_su2_probability_haar :
     exact Subtype.range_coe.symm)
   letI : ContinuousInv ComplexSU2 := ⟨by
     apply continuous_induced_rng.mpr
-    change Continuous (fun k : ComplexSU2 => star (k : Matrix (Fin 2) (Fin 2) ℂ))
     exact continuous_star.comp continuous_subtype_val⟩
   letI : IsTopologicalGroup ComplexSU2 := {}
   let K : TopologicalSpace.PositiveCompacts ComplexSU2 := ⊤

@@ -19,8 +19,7 @@ theorem galoisCharacter_ne_zero
     [Algebra K L] [IsAbelianGalois K L]
     (ρ : ComplexDual (L ≃ₐ[K] L)) (hρ : ρ ≠ 1) :
     ∃ (m : Ideal (𝓞 K)) (χ : RayClassCharacter K m) (f : ℂ → ℂ),
-      m ≠ ⊥ ∧ ¬ χ.IsPrincipal ∧
-      (∀ (p : HeightOneSpectrum (𝓞 K)) (W : HeightOneSpectrum (𝓞 L)),
+      m ≠ ⊥ ∧ (∀ (p : HeightOneSpectrum (𝓞 K)) (W : HeightOneSpectrum (𝓞 L)),
         W.asIdeal.LiesOver p.asIdeal → χ p.asIdeal = primeArtinValue ρ W) ∧
       Differentiable ℂ f ∧
       (∀ s, 1 < s.re → HasSum (fun I : Ideal (𝓞 K) =>
@@ -37,7 +36,7 @@ theorem galoisCharacter_ne_zero
     congr 1
     exact Finset.prod_congr rfl fun σ _ => (hsum σ s hs).tsum_eq
   let r : E := ⟨ρ, hρ⟩
-  refine ⟨m ρ, χ ρ, F r, hm ρ, hnonprincipal ρ hρ, hprime ρ, hF r, hsum r, ?_⟩
+  refine ⟨m ρ, χ ρ, F r, hm ρ, hprime ρ, hF r, hsum r, ?_⟩
   intro s hs
   by_cases hs1 : s = 1
   · subst s

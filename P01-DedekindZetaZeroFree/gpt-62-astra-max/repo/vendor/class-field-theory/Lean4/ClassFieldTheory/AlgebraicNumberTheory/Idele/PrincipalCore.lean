@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -25,7 +23,6 @@ open scoped NumberField
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable (K : Type*) [Field K] [NumberField K]
 
@@ -61,23 +58,12 @@ variable (K)
 /-- The diagonal map from field units to ideles is injective. -/
 theorem principalIdele_injective :
     Function.Injective (principalIdele K) := by
-  apply (equivAdeleRingUnits (K := K)).symm.injective.comp
-  exact Units.map_injective
-    (NumberField.AdeleRing.algebraMap_injective (R := 𝓞 K) (K := K))
+  apply (equivAdeleRingUnits).symm.injective.comp
+  exact Units.map_injective (AdeleRing.algebraMap_injective (𝓞 K) K)
 
 /-- The subgroup of principal ideles. -/
 def principalSubgroup : Subgroup (IdeleGroup K) :=
   (principalIdele K).range
-
-/-- The multiplicative group `Kˣ`, identified with the subgroup of principal
-ideles. -/
-def principalEquiv : Kˣ ≃* principalSubgroup K :=
-  MonoidHom.ofInjective (principalIdele_injective K)
-
-@[simp]
-theorem coe_principalEquiv (x : Kˣ) :
-    (principalEquiv K x : IdeleGroup K) = principalIdele K x :=
-  MonoidHom.ofInjective_apply (principalIdele_injective K)
 
 end IdeleGroup
 

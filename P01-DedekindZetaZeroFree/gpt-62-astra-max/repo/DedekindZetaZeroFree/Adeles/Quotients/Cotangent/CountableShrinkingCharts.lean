@@ -18,10 +18,10 @@ open KPContSectorPhaseComponentCharts KPContSectorCoveredQuotientVocabulary
 open KPContSectorScalarLineAlgebra KPContSectorSmoothFramesSupport
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 structure ShrunkChart where
   component : Fin (H.atlas U).componentCount
@@ -51,10 +51,9 @@ def quotientMap (y : C.domain) : C.baseDomain := ⟨C.toBase y, Set.mem_range_se
 
 def action (σ : C.Isotropy) (y : C.domain) : C.domain :=
   ⟨(σ.val : KPCuspArithmetic.PGL2 F) • y.val, by
-    have h := Set.mem_image_of_mem
-      (fun z : SymmetricSpace F => (σ.val : KPCuspArithmetic.PGL2 F) • z) y.property
     exact (congrArg (fun s : Set (SymmetricSpace F) =>
-      (σ.val : KPCuspArithmetic.PGL2 F) • y.val ∈ s) (C.invariant σ)).mp h⟩
+      σ.val • y.val ∈ s) (C.invariant σ)).mp (Set.mem_image_of_mem
+        (fun z : SymmetricSpace F => σ.val • z) y.property)⟩
 
 def lineAction (σ : C.Isotropy) (v : Coefficient F ζ hζ U) : Coefficient F ζ hζ U :=
   phaseTransport F ζ hζ U (((H.atlas U).line C.component).rho σ.val) v
@@ -75,28 +74,14 @@ structure Properties : Prop where
   finite_isotropy : Finite C.Isotropy
   base_open : IsOpen C.baseDomain
   base_measurable : MeasurableSet C.baseDomain
-  domain_borel : BorelSpace C.domain
-  base_borel : BorelSpace C.baseDomain
-  continuous : Continuous C.toBase
   measurable : Measurable C.toBase
   quotient : IsQuotientMap C.quotientMap
   orbit_fibers : ∀ y z : C.domain,
     C.toBase y = C.toBase z ↔ ∃ σ : C.Isotropy, C.action σ y = z
-  image_in_larger : C.baseDomain ⊆
-    baseChartImage F ζ hζ U R P H C.component C.center C.larger
   normalization_positive : 0 < (H.disintegration U).componentWeight C.component
   normalization_finite : (H.disintegration U).componentWeight C.component < ⊤
   exact_pushforward : Measure.map C.toBase C.liftedMeasure =
     (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U).restrict C.baseDomain
-  frame_unitary : ∀ (y : C.domain) (v : Coefficient F ζ hζ U), ‖C.frame y v‖ = ‖v‖
-  frame_equivariant : ∀ (σ : C.Isotropy) (y : C.domain) (v : Coefficient F ζ hζ U),
-    C.frame (C.action σ y) (C.lineAction σ v) = C.lineAction σ (C.frame y v)
-  coefficient_equivariant : ∀ (s : Sections F ζ hζ U R P H)
-    (σ : C.Isotropy) (y : C.domain),
-    C.coefficient s (C.action σ y) = C.lineAction σ (C.coefficient s y)
-  scalar_restriction : ∀ (f : GenuineCoveredScalars F ζ hζ U) (y : C.domain),
-    (C.coefficient (S F ζ hζ U R P H f) y : ℂ) =
-      (J F ζ hζ U f).val (y.val, (H.atlas U).representative C.component)
 
 end ShrunkChart
 
@@ -107,17 +92,14 @@ structure CountableCover where
 
 structure QuotientRegularity : Prop where
   second_countable : SecondCountableTopology (KPFiniteCuspAtlas.rawXU F ζ hζ U)
-  quotient_borel : BorelSpace (KPFiniteCuspAtlas.rawXU F ζ hζ U)
-  lifted_second_countable : SecondCountableTopology (SymmetricSpace F)
-  lifted_borel : BorelSpace (SymmetricSpace F)
 
 namespace Construction
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 private theorem component_open (i : Fin (H.atlas U).componentCount) :
     IsOpenEmbedding (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative i)) := by
@@ -133,7 +115,11 @@ private theorem projection_open (i : Fin (H.atlas U).componentCount) :
     ⟨fun g => KPCuspSiegel.continuous_action F g.val⟩
   exact isOpenMap_quotient_mk'_mul
 
- theorem base_open (C : ShrunkChart F ζ hζ U R P H) : IsOpen C.baseDomain := by
+ section
+
+variable (C : ShrunkChart F ζ hζ U R P H)
+
+theorem base_open : IsOpen C.baseDomain := by
   have he : C.baseDomain =
       KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative C.component) ''
         (KPCuspSiegel.projection F (Component F ζ hζ U R P H C.component) '' C.domain) := by
@@ -141,36 +127,30 @@ private theorem projection_open (i : Fin (H.atlas U).componentCount) :
   rw [he]
   exact (component_open C.component).isOpenMap _ ((projection_open C.component) _ C.domain_open)
 
-private theorem base_continuous (C : ShrunkChart F ζ hζ U R P H) : Continuous C.toBase :=
+private theorem base_continuous : Continuous C.toBase :=
   (component_open C.component).continuous.comp (continuous_quotient_mk'.comp continuous_subtype_val)
 
-private theorem base_quotient (C : ShrunkChart F ζ hζ U R P H) : IsQuotientMap C.quotientMap := by
-  have hopen : IsOpenMap C.toBase :=
-    ((component_open C.component).isOpenMap.comp (projection_open C.component)).domRestrict C.domain_open
-  exact (hopen.codRestrict (fun x => Set.mem_range_self x)).isQuotientMap
-    ((base_continuous C).subtype_mk (fun x => Set.mem_range_self x))
-    (fun ⟨x, y, hy⟩ => ⟨y, Subtype.ext hy⟩)
+end
 
 private theorem separated (C : ShrunkChart F ζ hζ U R P H)
     (g : Component F ζ hζ U R P H C.component) (x : SymmetricSpace F)
     (hx : x ∈ C.domain) (hg : g • x ∈ C.domain) : g ∈ C.Isotropy := by
   let g' : ArchComponent F ζ hζ U R P H C.component :=
     ⟨complexProjectiveEmbedding F g.val, Subgroup.mem_map.mpr ⟨g.val,g.property,rfl⟩⟩
-  have hh : g' ∈ MulAction.stabilizer _ C.center :=
-    C.larger.separated g' ⟨g • x,
-      ⟨x,C.closure_subset (subset_closure hx),complexProjectiveEmbedding_smul F g.val x⟩,
-      C.closure_subset (subset_closure hg)⟩
   apply MulAction.mem_stabilizer_iff.mpr
-  have ht := MulAction.mem_stabilizer_iff.mp hh
+  have ht := MulAction.mem_stabilizer_iff.mp (C.larger.separated g' ⟨g • x,
+    ⟨x,C.closure_subset (subset_closure hx),complexProjectiveEmbedding_smul F g.val x⟩,
+    C.closure_subset (subset_closure hg)⟩)
   change complexProjectiveEmbedding F g.val • C.center = C.center at ht
   rwa [complexProjectiveEmbedding_smul] at ht
+
+alias CountableShrinkingCharts.separated := separated
 
 private theorem base_fibers (C : ShrunkChart F ζ hζ U R P H) (y z : C.domain) :
     C.toBase y = C.toBase z ↔ ∃ σ : C.Isotropy, C.action σ y = z := by
   constructor
   · intro he
-    have hh := (component_open C.component).injective he
-    obtain ⟨g,hg⟩ := Quotient.exact hh
+    obtain ⟨g,hg⟩ := Quotient.exact ((component_open C.component).injective he)
     change g • z.val = y.val at hg
     refine ⟨⟨g⁻¹, separated C g⁻¹ y.val y.property ?_⟩, ?_⟩
     · simpa [← hg] using z.property
@@ -184,27 +164,28 @@ private theorem base_fibers (C : ShrunkChart F ζ hζ U R P H) (y z : C.domain) 
       rw [← h, inv_smul_smul]⟩
 
 private theorem shrink_exists (i : Fin (H.atlas U).componentCount) (p : SymmetricSpace F) :
-    ∃ C : ShrunkChart F ζ hζ U R P H, C.component = i ∧ C.center = p ∧ p ∈ C.domain := by
+    ∃ C : ShrunkChart F ζ hζ U R P H, C.component = i ∧ p ∈ C.domain := by
   let O := Classical.choice (orbifoldChart_exists F ζ hζ U R P H i p)
-  letI : Finite (MulAction.stabilizer (Component F ζ hζ U R P H i) p) :=
+  let stabilizer₀ := MulAction.stabilizer (Component F ζ hζ U R P H i) p
+  letI : Finite (stabilizer₀) :=
     chart_stabilizer_finite F ζ hζ U R P H i p O
-  letI := Fintype.ofFinite (MulAction.stabilizer (Component F ζ hζ U R P H i) p)
+  letI := Fintype.ofFinite (stabilizer₀)
   obtain ⟨W,hWo,hpW,hWsub,hWc⟩ := exists_open_between_and_isCompact_closure
     (isCompact_singleton (x := p)) O.isOpen (Set.singleton_subset_iff.mpr O.center_mem)
-  let V := ⋂ g : MulAction.stabilizer (Component F ζ hζ U R P H i) p,
+  let V := ⋂ g : stabilizer₀,
     (fun x : SymmetricSpace F => (g.val : KPCuspArithmetic.PGL2 F) • x) ⁻¹' W
   have hopen : IsOpen V := isOpen_iInter_of_finite fun g =>
     hWo.preimage (KPCuspSiegel.continuous_action F g.val.val)
   have hsub : V ⊆ W := by
     intro x hx
-    simpa using Set.mem_iInter.mp hx (1 : MulAction.stabilizer (Component F ζ hζ U R P H i) p)
+    simpa using Set.mem_iInter.mp hx (1 : stabilizer₀)
   have hp : p ∈ V := by
     apply Set.mem_iInter.mpr; intro g
     change g.val • p ∈ W
     rw [MulAction.mem_stabilizer_iff.mp g.property]
     exact hpW (Set.mem_singleton p)
   refine ⟨⟨i,p,O,V,hopen,hWc.of_isClosed_subset isClosed_closure (closure_mono hsub),
-    (closure_mono hsub).trans hWsub,?_⟩,rfl,rfl,hp⟩
+    (closure_mono hsub).trans hWsub,?_⟩, rfl, hp⟩
   intro g
   ext x; constructor
   · rintro ⟨y,hy,rfl⟩
@@ -216,7 +197,13 @@ private theorem shrink_exists (i : Fin (H.atlas U).componentCount) (p : Symmetri
     simpa only [Set.mem_preimage, Subgroup.coe_mul, Subgroup.coe_inv, ← mul_smul]
       using Set.mem_iInter.mp hx (h*g⁻¹)
 
-private theorem exact_measure (C : ShrunkChart F ζ hζ U R P H) :
+alias CountableShrinkingCharts.shrink_exists := shrink_exists
+
+section
+
+variable (C : ShrunkChart F ζ hζ U R P H)
+
+private theorem exact_measure :
     Measure.map C.toBase C.liftedMeasure =
       (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U).restrict C.baseDomain := by
   let Γ := Component F ζ hζ U R P H C.component
@@ -239,10 +226,9 @@ private theorem exact_measure (C : ShrunkChart F ζ hζ U R P H) :
     change (KPArch.hyperbolicVolume _) ((fun z => g.val • z) ⁻¹' s) = _
     rw [← Measure.map_apply hp.measurable hs, hp.map_eq]
   have hp : Measurable π := measurable_quotient_mk''
-  letI : OpensMeasurableSpace (KPCuspSiegel.OrbitQuotient F Γ) := ⟨by
-    exact MeasurableSpace.generateFrom_le (fun s hs =>
+  letI : OpensMeasurableSpace (KPCuspSiegel.OrbitQuotient F Γ) := ⟨MeasurableSpace.generateFrom_le (fun s hs =>
       measurableSet_quotient.mpr ((hs.preimage (show Continuous π from continuous_quotient_mk')).measurableSet))⟩
-  have hj : Measurable j := (component_open C.component).continuous.measurable
+  have hj := (component_open C.component).continuous.measurable
   open scoped Pointwise in
   have hinv (g : C.Isotropy) : (g.val : Γ) • C.domain = C.domain := C.invariant g
   have hl : Measure.map π ((Fintype.card C.Isotropy : ℝ≥0∞)⁻¹ • μ.restrict C.domain) =
@@ -278,26 +264,18 @@ private theorem exact_measure (C : ShrunkChart F ζ hζ U R P H) :
   rw [Measure.restrict_restrict_of_subset hsub] at hm
   exact hm.symm
 
-private theorem all_properties (C : ShrunkChart F ζ hζ U R P H) : C.Properties := by
+private theorem all_properties : C.Properties := by
   refine ⟨chart_stabilizer_finite F ζ hζ U R P H C.component C.center C.larger,
-    base_open C, (base_open C).measurableSet, inferInstance, inferInstance,
-    base_continuous C, (base_continuous C).measurable, base_quotient C, base_fibers C, ?_,
-    (H.disintegration U).positive_componentWeight C.component,
-    (H.disintegration U).finite_componentWeight C.component, exact_measure C, ?_, ?_, ?_, ?_⟩
-  · rintro z ⟨y,rfl⟩
-    refine ⟨KPCuspSiegel.projection F (Component F ζ hζ U R P H C.component) y.val,
-      ⟨y.val, C.closure_subset (subset_closure y.property),rfl⟩, ?_⟩
-    exact (H.atlas U).components_formula C.component _
-  · intro y v; exact liftFrame_unitary F ζ hζ U y.val v
-  · intro σ y v
-    exact liftFrame_equivariant F ζ hζ U R P H C.component σ.val y.val v
-  · intro s σ y
-    exact (liftCoefficient_transition F ζ hζ U R P H s C.component σ.val y.val).1
-  · intro f y
-    exact congrFun (lift_restriction_commutes F ζ hζ U R P H f C.component C.domain) y
+    base_open C, (base_open C).measurableSet, (base_continuous C).measurable, (by
+      exact ((((component_open C.component).isOpenMap.comp (projection_open C.component)).domRestrict C.domain_open).codRestrict (fun x => Set.mem_range_self x)).isQuotientMap
+        ((base_continuous C).subtype_mk (fun x => Set.mem_range_self x))
+        (fun ⟨x, y, hy⟩ => ⟨y, Subtype.ext hy⟩)), base_fibers C, (H.disintegration U).positive_componentWeight C.component,
+    (H.disintegration U).finite_componentWeight C.component, exact_measure C⟩
+
+end
 
 private theorem regularity : QuotientRegularity F ζ hζ U := by
-  exact ⟨inferInstance,inferInstance,inferInstance,inferInstance⟩
+  exact ⟨inferInstance⟩
 
 private theorem cover_exists : Nonempty (CountableCover F ζ hζ U R P H) := by
   have hcover : ∀ x : KPFiniteCuspAtlas.rawXU F ζ hζ U,
@@ -305,7 +283,7 @@ private theorem cover_exists : Nonempty (CountableCover F ζ hζ U R P H) := by
     intro x
     obtain ⟨⟨i,q⟩,rfl⟩ := (H.atlas U).components.surjective x
     obtain ⟨p,rfl⟩ := Quotient.mk_surjective q
-    obtain ⟨C,hi,hp,hmem⟩ := shrink_exists (H := H) i p
+    obtain ⟨C, hi, hmem⟩ := shrink_exists (H := H) i p
     refine ⟨C, ⟨⟨p,hmem⟩,?_⟩⟩
     change KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative C.component)
       (KPCuspSiegel.projection F (Component F ζ hζ U R P H C.component) p) = _
@@ -337,7 +315,7 @@ theorem every_shrunkChart_properties (C : ShrunkChart F ζ hζ U R P H) : C.Prop
 
 theorem quotientRegularity :
     QuotientRegularity F ζ hζ U :=
-  ⟨inferInstance, inferInstance, inferInstance, inferInstance⟩
+  ⟨inferInstance⟩
 
 end DedekindZetaZeroFree.KPContActualCotangentCountableShrinking
 
@@ -350,8 +328,7 @@ theorem kp_cont_actual_cotangent_countable_shrinking
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P) :
     KPContActualCotangentCountableShrinking.QuotientRegularity F ζ hζ U ∧
-      Nonempty (KPContActualCotangentCountableShrinking.CountableCover F ζ hζ U R P H) := by
-  exact ⟨KPContActualCotangentCountableShrinking.quotientRegularity F ζ hζ U,
+      Nonempty (KPContActualCotangentCountableShrinking.CountableCover F ζ hζ U R P H) := ⟨KPContActualCotangentCountableShrinking.quotientRegularity F ζ hζ U,
     KPContActualCotangentCountableShrinking.Construction.cover_exists⟩
 
 end DedekindZetaZeroFree

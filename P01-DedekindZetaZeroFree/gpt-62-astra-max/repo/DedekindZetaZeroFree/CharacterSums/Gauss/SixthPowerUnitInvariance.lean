@@ -21,7 +21,7 @@ theorem finiteCoefficient_gamma_invariant (A : SArithmeticData F) (ι : F →+* 
       ((A.unitEquiv γ.val : A.R) * h) =
       comparisonPoissonFiniteCoefficient F A P.coefficients c n s h := by
   have hchars (a : A.R) (ha : a ≠ 0) : P.coefficients.character a ^ 6 = 1 := by
-    let I : A.Exterior := A.exteriorIdealEquiv.symm
+    let I := A.exteriorIdealEquiv.symm
       ⟨Ideal.span {a}, Ideal.span_singleton_eq_bot.not.mpr ha⟩
     have hI : A.Generates I a := by
       refine ⟨ha, ?_⟩
@@ -32,9 +32,8 @@ theorem finiteCoefficient_gamma_invariant (A : SArithmeticData F) (ι : F →+* 
     intro x
     rw [MulChar.pow_apply_coe, MulChar.one_apply_coe,
       P.character_eq_sexticResiduePowerChar A ι η hS I a hI]
-    let e := Ideal.quotientEquivAlgOfEq A.R hI.2
-    let u := Units.map e.toRingEquiv.toMonoidHom x
-    change A.sexticResiduePowerChar ι I 1 (u : A.R ⧸ A.extendIdeal I) ^ 6 = 1
+    let u := Units.map (Ideal.quotientEquivAlgOfEq A.R hI.2).toRingEquiv.toMonoidHom x
+    change A.sexticResiduePowerChar ι I 1 u ^ 6 = 1
     rw [SArithmeticData.sexticResiduePowerChar,
       show SArithmeticData.sexticExponent 1 = 1 by decide, pow_one,
       MulChar.ofUnitHom_coe]

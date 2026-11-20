@@ -16,16 +16,15 @@ def finiteRayModulusIdeal
     (f : HeightOneSpectrum (𝓞 K) →₀ ℕ) : Ideal (𝓞 K) :=
   ∏ p ∈ f.support, p.asIdeal ^ f p
 
-theorem finiteRayModulusIdeal_ne_bot
-    (K : Type) [Field K] [NumberField K]
-    (f : HeightOneSpectrum (𝓞 K) →₀ ℕ) :
+section
+
+variable (K : Type) [Field K] [NumberField K] (f : HeightOneSpectrum (𝓞 K) →₀ ℕ)
+
+theorem finiteRayModulusIdeal_ne_bot :
     finiteRayModulusIdeal K f ≠ ⊥ := by
-  change (∏ p ∈ f.support, p.asIdeal ^ f p) ≠ 0
   exact Finset.prod_ne_zero_iff.mpr (fun p _ => pow_ne_zero _ p.ne_bot)
 
-@[simp] theorem finiteRayModulusIdeal_count
-    (K : Type) [Field K] [NumberField K]
-    (f : HeightOneSpectrum (𝓞 K) →₀ ℕ) (p : HeightOneSpectrum (𝓞 K)) :
+@[simp] theorem finiteRayModulusIdeal_count (p : HeightOneSpectrum (𝓞 K)) :
     Multiset.count p.asIdeal (normalizedFactors (finiteRayModulusIdeal K f)) = f p := by
   have hcount (s : Finset (HeightOneSpectrum (𝓞 K))) :
       Multiset.count p.asIdeal (normalizedFactors (∏ q ∈ s, q.asIdeal ^ f q)) =
@@ -51,9 +50,7 @@ theorem finiteRayModulusIdeal_ne_bot
   · have hz : f p = 0 := Finsupp.notMem_support_iff.mp hp
     simp [Finset.sum_eq_single p, hp, hz]
 
-theorem finiteRayModulusIdeal_coprime
-    (K : Type) [Field K] [NumberField K]
-    (f : HeightOneSpectrum (𝓞 K) →₀ ℕ) (p : HeightOneSpectrum (𝓞 K)) :
+theorem finiteRayModulusIdeal_coprime (p : HeightOneSpectrum (𝓞 K)) :
     p.asIdeal ⊔ finiteRayModulusIdeal K f = ⊤ ↔ f p = 0 := by
   have hle : finiteRayModulusIdeal K f ≤ p.asIdeal ↔ f p ≠ 0 := by
     rw [← finiteRayModulusIdeal_count K f p, Multiset.count_ne_zero,
@@ -71,6 +68,8 @@ theorem finiteRayModulusIdeal_coprime
     have h := hle.mp (heq ▸ le_sup_right)
     exact h hz
 
+end
+
 theorem narrowIdealModulus_finiteRayModulusIdeal
     (K : Type) [Field K] [NumberField K]
     (c : ClassFieldTheory.RayClassModulus K) (hc : c.infinitePart = Finset.univ) :
@@ -79,7 +78,7 @@ theorem narrowIdealModulus_finiteRayModulusIdeal
   apply ClassFieldTheory.RayClassModulus.ext
   · ext p
     simp
-  · simpa using hc.symm
+  · exact hc.symm
 
 end DedekindZetaZeroFree.AbelianQuotient
 

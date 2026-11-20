@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -46,7 +43,7 @@ theorem mem_rayPrincipalIdealSubgroup_iff
       IsRayCongruent m x ∧ toPrincipalIdeal (𝓞 K) K x = J}
     one_mem' := by
       refine ⟨1, IsRayCongruent.one m, ?_⟩
-      simp only [map_one]
+      simp
     mul_mem' := by
       rintro J J' ⟨x, hx, hxJ⟩ ⟨y, hy, hyJ⟩
       refine ⟨x * y, IsRayCongruent.mul hx hy, ?_⟩
@@ -56,7 +53,6 @@ theorem mem_rayPrincipalIdealSubgroup_iff
       refine ⟨x⁻¹, IsRayCongruent.inv hx, ?_⟩
       rw [map_inv, hxJ] }
   have hP : rayPrincipalIdealSubgroup m = P := by
-    change Subgroup.closure (P : Set (NumberFieldFractionalIdealGroup K)) = P
     exact Subgroup.closure_eq P
   rw [hP]
   rfl

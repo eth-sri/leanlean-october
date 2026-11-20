@@ -12,8 +12,8 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 
@@ -63,9 +63,8 @@ theorem localValue_upper (v : KPHilbert.Place F) (f : Plus A P C v)
     have hf := f.property.1 (S.borel.upperRoot (Multiplicative.ofAdd y))
       (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) g)
     rw [KPLocalPrincipalSeries.upperRoot_trivial] at hf
-    have hn := (S.openCell (C.polarization q)).upper_eq y
     change f.val (_ * _) = _ at hf
-    rw [hn] at hf
+    rw [((S.openCell (C.polarization q)).upper_eq y)] at hf
     change f.val (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (_ * _)) = _
     rw [map_mul]
     exact hf

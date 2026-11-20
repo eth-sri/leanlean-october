@@ -19,16 +19,14 @@ theorem haar_fractionalIntegral_of_stereographic_pushforward (β : ℂˣ) (p : �
     (∫ z, g z ∂characterHaar β) =
       (sphericalScalar β : ℂ) * fractionalIntegral (1 / 3) F x := by
   let d : ℂ → ℝ := fun z => (1 + ‖z‖ ^ 2) ^ (-2 : ℝ) / Real.pi
-  let K : Sphere → ℂ := fun y => (fractionalKernel (1 / 3) x y : ℂ) * F y
+  let K := fun y => (fractionalKernel (1 / 3) x y : ℂ) * F y
   have hd : Measurable (fun z => ENNReal.ofReal (d z)) := by
     dsimp [d]
     fun_prop
   have hdpos (z : ℂ) : 0 ≤ d z := by
     dsimp [d]
     exact div_nonneg (Real.rpow_nonneg (by positivity) _) Real.pi_pos.le
-  have hi : AEStronglyMeasurable K sphereArea :=
-    (fractionalIntegral_integrable (1 / 3) (by norm_num) hF x).aestronglyMeasurable
-  have hm := integral_map hp.aemeasurable (hpush ▸ hi)
+  have hm := integral_map hp.aemeasurable (hpush ▸ ((fractionalIntegral_integrable (1 / 3) (by norm_num) hF x).aestronglyMeasurable))
   have he : (∫ z, (d z : ℂ) * K (p z) ∂euclideanArea) =
       fractionalIntegral (1 / 3) F x := by
     rw [hpush] at hm
@@ -36,9 +34,7 @@ theorem haar_fractionalIntegral_of_stereographic_pushforward (β : ℂˣ) (p : �
       (Filter.Eventually.of_forall (fun z => ENNReal.ofReal_lt_top))] at hm
     simpa only [ENNReal.toReal_ofReal (hdpos _), Complex.real_smul,
       fractionalIntegral, K] using hm.symm
-  have hc : 0 ≤ characterScale β / (2 * Real.pi) :=
-    div_nonneg (characterScale_pos β).le (mul_pos (by norm_num) Real.pi_pos).le
-  rw [characterHaar, integral_smul_measure, ENNReal.toReal_ofReal hc,
+  rw [characterHaar, integral_smul_measure, ENNReal.toReal_ofReal (div_nonneg (characterScale_pos β).le (mul_pos (by norm_num) Real.pi_pos).le),
     Complex.real_smul]
   rw [integral_congr_ae hg]
   change ((characterScale β / (2 * Real.pi) : ℝ) : ℂ) *
@@ -58,9 +54,8 @@ theorem intertwiner_hopf_integral (H : ComplexSU2 → Sphere) (hH : HasHopfCoord
     (k : ComplexSU2) :
     (∫ z : ℂ, f (weyl * upperUnipotent z * complexSU2Embedding k) ∂characterHaar β) =
       (sphericalScalar β : ℂ) * fractionalIntegral (1 / 3) F (H k) := by
-  have hraw : ComplexLocal.StereographicTransport.HasRawHopfCoordinates H := hH
   obtain ⟨hmp, heval⟩ :=
-    ComplexLocal.StereographicTransport.positive_section_stereographic H hraw f F hf k
+    ComplexLocal.StereographicTransport.positive_section_stereographic H hH f F hf k
   apply haar_fractionalIntegral_of_stereographic_pushforward β
     (fun z => H (ComplexLocal.StereographicTransport.kappa z * k)) hmp.measurable
     hmp.map_eq F hF (H k)

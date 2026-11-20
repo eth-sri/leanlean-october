@@ -52,7 +52,7 @@ private theorem coe_mixElement :
 
 private theorem repr_mulVec_basisFun (A : Matrix (Fin 2) (Fin 2) ℂ) (k l : Fin 2) :
     (Pi.basisFun ℂ (Fin 2)).repr (A *ᵥ Pi.basisFun ℂ (Fin 2) k) l = A l k := by
-  simp [Matrix.mulVec_single]
+  simp
 
 private theorem weightBasis_eq_reindex :
     weightBasis d = ((Pi.basisFun ℂ (Fin 2)).symmetricPower d).reindex (symFinTwoEquiv d) :=
@@ -65,14 +65,6 @@ private theorem symFinTwoEquiv_symm_last :
   rw [coe_symFinTwoEquiv_symm_apply, DedekindZetaZeroFree.TauCeti.Sym.coe_ofFn, List.ofFn_const, Multiset.coe_replicate]
   simp
 
-private theorem repr_symPower_mixElement_weightBasis_last_ne_zero (i : Fin (d + 1)) :
-    (weightBasis d).repr (symPower d mixElement (weightBasis d i)) (Fin.last d) ≠ 0 := by
-  obtain ⟨f, hf⟩ := exists_weightBasis_eq_tprod d i
-  rw [hf, weightBasis_eq_reindex, Basis.repr_reindex_apply, symFinTwoEquiv_symm_last,
-    symPower_apply_tprod, coe_mixElement, SymmetricPower.repr_basis_symmetricPower_tprod_ofFn_const]
-  exact Finset.prod_ne_zero_iff.2 fun j _ => by
-    rw [repr_mulVec_basisFun]; exact mixMatrix_apply_ne_zero 0 (f j)
-
 private theorem repr_symPower_mixElement_weightBasis_last_ne_zero' (i : Fin (d + 1)) :
     (weightBasis d).repr (symPower d mixElement (weightBasis d (Fin.last d))) i ≠ 0 := by
   have hf : weightBasis d (Fin.last d) =
@@ -81,16 +73,16 @@ private theorem repr_symPower_mixElement_weightBasis_last_ne_zero' (i : Fin (d +
       SymmetricPower.tprodOfSym_ofFn]
   rw [hf, weightBasis_eq_reindex, Basis.repr_reindex_apply, symPower_apply_tprod, coe_mixElement]
   exact SymmetricPower.repr_basis_symmetricPower_tprod_const_ne_zero _
-    (fun l => by rw [repr_mulVec_basisFun]; exact mixMatrix_apply_ne_zero l 0) _
+    (fun l => by rw [repr_mulVec_basisFun]; apply mixMatrix_apply_ne_zero) _
 
 theorem isIrreducible_symPower : Representation.IsIrreducible (symPower d) := by
   have hnt : Nontrivial (Sym[ℂ]^d(Fin 2 → ℂ)) :=
-    Module.nontrivial_of_finrank_pos (R := ℂ) (by rw [finrank_symPower]; omega)
+    Module.nontrivial_of_finrank_pos (R := ℂ) (by simp)
   refine { eq_bot_or_eq_top := fun σ => ?_ }
   rcases eq_or_ne σ ⊥ with hσ | hσ
   · exact Or.inl hσ
   refine Or.inr (Subrepresentation.toSubmodule_injective ?_)
-  rw [Subrepresentation.toSubmodule_top]
+  simp
   have hW : ∀ (z : Circle) (v : Sym[ℂ]^d(Fin 2 → ℂ)), v ∈ σ.toSubmodule →
       symPower d (torusHom z) v ∈ σ.toSubmodule :=
     fun z _ hv => σ.apply_mem_toSubmodule (torusHom z) hv
@@ -105,23 +97,19 @@ theorem isIrreducible_symPower : Representation.IsIrreducible (symPower d) := by
       Submodule.span_empty]
 
   obtain ⟨i, hi⟩ := hex
-  have hlast : weightBasis d (Fin.last d) ∈ σ.toSubmodule :=
+  have hlast :=
     weightBasis_mem_of_repr_ne_zero hW (σ.apply_mem_toSubmodule mixElement hi)
-      (repr_symPower_mixElement_weightBasis_last_ne_zero d i)
-  have hall : ∀ i, weightBasis d i ∈ σ.toSubmodule := fun i =>
+      (by
+        obtain ⟨f, hf⟩ := exists_weightBasis_eq_tprod d i
+        rw [hf, weightBasis_eq_reindex, Basis.repr_reindex_apply, symFinTwoEquiv_symm_last,
+          symPower_apply_tprod, coe_mixElement, SymmetricPower.repr_basis_symmetricPower_tprod_ofFn_const]
+        exact Finset.prod_ne_zero_iff.2 fun j _ => by
+          rw [repr_mulVec_basisFun]; apply mixMatrix_apply_ne_zero)
+  have hall := fun i =>
     weightBasis_mem_of_repr_ne_zero hW (σ.apply_mem_toSubmodule mixElement hlast)
       (repr_symPower_mixElement_weightBasis_last_ne_zero' d i)
   rw [eq_top_iff, ← (weightBasis d).span_eq]
   exact Submodule.span_le.2 (by rintro _ ⟨i, rfl⟩; exact hall i)
-
-@[simp]
-theorem nonempty_equiv_symPower_iff (e : ℕ) :
-    Nonempty ((symPower d).Equiv (symPower e)) ↔ d = e := by
-  refine ⟨fun ⟨f⟩ => ?_, fun h => h ▸ ⟨Representation.Equiv.refl _⟩⟩
-  have hrank : Module.finrank ℂ (Sym[ℂ]^d(Fin 2 → ℂ)) = Module.finrank ℂ (Sym[ℂ]^e(Fin 2 → ℂ)) :=
-    f.toLinearEquiv.finrank_eq
-  rw [finrank_symPower, finrank_symPower] at hrank
-  omega
 
 end SU2
 

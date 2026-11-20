@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction
 namespace ElementaryOutputs
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 def rationalSplitting : RationalSplitting F ζ hζ where
   lift := QuotientGroup.lift (Subgroup.center (KubotaRankTwo.GL2 F))

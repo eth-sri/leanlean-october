@@ -27,6 +27,6 @@ theorem pow_mul_inv_pow_eq_zpow₀ {G₀ : Type*} [GroupWithZero G₀] {a : G₀
     (hi : i ≤ n) : a ^ i * a⁻¹ ^ (n - i) = a ^ (2 * (i : ℤ) - n) := by
 
   have hexp : 2 * (i : ℤ) - n = (i : ℤ) - ((n - i : ℕ) : ℤ) := by omega
-  rw [hexp, zpow_sub₀ ha, zpow_natCast, zpow_natCast, inv_pow, div_eq_mul_inv]
+  simp [hexp, zpow_sub₀, ha, zpow_natCast, inv_pow, div_eq_mul_inv]
 
 end DedekindZetaZeroFree.TauCeti

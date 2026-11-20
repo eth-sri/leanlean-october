@@ -36,33 +36,25 @@ def ordinaryRoots : rootsOfUnity 3 F →* rootsOfUnity 3 ℂ where
 
 theorem ordinaryRoots_injective : Function.Injective (ordinaryRoots F ζ hζ) := by
   intro ε δ he
-  have hi : KPGlobalTorusFunctionData.iota F ζ hζ ε = KPGlobalTorusFunctionData.iota F ζ hζ δ :=
-    congrArg (fun z : rootsOfUnity 3 ℂ => (z : ℂˣ)) he
-  have h6 := KPLocalCover.coefficientEmbedding_injective F ζ hζ hi
-  exact Subtype.ext (congrArg (fun z : rootsOfUnity 6 F => (z : Fˣ)) h6)
+  exact Subtype.ext (congrArg (fun z : rootsOfUnity 6 F => (z : Fˣ)) (KPLocalCover.coefficientEmbedding_injective F ζ hζ (congrArg (fun z : rootsOfUnity 3 ℂ => (z : ℂˣ)) he)))
 
 theorem ordinaryRoots_surjective : Function.Surjective (ordinaryRoots F ζ hζ) := by
   letI : Fintype (rootsOfUnity 3 F) := Fintype.ofFinite _
   letI : Fintype (rootsOfUnity 3 ℂ) := Fintype.ofFinite _
-  have hF : Nat.card (rootsOfUnity 3 F) = 3 :=
-    (hζ.pow (by norm_num : 0 < 12) (by norm_num : 12 = 4 * 3)).card_rootsOfUnity
-  have hcard : Fintype.card (rootsOfUnity 3 F) = Fintype.card (rootsOfUnity 3 ℂ) := by
-    rw [← Nat.card_eq_fintype_card, ← Nat.card_eq_fintype_card, hF, Complex.card_rootsOfUnity]
-  exact ((Fintype.bijective_iff_injective_and_card _).mpr
-    ⟨ordinaryRoots_injective F ζ hζ, hcard⟩).2
+  refine ((Fintype.bijective_iff_injective_and_card _).mpr
+    ⟨ordinaryRoots_injective F ζ hζ, ?_⟩).2
+  rw [← Nat.card_eq_fintype_card, ← Nat.card_eq_fintype_card, ((hζ.pow (by norm_num : 0 < 12) (by norm_num : 12 = 4 * 3)).card_rootsOfUnity), Complex.card_rootsOfUnity]
 
 theorem center_eq_cubicCenter : center F ζ hζ C L = cubicCenter F ζ hζ C L := by
   apply le_antisymm _ (cubicCenter_le_center F ζ hζ C L)
   intro z hz
   let cz : center F ζ hζ C L := ⟨z, hz⟩
-  let εC : rootsOfUnity 3 ℂ := ⟨centerCharacter F ζ hζ C L cz, centerCharacter_cube F ζ hζ C L cz⟩
-  obtain ⟨ε, hε⟩ := ordinaryRoots_surjective F ζ hζ εC
+  obtain ⟨ε, hε⟩ := ordinaryRoots_surjective F ζ hζ (⟨centerCharacter F ζ hζ C L cz, centerCharacter_cube F ζ hζ C L cz⟩)
   have hchar : centerCharacter F ζ hζ C L (phaseToCenter F ζ hζ C L (rootPhase F ζ hζ C L ε)) =
       centerCharacter F ζ hζ C L cz := by
     rw [centerCharacter_phase, rootPhase_character]
     exact congrArg (fun t : rootsOfUnity 3 ℂ => (t : ℂˣ)) hε
-  have he := centerCharacter_faithful F ζ hζ C L hchar
-  exact ⟨ε, congrArg (fun t : center F ζ hζ C L => (t : H F ζ hζ C L)) he⟩
+  exact ⟨ε, congrArg (fun t : center F ζ hζ C L => (t : H F ζ hζ C L)) (centerCharacter_faithful F ζ hζ C L hchar)⟩
 
 def centerEquiv : rootsOfUnity 3 F ≃* center F ζ hζ C L :=
   (cubicCenterEquiv F ζ hζ C L).trans
@@ -106,7 +98,9 @@ theorem centerEquiv_character (ε : rootsOfUnity 3 F) :
       KPGlobalTorusFunctionData.iota F ζ hζ ε := by
   rw [centerEquiv_apply, centerCharacter_phase, rootPhase_character]
 
-theorem H_commutator_formula (x y : H F ζ hζ C L) :
+variable (x y : H F ζ hζ C L)
+
+theorem H_commutator_formula :
     x * y * x⁻¹ * y⁻¹ =
       (centerEquiv F ζ hζ C L (stagePairing F ζ hζ C L
         (projection F ζ hζ C L x) (projection F ζ hζ C L y) ^ 4)).val := by
@@ -115,12 +109,12 @@ theorem H_commutator_formula (x y : H F ζ hζ C L) :
   rw [centerEquiv_apply]
   exact commutator_formula F ζ hζ C L a b
 
-theorem H_commutator_mem (x y : H F ζ hζ C L) :
+theorem H_commutator_mem :
     x * y * x⁻¹ * y⁻¹ ∈ center F ζ hζ C L := by
   rw [H_commutator_formula]
   exact (centerEquiv F ζ hζ C L _).property
 
-theorem H_commutator_character (x y : H F ζ hζ C L) :
+theorem H_commutator_character :
     centerCharacter F ζ hζ C L ⟨x * y * x⁻¹ * y⁻¹, H_commutator_mem F ζ hζ C L x y⟩ =
       KPGlobalTorusFunctionData.iota F ζ hζ (stagePairing F ζ hζ C L
         (projection F ζ hζ C L x) (projection F ζ hζ C L y) ^ 4) := by

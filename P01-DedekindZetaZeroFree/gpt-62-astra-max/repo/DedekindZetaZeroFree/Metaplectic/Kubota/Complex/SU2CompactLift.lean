@@ -14,7 +14,7 @@ open KPCplxCharacterHaar
 
 theorem complexSU2Embedding_continuous : Continuous complexSU2Embedding := by
   apply Units.isOpenEmbedding_val.isEmbedding.continuous_iff.mpr
-  exact continuous_subtype_val
+  fun_prop
 
 end DedekindZetaZeroFree.KPActualReflectionData.StandardLocalSource
 

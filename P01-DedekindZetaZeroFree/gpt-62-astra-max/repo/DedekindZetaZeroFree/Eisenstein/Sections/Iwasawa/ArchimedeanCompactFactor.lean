@@ -17,7 +17,9 @@ local instance instCubicRawTopArch (v : KPHilbert.Place F) :
     TopologicalSpace (KPLocalCover.CubicGL2Raw F ζ hζ v) :=
   KPAdelicCoverRestrictedProduct.localTopology F ζ hζ v
 
- def archSectionHom (w : InfinitePlace F) :
+ variable (w : InfinitePlace F)
+
+def archSectionHom :
     KPCplxCharacterHaar.ComplexSU2 →*
       KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w) where
   toFun k := KPLocalCover.sectionMap F ζ hζ (Sum.inl w)
@@ -32,11 +34,9 @@ local instance instCubicRawTopArch (v : KPHilbert.Place F) :
     · simp only [map_mul, KPLocalCover.sectionMap_g]
     · simp [KPLocalChartTopology.complex_sigmaTwo_eq_one]
 
-private theorem archSectionHom_continuous (w : InfinitePlace F) :
+private theorem archSectionHom_continuous :
     Continuous (archSectionHom F ζ hζ w) := by
   letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
-  change @Continuous _ _ _ (TopologicalSpace.induced
-    (KPLocalChartTopology.complexCoordinates F ζ hζ w) _) _
   apply continuous_induced_rng.mpr
   have he := (InfinitePlace.Completion.isometryEquivComplexOfIsComplex
     (KPHilbert.infinite_isComplex F ζ hζ w)).symm.continuous
@@ -62,15 +62,12 @@ private theorem archSectionHom_continuous (w : InfinitePlace F) :
           ((↑(KPCplxCharacterHaar.complexSU2Embedding k)⁻¹ :
             Matrix (Fin 2) (Fin 2) ℂ) i j))
       simp_rw [hi]
-      change Continuous (fun k : KPCplxCharacterHaar.ComplexSU2 =>
-        (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-          (KPHilbert.infinite_isComplex F ζ hζ w)).symm (star (k.val j i)))
       have hij : Continuous (fun k : KPCplxCharacterHaar.ComplexSU2 => k.val j i) :=
         (continuous_apply i).comp ((continuous_apply j).comp continuous_subtype_val)
       exact he.comp hij.star
   exact hc.prodMk continuous_const
 
-theorem archimedeanLocalCompact_compact (w : InfinitePlace F) :
+theorem archimedeanLocalCompact_compact :
     IsCompact (archimedeanLocalCompact F ζ hζ w :
       Set (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w))) := by
   have hset : archimedeanSectionSet F ζ hζ w =

@@ -28,23 +28,23 @@ def finiteRaw (a : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12) := (archRa
 
 theorem archRaw_finite (a : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12)
     (q : KPFinitePlace F) : archRaw (R := R) a (Sum.inr q) = 1 := by
-  change (if Sum.inr q ∈ archPlaces (F := F) then a (Sum.inr q) else 1) = 1
+  change (if Sum.inr q ∈ archPlaces then a (Sum.inr q) else 1) = 1
   simp [archPlaces]
 
 theorem finiteRaw_arch (a : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12)
     (w : InfinitePlace F) : finiteRaw (R := R) a (Sum.inl w) = 1 := by
-  change (if Sum.inl w ∈ archPlaces (F := F) then a (Sum.inl w) else 1)⁻¹ * a (Sum.inl w) = 1
+  change (if Sum.inl w ∈ archPlaces then a (Sum.inl w) else 1)⁻¹ * a (Sum.inl w) = 1
   simp [archPlaces]
 
 theorem finiteRaw_finite (a : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12)
     (q : KPFinitePlace F) : finiteRaw (R := R) a (Sum.inr q) = a (Sum.inr q) := by
-  change (archRaw (R := R) a (Sum.inr q))⁻¹ * a (Sum.inr q) = _
+  change (archRaw a (Sum.inr q))⁻¹ * a (Sum.inr q) = _
   rw [archRaw_finite, inv_one, one_mul]
 
 theorem raw_arch_finite_split (a : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12) :
     rawGlobal (R := R) (archRaw a) * rawGlobal (R := R) (finiteRaw a) = rawGlobal (R := R) a := by
   rw [← map_mul]
-  apply congrArg (rawGlobal (R := R))
+  apply congrArg (rawGlobal)
   exact mul_inv_cancel_left (archRaw a) a
 
 def JointArchExterior (D : TensorActions R N) (W : Finset (KPFinitePlace F))
@@ -78,28 +78,24 @@ theorem joint_kernel_all_borel_of_arch_exterior (D : TensorDetected R N)
         (fiber D.toTensorActions W) (action D.toTensorActions W) (localData D.toTensorActions W)
         (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] e))) b.val = 0 := by
   let u := tensorEmbedding F R.A.zeta12 R.A.primitive_zeta12 W
-    (depth (R := R) W) (depth_valid (R := R) W) (character W)
+    (depth W) (depth_valid W) (character W)
     (fiber D.toTensorActions W) (action D.toTensorActions W) (localData D.toTensorActions W)
     (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] e)
-  let θ : Functions R := globalMap D.toTensorActions W s hW x u
-  let a := Classical.choose (exists_raw_borel (R := R) b)
-  have ha := (Classical.choose_spec (exists_raw_borel (R := R) b)).1
-  have hb := (Classical.choose_spec (exists_raw_borel (R := R) b)).2
-  let hfactor := H (archRaw (R := R) a) (archRaw_finite (R := R) a)
-    (finiteRaw (R := R) a) (finiteRaw_arch (R := R) a)
+  let θ := globalMap D.toTensorActions W s hW x u
+  let a := Classical.choose (exists_raw_borel b)
+  let hfactor := H (archRaw a) (archRaw_finite a)
+    (finiteRaw a) (finiteRaw_arch a)
   let c := Classical.choose hfactor
-  have hc := Classical.choose_spec hfactor
-  have hfinite := joint_kernel_finite_raw D W s hW x hx ht (finiteRaw (R := R) a)
-    (finiteRaw_arch (R := R) a) (fun q ↦ by simpa only [finiteRaw_finite (R := R)] using hb q.val) f e he
+  have hfinite := joint_kernel_finite_raw D W s hW x hx ht (finiteRaw a)
+    (finiteRaw_arch a) (fun q ↦ by simpa only [finiteRaw_finite] using ((Classical.choose_spec (exists_raw_borel b)).2) q.val) f e he
   have hzero : fourier R D.sources.dq θ
-      (rawGlobal (R := R) (archRaw a) * rawGlobal (R := R) (finiteRaw a)) = 0 := by
-    exact (hc u).trans
+      (rawGlobal (archRaw a) * rawGlobal (finiteRaw a)) = 0 := ((Classical.choose_spec hfactor) u).trans
       ((congrArg (fun t : ℂ ↦ c * t) hfinite).trans (mul_zero c))
   calc
-    _ = fourier R D.sources.dq θ (rawGlobal (R := R) a) := congrArg (fourier R D.sources.dq θ) ha.symm
+    _ = fourier R D.sources.dq θ (rawGlobal a) := congrArg (fourier R D.sources.dq θ) ((Classical.choose_spec (exists_raw_borel b)).1).symm
     _ = fourier R D.sources.dq θ
-        (rawGlobal (R := R) (archRaw a) * rawGlobal (R := R) (finiteRaw a)) :=
-      congrArg (fourier R D.sources.dq θ) (raw_arch_finite_split (R := R) a).symm
+        (rawGlobal (archRaw a) * rawGlobal (finiteRaw a)) :=
+      congrArg (fourier R D.sources.dq θ) (raw_arch_finite_split a).symm
     _ = 0 := hzero
 end DedekindZetaZeroFree.FourierContinuation.WildFiniteExteriorAssembly
 

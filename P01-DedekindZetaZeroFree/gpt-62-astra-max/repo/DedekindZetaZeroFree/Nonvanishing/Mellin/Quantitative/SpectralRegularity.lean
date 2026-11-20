@@ -11,32 +11,31 @@ noncomputable section
 open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.Spectral
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem G_differentiableOn : DifferentiableOn ℂ (G D) {s : ℂ | 1 < s.re} :=
-  (PrincipalMellin.actual_principal_spectral_properties S η D.recipe).2.2.1
+  (PrincipalMellin.actual_principal_spectral_properties S η D.recipe).1
 
 theorem G_bound (A B : ℝ) (hA : 1 < A) (hAB : A ≤ B) :
     ∃ C : ℝ, 0 < C ∧ ∀ σ t : ℝ, A ≤ σ → σ ≤ B →
       ‖G D ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ C / (1 + t ^ 2) := by
   obtain ⟨C, hC, hb⟩ :=
-    (PrincipalMellin.actual_principal_spectral_properties S η D.recipe).2.2.2.1 A B hA hAB
+    (PrincipalMellin.actual_principal_spectral_properties S η D.recipe).2.1 A B hA hAB
   refine ⟨C + 1, by linarith, fun σ t h1 h2 => ?_⟩
   have h := hb σ ⟨h1, h2⟩ t
   have hpos : 0 < 1 + t ^ 2 := by positivity
   exact h.trans (div_le_div_of_nonneg_right (by linarith) hpos.le)
 
 theorem G_line_continuous : Continuous (fun t : ℝ => G D (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)) := by
-  have hc : ContinuousOn (G D) {s : ℂ | 1 < s.re} := (G_differentiableOn D).continuousOn
-  refine hc.comp_continuous (by fun_prop) (fun t => ?_)
+  refine ((G_differentiableOn D).continuousOn).comp_continuous (by fun_prop) (fun t => ?_)
   show 1 < ((((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)).re
   first | (simp; norm_num) | simp | norm_num
 
-theorem G_line_bound : ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ,
+theorem G_line_bound : ∃ C : ℝ, ∀ t : ℝ,
     ‖G D (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)‖ ≤ C / (1 + t ^ 2) := by
   obtain ⟨C, hC, hb⟩ := G_bound D 2 2 (by norm_num) le_rfl
-  exact ⟨C, hC, fun t => hb 2 t le_rfl le_rfl⟩
+  exact ⟨C, fun t => hb 2 t le_rfl le_rfl⟩
 
 theorem norm_rpow_line (Z : ℝ) (hZ : 0 < Z) (t : ℝ) :
     ‖(Z : ℂ) ^ (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I - 61 / 100)‖ = Z ^ (139 / 100 : ℝ) := by
@@ -44,14 +43,18 @@ theorem norm_rpow_line (Z : ℝ) (hZ : 0 < Z) (t : ℝ) :
   congr 1
   first | (simp; norm_num) | simp | norm_num
 
-theorem integrable_bound : MeasureTheory.Integrable (fun t : ℝ => (1 + t ^ 2)⁻¹) := by
-  simpa using integrable_inv_one_add_sq
+alias integrable_bound := integrable_inv_one_add_sq
 
-theorem f_integrable (Z : ℝ) (hZ : 0 < Z) :
+section
+
+variable (Z : ℝ) (hZ : 0 < Z)
+
+include hZ in
+theorem f_integrable :
     MeasureTheory.Integrable (fun t : ℝ =>
       (Z : ℂ) ^ (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I - 61 / 100) *
         G D (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)) := by
-  obtain ⟨C, hC, hb⟩ := G_line_bound D
+  obtain ⟨C, hb⟩ := G_line_bound D
   have hcont : Continuous (fun t : ℝ =>
       (Z : ℂ) ^ (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I - 61 / 100) *
         G D (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)) := by
@@ -64,7 +67,8 @@ theorem f_integrable (Z : ℝ) (hZ : 0 < Z) :
         mul_le_mul_of_nonneg_left (hb t) (by positivity)
     _ = _ := by rw [div_eq_mul_inv]; ring
 
-theorem rpow_mul_f (Z : ℝ) (hZ : 0 < Z) :
+include hZ in
+theorem rpow_mul_f :
     (Z : ℂ) ^ (61 / 100 : ℂ) * f D Z =
       comparisonVerticalIntegral 2 (fun s => (Z : ℂ) ^ s * G D s) := by
   have hZ' : (Z : ℂ) ≠ 0 := by exact_mod_cast hZ.ne'
@@ -76,24 +80,18 @@ theorem rpow_mul_f (Z : ℝ) (hZ : 0 < Z) :
   congr 2
   ring
 
+end
+
 theorem numerator_differentiableOn :
     DifferentiableOn ℂ (fun s : ℂ => Complex.exp ((s - 5 / 6) ^ 2) * H D s)
       {s : ℂ | 31 / 32 < s.re} := by
-  have hH : DifferentiableOn ℂ (fun s : ℂ => D.recipe.H s) {s : ℂ | (2 / 3 : ℝ) < s.re} :=
-    PrincipalMellin.actual_principal_H_differentiable D.recipe
-  have hsub : {s : ℂ | 31 / 32 < s.re} ⊆ {s : ℂ | (2 / 3 : ℝ) < s.re} := fun s hs => by
+  exact ((by fun_prop : Differentiable ℂ (fun s : ℂ => Complex.exp ((s - 5 / 6) ^ 2))).differentiableOn).mul ((PrincipalMellin.actual_principal_H_differentiable D.recipe).mono (fun s hs => by
     simp only [Set.mem_setOf_eq] at hs ⊢
-    linarith
-  have hexp : DifferentiableOn ℂ (fun s : ℂ => Complex.exp ((s - 5 / 6) ^ 2))
-      {s : ℂ | 31 / 32 < s.re} :=
-    (by fun_prop : Differentiable ℂ (fun s : ℂ => Complex.exp ((s - 5 / 6) ^ 2))).differentiableOn
-  exact hexp.mul (hH.mono hsub)
+    linarith))
 
 theorem numerator_ne_zero (s : ℂ) (hs : 31 / 32 < s.re) :
     Complex.exp ((s - 5 / 6) ^ 2) * H D s ≠ 0 := by
-  have h : D.recipe.H s ≠ 0 :=
-    PrincipalMellin.actual_principal_H_ne_zero D.recipe s (by linarith)
-  exact mul_ne_zero (Complex.exp_ne_zero _) h
+  exact mul_ne_zero (Complex.exp_ne_zero _) (PrincipalMellin.actual_principal_H_ne_zero D.recipe s (by linarith))
 
 end
 

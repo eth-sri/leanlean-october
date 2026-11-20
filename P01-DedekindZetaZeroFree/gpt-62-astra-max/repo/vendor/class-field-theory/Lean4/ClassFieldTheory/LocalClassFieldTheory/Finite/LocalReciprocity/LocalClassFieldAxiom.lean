@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -57,72 +52,51 @@ private theorem galoisAmbientUnits_satisfiesClassFieldAxiom
   let := hnormal
   let := hfinite
   let Q := K.toSubgroup ⧸ extensionSubgroup K L hLK
-  let : Fintype Q := Fintype.ofFinite Q
+  let := Fintype.ofFinite Q
   let F := abstractFixedField k Ω K
   let E := abstractRelativeFixedField k Ω hLK
-  let : FiniteDimensional k F :=
+  let :=
     abstractFixedField_finiteDimensional k Ω K hKfinite
-  let : FiniteDimensional F E :=
+  let :=
     abstractRelativeFixedField_finiteDimensional
       k Ω K L hLK hKfinite hfinite
-  let : IsGalois F E :=
+  let :=
     abstractRelativeFixedField_isGalois k Ω K L hLK hnormal
-  let eQ : Q ≃* Gal(E / F) :=
+  let eQ :=
     abstractExtensionQuotientEquivGaloisGroup k Ω K L hLK hnormal
-  let g' : Gal(E / F) := eQ g
-  have hg' : ∀ σ : Gal(E / F), σ ∈ Subgroup.zpowers g' :=
+  let g' := eQ g
+  have hg' :=
     map_cyclicGenerator eQ g hg
   have hUnitsTateCard := finiteTowerUnits_tate_card_of_generator k F E g' hg'
 
-  let : IsCyclic Q := CyclicCohomology.isCyclic_of_generator g hg
+  let := CyclicCohomology.isCyclic_of_generator g hg
   let : CommGroup Q := IsCyclic.commGroup
-  let : IsCyclic (Gal(E / F)) :=
+  let :=
     CyclicCohomology.isCyclic_of_generator g' hg'
   let : CommGroup (Gal(E / F)) := IsCyclic.commGroup
   let M := extensionFixedRepresentation
     (galoisAmbientUnitsRep k Ω) K L hLK hnormal
   let U := Rep.ofAlgebraAutOnUnits F E
-  let eM : M ≅
-      Rep.res eQ.toMonoidHom U :=
+  let eM :=
     abstractExtensionFixedRepresentationIsoUnitsRes
       k Ω K L hLK hnormal
-  let eH0 :
-      (Rep.FiniteCyclicGroup.normHomCompSub M g).homology ≅
-        (Rep.FiniteCyclicGroup.normHomCompSub U g').homology :=
-    (normHomCompSubHomologyIsoOfRepIso eM g) ≪≫
-      normHomCompSubHomologyResEquivIso eQ U g
-  let eHm1 :
-      (Rep.FiniteCyclicGroup.subCompNormHom M g).homology ≅
-        (Rep.FiniteCyclicGroup.subCompNormHom U g').homology :=
-    (subCompNormHomHomologyIsoOfRepIso eM g) ≪≫
-      subCompNormHomHomologyResEquivIso eQ U g
-  let eTateH0 :
-      tateCohomology M 0 ≅ tateCohomology U 0 :=
-    TateCohomology.isoFiniteCyclicZero M g hg ≪≫ eH0 ≪≫
+  let eTateH0 :=
+    TateCohomology.isoFiniteCyclicZero M g hg ≪≫ ((normHomCompSubHomologyIsoOfRepIso eM g) ≪≫
+      normHomCompSubHomologyResEquivIso eQ U g) ≪≫
       (TateCohomology.isoFiniteCyclicZero U g' hg').symm
-  let eTateHm1 :
-      tateCohomology M (-1) ≅ tateCohomology U (-1) :=
-    TateCohomology.isoFiniteCyclicNegOne M g hg ≪≫ eHm1 ≪≫
+  let eTateHm1 :=
+    TateCohomology.isoFiniteCyclicNegOne M g hg ≪≫ ((subCompNormHomHomologyIsoOfRepIso eM g) ≪≫
+      subCompNormHomHomologyResEquivIso eQ U g) ≪≫
       (TateCohomology.isoFiniteCyclicNegOne U g' hg').symm
-  let : Finite (tateCohomology U 0) :=
+  let :=
     hUnitsTateCard.finiteH0
-  have hUTateMinusOneZero :
-      Limits.IsZero (tateCohomology U (-1)) :=
-    hilbert90_unitsTateHminusOne_isZero F E g' hg'
-  let : Subsingleton (tateCohomology U (-1)) :=
-    ModuleCat.subsingleton_of_isZero hUTateMinusOneZero
+  let :=
+    ModuleCat.subsingleton_of_isZero (hilbert90_unitsTateHminusOne_isZero F E g' hg')
   let : Finite (tateCohomology U (-1)) := by infer_instance
-  let : Finite (tateCohomology M 0) :=
+  let :=
     Finite.of_equiv (tateCohomology U 0) eTateH0.symm.toLinearEquiv.toEquiv
-  let : Finite (tateCohomology M (-1)) :=
+  let :=
     Finite.of_equiv (tateCohomology U (-1)) eTateHm1.symm.toLinearEquiv.toEquiv
-  have hH0actual :
-      Nat.card (tateCohomology U 0) =
-        Module.finrank F E :=
-    hUnitsTateCard.cardH0
-  have hHm1actual :
-      Nat.card (tateCohomology U (-1)) = 1 :=
-    hUnitsTateCard.cardHminusOne
   refine
     { finiteTateHZero := by
         change Finite (tateCohomology M 0)
@@ -132,24 +106,19 @@ private theorem galoisAmbientUnits_satisfiesClassFieldAxiom
         infer_instance
       tateHZero_card := ?_
       tateHMinusOne_card := ?_ }
-  · change Nat.card
-      (tateCohomology M 0) =
-        ((DegreeData.FiniteAbstractExtension.ofInclusion L K hLK).degree : ℕ)
-    calc
-      Nat.card (tateCohomology M 0) =
+  · calc
+      _ =
           Nat.card (tateCohomology U 0) :=
         Nat.card_congr eTateH0.toLinearEquiv.toEquiv
-      _ = Module.finrank F E := hH0actual
+      _ = Module.finrank F E := hUnitsTateCard.cardH0
       _ = ((DegreeData.FiniteAbstractExtension.ofInclusion L K hLK).degree : ℕ) :=
         (finiteAbstractExtension_degree_eq_finrank
           k Ω K L hLK hnormal hKfinite hfinite).symm
-  · change Nat.card
-      (tateCohomology M (-1)) = 1
-    calc
-      Nat.card (tateCohomology M (-1)) =
+  · calc
+      _ =
           Nat.card (tateCohomology U (-1)) :=
         Nat.card_congr eTateHm1.toLinearEquiv.toEquiv
-      _ = 1 := hHm1actual
+      _ = 1 := hUnitsTateCard.cardHminusOne
 
 /-- The coefficient module A = (kˢᵉᵖ)ˣ satisfies the abstract
 class-field axiom.  This is the separable-closure specialization used for local

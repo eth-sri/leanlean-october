@@ -10,9 +10,9 @@ namespace DedekindZetaZeroFree.FourierContinuation.CurrentExteriorReference
 open KPLocalPrincipalSeries KPGlobalTorusFiniteStages
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 variable {F : Type} [Field F] [NumberField F]
-variable (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (A : SArithmeticData F)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
  theorem profile_eq_exterior (q : KPFinitePlace F) (hq : q ∉ C.exceptional) :
     profile A P C q hq =

@@ -11,12 +11,15 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.CoreChartLocalizers
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
+    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+    (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
-private theorem chart_component_eq (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count) :
+section
+
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
+    (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count)
+
+private theorem chart_component_eq :
     ∀ x : E (C.chart i).n,
       M.component ((C.chart i).toBase F ζ hζ hF U x) = (C.chart i).component := by
   intro x
@@ -33,9 +36,7 @@ private theorem chart_component_eq (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   have := A.components.injective (h1.trans h2.symm)
   exact congrArg Sigma.fst this
 
-private theorem phase_value (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count) (x : E (C.chart i).n)
+private theorem phase_value (x : E (C.chart i).n)
     (s : KPFiniteCuspAtlas.genuineScalars F ζ hζ U)
     (γ : KPCuspArithmetic.PGL2 F) (ε : rootsOfUnity 3 F) (u : U.toOpenSubgroup)
     (h1 : M.lift ((C.chart i).toBase F ζ hζ hF U x) = γ • (C.chart i).coordinates x)
@@ -46,16 +47,12 @@ private theorem phase_value (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     s.val ((C.chart i).coordinates x, A.representative (C.chart i).component) =
       ((KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂˣ) : ℂ)⁻¹ *
         (M.representative s ((C.chart i).toBase F ζ hζ hF U x) : ℂ) := by
-  have hc := chart_component_eq F ζ hζ hF U A M C i x
   have hsec : (M.representative s ((C.chart i).toBase F ζ hζ hF U x) : ℂ) =
       s.val (M.lift ((C.chart i).toBase F ζ hζ hF U x),
         A.representative (C.chart i).component) := by
     have := M.section_formula s ((C.chart i).toBase F ζ hζ hF U x)
-    rw [hc] at this
+    rw [(chart_component_eq F ζ hζ hF U A M C i x)] at this
     exact this
-  have hs1 := s.property.1
-  have hs2 := s.property.2.1
-  have hs3 := s.property.2.2
   have key : s.val (γ • (C.chart i).coordinates x,
         A.representative (C.chart i).component) =
       ((KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂˣ) : ℂ) *
@@ -66,17 +63,15 @@ private theorem phase_value (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
           KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ *
             (KPCuspGenuineMonodromy.central F ζ hζ ε *
               (A.representative (C.chart i).component *
-                (u : KPFiniteCuspAtlas.FiniteCover F ζ hζ)))) := by
+                u))) := by
       conv_lhs => rw [h2]
       simp only [mul_assoc]
-    rw [e1, hs1]
-    rw [hs2, hs3]
+    rw [e1, s.property.1]
+    rw [s.property.2.1, s.property.2.2]
   rw [hsec, h1, key, ← mul_assoc,
     inv_mul_cancel₀ (Units.ne_zero ((KPCuspGenuineMonodromy.chi F ζ hζ) ε)), one_mul]
 
-private theorem transition_exists (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count) (x : E (C.chart i).n) :
+private theorem transition_exists (x : E (C.chart i).n) :
     ∃ γ : KPCuspGenuineMonodromy.Component F ζ hζ U
       (A.representative (C.chart i).component),
       (γ : KPCuspArithmetic.PGL2 F) • (C.chart i).coordinates x =
@@ -99,6 +94,8 @@ private theorem transition_exists (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     simpa using hp
   exact MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp (Quotient.exact hq))
 
+end
+
 private theorem transition_finite (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (j : Fin A.componentCount)
     (γ : KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative j)) :
@@ -109,8 +106,7 @@ private theorem transition_finite (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   obtain ⟨u, hu⟩ := (A.line j).finite_comparison γ⁻¹
   simp only [Subgroup.coe_inv, map_inv, inv_inv] at hu
   refine ⟨u, ?_⟩
-  have hh := congrArg (fun t => KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ * t) hu
-  simpa only [← mul_assoc, mul_inv_cancel, one_mul] using hh
+  simpa only [← mul_assoc, mul_inv_cancel, one_mul] using (congrArg (fun t => KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ * t) hu)
 
 private theorem arithmetic_smul_continuous (γ : KPCuspArithmetic.PGL2 F) :
     Continuous (fun z : KPCuspGenuineMonodromy.SymmetricSpace F => γ • z) := by
@@ -119,9 +115,10 @@ private theorem arithmetic_smul_continuous (γ : KPCuspArithmetic.PGL2 F) :
   simp only [KPCuspSiegel.action_mk]
   exact (KPArch.productAction_contDiff _ _).continuous
 
-private theorem measurable_transition (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count) :
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
+    (C : FiniteCutoffs F ζ hζ hF U A K)
+
+private theorem measurable_transition (i : Fin C.count) :
     ∃ γ : E (C.chart i).n → KPCuspGenuineMonodromy.Component F ζ hζ U
         (A.representative (C.chart i).component),
       (∀ f : KPCuspGenuineMonodromy.Component F ζ hζ U
@@ -178,24 +175,11 @@ private theorem measurable_transition (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
     rw [dif_pos hx]
     exact Nat.find_spec (hp ⟨x, hx⟩)
 
-theorem frame_comparison (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) :
+theorem frame_comparison :
     Nonempty (FrameComparison F ζ hζ hF U A M C) := by
   choose γ hmeas hγ using measurable_transition F ζ hζ hF U A M C
   let phase : ∀ i, E (C.chart i).n → ℂˣ := fun i x =>
     ((KPCuspGenuineMonodromy.chi F ζ hζ) ((A.line (C.chart i).component).rho (γ i x)))⁻¹
-  have hframe : ∀ i x, x ∈ (C.chart i).extendedDomain → ∀ a : V F ζ hζ U,
-      (C.chart i).toLine F ζ hζ hF U x ((phase i x : ℂ) • a) =
-        M.frame ((C.chart i).toBase F ζ hζ hF U x) a := by
-    intro i x hx a
-    rw [M.frame_formula, chart_component_eq F ζ hζ hF U A M C i x]
-    unfold Chart.toLine
-    apply congrArg (Sigma.mk (C.chart i).component)
-    apply Quotient.sound
-    refine ⟨γ i x, (hγ i x hx).symm, ?_⟩
-    change (a : ℂ) = _ * ((phase i x : ℂ) * (a : ℂ))
-    simp [phase, ← mul_assoc]
   refine ⟨{
     phase := phase
     measurable_phase := fun i => hmeas i (fun g =>
@@ -205,7 +189,7 @@ theorem frame_comparison (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
         (A.line (C.chart i).component).unitary, inv_one]
     frame_comparison := ?_
     phase_equivariance := ?_
-    phase_frame := ?_ }⟩
+     }⟩
   · intro i s
     filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
     have hd := (C.chart i).closed_ball_in_extension (subset_closure hx)
@@ -254,9 +238,6 @@ theorem frame_comparison (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
         (C.chart i).rho F ζ hζ hF U g * phase i x := by
       simpa [phase, mul_inv_rev, mul_assoc] using hh
     exact congrArg (fun t : ℂˣ => (t : ℂ)) hh'
-  · intro i
-    filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
-    exact hframe i x ((C.chart i).closed_ball_in_extension (subset_closure hx))
 
 end DedekindZetaZeroFree.CoreChartLocalizers
 

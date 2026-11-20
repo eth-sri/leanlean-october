@@ -10,41 +10,38 @@ open scoped NumberField
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
-theorem localIntegralRayCongruence
-    (K : Type) [Field K] [NumberField K]
-    (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K))
-    (n : ℕ) (hn : 1 ≤ n) (a : 𝓞 K) (ha : (a : K) ≠ 0) :
+variable (K : Type) [Field K] [NumberField K] (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) (n : ℕ)
+
+theorem localIntegralRayCongruence (hn : 1 ≤ n) (a : 𝓞 K) (ha : (a : K) ≠ 0) :
     ClassFieldTheory.finitePlaceUnitEmbedding v (Units.mk0 (a : K) ha) ∈
         ClassFieldTheory.rayLocalHigherUnitGroup v n ↔
       a - 1 ∈ v.asIdeal ^ n := by
   rw [ClassFieldTheory.mem_rayLocalHigherUnitGroup_iff_exists_one_add v n hn]
+  let algebraMap₀ := algebraMap (𝓞 K) (v.adicCompletionIntegers K)
   have himage :
       ((ClassFieldTheory.finitePlaceUnitEmbedding v (Units.mk0 (a : K) ha)) :
         v.adicCompletion K) =
-      ((algebraMap (𝓞 K) (v.adicCompletionIntegers K) a) : v.adicCompletion K) := by
-    rfl
+      ((algebraMap₀ a) : v.adicCompletion K) := rfl
   constructor
   · rintro ⟨t, ht, heq⟩
-    have heq' : algebraMap (𝓞 K) (v.adicCompletionIntegers K) a = 1 + t := by
+    have heq' : algebraMap₀ a = 1 + t := by
       apply Subtype.ext
       exact himage.symm.trans heq
-    have hsub : algebraMap (𝓞 K) (v.adicCompletionIntegers K) (a - 1) = t := by
+    have hsub : algebraMap₀ (a - 1) = t := by
       rw [map_sub, map_one, heq']
       ring
     apply (completionIdealPowerPullback K v (a - 1) n).mp
     rw [hsub]
     exact ht
   · intro ha'
-    refine ⟨algebraMap (𝓞 K) (v.adicCompletionIntegers K) (a - 1),
+    refine ⟨algebraMap₀ (a - 1),
       (completionIdealPowerPullback K v (a - 1) n).mpr ha', ?_⟩
     rw [himage]
     congr 1
     rw [map_sub, map_one]
     ring
 
-theorem valuation_le_one_of_localRayCongruence
-    (K : Type) [Field K] [NumberField K]
-    (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) (n : ℕ) (x : Kˣ)
+theorem valuation_le_one_of_localRayCongruence (x : Kˣ)
     (hx : ClassFieldTheory.finitePlaceUnitEmbedding v x ∈
       ClassFieldTheory.rayLocalHigherUnitGroup v n) :
     v.valuation K (x : K) ≤ 1 := by
@@ -52,7 +49,7 @@ theorem valuation_le_one_of_localRayCongruence
     (ClassFieldTheory.mem_rayLocalHigherUnitGroup_iff v n
       (ClassFieldTheory.finitePlaceUnitEmbedding v x)).mp hx
   have hval := congrArg Units.val hxy
-  change ((y : v.adicCompletionIntegers K) : v.adicCompletion K) =
+  change (y : v.adicCompletion K) =
     algebraMap K (v.adicCompletion K) (x : K) at hval
   have hmem : algebraMap K (v.adicCompletion K) (x : K) ∈
       v.adicCompletionIntegers K := by

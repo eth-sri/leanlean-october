@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Metaplectic.Intertwining.CubicRootResidualIntegrals
 
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.Tame.DeformedBruhatTestScalarFormula
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.Tame.NormalizedCompactBruhatTests
@@ -27,16 +28,12 @@ theorem integrable_prod_restrict_of_locallyConstant_profiles
     simpa only [range_comp, Subtype.range_coe] using h
   letI : Fintype R := hR.fintype
   let A : R → X → ℂ := fun r => {x | f x = r.val}.indicator (fun _ => 1)
-  have hA : ∀ r, Integrable (A r) (μ.restrict C) := by
-    intro r
-    exact (integrable_const (1 : ℂ)).indicator (hf.isOpen_fiber r.val).measurableSet
+  have hA : ∀ r, Integrable (A r) (μ.restrict C) := fun r => (integrable_const (1 : ℂ)).indicator (hf.isOpen_fiber r.val).measurableSet
   have hB : ∀ r : R, Integrable r.val ν := by
     intro r
     obtain ⟨x, hxC, hx⟩ := r.property
     simpa only [hx] using hi x hxC
-  have hs : Integrable (fun p : X × Y => ∑ r : R, A r p.1 * r.val p.2)
-      ((μ.restrict C).prod ν) := by
-    exact integrable_finsetSum Finset.univ (fun r _ => (hA r).mul_prod (hB r))
+  have hs := integrable_finsetSum Finset.univ (fun r _ => (hA r).mul_prod (hB r))
   apply hs.congr
   have hmem : ∀ᵐ p : X × Y ∂((μ.restrict C).prod ν), p.1 ∈ C := by
     apply (Measure.ae_prod_iff_ae_ae (hCm.preimage measurable_fst)).mpr
@@ -94,14 +91,10 @@ private theorem section_profiles_locallyConstant
   obtain ⟨J, hJ⟩ := f.property.2
   rw [IsLocallyConstant.iff_eventually_eq]
   intro x
-  have hc : Continuous (fun y =>
-      (KPPGLLocalCover.N F ζ hζ (Sum.inr q) x)⁻¹ *
-        KPPGLLocalCover.N F ζ hζ (Sum.inr q) y) :=
-    continuous_const.mul (root_continuous F ζ hζ q S P)
   have hn : ∀ᶠ y in nhds x,
       (KPPGLLocalCover.N F ζ hζ (Sum.inr q) x)⁻¹ *
         KPPGLLocalCover.N F ζ hζ (Sum.inr q) y ∈ J :=
-    hc.continuousAt.preimage_mem_nhds (by simpa using J.isOpen.mem_nhds J.one_mem)
+    (continuous_const.mul (root_continuous F ζ hζ q S P)).continuousAt.preimage_mem_nhds (by simpa using J.isOpen.mem_nhds J.one_mem)
   filter_upwards [hn] with y hy
   funext u
   have he := congrFun (hJ _ hy) (kernelW (LocalField F q) S.borel .minus *
@@ -114,31 +107,32 @@ private theorem section_profiles_locallyConstant
       KPPGLLocalCover.N F ζ hζ (Sum.inr q) y))).val 1 = _ at he'
   simpa only [mul_assoc, mul_inv_cancel_left] using he'
 
+variable (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
+
+local notation "LocalCompletion" => LocalField F q
+
 private theorem section_fiber_integrable
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
+    (π : LocalCompletionˣ)
+    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt LocalCompletion
+      (valuation LocalCompletion (π : LocalCompletion)) = WithZero.exp (-1 : ℤ))
     (s : ℂ) (hs : convergenceHalfPlane .minus s)
     (f : sectionSpace S.borel P .minus (sourceParameter .minus s))
     (g : ActualCover F ζ hζ q) :
-    Integrable (fun u : LocalField F q =>
-      (f.val (kernelW (LocalField F q) S.borel .minus *
+    Integrable (fun u : LocalCompletion =>
+      (f.val (kernelW LocalCompletion S.borel .minus *
         KPPGLLocalCover.N F ζ hζ (Sum.inr q) u * g)).val 1) μ := by
-  let O : TopologicalSpace.PositiveCompacts (LocalField F q) :=
-    ⟨⟨((valuation (LocalField F q)).integer : Set (LocalField F q)),
-      IsNonarchimedeanLocalField.isCompact_closedBall (LocalField F q) 1⟩,
-      by rw [(valuation (LocalField F q)).isOpen_integer.interior_eq]; exact ⟨0, by simp⟩⟩
+  let O : TopologicalSpace.PositiveCompacts LocalCompletion :=
+    ⟨⟨((valuation LocalCompletion).integer : Set LocalCompletion),
+      IsNonarchimedeanLocalField.isCompact_closedBall LocalCompletion 1⟩,
+      by rw [(valuation LocalCompletion).isOpen_integer.interior_eq]; exact ⟨0, by simp⟩⟩
   let ν := Measure.addHaarMeasure O
-  have hν : ν ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1 :=
-    Measure.addHaarMeasure_self
   have hi := KPRankOneShellRepair.actual_section_integrable
-    F ζ hζ q S P ν hν π hπ .minus s hs f g 1
-  have he : (fun u : LocalField F q =>
-      (f.val (kernelW (LocalField F q) S.borel .minus *
+    F ζ hζ q S P ν Measure.addHaarMeasure_self π hπ .minus s hs f g 1
+  have he : (fun u : LocalCompletion =>
+      (f.val (kernelW LocalCompletion S.borel .minus *
         S.borel.upperRoot (Multiplicative.ofAdd u) * g)).val 1) =
-      (fun u : LocalField F q =>
-      (f.val (kernelW (LocalField F q) S.borel .minus *
+      (fun u : LocalCompletion =>
+      (f.val (kernelW LocalCompletion S.borel .minus *
         KPPGLLocalCover.N F ζ hζ (Sum.inr q) u * g)).val 1) := by
     funext u
     rw [(S.openCell P).upper_eq]
@@ -148,16 +142,15 @@ private theorem section_fiber_integrable
   exact hi.smul_measure O.isCompact.measure_lt_top.ne
 
 theorem eventual_baseChart_joint_integrable
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) :
+    (π : LocalCompletionˣ)
+    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt LocalCompletion
+      (valuation LocalCompletion (π : LocalCompletion)) = WithZero.exp (-1 : ℤ)) :
     ∃ M : ℕ, ∀ m ≥ M, ∀ s : ℂ, convergenceHalfPlane .minus s →
-      Integrable (fun z : LocalField F q × LocalField F q =>
+      Integrable (fun z : LocalCompletion × LocalCompletion =>
         chartDeformedScalar F ζ hζ q S P hP
           (diagonalLift F ζ hζ q π (0, 0)) m s
-          (kernelW (LocalField F q) S.borel .minus *
+          (kernelW LocalCompletion S.borel .minus *
             KPPGLLocalCover.N F ζ hζ (Sum.inr q) z.2 *
             (eta F ζ hζ q π (0 : Fin 3) * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
               KPPGLLocalCover.N F ζ hζ (Sum.inr q) z.1)))
@@ -169,14 +162,12 @@ theorem eventual_baseChart_joint_integrable
   refine ⟨max M₁ M₂, fun m hm s hs => ?_⟩
   obtain ⟨f, hf⟩ := hM₁ m (le_trans (le_max_left _ _) hm)
   let fₛ := deformedTest F ζ hζ q S P hP f s
-  have hC : IsCompact (lowShell F q) :=
-    IsNonarchimedeanLocalField.isCompact_closedBall (LocalField F q) 1
-  have hCm : MeasurableSet (lowShell F q) :=
-    (valuation (LocalField F q)).isOpen_integer.measurableSet
+  have hC :=
+    IsNonarchimedeanLocalField.isCompact_closedBall LocalCompletion 1
   letI : IsFiniteMeasure (μ.restrict (lowShell F q)) :=
     ⟨by rw [Measure.restrict_apply_univ]; exact hC.measure_lt_top⟩
   have hi := CompactProfiles.integrable_prod_restrict_of_locallyConstant_profiles
-    μ μ (lowShell F q) hC hCm _
+    μ μ (lowShell F q) hC ((valuation LocalCompletion).isOpen_integer.measurableSet) _
     (section_profiles_locallyConstant F ζ hζ q S P π s fₛ)
     (fun x _ => section_fiber_integrable F ζ hζ q S P μ π hπ s hs fₛ
       (eta F ζ hζ q π (0 : Fin 3) * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
@@ -304,15 +295,14 @@ theorem actual_support_lower_row
         KPStandardLocalRootLifts.weylSwap (LocalField F q) * KubotaRankTwo.n (LocalField F q) x) =
       Matrix.ProjGenLinGroup.mk (B * k.val * KPStandardLocalRootLifts.weylSwap (LocalField F q)) := by
     simpa only [map_mul, mul_assoc] using hp
-  have hB10 : B 1 0 = 0 := by
-    simp [B, Matrix.mul_apply, Fin.sum_univ_two]
   have hB11 : B 1 1 ≠ 0 := by
     simp [B, Matrix.mul_apply, Fin.sum_univ_two]
   have hk11 : k.val 1 1 ≠ 0 := by
     obtain ⟨r, hr⟩ := (hm.2 k.val k.property).1 1
     rw [← hr]
     exact pow_ne_zero _ r.ne_zero
-  obtain ⟨hu, he⟩ := lower_row_constraint B k.val u x hB10 hB11 hk11 hp'
+  obtain ⟨hu, he⟩ := lower_row_constraint B k.val u x (by
+    simp [B, Matrix.mul_apply, Fin.sum_univ_two]) hB11 hk11 hp'
   exact ⟨hu, k, he⟩
 
 theorem actual_support_residual_in_ideal
@@ -328,7 +318,7 @@ theorem actual_support_residual_in_ideal
           KPPGLLocalCover.N F ζ hζ (Sum.inr q) x) ∈
       testSupport F ζ hζ q S P (diagonalLift F ζ hζ q π (0, 0)) m) :
     u ≠ 0 ∧ ∃ y : KPLocalCube.LocalIntegers F q,
-      y ∈ KPLocalCube.maximalIdeal F q ^ m ∧ (y : LocalField F q) = x + u⁻¹ := by
+      (y : LocalField F q) = x + u⁻¹ := by
   obtain ⟨hu, k, hk⟩ := actual_support_lower_row F ζ hζ q S P π m hm u x hg
   obtain ⟨k₀, hk₀, he₀⟩ := k.property
   have hentries := (KPLocalCube.mem_integerCongruence_iff F q m k₀).mp hk₀
@@ -344,7 +334,7 @@ theorem actual_support_residual_in_ideal
     simpa only [neg_sub] using (KPLocalCube.maximalIdeal F q).neg_mem hmem
   obtain ⟨v, hv⟩ := hisunit
   let y : KPLocalCube.LocalIntegers F q := k₀ 1 0 * (↑v⁻¹)
-  refine ⟨hu, y, (KPLocalCube.maximalIdeal F q ^ m).mul_mem_right _ h10ideal, ?_⟩
+  refine ⟨hu, y, ?_⟩
   rw [hk]
   have hratio : k.val 1 0 / k.val 1 1 =
       (k₀ 1 0 : LocalField F q) / (k₀ 1 1 : LocalField F q) := by
@@ -370,7 +360,7 @@ theorem actual_support_inverse_mem_lowShell
           KPPGLLocalCover.N F ζ hζ (Sum.inr q) x) ∈
       testSupport F ζ hζ q S P (diagonalLift F ζ hζ q π (0, 0)) m) :
     u ≠ 0 ∧ u⁻¹ ∈ lowShell F q := by
-  obtain ⟨hu, y, _, hy⟩ := actual_support_residual_in_ideal F ζ hζ q S P π m hm u x hg
+  obtain ⟨hu, y, hy⟩ := actual_support_residual_in_ideal F ζ hζ q S P π m hm u x hg
   have hys : (y : LocalField F q) ∈ lowShell F q := y.property
   have hsub := (valuation (LocalField F q)).integer.sub_mem hys hx
   rw [hy] at hsub
@@ -378,47 +368,21 @@ theorem actual_support_inverse_mem_lowShell
   change u⁻¹ ∈ (valuation (LocalField F q)).integer
   simpa only [add_sub_cancel_left] using hsub
 
-private theorem unitCubeClasses_exponent_dvd
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (u : Kˣ)
-    (hu : QuotientGroup.mk' (CubicCharacters.cubes Kˣ) u ∈
-      unitCubeClasses K) : 3 ∣ KPCubicExpansion.valuationExponent K u := by
-  obtain ⟨y, hy, he⟩ := hu
-  obtain ⟨a, ha, b, hb, rfl⟩ := Subgroup.mem_sup.mp hy
-  obtain ⟨z, rfl⟩ := ha
-  obtain ⟨t, rfl⟩ := hb
-  have hdiff : (KPRamifiedBeta.unitsInclusion K z * t ^ 3) / u ∈
-      CubicCharacters.cubes Kˣ := (QuotientGroup.eq_iff_div_mem).mp he
-  obtain ⟨r, hr⟩ := hdiff
-  change r ^ 3 = _ at hr
-  have hh := congrArg (KPCubicExpansion.valuationExponent K) hr
-  have hu0 : KPCubicExpansion.valuationExponent K (KPRamifiedBeta.unitsInclusion K z) = 0 :=
-    KPCubicExpansion.valuationExponent_unit z
-  simp only [div_eq_mul_inv, KPCubicExpansion.valuationExponent_mul, hu0, zero_add] at hh
-  rw [← zpow_natCast r 3, KPCubicExpansion.valuationExponent_zpow,
-    ← zpow_natCast t 3, KPCubicExpansion.valuationExponent_zpow,
-    ← zpow_neg_one u, KPCubicExpansion.valuationExponent_zpow] at hh
-  refine ⟨KPCubicExpansion.valuationExponent K t - KPCubicExpansion.valuationExponent K r, ?_⟩
-  omega
+private alias unitCubeClasses_exponent_dvd := DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.RootResidualGeometry.exponent_dvd_of_unitCubeClasses
 
-private theorem tame_base_borel_exponent_dvd
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P) (b : BL F ζ hζ q S P) :
+section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F)) (S : CanonicalFiniteInducingData F ζ hζ q)
+    (P : Polarization S.heisenberg) (hP : IsTamePolarization F ζ hζ q S P)
+
+include hP in
+private theorem tame_base_borel_exponent_dvd (b : BL F ζ hζ q S P) :
     3 ∣ KPCubicExpansion.valuationExponent (LocalField F q)
-      (S.borel.coordinate (retractL F ζ hζ q S P b)) := by
-  apply unitCubeClasses_exponent_dvd
-  change QuotientGroup.mk (S.borel.coordinate (retractL F ζ hζ q S P b)) ∈ _
-  rw [← S.cube_class, ← hP]
-  exact ⟨S.heisenberg.π (retractL F ζ hζ q S P b),
-    (retractL F ζ hζ q S P b).property, rfl⟩
+      (S.borel.coordinate (retractL F ζ hζ q S P b)) := by apply @DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.RootResidualGeometry.tame_borel_coordinate_exponent_dvd <;> assumption
 
+include hP in
 private theorem actual_base_support_exponent_dvd
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P)
     (π : (LocalField F q)ˣ) (m : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F q m)
     (u : (LocalField F q)ˣ) (x : LocalField F q)
@@ -515,8 +479,13 @@ private theorem actual_base_support_exponent_dvd
   apply (Int.dvd_iff_emod_eq_zero).mpr
   omega
 
-private theorem expanding_shell_pairwise
-    (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F)) :
+end
+
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+private theorem expanding_shell_pairwise (q : HeightOneSpectrum (𝓞 F)) :
     Pairwise (fun i j => Disjoint (expandingReverseCubeShell F q i)
       (expandingReverseCubeShell F q j)) := by
   intro i j hij
@@ -528,7 +497,6 @@ private theorem expanding_shell_pairwise
   exact hij (by omega)
 
 private theorem actual_base_support_mem_expanding_union
-    (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
     (hP : IsTamePolarization F ζ hζ q S P)
@@ -542,8 +510,7 @@ private theorem actual_base_support_mem_expanding_union
       testSupport F ζ hζ q S P (diagonalLift F ζ hζ q π (0, 0)) m) :
     u ∈ ⋃ k : ℕ, expandingReverseCubeShell F q k := by
   obtain ⟨hu, hinv⟩ := actual_support_inverse_mem_lowShell F ζ hζ q S P π m hm u x hx hg
-  let v : (LocalField F q)ˣ := Units.mk0 u hu
-  have hd := actual_base_support_exponent_dvd F ζ hζ q S P hP π m hm v x hg
+  have hd := actual_base_support_exponent_dvd F ζ hζ q S P hP π m hm (Units.mk0 u hu) x hg
   obtain ⟨j, hj⟩ := hd
   have hv : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) u) ≠ 0 := by simpa using hu
@@ -567,13 +534,12 @@ private theorem actual_base_support_mem_expanding_union
   congr 1
   ring
 
-private theorem expanding_shell_measurable
-    (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
+private theorem expanding_shell_measurable (q : HeightOneSpectrum (𝓞 F))
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) (k : ℕ) :
     MeasurableSet (expandingReverseCubeShell F q k) := by
-  let a : LocalField F q := ((π : LocalField F q)⁻¹) ^ (3 * k)
+  let a := ((π : LocalField F q)⁻¹) ^ (3 * k)
   have ha : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) a) = WithZero.exp (3 * (k : ℤ)) := by
     simp only [a, map_pow, map_inv₀, hπ, ← WithZero.exp_neg,
@@ -589,15 +555,17 @@ private theorem expanding_shell_measurable
     exact (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).injective.eq_iff
   rw [he]
   apply IsClosed.measurableSet
-  simpa only [← (valuation (LocalField F q)).restrict_inj] using
+  simpa using
     (valuation (LocalField F q)).isClosed_sphere ((valuation (LocalField F q)).restrict a)
 
+end
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F)) (S : CanonicalFiniteInducingData F ζ hζ q)
+    (P : Polarization S.heisenberg) (hP : IsTamePolarization F ζ hζ q S P) (μ : Measure (LocalField F q))
+    [μ.IsAddHaarMeasure]
+
 private theorem baseChart_decomposition_of_integrable
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P)
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
@@ -622,14 +590,10 @@ private theorem baseChart_decomposition_of_integrable
     apply dif_neg
     intro hg
     exact hu (actual_base_support_mem_expanding_union F ζ hζ q S P hP π m hm u x hx hg)
-  have hi := hint.integral_prod_right
-  have hswap := integral_integral_swap hint
   have hmeas := expanding_shell_measurable F q π hπ
-  have hU : MeasurableSet (⋃ k : ℕ, expandingReverseCubeShell F q k) :=
-    MeasurableSet.iUnion hmeas
   change (∫ x in lowShell F q, ∫ u, _ ∂μ ∂μ) = _
   simp_rw [← hH]
-  rw [hswap]
+  rw [(integral_integral_swap hint)]
   have hid : (⋃ k : ℕ, expandingReverseCubeShell F q k).indicator
       (fun u => ∫ x in lowShell F q, H x u ∂μ) =
       (fun u => ∫ x in lowShell F q, H x u ∂μ) := by
@@ -640,16 +604,11 @@ private theorem baseChart_decomposition_of_integrable
   have hset : (∫ u in ⋃ k : ℕ, expandingReverseCubeShell F q k,
       ∫ x in lowShell F q, H x u ∂μ ∂μ) =
       ∫ u, ∫ x in lowShell F q, H x u ∂μ ∂μ := by
-    rw [← integral_indicator hU, hid]
+    rw [← integral_indicator (MeasurableSet.iUnion hmeas), hid]
   rw [← hset]
-  exact integral_iUnion hmeas (expanding_shell_pairwise F q) hi.integrableOn
+  exact integral_iUnion hmeas (expanding_shell_pairwise F q) hint.integral_prod_right.integrableOn
 
 theorem eventual_baseChart_cube_shell_decomposition
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P)
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)

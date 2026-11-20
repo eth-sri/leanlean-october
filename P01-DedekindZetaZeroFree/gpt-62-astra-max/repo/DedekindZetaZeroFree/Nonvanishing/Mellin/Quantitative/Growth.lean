@@ -10,8 +10,8 @@ namespace DedekindZetaZeroFree.Quantitative.Spectral
 open DedekindZetaZeroFree NumberField
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem f_growth (ε : ℝ) (hε : 0 < ε) :
     ∃ Cε : ℝ, 0 < Cε ∧ ∀ Z : ℝ, 2 ≤ Z → ‖f D Z‖ ≤ Cε * Z ^ ((287 / 800 : ℝ) + ε) := by
@@ -38,10 +38,10 @@ theorem f_growth (ε : ℝ) (hε : 0 < ε) :
   nlinarith
 
 theorem g_growth (ε : ℝ) (hε : 0 < ε) :
-    ∃ Cε : ℝ, 0 < Cε ∧ ∀ Z : ℝ, 2 ≤ Z →
+    ∃ Cε : ℝ, ∀ Z : ℝ, 2 ≤ Z →
       ‖((Z : ℂ) ^ (((61 / 100 : ℝ)) : ℂ)) * f D Z‖ ≤ Cε * Z ^ (31 / 32 + ε) := by
   obtain ⟨C, hC, h⟩ := f_growth D ε hε
-  refine ⟨C, hC, fun Z hZ => ?_⟩
+  refine ⟨C, fun Z hZ => ?_⟩
   have hZ0 : 0 < Z := by linarith
   rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hZ0]
   simp only [Complex.ofReal_re]

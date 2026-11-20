@@ -19,8 +19,8 @@ private theorem integral_dilation (β c : ℂˣ) (f : ℂ → ℂ) :
     (∫ x : ℂ, f ((c : ℂ) * x) ∂characterHaar β) =
       ((‖(c : ℂ)‖ ^ 2)⁻¹ : ℝ) • ∫ x : ℂ, f x ∂characterHaar β := by
   letI := characterHaar_isAddHaarMeasure β
-  let r : ℝ := ‖(c : ℂ)‖
-  have hr : 0 < r := norm_pos_iff.mpr c.ne_zero
+  let r := ‖(c : ℂ)‖
+  have hr := norm_pos_iff.mpr c.ne_zero
   let u : Circle := ⟨(c : ℂ) / (r : ℂ), by
     change (c : ℂ) / (r : ℂ) ∈ Metric.sphere (0 : ℂ) 1
     rw [Metric.mem_sphere, dist_zero_right, norm_div, Complex.norm_real,
@@ -42,7 +42,7 @@ private theorem integral_dilation (β c : ℂˣ) (f : ℂ → ℂ) :
         ∫ x : ℂ, f (r • x) ∂characterHaar β :=
       hrot.integral_comp (rotation u).toHomeomorph.measurableEmbedding (fun x => f (r • x))
     _ = _ := by
-      simpa only [Complex.finrank_real_complex] using
+      simpa using
         Measure.integral_comp_smul_of_nonneg (characterHaar β) f r (hR := hr.le)
 
 private theorem integral_affine (β c : ℂˣ) (b : ℂ) (f : ℂ → ℂ) :
@@ -66,6 +66,8 @@ private theorem weyl_upper (a d : ℂˣ) (b x : ℂ) :
   <;> field_simp
   <;> ring
 
+alias BoundaryPairing.weyl_upper := weyl_upper
+
 theorem complementary_weights (s : ℝ) (a d : ℂˣ) :
     inductionWeight s a d * inductionWeight (-s) a d = ‖(a : ℂ) / (d : ℂ)‖ ^ 2 := by
   have hp : 0 < complexAbs ((a : ℂ) / (d : ℂ)) :=
@@ -86,7 +88,6 @@ theorem pairing_upper_invariant (β : ℂˣ) (s : ℝ)
         (star (openCoordinate f (b / (a : ℂ) + ((d / a : ℂˣ) : ℂ) * z)) *
           openCoordinate g (b / (a : ℂ) + ((d / a : ℂˣ) : ℂ) * z)) := by
     rw [weyl_upper, f.property.1, g.property.1]
-    have hc := complementary_weights s d a
     have he : (b + z * (d : ℂ)) / (a : ℂ) =
         b / (a : ℂ) + ((d / a : ℂˣ) : ℂ) * z := by
       simp only [Units.val_div_eq_div_val]
@@ -97,16 +98,14 @@ theorem pairing_upper_invariant (β : ℂˣ) (s : ℝ)
       _ = ((inductionWeight s d a : ℂ) * (inductionWeight (-s) d a : ℂ)) *
           ((starRingEnd ℂ) (f (weyl * upperUnipotent (b / (a : ℂ) + ((d / a : ℂˣ) : ℂ) * z))) *
             g (weyl * upperUnipotent (b / (a : ℂ) + ((d / a : ℂˣ) : ℂ) * z))) := by ring
-      _ = _ := by rw [← Complex.ofReal_mul, hc]
+      _ = _ := by rw [← Complex.ofReal_mul, (complementary_weights s d a)]
   change (∫ z, star (f (weyl * upperUnipotent z * upperTriangular a d b)) *
     g (weyl * upperUnipotent z * upperTriangular a d b) ∂characterHaar β) = _
   simp_rw [hp]
   rw [integral_const_mul, integral_affine β (d/a) (b/(a:ℂ))
     (fun z => star (openCoordinate f z) * openCoordinate g z)]
-  have hn : ‖(d : ℂ) / (a : ℂ)‖ ^ 2 ≠ 0 :=
-    pow_ne_zero _ (norm_ne_zero_iff.mpr (div_ne_zero d.ne_zero a.ne_zero))
   simp only [Complex.real_smul, Complex.ofReal_inv, Units.val_div_eq_div_val]
-  rw [← mul_assoc, mul_inv_cancel₀ (Complex.ofReal_ne_zero.mpr hn), one_mul]
+  rw [← mul_assoc, mul_inv_cancel₀ (Complex.ofReal_ne_zero.mpr (pow_ne_zero _ (norm_ne_zero_iff.mpr (div_ne_zero d.ne_zero a.ne_zero)))), one_mul]
   rfl
 end DedekindZetaZeroFree.CurrentComplexBoundary
 

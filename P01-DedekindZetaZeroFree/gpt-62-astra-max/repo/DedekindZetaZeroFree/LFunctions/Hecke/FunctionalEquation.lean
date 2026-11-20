@@ -31,9 +31,7 @@ theorem heckeFunctionalEquation :
           (η I * (Ideal.absNorm I : ℂ) ^ (-s))) (Λ s)) ∧
       (∀ s : ℂ, s ≠ 0 → s ≠ 1 → Λ s = Λ (1 - s)) ∧
       (∀ s : ℂ, s ≠ 0 → s ≠ 1 → E s = s * (s - 1) * Λ s) ∧
-      (∀ ε : ℝ, 0 < ε → ∃ C : ℝ, ∀ s : ℂ, ‖E s‖ ≤ C * Real.exp (‖s‖ ^ (1 + ε)))) := by
-  intro F _ _ hF m hm η hprim
-  exact ⟨fun hnonprincipal =>
+      (∀ ε : ℝ, 0 < ε → ∃ C : ℝ, ∀ s : ℂ, ‖E s‖ ≤ C * Real.exp (‖s‖ ^ (1 + ε)))) := fun F _ _ hF m hm η hprim => ⟨fun hnonprincipal =>
       heckeNonprincipalFunctionalEquation F hF m hm η hprim hnonprincipal,
     fun hprincipal =>
       heckeFunctionalEquation_principal F hF m hm η hprim hprincipal⟩

@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -67,34 +63,19 @@ noncomputable def completionAlgebra :
 
 /-- The canonical valued structure on the completed base place. -/
 @[reducible]
-noncomputable def baseValued
-    (hvKna : IsNonarchimedean (vK : K → ℝ)) :
-    Valued vK.Completion ℝ≥0 :=
-  finitePlaceCompletionValued vK hvKna
+noncomputable alias baseValued := finitePlaceCompletionValued
 
 /-- The canonical valuative relation on the completed base place. -/
 @[reducible]
-noncomputable def baseValuativeRel
-    (hvKna : IsNonarchimedean (vK : K → ℝ)) :
-    letI : Valued vK.Completion ℝ≥0 := baseValued vK hvKna
-    ValuativeRel vK.Completion :=
-  finitePlaceCompletionValuativeRel vK hvKna
+noncomputable alias baseValuativeRel := finitePlaceCompletionValuativeRel
 
 /-- The canonical valued structure on the chosen localized completion. -/
 @[reducible]
-noncomputable def localizedValued
-    (hvKna : IsNonarchimedean (vK : K → ℝ)) :
-    Valued (LocalizedCompletion vK w) ℝ≥0 :=
-  localizedCompletionFinitePlaceValued vK w hvKna
+noncomputable alias localizedValued := localizedCompletionFinitePlaceValued
 
 /-- The canonical valuative relation on the chosen localized completion. -/
 @[reducible]
-noncomputable def localizedValuativeRel
-    (hvKna : IsNonarchimedean (vK : K → ℝ)) :
-    letI : Valued (LocalizedCompletion vK w) ℝ≥0 :=
-      localizedValued vK w hvKna
-    ValuativeRel (LocalizedCompletion vK w) :=
-  localizedCompletionFinitePlaceValuativeRel vK w hvKna
+noncomputable alias localizedValuativeRel := localizedCompletionFinitePlaceValuativeRel
 
 /-- The canonical algebra of the localized completion over the completed
 base valuation ring. -/

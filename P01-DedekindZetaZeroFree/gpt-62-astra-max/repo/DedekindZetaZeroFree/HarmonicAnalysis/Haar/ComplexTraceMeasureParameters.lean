@@ -11,7 +11,7 @@ open scoped NumberField Classical ENNReal
 open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.TraceHaarTransport
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem traceHaarTransport_exists (R : PrincipalMellin.ActualRecipe S η) :
     Nonempty (MomentSources.TraceHaarTransport R) := by
@@ -19,12 +19,9 @@ theorem traceHaarTransport_exists (R : PrincipalMellin.ActualRecipe S η) :
   letI : ∀ p, (μ p).IsHaarMeasure := hμ
   letI : ∀ w, (ν w).IsHaarMeasure := hν
   refine ⟨{
-    signedUniformizer := signedUniformizer R
     finiteHaar := localNormalizedHaar F
     finiteHaar_add := fun p => inferInstance
     finite_mass := finite_trace_mass
-    complexHaar := KPCplxCharacterHaar.characterHaar standardComplexParameter
-    complex_mass := standard_complex_mass
     finiteMultHaar := μ
     finiteMultHaar_isHaar := hμ
     angularHaar := ν

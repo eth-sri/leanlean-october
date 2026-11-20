@@ -33,7 +33,7 @@ private lemma gaussPoly_integrable (M : ℕ) : Integrable (gaussPoly M) := by
       rw [← Real.exp_add, ← Real.exp_add]
       apply Real.exp_le_exp.mpr
       nlinarith [sq_abs u, sq_nonneg (|u| - M)]
-    calc Real.exp (-u ^ 2) * (1 + |u|) ^ M
+    calc _
         ≤ Real.exp (-u ^ 2) * Real.exp (M * |u|) :=
           mul_le_mul_of_nonneg_left hpow (Real.exp_pos _).le
       _ ≤ _ := hexp
@@ -166,8 +166,8 @@ theorem model_decay (B k : ℝ) (hB : 0 < B) (hk : 0 ≤ k) :
     ring
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 private lemma rpow_form (n : ℕ) (r C x : ℝ) (h : (1 + |r|) ^ n * x ≤ C) :
     x ≤ C * (1 + |r|) ^ (-(n : ℝ)) := by
@@ -189,8 +189,7 @@ theorem weight_kernel_decay (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a
         ∫ p : ℝ × ℝ, weightModulus D ξ v y p * (2 + |p.1| + |p.2| + |ξ.im|) ^ k
           ≤ C * (1 + |ξ.im|) ^ (-B) := by
   obtain ⟨A₀, hA₀⟩ := model_decay B k hB hk
-  have hn : A₀ ≤ ((⌈A₀⌉₊ : ℕ) : ℝ) := Nat.le_ceil A₀
-  obtain ⟨Cm, hCm0, hint, hbound⟩ := hA₀ ((⌈A₀⌉₊ : ℕ) : ℝ) hn
+  obtain ⟨Cm, hCm0, hint, hbound⟩ := hA₀ ((⌈A₀⌉₊ : ℕ) : ℝ) (Nat.le_ceil A₀)
   obtain ⟨C₁, hC₁⟩ := D.M_vertical_decay a₁ b₁ ha₁ hab₁ ⌈A₀⌉₊
   obtain ⟨C₂, hC₂⟩ := D.W1Hat_vertical_decay a₂ b₂ hab₂ ⌈A₀⌉₊
   refine ⟨Real.exp ((|x₀ + a₁ - 1| + |x₁ + b₁ - 1|) ^ 2) * |C₁| * |C₂| * Cm, by positivity, ?_⟩
@@ -242,25 +241,16 @@ theorem weight_kernel_decay (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a
           gcongr
       _ = _ := by
           ring
-  have hexp0 : Measurable fun p : ℝ × ℝ =>
-      Complex.exp ((ξ + ((v : ℂ) + (p.1 : ℂ) * Complex.I) - 1) ^ 2) :=
-    (by fun_prop : Continuous fun p : ℝ × ℝ =>
-      Complex.exp ((ξ + ((v : ℂ) + (p.1 : ℂ) * Complex.I) - 1) ^ 2)).measurable
   have hMc : Continuous fun p : ℝ × ℝ => D.M ((v : ℂ) + (p.1 : ℂ) * Complex.I) :=
     D.M_differentiableOn.continuousOn.comp_continuous (by fun_prop)
       (fun p => by
         show 0 < ((v : ℂ) + (p.1 : ℂ) * Complex.I).re
         simp
         linarith)
-  have hf1 : Measurable fun p : ℝ × ℝ => (y : ℂ) + (p.2 : ℂ) * Complex.I :=
-    (by fun_prop : Continuous fun p : ℝ × ℝ => (y : ℂ) + (p.2 : ℂ) * Complex.I).measurable
-  have hWm := (PrincipalMellinComparison.principal_real_weight_measurable D.recipe).comp hf1
   have hwm : Measurable (weightModulus D ξ v y) := by
     unfold weightModulus
-    exact Measurable.norm ((hexp0.mul hMc.measurable).mul hWm)
-  have hmeas : Measurable fun p : ℝ × ℝ =>
-      weightModulus D ξ v y p * (2 + |p.1| + |p.2| + |ξ.im|) ^ k :=
-    hwm.mul ((by fun_prop : Continuous fun p : ℝ × ℝ => 2 + |p.1| + |p.2| + |ξ.im|).measurable.pow_const k)
+    exact Measurable.norm ((((by fun_prop : Continuous fun p : ℝ × ℝ =>
+      Complex.exp ((ξ + ((v : ℂ) + (p.1 : ℂ) * Complex.I) - 1) ^ 2)).measurable).mul hMc.measurable).mul ((PrincipalMellinComparison.principal_real_weight_measurable D.recipe).comp ((by fun_prop : Continuous fun p : ℝ × ℝ => (y : ℂ) + (p.2 : ℂ) * Complex.I).measurable)))
   have hnn : ∀ p : ℝ × ℝ, 0 ≤ weightModulus D ξ v y p * (2 + |p.1| + |p.2| + |ξ.im|) ^ k := by
     intro p
     unfold weightModulus
@@ -269,12 +259,12 @@ theorem weight_kernel_decay (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a
     (Real.exp ((|x₀ + a₁ - 1| + |x₁ + b₁ - 1|) ^ 2) * |C₁| * |C₂|)
   have hI : Integrable (fun p : ℝ × ℝ =>
       weightModulus D ξ v y p * (2 + |p.1| + |p.2| + |ξ.im|) ^ k) := by
-    refine Integrable.mono' hKint hmeas.aestronglyMeasurable ?_
+    refine Integrable.mono' hKint (hwm.mul ((by fun_prop : Continuous fun p : ℝ × ℝ => 2 + |p.1| + |p.2| + |ξ.im|).measurable.pow_const k)).aestronglyMeasurable ?_
     refine Filter.Eventually.of_forall (fun p => ?_)
     rw [Real.norm_of_nonneg (hnn p)]
     exact hpt p
   refine ⟨hI, ?_⟩
-  calc ∫ p : ℝ × ℝ, weightModulus D ξ v y p * (2 + |p.1| + |p.2| + |ξ.im|) ^ k
+  calc _
       ≤ ∫ p : ℝ × ℝ, (Real.exp ((|x₀ + a₁ - 1| + |x₁ + b₁ - 1|) ^ 2) * |C₁| * |C₂|) *
           modelIntegrand ((⌈A₀⌉₊ : ℕ) : ℝ) k ξ.im p := integral_mono hI hKint hpt
     _ = (Real.exp ((|x₀ + a₁ - 1| + |x₁ + b₁ - 1|) ^ 2) * |C₁| * |C₂|) *

@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Theta.Whittaker.SelectedJacquet.ArchSliceGeometry
 
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.TranslatedBigCellCoordinates
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.ComplexStandardIntertwinerGerm
@@ -11,9 +12,7 @@ open NumberField
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1200000
 
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming complexSectionHom → complexSectionHom
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming tuple_prod → tuple_prod
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_insertion → sectionTuple_insertion
+open _root_.DedekindZetaZeroFree.KPLiteralChamber (complexSectionHom tuple_prod sectionTuple_insertion)
 
 namespace DedekindZetaZeroFree.KPLiteralScalarHCCompactOrbit
 open KPLiteralRaw KPAdelicCoverRestrictedProduct KPLiteralChamber KPCplxCharacterHaar
@@ -130,7 +129,6 @@ theorem archMatrixInsertion_diagonal (z : InfinitePlace F → ℂˣ) :
   cases v with
   | inr q => rfl
   | inl w =>
-    change complexSectionHom F ζ hζ w (KubotaRankTwo.d ℂ (z w) 1) = _
     simp only [KPGlobalTorusFunctionData.archDiagonalTuple]
     change KPLocalCover.CubicGL2Raw.mk _ 1 = KPLocalCover.CubicGL2Raw.mk _ 1
     congr 1
@@ -138,17 +136,7 @@ theorem archMatrixInsertion_diagonal (z : InfinitePlace F → ℂˣ) :
     intro i j
     fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map]
 
-private theorem upper_projective (a d : ℂˣ) (b : ℂ) :
-    Matrix.ProjGenLinGroup.mk (KPCplxPrincipalSeriesCharts.upperTriangular a d b) =
-      Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d ℂ (a / d) 1 * upperUnipotent (b / a)) := by
-  apply (Matrix.ProjGenLinGroup.mk_eq_mk_iff).mpr
-  refine ⟨Units.mk0 ((d : ℂ)⁻¹) (inv_ne_zero d.ne_zero), ?_⟩
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;>
-    simp [KPCplxPrincipalSeriesCharts.upperTriangular, upperUnipotent,
-      Matrix.mul_apply, Fin.sum_univ_two, div_eq_mul_inv]
-  field_simp
+private alias upper_projective := DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal.upper_projective
 
 end DedekindZetaZeroFree.KPLiteralScalarHCLocalCovariance
 
@@ -197,13 +185,10 @@ def chosenCompact (g : InfinitePlace F → ComplexGL2) : InfinitePlace F → Com
 
 theorem chosen_factorization (g : InfinitePlace F → ComplexGL2) :
     ∃ (a d : InfinitePlace F → ℂˣ) (b : InfinitePlace F → ℂ),
-    (∀ w, g w = upperTriangular (a w) (d w) (b w) * complexSU2Embedding (chosenCompact F g w)) ∧
-    (∀ w, rowRatio (g w) = ‖(a w : ℂ) / (d w : ℂ)‖) := by
+    (∀ w, g w = upperTriangular (a w) (d w) (b w) * complexSU2Embedding (chosenCompact F g w)) := by
   choose a d b h using fun w => same_line_upper (g w)
     (complexSU2Embedding (chosenCompact F g w)) (by dsimp [chosenCompact]; rw [bottomRowLine_compactRepresentative])
-  refine ⟨a, d, b, h, ?_⟩
-  intro w
-  rw [h w, rowRatio_upper_mul, rowRatio_su2, mul_one]
+  refine ⟨a, d, b, h⟩
 
 theorem inserted_factorization
     (a d : InfinitePlace F → ℂˣ) (u : InfinitePlace F → ℂ)

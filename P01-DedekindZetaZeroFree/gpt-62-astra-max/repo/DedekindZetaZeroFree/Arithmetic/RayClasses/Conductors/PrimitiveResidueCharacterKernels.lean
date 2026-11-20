@@ -12,9 +12,10 @@ open scoped NumberField
 
 variable {F : Type} [Field F] [NumberField F] {m : Ideal (𝓞 F)}
 
-theorem residueRayCharacter_kernel_trivial_iff
-    (hF : NumberField.IsTotallyComplex F) (hm : m ≠ ⊥) (hmt : m ≠ ⊤)
+variable (hF : NumberField.IsTotallyComplex F) (hm : m ≠ ⊥) (hmt : m ≠ ⊤)
     (η : DedekindZetaZeroFree.RayClassCharacter F m)
+
+theorem residueRayCharacter_kernel_trivial_iff
     (f : Ideal (𝓞 F)) (hmf : m ≤ f) :
     (∀ α : 𝓞 F, α ≠ 0 → α - 1 ∈ f → Ideal.span {α} ⊔ m = ⊤ →
       η (Ideal.span {α}) = 1) ↔
@@ -34,9 +35,8 @@ theorem residueRayCharacter_kernel_trivial_iff
   · intro h α hα hcong hcop
     have hunit : IsUnit (Ideal.Quotient.mk m α) := by
       apply Ideal.span_singleton_eq_top.mp
-      have hx := congrArg (Ideal.map (Ideal.Quotient.mk m)) hcop
       simpa only [Ideal.map_sup, Ideal.map_span, Ideal.map_quotient_self,
-        Ideal.map_top, sup_bot_eq, Set.image_singleton] using hx
+        Ideal.map_top, sup_bot_eq, Set.image_singleton] using (congrArg (Ideal.map (Ideal.Quotient.mk m)) hcop)
     obtain ⟨u, hu⟩ := hunit
     have hker : Units.map (Ideal.Quotient.factor hmf).toMonoidHom u = 1 := by
       apply Units.ext
@@ -45,9 +45,7 @@ theorem residueRayCharacter_kernel_trivial_iff
     have hv := congrArg (fun v : ℂˣ => (v : ℂ)) (h u hker)
     simpa only [Units.val_one, residueRayCharacter_apply hF hm hmt η α hα hcop u hu] using hv
 
-theorem isPrimitive_iff_residueRayCharacter_kernel_nontrivial
-    (hF : NumberField.IsTotallyComplex F) (hm : m ≠ ⊥) (hmt : m ≠ ⊤)
-    (η : DedekindZetaZeroFree.RayClassCharacter F m) :
+theorem isPrimitive_iff_residueRayCharacter_kernel_nontrivial :
     η.IsPrimitive ↔
     ∀ (f : Ideal (𝓞 F)) (hmf : m < f), ∃ u : (𝓞 F ⧸ m)ˣ,
       Units.map (Ideal.Quotient.factor hmf.le).toMonoidHom u = 1 ∧
@@ -56,13 +54,9 @@ theorem isPrimitive_iff_residueRayCharacter_kernel_nontrivial
   constructor
   · intro hprim f hmf
     by_contra hn
-    have hker : ∀ u : (𝓞 F ⧸ m)ˣ,
-        Units.map (Ideal.Quotient.factor hmf.le).toMonoidHom u = 1 →
-        residueRayCharacter hF hm hmt η u = 1 := by
-      simpa only [not_exists, not_and, not_not] using hn
-    have htriv := (residueRayCharacter_kernel_trivial_iff hF hm hmt η f hmf.le).mpr hker
     obtain ⟨α, hα, hcong, _, hcop, hne⟩ := hprim f hmf
-    exact hne (htriv α hα hcong hcop)
+    exact hne (((residueRayCharacter_kernel_trivial_iff hF hm hmt η f hmf.le).mpr (by
+      simpa using hn)) α hα hcong hcop)
   · intro h f hmf
     have hn : ¬ (∀ α : 𝓞 F, α ≠ 0 → α - 1 ∈ f →
         Ideal.span {α} ⊔ m = ⊤ → η (Ideal.span {α}) = 1) := by
@@ -74,21 +68,17 @@ theorem isPrimitive_iff_residueRayCharacter_kernel_nontrivial
     refine ⟨α, hα, hcong, ?_, hcop, hne⟩
     letI := hF
     intro φ
-    have hc := NumberField.IsTotallyComplex.complexEmbedding_not_isReal
-      (Complex.ofRealHom.comp φ)
-    apply (hc ?_).elim
+    apply ((NumberField.IsTotallyComplex.complexEmbedding_not_isReal
+      (Complex.ofRealHom.comp φ)) ?_).elim
     apply NumberField.ComplexEmbedding.isReal_iff.mpr
     ext x
     simp [NumberField.ComplexEmbedding.conjugate]
 
-theorem residueRayCharacter_exists_kernel_ne_one
-    (hF : NumberField.IsTotallyComplex F) (hm : m ≠ ⊥) (hmt : m ≠ ⊤)
-    (η : DedekindZetaZeroFree.RayClassCharacter F m) (hprim : η.IsPrimitive)
+theorem residueRayCharacter_exists_kernel_ne_one (hprim : η.IsPrimitive)
     (f : Ideal (𝓞 F)) (hmf : m < f) :
     ∃ u : (𝓞 F ⧸ m)ˣ,
       Units.map (Ideal.Quotient.factor hmf.le).toMonoidHom u = 1 ∧
-      residueRayCharacter hF hm hmt η u ≠ 1 := by
-  exact (isPrimitive_iff_residueRayCharacter_kernel_nontrivial hF hm hmt η).mp hprim f hmf
+      residueRayCharacter hF hm hmt η u ≠ 1 := (isPrimitive_iff_residueRayCharacter_kernel_nontrivial hF hm hmt η).mp hprim f hmf
 
 end
 

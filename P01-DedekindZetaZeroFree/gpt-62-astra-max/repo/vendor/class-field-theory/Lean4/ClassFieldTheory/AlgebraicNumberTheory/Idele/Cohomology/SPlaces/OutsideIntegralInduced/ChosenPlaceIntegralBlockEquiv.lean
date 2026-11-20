@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -63,13 +60,13 @@ noncomputable def
         (K := K) (L := L) w₀
     exact
       (relativeLocalTensorDecompositionIntegralUnitSubgroupEquivPiUnits
-        (K := K) (L := L) w₀).trans
+          w₀).trans
         (completionProductIntegerUnitsEquivInducedModule
-          (K := K) (L := L)
+
           (HeightOneSpectrum.adicAbv K w₀)
           (RayClass.adicAbv_isNontrivial w₀)
           (HeightOneSpectrum.isNonarchimedean_adicAbv K w₀)
-          (chosenFinitePlaceExtension (L := L) w₀))
+          (chosenFinitePlaceExtension w₀))
 end ChosenFinitePlace
 
 end

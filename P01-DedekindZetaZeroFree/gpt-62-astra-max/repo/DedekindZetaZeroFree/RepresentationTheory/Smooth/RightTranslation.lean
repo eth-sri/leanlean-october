@@ -26,13 +26,11 @@ theorem smooth_right_translate (v : Functions F ζ hζ)
     obtain ⟨O, q, hO, hzO, hq, hqO, heq⟩ :=
       KPLiteralChamber.literal_group_chart_local_transition F ζ hζ g z₀ hz₀
     refine ⟨O, hO, hzO, ?_⟩
-    have hc := (hvarch
-      (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z₀ * g)).comp hq hqO
-    exact (hc.congr (fun z hz => congrArg v (heq z hz))).mono
+    exact (((hvarch
+      (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z₀ * g)).comp hq hqO).congr (fun z hz => congrArg v (heq z hz))).mono
       Set.inter_subset_right
   refine ⟨?_, ?_, ?_⟩
-  · change Continuous (fun g => v (g * a))
-    exact hvcont.comp (continuous_id.mul continuous_const)
+  · exact hvcont.comp (continuous_id.mul continuous_const)
   · intro g
     change ContDiffOn ℝ (⊤ : ℕ∞)
       (fun x => v ((g * KPGlobalResidualConstruction.archChart F ζ hζ x) * a))

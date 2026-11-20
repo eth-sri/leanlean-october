@@ -32,7 +32,7 @@ variable (d : ℕ)
 theorem sub_inv_mul_character_symPower_torusHom (z : Circle) :
     ((z : ℂ) - (z : ℂ)⁻¹) * (symPower d).character (torusHom z)
       = (z : ℂ) ^ (d + 1) - ((z : ℂ)⁻¹) ^ (d + 1) := by
-  have hz : (z : ℂ) ≠ 0 := z.coe_ne_zero
+  have hz := z.coe_ne_zero
   rw [character_symPower_torusHom_zpow, mul_sum]
   have key : ∀ i ∈ range (d + 1),
       ((z : ℂ) - (z : ℂ)⁻¹) * (z : ℂ) ^ (2 * (i : ℤ) - d)
@@ -51,9 +51,6 @@ theorem sub_inv_mul_character_symPower_torusHom (z : Circle) :
 
 theorem character_symPower_torusHom_of_sq_eq_one {z : Circle} (hz : (z : ℂ) ^ 2 = 1) :
     (symPower d).character (torusHom z) = ((d : ℂ) + 1) * (z : ℂ) ^ d := by
-  have hz0 : (z : ℂ) ≠ 0 := z.coe_ne_zero
-  have hpow : ((z : ℂ) ^ d) * ((z : ℂ) ^ d) = 1 := by
-    rw [← pow_add, ← two_mul, pow_mul, hz, one_pow]
   rw [character_symPower_torusHom_zpow]
   have hterm : ∀ i ∈ range (d + 1), (z : ℂ) ^ (2 * (i : ℤ) - d) = (z : ℂ) ^ d := by
     intro i _
@@ -62,11 +59,10 @@ theorem character_symPower_torusHom_of_sq_eq_one {z : Circle} (hz : (z : ℂ) ^ 
       exact hz
     have h2 : (z : ℂ) ^ (2 * (i : ℤ)) = 1 := by
       rw [zpow_mul, hsq, one_zpow]
-    rw [zpow_sub₀ hz0, h2, zpow_natCast, one_div, eq_comm]
-    exact eq_inv_of_mul_eq_one_left hpow
-  rw [sum_congr rfl hterm, sum_const, card_range, nsmul_eq_mul]
-  push_cast
-  ring
+    rw [zpow_sub₀ z.coe_ne_zero, h2, zpow_natCast, one_div, eq_comm]
+    exact eq_inv_of_mul_eq_one_left (by
+      rw [← pow_add, ← two_mul, pow_mul, hz, one_pow])
+  simp_all [sum_congr]
 
 private theorem exp_sub_exp_neg_mul_I (t : ℝ) :
     Complex.exp ((t : ℂ) * Complex.I) - Complex.exp (-((t : ℂ) * Complex.I))
@@ -83,7 +79,7 @@ theorem sin_mul_character_symPower_torusExp (θ : ℝ) :
   have hI : (2 : ℂ) * Complex.I ≠ 0 := by
     simp [Complex.I_ne_zero]
   refine mul_left_cancel₀ hI ?_
-  have hz : ((Circle.exp θ : Circle) : ℂ) = Complex.exp ((θ : ℂ) * Complex.I) :=
+  have hz :=
     Circle.coe_exp θ
   have hden : ((Circle.exp θ : Circle) : ℂ) - ((Circle.exp θ : Circle) : ℂ)⁻¹
       = 2 * Complex.I * (Real.sin θ : ℂ) := by
@@ -107,7 +103,7 @@ theorem character_symPower_torusExp_eq_sin_div_sin {θ : ℝ} (hθ : Real.sin θ
       = ((Real.sin (((d : ℝ) + 1) * θ) / Real.sin θ : ℝ) : ℂ) := by
   have hθ' : (Real.sin θ : ℂ) ≠ 0 := by exact_mod_cast hθ
   rw [Complex.ofReal_div, eq_div_iff hθ', mul_comm]
-  exact sin_mul_character_symPower_torusExp d θ
+  apply sin_mul_character_symPower_torusExp
 
 theorem character_symPower_torusExp_of_sin_eq_zero {θ : ℝ} (hθ : Real.sin θ = 0) :
     (symPower d).character (torusExp θ) = ((d : ℂ) + 1) * (Real.cos θ : ℂ) ^ d := by

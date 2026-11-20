@@ -25,9 +25,11 @@ private lemma rpow_neg_le_max (c x σ : ℝ) (hx : 0 < x)
     · exact (Real.rpow_le_rpow_of_exponent_ge hx hx1 (by linarith)).trans (le_max_right _ _)
     · exact (Real.rpow_le_rpow_of_exponent_ge hx hx1 (by linarith)).trans (le_max_left _ _)
 
-theorem B_inverse_integrable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) (c x : ℝ) (hc : 0 < c) (hx : 0 < x) :
+variable (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
+    (hhc : HasCompactSupport h) (c x : ℝ) (hc : 0 < c) (hx : 0 < x)
+
+include hD hr hh hhc hc hx in
+theorem B_inverse_integrable :
     MeasureTheory.Integrable (fun t : ℝ =>
       (x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I)) *
         B D r h ((c : ℂ) + (t : ℂ) * Complex.I)) MeasureTheory.volume := by
@@ -39,10 +41,8 @@ theorem B_inverse_integrable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
           Complex.ofReal_im, Complex.I_re, Complex.I_im]
         simpa using hc)
   haveI : NeZero ((x : ℂ)) := ⟨Complex.ofReal_ne_zero.mpr hx.ne'⟩
-  have hcpow : Continuous (fun t : ℝ => (x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I))) :=
-    (differentiable_const_cpow_of_neZero (x : ℂ)).continuous.comp (by fun_prop)
   refine Integrable.mono' (g := fun t : ℝ => (x ^ (-c) * C) * (1 + |t|) ^ (-2 : ℝ))
-    ?_ (hcpow.mul hcont).aestronglyMeasurable ?_
+    ?_ (((differentiable_const_cpow_of_neZero (x : ℂ)).continuous.comp (by fun_prop)).mul hcont).aestronglyMeasurable ?_
   · have h1 : Integrable (fun t : ℝ => (1 + ‖t‖) ^ (-2 : ℝ)) volume :=
       integrable_one_add_norm (E := ℝ) (r := 2) (by rw [Module.finrank_self]; norm_num)
     have h2 : Integrable (fun t : ℝ => (1 + |t|) ^ (-2 : ℝ)) volume := by
@@ -57,8 +57,7 @@ theorem B_inverse_integrable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
       have hp : (0 : ℝ) < (1 + |t|) ^ 2 := by positivity
       rw [le_div_iff₀ hp, mul_comm]
       exact hC c (by simp) t
-    calc ‖(x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I)) *
-            B D r h ((c : ℂ) + (t : ℂ) * Complex.I)‖
+    calc _
         = ‖(x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I))‖ *
             ‖B D r h ((c : ℂ) + (t : ℂ) * Complex.I)‖ := norm_mul _ _
       _ = x ^ (-c) * ‖B D r h ((c : ℂ) + (t : ℂ) * Complex.I)‖ := by rw [h1]
@@ -69,14 +68,13 @@ theorem B_inverse_integrable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
             div_eq_mul_inv]
           ring
 
-theorem B_mellinInv_eq (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) (c x : ℝ) (hc : 0 < c) (hx : 0 < x) :
+include hD hr hh hhc hc hx in
+theorem B_mellinInv_eq :
     mellinInv c (B D r h) x = mellinInv 2 (B D r h) x := by
   rw [Vendor.mellinInv_eq_verticalIntegral c (B D r h) hx,
     Vendor.mellinInv_eq_verticalIntegral 2 (B D r h) hx]
   haveI : NeZero ((x : ℂ)) := ⟨Complex.ofReal_ne_zero.mpr hx.ne'⟩
-  have hcpowd : Differentiable ℂ (fun s : ℂ => (x : ℂ) ^ (-s)) :=
+  have hcpowd :=
     (differentiable_const_cpow_of_neZero (x : ℂ)).comp differentiable_neg
   have hBdiff : ∀ s : ℂ, 0 < s.re → DifferentiableAt ℂ (B D r h) s := fun s hs =>
     (B_differentiableOn D r h hD hr hh hhc).differentiableAt
@@ -92,7 +90,6 @@ theorem B_mellinInv_eq (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     · refine ⟨0, max (x ^ (-c)) (x ^ (-2 : ℝ)) * C, le_refl 0,
         mul_nonneg (le_trans (Real.rpow_nonneg hx.le _) (le_max_left _ _)) hCpos.le,
         fun σ hσ t => ?_⟩
-      have hσ' : (c ≤ σ ∧ σ ≤ 2) ∨ (2 ≤ σ ∧ σ ≤ c) := Or.inl ⟨hσ.1, hσ.2⟩
       have h1 : ‖(x : ℂ) ^ (-((σ : ℂ) + (t : ℂ) * Complex.I))‖ = x ^ (-σ) := by
         rw [Complex.norm_cpow_eq_rpow_re_of_pos hx]
         simp [Complex.neg_re, Complex.add_re, Complex.mul_re, Complex.ofReal_re,
@@ -105,7 +102,7 @@ theorem B_mellinInv_eq (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
               ‖B D r h ((σ : ℂ) + (t : ℂ) * Complex.I)‖ := norm_mul _ _
         _ = x ^ (-σ) * ‖B D r h ((σ : ℂ) + (t : ℂ) * Complex.I)‖ := by rw [h1]
         _ ≤ max (x ^ (-c)) (x ^ (-2 : ℝ)) * C :=
-            mul_le_mul (rpow_neg_le_max c x σ hx hσ') h2 (norm_nonneg _)
+            mul_le_mul (rpow_neg_le_max c x σ hx (Or.inl ⟨hσ.1, hσ.2⟩)) h2 (norm_nonneg _)
               (le_trans (Real.rpow_nonneg hx.le _) (le_max_left _ _))
         _ = max (x ^ (-c)) (x ^ (-2 : ℝ)) * C * Real.exp (0 * |t|) := by simp
   · obtain ⟨C, hCpos, hC⟩ := B_rapid_bound D r h 2 c 0 hD hr hh hhc (by norm_num) hle
@@ -119,7 +116,6 @@ theorem B_mellinInv_eq (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     · refine ⟨0, max (x ^ (-c)) (x ^ (-2 : ℝ)) * C, le_refl 0,
         mul_nonneg (le_trans (Real.rpow_nonneg hx.le _) (le_max_left _ _)) hCpos.le,
         fun σ hσ t => ?_⟩
-      have hσ' : (c ≤ σ ∧ σ ≤ 2) ∨ (2 ≤ σ ∧ σ ≤ c) := Or.inr ⟨hσ.1, hσ.2⟩
       have h1 : ‖(x : ℂ) ^ (-((σ : ℂ) + (t : ℂ) * Complex.I))‖ = x ^ (-σ) := by
         rw [Complex.norm_cpow_eq_rpow_re_of_pos hx]
         simp [Complex.neg_re, Complex.add_re, Complex.mul_re, Complex.ofReal_re,
@@ -132,7 +128,7 @@ theorem B_mellinInv_eq (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
               ‖B D r h ((σ : ℂ) + (t : ℂ) * Complex.I)‖ := norm_mul _ _
         _ = x ^ (-σ) * ‖B D r h ((σ : ℂ) + (t : ℂ) * Complex.I)‖ := by rw [h1]
         _ ≤ max (x ^ (-c)) (x ^ (-2 : ℝ)) * C :=
-            mul_le_mul (rpow_neg_le_max c x σ hx hσ') h2 (norm_nonneg _)
+            mul_le_mul (rpow_neg_le_max c x σ hx (Or.inr ⟨hσ.1, hσ.2⟩)) h2 (norm_nonneg _)
               (le_trans (Real.rpow_nonneg hx.le _) (le_max_left _ _))
         _ = max (x ^ (-c)) (x ^ (-2 : ℝ)) * C * Real.exp (0 * |t|) := by simp
 

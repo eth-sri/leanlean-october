@@ -19,25 +19,22 @@ private theorem compact_reps_open {G : Type*} [CommGroup G] [TopologicalSpace G]
     ∃ C : Set H, IsCompact C ∧ ∀ h : H, ∃ c ∈ C, h.val / c.val ∈ P := by
   classical
   let J := H ⊔ P
-  have hJo : IsOpen (J : Set G) := Subgroup.isOpen_mono (show H ≤ J from le_sup_left) ho
-  let K0 := K ∩ (J : Set G)
-  have hK0 : IsCompact K0 := hc.inter_right (J.isClosed_of_isOpen hJo)
+  let K0 := K ∩ J
+  have hK0 := hc.inter_right (J.isClosed_of_isOpen (Subgroup.isOpen_mono (show H ≤ J from le_sup_left) ho))
   let V : P → Set G := fun p => (fun x : G => p.val * x) '' (H : Set G)
-  have hVo : ∀ p, IsOpen (V p) := fun p => (Homeomorph.mulLeft p.val).isOpenMap _ ho
   have hcover : K0 ⊆ ⋃ p, V p := by
     intro k hk
     obtain ⟨h, hh, p, hp, he⟩ := Subgroup.mem_sup.mp hk.2
     exact Set.mem_iUnion.mpr ⟨⟨p,hp⟩, h, hh, by simpa [mul_comm] using he⟩
-  obtain ⟨t, ht⟩ := hK0.elim_finite_subcover V hVo hcover
-  let D : P → Set G := fun p => (fun x : G => p.val⁻¹ * x) '' (K0 ∩ V p)
+  obtain ⟨t, ht⟩ := hK0.elim_finite_subcover V (fun p => (Homeomorph.mulLeft p.val).isOpenMap _ ho) hcover
+  let D := fun p => (fun x : G => p.val⁻¹ * x) '' (K0 ∩ V p)
   have hDc : ∀ p, IsCompact (D p) := by
     intro p
     apply IsCompact.image _ (continuous_const_mul _)
     apply hK0.inter_right
     exact (Homeomorph.mulLeft p.val).isClosedMap _ (H.isClosed_of_isOpen ho)
   let B := ⋃ p ∈ t, D p
-  have hBc : IsCompact B := t.isCompact_biUnion (fun p _ => hDc p)
-  have hBH : B ⊆ (H : Set G) := by
+  have hBH : B ⊆ H := by
     intro b hb
     rcases Set.mem_iUnion.mp hb with ⟨p, hb⟩
     rcases Set.mem_iUnion.mp hb with ⟨_, hb⟩
@@ -47,7 +44,7 @@ private theorem compact_reps_open {G : Type*} [CommGroup G] [TopologicalSpace G]
   let C : Set H := Subtype.val ⁻¹' B
   have hCc : IsCompact C := by
     apply Topology.IsEmbedding.subtypeVal.isCompact_iff.mpr
-    simpa [C, Set.image_preimage_eq_inter_range, Set.inter_eq_left.mpr hBH] using hBc
+    simpa [C, Set.image_preimage_eq_inter_range, Set.inter_eq_left.mpr hBH] using (t.isCompact_biUnion (fun p _ => hDc p))
   refine ⟨C, hCc, ?_⟩
   intro h
   obtain ⟨k, hk, hpk⟩ := hrep h.val

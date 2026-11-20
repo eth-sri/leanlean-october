@@ -30,8 +30,7 @@ theorem ofModule'_apply (g : G) (x : M) :
 
 theorem asAlgebraHom_ofModule' :
     (_root_.Representation.ofModule' (k := k) (G := G) M).asAlgebraHom = Algebra.lsmul k k M := by
-  rw [_root_.Representation.asAlgebraHom_def, _root_.Representation.ofModule']
-  exact (MonoidAlgebra.lift k (Module.End k M) G).apply_symm_apply _
+  apply Equiv.apply_symm_apply
 
 @[simp]
 theorem asAlgebraHom_ofModule'_apply (r : k[G]) (x : M) :
@@ -61,26 +60,6 @@ end Semiring
 section Character
 
 variable {k G : Type*} [Field k] [Monoid G]
-
-@[simp]
-theorem char_ofModule'_pi {ι : Type*} [Fintype ι] (M : ι → Type*) [∀ i, AddCommGroup (M i)]
-    [∀ i, Module k (M i)] [∀ i, Module k[G] (M i)] [∀ i, IsScalarTower k k[G] (M i)]
-    [∀ i, FiniteDimensional k (M i)] (g : G) :
-    (_root_.Representation.ofModule' (k := k) (G := G) ((i : ι) → M i)).character g =
-      ∑ i, (_root_.Representation.ofModule' (k := k) (G := G) (M i)).character g :=
-  LinearMap.trace_piMap fun i ↦ _root_.Representation.ofModule' (k := k) (G := G) (M i) g
-
-@[simp]
-theorem _root_.Representation.char_ofModule'_asModule {V : Type*} [AddCommGroup V] [Module k V]
-    (ρ : _root_.Representation k G V) (g : G) :
-    (_root_.Representation.ofModule' (k := k) (G := G) ρ.asModule).character g = ρ.character g := by
-  have h : _root_.Representation.ofModule' (k := k) (G := G) ρ.asModule g =
-      ρ.asModuleEquiv.symm.conj (ρ g) := by
-    ext x
-    rw [LinearEquiv.conj_apply_apply, LinearEquiv.symm_symm,
-      _root_.Representation.asModuleEquiv_symm_map_rho, LinearEquiv.symm_apply_apply,
-      ofModule'_apply, MonoidAlgebra.of_apply]
-  rw [_root_.Representation.character, h, LinearMap.trace_conj', _root_.Representation.character]
 
 end Character
 

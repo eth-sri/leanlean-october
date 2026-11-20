@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -88,15 +82,13 @@ theorem absoluteValueDecompositionGroup_eq_infinitePlaceStabilizer
   ext σ
   constructor
   · intro hσ
-    have hσi :
-        σ⁻¹ ∈ absoluteValueDecompositionGroup K w.1 :=
+    have hσi :=
       (absoluteValueDecompositionGroup K w.1).inv_mem hσ
     rw [mem_absoluteValueDecompositionGroup_iff_equivalent,
       LubinTate.Valuations.equivalentAbsoluteValues_iff_isEquiv] at hσi
-    rw [MulAction.mem_stabilizer_iff]
     apply
       (InfinitePlace.eq_iff_isEquiv
-        (w := σ • w) (v := w)).2
+         ).2
     exact hσi
   · intro hσ
     rw [MulAction.mem_stabilizer_iff] at hσ
@@ -106,20 +98,20 @@ theorem absoluteValueDecompositionGroup_eq_infinitePlaceStabilizer
         LubinTate.Valuations.equivalentAbsoluteValues_iff_isEquiv]
       exact
         (InfinitePlace.eq_iff_isEquiv
-          (w := σ • w) (v := w)).1 hσ
+           ).1 hσ
     simpa using
       (absoluteValueDecompositionGroup K w.1).inv_mem hσi
 
+section
+
+variable {K : Type u} {L : Type v} {K' : Type w} {L' : Type z} [Field K] [Field L] [Field K'] [Field L']
+    [Algebra K L] [Algebra K' L'] (eK : K ≃+* K') (eL : L ≃+* L')
+    (he : RingHom.comp (algebraMap K' L') eK = RingHom.comp eL (algebraMap K L))
+
+include he in
 /-- Field norms commute with compatible changes of both the base and
 extension fields. -/
 theorem normUnits_map_ringEquiv
-    {K : Type u} {L : Type v} {K' : Type w} {L' : Type z}
-    [Field K] [Field L] [Field K'] [Field L']
-    [Algebra K L] [Algebra K' L']
-    (eK : K ≃+* K') (eL : L ≃+* L')
-    (he :
-      RingHom.comp (algebraMap K' L') eK =
-        RingHom.comp eL (algebraMap K L))
     (x : Lˣ) :
     Units.mapEquiv eK.toMulEquiv (normUnits K L x) =
       normUnits K' L'
@@ -131,32 +123,26 @@ theorem normUnits_map_ringEquiv
   rw [Algebra.norm_eq_of_equiv_equiv eK eL he]
   exact eK.apply_symm_apply _
 
+include he in
 /-- Compatibility of a square of ring equivalences is symmetric. -/
-theorem ringEquiv_compat_symm
-    {K : Type u} {L : Type v} {K' : Type w} {L' : Type z}
-    [Field K] [Field L] [Field K'] [Field L']
-    [Algebra K L] [Algebra K' L']
-    (eK : K ≃+* K') (eL : L ≃+* L')
-    (he :
-      RingHom.comp (algebraMap K' L') eK =
-        RingHom.comp eL (algebraMap K L)) :
+theorem ringEquiv_compat_symm :
     RingHom.comp (algebraMap K L) eK.symm =
       RingHom.comp eL.symm (algebraMap K' L') := by
   ext x
   apply eL.injective
-  have hx := DFunLike.congr_fun he (eK.symm x)
-  simpa using hx.symm
+  simpa using (DFunLike.congr_fun he (eK.symm x)).symm
+
+end
+
+section
+
+variable {K L K' L' : Type} [Field K] [Field L] [Field K'] [Field L'] [Algebra K L] [Algebra K' L']
+    (eK : K ≃+* K') (eL : L ≃+* L')
+    (he : RingHom.comp (algebraMap K' L') eK = RingHom.comp eL (algebraMap K L))
 
 /-- A compatible pair of field equivalences induces a map of norm
 quotients. -/
-def normQuotientMapOfRingEquiv
-    {K L K' L' : Type}
-    [Field K] [Field L] [Field K'] [Field L']
-    [Algebra K L] [Algebra K' L']
-    (eK : K ≃+* K') (eL : L ≃+* L')
-    (he :
-      RingHom.comp (algebraMap K' L') eK =
-        RingHom.comp eL (algebraMap K L)) :
+def normQuotientMapOfRingEquiv :
     NormQuotient K L →* NormQuotient K' L' :=
   normQuotientLift
     ((normClass K' L').comp
@@ -176,13 +162,6 @@ def normQuotientMapOfRingEquiv
 with transporting its representative unit. -/
 @[simp]
 theorem normQuotientMapOfRingEquiv_normClass
-    {K L K' L' : Type}
-    [Field K] [Field L] [Field K'] [Field L']
-    [Algebra K L] [Algebra K' L']
-    (eK : K ≃+* K') (eL : L ≃+* L')
-    (he :
-      RingHom.comp (algebraMap K' L') eK =
-        RingHom.comp eL (algebraMap K L))
     (x : Kˣ) :
     normQuotientMapOfRingEquiv eK eL he
         (normClass K L x) =
@@ -192,14 +171,7 @@ theorem normQuotientMapOfRingEquiv_normClass
 
 /-- Norm quotients are invariant under compatible equivalences of the
 base and extension fields. -/
-def normQuotientEquivOfRingEquiv
-    {K L K' L' : Type}
-    [Field K] [Field L] [Field K'] [Field L']
-    [Algebra K L] [Algebra K' L']
-    (eK : K ≃+* K') (eL : L ≃+* L')
-    (he :
-      RingHom.comp (algebraMap K' L') eK =
-        RingHom.comp eL (algebraMap K L)) :
+def normQuotientEquivOfRingEquiv :
     NormQuotient K L ≃* NormQuotient K' L' where
   toFun := normQuotientMapOfRingEquiv eK eL he
   invFun :=
@@ -234,6 +206,8 @@ def normQuotientEquivOfRingEquiv
   map_mul' := fun x y =>
     map_mul (normQuotientMapOfRingEquiv eK eL he) x y
 
+end
+
 /-- A one-element acting group has trivial degree-zero Herbrand
 cohomology. -/
 theorem herbrandH0_card_eq_one_of_group_card_eq_one
@@ -242,7 +216,7 @@ theorem herbrandH0_card_eq_one_of_group_card_eq_one
     [CommGroup A] [MulDistribMulAction G A]
     (hG : Nat.card G = 1) :
     Nat.card (HerbrandH0 G A) = 1 := by
-  let : Subsingleton G :=
+  let :=
     (Nat.card_eq_one_iff_unique.mp hG).1
   let : Subsingleton (HerbrandH0 G A) :=
     herbrandH0_subsingleton_of_fixed_le_tateNormSubgroup
@@ -255,33 +229,8 @@ theorem herbrandH0_card_eq_one_of_group_card_eq_one
         have huniv : (Finset.univ : Finset G) = {1} := by
           ext g
           simp [Subsingleton.elim g 1]
-        rw [huniv]
-        simp)
+        simp [huniv])
   exact Nat.card_unique
-
-/-- At a complex place above a real place, the completion norm quotient
-is the concrete quotient for `ℂ/ℝ`. -/
-def infiniteCompletionNormQuotientEquivRealComplex
-    (v : InfinitePlace K) (w : InfinitePlace L)
-    (hw : w.comap (algebraMap K L) = v)
-    (hv : v.IsReal) (hwc : w.IsComplex) :
-    letI : w.1.LiesOver v.1 :=
-      ⟨congrArg (fun q : InfinitePlace K => q.1) hw⟩
-    NormQuotient v.Completion w.Completion ≃*
-      NormQuotient ℝ ℂ := by
-  letI : w.1.LiesOver v.1 :=
-    ⟨congrArg (fun q : InfinitePlace K => q.1) hw⟩
-  letI :
-      NumberField.ComplexEmbedding.LiesOver
-        (InfinitePlace.Completion.extensionEmbedding w)
-        (InfinitePlace.Completion.extensionEmbedding v) :=
-    InfinitePlace.LiesOver.extensionEmbedding_liesOver_of_isReal
-      w hv
-  exact
-    normQuotientEquivOfRingEquiv
-      (InfinitePlace.Completion.ringEquivRealOfIsReal hv)
-      (InfinitePlace.Completion.ringEquivComplexOfIsComplex hwc)
-      (by ext; simp)
 
 /-- The algebraic localization used in the local cohomology block is
 canonically the whole absolute-value completion, also at an infinite
@@ -314,16 +263,12 @@ def localizedCompletionNormQuotientEquivAbsoluteCompletions
   letI : Algebra v.1.Completion w.1.Completion :=
     AbsoluteValue.completionAlgebra v.1 w.1
       (infinitePlaceAbsoluteValueExtension v w hw).2
-  let eLAlg :
-      LocalizedCompletion v.1 u ≃ₐ[v.1.Completion]
-        w.1.Completion :=
+  let eLAlg :=
     localizedCompletionEquivCompletion
       v.1 v.isNontrivial u
-  let eL : LocalizedCompletion v.1 u ≃+* w.1.Completion :=
-    eLAlg.toRingEquiv
   exact
     normQuotientEquivOfRingEquiv
-      (RingEquiv.refl v.1.Completion) eL
+      (RingEquiv.refl v.1.Completion) eLAlg.toRingEquiv
       (by
         ext x
         exact eLAlg.commutes x)
@@ -361,11 +306,6 @@ def absoluteCompletionNormQuotientEquivRealComplex
       (infinitePlaceAbsoluteValueExtension v w hw).2
   letI : w.1.LiesOver v.1 :=
     ⟨congrArg (fun q : InfinitePlace K => q.1) hw⟩
-  have hEmbedding :
-      w.embedding.comp (algebraMap K L) =
-        v.embedding :=
-    (InfinitePlace.LiesOver.embedding_liesOver_of_isReal
-      w hv).over
   have hCompletionEmbedding :
       ∀ x : v.1.Completion,
         InfinitePlace.Completion.extensionEmbedding w
@@ -379,7 +319,7 @@ def absoluteCompletionNormQuotientEquivRealComplex
     intro x
     refine
       UniformSpace.Completion.induction_on
-        (α := WithAbs v.1) x ?_ ?_
+         x ?_ ?_
     · exact
         isClosed_eq
           ((InfinitePlace.Completion.isometry_extensionEmbedding
@@ -412,12 +352,7 @@ def absoluteCompletionNormQuotientEquivRealComplex
           (AbsoluteValue.completionMap_coe v.1 w.1
             (infinitePlaceAbsoluteValueExtension v w hw).2
             (WithAbs.equiv v.1 y))
-      have hwEmbedding :
-          InfinitePlace.Completion.extensionEmbedding w
-              ((InfinitePlace.Completion.equiv w).symm
-                (AbsoluteValue.toCompletion w.1
-                  (algebraMap K L (WithAbs.equiv v.1 y)))) =
-            w.embedding (algebraMap K L (WithAbs.equiv v.1 y)) :=
+      have hwEmbedding :=
         (InfinitePlace.Completion.extensionEmbedding_coe w
           ((WithAbs.equiv w.1).symm
             (algebraMap K L (WithAbs.equiv v.1 y)))).trans
@@ -429,7 +364,8 @@ def absoluteCompletionNormQuotientEquivRealComplex
           InfinitePlace.Completion.extensionEmbedding w
             ((InfinitePlace.Completion.equiv w).symm z)) hmap).trans
           (hwEmbedding.trans
-            ((DFunLike.congr_fun hEmbedding (WithAbs.equiv v.1 y)).trans
+            ((DFunLike.congr_fun ((InfinitePlace.LiesOver.embedding_liesOver_of_isReal
+              w hv).over) (WithAbs.equiv v.1 y)).trans
               (InfinitePlace.Completion.extensionEmbedding_coe v y).symm))
   exact
     normQuotientEquivOfRingEquiv
@@ -461,7 +397,7 @@ theorem realUnitsSign_surjective :
     Function.Surjective realUnitsSign := by
   intro u
   rcases Int.units_eq_one_or u with rfl | rfl
-  · exact ⟨1, by simp [realUnitsSign]⟩
+  · exact ⟨1, by simp⟩
   · exact ⟨-1, by
       apply Units.ext
       simp [realUnitsSign]⟩
@@ -474,10 +410,9 @@ theorem mem_realUnitsSign_ker_iff (x : ℝˣ) :
   constructor
   · intro hx
     have hxv := congrArg Units.val hx
-    have hs : SignType.sign (x : ℝ) = 1 := by
-      cases hsign : SignType.sign (x : ℝ) <;>
-        simp [realUnitsSign_coe, hsign] at hxv ⊢
-    exact sign_eq_one_iff.mp hs
+    apply sign_eq_one_iff.mp
+    cases hsign : SignType.sign (x : ℝ) <;>
+    simp [realUnitsSign_coe, hsign] at hxv ⊢
   · intro hx
     apply Units.ext
     simp [realUnitsSign, sign_pos hx]
@@ -490,15 +425,12 @@ theorem realUnitsSign_continuous :
   apply continuous_of_continuousAt_one _
   rw [continuousAt_def, map_one]
   intro V hV
-  have hposOpen :
-      IsOpen {x : ℝˣ | 0 < (x : ℝ)} :=
-    isOpen_Ioi.preimage Units.continuous_val
   have hposOne :
       (1 : ℝˣ) ∈ {x : ℝˣ | 0 < (x : ℝ)} := by
     norm_num
-  apply Filter.mem_of_superset (hposOpen.mem_nhds hposOne)
+  apply Filter.mem_of_superset ((isOpen_Ioi.preimage Units.continuous_val).mem_nhds hposOne)
   intro x hx
-  have hsign : realUnitsSign x = 1 :=
+  have hsign :=
     MonoidHom.mem_ker.mp
       ((mem_realUnitsSign_ker_iff x).2 hx)
   change realUnitsSign x ∈ V
@@ -510,14 +442,11 @@ theorem realUnitsSign_ker_eq_complexNormSubgroup :
     realUnitsSign.ker = localNormSubgroup ℝ ℂ := by
   ext x
   rw [mem_realUnitsSign_ker_iff]
-  change 0 < (x : ℝ) ↔
-    ∃ u : ℂˣ, normUnits ℝ ℂ u = x
   constructor
   · intro hx
-    let z : ℂ :=
+    let z :=
       (Real.sqrt (x : ℝ) : ℝ)
-    have hz : z ≠ 0 := by
-      exact Complex.ofReal_ne_zero.mpr
+    have hz := Complex.ofReal_ne_zero.mpr
         (ne_of_gt (Real.sqrt_pos.2 hx))
     let u : ℂˣ := Units.mk0 z hz
     refine ⟨u, ?_⟩
@@ -527,9 +456,7 @@ theorem realUnitsSign_ker_eq_complexNormSubgroup :
     simpa [u, z, Complex.normSq_ofReal] using
       Real.mul_self_sqrt hx.le
   · rintro ⟨u, rfl⟩
-    change 0 < Algebra.norm ℝ (u : ℂ)
-    rw [Algebra.norm_complex_apply, Complex.normSq_pos]
-    exact Units.ne_zero u
+    simp [Algebra.norm_complex_apply, Complex.normSq_pos]
 
 /-- The norm quotient for `ℂ/ℝ` is the two-element sign group. -/
 def realComplexNormQuotientEquivSign :
@@ -594,12 +521,11 @@ theorem infinitePlaceLocalHerbrandH0_card_eq_localDegree
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) u.1
   let : SMul K u.1.Completion := hL.toSMul
-  let : Algebra v.1.Completion u.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra v.1 u.1 u.2
   let := localizedCompletionGlobalAlgebra v.1 u
   let := localizedCompletionIsScalarTower v.1 u
-  let : FiniteDimensional v.1.Completion
-      (LocalizedCompletion v.1 u) :=
+  let :=
     localizedCompletionModuleFinite v.1 v.isNontrivial u
   let : IsGalois v.1.Completion
       (LocalizedCompletion v.1 u) :=
@@ -618,20 +544,14 @@ theorem infinitePlaceLocalHerbrandH0_card_eq_localDegree
       InfinitePlace.card_stabilizer, ite_eq_left hUnramified]
   · rw [ite_eq_right hUnramified]
     have hRamified : w.IsRamified K := hUnramified
-    have hvReal : v.IsReal := by
-      rw [← hw]
-      exact hRamified.isReal
-    have hwComplex : w.IsComplex :=
-      hRamified.isComplex
-    let eH0 :=
-      localHerbrandH0EquivNormQuotient
-        v.1 v.isNontrivial u
     let eCompletion :=
       localizedCompletionNormQuotientEquivAbsoluteCompletions
         v w hw
     let eRealComplex :=
       absoluteCompletionNormQuotientEquivRealComplex
-        v w hw hvReal hwComplex
+        v w hw (by
+          rw [← hw]
+          exact hRamified.isReal) hRamified.isComplex
     calc
       Nat.card
           (HerbrandH0
@@ -639,7 +559,8 @@ theorem infinitePlaceLocalHerbrandH0_card_eq_localDegree
             (LocalizedCompletion v.1 u)ˣ) =
           Nat.card (NormQuotient ℝ ℂ) :=
         Nat.card_congr
-          (eH0.trans
+          ((localHerbrandH0EquivNormQuotient
+            v.1 v.isNontrivial u).trans
             (eCompletion.trans eRealComplex)).toEquiv
       _ = 2 := realComplexNormQuotient_card_eq_two
 
@@ -694,21 +615,17 @@ theorem infinitePlaceLocalClassAxiom_cards
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) u.1
   let : SMul K u.1.Completion := hL.toSMul
-  let : Algebra v.1.Completion u.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra v.1 u.1 u.2
   let := localizedCompletionGlobalAlgebra v.1 u
   let := localizedCompletionIsScalarTower v.1 u
-  let : FiniteDimensional v.1.Completion
-      (LocalizedCompletion v.1 u) :=
+  let :=
     localizedCompletionModuleFinite v.1 v.isNontrivial u
-  let : IsGalois v.1.Completion
-      (LocalizedCompletion v.1 u) :=
+  let :=
     HilbertRamification.algebraicLocalization_isGalois v.1 u
   let : Fintype (absoluteValueDecompositionGroup K w.1) :=
     Fintype.ofFinite _
-  let : MulDistribMulAction
-      (absoluteValueDecompositionGroup K w.1)
-      (LocalizedCompletion v.1 u)ˣ :=
+  let :=
     decompositionGroupLocalUnitsAction
       v.1 v.isNontrivial u
   exact
@@ -759,11 +676,10 @@ theorem infinitePlaceLocalHerbrandH0Finite
       (LocalizedCompletion v.1 u)ˣ :=
     decompositionGroupLocalUnitsAction
       v.1 v.isNontrivial u
+  let HerbrandH0₀ := HerbrandH0 (absoluteValueDecompositionGroup K w.1) (LocalizedCompletion v.1 u)ˣ
   change
     Finite
-      (HerbrandH0
-        (absoluteValueDecompositionGroup K w.1)
-        (LocalizedCompletion v.1 u)ˣ)
+      (HerbrandH0₀)
   by_cases hUnramified : w.IsUnramified K
   · have hGroup :
         Nat.card (absoluteValueDecompositionGroup K w.1) = 1 := by
@@ -773,9 +689,7 @@ theorem infinitePlaceLocalHerbrandH0Finite
       (Nat.card_eq_one_iff_unique.mp hGroup).1
     let :
         Subsingleton
-          (HerbrandH0
-            (absoluteValueDecompositionGroup K w.1)
-            (LocalizedCompletion v.1 u)ˣ) :=
+          (HerbrandH0₀) :=
       herbrandH0_subsingleton_of_fixed_le_tateNormSubgroup
         (G := absoluteValueDecompositionGroup K w.1)
         (A := (LocalizedCompletion v.1 u)ˣ) (by
@@ -795,15 +709,13 @@ theorem infinitePlaceLocalHerbrandH0Finite
     exact
       Finite.of_injective
         (fun _ :
-          HerbrandH0
-            (absoluteValueDecompositionGroup K w.1)
-            (LocalizedCompletion v.1 u)ˣ => false)
+          HerbrandH0₀ => false)
         (fun x y _ => Subsingleton.elim x y)
   · have hRamified : w.IsRamified K := hUnramified
     have hvReal : v.IsReal := by
       rw [← hw]
       exact hRamified.isReal
-    have hwComplex : w.IsComplex :=
+    have hwComplex :=
       hRamified.isComplex
     let eH0 :=
       localHerbrandH0EquivNormQuotient
@@ -850,8 +762,8 @@ theorem infinitePlaceLocalHerbrandHMinusOneFinite
   let hL :=
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) u.1
-  let : SMul K u.1.Completion := hL.toSMul
-  let : Algebra v.1.Completion u.1.Completion :=
+  let := hL.toSMul
+  let :=
     AbsoluteValue.completionAlgebra v.1 u.1 u.2
   let := localizedCompletionGlobalAlgebra v.1 u
   let := localizedCompletionIsScalarTower v.1 u

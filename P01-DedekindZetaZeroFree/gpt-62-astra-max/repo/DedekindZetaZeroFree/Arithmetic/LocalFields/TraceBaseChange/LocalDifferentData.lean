@@ -24,17 +24,19 @@ instance valuationHasExtensionRaw (v : HeightOneSpectrum (𝓞 F)) :
     (baseRaw F v).valuation.HasExtension (targetRaw F v).valuation :=
   chosenLocalExtensionCompleteDVF_hasExtension _ _
 
-def codifferentRaw (v : HeightOneSpectrum (𝓞 F)) :
+variable (v : HeightOneSpectrum (𝓞 F))
+
+def codifferentRaw :
     Submodule (targetRaw F v).valuationSubring (v.adicCompletion F) :=
   RamificationTheory.DiscreteValuationField.ValuedExtension.codifferentSubmodule
     (baseRaw F v) (targetRaw F v)
 
-def differentRaw (v : HeightOneSpectrum (𝓞 F)) :
+def differentRaw :
     Ideal (targetRaw F v).valuationSubring :=
   RamificationTheory.DiscreteValuationField.ValuedExtension.differentIdealOfFiniteSeparable
     (baseRaw F v) (targetRaw F v)
 
- theorem integer_mem_targetRaw (v : HeightOneSpectrum (𝓞 F)) (x : 𝓞 F) :
+ theorem integer_mem_targetRaw (x : 𝓞 F) :
     algebraMap F (v.adicCompletion F) (x : F) ∈
       (targetRaw F v).valuation.valuationSubring := by
   letI : IsIntegralClosure (targetRaw F v).valuationSubring
@@ -47,12 +49,12 @@ def differentRaw (v : HeightOneSpectrum (𝓞 F)) :
     (IsIntegralClosure.isIntegral_iff (A := (targetRaw F v).valuationSubring)).mp h'
   exact hy ▸ y.property
 
-def integerMap (v : HeightOneSpectrum (𝓞 F)) :
+def integerMap :
     𝓞 F →+* (targetRaw F v).valuationSubring :=
   ((algebraMap F (v.adicCompletion F)).comp (algebraMap (𝓞 F) F)).codRestrict
     (targetRaw F v).valuation.valuationSubring (integer_mem_targetRaw F v)
 
-@[simp] theorem integerMap_coe (v : HeightOneSpectrum (𝓞 F)) (x : 𝓞 F) :
+@[simp] theorem integerMap_coe (x : 𝓞 F) :
     (integerMap F v x : v.adicCompletion F) =
       algebraMap F (v.adicCompletion F) (x : F) := rfl
 

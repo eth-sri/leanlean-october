@@ -12,13 +12,13 @@ namespace DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 open MomentSources NumberField IsDedekindDomain ThetaExpansion
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
 
 theorem rowExponent_eq (m : ThetaReflectionData.Row R.A) (p : ThetaBranch.ExteriorPrime R.A) :
     ThetaDigitAverage.rowExponent R.A m.val p.val = ThetaBranch.rowIndex R.A m p.val := by
-  have hv : p.val.valuation F (m.val : F) ≤ 1 := m.val.property p.val p.property
+  have hv := m.val.property p.val p.property
   have hnz : p.val.valuation F (m.val : F) ≠ 0 :=
     (Valuation.ne_zero_iff _).mpr (ThetaReflectionData.rowUnit R.A m).ne_zero
   rw [← WithZero.exp_log hnz, ← WithZero.exp_zero, WithZero.exp_le_exp] at hv
@@ -36,9 +36,7 @@ theorem local_average (m : ThetaReflectionData.Row R.A) (x : Fˣ) (p : RowPrime 
       (Characters.psi R (exteriorRowPrime R m p)) (ThetaBranch.rowIndex R.A m p.val)
       (ThetaBranch.order p.val x + 2)
       (ThetaBranch.unitResidue p.val (ThetaBranch.localUnit R.A R.probe.allowed (exteriorRowPrime R m p) x)) := by
-  have hj : ThetaDigitAverage.rowExponent R.A m.val p.val = ThetaBranch.rowIndex R.A m p.val :=
-    rowExponent_eq R m (exteriorRowPrime R m p)
-  rw [hj]
+  rw [(rowExponent_eq R m (exteriorRowPrime R m p))]
   let q := exteriorRowPrime R m p
   let L := ThetaDigitAverage.residueLifts (ThetaDigitAverage.rowPrimes R.A m.val m.property)
   have hL (v : ThetaDigitAverage.Residue p.val) : Ideal.Quotient.mk q.val.asIdeal (L.lift p v) = v :=
@@ -58,9 +56,6 @@ theorem local_average (m : ThetaReflectionData.Row R.A) (x : Fˣ) (p : RowPrime 
     have hh := nonzero_localDigit R C q x (L.lift p v) (by rw [hL]; exact Finset.ne_of_mem_erase hv)
     rw [hL] at hh
     exact hh
-  change (∑ v ∈ Finset.univ.erase (0 : ThetaDigitAverage.Residue p.val),
-    sexticFourierMask (ThetaBranch.residueCharacter R.A R.σ q) (Characters.psi R q)
-      (ThetaBranch.rowIndex R.A m p.val) v * localDigitValue R C q x (L.lift p v)) + _ = _
   rw [Finset.sum_congr rfl (fun v hv => congrArg
     (fun z => sexticFourierMask (ThetaBranch.residueCharacter R.A R.σ q) (Characters.psi R q)
       (ThetaBranch.rowIndex R.A m p.val) v * z) (hn v hv))]

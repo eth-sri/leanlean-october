@@ -18,16 +18,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -62,13 +52,12 @@ variable
     [Field L] [NumberField L]
     [Algebra K L] [FiniteDimensional K L]
 
+variable (n : ℕ+) (S : Finset (HeightOneSpectrum (𝓞 K))) (S' : Finset (HeightOneSpectrum (𝓞 L)))
+
 /-- If `S'` is exactly the set of finite places of `L` above `S`, the
 ordinary idèle norm carries the power-local-unit subgroup over `L` into
 the corresponding subgroup over `K`. -/
 theorem ideleNorm_mem_powerLocalUnitSubgroup_of_supports_above
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (S' : Finset (HeightOneSpectrum (𝓞 L)))
     (hS : ∀ W : HeightOneSpectrum (𝓞 L),
       W ∈ S' ↔ _root_.finitePlaceBelow (K := K) W ∈ S)
     {a : IdeleGroup L}
@@ -103,7 +92,7 @@ theorem ideleNorm_mem_powerLocalUnitSubgroup_of_supports_above
     rw [← hx, map_pow]
   · intro v₀ hv₀
     let vK := HeightOneSpectrum.adicAbv K v₀
-    let hvK : vK.IsNontrivial :=
+    let hvK :=
       RayClass.adicAbv_isNontrivial v₀
     let eAbove :=
       finitePlaceExtensionEquivAbove
@@ -112,10 +101,10 @@ theorem ideleNorm_mem_powerLocalUnitSubgroup_of_supports_above
       completionTensorDecomposition_extensionFintype
         (K := K) (L := L) vK hvK
     let : Fintype {W : HeightOneSpectrum (𝓞 L) //
-        _root_.finitePlaceBelow (K := K) W = v₀} :=
+        _root_.finitePlaceBelow W = v₀} :=
       Fintype.ofEquiv (AbsoluteValueExtension vK L) eAbove
     let : ∀ W : {W : HeightOneSpectrum (𝓞 L) //
-        _root_.finitePlaceBelow (K := K) W = v₀},
+        _root_.finitePlaceBelow W = v₀},
         Algebra (v₀.adicCompletion K) (W.1.adicCompletion L) :=
       fun W =>
         (finitePlaceAdicCompletionMap K L v₀ W).toAlgebra
@@ -148,10 +137,10 @@ theorem ideleNorm_mem_powerLocalUnitSubgroup_of_supports_above
       completionTensorDecomposition_extensionFintype
         (K := K) (L := L) vK hvK
     let : Fintype {W : HeightOneSpectrum (𝓞 L) //
-        _root_.finitePlaceBelow (K := K) W = v₀} :=
+        _root_.finitePlaceBelow W = v₀} :=
       Fintype.ofEquiv (AbsoluteValueExtension vK L) eAbove
     let : ∀ W : {W : HeightOneSpectrum (𝓞 L) //
-        _root_.finitePlaceBelow (K := K) W = v₀},
+        _root_.finitePlaceBelow W = v₀},
         Algebra (v₀.adicCompletion K) (W.1.adicCompletion L) :=
       fun W =>
         (finitePlaceAdicCompletionMap K L v₀ W).toAlgebra
@@ -162,9 +151,7 @@ theorem ideleNorm_mem_powerLocalUnitSubgroup_of_supports_above
       intro hWS
       have hbelow := (hS W.1).1 hWS
       exact hv₀ (by simpa only [W.2] using hbelow)
-    have hWunit :
-        IdeleGroup.finiteComponent W.1 a ∈
-          (W.1.adicCompletionIntegers L).units :=
+    have hWunit :=
       haAway W.1 (by
         simpa only [Finset.union_empty] using hWaway)
     let z : (W.1.adicCompletionIntegers L).units :=
@@ -177,9 +164,6 @@ theorem ideleNorm_mem_powerLocalUnitSubgroup_of_supports_above
 idèle-class norm maps the power-local-unit idèle-class subgroup over `L`
 into the corresponding subgroup over `K`. -/
 theorem ideleClassNorm_map_powerLocalUnitSubgroup_le_of_supports_above
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (S' : Finset (HeightOneSpectrum (𝓞 L)))
     (hS : ∀ W : HeightOneSpectrum (𝓞 L),
       W ∈ S' ↔ _root_.finitePlaceBelow (K := K) W ∈ S) :
     (ideleClassPowerLocalUnitSubgroup (K := L) n S' ∅).map
@@ -188,14 +172,14 @@ theorem ideleClassNorm_map_powerLocalUnitSubgroup_le_of_supports_above
   rintro _ ⟨c, hc, rfl⟩
   obtain ⟨a, ha, rfl⟩ :=
     (mem_ideleClassPowerLocalUnitSubgroup_iff
-      (K := L) n S' ∅ c).mp hc
+       n S' ∅ c).mp hc
   rw [_root_.ideleClassNorm_mk]
   exact
     (mem_ideleClassPowerLocalUnitSubgroup_iff
-      (K := K) n S ∅ _).2
+       n S ∅ _).2
       ⟨IdeleGroup.norm K L a,
         ideleNorm_mem_powerLocalUnitSubgroup_of_supports_above
-          (K := K) (L := L) n S S' hS ha,
+            n S S' hS ha,
         rfl⟩
 
 end GlobalClassFields

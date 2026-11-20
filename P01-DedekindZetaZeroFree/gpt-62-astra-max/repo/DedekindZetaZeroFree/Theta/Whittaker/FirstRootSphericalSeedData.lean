@@ -14,7 +14,7 @@ set_option maxHeartbeats 4000000
 set_option maxRecDepth 4000
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 structure FirstRootSphericalSeed (R : PrincipalMellin.ActualRecipe S η)
     (N : TraceHaarTransport R) where

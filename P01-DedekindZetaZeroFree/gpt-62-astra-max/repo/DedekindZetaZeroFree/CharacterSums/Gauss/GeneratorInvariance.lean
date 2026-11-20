@@ -12,37 +12,38 @@ noncomputable section
 
 namespace GeneratorInvariance
 
-def transportCharacter {T : Type*} [CommRing T] (I J : Ideal T)
-    (h : I = J) (χ : MulChar (T ⧸ I) ℂ) : MulChar (T ⧸ J) ℂ :=
+section
+
+variable {T : Type*} [CommRing T] (I J : Ideal T) (h : I = J)
+
+def transportCharacter (χ : MulChar (T ⧸ I) ℂ) : MulChar (T ⧸ J) ℂ :=
   h ▸ χ
 
- def quotientEq {T : Type*} [CommRing T] (I J : Ideal T)
-    (h : I = J) : T ⧸ I ≃+* T ⧸ J := h ▸ RingEquiv.refl _
+ def quotientEq : T ⧸ I ≃+* T ⧸ J := h ▸ RingEquiv.refl _
 
-private theorem quotientEq_mk {T : Type*} [CommRing T] (I J : Ideal T)
-    (h : I = J) (x : T) :
+private theorem quotientEq_mk (x : T) :
     quotientEq I J h (Ideal.Quotient.mk I x) = Ideal.Quotient.mk J x := by
   subst J
   rfl
 
-private theorem transport_apply {T : Type*} [CommRing T] (I J : Ideal T)
-    (h : I = J) (χ : MulChar (T ⧸ I) ℂ) (x : T ⧸ I) :
+private theorem transport_apply (χ : MulChar (T ⧸ I) ℂ) (x : T ⧸ I) :
     transportCharacter I J h χ (quotientEq I J h x) = χ x := by
   subst J
   rfl
 
-private theorem sixth_character {T : Type*} [CommRing T]
-    (χ : MulChar T ℂ) (hχ : χ ^ 6 = 1) (u : Tˣ) :
-    χ ((u ^ 6 : Tˣ) : T) = 1 := by
-  rw [Units.val_pow_eq_pow_val, map_pow, ← χ.pow_apply_coe 6 u, hχ,
-    MulChar.one_apply_coe]
+end
+
+private alias sixth_character := DedekindZetaZeroFree.FiniteTransform.ResidueRowFourierTransform.sixth_unit_character
 
 variable {K : Type*} [Field K]
 
-theorem finiteCoefficient_first_sixth_unit (R : Subring K) (s a h : R)
-    (hs : s ≠ 0) (ha : a ≠ 0) (ε : Rˣ)
-    [Fintype (FiniteTransform.Residue R s)]
-    [Fintype (FiniteTransform.Residue R a)]
+section
+
+variable (R : Subring K) (s a h : R) (hs : s ≠ 0) (ha : a ≠ 0) (ε : Rˣ)
+    [Fintype (FiniteTransform.Residue R s)] [Fintype (FiniteTransform.Residue R a)]
+
+include hs ha in
+theorem finiteCoefficient_first_sixth_unit
     [Fintype (FiniteTransform.Residue R (((ε ^ 6 : Rˣ) : R) * s))]
     (χs : MulChar (FiniteTransform.Residue R s) ℂ)
     (χa : MulChar (FiniteTransform.Residue R a) ℂ)
@@ -54,7 +55,7 @@ theorem finiteCoefficient_first_sixth_unit (R : Subring K) (s a h : R)
       FiniteTransform.finiteCoefficient R s a h χs χa e := by
   let c := ε ^ 6
   let E := quotientEq _ _ (Ideal.span_singleton_mul_left_unit c.isUnit s).symm
-  let ca : (FiniteTransform.Residue R a)ˣ :=
+  let ca :=
     Units.map (FiniteTransform.residueMap R a).toMonoidHom c
   let ds : FiniteTransform.ResidueLifts R ((c : R) * s) :=
     ⟨fun d => (FiniteTransform.canonicalLifts R s).val (E.symm d), by
@@ -76,11 +77,12 @@ theorem finiteCoefficient_first_sixth_unit (R : Subring K) (s a h : R)
   apply Fintype.sum_equiv E.toEquiv
   intro d
   simp only [RingEquiv.toEquiv_eq_coe, RingEquiv.coe_toEquiv]
-  have hm (x : R) : FiniteTransform.residueMap R ((c : R) * s) x =
+  let residueMap₀ := FiniteTransform.residueMap R ((c : R) * s)
+  have hm (x : R) : residueMap₀ x =
       E (FiniteTransform.residueMap R s x) :=
     (quotientEq_mk _ _ (Ideal.span_singleton_mul_left_unit c.isUnit s).symm x).symm
-  have hc : FiniteTransform.residueMap R ((c : R) * s) h =
-      FiniteTransform.residueMap R ((c : R) * s) a * E d ↔
+  have hc : residueMap₀ h =
+      residueMap₀ a * E d ↔
       FiniteTransform.residueMap R s h = FiniteTransform.residueMap R s a * d := by
     rw [hm, hm, ← map_mul]
     exact E.injective.eq_iff
@@ -90,10 +92,9 @@ theorem finiteCoefficient_first_sixth_unit (R : Subring K) (s a h : R)
     congr 1
     apply Fintype.sum_equiv ca.mulLeft
     intro v
-    have hca : χa (ca : FiniteTransform.Residue R a) = 1 := by
-      have H := sixth_character χa hχa
-        (Units.map (FiniteTransform.residueMap R a).toMonoidHom ε)
-      simpa only [ca, c, map_pow] using H
+    have hca : χa ca = 1 := by
+      simpa only [ca, c, map_pow] using (sixth_character χa hχa
+        (Units.map (FiniteTransform.residueMap R a).toMonoidHom ε))
     change χa v * e _ = χa ((ca : FiniteTransform.Residue R a) * v) * e _
     rw [map_mul, hca, one_mul]
     congr 1
@@ -105,15 +106,12 @@ theorem finiteCoefficient_first_sixth_unit (R : Subring K) (s a h : R)
       ((((c : R) * s : R) : K) * (a : K)))
     rw [E.symm_apply_apply, ca.mulLeft.symm_apply_apply]
     push_cast
-    have hc0 : ((c : R) : K) ≠ 0 := by exact_mod_cast c.ne_zero
     field_simp
     <;> ring
   · rw [if_neg hd, if_neg (fun hn => hd (hc.mp hn))]
 
-theorem finiteCoefficient_second_sixth_unit (R : Subring K) (s a h : R)
-    (hs : s ≠ 0) (ha : a ≠ 0) (ε : Rˣ)
-    [Fintype (FiniteTransform.Residue R s)]
-    [Fintype (FiniteTransform.Residue R a)]
+include hs ha in
+theorem finiteCoefficient_second_sixth_unit
     [Fintype (FiniteTransform.Residue R (((ε ^ 6 : Rˣ) : R) * a))]
     (χs : MulChar (FiniteTransform.Residue R s) ℂ)
     (χa : MulChar (FiniteTransform.Residue R a) ℂ)
@@ -156,27 +154,25 @@ theorem finiteCoefficient_second_sixth_unit (R : Subring K) (s a h : R)
       FiniteTransform.residueMap R s h = FiniteTransform.residueMap R s a * d := by
     simp only [map_mul, Units.mulLeft_apply]
     have hi : FiniteTransform.residueMap R s (c : R) *
-        (cs : FiniteTransform.Residue R s) = 1 := by
+        cs = 1 := by
       change FiniteTransform.residueMap R s (c : R) *
         FiniteTransform.residueMap R s ((c⁻¹ : Rˣ) : R) = 1
       rw [← map_mul, c.mul_inv, map_one]
     rw [mul_mul_mul_comm, hi, one_mul]
   by_cases hd : FiniteTransform.residueMap R s h = FiniteTransform.residueMap R s a * d
   · rw [if_pos hd, if_pos (hc.mpr hd)]
-    have hcs : χs (cs : FiniteTransform.Residue R s) = 1 := by
-      have H := sixth_character χs hχs
-        (Units.map (FiniteTransform.residueMap R s).toMonoidHom ε⁻¹)
-      simpa only [cs, c, map_inv, map_pow, inv_pow] using H
+    have hcs : χs cs = 1 := by
+      simpa only [cs, c, map_inv, map_pow, inv_pow] using (sixth_character χs hχs
+        (Units.map (FiniteTransform.residueMap R s).toMonoidHom ε⁻¹))
     simp only [Units.mulLeft_apply, map_mul, hcs, one_mul]
     congr 1
     apply Fintype.sum_equiv (ca.mulLeft.trans E.toEquiv)
     intro v
     simp only [Equiv.trans_apply, RingEquiv.toEquiv_eq_coe, RingEquiv.coe_toEquiv]
     rw [transport_apply]
-    have hca : χa (ca : FiniteTransform.Residue R a) = 1 := by
-      have H := sixth_character χa hχa
-        (Units.map (FiniteTransform.residueMap R a).toMonoidHom ε)
-      simpa only [ca, c, map_pow] using H
+    have hca : χa ca = 1 := by
+      simpa only [ca, c, map_pow] using (sixth_character χa hχa
+        (Units.map (FiniteTransform.residueMap R a).toMonoidHom ε))
     simp only [Units.mulLeft_apply, map_mul, hca, one_mul]
     congr 1
     apply congrArg e
@@ -191,7 +187,6 @@ theorem finiteCoefficient_second_sixth_unit (R : Subring K) (s a h : R)
     push_cast
     have hi : ((c : R) : K) * (((c⁻¹ : Rˣ) : R) : K) = 1 := by
       exact_mod_cast c.mul_inv
-    have hc0 : ((c : R) : K) ≠ 0 := by exact_mod_cast c.ne_zero
     have hs0 : (s : K) ≠ 0 := by exact_mod_cast hs
     have ha0 : (a : K) ≠ 0 := by exact_mod_cast ha
     field_simp
@@ -200,25 +195,29 @@ theorem finiteCoefficient_second_sixth_unit (R : Subring K) (s a h : R)
       ((FiniteTransform.canonicalLifts R a).val v : K)) * hi
   · rw [if_neg hd, if_neg (fun hn => hd (hc.mp hn))]
 
+end
+
 variable {F : Type} [Field F] [NumberField F]
 
-def HasCompatibleCharacters (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) : Prop :=
+section
+
+variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+
+def HasCompatibleCharacters : Prop :=
   FiniteTransform.IsTrivialOn A.R.toSubring D.additiveCharacter ∧
   (∀ (a : A.R), a ≠ 0 → D.character a ^ 6 = 1) ∧
   (∀ (a b : A.R) (ha : a ≠ 0) (hb : b ≠ 0)
     (hab : Ideal.span ({a} : Set A.R) = Ideal.span {b}),
       D.character b = transportCharacter _ _ hab (D.character a))
 
-def coefficient (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+def coefficient
     (s a h : A.R) (hs : s ≠ 0) (ha : a ≠ 0) : ℂ := by
   letI := D.finiteResidue s hs
   letI := D.finiteResidue a ha
   exact FiniteTransform.finiteCoefficient A.R.toSubring s a h
     (D.character s) (D.character a) D.additiveCharacter
 
-theorem coefficient_sixth_sUnit_invariant (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (hD : HasCompatibleCharacters A D)
+theorem coefficient_sixth_sUnit_invariant (hD : HasCompatibleCharacters A D)
     (s a h : A.R) (hs : s ≠ 0) (ha : a ≠ 0) (ε : A.U) :
     let v : A.Rˣ := A.unitEquiv ε ^ 6
     coefficient A D ((v : A.R) * s) a h (mul_ne_zero v.ne_zero hs) ha =
@@ -228,22 +227,20 @@ theorem coefficient_sixth_sUnit_invariant (A : SArithmeticData F)
     coefficient A D s a ((v : A.R) * h) hs ha =
         coefficient A D s a h hs ha := by
   dsimp only
-  let v : A.Rˣ := A.unitEquiv ε ^ 6
+  let v := A.unitEquiv ε ^ 6
   letI := D.finiteResidue s hs
   letI := D.finiteResidue a ha
   letI := D.finiteResidue ((v : A.R) * s) (mul_ne_zero v.ne_zero hs)
   letI := D.finiteResidue ((v : A.R) * a) (mul_ne_zero v.ne_zero ha)
-  have cs := hD.2.2 s ((v : A.R) * s) hs (mul_ne_zero v.ne_zero hs)
-    (Ideal.span_singleton_mul_left_unit v.isUnit s).symm
-  have ca := hD.2.2 a ((v : A.R) * a) ha (mul_ne_zero v.ne_zero ha)
-    (Ideal.span_singleton_mul_left_unit v.isUnit a).symm
   unfold coefficient
   refine ⟨?_, ?_, ?_⟩
-  · rw [cs]
+  · rw [(hD.2.2 s ((v : A.R) * s) hs (mul_ne_zero v.ne_zero hs)
+    (Ideal.span_singleton_mul_left_unit v.isUnit s).symm)]
     exact finiteCoefficient_first_sixth_unit A.R.toSubring s a h hs ha
       (A.unitEquiv ε) (D.character s) (D.character a) (hD.2.1 s hs)
       (hD.2.1 a ha) D.additiveCharacter hD.1
-  · rw [ca]
+  · rw [(hD.2.2 a ((v : A.R) * a) ha (mul_ne_zero v.ne_zero ha)
+    (Ideal.span_singleton_mul_left_unit v.isUnit a).symm)]
     exact finiteCoefficient_second_sixth_unit A.R.toSubring s a h hs ha
       (A.unitEquiv ε) (D.character s) (D.character a) (hD.2.1 s hs)
       (hD.2.1 a ha) D.additiveCharacter hD.1
@@ -251,14 +248,14 @@ theorem coefficient_sixth_sUnit_invariant (A : SArithmeticData F)
       s a h hs ha (D.character s) (D.character a) (hD.2.1 s hs)
       (hD.2.1 a ha) D.additiveCharacter hD.1 (A.unitEquiv ε)
 
-theorem coefficient_eq_comparison (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A)
+theorem coefficient_eq_comparison
     (c : ExteriorSquarefreeIdeal A.cS) (n s : A.Exterior) (h : A.R) :
     coefficient A D (D.generator s) (D.generator c.val * D.generator n ^ 3) h
       (D.generates s).1
       (mul_ne_zero (D.generates c.val).1 (pow_ne_zero _ (D.generates n).1)) =
-      comparisonPoissonFiniteCoefficient F A D c n s h := by
-  rfl
+      comparisonPoissonFiniteCoefficient F A D c n s h := rfl
+
+end
 
 private theorem allowed_translate (A : SArithmeticData F)
     (hCl : Subsingleton (ClassGroup A.R)) (H : A.V → A.V → Fˣ)
@@ -274,9 +271,8 @@ private theorem allowed_translate (A : SArithmeticData F)
       FractionalIdeal.spanSingleton A.R⁰ (algebraMap A.R F r)
     rw [← FractionalIdeal.coeIdeal_span_singleton,
       ← FractionalIdeal.coeIdeal_span_singleton, hr'.2, hr.2]
-  have hmem := A.allowed_generator_unique_mod_sixth hCl H B hB
-    (FractionalIdeal.spanSingleton A.R⁰ (a : F)) a' a ⟨heq.symm, hal'⟩ ⟨rfl, hal⟩
-  obtain ⟨ε, hε, he⟩ := hmem
+  obtain ⟨ε, hε, he⟩ := (A.allowed_generator_unique_mod_sixth hCl H B hB
+    (FractionalIdeal.spanSingleton A.R⁰ (a : F)) a' a ⟨heq.symm, hal'⟩ ⟨rfl, hal⟩)
   refine ⟨⟨ε, hε⟩, ?_⟩
   have hv : (ε : F) ^ 6 * (a : F) = (a' : F) := by
     have hh := congrArg (fun x : Fˣ => (x : F)) he
@@ -284,7 +280,6 @@ private theorem allowed_translate (A : SArithmeticData F)
       Units.val_div_eq_div_val] at hh
     exact (eq_div_iff a.ne_zero).mp hh
   apply Subtype.ext
-  change (r' : F) = _
   rw [← ha']
   exact hv.symm.trans (by rw [ha]; rfl)
 
@@ -329,7 +324,7 @@ theorem coefficient_allowed_generator_replacement (A : SArithmeticData F)
     simp only [map_pow, Units.val_pow_eq_pow_val]
     ring
   have hanon : c * n ^ 3 ≠ 0 := mul_ne_zero hc.1 (pow_ne_zero _ hn.1)
-  have hsnon : (((A.unitEquiv εs ^ 6 : A.Rˣ) : A.R) * s) ≠ 0 :=
+  have hsnon :=
     mul_ne_zero (A.unitEquiv εs ^ 6).ne_zero hs.1
   have e1 := (coefficient_sixth_sUnit_invariant A D hD s (c' * n' ^ 3)
     (u * r' ^ 6) hs.1 (mul_ne_zero hc'.1 (pow_ne_zero _ hn'.1)) εs).1

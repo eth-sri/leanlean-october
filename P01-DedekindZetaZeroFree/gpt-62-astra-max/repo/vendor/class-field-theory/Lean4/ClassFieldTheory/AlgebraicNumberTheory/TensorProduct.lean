@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -65,13 +61,10 @@ theorem tensorProduct_isField_of_finrank_coprime
     rw [← eM.toLinearEquiv.finrank_eq,
       ← eL.toLinearEquiv.finrank_eq]
     exact hcoprime
-  have hdisjoint :
-      iM.fieldRange.LinearDisjoint iL.fieldRange :=
-    IntermediateField.LinearDisjoint.of_finrank_coprime
-      hdegrees
   exact
     IntermediateField.LinearDisjoint.isField_of_isAlgebraic'
-      hdisjoint
+      (IntermediateField.LinearDisjoint.of_finrank_coprime
+        hdegrees)
       (Or.inl (Algebra.IsAlgebraic.of_finite K M))
 
 section TensorAutomorphisms
@@ -96,26 +89,13 @@ theorem tensorBaseChangeAut_tmul
     (m : M) (x : L) :
     tensorBaseChangeAut K M L σ (m ⊗ₜ[K] x) =
       m ⊗ₜ[K] σ x := by
-  simp [tensorBaseChangeAut]
+  rfl
 
 omit hKM hKL hGalois in
 /-- Distinct automorphisms remain distinct after tensor base change. -/
 theorem tensorBaseChangeAut_injective :
     Function.Injective (tensorBaseChangeAut K M L) := by
-  intro σ τ hστ
-  apply AlgEquiv.ext
-  intro x
-  have hx :=
-    DFunLike.congr_fun hστ
-      ((1 : M) ⊗ₜ[K] x)
-  have htensor :
-      (1 : M) ⊗ₜ[K] σ x =
-        (1 : M) ⊗ₜ[K] τ x := by
-    simpa using hx
-  exact
-    (Algebra.TensorProduct.includeRight
-      (R := K) (A := M) (B := L)).injective
-      htensor
+  exact fun ⦃σ τ⦄ hστ ↦ AlgEquiv.ext fun x ↦ RingHom.injective Algebra.TensorProduct.includeRight.toRingHom (DFunLike.congr_fun hστ (1 ⊗ₜ[K] x))
 
 /-- Galoisness survives the coprime tensor-product base change. -/
 theorem tensorProduct_isGalois_of_finrank_coprime
@@ -127,34 +107,17 @@ theorem tensorProduct_isGalois_of_finrank_coprime
         K M L hcoprime).toField
     IsGalois M (M ⊗[K] L) := by
   let N := M ⊗[K] L
-  let : Field N :=
+  let :=
     (tensorProduct_isField_of_finrank_coprime
       K M L hcoprime).toField
-  have hfinite : FiniteDimensional M N := by
-    exact Module.Finite.of_restrictScalars_finite K M N
-  let : FiniteDimensional M N := hfinite
-  have hlow :
-      Nat.card (L ≃ₐ[K] L) ≤
-        Nat.card (N ≃ₐ[M] N) :=
-    Nat.card_le_card_of_injective
-      (tensorBaseChangeAut K M L)
-      (tensorBaseChangeAut_injective K M L)
-  have hdim :
-      Module.finrank M N = Module.finrank K L := by
-    exact Module.finrank_baseChange
-  have hlow' :
-      Module.finrank M N ≤
-        Nat.card (N ≃ₐ[M] N) := by
-    rw [hdim, ← IsGalois.card_aut_eq_finrank K L]
-    exact hlow
-  have hupp :
-      Nat.card (N ≃ₐ[M] N) ≤
-        Module.finrank M N := by
-    rw [Nat.card_eq_fintype_card]
-    exact AlgEquiv.card_le
-  exact
+  let := (Module.Finite.of_restrictScalars_finite K M N)
+  refine
     IsGalois.of_card_aut_eq_finrank M N
-      (Nat.le_antisymm hupp hlow')
+      (Nat.le_antisymm ?_ ?_)
+  · simp
+    exact AlgEquiv.card_le
+  · rw [Module.finrank_baseChange, ← IsGalois.card_aut_eq_finrank K L]
+    exact Nat.card_le_card_of_injective (tensorBaseChangeAut K M L) (tensorBaseChangeAut_injective K M L)
 
 end TensorAutomorphisms
 

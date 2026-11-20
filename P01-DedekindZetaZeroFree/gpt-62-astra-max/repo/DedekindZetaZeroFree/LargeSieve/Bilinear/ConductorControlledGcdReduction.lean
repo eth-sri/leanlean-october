@@ -31,16 +31,15 @@ theorem bilinear_gcd_reduction_core
     GcdReduction.core_coefficient_estimate F c hc Q hGood W hW δ hδ
   refine ⟨2 * C, by linarith, ?_⟩
   intro M N K H hM hN hK hH hHN
-  have hHpos : 0 < H := lt_of_lt_of_le zero_lt_one hH
   have hMN : 0 ≤ M * N := by nlinarith [hM, hN]
   have hX1 : 1 ≤ N / H := by
-    rw [le_div_iff₀ hHpos]
+    rw [le_div_iff₀ (lt_of_lt_of_le zero_lt_one hH)]
     simpa using le_of_lt hHN
 
   obtain ⟨N', hN'1, hN'X, hN'le⟩ : ∃ N' : ℝ, 1 ≤ N' ∧ N' ≤ N / H ∧
       B2env F c Q W M (N / H) K ≤ B2 F c Q W M N' K + M := by
     by_cases hle : B2env F c Q W M (N / H) K ≤ M
-    · exact ⟨1, le_rfl, hX1, by linarith [B2_nonneg (F := F) (c := c) Q W M 1 K]⟩
+    · exact ⟨1, le_rfl, hX1, by linarith [B2_nonneg Q W M 1 K]⟩
     · rw [not_le] at hle
       have hmem0 : (0 : ℝ) ∈ ({0} ∪
           {x : ℝ | ∃ T : ℝ, 1 ≤ T ∧ T ≤ N / H ∧ x = B2 F c Q W M T K} ∪
@@ -56,8 +55,7 @@ theorem bilinear_gcd_reduction_core
       have hcases : (b = 0 ∨
           (∃ T : ℝ, 1 ≤ T ∧ T ≤ N / H ∧ b = B2 F c Q W M T K)) ∨
           (N / H < 1 ∧ 1 ≤ 2 * (N / H) ∧ b = B2unitColumn F c Q W M K) := by
-        simpa only [Set.mem_union, Set.mem_insert_iff, Set.mem_singleton_iff,
-          Set.mem_setOf_eq] using hbS
+        simpa using hbS
       rcases hcases with (hb0 | hb1) | hb2
       · exfalso
         rw [hb0] at hb
@@ -71,7 +69,7 @@ theorem bilinear_gcd_reduction_core
   have hSg0 : 0 ≤ Sg := by
     rw [hSg]
     exact Finset.sum_nonneg fun d _ => B3_nonneg Q W M N K d
-  have hE0 : 0 ≤ B2env F c Q W M (N / H) K :=
+  have hE0 :=
     GcdReduction.envelope_nonneg F c Q W hW M (N / H) K hM hX1 hK
   have hA0 : 0 ≤ C * Real.rpow (M * N) δ * (B2env F c Q W M (N / H) K + M + Sg) :=
     mul_nonneg (mul_nonneg hC0 (Real.rpow_nonneg hMN δ)) (by linarith)

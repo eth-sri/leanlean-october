@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.ActualFiniteBorel.IwasawaProof
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (q : HeightOneSpectrum (𝓞 F))
+    (q : HeightOneSpectrum (𝓞 F))
 local instance : ValuativeRel (q.adicCompletion F) :=
   ClassFieldTheory.finitePlaceCompletionValuativeRel F q
 local instance : IsNonarchimedeanLocalField (q.adicCompletion F) :=
@@ -21,11 +21,7 @@ local instance : (Valued.v : Valuation (q.adicCompletion F)
     (WithZero (Multiplicative ℤ))).Compatible := Valuation.Compatible.ofValuation _
 
 private theorem mem_integer (x : q.adicCompletion F) :
-    x ∈ KPTameCompact.O F q ↔ Valued.v x ≤ 1 := by
-  rw [Valuation.mem_integer_iff]
-  exact ((ValuativeRel.isEquiv (Valued.v : Valuation (q.adicCompletion F)
-    (WithZero (Multiplicative ℤ))) (ValuativeRel.valuation (q.adicCompletion F))).le_iff_le
-    (x := x) (y := 1)).symm.trans (by simp)
+    x ∈ KPTameCompact.O F q ↔ Valued.v x ≤ 1 := by apply @DedekindZetaZeroFree.KPRankOneCartanGeometry.CartanDecomposition.mem_integer_valuation <;> assumption
 
 private theorem triangularize_pivot (g : KPLocalCover.LocalGL2 F (Sum.inr q))
     (h : Valued.v (g 1 0) ≤ Valued.v (g 1 1)) :
@@ -33,7 +29,7 @@ private theorem triangularize_pivot (g : KPLocalCover.LocalGL2 F (Sum.inr q))
   have hd : g 1 1 ≠ 0 := by
     intro hd
     have hc : g 1 0 = 0 := by
-      apply (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ))).map_eq_zero_iff.mp
+      apply Valued.v.map_eq_zero_iff.mp
       exact le_antisymm (by simpa [hd] using h) zero_le
     exact Matrix.GeneralLinearGroup.det_ne_zero g (by simp [Matrix.det_fin_two, hd, hc])
   have ht : Valued.v (-(g 1 0 / g 1 1)) ≤ 1 := by
@@ -73,7 +69,7 @@ theorem integral_ratio (b : KPRankOneInduction.upperBorel F q)
       (KPRankOneInduction.borelRatio F q b) = 1 := by
   obtain ⟨A, hA, hu⟩ := b.property
   obtain ⟨u, he⟩ := (Matrix.ProjGenLinGroup.mk_eq_mk_iff
-    (g₁ := KPTameCompact.inclusion F q k) (g₂ := A)).mp (hk.trans hA.symm)
+     ).mp (hk.trans hA.symm)
   have hz : (KPTameCompact.inclusion F q k) 1 0 = 0 := by
     have he10 := congrArg (fun M : KPRankOneInduction.GL2 F q => M 1 0) he
     simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
@@ -86,7 +82,7 @@ theorem integral_ratio (b : KPRankOneInduction.upperBorel F q)
       Matrix.GeneralLinearGroup.map_apply] using hz
   have hdet : IsUnit (k 0 0 * k 1 1) := by
     simpa [Matrix.det_fin_two, hki] using k.det.isUnit
-  have hva : ValuativeRel.valuation (q.adicCompletion F) ((k 0 0 : KPTameCompact.O F q) : q.adicCompletion F) = 1 := by
+  have hva := by
     exact (Valuation.integer.integers _).one_of_isUnit (isUnit_of_mul_isUnit_left hdet)
   have hvd : ValuativeRel.valuation (q.adicCompletion F) ((k 1 1 : KPTameCompact.O F q) : q.adicCompletion F) = 1 := by
     exact (Valuation.integer.integers _).one_of_isUnit (isUnit_of_mul_isUnit_right hdet)

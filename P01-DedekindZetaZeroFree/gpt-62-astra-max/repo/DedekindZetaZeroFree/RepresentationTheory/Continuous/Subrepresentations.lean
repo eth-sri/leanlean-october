@@ -46,8 +46,7 @@ theorem coe_subrepresentation_apply (g : G) (v : W) :
 
 @[simp]
 theorem toRepresentation_subrepresentation : (subrepresentation π W hW).toRepresentation
-      = π.toRepresentation.subrepresentation W fun g _ hv => hW g _ hv := by
-  rfl
+      = π.toRepresentation.subrepresentation W fun g _ hv => hW g _ hv := rfl
 
 end Restriction
 

@@ -14,22 +14,23 @@ namespace DedekindZetaZeroFree.KPContActualCutoffDistributionEquation
 open KPContActualCutoffSmoothDescent KPContActualCutoffTestPairingHolomorphy
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
 variable {T : ℝ}
 variable (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (level F ζ hζ C R P H U) R P H T)
 variable (Ω : Set ℂ) (f : ℂ → S)
-variable (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
+    (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
+
+local notation "cuspLevel" => level F ζ hζ C R P H U
 
 structure Properties
     (D : Descent F ζ hζ C R P H U ι buffer Ω f χ) : Prop where
-
   pairings : KPContActualCutoffTestPairingHolomorphy.Conclusions
     F ζ hζ C R P H U ι buffer Ω f χ D
 
@@ -37,16 +38,16 @@ structure Properties
     (∫ x, coveredPair F ζ hζ C R P H U (D.cutoff s)
       (testLaplacian F ζ hζ C R P H U φ) x
       ∂KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R
-        (level F ζ hζ C R P H U)) -
+        cuspLevel) -
     KPContinuation.spectralCoordinate (KPContActualCutoffLocalCommutator.d F : ℤ) s *
       (∫ x, coveredPair F ζ hζ C R P H U (D.cutoff s)
         (testScalar F ζ hζ C R P H U φ) x
         ∂KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R
-          (level F ζ hζ C R P H U)) =
+          cuspLevel) =
     ∫ x, coveredPair F ζ hζ C R P H U (D.commutator s)
       (testScalar F ζ hζ C R P H U φ) x
       ∂KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R
-        (level F ζ hζ C R P H U)
+        cuspLevel
 
   quotient_equation : ∀ s ∈ Ω, ∀ φ : Tests F ζ hζ C R P H U,
     (∫ x, quotientPair F ζ hζ C R P H U (D.cutoff s)
@@ -72,19 +73,19 @@ theorem covered_green_pairing
     (∫ x, coveredPair F ζ hζ C R P H U w
         (testLaplacian F ζ hζ C R P H U φ) x
       ∂KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R
-        (level F ζ hζ C R P H U)) =
+        cuspLevel) =
     ∫ x, coveredPair F ζ hζ C R P H U
         (KPContActualCutoffLocalCommutator.Δloc F ζ hζ C R P H U w)
         (testScalar F ζ hζ C R P H U φ) x
       ∂KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R
-        (level F ζ hζ C R P H U) := by
+        cuspLevel := by
   obtain ⟨L, htransport⟩ := KPContCutoffPartitionTransport.finite_chart_pairing_transport
     F ζ hζ C R P H U φ
   rw [(htransport w).1, (htransport w).2]
   apply Finset.sum_congr rfl
   intro i _
   exact KPContCutoffLocalizedGreen.compact_interior_green
-    F ζ hζ (level F ζ hζ C R P H U) R P H (L.chart i) w (L.test i)
+    F ζ hζ cuspLevel R P H (L.chart i) w (L.test i)
     (L.test_compact i) (L.test_interior i)
 
 end DedekindZetaZeroFree.KPContActualCutoffDistributionEquation
@@ -105,7 +106,6 @@ theorem kp_cont_actual_cutoff_distribution_equation
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
     (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (_hι : Function.Injective ι)
-    (_hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (Ω : Set ℂ) (_hΩ : Ω ⊆ KPContinuation.spectralDomain) (_hopen : IsOpen Ω)
     (f : ℂ → S) (_hf : DifferentiableOn ℂ f Ω)
     (χ : KPContActualCutoffSmoothDescent.Cusps F ζ hζ C R P H U →
@@ -114,9 +114,9 @@ theorem kp_cont_actual_cutoff_distribution_equation
     KPContActualCutoffDistributionEquation.Properties F ζ hζ C R P H U
       ι buffer Ω f χ D := by
   have hpair := kp_cont_actual_cutoff_test_pairing_holomorphy
-    F ζ hζ C R P H U _hR buffer ι _hι _hStage Ω _hΩ _hopen f _hf χ D
+    F ζ hζ C R P H U _hR buffer ι _hι Ω _hΩ _hopen f _hf χ D
   have hloc := kp_cont_actual_cutoff_local_commutator
-    F ζ hζ C R P H U _hR buffer ι _hι _hStage Ω _hΩ f _hf χ D
+    F ζ hζ C R P H U _hR buffer ι _hι Ω _hΩ f _hf χ D
   have hcov : ∀ s ∈ Ω, ∀ φ : KPContActualCutoffTestPairingHolomorphy.Tests
         F ζ hζ C R P H U,
       (∫ x, KPContActualCutoffTestPairingHolomorphy.coveredPair F ζ hζ C R P H U

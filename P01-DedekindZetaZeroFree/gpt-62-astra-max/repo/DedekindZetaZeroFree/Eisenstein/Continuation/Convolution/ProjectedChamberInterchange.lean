@@ -10,7 +10,6 @@ open scoped Classical NumberField Topology
 open NumberField MeasureTheory Filter
 namespace DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.ProjectedChamberComparison
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.ActualProjectedFlatExpansion renaming projected_family_finite_flat_expansion → projected_family_finite_flat_expansion
 set_option maxHeartbeats 1600000
 set_option synthInstance.maxHeartbeats 200000
 set_option backward.isDefEq.respectTransparency false

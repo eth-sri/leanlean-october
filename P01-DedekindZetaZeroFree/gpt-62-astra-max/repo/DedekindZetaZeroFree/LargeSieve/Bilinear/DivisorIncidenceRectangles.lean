@@ -64,7 +64,7 @@ theorem divisor_block_bound
 
   have hcs : (∑ d, ∑ e, V d e) ^ 2 ≤
       ((Fintype.card D : ℝ) * (Fintype.card E : ℝ)) * (∑ d, ∑ e, V d e ^ 2) := by
-    have h := sq_sum_le_card_mul_sum_sq (s := (Finset.univ : Finset (D × E)))
+    have h := sq_sum_le_card_mul_sum_sq (s := Finset.univ)
       (f := fun p : D × E => V p.1 p.2)
     simp only [Finset.card_univ, Fintype.card_prod, Nat.cast_mul] at h
     rw [Fintype.sum_prod_type] at h
@@ -85,7 +85,7 @@ theorem divisor_block_bound
             (fun e => ∑ k, (2 : ℝ) ^ (t k).card * (if IR e k then ‖y k‖ ^ 2 else 0))]
       rw [← Finset.mul_sum Finset.univ
         (fun d => ∑ l, (2 : ℝ) ^ (s l).card * (if IL d l then ‖x l‖ ^ 2 else 0)) (UA * UB)]
-    calc (∑ d, ∑ e, V d e ^ 2)
+    calc _
         ≤ ∑ d, ∑ e, UA * UB *
             (∑ l, (2 : ℝ) ^ (s l).card * (if IL d l then ‖x l‖ ^ 2 else 0)) *
             (∑ k, (2 : ℝ) ^ (t k).card * (if IR e k then ‖y k‖ ^ 2 else 0)) :=
@@ -118,7 +118,7 @@ theorem divisor_block_bound
       (Fintype.card D : ℝ) * (Fintype.card E : ℝ) * UA * UB *
         (∑ d, ∑ l, (2 : ℝ) ^ (s l).card * (if IL d l then ‖x l‖ ^ 2 else 0)) *
         (∑ e, ∑ k, (2 : ℝ) ^ (t k).card * (if IR e k then ‖y k‖ ^ 2 else 0)) := by
-    calc (∑ d, ∑ e, V d e) ^ 2
+    calc _
         ≤ ((Fintype.card D : ℝ) * (Fintype.card E : ℝ)) * (∑ d, ∑ e, V d e ^ 2) := hcs
       _ ≤ ((Fintype.card D : ℝ) * (Fintype.card E : ℝ)) * (UA * UB *
             (∑ d, ∑ l, (2 : ℝ) ^ (s l).card * (if IL d l then ‖x l‖ ^ 2 else 0)) *

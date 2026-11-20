@@ -43,54 +43,44 @@ theorem translated_exponential_frame
     ext a
     simp [E, Φ, PartialDiffeomorph.trans, Diffeomorph.toPartialDiffeomorph]
   have he (a : V) : E a = g * D.exponentialChart a := rfl
-  have h0 : (0 : V) ∈ E.source := hs.symm ▸ D.zero_mem_source
-  have hf : ContMDiffOn (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞) E E.source :=
+  have hf :=
     Φ.contMDiffOn
-  have hi : ContMDiffOn (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞) E.symm E.target :=
+  have hi :=
     Φ.symm.contMDiffOn
-  refine ⟨E, h0, ?_, hf, hi, ?_, ?_⟩
+  refine ⟨E, (hs.symm ▸ D.zero_mem_source), ?_, hf, hi, ?_, ?_⟩
   · intro a ha
     rw [he, D.chart_eq_exponential a (hs ▸ ha)]
   · intro b a ha
     let f : V → ℝ → V := fun x t => E.symm (E x * D.exponential (t • D.basis b))
-    have hEa := hf.contMDiffAt (E.open_source.mem_nhds ha)
-    have hEi := hi.contMDiffAt (E.open_target.mem_nhds (E.map_source ha))
     have hprod : ContMDiffAt ((𝓘(ℝ, V)).prod (𝓘(ℝ, ℝ))) (𝓘(ℝ, V))
         (⊤ : ℕ∞) (Function.uncurry f) (a, 0) := by
-      have hx := hEa.comp (a, (0 : ℝ))
-        (contMDiffAt_fst (I := 𝓘(ℝ, V)) (J := 𝓘(ℝ, ℝ)))
-      have ht : ContMDiffAt ((𝓘(ℝ, V)).prod (𝓘(ℝ, ℝ))) (𝓘(ℝ, V))
-          (⊤ : ℕ∞) (fun p : V × ℝ => p.2 • D.basis b) (a, 0) :=
-        (contMDiffAt_snd (I := 𝓘(ℝ, V)) (J := 𝓘(ℝ, ℝ))).smul
-          (contMDiffAt_const (I := (𝓘(ℝ, V)).prod (𝓘(ℝ, ℝ)))
-            (I' := 𝓘(ℝ, V)) (c := D.basis b))
-      have hex := D.exponential_smooth.contMDiffAt.comp (a, (0 : ℝ)) ht
-      exact hEi.comp_of_eq (hx.mul hex) (by simp [D.exponential_zero])
+      exact (hi.contMDiffAt (E.open_target.mem_nhds (E.map_source ha))).comp_of_eq (((hf.contMDiffAt (E.open_source.mem_nhds ha)).comp (a, (0 : ℝ))
+        (contMDiffAt_fst)).mul (D.exponential_smooth.contMDiffAt.comp (a, (0 : ℝ)) ((contMDiffAt_snd).smul
+        (contMDiffAt_const
+           )))) (by simp [D.exponential_zero])
     have hd := ContMDiffAt.mfderiv (m := (⊤ : ℕ∞)) f (fun _ : V => (0 : ℝ))
       hprod contMDiffAt_const (by simp)
     simp +unfoldPartialApp only [inTangentCoordinates,
       inCoordinates_tangent_bundle_core_model_space] at hd
-    have hd' := hd.clm_apply (contMDiffAt_const (c := (1 : ℝ)))
     have hd'' : ContMDiffAt (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞)
         (fun x => deriv (f x) 0) a := by
-      convert hd' using 1
+      convert (hd.clm_apply (contMDiffAt_const)) using 1
       funext x
       rw [mfderiv_eq_fderiv]
       rfl
     exact hd''.contDiffAt.contDiffWithinAt
   · intro a ha
-    let f : V → V := fun u => E.symm (E a * D.exponential u)
+    let f := fun u => E.symm (E a * D.exponential u)
     have hd0 : IsLocalDiffeomorphAt (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞)
         D.exponential 0 :=
       ⟨D.exponentialChart, D.zero_mem_source, fun u hu =>
         (D.chart_eq_exponential u hu).symm⟩
-    have hd1 := (L (E a)).isLocalDiffeomorph (D.exponential 0)
     have hd2 : IsLocalDiffeomorphAt (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞)
         E.symm (E a * D.exponential 0) := by
       rw [D.exponential_zero, mul_one]
       exact ⟨Φ.symm, E.map_source ha, fun u hu => rfl⟩
     have hd : IsLocalDiffeomorphAt (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞) f 0 :=
-      (hd0.comp (𝓘(ℝ, V)) G hd1).comp (𝓘(ℝ, V)) V hd2
+      (hd0.comp (𝓘(ℝ, V)) G ((L (E a)).isLocalDiffeomorph (D.exponential 0))).comp (𝓘(ℝ, V)) V hd2
     let A : V ≃L[ℝ] V := hd.mfderivToContinuousLinearEquiv (by simp)
     refine ⟨D.basis.map A.toLinearEquiv, ?_⟩
     intro b

@@ -9,21 +9,11 @@ noncomputable section
 open scoped Classical NumberField
 set_option maxHeartbeats 2000000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-private theorem order_mul_local (p : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (x y : Fˣ) :
-    ThetaBranch.order p (x * y) = ThetaBranch.order p x + ThetaBranch.order p y := by
-  simp only [ThetaBranch.order, Units.val_mul, map_mul]
-  rw [WithZero.log_mul ((Valuation.ne_zero_iff _).mpr x.ne_zero)
-    ((Valuation.ne_zero_iff _).mpr y.ne_zero), neg_add]
+private alias order_mul_local := DedekindZetaZeroFree.ThetaBranch.ord_mul
 
-private theorem order_pow_local (p : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (x : Fˣ) (n : ℕ) :
-    ThetaBranch.order p (x ^ n) = n * ThetaBranch.order p x := by
-  induction n with
-  | zero => simp [ThetaBranch.order]
-  | succ n ih => rw [pow_succ, order_mul_local, ih]; push_cast; ring
+private alias order_pow_local := DedekindZetaZeroFree.ThetaBranch.ExteriorFrequencyBranchCoordinates.pow_order
 
 private theorem order_eq_exp (p : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
     (x : Fˣ) (e : ℤ) :
@@ -32,8 +22,7 @@ private theorem order_eq_exp (p : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
   constructor
   · intro h
     have hl : WithZero.log (p.valuation F (x : F)) = -e := by
-      have h2 := congrArg Neg.neg h
-      simpa only [ThetaBranch.order, neg_neg] using h2
+      simpa only [ThetaBranch.order, neg_neg] using (congrArg Neg.neg h)
     rw [← WithZero.exp_log hn, hl]
   · intro h
     simp only [ThetaBranch.order, h, WithZero.log_exp, neg_neg]
@@ -43,36 +32,23 @@ private theorem order_sunit_eq_zero (A : SArithmeticData F)
     ThetaBranch.order v u.val = 0 := by
   rw [ThetaBranch.order, u.property v hv, WithZero.log_one, neg_zero]
 
-private theorem order_nonneg_of_le_one (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (g : Fˣ) (h : v.valuation F (g : F) ≤ 1) : 0 ≤ ThetaBranch.order v g := by
-  rw [ThetaBranch.order, neg_nonneg]
-  have hne : v.valuation F (g : F) ≠ 0 := (Valuation.ne_zero_iff _).mpr g.ne_zero
-  exact (WithZero.log_le_iff_le_exp hne).mpr (by simpa [WithZero.exp_zero] using h)
+section
 
-private theorem valuation_eq_one_of_order_zero (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (g : Fˣ) (h : ThetaBranch.order v g = 0) : v.valuation F (g : F) = 1 := by
+variable (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) (g : Fˣ)
+
+private theorem order_nonneg_of_le_one (h : v.valuation F (g : F) ≤ 1) : 0 ≤ ThetaBranch.order v g := by
+  rw [ThetaBranch.order, neg_nonneg]
+  exact (WithZero.log_le_iff_le_exp ((Valuation.ne_zero_iff _).mpr g.ne_zero)).mpr (by simpa [WithZero.exp_zero] using h)
+
+private theorem valuation_eq_one_of_order_zero (h : ThetaBranch.order v g = 0) : v.valuation F (g : F) = 1 := by
   have := (order_eq_exp v g 0).mp h
   simpa [WithZero.exp_zero] using this
 
-private theorem sixthPowerFree_rowUnit
-    (R : PrincipalMellin.ActualRecipe S η) (u : Frequency R) :
-    Detector.sixthPowerFreeFrequency F (R.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
-      (ThetaReflectionData.rowUnit R.A u.val) := by
-  refine ⟨u.val.val.property, ?_⟩
-  intro v hv
-  have hfree := R.probe.frequencies.sixthFree u.val u.property ⟨v, hv⟩
-  have h0 : 0 ≤ ThetaBranch.order v (ThetaReflectionData.rowUnit R.A u.val) := hfree.1
-  have h6 : ThetaBranch.order v (ThetaReflectionData.rowUnit R.A u.val) < 6 := hfree.2
-  refine ⟨⟨(ThetaBranch.order v (ThetaReflectionData.rowUnit R.A u.val)).toNat, by omega⟩, ?_⟩
-  have hcast : (((⟨(ThetaBranch.order v (ThetaReflectionData.rowUnit R.A u.val)).toNat,
-      by omega⟩ : Fin 6)).val : ℤ) = ThetaBranch.order v (ThetaReflectionData.rowUnit R.A u.val) :=
-    Int.toNat_of_nonneg h0
-  rw [hcast]
-  exact (order_eq_exp v (ThetaReflectionData.rowUnit R.A u.val)
-    (ThetaBranch.order v (ThetaReflectionData.rowUnit R.A u.val))).mp rfl
+end
 
-private theorem rowUnit_represents
-    (R : PrincipalMellin.ActualRecipe S η) (x : Fˣ)
+variable (R : PrincipalMellin.ActualRecipe S η)
+
+private theorem rowUnit_represents (x : Fˣ)
     (hx : Detector.sixthPowerFreeFrequency F
       (R.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) x) :
     ∃! u : Frequency R, Detector.frequencyEquivalent F
@@ -147,8 +123,7 @@ private theorem rowUnit_represents
   have hpair := huniq (y, I) hpres'
   exact congrArg Prod.fst hpair
 
-theorem actual_detector_frequency_representatives
-    (R : PrincipalMellin.ActualRecipe S η) :
+theorem actual_detector_frequency_representatives :
     ∃ (V : Detector.FrequencyRepresentatives F
         (R.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F)) ))
       (e : Frequency R ≃ V.carrier),
@@ -157,6 +132,7 @@ theorem actual_detector_frequency_representatives
         (Detector.frequencySNorm F
           (R.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) V (e u) : ℝ) =
             frequencyNorm R u := by
+  let Set₀ := Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))
   classical
   let φ : Frequency R → Fˣ := fun u => ThetaReflectionData.rowUnit R.A u.val
   have hφinj : Function.Injective φ := by
@@ -167,14 +143,22 @@ theorem actual_detector_frequency_representatives
     have h := congrArg (fun z : Fˣ => (z : F)) huv
     simpa [φ, ThetaReflectionData.rowUnit] using h
   let V : Detector.FrequencyRepresentatives F
-      (R.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) :=
+      (R.A.Sf : Set₀) :=
     { carrier := Set.range φ
       one_mem := ⟨principalFrequency R, by
         apply Units.ext
         simp [φ, principalFrequency, ThetaReflectionData.rowUnit]⟩
       power_free := by
         rintro u ⟨u', rfl⟩
-        exact sixthPowerFree_rowUnit R u'
+        refine ⟨u'.val.val.property, ?_⟩
+        intro v hv
+        have hfree := R.probe.frequencies.sixthFree u'.val u'.property ⟨v, hv⟩
+        have h0 := hfree.1
+        have h6 : ThetaBranch.order v (ThetaReflectionData.rowUnit R.A u'.val) < 6 := hfree.2
+        refine ⟨⟨(ThetaBranch.order v (ThetaReflectionData.rowUnit R.A u'.val)).toNat, by omega⟩, ?_⟩
+        rw [(Int.toNat_of_nonneg h0)]
+        exact (order_eq_exp v (ThetaReflectionData.rowUnit R.A u'.val)
+          (ThetaBranch.order v (ThetaReflectionData.rowUnit R.A u'.val))).mp rfl
       represents := by
         intro x hx
         obtain ⟨u0, hP, huniq⟩ := rowUnit_represents R x hx
@@ -200,15 +184,15 @@ theorem actual_detector_frequency_representatives
       RightBound.ConductorEstimate.RawInducerArithmetic.actual_frequency_norm_dictionary
         R u
     have hS : Detector.frequencySInteger F
-        (R.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) V
+        (R.A.Sf : Set₀) V
           (Equiv.ofBijective ψfun ⟨hψinj, hψsurj⟩ u) = u.val.val := by
       apply Subtype.ext
       simp [Detector.frequencySInteger, ψfun, φ, ThetaReflectionData.rowUnit]
     have hnorm1 : Detector.frequencySNorm F
-        (R.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) V
+        (R.A.Sf : Set₀) V
           (Equiv.ofBijective ψfun ⟨hψinj, hψsurj⟩ u)
         = Detector.frequencyNorm F
-          (R.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) u.val.val := by
+          (R.A.Sf : Set₀) u.val.val := by
       simp only [Detector.frequencySNorm, Detector.frequencyNorm]
       rw [hS]
     rw [hnorm1]

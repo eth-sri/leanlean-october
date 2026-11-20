@@ -43,7 +43,6 @@ theorem arch_finite_factorization (g : G F ζ hζ) :
       (PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ a))⁻¹ * a = 1
     rw [PGLComplex.AdelicSlicesRaw.archProjection_archimedeanInsertion, inv_mul_cancel]
   have hc : c ∈ KPFiniteCuspAtlas.FiniteCover F ζ hζ := by
-    change KPCuspGenuineMonodromy.archProjection F ζ hζ c = 1
     funext w
     have hw := congrFun h w
     rw [projection_compare] at hw
@@ -55,8 +54,6 @@ theorem arch_finite_factorization (g : G F ζ hζ) :
       RingEquiv.symm_toRingHom_comp_toRingHom, Matrix.ProjGenLinGroup.map_id,
       MonoidHom.id_apply, map_one, Pi.one_apply] using hh
   refine ⟨a, ⟨c, hc⟩, ?_⟩
-  change g = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a *
-    ((KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a)⁻¹ * g)
   rw [mul_inv_cancel_left]
 
 def archRational (σ : KPCuspArithmetic.PGL2 F) : KPSmoothActualFlowData.GInfinity F :=
@@ -66,11 +63,9 @@ theorem rationalLift_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
     rationalLift F ζ hζ (Matrix.ProjGenLinGroup.mk m) =
       scalarQuotient F ζ hζ (rationalHom F ζ hζ m) := by
   let n := Classical.choose (Matrix.ProjGenLinGroup.mk_surjective (Matrix.ProjGenLinGroup.mk m))
-  have hn : Matrix.ProjGenLinGroup.mk n = Matrix.ProjGenLinGroup.mk m :=
-    Classical.choose_spec (Matrix.ProjGenLinGroup.mk_surjective (Matrix.ProjGenLinGroup.mk m))
-  obtain ⟨z, hz⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hn
+  obtain ⟨z, hz⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp (Classical.choose_spec (Matrix.ProjGenLinGroup.mk_surjective (Matrix.ProjGenLinGroup.mk m)))
   let φ := (scalarQuotient F ζ hζ).comp (rationalHom F ζ hζ)
-  have hscalar : φ (Matrix.GeneralLinearGroup.scalar (Fin 2) z) = 1 :=
+  have hscalar :=
     KPRationalAdelicSplitting.rationalScalars_le_ker F ζ hζ ⟨z, rfl⟩
   change φ n = φ m
   rw [← hz, map_mul, hscalar, mul_one]
@@ -106,16 +101,17 @@ theorem finiteProjection_local_infinite (v : NumberField.InfinitePlace F)
     (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl v)) :
     KPCuspGenuineMonodromy.finiteProjection F ζ hζ
       (scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inl v) g)) = 1 := by
+  let localToRestricted₀ := localToRestricted F ζ hζ (Sum.inl v) g
   change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map (RingHom.snd _ _)
-    (restrictedProjection F ζ hζ (localToRestricted F ζ hζ (Sum.inl v) g))) = 1
+    (restrictedProjection F ζ hζ (localToRestricted₀))) = 1
   have he : Matrix.GeneralLinearGroup.map (RingHom.snd _ _)
-      (restrictedProjection F ζ hζ (localToRestricted F ζ hζ (Sum.inl v) g)) = 1 := by
+      (restrictedProjection F ζ hζ (localToRestricted₀)) = 1 := by
     apply Matrix.GeneralLinearGroup.ext
     intro i j
     apply Subtype.ext
     funext q
-    have h := restrictedProjection_eval F ζ hζ (localToRestricted F ζ hζ (Sum.inl v) g) (Sum.inr q)
-    have hn : localToRestricted F ζ hζ (Sum.inl v) g (Sum.inr q) = 1 := by
+    have h := restrictedProjection_eval F ζ hζ (localToRestricted₀) (Sum.inr q)
+    have hn : localToRestricted₀ (Sum.inr q) = 1 := by
       exact RestrictedProduct.mulSingle_eq_of_ne' _ _ (by simp)
     rw [hn, map_one] at h
     convert congrArg (fun m => m i j) h using 1
@@ -136,8 +132,6 @@ theorem finiteProjection_rationalLift (σ : KPCuspArithmetic.PGL2 F) :
       (rationalLift F ζ hζ σ) = KPFiniteComponents.diagonal F σ := by
   obtain ⟨m, rfl⟩ := Matrix.ProjGenLinGroup.mk_surjective σ
   rw [rationalLift_mk]
-  change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map (RingHom.snd _ _)
-    (projection F ζ hζ (rationalHom F ζ hζ m))) = _
   exact congrArg (fun k => Matrix.ProjGenLinGroup.mk
     (Matrix.GeneralLinearGroup.map (RingHom.snd _ _) k))
       (projection_rationalSection F ζ hζ m)
@@ -166,11 +160,11 @@ theorem rationalLift_finite_factor (γ : KPCuspArithmetic.PGL2 F) :
   simp only [finiteProjection_rationalLift, map_mul, finiteProjection_insertion, one_mul] at hp
   have hf : KPCuspGenuineMonodromy.finiteBase F ζ hζ s =
       KPCuspGenuineMonodromy.finiteBase F ζ hζ (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ) := by
-    rw [← MonoidHom.comp_apply, (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2.2.1]
+    rw [← MonoidHom.comp_apply, (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2]
     exact hp.symm
   have hm : s * (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ)⁻¹ ∈
       (KPCuspGenuineMonodromy.central F ζ hζ).range := by
-    rw [(KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.1, MonoidHom.mem_ker,
+    rw [(KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).1, MonoidHom.mem_ker,
       map_mul, map_inv, hf, mul_inv_cancel]
   obtain ⟨ε, hε⟩ := hm
   refine ⟨ε, ?_⟩
@@ -189,8 +183,7 @@ theorem insertion_commutes (a : KPSmoothActualFlowData.GInfinity F)
     rw [← hker, MonoidHom.mem_ker]
     funext w
     rw [projection_compare]
-    have h := MonoidHom.mem_ker.mp c.property
-    rw [h]
+    rw [(MonoidHom.mem_ker.mp c.property)]
     exact map_one _
   exact RepresentationTheory.ArchFiniteSplitting.insertion_commutes_finite F ζ hζ a ⟨c.val, hc⟩
 
@@ -218,7 +211,6 @@ theorem archBasepoint_rational_mul (γ : KPCuspArithmetic.PGL2 F)
   have he : γ = Matrix.ProjGenLinGroup.mk γ.out := (Quotient.out_eq γ).symm
   conv_rhs => rw [he, KPCuspSiegel.action_mk]
   funext i
-  change KPArch.action ((archRational F γ * a) (KPCusp.complexPlace F i)).out (0,0) = _
   have hm : ∀ g h : Matrix.ProjGenLinGroup (Fin 2) ℂ,
       KPArch.action (g * h).out (0,0) = KPArch.action g.out (KPArch.action h.out (0,0)) := by
     intro g h
@@ -234,10 +226,10 @@ theorem archBasepoint_rational_mul (γ : KPCuspArithmetic.PGL2 F)
 
 variable {F ζ hζ}
 variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (J : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable {U : Level F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    (J : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    {U : Level F ζ hζ}
 
 abbrev Atlas := H.atlas J
 abbrev Cusp := KPMsFixedHaarDisintegration.CuspIndex (Atlas (H := H) J)

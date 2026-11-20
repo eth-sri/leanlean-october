@@ -35,28 +35,17 @@ theorem incomplete_nonzero_of_enlargement
 
   have hright : ∀ z : ℂ, 1 < z.re → P.L z = Q.L z := by
     intro z hz
-    have hseries : HasSum (fun I : Ideal (𝓞 F) =>
-        η I * (Ideal.absNorm I : ℂ) ^ (-z)) (Q.L z) := by
-      convert Q.series z hz using 1
-      ext I
-      rw [hchar I]
-    exact (P.series z hz).unique hseries
+    refine (P.series z hz).unique ?_
+    convert Q.series z hz using 1
+    ext I
+    rw [hchar I]
 
   have hopen := mellin_punctured_halfplane_isOpen 0 (by norm_num)
-  have hPa : AnalyticOnNhd ℂ P.L {s : ℂ | 0 < s.re ∧ s ≠ 1} :=
-    P.L_holo.analyticOnNhd hopen
-  have hQa : AnalyticOnNhd ℂ Q.L {s : ℂ | 0 < s.re ∧ s ≠ 1} :=
-    Q.L_holo.analyticOnNhd hopen
   have hfreq : ∃ᶠ z in nhdsWithin (2 : ℂ) {2}ᶜ, P.L z = Q.L z := by
     apply (accPt_iff_frequently_nhdsNE.mp mellin_punctured_halfplane_two_accPt).mono
     rintro z ⟨t, ht, rfl⟩
     apply hright
     simp
-  have heq := hPa.eqOn_of_preconnected_of_frequently_eq hQa
-    (mellin_punctured_halfplane_isPreconnected 0 (by norm_num))
-    (mellin_punctured_halfplane_two_mem 0 (by norm_num)) hfreq
-  have hL : P.L s = Q.L s := heq ⟨hs, hs1⟩
-
   set f : HeightOneSpectrum (𝓞 F) → ℂ := fun v =>
     (1 - η v.asIdeal * comparisonRealPower (idealNorm v.asIdeal) (-s)) with hf
   have hchar' : ∀ v : HeightOneSpectrum (𝓞 F),
@@ -70,7 +59,9 @@ theorem incomplete_nonzero_of_enlargement
   have key : comparisonPrincipalIncompleteL F A (hmod.symm ▸ η) hηA Q s =
       comparisonPrincipalIncompleteL F S η hη P s * (∏ v ∈ A.Sf \ S.Sf, f v) := by
     unfold comparisonPrincipalIncompleteL
-    rw [hL]
+    rw [(((P.L_holo.analyticOnNhd hopen).eqOn_of_preconnected_of_frequently_eq (Q.L_holo.analyticOnNhd hopen)
+      (mellin_punctured_halfplane_isPreconnected 0 (by norm_num))
+      (mellin_punctured_halfplane_two_mem 0 (by norm_num)) hfreq) ⟨hs, hs1⟩)]
     simp only [hchar']
     rw [hsplit]
     ring

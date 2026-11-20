@@ -13,18 +13,22 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-abbrev LocalGL2 (v : KPHilbert.Place F) := KubotaRankTwo.GL2 (KPHilbert.Completion F v)
+section
 
-def sigmaTwo (v : KPHilbert.Place F) (g h : LocalGL2 F v) : rootsOfUnity 3 F :=
+variable (v : KPHilbert.Place F)
+
+abbrev LocalGL2 := KubotaRankTwo.GL2 (KPHilbert.Completion F v)
+
+def sigmaTwo (g h : LocalGL2 F v) : rootsOfUnity 3 F :=
   KubotaElementaryLastArgument.tau (KPHilbert.Completion F v) (rootsOfUnity 3 F)
       (KPHilbert.B3 F ζ hζ v) g h *
     KPHilbert.B3 F ζ hζ v
       (KubotaRankTwo.det (KPHilbert.Completion F v) g)
       (KubotaRankTwo.det (KPHilbert.Completion F v) h) ^ 2
 
-theorem sigmaTwo_cocycle (v : KPHilbert.Place F) (g h k : LocalGL2 F v) :
+theorem sigmaTwo_cocycle (g h k : LocalGL2 F v) :
     sigmaTwo F ζ hζ v g h * sigmaTwo F ζ hζ v (g * h) k =
       sigmaTwo F ζ hζ v h k * sigmaTwo F ζ hζ v g (h * k) := by
   obtain ⟨hL, hR, _, hSt, _, hAlt⟩ := KPHilbert.B3_laws F ζ hζ v
@@ -35,15 +39,15 @@ theorem sigmaTwo_cocycle (v : KPHilbert.Place F) (g h k : LocalGL2 F v) :
       exact (KPHilbert.B3 F ζ hζ v a b).property)
     (fun a ha => hSt a _ (by simp)) g h k
 
-@[simp] theorem sigmaTwo_one_left (v : KPHilbert.Place F) (g : LocalGL2 F v) :
-    sigmaTwo F ζ hζ v 1 g = 1 := by
-  exact KubotaCocycleAlgebra.sigmaTwo_one_left _ _ _
+@[simp] theorem sigmaTwo_one_left (g : LocalGL2 F v) :
+    sigmaTwo F ζ hζ v 1 g = 1 := KubotaCocycleAlgebra.sigmaTwo_one_left _ _ _
     (KPHilbert.B3_laws F ζ hζ v).1 (KPHilbert.B3_laws F ζ hζ v).2.1 g
 
-@[simp] theorem sigmaTwo_one_right (v : KPHilbert.Place F) (g : LocalGL2 F v) :
-    sigmaTwo F ζ hζ v g 1 = 1 := by
-  exact KubotaCocycleAlgebra.sigmaTwo_one_right _ _ _
+@[simp] theorem sigmaTwo_one_right (g : LocalGL2 F v) :
+    sigmaTwo F ζ hζ v g 1 = 1 := KubotaCocycleAlgebra.sigmaTwo_one_right _ _ _
     (KPHilbert.B3_laws F ζ hζ v).1 (KPHilbert.B3_laws F ζ hζ v).2.1 g
+
+end
 
 structure CubicGL2Raw (F : Type) [Field F] [NumberField F] (ζ : F)
     (hζ : IsPrimitiveRoot ζ 12) (v : KPHilbert.Place F) where
@@ -71,28 +75,33 @@ theorem rawMul_assoc (x y z : CubicGL2Raw F ζ hζ v) :
         · exact mul_assoc _ _ _
         · simp only
           calc
-            (ex * ey * sigmaTwo F ζ hζ v gx gy) * ez * sigmaTwo F ζ hζ v (gx * gy) gz =
+            _ =
                 (ex * ey * ez) * (sigmaTwo F ζ hζ v gx gy * sigmaTwo F ζ hζ v (gx * gy) gz) := by ac_rfl
             _ = (ex * ey * ez) * (sigmaTwo F ζ hζ v gy gz * sigmaTwo F ζ hζ v gx (gy * gz)) := by rw [sigmaTwo_cocycle]
             _ = ex * (ey * ez * sigmaTwo F ζ hζ v gy gz) * sigmaTwo F ζ hζ v gx (gy * gz) := by ac_rfl
 
-theorem rawOne_mul (x : CubicGL2Raw F ζ hζ v) :
+section
+
+variable (x : CubicGL2Raw F ζ hζ v)
+
+theorem rawOne_mul :
     rawMul F ζ hζ v (rawOne F ζ hζ v) x = x := by
   cases x
   simp [rawMul, rawOne]
 
-theorem rawMul_one (x : CubicGL2Raw F ζ hζ v) :
+theorem rawMul_one :
     rawMul F ζ hζ v x (rawOne F ζ hζ v) = x := by
   cases x
   simp [rawMul, rawOne]
 
-theorem rawInv_mul_cancel (x : CubicGL2Raw F ζ hζ v) :
+theorem rawInv_mul_cancel :
     rawMul F ζ hζ v (rawInv F ζ hζ v x) x = rawOne F ζ hζ v := by
   have hi : sigmaTwo F ζ hζ v x.g⁻¹ x.g = sigmaTwo F ζ hζ v x.g x.g⁻¹ := by
-    have hc := sigmaTwo_cocycle F ζ hζ v x.g x.g⁻¹ x.g
-    simpa using hc.symm
+    simpa using (sigmaTwo_cocycle F ζ hζ v x.g x.g⁻¹ x.g).symm
   cases x
   simp [rawMul, rawInv, rawOne, hi, mul_assoc, mul_left_comm, mul_comm]
+
+end
 
 instance rawGroup : Group (CubicGL2Raw F ζ hζ v) where
   mul := rawMul F ζ hζ v
@@ -143,13 +152,9 @@ def sectionMap (g : LocalGL2 F v) : CubicGL2Raw F ζ hζ v := ⟨g, 1⟩
 @[simp] theorem sectionMap_epsilon (g : LocalGL2 F v) :
     (sectionMap F ζ hζ v g).epsilon = 1 := rfl
 
-theorem centralInjection_injective : Function.Injective (centralInjection F ζ hζ v) := by
-  intro a b h
-  exact congrArg CubicGL2Raw.epsilon h
+theorem centralInjection_injective : Function.Injective (centralInjection F ζ hζ v) := fun a b h => congrArg CubicGL2Raw.epsilon h
 
-theorem projection_surjective : Function.Surjective (projection F ζ hζ v) := by
-  intro g
-  exact ⟨sectionMap F ζ hζ v g, rfl⟩
+theorem projection_surjective : Function.Surjective (projection F ζ hζ v) := fun g => ⟨sectionMap F ζ hζ v g, rfl⟩
 
 theorem centralInjection_range_le_center :
     (centralInjection F ζ hζ v).range ≤ Subgroup.center (CubicGL2Raw F ζ hζ v) := by
@@ -178,24 +183,29 @@ theorem exists_sixthExponent (F : Type) [Field F] [NumberField F]
   apply (KPHilbert.primitive_six F ζ hζ).eq_pow_of_pow_eq_one
   exact congrArg (fun a : Fˣ => (a : F)) z.property
 
-def sixthExponent (z : rootsOfUnity 6 F) : ℕ :=
+section
+
+variable (z : rootsOfUnity 6 F)
+
+def sixthExponent : ℕ :=
   Classical.choose (exists_sixthExponent F ζ hζ z)
 
-def coefficientValue (z : rootsOfUnity 6 F) : ℂˣ :=
+def coefficientValue : ℂˣ :=
   complexSixthGenerator ^ sixthExponent F ζ hζ z
 
-private theorem sixthExponent_lt (z : rootsOfUnity 6 F) :
+private theorem sixthExponent_lt :
     sixthExponent F ζ hζ z < 6 :=
   (Classical.choose_spec (exists_sixthExponent F ζ hζ z)).1
 
-private theorem sixthExponent_spec (z : rootsOfUnity 6 F) :
+private theorem sixthExponent_spec :
     (ζ ^ 2) ^ sixthExponent F ζ hζ z = ((z : Fˣ) : F) :=
   (Classical.choose_spec (exists_sixthExponent F ζ hζ z)).2
 
+end
+
 private theorem complexSixthGenerator_primitive :
     IsPrimitiveRoot (complexSixthGenerator : ℂˣ) 6 :=
-  IsPrimitiveRoot.coe_units_iff.mp (by
-    exact Complex.isPrimitiveRoot_exp 6 (by decide))
+  IsPrimitiveRoot.coe_units_iff.mp (Complex.isPrimitiveRoot_exp 6 (by decide))
 
 theorem coefficientValue_one : coefficientValue F ζ hζ 1 = 1 := by
   have he : sixthExponent F ζ hζ 1 = 0 :=
@@ -226,12 +236,10 @@ def coefficientEmbedding : rootsOfUnity 6 F →* ℂˣ where
 
 theorem coefficientEmbedding_injective : Function.Injective (coefficientEmbedding F ζ hζ) := by
   intro x y h
-  have hi : sixthExponent F ζ hζ x = sixthExponent F ζ hζ y :=
-    complexSixthGenerator_primitive.pow_inj
-      (sixthExponent_lt F ζ hζ x) (sixthExponent_lt F ζ hζ y) h
   apply rootsOfUnity.coe_injective
   change ((x : Fˣ) : F) = ((y : Fˣ) : F)
-  rw [← sixthExponent_spec F ζ hζ x, ← sixthExponent_spec F ζ hζ y, hi]
+  rw [← sixthExponent_spec F ζ hζ x, ← sixthExponent_spec F ζ hζ y, (complexSixthGenerator_primitive.pow_inj
+    (sixthExponent_lt F ζ hζ x) (sixthExponent_lt F ζ hζ y) h)]
 
 def threeToSix : rootsOfUnity 3 F →* rootsOfUnity 6 F where
   toFun z := ⟨(z : Fˣ), by

@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -45,14 +43,12 @@ noncomputable def localizedCompletionDecompositionGroupFintype
     Fintype (absoluteValueDecompositionGroup K w.1) :=
   Fintype.ofFinite _
 
+variable (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) (w : AbsoluteValueExtension vK L)
+    (σ : L ≃ₐ[K] L) (hgen : ∀ τ : L ≃ₐ[K] L, τ ∈ Subgroup.zpowers σ)
+
 /-- A generator of the localized Galois group induced by a chosen generator
 of the global cyclic Galois group. -/
-noncomputable def localizedCompletionGaloisGenerator
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L)
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ) :
+noncomputable def localizedCompletionGaloisGenerator :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
     letI : SMul K w.1.Completion := hK.toSMul
     letI : Algebra vK.Completion w.1.Completion :=
@@ -64,12 +60,7 @@ noncomputable def localizedCompletionGaloisGenerator
       (subgroupGeneratorOfGenerator
         (absoluteValueDecompositionGroup K w.1) σ hgen)
 
-theorem localizedCompletionGaloisGenerator_generates
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L)
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ) :
+theorem localizedCompletionGaloisGenerator_generates :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
     letI : SMul K w.1.Completion := hK.toSMul
     letI : Algebra vK.Completion w.1.Completion :=

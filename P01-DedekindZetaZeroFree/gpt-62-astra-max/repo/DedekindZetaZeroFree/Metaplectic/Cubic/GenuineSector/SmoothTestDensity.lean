@@ -21,10 +21,6 @@ theorem kp_cont_actual_sector_test_density
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H) :
-    (∀ (u : KPContSectorClosedLpSubspace.H F ζ hζ R U) (ε : ℝ), 0 < ε →
-      ∃ φ : S_U F ζ hζ U R P H, ‖u - iota φ‖ < ε) ∧
-    (∀ (v : KPContActualSectorCotangentL2.V F ζ hζ U R P H) (ε : ℝ), 0 < ε →
-      ∃ W : T_U F ζ hζ U R P H, ‖v - j W‖ < ε) ∧
     DenseRange (iota (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)) ∧
     DenseRange (j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)) := by
   have approximate :
@@ -71,7 +67,7 @@ theorem kp_cont_actual_sector_test_density
     intro v ε hε
     obtain ⟨_, W, _, hW⟩ := approximate 0 v ε hε
     exact ⟨W, hW⟩
-  refine ⟨scalarApprox, cotangentApprox, ?_, ?_⟩
+  refine ⟨?_, ?_⟩
   · exact Metric.denseRange_iff.mpr (by simpa only [dist_eq_norm] using scalarApprox)
   · exact Metric.denseRange_iff.mpr (by simpa only [dist_eq_norm] using cotangentApprox)
 

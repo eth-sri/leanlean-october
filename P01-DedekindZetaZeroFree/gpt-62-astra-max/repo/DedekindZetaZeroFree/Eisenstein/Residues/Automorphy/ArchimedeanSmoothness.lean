@@ -11,25 +11,19 @@ open scoped NumberField Classical Topology ContDiff BigOperators
 open Filter MeasureTheory
 namespace DedekindZetaZeroFree.KPLiteralExceptionalResidue.ResidueAutomorphy.NativeArchSmooth
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming scalar_line_construction → scalar_line_construction
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming scalar_analytic_of_right_holomorphic → scalar_analytic_of_right_holomorphic
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming word_smul → word_smul
-open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy renaming actualRightWord_compact_holomorphy → actualRightWord_compact_holomorphy
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming word_zero → word_zero
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming literal_finite_word_chamber → literal_finite_word_chamber
 
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator renaming scalar_eq_lift → scalar_eq_lift
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction renaming native_word_smooth → native_word_smooth
-open _root_.DedekindZetaZeroFree.KPContActualCutoffPlusClearedGerm.ChartSeriesBridge renaming tensor_lifted_smooth → tensor_lifted_smooth
-open _root_.DedekindZetaZeroFree.KPContActualCommonDiskRightHolomorphy renaming level_projection → level_projection
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator (scalar_eq_lift)
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction (native_word_smooth)
+open _root_.DedekindZetaZeroFree.KPContActualCutoffPlusClearedGerm.ChartSeriesBridge (tensor_lifted_smooth)
+open _root_.DedekindZetaZeroFree.KPContActualCommonDiskRightHolomorphy (level_projection)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 private theorem lift_arch_smooth
     (V : KPMsFixedHaarDisintegration.Level F ζ hζ)
@@ -44,11 +38,9 @@ private theorem lift_arch_smooth
   obtain ⟨e, he, Q, W, hWo, hpx, hWd, τ, hτ, hτ0, hτc, hτQ, hτsm, hτj, hprod⟩ :=
     KPGlobalResidualConstruction.ActualMovingLocal.moving_inverse_local
       F ζ hζ V R P H g x hx
-  let A : Set (KPGlobalResidualConstruction.ArchCoordinates F) := {y | (g,y) ∈ W}
-  have hAo : IsOpen A := hWo.preimage (continuous_const.prodMk continuous_id)
-  refine ⟨A, hAo, hpx, ?_⟩
-  have hsm := (tensor_lifted_smooth Q u).comp (hτsm g) (fun y hy => hτQ hy)
-  apply (hsm.congr (fun y hy => ?_)).mono Set.inter_subset_right
+  let A := {y | (g,y) ∈ W}
+  refine ⟨A, (hWo.preimage (continuous_const.prodMk continuous_id)), hpx, ?_⟩
+  apply (((tensor_lifted_smooth Q u).comp (hτsm g) (fun y hy => hτQ hy)).congr (fun y hy => ?_)).mono Set.inter_subset_right
   obtain ⟨v, hv⟩ := hprod (g,y) hy
   rw [hv]
   unfold KPContActualCommonDiskRightHolomorphy.lift

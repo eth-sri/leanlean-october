@@ -1,4 +1,5 @@
 module
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.IdealMap
 
 public import ClassFieldTheory.Definitions.FrobeniusAndHilbertClassFields.FinitePrimeFractionalIdeal
 public import ClassFieldTheory.Definitions.FrobeniusAndHilbertClassFields.NumberFieldFractionalIdealGroup
@@ -12,11 +13,6 @@ Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
-
-
-
-
-
 
 set_option autoImplicit false
 
@@ -57,8 +53,7 @@ def factorization :
   MonoidHom.mk'
     (fun exps =>
       exps.toAdd.prod fun v n => primePowerHom v (Multiplicative.ofAdd n))
-    (fun a b => by
-      exact Finsupp.prod_hom_add_index (fun v => primePowerHom v))
+    (fun a b => Finsupp.prod_hom_add_index (fun v => primePowerHom v))
 
 @[simp]
 theorem factorization_val
@@ -66,19 +61,14 @@ theorem factorization_val
     ((factorization exps : NumberFieldFractionalIdealGroup K) :
       FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
       exps.toAdd.prod fun v n =>
-        (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) ^ n := by
-  classical
-  simp [factorization, primePowerHom, finitePrimeFractionalIdeal, Finsupp.prod]
+        (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) ^ n := by exact FractionalIdealGroup.factorization_val exps
 
 /-- Only finitely many finite primes occur with nonzero exponent in a
 nonzero fractional ideal. -/
 theorem finite_count_support (I : NumberFieldFractionalIdealGroup K) :
     {v : HeightOneSpectrum (𝓞 K) |
       FractionalIdeal.count K v
-        (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) ≠ 0}.Finite :=
-  Filter.eventually_cofinite.mp
-    (FractionalIdeal.finite_factors
-      (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K))
+        (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) ≠ 0}.Finite := by exact FractionalIdealGroup.finite_count_support I
 
 /-- The finitely supported prime-exponent vector of a nonzero fractional
 ideal. -/
@@ -106,9 +96,7 @@ theorem count_factorization
     FractionalIdeal.count K v
       ((factorization exps : NumberFieldFractionalIdealGroup K) :
         FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
-      exps.toAdd v := by
-  rw [factorization_val]
-  exact FractionalIdeal.count_finsuppProd K v exps.toAdd
+      exps.toAdd v := by exact FractionalIdealGroup.count_factorization exps v
 
 theorem ext_count {I J : NumberFieldFractionalIdealGroup K}
     (h : ∀ v : HeightOneSpectrum (𝓞 K),
@@ -116,34 +104,13 @@ theorem ext_count {I J : NumberFieldFractionalIdealGroup K}
         (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
       FractionalIdeal.count K v
         (J : FractionalIdeal (nonZeroDivisors (𝓞 K)) K)) :
-    I = J := by
-  apply Units.ext
-  rw [← FractionalIdeal.finprod_heightOneSpectrum_factorization'
-      K (Units.ne_zero I),
-    ← FractionalIdeal.finprod_heightOneSpectrum_factorization'
-      K (Units.ne_zero J)]
-  exact finprod_congr fun v => congrArg
-    (fun n : ℤ =>
-      (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) ^ n) (h v)
+    I = J := by exact FractionalIdealGroup.ext_count h
 
 theorem factorization_injective :
-    Function.Injective (factorization (K := K)) := by
-  intro a b hab
-  apply Multiplicative.ext
-  ext v
-  rw [← count_factorization a v, ← count_factorization b v, hab]
+    Function.Injective (factorization (K := K)) := by exact FractionalIdealGroup.factorization_injective
 
 theorem factorization_surjective :
-    Function.Surjective (factorization (K := K)) := by
-  intro I
-  refine ⟨Multiplicative.ofAdd (countVector I), ?_⟩
-  apply ext_count
-  intro v
-  rw [count_factorization]
-  change countVector I v =
-    FractionalIdeal.count K v
-      (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K)
-  exact countVector_apply I v
+    Function.Surjective (factorization (K := K)) := by exact FractionalIdealGroup.factorization_surjective
 
 /-- Multiplicative prime factorization of nonzero fractional ideals. -/
 def factorizationEquiv :

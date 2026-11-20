@@ -49,11 +49,12 @@ theorem rootCharacter_inducingAction
     inducingAction A P ε s (rootCubeLift A u) v =
       (deltaHalf A (rootCubeLift A u) * rootCharacter A ε s u) • v := by
   have hc := (finite_heisenberg_induction T P).2.2.2.1
+  let retract₀ := A.retract (rootCubeLift A u)
   cases ε with
   | plus =>
     change inducingScalar A s (rootCubeLift A u) •
-      (tau P (A.retract (rootCubeLift A u)) v) = _
-    rw [show A.retract (rootCubeLift A u) = (A.cubeLift (u ^ 2) : H) from
+      (tau P (retract₀) v) = _
+    rw [show retract₀ = (A.cubeLift (u ^ 2) : H) from
       A.retract_torus _ , hc]
     simp only [inducingScalar, rootCubeLift_coordinate, rootCharacter, smul_smul]
     congr 1
@@ -61,8 +62,8 @@ theorem rootCharacter_inducingAction
     ring
   | minus =>
     change inducingScalar A s (rootCubeLift A u) •
-      (tau P (A.weyl (A.retract (rootCubeLift A u))) v) = _
-    rw [show A.retract (rootCubeLift A u) = (A.cubeLift (u ^ 2) : H) from
+      (tau P (A.weyl (retract₀)) v) = _
+    rw [show retract₀ = (A.cubeLift (u ^ 2) : H) from
       A.retract_torus _, ← A.weylCenter_coe, hc]
     simp only [inducingScalar, rootCubeLift_coordinate, rootCharacter, smul_smul]
     congr 1
@@ -79,8 +80,6 @@ theorem rootCharacter_uniformizer
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
       (valuation K (π : K)) = WithZero.exp (-1 : ℤ)) :
     rootCharacter A .plus s π = t K s := by
-  have hq : 0 < (residueCardinality K : ℝ) := by
-    exact_mod_cast (Nat.card_pos (α := 𝓀[K]))
   have ha : localAbs K π = (residueCardinality K : ℝ)⁻¹ := by
     simp only [localAbs, hπ, WithZero.log_exp]
     norm_cast
@@ -96,7 +95,8 @@ theorem rootCharacter_uniformizer
       (residueCardinality K : ℂ)⁻¹ := by
     rw [show (1 / 6 : ℂ) * (-6 * (Real.log (residueCardinality K : ℝ) : ℂ)) =
       -(Real.log (residueCardinality K : ℝ) : ℂ) by ring, Complex.exp_neg,
-      ← Complex.ofReal_exp, Real.exp_log hq]
+      ← Complex.ofReal_exp, Real.exp_log (by
+        exact_mod_cast (Nat.card_pos))]
     simp
   rw [hex]
   unfold t r

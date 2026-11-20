@@ -14,49 +14,50 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayCoset
 
 variable {K : Type} [Field K] [NumberField K]
 
-def normalizationScale (D : Data K) : ℝ :=
+section
+
+variable (D : Data K)
+
+def normalizationScale : ℝ :=
   (Ideal.absNorm D.a : ℝ) ^ (-(Module.finrank ℚ K : ℝ)⁻¹)
 
-theorem normalizationScale_pos (D : Data K) : 0 < normalizationScale D := by
+theorem normalizationScale_pos : 0 < normalizationScale D := by
   apply Real.rpow_pos_of_pos
   exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr D.ideal_ne_bot)
 
-private theorem normalizationScale_pow (D : Data K) :
+private theorem normalizationScale_pow :
     normalizationScale D ^ Module.finrank ℚ K = (Ideal.absNorm D.a : ℝ)⁻¹ := by
   have hn : (Module.finrank ℚ K : ℝ) ≠ 0 := by
-    exact_mod_cast (Module.finrank_pos (R := ℚ) (M := K)).ne'
+    exact_mod_cast (Module.finrank_pos).ne'
   have ha : 0 < (Ideal.absNorm D.a : ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr D.ideal_ne_bot)
   rw [normalizationScale, ← Real.rpow_natCast, ← Real.rpow_mul ha.le]
   simp [hn, Real.rpow_neg_one]
 
-def normalizedEmbedding (D : Data K) : 𝓞 K →ₗ[ℤ] euclidean.mixedSpace K :=
+def normalizedEmbedding : 𝓞 K →ₗ[ℤ] euclidean.mixedSpace K :=
   normalizationScale D •
     ((Theta.traceEmbeddingIntLinearMap K).comp
       ((Algebra.linearMap (𝓞 K) K).restrictScalars ℤ))
 
-@[simp] theorem normalizedEmbedding_apply (D : Data K) (α : 𝓞 K) :
-    normalizedEmbedding D α = normalizationScale D • Theta.traceEmbedding K (α : K) := by
-  rfl
+@[simp] theorem normalizedEmbedding_apply (α : 𝓞 K) :
+    normalizedEmbedding D α = normalizationScale D • Theta.traceEmbedding K (α : K) := rfl
 
-def normalizedLattice (D : Data K) : Submodule ℤ (euclidean.mixedSpace K) :=
+def normalizedLattice : Submodule ℤ (euclidean.mixedSpace K) :=
   (D.a * D.m).restrictScalars ℤ |>.map (normalizedEmbedding D)
 
-def normalizedBasepoint (D : Data K) : euclidean.mixedSpace K :=
+def normalizedBasepoint : euclidean.mixedSpace K :=
   normalizedEmbedding D D.b
 
-def normalizedAffineCoset (D : Data K) : Set (euclidean.mixedSpace K) :=
+def normalizedAffineCoset : Set (euclidean.mixedSpace K) :=
   {x | x - normalizedBasepoint D ∈ normalizedLattice D}
 
-theorem normalizedEmbedding_bijOn (D : Data K) :
+theorem normalizedEmbedding_bijOn :
     Set.BijOn (normalizedEmbedding D) (C D) (normalizedAffineCoset D) := by
   have hi : Function.Injective (normalizedEmbedding D) := by
     intro x y h
-    have ht : Theta.traceEmbedding K (x : K) = Theta.traceEmbedding K (y : K) :=
-      (smul_right_injective _ (normalizationScale_pos D).ne').eq_iff.mp h
     apply RingOfIntegers.coe_injective
     apply mixedEmbedding_injective K
-    simpa [Theta.traceEmbedding] using congrArg (Theta.traceToMixed K) ht
+    simpa [Theta.traceEmbedding] using congrArg (Theta.traceToMixed K) ((smul_right_injective _ (normalizationScale_pos D).ne').eq_iff.mp h)
   refine ⟨?_, hi.injOn, ?_⟩
   · intro α hα
     change normalizedEmbedding D α - normalizedEmbedding D D.b ∈ ((D.a * D.m).restrictScalars ℤ).map (normalizedEmbedding D)
@@ -72,19 +73,19 @@ theorem normalizedEmbedding_bijOn (D : Data K) :
     · rw [map_add, he]
       abel
 
- def productIdealUnit (D : Data K) : (FractionalIdeal (𝓞 K)⁰ K)ˣ :=
+ def productIdealUnit : (FractionalIdeal (𝓞 K)⁰ K)ˣ :=
   FractionalIdeal.mk0 K ⟨D.a * D.m, by
     rw [mem_nonZeroDivisors_iff_ne_zero]
     exact Ideal.mul_eq_bot.not.mpr (not_or.mpr ⟨D.ideal_ne_bot, D.modulus_ne_bot⟩)⟩
 
- def scaleEquiv (D : Data K) :
+ def scaleEquiv :
     euclidean.mixedSpace K ≃L[ℝ] euclidean.mixedSpace K :=
   { LinearEquiv.smulOfNeZero ℝ (euclidean.mixedSpace K)
       (normalizationScale D) (normalizationScale_pos D).ne' with
     continuous_toFun := continuous_const.smul continuous_id
     continuous_invFun := continuous_const.smul continuous_id }
 
- theorem normalizedLattice_eq_comap (D : Data K) :
+ theorem normalizedLattice_eq_comap :
     normalizedLattice D = ZLattice.comap ℝ
       (Theta.traceIdealLattice K (productIdealUnit D)) (scaleEquiv D).symm.toLinearMap := by
   ext x
@@ -105,6 +106,8 @@ theorem normalizedEmbedding_bijOn (D : Data K) :
     refine ⟨β, hβ, ?_⟩
     change (scaleEquiv D) (Theta.traceEmbedding K (β : K)) = x
     rw [he, ContinuousLinearEquiv.apply_symm_apply]
+
+end
 
 instance normalizedLattice_discrete (D : Data K) :
     DiscreteTopology (normalizedLattice D) := by

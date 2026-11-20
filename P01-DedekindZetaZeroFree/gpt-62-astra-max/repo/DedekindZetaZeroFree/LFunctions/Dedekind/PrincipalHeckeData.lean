@@ -15,16 +15,20 @@ open Filter
 
 namespace DedekindZetaZeroFree.LargeSieve
 
- lemma top_ne_bot_ringOfIntegers (F : Type) [Field F] [NumberField F] :
+ section
+
+variable (F : Type) [Field F] [NumberField F]
+
+lemma top_ne_bot_ringOfIntegers :
     (⊤ : Ideal (𝓞 F)) ≠ ⊥ := by
   intro h
   have h1 : (1 : 𝓞 F) = 0 := by
-    have hm : (1 : 𝓞 F) ∈ (⊥ : Ideal (𝓞 F)) :=
+    have hm :=
       h ▸ (show (1 : 𝓞 F) ∈ (⊤ : Ideal (𝓞 F)) from Submodule.mem_top)
     simpa using hm
   exact one_ne_zero h1
 
-def principalCharacter (F : Type) [Field F] [NumberField F] :
+def principalCharacter :
     DedekindZetaZeroFree.RayClassCharacter F ⊤ where
   toFun I := if I = ⊥ then 0 else 1
   map_mul' := by
@@ -52,32 +56,30 @@ def principalCharacter (F : Type) [Field F] [NumberField F] :
       exact hα (by simpa using hmem)
     simp [h]
 
-@[simp] theorem principalCharacter_apply (F : Type) [Field F] [NumberField F]
+@[simp] theorem principalCharacter_apply
     (I : Ideal (𝓞 F)) :
     principalCharacter F I = if I = ⊥ then 0 else 1 := rfl
 
-theorem principalCharacter_primitive (F : Type) [Field F] [NumberField F] :
-    (principalCharacter F).IsPrimitive := by
-  intro 𝔣 h𝔣
-  exact (not_lt_of_ge le_top h𝔣).elim
+theorem principalCharacter_primitive :
+    (principalCharacter F).IsPrimitive := fun 𝔣 h𝔣 => (not_lt_of_ge le_top h𝔣).elim
 
-theorem principalCharacter_principal (F : Type) [Field F] [NumberField F] :
+theorem principalCharacter_principal :
     (principalCharacter F).IsPrincipal := by
   intro I hI _
   simp [principalCharacter, hI]
 
-def principalDiscriminant (F : Type) [Field F] [NumberField F] : ℝ :=
+def principalDiscriminant : ℝ :=
   ((|NumberField.discr F| : ℤ) : ℝ)
 
-def principalComplexPlaces (F : Type) [Field F] [NumberField F] : ℕ :=
+def principalComplexPlaces : ℕ :=
   NumberField.InfinitePlace.nrComplexPlaces F
 
-theorem principalDiscriminant_pos (F : Type) [Field F] [NumberField F] :
+theorem principalDiscriminant_pos :
     0 < principalDiscriminant F := by
   rw [principalDiscriminant, Int.cast_pos]
   exact abs_pos.mpr (NumberField.discr_ne_zero F)
 
-theorem principalComplexPlaces_pos (F : Type) [Field F] [NumberField F]
+theorem principalComplexPlaces_pos
     (hF : NumberField.IsTotallyComplex F) :
     1 ≤ principalComplexPlaces F := by
   have hfin := NumberField.IsTotallyComplex.finrank (K := F)
@@ -85,15 +87,12 @@ theorem principalComplexPlaces_pos (F : Type) [Field F] [NumberField F]
   rw [principalComplexPlaces]
   omega
 
+end
+
 structure PrincipalHeckeData (F : Type) [Field F] [NumberField F] where
   Lambda : ℂ → ℂ
   E : ℂ → ℂ
-  Lambda_differentiableOn : DifferentiableOn ℂ Lambda {s | s ≠ 0 ∧ s ≠ 1}
   E_differentiable : Differentiable ℂ E
-  Lambda_hasSum : ∀ s : ℂ, 1 < s.re → HasSum (fun I : Ideal (𝓞 F) =>
-    (((|NumberField.discr F| : ℤ) : ℂ) * (Ideal.absNorm (⊤ : Ideal (𝓞 F)) : ℂ)) ^ (s / 2) *
-      Complex.Gammaℂ s ^ principalComplexPlaces F *
-      ((principalCharacter F) I * (Ideal.absNorm I : ℂ) ^ (-s))) (Lambda s)
   Lambda_functional_equation : ∀ s : ℂ, s ≠ 0 → s ≠ 1 → Lambda s = Lambda (1 - s)
   E_eq_mul_Lambda : ∀ s : ℂ, s ≠ 0 → s ≠ 1 → E s = s * (s - 1) * Lambda s
   E_growth : ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, ∀ s : ℂ,
@@ -101,8 +100,6 @@ structure PrincipalHeckeData (F : Type) [Field F] [NumberField F] where
   E_functional_equation : ∀ s : ℂ, E s = E (1 - s)
   Lambda_eq_div : ∀ s : ℂ, s ≠ 0 → s ≠ 1 →
     Lambda s = E s / (s * (s - 1))
-  residue_one : Tendsto (fun s : ℂ => (s - 1) * Lambda s) (𝓝[≠] (1 : ℂ)) (𝓝 (E 1))
-  residue_zero : Tendsto (fun s : ℂ => s * Lambda s) (𝓝[≠] (0 : ℂ)) (𝓝 (-E 1))
   Lambda_dirichlet : ∀ s : ℂ, 1 < s.re →
     Lambda s = (principalDiscriminant F : ℂ) ^ (s / 2) *
       Complex.Gammaℂ s ^ principalComplexPlaces F *
@@ -112,8 +109,10 @@ theorem PrincipalHeckeData.E_zero_eq_one {F : Type} [Field F] [NumberField F]
     (data : PrincipalHeckeData F) : data.E 0 = data.E 1 := by
   simpa using data.E_functional_equation 0
 
-theorem exists_principalHeckeData
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) :
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
+
+include hF in
+theorem exists_principalHeckeData :
     Nonempty (PrincipalHeckeData F) := by
   have htop : (⊤ : Ideal (𝓞 F)) ≠ ⊥ := top_ne_bot_ringOfIntegers F
   obtain ⟨Λ, E, hΛ_holo, hE_entire, hseries, hFE, hE_eq, hgrowth⟩ :=
@@ -149,48 +148,6 @@ theorem exists_principalHeckeData
     intro s
     exact congrFun hEq s
 
-  have hres1 : Tendsto (fun s : ℂ => (s - 1) * Λ s) (𝓝[≠] (1 : ℂ)) (𝓝 (E 1)) := by
-    have hlim : Tendsto (E / id) (𝓝 (1 : ℂ)) (𝓝 (E 1)) := by
-      have h : Tendsto (E / id) (𝓝 (1 : ℂ)) (𝓝 (E 1 / 1)) :=
-        hE_entire.continuous.continuousAt.tendsto.div tendsto_id
-          (by norm_num : (1 : ℂ) ≠ 0)
-      simpa using h
-    have hfun : (E / id) =ᶠ[𝓝[≠] (1 : ℂ)]
-        (fun s : ℂ => (s - 1) * Λ s) := by
-      filter_upwards [eventually_ne_nhdsWithin (show (1 : ℂ) ≠ 0 by norm_num),
-        self_mem_nhdsWithin] with s hs0 hs1
-      simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hs1
-      change E s / s = (s - 1) * Λ s
-      rw [hΛdiv s hs0 hs1]
-      have h1 : s - 1 ≠ 0 := sub_ne_zero.mpr hs1
-      have h2 : s * (s - 1) ≠ 0 := mul_ne_zero hs0 h1
-      field_simp
-    exact Tendsto.congr' hfun (hlim.mono_left nhdsWithin_le_nhds)
-
-  have hres0 : Tendsto (fun s : ℂ => s * Λ s) (𝓝[≠] (0 : ℂ)) (𝓝 (-E 1)) := by
-    have hlim : Tendsto (E / (fun s : ℂ => s - 1)) (𝓝 (0 : ℂ)) (𝓝 (-E 1)) := by
-      have hf : Tendsto E (𝓝 (0 : ℂ)) (𝓝 (E 0)) :=
-        hE_entire.continuous.continuousAt.tendsto
-      have hg : Tendsto (fun s : ℂ => s - 1) (𝓝 (0 : ℂ)) (𝓝 ((0 : ℂ) - 1)) :=
-        tendsto_id.sub (tendsto_const_nhds (x := (1 : ℂ)))
-      have h := hf.div hg (by norm_num : (0 : ℂ) - 1 ≠ 0)
-      have h0 : E 0 / ((0 : ℂ) - 1) = -E 1 := by
-        rw [show E 0 = E 1 from by simpa using hEfun 0]
-        ring
-      rw [h0] at h
-      exact h
-    have hfun : (E / (fun s : ℂ => s - 1)) =ᶠ[𝓝[≠] (0 : ℂ)]
-        (fun s : ℂ => s * Λ s) := by
-      filter_upwards [self_mem_nhdsWithin,
-        eventually_ne_nhdsWithin (show (0 : ℂ) ≠ 1 by norm_num)] with s hs0 hs1
-      simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hs0
-      change E s / (s - 1) = s * Λ s
-      rw [hΛdiv s hs0 hs1]
-      have h1 : s - 1 ≠ 0 := sub_ne_zero.mpr hs1
-      have h2 : s * (s - 1) ≠ 0 := mul_ne_zero hs0 h1
-      field_simp
-    exact Tendsto.congr' hfun (hlim.mono_left nhdsWithin_le_nhds)
-
   have hbase : (((|NumberField.discr F| : ℤ) : ℂ) *
       (Ideal.absNorm (⊤ : Ideal (𝓞 F)) : ℂ)) = (principalDiscriminant F : ℂ) := by
     rw [Ideal.absNorm_top, Nat.cast_one, mul_one, principalDiscriminant,
@@ -214,19 +171,17 @@ theorem exists_principalHeckeData
         rw [principalComplexPlaces, ← hg I]
     rw [← hseries'.tsum_eq, tsum_mul_left, hbase]
   exact ⟨(show PrincipalHeckeData F from
-    { Lambda := Λ, E := E, Lambda_differentiableOn := hΛ_holo,
-      E_differentiable := hE_entire, Lambda_hasSum := fun s hs => hseries s hs,
+    { Lambda := Λ, E := E,
+      E_differentiable := hE_entire,
       Lambda_functional_equation := hFE, E_eq_mul_Lambda := hE_eq, E_growth := hgrowth,
-      E_functional_equation := hEfun, Lambda_eq_div := hΛdiv, residue_one := hres1,
-      residue_zero := hres0, Lambda_dirichlet := hdir })⟩
+      E_functional_equation := hEfun, Lambda_eq_div := hΛdiv,
+       Lambda_dirichlet := hdir})⟩
 
-def principalHeckeData
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) :
+def principalHeckeData :
     PrincipalHeckeData F :=
   Classical.choice (exists_principalHeckeData F hF)
 
-def principalPoleCoefficient
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) : ℂ :=
+def principalPoleCoefficient : ℂ :=
   (principalHeckeData F hF).E 1
 
 end DedekindZetaZeroFree.LargeSieve

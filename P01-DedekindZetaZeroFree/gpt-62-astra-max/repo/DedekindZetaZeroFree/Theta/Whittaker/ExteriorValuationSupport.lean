@@ -11,17 +11,17 @@ set_option maxHeartbeats 4000000
 namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming order_finite_support → order_finite_support
+open _root_.DedekindZetaZeroFree.ThetaBranch (order_finite_support)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 lemma order_eq_zero_iff (p : KPFinitePlace F) (a : Fˣ) :
     ThetaBranch.order p a = 0 ↔ p.valuation F (a : F) = 1 := by
   have hn : p.valuation F (a : F) ≠ 0 := (Valuation.ne_zero_iff _).mpr a.ne_zero
   constructor
   · intro h
-    have hh : WithZero.log (p.valuation F (a : F)) = 0 := neg_eq_zero.mp h
+    have hh := neg_eq_zero.mp h
     rw [← WithZero.exp_log hn, hh, WithZero.exp_zero]
   · intro h
     simp [ThetaBranch.order, h]
@@ -73,18 +73,15 @@ lemma fourier_rational_finprod {N : TraceHaarTransport R} (C : JointUpperVanishi
     simpa only [P, Set.Finite.mem_toFinset, Set.mem_setOf_eq, not_not] using h
   rw [OrbitFrequencies.rationalValue_eq_fourier]
   rw [fourier_rational_diagonal R C v a y P.toList P.nodup_toList
-    (by simpa only [Finset.mem_toList] using hp)]
+    (by simpa using hp)]
   rw [forwardExterior_eq_prod R C a P hp]
   congr 2
   exact Finset.prod_map_toList _ _
 
 lemma order_negative_of_valuation_gt_one (p : KPFinitePlace F) (a : Fˣ)
     (ha : 1 < p.valuation F (a : F)) : ThetaBranch.order p a < 0 := by
-  have hn : p.valuation F (a : F) ≠ 0 := (Valuation.ne_zero_iff _).mpr a.ne_zero
-  have he : WithZero.exp (0 : ℤ) < WithZero.exp (WithZero.log (p.valuation F (a : F))) := by
-    simpa only [WithZero.exp_zero, WithZero.exp_log hn] using ha
-  have hl : 0 < WithZero.log (p.valuation F (a : F)) := WithZero.exp_lt_exp.mp he
-  exact neg_neg_of_pos hl
+  exact neg_neg_of_pos (WithZero.exp_lt_exp.mp (by
+    simpa using ha))
 
 lemma forwardExterior_nonintegral {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (a : Fˣ) (p : ThetaBranch.ExteriorPrime R.A) (ha : 1 < p.val.valuation F (a : F)) :

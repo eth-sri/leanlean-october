@@ -11,9 +11,9 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.LocalSignedChamber
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann KPLocalExceptionalConstruction
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+    (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
 set_option backward.isDefEq.respectTransparency false
-open _root_.DedekindZetaZeroFree.KPStandardLocalRootLifts renaming B_one_left → B_one_left
+open _root_.DedekindZetaZeroFree.KPStandardLocalRootLifts (B_one_left)
 
 theorem signedW_eq_diagonal_unsigned :
     KPStandardLocalRootLifts.signedW F ζ hζ (Sum.inr q) =
@@ -51,8 +51,9 @@ private theorem localAbs_neg_one : localAbs (LocalField F q) (-1) = 1 := by
   simp only [neg_mul_neg, one_mul, localAbs_one] at hm
   nlinarith
 
-theorem cube_diagonal_trivial (S : CanonicalFiniteInducingData F ζ hζ q)
-    (P : Polarization S.heisenberg) (s : ℂ) (v : InducedModule P) :
+variable (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg) (s : ℂ)
+
+theorem cube_diagonal_trivial (v : InducedModule P) :
     inducingAction S.borel P .plus s (S.borel.torus (S.borel.cubeLift (-1))) v = v := by
   change (inducingScalar S.borel s (S.borel.torus (S.borel.cubeLift (-1)))) •
     (borelAction S.borel P .plus (S.borel.torus (S.borel.cubeLift (-1)))) v = v
@@ -64,13 +65,11 @@ theorem cube_diagonal_trivial (S : CanonicalFiniteInducingData F ζ hζ q)
   simp only [inducingScalar, deltaHalf, S.borel.retract_torus, S.borel.cube_coordinate]
   rw [hn, hn, one_mul, one_smul]
   simp only [borelAction, MonoidHom.comp_apply, S.borel.retract_torus]
-  change (tau P) ((S.borel.cubeLift (-1) : S.heisenberg.C) : actualTorus F ζ hζ q) v = v
   rw [tau_hasCentralCharacter S.heisenberg P]
   change (S.heisenberg.ω (S.borel.cubeLift (-1)) : ℂ) • v = v
   rw [S.borel.exceptional_cube, hn, one_smul]
 
-theorem section_unsigned_eq_signed (S : CanonicalFiniteInducingData F ζ hζ q)
-    (P : Polarization S.heisenberg) (s : ℂ) (f : sectionSpace S.borel P .plus s)
+theorem section_unsigned_eq_signed (f : sectionSpace S.borel P .plus s)
     (g : ActualCover F ζ hζ q) :
     f.val (KPPGLLocalCover.W F ζ hζ (Sum.inr q) * g) =
       f.val (S.borel.liftedW⁻¹ * g) := by

@@ -13,13 +13,13 @@ open KPRankOneShellContinuation KPRankOneForwardTestVector
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
 
 include hζ in
  theorem root : ∃ ξ : (valuation (LocalField F q)).integer,
     (ξ : LocalField F q) = algebraMap F (LocalField F q) (ζ ^ 4) ∧ IsPrimitiveRoot ξ 3 := by
-  have hp : IsPrimitiveRoot (algebraMap F (LocalField F q) (ζ ^ 4)) 3 :=
+  have hp :=
     (hζ.pow (by norm_num) (by norm_num : 12 = 4 * 3)).map_of_injective
       (FaithfulSMul.algebraMap_injective F (LocalField F q))
   have hv : valuation (LocalField F q) (algebraMap F (LocalField F q) (ζ ^ 4)) = 1 := by

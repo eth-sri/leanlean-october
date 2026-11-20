@@ -62,10 +62,6 @@ theorem diagonal_lift_scalar (π : (LocalField F q)ˣ) (a b : ℤ) :
         (Matrix.scalar (Fin 2) (x : LocalField F q)) 1 1 else
         (Matrix.scalar (Fin 2) (x : LocalField F q)) 1 0) = _
       simp [Matrix.scalar, Matrix.diagonal_apply]
-    have hd (x y : (LocalField F q)ˣ) : KubotaRankTwo.det (LocalField F q)
-        (KubotaRankTwo.d (LocalField F q) x y) = x*y := by
-      apply Units.ext
-      simp [KubotaRankTwo.det]
     simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, hm, hX, hXs,
       KubotaRankTwo.det, Matrix.GeneralLinearGroup.det_scalar, Fintype.card_fin]
     rw [show (π ^ b / π ^ b : (LocalField F q)ˣ) = 1 by simp,

@@ -25,13 +25,6 @@ namespace Matrix
 
 variable {n α : Type*} [Fintype n] [DecidableEq n] [CommRing α] [StarRing α]
 
-@[simp]
-theorem diagonal_mem_unitaryGroup_iff {d : n → α} :
-    diagonal d ∈ unitaryGroup n α ↔ ∀ i, d i ∈ unitary α := by
-  simp only [mem_unitaryGroup_iff, star_eq_conjTranspose, diagonal_conjTranspose,
-    diagonal_mul_diagonal, ← diagonal_one, diagonal_eq_diagonal_iff, Pi.star_apply,
-    Unitary.mem_iff_self_mul_star]
-
 end Matrix
 
 namespace DedekindZetaZeroFree.TauCeti
@@ -40,7 +33,7 @@ variable {n : Type*} [Fintype n] [DecidableEq n]
 
 theorem _root_.Circle.coe_mem_unitary (z : Circle) : (z : ℂ) ∈ unitary ℂ :=
   Unitary.mem_iff_star_mul_self.mpr <| by
-    rw [Complex.star_def, ← Complex.normSq_eq_conj_mul_self, Circle.normSq_coe, Complex.ofReal_one]
+    simp [Complex.star_def, ← Complex.normSq_eq_conj_mul_self]
 
 theorem _root_.Matrix.exists_circle_smul_mem_specialUnitaryGroup (U : Matrix.unitaryGroup n ℂ) :
     ∃ c : Circle, ((c : ℂ) • (U : Matrix n n ℂ)) ∈ Matrix.specialUnitaryGroup n ℂ := by
@@ -50,11 +43,8 @@ theorem _root_.Matrix.exists_circle_smul_mem_specialUnitaryGroup (U : Matrix.uni
   rcases isEmpty_or_nonempty n with hn | hn
   ·
     exact ⟨1, Matrix.mem_specialUnitaryGroup_iff.mpr ⟨hunit 1, Matrix.det_isEmpty⟩⟩
-  · have hcard : (Fintype.card n : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr Fintype.card_ne_zero
-    have hnorm : ‖(U : Matrix n n ℂ).det‖ = 1 :=
-      CStarRing.norm_of_mem_unitary (Matrix.det_of_mem_unitary U.2)
-    obtain ⟨θ, hθ⟩ := Circle.exp_surjective
-      (⟨(U : Matrix n n ℂ).det, mem_sphere_zero_iff_norm.mpr hnorm⟩ : Circle)
+  · obtain ⟨θ, hθ⟩ := Circle.exp_surjective
+      (⟨(U : Matrix n n ℂ).det, mem_sphere_zero_iff_norm.mpr (CStarRing.norm_of_mem_unitary (Matrix.det_of_mem_unitary U.2))⟩ : Circle)
     have hdetU : (U : Matrix n n ℂ).det = Complex.exp ((θ : ℂ) * Complex.I) := by
       have := congrArg (fun z : Circle => (z : ℂ)) hθ
       rw [Circle.coe_exp] at this

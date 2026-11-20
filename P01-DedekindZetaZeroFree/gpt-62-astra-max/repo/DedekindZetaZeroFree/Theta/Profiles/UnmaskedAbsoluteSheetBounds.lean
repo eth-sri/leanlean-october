@@ -9,8 +9,8 @@ namespace DedekindZetaZeroFree.OrbitFrequencies
 open MomentSources NumberField MeasureTheory ThetaProfileHaarSheets
 open scoped NumberField Classical Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem sheet_class_norm {Q : AdmissibleFlatSources R} (T : Realization R Q)
     (P : Packet R Q) (v : R.A.UnitQuotient) (y : R.A.G) :

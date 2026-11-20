@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.LargeSieve.Bilinear.Remainders.PairEnergyAndUniformTailBounds
 
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.FourierRectangles.InclusiveDivisorBucketEnergy
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.LargeDivisors.RadicalCoprimeColumnExpansion
@@ -13,7 +14,7 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.FiniteFourierRectangles.FourierExpansion
 open ExplicitTerms
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 private lemma bucket_partition_sum (C : Context Q)
     (hN : 1 ≤ C.N) (hK : 1 ≤ C.K) (hnN : norm C.d ≤ 2 * C.N)
@@ -26,7 +27,7 @@ private lemma bucket_partition_sum (C : Context Q)
   let blk := fun j => (divisorBucket F (2 * C.N / norm C.d) j).filter (fun f => f ∣ u)
   have hu0 : u ≠ ⊥ := ((Sieve.mem_idealAdmissibleFinset _ _ _ _).mp
     (Finset.mem_filter.mp hu).1).1.ne_zero
-  have hex := (inclusive_divisor_endpoint_energy C hN hK hnN).2.1 u hu
+  have hex := fun f (hf : f ∈ idealDivisors u) => exists_unique_divisor_bucket C hu hf
   have heq : J.biUnion blk = idealDivisors u := by
     ext f
     constructor
@@ -105,19 +106,12 @@ theorem sum_divisors_rectangles (C : Context Q)
       exact hn (hH _ hw)
     obtain ⟨hb1, hf10, hl1, hh1⟩ := Finset.mem_filter.mp hf₁
     obtain ⟨hb2, hf20, hl2, hh2⟩ := Finset.mem_filter.mp hf₂
-    have hu1 : ExplicitTerms.norm f₁ ≤ 2 * C.N / norm C.d :=
-      mem_boundedNormIdeals.mp hb1
-    have hu2 : ExplicitTerms.norm f₂ ≤ 2 * C.N / norm C.d :=
-      mem_boundedNormIdeals.mp hb2
-    have hp1 : 0 ≤ divisorScale ij.1 := by unfold divisorScale; positivity
-    have hp2 : 0 ≤ divisorScale ij.2 := by unfold divisorScale; positivity
-    have hn1 : 0 ≤ ExplicitTerms.norm f₁ := Nat.cast_nonneg _
     have hprod : divisorScale ij.1 * divisorScale ij.2 ≤ ExplicitTerms.norm (f₁*f₂) := by
       rw [ExplicitTerms.norm, map_mul, Nat.cast_mul]
-      exact mul_le_mul hl1 hl2 hp2 hn1
+      exact mul_le_mul hl1 hl2 (by unfold divisorScale; positivity) (Nat.cast_nonneg _)
     apply hnot
     apply Finset.mem_filter.mpr
-    refine ⟨hij, le_trans hl1 hu1, le_trans hl2 hu2, ?_, ⟨f₁, hf₁⟩, ⟨f₂, hf₂⟩⟩
+    refine ⟨hij, le_trans hl1 (mem_boundedNormIdeals.mp hb1), le_trans hl2 (mem_boundedNormIdeals.mp hb2), ?_, ⟨f₁, hf₁⟩, ⟨f₂, hf₂⟩⟩
     exact hprod.trans (hwindow.2.trans (hThreshold e he))
   · rfl
 
@@ -135,7 +129,7 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.FiniteFourierRectangles.FourierExpansion
 open ExplicitTerms
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 def rowScale (C : Context Q) (e a f₁ f₂ : Ideal (𝓞 F)) : ℝ :=
   (C.N / norm C.d) * Real.sqrt (norm e) /
@@ -185,7 +179,7 @@ theorem normalizedKernel_eq (K : ℝ → ℂ) (χ : ℝ → ℝ)
       Real.sqrt E * Real.sqrt (u * v) / Real.sqrt (M * A) := by
     rw [show E * (u * v) / M / A = (E * (u * v)) / (M * A) by ring,
       Real.sqrt_div (by positivity), Real.sqrt_mul hE.le]
-  have hs : Real.sqrt (M * A) ≠ 0 := (Real.sqrt_pos.mpr (mul_pos hM hA)).ne'
+  have hs := (Real.sqrt_pos.mpr (mul_pos hM hA)).ne'
   have hscale : (X * Real.sqrt E / (f * Real.sqrt (M * A))) * (Real.sqrt (u * v) / X) =
       Real.sqrt (E * (u * v) / M / A) / f := by
     rw [ht]
@@ -203,10 +197,8 @@ theorem coefficient_prefactor (C : Context Q) (e : Ideal (𝓞 F))
     C.coefficient p * C.prefactor e p hp =
       (UniqueFactorizationMonoid.moebius e : ℂ) * (C.M / norm e : ℂ) *
         (weightedColumn C p.1 * star (weightedColumn C p.2)) * C.primitive p hp e := by
-  have hu := reflectedRowIdealNorm_pos_of_ne_bot hp.hu0
-  have hv := reflectedRowIdealNorm_pos_of_ne_bot hp.hv0
   have hs : Real.sqrt (norm (p.1 * p.2)) = Real.sqrt (norm p.1) * Real.sqrt (norm p.2) := by
-    rw [norm_mul, Real.sqrt_mul hu.le]
+    rw [norm_mul, Real.sqrt_mul (reflectedRowIdealNorm_pos_of_ne_bot hp.hu0).le]
   simp only [Context.coefficient, Context.prefactor, weightedColumn, star_div₀,
     star_mul, star_inv₀, RCLike.star_def, Complex.conj_ofReal, hs, Complex.ofReal_mul, Complex.ofReal_div]
   ring
@@ -226,7 +218,7 @@ theorem row_fourier_identity (C : Context Q) (χ : ℝ → ℝ)
       (weightedColumn C p.1 * star (weightedColumn C p.2) *
         C.primitive p hp e * C.primitive p hp a) *
       ∫ q : ℝ × ℝ, frequencyPhase C p q.1 q.2 * rowCoefficient C χ e a f₁ f₂ b q.1 q.2 := by
-  have hX : 0 < C.N / norm C.d := div_pos hN (reflectedRowIdealNorm_pos_of_ne_bot C.hd0)
+  have hX := div_pos hN (reflectedRowIdealNorm_pos_of_ne_bot C.hd0)
   have hE := reflectedRowIdealNorm_pos_of_ne_bot he
   have hA := reflectedRowIdealNorm_pos_of_ne_bot ha
   have hf : 0 < norm (f₁ * f₂) := by rw [norm_mul]; exact mul_pos (reflectedRowIdealNorm_pos_of_ne_bot hf₁) (reflectedRowIdealNorm_pos_of_ne_bot hf₂)
@@ -273,18 +265,17 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.FiniteFourierRectangles.FourierExpansion
 open ExplicitTerms
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
-private lemma fourier_rectangles_nonzero_ideal_norm_pos {a : Ideal (𝓞 F)} (ha : a ≠ ⊥) : 0 < norm a := by
-  unfold ExplicitTerms.norm
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr ha)
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+private alias fourier_rectangles_nonzero_ideal_norm_pos := reflectedRowIdealNorm_pos_of_ne_bot
+local notation "IntegerIdeal" => Ideal (𝓞 F)
+
 private lemma row_nonzero (C : Context Q) (B : ℝ) (unit : Bool)
-    (a : Ideal (𝓞 F)) (ha : a ∈ C.reflectedRows B unit) : a ≠ ⊥ := by
+    (a : IntegerIdeal) (ha : a ∈ C.reflectedRows B unit) : a ≠ ⊥ := by
   obtain ⟨tr, ht, rfl⟩ := Finset.mem_image.mp ha
   exact (Finset.mem_filter.mp ht).2.2.2
-private lemma column_range (C : Context Q) (hN : 1 ≤ C.N) (u : Ideal (𝓞 F)) (hu : u ∈ C.columns) :
+private lemma column_range (C : Context Q) (hN : 1 ≤ C.N) (u : IntegerIdeal) (hu : u ∈ C.columns) :
     C.N / norm C.d < norm u ∧ norm u ≤ 2 * (C.N / norm C.d) := by
-  have hs := (Finset.mem_filter.mp hu).2.1
-  have h := (Sieve.mem_paperShell F c C.N (C.d*u)).mp hs
+  have h := (Sieve.mem_paperShell F c C.N (C.d*u)).mp ((Finset.mem_filter.mp hu).2.1)
   have he : norm (C.d*u) = norm C.d * norm u := by simp [ExplicitTerms.norm, map_mul]
   have hn : C.N < norm (C.d*u) ∧ norm (C.d*u) ≤ 2*C.N := h.2.2
   rw [he] at hn
@@ -294,7 +285,7 @@ private lemma column_range (C : Context Q) (hN : 1 ≤ C.N) (u : Ideal (𝓞 F))
     exact (le_div_iff₀ (fourier_rectangles_nonzero_ideal_norm_pos C.hd0)).mpr (by simpa [mul_comm] using hn.2)
 
 private lemma pairSum_sum {α : Type*} (C : Context Q) (s : Finset α)
-    (f : α → (p : Ideal (𝓞 F) × Ideal (𝓞 F)) → C.ValidPair p → ℂ) :
+    (f : α → (p : IntegerIdeal × IntegerIdeal) → C.ValidPair p → ℂ) :
     C.pairSum (fun p hp => ∑ i ∈ s, f i p hp) = ∑ i ∈ s, C.pairSum (f i) := by
   unfold Context.pairSum
   conv_rhs => rw [Finset.sum_comm]
@@ -302,7 +293,7 @@ private lemma pairSum_sum {α : Type*} (C : Context Q) (s : Finset α)
   intro p hp
   split_ifs <;> simp
 private lemma pairSum_mul (C : Context Q) (z : ℂ)
-    (f : (p : Ideal (𝓞 F) × Ideal (𝓞 F)) → C.ValidPair p → ℂ) :
+    (f : (p : IntegerIdeal × IntegerIdeal) → C.ValidPair p → ℂ) :
     C.pairSum (fun p hp => z * f p hp) = z * C.pairSum f := by
   unfold Context.pairSum
   rw [Finset.mul_sum]
@@ -310,7 +301,7 @@ private lemma pairSum_mul (C : Context Q) (z : ℂ)
   intro p hp
   split_ifs <;> simp
 private lemma pairSum_congr (C : Context Q)
-    (f g : (p : Ideal (𝓞 F) × Ideal (𝓞 F)) → C.ValidPair p → ℂ)
+    (f g : (p : IntegerIdeal × IntegerIdeal) → C.ValidPair p → ℂ)
     (h : ∀ p ∈ C.pairs, ∀ hp, f p hp = g p hp) : C.pairSum f = C.pairSum g := by
   unfold Context.pairSum
   apply Finset.sum_congr rfl
@@ -319,10 +310,10 @@ private lemma pairSum_congr (C : Context Q)
   · exact h p hp hv
   · rfl
 
-private lemma phase_norm (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (t s : ℝ) :
+private lemma phase_norm (C : Context Q) (p : IntegerIdeal × IntegerIdeal) (t s : ℝ) :
     ‖frequencyPhase C p t s‖ = 1 := by
   simp [frequencyPhase, Complex.norm_exp]
-private lemma phase_integrable (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F))
+private lemma phase_integrable (C : Context Q) (p : IntegerIdeal × IntegerIdeal)
     (A : ℝ × ℝ → ℂ) (hA : Integrable A) (z : ℂ) :
     Integrable (fun q : ℝ × ℝ => z * (frequencyPhase C p q.1 q.2 * A q)) := by
   apply Integrable.const_mul
@@ -333,7 +324,7 @@ private lemma phase_integrable (C : Context Q) (p : Ideal (𝓞 F) × Ideal (�
     simp only [_root_.norm_mul, phase_norm, one_mul]
     exact le_refl _
 
-private lemma pair_integral (C : Context Q) (e a f₁ f₂ : Ideal (𝓞 F))
+private lemma pair_integral (C : Context Q) (e a f₁ f₂ : IntegerIdeal)
     (A : ℝ × ℝ → ℂ) (hA : Integrable A) :
     C.pairSum (fun p hp => if f₁ ∣ p.1 ∧ f₂ ∣ p.2 then
       (weightedColumn C p.1 * star (weightedColumn C p.2) * C.primitive p hp e * C.primitive p hp a) *
@@ -355,8 +346,8 @@ private lemma pair_integral (C : Context Q) (e a f₁ f₂ : Ideal (𝓞 F))
 
 private lemma middle_rectangles (C : Context Q) (hN : 1 ≤ C.N) (hK : 1 ≤ C.K)
     (hnN : norm C.d ≤ 2*C.N) (B Cq : ℝ) (ht : Threshold C B Cq)
-    (e : Ideal (𝓞 F)) (he : e ∈ C.mobiusDivisors)
-    (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : p ∈ C.pairs) (T : ℝ) :
+    (e : IntegerIdeal) (he : e ∈ C.mobiusDivisors)
+    (p : IntegerIdeal × IntegerIdeal) (hp : p ∈ C.pairs) (T : ℝ) :
     Context.middle C.reflectedKernel (p.1*p.2) T (C.Y1 B e) (C.Z1 B e) C.L1 =
     ∑ ij ∈ rectangles F B C.M C.N (norm C.d) (Real.rpow (C.M*C.N) C.δ) Cq,
       ∑ f₁ ∈ divisorBucket F (2*C.N/norm C.d) ij.1,
@@ -375,7 +366,7 @@ private lemma middle_rectangles (C : Context Q) (hN : 1 ≤ C.N) (hK : 1 ≤ C.K
 private lemma cell_identity (C : Context Q) (χ : ℝ → ℝ)
     (hχ : ∀ x ∈ Set.Icc 0 (Real.log 2), χ x = 1) (hFourier : FourierInversion C χ)
     (hM : 1 ≤ C.M) (hN : 1 ≤ C.N)
-    (e a f₁ f₂ : Ideal (𝓞 F)) (he : e ≠ ⊥) (ha : a ≠ ⊥)
+    (e a f₁ f₂ : IntegerIdeal) (he : e ≠ ⊥) (ha : a ≠ ⊥)
     (hf₁ : f₁ ≠ ⊥) (hf₂ : f₂ ≠ ⊥) (B : ℝ) :
     C.pairSum (fun p hp => C.coefficient p * C.prefactor e p hp * C.primitive p hp a *
       (if f₁ ∣ p.1 ∧ f₂ ∣ p.2 then
@@ -416,9 +407,8 @@ private lemma cell_identity (C : Context Q) (χ : ℝ → ℝ)
           obtain ⟨hu,hv⟩ := Finset.mem_product.mp (Finset.mem_filter.mp hpv).1
           obtain ⟨hu1,hu2⟩ := column_range C hN _ hu
           obtain ⟨hv1,hv2⟩ := column_range C hN _ hv
-          have h := row_fourier_identity C χ hχ hFourier (by linarith) (by linarith)
-            e a f₁ f₂ b he ha hf₁ hf₂ (Finset.mem_filter.mp hb).2 p hp hu1 hu2 hv1 hv2
-          linear_combination (UniqueFactorizationMonoid.moebius (f₁*f₂) : ℂ) * h
+          linear_combination (UniqueFactorizationMonoid.moebius (f₁*f₂) : ℂ) * (row_fourier_identity C χ hχ hFourier (by linarith) (by linarith)
+            e a f₁ f₂ b he ha hf₁ hf₂ (Finset.mem_filter.mp hb).2 p hp hu1 hu2 hv1 hv2)
         · simp [hd])
     rw [hrewrite, pairSum_mul, pairSum_mul, pairSum_sum]
     congr 2
@@ -443,7 +433,7 @@ theorem maskedE3_eq_fourier_rectangles (C : Context Q) (χ : ℝ → ℝ)
     (hχ : ∀ x ∈ Set.Icc 0 (Real.log 2), χ x = 1) (hFourier : FourierInversion C χ)
     (hM : 1 ≤ C.M) (hN : 1 ≤ C.N) (hK : 1 ≤ C.K)
     (hnN : norm C.d ≤ 2 * C.N) (B Cq : ℝ) (unit : Bool)
-    (hThreshold : Threshold C B Cq) (ρ : Ideal (𝓞 F) → ℂ) :
+    (hThreshold : Threshold C B Cq) (ρ : IntegerIdeal → ℂ) :
     maskedE3 C B unit ρ =
       ∑ e ∈ C.mobiusDivisors, (UniqueFactorizationMonoid.moebius e : ℂ) * (C.M / norm e : ℂ) *
         ∑ ij ∈ rectangles F B C.M C.N (norm C.d) (Real.rpow (C.M * C.N) C.δ) Cq,
@@ -502,9 +492,6 @@ theorem maskedE3_eq_fourier_rectangles (C : Context Q) (χ : ℝ → ℝ)
   apply Finset.sum_congr rfl
   intro f₂ hf₂
   simp_rw [pairSum_mul]
-  have he0 := ne_bot_of_mem_idealDivisors he
-  have hf₁0 := (Finset.mem_filter.mp hf₁).2.1
-  have hf₂0 := (Finset.mem_filter.mp hf₂).2.1
   calc
     _ = ∑ a ∈ C.reflectedRows B unit, ρ a *
       ((UniqueFactorizationMonoid.moebius e : ℂ) * (C.M / norm e : ℂ) *
@@ -515,8 +502,8 @@ theorem maskedE3_eq_fourier_rectangles (C : Context Q) (χ : ℝ → ℝ)
         else 0)) := by
       apply Finset.sum_congr rfl
       intro a ha
-      rw [cell_identity C χ hχ hFourier hM hN e a f₁ f₂ he0
-        (row_nonzero C B unit a ha) hf₁0 hf₂0 B]
+      rw [cell_identity C χ hχ hFourier hM hN e a f₁ f₂ (ne_bot_of_mem_idealDivisors he)
+        (row_nonzero C B unit a ha) ((Finset.mem_filter.mp hf₁).2.1) ((Finset.mem_filter.mp hf₂).2.1) B]
     _ = _ := by
       by_cases hw : C.Y1 B e < norm (f₁*f₂) ∧ norm (f₁*f₂) ≤ C.Z1 B e
       · simp only [if_pos hw, Finset.mul_sum]
@@ -541,7 +528,7 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.FiniteFourierRectangles
 open ExplicitTerms
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 private lemma row_scale_bounds (Q M B e f a θ q : ℝ) (hQ : 0 < Q) (hM : 0 < M) (hB : 0 < B)
     (he : 0 < e) (hf : 0 < f) (hθ : 1 ≤ θ) (hq : 1 ≤ q)
@@ -552,30 +539,27 @@ private lemma row_scale_bounds (Q M B e f a θ q : ℝ) (hQ : 0 < Q) (hM : 0 < M
     Q*Real.sqrt e/(f*Real.sqrt (M*a)) ≤ Real.sqrt 2*(q*θ) := by
   have hθ0 : 0 < θ := by linarith
   have hq0 : 0 < q := by linarith
-  have ha0 : 0 < a := lt_of_lt_of_le hB ha
-  have hse : 0 < Real.sqrt e := Real.sqrt_pos.2 he
+  have ha0 := lt_of_lt_of_le hB ha
+  have hse := Real.sqrt_pos.2 he
   have hsMa : 0 < Real.sqrt (M*a) := by positivity
-  have hsBM : 0 < Real.sqrt (B*M) := by positivity
   have hs2 : 0 < Real.sqrt 2 := by positivity
   have hs2BM : Real.sqrt (2*B*M) = Real.sqrt 2 * Real.sqrt (B*M) := by
     rw [show 2*B*M=2*(B*M) by ring, Real.sqrt_mul (by norm_num : (0:ℝ)≤2)]
   have hsMa_le : Real.sqrt (M*a) ≤ Real.sqrt 2*q*Real.sqrt (B*M) := by
-    have hh : M*a ≤ (Real.sqrt 2*q*Real.sqrt (B*M))^2 := by
-      have hsq : (Real.sqrt 2*q*Real.sqrt (B*M))^2 = 2*q^2*(B*M) := by
-        rw [mul_pow, mul_pow, Real.sq_sqrt (show 0≤B*M by positivity),
-          Real.sq_sqrt (show (0:ℝ)≤2 by norm_num)]
-      rw [hsq]
-      nlinarith [mul_nonneg (show 0≤q*(q-1) by positivity) (show 0≤B*M by positivity)]
-    exact (Real.sqrt_le_left (by positivity)).2 hh
+    refine (Real.sqrt_le_left (by positivity)).2 ?_
+    have hsq : (Real.sqrt 2*q*Real.sqrt (B*M))^2 = 2*q^2*(B*M) := by
+      rw [mul_pow, mul_pow, Real.sq_sqrt (show 0≤B*M by positivity),
+        Real.sq_sqrt (show (0:ℝ)≤2 by norm_num)]
+    rw [hsq]
+    nlinarith [mul_nonneg (show 0≤q*(q-1) by positivity) (show 0≤B*M by positivity)]
   have hsBM_le : Real.sqrt (B*M) ≤ Real.sqrt (M*a) := by
     apply Real.sqrt_le_sqrt; nlinarith
-  have hfl := (le_div_iff₀ hsBM).mp hZ
+  have hfl := (le_div_iff₀ (by positivity)).mp hZ
   have hfu := (div_lt_iff₀ (mul_pos (by positivity) hθ0)).mp hY
   constructor
   · apply (le_div_iff₀ (mul_pos hf hsMa)).2
     rw [div_mul_eq_mul_div, one_mul]
     apply (div_le_iff₀ (by positivity : 0<Real.sqrt 2*(q*θ))).2
-    have h1 := mul_le_mul_of_nonneg_left hsMa_le hf.le
     have h2 := mul_le_mul_of_nonneg_left hfl (mul_pos hs2 hq0).le
     nlinarith
   · apply (div_le_iff₀ (mul_pos hf hsMa)).2
@@ -628,13 +612,13 @@ private lemma all_positive_rows_inversion {F : Type} [Field F] [NumberField F]
   have hs : 1 ≤ Real.sqrt 2 := by simpa using Real.sqrt_le_sqrt (show (1:ℝ)≤2 by norm_num)
   have hlow : 1/(Real.sqrt 2*θ) ≤ h := by
     apply (div_le_iff₀ (by positivity : 0<Real.sqrt 2*θ)).2
-    have hhθ : h⁻¹ ≤ θ := (le_max_right h h⁻¹).trans (le_max_right 1 _)
+    have hhθ := (le_max_right h h⁻¹).trans (le_max_right 1 _)
     have hhprod : 1 ≤ θ*h := by
       have := mul_le_mul_of_nonneg_right hhθ hh.le
       simpa only [inv_mul_cancel₀ hh.ne'] using this
-    have ht : θ ≤ Real.sqrt 2*θ := le_mul_of_one_le_left hθ0.le hs
+    have ht := le_mul_of_one_le_left hθ0.le hs
     nlinarith [mul_le_mul_of_nonneg_right ht hh.le]
-  have hhigh : h ≤ Real.sqrt 2*θ :=
+  have hhigh :=
     ((le_max_left h h⁻¹).trans (le_max_right 1 _)).trans (le_mul_of_one_le_left hθ0.le hs)
   exact ⟨(henv θ b h hθ hb hlow hhigh).2.2.1, (henv θ b h hθ hb hlow hhigh).2.2.2.1⟩
 
@@ -643,8 +627,7 @@ private lemma reflected_row_bounds {F : Type} [Field F] [NumberField F]
     (C : Context Q) (B : ℝ) (unit : Bool) (hB : 1 ≤ B) (hunit : unit=true→B=1)
     {a : Ideal (𝓞 F)} (ha : a ∈ C.reflectedRows B unit) :
     B ≤ norm a ∧ norm a ≤ ExplicitAssembly.LocalTailGeometry.supportedNormBound c*(2*B) := by
-  have hupp := (ExplicitAssembly.LocalTailGeometry.reflected_row_norm C B unit hB ha).2
-  refine ⟨?_, hupp⟩
+  refine ⟨?_, ((ExplicitAssembly.LocalTailGeometry.reflected_row_norm C B unit hB ha).2)⟩
   obtain ⟨⟨t,r⟩,htr,rfl⟩ := Finset.mem_image.mp ha
   obtain ⟨htr,hmask⟩ := Finset.mem_filter.mp htr
   obtain ⟨ht,hr⟩ := Finset.mem_product.mp htr
@@ -660,9 +643,10 @@ private lemma reflected_row_bounds {F : Type} [Field F] [NumberField F]
   exact hrB.trans (le_mul_of_one_le_left (by unfold ExplicitTerms.norm; positivity) ht1)
 
 private lemma frequencyWeight_integrable : Integrable frequencyWeight := by
-  have hh := integrable_inv_one_add_sq.mul_prod integrable_inv_one_add_sq
   rw [Measure.volume_eq_prod]
-  exact hh.congr (Filter.Eventually.of_forall (fun p => by simp [frequencyWeight, mul_inv_rev, mul_comm]))
+  exact (integrable_inv_one_add_sq.mul_prod integrable_inv_one_add_sq).congr (Filter.Eventually.of_forall (fun p => by simp [frequencyWeight, mul_inv_rev, mul_comm]))
+
+alias ReflectedRowInversionAndExpansion.frequencyWeight_integrable := frequencyWeight_integrable
 private lemma frequencyCell_continuous (C : Context Q) (e a f₁ f₂ : Ideal (𝓞 F)) :
     Continuous (fun p : ℝ × ℝ => frequencyCell C e a f₁ f₂ p.1 p.2) := by
   unfold frequencyCell Context.pairSum
@@ -676,9 +660,8 @@ private lemma frequencyCell_continuous (C : Context Q) (e a f₁ f₂ : Ideal (�
   · exact continuous_const
 private lemma frequencyCell_bound (C : Context Q) (e a f₁ f₂ : Ideal (𝓞 F)) :
     ∃ J : ℝ, 0 ≤ J ∧ ∀ p : ℝ × ℝ, ‖frequencyCell C e a f₁ f₂ p.1 p.2‖ ≤ J := by
-  let J := ∑ p ∈ C.pairs, if hp : C.ValidPair p then
-    ‖weightedColumn C p.1 * star (weightedColumn C p.2) * C.primitive p hp e * C.primitive p hp a‖ else 0
-  refine ⟨J, Finset.sum_nonneg (by intros; split_ifs <;> positivity), ?_⟩
+  refine ⟨(∑ p ∈ C.pairs, if hp : C.ValidPair p then
+    ‖weightedColumn C p.1 * star (weightedColumn C p.2) * C.primitive p hp e * C.primitive p hp a‖ else 0), Finset.sum_nonneg (by intros; split_ifs <;> positivity), ?_⟩
   intro x
   unfold frequencyCell Context.pairSum
   apply (norm_sum_le _ _).trans
@@ -724,12 +707,12 @@ private lemma uniform_row_envelope {F : Type} [Field F] [NumberField F]
     (by intro x hx; by_contra hn; exact hx (by simp [hW.zero_outside x hn]))
     (by norm_num) (by norm_num) logCutoff logCutoff_smooth logCutoff_one logCutoff_support
   let q := ExplicitAssembly.LocalTailGeometry.supportedNormBound c
-  have hq : 1 ≤ q := ExplicitAssembly.LocalTailGeometry.supportedNormBound_one_le c
+  have hq := ExplicitAssembly.LocalTailGeometry.supportedNormBound_one_le c
   refine ⟨A*q, by positivity, ?_⟩
   intro C hCW B unit hM hN hδ hB hunit e a f he hf ha hY hZ b hb t s
-  have hn : 0 < norm C.d := lt_of_lt_of_le zero_lt_one
+  have hn := lt_of_lt_of_le zero_lt_one
     (ExplicitAssembly.LocalTailGeometry.norm_one_le C.hd0)
-  have he0 : 0 < norm e := lt_of_lt_of_le zero_lt_one
+  have he0 := lt_of_lt_of_le zero_lt_one
     (ExplicitAssembly.LocalTailGeometry.norm_one_le he)
   have hf0 : 0 < norm f := lt_of_lt_of_le zero_lt_one
     (ExplicitAssembly.LocalTailGeometry.norm_one_le hf)
@@ -760,17 +743,12 @@ private lemma uniform_row_envelope {F : Type} [Field F] [NumberField F]
   convert hcoeff using 1 <;> ring
 
 private lemma moebius_le_one {F : Type} [Field F] [NumberField F] (a : Ideal (𝓞 F)) :
-    ‖(UniqueFactorizationMonoid.moebius a : ℂ)‖ ≤ 1 := by
-  rw [UniqueFactorizationMonoid.moebius]
-  split_ifs
-  · rw [Int.cast_pow, Int.cast_neg, Int.cast_one, norm_pow, norm_neg, norm_one, one_pow]
-  · simp
+    ‖(UniqueFactorizationMonoid.moebius a : ℂ)‖ ≤ 1 := by apply @DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.PairEnergyAndUniformTailBounds.mu_norm <;> assumption
 private lemma integral_product_bound (f g : ℝ × ℝ → ℂ) (J : ℝ) (hJ : 0 ≤ J)
     (hint : Integrable (fun p => frequencyWeight p * ‖f p‖))
     (hf : AEStronglyMeasurable f) (hg : AEStronglyMeasurable g)
     (hbound : ∀ p, ‖g p‖ ≤ J * frequencyWeight p) :
     ‖∫ p, f p * g p‖ ≤ J * ∫ p, frequencyWeight p * ‖f p‖ := by
-  have hw : ∀ p, 0 ≤ frequencyWeight p := fun p => by unfold frequencyWeight; positivity
   have hmul : Integrable (fun p => f p * g p) := by
     apply Integrable.mono' (hint.const_mul J)
     · exact hf.mul hg
@@ -779,7 +757,7 @@ private lemma integral_product_bound (f g : ℝ × ℝ → ℂ) (J : ℝ) (hJ : 
       have hh := mul_le_mul_of_nonneg_left (hbound p) (norm_nonneg (f p))
       nlinarith
   calc
-    ‖∫ p, f p*g p‖ ≤ ∫ p, ‖f p*g p‖ := norm_integral_le_integral_norm _
+    _ ≤ ∫ p, ‖f p*g p‖ := norm_integral_le_integral_norm _
     _ ≤ ∫ p, J*(frequencyWeight p*‖f p‖) := by
       apply integral_mono hmul.norm (hint.const_mul J)
       intro p

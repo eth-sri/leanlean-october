@@ -15,15 +15,14 @@ open KPLiteralRaw KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct
 open KPGlobalTorusPeriodizationInverse hiding productModel
 attribute [local instance] KPGlobalTorusPeriodizationInverse.modelTopology
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 private theorem deltaHalf_ne_zero (e : KPGlobalTorusFunctionData.E F ζ hζ) :
     KPGlobalTorusFunctionData.deltaHalf F ζ hζ e ≠ 0 := by
-  have hd : (0:ℝ) < ((KPGlobalTorusFunctionData.delta F ζ hζ e : ℝ≥0) : ℝ) := by
-    exact_mod_cast (pos_iff_ne_zero.mpr (Units.ne_zero _))
-  exact Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hd).ne'
+  refine Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr ?_).ne'
+  exact_mod_cast (pos_iff_ne_zero.mpr (Units.ne_zero _))
 
 theorem inducedRationalFiber_core (x : RestrictedTensorSimple.Core
     (Plus A P C) (plusReference A P C) (bad A P C)) (g : Raw A) :
@@ -62,12 +61,10 @@ theorem originalProductScalar_core (x : RestrictedTensorSimple.Core
   unfold originalProductScalar originalProductFiber
   rw [inducedRationalFiber_core]
   change (averaging F ζ hζ P ((untwistRational F ζ hζ).symm
-    (unitaryPeriodization F ζ hζ P (rawCoreFiber A P C g x)))).val.val 1 = _
-  change (averaging F ζ hζ P ((untwistRational F ζ hζ).symm
     ((untwistRational F ζ hζ) (periodization F ζ hζ P
       ((untwistProduct F ζ hζ P).symm (rawCoreFiber A P C g x)))))).val.val 1 = _
   rw [ContinuousLinearEquiv.symm_apply_apply,averaging_periodization,retwistProduct_formula]
-  simp only [map_one,Units.val_one,NNReal.coe_one,Complex.ofReal_one,one_mul]
+  simp
 
 theorem originalProductScalar_injective
     (f h : Functions F ζ hζ) (hf : KPLiteralRaw.Induced F ζ hζ 0 f)
@@ -95,8 +92,7 @@ theorem originalProductScalar_injective
   change periodization F ζ hζ P (averaging F ζ hζ P _) =
     periodization F ζ hζ P (averaging F ζ hζ P _) at hi
   rw [periodization_averaging,periodization_averaging] at hi
-  have hv := congrArg (fun v : ↥(KPGlobalResidualConstruction.smoothRationalFiber F ζ hζ) => v.val.val 1) hi
-  simpa only [inducedRationalFiber_one] using hv
+  simpa only [inducedRationalFiber_one] using (congrArg (fun v : ↥(KPGlobalResidualConstruction.smoothRationalFiber F ζ hζ) => v.val.val 1) hi)
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource
 
 end

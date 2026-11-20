@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -29,14 +26,16 @@ namespace KummerTheory
 
 variable (K : Type) [Field K]
 
+variable (n : ℕ+)
+
 /-- The largest admissible Kummer subgroup, corresponding to adjoining all
 `n`-th roots of elements of `Kˣ`. -/
-def maximalKummerSubgroup (n : ℕ+) : KummerSubgroup K n :=
+def maximalKummerSubgroup : KummerSubgroup K n :=
   ⟨⊤, le_top⟩
 
 /-- In the maximal Kummer subgroup, restricted ambient powers are the
 ordinary `n`-th-power subgroup of the top subgroup. -/
-theorem restrictedNthPowersSubgroup_maximal_eq (n : ℕ+) :
+theorem restrictedNthPowersSubgroup_maximal_eq :
     restrictedNthPowersSubgroup n (maximalKummerSubgroup K n) =
       (powMonoidHom (n : ℕ) : (⊤ : Subgroup Kˣ) →* (⊤ : Subgroup Kˣ)).range := by
   ext a
@@ -45,11 +44,11 @@ theorem restrictedNthPowersSubgroup_maximal_eq (n : ℕ+) :
     obtain ⟨b, hb⟩ :=
       (mem_restrictedNthPowersSubgroup_iff n
         (maximalKummerSubgroup K n)).1 ha
-    exact (MonoidHom.mem_range (G := (⊤ : Subgroup Kˣ))).2
+    exact (MonoidHom.mem_range).2
       ⟨⟨b, Subgroup.mem_top b⟩, Subtype.ext hb⟩
   · intro ha
     obtain ⟨b, hb⟩ :=
-      (MonoidHom.mem_range (G := (⊤ : Subgroup Kˣ))).1 ha
+      (MonoidHom.mem_range).1 ha
     exact
       (mem_restrictedNthPowersSubgroup_iff n
         (maximalKummerSubgroup K n)).2
@@ -57,7 +56,7 @@ theorem restrictedNthPowersSubgroup_maximal_eq (n : ℕ+) :
 
 /-- The radical quotient for the maximal Kummer subgroup is canonically the
 power-class group `Kˣ / Kˣⁿ`. -/
-noncomputable def maximalRestrictedRadicalQuotientEquiv (n : ℕ+) :
+noncomputable def maximalRestrictedRadicalQuotientEquiv :
     Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range ≃*
       RestrictedRadicalQuotient n (maximalKummerSubgroup K n) :=
   ((LocalFieldTheory.nthPowerQuotientEquivOfMulEquiv

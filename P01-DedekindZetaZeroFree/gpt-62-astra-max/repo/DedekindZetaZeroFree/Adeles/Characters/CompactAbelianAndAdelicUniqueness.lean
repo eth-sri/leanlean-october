@@ -14,30 +14,31 @@ namespace DedekindZetaZeroFree.KPCompactFourierSeparation
 noncomputable section
 set_option allowUnsafeReducibility true in
 attribute [local reducible] NumberField.AdeleRing
- def archIn (F : Type) [Field F] [NumberField F] :
+ variable (F : Type) [Field F] [NumberField F]
+
+def archIn :
     InfiniteAdeleRing F →+ AdeleRing (𝓞 F) F where
   toFun x := (x, 0)
   map_zero' := rfl
   map_add' _ _ := by simp
 
-private theorem archIn_cont (F : Type) [Field F] [NumberField F] :
+private theorem archIn_cont :
     Continuous (archIn F) := continuous_id.prodMk continuous_const
 
-private theorem diagonal_decomp (F : Type) [Field F] [NumberField F] (a : F) :
+private theorem diagonal_decomp (a : F) :
     algebraMap F (AdeleRing (𝓞 F) F) a =
       archIn F (algebraMap F (InfiniteAdeleRing F) a) +
         ((0, algebraMap F (FiniteAdeleRing (𝓞 F) F) a) : AdeleRing (𝓞 F) F) := by
   apply Prod.ext <;> simp [archIn]
 
 private theorem character_rational_arch
-    (F : Type) [Field F] [NumberField F]
     (χ : AddChar (AdeleRing (𝓞 F) F) Circle) (hc : Continuous χ)
     (hF : ∀ t : F, χ (algebraMap F (AdeleRing (𝓞 F) F) t) = 1) :
     ∃ a : F, ∀ x : InfiniteAdeleRing F,
       χ (x, 0) = Circle.exp (2 * Real.pi * KPArchTrace.infiniteTracePairing F x
         (algebraMap F (InfiniteAdeleRing F) a)) := by
   let χa := χ.compAddMonoidHom (archIn F)
-  have hca : Continuous χa := hc.comp (archIn_cont F)
+  have hca := hc.comp (archIn_cont F)
   obtain ⟨y, hy, _⟩ := KPArchTrace.infinite_character_classification F χa hca
   obtain ⟨T, k, I, _, hker, hI, hIfiber, _, _⟩ := kp_adelic_character_open_kernel F χ hc
   have hdiag : ∀ a : F, a ∈ (I : FractionalIdeal (𝓞 F)⁰ F) →
@@ -51,32 +52,30 @@ private theorem character_rational_arch
     rw [diagonal_decomp F a, AddChar.map_add_eq_mul, hker _ haf, mul_one] at h
     exact h
   obtain ⟨a, _, ha⟩ := KPArchTrace.infinite_character_parameter_mem_inverseDifferent
-    F (I : FractionalIdeal (𝓞 F)⁰ F) hI χa hca y hy hdiag
+    F I hI χa hca y hy hdiag
   refine ⟨a, ?_⟩
   intro x
   simpa only [ha, χa, AddChar.compAddMonoidHom_apply, archIn, AddMonoidHom.coe_mk, ZeroHom.coe_mk] using hy x
 
 private theorem characters_eq_of_arch_eq
-    (F : Type) [Field F] [NumberField F]
     (χ η : AddChar (AdeleRing (𝓞 F) F) Circle)
     (hc : Continuous χ) (he : Continuous η)
     (hχF : ∀ t : F, χ (algebraMap F (AdeleRing (𝓞 F) F) t) = 1)
     (hηF : ∀ t : F, η (algebraMap F (AdeleRing (𝓞 F) F) t) = 1)
     (ha : ∀ x : InfiniteAdeleRing F, χ (x, 0) = η (x, 0)) : χ = η := by
   have hf : ∀ z : FiniteAdeleRing (𝓞 F) F, χ (0, z) = η (0, z) := by
-    have hh : (fun z : FiniteAdeleRing (𝓞 F) F => χ (0, z)) = (fun z => η (0, z)) := by
-      apply (finiteAdele_dense F).equalizer
-        (hc.comp (continuous_const.prodMk continuous_id))
-        (he.comp (continuous_const.prodMk continuous_id))
-      funext t
-      have h1 := hχF t
-      have h2 := hηF t
-      rw [diagonal_decomp F t, AddChar.map_add_eq_mul] at h1 h2
-      change χ (_, 0) * _ = 1 at h1
-      change η (_, 0) * _ = 1 at h2
-      rw [ha] at h1
-      exact mul_left_cancel (h1.trans h2.symm)
-    exact congrFun hh
+    apply congrFun
+    apply (finiteAdele_dense F).equalizer
+      (hc.comp (continuous_const.prodMk continuous_id))
+      (he.comp (continuous_const.prodMk continuous_id))
+    funext t
+    have h1 := hχF t
+    have h2 := hηF t
+    rw [diagonal_decomp F t, AddChar.map_add_eq_mul] at h1 h2
+    change χ (_, 0) * _ = 1 at h1
+    change η (_, 0) * _ = 1 at h2
+    rw [ha] at h1
+    exact mul_left_cancel (h1.trans h2.symm)
   apply AddChar.ext
   intro x
   have hx : x = ((x.1, 0) : AdeleRing (𝓞 F) F) + ((0, x.2) : AdeleRing (𝓞 F) F) := by
@@ -84,7 +83,6 @@ private theorem characters_eq_of_arch_eq
   rw [hx, AddChar.map_add_eq_mul, AddChar.map_add_eq_mul, ha, hf]
 
 private theorem pairing_scale
-    (F : Type) [Field F] [NumberField F]
     (x : InfiniteAdeleRing F) (a t : F) :
     KPArchTrace.infiniteTracePairing F
       (algebraMap F (InfiniteAdeleRing F) t * x)
@@ -106,7 +104,6 @@ private theorem pairing_scale
     ring
 
 theorem adelic_annihilator_scalar
-      (F : Type) [Field F] [NumberField F]
       (ψ : AddChar (NumberField.AdeleRing (𝓞 F) F) Circle)
       (hψcont : Continuous ψ) (hψne : ψ ≠ 1)
       (hψF : ∀ t : F, ψ (algebraMap F (NumberField.AdeleRing (𝓞 F) F) t) = 1)
@@ -230,14 +227,13 @@ private theorem char_span_dense
     (hsep : ∀ x y : X, x ≠ y → ∃ χ : AddChar X Circle, Continuous χ ∧ χ x ≠ χ y) :
     (Submodule.span ℂ (range (charMap (X := X)))).topologicalClosure = ⊤ := by
   rw [← charAlgebra_span]
-  have hA : (charAlgebra (X := X)).SeparatesPoints := by
-    intro x y hxy
-    obtain ⟨χ, hc, hn⟩ := hsep x y hxy
-    refine ⟨_, ⟨charMap ⟨χ, hc⟩, Algebra.subset_adjoin ⟨⟨χ, hc⟩, rfl⟩, rfl⟩, ?_⟩
-    exact fun h => hn (Subtype.coe_injective h)
-  exact congrArg (fun A : StarSubalgebra ℂ C(X, ℂ) => A.toSubalgebra.toSubmodule)
+  refine congrArg (fun A : StarSubalgebra ℂ C(X, ℂ) => A.toSubalgebra.toSubmodule)
     (ContinuousMap.starSubalgebra_topologicalClosure_eq_top_of_separatesPoints
-      (charAlgebra (X := X)) hA)
+      (charAlgebra) ?_)
+  intro x y hxy
+  obtain ⟨χ, hc, hn⟩ := hsep x y hxy
+  refine ⟨_, ⟨charMap ⟨χ, hc⟩, Algebra.subset_adjoin ⟨⟨χ, hc⟩, rfl⟩, rfl⟩, ?_⟩
+  exact fun h => hn (Subtype.coe_injective h)
 
 variable (μ : Measure X) [μ.IsAddHaarMeasure] [IsProbabilityMeasure μ]
 
@@ -259,7 +255,7 @@ variable (μ : Measure X) [μ.IsAddHaarMeasure] [IsProbabilityMeasure μ]
     ‖u‖ (by
       intro f
       calc
-        ‖∫ x, u x * f x ∂μ‖ ≤ ‖u‖ * ‖f‖ := by
+        _ ≤ ‖u‖ * ‖f‖ := by
           simpa using norm_integral_le_of_norm_le_const
             (μ := μ) (Filter.Eventually.of_forall (fun x => by
               rw [norm_mul]
@@ -276,9 +272,8 @@ theorem char_integral_zero (χ : AddChar X Circle) (hne : χ ≠ 1) :
     exact h z
   have heq := integral_add_left_eq_self (μ := μ) (fun x => (χ x : ℂ)) z
   simp only [χ.map_add_eq_mul, Circle.coe_mul, integral_const_mul] at heq
-  have hc : (χ z : ℂ) ≠ 1 := fun h => hz (Circle.coe_eq_one.mp h)
   by_contra hI
-  exact hc ((mul_eq_right₀ hI).mp heq)
+  exact (fun h => hz (Circle.coe_eq_one.mp h)) ((mul_eq_right₀ hI).mp heq)
 
 theorem uniqueness_of_characters_separate
     (hsep : ∀ x y : X, x ≠ y → ∃ χ : AddChar X Circle, Continuous χ ∧ χ x ≠ χ y)
@@ -300,7 +295,7 @@ theorem uniqueness_of_characters_separate
         simp
     · exact int_cont μ (⟨h, hh⟩ * charMap ⟨χ, hc⟩)
     · exact (int_cont μ (charMap ⟨χ, hc⟩)).const_mul _
-  have hspan : Submodule.span ℂ (range (charMap (X := X))) ≤ L.ker :=
+  have hspan :=
     Submodule.span_le.mpr hgen
   have htop : (⊤ : Submodule ℂ C(X, ℂ)) ≤ L.ker := by
     rw [← char_span_dense hsep]
@@ -314,13 +309,11 @@ theorem uniqueness_of_characters_separate
     simp_rw [← Complex.ofReal_pow] at h
     rw [integral_complex_ofReal] at h
     exact Complex.ofReal_injective h
-  have hae : (fun x => ‖u x‖ ^ 2) =ᵐ[μ] 0 :=
-    (integral_eq_zero_iff_of_nonneg (fun x => sq_nonneg _)
-      ((u.continuous.norm.pow 2).integrable_of_hasCompactSupport
-        (HasCompactSupport.of_compactSpace _))).mp hreal
   have hu : (u : X → ℂ) = 0 := by
     apply MeasureTheory.Measure.eq_of_ae_eq (μ := μ) _ u.continuous continuous_const
-    filter_upwards [hae] with x hx
+    filter_upwards [((integral_eq_zero_iff_of_nonneg (fun x => sq_nonneg _)
+      ((u.continuous.norm.pow 2).integrable_of_hasCompactSupport
+        (HasCompactSupport.of_compactSpace _))).mp hreal)] with x hx
     change u x = 0
     exact norm_eq_zero.mp ((sq_eq_zero_iff).mp hx)
   intro x
@@ -353,17 +346,15 @@ theorem kp_adelic_character_exhaustion
       χ (QuotientAddGroup.mk x) =
         ψ (algebraMap F (NumberField.AdeleRing (𝓞 F) F) t * x) := by
   let A := NumberField.AdeleRing (𝓞 F) F
-  let S := NumberField.AdeleRing.principalSubgroup (𝓞 F) F
-  let φ : AddChar A Circle := χ.compAddMonoidHom (QuotientAddGroup.mk' S)
+  let φ := χ.compAddMonoidHom (QuotientAddGroup.mk' (NumberField.AdeleRing.principalSubgroup (𝓞 F) F))
   have hφ (x : A) : φ x = χ (QuotientAddGroup.mk x) := rfl
-  have hφcont : Continuous φ := hχcont.comp QuotientAddGroup.continuous_mk
   have hφF (r : F) : φ (algebraMap F A r) = 1 := by
     rw [hφ]
     have hr : (QuotientAddGroup.mk (algebraMap F A r) : KPCompactFourier.AdditiveQuotient F) = 0 :=
       (QuotientAddGroup.eq_zero_iff _).mpr ⟨r, rfl⟩
     rw [hr, χ.map_zero_eq_one]
   obtain ⟨t, ht⟩ := KPCompactFourierSeparation.adelic_annihilator_scalar
-    F ψ hψcont hψne hψF φ hφcont hφF
+    F ψ hψcont hψne hψF φ (hχcont.comp QuotientAddGroup.continuous_mk) hφF
   have hformula (x : A) : χ (QuotientAddGroup.mk x) = ψ (algebraMap F A t * x) := ht x
   have htne : t ≠ 0 := by
     intro hzero
@@ -401,17 +392,17 @@ end KPCompactFourier
 
 namespace KPCompactFourier
 
-noncomputable def representative (F : Type) [Field F] [NumberField F] :
+variable (F : Type) [Field F] [NumberField F]
+
+noncomputable def representative :
     AdditiveQuotient F → NumberField.AdeleRing (𝓞 F) F := Quotient.out
 
-noncomputable def unipotentFiber
-    (F : Type) [Field F] [NumberField F] {G : Type*} [Group G]
+noncomputable def unipotentFiber {G : Type*} [Group G]
     (n : AddChar (NumberField.AdeleRing (𝓞 F) F) G) (θ : G → ℂ) (g : G)
     (x : AdditiveQuotient F) : ℂ :=
   θ (n (representative F x) * g)
 
-noncomputable def fourierPeriod
-    (F : Type) [Field F] [NumberField F] {G : Type*} [Group G]
+noncomputable def fourierPeriod {G : Type*} [Group G]
     (μ : Measure (AdditiveQuotient F))
     (ψ : AddChar (NumberField.AdeleRing (𝓞 F) F) Circle)
     (n : AddChar (NumberField.AdeleRing (𝓞 F) F) G) (θ : G → ℂ) (g : G) : ℂ :=
@@ -441,7 +432,7 @@ theorem kp_adelic_scaled_character
     change Additive.ofMul (ψ (algebraMap F A t * algebraMap F A r)) = 0
     rw [← map_mul, hψF]
     rfl
-  let χ : AddChar (KPCompactFourier.AdditiveQuotient F) Circle :=
+  let χ :=
     AddChar.toAddMonoidHomEquiv.symm (QuotientAddGroup.lift S φ.toAddMonoidHom hS)
   have hχ : ∀ x : A, χ (QuotientAddGroup.mk x) = ψ (algebraMap F A t * x) := by
     intro x
@@ -469,25 +460,18 @@ theorem kp_adelic_scaled_character
     obtain ⟨x, rfl⟩ := QuotientAddGroup.mk_surjective q
     exact (hχ'.2.2 x).trans (hχ x).symm
 
-theorem kp_additive_adelic_fourier_uniqueness
-    (F : Type) [Field F] [NumberField F]
-    [CompactSpace (KPCompactFourier.AdditiveQuotient F)]
-    [T2Space (KPCompactFourier.AdditiveQuotient F)]
-    (μ : Measure (KPCompactFourier.AdditiveQuotient F))
+variable (F : Type) [Field F] [NumberField F] [CompactSpace (KPCompactFourier.AdditiveQuotient F)]
+    [T2Space (KPCompactFourier.AdditiveQuotient F)] (μ : Measure (KPCompactFourier.AdditiveQuotient F))
     [μ.IsAddHaarMeasure] [IsProbabilityMeasure μ]
+
+theorem kp_additive_adelic_fourier_uniqueness
     (h : KPCompactFourier.AdditiveQuotient F → ℂ) (hh : Continuous h)
     (hfourier : ∀ χ : AddChar (KPCompactFourier.AdditiveQuotient F) Circle,
       Continuous χ → χ ≠ 1 → (∫ x, h x * (χ x : ℂ) ∂μ) = 0) :
-    ∀ x, h x = ∫ y, h y ∂μ := by
-  exact KPCompactFourier.uniqueness_of_characters_separate μ
+    ∀ x, h x = ∫ y, h y ∂μ := KPCompactFourier.uniqueness_of_characters_separate μ
     (AdelicSeparation.additiveAdeleQuotient_characters_separate F) h hh hfourier
 
 theorem kp_right_translate_periods_force_constant
-    (F : Type) [Field F] [NumberField F]
-    [CompactSpace (KPCompactFourier.AdditiveQuotient F)]
-    [T2Space (KPCompactFourier.AdditiveQuotient F)]
-    (μ : Measure (KPCompactFourier.AdditiveQuotient F))
-    [μ.IsAddHaarMeasure] [IsProbabilityMeasure μ]
     (ψ : AddChar (NumberField.AdeleRing (𝓞 F) F) Circle)
     (hψcont : Continuous ψ) (hψne : ψ ≠ 1)
     (hψF : ∀ t : F, ψ (algebraMap F (NumberField.AdeleRing (𝓞 F) F) t) = 1)
@@ -524,7 +508,7 @@ theorem kp_right_translate_periods_force_constant
   intro χ hχcont hχne
   obtain ⟨t, ⟨ht, hχ⟩, _⟩ :=
     kp_adelic_character_exhaustion F ψ hψcont hψne hψF χ hχcont hχne
-  let u : Fˣ := Units.mk0 t ht
+  let u := Units.mk0 t ht
   let m : A →+ A :=
     { toFun := fun z => algebraMap F A t * z
       map_zero' := mul_zero _
@@ -534,7 +518,7 @@ theorem kp_right_translate_periods_force_constant
     change QuotientAddGroup.mk (algebraMap F A t * algebraMap F A s) = 0
     rw [← map_mul]
     exact (QuotientAddGroup.eq_zero_iff _).mpr ⟨t * s, rfl⟩
-  let D : Q →+ Q := QuotientAddGroup.lift S ((QuotientAddGroup.mk' S).comp m) hS
+  let D := QuotientAddGroup.lift S ((QuotientAddGroup.mk' S).comp m) hS
   have hD (z : A) : D (QuotientAddGroup.mk z) =
       QuotientAddGroup.mk (algebraMap F A t * z) := QuotientAddGroup.lift_mk' S hS z
   have hDcont : Continuous D := by
@@ -549,7 +533,6 @@ theorem kp_right_translate_periods_force_constant
     obtain ⟨z, rfl⟩ := QuotientAddGroup.mk_surjective q
     refine ⟨QuotientAddGroup.mk (algebraMap F A t⁻¹ * z), ?_⟩
     rw [hD, ← mul_assoc, hinv, one_mul]
-  have hDmp : MeasurePreserving D μ μ := D.measurePreserving hDcont hDsurj rfl
   have htransform (q : Q) :
       KPCompactFourier.unipotentFiber F n θ (a u * g) (D q) *
         (ψ (KPCompactFourier.representative F (D q)) : ℂ) =
@@ -572,8 +555,7 @@ theorem kp_right_translate_periods_force_constant
   obtain ⟨χψ, ⟨hχψcont, _, hχψ⟩, _⟩ :=
     kp_adelic_scaled_character F ψ hψcont hψne hψF 1 one_ne_zero
   have hχψrep (q : Q) : χψ q = ψ (KPCompactFourier.representative F q) := by
-    have hr := hχψ (KPCompactFourier.representative F q)
-    simpa [KPCompactFourier.representative, map_one, Quotient.out_eq'] using hr
+    simpa [KPCompactFourier.representative, map_one, Quotient.out_eq'] using (hχψ (KPCompactFourier.representative F q))
   have hintcont : Continuous (fun q : Q =>
       KPCompactFourier.unipotentFiber F n θ (a u * g) q *
         (ψ (KPCompactFourier.representative F q) : ℂ)) := by
@@ -581,7 +563,7 @@ theorem kp_right_translate_periods_force_constant
     exact (hfcont _).mul (continuous_subtype_val.comp hχψcont)
   have hint := integral_map_of_stronglyMeasurable (μ := μ)
     hDcont.measurable hintcont.stronglyMeasurable
-  rw [hDmp.map_eq] at hint
+  rw [(D.measurePreserving hDcont hDsurj rfl).map_eq] at hint
   simp_rw [htransform] at hint
   exact hint.symm.trans (hperiod (a u * g))
 

@@ -17,8 +17,8 @@ open DedekindZetaZeroFree.Quantitative.DetectorDef
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem nonvanishing_of_not_exceptional (ρ U : ℝ) (u : Frequency D.recipe)
     (hu : u ≠ principalFrequency D.recipe) (hUq : U ≤ frequencyNorm D.recipe u)
@@ -28,10 +28,9 @@ theorem nonvanishing_of_not_exceptional (ρ U : ℝ) (u : Frequency D.recipe)
       g s = Detector.idealLSeries F (FixedData.primMinus D u).character s)
     (s : ℂ) (h1 : σ₀ ≤ s.re) (h2 : |s.im| ≤ 4 * U ^ ρ) : g s ≠ 0 := by
   intro h0
-  have hs0 : 0 < s.re := by
-    have : (0 : ℝ) < σ₀ := by unfold σ₀; norm_num
-    linarith
-  exact hex ⟨hu, hUq, hUq2, s, ⟨hs0, g, fun z _ => hg.analyticAt z, hgL, h0⟩, h1, h2⟩
+  refine hex ⟨hu, hUq, hUq2, s, ⟨?_, g, fun z _ => hg.analyticAt z, hgL, h0⟩, h1, h2⟩
+  have : (0 : ℝ) < σ₀ := by unfold σ₀; norm_num
+  linarith
 
 theorem raw_reciprocal_log_disk (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
     (hρ : HeightSpec D A ρ) :
@@ -111,15 +110,16 @@ theorem raw_reciprocal_log_disk (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexit
     exact nonvanishing_of_not_exceptional D ρ U u hu1 hUq hUq2 hu g hg hgL s hs'.1.le hs'.2.le
   obtain ⟨hEan, hEexp, hEbd⟩ := hEf (FixedData.primMinus D u)
   have hc1' : 1 < c.re := by rw [hcre]; norm_num
-  have hcexp : Complex.exp (eulerLog (FixedData.primMinus D u) c) = g c := by
+  let eulerLog₀ := eulerLog (FixedData.primMinus D u)
+  have hcexp : Complex.exp (eulerLog₀ c) = g c := by
     rw [hgL c hc1']
     exact hEexp c hc1'
   obtain ⟨ℓ, hℓan, hℓexp, hℓc⟩ :=
     exists_analytic_log_ball hgan hnz hcexp (by rw [hR₀]; norm_num)
-  have hEc : ‖eulerLog (FixedData.primMinus D u) c‖ ≤ E := by
+  have hEc : ‖eulerLog₀ c‖ ≤ E := by
     apply hEbd
     rw [hcre]; norm_num
-  have hlogU : Real.log 2 ≤ Real.log U := Real.log_le_log (by norm_num) hU2
+  have hlogU := Real.log_le_log (by norm_num) hU2
   have hlogU0 : 0 ≤ Real.log U := le_trans hlog2.le hlogU
   refine ⟨ℓ, hℓan, hℓexp, hℓc, ?_, ?_⟩
   ·
@@ -130,7 +130,7 @@ theorem raw_reciprocal_log_disk (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexit
         rw [← dist_eq_norm]; exact Metric.mem_ball.mp hs
       have h1 := hre' s
       have hsre := abs_lt.mp (lt_of_le_of_lt h1 hsn)
-      have hb : ‖g s‖ ≤ C₃ * 6 ^ A * U ^ K :=
+      have hb :=
         hgrow s (by rw [hR₀] at hsre; linarith [hsre.1]) (by rw [hR₀] at hsre; linarith [hsre.2])
           (by linarith [hs'.2])
       have hnorm : ‖g s‖ = Real.exp (ℓ s).re := by
@@ -149,18 +149,18 @@ theorem raw_reciprocal_log_disk (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexit
     rw [hℓc]
     have hL1 : 1 ≤ c1 * Real.log U := by
       rw [hc1, one_div, inv_mul_eq_div, le_div_iff₀ hlog2]; linarith
-    have h1 : a * lc * 1 ≤ a * lc * (c1 * Real.log U) :=
+    have h1 :=
       mul_le_mul_of_nonneg_left hL1 (mul_nonneg ha0 hlc0)
-    have h2 : b * E * 1 ≤ b * E * (c1 * Real.log U) :=
+    have h2 :=
       mul_le_mul_of_nonneg_left hL1 (mul_nonneg hb0 hE.le)
-    have h3 : 0 ≤ E * Real.log U := mul_nonneg hE.le hlogU0
-    have h4 : b * ‖eulerLog (FixedData.primMinus D u) c‖ ≤ b * E :=
+    have h3 := mul_nonneg hE.le hlogU0
+    have h4 : b * ‖eulerLog₀ c‖ ≤ b * E :=
       mul_le_mul_of_nonneg_left hEc hb0
     nlinarith
   ·
     have hsub1 : Metric.ball c 1 ⊆ Metric.ball c R₀ :=
       Metric.ball_subset_ball (by rw [hR₀]; norm_num)
-    have hEan' : AnalyticOnNhd ℂ (eulerLog (FixedData.primMinus D u)) (Metric.ball c 1) := by
+    have hEan' : AnalyticOnNhd ℂ (eulerLog₀) (Metric.ball c 1) := by
       refine AnalyticOnNhd.mono hEan ?_
       intro s hs
       have hsn : ‖s - c‖ < 1 := by rw [← dist_eq_norm]; exact Metric.mem_ball.mp hs
@@ -169,7 +169,7 @@ theorem raw_reciprocal_log_disk (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexit
       show 1 < s.re
       linarith [this.1]
     have huniq := analytic_log_unique_ball (c := c) (R := 1) (ℓ₁ := ℓ)
-      (ℓ₂ := eulerLog (FixedData.primMinus D u)) one_pos (hℓan.mono hsub1) hEan'
+      (ℓ₂ := eulerLog₀) one_pos (hℓan.mono hsub1) hEan'
       (fun s hs => by
         have hs1 : 1 < s.re := by
           have hsn : ‖s - c‖ < 1 := by rw [← dist_eq_norm]; exact Metric.mem_ball.mp hs

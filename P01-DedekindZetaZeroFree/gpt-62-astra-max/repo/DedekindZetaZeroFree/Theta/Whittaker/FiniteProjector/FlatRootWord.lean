@@ -13,10 +13,10 @@ open MomentSources
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (I : R.A.Sf → Type) [∀ q, Fintype (I q)]
-variable (c : ∀ q, I q → ℂ) (t : ∀ q, I q → q.val.adicCompletion F)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (I : R.A.Sf → Type) [∀ q, Fintype (I q)]
+    (c : ∀ q, I q → ℂ) (t : ∀ q, I q → q.val.adicCompletion F)
 
 end DedekindZetaZeroFree.FiniteWhittakerProjectors
 
@@ -32,10 +32,10 @@ open MomentSources
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (I : R.A.Sf → Type) [∀ q, Fintype (I q)]
-variable (c : ∀ q, I q → ℂ) (t : ∀ q, I q → q.val.adicCompletion F)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (I : R.A.Sf → Type) [∀ q, Fintype (I q)]
+    (c : ∀ q, I q → ℂ) (t : ∀ q, I q → q.val.adicCompletion F)
 
 theorem flat_root_word_lift {K : Subgroup (Group R)}
     (hK : KPLiteralRaw.IwasawaCompact F R.A.zeta12 R.A.primitive_zeta12 K)
@@ -73,9 +73,8 @@ theorem selected_root_word_flat_lifts {N : TraceHaarTransport R} (A : JointExter
       (B : ∀ v, FlatScalarResidue F R.A.zeta12 R.A.primitive_zeta12 (f v)),
       (∀ v, (f v).val 0 = FiniteWhittakerProjectors.rootProjectorWord R I c t l ((A.sources.flat v).val 0)) ∧
       ∀ v, (B v).numerator 0 = FiniteWhittakerProjectors.rootProjectorWord R I c t l (A.realization.theta v) := by
-  have he := fun v => flat_root_word_lift R I c t A.sources.iwasawa
-    (A.sources.flat v) (realizationScalarResidue A.realization v) l
-  choose f B hf hB using he
+  choose f B hf hB using (fun v => flat_root_word_lift R I c t A.sources.iwasawa
+    (A.sources.flat v) (realizationScalarResidue A.realization v) l)
   exact ⟨f,B,hf,hB⟩
 
 end DedekindZetaZeroFree.RootDerivatives

@@ -28,13 +28,12 @@ theorem actualCuspSheet_exponential_bound
         ∀ s ∈ K, ∀ xb ∈ B, ∀ ε : rootsOfUnity 3 F, ∀ t : ℝ, 0 ≤ t →
           ‖KPContActualChamberCasimirJets.cuspSheet F ζ hζ C R P H U ι f a 0 s
             t xb.1 xb.2 ε‖ ≤ C₀ * Real.exp (M * t) := by
-  let D : Set (KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ) :=
+  let D :=
     Set.range (fun aε : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U ×
       rootsOfUnity 3 F =>
       KPContFlatCuspIncomingEvaluation.finiteRepresentative F ζ hζ C R P H U aε.1 aε.2)
-  have hD : IsCompact D := (Set.finite_range _).isCompact
   obtain ⟨C₀, M, hC₀, hM, hbound⟩ :=
-    actualSeries_exponential_bound F ζ hζ U ι f hf K hK hKV B hB D hD
+    actualSeries_exponential_bound F ζ hζ U ι f hf K hK hKV B hB D ((Set.finite_range _).isCompact)
   refine ⟨C₀, M, hC₀, hM, ?_⟩
   intro a s hs xb hxb ε t ht
   simp only [KPContActualChamberCasimirJets.cuspSheet,

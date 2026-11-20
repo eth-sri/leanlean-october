@@ -57,18 +57,15 @@ private theorem normalizedGauss_residue_primitive :
     hF hm hmt η hprim f hstrict
   refine ⟨u, ?_, ?_⟩
   · obtain ⟨x, hx⟩ := Ideal.Quotient.mk_surjective (u : 𝓞 F ⧸ m)
-    have hv := congrArg Units.val hu
     have hxf : x - 1 ∈ f := by
       apply Ideal.Quotient.eq_zero_iff_mem.mp
-      have hv' : Ideal.Quotient.factor hstrict.le (u : 𝓞 F ⧸ m) = 1 := hv
       have hx' : Ideal.Quotient.mk f x = 1 := by
         rw [← Ideal.Quotient.factor_mk hstrict.le x, hx]
-        exact hv'
+        exact (congrArg Units.val hu)
       simp [hx']
     change Ideal.Quotient.mk m (x - 1) ∈ J at hxf
     simpa only [map_sub, map_one, hx] using hxf
-  · change ((residueRayCharacter hF hm hmt η u : ℂˣ) : ℂ) ≠ 1
-    intro h
+  · intro h
     apply hne
     exact Units.ext h
 
@@ -97,10 +94,9 @@ theorem rayNormalizedGaussFactor_norm_eq_one :
   letI := rayTraceQuotientModule m hm
   letI : Nontrivial (𝓞 F ⧸ m) := Ideal.Quotient.nontrivial_iff.mpr hmt
   intro β₀ hgen b hb hbcop hbimage e₀ he₀ τ hτ
-  have he : IsPrimitiveRingAddChar e₀ := by
+  have hn := finiteRingGaussSum_normalized_norm e₀ (by
     rw [he₀]
-    exact rayTraceGeneratorChar_primitive m hm _ hgen
-  have hn := finiteRingGaussSum_normalized_norm e₀ he _
+    exact rayTraceGeneratorChar_primitive m hm _ hgen) _
     (normalizedGauss_residue_primitive hF m hm hmt η hprim)
   have hc : Fintype.card (𝓞 F ⧸ m) = Ideal.absNorm m := by
     rw [Ideal.absNorm_apply]

@@ -17,10 +17,10 @@ open KPContCotangentActualOverlap KPContSectorSmoothFramesSupport
 open KPContActualCotangentPieceHilbertSum
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 theorem smoothOnLift_sectionFields
     (a : ShrunkChart F ζ hζ U R P H)
@@ -40,23 +40,23 @@ theorem smoothOnLift_sectionFields
   simp [sectionFields, LiftedChart.coefficient,
     KPContCotangentActualGenuineTwistIsotropy.isotropyChart, ChartKind.representative]
 
-private lemma cd_eventually (d : ℕ) (f g : HyperbolicChart.Space d → ℂ)
-    (x : HyperbolicChart.Space d) (h : f =ᶠ[nhds x] g) (i : Fin d) (k : Fin 3) :
+section
+
+variable (d : ℕ) (f g : HyperbolicChart.Space d → ℂ) (x : HyperbolicChart.Space d) (h : f =ᶠ[nhds x] g)
+
+include h in
+private lemma cd_eventually (i : Fin d) (k : Fin 3) :
     HyperbolicChart.coordinateDerivative d i k f =ᶠ[nhds x]
       HyperbolicChart.coordinateDerivative d i k g := by
   filter_upwards [h.fderiv (𝕜 := ℝ)] with y hy
   exact congrArg (fun A : HyperbolicChart.Space d →L[ℝ] ℂ =>
     A (HyperbolicChart.coordinateVector d i k)) hy
 
-private lemma lap_local (d : ℕ) (f g : HyperbolicChart.Space d → ℂ)
-    (x : HyperbolicChart.Space d) (h : f =ᶠ[nhds x] g) :
-    HyperbolicChart.laplacian d f x = HyperbolicChart.laplacian d g x := by
-  unfold HyperbolicChart.laplacian
-  apply Finset.sum_congr rfl
-  intro i hi
-  have hc := fun k => cd_eventually d f g x h i k
-  have hcc := fun k => cd_eventually d _ _ x (hc k) i k
-  rw [(hc 2).eq_of_nhds, (hcc 2).eq_of_nhds, (hcc 0).eq_of_nhds, (hcc 1).eq_of_nhds]
+include h in
+private lemma lap_local :
+    HyperbolicChart.laplacian d f x = HyperbolicChart.laplacian d g x := by apply @DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.LaplacianPairingInvariance.laplacian_congr <;> assumption
+
+end
 
 private lemma lap_zero (d : ℕ) (f : HyperbolicChart.Space d → ℂ)
     (x : HyperbolicChart.Space d) (hx : x ∉ tsupport f) : HyperbolicChart.laplacian d f x = 0 := by
@@ -87,7 +87,7 @@ private lemma compact_green (d : ℕ) (hd : 1 ≤ d)
   have intstar (v : HyperbolicChart.Space d → ℂ) :
       (∫ p in Ω, star (v p) ∂HyperbolicChart.measure d) =
         star (∫ p in Ω, v p ∂HyperbolicChart.measure d) := by
-    simpa only [starRingEnd_apply] using (integral_conj (f := v) (μ := (HyperbolicChart.measure d).restrict Ω))
+    simpa using (integral_conj)
   rw [← intstar, ← intstar] at hs
   calc
     _ = ∫ p in Ω, star (star (f p) * HyperbolicChart.laplacian d g p) ∂HyperbolicChart.measure d := by
@@ -109,16 +109,14 @@ private lemma compact_localization {E : Type*} [NormedAddCommGroup E] [NormedSpa
   obtain ⟨V, hVo, hKV, hVΩ, hVc⟩ := exists_open_between_and_isCompact_closure hK hΩ hKΩ
   obtain ⟨W, hWo, hKW, hWV, hWc⟩ := exists_open_between_and_isCompact_closure hK hVo hKV
   obtain ⟨χ, hχ, hχrange, hχsupport, hχone⟩ :=
-    exists_contDiff_support_eq_eq_one_iff (n := (⊤ : ℕ∞)) hVo isClosed_closure hWV
-  let F : E → ℂ := fun x => if x ∈ Ω then (χ x : ℂ) * f x else 0
+    exists_contDiff_support_eq_eq_one_iff hVo isClosed_closure hWV
+  let F := fun x => if x ∈ Ω then (χ x : ℂ) * f x else 0
   have hsupp : Function.support F ⊆ V := by
     intro x hx
     rw [← hχsupport]
     by_contra hn
-    have hz : χ x = 0 := Function.notMem_support.mp hn
-    by_cases hxo : x ∈ Ω <;> simp [F, hxo, hz] at hx
-  have hts : tsupport F ⊆ closure V := closure_mono hsupp
-  refine ⟨F, ?_, HasCompactSupport.of_support_subset_isCompact hVc (hsupp.trans subset_closure), hts.trans hVΩ, ?_⟩
+    by_cases hxo : x ∈ Ω <;> simp [F, hxo, (Function.notMem_support.mp hn)] at hx
+  refine ⟨F, ?_, HasCompactSupport.of_support_subset_isCompact hVc (hsupp.trans subset_closure), (closure_mono hsupp).trans hVΩ, ?_⟩
   · rw [contDiff_iff_contDiffAt]
     intro x
     by_cases hx : x ∈ Ω
@@ -126,9 +124,8 @@ private lemma compact_localization {E : Type*} [NormedAddCommGroup E] [NormedSpa
         (hf.contDiffAt (hΩ.mem_nhds hx))).congr_of_eventuallyEq
       filter_upwards [hΩ.mem_nhds hx] with y hy
       simp [F, hy]
-    · apply (contDiffAt_const (c := (0 : ℂ))).congr_of_eventuallyEq
-      have hv : x ∉ closure V := fun h => hx (hVΩ h)
-      filter_upwards [isClosed_closure.isOpen_compl.mem_nhds hv] with y hy
+    · apply (contDiffAt_const).congr_of_eventuallyEq
+      filter_upwards [isClosed_closure.isOpen_compl.mem_nhds (fun h => hx (hVΩ h))] with y hy
       exact Function.notMem_support.mp (fun h => hy (subset_closure (hsupp h)))
   · intro x hx
     filter_upwards [hWo.mem_nhds (hKW hx), hΩ.mem_nhds (hKΩ hx)] with y hyW hyΩ
@@ -170,11 +167,13 @@ private lemma local_green (d : ℕ) (hd : 1 ≤ d)
     apply (CotangentLogCoframe.A (KPContCotangentActualOverlap.d F)).symm.continuous.comp
     exact continuous_pi fun k => continuous_apply _
 
-private lemma map_compact_coordinates (a : ShrunkChart F ζ hζ U R P H) :
+variable (a : ShrunkChart F ζ hζ U R P H)
+
+private lemma map_compact_coordinates :
     Measure.map (fun y : a.domain => (coordinates a y).val) a.liftedMeasure =
       ((H.disintegration U).componentWeight a.component / (Nat.card a.Isotropy : ℝ≥0∞)) •
         (HyperbolicChart.measure (d F)).restrict (omega a) := by
-  let c₀ : ℝ≥0∞ :=
+  let c₀ :=
     (H.disintegration U).componentWeight a.component / (Nat.card a.Isotropy : ℝ≥0∞)
   let c := compactCoordHomeomorph (F := F) (ζ := ζ) (hζ := hζ)
   have hbridge : Measure.map c.symm
@@ -186,7 +185,7 @@ private lemma map_compact_coordinates (a : ShrunkChart F ζ hζ U R P H) :
     change c (c.symm x) ∈ a.domain ↔ x ∈ a.domain
     rw [c.apply_symm_apply]
   change Measure.map (c.symm ∘
-      (Subtype.val : a.domain → KPCuspGenuineMonodromy.SymmetricSpace F))
+      Subtype.val)
       a.liftedMeasure
     = c₀ • (HyperbolicChart.measure (KPContCotangentActualOverlap.d F)).restrict (omega a)
   rw [show a.liftedMeasure = c₀ •
@@ -194,13 +193,8 @@ private lemma map_compact_coordinates (a : ShrunkChart F ζ hζ U R P H) :
         ((KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)).restrict a.domain) from rfl]
   rw [Measure.map_smul c₀ ((c.symm.measurable.comp measurable_subtype_coe).aemeasurable)]
   congr 1
-  change Measure.map (c.symm ∘
-      (Subtype.val : a.domain → KPCuspGenuineMonodromy.SymmetricSpace F))
-      (Measure.comap (Subtype.val : a.domain → KPCuspGenuineMonodromy.SymmetricSpace F)
-        ((KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)).restrict a.domain))
-    = (HyperbolicChart.measure (KPContCotangentActualOverlap.d F)).restrict (omega a)
-  rw [← Measure.map_map (f := (Subtype.val : a.domain → KPCuspGenuineMonodromy.SymmetricSpace F))
-    (g := c.symm) c.symm.measurable measurable_subtype_coe]
+  rw [← Measure.map_map
+     c.symm.measurable measurable_subtype_coe]
   rw [map_comap_subtype_coe a.domain_open.measurableSet]
   rw [Measure.restrict_restrict a.domain_open.measurableSet, Set.inter_self]
   rw [← hbridge]
@@ -208,7 +202,6 @@ private lemma map_compact_coordinates (a : ShrunkChart F ζ hζ U R P H) :
   rw [he]
 
 theorem compact_interior_green_lift
-    (a : ShrunkChart F ζ hζ U R P H)
     (s : ScalarFields F ζ hζ U R P H) (hs : SmoothOnLift a (s a))
     (g : localScalarTests a)
     (hgcompact : HasCompactSupport (liftExtension a g.val))
@@ -232,19 +225,12 @@ theorem compact_interior_green_lift
     change liftExtension a (s a) x = f₀ x
     simp only [liftExtension, dite_eq_left hx]
     exact (he ⟨x, hx⟩).symm
-  have hv : HyperbolicChart.IsTestFunction (d F) (omega a) v :=
-    ⟨interior_liftExtension_contDiff a g.val g.property.1 hginterior, hgcompact, hginterior⟩
-  have hgreen := local_green (d F) hd (omega a) (isOpen_omega_actual a) f v hf hv
   have hem : MeasurableEmbedding (fun y : a.domain => (coordinates a y).val) := by
-    refine (compactCoordHomeomorph (F := F) (ζ := ζ) (hζ := hζ)).symm.measurableEmbedding.comp ?_
+    refine (compactCoordHomeomorph).symm.measurableEmbedding.comp ?_
     exact MeasurableEmbedding.subtype_coe a.domain_open.measurableSet
-  change (∫ y, f (coordinates a y).val *
-      star (HyperbolicChart.laplacian (d F) v (coordinates a y).val) ∂a.liftedMeasure) =
-    ∫ y, HyperbolicChart.laplacian (d F) f (coordinates a y).val *
-      star (v (coordinates a y).val) ∂a.liftedMeasure
   rw [← hem.integral_map (fun p => f p * star (HyperbolicChart.laplacian (d F) v p)),
     ← hem.integral_map (fun p => HyperbolicChart.laplacian (d F) f p * star (v p)),
-    map_compact_coordinates, integral_smul_measure, integral_smul_measure, hgreen]
+    map_compact_coordinates, integral_smul_measure, integral_smul_measure, (local_green (d F) hd (omega a) (isOpen_omega_actual a) f v hf (⟨interior_liftExtension_contDiff a g.val g.property.1 hginterior, hgcompact, hginterior⟩))]
 
 end DedekindZetaZeroFree.KPContActualGlobalGreen
 

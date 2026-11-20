@@ -32,8 +32,9 @@ private theorem principal_of_class_top
   simpa only [Units.val_mul, coe_toPrincipalIdeal, mul_comm] using
     (congrArg (fun U : (FractionalIdeal (𝓞 F)⁰ F)ˣ => (U : FractionalIdeal (𝓞 F)⁰ F)) ha).symm
 
+variable (htop : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
+
 theorem topLogIdealAverage_class_invariant
-    (htop : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
     (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (t : ℝ) (ht : 0 < t)
     (hclass : ClassGroup.mk F I = ClassGroup.mk F J) :
     topLogIdealAverage F htop I t = topLogIdealAverage F htop J t := by
@@ -69,7 +70,6 @@ theorem topLogIdealAverage_class_invariant
   rw [hint]
 
 theorem topLogIdealAverage_reflection
-    (htop : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
     (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (t : ℝ) (ht : 0 < t) :
     (RayCoset.rayUnitTorsionCard F ⊤ : ℂ)⁻¹ *
       (∫ h in RayCoset.rayUnitHalfOpenDomain F ⊤ htop,

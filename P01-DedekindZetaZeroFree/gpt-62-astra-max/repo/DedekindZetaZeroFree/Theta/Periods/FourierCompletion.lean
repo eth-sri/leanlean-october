@@ -12,10 +12,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.ComplexLines
 open ThetaExpansion MomentSources KPGlobalTorusFiniteStages KPGlobalResidualConstruction KPCplxPrincipalSeriesCharts
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1500000
 set_option synthInstance.maxHeartbeats 150000
@@ -34,9 +34,9 @@ local instance completedPeriodCoreUniform : IsUniformAddGroup complexCore :=
   complexCore.toAddSubgroup.isUniformAddGroup
 
 variable (s : RestrictedTensorSimple.Level (LiteralSource.bad R.A P C))
-variable (x : ∀j : s.val,LiteralSource.Plus R.A P C j.val)
-variable (w : InfinitePlace F) (hw : Sum.inl w∈s.val)
-variable (g : MomentSources.Group R)
+    (x : ∀j : s.val,LiteralSource.Plus R.A P C j.val)
+    (w : InfinitePlace F) (hw : Sum.inl w∈s.val)
+    (g : MomentSources.Group R)
 local notation "slot" => restrictedSlotTensor R.A P C s x w hw
 
 local notation "dq" => KPWildKernelUpperBound.quotientHaar F

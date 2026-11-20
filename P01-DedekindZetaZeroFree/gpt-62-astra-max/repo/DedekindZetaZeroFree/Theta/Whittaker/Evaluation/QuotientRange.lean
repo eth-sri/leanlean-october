@@ -16,8 +16,8 @@ open LiteralSource CurrentNativeStage CurrentFiniteFamily NativeScalarMixedTenso
 open KPAdelicCoverRestrictedProduct KPLiteralRaw KPLiteralScalarHCExtraction
 open KPLiteralScalarHCCompactOrbit KPLiteralScalarHCFiniteProduct
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local instance (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (j : InfinitePlace F ⊕ T) :
     AddCommGroup (mixedSource F A.zeta12 A.primitive_zeta12 (nativeInducingData A P C) T j) := by
   cases j <;> dsimp [mixedSource] <;> infer_instance
@@ -61,15 +61,12 @@ theorem quotientCoreEvaluator_source_range
   funext g
   obtain ⟨r,m,hi,hg⟩ := groupDecomposition A g
   obtain ⟨U,hTU,hrU⟩ := rawStage A T r
-  have heU : C.exceptional ⊆ U := he.trans hTU
+  have heU := he.trans hTU
   obtain ⟨xU,hxU⟩ := extractTensor A P C K hK f U
-  have hc := CurrentCoherentEnlargement.native_HC_tensors_coherent
-    A P C K hK f T U he heU hTU hb (ht T (Finset.Subset.refl T)) xT xU hxT hxU
   have hcore : nativeCoreInsertion A P C T he xT = nativeCoreInsertion A P C U heU xU := by
-    change RestrictedTensorSimple.stageInclusion _ _ _ _ _ = RestrictedTensorSimple.stageInclusion _ _ _ _ _
-    have hi := congrArg (RestrictedTensorSimple.stageInclusion
-      (Plus A P C) (plusReference A P C) (bad A P C) (fullStage A P C U heU)) hc
-    exact (Module.DirectLimit.of_f ..).symm.trans hi
+    exact (Module.DirectLimit.of_f ..).symm.trans (congrArg (RestrictedTensorSimple.stageInclusion
+      (Plus A P C) (plusReference A P C) (bad A P C) (fullStage A P C U heU)) (CurrentCoherentEnlargement.native_HC_tensors_coherent
+        A P C K hK f T U he heU hTU hb (ht T (Finset.Subset.refl T)) xT xU hxT hxU))
   rw [hcore,hg]
   rw [nativeCoreInsertion_originalProductScalar A P C U heU xU r hi]
   · rw [hxU]

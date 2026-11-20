@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -63,20 +60,16 @@ theorem henselFactorization_complete_exists_factorization
   let V := absoluteValueValuationSubring v hnonarch
   let hpre :
       ∀ π : V, π ≠ 0 → π ∈ IsLocalRing.maximalIdeal V →
-        IsPrecomplete (Ideal.span ({π} : Set V)) V := by
-    intro π hπne hπmem
-    exact principalPrecomplete_of_complete
+        IsPrecomplete (Ideal.span ({π} : Set V)) V := fun π hπne hπmem => principalPrecomplete_of_complete
       v hcomplete hnonarch hπne hπmem
   let hhaus :
       ∀ π : V, π ≠ 0 → π ∈ IsLocalRing.maximalIdeal V →
-        IsHausdorff (Ideal.span ({π} : Set V)) V := by
-    intro π hπne hπmem
-    exact principalHausdorff_of_nonzero_mem_maximalIdeal
+        IsHausdorff (Ideal.span ({π} : Set V)) V := fun π hπne hπmem => principalHausdorff_of_nonzero_mem_maximalIdeal
       v hnonarch hπne hπmem
   rcases
       henselFactorization_exists_limit_factorization_of_residual_factors_valuationRing_principal
-        (R := V) hpre hhaus
-        (f := f) (gbar := gbar) (hbar := hbar)
+         hpre hhaus
+
         hprim hfbar hcop with
     ⟨G, H, hGdegree, _hHle, hfactor, hGmap, hHmap⟩
   exact ⟨G, H, hfactor, hGdegree, hGmap, hHmap⟩

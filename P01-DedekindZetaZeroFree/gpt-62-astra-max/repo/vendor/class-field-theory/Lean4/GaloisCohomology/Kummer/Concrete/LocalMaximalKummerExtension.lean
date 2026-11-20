@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -39,7 +35,7 @@ nonzero in the local field. -/
 theorem finite_maximalRestrictedRadicalQuotient
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) :
     Finite (RestrictedRadicalQuotient n (maximalKummerSubgroup K n)) := by
-  let _ : Finite (Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range) :=
+  let _ :=
     LocalFieldTheory.finite_nthPowerQuotient_of_natCast_ne_zero
       K (n : ℕ) hnK
   exact Finite.of_equiv
@@ -53,22 +49,21 @@ theorem maximalKummerRadicalExtension_finiteDimensional
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
     FiniteDimensional K
-      (kummerRadicalExtension (K := K) (Omega := Omega) n
+      (kummerRadicalExtension (Omega := Omega) n
         (maximalKummerSubgroup K n).1) := by
   let Delta := maximalKummerSubgroup K n
-  let E := kummerRadicalExtension (K := K) (Omega := Omega) n Delta.1
+  let E := kummerRadicalExtension (Omega := Omega) n Delta.1
   let R := RestrictedRadicalQuotient n Delta
   let M := nthRootsSubgroup E (n : ℕ)
   let _ : IsGalois K E :=
-    kummerRadicalExtension_isGalois (K := K) (Omega := Omega) n Delta.1
+    kummerRadicalExtension_isGalois n Delta.1
   let _ : Finite R := finite_maximalRestrictedRadicalQuotient K n hnK
   let _ : NeZero (n : ℕ) := ⟨n.ne_zero⟩
   let _ : Fintype M := nthRootsSubgroupFintype E (n : ℕ)
   let _ : Finite (R →* M) :=
     Finite.of_injective (fun chi : R →* M => (chi : R → M))
       DFunLike.coe_injective
-  let e := kummerRadicalExtensionRestrictedTransposeMulEquiv
-    (K := K) (Omega := Omega) n hnK hmu Delta
+  let e := kummerRadicalExtensionRestrictedTransposeMulEquiv (Omega := Omega) n hnK hmu Delta
   let _ : Finite Gal(E/K) := Finite.of_equiv (R →* M) e.symm.toEquiv
   exact IsGalois.finiteDimensional_of_finite K E
 

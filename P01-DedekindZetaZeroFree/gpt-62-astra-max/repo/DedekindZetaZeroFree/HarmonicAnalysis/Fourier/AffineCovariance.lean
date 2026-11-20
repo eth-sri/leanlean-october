@@ -15,16 +15,21 @@ namespace DedekindZetaZeroFree.AbelianQuotient
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
   [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E]
 
-def affineSchwartz (f : SchwartzMap E ℂ) (A : E ≃L[ℝ] E) (z : E) :
+section
+
+variable (f : SchwartzMap E ℂ) (A : E ≃L[ℝ] E)
+
+def affineSchwartz (z : E) :
     SchwartzMap E ℂ :=
   SchwartzMap.compCLMOfAntilipschitz ℂ
     ((Function.HasTemperateGrowth.const z).add Function.HasTemperateGrowth.id')
     (IsometryEquiv.addLeft z).isometry.antilipschitz
     (SchwartzMap.compCLMOfContinuousLinearEquiv ℂ A f)
 
-@[simp] theorem affineSchwartz_apply (f : SchwartzMap E ℂ)
-    (A : E ≃L[ℝ] E) (z x : E) :
+@[simp] theorem affineSchwartz_apply (z x : E) :
     affineSchwartz f A z x = f (A (z + x)) := rfl
+
+end
 
 private theorem affineFourier_linear_covariance (f : SchwartzMap E ℂ) (A : E ≃L[ℝ] E) (ξ : E) :
     FourierTransform.fourier ((f : E → ℂ) ∘ A) ξ =
@@ -38,7 +43,7 @@ private theorem affineFourier_linear_covariance (f : SchwartzMap E ℂ) (A : E �
     (μ := volume)
   change (∫ y : E, Real.fourierChar (-inner ℝ y (A.symm.toContinuousLinearMap.adjoint ξ)) • f y ∂Measure.map A volume) =
     ∫ x : E, Real.fourierChar (-inner ℝ (A x) (A.symm.toContinuousLinearMap.adjoint ξ)) • f (A x) at hi
-  rw [hm, integral_smul_measure, ENNReal.toReal_ofReal (abs_nonneg _)] at hi
+  simp [hm] at hi
   simp only [ContinuousLinearMap.adjoint_inner_right, ContinuousLinearEquiv.coe_coe,
     ContinuousLinearEquiv.symm_apply_apply] at hi
   rw [SchwartzMap.fourier_coe, Real.fourier_eq, Real.fourier_eq]

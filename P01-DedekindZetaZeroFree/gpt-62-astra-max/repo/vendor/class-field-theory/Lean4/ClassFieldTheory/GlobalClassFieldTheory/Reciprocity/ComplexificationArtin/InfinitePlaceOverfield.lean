@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -55,8 +53,7 @@ theorem complexEmbeddingFieldRange_map_complexConjugation
   · rintro ⟨x, rfl⟩
     refine ⟨σ.symm x, ?_⟩
     calc
-      (Complex.conjAe.restrictScalars ℚ)
-          (φ (σ.symm x)) =
+      _ =
           φ (σ (σ.symm x)) :=
         (hσ.eq (σ.symm x)).symm
       _ = φ x := by rw [σ.apply_symm_apply]
@@ -93,7 +90,7 @@ noncomputable instance
   let φ :=
     (InfinitePlace.embedding
       (chosenInfinitePlaceAbove (L := L) v)).toRatAlgHom
-  let : FiniteDimensional ℚ φ.fieldRange :=
+  let :=
     φ.equivFieldRange.toLinearEquiv.finiteDimensional
   exact
     IntermediateField.finiteDimensional_sup
@@ -144,9 +141,9 @@ theorem infinitePlaceComplexificationOverfieldEmbedding_coe
         (chosenInfinitePlaceAbove (L := L) v) x := by
   change
     (InfinitePlace.embedding
-      (chosenInfinitePlaceAbove (L := L) v)).toRatAlgHom x =
+      (chosenInfinitePlaceAbove v)).toRatAlgHom x =
       InfinitePlace.embedding
-        (chosenInfinitePlaceAbove (L := L) v) x
+        (chosenInfinitePlaceAbove v) x
   rfl
 
 noncomputable instance
@@ -319,7 +316,7 @@ noncomputable instance
     IntermediateField.isCyclotomicExtension_adjoin_of_exists_isPrimitiveRoot
       ({4} : Set ℕ) K
       (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v)
+          v)
   intro n hn _hn0
   rw [Set.mem_singleton_iff] at hn
   subst n
@@ -339,11 +336,10 @@ noncomputable instance
   refine ⟨ζ, ?_⟩
   apply IsPrimitiveRoot.of_map_of_injective
     (f :=
-      (C.val : C →ₐ[ℚ] ℂ))
+      C.val)
     (ζ := ζ)
     (k := 4)
-  · change IsPrimitiveRoot Complex.I 4
-    exact complexI_isPrimitiveRoot_four
+  · exact complexI_isPrimitiveRoot_four
   · exact C.val.injective
 
 noncomputable instance
@@ -417,12 +413,8 @@ private theorem infinitePlaceRatEmbeddedExtensionField_le_factors
     infinitePlaceBaseFourthRootField
       (K := K) (L := L) v
   intro x hx
-  have hx' :
-      (x : C).1 ∈ φ.fieldRange :=
-    (IntermediateField.mem_restrict
-      (show φ.fieldRange ≤ C from le_sup_left) x).mp hx
-  obtain ⟨y, hy⟩ := hx'
-  change (x : C) ∈ A ⊔ B
+  obtain ⟨y, hy⟩ := ((IntermediateField.mem_restrict
+    (show φ.fieldRange ≤ C from le_sup_left) x).mp hx)
   apply (show A ≤ A ⊔ B from le_sup_left)
   change
     (x : C) ∈
@@ -430,15 +422,15 @@ private theorem infinitePlaceRatEmbeddedExtensionField_le_factors
   refine ⟨y, ?_⟩
   apply Subtype.ext
   calc
-    ((IsScalarTower.toAlgHom K L C y : C) : ℂ) =
+    _ =
         InfinitePlace.embedding
-          (chosenInfinitePlaceAbove (L := L) v) y := by
+          (chosenInfinitePlaceAbove v) y := by
       change
         ((infinitePlaceComplexificationOverfieldEmbedding
-            (K := K) (L := L) v y : C) : ℂ) = _
+              v y : C) : ℂ) = _
       exact
         infinitePlaceComplexificationOverfieldEmbedding_coe
-          (K := K) (L := L) v y
+            v y
     _ = (x : C).1 := hy
 
 omit [FiniteDimensional K L] in
@@ -513,7 +505,7 @@ private theorem infinitePlaceRatComplexificationFactors_sup
       ⊤ := by
   apply IntermediateField.lift_injective
     (infinitePlaceComplexificationOverfield
-      (K := K) (L := L) v)
+        v)
   rw [infinitePlaceRatEmbeddedExtensionField,
     infinitePlaceRatFourthRootField,
     IntermediateField.lift_sup,
@@ -537,16 +529,16 @@ theorem infinitePlaceComplexificationFactors_sup
       (K := ℚ)).mp
   change
     infinitePlaceRatComplexificationFactors
-        (K := K) (L := L) v =
+          v =
       ⊤
   apply top_unique
   rw [← infinitePlaceRatComplexificationFactors_sup
-    (K := K) (L := L) v]
+      v]
   exact sup_le
     (infinitePlaceRatEmbeddedExtensionField_le_factors
-      (K := K) (L := L) v)
+        v)
     (infinitePlaceRatFourthRootField_le_factors
-      (K := K) (L := L) v)
+        v)
 
 noncomputable instance
     infinitePlaceComplexificationOverfield_isAbelianGalois_over_base
@@ -563,23 +555,22 @@ noncomputable instance
   let B :=
     infinitePlaceBaseFourthRootField
       (K := K) (L := L) v
-  let : FiniteDimensional K A :=
+  let :=
     (IsScalarTower.toAlgHom K L C).equivFieldRange.toLinearEquiv
       |>.finiteDimensional
-  let : FiniteDimensional K B :=
+  let :=
     IsCyclotomicExtension.finiteDimensional
       ({4} : Set ℕ) K B
   let :
       IsAbelianGalois K
         (⊤ : IntermediateField K C) := by
     rw [← infinitePlaceComplexificationFactors_sup
-      (K := K) (L := L) v]
+        v]
     exact
       AlgebraicNumberTheory.isAbelianGalois_sup K A B
   exact
     IsAbelianGalois.of_algHom
-      (IntermediateField.topEquiv.symm.toAlgHom :
-        C →ₐ[K] (⊤ : IntermediateField K C))
+      IntermediateField.topEquiv.symm.toAlgHom
 
 noncomputable instance
     infinitePlaceComplexificationOverfield_isTotallyComplex
@@ -664,8 +655,7 @@ theorem ramifiedInfinitePlaceOverfieldConjugation_apply
         (K := K) (L := L) v) :
     (ramifiedInfinitePlaceOverfieldConjugation
         (K := K) (L := L) v hRamified z : ℂ) =
-      star (z : ℂ) := by
-  rfl
+      star (z : ℂ) := rfl
 
 omit [NumberField K] [FiniteDimensional K L] in
 /-- The restricted overfield complex conjugation is an involution. -/
@@ -684,12 +674,11 @@ theorem ramifiedInfinitePlaceOverfieldConjugation_sq
   apply Subtype.ext
   change
     (ramifiedInfinitePlaceOverfieldConjugation
-        (K := K) (L := L) v hRamified
+          v hRamified
         (ramifiedInfinitePlaceOverfieldConjugation
-          (K := K) (L := L) v hRamified z) : ℂ) =
+            v hRamified z) : ℂ) =
       (z : ℂ)
-  simp only [ramifiedInfinitePlaceOverfieldConjugation_apply,
-    star_star]
+  simp
 
 end ComplexConjugationOverextension
 

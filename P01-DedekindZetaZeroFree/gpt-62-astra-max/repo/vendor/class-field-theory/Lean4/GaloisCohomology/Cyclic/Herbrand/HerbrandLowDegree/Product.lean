@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -51,10 +49,12 @@ def piMulDistribMulAction
     funext i
     exact MulDistribMulAction.smul_mul g (x i) (y i)
 
+section
+
+variable (ι : Type uι) (A : ι → Type uA) [∀ i, CommGroup (A i)] (N : ∀ i, Subgroup (A i))
+
 /-- The pointwise product of a family of subgroups. -/
-def piSubgroup (ι : Type uι) (A : ι → Type uA)
-    [∀ i, CommGroup (A i)]
-    (N : ∀ i, Subgroup (A i)) :
+def piSubgroup :
     Subgroup (∀ i, A i) where
   carrier := {x | ∀ i, x i ∈ N i}
   one_mem' i := (N i).one_mem
@@ -63,19 +63,13 @@ def piSubgroup (ι : Type uι) (A : ι → Type uA)
 
 @[simp]
 theorem mem_piSubgroup_iff
-    (ι : Type uι) (A : ι → Type uA)
-    [∀ i, CommGroup (A i)]
-    (N : ∀ i, Subgroup (A i))
     (x : ∀ i, A i) :
     x ∈ piSubgroup ι A N ↔
       ∀ i, x i ∈ N i :=
   Iff.rfl
 
 /-- The componentwise quotient map. -/
-noncomputable def piQuotientMap
-    (ι : Type uι) (A : ι → Type uA)
-    [∀ i, CommGroup (A i)]
-    (N : ∀ i, Subgroup (A i)) :
+noncomputable def piQuotientMap :
     (∀ i, A i) →* ∀ i, A i ⧸ N i where
   toFun x i := QuotientGroup.mk' (N i) (x i)
   map_one' := by
@@ -88,42 +82,20 @@ noncomputable def piQuotientMap
 
 @[simp]
 theorem piQuotientMap_apply
-    (ι : Type uι) (A : ι → Type uA)
-    [∀ i, CommGroup (A i)]
-    (N : ∀ i, Subgroup (A i))
     (x : ∀ i, A i) (i : ι) :
     piQuotientMap ι A N x i =
       QuotientGroup.mk' (N i) (x i) :=
   rfl
 
-theorem ker_piQuotientMap
-    (ι : Type uι) (A : ι → Type uA)
-    [∀ i, CommGroup (A i)]
-    (N : ∀ i, Subgroup (A i)) :
+theorem ker_piQuotientMap :
     (piQuotientMap ι A N).ker =
       piSubgroup ι A N := by
   ext x
   constructor
-  · intro hx i
-    have hmap :
-        piQuotientMap ι A N x = 1 :=
-      MonoidHom.mem_ker.mp hx
-    have hi : QuotientGroup.mk' (N i) (x i) = 1 :=
-      (piQuotientMap_apply ι A N x i).symm.trans (congrFun hmap i)
-    exact
-      (QuotientGroup.eq_one_iff
-        (N := N i) (x := x i)).mp hi
-  · intro hx
-    exact MonoidHom.mem_ker.mpr <| by
-      ext i
-      exact
-        (QuotientGroup.eq_one_iff
-          (N := N i) (x := x i)).mpr (hx i)
+  · exact fun hx i ↦ (QuotientGroup.eq_one_iff (x i)).mp (Eq.trans (Eq.symm (piQuotientMap_apply ι A N x i)) (congrFun (MonoidHom.mem_ker.mp hx) i))
+  · exact fun hx ↦ MonoidHom.mem_ker.mpr (funext fun i ↦ (QuotientGroup.eq_one_iff (x i)).mpr (hx i))
 
-theorem piQuotientMap_surjective
-    (ι : Type uι) (A : ι → Type uA)
-    [∀ i, CommGroup (A i)]
-    (N : ∀ i, Subgroup (A i)) :
+theorem piQuotientMap_surjective :
     Function.Surjective (piQuotientMap ι A N) := by
   intro y
   choose x hx using fun i =>
@@ -134,10 +106,7 @@ theorem piQuotientMap_surjective
 
 /-- The quotient of a dependent product by the pointwise subgroup is the
 dependent product of the quotients. -/
-noncomputable def piQuotientEquiv
-    (ι : Type uι) (A : ι → Type uA)
-    [∀ i, CommGroup (A i)]
-    (N : ∀ i, Subgroup (A i)) :
+noncomputable def piQuotientEquiv :
     (∀ i, A i) ⧸ piSubgroup ι A N ≃*
       ∀ i, A i ⧸ N i :=
   (QuotientGroup.quotientMulEquivOfEq
@@ -146,10 +115,12 @@ noncomputable def piQuotientEquiv
       (piQuotientMap ι A N)
       (piQuotientMap_surjective ι A N))
 
+end
+
 section TateProducts
 
 variable {G : Type uG} [Group G] [Fintype G]
-variable {ι : Type uι} (A : ι → Type uA)
+    {ι : Type uι} (A : ι → Type uA)
 variable [∀ i, CommGroup (A i)]
 variable [∀ i, MulDistribMulAction G (A i)]
 
@@ -193,7 +164,7 @@ def normKernelPiEquiv :
       (tateNorm G (∀ i, A i)
         (fun i ↦ (x i).1)) i = 1
     have hi := (x i).2
-    change tateNormHom (G := G) (A := A i) (x i).1 = 1 at hi
+    change tateNormHom (x i).1 = 1 at hi
     rw [tateNormHom_apply] at hi
     simpa only [tateNorm, Finset.prod_apply,
       Pi.smul_apply] using hi⟩
@@ -226,9 +197,7 @@ noncomputable def herbrandH0PiEquiv :
       (fun i ↦
         (tateNormSubgroup G (A i)).subgroupOf
           (fixedSubgroup G (A i)))
-  let q :
-      fixedSubgroup G (∀ i, A i) ⧸ N ≃*
-        (∀ i, fixedSubgroup G (A i)) ⧸ M :=
+  let q :=
     quotientMulEquivOfSplit
       N M e.toMonoidHom e.symm.toMonoidHom
       (fun y ↦ e.apply_symm_apply y)
@@ -239,25 +208,21 @@ noncomputable def herbrandH0PiEquiv :
         intro i
         rw [Subgroup.mem_subgroupOf]
         refine ⟨a i, ?_⟩
-        have hi := congrFun ha i
-        simpa [tateNormHom_apply, tateNorm, e, fixedPiEquiv] using hi)
+        simpa [tateNormHom_apply, tateNorm, e, fixedPiEquiv] using (congrFun ha i))
       (fun y hy ↦ by
         change ∀ i, _ at hy
         have hy' :
             ∀ i, ∃ a : A i,
               tateNorm G (A i) a = (y i).1 := by
           intro i
-          have hyi :
-              (y i : A i) ∈ tateNormSubgroup G (A i) := by
-            simpa only [Subgroup.mem_subgroupOf] using hy i
-          rcases hyi with ⟨a, ha⟩
-          exact ⟨a, by simpa only [tateNormHom_apply] using ha⟩
+          rcases (by
+            simpa using hy i) with ⟨a, ha⟩
+          exact ⟨a, by simpa using ha⟩
         choose a ha using hy'
         rw [Subgroup.mem_subgroupOf]
         refine ⟨fun i ↦ a i, ?_⟩
         funext i
-        have hi := ha i
-        simpa [tateNormHom_apply, e, fixedPiEquiv, tateNorm] using hi)
+        simpa [tateNormHom_apply, e, fixedPiEquiv, tateNorm] using (ha i))
       (fun x hx ↦ by
         have hx1 : x = 1 := by
           apply e.injective
@@ -288,9 +253,7 @@ noncomputable def herbrandHMinusOnePiEquiv (σ : G) :
       (fun i ↦
         (augmentationSubgroup G (A i) σ).subgroupOf
           (normKernelSubgroup G (A i)))
-  let q :
-      normKernelSubgroup G (∀ i, A i) ⧸ N ≃*
-        (∀ i, normKernelSubgroup G (A i)) ⧸ M :=
+  let q :=
     quotientMulEquivOfSplit
       N M e.toMonoidHom e.symm.toMonoidHom
       (fun y ↦ e.apply_symm_apply y)
@@ -301,9 +264,8 @@ noncomputable def herbrandHMinusOnePiEquiv (σ : G) :
         intro i
         rw [Subgroup.mem_subgroupOf]
         refine ⟨a i, ?_⟩
-        have hi := congrFun ha i
         simpa [sigmaMinusOneHom_apply, sigmaMinusOne, e,
-          normKernelPiEquiv] using hi)
+          normKernelPiEquiv] using (congrFun ha i))
       (fun y hy ↦ by
         change ∀ i, _ at hy
         have hy' :
@@ -311,18 +273,15 @@ noncomputable def herbrandHMinusOnePiEquiv (σ : G) :
               sigmaMinusOne G (A i) σ a =
                 (y i).1 := by
           intro i
-          have hyi :
-              (y i : A i) ∈ augmentationSubgroup G (A i) σ := by
-            simpa only [Subgroup.mem_subgroupOf] using hy i
-          rcases hyi with ⟨a, ha⟩
-          exact ⟨a, by simpa only [sigmaMinusOneHom_apply] using ha⟩
+          rcases (by
+            simpa using hy i) with ⟨a, ha⟩
+          exact ⟨a, by simpa using ha⟩
         choose a ha using hy'
         rw [Subgroup.mem_subgroupOf]
         refine ⟨fun i ↦ a i, ?_⟩
         funext i
-        have hi := ha i
         simpa [sigmaMinusOneHom_apply, e, normKernelPiEquiv,
-          sigmaMinusOne] using hi)
+          sigmaMinusOne] using (ha i))
       (fun x hx ↦ by
         have hx1 : x = 1 := by
           apply e.injective

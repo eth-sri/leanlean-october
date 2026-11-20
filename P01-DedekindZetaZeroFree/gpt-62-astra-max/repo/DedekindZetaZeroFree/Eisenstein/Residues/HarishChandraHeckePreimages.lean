@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.RepresentationTheory.Smooth.HarishChandraHeckeLieCovariance
 
 public import DedekindZetaZeroFree.Eisenstein.Residues.CompactFiniteRange
 public import DedekindZetaZeroFree.Theta.Periods.SphericalTensorResidueData
@@ -11,7 +12,7 @@ open NumberField Filter MeasureTheory
 namespace DedekindZetaZeroFree.RootDerivatives
 open KPLiteralRaw
 open KPContActualSphericalRightFieldIdentification
-open _root_.DedekindZetaZeroFree.RootDerivatives renaming chamber_germ_unique → chamber_germ_unique
+open _root_.DedekindZetaZeroFree.RootDerivatives (chamber_germ_unique)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1800000
@@ -26,7 +27,7 @@ set_option maxHeartbeats 1800000
   obtain ⟨M,_⟩ := KPGlobalTorusFiniteStages.compatibleModelData_exists F ζ hζ L
   obtain ⟨μ,_,_,P,⟨H⟩⟩ := kp_ms_fixed_haar_disintegration F ζ hζ
     (Measure.haar : Measure (G F ζ hζ)) inferInstance
-  obtain ⟨q,A,N,r,hq,hq0,hAs,hAm,hAc,hr,hball,hNs,hNa,hclear⟩ :=
+  obtain ⟨q, A, N, r, hq, hq0, hAs, hAm, hAc, hr, hNs, hNa, hclear⟩ :=
     literal_allWord_numerator F ζ hζ M μ P H K hK f
   have he : N 0 = Cf.numerator 0 := by
     ext g
@@ -50,20 +51,16 @@ set_option maxHeartbeats 1800000
 
 variable {F ζ hζ}
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    (R : PrincipalMellin.ActualRecipe S η)
 open MomentSources
 
 private theorem actualRightWord_eq_adelic (w : List (Fin (groupDimension F)))
     (f : Functions R) : actualRightWord F R.A.zeta12 R.A.primitive_zeta12 w f =
-      AdelicRightLieWords.actualRightWord F R.A.zeta12 R.A.primitive_zeta12 w f := by
-  induction w with
-  | nil => rfl
-  | cons b w ih =>
-    simp only [KPContActualSphericalRightFieldIdentification.actualRightWord, AdelicRightLieWords.actualRightWord]
-    rw [ih]
-    rfl
+      AdelicRightLieWords.actualRightWord F R.A.zeta12 R.A.primitive_zeta12 w f := by apply @DedekindZetaZeroFree.FourierContinuation.HCGeneration.HarishChandraHeckeLieCovariance.actualRightWord_eq_adelic <;> assumption
 
- theorem hcHeckeSpan_native_ancestry {Q : AdmissibleFlatSources R} (T : Realization R Q) :
+ variable {Q : AdmissibleFlatSources R} (T : Realization R Q)
+
+theorem hcHeckeSpan_native_ancestry :
     hcHeckeSpan T ≤ translatedFlatResidueSpan F R.A.zeta12 R.A.primitive_zeta12
       (KPContFlatSourceRecipe.D F R.A.zeta12 R.A.primitive_zeta12).K
       (PrincipalOfKP.iwasawaCompactSubgroupMax_isIwasawa F R.A.zeta12 R.A.primitive_zeta12) := by
@@ -77,14 +74,13 @@ private theorem actualRightWord_eq_adelic (w : List (Fin (groupDimension F)))
   simpa only [actualRightWord_eq_adelic R, realizationScalarResidue,
     MomentSources.Realization.theta]
 
- theorem hcHecke_kfinite_flat_preimage {Q : AdmissibleFlatSources R} (T : Realization R Q)
+ theorem hcHecke_kfinite_flat_preimage
     (u : MomentSources.Functions R) (hu : u ∈ hcHeckeSpan T) (hc : Continuous u)
     (hk : KFinite F R.A.zeta12 R.A.primitive_zeta12
       (KPContFlatSourceRecipe.D F R.A.zeta12 R.A.primitive_zeta12).K u) :
     ∃ (f : Flat F R.A.zeta12 R.A.primitive_zeta12
       (KPContFlatSourceRecipe.D F R.A.zeta12 R.A.primitive_zeta12).K)
-      (C : FlatScalarResidue F R.A.zeta12 R.A.primitive_zeta12 f), C.numerator 0 = u := by
-  exact kfinite_mem_flat_range F R.A.zeta12 R.A.primitive_zeta12
+      (C : FlatScalarResidue F R.A.zeta12 R.A.primitive_zeta12 f), C.numerator 0 = u := kfinite_mem_flat_range F R.A.zeta12 R.A.primitive_zeta12
     (PrincipalOfKP.iwasawaCompactSubgroupMax_isIwasawa F R.A.zeta12 R.A.primitive_zeta12)
     u (hcHeckeSpan_native_ancestry R T hu) hc hk
     (fun f C => (flatScalarResidue_smooth F R.A.zeta12 R.A.primitive_zeta12

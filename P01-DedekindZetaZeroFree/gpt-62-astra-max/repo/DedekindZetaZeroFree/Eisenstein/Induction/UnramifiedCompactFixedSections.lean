@@ -12,12 +12,15 @@ open KPLocalPrincipalSeries KPLocalStoneVonNeumann
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
-variable (S : RawFiniteInducingData F ζ hζ q)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
+    (S : RawFiniteInducingData F ζ hζ q)
 
-def actual_split_compact_level
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) :
+section
+
+variable (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
+
+def actual_split_compact_level :
     CompactOpenLevel (ActualCover F ζ hζ q) := by
   let m := KPAdelicCoverRestrictedProduct.depth F ζ hζ q
   have hm := KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q
@@ -25,12 +28,6 @@ def actual_split_compact_level
   letI := (KPLocalChartTopology.finite_topological_group F ζ hζ q m hm).2.2
   let k := KPGoodCompactSplitting.kStar F ζ hζ q ht
   let p := KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
-  have hk : IsCompact (Set.range k) :=
-    KPGoodCompactSplitting.kStar_compact_image F ζ hζ q ht m hm
-  have ho : IsOpen (Set.range k) :=
-    KPGoodCompactSplitting.kStar_open_image F ζ hζ q ht m hm
-  have hq : Continuous p := QuotientGroup.continuous_mk
-  have hqo : IsOpenMap p := QuotientGroup.isOpenMap_coe
   have he : Set.range (p.comp k) = p '' Set.range k := by
     simp [MonoidHom.comp_apply, Set.range_comp]
   refine { toOpenSubgroup := {
@@ -38,60 +35,54 @@ def actual_split_compact_level
     isOpen' := ?_ }, isCompact := ?_ }
   · change IsOpen (Set.range (p.comp k))
     rw [he]
-    exact hqo _ ho
+    exact QuotientGroup.isOpenMap_coe _ (KPGoodCompactSplitting.kStar_open_image F ζ hζ q ht m hm)
   · change IsCompact (Set.range (p.comp k))
     rw [he]
-    exact hk.image hq
+    exact (KPGoodCompactSplitting.kStar_compact_image F ζ hζ q ht m hm).image QuotientGroup.continuous_mk
 
-@[simp] theorem actual_split_compact_level_subgroup
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) :
+@[simp] theorem actual_split_compact_level_subgroup :
     ((actual_split_compact_level F ζ hζ q ht).toOpenSubgroup :
       Subgroup (ActualCover F ζ hζ q)) =
       (((KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp
         (KPGoodCompactSplitting.kStar F ζ hζ q ht)).range) := rfl
 
-theorem actual_split_compact_factor (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
+theorem actual_split_compact_factor
     (g : ActualCover F ζ hζ q) :
     ∃ b : S.borel.B, ∃ k : (actual_split_compact_level F ζ hζ q ht).toOpenSubgroup,
       g = (b : ActualCover F ζ hζ q) * (k : ActualCover F ζ hζ q) := by
   letI : Group (KPPGLLocalCover.LocalPGL2 F (Sum.inr q)) :=
     @QuotientGroup.Quotient.group _ _ (KPPGLLocalCover.scalarSubgroup F (Sum.inr q))
       (KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr q))
+  let projection₀ := KPPGLLocalCover.projection F ζ hζ (Sum.inr q)
   obtain ⟨G, hG⟩ := QuotientGroup.mk_surjective
-    (KPPGLLocalCover.projection F ζ hζ (Sum.inr q) g)
+    (projection₀ g)
   obtain ⟨r, hr⟩ := ActualFiniteBorel.IwasawaProof.triangularize F q G
   let K := ((KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp
     (KPGoodCompactSplitting.kStar F ζ hζ q ht)) r⁻¹
-  have hkmem : K ∈ (actual_split_compact_level F ζ hζ q ht).toOpenSubgroup := ⟨r⁻¹, rfl⟩
   have hb : g * K⁻¹ ∈ S.borel.B := by
     rw [S.borel_eq]
-    change KPLocalSmoothRepresentation.projection F ζ hζ q (g * K⁻¹) ∈
-      KPRankOneInduction.upperBorel F q
     refine ⟨G * KPTameCompact.inclusion F q r, ?_, hr⟩
     change Matrix.ProjGenLinGroup.mk (G * KPTameCompact.inclusion F q r) =
       KPLocalSmoothRepresentation.ordinaryPGLMap F q
-        (KPPGLLocalCover.projection F ζ hζ (Sum.inr q) (g * K⁻¹))
-    rw [(KPPGLLocalCover.projection F ζ hζ (Sum.inr q)).map_mul,
-      (KPPGLLocalCover.projection F ζ hζ (Sum.inr q)).map_inv, ← hG]
+        (projection₀ (g * K⁻¹))
+    rw [(projection₀).map_mul,
+      (projection₀).map_inv, ← hG]
     change _ = KPLocalSmoothRepresentation.ordinaryPGLMap F q
       (KPPGLLocalCover.baseQuotient F (Sum.inr q) G *
         (KPPGLLocalCover.baseQuotient F (Sum.inr q)
           (KPTameCompact.inclusion F q r⁻¹))⁻¹)
     rw [map_mul, map_inv, map_inv, inv_inv]
     rfl
-  refine ⟨⟨g * K⁻¹, hb⟩, ⟨K, hkmem⟩, ?_⟩
+  refine ⟨⟨g * K⁻¹, hb⟩, ⟨K, (⟨r⁻¹, rfl⟩)⟩, ?_⟩
   simp
 
- abbrev rawSplit
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) :=
+ abbrev rawSplit :=
   (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp
     (KPGoodCompactSplitting.kStar F ζ hζ q ht)
- abbrev rawCompact
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) :=
+ abbrev rawCompact :=
   (rawSplit F ζ hζ q ht).range
 
 theorem actual_split_compact_retract
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (b : S.borel.B)
     (hb : b.val ∈ (actual_split_compact_level F ζ hζ q ht).toOpenSubgroup) :
     S.borel.retract b ∈
@@ -117,9 +108,8 @@ theorem actual_split_compact_retract
       Matrix.GeneralLinearGroup.map_apply] using hz
   have hdet : IsUnit (k 0 0 * k 1 1) := by
     simpa [Matrix.det_fin_two, hki] using k.det.isUnit
-  let a : (KPTameCompact.O F q)ˣ := (isUnit_of_mul_isUnit_left hdet).unit
-  have ha : (a : KPTameCompact.O F q) = k 0 0 := (isUnit_of_mul_isUnit_left hdet).unit_spec
-  let t : KPTameCompact.O F q := - (a⁻¹ : (KPTameCompact.O F q)ˣ) * k 0 1
+  let a := (isUnit_of_mul_isUnit_left hdet).unit
+  let t := - (a⁻¹ : (KPTameCompact.O F q)ˣ) * k 0 1
   let d := k * KPStandardLocalRootLifts.integralN F q t
   have hd10 : (KPTameCompact.inclusion F q d) 1 0 = 0 := by
     simp [d, map_mul, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply,
@@ -127,7 +117,7 @@ theorem actual_split_compact_retract
       KPLocalCube.integerInclusion, Matrix.GeneralLinearGroup.map_apply, hki]
   have hd01 : (KPTameCompact.inclusion F q d) 0 1 = 0 := by
     have hai : k 0 0 * ((a⁻¹ : (KPTameCompact.O F q)ˣ) : KPTameCompact.O F q) = 1 := by
-      rw [← ha]; exact Units.mul_inv a
+      rw [← ((isUnit_of_mul_isUnit_left hdet).unit_spec)]; exact Units.mul_inv a
     have hdt : k 0 0 * t + k 0 1 = 0 := by
       dsimp [t]
       rw [← mul_assoc, mul_neg, hai]
@@ -138,15 +128,13 @@ theorem actual_split_compact_retract
         KPStandardLocalRootLifts.integralN] using hdt]
     rfl
   let D := rawSplit F ζ hζ q ht d
-  have hD : D ∈ actualTorus F ζ hζ q := by
-    exact ⟨KPTameCompact.inclusion F q d, rfl, hd10, hd01⟩
-  let j : actualTorus F ζ hζ q := ⟨D, hD⟩
+  let j : actualTorus F ζ hζ q := ⟨D, ⟨KPTameCompact.inclusion F q d, rfl, hd10, hd01⟩⟩
   have hn : (S.borel.upperRoot (Multiplicative.ofAdd (t : LocalField F q)) :
       ActualCover F ζ hζ q) = rawSplit F ζ hζ q ht
         (KPStandardLocalRootLifts.integralN F q t) := by
     rw [(S.openCell S.polarization).upper_eq]
     change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
-      (KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) (t : LocalField F q)) = _
+      (KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) t) = _
     rw [KPStandardLocalRootLifts.N_eq_compact F ζ hζ q ht t]
     rfl
   have hbj : b * S.borel.upperRoot (Multiplicative.ofAdd (t : LocalField F q)) =
@@ -160,9 +148,10 @@ theorem actual_split_compact_retract
     have h := congrArg S.borel.retract hbj
     simpa only [map_mul, S.borel.retract_upperRoot, mul_one,
       S.borel.retract_torus] using h
-  change (S.borel.retract b : ActualCover F ζ hζ q) ∈ rawCompact F ζ hζ q ht
   rw [hr]
   exact ⟨d, rfl⟩
+
+end
 
 private lemma raw_split_projection (g : ActualCover F ζ hζ q) :
     S.borel.projection g = KPLocalSmoothRepresentation.projection F ζ hζ q g := by
@@ -181,9 +170,8 @@ private lemma raw_split_ratio (b : S.borel.B) :
   have hG : Matrix.ProjGenLinGroup.mk G =
       KPLocalSmoothRepresentation.projection F ζ hζ q b.val := by
     rw [← raw_split_projection F ζ hζ q S]
-    have hp := congrArg (fun c : S.borel.B => S.borel.projection c.val) hx
     simpa only [G, y, Subgroup.coe_mul, map_mul, S.borel.torus_projection,
-      S.borel.upperRoot_projection] using hp.symm
+      S.borel.upperRoot_projection] using (congrArg (fun c : S.borel.B => S.borel.projection c.val) hx).symm
   have h10 : G 1 0 = 0 := by
     simp [G, KubotaRankTwo.d, KubotaRankTwo.n, Matrix.GeneralLinearGroup.coe_mul,
       Matrix.mul_apply, Fin.sum_univ_two]
@@ -192,17 +180,6 @@ private lemma raw_split_ratio (b : S.borel.B) :
   rw [KPRankOneInduction.borelRatio_eq F q _ G hG h10]
   simp [G, KubotaRankTwo.d, KubotaRankTwo.n, Matrix.GeneralLinearGroup.coe_mul,
     Matrix.mul_apply, Fin.sum_univ_two, y]
-
-private lemma raw_split_intersection_norm
-    (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (b : S.borel.B) (hb : b.val ∈ rawCompact F ζ hζ q ht) :
-    localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract b)) = 1 := by
-  rw [raw_split_ratio F ζ hζ q S]
-  have hbb : b.val ∈ actualBorel F ζ hζ q := S.borel_eq ▸ b.property
-  have hc : b.val ∈ KPRankOneCartanGeometry.coveredK0 F ζ hζ q := by
-    obtain ⟨k, hk⟩ := hb
-    exact ⟨k, hk ▸ rfl⟩
-  exact ActualFiniteBorel.IwasawaProof.covered_intersection F ζ hζ q ⟨b.val, hbb⟩ hc
 
 theorem actual_split_compact_iwasawa
     (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) :
@@ -238,7 +215,12 @@ theorem actual_split_compact_iwasawa
   · intro k
     simp [kp, k.property]
   · intro b hb
-    exact raw_split_intersection_norm F ζ hζ q S ht b hb
+    rw [raw_split_ratio F ζ hζ q S]
+    have hbb : b.val ∈ actualBorel F ζ hζ q := S.borel_eq ▸ b.property
+    have hc : b.val ∈ KPRankOneCartanGeometry.coveredK0 F ζ hζ q := by
+      obtain ⟨k, hk⟩ := hb
+      exact ⟨k, hk ▸ rfl⟩
+    exact ActualFiniteBorel.IwasawaProof.covered_intersection F ζ hζ q ⟨b.val, hbb⟩ hc
 
 end
 end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.GoodSphericalVector

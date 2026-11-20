@@ -12,9 +12,9 @@ noncomputable section
 open DedekindZetaZeroFree.Quantitative.PoissonKernel
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : DedekindZetaZeroFree.SArithmeticData F}
-variable {η : DedekindZetaZeroFree.RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : DedekindZetaZeroFree.SArithmeticData F}
+    {η : DedekindZetaZeroFree.RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem savings_gt : (1 / 32 : ℝ) < 37749867 / 1000000000 ∧ (1 / 32 : ℝ) < 384999 / 10000000 := by
   norm_num

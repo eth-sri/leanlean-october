@@ -15,10 +15,10 @@ open KPContActualSectorSmoothTestModules KPContActualSectorTestDifferentialDesce
 open KPContActualCotangentCountableShrinking KPContCotangentOverlapRationalBranches
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 abbrev Base := KPFiniteCuspAtlas.rawXU F ζ hζ U
 
@@ -47,14 +47,10 @@ private theorem isOpen_omega (a : ActualChart (U := U) (H := H)) : IsOpen (omega
   a.domain_open.preimage continuous_labeledA_self
 
 private theorem continuous_q (a : ActualChart (U := U) (H := H)) : Continuous (q a) := by
-  have hp : Continuous (KPCuspSiegel.projection F
-      (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)) :=
-    continuous_quotient_mk'
   have hc : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
       ((H.atlas U).representative a.component)) := by
-    have hh := (H.atlas U).components.continuous.comp (continuous_sigmaMk (i := a.component))
-    simpa only [Function.comp_def, (H.atlas U).components_formula] using hh
-  exact hc.comp (hp.comp continuous_labeledA_self)
+    simpa only [Function.comp_def, (H.atlas U).components_formula] using ((H.atlas U).components.continuous.comp (continuous_sigmaMk))
+  exact hc.comp (continuous_quotient_mk'.comp continuous_labeledA_self)
 
  def zext (a : ActualChart (U := U) (H := H)) (f : omega a → ℂ) : M F → ℂ :=
   fun x => if hx : x ∈ omega a then f ⟨x, hx⟩ else 0
@@ -62,7 +58,7 @@ private theorem continuous_q (a : ActualChart (U := U) (H := H)) : Continuous (q
 private theorem smooth_zext {a : ActualChart (U := U) (H := H)} {f : omega a → ℂ}
     (hf : SmoothOnLift a f) : ContDiffOn ℝ (⊤ : ℕ∞) (zext a f) (omega a) := by
   obtain ⟨g, hg, he⟩ := hf
-  refine hg.congr (f₁ := zext a f) ?_
+  refine hg.congr ?_
   intro x hx
   simpa [zext, hx] using (he ⟨x, hx⟩).symm
 
@@ -73,10 +69,9 @@ private theorem smooth_differential {a : ActualChart (U := U) (H := H)} {f : ome
     (HyperbolicChart.differential (d F) (zext a f) x), ?_, fun _ => rfl⟩
   rw [contDiffOn_piLp]
   rintro ⟨i, k⟩
-  have hd := (smooth_zext hf).fderiv_of_isOpen (isOpen_omega a) (m := (⊤ : ℕ∞)) (by simp)
   have hcd (k : Fin 3) : ContDiffOn ℝ (⊤ : ℕ∞)
       (HyperbolicChart.coordinateDerivative (d F) i k (zext a f)) (omega a) :=
-    hd.clm_apply contDiffOn_const
+    ((smooth_zext hf).fderiv_of_isOpen (isOpen_omega a) (by simp)).clm_apply contDiffOn_const
   have hexp : ContDiffOn ℝ (⊤ : ℕ∞)
       (fun x : M F => (Real.exp (x (i, 2)) : ℂ)) (omega a) :=
     Complex.ofRealCLM.contDiff.comp_contDiffOn
@@ -92,7 +87,11 @@ private theorem smooth_ofReal {a : ActualChart (U := U) (H := H)} {f : omega a �
   exact ⟨fun x => (g x : ℂ), Complex.ofRealCLM.contDiff.comp_contDiffOn hg,
     fun x => by dsimp; rw [he x]⟩
 
-private theorem differential_frame (f : M F → ℂ) (x : M F) (k : Fin (d F) × Fin 3) :
+section
+
+variable (f : M F → ℂ) (x : M F)
+
+private theorem differential_frame (k : Fin (d F) × Fin 3) :
     (CotangentLogCoframe.j (d F) (HyperbolicChart.differential (d F) f x)) k =
       fderiv ℝ f x (CotangentLogCoframe.H (d F) x
         (EuclideanSpace.basisFun _ ℝ k)) := by
@@ -134,7 +133,7 @@ private theorem differential_frame (f : M F → ℂ) (x : M F) (k : Fin (d F) ×
     simp [CotangentLogCoframe.j, HyperbolicChart.differential,
       HyperbolicChart.coordinateDerivative, RCLike.real_smul_eq_coe_mul]
 
-private theorem differential_frame_sum (f : M F → ℂ) (x : M F) (v : V F) :
+private theorem differential_frame_sum (v : V F) :
     fderiv ℝ f x (CotangentLogCoframe.H (d F) x v) =
       ∑ k, (v k : ℂ) *
         (CotangentLogCoframe.j (d F) (HyperbolicChart.differential (d F) f x)) k := by
@@ -142,6 +141,8 @@ private theorem differential_frame_sum (f : M F → ℂ) (x : M F) (v : V F) :
   simp only [EuclideanSpace.basisFun_repr, map_sum, map_smul, differential_frame,
     RCLike.real_smul_eq_coe_mul]
   rfl
+
+end
 
 private theorem differential_arrow_const {i : Fin (H.atlas U).componentCount}
     {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) i}
@@ -218,8 +219,11 @@ local notation "cmap" => coord (ζ:=ζ) (hζ:=hζ)
     apply continuous_pi
     intro k
     exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous))
- theorem chart_coord (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component)
+ section
+
+variable (a b : ShrunkChart F ζ hζ U R P H) (h : a.component = b.component)
+
+theorem chart_coord
     (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
     coordinateMap (isotropyChart a) (targetChart a b h) g = cmap g.val := by
   rcases a with ⟨i,ca,oa,da,dao,dac,das,dai⟩
@@ -228,30 +232,36 @@ local notation "cmap" => coord (ζ:=ζ) (hζ:=hζ)
   subst j
   funext x
   simp [coordinateMap, isotropyChart, targetChart, ChartKind.representative, coord]
- theorem chart_omega (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component) :
+ theorem chart_omega :
     (targetChart a b h).omega = (isotropyChart b).omega := by
   rcases a with ⟨i,ca,oa,da,dao,dac,das,dai⟩
   rcases b with ⟨j,cb,ob,db,dbo,dbc,dbs,dbi⟩
   dsimp at h
   subst j
   rfl
- theorem omega_open (a : ShrunkChart F ζ hζ U R P H) : IsOpen (omega a) := by
+
+end
+ section
+
+variable (a : ShrunkChart F ζ hζ U R P H)
+
+theorem omega_open : IsOpen (omega a) := by
   apply a.domain_open.preimage
   apply continuous_pi
   intro k
   exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
- theorem omega_subset (a : ShrunkChart F ζ hζ U R P H) :
-    omega a ⊆ (isotropyChart a).omega := by
-  intro x hx
-  exact a.closure_subset (subset_closure hx)
- def make (a b : ShrunkChart F ζ hζ U R P H) (h : a.component = b.component)
-    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
+ theorem omega_subset :
+    omega a ⊆ (isotropyChart a).omega := fun x hx => a.closure_subset (subset_closure hx)
+
+end
+ section
+
+variable (a b : ShrunkChart F ζ hζ U R P H) (h : a.component = b.component)
+    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component))
+
+def make :
     ActualBranch a b := by
   let he := KPCuspGenuineMonodromy.finiteComparison_exists F ζ hζ U _ g
-  let r := he.choose
-  let u := he.choose_spec.choose
-  have hu := he.choose_spec.choose_spec
   have ht : Set.MapsTo (coordinateMap (isotropyChart a) (targetChart a b h) g)
       (omega a ∩ cmap g.val ⁻¹' omega b) (isotropyChart b).omega := by
     rw [chart_coord a b h g]
@@ -259,8 +269,8 @@ local notation "cmap" => coord (ζ:=ζ) (hζ:=hζ)
   exact {
     component_eq := h
     arrow := {
-      gamma := g, root := r⁻¹, levelLift := u,
-      finite_comparison := by simpa only [inv_inv] using hu
+      gamma := g, root := he.choose⁻¹, levelLift := he.choose_spec.choose,
+      finite_comparison := by simpa using he.choose_spec.choose_spec
       domain := omega a ∩ cmap g.val ⁻¹' omega b
       isOpen_domain := (omega_open a).inter ((omega_open b).preimage (coord_continuous g.val))
       source := fun _ hx => omega_subset a hx.1
@@ -272,9 +282,8 @@ local notation "cmap" => coord (ζ:=ζ) (hζ:=hζ)
       rw [chart_coord a b h g]
       exact fun _ hx => hx.2
     target_larger := ht }
-private theorem q_coord (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component)
-    (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component))
+include h in
+private theorem q_coord
     (x : M F) : q b (cmap g.val x) = q a x := by
   rcases a with ⟨i,ca,oa,da,dao,dac,das,dai⟩
   rcases b with ⟨j,cb,ob,db,dbo,dbc,dbs,dbi⟩
@@ -285,17 +294,23 @@ private theorem q_coord (a b : ShrunkChart F ζ hζ U R P H)
   apply Quotient.sound
   exact ⟨g, rfl⟩
 
+end
+
 private theorem q_branch {a b : ActualChart (U := U) (H := H)} (e : ActualBranch a b)
     (x : M F) : q b (e.arrow.psi x) = q a x := by
   rw [show e.arrow.psi = cmap e.arrow.gamma.val from chart_coord a b e.component_eq e.arrow.gamma]
   exact q_coord a b e.component_eq e.arrow.gamma x
 
-private theorem cutoff_norm_branch (η : Cutoff F ζ hζ U R P H)
+section
+
+variable (η : Cutoff F ζ hζ U R P H)
+
+private theorem cutoff_norm_branch
     {a b : ActualChart (U := U) (H := H)} (e : ActualBranch a b)
     (x : M F) (hx : x ∈ e.arrow.domain) :
     ‖cutoffDifferential η b ⟨e.arrow.psi x, e.target_shrinking hx⟩‖ =
       ‖cutoffDifferential η a ⟨x, e.source_shrinking hx⟩‖ := by
-  have hu (a : ActualChart (U := U) (H := H)) : SmoothOnLift a (cutoffLift η a) :=
+  have hu (a : ActualChart) : SmoothOnLift a (cutoffLift η a) :=
     smooth_ofReal (η.smooth a)
   have he : (fun y => zext b (cutoffLift η b) (e.arrow.psi y)) =ᶠ[𝓝 x]
       (1:ℂ) • zext a (cutoffLift η a) := by
@@ -313,7 +328,7 @@ private theorem cutoff_norm_branch (η : Cutoff F ζ hζ U R P H)
   exact (KPContCotangentRealOrthogonalComplexification.orthogonalComplexification _
     (KPContCotangentActualGenuineTwistIsotropy.q e.arrow x hx)).norm_map _
 
-private theorem cutoff_norm_fiber (η : Cutoff F ζ hζ U R P H)
+private theorem cutoff_norm_fiber
     (a b : ActualChart (U := U) (H := H)) (x : omega a) (y : omega b)
     (hxy : q a x.val = q b y.val) :
     ‖cutoffDifferential η a x‖ = ‖cutoffDifferential η b y‖ := by
@@ -339,8 +354,8 @@ private theorem cutoff_norm_fiber (η : Cutoff F ζ hζ U R P H)
     exact eq_of_heq (Sigma.mk.inj ((H.atlas U).components.injective he)).2
   obtain ⟨g,hg⟩ := Quotient.exact (hi hxy)
   change g.val • labeledA (placeEquiv F ζ hζ) y.val = labeledA (placeEquiv F ζ hζ) x.val at hg
-  let a : ActualChart (U := U) (H := H) := ⟨i,ca,oa,da,dao,dac,das,dai⟩
-  let b : ActualChart (U := U) (H := H) := ⟨i,cb,ob,db,dbo,dbc,dbs,dbi⟩
+  let a : ActualChart := ⟨i,ca,oa,da,dao,dac,das,dai⟩
+  let b : ActualChart := ⟨i,cb,ob,db,dbo,dbc,dbs,dbi⟩
   have he : cmap g.val⁻¹ x.val = y.val := by
     rw [coord, ← hg, inv_smul_smul, al]
   refine ⟨make a b rfl g⁻¹, ⟨x.property, ?_⟩, ?_⟩
@@ -349,7 +364,7 @@ private theorem cutoff_norm_fiber (η : Cutoff F ζ hζ U R P H)
   · change coordinateMap (isotropyChart a) (targetChart a b rfl) g⁻¹ x.val = y.val
     rw [chart_coord, Subgroup.coe_inv, he]
 
-private theorem cutoff_norm_continuous (η : Cutoff F ζ hζ U R P H)
+private theorem cutoff_norm_continuous
     (a : ActualChart (U := U) (H := H)) : Continuous (fun x : omega a => ‖cutoffDifferential η a x‖ ^ 2) := by
   obtain ⟨g,hg,he⟩ := smooth_differential (smooth_ofReal (η.smooth a))
   have h : (fun x : omega a => cutoffDifferential η a x) = (omega a).domRestrict g := by
@@ -358,11 +373,12 @@ private theorem cutoff_norm_continuous (η : Cutoff F ζ hζ U R P H)
     (fun x : omega a => ‖g x.val‖ ^ 2) from congrArg (fun f => fun x => ‖f x‖ ^ 2) h]
   exact hg.continuousOn.restrict.norm.pow 2
 
+end
+
 private theorem exists_chart_point (x : Base F ζ hζ U) :
     ∃ (a : ActualChart (U := U) (H := H)) (y : omega a), q a y.val = x := by
   obtain ⟨cov⟩ := (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
-  have hx : x ∈ ⋃ n, (cov.chart n).baseDomain := by rw [cov.covers]; trivial
-  obtain ⟨n,y,hy⟩ := Set.mem_iUnion.mp hx
+  obtain ⟨n,y,hy⟩ := Set.mem_iUnion.mp (by rw [cov.covers]; trivial)
   refine ⟨cov.chart n, coordinates (cov.chart n) y, ?_⟩
   change KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative (cov.chart n).component)
     (KPCuspSiegel.projection F _ (labeledA (placeEquiv F ζ hζ)
@@ -384,14 +400,18 @@ private theorem q_coordinates (a : ActualChart (U := U) (H := H)) (y : a.domain)
 
 end NormDescentHelpers
 
-theorem differentialNormSquared_descends (η : Cutoff F ζ hζ U R P H) :
+section
+
+variable (η : Cutoff F ζ hζ U R P H)
+
+theorem differentialNormSquared_descends :
     ∃! f : Base F ζ hζ U → ℝ, Continuous f ∧
       ∀ (a : ActualChart (U := U) (H := H)) (y : omega a),
         f (q a y.val) = ‖cutoffDifferential η a y‖ ^ 2 := by
   classical
   choose chart point hpoint using (exists_chart_point (R := R) (P := P) (H := H))
-  let f : Base F ζ hζ U → ℝ := fun x => ‖cutoffDifferential η (chart x) (point x)‖ ^ 2
-  have hf (a : ActualChart (U := U) (H := H)) (y : omega a) :
+  let f := fun x => ‖cutoffDifferential η (chart x) (point x)‖ ^ 2
+  have hf (a : ActualChart) (y : omega a) :
       f (q a y.val) = ‖cutoffDifferential η a y‖ ^ 2 := by
     dsimp only [f]
     rw [cutoff_norm_fiber η (chart (q a y.val)) a (point (q a y.val)) y (hpoint _)]
@@ -418,19 +438,18 @@ theorem differentialNormSquared_descends (η : Cutoff F ζ hζ U R P H) :
   refine ⟨f, ⟨hcont,hf⟩, ?_⟩
   intro g hg
   funext x
-  obtain ⟨a,y,hy⟩ := exists_chart_point (R := R) (P := P) (H := H) x
+  obtain ⟨a,y,hy⟩ := exists_chart_point x
   rw [← hy, hg.2, hf]
 
-def differentialNormSquared (η : Cutoff F ζ hζ U R P H) : Base F ζ hζ U → ℝ :=
+def differentialNormSquared : Base F ζ hζ U → ℝ :=
   Classical.choose (differentialNormSquared_descends F ζ hζ U R P H η)
 
-theorem differentialNormSquared_chart (η : Cutoff F ζ hζ U R P H)
+theorem differentialNormSquared_chart
     (a : ActualChart (U := U) (H := H)) (y : omega a) :
     differentialNormSquared F ζ hζ U R P H η (q a y.val) =
-      ‖cutoffDifferential η a y‖ ^ 2 := by
-  exact (Classical.choose_spec (differentialNormSquared_descends F ζ hζ U R P H η)).1.2 a y
+      ‖cutoffDifferential η a y‖ ^ 2 := (Classical.choose_spec (differentialNormSquared_descends F ζ hζ U R P H η)).1.2 a y
 
-theorem differentialSupport_eq_tsupport (η : Cutoff F ζ hζ U R P H) :
+theorem differentialSupport_eq_tsupport :
     differentialSupport F ζ hζ U R P H η =
       tsupport (differentialNormSquared F ζ hζ U R P H η) := by
   obtain ⟨cov⟩ := (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
@@ -451,7 +470,7 @@ theorem differentialSupport_eq_tsupport (η : Cutoff F ζ hζ U R P H) :
     simp only [Function.mem_support] at hx
     obtain ⟨n, hn⟩ := hcov x
     obtain ⟨y, hy⟩ := hn
-    let x' : KPContCotangentActualOverlap.M F := KPContCotangentActualOverlap.labeledAInv
+    let x' := KPContCotangentActualOverlap.labeledAInv
       (KPContCotangentActualOverlap.placeEquiv F ζ hζ) y.val
     have hx' : KPContCotangentActualOverlap.labeledA
         (KPContCotangentActualOverlap.placeEquiv F ζ hζ) x' = y.val := by
@@ -474,20 +493,25 @@ theorem differentialSupport_eq_tsupport (η : Cutoff F ζ hζ U R P H) :
       rw [differentialNormSquared_chart F ζ hζ U R P H η (cov.chart n) ⟨x', hmem⟩] at hx
       exact fun hz => hx (by rw [hz]; simp)
 
+end
+
 def collarError (χ₀ : Cutoff F ζ hζ U R P H)
     (χ : CuspIndex F ζ hζ U R P H → Cutoff F ζ hζ U R P H) : Base F ζ hζ U → ℝ :=
   fun x => differentialNormSquared F ζ hζ U R P H χ₀ x +
     ∑ c, differentialNormSquared F ζ hζ U R P H (χ c) x
 
-theorem continuous_differentialNormSquared (η : Cutoff F ζ hζ U R P H) :
+section
+
+variable (η : Cutoff F ζ hζ U R P H)
+
+theorem continuous_differentialNormSquared :
     Continuous (differentialNormSquared F ζ hζ U R P H η) :=
   (Classical.choose_spec (differentialNormSquared_descends F ζ hζ U R P H η)).1.1
 
-theorem differentialNormSquared_nonnegative (η : Cutoff F ζ hζ U R P H) (x : Base F ζ hζ U) :
+theorem differentialNormSquared_nonnegative (x : Base F ζ hζ U) :
     0 ≤ differentialNormSquared F ζ hζ U R P H η x := by
   obtain ⟨cov⟩ := (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
-  have hx : x ∈ ⋃ n, (cov.chart n).baseDomain := by rw [cov.covers]; trivial
-  obtain ⟨n, y, hy⟩ := Set.mem_iUnion.mp hx
+  obtain ⟨n, y, hy⟩ := Set.mem_iUnion.mp (by rw [cov.covers]; trivial)
   let z := KPContActualCotangentPieceHilbertSum.coordinates (cov.chart n) y
   have hz : q (cov.chart n) z.val = x := by
     change KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative (cov.chart n).component)
@@ -503,8 +527,13 @@ theorem differentialNormSquared_nonnegative (η : Cutoff F ζ hζ U R P H) (x : 
   rw [← hz, differentialNormSquared_chart]
   exact sq_nonneg _
 
-theorem collarError_continuous_nonnegative (χ₀ : Cutoff F ζ hζ U R P H)
-    (χ : CuspIndex F ζ hζ U R P H → Cutoff F ζ hζ U R P H) :
+end
+
+section
+
+variable (χ₀ : Cutoff F ζ hζ U R P H) (χ : CuspIndex F ζ hζ U R P H → Cutoff F ζ hζ U R P H)
+
+theorem collarError_continuous_nonnegative :
     Continuous (collarError F ζ hζ U R P H χ₀ χ) ∧
       ∀ x, 0 ≤ collarError F ζ hζ U R P H χ₀ χ x := by
   refine ⟨(continuous_differentialNormSquared F ζ hζ U R P H χ₀).add
@@ -513,8 +542,7 @@ theorem collarError_continuous_nonnegative (χ₀ : Cutoff F ζ hζ U R P H)
   exact add_nonneg (differentialNormSquared_nonnegative F ζ hζ U R P H χ₀ x)
     (Finset.sum_nonneg (fun c _ => differentialNormSquared_nonnegative F ζ hζ U R P H (χ c) x))
 
-theorem collarError_compact_bounded (χ₀ : Cutoff F ζ hζ U R P H)
-    (χ : CuspIndex F ζ hζ U R P H → Cutoff F ζ hζ U R P H)
+theorem collarError_compact_bounded
     (h₀ : IsCompact (differentialSupport F ζ hζ U R P H χ₀))
     (hχ : ∀ c, IsCompact (differentialSupport F ζ hζ U R P H (χ c))) :
     HasCompactSupport (collarError F ζ hζ U R P H χ₀ χ) ∧
@@ -534,45 +562,27 @@ theorem collarError_compact_bounded (χ₀ : Cutoff F ζ hζ U R P H)
     | @insert a s ha ih =>
       simp only [Finset.sum_insert ha]
       exact (hχ' a).add ih
-  have hc : HasCompactSupport (collarError F ζ hζ U R P H χ₀ χ) :=
+  have hc :=
     h₀'.add (hsum Finset.univ)
-  have hcont := (collarError_continuous_nonnegative F ζ hζ U R P H χ₀ χ).1
-  obtain ⟨C, hC⟩ := hcont.bddAbove_range_of_hasCompactSupport hc
+  obtain ⟨C, hC⟩ := ((collarError_continuous_nonnegative F ζ hζ U R P H χ₀ χ).1).bddAbove_range_of_hasCompactSupport hc
   refine ⟨hc, max C 0, le_max_right _ _, fun x => ?_⟩
   exact (hC (Set.mem_range_self x)).trans (le_max_left _ _)
+
+end
 
 structure SquareEndPartition (T : ℝ) where
   χ₀ : Cutoff F ζ hζ U R P H
   χ : CuspIndex F ζ hζ U R P H → Cutoff F ζ hζ U R P H
   ρ : Cutoff F ζ hζ U R P H
-  A : ℝ
-  B : ℝ
-  T_lt_A : T < A
-  A_lt_B : A < B
   core_range : ∀ x, 0 ≤ χ₀.val x ∧ χ₀.val x ≤ 1
   cusp_range : ∀ c x, 0 ≤ (χ c).val x ∧ (χ c).val x ≤ 1
   square_sum : ∀ x, χ₀.val x ^ 2 + ∑ c, (χ c).val x ^ 2 = 1
-  compact_core_support : HasCompactSupport χ₀.val
 
   cusp_support_in_tail : ∀ c, tsupport (χ c).val ⊆
     KPContActualCollarBuffer.endSet F ζ hζ U R P H T c
 
-  cusp_zero_off_own_end : ∀ c x,
-    x ∉ KPContActualCollarBuffer.endSet F ζ hζ U R P H A c → (χ c).val x = 0
-  cusp_zero_other_ends : ∀ c c', c ≠ c' → ∀ x,
-    x ∈ KPContActualCollarBuffer.endSet F ζ hζ U R P H T c' → (χ c).val x = 0
-  cusp_one_high : ∀ c (z : KPCuspCharts.Coordinates F), B ≤ z.2 →
-    (χ c).val (KPContActualCollarBuffer.chartLift F ζ hζ U R P H c z) = 1
-  core_one_below : ∀ x,
-    (∀ c, x ∉ KPContActualCollarBuffer.endSet F ζ hζ U R P H A c) → χ₀.val x = 1
-  core_zero_high : ∀ c (z : KPCuspCharts.Coordinates F), B ≤ z.2 →
-    χ₀.val (KPContActualCollarBuffer.chartLift F ζ hζ U R P H c z) = 0
-  compact_core_differential : IsCompact (differentialSupport F ζ hζ U R P H χ₀)
-  compact_cusp_differential : ∀ c,
-    IsCompact (differentialSupport F ζ hζ U R P H (χ c))
   error_nonnegative : ∀ x, 0 ≤ collarError F ζ hζ U R P H χ₀ χ x
   error_bounded : ∃ C : ℝ, 0 ≤ C ∧ ∀ x, collarError F ζ hζ U R P H χ₀ χ x ≤ C
-  compact_error_support : HasCompactSupport (collarError F ζ hζ U R P H χ₀ χ)
   rho_range : ∀ x, 0 ≤ ρ.val x ∧ ρ.val x ≤ 1
   compact_rho_support : HasCompactSupport ρ.val
 
@@ -582,34 +592,37 @@ structure SquareEndPartition (T : ℝ) where
   core_multiplier : SectorMultiplier F ζ hζ U R P H χ₀
   cusp_multiplier : ∀ c, SectorMultiplier F ζ hζ U R P H (χ c)
   rho_multiplier : SectorMultiplier F ζ hζ U R P H ρ
-  core_multiplier_contraction : ‖core_multiplier.op‖ ≤ 1
-  cusp_multiplier_contraction : ∀ c, ‖(cusp_multiplier c).op‖ ≤ 1
-  rho_multiplier_contraction : ‖rho_multiplier.op‖ ≤ 1
-
-  no_ends : IsEmpty (CuspIndex F ζ hζ U R P H) →
-    IsCompact (Set.univ : Set (Base F ζ hζ U)) ∧
-      (∀ x, χ₀.val x = 1) ∧ (∀ x, ρ.val x = 1)
 
 section ConstructionHelpers
 
  def angle (A B t : ℝ) := (Real.pi / 2) * Real.smoothTransition ((t-A)/(B-A))
-private theorem angle_smooth (A B : ℝ) : ContDiff ℝ (⊤ : ℕ∞) (angle A B) := by
-  exact contDiff_const.mul (Real.smoothTransition.contDiff.comp ((contDiff_id.sub contDiff_const).div_const _))
-private theorem angle_zero {A B t : ℝ} (hAB : A < B) (ht : t ≤ A) : angle A B t = 0 := by
+private theorem angle_smooth (A B : ℝ) : ContDiff ℝ (⊤ : ℕ∞) (angle A B) := contDiff_const.mul (Real.smoothTransition.contDiff.comp ((contDiff_id.sub contDiff_const).div_const _))
+section
+
+variable {A B t : ℝ} (hAB : A < B)
+
+include hAB in
+private theorem angle_zero (ht : t ≤ A) : angle A B t = 0 := by
   unfold angle
   rw [Real.smoothTransition.zero_of_nonpos (div_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr ht) (le_of_lt (sub_pos.mpr hAB))), mul_zero]
-private theorem angle_one {A B t : ℝ} (hAB : A < B) (ht : B ≤ t) : angle A B t = Real.pi / 2 := by
+include hAB in
+private theorem angle_one (ht : B ≤ t) : angle A B t = Real.pi / 2 := by
   unfold angle
   rw [Real.smoothTransition.one_of_one_le ((le_div_iff₀ (sub_pos.mpr hAB)).mpr (by linarith)), mul_one]
-private theorem angle_range (A B t : ℝ) : 0 ≤ angle A B t ∧ angle A B t ≤ Real.pi / 2 := by
-  have hp := le_of_lt Real.pi_pos
+
+end
+section
+
+variable (A B t : ℝ)
+
+private theorem angle_range : 0 ≤ angle A B t ∧ angle A B t ≤ Real.pi / 2 := by
   constructor
   · exact mul_nonneg (by positivity) (Real.smoothTransition.nonneg _)
   · exact mul_le_of_le_one_right (by positivity) (Real.smoothTransition.le_one _)
-private theorem sin_range (A B t : ℝ) : 0 ≤ Real.sin (angle A B t) ∧ Real.sin (angle A B t) ≤ 1 := by
-  exact ⟨Real.sin_nonneg_of_nonneg_of_le_pi (angle_range A B t).1 (by have := (angle_range A B t).2; have := Real.pi_pos; linarith), Real.sin_le_one _⟩
-private theorem cos_range (A B t : ℝ) : 0 ≤ Real.cos (angle A B t) ∧ Real.cos (angle A B t) ≤ 1 := by
-  exact ⟨Real.cos_nonneg_of_mem_Icc ⟨by have := (angle_range A B t).1; have := Real.pi_pos; linarith, (angle_range A B t).2⟩, Real.cos_le_one _⟩
+private theorem sin_range : 0 ≤ Real.sin (angle A B t) ∧ Real.sin (angle A B t) ≤ 1 := ⟨Real.sin_nonneg_of_nonneg_of_le_pi (angle_range A B t).1 (by have := (angle_range A B t).2; have := Real.pi_pos; linarith), Real.sin_le_one _⟩
+private theorem cos_range : 0 ≤ Real.cos (angle A B t) ∧ Real.cos (angle A B t) ≤ 1 := ⟨Real.cos_nonneg_of_mem_Icc ⟨by have := (angle_range A B t).1; have := Real.pi_pos; linarith, (angle_range A B t).2⟩, Real.cos_le_one _⟩
+
+end
 
 private theorem multiplier_contraction (η : Cutoff F ζ hζ U R P H)
     (hη : ∀ x, |η.val x| ≤ 1) (m : SectorMultiplier F ζ hζ U R P H η) : ‖m.op‖ ≤ 1 := by
@@ -632,8 +645,7 @@ private theorem differential_zero_of_germ (η : Cutoff F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (x : omega a) (r : ℝ)
     (he : (fun y => η.val (q a y)) =ᶠ[𝓝 x.val] (fun _ => r)) :
     cutoffDifferential η a x = 0 := by
-  have hopen : IsOpen (omega a) := by
-    exact a.domain_open.preimage (by
+  have hopen : IsOpen (omega a) := a.domain_open.preimage (by
       apply continuous_pi
       intro k
       exact (continuous_apply _).comp (CotangentLogCoframe.A (KPContCotangentActualOverlap.d F)).continuous)
@@ -650,8 +662,7 @@ private theorem endChart_continuous (τ : ℝ) (c : CuspIndex F ζ hζ U R P H) 
     (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative c.1))
     (((H.atlas U).cuspAtlas c.1).cusp c.2)
     (((H.atlas U).cuspAtlas c.1).representative c.2) τ) from ?_)
-  · have hh := (H.atlas U).components.continuous.comp (continuous_sigmaMk (i := c.1))
-    simpa only [Function.comp_def, (H.atlas U).components_formula] using hh
+  · simpa only [Function.comp_def, (H.atlas U).components_formula] using ((H.atlas U).components.continuous.comp (continuous_sigmaMk))
   · apply Continuous.quotient_lift
     have hact : Continuous (KPCuspSiegel.action F (((H.atlas U).cuspAtlas c.1).representative c.2)) :=
       (by unfold KPCuspSiegel.action KPCuspSiegel.glAction
@@ -669,9 +680,8 @@ private theorem compact_slab (c : CuspIndex F ζ hζ U R P H) (L B : ℝ) :
   let f : KPCuspCharts.CrossQuotient F S × Set.Icc L B → Base F ζ hζ U := fun p =>
     KPContActualCollarBuffer.endChart F ζ hζ U R P H (L-1) c
       (G.highPresentation (L-1) (p.1, ⟨p.2.val, by change L-1 < p.2.val; have := p.2.property.1; linarith⟩))
-  have hf : Continuous f := (endChart_continuous F ζ hζ U R P H (L-1) c).comp
-    ((G.highPresentation (L-1)).continuous.comp (by fun_prop))
-  refine ⟨Set.range f, isCompact_range hf, ?_⟩
+  refine ⟨Set.range f, isCompact_range ((endChart_continuous F ζ hζ U R P H (L-1) c).comp
+    ((G.highPresentation (L-1)).continuous.comp (by fun_prop))), ?_⟩
   intro z hz
   refine ⟨(Quotient.mk _ z.1, ⟨z.2,hz⟩), ?_⟩
   dsimp only [f]
@@ -694,7 +704,6 @@ private theorem end_lift_range (τ : ℝ) (c : CuspIndex F ζ hζ U R P H) :
     let z := (KPCuspCharts.toArchHomeomorph F
       (((H.atlas U).cuspAtlas c.1).geometry c.2).positive_dimension).symm v
     refine ⟨z, hv, ?_⟩
-    change KPContActualCollarBuffer.chartLift F ζ hζ U R P H c z = _
     simp only [KPContActualCollarBuffer.chartLift]
     congr 2
     exact congrArg (fun w => (((H.atlas U).cuspAtlas c.1).representative c.2 • w))
@@ -708,8 +717,7 @@ private theorem ends_antitone {s t : ℝ} (hst : s ≤ t)
 private theorem all_ends_open (t : ℝ) (c : CuspIndex F ζ hζ U R P H) :
     IsOpen (KPContActualCollarBuffer.endSet F ζ hζ U R P H t c) := by
   have hop : IsOpenMap (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative c.1)) := by
-    have he := (H.atlas U).components.isOpenMap.comp (isOpenMap_sigmaMk (i := c.1))
-    simpa only [Function.comp_def, (H.atlas U).components_formula] using he
+    simpa only [Function.comp_def, (H.atlas U).components_formula] using ((H.atlas U).components.isOpenMap.comp (isOpenMap_sigmaMk))
   exact hop _ (KPFiniteAdelicCuspEnds.component_open_end F _ _ t)
 private theorem compact_truncated_core (B : ℝ) :
     IsCompact ((⋃ c : CuspIndex F ζ hζ U R P H,
@@ -724,28 +732,27 @@ private theorem compact_truncated_core (B : ℝ) :
     ext x
     simp only [core, Set.mem_compl_iff, Set.mem_iUnion, Set.mem_diff, Set.mem_univ,
       true_and, KPContActualCollarBuffer.endSet]
-    simp only [Sigma.exists]
-  have hcompact : IsCompact (core ∪ ⋃ c, K c) := hc.union (isCompact_iUnion hK)
-  apply hcompact.of_isClosed_subset
+    simp
+  apply (hc.union (isCompact_iUnion hK)).of_isClosed_subset
   · exact (isOpen_iUnion (all_ends_open F ζ hζ U R P H B)).isClosed_compl
   · intro x hx
     by_cases hcore : x ∈ core
     · exact Or.inl hcore
     · right
-      have hh : x ∈ ⋃ c : CuspIndex F ζ hζ U R P H,
-          KPContActualCollarBuffer.endSet F ζ hζ U R P H (H.atlas U).threshold c :=
-        not_not.mp hcore
-      obtain ⟨c,hc⟩ := Set.mem_iUnion.mp hh
+      obtain ⟨c,hc⟩ := Set.mem_iUnion.mp (not_not.mp hcore)
       rw [← end_lift_range F ζ hζ U R P H (H.atlas U).threshold c] at hc
       obtain ⟨z,hz,rfl⟩ := hc
-      have hzB : z.2 ≤ B := by
-        by_contra hn
-        apply hx
-        exact Set.mem_iUnion.mpr ⟨c, by rw [← end_lift_range F ζ hζ U R P H B c]; exact ⟨z,lt_of_not_ge hn,rfl⟩⟩
-      exact Set.mem_iUnion.mpr ⟨c,hslab c z ⟨hz.le,hzB⟩⟩
+      refine Set.mem_iUnion.mpr ⟨c,hslab c z ⟨hz.le,?_⟩⟩
+      by_contra hn
+      apply hx
+      exact Set.mem_iUnion.mpr ⟨c, by rw [← end_lift_range F ζ hζ U R P H B c]; exact ⟨z,lt_of_not_ge hn,rfl⟩⟩
 
-private theorem height_tail (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
-    (c : CuspIndex F ζ hζ U R P H) {s : ℝ} (hs : buf.τ ≤ s) (x : Base F ζ hζ U) :
+section
+
+variable (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
+    (c : CuspIndex F ζ hζ U R P H)
+
+private theorem height_tail {s : ℝ} (hs : buf.τ ≤ s) (x : Base F ζ hζ U) :
     x ∈ KPContActualCollarBuffer.endSet F ζ hζ U R P H s c ↔
       x ∈ KPContActualCollarBuffer.endSet F ζ hζ U R P H buf.τ c ∧
         s < KPContActualCollarBuffer.height F ζ hζ U R P H buf.τ c x := by
@@ -762,8 +769,7 @@ private theorem height_tail (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuff
     rw [buf.height_coordinates c z hz] at hheight
     rw [← end_lift_range F ζ hζ U R P H s c]
     exact ⟨z,hheight,rfl⟩
-private theorem zero_extension_off (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
-    (c : CuspIndex F ζ hζ U R P H) (φ : ℝ → ℝ) {s : ℝ} (hs : buf.τ ≤ s)
+private theorem zero_extension_off (φ : ℝ → ℝ) {s : ℝ} (hs : buf.τ ≤ s)
     (hφ : ∀ t, t ≤ s → φ t = 0) (x : Base F ζ hζ U)
     (hx : x ∉ KPContActualCollarBuffer.endSet F ζ hζ U R P H s c) :
     KPContActualCollarBuffer.zeroExtension F ζ hζ U R P H buf.τ c φ x = 0 := by
@@ -773,8 +779,7 @@ private theorem zero_extension_off (D : ℝ) (buf : KPContActualCollarBuffer.Col
       exact hx ((height_tail F ζ hζ U R P H D buf c hs x).mpr ⟨he,lt_of_not_ge hn⟩)
     simpa only [KPContActualCollarBuffer.zeroExtension, Set.indicator_of_mem he] using hφ _ ht
   · simp [KPContActualCollarBuffer.zeroExtension,he]
-private theorem zero_extension_support_tail (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
-    (c : CuspIndex F ζ hζ U R P H) (φ : ℝ → ℝ) {s t : ℝ}
+private theorem zero_extension_support_tail (φ : ℝ → ℝ) {s t : ℝ}
     (ht : buf.τ ≤ t) (hts : t < s) (hDs : D ≤ s)
     (hφ : ∀ u, u ≤ s → φ u = 0) :
     tsupport (KPContActualCollarBuffer.zeroExtension F ζ hζ U R P H buf.τ c φ) ⊆
@@ -804,6 +809,8 @@ private theorem zero_extension_support_tail (D : ℝ) (buf : KPContActualCollarB
     have he : y ∉ KPContActualCollarBuffer.endSet F ζ hζ U R P H buf.τ c := fun he => hy (subset_closure he)
     simp [KPContActualCollarBuffer.zeroExtension,he]
 
+end
+
 private theorem compact_differential_of_end_plateaus (η : Cutoff F ζ hζ U R P H)
     (B : ℝ) (hp : ∀ c, ∃ r : ℝ, ∀ x ∈ KPContActualCollarBuffer.endSet F ζ hζ U R P H B c,
       η.val x = r) : IsCompact (differentialSupport F ζ hζ U R P H η) := by
@@ -813,10 +820,9 @@ private theorem compact_differential_of_end_plateaus (η : Cutoff F ζ hζ U R P
   intro hx
   obtain ⟨c,hc⟩ := Set.mem_iUnion.mp hx
   obtain ⟨r,hr⟩ := hp c
-  have he : (fun z => η.val (q a z)) =ᶠ[𝓝 y.val] (fun _ => r) := by
-    filter_upwards [((all_ends_open F ζ hζ U R P H B c).preimage (continuous_q a)).mem_nhds hc] with z hz
-    exact hr _ hz
-  exact hy (differential_zero_of_germ F ζ hζ U R P H η a y r he)
+  refine hy (differential_zero_of_germ F ζ hζ U R P H η a y r ?_)
+  filter_upwards [((all_ends_open F ζ hζ U R P H B c).preimage (continuous_q a)).mem_nhds hc] with z hz
+  exact hr _ hz
 
  def subCutoff (η ξ : Cutoff F ζ hζ U R P H) : Cutoff F ζ hζ U R P H :=
   ⟨η.val - ξ.val, fun a => by
@@ -824,15 +830,17 @@ private theorem compact_differential_of_end_plateaus (η : Cutoff F ζ hζ U R P
     obtain ⟨k,hk,hke⟩ := ξ.smooth a
     exact ⟨g-k,hg.sub hk,fun x => by simp only [Pi.sub_apply,he,hke]⟩⟩
 
-private theorem extension_other (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
+section
+
+variable (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
+
+private theorem extension_other
     {c c' : CuspIndex F ζ hζ U R P H} (hcc : c ≠ c') (φ : ℝ → ℝ)
     (x : Base F ζ hζ U) (hx : x ∈ KPContActualCollarBuffer.endSet F ζ hζ U R P H buf.τ c') :
     KPContActualCollarBuffer.zeroExtension F ζ hζ U R P H buf.τ c φ x = 0 := by
-  have hn : x ∉ KPContActualCollarBuffer.endSet F ζ hζ U R P H buf.τ c := by
-    intro hc
-    exact Set.disjoint_left.mp (buf.disjoint_ends hcc) hc hx
+  have hn : x ∉ KPContActualCollarBuffer.endSet F ζ hζ U R P H buf.τ c := fun hc => Set.disjoint_left.mp (buf.disjoint_ends hcc) hc hx
   simp [KPContActualCollarBuffer.zeroExtension,hn]
-private theorem extension_sum_at (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
+private theorem extension_sum_at
     (φ : ℝ → ℝ) (c : CuspIndex F ζ hζ U R P H) (x : Base F ζ hζ U)
     (hx : x ∈ KPContActualCollarBuffer.endSet F ζ hζ U R P H buf.τ c) :
     (∑ c', KPContActualCollarBuffer.zeroExtension F ζ hζ U R P H buf.τ c' φ x) =
@@ -842,7 +850,13 @@ private theorem extension_sum_at (D : ℝ) (buf : KPContActualCollarBuffer.Colla
   · intro b _ hbc
     exact extension_other F ζ hζ U R P H D buf hbc φ x hx
   · simp
-private theorem compact_core_from_plateau (η : Cutoff F ζ hζ U R P H) (B : ℝ)
+
+end
+section
+
+variable (η : Cutoff F ζ hζ U R P H)
+
+private theorem compact_core_from_plateau (B : ℝ)
     (hp : ∀ c x, x ∈ KPContActualCollarBuffer.endSet F ζ hζ U R P H B c → η.val x = 0) :
     HasCompactSupport η.val := by
   apply (compact_truncated_core F ζ hζ U R P H B).of_isClosed_subset (isClosed_tsupport η.val)
@@ -851,7 +865,7 @@ private theorem compact_core_from_plateau (η : Cutoff F ζ hζ U R P H) (B : �
   obtain ⟨c,hc⟩ := Set.mem_iUnion.mp hn
   exact hx (hp c x hc)
 
-private theorem differentialSupport_in_core (η : Cutoff F ζ hζ U R P H)
+private theorem differentialSupport_in_core
     (B : ℝ) (hp : ∀ c, ∃ r : ℝ, ∀ x ∈ KPContActualCollarBuffer.endSet F ζ hζ U R P H B c,
       η.val x = r) : differentialSupport F ζ hζ U R P H η ⊆
       (⋃ c : CuspIndex F ζ hζ U R P H, KPContActualCollarBuffer.endSet F ζ hζ U R P H B c)ᶜ := by
@@ -859,15 +873,16 @@ private theorem differentialSupport_in_core (η : Cutoff F ζ hζ U R P H)
   rintro x ⟨a,y,rfl,hy⟩ hx
   obtain ⟨c,hc⟩ := Set.mem_iUnion.mp hx
   obtain ⟨r,hr⟩ := hp c
-  have he : (fun z => η.val (q a z)) =ᶠ[𝓝 y.val] (fun _ => r) := by
-    filter_upwards [((all_ends_open F ζ hζ U R P H B c).preimage (continuous_q a)).mem_nhds hc] with z hz
-    exact hr _ hz
-  exact hy (differential_zero_of_germ F ζ hζ U R P H η a y r he)
-private theorem norm_zero_off_differentialSupport (η : Cutoff F ζ hζ U R P H)
+  refine hy (differential_zero_of_germ F ζ hζ U R P H η a y r ?_)
+  filter_upwards [((all_ends_open F ζ hζ U R P H B c).preimage (continuous_q a)).mem_nhds hc] with z hz
+  exact hr _ hz
+private theorem norm_zero_off_differentialSupport
     (x : Base F ζ hζ U) (hx : x ∉ differentialSupport F ζ hζ U R P H η) :
     differentialNormSquared F ζ hζ U R P H η x = 0 := by
   rw [differentialSupport_eq_tsupport] at hx
   exact image_eq_zero_of_notMem_tsupport hx
+
+end
 private theorem error_support_core (χ₀ : Cutoff F ζ hζ U R P H)
     (χ : CuspIndex F ζ hζ U R P H → Cutoff F ζ hζ U R P H) (B : ℝ)
     (h₀ : ∀ c, ∃ r : ℝ, ∀ x ∈ KPContActualCollarBuffer.endSet F ζ hζ U R P H B c, χ₀.val x = r)
@@ -876,15 +891,14 @@ private theorem error_support_core (χ₀ : Cutoff F ζ hζ U R P H)
       (⋃ c : CuspIndex F ζ hζ U R P H, KPContActualCollarBuffer.endSet F ζ hζ U R P H B c)ᶜ := by
   apply closure_minimal _ ((isOpen_iUnion (all_ends_open F ζ hζ U R P H B)).isClosed_compl)
   intro x hx hhigh
-  have hn₀ : x ∉ differentialSupport F ζ hζ U R P H χ₀ :=
-    fun hh => differentialSupport_in_core F ζ hζ U R P H χ₀ B h₀ hh hhigh
-  have hnχ : ∀ k, x ∉ differentialSupport F ζ hζ U R P H (χ k) :=
-    fun k hh => differentialSupport_in_core F ζ hζ U R P H (χ k) B (hχ k) hh hhigh
   apply hx
-  simp only [collarError, norm_zero_off_differentialSupport F ζ hζ U R P H χ₀ x hn₀,
-    norm_zero_off_differentialSupport F ζ hζ U R P H (χ _) x (hnχ _), Finset.sum_const_zero, add_zero]
+  simp only [collarError, norm_zero_off_differentialSupport F ζ hζ U R P H χ₀ x (fun hh => differentialSupport_in_core F ζ hζ U R P H χ₀ B h₀ hh hhigh),
+    norm_zero_off_differentialSupport F ζ hζ U R P H (χ _) x ((fun k hh => differentialSupport_in_core F ζ hζ U R P H (χ k) B (hχ k) hh hhigh) _), Finset.sum_const_zero, add_zero]
 
-private theorem closure_end_inside (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
+variable (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
+
+include buf in
+private theorem closure_end_inside
     (c : CuspIndex F ζ hζ U R P H) (s t : ℝ) (hDs : D ≤ s) (hst : s < t) :
     closure (KPContActualCollarBuffer.endSet F ζ hζ U R P H t c) ⊆
       KPContActualCollarBuffer.endSet F ζ hζ U R P H s c := by
@@ -892,9 +906,7 @@ private theorem closure_end_inside (D : ℝ) (buf : KPContActualCollarBuffer.Col
   let φ := fun u => Real.smoothTransition ((u-m)/(t-m))
   have hsm : s < m := by dsimp [m]; linarith
   have hmt : m < t := by dsimp [m]; linarith
-  have hzero : ∀ u, u ≤ m → φ u = 0 := by
-    intro u hu
-    exact Real.smoothTransition.zero_of_nonpos
+  have hzero : ∀ u, u ≤ m → φ u = 0 := fun u hu => Real.smoothTransition.zero_of_nonpos
       (div_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr hu) (sub_nonneg.mpr hmt.le))
   apply Set.Subset.trans (closure_mono ?_) (zero_extension_support_tail F ζ hζ U R P H D buf c φ
     (buf.below_cutoff.le.trans hDs) hsm (hDs.trans hsm.le) hzero)
@@ -905,7 +917,8 @@ private theorem closure_end_inside (D : ℝ) (buf : KPContActualCollarBuffer.Col
   have hone : φ (KPContActualCollarBuffer.height F ζ hζ U R P H buf.τ c x) = 1 :=
     Real.smoothTransition.one_of_one_le ((le_div_iff₀ (sub_pos.mpr hmt)).mpr (by linarith [hh.2]))
   rw [hone]; exact one_ne_zero
-private theorem core_in_open_lower (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
+include buf in
+private theorem core_in_open_lower
     (s t : ℝ) (hDs : D ≤ s) (hst : s < t) :
     (⋃ c : CuspIndex F ζ hζ U R P H, KPContActualCollarBuffer.endSet F ζ hζ U R P H s c)ᶜ ⊆
       (⋃ c : CuspIndex F ζ hζ U R P H, closure (KPContActualCollarBuffer.endSet F ζ hζ U R P H t c))ᶜ := by
@@ -922,8 +935,7 @@ def oneCutoff : Cutoff F ζ hζ U R P H :=
 
 private theorem oneCutoff_differential (a : ActualChart (U := U) (H := H)) (x : omega a) :
     cutoffDifferential (oneCutoff F ζ hζ U R P H) a x = 0 := by
-  have hopen : IsOpen (omega a) := by
-    exact a.domain_open.preimage (by
+  have hopen : IsOpen (omega a) := a.domain_open.preimage (by
       apply continuous_pi
       intro k
       exact (continuous_apply _).comp
@@ -932,13 +944,11 @@ private theorem oneCutoff_differential (a : ActualChart (U := U) (H := H)) (x : 
       (fun _ => (1:ℂ)) := by
     filter_upwards [hopen.mem_nhds x.property] with y hy
     simp [liftExtension, cutoffLift, oneCutoff, hy]
-  have hd := he.fderiv_eq (𝕜 := ℝ)
-
   ext i
   rcases i with ⟨i,k⟩
   fin_cases k <;>
     simp [cutoffDifferential, chartDifferential, HyperbolicChart.differential,
-      HyperbolicChart.coordinateDerivative, CotangentLogCoframe.j, hd]
+      HyperbolicChart.coordinateDerivative, CotangentLogCoframe.j, (he.fderiv_eq)]
 
 private theorem oneCutoff_norm :
     differentialNormSquared F ζ hζ U R P H (oneCutoff F ζ hζ U R P H) = 0 := by
@@ -966,11 +976,6 @@ def oneMultiplier : SectorMultiplier F ζ hζ U R P H (oneCutoff F ζ hζ U R P 
       simp [scalarMultiply, cutoffLift, oneCutoff]
     rw [he]
     rfl
-  ordinary_central_invariant := fun _ _ => rfl
-  genuine_unchanged := by
-    intro f ε x
-    simpa only [oneCutoff, Complex.ofReal_one, one_mul,
-      KPContSectorCoveredQuotientVocabulary.chi_coe] using f.property ε x
 
 theorem squareEndPartition_no_ends (T : ℝ) [IsEmpty (CuspIndex F ζ hζ U R P H)] :
     Nonempty (SquareEndPartition F ζ hζ U R P H T) := by
@@ -993,87 +998,66 @@ theorem squareEndPartition_no_ends (T : ℝ) [IsEmpty (CuspIndex F ζ hζ U R P 
     simp [collarError, η, oneCutoff_norm]
   have hηcompact : HasCompactSupport η.val := by
     apply hcompact.of_isClosed_subset (isClosed_tsupport _) (Set.subset_univ _)
-  have hop : ‖(oneMultiplier F ζ hζ U R P H).op‖ ≤ 1 := by
-    apply ((oneMultiplier F ζ hζ U R P H).op).opNorm_le_bound (by norm_num)
-    intro u
-    change ‖u‖ ≤ 1 * ‖u‖
-    simp
   refine ⟨{ χ₀ := η
             χ := χ
             ρ := η
-            A := T + 1
-            B := T + 2
 
-            T_lt_A := by linarith
-            A_lt_B := by linarith
             core_range := fun x => by simp [η, oneCutoff]
             cusp_range := fun c => isEmptyElim c
             square_sum := fun x => by simp [η, oneCutoff]
-            compact_core_support := hηcompact
             cusp_support_in_tail := fun c => isEmptyElim c
-            cusp_zero_off_own_end := fun c => isEmptyElim c
-            cusp_zero_other_ends := fun c => isEmptyElim c
-            cusp_one_high := fun c => isEmptyElim c
-            core_one_below := fun _ _ => rfl
-            core_zero_high := fun c => isEmptyElim c
-            compact_core_differential := by
-              dsimp only [η]
-              rw [oneCutoff_support]
-              exact isCompact_empty
-            compact_cusp_differential := fun c => isEmptyElim c
             error_nonnegative := fun x => by rw [herror]; exact le_rfl
             error_bounded := ⟨0, le_rfl, fun x => by rw [herror]; exact le_rfl⟩
-            compact_error_support := by rw [herror]; exact HasCompactSupport.zero
             rho_range := fun x => by simp [η, oneCutoff]
             compact_rho_support := hηcompact
             rho_one_neighborhood := ⟨Set.univ, isOpen_univ, Set.subset_univ _, fun _ _ => rfl⟩
             core_multiplier := oneMultiplier F ζ hζ U R P H
             cusp_multiplier := fun c => isEmptyElim c
             rho_multiplier := oneMultiplier F ζ hζ U R P H
-            core_multiplier_contraction := hop
-            cusp_multiplier_contraction := fun c => isEmptyElim c
-            rho_multiplier_contraction := hop
-            no_ends := fun _ => ⟨hcompact, fun _ => rfl, fun _ => rfl⟩ }⟩
+             }⟩
 end Constant
 
 section RadialConstruction
- def radialCutoff (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
-    (c : CuspIndex F ζ hζ U R P H) (φ : ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hz : ∀ t, t ≤ D → φ t = 0) : Cutoff F ζ hζ U R P H :=
+ section
+
+variable (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
+    (c : CuspIndex F ζ hζ U R P H) (φ : ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hz : ∀ t, t ≤ D → φ t = 0)
+
+def radialCutoff : Cutoff F ζ hζ U R P H :=
   Classical.choose (KPContActualRadialCutoff.exists_smooth_zero_extension F ζ hζ U R P H D buf c φ hφ hz)
-private theorem radialCutoff_val (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
-    (c : CuspIndex F ζ hζ U R P H) (φ : ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hz : ∀ t, t ≤ D → φ t = 0) :
+private theorem radialCutoff_val :
     (radialCutoff F ζ hζ U R P H D buf c φ hφ hz).val =
       KPContActualCollarBuffer.zeroExtension F ζ hζ U R P H buf.τ c φ :=
   (Classical.choose_spec (KPContActualRadialCutoff.exists_smooth_zero_extension F ζ hζ U R P H D buf c φ hφ hz)).1
- def complementRadial (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
-    (φ : ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hz : ∀ t, t ≤ D → φ t = 0) : Cutoff F ζ hζ U R P H :=
+
+end
+ section
+
+variable (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D) (φ : ℝ → ℝ)
+    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hz : ∀ t, t ≤ D → φ t = 0)
+
+def complementRadial : Cutoff F ζ hζ U R P H :=
   subCutoff F ζ hζ U R P H (oneCutoff F ζ hζ U R P H)
     (sumCutoff F ζ hζ U R P H Finset.univ (fun c => radialCutoff F ζ hζ U R P H D buf c φ hφ hz))
-private theorem complementRadial_val (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
-    (φ : ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hz : ∀ t, t ≤ D → φ t = 0) (x : Base F ζ hζ U) :
+private theorem complementRadial_val (x : Base F ζ hζ U) :
     (complementRadial F ζ hζ U R P H D buf φ hφ hz).val x =
       1 - ∑ c, KPContActualCollarBuffer.zeroExtension F ζ hζ U R P H buf.τ c φ x := by
   simp only [complementRadial,subCutoff,oneCutoff,sumCutoff,Pi.sub_apply,radialCutoff_val]
-private theorem complementRadial_on_end (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
-    (φ : ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hz : ∀ t, t ≤ D → φ t = 0)
+private theorem complementRadial_on_end
     (c : CuspIndex F ζ hζ U R P H) (x : Base F ζ hζ U)
     (hx : x ∈ KPContActualCollarBuffer.endSet F ζ hζ U R P H buf.τ c) :
     (complementRadial F ζ hζ U R P H D buf φ hφ hz).val x =
       1 - φ (KPContActualCollarBuffer.height F ζ hζ U R P H buf.τ c x) := by
   rw [complementRadial_val, extension_sum_at F ζ hζ U R P H D buf φ c x hx]
-private theorem complementRadial_one_off (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
-    (φ : ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hz : ∀ t, t ≤ D → φ t = 0)
+private theorem complementRadial_one_off
     (s : ℝ) (hs : D ≤ s) (hzs : ∀ t, t ≤ s → φ t = 0) (x : Base F ζ hζ U)
     (hx : ∀ c, x ∉ KPContActualCollarBuffer.endSet F ζ hζ U R P H s c) :
     (complementRadial F ζ hζ U R P H D buf φ hφ hz).val x = 1 := by
   rw [complementRadial_val]
-  have he : ∀ c, KPContActualCollarBuffer.zeroExtension F ζ hζ U R P H buf.τ c φ x = 0 :=
+  have he :=
     fun c => zero_extension_off F ζ hζ U R P H D buf c φ (buf.below_cutoff.le.trans hs) hzs x (hx c)
   simp only [he,Finset.sum_const_zero,sub_zero]
-private theorem complementRadial_range (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
-    (φ : ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hz : ∀ t, t ≤ D → φ t = 0)
+private theorem complementRadial_range
     (hr : ∀ t, 0 ≤ φ t ∧ φ t ≤ 1) (x : Base F ζ hζ U) :
     0 ≤ (complementRadial F ζ hζ U R P H D buf φ hφ hz).val x ∧
       (complementRadial F ζ hζ U R P H D buf φ hφ hz).val x ≤ 1 := by
@@ -1082,21 +1066,18 @@ private theorem complementRadial_range (D : ℝ) (buf : KPContActualCollarBuffer
     rw [complementRadial_on_end F ζ hζ U R P H D buf φ hφ hz c x hc]
     have := hr (KPContActualCollarBuffer.height F ζ hζ U R P H buf.τ c x)
     constructor <;> linarith
-  · have hx : ∀ c, x ∉ KPContActualCollarBuffer.endSet F ζ hζ U R P H D c := by
-      intro c hc; exact he ⟨c, ends_antitone F ζ hζ U R P H buf.below_cutoff.le c hc⟩
+  · have hx : ∀ c, x ∉ KPContActualCollarBuffer.endSet F ζ hζ U R P H D c := fun c hc => he ⟨c, ends_antitone F ζ hζ U R P H buf.below_cutoff.le c hc⟩
     rw [complementRadial_one_off F ζ hζ U R P H D buf φ hφ hz D le_rfl hz x hx]
     exact ⟨zero_le_one,le_rfl⟩
 
-private theorem complementRadial_high (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
-    (φ : ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hz : ∀ t, t ≤ D → φ t = 0)
+private theorem complementRadial_high
     (B : ℝ) (hDB : D ≤ B) (hone : ∀ t, B ≤ t → φ t = 1)
     (c : CuspIndex F ζ hζ U R P H) (x : Base F ζ hζ U)
     (hx : x ∈ KPContActualCollarBuffer.endSet F ζ hζ U R P H B c) :
     (complementRadial F ζ hζ U R P H D buf φ hφ hz).val x = 0 := by
   have hh := (height_tail F ζ hζ U R P H D buf c (buf.below_cutoff.le.trans hDB) x).mp hx
   rw [complementRadial_on_end F ζ hζ U R P H D buf φ hφ hz c x hh.1, hone _ hh.2.le, sub_self]
-private theorem radial_range (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
-    (φ : ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hz : ∀ t, t ≤ D → φ t = 0)
+private theorem radial_range
     (hr : ∀ t, 0 ≤ φ t ∧ φ t ≤ 1)
     (c : CuspIndex F ζ hζ U R P H) (x : Base F ζ hζ U) :
     0 ≤ (radialCutoff F ζ hζ U R P H D buf c φ hφ hz).val x ∧
@@ -1105,8 +1086,7 @@ private theorem radial_range (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuf
   by_cases he : x ∈ KPContActualCollarBuffer.endSet F ζ hζ U R P H buf.τ c
   · simpa only [KPContActualCollarBuffer.zeroExtension, Set.indicator_of_mem he] using hr (KPContActualCollarBuffer.height F ζ hζ U R P H buf.τ c x)
   · simp [KPContActualCollarBuffer.zeroExtension,he]
-private theorem radial_plateau (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
-    (φ : ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hz : ∀ t, t ≤ D → φ t = 0)
+private theorem radial_plateau
     (B : ℝ) (hDB : D ≤ B) (hone : ∀ t, B ≤ t → φ t = 1)
     (c : CuspIndex F ζ hζ U R P H) :
     ∀ c', ∃ r : ℝ, ∀ x ∈ KPContActualCollarBuffer.endSet F ζ hζ U R P H B c',
@@ -1124,21 +1104,39 @@ private theorem radial_plateau (D : ℝ) (buf : KPContActualCollarBuffer.CollarB
     exact extension_other F ζ hζ U R P H D buf hc φ x
       (ends_antitone F ζ hζ U R P H (buf.below_cutoff.le.trans hDB) c' hx)
 
-private theorem sin_profile_smooth (A B : ℝ) : ContDiff ℝ (⊤ : ℕ∞) (fun t => Real.sin (angle A B t)) :=
+end
+
+section
+
+variable (A B : ℝ)
+
+private theorem sin_profile_smooth : ContDiff ℝ (⊤ : ℕ∞) (fun t => Real.sin (angle A B t)) :=
   Real.contDiff_sin.comp (angle_smooth A B)
-private theorem cos_complement_smooth (A B : ℝ) : ContDiff ℝ (⊤ : ℕ∞) (fun t => 1 - Real.cos (angle A B t)) :=
+private theorem cos_complement_smooth : ContDiff ℝ (⊤ : ℕ∞) (fun t => 1 - Real.cos (angle A B t)) :=
   contDiff_const.sub (Real.contDiff_cos.comp (angle_smooth A B))
-private theorem transition_smooth (A B : ℝ) : ContDiff ℝ (⊤ : ℕ∞)
+private theorem transition_smooth : ContDiff ℝ (⊤ : ℕ∞)
     (fun t => Real.smoothTransition ((t-A)/(B-A))) :=
   Real.smoothTransition.contDiff.comp ((contDiff_id.sub contDiff_const).div_const _)
-private theorem cos_complement_zero {A B : ℝ} (hAB : A < B) : ∀ t, t ≤ A → 1 - Real.cos (angle A B t) = 0 := by
+
+end
+section
+
+variable {A B : ℝ} (hAB : A < B)
+
+include hAB in
+private theorem cos_complement_zero : ∀ t, t ≤ A → 1 - Real.cos (angle A B t) = 0 := by
   intro t ht; rw [angle_zero hAB ht,Real.cos_zero,sub_self]
-private theorem sin_profile_zero {A B : ℝ} (hAB : A < B) : ∀ t, t ≤ A → Real.sin (angle A B t) = 0 := by
+include hAB in
+private theorem sin_profile_zero : ∀ t, t ≤ A → Real.sin (angle A B t) = 0 := by
   intro t ht; rw [angle_zero hAB ht,Real.sin_zero]
-private theorem cos_complement_one {A B : ℝ} (hAB : A < B) : ∀ t, B ≤ t → 1 - Real.cos (angle A B t) = 1 := by
+include hAB in
+private theorem cos_complement_one : ∀ t, B ≤ t → 1 - Real.cos (angle A B t) = 1 := by
   intro t ht; rw [angle_one hAB ht,Real.cos_pi_div_two,sub_zero]
-private theorem sin_profile_one {A B : ℝ} (hAB : A < B) : ∀ t, B ≤ t → Real.sin (angle A B t) = 1 := by
+include hAB in
+private theorem sin_profile_one : ∀ t, B ≤ t → Real.sin (angle A B t) = 1 := by
   intro t ht; rw [angle_one hAB ht,Real.sin_pi_div_two]
+
+end
 private theorem cos_complement_range (A B : ℝ) : ∀ t, 0 ≤ 1 - Real.cos (angle A B t) ∧ 1 - Real.cos (angle A B t) ≤ 1 := by
   intro t; have := cos_range A B t; constructor <;> linarith
 private theorem cutoff_core_support (η : Cutoff F ζ hζ U R P H) (B : ℝ)
@@ -1148,7 +1146,11 @@ private theorem cutoff_core_support (η : Cutoff F ζ hζ U R P H) (B : ℝ)
   intro x hx hn
   obtain ⟨c,hc⟩ := Set.mem_iUnion.mp hn
   exact hx (hp c x hc)
-private theorem radial_at_coordinate (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
+section
+
+variable (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
+
+private theorem radial_at_coordinate
     (φ : ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hz : ∀ t, t ≤ D → φ t = 0)
     (c : CuspIndex F ζ hζ U R P H) (z : KPCuspCharts.Coordinates F) (hzheight : buf.τ < z.2) :
     (radialCutoff F ζ hζ U R P H D buf c φ hφ hz).val
@@ -1160,7 +1162,7 @@ private theorem radial_at_coordinate (D : ℝ) (buf : KPContActualCollarBuffer.C
   simp only [KPContActualCollarBuffer.zeroExtension, Set.indicator_of_mem he,
     buf.height_coordinates c z hzheight]
 
-private theorem square_sum_radial (D : ℝ) (buf : KPContActualCollarBuffer.CollarBuffer F ζ hζ U R P H D)
+private theorem square_sum_radial
     (A B : ℝ) (hAB : A < B) (hDA : D ≤ A) (x : Base F ζ hζ U) :
     (complementRadial F ζ hζ U R P H D buf (fun t => 1 - Real.cos (angle A B t))
       (cos_complement_smooth A B) (fun t ht => cos_complement_zero hAB t (ht.trans hDA))).val x ^ 2 +
@@ -1182,10 +1184,11 @@ private theorem square_sum_radial (D : ℝ) (buf : KPContActualCollarBuffer.Coll
     rw [heq]
     have hid := Real.sin_sq_add_cos_sq (angle A B (KPContActualCollarBuffer.height F ζ hζ U R P H buf.τ c x))
     nlinarith
-  · have hn : ∀ c, x ∉ KPContActualCollarBuffer.endSet F ζ hζ U R P H buf.τ c := fun c hc => he ⟨c,hc⟩
-    rw [complementRadial_val]
-    simp only [radialCutoff_val, KPContActualCollarBuffer.zeroExtension,Set.indicator_of_notMem (hn _)]
+  · rw [complementRadial_val]
+    simp only [radialCutoff_val, KPContActualCollarBuffer.zeroExtension,Set.indicator_of_notMem ((fun c hc => he ⟨c,hc⟩) _)]
     norm_num
+
+end
 
 set_option maxHeartbeats 800000 in
 private theorem construct_with_buffer (T : ℝ)
@@ -1241,46 +1244,19 @@ private theorem construct_with_buffer (T : ℝ)
   let mχ := fun c => Classical.choice (hmχ c)
   obtain ⟨mρ⟩ := KPContActualSectorMultiplier.boundedSectorMultiplier F ζ hζ U R P H ρ 1 zero_le_one
     (fun x => by rw [abs_of_nonneg (hρRange x).1]; exact (hρRange x).2)
-  refine ⟨{ χ₀ := χ₀, χ := χ, ρ := ρ, A := A, B := B,
-            T_lt_A := hTA, A_lt_B := hAB, core_range := hcoreRange, cusp_range := hcuspRange,
+  refine ⟨{ χ₀ := χ₀, χ := χ, ρ := ρ,
+              core_range := hcoreRange, cusp_range := hcuspRange,
             square_sum := square_sum_radial F ζ hζ U R P H T buf A B hAB hTA.le,
-            compact_core_support := compact_core_from_plateau F ζ hζ U R P H χ₀ B hcoreHigh,
-            cusp_support_in_tail := ?_, cusp_zero_off_own_end := ?_, cusp_zero_other_ends := ?_,
-            cusp_one_high := ?_, core_one_below := ?_, core_zero_high := ?_,
-            compact_core_differential := hd₀, compact_cusp_differential := hdχ,
+            cusp_support_in_tail := ?_,
+
             error_nonnegative := (collarError_continuous_nonnegative F ζ hζ U R P H χ₀ χ).2,
-            error_bounded := ⟨C,hC,hbound⟩, compact_error_support := herr,
+            error_bounded := ⟨C,hC,hbound⟩,
             rho_range := hρRange, compact_rho_support := compact_core_from_plateau F ζ hζ U R P H ρ M hρHigh,
             rho_one_neighborhood := ?_, core_multiplier := m₀, cusp_multiplier := mχ, rho_multiplier := mρ,
-            core_multiplier_contraction := multiplier_contraction F ζ hζ U R P H χ₀
-              (fun x => by rw [abs_of_nonneg (hcoreRange x).1]; exact (hcoreRange x).2) m₀,
-            cusp_multiplier_contraction := fun c => multiplier_contraction F ζ hζ U R P H (χ c)
-              (fun x => by rw [abs_of_nonneg (hcuspRange c x).1]; exact (hcuspRange c x).2) (mχ c),
-            rho_multiplier_contraction := multiplier_contraction F ζ hζ U R P H ρ
-              (fun x => by rw [abs_of_nonneg (hρRange x).1]; exact (hρRange x).2) mρ,
-            no_ends := ?_ }⟩
+             }⟩
   · intro c
     rw [radialCutoff_val]
     exact zero_extension_support_tail F ζ hζ U R P H T buf c φ buf.below_cutoff.le hTA hTA.le (sin_profile_zero hAB)
-  · intro c x hx
-    rw [radialCutoff_val]
-    exact zero_extension_off F ζ hζ U R P H T buf c φ (buf.below_cutoff.le.trans hTA.le) (sin_profile_zero hAB) x hx
-  · intro c c' hcc x hx
-    rw [radialCutoff_val]
-    exact extension_other F ζ hζ U R P H T buf hcc φ x
-      (ends_antitone F ζ hζ U R P H buf.below_cutoff.le c' hx)
-  · intro c z hz
-    rw [radial_at_coordinate F ζ hζ U R P H T buf φ hφ hzφ c z
-      (lt_of_lt_of_le (buf.below_cutoff.trans_le hTB) hz)]
-    exact sin_profile_one hAB z.2 hz
-  · intro x hx
-    exact complementRadial_one_off F ζ hζ U R P H T buf ψ hψ hzψ A hTA.le (cos_complement_zero hAB) x hx
-  · intro c z hz
-    have hτz : buf.τ < z.2 := lt_of_lt_of_le (buf.below_cutoff.trans_le hTB) hz
-    rw [complementRadial_on_end F ζ hζ U R P H T buf ψ hψ hzψ c _
-      (by rw [← buf.lift_range c]; exact ⟨z,hτz,rfl⟩), buf.height_coordinates c z hτz]
-    change 1 - (1 - Real.cos (angle A B z.2)) = 0
-    rw [cos_complement_one hAB z.2 hz,sub_self]
   · let V := (⋃ c : CuspIndex F ζ hζ U R P H,
       closure (KPContActualCollarBuffer.endSet F ζ hζ U R P H L c))ᶜ
     refine ⟨V, (isClosed_iUnion_of_finite (fun c => isClosed_closure)).isOpen_compl, ?_, ?_⟩
@@ -1292,29 +1268,6 @@ private theorem construct_with_buffer (T : ℝ)
       apply complementRadial_one_off F ζ hζ U R P H T buf θ hθ hzθ L hTL hzθL x
       intro c hc
       exact hx (Set.mem_iUnion.mpr ⟨c,subset_closure hc⟩)
-  · intro hemp
-    letI := hemp
-    have hcore : ∀ x, χ₀.val x = 1 := by
-      intro x
-      rw [complementRadial_val]
-      simp
-    have hρ : ∀ x, ρ.val x = 1 := by
-      intro x
-      rw [complementRadial_val]
-      simp
-    have hc := (H.atlas U).compact_core
-    have he : (⋃ i : Fin (H.atlas U).componentCount,
-        ⋃ a : Fin ((H.atlas U).cuspAtlas i).cuspCount,
-        KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative i) ''
-        KPFiniteCuspAtlas.endSet F (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i))
-          (((H.atlas U).cuspAtlas i).representative a) (H.atlas U).threshold) = ∅ := by
-      apply Set.eq_empty_iff_forall_notMem.mpr
-      intro x hx
-      obtain ⟨i,hi⟩ := Set.mem_iUnion.mp hx
-      obtain ⟨a,ha⟩ := Set.mem_iUnion.mp hi
-      exact isEmptyElim (⟨i,a⟩ : CuspIndex F ζ hζ U R P H)
-    rw [he,Set.diff_empty] at hc
-    exact ⟨hc,hcore,hρ⟩
 
 end RadialConstruction
 
@@ -1335,13 +1288,10 @@ theorem kp_cont_actual_square_end_partition
   by_cases he : IsEmpty (KPContActualSquareEndPartition.CuspIndex F ζ hζ U R P H)
   · letI := he
     exact KPContActualSquareEndPartition.squareEndPartition_no_ends F ζ hζ U R P H T
-  · have hc : Nonempty (KPContActualSquareEndPartition.CuspIndex F ζ hζ U R P H) :=
-      not_isEmpty_iff.mp he
-    obtain ⟨c⟩ := hc
-    have hthreshold : (H.atlas U).threshold < T := by
+  · obtain ⟨c⟩ := (not_isEmpty_iff.mp he)
+    obtain ⟨buf⟩ := kp_cont_actual_collar_buffer F ζ hζ U R P H realization T (by
       rw [← (H.atlas U).common_threshold c.1]
-      exact hT c
-    obtain ⟨buf⟩ := kp_cont_actual_collar_buffer F ζ hζ U R P H realization T hthreshold
+      exact hT c)
     exact KPContActualSquareEndPartition.construct_with_buffer F ζ hζ U R P H T buf
 
 end DedekindZetaZeroFree

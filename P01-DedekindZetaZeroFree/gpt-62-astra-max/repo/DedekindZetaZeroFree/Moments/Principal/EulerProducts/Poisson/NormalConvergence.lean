@@ -15,50 +15,55 @@ open scoped NumberField Classical
 set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-private lemma Q_gt_one (p : ExteriorPrime A) : 1 < Q p := by
+section
+
+variable (p : ExteriorPrime A)
+
+private lemma Q_gt_one : 1 < Q p := by
   change 1 < (Ideal.absNorm p.val.asIdeal : ℝ)
   exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm p.val
 
-private lemma chi_le (p : ExteriorPrime A) (u : A.R) :
+private lemma chi_le (u : A.R) :
     ‖chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u)‖ ≤ 1 := by
   letI := A.exteriorResidue_finite (primeIdeal p)
   letI := Fintype.ofFinite (A.R ⧸ A.extendIdeal (primeIdeal p))ˣ
   by_cases hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u)
   · obtain ⟨v, hv⟩ := hu
     rw [← hv]
-    have h := Complex.norm_eq_one_of_mem_rootsOfUnity
-      ((chi (σ := σ) p).apply_mem_rootsOfUnity v)
-    simpa only [MulChar.coe_equivToUnitHom] using h.le
+    simpa using (Complex.norm_eq_one_of_mem_rootsOfUnity
+      ((chi p).apply_mem_rootsOfUnity v)).le
   · simp [MulChar.map_nonunit _ hu]
 
-private lemma eta_le (p : ExteriorPrime A) : ‖η p.val.asIdeal‖ ≤ 1 := by
+private lemma eta_le : ‖η p.val.asIdeal‖ ≤ 1 := by
   by_cases h : η p.val.asIdeal = 0
   · simp [h]
   · exact (RayClassBridge.rayClassCharacter_norm_of_ne_zero F
       (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12)
       A.modulus A.modulus_ne_zero η p.val.asIdeal h).le
 
-private lemma qPower_norm (p : ExteriorPrime A) (s : ℂ) :
+private lemma qPower_norm (s : ℂ) :
     ‖qPower p s‖ = Real.exp (s.re * Real.log (Q p)) := by
   simp [qPower, Complex.norm_exp]
 
-private lemma norm_V' (p : ExteriorPrime A) (z : ℂ) :
+private lemma norm_V' (z : ℂ) :
     ‖V p z‖ = Real.exp ((-6 * z.re) * Real.log (Q p)) := by
   simp [V, qPower_norm]
 
-private lemma norm_W' (p : ExteriorPrime A) (u : A.R) (w : ℂ) :
+private lemma norm_W' (u : A.R) (w : ℂ) :
     ‖W (σ := σ) p u w‖ ≤ Real.exp (-w.re * Real.log (Q p)) := by
   simp only [W, norm_mul, qPower_norm, Complex.neg_re]
   exact mul_le_of_le_one_left (Real.exp_pos _).le (chi_le p u)
 
-private lemma norm_D' (p : ExteriorPrime A) (u : A.R) (ξ : ℂ) :
+private lemma norm_D' (u : A.R) (ξ : ℂ) :
     ‖D (σ := σ) (η := η) p u ξ‖ ≤ Real.exp (-ξ.re * Real.log (Q p)) := by
   simp only [D, norm_mul, norm_star, qPower_norm, Complex.neg_re]
   exact mul_le_of_le_one_left (Real.exp_pos _).le
     (mul_le_one₀ (eta_le p) (norm_nonneg _) (chi_le p u))
+
+end
 
 private lemma norm_E' (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (ξ z : ℂ) :
@@ -76,25 +81,25 @@ private lemma star_region (x : Coordinates) (hx : x ∈ DedekindZetaZeroFree.Qua
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11⟩ := hx
   refine ⟨by linarith, by linarith, by linarith, by linarith⟩
 
-private lemma norms_lt_one_star (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (u : A.R) (x : Coordinates)
-    (hx : x ∈ DedekindZetaZeroFree.Quantitative.EulerDomain.OmegaStar) :
+section
+
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (u : A.R) (x : Coordinates)
+    (hx : x ∈ DedekindZetaZeroFree.Quantitative.EulerDomain.OmegaStar)
+
+include hx in
+private lemma norms_lt_one_star :
     ‖V p x.2.2‖ < 1 ∧ ‖W (σ := σ) p u x.2.1‖ < 1 ∧
     ‖D (σ := σ) (η := η) p u x.1‖ < 1 ∧ ‖E C p x.1 x.2.2‖ < 1 := by
   obtain ⟨hz, hw, hξ, he⟩ := star_region x hx
-  have hlog := Real.log_pos (Q_gt_one p)
-  have hexp : ∀ a : ℝ, a < 0 → Real.exp (a * Real.log (Q p)) < 1 := by
-    intro a ha
-    exact Real.exp_lt_one_iff.mpr (mul_neg_of_neg_of_pos ha hlog)
+  have hexp : ∀ a : ℝ, a < 0 → Real.exp (a * Real.log (Q p)) < 1 := fun a ha => Real.exp_lt_one_iff.mpr (mul_neg_of_neg_of_pos ha (Real.log_pos (Q_gt_one p)))
   refine ⟨?_, ?_, ?_, ?_⟩
   · rw [norm_V']; exact hexp _ (by linarith)
   · exact (norm_W' p u _).trans_lt (hexp _ (by linarith))
   · exact (norm_D' p u _).trans_lt (hexp _ (by linarith))
   · rw [norm_E']; exact hexp _ (by linarith)
 
-private lemma denominators_ne_zero_star (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (u : A.R) (x : Coordinates)
-    (hx : x ∈ DedekindZetaZeroFree.Quantitative.EulerDomain.OmegaStar) :
+include hx in
+private lemma denominators_ne_zero_star :
     1 - V p x.2.2 ≠ 0 ∧
     1 - W (σ := σ) p u x.2.1 ≠ 0 ∧
     1 - D (σ := σ) (η := η) p u x.1 ≠ 0 ∧
@@ -102,9 +107,11 @@ private lemma denominators_ne_zero_star (C : A.GeneralArithmeticContext σ η hS
   obtain ⟨hv, hw, hd, he⟩ := norms_lt_one_star C p u x hx
   have h : ∀ a : ℂ, ‖a‖ < 1 → 1 - a ≠ 0 := by
     intro a ha heq
-    have : a = 1 := (sub_eq_zero.mp heq).symm
+    have := (sub_eq_zero.mp heq).symm
     simp [this] at ha
   exact ⟨h _ hv, h _ hw, h _ hd, h _ he⟩
+
+end
 
 set_option maxHeartbeats 1500000 in
 theorem goodFactor_differentiableOn_star
@@ -137,29 +144,24 @@ theorem frequency_good_cofinite
     (C : A.GeneralArithmeticContext σ η hS) (U : Frequency C) :
     ∀ᶠ p : ExteriorPrime A in Filter.cofinite, (U.j p).val = 0 := by
   apply Filter.eventually_cofinite.mpr
-  have hinj : Function.Injective (fun p : ExteriorPrime A => p.val.asIdeal) :=
-    IsDedekindDomain.HeightOneSpectrum.asIdeal_injective.comp Subtype.val_injective
   simpa [Frequency.j, idealPrimeExponent, Multiset.count_eq_zero] using
     (UniqueFactorizationMonoid.normalizedFactors U.ideal.val).finite_toSet.preimage
-      hinj.injOn
-
-private theorem exterior_not_mem (p : ExteriorPrime A) : p.val ∉ A.Sf := by
-  intro hp
-  have he := (A.exterior_iff ⟨p.val.asIdeal, p.val.ne_bot⟩).mp p.property p.val hp
-  simp only [sup_idem] at he
-  exact p.val.isPrime.ne_top he
+      (IsDedekindDomain.HeightOneSpectrum.asIdeal_injective.comp Subtype.val_injective).injOn
 
 theorem summable_majorant (M a : ℝ) (ha : 1 < a) :
     Summable (fun p : ExteriorPrime A => M * (Q p) ^ (-a)) := by
   let i : ExteriorPrime A → {p : IsDedekindDomain.HeightOneSpectrum (𝓞 F) // p ∉ A.Sf} :=
-    fun p => ⟨p.val, exterior_not_mem p⟩
+    fun p => ⟨p.val, (by
+      intro hp
+      have he := (A.exterior_iff ⟨p.val.asIdeal, p.val.ne_bot⟩).mp p.property p.val hp
+      simp only [sup_idem] at he
+      exact p.val.isPrime.ne_top he)⟩
   have hi : Function.Injective i := by
     intro p q h
     apply Subtype.ext
     exact congrArg (fun r : {p : IsDedekindDomain.HeightOneSpectrum (𝓞 F) // p ∉ A.Sf} => r.val) h
-  have hs := (summable_exterior_prime_norm_rpow F A.Sf a ha).comp_injective hi
   simpa [Function.comp_def, i, Q, SArithmeticData.exteriorNorm, idealNorm, primeIdeal]
-    using hs.mul_left M
+    using ((summable_exterior_prime_norm_rpow F A.Sf a ha).comp_injective hi).mul_left M
 
 theorem exists_margin (K : Set Coordinates) (hK : IsCompact K)
     (hKO : K ⊆ DedekindZetaZeroFree.Quantitative.EulerDomain.OmegaStar) :
@@ -197,11 +199,10 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
 theorem norm_fderiv_le_of_bound {G : E → ℂ} {y : E} {r M : ℝ} (hr : 0 < r)
     (hd : ∀ z ∈ closedBall y r, DifferentiableAt ℂ G z)
     (hb : ∀ z ∈ closedBall y r, ‖G z‖ ≤ M) : ‖fderiv ℂ G y‖ ≤ M / r := by
-  have hM : 0 ≤ M := (norm_nonneg _).trans (hb y (mem_closedBall_self hr.le))
-  refine ContinuousLinearMap.opNorm_le_bound _ (div_nonneg hM hr.le) fun h => ?_
+  refine ContinuousLinearMap.opNorm_le_bound _ (div_nonneg ((norm_nonneg _).trans (hb y (mem_closedBall_self hr.le))) hr.le) fun h => ?_
   by_cases h0 : h = 0
   · simp [h0]
-  have hh : 0 < ‖h‖ := norm_pos_iff.mpr h0
+  have hh := norm_pos_iff.mpr h0
   obtain ⟨c, hc⟩ : ∃ c : ℝ, c = r / ‖h‖ := ⟨_, rfl⟩
   have hcpos : 0 < c := by rw [hc]; exact div_pos hr hh
   have hcr : c * ‖h‖ = r := by rw [hc]; exact div_mul_cancel₀ _ hh.ne'
@@ -210,7 +211,7 @@ theorem norm_fderiv_le_of_bound {G : E → ℂ} {y : E} {r M : ℝ} (hr : 0 < r)
     intro t ht
     rw [mem_closedBall_iff_norm, add_sub_cancel_left, norm_smul, hv, norm_smul,
       Complex.norm_real, Real.norm_of_nonneg hcpos.le, hcr]
-    calc ‖t‖ * r ≤ 1 * r := mul_le_mul_of_nonneg_right ht hr.le
+    calc _ ≤ 1 * r := mul_le_mul_of_nonneg_right ht hr.le
       _ = r := one_mul r
   have haff : ∀ t : ℂ, HasDerivAt (fun t : ℂ => y + t • v) v t := by
     intro t
@@ -235,7 +236,7 @@ theorem norm_fderiv_le_of_bound {G : E → ℂ} {y : E} {r M : ℝ} (hr : 0 < r)
     Real.norm_of_nonneg hcpos.le] at hest
   rw [div_mul_eq_mul_div, le_div_iff₀ hr]
   have := mul_le_mul_of_nonneg_right hest hh.le
-  calc ‖fderiv ℂ G y h‖ * r = c * ‖fderiv ℂ G y h‖ * ‖h‖ := by rw [← hcr]; ring
+  calc _ = c * ‖fderiv ℂ G y h‖ * ‖h‖ := by rw [← hcr]; ring
     _ ≤ M * ‖h‖ := this
 
 theorem differentiableOn_of_tendstoLocallyUniformlyOn [ProperSpace E] {ι : Type*}
@@ -297,7 +298,7 @@ theorem diffOn_finsetProd {ι : Type*} (s : Finset ι) {G : ι → E → ℂ} {U
     DifferentiableOn ℂ (fun x => ∏ i ∈ s, G i x) U := by
   classical
   induction s using Finset.induction_on with
-  | empty => simpa using differentiableOn_const (1 : ℂ)
+  | empty => exact differentiableOn_const (1 : ℂ)
   | insert a s ha ih =>
     simp only [Finset.prod_insert ha]
     exact (h a (Finset.mem_insert_self a s)).mul
@@ -322,8 +323,8 @@ theorem OmegaStar_isOpen : IsOpen OmegaStar := by
   all_goals exact isOpen_lt (by fun_prop) (by fun_prop)
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 private theorem localFactor_diffOn_star (u : D.Row)
     (pr : LocalFiniteSums.ExteriorPrime D.recipe.A) :
@@ -356,33 +357,19 @@ private theorem hasProdUniformlyOn_star (u : D.Row) (K : Set Coordinates)
     rwa [e] at h
   have hcts : ∀ pr : LocalFiniteSums.ExteriorPrime D.recipe.A,
       ContinuousOn (fun x : Coordinates =>
-        CorrectionFactors.localFactor D.context u.toFrequency pr x.1 x.2.1 x.2.2 - 1) K := by
-    intro pr
-    exact ((localFactor_diffOn_star D u pr).continuousOn.mono hKO).sub continuousOn_const
-  simpa only [add_sub_cancel] using
-    (DedekindZetaZeroFree.Quantitative.EulerProductAux.summable_majorant (A := D.recipe.A) M (1 + δ)
+        CorrectionFactors.localFactor D.context u.toFrequency pr x.1 x.2.1 x.2.2 - 1) K := fun pr => ((localFactor_diffOn_star D u pr).continuousOn.mono hKO).sub continuousOn_const
+  simpa using
+    (DedekindZetaZeroFree.Quantitative.EulerProductAux.summable_majorant M (1 + δ)
       (by linarith)).hasProdUniformlyOn_one_add hK hb hcts
 
 theorem Hu_normal_convergence (u : D.Row) :
     OmegaStar ⊆
       {p : Coordinates | Multipliable (fun pr : LocalFiniteSums.ExteriorPrime D.recipe.A =>
         CorrectionFactors.localFactor D.context u.toFrequency pr p.1 p.2.1 p.2.2)} ∧
-    HasProdLocallyUniformlyOn
-      (fun (pr : LocalFiniteSums.ExteriorPrime D.recipe.A) (p : Coordinates) =>
-        CorrectionFactors.localFactor D.context u.toFrequency pr p.1 p.2.1 p.2.2)
-      (fun p : Coordinates =>
-        ∏' pr : LocalFiniteSums.ExteriorPrime D.recipe.A,
-          CorrectionFactors.localFactor D.context u.toFrequency pr p.1 p.2.1 p.2.2) OmegaStar ∧
     DifferentiableOn ℂ
       (fun p : Coordinates =>
         ∏' pr : LocalFiniteSums.ExteriorPrime D.recipe.A,
-          CorrectionFactors.localFactor D.context u.toFrequency pr p.1 p.2.1 p.2.2) OmegaStar ∧
-    (∀ p ∈ OmegaStar ∩ CorrectionFactors.Omega,
-      ∀ h : Multipliable (fun pr : LocalFiniteSums.ExteriorPrime D.recipe.A =>
-        CorrectionFactors.localFactor D.context u.toFrequency pr p.1 p.2.1 p.2.2),
-        CorrectionFactors.H_u D.context u.toFrequency p.1 p.2.1 p.2.2 h =
-          ∏' pr : LocalFiniteSums.ExteriorPrime D.recipe.A,
-            CorrectionFactors.localFactor D.context u.toFrequency pr p.1 p.2.1 p.2.2) := by
+          CorrectionFactors.localFactor D.context u.toFrequency pr p.1 p.2.1 p.2.2) OmegaStar := by
   have hloc : HasProdLocallyUniformlyOn
       (fun (pr : LocalFiniteSums.ExteriorPrime D.recipe.A) (p : Coordinates) =>
         CorrectionFactors.localFactor D.context u.toFrequency pr p.1 p.2.1 p.2.2)
@@ -391,7 +378,7 @@ theorem Hu_normal_convergence (u : D.Row) :
           CorrectionFactors.localFactor D.context u.toFrequency pr p.1 p.2.1 p.2.2) OmegaStar :=
     hasProdLocallyUniformlyOn_of_forall_compact OmegaStar_isOpen
       (fun K hKO hK => hasProdUniformlyOn_star D u K hK hKO)
-  refine ⟨fun p hp => ?_, hloc, ?_, fun p _ h => rfl⟩
+  refine ⟨fun p hp => ?_, ?_⟩
   · exact ((hasProdUniformlyOn_star D u {p} isCompact_singleton
       (Set.singleton_subset_iff.mpr hp)).hasProd (Set.mem_singleton p)).multipliable
   · have htlu : TendstoLocallyUniformlyOn

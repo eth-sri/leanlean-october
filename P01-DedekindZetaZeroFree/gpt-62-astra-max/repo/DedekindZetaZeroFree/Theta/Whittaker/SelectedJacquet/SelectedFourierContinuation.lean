@@ -16,8 +16,8 @@ open DedekindZetaZeroFree.KPLiteralScatteringGlobalContinuation
 open KPLiteralPeriod.ConstantTermCovariance.QuotientUpperOrbit
 open KPLiteralPeriod.ConstantTermCovariance.CompactPeriodDescent
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 local instance : IsProbabilityMeasure Q.dq := ⟨Q.probability⟩
 set_option maxHeartbeats 1800000
 set_option backward.isDefEq.respectTransparency false
@@ -26,14 +26,14 @@ theorem selected_chamber_fourier_analytic (v : R.A.UnitQuotient) (g : Group R) :
     AnalyticOnNhd ℂ (fun s => fourier R Q.dq
       (KPLiteralRaw.eisenstein F R.A.zeta12 R.A.primitive_zeta12 Q.K (Q.flat v) s) g)
       {s : ℂ | (1 / 3 : ℝ) < s.re} := by
-  let arg : KPAdeles F → Group R := fun x =>
+  let arg := fun x =>
     KPRationalAdelicSplitting.pglW F R.A.zeta12 R.A.primitive_zeta12 *
       KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 x * g
   let p := fun x => KPLiteralChamber.iwasawaTriple F R.A.zeta12
     R.A.primitive_zeta12 Q.K Q.iwasawa (arg x)
-  let l : KPAdeles F → ℝ := fun x => Real.log
+  let l := fun x => Real.log
     (((KPGlobalTorusFunctionData.delta F R.A.zeta12 R.A.primitive_zeta12 (p x).1 : NNReal) : ℝ))
-  let c : KPAdeles F → ℂ := fun x =>
+  let c := fun x =>
     (Q.flat v).val 0 ((p x).1.val * (p x).2.2.val) *
       star (adelicTraceQuotientCharacter F (QuotientAddGroup.mk x) : ℂ)
   have hf (s : ℂ) (x : KPAdeles F) :
@@ -47,10 +47,9 @@ theorem selected_chamber_fourier_analytic (v : R.A.UnitQuotient) (g : Group R) :
       Integrable (fun x => Complex.exp (s * (l x : ℂ)) * c x)
         (KPAdditiveHaar.adelicMeasure F) := by
     simpa only [← hf] using selected_open_cell_fourier_integrable R Q v s hs g
-  have ha := (exponential_integral_differentiable
+  apply ((exponential_integral_differentiable
     (KPAdditiveHaar.adelicMeasure F) l c (1 / 3) hint).analyticOnNhd
-      (isOpen_lt continuous_const Complex.continuous_re)
-  apply ha.congr (isOpen_lt continuous_const Complex.continuous_re)
+      (isOpen_lt continuous_const Complex.continuous_re)).congr (isOpen_lt continuous_const Complex.continuous_re)
   intro s hs
   dsimp only
   rw [selected_chamber_fourier_unfolding R Q v s hs g]
@@ -183,13 +182,11 @@ open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.SheetRescaling
 open MomentSources NumberField MeasureTheory Filter
 open CompactPeriodAnalyticity.UpperPeriodContinuation
-open _root_.DedekindZetaZeroFree.KPLiteralScatteringGlobalContinuation renaming exponential_integral_differentiable → exponential_integral_differentiable
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.QuotientUpperOrbit renaming upper_fiber_eq → upper_fiber_eq
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.QuotientUpperOrbit renaming compact_additive_representatives → compact_additive_representatives
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.CompactPeriodDescent renaming extension_of_compact_period → extension_of_compact_period
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.QuotientUpperOrbit (upper_fiber_eq compact_additive_representatives)
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.CompactPeriodDescent (extension_of_compact_period)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 local instance : IsProbabilityMeasure Q.dq := ⟨Q.probability⟩
 set_option maxHeartbeats 1800000
 set_option backward.isDefEq.respectTransparency false

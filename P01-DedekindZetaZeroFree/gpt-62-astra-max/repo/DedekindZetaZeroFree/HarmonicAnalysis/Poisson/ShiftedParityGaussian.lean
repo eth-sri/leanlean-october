@@ -58,14 +58,9 @@ theorem poisson (L : Submodule ℤ (euclidean.mixedSpace K))
   refine ⟨?_, ?_, ?_⟩
   · refine hprimal.congr (fun ℓ => ?_)
     rw [AffineFourier.shiftedSchwartz_apply]
-  · have hA : Summable (fun ξ : Theta.dualLattice L =>
-        |J K q|⁻¹ * ‖gδ K δ (Q K (fun v ↦ (q v)⁻¹)
-          (ξ : euclidean.mixedSpace K))‖) :=
-      hdual.congr (fun ξ => norm_fourier K δ q hq z (ξ : euclidean.mixedSpace K))
-    have hbase : Summable (fun ξ : Theta.dualLattice L =>
-        ‖gδ K δ (Q K (fun v ↦ (q v)⁻¹) (ξ : euclidean.mixedSpace K))‖) := by
-      have h2 := hA.mul_left (|J K q|)
-      refine h2.congr (fun ξ => ?_)
+  · have hbase : Summable (fun ξ : Theta.dualLattice L =>
+        ‖gδ K δ (Q K (fun v ↦ (q v)⁻¹) ξ)‖) := by
+      refine ((hdual.congr (fun ξ => norm_fourier K δ q hq z ξ)).mul_left (|J K q|)).congr (fun ξ => ?_)
       rw [← mul_assoc, mul_inv_cancel₀
         (ne_of_gt (abs_pos.mpr (ne_of_gt (AffineFourier.J_pos K q hq)))), one_mul]
     refine hbase.congr (fun ξ => ?_)
@@ -79,7 +74,7 @@ theorem poisson (L : Submodule ℤ (euclidean.mixedSpace K))
           (ξ : euclidean.mixedSpace K) = (J K q : ℂ)⁻¹ * εδ K δ * S := by
       rw [hS]
       rw [tsum_congr (fun ξ : Theta.dualLattice L =>
-        AffineFourier.fourier_shiftedSchwartz K δ q hq z (ξ : euclidean.mixedSpace K))]
+        AffineFourier.fourier_shiftedSchwartz K δ q hq z ξ)]
       rw [tsum_congr (fun ξ : Theta.dualLattice L =>
         mul_assoc ((J K q : ℂ)⁻¹ * εδ K δ)
           (Complex.exp (2 * Real.pi * Complex.I *
@@ -88,7 +83,7 @@ theorem poisson (L : Submodule ℤ (euclidean.mixedSpace K))
       rw [tsum_mul_left]
     rw [htsum] at hHas
     have hHas' : HasSum (fun ℓ : L =>
-        gδ K δ (Q K q (z + (ℓ : euclidean.mixedSpace K))))
+        gδ K δ (Q K q (z + ℓ)))
         ((ZLattice.covolume L : ℂ)⁻¹ * ((J K q : ℂ)⁻¹ * εδ K δ * S)) := by
       simpa only [AffineFourier.shiftedSchwartz_apply] using hHas
     have hval : (ZLattice.covolume L : ℂ)⁻¹ * ((J K q : ℂ)⁻¹ * εδ K δ * S) =

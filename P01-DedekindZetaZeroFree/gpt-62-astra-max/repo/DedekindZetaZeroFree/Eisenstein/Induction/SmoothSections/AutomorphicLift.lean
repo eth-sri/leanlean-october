@@ -14,10 +14,10 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualSectionLift
 open KPContSectorSmoothFramesSupport KPContActualCommonDiskRightHolomorphy
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 def scalarLift : Sections F ζ hζ U R P H →ₗ[ℂ] (G F ζ hζ → ℂ) where
   toFun u := lift F ζ hζ U R P H u
@@ -30,9 +30,8 @@ def scalarLift : Sections F ζ hζ U R P H →ₗ[ℂ] (G F ζ hζ → ℂ) wher
 
 theorem lift_continuous (u : smoothSections F ζ hζ U R P H) :
     Continuous (lift F ζ hζ U R P H u.val) := by
-  have hc := (KPContSectorLineL2Isometry.continuous_iff F ζ hζ U R P H u.val).mp
-    (fun i => (u.property i).continuous)
-  exact hc.comp ((KPContSectorQuotientRelationsComparison.piTilde_continuous F ζ hζ U).comp
+  exact ((KPContSectorLineL2Isometry.continuous_iff F ζ hζ U R P H u.val).mp
+    (fun i => (u.property i).continuous)).comp ((KPContSectorQuotientRelationsComparison.piTilde_continuous F ζ hζ U).comp
     continuous_quotient_mk')
 
 theorem lift_genuine (u : Sections F ζ hζ U R P H) (ε : rootsOfUnity 3 F)
@@ -82,7 +81,7 @@ theorem lift_arch_smooth (u : smoothSections F ζ hζ U R P H) (g : G F ζ hζ) 
       (g * archChart F ζ hζ x)) (archDomain F) := by
   apply (ActualDifferentialData.archDomain_isOpen F).contDiffOn_iff.mpr
   intro x hx
-  obtain ⟨Q, W, hWo, hpx, hWd, A, ρ, τ, hρsm, hρA, hτc, hτQ, hτsm, hτj, hbase, heq⟩ :=
+  obtain ⟨Q, W, hWo, hpx, A, ρ, τ, hρsm, hρA, hτc, hτQ, hτsm, hτj, hbase, heq⟩ :=
     ActualMovingCompactGeometry.local_moving_word_normal_form F ζ hζ U R P H g x hx
   let V : Set (ArchCoordinates F) := {y | (g,y) ∈ W}
   have hVo : IsOpen V := hWo.preimage (continuous_const.prodMk continuous_id)
@@ -97,11 +96,7 @@ theorem lift_arch_smooth (u : smoothSections F ζ hζ U R P H) (g : G F ζ hζ) 
       KPContRightJets.rightWord, Function.comp_apply] using (heq u.val (coefficient_smooth F ζ hζ U R P H u A) [] (g,y) hy)
   exact hf.contDiffAt (hVo.mem_nhds hxV)
 
- theorem finitePart_eq : KPGlobalTorusFunctionData.finitePart F ζ hζ =
-    KPFiniteCuspAtlas.FiniteCover F ζ hζ := by
-  rw [KPGlobalTorusFiniteStagesCofinality.finitePart_eq_closure,
-    ActualFiniteFactor.finiteSubgroup_eq_tupleFactor]
-  exact KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_finiteSubgroup_eq F ζ hζ
+ alias finitePart_eq := DedekindZetaZeroFree.KPMsAngularSourceRecipe.finitePart_eq_finiteCover
 
  def finiteEquiv : KPGlobalTorusFunctionData.finitePart F ζ hζ ≃ₜ*
     KPFiniteCuspAtlas.FiniteCover F ζ hζ where

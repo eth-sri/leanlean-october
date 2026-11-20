@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Eisenstein.ConstantTerms.BruhatTwoCellIntegral
 
 public import DedekindZetaZeroFree.Eisenstein.Induction.MetaplecticSectionCovariance
 public import DedekindZetaZeroFree.Theta.Profiles.ResidualCoreAndUnitRotations
@@ -39,8 +40,6 @@ theorem rationalLift_unipotent (t : F) :
       KPGlobalTorusFunctionData.N F ζ hζ
         (algebraMap F (KPGlobalTorusFunctionData.Adeles F) t) := by
   rw [rationalLift_eq_constructed]
-  change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-    (KPAdelicCoverRestrictedProduct.rationalSection F ζ hζ (KubotaRankTwo.n F t)) = _
   exact congrArg (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ)
     (KPRationalAdelicSplitting.N_rational F ζ hζ t).symm
 
@@ -58,29 +57,7 @@ theorem val_rational_diagonal_invariant (K : Subgroup (G F ζ hζ))
     KPGlobalExceptionalParameter.realLogPower, Real.log_one, Complex.ofReal_zero,
     mul_zero, Complex.exp_zero, one_mul] using h
 
-private theorem upper_matrix_factorization (b : KPRationalFlag.borel F) :
-    ∃ (y : Fˣ) (t : F), Matrix.ProjGenLinGroup.mk b.val =
-      Matrix.ProjGenLinGroup.mk (KPGlobalTorusFunctionData.rationalDiagonal F y) *
-        KPChamberBruhatTwoCells.rationalUnipotent F t := by
-  have hb : b.val 1 0 = 0 := b.property
-  have hdet : b.val 0 0 * b.val 1 1 ≠ 0 := by
-    have h := Units.ne_zero (Matrix.GeneralLinearGroup.det b.val)
-    simpa [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, hb] using h
-  have ha := (mul_ne_zero_iff.mp hdet).1
-  have hd := (mul_ne_zero_iff.mp hdet).2
-  let y : Fˣ := Units.mk0 (b.val 0 0 / b.val 1 1) (div_ne_zero ha hd)
-  refine ⟨y, b.val 0 1 / b.val 0 0, ?_⟩
-  unfold KPChamberBruhatTwoCells.rationalUnipotent
-  rw [← map_mul]
-  apply Eq.symm
-  apply Matrix.ProjGenLinGroup.mk_eq_mk_iff.mpr
-  refine ⟨Units.mk0 (b.val 1 1) hd, ?_⟩
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;>
-    simp [KPGlobalTorusFunctionData.rationalDiagonal, y,
-      Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-      Matrix.mul_apply, Fin.sum_univ_two, hb] <;> field_simp <;> ring
+private alias upper_matrix_factorization := DedekindZetaZeroFree.KPGlobalResidualKernel.RawStageL2.Outgoing.ActualBruhat.BruhatTwoCellIntegral.upper_matrix_factorization
 
 theorem val_rational_borel_invariant (K : Subgroup (G F ζ hζ))
     (f : Flat F ζ hζ K) (s : ℂ)
@@ -124,25 +101,12 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
  abbrev rational :=
   (KPGlobalResidualConstruction.ElementaryOutputs.rationalSplitting F ζ hζ).lift
 
-private theorem section_unipotent_invariant (s : ℂ)
-    (v : KPMsRationalCompactCrossPairing.Source F ζ hζ s)
-    (a : KPGlobalTorusFunctionData.Adeles F)
-    (g : KPGlobalTorusFunctionData.G F ζ hζ) :
-    v.val (KPGlobalTorusFunctionData.N F ζ hζ a * g) = v.val g := by
-  have h := v.property 1 a g
-  simpa [KPGlobalTorusFunctionData.deltaHalf] using h
+private alias section_unipotent_invariant := DedekindZetaZeroFree.KPGlobalResidualKernel.RawStageL2.Outgoing.ActualBruhat.section_unipotent_invariant
 
 private theorem rational_unipotent (t : F) :
     rational F ζ hζ (KPChamberBruhatTwoCells.rationalUnipotent F t) =
       KPGlobalTorusFunctionData.Nhom F ζ hζ
-        (Multiplicative.ofAdd (algebraMap F (KPGlobalTorusFunctionData.Adeles F) t)) := by
-  change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-    (KPAdelicCoverRestrictedProduct.rationalSection F ζ hζ (KubotaRankTwo.n F t)) = _
-  change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ _ =
-    KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-      (KPRationalAdelicSplitting.N F ζ hζ _)
-  exact congrArg (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ)
-    (KPRationalAdelicSplitting.N_rational F ζ hζ t).symm
+        (Multiplicative.ofAdd (algebraMap F (KPGlobalTorusFunctionData.Adeles F) t)) := by apply @DedekindZetaZeroFree.KPGlobalResidualKernel.RawStageL2.Outgoing.ActualBruhat.rational_unipotent <;> assumption
 
  theorem compatible_unipotent :
     KPChamberBruhatTwoCells.CompatibleUnipotentLift F (rational F ζ hζ)
@@ -151,11 +115,7 @@ private theorem rational_unipotent (t : F) :
 private theorem unsigned_weyl :
     rational F ζ hζ (Matrix.ProjGenLinGroup.mk (KPStandardLocalRootLifts.weylSwap F)) =
       KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-        (KPCubicCoverConstruction.adelicW F ζ hζ) := by
-  change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-    (KPAdelicCoverRestrictedProduct.rationalSection F ζ hζ _) = _
-  exact congrArg (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ)
-    (KPRationalAdelicSplitting.W_rational F ζ hζ).symm
+        (KPCubicCoverConstruction.adelicW F ζ hζ) := by apply @DedekindZetaZeroFree.KPGlobalResidualKernel.RawStageL2.Outgoing.ActualBruhat.unsigned_weyl <;> assumption
 
 private theorem section_rational_diagonal_invariant (s : ℂ)
     (v : KPMsRationalCompactCrossPairing.Source F ζ hζ s)
@@ -171,7 +131,7 @@ private theorem section_rational_diagonal_invariant (s : ℂ)
       (KPGlobalTorusPeriodizationInverse.rationalLift F ζ hζ y) *
       KPGlobalTorusBorelTwistCompatibility.normCharacter F ζ hζ s
         (KPGlobalTorusFunctionData.s F ζ hζ y)) : ℂ) = 1
-    rw [(KPGlobalTorusPeriodizationInverse.rational_representative_character F ζ hζ y).1,
+    rw [(KPGlobalTorusPeriodizationInverse.rational_representative_character F ζ hζ y),
       KPGlobalTorusBorelTwistCompatibility.normCharacter_rational]
     simp
   rw [hchar] at h
@@ -185,58 +145,13 @@ private theorem section_rational_diagonal_invariant (s : ℂ)
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     v.val (rational F ζ hζ (KPChamberBruhatTwoCells.rationalWeyl F) * g) =
       v.val (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-        (KPCubicCoverConstruction.adelicW F ζ hζ) * g) := by
-  have hmatrix : KPChamberBruhatTwoCells.rationalWeyl F =
-      Matrix.ProjGenLinGroup.mk (KPGlobalTorusFunctionData.rationalDiagonal F (-1)) *
-        Matrix.ProjGenLinGroup.mk (KPStandardLocalRootLifts.weylSwap F) := by
-    rw [← map_mul]
-    unfold KPChamberBruhatTwoCells.rationalWeyl
-    congr 1
-    apply Matrix.GeneralLinearGroup.ext
-    intro i j
-    fin_cases i <;> fin_cases j <;>
-      simp [KPChamberBruhatTwoCells.rationalWeyl,
-        KPGlobalTorusFunctionData.rationalDiagonal, KPStandardLocalRootLifts.weylSwap,
-        Matrix.mul_apply, Fin.sum_univ_two]
-  rw [hmatrix, map_mul, unsigned_weyl, mul_assoc]
-  change v.val ((KPGlobalTorusFunctionData.s F ζ hζ (-1)).val * _) = _
-  exact section_rational_diagonal_invariant F ζ hζ s v (-1) _
+        (KPCubicCoverConstruction.adelicW F ζ hζ) * g) := by apply @DedekindZetaZeroFree.KPGlobalResidualKernel.RawStageL2.Outgoing.ActualBruhat.section_signed_weyl <;> assumption
 
-private theorem upper_matrix_factorization
-    (b : KPRationalFlag.borel F) :
-    ∃ (y : Fˣ) (t : F), Matrix.ProjGenLinGroup.mk b.val =
-      Matrix.ProjGenLinGroup.mk (KPGlobalTorusFunctionData.rationalDiagonal F y) *
-        KPChamberBruhatTwoCells.rationalUnipotent F t := by
-  have hb : b.val 1 0 = 0 := b.property
-  have hdet : b.val 0 0 * b.val 1 1 ≠ 0 := by
-    have h := Units.ne_zero (Matrix.GeneralLinearGroup.det b.val)
-    simpa [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, hb] using h
-  have ha := (mul_ne_zero_iff.mp hdet).1
-  have hd := (mul_ne_zero_iff.mp hdet).2
-  let y : Fˣ := Units.mk0 (b.val 0 0 / b.val 1 1) (div_ne_zero ha hd)
-  refine ⟨y, b.val 0 1 / b.val 0 0, ?_⟩
-  unfold KPChamberBruhatTwoCells.rationalUnipotent
-  rw [← map_mul]
-  apply Eq.symm
-  apply Matrix.ProjGenLinGroup.mk_eq_mk_iff.mpr
-  refine ⟨Units.mk0 (b.val 1 1) hd, ?_⟩
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;>
-    simp [KPGlobalTorusFunctionData.rationalDiagonal, y,
-      Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-      Matrix.mul_apply, Fin.sum_univ_two, hb] <;> field_simp <;> ring
+private alias upper_matrix_factorization := DedekindZetaZeroFree.KPLiteralExceptionalResidue.upper_matrix_factorization
 
  theorem scalar_rational_borel_invariant (s : ℂ)
     (v : KPMsRationalCompactCrossPairing.Source F ζ hζ s) :
-    KPChamberBruhatTwoCells.ScalarRationalBorelInvariant F (rational F ζ hζ) v.val := by
-  intro b g
-  obtain ⟨B, hB, he⟩ := b.property
-  obtain ⟨y, t, ht⟩ := upper_matrix_factorization F ⟨B, hB⟩
-  rw [← he, ht, map_mul, rational_unipotent, mul_assoc]
-  change v.val ((KPGlobalTorusFunctionData.s F ζ hζ y).val *
-    (KPGlobalTorusFunctionData.N F ζ hζ _ * g)) = _
-  rw [section_rational_diagonal_invariant, section_unipotent_invariant]
+    KPChamberBruhatTwoCells.ScalarRationalBorelInvariant F (rational F ζ hζ) v.val := by apply @DedekindZetaZeroFree.KPGlobalResidualKernel.RawStageL2.Outgoing.ActualBruhat.scalar_rational_borel_invariant <;> assumption
 
 end DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm.Actual
 

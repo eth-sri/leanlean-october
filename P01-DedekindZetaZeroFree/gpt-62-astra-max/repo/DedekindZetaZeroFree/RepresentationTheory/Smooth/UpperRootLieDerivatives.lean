@@ -11,12 +11,12 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1200000
 open scoped NumberField Classical Topology
 open NumberField MeasureTheory Filter
-open _root_.DedekindZetaZeroFree.KPLiteralChamber.JointProfile.ArchChartProduct renaming product_coordinate → product_coordinate
+open _root_.DedekindZetaZeroFree.KPLiteralChamber.JointProfile.ArchChartProduct (product_coordinate)
 namespace DedekindZetaZeroFree.RootDerivatives
 open MomentSources KPGlobalResidualConstruction KPLiteralChamber
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def chartProduct (p : ArchCoordinates F × ArchCoordinates F) : ArchCoordinates F := fun q =>
   ![p.1 q 0 + p.1 q 1 * p.2 q 0 / (1 + p.1 q 2 * p.2 q 0),
@@ -62,16 +62,14 @@ theorem upperField_smooth (w : InfinitePlace F) (b : Bool) :
   · apply contDiff_pi.mpr; intro i
     fin_cases i <;> simp [upperField, hv]
     all_goals fun_prop
-  · simpa [upperField, hv] using (contDiff_const : ContDiff ℝ (⊤ : ℕ∞)
-      (fun _ : ArchCoordinates F => (0 : Fin 3 → ℂ)))
+  · simpa [upperField, hv] using contDiff_const
 
 theorem upperTransport_hasDeriv (w : InfinitePlace F) (b : Bool) (x : ArchCoordinates F) :
     HasDerivAt (upperTransport w b x) (upperField w b x) 0 := by
   apply hasDerivAt_pi.mpr; intro v
   apply hasDerivAt_pi.mpr; intro i
-  have ht := Complex.ofRealCLM.hasDerivAt (x := (0 : ℝ))
   have ha : HasDerivAt (fun t : ℝ => (t : ℂ) * direction b) (direction b) 0 := by
-    simpa using ht.mul_const (direction b)
+    simpa using (Complex.ofRealCLM.hasDerivAt).mul_const (direction b)
   have hd : HasDerivAt (fun t : ℝ => 1 + x v 2 * ((t : ℂ) * direction b))
       (x v 2 * direction b) 0 := by
     convert (hasDerivAt_const 0 (1 : ℂ)).add (ha.const_mul (x v 2)) using 1 <;> simp
@@ -97,10 +95,8 @@ theorem upperLieDerivative_chart (w : InfinitePlace F) (b : Bool) (f : Functions
     upperLieDerivative R w b f (g * archChart F R.A.zeta12 R.A.primitive_zeta12 x) =
       fderiv ℝ (fun y => f (g * archChart F R.A.zeta12 R.A.primitive_zeta12 y)) x
         (upperField w b x) := by
-  have hO : IsOpen (archDomain F) := KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F
-  have hd := ((hf.2.1 g).contDiffAt (hO.mem_nhds hx)).differentiableAt (by simp)
   have ht := upperTransport_hasDeriv w b x
-  have hder := (upperTransport_zero w b x).symm ▸ hd.hasFDerivAt
+  have hder := (upperTransport_zero w b x).symm ▸ (((hf.2.1 g).contDiffAt ((KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F).mem_nhds hx)).differentiableAt (by simp)).hasFDerivAt
   have hder := hder.comp_hasDerivAt 0 ht
   rw [upperTransport_zero] at hder
   have he : (fun t => f ((g * archChart F R.A.zeta12 R.A.primitive_zeta12 x) *
@@ -109,10 +105,8 @@ theorem upperLieDerivative_chart (w : InfinitePlace F) (b : Bool) (f : Functions
     have hn : ∀ᶠ t in 𝓝 (0 : ℝ), ∀ v, 1 + x v 2 * upperCoordinates w b t v 0 ≠ 0 := by
       apply eventually_all.mpr; intro v
       have hc : ContinuousAt (fun t : ℝ => 1 + x v 2 * upperCoordinates w b t v 0) 0 := by
-        have hcv : Continuous (fun t : ℝ => upperCoordinates w b t v 0) :=
-          (continuous_apply 0).comp ((continuous_apply v).comp
-            (upperCoordinates_smooth w b).continuous)
-        exact continuousAt_const.add (continuousAt_const.mul hcv.continuousAt)
+        exact continuousAt_const.add (continuousAt_const.mul ((continuous_apply 0).comp ((continuous_apply v).comp
+          (upperCoordinates_smooth w b).continuous)).continuousAt)
       exact hc.eventually_ne (by simp [upperCoordinates])
     filter_upwards [hn] with t ht
     rw [← upperCoordinates_chart, mul_assoc, ← chartProduct_chart R x _ hx
@@ -127,8 +121,7 @@ theorem upperLieDerivative_chart_smooth (w : InfinitePlace F) (b : Bool) (f : Fu
     (hf : KPLiteralRaw.Smooth F R.A.zeta12 R.A.primitive_zeta12 f) (g : Group R) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => upperLieDerivative R w b f
       (g * archChart F R.A.zeta12 R.A.primitive_zeta12 x)) (archDomain F) := by
-  have hO : IsOpen (archDomain F) := KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F
-  exact (((hf.2.1 g).fderiv_of_isOpen hO (by simp)).clm_apply
+  exact (((hf.2.1 g).fderiv_of_isOpen (KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F) (by simp)).clm_apply
     (upperField_smooth w b).contDiffOn).congr
       (fun x hx => upperLieDerivative_chart R w b f hf g x hx)
 

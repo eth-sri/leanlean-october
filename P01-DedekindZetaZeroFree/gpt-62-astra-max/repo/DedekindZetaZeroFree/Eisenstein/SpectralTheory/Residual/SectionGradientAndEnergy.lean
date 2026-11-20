@@ -9,17 +9,16 @@ noncomputable section
 open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualSectionGradient
 open KPContSectorSmoothFramesSupport KPContActualSectorCutoffGraphLimit
-open _root_.DedekindZetaZeroFree.KPContThreeL2CotangentHelpers renaming smoothGradient → KPContThreeL2CotangentHelpers.smoothGradient
 open _root_.DedekindZetaZeroFree.KPContThreeL2CotangentHelpers renaming arch_coframe_norm → KPContThreeL2CotangentHelpers.arch_coframe_norm
 open _root_.DedekindZetaZeroFree.KPContThreeL2CotangentHelpers renaming coframe_reindex → KPContThreeL2CotangentHelpers.coframe_reindex
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 set_option synthInstance.maxHeartbeats 100000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 theorem gradient_norm_component (Z : smoothSections F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount) (x : KPCuspGenuineMonodromy.SymmetricSpace F) :
@@ -31,10 +30,9 @@ theorem gradient_norm_component (Z : smoothSections F ζ hζ U R P H)
   change (KPContActualCotangentMeasurableFamilies.normSquare (gradient Z)
     ((H.atlas U).components ⟨i,Quotient.mk _ x⟩) : ℝ) = _ at hh
   rw [hh]
-  have hr := KPContThreeL2CotangentHelpers.coframe_reindex
+  exact (KPContThreeL2CotangentHelpers.coframe_reindex
     (KPContCotangentActualOverlap.d F) (KPCuspLogShape.dimension F)
-    (KPArch.complex_places_of_primitive_twelfth_root F ζ hζ).2.1.symm (Z.val i).val x
-  exact hr.trans (KPContThreeL2CotangentHelpers.arch_coframe_norm _ _ (Z.property i) _)
+    (KPArch.complex_places_of_primitive_twelfth_root F ζ hζ).2.1.symm (Z.val i).val x).trans (KPContThreeL2CotangentHelpers.arch_coframe_norm _ _ (Z.property i) _)
 theorem finite_component_eq
     (x : KPCuspGenuineMonodromy.SymmetricSpace F)
     (c : KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ)

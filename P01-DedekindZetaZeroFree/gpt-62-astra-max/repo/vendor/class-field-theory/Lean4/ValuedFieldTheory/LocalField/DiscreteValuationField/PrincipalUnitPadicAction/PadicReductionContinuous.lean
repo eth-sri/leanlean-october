@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -27,19 +23,14 @@ topology on the quotient. This source has no local-field dependencies.
 
 namespace LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup
 
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+
 /-- The kernel of reduction `Z_p -> ZMod (p^n)` is open. -/
-theorem isOpen_ker_padicIntToZModPow
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem isOpen_ker_padicIntToZModPow :
     IsOpen
       ((RingHom.ker (PadicInt.toZModPow n : ℤ_[p] →+* ZMod (p ^ n)) :
         Ideal ℤ_[p]) : Set ℤ_[p]) := by
   rw [PadicInt.ker_toZModPow]
-  have hp0 : (p : ℝ) ≠ 0 := by
-    exact_mod_cast (Fact.out : p.Prime).ne_zero
-  have hr : (p : ℝ) ^ (-n : ℤ) ≠ 0 := zpow_ne_zero (-n : ℤ) hp0
-  have hball :
-      IsOpen (Metric.closedBall (0 : ℤ_[p]) ((p : ℝ) ^ (-n : ℤ))) :=
-    IsUltrametricDist.isOpen_closedBall (0 : ℤ_[p]) hr
   have heq :
       ((Ideal.span {(p : ℤ_[p]) ^ n} : Ideal ℤ_[p]) : Set ℤ_[p]) =
         Metric.closedBall (0 : ℤ_[p]) ((p : ℝ) ^ (-n : ℤ)) := by
@@ -47,12 +38,12 @@ theorem isOpen_ker_padicIntToZModPow
     rw [Metric.mem_closedBall, dist_zero_right]
     exact (PadicInt.norm_le_pow_iff_mem_span_pow x n).symm
   rw [heq]
-  exact hball
+  exact IsUltrametricDist.isOpen_closedBall (0 : ℤ_[p]) (zpow_ne_zero (-n : ℤ) (by
+    exact_mod_cast (Fact.out : p.Prime).ne_zero))
 
 /-- Reduction of p-adic integers modulo `p^n` is continuous for the
 discrete topology on the target. -/
-theorem Internal.continuous_padicIntToZModPow
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem Internal.continuous_padicIntToZModPow :
     @Continuous ℤ_[p] (ZMod (p ^ n))
       (inferInstance : TopologicalSpace ℤ_[p]) ⊥
       (PadicInt.toZModPow n : ℤ_[p] → ZMod (p ^ n)) := by
@@ -60,7 +51,7 @@ theorem Internal.continuous_padicIntToZModPow
   let : DiscreteTopology (ZMod (p ^ n)) := ⟨rfl⟩
   apply continuous_of_continuousAt_zero
     (PadicInt.toZModPow n : ℤ_[p] →+* ZMod (p ^ n))
-  rw [ContinuousAt, nhds_discrete (ZMod (p ^ n)), map_zero, Filter.tendsto_pure]
+  simp [ContinuousAt]
   exact (isOpen_ker_padicIntToZModPow p n).mem_nhds
     (RingHom.ker (PadicInt.toZModPow n)).zero_mem
 

@@ -10,10 +10,14 @@ open MeasureTheory
 
 namespace DedekindZetaZeroFree.KPFiniteAdelicCuspEnds
 
-theorem fd_ae_unique {G X : Type*} [Group G] [Countable G]
-    [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
-    (μ : Measure X) [SMulInvariantMeasure G X μ]
-    (s : Set X) (hs : IsFundamentalDomain G s μ) :
+section
+
+variable {G X : Type*} [Group G] [Countable G] [MeasurableSpace X] [MulAction G X]
+    [MeasurableConstSMul G X] (μ : Measure X) [SMulInvariantMeasure G X μ] (s : Set X)
+    (hs : IsFundamentalDomain G s μ)
+
+include hs in
+theorem fd_ae_unique :
     ∀ᵐ x ∂μ, ∃! g : G, g • x ∈ s := by
   have hd : ∀ᵐ x ∂μ, ∀ a b : G, a ≠ b → ¬ (a • x ∈ s ∧ b • x ∈ s) := by
     apply (ae_all_iff).2
@@ -21,15 +25,14 @@ theorem fd_ae_unique {G X : Type*} [Group G] [Countable G]
     apply (ae_all_iff).2
     intro b
     by_cases hab : a = b
-    · exact Filter.Eventually.of_forall (by simp [hab])
-    · have h := hs.aedisjoint (i := a⁻¹) (j := b⁻¹) (by simpa only [ne_eq, inv_inj] using hab)
+    · grind [Filter.Eventually.of_forall]
+    · have h := hs.aedisjoint (i := a⁻¹) (j := b⁻¹) (by simpa using hab)
       have he : μ ((a⁻¹ • s) ∩ (b⁻¹ • s)) = 0 := h
       have hz : ∀ᵐ x ∂μ, x ∉ ((a⁻¹ • s) ∩ (b⁻¹ • s)) := by
         exact ae_iff.mpr (by simpa using he)
       filter_upwards [hz] with x hx
       intro _
-      simpa only [Set.mem_inter_iff, Set.mem_smul_set_iff_inv_smul_mem, inv_inv,
-        Set.mem_setOf_eq] using hx
+      simpa [Set.mem_inter_iff, Set.mem_smul_set_iff_inv_smul_mem] using hx
   filter_upwards [hs.ae_covers, hd] with x hx hd
   obtain ⟨a, ha⟩ := hx
   refine ⟨a, ha, ?_⟩
@@ -37,33 +40,34 @@ theorem fd_ae_unique {G X : Type*} [Group G] [Countable G]
   by_contra hba
   exact hd b a hba ⟨hb, ha⟩
 
-theorem fd_ae_free {G X : Type*} [Group G] [Countable G]
-    [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
-    (μ : Measure X) [SMulInvariantMeasure G X μ]
-    (s : Set X) (hs : IsFundamentalDomain G s μ) :
+include hs in
+theorem fd_ae_free :
     ∀ᵐ x ∂μ, ∀ g : G, g • x = x → g = 1 := by
   filter_upwards [fd_ae_unique μ s hs] with x hx
   intro g hg
   obtain ⟨a, ha, hu⟩ := hx
-  have h := hu (a * g) (by simpa only [mul_smul, hg] using ha)
+  have h := hu (a * g) (by simpa [mul_smul, hg] using ha)
   exact mul_left_cancel (h.trans (mul_one a).symm)
 
-theorem glue_partial_fd {G X : Type*} [Group G] [Countable G]
-    [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
-    (μ : Measure X) [SMulInvariantMeasure G X μ]
-    (A B E : Set X) (hA : MeasurableSet A) (hB : MeasurableSet B)
-    (hE : MeasurableSet E) (hBE : B ⊆ E)
-    (hinv : ∀ g : G, (fun x => g • x) ⁻¹' E = E)
-    (hFD : IsFundamentalDomain G A μ)
-    (hlocal : IsFundamentalDomain G B (μ.restrict E)) :
+end
+
+section
+
+variable {G X : Type*} [Group G] [Countable G] [MeasurableSpace X] [MulAction G X]
+    [MeasurableConstSMul G X] (μ : Measure X) [SMulInvariantMeasure G X μ] (A B E : Set X)
+    (hA : MeasurableSet A) (hB : MeasurableSet B) (hE : MeasurableSet E) (hBE : B ⊆ E)
+    (hinv : ∀ g : G, (fun x => g • x) ⁻¹' E = E) (hFD : IsFundamentalDomain G A μ)
+    (hlocal : IsFundamentalDomain G B (μ.restrict E))
+
+include hA hB hE hBE hinv hFD hlocal in
+theorem glue_partial_fd :
     IsFundamentalDomain G (B ∪ (A \ E)) μ := by
   have hmem (g : G) (x : X) : g • x ∈ E ↔ x ∈ E := by
     change x ∈ (fun x => g • x) ⁻¹' E ↔ x ∈ E
     rw [hinv]
   refine IsFundamentalDomain.mk'' (hB.union (hA.diff hE)).nullMeasurableSet ?_ ?_
     (fun g => (measurePreserving_smul g μ).quasiMeasurePreserving)
-  · have hc : ∀ᵐ x ∂μ, x ∈ E → ∃ g : G, g • x ∈ B := by
-      exact (ae_restrict_iff' hE).mp hlocal.ae_covers
+  · have hc := (ae_restrict_iff' hE).mp hlocal.ae_covers
     filter_upwards [hFD.ae_covers, hc] with x hx hc
     by_cases hxE : x ∈ E
     · obtain ⟨g, hg⟩ := hc hxE
@@ -71,18 +75,18 @@ theorem glue_partial_fd {G X : Type*} [Group G] [Countable G]
     · obtain ⟨g, hg⟩ := hx
       exact ⟨g, Or.inr ⟨hg, (hmem g x).not.mpr hxE⟩⟩
   · intro g hg
-    have hl := hlocal.aedisjoint (i := g) (j := 1) hg
+    have hl := hlocal.aedisjoint hg
     have hlzero : (μ.restrict E) ((g • B) ∩ B) = 0 := by
       change (μ.restrict E) ((g • B) ∩ (1 • B)) = 0 at hl
-      simpa only [one_smul] using hl
+      simpa using hl
     have hlzero' : μ ((g • B) ∩ B) = 0 := by
       rw [Measure.restrict_apply ((hB.const_smul g).inter hB)] at hlzero
       rwa [Set.inter_eq_left.mpr (Set.inter_subset_right.trans hBE)] at hlzero
     have hazero : μ ((g • A) ∩ A) = 0 := by
-      have h := hFD.aedisjoint (i := g) (j := 1) hg
+      have h := hFD.aedisjoint hg
       change μ ((g • A) ∩ (1 • A)) = 0 at h
-      simpa only [one_smul] using h
-    apply measure_mono_null (t := ((g • B) ∩ B) ∪ ((g • A) ∩ A)) ?_
+      simpa using h
+    apply measure_mono_null ?_
       (measure_union_null hlzero' hazero)
     rintro x ⟨hxg, hxs⟩
     obtain ⟨y, hy, rfl⟩ := hxg
@@ -92,14 +96,8 @@ theorem glue_partial_fd {G X : Type*} [Group G] [Countable G]
     · exact False.elim (hy.2 ((hmem g y).mp (hBE hx)))
     · exact Or.inr ⟨Set.smul_mem_smul_set hy.1, hx.1⟩
 
-theorem partial_fd_quotient_measure {G X : Type*} [Group G] [Countable G]
-    [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
-    (μ : Measure X) [SMulInvariantMeasure G X μ]
-    (A B E : Set X) (hA : MeasurableSet A) (hB : MeasurableSet B)
-    (hE : MeasurableSet E) (hBE : B ⊆ E)
-    (hinv : ∀ g : G, (fun x => g • x) ⁻¹' E = E)
-    (hFD : IsFundamentalDomain G A μ)
-    (hlocal : IsFundamentalDomain G B (μ.restrict E)) :
+include hA hB hE hBE hinv hFD hlocal in
+theorem partial_fd_quotient_measure :
     Measure.map (Quotient.mk (MulAction.orbitRel G X)) (μ.restrict B) =
     (Measure.map (Quotient.mk (MulAction.orbitRel G X)) (μ.restrict A)).restrict
       ((Quotient.mk (MulAction.orbitRel G X)) '' E) := by
@@ -115,7 +113,7 @@ theorem partial_fd_quotient_measure {G X : Type*} [Group G] [Countable G]
         exact hy
       change x ∈ (fun x => g • x) ⁻¹' E at hm
       rwa [hinv] at hm
-    · exact Set.subset_preimage_image _ _
+    · apply Set.subset_preimage_image
   have hπE : MeasurableSet (π '' E) := by
     apply measurableSet_quotient.mpr
     change MeasurableSet (π ⁻¹' (π '' E))
@@ -128,14 +126,14 @@ theorem partial_fd_quotient_measure {G X : Type*} [Group G] [Countable G]
     measure_map_restrict_apply (meas_U := hV)]
   apply congrArg μ
   change π ⁻¹' V ∩ B = π ⁻¹' (V ∩ π '' E) ∩ (B ∪ A \ E)
-  rw [Set.preimage_inter, hpre]
+  simp [hpre]
   ext x
   simp only [Set.mem_inter_iff, Set.mem_union, Set.mem_diff]
   constructor
   · rintro ⟨hx, hb⟩; exact ⟨⟨hx, hBE hb⟩, Or.inl hb⟩
-  · rintro ⟨⟨hx, he⟩, hb | ha⟩
-    · exact ⟨hx, hb⟩
-    · exact False.elim (ha.2 he)
+  simp_all
+
+end
 
 theorem partial_fd_of_local_unique {G X : Type*} [Group G] [Countable G]
     [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
@@ -144,15 +142,15 @@ theorem partial_fd_of_local_unique {G X : Type*} [Group G] [Countable G]
     (hunique : ∀ᵐ x ∂μ.restrict U, ∃! g : G, g • x ∈ B) :
     IsFundamentalDomain G B (μ.restrict (⋃ g : G, g • U)) := by
   let E := ⋃ g : G, g • U
-  have hE : MeasurableSet E := .iUnion (fun g => hU.const_smul g)
+  have hE : MeasurableSet E := .iUnion (hU.const_smul)
   have hi (g : G) : (fun x : X => g • x) ⁻¹' E = E := by
     ext x
     simp only [E, Set.mem_preimage, Set.mem_iUnion, Set.mem_smul_set_iff_inv_smul_mem]
     constructor
     · rintro ⟨a, ha⟩
-      exact ⟨g⁻¹ * a, by simpa only [mul_inv_rev, inv_inv, mul_smul] using ha⟩
+      exact ⟨g⁻¹ * a, by simpa [mul_smul] using ha⟩
     · rintro ⟨a, ha⟩
-      exact ⟨g * a, by simpa only [mul_inv_rev, mul_smul, inv_smul_smul] using ha⟩
+      exact ⟨g * a, by simpa [mul_smul] using ha⟩
   have hu : ∀ᵐ x ∂μ, x ∈ U → ∃! g : G, g • x ∈ B :=
     (ae_restrict_iff' hU).mp hunique
   have hall : ∀ᵐ x ∂μ, ∀ a : G, a⁻¹ • x ∈ U → ∃! g : G, g • (a⁻¹ • x) ∈ B := by
@@ -166,9 +164,9 @@ theorem partial_fd_of_local_unique {G X : Type*} [Group G] [Countable G]
     obtain ⟨a, ha⟩ := Set.mem_iUnion.mp hxE
     rw [Set.mem_smul_set_iff_inv_smul_mem] at ha
     obtain ⟨b, hb, hbu⟩ := hx a ha
-    refine ⟨b * a⁻¹, by simpa only [mul_smul] using hb, ?_⟩
+    refine ⟨b * a⁻¹, by simpa [mul_smul] using hb, ?_⟩
     intro c hc
-    have hca := hbu (c * a) (by simpa only [mul_smul, smul_inv_smul] using hc)
+    have hca := hbu (c * a) (by simpa [mul_smul] using hc)
     have hc' := congrArg (fun g : G => g * a⁻¹) hca
     simpa only [mul_assoc, mul_inv_cancel, mul_one] using hc'
   letI : SMulInvariantMeasure G X (μ.restrict E) := by
@@ -186,13 +184,16 @@ theorem partial_fd_of_local_unique {G X : Type*} [Group G] [Countable G]
     simp only [Set.mem_inter_iff, Set.mem_smul_set_iff_inv_smul_mem]
     rintro ⟨hxg, hxb⟩
     obtain ⟨a, ha, hu⟩ := hx
-    have h1 := hu 1 (by simpa only [one_smul] using hxb)
+    have h1 := hu 1 (by simpa using hxb)
     have hg' := hu g⁻¹ hxg
-    exact hg (by simpa only [inv_eq_one] using hg'.trans h1.symm)
+    exact hg (by simpa using hg'.trans h1.symm)
   simpa using ae_iff.mp hz
 
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
 theorem chart_actual_cross_action
-    (F : Type) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F))
     (D : KPCuspCharts.ParabolicData F S)
@@ -204,8 +205,7 @@ theorem chart_actual_cross_action
   rw [G.actual_action g A hA hc, G.crossAction_formula g A hA hc]
   rfl
 
-theorem arch_smul_measurePreserving
-    (F : Type) [Field F] [NumberField F] (g : KPCuspArithmetic.PGL2 F) :
+theorem arch_smul_measurePreserving (g : KPCuspArithmetic.PGL2 F) :
     MeasurePreserving (fun z : KPArch.Space (KPCuspLogShape.dimension F) => g • z)
       (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F))
       (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)) := by
@@ -218,17 +218,18 @@ theorem arch_smul_measurePreserving
   rw [he]
   exact KPArch.hyperbolicVolume_invariant _ _
 
-theorem cusp_end_coordinate_volume
-    (F : Type) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (Γ S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (σ : KPCuspArithmetic.PGL2 F) (T : ℝ)
-    (D : KPCuspCharts.ParabolicData F S)
-    (G : KPCuspCharts.ChartOutput F hF S D)
+end
+
+section
+
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+    (Γ S : Subgroup (KPCuspArithmetic.PGL2 F)) (σ : KPCuspArithmetic.PGL2 F) (T : ℝ)
+    (D : KPCuspCharts.ParabolicData F S) (G : KPCuspCharts.ChartOutput F hF S D)
     (f : KPCuspCharts.HighQuotient F S T → KPCuspSiegel.OrbitQuotient F Γ)
-    (hf : ∀ (p : {p : KPCuspCharts.Coordinates F // T < p.2}),
-      f (Quotient.mk _ p) =
-        KPCuspSiegel.projection F Γ (σ • KPCuspCharts.toArch F p.val)) :
+    (hf : ∀ (p : {p : KPCuspCharts.Coordinates F // T < p.2}), f (Quotient.mk _ p) = KPCuspSiegel.projection F Γ (σ • KPCuspCharts.toArch F p.val))
+
+include hf in
+theorem cusp_end_coordinate_volume :
     Measure.map f
       (Measure.map (G.highPresentation T)
         (G.sectionMeasure.prod
@@ -246,7 +247,7 @@ theorem cusp_end_coordinate_volume
       KPCuspSiegel.projection F Γ (σ • KPCuspCharts.toArch F p)) :=
     hproj.comp ((KPCuspCharts.projectiveHomeomorph F σ).continuous.measurable.comp
       (KPCuspCharts.toArch_contDiff F).continuous.measurable)
-  have hfm : Measurable f := measurable_from_quotient.mpr (by
+  have hfm := measurable_from_quotient.mpr (by
     convert hcoord.comp measurable_subtype_coe using 1
     funext p
     exact hf p)
@@ -258,20 +259,11 @@ theorem cusp_end_coordinate_volume
     exact hf p
   rw [heq, ← Measure.map_map hcoord measurable_subtype_coe]
   congr 1
-  exact map_comap_subtype_coe (s := {p : KPCuspCharts.Coordinates F | T < p.2})
+  exact map_comap_subtype_coe
     (measurableSet_lt measurable_const measurable_snd) _
 
-theorem cusp_end_arch_volume
-    (F : Type) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (Γ S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (σ : KPCuspArithmetic.PGL2 F) (T : ℝ)
-    (D : KPCuspCharts.ParabolicData F S)
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    (f : KPCuspCharts.HighQuotient F S T → KPCuspSiegel.OrbitQuotient F Γ)
-    (hf : ∀ (p : {p : KPCuspCharts.Coordinates F // T < p.2}),
-      f (Quotient.mk _ p) =
-        KPCuspSiegel.projection F Γ (σ • KPCuspCharts.toArch F p.val)) :
+include hf in
+theorem cusp_end_arch_volume :
     Measure.map f
       (Measure.map (G.highPresentation T)
         (G.sectionMeasure.prod
@@ -316,6 +308,8 @@ theorem cusp_end_arch_volume
     simp only [Set.mem_inter_iff, Set.mem_setOf_eq, and_comm]
   rw [hi, ← he, e.measurableEmbedding.restrict_map,
     Set.preimage_image_eq _ e.injective]
+
+end
 
 section PartialDomain
 open scoped Pointwise

@@ -27,7 +27,7 @@ theorem scalarSmooth_exists_right_level
     apply Submodule.iSup_induction _ (motive := fixed) b.property
     · intro U b hb
       exact ⟨U, hb.2⟩
-    · obtain ⟨U, hU⟩ := (rawSmoothCarrier_closed F ζ hζ).1.2.2
+    · obtain ⟨U, hU⟩ := (rawSmoothCarrier_closed F ζ hζ).2.2
       exact ⟨U, fun _ _ => rfl⟩
     · intro b c hb hc
       obtain ⟨U, hU⟩ := hb

@@ -10,7 +10,7 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ChamberReferenceInsertion
 open KPGlobalTorusFiniteStages ActualCofactor
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 set_option backward.isDefEq.respectTransparency false
 
 open MeasureTheory KPLocalPrincipalSeries KPLocalExceptionalConstruction KPLocalStoneVonNeumann
@@ -47,13 +47,12 @@ theorem arch_chamber_integral (s : ℂ) :
       ∏ _w : NumberField.InfinitePlace F, ∫ x : ℂ,
         TraceBox.complexIntegrand s x ∂((2 : ENNReal) • KPCplxCharacterHaar.euclideanArea) := by
   let := primitive12_totallyComplex F ζ hζ
-  have h := TraceBox.arch_cylinder_integral F ζ hζ s
   let e : NumberField.InfinitePlace F ≃ {w : NumberField.InfinitePlace F // w.IsComplex} :=
     { toFun := fun w => ⟨w, NumberField.IsTotallyComplex.isComplex w⟩
       invFun := Subtype.val
       left_inv := fun _ => rfl
       right_inv := fun _ => rfl }
-  exact h.trans (e.prod_comp (fun _ => ∫ x : ℂ, TraceBox.complexIntegrand s x
+  exact (TraceBox.arch_cylinder_integral F ζ hζ s).trans (e.prod_comp (fun _ => ∫ x : ℂ, TraceBox.complexIntegrand s x
     ∂((2 : ENNReal) • KPCplxCharacterHaar.euclideanArea))).symm
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ChamberReferenceInsertion

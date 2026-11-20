@@ -13,11 +13,10 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open ThetaExpansion.SignedExpansion
 open scoped Classical NumberField
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_rationalUnit → eval_rationalUnit
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_localIdele → eval_localIdele
+open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting (eval_rationalUnit eval_localIdele)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 private theorem value_right_fixed {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) (ell : V →ₗ[ℂ] ℂ) (r : V) (a b k : G)
@@ -37,7 +36,6 @@ private theorem value_right_fixed {G V : Type*} [Group G] [AddCommGroup V] [Modu
   unfold exteriorDigitFactor exteriorSlotValue
   congr 3
   congr 1
-  change KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) _ * _ * _ = _
   have h := eval_localIdele F (Sum.inr p.val) (Sum.inr p.val)
     (Units.map (algebraMap F (p.val.adicCompletion F)).toMonoidHom x)
   simp only [Pi.mulSingle_eq_same] at h
@@ -75,12 +73,10 @@ private theorem value_right_fixed {G V : Type*} [Group G] [AddCommGroup V] [Modu
     rw [sDiagonal_exterior R _ p.val p.property, sDiagonal_exterior R _ p.val p.property]
     simp only [one_mul, map_mul, map_inv]
     congr 2
-    change P (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 v _) = _
     have he := eval_rationalUnit F v (u.val ^ 6)
     change Units.map (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr p.val)).toMonoidHom
       (Units.map (algebraMap F (KPAdeles F)).toMonoidHom (u.val ^ 6)) = _ at he
-    have he' := congrArg (fun z => P (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 v z)) he
-    exact he'.trans (congrArg A (map_pow _ u.val 6))
+    exact (congrArg (fun z => P (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 v z)) he).trans (congrArg A (map_pow _ u.val 6))
   have hA (z : (p.val.adicCompletion F)ˣ) : A (b ^ 6 * z) = A (b ^ 6) * A z := by
     change KPPGLLocalCover.A F R.A.zeta12 R.A.primitive_zeta12 v _ = _
     unfold KPPGLLocalCover.A
@@ -88,15 +84,13 @@ private theorem value_right_fixed {G V : Type*} [Group G] [AddCommGroup V] [Modu
     rfl
   have hcomm : A (b ^ 6) * A a = A a * A (b ^ 6) := by
     rw [← hA]
-    change A _ = A a * A (b ^ 6)
     rw [mul_comm (b ^ 6) a, KPPGLLocalCover.A_mul]
     have hh := ((KPHilbert.B3_laws F R.A.zeta12 R.A.primitive_zeta12 v).2.2.2.2.1 a (b ^ 2)).2
     rw [← pow_mul] at hh
     norm_num only at hh
     rw [hh, one_pow, map_one, one_mul]
   have hW : A (b ^ 6) * W = W * A ((b ^ 6)⁻¹) := by
-    have h := KPCorrectedBruhatLifts.quotient_weyl_diagonal F R.A.zeta12 R.A.primitive_zeta12 v (b ^ 6)⁻¹
-    simpa only [inv_inv] using h.symm
+    simpa using (KPCorrectedBruhatLifts.quotient_weyl_diagonal F R.A.zeta12 R.A.primitive_zeta12 v (b ^ 6)⁻¹).symm
   have hInv : A ((b ^ 6)⁻¹) = (A (b ^ 6))⁻¹ := by
     apply eq_inv_of_mul_eq_one_right
     rw [← hA, mul_inv_cancel]
@@ -108,25 +102,15 @@ private theorem value_right_fixed {G V : Type*} [Group G] [AddCommGroup V] [Modu
   let ρ := KPRankOneShellRepair.actualCanonicalImageRepresentation F R.A.zeta12 R.A.primitive_zeta12
     p.val (C.factorization.finiteData p.val).inducing (C.factorization.finiteData p.val).inducing.polarization
     (C.factorization.finiteData p.val).haar (C.factorization.finiteData p.val).haar_integer
-  have hfix : ρ (P k⁻¹) (C.factorization.references v) = C.factorization.references v :=
-    (C.factorization.spherical_reference p.val p.property).2 _
-      (DigitMasks.exteriorFactor_le_compact R v ((DigitMasks.exteriorFactor R v).inv_mem
-        (DigitMasks.digitRightTuple_exterior R m u 1 d p.val p.property)))
-  have hv := value_right_fixed ρ (C.factorization.ell v) (C.factorization.references v)
-    (A (b ^ 6 * a) * W * N n') (A a * W * N n) (P k⁻¹) he hfix
-  have hl : P (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 v
-      (Units.map (algebraMap F (p.val.adicCompletion F)).toMonoidHom (u.val ^ 6 * x)) *
-      KPStandardLocalRootLifts.W F R.A.zeta12 R.A.primitive_zeta12 v *
-      KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 v n') = A (b ^ 6 * a) * W * N n' := by
-    rw [map_mul, map_mul, map_mul, map_pow]
+  refine (congrArg (fun g => C.factorization.ell v (ρ g (C.factorization.references v))) ?_).trans
+    ((value_right_fixed ρ (C.factorization.ell v) (C.factorization.references v)
+      (A (b ^ 6 * a) * W * N n') (A a * W * N n) (P k⁻¹) he ((C.factorization.spherical_reference p.val p.property).2 _
+        (DigitMasks.exteriorFactor_le_compact R v ((DigitMasks.exteriorFactor R v).inv_mem
+          (DigitMasks.digitRightTuple_exterior R m u 1 d p.val p.property))))).trans (congrArg (fun g => C.factorization.ell v (ρ g (C.factorization.references v))) ?_).symm)
+  · rw [map_mul, map_mul, map_mul, map_pow]
     rfl
-  have hr : P (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 v a *
-      KPStandardLocalRootLifts.W F R.A.zeta12 R.A.primitive_zeta12 v *
-      KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 v n) = A a * W * N n := by
-    rw [map_mul, map_mul]
+  · rw [map_mul, map_mul]
     rfl
-  exact (congrArg (fun g => C.factorization.ell v (ρ g (C.factorization.references v))) hl).trans
-    (hv.trans (congrArg (fun g => C.factorization.ell v (ρ g (C.factorization.references v))) hr).symm)
 
  theorem exteriorDigitCoefficient_sixth {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (m : ThetaReflectionData.Row R.A) (x : Fˣ) (u : R.A.U) :

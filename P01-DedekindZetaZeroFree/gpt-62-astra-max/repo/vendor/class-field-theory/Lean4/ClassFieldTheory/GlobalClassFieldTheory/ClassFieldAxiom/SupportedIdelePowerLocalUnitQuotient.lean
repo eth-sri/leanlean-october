@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -69,7 +66,7 @@ theorem idelePowerLocalUnitSubgroup_le_supportedAt
   intro v hv
   apply
     ((mem_idelePowerLocalUnitSubgroup_iff
-      (K := K) n S T a).mp ha).2.2 v
+       n S T a).mp ha).2.2 v
   simpa using hv
 
 /-- Reduction modulo local `n`-th powers at all infinite places and at the
@@ -108,7 +105,7 @@ def supportedIdelePowerClassMap
       apply (QuotientGroup.eq_one_iff _).mpr
       apply
         (MonoidHom.mem_range
-          (G := w.Completionˣ)).mpr
+          ).mpr
       refine ⟨1, ?_⟩
       rw [powMonoidHom_apply, one_pow]
       exact (IdeleGroup.infiniteComponent w).map_one.symm
@@ -134,11 +131,13 @@ def supportedIdelePowerClassMap
     · funext v
       simp
 
+section
+
+variable (n : ℕ+) (S T : Finset (HeightOneSpectrum (𝓞 K)))
+
 /-- The kernel of the local-power class map is precisely `h(S,T)` inside
 `I_K^{S ∪ T}`. -/
-theorem supportedIdelePowerClassMap_ker
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem supportedIdelePowerClassMap_ker :
     (supportedIdelePowerClassMap (K := K) n S T).ker =
       supportedIdelePowerLocalUnitSubgroup (K := K) n S T := by
   ext a
@@ -154,8 +153,7 @@ theorem supportedIdelePowerClassMap_ker
       rw [Prod.fst_one, Pi.one_apply] at hw
       exact (QuotientGroup.eq_one_iff _).mp hw
     · intro v hv
-      let vS : ↥S := ⟨v, hv⟩
-      have hvq := congrArg (fun q => q.2 vS) ha
+      have hvq := congrArg (fun q => q.2 (⟨v, hv⟩)) ha
       rw [Prod.snd_one, Pi.one_apply] at hvq
       exact (QuotientGroup.eq_one_iff _).mp hvq
     · intro v hv
@@ -181,9 +179,7 @@ theorem supportedIdelePowerClassMap_ker
 /-- The local-power class map is onto: choose representatives independently
 at the finitely many constrained finite places and at all archimedean
 places, then extend the finite family by `1`. -/
-theorem supportedIdelePowerClassMap_surjective
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem supportedIdelePowerClassMap_surjective :
     Function.Surjective
       (supportedIdelePowerClassMap (K := K) n S T) := by
   intro q
@@ -213,10 +209,7 @@ theorem supportedIdelePowerClassMap_surjective
   apply Prod.ext
   · funext w
     calc
-      QuotientGroup.mk'
-          (powMonoidHom (n : ℕ) :
-            w.Completionˣ →* w.Completionˣ).range
-          (IdeleGroup.infiniteComponent w alpha) =
+      _ =
           QuotientGroup.mk'
             (powMonoidHom (n : ℕ) :
               w.Completionˣ →* w.Completionˣ).range
@@ -231,11 +224,7 @@ theorem supportedIdelePowerClassMap_surjective
       _ = q.1 w := hInf w
   · funext v
     calc
-      QuotientGroup.mk'
-          (powMonoidHom (n : ℕ) :
-            (v.1.adicCompletion K)ˣ →*
-              (v.1.adicCompletion K)ˣ).range
-          (IdeleGroup.finiteComponent v.1 alpha) =
+      _ =
           QuotientGroup.mk'
             (powMonoidHom (n : ℕ) :
               (v.1.adicCompletion K)ˣ →*
@@ -244,6 +233,8 @@ theorem supportedIdelePowerClassMap_surjective
         apply congrArg
         exact IdeleGroup.finiteIdeleOfFinset_apply_mem S aS v
       _ = q.2 v := hS v
+
+end
 
 /-- The algebraic supported-idele index decomposition:
 
@@ -306,7 +297,6 @@ theorem card_supportedIdeleQuotient_eq_localPowerClasses
   Nat.card_congr
     (supportedIdeleQuotientEquivLocalPowerClasses
       (K := K) n S T).toEquiv
-
 
 end GlobalClassFieldTheory.ClassFieldAxiom
 

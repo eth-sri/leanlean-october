@@ -52,13 +52,12 @@ theorem traceLine_rank : Module.rank ℂ traceLine = 1 := by
   obtain ⟨L, hL, hmem, hspan⟩ :=
     KPWildComplexWhittakerDictionary.restrictedWhittakerSpace_eq_span traceFrequency
       traceCharacter traceCharacter_continuous traceCharacter_ne_one
-  have hn : restriction L ≠ 0 := by
-    intro he
-    apply hL
-    apply restriction_injective
-    simpa only [map_zero] using he
   rw [traceLine, hspan]
-  exact Module.rank_eq_one_iff_finrank_eq_one.mpr (finrank_span_singleton hn)
+  refine Module.rank_eq_one_iff_finrank_eq_one.mpr (finrank_span_singleton ?_)
+  intro he
+  apply hL
+  apply restriction_injective
+  simpa using he
 
 theorem mem_traceLine_of_extension (l : complexCore →ₗ[ℂ] ℂ)
     (L : Theta traceFrequency →L[ℂ] ℂ)
@@ -70,8 +69,8 @@ theorem mem_traceLine_of_extension (l : complexCore →ₗ[ℂ] ℂ)
 
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 
 theorem slice_rank_of_extensions (D : TensorHC R N) (w : NumberField.InfinitePlace F)
@@ -83,12 +82,11 @@ theorem slice_rank_of_extensions (D : TensorHC R N) (w : NumberField.InfinitePla
           (coreStageMultilinear (actualLocal R D.finiteData) D.references D.bad
             (D.literalPeriod 1) s).toLinearMap x ⟨Sum.inl w, hw⟩ v) :
     Module.rank ℂ (D.sliceLine (Sum.inl w)) ≤ 1 := by
-  have hle : D.sliceLine (Sum.inl w) ≤ traceLine := by
-    apply Submodule.span_le.mpr
-    rintro l ⟨s, x, hw, rfl⟩
-    obtain ⟨L, hL, he⟩ := hext s x hw
-    exact mem_traceLine_of_extension _ L hL he
-  exact (Submodule.rank_mono hle).trans_eq traceLine_rank
+  refine (Submodule.rank_mono ?_).trans_eq traceLine_rank
+  apply Submodule.span_le.mpr
+  rintro l ⟨s, x, hw, rfl⟩
+  obtain ⟨L, hL, he⟩ := hext s x hw
+  exact mem_traceLine_of_extension _ L hL he
 
 end DedekindZetaZeroFree.FourierContinuation.ComplexLines
 

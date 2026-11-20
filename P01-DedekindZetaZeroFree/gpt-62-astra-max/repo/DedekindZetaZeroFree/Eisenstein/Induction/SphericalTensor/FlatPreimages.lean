@@ -9,7 +9,7 @@ open scoped Classical NumberField
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory RootDerivatives
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 structure SphericalFlatPreimages (R : PrincipalMellin.ActualRecipe S η)
     {N : TraceHaarTransport R} (A : JointExteriorCoefficientSources R N) (D : SphericalTransportData R A)
@@ -20,8 +20,6 @@ structure SphericalFlatPreimages (R : PrincipalMellin.ActualRecipe S η)
   residue_exact : ∀ v, (residue v).numerator 0 =
     tensorFunction R A.factorization D.tensor.stage P.entries
   source_nonzero : ∀ v, (sources.flat v).val 0 ≠ 0
-  residue_nonzero : ∀ v, (residue v).numerator 0 ≠ 0
-  period_nonzero : ∀ v, fourier R sources.dq ((residue v).numerator 0) 1 ≠ 0
 
 theorem sphericalFlatPreimages_nonempty
     (R : PrincipalMellin.ActualRecipe S η) {N : TraceHaarTransport R}
@@ -35,8 +33,7 @@ theorem sphericalFlatPreimages_nonempty
     residue := C
     residue_exact := hC
     source_nonzero := hf
-    residue_nonzero := hne
-    period_nonzero := hper }⟩
+     }⟩
 
 end DedekindZetaZeroFree.ThetaExpansion
 

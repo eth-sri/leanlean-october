@@ -15,19 +15,23 @@ open scoped NumberField
 
 namespace PlaceTraceAdapter
 
-theorem prime_eq_of_above (F : Type) [Field F] [NumberField F]
-    (p : Nat.Primes)
-    (v : FinitePlacesAbove ℚ F (Rat.HeightOneSpectrum.primesEquiv.symm p)) :
+section
+
+variable (F : Type) [Field F] [NumberField F] (p : Nat.Primes)
+    (v : FinitePlacesAbove ℚ F (Rat.HeightOneSpectrum.primesEquiv.symm p))
+
+theorem prime_eq_of_above :
     prime F v.val = p := by
-  change Rat.HeightOneSpectrum.primesEquiv (finitePlaceBelow (K := ℚ) v.val) = p
+  change Rat.HeightOneSpectrum.primesEquiv (finitePlaceBelow v.val) = p
   rw [v.property]
   exact Rat.HeightOneSpectrum.primesEquiv.apply_symm_apply p
 
-def traceAbove (F : Type) [Field F] [NumberField F] (p : Nat.Primes)
-    (v : FinitePlacesAbove ℚ F (Rat.HeightOneSpectrum.primesEquiv.symm p))
+def traceAbove
     (x : v.val.adicCompletion F) : ℚ_[p] :=
   cast (congrArg (fun q : Nat.Primes => ℚ_[q]) (prime_eq_of_above F p v))
     (trace F v.val x)
+
+end
 
 private theorem trace_cast_eq (F : Type) [Field F] [NumberField F]
     (w : HeightOneSpectrum (𝓞 ℚ)) (p : Nat.Primes)
@@ -54,8 +58,9 @@ private theorem trace_cast_eq (F : Type) [Field F] [NumberField F]
 
 end PlaceTraceAdapter
 
-private theorem trace_eq_sum_transported (F : Type) [Field F] [NumberField F]
-    (t : F) (w : HeightOneSpectrum (𝓞 ℚ)) (p : Nat.Primes)
+variable (F : Type) [Field F] [NumberField F] (t : F)
+
+private theorem trace_eq_sum_transported (w : HeightOneSpectrum (𝓞 ℚ)) (p : Nat.Primes)
     (hp : Rat.HeightOneSpectrum.primesEquiv w = p) :
     letI : Fintype (FinitePlacesAbove ℚ F w) := finitePlacesAboveFintype ℚ F w
     letI : ∀ v : FinitePlacesAbove ℚ F w,
@@ -80,8 +85,7 @@ private theorem trace_eq_sum_transported (F : Type) [Field F] [NumberField F]
     HeightOneSpectrum.instAlgebraAdicCompletion (𝓞 ℚ) ℚ w
   exact (Rat.HeightOneSpectrum.adicCompletion.padicEquiv w).commutes _ |>.symm
 
-theorem trace_eq_sum_localTrace_padic (F : Type) [Field F] [NumberField F]
-    (t : F) (p : Nat.Primes) :
+theorem trace_eq_sum_localTrace_padic (p : Nat.Primes) :
     letI : Fintype (FinitePlacesAbove ℚ F (Rat.HeightOneSpectrum.primesEquiv.symm p)) :=
       finitePlacesAboveRationalPrimeFintype F p
     algebraMap ℚ ℚ_[p] (Algebra.trace ℚ F t) =
@@ -97,11 +101,9 @@ theorem trace_eq_sum_localTrace_padic (F : Type) [Field F] [NumberField F]
   exact (PlaceTraceAdapter.trace_cast_eq F _ p
     (Rat.HeightOneSpectrum.primesEquiv.apply_symm_apply p) v t).symm
 
-theorem trace_eq_sum_localTrace_infinite (F : Type) [Field F] [NumberField F]
-    (t : F) :
+theorem trace_eq_sum_localTrace_infinite :
     (Algebra.trace ℚ F t : ℝ) =
-      ∑ v : InfinitePlace F, archTrace v (algebraMap F v.Completion t) := by
-  exact trace_eq_sum_archTrace t
+      ∑ v : InfinitePlace F, archTrace v (algebraMap F v.Completion t) := trace_eq_sum_archTrace t
 
 end DedekindZetaZeroFree
 

@@ -9,7 +9,7 @@ set_option backward.isDefEq.respectTransparency false
 open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.KPMsClearedTruncationL2.ActualSmoothWordAction
 open KPSmoothActualFlowData
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.ActualWordSpatial renaming finitePart_eq → finitePart_eq
+open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.ActualWordSpatial (finitePart_eq)
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
@@ -46,7 +46,9 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     exact ((ActualWordLinearity.word_hasDerivAt_flow F ζ hζ f hf w b
       (Quotient.mk _ g)).const_smul c).deriv
 
-theorem word_mem (U : Level F ζ hζ) (w : List (B F)) (f : smoothSpace F ζ hζ U) :
+variable (U : Level F ζ hζ) (w : List (B F))
+
+theorem word_mem (f : smoothSpace F ζ hζ U) :
     wordDerivative F ζ hζ w f.val ∈ smoothSpace F ζ hζ U := by
   refine ⟨⟨ActualWordSpatial.word_continuous F ζ hζ U f.val f.property.1
     f.property.2.1 w, fun x => ActualWordLinearity.word_orbit_contDiff
@@ -69,12 +71,12 @@ theorem word_mem (U : Level F ζ hζ) (w : List (B F)) (f : smoothSpace F ζ hζ
       ((KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ)
         (MonoidHom.mem_range.mpr ⟨ε, rfl⟩)) _
 
-def wordAction (U : Level F ζ hζ) (w : List (B F)) :
+def wordAction :
     smoothSpace F ζ hζ U →ₗ[ℂ] smoothSpace F ζ hζ U :=
   (ActualWordLinearity.wordLinearMap F ζ hζ (smoothSpace F ζ hζ U)
     (fun f => f.property.1) w).codRestrict (smoothSpace F ζ hζ U) (word_mem F ζ hζ U w)
 
-@[simp] theorem wordAction_value (U : Level F ζ hζ) (w : List (B F))
+@[simp] theorem wordAction_value
     (f : smoothSpace F ζ hζ U) (x : X F ζ hζ) :
     (wordAction F ζ hζ U w f).val x = wordDerivative F ζ hζ w f.val x := rfl
 

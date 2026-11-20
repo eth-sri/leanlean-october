@@ -46,8 +46,7 @@ def action (g : KPCuspArithmetic.PGL2 F)
 
 theorem action_mk (A : Matrix.GeneralLinearGroup (Fin 2) F)
     (z : KPArch.Space (KPCuspLogShape.dimension F)) :
-    action F (Matrix.ProjGenLinGroup.mk A) z = glAction F A z := by
-  exact glAction_eq_of_mk_eq F _ A
+    action F (Matrix.ProjGenLinGroup.mk A) z = glAction F A z := glAction_eq_of_mk_eq F _ A
     (Classical.choose_spec (Matrix.ProjGenLinGroup.mk_surjective _)) z
 
 instance : MulAction (KPCuspArithmetic.PGL2 F)
@@ -99,12 +98,13 @@ def highCusp (σ : KPCuspArithmetic.PGL2 F) (T : ℝ) :
     Set (KPArch.Space (KPCuspLogShape.dimension F)) :=
   (action F σ) '' {z | T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z}
 
-def parabolic (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (q : KPCuspArithmetic.Cusp F) :
+variable (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (q : KPCuspArithmetic.Cusp F)
+
+def parabolic :
     Subgroup (KPCuspArithmetic.PGL2 F) :=
   Γ ⊓ MulAction.stabilizer (KPCuspArithmetic.PGL2 F) q
 
-abbrev CuspQuotient (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
-    (q : KPCuspArithmetic.Cusp F) (U : Set (KPArch.Space (KPCuspLogShape.dimension F))) :=
+abbrev CuspQuotient (U : Set (KPArch.Space (KPCuspLogShape.dimension F))) :=
   Quotient (Setoid.comap (Subtype.val : U → KPArch.Space (KPCuspLogShape.dimension F))
     (MulAction.orbitRel (parabolic F Γ q) (KPArch.Space (KPCuspLogShape.dimension F))))
 

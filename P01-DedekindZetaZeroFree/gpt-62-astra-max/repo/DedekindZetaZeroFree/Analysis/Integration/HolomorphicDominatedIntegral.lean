@@ -50,19 +50,21 @@ namespace HolomorphicDominatedIntegral
 variable {α : Type*} [MeasurableSpace α] {μ : Measure α}
   {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E]
 
-theorem hasDerivAt_integral_of_locally_dominated
-    {U : Set ℂ} (hU : IsOpen U) {G : ℂ → α → E}
-    (hmeas : ∀ z ∈ U, AEStronglyMeasurable (G z) μ)
+section
+
+variable {U : Set ℂ} (hU : IsOpen U) {G : ℂ → α → E} (hmeas : ∀ z ∈ U, AEStronglyMeasurable (G z) μ)
     (hdiff : ∀ p, DifferentiableOn ℂ (fun z => G z p) U)
-    (hdom : ∀ z0 ∈ U, ∃ r > 0, Metric.ball z0 r ⊆ U ∧
-      ∃ g : α → ℝ, Integrable g μ ∧ ∀ z ∈ Metric.ball z0 r, ∀ p, ‖G z p‖ ≤ g p)
+    (hdom : ∀ z0 ∈ U, ∃ r > 0, Metric.ball z0 r ⊆ U ∧ ∃ g : α → ℝ, Integrable g μ ∧ ∀ z ∈ Metric.ball z0 r, ∀ p, ‖G z p‖ ≤ g p)
+
+include hU hmeas hdiff hdom in
+theorem hasDerivAt_integral_of_locally_dominated
     {z0 : ℂ} (hz0 : z0 ∈ U) :
     Integrable (fun p => deriv (fun z => G z p) z0) μ ∧
       HasDerivAt (fun z => ∫ p, G z p ∂μ) (∫ p, deriv (fun z => G z p) z0 ∂μ) z0 := by
   obtain ⟨r, hr, hrU, g, hg, hbd⟩ := hdom z0 hz0
   have hr2 : 0 < r / 2 := by positivity
   have hsub : Metric.ball z0 (r / 2) ⊆ Metric.ball z0 r := ball_subset_ball (by linarith)
-  have hdiffAt : ∀ p, ∀ z ∈ U, DifferentiableAt ℂ (fun z => G z p) z :=
+  have hdiffAt :=
     fun p z hz => (hdiff p z hz).differentiableAt (hU.mem_nhds hz)
 
   have hder_bd : ∀ p, ∀ z ∈ Metric.ball z0 (r / 2), ‖deriv (fun z => G z p) z‖ ≤ g p / (r / 2) := by
@@ -73,10 +75,8 @@ theorem hasDerivAt_integral_of_locally_dominated
       rw [mem_closedBall] at hw
       have := dist_triangle w z z0
       linarith
-    have hdc : DiffContOnCl ℂ (fun z => G z p) (Metric.ball z (r / 2)) :=
-      DifferentiableOn.diffContOnCl
-        ((hdiff p).mono ((closure_ball_subset_closedBall.trans hcl).trans hrU))
-    exact Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hr2 hdc
+    exact Complex.norm_deriv_le_of_forall_mem_sphere_norm_le hr2 (DifferentiableOn.diffContOnCl
+      ((hdiff p).mono ((closure_ball_subset_closedBall.trans hcl).trans hrU)))
       (fun w hw => hbd w (hcl (sphere_subset_closedBall hw)) p)
   have hFmeas : ∀ᶠ z in 𝓝 z0, AEStronglyMeasurable (G z) μ :=
     Filter.mem_of_superset (ball_mem_nhds z0 hr) (fun z hz => hmeas z (hrU hz))
@@ -115,29 +115,26 @@ theorem hasDerivAt_integral_of_locally_dominated
     · intro n
       exact ((hmeas _ (hmem n)).sub (hmeas z0 hz0)).const_smul _
     · refine Filter.Eventually.of_forall fun p => ?_
-      have hd := (hdiffAt p z0 hz0).hasDerivAt
-      have := hd.tendsto_slope_zero.comp hhlim
+      have := ((hdiffAt p z0 hz0).hasDerivAt).tendsto_slope_zero.comp hhlim
       refine this.congr fun n => ?_
       simp [Function.comp]
-  have key := hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ)
-    (F := G) (x₀ := z0) (s := Metric.ball z0 (r / 2)) (ball_mem_nhds z0 hr2) hFmeas hFint
-    (F' := fun z p => deriv (fun z => G z p) z) hF'meas
-    (bound := fun p => g p / (r / 2))
+  have key := hasDerivAt_integral_of_dominated_loc_of_deriv_le
+       (ball_mem_nhds z0 hr2) hFmeas hFint
+     hF'meas
+
     (Filter.Eventually.of_forall fun p z hz => hder_bd p z hz)
     (hg.div_const _)
     (Filter.Eventually.of_forall fun p z hz =>
       (hdiffAt p z (hrU (hsub hz))).hasDerivAt)
   exact key
 
-theorem differentiableOn_integral_of_locally_dominated
-    {U : Set ℂ} (hU : IsOpen U) {G : ℂ → α → E}
-    (hmeas : ∀ z ∈ U, AEStronglyMeasurable (G z) μ)
-    (hdiff : ∀ p, DifferentiableOn ℂ (fun z => G z p) U)
-    (hdom : ∀ z0 ∈ U, ∃ r > 0, Metric.ball z0 r ⊆ U ∧
-      ∃ g : α → ℝ, Integrable g μ ∧ ∀ z ∈ Metric.ball z0 r, ∀ p, ‖G z p‖ ≤ g p) :
+include hU hmeas hdiff hdom in
+theorem differentiableOn_integral_of_locally_dominated :
     DifferentiableOn ℂ (fun z => ∫ p, G z p ∂μ) U := fun z hz =>
   (hasDerivAt_integral_of_locally_dominated hU hmeas hdiff hdom hz).2.differentiableAt
     |>.differentiableWithinAt
+
+end
 
 theorem integrable_of_locally_dominated
     {U : Set ℂ} {G : ℂ → α → E}

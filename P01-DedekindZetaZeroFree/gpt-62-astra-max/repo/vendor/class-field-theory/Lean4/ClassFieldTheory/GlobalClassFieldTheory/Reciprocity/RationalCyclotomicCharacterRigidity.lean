@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -49,12 +47,12 @@ theorem rationalCyclotomicAutomorphism_sq_eq_one_of_character_reductions
     σ ^ 2 = 1 := by
   apply
     KummerTheory.rationalCyclotomicCharacterPrimeProduct_injective
-  rw [map_pow, map_one]
+  simp
   funext p
   apply Units.ext
   apply PadicInt.ext_of_toZModPow.mp
   intro k
-  let u : ℤ_[p.1]ˣ :=
+  let u :=
     KummerTheory.rationalCyclotomicCharacterPrimeProduct σ p
   let f : ℤ_[p.1] →* ZMod (p.1 ^ k) :=
     (PadicInt.toZModPow k).toMonoidHom
@@ -67,8 +65,7 @@ theorem rationalCyclotomicAutomorphism_sq_eq_one_of_character_reductions
     exact h p k
   simp only [Pi.pow_apply, Pi.one_apply]
   calc
-    (PadicInt.toZModPow k)
-          ↑(KummerTheory.rationalCyclotomicCharacterPrimeProduct σ p ^ 2) =
+    _ =
         f ↑(u ^ 2) := rfl
     _ = ↑(Units.map f (u ^ 2)) :=
       (Units.coe_map f (u ^ 2)).symm

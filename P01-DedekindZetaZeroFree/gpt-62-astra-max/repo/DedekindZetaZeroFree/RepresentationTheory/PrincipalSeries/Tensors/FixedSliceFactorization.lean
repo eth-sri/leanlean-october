@@ -16,13 +16,12 @@ namespace DedekindZetaZeroFree.FourierContinuation.CurrentFixedSlices
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann
 open NativeScalarMixedTensorGeneration KPLiteralScalarHCCompactOrbit
 open KPLiteralTensor.KernelAndHCRange.PointwiseKernel
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductCovariantSlices renaming contraction → contraction
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductCovariantSlices renaming contractionMultilinear → contractionMultilinear
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming normalized_reference → normalized_reference
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductCovariantSlices (contraction contractionMultilinear)
+open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource (normalized_reference)
 
 section Contraction
 variable {ι : Type} [Fintype ι] [DecidableEq ι]
-variable {V : ι → Type} [∀ i, AddCommGroup (V i)] [∀ i, Module ℂ (V i)]
+    {V : ι → Type} [∀ i, AddCommGroup (V i)] [∀ i, Module ℂ (V i)]
 
 theorem evaluation_contraction (q : ι) (l : ∀ i, V i →ₗ[ℂ] ℂ)
     (e : V q →ₗ[ℂ] ℂ) (x : PiTensorProduct ℂ V) :
@@ -44,8 +43,8 @@ theorem evaluation_contraction (q : ι) (l : ∀ i, V i →ₗ[ℂ] ℂ)
 end Contraction
 
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "M" => CurrentFiniteFamily.nativeInducingData A P C
 
 section Local
@@ -65,8 +64,7 @@ theorem localScalar_recovery (f : Section)
     (g : KPLocalExceptionalConstruction.ActualCover F A.zeta12 A.primitive_zeta12 q) :
     (f.val g).val t = (deltaHalf B ((C.canonical q).borel.torus t))⁻¹ *
       localScalar A P C q f (((C.canonical q).borel.torus t).val * g) := by
-  have h := f.property.1 ((C.canonical q).borel.torus t) g
-  have hv := congrArg (fun v : InducedModule L => v.val 1) h
+  have hv := congrArg (fun v : InducedModule L => v.val 1) (f.property.1 ((C.canonical q).borel.torus t) g)
   change localScalar A P C q f (((C.canonical q).borel.torus t).val * g) =
     inducingScalar B 0 ((C.canonical q).borel.torus t) *
       (f.val g).val (1 * (C.canonical q).borel.retract ((C.canonical q).borel.torus t)) at hv

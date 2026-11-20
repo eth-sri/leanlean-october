@@ -10,19 +10,22 @@ open MeasureTheory Set
 
 namespace DedekindZetaZeroFree.KPCuspChart.SectionConstruction
 
-theorem measurable_fundamental_domain_of_countable_slices
-    {H X : Type*} [Group H] [Countable H] [MeasurableSpace X]
+section
+
+variable {H X : Type*} [Group H] [Countable H]
+
+theorem measurable_fundamental_domain_of_countable_slices [MeasurableSpace X]
     [MulAction H X] [MeasurableConstSMul H X]
     (ν : Measure X) (U : ℕ → Set X)
     (hU : ∀ n, MeasurableSet (U n))
     (hslice : ∀ n (g : H), g ≠ 1 → Disjoint (g • U n) (U n))
     (hcover : ∀ᵐ x ∂ν, ∃ n, ∃ g : H, g • x ∈ U n) :
     ∃ Ω : Set X, MeasurableSet Ω ∧ IsFundamentalDomain H Ω ν := by
-  let V : ℕ → Set X := fun n => U n \ ⋃ (j : ℕ), ⋃ (_ : j < n), ⋃ (g : H), g • U j
-  let Ω : Set X := ⋃ n, V n
+  let V := fun n => U n \ ⋃ (j : ℕ), ⋃ (_ : j < n), ⋃ (g : H), g • U j
+  let Ω := ⋃ n, V n
   have hV : ∀ n, MeasurableSet (V n) := fun n =>
     (hU n).diff (MeasurableSet.iUnion fun j => MeasurableSet.iUnion fun _ =>
-      MeasurableSet.iUnion fun g => (hU j).const_smul g)
+      MeasurableSet.iUnion ((hU j).const_smul))
   have hΩ : MeasurableSet Ω := MeasurableSet.iUnion hV
   have unique : ∀ x (a b : H), a • x ∈ Ω → b • x ∈ Ω → a = b := by
     intro x a b ha hb
@@ -39,27 +42,24 @@ theorem measurable_fundamental_domain_of_countable_slices
           ⟨a * b⁻¹, ⟨b • x, hj.1, by simp [mul_smul]⟩⟩⟩⟩
     subst j
     by_contra hab
-    have hne : b * a⁻¹ ≠ 1 := by
-      intro h
-      apply hab
-      exact (mul_inv_eq_one.mp h).symm
-    exact Set.disjoint_left.mp (hslice i (b * a⁻¹) hne)
+    refine Set.disjoint_left.mp (hslice i (b * a⁻¹) ?_)
       ⟨a • x, hi.1, by simp [mul_smul]⟩ hj.1
+    intro h
+    apply hab
+    exact (mul_inv_eq_one.mp h).symm
   refine ⟨Ω, hΩ, ?_⟩
   refine ⟨hΩ.nullMeasurableSet, ?_, ?_⟩
   · filter_upwards [hcover] with x hx
-    let n := Nat.find hx
     obtain ⟨g, hg⟩ := Nat.find_spec hx
-    refine ⟨g, mem_iUnion.mpr ⟨n, hg, ?_⟩⟩
+    refine ⟨g, mem_iUnion.mpr ⟨(Nat.find hx), hg, ?_⟩⟩
     intro h
     obtain ⟨j, hj⟩ := mem_iUnion.mp h
     obtain ⟨hjn, hj⟩ := mem_iUnion.mp hj
     obtain ⟨a, y, hy, heq⟩ := mem_iUnion.mp hj
-    have hsmall : ∃ b : H, b • x ∈ U j := by
-      refine ⟨a⁻¹ * g, ?_⟩
-      have : a⁻¹ • (g • x) = y := by rw [← heq]; simp
-      simpa [mul_smul] using this.symm ▸ hy
-    exact Nat.find_min hx hjn hsmall
+    apply Nat.find_min hx hjn
+    refine ⟨a⁻¹ * g, ?_⟩
+    have : a⁻¹ • (g • x) = y := by rw [← heq]; simp
+    simpa [mul_smul] using this.symm ▸ hy
   · intro a b hab
     apply Disjoint.aedisjoint
     apply Set.disjoint_left.mpr
@@ -67,8 +67,7 @@ theorem measurable_fundamental_domain_of_countable_slices
     rw [mem_smul_set_iff_inv_smul_mem] at hxa hxb
     exact hab (inv_injective (unique x a⁻¹ b⁻¹ hxa hxb))
 
-theorem measurable_fundamental_domain_of_properly_discontinuous_ae_free
-    {H X : Type*} [Group H] [Countable H] [TopologicalSpace X]
+theorem measurable_fundamental_domain_of_properly_discontinuous_ae_free [TopologicalSpace X]
     [T2Space X] [LocallyCompactSpace X] [SecondCountableTopology X]
     [MeasurableSpace X] [BorelSpace X] [MulAction H X]
     [ContinuousConstSMul H X] [ProperlyDiscontinuousSMul H X]
@@ -86,8 +85,7 @@ theorem measurable_fundamental_domain_of_properly_discontinuous_ae_free
   choose U hU hxU hslice using hlocal
   obtain ⟨C, hC, hcoverC⟩ := TopologicalSpace.isOpen_iUnion_countable U hU
   by_cases hT : Nonempty T
-  · letI := hT
-    obtain ⟨f, hf⟩ := Set.countable_iff_exists_subset_range.mp hC
+  · obtain ⟨f, hf⟩ := Set.countable_iff_exists_subset_range.mp hC
     apply measurable_fundamental_domain_of_countable_slices ν (U ∘ f)
       (fun n => (hU _).measurableSet) (fun n g hg => hslice _ g hg)
     filter_upwards [hfree] with x hx
@@ -97,7 +95,7 @@ theorem measurable_fundamental_domain_of_properly_discontinuous_ae_free
     obtain ⟨htC, hxt⟩ := mem_iUnion.mp ht
     obtain ⟨n, hn⟩ := hf htC
     refine ⟨n, 1, ?_⟩
-    simpa [Function.comp_def, hn] using hxt
+    simpa [hn] using hxt
   · have hempty : ∀ᵐ x ∂ν, False := by
       filter_upwards [hfree] with x hx
       exact hT ⟨⟨x, hx⟩⟩
@@ -106,7 +104,9 @@ theorem measurable_fundamental_domain_of_properly_discontinuous_ae_free
     · exact hempty.mono fun x hx => hx.elim
     · intro a b hab
       simp only [smul_set_empty]
-      exact (disjoint_bot_left : Disjoint (∅ : Set X) ∅).aedisjoint
+      exact disjoint_bot_left.aedisjoint
+
+end
 
 theorem properlyDiscontinuous_of_equivariant
     {H J X Y : Type*} [Group H] [Group J]
@@ -156,10 +156,12 @@ theorem properlyDiscontinuous_of_equivariant
     ext g
     simp
 
-private theorem translation_formula
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+section
+
+variable (F : Type*) [Field F] [NumberField F] (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+
+private theorem translation_formula
     (G : GeometryData F hF S D) (x : D.L) (p : Cross F) :
     G.crossAction (D.inclusion (Multiplicative.ofAdd x)) p =
       (p.1 + embedding F x.val, p.2) := by
@@ -167,11 +169,8 @@ private theorem translation_formula
     (D.inclusion (Multiplicative.ofAdd x)).val
     (D.inclusion (Multiplicative.ofAdd x)).property
   obtain ⟨_, hd, ht⟩ := D.unipotentFormula x A hA
-  have hn : A 1 1 ≠ 0 := by
-    intro hz
-    exact A.det_ne_zero (by simp [Matrix.det_fin_two, hc, hd, hz])
   have hv : A 0 1 / A 1 1 = x.val := by
-    rw [ht, hd, mul_div_cancel_right₀ _ hn]
+    rw [ht, hd, mul_div_cancel_right₀ _ (fun hz => A.det_ne_zero (by simp [Matrix.det_fin_two, hc, hd, hz]))]
   have hr : D.ratio (D.inclusion (Multiplicative.ofAdd x)) = 1 := by
     have hm : D.inclusion (Multiplicative.ofAdd x) ∈ D.ratio.ker := by
       rw [← D.exact]
@@ -184,9 +183,6 @@ private theorem translation_formula
   · simp [crossAffine, affine]
 
 theorem actual_ratio_kernel_properly_discontinuous
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (hdisc : DiscreteTopology (translationLattice F D.L).toIntSubmodule)
     (G : GeometryData F hF S D) :
     letI := homeomorphAction G.crossAction
@@ -194,9 +190,6 @@ theorem actual_ratio_kernel_properly_discontinuous
   letI := homeomorphAction G.crossAction
   let N := translationLattice F D.L
   letI : DiscreteTopology N := hdisc
-  have hd : ProperlyDiscontinuousVAdd N (Horizontal F) :=
-    N.properlyDiscontinuousVAdd_of_tendsto_cofinite
-      (N.tendsto_coe_cofinite_of_isDiscrete (isDiscrete_iff_discreteTopology.mpr inferInstance))
   constructor
   intro K L hK hL
   have hx : ∀ g : D.ratio.ker, ∃ x : D.L, D.inclusion (Multiplicative.ofAdd x) = g.val := by
@@ -215,10 +208,10 @@ theorem actual_ratio_kernel_properly_discontinuous
     let i : Fin (KPCuspLogShape.dimension F) := ⟨0, KPCuspLogShape.dimension_pos F hF⟩
     apply (KPCusp.complexPlace F i).embedding.injective
     exact congrArg (fun y : N => y.val i) h
-  letI := hd
-  have hfin : Set.Finite _ := ProperlyDiscontinuousVAdd.finite_disjoint_inter_image
-    (Γ := N) (hK.image continuous_fst) (hL.image continuous_fst)
-  apply (Set.Finite.preimage hb.injOn hfin).subset
+  letI := (N.properlyDiscontinuousVAdd_of_tendsto_cofinite
+    (N.tendsto_coe_cofinite_of_isDiscrete (isDiscrete_iff_discreteTopology.mpr inferInstance)))
+  apply (Set.Finite.preimage hb.injOn (ProperlyDiscontinuousVAdd.finite_disjoint_inter_image
+    (hK.image continuous_fst) (hL.image continuous_fst))).subset
   rintro g ⟨p, ⟨q, hq, hqp⟩, hp⟩
   refine ⟨p.1, ⟨q.1, ⟨q, hq, rfl⟩, ?_⟩, ⟨p, hp, rfl⟩⟩
   have he := translation_formula F hF S D G (x g) q
@@ -230,9 +223,6 @@ theorem actual_ratio_kernel_properly_discontinuous
   simpa [b, add_comm] using this.symm
 
 theorem actual_cross_action_properly_discontinuous
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (hdisc : DiscreteTopology (translationLattice F D.L).toIntSubmodule)
     (G : GeometryData F hF S D) :
     letI := homeomorphAction G.crossAction
@@ -247,13 +237,10 @@ theorem actual_cross_action_properly_discontinuous
       map_one' := by apply Multiplicative.toAdd.injective; apply Subtype.ext; exact ell.map_zero
       map_mul' := by intro a b; apply Multiplicative.toAdd.injective; apply Subtype.ext; exact ell.map_add _ _ }
   letI : ProperlyDiscontinuousSMul (Multiplicative Λ) (Shape F) := by
-    have hd : ProperlyDiscontinuousVAdd Λ (Shape F) :=
-      Λ.toAddSubgroup.properlyDiscontinuousVAdd_of_tendsto_cofinite
-        (Λ.toAddSubgroup.tendsto_coe_cofinite_of_isDiscrete (isDiscrete_iff_discreteTopology.mpr inferInstance))
     constructor
     intro K L hK hL
-    have hfin : Set.Finite _ := @ProperlyDiscontinuousVAdd.finite_disjoint_inter_image Λ (Shape F) _ _ hd K L hK hL
-    apply (Set.Finite.preimage Multiplicative.toAdd.injective.injOn hfin).subset
+    apply (Set.Finite.preimage Multiplicative.toAdd.injective.injOn (@ProperlyDiscontinuousVAdd.finite_disjoint_inter_image Λ (Shape F) _ _ (Λ.toAddSubgroup.properlyDiscontinuousVAdd_of_tendsto_cofinite
+      (Λ.toAddSubgroup.tendsto_coe_cofinite_of_isDiscrete (isDiscrete_iff_discreteTopology.mpr inferInstance))) K L hK hL)).subset
     rintro u ⟨y, ⟨x, hx, hxy⟩, hy⟩
     refine ⟨y, ⟨x, hx, ?_⟩, hy⟩
     change u.toAdd.val + x = y
@@ -262,11 +249,9 @@ theorem actual_cross_action_properly_discontinuous
   letI : MulAction D.E (Shape F) := MulAction.compHom _ r
   letI : ContinuousConstSMul D.E (Shape F) := ⟨fun u => by change Continuous (fun b : Shape F => (r u).toAdd.val + b); fun_prop⟩
   letI : Finite r.ker := by
-    let f : r.ker → kernelUnits F hF D.E D.integralUnits := fun u => ⟨u.val, by
-      have h := congrArg (fun v : Multiplicative Λ => v.toAdd.val) u.property
-      exact h⟩
     letI := G.finite_isotropy
-    exact Finite.of_injective f (fun a b h => Subtype.ext (congrArg (fun u : kernelUnits F hF D.E D.integralUnits => u.val) h))
+    exact Finite.of_injective (fun u => ⟨u.val, by
+      exact congrArg (fun v : Multiplicative Λ => v.toAdd.val) u.property⟩) (fun a b h => Subtype.ext (congrArg (fun u : kernelUnits F hF D.E D.integralUnits => u.val) h))
   letI : ProperlyDiscontinuousSMul D.E (Shape F) :=
     properlyDiscontinuous_of_equivariant r id continuous_id (fun _ _ => rfl)
   letI : ProperlyDiscontinuousSMul D.ratio.ker (Cross F) :=
@@ -276,21 +261,22 @@ theorem actual_cross_action_properly_discontinuous
   obtain ⟨A, hA, hc⟩ := D.upper g g.property
   change (G.crossAction g p).2 = ell (Additive.ofMul (D.ratio g)) + p.2
   rw [G.crossAction_formula g A hA hc]
-  change p.2 + ell (Additive.ofMul (D.ratio g)) = ell (Additive.ofMul (D.ratio g)) + p.2
   exact add_comm _ _
+
+end
 
 private theorem actual_group_countable (F : Type*) [Field F] [NumberField F]
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) : Countable S := by
-  letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ) (M := F)
+  letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   letI : Countable (Matrix (Fin 2) (Fin 2) F) := by change Countable (Fin 2 → Fin 2 → F); infer_instance
   letI : Countable (Matrix.GeneralLinearGroup (Fin 2) F) := Function.Injective.countable Units.val_injective
   letI : Countable (KPCuspArithmetic.PGL2 F) := Function.Surjective.countable Matrix.ProjGenLinGroup.mk_surjective
   infer_instance
 
-theorem actual_fixed_locus_null
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+variable (F : Type*) [Field F] [NumberField F] (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
+
+theorem actual_fixed_locus_null
     (G : GeometryData F hF S D) (μ : Measure (Shape F)) [SFinite μ]
     (g : S) (hg : g ≠ 1) :
     (volume.prod μ) {p : Cross F | G.crossAction g p = p} = 0 := by
@@ -306,10 +292,7 @@ theorem actual_fixed_locus_null
     obtain ⟨A, hA, hc⟩ := D.upper g g.property
     have hAi : Matrix.ProjGenLinGroup.mk A = (D.inclusion x : KPCuspArithmetic.PGL2 F) := by rw [hA, hx]
     obtain ⟨_, hd, ht⟩ := D.unipotentFormula x.toAdd A hAi
-    have hn : A 1 1 ≠ 0 := by
-      intro hz
-      exact A.det_ne_zero (by simp [Matrix.det_fin_two, hc, hd, hz])
-    have hv : A 0 1 / A 1 1 = (x.toAdd : F) := by rw [ht, hd, mul_div_cancel_right₀ _ hn]
+    have hv : A 0 1 / A 1 1 = (x.toAdd : F) := by rw [ht, hd, mul_div_cancel_right₀ _ (fun hz => A.det_ne_zero (by simp [Matrix.det_fin_two, hc, hd, hz]))]
     have hempty : {p : Cross F | G.crossAction g p = p} = ∅ := by
       apply eq_empty_iff_forall_notMem.mpr
       intro p hp
@@ -321,12 +304,11 @@ theorem actual_fixed_locus_null
       change (KPCusp.complexPlace F i).embedding 1 * p.1 i +
         (KPCusp.complexPlace F i).embedding (x.toAdd : F) = p.1 i at hi
       simp only [map_one, one_mul] at hi
-      have hz : (KPCusp.complexPlace F i).embedding (x.toAdd : F) = 0 := by linear_combination hi
-      exact hx0 ((map_eq_zero (KPCusp.complexPlace F i).embedding).mp hz)
-    rw [hempty, measure_empty]
+      exact hx0 ((map_eq_zero (KPCusp.complexPlace F i).embedding).mp (by linear_combination hi))
+    simp [hempty]
   · obtain ⟨A, hA, hc⟩ := D.upper g g.property
-    let a : ℂ := embedding F ((D.ratio g : Fˣ) : F) i
-    let v : ℂ := embedding F (A 0 1 / A 1 1) i
+    let a := embedding F ((D.ratio g : Fˣ) : F) i
+    let v := embedding F (A 0 1 / A 1 1) i
     have ha : a - 1 ≠ 0 := by
       intro h
       apply hr
@@ -335,13 +317,12 @@ theorem actual_fixed_locus_null
       apply (KPCusp.complexPlace F i).embedding.injective
       simpa [a, embedding] using sub_eq_zero.mp h
     have hsub : {p : Cross F | G.crossAction g p = p} ⊆
-        {x : Horizontal F | x i = -v / (a - 1)} ×ˢ (univ : Set (Shape F)) := by
+        {x : Horizontal F | x i = -v / (a - 1)} ×ˢ univ := by
       intro p hp
       refine ⟨?_, mem_univ _⟩
       have hi := congrArg (fun q : Cross F => q.1 i) hp
       rw [G.crossAction_formula g A hA hc] at hi
       change a * p.1 i + v = p.1 i at hi
-      change p.1 i = -v / (a - 1)
       apply (eq_div_iff ha).mpr
       linear_combination hi
     apply measure_mono_null hsub
@@ -351,9 +332,6 @@ theorem actual_fixed_locus_null
     rw [hz, zero_mul]
 
 theorem actual_cross_action_ae_free
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (G : GeometryData F hF S D) (μ : Measure (Shape F)) [SFinite μ] :
     ∀ᵐ p ∂(volume.prod μ), ∀ g : S, G.crossAction g p = p → g = 1 := by
   letI : Countable S := actual_group_countable F S
@@ -363,13 +341,10 @@ theorem actual_cross_action_ae_free
   · exact Filter.Eventually.of_forall fun p _ => hg
   · have hn : ∀ᵐ p ∂(volume.prod μ), G.crossAction g p ≠ p := by
       rw [ae_iff]
-      simpa only [not_not] using actual_fixed_locus_null F hF S D G μ g hg
+      simpa using actual_fixed_locus_null F hF S D G μ g hg
     exact hn.mono fun p hp he => (hp he).elim
 
 theorem actual_measurable_fundamental_domain
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (hdisc : DiscreteTopology (translationLattice F D.L).toIntSubmodule)
     (hlattice : letI := hdisc; IsZLattice ℝ (translationLattice F D.L).toIntSubmodule)
     (G : GeometryData F hF S D)

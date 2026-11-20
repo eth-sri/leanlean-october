@@ -18,10 +18,12 @@ theorem continuous_of_open_kernel {G H : Type*} [Group G] [Group H]
   apply tendsto_nhds_of_eventually_eq
   filter_upwards [h.mem_nhds (by simp)] with x hx
   change f x = 1 at hx
-  simpa only [map_one] using hx
+  simpa using hx
 
-theorem arithmeticLocalArtin_ker (F E : Type) [Field F] [NumberField F]
-    [Field E] [NumberField E] [Algebra F E] [IsAbelianGalois F E]
+variable (F E : Type) [Field F] [NumberField F] [Field E] [NumberField E] [Algebra F E]
+    [IsAbelianGalois F E]
+
+theorem arithmeticLocalArtin_ker
     (v : HeightOneSpectrum (𝓞 F)) :
     (GlobalClassFieldTheory.Reciprocity.arithmeticChosenFinitePlaceArtinMonoidHom F E v).ker =
       ClassFieldTheory.finitePlaceTensorNormSubgroup F E v := by
@@ -30,21 +32,19 @@ theorem arithmeticLocalArtin_ker (F E : Type) [Field F] [NumberField F]
     GlobalClassFieldTheory.Reciprocity.arithmeticChosenFinitePlaceArtinMonoidHom_apply,
     inv_eq_one]
   rw [GlobalClassFieldTheory.Reciprocity.chosenFinitePlaceArtinMonoidHom_eq_one_iff_chosenLocalNorm,
-    ← finitePlaceLocalTensorNorm_range_eq_chosenLocalNormSubgroup (K := F) (L := E) v]
+    ← finitePlaceLocalTensorNorm_range_eq_chosenLocalNormSubgroup v]
   rfl
 
-theorem arithmeticLocalArtin_continuous (F E : Type) [Field F] [NumberField F]
-    [Field E] [NumberField E] [Algebra F E] [IsAbelianGalois F E]
+theorem arithmeticLocalArtin_continuous
     (v : HeightOneSpectrum (𝓞 F)) :
     Continuous (GlobalClassFieldTheory.Reciprocity.arithmeticChosenFinitePlaceArtinMonoidHom F E v) := by
   apply continuous_of_open_kernel
   rw [arithmeticLocalArtin_ker]
-  change IsOpen ((_root_.localTensorNorm (K := F) (L := E) v).range : Set (v.adicCompletion F)ˣ)
+  change IsOpen ((_root_.localTensorNorm v).range : Set (v.adicCompletion F)ˣ)
   rw [finitePlaceLocalTensorNorm_range_eq_chosenLocalNormSubgroup (K := F) (L := E) v]
-  exact chosenFinitePlaceLocalNormSubgroup_isOpen (K := F) (L := E) v
+  exact chosenFinitePlaceLocalNormSubgroup_isOpen v
 
-theorem normConductorArtin_local (F E : Type) [Field F] [NumberField F]
-    [Field E] [NumberField E] [Algebra F E] [IsAbelianGalois F E]
+theorem normConductorArtin_local
     (v : HeightOneSpectrum (𝓞 F)) (t : (v.adicCompletion F)ˣ) :
     ClassFieldTheory.GlobalClassFieldComparison.normConductorArtin F E
       ((ClassFieldTheory.GlobalClassFieldComparison.rayClassGroupEquivOriginalIdele F
@@ -65,8 +65,7 @@ theorem normConductorArtin_local (F E : Type) [Field F] [NumberField F]
     (GlobalClassFieldTheory.Reciprocity.arithmeticGlobalNormResidueMonoidHom_comp_finitePlaceIdeleClass
       (K := F) (L := E) v) t
 
-theorem transported_normConductorArtin_local (F E : Type) [Field F] [NumberField F]
-    [Field E] [NumberField E] [Algebra F E] [IsAbelianGalois F E]
+theorem transported_normConductorArtin_local
     (m : ClassFieldTheory.RayClassModulus F)
     (hm : m = ClassFieldTheory.GlobalClassFieldComparison.normConductorRayClassModulus F E)
     (v : HeightOneSpectrum (𝓞 F)) (t : (v.adicCompletion F)ˣ) :

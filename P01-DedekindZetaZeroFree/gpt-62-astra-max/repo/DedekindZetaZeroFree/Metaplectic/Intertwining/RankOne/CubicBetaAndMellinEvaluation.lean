@@ -15,8 +15,7 @@ open scoped ValuativeRel Topology
 theorem residueCard_pos (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] :
     0 < (KPCubicUnitIndices.residueCard K : ℝ) := by
-  have h := KPCubicUnitIndices.two_le_residueCard K
-  exact_mod_cast (lt_of_lt_of_le (by norm_num : 0 < 2) h)
+  exact_mod_cast (lt_of_lt_of_le (by norm_num : 0 < 2) (KPCubicUnitIndices.two_le_residueCard K))
 
 theorem cube_root_norm_bounds (q : ℝ) (hq : 0 < q)
     (t z : ℂˣ) (lam : ℂ) (hz : z ^ 3 = t)
@@ -28,7 +27,7 @@ theorem cube_root_norm_bounds (q : ℝ) (hq : 0 < q)
     simp
   have hp : q.rpow (-3 * lam.re) = (q.rpow (-lam.re)) ^ 3 := by
     calc
-      q.rpow (-3 * lam.re) = q.rpow ((-lam.re) * (3 : ℝ)) := by congr 1; ring
+      _ = q.rpow ((-lam.re) * (3 : ℝ)) := by congr 1; ring
       _ = (q.rpow (-lam.re)).rpow (3 : ℝ) := Real.rpow_mul hq.le _ _
       _ = (q.rpow (-lam.re)) ^ 3 := Real.rpow_natCast _ 3
   rw [hn, hp] at hlower
@@ -40,21 +39,23 @@ theorem cube_root_norm_bounds (q : ℝ) (hq : 0 < q)
       (by norm_num : (0 : ℝ) ≤ 1) (by decide : (3 : ℕ) ≠ 0)).mp
       (by simpa using hupper)
 
-theorem beta_power_exp_coordinates
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (s : ℂ) (x : Kˣ) :
+section
+
+variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K]
+
+theorem beta_power_exp_coordinates (s : ℂ) (x : Kˣ) :
     (KPCubicHaar.abs K (x : K) : ℂ) ^ (-s) =
       (Complex.exp ((s - 1) *
         (Real.log (CubicUnitCharacters.residueCard K : ℝ) : ℂ))) ^
         KPCubicExpansion.valuationExponent K x /
       (KPCubicHaar.abs K (x : K) : ℂ) := by
-  let q : ℝ := CubicUnitCharacters.residueCard K
-  let j : ℤ := KPCubicExpansion.valuationExponent K x
-  have hq : 0 < q := residueCard_pos K
+  let q := CubicUnitCharacters.residueCard K
+  let j := KPCubicExpansion.valuationExponent K x
   have habs : KPCubicHaar.abs K (x : K) = q ^ (-j) := by
     simp [KPCubicHaar.abs, x.ne_zero, KPCubicExpansion.valuationExponent, q, j]
     rfl
-  have ha : 0 < KPCubicHaar.abs K (x : K) := KPCubicHaar.abs_pos K x.ne_zero
+  have ha := KPCubicHaar.abs_pos K x.ne_zero
   have halog : (Real.log (KPCubicHaar.abs K (x : K)) : ℂ) =
       -(j : ℂ) * (Real.log q : ℂ) := by
     rw [habs, Real.log_zpow]
@@ -70,9 +71,7 @@ theorem beta_power_exp_coordinates
   dsimp [q, j]
   ring
 
-theorem betaFunction_eq_ramified_integrand
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K]
+theorem betaFunction_eq_ramified_integrand [MeasurableSpace K] [BorelSpace K]
     (χ : Kˣ →ₜ* ℂˣ) (s : ℂ) (y : Kˣ) :
     (χ y : ℂ) * KPCubicExpansion.betaFunction K s y =
       KPRankOneRamifiedBeta.betaIntegrand K χ
@@ -80,21 +79,16 @@ theorem betaFunction_eq_ramified_integrand
           (Real.log (CubicUnitCharacters.residueCard K : ℝ) : ℂ)))
           (Complex.exp_ne_zero _)) y := by
   by_cases hy : y = 1
-  · subst y
-    simp [KPCubicExpansion.betaFunction, KPRankOneRamifiedBeta.betaIntegrand]
+  · simp_all [KPCubicExpansion.betaFunction, KPRankOneRamifiedBeta.betaIntegrand]
   · have hy' : (y : K) ≠ 1 := fun h => hy (Units.ext h)
     rw [KPCubicExpansion.betaFunction, if_neg hy,
       KPRankOneRamifiedBeta.betaIntegrand, dif_neg hy']
     have hp := beta_power_exp_coordinates K s
       (Units.mk0 (1 - (y : K)) (sub_ne_zero.mpr (Ne.symm hy')))
     simp only [Units.val_mk0] at hp
-    rw [hp]
-    simp only [Units.val_zpow_eq_zpow_val, Units.val_mk0, div_eq_mul_inv]
-    ring
+    simp [Units.val_zpow_eq_zpow_val, Units.val_mk0, div_eq_mul_inv, hp] <;> ring
 
-theorem betaFunction_eq_unramified_integrand
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K]
+theorem betaFunction_eq_unramified_integrand [MeasurableSpace K] [BorelSpace K]
     (b : ℂˣ) (s : ℂ) (y : Kˣ) :
     (KPRankOneCubicProjection.eta K b y : ℂ) * KPCubicExpansion.betaFunction K s y =
       KPRankOneUnramifiedBetaShells.integrand K b
@@ -102,18 +96,15 @@ theorem betaFunction_eq_unramified_integrand
           (Real.log (CubicUnitCharacters.residueCard K : ℝ) : ℂ)))
           (Complex.exp_ne_zero _)) y := by
   by_cases hy : y = 1
-  · subst y
-    simp [KPCubicExpansion.betaFunction, KPRankOneUnramifiedBetaShells.integrand]
-  · have hy' : 1 - (y : K) ≠ 0 := by
-      intro h
-      exact hy (Units.ext (sub_eq_zero.mp h).symm)
+  · simp_all [KPCubicExpansion.betaFunction, KPRankOneUnramifiedBetaShells.integrand]
+  · have hy' : 1 - (y : K) ≠ 0 := fun h => hy (Units.ext (sub_eq_zero.mp h).symm)
     rw [KPCubicExpansion.betaFunction, if_neg hy,
       KPRankOneUnramifiedBetaShells.integrand, dif_neg hy']
     have hp := beta_power_exp_coordinates K s (Units.mk0 (1 - (y : K)) hy')
     simp only [Units.val_mk0] at hp
-    rw [hp]
-    simp only [Units.val_zpow_eq_zpow_val, Units.val_mk0, div_eq_mul_inv]
-    ring
+    simp [Units.val_zpow_eq_zpow_val, Units.val_mk0, div_eq_mul_inv, hp] <;> ring
+
+end
 
 theorem uniformizer_unit_decomposition (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
@@ -137,8 +128,8 @@ theorem uniformizer_unit_decomposition (K : Type*) [Field K] [ValuativeRel K] [T
   let u : (𝒪[K])ˣ :=
     { val := ⟨(y : K), by change ValuativeRel.valuation K (y : K) ≤ 1; rw [hv]⟩
       inv := ⟨((y⁻¹ : Kˣ) : K), by change ValuativeRel.valuation K ((y⁻¹ : Kˣ) : K) ≤ 1; simp [hv]⟩
-      val_inv := by apply Subtype.ext; exact y.val_inv
-      inv_val := by apply Subtype.ext; exact y.inv_val }
+      val_inv := by exact Subtype.ext y.val_inv
+      inv_val := by exact Subtype.ext y.inv_val}
   refine ⟨j, u, ?_⟩
   have hu : Units.map (𝒪[K]).subtype.toMonoidHom u = y := Units.ext rfl
   rw [hu]
@@ -161,17 +152,12 @@ theorem character_eq_eta_of_coordinates
 
 theorem norm_beta_exp_parameter (q : ℝ) (hq : 0 < q) (s : ℂ) :
     ‖Complex.exp ((s - 1) * (Real.log q : ℂ))‖ = q.rpow (s.re - 1) := by
-  change ‖Complex.exp ((s - 1) * (Real.log q : ℂ))‖ = q ^ (s.re - 1 : ℝ)
-  rw [Complex.norm_exp, Real.rpow_def_of_pos hq]
-  congr 1
-  simp [Complex.mul_re]
-  ring
+  simp [Complex.mul_re, Complex.norm_exp, Real.rpow_def_of_pos, hq] <;> ring
 theorem joint_strip_geometric_bounds (q : ℝ) (hq : 1 < q) (s : ℂ) (hs : s.re < 1)
     (b : ℂˣ) (hlo : q.rpow (-s.re) < ‖(b : ℂ)‖) (hhi : ‖(b : ℂ)‖ < 1) :
     q⁻¹ < ‖(b : ℂ)‖ ∧ ‖(b : ℂ)‖ < 1 ∧
       q⁻¹ / ‖(b : ℂ)‖ < q.rpow (s.re - 1) ∧ q.rpow (s.re - 1) < 1 := by
-  have hq0 : 0 < q := lt_trans zero_lt_one hq
-  have hb0 : 0 < ‖(b : ℂ)‖ := norm_pos_iff.mpr b.ne_zero
+  have hq0 := lt_trans zero_lt_one hq
   have hpow : q.rpow (-1) < q.rpow (-s.re) :=
     Real.rpow_lt_rpow_of_exponent_lt hq (by linarith)
   have he : q.rpow (-s.re) * q.rpow (s.re - 1) = q⁻¹ := by
@@ -182,7 +168,7 @@ theorem joint_strip_geometric_bounds (q : ℝ) (hq : 1 < q) (s : ℂ) (hs : s.re
   rw [Real.rpow_neg_one] at hpow
   refine ⟨lt_trans hpow hlo, hhi, ?_,
     Real.rpow_lt_one_of_one_lt_of_neg hq (by linarith)⟩
-  apply (div_lt_iff₀ hb0).mpr
+  apply (div_lt_iff₀ (norm_pos_iff.mpr b.ne_zero)).mpr
   rw [← he]
   rw [mul_comm (q.rpow (s.re - 1))]
   exact mul_lt_mul_of_pos_right hlo (Real.rpow_pos_of_pos hq0 _)

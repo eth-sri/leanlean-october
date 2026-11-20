@@ -10,10 +10,10 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPLiteralRaw KPLocalPrincipalSeries
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "V" => RestrictedTensorSimple.Core (Plus R.A P C)
@@ -50,17 +50,20 @@ def coreScatteringLinear (s : ℂ) (hs : (1 / 3 : ℝ) < s.re) (g : G F ζ hζ) 
     rw [he, integral_const_mul]
     rfl
 
-def slotCore (t : RestrictedTensorSimple.Level (bad R.A P C))
-    (x : ∀ j : t.val, Plus R.A P C j.val) (q : KPFinitePlace F)
-    (hq : Sum.inr q ∈ t.val) : Plus R.A P C (Sum.inr q) →ₗ[ℂ] V :=
+section
+
+variable (t : RestrictedTensorSimple.Level (bad R.A P C)) (x : ∀ j : t.val, Plus R.A P C j.val)
+    (q : KPFinitePlace F) (hq : Sum.inr q ∈ t.val)
+
+def slotCore : Plus R.A P C (Sum.inr q) →ₗ[ℂ] V :=
   (RestrictedTensorSimple.stageInclusion _ _ _ t).comp
     ((PiTensorProduct.tprod ℂ).toLinearMap x ⟨Sum.inr q,hq⟩)
 
-@[simp] theorem slotCore_apply (t : RestrictedTensorSimple.Level (bad R.A P C))
-    (x : ∀ j : t.val, Plus R.A P C j.val) (q : KPFinitePlace F)
-    (hq : Sum.inr q ∈ t.val) (f : Plus R.A P C (Sum.inr q)) :
+@[simp] theorem slotCore_apply (f : Plus R.A P C (Sum.inr q)) :
     slotCore R P C t x q hq f = RestrictedTensorSimple.stageInclusion _ _ _ t
       (PiTensorProduct.tprod ℂ (Function.update x ⟨Sum.inr q,hq⟩ f)) := rfl
+
+end
 
 set_option backward.isDefEq.respectTransparency false
 
@@ -94,7 +97,7 @@ theorem scatteringSlotOutputLinear_ker_le (N : MomentSources.TraceHaarTransport 
   change coreScattering R P C (slotCore R P C t x q hq f) s _ = 0
   rw [slotCore_apply]
   apply coreScattering_slot_kernel R P C N t _ q hq g μ hμ s hs
-  simpa only [Function.update_self] using hf
+  simpa using hf
 
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource
 

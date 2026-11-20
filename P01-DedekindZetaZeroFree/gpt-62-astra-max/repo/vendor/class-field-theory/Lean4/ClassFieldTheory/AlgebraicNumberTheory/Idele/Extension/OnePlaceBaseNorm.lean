@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -44,10 +40,13 @@ variable
     [Field K] [NumberField K]
     [Field L] [NumberField L] [Algebra K L] [FiniteDimensional K L]
 
+section
+
+variable (v : HeightOneSpectrum (𝓞 L))
+
 /-- The map from units of the completion below `v` to units of the
 completion at `v`, using the actual finite-place completion map. -/
-noncomputable def finitePlaceBaseUnitExtension
-    (v : HeightOneSpectrum (𝓞 L)) :
+noncomputable def finitePlaceBaseUnitExtension :
     ((_root_.finitePlaceBelow (K := K) v).adicCompletion K)ˣ →*
       (v.adicCompletion L)ˣ :=
   Units.map
@@ -58,12 +57,11 @@ noncomputable def finitePlaceBaseUnitExtension
 
 /-- The degree of the actual completed extension at `v` over the
 completion at the place below `v`. -/
-noncomputable def finitePlaceCompletionDegree
-    (v : HeightOneSpectrum (𝓞 L)) : ℕ := by
+noncomputable def finitePlaceCompletionDegree : ℕ := by
   let q := _root_.finitePlaceBelow (K := K) v
   let W :
       {W : HeightOneSpectrum (𝓞 L) //
-        _root_.finitePlaceBelow (K := K) W = q} :=
+        _root_.finitePlaceBelow W = q} :=
     ⟨v, rfl⟩
   letI : Algebra (q.adicCompletion K) (v.adicCompletion L) :=
     (finitePlaceAdicCompletionMap K L q W).toAlgebra
@@ -72,25 +70,26 @@ noncomputable def finitePlaceCompletionDegree
   exact Module.finrank (q.adicCompletion K) (v.adicCompletion L)
 
 /-- The completed local degree at an actual finite place is positive. -/
-theorem finitePlaceCompletionDegree_pos
-    (v : HeightOneSpectrum (𝓞 L)) :
+theorem finitePlaceCompletionDegree_pos :
     0 <
       finitePlaceCompletionDegree
         (K := K) (L := L) v := by
   let q := _root_.finitePlaceBelow (K := K) v
   let W :
       {W : HeightOneSpectrum (𝓞 L) //
-        _root_.finitePlaceBelow (K := K) W = q} :=
+        _root_.finitePlaceBelow W = q} :=
     ⟨v, rfl⟩
-  let : Algebra (q.adicCompletion K) (v.adicCompletion L) :=
+  let :=
     (finitePlaceAdicCompletionMap K L q W).toAlgebra
-  let : Module.Finite (q.adicCompletion K) (v.adicCompletion L) :=
+  let :=
     finitePlaceAdicCompletionMap_moduleFinite K L q W
   change
     0 <
       Module.finrank
         (q.adicCompletion K) (v.adicCompletion L)
   exact Module.finrank_pos
+
+end
 
 omit [FiniteDimensional K L] in
 /-- The idele norm of a base-completion unit supported at one extension
@@ -112,7 +111,7 @@ theorem norm_finitePlaceIdele_finitePlaceBaseUnitExtension
   let q := _root_.finitePlaceBelow (K := K) v
   let W₀ :
       {W : HeightOneSpectrum (𝓞 L) //
-        _root_.finitePlaceBelow (K := K) W = q} :=
+        _root_.finitePlaceBelow W = q} :=
     ⟨v, rfl⟩
   apply Prod.ext
   · apply ContinuousMulEquiv.piUnits.injective
@@ -140,19 +139,18 @@ theorem norm_finitePlaceIdele_finitePlaceBaseUnitExtension
           (norm K L
             (finitePlaceIdele v
               (finitePlaceBaseUnitExtension
-                (K := K) (L := L) v x))) =
+                  v x))) =
         finiteComponent r
           (finitePlaceIdele q
             (x ^ finitePlaceCompletionDegree
-              (K := K) (L := L) v))
+                v))
     by_cases hr : r = q
     · subst r
       rw [finiteComponent_norm_eq_prod,
         finitePlaceIdele_finiteComponent_same]
       rw [Finset.prod_eq_single W₀]
       · rw [finitePlaceIdele_finiteComponent_same]
-        let :
-            Algebra (q.adicCompletion K) (v.adicCompletion L) :=
+        let :=
           (finitePlaceAdicCompletionMap K L q W₀).toAlgebra
         let : Module.Finite (q.adicCompletion K) (v.adicCompletion L) :=
           finitePlaceAdicCompletionMap_moduleFinite K L q W₀
@@ -171,7 +169,7 @@ theorem norm_finitePlaceIdele_finitePlaceBaseUnitExtension
           LocalFieldTheory.IsNonarchimedeanLocalField.mapBaseUnitsToExtensionUnits,
           MonoidHom.id_apply] using
           (LocalFieldTheory.IsNonarchimedeanLocalField.normUnits_algebraMap_base
-            (K := q.adicCompletion K) (L := v.adicCompletion L) x)
+              x)
       · intro W _ hW
         have hWv : W.1 ≠ v := by
           intro h
@@ -181,7 +179,7 @@ theorem norm_finitePlaceIdele_finitePlaceBaseUnitExtension
           finitePlaceIdele_finiteComponent_of_ne
             v W.1
             (finitePlaceBaseUnitExtension
-              (K := K) (L := L) v x)
+                v x)
             hWv,
           map_one]
       · simp
@@ -190,7 +188,7 @@ theorem norm_finitePlaceIdele_finitePlaceBaseUnitExtension
         finitePlaceIdele_finiteComponent_of_ne
           q r
           (x ^ finitePlaceCompletionDegree
-            (K := K) (L := L) v)
+              v)
           hr]
       apply Finset.prod_eq_one
       intro W _
@@ -198,14 +196,14 @@ theorem norm_finitePlaceIdele_finitePlaceBaseUnitExtension
         intro h
         apply hr
         calc
-          r = _root_.finitePlaceBelow (K := K) W.1 :=
+          r = _root_.finitePlaceBelow W.1 :=
             W.2.symm
           _ = q := by rw [h]
       rw [
         finitePlaceIdele_finiteComponent_of_ne
           v W.1
           (finitePlaceBaseUnitExtension
-            (K := K) (L := L) v x)
+              v x)
           hWv,
         map_one]
 
@@ -227,8 +225,7 @@ theorem norm_finitePlaceIdele_eq_finitePlaceIdele_normUnits
         (LocalFieldTheory.normUnits
           (v.adicCompletion K) (W.1.adicCompletion L) y) := by
   classical
-  let :
-      Algebra (v.adicCompletion K) (W.1.adicCompletion L) :=
+  let :=
     (finitePlaceAdicCompletionMap K L v W).toAlgebra
   apply Prod.ext
   · apply ContinuousMulEquiv.piUnits.injective
@@ -283,7 +280,7 @@ theorem norm_finitePlaceIdele_eq_finitePlaceIdele_normUnits
         intro h
         apply hr
         calc
-          r = _root_.finitePlaceBelow (K := K) W'.1 :=
+          r = _root_.finitePlaceBelow W'.1 :=
             W'.2.symm
           _ = v := by rw [h, W.2]
       rw [
@@ -309,8 +306,7 @@ theorem ideleClassNorm_finitePlaceIdeleClass_eq_normUnits
         (LocalFieldTheory.normUnits
           (v.adicCompletion K) (W.1.adicCompletion L) y) := by
   classical
-  let :
-      Algebra (v.adicCompletion K) (W.1.adicCompletion L) :=
+  let :=
     (finitePlaceAdicCompletionMap K L v W).toAlgebra
   rw [
     finitePlaceIdeleClass,

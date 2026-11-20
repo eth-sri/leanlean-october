@@ -1,4 +1,6 @@
 module
+public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.PGL.BorelModularCharacter
+public import DedekindZetaZeroFree.Metaplectic.Kubota.PGLCentralTransitions
 
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.ClosedCellEvaluation
 
@@ -23,31 +25,21 @@ def torusToBorel : Torus F ζ hζ w →* Borel F ζ hζ w := by
   exact Subgroup.inclusion
     (KPRankOneInduction.coveredTorus_le_Borel F w (projection F ζ hζ w))
 
-theorem upperRoot_mem_borel (x : Multiplicative (KPRankOneInduction.LocalField F w)) :
-    upperRoot F ζ hζ w x ∈ Borel F ζ hζ w := by
-  exact KPJacquetClosedCellBump.upperRoot_mem_borel F ζ hζ w x
+alias upperRoot_mem_borel := DedekindZetaZeroFree.KPJacquetClosedCellBump.upperRoot_mem_borel
 
-private theorem ordinaryPGLMap_injective : Function.Injective (ordinaryPGLMap F w) := by
-  letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
-  intro a b
-  induction a using Quotient.inductionOn with | _ A =>
-    induction b using Quotient.inductionOn with | _ B =>
-      intro h
-      change Matrix.ProjGenLinGroup.mk A = Matrix.ProjGenLinGroup.mk B at h
-      obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
-      apply (QuotientGroup.mk'_eq_mk' _).mpr
-      exact ⟨KPScalarSplitCentral.scalarMatrix F (Sum.inr w) u, ⟨u, rfl⟩, hu⟩
+private theorem ordinaryPGLMap_injective : Function.Injective (ordinaryPGLMap F w) := by apply @DedekindZetaZeroFree.KPWildCompactProjectorKirillov.ClopenGluing.ordinaryPGLMap_injective <;> assumption
 
 private theorem projection_kernel_central :
     (projection F ζ hζ w).ker ≤ Subgroup.center (FiniteCover F ζ hζ w) := by
   letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
   intro g hg
-  have he : KPPGLLocalCover.projection F ζ hζ (Sum.inr w) g = 1 := by
-    apply ordinaryPGLMap_injective F w
-    exact hg
   apply KPPGLLocalCover.centralInjection_range_le_center F ζ hζ (Sum.inr w)
   rw [KPPGLLocalCover.range_centralInjection_eq_ker_projection]
-  exact he
+  exact by
+    apply ordinaryPGLMap_injective F w
+    exact hg
+
+alias InductionReciprocity.projection_kernel_central := projection_kernel_central
 
 private theorem projection_kernel_finite : Finite (projection F ζ hζ w).ker := by
   letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
@@ -56,14 +48,15 @@ private theorem projection_kernel_finite : Finite (projection F ζ hζ w).ker :=
     have he : KPPGLLocalCover.projection F ζ hζ (Sum.inr w) g.val = 1 := by
       apply ordinaryPGLMap_injective F w
       exact g.property
-    have hr := KPPGLLocalCover.range_centralInjection_eq_ker_projection F ζ hζ (Sum.inr w)
-    rw [← MonoidHom.mem_ker, ← hr] at he
+    rw [← MonoidHom.mem_ker, ← (KPPGLLocalCover.range_centralInjection_eq_ker_projection F ζ hζ (Sum.inr w))] at he
     exact he
-  let e : (projection F ζ hζ w).ker → rootsOfUnity 3 F := fun g => Classical.choose (hex g)
+  let e := fun g => Classical.choose (hex g)
   have he (g : (projection F ζ hζ w).ker) :
       KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr w) (e g) = g.val :=
     Classical.choose_spec (hex g)
   exact Finite.of_injective e (fun a b h => Subtype.ext (by rw [← he a, ← he b, h]))
+
+alias InductionReciprocity.projection_kernel_finite := projection_kernel_finite
 
 private theorem projection_surjective : Function.Surjective (projection F ζ hζ w) := by
   letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
@@ -75,8 +68,6 @@ private theorem projection_surjective : Function.Surjective (projection F ζ hζ
 
 private theorem upperRoot_projection (x : Multiplicative (KPRankOneInduction.LocalField F w)) :
     projection F ζ hζ w (upperRoot F ζ hζ w x) = KPRankOneInduction.ordinaryUpperRootHom F w x := by
-  change Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n _ _) =
-    Matrix.ProjGenLinGroup.mk (KPRankOneInduction.upperRootMatrix F w _)
   rfl
 
 private theorem upperRoot_injective : Function.Injective (upperRoot F ζ hζ w) := by
@@ -131,7 +122,7 @@ theorem borel_factorization (b : Borel F ζ hζ w) :
   apply Prod.ext
   · exact hh.symm
   · apply upperRoot_injective F ζ hζ w
-    apply mul_left_cancel (a := h.val)
+    apply mul_left_cancel
     rw [← hy, ← hh]
     exact he
 
@@ -184,17 +175,15 @@ set_option maxHeartbeats 1000000 in
       ⟨upperRoot F ζ hζ w x, upperRoot_mem_borel F ζ hζ w x⟩ = 1 := by
   let b : Borel F ζ hζ w := ⟨upperRoot F ζ hζ w x, upperRoot_mem_borel F ζ hζ w x⟩
   have hf := borel_factorization F ζ hζ w b
-  have hc := Classical.choose_spec (ExistsUnique.exists hf)
   have hp : b.val = ((1 : Torus F ζ hζ w) : FiniteCover F ζ hζ w) * upperRoot F ζ hζ w x := by simp [b]
   have he : Classical.choose (ExistsUnique.exists hf) = (1, x) :=
-    hf.unique hc hp
+    hf.unique (Classical.choose_spec (ExistsUnique.exists hf)) hp
   exact congrArg Prod.fst he
 
 theorem borelRetraction_decomposition (b : Borel F ζ hζ w) :
     ∃ x : Multiplicative (KPRankOneInduction.LocalField F w),
       (b : FiniteCover F ζ hζ w) =
-        (borelRetraction F ζ hζ w b : FiniteCover F ζ hζ w) * upperRoot F ζ hζ w x := by
-  exact ⟨(Classical.choose (ExistsUnique.exists (borel_factorization F ζ hζ w b))).2,
+        (borelRetraction F ζ hζ w b : FiniteCover F ζ hζ w) * upperRoot F ζ hζ w x := ⟨(Classical.choose (ExistsUnique.exists (borel_factorization F ζ hζ w b))).2,
     Classical.choose_spec (ExistsUnique.exists (borel_factorization F ζ hζ w b))⟩
 
 theorem borelRetraction_kernel (b : Borel F ζ hζ w) :
@@ -250,15 +239,11 @@ private theorem upperCoordinate_continuous : Continuous (upperCoordinate F w) :=
       ((Units.continuous_val (M := Matrix (Fin 2) (Fin 2) (KPRankOneInduction.LocalField F w))).comp continuous_subtype_val))
   · intro A hz
     obtain ⟨B, hB, h10⟩ := A.property
-    have hr := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hB
-    obtain ⟨u, hu⟩ := hr
+    obtain ⟨u, hu⟩ := (Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hB)
     have hb00 : B 0 0 = 0 := by
-      have he := congrArg (fun M : KPRankOneInduction.GL2 F w => M 0 0) hu
       simpa [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-        Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply, hz] using he
-    have hd := Units.ne_zero (Matrix.GeneralLinearGroup.det B)
-    apply hd
-    change (B.val).det = 0
+        Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply, hz] using (congrArg (fun M : KPRankOneInduction.GL2 F w => M 0 0) hu)
+    apply Units.ne_zero (Matrix.GeneralLinearGroup.det B)
     simp [Matrix.det_fin_two, h10, hb00]
 
 private theorem borelRetraction_formula (b : Borel F ζ hζ w) :
@@ -269,9 +254,7 @@ private theorem borelRetraction_formula (b : Borel F ζ hζ w) :
   obtain ⟨A, hA, h10, h01⟩ := (borelRetraction F ζ hζ w b).property
   have ha00 : A 0 0 ≠ 0 := by
     intro hz
-    have hd := Units.ne_zero (Matrix.GeneralLinearGroup.det A)
-    apply hd
-    change (A.val).det = 0
+    apply Units.ne_zero (Matrix.GeneralLinearGroup.det A)
     simp [Matrix.det_fin_two, h10, hz]
   have hc : upperCoordinate F w
       (KPRankOneInduction.borelProjection F w (projection F ζ hζ w) b) =
@@ -280,7 +263,6 @@ private theorem borelRetraction_formula (b : Borel F ζ hζ w) :
       change Matrix.ProjGenLinGroup.mk _ = projection F ζ hζ w b.val
       rw [hx]
       rw [(projection F ζ hζ w).map_mul, upperRoot_projection]
-      change Matrix.ProjGenLinGroup.mk _ = _ * Matrix.ProjGenLinGroup.mk _
       rw [map_mul, hA]
       rfl)]
     simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two, KubotaRankTwo.n,
@@ -301,24 +283,11 @@ private theorem borelRetraction_continuous_admissible
     apply (QuotientGroup.isQuotientMap_mk
       (KPPGLLocalCover.scalarSubgroup F (Sum.inr w))).continuous_iff.mpr
     exact QuotientGroup.continuous_mk
-  have hp : Continuous (projection F ζ hζ w) := hmap.comp
-    (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.2.1.continuous
-  have hbp : Continuous (KPRankOneInduction.borelProjection F w (projection F ζ hζ w)) :=
-    (hp.comp continuous_subtype_val).subtype_mk _
-  have hc := (upperCoordinate_continuous F w).comp hbp
-  have hN := (KPPGLLocalCover.finite_lifts_continuous F ζ hζ w m hm).1
-  have hformula : Continuous (fun b : Borel F ζ hζ w => b.val * upperRoot F ζ hζ w
-      (Multiplicative.ofAdd (-upperCoordinate F w
-        (KPRankOneInduction.borelProjection F w (projection F ζ hζ w) b)))) :=
-    continuous_subtype_val.mul (hN.comp hc.neg)
   apply Continuous.subtype_mk _ _
-  exact hformula.congr (fun b => (borelRetraction_formula F ζ hζ w b).symm)
+  exact (continuous_subtype_val.mul (((KPPGLLocalCover.finite_lifts_continuous F ζ hζ w m hm).1).comp ((upperCoordinate_continuous F w).comp (((hmap.comp
+    (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.2.1.continuous).comp continuous_subtype_val).subtype_mk _)).neg)).congr (fun b => (borelRetraction_formula F ζ hζ w b).symm)
 
-theorem borelRetraction_continuous
-    (hm : KPLocalChartTopology.MatrixChartDepth F w m) :
-    letI := finiteCoverTopology F ζ hζ w m
-    Continuous (borelRetraction F ζ hζ w) := by
-  exact borelRetraction_continuous_admissible F ζ hζ w m hm
+alias borelRetraction_continuous := borelRetraction_continuous_admissible
 
 theorem dB_retraction (b : Borel F ζ hζ w) :
     dB F ζ hζ w (torusToBorel F ζ hζ w m hm (borelRetraction F ζ hζ w b)) =
@@ -329,7 +298,7 @@ theorem dB_retraction (b : Borel F ζ hζ w) :
   let n : Borel F ζ hζ w := ⟨upperRoot F ζ hζ w x, upperRoot_mem_borel F ζ hζ w x⟩
   have hb : b = torusToBorel F ζ hζ w m hm (borelRetraction F ζ hζ w b) * n :=
     Subtype.ext hx
-  have hd : deltaB F ζ hζ w n = 1 :=
+  have hd :=
     KPRankOneInduction.deltaB_upperRoot F w (projection F ζ hζ w) _ n
       (upperRoot_projection F ζ hζ w x)
   have hn : dB F ζ hζ w n = 1 := by
@@ -345,8 +314,11 @@ def torusHalfModulus : Torus F ζ hζ w →* (ℝ≥0)ˣ :=
 variable {V E : Type*} [AddCommGroup V] [Module ℂ V]
   [AddCommGroup E] [Module ℂ E]
 
+section
+
+variable (ρ : Representation ℂ (FiniteCover F ζ hζ w) V)
+
 theorem jacquet_relations_stable
-    (ρ : Representation ℂ (FiniteCover F ζ hζ w) V)
     (h : Torus F ζ hζ w) :
     Representation.Coinvariants.ker
       (rootTwistedRepresentation ρ (upperRoot F ζ hζ w) 1) ≤
@@ -377,12 +349,14 @@ theorem jacquet_relations_stable
   simp only [map_sub, one_smul, hv]
   exact Submodule.subset_span ⟨(y, ρ h.val v), by simp⟩
 
-def jacquetAction (ρ : Representation ℂ (FiniteCover F ζ hζ w) V) :
+def jacquetAction :
     Representation ℂ (Torus F ζ hζ w) (OrdinaryCoinvariants F ζ hζ w ρ) :=
   Representation.quotient (ρ.comp (Torus F ζ hζ w).subtype)
     (Representation.Coinvariants.ker
       (rootTwistedRepresentation ρ (upperRoot F ζ hζ w) 1))
     (jacquet_relations_stable F ζ hζ w ρ)
+
+end
 
 def inducedAction (τ : Representation ℂ (Torus F ζ hζ w) E) :
     Representation ℂ (FiniteCover F ζ hζ w)

@@ -14,8 +14,8 @@ set_option maxHeartbeats 4000000
 namespace DedekindZetaZeroFree.FourierContinuation.NonDegenerate
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
 local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 
 structure PeriodSource extends JointRealizedFlatSources R N where
@@ -29,8 +29,7 @@ namespace PeriodSource
 variable {R N}
 
 theorem period_eq (D : PeriodSource R N) :
-    fourier R D.sources.dq (D.realization.theta D.probe) 1 = D.coefficient := by
-  exact tendsto_nhds_unique (fourier_residue_tendsto D.realization D.probe 1) D.period_limit
+    fourier R D.sources.dq (D.realization.theta D.probe) 1 = D.coefficient := tendsto_nhds_unique (fourier_residue_tendsto D.realization D.probe 1) D.period_limit
 
 theorem detected (D : PeriodSource R N) :
     fourier R D.sources.dq (D.realization.theta D.probe) 1 ≠ 0 := by
@@ -73,9 +72,7 @@ theorem image_ne (D : Dictionary R N) : D.coreMap (D.selected D.probe) ≠ 0 := 
   rw [D.selected_eq]
   exact D.toPeriodSource.residue_ne
 
-theorem selected_ne (D : Dictionary R N) : D.selected D.probe ≠ 0 := by
-  intro hz
-  exact D.image_ne (by rw [hz, map_zero])
+theorem selected_ne (D : Dictionary R N) : D.selected D.probe ≠ 0 := fun hz => D.image_ne (by rw [hz, map_zero])
 
 theorem reference_ne_zero (D : Dictionary R N) (p : KPHilbert.Place F)
     (hp : p ∉ D.bad) : D.references p ≠ 0 := by
@@ -104,9 +101,7 @@ theorem initial_pure_nonzero (D : Dictionary R N) :
         (PiTensorProduct.tprod ℂ x) ∧
       PiTensorProduct.tprod ℂ x ≠ 0 ∧ ∀ p, x p ≠ 0 := by
   obtain ⟨s, x, hs, hx⟩ := D.selected_frozen_stage D.probe
-  have hn : PiTensorProduct.tprod ℂ x ≠ 0 := by
-    intro hz
-    exact D.selected_ne (by rw [hx, hz, map_zero])
+  have hn : PiTensorProduct.tprod ℂ x ≠ 0 := fun hz => D.selected_ne (by rw [hx, hz, map_zero])
   refine ⟨s, x, hs, hx, hn, ?_⟩
   intro p hp
   exact hn ((PiTensorProduct.tprod ℂ).map_coord_zero p hp)

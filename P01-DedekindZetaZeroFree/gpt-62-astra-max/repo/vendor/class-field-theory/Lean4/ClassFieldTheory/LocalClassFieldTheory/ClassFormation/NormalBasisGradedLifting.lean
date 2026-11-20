@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 /-! Provides the public declarations in the `LocalClassFieldTheory.ClassFormation.NormalBasisGradedLifting` Lean module. -/
 
@@ -59,7 +54,7 @@ theorem chosenNormalBasisPrincipalUnitLatticeClass_galoisGroup
   let y : chosenBaseUniformizerPowSubmodule K L n
       (chosenNormalBasisIntegerLattice K L) :=
     ⟨((((u : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L), hu⟩
-  let x : chosenNormalBasisIntegerLattice K L :=
+  let x :=
     (chosenNormalBasisIntegerLatticeMulPowLinearEquiv K L n).symm y
   have hxy : chosenNormalBasisIntegerLatticeMulPowLinearEquiv K L n x = y :=
     (chosenNormalBasisIntegerLatticeMulPowLinearEquiv K L n).apply_symm_apply y
@@ -74,17 +69,18 @@ theorem chosenNormalBasisPrincipalUnitLatticeClass_galoisGroup
   have hfield := chosenNormalBasisIntegerLatticeMulPowLinearEquiv_galoisGroup_apply_coe
     K L n sigma x
   rw [hxy] at hfield
-  simpa [y, galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure_smul,
-    map_sub, map_one] using hfield.symm
+  simpa [y] using hfield.symm
+
+section
+
+variable (n : Nat) {Vn Vsucc : Subgroup 𝒪[L]ˣ} (hV : Vsucc ≤ Vn)
+    (hVn : (Vn : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
+    (hVsucc : (Vsucc : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L (n + 1))
 
 /-- The actual action on `V^n` descends to the successive quotient
 `V^n / V^(n+1)`. -/
 @[implicit_reducible]
-def chosenNormalBasisPrincipalUnitSuccQuotMulDistribMulAction
-    (n : Nat) {Vn Vsucc : Subgroup 𝒪[L]ˣ} (hV : Vsucc ≤ Vn)
-    (hVn : (Vn : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
-    (hVsucc : (Vsucc : Set 𝒪[L]ˣ) =
-      chosenNormalBasisPrincipalUnitSet K L (n + 1)) :
+def chosenNormalBasisPrincipalUnitSuccQuotMulDistribMulAction :
     MulDistribMulAction (Gal(L / K))
       (chosenNormalBasisPrincipalUnitSuccQuot (L := L) hV) := by
   letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
@@ -109,10 +105,6 @@ def chosenNormalBasisPrincipalUnitSuccQuotMulDistribMulAction
 /-- States the theorem `chosenNormalBasisPrincipalUnitSuccQuotMulDistribMulAction_smul_mk`. -/
 @[simp]
 theorem chosenNormalBasisPrincipalUnitSuccQuotMulDistribMulAction_smul_mk
-    (n : Nat) {Vn Vsucc : Subgroup 𝒪[L]ˣ} (hV : Vsucc ≤ Vn)
-    (hVn : (Vn : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
-    (hVsucc : (Vsucc : Set 𝒪[L]ˣ) =
-      chosenNormalBasisPrincipalUnitSet K L (n + 1))
     (sigma : Gal(L / K)) (u : Vn) :
     letI := chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction
       K L n Vn hVn
@@ -121,6 +113,8 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotMulDistribMulAction_smul_mk
     sigma • chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV u =
       chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV (sigma • u) :=
   rfl
+
+end
 
 /-- Any graded-piece equivalence whose value on representatives is `u - 1`
 is equivariant for the actual quotient action and the lattice action. -/
@@ -135,7 +129,7 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotMulEquiv_galoisGroup
       Phi (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV u) =
         Multiplicative.ofAdd
           (chosenNormalBasisPrincipalUnitLatticeClass K L n (u : 𝒪[L]ˣ)
-            (by exact hVn ▸ u.2)))
+            (hVn ▸ u.2)))
     (sigma : Gal(L / K))
     (q : chosenNormalBasisPrincipalUnitSuccQuot (L := L) hV) :
     letI := chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction
@@ -164,13 +158,13 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotMulEquiv_galoisGroup
     hPhi, hPhi]
   exact congrArg Multiplicative.ofAdd
     (chosenNormalBasisPrincipalUnitLatticeClass_galoisGroup
-      (K := K) (L := L) n sigma (u : 𝒪[L]ˣ) (by exact hVn ▸ u.2))
+      (K := K) (L := L) n sigma (u : 𝒪[L]ˣ) (hVn ▸ u.2))
+
+variable [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Module.Finite 𝒪[K] 𝒪[L]]
 
 /-- One-step `H⁰` lifting: sufficiently deep fixed units are
 a norm from the same level times a fixed unit one level deeper. -/
-theorem exists_chosenNormalBasisPrincipalUnit_h0_oneStep_lifting
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Module.Finite 𝒪[K] 𝒪[L]] :
+theorem exists_chosenNormalBasisPrincipalUnit_h0_oneStep_lifting :
     letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
     ∃ c : Nat, ∀ k : Nat, c ≤ k → ∀ a : 𝒪[L]ˣ,
       a ∈ chosenNormalBasisPrincipalUnitSet K L k →
@@ -198,7 +192,8 @@ theorem exists_chosenNormalBasisPrincipalUnit_h0_oneStep_lifting
     change a ∈ (Vn : Set 𝒪[L]ˣ)
     rw [hVn]
     exact ha⟩
-  let q : Multiplicative (chosenNormalBasisLatticeSuccQuot K L k) :=
+  let Multiplicative₀ := Multiplicative (chosenNormalBasisLatticeSuccQuot K L k)
+  let q : Multiplicative₀ :=
     Phi (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV av)
   have hqfixed : ∀ sigma : Gal(L / K), sigma • q = q := by
     intro sigma
@@ -215,19 +210,19 @@ theorem exists_chosenNormalBasisPrincipalUnit_h0_oneStep_lifting
         apply Subtype.ext
         exact hfixed sigma
   let qfixed : fixedSubgroup (Gal(L / K))
-      (Multiplicative (chosenNormalBasisLatticeSuccQuot K L k)) :=
+      (Multiplicative₀) :=
     ⟨q, hqfixed⟩
   have hH0 := chosenNormalBasisLatticeSuccQuot_herbrandH0_subsingleton K L k
   have hqone :
       QuotientGroup.mk'
           ((tateNormSubgroup (Gal(L / K))
-            (Multiplicative (chosenNormalBasisLatticeSuccQuot K L k))).subgroupOf
+            (Multiplicative₀)).subgroupOf
               (fixedSubgroup (Gal(L / K))
-                (Multiplicative (chosenNormalBasisLatticeSuccQuot K L k))))
+                (Multiplicative₀)))
           qfixed = 1 :=
     @Subsingleton.elim _ hH0 _ _
   have hqmem : q ∈ tateNormSubgroup (Gal(L / K))
-      (Multiplicative (chosenNormalBasisLatticeSuccQuot K L k)) := by
+      (Multiplicative₀) := by
     have hm := (QuotientGroup.eq_one_iff _).1 hqone
     exact hm
   rcases hqmem with ⟨y, hy⟩
@@ -236,37 +231,38 @@ theorem exists_chosenNormalBasisPrincipalUnit_h0_oneStep_lifting
       (L := L) hV qb with
     ⟨bv, hbvmk⟩
   change chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bv = qb at hbvmk
+  let tateNorm₀ := tateNorm (Gal(L / K))
   have hPhiNorm :
-      Phi (tateNorm (Gal(L / K))
+      Phi (tateNorm₀
         (chosenNormalBasisPrincipalUnitSuccQuot (L := L) hV)
         (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bv)) = q := by
     calc
-      Phi (tateNorm (Gal(L / K))
+      Phi (tateNorm₀
           (chosenNormalBasisPrincipalUnitSuccQuot (L := L) hV)
           (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bv)) =
-          tateNorm (Gal(L / K))
-            (Multiplicative (chosenNormalBasisLatticeSuccQuot K L k))
+          tateNorm₀
+            (Multiplicative₀)
             (Phi (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bv)) :=
         map_tateNorm Phi.toMonoidHom
           (fun sigma z => chosenNormalBasisPrincipalUnitSuccQuotMulEquiv_galoisGroup
             (K := K) (L := L) k hV hVn hVsucc Phi hPhi sigma z) _
-      _ = tateNorm (Gal(L / K))
-          (Multiplicative (chosenNormalBasisLatticeSuccQuot K L k)) y := by
+      _ = tateNorm₀
+          (Multiplicative₀) y := by
         rw [hbvmk, hqb]
       _ = q := hy
   have hquotNorm :
-      tateNorm (Gal(L / K))
+      tateNorm₀
           (chosenNormalBasisPrincipalUnitSuccQuot (L := L) hV)
           (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bv) =
         chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV av := by
     apply Phi.injective
     simpa [q] using hPhiNorm
-  let bn : Vn := tateNorm (Gal(L / K)) Vn bv
+  let bn : Vn := tateNorm₀ Vn bv
   have hmkbn : chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bn =
       chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV av := by
     calc
       chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bn =
-          tateNorm (Gal(L / K))
+          tateNorm₀
             (chosenNormalBasisPrincipalUnitSuccQuot (L := L) hV)
             (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bv) := by
         exact map_tateNorm
@@ -304,12 +300,12 @@ theorem exists_chosenNormalBasisPrincipalUnit_h0_oneStep_lifting
   · intro sigma
     exact congrArg (fun z : Vn => (z : 𝒪[L]ˣ)) (haprimefixed sigma)
   · have hbnval : (bn : 𝒪[L]ˣ) =
-        tateNorm (Gal(L / K)) 𝒪[L]ˣ (bv : 𝒪[L]ˣ) := by
+        tateNorm₀ 𝒪[L]ˣ (bv : 𝒪[L]ˣ) := by
       exact map_tateNorm
         (chosenNormalBasisPrincipalUnitSubgroupInclusion (L := L) Vn)
         (fun sigma z => chosenNormalBasisPrincipalUnitSubgroupInclusion_equivariant
           (K := K) (L := L) k Vn hVn sigma z) bv
-    change a = tateNorm (Gal(L / K)) 𝒪[L]ˣ (bv : 𝒪[L]ˣ) *
+    change a = tateNorm₀ 𝒪[L]ˣ (bv : 𝒪[L]ˣ) *
       (aprimev : 𝒪[L]ˣ)
     rw [← hbnval]
     dsimp [aprimev, av]
@@ -319,8 +315,6 @@ theorem exists_chosenNormalBasisPrincipalUnit_h0_oneStep_lifting
 sufficiently deep norm-one unit is a coboundary from the same level times a
 norm-one unit one level deeper. -/
 theorem exists_chosenNormalBasisPrincipalUnit_hMinusOne_oneStep_lifting
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
     (g : Gal(L / K)) (hgen : ∀ sigma : Gal(L / K),
       sigma ∈ Subgroup.zpowers g) :
     letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L

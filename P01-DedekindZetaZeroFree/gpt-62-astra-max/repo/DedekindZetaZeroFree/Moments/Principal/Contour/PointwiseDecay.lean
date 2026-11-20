@@ -16,8 +16,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonK
 open scoped Classical Topology
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem decay_main (f h ζ : ℂ → ℂ) (a b T K C' k : ℝ) (hk : 0 ≤ k) (hC' : 0 ≤ C') (hK : 0 ≤ K)
     (hh : ∀ m : ℕ, ∃ C, ∀ z : ℂ, a ≤ z.re → z.re ≤ b → T ≤ |z.im| →
@@ -32,27 +32,26 @@ theorem decay_main (f h ζ : ℂ → ℂ) (a b T K C' k : ℝ) (hk : 0 ≤ k) (h
   refine ⟨max (K * C' * C0) 0, T, fun x hx y hy => ?_⟩
   have hre : ((x : ℂ) + (y : ℂ) * I).re = x := by simp
   have him : ((x : ℂ) + (y : ℂ) * I).im = y := by simp
-  have h1 := hf _ (by rw [hre]; exact hx.1) (by rw [hre]; exact hx.2) (by rw [him]; exact hy)
   have h2 := hz _ (by rw [hre]; exact hx.1) (by rw [hre]; exact hx.2) (by rw [him]; exact hy)
   have h3 := hC0 _ (by rw [hre]; exact hx.1) (by rw [hre]; exact hx.2) (by rw [him]; exact hy)
   rw [him] at h2 h3
   set z := (x : ℂ) + (y : ℂ) * I
   have hy1 : 1 ≤ 1 + |y| := by linarith [abs_nonneg y]
   have hpos : 0 < 1 + |y| := by linarith
-  have hkN : (1 + |y|) ^ k ≤ (1 + |y|) ^ (N : ℝ) :=
+  have hkN :=
     Real.rpow_le_rpow_of_exponent_le hy1 (Nat.le_ceil k)
   rw [Real.rpow_natCast] at hkN
   have hBM : (1 + |y|) ^ (-B) ≥ ((1 + |y|) ^ M)⁻¹ := by
     rw [Real.rpow_neg hpos.le, ge_iff_le]
     apply inv_anti₀ (by positivity)
-    calc (1 + |y|) ^ B ≤ (1 + |y|) ^ (M : ℝ) :=
+    calc _ ≤ (1 + |y|) ^ (M : ℝ) :=
           Real.rpow_le_rpow_of_exponent_le hy1 (Nat.le_ceil B)
       _ = (1 + |y|) ^ M := Real.rpow_natCast _ _
 
   have h4 : (1 + |y|) ^ M * ‖f z‖ ≤ K * C' * C0 := by
     have e1 : (1 + |y|) ^ M * ‖f z‖ ≤ (1 + |y|) ^ M * (K * (‖h z‖ * (C' * (1 + |y|) ^ N))) := by
       apply mul_le_mul_of_nonneg_left _ (by positivity)
-      refine h1.trans (mul_le_mul_of_nonneg_left ?_ hK)
+      refine (hf _ (by rw [hre]; exact hx.1) (by rw [hre]; exact hx.2) (by rw [him]; exact hy)).trans (mul_le_mul_of_nonneg_left ?_ hK)
       exact mul_le_mul_of_nonneg_left (h2.trans (mul_le_mul_of_nonneg_left (hkN) hC')) (norm_nonneg _)
     refine e1.trans ?_
     have : (1 + |y|) ^ M * (K * (‖h z‖ * (C' * (1 + |y|) ^ N))) =
@@ -61,7 +60,7 @@ theorem decay_main (f h ζ : ℂ → ℂ) (a b T K C' k : ℝ) (hk : 0 ≤ k) (h
     exact mul_le_mul_of_nonneg_left h3 (by positivity)
   have h5 : ‖f z‖ ≤ max (K * C' * C0) 0 * ((1 + |y|) ^ M)⁻¹ := by
     rw [← div_eq_mul_inv, le_div_iff₀ (by positivity)]
-    calc ‖f z‖ * (1 + |y|) ^ M = (1 + |y|) ^ M * ‖f z‖ := by ring
+    calc _ = (1 + |y|) ^ M * ‖f z‖ := by ring
       _ ≤ K * C' * C0 := h4
       _ ≤ _ := le_max_left _ _
   exact h5.trans (mul_le_mul_of_nonneg_left hBM (le_max_right _ _))
@@ -82,22 +81,29 @@ theorem Hu_bound (u : D.Row) : ∃ CH : ℝ, 0 ≤ CH ∧ ∀ ξ w z : ℂ,
         exact ⟨h1, h2, h3⟩)
   exact ((h u _ hmem).2).trans (le_max_left _ _)
 
-theorem kern_norm_eq (u : D.Row) (hu : u.u = 1) (Z : ℝ) (ξ w z : ℂ) :
+section
+
+variable (u : D.Row) (hu : u.u = 1) (Z : ℝ)
+
+include hu in
+theorem kern_norm_eq (ξ w z : ℂ) :
     ‖kern D u Z ξ w z‖ =
       ‖(Z : ℂ) ^ ((Scales.xExponent / 2 : ℝ) + ξ - 1 + (Scales.smoothingExponent : ℂ) * z + (Scales.yExponent : ℂ) * (w - 1))‖ *
         Real.exp (((ξ + z - 1) ^ 2).re) * ‖D.M z‖ * ‖D.W1Hat w‖ *
         (‖D.zetaSCont (6 * z)‖ * ‖D.Lpsi u w‖ * ‖EulerDomain.Hu D u ξ w z‖ / ‖D.Llam u ξ‖) := by
-  have hq := PrincipalResidueFormulas.q_principal D u hu
-  simp only [kern, kernelWith, rowContLocal, norm_mul, norm_div, hq, Complex.ofReal_one,
+  simp only [kern, kernelWith, rowContLocal, norm_mul, norm_div, (PrincipalResidueFormulas.q_principal D u hu), Complex.ofReal_one,
     Complex.one_cpow, norm_one, mul_one, Complex.norm_exp] <;> ring
 
-theorem rem_norm_eq (u : D.Row) (hu : u.u = 1) (Z : ℝ) (ξ z : ℂ) :
+include hu in
+theorem rem_norm_eq (ξ z : ℂ) :
     ‖PrincipalResidueFormulas.remainingKernel D u ξ z Z‖ =
       ‖(Z : ℂ) ^ ((Scales.xExponent / 2 : ℝ) + ξ - 1 + (Scales.smoothingExponent : ℂ) * z)‖ *
         Real.exp (((ξ + z - 1) ^ 2).re) * ‖D.M z‖ *
         (‖D.zetaSCont (6 * z)‖ * ‖EulerDomain.Hu D u ξ 1 z‖ / ‖D.Llam u ξ‖) := by
   rw [PrincipalResidueFormulas.remainingKernel_principal D u hu]
   simp only [norm_mul, norm_div, Complex.norm_exp]
+
+end
 
 theorem zpow_norm_le (Z : ℝ) (hZ : 2 ≤ Z) (c : ℂ) (hc : c.re ≤ 12) :
     ‖(Z : ℂ) ^ c‖ ≤ Z ^ (12 : ℝ) := by
@@ -120,11 +126,9 @@ theorem real_bound1 (P E m W zz Lp Hn Ll P' E' H' : ℝ) (hP : 0 ≤ P) (hP' : P
   have e : P * E * m * W * (zz * Lp * Hn / Ll) = (P * E * Hn) * (W * Lp / Ll) * (m * zz) := by
     ring
   rw [e]
-  have h1 : P * E * Hn ≤ P' * E' * H' :=
-    mul_le_mul (mul_le_mul hP' hE' hE (hP.trans hP')) hH hHn
-      (mul_nonneg (hP.trans hP') (hE.trans hE'))
   apply mul_le_mul_of_nonneg_right _ (mul_nonneg hm hzz)
-  apply mul_le_mul_of_nonneg_right h1 (by positivity)
+  apply mul_le_mul_of_nonneg_right (mul_le_mul (mul_le_mul hP' hE' hE (hP.trans hP')) hH hHn
+    (mul_nonneg (hP.trans hP') (hE.trans hE'))) (by positivity)
 
 theorem real_bound2 (P E m W zz Lp Hn Ll P' H' : ℝ) (hP : 0 ≤ P) (hP' : P ≤ P')
     (hE : 0 ≤ E) (hHn : 0 ≤ Hn) (hH : Hn ≤ H') (hm : 0 ≤ m) (hW : 0 ≤ W)
@@ -143,11 +147,9 @@ theorem real_bound3 (P E m zz Hn Ll P' E' H' : ℝ) (hP : 0 ≤ P) (hP' : P ≤ 
     P * E * m * (zz * Hn / Ll) ≤ ((P' * E' * H') / Ll) * (m * zz) := by
   have e : P * E * m * (zz * Hn / Ll) = ((P * E * Hn) / Ll) * (m * zz) := by ring
   rw [e]
-  have h1 : P * E * Hn ≤ P' * E' * H' :=
-    mul_le_mul (mul_le_mul hP' hE' hE (hP.trans hP')) hH hHn
-      (mul_nonneg (hP.trans hP') (hE.trans hE'))
   apply mul_le_mul_of_nonneg_right _ (mul_nonneg hm hzz)
-  exact div_le_div_of_nonneg_right h1 hLl
+  exact div_le_div_of_nonneg_right (mul_le_mul (mul_le_mul hP' hE' hE (hP.trans hP')) hH hHn
+    (mul_nonneg (hP.trans hP') (hE.trans hE'))) hLl
 
 theorem zeta6_bound : ∃ C k : ℝ, 0 ≤ C ∧ 0 ≤ k ∧ ∀ z : ℂ, 1 / 20 ≤ z.re → z.re ≤ 2 →
     1 / 6 ≤ |z.im| → ‖D.zetaSCont (6 * z)‖ ≤ C * (1 + |z.im|) ^ k := by
@@ -173,19 +175,18 @@ theorem zeta1_bound : ∃ C k : ℝ, 0 ≤ C ∧ 0 ≤ k ∧ ∀ w : ℂ, 9 / 10
     PrincipalZetaStripGrowth.zetaSCont_high_height_bound D (9 / 10) 2 (by norm_num)
       (by norm_num)
   refine ⟨C, k, hC.le, hk, fun w h1 h2 h3 => ?_⟩
-  have hb := h w h1 h2 h3
-  have h4 : |w.im| ^ k ≤ (1 + |w.im|) ^ k :=
-    Real.rpow_le_rpow (abs_nonneg _) (by linarith) hk
-  exact hb.trans (mul_le_mul_of_nonneg_left h4 hC.le)
+  exact (h w h1 h2 h3).trans (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (abs_nonneg _) (by linarith) hk) hC.le)
 
 theorem Scales_facts : (0 : ℝ) < Scales.contourOffset ∧ Scales.contourOffset ≤ 1 / 100 ∧ Scales.rightLine = 1 + Scales.contourOffset := by
   refine ⟨?_, ?_, rfl⟩ <;> norm_num [Scales.contourOffset]
 
-theorem kern_z_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : ℂ)
+variable (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z)
+
+include hu hZ in
+theorem kern_z_decay (ξ w : ℂ)
     (hξ : ξ.re ∈ Icc Scales.rightLine 4) (hw : w.re ∈ Icc Scales.rightLine 4) :
     DecayOn (fun z => kern D u Z ξ w z) (1 / 6 + Scales.contourOffset) 2 := by
   obtain ⟨hδ0, hδ1, hx1⟩ := Scales_facts
-  have hZ0 : (0 : ℝ) < Z := by linarith
   obtain ⟨CH, hCH0, hCH⟩ := Hu_bound D u
   obtain ⟨Cz, kz, hCz, hkz, hz⟩ := zeta6_bound D
   have hξ1 := hξ.1
@@ -219,12 +220,12 @@ theorem kern_z_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w :
       (norm_nonneg _) hHu (norm_nonneg _) (norm_nonneg _) (norm_nonneg _) (norm_nonneg _)
       (norm_nonneg _)
 
-theorem kern_w_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s t : ℝ) :
+include hu hZ in
+theorem kern_w_decay (s t : ℝ) :
     DecayOn
       (fun w => kern D u Z ((Scales.rightLine : ℂ) + (s : ℂ) * I) w
         (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I)) (9 / 10) Scales.rightLine := by
   obtain ⟨hδ0, hδ1, hx1⟩ := Scales_facts
-  have hZ0 : (0 : ℝ) < Z := by linarith
   obtain ⟨CH, hCH0, hCH⟩ := Hu_bound D u
   obtain ⟨Cw, kw, hCw, hkw, hw⟩ := zeta1_bound D
   obtain ⟨ξ, hξdef⟩ : ∃ ξ : ℂ, ξ = (Scales.rightLine : ℂ) + (s : ℂ) * I := ⟨_, rfl⟩
@@ -232,9 +233,6 @@ theorem kern_w_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s t : 
   rw [← hξdef, ← hzdef]
   have hξre : ξ.re = Scales.rightLine := by simp [hξdef]
   have hzre : z.re = 1 / 6 + Scales.contourOffset := by simp [hzdef]
-  have hcre : (ξ + z - 1).re ≤ 5 ∧ -5 ≤ (ξ + z - 1).re := by
-    simp only [Complex.add_re, Complex.sub_re, Complex.one_re]
-    constructor <;> linarith
   refine decay_main (fun w => kern D u Z ξ w z) (fun w => D.W1Hat w) (fun w => D.zetaSCont w)
     (9 / 10) Scales.rightLine 1
     ((Z ^ (12 : ℝ) * CH) * (Real.exp (((ξ + z - 1) ^ 2).re) * ‖D.M z‖ *
@@ -252,25 +250,21 @@ theorem kern_w_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s t : 
       have : w.im = 0 := by rw [h]; simp
       rw [this] at h3
       norm_num at h3
-    have hL : D.Lpsi u w = D.zetaSCont w :=
-      PrincipalResidueFormulas.Lpsi_principal_eq D u hu w (by linarith) hw1
-    rw [kern_norm_eq D u hu Z ξ w z, hL]
-    have hHu := hCH ξ w z (Or.inl ⟨hξre.ge, h1, hzre.ge⟩)
+    rw [kern_norm_eq D u hu Z ξ w z, (PrincipalResidueFormulas.Lpsi_principal_eq D u hu w (by linarith) hw1)]
     have hc : (((Scales.xExponent / 2 : ℝ) + ξ - 1 + (Scales.smoothingExponent : ℂ) * z + (Scales.yExponent : ℂ) * (w - 1))).re ≤ 12 := by
       simp only [Complex.add_re, Complex.sub_re, Complex.mul_re, Complex.ofReal_re,
         Complex.ofReal_im, Complex.one_re, Complex.one_im, Complex.sub_im]
       simp only [Scales.xExponent, Scales.smoothingExponent, Scales.yExponent]
       linarith
-    have hP := zpow_norm_le Z hZ _ hc
-    exact real_bound2 _ _ _ _ _ _ _ _ _ _ (norm_nonneg _) hP (Real.exp_nonneg _)
-      (norm_nonneg _) hHu (norm_nonneg _) (norm_nonneg _) (norm_nonneg _) (norm_nonneg _)
+    exact real_bound2 _ _ _ _ _ _ _ _ _ _ (norm_nonneg _) (zpow_norm_le Z hZ _ hc) (Real.exp_nonneg _)
+      (norm_nonneg _) (hCH ξ w z (Or.inl ⟨hξre.ge, h1, hzre.ge⟩)) (norm_nonneg _) (norm_nonneg _) (norm_nonneg _) (norm_nonneg _)
       (norm_nonneg _)
 
-theorem wResidue_z_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s : ℝ) :
+include hu hZ in
+theorem wResidue_z_decay (s : ℝ) :
     DecayOn (fun z => wResidueLocal D u ((Scales.rightLine : ℂ) + (s : ℂ) * I) z Z)
       (1 / 20) (1 / 6 + Scales.contourOffset) := by
   obtain ⟨hδ0, hδ1, hx1⟩ := Scales_facts
-  have hZ0 : (0 : ℝ) < Z := by linarith
   obtain ⟨CH, hCH0, hCH⟩ := Hu_bound D u
   obtain ⟨Cz, kz, hCz, hkz, hz⟩ := zeta6_bound D
   obtain ⟨ξ, hξdef⟩ : ∃ ξ : ℂ, ξ = (Scales.rightLine : ℂ) + (s : ℂ) * I := ⟨_, rfl⟩
@@ -296,25 +290,21 @@ theorem wResidue_z_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s 
         linarith
       rw [h0] at h3
       norm_num at h3
-    rw [PrincipalResidueFormulas.wResidue_eq D u hu ξ z Z hZ0 (by linarith)
+    rw [PrincipalResidueFormulas.wResidue_eq D u hu ξ z Z (by linarith) (by linarith)
       (by simp only [EulerDomain.pad]; linarith) h6, norm_mul, norm_mul,
       rem_norm_eq D u hu Z ξ z]
-    have hHu := hCH ξ 1 z (Or.inr ⟨hξre.ge, by simp, h1⟩)
     have hc : (((Scales.xExponent / 2 : ℝ) + ξ - 1 + (Scales.smoothingExponent : ℂ) * z)).re ≤ 12 := by
       simp only [Complex.add_re, Complex.sub_re, Complex.mul_re, Complex.ofReal_re,
         Complex.ofReal_im, Complex.one_re, Complex.one_im, Complex.sub_im]
       simp only [Scales.xExponent, Scales.smoothingExponent]
       linarith
-    have hP := zpow_norm_le Z hZ _ hc
-    have hE := exp_sq_le (ξ + z - 1) (by
-      simp only [Complex.add_re, Complex.sub_re, Complex.one_re]; linarith) (by
-      simp only [Complex.add_re, Complex.sub_re, Complex.one_re]; linarith)
-    have key := real_bound3 _ _ _ _ _ _ _ _ _ (norm_nonneg _) hP (Real.exp_nonneg _) hE
-      (norm_nonneg _) hHu (norm_nonneg (D.M z)) (norm_nonneg (D.zetaSCont (6 * z)))
-      (norm_nonneg (D.Llam u ξ))
     calc _ ≤ ‖Spectral.RS D‖ * ‖D.W1Hat 1‖ * (((Z ^ (12 : ℝ) * Real.exp 25 * CH) / ‖D.Llam u ξ‖) *
           (‖D.M z‖ * ‖D.zetaSCont (6 * z)‖)) :=
-          mul_le_mul_of_nonneg_left key (by positivity)
+          mul_le_mul_of_nonneg_left (real_bound3 _ _ _ _ _ _ _ _ _ (norm_nonneg _) (zpow_norm_le Z hZ _ hc) (Real.exp_nonneg _) (exp_sq_le (ξ + z - 1) (by
+            simp only [Complex.add_re, Complex.sub_re, Complex.one_re]; linarith) (by
+            simp only [Complex.add_re, Complex.sub_re, Complex.one_re]; linarith))
+            (norm_nonneg _) (hCH ξ 1 z (Or.inr ⟨hξre.ge, by simp, h1⟩)) (norm_nonneg (D.M z)) (norm_nonneg (D.zetaSCont (6 * z)))
+            (norm_nonneg (D.Llam u ξ))) (by positivity)
       _ = _ := by ring
 
 end

@@ -11,8 +11,8 @@ open Filter
 namespace DedekindZetaZeroFree.SharedSource
 open MomentSources EisensteinSmoothGerms
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 
 theorem scalar_residue_eq_literal_ancestor
     (E N : KPLiteralRaw.Flat F R.A.zeta12 R.A.primitive_zeta12 Q.K → ℂ → Functions R)
@@ -21,15 +21,14 @@ theorem scalar_residue_eq_literal_ancestor
     {C : ScalarContinuation R Q} {v : R.A.UnitQuotient} (H : ScalarGerm C v) :
     (H.cleared 0 : Functions R) = N (Q.flat v) 0 := by
   obtain ⟨U, r, hUo, hUc, hUch, hr, hb, hm, hclear, ha⟩ := hE.2 (Q.flat v)
-  have hC0 : (0 : ℂ) ∈ KPContinuation.spectralDomain := by
-    norm_num [KPContinuation.spectralDomain]
   have he (g : Group R) : (fun s => C.E v s g) =ᶠ[𝓝[≠] (0 : ℂ)]
       (fun s => E (Q.flat v) s g) := by
     apply KPMsSameContinuationGreen.ContinuationUniqueness.meromorphic_germ_unique
       (C.meromorphic v g) ((hNF (Q.flat v) g).meromorphicOn)
       KPContinuation.spectralDomain_isConnected.isPreconnected
       (isOpen_lt continuous_const Complex.continuous_re)
-      KPContinuation.convergenceHalfPlane_subset_spectralDomain ⟨1, by norm_num⟩ ?_ hC0
+      KPContinuation.convergenceHalfPlane_subset_spectralDomain ⟨1, by norm_num⟩ ?_ (by
+        norm_num [KPContinuation.spectralDomain])
     intro s hs
     change C.E v s g = E (Q.flat v) s g
     rw [C.chamber v s hs g, hE.1 (Q.flat v) s hs g]

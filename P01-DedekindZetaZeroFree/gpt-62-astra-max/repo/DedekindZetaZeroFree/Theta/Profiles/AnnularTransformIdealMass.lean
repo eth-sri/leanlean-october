@@ -26,11 +26,9 @@ theorem initial_annular_transform_mass
   letI : NumberField.IsTotallyComplex F := hTC
 
   have hD : (0 : ℝ) < ((|NumberField.discr F| : ℤ) : ℝ) := by
-    have hne : NumberField.discr F ≠ 0 := NumberField.discr_ne_zero F
-    have hpos : (0 : ℤ) < |NumberField.discr F| := by
+    exact_mod_cast (by
       rw [Int.abs_eq_natAbs]
-      exact_mod_cast Int.natAbs_pos.mpr hne
-    exact_mod_cast hpos
+      exact_mod_cast Int.natAbs_pos.mpr (NumberField.discr_ne_zero F))
 
   have hr : 1 ≤ NumberField.InfinitePlace.nrComplexPlaces F := by
     have hfr : 0 < Module.finrank ℚ F := Module.finrank_pos
@@ -67,7 +65,7 @@ theorem initial_annular_transform_mass
     have h2 : 0 ≤ ‖((C : ℂ))‖ := norm_nonneg _
     nlinarith [h, hCpos, h2]
   have hCinvnorm : ‖((C : ℂ))⁻¹‖ = C⁻¹ := by rw [norm_inv, hCnorm]
-  have hCne : (C : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hCpos)
+  have hCne := Complex.ofReal_ne_zero.mpr (ne_of_gt hCpos)
 
   have hb1 : ∀ x : ℝ, 0 < x → x ≤ 1 → ‖T x‖ ≤ C * x ^ (-(1 / 2 : ℝ)) := by
     intro x hx hx1
@@ -79,10 +77,8 @@ theorem initial_annular_transform_mass
     have h := hCge x hx
     simp only [DedekindZetaZeroFree.LargeSieve.Vendor.EulerIter_zero, ← hTdef] at h
     exact h
-  let gfun : Ideal (𝓞 F) → ℂ := fun I =>
+  let gfun := fun I =>
     if I = ⊥ then (0 : ℂ) else v I * T ((Ideal.absNorm I : ℝ) / Y)
-  change Summable (fun I : Ideal (𝓞 F) => ‖gfun I‖) ∧ Summable gfun ∧
-    (∑' I : Ideal (𝓞 F), ‖gfun I‖) ≤ (C * Bc) * Y
   have hgfun_bot : gfun ⊥ = 0 := by simp [gfun]
 
   have hkey : ∀ I : Ideal (𝓞 F), I ≠ ⊥ →
@@ -103,16 +99,14 @@ theorem initial_annular_transform_mass
         C * (if (Ideal.absNorm I : ℝ) ≤ Y then x ^ (-(1 / 2 : ℝ))
              else x ^ (-(2 : ℝ))) := by
       by_cases hcase : (Ideal.absNorm I : ℝ) ≤ Y
-      · have hx1 : x ≤ 1 := by rw [hxdef, div_le_one hY]; exact hcase
-        rw [if_pos hcase]
-        calc ‖v I‖ * ‖T x‖ ≤ 1 * (C * x ^ (-(1 / 2 : ℝ))) :=
-              mul_le_mul (hv I) (hb1 x hxpos hx1) (norm_nonneg _) (by norm_num)
+      · rw [if_pos hcase]
+        calc _ ≤ 1 * (C * x ^ (-(1 / 2 : ℝ))) :=
+              mul_le_mul (hv I) (hb1 x hxpos (by rw [hxdef, div_le_one hY]; exact hcase)) (norm_nonneg _) (by norm_num)
           _ = C * x ^ (-(1 / 2 : ℝ)) := by ring
-      · have hx1 : 1 ≤ x := by
-          rw [hxdef, le_div_iff₀ hY]; linarith [not_le.mp hcase]
-        rw [if_neg hcase]
-        calc ‖v I‖ * ‖T x‖ ≤ 1 * (C * x ^ (-(2 : ℝ))) :=
-              mul_le_mul (hv I) (hb2 x hx1) (norm_nonneg _) (by norm_num)
+      · rw [if_neg hcase]
+        calc _ ≤ 1 * (C * x ^ (-(2 : ℝ))) :=
+              mul_le_mul (hv I) (hb2 x (by
+                rw [hxdef, le_div_iff₀ hY]; linarith [not_le.mp hcase])) (norm_nonneg _) (by norm_num)
           _ = C * x ^ (-(2 : ℝ)) := by ring
     calc C⁻¹ * (‖v I‖ * ‖T x‖)
         ≤ C⁻¹ * (C * (if (Ideal.absNorm I : ℝ) ≤ Y then x ^ (-(1 / 2 : ℝ))
@@ -125,17 +119,13 @@ theorem initial_annular_transform_mass
     hBc Y hY (fun I : Ideal (𝓞 F) => (C : ℂ)⁻¹ * gfun I) (by simp [hgfun_bot]) hkey
   have hnorm_eq : ∀ I : Ideal (𝓞 F), ‖gfun I‖ = C * ‖(C : ℂ)⁻¹ * gfun I‖ := by
     intro I
-    have h1 : gfun I = (C : ℂ) * ((C : ℂ)⁻¹ * gfun I) :=
-      (mul_inv_cancel_left₀ hCne (gfun I)).symm
-    calc ‖gfun I‖ = ‖(C : ℂ) * ((C : ℂ)⁻¹ * gfun I)‖ := congrArg (fun z : ℂ => ‖z‖) h1
+    calc _ = ‖(C : ℂ) * ((C : ℂ)⁻¹ * gfun I)‖ := congrArg (fun z : ℂ => ‖z‖) ((mul_inv_cancel_left₀ hCne (gfun I)).symm)
       _ = ‖(C : ℂ)‖ * ‖(C : ℂ)⁻¹ * gfun I‖ := norm_mul _ _
       _ = C * ‖(C : ℂ)⁻¹ * gfun I‖ := by rw [hCnorm]
   refine ⟨?_, ?_, ?_⟩
-  · have h := hsum1.mul_left C
-    exact h.congr (fun I => (hnorm_eq I).symm)
-  · have h := hsum2.mul_left (C : ℂ)
-    exact h.congr (fun I => mul_inv_cancel_left₀ hCne (gfun I))
-  · calc (∑' I : Ideal (𝓞 F), ‖gfun I‖)
+  · exact (hsum1.mul_left C).congr (fun I => (hnorm_eq I).symm)
+  · exact (hsum2.mul_left (C : ℂ)).congr (fun I => mul_inv_cancel_left₀ hCne (gfun I))
+  · calc _
         = ∑' I : Ideal (𝓞 F), C * ‖(C : ℂ)⁻¹ * gfun I‖ :=
           tsum_congr (fun I => hnorm_eq I)
       _ = C * ∑' I : Ideal (𝓞 F), ‖(C : ℂ)⁻¹ * gfun I‖ := tsum_mul_left

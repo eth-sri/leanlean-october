@@ -18,16 +18,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -55,56 +45,52 @@ namespace LocalField
 
 variable {K : Type u} [Field K]
 
+section
+
+variable (F : LocalField.{u, v} K)
+
 /-- The residue field of a local field package. -/
-abbrev residueField (F : LocalField.{u, v} K) : Type u :=
+abbrev residueField : Type u :=
   F.toCompleteDVF.residueField
 
 /-- The valuation subring of a local field package. -/
-abbrev valuationSubring (F : LocalField.{u, v} K) : Type u :=
+abbrev valuationSubring : Type u :=
   F.toCompleteDVF.valuationSubring
 
 /-- The maximal ideal of the valuation subring. -/
-abbrev maximalIdeal (F : LocalField.{u, v} K) : Ideal F.valuationSubring :=
+abbrev maximalIdeal : Ideal F.valuationSubring :=
   F.toCompleteDVF.maximalIdeal
 
 /-- The residue map of a local field package. -/
-abbrev residueMap (F : LocalField.{u, v} K) :
+abbrev residueMap :
     RingHom F.valuationSubring F.residueField :=
   F.toCompleteDVF.residueMap
 
-/-- The valuation subring of a local field package is a DVR. -/
-theorem valuationSubring_isDiscreteValuationRing
-    (F : LocalField.{u, v} K) :
-    IsDiscreteValuationRing F.valuationSubring := by
-  change IsDiscreteValuationRing F.toCompleteDVF.valuationSubring
-  exact F.toCompleteDVF.valuationSubring_isDiscreteValuationRing
-
 /-- The valuation subring of a local field package is Henselian. -/
-theorem henselianRing (F : LocalField.{u, v} K) :
+theorem henselianRing :
     HenselianRing F.valuationSubring F.maximalIdeal :=
   F.toCompleteDVF.henselianRing
 
 /-- A local field package has a uniformizer. -/
-theorem exists_uniformizer (F : LocalField.{u, v} K) :
+theorem exists_uniformizer :
     ∃ pi : F.valuationSubring, F.toCompleteDVF.valuation.IsUniformizer (pi : K) :=
   F.toCompleteDVF.exists_uniformizer
 
 /-- The residue characteristic of a local field. -/
-noncomputable abbrev residueCharacteristic (F : LocalField.{u, v} K) : ℕ :=
+noncomputable abbrev residueCharacteristic : ℕ :=
   ringChar F.residueField
 
 /-- Establishes the inequality `F.residueCharacteristic ≠ 0`. -/
-theorem residueCharacteristic_ne_zero (F : LocalField.{u, v} K) :
+theorem residueCharacteristic_ne_zero :
     F.residueCharacteristic ≠ 0 :=
   CharP.ringChar_ne_zero_of_finite F.residueField
 
 /-- Proves the primality statement `Nat.Prime F.residueCharacteristic`. -/
-theorem residueCharacteristic_prime (F : LocalField.{u, v} K) :
+theorem residueCharacteristic_prime :
     Nat.Prime F.residueCharacteristic := by
-  change Nat.Prime (ringChar F.toCompleteDVF.residueField)
-  let : NoZeroDivisors F.toCompleteDVF.residueField :=
-    GroupWithZero.noZeroDivisors
   exact CharP.prime_ringChar F.toCompleteDVF.residueField
+
+end
 
 /-- The target has the stated characteristic: `CharP F.residueField F.residueCharacteristic`. -/
 instance residueField_charP_residueCharacteristic (F : LocalField.{u, v} K) :
@@ -122,12 +108,7 @@ the local-field structure theory, the local-field structure classification. -/
 theorem residueCharacteristic_natCast_residue_eq_zero
     (F : LocalField.{u, v} K) :
     F.residueMap (F.residueCharacteristic : F.valuationSubring) = 0 := by
-  calc
-    F.residueMap (F.residueCharacteristic : F.valuationSubring)
-        = (F.residueCharacteristic : F.residueField) := by
-          exact map_natCast F.residueMap F.residueCharacteristic
-    _ = 0 := by
-      exact ringChar.Nat.cast_ringChar (R := F.residueField)
+  simp
 
 /-- The residue characteristic belongs to the maximal ideal of the valuation
 ring. -/
@@ -151,12 +132,6 @@ theorem valuation_residueCharacteristic_natCast_lt_one
 theorem valuation_natCast_residueCharacteristic_lt_one
     (F : LocalField.{u, v} K) :
     F.toCompleteDVF.valuation (F.residueCharacteristic : K) < 1 := by
-  have hcast :
-      ((F.residueCharacteristic : F.valuationSubring) : K) =
-        (F.residueCharacteristic : K) := by
-    exact map_natCast F.toCompleteDVF.valuation.valuationSubring.subtype
-      F.residueCharacteristic
-  rw [← hcast]
   exact F.valuation_residueCharacteristic_natCast_lt_one
 
 /-- In mixed characteristic, the residue characteristic is a nonzero element of
@@ -173,24 +148,22 @@ theorem intCast_mem_maximalIdeal_iff_residueCharacteristic_dvd
     (z : F.valuationSubring) ∈ F.maximalIdeal ↔
       (F.residueCharacteristic : ℤ) ∣ z := by
   rw [← F.toCompleteDVF.residue_eq_zero_iff (z : F.valuationSubring)]
-  rw [map_intCast]
-  exact
-    CharP.intCast_eq_zero_iff
-      (R := F.residueField) F.residueCharacteristic z
+  exact CharP.intCast_eq_zero_iff F.residueField F.residueCharacteristic z
+
+section
+
+variable (F : LocalField.{u, v} K)
 
 /-- Natural-number version of
 `intCast_mem_maximalIdeal_iff_residueCharacteristic_dvd`. -/
-theorem natCast_mem_maximalIdeal_iff_residueCharacteristic_dvd
-    (F : LocalField.{u, v} K) (n : ℕ) :
+theorem natCast_mem_maximalIdeal_iff_residueCharacteristic_dvd (n : ℕ) :
     (n : F.valuationSubring) ∈ F.maximalIdeal ↔
       F.residueCharacteristic ∣ n := by
   rw [← F.toCompleteDVF.residue_eq_zero_iff (n : F.valuationSubring)]
-  rw [map_natCast]
-  exact ringChar.spec (R := F.residueField) n
+  exact ringChar.spec F.residueField n
 
 /-- Integer-valued maximal-ideal membership as a valuation inequality. -/
-theorem valuationSubring_intCast_lt_one_iff_residueCharacteristic_dvd
-    (F : LocalField.{u, v} K) (z : ℤ) :
+theorem valuationSubring_intCast_lt_one_iff_residueCharacteristic_dvd (z : ℤ) :
     F.toCompleteDVF.valuation ((z : F.valuationSubring) : K) < 1 ↔
       (F.residueCharacteristic : ℤ) ∣ z :=
   (F.toCompleteDVF.mem_maximalIdeal_iff
@@ -198,133 +171,63 @@ theorem valuationSubring_intCast_lt_one_iff_residueCharacteristic_dvd
     (F.intCast_mem_maximalIdeal_iff_residueCharacteristic_dvd z)
 
 /-- Natural-number-valued maximal-ideal membership as a valuation inequality. -/
-theorem valuationSubring_natCast_lt_one_iff_residueCharacteristic_dvd
-    (F : LocalField.{u, v} K) (n : ℕ) :
+theorem valuationSubring_natCast_lt_one_iff_residueCharacteristic_dvd (n : ℕ) :
     F.toCompleteDVF.valuation ((n : F.valuationSubring) : K) < 1 ↔
       F.residueCharacteristic ∣ n :=
   (F.toCompleteDVF.mem_maximalIdeal_iff
     (n : F.valuationSubring)).symm.trans
     (F.natCast_mem_maximalIdeal_iff_residueCharacteristic_dvd n)
 
-/-- An integer prime to the residue characteristic is a unit in the valuation
-ring. -/
-theorem isUnit_intCast_iff_not_residueCharacteristic_dvd
-    (F : LocalField.{u, v} K) (z : ℤ) :
-    IsUnit (z : F.valuationSubring) ↔
-      ¬ (F.residueCharacteristic : ℤ) ∣ z := by
-  rw [← F.toCompleteDVF.residue_ne_zero_iff_isUnit (z : F.valuationSubring)]
-  rw [map_intCast]
-  exact
-    not_congr
-      (CharP.intCast_eq_zero_iff
-        (R := F.residueField) F.residueCharacteristic z)
-
-/-- A natural number prime to the residue characteristic is a unit in the
-valuation ring. -/
-theorem isUnit_natCast_iff_not_residueCharacteristic_dvd
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    IsUnit (n : F.valuationSubring) ↔
-      ¬ F.residueCharacteristic ∣ n := by
-  rw [← F.toCompleteDVF.residue_ne_zero_iff_isUnit (n : F.valuationSubring)]
-  rw [map_natCast]
-  exact not_congr (ringChar.spec (R := F.residueField) n)
-
 /-- An integer prime to the residue characteristic has valuation one. -/
-theorem valuationSubring_intCast_eq_one_of_not_residueCharacteristic_dvd
-    (F : LocalField.{u, v} K) {z : ℤ}
+theorem valuationSubring_intCast_eq_one_of_not_residueCharacteristic_dvd {z : ℤ}
     (hz : ¬ (F.residueCharacteristic : ℤ) ∣ z) :
     F.toCompleteDVF.valuation ((z : F.valuationSubring) : K) = 1 := by
-  have hle :
-      F.toCompleteDVF.valuation ((z : F.valuationSubring) : K) ≤ 1 :=
+  have hle :=
     (F.toCompleteDVF.mem_valuationSubring_iff
       ((z : F.valuationSubring) : K)).1
       (z : F.valuationSubring).property
-  have hnlt :
-      ¬ F.toCompleteDVF.valuation ((z : F.valuationSubring) : K) < 1 := by
-    intro hlt
-    exact hz
-      ((F.valuationSubring_intCast_lt_one_iff_residueCharacteristic_dvd z).1 hlt)
-  exact le_antisymm hle (le_of_not_gt hnlt)
+  exact le_antisymm hle (le_of_not_gt fun hlt ↦ hz ((valuationSubring_intCast_lt_one_iff_residueCharacteristic_dvd F z).mp hlt))
 
 /-- A natural number prime to the residue characteristic has valuation one. -/
-theorem valuationSubring_natCast_eq_one_of_not_residueCharacteristic_dvd
-    (F : LocalField.{u, v} K) {n : ℕ}
+theorem valuationSubring_natCast_eq_one_of_not_residueCharacteristic_dvd {n : ℕ}
     (hn : ¬ F.residueCharacteristic ∣ n) :
     F.toCompleteDVF.valuation ((n : F.valuationSubring) : K) = 1 := by
-  have hle :
-      F.toCompleteDVF.valuation ((n : F.valuationSubring) : K) ≤ 1 :=
+  have hle :=
     (F.toCompleteDVF.mem_valuationSubring_iff
       ((n : F.valuationSubring) : K)).1
       (n : F.valuationSubring).property
-  have hnlt :
-      ¬ F.toCompleteDVF.valuation ((n : F.valuationSubring) : K) < 1 := by
-    intro hlt
-    exact hn
-      ((F.valuationSubring_natCast_lt_one_iff_residueCharacteristic_dvd n).1 hlt)
-  exact le_antisymm hle (le_of_not_gt hnlt)
-
-/-- Field-level integer valuation criterion for the residue characteristic. -/
-theorem valuation_intCast_lt_one_iff_residueCharacteristic_dvd
-    (F : LocalField.{u, v} K) (z : ℤ) :
-    F.toCompleteDVF.valuation (z : K) < 1 ↔
-      (F.residueCharacteristic : ℤ) ∣ z := by
-  have hcast :
-      ((z : F.valuationSubring) : K) = (z : K) := by
-    exact map_intCast F.toCompleteDVF.valuation.valuationSubring.subtype z
-  rw [← hcast]
-  exact F.valuationSubring_intCast_lt_one_iff_residueCharacteristic_dvd z
+  exact le_antisymm hle (le_of_not_gt fun hlt ↦ hn ((valuationSubring_natCast_lt_one_iff_residueCharacteristic_dvd F n).mp hlt))
 
 /-- Field-level natural-number valuation criterion for the residue
 characteristic. -/
-theorem valuation_natCast_lt_one_iff_residueCharacteristic_dvd
-    (F : LocalField.{u, v} K) (n : ℕ) :
+theorem valuation_natCast_lt_one_iff_residueCharacteristic_dvd (n : ℕ) :
     F.toCompleteDVF.valuation (n : K) < 1 ↔
       F.residueCharacteristic ∣ n := by
-  have hcast :
-      ((n : F.valuationSubring) : K) = (n : K) := by
-    exact map_natCast F.toCompleteDVF.valuation.valuationSubring.subtype n
-  rw [← hcast]
-  exact F.valuationSubring_natCast_lt_one_iff_residueCharacteristic_dvd n
+  apply valuationSubring_natCast_lt_one_iff_residueCharacteristic_dvd
 
 /-- Field-level integer valuation-one criterion away from the residue
 characteristic. -/
-theorem valuation_intCast_eq_one_of_not_residueCharacteristic_dvd
-    (F : LocalField.{u, v} K) {z : ℤ}
+theorem valuation_intCast_eq_one_of_not_residueCharacteristic_dvd {z : ℤ}
     (hz : ¬ (F.residueCharacteristic : ℤ) ∣ z) :
     F.toCompleteDVF.valuation (z : K) = 1 := by
-  have hcast :
-      ((z : F.valuationSubring) : K) = (z : K) := by
-    exact map_intCast F.toCompleteDVF.valuation.valuationSubring.subtype z
-  rw [← hcast]
   exact F.valuationSubring_intCast_eq_one_of_not_residueCharacteristic_dvd hz
 
 /-- Field-level natural-number valuation-one criterion away from the residue
 characteristic. -/
-theorem valuation_natCast_eq_one_of_not_residueCharacteristic_dvd
-    (F : LocalField.{u, v} K) {n : ℕ}
+theorem valuation_natCast_eq_one_of_not_residueCharacteristic_dvd {n : ℕ}
     (hn : ¬ F.residueCharacteristic ∣ n) :
     F.toCompleteDVF.valuation (n : K) = 1 := by
-  have hcast :
-      ((n : F.valuationSubring) : K) = (n : K) := by
-    exact map_natCast F.toCompleteDVF.valuation.valuationSubring.subtype n
-  rw [← hcast]
   exact F.valuationSubring_natCast_eq_one_of_not_residueCharacteristic_dvd hn
+
+end
 
 /-- Every integer lies in the valuation subring.  This is the denominator
 control input for the mixed-characteristic branch of the local-field structure classification. -/
 theorem valuation_intCast_le_one (F : LocalField.{u, v} K) (z : ℤ) :
     F.toCompleteDVF.valuation (z : K) ≤ 1 := by
-  have hmem :
-      ((z : F.valuationSubring) : K) ∈
-        F.toCompleteDVF.valuation.valuationSubring :=
-    (z : F.valuationSubring).property
-  have hcast :
-      ((z : F.valuationSubring) : K) = (z : K) := by
-    exact map_intCast F.toCompleteDVF.valuation.valuationSubring.subtype z
-  rw [← hcast]
   exact
     (F.toCompleteDVF.mem_valuationSubring_iff
-      ((z : F.valuationSubring) : K)).1 hmem
+      ((z : F.valuationSubring) : K)).1 ((z : F.valuationSubring).property)
 
 /-- Every natural number lies in the valuation subring. -/
 theorem valuation_natCast_le_one (F : LocalField.{u, v} K) (n : ℕ) :
@@ -338,17 +241,7 @@ theorem valuation_ratCast_eq_intCast_of_not_residueCharacteristic_dvd_den
     (hden : ¬ F.residueCharacteristic ∣ q.den) :
     F.toCompleteDVF.valuation (q : K) =
       F.toCompleteDVF.valuation (q.num : K) := by
-  calc
-    F.toCompleteDVF.valuation (q : K)
-        = F.toCompleteDVF.valuation ((q.num : K) / (q.den : K)) := by
-          rw [Rat.cast_def]
-    _ = F.toCompleteDVF.valuation (q.num : K) /
-        F.toCompleteDVF.valuation (q.den : K) := by
-          exact F.toCompleteDVF.valuation.map_div (q.num : K) (q.den : K)
-    _ = F.toCompleteDVF.valuation (q.num : K) / 1 := by
-          rw [F.valuation_natCast_eq_one_of_not_residueCharacteristic_dvd hden]
-    _ = F.toCompleteDVF.valuation (q.num : K) := by
-          simp
+  simpa [Rat.cast_def, F.valuation_natCast_eq_one_of_not_residueCharacteristic_dvd hden] using F.toCompleteDVF.valuation.map_div (q.num : K) (q.den : K)
 
 /-- A rational number with denominator prime to the residue characteristic lies
 in the valuation subring.  This is the local `ℤ_(p)` input for the converse
@@ -358,16 +251,7 @@ theorem valuation_ratCast_le_one_of_not_residueCharacteristic_dvd_den
     (hden : ¬ F.residueCharacteristic ∣ q.den) :
     F.toCompleteDVF.valuation (q : K) ≤ 1 := by
   rw [F.valuation_ratCast_eq_intCast_of_not_residueCharacteristic_dvd_den q hden]
-  exact F.valuation_intCast_le_one q.num
-
-/-- Valuation-subring membership form of
-`valuation_ratCast_le_one_of_not_residueCharacteristic_dvd_den`. -/
-theorem ratCast_mem_valuationSubring_of_not_residueCharacteristic_dvd_den
-    (F : LocalField.{u, v} K) (q : ℚ)
-    (hden : ¬ F.residueCharacteristic ∣ q.den) :
-    (q : K) ∈ F.toCompleteDVF.valuation.valuationSubring :=
-  (F.toCompleteDVF.mem_valuationSubring_iff (q : K)).2
-    (F.valuation_ratCast_le_one_of_not_residueCharacteristic_dvd_den q hden)
+  apply F.valuation_intCast_le_one
 
 /-- In a reduced rational number, if the denominator is divisible by the
 residue characteristic then the numerator is not. -/
@@ -376,11 +260,7 @@ theorem not_residueCharacteristic_dvd_rat_num_of_dvd_den
     (hden : F.residueCharacteristic ∣ q.den) :
     ¬ (F.residueCharacteristic : ℤ) ∣ q.num := by
   intro hnum
-  have hnumNat : F.residueCharacteristic ∣ q.num.natAbs :=
-    (Int.natCast_dvd.mp hnum)
-  have hp_one : F.residueCharacteristic = 1 :=
-    Nat.eq_one_of_dvd_coprimes q.reduced hnumNat hden
-  exact F.residueCharacteristic_prime.ne_one hp_one
+  exact F.residueCharacteristic_prime.ne_one (Nat.eq_one_of_dvd_coprimes q.reduced ((Int.natCast_dvd.mp hnum)) hden)
 
 /-- For mixed-characteristic local fields, the rational numbers lying in the
 valuation subring are exactly those whose denominator is prime to the residue
@@ -391,45 +271,20 @@ theorem valuation_ratCast_le_one_iff_not_residueCharacteristic_dvd_den
       ¬ F.residueCharacteristic ∣ q.den := by
   constructor
   · intro hle hden
-    have hnumNot :
-        ¬ (F.residueCharacteristic : ℤ) ∣ q.num :=
-      F.not_residueCharacteristic_dvd_rat_num_of_dvd_den q hden
-    have hnumVal :
-        F.toCompleteDVF.valuation (q.num : K) = 1 :=
-      F.valuation_intCast_eq_one_of_not_residueCharacteristic_dvd hnumNot
-    have hdenValLt :
-        F.toCompleteDVF.valuation (q.den : K) < 1 :=
-      (F.valuation_natCast_lt_one_iff_residueCharacteristic_dvd q.den).2 hden
-    have hdenNe : (q.den : K) ≠ 0 :=
-      Nat.cast_ne_zero.mpr q.den_ne_zero
-    have hdenValPos :
-        0 < F.toCompleteDVF.valuation (q.den : K) :=
-      F.toCompleteDVF.valuation.pos_iff.2 hdenNe
     have hqVal :
         F.toCompleteDVF.valuation (q : K) =
           F.toCompleteDVF.valuation (q.num : K) /
             F.toCompleteDVF.valuation (q.den : K) := by
       calc
-        F.toCompleteDVF.valuation (q : K)
+        _
             = F.toCompleteDVF.valuation ((q.num : K) / (q.den : K)) := by
               rw [Rat.cast_def]
         _ = F.toCompleteDVF.valuation (q.num : K) /
-            F.toCompleteDVF.valuation (q.den : K) := by
-              exact F.toCompleteDVF.valuation.map_div (q.num : K) (q.den : K)
-    have hgt : 1 < F.toCompleteDVF.valuation (q : K) := by
-      rw [hqVal, hnumVal]
-      simpa [one_div] using (one_lt_inv₀ hdenValPos).2 hdenValLt
-    exact (not_lt_of_ge hle) hgt
-  · exact F.valuation_ratCast_le_one_of_not_residueCharacteristic_dvd_den q
-
-/-- Valuation-subring membership version of
-`valuation_ratCast_le_one_iff_not_residueCharacteristic_dvd_den`. -/
-theorem ratCast_mem_valuationSubring_iff_not_residueCharacteristic_dvd_den
-    (F : LocalField.{u, v} K) [CharZero K] (q : ℚ) :
-    (q : K) ∈ F.toCompleteDVF.valuation.valuationSubring ↔
-      ¬ F.residueCharacteristic ∣ q.den :=
-  (F.toCompleteDVF.mem_valuationSubring_iff (q : K)).trans
-    (F.valuation_ratCast_le_one_iff_not_residueCharacteristic_dvd_den q)
+            F.toCompleteDVF.valuation (q.den : K) := F.toCompleteDVF.valuation.map_div (q.num : K) (q.den : K)
+    refine (not_lt_of_ge hle) ?_
+    rw [hqVal, (F.valuation_intCast_eq_one_of_not_residueCharacteristic_dvd (F.not_residueCharacteristic_dvd_rat_num_of_dvd_den q hden))]
+    simpa using (one_lt_inv₀ (F.toCompleteDVF.valuation.pos_iff.2 (Nat.cast_ne_zero.mpr q.den_ne_zero))).2 ((F.valuation_natCast_lt_one_iff_residueCharacteristic_dvd q.den).2 hden)
+  apply valuation_ratCast_le_one_of_not_residueCharacteristic_dvd_den
 
 /-- The restriction of the local-field valuation to `ℚ` has the same valuation
 subring as the `p`-adic valuation, where `p` is the residue characteristic. -/
@@ -441,83 +296,22 @@ theorem valuation_ratCast_le_one_iff_padicValuation_le_one
     (Rat.padicValuation_le_one_iff
       (p := F.residueCharacteristic) (x := q)).symm
 
-/-- Valuation-subring membership version of
-`valuation_ratCast_le_one_iff_padicValuation_le_one`. -/
-theorem ratCast_mem_valuationSubring_iff_padicValuation_le_one
-    (F : LocalField.{u, v} K) [CharZero K] (q : ℚ) :
-    (q : K) ∈ F.toCompleteDVF.valuation.valuationSubring ↔
-      Rat.padicValuation F.residueCharacteristic q ≤ 1 :=
-  (F.toCompleteDVF.mem_valuationSubring_iff (q : K)).trans
-    (F.valuation_ratCast_le_one_iff_padicValuation_le_one q)
+variable (F : LocalField.{u, v} K) (p : ℕ) [CharP K p] (hp : p ≠ 0)
 
-/-- The valuation subring pulled back from `K` along the rational embedding is
-the usual `p`-adic valuation subring of `ℚ`. -/
-theorem ratCast_preimage_valuationSubring_eq_padicValuationSubring
-    (F : LocalField.{u, v} K) [CharZero K] :
-    F.toCompleteDVF.valuation.valuationSubring.comap (Rat.castHom K) =
-      (Rat.padicValuation F.residueCharacteristic).valuationSubring := by
-  ext q
-  rw [ValuationSubring.mem_comap]
-  simpa using F.ratCast_mem_valuationSubring_iff_padicValuation_le_one q
-
-/-- The valuation on `K`, restricted along `ℚ → K`, is equivalent to the
-`p`-adic valuation on `ℚ`. -/
-theorem ratCast_valuation_isEquiv_padicValuation
-    (F : LocalField.{u, v} K) [CharZero K] :
-    (F.toCompleteDVF.valuation.comap (Rat.castHom K)).IsEquiv
-      (Rat.padicValuation F.residueCharacteristic) := by
-  refine (Valuation.isEquiv_iff_valuationSubring
-    (v₁ := F.toCompleteDVF.valuation.comap (Rat.castHom K))
-    (v₂ := Rat.padicValuation F.residueCharacteristic)).2 ?_
-  ext q
-  change F.toCompleteDVF.valuation ((Rat.castHom K) q) ≤ 1 ↔
-    Rat.padicValuation F.residueCharacteristic q ≤ 1
-  simpa using F.valuation_ratCast_le_one_iff_padicValuation_le_one q
-
+include hp in
 /-- In positive equal characteristic, the residue field has the same
 characteristic as the local field. -/
-theorem residueField_charP_of_charP
-    (F : LocalField.{u, v} K) (p : ℕ) [CharP K p] (hp : p ≠ 0) :
-    CharP F.residueField p := by
-  exact CharP.of_ringHom_of_ne_zero F.residueMap p hp
+theorem residueField_charP_of_charP :
+    CharP F.residueField p := CharP.of_ringHom_of_ne_zero F.residueMap p hp
 
+include hp in
 /-- In positive equal characteristic, the residue characteristic is the
 characteristic of the local field. -/
-theorem residueCharacteristic_eq_of_charP
-    (F : LocalField.{u, v} K) (p : ℕ) [CharP K p] (hp : p ≠ 0) :
+theorem residueCharacteristic_eq_of_charP :
     F.residueCharacteristic = p := by
-  have : CharP F.residueField p :=
+  have :=
     F.residueField_charP_of_charP p hp
-  exact ringChar.eq F.residueField p
-
-/-- Any finite residue-field algebra over a local field residue field is
-algebraic. -/
-theorem residueExtension_isAlgebraic_of_finite
-    (F : LocalField.{u, v} K) {k : Type w} [Field k]
-    [Algebra F.residueField k] [Finite k] :
-    Algebra.IsAlgebraic F.residueField k := by
-  let : Module.Finite F.residueField k :=
-    Module.Finite.of_finite
-  exact Algebra.IsAlgebraic.of_finite F.residueField k
-
-/-- Any finite residue-field algebra over a local field residue field is
-separable. -/
-theorem residueExtension_isSeparable_of_finite
-    (F : LocalField.{u, v} K) {k : Type w} [Field k]
-    [Algebra F.residueField k] [Finite k] :
-    Algebra.IsSeparable F.residueField k := by
-  let : Module.Finite F.residueField k :=
-    Module.Finite.of_finite
-  let : Algebra.IsAlgebraic F.residueField k :=
-    Algebra.IsAlgebraic.of_finite F.residueField k
-  infer_instance
-
-/-- The residue-field algebra between two local-field packages is separable. -/
-theorem residueExtension_isSeparable
-    (F : LocalField.{u, v} K) {L : Type w} [Field L]
-    (E : LocalField.{w, x} L) [Algebra F.residueField E.residueField] :
-    Algebra.IsSeparable F.residueField E.residueField :=
-  F.residueExtension_isSeparable_of_finite (k := E.residueField)
+  apply ringChar.eq
 
 end LocalField
 end LocalFieldTheory.DiscreteValuationField

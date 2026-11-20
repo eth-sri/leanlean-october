@@ -13,7 +13,7 @@ namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuatio
 noncomputable section
 open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 private theorem freqOrbit_injective (R : PrincipalMellin.ActualRecipe S η) :
     Function.Injective (fun u : Frequency R =>
@@ -58,6 +58,8 @@ private theorem freqOrbit_injective (R : PrincipalMellin.ActualRecipe S η) :
   have he : (u, I) = (v, I) := (hxuniq _ hu).trans (hxuniq _ hv).symm
   exact congrArg Prod.fst he
 
+alias PrimitiveDenominatorRectanglesAndDyadicCounts.freqOrbit_injective := freqOrbit_injective
+
 private lemma freqOrbit_norm (R : PrincipalMellin.ActualRecipe S η) (u : Frequency R) :
     frequencyNorm R u =
       ProbeOrbitNormSum.orbitNorm R.A (ProbeOrbitNormSum.orbitMk R.A u.val) := by
@@ -68,11 +70,15 @@ private lemma freqOrbit_norm (R : PrincipalMellin.ActualRecipe S η) (u : Freque
   rw [(ProbeOrbitNormSum.principalExterior_generates R.A u.val).2, R.A.exteriorResidue_card]
   rfl
 
+alias PrimitiveDenominatorRectanglesAndDyadicCounts.freqOrbit_norm := freqOrbit_norm
+
 private lemma one_le_frequencyNorm (R : PrincipalMellin.ActualRecipe S η)
     (u : Frequency R) : 1 ≤ frequencyNorm R u := by
   rw [freqOrbit_norm R u]
   exact idealNorm_ge_one _
     (ProbeOrbitNormSum.orbitIdeal R.A (ProbeOrbitNormSum.orbitMk R.A u.val)).property.1
+
+alias PrimitiveDenominatorRectanglesAndDyadicCounts.one_le_frequencyNorm := one_le_frequencyNorm
 
 private lemma freq_count_linear (R : PrincipalMellin.ActualRecipe S η) :
     ∃ K : ℝ, 0 < K ∧ ∀ X : ℝ, 1 ≤ X →
@@ -82,7 +88,6 @@ private lemma freq_count_linear (R : PrincipalMellin.ActualRecipe S η) :
   refine ⟨(Nat.card R.A.UnitQuotient : ℝ) * C + 1, by positivity, ?_⟩
   intro X hX
   obtain ⟨hBfin, hBcard⟩ := hCcount X hX
-  have hBfin' : {I : R.A.Exterior | R.A.exteriorNorm I ≤ X}.Finite := hBfin
   have hfiber : ∀ I : R.A.Exterior,
       {o : ProbeOrbitNormSum.Orbit R.A | ProbeOrbitNormSum.orbitIdeal R.A o = I}.Finite ∧
       Nat.card {o : ProbeOrbitNormSum.Orbit R.A //
@@ -92,18 +97,11 @@ private lemma freq_count_linear (R : PrincipalMellin.ActualRecipe S η) :
     rw [ProbeOrbitNormSum.idealFiber_card R.A R.classKilled I]
   obtain ⟨hprefin, hprecard⟩ := ProbeExteriorPrincipalIdealFibers.finite_preimage_card_bound
     (ProbeOrbitNormSum.orbitIdeal R.A) (Nat.card R.A.UnitQuotient) hfiber
-    {I : R.A.Exterior | R.A.exteriorNorm I ≤ X} hBfin'
-  have ht : {o : ProbeOrbitNormSum.Orbit R.A |
-      ProbeOrbitNormSum.orbitNorm R.A o ≤ X}.Finite := hprefin
-  have hprecard' : Nat.card {o : ProbeOrbitNormSum.Orbit R.A //
-      ProbeOrbitNormSum.orbitNorm R.A o ≤ X} ≤
-      Nat.card R.A.UnitQuotient * Set.ncard {I : R.A.Exterior |
-        R.A.exteriorNorm I ≤ X} := hprecard
-  have hpfin : ((fun u : Frequency R => ProbeOrbitNormSum.orbitMk R.A u.val) ⁻¹'
-      {o : ProbeOrbitNormSum.Orbit R.A | ProbeOrbitNormSum.orbitNorm R.A o ≤ X}).Finite :=
-    ht.preimage (fun a _ b _ hab => freqOrbit_injective R hab)
+    {I : R.A.Exterior | R.A.exteriorNorm I ≤ X} hBfin
+  have ht := hprefin
+  have hprecard' := hprecard
   have hfin : {u : Frequency R | frequencyNorm R u ≤ X}.Finite := by
-    refine hpfin.subset ?_
+    refine (ht.preimage (fun a _ b _ hab => freqOrbit_injective R hab)).subset ?_
     intro u hu
     rw [Set.mem_setOf_eq] at hu
     show ProbeOrbitNormSum.orbitNorm R.A (ProbeOrbitNormSum.orbitMk R.A u.val) ≤ X
@@ -117,14 +115,7 @@ private lemma freq_count_linear (R : PrincipalMellin.ActualRecipe S η) :
       rw [← freqOrbit_norm R u]
       exact hu)
     (fun a _ b _ h => freqOrbit_injective R h) ht
-  have hnat : Nat.card {o : ProbeOrbitNormSum.Orbit R.A //
-      ProbeOrbitNormSum.orbitNorm R.A o ≤ X} =
-      Set.ncard {o : ProbeOrbitNormSum.Orbit R.A |
-        ProbeOrbitNormSum.orbitNorm R.A o ≤ X} := Nat.card_coe_set_eq _
-  have hBcard' : (Set.ncard {I : R.A.Exterior | R.A.exteriorNorm I ≤ X} : ℝ) ≤ C * X := by
-    rw [← Nat.card_coe_set_eq]
-    exact hBcard
-  rw [hnat] at hprecard'
+  rw [(Nat.card_coe_set_eq _)] at hprecard'
   calc
     (Set.ncard {u : Frequency R | frequencyNorm R u ≤ X} : ℝ)
         ≤ (Set.ncard {o : ProbeOrbitNormSum.Orbit R.A |
@@ -134,9 +125,13 @@ private lemma freq_count_linear (R : PrincipalMellin.ActualRecipe S η) :
           (Set.ncard {I : R.A.Exterior | R.A.exteriorNorm I ≤ X} : ℝ) := by
           exact_mod_cast hprecard'
     _ ≤ (Nat.card R.A.UnitQuotient : ℝ) * (C * X) :=
-          mul_le_mul_of_nonneg_left hBcard' (Nat.cast_nonneg _)
+          mul_le_mul_of_nonneg_left (by
+            rw [← Nat.card_coe_set_eq]
+            exact hBcard) (Nat.cast_nonneg _)
     _ ≤ ((Nat.card R.A.UnitQuotient : ℝ) * C + 1) * X := by
           nlinarith [hC0, Nat.cast_nonneg (α := ℝ) (Nat.card R.A.UnitQuotient), hX]
+
+alias PrimitiveDenominatorRectanglesAndDyadicCounts.freq_count_linear := freq_count_linear
 
 theorem actual_complete_frequency_dyads
     (R : PrincipalMellin.ActualRecipe S η) :
@@ -230,7 +225,7 @@ noncomputable section
 open scoped Classical NumberField
 open IsDedekindDomain
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.DetectorDyads.DenominatorRectangle.Dictionary
@@ -264,7 +259,7 @@ noncomputable section
 open scoped Classical NumberField
 open IsDedekindDomain
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.DetectorDyads
@@ -277,7 +272,7 @@ namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuatio
 noncomputable section
 open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.DetectorDyads.DenominatorRectangle
@@ -290,7 +285,7 @@ namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuatio
 noncomputable section
 open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.DetectorDyads
@@ -303,7 +298,7 @@ namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuatio
 noncomputable section
 open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.DetectorDyads
@@ -316,7 +311,7 @@ namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuatio
 noncomputable section
 open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.DetectorDyads
@@ -329,7 +324,7 @@ namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuatio
 noncomputable section
 open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation

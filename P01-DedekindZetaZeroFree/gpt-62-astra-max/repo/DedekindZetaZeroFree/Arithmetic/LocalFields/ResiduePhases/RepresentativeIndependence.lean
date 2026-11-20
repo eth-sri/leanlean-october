@@ -13,44 +13,41 @@ open LocalFiniteSums
 set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-theorem congruent_symm (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) {x y : LocalField p}
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+
+theorem congruent_symm (n : ℕ) {x y : LocalField p}
     (h : Congruent C p n x y) : Congruent C p n y x := by
   obtain ⟨r, hr⟩ := h
   refine ⟨-r, ?_⟩
-  change y - x = uniformizer C p ^ n * -(r : LocalField p)
+  change y - x = uniformizer C p ^ n * -r
   linear_combination -hr
 
-theorem congruent_trans (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) {x y z : LocalField p}
+theorem congruent_trans (n : ℕ) {x y z : LocalField p}
     (h : Congruent C p n x y) (h' : Congruent C p n y z) :
     Congruent C p n x z := by
   obtain ⟨r, hr⟩ := h
   obtain ⟨q, hq⟩ := h'
   refine ⟨r + q, ?_⟩
-  change x - z = uniformizer C p ^ n * ((r : LocalField p) + q)
+  change x - z = uniformizer C p ^ n * (r + q)
   linear_combination hr + hq
 
-theorem numeratorCongruence_independent (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t k J : ℕ) (a h : (LocalIntegers p)ˣ)
+theorem numeratorCongruence_independent (t k J : ℕ) (a h : (LocalIntegers p)ˣ)
     {d d' : LocalField p} (hd : Congruent C p k d d') :
     numeratorCongruence C p t k J a h d ↔
       numeratorCongruence C p t k J a h d' := by
   obtain ⟨r, hr⟩ := hd
-  let π : LocalIntegers p := ⟨uniformizer C p, CompatiblePrimeRawLocal.sInteger_local_integral_source p (generator C p)⟩
-  have hh : Congruent C p k ((a.val : LocalField p) * uniformizer C p ^ t * d)
-      ((a.val : LocalField p) * uniformizer C p ^ t * d') := by
-    refine ⟨a.val * π ^ t * r, ?_⟩
-    change _ = uniformizer C p ^ k * ((a.val : LocalField p) * uniformizer C p ^ t * r)
+  have hh : Congruent C p k (a.val * uniformizer C p ^ t * d)
+      (a.val * uniformizer C p ^ t * d') := by
+    refine ⟨a.val * (⟨uniformizer C p, CompatiblePrimeRawLocal.sInteger_local_integral_source p (generator C p)⟩) ^ t * r, ?_⟩
+    change _ = uniformizer C p ^ k * (a.val * uniformizer C p ^ t * r)
     linear_combination (a.val : LocalField p) * uniformizer C p ^ t * hr
   exact ⟨fun hc => congruent_trans C p k hc hh,
     fun hc => congruent_trans C p k hc (congruent_symm C p k hh)⟩
 
 theorem rawPhase_representatives_independent
-    (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (t k J : ℕ) (s a h : (LocalIntegers p)ˣ)
     (d d' v v' : LocalIntegers p)
     (hd : Congruent C p k (d : LocalField p) (d' : LocalField p))
@@ -62,9 +59,9 @@ theorem rawPhase_representatives_independent
   obtain ⟨q, hq⟩ := hv
   obtain ⟨b, hb⟩ := hc
   let z : LocalIntegers p := (↑s⁻¹ * ↑a⁻¹) * b * q - ↑s⁻¹ * r * v'
-  have hs : (s.val : LocalField p) ≠ 0 := by
+  have hs := by
     exact (s.isUnit.map (LocalIntegers p).subtype).ne_zero
-  have ha : (a.val : LocalField p) ≠ 0 := by
+  have ha := by
     exact (a.isUnit.map (LocalIntegers p).subtype).ne_zero
   have hz := CRTRawLocalPhaseAlgebra.phase_difference
     (uniformizer C p) (s.val : LocalField p) (a.val : LocalField p)

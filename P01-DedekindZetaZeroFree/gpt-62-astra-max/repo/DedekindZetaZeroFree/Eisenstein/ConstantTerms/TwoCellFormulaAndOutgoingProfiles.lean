@@ -15,8 +15,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 def rationalEquiv : Matrix.ProjGenLinGroup (Fin 2) F ≃* KPRationalAdelicSplitting.RationalPGL2 F :=
   QuotientGroup.quotientMulEquivOfEq Matrix.GeneralLinearGroup.center_eq_range_scalar
 @[simp] theorem rationalEquiv_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
-    rationalEquiv F (Matrix.ProjGenLinGroup.mk m) = KPRationalAdelicSplitting.rationalPGLQuotient F m := by
-  exact QuotientGroup.quotientMulEquivOfEq_mk _ m
+    rationalEquiv F (Matrix.ProjGenLinGroup.mk m) = KPRationalAdelicSplitting.rationalPGLQuotient F m := QuotientGroup.quotientMulEquivOfEq_mk _ m
 @[simp] theorem rationalEquiv_lift (g : Matrix.ProjGenLinGroup (Fin 2) F) :
     KPRationalAdelicSplitting.rationalPGLHom F ζ hζ (rationalEquiv F g) = ActualBruhat.rational F ζ hζ g := by
   induction g using Matrix.ProjGenLinGroup.induction_on with
@@ -31,18 +30,14 @@ private theorem raw_borel_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
   change (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ)
     (KPRationalAdelicSplitting.rationalPGLHom F ζ hζ (KPRationalAdelicSplitting.rationalPGLQuotient F m)) ∈ KPGlobalTorusFunctionData.ordinaryBorel F ↔ _
   rw [hp]
-  change (∃ a : KPAdelicCoverRestrictedProduct.AdelicGL2 F,
-    QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) a =
-      QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) (KPAdelicCoverRestrictedProduct.rationalBase F m) ∧ a 1 0 = 0) ↔ _
   constructor
   · rintro ⟨a, he, ha⟩
     obtain ⟨z, hz, hez⟩ := (QuotientGroup.mk'_eq_mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)).mp he
     obtain ⟨u, rfl⟩ := hz
-    have hent := congrArg (fun a : KPAdelicCoverRestrictedProduct.AdelicGL2 F => a 1 0) hez
     have hzero : algebraMap F (KPGlobalTorusFunctionData.Adeles F) (m 1 0) = 0 := by
       simpa [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two, ha,
-        Matrix.GeneralLinearGroup.coe_scalar, KPAdelicCoverRestrictedProduct.rationalBase] using hent.symm
-    exact (NumberField.AdeleRing.algebraMap_injective (𝓞 F) F) (by simpa using hzero)
+        Matrix.GeneralLinearGroup.coe_scalar, KPAdelicCoverRestrictedProduct.rationalBase] using (congrArg (fun a : KPAdelicCoverRestrictedProduct.AdelicGL2 F => a 1 0) hez).symm
+    exact (NumberField.AdeleRing.algebraMap_injective (𝓞 F) F) (by exact hzero)
   · intro hm
     exact ⟨_, rfl, by simpa [KPAdelicCoverRestrictedProduct.rationalBase] using congrArg (algebraMap F (KPGlobalTorusFunctionData.Adeles F)) hm⟩
 
@@ -51,10 +46,9 @@ private theorem matrix_borel_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
   constructor
   · rintro ⟨b, hb, he⟩
     obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp he
-    have hc := congrArg (fun c : Matrix.GeneralLinearGroup (Fin 2) F => c 1 0) hu
     change b 1 0 = 0 at hb
     simpa [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-      Matrix.mul_apply, Fin.sum_univ_two, hb] using hc.symm
+      Matrix.mul_apply, Fin.sum_univ_two, hb] using (congrArg (fun c : Matrix.GeneralLinearGroup (Fin 2) F => c 1 0) hu).symm
   · intro hm
     exact ⟨m, hm, rfl⟩
 

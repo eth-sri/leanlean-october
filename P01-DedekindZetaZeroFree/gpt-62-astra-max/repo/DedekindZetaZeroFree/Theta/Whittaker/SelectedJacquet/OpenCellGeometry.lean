@@ -37,7 +37,6 @@ def openCellFiniteUpper (b : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F) :
     refine ⟨KPGlobalTorusFunctionData.rootTuple F ζ hζ (0, b), ?_, rfl⟩
     apply Subgroup.mem_iInf.mpr
     intro w
-    change KPStandardLocalRootLifts.N F ζ hζ (Sum.inl w) 0 = 1
     exact KPStandardLocalRootLifts.N_zero F ζ hζ (Sum.inl w)⟩
 
 theorem openCell_arch_upper (a : InfiniteAdeleRing F) :
@@ -53,7 +52,6 @@ theorem openCell_arch_upper (a : InfiniteAdeleRing F) :
   intro v
   cases v with
   | inr q =>
-    change KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) 0 = 1
     exact KPStandardLocalRootLifts.N_zero F ζ hζ (Sum.inr q)
   | inl w =>
     change KPLocalCover.sectionMap F ζ hζ (Sum.inl w) _ =
@@ -64,10 +62,6 @@ theorem openCell_arch_upper (a : InfiniteAdeleRing F) :
     fin_cases i <;> fin_cases j <;>
       simp [KubotaRankTwo.n, upperUnipotent, Matrix.GeneralLinearGroup.map,
         archTraceCoordinates, Equiv.piCongrRight]
-    change a w = (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-      (KPHilbert.infinite_isComplex F ζ hζ w)).symm
-      ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
-        (KPHilbert.infinite_isComplex F ζ hζ w)) (a w))
     exact ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
       (KPHilbert.infinite_isComplex F ζ hζ w)).symm_apply_apply _).symm
 
@@ -75,8 +69,6 @@ theorem openCell_weyl :
     KPRationalAdelicSplitting.pglW F ζ hζ =
       (openCellFiniteFactor F ζ hζ (KPRationalAdelicSplitting.WTuple F ζ hζ)).val *
         archMatrixInsertion F ζ hζ (fun _ => weyl) := by
-  change scalarQuotient F ζ hζ
-    (amalgamation F ζ hζ (KPRationalAdelicSplitting.WTuple F ζ hζ)) = _
   change scalarQuotient F ζ hζ (amalgamation F ζ hζ _) =
     scalarQuotient F ζ hζ (amalgamation F ζ hζ
       (openCellFiniteTuple F ζ hζ (KPRationalAdelicSplitting.WTuple F ζ hζ))) *
@@ -88,8 +80,6 @@ theorem openCell_weyl :
   intro v
   cases v with
   | inr q =>
-    change (KPRationalAdelicSplitting.WTuple F ζ hζ) (Sum.inr q) =
-      (KPRationalAdelicSplitting.WTuple F ζ hζ) (Sum.inr q) * 1
     exact (mul_one _).symm
   | inl w =>
     change KPLocalCover.sectionMap F ζ hζ (Sum.inl w) _ = 1 *

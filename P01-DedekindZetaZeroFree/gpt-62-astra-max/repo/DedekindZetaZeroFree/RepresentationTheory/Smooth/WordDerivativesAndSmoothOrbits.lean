@@ -10,18 +10,10 @@ open scoped Manifold ContDiff
 
 namespace DedekindZetaZeroFree
 
-structure HilbertOneParameterGroups
-    (H : Type*) [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : Type*) [Fintype B] where
-  operator : B → ℝ → H ≃ₗᵢ[ℂ] H
-  operator_zero : ∀ b : B, operator b 0 = 1
-  operator_add : ∀ (b : B) (s t : ℝ), operator b (s + t) = operator b s * operator b t
-  strongly_continuous : ∀ (b : B) (v : H), Continuous (fun t : ℝ => operator b t v)
-
 section LieData
 
 variable (G : Type*) [Group G] [TopologicalSpace G]
-variable (V : Type*) [NormedAddCommGroup V] [NormedSpace ℝ V]
+    (V : Type*) [NormedAddCommGroup V] [NormedSpace ℝ V]
   [FiniteDimensional ℝ V] [ChartedSpace V G] [LieGroup (𝓘(ℝ, V)) ∞ G]
 variable (B : Type*) [Fintype B]
 
@@ -48,10 +40,10 @@ end LieData
 section Representation
 
 variable {G : Type*} [Group G] [TopologicalSpace G]
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [FiniteDimensional ℝ V] [ChartedSpace V G] [LieGroup (𝓘(ℝ, V)) ∞ G]
 variable {B : Type*} [Fintype B]
-variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
 
 structure StronglyContinuousHilbertRepresentation where
   operator : G →* H ≃ₗᵢ[ℂ] H

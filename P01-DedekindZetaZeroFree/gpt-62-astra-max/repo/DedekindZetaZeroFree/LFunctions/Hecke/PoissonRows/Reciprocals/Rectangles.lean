@@ -14,8 +14,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.Detector
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem recip_bound (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) :
@@ -40,7 +40,7 @@ theorem recip_bound (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D
   have hq1 : (1 : ℝ) ≤ D.q u := le_trans (by linarith) hU1
   have hnp := (RowNonprincipal.inducers_nonprincipal D u hu).2
   obtain ⟨g, hg, hgL⟩ := RowHeckeBridge.hecke_exists_entire D.recipe.A (D.omega u) hnp
-  have hg1 : ∀ z : ℂ, 1 < z.re → g z = Detector.idealLSeries F (D.omega u).character z :=
+  have hg1 :=
     fun z hz => (hgL z (by linarith [hz])).trans
       (RowHeckeBridge.hecke_eq_idealLSeries D.recipe.A (D.omega u) hnp z hz)
   obtain ⟨hgne, hginv⟩ := hr U hUr' u hu hU1 hU2 hexc g hg hg1 s hs hIm

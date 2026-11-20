@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -33,10 +31,7 @@ namespace GlobalClassFields
 open Reciprocity
 
 /-- Canonical class-group commutativity supplies normality for the two quotients. -/
-theorem closedFiniteIndexTopologicalClassGroupIsMulCommutative
-    (F : Type) [Field F] [NumberField F] :
-    IsMulCommutative (IdeleClassGroup F) :=
-  IsMulCommutative.of_comm (fun a b => mul_comm a b)
+alias closedFiniteIndexTopologicalClassGroupIsMulCommutative := GlobalClassFieldTheory.Reciprocity.realizedTowerIdeleClassIsMulCommutative
 
 attribute [local instance] closedFiniteIndexTopologicalClassGroupIsMulCommutative
 

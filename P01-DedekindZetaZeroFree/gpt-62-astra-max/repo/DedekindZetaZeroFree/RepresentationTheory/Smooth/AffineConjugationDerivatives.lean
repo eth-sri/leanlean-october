@@ -17,10 +17,8 @@ private theorem archChart_domain_injective (x y : ArchCoordinates F)
     (hx : x ∈ archDomain F) (hy : y ∈ archDomain F)
     (he : archChart F ζ hζ x = archChart F ζ hζ y) : x = y := by
   rw [right_insertion, right_insertion] at he
-  have hinj := (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.2.1
-  have hp := hinj he
   funext w
-  obtain ⟨c, hc⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp (congrFun hp w)
+  obtain ⟨c, hc⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp (congrFun (((KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.2.1) he) w)
   have hmat := congrArg (fun M : Matrix.GeneralLinearGroup (Fin 2) ℂ => M.val) hc
   rw [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
     rightMatrix_val _ (hx w), rightMatrix_val _ (hy w)] at hmat
@@ -47,7 +45,7 @@ private theorem base_domain : archBase F ∈ archDomain F := by
 theorem rightChart_conjugation_local (k : G F ζ hζ) :
     ∃ (O : Set (ArchCoordinates F)) (c : ArchCoordinates F → ArchCoordinates F),
       IsOpen O ∧ archBase F ∈ O ∧ ContDiffOn ℝ (⊤ : ℕ∞) c O ∧
-      Set.MapsTo c O (archDomain F) ∧ c (archBase F) = archBase F ∧
+      c (archBase F) = archBase F ∧
       ∀ x ∈ O, archChart F ζ hζ (c x) = k * archChart F ζ hζ x * k⁻¹ := by
   obtain ⟨O₁,q,hO₁,hb₁,hq,hqD,he₁⟩ :=
     literal_right_to_left_chart_local_transition F ζ hζ k (archBase F) (base_domain F)
@@ -63,9 +61,7 @@ theorem rightChart_conjugation_local (k : G F ζ hζ) :
     have he := he₂ (q (archBase F)) hb₂
     simpa only [hqbase, one_mul, mul_one, KPInterface.ResidueConstruction.Raw.archChart_base] using he.symm
   let O := O₁ ∩ q ⁻¹' O₂
-  refine ⟨O,r ∘ q,hq.continuousOn.isOpen_inter_preimage hO₁ hO₂,⟨hb₁,hb₂⟩,
-    hr.comp (hq.mono Set.inter_subset_left) (fun x hx => hx.2),
-    (fun x hx => hrD hx.2),hb,?_⟩
+  refine ⟨O, r ∘ q, hq.continuousOn.isOpen_inter_preimage hO₁ hO₂, ⟨hb₁,hb₂⟩, hr.comp (hq.mono Set.inter_subset_left) (fun x hx => hx.2), hb, ?_⟩
   intro x hx
   have ha := he₁ x hx.1
   rw [KPInterface.ResidueConstruction.Raw.archChart_base, mul_one] at ha
@@ -83,13 +79,13 @@ theorem right_derivative_conjugation
         (X : ArchCoordinates F) (g : G F ζ hζ),
       fderiv ℝ (fun x => f ((g*k)*archChart F ζ hζ x)) (archBase F) X =
         fderiv ℝ (fun x => f ((g*archChart F ζ hζ x)*k)) (archBase F) (L X) := by
-  obtain ⟨O,c,hO,hb,hc,hcD,hcb,he⟩ := rightChart_conjugation_local F ζ hζ k
+  obtain ⟨O, c, hO, hb, hc, hcb, he⟩ := rightChart_conjugation_local F ζ hζ k
   have hcd : DifferentiableAt ℝ c (archBase F) :=
     (hc.contDiffAt (hO.mem_nhds hb)).differentiableAt (by simp)
   refine ⟨fderiv ℝ c (archBase F),?_⟩
   intro f hf X g
   have hh : DifferentiableAt ℝ (fun x => f ((g*archChart F ζ hζ x)*k)) (archBase F) := by
-    obtain ⟨O',d,hO',hb',hd,hdD,hdb,hed⟩ := rightChart_conjugation_local F ζ hζ k⁻¹
+    obtain ⟨O', d, hO', hb', hd, hdb, hed⟩ := rightChart_conjugation_local F ζ hζ k⁻¹
     have hdd : DifferentiableAt ℝ d (archBase F) :=
       (hd.contDiffAt (hO'.mem_nhds hb')).differentiableAt (by simp)
     have houter := (hf (g*k)).hasFDerivAt

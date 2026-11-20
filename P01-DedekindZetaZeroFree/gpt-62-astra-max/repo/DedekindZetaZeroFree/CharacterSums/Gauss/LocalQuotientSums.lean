@@ -14,21 +14,22 @@ open LocalFiniteSums
 set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-def Congruent (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (x y : LocalField p) : Prop :=
+section
+
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+
+def Congruent (n : ℕ) (x y : LocalField p) : Prop :=
   ∃ r : LocalIntegers p, x - y = uniformizer C p ^ n * (r : LocalField p)
 
-def numeratorCongruence (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t k J : ℕ) (a h : (LocalIntegers p)ˣ)
+def numeratorCongruence (t k J : ℕ) (a h : (LocalIntegers p)ˣ)
     (d : LocalField p) : Prop :=
   Congruent C p k ((h.val : LocalField p) * uniformizer C p ^ J)
     ((a.val : LocalField p) * uniformizer C p ^ t * d)
 
-def rawPhase (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t k J : ℕ) (s a h : (LocalIntegers p)ˣ)
+def rawPhase (t k J : ℕ) (s a h : (LocalIntegers p)ˣ)
     (d v : LocalField p) : ℂ :=
   (negativeTrace p
     ((((h.val : LocalField p) * uniformizer C p ^ J -
@@ -36,14 +37,11 @@ def rawPhase (C : A.GeneralArithmeticContext σ η hS)
       ((s.val : LocalField p) * (a.val : LocalField p) *
         uniformizer C p ^ (k + t))) : ℂ)
 
-theorem sInteger_local_integral (p : ExteriorPrime A) (x : A.R) :
-    algebraMap F (LocalField p) (x : F) ∈ p.val.adicCompletionIntegers F := by
-  exact sInteger_local_integral_source p x
+end
 
-theorem negativeTrace_integer (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (x : LocalIntegers p) :
-    negativeTrace p (x : LocalField p) = 1 := by
-  exact negativeTrace_integer_source C p x
+alias sInteger_local_integral := sInteger_local_integral_source
+
+alias negativeTrace_integer := negativeTrace_integer_source
 
 def canonicalLocalRepresentative (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (n : ℕ) (x : Residue C p n) : LocalField p :=
@@ -61,20 +59,21 @@ def canonicalLocalLifts (C : A.GeneralArithmeticContext σ η hS)
   integral x := sInteger_local_integral p ((lifts C p n).val x)
   congruent x := ⟨0, by simp⟩
 
+section
+
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (t k J : ℕ)
+    (s a h : (LocalIntegers p)ˣ)
+
 theorem rawPhase_representatives_independent
-    (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
-    (t k J : ℕ) (s a h : (LocalIntegers p)ˣ)
     (d d' v v' : LocalIntegers p)
     (hd : Congruent C p k (d : LocalField p) (d' : LocalField p))
     (hv : Congruent C p t (v : LocalField p) (v' : LocalField p))
     (hc : numeratorCongruence C p t k J a h (d : LocalField p)) :
     rawPhase C p t k J s a h (d : LocalField p) (v : LocalField p) =
-      rawPhase C p t k J s a h (d' : LocalField p) (v' : LocalField p) := by
-  exact CRTRawLocalModel.rawPhase_representatives_independent C p t k J s a h
+      rawPhase C p t k J s a h (d' : LocalField p) (v' : LocalField p) := CRTRawLocalModel.rawPhase_representatives_independent C p t k J s a h
     d d' v v' hd hv hc
 
-def RWithLifts (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t k J : ℕ) (s a h : (LocalIntegers p)ˣ)
+def RWithLifts
     (D : LocalLifts C p k) (V : LocalLifts C p t) : ℂ :=
   ∑ d : Residue C p k,
     if numeratorCongruence C p t k J a h (D.val d) then
@@ -83,13 +82,11 @@ def RWithLifts (C : A.GeneralArithmeticContext σ η hS)
           rawPhase C p t k J s a h (D.val d) (V.val v)
     else 0
 
-def R (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t k J : ℕ) (s a h : (LocalIntegers p)ˣ) : ℂ :=
+def R : ℂ :=
   RWithLifts C p t k J s a h (canonicalLocalLifts C p k)
     (canonicalLocalLifts C p t)
 
-theorem RWithLifts_independent (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (t k J : ℕ) (s a h : (LocalIntegers p)ˣ)
+theorem RWithLifts_independent
     (D D' : LocalLifts C p k) (V V' : LocalLifts C p t) :
     RWithLifts C p t k J s a h D V = RWithLifts C p t k J s a h D' V' := by
   unfold RWithLifts
@@ -113,6 +110,8 @@ theorem RWithLifts_independent (C : A.GeneralArithmeticContext σ η hS)
         (CRTRawLocalModel.congruent_symm C p t (V'.congruent v))) hcon
   · rw [if_neg hcon, if_neg (fun h' => hcon (hc.mpr h'))]
 
+end
+
 theorem R_one_eq_Ctk (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (t k J : ℕ) :
     R C p t k J 1 1 1 = Ctk C p t k J := by
@@ -134,18 +133,8 @@ theorem R_one_eq_Ctk (C : A.GeneralArithmeticContext σ η hS)
     rw [psi_residueMap_eq_negativeTrace]
     simp only [canonicalLocalLifts, canonicalLocalRepresentative, rawPhase,
       Units.val_one, map_one, one_mul, mul_one, uniformizer, map_mul, map_sub, map_pow]
-    change _ = (negativeTrace p
-      (algebraMap F (LocalField p) (A.R.subtype
-        ((generator C p ^ J - generator C p ^ t * (lifts C p k).val d) *
-          (lifts C p t).val v)) /
-        algebraMap F (LocalField p) (generator C p : F) ^ (k + t)) : ℂ)
     simp only [map_mul, map_sub, map_pow, OneMemClass.coe_one, one_mul]
-    change _ = (negativeTrace p
-      ((algebraMap F (LocalField p) ((generator C p : F) ^ J -
-        (generator C p : F) ^ t * ((lifts C p k).val d : F)) *
-        algebraMap F (LocalField p) ((lifts C p t).val v : F)) /
-        algebraMap F (LocalField p) (generator C p : F) ^ (k + t)) : ℂ)
-    simp only [map_sub, map_mul, map_pow]
+    simp
   · rfl
 
 end DedekindZetaZeroFree.CompatiblePrimeRawLocal

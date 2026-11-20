@@ -14,11 +14,10 @@ open DedekindZetaZeroFree NumberField
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
-theorem c₀_ne_zero : Spectral.c₀ D ≠ 0 :=
-  (Principal.principal_comparison D).1
+alias c₀_ne_zero := DedekindZetaZeroFree.Quantitative.ResidueNonzero.c₀_ne_zero
 
 theorem Iscale_sub_main_le :
     ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z →
@@ -47,7 +46,7 @@ theorem Iscale_sub_main_le :
       unfold Rows.nonprincipalSum Rows.dyadIntegral
       exact tsum_congr (fun k => by rw [hset k])
     rw [PoissonIdentity.Iscale_eq_principal_add_nonprincipal D Z hZ0,
-      (PoissonIdentity.nonprincipal_eq_sum_dyads D Z hZ0).2, hprin, h2]
+      (PoissonIdentity.nonprincipal_eq_sum_dyads D Z hZ0), hprin, h2]
     try rfl
   have hexp1 : ∀ Z : ℝ, 2 ≤ Z → Z ^ (Scales.mainExponent - 37749867 / 1000000000) ≤ Z ^ (717 / 2000 : ℝ) := by
     intro Z hZ

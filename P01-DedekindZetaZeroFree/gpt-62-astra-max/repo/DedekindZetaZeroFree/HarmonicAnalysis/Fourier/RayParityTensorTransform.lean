@@ -25,7 +25,7 @@ private theorem fourier_tensor {ι : Type*} [Fintype ι] (f : ι → ℝ → ℂ
   simp only [Pi.star_apply, star_trivial, RCLike.inner_apply, conj_trivial]
   simp_rw [Finset.mul_sum, Complex.ofReal_sum, Finset.sum_mul, Complex.exp_sum]
   simp_rw [← Finset.prod_mul_distrib]
-  simpa only [mul_comm] using (integral_fintype_prod_volume_eq_prod
+  simpa using (integral_fintype_prod_volume_eq_prod
     (fun i v ↦ Complex.exp (↑(-2 * Real.pi * (ξ i * v)) * Complex.I) * f i v))
  def localParity (odd : Bool) (x : ℝ) : ℂ :=
   (if odd then (x : ℂ) else 1) * Complex.exp (-((Real.pi * x ^ 2 : ℝ) : ℂ))
@@ -36,7 +36,7 @@ private theorem localParity_fourier (odd : Bool) :
   unfold localParity
   cases odd
   · simpa using real_evenGaussian_fourier
-  · simpa using real_oddGaussian_fourier
+  · exact real_oddGaussian_fourier
 
 private theorem parity_tensor_fourier {ι : Type*} [Fintype ι] [DecidableEq ι]
     (D : Finset ι) (ξ : EuclideanSpace ℝ ι) :
@@ -70,11 +70,10 @@ private theorem gδ_tensor (K : Type) [Field K] [NumberField K]
       ∏ i : NumberField.mixedEmbedding.index K,
         localParity (decide (i ∈ δ.map ⟨Sum.inl, Sum.inl_injective⟩))
           (Theta.traceCoordinates K x i) := by
-  have ht := parity_tensor_eq (δ.map (⟨Sum.inl, Sum.inl_injective⟩ :
-    RayCoset.RealPlaces K ↪ NumberField.mixedEmbedding.index K)) (Theta.traceCoordinates K x)
   simpa only [Finset.prod_map, gδ, Theta.traceRealCoordinateCLM_apply,
     Theta.latticeGaussian, LinearIsometryEquiv.norm_map, Function.Embedding.coeFn_mk,
-    localParity, decide_eq_true_eq] using ht.symm
+    localParity, decide_eq_true_eq] using (parity_tensor_eq (δ.map (⟨Sum.inl, Sum.inl_injective⟩ :
+      RayCoset.RealPlaces K ↪ NumberField.mixedEmbedding.index K)) (Theta.traceCoordinates K x)).symm
 
 variable (K : Type) [Field K] [NumberField K]
 

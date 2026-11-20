@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -39,16 +34,22 @@ open LocalFieldTheory RamificationTheory CyclicCohomology KummerTheory
 open ClassFormation LocalClassFieldTheory
 open scoped IsMulCommutative
 
- abbrev towerAbsoluteGalois (K : Type) [Field K] :=
+ section
+
+variable (K : Type) [Field K]
+
+abbrev towerAbsoluteGalois :=
   intrinsicAbsoluteGalois K
 
- abbrev towerAbsoluteUnits (K : Type) [Field K] :
+ abbrev towerAbsoluteUnits :
     Rep ℤ (towerAbsoluteGalois K) :=
   intrinsicAbsoluteUnits K
 
- abbrev towerAbstractBase (K : Type) [Field K] :
+ abbrev towerAbstractBase :
     ClosedSubgroup (towerAbsoluteGalois K) :=
   intrinsicAbstractBase K
+
+end
 
  def towerLowerEmbedding
     (K E L : Type)
@@ -72,18 +73,6 @@ open scoped IsMulCommutative
     (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)
       (Additive.ofMul a))
 
-private theorem towerEmbeddedFieldRange_le
-    (K E L : Type)
-    [Field K] [Field E] [Field L]
-    [Algebra K E] [Algebra E L] [Algebra K L]
-    [IsScalarTower K E L]
-    (iL : L →ₐ[K] SeparableClosure K) :
-    AlgHom.fieldRange (towerLowerEmbedding K E L iL) ≤
-      AlgHom.fieldRange iL := by
-  intro x hx
-  rcases hx with ⟨y, rfl⟩
-  exact ⟨algebraMap E L y, rfl⟩
-
 private theorem towerEmbeddedAbstractExtension_field_le
     (K E L : Type)
     [Field K] [Field E] [Field L]
@@ -105,62 +94,17 @@ private theorem towerEmbeddedAbstractExtension_field_le
       (AlgHom.fieldRange (towerLowerEmbedding K E L iL)).fixingSubgroup
   exact
     (AlgHom.fieldRange (towerLowerEmbedding K E L iL)).fixingSubgroup_le
-      (towerEmbeddedFieldRange_le K E L iL)
+      (by
+        intro x hx
+        rcases hx with ⟨y, rfl⟩
+        exact ⟨algebraMap E L y, rfl⟩)
 
-private theorem towerRestrict_abstractQuotient_mk
-    (K E L : Type)
-    [Field K] [Field E] [Field L]
-    [Algebra K E] [Algebra E L] [Algebra K L]
+section
+
+variable (K E L : Type) [Field K] [Field E] [Field L] [Algebra K E] [Algebra E L] [Algebra K L]
     [IsScalarTower K E L]
-    [FiniteDimensional K E] [FiniteDimensional K L]
-    [IsGalois K E] [IsGalois K L]
-    (iL : L →ₐ[K] SeparableClosure K)
-    (sigma : (towerAbstractBase K).toSubgroup) :
-    AlgEquiv.restrictNormalHom E
-        (finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
-          K L iL (QuotientGroup.mk sigma)) =
-      finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
-        K E (towerLowerEmbedding K E L iL)
-        (QuotientGroup.mk (Subgroup.inclusion le_rfl sigma)) := by
-  let iE := towerLowerEmbedding K E L iL
-  apply AlgEquiv.ext
-  intro x
-  apply iE.injective
-  calc
-    iE ((AlgEquiv.restrictNormalHom E
-        (finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
-          K L iL (QuotientGroup.mk sigma))) x) =
-        iL ((finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
-          K L iL (QuotientGroup.mk sigma)) (algebraMap E L x)) := by
-      change
-        iL (algebraMap E L
-          ((AlgEquiv.restrictNormalHom E
-            (finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
-              K L iL (QuotientGroup.mk sigma))) x)) =
-          iL ((finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
-            K L iL (QuotientGroup.mk sigma)) (algebraMap E L x))
-      exact congrArg iL
-        (AlgEquiv.restrictNormal_commutes
-          (finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
-            K L iL (QuotientGroup.mk sigma)) E x)
-    _ = sigma.1 (iL (algebraMap E L x)) := by
-      exact
-        finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding_mk_apply
-          K L iL sigma (algebraMap E L x)
-    _ = sigma.1 (iE x) := rfl
-    _ = iE
-        ((finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
-          K E iE
-          (QuotientGroup.mk (Subgroup.inclusion le_rfl sigma))) x) := by
-      exact
-        (finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding_mk_apply
-          K E iE (Subgroup.inclusion le_rfl sigma) x).symm
 
 private theorem towerRestrict_abstractAbelianization
-    (K E L : Type)
-    [Field K] [Field E] [Field L]
-    [Algebra K E] [Algebra E L] [Algebra K L]
-    [IsScalarTower K E L]
     [FiniteDimensional K E] [FiniteDimensional K L]
     [IsAbelianGalois K E] [IsAbelianGalois K L]
     (iL : L →ₐ[K] SeparableClosure K)
@@ -192,26 +136,26 @@ private theorem towerRestrict_abstractAbelianization
       K E (towerLowerEmbedding K E L iL)
   let qL :=
     finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding K L iL
-  let : (extensionSubgroup B EE.field EE.below).Normal := EE.normal
-  let : (extensionSubgroup B EL.field EL.below).Normal := EL.normal
+  let := EE.normal
+  let := EL.normal
   obtain ⟨q, rfl⟩ := QuotientGroup.mk_surjective z
   obtain ⟨sigma, rfl⟩ := QuotientGroup.mk_surjective q
   change
     AlgEquiv.restrictNormalHom E
-        ((Abelianization.equivOfComm (H := Gal(L / K))).symm
+        ((Abelianization.equivOfComm).symm
           (qL.abelianizationCongr
             (Abelianization.of (QuotientGroup.mk sigma)))) =
-      (Abelianization.equivOfComm (H := Gal(E / K))).symm
+      (Abelianization.equivOfComm).symm
         (qE.abelianizationCongr
           (normResidueNaturalityAbelianizedRestriction
             B B EE.field EL.field EE.below EL.below le_rfl
             (towerEmbeddedAbstractExtension_field_le K E L iL)
             (Abelianization.of (QuotientGroup.mk sigma))))
   rw [abelianizationCongr_of]
+  let restrictNormalHom₀ := AlgEquiv.restrictNormalHom E (qL (QuotientGroup.mk sigma))
   change
-    AlgEquiv.restrictNormalHom E
-        (qL (QuotientGroup.mk sigma)) =
-      (Abelianization.equivOfComm (H := Gal(E / K))).symm
+    restrictNormalHom₀ =
+      (Abelianization.equivOfComm).symm
         (qE.abelianizationCongr
           (normResidueNaturalityAbelianizedRestriction
             B B EE.field EL.field EE.below EL.below le_rfl
@@ -219,27 +163,47 @@ private theorem towerRestrict_abstractAbelianization
             (Abelianization.of (QuotientGroup.mk sigma))))
   rw [normResidueNaturalityAbelianizedRestriction_of_mk]
   change
-    AlgEquiv.restrictNormalHom E
-        (qL (QuotientGroup.mk sigma)) =
-      (Abelianization.equivOfComm (H := Gal(E / K))).symm
+    restrictNormalHom₀ =
+      (Abelianization.equivOfComm).symm
         (qE.abelianizationCongr
           (Abelianization.of
             (QuotientGroup.mk (Subgroup.inclusion le_rfl sigma))))
   rw [abelianizationCongr_of]
   change
-    AlgEquiv.restrictNormalHom E
-        (qL (QuotientGroup.mk sigma)) =
+    restrictNormalHom₀ =
       qE (QuotientGroup.mk (Subgroup.inclusion le_rfl sigma))
-  exact towerRestrict_abstractQuotient_mk K E L iL sigma
+  let iE := towerLowerEmbedding K E L iL
+  apply AlgEquiv.ext
+  intro x
+  apply iE.injective
+  calc
+    _ =
+        iL ((finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
+          K L iL (QuotientGroup.mk sigma)) (algebraMap E L x)) := by
+      change
+        iL (algebraMap E L
+          ((AlgEquiv.restrictNormalHom E
+            (finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
+              K L iL (QuotientGroup.mk sigma))) x)) =
+          iL ((finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
+            K L iL (QuotientGroup.mk sigma)) (algebraMap E L x))
+      exact congrArg iL
+        (AlgEquiv.restrictNormal_commutes
+          (finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
+            K L iL (QuotientGroup.mk sigma)) E x)
+    _ = sigma.1 (iL (algebraMap E L x)) := finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding_mk_apply
+          K L iL sigma (algebraMap E L x)
+    _ = sigma.1 (iE x) := rfl
+    _ = iE
+        ((finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
+          K E iE
+          (QuotientGroup.mk (Subgroup.inclusion le_rfl sigma))) x) := (finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding_mk_apply
+          K E iE (Subgroup.inclusion le_rfl sigma) x).symm
 
 /-- Before specializing the local class-formation structures, compatible
 embeddings of an arbitrary finite abelian tower identify abstract
 norm--residue restriction with the actual Galois restriction map. -/
 theorem concreteNormResidueAutomorphism_restrict_tower
-    (K E L : Type)
-    [Field K] [Field E] [Field L]
-    [Algebra K E] [Algebra E L] [Algebra K L]
-    [IsScalarTower K E L]
     [FiniteDimensional K E] [FiniteDimensional K L]
     [IsAbelianGalois K E] [IsAbelianGalois K L]
     (iL : L →ₐ[K] SeparableClosure K)
@@ -269,18 +233,8 @@ theorem concreteNormResidueAutomorphism_restrict_tower
     towerEmbeddedBaseNormClass K E
       (towerLowerEmbedding K E L iL) a
   let xL := towerEmbeddedBaseNormClass K L iL a
-  have hLE : EL.field.toSubgroup ≤ EE.field.toSubgroup :=
+  have hLE :=
     towerEmbeddedAbstractExtension_field_le K E L iL
-  let hEENormal : (extensionSubgroup B EE.field EE.below).Normal :=
-    EE.normal
-  let hELNormal : (extensionSubgroup B EL.field EL.below).Normal :=
-    EL.normal
-  let hEEFinite : Finite
-      (B.toSubgroup ⧸ extensionSubgroup B EE.field EE.below) :=
-    EE.finite
-  let hELFinite : Finite
-      (B.toSubgroup ⧸ extensionSubgroup B EL.field EL.below) :=
-    EL.finite
   let hBBFinite : Finite
       (B.toSubgroup ⧸ extensionSubgroup B B le_rfl) := by
     have htop : extensionSubgroup B B le_rfl = ⊤ := by
@@ -298,30 +252,25 @@ theorem concreteNormResidueAutomorphism_restrict_tower
     below := le_rfl
     finiteQuotient := hBBFinite }
   let : (extensionSubgroup T.base.field EE.field EE.below).Normal := by
-    change (extensionSubgroup B EE.field EE.below).Normal
-    exact hEENormal
+    exact EE.normal
   let : (extensionSubgroup T.field.field EL.field EL.below).Normal := by
-    change (extensionSubgroup B EL.field EL.below).Normal
-    exact hELNormal
+    exact EL.normal
   let : Finite
       (T.base.field.toSubgroup ⧸
         extensionSubgroup T.base.field EE.field EE.below) := by
-    change Finite (B.toSubgroup ⧸ extensionSubgroup B EE.field EE.below)
-    exact hEEFinite
+    exact EE.finite
   let : Finite
       (T.field.field.toSubgroup ⧸
         extensionSubgroup T.field.field EL.field EL.below) := by
-    change Finite (B.toSubgroup ⧸ extensionSubgroup B EL.field EL.below)
-    exact hELFinite
+    exact EL.finite
   have hnorm : finiteReciprocityNaturalityNormMap (towerAbsoluteUnits K)
         B B EE.field EL.field EE.below EL.below le_rfl hLE xL = xE := by
     dsimp only [xL, xE, towerEmbeddedBaseNormClass]
     rw [finiteReciprocityNaturalityNormMap_finiteNormClass,
       relativeNorm_self]
-  have hraw := D.normResidueNaturality_norm_restriction
+  have hrawa := DFunLike.congr_fun (D.normResidueNaturality_norm_restriction
     (towerAbsoluteUnits K) v hcf
-    T EE.field EL.field EE.below EL.below hLE
-  have hrawa := DFunLike.congr_fun hraw xL
+    T EE.field EL.field EE.below EL.below hLE) xL
   change _ =
     D.normResidueSymbol (towerAbsoluteUnits K) v hcf BF EE
       (finiteReciprocityNaturalityNormMap (towerAbsoluteUnits K)
@@ -331,36 +280,34 @@ theorem concreteNormResidueAutomorphism_restrict_tower
     D.normResidueSymbol (towerAbsoluteUnits K) v hcf BF EL xL
   let zE :=
     D.normResidueSymbol (towerAbsoluteUnits K) v hcf BF EE xE
-  have hz : normResidueNaturalityAbelianizedRestriction
-        B B EE.field EL.field EE.below EL.below le_rfl hLE
-        (Additive.toMul zL) = Additive.toMul zE := by
-    exact congrArg Additive.toMul hrawa
   rw [concreteNormResidueSymbolOfEmbedding_eq_abstract
       K L iL D v hcf a,
     concreteNormResidueSymbolOfEmbedding_eq_abstract
       K E (towerLowerEmbedding K E L iL) D v hcf a]
   change
     AlgEquiv.restrictNormalHom E
-        ((Abelianization.equivOfComm (H := Gal(L / K))).symm
+        ((Abelianization.equivOfComm).symm
           (qL.abelianizationCongr (Additive.toMul zL))) =
-      (Abelianization.equivOfComm (H := Gal(E / K))).symm
+      (Abelianization.equivOfComm).symm
         (qE.abelianizationCongr (Additive.toMul zE))
   calc
     AlgEquiv.restrictNormalHom E
-        ((Abelianization.equivOfComm (H := Gal(L / K))).symm
+        ((Abelianization.equivOfComm).symm
           (qL.abelianizationCongr (Additive.toMul zL))) =
-      (Abelianization.equivOfComm (H := Gal(E / K))).symm
+      (Abelianization.equivOfComm).symm
         (qE.abelianizationCongr
           (normResidueNaturalityAbelianizedRestriction
             B B EE.field EL.field EE.below EL.below le_rfl hLE
             (Additive.toMul zL))) :=
       towerRestrict_abstractAbelianization
         K E L iL (Additive.toMul zL)
-    _ = (Abelianization.equivOfComm (H := Gal(E / K))).symm
+    _ = (Abelianization.equivOfComm).symm
         (qE.abelianizationCongr (Additive.toMul zE)) :=
       congrArg
-        (fun w => (Abelianization.equivOfComm (H := Gal(E / K))).symm
-          (qE.abelianizationCongr w)) hz
+        (fun w => (Abelianization.equivOfComm).symm
+          (qE.abelianizationCongr w)) (congrArg Additive.toMul hrawa)
+
+end
 
 /-- Pointwise restriction naturality for the canonical local Artin
 automorphism in an arbitrary finite abelian tower. -/
@@ -408,13 +355,12 @@ theorem abelianLocalArtinMonoidHom_restrict_tower
   intro a
   exact localArtinAutomorphism_restrict_tower K E L a
 
+variable (K L M : Type) [Field K] [Field L] [Field M] [Algebra K L] [Algebra K M]
+
 /-- When `L` is regarded as an `M`-algebra through the inverse of a
 `K`-algebra equivalence, restriction from `L` to `M` is conjugation by that
 equivalence. -/
 theorem restrictNormalHom_eq_autCongr
-    (K L M : Type)
-    [Field K] [Field L] [Field M]
-    [Algebra K L] [Algebra K M]
     [Normal K M]
     (e : L ≃ₐ[K] M) :
     letI : Algebra M L := e.symm.toRingHom.toAlgebra
@@ -426,7 +372,7 @@ theorem restrictNormalHom_eq_autCongr
     (AlgEquiv.restrictNormalHom M :
         Gal(L / K) →* Gal(M / K)) =
       (AlgEquiv.autCongr e).toMonoidHom := by
-  let : Algebra M L := e.symm.toRingHom.toAlgebra
+  let := e.symm.toRingHom.toAlgebra
   let : IsScalarTower K M L :=
     IsScalarTower.of_algebraMap_eq' (by
       apply RingHom.ext
@@ -438,7 +384,7 @@ theorem restrictNormalHom_eq_autCongr
   intro x
   apply e.symm.injective
   calc
-    e.symm ((AlgEquiv.restrictNormalHom M sigma) x) =
+    _ =
         sigma (e.symm x) := by
       exact AlgEquiv.restrictNormal_commutes sigma M x
     _ = e.symm ((AlgEquiv.autCongr e sigma) x) := by
@@ -448,9 +394,6 @@ theorem restrictNormalHom_eq_autCongr
 finite abelian extensions.  The Galois groups are identified by conjugating
 automorphisms with that equivalence. -/
 theorem abelianLocalArtinMonoidHom_autCongr
-    (K L M : Type)
-    [Field K] [Field L] [Field M]
-    [Algebra K L] [Algebra K M]
     [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     [FiniteDimensional K L] [FiniteDimensional K M]
@@ -459,7 +402,7 @@ theorem abelianLocalArtinMonoidHom_autCongr
     (AlgEquiv.autCongr e).toMonoidHom.comp
         (abelianLocalArtinMonoidHom K L) =
       abelianLocalArtinMonoidHom K M := by
-  let : Algebra M L := e.symm.toRingHom.toAlgebra
+  let := e.symm.toRingHom.toAlgebra
   let : IsScalarTower K M L :=
     IsScalarTower.of_algebraMap_eq' (by
       apply RingHom.ext
@@ -471,24 +414,6 @@ theorem abelianLocalArtinMonoidHom_autCongr
 end LocalClassFieldTheory
 
 namespace ClassFieldTheory
-
-/-- Restriction of the canonical Artin map at the upper level is exactly the
-canonical Artin map at the lower level of a finite abelian tower. -/
-theorem finiteAbelianLocalArtinMap_restrict_tower
-    (K E L : Type)
-    [Field K] [Field E] [Field L]
-    [Algebra K E] [Algebra E L] [Algebra K L]
-    [IsScalarTower K E L]
-    [FiniteDimensional K E] [FiniteDimensional K L]
-    [IsAbelianGalois K E] [IsAbelianGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] :
-    (AlgEquiv.restrictNormalHom E).comp
-        (LocalClassFieldTheory.abelianLocalArtinMap K L).toMonoidHom =
-      (LocalClassFieldTheory.abelianLocalArtinMap K E).toMonoidHom := by
-  rw [LocalClassFieldTheory.abelianLocalArtinMap_toMonoidHom K L,
-    LocalClassFieldTheory.abelianLocalArtinMap_toMonoidHom K E]
-  exact LocalClassFieldTheory.abelianLocalArtinMonoidHom_restrict_tower K E L
 
 end ClassFieldTheory
 

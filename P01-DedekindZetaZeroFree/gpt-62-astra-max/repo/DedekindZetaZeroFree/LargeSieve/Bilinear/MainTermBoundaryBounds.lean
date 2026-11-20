@@ -10,16 +10,14 @@ noncomputable section
 open scoped NumberField Classical NNReal
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundaryBound
 variable {F : Type} [Field F] [NumberField F]
-variable {c : Ideal (𝓞 F)}
+    {c : Ideal (𝓞 F)}
 
-private lemma rel_of_sup {a b : Ideal (𝓞 F)} (h : a ⊔ b = ⊤) :
-    IsRelPrime a b := by
-  intro z hza hzb
-  rw [Ideal.isUnit_iff]
-  exact le_antisymm le_top
-    (h ▸ sup_le (Ideal.dvd_iff_le.mp hza) (Ideal.dvd_iff_le.mp hzb))
+local notation "IntegerIdeal" => Ideal (𝓞 F)
 
-private lemma annular_rows_prime_ideal_size_gt_one (p : Ideal (𝓞 F)) (hp : Prime p) :
+private lemma rel_of_sup {a b : IntegerIdeal} (h : a ⊔ b = ⊤) :
+    IsRelPrime a b := by apply @DedekindZetaZeroFree.LargeSieve.SquarefreeGcd.SquarefreeGcdDecomposition.isRelPrime_of_sup_eq_top <;> assumption
+
+private lemma annular_rows_prime_ideal_size_gt_one (p : IntegerIdeal) (hp : Prime p) :
     1 < ((idealSize F) p : ℝ) := by
   have h0 : Ideal.absNorm p ≠ 0 := fun h => hp.ne_zero (Ideal.absNorm_eq_zero_iff.mp h)
   have h1 : Ideal.absNorm p ≠ 1 :=
@@ -28,85 +26,70 @@ private lemma annular_rows_prime_ideal_size_gt_one (p : Ideal (𝓞 F)) (hp : Pr
   have h2' : (1 : ℝ) < (Ideal.absNorm p : ℝ) := by exact_mod_cast h2
   simpa [idealSize] using h2'
 
-private lemma boundary_core (q d : Ideal (𝓞 F)) (hd0 : d ≠ 0)
+private lemma boundary_core (q d : IntegerIdeal) (hd0 : d ≠ 0)
     (hd : Squarefree d) (hdq : d ⊔ q = ⊤) (K : ℝ)
-    (b : Ideal (𝓞 F))
+    (b : IntegerIdeal)
     (hb : b ∈ Vendor.CutoffDifference.boundaryElements (cutoffBase q d K) d) :
     b ⊔ q = ⊤ := by
   rcases Finset.mem_image.mp hb with ⟨⟨h, e, f⟩, hmem, rfl⟩
   rcases Finset.mem_product.mp hmem with ⟨hh, hef⟩
   rcases Finset.mem_product.mp hef with ⟨he, hf⟩
-  have hhd := ((mem_idealAdmissibleFinset F (q * d) K h).mp hh).2.1
-  have hdvd : ∀ x ∈ Vendor.CutoffDifference.divisors d, x ∣ d := by
-    intro x hx
-    exact ((Vendor.CutoffDifference.squarefree_divisor_dictionary d hd0 hd).2.2.2.2.2 x).mp hx
-  have hrel : IsRelPrime (h * e * f) q :=
-    (((rel_of_sup hhd).of_dvd_right (dvd_mul_right q d)).mul_left
-      ((rel_of_sup hdq).of_dvd_left (hdvd e he))).mul_left
-      ((rel_of_sup hdq).of_dvd_left (hdvd f hf))
-  exact Ideal.isUnit_iff.mp (hrel
+  have hdvd : ∀ x ∈ Vendor.CutoffDifference.divisors d, x ∣ d := fun x hx => ((Vendor.CutoffDifference.squarefree_divisor_dictionary d hd0 hd).2.2.2.2.2 x).mp hx
+  exact Ideal.isUnit_iff.mp (((((rel_of_sup (((mem_idealAdmissibleFinset F (q * d) K h).mp hh).2.1)).of_dvd_right (dvd_mul_right q d)).mul_left
+    ((rel_of_sup hdq).of_dvd_left (hdvd e he))).mul_left
+    ((rel_of_sup hdq).of_dvd_left (hdvd f hf)))
     (Ideal.dvd_iff_le.mpr le_sup_left) (Ideal.dvd_iff_le.mpr le_sup_right))
 
 theorem collected_le_squarefree_rows
     (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (D : NormalizedFamilyData Q)
     (N K : ℝ) (hK : 1 ≤ K)
-    (d : Ideal (𝓞 F)) (hd : Squarefree d) (hdq : d ⊔ D.bad = ⊤)
-    (g : Q.G) (lam : Ideal (𝓞 F) → ℂ) :
+    (d : IntegerIdeal) (hd : Squarefree d) (hdq : d ⊔ D.bad = ⊤)
+    (g : Q.G) (lam : IntegerIdeal → ℂ) :
     ‖collectedBoundary Q D.bad d N K g lam‖ ≤
       ((Vendor.CutoffDifference.divisors d).card : ℝ) ^ 2 /
         Real.sqrt K *
         squarefreeRows Q D.bad d
           (K * (Ideal.absNorm d : ℝ) ^ 2) N g lam := by
-  have hd0 : d ≠ 0 := hd.ne_zero
+  have hd0 := hd.ne_zero
   have hK0 : 0 < K := by linarith
   let H := cutoffBase D.bad d K
   let beta := Vendor.CutoffDifference.boundaryCoefficient (idealSize F) K H d
   let S := (Vendor.CutoffDifference.boundaryElements H d).filter (fun b => beta b ≠ 0)
   let A := idealAdmissibleFinset F D.bad (K * (Ideal.absNorm d : ℝ) ^ 2)
   let T := Vendor.CutoffDifference.divisors d ×ˢ A
-  let phi : Ideal (𝓞 F) × Ideal (𝓞 F) → Ideal (𝓞 F) := fun x => x.2 * x.1 ^ 2
+  let phi : IntegerIdeal × IntegerIdeal → IntegerIdeal := fun x => x.2 * x.1 ^ 2
   have hH : ∀ h ∈ H, Squarefree h ∧ IsRelPrime h d := by
     intro h hh
     have hh' := (mem_idealAdmissibleFinset F (D.bad * d) K h).mp hh
     exact ⟨hh'.1, (rel_of_sup hh'.2.1).of_dvd_right (dvd_mul_left d D.bad)⟩
-  have hprops (b : Ideal (𝓞 F)) :=
+  have hprops (b : IntegerIdeal) :=
     Vendor.CutoffDifference.boundary_coefficient_properties (idealSize F)
       annular_rows_prime_ideal_size_gt_one d hd0 hd K hK0 H hH b
   have hsubset : S ⊆ T.image phi := by
     intro b hb
     rcases Finset.mem_filter.mp hb with ⟨hb, hbeta⟩
     obtain ⟨hlo, hhi, a, t, ha, ht, hbt⟩ := (hprops b).1 hbeta
-    have hbc : b ⊔ D.bad = ⊤ := boundary_core D.bad d hd0 hd hdq K b hb
     have hadvd : a ∣ b := by rw [hbt]; exact dvd_mul_right a (t ^ 2)
-    have haq : a ⊔ D.bad = ⊤ := top_unique
-      (hbc.symm.trans_le (sup_le_sup (Ideal.dvd_iff_le.mp hadvd) le_rfl))
     have hbpos : 0 < Ideal.absNorm b := by
       have : (0 : ℝ) < Ideal.absNorm b := by simpa [idealSize] using lt_trans hK0 hlo
       exact_mod_cast this
     have hanorm : (Ideal.absNorm a : ℝ) ≤ Ideal.absNorm b := by
       exact_mod_cast Nat.le_of_dvd hbpos (Ideal.absNorm_dvd_absNorm_of_le
         (Ideal.dvd_iff_le.mp hadvd))
-    have haA : a ∈ A := (mem_idealAdmissibleFinset F D.bad _ a).mpr
-      ⟨ha, haq, hanorm.trans (by simpa [idealSize] using hhi)⟩
-    have htT : t ∈ Vendor.CutoffDifference.divisors d :=
-      ((Vendor.CutoffDifference.squarefree_divisor_dictionary d hd0 hd).2.2.2.2.2 t).mpr ht
-    exact Finset.mem_image.mpr ⟨(t, a), Finset.mem_product.mpr ⟨htT, haA⟩, hbt.symm⟩
-  let C : ℝ := ((Vendor.CutoffDifference.divisors d).card : ℝ) ^ 2 / Real.sqrt K
-  have hC : 0 ≤ C := div_nonneg (sq_nonneg _) (Real.sqrt_nonneg _)
-  have hterm (b : Ideal (𝓞 F)) (hb : b ∈ S) :
+    exact Finset.mem_image.mpr ⟨(t, a), Finset.mem_product.mpr ⟨(((Vendor.CutoffDifference.squarefree_divisor_dictionary d hd0 hd).2.2.2.2.2 t).mpr ht), ((mem_idealAdmissibleFinset F D.bad _ a).mpr
+      ⟨ha, (top_unique
+        ((boundary_core D.bad d hd0 hd hdq K b hb).symm.trans_le (sup_le_sup (Ideal.dvd_iff_le.mp hadvd) le_rfl))), hanorm.trans (by simpa [idealSize] using hhi)⟩)⟩, hbt.symm⟩
+  let C := ((Vendor.CutoffDifference.divisors d).card : ℝ) ^ 2 / Real.sqrt K
+  have hterm (b : IntegerIdeal) (hb : b ∈ S) :
       ‖(beta b : ℂ) / (Real.sqrt (Ideal.absNorm b : ℝ) : ℂ) *
         densityRow Q D.bad d N g lam b‖ ≤ C * ‖densityRow Q D.bad d N g lam b‖ := by
-    have hbeta := (Finset.mem_filter.mp hb).2
     have hlo : K < (Ideal.absNorm b : ℝ) := by
-      simpa [idealSize] using ((hprops b).1 hbeta).1
-    have hsqrt : 0 < Real.sqrt K := Real.sqrt_pos.mpr hK0
-    have hsqrtle : Real.sqrt K ≤ Real.sqrt (Ideal.absNorm b : ℝ) :=
-      Real.sqrt_le_sqrt hlo.le
+      simpa [idealSize] using ((hprops b).1 ((Finset.mem_filter.mp hb).2)).1
     rw [norm_mul, norm_div, Complex.norm_real, Real.norm_eq_abs,
       abs_of_nonneg (Real.sqrt_nonneg _)]
     apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
-    exact div_le_div₀ (sq_nonneg _) (hprops b).2 hsqrt hsqrtle
+    exact div_le_div₀ (sq_nonneg _) (hprops b).2 (Real.sqrt_pos.mpr hK0) (Real.sqrt_le_sqrt hlo.le)
   have hsum : (∑ b ∈ S, ‖densityRow Q D.bad d N g lam b‖) ≤
       squarefreeRows Q D.bad d (K * (Ideal.absNorm d : ℝ) ^ 2) N g lam := by
     calc
@@ -137,7 +120,7 @@ theorem collected_le_squarefree_rows
       Finset.sum_le_sum hterm
     _ = C * ∑ b ∈ S, ‖densityRow Q D.bad d N g lam b‖ := by rw [Finset.mul_sum]
     _ ≤ C * squarefreeRows Q D.bad d (K * (Ideal.absNorm d : ℝ) ^ 2) N g lam :=
-      mul_le_mul_of_nonneg_left hsum hC
+      mul_le_mul_of_nonneg_left hsum (div_nonneg (sq_nonneg _) (Real.sqrt_nonneg _))
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundaryBound
 
@@ -151,44 +134,26 @@ noncomputable section
 open scoped NumberField Classical NNReal
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundaryBound
 variable {F : Type} [Field F] [NumberField F]
-variable {c : Ideal (𝓞 F)}
+    {c : Ideal (𝓞 F)}
 
-private lemma prime_idealSize_real_gt_one (p : Ideal (𝓞 F)) (hp : Prime p) :
-    1 < (idealSize F p : ℝ) := by
-  have hn0 : Ideal.absNorm p ≠ 0 := by
-    intro h
-    exact hp.ne_zero (Ideal.absNorm_eq_zero_iff.mp h)
-  have hn1 : Ideal.absNorm p ≠ 1 := by
-    intro h
-    exact hp.not_unit ((Ideal.absNorm_eq_one_iff.mp h).trans Ideal.one_eq_top.symm ▸ isUnit_one)
-  change 1 < ((Ideal.absNorm p : ℝ≥0) : ℝ)
-  norm_cast
-  omega
+private alias prime_idealSize_real_gt_one := annular_rows_prime_ideal_size_gt_one
 
-private lemma column_value_sq
-    (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) (d : Ideal (𝓞 F)) (hdq : d ⊔ D.bad = ⊤)
+alias MainTermBoundaryBounds.prime_idealSize_real_gt_one := prime_idealSize_real_gt_one
+
+variable (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (D : NormalizedFamilyData Q)
+
+private lemma column_value_sq (d : Ideal (𝓞 F)) (hdq : d ⊔ D.bad = ⊤)
     (N : ℝ) (g : Q.G) (u : Ideal (𝓞 F))
     (hu : u ∈ quotientColumns Q D.bad d N g)
     (p : Ideal (𝓞 F)) (hp : Prime p) (hpd : p ∣ d) :
     (Q.χ u p) ^ 2 = 1 := by
   obtain ⟨hu, hucol⟩ := Finset.mem_filter.mp hu
   obtain ⟨husf, huq, _⟩ := (mem_idealAdmissibleFinset F _ _ u).mp hu
-  have hpq : IsCoprime p D.bad :=
-    (Ideal.isCoprime_iff_sup_eq.mpr hdq).of_isCoprime_of_dvd_left hpd
-  have hpu : IsCoprime p u :=
-    (Ideal.isCoprime_iff_sup_eq.mpr hucol.1).symm.of_isCoprime_of_dvd_left hpd
-  have hpc : IsCoprime p (Q.cond u) :=
-    (hpu.mul_right hpq).of_isCoprime_of_dvd_right
-      (D.conductor_dvd_index_bad u husf huq)
-  have huc : u ⊔ c = ⊤ :=
-    ((Ideal.isCoprime_iff_sup_eq.mpr huq).of_isCoprime_of_dvd_right
-      D.original_dvd_bad).sup_eq
-  exact DedekindZetaZeroFree.LargeSieve.quadraticFamily_value_sq_eq_one Q husf huc p hp.ne_zero hpc.sup_eq
+  exact DedekindZetaZeroFree.LargeSieve.quadraticFamily_value_sq_eq_one Q husf (((Ideal.isCoprime_iff_sup_eq.mpr huq).of_isCoprime_of_dvd_right
+    D.original_dvd_bad).sup_eq) p hp.ne_zero ((((Ideal.isCoprime_iff_sup_eq.mpr hucol.1).symm.of_isCoprime_of_dvd_left hpd).mul_right ((Ideal.isCoprime_iff_sup_eq.mpr hdq).of_isCoprime_of_dvd_left hpd)).of_isCoprime_of_dvd_right
+    (D.conductor_dvd_index_bad u husf huq)).sup_eq
 
-theorem cancelled_eq_collected
-    (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) (W : ℝ → ℝ) (kappa : ℂ)
+theorem cancelled_eq_collected (W : ℝ → ℝ) (kappa : ℂ)
     (M N K : ℝ) (hN : 1 ≤ N) (hK : 1 ≤ K)
     (d : Ideal (𝓞 F)) (hd : Squarefree d) (hdq : d ⊔ D.bad = ⊤)
     (g : Q.G) (lam : Ideal (𝓞 F) → ℂ) :
@@ -253,7 +218,7 @@ open scoped NumberField Classical NNReal
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundary
 
 variable {F : Type} [Field F] [NumberField F]
-variable {c : Ideal (𝓞 F)}
+    {c : Ideal (𝓞 F)}
 
 def idealSize (F : Type) [Field F] [NumberField F] : Ideal (𝓞 F) →* (ℝ≥0) where
   toFun a := (Ideal.absNorm a : ℝ≥0)
@@ -435,17 +400,15 @@ private lemma dyadicLength_pow_le {X : ℝ} (hX : 1 ≤ X) :
   · rw [h, pow_zero]; linarith
   · have hlt := DedekindZetaZeroFree.LargeSieve.Vendor.pow_lt_of_lt_dyadicLength hX
       (Nat.sub_one_lt (Nat.pos_iff_ne_zero.mp h))
-    have hL : DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength X - 1 + 1 = DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength X :=
-      Nat.sub_add_cancel h
-    rw [← hL, pow_succ]
+    rw [← (Nat.sub_add_cancel h), pow_succ]
     linarith
 
 private lemma rpow_mul_le_pow {a b s t e : ℝ} (ha : 1 ≤ a) (hb : 1 ≤ b)
     (hs : 0 ≤ s) (ht : 0 ≤ t) (hse : s ≤ e) (hte : t ≤ e) :
     a ^ s * b ^ t ≤ (a * b) ^ e := by
-  have ha0 : 0 ≤ a := le_trans zero_le_one ha
-  have hb0 : 0 ≤ b := le_trans zero_le_one hb
-  calc a ^ s * b ^ t ≤ a ^ e * b ^ e :=
+  have ha0 := le_trans zero_le_one ha
+  have hb0 := le_trans zero_le_one hb
+  calc _ ≤ a ^ e * b ^ e :=
         mul_le_mul (Real.rpow_le_rpow_of_exponent_le ha hse)
           (Real.rpow_le_rpow_of_exponent_le hb hte)
           (Real.rpow_nonneg hb0 t) (Real.rpow_nonneg ha0 e)
@@ -803,18 +766,19 @@ theorem cancelledMainTerms_le_of_exponent
   have h4' := h4 (K * n ^ 2) N hX1 hN
   have hcore := core_bound hM hN hK hKM hn1 (by rw [hn]; exact hdn) hα hα₂ hε
   have hE0 : 0 ≤ E := by rw [hE]; rw [energy]; positivity
+  let sqrt₀ := Real.sqrt (M / K)
   calc ‖cancelledMainTerms Q D.bad W kappa M N K d g lam‖
-      ≤ C₁ * (M * N * n) ^ m * Real.sqrt (M / K) * S * E := h5'
-    _ ≤ C₁ * (M * N * n) ^ m * Real.sqrt (M / K) *
+      ≤ C₁ * (M * N * n) ^ m * sqrt₀ * S * E := h5'
+    _ ≤ C₁ * (M * N * n) ^ m * sqrt₀ *
           (C₂ * ((K * n ^ 2) * N) ^ m * (N + (K * n ^ 2) ^ α)) * E := by
         gcongr
-    _ = C₁ * C₂ * ((M * N * n) ^ m * ((K * n ^ 2) * N) ^ m * Real.sqrt (M / K) *
+    _ = C₁ * C₂ * ((M * N * n) ^ m * ((K * n ^ 2) * N) ^ m * sqrt₀ *
           (N + (K * n ^ 2) ^ α)) * E := by ring
     _ ≤ C₁ * C₂ * (8 ^ m * (M * N) ^ ε *
-          (n ^ 4 * Real.sqrt M * K ^ (α - 1 / 2) + n ^ 4 * Real.sqrt (M / K) * N)) * E := by
+          (n ^ 4 * Real.sqrt M * K ^ (α - 1 / 2) + n ^ 4 * sqrt₀ * N)) * E := by
         gcongr
     _ = (C₁ * C₂ * 8 ^ m) * n ^ 4 * (M * N) ^ ε *
-          (Real.sqrt M * K ^ (α - 1 / 2) + Real.sqrt (M / K) * N) * E := by ring
+          (Real.sqrt M * K ^ (α - 1 / 2) + sqrt₀ * N) * E := by ring
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundary
 

@@ -14,12 +14,18 @@ namespace ProbeSeparation
 
 variable (F : Type) [Field F] [NumberField F]
 
-abbrev Integers (S : Finset (HeightOneSpectrum (𝓞 F))) :=
+section
+
+variable (S : Finset (HeightOneSpectrum (𝓞 F)))
+
+abbrev Integers :=
   (S : Set (HeightOneSpectrum (𝓞 F))).integer F
 
-def productNorm (S : Finset (HeightOneSpectrum (𝓞 F))) (x : F) : ℝ :=
+def productNorm (x : F) : ℝ :=
   (∏ v : NumberField.InfinitePlace F, v x ^ v.mult) *
     ∏ v ∈ S, NumberField.FinitePlace.mk v x
+
+end
 
 structure Presentation (S : Finset (HeightOneSpectrum (𝓞 F))) where
   generator : (I : Ideal (Integers F S)) → I ≠ ⊥ → Integers F S
@@ -31,13 +37,17 @@ structure Presentation (S : Finset (HeightOneSpectrum (𝓞 F))) where
 abbrev ReducedPair (S : Finset (HeightOneSpectrum (𝓞 F))) :=
   (I : {I : Ideal (Integers F S) // I ≠ ⊥}) × ((Integers F S) ⧸ I.val)ˣ
 
-def value {S : Finset (HeightOneSpectrum (𝓞 F))}
-    (p : Presentation F S) (α : ReducedPair F S) : F :=
+section
+
+variable {S : Finset (HeightOneSpectrum (𝓞 F))} (p : Presentation F S) (α : ReducedPair F S)
+
+def value : F :=
   (p.lift α.1.val α.2 : F) / (p.generator α.1.val α.1.property : F)
 
-def fractionClass {S : Finset (HeightOneSpectrum (𝓞 F))}
-    (p : Presentation F S) (α : ReducedPair F S) : F ⧸ (Integers F S).toSubring.toAddSubgroup :=
+def fractionClass : F ⧸ (Integers F S).toSubring.toAddSubgroup :=
   QuotientAddGroup.mk' (Integers F S).toSubring.toAddSubgroup (value F p α)
+
+end
 
 def denominatorNorm {S : Finset (HeightOneSpectrum (𝓞 F))}
     (α : ReducedPair F S) : ℝ :=
@@ -69,10 +79,9 @@ private theorem probeDenominatorLe (F : Type) [Field F] [NumberField F]
   have hqt : Ideal.Quotient.mk a.1.val t = 0 := by
     have hcq := congrArg (Ideal.Quotient.mk a.1.val) hc
     simp only [map_add, map_mul, hqs, mul_zero, zero_mul, add_zero, p.lift_spec] at hcq
-    rw [show Ideal.Quotient.mk a.1.val d = (a.2 : (Integers F S) ⧸ a.1.val) from
+    rw [show Ideal.Quotient.mk a.1.val d = a.2 from
       p.lift_spec _ _] at hcq
-    have hcancel := congrArg (fun x => (↑a.2⁻¹ : (Integers F S) ⧸ a.1.val) * x) hcq
-    simpa only [← mul_assoc, Units.inv_mul, one_mul, mul_zero] using hcancel
+    simpa only [← mul_assoc, Units.inv_mul, one_mul, mul_zero] using (congrArg (fun x => (↑a.2⁻¹ : (Integers F S) ⧸ a.1.val) * x) hcq)
   rw [← p.generator_span b.1.val b.1.property]
   exact Ideal.span_le.mpr (by simpa using Ideal.Quotient.eq_zero_iff_mem.mp hqt)
 
@@ -142,7 +151,6 @@ theorem probe_sinteger_product_norm_lower_bound (F : Type) [Field F] [NumberFiel
     · exact le_rfl
     · rw [← NumberField.FinitePlace.mk_maximalIdeal w,
         NumberField.FinitePlace.mk_apply, NumberField.FinitePlace.norm_embedding']
-      change ((WithZeroMulInt.toNNReal _ _) : ℝ) ≤ 1
       norm_cast
       apply (WithZeroMulInt.toNNReal_le_one_iff
         (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal w.maximalIdeal)).2
@@ -151,17 +159,16 @@ theorem probe_sinteger_product_norm_lower_bound (F : Type) [Field F] [NumberFiel
     rw [← finprod_comp_equiv NumberField.FinitePlace.equivHeightOneSpectrum.symm]
     simp only [f, NumberField.FinitePlace.equivHeightOneSpectrum,
       Equiv.coe_fn_symm_mk, NumberField.FinitePlace.maximalIdeal_mk]
-    rw [finprod_eq_prod_of_mulSupport_subset _ (s := S)]
+    rw [finprod_eq_prod_of_mulSupport_subset _]
     · exact Finset.prod_congr rfl fun v hv => if_pos hv
     · intro v hv
       simp only [Function.mem_mulSupport] at hv
       by_contra h
       exact hv (if_neg h)
   rw [heq] at hle
-  have hnonneg : 0 ≤ ∏ w : NumberField.InfinitePlace F, w (r : F) ^ w.mult := by
-    positivity
   rw [← NumberField.prod_abs_eq_one hrF]
-  exact mul_le_mul_of_nonneg_left hle hnonneg
+  refine mul_le_mul_of_nonneg_left hle ?_
+  positivity
 
 open ProbeSeparation in
 private theorem probeProductNormMul (F : Type) [Field F] [NumberField F]

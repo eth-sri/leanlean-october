@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -79,8 +73,7 @@ private theorem cyclotomicKummerNormDescent_primitiveRoots_nonempty
 
 private theorem cyclotomicKummerNormDescent_natCast_ne_zero
     (n : ℕ+) :
-    ((n : ℕ) : CyclotomicField (n : ℕ) K) ≠ 0 := by
-  exact Nat.cast_ne_zero.mpr n.ne_zero
+    ((n : ℕ) : CyclotomicField (n : ℕ) K) ≠ 0 := Nat.cast_ne_zero.mpr n.ne_zero
 
 /-- A finite support on `K` whose full inverse image in
 `CyclotomicField n K` contains the chosen Kummer norm support upstairs.
@@ -121,9 +114,8 @@ noncomputable def cyclotomicKummerNormSupportAbove
     Finset
       (HeightOneSpectrum
         (𝓞 (CyclotomicField (n : ℕ) K))) := by
-  let C := CyclotomicField (n : ℕ) K
-  exact finitePlacesAbove (K := K) (L := C)
-    (cyclotomicKummerNormSupport (K := K) n seed)
+  exact finitePlacesAbove
+    (cyclotomicKummerNormSupport n seed)
 
 /-- Membership in the upstairs support is exactly membership of the place
 below in the enlarged base support. -/
@@ -137,17 +129,18 @@ theorem mem_cyclotomicKummerNormSupportAbove_iff
     W ∈ cyclotomicKummerNormSupportAbove (K := K) n seed ↔
       finitePlaceBelow (K := K) W ∈
         cyclotomicKummerNormSupport (K := K) n seed := by
-  let C := CyclotomicField (n : ℕ) K
   simpa only [cyclotomicKummerNormSupportAbove] using
     (mem_finitePlacesAbove_iff
-      (K := K) (L := C)
+      (K := K) (L := (CyclotomicField (n : ℕ) K))
       (cyclotomicKummerNormSupport (K := K) n seed) W)
+
+section
+
+variable (n : ℕ+) (seed : Finset (HeightOneSpectrum (𝓞 K)))
 
 /-- The fibre-saturated support upstairs is already fixed by the chosen
 Kummer-support enlargement. -/
-theorem sUnitKummerNormSupport_cyclotomicKummerNormSupportAbove
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem sUnitKummerNormSupport_cyclotomicKummerNormSupportAbove :
     sUnitKummerNormSupport
         (K := CyclotomicField (n : ℕ) K) n
         (cyclotomicKummerNormSupportAbove (K := K) n seed) =
@@ -159,19 +152,16 @@ theorem sUnitKummerNormSupport_cyclotomicKummerNormSupportAbove
   let canonicalAbove :=
     sUnitKummerNormSupport (K := C) n seedAbove
   let baseSupport :=
-    cyclotomicKummerNormSupport (K := K) n seed
+    cyclotomicKummerNormSupport n seed
   let saturatedAbove :=
-    cyclotomicKummerNormSupportAbove (K := K) n seed
+    cyclotomicKummerNormSupportAbove n seed
   have hcanonical :
       canonicalAbove ⊆ saturatedAbove := by
     intro W hW
     rw [show saturatedAbove =
-      finitePlacesAbove (K := K) (L := C) baseSupport by
+      finitePlacesAbove baseSupport by
         rfl]
     rw [mem_finitePlacesAbove_iff]
-    change finitePlaceBelow (K := K) W ∈
-      seed ∪ canonicalAbove.image
-        (fun V => finitePlaceBelow (K := K) V)
     exact Finset.mem_union_right _
       (Finset.mem_image.mpr ⟨W, hW, rfl⟩)
   apply Finset.Subset.antisymm
@@ -196,43 +186,43 @@ theorem sUnitKummerNormSupport_cyclotomicKummerNormSupportAbove
         Finset.mem_union]
       exact Or.inr hWexp
   · exact subset_sUnitKummerNormSupport
-      (K := C) n saturatedAbove
+       n saturatedAbove
 
 /-- Enlarging a support by the cyclotomic Kummer requirements is
 idempotent.  In particular, downstream neighbourhood arguments may choose a
 support containing these requirements from the outset without a second
 change of support. -/
 @[simp]
-theorem cyclotomicKummerNormSupport_idem
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem cyclotomicKummerNormSupport_idem :
     cyclotomicKummerNormSupport (K := K) n
         (cyclotomicKummerNormSupport (K := K) n seed) =
       cyclotomicKummerNormSupport (K := K) n seed := by
   classical
   let C := CyclotomicField (n : ℕ) K
-  let S := cyclotomicKummerNormSupport (K := K) n seed
+  let S := cyclotomicKummerNormSupport n seed
   let SAbove :=
-    cyclotomicKummerNormSupportAbove (K := K) n seed
+    cyclotomicKummerNormSupportAbove n seed
   have hstable :
-      sUnitKummerNormSupport (K := C) n SAbove = SAbove := by
-    simpa only [C, SAbove] using
+      sUnitKummerNormSupport n SAbove = SAbove := by
+    simpa using
       sUnitKummerNormSupport_cyclotomicKummerNormSupportAbove
-        (K := K) n seed
+         n seed
   apply Finset.Subset.antisymm
   · intro v hv
     change v ∈
       S ∪
-        (sUnitKummerNormSupport (K := C) n SAbove).image
-          (fun W => finitePlaceBelow (K := K) W) at hv
+        (sUnitKummerNormSupport n SAbove).image
+          (fun W => finitePlaceBelow W) at hv
     rcases Finset.mem_union.mp hv with hvS | hvAbove
     · exact hvS
     · rw [hstable] at hvAbove
       obtain ⟨W, hW, rfl⟩ := Finset.mem_image.mp hvAbove
       exact
         (mem_cyclotomicKummerNormSupportAbove_iff
-          (K := K) n seed W).mp hW
-  · exact subset_cyclotomicKummerNormSupport (K := K) n S
+           n seed W).mp hW
+  · exact subset_cyclotomicKummerNormSupport n S
+
+end
 
 /-- The actual full S-unit Kummer extension over the cyclotomic base,
 formed inside its fixed separable closure and using the chosen enlargement
@@ -253,43 +243,40 @@ noncomputable abbrev cyclotomicFullSUnitKummerExtension
       (K := CyclotomicField (n : ℕ) K) n
       (cyclotomicKummerNormSupportAbove (K := K) n seed))
 
+section
+
+variable (n : ℕ+) (seed : Finset (HeightOneSpectrum (𝓞 K)))
+
 /-- The cyclotomic full S-unit Kummer extension is Galois over the
 cyclotomic base. -/
-theorem cyclotomicFullSUnitKummerExtension_isGalois
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem cyclotomicFullSUnitKummerExtension_isGalois :
     IsGalois
       (CyclotomicField (n : ℕ) K)
       (cyclotomicFullSUnitKummerExtension (K := K) n seed) := by
-  simpa only [cyclotomicFullSUnitKummerExtension] using
+  simpa using
     (KummerTheory.fullSUnitKummerExtension_isGalois
-      (K := CyclotomicField (n : ℕ) K)
-      (Omega := SeparableClosure (CyclotomicField (n : ℕ) K))
+
       n (sUnitKummerNormSupport
-        (K := CyclotomicField (n : ℕ) K) n
-        (cyclotomicKummerNormSupportAbove (K := K) n seed)))
+         n
+        (cyclotomicKummerNormSupportAbove n seed)))
 
 /-- The cyclotomic full S-unit Kummer extension is finite over the
 cyclotomic base. -/
-theorem cyclotomicFullSUnitKummerExtension_finiteDimensional
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem cyclotomicFullSUnitKummerExtension_finiteDimensional :
     FiniteDimensional
       (CyclotomicField (n : ℕ) K)
       (cyclotomicFullSUnitKummerExtension (K := K) n seed) := by
   let C := CyclotomicField (n : ℕ) K
-  have hmu : (primitiveRoots (n : ℕ) C).Nonempty :=
-    cyclotomicKummerNormDescent_primitiveRoots_nonempty
-      (K := K) n
-  have hnC : ((n : ℕ) : C) ≠ 0 :=
-    cyclotomicKummerNormDescent_natCast_ne_zero
-      (K := K) n
-  simpa only [C, cyclotomicFullSUnitKummerExtension] using
+  simpa using
     (KummerTheory.fullSUnitKummerExtension_finiteDimensional
-      (K := C) (Omega := SeparableClosure C)
-      n hnC hmu
-      (sUnitKummerNormSupport (K := C) n
-        (cyclotomicKummerNormSupportAbove (K := K) n seed)))
+
+      n (cyclotomicKummerNormDescent_natCast_ne_zero
+        n) (cyclotomicKummerNormDescent_primitiveRoots_nonempty
+        n)
+      (sUnitKummerNormSupport n
+        (cyclotomicKummerNormSupportAbove n seed)))
+
+end
 
 noncomputable local instance
     cyclotomicKummerNormDescent_kummerFiniteDimensional
@@ -331,30 +318,26 @@ private theorem
   classical
   dsimp only
   let C := CyclotomicField (n : ℕ) K
-  let S' := cyclotomicKummerNormSupportAbove (K := K) n seed
-  let E := cyclotomicFullSUnitKummerExtension (K := K) n seed
-  let : NumberField E :=
-    cyclotomicKummerNormDescent_kummerNumberField (K := K) n seed
-  have hmu : (primitiveRoots (n : ℕ) C).Nonempty :=
-    cyclotomicKummerNormDescent_primitiveRoots_nonempty
-      (K := K) n
-  have hstable :
-      sUnitKummerNormSupport (K := C) n S' = S' := by
-    simpa only [C, S'] using
-      sUnitKummerNormSupport_cyclotomicKummerNormSupportAbove
-        (K := K) n seed
+  let S' := cyclotomicKummerNormSupportAbove n seed
+  let E := cyclotomicFullSUnitKummerExtension n seed
+  let :=
+    cyclotomicKummerNormDescent_kummerNumberField n seed
   have hNormCanonical :
       (_root_.ideleClassNorm C E).range =
-        ideleClassPowerLocalUnitSubgroup (K := C) n
-          (sUnitKummerNormSupport (K := C) n S') ∅ := by
-    simpa only [C, S', E, cyclotomicFullSUnitKummerExtension] using
+        ideleClassPowerLocalUnitSubgroup n
+          (sUnitKummerNormSupport n S') ∅ := by
+    simpa using
       (fullSUnitKummerExtension_ideleClassNormRange_eq_powerLocalUnit
-        (K := C) (Omega := SeparableClosure C)
-        n hn hmu S')
-  exact hNormCanonical.trans
+
+        n hn (cyclotomicKummerNormDescent_primitiveRoots_nonempty
+          n) S')
+  refine hNormCanonical.trans
     (congrArg
-      (fun T => ideleClassPowerLocalUnitSubgroup (K := C) n T ∅)
-      hstable)
+      (fun T => ideleClassPowerLocalUnitSubgroup n T ∅)
+      ?_)
+  simpa using
+  sUnitKummerNormSupport_cyclotomicKummerNormSupportAbove
+     n seed
 
 @[reducible]
 noncomputable local instance
@@ -367,26 +350,6 @@ noncomputable local instance
       (CyclotomicField (n : ℕ) K)
       (cyclotomicFullSUnitKummerExtension (K := K) n seed)).comp
     (algebraMap K (CyclotomicField (n : ℕ) K))).toAlgebra
-
-@[reducible]
- noncomputable def
-    cyclotomicKummerNormDescent_kummerSMulOverBase
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
-    SMul K
-      (cyclotomicFullSUnitKummerExtension (K := K) n seed) :=
-  Algebra.toSMul
-    (self := cyclotomicKummerNormDescent_kummerAlgebraOverBase
-      (K := K) n seed)
-
-@[reducible]
- noncomputable def
-    cyclotomicKummerNormDescent_kummerModuleOverBase
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
-    Module K
-      (cyclotomicFullSUnitKummerExtension (K := K) n seed) :=
-  Algebra.toModule
 
  theorem
     cyclotomicKummerNormDescent_kummerScalarTower
@@ -404,13 +367,11 @@ noncomputable local instance
     FiniteDimensional K
       (cyclotomicFullSUnitKummerExtension (K := K) n seed) :=
   by
-    let : IsScalarTower K
-        (CyclotomicField (n : ℕ) K)
-        (cyclotomicFullSUnitKummerExtension (K := K) n seed) :=
-      cyclotomicKummerNormDescent_kummerScalarTower (K := K) n seed
+    let :=
+      cyclotomicKummerNormDescent_kummerScalarTower n seed
     exact FiniteDimensional.trans K
       (CyclotomicField (n : ℕ) K)
-      (cyclotomicFullSUnitKummerExtension (K := K) n seed)
+      (cyclotomicFullSUnitKummerExtension n seed)
 
 /-- The norm range of the actual cyclotomic full S-unit Kummer extension,
 viewed as a finite extension of `K`, lies in the power-local-unit subgroup
@@ -431,21 +392,16 @@ theorem
   classical
   dsimp only
   let C := CyclotomicField (n : ℕ) K
-  let S := cyclotomicKummerNormSupport (K := K) n seed
-  let S' := cyclotomicKummerNormSupportAbove (K := K) n seed
-  let E := cyclotomicFullSUnitKummerExtension (K := K) n seed
-  let : IsScalarTower K C E :=
-    cyclotomicKummerNormDescent_kummerScalarTower (K := K) n seed
-  let : NumberField E :=
-    cyclotomicKummerNormDescent_kummerNumberField (K := K) n seed
-  have hNormC :
-      (_root_.ideleClassNorm C E).range =
-        ideleClassPowerLocalUnitSubgroup (K := C) n S' ∅ :=
-    cyclotomicFullSUnitKummerExtension_cyclotomicNormRange
-      (K := K) n hn seed
+  let S := cyclotomicKummerNormSupport n seed
+  let S' := cyclotomicKummerNormSupportAbove n seed
+  let E := cyclotomicFullSUnitKummerExtension n seed
+  let :=
+    cyclotomicKummerNormDescent_kummerScalarTower n seed
+  let :=
+    cyclotomicKummerNormDescent_kummerNumberField n seed
   have hSupport :
       ∀ W : HeightOneSpectrum (𝓞 C),
-        W ∈ S' ↔ finitePlaceBelow (K := K) W ∈ S := by
+        W ∈ S' ↔ finitePlaceBelow W ∈ S := by
     intro W
     simpa only [C, S, S'] using
       (mem_cyclotomicKummerNormSupportAbove_iff
@@ -455,9 +411,10 @@ theorem
     (K := K) (M := C) (L := E) c]
   apply
     (ideleClassNorm_map_powerLocalUnitSubgroup_le_of_supports_above
-      (K := K) (L := C) n S S' hSupport)
+        n S S' hSupport)
   refine ⟨_root_.ideleClassNorm C E c, ?_, rfl⟩
-  rw [← hNormC]
+  rw [← (cyclotomicFullSUnitKummerExtension_cyclotomicNormRange
+    n hn seed)]
   exact ⟨c, rfl⟩
 
 /-- Passing to the finite normal closure produces an actual finite Galois
@@ -479,22 +436,22 @@ theorem
         (cyclotomicKummerNormSupport (K := K) n seed) ∅ := by
   classical
   dsimp only
-  let E := cyclotomicFullSUnitKummerExtension (K := K) n seed
-  let : NumberField E :=
-    cyclotomicKummerNormDescent_kummerNumberField (K := K) n seed
+  let E := cyclotomicFullSUnitKummerExtension n seed
+  let :=
+    cyclotomicKummerNormDescent_kummerNumberField n seed
   let F := finiteNormalClosure K E
   calc
-    (_root_.ideleClassNorm K F).range ≤
+    _ ≤
         (_root_.ideleClassNorm K E).range := by
-      simpa only [F] using
+      simpa using
         (finiteNormalClosure_ideleClassNorm_range_le_source
-          (K := K) (L := E))
+           )
     _ ≤ ideleClassPowerLocalUnitSubgroup
-          (K := K) n
-          (cyclotomicKummerNormSupport (K := K) n seed) ∅ := by
-      simpa only [E] using
+           n
+          (cyclotomicKummerNormSupport n seed) ∅ := by
+      simpa using
         (cyclotomicFullSUnitKummerExtension_ideleClassNormRange_le_powerLocalUnit
-          (K := K) n hn seed)
+           n hn seed)
 
 end GlobalClassFields
 end GlobalClassFieldTheory

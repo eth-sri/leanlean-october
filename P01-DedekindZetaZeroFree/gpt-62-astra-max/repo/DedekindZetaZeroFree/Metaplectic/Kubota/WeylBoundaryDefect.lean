@@ -28,7 +28,7 @@ private theorem factor (K : Type*) [Field K] (M : Type*) [CommGroup M]
         (X K (g * h) * X K (h * w K) / (X K g * det K h)) := by
   unfold KubotaElementaryLastArgument.defect KubotaElementaryLastArgument.tau
   simp only [map_mul, X_w, one_mul, mul_assoc]
-  simpa only [one_mul, mul_one, mul_assoc] using
+  simpa using
     kp_kubota_defect_symbol_algebra K M B hL hR hAlt
       (X K g) (X K h) (X K (h * w K)) (X K (g * h))
       (X K (g * (h * w K))) 1 (det K g) (det K h)

@@ -11,17 +11,15 @@ noncomputable section
 open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.FiniteWhittakerProjectors
 open MomentSources NumberField
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction renaming actual_eq_word → actual_eq_word
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming word_add → word_add
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming word_smul → word_smul
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.RawFiniteCompact renaming smooth_translate → smooth_translate
-open _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum renaming smooth_add → smooth_add
-open _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum renaming smooth_smul → smooth_smul
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction (actual_eq_word)
+open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets (word_add word_smul)
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.RawFiniteCompact (smooth_translate)
+open _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum (smooth_add smooth_smul)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 local notation "ρ" => KPLiteralRaw.rightAction F R.A.zeta12 R.A.primitive_zeta12
 local notation "W" => AdelicRightLieWords.actualRightWord F R.A.zeta12 R.A.primitive_zeta12
 local notation "FinG" => KPGlobalTorusFunctionData.finitePart F R.A.zeta12 R.A.primitive_zeta12

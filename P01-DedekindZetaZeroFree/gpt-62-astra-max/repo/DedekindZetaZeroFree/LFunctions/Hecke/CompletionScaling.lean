@@ -9,24 +9,23 @@ namespace DedekindZetaZeroFree.LargeSieve
 noncomputable section
 open scoped NumberField Classical
 
-def heckeCompletionLogScale (F E : Type) [Field F] [NumberField F]
-    [Field E] [NumberField E] (f : Ideal (𝓞 F)) : ℝ :=
+variable (F E : Type) [Field F] [NumberField F] [Field E] [NumberField E] (f : Ideal (𝓞 F))
+
+def heckeCompletionLogScale : ℝ :=
   (Real.log ((NumberField.discr E).natAbs : ℝ) -
     2 * Real.log ((NumberField.discr F).natAbs : ℝ) -
     Real.log (Ideal.absNorm f : ℝ)) / 2
 
-theorem heckeCompletionFactor_scaling
-    (F E : Type) [Field F] [NumberField F] [Field E] [NumberField E]
-    (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
+theorem heckeCompletionFactor_scaling (hf : f ≠ ⊥)
     (hcomplex : NumberField.InfinitePlace.nrComplexPlaces E =
       2 * NumberField.InfinitePlace.nrComplexPlaces F) :
     ∀ s : ℂ, heckeCompletionFactor E ⊤ s =
       Complex.exp ((heckeCompletionLogScale F E f : ℂ) * s) *
         heckeCompletionFactor F ⊤ s * heckeCompletionFactor F f s := by
   intro s
-  have hdE : NumberField.discr E ≠ 0 := NumberField.discr_ne_zero E
-  have hdF : NumberField.discr F ≠ 0 := NumberField.discr_ne_zero F
-  have hN : Ideal.absNorm f ≠ 0 := Ideal.absNorm_eq_zero_iff.not.mpr hf
+  have hdE := NumberField.discr_ne_zero E
+  have hdF := NumberField.discr_ne_zero F
+  have hN := Ideal.absNorm_eq_zero_iff.not.mpr hf
   have hxE : (0 : ℝ) < ((NumberField.discr E).natAbs : ℝ) :=
     Nat.cast_pos.mpr (Int.natAbs_pos.mpr hdE)
   have hxF : (0 : ℝ) < ((NumberField.discr F).natAbs : ℝ) :=
@@ -47,7 +46,7 @@ theorem heckeCompletionFactor_scaling
         ((|NumberField.discr F| : ℤ) : ℂ) ^ (s / 2) *
         (((|NumberField.discr F| : ℤ) : ℂ) * (Ideal.absNorm f : ℂ)) ^ (s / 2) := by
     rw [hbaseE, hbaseF, hbaseN, ← Complex.ofReal_mul]
-    have hxFN : (0 : ℝ) < (NumberField.discr F).natAbs * (Ideal.absNorm f : ℝ) :=
+    have hxFN :=
       mul_pos hxF hxN
     rw [Complex.cpow_def_of_ne_zero (by exact_mod_cast hxE.ne'),
       Complex.cpow_def_of_ne_zero (by exact_mod_cast hxF.ne'),

@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -30,7 +26,6 @@ open scoped NumberField RestrictedProduct WithZero
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -47,8 +42,7 @@ theorem count_toPrincipalIdeal (x : Kˣ)
   obtain ⟨⟨n, d, hd⟩, hnd⟩ :=
     IsLocalization.surj (nonZeroDivisors (𝓞 K)) (x : K)
   let d' : nonZeroDivisors (𝓞 K) := ⟨d, hd⟩
-  have hx :
-      (x : K) = IsLocalization.mk' K n d' :=
+  have hx :=
     IsLocalization.eq_mk'_iff_mul_eq.mpr hnd
   have hn : n ≠ 0 := by
     intro hn
@@ -83,7 +77,7 @@ theorem fractionalIdeal_principalIdele (x : Kˣ) :
   intro v
   rw [count_toPrincipalIdeal]
   change FractionalIdeal.count K v
-      (((FractionalIdealGroup.factorization (K := K))
+      (((FractionalIdealGroup.factorization)
         (FiniteIdeleGroup.valuationVector
           (principalIdele K x).2) : FractionalIdealGroup K) :
         FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
@@ -103,8 +97,7 @@ theorem classGroup_mk_eq_one_iff
       I ∈ (toPrincipalIdeal (𝓞 K) K).range := by
   constructor
   · intro h
-    have h' := congrArg (ClassGroup.equiv K) h
-    simpa using h'
+    simpa using (congrArg (ClassGroup.equiv K) h)
   · intro h
     apply (ClassGroup.equiv K).injective
     simpa using h
@@ -114,9 +107,7 @@ theorem idealClass_principalIdele (x : Kˣ) :
     idealClass (principalIdele K x) = 1 := by
   change ClassGroup.mk K
       (fractionalIdeal (principalIdele K x)) = 1
-  rw [fractionalIdeal_principalIdele,
-    classGroup_mk_eq_one_iff]
-  exact ⟨x, rfl⟩
+  simp [fractionalIdeal_principalIdele, classGroup_mk_eq_one_iff]
 
 /-- The subgroup `I_K^{S∞} Kˣ` defining the ordinary ideal class quotient. -/
 def ordinaryIdealClassSubgroup : Subgroup (IdeleGroup K) :=
@@ -138,18 +129,16 @@ theorem ordinaryIdealClassSubgroup_eq_ker :
         fractionalIdeal_ker]
       exact hu
     change idealClass (u * principalIdele K x) = 1
-    rw [map_mul, idealClass_principalIdele, mul_one]
+    simp
     change ClassGroup.mk K (fractionalIdeal u) = 1
     rw [hu', map_one]
   · intro ha
     change ClassGroup.mk K (fractionalIdeal a) = 1 at ha
     rw [classGroup_mk_eq_one_iff] at ha
     obtain ⟨x, hx⟩ := ha
-    let u : IdeleGroup K := a * (principalIdele K x)⁻¹
-    have hu : u ∈ integralAtFinitePlaces (K := K) := by
+    let u := a * (principalIdele K x)⁻¹
+    have hu : u ∈ integralAtFinitePlaces := by
       rw [← fractionalIdeal_ker, MonoidHom.mem_ker]
-      change fractionalIdeal
-          (a * (principalIdele K x)⁻¹) = 1
       rw [map_mul, map_inv, fractionalIdeal_principalIdele,
         ← hx, mul_inv_cancel]
     rw [ordinaryIdealClassSubgroup, Subgroup.mem_sup]
@@ -164,16 +153,16 @@ def quotientIntegralSupPrincipalEquiv :
     IdeleGroup K ⧸
         (integralAtFinitePlaces (K := K) ⊔ principalSubgroup K) ≃*
       ClassGroup (𝓞 K) := by
-  let h : integralAtFinitePlaces (K := K) ⊔ principalSubgroup K =
-      (idealClass (K := K)).ker := by
+  let h : integralAtFinitePlaces ⊔ principalSubgroup K =
+      (idealClass).ker := by
     simpa [ordinaryIdealClassSubgroup] using
-      ordinaryIdealClassSubgroup_eq_ker (K := K)
+      ordinaryIdealClassSubgroup_eq_ker
   exact
     (QuotientGroup.congr
-      (integralAtFinitePlaces (K := K) ⊔ principalSubgroup K)
-      (idealClass (K := K)).ker (MulEquiv.refl (IdeleGroup K))
+      (integralAtFinitePlaces ⊔ principalSubgroup K)
+      (idealClass).ker (MulEquiv.refl (IdeleGroup K))
       (by simpa using h)).trans
-        (quotientIdealClassKernelEquiv (K := K))
+        (quotientIdealClassKernelEquiv)
 
 end IdeleGroup
 

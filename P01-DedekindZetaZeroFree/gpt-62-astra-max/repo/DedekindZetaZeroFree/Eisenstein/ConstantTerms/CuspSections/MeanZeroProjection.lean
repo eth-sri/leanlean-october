@@ -13,12 +13,12 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualMeanZeroSectio
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
 def actualEnd : KPMeanZeroWeightedEnergy.End F ζ hζ H.totallyComplex
  (KPContFlatCuspIncomingEvaluation.atlasLevel F ζ hζ C R P H U) where
  atlas := KPContFlatCuspIncomingEvaluation.atlas F ζ hζ C R P H U
@@ -26,9 +26,9 @@ def actualEnd : KPMeanZeroWeightedEnergy.End F ζ hζ H.totallyComplex
  cusp := a.2
 
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable (hι : Function.Injective ι) (f : ℂ → S)
-variable (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (hι : Function.Injective ι) (f : ℂ → S)
+    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
 theorem parameterScalar_zero_coordinates (s:ℂ) (p:KPCuspCharts.Coordinates F) :
  KPContActualChamberMeanZeroAdapter.parameterScalar F ζ hζ C R P H U a ι f 0 s
    (KPCuspCharts.toArch F p) =
@@ -46,7 +46,7 @@ theorem parameterScalar_zero_coordinates (s:ℂ) (p:KPCuspCharts.Coordinates F) 
 
 open KPContFlatCuspIncomingEvaluation
 private theorem inv_fix {a c:ℂ} (ha:a≠0) (h:a*c=c) : a⁻¹*c=c := by
- calc a⁻¹*c = a⁻¹*(a*c) := congrArg (a⁻¹ * ·) h.symm
+ calc _ = a⁻¹*(a*c) := congrArg (a⁻¹ * ·) h.symm
       _ = c := by rw [← mul_assoc,inv_mul_cancel₀ ha,one_mul]
 private theorem average_fix {I:Type*} [Fintype I] [Nonempty I] (w:I→ℂ) (c:ℂ)
  (hw:∀i,w i*c=c) : ((Fintype.card I:ℂ)⁻¹*∑i,w i)*c=c := by
@@ -80,7 +80,7 @@ theorem projectedScalar_reconstruct (c:ℂ)
  exact hdeck (Quotient.out q)
 
 variable (s:ℂ) (hs:s∈KPContActualChamberNormalSeries.V)
-variable (t:ℝ) (b:KPCuspCharts.Shape F)
+    (t:ℝ) (b:KPCuspCharts.Shape F)
 include hι hf hs in
 theorem actualCuspSheet_sheet_identity (x:KPCuspCharts.Horizontal F) (ε:rootsOfUnity 3 F) :
  KPContActualChamberCasimirJets.cuspSheet F ζ hζ C R P H U ι f a 0 s t x b ε =
@@ -118,11 +118,6 @@ theorem actualCuspSheet_rawMean_deck_fixed (l:(parabolic F ζ hζ C R P H U a).L
    (KPCuspGenuineMonodromy.chi F ζ hζ (rho F ζ hζ C R P H U a
     ((parabolic F ζ hζ C R P H U a).inclusion (Multiplicative.ofAdd l))) : ℂ)*φ z := by
    dsimp only [φ]
-   change KPContActualChamberCasimirJets.cuspSheet F ζ hζ C R P H U ι f a 0 s t
-     (Quotient.out (z + QuotientAddGroup.mk (KPCuspCharts.embedding F l.val))) b 1 =
-     (KPCuspGenuineMonodromy.chi F ζ hζ (rho F ζ hζ C R P H U a
-       ((parabolic F ζ hζ C R P H U a).inclusion (Multiplicative.ofAdd l))) : ℂ)*
-       KPContActualChamberCasimirJets.cuspSheet F ζ hζ C R P H U ι f a 0 s t (Quotient.out z) b 1
    rw [← KPContinuation.ChamberModerateGrowth.actualCuspSheet_translation F ζ hζ C R P H U ι hι f hf a s hs l]
    apply KPContinuation.ChamberModerateGrowth.actualCuspSheet_kernel_representative F ζ hζ C R P H U ι hι f hf a s hs
    calc
@@ -142,23 +137,16 @@ theorem actualCuspSheet_central_fixed (η:KPContSectorPhaseComponentCharts.centr
  KPContActualChamberCasimirJets.cuspSheet F ζ hζ C R P H U ι f a 0 s t x b 1 =
  KPContActualChamberCasimirJets.cuspSheet F ζ hζ C R P H U ι f a 0 s t x b 1 := by
  let c := KPCuspGenuineMonodromy.central F ζ hζ η.val
- have hc : c ∈ (atlasLevel F ζ hζ C R P H U).toOpenSubgroup := η.property
- have hu : c.val ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U := by
-   rw [EisensteinSmoothGerms.ScalarSource.level_matching F ζ hζ U]
-   exact ⟨c,hc,rfl⟩
  let g := cuspGroup F ζ hζ C R P H U a t x b 1
- have hcomm : g * KPSmoothLocalQuotientCharts.centreMap F ζ hζ η.val =
-    KPSmoothLocalQuotientCharts.centreMap F ζ hζ η.val * g :=
-   Subgroup.mem_center_iff.mp (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨η.val,rfl⟩) g
- change _ * KPContActualChamberNormalSeries.E F ζ hζ U ι f s g =
-   KPContActualChamberNormalSeries.E F ζ hζ U ι f s g
  calc
    _ = KPContActualChamberNormalSeries.E F ζ hζ U ι f s
      (KPSmoothLocalQuotientCharts.centreMap F ζ hζ η.val * g) :=
      ((KPContActualChamberNormalSeries.covariance F ζ hζ U ι f hι hf s hs).2.1 η.val g).symm
    _ = KPContActualChamberNormalSeries.E F ζ hζ U ι f s
-     (g * KPSmoothLocalQuotientCharts.centreMap F ζ hζ η.val) := congrArg _ hcomm.symm
-   _ = _ := (KPContActualChamberNormalSeries.covariance F ζ hζ U ι f hι hf s hs).2.2.1 g ⟨c.val,hu⟩
+     (g * KPSmoothLocalQuotientCharts.centreMap F ζ hζ η.val) := congrArg _ (Subgroup.mem_center_iff.mp (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨η.val,rfl⟩) g).symm
+   _ = _ := (KPContActualChamberNormalSeries.covariance F ζ hζ U ι f hι hf s hs).2.2.1 g ⟨c.val,(by
+     rw [EisensteinSmoothGerms.ScalarSource.level_matching F ζ hζ U]
+     exact ⟨c,η.property,rfl⟩)⟩
 
 include hι hf hs in
 

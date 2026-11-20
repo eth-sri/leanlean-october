@@ -15,13 +15,17 @@ open MomentSources NonDegenerate
 
 section Algebraic
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
-variable {V : ι → Type*} [∀ i, AddCommGroup (V i)] [∀ i, Module ℂ (V i)]
-variable {A : ι → Type*} (op : ∀ i, A i → Module.End ℂ (V i))
+    {V : ι → Type*} [∀ i, AddCommGroup (V i)] [∀ i, Module ℂ (V i)]
+    {A : ι → Type*} (op : ∀ i, A i → Module.End ℂ (V i))
 
-def tensorSlot (i : ι) (T : Module.End ℂ (V i)) : Module.End ℂ (PiTensorProduct ℂ V) :=
+section
+
+variable (i : ι) (T : Module.End ℂ (V i))
+
+def tensorSlot : Module.End ℂ (PiTensorProduct ℂ V) :=
   PiTensorProduct.map (Function.update (fun j => LinearMap.id : ∀ j, Module.End ℂ (V j)) i T)
 
-theorem tensorSlot_tprod (i : ι) (T : Module.End ℂ (V i)) (v : ∀ i, V i) :
+theorem tensorSlot_tprod (v : ∀ i, V i) :
     tensorSlot i T (PiTensorProduct.tprod ℂ v) =
       PiTensorProduct.tprod ℂ (Function.update v i (T (v i))) := by
   rw [tensorSlot, PiTensorProduct.map_tprod]
@@ -30,6 +34,8 @@ theorem tensorSlot_tprod (i : ι) (T : Module.End ℂ (V i)) (v : ∀ i, V i) :
   by_cases h : j = i
   · subst j; simp
   · simp [h]
+
+end
 
 theorem tupleOperator_mem_of_slot_stable
     (M : Submodule ℂ (PiTensorProduct ℂ V))
@@ -59,8 +65,8 @@ theorem tupleOperator_mem_of_slot_stable
 end Algebraic
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 
 def NativeSlotComparisons (D : Faithful R N) : Prop :=
   ∀ t : RestrictedTensorSimple.Level D.bad,
@@ -80,17 +86,16 @@ def NativeSlotComparisons (D : Faithful R N) : Prop :=
         L (tensorSlot ⟨Sum.inr q, hq⟩ (localOperation R D.finiteData (Sum.inr q) b) x) =
           KPLiteralRaw.rightAction F R.A.zeta12 R.A.primitive_zeta12 a (L x))
 
-theorem tensorSlot_id
-    {ι : Type*} [Fintype ι] [DecidableEq ι]
-    {V : ι → Type*} [∀ i, AddCommGroup (V i)] [∀ i, Module ℂ (V i)]
-    (i : ι) : tensorSlot i (LinearMap.id : Module.End ℂ (V i)) = LinearMap.id := by
+section
+
+variable {ι : Type*} [Fintype ι] [DecidableEq ι] {V : ι → Type*} [∀ i, AddCommGroup (V i)]
+    [∀ i, Module ℂ (V i)] (i : ι)
+
+theorem tensorSlot_id : tensorSlot i (LinearMap.id : Module.End ℂ (V i)) = LinearMap.id := by
   unfold tensorSlot
   rw [Function.update_eq_self, PiTensorProduct.map_id]
 
-theorem tensorSlot_comp
-    {ι : Type*} [Fintype ι] [DecidableEq ι]
-    {V : ι → Type*} [∀ i, AddCommGroup (V i)] [∀ i, Module ℂ (V i)]
-    (i : ι) (A B : Module.End ℂ (V i)) :
+theorem tensorSlot_comp (A B : Module.End ℂ (V i)) :
     tensorSlot i (A.comp B) = (tensorSlot i A).comp (tensorSlot i B) := by
   rw [tensorSlot, tensorSlot, tensorSlot, ← PiTensorProduct.map_comp]
   congr 1
@@ -99,7 +104,12 @@ theorem tensorSlot_comp
   · subst j; simp
   · simp [h]
 
-theorem complex_word_slot_stable (D : Faithful R N) (hD : NativeSlotComparisons D)
+end
+
+variable (D : Faithful R N) (hD : NativeSlotComparisons D)
+
+include hD in
+theorem complex_word_slot_stable
     (t : RestrictedTensorSimple.Level D.bad)
     (w : NumberField.InfinitePlace F) (hw : Sum.inl w ∈ t.val)
     (a : List ComplexGenerator)
@@ -138,8 +148,8 @@ theorem complex_word_slot_stable (D : Faithful R N) (hD : NativeSlotComparisons 
         exact (congrArg (fun z => z ∈ hcHeckeSpan D.realization) (hj y)).mpr
           (hcHeckeSpan_actualRight D.realization ih j))
 
-theorem generated_of_native_slot_comparisons (D : Faithful R N)
-    (hD : NativeSlotComparisons D) : ∀ x, D.coreMap x ∈ hcHeckeSpan D.realization := by
+include hD in
+theorem generated_of_native_slot_comparisons : ∀ x, D.coreMap x ∈ hcHeckeSpan D.realization := by
   obtain ⟨s, v, hs, hseed, _, hv⟩ := D.initial_pure_nonzero
   apply generated_of_detected_seed_orbits D.toDictionary s v hs hv
   intro t a
@@ -170,7 +180,7 @@ theorem generated_of_native_slot_comparisons (D : Faithful R N)
   exact scalarWordSpan_le_hcHeckeSpan D.realization
     (Submodule.subset_span ⟨(D.probe, []), rfl⟩)
 
-def faithfulGeneratedOfNativeSlots (D : Faithful R N) (hD : NativeSlotComparisons D) :
+def faithfulGeneratedOfNativeSlots :
     Generated R N where
   toFaithful := D
   generated := generated_of_native_slot_comparisons D hD

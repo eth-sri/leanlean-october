@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 namespace RamificationTheory
@@ -33,7 +30,7 @@ noncomputable section
 open scoped Pointwise
 
 variable {A B : Type*} [CommRing A] [CommRing B] [Algebra A B]
-variable {G : Type*} [Group G] [MulSemiringAction G B] [SMulCommClass G A B]
+    {G : Type*} [Group G] [MulSemiringAction G B] [SMulCommClass G A B]
 variable [TopologicalSpace G] [CompactSpace G] [TotallyDisconnectedSpace G]
 variable [IsTopologicalGroup G] [TopologicalSpace B] [DiscreteTopology B]
 variable [ContinuousSMul G B] [Algebra.IsInvariant A B G]
@@ -64,16 +61,14 @@ theorem normal_of_profinite
       (stabilizer_isOpen G x) (MulAction.mem_stabilizer_iff.mpr (one_smul G x))
   let B' := FixedPoints.subalgebra A B N.1.1
   let x' : B' := ⟨x, fun g ↦ hN g.2⟩
-  let j : B' →ₐ[A] B := B'.val
-  have hjx : j x' = x := rfl
+  let j := B'.val
   let : Algebra.IsInvariant A B' (G ⧸ N.1.1) := inferInstance
   cases nonempty_fintype (G ⧸ N.1.1)
   obtain ⟨p, hp, _hdegree, hpmonic⟩ :=
     Polynomial.lifts_and_degree_eq_and_monic
       (Algebra.IsInvariant.charpoly_mem_lifts A B' (G ⧸ N.1.1) x')
       (MulSemiringAction.monic_charpoly (G ⧸ N.1.1) x')
-  let qB : B →+* B ⧸ Q := Ideal.Quotient.mk Q
-  let qB' : B' →+* B ⧸ Q := qB.comp j.toRingHom
+  let qB' := (Ideal.Quotient.mk Q).comp j.toRingHom
   have hroot : Polynomial.aeval (Ideal.Quotient.mk Q x)
       (p.map (algebraMap A (A ⧸ P))) = 0 := by
     rw [Polynomial.aeval_def, ← Polynomial.eval_map]
@@ -86,18 +81,15 @@ theorem normal_of_profinite
       ext a
       rfl
     calc
-      Polynomial.eval (Ideal.Quotient.mk Q x)
-          ((p.map (algebraMap A (A ⧸ P))).map
-            (algebraMap (A ⧸ P) (B ⧸ Q))) =
+      _ =
           Polynomial.eval (Ideal.Quotient.mk Q x)
             ((p.map (algebraMap A B')).map qB') := by
         rw [hmap, Polynomial.map_map, Ideal.Quotient.algebraMap_eq]
       _ = 0 := by
         rw [hp, show Ideal.Quotient.mk Q x = qB' x' from rfl,
           Polynomial.eval_map_apply, MulSemiringAction.eval_charpoly, map_zero]
-  have hdiv := minpoly.dvd (A ⧸ P) (Ideal.Quotient.mk Q x)
-    (p := p.map (algebraMap A (A ⧸ P))) hroot
-  refine Polynomial.Splits.of_dvd ?_ ?_ ((Polynomial.map_dvd_map' _).mpr hdiv)
+  refine Polynomial.Splits.of_dvd ?_ ?_ ((Polynomial.map_dvd_map' _).mpr (minpoly.dvd (A ⧸ P) (Ideal.Quotient.mk Q x)
+    hroot))
   · rw [Polynomial.map_map, ← IsScalarTower.algebraMap_eq,
       IsScalarTower.algebraMap_eq A B', ← Polynomial.map_map, hp,
       MulSemiringAction.charpoly_eq, Polynomial.map_prod]

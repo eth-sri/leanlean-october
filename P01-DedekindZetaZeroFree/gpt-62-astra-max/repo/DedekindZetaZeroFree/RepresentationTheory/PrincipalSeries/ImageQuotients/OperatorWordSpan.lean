@@ -10,13 +10,13 @@ open scoped Classical NumberField TensorProduct
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open NumberField KPGlobalTorusFiniteStages HCGeneration TensorActionSource MomentSources
 open KPContActualSphericalRightFieldIdentification
-open _root_.DedekindZetaZeroFree.FourierContinuation.HCGeneration renaming map_tensorSlot → map_tensorSlot
+open _root_.DedekindZetaZeroFree.FourierContinuation.HCGeneration (map_tensorSlot)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (H : ∀ q, LocalImageData R q)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (H : ∀ q, LocalImageData R q)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 6400000
 
@@ -43,12 +43,16 @@ theorem localImageQuotient_surjective (v : KPHilbert.Place F) :
     rintro ⟨f, x, rfl⟩
     exact ⟨x, rfl⟩
 
-def stageImageQuotient (s : RestrictedTensorSimple.Level (bad R.A P C)) :
+section
+
+variable (s : RestrictedTensorSimple.Level (bad R.A P C))
+
+def stageImageQuotient :
     RestrictedTensorSimple.Stage (Plus R.A P C) s.val →ₗ[ℂ]
     RestrictedTensorSimple.Stage (actualLocal R (imageData R P C H)) s.val :=
   PiTensorProduct.map (fun j => localImageQuotient R P C H j.val)
 
-def stageImageGenerator (s : RestrictedTensorSimple.Level (bad R.A P C)) :
+def stageImageGenerator :
     StageGenerator R P C s →
     Module.End ℂ (RestrictedTensorSimple.Stage (actualLocal R (imageData R P C H)) s.val)
   | .compact w k => tensorSlot (V := fun j : s.val => actualLocal R (imageData R P C H) j.val) ⟨Sum.inl w,
@@ -62,8 +66,7 @@ def stageImageGenerator (s : RestrictedTensorSimple.Level (bad R.A P C)) :
       (localOperation R (imageData R P C H) (Sum.inr q)
         (KPPGLLocalCover.coverQuotient F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) a))
 
-theorem stageImageQuotient_generator
-    (s : RestrictedTensorSimple.Level (bad R.A P C)) (b : StageGenerator R P C s)
+theorem stageImageQuotient_generator (b : StageGenerator R P C s)
     (x : RestrictedTensorSimple.Stage (Plus R.A P C) s.val) :
     stageImageQuotient R P C H s (stageGenerator R P C s b x) =
     stageImageGenerator R P C H s b (stageImageQuotient R P C H s x) := by
@@ -79,8 +82,8 @@ theorem stageImageQuotient_generator
   | lie i =>
     exact congrArg (fun L => L x) (map_tensorSlot
       (fun j : s.val => localImageQuotient R P C H j.val)
-      ⟨Sum.inl (actualLieIndexEquiv (F := F) i).1, _⟩ _ _
-      (harmonicPlusDerivative_intertwines (actualLieIndexEquiv (F := F) i).2))
+      ⟨Sum.inl (actualLieIndexEquiv i).1, _⟩ _ _
+      (harmonicPlusDerivative_intertwines (actualLieIndexEquiv i).2))
   | finite q hq a =>
     apply congrArg (fun L => L x) (map_tensorSlot
       (fun j : s.val => localImageQuotient R P C H j.val) ⟨Sum.inr q, hq⟩ _ _ ?_)
@@ -91,35 +94,39 @@ theorem stageImageQuotient_generator
       (imageData R P C H q).inducing.polarization
       (imageData R P C H q).haar (imageData R P C H q).haar_integer _ f
 
+end
+
 def stageImageWord (s : RestrictedTensorSimple.Level (bad R.A P C)) :
     List (StageGenerator R P C s) →
     Module.End ℂ (RestrictedTensorSimple.Stage (actualLocal R (imageData R P C H)) s.val)
   | [] => LinearMap.id
   | b :: w => (stageImageGenerator R P C H s b).comp (stageImageWord s w)
 
-def stageComplexIndex (s : RestrictedTensorSimple.Level (bad R.A P C))
+variable (s : RestrictedTensorSimple.Level (bad R.A P C))
+
+def stageComplexIndex
     (w : InfinitePlace F) : ComplexGenerator → StageGenerator R P C s
   | .inl k => .compact w k
   | .inr b => .lie ((actualLieIndexEquiv (F := F)).symm (w, b))
 
 theorem stageComplexIndex_word
-    (s : RestrictedTensorSimple.Level (bad R.A P C))
     (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val) (a : List ComplexGenerator) :
     stageImageWord R P C H s (a.map (stageComplexIndex R P C s w)) =
     tensorSlot (V := fun j : s.val => actualLocal R (imageData R P C H) j.val)
       ⟨Sum.inl w, hw⟩ (localOperation R (imageData R P C H) (Sum.inl w) a) := by
+  let actualLocal₀ := actualLocal R (imageData R P C H)
   induction a with
-  | nil => exact (tensorSlot_id (V := fun j : s.val => actualLocal R (imageData R P C H) j.val) _).symm
+  | nil => exact (tensorSlot_id (V := fun j : s.val => actualLocal₀ j.val) _).symm
   | cons b a ih =>
     have hb : stageImageGenerator R P C H s (stageComplexIndex R P C s w b) =
-        tensorSlot (V := fun j : s.val => actualLocal R (imageData R P C H) j.val)
+        tensorSlot (V := fun j : s.val => actualLocal₀ j.val)
           ⟨Sum.inl w, hw⟩ (localOperation R (imageData R P C H) (Sum.inl w) [b]) := by
       cases b with
       | inl k => rfl
       | inr b =>
         let slot (wb : InfinitePlace F × Fin 6) :
-            Module.End ℂ (RestrictedTensorSimple.Stage (actualLocal R (imageData R P C H)) s.val) :=
-          tensorSlot (V := fun j : s.val => actualLocal R (imageData R P C H) j.val)
+            Module.End ℂ (RestrictedTensorSimple.Stage (actualLocal₀) s.val) :=
+          tensorSlot (V := fun j : s.val => actualLocal₀ j.val)
             ⟨Sum.inl wb.1, s.property (by simp [bad,
               KPGlobalResidualConstruction.ScalarAbsorption.fullBad])⟩
             (localOperation R (imageData R P C H) (Sum.inl wb.1) [.inr wb.2])

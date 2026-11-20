@@ -25,20 +25,26 @@ def targetSign : Sign → Sign
   | .plus => .minus
   | .minus => .plus
 
-def sourceParameter (ε : Sign) (s : ℂ) : ℂ :=
+section
+
+variable (ε : Sign) (s : ℂ)
+
+def sourceParameter : ℂ :=
   if ε = .plus then s else -s
 
-def targetParameter (ε : Sign) (s : ℂ) : ℂ := -(sourceParameter ε s)
+def targetParameter : ℂ := -(sourceParameter ε s)
 
-def convergenceHalfPlane (ε : Sign) (s : ℂ) : Prop :=
+def convergenceHalfPlane : Prop :=
   if ε = .plus then -(1 / 6 : ℝ) < s.re else s.re < -(1 / 6 : ℝ)
 
-def evaluationUnit (ε : Sign) (s : ℂ) : ℂˣ :=
+def evaluationUnit : ℂˣ :=
   if ε = .plus then rUnit K s else (rUnit K s)⁻¹
 
-def denominator (ε : Sign) (s : ℂ) : ℂ :=
+def denominator : ℂ :=
   if ε = .plus then 1 - t K s else
     1 - (residueCardinality K : ℂ) * (r K s)⁻¹ ^ 6
+
+end
 
 def kernelW (A : LocalBorelData (K := K) (G := G) T) : Sign → G
   | .plus => A.liftedW⁻¹
@@ -122,9 +128,9 @@ theorem convergence_iff_geometric
       (if ε = .plus then ‖t K s‖ < 1 else ‖(t K s)⁻¹‖ < 1) := by
   have hl : 0 < Real.log (residueCardinality K : ℝ) := by
     apply Real.log_pos
-    exact_mod_cast Finite.one_lt_card (α := 𝓀[K])
+    exact_mod_cast Finite.one_lt_card
   have ht : ‖t K s‖ = Real.exp ((-1 - 6 * s.re) * Real.log (residueCardinality K : ℝ)) := by
-    have hq : 0 < (residueCardinality K : ℝ) := by exact_mod_cast Nat.card_pos (α := 𝓀[K])
+    have hq : 0 < (residueCardinality K : ℝ) := by exact_mod_cast Nat.card_pos
     simp only [t, r, norm_mul, norm_inv, norm_pow, Complex.norm_natCast, Complex.norm_exp]
     simp only [Complex.mul_re, Complex.neg_re, Complex.ofReal_re, Complex.neg_im,
       Complex.ofReal_im, mul_zero, sub_zero]
@@ -144,7 +150,7 @@ theorem convergence_iff_geometric
 theorem denominator_ne_zero_at_zero (ε : Sign) :
     denominator K ε 0 ≠ 0 := by
   have hq : (residueCardinality K : ℂ) ≠ 1 := by
-    exact_mod_cast (ne_of_gt (Finite.one_lt_card (α := 𝓀[K])))
+    exact_mod_cast (ne_of_gt (Finite.one_lt_card))
   cases ε <;> simp [denominator, t, r, sub_ne_zero, hq, Ne.symm hq, inv_eq_one]
 
 private theorem laurent_zero (p : LaurentPolynomial ℂ)
@@ -152,22 +158,25 @@ private theorem laurent_zero (p : LaurentPolynomial ℂ)
     (hp : ∀ u ∈ U, LaurentPolynomial.eval₂ (RingHom.id ℂ) u p = 0) : p = 0 := by
   obtain ⟨n, f, hf⟩ := LaurentPolynomial.exists_T_pow p
   have hroots : {x : ℂ | f.eval x = (0 : Polynomial ℂ).eval x}.Infinite := by
-    apply (hU.image (f := fun u : ℂˣ => (u : ℂ)) Units.val_injective.injOn).mono
+    apply (hU.image Units.val_injective.injOn).mono
     rintro x ⟨u, hu, rfl⟩
     have he := congrArg (LaurentPolynomial.eval₂ (RingHom.id ℂ) u) hf
     simp only [map_mul, LaurentPolynomial.eval₂_toLaurent, Polynomial.eval₂_id,
       hp u hu, zero_mul, Polynomial.eval_zero] at he ⊢
     exact he
-  have hz := Polynomial.eq_of_infinite_eval_eq f 0 hroots
-  rw [hz, map_zero] at hf
-  exact (IsUnit.mul_left_inj (LaurentPolynomial.isUnit_T (R := ℂ) (n : ℤ))).mp (by simpa using hf.symm)
+  rw [(Polynomial.eq_of_infinite_eval_eq f 0 hroots), map_zero] at hf
+  exact (IsUnit.mul_left_inj (LaurentPolynomial.isUnit_T (n : ℤ))).mp (by simpa using hf.symm)
 
- def scalarLaurent {V : Type*} [AddCommMonoid V] [Module ℂ V]
-    (p : ℤ →₀ V) (l : V →ₗ[ℂ] ℂ) : LaurentPolynomial ℂ :=
+alias StandardIntegralAndLevelContinuation.laurent_zero := laurent_zero
+
+ section
+
+variable {V : Type*} [AddCommMonoid V] [Module ℂ V] (p : ℤ →₀ V) (l : V →ₗ[ℂ] ℂ)
+
+def scalarLaurent : LaurentPolynomial ℂ :=
   p.sum (fun n v => LaurentPolynomial.C (l v) * LaurentPolynomial.T n)
 
-private theorem scalarLaurent_coeff {V : Type*} [AddCommMonoid V] [Module ℂ V]
-    (p : ℤ →₀ V) (l : V →ₗ[ℂ] ℂ) (n : ℤ) :
+private theorem scalarLaurent_coeff (n : ℤ) :
     (scalarLaurent p l).coeff n = l (p n) := by
   classical
   simp only [scalarLaurent, ← LaurentPolynomial.single_eq_C_mul_T,
@@ -180,6 +189,10 @@ private theorem scalarLaurent_coeff {V : Type*} [AddCommMonoid V] [Module ℂ V]
   · intro hn
     simp [Finsupp.notMem_support_iff.mp hn]
 
+end
+
+alias StandardIntegralAndLevelContinuation.scalarLaurent_coeff := scalarLaurent_coeff
+
 private theorem scalarLaurent_eval {V : Type*} [AddCommMonoid V] [Module ℂ V]
     (p : ℤ →₀ V) (l : V →ₗ[ℂ] ℂ) (u : ℂˣ) :
     LaurentPolynomial.eval₂ (RingHom.id ℂ) u (scalarLaurent p l) =
@@ -191,6 +204,8 @@ private theorem scalarLaurent_eval {V : Type*} [AddCommMonoid V] [Module ℂ V]
   apply Finset.sum_congr rfl
   intro n hn
   exact mul_comm _ _
+
+alias StandardIntegralAndLevelContinuation.scalarLaurent_eval := scalarLaurent_eval
 private theorem evaluation_norm (ε : Sign) (x : ℝ) :
     ‖(evaluationUnit K ε (x : ℂ) : ℂ)‖ =
       Real.exp ((if ε = .plus then -x else x) * Real.log (residueCardinality K : ℝ)) := by
@@ -269,9 +284,7 @@ theorem level_numerator_compatible
   funext k
   apply Subtype.ext
   funext h
-  let l := scalarCoordinate K A P I J ε φ k h
-  let l' := scalarCoordinate K A P I J' ε φ' k h
-  have hz : scalarLaurent p l - scalarLaurent p' l' = 0 := by
+  have hz : scalarLaurent p (scalarCoordinate K A P I J ε φ k h) - scalarLaurent p' (scalarCoordinate K A P I J' ε φ' k h) = 0 := by
     apply laurent_zero _ _ (evaluation_infinite K ε)
     rintro u ⟨s, hs, rfl⟩
     rw [map_sub, scalarLaurent_eval, scalarLaurent_eval, sub_eq_zero]
@@ -326,8 +339,7 @@ theorem lowerRootCoordinate_uniform_cutoff
     unfold lowerRootCoordinate
     exact ((continuous_const.mul (continuous_subtype_val.comp
       (A.upperRoot_continuous.comp continuous_ofAdd))).mul continuous_const)
-  have hK : IsCompact (Set.univ : Set I.compact.toOpenSubgroup) := by
-    exact isCompact_iff_isCompact_univ.mp I.compact.isCompact
+  have hK := isCompact_iff_isCompact_univ.mp I.compact.isCompact
   suffices he : ∀ᶠ x : K in nhds 0, ∀ k ∈ (Set.univ : Set I.compact.toOpenSubgroup),
       (k : G)⁻¹ * lowerRootCoordinate K A x * (k : G) ∈ J.toOpenSubgroup by
     simpa only [Set.mem_univ, forall_const] using he
@@ -349,11 +361,9 @@ theorem denominator_ne_zero_of_convergence (ε : Sign) (s : ℂ)
   have ht := (convergence_iff_geometric K ε s).mp hs
   cases ε with
   | plus =>
-    change 1 - t K s ≠ 0
     simp only [if_pos rfl] at ht
     intro he
-    have he : t K s = 1 := (sub_eq_zero.mp he).symm
-    simpa [he] using ht
+    simpa [((sub_eq_zero.mp he).symm)] using ht
   | minus =>
     have he : (residueCardinality K : ℂ) * (r K s)⁻¹ ^ 6 = (t K s)⁻¹ := by
       simp [t, mul_inv_rev, inv_pow, mul_comm]
@@ -361,8 +371,7 @@ theorem denominator_ne_zero_of_convergence (ε : Sign) (s : ℂ)
     rw [he]
     simp only [reduceCtorEq, if_false] at ht
     intro hz
-    have hz : (t K s)⁻¹ = 1 := (sub_eq_zero.mp hz).symm
-    simpa [hz] using ht
+    simpa [((sub_eq_zero.mp hz).symm)] using ht
 
 theorem continuedLevel_eq_integral_of_convergence
     (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
@@ -403,9 +412,7 @@ theorem continuedLevel_compatible
   funext k
   apply Subtype.ext
   funext h
-  let l := scalarCoordinate K A P I J ε φ k h
-  let l' := scalarCoordinate K A P I J' ε φ' k h
-  have he : scalarLaurent p l = scalarLaurent p' l' := by
+  have he : scalarLaurent p (scalarCoordinate K A P I J ε φ k h) = scalarLaurent p' (scalarCoordinate K A P I J' ε φ' k h) := by
     apply LaurentPolynomial.ext
     intro n
     rw [scalarLaurent_coeff, scalarLaurent_coeff]
@@ -413,12 +420,6 @@ theorem continuedLevel_compatible
       (level_numerator_compatible K A P I J J' hJ hJ' μ hμ ζ hζ ε p p' hp hp' φ φ' hφ n)
   have hv := congrArg (LaurentPolynomial.eval₂ (RingHom.id ℂ) (evaluationUnit K ε s)) he
   rw [scalarLaurent_eval, scalarLaurent_eval] at hv
-  change (denominator K ε s)⁻¹ *
-    ((evaluate K A P I J ε p (evaluationUnit K ε s) φ :
-      compactPicture A P I (targetSign ε)).val k).val h =
-    (denominator K ε s)⁻¹ *
-      ((evaluate K A P I J' ε p' (evaluationUnit K ε s) φ' :
-        compactPicture A P I (targetSign ε)).val k).val h
   exact congrArg ((denominator K ε s)⁻¹ * ·) hv
 
 private theorem section_locallyConstant
@@ -427,12 +428,10 @@ private theorem section_locallyConstant
   obtain ⟨J, hJ⟩ := f.property.2
   rw [IsLocallyConstant.iff_eventually_eq]
   intro g
-  have hc : Continuous (fun y : G => g⁻¹ * y) := continuous_const.mul continuous_id
   have hmem : ∀ᶠ y : G in nhds g, g⁻¹ * y ∈ J :=
-    hc.continuousAt.preimage_mem_nhds (by simpa using J.isOpen.mem_nhds J.one_mem)
+    (continuous_const.mul continuous_id).continuousAt.preimage_mem_nhds (by simpa using J.isOpen.mem_nhds J.one_mem)
   filter_upwards [hmem] with y hy
-  have he := congrFun (hJ (g⁻¹ * y) hy) g
-  simpa [vectorRightTranslation] using he
+  simpa [vectorRightTranslation] using (congrFun (hJ (g⁻¹ * y) hy) g)
 
 theorem standardIntegral_integrand_locallyConstant
     (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
@@ -441,9 +440,7 @@ theorem standardIntegral_integrand_locallyConstant
     IsLocallyConstant (fun x : K =>
       ((compactTrivialization A P I (sourceSign ε) (sourceParameter ε s) φ).val
         (kernelW K A ε * (A.upperRoot (Multiplicative.ofAdd x) : G) * g)).val h) := by
-  let f := compactTrivialization A P I (sourceSign ε) (sourceParameter ε s) φ
-  have hl := (section_locallyConstant K A P _ _ f).comp (fun v : InducedModule P => v.val h)
-  apply hl.comp_continuous
+  apply ((section_locallyConstant K A P _ _ (compactTrivialization A P I (sourceSign ε) (sourceParameter ε s) φ)).comp (fun v : InducedModule P => v.val h)).comp_continuous
   exact (continuous_const.mul (continuous_subtype_val.comp
     (A.upperRoot_continuous.comp continuous_ofAdd))).mul continuous_const
 
@@ -454,8 +451,7 @@ theorem standardIntegral_integrableOn_compact
     (g : G) (h : H) (C : Set K) (hC : IsCompact C) (hmC : MeasurableSet C) :
     IntegrableOn (fun x : K =>
       ((compactTrivialization A P I (sourceSign ε) (sourceParameter ε s) φ).val
-        (kernelW K A ε * (A.upperRoot (Multiplicative.ofAdd x) : G) * g)).val h) C μ := by
-  exact (standardIntegral_integrand_locallyConstant K A P I ε s φ g h).continuous.continuousOn.integrableOn_compact' hC hmC
+        (kernelW K A ε * (A.upperRoot (Multiplicative.ofAdd x) : G) * g)).val h) C μ := (standardIntegral_integrand_locallyConstant K A P I ε s φ g h).continuous.continuousOn.integrableOn_compact' hC hmC
 
 end
 end DedekindZetaZeroFree.KPRankOneShellContinuation
@@ -485,10 +481,8 @@ private theorem r_diff : Differentiable ℂ (r K) := by
     Differentiable ℂ (fun s => (evaluationUnit K ε s : ℂ)) := by
   cases ε with
   | plus =>
-    change Differentiable ℂ (r K)
     exact r_diff K
   | minus =>
-    change Differentiable ℂ (fun s => (r K s)⁻¹)
     exact (r_diff K).inv (fun s => Complex.exp_ne_zero _)
 
  theorem denom_diff (ε : Sign) :

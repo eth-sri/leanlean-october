@@ -12,10 +12,10 @@ open KPLocalPrincipalSeries KPLocalExceptionalConstruction KPAdelicCoverRestrict
 open ThetaExpansion MomentSources
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -41,16 +41,10 @@ private theorem arch_upper_abs (raw : Raw R.A)
   have h10 : g 1 0 = 0 := by
     change E ((raw (Sum.inl w)).g 1 0) = 0
     rw [raw_upper_eval R raw hu,map_zero]
-  have hd : g 1 1 ≠ 0 := by
-    have hdet := Matrix.GeneralLinearGroup.det_ne_zero g
-    simpa only [Matrix.det_fin_two,h10,mul_zero,sub_zero] using
-      (right_ne_zero_of_mul (show g 0 0 * g 1 1 ≠ 0 by
-        simpa only [Matrix.det_fin_two,h10,mul_zero,sub_zero] using hdet))
   change ‖(KPGlobalCubicIdelePairing.ideleEval F (Sum.inl w)
     (KPGlobalTorusBorelNormTwistTransport.iwasawaUpperRatio F
       (restrictedProjection F ζ hζ raw) hu) : w.Completion)‖ ^ 2 = _
   rw [raw_upperRatio_eval R raw hu,← hn,map_div₀]
-  change ‖g 0 0 / g 1 1‖ ^ 2 = (KPComplexIntertwinerParameterMajorant.rowRatio g) ^ 2
   congr 1
   unfold KPComplexIntertwinerParameterMajorant.rowRatio KPCplxPrincipalSeriesCharts.bottomRowNormSq
   change ‖g 0 0 / g 1 1‖ = ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ / (‖g 1 0‖ ^ 2 + ‖g 1 1‖ ^ 2)
@@ -87,39 +81,8 @@ private theorem raw_borel_log_support (raw : Raw R.A)
       (KPGlobalCubicIdelePairing.ideleEval F v
         (KPGlobalTorusBorelNormTwistTransport.iwasawaUpperRatio F
           (restrictedProjection F ζ hζ raw) (raw_borel_upper R raw hb))) = 1 := by
-        simpa only [Function.mem_mulSupport, not_not] using hv
+        simpa using hv
   simp [hval]
-
-private theorem rawLocalLog_mul_compact (raw k : Raw R.A)
-    (hk : k ∈ fullProductCompactPreimage R) :
-    rawLocalLog R P C (raw*k) = rawLocalLog R P C raw := by
-  funext v
-  cases v with
-  | inl w =>
-    have hmem := archMax_matrix R w (k (Sum.inl w)) (hk (Sum.inl w))
-    obtain ⟨u,hu⟩ := hmem
-    have hm : complexMatrix R.A w ((raw*k) (Sum.inl w)) =
-        complexMatrix R.A w (raw (Sum.inl w)) * complexMatrix R.A w (k (Sum.inl w)) := map_mul _ _ _
-    change Matrix.ProjGenLinGroup.mk (KPCplxCharacterHaar.complexSU2Embedding u) =
-      Matrix.ProjGenLinGroup.mk (complexMatrix R.A w (k (Sum.inl w))) at hu
-    have hmul : Matrix.ProjGenLinGroup.mk (complexMatrix R.A w (raw (Sum.inl w)) *
-        KPCplxCharacterHaar.complexSU2Embedding u) =
-      Matrix.ProjGenLinGroup.mk (complexMatrix R.A w ((raw*k) (Sum.inl w))) := by
-      rw [hm,map_mul,map_mul,hu]
-    have hlog := HeightGeometry.complexMatrixLogNorm_eq_of_mk_eq _ _ hmul
-    change Real.log ((KPComplexIntertwinerParameterMajorant.rowRatio
-      (complexMatrix R.A w (raw (Sum.inl w)) * KPCplxCharacterHaar.complexSU2Embedding u)) ^ 2) =
-      Real.log ((KPComplexIntertwinerParameterMajorant.rowRatio
-        (complexMatrix R.A w ((raw*k) (Sum.inl w)))) ^ 2) at hlog
-    rw [RepresentationTheory.KPComplexStandardIntertwinerGermProve.rowRatio_mul_su2,
-      Real.log_pow,Real.log_pow] at hlog
-    exact hlog.symm
-  | inr q =>
-    change Real.log (LocalCompactChange.forwardAbs F ζ hζ q (C.canonical q) (finiteIntegralIwasawa R P C q)
-      (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (raw (Sum.inr q)*k (Sum.inr q)))) = _
-    rw [map_mul,LocalCompactChange.forwardAbs_mul_compact F ζ hζ q (C.canonical q)
-      (finiteIntegralIwasawa R P C q) _ ⟨_,finiteMax_mem_integral R P C q _ (hk (Sum.inr q))⟩]
-    rfl
 
 theorem rawLocalLog_finite_and_height (raw : Raw R.A) :
     Function.HasFiniteSupport (rawLocalLog R P C raw) ∧
@@ -132,14 +95,38 @@ theorem rawLocalLog_finite_and_height (raw : Raw R.A) :
   let b := raw*rk⁻¹
   have he : raw = b*rk := by simp [b]
   have hb : Q b ∈ KPGlobalTorusFunctionData.borel F ζ hζ := by
-    change Q (raw*rk⁻¹) ∈ _
     rw [map_mul,map_inv,hr,hg,mul_assoc,mul_inv_cancel,mul_one]
     exact (KPGlobalTorusFunctionData.borel F ζ hζ).mul_mem
       (ActualBorelRetraction.torusInBorel F ζ hζ t).property
       (ActualBorelRetraction.rootInBorel F ζ hζ x).property
   have hlogs : rawLocalLog R P C raw = rawLocalLog R P C b := by
     rw [he]
-    exact rawLocalLog_mul_compact R P C b rk hrk
+    funext v
+    cases v with
+    | inl w =>
+      obtain ⟨u,hu⟩ := (archMax_matrix R w (rk (Sum.inl w)) (hrk (Sum.inl w)))
+      have hm : complexMatrix R.A w ((b*rk) (Sum.inl w)) =
+          complexMatrix R.A w (b (Sum.inl w)) * complexMatrix R.A w (rk (Sum.inl w)) := map_mul _ _ _
+      change Matrix.ProjGenLinGroup.mk (KPCplxCharacterHaar.complexSU2Embedding u) =
+        Matrix.ProjGenLinGroup.mk (complexMatrix R.A w (rk (Sum.inl w))) at hu
+      have hmul : Matrix.ProjGenLinGroup.mk (complexMatrix R.A w (b (Sum.inl w)) *
+          KPCplxCharacterHaar.complexSU2Embedding u) =
+        Matrix.ProjGenLinGroup.mk (complexMatrix R.A w ((b*rk) (Sum.inl w))) := by
+        rw [hm,map_mul,map_mul,hu]
+      have hlog := HeightGeometry.complexMatrixLogNorm_eq_of_mk_eq _ _ hmul
+      change Real.log ((KPComplexIntertwinerParameterMajorant.rowRatio
+        (complexMatrix R.A w (b (Sum.inl w)) * KPCplxCharacterHaar.complexSU2Embedding u)) ^ 2) =
+        Real.log ((KPComplexIntertwinerParameterMajorant.rowRatio
+          (complexMatrix R.A w ((b*rk) (Sum.inl w)))) ^ 2) at hlog
+      rw [RepresentationTheory.KPComplexStandardIntertwinerGermProve.rowRatio_mul_su2,
+        Real.log_pow,Real.log_pow] at hlog
+      exact hlog.symm
+    | inr q =>
+      change Real.log (LocalCompactChange.forwardAbs F ζ hζ q (C.canonical q) (finiteIntegralIwasawa R P C q)
+        (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (b (Sum.inr q)*rk (Sum.inr q)))) = _
+      rw [map_mul,LocalCompactChange.forwardAbs_mul_compact F ζ hζ q (C.canonical q)
+        (finiteIntegralIwasawa R P C q) _ ⟨_,finiteMax_mem_integral R P C q _ (hrk (Sum.inr q))⟩]
+      rfl
   refine ⟨hlogs ▸ raw_borel_log_support R P C b hb, ?_⟩
   have hheight : iwasawaLogHeight R (Q raw) = iwasawaLogHeight R (Q b) := by
     rw [he,map_mul,hr]

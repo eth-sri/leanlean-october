@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -106,11 +104,9 @@ theorem numberFieldTowerAbstractFieldEquiv_algebraMap
         (numberFieldTowerAbstractBaseFieldEquiv K L x) := by
   apply Subtype.ext
   calc
-    (numberFieldTowerAbstractTopFieldEquiv K L
-        (algebraMap K L x)).1 =
+    _ =
         ((numberFieldSeparableClosureEmbedding L).equivFieldRange
-          (algebraMap K L x)).1 := by
-      rfl
+          (algebraMap K L x)).1 := rfl
     _ =
         (algebraMap
           (numberFieldTowerBaseField K L)
@@ -124,8 +120,7 @@ theorem numberFieldTowerAbstractFieldEquiv_algebraMap
             (numberFieldTowerBaseSubgroup K L))
           (abstractRelativeFixedField ℚ (SeparableClosure ℚ)
             (numberFieldTowerTopSubgroup_le_baseSubgroup K L))
-          (numberFieldTowerAbstractBaseFieldEquiv K L x)).1 := by
-      rfl
+          (numberFieldTowerAbstractBaseFieldEquiv K L x)).1 := rfl
 
 omit [FiniteDimensional K L] [IsGalois K L] in
 /-- The compatible lower subgroup has finite absolute index in the
@@ -140,7 +135,7 @@ theorem numberFieldTowerBaseSubgroup_absoluteQuotient_finite :
             (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
           (numberFieldTowerBaseSubgroup K L)
           (le_baseField (numberFieldTowerBaseSubgroup K L))) := by
-  simpa only [numberFieldTowerFiniteAbstractField] using
+  simpa using
     (numberFieldTowerFiniteAbstractField K L).finite
 
 /-- The absolute-index witness used by the tower realization, registered at
@@ -233,13 +228,11 @@ noncomputable def numberFieldTowerIdeleClassEquivAmbientFixed :
     Additive (IdeleClassGroup K) ≃+
       KummerTheory.ambientFixedAddSubgroup
         rationalIdeleClassRepresentation
-        (numberFieldTowerBaseSubgroup K L) := by
-  exact
-    (MulEquiv.toAdditive
+        (numberFieldTowerBaseSubgroup K L) := (MulEquiv.toAdditive
       (ideleClassCongr
         (numberFieldTowerAbstractBaseFieldEquiv K L))).trans
       (rationalAbstractFixedFieldIdeleClassEquivFixed
-        (hfinite := numberFieldTowerBaseSubgroupAbsoluteQuotientFinite K L)
+
         (numberFieldTowerBaseSubgroup K L))
 
 /-- The ordinary norm quotient of the two fixed fields, kept behind a
@@ -262,11 +255,9 @@ separate declarations. -/
   let F :=
     abstractFixedField ℚ (SeparableClosure ℚ)
       (numberFieldTowerBaseSubgroup K L)
-  let E :=
-    abstractRelativeFixedField ℚ (SeparableClosure ℚ)
-      (numberFieldTowerTopSubgroup_le_baseSubgroup K L)
   change AddCommGroup
-    (Additive (IdeleClassGroup F ⧸ (_root_.ideleClassNorm F E).range))
+    (Additive (IdeleClassGroup F ⧸ (_root_.ideleClassNorm F (abstractRelativeFixedField ℚ (SeparableClosure ℚ)
+      (numberFieldTowerTopSubgroup_le_baseSubgroup K L))).range))
   exact Additive.addCommGroup
 
 /-- First comparison step: abstract finite norms to the ordinary norm
@@ -280,22 +271,19 @@ quotient of the realized fixed fields. -/
       numberFieldTowerFixedFieldNormQuotient K L := by
   let H := numberFieldTowerBaseSubgroup K L
   let J := numberFieldTowerTopSubgroup L
-  let hJH : J.toSubgroup ≤ H.toSubgroup :=
+  let hJH :=
     numberFieldTowerTopSubgroup_le_baseSubgroup K L
   let F :=
     abstractFixedField ℚ (SeparableClosure ℚ) H
-  let E :=
-    abstractRelativeFixedField ℚ (SeparableClosure ℚ) hJH
   change
     FiniteNormQuotient rationalIdeleClassRepresentation
         H J hJH ≃+
       Additive
         (IdeleClassGroup F ⧸
-          (_root_.ideleClassNorm F E).range)
+          (_root_.ideleClassNorm F (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hJH)).range)
   exact
     rationalFiniteNormQuotientEquivIdeleClassNormQuotient
-      (hKfinite := numberFieldTowerBaseSubgroupAbsoluteQuotientFinite K L)
-      (hfinite := numberFieldTowerExtensionQuotientFinite K L)
+
       H J hJH (numberFieldTowerExtensionSubgroupNormal K L)
 
 /-- Second comparison step: transport the realized fixed-field norm
@@ -307,13 +295,10 @@ quotient back to the original number-field tower. -/
         (IdeleClassGroup K ⧸
           (_root_.ideleClassNorm K L).range) := by
   let H := numberFieldTowerBaseSubgroup K L
-  let J := numberFieldTowerTopSubgroup L
-  let hJH : J.toSubgroup ≤ H.toSubgroup :=
-    numberFieldTowerTopSubgroup_le_baseSubgroup K L
   let F :=
     abstractFixedField ℚ (SeparableClosure ℚ) H
   let E :=
-    abstractRelativeFixedField ℚ (SeparableClosure ℚ) hJH
+    abstractRelativeFixedField ℚ (SeparableClosure ℚ) (numberFieldTowerTopSubgroup_le_baseSubgroup K L)
   change
     Additive
         (IdeleClassGroup F ⧸
@@ -321,18 +306,15 @@ quotient back to the original number-field tower. -/
       Additive
         (IdeleClassGroup K ⧸
           (_root_.ideleClassNorm K L).range)
-  let eBase : K ≃ₐ[ℚ] F :=
+  let eBase :=
     numberFieldTowerAbstractBaseFieldEquiv K L
-  let eTop : L ≃ₐ[ℚ] E :=
+  let eTop :=
     numberFieldTowerAbstractTopFieldEquiv K L
-  have hcompat : ∀ x : K,
-      eTop (algebraMap K L x) = algebraMap F E (eBase x) :=
-    numberFieldTowerAbstractFieldEquiv_algebraMap K L
   let eQuotient :
       (IdeleClassGroup K ⧸ (_root_.ideleClassNorm K L).range) ≃*
         (IdeleClassGroup F ⧸ (_root_.ideleClassNorm F E).range) :=
     ordinaryIdeleClassNormQuotientCongrOfAlgEquiv
-      (K := K) (L := L) (K' := F) (L' := E) eBase eTop hcompat
+      (K := K) (L := L) (K' := F) (L' := E) eBase eTop (numberFieldTowerAbstractFieldEquiv_algebraMap K L)
   exact MulEquiv.toAdditive eQuotient.symm
 
 /-- The abstract finite norm quotient attached to the compatible
@@ -346,9 +328,7 @@ noncomputable def
         (numberFieldTowerTopSubgroup_le_baseSubgroup K L) ≃+
       Additive
         (IdeleClassGroup K ⧸
-          (_root_.ideleClassNorm K L).range) := by
-  exact
-    (numberFieldTowerFiniteNormQuotientEquivFixedFieldNormQuotient K L).trans
+          (_root_.ideleClassNorm K L).range) := (numberFieldTowerFiniteNormQuotientEquivFixedFieldNormQuotient K L).trans
       (numberFieldTowerFixedFieldNormQuotientEquivActualNormQuotient K L)
 
 end Reciprocity

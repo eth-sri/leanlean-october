@@ -56,54 +56,44 @@ theorem translated_exponential_frame
     ext a
     simp [E, Φ, PartialDiffeomorph.trans, Diffeomorph.toPartialDiffeomorph]
   have he (a : V) : E a = g * D.exponentialChart a := rfl
-  have h0 : (0 : V) ∈ E.source := hs.symm ▸ D.zero_mem_source
-  have hf : ContMDiffOn (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞) E E.source :=
+  have hf :=
     Φ.contMDiffOn
-  have hi : ContMDiffOn (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞) E.symm E.target :=
+  have hi :=
     Φ.symm.contMDiffOn
-  refine ⟨E, h0, ?_, hf, hi, ?_, ?_⟩
+  refine ⟨E, (hs.symm ▸ D.zero_mem_source), ?_, hf, hi, ?_, ?_⟩
   · intro a ha
     rw [he, D.chart_eq_exponential a (hs ▸ ha)]
   · intro b a ha
     let f : V → ℝ → V := fun x t => E.symm (E x * D.exponential (t • D.basis b))
-    have hEa := hf.contMDiffAt (E.open_source.mem_nhds ha)
-    have hEi := hi.contMDiffAt (E.open_target.mem_nhds (E.map_source ha))
     have hprod : ContMDiffAt ((𝓘(ℝ, V)).prod (𝓘(ℝ, ℝ))) (𝓘(ℝ, V))
         (⊤ : ℕ∞) (Function.uncurry f) (a, 0) := by
-      have hx := hEa.comp (a, (0 : ℝ))
-        (contMDiffAt_fst (I := 𝓘(ℝ, V)) (J := 𝓘(ℝ, ℝ)))
-      have ht : ContMDiffAt ((𝓘(ℝ, V)).prod (𝓘(ℝ, ℝ))) (𝓘(ℝ, V))
-          (⊤ : ℕ∞) (fun p : V × ℝ => p.2 • D.basis b) (a, 0) :=
-        (contMDiffAt_snd (I := 𝓘(ℝ, V)) (J := 𝓘(ℝ, ℝ))).smul
-          (contMDiffAt_const (I := (𝓘(ℝ, V)).prod (𝓘(ℝ, ℝ)))
-            (I' := 𝓘(ℝ, V)) (c := D.basis b))
-      have hex := D.exponential_smooth.contMDiffAt.comp (a, (0 : ℝ)) ht
-      exact hEi.comp_of_eq (hx.mul hex) (by simp [D.exponential_zero])
+      exact (hi.contMDiffAt (E.open_target.mem_nhds (E.map_source ha))).comp_of_eq (((hf.contMDiffAt (E.open_source.mem_nhds ha)).comp (a, (0 : ℝ))
+        (contMDiffAt_fst)).mul (D.exponential_smooth.contMDiffAt.comp (a, (0 : ℝ)) ((contMDiffAt_snd).smul
+        (contMDiffAt_const
+           )))) (by simp [D.exponential_zero])
     have hd := ContMDiffAt.mfderiv (m := (⊤ : ℕ∞)) f (fun _ : V => (0 : ℝ))
       hprod contMDiffAt_const (by simp)
     simp +unfoldPartialApp only [inTangentCoordinates,
       inCoordinates_tangent_bundle_core_model_space] at hd
-    have hd' := hd.clm_apply (contMDiffAt_const (c := (1 : ℝ)))
     have hd'' : ContMDiffAt (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞)
         (fun x => deriv (f x) 0) a := by
-      convert hd' using 1
+      convert (hd.clm_apply (contMDiffAt_const)) using 1
       funext x
       rw [mfderiv_eq_fderiv]
       rfl
     exact hd''.contDiffAt.contDiffWithinAt
   · intro a ha
-    let f : V → V := fun u => E.symm (E a * D.exponential u)
+    let f := fun u => E.symm (E a * D.exponential u)
     have hd0 : IsLocalDiffeomorphAt (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞)
         D.exponential 0 :=
       ⟨D.exponentialChart, D.zero_mem_source, fun u hu =>
         (D.chart_eq_exponential u hu).symm⟩
-    have hd1 := (L (E a)).isLocalDiffeomorph (D.exponential 0)
     have hd2 : IsLocalDiffeomorphAt (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞)
         E.symm (E a * D.exponential 0) := by
       rw [D.exponential_zero, mul_one]
       exact ⟨Φ.symm, E.map_source ha, fun u hu => rfl⟩
     have hd : IsLocalDiffeomorphAt (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞) f 0 :=
-      (hd0.comp (𝓘(ℝ, V)) G hd1).comp (𝓘(ℝ, V)) V hd2
+      (hd0.comp (𝓘(ℝ, V)) G ((L (E a)).isLocalDiffeomorph (D.exponential 0))).comp (𝓘(ℝ, V)) V hd2
     let A : V ≃L[ℝ] V := hd.mfderivToContinuousLinearEquiv (by simp)
     refine ⟨D.basis.map A.toLinearEquiv, ?_⟩
     intro b
@@ -125,27 +115,28 @@ open scoped Manifold ContDiff Convex
 open Topology Filter Asymptotics
 
 variable {G : Type*} [Group G] [TopologicalSpace G]
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [FiniteDimensional ℝ V] [ChartedSpace V G]
   [LieGroup (𝓘(ℝ, V)) (↑(⊤ : ℕ∞) : ℕ∞ω) G]
 variable {B : Type*} [Fintype B]
-variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
-theorem right_frame_hasDerivAt (D : Data G V B)
-    (f : G → E) (h : B → G → E)
+section
+
+variable (D : Data G V B) (f : G → E) (h : B → G → E)
+
+theorem right_frame_hasDerivAt
     (hderiv : ∀ (b : B) (a : G),
       HasDerivAt (fun t : ℝ => f (a * D.exponential (t • D.basis b))) (h b a) 0)
     (b : B) (a : G) (t : ℝ) :
     HasDerivAt (fun s : ℝ => f (a * D.exponential (s • D.basis b)))
       (h b (a * D.exponential (t • D.basis b))) t := by
-  have hd := hderiv b (a * D.exponential (t • D.basis b))
-  have hd' := (show HasDerivAt _ _ (t - t) by simpa using hd).comp_sub_const t t
+  have hd' := (show HasDerivAt _ _ (t - t) by simpa using (hderiv b (a * D.exponential (t • D.basis b)))).comp_sub_const t t
   convert hd' using 1
   funext s
   rw [mul_assoc, ← D.exponential_add_ray, show t + (s - t) = s by ring]
 
-theorem right_frame_uniform_ray_expansion (D : Data G V B)
-    (f : G → E) (h : B → G → E) (hh : ∀ b, Continuous (h b))
+theorem right_frame_uniform_ray_expansion (hh : ∀ b, Continuous (h b))
     (hderiv : ∀ (b : B) (a : G),
       HasDerivAt (fun t : ℝ => f (a * D.exponential (t • D.basis b))) (h b a) 0)
     (b : B) (a : G) :
@@ -194,24 +185,25 @@ theorem right_frame_uniform_ray_expansion (D : Data G V B)
       (convex_segment ..) (left_mem_segment ..) (right_mem_segment ..)
   simpa [F, sub_zero, D.exponential_zero] using H
 
+end
+
 section FiniteProducts
 
 variable {W : Type*} [NormedAddCommGroup W] [NormedSpace ℝ W]
 
-theorem right_frame_insertion_hasFDerivAt_zero (D : Data G V B)
-    (f : G → E) (h : B → G → E) (hh : ∀ b, Continuous (h b))
-    (hderiv : ∀ (b : B) (a : G),
-      HasDerivAt (fun t : ℝ => f (a * D.exponential (t • D.basis b))) (h b a) 0)
+variable (D : Data G V B) (f : G → E) (h : B → G → E) (hh : ∀ b, Continuous (h b))
+    (hderiv : ∀ (b : B) (a : G), HasDerivAt (fun t : ℝ => f (a * D.exponential (t • D.basis b))) (h b a) 0)
+
+include hh hderiv in
+theorem right_frame_insertion_hasFDerivAt_zero
     (b : B) (A : W → G) (hA : ContinuousAt A 0)
     (L : W →L[ℝ] E) (c : W →L[ℝ] ℝ)
     (hd : HasFDerivAt (fun x => f (A x)) L 0) :
     HasFDerivAt (fun x => f (A x * D.exponential (c x • D.basis b)))
       (L + c.smulRight (h b (A 0))) 0 := by
   rw [hasFDerivAt_iff_isLittleO_nhds_zero]
-  have hu := right_frame_uniform_ray_expansion D f h hh hderiv b (A 0)
-  have ht : Tendsto (fun x : W => (A x, c x)) (𝓝 0) (𝓝 (A 0, 0)) := by
-    simpa [ContinuousAt] using hA.prodMk c.continuous.continuousAt
-  have he := (hu.comp_tendsto ht).trans_isBigO (c.isBigO_id (𝓝 0))
+  have he := ((right_frame_uniform_ray_expansion D f h hh hderiv b (A 0)).comp_tendsto (by
+    simpa [ContinuousAt] using hA.prodMk c.continuous.continuousAt)).trans_isBigO (c.isBigO_id (𝓝 0))
   have hf := (hasFDerivAt_iff_isLittleO_nhds_zero.mp hd)
   have hs := hf.add he
   convert hs using 1
@@ -221,10 +213,8 @@ theorem right_frame_insertion_hasFDerivAt_zero (D : Data G V B)
     Function.comp_apply]
   abel
 
-theorem right_frame_product_hasFDerivAt_zero (D : Data G V B)
-    (f : G → E) (h : B → G → E) (hh : ∀ b, Continuous (h b))
-    (hderiv : ∀ (b : B) (a : G),
-      HasDerivAt (fun t : ℝ => f (a * D.exponential (t • D.basis b))) (h b a) 0)
+include hh hderiv in
+theorem right_frame_product_hasFDerivAt_zero
     (w : List B) (c : B → W →L[ℝ] ℝ) (a : G) :
     HasFDerivAt (fun x : W => f (a * (w.map
       (fun b => D.exponential (c b x • D.basis b))).prod))
@@ -234,7 +224,7 @@ theorem right_frame_product_hasFDerivAt_zero (D : Data G V B)
   induction w using List.reverseRecOn with
   | nil => simpa using (hasFDerivAt_const (𝕜 := ℝ) (f a) (0 : W))
   | append_singleton w b ih =>
-    let A : W → G := fun x => a * (w.map
+    let A := fun x => a * (w.map
       (fun b => D.exponential (c b x • D.basis b))).prod
     have hA : Continuous A := by
       apply continuous_const.mul
@@ -247,10 +237,9 @@ theorem right_frame_product_hasFDerivAt_zero (D : Data G V B)
         | nil => rfl
         | cons b w ih => simp [ih, D.exponential_zero]
       rw [hp, mul_one]
-    have H := right_frame_insertion_hasFDerivAt_zero D f h hh hderiv b A
-      hA.continuousAt _ (c b) ih
     simpa [List.map_append, List.prod_append, List.sum_append,
-      mul_assoc, hA0, A] using H
+      mul_assoc, hA0, A] using (right_frame_insertion_hasFDerivAt_zero D f h hh hderiv b A
+        hA.continuousAt _ (c b) ih)
 
 end FiniteProducts
 
@@ -405,13 +394,13 @@ theorem continuous_right_frame_contMDiff_one
     have hci : ContDiffAt ℝ 1 (fun t => P.symm (c t)) 0 := by
       exact (((hpi.of_le (by simp)).contMDiffAt
         (P.open_target.mem_nhds (P.map_source ha))).comp_of_eq hcs hc0).contDiffAt
-    have hdi : HasDerivAt (fun t => P.symm (c t)) (X b a) 0 := by
+    have hdi := by
       exact hci.differentiableAt_one.hasDerivAt
     have hdφ : HasFDerivAt φ (fderiv ℝ φ a) (P.symm (c 0)) := by
       simpa only [hc0, P.left_inv ha] using (hc a ha).hasFDerivAt
     have hd := hdφ.comp_hasDerivAt 0 hdi
     have heq : (fun t => φ (P.symm (c t))) =ᶠ[nhds (0 : ℝ)] (fun t => f (c t)) := by
-      have hn : ∀ᶠ t in nhds (0 : ℝ), c t ∈ P.target :=
+      have hn :=
         hcs.continuousAt.preimage_mem_nhds (by
           rw [hc0]
           exact P.open_target.mem_nhds (P.map_source ha))
@@ -444,11 +433,11 @@ theorem continuous_right_frame_contMDiff_one
 open scoped Manifold ContDiff
 
 variable {G : Type*} [Group G] [TopologicalSpace G]
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [FiniteDimensional ℝ V] [ChartedSpace V G]
   [LieGroup (𝓘(ℝ, V)) (↑(⊤ : ℕ∞) : ℕ∞ω) G]
 variable {B : Type*} [Fintype B]
-variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 theorem right_frame_contMDiff_succ
     (D : Data G V B)
@@ -554,10 +543,10 @@ theorem right_frame_contMDiff_succ
 end RawFrame
 
 variable {G : Type*} [Group G] [TopologicalSpace G]
-variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
   [FiniteDimensional ℝ V] [ChartedSpace V G] [LieGroup (𝓘(ℝ, V)) ∞ G]
 variable {B : Type*} [Fintype B]
-variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 theorem contMDiff_succ_of_translated_basis_derivatives
     (basis : Module.Basis B ℝ V) (exponential : V → G)
@@ -583,9 +572,8 @@ theorem contMDiff_succ_of_translated_basis_derivatives
     exponentialChart := chart
     zero_mem_source := hzero
     chart_eq_exponential := hchart }
-  have hc := RawFrame.continuous_right_frame_contMDiff_one d f D hf
-    (fun b => (hD b).continuous) hderiv
-  exact RawFrame.right_frame_contMDiff_succ d n f D hc hD hderiv
+  exact RawFrame.right_frame_contMDiff_succ d n f D (RawFrame.continuous_right_frame_contMDiff_one d f D hf
+    (fun b => (hD b).continuous) hderiv) hD hderiv
 
 end DedekindZetaZeroFree.SmoothWordOrbit.DomainToSmooth
 

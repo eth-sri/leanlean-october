@@ -13,9 +13,9 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (v : HeightOneSpectrum (𝓞 F))
-variable (hv : ringChar (O F v ⧸ p F v) ≠ 3)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (v : HeightOneSpectrum (𝓞 F))
+    (hv : ringChar (O F v ⧸ p F v) ≠ 3)
 
 private lemma norm_unit (x : K F v) (hx : ‖x‖ = 1) :
     ∃ u : (O F v)ˣ, (unitInclusion F v u : K F v) = x := by
@@ -30,18 +30,17 @@ private lemma norm_unit (x : K F v) (hx : ‖x‖ = 1) :
     rw [← Valuation.vle_one_iff, Valuation.vle_one_iff (Valued.v : Valuation (K F v) (WithZero (Multiplicative ℤ)))]
     exact hy
   have hn : x ≠ 0 := by intro h; simp [h] at hx
-  let u : (O F v)ˣ := ⟨⟨x, mem x hnorm.le⟩, ⟨x⁻¹, mem _ (by simp [map_inv₀, hnorm])⟩,
-    by apply Subtype.ext; simp [hn], by apply Subtype.ext; simp [hn]⟩
-  exact ⟨u, rfl⟩
+  exact ⟨(⟨⟨x, mem x hnorm.le⟩, ⟨x⁻¹, mem _ (by simp [map_inv₀, hnorm])⟩,
+    by apply Subtype.ext; simp [hn], by apply Subtype.ext; simp [hn]⟩), rfl⟩
 
 private lemma norm_integer_le_one (x : O F v) : ‖(x : K F v)‖ ≤ 1 := by
   letI : ValuativeRel (K F v) := ClassFieldTheory.finitePlaceCompletionValuativeRel F v
   letI : (Valued.v : Valuation (K F v) (WithZero (Multiplicative ℤ))).Compatible :=
     Valuation.Compatible.ofValuation _
   rw [← norm_one (α := K F v)]
-  apply (Valued.toNormedField.norm_le_iff (x := (x : K F v)) (x' := 1)).mpr
+  apply (Valued.toNormedField.norm_le_iff).mpr
   simp only [map_one]
-  exact (Valuation.vle_one_iff (Valued.v : Valuation (K F v) (WithZero (Multiplicative ℤ)))).mp
+  exact (Valuation.vle_one_iff Valued.v).mp
     ((Valuation.vle_one_iff (ValuativeRel.valuation (K F v))).mpr x.property)
 
 private lemma norm_of_integer_unit (x : (O F v)ˣ) :
@@ -64,9 +63,7 @@ private lemma B3_norm_units (x y : (K F v)ˣ)
     KPHilbert.B3 F ζ hζ (Sum.inr v) x y = 1 := by
   obtain ⟨u, hu⟩ := norm_unit F v _ hx
   obtain ⟨w, hw⟩ := norm_unit F v _ hy
-  have eu : unitInclusion F v u = x := Units.ext hu
-  have ew : unitInclusion F v w = y := Units.ext hw
-  rw [← eu, ← ew]
+  rw [← (Units.ext hu), ← (Units.ext hw)]
   exact B3_units F v ζ hζ hv u w
 
 private lemma B3_norm_congruent (x y y' : (K F v)ˣ)
@@ -76,19 +73,16 @@ private lemma B3_norm_congruent (x y y' : (K F v)ˣ)
       KPHilbert.B3 F ζ hζ (Sum.inr v) x y' := by
   obtain ⟨u, hu⟩ := norm_unit F v _ hy
   obtain ⟨w, hw⟩ := norm_unit F v _ hy'
-  have eu : unitInclusion F v u = y := Units.ext hu
-  have ew : unitInclusion F v w = y' := Units.ext hw
-  rw [← eu, ← ew]
+  rw [← (Units.ext hu), ← (Units.ext hw)]
   apply B3_congruent_right F v ζ hζ hv
   apply (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mpr
   letI : ValuativeRel (K F v) := ClassFieldTheory.finitePlaceCompletionValuativeRel F v
   letI : (Valued.v : Valuation (K F v) (WithZero (Multiplicative ℤ))).Compatible :=
     Valuation.Compatible.ofValuation _
-  change (u : O F v) - w ∈ IsLocalRing.maximalIdeal (O F v)
   apply (Valuation.mem_maximalIdeal_iff (K F v) (ValuativeRel.valuation (K F v))).mpr
   rw [← Valuation.vlt_one_iff, Valuation.vlt_one_iff
-    (Valued.v : Valuation (K F v) (WithZero (Multiplicative ℤ)))]
-  have hd : ‖((u : O F v) : K F v) - ((w : O F v) : K F v)‖ < ‖(1 : K F v)‖ := by
+    Valued.v]
+  have hd : ‖(u : K F v) - (w : K F v)‖ < ‖(1 : K F v)‖ := by
     change ‖(unitInclusion F v u : K F v) - (unitInclusion F v w : K F v)‖ < _
     simpa [hu, hw] using hdiff
   exact (lt_iff_not_ge).mpr (fun hn => (not_le_of_gt hd)
@@ -96,7 +90,6 @@ private lemma B3_norm_congruent (x y y' : (K F v)ˣ)
 
 private lemma X_inclusion (g : K0 F v) (hc : c F v g ≠ 0) :
     KubotaRankTwo.X (K F v) (inclusion F v g) = Units.mk0 (c F v g) hc := by
-  apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, inclusion,
     KPLocalCube.integerInclusion, Matrix.GeneralLinearGroup.map_apply, hc]
 

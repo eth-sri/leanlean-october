@@ -16,7 +16,7 @@ theorem circle_sub_inv_ne_zero {z : Circle} (hz : (z : ℂ) ^ 2 ≠ 1) :
   intro hc
   refine hz ?_
   rw [sub_eq_zero] at hc
-  calc (z : ℂ) ^ 2 = (z : ℂ) * ((z : ℂ))⁻¹ := by rw [← hc, sq]
+  calc _ = (z : ℂ) * ((z : ℂ))⁻¹ := by rw [← hc, sq]
     _ = 1 := mul_inv_cancel₀ z.coe_ne_zero
 
 end DedekindZetaZeroFree.TauCeti

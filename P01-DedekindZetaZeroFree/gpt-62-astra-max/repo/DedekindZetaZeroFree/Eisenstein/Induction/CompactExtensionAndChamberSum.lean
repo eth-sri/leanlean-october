@@ -12,8 +12,9 @@ open KPLiteralRaw
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-def iwasawaTriple (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (g : G F ζ hζ) :
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+
+def iwasawaTriple (g : G F ζ hζ) :
     KPGlobalTorusFunctionData.E F ζ hζ × KPAdeles F × K :=
   let t := Classical.choose (hK.2.1 g)
   let x := Classical.choose (Classical.choose_spec (hK.2.1 g))
@@ -21,8 +22,7 @@ def iwasawaTriple (K : Subgroup (G F ζ hζ))
     (Classical.choose_spec (hK.2.1 g)))
   (t, x, k)
 
-def compactExtension (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (v : Functions F ζ hζ)
+def compactExtension (v : Functions F ζ hζ)
     (s : ℂ) (g : G F ζ hζ) : ℂ :=
   let p := iwasawaTriple F ζ hζ K hK g
   KPGlobalExceptionalParameter.realLogPower

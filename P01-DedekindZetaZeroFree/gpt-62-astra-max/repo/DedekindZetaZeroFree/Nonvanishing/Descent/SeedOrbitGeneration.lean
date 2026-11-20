@@ -10,8 +10,8 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.FourierContinuation.HCGeneration
 open MomentSources NonDegenerate
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 
 theorem stage_image_le_of_seed_orbit
     {ι : Type*} [Fintype ι] [DecidableEq ι]
@@ -27,9 +27,9 @@ theorem stage_image_le_of_seed_orbit
   | mem x hx =>
     obtain ⟨a, rfl⟩ := hx
     exact horbit a
-  | zero => simpa only [map_zero] using M.zero_mem
-  | add x y hx hy ihx ihy => simpa only [map_add] using M.add_mem ihx ihy
-  | smul c x hx ihx => simpa only [map_smul] using M.smul_mem c ihx
+  | zero => simpa using M.zero_mem
+  | add x y hx hy ihx ihy => simpa using M.add_mem ihx ihy
+  | smul c x hx ihx => simpa using M.smul_mem c ihx
 
 theorem generated_of_detected_seed_orbits (D : Dictionary R N)
     (s : RestrictedTensorSimple.Level D.bad)

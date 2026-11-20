@@ -17,8 +17,8 @@ open DedekindZetaZeroFree.Quantitative.RawRowSumDefinitions31
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
 theorem finset_norm_sum_le :
     ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z → ∀ G : Finset (Frequency D.recipe),
@@ -190,11 +190,11 @@ theorem finset_norm_sum_le :
   linarith
 
 theorem smallRows_norm_tsum_le :
-    ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z →
+    ∃ C : ℝ, ∀ Z : ℝ, 2 ≤ Z →
       Summable (fun u : smallSet D Z => ‖initialRowIntegral D u.1 Z‖) ∧
         ∑' u : smallSet D Z, ‖initialRowIntegral D u.1 Z‖ ≤ C * Z ^ ((717 : ℝ) / 2000) := by
   obtain ⟨C, hC, h⟩ := finset_norm_sum_le D
-  refine ⟨C, hC, fun Z hZ => ?_⟩
+  refine ⟨C, fun Z hZ => ?_⟩
   have hfin : (smallSet D Z).Finite := smallSet_finite D Z
   haveI : Finite (smallSet D Z) := hfin.to_subtype
   refine ⟨Summable.of_finite, ?_⟩

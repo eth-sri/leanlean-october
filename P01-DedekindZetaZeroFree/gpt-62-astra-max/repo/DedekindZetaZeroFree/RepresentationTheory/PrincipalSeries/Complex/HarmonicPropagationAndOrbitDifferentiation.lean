@@ -18,14 +18,12 @@ theorem harmonic_le_of_nonzero_vector (s : ℝ)
     (n : ℕ) (v : PrincipalSeries s)
     (hvU : v ∈ U) (hvtype : v ∈ harmonicKType s n) (hv : v ≠ 0) :
     harmonicKType s n ≤ U := by
-  have hWinv : IsKInvariant s (U ⊓ harmonicKType s n) := by
-    intro k f hf
-    exact ⟨hinv k f hf.1, (harmonicKType_multiplicity_one s n).1 k f hf.2⟩
+  have hWinv : IsKInvariant s (U ⊓ harmonicKType s n) := fun k f hf => ⟨hinv k f hf.1, (harmonicKType_multiplicity_one s n).1 k f hf.2⟩
   have hmem : v ∈ U ⊓ harmonicKType s n := ⟨hvU, hvtype⟩
   have hW : U ⊓ harmonicKType s n = harmonicKType s n := by
     rcases (harmonicKType_multiplicity_one s n).2.2.1 (U ⊓ harmonicKType s n)
       inf_le_right hWinv with h | h
-    · exact absurd (by rw [h] at hmem; exact hmem) (by simpa using hv)
+    · exact absurd (by rw [h] at hmem; exact hmem) (by exact hv)
     · exact h
   rw [← hW]
   exact inf_le_left
@@ -56,7 +54,7 @@ private theorem partials_commute (i j : Fin 3) (p : MvPolynomial (Fin 3) ℂ) :
 private theorem harmonic_partial_mem (n : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     (hp : p ∈ harmonicPolynomials (n + 1)) (i : Fin 3) :
     pderiv i p ∈ harmonicPolynomials n := by
-  refine ⟨by simpa using hp.1.pderiv (i := i), ?_⟩
+  refine ⟨by exact hp.1.pderiv, ?_⟩
   change polynomialLaplacian (pderiv i p) = 0
   have hc : polynomialLaplacian (pderiv i p) = pderiv i (polynomialLaplacian p) := by
     change (∑ j : Fin 3, pderiv j (pderiv j (pderiv i p))) =
@@ -151,6 +149,8 @@ private theorem compact_radius (k : KPCplxCharacterHaar.ComplexSU2) :
   norm_cast
   nlinarith [hprod, sq_nonneg (‖m 1 0‖^2 + ‖m 1 1‖^2 - 1)]
 
+alias HarmonicPropagationAndOrbitDifferentiation.compact_radius := compact_radius
+
 theorem conformal_gradient_harmonic_decomposition (s : ℝ) (n : ℕ)
     (p : MvPolynomial (Fin 3) ℂ) (hp : p ∈ harmonicPolynomials (n + 1))
     (i : Fin 3) (D : PrincipalSeries s)
@@ -165,9 +165,9 @@ theorem conformal_gradient_harmonic_decomposition (s : ℝ) (n : ℕ)
           (2 * (((n + 1 : ℕ) : ℂ)) + 1)) •
           polynomialCompactRestriction (pderiv i p) := by
   classical
-  let c : ℂ := ((((n + 1 : ℕ) : ℂ)) - 2 * (s : ℂ)) /
+  let c := ((((n + 1 : ℕ) : ℂ)) - 2 * (s : ℂ)) /
     (2 * (((n + 1 : ℕ) : ℂ)) + 1)
-  let α : ℂ := (((n + 1 : ℕ) : ℂ)) + 1 + 2 * (s : ℂ)
+  let α := (((n + 1 : ℕ) : ℂ)) + 1 + 2 * (s : ℂ)
   have hpartial := harmonic_partial_mem n p hp i
   have hrange : polynomialCompactRestriction (pderiv i p) ∈
       (compactRestriction s).range := by
@@ -189,9 +189,7 @@ theorem conformal_gradient_harmonic_decomposition (s : ℝ) (n : ℕ)
     field_simp [hc']
     <;> ring
   refine ⟨D - c • q, c • q, ?_, ?_, ?_, ?_⟩
-  · change compactRestriction s (D - c • q) ∈
-      (harmonicPolynomials (n + 2)).map polynomialCompactRestriction
-    exact Submodule.mem_map.mpr ⟨(-α) • harmonicRaise (n + 1) i p,
+  · exact Submodule.mem_map.mpr ⟨(-α) • harmonicRaise (n + 1) i p,
       (harmonicPolynomials (n + 2)).smul_mem (-α) (harmonicRaise_succ_mem n p hp i),
       hprofile.symm⟩
   · change compactRestriction s (c • q) ∈
@@ -213,17 +211,13 @@ namespace DedekindZetaZeroFree.KPCplxLoweringOrbitDifferentiation
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxHarmonicPropagation.RaisingTopology
 open scoped Topology Matrix.Norms.Elementwise
 
+local notation "Mat₂ℂ" => Matrix (Fin 2) (Fin 2) ℂ
+
 private lemma matrixFunction_coe (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
-    matrixFunction f (g : Matrix (Fin 2) (Fin 2) ℂ) = f g := by
-  unfold matrixFunction
-  rw [dif_pos (Matrix.GeneralLinearGroup.det_ne_zero g)]
-  congr 1
-  apply Units.ext
-  rfl
+    matrixFunction f (g : Mat₂ℂ) = f g := by apply @DedekindZetaZeroFree.KPCplxPrincipalSeriesMatrixSmooth.matrixFunction_coe <;> assumption
 
 private lemma contDiff_upperUnipotent :
-    ContDiff ℝ (⊤ : ℕ∞) (fun x : ℂ => (upperUnipotent x : Matrix (Fin 2) (Fin 2) ℂ)) := by
-  change ContDiff ℝ (⊤ : ℕ∞) (fun x : ℂ => !![1, x; 0, 1])
+    ContDiff ℝ (⊤ : ℕ∞) (fun x : ℂ => (upperUnipotent x : Mat₂ℂ)) := by
   apply contDiff_pi.mpr
   intro i
   apply contDiff_pi.mpr
@@ -233,10 +227,7 @@ private lemma contDiff_upperUnipotent :
 
 lemma contDiff_weyl_upperUnipotent :
     ContDiff ℝ (⊤ : ℕ∞)
-      (fun x : ℂ => (weyl * upperUnipotent x : Matrix (Fin 2) (Fin 2) ℂ)) := by
-  change ContDiff ℝ (⊤ : ℕ∞)
-    (fun x : ℂ => (weyl : Matrix (Fin 2) (Fin 2) ℂ) *
-      (upperUnipotent x : Matrix (Fin 2) (Fin 2) ℂ))
+      (fun x : ℂ => (weyl * upperUnipotent x : Mat₂ℂ)) := by
   apply contDiff_pi.mpr
   intro i
   apply contDiff_pi.mpr
@@ -247,8 +238,7 @@ lemma contDiff_weyl_upperUnipotent :
   exact contDiff_const.mul (contDiff_pi.mp (contDiff_pi.mp contDiff_upperUnipotent l) j)
 
 lemma contDiff_lowerUnipotent :
-    ContDiff ℝ (⊤ : ℕ∞) (fun x : ℂ => (lowerUnipotent x : Matrix (Fin 2) (Fin 2) ℂ)) := by
-  change ContDiff ℝ (⊤ : ℕ∞) (fun x : ℂ => !![1, 0; x, 1])
+    ContDiff ℝ (⊤ : ℕ∞) (fun x : ℂ => (lowerUnipotent x : Mat₂ℂ)) := by
   apply contDiff_pi.mpr
   intro i
   apply contDiff_pi.mpr
@@ -258,15 +248,12 @@ lemma contDiff_lowerUnipotent :
 
 lemma smoothOrbit_curve (s : ℝ) (f : PrincipalSeries s)
     (q : ℂ → ComplexGL2)
-    (hq : ContDiff ℝ (⊤ : ℕ∞) (fun x => (q x : Matrix (Fin 2) (Fin 2) ℂ)))
+    (hq : ContDiff ℝ (⊤ : ℕ∞) (fun x => (q x : Mat₂ℂ)))
     (γ : ℝ → ComplexGL2)
-    (hγ : ContDiff ℝ (⊤ : ℕ∞) (fun t => (γ t : Matrix (Fin 2) (Fin 2) ℂ))) :
+    (hγ : ContDiff ℝ (⊤ : ℕ∞) (fun t => (γ t : Mat₂ℂ))) :
     ContDiff ℝ (⊤ : ℕ∞) (fun p : ℝ × ℂ => f (q p.2 * γ p.1)) := by
-  have hf := ((principalSeries_mem_iff s f).mp f.property).2
   have hm : ContDiff ℝ (⊤ : ℕ∞)
-      (fun p : ℝ × ℂ => (q p.2 * γ p.1 : Matrix (Fin 2) (Fin 2) ℂ)) := by
-    change ContDiff ℝ (⊤ : ℕ∞) (fun p : ℝ × ℂ =>
-      (q p.2 : Matrix (Fin 2) (Fin 2) ℂ) * (γ p.1 : Matrix (Fin 2) (Fin 2) ℂ))
+      (fun p : ℝ × ℂ => (q p.2 * γ p.1 : Mat₂ℂ)) := by
     apply contDiff_pi.mpr
     intro i
     apply contDiff_pi.mpr
@@ -276,14 +263,15 @@ lemma smoothOrbit_curve (s : ℝ) (f : PrincipalSeries s)
     intro l _
     exact (contDiff_pi.mp (contDiff_pi.mp (hq.comp contDiff_snd) i) l).mul
       (contDiff_pi.mp (contDiff_pi.mp (hγ.comp contDiff_fst) l) j)
-  have h := hf.comp_contDiff hm (fun p => by
-    change (q p.2 * γ p.1 : ComplexGL2).val.det ≠ 0
-    exact (Matrix.GeneralLinearGroup.det (q p.2 * γ p.1)).ne_zero)
-  simpa only [Function.comp_def, ← Matrix.GeneralLinearGroup.coe_mul, matrixFunction_coe] using h
+  simpa only [Function.comp_def, ← Matrix.GeneralLinearGroup.coe_mul, matrixFunction_coe] using ((((principalSeries_mem_iff s f).mp f.property).2).comp_contDiff hm (fun p => by
+    exact (Matrix.GeneralLinearGroup.det (q p.2 * γ p.1)).ne_zero))
 
-noncomputable def orbitDerivativeSection (s : ℝ) (γ : ℝ → ComplexGL2)
-    (hγ : ContDiff ℝ (⊤ : ℕ∞) (fun t => (γ t : Matrix (Fin 2) (Fin 2) ℂ)))
-    (f : PrincipalSeries s) : PrincipalSeries s :=
+section
+
+variable (s : ℝ) (γ : ℝ → ComplexGL2)
+    (hγ : ContDiff ℝ (⊤ : ℕ∞) (fun t => (γ t : Matrix (Fin 2) (Fin 2) ℂ))) (f : PrincipalSeries s)
+
+noncomputable def orbitDerivativeSection : PrincipalSeries s :=
   ⟨fun g => deriv (fun t : ℝ => f (g * γ t)) 0, by
     refine ⟨?_, ?_, ?_⟩
     · intro a d b g
@@ -295,31 +283,23 @@ noncomputable def orbitDerivativeSection (s : ℝ) (γ : ℝ → ComplexGL2)
         rw [mul_assoc]
         exact f.property.1 a d b (g * γ t)
       rw [hfun, deriv_const_mul_field]
-    · have hs := smoothOrbit_curve s f (fun x => weyl * upperUnipotent x)
-        contDiff_weyl_upperUnipotent γ hγ
-      have hd := SmoothQuotient.slice_smooth
-        (SmoothQuotient.partialT (fun p : ℝ × ℂ => f ((weyl * upperUnipotent p.2) * γ p.1)))
-        (SmoothQuotient.partialT_smooth _ hs) 0
-      change ContDiff ℝ (⊤ : ℕ∞)
+    · change ContDiff ℝ (⊤ : ℕ∞)
         (fun x : ℂ => deriv (fun t : ℝ => f ((weyl * upperUnipotent x) * γ t)) 0)
-      simpa only [SmoothQuotient.partialT, fderiv_apply_one_eq_deriv] using hd
-    · have hs := smoothOrbit_curve s f lowerUnipotent contDiff_lowerUnipotent γ hγ
-      have hd := SmoothQuotient.slice_smooth
-        (SmoothQuotient.partialT (fun p : ℝ × ℂ => f (lowerUnipotent p.2 * γ p.1)))
-        (SmoothQuotient.partialT_smooth _ hs) 0
-      change ContDiff ℝ (⊤ : ℕ∞)
+      simpa only [SmoothQuotient.partialT, fderiv_apply_one_eq_deriv] using (SmoothQuotient.slice_smooth
+        (SmoothQuotient.partialT (fun p : ℝ × ℂ => f ((weyl * upperUnipotent p.2) * γ p.1)))
+        (SmoothQuotient.partialT_smooth _ (smoothOrbit_curve s f (fun x => weyl * upperUnipotent x)
+          contDiff_weyl_upperUnipotent γ hγ)) 0)
+    · change ContDiff ℝ (⊤ : ℕ∞)
         (fun x : ℂ => deriv (fun t : ℝ => f (lowerUnipotent x * γ t)) 0)
-      simpa only [SmoothQuotient.partialT, fderiv_apply_one_eq_deriv] using hd⟩
+      simpa only [SmoothQuotient.partialT, fderiv_apply_one_eq_deriv] using (SmoothQuotient.slice_smooth
+        (SmoothQuotient.partialT (fun p : ℝ × ℂ => f (lowerUnipotent p.2 * γ p.1)))
+        (SmoothQuotient.partialT_smooth _ (smoothOrbit_curve s f lowerUnipotent contDiff_lowerUnipotent γ hγ)) 0)⟩
 
-private lemma contDiff_orbit_scalar (s : ℝ) (γ : ℝ → ComplexGL2)
-    (hγ : ContDiff ℝ (⊤ : ℕ∞) (fun t => (γ t : Matrix (Fin 2) (Fin 2) ℂ)))
-    (f : PrincipalSeries s) (g : ComplexGL2) :
+include hγ in
+private lemma contDiff_orbit_scalar (g : ComplexGL2) :
     ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ => f (g * γ t)) := by
-  have hf := ((principalSeries_mem_iff s f).mp f.property).2
   have hm : ContDiff ℝ (⊤ : ℕ∞)
       (fun t : ℝ => (g * γ t : Matrix (Fin 2) (Fin 2) ℂ)) := by
-    change ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ =>
-      (g : Matrix (Fin 2) (Fin 2) ℂ) * (γ t : Matrix (Fin 2) (Fin 2) ℂ))
     apply contDiff_pi.mpr
     intro i
     apply contDiff_pi.mpr
@@ -328,16 +308,14 @@ private lemma contDiff_orbit_scalar (s : ℝ) (γ : ℝ → ComplexGL2)
     apply ContDiff.sum
     intro l _
     exact contDiff_const.mul (contDiff_pi.mp (contDiff_pi.mp hγ l) j)
-  have h := hf.comp_contDiff hm (fun t => by
-    change (g * γ t : ComplexGL2).val.det ≠ 0
-    exact (Matrix.GeneralLinearGroup.det (g * γ t)).ne_zero)
-  simpa only [Function.comp_def, ← Matrix.GeneralLinearGroup.coe_mul, matrixFunction_coe] using h
+  simpa only [Function.comp_def, ← Matrix.GeneralLinearGroup.coe_mul, matrixFunction_coe] using ((((principalSeries_mem_iff s f).mp f.property).2).comp_contDiff hm (fun t => by
+    exact (Matrix.GeneralLinearGroup.det (g * γ t)).ne_zero))
 
-private lemma orbitDerivativeSection_hasDerivAt (s : ℝ) (γ : ℝ → ComplexGL2)
-    (hγ : ContDiff ℝ (⊤ : ℕ∞) (fun t => (γ t : Matrix (Fin 2) (Fin 2) ℂ)))
-    (f : PrincipalSeries s) (g : ComplexGL2) :
+private lemma orbitDerivativeSection_hasDerivAt (g : ComplexGL2) :
     HasDerivAt (fun t : ℝ => f (g * γ t)) (orbitDerivativeSection s γ hγ f g) 0 :=
   (contDiff_orbit_scalar s γ hγ f g).differentiable (by simp) 0 |>.hasDerivAt
+
+end
 
 set_option maxHeartbeats 1500000 in
 private theorem orbit_quotient_tendsto (s : ℝ) (γ : ℝ → ComplexGL2)
@@ -428,15 +406,12 @@ theorem lowering_harmonic_disjoint (s : ℝ) (m n : ℕ) (hmn : m ≠ n) :
     Disjoint (harmonicKType s m) (harmonicKType s n) := by
   have hm := harmonicKType_multiplicity_one s m
   have hn := harmonicKType_multiplicity_one s n
-  have hi : IsKInvariant s (harmonicKType s m ⊓ harmonicKType s n) :=
-    fun k f hf => ⟨hm.1 k f hf.1, hn.1 k f hf.2⟩
   apply disjoint_iff.mpr
-  rcases hm.2.2.1 _ inf_le_left hi with hbot | heq
+  rcases hm.2.2.1 _ inf_le_left (fun k f hf => ⟨hm.1 k f hf.1, hn.1 k f hf.2⟩) with hbot | heq
   · exact hbot
-  · have hle : harmonicKType s m ≤ harmonicKType s n := by
+  · rcases hn.2.2.1 _ (by
       rw [← heq]
-      exact inf_le_right
-    rcases hn.2.2.1 _ hle hm.1 with hbot | heq'
+      exact inf_le_right) hm.1 with hbot | heq'
     · have hd : Module.finrank ℂ (harmonicKType s m) = 0 := by rw [hbot]; simp
       rw [hm.2.1] at hd
       omega
@@ -448,7 +423,6 @@ private theorem lowering_pi_sub (s : ℝ) (g : ComplexPGL2)
     (f h : PrincipalSeries s) : pi s g (f - h) = pi s g f - pi s g h := by
   induction g using Quotient.inductionOn with
   | h g =>
-    change rightTranslate s g (f - h) = rightTranslate s g f - rightTranslate s g h
     rfl
 
 private theorem lowering_sum_projection (s : ℝ) (A B W : Submodule ℂ (PrincipalSeries s))
@@ -464,21 +438,19 @@ private theorem lowering_sum_projection (s : ℝ) (A B W : Submodule ℂ (Princi
   have hp (w : W) : (w : PrincipalSeries s) - p w ∈ A := (hex w).choose_spec
   have huniq (w : W) (b : B) (hb : (w : PrincipalSeries s) - b ∈ A) : p w = b := by
     apply Subtype.ext
-    have hA : (p w : PrincipalSeries s) - b ∈ A := by
-      simpa only [sub_sub_sub_cancel_left] using A.sub_mem hb (hp w)
-    have hB := B.sub_mem (p w).property b.property
-    have hm : (p w : PrincipalSeries s) - b ∈ A ⊓ B := ⟨hA, hB⟩
+    have hm : (p w : PrincipalSeries s) - b ∈ A ⊓ B := ⟨by
+      simpa using A.sub_mem hb (hp w), (B.sub_mem (p w).property b.property)⟩
     rw [disjoint_iff.mp hd] at hm
-    have hz : (p w : PrincipalSeries s) - b = 0 := by simpa using hm
-    exact sub_eq_zero.mp hz
+    refine sub_eq_zero.mp ?_
+    exact hm
   refine ⟨{ toFun := p, map_add' := ?_, map_smul' := ?_ }, hp⟩
   · intro x y
     apply huniq
-    change (x : PrincipalSeries s) + y - ((p x : PrincipalSeries s) + p y) ∈ A
+    change x + y - ((p x : PrincipalSeries s) + p y) ∈ A
     simpa only [add_sub_add_comm] using A.add_mem (hp x) (hp y)
   · intro c x
     apply huniq
-    change c • (x : PrincipalSeries s) - c • (p x : PrincipalSeries s) ∈ A
+    change c • x - c • (p x : PrincipalSeries s) ∈ A
     simpa only [smul_sub] using A.smul_mem c (hp x)
 
 set_option backward.isDefEq.respectTransparency false in
@@ -492,22 +464,20 @@ theorem lowering_two_harmonic_components_mem (s : ℝ) (m n : ℕ) (hmn : m ≠ 
   let B := harmonicKType s n
   have hA := harmonicKType_multiplicity_one s m
   have hB := harmonicKType_multiplicity_one s n
-  have hd : Disjoint A B := lowering_harmonic_disjoint s m n hmn
-  have hUA : IsKInvariant s (U ⊓ A) := fun k f hf => ⟨hU k f hf.1, hA.1 k f hf.2⟩
-  rcases hA.2.2.1 (U ⊓ A) inf_le_right hUA with hzero | hfull
+  have hd := lowering_harmonic_disjoint s m n hmn
+  rcases hA.2.2.1 (U ⊓ A) inf_le_right (fun k f hf => ⟨hU k f hf.1, hA.1 k f hf.2⟩) with hzero | hfull
   · by_cases hbzero : b = 0
     · simpa [hbzero] using U.zero_mem
     let W := U ⊓ (A ⊔ B)
     obtain ⟨P, hP⟩ := lowering_sum_projection s A B W hd inf_le_right
     have huniq (w : W) (v : B) (hv : (w : PrincipalSeries s) - v ∈ A) : P w = v := by
       apply Subtype.ext
-      have hhA : (P w : PrincipalSeries s) - v ∈ A := by
-        simpa only [sub_sub_sub_cancel_left] using A.sub_mem hv (hP w)
       have hm : (P w : PrincipalSeries s) - v ∈ A ⊓ B :=
-        ⟨hhA, B.sub_mem (P w).property v.property⟩
+        ⟨by
+          simpa using A.sub_mem hv (hP w), B.sub_mem (P w).property v.property⟩
       rw [disjoint_iff.mp hd] at hm
-      have he : (P w : PrincipalSeries s) - v = 0 := by simpa using hm
-      exact sub_eq_zero.mp he
+      refine sub_eq_zero.mp ?_
+      exact hm
     have hWinv : IsKInvariant s W := by
       intro k f hf
       refine ⟨hU k f hf.1, ?_⟩
@@ -516,7 +486,6 @@ theorem lowering_two_harmonic_components_mem (s : ℝ) (m n : ℕ) (hmn : m ≠ 
       have hepi : pi s k (a + b) = pi s k a + pi s k b := by
         induction (k : ComplexPGL2) using Quotient.inductionOn with
         | h g =>
-          change rightTranslate s g (a + b) = rightTranslate s g a + rightTranslate s g b
           rfl
       rw [hepi]
       exact (A ⊔ B).add_mem (Submodule.mem_sup_left (hA.1 k a ha))
@@ -525,22 +494,20 @@ theorem lowering_two_harmonic_components_mem (s : ℝ) (m n : ℕ) (hmn : m ≠ 
         P ⟨pi s k w, hWinv k w w.property⟩ =
           ⟨pi s k (P w), hB.1 k (P w) (P w).property⟩ := by
       apply huniq
-      change pi s k w - pi s k (P w) ∈ A
       rw [← lowering_pi_sub]
       exact hA.1 k _ (hP w)
-    let L : W →ₗ[ℂ] PrincipalSeries s := B.subtype.comp P
+    let L := B.subtype.comp P
     have hLin : Function.Injective L := by
       intro x y hxy
-      have hpEq : P x = P y := Subtype.ext hxy
       have hhA : (x : PrincipalSeries s) - y ∈ A := by
         have hh := A.sub_mem (hP x) (hP y)
-        rw [hpEq] at hh
-        simpa only [sub_sub_sub_cancel_right] using hh
+        rw [(Subtype.ext hxy)] at hh
+        simpa using hh
       have hhUA : (x : PrincipalSeries s) - y ∈ U ⊓ A :=
         ⟨U.sub_mem x.property.1 y.property.1, hhA⟩
       rw [hzero] at hhUA
-      have he : (x : PrincipalSeries s) - y = 0 := by simpa using hhUA
-      exact Subtype.ext (sub_eq_zero.mp he)
+      refine Subtype.ext (sub_eq_zero.mp ?_)
+      exact hhUA
     have hRinv : IsKInvariant s L.range := by
       intro k f hf
       obtain ⟨w, rfl⟩ := hf
@@ -558,50 +525,29 @@ theorem lowering_two_harmonic_components_mem (s : ℝ) (m n : ℕ) (hmn : m ≠ 
       have hbR : b ∈ L.range := ⟨⟨a + b, hw⟩,
         congrArg (fun v : B => (v : PrincipalSeries s)) hPb⟩
       rw [hbot] at hbR
-      exact hbzero (by simpa using hbR)
-    have hReq : L.range = B := (hB.2.2.1 L.range hRle hRinv).resolve_left hRne
+      exact hbzero (by exact hbR)
+    have hReq := (hB.2.2.1 L.range hRle hRinv).resolve_left hRne
     have hWE : KEquivalent s W B := by
-      let e : W ≃ₗ[ℂ] B := (LinearEquiv.ofInjective L hLin).trans
+      let e := (LinearEquiv.ofInjective L hLin).trans
         (LinearEquiv.ofEq _ _ hReq)
       refine ⟨e, ?_⟩
       intro k u v huv
       have hv : v = ⟨pi s k u, hWinv k u u.property⟩ := Subtype.ext huv
       subst v
       exact congrArg (fun v : B => (v : PrincipalSeries s)) (hequiv k u)
-    have hWeq : W = B := hB.2.2.2 W hWinv hWE
-    have hbW : b ∈ W := by rw [hWeq]; exact hb
+    have hbW : b ∈ W := by rw [(hB.2.2.2 W hWinv hWE)]; exact hb
     exact hbW.1
   · have haU : a ∈ U := by
       have : a ∈ U ⊓ A := by rw [hfull]; exact ha
       exact this.1
-    simpa only [add_sub_cancel_left] using U.sub_mem hab haU
+    simpa using U.sub_mem hab haU
 
 open MvPolynomial
 open scoped BigOperators
 
-private theorem partials_commute_lowering (i j : Fin 3) (p : MvPolynomial (Fin 3) ℂ) :
-    pderiv i (pderiv j p) = pderiv j (pderiv i p) := by
-  classical
-  ext d
-  simp only [coeff_pderiv]
-  by_cases hij : i = j
-  · subst j; rfl
-  · simp [Finsupp.single_apply, hij, Ne.symm hij, add_comm, add_left_comm, add_assoc,
-      mul_comm, mul_left_comm]
+private alias partials_commute_lowering := DedekindZetaZeroFree.KPCplxLoweringHarmonicDecomposition.partials_commute
 
-private theorem partial_mem_lowering (n : ℕ) (p : MvPolynomial (Fin 3) ℂ)
-    (hp : p ∈ harmonicPolynomials (n + 1)) (i : Fin 3) :
-    pderiv i p ∈ harmonicPolynomials n := by
-  refine ⟨by simpa using hp.1.pderiv (i := i), ?_⟩
-  change polynomialLaplacian (pderiv i p) = 0
-  have hc : polynomialLaplacian (pderiv i p) = pderiv i (polynomialLaplacian p) := by
-    change (∑ j : Fin 3, pderiv j (pderiv j (pderiv i p))) =
-      pderiv i (∑ j : Fin 3, pderiv j (pderiv j p))
-    rw [map_sum]
-    apply Finset.sum_congr rfl
-    intro j hj
-    rw [partials_commute_lowering j i, partials_commute_lowering j i]
-  rw [hc, show polynomialLaplacian p = 0 from hp.2, map_zero]
+private alias partial_mem_lowering := DedekindZetaZeroFree.KPCplxLoweringHarmonicDecomposition.harmonic_partial_mem
 
  theorem compact_polynomial_ne_zero_lowering (n : ℕ)
     (p : MvPolynomial (Fin 3) ℂ) (hp : p.IsHomogeneous n) (hne : p ≠ 0) :
@@ -620,10 +566,11 @@ private theorem partial_mem_lowering (n : ℕ) (p : MvPolynomial (Fin 3) ℂ)
   funext i
   fin_cases i <;> simp [compactSphereCoordinate, ← Complex.ofReal_pow]
 
-theorem nonzero_adjacent_lowering_of_component (s : ℝ) (n : ℕ)
-    (hcoeff : ((((n + 1 : ℕ) : ℂ) - 2 * (s : ℂ)) /
-      (2 * ((n + 1 : ℕ) : ℂ) + 1)) ≠ 0)
+variable (s : ℝ) (n : ℕ) (hcoeff : ((((n + 1 : ℕ) : ℂ) - 2 * (s : ℂ)) / (2 * ((n + 1 : ℕ) : ℂ) + 1)) ≠ 0)
     (U : Submodule ℂ (PrincipalSeries s))
+
+include hcoeff in
+theorem nonzero_adjacent_lowering_of_component
     (hn : harmonicKType s (n + 1) ≤ U)
     (hcomponent : ∀ (f : PrincipalSeries s) (p : MvPolynomial (Fin 3) ℂ),
       f ∈ U → p ∈ harmonicPolynomials (n + 1) →
@@ -632,11 +579,10 @@ theorem nonzero_adjacent_lowering_of_component (s : ℝ) (n : ℕ)
         ((((n + 1 : ℕ) : ℂ) - 2 * (s : ℂ)) /
           (2 * ((n + 1 : ℕ) : ℂ) + 1)) • polynomialCompactRestriction (pderiv i p)) :
     ∃ v : PrincipalSeries s, v ∈ U ∧ v ∈ harmonicKType s n ∧ v ≠ 0 := by
-  have hdim : 0 < Module.finrank ℂ (harmonicKType s (n + 1)) := by
-    rw [(harmonicKType_multiplicity_one s (n + 1)).2.1]
-    omega
   haveI : Nontrivial (harmonicKType s (n + 1)) :=
-    Module.nontrivial_of_finrank_pos hdim
+    Module.nontrivial_of_finrank_pos (by
+      rw [(harmonicKType_multiplicity_one s (n + 1)).2.1]
+      omega)
   obtain ⟨f, hf⟩ := exists_ne (0 : harmonicKType s (n + 1))
   have hfne : (f : PrincipalSeries s) ≠ 0 := by
     intro h
@@ -649,16 +595,15 @@ theorem nonzero_adjacent_lowering_of_component (s : ℝ) (n : ℕ)
     rw [map_zero] at he
     apply hfne
     apply compactRestriction_injective s
-    simpa using he.symm
+    exact he.symm
   have hpartial : ∃ i : Fin 3, pderiv i p ≠ 0 := by
     by_contra h
     push Not at h
     have he := hp.1.sum_X_mul_pderiv
     simp only [h, mul_zero, Finset.sum_const_zero] at he
-    have hn : (n + 1 : ℂ) ≠ 0 := by exact_mod_cast Nat.succ_ne_zero n
     have he' : (n + 1 : ℂ) • p = 0 := by
-      simpa only [← Nat.cast_add_one (R := ℂ), Nat.cast_smul_eq_nsmul] using he.symm
-    exact hpne ((smul_eq_zero.mp he').resolve_left hn)
+      simpa only [← Nat.cast_add_one, Nat.cast_smul_eq_nsmul] using he.symm
+    exact hpne ((smul_eq_zero.mp he').resolve_left (by exact_mod_cast Nat.succ_ne_zero n))
   obtain ⟨i, hi⟩ := hpartial
   obtain ⟨v, hvU, hv⟩ := hcomponent f p (hn f.property) hp he.symm i
   have hpi := partial_mem_lowering n p hp i
@@ -668,14 +613,10 @@ theorem nonzero_adjacent_lowering_of_component (s : ℝ) (n : ℕ)
     exact Submodule.smul_mem _ _ ⟨pderiv i p, hpi, rfl⟩
   · intro hzero
     rw [hzero, map_zero] at hv
-    have hcompact : polynomialCompactRestriction (pderiv i p) ≠ 0 :=
-      compact_polynomial_ne_zero_lowering n _ hpi.1 hi
-    exact hcompact ((smul_eq_zero.mp hv.symm).resolve_left hcoeff)
+    exact (compact_polynomial_ne_zero_lowering n _ hpi.1 hi) ((smul_eq_zero.mp hv.symm).resolve_left hcoeff)
 
-theorem nonzero_adjacent_lowering (s : ℝ) (n : ℕ)
-    (hcoeff : ((((n + 1 : ℕ) : ℂ) - 2 * (s : ℂ)) /
-      (2 * ((n + 1 : ℕ) : ℂ) + 1)) ≠ 0)
-    (U : Submodule ℂ (PrincipalSeries s))
+include hcoeff in
+theorem nonzero_adjacent_lowering
     (hclosed : IsClosed (U : Set (PrincipalSeries s)))
     (hinv : ∀ (g : ComplexPGL2) (f : PrincipalSeries s), f ∈ U → pi s g f ∈ U)
     (hn : harmonicKType s (n + 1) ≤ U) :
@@ -720,7 +661,6 @@ theorem exceptional_boost_coefficients_ne_zero (s : ℝ)
       s = KPCplxPrincipalSeriesCharts.negativeParameter) (n : ℕ) :
     ((n : ℂ) + 1 + 2 * (s : ℂ)) ≠ 0 ∧
       (((n + 1 : ℕ) : ℂ) - 2 * (s : ℂ)) / (2 * ((n + 1 : ℕ) : ℂ) + 1) ≠ 0 := by
-  have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
   have hr : (n : ℝ) + 1 + 2 * s ≠ 0 ∧ (n : ℝ) + 1 - 2 * s ≠ 0 := by
     rcases hs with rfl | rfl <;>
       dsimp only [KPCplxPrincipalSeriesCharts.positiveParameter,
@@ -743,10 +683,9 @@ theorem harmonic_propagation_of_adjacent (s : ℝ)
     induction n with
     | zero => exact id
     | succ n ih => exact fun hn => ih (hlower n hn)
-  have hzero := hdown ℓ hℓ
   intro m
   induction m with
-  | zero => exact hzero
+  | zero => exact (hdown ℓ hℓ)
   | succ n ih => exact hraise n ih
 
 theorem exceptional_harmonic_propagation (s : ℝ)
@@ -801,7 +740,7 @@ theorem orbit_limit_eq_of_pointwise_derivative (s : ℝ)
       (fun t : ℝ => t⁻¹ • (pi s (γ t) f g - pi s (γ 0) f g)) := by
     funext t
     rw [hγ, pi_one]
-    simp only [Complex.real_smul, Complex.ofReal_inv]
+    simp
   change Filter.Tendsto
     (fun t : ℝ => (t : ℂ)⁻¹ * (pi s (γ t) f g - f g))
     (𝓝[≠] (0 : ℝ)) (𝓝 (D g)) at hD

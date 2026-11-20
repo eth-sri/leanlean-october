@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -35,7 +30,6 @@ open NumberField
 
 noncomputable section
 
-
 variable
     (K L : Type*) [Field K] [NumberField K]
     [Field L] [NumberField L] [Algebra K L]
@@ -46,8 +40,7 @@ namespace RelativeIdeleGroup
 omit [NumberField L] [FiniteDimensional K L] in
 /-- The diagonal copy of `Lˣ` in the relative ideles is injective. -/
 theorem principalIdele_injective :
-    Function.Injective (principalIdele K L) := by
-  exact Units.map_injective
+    Function.Injective (principalIdele K L) := Units.map_injective
     (Algebra.TensorProduct.includeRight_injective
       (B := L)
       (NumberField.AdeleRing.algebraMap_injective
@@ -141,16 +134,10 @@ theorem exists_fixed_representative_of_fixed_class
           principalIdele K L x =
             (σ • a) / a := by
     intro σ
-    have hmem :
-        (σ • a) / a ∈ principalSubgroup K L := by
-      exact (QuotientGroup.eq_iff_div_mem).1 (ha σ)
-    exact hmem
-  let f : (L ≃ₐ[K] L) → Lˣ :=
+    exact (QuotientGroup.eq_iff_div_mem).1 (ha σ)
+  let f :=
     fun σ ↦ Classical.choose (hex σ)
-  have hf_spec :
-      ∀ σ : L ≃ₐ[K] L,
-        principalIdele K L (f σ) =
-          (σ • a) / a :=
+  have hf_spec :=
     fun σ ↦ Classical.choose_spec (hex σ)
   have hf_cocycle :
       groupCohomology.IsMulCocycle₁ f := by
@@ -160,7 +147,7 @@ theorem exists_fixed_representative_of_fixed_class
         principalIdele K L (σ • f τ) =
           σ • principalIdele K L (f τ) := by
       calc
-        principalIdele K L (σ • f τ) =
+        _ =
             principalIdele K L
               (Units.map
                 σ.toRingEquiv.toMonoidHom (f τ)) := by
@@ -174,7 +161,7 @@ theorem exists_fixed_representative_of_fixed_class
   obtain ⟨β, hβ⟩ :=
     groupCohomology.isMulCoboundary₁_of_isMulCocycle₁_of_aut_to_units
       f hf_cocycle
-  let a' : RelativeIdeleGroup K L :=
+  let a' :=
     a / principalIdele K L β
   have hratio :
       ∀ σ : L ≃ₐ[K] L,
@@ -186,7 +173,7 @@ theorem exists_fixed_representative_of_fixed_class
         Units.map σ.toRingEquiv.toMonoidHom β / β =
           f σ := by
       calc
-        Units.map σ.toRingEquiv.toMonoidHom β / β =
+        _ =
             σ • β / β := by
           congr 2
         _ = f σ := hβ σ
@@ -200,23 +187,21 @@ theorem exists_fixed_representative_of_fixed_class
         a / principalIdele K L β
     rw [smul_div']
     calc
-      (σ • a) / (σ • principalIdele K L β) =
+      _ =
           ((σ • a) / a) *
-            (a / (σ • principalIdele K L β)) := by
-        exact (div_mul_div_cancel _ _ _).symm
+            (a / (σ • principalIdele K L β)) := (div_mul_div_cancel _ _ _).symm
       _ = ((σ • principalIdele K L β) /
             principalIdele K L β) *
           (a / (σ • principalIdele K L β)) := by
         rw [← hratio σ]
-      _ = a / principalIdele K L β := by
-        exact div_mul_div_cancel' _ _ _
+      _ = a / principalIdele K L β := div_mul_div_cancel' _ _ _
   refine ⟨a', ?_, ha'fixed⟩
   apply (QuotientGroup.eq_iff_div_mem).2
   refine ⟨β⁻¹, ?_⟩
   change
     (principalIdele K L β)⁻¹ =
       (a / principalIdele K L β) / a
-  simpa only [div_mul_eq_div_div] using
+  simpa using
     (div_mul_cancel_right a
       (principalIdele K L β)).symm
 
@@ -229,17 +214,9 @@ theorem galoisFixed_le_classInclusion_range
   intro c hc
   obtain ⟨a, rfl⟩ :=
     QuotientGroup.mk_surjective c
-  have ha :
-      ∀ σ : L ≃ₐ[K] L,
-        σ •
-            QuotientGroup.mk'
-              (principalSubgroup K L) a =
-          QuotientGroup.mk'
-            (principalSubgroup K L) a :=
-    hc
   obtain ⟨a', ha'class, ha'fixed⟩ :=
     exists_fixed_representative_of_fixed_class
-      K L a ha
+      K L a hc
   have ha'mem :
       a' ∈ galoisFixedSubgroup K L :=
     ha'fixed

@@ -19,9 +19,7 @@ theorem polynomialHopf_native_band (p : MvPolynomial (Fin 3) ℂ) :
   classical
   obtain ⟨I, q, hq, he⟩ := finite_fischer_spanning p
   have hlift : ∀ ℓ, ∃ h : PrincipalSeries positiveParameter,
-      sphereProfile positiveParameter h = polynomialSphere (q ℓ) := by
-    intro ℓ
-    exact sphereProfile_surjective positiveParameter _ (polynomialSphere_smooth _)
+      sphereProfile positiveParameter h = polynomialSphere (q ℓ) := fun ℓ => sphereProfile_surjective positiveParameter _ (polynomialSphere_smooth _)
   choose h hh using hlift
   have hmem : ∀ ℓ ∈ I, h ℓ ∈ harmonicKType positiveParameter ℓ := by
     intro ℓ hℓ
@@ -33,9 +31,8 @@ theorem polynomialHopf_native_band (p : MvPolynomial (Fin 3) ℂ) :
   refine ⟨N, ∑ ℓ ∈ I, h ℓ, ?_, ?_⟩
   · apply Submodule.sum_mem
     intro ℓ hℓ
-    have hℓN : ℓ ≤ N := Finset.le_sup (f := id) hℓ
     exact (Finset.le_sup (s := Finset.range (N + 1))
-      (f := harmonicKType positiveParameter) (Finset.mem_range.mpr (Nat.lt_succ_of_le hℓN)))
+      (f := harmonicKType positiveParameter) (Finset.mem_range.mpr (Nat.lt_succ_of_le (Finset.le_sup hℓ))))
       (hmem ℓ hℓ)
   · intro k
     have hp := KPCplxActualImageProof.polynomialCompactRestriction_eq_hopf p k
@@ -91,34 +88,29 @@ private theorem mass_direction_identity (X g : KPContHolomorphicKGeneration.Mat)
   field_simp
   <;> ring
 
-theorem bottomRowMass_hasDerivAt
-    (X : KPContHolomorphicKGeneration.Mat) (g : ComplexGL2)
-    (c : ℝ → KPContHolomorphicKGeneration.Mat)
-    (hc : c 0 = g)
-    (hd : ∀ i, HasDerivAt (fun t => c t 1 i) (((g : KPContHolomorphicKGeneration.Mat) * X) 1 i) 0) :
+section
+
+variable (X : KPContHolomorphicKGeneration.Mat) (g : ComplexGL2)
+    (c : ℝ → KPContHolomorphicKGeneration.Mat) (hc : c 0 = g)
+    (hd : ∀ i, HasDerivAt (fun t => c t 1 i) (((g : KPContHolomorphicKGeneration.Mat) * X) 1 i) 0)
+
+include hc hd in
+theorem bottomRowMass_hasDerivAt :
     HasDerivAt (fun t => bottomRowMass (c t))
       (bottomRowMass g * projectorMassDirection X (bottomRowProjector g)) 0 := by
   have hraw := ((hd 0).mul (hd 0).star).add ((hd 1).mul (hd 1).star)
   simp only [hc] at hraw
-  have he := mass_direction_identity X g (mass_ne_zero g)
-  have hn : (∑ i : Fin 2, (((g : KPContHolomorphicKGeneration.Mat) * X) 1 i * star ((g : KPContHolomorphicKGeneration.Mat) 1 i) +
-      (g : KPContHolomorphicKGeneration.Mat) 1 i * star (((g : KPContHolomorphicKGeneration.Mat) * X) 1 i))) =
-      bottomRowMass g * projectorMassDirection X (bottomRowProjector g) := by
-    exact (div_eq_iff (mass_ne_zero g)).mp he |>.trans (mul_comm _ _)
+  have hn := (div_eq_iff (mass_ne_zero g)).mp (mass_direction_identity X g (mass_ne_zero g)) |>.trans (mul_comm _ _)
   simp only [Fin.sum_univ_two] at hn
   rw [hn] at hraw
   exact hraw
 
+include hc hd in
 theorem bottomRowProjector_hasDerivAt
-    (X : KPContHolomorphicKGeneration.Mat) (g : ComplexGL2)
-    (c : ℝ → KPContHolomorphicKGeneration.Mat)
-    (hc : c 0 = g)
-    (hd : ∀ i, HasDerivAt (fun t => c t 1 i) (((g : KPContHolomorphicKGeneration.Mat) * X) 1 i) 0)
     (i j : Fin 2) :
     HasDerivAt (fun t => bottomRowProjector (c t) i j)
       (projectorDirection X (bottomRowProjector g) i j) 0 := by
-  have hm := bottomRowMass_hasDerivAt X g c hc hd
-  have hn := ((hd i).star.mul (hd j)).div hm (by simpa [hc] using mass_ne_zero g)
+  have hn := ((hd i).star.mul (hd j)).div (bottomRowMass_hasDerivAt X g c hc hd) (by simpa [hc] using mass_ne_zero g)
   simp only [hc] at hn
   change HasDerivAt (fun t => bottomRowProjector (c t) i j) _ 0 at hn
   apply hn.congr_deriv
@@ -129,6 +121,8 @@ theorem bottomRowProjector_hasDerivAt
     bottomRowProjector, star_add, star_mul]
   field_simp
   <;> ring
+
+end
 
  def bottomRowOuter (g : KPContHolomorphicKGeneration.Mat) :
     KPContHolomorphicKGeneration.Mat := fun i j => star (g 1 i) * g 1 j
@@ -177,9 +171,8 @@ theorem bottomRowProjector_compact (k : ComplexSU2) (i j : Fin 2) :
     bottomRowProjector k i j =
       MvPolynomial.eval (compactSphereCoordinate k) (projectorSpherePolynomial i j) := by
   have hm : bottomRowMass k = 1 := by
-    have hk := RepresentationTheory.KPContHolomorphicKGenerationProve.RaisingCalculation.rowB_compact k
     rw [bottomRowMass_eq]
-    exact_mod_cast hk
+    exact_mod_cast (RepresentationTheory.KPContHolomorphicKGenerationProve.RaisingCalculation.rowB_compact k)
   have hn : ‖(k : KPContHolomorphicKGeneration.Mat) 1 0‖ ^ 2 +
       ‖(k : KPContHolomorphicKGeneration.Mat) 1 1‖ ^ 2 = 1 :=
     RepresentationTheory.KPContHolomorphicKGenerationProve.RaisingCalculation.rowB_compact k
@@ -282,8 +275,7 @@ theorem sphericalLogRatio_hasDerivAt (X : LM) (g : ComplexGL2) (c : ℝ → LM) 
   have hdet := determinant_right_hasDerivAt X g c hc hd
   have hne := Matrix.GeneralLinearGroup.det_ne_zero g
   have hnorm : HasDerivAt (fun t => Real.log ‖(c t).det‖) (Matrix.trace X).re 0 := by
-    have h := logNormDeriv hdet (by simpa [hc] using hne)
-    simpa [hc, mul_div_cancel_left₀ _ hne] using h
+    simpa [hc, mul_div_cancel_left₀ _ hne] using (logNormDeriv hdet (by simpa [hc] using hne))
   have hm := Complex.reCLM.hasFDerivAt.comp_hasDerivAt 0
     (bottomRowMass_hasDerivAt X g c hc (hd 1))
   change HasDerivAt (fun t => (bottomRowMass (c t)).re) _ 0 at hm
@@ -300,10 +292,8 @@ theorem sphericalLogRatio_hasDerivAt (X : LM) (g : ComplexGL2) (c : ℝ → LM) 
     mul_div_cancel_left₀ _ (ne_of_gt hrow)
   rw [he] at hlog
   apply (hnorm.sub hlog).congr_of_eventuallyEq
-  have hct : ContinuousAt (fun t => (c t).det) 0 := hdet.continuousAt
-  have hcr : ContinuousAt (fun t => ‖c t 1 0‖ ^ 2 + ‖c t 1 1‖ ^ 2) 0 := hm.continuousAt
-  filter_upwards [hct.eventually_ne (by simpa [hc] using hne),
-    hcr.eventually_ne (by simpa [hc] using ne_of_gt hrow)] with t ht hr
+  filter_upwards [hdet.continuousAt.eventually_ne (by simpa [hc] using hne),
+    hm.continuousAt.eventually_ne (by simpa [hc] using ne_of_gt hrow)] with t ht hr
   exact (Real.log_div (norm_ne_zero_iff.mpr ht) hr)
 
 end NormalizedCalculus
@@ -345,14 +335,9 @@ private theorem p_derivative (X : BM) (p : PP) : ∃ q : PP,
     obtain ⟨q,hq⟩ := hp
     refine ⟨q * MvPolynomial.X ij + p * pField X ij.1 ij.2, ?_⟩
     intro g c hc hd
-    have hf := bottomRowProjector_hasDerivAt X g c hc hd ij.1 ij.2
-    have hh := (hq g c hc hd).mul hf
-    convert hh using 1 <;> simp [peval, hc, ← peval_field X (g : BM) ij.1 ij.2] <;> rfl
+    convert ((hq g c hc hd).mul (bottomRowProjector_hasDerivAt X g c hc hd ij.1 ij.2)) using 1 <;> simp [peval, hc, ← peval_field X (g : BM) ij.1 ij.2] <;> rfl
  def bDomain : Set BM := {g | g.det ≠ 0}
-private theorem bDomain_open : IsOpen bDomain := by
-  have hc : Continuous (fun g : BM => g.det) := by
-    simp only [Matrix.det_fin_two]; fun_prop
-  exact isOpen_ne_fun hc continuous_const
+private theorem bDomain_open : IsOpen bDomain := by apply @DedekindZetaZeroFree.KPContHolomorphicKGeneration.inv_open <;> assumption
 private theorem peval_smooth (p : PP) : ContDiffOn ℝ ∞ (peval p) bDomain := by
   have hcoord : ∀ ij : Fin 2 × Fin 2,
       ContDiffOn ℝ ∞ (fun g : BM => bottomRowProjector g ij.1 ij.2) bDomain := by
@@ -409,21 +394,7 @@ private theorem p_direction (X : BM) (p : PP) : ∃ q : PP,
  def bExponent : Polynomial ℂ :=
   Polynomial.C (1 + 2 * (positiveParameter : ℂ)) + Polynomial.C 2 * Polynomial.X
  def bLog (X : BM) : PP := MvPolynomial.C ((Matrix.trace X).re : ℂ) - pMass X
-private theorem bPhase_smooth : ContDiffOn ℝ ∞ bPhase bDomain := by
-  have hd : ContDiff ℝ ∞ (fun g : BM => g.det) := by
-    simp only [Matrix.det_fin_two]; fun_prop
-  have hr : ContDiff ℝ ∞ (fun g : BM => ‖g 1 0‖ ^ 2 + ‖g 1 1‖ ^ 2) := by
-    apply ContDiff.add
-    · exact (by fun_prop : ContDiff ℝ ∞ (fun g : BM => g 1 0)).norm_sq (𝕜 := ℂ)
-    · exact (by fun_prop : ContDiff ℝ ∞ (fun g : BM => g 1 1)).norm_sq (𝕜 := ℂ)
-  have hp : ∀ g ∈ bDomain, 0 < ‖g 1 0‖ ^ 2 + ‖g 1 1‖ ^ 2 := by
-    intro g hg
-    exact RepresentationTheory.KPContHolomorphicKGenerationProve.RaisingCalculation.rowB_pos
-      (Matrix.GeneralLinearGroup.mkOfDetNeZero g hg)
-  have hl := ((hd.contDiffOn.norm ℂ (fun g hg => hg)).div hr.contDiffOn
-    (fun g hg => ne_of_gt (hp g hg))).log
-    (fun g hg => ne_of_gt (div_pos (norm_pos_iff.mpr hg) (hp g hg)))
-  exact Complex.ofRealCLM.contDiff.comp_contDiffOn hl
+private theorem bPhase_smooth : ContDiffOn ℝ ∞ bPhase bDomain := by apply @DedekindZetaZeroFree.KPContHolomorphicKGeneration.phase_smooth <;> assumption
 private theorem phase_direction (X : BM) (g : ComplexGL2) :
     bDirection X bPhase g = peval (bLog X) g := by
   apply along_right X g _
@@ -432,8 +403,7 @@ private theorem phase_direction (X : BM) (g : ComplexGL2) :
       (((g : BM) * X) i j) 0 := by
     intro i j
     simpa using (hasDerivAt_id (0 : ℝ)).smul_const (((g : BM) * X) i j) |>.const_add ((g : BM) i j)
-  have hl := (sphericalLogRatio_hasDerivAt X g _ (by simp) hc).ofReal_comp
-  convert hl using 1
+  convert ((sphericalLogRatio_hasDerivAt X g _ (by simp) hc).ofReal_comp) using 1
   · rfl
   · change peval (MvPolynomial.C ((Matrix.trace X).re : ℂ) - pMass X) (g : BM) = _
     rw [show peval (MvPolynomial.C ((Matrix.trace X).re : ℂ) - pMass X) (g : BM) =
@@ -569,8 +539,7 @@ theorem sphericalWord_polynomial_harmonic_band :
   classical
   obtain ⟨n,p,q,he⟩ := sphericalWord_polynomial_projector_factors w
   choose N h hh eh using (fun j => projectorPolynomial_native_band (q j))
-  let M := Finset.univ.sup N
-  refine ⟨M,n,h,p,?_,?_⟩
+  refine ⟨(Finset.univ.sup N),n,h,p,?_,?_⟩
   · intro j
     apply (Finset.sup_mono (f := KPCplxIntertwinerEigenvalues.harmonicKType positiveParameter)
       (Finset.range_mono (Nat.add_le_add_right (Finset.le_sup (f := N) (Finset.mem_univ j)) 1)))
@@ -578,7 +547,7 @@ theorem sphericalWord_polynomial_harmonic_band :
   · intro s k
     rw [he]
     have hb := RepresentationTheory.KPContHolomorphicKGenerationProve.RaisingCalculation.rowB_compact k
-    have hd : (k : BM).det = 1 := (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2
+    have hd := (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2
     have hs : KPContHolomorphicKGeneration.complexSpherical s (complexSU2Embedding k) = 1 := by
       simp only [KPContHolomorphicKGeneration.complexSpherical]
       change Complex.exp ((1 + 2 * ((positiveParameter : ℂ) + s)) *

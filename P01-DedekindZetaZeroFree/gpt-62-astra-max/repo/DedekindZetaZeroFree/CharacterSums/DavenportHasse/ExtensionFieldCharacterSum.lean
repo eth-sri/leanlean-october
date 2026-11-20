@@ -56,7 +56,7 @@ lemma card_minpoly_eq {P : k[X]} (hP : P.Monic) (hirr : Irreducible P)
     (hdvd : P.natDegree ∣ Module.finrank k E) :
     (Finset.univ.filter fun α : E => minpoly k α = P).card = P.natDegree := by
   have : Fact (Irreducible P) := ⟨hirr⟩
-  have hK : Module.finrank k (AdjoinRoot P) = P.natDegree :=
+  have hK :=
     (AdjoinRoot.powerBasis hirr.ne_zero).finrank
   obtain ⟨f⟩ := FiniteField.nonempty_algHom_of_finrank_dvd (F := k) (K := AdjoinRoot P) (L := E)
     (hK ▸ hdvd)
@@ -66,8 +66,7 @@ lemma card_minpoly_eq {P : k[X]} (hP : P.Monic) (hirr : Irreducible P)
     minpoly.eq_of_irreducible_of_monic hirr hroot hP
   have hsplit : Splits (P.map (algebraMap k E)) := by
     rw [hmin]; exact Normal.splits inferInstance _
-  have hsep : P.Separable := PerfectField.separable_of_irreducible hirr
-  rw [← card_rootSet_eq_natDegree hsep hsplit, ← Fintype.card_subtype]
+  rw [← card_rootSet_eq_natDegree (PerfectField.separable_of_irreducible hirr) hsplit, ← Fintype.card_subtype]
   refine Fintype.card_congr (Equiv.subtypeEquivRight fun α => ?_)
   rw [mem_rootSet_of_ne hirr.ne_zero]
   constructor
@@ -79,9 +78,8 @@ lemma norm_trace_eq (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (α : E) :
     χ (Algebra.norm k α) * ψ (Algebra.trace k E α) =
       wt χ ψ (minpoly k α) ^ (Module.finrank k E / (minpoly k α).natDegree) := by
   have hx : IsIntegral k α := .of_finite k α
-  have hd : Module.finrank k k⟮α⟯ = (minpoly k α).natDegree := adjoin.finrank hx
   have hm : Module.finrank k E / (minpoly k α).natDegree = Module.finrank k⟮α⟯ E := by
-    rw [← Module.finrank_mul_finrank k k⟮α⟯ E, hd,
+    rw [← Module.finrank_mul_finrank k k⟮α⟯ E, (adjoin.finrank hx),
       Nat.mul_div_cancel_left _ (minpoly.natDegree_pos hx)]
   rw [hm, Algebra.norm_eq_norm_adjoin, trace_eq_finrank_mul_minpoly_nextCoeff,
     ← adjoin.powerBasis_gen hx, Algebra.PowerBasis.norm_gen_eq_coeff_zero_minpoly,
@@ -97,7 +95,7 @@ lemma term_eq (χ : MulChar k ℂ) (ψ : AddChar k ℂ) {d : ℕ} (hd : d ∣ Mo
   split_ifs with hirr
   · rw [← Finset.sum_filter]
     have hdeg := monicOfCoeffs_natDegree d c
-    rw [Finset.sum_congr rfl (g := fun _ => wt χ ψ (monicOfCoeffs d c) ^ (Module.finrank k E / d))
+    rw [Finset.sum_congr rfl
       (fun α hα => by rw [(Finset.mem_filter.1 hα).2, hdeg]), Finset.sum_const, nsmul_eq_mul,
       card_minpoly_eq E (monicOfCoeffs_monic d c) hirr (by rw [hdeg]; exact hd), hdeg]
   · refine (Finset.sum_eq_zero fun α _ => ?_).symm

@@ -13,8 +13,8 @@ noncomputable section
 open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.DetectorDef DedekindZetaZeroFree.Quantitative.DetectorHeight
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem reciprocal_primitive (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) (ε : ℝ) (hε : 0 < ε) :
@@ -24,6 +24,7 @@ theorem reciprocal_primitive (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityE
         (∀ s : ℂ, 1 < s.re → g s = Detector.idealLSeries F (D.omega u).character s) →
       ∀ s : ℂ, (8801 / 10000 : ℝ) ≤ s.re → |s.im| ≤ 2 * U ^ ρ →
         g s ≠ 0 ∧ ‖(g s)⁻¹‖ ≤ Cε * U ^ ε := by
+  let log₀ := Real.log (11199 / 10000 : ℝ)
   classical
   obtain ⟨C₁, hC₁, U₁, hU₁, hdisk⟩ :=
     ReciprocalLogDisk.reciprocal_log_disk D A_F ρ hA hconv hρ
@@ -40,12 +41,12 @@ theorem reciprocal_primitive (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityE
   have hsub : 0 < Real.log ReciprocalLogDisk.r₂ - Real.log ReciprocalLogDisk.r₀ := by
     have := Real.log_lt_log hr0pos hr02
     linarith
-  have hθ0 : 0 ≤ (Real.log (11199 / 10000 : ℝ) - Real.log ReciprocalLogDisk.r₀) /
+  have hθ0 : 0 ≤ (log₀ - Real.log ReciprocalLogDisk.r₀) /
       (Real.log ReciprocalLogDisk.r₂ - Real.log ReciprocalLogDisk.r₀) := by
     apply div_nonneg _ hsub.le
     have := Real.log_lt_log hr0pos hr0r1
     linarith
-  have hθ1 : (Real.log (11199 / 10000 : ℝ) - Real.log ReciprocalLogDisk.r₀) /
+  have hθ1 : (log₀ - Real.log ReciprocalLogDisk.r₀) /
       (Real.log ReciprocalLogDisk.r₂ - Real.log ReciprocalLogDisk.r₀) < 1 := by
     rw [div_lt_one hsub]
     have := Real.log_lt_log (by norm_num : (0 : ℝ) < 11199 / 10000) hr1r2
@@ -84,7 +85,7 @@ theorem reciprocal_primitive (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityE
       have : (11199 / 10000 : ℝ) < ReciprocalLogDisk.R₀ := by
         norm_num [ReciprocalLogDisk.R₀]
       linarith
-    have hℓs : ‖ℓ s‖ ≤ C₁ * (Real.log U) ^ ((Real.log (11199 / 10000 : ℝ) -
+    have hℓs : ‖ℓ s‖ ≤ C₁ * (Real.log U) ^ ((log₀ -
         Real.log ReciprocalLogDisk.r₀) /
       (Real.log ReciprocalLogDisk.r₂ - Real.log ReciprocalLogDisk.r₀)) := by
       by_cases hcase : |s.re - 2| ≤ ReciprocalLogDisk.r₀
@@ -102,7 +103,7 @@ theorem reciprocal_primitive (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityE
     refine ⟨by rw [hgs]; exact Complex.exp_ne_zero _, ?_⟩
     rw [hgs, ← Complex.exp_neg, Complex.norm_exp, Complex.neg_re]
     calc Real.exp (-(ℓ s).re)
-        ≤ Real.exp (C₁ * (Real.log U) ^ ((Real.log (11199 / 10000 : ℝ) -
+        ≤ Real.exp (C₁ * (Real.log U) ^ ((log₀ -
         Real.log ReciprocalLogDisk.r₀) /
       (Real.log ReciprocalLogDisk.r₂ - Real.log ReciprocalLogDisk.r₀))) := by
           apply Real.exp_le_exp.mpr

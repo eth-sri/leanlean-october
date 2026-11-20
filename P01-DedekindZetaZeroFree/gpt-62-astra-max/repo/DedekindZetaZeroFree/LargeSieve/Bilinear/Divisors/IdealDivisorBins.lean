@@ -29,7 +29,7 @@ theorem bin_exists (X : ℝ) (hX : 1 ≤ 2 * X) (f : Ideal (𝓞 F))
     ⟨Vendor.dyadicLength (2 * max 1 X), hf.trans (hXX.trans (Vendor.dyadicLength_cover _))⟩
   let j := Nat.find hcover
   have hj : norm f ≤ (2 : ℝ) ^ j := Nat.find_spec hcover
-  have hjle : j ≤ Vendor.dyadicLength (2 * max 1 X) :=
+  have hjle :=
     Nat.find_min' hcover (hf.trans (hXX.trans (Vendor.dyadicLength_cover _)))
   rcases hj0 : j with _ | k
   · refine ⟨1, by simp [ErrorRectangles.scales], le_rfl, hX, hf0, ?_, ?_⟩
@@ -37,8 +37,7 @@ theorem bin_exists (X : ℝ) (hX : 1 ≤ 2 * X) (f : Ideal (𝓞 F))
     · have hh : norm f ≤ 1 := by simpa [hj0] using hj
       linarith
   · have hk : k < Vendor.dyadicLength (2 * max 1 X) := by omega
-    have hlow : (2 : ℝ) ^ k < norm f := by
-      exact lt_of_not_ge (Nat.find_min hcover (by omega))
+    have hlow : (2 : ℝ) ^ k < norm f := lt_of_not_ge (Nat.find_min hcover (by omega))
     refine ⟨(2 : ℝ) ^ k, ?_, one_le_pow₀ (by norm_num), hlow.le.trans hf, hf0, ?_, ?_⟩
     · apply Finset.mem_insert_of_mem
       exact Finset.mem_image.mpr ⟨k, Finset.mem_range.mpr hk, rfl⟩
@@ -50,7 +49,7 @@ theorem bin_unique {X P R : ℝ} {f : Ideal (𝓞 F)}
     (hp : ErrorRectangles.InBin P f) (hr : ErrorRectangles.InBin R f) : P = R := by
   have power {S : ℝ} (hS : S ∈ ErrorRectangles.scales X) : ∃ i : ℕ, S = 2 ^ i := by
     rcases Finset.mem_insert.mp hS with h | h
-    · exact ⟨0, by simpa using h⟩
+    · exact ⟨0, by exact h⟩
     · obtain ⟨i, _, hi⟩ := Finset.mem_image.mp h
       exact ⟨i, hi.symm⟩
   obtain ⟨i, rfl⟩ := power hP
@@ -64,13 +63,11 @@ theorem bin_unique {X P R : ℝ} {f : Ideal (𝓞 F)}
       simpa using (pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) hj)
     linarith
   rcases lt_trichotomy i j with hij | hij | hij
-  · have hj := nonone (by omega : 0 < j)
-    have hl : (2 : ℝ) ^ j < norm f := by simpa [hj] using hr.2.1
+  · have hl : (2 : ℝ) ^ j < norm f := by simpa [(nonone (by omega : 0 < j))] using hr.2.1
     have hh := step hij
     linarith [hp.2.2]
   · rw [hij]
-  · have hi := nonone (by omega : 0 < i)
-    have hl : (2 : ℝ) ^ i < norm f := by simpa [hi] using hp.2.1
+  · have hl : (2 : ℝ) ^ i < norm f := by simpa [(nonone (by omega : 0 < i))] using hp.2.1
     have hh := step hij
     linarith [hr.2.2]
 

@@ -27,14 +27,16 @@ variable (F : Type) [Field F] [NumberField F]
     exact False.elim ((NumberField.InfinitePlace.not_isReal_iff_isComplex.mpr
       (hF.isComplex v.1)) v.2)
 
- def ordinaryComparison (m : ClassFieldTheory.RayClassModulus F)
-    (h : m = ClassFieldTheory.ordinaryRayClassModulus F) :
+ section
+
+variable (m : ClassFieldTheory.RayClassModulus F) (h : m = ClassFieldTheory.ordinaryRayClassModulus F)
+
+def ordinaryComparison :
     ClassFieldTheory.RayClassGroup m ≃* ClassGroup (𝓞 F) := by
   subst m
   exact ClassFieldTheory.ordinaryRayClassGroupEquivClassGroup
 
-private theorem ordinaryComparison_apply (m : ClassFieldTheory.RayClassModulus F)
-    (h : m = ClassFieldTheory.ordinaryRayClassModulus F)
+private theorem ordinaryComparison_apply
     (J : ClassFieldTheory.rayClassPrimeToIdeals m) :
     ordinaryComparison F m h
         (QuotientGroup.mk' (ClassFieldTheory.rayPrincipalIdealSubgroupInPrimeTo m) J) =
@@ -47,28 +49,28 @@ private theorem ordinaryComparison_apply (m : ClassFieldTheory.RayClassModulus F
   simp only [FractionalIdeal.canonicalEquiv_self, RingEquiv.coe_mulEquiv_refl]
   rfl
 
-def topRayClassEquivClassGroup (hF : NumberField.IsTotallyComplex F)
-    (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥) :
+end
+
+variable (hF : NumberField.IsTotallyComplex F) (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
+
+def topRayClassEquivClassGroup :
     RayIdealClass F ⊤ ht ≃* ClassGroup (𝓞 F) :=
   ordinaryComparison F (narrowIdealModulus F ⊤ ht)
     (topNarrowModulus_eq_ordinary F hF ht)
 
-theorem topRayClassEquivClassGroup_rayIdealClass (hF : NumberField.IsTotallyComplex F)
-    (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
+theorem topRayClassEquivClassGroup_rayIdealClass
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (c : RayIdealClass F ⊤ ht)
     (hc : rayIdealClass F ⊤ ht I = some c) :
     topRayClassEquivClassGroup F hF ht c =
       ClassGroup.mk F (rayIdealFractionalIdeal F I hI) := by
   have hcoprime : I ⊔ (⊤ : Ideal (𝓞 F)) = ⊤ := sup_top_eq _
   rw [rayIdealClass_eq_some F ⊤ ht I hI hcoprime] at hc
-  have heq := Option.some.inj hc
-  rw [← heq]
+  rw [← (Option.some.inj hc)]
   exact ordinaryComparison_apply F (narrowIdealModulus F ⊤ ht)
     (topNarrowModulus_eq_ordinary F hF ht)
     (rayIdealClassRepresentative F ⊤ ht I hI hcoprime)
 
-theorem topRayClassEquivClassGroup_representatives (hF : NumberField.IsTotallyComplex F)
-    (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥) (D : RayThetaRepresentatives F ⊤ ht)
+theorem topRayClassEquivClassGroup_representatives (D : RayThetaRepresentatives F ⊤ ht)
     (c : RayIdealClass F ⊤ ht) :
     ClassGroup.mk F
       (rayIdealFractionalIdeal F (D.coset c).a (D.coset c).ideal_ne_bot) =

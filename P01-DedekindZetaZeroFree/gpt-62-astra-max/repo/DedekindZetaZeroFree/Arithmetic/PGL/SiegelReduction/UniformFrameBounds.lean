@@ -17,17 +17,20 @@ variable (F : Type*) [Field F] [NumberField F]
  abbrev coordinates : (Fin 2 → F) ≃ₗ[F] F × F :=
   LinearEquiv.finTwoArrow F F
 
- def coordinateLattice
-    (M : Submodule (KPCuspArithmetic.Order F) (KPCuspArithmetic.Vec F))
-    (hM : KPCuspArithmetic.IsRankTwoLattice F M) :
+ section
+
+variable (M : Submodule (KPCuspArithmetic.Order F) (KPCuspArithmetic.Vec F))
+    (hM : KPCuspArithmetic.IsRankTwoLattice F M)
+
+def coordinateLattice :
     FullLattice (KPCuspArithmetic.Order F) F :=
   ⟨M.map ((coordinates F).restrictScalars (KPCuspArithmetic.Order F)).toLinearMap,
     { fg := by
         letI := hM.1
-        exact (Submodule.FG.of_finite (N := M)).map _
+        exact (Submodule.FG.of_finite).map _
       span_eq_top := by
         rw [Submodule.map_coe]
-        change Submodule.span F ((coordinates F).toLinearMap '' (M : Set _)) = ⊤
+        change Submodule.span F ((coordinates F).toLinearMap '' M) = ⊤
         rw [← Submodule.map_span, hM.2]
         apply top_unique
         intro v _
@@ -35,8 +38,6 @@ variable (F : Type*) [Field F] [NumberField F]
           (coordinates F).apply_symm_apply v⟩ }⟩
 
 private theorem coordinate_orbit
-    (M : Submodule (KPCuspArithmetic.Order F) (KPCuspArithmetic.Vec F))
-    (hM : KPCuspArithmetic.IsRankTwoLattice F M)
     (q r : RationalLine F)
     (h : lineEquivalent (KPCuspArithmetic.Order F) F (coordinateLattice F M hM).val q r) :
     MulAction.orbitRel (KPCuspArithmetic.projectiveAutomorphisms F M)
@@ -46,23 +47,17 @@ private theorem coordinate_orbit
   obtain ⟨g, hg, hq⟩ := h
   let f := ((coordinates F).trans g).trans (coordinates F).symm
   let A := Matrix.GeneralLinearGroup.toLin.symm (LinearMap.GeneralLinearGroup.ofLinearEquiv f)
-  have hAv (v : Fin 2 → F) : (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v = f v := by
-    have hh := congrArg (fun u : LinearMap.GeneralLinearGroup F (Fin 2 → F) => u.val v)
+  have hAv (v : Fin 2 → F) : A *ᵥ v = f v := by
+    exact congrArg (fun u : LinearMap.GeneralLinearGroup F (Fin 2 → F) => u.val v)
       (Matrix.GeneralLinearGroup.toLin.apply_symm_apply
         (LinearMap.GeneralLinearGroup.ofLinearEquiv f))
-    exact hh
   have hf : Submodule.map (f.restrictScalars (KPCuspArithmetic.Order F)).toLinearMap M = M := by
     change Submodule.map (((coordinates F).symm.restrictScalars _).toLinearMap.comp
       ((g.restrictScalars _).toLinearMap.comp ((coordinates F).restrictScalars _).toLinearMap)) M = M
     rw [Submodule.map_comp, Submodule.map_comp]
-    change Submodule.map ((coordinates F).symm.restrictScalars _).toLinearMap
-      (Submodule.map (g.restrictScalars _).toLinearMap (coordinateLattice F M hM).val) = M
     change Submodule.map (g.restrictScalars (KPCuspArithmetic.Order F)).toLinearMap
       (M.map ((coordinates F).restrictScalars _).toLinearMap) =
       M.map ((coordinates F).restrictScalars _).toLinearMap at hg
-    change Submodule.map ((coordinates F).symm.restrictScalars _).toLinearMap
-      (Submodule.map (g.restrictScalars _).toLinearMap
-        (M.map ((coordinates F).restrictScalars _).toLinearMap)) = M
     rw [hg]
     ext v
     simp only [Submodule.mem_map_equiv]
@@ -96,9 +91,8 @@ private theorem coordinate_orbit
     rw [hAv]
     simp [f]
 
-theorem finite_integral_cusp_orbits
-    (M : Submodule (KPCuspArithmetic.Order F) (KPCuspArithmetic.Vec F))
-    (hM : KPCuspArithmetic.IsRankTwoLattice F M) :
+include hM in
+theorem finite_integral_cusp_orbits :
     Finite (Quotient (MulAction.orbitRel (KPCuspArithmetic.projectiveAutomorphisms F M)
       (KPCuspArithmetic.Cusp F))) := by
   let L := coordinateLattice F M hM
@@ -122,16 +116,13 @@ theorem finite_integral_cusp_orbits
     congr 2
     exact (coordinates F).symm_apply_apply v
 
+include hM in
 theorem finite_arithmetic_cusp_orbits
-    (M : Submodule (KPCuspArithmetic.Order F) (KPCuspArithmetic.Vec F))
-    (hM : KPCuspArithmetic.IsRankTwoLattice F M)
     (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
     (hΓ : ∀ g ∈ Γ, KPCuspArithmetic.PreservesUpToHomothety F M g)
     (hcomm : Γ.Commensurable (KPCuspArithmetic.projectiveAutomorphisms F M)) :
     Finite (Quotient (MulAction.orbitRel Γ (KPCuspArithmetic.Cusp F))) := by
   let G := KPCuspArithmetic.projectiveAutomorphisms F M
-  have hle : Γ ≤ G := fun g hg =>
-    (KPCuspArithmetic.preservesUpToHomothety_iff_mem_projectiveAutomorphisms F M g).mp (hΓ g hg)
   let H := Γ.subgroupOf G
   letI : H.FiniteIndex := Subgroup.isFiniteRelIndex_iff_finiteIndex.mp hcomm.1
   letI := finite_integral_cusp_orbits F M hM
@@ -148,6 +139,8 @@ theorem finite_arithmetic_cusp_orbits
   obtain ⟨q, rfl⟩ := Quotient.mk_surjective z
   exact ⟨Quotient.mk _ q, rfl⟩
 
+end
+
 theorem exists_cusp_frame (q : KPCuspArithmetic.Cusp F) :
     ∃ σ : KPCuspArithmetic.PGL2 F, σ • KPCuspArithmetic.infinity F = q := by
   let v := q.rep
@@ -158,7 +151,7 @@ theorem exists_cusp_frame (q : KPCuspArithmetic.Cusp F) :
     rw [KPCuspArithmetic.infinity, Projectivization.PGL.mk_smul_mk,
       ← Projectivization.mk_rep q]
     congr 1
-    change (A : Matrix (Fin 2) (Fin 2) F) *ᵥ ![1, 0] = v
+    change A *ᵥ ![1, 0] = v
     ext i
     fin_cases i <;> simp [Matrix.mulVec, dotProduct, Fin.sum_univ_two, hc]
   by_cases h0 : v 0 = 0
@@ -168,10 +161,10 @@ theorem exists_cusp_frame (q : KPCuspArithmetic.Cusp F) :
       ext i
       fin_cases i <;> simp [h0, h1]
     let A := Matrix.GeneralLinearGroup.mkOfDetNeZero
-      !![v 0, 1; v 1, 0] (by simpa [Matrix.det_fin_two] using h1)
+      !![v 0, 1; v 1, 0] (by simpa using h1)
     exact ⟨Matrix.ProjGenLinGroup.mk A, hcol A ⟨rfl, rfl⟩⟩
   · let A := Matrix.GeneralLinearGroup.mkOfDetNeZero
-      !![v 0, 0; v 1, 1] (by simpa [Matrix.det_fin_two] using h0)
+      !![v 0, 0; v 1, 1] (by simpa using h0)
     exact ⟨Matrix.ProjGenLinGroup.mk A, hcol A ⟨rfl, rfl⟩⟩
 
 theorem exists_finite_cusp_frames
@@ -191,7 +184,7 @@ theorem exists_finite_cusp_frames
   letI : Fintype Q := Fintype.ofFinite Q
   letI : Nonempty Q := ⟨Quotient.mk _ (KPCuspArithmetic.infinity F)⟩
   let e := Fintype.equivFin Q
-  let q : Fin (Fintype.card Q) → KPCuspArithmetic.Cusp F := fun a => (e.symm a).out
+  let q := fun a => (e.symm a).out
   choose σ hσ using fun a => exists_cusp_frame F (q a)
   refine ⟨Fintype.card Q, q, σ, Fintype.card_pos, hσ, ?_, ?_⟩
   · intro r
@@ -241,7 +234,7 @@ theorem integral_lattice_determinant_unit
     ⟨M.map (e.restrictScalars _).toLinearMap,
       { fg := by
           letI := hM.1
-          exact (Submodule.FG.of_finite (N := M)).map _
+          exact (Submodule.FG.of_finite).map _
         span_eq_top := by
           rw [Submodule.map_coe]
           change Submodule.span F (e.toLinearMap '' (M : Set _)) = ⊤
@@ -263,19 +256,20 @@ theorem integral_lattice_determinant_unit
     have hh := hA (f.symm (e.symm x))
     change f.symm (e.symm x) ∈ M ↔ f (f.symm (e.symm x)) ∈ M at hh
     simpa using hh
-  have hd : LinearMap.det g.toLinearMap = (A : Matrix (Fin 2) (Fin 2) F).det := by
+  let Matrix₀ := Matrix (Fin 2) (Fin 2) F
+  have hd : LinearMap.det g.toLinearMap = (A : Matrix₀).det := by
     change LinearMap.det (e.toLinearMap ∘ₗ f.toLinearMap ∘ₗ e.symm.toLinearMap) = _
     rw [LinearMap.det_conj]
-    change LinearMap.det (Matrix.toLin' (A : Matrix (Fin 2) (Fin 2) F)) = _
+    change LinearMap.det (Matrix.toLin' (A : Matrix₀)) = _
     simp
   let N := determinantSubmodule (NumberField.RingOfIntegers F) F L.val
   have hs : Submodule.map (LinearMap.mulLeft (NumberField.RingOfIntegers F)
-      (A : Matrix (Fin 2) (Fin 2) F).det) N = N := by
+      (A : Matrix₀).det) N = N := by
     rw [← hd, ← kp_cusp_determinantSubmodule_map]
     change determinantSubmodule (NumberField.RingOfIntegers F) F
       (Submodule.map (g.restrictScalars _).toLinearMap L.val) = N
     rw [hmap]
-  have hg : ∀ x ∈ N, (A : Matrix (Fin 2) (Fin 2) F).det * x ∈ N := by
+  have hg : ∀ x ∈ N, A.det * x ∈ N := by
     intro x hx
     rw [← hs]
     exact Submodule.mem_map_of_mem hx
@@ -283,10 +277,8 @@ theorem integral_lattice_determinant_unit
     intro x hx
     rw [← hs] at hx
     obtain ⟨y, hy, he⟩ := hx
-    change (A : Matrix (Fin 2) (Fin 2) F).det * y = x at he
+    change A.det * y = x at he
     rw [← he, ← mul_assoc]
-    change ((Matrix.GeneralLinearGroup.det A)⁻¹ : Fˣ).val *
-      (Matrix.GeneralLinearGroup.det A : Fˣ).val * y ∈ N
     rw [← Units.val_mul, inv_mul_cancel, Units.val_one, one_mul]
     exact hy
   have hu := KPCuspParabolicLattices.scalar_integral_unit F
@@ -303,20 +295,17 @@ theorem fractional_absNorm_antitone
     (hI : I ≠ 0) (hJ : J ≠ 0) (h : I ≤ J) :
     FractionalIdeal.absNorm J ≤ FractionalIdeal.absNorm I := by
   have hmul : I * J⁻¹ ≤ 1 := by
-    calc I * J⁻¹ ≤ J * J⁻¹ := mul_le_mul_of_nonneg_right h zero_le
+    calc _ ≤ J * J⁻¹ := mul_le_mul_of_nonneg_right h zero_le
          _ = 1 := by rw [mul_inv_cancel₀ hJ]
   obtain ⟨K, hK⟩ := FractionalIdeal.le_one_iff_exists_coeIdeal.mp hmul
   have hK0 : K ≠ ⊥ := by
     intro hzero
-    have hz : I * J⁻¹ = 0 := by rw [← hK, hzero, FractionalIdeal.coeIdeal_bot]
-    exact (mul_ne_zero hI (inv_ne_zero hJ)) hz
+    refine (mul_ne_zero hI (inv_ne_zero hJ)) ?_
+    rw [← hK, hzero, FractionalIdeal.coeIdeal_bot]
   have hnorm : (1 : ℚ) ≤ FractionalIdeal.absNorm (I * J⁻¹) := by
     rw [← hK, FractionalIdeal.coeIdeal_absNorm]
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hK0)
-  have hp : 0 < FractionalIdeal.absNorm J :=
-    lt_of_le_of_ne (FractionalIdeal.absNorm_nonneg J)
-      (Ne.symm (FractionalIdeal.absNorm_eq_zero_iff.not.mpr hJ))
-  rw [map_mul, map_inv₀, ← div_eq_mul_inv, le_div_iff₀ hp, one_mul] at hnorm
+  simp [← div_eq_mul_inv, le_div_iff₀ (lt_of_le_of_ne (FractionalIdeal.absNorm_nonneg J) (Ne.symm (FractionalIdeal.absNorm_eq_zero_iff.not.mpr hJ))), one_mul] at hnorm
   exact hnorm
 
 theorem integral_lattice_entry_denominator
@@ -326,37 +315,36 @@ theorem integral_lattice_entry_denominator
       (∀ v, v ∈ M ↔ (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M) →
       ∀ i j, c * A i j ∈ (1 : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) := by
   letI : Submodule.IsLattice F M := ⟨Module.Finite.iff_fg.mp hM.1, hM.2⟩
+  let algebraMap₀ := algebraMap (NumberField.RingOfIntegers F) F
   have hd (i : Fin 2) : ∃ c : (NumberField.RingOfIntegers F)⁰,
-      ∀ v ∈ M, algebraMap (NumberField.RingOfIntegers F) F c * v i ∈
+      ∀ v ∈ M, algebraMap₀ c * v i ∈
         (1 : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) := by
     let p : (Fin 2 → F) →ₗ[NumberField.RingOfIntegers F] F := LinearMap.proj i
     obtain ⟨c, hc⟩ := FractionalIdeal.isFractional_of_fg
       (S := (NumberField.RingOfIntegers F)⁰) ((Module.Finite.iff_fg.mp hM.1).map p)
     refine ⟨⟨c, hc.1⟩, fun v hv => ?_⟩
-    have hh := hc.2 (p v) (Submodule.mem_map_of_mem hv)
-    exact (FractionalIdeal.mem_one_iff _).mpr hh
+    exact (FractionalIdeal.mem_one_iff _).mpr (hc.2 (p v) (Submodule.mem_map_of_mem hv))
   choose c hc using hd
   have hr (j : Fin 2) : ∃ r : NumberField.RingOfIntegers F, r ≠ 0 ∧
-      algebraMap (NumberField.RingOfIntegers F) F r • Pi.single j (1 : F) ∈ M :=
+      algebraMap₀ r • Pi.single j (1 : F) ∈ M :=
     kp_cusp_full_lattice_clear_denominators _ F _ M (Pi.single j 1)
   choose r hr hrv using hr
-  let d : NumberField.RingOfIntegers F := c 0 * c 1 * (r 0 * r 1)
-  have hd0 : d ≠ 0 := mul_ne_zero
-    (mul_ne_zero (nonZeroDivisors.ne_zero (c 0).property)
-      (nonZeroDivisors.ne_zero (c 1).property)) (mul_ne_zero (hr 0) (hr 1))
-  refine ⟨algebraMap (NumberField.RingOfIntegers F) F d,
-    (map_ne_zero_iff _ (IsFractionRing.injective _ F)).mpr hd0, ?_⟩
+  let d := c 0 * c 1 * (r 0 * r 1)
+  refine ⟨algebraMap₀ d,
+    (map_ne_zero_iff _ (IsFractionRing.injective _ F)).mpr (mul_ne_zero
+      (mul_ne_zero (nonZeroDivisors.ne_zero (c 0).property)
+        (nonZeroDivisors.ne_zero (c 1).property)) (mul_ne_zero (hr 0) (hr 1))), ?_⟩
   intro A hA i j
-  have hh := hc i ((A : Matrix (Fin 2) (Fin 2) F) *ᵥ
-    (algebraMap (NumberField.RingOfIntegers F) F (r j) • Pi.single j 1))
+  have hh := hc i (A *ᵥ
+    (algebraMap₀ (r j) • Pi.single j 1))
     ((hA _).mp (hrv j))
   rw [Matrix.mulVec_smul, Matrix.mulVec_single_one] at hh
-  change algebraMap (NumberField.RingOfIntegers F) F (c i) *
-    (algebraMap (NumberField.RingOfIntegers F) F (r j) * A i j) ∈ _ at hh
+  change algebraMap₀ (c i) *
+    (algebraMap₀ (r j) * A i j) ∈ _ at hh
   have hscale (a : NumberField.RingOfIntegers F) :
-      algebraMap (NumberField.RingOfIntegers F) F a *
-        (algebraMap (NumberField.RingOfIntegers F) F (c i) *
-          (algebraMap (NumberField.RingOfIntegers F) F (r j) * A i j)) ∈
+      algebraMap₀ a *
+        (algebraMap₀ (c i) *
+          (algebraMap₀ (r j) * A i j)) ∈
         (1 : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) := by
     simpa only [one_mul] using FractionalIdeal.mul_mem_mul
       (FractionalIdeal.coe_mem_one (S := (NumberField.RingOfIntegers F)⁰) a) hh
@@ -377,17 +365,16 @@ theorem lower_row_content_mul_le
       KPCusp.content F 1 (frameLowerRow F A) := by
     obtain ⟨u, hu⟩ := (FractionalIdeal.mem_one_iff _).mp (hc k j)
     rw [← hu, mul_comm]
-    change u • A 1 k ∈ _
     apply Submodule.smul_mem
     fin_cases k
     · apply (show FractionalIdeal.spanSingleton (NumberField.RingOfIntegers F)⁰ (A 1 0) ≤
           KPCusp.content F 1 (frameLowerRow F A) from le_add_of_nonneg_right zero_le)
-      exact FractionalIdeal.mem_spanSingleton_self _ _
+      apply FractionalIdeal.mem_spanSingleton_self
     · apply (show FractionalIdeal.spanSingleton (NumberField.RingOfIntegers F)⁰ (A 1 1) ≤
           KPCusp.content F 1 (frameLowerRow F A) from by
             simp only [KPCusp.content, frameLowerRow, mul_one]
             exact le_add_of_nonneg_left zero_le)
-      exact FractionalIdeal.mem_spanSingleton_self _ _
+      apply FractionalIdeal.mem_spanSingleton_self
   have hcol (j : Fin 2) : c * (A * G) 1 j ∈
       KPCusp.content F 1 (frameLowerRow F A) := by
     have hh := Submodule.add_mem (KPCusp.content F 1 (frameLowerRow F A)).val
@@ -424,11 +411,10 @@ theorem frameHeightConstant_eq_of_mk_eq
     (A B : Matrix.GeneralLinearGroup (Fin 2) F)
     (h : Matrix.ProjGenLinGroup.mk A = Matrix.ProjGenLinGroup.mk B) :
     frameHeightConstant F 1 A = frameHeightConstant F 1 B := by
-  have hr : rowCusp F (frameLowerRow F A) = rowCusp F (frameLowerRow F B) := by
-    rw [rowCusp_frameLowerRow, rowCusp_frameLowerRow, map_inv, map_inv, h]
   have hh := KPCusp.normalizedHeight_eq_of_flag_eq F hF 1
     (frameLowerRow F A) (frameLowerRow F B)
-    (flag_eq_of_rowCusp_eq F _ _ hr) (fun _ => (0, 0))
+    (flag_eq_of_rowCusp_eq F _ _ (by
+      rw [rowCusp_frameLowerRow, rowCusp_frameLowerRow, map_inv, map_inv, h])) (fun _ => (0, 0))
   rw [normalizedHeight_frame_lower_row, normalizedHeight_frame_lower_row] at hh
   change frameHeightConstant F 1 A * _ = frameHeightConstant F 1 B * _ at hh
   have ha : glAction F A (fun _ => (0, 0)) = glAction F B (fun _ => (0, 0)) := by
@@ -436,21 +422,24 @@ theorem frameHeightConstant_eq_of_mk_eq
   rw [ha] at hh
   exact mul_right_cancel₀ (ne_of_gt (Real.exp_pos _)) hh
 
+local notation "Mat₂" => Matrix (Fin 2) (Fin 2) F
+local notation "Mat₂ℂ" => Matrix (Fin 2) (Fin 2) ℂ
+
 theorem complex_det_norm_product_sq
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (A : Matrix.GeneralLinearGroup (Fin 2) F) :
     (∏ i, ‖(Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F i).embedding A :
-      Matrix (Fin 2) (Fin 2) ℂ).det‖) ^ 2 =
-        (|Algebra.norm ℚ (A : Matrix (Fin 2) (Fin 2) F).det| : ℝ) := by
+      Mat₂ℂ).det‖) ^ 2 =
+        (|Algebra.norm ℚ (A : Mat₂).det| : ℝ) := by
   letI : NumberField.IsTotallyComplex F := NumberField.nrRealPlaces_eq_zero_iff.mp hF
   rw [← Rat.cast_abs, ← NumberField.InfinitePlace.prod_eq_abs_norm, ← Finset.prod_pow]
   simp only [NumberField.IsTotallyComplex.mult_eq]
-  let e : Fin (NumberField.InfinitePlace.nrComplexPlaces F) ≃ NumberField.InfinitePlace F :=
+  let e :=
     (Fintype.equivFin {w : NumberField.InfinitePlace F // w.IsComplex}).symm.trans
       (Equiv.subtypeUnivEquiv fun w => NumberField.IsTotallyComplex.isComplex w)
   apply Fintype.prod_equiv e
   intro i
-  change ‖((KPCusp.complexPlace F i).embedding.mapMatrix (A : Matrix (Fin 2) (Fin 2) F)).det‖ ^ 2 = _
+  change ‖((KPCusp.complexPlace F i).embedding.mapMatrix (A : Mat₂)).det‖ ^ 2 = _
   rw [← RingHom.map_det]
   simp [e, KPCusp.complexPlace, NumberField.InfinitePlace.norm_embedding_eq]
 
@@ -459,21 +448,21 @@ theorem integral_lattice_complex_det_norm_product
     (M : Submodule (KPCuspArithmetic.Order F) (KPCuspArithmetic.Vec F))
     (hM : KPCuspArithmetic.IsRankTwoLattice F M)
     (A : Matrix.GeneralLinearGroup (Fin 2) F)
-    (hA : ∀ v, v ∈ M ↔ (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M) :
+    (hA : ∀ v, v ∈ M ↔ (A : Mat₂) *ᵥ v ∈ M) :
     (∏ i, ‖(Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F i).embedding A :
-      Matrix (Fin 2) (Fin 2) ℂ).det‖) = 1 := by
+      Mat₂ℂ).det‖) = 1 := by
   obtain ⟨u, hu⟩ := integral_lattice_determinant_unit F M hM A hA
   have hs : FractionalIdeal.spanSingleton (NumberField.RingOfIntegers F)⁰
-      (A : Matrix (Fin 2) (Fin 2) F).det = 1 := by
+      (A : Mat₂).det = 1 := by
     rw [← hu]
     rw [← FractionalIdeal.coeIdeal_span_singleton, Ideal.span_singleton_eq_top.mpr u.isUnit,
       FractionalIdeal.coeIdeal_top]
-  have hn : |Algebra.norm ℚ (A : Matrix (Fin 2) (Fin 2) F).det| = 1 := by
+  have hn : |Algebra.norm ℚ (A : Mat₂).det| = 1 := by
     rw [← FractionalIdeal.absNorm_span_singleton (R := NumberField.RingOfIntegers F), hs, map_one]
   have hp := complex_det_norm_product_sq F hF A
   rw [← Rat.cast_abs, hn, Rat.cast_one] at hp
   have hnonneg : 0 ≤ (∏ i, ‖(Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F i).embedding A :
-      Matrix (Fin 2) (Fin 2) ℂ).det‖) := Finset.prod_nonneg (fun _ _ => norm_nonneg _)
+      Mat₂ℂ).det‖) := Finset.prod_nonneg (fun _ _ => norm_nonneg _)
   nlinarith
 
 theorem integral_lattice_det_norm_mul
@@ -481,11 +470,11 @@ theorem integral_lattice_det_norm_mul
     (M : Submodule (KPCuspArithmetic.Order F) (KPCuspArithmetic.Vec F))
     (hM : KPCuspArithmetic.IsRankTwoLattice F M)
     (A G : Matrix.GeneralLinearGroup (Fin 2) F)
-    (hG : ∀ v, v ∈ M ↔ (G : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M) :
+    (hG : ∀ v, v ∈ M ↔ (G : Mat₂) *ᵥ v ∈ M) :
     (∏ i, ‖(Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F i).embedding (A * G) :
-      Matrix (Fin 2) (Fin 2) ℂ).det‖) =
+      Mat₂ℂ).det‖) =
     (∏ i, ‖(Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F i).embedding A :
-      Matrix (Fin 2) (Fin 2) ℂ).det‖) := by
+      Mat₂ℂ).det‖) := by
   simp only [map_mul, Units.val_mul, Matrix.det_mul, norm_mul, Finset.prod_mul_distrib]
   rw [integral_lattice_complex_det_norm_product F hF M hM G hG, mul_one]
 
@@ -493,7 +482,7 @@ theorem integral_lattice_content_norm_bounds
     (M : Submodule (KPCuspArithmetic.Order F) (KPCuspArithmetic.Vec F))
     (hM : KPCuspArithmetic.IsRankTwoLattice F M) :
     ∃ k : ℝ, 0 < k ∧ ∀ A G : Matrix.GeneralLinearGroup (Fin 2) F,
-      (∀ v, v ∈ M ↔ (G : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M) →
+      (∀ v, v ∈ M ↔ (G : Mat₂) *ᵥ v ∈ M) →
       (FractionalIdeal.absNorm (KPCusp.content F 1 (frameLowerRow F A)) : ℝ) / k ≤
         (FractionalIdeal.absNorm (KPCusp.content F 1 (frameLowerRow F (A * G))) : ℝ) ∧
       (FractionalIdeal.absNorm (KPCusp.content F 1 (frameLowerRow F (A * G))) : ℝ) ≤
@@ -511,17 +500,17 @@ theorem integral_lattice_content_norm_bounds
     simp [frameHeightConstant, hz] at hp
   refine ⟨FractionalIdeal.absNorm S, hk, ?_⟩
   intro A G hG
-  have hiG : ∀ v, v ∈ M ↔ (↑(G⁻¹) : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M := by
+  have hiG : ∀ v, v ∈ M ↔ (↑(G⁻¹) : Mat₂) *ᵥ v ∈ M := by
     intro v
-    have hh := hG ((↑(G⁻¹) : Matrix (Fin 2) (Fin 2) F) *ᵥ v)
+    have hh := hG ((↑(G⁻¹) : Mat₂) *ᵥ v)
     rw [Matrix.mulVec_mulVec, ← Units.val_mul, mul_inv_cancel, Units.val_one, Matrix.one_mulVec] at hh
     exact hh.symm
   have hl := fractional_absNorm_antitone F _ _ (mul_ne_zero hS (hn (A * G))) (hn A)
     (lower_row_content_mul_le F A G c (hden G hG))
   have hu := fractional_absNorm_antitone F _ _ (mul_ne_zero hS (hn A)) (hn (A * G))
-    (by simpa only [mul_inv_cancel_right] using
+    (by simpa using
       lower_row_content_mul_le F (A * G) G⁻¹ c (hden G⁻¹ hiG))
-  rw [map_mul] at hl hu
+  simp at hl hu
   constructor
   · rw [div_le_iff₀ hk, mul_comm]
     exact_mod_cast hl
@@ -549,8 +538,7 @@ theorem exists_projective_frame_bounds
   rw [he]
   obtain ⟨hl, hu⟩ := hb A H hh
   have hd : 0 < (∏ i, ‖(Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F i).embedding A :
-      Matrix (Fin 2) (Fin 2) ℂ).det‖) := by
-    exact Finset.prod_pos fun i _ => norm_pos_iff.mpr (Matrix.GeneralLinearGroup.map _ A).det_ne_zero
+      Mat₂ℂ).det‖) := Finset.prod_pos fun i _ => norm_pos_iff.mpr (Matrix.GeneralLinearGroup.map _ A).det_ne_zero
   unfold frameHeightConstant
   rw [integral_lattice_det_norm_mul F hF M hM A H hh]
   constructor
@@ -588,10 +576,8 @@ theorem exists_uniform_arithmetic_frame_bounds {n : ℕ} (hn : 0 < n)
   have hu : (Finset.univ : Finset (Fin n)).Nonempty := ⟨⟨0, hn⟩, Finset.mem_univ _⟩
   let c₀ := Finset.univ.inf' hu c
   let C₀ := Finset.univ.sup' hu C
-  have hc₀ : 0 < c₀ := (Finset.lt_inf'_iff hu).mpr (fun a _ => hc a)
-  have hC₀ : 0 < C₀ := (hC ⟨0, hn⟩).trans_le (Finset.le_sup' C (Finset.mem_univ _))
   have hle := KPCuspArithmetic.subgroup_le_projectiveAutomorphisms F M Γ hΓ
-  refine ⟨c₀, C₀, hc₀, hC₀, ?_, ?_⟩
+  refine ⟨c₀, C₀, ((Finset.lt_inf'_iff hu).mpr (fun a _ => hc a)), ((hC ⟨0, hn⟩).trans_le (Finset.le_sup' C (Finset.mem_univ _))), ?_, ?_⟩
   · intro a G hG
     exact (Finset.inf'_le c (Finset.mem_univ a)).trans (hb a G (hle hG)).1
   · intro a G hG

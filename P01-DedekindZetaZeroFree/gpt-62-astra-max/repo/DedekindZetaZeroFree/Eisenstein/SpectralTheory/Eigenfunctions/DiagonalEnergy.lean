@@ -14,8 +14,8 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualWeakEnergy
 open KPMsClearedTruncationL2
 open ResidualCompactSecondL2
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.FullSixCoercivity renaming compactTensor → compactTensor
-open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualCompactSecondL2 renaming compactAction → compactAction
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.FullSixCoercivity (compactTensor)
+open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualCompactSecondL2 (compactAction)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
  abbrev diagonalEnergyWordDerivative := KPSmoothActualFlowData.wordDerivative F ζ hζ
 

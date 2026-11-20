@@ -17,7 +17,7 @@ set_option maxRecDepth 2000
 set_option maxHeartbeats 800000
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 private theorem contDiffOn_tsum_of_chart_locally_finite
     (C : ModelData F ζ hζ)
@@ -32,9 +32,8 @@ private theorem contDiffOn_tsum_of_chart_locally_finite
   refine contDiffOn_of_locally_contDiffOn ?_
   intro x hx
   obtain ⟨r, hr, hrsub⟩ := Metric.isOpen_iff.mp (groupArchDomain_open F) x hx
-  have hr2 : (0 : ℝ) < r / 2 := by linarith
   refine ⟨interior (Metric.closedBall x (r / 2)), isOpen_interior, ?_, ?_⟩
-  · exact Metric.ball_subset_interior_closedBall (Metric.mem_ball_self hr2)
+  · exact Metric.ball_subset_interior_closedBall (Metric.mem_ball_self (by linarith))
   · obtain ⟨S, hS⟩ := hfin (Metric.closedBall x (r / 2)) (isCompact_closedBall x (r / 2))
       ((Metric.closedBall_subset_ball (by linarith)).trans hrsub)
     have hsum : ContDiffOn ℝ (⊤ : ℕ∞)
@@ -42,13 +41,14 @@ private theorem contDiffOn_tsum_of_chart_locally_finite
       ContDiffOn.sum (fun a _ => hsmooth a)
     refine (hsum.mono Set.inter_subset_left).congr ?_
     intro z hz
-    have hzK : z ∈ Metric.closedBall x (r / 2) := interior_subset hz.2
-    rw [hφ z, tsum_eq_sum (fun a ha => hS z hzK a ha)]
+    rw [hφ z, tsum_eq_sum (fun a ha => hS z (interior_subset hz.2) a ha)]
 
-theorem functionsP_chart_contDiff (C : ModelData F ζ hζ) (s : ℂ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+variable (C : ModelData F ζ hζ) (s : ℂ) (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (f : InducedFunctions F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s))
     (hf : f ∈ InducedLevel F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J)
+
+include hf in
+theorem functionsP_chart_contDiff
     (g : G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z => ((functionsP F ζ hζ C s f).val (groupArchChart F ζ hζ z * g)).val.val 1)
@@ -60,10 +60,8 @@ theorem functionsP_chart_contDiff (C : ModelData F ζ hζ) (s : ℂ)
     (fun a => TorusChartTransport.chartTerm_contDiffOn F ζ hζ C s J f hf g a)
     (fun K hK hKU => TorusChartTransport.chartTerm_eventually_zero F ζ hζ C s J f hf g K hK hKU)
 
-theorem functionsP_preserves_level (C : ModelData F ζ hζ) (s : ℂ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (f : InducedFunctions F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s))
-    (hf : f ∈ InducedLevel F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J) :
+include hf in
+theorem functionsP_preserves_level :
     functionsP F ζ hζ C s f ∈
       InducedLevel F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J := by
   constructor
@@ -89,7 +87,7 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 local instance inducedFunctionsAddGroup (P : Polarization F ζ hζ) :
     AddCommGroup (InducedFunctions F ζ hζ P) :=
@@ -107,8 +105,7 @@ theorem inducedLevelTopology_withSeminorms (P : Polarization F ζ hζ)
     letI := inducedLevelTopology F ζ hζ P J
     WithSeminorms (fun i : G F ζ hζ × ℕ ×
       KPGlobalTorusFunctionData.JetCompact (groupArchDomain F) =>
-      inducedJet F ζ hζ P J i.1 i.2.1 i.2.2) := by
-  exact WithSeminorms.mk (topology := inducedLevelTopology F ζ hζ P J) rfl
+      inducedJet F ζ hζ P J i.1 i.2.1 i.2.2) := WithSeminorms.mk (topology := inducedLevelTopology F ζ hζ P J) rfl
 
 end
 end DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction.Continuity
@@ -126,7 +123,7 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 local instance criterionFunctionsAddGroup (P : Polarization F ζ hζ) :
     AddCommGroup (InducedFunctions F ζ hζ P) :=
@@ -180,7 +177,7 @@ set_option autoImplicit false
 set_option maxHeartbeats 4000000
 set_option maxRecDepth 2000
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 def rationalArchUnits (y : Fˣ) (w : InfinitePlace F) : ℂˣ :=
   Units.map ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
@@ -191,40 +188,11 @@ theorem rationalLift_split (y : Fˣ) :
     ∃ b : G F ζ hζ, b ∈ KPGlobalTorusFunctionData.finitePart F ζ hζ ∧
       (KPGlobalTorusPeriodizationInverse.rationalLift F ζ hζ y).val.val =
         KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ
-          (fun w => (rationalArchUnits F ζ hζ y w : ℂ)) * b := by
-  let r := KPAdelicCoverRestrictedProduct.rationalTuple F ζ hζ (KubotaRankTwo.d F y 1)
-  let a := KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ
-    (fun w => (rationalArchUnits F ζ hζ y w : ℂ))
-  let q := (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp
-    (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ)
-  refine ⟨q (a⁻¹ * r), ?_, ?_⟩
-  · refine ⟨a⁻¹ * r, ?_, rfl⟩
-    apply Subgroup.mem_iInf.mpr
-    intro w
-    change (a (Sum.inl w))⁻¹ * r (Sum.inl w) = 1
-    have he : a (Sum.inl w) = r (Sum.inl w) := by
-      change KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ _ (Sum.inl w) =
-        KPAdelicCoverRestrictedProduct.rationalCoordinates F ζ hζ _ (Sum.inl w)
-      rw [KPAdelicCoverRestrictedProduct.rationalCoordinates_A]
-      change KPStandardLocalRootLifts.A F ζ hζ (Sum.inl w)
-        (if h : (rationalArchUnits F ζ hζ y w : ℂ) = 0 then 1 else
-          Units.mk0 ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
-            (KPHilbert.infinite_isComplex F ζ hζ w)).symm (rationalArchUnits F ζ hζ y w)) _) = _
-      simp only [Units.ne_zero, ↓reduceDIte]
-      congr 1
-      apply Units.ext
-      change (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-        (KPHilbert.infinite_isComplex F ζ hζ w)).symm
-          ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
-            (KPHilbert.infinite_isComplex F ζ hζ w))
-              (algebraMap F (KPHilbert.Completion F (Sum.inl w)) y.val)) = _
-      exact RingEquiv.symm_apply_apply _ _
-    change (a (Sum.inl w))⁻¹ * r (Sum.inl w) = 1
-    rw [he, inv_mul_cancel]
-  · change q r = q a * q (a⁻¹ * r)
-    simp
+          (fun w => (rationalArchUnits F ζ hζ y w : ℂ)) * b := by apply @DedekindZetaZeroFree.RationalDiagonalSectionSmoothness.rationalLift_split <;> assumption
 
-theorem chartTerm_transport (C : ModelData F ζ hζ) (s : ℂ)
+variable (C : ModelData F ζ hζ) (s : ℂ)
+
+theorem chartTerm_transport
     (g : G F ζ hζ) (a : KPGlobalTorusPeriodizationInverse.PeriodizationIndex F ζ hζ C) :
     ∃ (u : InfinitePlace F → ℂˣ) (b : G F ζ hζ),
       ∀ (f : InducedFunctions F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s))
@@ -242,29 +210,27 @@ theorem chartTerm_transport (C : ModelData F ζ hζ) (s : ℂ)
     simp [KPGlobalTorusFunctionData.deltaHalf,
       KPGlobalTorusPeriodizationInverse.rationalLift, delta_rational]
   rw [hhalf, inv_one, one_mul, he]
-  have hc := (TorusChartTransport.groupArchChart_commutes_finite F ζ hζ b hb z).eq
   have hm : (KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ
         (fun w => (rationalArchUnits F ζ hζ y w : ℂ)) * b) *
         (groupArchChart F ζ hζ z * g) =
       (KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ
         (fun w => (rationalArchUnits F ζ hζ y w : ℂ)) * groupArchChart F ζ hζ z) * (b * g) := by
-    rw [mul_assoc, ← mul_assoc b, ← hc]
+    rw [mul_assoc, ← mul_assoc b, ← ((TorusChartTransport.groupArchChart_commutes_finite F ζ hζ b hb z).eq)]
     group
   rw [hm, TorusChartTransport.groupArchDiagonalTransport_absorption F ζ hζ _ z hz]
 
-theorem chartTerm_contDiffOn_from_transport (C : ModelData F ζ hζ) (s : ℂ)
+theorem chartTerm_contDiffOn_from_transport
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (f : InducedLevel F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J)
     (g : G F ζ hζ) (a : KPGlobalTorusPeriodizationInverse.PeriodizationIndex F ζ hζ C) :
     ContDiffOn ℝ (⊤ : ℕ∞) (TorusChartTransport.chartTerm F ζ hζ C s f.val g a)
       (groupArchDomain F) := by
   obtain ⟨u, b, he⟩ := chartTerm_transport F ζ hζ C s g a
-  have hc := (f.property.1 b).comp
+  exact ((f.property.1 b).comp
     (TorusChartTransport.groupArchDiagonalTransport_contDiff F u).contDiffOn
-    (fun z hz => (TorusChartTransport.groupArchDiagonalTransport_domain F u z).2 hz)
-  exact hc.congr (fun z hz => he f.val z hz)
+    (fun z hz => (TorusChartTransport.groupArchDiagonalTransport_domain F u z).2 hz)).congr (fun z hz => he f.val z hz)
 
-theorem chartTerm_jet_bound (C : ModelData F ζ hζ) (s : ℂ)
+theorem chartTerm_jet_bound
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (g : G F ζ hζ) (n : ℕ)
     (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
@@ -306,7 +272,7 @@ set_option maxHeartbeats 6000000
 set_option maxRecDepth 2000
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 local instance functionsPLevelFunctionsAddGroup (P : Polarization F ζ hζ) :
     AddCommGroup (InducedFunctions F ζ hζ P) :=
@@ -319,8 +285,9 @@ local instance functionsPLevelAddGroup (P : Polarization F ζ hζ)
   @Submodule.addCommGroup ℂ (InducedFunctions F ζ hζ P)
     inferInstance inferInstance inferInstance (InducedLevel F ζ hζ P J)
 
-theorem functionsP_jet_le_of_finite_chart_terms (C : ModelData F ζ hζ) (s : ℂ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+variable (C : ModelData F ζ hζ) (s : ℂ) (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+
+theorem functionsP_jet_le_of_finite_chart_terms
     (g : G F ζ hζ) (n : ℕ)
     (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
     (f : InducedLevel F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J)
@@ -348,21 +315,18 @@ theorem functionsP_jet_le_of_finite_chart_terms (C : ModelData F ζ hζ) (s : �
       filter_upwards [hfin z hz] with y hy
       rw [TorusChartTransport.functionsP_chart_tsum F ζ hζ C s f.val g y]
       exact tsum_eq_sum hy
-    have heqz := heq.eq_of_nhdsWithin hzU
     change ‖iteratedFDerivWithin ℝ n
       (fun y => ((functionsP F ζ hζ C s f.val).val
         (groupArchChart F ζ hζ y * g)).val.val 1) (groupArchDomain F) z‖ ≤ _
-    rw [heq.iteratedFDerivWithin_eq heqz n,
+    rw [heq.iteratedFDerivWithin_eq (heq.eq_of_nhdsWithin hzU) n,
       iteratedFDerivWithin_fun_sum_apply (groupArchDomain_open F).uniqueDiffOn hzU
         (hsmooth z hz)]
     exact (norm_sum_le _ _).trans ((Finset.sum_le_sum (hbound z hz)).trans_eq
       (by simp))
-  · have hE : K.set = ∅ := Set.not_nonempty_iff_eq_empty.mp hK
-    simp only [hE, Set.image_empty, Real.sSup_empty]
+  · simp only [(Set.not_nonempty_iff_eq_empty.mp hK), Set.image_empty, Real.sSup_empty]
     positivity
 
-theorem functionsP_level_isBounded (C : ModelData F ζ hζ) (s : ℂ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
+theorem functionsP_level_isBounded :
     Seminorm.IsBounded
       (fun i : G F ζ hζ × ℕ × KPGlobalTorusFunctionData.JetCompact (groupArchDomain F) =>
         inducedJet F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J i.1 i.2.1 i.2.2)
@@ -372,18 +336,19 @@ theorem functionsP_level_isBounded (C : ModelData F ζ hζ) (s : ℂ)
         (functionsP_preserves_level F ζ hζ C s) J) := by
   apply Seminorm.IsBounded.of_real
   rintro ⟨g, n, K⟩
+  let twist₀ := twist F ζ hζ (productModel F ζ hζ C) s
   change ∃ (A : Finset (G F ζ hζ × ℕ × KPGlobalTorusFunctionData.JetCompact (groupArchDomain F)))
-    (B : ℝ), ∀ f : InducedLevel F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J,
+    (B : ℝ), ∀ f : InducedLevel F ζ hζ (twist₀) J,
       inducedJet F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J g n K
         (levelMap F ζ hζ _ _ (functionsP F ζ hζ C s)
           (functionsP_preserves_level F ζ hζ C s) J f) ≤
       B * (A.sup (fun i => inducedJet F ζ hζ
-        (twist F ζ hζ (productModel F ζ hζ C) s) J i.1 i.2.1 i.2.2)) f
+        (twist₀) J i.1 i.2.1 i.2.2)) f
   obtain ⟨S, hS⟩ := UniformFiberLevel.exists_uniform_chart_support F ζ hζ C s J g
   choose b L B hB hb using (UniformFiberLevel.chartTerm_jet_bound F ζ hζ C s J g n K)
   let A := S.image (fun a => (b a, n, L a))
   let p := fun i : G F ζ hζ × ℕ × KPGlobalTorusFunctionData.JetCompact (groupArchDomain F) =>
-    inducedJet F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J i.1 i.2.1 i.2.2
+    inducedJet F ζ hζ (twist₀) J i.1 i.2.1 i.2.2
   let D := ∑ a ∈ S, B a
   have hD : 0 ≤ D := Finset.sum_nonneg (fun a _ => hB a)
   refine ⟨A, (S.card : ℝ) * D, ?_⟩
@@ -391,8 +356,8 @@ theorem functionsP_level_isBounded (C : ModelData F ζ hζ) (s : ℂ)
   have hjet (a) (ha : a ∈ S) (z) (hz : z ∈ K.set) :
       ‖iteratedFDerivWithin ℝ n (TorusChartTransport.chartTerm F ζ hζ C s f.val g a)
         (groupArchDomain F) z‖ ≤ D * (A.sup p) f := by
-    have hBa : B a ≤ D := Finset.single_le_sum (fun a _ => hB a) ha
-    have hp : p (b a, n, L a) f ≤ (A.sup p) f :=
+    have hBa := Finset.single_le_sum (fun a _ => hB a) ha
+    have hp :=
       Finset.le_sup (s := A) (f := p) (Finset.mem_image.mpr ⟨a, ha, rfl⟩) f
     exact (hb a f z hz).trans (mul_le_mul hBa hp (apply_nonneg _ _) hD)
   have ht := functionsP_jet_le_of_finite_chart_terms F ζ hζ C s J g n K f S
@@ -403,16 +368,14 @@ theorem functionsP_level_isBounded (C : ModelData F ζ hζ) (s : ℂ)
     (fun z hz a ha => hjet a ha z hz)
   exact ht.trans_eq (by ring)
 
-theorem functionsP_level_continuous (C : ModelData F ζ hζ) (s : ℂ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
+theorem functionsP_level_continuous :
     @Continuous
       (InducedLevel F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J)
       (InducedLevel F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J)
       (inducedLevelTopology F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J)
       (inducedLevelTopology F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J)
       (levelMap F ζ hζ _ _ (functionsP F ζ hζ C s)
-        (functionsP_preserves_level F ζ hζ C s) J) := by
-  exact Continuity.continuous_of_inducedJet_isBounded F ζ hζ _ _ J J _
+        (functionsP_preserves_level F ζ hζ C s) J) := Continuity.continuous_of_inducedJet_isBounded F ζ hζ _ _ J J _
     (Continuity.inducedLevelTopology_withSeminorms F ζ hζ _ J)
     (Continuity.inducedLevelTopology_withSeminorms F ζ hζ _ J)
     (functionsP_level_isBounded F ζ hζ C s J)

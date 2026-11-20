@@ -33,15 +33,15 @@ theorem irreducible_orbit_span {G V : Type*} [Group G] [AddCommGroup V] [Module 
 
 open MomentSources NumberField
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
 
 theorem actualFinite_irreducible (D : SourceFactorization R Q T) (q : KPFinitePlace F) :
     (actualFiniteAction R D q).IsIrreducible :=
   (KPRankOneShellRepair.ActualSourcePredicates.actual_images_irreducible_of_length
     F R.A.zeta12 R.A.primitive_zeta12 q (D.finiteData q).inducing
-    (D.finiteData q).inducing.polarization (D.finiteData q).haar (D.finiteData q).haar_integer).1.2
+    (D.finiteData q).inducing.polarization (D.finiteData q).haar (D.finiteData q).haar_integer).2
 
 theorem actualFinite_orbit_span (D : SourceFactorization R Q T) (q : KPFinitePlace F)
     (v : actualLocal R D.finiteData (Sum.inr q)) (hv : v ≠ 0) :

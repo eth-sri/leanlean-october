@@ -24,17 +24,12 @@ theorem separated_summand_norm_summable
     RMParameterAbsorption.finiteProfileFamily_reciprocal_bound A H hH
   let W : RMParameterAbsorption.CompactMajorantIndex A h → ℝ := fun k =>
     A.exteriorNorm k.1.val.val ^ 2 * positiveRowWeight k.1.val 1 k.2.2
-  let c : ℝ := K * A.exteriorNorm d ^ 2 / Z
+  let c := K * A.exteriorNorm d ^ 2 / Z
   let e := RMParameterAbsorption.compactMajorantIndexMap A h
-  have hW : Summable W := RMParameterAbsorption.compactWeightedMajorant_summable A h
-  have he : Function.Injective e :=
-    RMParameterAbsorption.compactMajorantIndexMap_injective A h
-  have hs := (hW.comp_injective he).mul_left c
-  apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _ hs
+  apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _ (((RMParameterAbsorption.compactWeightedMajorant_summable A h).comp_injective (RMParameterAbsorption.compactMajorantIndexMap_injective A h)).mul_left c)
   intro i
-  have hi := RMParameterAbsorption.summand_positiveRowWeight_bound
-    A G U σ ψ hψ L hL (H u) K hK (hbound u) i.1.val d i.2 Z hZ
-  convert hi using 1 <;>
+  convert (RMParameterAbsorption.summand_positiveRowWeight_bound
+    A G U σ ψ hψ L hL (H u) K hK (hbound u) i.1.val d i.2 Z hZ) using 1 <;>
     dsimp [c, W, e, RMParameterAbsorption.compactMajorantIndexMap,
       RMSeparatedExpansion.activeSupport] <;> ring
 

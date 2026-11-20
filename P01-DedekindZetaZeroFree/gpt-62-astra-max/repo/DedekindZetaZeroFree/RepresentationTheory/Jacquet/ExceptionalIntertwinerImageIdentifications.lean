@@ -21,7 +21,7 @@ variable {K : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
 variable {G H D : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [Group H] [TopologicalSpace H] [IsTopologicalGroup H] [CommGroup D] [Finite D]
 variable {T : LocalHeisenbergData H D}
-variable {V W : Type*} [AddCommGroup V] [Module ℂ V] [AddCommGroup W] [Module ℂ W]
+    {V W : Type*} [AddCommGroup V] [Module ℂ V] [AddCommGroup W] [Module ℂ W]
 
 theorem jacquetMap_injective_of_smooth (A : LocalBorelData (K := K) (G := G) T)
     {ρ : Representation ℂ G V} {σ : Representation ℂ G W}
@@ -64,16 +64,11 @@ theorem jacquet_image_equiv (A : LocalBorelData (K := K) (G := G) T)
         apply LinearMap.ext
         intro v
         apply Subtype.ext
-        change f (ρ g v) = σ g (f v)
         exact congrArg (fun l : V →ₗ[ℂ] W => l v) (f.isIntertwining' g) }
   let i : f.range.toRepresentation.IntertwiningMap σ :=
     { toLinearMap := f.range.toSubmodule.subtype
       isIntertwining' g := rfl }
   let j := jacquetMap A i
-  have hj : Function.Injective j := jacquetMap_injective_of_smooth A i Subtype.val_injective hσ
-  have hq : Function.Surjective (jacquetMap A q) := jacquetMap_surjective A q (by
-    rintro ⟨v, u, rfl⟩
-    exact ⟨u, rfl⟩)
   have hcomp : ∀ v, j ((jacquetMap A q) v) = (jacquetMap A f) v := by
     intro v
     obtain ⟨u, rfl⟩ := Representation.Coinvariants.mk_surjective (ρ.comp (root A)) v
@@ -82,7 +77,9 @@ theorem jacquet_image_equiv (A : LocalBorelData (K := K) (G := G) T)
       (jacquetMap A f).range.toRepresentation :=
     { toLinearMap := j.toLinearMap.codRestrict (jacquetMap A f).range.toSubmodule (by
         intro v
-        obtain ⟨u, rfl⟩ := hq v
+        obtain ⟨u, rfl⟩ := (jacquetMap_surjective A q (by
+          rintro ⟨v, u, rfl⟩
+          exact ⟨u, rfl⟩)) v
         exact ⟨u, (hcomp u).symm⟩)
       isIntertwining' g := by
         apply LinearMap.ext
@@ -91,7 +88,7 @@ theorem jacquet_image_equiv (A : LocalBorelData (K := K) (G := G) T)
         exact congrArg (fun l => l v) (j.isIntertwining' g) }
   refine ⟨m.ofBijective ⟨?_, ?_⟩⟩
   · intro v w h
-    exact hj (congrArg Subtype.val h)
+    exact (jacquetMap_injective_of_smooth A i Subtype.val_injective hσ) (congrArg Subtype.val h)
   · rintro ⟨v, u, rfl⟩
     exact ⟨(jacquetMap A q) u, Subtype.ext (hcomp u)⟩
 

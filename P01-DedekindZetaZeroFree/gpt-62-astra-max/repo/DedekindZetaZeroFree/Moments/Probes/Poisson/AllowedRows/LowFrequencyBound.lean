@@ -12,8 +12,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonK
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def lowNormRows : Set D.Row := dyadRows D 1 \ principalRows D
 
@@ -25,8 +25,7 @@ theorem lowNorm_initial_eq (Z : ℝ) (hZ : 2 ≤ Z) :
   unfold J JCont
   refine finsum_mem_congr rfl ?_
   intro u hu
-  have hne : u.u ≠ 1 := fun h => hu.2 h
-  have h1 := FixedLowRowContour.fixedRow_initial_eq D u hne Z hZ
+  have h1 := FixedLowRowContour.fixedRow_initial_eq D u (fun h => hu.2 h) Z hZ
   rw [FixedLowRowContour.J_singleton] at h1
   exact h1
 
@@ -36,8 +35,7 @@ theorem lowNorm_row_bound_exists (u : D.Row) :
           Scales.rightLine Scales.wLine Scales.zLine Z‖ ≤
         Cu * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine)) := by
   by_cases hu : u ∈ lowNormRows D
-  · have hne : u.u ≠ 1 := fun h => hu.2 h
-    obtain ⟨Cu, hC, h⟩ := FixedLowRowContour.fixedRow_low_bound D u hne
+  · obtain ⟨Cu, hC, h⟩ := FixedLowRowContour.fixedRow_low_bound D u (fun h => hu.2 h)
     exact ⟨Cu, hC, fun _ => h⟩
   · exact ⟨1, one_pos, fun h => absurd h hu⟩
 
@@ -52,16 +50,13 @@ theorem lowNorm_bound :
     linarith
   intro Z hZ
   have hZ0 : 0 < Z := by linarith
-  have hZE : 0 ≤ Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) := Real.rpow_nonneg hZ0.le _
   rw [lowNorm_initial_eq D Z hZ]
   unfold JCont
   rw [finsum_mem_eq_finite_toFinset_sum _ hfin]
   refine le_trans (norm_sum_le _ _) ?_
-  have hsum : ∑ u ∈ hfin.toFinset, c u * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) ≤
-      (1 + ∑ u ∈ hfin.toFinset, c u) * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) := by
+  refine le_trans (Finset.sum_le_sum (fun u hu => ?_)) (by
     rw [← Finset.sum_mul]
-    exact mul_le_mul_of_nonneg_right (by linarith) hZE
-  refine le_trans (Finset.sum_le_sum (fun u hu => ?_)) hsum
+    exact mul_le_mul_of_nonneg_right (by linarith) (Real.rpow_nonneg hZ0.le _))
   exact (hc u) ((hfin.mem_toFinset).mp hu) Z hZ
 
 theorem lowNorm_rows_small_k0 (ε : ℝ) (hε : 0 < ε) :

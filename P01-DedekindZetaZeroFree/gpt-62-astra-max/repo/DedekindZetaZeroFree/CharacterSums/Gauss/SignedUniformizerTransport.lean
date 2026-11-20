@@ -9,7 +9,7 @@ namespace DedekindZetaZeroFree.MomentSources
 open scoped NumberField Classical
 open NumberField
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 structure SignedUniformizerTransport (R : PrincipalMellin.ActualRecipe S η) where
   uniformizer : ∀ p : ThetaBranch.ExteriorPrime R.A, (p.val.adicCompletion F)ˣ
   uniformizer_norm : ∀ p, ‖(uniformizer p : p.val.adicCompletion F)‖ = (R.A.exteriorNorm (ThetaBranch.primeIdeal R.A p))⁻¹

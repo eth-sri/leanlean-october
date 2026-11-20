@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -59,18 +57,17 @@ noncomputable def chosenFinitePlaceIntegralInducedBlockToLocalPlaceBlock
         (K := K) (L := L) w₀
     change
       InducedModule
-          (B := ChosenFinitePlaceLocalizedIntegerUnits
-            (K := K) (L := L) w₀)
+
           (ChosenFinitePlaceDecompositionGroup
-            (K := K) (L := L) w₀) →
+              w₀) →
         ChosenFinitePlaceLocalPlaceBlock
-          (K := K) (L := L) w₀
+            w₀
     exact
       (inducedIntegerUnitsToLocalPlaceBlock
           (HeightOneSpectrum.adicAbv K w₀)
           (RayClass.adicAbv_isNontrivial w₀)
           (HeightOneSpectrum.isNonarchimedean_adicAbv K w₀)
-          (chosenFinitePlaceExtension (L := L) w₀)).toFun
+          (chosenFinitePlaceExtension w₀)).toFun
 
 omit [NumberField L] in
 /-- The chosen finite-place integral induced block embeds into its
@@ -81,13 +78,9 @@ theorem chosenFinitePlaceIntegralInducedBlockToLocalPlaceBlock_injective
       (chosenFinitePlaceIntegralInducedBlockToLocalPlaceBlock
         (K := K) (L := L) w₀) := by
   let vK := HeightOneSpectrum.adicAbv K w₀
-  let u := chosenFinitePlaceExtension (L := L) w₀
-  let hvK : vK.IsNontrivial := RayClass.adicAbv_isNontrivial w₀
-  let hvKna : IsNonarchimedean (vK : K → ℝ) :=
-    HeightOneSpectrum.isNonarchimedean_adicAbv K w₀
   unfold chosenFinitePlaceIntegralInducedBlockToLocalPlaceBlock
   exact inducedIntegerUnitsToLocalPlaceBlock_injective
-    vK hvK hvKna u
+    vK (RayClass.adicAbv_isNontrivial w₀) (HeightOneSpectrum.isNonarchimedean_adicAbv K w₀) (chosenFinitePlaceExtension w₀)
 end ChosenFinitePlace
 
 end

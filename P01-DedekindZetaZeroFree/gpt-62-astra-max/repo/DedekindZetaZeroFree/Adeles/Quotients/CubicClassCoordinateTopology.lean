@@ -18,7 +18,7 @@ variable (F : Type) [Field F] [NumberField F]
 private theorem integralUnits_open (v : KPHilbert.Place F) : IsOpen (integralUnits F v : Set (KPHilbert.Completion F v)ˣ) := by
   cases v with
   | inl w => exact isOpen_univ
-  | inr q => exact isOpen_finiteLocalUnits F q
+  | inr q => apply isOpen_finiteLocalUnits
 private theorem integralUnits_eq_range (q : HeightOneSpectrum (𝓞 F)) :
     integralUnits F (Sum.inr q) = (KPHilbert.integerUnitInclusion F q).range := by
   letI : ValuativeRel (q.adicCompletion F) := ClassFieldTheory.finitePlaceCompletionValuativeRel F q
@@ -30,27 +30,34 @@ private theorem integralUnits_eq_range (q : HeightOneSpectrum (𝓞 F)) :
   ext z
   constructor
   · intro hz
-    let u : KPHilbert.LocalIntegerUnits F q :=
-      ⟨⟨z.val, (mem _).mp hz.1⟩, ⟨z.inv, (mem _).mp hz.2⟩,
+    exact ⟨(⟨⟨z.val, (mem _).mp hz.1⟩, ⟨z.inv, (mem _).mp hz.2⟩,
       by apply Subtype.ext; exact z.val_inv,
-      by apply Subtype.ext; exact z.inv_val⟩
-    exact ⟨u, rfl⟩
+      by apply Subtype.ext; exact z.inv_val⟩), rfl⟩
   · rintro ⟨u, rfl⟩
     exact ⟨(mem _).mpr u.val.property, (mem _).mpr u.inv.property⟩
- theorem integralUnits_maps (v : KPHilbert.Place F) :
+ section
+
+variable (v : KPHilbert.Place F)
+
+theorem integralUnits_maps :
     Set.MapsTo (localClass F v) (integralUnits F v) (U F v) := by
   cases v with
   | inl w => intro z hz; trivial
   | inr q =>
     intro z hz
     exact ⟨z, (integralUnits_eq_range F q) ▸ hz, rfl⟩
- def integralClass (v : KPHilbert.Place F) : integralUnits F v → U F v :=
+ def integralClass : integralUnits F v → U F v :=
   Subtype.map (localClass F v) (integralUnits_maps F v)
-private theorem integralClass_open (v : KPHilbert.Place F) : IsOpenMap (integralClass F v) :=
+private theorem integralClass_open : IsOpenMap (integralClass F v) :=
   QuotientGroup.isOpenMap_coe.subtype_map (integralUnits_open F v) (integralUnits_maps F v)
-private theorem integralClass_cont (v : KPHilbert.Place F) : Continuous (integralClass F v) :=
-  (QuotientGroup.continuous_mk.comp continuous_subtype_val).subtype_mk _
-private theorem integralClass_surj (v : KPHilbert.Place F) : Function.Surjective (integralClass F v) := by
+
+end
+
+section
+
+variable (v : KPHilbert.Place F)
+
+private theorem integralClass_surj : Function.Surjective (integralClass F v) := by
   intro z
   cases v with
   | inl w =>
@@ -59,7 +66,7 @@ private theorem integralClass_surj (v : KPHilbert.Place F) : Function.Surjective
   | inr q =>
     obtain ⟨a, ha, he⟩ := z.property
     exact ⟨⟨a, (integralUnits_eq_range F q).symm ▸ ha⟩, Subtype.ext he⟩
- theorem U_open (v : KPHilbert.Place F) : IsOpen (U F v : Set (LocalD F v)) := by
+ theorem U_open : IsOpen (U F v : Set (LocalD F v)) := by
   cases v with
   | inl w => exact isOpen_univ
   | inr q =>
@@ -68,6 +75,8 @@ private theorem integralClass_surj (v : KPHilbert.Place F) : Function.Surjective
       rfl
     rw [h]
     exact QuotientGroup.isOpenMap_coe _ (integralUnits_open F (Sum.inr q))
+
+end
  def chart : ((v : KPHilbert.Place F) → integralUnits F v) → Ideles F :=
   fun a => IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F
     (⟨fun w => (a (Sum.inl w)).val.val, fun w => (a (Sum.inl w)).val.inv,
@@ -75,23 +84,12 @@ private theorem integralClass_surj (v : KPHilbert.Place F) : Function.Surjective
        by funext w; exact (a (Sum.inl w)).val.inv_val⟩,
      RestrictedProduct.structureMap _ _ Filter.cofinite (fun q => a (Sum.inr q)))
 private theorem chart_openEmbedding : Topology.IsOpenEmbedding (chart F) := by
-  let h := Homeomorph.sumPiEquivProdPi (InfinitePlace F) (HeightOneSpectrum (𝓞 F)) (fun v => integralUnits F v)
-  let h' := (Homeomorph.piCongrRight fun w : InfinitePlace F =>
-    Homeomorph.Set.univ (w.Completionˣ)).prodCongr (Homeomorph.refl ((q : HeightOneSpectrum (𝓞 F)) → integralUnits F (Sum.inr q)))
-  let h'' := (@ContinuousMulEquiv.piUnits (InfinitePlace F) (fun w => w.Completion) _ _).symm.toHomeomorph.prodCongr (Homeomorph.refl ((q : HeightOneSpectrum (𝓞 F)) → integralUnits F (Sum.inr q)))
-  have hop := ((Homeomorph.refl ((w : InfinitePlace F) → w.Completion)ˣ).isOpenEmbedding.prodMap
-    (RestrictedProduct.isOpenEmbedding_structureMap (fun q => isOpen_finiteLocalUnits F q)))
-  have hh := (IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).toHomeomorph.isOpenEmbedding.comp
-    (hop.comp (h''.isOpenEmbedding.comp (h'.isOpenEmbedding.comp h.isOpenEmbedding)))
-  exact hh
+  exact (IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).toHomeomorph.isOpenEmbedding.comp
+    ((((Homeomorph.refl ((w : InfinitePlace F) → w.Completion)ˣ).isOpenEmbedding.prodMap
+      (RestrictedProduct.isOpenEmbedding_structureMap ((isOpen_finiteLocalUnits F))))).comp (((@ContinuousMulEquiv.piUnits (InfinitePlace F) (fun w => w.Completion) _ _).symm.toHomeomorph.prodCongr (Homeomorph.refl ((q : HeightOneSpectrum (𝓞 F)) → integralUnits F (Sum.inr q)))).isOpenEmbedding.comp (((Homeomorph.piCongrRight fun w : InfinitePlace F =>
+      Homeomorph.Set.univ (w.Completionˣ)).prodCongr (Homeomorph.refl ((q : HeightOneSpectrum (𝓞 F)) → integralUnits F (Sum.inr q)))).isOpenEmbedding.comp (Homeomorph.sumPiEquivProdPi (InfinitePlace F) (HeightOneSpectrum (𝓞 F)) (fun v => integralUnits F v)).isOpenEmbedding)))
 private theorem chart_one : chart F 1 = 1 := by
-  apply Units.ext
-  apply Prod.ext
-  · funext w
-    rfl
-  · apply RestrictedProduct.ext
-    intro q
-    rfl
+  rfl
  def st : ((v : KPHilbert.Place F) → U F v) → RestrictedClasses F :=
   RestrictedProduct.structureMap _ _ Filter.cofinite
 private theorem chart_comp : restrictedClassMap F ∘ chart F = st F ∘ Pi.map (integralClass F) := by
@@ -107,7 +105,7 @@ private theorem restrictedClassMap_cont : Continuous (restrictedClassMap F) := b
   apply (chart_openEmbedding F).continuousAt_iff.mp
   rw [chart_comp F]
   exact ((RestrictedProduct.isEmbedding_structureMap.continuous).comp
-    (continuous_pi fun v => (integralClass_cont F v).comp (continuous_apply v))).continuousAt
+    (continuous_pi fun v => (((QuotientGroup.continuous_mk.comp continuous_subtype_val).subtype_mk _)).comp (continuous_apply v))).continuousAt
 private theorem restrictedClassMap_open : IsOpenMap (restrictedClassMap F) := by
   rw [IsTopologicalGroup.isOpenMap_iff_nhds_one]
   have hc : IsOpenMap (Pi.map (integralClass F)) :=

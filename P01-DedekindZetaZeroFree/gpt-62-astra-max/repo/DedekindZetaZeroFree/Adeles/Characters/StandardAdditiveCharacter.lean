@@ -9,7 +9,9 @@ noncomputable section
 open scoped NumberField Classical
 namespace DedekindZetaZeroFree.PrincipalOfKP
 
-def standardCharacter (F : Type) [Field F] [NumberField F] :
+variable (F : Type) [Field F] [NumberField F]
+
+def standardCharacter :
     ContinuousAddChar (KPAdditiveQuotient F) where
   toFun x := (adelicTraceQuotientCharacter F x : ℂ)
   map_zero_eq_one' := by
@@ -24,7 +26,7 @@ def standardCharacter (F : Type) [Field F] [NumberField F] :
     continuous_subtype_val.comp (continuous_adelicTraceQuotientCharacter F)
   unitary := fun a => Circle.norm_coe _
 
-theorem standardCharacter_nontrivial (F : Type) [Field F] [NumberField F] :
+theorem standardCharacter_nontrivial :
     KPReflectionSpec.NontrivialCharacter (standardCharacter F) := by
   obtain ⟨x, hx⟩ := AddChar.ne_one_iff.1 (adelicTraceQuotientCharacter_ne_one F)
   refine ⟨x, ?_⟩
@@ -32,7 +34,7 @@ theorem standardCharacter_nontrivial (F : Type) [Field F] [NumberField F] :
   change ((adelicTraceQuotientCharacter F x : Circle) : ℂ) = 1 at h
   apply hx
   apply Subtype.ext
-  rw [h, Circle.coe_one]
+  assumption
 
 end DedekindZetaZeroFree.PrincipalOfKP
 

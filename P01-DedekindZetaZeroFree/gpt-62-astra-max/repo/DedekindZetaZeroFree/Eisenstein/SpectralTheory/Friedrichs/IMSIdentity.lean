@@ -18,27 +18,33 @@ open KPContActualSectorTestDifferentialDescent
 open KPContActualSquareEndPartition KPContSectorLineL2Isometry
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 abbrev Index := Option (CuspIndex F ζ hζ U R P H)
 
-def cutoff {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H T) :
+section
+
+variable {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H T)
+
+def cutoff :
     Index F ζ hζ U R P H → Cutoff F ζ hζ U R P H
   | none => partition.χ₀
   | some c => partition.χ c
 
-def sectorMultiplier {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H T) :
+def sectorMultiplier :
     (i : Index F ζ hζ U R P H) →
       SectorMultiplier F ζ hζ U R P H (cutoff F ζ hζ U R P H partition i)
   | none => partition.core_multiplier
   | some c => partition.cusp_multiplier c
 
+end
+
 variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
-variable (hR : R.adelicHaar = μG)
-variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
+    (hR : R.adelicHaar = μG)
+    (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
 
 local notation "D" => KPContActualSectorFriedrichsSynthesis.A_U F ζ hζ U R P H μG hμG hR realization
 
@@ -102,12 +108,12 @@ theorem cutoff_square_sum {T : ℝ} (partition : SquareEndPartition F ζ hζ U R
 
 theorem cutoff_differential_bound {T : ℝ}
     (partition : SquareEndPartition F ζ hζ U R P H T) :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ (i : Index F ζ hζ U R P H)
+    ∃ C : ℝ, ∀ (i : Index F ζ hζ U R P H)
       (a : ActualChart (U := U) (H := H))
       (y : KPContCotangentOverlapRationalBranches.omega a),
       ‖cutoffDifferential (cutoff F ζ hζ U R P H partition i) a y‖ ≤ Real.sqrt C := by
   obtain ⟨C, hC, hb⟩ := partition.error_bounded
-  refine ⟨C, hC, fun i a y => ?_⟩
+  refine ⟨C, fun i a y => ?_⟩
   have hn (η : Cutoff F ζ hζ U R P H) :
       0 ≤ differentialNormSquared F ζ hζ U R P H η
         (KPContCotangentOverlapRationalBranches.q a y.val) := by
@@ -143,7 +149,7 @@ theorem sector_mass {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H T
         ((M i u).val : KPContSectorCoveredQuotientVocabulary.CoveredSpherical F ζ hζ U → ℂ) x =
           ((cutoff F ζ hζ U R P H partition i).val
             (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x) : ℂ) *
-            (u.val : KPContSectorCoveredQuotientVocabulary.CoveredSpherical F ζ hζ U → ℂ) x := by
+            u.val x := by
     rw [Filter.eventually_all]
     exact fun i => (sectorMultiplier F ζ hζ U R P H partition i).ae_apply u
   have hp : (fun x => ∑ i : Index F ζ hζ U R P H,
@@ -154,11 +160,10 @@ theorem sector_mass {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H T
     simp only [hx, inner_self_eq_norm_sq_to_K, norm_mul, Complex.norm_real,
       Real.norm_eq_abs, mul_pow]
     push_cast
-    have hs := cutoff_square_sum F ζ hζ U R P H partition
-      (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x)
     norm_cast
     simp_rw [mul_pow, sq_abs]
-    rw [← Finset.sum_mul, hs, one_mul]
+    rw [← Finset.sum_mul, (cutoff_square_sum F ζ hζ U R P H partition
+      (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x)), one_mul]
   have hc : (∑ i, inner ℂ (M i u).val (M i u).val) = inner ℂ u.val u.val := by
     simp_rw [L2.inner_def]
     rw [← integral_finset_sum Finset.univ (fun i _ => L2.integrable_inner _ _)]
@@ -181,7 +186,7 @@ theorem partition_lifts {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P
         (sectorMultiplier F ζ hζ U R P H partition i).op.comp jQ) ∧
       ∀ i (f : S_U F ζ hζ U R P H),
         A i (lift f) = lift (scalarMultiply (cutoff F ζ hζ U R P H partition i) f) := by
-  obtain ⟨C, hC, hd⟩ := cutoff_differential_bound F ζ hζ U R P H partition
+  obtain ⟨C, hd⟩ := cutoff_differential_bound F ζ hζ U R P H partition
   have hex (i : Index F ζ hζ U R P H) :
       ∃ A : Q →L[ℂ] Q, (jQ).comp A =
         (sectorMultiplier F ζ hζ U R P H partition i).op.comp jQ ∧
@@ -208,9 +213,8 @@ theorem collar_error_integrable {T : ℝ}
       (KPContActualSectorCotangentL2.muU F ζ hζ U R P) := by
   have hm : Measurable (fun x =>
       KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val x ^ 2) := by
-    have h := ENNReal.measurable_toReal.comp
-      (squaredNorm_measurable F ζ hζ U R P H s.val s.property.1)
-    simpa only [Function.comp_def, squaredNorm, ENNReal.toReal_ofReal (sq_nonneg _)] using h
+    simpa only [Function.comp_def, squaredNorm, ENNReal.toReal_ofReal (sq_nonneg _)] using (ENNReal.measurable_toReal.comp
+      (squaredNorm_measurable F ζ hζ U R P H s.val s.property.1))
   have hi : Integrable (fun x =>
       KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val x ^ 2)
       (KPContActualSectorCotangentL2.muU F ζ hζ U R P) := by
@@ -578,7 +582,7 @@ theorem test_ims_scalar {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P
       ∫ x, collarError F ζ hζ U R P H partition.χ₀ partition.χ x *
         (scalarPair f f x).re ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P := by
   have hte := kp_cont_actual_sector_test_embeddings F ζ hζ μG hμG U R hR P H realization
-  have hcl2 := kp_cont_actual_sector_cotangent_l2 F ζ hζ μG hμG U R hR P H realization
+  have normFormula := KPContActualCotangentIntrinsicHilbertIntegral.norm_sq_eq_integral (KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H)
   have hinte (g : S_U F ζ hζ U R P H) : Integrable (fun x =>
       (KPContActualCotangentMeasurableFamilies.normSquare (D_U g).val x : ℝ))
       (KPContActualSectorCotangentL2.muU F ζ hζ U R P) := by
@@ -613,13 +617,13 @@ theorem test_ims_scalar {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P
       ∫ x, (KPContActualCotangentMeasurableFamilies.normSquare
         (D_U (scalarMultiply (cutoff F ζ hζ U R P H partition i) f)).val x : ℝ)
         ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P :=
-    hcl2.norm_integral _
+    normFormula _
       (KPContActualSectorTestEmbeddings.cotangentSquareFamily
         (D_U (scalarMultiply (cutoff F ζ hζ U R P H partition i) f))) rfl
   have hW : ‖j (D_U f)‖ ^ 2 =
       ∫ x, (KPContActualCotangentMeasurableFamilies.normSquare (D_U f).val x : ℝ)
         ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P :=
-    hcl2.norm_integral _ (KPContActualSectorTestEmbeddings.cotangentSquareFamily (D_U f)) rfl
+    normFormula _ (KPContActualSectorTestEmbeddings.cotangentSquareFamily (D_U f)) rfl
   have hsum_int : (∫ x, (∑ i : Index F ζ hζ U R P H,
         (KPContActualCotangentMeasurableFamilies.normSquare
           (D_U (scalarMultiply (cutoff F ζ hζ U R P H partition i) f)).val x : ℝ))
@@ -916,7 +920,6 @@ theorem ims_identity {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H 
     weighted_integral_eq F ζ hζ U R P H μG hμG hR realization partition v s hs]
 
 structure Properties {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H T) where
-
   A : Index F ζ hζ U R P H → Q →L[ℂ] Q
 
   intertwines : ∀ i, (jQ).comp (A i) =
@@ -924,13 +927,6 @@ structure Properties {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H 
 
   test_lift : ∀ i (f : S_U F ζ hζ U R P H),
     A i (lift f) = lift (scalarMultiply (cutoff F ζ hζ U R P H partition i) f)
-
-  test_gradient : ∀ f : S_U F ζ hζ U R P H, ∇Q (lift f) = j (D_U f)
-
-  test_product_rule : ∀ i (f : S_U F ζ hζ U R P H),
-    ∇Q (A i (lift f)) =
-      j (cotangentMultiply (cutoff F ζ hζ U R P H partition i) (D_U f)) +
-      j (cutoffGradientTimes (cutoff F ζ hζ U R P H partition i) f)
 
   mass : ∀ v : Q, ∑ i, ‖jQ (A i v)‖ ^ 2 = ‖jQ v‖ ^ 2
 
@@ -968,17 +964,10 @@ theorem kp_cont_actual_form_ims_identity
     A := A
     intertwines := hA
     test_lift := ht
-    test_gradient := KPContActualFormIMSIdentity.coreLift_gradient
-      F ζ hζ U R P H μG hμG hR realization
-    test_product_rule := ?_
     mass := ?_
     line_representative := KPContActualFormIMSIdentity.core_line_representative
       F ζ hζ U R P H μG hμG hR realization
     ims := ?_ }⟩
-  · intro i f
-    rw [ht]
-    exact KPContActualFormIMSIdentity.coreLift_product
-      F ζ hζ U R P H μG hμG hR realization _ f
   · intro v
     have he (i) := congrArg (fun M => M v) (hA i)
     simp only [ContinuousLinearMap.comp_apply] at he

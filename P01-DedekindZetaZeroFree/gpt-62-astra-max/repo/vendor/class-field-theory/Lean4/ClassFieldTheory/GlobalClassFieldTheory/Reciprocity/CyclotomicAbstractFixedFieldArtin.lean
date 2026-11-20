@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -62,9 +58,7 @@ theorem rationalCyclotomicFieldInertia_le
     (H : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)) :
     (rationalCyclotomicDegreeData.fieldInertia H).toSubgroup ≤
-      H.toSubgroup := by
-  intro σ hσ
-  exact hσ.1
+      H.toSubgroup := fun σ hσ => hσ.1
 
 /-- Viewing cyclotomic field inertia inside its ambient field subgroup
 gives exactly the kernel of normalized degree. -/
@@ -104,16 +98,7 @@ noncomputable def abstractFixedFieldCyclotomicGalEquivZHat
         hI).Normal := by
     rw [extensionSubgroup_rationalCyclotomicFieldInertia]
     infer_instance
-  let qField :
-      H.field.toSubgroup ⧸
-          CyclicCohomology.extensionSubgroup H.field
-            (rationalCyclotomicDegreeData.fieldInertia H.field)
-            hI ≃*
-        Gal(
-          LocalClassFieldTheory.abstractRelativeFixedField
-            ℚ (SeparableClosure ℚ) hI /
-          LocalClassFieldTheory.abstractFixedField
-            ℚ (SeparableClosure ℚ) H.field) :=
+  let qField :=
     LocalClassFieldTheory.abstractExtensionQuotientEquivGaloisGroup
       ℚ (SeparableClosure ℚ) H.field
       (rationalCyclotomicDegreeData.fieldInertia H.field)
@@ -134,12 +119,14 @@ noncomputable def abstractFixedFieldCyclotomicGalEquivZHat
           (H.toFiniteResidueAbstractField
             rationalCyclotomicDegreeData)))
 
+section
+
+variable (H : FiniteAbstractField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+
 /-- On an absolute-Galois representative fixing the lower field, the
 actual cyclotomic Galois coordinate is its normalized degree. -/
 @[simp]
 theorem abstractFixedFieldCyclotomicGalEquivZHat_extensionClass
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (σ : H.field.toSubgroup) :
     let hI :=
       rationalCyclotomicFieldInertia_le H.field
@@ -188,8 +175,6 @@ theorem abstractFixedFieldCyclotomicGalEquivZHat_extensionClass
 coordinate. -/
 @[simp]
 theorem abstractFixedFieldCyclotomicGalEquivZHat_quotientClass
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (q :
       H.field.toSubgroup ⧸
         rationalCyclotomicDegreeData.fieldInertiaWithin H.field) :
@@ -255,9 +240,7 @@ theorem abstractFixedFieldCyclotomicGalEquivZHat_quotientClass
 
 /-- The extension fixed by cyclotomic field inertia is an actual
 abelian Galois extension of the lower abstract fixed field. -/
-theorem abstractFixedFieldCyclotomic_isAbelianGalois
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)) :
+theorem abstractFixedFieldCyclotomic_isAbelianGalois :
     let hI :=
       rationalCyclotomicFieldInertia_le H.field
     IsAbelianGalois
@@ -267,28 +250,22 @@ theorem abstractFixedFieldCyclotomic_isAbelianGalois
         ℚ (SeparableClosure ℚ) hI) := by
   let hI :=
     rationalCyclotomicFieldInertia_le H.field
-  let hnormal :
-      (CyclicCohomology.extensionSubgroup H.field
-        (rationalCyclotomicDegreeData.fieldInertia H.field)
-        hI).Normal := by
-    rw [extensionSubgroup_rationalCyclotomicFieldInertia]
-    infer_instance
-  let : IsGalois
-      (LocalClassFieldTheory.abstractFixedField
-        ℚ (SeparableClosure ℚ) H.field)
-      (LocalClassFieldTheory.abstractRelativeFixedField
-        ℚ (SeparableClosure ℚ) hI) :=
+  let :=
     LocalClassFieldTheory.abstractRelativeFixedField_isGalois
       ℚ (SeparableClosure ℚ) H.field
       (rationalCyclotomicDegreeData.fieldInertia H.field)
-      hI hnormal
+      hI (by
+        rw [extensionSubgroup_rationalCyclotomicFieldInertia]
+        infer_instance)
   let e :=
     abstractFixedFieldCyclotomicGalEquivZHat H
   exact
     { is_comm.comm := by
         intro σ τ
         apply e.injective
-        simpa only [map_mul] using mul_comm (e σ) (e τ) }
+        simpa using mul_comm (e σ) (e τ)}
+
+end
 
 /-- The rational cyclotomic `ZHat`-field embedded in the actual
 maximal-unramified compositum of an abstract fixed field. -/
@@ -301,23 +278,15 @@ noncomputable def
     rationalCyclotomicZHatField →ₐ[ℚ]
       LocalClassFieldTheory.abstractRelativeFixedField
         ℚ (SeparableClosure ℚ) hI := by
-  let hI :=
-    rationalCyclotomicFieldInertia_le H.field
-  let J :=
-    LocalClassFieldTheory.abstractFixedField
-      ℚ (SeparableClosure ℚ)
-      (rationalCyclotomicDegreeData.fieldInertia H.field)
-  have hTJ :
-      rationalCyclotomicZHatField ≤ J := by
-    change
-      rationalCyclotomicZHatField ≤
-        LocalClassFieldTheory.abstractFixedField
-          ℚ (SeparableClosure ℚ)
-          (rationalCyclotomicDegreeData.fieldInertia H.field)
-    rw [
-      rationalCyclotomicDegreeData_fixedField_fieldInertia]
-    exact le_sup_right
-  exact IntermediateField.inclusion hTJ
+  apply IntermediateField.inclusion
+  change
+    rationalCyclotomicZHatField ≤
+      LocalClassFieldTheory.abstractFixedField
+        ℚ (SeparableClosure ℚ)
+        (rationalCyclotomicDegreeData.fieldInertia H.field)
+  rw [
+    rationalCyclotomicDegreeData_fixedField_fieldInertia]
+  exact le_sup_right
 
 noncomputable instance
     abstractFixedFieldCyclotomicCompositum_algebra
@@ -353,8 +322,6 @@ instance abstractFixedFieldCyclotomicCompositum_baseScalarTower
         ℚ (SeparableClosure ℚ) H.field)
       (LocalClassFieldTheory.abstractRelativeFixedField
         ℚ (SeparableClosure ℚ) hI) := by
-  let hI :=
-    rationalCyclotomicFieldInertia_le H.field
   apply IsScalarTower.of_algebraMap_eq
   intro x
   apply Subtype.ext
@@ -373,15 +340,13 @@ noncomputable def abstractFixedFieldCyclotomicRestriction
         LocalClassFieldTheory.abstractFixedField
           ℚ (SeparableClosure ℚ) H.field) →*
       Gal(rationalCyclotomicZHatField / ℚ) := by
-  let hI :=
-    rationalCyclotomicFieldInertia_le H.field
   exact
     IntermediateField.restrictRestrictAlgEquivMapHom
       ℚ rationalCyclotomicZHatField
       (LocalClassFieldTheory.abstractFixedField
         ℚ (SeparableClosure ℚ) H.field)
       (LocalClassFieldTheory.abstractRelativeFixedField
-        ℚ (SeparableClosure ℚ) hI)
+        ℚ (SeparableClosure ℚ) (rationalCyclotomicFieldInertia_le H.field))
 
 /-- On a quotient representative, cyclotomic restriction of the
 actual relative automorphism is ordinary restriction of the same
@@ -391,10 +356,12 @@ noncomputable local instance
     Normal ℚ rationalCyclotomicZHatField :=
   rationalCyclotomicZHatField_isNormal
 
+section
+
+variable (H : FiniteAbstractField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+
 @[simp]
 theorem abstractFixedFieldCyclotomicRestriction_extensionClass
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (σ : H.field.toSubgroup) :
     let hI :=
       rationalCyclotomicFieldInertia_le H.field
@@ -454,19 +421,17 @@ theorem abstractFixedFieldCyclotomicRestriction_extensionClass
       (z : rationalCyclotomicZHatField) :
       algebraMap rationalCyclotomicZHatField U z =
         (rationalCyclotomicZHatFieldEmbeddingInAbstractFixedFieldCompositum
-          H z : U) := by
-    rfl
+          H z : U) := rfl
   have hembedding_coe
       (z : rationalCyclotomicZHatField) :
       (((rationalCyclotomicZHatFieldEmbeddingInAbstractFixedFieldCompositum
           H z : U) : SeparableClosure ℚ)) =
-        (z : SeparableClosure ℚ) := by
-    rfl
+        z := rfl
   have halgebraMap_coe
       (z : rationalCyclotomicZHatField) :
       ((algebraMap rationalCyclotomicZHatField U z : U) :
           SeparableClosure ℚ) =
-        (z : SeparableClosure ℚ) := by
+        z := by
     rw [halgebraMap_eq_embedding]
     exact hembedding_coe z
   have hambient :=
@@ -477,9 +442,7 @@ theorem abstractFixedFieldCyclotomicRestriction_extensionClass
         (rationalCyclotomicZHatFieldEmbeddingInAbstractFixedFieldCompositum
           H x)
   calc
-    (((abstractFixedFieldCyclotomicRestriction H τ) x :
-        rationalCyclotomicZHatField) :
-        SeparableClosure ℚ) =
+    _ =
         ((τ
           (rationalCyclotomicZHatFieldEmbeddingInAbstractFixedFieldCompositum
             H x) :
@@ -487,8 +450,7 @@ theorem abstractFixedFieldCyclotomicRestriction_extensionClass
             ℚ (SeparableClosure ℚ) hI) :
           SeparableClosure ℚ) := by
       calc
-        (((abstractFixedFieldCyclotomicRestriction H τ) x :
-            rationalCyclotomicZHatField) : SeparableClosure ℚ) =
+        _ =
             ((algebraMap rationalCyclotomicZHatField U
               ((abstractFixedFieldCyclotomicRestriction H τ) x) : U) :
               SeparableClosure ℚ) :=
@@ -501,32 +463,26 @@ theorem abstractFixedFieldCyclotomicRestriction_extensionClass
             (rationalCyclotomicZHatFieldEmbeddingInAbstractFixedFieldCompositum
               H x) : U) : SeparableClosure ℚ) := by
           rw [halgebraMap_eq_embedding]
-    _ = σ.1 (x : SeparableClosure ℚ) := by
+    _ = σ.1 x := by
       calc
-        ((τ
-            (rationalCyclotomicZHatFieldEmbeddingInAbstractFixedFieldCompositum
-              H x) : U) : SeparableClosure ℚ) =
+        _ =
             σ.1
               ((rationalCyclotomicZHatFieldEmbeddingInAbstractFixedFieldCompositum
                 H x : U) : SeparableClosure ℚ) := by
           simpa only [τ, U] using hambient.symm
-        _ = σ.1 (x : SeparableClosure ℚ) := by
+        _ = σ.1 x := by
           rw [hembedding_coe]
     _ =
         (((AlgEquiv.restrictNormalHom
           rationalCyclotomicZHatField σ.1) x :
           rationalCyclotomicZHatField) :
-          SeparableClosure ℚ) := by
-      exact
-        (AlgEquiv.restrictNormal_commutes
+          SeparableClosure ℚ) := (AlgEquiv.restrictNormal_commutes
           σ.1 rationalCyclotomicZHatField x).symm
 
 /-- Raw cyclotomic restriction is residue-degree multiplication of
 the normalized actual Galois coordinate. -/
 theorem
     abstractFixedFieldCyclotomicRestriction_coordinate
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (τ :
       Gal(
         LocalClassFieldTheory.abstractRelativeFixedField
@@ -567,8 +523,6 @@ theorem
 /-- The canonical compositum of an abstract fixed field with a finite
 layer of the rational cyclotomic `ZHat`-extension. -/
 def abstractFixedFieldCyclotomicFiniteCompositum
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (E :
       FiniteGaloisIntermediateField
         ℚ rationalCyclotomicZHatField) :
@@ -576,6 +530,8 @@ def abstractFixedFieldCyclotomicFiniteCompositum
   LocalClassFieldTheory.abstractFixedField
       ℚ (SeparableClosure ℚ) H.field ⊔
     IntermediateField.lift E.toIntermediateField
+
+end
 
 noncomputable instance
     abstractFixedFieldCyclotomicFiniteCompositum_finiteDimensional
@@ -589,11 +545,10 @@ noncomputable instance
   let F :=
     LocalClassFieldTheory.abstractFixedField
       ℚ (SeparableClosure ℚ) H.field
-  let : FiniteDimensional ℚ F :=
+  let :=
     LocalClassFieldTheory.abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) H.field H.finite
-  let : FiniteDimensional ℚ
-      (IntermediateField.lift E.toIntermediateField) :=
+  let :=
     ((IntermediateField.liftAlgEquiv
       E.toIntermediateField).toLinearEquiv).finiteDimensional
   exact IntermediateField.finiteDimensional_sup
@@ -640,9 +595,7 @@ noncomputable local instance
     NumberField
       (LocalClassFieldTheory.abstractFixedField
         ℚ (SeparableClosure ℚ) H.field) := by
-  let : FiniteDimensional ℚ
-      (LocalClassFieldTheory.abstractFixedField
-        ℚ (SeparableClosure ℚ) H.field) :=
+  let :=
     LocalClassFieldTheory.abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) H.field H.finite
   exact
@@ -739,15 +692,15 @@ instance
     (AlgHom.comp_algebraMap
       (abstractFixedFieldCyclotomicFiniteCompositumLayerEmbedding H E)).symm
 
+section
+
+variable (H : FiniteAbstractField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+    (E : FiniteGaloisIntermediateField ℚ rationalCyclotomicZHatField)
+
 /-- Inclusion of the finite cyclotomic compositum into the actual
 maximal-unramified compositum. -/
 noncomputable def
-    abstractFixedFieldCyclotomicFiniteCompositumInclusion
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+    abstractFixedFieldCyclotomicFiniteCompositumInclusion :
     let hI :=
       rationalCyclotomicFieldInertia_le H.field
     abstractFixedFieldCyclotomicFiniteCompositum H E →ₐ[ℚ]
@@ -772,12 +725,7 @@ noncomputable def
 /-- The same finite-compositum inclusion over the lower abstract fixed
 field. -/
 noncomputable def
-    abstractFixedFieldCyclotomicFiniteCompositumInclusionOverBase
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+    abstractFixedFieldCyclotomicFiniteCompositumInclusionOverBase :
     let hI :=
       rationalCyclotomicFieldInertia_le H.field
     abstractFixedFieldCyclotomicFiniteCompositum H E →ₐ[
@@ -785,22 +733,15 @@ noncomputable def
         ℚ (SeparableClosure ℚ) H.field]
       LocalClassFieldTheory.abstractRelativeFixedField
         ℚ (SeparableClosure ℚ) hI := by
-  let f :=
-    abstractFixedFieldCyclotomicFiniteCompositumInclusion H E
   exact
-    { f.toRingHom with
+    { (abstractFixedFieldCyclotomicFiniteCompositumInclusion H E).toRingHom with
       commutes' := by
         intro x
         rfl }
 
 /-- The finite cyclotomic compositum as an intermediate field of the
 actual maximal-unramified extension. -/
-noncomputable def abstractFixedFieldCyclotomicFiniteLayer
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+noncomputable def abstractFixedFieldCyclotomicFiniteLayer :
     let hI :=
       rationalCyclotomicFieldInertia_le H.field
     IntermediateField
@@ -809,6 +750,8 @@ noncomputable def abstractFixedFieldCyclotomicFiniteLayer
       (LocalClassFieldTheory.abstractRelativeFixedField
         ℚ (SeparableClosure ℚ) hI) :=
   (abstractFixedFieldCyclotomicFiniteCompositumInclusionOverBase H E).fieldRange
+
+end
 
 /-- The base algebra on the finite field range, obtained from the
 explicit base embedding followed by the field-range equivalence. -/
@@ -927,13 +870,7 @@ noncomputable instance
       (LocalClassFieldTheory.abstractFixedField
         ℚ (SeparableClosure ℚ) H.field)
       (abstractFixedFieldCyclotomicFiniteLayer H E) := by
-  let hI :=
-    rationalCyclotomicFieldInertia_le H.field
-  let : IsAbelianGalois
-      (LocalClassFieldTheory.abstractFixedField
-        ℚ (SeparableClosure ℚ) H.field)
-      (LocalClassFieldTheory.abstractRelativeFixedField
-        ℚ (SeparableClosure ℚ) hI) :=
+  let :=
     abstractFixedFieldCyclotomic_isAbelianGalois H
   exact
     IsAbelianGalois.of_algHom
@@ -990,9 +927,7 @@ noncomputable def
       FiniteGaloisIntermediateField
         ℚ rationalCyclotomicZHatField) :
     E →ₐ[ℚ]
-      abstractFixedFieldCyclotomicFiniteLayer H E := by
-  exact
-    (AlgEquiv.toAlgHom
+      abstractFixedFieldCyclotomicFiniteLayer H E := (AlgEquiv.toAlgHom
       (AlgEquiv.restrictScalars ℚ
         (abstractFixedFieldCyclotomicFiniteCompositumEquivFiniteLayer
           H E))).comp
@@ -1061,21 +996,6 @@ noncomputable def
   isGalois :=
     (abstractFixedFieldCyclotomicFiniteLayer_isAbelianGalois H E).toIsGalois
 
-/-- The explicit base algebra on a finite cyclotomic layer is the canonical
-intermediate-field inclusion used by the finite Galois inverse system. -/
-theorem abstractFixedFieldCyclotomicFiniteLayer_baseAlgebra_eq_algebra'
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    abstractFixedFieldCyclotomicFiniteLayer_baseAlgebra H E =
-      (abstractFixedFieldCyclotomicFiniteGaloisLayer H E).algebra' := by
-  apply Algebra.algebra_ext
-  intro x
-  apply Subtype.ext
-  rfl
-
 /-- The finite Galois layer uses its canonical inclusion into the full
 relative fixed field for the upper scalar action. -/
 instance
@@ -1109,12 +1029,14 @@ instance
     IsScalarTower.of_algebraMap_eq'
       (AlgHom.comp_algebraMap i).symm
 
+section
+
+variable (H : FiniteAbstractField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+
 /-- The canonical inclusion of the finite cyclotomic layer into the
 full abstract-fixed-field compositum. -/
  noncomputable def
     abstractFixedFieldCyclotomicFiniteLayerInclusion
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (E :
       FiniteGaloisIntermediateField
         ℚ rationalCyclotomicZHatField) :
@@ -1131,8 +1053,6 @@ full abstract-fixed-field compositum. -/
 full abstract-fixed-field compositum agree. -/
 private theorem
     abstractFixedFieldCyclotomicFiniteLayerEmbedding_inclusion
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (E :
       FiniteGaloisIntermediateField
         ℚ rationalCyclotomicZHatField)
@@ -1140,15 +1060,12 @@ private theorem
     abstractFixedFieldCyclotomicFiniteLayerInclusion H E
         (abstractFixedFieldCyclotomicFiniteLayerEmbedding H E z) =
       rationalCyclotomicZHatFieldEmbeddingInAbstractFixedFieldCompositum H
-        (z : rationalCyclotomicZHatField) := by
-  exact Subtype.ext rfl
+        (z : rationalCyclotomicZHatField) := Subtype.ext rfl
 
 /-- Restriction to `E` commutes pointwise with the restriction from the
 full rational cyclotomic tower. -/
 private theorem
     restrictNormalHom_abstractFixedFieldCyclotomicRestriction_apply
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (E :
       FiniteGaloisIntermediateField
         ℚ rationalCyclotomicZHatField)
@@ -1165,17 +1082,13 @@ private theorem
       (abstractFixedFieldCyclotomicRestriction H σ)) z :
         rationalCyclotomicZHatField) =
       (abstractFixedFieldCyclotomicRestriction H σ)
-        (z : rationalCyclotomicZHatField) := by
-  exact
-    AlgEquiv.restrictNormal_commutes
+        (z : rationalCyclotomicZHatField) := AlgEquiv.restrictNormal_commutes
       (abstractFixedFieldCyclotomicRestriction H σ) E z
 
 /-- The raw cyclotomic restriction commutes with the canonical embedding
 of the full rational cyclotomic tower. -/
 private theorem
     abstractFixedFieldCyclotomicRestriction_embedding_apply
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (σ :
       Gal(
         LocalClassFieldTheory.abstractRelativeFixedField
@@ -1189,21 +1102,17 @@ private theorem
       σ
         (rationalCyclotomicZHatFieldEmbeddingInAbstractFixedFieldCompositum
           H z) := by
-  let U :=
-    LocalClassFieldTheory.abstractRelativeFixedField
-      ℚ (SeparableClosure ℚ)
-      (rationalCyclotomicFieldInertia_le H.field)
   exact
     AlgEquiv.restrictNormal_commutes
-      (MulSemiringAction.toAlgEquiv ℚ U σ)
+      (MulSemiringAction.toAlgEquiv ℚ (LocalClassFieldTheory.abstractRelativeFixedField
+        ℚ (SeparableClosure ℚ)
+        (rationalCyclotomicFieldInertia_le H.field)) σ)
       rationalCyclotomicZHatField z
 
 /-- Restriction to the finite compositum layer commutes with its
 canonical inclusion into the full compositum. -/
 private theorem
     restrictNormalHom_abstractFixedFieldCyclotomicFiniteLayer_apply
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (E :
       FiniteGaloisIntermediateField
         ℚ rationalCyclotomicZHatField)
@@ -1230,18 +1139,14 @@ private theorem
     LocalClassFieldTheory.abstractRelativeFixedField
       ℚ (SeparableClosure ℚ)
       (rationalCyclotomicFieldInertia_le H.field)
-  let P : IntermediateField F U :=
-    abstractFixedFieldCyclotomicFiniteLayer H E
   exact
     AlgEquiv.restrictNormal_commutes
-      (MulSemiringAction.toAlgEquiv F U σ) P z
+      (MulSemiringAction.toAlgEquiv F U σ) (abstractFixedFieldCyclotomicFiniteLayer H E) z
 
 /-- Restricting the finite-compositum action further to `E` commutes
 with the explicit embedding of `E` into that finite layer. -/
 private theorem
     abstractFixedFieldCyclotomicFiniteLayerEmbedding_restrict_apply
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (E :
       FiniteGaloisIntermediateField
         ℚ rationalCyclotomicZHatField)
@@ -1269,14 +1174,7 @@ private theorem
       (AlgEquiv.restrictNormalHom
         (abstractFixedFieldCyclotomicFiniteLayer H E) σ)
         (abstractFixedFieldCyclotomicFiniteLayerEmbedding H E z) := by
-  let F :=
-    LocalClassFieldTheory.abstractFixedField
-      ℚ (SeparableClosure ℚ) H.field
-  let U :=
-    LocalClassFieldTheory.abstractRelativeFixedField
-      ℚ (SeparableClosure ℚ)
-      (rationalCyclotomicFieldInertia_le H.field)
-  let P : IntermediateField F U :=
+  let P :=
     abstractFixedFieldCyclotomicFiniteLayer H E
   exact
     AlgEquiv.restrictNormal_commutes
@@ -1287,8 +1185,6 @@ private theorem
 the full compositum, is the action of `σ` on the cyclotomic embedding. -/
 private theorem
     restrictNormalHom_abstractFixedFieldCyclotomicRestriction_left_embedded
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (E :
       FiniteGaloisIntermediateField
         ℚ rationalCyclotomicZHatField)
@@ -1309,10 +1205,7 @@ private theorem
         (rationalCyclotomicZHatFieldEmbeddingInAbstractFixedFieldCompositum H
           (x : rationalCyclotomicZHatField)) := by
   calc
-    abstractFixedFieldCyclotomicFiniteLayerInclusion H E
-          (abstractFixedFieldCyclotomicFiniteLayerEmbedding H E
-            (AlgEquiv.restrictNormalHom E
-              (abstractFixedFieldCyclotomicRestriction H σ) x)) =
+    _ =
         rationalCyclotomicZHatFieldEmbeddingInAbstractFixedFieldCompositum H
           (((AlgEquiv.restrictNormalHom E
             (abstractFixedFieldCyclotomicRestriction H σ) x) :
@@ -1331,28 +1224,20 @@ private theorem
       abstractFixedFieldCyclotomicRestriction_embedding_apply
         H σ (x : rationalCyclotomicZHatField)
 
+end
+
+section
+
+variable (H : FiniteAbstractField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+    (E : FiniteGaloisIntermediateField ℚ rationalCyclotomicZHatField) [Normal ℚ E]
+    [Normal (LocalClassFieldTheory.abstractFixedField ℚ (SeparableClosure ℚ) H.field) (abstractFixedFieldCyclotomicFiniteLayer H E)]
+    (σ : Gal( LocalClassFieldTheory.abstractRelativeFixedField ℚ (SeparableClosure ℚ) (rationalCyclotomicFieldInertia_le H.field) / LocalClassFieldTheory.abstractFixedField ℚ (SeparableClosure ℚ) H.field))
+    (x : E)
+
 /-- The right finite-level restriction, after both canonical embeddings into
 the full compositum, is the same action of `σ`. -/
 private theorem
-    restrictNormalHom_abstractFixedFieldCyclotomicRestriction_right_embedded
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField)
-    [Normal ℚ E]
-    [Normal
-      (LocalClassFieldTheory.abstractFixedField
-        ℚ (SeparableClosure ℚ) H.field)
-      (abstractFixedFieldCyclotomicFiniteLayer H E)]
-    (σ :
-      Gal(
-        LocalClassFieldTheory.abstractRelativeFixedField
-          ℚ (SeparableClosure ℚ)
-          (rationalCyclotomicFieldInertia_le H.field) /
-        LocalClassFieldTheory.abstractFixedField
-          ℚ (SeparableClosure ℚ) H.field))
-    (x : E) :
+    restrictNormalHom_abstractFixedFieldCyclotomicRestriction_right_embedded :
     abstractFixedFieldCyclotomicFiniteLayerInclusion H E
         (abstractFixedFieldCyclotomicFiniteLayerEmbedding H E
           (IntermediateField.restrictRestrictAlgEquivMapHom
@@ -1366,15 +1251,7 @@ private theorem
         (rationalCyclotomicZHatFieldEmbeddingInAbstractFixedFieldCompositum H
           (x : rationalCyclotomicZHatField)) := by
   calc
-    abstractFixedFieldCyclotomicFiniteLayerInclusion H E
-          (abstractFixedFieldCyclotomicFiniteLayerEmbedding H E
-            (IntermediateField.restrictRestrictAlgEquivMapHom
-              ℚ E
-              (LocalClassFieldTheory.abstractFixedField
-                ℚ (SeparableClosure ℚ) H.field)
-              (abstractFixedFieldCyclotomicFiniteLayer H E)
-              (AlgEquiv.restrictNormalHom
-                (abstractFixedFieldCyclotomicFiniteLayer H E) σ) x)) =
+    _ =
         abstractFixedFieldCyclotomicFiniteLayerInclusion H E
           ((AlgEquiv.restrictNormalHom
             (abstractFixedFieldCyclotomicFiniteLayer H E) σ)
@@ -1396,25 +1273,7 @@ private theorem
 
 /-- Pointwise form of finite-layer restriction compatibility. -/
 private theorem
-    restrictNormalHom_abstractFixedFieldCyclotomicRestriction_pointwise
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField)
-    [Normal ℚ E]
-    [Normal
-      (LocalClassFieldTheory.abstractFixedField
-        ℚ (SeparableClosure ℚ) H.field)
-      (abstractFixedFieldCyclotomicFiniteLayer H E)]
-    (σ :
-      Gal(
-        LocalClassFieldTheory.abstractRelativeFixedField
-          ℚ (SeparableClosure ℚ)
-          (rationalCyclotomicFieldInertia_le H.field) /
-        LocalClassFieldTheory.abstractFixedField
-          ℚ (SeparableClosure ℚ) H.field))
-    (x : E) :
+    restrictNormalHom_abstractFixedFieldCyclotomicRestriction_pointwise :
     AlgEquiv.restrictNormalHom E
         (abstractFixedFieldCyclotomicRestriction H σ) x =
       IntermediateField.restrictRestrictAlgEquivMapHom
@@ -1433,6 +1292,8 @@ private theorem
       H E σ x).trans
       (restrictNormalHom_abstractFixedFieldCyclotomicRestriction_right_embedded
         H E σ x).symm
+
+end
 
 /-- Restricting through a finite layer commutes with restriction from
 the full abstract-fixed-field compositum. -/
@@ -1461,7 +1322,7 @@ theorem
         (AlgEquiv.restrictNormalHom
           (abstractFixedFieldCyclotomicFiniteGaloisLayer H E)
           σ) := by
-  let : Normal ℚ E := E.isGalois.to_normal
+  let := E.isGalois.to_normal
   let F :=
     LocalClassFieldTheory.abstractFixedField
       ℚ (SeparableClosure ℚ) H.field
@@ -1470,19 +1331,17 @@ theorem
       ℚ (SeparableClosure ℚ)
       (rationalCyclotomicFieldInertia_le H.field)
   let T := rationalCyclotomicZHatField
-  let P : IntermediateField F U :=
+  let P :=
     abstractFixedFieldCyclotomicFiniteLayer H E
-  let : Algebra T U :=
+  let :=
     abstractFixedFieldCyclotomicCompositum_algebra H
-  let : IsScalarTower ℚ T U :=
+  let :=
     abstractFixedFieldCyclotomicCompositum_scalarTower H
-  let : Algebra E P :=
+  let :=
     abstractFixedFieldCyclotomicFiniteLayer_layerAlgebra H E
-  let : IsScalarTower ℚ E P :=
+  let :=
     abstractFixedFieldCyclotomicFiniteLayer_layerScalarTower H E
   let : IsAbelianGalois F P := by
-    change IsAbelianGalois F
-      (abstractFixedFieldCyclotomicFiniteLayer H E)
     exact
       abstractFixedFieldCyclotomicFiniteLayer_isAbelianGalois H E
   let : Normal F P := IsGalois.to_normal
@@ -1502,22 +1361,20 @@ private theorem cyclotomicAbstractFixedFieldArtin_eqTransThree
     a = d :=
   hab.trans (hbc.trans hcd)
 
- abbrev cyclotomicAbstractFixedFieldArtinCoordinateBase
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)) :=
+ section
+
+variable (H : FiniteAbstractField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+
+abbrev cyclotomicAbstractFixedFieldArtinCoordinateBase :=
   LocalClassFieldTheory.abstractFixedField
     ℚ (SeparableClosure ℚ) H.field
 
- abbrev cyclotomicAbstractFixedFieldArtinCoordinateRelative
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)) :=
+ abbrev cyclotomicAbstractFixedFieldArtinCoordinateRelative :=
   LocalClassFieldTheory.abstractRelativeFixedField
     ℚ (SeparableClosure ℚ)
     (rationalCyclotomicFieldInertia_le H.field)
 
  abbrev cyclotomicAbstractFixedFieldArtinCoordinateLayer
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (E :
       FiniteGaloisIntermediateField
         ℚ rationalCyclotomicZHatField) :
@@ -1525,6 +1382,8 @@ private theorem cyclotomicAbstractFixedFieldArtin_eqTransThree
       (cyclotomicAbstractFixedFieldArtinCoordinateBase H)
       (cyclotomicAbstractFixedFieldArtinCoordinateRelative H) :=
   abstractFixedFieldCyclotomicFiniteLayer H E
+
+end
 
 noncomputable local instance
     cyclotomicAbstractFixedFieldArtinCoordinateBaseAlgebra
@@ -1760,14 +1619,15 @@ noncomputable local instance
       (cyclotomicAbstractFixedFieldArtinCoordinateLayer H E) :=
   abstractFixedFieldCyclotomicFiniteLayer_isAbelianGalois H E
 
+section
+
+variable (H : FiniteAbstractField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+    (a : IdeleGroup (cyclotomicAbstractFixedFieldArtinCoordinateBase H))
+
 /-- The full abstract Artin symbol whose finite coordinates are compared
 below.  Naming this endpoint keeps its relative fixed-field data opaque. -/
  noncomputable def
-    cyclotomicAbstractFixedFieldArtinAbstractEndpoint
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a : IdeleGroup
-      (cyclotomicAbstractFixedFieldArtinCoordinateBase H)) :
+    cyclotomicAbstractFixedFieldArtinAbstractEndpoint :
     Gal(rationalCyclotomicZHatField / ℚ) :=
   abstractFixedFieldCyclotomicRestriction H
     (infiniteGlobalArtinMonoidHom
@@ -1776,25 +1636,23 @@ below.  Naming this endpoint keeps its relative fixed-field data opaque. -/
 
 /-- The rational norm Artin symbol serving as the other full endpoint. -/
  noncomputable def
-    cyclotomicAbstractFixedFieldArtinRationalEndpoint
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a : IdeleGroup
-      (cyclotomicAbstractFixedFieldArtinCoordinateBase H)) :
+    cyclotomicAbstractFixedFieldArtinRationalEndpoint :
     Gal(rationalCyclotomicZHatField / ℚ) :=
   rationalCyclotomicZHatGlobalArtin
     (IdeleGroup.norm ℚ
       (cyclotomicAbstractFixedFieldArtinCoordinateBase H) a)
 
+end
+
+section
+
+variable (H : FiniteAbstractField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+    (E : FiniteGaloisIntermediateField ℚ rationalCyclotomicZHatField)
+
 /-- The finite restriction map packaged together with its pointwise Artin
 naturality law.  The map is inferred from the generic hom-level theorem, so
 no concrete instance tower is compared after the opaque boundary. -/
- noncomputable def cyclotomicAbstractFixedFieldArtinCoordinateMapData
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+ noncomputable def cyclotomicAbstractFixedFieldArtinCoordinateMapData :
     {f : Gal(abstractFixedFieldCyclotomicFiniteGaloisLayer H E /
         cyclotomicAbstractFixedFieldArtinCoordinateBase H) →*
         Gal(E / ℚ) //
@@ -1858,12 +1716,7 @@ no concrete instance tower is compared after the opaque boundary. -/
 
 /-- The fixed restriction map from the relative finite layer to one rational
 cyclotomic coordinate. -/
- noncomputable def cyclotomicAbstractFixedFieldArtinCoordinateMap
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+ noncomputable def cyclotomicAbstractFixedFieldArtinCoordinateMap :
     Gal(abstractFixedFieldCyclotomicFiniteGaloisLayer H E /
         cyclotomicAbstractFixedFieldArtinCoordinateBase H) →*
       Gal(E / ℚ) :=
@@ -1871,12 +1724,7 @@ cyclotomic coordinate. -/
 
 /-- Naturality of the named coordinate map, kept at the hom level so later
 pointwise rewrites match the opaque map without unfolding its data package. -/
- theorem cyclotomicAbstractFixedFieldArtinCoordinateMap_naturality
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+ theorem cyclotomicAbstractFixedFieldArtinCoordinateMap_naturality :
     (cyclotomicAbstractFixedFieldArtinCoordinateMap H E).comp
         (globalArtinMonoidHom
           (K := cyclotomicAbstractFixedFieldArtinCoordinateBase H)
@@ -1889,11 +1737,6 @@ pointwise rewrites match the opaque map without unfolding its data package. -/
 /-- Pointwise identification of the named coordinate map with the concrete
 two-stage restriction used by the abstract fixed-field comparison. -/
 private theorem cyclotomicAbstractFixedFieldArtinCoordinateMap_apply
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField)
     (σ : Gal(abstractFixedFieldCyclotomicFiniteGaloisLayer H E /
       cyclotomicAbstractFixedFieldArtinCoordinateBase H)) :
     cyclotomicAbstractFixedFieldArtinCoordinateMap H E σ =
@@ -1912,18 +1755,19 @@ private theorem cyclotomicAbstractFixedFieldArtinCoordinateMap_apply
         (cyclotomicAbstractFixedFieldArtinCoordinateNormal E) σ :=
   rfl
 
+end
+
+section
+
+variable (H : FiniteAbstractField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+    (a : IdeleGroup (cyclotomicAbstractFixedFieldArtinCoordinateBase H))
+    (E : FiniteGaloisIntermediateField ℚ rationalCyclotomicZHatField)
+
 /-- The relative projection, common rational finite value, and rational
 infinite projection, with both comparison steps packaged by the generic
 provider before this concrete tower becomes opaque. -/
  noncomputable def
-    cyclotomicAbstractFixedFieldArtinCoordinateBridgeData
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a : IdeleGroup
-      (cyclotomicAbstractFixedFieldArtinCoordinateBase H))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :=
+    cyclotomicAbstractFixedFieldArtinCoordinateBridgeData :=
     @compRestrictNormalHomInfiniteGlobalArtinRationalCyclotomicDataOfNumberField
       (cyclotomicAbstractFixedFieldArtinCoordinateBase H)
       (cyclotomicAbstractFixedFieldArtinCoordinateRelative H)
@@ -1945,14 +1789,7 @@ provider before this concrete tower becomes opaque. -/
 
 /-- The abstract endpoint after projection to one finite coordinate. -/
  noncomputable def
-    cyclotomicAbstractFixedFieldArtinAbstractCoordinate
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a : IdeleGroup
-      (cyclotomicAbstractFixedFieldArtinCoordinateBase H))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+    cyclotomicAbstractFixedFieldArtinAbstractCoordinate :
     Gal(E / ℚ) :=
   AlgEquiv.restrictNormalHom E
     (cyclotomicAbstractFixedFieldArtinAbstractEndpoint H a)
@@ -1960,85 +1797,29 @@ provider before this concrete tower becomes opaque. -/
 /-- The relative infinite Artin symbol, restricted to a finite layer and
 then mapped to the corresponding rational coordinate. -/
  noncomputable def
-    cyclotomicAbstractFixedFieldArtinRestrictedLayerCoordinate
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a : IdeleGroup
-      (cyclotomicAbstractFixedFieldArtinCoordinateBase H))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+    cyclotomicAbstractFixedFieldArtinRestrictedLayerCoordinate :
     Gal(E / ℚ) :=
   (cyclotomicAbstractFixedFieldArtinCoordinateBridgeData H a E).1.1
 
 /-- The finite relative Artin symbol mapped to one rational coordinate. -/
  noncomputable def
-    cyclotomicAbstractFixedFieldArtinFiniteCoordinate
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a : IdeleGroup
-      (cyclotomicAbstractFixedFieldArtinCoordinateBase H))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+    cyclotomicAbstractFixedFieldArtinFiniteCoordinate :
     Gal(E / ℚ) :=
   (cyclotomicAbstractFixedFieldArtinCoordinateBridgeData H a E).1.2.1
-
-/-- The finite rational Artin coordinate of the idele norm. -/
- noncomputable def
-    cyclotomicAbstractFixedFieldArtinRationalCoordinate
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a : IdeleGroup
-      (cyclotomicAbstractFixedFieldArtinCoordinateBase H))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    Gal(E / ℚ) :=
-  (cyclotomicAbstractFixedFieldArtinCoordinateBridgeData H a E).1.2.1
-
-/-- Naturality of the finite global Artin map at the concrete cyclotomic
-coordinate. -/
-private theorem
-    cyclotomicAbstractFixedFieldArtinCoordinateNaturality
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a : IdeleGroup
-      (cyclotomicAbstractFixedFieldArtinCoordinateBase H))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    cyclotomicAbstractFixedFieldArtinFiniteCoordinate H a E =
-      cyclotomicAbstractFixedFieldArtinRationalCoordinate H a E := by
-  rfl
 
 /-- The rational endpoint after projection to one finite coordinate. -/
  noncomputable def
-    cyclotomicAbstractFixedFieldArtinRationalEndpointCoordinate
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a : IdeleGroup
-      (cyclotomicAbstractFixedFieldArtinCoordinateBase H))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+    cyclotomicAbstractFixedFieldArtinRationalEndpointCoordinate :
     Gal(E / ℚ) :=
   (cyclotomicAbstractFixedFieldArtinCoordinateBridgeData H a E).1.2.2
 
 /-- The abstract restriction map projected to the concrete finite layer. -/
 private theorem
-    cyclotomicAbstractFixedFieldArtinCoordinateRestriction
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a : IdeleGroup
-      (cyclotomicAbstractFixedFieldArtinCoordinateBase H))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+    cyclotomicAbstractFixedFieldArtinCoordinateRestriction :
     cyclotomicAbstractFixedFieldArtinAbstractCoordinate H a E =
       cyclotomicAbstractFixedFieldArtinRestrictedLayerCoordinate H a E := by
   calc
-    cyclotomicAbstractFixedFieldArtinAbstractCoordinate H a E =
+    _ =
         AlgEquiv.restrictNormalHom E
           (cyclotomicAbstractFixedFieldArtinAbstractEndpoint H a) := rfl
     _ = cyclotomicAbstractFixedFieldArtinCoordinateMap H E
@@ -2058,14 +1839,7 @@ private theorem
 /-- Restricting the infinite relative Artin symbol supplies exactly the
 finite Artin coordinate. -/
 private theorem
-    cyclotomicAbstractFixedFieldArtinCoordinateLayerProjection
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a : IdeleGroup
-      (cyclotomicAbstractFixedFieldArtinCoordinateBase H))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+    cyclotomicAbstractFixedFieldArtinCoordinateLayerProjection :
     cyclotomicAbstractFixedFieldArtinRestrictedLayerCoordinate H a E =
       cyclotomicAbstractFixedFieldArtinFiniteCoordinate H a E :=
   (cyclotomicAbstractFixedFieldArtinCoordinateBridgeData H a E).2.1
@@ -2073,29 +1847,13 @@ private theorem
 /-- The rational cyclotomic Artin map projected to the same finite
 coordinate. -/
 private theorem
-    cyclotomicAbstractFixedFieldArtinCoordinateRationalProjection
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a : IdeleGroup
-      (cyclotomicAbstractFixedFieldArtinCoordinateBase H))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+    cyclotomicAbstractFixedFieldArtinCoordinateRationalProjection :
     cyclotomicAbstractFixedFieldArtinRationalEndpointCoordinate H a E =
-      cyclotomicAbstractFixedFieldArtinFiniteCoordinate H a E := by
-  exact
-    (cyclotomicAbstractFixedFieldArtinCoordinateBridgeData H a E).2.2.symm
+      cyclotomicAbstractFixedFieldArtinFiniteCoordinate H a E := (cyclotomicAbstractFixedFieldArtinCoordinateBridgeData H a E).2.2.symm
 
 /-- Equality of the two full endpoints at one opaque finite coordinate. -/
 private theorem
-    cyclotomicAbstractFixedFieldArtinFiniteCoordinateComparison
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a : IdeleGroup
-      (cyclotomicAbstractFixedFieldArtinCoordinateBase H))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
+    cyclotomicAbstractFixedFieldArtinFiniteCoordinateComparison :
     AlgEquiv.restrictNormalHom E
         (cyclotomicAbstractFixedFieldArtinAbstractEndpoint H a) =
       AlgEquiv.restrictNormalHom E
@@ -2109,6 +1867,8 @@ private theorem
       (cyclotomicAbstractFixedFieldArtinCoordinateLayerProjection H a E)
       (cyclotomicAbstractFixedFieldArtinCoordinateRationalProjection
         H a E).symm
+
+end
 
 /-- The finite-coordinate comparison assembled in the rational cyclotomic
 inverse limit. -/
@@ -2132,18 +1892,17 @@ private theorem
 
 end FiniteCoordinateHelpers
 
+section
+
+variable (H : FiniteAbstractField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+    (a : IdeleGroup (LocalClassFieldTheory.abstractFixedField ℚ (SeparableClosure ℚ) H.field))
+
 /-- The actual infinite global Artin map on an abstract fixed field
 restricts to the rational cyclotomic Artin map of the ordinary idele
 norm. -/
 @[simp]
 theorem
-    abstractFixedFieldCyclotomicRestriction_infiniteGlobalArtinMonoidHom
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a :
-      IdeleGroup
-        (LocalClassFieldTheory.abstractFixedField
-          ℚ (SeparableClosure ℚ) H.field)) :
+    abstractFixedFieldCyclotomicRestriction_infiniteGlobalArtinMonoidHom :
     let F :=
       LocalClassFieldTheory.abstractFixedField
         ℚ (SeparableClosure ℚ) H.field
@@ -2162,21 +1921,13 @@ theorem
     abstractFixedFieldCyclotomicRestriction H
         (infiniteGlobalArtinMonoidHom F U a) =
       rationalCyclotomicZHatGlobalArtin
-        (IdeleGroup.norm ℚ F a) := by
-  exact
-    abstractFixedFieldCyclotomicRestriction_infiniteGlobalArtin_inverseLimit
+        (IdeleGroup.norm ℚ F a) := abstractFixedFieldCyclotomicRestriction_infiniteGlobalArtin_inverseLimit
       H a
 
 /-- In the normalized actual Galois coordinate, the infinite global
 Artin symbol is exactly the normalized cyclotomic idele value. -/
 theorem
-    abstractFixedFieldCyclotomicGalEquivZHat_infiniteGlobalArtinMonoidHom
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a :
-      IdeleGroup
-        (LocalClassFieldTheory.abstractFixedField
-          ℚ (SeparableClosure ℚ) H.field)) :
+    abstractFixedFieldCyclotomicGalEquivZHat_infiniteGlobalArtinMonoidHom :
     let F :=
       LocalClassFieldTheory.abstractFixedField
         ℚ (SeparableClosure ℚ) H.field
@@ -2200,32 +1951,25 @@ theorem
   let F :=
     LocalClassFieldTheory.abstractFixedField
       ℚ (SeparableClosure ℚ) H.field
-  let : FiniteDimensional ℚ F :=
+  let :=
     LocalClassFieldTheory.abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) H.field H.finite
-  let : NumberField F :=
+  let :=
     NumberField.of_module_finite ℚ F
-  let hI :=
-    rationalCyclotomicFieldInertia_le H.field
   let U :=
     LocalClassFieldTheory.abstractRelativeFixedField
-      ℚ (SeparableClosure ℚ) hI
-  let : IsAbelianGalois F U :=
+      ℚ (SeparableClosure ℚ) (rationalCyclotomicFieldInertia_le H.field)
+  let :=
     abstractFixedFieldCyclotomic_isAbelianGalois H
   apply
     zHatMulNat_injective
       (H.residueDegree rationalCyclotomicDegreeData).pos
   calc
-    (H.residueDegree rationalCyclotomicDegreeData : ℕ) •
-          Multiplicative.toAdd
-            (abstractFixedFieldCyclotomicGalEquivZHat H
-              (infiniteGlobalArtinMonoidHom F U a)) =
+    _ =
         Multiplicative.toAdd
           (rationalCyclotomicZHatFieldGalEquivZHat
             (abstractFixedFieldCyclotomicRestriction H
-              (infiniteGlobalArtinMonoidHom F U a))) := by
-      exact
-        (abstractFixedFieldCyclotomicRestriction_coordinate H
+              (infiniteGlobalArtinMonoidHom F U a))) := (abstractFixedFieldCyclotomicRestriction_coordinate H
           (infiniteGlobalArtinMonoidHom F U a)).symm
     _ =
         Multiplicative.toAdd
@@ -2236,14 +1980,11 @@ theorem
         abstractFixedFieldCyclotomicRestriction_infiniteGlobalArtinMonoidHom]
     _ =
         cyclotomicZHatNormComposite F
-          (Additive.ofMul a) := by
-      rfl
+          (Additive.ofMul a) := rfl
     _ =
         cyclotomicZHatIntersectionDegree F •
           normalizedCyclotomicZHatIdeleValue F
-            (Additive.ofMul a) := by
-      exact
-        (cyclotomicZHatIntersectionDegree_nsmul_normalizedIdeleValue
+            (Additive.ofMul a) := (cyclotomicZHatIntersectionDegree_nsmul_normalizedIdeleValue
           F (Additive.ofMul a)).symm
     _ =
         (H.residueDegree rationalCyclotomicDegreeData : ℕ) •
@@ -2257,13 +1998,7 @@ theorem
 identity after descent of the normalized value to the idele class
 group. -/
 theorem
-    abstractFixedFieldCyclotomicGalEquivZHat_infiniteGlobalArtinMonoidHom_mk
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a :
-      IdeleGroup
-        (LocalClassFieldTheory.abstractFixedField
-          ℚ (SeparableClosure ℚ) H.field)) :
+    abstractFixedFieldCyclotomicGalEquivZHat_infiniteGlobalArtinMonoidHom_mk :
     let F :=
       LocalClassFieldTheory.abstractFixedField
         ℚ (SeparableClosure ℚ) H.field
@@ -2294,17 +2029,13 @@ theorem
   let F :=
     LocalClassFieldTheory.abstractFixedField
       ℚ (SeparableClosure ℚ) H.field
-  let hI :=
-    rationalCyclotomicFieldInertia_le H.field
   let U :=
     LocalClassFieldTheory.abstractRelativeFixedField
-      ℚ (SeparableClosure ℚ) hI
-  let : IsAbelianGalois F U :=
+      ℚ (SeparableClosure ℚ) (rationalCyclotomicFieldInertia_le H.field)
+  let :=
     abstractFixedFieldCyclotomic_isAbelianGalois H
   calc
-    Multiplicative.toAdd
-        (abstractFixedFieldCyclotomicGalEquivZHat H
-          (infiniteGlobalArtinMonoidHom F U a)) =
+    _ =
         normalizedCyclotomicZHatIdeleValue F
           (Additive.ofMul a) :=
       abstractFixedFieldCyclotomicGalEquivZHat_infiniteGlobalArtinMonoidHom
@@ -2317,14 +2048,18 @@ theorem
       (normalizedCyclotomicZHatIdeleClassValueContinuous_mk
         (K := F) a).symm
 
+end
+
+section
+
+variable (H : FiniteAbstractField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+
 /-- The genuine infinite global Artin symbol of the cyclotomic
 maximal-unramified extension kills every principal idele of the
 abstract fixed field. -/
 @[simp]
 theorem
     infiniteGlobalArtinMonoidHom_abstractFixedFieldCyclotomic_principalIdele
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (x :
       (LocalClassFieldTheory.abstractFixedField
         ℚ (SeparableClosure ℚ) H.field)ˣ) :
@@ -2349,36 +2084,26 @@ theorem
   let F :=
     LocalClassFieldTheory.abstractFixedField
       ℚ (SeparableClosure ℚ) H.field
-  let : FiniteDimensional ℚ F :=
+  let :=
     LocalClassFieldTheory.abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) H.field H.finite
-  let : NumberField F :=
+  let :=
     NumberField.of_module_finite ℚ F
-  let hI :=
-    rationalCyclotomicFieldInertia_le H.field
   let U :=
     LocalClassFieldTheory.abstractRelativeFixedField
-      ℚ (SeparableClosure ℚ) hI
-  let : IsAbelianGalois F U :=
+      ℚ (SeparableClosure ℚ) (rationalCyclotomicFieldInertia_le H.field)
+  let :=
     abstractFixedFieldCyclotomic_isAbelianGalois H
-  have hcoord :
-      Multiplicative.toAdd
-        (abstractFixedFieldCyclotomicGalEquivZHat H
-          (infiniteGlobalArtinMonoidHom F U
-            (IdeleGroup.principalIdele F x))) = 0 :=
-    (abstractFixedFieldCyclotomicGalEquivZHat_infiniteGlobalArtinMonoidHom
-      H (IdeleGroup.principalIdele F x)).trans
-      (normalizedCyclotomicZHatIdeleValue_principalIdele_eq_zero F x)
   apply (abstractFixedFieldCyclotomicGalEquivZHat H).injective
   rw [map_one]
   apply Multiplicative.ext
-  exact hcoord.trans toAdd_one.symm
+  exact ((abstractFixedFieldCyclotomicGalEquivZHat_infiniteGlobalArtinMonoidHom
+    H (IdeleGroup.principalIdele F x)).trans
+    (normalizedCyclotomicZHatIdeleValue_principalIdele_eq_zero F x)).trans toAdd_one.symm
 
 /-- The genuine cyclotomic maximal-unramified Artin map descended to
 the idele class group of an abstract fixed field. -/
-noncomputable def abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)) :
+noncomputable def abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom :
     IdeleClassGroup
         (LocalClassFieldTheory.abstractFixedField
           ℚ (SeparableClosure ℚ) H.field) →*
@@ -2396,11 +2121,9 @@ noncomputable def abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom
       ℚ (SeparableClosure ℚ) H.field H.finite
   letI : NumberField F :=
     NumberField.of_module_finite ℚ F
-  let hI :=
-    rationalCyclotomicFieldInertia_le H.field
   let U :=
     LocalClassFieldTheory.abstractRelativeFixedField
-      ℚ (SeparableClosure ℚ) hI
+      ℚ (SeparableClosure ℚ) (rationalCyclotomicFieldInertia_le H.field)
   letI : IsAbelianGalois F U :=
     abstractFixedFieldCyclotomic_isAbelianGalois H
   exact
@@ -2417,8 +2140,6 @@ noncomputable def abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom
 idele representative. -/
 @[simp]
 theorem abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom_mk
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (a :
       IdeleGroup
         (LocalClassFieldTheory.abstractFixedField
@@ -2445,6 +2166,8 @@ theorem abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom_mk
   rw [abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom]
   exact QuotientGroup.lift_mk _ _ _
 
+end
+
 /-- The descended genuine maximal-unramified Artin map is precisely
 the normalized cyclotomic idele-class value in the actual Galois
 coordinate. -/
@@ -2470,10 +2193,10 @@ theorem
   let F :=
     LocalClassFieldTheory.abstractFixedField
       ℚ (SeparableClosure ℚ) H.field
-  let : FiniteDimensional ℚ F :=
+  let :=
     LocalClassFieldTheory.abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) H.field H.finite
-  let : NumberField F :=
+  let :=
     NumberField.of_module_finite ℚ F
   have hSeparableClosureAlgebra :
       cyclotomicAbstractFixedFieldArtin_separableClosureAlgebra =
@@ -2482,18 +2205,13 @@ theorem
   cases hSeparableClosureAlgebra
   refine Quotient.inductionOn' c ?_
   intro a
-  let hI :=
-    rationalCyclotomicFieldInertia_le H.field
   let U :=
     LocalClassFieldTheory.abstractRelativeFixedField
-      ℚ (SeparableClosure ℚ) hI
-  let : IsAbelianGalois F U :=
+      ℚ (SeparableClosure ℚ) (rationalCyclotomicFieldInertia_le H.field)
+  let :=
     abstractFixedFieldCyclotomic_isAbelianGalois H
   calc
-    abstractFixedFieldCyclotomicGalEquivZHat H
-        (abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom H
-          (QuotientGroup.mk'
-            (IdeleGroup.principalSubgroup F) a)) =
+    _ =
         abstractFixedFieldCyclotomicGalEquivZHat H
           (infiniteGlobalArtinMonoidHom F U a) :=
       congrArg (abstractFixedFieldCyclotomicGalEquivZHat H)
@@ -2551,32 +2269,17 @@ theorem
   let F :=
     LocalClassFieldTheory.abstractFixedField
       ℚ (SeparableClosure ℚ) H.field
-  let : FiniteDimensional ℚ F :=
+  let :=
     LocalClassFieldTheory.abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) H.field H.finite
-  let : NumberField F :=
+  let :=
     NumberField.of_module_finite ℚ F
   let hI :=
     rationalCyclotomicFieldInertia_le H.field
-  let hnormal :
-      (CyclicCohomology.extensionSubgroup H.field
-        (rationalCyclotomicDegreeData.fieldInertia H.field)
-        hI).Normal := by
-    rw [extensionSubgroup_rationalCyclotomicFieldInertia]
-    infer_instance
-  let qInertia :
-      H.field.toSubgroup ⧸
-          CyclicCohomology.extensionSubgroup H.field
-            (rationalCyclotomicDegreeData.fieldInertia H.field)
-            hI ≃*
-        H.field.toSubgroup ⧸
-          rationalCyclotomicDegreeData.fieldInertiaWithin H.field :=
-    QuotientGroup.quotientMulEquivOfEq
-      (extensionSubgroup_rationalCyclotomicFieldInertia H.field)
-  let c : IdeleClassGroup F :=
+  let c :=
     Additive.toMul
       ((rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-          (hfinite := H.finite)).symm a)
+          ).symm a)
   have hvaluation :
       ((rationalCyclotomicIdeleClassValuationData.valuationAt H a :
           rationalCyclotomicIdeleClassValuationData.valueGroup) : ZHat) =
@@ -2589,162 +2292,14 @@ theorem
         H
         ((rationalAbstractFixedFieldIdeleClassEquivFixed H.field
           (hfinite := H.finite)).symm a))
-  have hleft :
-      Multiplicative.toAdd
-        (abstractFixedFieldCyclotomicGalEquivZHat H
-          (abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom H c)) =
-        normalizedCyclotomicZHatIdeleClassValueContinuous F
-          (Additive.ofMul c) :=
-    congrArg Multiplicative.toAdd
-      (abstractFixedFieldCyclotomicGalEquivZHat_ideleClassArtinMonoidHom H c)
-  have hright :
-      ((rationalCyclotomicIdeleClassValuationData.valuationAt H a :
-          rationalCyclotomicIdeleClassValuationData.valueGroup) : ZHat) =
-        Multiplicative.toAdd
-          (abstractFixedFieldCyclotomicGalEquivZHat H
-            (LocalClassFieldTheory.abstractExtensionQuotientEquivGaloisGroup
-              ℚ (SeparableClosure ℚ) H.field
-              (rationalCyclotomicDegreeData.fieldInertia H.field)
-              hI hnormal
-              (qInertia.symm
-                (ValuationData.maximalUnramifiedNormResidueSymbol
-                  rationalCyclotomicIdeleClassValuationData H a).toMul))) := by
-    rw [abstractFixedFieldCyclotomicGalEquivZHat_quotientClass]
-    exact
-      (ValuationData.maximalUnramifiedNormResidue_degree
-        rationalCyclotomicIdeleClassValuationData H a).symm
   apply (abstractFixedFieldCyclotomicGalEquivZHat H).injective
   apply Multiplicative.ext
-  exact hleft.trans (hvaluation.symm.trans hright)
-
-/-- A prime idele class has genuine maximal-unramified Artin symbol
-equal to the arithmetic Frobenius of its abstract fixed field. -/
-theorem
-    abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom_prime
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (π :
-      ambientFixedAddSubgroup
-        rationalIdeleClassRepresentation H.field)
-    (hπ :
-      rationalCyclotomicIdeleClassValuationData.IsPrimeElement H π) :
-    let hI :=
-      rationalCyclotomicFieldInertia_le H.field
-    let hnormal :
-        (CyclicCohomology.extensionSubgroup H.field
-          (rationalCyclotomicDegreeData.fieldInertia H.field)
-          hI).Normal := by
-      rw [extensionSubgroup_rationalCyclotomicFieldInertia]
-      infer_instance
-    let qInertia :
-        H.field.toSubgroup ⧸
-            CyclicCohomology.extensionSubgroup H.field
-              (rationalCyclotomicDegreeData.fieldInertia H.field)
-              hI ≃*
-          H.field.toSubgroup ⧸
-            rationalCyclotomicDegreeData.fieldInertiaWithin H.field :=
-      QuotientGroup.quotientMulEquivOfEq
-        (extensionSubgroup_rationalCyclotomicFieldInertia H.field)
-    abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom H
-        (Additive.toMul
-          ((rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-              (hfinite := H.finite)).symm
-            π)) =
-      LocalClassFieldTheory.abstractExtensionQuotientEquivGaloisGroup
-        ℚ (SeparableClosure ℚ) H.field
-        (rationalCyclotomicDegreeData.fieldInertia H.field)
-        hI hnormal
-        (qInertia.symm
-          (rationalCyclotomicDegreeData.frobenius
-            (H.toFiniteResidueAbstractField
-              rationalCyclotomicDegreeData))) := by
-  let F :=
-    LocalClassFieldTheory.abstractFixedField
-      ℚ (SeparableClosure ℚ) H.field
-  let : FiniteDimensional ℚ F :=
-    LocalClassFieldTheory.abstractFixedField_finiteDimensional
-      ℚ (SeparableClosure ℚ) H.field H.finite
-  let : NumberField F :=
-    NumberField.of_module_finite ℚ F
-  let hI :=
-    rationalCyclotomicFieldInertia_le H.field
-  let hnormal :
-      (CyclicCohomology.extensionSubgroup H.field
-        (rationalCyclotomicDegreeData.fieldInertia H.field)
-        hI).Normal := by
-    rw [extensionSubgroup_rationalCyclotomicFieldInertia]
-    infer_instance
-  let qInertia :
-      H.field.toSubgroup ⧸
-          CyclicCohomology.extensionSubgroup H.field
-            (rationalCyclotomicDegreeData.fieldInertia H.field)
-            hI ≃*
-        H.field.toSubgroup ⧸
-          rationalCyclotomicDegreeData.fieldInertiaWithin H.field :=
-    QuotientGroup.quotientMulEquivOfEq
-      (extensionSubgroup_rationalCyclotomicFieldInertia H.field)
-  let c :
-      IdeleClassGroup F :=
-    Additive.toMul
-      ((rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-          (hfinite := H.finite)).symm π)
-  have hvalue :
-      normalizedCyclotomicZHatIdeleClassValueContinuous F
-          ((rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-              (hfinite := H.finite)).symm
-            π) =
-        1 := by
-    calc
-      normalizedCyclotomicZHatIdeleClassValueContinuous F
-          ((rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-              (hfinite := H.finite)).symm
-            π) =
-          ((rationalCyclotomicIdeleClassValuationData.valuationAt H
-              (rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-                (hfinite := H.finite)
-                ((rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-                    (hfinite := H.finite)).symm
-                  π)) :
-              rationalCyclotomicIdeleClassValuationData.valueGroup) :
-            ZHat) := by
-        exact
-          (rationalCyclotomicIdeleClassValuationData_valuationAt_fixed_apply
-            H
-            ((rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-                (hfinite := H.finite)).symm
-              π)).symm
-      _ =
-          ((rationalCyclotomicIdeleClassValuationData.oneValue :
-              rationalCyclotomicIdeleClassValuationData.valueGroup) :
-            ZHat) := by
-        rw [(rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-          (hfinite := H.finite)).apply_symm_apply]
-        exact congrArg Subtype.val hπ
-      _ = 1 :=
-        rationalCyclotomicIdeleClassValuationData.oneValue_coe
-  apply (abstractFixedFieldCyclotomicGalEquivZHat H).injective
-  calc
-    abstractFixedFieldCyclotomicGalEquivZHat H
-        (abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom H c) =
-        normalizedCyclotomicZHatIdeleClassValueContinuousMul F c :=
-      abstractFixedFieldCyclotomicGalEquivZHat_ideleClassArtinMonoidHom
-        H c
-    _ = Multiplicative.ofAdd (1 : ZHat) := by
-      apply Multiplicative.ext
-      exact hvalue
-    _ =
-        abstractFixedFieldCyclotomicGalEquivZHat H
-          (LocalClassFieldTheory.abstractExtensionQuotientEquivGaloisGroup
-            ℚ (SeparableClosure ℚ) H.field
-            (rationalCyclotomicDegreeData.fieldInertia H.field)
-            hI hnormal
-            (qInertia.symm
-              (rationalCyclotomicDegreeData.frobenius
-                (H.toFiniteResidueAbstractField
-                  rationalCyclotomicDegreeData)))) := by
-      rw [
-        abstractFixedFieldCyclotomicGalEquivZHat_quotientClass,
-        rationalCyclotomicDegreeData.maximalUnramifiedDegreeEquiv_frobenius]
+  refine (congrArg Multiplicative.toAdd
+    (abstractFixedFieldCyclotomicGalEquivZHat_ideleClassArtinMonoidHom H c)).trans (hvaluation.symm.trans ?_)
+  rw [abstractFixedFieldCyclotomicGalEquivZHat_quotientClass]
+  exact
+    (ValuationData.maximalUnramifiedNormResidue_degree
+      rationalCyclotomicIdeleClassValuationData H a).symm
 
 end Reciprocity
 end GlobalClassFieldTheory

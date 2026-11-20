@@ -12,33 +12,9 @@ namespace DedekindZetaZeroFree.KPMsResidualTailRestoration.SharpConstantTerm.Fib
 open KPAdelicCoverRestrictedProduct
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-theorem archProjection_compare (g : KPCubicCoverConstruction.AdelicPGL2Cover F ζ hζ)
-    (w : NumberField.InfinitePlace F) :
-    PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ g w =
-      Matrix.ProjGenLinGroup.map
-        (NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
-          (KPHilbert.infinite_isComplex F ζ hζ w)).toRingHom
-        (KPCuspGenuineMonodromy.archProjection F ζ hζ g w) := by
-  obtain ⟨g, rfl⟩ := QuotientGroup.mk'_surjective (splitScalarSubgroup F ζ hζ) g
-  change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map _ (projection F ζ hζ g)) =
-    Matrix.ProjGenLinGroup.map _ (Matrix.ProjGenLinGroup.mk (matrixEval F (Sum.inl w) (projection F ζ hζ g)))
-  rw [Matrix.ProjGenLinGroup.map_mk, Matrix.GeneralLinearGroup.map_comp]
-  rfl
+alias archProjection_compare := DedekindZetaZeroFree.KPMsFixedHaar.archProjection_compare
 
-theorem insertion_commutes_cover (a : KPSmoothActualFlowData.GInfinity F)
-    (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
-    Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) c.val := by
-  have hc : c.val ∈ (PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ).ker := by
-    rw [MonoidHom.mem_ker]
-    funext w
-    rw [archProjection_compare]
-    have he := c.property
-    rw [MonoidHom.mem_ker] at he
-    rw [he]
-    exact map_one _
-  have hm := (PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ).choose_spec.2.2.2.1
-  rw [hm] at hc
-  exact RepresentationTheory.ArchFiniteSplitting.insertion_commutes_finite F ζ hζ a ⟨c.val, hc⟩
+alias insertion_commutes_cover := DedekindZetaZeroFree.KPMsActualCuspSource.insertion_commutes
 
 def complexParameter (a : NumberField.InfiniteAdeleRing F) : NumberField.InfinitePlace F → ℂ :=
   fun w => NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
@@ -56,10 +32,6 @@ theorem root_arch_insertion (a : NumberField.InfiniteAdeleRing F) :
   unfold archRoot
   rw [(KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.2.2]
   simp only [map_upper]
-  have he : ∀ w, (NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
-      (KPHilbert.infinite_isComplex F ζ hζ w)).symm (complexParameter F ζ hζ a w) = a w := by
-    intro w
-    exact RingEquiv.symm_apply_apply _ _
   simp only [complexParameter, RingEquiv.toRingHom_eq_coe, RingHom.coe_coe, RingEquiv.symm_apply_apply]
   let l := (Finset.univ : Finset (NumberField.InfinitePlace F)).toList
   let f := fun w => localToRestricted F ζ hζ (Sum.inl w)
@@ -79,8 +51,7 @@ theorem root_arch_insertion (a : NumberField.InfiniteAdeleRing F) :
         intro v hv _
         simp [p, f, localToRestricted, RestrictedProduct.mulSingleMonoidHom_apply,
           RestrictedProduct.coe_mulSingle_apply, hv])]
-      have hc : l.count w = 1 := List.count_eq_one_of_mem (Finset.nodup_toList _) (by simp [l])
-      rw [hc, pow_one]
+      rw [(List.count_eq_one_of_mem (Finset.nodup_toList _) (by simp [l])), pow_one]
       simp [p, f, localToRestricted, RestrictedProduct.mulSingleMonoidHom_apply,
         KPGlobalTorusFunctionData.rootTuple, adeleEval, RingHom.fst]
       rfl
@@ -90,58 +61,19 @@ theorem root_arch_insertion (a : NumberField.InfiniteAdeleRing F) :
         simp [p, f, localToRestricted, RestrictedProduct.mulSingleMonoidHom_apply,
           RestrictedProduct.coe_mulSingle_apply]
       simp [hf, KPGlobalTorusFunctionData.rootTuple, adeleEval, RingHom.snd, KPStandardLocalRootLifts.N_zero]
-      change KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) 0 = 1
       exact KPStandardLocalRootLifts.N_zero F ζ hζ (Sum.inr q)
   change scalarQuotient F ζ hζ (amalgamation F ζ hζ (KPGlobalTorusFunctionData.rootTuple F ζ hζ (a,0))) = _
   rw [ht, map_list_prod, map_list_prod]
   simp only [List.map_map]
   rfl
 
-private theorem projective_equiv_injective {K L : Type} [Field K] [Field L]
-    (e : K ≃+* L) : Function.Injective (Matrix.ProjGenLinGroup.map (n := Fin 2) e.toRingHom) := by
-  intro x y h
-  have h' := congrArg (Matrix.ProjGenLinGroup.map e.symm.toRingHom) h
-  simp only [← MonoidHom.comp_apply, ← Matrix.ProjGenLinGroup.map_comp] at h'
-  simpa using h'
+private alias projective_equiv_injective := DedekindZetaZeroFree.KPMsFixedHaar.SphericalProjection.projective_equiv_injective
 
-theorem complex_kernel_mem {g : KPCubicCoverConstruction.AdelicPGL2Cover F ζ hζ}
-    (hg : PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ g = 1) :
-    g ∈ KPFiniteCuspAtlas.FiniteCover F ζ hζ := by
-  rw [MonoidHom.mem_ker]
-  funext w
-  apply projective_equiv_injective
-    (NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
-      (KPHilbert.infinite_isComplex F ζ hζ w))
-  rw [← archProjection_compare, hg]
-  exact (map_one _).symm
+alias complex_kernel_mem := DedekindZetaZeroFree.KPMsFixedHaar.SphericalProjection.complex_kernel_mem
 
 theorem rationalLift_archProjection (σ : KPCuspArithmetic.PGL2 F) :
     PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ
-      (KPMsClearedTruncationL2.rationalLift F ζ hζ σ) = archRational σ := by
-  have hs : σ = Matrix.ProjGenLinGroup.mk σ.out := (Quotient.out_eq σ).symm
-  rw [hs, KPMsClearedTruncationL2.rationalLift_mk]
-  funext w
-  change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map _
-    (projection F ζ hζ (rationalSection F ζ hζ σ.out))) = _
-  rw [projection_rationalSection]
-  have hmap : (NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
-      (KPHilbert.infinite_isComplex F ζ hζ w)).toRingHom.comp
-      ((adeleEval F (Sum.inl w)).comp (algebraMap F (Adeles F))) = w.embedding := by
-    ext x
-    change NumberField.InfinitePlace.Completion.extensionEmbedding w
-      (algebraMap F w.Completion x) = w.embedding x
-    change NumberField.InfinitePlace.Completion.extensionEmbedding w
-      ((WithAbs.equiv w.1).symm x : w.Completion) = _
-    simp
-  change Matrix.ProjGenLinGroup.mk
-    (Matrix.GeneralLinearGroup.map _ (Matrix.GeneralLinearGroup.map _ σ.out)) = _
-  simp only [← MonoidHom.comp_apply, ← Matrix.GeneralLinearGroup.map_comp]
-  rw [RingHom.comp_assoc, hmap]
-  unfold archRational
-  simp only [MonoidHom.comp_apply]
-  rw [← Matrix.ProjGenLinGroup.map_mk, ← Matrix.ProjGenLinGroup.map_mk]
-  exact congrArg (Matrix.ProjGenLinGroup.map w.embedding)
-    (Quotient.out_eq (Matrix.ProjGenLinGroup.mk σ.out)).symm
+      (KPMsClearedTruncationL2.rationalLift F ζ hζ σ) = archRational σ := by apply @DedekindZetaZeroFree.KPMsActualCuspSource.rationalLift_archProjection <;> assumption
 
 theorem rationalLift_split (σ : KPCuspArithmetic.PGL2 F) :
     ∃ s : KPFiniteCuspAtlas.FiniteCover F ζ hζ,
@@ -164,12 +96,10 @@ private theorem conjugation_split {G : Type} [Group G] (i s z n : G)
     (i * s) * (z * n) * (i * s)⁻¹ =
       (i * z * i⁻¹) * (s * n * s⁻¹) := by
   rw [mul_inv_rev, hsz.mul_mul_mul_comm]
-  have hsi : Commute (s * n) i⁻¹ := (his.symm.mul_left hin.symm).inv_right
   calc
-    i * z * (s * n) * (s⁻¹ * i⁻¹) =
+    _ =
         (i * z) * (s * n) * (i⁻¹ * s⁻¹) := by rw [his.symm.inv_left.inv_right.eq]
-    _ = (i * z) * i⁻¹ * ((s * n) * s⁻¹) := by
-      exact (hsi.mul_mul_mul_comm (i * z) s⁻¹).trans (by group)
+    _ = (i * z) * i⁻¹ * ((s * n) * s⁻¹) := (((his.symm.mul_left hin.symm).inv_right).mul_mul_mul_comm (i * z) s⁻¹).trans (by group)
     _ = _ := by group
 
 theorem conjugated_root_split (σ : KPCuspArithmetic.PGL2 F)

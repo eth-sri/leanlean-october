@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -42,15 +37,16 @@ open HilbertRamification.ValuationSubring
 
 universe u v
 
+section
+
+variable {F : Type u} {Omega : Type v} [Field F] [Field Omega] [Algebra F Omega] [IsGalois F Omega]
+    (A : ValuationSubring Omega) (C : ValuationSubring F) (hC : A.comap (algebraMap F Omega) = C)
+    (hA : decompositionGroup F A = ⊤)
+
 /-- If the decomposition group of an ambient valuation ring is the whole
 Galois group, its decomposition-field valuation ring is canonically
 equivalent to the given valuation ring on the ground field. -/
-noncomputable def valuationSubringEquivDecompositionFieldOfEqTop
-    {F : Type u} {Omega : Type v} [Field F] [Field Omega] [Algebra F Omega]
-    [IsGalois F Omega]
-    (A : ValuationSubring Omega) (C : ValuationSubring F)
-    (hC : A.comap (algebraMap F Omega) = C)
-    (hA : decompositionGroup F A = ⊤) :
+noncomputable def valuationSubringEquivDecompositionFieldOfEqTop :
     C ≃+* decompositionFieldValuationSubring F A := by
   let Z := decompositionField F A
   have hZ : Z = ⊥ := by
@@ -59,7 +55,7 @@ noncomputable def valuationSubringEquivDecompositionFieldOfEqTop
     simpa using
       (InfiniteGalois.fixedField_fixingSubgroup
         (⊥ : IntermediateField F Omega))
-  let eFZ : F ≃ₐ[F] Z :=
+  let eFZ :=
     (IntermediateField.botEquiv F Omega).symm.trans
       (IntermediateField.equivOfEq hZ.symm)
   have hto (x : C) : eFZ (x : F) ∈ decompositionFieldValuationSubring F A := by
@@ -100,16 +96,13 @@ noncomputable def valuationSubringEquivDecompositionFieldOfEqTop
 
 /-- The corresponding equivalence between literal and intrinsic residue
 fields. -/
-noncomputable def residueFieldEquivDecompositionResidueOfEqTop
-    {F : Type u} {Omega : Type v} [Field F] [Field Omega] [Algebra F Omega]
-    [IsGalois F Omega]
-    (A : ValuationSubring Omega) (C : ValuationSubring F)
-    (hC : A.comap (algebraMap F Omega) = C)
-    (hA : decompositionGroup F A = ⊤) :
+noncomputable def residueFieldEquivDecompositionResidueOfEqTop :
     IsLocalRing.ResidueField C ≃+* decompositionResidueField F A :=
   (IsLocalRing.ResidueField.mapEquiv
       (valuationSubringEquivDecompositionFieldOfEqTop A C hC hA)).trans
     (decompositionFieldResidueEquiv (K := F) A)
+
+end
 
 /-- Naturality of the preceding residue equivalence with reduction into the
 selected residue field. -/
@@ -127,8 +120,7 @@ theorem residueFieldEquivDecompositionResidueOfEqTop_algebraMap
           have hx : (x : F) ∈ A.comap (algebraMap F Omega) := by
             rw [hC]
             exact x.property
-          exact hx⟩ : A) := by
-  rfl
+          exact hx⟩ : A) := rfl
 
 /-! ## The finite fixed-field comparison -/
 
@@ -185,7 +177,7 @@ theorem localResidueDatum_residueDegree_eq_residueFinrank
     rw [_root_.Valuation.HasExtension.val_map_le_one_iff
       (ValuativeRel.valuation K) (ValuativeRel.valuation E)]
     rfl
-  let : (localCompleteDVF K).valuation.HasExtension C.valuation := hExtC
+  let := hExtC
   have hVC : V.valuation.HasExtension C.valuation := by
     apply
       ValuationTheory.DiscreteValuationField.Valuation.hasExtension_valuation_of_valuationSubring_pullback
@@ -194,20 +186,17 @@ theorem localResidueDatum_residueDegree_eq_residueFinrank
       (ValuationTheory.DiscreteValuationField.Valuation.valuationSubring_pullback_of_hasExtension_valuation
         (localCompleteDVF K).valuation C x)
   have hC : A.comap (algebraMap E (SeparableClosure K)) = C := by
-    simpa only [RamificationTheory.ValuationSubring.restrictIntermediateField_eq_comap] using
+    simpa using
       (ValuationSubring.restrictIntermediateField_eq_of_finite_separable
         (localCompleteDVF K) A
         (abstractFixedField K (SeparableClosure K) H.field) C)
-  have htop : decompositionGroup E A = ⊤ :=
-    localAbstractFixedDecompositionGroup_eq_top K H.field
-
-  let eK : kK ≃+* k₀ :=
+  let eK :=
     localBaseResidueEquivDecompositionResidue K
-  let eE : kE ≃+* kE' :=
-    residueFieldEquivDecompositionResidueOfEqTop A C hC htop
-  let i : V →+* C :=
+  let eE :=
+    residueFieldEquivDecompositionResidueOfEqTop A C hC (localAbstractFixedDecompositionGroup_eq_top K H.field)
+  let i :=
     ValuationTheory.Valuations.valuationSubringMapOfHasExtension V C hVC
-  let bar : kE →+* Omega :=
+  let bar :=
     (algebraMap kE' Omega).comp eE.toRingHom
 
   have hbar_base (x : kK) :
@@ -237,7 +226,7 @@ theorem localResidueDatum_residueDegree_eq_residueFinrank
     rw [hbase]
     congr 1
 
-  let : Algebra k₀ kE :=
+  let :=
     ((algebraMap kK kE).comp eK.symm.toRingHom).toAlgebra
   let barAlg : kE →ₐ[k₀] Omega :=
     { bar with
@@ -247,8 +236,6 @@ theorem localResidueDatum_residueDegree_eq_residueFinrank
         simpa using hbar_base (eK.symm z) }
 
   have hF : F = barAlg.fieldRange := by
-    change IntermediateField.adjoin k₀
-        (Set.range (algebraMap kE' Omega)) = barAlg.fieldRange
     apply le_antisymm
     · apply IntermediateField.adjoin_le_iff.mpr
       rintro y ⟨z, rfl⟩
@@ -258,27 +245,20 @@ theorem localResidueDatum_residueDegree_eq_residueFinrank
       apply IntermediateField.subset_adjoin
       exact ⟨eE x, rfl⟩
 
-  let eRange : kE ≃+* barAlg.fieldRange :=
-    (AlgEquiv.ofInjectiveField barAlg).toRingEquiv
   let : Algebra k₀ barAlg.fieldRange := barAlg.fieldRange.algebra
-  let : Algebra k₀ F :=
+  let :=
     localAbstractFixedResidueIntermediateFieldAlgebra K H.field
-  let eTop : kE ≃+* F :=
-    eRange.trans
+  let eTop :=
+    ((AlgEquiv.ofInjectiveField barAlg).toRingEquiv).trans
       (IntermediateField.equivOfEq hF.symm).toRingEquiv
   have hcomm :
       (algebraMap k₀ F).comp eK.toRingHom =
         eTop.toRingHom.comp (algebraMap kK kE) := by
     ext x
-    change algebraMap k₀ Omega (eK x) =
-      bar (algebraMap kK kE x)
     exact (hbar_base x).symm
-  have hfinrankRaw :
-      Module.finrank kK kE = Module.finrank k₀ F :=
-    Algebra.finrank_eq_of_equiv_equiv eK eTop hcomm
   exact
     (localResidueDatum_residueDegree_eq_selectedResidueFinrank K H).trans
-      hfinrankRaw.symm
+      (Algebra.finrank_eq_of_equiv_equiv eK eTop hcomm).symm
 
 end
 end LocalClassFieldTheory

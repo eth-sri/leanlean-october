@@ -23,21 +23,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -67,7 +52,6 @@ open NumberField IsDedekindDomain
 
 noncomputable section
 
-
 open AlgebraicNumberTheory.Valuations
 
 universe u v
@@ -96,7 +80,6 @@ noncomputable def realAbsoluteValueValuation
     ext
     exact vF.map_mul x y
   map_add_le_max' x y := by
-    change vF (x + y) ≤ max (vF x) (vF y)
     exact hvF x y
 
 /-- The following two lemmas expose the valuation-subring interface used by later modules. -/
@@ -124,7 +107,7 @@ theorem absoluteValueExtension_isNonarchimedean
   refine ⟨1, ?_⟩
   intro n
   calc
-    w.1 (n : E) =
+    _ =
         w.1 (algebraMap F E (n : F)) := by simp
     _ = vF (n : F) := w.2 (n : F)
     _ ≤ 1 :=
@@ -138,9 +121,9 @@ theorem absoluteValue_le_one_of_isIntegral
     (hvF : IsNonarchimedean (vF : F → ℝ))
     {x : F} (hx : IsIntegral ℤ x) :
     vF x ≤ 1 := by
-  let ν : Valuation F NNReal :=
+  let ν :=
     realAbsoluteValueValuation vF hvF
-  let V : ValuationSubring F := ν.valuationSubring
+  let V := ν.valuationSubring
   let : IsIntegrallyClosedIn V F :=
     (isIntegrallyClosed_iff_isIntegrallyClosedIn F).1
       inferInstance
@@ -198,7 +181,7 @@ theorem isIntegral_over_baseCompletionIntegers_of_mem
       (absoluteValueExtension_isNonarchimedean vK hvK w)) :
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
     IsIntegral (absoluteValueCompletionIntegers vK hvK) x := by
-  let hw : IsNonarchimedean (w.1 : L → ℝ) :=
+  let hw : IsNonarchimedean w.1 :=
     absoluteValueExtension_isNonarchimedean vK hvK w
   let aC := AbsoluteValue.completionAbsoluteValue vK
   let bC := AbsoluteValue.completionAbsoluteValue w.1
@@ -259,9 +242,7 @@ theorem isIntegral_over_baseCompletionIntegers_of_mem
           va).valuation := by
     rw [hVaAbs]
     exact hhensAbs
-  have hExt :
-      ∀ y : vK.Completion,
-        bC (algebraMap vK.Completion w.1.Completion y) = aC y :=
+  have hExt :=
     AbsoluteValue.completionAbsoluteValue_extends vK w.1 w.2
   have hclosure :=
     exponentialValuationSubring_eq_integralClosure_of_henselian

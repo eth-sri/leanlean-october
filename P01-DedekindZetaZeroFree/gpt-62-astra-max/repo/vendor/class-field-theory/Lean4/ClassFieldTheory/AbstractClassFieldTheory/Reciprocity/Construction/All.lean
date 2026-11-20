@@ -1,5 +1,4 @@
 module
-
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.CanonicalUnramifiedNormQuotient
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.ChosenDegreeOneFrobenius
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.CoreFrobeniusNorm
@@ -37,58 +36,3 @@ public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.Universal
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.UniversalNormDescent
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.UnramifiedNormQuotient
-
-@[expose] public section
-
-/-
-Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
--/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
-/-!
-# Abstract reciprocity construction
-
-Aggregate for norm quotients, Frobenius descent, prime independence, transfer naturality, and the
-canonical abstract reciprocity map.
--/

@@ -109,8 +109,7 @@ private theorem sum_embeddings_eq_sum_places (z : K) :
       · intro h
         exact (mk_eq_iff.mpr h).trans (mk_embedding w)
     by_cases hw : IsReal w
-    · have hconj :
-          ComplexEmbedding.conjugate w.embedding = w.embedding :=
+    · have hconj :=
         ComplexEmbedding.isReal_iff.mp (isReal_iff.mp hw)
       have hfilter :
           Finset.univ.filter (fun φ : K →+* ℂ ↦
@@ -123,8 +122,7 @@ private theorem sum_embeddings_eq_sum_places (z : K) :
         constructor
         · rintro (h | h)
           · simp_all
-          · have hc := congrArg ComplexEmbedding.conjugate h
-            simpa [hconj] using hc
+          · simpa [hconj] using (congrArg ComplexEmbedding.conjugate h)
         · simp_all
       simp_all
     · have hne :
@@ -400,9 +398,7 @@ theorem span_traceIdealRealBasis
     span ℤ (Set.range (traceIdealRealBasis K I)) =
       traceIdealLattice K I := by
   rw [traceIdealLattice]
-  let eZ :
-      mixedEmbedding.euclidean.mixedSpace K ≃ₗ[ℤ]
-        mixedEmbedding.mixedSpace K :=
+  let eZ :=
     (traceToMixed K).toLinearEquiv.restrictScalars ℤ
   have hrange :
       Set.range (traceIdealRealBasis K I) =
@@ -420,8 +416,6 @@ theorem span_traceIdealRealBasis
       rw [mixedEmbedding.span_idealLatticeBasis]
     _ = ZLattice.comap ℝ (mixedEmbedding.idealLattice K I)
           (traceToMixed K).toLinearMap := by
-      change (mixedEmbedding.idealLattice K I).map eZ.symm.toLinearMap =
-        (mixedEmbedding.idealLattice K I).comap eZ.toLinearMap
       exact Submodule.map_equiv_eq_comap_symm eZ.symm _
 
 open Classical in
@@ -505,7 +499,7 @@ theorem map_traceEmbeddingIntLinearMap_fractionalIdeal
   · intro hv
     obtain ⟨x, hx, hxv⟩ :=
       exists_traceEmbedding_eq_of_mem_traceIdealLattice K I hv
-    exact ⟨x, hx, by simpa using hxv⟩
+    exact ⟨x, hx, by exact hxv⟩
 
 open Classical in
 theorem span_conjugate_traceDual_basisOfFractionalIdeal
@@ -515,9 +509,7 @@ theorem span_conjugate_traceDual_basisOfFractionalIdeal
           (traceEmbedding K
             ((basisOfFractionalIdeal K I).traceDual i))) =
       conjugateTraceIdealLattice K (traceDualIdealUnit K I) := by
-  let cZ :
-      mixedEmbedding.euclidean.mixedSpace K ≃ₗ[ℤ]
-      mixedEmbedding.euclidean.mixedSpace K :=
+  let cZ :=
     (traceConjugation K).toLinearEquiv.restrictScalars ℤ
   have hrange :
       Set.range (fun i : Free.ChooseBasisIndex ℤ I ↦

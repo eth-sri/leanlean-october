@@ -14,8 +14,8 @@ set_option maxHeartbeats 1600000
 set_option maxRecDepth 4000
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 abbrev tupleLift : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12 →* Group R :=
   (scalarQuotient F R.A.zeta12 R.A.primitive_zeta12).comp
@@ -25,8 +25,7 @@ def sWeylTuple : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12 :=
   ⟨fun w => match w with
     | Sum.inl u => KPStandardLocalRootLifts.W F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl u)
     | Sum.inr p => if p ∈ R.A.Sf then KPStandardLocalRootLifts.W F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) else 1, by
-      have h := KPRationalAdelicSplitting.WCoordinates_restricted F R.A.zeta12 R.A.primitive_zeta12
-      filter_upwards [h] with w hw
+      filter_upwards [(KPRationalAdelicSplitting.WCoordinates_restricted F R.A.zeta12 R.A.primitive_zeta12)] with w hw
       cases w with
       | inl w => exact hw
       | inr p => dsimp only; split_ifs <;> first | exact hw | exact Subgroup.one_mem _⟩
@@ -48,7 +47,6 @@ theorem exteriorWeylTuple_mem (w : KPHilbert.Place F) :
       rw [if_neg hp,inv_one,one_mul]
       simp only [DigitMasks.exteriorFactor,dif_pos hp]
       refine ⟨KPStandardLocalRootLifts.integralW F p, ?_⟩
-      change KPLocalCover.CubicGL2Raw.mk _ _ = _
       exact (KPStandardLocalRootLifts.W_eq_compact F R.A.zeta12 R.A.primitive_zeta12 p
         (fun h3 => DigitMasks.exterior_not_bad R p hp (Or.inr h3))).symm
 
@@ -65,8 +63,6 @@ theorem fourier_right_sWeyl {Q : AdmissibleFlatSources R} (T : Realization R Q)
     rw [← map_mul]
     simp only [exteriorWeylTuple,mul_inv_cancel_left]
     rfl
-  have hint := SheetRescaling.selected_cleared_fourier_integrable T v 0
-    (Metric.mem_ball_self T.radius_pos) (g * KPRationalAdelicSplitting.pglW F R.A.zeta12 R.A.primitive_zeta12)
   unfold MomentSources.fourier
   apply integral_congr_ae
   filter_upwards with q
@@ -90,7 +86,7 @@ theorem diagonal_sWeyl_geometry (z : R.A.G) :
         archMatrixInsertion F R.A.zeta12 R.A.primitive_zeta12 (archWeylMatrix R z) := by
   rw [finiteBase_val]
   change tupleLift R (KPRationalAdelicSplitting.ATuple F R.A.zeta12 R.A.primitive_zeta12 (localIdele R z)) *
-    tupleLift R (sWeylTuple R) = tupleLift R (finiteTuple (R := R) (finiteWeylRaw R z)) *
+    tupleLift R (sWeylTuple R) = tupleLift R (finiteTuple (finiteWeylRaw R z)) *
       tupleLift R (KPLiteralChamber.sectionTuple F R.A.zeta12 R.A.primitive_zeta12 (archWeylMatrix R z))
   rw [← map_mul,← map_mul]
   apply congrArg (tupleLift R)
@@ -101,7 +97,7 @@ theorem diagonal_sWeyl_geometry (z : R.A.G) :
     change KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w)
       (Units.map (adeleEval F (Sum.inl w)) (localIdele R z)) *
       KPStandardLocalRootLifts.W F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w) =
-      finiteTuple (R := R) (finiteWeylRaw R z) (Sum.inl w) * _
+      finiteTuple (finiteWeylRaw R z) (Sum.inl w) * _
     rw [SheetRescaling.localIdele_eval_arch R z w,
       finiteTuple_off (finiteWeylRaw R z) (Sum.inl w) (fun _ => Sum.inl_ne_inr),one_mul]
     change KPLocalCover.sectionMap F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w) _ *
@@ -118,23 +114,18 @@ theorem diagonal_sWeyl_geometry (z : R.A.G) :
     fin_cases i <;> fin_cases j <;>
       simp [archWeylMatrix,KPCplxCharacterHaar.diagonal,weyl,KubotaRankTwo.d,KPStandardLocalRootLifts.weylSwap,
         Matrix.mul_apply,Fin.sum_univ_two,Matrix.GeneralLinearGroup.map]
-    change (z.1 w : w.Completion) =
-      (InfinitePlace.Completion.ringEquivComplexOfIsComplex (R.A.complex_place w)).symm
-        ((InfinitePlace.Completion.ringEquivComplexOfIsComplex (R.A.complex_place w)) (z.1 w : w.Completion))
     exact ((InfinitePlace.Completion.ringEquivComplexOfIsComplex (R.A.complex_place w)).symm_apply_apply _).symm
   | inr q =>
     change KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q)
       (Units.map (adeleEval F (Sum.inr q)) (localIdele R z)) *
       (if q ∈ R.A.Sf then KPStandardLocalRootLifts.W F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) else 1) =
-      finiteTuple (R := R) (finiteWeylRaw R z) (Sum.inr q) * 1
+      finiteTuple (finiteWeylRaw R z) (Sum.inr q) * 1
     rw [mul_one]
     by_cases hq : q ∈ R.A.Sf
     · rw [if_pos hq,finiteTuple_at (finiteWeylRaw R z) ⟨q,hq⟩]
       rfl
-    · have he : Units.map (adeleEval F (Sum.inr q)).toMonoidHom (localIdele R z) = 1 :=
-        DigitMasks.localIdele_exterior R z q hq
-      rw [if_neg hq]
-      have hh := congrArg (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q)) he
+    · rw [if_neg hq]
+      have hh := congrArg (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q)) (DigitMasks.localIdele_exterior R z q hq)
       change KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q)
         (Units.map (adeleEval F (Sum.inr q)).toMonoidHom (localIdele R z)) * 1 = _
       rw [hh,KPStandardLocalRootLifts.A_one,one_mul,

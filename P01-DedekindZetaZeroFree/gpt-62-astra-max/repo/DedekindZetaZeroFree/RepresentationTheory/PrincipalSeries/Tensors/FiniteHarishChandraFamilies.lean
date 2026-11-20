@@ -20,13 +20,13 @@ open KPLiteralScalarArchUniformBands KPLiteralScalarArchIndependentSlices
 open NativeScalarMixedTensorGeneration CurrentArchFamily
 open KPLocalPrincipalSeries
 variable {F : Type} [Field F] [NumberField F]
-variable (A : SArithmeticData F)
+    (A : SArithmeticData F)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
-variable (K : Subgroup (KPLiteralRaw.G F A.zeta12 A.primitive_zeta12)) (hK : IwasawaCompact F A.zeta12 A.primitive_zeta12 K)
-variable (f : Flat F A.zeta12 A.primitive_zeta12 K)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (K : Subgroup (KPLiteralRaw.G F A.zeta12 A.primitive_zeta12)) (hK : IwasawaCompact F A.zeta12 A.primitive_zeta12 K)
+    (f : Flat F A.zeta12 A.primitive_zeta12 K)
 abbrev nativeInducingData : SourceReconstruction.InducingData F ζ hζ :=
   fun q => { C.canonical q with polarization := C.polarization q }
 
@@ -55,17 +55,12 @@ theorem productHCScalar_product_right_level :
   refine ⟨J, ?_⟩
   intro T j a b m
   let d := finiteProductInsertion F ζ hζ T j.val
-  have hd : d ∈ J.toOpenSubgroup := finiteProductInsertion_mem_level F ζ hζ T J j.val j.property
-  have hdc := (archMatrixInsertion_commutes_finite F ζ hζ m d).eq
-  have hc := hJ ((b * finiteProductInsertion F ζ hζ T a).val * archMatrixInsertion F ζ hζ m)
-    d.val ⟨d, hd, rfl⟩
-  change productHCScalar F ζ hζ K hK P f
-    ((b.val * (finiteProductInsertion F ζ hζ T (a * j.val)).val) * archMatrixInsertion F ζ hζ m) = _
   rw [map_mul]
   change productHCScalar F ζ hζ K hK P f
     ((b.val * ((finiteProductInsertion F ζ hζ T a).val * d.val)) * archMatrixInsertion F ζ hζ m) = _
-  rw [← mul_assoc, mul_assoc, ← hdc, ← mul_assoc]
-  exact hc
+  rw [← mul_assoc, mul_assoc, ← ((archMatrixInsertion_commutes_finite F ζ hζ m d).eq), ← mul_assoc]
+  exact hJ ((b * finiteProductInsertion F ζ hζ T a).val * archMatrixInsertion F ζ hζ m)
+    d.val ⟨d, (finiteProductInsertion_mem_level F ζ hζ T J j.val j.property), rfl⟩
 
 theorem productHCScalar_product_smooth
     (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
@@ -149,11 +144,8 @@ private theorem independent_slot_covariance
   change φ (fun i => b i * g i) = _
   simpa using he Finset.univ
 
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarInverse renaming scalarSections → scalarSections
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarInverse renaming scalarCovariance → scalarCovariance
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarInverse renaming scalarTensorEquiv → scalarTensorEquiv
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Source → Source
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductCover → ProductCover
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarInverse (scalarSections scalarCovariance scalarTensorEquiv)
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation (ProductCover)
 
 private theorem productHCFamily_slot_borel_transport
     (d : outsideStage F ζ hζ T) (j : T)

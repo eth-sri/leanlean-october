@@ -10,8 +10,8 @@ open NumberField Filter
 namespace DedekindZetaZeroFree.RootDerivatives
 open MomentSources KPLiteralRaw
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1800000
 
@@ -31,12 +31,10 @@ set_option maxHeartbeats 1800000
   have hflat' (s) (g) : f'.val s g = scalarWeight F R.A.zeta12 R.A.primitive_zeta12 s (f'.val 0) g := by
     rw [hf'0,hf']; rfl
   have hext' : ExteriorFixed R (C'.numerator 0) := by
-    have he : C'.numerator 0 = tensorFunction R A.factorization D.tensor.stage P.entries :=
-      (funext hC').trans hC
-    rw [he]
+    rw [((funext hC').trans hC)]
     exact normalized_tensor_exterior R A D P
   obtain ⟨z,Cz,hz,hext,hCz⟩ := exterior_flat_preimage R f' C' hflat' hext'
-  have hp : Cz.numerator 0 = tensorFunction R A.factorization D.tensor.stage P.entries :=
+  have hp :=
     hCz.trans ((funext hC').trans hC)
   letI := A.sources.finite_companions
   let w : R.A.UnitQuotient → Flat F R.A.zeta12 R.A.primitive_zeta12

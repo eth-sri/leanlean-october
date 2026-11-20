@@ -11,11 +11,9 @@ set_option backward.isDefEq.respectTransparency true
 namespace DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 open MomentSources NumberField IsDedekindDomain ThetaExpansion
 open scoped NumberField Classical
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming finite_split → finite_split
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming exteriorLocalFactor_finite → exteriorLocalFactor_finite
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem row_support (m : ThetaReflectionData.Row R.A)
     (D : ThetaBranch.RowFactorization R.A R.probe.allowed m) :
@@ -63,10 +61,7 @@ theorem prod_exteriorRows {M : Type*} [CommMonoid M] (m : ThetaReflectionData.Ro
   rw [exteriorRows, Finset.prod_map]
   rfl
 
-theorem split_product {P : Type*} [DecidableEq P] (s : Finset P) (f : P → ℂ)
-    (hf : Function.HasFiniteMulSupport f) :
-    (∏ᶠ p, f p) = (∏ p ∈ s, f p) * ∏ᶠ p, if p ∈ s then 1 else f p :=
-  finite_split s f hf
+alias split_product := DedekindZetaZeroFree.ThetaBranch.finite_split
 
 end DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 

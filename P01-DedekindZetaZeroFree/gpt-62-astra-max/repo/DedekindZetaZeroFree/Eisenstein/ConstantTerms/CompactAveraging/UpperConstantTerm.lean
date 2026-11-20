@@ -12,9 +12,9 @@ open KPMsGreenFlux
 set_option backward.isDefEq.respectTransparency true
 set_option maxHeartbeats 500000
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 local instance (K : Subgroup (Cover F ζ hζ)) : MeasurableSpace K := borel K
 local instance (K : Subgroup (Cover F ζ hζ)) : BorelSpace K := ⟨rfl⟩
 theorem constantTerm_average (K : Subgroup (Cover F ζ hζ))
@@ -50,7 +50,7 @@ theorem constantTerm_average (K : Subgroup (Cover F ζ hζ))
       ∫ q, ∫ k, L (q,k) ∂ν ∂dn by simp only [L,mul_assoc], he]
   rfl
 
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabActualMean renaming cuspRepresentative_mem_rational → cuspRepresentative_mem_rational
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabActualMean (cuspRepresentative_mem_rational)
 
 theorem constantTerm_eq_original_upper (j : Cusps A) (f : Cover F ζ hζ → ℂ)
     (hr : ∀ γ : KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ, ∀ g, f (γ.val*g)=f g)

@@ -1,4 +1,6 @@
 module
+public import DedekindZetaZeroFree.Metaplectic.Kubota.PGLCentralTransitions
+public import DedekindZetaZeroFree.RepresentationTheory.Jacquet.InductionReciprocity
 
 public import DedekindZetaZeroFree.RepresentationTheory.Jacquet.BruhatChartsAndCompactTransversal
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.ClosedCellEvaluation
@@ -18,19 +20,7 @@ open KPLocalSmoothRepresentation KPJacquetClosedCellBump
 open scoped Topology
 open KPJacquetBruhatCharts
 
-private theorem orbit_lc {G V : Type*} [Group G] [TopologicalSpace G]
-    [IsTopologicalGroup G] [AddCommGroup V] [Module ℂ V]
-    (ρ : Representation ℂ G V) (hρ : SmoothRepresentation ρ) (v : V) :
-    IsLocallyConstant (fun g => ρ g v) := by
-  obtain ⟨J, hJ⟩ := hρ v
-  rw [IsLocallyConstant.iff_exists_open]
-  intro g
-  refine ⟨{x | g⁻¹ * x ∈ J},
-    J.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
-  · simpa using J.one_mem
-  · intro x hx
-    have he := congrArg (fun w => ρ g w) (hJ (g⁻¹ * x) hx)
-    simpa only [← Module.End.mul_apply, ← map_mul, mul_inv_cancel_left] using he
+private alias orbit_lc := DedekindZetaZeroFree.smoothRepresentation_orbit_isLocallyConstant
 
 private theorem compact_avoids_inverse {K : Type*} [Field K] [TopologicalSpace K]
     [IsTopologicalRing K] [T1Space K] {S : Set K} (hS : IsCompact S) :
@@ -52,11 +42,9 @@ private theorem lc_covariant_smooth
     (C : Set G) (hC : IsCompact C)
     (hcover : (fun p : H × G => p.1.val * p.2) '' (Set.univ ×ˢ C) = Set.univ) :
     f ∈ SmoothInd H τ d := by
-  have hO : IsOpen {p : G × G | f.val (p.1 * p.2) = f.val p.1} :=
-    ((hf.comp_continuous (continuous_fst.mul continuous_snd)).prodMk
-      (hf.comp_continuous continuous_fst)) {p | p.1 = p.2}
   obtain ⟨U, V, hU, hV, hCU, h1V, hUV⟩ :=
-    generalized_tube_lemma hC (isCompact_singleton (x := (1 : G))) hO
+    generalized_tube_lemma hC (isCompact_singleton (x := (1 : G))) (((hf.comp_continuous (continuous_fst.mul continuous_snd)).prodMk
+      (hf.comp_continuous continuous_fst)) {p | p.1 = p.2})
       (by rintro ⟨g, l⟩ ⟨hg, hl⟩; simp_all)
   have hfix (l : G) (hl : l ∈ V) (g : G) : f.val (g * l) = f.val g := by
     obtain ⟨⟨b, c⟩, ⟨_, hc⟩, rfl⟩ := hcover ▸ Set.mem_univ g
@@ -68,13 +56,11 @@ private theorem lc_covariant_smooth
     mul_mem' := by intro a b ha hb g; rw [← mul_assoc, hb, ha]
     inv_mem' := by
       intro a ha g
-      have he := ha (g * a⁻¹)
-      simpa only [inv_mul_cancel_right] using he.symm }
-  have hJo : IsOpen (J : Set G) := J.isOpen_of_mem_nhds
-    (Filter.mem_of_superset (hV.mem_nhds (h1V (Set.mem_singleton 1)))
-      (fun l hl => hfix l hl))
+      simpa using (ha (g * a⁻¹)).symm}
   apply (mem_smoothSubmodule _ _).mpr
-  refine ⟨⟨J, hJo⟩, ?_⟩
+  refine ⟨⟨J, (J.isOpen_of_mem_nhds
+    (Filter.mem_of_superset (hV.mem_nhds (h1V (Set.mem_singleton 1)))
+      (fun l hl => hfix l hl)))⟩, ?_⟩
   intro l hl
   apply Subtype.ext
   funext g
@@ -125,6 +111,7 @@ theorem open_cell_section_smooth
     change _ = f.val (p.1.val * KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
         upperRoot F ζ hζ w (Multiplicative.ofAdd p.2))
     rw [mul_assoc, hcov, hopen]
+  let omegaHomeomorph₀ := omegaHomeomorph F ζ hζ w m hm
   have hlocal : IsLocallyConstant f.val := by
     apply (IsLocallyConstant.iff_eventually_eq _).mpr
     intro g
@@ -132,13 +119,13 @@ theorem open_cell_section_smooth
     · let q : omega F ζ hζ w := ⟨g, hg⟩
       have hc : IsLocallyConstant (fun q : omega F ζ hζ w => f.val q.val) := by
         have hh := hchart.comp_continuous
-          (omegaHomeomorph F ζ hζ w m hm).symm.continuous
+          (omegaHomeomorph₀).symm.continuous
         have heq : (fun x : omega F ζ hζ w =>
-            f.val (omegaMap F ζ hζ w ((omegaHomeomorph F ζ hζ w m hm).symm x)).val) =
+            f.val (omegaMap F ζ hζ w ((omegaHomeomorph₀).symm x)).val) =
             (fun x => f.val x.val) := by
           funext x
           exact congrArg (fun y : omega F ζ hζ w => f.val y.val)
-            ((omegaHomeomorph F ζ hζ w m hm).apply_symm_apply x)
+            ((omegaHomeomorph₀).apply_symm_apply x)
         simpa only [Function.comp_def, heq] using hh
       have he := hc.eventually_eq q
       rw [← hΩ.isOpenEmbedding_subtypeVal.map_nhds_eq q]
@@ -164,9 +151,9 @@ theorem open_cell_section_smooth
         rw [hg0]
         by_cases hrΩ : r.val ∈ omega F ζ hζ w
         · let s : omega F ζ hζ w := ⟨r.val, hrΩ⟩
-          let p := (omegaHomeomorph F ζ hζ w m hm).symm s
+          let p := (omegaHomeomorph₀).symm s
           have hp : (omegaMap F ζ hζ w p).val = r.val :=
-            congrArg Subtype.val ((omegaHomeomorph F ζ hζ w m hm).apply_symm_apply s)
+            congrArg Subtype.val ((omegaHomeomorph₀).apply_symm_apply s)
           have hpx : p.2 = (deltaCoordinate F ζ hζ w r)⁻¹ :=
             (overlap_coordinates F ζ hζ w r.val hrΩ r.property).1
           have hxS : p.2 ∉ tsupport (φ.val : KPRankOneInduction.LocalField F w → E) := by
@@ -233,9 +220,7 @@ theorem kernel_restriction_hasCompactSupport
   have hzero : ∀ y : KPRankOneInduction.LocalField F w, ‖y‖ < ε →
       f.val.val (lowerRoot F ζ hζ w (Multiplicative.ofAdd y)) = 0 := by
     intro y hy
-    have hj := hJ _ (he (by simpa [Metric.mem_ball, dist_zero_right] using hy))
-    have hv := congrArg (fun s => s.val (1 : FiniteCover F ζ hζ w)) hj
-    simpa [eqSectionsRepresentation_apply, hf] using hv
+    simpa [eqSectionsRepresentation_apply, hf] using (congrArg (fun s => s.val (1 : FiniteCover F ζ hζ w)) (hJ _ (he (by simpa [Metric.mem_ball, dist_zero_right] using hy))))
   have hlarge : ∀ x : KPRankOneInduction.LocalField F w, ε⁻¹ < ‖x‖ →
       f.val.val (KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
         upperRoot F ζ hζ w (Multiplicative.ofAdd x)) = 0 := by
@@ -250,7 +235,6 @@ theorem kernel_restriction_hasCompactSupport
     let A := KPStandardLocalRootLifts.weylSwap (KPRankOneInduction.LocalField F w) *
       KubotaRankTwo.n (KPRankOneInduction.LocalField F w) x
     have hA : Matrix.ProjGenLinGroup.mk A = projection F ζ hζ w g := by
-      change Matrix.ProjGenLinGroup.mk (_ * _) = _
       rw [map_mul, map_mul]
       rfl
     have hd : g ∈ KPJacquetBruhatCharts.delta F ζ hζ w := by
@@ -263,8 +247,7 @@ theorem kernel_restriction_hasCompactSupport
       simp [A, Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two,
         KPStandardLocalRootLifts.weylSwap, KubotaRankTwo.n,
         Matrix.GeneralLinearGroup.mkOfDetNeZero, one_div]
-    let b := (KPJacquetBruhatCharts.deltaInverse F ζ hζ w ⟨g, hd⟩).1
-    have hb : b.val * lowerRoot F ζ hζ w (Multiplicative.ofAdd x⁻¹) = g := by
+    have hb : ((KPJacquetBruhatCharts.deltaInverse F ζ hζ w ⟨g, hd⟩).1).val * lowerRoot F ζ hζ w (Multiplicative.ofAdd x⁻¹) = g := by
       change (g * (lowerRoot F ζ hζ w (Multiplicative.ofAdd
         (KPJacquetBruhatCharts.deltaCoordinate F ζ hζ w ⟨g, hd⟩)))⁻¹) * _ = g
       rw [hc, inv_mul_cancel_right]
@@ -295,47 +278,11 @@ open KPLocalSmoothRepresentation KPJacquetClosedCellBump
 
 private theorem ordinaryPGLMap_injective (F : Type) [Field F] [NumberField F]
     (w : HeightOneSpectrum (RingOfIntegers F)) :
-    Function.Injective (ordinaryPGLMap F w) := by
-  letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
-  intro a b
-  induction a using Quotient.inductionOn with | _ A =>
-    induction b using Quotient.inductionOn with | _ B =>
-      intro h
-      change Matrix.ProjGenLinGroup.mk A = Matrix.ProjGenLinGroup.mk B at h
-      obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
-      apply (QuotientGroup.mk'_eq_mk' _).mpr
-      exact ⟨KPScalarSplitCentral.scalarMatrix F (Sum.inr w) u, ⟨u, rfl⟩, hu⟩
+    Function.Injective (ordinaryPGLMap F w) := by apply @DedekindZetaZeroFree.KPWildCompactProjectorKirillov.ClopenGluing.ordinaryPGLMap_injective <;> assumption
 
-private theorem projection_kernel_central (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (w : HeightOneSpectrum (RingOfIntegers F)) :
-    (projection F ζ hζ w).ker ≤ Subgroup.center (FiniteCover F ζ hζ w) := by
-  letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
-  intro g hg
-  have he : KPPGLLocalCover.projection F ζ hζ (Sum.inr w) g = 1 := by
-    apply ordinaryPGLMap_injective F w
-    exact hg
-  apply KPPGLLocalCover.centralInjection_range_le_center F ζ hζ (Sum.inr w)
-  rw [KPPGLLocalCover.range_centralInjection_eq_ker_projection]
-  exact he
+private alias projection_kernel_central := DedekindZetaZeroFree.KPLocalInductionJacquetReciprocity.InductionReciprocity.projection_kernel_central
 
-private theorem projection_kernel_finite (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (w : HeightOneSpectrum (RingOfIntegers F)) : Finite (projection F ζ hζ w).ker := by
-  letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
-  have hex (g : (projection F ζ hζ w).ker) :
-      ∃ z, KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr w) z = g.val := by
-    have he : KPPGLLocalCover.projection F ζ hζ (Sum.inr w) g.val = 1 := by
-      apply ordinaryPGLMap_injective F w
-      exact g.property
-    have hr := KPPGLLocalCover.range_centralInjection_eq_ker_projection F ζ hζ (Sum.inr w)
-    rw [← MonoidHom.mem_ker, ← hr] at he
-    exact he
-  let e : (projection F ζ hζ w).ker → rootsOfUnity 3 F := fun g => Classical.choose (hex g)
-  have he (g : (projection F ζ hζ w).ker) :
-      KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr w) (e g) = g.val :=
-    Classical.choose_spec (hex g)
-  exact Finite.of_injective e (fun a b h => Subtype.ext (by rw [← he a, ← he b, h]))
+private alias projection_kernel_finite := DedekindZetaZeroFree.KPLocalInductionJacquetReciprocity.InductionReciprocity.projection_kernel_finite
 
 theorem torus_conjugates_upperRoot_ratio
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -351,8 +298,6 @@ theorem torus_conjugates_upperRoot_ratio
   have hn (y : Multiplicative (KPRankOneInduction.LocalField F w)) :
       projection F ζ hζ w (upperRoot F ζ hζ w y) =
         KPRankOneInductionRaw.ordinaryUpperRootHom F w y := by
-    change Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n _ _) =
-      Matrix.ProjGenLinGroup.mk (KPRankOneInductionRaw.upperRootMatrix F w _)
     rfl
   exact FiniteCentralBorel.torusLift_conjugates_root F w
     (projection F ζ hζ w) (projection_kernel_central F ζ hζ w)
@@ -433,8 +378,7 @@ theorem extensionFunction_on (φ : TestFunctions F w (E := E))
       (b.val * KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
         upperRoot F ζ hζ w (Multiplicative.ofAdd x)) =
       (Real.sqrt ((deltaB F ζ hζ w b : ℝ≥0) : ℝ) : ℂ) •
-        τB b (KPJacquetStepFunction.value φ x) := by
-  exact extension_on F ζ hζ w τB φ b x
+        τB b (KPJacquetStepFunction.value φ x) := extension_on F ζ hζ w τB φ b x
 
 include hm in
 omit [FiniteDimensional ℂ E] in
@@ -467,7 +411,7 @@ omit [FiniteDimensional ℂ E] in
   · have hb : g ∈ Borel F ζ hζ w :=
       (show g ∈ (Borel F ζ hζ w : Set (FiniteCover F ζ hζ w)) from
         (KPJacquetBruhatCharts.omega_complement F ζ hζ w ▸ hg))
-    have hbg : b.val * g ∈ Borel F ζ hζ w := (Borel F ζ hζ w).mul_mem b.property hb
+    have hbg := (Borel F ζ hζ w).mul_mem b.property hb
     rw [extension_off F ζ hζ w τB φ ⟨b.val * g, hbg⟩,
       extension_off F ζ hζ w τB φ ⟨g, hb⟩, map_zero]
 
@@ -511,8 +455,7 @@ def ext_w (hm : KPLocalChartTopology.MatrixChartDepth F w m)
 
 theorem ext_w_value (φ : TestFunctions F w (E := E)) (g : FiniteCover F ζ hζ w) :
     (ext_w F ζ hζ w m hm τB hτB φ).val.val g =
-      extensionFunction F ζ hζ w τB φ g := by
-  rfl
+      extensionFunction F ζ hζ w τB φ g := rfl
 
 include hm in
 omit [FiniteDimensional ℂ E] in
@@ -522,9 +465,7 @@ omit [FiniteDimensional ℂ E] in
         upperRoot F ζ hζ w (Multiplicative.ofAdd x))) := by
   letI := finiteCoverTopology F ζ hζ w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
-  have hf : IsLocallyConstant f.val.val.val :=
-    SmoothInd_le_LCSections (Borel F ζ hζ w) τB (dB F ζ hζ w) f.val.property
-  exact hf.comp_continuous (continuous_const.mul
+  exact (SmoothInd_le_LCSections (Borel F ζ hζ w) τB (dB F ζ hζ w) f.val.property).comp_continuous (continuous_const.mul
     (KPPGLLocalCover.finite_lifts_continuous F ζ hζ w m hm).1)
 
 def restriction (hm : KPLocalChartTopology.MatrixChartDepth F w m)
@@ -560,8 +501,6 @@ theorem ext_w_injective : Function.Injective (ext_w F ζ hζ w m hm τB hτB) :=
 omit [FiniteDimensional ℂ E] in
  theorem extension_mem_kernel (φ : TestFunctions F w (E := E)) :
     ext_w F ζ hζ w m hm τB hτB φ ∈ LinearMap.ker (ev1 F ζ hζ w m τB) := by
-  change (ext_w F ζ hζ w m hm τB hτB φ).val.val 1 = 0
-  change extensionFunction F ζ hζ w τB φ 1 = 0
   exact extension_off F ζ hζ w τB φ 1
 
 omit [FiniteDimensional ℂ E] in
@@ -660,7 +599,7 @@ def openCellRepresentation : Representation ℂ (Borel F ζ hζ w)
             borel_stable F ζ hζ w m hm τB b
               (extension_mem_kernel F ζ hζ w m hm τB hτB ψ)⟩ := by
         apply Subtype.ext
-        simp only [map_add, Submodule.coe_add]
+        simp
       rw [h, map_add]
     map_smul' := by
       intro c φ
@@ -674,13 +613,12 @@ def openCellRepresentation : Representation ℂ (Borel F ζ hζ w)
             borel_stable F ζ hζ w m hm τB b
               (extension_mem_kernel F ζ hζ w m hm τB hτB φ)⟩ := by
         apply Subtype.ext
-        simp only [map_smul, Submodule.coe_smul]
+        simp
       rw [h, map_smul]
       rfl }
   map_one' := by
     apply LinearMap.ext
     intro φ
-    change restriction F ζ hζ w m hm τB ⟨_, _⟩ = φ
     simp only [OneMemClass.coe_one, map_one, Module.End.one_apply]
     exact restrict_extension F ζ hζ w m hm τB hτB φ
   map_mul' := by
@@ -697,14 +635,13 @@ def openCellRepresentation : Representation ℂ (Borel F ζ hζ w)
         (ext_w F ζ hζ w m hm τB hτB
           (restriction F ζ hζ w m hm τB ⟨_, _⟩))
     rw [extension_restrict]
-    simp only [Subgroup.coe_mul, map_mul, Module.End.mul_apply]
+    simp
 
 theorem ext_w_borel (b : Borel F ζ hζ w) (φ : TestFunctions F w (E := E)) :
     ext_w F ζ hζ w m hm τB hτB
       (openCellRepresentation F ζ hζ w m hm τB hτB b φ) =
       inducedRepresentation F ζ hζ w m hm τB b.val
-        (ext_w F ζ hζ w m hm τB hτB φ) := by
-  exact extension_restrict F ζ hζ w m hm τB hτB _
+        (ext_w F ζ hζ w m hm τB hτB φ) := extension_restrict F ζ hζ w m hm τB hτB _
 
 include hτB in
 private theorem smooth_borel_induced :
@@ -735,39 +672,28 @@ private theorem smooth_open_cell :
 def r : Torus F ζ hζ w →* (KPRankOneInduction.LocalField F w)ˣ := by
   letI := finiteCoverTopology F ζ hζ w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
+  let borelProjection₀ := KPRankOneInduction.borelProjection F w (projection F ζ hζ w)
   exact {
     toFun h := KPRankOneInduction.borelRatio F w
-      (KPRankOneInduction.borelProjection F w (projection F ζ hζ w)
+      (borelProjection₀
         (torusInBorel F ζ hζ w m hm h))
     map_one' := by
       change KPRankOneInduction.borelRatio F w
-        (KPRankOneInduction.borelProjection F w (projection F ζ hζ w) 1) = 1
+        (borelProjection₀ 1) = 1
       simp only [map_one]
     map_mul' := by
       intro a b
       change KPRankOneInduction.borelRatio F w
-        (KPRankOneInduction.borelProjection F w (projection F ζ hζ w)
+        (borelProjection₀
           (torusInBorel F ζ hζ w m hm a * torusInBorel F ζ hζ w m hm b)) = _
       simp only [map_mul] }
 
 def d (h : Torus F ζ hζ w) : ℝ :=
   ((deltaB F ζ hζ w (torusInBorel F ζ hζ w m hm h) : ℝ≥0) : ℝ)
 
- theorem weyl_matrix_inv :
-    (KPStandardLocalRootLifts.weylSwap (KPRankOneInduction.LocalField F w))⁻¹ =
-      KPStandardLocalRootLifts.weylSwap (KPRankOneInduction.LocalField F w) := by
-  symm
-  apply eq_inv_of_mul_eq_one_left
-  apply Units.ext
-  ext i j
-  fin_cases i <;> fin_cases j <;>
-    simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two,
-      KPStandardLocalRootLifts.weylSwap, Matrix.GeneralLinearGroup.mkOfDetNeZero]
+ alias weyl_matrix_inv := DedekindZetaZeroFree.KPJacquetBruhatCharts.weyl_matrix_inv
 
- theorem projection_weyl : projection F ζ hζ w
-    (KPPGLLocalCover.W F ζ hζ (Sum.inr w)) =
-      Matrix.ProjGenLinGroup.mk
-        (KPStandardLocalRootLifts.weylSwap (KPRankOneInduction.LocalField F w)) := rfl
+ alias projection_weyl := DedekindZetaZeroFree.KPJacquetBruhatCharts.projection_weyl
 
 def alpha : Torus F ζ hζ w →* Torus F ζ hζ w where
   toFun h := ⟨KPPGLLocalCover.W F ζ hζ (Sum.inr w) * h.val *
@@ -809,19 +735,21 @@ def tauW : Representation ℂ (Torus F ζ hζ w) E where
       torusInBorel F ζ hζ w m hm (alpha F ζ hζ w b)) = _
     exact map_mul τB _ _
 
-theorem torus_conjugates_root (h : Torus F ζ hζ w)
+section
+
+variable (h : Torus F ζ hζ w)
+
+theorem torus_conjugates_root
     (x : KPRankOneInduction.LocalField F w) :
     h.val * upperRoot F ζ hζ w (Multiplicative.ofAdd x) * h.val⁻¹ =
       upperRoot F ζ hζ w (Multiplicative.ofAdd
-        ((r F ζ hζ w m hm h : KPRankOneInduction.LocalField F w) * x)) := by
-  exact KPJacquetOpenCellSections.torus_conjugates_upperRoot_ratio F ζ hζ w m hm h x
+        ((r F ζ hζ w m hm h : KPRankOneInduction.LocalField F w) * x)) := KPJacquetOpenCellSections.torus_conjugates_upperRoot_ratio F ζ hζ w m hm h x
 
-theorem d_eq_abs_r (h : Torus F ζ hζ w) :
+theorem d_eq_abs_r :
     d F ζ hζ w m hm h =
-      ((KPRankOneInduction.localAbs F w (r F ζ hζ w m hm h) : ℝ≥0) : ℝ) := by
-  rfl
+      ((KPRankOneInduction.localAbs F w (r F ζ hζ w m hm h) : ℝ≥0) : ℝ) := rfl
 
-theorem d_alpha (h : Torus F ζ hζ w) :
+theorem d_alpha :
     d F ζ hζ w m hm (alpha F ζ hζ w h) = (d F ζ hζ w m hm h)⁻¹ := by
   letI := finiteCoverTopology F ζ hζ w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
@@ -856,6 +784,8 @@ theorem d_alpha (h : Torus F ζ hζ w) :
     KPStandardLocalRootLifts.weylSwap (KPRankOneInduction.LocalField F w)) 1 1‖ = _
   rw [h00, h11, ← inv_div, norm_inv]
 
+end
+
 theorem upperRoot_action
     (hτN : ∀ y, τB (rootInBorel F ζ hζ w y) = 1)
     (y x : KPRankOneInduction.LocalField F w) (φ : TestFunctions F w (E := E)) :
@@ -865,33 +795,27 @@ theorem upperRoot_action
       KPJacquetStepFunction.value φ (x + y) := by
   letI := finiteCoverTopology F ζ hζ w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
+  let upperRoot₀ := upperRoot F ζ hζ w (Multiplicative.ofAdd x)
   have h := congrArg (fun f : Induced F ζ hζ w m τB =>
     f.val.val (KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
-      upperRoot F ζ hζ w (Multiplicative.ofAdd x)))
+      upperRoot₀))
     (ext_w_borel F ζ hζ w m hm τB hτB
       (rootInBorel F ζ hζ w (Multiplicative.ofAdd y)) φ)
-  have heval (ψ : TestFunctions F w (E := E)) :
+  have heval (ψ : TestFunctions F w) :
       (ext_w F ζ hζ w m hm τB hτB ψ).val.val
         (KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
-          upperRoot F ζ hζ w (Multiplicative.ofAdd x)) = KPJacquetStepFunction.value ψ x := by
+          upperRoot₀) = KPJacquetStepFunction.value ψ x := by
     rw [ext_w_value]
-    simpa only [OneMemClass.coe_one, one_mul, map_one, Units.val_one,
-      NNReal.coe_one, Real.sqrt_one, Complex.ofReal_one, one_smul,
-      Module.End.one_apply] using extensionFunction_on F ζ hζ w τB ψ 1 x
+    simpa using extensionFunction_on F ζ hζ w τB ψ 1 x
   rw [heval] at h
   rw [h]
   change (ext_w F ζ hζ w m hm τB hτB φ).val.val
     ((KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
-      upperRoot F ζ hζ w (Multiplicative.ofAdd x)) *
+      upperRoot₀) *
       upperRoot F ζ hζ w (Multiplicative.ofAdd y)) = _
   rw [mul_assoc, ← map_mul]
-  change (ext_w F ζ hζ w m hm τB hτB φ).val.val
-    (KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
-      upperRoot F ζ hζ w (Multiplicative.ofAdd (x + y))) = _
   rw [ext_w_value]
-  simpa only [OneMemClass.coe_one, one_mul, map_one, Units.val_one,
-    NNReal.coe_one, Real.sqrt_one, Complex.ofReal_one, one_smul,
-    Module.End.one_apply] using extensionFunction_on F ζ hζ w τB φ 1 (x + y)
+  simpa using extensionFunction_on F ζ hζ w τB φ 1 (x + y)
 
 theorem torus_action (h : Torus F ζ hζ w)
     (x : KPRankOneInduction.LocalField F w) (φ : TestFunctions F w (E := E)) :
@@ -904,7 +828,7 @@ theorem torus_action (h : Torus F ζ hζ w)
             (((r F ζ hζ w m hm h)⁻¹ : (KPRankOneInduction.LocalField F w)ˣ) * x)) := by
   letI := finiteCoverTopology F ζ hζ w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
-  let z : KPRankOneInduction.LocalField F w :=
+  let z :=
     (((r F ζ hζ w m hm h)⁻¹ : (KPRankOneInduction.LocalField F w)ˣ) * x)
   have hz : (r F ζ hζ w m hm h : KPRankOneInduction.LocalField F w) * z = x := by
     dsimp [z]
@@ -924,14 +848,12 @@ theorem torus_action (h : Torus F ζ hζ w)
     f.val.val (KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
       upperRoot F ζ hζ w (Multiplicative.ofAdd x)))
     (ext_w_borel F ζ hζ w m hm τB hτB (torusInBorel F ζ hζ w m hm h) φ)
-  have heval (ψ : TestFunctions F w (E := E)) :
+  have heval (ψ : TestFunctions F w) :
       (ext_w F ζ hζ w m hm τB hτB ψ).val.val
         (KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
           upperRoot F ζ hζ w (Multiplicative.ofAdd x)) = KPJacquetStepFunction.value ψ x := by
     rw [ext_w_value]
-    simpa only [OneMemClass.coe_one, one_mul, map_one, Units.val_one,
-      NNReal.coe_one, Real.sqrt_one, Complex.ofReal_one, one_smul,
-      Module.End.one_apply] using extensionFunction_on F ζ hζ w τB ψ 1 x
+    simpa using extensionFunction_on F ζ hζ w τB ψ 1 x
   rw [heval] at hh
   rw [hh]
   change (ext_w F ζ hζ w m hm τB hτB φ).val.val

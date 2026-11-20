@@ -18,9 +18,9 @@ private lemma ratios_from_squares (T Y Z U H : ℝ)
     (hzhi : Z^2 ≤ (H*T*U)^2) :
     U/H ≤ Z/T ∧ U/H ≤ T/Y ∧ U/H ≤ (8*U^2)*T/Z := by
   have hH0 : 0 < H := by linarith
-  have hzlo' : T*U ≤ H*Z := (sq_le_sq₀ (by positivity) (by positivity)).mp hzlo
-  have hyhi' : Y*U ≤ H*T := (sq_le_sq₀ (by positivity) (by positivity)).mp hyhi
-  have hzhi' : Z ≤ H*T*U := (sq_le_sq₀ (by positivity) (by positivity)).mp hzhi
+  have hzlo' := (sq_le_sq₀ (by positivity) (by positivity)).mp hzlo
+  have hyhi' := (sq_le_sq₀ (by positivity) (by positivity)).mp hyhi
+  have hzhi' := (sq_le_sq₀ (by positivity) (by positivity)).mp hzhi
   constructor
   · apply (div_le_div_iff₀ hH0 hT).mpr
     nlinarith
@@ -38,30 +38,26 @@ private lemma original_squares (M R B U H : ℝ) (hM : 0 < M) (hR : 0 < R)
     let Z := Real.sqrt (M/B)*U
     (T*U)^2 ≤ (H*Z)^2 ∧ (Y*U)^2 ≤ (H*T)^2 ∧ Z^2 ≤ (H*T*U)^2 := by
   dsimp
-  have hT := Real.sq_sqrt (div_pos hM hR).le
-  have hY := Real.sq_sqrt (div_pos hM (by positivity : 0 < 2*B)).le
-  have hZ := Real.sq_sqrt (div_pos hM hB).le
   have hH2 : 2 ≤ H^2 := by nlinarith
-  have hMB : 0 < M/B := div_pos hM hB
-  have hMR : 0 < M/R := div_pos hM hR
-  have hcmp : M/R ≤ M/B := div_le_div_of_nonneg_left hM.le hB hRB
+  have hMB := div_pos hM hB
+  have hMR := div_pos hM hR
+  have hcmp := div_le_div_of_nonneg_left hM.le hB hRB
   have hcmp2 : M/B ≤ 2*(M/R) := by
     rw [div_le_iff₀ hB]
     rw [mul_assoc, mul_comm (M/R) B, ← mul_assoc, ← mul_div_assoc,
       le_div_iff₀ hR]
     nlinarith [mul_le_mul_of_nonneg_left hBR hM.le]
-  have hcmp3 : M/(2*B) ≤ M/R := div_le_div_of_nonneg_left hM.le hR hBR
-  simp only [mul_pow, div_pow, hT, hY, hZ, div_mul_cancel₀ _ (pow_ne_zero 2 hU.ne')]
+  have hcmp3 := div_le_div_of_nonneg_left hM.le hR hBR
+  simp only [mul_pow, div_pow, (Real.sq_sqrt (div_pos hM hR).le), (Real.sq_sqrt (div_pos hM (by positivity : 0 < 2*B)).le), (Real.sq_sqrt (div_pos hM hB).le), div_mul_cancel₀ _ (pow_ne_zero 2 hU.ne')]
   constructor
   · calc
       _ ≤ (M/B)*U^2 := mul_le_mul_of_nonneg_right hcmp (sq_nonneg U)
       _ ≤ H^2*((M/B)*U^2) := le_mul_of_one_le_left (by positivity) (by linarith)
   constructor
   · exact hcmp3.trans (le_mul_of_one_le_left hMR.le (by linarith))
-  · have hb : M/B ≤ H^2*(M/R) := hcmp2.trans
-      (mul_le_mul_of_nonneg_right hH2 hMR.le)
-    calc
-      _ ≤ (H^2*(M/R))*U^2 := mul_le_mul_of_nonneg_right hb (sq_nonneg U)
+  · calc
+      _ ≤ (H^2*(M/R))*U^2 := mul_le_mul_of_nonneg_right (hcmp2.trans
+        (mul_le_mul_of_nonneg_right hH2 hMR.le)) (sq_nonneg U)
       _ = _ := by ring
 
 private lemma reflected_square_ratios (M N d E V R B U q : ℝ)
@@ -74,20 +70,12 @@ private lemma reflected_square_ratios (M N d E V R B U q : ℝ)
     let Z := N*Real.sqrt E/(d*Real.sqrt (B*M))*U
     (T*U)^2 ≤ (4*q*Z)^2 ∧ (Y*U)^2 ≤ (4*q*T)^2 ∧ Z^2 ≤ (4*q*T*U)^2 := by
   dsimp
-  have hT := Real.sq_sqrt (show 0 ≤ E*V/M/R by positivity)
-  have hY := Real.sq_sqrt (show 0 ≤ 2*B*M by positivity)
-  have hZ := Real.sq_sqrt (show 0 ≤ B*M by positivity)
-  have hEs := Real.sq_sqrt hE.le
-  have hq0 : 0 < q := zero_lt_one.trans_le hq
   have hq2 : 1 ≤ q^2 := by nlinarith
   have hBq : R ≤ 16*q^2*B := hRhi.trans (by nlinarith [mul_nonneg (by linarith : 0 ≤ q-1) hB.le])
   have hcomp : V ≤ 16*q^2*N^2/d^2 := by
     rw [le_div_iff₀ (sq_pos_of_pos hd)]
     nlinarith [mul_le_mul_of_nonneg_right hq2 (sq_nonneg N)]
-  have hcomp2 : N^2/d^2 ≤ 16*q^2*V := by
-    rw [div_le_iff₀ (sq_pos_of_pos hd)]
-    nlinarith [mul_le_mul_of_nonneg_right hq2 (mul_nonneg (sq_nonneg d) hV.le)]
-  simp only [mul_pow, div_pow, hT, hY, hZ, hEs, div_mul_cancel₀ _ (pow_ne_zero 2 hU.ne')]
+  simp only [mul_pow, div_pow, (Real.sq_sqrt (show 0 ≤ E*V/M/R by positivity)), (Real.sq_sqrt (show 0 ≤ 2*B*M by positivity)), (Real.sq_sqrt (show 0 ≤ B*M by positivity)), (Real.sq_sqrt hE.le), div_mul_cancel₀ _ (pow_ne_zero 2 hU.ne')]
   constructor
   · have hb : E*V/M/R ≤ 16*q^2*(N^2*E/(d^2*(B*M))) := by
       have hi := mul_le_mul_of_nonneg_left hcomp (div_pos hE hM).le
@@ -251,7 +239,7 @@ lemma tailBudget_of_ratio_lower_bounds (a T Y Z L s H : ℝ)
     (hLTZ : s / H ≤ L * T / Z) :
     tailBudget a T Y Z L ≤
       (Real.rpow H a + 2 * Real.rpow H (a-1)) * Real.rpow s (1-a) := by
-  have hs0 : 0 < s := zero_lt_one.trans_le hs
+  have hs0 := zero_lt_one.trans_le hs
   have hr : 0 < s / H := div_pos hs0 hH
   have hpow₁ := Real.rpow_le_rpow_of_nonpos hr hZT (show -a ≤ 0 by linarith)
   have hpow₂ := Real.rpow_le_rpow_of_nonpos hr hTY (show 1-a ≤ 0 by linarith)
@@ -265,18 +253,17 @@ lemma tailBudget_of_ratio_lower_bounds (a T Y Z L s H : ℝ)
     have hdiv : Real.rpow (s / H) (1-a) = Real.rpow s (1-a) / Real.rpow H (1-a) :=
       Real.div_rpow hs0.le hH.le (1-a)
     rw [show 1-a = -(a-1) by ring, hneg (a-1), div_inv_eq_mul, mul_comm] at hdiv
-    simpa only [show -(a-1) = 1-a by ring] using hdiv
-  have hexp := Real.rpow_le_rpow_of_exponent_le hs (show -a ≤ 1-a by linarith)
-  have hfirst := hpow₁.trans (he₁.le.trans (mul_le_mul_of_nonneg_left hexp
-    (Real.rpow_nonneg hH.le a)))
+    simpa using hdiv
   unfold tailBudget
-  have hsum := add_le_add (add_le_add hfirst (hpow₂.trans_eq he₂)) (hpow₃.trans_eq he₂)
-  refine hsum.trans_eq ?_
+  refine (add_le_add (add_le_add (hpow₁.trans (he₁.le.trans (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hs (show -a ≤ 1-a by linarith))
+    (Real.rpow_nonneg hH.le a)))) (hpow₂.trans_eq he₂)) (hpow₃.trans_eq he₂)).trans_eq ?_
   simp only [Real.rpow_eq_pow]
   ring
 
-def blockBudget {F : Type} [Field F] [NumberField F]
-    {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+
+def blockBudget
     (C : Context Q) (a : ℝ) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : C.ValidPair p)
     (B : ℝ) (unit : Bool := false) : ℝ :=
   (∑ e ∈ C.mobiusDivisors, ‖C.prefactor e p hp‖ *
@@ -288,14 +275,11 @@ def blockBudget {F : Type} [Field F] [NumberField F]
     ((idealDivisors ((c * C.d) * (p.1 * p.2))).card : ℝ) *
       tailBudget a (Real.sqrt (C.M / norm r)) (C.Y2 B) (C.Z2 B) C.L2)
 
-def pairBudget {F : Type} [Field F] [NumberField F]
-    {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+def pairBudget
     (C : Context Q) (a : ℝ) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : C.ValidPair p) : ℝ :=
   blockBudget C a p hp 1 true + ∑ B ∈ dyadicScales C, blockBudget C a p hp B
 
 private lemma blockBudget_bound
-    {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
     (C : Context Q) (a A U B : ℝ) (unit : Bool)
     (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : C.ValidPair p)
     (hM : 1 ≤ C.M) (hN : 1 ≤ C.N) (hA : 1 ≤ A) (hU : 0 ≤ U)
@@ -310,10 +294,6 @@ private lemma blockBudget_bound
     (hto : ∀ r ∈ C.originalRows B unit,
       tailBudget a (Real.sqrt (C.M / norm r)) (C.Y2 B) (C.Z2 B) C.L2 ≤ U) :
     blockBudget C a p hp B unit ≤ (A ^ 3 + A ^ 2) * (C.M * C.N) ^ 5 * U := by
-  have hM0 : 0 ≤ C.M := by linarith
-  have hN0 : 0 ≤ C.N := by linarith
-  have hA0 : 0 ≤ A := by linarith
-  have hX : 1 ≤ C.M * C.N := by nlinarith
   have hMX : C.M ≤ C.M * C.N := by nlinarith
   have hNX : C.N ≤ C.M * C.N := by nlinarith
   have hinner : ∀ e ∈ C.mobiusDivisors,
@@ -366,13 +346,9 @@ private lemma blockBudget_bound
     exact this.trans hpow
   unfold blockBudget
   refine (add_le_add href hori).trans ?_
-  have h₁ := mul_le_mul_of_nonneg_left hpow (show 0 ≤ A ^ 3 * U by positivity)
-  have h₂ := mul_le_mul_of_nonneg_left hpow' (show 0 ≤ A ^ 2 * U by positivity)
-  nlinarith [h₁, h₂]
+  nlinarith [(mul_le_mul_of_nonneg_left hpow (show 0 ≤ A ^ 3 * U by positivity)), (mul_le_mul_of_nonneg_left hpow' (show 0 ≤ A ^ 2 * U by positivity))]
 
 theorem geometric_pair_budget
-    {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
     (D : Sieve.AllIndexNormalizedFamilyData Q)
     (ε : ℝ) (hε : 0 < ε) (δ : ℝ) (hδ : 0 < δ) (hδε : δ ≤ ε / 100)
     (a : ℝ) (ha : 1 < a) :

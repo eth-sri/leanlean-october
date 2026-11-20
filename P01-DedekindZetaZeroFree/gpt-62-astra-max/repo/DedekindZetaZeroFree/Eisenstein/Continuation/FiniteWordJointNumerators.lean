@@ -9,14 +9,14 @@ open scoped Classical NumberField Topology
 open Filter
 namespace DedekindZetaZeroFree.ResidueContinuity.ScalarSourceJointContinuity
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming literal_finite_word_chamber → literal_finite_word_chamber
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (literal_finite_word_chamber)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 include C R P H in
  theorem literal_joint_numerators
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) :
@@ -35,7 +35,7 @@ include C R P H in
   have hp (i : Fin n) (j : Fin (m i)) :=
     spherical_word_numerators F ζ hζ C R P H (U i) (v i j) (w i j)
   choose A hAc hAm hAl using hp
-  let S : ℂ → G F ζ hζ → ℂ := fun s g => ∑ i, ∑ j, B i j s * A i j s g
+  let S := fun s g => ∑ i, ∑ j, B i j s * A i j s g
   refine ⟨Q, S, hQ, hQ0, ?_, ?_, ?_⟩
   · intro g s hs
     apply MeromorphicAt.fun_sum
@@ -58,7 +58,7 @@ include C R P H in
       intro j
       exact Metric.ball_mem_nhds _ (hr i j)
     obtain ⟨ρ, hρ, hρsub⟩ := Metric.mem_nhds_iff.mp hall
-    let T : ℂ → G F ζ hζ → ℂ := fun s g => ∑ i, ∑ j, B i j s * N i j s g
+    let T := fun s g => ∑ i, ∑ j, B i j s * N i j s g
     have hO : Metric.ball c ρ ⊆ KPContinuation.spectralDomain := fun s hs => (hρsub hs).1
     have hball (i) (j) : Metric.ball c ρ ⊆ Metric.ball c (r i j) := fun s hs => (hρsub hs).2 i j
     refine ⟨ρ, hρ, hO, T, ?_, ?_, ?_⟩

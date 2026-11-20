@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -36,11 +34,11 @@ variable {k ell : Type}
     [Field k] [Field ell] [Algebra k ell]
     [FiniteDimensional k ell] [IsGalois k ell]
 
+variable (vK : AbsoluteValue k ℝ) (hvK : vK.IsNontrivial) (w : AbsoluteValueExtension vK ell)
+
 /-- Degree-zero multiplicative Herbrand cohomology for a decomposition group
 identified with degree-zero Tate cohomology of the localized field units. -/
-noncomputable def localHerbrandH0EquivUnitsTateH0
-    (vK : AbsoluteValue k ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK ell) :
+noncomputable def localHerbrandH0EquivUnitsTateH0 :
     letI hK :=
       AbsoluteValue.extensionCompletionAlgebra
         (K := k) w.1
@@ -82,32 +80,19 @@ noncomputable def localHerbrandH0EquivUnitsTateH0
         (LocalizedCompletion vK w)ˣ :=
     galoisGroupFieldUnitsMulDistribMulAction
       vK.Completion (LocalizedCompletion vK w)
-  let e :=
-    decompositionGroupEquivAlgebraicLocalizationAut
-      vK hvK w
-  let eTate :
-      (unitsInvariantSubmodule vK.Completion
-          (LocalizedCompletion vK w) ⧸
-        unitsTateH0NormSubmodule vK.Completion
-          (LocalizedCompletion vK w)) ≃+
-        tateCohomology
-          (Rep.ofAlgebraAutOnUnits vK.Completion
-            (LocalizedCompletion vK w)) 0 :=
-    (tateUnitsH0IsoInvariantsQuotient
-      vK.Completion
-      (LocalizedCompletion vK w)).symm.toLinearEquiv.toAddEquiv
   exact
     (herbrandH0CompMulEquiv
-      (A := (LocalizedCompletion vK w)ˣ) e).trans
+       (decompositionGroupEquivAlgebraicLocalizationAut
+        vK hvK w)).trans
       ((herbrandH0MulEquivInvariantsNormQuotient
         vK.Completion (LocalizedCompletion vK w)).trans
-          eTate.toMultiplicative)
+          ((tateUnitsH0IsoInvariantsQuotient
+            vK.Completion
+            (LocalizedCompletion vK w)).symm.toLinearEquiv.toAddEquiv).toMultiplicative)
 
 /-- Degree-minus-one multiplicative Herbrand cohomology for a decomposition
 group identified with degree-minus-one Tate cohomology of localized units. -/
 noncomputable def localHerbrandHMinusOneEquivUnitsTateHminusOne
-    (vK : AbsoluteValue k ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK ell)
     (σ : ell ≃ₐ[k] ell)
     (hgen : ∀ τ : ell ≃ₐ[k] ell,
       τ ∈ Subgroup.zpowers σ) :
@@ -154,31 +139,21 @@ noncomputable def localHerbrandHMinusOneEquivUnitsTateHminusOne
         (LocalizedCompletion vK w)ˣ :=
     galoisGroupFieldUnitsMulDistribMulAction
       vK.Completion (LocalizedCompletion vK w)
-  let e :=
-    decompositionGroupEquivAlgebraicLocalizationAut
-      vK hvK w
-  let δ :=
-    subgroupGeneratorOfGenerator
-      (absoluteValueDecompositionGroup k w.1) σ hgen
-  let g :=
-    localizedCompletionGaloisGenerator
-      vK hvK w σ hgen
-  let hg :=
-    localizedCompletionGaloisGenerator_generates
-      vK hvK w σ hgen
   exact
     (herbrandHMinusOneCompMulEquiv
-      (A := (LocalizedCompletion vK w)ˣ)
-      e δ).toEquiv.trans
+
+      (decompositionGroupEquivAlgebraicLocalizationAut
+        vK hvK w) (subgroupGeneratorOfGenerator
+        (absoluteValueDecompositionGroup k w.1) σ hgen)).toEquiv.trans
       (herbrandHminusOneEquivUnitsTateHminusOne
         vK.Completion (LocalizedCompletion vK w)
-        g hg)
+        (localizedCompletionGaloisGenerator
+          vK hvK w σ hgen) (localizedCompletionGaloisGenerator_generates
+          vK hvK w σ hgen))
 
 /-- Degree-zero Herbrand cohomology for a decomposition group identified with
 the norm quotient of the localized field extension. -/
-noncomputable def localHerbrandH0EquivNormQuotient
-    (vK : AbsoluteValue k ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK ell) :
+noncomputable def localHerbrandH0EquivNormQuotient :
     letI hK :=
       AbsoluteValue.extensionCompletionAlgebra
         (K := k) w.1
@@ -211,24 +186,13 @@ noncomputable def localHerbrandH0EquivNormQuotient
       (LocalizedCompletion vK w) :=
     localizedCompletionIsGalois vK w
   letI := localizedCompletionDecompositionGroupFintype vK w
-  let e0 :=
-    localHerbrandH0EquivUnitsTateH0 vK hvK w
-  let eAdd :
-      tateCohomology
-          (Rep.ofAlgebraAutOnUnits vK.Completion
-            (LocalizedCompletion vK w)) 0 ≃+
-        Additive
-          (NormQuotient vK.Completion
-            (LocalizedCompletion vK w)) :=
-    (H0TateUnitsIsoNormQuotient
+  exact (localHerbrandH0EquivUnitsTateH0 vK hvK w).trans <|
+    ((H0TateUnitsIsoNormQuotient
       vK.Completion
-      (LocalizedCompletion vK w)).toLinearEquiv.toAddEquiv
-  exact e0.trans <|
-    eAdd.toMultiplicative.trans <|
+      (LocalizedCompletion vK w)).toLinearEquiv.toAddEquiv).toMultiplicative.trans <|
       MulEquiv.multiplicativeAdditive
         (NormQuotient vK.Completion
           (LocalizedCompletion vK w))
-
 
 end LocalTateComparison
 

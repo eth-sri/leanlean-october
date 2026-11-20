@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 /-!
 # Integer multiple subgroups
 
@@ -58,73 +54,36 @@ def integerMultipleSubgroup (d : ℤ) : Subgroup (Multiplicative ℤ) where
     n ∈ integerMultipleSubgroup d ↔ d ∣ Multiplicative.toAdd n :=
   Iff.rfl
 
-/-- Membership of a multiplicative integer in the multiple subgroup is equivalent to divisibility of
-its additive value. -/
-@[simp] theorem ofAdd_mem_integerMultipleSubgroup_iff (d n : ℤ) :
-    Multiplicative.ofAdd n ∈ integerMultipleSubgroup d ↔ d ∣ n := by
-  rw [mem_integerMultipleSubgroup_iff, toAdd_ofAdd]
+section
 
-/-- Multiplying two multiplicative integers from the multiple subgroup remains in that subgroup. -/
-theorem ofAdd_mul_mem_integerMultipleSubgroup (d n : ℤ) :
-    Multiplicative.ofAdd (d * n) ∈ integerMultipleSubgroup d := by
-  rw [ofAdd_mem_integerMultipleSubgroup_iff]
-  exact dvd_mul_right d n
-
-/-- The multiple subgroup is closed under multiplication in either order. -/
-theorem ofAdd_mul_comm_mem_integerMultipleSubgroup (d n : ℤ) :
-    Multiplicative.ofAdd (n * d) ∈ integerMultipleSubgroup d := by
-  rw [mul_comm]
-  exact ofAdd_mul_mem_integerMultipleSubgroup d n
-
-/-- Divisibility of generators reverses inclusion between their integer-multiple subgroups. -/
-theorem integerMultipleSubgroup_le_of_dvd {a b : ℤ} (hab : a ∣ b) :
-    integerMultipleSubgroup b ≤ integerMultipleSubgroup a := by
-  intro n hn
-  rw [mem_integerMultipleSubgroup_iff] at hn ⊢
-  exact dvd_trans hab hn
-
-/-- Every multiplicative integer belongs to the subgroup of multiples of one. -/
-@[simp] theorem integerMultipleSubgroup_one_eq_top :
-    integerMultipleSubgroup (1 : ℤ) = ⊤ := by
-  ext n
-  rw [mem_integerMultipleSubgroup_iff]
-  simp
+variable (d : ℤ)
 
 /-- Reduction of multiplicative integers modulo the subgroup of multiples of
 `d`, written as a homomorphism to `Multiplicative (ZMod |d|)`. -/
-def multiplicativeIntToZModHom (d : ℤ) :
+def multiplicativeIntToZModHom :
     Multiplicative ℤ →* Multiplicative (ZMod d.natAbs) :=
   AddMonoidHom.toMultiplicative (Int.castAddHom (ZMod d.natAbs))
 
 /-- Reduction modulo `n` sends a multiplicative integer to the residue class of its additive value.
 Reduction modulo `n` sends a multiplicative integer to the residue class of its additive value. -/
-@[simp] theorem multiplicativeIntToZModHom_apply
-    (d : ℤ) (n : Multiplicative ℤ) :
+@[simp] theorem multiplicativeIntToZModHom_apply (n : Multiplicative ℤ) :
     multiplicativeIntToZModHom d n =
       Multiplicative.ofAdd ((n.toAdd : ZMod d.natAbs)) :=
   rfl
 
 /-- The kernel of reduction modulo `n` is precisely the subgroup of integer multiples of `n`. -/
-theorem multiplicativeIntToZModHom_ker_eq_integerMultipleSubgroup (d : ℤ) :
+theorem multiplicativeIntToZModHom_ker_eq_integerMultipleSubgroup :
     (multiplicativeIntToZModHom d).ker = integerMultipleSubgroup d := by
-  ext n
-  change ((n.toAdd : ZMod d.natAbs) = 0) ↔ d ∣ n.toAdd
-  rw [ZMod.intCast_zmod_eq_zero_iff_dvd]
-  exact Int.natAbs_dvd
+  ext <;> simp [ZMod.intCast_zmod_eq_zero_iff_dvd]
 
 /-- Every residue class modulo `n` is represented by a multiplicative integer. -/
-theorem multiplicativeIntToZModHom_surjective (d : ℤ) :
+theorem multiplicativeIntToZModHom_surjective :
     Function.Surjective (multiplicativeIntToZModHom d) := by
-  intro q
-  rcases ZMod.intCast_surjective q.toAdd with ⟨n, hn⟩
-  refine ⟨Multiplicative.ofAdd n, ?_⟩
-  change Multiplicative.ofAdd ((n : ZMod d.natAbs)) = q
-  rw [hn]
-  rfl
+  exact ZMod.intCast_surjective
 
 /-- The quotient of multiplicative integers by multiples of `d` is the
 standard cyclic value group `Multiplicative (ZMod |d|)`. -/
-noncomputable def valueModIntegerMultipleSubgroupEquivZMod (d : ℤ) :
+noncomputable def valueModIntegerMultipleSubgroupEquivZMod :
     Multiplicative ℤ ⧸ integerMultipleSubgroup d ≃*
       Multiplicative (ZMod d.natAbs) :=
   (QuotientGroup.quotientMulEquivOfEq
@@ -132,6 +91,8 @@ noncomputable def valueModIntegerMultipleSubgroupEquivZMod (d : ℤ) :
     (QuotientGroup.quotientKerEquivOfSurjective
       (multiplicativeIntToZModHom d)
       (multiplicativeIntToZModHom_surjective d))
+
+end
 
 /-- The quotient-to-`ZMod` equivalence sends a quotient class to reduction of its representative
 modulo `n`. -/
@@ -141,20 +102,6 @@ modulo `n`. -/
         (QuotientGroup.mk' (integerMultipleSubgroup d)
           (Multiplicative.ofAdd n)) =
       Multiplicative.ofAdd ((n : ZMod d.natAbs)) := by
-  change
-    (QuotientGroup.quotientKerEquivOfSurjective
-        (multiplicativeIntToZModHom d)
-        (multiplicativeIntToZModHom_surjective d))
-      (QuotientGroup.mk' (multiplicativeIntToZModHom d).ker
-        (Multiplicative.ofAdd n)) =
-      Multiplicative.ofAdd ((n : ZMod d.natAbs))
-  unfold QuotientGroup.quotientKerEquivOfSurjective
-    QuotientGroup.quotientKerEquivOfRightInverse
-  change
-    QuotientGroup.kerLift (multiplicativeIntToZModHom d)
-      (QuotientGroup.mk' (multiplicativeIntToZModHom d).ker
-        (Multiplicative.ofAdd n)) =
-      Multiplicative.ofAdd ((n : ZMod d.natAbs))
   rfl
 
 end LocalFieldTheory.DiscreteValuationField

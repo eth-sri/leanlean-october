@@ -83,8 +83,8 @@ end CompactIntegral
 
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 
 theorem upper_cleared_analyticOnNhd (T : Realization R Q) (v : R.A.UnitQuotient)
     (g : Group R) :

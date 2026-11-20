@@ -42,7 +42,11 @@ variable (B : Fin 6 → Module.End ℂ complexCore)
  theorem derivative_mem_algebra (i : Fin 6) : B i ∈ algebra B :=
   Algebra.subset_adjoin (Or.inr ⟨i, rfl⟩)
 
-def underlying (N : Submodule (algebra B) complexCore) : Submodule ℂ complexCore where
+section
+
+variable (N : Submodule (algebra B) complexCore)
+
+def underlying : Submodule ℂ complexCore where
   carrier := N
   zero_mem' := N.zero_mem
   add_mem' := N.add_mem
@@ -51,17 +55,17 @@ def underlying (N : Submodule (algebra B) complexCore) : Submodule ℂ complexCo
     have h := N.smul_mem (algebraMap ℂ (algebra B) c) hf
     exact h
 
- theorem underlying_compact_invariant (N : Submodule (algebra B) complexCore) :
-    ∀ k f, f ∈ underlying B N → complexCoreCompactLinearMap k f ∈ underlying B N := by
-  intro k f hf
-  exact N.smul_mem ⟨_, compact_mem_algebra B k⟩ hf
+ theorem underlying_compact_invariant :
+    ∀ k f, f ∈ underlying B N → complexCoreCompactLinearMap k f ∈ underlying B N := fun k f hf => N.smul_mem ⟨_, compact_mem_algebra B k⟩ hf
 
- theorem underlying_derivative_invariant (N : Submodule (algebra B) complexCore) :
-    ∀ i f, f ∈ underlying B N → B i f ∈ underlying B N := by
-  intro i f hf
-  exact N.smul_mem ⟨_, derivative_mem_algebra B i⟩ hf
+ theorem underlying_derivative_invariant :
+    ∀ i f, f ∈ underlying B N → B i f ∈ underlying B N := fun i f hf => N.smul_mem ⟨_, derivative_mem_algebra B i⟩ hf
 
-def endomorphismComplex (T : Module.End (algebra B) complexCore) :
+end
+
+variable (T : Module.End (algebra B) complexCore)
+
+def endomorphismComplex :
     Module.End ℂ complexCore where
   toFun := T
   map_add' := T.map_add
@@ -69,13 +73,13 @@ def endomorphismComplex (T : Module.End (algebra B) complexCore) :
     intro c f
     exact T.map_smul (algebraMap ℂ (algebra B) c) f
 
- theorem endomorphism_compact_commutes (T : Module.End (algebra B) complexCore)
+ theorem endomorphism_compact_commutes
     (k : KPCplxCharacterHaar.ComplexSU2) (f : complexCore) :
     endomorphismComplex B T (complexCoreCompactLinearMap k f) =
       complexCoreCompactLinearMap k (endomorphismComplex B T f) :=
   T.map_smul ⟨_, compact_mem_algebra B k⟩ f
 
- theorem endomorphism_scalar_on_lowest (T : Module.End (algebra B) complexCore) :
+ theorem endomorphism_scalar_on_lowest :
     ∃ c : ℂ, ∀ f ∈ coreHarmonic 0, T f = c • f :=
   commutant_scalar_on_lowest (endomorphismComplex B T)
     (endomorphism_compact_commutes B T)
@@ -121,8 +125,7 @@ open NativeComplexHCSource
     intro hN
     have hz : v.val = 0 := by simpa only [hN, Submodule.mem_bot] using hvN
     exact hv (Subtype.ext hz)
-  have htop : N = ⊤ := (eq_bot_or_eq_top N).resolve_left hN
-  exact ⟨c, fun f => show f ∈ N from htop ▸ Submodule.mem_top⟩
+  exact ⟨c, fun f => show f ∈ N from ((eq_bot_or_eq_top N).resolve_left hN) ▸ Submodule.mem_top⟩
 
 open scoped Classical BigOperators Matrix
 open KPCplxPrincipalSeriesCharts KPCplxCharacterHaar KPCplxIntertwinerEigenvalues
@@ -131,9 +134,8 @@ open NativeComplexHCOperators
 private theorem basis_expansion (X : Matrix (Fin 2) (Fin 2) ℂ) (hX : Matrix.trace X = 0) :
     X = ∑ i : Fin 6, (KPSmoothActualFlowData.matrixCoordinates X i : ℝ) •
       KPSmoothActualFlowData.basisMatrix i := by
-  have h := PGLComplex.sl2Matrix_matrixCoordinates X hX
   calc
-    X = KPSmoothActualFlowData.sl2Matrix (KPSmoothActualFlowData.matrixCoordinates X) := h.symm
+    X = KPSmoothActualFlowData.sl2Matrix (KPSmoothActualFlowData.matrixCoordinates X) := (PGLComplex.sl2Matrix_matrixCoordinates X hX).symm
     _ = _ := by
       ext i j
       fin_cases i <;> fin_cases j <;>
@@ -177,8 +179,7 @@ private theorem basis_expansion (X : Matrix (Fin 2) (Fin 2) ℂ) (hX : Matrix.tr
  theorem native_operators_simple :
     IsSimpleOrder (Submodule (algebra NativeComplexHCOperators.operators) complexCore) := by
   haveI : Nontrivial complexCore := by
-    have hdim : 0 < Module.finrank ℂ (coreHarmonic 0) := by rw [coreHarmonic_finrank]; norm_num
-    haveI : Nontrivial (coreHarmonic 0) := Module.nontrivial_of_finrank_pos hdim
+    haveI : Nontrivial (coreHarmonic 0) := Module.nontrivial_of_finrank_pos (by rw [coreHarmonic_finrank]; norm_num)
     exact (coreHarmonic 0).subtype_injective.nontrivial
   apply (isSimpleOrder_iff _).mpr
   refine ⟨(Submodule.nontrivial_iff _).mpr inferInstance, fun N => ?_⟩
@@ -186,17 +187,15 @@ private theorem basis_expansion (X : Matrix (Fin 2) (Fin 2) ℂ) (hX : Matrix.tr
   · exact Or.inl hN
   right
   obtain ⟨v, hv, hvne⟩ := N.ne_bot_iff.mp hN
-  let U := (underlying NativeComplexHCOperators.operators N).map complexCore.subtype
   have hall := NativeComplexHCPropagation.all_harmonics_of_nonzero negativeParameter
     NativeComplexHCPropagation.negative_coefficients_nonzero.1
-    NativeComplexHCPropagation.negative_coefficients_nonzero.2 U
+    NativeComplexHCPropagation.negative_coefficients_nonzero.2 ((underlying NativeComplexHCOperators.operators N).map complexCore.subtype)
     (ambient_submodule_compact_stable N) (ambient_submodule_lie_stable N)
-    v.val ⟨v, hv, rfl⟩ v.property.2 (by intro h; exact hvne (Subtype.ext h))
+    v.val ⟨v, hv, rfl⟩ v.property.2 (fun h => hvne (Subtype.ext h))
   apply Submodule.eq_top_iff'.mpr
   intro f
   obtain ⟨x, hx, hxf⟩ := hall f.property.2
-  have hxf' : x = f := Subtype.ext hxf
-  rwa [hxf'] at hx
+  rwa [(Subtype.ext hxf)] at hx
 
  theorem native_operators_scalar
     (T : Module.End (algebra NativeComplexHCOperators.operators) complexCore) :

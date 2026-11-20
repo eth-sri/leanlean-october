@@ -27,12 +27,10 @@ variable {n : Type*} [Fintype n] [DecidableEq n] {α : Type*} [CommRing α] [Sta
 theorem _root_.Matrix.specialUnitaryGroup.star_eq_adjugate (g : Matrix.specialUnitaryGroup n α) :
     star (g : Matrix n n α) = (g : Matrix n n α).adjugate := by
   have hmem := Matrix.mem_specialUnitaryGroup_iff.mp g.2
-  have hmul : (g : Matrix n n α) * star (g : Matrix n n α) = 1 :=
-    Matrix.mem_unitaryGroup_iff.mp hmem.1
-  calc star (g : Matrix n n α)
+  calc _
       = (g : Matrix n n α).adjugate * (g : Matrix n n α) * star (g : Matrix n n α) := by
-        rw [Matrix.adjugate_mul, hmem.2, one_smul, Matrix.one_mul]
+        simp_all [Matrix.adjugate_mul]
     _ = (g : Matrix n n α).adjugate := by
-        rw [Matrix.mul_assoc, hmul, Matrix.mul_one]
+        simp_all [Matrix.mul_assoc, Matrix.mul_one]
 
 end DedekindZetaZeroFree.TauCeti

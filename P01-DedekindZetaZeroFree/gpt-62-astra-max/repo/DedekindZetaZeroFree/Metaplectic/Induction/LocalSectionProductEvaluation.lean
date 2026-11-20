@@ -13,7 +13,7 @@ namespace DedekindZetaZeroFree.KPActualReflectionData.LiteralProductEvaluator
 open KPGlobalResidualConstruction KPCplxPrincipalSeriesCharts
 
 variable {F : Type} [Field F] [NumberField F]
-variable (A : SArithmeticData F)
+    (A : SArithmeticData F)
 
 def complexMatrix (w : NumberField.InfinitePlace F)
     (g : KPLocalCover.CubicGL2Raw F A.zeta12 A.primitive_zeta12 (Sum.inl w)) :

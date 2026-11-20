@@ -11,7 +11,12 @@ open scoped Classical NumberField
 open NumberField IsDedekindDomain MeasureTheory
 variable {F : Type} [Field F] [NumberField F]
 
-theorem raw_sheet_modulus (A : SArithmeticData F) (T : ℝ) (hT : 0 < T) (t : A.G1) :
+section
+
+variable (A : SArithmeticData F) (T : ℝ) (hT : 0 < T)
+
+include hT in
+theorem raw_sheet_modulus (t : A.G1) :
     ProbeWeight.modulus F A.Sf (ProbeSheetFourierMellinBounds.sheetPointRaw A T t) = T := by
   have hm (x y : A.G) : A.norm (x * y) = A.norm x * A.norm y := by
     simp only [SArithmeticData.norm, Prod.fst_mul, Prod.snd_mul, Pi.mul_apply,
@@ -22,7 +27,8 @@ theorem raw_sheet_modulus (A : SArithmeticData F) (T : ℝ) (hT : 0 < T) (t : A.
   change A.norm (t.val * A.radialSection T hT) = T
   rw [hm, show A.norm t.val = 1 from t.property, A.norm_radialSection, one_mul]
 
-theorem raw_sheet_continuous (A : SArithmeticData F) (T : ℝ) (hT : 0 < T) :
+include hT in
+theorem raw_sheet_continuous :
     Continuous (fun t : A.G1 => (ProbeSheetFourierMellinBounds.sheetPointRaw A T t).val) := by
   have he : Continuous (ProbeSheetFourierMellinBounds.localUnitsRaw A) := by
     change Continuous (Homeomorph.prodUnits.symm ∘
@@ -32,6 +38,8 @@ theorem raw_sheet_continuous (A : SArithmeticData F) (T : ℝ) (hT : 0 < T) :
   simp only [ProbeSheetFourierMellinBounds.sheetPointRaw, ProbeSheetFourierMellinBounds.ellRaw, dif_pos hT,
     Units.val_mul]
   exact (Units.continuous_val.comp (he.comp continuous_subtype_val)).mul continuous_const
+
+end
 
 theorem complex_product_modulus (A : SArithmeticData F)
     (y : (SLocalProduct F A.Sf)ˣ) :

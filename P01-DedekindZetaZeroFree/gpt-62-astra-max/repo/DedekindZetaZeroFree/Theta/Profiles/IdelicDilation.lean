@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.MomentSources
 open scoped NumberField Classical Topology
 open NumberField MeasureTheory
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 abbrev Group (R : PrincipalMellin.ActualRecipe S η) :=
   KPGlobalTorusFunctionData.G F R.A.zeta12 R.A.primitive_zeta12
@@ -119,14 +119,6 @@ def theta {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 end Realization
 
 structure Packet (R : PrincipalMellin.ActualRecipe S η) (Q : AdmissibleFlatSources R) where
-  seed : R.A.UnitQuotient → KPLiteralRaw.Flat F R.A.zeta12 R.A.primitive_zeta12 Q.K
-  seed_spherical : ∀ v s (p : KPFinitePlace F), p ∉ R.A.Sf →
-    ∀ k : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p),
-    k ∈ KPAdelicCoverRestrictedProduct.compact F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) →
-    ∀ g, (seed v).val s (g * KPAdelicCoverRestrictedProduct.scalarQuotient F
-      R.A.zeta12 R.A.primitive_zeta12 (KPAdelicCoverRestrictedProduct.localInjection
-        F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) k)) = (seed v).val s g
-  operations : ∀ v, FlatOperation R Q.K seed (Q.flat v).val
   v₀ : InfinitePlace F
   cutoff : ∀ p : R.A.Sf, Subgroup (p.val.adicCompletion F)ˣ
   cutoff_open : ∀ p, IsOpen (cutoff p : Set (p.val.adicCompletion F)ˣ)
@@ -141,8 +133,6 @@ structure Packet (R : PrincipalMellin.ActualRecipe S η) (Q : AdmissibleFlatSour
   branch_exact : ∀ v y, (∀ p : R.A.Sf, y.2 p ∈ cutoff p) → branch v y =
     ∏ w : InfinitePlace F,
       DHCubic.angular (InfinitePlace.Completion.extensionEmbedding w (y.1 w : w.Completion)) ^ exponents v w
-  cutoff_kernel : ∀ v y, (∀ w, y.1 w = 1) →
-    (∀ p : R.A.Sf, y.2 p ∈ cutoff p) → branch v y = 1
 
 namespace Packet
 variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}

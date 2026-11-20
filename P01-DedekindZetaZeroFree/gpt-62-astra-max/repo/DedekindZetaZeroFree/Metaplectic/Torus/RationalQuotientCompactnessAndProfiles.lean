@@ -41,7 +41,11 @@ theorem actualTorusProjection_surjective :
   rw [h11, inv_one, Units.val_one, mul_one, IsUnit.unit_spec]
   rfl
 
-private theorem ratio_val_formula (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F) (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) :
+section
+
+variable (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F) (h10 : A 1 0 = 0) (h01 : A 0 1 = 0)
+
+private theorem ratio_val_formula :
     ((diagonal_entries_units F A h10 h01).1.unit : Adeles F) *
       ↑((diagonal_entries_units F A h10 h01).2.unit)⁻¹ = A 0 0 * A⁻¹ 1 1 := by
   have hi : (A⁻¹ : KPGlobalTorusFunctionData.AdelicMatrixGroup F) 1 1 =
@@ -50,15 +54,14 @@ private theorem ratio_val_formula (A : KPGlobalTorusFunctionData.AdelicMatrixGro
     simp only [Matrix.mul_apply, Fin.sum_univ_two, h10, zero_mul, zero_add,
       Matrix.one_apply_eq] at hh
     apply (diagonal_entries_units F A h10 h01).2.mul_left_cancel
-    change A.val 1 1 * A.inv 1 1 = _
     calc
       _ = 1 := hh
       _ = _ := by
-        simpa only [IsUnit.unit_spec] using
+        simpa using
           ((diagonal_entries_units F A h10 h01).2.unit.mul_inv).symm
   rw [hi, IsUnit.unit_spec]
 
-private theorem ratio_inverse_formula (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F) (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) :
+private theorem ratio_inverse_formula :
     (↑(((diagonal_entries_units F A h10 h01).1.unit *
       ((diagonal_entries_units F A h10 h01).2.unit)⁻¹)⁻¹) : Adeles F) = A 1 1 * A⁻¹ 0 0 := by
   have hi : (A⁻¹ : KPGlobalTorusFunctionData.AdelicMatrixGroup F) 0 0 =
@@ -67,14 +70,15 @@ private theorem ratio_inverse_formula (A : KPGlobalTorusFunctionData.AdelicMatri
     simp only [Matrix.mul_apply, Fin.sum_univ_two, h01, zero_mul, add_zero,
       Matrix.one_apply_eq] at hh
     apply (diagonal_entries_units F A h10 h01).1.mul_left_cancel
-    change A.val 0 0 * A.inv 0 0 = _
     calc
       _ = 1 := hh
       _ = _ := by
-        simpa only [IsUnit.unit_spec] using
+        simpa using
           ((diagonal_entries_units F A h10 h01).1.unit.mul_inv).symm
   simp only [mul_inv_rev, inv_inv, Units.val_mul]
   rw [hi, IsUnit.unit_spec]
+
+end
 
  def ordinaryDiagonal (y : Ideles F) : ordinaryTorus F :=
   ⟨KPGlobalCubicIdelePairing.diagonalPGL F y,
@@ -119,10 +123,8 @@ private theorem diagonal_preimage (A : KPGlobalTorusFunctionData.AdelicMatrixGro
 
  theorem ordinaryRatio_continuous : Continuous (torusRatio F) := by
   let q := QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
-  have hq := (QuotientGroup.isOpenQuotientMap_mk (N :=
-    KPAdelicCoverRestrictedProduct.scalarSubgroup F)).restrictPreimage
-      (ordinaryTorus F : Set (KPAdelicCoverRestrictedProduct.AdelicPGL2 F))
-  apply hq.isQuotientMap.continuous_iff.mpr
+  apply ((QuotientGroup.isOpenQuotientMap_mk).restrictPreimage
+    (ordinaryTorus F : Set (KPAdelicCoverRestrictedProduct.AdelicPGL2 F))).isQuotientMap.continuous_iff.mpr
   apply Units.continuous_iff.mpr
   constructor
   · change Continuous (fun a : {A : KPGlobalTorusFunctionData.AdelicMatrixGroup F // q A ∈ ordinaryTorus F} =>
@@ -136,12 +138,8 @@ private theorem diagonal_preimage (A : KPGlobalTorusFunctionData.AdelicMatrixGro
           (diagonal_preimage F a.val a.property).1
           (diagonal_preimage F a.val a.property).2]
     rw [he]
-    have hv : Continuous (fun a : KPGlobalTorusFunctionData.AdelicMatrixGroup F =>
-        (a.val : Matrix (Fin 2) (Fin 2) (Adeles F))) := Units.continuous_val
-    have hi : Continuous (fun a : KPGlobalTorusFunctionData.AdelicMatrixGroup F =>
-        (a.inv : Matrix (Fin 2) (Fin 2) (Adeles F))) := Units.continuous_coe_inv
-    exact ((hv.comp continuous_subtype_val).matrix_elem 0 0).mul
-      ((hi.comp continuous_subtype_val).matrix_elem 1 1)
+    exact ((Units.continuous_val.comp continuous_subtype_val).matrix_elem 0 0).mul
+      ((Units.continuous_coe_inv.comp continuous_subtype_val).matrix_elem 1 1)
   · change Continuous (fun a : {A : KPGlobalTorusFunctionData.AdelicMatrixGroup F // q A ∈ ordinaryTorus F} =>
         (↑((torusRatio F ⟨q a.val, a.property⟩)⁻¹) : Adeles F))
     have he : (fun a : {A : KPGlobalTorusFunctionData.AdelicMatrixGroup F // q A ∈ ordinaryTorus F} =>
@@ -160,12 +158,8 @@ private theorem diagonal_preimage (A : KPGlobalTorusFunctionData.AdelicMatrixGro
         (diagonal_preimage F a.val a.property).1
         (diagonal_preimage F a.val a.property).2]
     rw [he]
-    have hv : Continuous (fun a : KPGlobalTorusFunctionData.AdelicMatrixGroup F =>
-        (a.val : Matrix (Fin 2) (Fin 2) (Adeles F))) := Units.continuous_val
-    have hi : Continuous (fun a : KPGlobalTorusFunctionData.AdelicMatrixGroup F =>
-        (a.inv : Matrix (Fin 2) (Fin 2) (Adeles F))) := Units.continuous_coe_inv
-    exact ((hv.comp continuous_subtype_val).matrix_elem 1 1).mul
-      ((hi.comp continuous_subtype_val).matrix_elem 0 0)
+    exact ((Units.continuous_val.comp continuous_subtype_val).matrix_elem 1 1).mul
+      ((Units.continuous_coe_inv.comp continuous_subtype_val).matrix_elem 0 0)
 
  theorem ordinaryDiagonal_ratio (t : ordinaryTorus F) :
     ordinaryDiagonal F (torusRatio F t) = t := by
@@ -175,7 +169,6 @@ private theorem diagonal_preimage (A : KPGlobalTorusFunctionData.AdelicMatrixGro
     apply Units.ext
     exact ratio_formula F t A hA h10 h01
   apply Subtype.ext
-  change KPGlobalCubicIdelePairing.diagonalPGL F (torusRatio F t) = t.val
   rw [hf, ← hA]
   apply (QuotientGroup.mk'_eq_mk' _).mpr
   refine ⟨Matrix.GeneralLinearGroup.scalar (Fin 2)
@@ -204,12 +197,11 @@ theorem actualTorusProjection_topology :
     Continuous (KPGlobalTorusFunctionData.p F ζ hζ) ∧
       IsOpenMap (KPGlobalTorusFunctionData.p F ζ hζ) := by
   have hc := (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2
-  have hr := hc.isOpenMap.restrictPreimage
-    (ordinaryTorus F : Set (KPAdelicCoverRestrictedProduct.AdelicPGL2 F))
   have ht := hc.continuous.restrictPreimage
     (s := (ordinaryTorus F : Set (KPAdelicCoverRestrictedProduct.AdelicPGL2 F)))
   exact ⟨(ordinaryRatio_continuous F).comp ht,
-    (ordinaryTorusHomeomorph F).isOpenMap.comp hr⟩
+    (ordinaryTorusHomeomorph F).isOpenMap.comp (hc.isOpenMap.restrictPreimage
+      (ordinaryTorus F : Set (KPAdelicCoverRestrictedProduct.AdelicPGL2 F)))⟩
 
 theorem actualR_normal : (KPGlobalCenterRationalCharacter.R F ζ hζ).Normal := by
   rw [KPGlobalCenterRationalCharacter.R_eq_principal_preimage F ζ hζ]
@@ -260,22 +252,17 @@ theorem normalizedTorusProfile_bounded (K : Subgroup (KPLiteralRaw.G F ζ hζ))
   letI := actualR_cocompact F ζ hζ
   letI : CompactSpace K := isCompact_iff_compactSpace.mp hK.1
   let Q := KPGlobalTorusFunctionData.E F ζ hζ ⧸ KPGlobalCenterRationalCharacter.R F ζ hζ
-  let u : Q → K → ℝ := Quotient.lift
+  let u := Quotient.lift
     (fun t k => normalizedTorusProfile F ζ hζ K f t k) (by
       intro a b hab
       funext k
-      have hr : a⁻¹ * b ∈ KPGlobalCenterRationalCharacter.R F ζ hζ :=
-        QuotientGroup.leftRel_apply.mp hab
       have hr' : b * a⁻¹ ∈ KPGlobalCenterRationalCharacter.R F ζ hζ := by
-        simpa only [← mul_assoc, mul_inv_cancel, one_mul] using
-          (actualR_normal F ζ hζ).conj_mem (a⁻¹ * b) hr a
-      have he := normalizedTorusProfile_R_invariant F ζ hζ K f
-        ⟨b * a⁻¹, hr'⟩ a k
-      simpa only [mul_assoc, inv_mul_cancel, mul_one] using he.symm)
+        simpa using
+          (actualR_normal F ζ hζ).conj_mem (a⁻¹ * b) (QuotientGroup.leftRel_apply.mp hab) a
+      simpa using (normalizedTorusProfile_R_invariant F ζ hζ K f
+        ⟨b * a⁻¹, hr'⟩ a k).symm)
   have hu : Continuous (fun p : Q × K => u p.1 p.2) := by
-    have hid : IsOpenQuotientMap (id : K → K) :=
-      ⟨Function.surjective_id, continuous_id, IsOpenMap.id⟩
-    apply (QuotientGroup.isOpenQuotientMap_mk.prodMap hid).isQuotientMap.continuous_iff.mpr
+    apply (QuotientGroup.isOpenQuotientMap_mk.prodMap (⟨Function.surjective_id, continuous_id, IsOpenMap.id⟩)).isQuotientMap.continuous_iff.mpr
     exact normalizedTorusProfile_continuous F ζ hζ K f
   obtain ⟨B, hB⟩ := (isCompact_univ.image hu).bddAbove
   refine ⟨max 0 B, le_max_left _ _, fun t k => ?_⟩

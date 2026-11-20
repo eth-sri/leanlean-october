@@ -15,18 +15,20 @@ private theorem square_cpow (a : ℝ) (ha : 0 < a) (z : ℂ) :
   congr 1
   ring
 
-theorem integrableOn_gaussian_real_place_mellin (s : ℂ) (a : ℝ)
-    (hs : 0 < s.re) (ha : 0 < a) :
+variable (s : ℂ) (a : ℝ) (hs : 0 < s.re) (ha : 0 < a)
+
+include hs ha in
+theorem integrableOn_gaussian_real_place_mellin :
     IntegrableOn (fun q : ℝ ↦
       (q : ℂ) ^ (s - 1) *
         Complex.exp (-((Real.pi * a ^ 2 : ℝ) : ℂ) * (q : ℂ) ^ 2))
       (Set.Ioi 0) := by
-  simpa only [Complex.ofReal_mul, Complex.ofReal_pow, neg_mul] using
+  simpa using
     AbelianQuotient.integrableOn_gaussian_real_place_mellin s (a ^ 2) hs
       (sq_pos_of_pos ha)
 
-theorem gaussian_real_place_mellin (s : ℂ) (a : ℝ)
-    (hs : 0 < s.re) (ha : 0 < a) :
+include hs ha in
+theorem gaussian_real_place_mellin :
     (∫ q : ℝ in Set.Ioi 0,
       (q : ℂ) ^ (s - 1) *
         Complex.exp (-((Real.pi * a ^ 2 : ℝ) : ℂ) * (q : ℂ) ^ 2)) =
@@ -34,20 +36,20 @@ theorem gaussian_real_place_mellin (s : ℂ) (a : ℝ)
   have h := AbelianQuotient.gaussian_real_place_mellin s (a ^ 2) hs
     (sq_pos_of_pos ha)
   rw [square_cpow a ha, show (2 : ℂ) * (-s / 2) = -s by ring] at h
-  simpa only [Complex.ofReal_mul, Complex.ofReal_pow, neg_mul, one_div] using h
+  simpa using h
 
-theorem integrableOn_gaussian_complex_place_mellin (s : ℂ) (a : ℝ)
-    (hs : 0 < s.re) (ha : 0 < a) :
+include hs ha in
+theorem integrableOn_gaussian_complex_place_mellin :
     IntegrableOn (fun q : ℝ ↦
       (q : ℂ) ^ (2 * s - 1) *
         Complex.exp (-((2 * Real.pi * a ^ 2 : ℝ) : ℂ) * (q : ℂ) ^ 2))
       (Set.Ioi 0) := by
-  simpa only [Complex.ofReal_mul, Complex.ofReal_pow, neg_mul] using
+  simpa using
     AbelianQuotient.integrableOn_gaussian_complex_place_mellin s (a ^ 2) hs
       (sq_pos_of_pos ha)
 
-theorem gaussian_complex_place_mellin (s : ℂ) (a : ℝ)
-    (hs : 0 < s.re) (ha : 0 < a) :
+include hs ha in
+theorem gaussian_complex_place_mellin :
     (∫ q : ℝ in Set.Ioi 0,
       (q : ℂ) ^ (2 * s - 1) *
         Complex.exp (-((2 * Real.pi * a ^ 2 : ℝ) : ℂ) * (q : ℂ) ^ 2)) =
@@ -55,6 +57,6 @@ theorem gaussian_complex_place_mellin (s : ℂ) (a : ℝ)
   have h := AbelianQuotient.gaussian_complex_place_mellin s (a ^ 2) hs
     (sq_pos_of_pos ha)
   rw [square_cpow a ha, show (2 : ℂ) * (-s) = -2 * s by ring] at h
-  simpa only [Complex.ofReal_mul, Complex.ofReal_pow, neg_mul, one_div] using h
+  simpa using h
 
 end DedekindZetaZeroFree.AbelianQuotient.Theta

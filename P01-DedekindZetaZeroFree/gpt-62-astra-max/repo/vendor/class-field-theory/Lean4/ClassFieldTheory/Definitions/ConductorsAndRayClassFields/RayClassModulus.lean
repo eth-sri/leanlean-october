@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -119,33 +113,13 @@ instance {K : Type u} [Field K] [NumberField K] :
       ⟨sup_le hmp.1 hnp.1, Finset.union_subset hmp.2 hnp.2⟩
   }
 
-@[simp] theorem finitePart_inf
-    {K : Type u} [Field K] [NumberField K]
-    (m n : RayClassModulus K) :
+variable {K : Type u} [Field K] [NumberField K] (m n : RayClassModulus K)
+
+@[simp] theorem finitePart_inf :
     (m ⊓ n).finitePart = m.finitePart ⊓ n.finitePart := rfl
 
-@[simp] theorem mem_infinitePart_inf
-    {K : Type u} [Field K] [NumberField K]
-    (m n : RayClassModulus K) (v : RayClassRealPlace K) :
-    v ∈ (m ⊓ n).infinitePart ↔
-      v ∈ m.infinitePart ∧ v ∈ n.infinitePart := by
-  classical
-  change v ∈ m.infinitePart ∩ n.infinitePart ↔ _
-  exact Finset.mem_inter
-
-@[simp] theorem finitePart_sup
-    {K : Type u} [Field K] [NumberField K]
-    (m n : RayClassModulus K) :
+@[simp] theorem finitePart_sup :
     (m ⊔ n).finitePart = m.finitePart ⊔ n.finitePart := rfl
-
-@[simp] theorem mem_infinitePart_sup
-    {K : Type u} [Field K] [NumberField K]
-    (m n : RayClassModulus K) (v : RayClassRealPlace K) :
-    v ∈ (m ⊔ n).infinitePart ↔
-      v ∈ m.infinitePart ∨ v ∈ n.infinitePart := by
-  classical
-  change v ∈ m.infinitePart ∪ n.infinitePart ↔ _
-  exact Finset.mem_union
 
 end RayClassModulus
 

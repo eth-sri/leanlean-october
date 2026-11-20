@@ -24,14 +24,19 @@ theorem exterior_iff (A : SArithmeticData F) (c : Ideal (𝓞 F)) :
   · intro h v hv
     exact (h v hv).pow_right
 
-def exteriorIndex (A : SArithmeticData F) (c : Ideal (𝓞 F))
-    (hc : Squarefree c) (hcop : c ⊔ uniformSquareUnitModulus A.Sf = ⊤) :
+section
+
+variable (A : SArithmeticData F) (c : Ideal (𝓞 F)) (hc : Squarefree c)
+    (hcop : c ⊔ uniformSquareUnitModulus A.Sf = ⊤)
+
+def exteriorIndex :
     A.Exterior :=
   ⟨c, hc.ne_zero, (exterior_iff A c).mp hcop⟩
 
-@[simp] theorem exteriorIndex_val (A : SArithmeticData F) (c : Ideal (𝓞 F))
-    (hc : Squarefree c) (hcop : c ⊔ uniformSquareUnitModulus A.Sf = ⊤) :
+@[simp] theorem exteriorIndex_val :
     (exteriorIndex A c hc hcop).val = c := rfl
+
+end
 
 structure AllowedRepresentative (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -42,26 +47,29 @@ structure AllowedRepresentative (A : SArithmeticData F) (σ : F →+* ℂ)
   radical_eq : (radical : F) = (integral : F)
   allowed : A.IsAllowed C.correction.B radical
 
-def chooseRepresentative (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS) (I : A.Exterior) :
+section
+
+variable (A : SArithmeticData F) (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)
+    (hS : A.ContainsTraceBadPlaces) (C : A.GeneralArithmeticContext σ η hS)
+
+def chooseRepresentative (I : A.Exterior) :
     AllowedRepresentative A σ η hS C I :=
   let r := (C.allowed_integral I).choose
   let a := (C.allowed_integral I).choose_spec.choose
   let h := (C.allowed_integral I).choose_spec.choose_spec
   ⟨r, a, h.1, h.2.1, h.2.2⟩
 
-def generator (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS) (c : Ideal (𝓞 F))
+def generator (c : Ideal (𝓞 F))
     (hc : Squarefree c) (hcop : c ⊔ uniformSquareUnitModulus A.Sf = ⊤) : Fˣ :=
   (chooseRepresentative A σ η hS C (exteriorIndex A c hc hcop)).radical
 
-theorem AllowedRepresentative.isAllowedGenerator
-    {A : SArithmeticData F} {σ : F →+* ℂ}
-    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
-    {C : A.GeneralArithmeticContext σ η hS} {I : A.Exterior}
-    (a : AllowedRepresentative A σ η hS C I) :
+end
+
+variable {A : SArithmeticData F} {σ : F →+* ℂ} {η : RayClassCharacter F A.modulus}
+    {hS : A.ContainsTraceBadPlaces} {C : A.GeneralArithmeticContext σ η hS} {I : A.Exterior}
+    (a : AllowedRepresentative A σ η hS C I)
+
+theorem AllowedRepresentative.isAllowedGenerator :
     A.IsAllowedGenerator C.correction.B
       (A.extendIdeal I : FractionalIdeal A.R⁰ F) a.radical := by
   refine ⟨?_, a.allowed⟩
@@ -69,11 +77,7 @@ theorem AllowedRepresentative.isAllowedGenerator
   change FractionalIdeal.spanSingleton A.R⁰ (a.integral : F) = _
   rw [← a.radical_eq]
 
-theorem representative_top_square
-    {A : SArithmeticData F} {σ : F →+* ℂ}
-    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
-    {C : A.GeneralArithmeticContext σ η hS} {I : A.Exterior}
-    (a : AllowedRepresentative A σ η hS C I) (hI : I.val = ⊤) :
+theorem representative_top_square (hI : I.val = ⊤) :
     ∃ y : Fˣ, a.radical = y ^ 2 := by
   have hone : A.IsAllowedGenerator C.correction.B
       (A.extendIdeal I : FractionalIdeal A.R⁰ F) 1 := by
@@ -82,8 +86,7 @@ theorem representative_top_square
         Ideal.map_top]
     · change A.sClass 1 ∈ C.correction.B
       simp
-  have h := C.allowed_unique _ _ _ a.isAllowedGenerator hone
-  obtain ⟨u, hu, heq⟩ := h
+  obtain ⟨u, hu, heq⟩ := (C.allowed_unique _ _ _ a.isAllowedGenerator hone)
   change u ^ 6 = a.radical / 1 at heq
   refine ⟨u ^ 3, ?_⟩
   simpa [← pow_mul] using heq.symm

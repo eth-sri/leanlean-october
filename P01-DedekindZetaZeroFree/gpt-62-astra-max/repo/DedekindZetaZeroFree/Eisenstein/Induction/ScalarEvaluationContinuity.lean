@@ -14,10 +14,10 @@ set_option synthInstance.maxHeartbeats 200000
 namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 open MomentSources TensorActionSource KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology
 
@@ -35,7 +35,7 @@ theorem archValue_continuous (w : InfinitePlace F) (f : Plus R N P C (Sum.inl w)
   letI : DiscreteTopology (rootsOfUnity 3 F) := ⟨rfl⟩
   have hc : Continuous (KPLocalChartTopology.complexCoordinates F R.A.zeta12 R.A.primitive_zeta12 w) := continuous_induced_dom
   have hm : Continuous (complexMatrix R w) := by
-    have hg : Continuous (fun g : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w) => g.g) :=
+    have hg :=
       continuous_fst.comp hc
     have he := (InfinitePlace.Completion.isometryEquivComplexOfIsComplex
       (KPHilbert.infinite_isComplex F R.A.zeta12 R.A.primitive_zeta12 w)).continuous
@@ -67,14 +67,10 @@ theorem scalarSource_finite_locallyConstant (x : PlusCore R N P C) :
   obtain ⟨U, hU⟩ := scalarSource_has_level R N P C x
   rw [IsLocallyConstant.iff_eventually_eq]
   intro g
-  have hc : Continuous (fun y : KPGlobalTorusFunctionData.finitePart F R.A.zeta12 R.A.primitive_zeta12 => g⁻¹ * y) :=
-    continuous_const.mul continuous_id
   have he : ∀ᶠ y in nhds g, g⁻¹ * y ∈ U.toOpenSubgroup :=
-    hc.continuousAt.preimage_mem_nhds (by simpa using U.toOpenSubgroup.isOpen.mem_nhds U.toOpenSubgroup.one_mem)
+    (continuous_const.mul continuous_id).continuousAt.preimage_mem_nhds (by simpa using U.toOpenSubgroup.isOpen.mem_nhds U.toOpenSubgroup.one_mem)
   filter_upwards [he] with y hy
-  have hm : (g⁻¹ * y).val ∈ KPGlobalTorusFunctionData.globalLevel F R.A.zeta12 R.A.primitive_zeta12 U :=
-    Subgroup.mem_map.mpr ⟨g⁻¹ * y, hy, rfl⟩
-  simpa using hU g.val (g⁻¹ * y).val hm
+  simpa using hU g.val (g⁻¹ * y).val (Subgroup.mem_map.mpr ⟨g⁻¹ * y, hy, rfl⟩)
 
 theorem scalarSource_pure_raw_factor (s : RestrictedTensorSimple.Level (bad R P C))
     (f : ∀ p : s.val, Plus R N P C p) (g : Raw R) :
@@ -174,7 +170,7 @@ theorem scalarSource_continuous (x : PlusCore R N P C) :
     change Continuous (fun g => c * scalarSourceEvaluator R N P C
       (RestrictedTensorSimple.stageInclusion _ _ _ s (PiTensorProduct.tprod ℂ f)) g)
     exact continuous_const.mul hp
-  | add x y hx hy => simpa only [map_add] using hx.add hy
+  | add x y hx hy => simpa using hx.add hy
 
 end DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 

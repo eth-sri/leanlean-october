@@ -14,10 +14,10 @@ open ResidualSphericalGeometry
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 theorem component_slice (Z : smoothSections F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount) (b : KPSmoothActualFlowData.GInfinity F) :
@@ -45,7 +45,7 @@ theorem section_eigen_of_native (Z : smoothSections F ζ hζ U R P H) (a : ℂ)
   apply Subtype.ext
   funext x
   let b := KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ x
-  have hb : KPMsFixedHaarDisintegration.archBasepoint F b = x :=
+  have hb :=
     KPContSectorArchSphericalFibers.archBasepoint_iwasawaSection F ζ hζ x
   have hslice (d : KPSmoothActualFlowData.GInfinity F) :
       (originalScalar F ζ hζ U R P H Z ∘ KPSmoothLocalQuotientCharts.quotientMap F ζ hζ)

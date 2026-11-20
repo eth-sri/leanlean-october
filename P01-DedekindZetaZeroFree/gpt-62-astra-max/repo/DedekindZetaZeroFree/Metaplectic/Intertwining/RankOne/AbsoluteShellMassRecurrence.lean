@@ -56,13 +56,11 @@ theorem actual_tail_shell_norm_step (P : Polarization S.heisenberg)
   congr 1
   have H := congrArg norm (actual_uniformizer_multiplier F ζ hζ q S ε s π hπ)
   rw [norm_mul] at H
-  have hq : (0 : ℝ) < residueCardinality (LocalField F q) := by
-    exact_mod_cast (lt_of_lt_of_le (by decide : 0 < 2) (KPCubicUnitIndices.two_le_residueCard (LocalField F q)))
   have hn : ‖(residueCardinality (LocalField F q) : ℂ) ^ 3‖ =
       (residueCardinality (LocalField F q) : ℝ) ^ 3 := by
     rw [norm_pow]
     congr 1
-    simp only [Complex.norm_natCast]
+    simp
   rwa [hn] at H
 
 end DedekindZetaZeroFree.KPRankOneShellRepair

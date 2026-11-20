@@ -18,16 +18,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -80,82 +70,62 @@ theorem
           (padicCompletedChangedUniformizerPrimeElement p u n)) := by
   let D := padicCompletedChangedUniformizerFixedField p u n
   let M := padicCompletedStandardChangedCompositum p u n
-  let A := padicCompletedUnramifiedField p
   let E := padicCompletedLevelField p n
   let padicBase := (padicLocalField p).toCompleteDVF
   let canonicalBase := localCompleteDVF ℚ_[p]
   let coefficient := padicCompletedUnramifiedCompleteDVF p
   let ambient := padicCompletedLevelCompleteDVF p n
-  let : NontriviallyNormedField D :=
+  let :=
     finiteExtensionSpectralNormedField ℚ_[p] D
-  let : ValuativeRel D :=
+  let :=
     finiteExtensionSpectralValuativeRel ℚ_[p] D
-  let : IsNonarchimedeanLocalField D :=
+  let :=
     finiteExtensionSpectralIsNonarchimedeanLocalField ℚ_[p] D
-  let : NontriviallyNormedField M :=
+  let :=
     finiteExtensionSpectralNormedField ℚ_[p] M
-  let : ValuativeRel M :=
+  let :=
     finiteExtensionSpectralValuativeRel ℚ_[p] M
-  let : IsNonarchimedeanLocalField M :=
+  let :=
     finiteExtensionSpectralIsNonarchimedeanLocalField ℚ_[p] M
-  let :
-      Valuation.HasExtension (ValuativeRel.valuation ℚ_[p])
-        (ValuativeRel.valuation D) :=
+  let :=
     finiteExtensionSpectralValuation_hasExtension ℚ_[p] D
-  let :
-      Valuation.HasExtension (ValuativeRel.valuation ℚ_[p])
-        (ValuativeRel.valuation M) :=
+  let :=
     finiteExtensionSpectralValuation_hasExtension ℚ_[p] M
-  let :
-      canonicalBase.valuation.HasExtension
-        (localCompleteDVF D).valuation :=
+  let :=
     localCompleteDVFValuation_hasExtension ℚ_[p] D
-  let :
-      canonicalBase.valuation.HasExtension
-        (localCompleteDVF M).valuation :=
+  let :=
     localCompleteDVFValuation_hasExtension ℚ_[p] M
-  let : padicBase.valuation.HasExtension coefficient.valuation :=
+  let :=
     padicCompletedUnramifiedValuation_hasExtension p
-  let : coefficient.valuation.HasExtension ambient.valuation :=
+  let :=
     padicCompletedLevelCompleteDVF_hasExtension p n
-  let : padicBase.valuation.HasExtension ambient.valuation :=
+  let :=
     ValuationTheory.DiscreteValuationField.Valuation.hasExtension_trans
       padicBase.valuation coefficient.valuation
       ambient.valuation
-  let : canonicalBase.valuation.HasExtension ambient.valuation :=
+  let :=
     localCompleteDVFValuation_hasExtension_of_padicLocalField
       p ambient.valuation
-  let inclusionD : D →+* E := D.val.toRingHom
-  have inclusionD_comp :
-      inclusionD.comp (algebraMap ℚ_[p] D) =
-        algebraMap ℚ_[p] E := by
-    ext x
-    exact D.val.commutes x
+  let inclusionD := D.val.toRingHom
   let :
       canonicalBase.valuation.HasExtension
         (ambient.valuation.comap inclusionD) :=
     hasExtension_comap_of_algebraMap_compatible
-      inclusionD inclusionD_comp
-  let inclusionM : M →+* E := M.val.toRingHom
-  have inclusionM_comp :
-      inclusionM.comp (algebraMap ℚ_[p] M) =
-        algebraMap ℚ_[p] E := by
-    ext x
-    exact M.val.commutes x
+      inclusionD (by
+        ext x
+        exact D.val.commutes x)
+  let inclusionM := M.val.toRingHom
   let :
       canonicalBase.valuation.HasExtension
         (ambient.valuation.comap inclusionM) :=
     hasExtension_comap_of_algebraMap_compatible
-      inclusionM inclusionM_comp
-  have hthetaAmbient :
-      ambient.valuation.IsUniformizer
-        (((padicChangedUniformizerThetaValue p u n :
-          ambient.valuationSubring) : E)) :=
+      inclusionM (by
+        ext x
+        exact M.val.commutes x)
+  have hthetaAmbient :=
     padicChangedUniformizerThetaValue_isUniformizer p u n
-  have hthetaD :
-      (localCompleteDVF D).valuation.IsUniformizer
-        (padicCompletedChangedUniformizerPrimeElement p u n : D) := by
-    apply
+  refine ⟨?_, ?_⟩
+  · apply
       isUniformizer_of_ambient_image_isUniformizer
         canonicalBase (localCompleteDVF D) ambient inclusionD
     change
@@ -163,11 +133,7 @@ theorem
         (((padicChangedUniformizerThetaValue p u n :
           ambient.valuationSubring) : E))
     exact hthetaAmbient
-  have hthetaM :
-      (localCompleteDVF M).valuation.IsUniformizer
-        (algebraMap D M
-          (padicCompletedChangedUniformizerPrimeElement p u n)) := by
-    apply
+  · apply
       isUniformizer_of_ambient_image_isUniformizer
         canonicalBase (localCompleteDVF M) ambient inclusionM
     change
@@ -175,14 +141,13 @@ theorem
         (((padicChangedUniformizerThetaValue p u n :
           ambient.valuationSubring) : E))
     exact hthetaAmbient
-  exact ⟨hthetaD, hthetaM⟩
+
+variable (p : ℕ) [Fact p.Prime] (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
 
 /-- The finite standard/changed compositum has relative ramification index
 one over the changed fixed field. -/
 theorem
-    padicCompletedStandardChangedCompositum_ramificationIndex_eq_one
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+    padicCompletedStandardChangedCompositum_ramificationIndex_eq_one :
     let D := padicCompletedChangedUniformizerFixedField p u n
     let M := padicCompletedStandardChangedCompositum p u n
     letI : NontriviallyNormedField D :=
@@ -209,25 +174,21 @@ theorem
       (localCompleteDVF M).toDVF = 1 := by
   let D := padicCompletedChangedUniformizerFixedField p u n
   let M := padicCompletedStandardChangedCompositum p u n
-  let : NontriviallyNormedField D :=
+  let :=
     finiteExtensionSpectralNormedField ℚ_[p] D
-  let : ValuativeRel D :=
+  let :=
     finiteExtensionSpectralValuativeRel ℚ_[p] D
-  let : IsNonarchimedeanLocalField D :=
+  let :=
     finiteExtensionSpectralIsNonarchimedeanLocalField ℚ_[p] D
-  let : NontriviallyNormedField M :=
+  let :=
     finiteExtensionSpectralNormedField ℚ_[p] M
-  let : ValuativeRel M :=
+  let :=
     finiteExtensionSpectralValuativeRel ℚ_[p] M
-  let : IsNonarchimedeanLocalField M :=
+  let :=
     finiteExtensionSpectralIsNonarchimedeanLocalField ℚ_[p] M
-  let :
-      Valuation.HasExtension (ValuativeRel.valuation D)
-        (ValuativeRel.valuation M) :=
+  let :=
     finiteExtensionSpectralValuation_hasExtension_of_tower ℚ_[p] D M
-  let :
-      (localCompleteDVF D).valuation.HasExtension
-        (localCompleteDVF M).valuation :=
+  let :=
     localCompleteDVFValuation_hasExtension D M
   let base := localCompleteDVF D
   let target := localCompleteDVF M
@@ -237,25 +198,19 @@ theorem
   let thetaInteger : base.valuationSubring :=
     ⟨padicCompletedChangedUniformizerPrimeElement p u n,
       hthetaD.val_lt_one.le⟩
-  have hthetaMap :
-      target.valuation.IsUniformizer
-        (((integerMap base.toDVF target.toDVF thetaInteger :
-          target.valuationSubring) : M)) := by
-    rw [integerMap_apply]
-    exact hthetaM
-  exact
+  refine
     LocalFieldTheory.DiscreteValuationField.ValuedExtension.ramificationIndex_eq_one_of_integerMap_uniformizer
       base target thetaInteger
-      (by simpa only [thetaInteger] using hthetaD)
-      hthetaMap
+      (by simpa using hthetaD)
+      ?_
+  rw [integerMap_apply]
+  exact hthetaM
 
 /-- With the canonical p-adic spectral valuations, the finite
 standard/changed compositum is an unramified valued extension of the changed
 fixed field. -/
 theorem
-    padicCompletedStandardChangedCompositum_isUnramifiedValuedExtension
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+    padicCompletedStandardChangedCompositum_isUnramifiedValuedExtension :
     let D := padicCompletedChangedUniformizerFixedField p u n
     let M := padicCompletedStandardChangedCompositum p u n
     let : FiniteDimensional D M :=
@@ -290,9 +245,6 @@ theorem
     let :
         Module.Finite (ValuativeRel.valuation D).integer
           (ValuativeRel.valuation M).integer := by
-      change
-        Module.Finite (localCompleteDVF D).valuationSubring
-          (localCompleteDVF M).valuationSubring
       exact
         ValuationTheory.DiscreteValuationField.ValuedExtension.moduleFinite_target_valuationSubring_of_finite_separable
           (localCompleteDVF D) (localCompleteDVF M)

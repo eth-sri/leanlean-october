@@ -11,8 +11,8 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.CompactPeriodAnalyticity.CompactPeriod
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 
 def numeratorProfile (T : Realization R Q) (v : R.A.UnitQuotient)
     (s : Metric.ball (0 : ℂ) T.radius) (g : Group R) : C(KPAdditiveQuotient F, ℂ) :=
@@ -50,10 +50,7 @@ theorem localPeriod_meromorphic (T : Realization R Q) (v : R.A.UnitQuotient)
 
 theorem localPeriod_clears (T : Realization R Q) (v : R.A.UnitQuotient)
     (s : ℂ) (hs : s ∈ Metric.ball (0 : ℂ) T.radius) (hs0 : s ≠ 0) (g : Group R) :
-    Integrable (fun q => T.cleared v s
-      (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g)) Q.dq ∧
     upper R Q.dq (T.cleared v s) g = s * localPeriod T v s g := by
-  refine ⟨cleared_integrable T v s hs g, ?_⟩
   dsimp [localPeriod]
   field_simp
 

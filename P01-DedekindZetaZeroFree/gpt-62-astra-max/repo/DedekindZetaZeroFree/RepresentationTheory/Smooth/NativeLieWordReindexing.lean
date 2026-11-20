@@ -58,7 +58,6 @@ theorem actual_frame_ray_eq_flow
   change LocalQuotientCharts.ExponentialHaarFrame.coordinateReindex F
     (t • Pi.single b 1) (actualBasisReindex F c) = _ at hr
   rw [hr]
-  change (t • Pi.single b 1) c = if actualBasisReindex F c = actualBasisReindex F b then t else 0
   simp [Pi.single_apply, Equiv.apply_eq_iff_eq, eq_comm]
 
 end DedekindZetaZeroFree.KPSmoothAutomorphicEvaluation.AmbientApproximation.OrbitSmoothing.Reconstruction.LocalSobolev.Scalar.CoordinateSource

@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Algebra.LinearAlgebra.FunctionInterpolation
 
 public import DedekindZetaZeroFree.Eisenstein.Induction.ScalarCompactPicturesAndLocalQuotientTensors
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.HolomorphicKTypeGeneration
@@ -15,75 +16,22 @@ namespace DedekindZetaZeroFree.KPLiteralScalarArchIndependentSlices
  def pointEvaluation {X : Type*} (S : Submodule ℂ (X → ℂ)) (x : X) :
     Module.Dual ℂ S := (LinearMap.proj x).comp S.subtype
 
-theorem finite_interpolation {X : Type*}
-    (S : Submodule ℂ (X → ℂ)) [FiniteDimensional ℂ S] :
-    ∃ (n : ℕ) (x : Fin n → X) (b : Fin n → S),
-      ∀ (f : S) (y : X), f.val y = ∑ i, f.val (x i) * (b i).val y := by
-  have htop : Submodule.span ℂ (Set.range (pointEvaluation S)) = ⊤ := by
-    apply Submodule.span_eq_top_of_ne_zero
-    intro f hf
-    have hx : ∃ x, f.val x ≠ 0 := by
-      by_contra! hn
-      exact hf (Subtype.ext (funext hn))
-    obtain ⟨x, hx⟩ := hx
-    exact ⟨pointEvaluation S x, ⟨x, rfl⟩, hx⟩
-  have hfg : (Submodule.span ℂ (Set.range (pointEvaluation S))).FG := by
-    rw [htop]
-    exact Module.Finite.fg_top
-  obtain ⟨s, hs, he⟩ := (Submodule.fg_span_iff_fg_span_finset_subset _).mp hfg
-  choose x hx using fun e : s => hs e.property
-  let E := Fintype.equivFin s
-  let p : Fin (Fintype.card s) → X := fun i => x (E.symm i)
-  have hr : Set.range (fun i => pointEvaluation S (p i)) =
-      (s : Set (Module.Dual ℂ S)) := by
-    ext e
-    constructor
-    · rintro ⟨i, rfl⟩
-      dsimp [p]
-      rw [hx]
-      exact (E.symm i).property
-    · intro he
-      exact ⟨E ⟨e, he⟩, by simpa [p] using hx ⟨e, he⟩⟩
-  have hp : Submodule.span ℂ (Set.range (fun i => pointEvaluation S (p i))) = ⊤ := by
-    rw [hr, ← he, htop]
-  let B := Module.finBasis ℂ S
-  have hc : ∀ j, ∃ c : Fin (Fintype.card s) → ℂ,
-      ∑ i, c i • pointEvaluation S (p i) = B.coord j := by
-    intro j
-    apply (Submodule.mem_span_range_iff_exists_fun ℂ).mp
-    rw [hp]
-    exact Submodule.mem_top
-  choose c hc using hc
-  refine ⟨Fintype.card s, p, fun i => ∑ j, c j i • B j, ?_⟩
-  intro f y
-  have hb := congrArg (fun z : S => z.val y) (B.sum_repr f)
-  simp only [Submodule.coe_sum, Finset.sum_apply, Submodule.coe_smul,
-    Pi.smul_apply, smul_eq_mul] at hb
-  rw [← hb]
-  simp only [Submodule.coe_sum, Finset.sum_apply, Submodule.coe_smul,
-    Pi.smul_apply, smul_eq_mul, Finset.mul_sum]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro j _
-  have hj := congrArg (fun l : Module.Dual ℂ S => l f) (hc j)
-  simp only [LinearMap.sum_apply, LinearMap.smul_apply, smul_eq_mul,
-    pointEvaluation, LinearMap.comp_apply, LinearMap.proj_apply,
-    Submodule.subtype_apply, Module.Basis.coord_apply] at hj
-  rw [← hj, Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro i _
-  ring
+alias finite_interpolation := DedekindZetaZeroFree.FiniteFunctionSpaces.exists_finite_evaluation_interpolation
 
  def partialProducts {ι X : Type*} [Fintype ι] (S : ι → Submodule ℂ (X → ℂ))
     (s : Finset ι) : Submodule ℂ ((ι → X) → ℂ) :=
   Submodule.span ℂ (Set.range (fun f : ∀ i, S i => fun a => ∏ i ∈ s, (f i).val (a i)))
 
-private theorem partialProducts_mul {ι X : Type*} [Fintype ι] [DecidableEq ι]
+section
+
+variable {ι X : Type*} [Fintype ι]
+
+private theorem partialProducts_mul [DecidableEq ι]
     (S : ι → Submodule ℂ (X → ℂ)) (s : Finset ι) (w : ι) (hw : w ∉ s)
     (f : S w) (h : (ι → X) → ℂ) (hh : h ∈ partialProducts S s) :
     (fun a => f.val (a w) * h a) ∈ partialProducts S (insert w s) := by
   refine Submodule.span_induction
-    (p := fun h _ => (fun a => f.val (a w) * h a) ∈ partialProducts S (insert w s))
+
     ?_ ?_ ?_ ?_ hh
   · rintro _ ⟨g, rfl⟩
     apply Submodule.subset_span
@@ -103,7 +51,7 @@ private theorem partialProducts_mul {ι X : Type*} [Fintype ι] [DecidableEq ι]
   · intro c h _ hh
     simpa only [Pi.smul_def, smul_eq_mul, mul_left_comm] using Submodule.smul_mem _ c hh
 
-private theorem tensor_interpolation {ι X : Type*} [Fintype ι] [DecidableEq ι]
+private theorem tensor_interpolation [DecidableEq ι]
     (S : ι → Submodule ℂ (X → ℂ)) (n : ι → ℕ)
     (x : ∀ i, Fin (n i) → X) (b : ∀ i, Fin (n i) → S i)
     (s : Finset ι) (h : (ι → X) → ℂ) (a₀ : ι → X)
@@ -112,7 +60,7 @@ private theorem tensor_interpolation {ι X : Type*} [Fintype ι] [DecidableEq ι
     h ∈ partialProducts S s := by
   induction s using Finset.induction_on generalizing h with
   | empty =>
-    have he : h = fun _ => h a₀ := by funext a; simpa using hd a
+    have he : h = fun _ => h a₀ := by funext a; exact hd a
     rw [he]
     have h1 : (fun _ : ι → X => (1 : ℂ)) ∈ partialProducts S ∅ :=
       Submodule.subset_span ⟨fun _ => 0, by simp⟩
@@ -122,13 +70,11 @@ private theorem tensor_interpolation {ι X : Type*} [Fintype ι] [DecidableEq ι
       intro j
       apply ih
       · intro v hv a
-        have hne : v ≠ w := ne_of_mem_of_not_mem hv hw
-        have hi := hh v (Finset.mem_insert_of_mem hv) (Function.update a w (x w j))
-        simpa only [Function.update_of_ne hne, Function.update_comm hne] using hi
+        have hne := ne_of_mem_of_not_mem hv hw
+        simpa only [Function.update_of_ne hne, Function.update_comm hne] using (hh v (Finset.mem_insert_of_mem hv) (Function.update a w (x w j)))
       · intro a
         have hi := hd (Function.update a w (x w j))
-        have hj := hd (Function.update (fun i => if i ∈ s then a i else a₀ i) w (x w j))
-        rw [hi, hj]
+        rw [hi, (hd (Function.update (fun i => if i ∈ s then a i else a₀ i) w (x w j)))]
         congr 1
         funext i
         by_cases hi : i = w
@@ -140,8 +86,7 @@ private theorem tensor_interpolation {ι X : Type*} [Fintype ι] [DecidableEq ι
     rw [he]
     exact Submodule.sum_mem _ (fun j _ => partialProducts_mul S s w hw (b w j) _ (hqi j))
 
-theorem independent_slices_mem_product_span
-    {ι X : Type*} [Fintype ι] [DecidableEq ι] [Nonempty X]
+theorem independent_slices_mem_product_span [DecidableEq ι] [Nonempty X]
     (S : ι → Submodule ℂ (X → ℂ)) [∀ i, FiniteDimensional ℂ (S i)]
     (h : (ι → X) → ℂ)
     (hh : ∀ i a, (fun x => h (Function.update a i x)) ∈ S i) :
@@ -149,17 +94,20 @@ theorem independent_slices_mem_product_span
   choose n x b hb using fun i => finite_interpolation (S i)
   apply tensor_interpolation S n x b Finset.univ h (fun _ => Classical.choice ‹Nonempty X›)
   · intro i _ a
-    have hi := hb i ⟨_, hh i a⟩ (a i)
-    simpa only [Function.update_eq_self] using hi
+    simpa using (hb i ⟨_, hh i a⟩ (a i))
   · intro a
-    simp only [Finset.mem_univ, ite_true]
+    simp
+
+end
 
 open KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues
 
-abbrev harmonicBand (s : ℝ) (N : ℕ) : Submodule ℂ (PrincipalSeries s) :=
+variable (s : ℝ) (N : ℕ)
+
+abbrev harmonicBand : Submodule ℂ (PrincipalSeries s) :=
   (Finset.range (N + 1)).sup (harmonicKType s)
 
-theorem harmonicBand_finite (s : ℝ) (N : ℕ) :
+theorem harmonicBand_finite :
     Module.Finite ℂ (harmonicBand s N) := by
   have h (I : Finset ℕ) : Module.Finite ℂ ↥(I.sup (harmonicKType s)) := by
     induction I using Finset.induction_on with
@@ -174,7 +122,7 @@ theorem harmonicBand_finite (s : ℝ) (N : ℕ) :
       infer_instance
   exact h _
 
-def harmonicBandEvaluation (s : ℝ) (N : ℕ) :
+def harmonicBandEvaluation :
     harmonicBand s N →ₗ[ℂ] (KPCplxCharacterHaar.ComplexGL2 → ℂ) :=
   (principalSeriesSubmodule s).subtype.comp (harmonicBand s N).subtype
 
@@ -189,10 +137,9 @@ theorem invariant_subspace_le_band (s : ℝ)
     (hU : IsKInvariant s U) :
     U ≤ harmonicBand s (Module.finrank ℂ U) := by
   intro f hf
-  let : T2Space (PrincipalSeries s) := principalSeries_t2 s
-  let : ContinuousSMul ℂ (PrincipalSeries s) :=
+  let := principalSeries_t2 s
+  let :=
     (show WithSeminorms (chartSeminorm s) from ⟨rfl⟩).continuousSMul
-  have hclosed : IsClosed (U : Set (PrincipalSeries s)) := U.closed_of_finiteDimensional
   obtain ⟨μ, hhaar, hprob⟩ := KPCplxHarmonicExtraction.exists_su2_probability_haar
   obtain ⟨a, hint, havg, htype, hlim⟩ :=
     KPCplxHarmonicExtraction.character_average_harmonic_expansion s μ hhaar hprob f
@@ -201,23 +148,18 @@ theorem invariant_subspace_le_band (s : ℝ)
     rintro _ ⟨k, rfl⟩
     exact hU k f hf
   have haU (ℓ : ℕ) : a ℓ ∈ U := by
-    have h := KPCplxHarmonicExtraction.character_average_mem_orbit_closure
-      s μ hhaar hprob ℓ f (a ℓ) (hint ℓ) (havg ℓ)
-    have h' : a ℓ ∈ closure (U : Set (PrincipalSeries s)) := closure_mono horbit h
-    rwa [hclosed.closure_eq] at h'
+    have h' := closure_mono horbit (KPCplxHarmonicExtraction.character_average_mem_orbit_closure
+      s μ hhaar hprob ℓ f (a ℓ) (hint ℓ) (havg ℓ))
+    rwa [U.closed_of_finiteDimensional.closure_eq] at h'
   have hbound (ℓ : ℕ) (hne : a ℓ ≠ 0) : ℓ < Module.finrank ℂ U := by
     have ht := harmonicKType_multiplicity_one s ℓ
-    have hi : IsKInvariant s (U ⊓ harmonicKType s ℓ) := by
-      intro k v hv
-      exact ⟨hU k v hv.1, ht.1 k v hv.2⟩
     have hn : U ⊓ harmonicKType s ℓ ≠ ⊥ := by
       intro he
       have hm : a ℓ ∈ U ⊓ harmonicKType s ℓ := ⟨haU ℓ, htype ℓ⟩
       rw [he] at hm
-      exact hne (by simpa using hm)
-    have he := (ht.2.2.1 (U ⊓ harmonicKType s ℓ) inf_le_right hi).resolve_left hn
+      exact hne (by exact hm)
     have hle : harmonicKType s ℓ ≤ U := by
-      rw [← he]
+      rw [← ((ht.2.2.1 (U ⊓ harmonicKType s ℓ) inf_le_right (fun k v hv => ⟨hU k v hv.1, ht.1 k v hv.2⟩)).resolve_left hn)]
       exact inf_le_left
     have hd := Submodule.finrank_mono hle
     rw [ht.2.1] at hd
@@ -235,9 +177,7 @@ theorem invariant_subspace_le_band (s : ℝ)
       (fun _ : ℕ => ∑ ℓ ∈ Finset.range (Module.finrank ℂ U), a ℓ) := by
     filter_upwards [Filter.eventually_ge_atTop (Module.finrank ℂ U)] with N hN
     exact hsum N hN
-  have heq : (∑ ℓ ∈ Finset.range (Module.finrank ℂ U), a ℓ) = f :=
-    tendsto_nhds_unique (tendsto_const_nhds.congr' hevent.symm) hlim
-  rw [← heq]
+  rw [← (tendsto_nhds_unique (tendsto_const_nhds.congr' hevent.symm) hlim)]
   apply Submodule.sum_mem
   intro ℓ hℓ
   exact (Finset.le_sup (Finset.mem_range_succ_iff.mpr
@@ -249,7 +189,11 @@ end DedekindZetaZeroFree.KPLiteralScalarArchUniformBands
 namespace DedekindZetaZeroFree.KPLiteralScalarArchCoefficientGeneration
 open KPLiteralScalarArchIndependentSlices
 
-def tensorEvaluation {ι X : Type*} [Fintype ι] (S : ι → Submodule ℂ (X → ℂ)) :
+section
+
+variable {ι X : Type*} [Fintype ι] (S : ι → Submodule ℂ (X → ℂ))
+
+def tensorEvaluation :
     PiTensorProduct ℂ (fun i => S i) →ₗ[ℂ] ((ι → X) → ℂ) :=
   PiTensorProduct.lift
     ((MultilinearMap.mkPiAlgebra ℂ ι ((ι → X) → ℂ)).compLinearMap
@@ -258,13 +202,11 @@ def tensorEvaluation {ι X : Type*} [Fintype ι] (S : ι → Submodule ℂ (X �
           map_add' := fun _ _ => rfl
           map_smul' := fun _ _ => rfl }))
 
-@[simp] theorem tensorEvaluation_pure {ι X : Type*} [Fintype ι]
-    (S : ι → Submodule ℂ (X → ℂ)) (f : ∀ i, S i) (a : ι → X) :
+@[simp] theorem tensorEvaluation_pure (f : ∀ i, S i) (a : ι → X) :
     tensorEvaluation S (PiTensorProduct.tprod ℂ f) a = ∏ i, (f i).val (a i) := by
   simp [tensorEvaluation]
 
-private theorem product_span_eq_range {ι X : Type*} [Fintype ι]
-    (S : ι → Submodule ℂ (X → ℂ)) :
+private theorem product_span_eq_range :
     Submodule.span ℂ (Set.range (fun f : ∀ i, S i => fun a => ∏ i, (f i).val (a i))) =
       (tensorEvaluation S).range := by
   apply le_antisymm
@@ -279,9 +221,7 @@ private theorem product_span_eq_range {ι X : Type*} [Fintype ι]
       exact Submodule.subset_span ⟨f, (funext (tensorEvaluation_pure S f)).symm⟩
     | add x y hx hy => rw [map_add]; exact Submodule.add_mem _ hx hy
 
-theorem uniform_pure_sampling
-    {ι X : Type*} [Fintype ι]
-    (S : ι → Submodule ℂ (X → ℂ)) [∀ i, FiniteDimensional ℂ (S i)] :
+theorem uniform_pure_sampling [∀ i, FiniteDimensional ℂ (S i)] :
     ∃ (n : ℕ) (p : Fin n → (ι → X)) (c : Fin n → ℂ) (f : Fin n → ∀ i, S i),
       ∀ h ∈ Submodule.span ℂ (Set.range
         (fun f : ∀ i, S i => fun a => ∏ i, (f i).val (a i))),
@@ -291,7 +231,7 @@ theorem uniform_pure_sampling
   have hfin : Module.Finite ℂ R := by
     rw [show R = (tensorEvaluation S).range from product_span_eq_range S]
     infer_instance
-  let : Module.Finite ℂ R := hfin
+  let := hfin
   obtain ⟨m, p, b, hb⟩ := finite_interpolation R
   have hx (i : Fin m) : ∃ d : (∀ j, S j) →₀ ℂ,
       d.sum (fun f c => c • (fun a => ∏ j, (f j).val (a j))) = (b i).val :=
@@ -308,8 +248,7 @@ theorem uniform_pure_sampling
   rw [hbase]
   have he (i : Fin m) : (b i).val a =
       ∑ f ∈ (d i).support, d i f * ∏ j, (f j).val (a j) := by
-    have hi := congrFun (hd i) a
-    simpa only [Finsupp.sum, Finset.sum_apply, Pi.smul_apply, smul_eq_mul] using hi.symm
+    simpa only [Finsupp.sum, Finset.sum_apply, Pi.smul_apply, smul_eq_mul] using (congrFun (hd i) a).symm
   simp_rw [he, Finset.mul_sum]
   have hs : (∑ i : Fin m, ∑ f ∈ (d i).support,
       h (p i) * (d i f * ∏ j, (f j).val (a j))) =
@@ -322,9 +261,10 @@ theorem uniform_pure_sampling
     intro f _
     ring
   rw [hs]
-  exact Fintype.sum_equiv E _ _ (fun j => by
-    exact (congrArg (fun u : J => d u.1 u.2.val * h (p u.1) *
+  exact Fintype.sum_equiv E _ _ (fun j => (congrArg (fun u : J => d u.1 u.2.val * h (p u.1) *
       ∏ i, (u.2.val i).val (a i)) (E.symm_apply_apply j)).symm)
+
+end
 
 open KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues
 

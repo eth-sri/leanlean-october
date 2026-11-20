@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -157,20 +155,7 @@ noncomputable def rationalAbstractExtensionIdeleClassEquiv
     FiniteDimensional.trans ℚ F E
   letI : NumberField F := NumberField.of_module_finite ℚ F
   letI : NumberField E := NumberField.of_module_finite ℚ E
-  let eFixed :
-      Additive (IdeleClassGroup E) ≃+
-        KummerTheory.ambientFixedAddSubgroup
-          rationalIdeleClassRepresentation L :=
-    rationalAbstractRelativeFixedFieldIdeleClassEquivFixedOfFiniteDimensional K L hLK
-  let eRelative :
-      Additive (RelativeIdeleGroup.ClassGroup ℚ E) ≃+
-        Additive (IdeleClassGroup E) :=
-    MulEquiv.toAdditive
-      (_root_.relativeIdeleClassBaseChangeMulEquiv
-        (K := ℚ) (L := E))
-  let eTower :
-      Additive (RelativeIdeleGroup.ClassGroup ℚ E) ≃+
-        Additive (RelativeIdeleGroup.ClassGroup F E) :=
+  let eTower :=
     MulEquiv.toAdditive
       ((TowerRelativeIdeleGroup.classGroupEquiv
         ℚ F E).symm.trans
@@ -179,7 +164,9 @@ noncomputable def rationalAbstractExtensionIdeleClassEquiv
   exact
     (((extensionFixedRepresentationEquiv
       rationalIdeleClassRepresentation K L hLK hnormal).trans
-        eFixed.symm).trans eRelative.symm).trans eTower
+        (rationalAbstractRelativeFixedFieldIdeleClassEquivFixedOfFiniteDimensional K L hLK).symm).trans (MulEquiv.toAdditive
+          (_root_.relativeIdeleClassBaseChangeMulEquiv
+             )).symm).trans eTower
 
 /-- In the direct-limit fixed-part comparison, one absolute left-coset
 action is the idele-class embedding selected by the corresponding
@@ -224,11 +211,11 @@ theorem rationalIdeleClassEquivFixed_relativeCosetAction_coe
     IntermediateField.le_normalClosure K
   refine Quotient.inductionOn' q ?_
   intro σ
+  let restrictNormalHom₀ := AlgEquiv.restrictNormalHom (rationalNormalClosure K) σ.1
   have hembedding :
       rationalBaseFixingCosetEquivNormalClosure K
           (QuotientGroup.mk σ) =
-        (AlgEquiv.restrictNormalHom
-            (rationalNormalClosure K) σ.1).toAlgHom.comp
+        (restrictNormalHom₀).toAlgHom.comp
           (IntermediateField.inclusion
             hKN) := by
     apply AlgHom.ext
@@ -236,8 +223,7 @@ theorem rationalIdeleClassEquivFixed_relativeCosetAction_coe
     apply Subtype.ext
     change
       σ.1 (x : SeparableClosure ℚ) =
-        (((AlgEquiv.restrictNormalHom
-          (rationalNormalClosure K) σ.1)
+        (((restrictNormalHom₀)
             (IntermediateField.inclusion
               hKN x) :
             rationalNormalClosure K) :
@@ -258,8 +244,7 @@ theorem rationalIdeleClassEquivFixed_relativeCosetAction_coe
         (rationalRelativeIdeleClassToDirectLimit
           (rationalNormalClosure K)
           (RelativeIdeleGroup.classEmbedding
-            ((AlgEquiv.restrictNormalHom
-                (rationalNormalClosure K) σ.1).toAlgHom.comp
+            ((restrictNormalHom₀).toAlgHom.comp
               (IntermediateField.inclusion
                 hKN)) c))
   rw [show
@@ -280,20 +265,18 @@ theorem rationalIdeleClassEquivFixed_relativeCosetAction_coe
       (⟦⟨rationalNormalClosure K, d⟩⟧ :
         rationalIdeleClassDirectLimit))
   change
-    (AlgEquiv.restrictNormalHom
-        (rationalNormalClosure K) σ.1) •
+    (restrictNormalHom₀) •
       RelativeIdeleGroup.classEmbedding (IntermediateField.inclusion hKN)
         ((_root_.relativeIdeleClassBaseChangeMulEquiv
           (K := ℚ) (L := K)).symm
           (_root_.relativeIdeleClassBaseChangeMulEquiv
             (K := ℚ) (L := K) c)) =
       RelativeIdeleGroup.classEmbedding
-        ((AlgEquiv.restrictNormalHom
-            (rationalNormalClosure K) σ.1).toAlgHom.comp
+        ((restrictNormalHom₀).toAlgHom.comp
           (IntermediateField.inclusion
             hKN)) c
   rw [(_root_.relativeIdeleClassBaseChangeMulEquiv
-    (K := ℚ) (L := K)).symm_apply_apply]
+     ).symm_apply_apply]
   exact
     rationalRelativeIdeleClassEmbedding_smul_eq_classEmbedding
       hKN σ.1 c
@@ -383,8 +366,7 @@ theorem rationalIdeleClassEquivFixed_relativeNorm_coe
           (RelativeIdeleGroup.Cohomology.ideleClassNorm ℚ K c))
   rw [toMul_sum]
   calc
-    ∏ q : Q,
-        Additive.toMul (term q) =
+    _ =
         ∏ q : Q,
           rationalRelativeIdeleClassToDirectLimit
             (rationalNormalClosure K)
@@ -451,8 +433,7 @@ theorem rationalIdeleClassEquivFixed_relativeNorm_coe
         intro a
         rfl
       calc
-        (∏ f : K →ₐ[ℚ] rationalNormalClosure K,
-            RelativeIdeleGroup.classEmbedding f c) =
+        _ =
             RelativeIdeleGroup.classInclusion
               ℚ (rationalNormalClosure K)
               (RelativeIdeleGroup.classNorm ℚ K c) :=
@@ -509,25 +490,19 @@ theorem
   let F :=
     LocalClassFieldTheory.abstractFixedField
       ℚ (SeparableClosure ℚ) H
-  let : FiniteDimensional ℚ F :=
+  let :=
     LocalClassFieldTheory.abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) H hfinite
-  let x :
-      KummerTheory.ambientFixedAddSubgroup
-        rationalIdeleClassRepresentation
-        (RamificationTheory.closedFixingSubgroup
-          ℚ (SeparableClosure ℚ) F) :=
+  let x :=
     rationalIdeleClassEquivFixed F
       (Additive.ofMul
         (_root_.relativeIdeleClassBaseChangeMulEquiv
-          (K := ℚ) (L := F) c))
-  let x' :
-      KummerTheory.ambientFixedAddSubgroup
-        rationalIdeleClassRepresentation H :=
+            c))
+  let x' :=
     rationalAbstractFixedFieldIdeleClassEquivFixed H
       (Additive.ofMul
         (_root_.relativeIdeleClassBaseChangeMulEquiv
-          (K := ℚ) (L := F) c))
+            c))
   have hx : x.1 = x'.1 := by
     simpa only [x, x', F] using
       (rationalAbstractFixedFieldIdeleClassEquivFixed_coe H
@@ -598,7 +573,7 @@ theorem
       (K := ℚ) (L := F)).symm (Additive.toMul c)
   have hc :
       _root_.relativeIdeleClassBaseChangeMulEquiv
-          (K := ℚ) (L := F) d =
+            d =
         Additive.toMul c := by
     simpa only [d] using
       ((_root_.relativeIdeleClassBaseChangeMulEquiv
@@ -625,9 +600,9 @@ theorem
     have hcAdd :
         Additive.ofMul
             (_root_.relativeIdeleClassBaseChangeMulEquiv
-              (K := ℚ) (L := F) d) =
+                d) =
           c := by
-      simpa only [ofMul_toMul] using congrArg Additive.ofMul hc
+      simpa using congrArg Additive.ofMul hc
     rw [hcAdd] at h
     exact h
   have hordinary :
@@ -636,10 +611,6 @@ theorem
     rw [← hc]
     exact
       ordinaryIdeleClassNorm_relativeIdeleClassBaseChange d
-  have hbase :=
-    rationalIdeleClassEquivBaseFixed_coe
-      (rationalNormalClosure F)
-      (_root_.ideleClassNorm ℚ F (Additive.toMul c))
   have hcoe' := hcoe.trans
     (congrArg
       (fun x : IdeleClassGroup ℚ =>
@@ -651,10 +622,7 @@ theorem
       hordinary.symm)
   apply rationalIdeleClassEquivBaseFixed.injective
   calc
-    rationalIdeleClassEquivBaseFixed
-        (rationalIdeleClassEquivBaseFixed.symm
-          (normToBase rationalIdeleClassRepresentation H.field
-            (rationalAbstractFixedFieldIdeleClassEquivFixed H.field c))) =
+    _ =
       normToBase rationalIdeleClassRepresentation H.field
         (rationalAbstractFixedFieldIdeleClassEquivFixed H.field c) :=
       rationalIdeleClassEquivBaseFixed.apply_symm_apply _
@@ -662,7 +630,9 @@ theorem
         (Additive.ofMul
           (_root_.ideleClassNorm ℚ F (Additive.toMul c))) := by
       apply Subtype.ext
-      exact hcoe'.trans hbase.symm
+      exact hcoe'.trans (rationalIdeleClassEquivBaseFixed_coe
+        (rationalNormalClosure F)
+        (_root_.ideleClassNorm ℚ F (Additive.toMul c))).symm
 
 end AbstractFixedFieldOrdinaryNorm
 

@@ -10,36 +10,27 @@ open scoped Classical NumberField Topology ContDiff
 open MeasureTheory Filter
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming cutoff → cutoff
-open _root_.DedekindZetaZeroFree renaming canonicalRealization → canonicalRealization
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming lift_eq → lift_eq
+
 set_option maxHeartbeats 1600000
 set_option synthInstance.maxHeartbeats 120000
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {SS : SArithmeticData F} {η : RayClassCharacter F SS.modulus}
-variable (AR : PrincipalMellin.ActualRecipe SS η)
-variable (AP : KPGlobalTorusFiniteStages.CompatibleModelData F AR.A.zeta12 AR.A.primitive_zeta12)
-variable (AC : KPGlobalTorusFiniteStages.LocalFiberData F AR.A.zeta12 AR.A.primitive_zeta12 AP)
-variable (D : KPGlobalTorusInducingPlan.ModelData F AR.A.zeta12 AR.A.primitive_zeta12)
-variable (Haar : KPSmoothLocalQuotientCharts.HaarRecipe F AR.A.zeta12 AR.A.primitive_zeta12)
-variable (Transport : KPMsFixedHaarDisintegration.SphericalTransport F AR.A.zeta12 AR.A.primitive_zeta12)
+    {SS : SArithmeticData F} {η : RayClassCharacter F SS.modulus}
+    (AR : PrincipalMellin.ActualRecipe SS η)
+    (AP : KPGlobalTorusFiniteStages.CompatibleModelData F AR.A.zeta12 AR.A.primitive_zeta12)
+    (AC : KPGlobalTorusFiniteStages.LocalFiberData F AR.A.zeta12 AR.A.primitive_zeta12 AP)
+    (D : KPGlobalTorusInducingPlan.ModelData F AR.A.zeta12 AR.A.primitive_zeta12)
+    (Haar : KPSmoothLocalQuotientCharts.HaarRecipe F AR.A.zeta12 AR.A.primitive_zeta12)
+    (Transport : KPMsFixedHaarDisintegration.SphericalTransport F AR.A.zeta12 AR.A.primitive_zeta12)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F AR.A.zeta12 AR.A.primitive_zeta12 Haar Transport)
-variable (U : KPMsRationalCompactCrossPairing.Level F AR.A.zeta12 AR.A.primitive_zeta12)
+    (U : KPMsRationalCompactCrossPairing.Level F AR.A.zeta12 AR.A.primitive_zeta12)
 local notation "level" => KPContActualAllCuspSource.level F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U
 local notation "G" => KPContSectorCoveredQuotientVocabulary.ActualCover F AR.A.zeta12 AR.A.primitive_zeta12
 
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming word_smul → word_smul
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator renaming compact_word_holomorphy → compact_word_holomorphy
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator renaming singleton_combination → singleton_combination
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator renaming scalar_eq_lift → scalar_eq_lift
-open _root_.DedekindZetaZeroFree.KPContActualCommonDiskRightHolomorphy renaming continuous_of_pieces → continuous_of_pieces
 open scoped BigOperators
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming literal_finite_word_chamber → literal_finite_word_chamber
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.FiniteCompactAssembly renaming finite_compact_numerator → finite_compact_numerator
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (literal_finite_word_chamber)
 
 theorem finite_literal_global_refined_boundary_centers
     (Jaux : KPGlobalTorusFunctionData.FiniteLevel F AR.A.zeta12 AR.A.primitive_zeta12)
@@ -70,8 +61,7 @@ theorem finite_literal_global_refined_boundary_centers
         AnalyticOnNhd ℂ Q KPContinuation.spectralDomain ∧ Q 0 = 1 ∧
         (∀ g, MeromorphicOn (fun s => S s g) KPContinuation.spectralDomain) ∧
         (∀ s, (1 : ℝ)/3 < s.re → ∀ g, S s g = Q s * eisenstein F AR.A.zeta12 AR.A.primitive_zeta12 K f s g) ∧
-        0 < r ∧ Metric.ball (0 : ℂ) r ⊆ KPContinuation.spectralDomain ∧
-        (∀ g, AnalyticOnNhd ℂ (fun s => T s g) (Metric.ball (0 : ℂ) r)) ∧
+        0 < r ∧ (∀ g, AnalyticOnNhd ℂ (fun s => T s g) (Metric.ball (0 : ℂ) r)) ∧
         (∀ s ∈ Metric.ball (0 : ℂ) r, s ≠ 0 → T s = s • S s) ∧
         ∀ g, T 0 g = ∑ i, ∑ j, B i j 0 * actualRightWord F AR.A.zeta12 AR.A.primitive_zeta12 (w i j)
           (groupScalar F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H (U i) (Z i j)) g := by
@@ -98,10 +88,7 @@ theorem finite_literal_global_refined_boundary_centers
     intro j
     exact Metric.isOpen_ball.mem_nhds (Metric.mem_ball_self (hr i j))
   obtain ⟨ρ, hρ, hρsub⟩ := Metric.mem_nhds_iff.mp hall
-  refine ⟨n, U, m, v, w, B, Z, z, hfix, haux, hz, heig, horth, hnative, hcus, ?_, Q,
-    (fun s g => ∑ i, ∑ j, B i j s * A i j s g),
-    (fun s g => ∑ i, ∑ j, B i j s * N i j s g), ρ, hQ, hQ0, ?_, ?_, hρ,
-    fun s hs => hb₀ (hρsub hs).1, ?_, ?_, ?_⟩
+  refine ⟨n, U, m, v, w, B, Z, z, hfix, haux, hz, heig, horth, hnative, hcus, ?_, Q, (fun s g => ∑ i, ∑ j, B i j s * A i j s g), (fun s g => ∑ i, ∑ j, B i j s * N i j s g), ρ, hQ, hQ0, ?_, ?_, hρ, ?_, ?_, ?_⟩
   · intro g
     simpa only [hQ0, one_mul, v, ResidualBoundaryRelevel.restrictStage_val] using hrec 0 (by norm_num [KPContinuation.spectralDomain]) g
   · intro g s hs

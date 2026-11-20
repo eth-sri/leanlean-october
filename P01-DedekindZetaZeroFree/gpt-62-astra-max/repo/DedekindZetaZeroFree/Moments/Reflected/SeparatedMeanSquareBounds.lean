@@ -29,29 +29,22 @@ theorem dyadic_square_mass_of_pointwise (A : SArithmeticData F)
   obtain ⟨L, L', hL, _, hcount⟩ := ideal_counting_harmonic_bounds F
   refine ⟨K * (2 * L) * (2 : ℝ) ^ (2 * b), by positivity, ?_⟩
   intro P D W hP hD hW f hf
-  have hP0 : 0 < P := lt_of_lt_of_le zero_lt_one hP
-  let M : ℝ := (2 * P) ^ (2 * b) * W ^ 2
+  have hP0 := lt_of_lt_of_le zero_lt_one hP
+  let M := (2 * P) ^ (2 * b) * W ^ 2
   have hM : 0 ≤ M := by dsimp [M]; positivity
   have hpoint (h : exteriorPowerfulDyad A.cS P)
       (d : RMRetainedAggregation.rowDyad A h.val D) :
       ‖f h.val d.val‖ ^ 2 ≤ M := by
-    have hn : A.exteriorNorm h.val ^ b ≤ (2 * P) ^ b :=
-      Real.rpow_le_rpow
-        (by have := idealNorm_ge_one h.val.val h.val.property.1; linarith)
-        h.property.2.2.le hb.le
-    have he : ‖f h.val d.val‖ ≤ (2 * P) ^ b * W :=
-      (hf h.val h.property d.val d.property).trans
-        (mul_le_mul_of_nonneg_right hn hW)
-    have hs := (sq_le_sq₀ (norm_nonneg _) (by positivity)).mpr he
     simpa only [M, mul_pow, ← Real.rpow_mul_natCast (by positivity : 0 ≤ 2 * P),
-      Nat.cast_ofNat, mul_comm b (2 : ℝ)] using hs
+      Nat.cast_ofNat, mul_comm b (2 : ℝ)] using ((sq_le_sq₀ (norm_nonneg _) (by positivity)).mpr ((hf h.val h.property d.val d.property).trans
+        (mul_le_mul_of_nonneg_right (Real.rpow_le_rpow
+          (by have := idealNorm_ge_one h.val.val h.val.property.1; linarith)
+          h.property.2.2.le hb.le) hW)))
   have hrowcard (h : A.Exterior) :
       ((RMRetainedAggregation.rowDyad A h D).ncard : ℝ) ≤ 2 * L * D := by
-    let g : ExteriorSquarefreeIdeal A.cS → NonzeroIdeal F :=
-      fun d => ⟨d.val.val, d.val.property.1⟩
     have hc : (RMRetainedAggregation.rowDyad A h D).ncard ≤
         (normBoundedIdeals F (2 * D)).ncard := by
-      apply Set.ncard_le_ncard_of_injOn g
+      apply Set.ncard_le_ncard_of_injOn (fun d => ⟨d.val.val, d.val.property.1⟩)
         (ht := normBoundedIdeals_finite F (2 * D))
       · intro d hd
         exact hd.2.1.le
@@ -72,8 +65,7 @@ theorem dyadic_square_mass_of_pointwise (A : SArithmeticData F)
       (∑' d : RMRetainedAggregation.rowDyad A h.val D,
         ‖f h.val d.val‖ ^ 2) ≤ (2 * L * D) * M := by
     calc
-      (∑' d : RMRetainedAggregation.rowDyad A h.val D,
-          ‖f h.val d.val‖ ^ 2) ≤ ∑' _d : RMRetainedAggregation.rowDyad A h.val D, M := by
+      _ ≤ ∑' _d : RMRetainedAggregation.rowDyad A h.val D, M := by
         simp only [tsum_fintype]
         exact Finset.sum_le_sum (fun d _ => hpoint h d)
       _ = ((RMRetainedAggregation.rowDyad A h.val D).ncard : ℝ) * M := by
@@ -81,15 +73,13 @@ theorem dyadic_square_mass_of_pointwise (A : SArithmeticData F)
           ← Nat.card_eq_fintype_card, Nat.card_coe_set_eq]
       _ ≤ (2 * L * D) * M := mul_le_mul_of_nonneg_right (hrowcard h.val) hM
   have hcard : (Fintype.card (exteriorPowerfulDyad A.cS P) : ℝ) ≤ K * Real.sqrt P := by
-    simpa only [← Nat.card_eq_fintype_card, Nat.card_coe_set_eq] using
+    simpa using
       hpower A.cS A.cS_ne_zero P hP
   calc
-    (∑' h : exteriorPowerfulDyad A.cS P,
-        ∑' d : RMRetainedAggregation.rowDyad A h.val D,
-          ‖f h.val d.val‖ ^ 2) ≤
+    _ ≤
         ∑' _h : exteriorPowerfulDyad A.cS P, (2 * L * D) * M := by
       simp only [tsum_fintype]
-      exact Finset.sum_le_sum (fun h _ => by simpa only [tsum_fintype] using hrow h)
+      exact Finset.sum_le_sum (fun h _ => by simpa using hrow h)
     _ = (Fintype.card (exteriorPowerfulDyad A.cS P) : ℝ) * ((2 * L * D) * M) := by
       simp [tsum_fintype, nsmul_eq_mul]
     _ ≤ (K * Real.sqrt P) * ((2 * L * D) * M) :=
@@ -153,20 +143,20 @@ theorem cutoff_eq_threshold (Z P D θ : ℝ) :
   change 8 * Z ^ θ * D ^ 2 * P / Z = Z ^ θ * (8 * D ^ 2 * P / Z)
   ring
 
-theorem retained_eq (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : ThetaBranch.UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ) (h d : A.Exterior) (Z P D θ : ℝ) :
+section
+
+variable (A : SArithmeticData F) (G : AllowedRecipe A) (U : ThetaBranch.UnitRepresentatives A)
+    (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ) (L : Fˣ →* ℂ)
+    (H : A.V → ℝ → ℂ)
+
+theorem retained_eq (h d : A.Exterior) (Z P D θ : ℝ) :
     RMRetainedAggregation.retained A G U σ ψ L H h d Z
         (RMRetainedAggregation.cutoff Z P D θ) =
       RMTailCutoff.retained A G U σ ψ L H h d Z P D θ := by
   rw [RMRetainedAggregation.retained_eq_tsum, cutoff_eq_threshold]
   rfl
 
-theorem expansion_square_le (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : ThetaBranch.UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ) (h d : A.Exterior) (Z P D θ : ℝ) :
+theorem expansion_square_le (h d : A.Exterior) (Z P D θ : ℝ) :
     ‖RMSeparatedExpansion.expansion A G U σ ψ L H h d Z‖ ^ 2 ≤
       2 * ‖RMRetainedAggregation.retained A G U σ ψ L H h d Z
           (RMRetainedAggregation.cutoff Z P D θ)‖ ^ 2 +
@@ -177,11 +167,9 @@ theorem expansion_square_le (A : SArithmeticData F) (G : AllowedRecipe A)
   · have he : RMSeparatedExpansion.expansion A G U σ ψ L H h d Z =
         RMTailCutoff.retained A G U σ ψ L H h d Z P D θ +
           RMTailCutoff.tail A G U σ ψ L H h d Z P D θ := by
-      have hr := hs.indicator {i | RMTailCutoff.frozenNorm A i.1.val i.2 ≤
-        RMTailCutoff.threshold Z P D θ}
-      have ht := hs.indicator {i | RMTailCutoff.threshold Z P D θ <
-        RMTailCutoff.frozenNorm A i.1.val i.2}
-      have he := hr.tsum_add ht
+      have he := (hs.indicator {i | RMTailCutoff.frozenNorm A i.1.val i.2 ≤
+        RMTailCutoff.threshold Z P D θ}).tsum_add (hs.indicator {i | RMTailCutoff.threshold Z P D θ <
+        RMTailCutoff.frozenNorm A i.1.val i.2})
       simp only [Set.indicator_apply, Set.mem_setOf_eq] at he
       unfold RMSeparatedExpansion.expansion RMTailCutoff.retained RMTailCutoff.tail
       rw [← he]
@@ -204,10 +192,7 @@ theorem expansion_square_le (A : SArithmeticData F) (G : AllowedRecipe A)
       zero_pow (by decide : 2 ≠ 0)]
     positivity
 
-theorem separatedSquareMass_le (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : ThetaBranch.UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ) (Z P D θ : ℝ) :
+theorem separatedSquareMass_le (Z P D θ : ℝ) :
     separatedSquareMass A G U σ ψ L H Z P D ≤
       2 * RMRetainedAggregation.totalSquareMass A G U σ ψ L H Z P D
           (RMRetainedAggregation.cutoff Z P D θ) +
@@ -247,6 +232,8 @@ theorem separatedSquareMass_le (A : SArithmeticData F) (G : AllowedRecipe A)
         tsum_mul_left, tsum_mul_left]
       simp only [RMRetainedAggregation.totalSquareMass, finsum_eq_sum_of_fintype, tsum_fintype]
 
+end
+
 theorem compact_separated_square_bound
     (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : ThetaBranch.UnitRepresentatives A) (σ : F →+* ℂ)
@@ -265,14 +252,12 @@ theorem compact_separated_square_bound
     A G U σ ψ hψ L hL H hH M Cstar hM hCstar
   refine ⟨K, hK, ?_⟩
   intro u Z P D hZ hZ2 hP hD hPD
-  have hb : separatedSquareMass A G U σ ψ (L u) (H u) Z P D ≤
-      K * Real.sqrt P * D := hk Z P D hZ hZ2 hP hD hPD u
-  have hzpow : 1 ≤ Z ^ ε := Real.one_le_rpow hZ hε.le
+  have hzpow := Real.one_le_rpow hZ hε.le
   have hD' : D ≤ D + D ^ 2 * P / Z := by
     have : 0 ≤ D ^ 2 * P / Z := by positivity
     linarith
   calc
-    _ ≤ K * Real.sqrt P * D := hb
+    _ ≤ K * Real.sqrt P * D := (hk Z P D hZ hZ2 hP hD hPD u)
     _ = K * 1 * Real.sqrt P * D := by ring
     _ ≤ _ := by gcongr
 
@@ -300,8 +285,7 @@ theorem separated_mean_square_bound_of_tail
       1 ≤ Z → 1 ≤ P → 1 ≤ D → P * D ≤ Cstar * Z ^ M →
       separatedSquareMass A G U σ ψ (L u) (H u) Z P D ≤
         K * Z ^ ε * Real.sqrt P * (D + D ^ 2 * P / Z) := by
-  obtain ⟨θ, b₁, b₂, b₃, b, B, Ka, hθ, hb₁, hb₂, hb₃, hb, hB, hKa,
-    _, _, ha⟩ := RMParameterAbsorption.scalar_parameter_absorption M Cstar ε hM hCstar hε
+  obtain ⟨θ, b₁, b₂, b₃, b, B, Ka, hθ, hb₁, hb₂, hb, hB, hKa, ha⟩ := RMParameterAbsorption.scalar_parameter_absorption M Cstar ε hM hCstar hε
   obtain ⟨Kr, hKr, hr⟩ := RMRetainedAggregation.retained_total_square_bound
     A G U σ ψ hψ L hL H hH 𝓕 h𝓕 b₁ b₂ hb₁ hb₂
   obtain ⟨Kt, hKt, ht⟩ := htail B b hB hb
@@ -399,21 +383,18 @@ theorem separated_mean_square_bound
   obtain ⟨Cc, hCc, hc⟩ := ReflectedMomentSubpowerMajorants.dyadic_square_mass_of_pointwise A b hb
   refine ⟨Cc * Kt ^ 2, by positivity, ?_⟩
   intro u Z P D θ hZ hP hD hθ
-  have hZ0 : 0 < Z := by linarith
   have hl : 0 < RMTailCutoff.length Z P D := by
     unfold RMTailCutoff.length
     positivity
   have hg : 0 < RMTailCutoff.gain Z P D θ :=
-    lt_of_lt_of_le (Real.rpow_pos_of_pos hZ0 θ) (le_max_left _ _)
+    lt_of_lt_of_le (Real.rpow_pos_of_pos (by linarith) θ) (le_max_left _ _)
   have hpoint := hc P D
     (Kt * RMTailCutoff.length Z P D *
       RMTailCutoff.gain Z P D θ ^ (-(B - 1))) hP hD (by positivity)
     (fun h d => RMTailCutoff.tail A G U σ ψ (L u) (H u) h d.val Z P D θ)
     (by
       intro h hh d hd
-      have hd' : d ∈ RMTailCutoff.rowDyad A h D := hd
-      have ht' := ht Z P D θ hZ hP hD hθ h hh d hd' u
-      simpa only [mul_assoc, mul_left_comm, mul_comm] using ht')
+      simpa only [mul_assoc, mul_left_comm, mul_comm] using (ht Z P D θ hZ hP hD hθ h hh d hd u))
   calc
     _ ≤ Cc * P ^ ((1 / 2 : ℝ) + 2 * b) * D *
         (Kt * RMTailCutoff.length Z P D *

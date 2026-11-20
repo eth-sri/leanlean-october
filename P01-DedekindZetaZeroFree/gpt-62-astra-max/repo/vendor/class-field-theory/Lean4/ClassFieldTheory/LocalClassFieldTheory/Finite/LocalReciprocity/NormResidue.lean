@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -60,59 +57,10 @@ theorem abelianLocalArtinMonoidHom_ker :
     MonoidHom.coe_comp, Function.comp_apply]
   constructor
   · intro ha
-    apply (Abelianization.equivOfComm (H := Gal(L / K))).symm.injective
-    simpa using ha
+    apply (Abelianization.equivOfComm).symm.injective
+    exact ha
   · intro ha
     rw [ha, map_one]
-
-/-- For a finite abelian Galois extension, topological abelianization is
-canonically homeomorphic to the actual Galois group. -/
-noncomputable def topologicalAbelianizationEquivSelf :
-    TopologicalAbelianization Gal(L / K) ≃ₜ* Gal(L / K) := by
-  letI : DiscreteTopology (TopologicalAbelianization Gal(L / K)) :=
-    QuotientGroup.discreteTopology (isOpen_discrete _)
-  let e : TopologicalAbelianization Gal(L / K) ≃* Gal(L / K) :=
-    (topologicalAbelianization_finite_equiv K L).symm.trans
-      (Abelianization.equivOfComm (H := Gal(L / K))).symm
-  exact
-    { e with
-      continuous_toFun := continuous_of_discreteTopology
-      continuous_invFun := continuous_of_discreteTopology }
-
-/-- The continuous local Artin map with values in the actual Galois group
-of a finite abelian extension. -/
-noncomputable def abelianLocalArtinMap :
-    Kˣ →ₜ* Gal(L / K) :=
-  (ContinuousMonoidHom.toContinuousMonoidHom
-      (topologicalAbelianizationEquivSelf K L)).comp
-    (localArtinMap K L)
-
-/-- Forgetting topology from the continuous actual Artin map recovers the
-algebraic actual Artin homomorphism. -/
-theorem abelianLocalArtinMap_toMonoidHom :
-    (abelianLocalArtinMap K L).toMonoidHom =
-      abelianLocalArtinMonoidHom K L := by
-  change
-    ((Abelianization.equivOfComm (H := Gal(L / K))).symm).toMonoidHom.comp
-        ((topologicalAbelianization_finite_equiv K L).symm.toMonoidHom.comp
-          (localArtinMap K L).toMonoidHom) =
-      ((Abelianization.equivOfComm (H := Gal(L / K))).symm).toMonoidHom.comp
-        (localArtinMonoidHom K L)
-  rw [localArtinMap_toMonoidHom K L]
-
-/-- The continuous actual abelian local Artin map is surjective. -/
-theorem abelianLocalArtinMap_surjective :
-    Function.Surjective (abelianLocalArtinMap K L) :=
-  (topologicalAbelianizationEquivSelf K L).surjective.comp
-    (localArtinMap_surjective K L)
-
-/-- The kernel of the continuous actual abelian local Artin map is the norm
-subgroup. -/
-theorem abelianLocalArtinMap_ker :
-    (abelianLocalArtinMap K L).toMonoidHom.ker =
-      localNormSubgroup K L := by
-  rw [abelianLocalArtinMap_toMonoidHom,
-    abelianLocalArtinMonoidHom_ker]
 
 end LocalClassFieldTheory
 

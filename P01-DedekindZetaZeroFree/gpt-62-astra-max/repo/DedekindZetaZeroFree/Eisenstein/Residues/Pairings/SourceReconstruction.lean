@@ -14,23 +14,21 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPMsActualAngularSource KPMsNativeOffsetMass KPMsNativeOffsetComparison
 open KPContSectorCoveredQuotientVocabulary KPContFlatCuspIncomingEvaluation
 open KPGlobalResidualConstruction
-open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison renaming K_U_compact → K_U_compact
-open _root_.DedekindZetaZeroFree renaming canonicalRealization → canonicalRealization
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "Core" => RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C)
 variable (D : KPGlobalTorusInducingPlan.ModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (HR : KPSmoothLocalQuotientCharts.HaarRecipe F R.A.zeta12 R.A.primitive_zeta12)
-variable (HP : KPMsFixedHaarDisintegration.SphericalTransport F R.A.zeta12 R.A.primitive_zeta12)
-variable (M : NativeMeasuredSource F R.A.zeta12 R.A.primitive_zeta12 HR HP)
-variable (U : Level F R.A.zeta12 R.A.primitive_zeta12)
+    (HR : KPSmoothLocalQuotientCharts.HaarRecipe F R.A.zeta12 R.A.primitive_zeta12)
+    (HP : KPMsFixedHaarDisintegration.SphericalTransport F R.A.zeta12 R.A.primitive_zeta12)
+    (M : NativeMeasuredSource F R.A.zeta12 R.A.primitive_zeta12 HR HP)
+    (U : Level F R.A.zeta12 R.A.primitive_zeta12)
 local notation "H" => nativeFamily F ζ hζ HR HP
 local notation "V" => EisensteinSmoothGerms.ScalarSource.atlasLevel F ζ hζ U
 local instance ResidualSourceReconstructionPairingMeasurable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) : MeasurableSpace K := borel K
@@ -64,10 +62,9 @@ theorem finiteBoundaryPair_source_reconstruction
     funext g
     simpa only [Fintype.sum_sigma] using hs g
   rw [hfun]
-  have he := finiteBoundaryPair_source_words_sum R P C HR HP Vnew dk
+  simpa only [Fintype.sum_sigma] using (finiteBoundaryPair_source_words_sum R P C HR HP Vnew dk
     (fun ij : Σi, Fin (m i) => a ij.1 ij.2)
-    (fun ij => (v ij.1 ij.2).val) (fun ij => w ij.1 ij.2) x
-  simpa only [Fintype.sum_sigma] using he
+    (fun ij => (v ij.1 ij.2).val) (fun ij => w ij.1 ij.2) x)
 
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource
 

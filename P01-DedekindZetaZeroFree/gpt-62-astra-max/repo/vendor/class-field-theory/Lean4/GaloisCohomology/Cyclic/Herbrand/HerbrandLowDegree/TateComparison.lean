@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-! Comparisons between arithmetic Herbrand quotient presentations and mathlib Tate cohomology. -/
@@ -69,7 +66,6 @@ def equivariantShortComplex
   ShortComplex.mk (equivariantRepHom i hi) (equivariantRepHom j hj) <| by
     apply Rep.hom_ext
     ext a
-    change Additive.ofMul (j (i a.toMul)) = 0
     apply Additive.ofMul.injective
     exact (hker (i a.toMul)).2 ⟨a.toMul, rfl⟩
 
@@ -87,32 +83,15 @@ theorem equivariantShortComplex_shortExact
       epi_g := (Rep.epi_iff_surjective _).2 ?_ }
   · intro b hb
     change Additive.ofMul (j b.toMul) = 0 at hb
-    have hb' : j b.toMul = 1 := Additive.ofMul.injective hb
-    rcases (hker b.toMul).1 hb' with ⟨a, ha⟩
-    refine ⟨Additive.ofMul a, ?_⟩
-    change Additive.ofMul (i a) = b
-    apply Additive.toMul.injective
-    exact ha
-  · intro a a' h
-    change Additive.ofMul (i a.toMul) = Additive.ofMul (i a'.toMul) at h
-    apply Additive.toMul.injective
-    apply hinj
-    exact Additive.ofMul.injective h
-  · intro c
-    rcases hsurj c.toMul with ⟨b, hb⟩
-    refine ⟨Additive.ofMul b, ?_⟩
-    change Additive.ofMul (j b) = c
-    apply Additive.toMul.injective
-    exact hb
+    rcases (hker b.toMul).1 (Additive.ofMul.injective hb) with ⟨a, ha⟩
+    apply Exists.intro <;> assumption
+  · exact hinj
+  exact hsurj
 
  theorem repNorm_toMul (a : Additive A) :
     Additive.toMul
         ((Rep.ofMulDistribMulAction G A).ρ.norm a) =
       tateNorm G A a.toMul := by
-  unfold Rep.ofMulDistribMulAction
-  change Additive.toMul
-      ((Representation.ofMulDistribMulAction G A).norm a) =
-    ∏ g : G, g • a.toMul
   exact Representation.norm_ofMulDistribMulAction_eq a
 
  theorem repSigmaMinusOne_toMul
@@ -123,34 +102,7 @@ theorem equivariantShortComplex_shortExact
           (((Rep.ofMulDistribMulAction G A).applyAsHom σ -
             𝟙 (Rep.ofMulDistribMulAction G A)).hom a)) =
       sigmaMinusOne G A σ a.toMul := by
-  unfold Rep.toAdditive
-  unfold Rep.ofMulDistribMulAction
-  rw [Rep.sub_hom]
-  rw [show
-    (Rep.Hom.hom
-        ((Rep.of (Representation.ofMulDistribMulAction G A)).applyAsHom σ) -
-      Rep.Hom.hom
-        (𝟙 (Rep.of (Representation.ofMulDistribMulAction G A)))) a =
-        Rep.Hom.hom
-            ((Rep.of (Representation.ofMulDistribMulAction G A)).applyAsHom σ) a -
-          Rep.Hom.hom
-            (𝟙 (Rep.of (Representation.ofMulDistribMulAction G A))) a by
-    rfl]
-  rw [Rep.applyAsHom_apply]
-  rw [show
-    Rep.Hom.hom
-        (𝟙 (Rep.of (Representation.ofMulDistribMulAction G A))) a = a by
-    rfl]
-  unfold sigmaMinusOne
-  rw [show
-    ((Rep.of (Representation.ofMulDistribMulAction G A)).ρ σ) a =
-      Additive.ofMul (σ • a.toMul) by
-    rfl]
-  change Additive.toMul
-      (Additive.ofMul (σ • a.toMul) - a) =
-    σ • a.toMul * (a.toMul)⁻¹
-  rw [toMul_sub]
-  exact div_eq_mul_inv _ _
+  apply div_eq_mul_inv
 
  def fixedCyclesAddEquiv :
     LinearMap.ker
@@ -301,14 +253,8 @@ noncomputable def tateH0IsoHerbrandH0 :
       ModuleCat.of ℤ (Additive (HerbrandHMinusOne G A σ)) := by
   let M := Rep.ofMulDistribMulAction G A
   let S := Rep.FiniteCyclicGroup.subCompNormHom M σ
-  let eKOwner :
-      S.moduleCatLeftHomologyData.K ≅
-        ModuleCat.of ℤ
-          (LinearMap.ker
-            (Rep.ofMulDistribMulAction G A).norm.toModuleCatHom.hom) :=
-    eqToIso (by rfl)
   let eK :=
-    (eKOwner ≪≫
+    ((eqToIso (rfl)) ≪≫
       ((normKernelCyclesAddEquiv (G := G) (A := A)).toIntLinearEquiv
         (modM := inferInstance) (modM₂ := inferInstance)).toModuleIso).toLinearEquiv
   let q : Additive (normKernelSubgroup G A) →+
@@ -322,20 +268,17 @@ noncomputable def tateH0IsoHerbrandH0 :
     · rintro ⟨y, ⟨a, ha⟩, rfl⟩
       subst y
       change Additive A at a
-      change q (eK (S.moduleCatToCycles a)) = 0
       apply Additive.ofMul.injective
-      change HerbrandHMinusOne.mk σ _ = 1
       apply (HerbrandHMinusOne.mk_eq_one_iff σ _).2
       refine ⟨a.toMul, ?_⟩
       dsimp [eK, normKernelCyclesAddEquiv, S, M]
       exact (repSigmaMinusOne_toMul
-        (G := G) (A := A) σ a).symm
+          σ a).symm
     · intro hx
       change q x = 0 at hx
-      have hx' : HerbrandHMinusOne.mk σ x.toMul = 1 := by
+      rcases (HerbrandHMinusOne.mk_eq_one_iff σ x.toMul).1 (by
         apply Additive.ofMul.injective
-        exact hx
-      rcases (HerbrandHMinusOne.mk_eq_one_iff σ x.toMul).1 hx' with ⟨a, ha⟩
+        exact hx) with ⟨a, ha⟩
       refine ⟨eK.symm x, ?_, eK.apply_symm_apply x⟩
       refine ⟨Additive.ofMul a, ?_⟩
       apply eK.injective
@@ -344,8 +287,8 @@ noncomputable def tateH0IsoHerbrandH0 :
       apply Subtype.ext
       dsimp [eK, normKernelCyclesAddEquiv, S, M]
       have hσ := repSigmaMinusOne_toMul
-        (G := G) (A := A) σ (Additive.ofMul a)
-      rw [show Additive.toMul (Additive.ofMul a) = a by rfl] at hσ
+          σ (Additive.ofMul a)
+      simp at hσ
       exact hσ.trans ha
   let eQ :=
     (Submodule.Quotient.equiv (LinearMap.range S.moduleCatToCycles)

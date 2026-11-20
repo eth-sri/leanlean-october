@@ -22,8 +22,7 @@ private theorem normal_holomorphic {ι : Type*} (g : ι → Coordinates → ℂ)
   obtain ⟨r, hr, hsub⟩ := Metric.nhds_basis_closedBall.mem_iff.mp (hU.mem_nhds hx)
   obtain ⟨M, hMs, hMb⟩ := hM (closedBall x r) hsub (isCompact_closedBall x r)
   have hhalf : 0 < r / 2 := by positivity
-  have hinside {y : Coordinates} (hy : y ∈ ball x (r / 2)) : y ∈ closedBall x r := by
-    exact ball_subset_closedBall (ball_subset_ball (by linarith) hy)
+  have hinside {y : Coordinates} (hy : y ∈ ball x (r / 2)) : y ∈ closedBall x r := ball_subset_closedBall (ball_subset_ball (by linarith) hy)
   have hderiv : ∀ i y, y ∈ ball x (r / 2) → ‖fderiv ℂ (g i) y‖ ≤ (4 / r) * M i := by
     intro i y hy
     have hball : ball y (r / 2) ⊆ closedBall x r := by
@@ -35,11 +34,11 @@ private theorem normal_holomorphic {ι : Type*} (g : ι → Coordinates → ℂ)
       linarith
     have hnorm := Complex.norm_fderiv_le_div_of_mapsTo_ball
       ((hg i).differentiableOn : DifferentiableOn ℂ (g i) (ball y (r / 2)))
-      (R₂ := 2 * M i) (by
+       (by
         intro z hz
         apply mem_closedBall.mpr
         calc
-          dist (g i z) (g i y) ≤ ‖g i z‖ + ‖g i y‖ := by simpa only [dist_eq_norm_sub] using norm_sub_le (g i z) (g i y)
+          _ ≤ ‖g i z‖ + ‖g i y‖ := by simpa only [dist_eq_norm_sub] using norm_sub_le (g i z) (g i y)
           _ ≤ 2 * M i := by linarith [hMb i z (hball hz), hMb i y (hinside hy)]) hhalf
     convert hnorm using 1 <;> field_simp <;> ring
   have hs := hasFDerivAt_tsum_of_isPreconnected (hMs.mul_left (4 / r)) isOpen_ball
@@ -51,13 +50,17 @@ private theorem normal_holomorphic {ι : Type*} (g : ι → Coordinates → ℂ)
   exact hs.differentiableAt.differentiableWithinAt
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 private lemma Q_pos (p : ExteriorPrime A) : 0 < Q p := A.exteriorNorm_pos (primeIdeal p)
 
+alias BadPrimeEstimates.Q_pos := Q_pos
+
 private lemma two_le_Q (p : ExteriorPrime A) : 2 ≤ Q p :=
   idealNorm_prime_ge_two (primeIdeal p).val (by simpa [primeIdeal] using p.val.prime)
+
+alias BadPrimeEstimates.two_le_Q := two_le_Q
 
 private lemma norm_qPower (p : ExteriorPrime A) (s : ℂ) :
     ‖qPower p s‖ = (Q p) ^ s.re := by
@@ -66,16 +69,19 @@ private lemma norm_qPower (p : ExteriorPrime A) (s : ℂ) :
   simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
   ring
 
-private lemma norm_vartheta (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) : ‖vartheta C p‖ = 1 := by
-  rw [vartheta]
-  exact Circle.norm_coe _
+alias BadPrimeEstimates.norm_qPower := norm_qPower
+
+private alias norm_vartheta := DedekindZetaZeroFree.LocalFiniteSums.GoodPrimeSeries.good_series_vartheta_norm
+
+alias BadPrimeEstimates.norm_vartheta := norm_vartheta
 
 private lemma norm_gammaTwo (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) : ‖gammaTwo C p‖ ≤ 1 := by
   rw [gammaTwo]
   exact NormalizedProbe.PrincipalData.norm_idealGauss_le_one A σ hS (primeIdeal p)
     (generator C p) (generator_generates C p) 2
+
+alias BadPrimeEstimates.norm_gammaTwo := norm_gammaTwo
 
 private lemma region_lower (x : Coordinates) (hx : x ∈ Omega) :
     (99799 / 100000 : ℝ) < x.1.re ∧ (299 / 100000 : ℝ) < x.2.1.re ∧
@@ -94,22 +100,25 @@ private lemma norm_series_le (C : A.GeneralArithmeticContext σ η hS)
   unfold seriesTerm
   simp only [norm_mul, norm_pow, norm_vartheta, one_pow, mul_one,
     norm_zpow, θ.property, one_zpow, norm_qPower]
-  have he : ‖gammaTwo C p‖ ^ e.val ≤ 1 := pow_le_one₀ (norm_nonneg _) (norm_gammaTwo C p)
   have hexp : (-(e.val : ℂ) * (1 / 2 + x.1) - (l : ℂ) * (1 + 3 * x.1) -
       (k : ℂ) * x.2.1 - 6 * (m : ℂ) * x.2.2).re =
       -(e.val : ℝ) * (1 / 2 + x.1.re) - (l : ℝ) * (1 + 3 * x.1.re) -
       (k : ℝ) * x.2.1.re - 6 * (m : ℝ) * x.2.2.re := by simp
   rw [hexp]
   exact mul_le_mul_of_nonneg_right
-    (mul_le_of_le_one_left (norm_nonneg _) he) (Real.rpow_nonneg (Q_pos p).le _)
+    (mul_le_of_le_one_left (norm_nonneg _) (pow_le_one₀ (norm_nonneg _) (norm_gammaTwo C p))) (Real.rpow_nonneg (Q_pos p).le _)
+
+alias BadPrimeEstimates.norm_series_le := norm_series_le
 
 private lemma shell_bound (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (t k J : ℕ) (ht : 0 < t) (hk : k ≤ 1) :
     ‖Ctk C p t k J‖ ≤ (Q p) ^ ((t : ℝ) + (k : ℝ) / 2) := by
   interval_cases k
-  · simpa only [Nat.cast_zero, zero_div, add_zero, Real.rpow_natCast] using
+  · simpa using
       norm_Ctk_zero_le C p t J ht
   · simpa using norm_Ctk_one_le C p t J ht
+
+alias BadPrimeEstimates.shell_bound := shell_bound
 
 private lemma shell_exponent (e : Fin 2) (l k m : ℕ) (ht : 0 < e.val + 3 * l)
     (hk : k ≤ 1) (x : Coordinates) (hx : x ∈ Omega) :
@@ -117,8 +126,6 @@ private lemma shell_exponent (e : Fin 2) (l k m : ℕ) (ht : 0 < e.val + 3 * l)
       (l : ℝ) * (1 + 3 * x.1.re) - (k : ℝ) * x.2.1.re - 6 * (m : ℝ) * x.2.2.re ≤
       -(1 / 4000 : ℝ) - (l : ℝ) / 4 - (m : ℝ) / 4 := by
   obtain ⟨ha, hb, hc⟩ := region_lower x hx
-  have hl : 0 ≤ (l : ℝ) := Nat.cast_nonneg _
-  have hm : 0 ≤ (m : ℝ) := Nat.cast_nonneg _
   have he := e.isLt
   simp only [Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat]
   interval_cases k <;> interval_cases e.val <;> simp only [Nat.cast_zero, Nat.cast_one] at *
@@ -134,16 +141,21 @@ private lemma shell_exponent (e : Fin 2) (l k m : ℕ) (ht : 0 < e.val + 3 * l)
 
 private lemma ratio_pos : 0 < ratio := Real.rpow_pos_of_pos (by norm_num) _
 
-private lemma ratio_lt_one : ratio < 1 := by
-  exact Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by norm_num)
+private lemma ratio_lt_one : ratio < 1 := Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by norm_num)
 
- def weight (i : Fin 2 × ℕ × ℕ × ℕ) : ℝ :=
+ section
+
+variable (i : Fin 2 × ℕ × ℕ × ℕ)
+
+def weight : ℝ :=
   4 * ratio ^ i.2.1 * (1 / 2 : ℝ) ^ i.2.2.1 * ratio ^ i.2.2.2
 
-private lemma weight_nonneg (i : Fin 2 × ℕ × ℕ × ℕ) : 0 ≤ weight i := by
+private lemma weight_nonneg : 0 ≤ weight i := by
   have := ratio_pos
   unfold weight
   positivity
+
+end
 
 private lemma weight_summable : Summable weight := by
   have := ratio_pos
@@ -187,15 +199,14 @@ private lemma positive_term_bound (C : A.GeneralArithmeticContext σ η hS)
       (mul_le_mul_of_nonneg_right (shell_bound C p _ _ _ ht hk)
         (Real.rpow_nonneg (Q_pos p).le _))
     rw [← Real.rpow_add (Q_pos p)] at h
-    have h' := Real.rpow_le_rpow_of_exponent_le (x := Q p) (by linarith [two_le_Q p])
-      (shell_exponent e l k m ht hk x hx)
     have hex : ((e.val + 3 * l : ℕ) : ℝ) + (k : ℝ) / 2 +
         (-(e.val : ℝ) * (1 / 2 + x.1.re) - (l : ℝ) * (1 + 3 * x.1.re) -
           (k : ℝ) * x.2.1.re - 6 * (m : ℝ) * x.2.2.re) =
         ((e.val + 3 * l : ℕ) : ℝ) + (k : ℝ) / 2 - (e.val : ℝ) * (1 / 2 + x.1.re) -
           (l : ℝ) * (1 + 3 * x.1.re) - (k : ℝ) * x.2.1.re - 6 * (m : ℝ) * x.2.2.re := by ring
     rw [hex] at h
-    have h'' := h.trans (h'.trans (decay_split p l m))
+    have h'' := h.trans ((Real.rpow_le_rpow_of_exponent_le (by linarith [two_le_Q p])
+      (shell_exponent e l k m ht hk x hx)).trans (decay_split p l m))
     interval_cases k <;> unfold weight <;> simp only [pow_zero, pow_one] <;>
       nlinarith [mul_nonneg (mul_nonneg (Real.rpow_nonneg (Q_pos p).le (-(1 / 4000 : ℝ)))
         (pow_nonneg hr.le l)) (pow_nonneg hr.le m)]
@@ -212,9 +223,11 @@ private lemma norm_V_bound (p : ExteriorPrime A) (x : Coordinates) (hx : x ∈ O
   exact (Real.rpow_le_rpow_of_exponent_le (by linarith [two_le_Q p]) he).trans
     (Real.rpow_le_rpow_of_nonpos (by norm_num) (two_le_Q p) (by norm_num))
 
-private lemma zero_term (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (j : Fin 6) (hj : j.val ≠ 0)
-    (θ : {θ : ℂ // ‖θ‖ = 1}) (k m : ℕ) (x : Coordinates) :
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (j : Fin 6) (hj : j.val ≠ 0)
+    (θ : {θ : ℂ // ‖θ‖ = 1})
+
+include hj in
+private lemma zero_term (k m : ℕ) (x : Coordinates) :
     seriesTerm C p j θ 0 0 k m x.1 x.2.1 x.2.2 =
       if k = 0 then V p x.2.2 ^ m else 0 := by
   by_cases hk : k = 0
@@ -234,12 +247,10 @@ private lemma zero_term (C : A.GeneralArithmeticContext σ η hS)
       Ctk_zero_pos C p k _ (Nat.pos_of_ne_zero hk), if_neg hJ]
     simp only [mul_zero, zero_mul, if_neg hk]
 
-private lemma term_bound (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (j : Fin 6) (hj : j.val ≠ 0)
-    (θ : {θ : ℂ // ‖θ‖ = 1}) (i : Fin 2 × ℕ × ℕ × ℕ)
+include hj in
+private lemma term_bound (i : Fin 2 × ℕ × ℕ × ℕ)
     (x : Coordinates) (hx : x ∈ Omega) :
     ‖seriesTerm C p j θ i.1 i.2.1 i.2.2.1 i.2.2.2 x.1 x.2.1 x.2.2‖ ≤ weight i / 2 := by
-  have hr := ratio_pos
   by_cases ht : 0 < i.1.val + 3 * i.2.1
   · apply (positive_term_bound C p j θ _ _ _ _ ht x hx).trans
     exact mul_le_of_le_one_left (div_nonneg (weight_nonneg _) (by norm_num))
@@ -251,13 +262,12 @@ private lemma term_bound (C : A.GeneralArithmeticContext σ η hS)
     · rw [norm_pow]
       have h := pow_le_pow_left₀ (norm_nonneg _) (norm_V_bound p x hx) i.2.2.2
       simp only [weight, he, hl, hk, pow_zero, mul_one]
-      nlinarith [pow_nonneg hr.le i.2.2.2]
+      nlinarith [pow_nonneg ratio_pos.le i.2.2.2]
     · simp only [norm_zero]
       exact div_nonneg (weight_nonneg _) (by norm_num)
 
-theorem bad_factor_normal_majorants (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (j : Fin 6) (hj : j.val ≠ 0)
-    (θ : {θ : ℂ // ‖θ‖ = 1}) :
+include hj in
+theorem bad_factor_normal_majorants :
     ∀ K : Set Coordinates, K ⊆ Omega → IsCompact K →
       ∃ M : (Fin 2 × ℕ × ℕ × ℕ) → ℝ, Summable M ∧
         ∀ (i : Fin 2 × ℕ × ℕ × ℕ) (x : Coordinates), x ∈ K →
@@ -275,9 +285,8 @@ theorem bad_factor_normal_majorants (C : A.GeneralArithmeticContext σ η hS)
   have ht := term_bound C p j hj θ i x (hKO hx)
   nlinarith [norm_nonneg (seriesTerm C p j θ i.1 i.2.1 i.2.2.1 i.2.2.2 x.1 x.2.1 x.2.2)]
 
-theorem bad_factor_holomorphic (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (j : Fin 6) (hj : j.val ≠ 0)
-    (θ : {θ : ℂ // ‖θ‖ = 1}) :
+include hj in
+theorem bad_factor_holomorphic :
     DifferentiableOn ℂ
       (fun x : Coordinates => badFactor C p j θ x.1 x.2.1 x.2.2) Omega := by
   have hg : ∀ i : Fin 2 × ℕ × ℕ × ℕ, Differentiable ℂ
@@ -286,9 +295,8 @@ theorem bad_factor_holomorphic (C : A.GeneralArithmeticContext σ η hS)
     intro i
     unfold V seriesTerm qPower
     fun_prop
-  have h := normal_holomorphic _ hg Omega isOpen_Omega
-    (bad_factor_normal_majorants C p j hj θ)
-  simpa only [badFactor, f, tsum_mul_left] using h
+  simpa only [badFactor, f, tsum_mul_left] using (normal_holomorphic _ hg Omega isOpen_Omega
+    (bad_factor_normal_majorants C p j hj θ))
 
 end DedekindZetaZeroFree.CorrectionFactors
 

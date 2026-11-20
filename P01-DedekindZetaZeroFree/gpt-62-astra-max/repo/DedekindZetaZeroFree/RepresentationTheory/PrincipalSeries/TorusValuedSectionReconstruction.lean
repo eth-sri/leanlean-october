@@ -25,30 +25,14 @@ private theorem scalar_retract_reduction
     (ε : Sign) (f : scalarSections F ζ hζ q S P hP ε)
     (b : S.borel.B) (g : ActualCover F ζ hζ q) :
     f.val ((b : ActualCover F ζ hζ q) * g) =
-      f.val ((S.borel.torus (S.borel.retract b) : ActualCover F ζ hζ q) * g) := by
-  let a : S.borel.B := b * (S.borel.torus (S.borel.retract b))⁻¹
-  have ha : S.borel.retract a = 1 := by
-    simp [a, S.borel.retract_torus]
-  let aL : BL F ζ hζ q S P := ⟨a, ⟨a, by
-    change S.borel.retract a ∈ HL F ζ hζ q S P
-    rw [ha]
-    exact Subgroup.one_mem _, rfl⟩⟩
-  have hr : (retractL F ζ hζ q S P aL : actualTorus F ζ hζ q) = 1 := by
-    change S.borel.retract (inBorel F ζ hζ q S P aL) = 1
-    have : inBorel F ζ hζ q S P aL = a := Subtype.ext rfl
-    rw [this, ha]
-  have hc : chi F ζ hζ q S P hP ε aL = 1 := by
-    have hr' : retractL F ζ hζ q S P aL = 1 := Subtype.ext hr
-    cases ε <;> simp [chi, chiH, hr', normPower, localAbs_one]
-  have hf := f.property.1 aL
-    ((S.borel.torus (S.borel.retract b) : ActualCover F ζ hζ q) * g)
-  rw [hc, one_mul] at hf
-  simpa [aL, a, mul_assoc] using hf
+      f.val ((S.borel.torus (S.borel.retract b) : ActualCover F ζ hζ q) * g) := by apply @DedekindZetaZeroFree.KPTameJacquetTestDualityScalarization.ScalarSectionLiftsAndWhittakerDimension.borel_reduce <;> assumption
 
-private theorem normPower_product (x y : (LocalField F q)ˣ) :
-    normPower (LocalField F q) (x * y) (1 / 2) =
-      normPower (LocalField F q) x (1 / 2) *
-        normPower (LocalField F q) y (1 / 2) := by
+local notation "LocalCompletion" => LocalField F q
+
+private theorem normPower_product (x y : LocalCompletionˣ) :
+    normPower LocalCompletion (x * y) (1 / 2) =
+      normPower LocalCompletion x (1 / 2) *
+        normPower LocalCompletion y (1 / 2) := by
   simp [normPower, localAbs_mul, Real.log_mul (ne_of_gt (localAbs_pos _ x))
     (ne_of_gt (localAbs_pos _ y)), mul_add, Complex.exp_add]
 
@@ -59,7 +43,7 @@ theorem reconstruction_section_membership
       let t' := match ε with
         | .plus => t
         | .minus => S.borel.weyl.symm t
-      (normPower (LocalField F q) (S.borel.coordinate t') (1 / 2))⁻¹ *
+      (normPower LocalCompletion (S.borel.coordinate t') (1 / 2))⁻¹ *
         f.val ((S.borel.torus t' : ActualCover F ζ hζ q) * g)) :
     v ∈ sectionSpace S.borel P ε 0 := by
   refine ⟨?_, ?_⟩
@@ -70,7 +54,7 @@ theorem reconstruction_section_membership
       normPower, zero_mul, Complex.exp_zero, mul_one,
       LinearMap.smul_apply, deltaHalf]
     · change (v ((b : ActualCover F ζ hζ q) * g)).val t =
-        normPower (LocalField F q) (S.borel.coordinate (S.borel.retract b)) (1 / 2) *
+        normPower LocalCompletion (S.borel.coordinate (S.borel.retract b)) (1 / 2) *
           (v g).val (t * S.borel.retract b)
       rw [hv, hv]
       simp only [map_mul]
@@ -79,15 +63,15 @@ theorem reconstruction_section_membership
       simp only [map_mul, S.borel.retract_torus, Subgroup.coe_mul,
         mul_assoc] at hf
       rw [hf, normPower_product]
-      have hn : normPower (LocalField F q)
+      have hn : normPower LocalCompletion
           (S.borel.coordinate (S.borel.retract b)) (1 / 2) ≠ 0 :=
         Complex.exp_ne_zero _
-      have ht : normPower (LocalField F q) (S.borel.coordinate t) (1 / 2) ≠ 0 :=
+      have ht : normPower LocalCompletion (S.borel.coordinate t) (1 / 2) ≠ 0 :=
         Complex.exp_ne_zero _
       field_simp
       simp only [Subgroup.coe_mul, mul_assoc]
     · change (v ((b : ActualCover F ζ hζ q) * g)).val t =
-        normPower (LocalField F q) (S.borel.coordinate (S.borel.retract b)) (1 / 2) *
+        normPower LocalCompletion (S.borel.coordinate (S.borel.retract b)) (1 / 2) *
           (v g).val (t * S.borel.weyl (S.borel.retract b))
       rw [hv, hv]
       simp only [map_mul, S.borel.weyl.symm_apply_apply]
@@ -96,10 +80,10 @@ theorem reconstruction_section_membership
       simp only [map_mul, S.borel.retract_torus, Subgroup.coe_mul,
         mul_assoc] at hf
       rw [hf, normPower_product]
-      have hn : normPower (LocalField F q)
+      have hn : normPower LocalCompletion
           (S.borel.coordinate (S.borel.retract b)) (1 / 2) ≠ 0 :=
         Complex.exp_ne_zero _
-      have ht : normPower (LocalField F q)
+      have ht : normPower LocalCompletion
           (S.borel.coordinate (S.borel.weyl.symm t)) (1 / 2) ≠ 0 :=
         Complex.exp_ne_zero _
       field_simp

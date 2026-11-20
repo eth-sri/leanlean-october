@@ -32,13 +32,10 @@ theorem constant_image_zero (q : W)
     constantMap D W s hW x μ b
       (subspaceEmbedding F R.A.zeta12 R.A.primitive_zeta12 W
         (depth (R := R) W) (depth_valid (R := R) W) (character W)
-        (fiber D W) (action D W) (localData D W) E z) = 0 := by
-  exact WildOrdinaryImageFunctional.vanishes F R.A.zeta12 R.A.primitive_zeta12 W
-    (depth (R := R) W) (depth_valid (R := R) W) (character W)
+        (fiber D W) (action D W) (localData D W) E z) = 0 := WildOrdinaryImageFunctional.vanishes F R.A.zeta12 R.A.primitive_zeta12 W
+    (depth W) (depth_valid W) (character W)
     (fiber D W) (action D W) (localData D W) q E
-    (constantMap D W s hW x μ b) (by
-      intro t u
-      exact (congrArg (constantMap D W s hW x μ b)
+    (constantMap D W s hW x μ b) (fun t u => (congrArg (constantMap D W s hW x μ b)
         (LinearMap.congr_fun (ambient_root_eq_slot D W q t) u)).trans
           (constant_integral_root D W s hW x q t u μ b)) z
 end DedekindZetaZeroFree.FourierContinuation.WildCurrentGlobalMap

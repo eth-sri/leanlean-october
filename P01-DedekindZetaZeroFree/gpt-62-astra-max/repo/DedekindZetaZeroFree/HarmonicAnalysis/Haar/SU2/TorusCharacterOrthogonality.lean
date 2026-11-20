@@ -52,7 +52,6 @@ theorem character_symPower_orthonormal_torusExp (m n : ℕ) :
   rw [intervalIntegral.integral_ofReal, intervalIntegral.integral_const_mul]
 
   have hnorm : ∀ I : ℝ, 1 / (2 * Real.pi) * (4 * I) = 2 / Real.pi * I := by
-    have hpi : Real.pi ≠ 0 := Real.pi_ne_zero
     intro I
     field_simp
     ring

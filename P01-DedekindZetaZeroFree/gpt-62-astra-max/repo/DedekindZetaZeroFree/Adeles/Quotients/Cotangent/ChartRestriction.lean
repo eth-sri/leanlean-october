@@ -21,12 +21,12 @@ open KPContCotangentActualGenuineTwistIsotropy KPContCotangentActualOverlap
 open KPContCotangentOverlapRationalBranches
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (cover : CountableCover F ζ hζ U R P H)
-variable (a : ShrunkChart F ζ hζ U R P H)
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    (cover : CountableCover F ζ hζ U R P H)
+    (a : ShrunkChart F ζ hζ U R P H)
 
 def fullPiece : KPMeasurableLocalL2.Piece (localData a) where
   set := Set.univ
@@ -46,24 +46,18 @@ def localCoefficient (r : Family (U := U) (H := H)) (y : a.domain) : E F :=
   coefficient r a (coordinates a y)
 
 private lemma q_coordinates (y : a.domain) :
-    KPContCotangentOverlapRationalBranches.q a (coordinates a y).val = a.toBase y := by
-  have hi : ∀ z : KPCuspGenuineMonodromy.SymmetricSpace F,
-      labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) z) = z := by
-    intro z; funext k; simp [labeledA, labeledAInv]
-  simp only [ShrunkChart.toBase, KPContCotangentOverlapRationalBranches.q, coordinates]
-  rw [hi]
+    KPContCotangentOverlapRationalBranches.q a (coordinates a y).val = a.toBase y := by apply @DedekindZetaZeroFree.KPContActualCotangentPieceReconstruction.HilbertPieceReconstruction.q_coordinates' <;> assumption
 
 private theorem localCoefficient_covariant (r : Family (U := U) (H := H))
     (γ : Gamma a) (y : a.domain) :
     localCoefficient a r (actualActionEquiv a γ y) =
       actualTensor a γ y (localCoefficient a r y) := by
-  have hcov := (r.property).2.1 a γ (coordinates a y).val (coordinates a y).property
   simp only [localCoefficient, actualTensor]
   rw [show coordinates a (actualActionEquiv a γ y) =
       ⟨(isotropyArrow a γ).psi (coordinates a y).val,
         isotropy_mem a γ (coordinates a y).val (coordinates a y).property⟩
       from Subtype.ext (coordinates_action a γ y)]
-  exact hcov
+  exact (r.property).2.1 a γ (coordinates a y).val (coordinates a y).property
 
 theorem localCoefficient_memLp (r : SquareFiniteFamily (U := U) (H := H)) :
     MemLp (localCoefficient a r.val) 2 a.liftedMeasure := by
@@ -77,29 +71,26 @@ theorem localCoefficient_memLp (r : SquareFiniteFamily (U := U) (H := H)) :
     intro y
     have h1 : ‖(‖localCoefficient a r.val y‖ ^ 2 : ℝ)‖ₑ =
         (‖localCoefficient a r.val y‖₊ : ℝ≥0∞) ^ 2 := by
-      have h : ‖(‖localCoefficient a r.val y‖ ^ 2 : ℝ)‖ₑ =
-          ENNReal.ofReal (‖localCoefficient a r.val y‖ ^ 2) :=
-        Real.enorm_eq_ofReal (r := ‖localCoefficient a r.val y‖ ^ 2) (sq_nonneg _)
-      rw [h, ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm (x := localCoefficient a r.val y),
+      rw [(Real.enorm_eq_ofReal (sq_nonneg _)), ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm,
         enorm_eq_nnnorm]
     rw [h1, ← q_coordinates a y, normSquare_chart]
     rfl
   simp only [hnn]
   have hP := every_shrunkChart_properties F ζ hζ U R P H a
-  calc ∫⁻ y, (normSquare r.val (a.toBase y) : ℝ≥0∞) ∂a.liftedMeasure
+  calc _
       = ∫⁻ b, (normSquare r.val b : ℝ≥0∞) ∂(Measure.map a.toBase a.liftedMeasure) :=
-        (lintegral_map' (f := fun b => (normSquare r.val b : ℝ≥0∞)) (g := a.toBase)
-          (μ := a.liftedMeasure) (measurable_normSquare r.val).coe_nnreal_ennreal.aemeasurable
+        (lintegral_map'
+           (measurable_normSquare r.val).coe_nnreal_ennreal.aemeasurable
           hP.measurable.aemeasurable).symm
     _ = ∫⁻ b, (normSquare r.val b : ℝ≥0∞) ∂
-          ((baseMeasure (R := R) (P := P) (U := U)).restrict a.baseDomain) := by
+          ((baseMeasure).restrict a.baseDomain) := by
         rw [hP.exact_pushforward]
     _ ≤ ∫⁻ b, (normSquare r.val b : ℝ≥0∞) ∂
-          (baseMeasure (R := R) (P := P) (U := U)) :=
+          (baseMeasure) :=
         lintegral_mono' Measure.restrict_le_self le_rfl
     _ = ∫⁻ b, ENNReal.ofReal (normSquare r.val b : ℝ) ∂
-          (baseMeasure (R := R) (P := P) (U := U)) := by
-        simp only [ENNReal.ofReal_coe_nnreal]
+          (baseMeasure) := by
+        simp
     _ < ⊤ := r.property
 
 def familyLp (r : SquareFiniteFamily (U := U) (H := H)) : Lp (E F) 2 a.liftedMeasure :=
@@ -111,8 +102,7 @@ theorem familyLp_mem_Q (r : SquareFiniteFamily (U := U) (H := H)) :
   refine ⟨?_, ?_⟩
   · intro γ
     have hcoe := MemLp.coeFn_toLp (localCoefficient_memLp a r)
-    have hact := (action_preserving a γ).quasiMeasurePreserving.ae hcoe
-    filter_upwards [hcoe, hact] with y hy hyact
+    filter_upwards [hcoe, ((action_preserving a γ).quasiMeasurePreserving.ae hcoe)] with y hy hyact
     show (familyLp a r) (actualActionEquiv a γ y) =
       actualTensor a γ y ((familyLp a r) y)
     simp only [familyLp]
@@ -128,13 +118,14 @@ private theorem familyQ_inner_eq_integral (r s : SquareFiniteFamily (U := U) (H 
       ∫ x in a.baseDomain, pair r.val s.val x
         ∂(baseMeasure (R := R) (P := P) (U := U)) := by
   have hP := every_shrunkChart_properties F ζ hζ U R P H a
+  let Lp₀ := Lp (E F) 2 a.liftedMeasure
   have h1 : inner ℂ (familyQ a r) (familyQ a s) =
-      ∫ y, inner ℂ ((familyQ a r : Lp (E F) 2 a.liftedMeasure) y)
-        ((familyQ a s : Lp (E F) 2 a.liftedMeasure) y) ∂a.liftedMeasure :=
+      ∫ y, inner ℂ ((familyQ a r : Lp₀) y)
+        ((familyQ a s : Lp₀) y) ∂a.liftedMeasure :=
     KPMeasurableLocalL2.Q_inner_eq_integral (localData a) (fullPiece a) (familyQ a r) (familyQ a s)
   rw [h1]
-  rw [integral_congr_ae (show (fun y => inner ℂ ((familyQ a r : Lp (E F) 2 a.liftedMeasure) y)
-        ((familyQ a s : Lp (E F) 2 a.liftedMeasure) y))
+  rw [integral_congr_ae (show (fun y => inner ℂ ((familyQ a r : Lp₀) y)
+        ((familyQ a s : Lp₀) y))
         =ᵐ[a.liftedMeasure] (fun y => pair r.val s.val (a.toBase y)) from by
     filter_upwards [MemLp.coeFn_toLp (localCoefficient_memLp a r),
       MemLp.coeFn_toLp (localCoefficient_memLp a s)] with y hy1 hy2
@@ -142,17 +133,13 @@ private theorem familyQ_inner_eq_integral (r s : SquareFiniteFamily (U := U) (H 
     simp only [familyLp]
     rw [hy1, hy2, ← q_coordinates a y, pair_chart]
     rfl)]
-  rw [(integral_map (μ := a.liftedMeasure) (φ := a.toBase) hP.measurable.aemeasurable
+  rw [(integral_map hP.measurable.aemeasurable
     (measurable_pair r.val s.val).aestronglyMeasurable).symm]
   rw [hP.exact_pushforward]
 
 private theorem familyQ_norm_sq_eq_integral (r : SquareFiniteFamily (U := U) (H := H)) :
     ‖familyQ a r‖ ^ 2 = ∫ x in a.baseDomain, (normSquare r.val x : ℝ)
       ∂(baseMeasure (R := R) (P := P) (U := U)) := by
-  have hP := every_shrunkChart_properties F ζ hζ U R P H a
-  have hint : Integrable (fun x => pair r.val r.val x)
-      ((baseMeasure (R := R) (P := P) (U := U)).restrict a.baseDomain) :=
-    (integrable_pair r r).mono_measure Measure.restrict_le_self
   calc ‖familyQ a r‖ ^ 2
       = RCLike.re (inner ℂ (familyQ a r) (familyQ a r)) :=
         InnerProductSpace.norm_sq_eq_re_inner (𝕜 := ℂ) (familyQ a r)
@@ -160,17 +147,17 @@ private theorem familyQ_norm_sq_eq_integral (r : SquareFiniteFamily (U := U) (H 
           ∂(baseMeasure (R := R) (P := P) (U := U))) := by
         rw [familyQ_inner_eq_integral a r r]
     _ = ∫ x in a.baseDomain, RCLike.re (pair r.val r.val x)
-          ∂(baseMeasure (R := R) (P := P) (U := U)) := (integral_re hint).symm
+          ∂(baseMeasure (R := R) (P := P) (U := U)) := (integral_re ((integrable_pair r r).mono_measure Measure.restrict_le_self)).symm
     _ = ∫ x in a.baseDomain, (normSquare r.val x : ℝ)
           ∂(baseMeasure (R := R) (P := P) (U := U)) := by
       refine integral_congr_ae ?_
       have hpt : ∀ᵐ x ∂((baseMeasure (R := R) (P := P) (U := U)).restrict a.baseDomain),
           RCLike.re (pair r.val r.val x) = (normSquare r.val x : ℝ) := by
-        rw [MeasureTheory.ae_restrict_iff' hP.base_measurable]
+        rw [MeasureTheory.ae_restrict_iff' (every_shrunkChart_properties F ζ hζ U R P H a).base_measurable]
         filter_upwards with b hb
         obtain ⟨y, rfl⟩ := hb
         rw [← q_coordinates a y, pair_chart, normSquare_chart,
-          ← InnerProductSpace.norm_sq_eq_re_inner (𝕜 := ℂ)
+          ← InnerProductSpace.norm_sq_eq_re_inner
             (coefficient r.val a (coordinates a y))]
         push_cast
         rfl
@@ -180,12 +167,9 @@ private theorem localCoefficient_ae_eq (r s : SquareFiniteFamily (U := U) (H := 
     (hrs : AeEquivalent r.val s.val) :
     localCoefficient a r.val =ᵐ[a.liftedMeasure] localCoefficient a s.val := by
   have hP := every_shrunkChart_properties F ζ hζ U R P H a
-  have hbase : ∀ᵐ x ∂(Measure.map a.toBase a.liftedMeasure),
-      normSquare (r.val - s.val) x = 0 := by
+  filter_upwards [(ae_of_ae_map hP.measurable.aemeasurable (by
     rw [hP.exact_pushforward]
-    exact ae_mono Measure.restrict_le_self hrs
-  have hlift := ae_of_ae_map hP.measurable.aemeasurable hbase
-  filter_upwards [hlift] with y hy
+    exact ae_mono Measure.restrict_le_self hrs))] with y hy
   rw [← q_coordinates a y, normSquare_chart] at hy
   have hz : coefficient (r.val - s.val) a (coordinates a y) = 0 := by
     simpa using hy
@@ -265,19 +249,23 @@ theorem restrictionLinear_norm_le (v : IntrinsicHilbert cover) :
 def res : IntrinsicHilbert cover →L[ℂ] Q a :=
   (restrictionLinear cover a).mkContinuous 1 (by
     intro v
-    simpa only [one_mul] using restrictionLinear_norm_le cover a v)
+    simpa using restrictionLinear_norm_le cover a v)
 
-theorem res_eq_familyQ (v : IntrinsicHilbert cover)
+section
+
+variable (v : IntrinsicHilbert cover)
+
+theorem res_eq_familyQ
     (r : SquareFiniteFamily (U := U) (H := H))
     (hr : toAeQuotient r = intrinsicClass cover v) :
     res cover a v = familyQ a r := by
-  have hv : v = toAeQuotient (R := R) (U := U) (H := H) r := by
+  have hv : v = toAeQuotient r := by
     rw [hr]
     rfl
   rw [hv]
   rfl
 
-theorem res_represented (v : IntrinsicHilbert cover)
+theorem res_represented
     (r : SquareFiniteFamily (U := U) (H := H))
     (hr : toAeQuotient r = intrinsicClass cover v) :
     (fun y => (res cover a v : Lp (E F) 2 a.liftedMeasure) y) =ᵐ[a.liftedMeasure]
@@ -285,12 +273,14 @@ theorem res_represented (v : IntrinsicHilbert cover)
   rw [res_eq_familyQ cover a v r hr]
   exact MemLp.coeFn_toLp (localCoefficient_memLp a r)
 
-theorem res_norm_le (v : IntrinsicHilbert cover) : ‖res cover a v‖ ≤ ‖v‖ := by
-  calc ‖res cover a v‖ ≤ ‖res cover a‖ * ‖v‖ := ContinuousLinearMap.le_opNorm _ _
+theorem res_norm_le : ‖res cover a v‖ ≤ ‖v‖ := by
+  calc _ ≤ ‖res cover a‖ * ‖v‖ := ContinuousLinearMap.le_opNorm _ _
     _ ≤ 1 * ‖v‖ := by
       gcongr
       exact LinearMap.mkContinuous_norm_le _ zero_le_one _
     _ = ‖v‖ := one_mul _
+
+end
 
 theorem res_inner_eq_integral (v w : IntrinsicHilbert cover)
     (r s : SquareFiniteFamily (U := U) (H := H))
@@ -308,10 +298,6 @@ theorem res_norm_sq_eq_integral (v : IntrinsicHilbert cover)
     ‖res cover a v‖ ^ 2 = ∫ x in a.baseDomain, (normSquare r.val x : ℝ)
       ∂(KPContActualCotangentMeasurableFamilies.baseMeasure (R := R) (P := P) (U := U)) := by
   rw [res_eq_familyQ cover a v r hr]
-  have hP := every_shrunkChart_properties F ζ hζ U R P H a
-  have hint : Integrable (fun x => pair r.val r.val x)
-      ((baseMeasure (R := R) (P := P) (U := U)).restrict a.baseDomain) :=
-    (integrable_pair r r).mono_measure Measure.restrict_le_self
   calc ‖familyQ a r‖ ^ 2
       = RCLike.re (inner ℂ (familyQ a r) (familyQ a r)) :=
         InnerProductSpace.norm_sq_eq_re_inner (𝕜 := ℂ) (familyQ a r)
@@ -319,17 +305,17 @@ theorem res_norm_sq_eq_integral (v : IntrinsicHilbert cover)
           ∂(baseMeasure (R := R) (P := P) (U := U))) := by
         rw [familyQ_inner_eq_integral a r r]
     _ = ∫ x in a.baseDomain, RCLike.re (pair r.val r.val x)
-          ∂(baseMeasure (R := R) (P := P) (U := U)) := (integral_re hint).symm
+          ∂(baseMeasure (R := R) (P := P) (U := U)) := (integral_re ((integrable_pair r r).mono_measure Measure.restrict_le_self)).symm
     _ = ∫ x in a.baseDomain, (normSquare r.val x : ℝ)
           ∂(baseMeasure (R := R) (P := P) (U := U)) := by
       refine integral_congr_ae ?_
       have hpt : ∀ᵐ x ∂((baseMeasure (R := R) (P := P) (U := U)).restrict a.baseDomain),
           RCLike.re (pair r.val r.val x) = (normSquare r.val x : ℝ) := by
-        rw [MeasureTheory.ae_restrict_iff' hP.base_measurable]
+        rw [MeasureTheory.ae_restrict_iff' (every_shrunkChart_properties F ζ hζ U R P H a).base_measurable]
         filter_upwards with b hb
         obtain ⟨y, rfl⟩ := hb
         rw [← q_coordinates a y, pair_chart, normSquare_chart,
-          ← InnerProductSpace.norm_sq_eq_re_inner (𝕜 := ℂ)
+          ← InnerProductSpace.norm_sq_eq_re_inner
             (coefficient r.val a (coordinates a y))]
         push_cast
         rfl
@@ -477,16 +463,13 @@ theorem resEuclidean_represented (v : IntrinsicHilbert cover)
       Lp (EuclideanSpace ℂ (Fin (3 * d F))) 2 a.liftedMeasure) y) =ᵐ[a.liftedMeasure]
       (fun y => coefficientReindex (F := F) (localCoefficient a r.val y)) := by
   let L := (coefficientReindex (F := F)).toContinuousLinearEquiv.toContinuousLinearMap
-  have hres := res_represented cover a v r hr
-  have heq := L.coeFn_compLp (res cover a v).val
-  filter_upwards [heq, hres] with y hy hz
+  filter_upwards [(L.coeFn_compLp (res cover a v).val), (res_represented cover a v r hr)] with y hy hz
   change L.compLp (res cover a v).val y = _
   rw [hy, hz]
   rfl
 
 theorem resEuclidean_norm (v : IntrinsicHilbert cover) :
-    ‖resEuclidean cover a v‖ = ‖res cover a v‖ := by
-  exact LinearIsometryEquiv.norm_map (reindexQ a) (res cover a v)
+    ‖resEuclidean cover a v‖ = ‖res cover a v‖ := LinearIsometryEquiv.norm_map (reindexQ a) (res cover a v)
 
 end DedekindZetaZeroFree.KPContActualCotangentChartRestriction
 

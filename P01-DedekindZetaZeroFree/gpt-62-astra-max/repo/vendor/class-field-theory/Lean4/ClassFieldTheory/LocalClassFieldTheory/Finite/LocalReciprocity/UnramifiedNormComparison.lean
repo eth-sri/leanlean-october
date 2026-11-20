@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -33,7 +27,6 @@ the valuation quotient have the same finite cardinality.
 -/
 
 noncomputable section
-
 
 namespace LocalClassFieldTheory
 
@@ -61,9 +54,6 @@ theorem localNormSubgroup_le_unramifiedNormSubgroup :
   obtain ⟨y, rfl⟩ := MonoidHom.mem_range.mp hx
   apply (mem_unramifiedNormSubgroup_iff K (Module.finrank K L) _).2
   rw [valuationMap_apply]
-  change (Module.finrank K L : Int) ∣
-    v K (Additive.ofMul
-      (LocalFieldTheory.normUnits K L y))
   rw [v_normUnits_eq_residue_finrank_mul_of_isGalois K L,
     unramifiedValuation_residue_finrank_eq_finrank K L]
   exact dvd_mul_right _ _
@@ -107,8 +97,8 @@ noncomputable def galoisGroupEquivAbelianizationOfUnramifiedValuation :
   letI : IsCyclic (Gal(L / K)) :=
     isCyclic_galoisGroup_of_unramifiedValuation K L
   letI : CommGroup (Gal(L / K)) :=
-    IsCyclic.commGroup (α := Gal(L / K))
-  exact Abelianization.equivOfComm (H := Gal(L / K))
+    IsCyclic.commGroup
+  exact Abelianization.equivOfComm
 
 /-- The cyclic Galois-group equivalence is the canonical map to the abelianization. -/
 @[simp]
@@ -129,7 +119,7 @@ private theorem normQuotient_card_eq_finrank :
   let : Finite (Abelianization (Gal(L / K))) :=
     Finite.of_surjective Abelianization.of QuotientGroup.mk_surjective
   calc
-    Nat.card (NormQuotient K L) =
+    _ =
         Nat.card (Abelianization (Gal(L / K))) :=
       Nat.card_congr (abelianizationEquivNormQuotient K L).symm.toEquiv
     _ = Nat.card (Gal(L / K)) :=
@@ -143,7 +133,7 @@ theorem normQuotientToUnramifiedNormQuotient_injective :
     Function.Injective
       (normQuotientToUnramifiedNormQuotient K L) := by
   let : NeZero (Module.finrank K L) := ⟨Module.finrank_pos.ne'⟩
-  let : Finite (NormQuotient K L) :=
+  let :=
     Finite.of_equiv (Gal(L / K))
       ((galoisGroupEquivAbelianizationOfUnramifiedValuation K L).trans
         (abelianizationEquivNormQuotient K L)).toEquiv
@@ -155,8 +145,7 @@ theorem normQuotientToUnramifiedNormQuotient_injective :
     exact
       (unramifiedNormQuotient_card_eq_degree
         K (Module.finrank K L)).symm
-  have hbij : Function.Bijective
-      (normQuotientToUnramifiedNormQuotient K L) :=
+  have hbij :=
     (Nat.bijective_iff_surjective_and_card
       (normQuotientToUnramifiedNormQuotient K L)).2
         ⟨normQuotientToUnramifiedNormQuotient_surjective K L,

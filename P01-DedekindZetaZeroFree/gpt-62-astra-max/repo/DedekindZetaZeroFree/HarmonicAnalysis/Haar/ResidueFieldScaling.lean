@@ -10,14 +10,20 @@ open scoped ValuativeRel Classical ENNReal Pointwise
 
 namespace DedekindZetaZeroFree.IntrinsicHaarScaling
 
-def residueCard (K : Type*) [Field K] [ValuativeRel K] : ℕ :=
+section
+
+variable (K : Type*) [Field K] [ValuativeRel K]
+
+def residueCard : ℕ :=
   Nat.card (IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer)
 
-def abs (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
+def abs [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] (x : K) : ℝ :=
   if x = 0 then 0 else
     (residueCard K : ℝ) ^ WithZero.log
       (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (ValuativeRel.valuation K x))
+
+end
 
 variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K]
@@ -87,8 +93,6 @@ theorem uniformizer_image_integerRing
         (IsLocalRing.maximalIdeal ↥(ValuativeRel.valuation K).integer :
           Set ↥(ValuativeRel.valuation K).integer) := by
   let R := (ValuativeRel.valuation K).integer
-  change (fun x : K => (π : K) * x) '' (R : Set K) =
-    R.subtype '' (IsLocalRing.maximalIdeal R : Set R)
   ext x
   constructor
   · rintro ⟨y, hy, rfl⟩
@@ -120,6 +124,8 @@ private lemma pseudo : TopologicalSpace.PseudoMetrizableSpace K := by
     strictMono' := ValuativeRel.IsRankLeOne.nonempty.some.strictMono.comp MonoidWithZeroHom.ValueGroup₀.embedding_strictMono }
   letI : NormedField K := Valued.toNormedField K (ValuativeRel.ValueGroupWithZero K)
   infer_instance
+
+alias ResidueFieldScaling.pseudo := pseudo
 private lemma sigma : SigmaCompactSpace K := by
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
   apply SigmaCompactSpace_iff_exists_compact_covering.mpr
@@ -135,13 +141,18 @@ private lemma sigma : SigmaCompactSpace K := by
   rw [← e.toOrderIso.le_iff_le]
   change e (ValuativeRel.valuation K x) ≤ e (e.symm (WithZero.exp (l.toNat : ℤ)))
   rw [e.apply_symm_apply, ← WithZero.exp_log hv, WithZero.exp_le_exp]
-  change l ≤ (l.toNat : ℤ)
   omega
+
+alias ResidueFieldScaling.sigma := sigma
 abbrev q := Nat.card (IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer)
-private lemma q_pos : (0 : ℝ) < q K := by exact_mod_cast (Nat.card_pos (α := IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer))
+private lemma q_pos : (0 : ℝ) < q K := by exact_mod_cast (Nat.card_pos)
+
+alias ResidueFieldScaling.q_pos := q_pos
 private lemma q_gt : (1 : ℝ) < q K := by
   letI := Fintype.ofFinite (IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer)
-  exact_mod_cast (show 1 < q K from by simpa only [q, Nat.card_eq_fintype_card] using Fintype.one_lt_card (α := IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer))
+  exact_mod_cast (show 1 < q K from by simpa using Fintype.one_lt_card)
+
+alias ResidueFieldScaling.q_gt := q_gt
 private lemma apos {x : K} (hx : x ≠ 0) : 0 < abs K x := by
   simp only [abs, if_neg hx]
   exact zpow_pos (q_pos K) _
@@ -150,11 +161,9 @@ private lemma amul (x y : K) : abs K (x*y) = abs K x * abs K y := by
   · subst x; simp [abs]
   by_cases hy : y = 0
   · subst y; simp [abs]
-  have hvx : ValuativeRel.valuation K x ≠ 0 := by simpa using hx
-  have hvy : ValuativeRel.valuation K y ≠ 0 := by simpa using hy
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-  have hex : e (ValuativeRel.valuation K x) ≠ 0 := by simpa [e] using hvx
-  have hey : e (ValuativeRel.valuation K y) ≠ 0 := by simpa [e] using hvy
+  have hex : e (ValuativeRel.valuation K x) ≠ 0 := by simpa [e] using (by exact hx)
+  have hey : e (ValuativeRel.valuation K y) ≠ 0 := by simpa [e] using (by exact hy)
   simp only [abs, if_neg hx, if_neg hy, if_neg (mul_ne_zero hx hy), _root_.map_mul]
   rw [WithZero.log_mul hex hey, zpow_add₀]
   exact (q_pos K).ne'
@@ -244,10 +253,12 @@ private lemma mass_pos (μ : Measure K) [μ.IsAddHaarMeasure] :
   letI := IsTopologicalAddGroup.rightUniformSpace K
   haveI := isUniformAddGroup_of_addCommGroup (G := K)
   exact ENNReal.toReal_pos ((Valued.isOpen_integer K).measure_ne_zero μ ⟨0, by simp⟩) (IsNonarchimedeanLocalField.isCompact_closedBall K 1).measure_lt_top.ne
+
+alias ResidueFieldScaling.mass_pos := mass_pos
 private lemma pi_char (μ : Measure K) [μ.IsAddHaarMeasure]
     (π : ↥(ValuativeRel.valuation K).integer) (hπ : Irreducible π) :
     (distribHaarChar K (Units.mk0 (π : K) (by exact_mod_cast hπ.ne_zero)) : ℝ) = (q K : ℝ)⁻¹ := by
-  let d : Kˣ := Units.mk0 (π : K) (by exact_mod_cast hπ.ne_zero)
+  let d := Units.mk0 (π : K) (by exact_mod_cast hπ.ne_zero)
   have h := uniformizer_image_measure K μ π hπ
   have hset : (fun x : K => (π : K) * x) '' ((ValuativeRel.valuation K).integer : Set K) = d • ((ValuativeRel.valuation K).integer : Set K) := rfl
   rw [hset, ball_image K, mass_scale K] at h
@@ -256,10 +267,12 @@ private lemma pi_char (μ : Measure K) [μ.IsAddHaarMeasure]
   change (distribHaarChar K d : ℝ) * μ.real ((ValuativeRel.valuation K).integer : Set K) = μ.real ((ValuativeRel.valuation K).integer : Set K) / (q K : ℝ) at ht
   apply mul_right_cancel₀ (mass_pos K μ).ne'
   simpa [div_eq_mul_inv, mul_comm] using ht
+
+alias ResidueFieldScaling.pi_char := pi_char
 private lemma char_abs (μ : Measure K) [μ.IsAddHaarMeasure] (c : Kˣ) :
     (distribHaarChar K c : ℝ) = abs K (c : K) := by
   obtain ⟨π, hπ, ha⟩ := exists_pi K
-  let d : Kˣ := Units.mk0 (π : K) (by exact_mod_cast hπ.ne_zero)
+  let d := Units.mk0 (π : K) (by exact_mod_cast hπ.ne_zero)
   have hd : abs K (d : K) = (q K : ℝ) ^ (-1 : ℤ) := ha
   have hc := pi_char K μ π hπ
   let k := -WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (ValuativeRel.valuation K (c : K)))
@@ -270,10 +283,8 @@ private lemma char_abs (μ : Measure K) [μ.IsAddHaarMeasure] (c : Kˣ) :
   simp only [ENNReal.toReal_mul, ENNReal.coe_toReal] at hm hn
   rw [hca] at hm
   rw [hdk, _root_.map_zpow, NNReal.coe_zpow, hc, ← zpow_neg_one, ← zpow_mul, neg_one_mul] at hn
-  have H := hm.symm.trans hn
-  have H' := mul_right_cancel₀ (mass_pos K μ).ne' H
   rw [hca]
-  exact H'
+  exact mul_right_cancel₀ (mass_pos K μ).ne' (hm.symm.trans hn)
 
 theorem map_mul (μ : Measure K) [μ.IsAddHaarMeasure] (c : K) (hc : c ≠ 0) :
     Measure.map (fun x : K => c * x) μ =

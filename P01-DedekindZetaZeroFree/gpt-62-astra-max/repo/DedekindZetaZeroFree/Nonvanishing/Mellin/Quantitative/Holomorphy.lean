@@ -14,8 +14,8 @@ open DedekindZetaZeroFree NumberField MeasureTheory Asymptotics Filter Set Topol
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 private lemma g_eq_flat_on :
     EqOn (MellinTransform.g D) (TransformFlat.g D) (Ioi (0 : ℝ)) := by
@@ -27,7 +27,7 @@ private lemma g_eq_flat_on :
 
 private lemma g_top (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, ∀ᶠ Z in atTop, ‖MellinTransform.g D Z‖ ≤ C * Z ^ (31 / 32 + ε) := by
-  obtain ⟨C, _, h⟩ := Spectral.g_growth D ε hε
+  obtain ⟨C, h⟩ := Spectral.g_growth D ε hε
   refine ⟨C, eventually_atTop.2 ⟨2, fun Z hZ => ?_⟩⟩
   have hZ0 : (0 : ℝ) < Z := by linarith
   have e : MellinTransform.g D Z = (Z : ℂ) ^ (((61 / 100 : ℝ)) : ℂ) * Spectral.f D Z := by
@@ -40,7 +40,6 @@ private lemma mellin_props (z : ℂ) (hz : z.re < -(31 / 32)) :
     MellinConvergent (MellinTransform.g D) z ∧
       DifferentiableAt ℂ (mellin (MellinTransform.g D)) z := by
   set ε : ℝ := (-(31 / 32) - z.re) / 4 with hεdef
-  have hε : 0 < ε := by rw [hεdef]; linarith
   set a : ℝ := -(31 / 32 + ε) with ha
   set b : ℝ := z.re - 1 with hb
   have hza : z.re < a := by rw [ha, hεdef]; linarith
@@ -50,17 +49,15 @@ private lemma mellin_props (z : ℂ) (hz : z.re < -(31 / 32)) :
     exact (ae_restrict_iff' measurableSet_Ioi).2
       (Eventually.of_forall fun Z hZ => (g_eq_flat_on D hZ).symm)
   have htop : MellinTransform.g D =O[atTop] (fun x : ℝ => x ^ (-a)) := by
-    obtain ⟨C, hC⟩ := g_top D ε hε
+    obtain ⟨C, hC⟩ := g_top D ε (by rw [hεdef]; linarith)
     have hneg : -a = 31 / 32 + ε := by rw [ha]; ring
     rw [hneg]
     refine Asymptotics.IsBigO.of_bound C ?_
     filter_upwards [hC, eventually_gt_atTop 0] with Z hZ hZ0
-    have hp : 0 ≤ Z ^ (31 / 32 + ε) := Real.rpow_nonneg hZ0.le _
-    rw [Real.norm_of_nonneg hp]
+    rw [Real.norm_of_nonneg (Real.rpow_nonneg hZ0.le _)]
     exact hZ
   have hbot : MellinTransform.g D =O[𝓝[>] (0 : ℝ)] (fun x : ℝ => x ^ (-b)) := by
-    have h0 := TransformFlat.g_isBigO_zero D (-b)
-    exact h0.congr' (eventually_nhdsWithin_of_forall fun Z hZ => (g_eq_flat_on D hZ).symm)
+    exact (TransformFlat.g_isBigO_zero D (-b)).congr' (eventually_nhdsWithin_of_forall fun Z hZ => (g_eq_flat_on D hZ).symm)
       EventuallyEq.rfl
   exact ⟨mellinConvergent_of_isBigO_rpow hloc htop hza hbot hbz,
     mellin_differentiableAt_of_isBigO_rpow hloc htop hza hbot hbz⟩
@@ -74,9 +71,8 @@ theorem T_differentiableOn :
   intro s hs
   have hs' : 31 / 32 < s.re := hs
   have h := (mellin_props D (-s) (by rw [Complex.neg_re]; linarith)).2
-  have hneg : DifferentiableAt ℂ (fun s : ℂ => -s) s := by fun_prop
   have h2 : DifferentiableAt ℂ (fun s : ℂ => mellin (MellinTransform.g D) (-s)) s :=
-    h.comp s hneg
+    h.comp s (by fun_prop)
   exact h2.differentiableWithinAt
 
 end

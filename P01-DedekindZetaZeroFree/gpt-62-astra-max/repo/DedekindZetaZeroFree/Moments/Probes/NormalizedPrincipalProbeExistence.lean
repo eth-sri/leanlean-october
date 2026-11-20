@@ -58,7 +58,6 @@ theorem exists_shared_principal_probe (A : SArithmeticData F) (σ : F →+* ℂ)
     annular := hannular
     compactSupport := hcompact
     supportUnits := hunits
-    nonzero := hnonzero
     zeroFrequency := hzero
     nonzeroMellin := hmellin }
   refine ⟨P, rfl, B, ?_⟩

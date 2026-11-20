@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -42,19 +40,12 @@ theorem finitePlaceAdicHilbertPairingFamily_productFormula
             globalInfinitePlaceHilbertSymbol F n v a b) *
           ∏ᶠ v : HeightOneSpectrum (𝓞 F),
             GlobalHilbertPairingFamily.finiteFactor F B hmu v a b = 1 := by
-  let B := finitePlaceAdicHilbertPairingFamily F n hmu
   have hnF : ((n : ℕ) : F) ≠ 0 := Nat.cast_ne_zero.mpr n.ne_zero
   refine ⟨finitePlaceAdicHilbertPairingFamily_isLocallyHilbert F n hmu, ?_, ?_⟩
   · intro a b
-    have hsource :=
-      GlobalClassFieldTheory.Reciprocity.finitePlaceHilbertSymbol_hasFiniteMulSupport
-        F n hnF hmu a b
-    have htarget : Function.HasFiniteMulSupport
-        (fun v : HeightOneSpectrum (𝓞 F) =>
-          globalFinitePlaceHilbertSymbol F n hnF hmu v a b) :=
-      hsource.fun_comp
-        (KummerTheory.nthRootsSubgroupEquivRootsOfUnity F (n : ℕ)).map_one
-    convert htarget using 1
+    convert ((GlobalClassFieldTheory.Reciprocity.finitePlaceHilbertSymbol_hasFiniteMulSupport
+      F n hnF hmu a b).fun_comp
+      (KummerTheory.nthRootsSubgroupEquivRootsOfUnity F (n : ℕ)).map_one) using 1
     funext v
     exact finitePlaceAdicHilbertPairingFamily_finiteFactor F n hnF hmu v a b
   · intro a b

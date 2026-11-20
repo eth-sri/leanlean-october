@@ -47,15 +47,13 @@ private theorem groupArchChart_slice_lower (w : InfinitePlace F) (u : ℂ) :
   · simp [sliceCoordinates, hj, Function.update_of_ne hj, leftMatrix_zero]
 
 variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-variable (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)
+    (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)
 
 theorem productHCScalar_lower_sweep (b : KPGlobalTorusFunctionData.finitePart F ζ hζ)
     (w : InfinitePlace F) (a : InfinitePlace F → ComplexGL2) :
     ContDiff ℝ (⊤ : ℕ∞) (fun u : ℂ => productHCScalar F ζ hζ K hK C f
       (b.val * archMatrixInsertion F ζ hζ (Function.update a w (lowerUnipotent u * a w)))) := by
   let a₀ := a
-  let g := b.val * archMatrixInsertion F ζ hζ a₀
-  have hs := productHCScalar_left_chart F ζ hζ K hK C f g
   have hcoord : ContDiff ℝ (⊤ : ℕ∞) (fun u : ℂ => sliceCoordinates F w u 0) := by
     apply contDiff_pi.mpr
     intro j
@@ -65,16 +63,12 @@ theorem productHCScalar_lower_sweep (b : KPGlobalTorusFunctionData.finitePart F 
       intro i
       fin_cases i <;> simp [sliceCoordinates] <;> fun_prop
     · simpa [sliceCoordinates, hj] using
-        (contDiff_const : ContDiff ℝ (⊤ : ℕ∞) (fun _ : ℂ => ![(0 : ℂ), 1, 0]))
-  have hc := hs.comp (s := Set.univ) hcoord.contDiffOn (fun u _ => sliceCoordinates_domain F w u 0)
-  convert contDiffOn_univ.mp hc using 1
+        contDiff_const
+  convert contDiffOn_univ.mp ((productHCScalar_left_chart F ζ hζ K hK C f (b.val * archMatrixInsertion F ζ hζ a₀)).comp hcoord.contDiffOn (fun u _ => sliceCoordinates_domain F w u 0)) using 1
   funext u
   symm
   dsimp only [Function.comp_def]
   rw [groupArchChart_slice_lower]
-  change productHCScalar F ζ hζ K hK C f
-    (archMatrixInsertion F ζ hζ (Function.update 1 w (lowerUnipotent u)) *
-      (b.val * archMatrixInsertion F ζ hζ a₀)) = _
   rw [← mul_assoc, (archMatrixInsertion_commutes_finite F ζ hζ _ b).eq, mul_assoc, ← map_mul]
   congr 3
   funext j
@@ -86,15 +80,10 @@ theorem productHCScalar_infinity_chart (b : KPGlobalTorusFunctionData.finitePart
     (w : InfinitePlace F) (a : InfinitePlace F → ComplexGL2) :
     ContDiff ℝ (⊤ : ℕ∞) (fun u : ℂ => productHCScalar F ζ hζ K hK C f
       (b.val * archMatrixInsertion F ζ hζ (Function.update a w (lowerUnipotent u)))) := by
-  simpa only [Function.update_self, mul_one, Function.update_idem] using
+  simpa using
     productHCScalar_lower_sweep F ζ hζ K hK C f b w (Function.update a w 1)
 
-private theorem weyl_upper_eq_lower_weyl (u : ℂ) :
-    weyl * upperUnipotent u = lowerUnipotent u * weyl := by
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;>
-    simp [weyl, upperUnipotent, lowerUnipotent, Matrix.mul_apply, Fin.sum_univ_two]
+private alias weyl_upper_eq_lower_weyl := DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal.weyl_upper
 
 theorem productHCScalar_open_chart (b : KPGlobalTorusFunctionData.finitePart F ζ hζ)
     (w : InfinitePlace F) (a : InfinitePlace F → ComplexGL2) :

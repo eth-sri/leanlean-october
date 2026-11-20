@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -53,8 +49,7 @@ topological group equivalence; no openness assumption is needed. -/
  noncomputable def unitsEquivPrincipal (T : Set ι) :
     (Πʳ i, [R i, B i]_[𝓟 T])ˣ ≃ₜ*
       (Πʳ i, [(R i)ˣ, (Submonoid.ofClass (B i)).units]_[𝓟 T]) := by
-  let e := unitsEquiv (B := B) (𝓕 := 𝓟 T) R
-  refine { toMulEquiv := e, continuous_toFun := ?_, continuous_invFun := ?_ }
+  refine { toMulEquiv := (unitsEquiv R), continuous_toFun := ?_, continuous_invFun := ?_}
   · apply (isEmbedding_coe_of_principal
       (R := fun i => (R i)ˣ)
       (A := fun i => ((Submonoid.ofClass (B i)).units : Set (R i)ˣ))).continuous_iff.mpr
@@ -77,24 +72,21 @@ topological group equivalence; no openness assumption is needed. -/
         (Units.map (coeMonoidHom (B := B) (𝓕 := 𝓟 T))) :=
       hCoe.units_map
     apply hEmbedding.continuous_iff.mpr
-    have h : Continuous (fun y :
-        (Πʳ i, [(R i)ˣ, (Submonoid.ofClass (B i)).units]_[𝓟 T]) =>
-        ContinuousMulEquiv.piUnits.symm (y : Π i, (R i)ˣ)) :=
-      ContinuousMulEquiv.piUnits.symm.continuous.comp continuous_coe
-    refine h.congr ?_
+    refine (ContinuousMulEquiv.piUnits.symm.continuous.comp continuous_coe).congr ?_
     intro y
     apply Units.ext
     funext i
     rfl
 
+variable (hBopen : ∀ i, IsOpen (B i : Set (R i)))
+
+include hBopen in
 /-- The principal-stage inclusion of ring restricted products induces an
 open embedding of their unit groups when the distinguished submonoids are open. -/
  theorem isOpenEmbedding_units_inclusion
-    (hBopen : ∀ i, IsOpen (B i : Set (R i)))
     {T : Set ι} (hT : cofinite ≤ 𝓟 T) :
     Topology.IsOpenEmbedding (Units.map (inclusionMonoidHom (B := B) hT)) := by
-  have hRing : Topology.IsOpenEmbedding
-      (inclusion R (fun i => (B i : Set (R i))) hT) :=
+  have hRing :=
     isOpenEmbedding_inclusion_principal hBopen hT
   exact Topology.IsOpenEmbedding.of_continuous_injective_isOpenMap
     (hRing.continuous.units_map _)
@@ -103,40 +95,34 @@ open embedding of their unit groups when the distinguished submonoids are open. 
 
 /-- For open distinguished local submonoids, Mathlib's restricted-product
 unit equivalence is an equivalence of topological groups. -/
-noncomputable def unitsContinuousMulEquiv
-    (hBopen : ∀ i, IsOpen (B i : Set (R i))) :
+noncomputable def unitsContinuousMulEquiv :
     (Πʳ i, [R i, B i])ˣ ≃ₜ*
       (Πʳ i, [(R i)ˣ, (Submonoid.ofClass (B i)).units]) := by
   let e := unitsEquiv (B := B) (𝓕 := cofinite) R
   refine { toMulEquiv := e, continuous_toFun := ?_, continuous_invFun := ?_ }
   · rw [continuous_iff_continuousAt]
     intro x
-    let T : Set ι := {i | e x i ∈ (Submonoid.ofClass (B i)).units}
-    have hT : cofinite ≤ 𝓟 T := le_principal_iff.mpr (e x).2
-    let y : Πʳ i, [(R i)ˣ, (Submonoid.ofClass (B i)).units]_[𝓟 T] :=
-      ⟨(e x).1, fun i hi => hi⟩
-    let x' : (Πʳ i, [R i, B i]_[𝓟 T])ˣ :=
-      (unitsEquivPrincipal (B := B) T).symm y
-    have hx : Units.map (inclusionMonoidHom (B := B) hT) x' = x := by
+    let T := {i | e x i ∈ (Submonoid.ofClass (B i)).units}
+    have hT := le_principal_iff.mpr (e x).2
+    have hx : Units.map (inclusionMonoidHom hT) ((unitsEquivPrincipal T).symm (⟨(e x).1, fun i hi => hi⟩)) = x := by
       apply Units.ext
       apply RestrictedProduct.ext
       intro i
       rfl
     have hLocal : Continuous (fun z : (Πʳ i, [R i, B i]_[𝓟 T])ˣ =>
-        e (Units.map (inclusionMonoidHom (B := B) hT) z)) := by
-      have h := (continuous_inclusion (R := fun i => (R i)ˣ)
-        (A := fun i => ((Submonoid.ofClass (B i)).units : Set (R i)ˣ)) hT).comp
-          (unitsEquivPrincipal (B := B) T).continuous
-      refine h.congr ?_
+        e (Units.map (inclusionMonoidHom hT) z)) := by
+      refine ((continuous_inclusion
+        hT).comp
+         (unitsEquivPrincipal T).continuous).congr ?_
       intro z
       apply RestrictedProduct.ext
       intro i
       rfl
     rw [← hx]
-    exact (isOpenEmbedding_units_inclusion (B := B) hBopen hT).continuousAt_iff.mp
+    exact (isOpenEmbedding_units_inclusion hBopen hT).continuousAt_iff.mp
       hLocal.continuousAt
-  · apply (continuous_dom (R := fun i => (R i)ˣ)
-      (A := fun i => ((Submonoid.ofClass (B i)).units : Set (R i)ˣ))).mpr
+  · apply (continuous_dom
+      ).mpr
     intro T hT
     have h : Continuous (fun y :
         (Πʳ i, [(R i)ˣ, (Submonoid.ofClass (B i)).units]_[𝓟 T]) =>

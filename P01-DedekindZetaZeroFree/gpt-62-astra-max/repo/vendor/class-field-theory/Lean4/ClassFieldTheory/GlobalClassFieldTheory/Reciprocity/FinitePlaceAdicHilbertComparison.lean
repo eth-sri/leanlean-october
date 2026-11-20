@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -30,11 +27,11 @@ noncomputable section
 
 namespace ClassFieldTheory
 
+variable (F : Type) [Field F] [NumberField F] (n : ℕ+)
+
 /-- The established finite-place symbol becomes the local Mathlib-facing
 Hilbert symbol after mapping to the absolute-value completion. -/
-private theorem globalFinitePlaceHilbertSymbol_map_eq_local
-    (F : Type) [Field F] [NumberField F]
-    (n : ℕ+) (hnF : ((n : ℕ) : F) ≠ 0)
+private theorem globalFinitePlaceHilbertSymbol_map_eq_local (hnF : ((n : ℕ) : F) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
     (v : HeightOneSpectrum (𝓞 F)) (a b : Fˣ) :
     let C := (HeightOneSpectrum.adicAbv F v).Completion
@@ -52,34 +49,19 @@ private theorem globalFinitePlaceHilbertSymbol_map_eq_local
         (GlobalClassFieldTheory.Reciprocity.finitePlaceHilbert_completionUnit F v a)
         (GlobalClassFieldTheory.Reciprocity.finitePlaceHilbert_completionUnit F v b) := by
   let C := (HeightOneSpectrum.adicAbv F v).Completion
-  let : ValuativeRel C :=
+  let :=
     GlobalClassFieldTheory.Reciprocity.finitePlaceLocalArtinCompletionValuativeRel v
   let : NeZero (n : ℕ) := ⟨n.ne_zero⟩
-  let eFC : rootsOfUnity (n : ℕ) F ≃* rootsOfUnity (n : ℕ) C :=
+  let eFC :=
     rootsOfUnityEquivOfPrimitiveRoots (algebraMap F C).injective hmu
-  change eFC
-    (KummerTheory.nthRootsSubgroupEquivRootsOfUnity F (n : ℕ)
-      (GlobalClassFieldTheory.Reciprocity.finitePlaceHilbertSymbol
-        F n hnF hmu v a b)) =
-    KummerTheory.nthRootsSubgroupEquivRootsOfUnity C (n : ℕ)
-      (GlobalClassFieldTheory.Reciprocity.finitePlaceLocalHilbertSymbol
-        F n hnF hmu v a b)
   apply Subtype.ext
-  have h := congrArg Subtype.val
+  exact congrArg Subtype.val
     (GlobalClassFieldTheory.Reciprocity.finitePlaceHilbertSymbol_map_eq_localHilbertSymbol
       F n hnF hmu v a b)
-  change Units.map (algebraMap F C).toMonoidHom
-      (GlobalClassFieldTheory.Reciprocity.finitePlaceHilbertSymbol
-        F n hnF hmu v a b) =
-    GlobalClassFieldTheory.Reciprocity.finitePlaceLocalHilbertSymbol
-      F n hnF hmu v a b
-  exact h
 
 /-- Mapping roots of unity from the number field to the adic completion
 agrees with mapping first to the absolute-value completion. -/
-private theorem rootsOfUnity_finiteCompletion_comp
-    (F : Type) [Field F] [NumberField F]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
+private theorem rootsOfUnity_finiteCompletion_comp (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
     (v : HeightOneSpectrum (𝓞 F))
     (hmuC : (primitiveRoots (n : ℕ)
       (HeightOneSpectrum.adicAbv F v).Completion).Nonempty)
@@ -98,25 +80,13 @@ private theorem rootsOfUnity_finiteCompletion_comp
   let C := (HeightOneSpectrum.adicAbv F v).Completion
   let D := v.adicCompletion F
   let : NeZero (n : ℕ) := ⟨n.ne_zero⟩
-  let eFC : rootsOfUnity (n : ℕ) F ≃* rootsOfUnity (n : ℕ) C :=
-    rootsOfUnityEquivOfPrimitiveRoots (algebraMap F C).injective hmu
-  let eFD : rootsOfUnity (n : ℕ) F ≃* rootsOfUnity (n : ℕ) D :=
-    rootsOfUnityEquivOfPrimitiveRoots (algebraMap F D).injective hmu
-  let eCD : rootsOfUnity (n : ℕ) C ≃* rootsOfUnity (n : ℕ) D :=
-    rootsOfUnityEquivOfRingEquiv
-      (relativeFinitePlaceCompletionAlgEquiv v).toRingEquiv n hmuC
   apply Subtype.ext
   apply Units.ext
-  change algebraMap F D ((z : Fˣ) : F) =
-    (relativeFinitePlaceCompletionAlgEquiv v)
-      (algebraMap F C ((z : Fˣ) : F))
   exact (relativeFinitePlaceCompletionAlgEquiv v).commutes ((z : Fˣ) : F) |>.symm
 
 /-- The finite factor of the adic local Hilbert family is the established
 global finite-place Hilbert symbol. -/
-theorem finitePlaceAdicHilbertPairingFamily_finiteFactor
-    (F : Type) [Field F] [NumberField F]
-    (n : ℕ+) (hnF : ((n : ℕ) : F) ≠ 0)
+theorem finitePlaceAdicHilbertPairingFamily_finiteFactor (hnF : ((n : ℕ) : F) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
     (v : HeightOneSpectrum (𝓞 F)) (a b : Fˣ) :
     GlobalHilbertPairingFamily.finiteFactor F
@@ -124,29 +94,27 @@ theorem finitePlaceAdicHilbertPairingFamily_finiteFactor
         globalFinitePlaceHilbertSymbol F n hnF hmu v a b := by
   let C := (HeightOneSpectrum.adicAbv F v).Completion
   let D := v.adicCompletion F
-  let e : C ≃+* D := (relativeFinitePlaceCompletionAlgEquiv v).toRingEquiv
-  let : ValuativeRel C :=
+  let e := (relativeFinitePlaceCompletionAlgEquiv v).toRingEquiv
+  let :=
     GlobalClassFieldTheory.Reciprocity.finitePlaceLocalArtinCompletionValuativeRel v
-  let : IsNonarchimedeanLocalField C :=
+  let :=
     GlobalClassFieldTheory.Reciprocity.finitePlaceLocalArtinCompletionIsNonarchimedeanLocalField v
   let : NeZero (n : ℕ) := ⟨n.ne_zero⟩
-  let hnC : ((n : ℕ) : C) ≠ 0 :=
+  let hnC :=
     GlobalClassFieldTheory.Reciprocity.finitePlaceHilbert_natCast_ne_zero F n hnF v
-  let hmuC : (primitiveRoots (n : ℕ) C).Nonempty :=
+  let hmuC :=
     GlobalClassFieldTheory.Reciprocity.finitePlaceHilbert_primitiveRoots_nonempty
       F n hmu v
-  let eFC : rootsOfUnity (n : ℕ) F ≃* rootsOfUnity (n : ℕ) C :=
+  let eFC :=
     rootsOfUnityEquivOfPrimitiveRoots (algebraMap F C).injective hmu
-  let eFD : rootsOfUnity (n : ℕ) F ≃* rootsOfUnity (n : ℕ) D :=
+  let eFD :=
     rootsOfUnityEquivOfPrimitiveRoots (algebraMap F D).injective hmu
-  let eCD : rootsOfUnity (n : ℕ) C ≃* rootsOfUnity (n : ℕ) D :=
+  let eCD :=
     rootsOfUnityEquivOfRingEquiv e n hmuC
-  let aC : Cˣ :=
+  let aC :=
     GlobalClassFieldTheory.Reciprocity.finitePlaceHilbert_completionUnit F v a
-  let bC : Cˣ :=
+  let bC :=
     GlobalClassFieldTheory.Reciprocity.finitePlaceHilbert_completionUnit F v b
-  let aD : Dˣ := Units.map (algebraMap F D).toMonoidHom a
-  let bD : Dˣ := Units.map (algebraMap F D).toMonoidHom b
   have hunit (x : Fˣ) :
       (Units.mapEquiv e.toMulEquiv).symm
         (Units.map (algebraMap F D).toMonoidHom x) =
@@ -164,22 +132,17 @@ theorem finitePlaceAdicHilbertPairingFamily_finiteFactor
     change eFD (eFD.symm
       ((hilbertPairingOfRingEquiv e n hmuC
         (localHilbertPairing C n hnC hmuC))
-        (powerClass D n aD) (powerClass D n bD))) = _
+        (powerClass D n (Units.map (algebraMap F D).toMonoidHom a)) (powerClass D n (Units.map (algebraMap F D).toMonoidHom b)))) = _
     rw [eFD.apply_symm_apply, hilbertPairingOfRingEquiv_apply,
       powerClassGroupEquivOfRingEquiv_symm_powerClass,
       powerClassGroupEquivOfRingEquiv_symm_powerClass,
       hunit a, hunit b, localHilbertPairing_powerClass]
-  have hglobal :
-      eFC (globalFinitePlaceHilbertSymbol F n hnF hmu v a b) =
-        localHilbertSymbol C n hnC hmuC aC bC :=
-    globalFinitePlaceHilbertSymbol_map_eq_local F n hnF hmu v a b
   apply eFD.injective
   calc
-    eFD (GlobalHilbertPairingFamily.finiteFactor F
-        (finitePlaceAdicHilbertPairingFamily F n hmu) hmu v a b) =
+    _ =
         eCD (localHilbertSymbol C n hnC hmuC aC bC) := hfactorD
     _ = eCD (eFC (globalFinitePlaceHilbertSymbol F n hnF hmu v a b)) := by
-          rw [hglobal]
+          rw [(globalFinitePlaceHilbertSymbol_map_eq_local F n hnF hmu v a b)]
     _ = eFD (globalFinitePlaceHilbertSymbol F n hnF hmu v a b) :=
       (rootsOfUnity_finiteCompletion_comp F n hmu v hmuC _).symm
 

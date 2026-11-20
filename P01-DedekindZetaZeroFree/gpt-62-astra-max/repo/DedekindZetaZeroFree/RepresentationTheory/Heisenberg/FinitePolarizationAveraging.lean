@@ -8,31 +8,38 @@ namespace DedekindZetaZeroFree.FinitePolarization
 
 open scoped Classical commutatorElement
 
-def IsIsotropic {V : Type*} [CommGroup V]
-    (b : V →* (V →* rootsOfUnity 3 ℂ)) (L : Subgroup V) : Prop :=
+section
+
+variable {V : Type*} [CommGroup V] (b : V →* (V →* rootsOfUnity 3 ℂ)) (L : Subgroup V)
+
+def IsIsotropic : Prop :=
   ∀ x ∈ L, ∀ y ∈ L, b x y = 1
 
-def IsMaximalIsotropic {V : Type*} [CommGroup V]
-    (b : V →* (V →* rootsOfUnity 3 ℂ)) (L : Subgroup V) : Prop :=
+def IsMaximalIsotropic : Prop :=
   IsIsotropic b L ∧ ∀ M : Subgroup V, L ≤ M → IsIsotropic b M → M = L
 
-def orthogonal {V : Type*} [CommGroup V] (b : V →* (V →* rootsOfUnity 3 ℂ))
-    (L : Subgroup V) : Subgroup V :=
+def orthogonal : Subgroup V :=
   ⨅ l : L, (b (l : V)).ker
+
+end
 
 lemma mem_orthogonal {V : Type*} [CommGroup V] {b : V →* (V →* rootsOfUnity 3 ℂ)}
     {L : Subgroup V} {x : V} : x ∈ orthogonal b L ↔ ∀ l : L, b (l : V) x = 1 := by
   simp [orthogonal]
 
-lemma pairing_swap_inv {V : Type*} [CommGroup V] (b : V →* (V →* rootsOfUnity 3 ℂ))
-    (halt : ∀ v : V, b v v = 1) (x y : V) : b y x = (b x y)⁻¹ := by
+section
+
+variable {V : Type*} [CommGroup V] (b : V →* (V →* rootsOfUnity 3 ℂ)) (halt : ∀ v : V, b v v = 1)
+
+include halt in
+lemma pairing_swap_inv (x y : V) : b y x = (b x y)⁻¹ := by
   have h := halt (y * x)
   simp only [map_mul, MonoidHom.mul_apply] at h
   simp only [halt, one_mul, mul_one] at h
   exact eq_inv_of_mul_eq_one_right h
 
-theorem orthogonal_eq_of_isMaximalIsotropic {V : Type*} [CommGroup V]
-    (b : V →* (V →* rootsOfUnity 3 ℂ)) (halt : ∀ v : V, b v v = 1) {L : Subgroup V}
+include halt in
+theorem orthogonal_eq_of_isMaximalIsotropic {L : Subgroup V}
     (hL : IsMaximalIsotropic b L) : orthogonal b L = L := by
   refine le_antisymm ?_ ?_
   · intro x hx
@@ -60,12 +67,14 @@ theorem orthogonal_eq_of_isMaximalIsotropic {V : Type*} [CommGroup V]
       obtain ⟨p, rfl⟩ := hv'
       simp only [map_mul, MonoidHom.mul_apply, hL.1 l hl m hm, hxiso l hl p, h1 m hm n, h2 n p,
         mul_one, one_mul]
-    have hLM : L ⊔ Subgroup.zpowers x = L := hL.2 _ le_sup_left hiso
+    have hLM := hL.2 _ le_sup_left hiso
     exact hxL (hLM ▸ Subgroup.mem_sup_right (Subgroup.mem_zpowers x))
   · intro x hx
     rw [mem_orthogonal]
     intro l
     exact hL.1 (l : V) l.2 x hx
+
+end
 
 def preimageProjection {H V : Type*} [Group H] [CommGroup V]
     (π : H →* V) (A : Subgroup V) : A.comap π →* A where
@@ -136,7 +145,11 @@ structure LiftSection {H V : Type*} [Group H] [CommGroup V]
   represents : ∀ i : PolarizationIndex A J,
     QuotientGroup.mk (preimageProjection π A (lift i)) = i
 
-theorem liftSection_nonempty {H V : Type*} [Group H] [CommGroup V]
+section
+
+variable {H V : Type*} [Group H] [CommGroup V]
+
+theorem liftSection_nonempty
     (π : H →* V) (hπ : Function.Surjective π) (A J : Subgroup V) :
     Nonempty (LiftSection π A J) := by
   classical
@@ -144,14 +157,13 @@ theorem liftSection_nonempty {H V : Type*} [Group H] [CommGroup V]
     intro a
     obtain ⟨h, hh⟩ := hπ (a : V)
     exact ⟨⟨h, by rw [Subgroup.mem_comap]; exact hh ▸ a.2⟩, by ext; exact hh⟩
-  have hsurj : Function.Surjective
-      (fun a : A.comap π => QuotientGroup.mk' (J.subgroupOf A) (preimageProjection π A a)) :=
+  have hsurj :=
     (QuotientGroup.mk'_surjective (J.subgroupOf A)).comp hproj
   exact ⟨{ lift := fun i => Function.surjInv hsurj i,
            represents := fun i => by
              simpa [QuotientGroup.coe_mk'] using Function.surjInv_eq hsurj i }⟩
 
-private lemma term_congr {H V : Type*} [Group H] [CommGroup V] [Fintype V]
+private lemma term_congr [Fintype V]
     (D : HeisenbergData H V) (A B J : Subgroup V) (hJ : J = A ⊓ B)
     (χA : A.comap D.π →* ℂˣ) (χB : B.comap D.π →* ℂˣ)
     (hagree : ∀ a : H, ∀ hA : D.π a ∈ A, ∀ hB : D.π a ∈ B,
@@ -167,8 +179,7 @@ private lemma term_congr {H V : Type*} [Group H] [CommGroup V] [Fintype V]
   have hzAB : (z : V) ∈ A ⊓ B := by rw [← hJ]; exact hz
   obtain ⟨hzA, hzB⟩ := hzAB
   have hzv : (D.π (x : H)) * (z : V) = D.π (y : H) := by
-    have h' := congrArg Subtype.val hzy
-    simpa [preimageProjection] using h'
+    simpa [preimageProjection] using (congrArg Subtype.val hzy)
   set c : H := (y : H) * (x : H)⁻¹ with hc
   have hpc : D.π c = (z : V) := by
     rw [hc, map_mul, map_inv, ← hzv]
@@ -197,23 +208,29 @@ private lemma term_congr {H V : Type*} [Group H] [CommGroup V] [Fintype V]
   rw [hchi, hf]
   have hvu : (↑(χA cL * χA x) : ℂ) = (χA cL : ℂ) * (χA x : ℂ) := by simp
   rw [hvu, show (χB cN : ℂ) = (χA cL : ℂ) from by rw [hag]]
-  have hne : (χA cL : ℂ) ≠ 0 := Units.ne_zero _
-  have hne2 : (χA x : ℂ) ≠ 0 := Units.ne_zero _
   field_simp
 
-noncomputable def countingAverage {H V : Type*} [Group H] [CommGroup V]
-    [Fintype V] (π : H →* V) (A J : Subgroup V) (χ : A.comap π →* ℂˣ)
-    (r : LiftSection π A J) (f : H → ℂ) (g : H) : ℂ :=
+end
+
+section
+
+variable {H V : Type*} [Group H] [CommGroup V] [Fintype V] (π : H →* V) (A J : Subgroup V)
+    (χ : A.comap π →* ℂˣ) (r : LiftSection π A J) (f : H → ℂ) (g : H)
+
+noncomputable def countingAverage : ℂ :=
   ∑ i : PolarizationIndex A J, (χ (r.lift i) : ℂ)⁻¹ * f ((r.lift i : H) * g)
 
-noncomputable def probabilityAverage {H V : Type*} [Group H] [CommGroup V]
-    [Fintype V] (π : H →* V) (A J : Subgroup V) (χ : A.comap π →* ℂˣ)
-    (r : LiftSection π A J) (f : H → ℂ) (g : H) : ℂ :=
+noncomputable def probabilityAverage : ℂ :=
   (Fintype.card (PolarizationIndex A J) : ℂ)⁻¹ *
     ∑ i : PolarizationIndex A J, (χ (r.lift i) : ℂ)⁻¹ * f ((r.lift i : H) * g)
 
-private theorem average_left_covariant {H V : Type*} [Group H] [CommGroup V]
-    [Fintype V] (D : HeisenbergData H V) (A B J : Subgroup V) (hJ : J = A ⊓ B)
+end
+
+section
+
+variable {H V : Type*} [Group H] [CommGroup V] [Fintype V] (D : HeisenbergData H V)
+
+private theorem average_left_covariant (A B J : Subgroup V) (hJ : J = A ⊓ B)
     (χA : A.comap D.π →* ℂˣ) (χB : B.comap D.π →* ℂˣ)
     (hagree : ∀ a : H, ∀ hA : D.π a ∈ A, ∀ hB : D.π a ∈ B,
       χA ⟨a, hA⟩ = χB ⟨a, hB⟩)
@@ -222,8 +239,7 @@ private theorem average_left_covariant {H V : Type*} [Group H] [CommGroup V]
     countingAverage D.π A J χA r f ((a : H) * g) =
       (χA a : ℂ) * countingAverage D.π A J χA r f g := by
   classical
-  let q := QuotientGroup.mk' (J.subgroupOf A) (preimageProjection D.π A a)
-  let e : PolarizationIndex A J ≃ PolarizationIndex A J := Equiv.mulRight q
+  let e := Equiv.mulRight (QuotientGroup.mk' (J.subgroupOf A) (preimageProjection D.π A a))
   unfold countingAverage
   rw [Finset.mul_sum]
   apply Fintype.sum_equiv e
@@ -237,21 +253,16 @@ private theorem average_left_covariant {H V : Type*} [Group H] [CommGroup V]
   simp only [map_mul, Units.val_mul, Subgroup.coe_mul] at ht
   simp only [← mul_assoc]
   rw [mul_assoc (χA a : ℂ), ht]
-  have ha : (χA a : ℂ) ≠ 0 := Units.ne_zero _
-  have hi : (χA (r.lift i) : ℂ) ≠ 0 := Units.ne_zero _
   field_simp
 
-theorem counting_left_covariant {H V : Type*} [Group H] [CommGroup V] [Fintype V]
-    (D : HeisenbergData H V) (T : PolarizationData D)
+theorem counting_left_covariant (T : PolarizationData D)
     (r : LiftSection D.π T.L T.intersection)
     (f : inducedSpace (T.N.comap D.π) T.χN) (a : T.L.comap D.π) (g : H) :
     countingAverage D.π T.L T.intersection T.χL r f ((a : H) * g) =
-      (T.χL a : ℂ) * countingAverage D.π T.L T.intersection T.χL r f g := by
-  exact average_left_covariant D T.L T.N T.intersection rfl T.χL T.χN
+      (T.χL a : ℂ) * countingAverage D.π T.L T.intersection T.χL r f g := average_left_covariant D T.L T.N T.intersection rfl T.χL T.χN
     T.agree_on_intersection r f a g
 
-theorem probability_left_covariant {H V : Type*} [Group H] [CommGroup V] [Fintype V]
-    (D : HeisenbergData H V) (T : PolarizationData D)
+theorem probability_left_covariant (T : PolarizationData D)
     (s : LiftSection D.π T.N T.intersection)
     (h : inducedSpace (T.L.comap D.π) T.χL) (a : T.N.comap D.π) (g : H) :
     probabilityAverage D.π T.N T.intersection T.χN s h ((a : H) * g) =
@@ -263,44 +274,36 @@ theorem probability_left_covariant {H V : Type*} [Group H] [CommGroup V] [Fintyp
   unfold probabilityAverage countingAverage
   ring
 
-noncomputable def P {H V : Type*} [Group H] [CommGroup V] [Fintype V]
-    (D : HeisenbergData H V) (T : PolarizationData D)
+noncomputable def P (T : PolarizationData D)
     (r : LiftSection D.π T.L T.intersection)
     (f : inducedSpace (T.N.comap D.π) T.χN) : inducedSpace (T.L.comap D.π) T.χL :=
   ⟨countingAverage D.π T.L T.intersection T.χL r f,
     counting_left_covariant D T r f⟩
 
-noncomputable def Q {H V : Type*} [Group H] [CommGroup V] [Fintype V]
-    (D : HeisenbergData H V) (T : PolarizationData D)
+noncomputable def Q (T : PolarizationData D)
     (s : LiftSection D.π T.N T.intersection)
     (h : inducedSpace (T.L.comap D.π) T.χL) : inducedSpace (T.N.comap D.π) T.χN :=
   ⟨probabilityAverage D.π T.N T.intersection T.χN s h,
     probability_left_covariant D T s h⟩
 
-private lemma pairing_flip {H V : Type*} [Group H] [CommGroup V] [Fintype V]
-    (D : HeisenbergData H V) (x y : V) : D.pairing x y * D.pairing y x = 1 := by
+private lemma pairing_flip (x y : V) : D.pairing x y * D.pairing y x = 1 := by
   have h := D.alternating (x * y)
   simp only [map_mul, MonoidHom.mul_apply, D.alternating, one_mul, mul_one] at h
   simpa only [mul_comm] using h
-private lemma maximal_orthogonal {H V : Type*} [Group H] [CommGroup V] [Fintype V]
-    (D : HeisenbergData H V) (A : Subgroup V) (hA : IsMaximalIsotropic D.pairing A)
+private lemma maximal_orthogonal (A : Subgroup V) (hA : IsMaximalIsotropic D.pairing A)
     (v : V) (hv : ∀ a ∈ A, D.pairing v a = 1) : v ∈ A := by
   let S : Set V := (A : Set V) ∪ {v}
   have hs : ∀ x ∈ S, ∀ y ∈ S, D.pairing x y = 1 := by
     intro x hx y hy
     rcases hx with hx | hx <;> rcases hy with hy | hy
     · exact hA.1 x hx y hy
-    · have hyv : y = v := hy
-      subst y
+    · subst y
       have hf := pairing_flip D x v
       rw [hv x hx, mul_one] at hf
       exact hf
-    · have hxv : x = v := hx
-      subst x
+    · subst x
       exact hv y hy
-    · have hxv : x = v := hx
-      have hyv : y = v := hy
-      subst x; subst y
+    · subst x; subst y
       exact D.alternating v
   have hgen : IsIsotropic D.pairing (Subgroup.closure S) := by
     intro x hx y hy
@@ -318,6 +321,8 @@ private lemma maximal_orthogonal {H V : Type*} [Group H] [CommGroup V] [Fintype 
     (fun a ha => Subgroup.subset_closure (Or.inl ha)) hgen
   rw [← hcl]
   exact Subgroup.subset_closure (Or.inr rfl)
+
+end
 private lemma character_sum {G : Type*} [Group G] [Fintype G]
     (χ : G →* ℂˣ) : (∑ x, (χ x : ℂ)) = if χ = 1 then (Fintype.card G : ℂ) else 0 := by
   classical
@@ -333,9 +338,8 @@ private lemma character_sum {G : Type*} [Group G] [Fintype G]
       rw [Finset.mul_sum]
       symm
       exact Fintype.sum_equiv (Equiv.mulLeft x) _ _ (by intro y; simp [map_mul])
-    have hm : ((χ x : ℂ) - 1) * ∑ y, (χ y : ℂ) = 0 := by
-      linear_combination -hs
-    exact (mul_eq_zero.mp hm).resolve_left (sub_ne_zero.mpr hx)
+    refine (mul_eq_zero.mp ?_).resolve_left (sub_ne_zero.mpr hx)
+    linear_combination -hs
 
 open scoped Classical
 private lemma restricted_sum {H V : Type*} [Group H] [CommGroup V] [Fintype V]
@@ -343,14 +347,13 @@ private lemma restricted_sum {H V : Type*} [Group H] [CommGroup V] [Fintype V]
     (v : V) : (∑ a : A, ((D.pairing v a : ℂˣ) : ℂ)) =
       if v ∈ A then (Fintype.card A : ℂ) else 0 := by
   classical
-  let χ : A →* ℂˣ := (rootsOfUnity 3 ℂ).subtype.comp ((D.pairing v).domRestrict A)
+  let χ := (rootsOfUnity 3 ℂ).subtype.comp ((D.pairing v).domRestrict A)
   have hc : χ = 1 ↔ v ∈ A := by
     constructor
     · intro hh
       apply maximal_orthogonal D A hA v
       intro a ha
-      have he := DFunLike.congr_fun hh (⟨a, ha⟩ : A)
-      exact Subtype.ext he
+      exact Subtype.ext (DFunLike.congr_fun hh (⟨a, ha⟩ : A))
     · intro hv
       ext a
       simpa [χ] using congrArg (fun t : rootsOfUnity 3 ℂ => ((t : ℂˣ) : ℂ)) (hA.1 v hv a a.2)
@@ -358,11 +361,14 @@ private lemma restricted_sum {H V : Type*} [Group H] [CommGroup V] [Fintype V]
   rw [character_sum]
   simp only [hc]
 open scoped Classical
-private lemma full_sum {H V : Type*} [Group H] [CommGroup V] [Fintype V]
-    (D : HeisenbergData H V) (v : V) : (∑ a : V, ((D.pairing v a : ℂˣ) : ℂ)) =
+section
+
+variable {H V : Type*} [Group H] [CommGroup V] [Fintype V] (D : HeisenbergData H V)
+
+private lemma full_sum (v : V) : (∑ a : V, ((D.pairing v a : ℂˣ) : ℂ)) =
       if v = 1 then (Fintype.card V : ℂ) else 0 := by
   classical
-  let χ : V →* ℂˣ := (rootsOfUnity 3 ℂ).subtype.comp (D.pairing v)
+  let χ := (rootsOfUnity 3 ℂ).subtype.comp (D.pairing v)
   have hc : χ = 1 ↔ v = 1 := by
     constructor
     · intro hh
@@ -375,16 +381,14 @@ private lemma full_sum {H V : Type*} [Group H] [CommGroup V] [Fintype V]
   change (∑ a : V, (χ a : ℂ)) = _
   rw [character_sum]
   simp only [hc]
-private lemma maximal_card_square {H V : Type*} [Group H] [CommGroup V] [Fintype V]
-    (D : HeisenbergData H V) (A : Subgroup V) (hA : IsMaximalIsotropic D.pairing A) :
+private lemma maximal_card_square (A : Subgroup V) (hA : IsMaximalIsotropic D.pairing A) :
     Fintype.card A ^ 2 = Fintype.card V := by
   have hs : (∑ v : V, ∑ a : A, ((D.pairing v a : ℂˣ) : ℂ)) =
       (Fintype.card A : ℂ) ^ 2 := by
     simp_rw [restricted_sum D A hA]
     rw [Finset.sum_ite]
     simp only [Finset.sum_const, Finset.sum_const_zero, add_zero, nsmul_eq_mul]
-    have hc : (Finset.univ.filter fun v : V => v ∈ A).card = Fintype.card A := by
-      exact (Fintype.card_subtype _).symm
+    have hc : (Finset.univ.filter fun v : V => v ∈ A).card = Fintype.card A := (Fintype.card_subtype _).symm
     rw [hc]
     ring
   have ht : (∑ v : V, ∑ a : A, ((D.pairing v a : ℂˣ) : ℂ)) =
@@ -395,10 +399,9 @@ private lemma maximal_card_square {H V : Type*} [Group H] [CommGroup V] [Fintype
       intro a
       apply Fintype.sum_equiv (Equiv.inv V)
       intro v
-      have hf := pairing_flip D v a
       have he : D.pairing v a = D.pairing (a : V) v⁻¹ := by
         rw [map_inv]
-        exact eq_inv_of_mul_eq_one_left hf
+        exact eq_inv_of_mul_eq_one_left (pairing_flip D v a)
       rw [he]
       rfl
     simp_rw [hflip, full_sum]
@@ -408,12 +411,16 @@ private lemma maximal_card_square {H V : Type*} [Group H] [CommGroup V] [Fintype
       exact Subtype.val_injective.eq_iff
     simp only [he]
     simp
-  have he : (Fintype.card A : ℂ) ^ 2 = (Fintype.card V : ℂ) := hs.symm.trans ht
-  exact_mod_cast he
+  exact_mod_cast (hs.symm.trans ht)
+
+end
 open scoped Classical
 
-theorem exact_quotient_cardinality {H V : Type*} [Group H] [CommGroup V] [Fintype V]
-    (D : HeisenbergData H V) (T : PolarizationData D) :
+section
+
+variable {H V : Type*} [Group H] [CommGroup V] [Fintype V] (D : HeisenbergData H V)
+
+theorem exact_quotient_cardinality (T : PolarizationData D) :
     Fintype.card (PolarizationIndex T.L T.intersection) =
       Fintype.card (PolarizationIndex T.N T.intersection) ∧
     0 < Fintype.card (PolarizationIndex T.N T.intersection) := by
@@ -425,24 +432,19 @@ theorem exact_quotient_cardinality {H V : Type*} [Group H] [CommGroup V] [Fintyp
     (T.intersection.subgroupOf T.L)
   have hN := Subgroup.card_eq_card_quotient_mul_card_subgroup
     (T.intersection.subgroupOf T.N)
-  have heL : Nat.card (T.intersection.subgroupOf T.L) = Nat.card T.intersection :=
-    Nat.card_congr (Subgroup.subgroupOfEquivOfLe inf_le_left).toEquiv
-  have heN : Nat.card (T.intersection.subgroupOf T.N) = Nat.card T.intersection :=
-    Nat.card_congr (Subgroup.subgroupOfEquivOfLe inf_le_right).toEquiv
-  rw [heL] at hL
-  rw [heN] at hN
+  rw [(Nat.card_congr (Subgroup.subgroupOfEquivOfLe inf_le_left).toEquiv)] at hL
+  rw [(Nat.card_congr (Subgroup.subgroupOfEquivOfLe inf_le_right).toEquiv)] at hN
   simp only [Nat.card_eq_fintype_card] at hL hN
   refine ⟨?_, Fintype.card_pos⟩
   have hj : 0 < Fintype.card T.intersection := Fintype.card_pos
   nlinarith
 
-private lemma quotient_pairing_sum {H V : Type*} [Group H] [CommGroup V] [Fintype V]
-    (D : HeisenbergData H V) (A J : Subgroup V) (hJA : J ≤ A)
+private lemma quotient_pairing_sum (A J : Subgroup V) (hJA : J ≤ A)
     (hA : IsMaximalIsotropic D.pairing A)
     (r : LiftSection D.π A J) (v : V) (hv : ∀ j ∈ J, D.pairing v j = 1) :
     (∑ i : PolarizationIndex A J, ((D.pairing v (D.π (r.lift i)) : ℂˣ) : ℂ)) =
       if v ∈ A then (Fintype.card (PolarizationIndex A J) : ℂ) else 0 := by
-  let φ : A →* ℂˣ := (rootsOfUnity 3 ℂ).subtype.comp ((D.pairing v).domRestrict A)
+  let φ := (rootsOfUnity 3 ℂ).subtype.comp ((D.pairing v).domRestrict A)
   have hJ : J.subgroupOf A ≤ φ.ker := by
     intro a ha
     rw [MonoidHom.mem_ker]
@@ -453,8 +455,7 @@ private lemma quotient_pairing_sum {H V : Type*} [Group H] [CommGroup V] [Fintyp
     · intro hh
       apply maximal_orthogonal D A hA v
       intro a ha
-      have he := DFunLike.congr_fun hh (QuotientGroup.mk (⟨a, ha⟩ : A))
-      exact Subtype.ext he
+      exact Subtype.ext (DFunLike.congr_fun hh (QuotientGroup.mk (⟨a, ha⟩ : A)))
     · intro hvA
       apply MonoidHom.ext
       intro i
@@ -469,6 +470,8 @@ private lemma quotient_pairing_sum {H V : Type*} [Group H] [CommGroup V] [Fintyp
   simp_rw [he]
   rw [character_sum]
   simp only [hc]
+
+end
 open scoped Classical commutatorElement
 private lemma commute_covariance {H V : Type*} [Group H] [CommGroup V] [Fintype V]
     (D : HeisenbergData H V) (A : Subgroup V) (χA : A.comap D.π →* ℂˣ)
@@ -477,12 +480,11 @@ private lemma commute_covariance {H V : Type*} [Group H] [CommGroup V] [Fintype 
     (h : inducedSpace (A.comap D.π) χA) (x : A.comap D.π) (y g : H) :
     (h : H → ℂ) (y * ((x : H) * g)) =
       ((D.pairing (D.π y) (D.π x) : ℂˣ) : ℂ) * (χA x : ℂ) * (h : H → ℂ) (y * g) := by
-  let c : H := ⁅y, (x : H)⁆
-  have hcC : c ∈ D.C := D.commutator_mem y x
+  let c := ⁅y, (x : H)⁆
+  have hcC := D.commutator_mem y x
   have hcA : c ∈ A.comap D.π := by
-    have hcK : c ∈ D.π.ker := D.quotient_kernel.symm ▸ hcC
     change D.π c ∈ A
-    rw [MonoidHom.mem_ker.mp hcK]
+    rw [MonoidHom.mem_ker.mp (D.quotient_kernel.symm ▸ hcC)]
     exact A.one_mem
   let ca : A.comap D.π := ⟨c, hcA⟩
   have hca : χA ca = (D.pairing (D.π y) (D.π x) : ℂˣ) := by
@@ -507,8 +509,9 @@ private lemma lift_mem_iff {H V : Type*} [Group H] [CommGroup V]
     rw [hi] at hr ⊢
     exact ((QuotientGroup.eq_one_iff _).mp hr).1
 open scoped Classical commutatorElement
-private lemma counting_composition {H V : Type*} [Group H] [CommGroup V] [Fintype V]
-    (D : HeisenbergData H V) (A B : Subgroup V)
+variable {H V : Type*} [Group H] [CommGroup V] [Fintype V] (D : HeisenbergData H V)
+
+private lemma counting_composition (A B : Subgroup V)
     (hA : IsMaximalIsotropic D.pairing A) (hB : IsMaximalIsotropic D.pairing B)
     (χA : A.comap D.π →* ℂˣ) (χB : B.comap D.π →* ℂˣ)
     (hcentral : ∀ a : A.comap D.π, ∀ ha : (a : H) ∈ D.C,
@@ -534,21 +537,16 @@ private lemma counting_composition {H V : Type*} [Group H] [CommGroup V] [Fintyp
     field_simp
   simp_rw [hterm, ← Finset.sum_mul]
   have hp : ∀ j : PolarizationIndex B (A ⊓ B),
-      ∀ v ∈ A ⊓ B, D.pairing (D.π (s.lift j)) v = 1 := by
-    intro j v hv
-    exact hB.1 _ (s.lift j).2 v hv.2
+      ∀ v ∈ A ⊓ B, D.pairing (D.π (s.lift j)) v = 1 := fun j v hv => hB.1 _ (s.lift j).2 v hv.2
   simp_rw [quotient_pairing_sum D A (A ⊓ B) inf_le_left hA r _ (hp _)]
   simp_rw [lift_mem_iff D.π A B s]
   simp only [ite_mul, zero_mul, Finset.sum_ite_eq', Finset.mem_univ, if_true]
-  have hz : D.π (s.lift 1) ∈ A := (lift_mem_iff D.π A B s 1).mpr rfl
+  have hz := (lift_mem_iff D.π A B s 1).mpr rfl
   let x : A.comap D.π := ⟨s.lift 1, hz⟩
-  have hx : χA x = χB (s.lift 1) := hagree _ hz (s.lift 1).2
-  rw [h.property x, hx]
-  have hn : (χB (s.lift 1) : ℂ) ≠ 0 := Units.ne_zero _
+  rw [h.property x, (hagree _ hz (s.lift 1).2)]
   field_simp
 
-theorem P_Q {H V : Type*} [Group H] [CommGroup V] [Fintype V]
-    (D : HeisenbergData H V) (T : PolarizationData D)
+theorem P_Q (T : PolarizationData D)
     (r : LiftSection D.π T.L T.intersection)
     (s : LiftSection D.π T.N T.intersection)
     (h : inducedSpace (T.L.comap D.π) T.χL) : P D T r (Q D T s h) = h := by
@@ -570,12 +568,9 @@ theorem P_Q {H V : Type*} [Group H] [CommGroup V] [Fintype V]
     ring
   rw [he, counting_composition D T.L T.N T.maximal_L T.maximal_N T.χL T.χN
     T.central_L T.agree_on_intersection r s h g, (exact_quotient_cardinality D T).1]
-  have hn : (Fintype.card (PolarizationIndex T.N T.intersection) : ℂ) ≠ 0 :=
-    Nat.cast_ne_zero.mpr (Fintype.card_ne_zero)
-  rw [← mul_assoc, inv_mul_cancel₀ hn, one_mul]
+  rw [← mul_assoc, inv_mul_cancel₀ (Nat.cast_ne_zero.mpr (Fintype.card_ne_zero)), one_mul]
 
-theorem Q_P {H V : Type*} [Group H] [CommGroup V] [Fintype V]
-    (D : HeisenbergData H V) (T : PolarizationData D)
+theorem Q_P (T : PolarizationData D)
     (r : LiftSection D.π T.L T.intersection)
     (s : LiftSection D.π T.N T.intersection)
     (f : inducedSpace (T.N.comap D.π) T.χN) : Q D T s (P D T r f) = f := by
@@ -594,9 +589,7 @@ theorem Q_P {H V : Type*} [Group H] [CommGroup V] [Fintype V]
     exact counting_composition D T.N T.L T.maximal_N T.maximal_L T.χN T.χL
       T.central_N (fun a hN hL => (T.agree_on_intersection a hL hN).symm) s r f g
   rw [he]
-  have hn : (Fintype.card (PolarizationIndex T.N T.intersection) : ℂ) ≠ 0 :=
-    Nat.cast_ne_zero.mpr (Fintype.card_ne_zero)
-  rw [← mul_assoc, inv_mul_cancel₀ hn, one_mul]
+  rw [← mul_assoc, inv_mul_cancel₀ (Nat.cast_ne_zero.mpr (Fintype.card_ne_zero)), one_mul]
 
 end DedekindZetaZeroFree.FinitePolarization
 

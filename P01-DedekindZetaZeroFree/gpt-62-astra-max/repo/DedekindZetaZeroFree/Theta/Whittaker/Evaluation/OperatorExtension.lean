@@ -13,7 +13,7 @@ local instance : AddCommGroup complexCore := Submodule.addCommGroup complexCore
 local instance : Module ℂ complexCore := Submodule.module complexCore
 local instance : TopologicalSpace complexCore := instTopologicalSpaceSubtype
 variable {α : Type*} [TopologicalSpace α]
-variable (E : complexCore →ₗ[ℂ] (α → ℂ)) (hb : CompactBound E)
+    (E : complexCore →ₗ[ℂ] (α → ℂ)) (hb : CompactBound E)
 
 theorem extendedEvaluation_operator
     (A : complexCore →ₗ[ℂ] complexCore)
@@ -33,14 +33,12 @@ theorem compactBound_operator (A : complexCore →ₗ[ℂ] complexCore) (hA : Co
     CompactBound (E.comp A) := by
   intro K hK
   obtain ⟨orders,B,h⟩ := hb K hK
-  let Q : Seminorm ℂ complexCore := (orders.sup coreSeminorm).comp A
-  have hQ : Continuous Q :=
-    (Seminorm.continuous_finsetSup (fun i _=>core_withSeminorms.continuous_seminorm i)).comp hA
-  obtain ⟨orders₁,B₁,_,hb₁⟩ := Seminorm.bound_of_continuous core_withSeminorms Q hQ
+  let Q := (orders.sup coreSeminorm).comp A
+  obtain ⟨orders₁,B₁,_,hb₁⟩ := Seminorm.bound_of_continuous core_withSeminorms Q ((Seminorm.continuous_finsetSup (fun i _=>core_withSeminorms.continuous_seminorm i)).comp hA)
   refine ⟨orders₁,B*B₁,?_⟩
   intro v g hg
   calc
-    ‖(E.comp A) v g‖ ≤ B*(orders.sup coreSeminorm) (A v) := h (A v) g hg
+    _ ≤ B*(orders.sup coreSeminorm) (A v) := h (A v) g hg
     _ ≤ B*(B₁*(orders₁.sup coreSeminorm) v) := mul_le_mul_of_nonneg_left (hb₁ v) B.coe_nonneg
     _ = (B*B₁ : ℝ≥0)*(orders₁.sup coreSeminorm) v := by simp only [NNReal.coe_mul];ring
 end DedekindZetaZeroFree.FourierContinuation.CurrentOutputExtension

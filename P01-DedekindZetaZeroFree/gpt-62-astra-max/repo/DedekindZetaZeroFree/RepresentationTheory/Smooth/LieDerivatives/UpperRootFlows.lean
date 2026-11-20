@@ -14,8 +14,8 @@ open KPContActualSphericalRightFieldIdentification KPGlobalResidualConstruction
 set_option maxHeartbeats 1200000
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
  theorem exp_upper (z : ℂ) :
     NormedSpace.exp (!![(0 : ℂ),z;0,0]) = !![1,z;0,1] := by

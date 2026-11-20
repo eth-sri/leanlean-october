@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -32,12 +28,12 @@ namespace ClassFieldTheory
 open scoped BigOperators Classical NumberField
 open NumberField IsDedekindDomain
 
+variable (F : Type) [Field F] [NumberField F] (n : ℕ+) (hnF : ((n : ℕ) : F) ≠ 0)
+    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
+
 /-- The finite-place Hilbert factor, transported from the internal
 unit-root subgroup to Mathlib's `rootsOfUnity`. -/
 noncomputable def globalFinitePlaceHilbertSymbol
-    (F : Type) [Field F] [NumberField F]
-    (n : ℕ+) (hnF : ((n : ℕ) : F) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
     (v : HeightOneSpectrum (𝓞 F)) (a b : Fˣ) :
     rootsOfUnity (n : ℕ) F :=
   (KummerTheory.nthRootsSubgroupEquivRootsOfUnity F (n : ℕ))
@@ -47,18 +43,12 @@ noncomputable def globalFinitePlaceHilbertSymbol
 /-- **Hilbert product formula.**  The product of the local symbols of two
 global units over every finite and infinite place is one. -/
 theorem hilbertProductFormula
-    (F : Type) [Field F] [NumberField F]
-    (n : ℕ+) (hnF : ((n : ℕ) : F) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
     (a b : Fˣ) :
     (∏ v : InfinitePlace F,
         globalInfinitePlaceHilbertSymbol F n v a b) *
       ∏ᶠ v : HeightOneSpectrum (𝓞 F),
         globalFinitePlaceHilbertSymbol F n hnF hmu v a b = 1 := by
   let e := KummerTheory.nthRootsSubgroupEquivRootsOfUnity F (n : ℕ)
-  have hfinite :=
-    GlobalClassFieldTheory.Reciprocity.finitePlaceHilbertSymbol_hasFiniteMulSupport
-      F n hnF hmu a b
   change
     (∏ v : InfinitePlace F,
         e (GlobalClassFieldTheory.Reciprocity.infinitePlaceHilbertSymbol
@@ -74,7 +64,8 @@ theorem hilbertProductFormula
           ∏ᶠ v : HeightOneSpectrum (𝓞 F),
             GlobalClassFieldTheory.Reciprocity.finitePlaceHilbertSymbol
               F n hnF hmu v a b) := by
-      rw [map_mul, map_prod, map_finprod e hfinite]
+      rw [map_mul, map_prod, map_finprod e (GlobalClassFieldTheory.Reciprocity.finitePlaceHilbertSymbol_hasFiniteMulSupport
+        F n hnF hmu a b)]
     _ = e 1 := congrArg e
       (GlobalClassFieldTheory.Reciprocity.hilbertSymbol_allPlaces_product_eq_one
         F n hnF hmu a b)

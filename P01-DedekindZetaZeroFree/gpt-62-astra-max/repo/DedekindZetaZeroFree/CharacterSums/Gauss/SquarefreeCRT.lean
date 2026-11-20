@@ -11,7 +11,7 @@ open NumberField IsDedekindDomain UniqueFactorizationMonoid
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem prime_gauss (R : PrincipalMellin.ActualRecipe S η)
     (p : ThetaBranch.ExteriorPrime R.A) :
@@ -21,9 +21,6 @@ theorem prime_gauss (R : PrincipalMellin.ActualRecipe S η)
         (Classical.choose_spec (R.probe.allowed.generates (ThetaBranch.primeIdeal R.A p))).1 2 := by
   let r := Classical.choose (R.probe.allowed.generates (ThetaBranch.primeIdeal R.A p))
   have hr := (Classical.choose_spec (R.probe.allowed.generates (ThetaBranch.primeIdeal R.A p))).1
-  have hgen := (Classical.choose_spec (R.probe.allowed.generates (ThetaBranch.primeIdeal R.A p))).2
-  change ThetaBranch.gaussTwo R.A R.σ (MomentSources.Characters.psi R) p =
-    R.A.idealGauss R.σ R.traceBad (ThetaBranch.primeIdeal R.A p) r hr 2
   let I := ThetaBranch.primeIdeal R.A p
   let E := ArithGaussCRT.exteriorQuotientEquiv R.A I
   letI : Finite (R.A.R ⧸ R.A.extendIdeal I) := R.A.exteriorResidue_finite I
@@ -36,7 +33,7 @@ theorem prime_gauss (R : PrincipalMellin.ActualRecipe S η)
       (E (Ideal.Quotient.mk I.val t)) : ℂ)
     rw [ArithGaussCRT.exteriorQuotientEquiv_mk,
       R.A.residueTraceCharacter_apply, PrincipalMellinSource.additiveCharacter_eq_fieldTrace,
-      hgen]
+      ((Classical.choose_spec (R.probe.allowed.generates (ThetaBranch.primeIdeal R.A p))).2)]
     rfl
   have hmul (d : DHCubic.Residue F p.val) :
       (ThetaBranch.residueCharacter R.A R.σ p ^ 2) d =
@@ -55,7 +52,6 @@ theorem prime_gauss (R : PrincipalMellin.ActualRecipe S η)
   rw [hcard]
   congr 1
   unfold gaussSum
-  change (∑ d : DHCubic.Residue F p.val, _) = ∑ x : R.A.R ⧸ R.A.extendIdeal I, _
   let E' : DHCubic.Residue F p.val ≃ R.A.R ⧸ R.A.extendIdeal I := E.toEquiv
   refine Fintype.sum_equiv E' _ _ ?_
   intro d
@@ -92,10 +88,10 @@ theorem gauss_finiteProduct (R : PrincipalMellin.ActualRecipe S η)
   have hu (p : ThetaBranch.ExteriorPrime A) : (G.generator (ThetaBranch.primeIdeal A p) : F) = (r p : F) :=
     (Classical.choose_spec (G.generates (ThetaBranch.primeIdeal A p))).2
   have he (p : ThetaBranch.ExteriorPrime A) : e p = 0 ∨ e p = 1 := squarefree_exps A d p
-  let Q : ThetaBranch.ExteriorPrime A → A.Exterior := fun p =>
+  let Q := fun p =>
     if e p = 0 then (exteriorSquarefreeTop A.cS).val else ThetaBranch.primeIdeal A p
-  let ρ : ThetaBranch.ExteriorPrime A → A.R := fun p => r p ^ e p
-  let a : ThetaBranch.ExteriorPrime A → Fˣ := fun p => G.generator (ThetaBranch.primeIdeal A p) ^ e p
+  let ρ := fun p => r p ^ e p
+  let a := fun p => G.generator (ThetaBranch.primeIdeal A p) ^ e p
   have hρ (p : ThetaBranch.ExteriorPrime A) : A.Generates (Q p) (ρ p) := by
     rcases he p with hz | ho
     · simp [Q, ρ, hz, SArithmeticData.Generates, SArithmeticData.extendIdeal, exteriorSquarefreeTop,
@@ -133,10 +129,9 @@ theorem gauss_finiteProduct (R : PrincipalMellin.ActualRecipe S η)
   have hall (p : ThetaBranch.ExteriorPrime A) : A.IsAllowed R.probe.correction.B (a p) := by
     change A.sClass (G.generator (ThetaBranch.primeIdeal A p) ^ e p) ∈ _
     rw [map_pow]
-    have hh : A.sClass (G.generator (ThetaBranch.primeIdeal A p)) ∈ R.probe.correction.B := by
-      rw [← R.probe.sameComplement]
-      exact G.allowed _
-    exact R.probe.correction.B.pow_mem hh _
+    refine R.probe.correction.B.pow_mem ?_ _
+    rw [← R.probe.sameComplement]
+    exact G.allowed _
   have hallowed : A.IsAllowed R.probe.correction.B (∏ p ∈ P, a p) := by
     clear hd hQ hcop hgen hval
     induction P using Finset.induction_on with
@@ -147,7 +142,6 @@ theorem gauss_finiteProduct (R : PrincipalMellin.ActualRecipe S η)
       rw [map_mul]
       exact R.probe.correction.B.mul_mem (hall p) ih
   have hb : A.IsAllowed R.probe.correction.B (G.generator d.val) := by
-    change A.sClass (G.generator d.val) ∈ _
     rw [← R.probe.sameComplement]
     exact G.allowed _
   have hind := A.idealGauss_allowed_generator_independent R.σ R.traceBad R.classKilled
@@ -174,18 +168,15 @@ theorem gauss_finiteProduct (R : PrincipalMellin.ActualRecipe S η)
     have hphase : R.σ (R.A.sexticResidue (Q p) (∏ w ∈ P.erase p, ρ w)) ^ 2 =
         ∏ q ∈ P.erase p, R.σ (R.A.sexticResidue (ThetaBranch.primeIdeal R.A p) (r q)) ^ (2 * e p * e q) := by
       rcases he p with hz | ho
-      · change R.σ (R.A.sexticResidue (Q p) _) ^ 2 = _
-        have ht : (Q p).val = ⊤ := by simp [Q, hz, exteriorSquarefreeTop]
+      · have ht : (Q p).val = ⊤ := by simp [Q, hz, exteriorSquarefreeTop]
         rw [show R.A.sexticResidue (Q p) (∏ w ∈ P.erase p, ρ w) = 1 from
           R.A.residueValue_top R.A.sexticResidueFamily (Q p) ht _]
         simp [← show e p = idealPrimeExponent p.val.asIdeal d.val.val from rfl, hz]
-      · change R.σ (R.A.sexticResidue (Q p) _) ^ 2 = _
-        simp only [Q, ho, one_ne_zero, ↓reduceIte]
+      · simp only [Q, ho, one_ne_zero, ↓reduceIte]
         unfold SArithmeticData.sexticResidue SArithmeticData.residueValue
         simp only [map_prod, ← Finset.prod_pow, map_pow, ρ]
         apply Finset.prod_congr rfl
         intro q hq
-        change (R.σ (R.A.sexticResidue (ThetaBranch.primeIdeal R.A p) (r q)) ^ e q) ^ 2 = _
         rw [← pow_mul]
         congr 1
         ring

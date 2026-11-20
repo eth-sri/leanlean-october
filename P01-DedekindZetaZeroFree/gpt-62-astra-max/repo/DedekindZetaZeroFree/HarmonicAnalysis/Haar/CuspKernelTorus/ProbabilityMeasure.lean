@@ -11,11 +11,11 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.KPContActualChamberOutgoingAdapter
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 local notation "Cusps" => KPContFlatCuspIncomingEvaluation.Cusps
 local notation "geometry" => KPContFlatCuspIncomingEvaluation.geometry
@@ -25,18 +25,15 @@ variable (a : Cusps F ζ hζ C R P H U)
 
 theorem kernelTorus_borelSpace : BorelSpace (KernelTorus F ζ hζ C R P H U a) := by
   obtain ⟨hd, -⟩ := (geometry F ζ hζ C R P H U a).lattice
-  let N : AddSubgroup (KPCuspCharts.Horizontal F) :=
+  let N :=
     KPCuspCharts.translationLattice F
       (KPCuspGenuineMonodromy.kernelLattice
         (KPContFlatCuspIncomingEvaluation.stabilizer F ζ hζ C R P H U a)
         (KPContFlatCuspIncomingEvaluation.parabolic F ζ hζ C R P H U a)
         (KPContFlatCuspIncomingEvaluation.rho F ζ hζ C R P H U a))
-  have hle : N ≤ KPCuspCharts.translationLattice F
-      (KPContFlatCuspIncomingEvaluation.parabolic F ζ hζ C R P H U a).L :=
-    AddSubgroup.map_mono
-      (KPContFlatCuspIncomingEvaluation.monodromy F ζ hζ C R P H U a).kernel_le
-  letI : DiscreteTopology (N : Set (KPCuspCharts.Horizontal F)) :=
-    DiscreteTopology.of_subset hd hle
+  letI : DiscreteTopology N :=
+    DiscreteTopology.of_subset hd (AddSubgroup.map_mono
+      (KPContFlatCuspIncomingEvaluation.monodromy F ζ hζ C R P H U a).kernel_le)
   haveI : IsClosed (N : Set (KPCuspCharts.Horizontal F)) :=
     AddSubgroup.isClosed_of_discreteTopology
   haveI : N.Normal := AddSubgroup.normal_of_isAddCommutative N

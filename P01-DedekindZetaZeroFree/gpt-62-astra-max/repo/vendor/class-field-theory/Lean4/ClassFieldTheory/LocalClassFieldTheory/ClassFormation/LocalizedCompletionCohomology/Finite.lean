@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -36,14 +34,12 @@ variable {k ell : Type}
     [Field k] [Field ell] [Algebra k ell]
     [FiniteDimensional k ell] [IsGalois k ell]
 
-theorem localHerbrandH0Finite
-    (vK : AbsoluteValue k ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK ell)
-    (σ : ell ≃ₐ[k] ell)
-    (hgen : ∀ τ : ell ≃ₐ[k] ell,
-      τ ∈ Subgroup.zpowers σ)
-    [ValuativeRel vK.Completion]
-    [IsNonarchimedeanLocalField vK.Completion] :
+variable (vK : AbsoluteValue k ℝ) (hvK : vK.IsNontrivial) (w : AbsoluteValueExtension vK ell)
+    (σ : ell ≃ₐ[k] ell) (hgen : ∀ τ : ell ≃ₐ[k] ell, τ ∈ Subgroup.zpowers σ) [ValuativeRel vK.Completion]
+    [IsNonarchimedeanLocalField vK.Completion]
+
+include hgen in
+theorem localHerbrandH0Finite :
     letI hK :=
       AbsoluteValue.extensionCompletionAlgebra
         (K := k) w.1
@@ -68,28 +64,17 @@ theorem localHerbrandH0Finite
   let := localizedCompletionBaseAlgebra vK w
   let := localizedCompletionGlobalAlgebra vK w
   let := localizedCompletionIsScalarTower vK w
-  let : FiniteDimensional vK.Completion
-      (LocalizedCompletion vK w) :=
+  let :=
     localizedCompletionFiniteDimensional vK hvK w
-  let : IsGalois vK.Completion
-      (LocalizedCompletion vK w) :=
+  let :=
     localizedCompletionIsGalois vK w
   let := localizedCompletionDecompositionGroupFintype vK w
-  let g :=
-    localizedCompletionGaloisGenerator
-      vK hvK w σ hgen
-  let hg :=
-    localizedCompletionGaloisGenerator_generates
-      vK hvK w σ hgen
-  let hcard :=
-    finiteExtensionUnits_tate_card_of_generator
+  let :=
+    (finiteExtensionUnits_tate_card_of_generator
       vK.Completion (LocalizedCompletion vK w)
-      g hg
-  let : Finite
-      (tateCohomology
-        (Rep.ofAlgebraAutOnUnits vK.Completion
-          (LocalizedCompletion vK w)) 0) :=
-    hcard.finiteH0
+      (localizedCompletionGaloisGenerator
+        vK hvK w σ hgen) (localizedCompletionGaloisGenerator_generates
+        vK hvK w σ hgen)).finiteH0
   exact Finite.of_equiv
     (Multiplicative
       (tateCohomology
@@ -98,14 +83,7 @@ theorem localHerbrandH0Finite
     (localHerbrandH0EquivUnitsTateH0
       vK hvK w).symm.toEquiv
 
-theorem localHerbrandHMinusOneFinite
-    (vK : AbsoluteValue k ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK ell)
-    (σ : ell ≃ₐ[k] ell)
-    (hgen : ∀ τ : ell ≃ₐ[k] ell,
-      τ ∈ Subgroup.zpowers σ)
-    [ValuativeRel vK.Completion]
-    [IsNonarchimedeanLocalField vK.Completion] :
+theorem localHerbrandHMinusOneFinite :
     letI hK :=
       AbsoluteValue.extensionCompletionAlgebra
         (K := k) w.1
@@ -134,23 +112,17 @@ theorem localHerbrandHMinusOneFinite
   let := localizedCompletionBaseAlgebra vK w
   let := localizedCompletionGlobalAlgebra vK w
   let := localizedCompletionIsScalarTower vK w
-  let : FiniteDimensional vK.Completion
-      (LocalizedCompletion vK w) :=
+  let :=
     localizedCompletionFiniteDimensional vK hvK w
-  let : IsGalois vK.Completion
-      (LocalizedCompletion vK w) :=
+  let :=
     localizedCompletionIsGalois vK w
   let := localizedCompletionDecompositionGroupFintype vK w
-  let g :=
-    localizedCompletionGaloisGenerator
-      vK hvK w σ hgen
-  let hg :=
-    localizedCompletionGaloisGenerator_generates
-      vK hvK w σ hgen
   let hcard :=
     finiteExtensionUnits_tate_card_of_generator
       vK.Completion (LocalizedCompletion vK w)
-      g hg
+      (localizedCompletionGaloisGenerator
+        vK hvK w σ hgen) (localizedCompletionGaloisGenerator_generates
+        vK hvK w σ hgen)
   let : Finite
       (tateCohomology
         (Rep.ofAlgebraAutOnUnits vK.Completion
@@ -164,7 +136,6 @@ theorem localHerbrandHMinusOneFinite
         (LocalizedCompletion vK w)) (-1))
     (localHerbrandHMinusOneEquivUnitsTateHminusOne
       vK hvK w σ hgen).symm
-
 
 end LocalTateComparison
 

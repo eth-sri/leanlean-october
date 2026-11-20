@@ -10,10 +10,9 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.ThetaExpansion.ChamberPeriods
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
-open _root_.DedekindZetaZeroFree.KPLiteralChamberWeight renaming standard_integrable → standard_integrable
-open _root_.DedekindZetaZeroFree.KPLiteralChamberWeight renaming literal_two_cells → literal_two_cells
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+open _root_.DedekindZetaZeroFree.KPLiteralChamberWeight (standard_integrable literal_two_cells)
 
 def outgoing (C : JointForwardIdentitySources R N) (v : R.A.UnitQuotient) (s : ℂ) (g : Group R) : ℂ :=
   ∫ x : KPAdeles F, incoming C v s
@@ -52,14 +51,7 @@ theorem chamber_two_cells_identity (C : JointForwardIdentitySources R N) (v : R.
   rw [hmass, Complex.ofReal_one, one_mul] at h
   exact h
 
-theorem chamber_upper_integrable (C : JointForwardIdentitySources R N) (v : R.A.UnitQuotient)
-    (s : ℂ) (hs : (1 / 3 : ℝ) < s.re) (g : Group R) :
-    Integrable (fun q => KPLiteralRaw.eisenstein F R.A.zeta12 R.A.primitive_zeta12
-      C.sources.K (C.sources.flat v) s
-      (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
-        (Quotient.out q) * g)) C.sources.dq :=
-  DedekindZetaZeroFree.CompactPeriodAnalyticity.Chamber.upper_integrable F R.A.zeta12 R.A.primitive_zeta12
-    C.sources.K C.sources.iwasawa (C.sources.flat v) C.sources.dq C.sources.quotientHaar s hs g
+alias chamber_upper_integrable := DedekindZetaZeroFree.CompactPeriodAnalyticity.selected_chamber_period_integrable
 
 theorem selected_chamber_two_cells (C : JointForwardIdentitySources R N) :
     ∀ v s, (1 / 3 : ℝ) < s.re → ∀ g,

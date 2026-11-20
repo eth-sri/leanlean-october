@@ -20,30 +20,38 @@ variable {F : Type} [Field F] [NumberField F]
 local instance (A : SArithmeticData F) : MeasurableSpace A.G1 := borel _
 local instance (A : SArithmeticData F) : BorelSpace A.G1 := ⟨rfl⟩
 
-def modulusNorm (A : SArithmeticData F)
+section
+
+variable (A : SArithmeticData F)
+
+def modulusNorm
     (c : ExteriorSquarefreeIdeal A.cS) (n : A.Exterior) : ℝ :=
   A.exteriorNorm c.val * A.exteriorNorm n ^ 3
 
-def lambda (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+def lambda (D : ComparisonPoissonCoefficientData F A)
     (c : ExteriorSquarefreeIdeal A.cS) (n : A.Exterior) (Z : ℝ) : ℂ :=
   ThetaReflectionData.forwardArithmeticWeight A D c n *
     (thetaReflectionGaussian (modulusNorm A c n / Z) : ℂ) /
     ((Real.sqrt (A.exteriorNorm c.val) : ℂ) * (A.exteriorNorm n : ℂ))
 
-abbrev Index (A : SArithmeticData F) :=
+abbrev Index :=
   A.Exterior × ExteriorSquarefreeIdeal A.cS × A.Exterior × ThetaReflectionData.Row A
 
-def frequency (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+def frequency (D : ComparisonPoissonCoefficientData F A)
     (X : ℝ) (s : A.Exterior) (c : ExteriorSquarefreeIdeal A.cS)
     (n : A.Exterior) (h : ThetaReflectionData.Row A) : SLocalProduct F A.Sf :=
   (ProbeSheet.ell A (A.exteriorNorm s * X)).val *
     sLocalDiagonal F A.Sf ((h.val : F) /
       ((D.generator s : F) * (ThetaReflectionData.forwardModulus A D c n : F)))
 
-def kernel (A : SArithmeticData F) (ι : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A ι η hS)
-    (X Y Z : ℝ) (i : Index A) (t : A.G1) : ℂ :=
+end
+
+section
+
+variable (A : SArithmeticData F) (ι : F →+* ℂ) (η : RayClassCharacter F A.modulus)
+    (hS : A.ContainsTraceBadPlaces) (P : NormalizedProbe.PrincipalData A ι η hS) (X Y Z : ℝ)
+
+def kernel (i : Index A) (t : A.G1) : ℂ :=
   (Y⁻¹ : ℂ) * (P.W1 (A.exteriorNorm i.1 / Y) : ℂ) *
     lambda A P.coefficients i.2.1 i.2.2.1 Z *
     ((Real.sqrt X / modulusNorm A i.2.1 i.2.2.1 : ℝ) : ℂ) *
@@ -53,34 +61,40 @@ def kernel (A : SArithmeticData F) (ι : F →+* ℂ)
       ((ProbeSheet.localUnits A t.val).val *
         frequency A P.coefficients X i.1 i.2.1 i.2.2.1 i.2.2.2)
 
-def absoluteMass (A : SArithmeticData F) (ι : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A ι η hS) (X Y Z : ℝ) : ℝ≥0∞ :=
+def absoluteMass : ℝ≥0∞ :=
   ∑' i : Index A, ∫⁻ t in P.domain.domain,
     ENNReal.ofReal ‖kernel A ι η hS P X Y Z i t‖ ∂P.domain.measure
 
-def outerMoment (A : SArithmeticData F) (W1 : ProbeRealAnnularWeight) (Y : ℝ) : ℝ :=
+end
+
+section
+
+variable (A : SArithmeticData F)
+
+def outerMoment (W1 : ProbeRealAnnularWeight) (Y : ℝ) : ℝ :=
   ∑' s : A.Exterior, |W1 (A.exteriorNorm s / Y)| * A.exteriorNorm s
 
-def gaussianMomentTerm (A : SArithmeticData F) (σ Z : ℝ)
+def gaussianMomentTerm (σ Z : ℝ)
     (p : ExteriorSquarefreeIdeal A.cS × A.Exterior) : ℝ :=
   (A.exteriorNorm p.1.val) ^ (σ - 1 / 2) *
     (A.exteriorNorm p.2) ^ (3 * σ - 1) *
     thetaReflectionGaussian (modulusNorm A p.1 p.2 / Z)
 
-def gaussianMoment (A : SArithmeticData F) (σ Z : ℝ) : ℝ :=
+def gaussianMoment (σ Z : ℝ) : ℝ :=
   ∑' p : ExteriorSquarefreeIdeal A.cS × A.Exterior, gaussianMomentTerm A σ Z p
 
-abbrev OrbitIndex (A : SArithmeticData F) :=
+abbrev OrbitIndex :=
   A.Exterior × ExteriorSquarefreeIdeal A.cS × A.Exterior × ProbeOrbitNormSum.Orbit A
 
-def orbitIntegral (A : SArithmeticData F) (ι : F →+* ℂ)
+def orbitIntegral (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : NormalizedProbe.PrincipalData A ι η hS) (X Y Z : ℝ)
     (ρ : ProbeOrbitNormSum.Orbit A → ProbeOrbitNormSum.Nonzero A)
     (i : OrbitIndex A) : ℂ :=
   ∫ t : A.G1, kernel A ι η hS P X Y Z (i.1, i.2.1, i.2.2.1, ρ i.2.2.2) t
     ∂P.domain.measure
+
+end
 
 theorem joint_series_exchanges {T I : Type*} [MeasurableSpace T] [Countable I]
     (μ : Measure T) (f : I → T → ℂ)
@@ -112,7 +126,7 @@ theorem joint_series_exchanges {T I : Type*} [MeasurableSpace T] [Countable I]
     exact lt_of_le_of_lt (lintegral_mono (fun t => enorm_tsum_le_tsum_enorm)) hfinite.lt_top
   have hn : Summable (fun i => ‖∫ t, f i t ∂μ‖) :=
     hs.of_nonneg_of_le (fun _ => norm_nonneg _) (fun _ => norm_integral_le_integral_norm _)
-  have he : (∫ t, ∑' i, f i t ∂μ) = ∑' i, ∫ t, f i t ∂μ :=
+  have he :=
     (integral_tsum_of_summable_integral_norm hf hs).symm
   refine ⟨hae, hi, hn, he, ?_, ?_⟩
   · intro J e
@@ -123,14 +137,17 @@ theorem joint_series_exchanges {T I : Type*} [MeasurableSpace T] [Countable I]
     have hg := hn.of_norm.hasSum.tsum_fiberwise g
     exact ⟨summable_norm_iff.mpr hg.summable, hg.tsum_eq⟩
 
-theorem diagonal_injective (A : SArithmeticData F) : Function.Injective A.diagonal := by
+section
+
+variable (A : SArithmeticData F)
+
+theorem diagonal_injective : Function.Injective A.diagonal := by
   intro x y h
   apply Units.ext
   let w : InfinitePlace F := Classical.choice inferInstance
-  have hw := congrArg (fun g : A.G => ((g.1 w : w.Completion))) h
-  exact (algebraMap F w.Completion).injective hw
+  exact (algebraMap F w.Completion).injective (congrArg (fun g : A.G => ((g.1 w : w.Completion))) h)
 
-def gamma1Hom (A : SArithmeticData F) : ProbeOrbitNormSum.Gamma A →* A.Gamma1 where
+def gamma1Hom : ProbeOrbitNormSum.Gamma A →* A.Gamma1 where
   toFun γ := ⟨⟨A.diagonal γ.val.val, A.Gamma_le_G1 (by
     obtain ⟨u, hu⟩ := γ.property
     change A.diagonal γ.val.val ∈ (A.U.map (powMonoidHom 6)).map A.diagonal
@@ -145,7 +162,7 @@ def gamma1Hom (A : SArithmeticData F) : ProbeOrbitNormSum.Gamma A →* A.Gamma1 
   map_one' := by apply Subtype.ext; apply Subtype.ext; exact map_one _
   map_mul' x y := by apply Subtype.ext; apply Subtype.ext; exact map_mul _ _ _
 
-def gamma1Equiv (A : SArithmeticData F) : ProbeOrbitNormSum.Gamma A ≃* A.Gamma1 :=
+def gamma1Equiv : ProbeOrbitNormSum.Gamma A ≃* A.Gamma1 :=
   MulEquiv.ofBijective (gamma1Hom A) (by
     constructor
     · intro x y h
@@ -153,16 +170,15 @@ def gamma1Equiv (A : SArithmeticData F) : ProbeOrbitNormSum.Gamma A ≃* A.Gamma
       apply Subtype.ext
       exact diagonal_injective A (congrArg (fun γ : A.Gamma1 => γ.val.val) h)
     · intro γ
-      have hγ : γ.val.val ∈ (A.U.map (powMonoidHom 6)).map A.diagonal := γ.property
-      obtain ⟨v, hv, heq⟩ := Subgroup.mem_map.mp hγ
+      obtain ⟨v, hv, heq⟩ := Subgroup.mem_map.mp γ.property
       obtain ⟨u, hu, huv⟩ := Subgroup.mem_map.mp hv
       let a : A.U := ⟨u, hu⟩
-      let b : ProbeOrbitNormSum.Gamma A := ⟨a ^ 6, ⟨a, rfl⟩⟩
-      refine ⟨b, ?_⟩
+      refine ⟨(⟨a ^ 6, ⟨a, rfl⟩⟩), ?_⟩
       apply Subtype.ext
       apply Subtype.ext
-      change A.diagonal (u ^ 6) = γ.val.val
       exact (congrArg A.diagonal huv).trans heq)
+
+end
 
 theorem orbit_regrouping {H G N O B : Type*}
     [MeasurableSpace H] [Group G] [MulAction G H] [MulAction G N]
@@ -179,16 +195,15 @@ theorem orbit_regrouping {H G N O B : Type*}
     Summable (fun p : B × O => ∫ t, f p.1 (ρ p.2) t ∂μ) ∧
     (∑' p : B × N, ∫ t in D, f p.1 p.2 t ∂μ) =
       ∑' p : B × O, ∫ t, f p.1 (ρ p.2) t ∂μ := by
-  let E : (B × O) × G ≃ B × N :=
+  let E :=
     (Equiv.prodAssoc B O G).trans (Equiv.prodCongr (Equiv.refl B) e)
   have hE (p : (B × O) × G) : E p = (p.1.1, p.2 • ρ p.1.2) := by
     simp [E, he]
-  have hsE := hs.comp_injective E.injective
   have hInt (p : B × O) : Integrable (f p.1 (ρ p.2)) μ := by
     refine ⟨hm _ _, hasFiniteIntegral_iff_enorm.mpr ?_⟩
     rw [hD.lintegral_eq_tsum'']
     have hsg : Summable (fun g : G => ∫ t in D, ‖f p.1 (g • ρ p.2) t‖ ∂μ) := by
-      simpa only [Function.comp_def, hE] using hsE.prod_factor p
+      simpa only [Function.comp_def, hE] using (hs.comp_injective E.injective).prod_factor p
     have hn (g : G) : IntegrableOn (f p.1 (g • ρ p.2)) D μ := hi (p.1, g • ρ p.2)
     simp_rw [← ht p.1 (ρ p.2)]
     simp_rw [← ofReal_integral_norm_eq_lintegral_enorm (hn _)]
@@ -200,11 +215,9 @@ theorem orbit_regrouping {H G N O B : Type*}
         ∫ t, f p.1 (ρ p.2) t ∂μ := by
     simp_rw [ht]
     exact (hD.integral_eq_tsum'' _ (hInt p)).symm
-  have hf := hn.of_norm.comp_injective E.injective
   have hnorm : Summable (fun p : B × O => ‖∑' g : G,
       ∫ t in D, f p.1 (g • ρ p.2) t ∂μ‖) := by
-    have hh := (hn.comp_injective E.injective).prod
-    apply hh.of_nonneg_of_le (fun _ => norm_nonneg _)
+    apply ((hn.comp_injective E.injective).prod).of_nonneg_of_le (fun _ => norm_nonneg _)
     intro p
     simpa only [Function.comp_def, hE] using
       norm_tsum_le_tsum_norm ((hn.comp_injective E.injective).prod_factor p)
@@ -213,7 +226,7 @@ theorem orbit_regrouping {H G N O B : Type*}
   rw [← E.tsum_eq]
   calc
     _ = ∑' p : B × O, ∑' g : G,
-        ((fun p : B × N => ∫ t in D, f p.1 p.2 t ∂μ) ∘ E) (p, g) := hf.tsum_prod
+        ((fun p : B × N => ∫ t in D, f p.1 p.2 t ∂μ) ∘ E) (p, g) := (hn.of_norm.comp_injective E.injective).tsum_prod
     _ = _ := by
       apply tsum_congr
       intro p
@@ -265,17 +278,13 @@ theorem arithmetic_orbit_regrouping (A : SArithmeticData F)
     · intro δ hδ
       apply (gamma1Equiv A).injective
       exact (hu _ hδ).trans (by simp)
-  let e : ProbeOrbitNormSum.Orbit A × ProbeOrbitNormSum.Gamma A ≃ ProbeOrbitNormSum.Nonzero A :=
-    Equiv.ofBijective _ (ProbeOrbitNormSum.sectionMultiply_bijective A ρ hρ)
-  let B := A.Exterior × ExteriorSquarefreeIdeal A.cS × A.Exterior
-  let fn : B → ProbeOrbitNormSum.Nonzero A → A.G1 → ℂ :=
+  let fn : (A.Exterior × ExteriorSquarefreeIdeal A.cS × A.Exterior) → ProbeOrbitNormSum.Nonzero A → A.G1 → ℂ :=
     fun b h => f (b.1,b.2.1,b.2.2,h)
   let hb := blockEquiv A (ProbeOrbitNormSum.Nonzero A)
   let ho := blockEquiv A (ProbeOrbitNormSum.Orbit A)
-  have hsr := hs.comp_injective hb.injective
-  have hr := orbit_regrouping D.measure D.domain hFD ρ e (fun _ => rfl) fn
+  have hr := orbit_regrouping D.measure D.domain hFD ρ (Equiv.ofBijective _ (ProbeOrbitNormSum.sectionMultiply_bijective A ρ hρ)) (fun _ => rfl) fn
     (fun b h => hm _) (fun b h γ t => ht _ _ _ _ _ _)
-    (fun p => hi _) (by simpa [fn, hb, blockEquiv, Function.comp_def] using hsr)
+    (fun p => hi _) (by simpa [fn, hb, blockEquiv, Function.comp_def] using (hs.comp_injective hb.injective))
   refine ⟨?_, ?_, ?_⟩
   · simpa [fn, ho, blockEquiv, Function.comp_def] using hr.1.comp_injective ho.symm.injective
   · simpa [fn, ho, blockEquiv, Function.comp_def] using hr.2.1.comp_injective ho.symm.injective
@@ -295,7 +304,7 @@ theorem orbit_norm_unfolding_raw {H G N O B : Type*}
     (ht : ∀ b n (g : G) t, f b (g • n) t = f b n (g • t)) :
     (∑' p : B × N, ∫⁻ t in D, f p.1 p.2 t ∂μ) =
       ∑' p : B × O, ∫⁻ t, f p.1 (ρ p.2) t ∂μ := by
-  let E : (B × O) × G ≃ B × N :=
+  let E :=
     (Equiv.prodAssoc B O G).trans (Equiv.prodCongr (Equiv.refl B) e)
   have hE (p : (B × O) × G) : E p = (p.1.1, p.2 • ρ p.1.2) := by
     simp [E, he]
@@ -345,21 +354,21 @@ theorem norm_unfolding_raw (A : SArithmeticData F)
     · intro δ hδ
       apply (gamma1Equiv A).injective
       exact (hu _ hδ).trans (by simp)
-  let e : ProbeOrbitNormSum.Orbit A × ProbeOrbitNormSum.Gamma A ≃ ProbeOrbitNormSum.Nonzero A :=
-    Equiv.ofBijective _ (ProbeOrbitNormSum.sectionMultiply_bijective A ρ hρ)
-  let B := A.Exterior × ExteriorSquarefreeIdeal A.cS × A.Exterior
-  let fn : B → ProbeOrbitNormSum.Nonzero A → A.G1 → ℝ≥0∞ :=
+  let fn : (A.Exterior × ExteriorSquarefreeIdeal A.cS × A.Exterior) → ProbeOrbitNormSum.Nonzero A → A.G1 → ℝ≥0∞ :=
     fun b h => f (b.1,b.2.1,b.2.2,h)
   let hb := blockEquiv A (ProbeOrbitNormSum.Nonzero A)
   let ho := blockEquiv A (ProbeOrbitNormSum.Orbit A)
-  have hr := orbit_norm_unfolding_raw D.measure D.domain hFD ρ e (fun _ => rfl) fn
-    (fun b h γ t => ht _ _ _ _ _ _)
   rw [← hb.tsum_eq]
-  refine hr.trans ?_
+  refine (orbit_norm_unfolding_raw D.measure D.domain hFD ρ (Equiv.ofBijective _ (ProbeOrbitNormSum.sectionMultiply_bijective A ρ hρ)) (fun _ => rfl) fn
+    (fun b h γ t => ht _ _ _ _ _ _)).trans ?_
   simpa [fn, ho, blockEquiv] using ho.tsum_eq
     (fun i : OrbitIndex A => ∫⁻ t, f (i.1,i.2.1,i.2.2.1,ρ i.2.2.2) t ∂D.measure)
 
-theorem gaussianMomentTerm_eq_doubleMomentSummand (A : SArithmeticData F)
+section
+
+variable (A : SArithmeticData F)
+
+theorem gaussianMomentTerm_eq_doubleMomentSummand
     (σ Z : ℝ) :
     gaussianMomentTerm A σ Z =
       NormalizedProbe.gaussianDoubleMomentSummand A σ Z := by
@@ -367,24 +376,22 @@ theorem gaussianMomentTerm_eq_doubleMomentSummand (A : SArithmeticData F)
   simp only [gaussianMomentTerm, NormalizedProbe.gaussianDoubleMomentSummand,
     modulusNorm, Real.rpow_eq_pow]
 
-theorem summable_gaussianMomentTerm (A : SArithmeticData F) (σ Z : ℝ)
+theorem summable_gaussianMomentTerm (σ Z : ℝ)
     (hZ : 0 < Z) : Summable (gaussianMomentTerm A σ Z) := by
   rw [gaussianMomentTerm_eq_doubleMomentSummand]
   exact NormalizedProbe.gaussian_double_moments_summable A σ Z hZ
 
-theorem summable_outerMoment (A : SArithmeticData F) (W1 : ProbeRealAnnularWeight)
+theorem summable_outerMoment (W1 : ProbeRealAnnularWeight)
     (Y : ℝ) (hY : 0 < Y) :
     Summable (fun s : A.Exterior =>
       |W1 (A.exteriorNorm s / Y)| * A.exteriorNorm s) := by
-  have hfin : ({s : A.Exterior | W1 (A.exteriorNorm s / Y) ≠ 0}).Finite :=
-    NormalizedProbe.exterior_weight_finite A W1 Y hY
-  refine summable_of_hasFiniteSupport (hfin.subset ?_)
+  refine summable_of_hasFiniteSupport ((NormalizedProbe.exterior_weight_finite A W1 Y hY).subset ?_)
   intro s hs
   simp only [Function.mem_support] at hs ⊢
   intro hW
   exact hs (by rw [hW, abs_zero, zero_mul])
 
-theorem absoluteMass_of_joint_norm_summability (A : SArithmeticData F) (ι : F →+* ℂ)
+theorem absoluteMass_of_joint_norm_summability (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : NormalizedProbe.PrincipalData A ι η hS) (X Y Z : ℝ)
     (hi : ∀ i : Index A, IntegrableOn (kernel A ι η hS P X Y Z i)
@@ -401,7 +408,7 @@ theorem absoluteMass_of_joint_norm_summability (A : SArithmeticData F) (ι : F �
     unfold absoluteMass
     apply tsum_congr
     intro i
-    simpa only [← ofReal_norm] using
+    simpa using
       (ofReal_integral_norm_eq_lintegral_enorm (hi i)).symm
   constructor
   · rw [heq]
@@ -412,13 +419,12 @@ theorem absoluteMass_of_joint_norm_summability (A : SArithmeticData F) (ι : F �
       integral_nonneg (fun _ => norm_nonneg _)
     exact (ENNReal.ofReal_tsum_of_nonneg hnonneg hs).symm
 
-theorem q_generator (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+theorem q_generator (D : ComparisonPoissonCoefficientData F A)
     (s : A.Exterior) :
-    ProbeSheetTranslation.q A (D.generator s) (D.generates s).1 = A.exteriorNorm s := by
-  exact A.generator_norm s (D.generator s) (D.generates s)
+    ProbeSheetTranslation.q A (D.generator s) (D.generates s).1 = A.exteriorNorm s := A.generator_norm s (D.generator s) (D.generates s)
     (ProbeSheetTranslation.fieldUnit A (D.generator s) (D.generates s).1) rfl
 
-theorem frequency_eq_fractionPoint (A : SArithmeticData F)
+theorem frequency_eq_fractionPoint
     (D : ComparisonPoissonCoefficientData F A) (X : ℝ) (hX : 0 < X)
     (s : A.Exterior) (c : ExteriorSquarefreeIdeal A.cS) (n : A.Exterior)
     (h : ThetaReflectionData.Row A) :
@@ -440,7 +446,7 @@ theorem frequency_eq_fractionPoint (A : SArithmeticData F)
       (algebraMap F (v.val.adicCompletion F)) _
     simp [ProbeSheetTranslation.fieldUnit]
 
-theorem kernel_integrable (A : SArithmeticData F) (ι : F →+* ℂ)
+theorem kernel_integrable (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : NormalizedProbe.PrincipalData A ι η hS)
     (hne : ∀ v, P.finiteTrace v ≠ 1)
@@ -470,24 +476,22 @@ theorem kernel_integrable (A : SArithmeticData F) (ι : F →+* ℂ)
   unfold kernel
   exact (heq ▸ hi).const_mul _
 
-private theorem norm_mul_raw (A : SArithmeticData F) (x y : A.G) :
-    A.norm (x * y) = A.norm x * A.norm y := by
-  simp only [SArithmeticData.norm, Prod.fst_mul, Prod.snd_mul, Pi.mul_apply,
-    Units.val_mul, _root_.norm_mul, mul_pow, Finset.prod_mul_distrib]
-  ring
+end
+
+private alias norm_mul_raw := DedekindZetaZeroFree.ProbeSheet.norm_mul
 private theorem norm_pow_raw (A : SArithmeticData F) (x : A.G) (k : ℕ) :
     A.norm (x ^ k) = A.norm x ^ k := by
   induction k with
   | zero => simp [SArithmeticData.norm]
   | succ k hk => rw [pow_succ, norm_mul_raw, hk, pow_succ]
+
+alias PoissonJointAbsoluteMass.norm_pow_raw := norm_pow_raw
 theorem q_forwardModulus (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (c : ExteriorSquarefreeIdeal A.cS) (n : A.Exterior) :
     ProbeSheetTranslation.q A (ThetaReflectionData.forwardModulus A D c n)
       (mul_ne_zero (D.generates c.val).1 (pow_ne_zero _ (D.generates n).1)) = modulusNorm A c n := by
-  let uc := ProbeSheetTranslation.fieldUnit A (D.generator c.val) (D.generates c.val).1
-  let un := ProbeSheetTranslation.fieldUnit A (D.generator n) (D.generates n).1
   have hu : ProbeSheetTranslation.fieldUnit A (ThetaReflectionData.forwardModulus A D c n)
-      (mul_ne_zero (D.generates c.val).1 (pow_ne_zero _ (D.generates n).1)) = uc * un ^ 3 := by
+      (mul_ne_zero (D.generates c.val).1 (pow_ne_zero _ (D.generates n).1)) = (ProbeSheetTranslation.fieldUnit A (D.generator c.val) (D.generates c.val).1) * (ProbeSheetTranslation.fieldUnit A (D.generator n) (D.generates n).1) ^ 3 := by
     apply Units.ext
     rfl
   unfold ProbeSheetTranslation.q
@@ -630,7 +634,7 @@ theorem whole_group_orbit_mass_summable (A : SArithmeticData F) (ι : F →+* �
     Summable (fun i : OrbitIndex A => ∫ t : A.G1,
       ‖kernel A ι η hS P X Y Z (i.1, i.2.1, i.2.2.1, ρ i.2.2.2) t‖ ∂P.domain.measure) := by
   obtain ⟨C, hC, hb⟩ := integrated_orbit_mass_bound A ι η hS P hne hnormalized 2 (by norm_num)
-  obtain ⟨K, hK, hk⟩ := ProbePoissonGaussianRowBound.gaussian_row_domination A ι η hS 2 Z
+  obtain ⟨K, hk⟩ := ProbePoissonGaussianRowBound.gaussian_row_domination A ι η hS 2 Z
     (by norm_num) hZ
   have hrow := (hk P).2.2.2.1
   have houter := summable_outerMoment A P.W1 Y hY
@@ -698,18 +702,20 @@ theorem orbit_integrals_absolutely_summable (A : SArithmeticData F) (ι : F →+
     (X Y Z : ℝ) (hX : 0 < X) (hY : 0 < Y) (hZ : 0 < Z)
     (ρ : ProbeOrbitNormSum.Orbit A → ProbeOrbitNormSum.Nonzero A)
     (hρ : ProbeOrbitNormSum.IsRepresentativeSection A ρ) :
-    Summable (fun i : OrbitIndex A => ‖orbitIntegral A ι η hS P X Y Z ρ i‖) ∧
-      Summable (orbitIntegral A ι η hS P X Y Z ρ) := by
+    Summable (fun i : OrbitIndex A => ‖orbitIntegral A ι η hS P X Y Z ρ i‖) := by
   have hm := whole_group_orbit_mass_summable A ι η hS P hne hnormalized
     X Y Z hX hY hZ ρ hρ
   have hn : Summable (fun i : OrbitIndex A => ‖orbitIntegral A ι η hS P X Y Z ρ i‖) :=
     hm.of_nonneg_of_le (fun _ => norm_nonneg _) (fun _ => norm_integral_le_integral_norm _)
-  exact ⟨hn, hn.of_norm⟩
+  exact hn
 
-theorem frequency_gamma_translate (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (X : ℝ)
-    (s : A.Exterior) (c : ExteriorSquarefreeIdeal A.cS) (n : A.Exterior)
-    (h : ThetaReflectionData.Row A) (γ : ProbeOrbitNormSum.Gamma A) :
+section
+
+variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A) (X : ℝ) (s : A.Exterior)
+    (c : ExteriorSquarefreeIdeal A.cS) (n : A.Exterior) (h : ThetaReflectionData.Row A)
+    (γ : ProbeOrbitNormSum.Gamma A)
+
+theorem frequency_gamma_translate :
     frequency A D X s c n (γ • h) =
       (ProbeSheet.localUnits A (gamma1Equiv A γ).val.val).val *
         frequency A D X s c n h := by
@@ -728,16 +734,15 @@ theorem frequency_gamma_translate (A : SArithmeticData F)
   rw [mul_div_assoc]
   rfl
 
-theorem fourier_gamma_translate (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (X : ℝ)
-    (s : A.Exterior) (c : ExteriorSquarefreeIdeal A.cS) (n : A.Exterior)
-    (h : ThetaReflectionData.Row A) (γ : ProbeOrbitNormSum.Gamma A) (t : A.G1) :
+theorem fourier_gamma_translate (t : A.G1) :
     (ProbeSheet.localUnits A t.val).val * frequency A D X s c n (γ • h) =
       (ProbeSheet.localUnits A (((gamma1Equiv A γ).val * t).val)).val *
         frequency A D X s c n h := by
   rw [frequency_gamma_translate, ← mul_assoc]
   congr 1
   rw [Subgroup.coe_mul, map_mul, Units.val_mul, mul_comm]
+
+end
 
 theorem kernel_gamma_translate (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -753,9 +758,7 @@ theorem kernel_gamma_translate (A : SArithmeticData F) (ι : F →+* ℂ)
   exact ProbeJointNormMassTransfer.finiteCoefficient_gamma_invariant
     A ι η hS P c n s h.val γ
 
-private theorem gaussian_nonneg (x : ℝ) : 0 ≤ thetaReflectionGaussian x := by
-  unfold thetaReflectionGaussian
-  split_ifs <;> positivity
+private alias gaussian_nonneg := DedekindZetaZeroFree.NormalizedProbe.GaussianDoubleMomentSummability.thetaReflectionGaussian_nonneg
 
 theorem rowMass_le_gaussianMomentTerm (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -764,10 +767,8 @@ theorem rowMass_le_gaussianMomentTerm (A : SArithmeticData F) (ι : F →+* ℂ)
     ProbePoissonGaussianRowBound.rowMass A P.coefficients σ Z c n ≤
       gaussianMomentTerm A σ Z (c,n) := by
   have htheta : ‖P.coefficients.theta (ThetaReflectionData.forwardModulus A P.coefficients c n)‖ = 1 := by
-    let m : ThetaReflectionData.Row A :=
-      ⟨ThetaReflectionData.forwardModulus A P.coefficients c n,
-        mul_ne_zero (P.coefficients.generates c.val).1 (pow_ne_zero _ (P.coefficients.generates n).1)⟩
-    exact (congrArg norm (P.theta_principal m)).trans (Circle.norm_coe _)
+    exact (congrArg norm (P.theta_principal (⟨ThetaReflectionData.forwardModulus A P.coefficients c n,
+      mul_ne_zero (P.coefficients.generates c.val).1 (pow_ne_zero _ (P.coefficients.generates n).1)⟩))).trans (Circle.norm_coe _)
   have hw : ‖ThetaReflectionData.forwardArithmeticWeight A P.coefficients c n‖ ≤ 1 := by
     rw [ThetaReflectionData.forwardArithmeticWeight, norm_mul, htheta, mul_one]
     exact P.norm_gammaTwo_le_one A ι η hS c
@@ -912,7 +913,7 @@ theorem finite_absolute_mass (A : SArithmeticData F) (ι : F →+* ℂ)
     (hnormalized : ProbeSheet.HaarDisintegration A
       P.multiplicativeMeasure P.domain.measure)
     (σ : ℝ) (hσ : 1 < σ) :
-    ∃ Cσ : ℝ, 0 ≤ Cσ ∧ ∀ (X Y Z : ℝ), 0 < X → 0 < Y → 0 < Z →
+    ∃ Cσ : ℝ, ∀ (X Y Z : ℝ), 0 < X → 0 < Y → 0 < Z →
       (∀ i : Index A, IntegrableOn (kernel A ι η hS P X Y Z i)
         P.domain.domain P.domain.measure) ∧
       Summable (fun i : Index A => ∫ t in P.domain.domain,
@@ -930,24 +931,25 @@ theorem finite_absolute_mass (A : SArithmeticData F) (ι : F →+* ℂ)
         |P.W1 (A.exteriorNorm s / Y)| * A.exteriorNorm s) ∧
       Summable (gaussianMomentTerm A σ Z) := by
   obtain ⟨C, hC, hb⟩ := orbit_mass_same_gaussian_majorant A ι η hS P hne hnormalized σ hσ
-  refine ⟨C, hC, ?_⟩
+  refine ⟨C, ?_⟩
   intro X Y Z hX hY hZ
   let ρ : ProbeOrbitNormSum.Orbit A → ProbeOrbitNormSum.Nonzero A := Quotient.out
   have hρ : ProbeOrbitNormSum.IsRepresentativeSection A ρ := by
     intro o
     exact Quotient.out_eq o
   have hiG := kernel_integrable A ι η hS P hne hnormalized X Y Z hX
-  have hi : ∀ i : Index A, IntegrableOn (kernel A ι η hS P X Y Z i)
+  let kernel₀ := kernel A ι η hS P X Y Z
+  have hi : ∀ i : Index A, IntegrableOn (kernel₀ i)
       P.domain.domain P.domain.measure := fun i => (hiG i).integrableOn
   have ho := whole_group_orbit_mass_summable A ι η hS P hne hnormalized
     X Y Z hX hY hZ ρ hρ
   have he := norm_unfolding_raw A P.domain ρ hρ
-    (fun i t => ENNReal.ofReal ‖kernel A ι η hS P X Y Z i t‖)
+    (fun i t => ENNReal.ofReal ‖kernel₀ i t‖)
     (fun s c n h γ t => congrArg (fun z : ℂ => ENNReal.ofReal ‖z‖)
       (kernel_gamma_translate A ι η hS P X Y Z s c n h γ t))
   obtain ⟨hs, hsum⟩ := ProbeJointNormMassTransfer.norm_mass_transfer
-    P.domain.measure P.domain.domain (kernel A ι η hS P X Y Z)
-    (fun (i : OrbitIndex A) => kernel A ι η hS P X Y Z
+    P.domain.measure P.domain.domain (kernel₀)
+    (fun (i : OrbitIndex A) => kernel₀
       (i.1,i.2.1,i.2.2.1,ρ i.2.2.2)) hi (fun i => hiG _) ho he
   obtain ⟨hfinite, hmass⟩ := absoluteMass_of_joint_norm_summability A ι η hS P X Y Z hi hs
   refine ⟨hi, hs, hfinite, hmass, ?_,
@@ -963,30 +965,12 @@ theorem exchanges_and_orbit_convergence (A : SArithmeticData F) (ι : F →+* �
     (hnormalized : ProbeSheet.HaarDisintegration A
       P.multiplicativeMeasure P.domain.measure)
     (X Y Z : ℝ) (hX : 0 < X) (hY : 0 < Y) (hZ : 0 < Z) :
-    (∀ᵐ t ∂P.domain.measure.restrict P.domain.domain,
-      Summable (fun i : Index A => ‖kernel A ι η hS P X Y Z i t‖) ∧
-      Summable (fun i : Index A => kernel A ι η hS P X Y Z i t)) ∧
-    IntegrableOn (fun t => ∑' i : Index A, kernel A ι η hS P X Y Z i t)
-      P.domain.domain P.domain.measure ∧
     Summable (fun i : Index A =>
       ‖∫ t in P.domain.domain, kernel A ι η hS P X Y Z i t ∂P.domain.measure‖) ∧
     (∫ t in P.domain.domain, ∑' i : Index A, kernel A ι η hS P X Y Z i t
       ∂P.domain.measure) =
       ∑' i : Index A, ∫ t in P.domain.domain,
         kernel A ι η hS P X Y Z i t ∂P.domain.measure ∧
-    (∀ (J : Type) (e : J ≃ Index A),
-      (∫ t in P.domain.domain, ∑' j : J, kernel A ι η hS P X Y Z (e j) t
-        ∂P.domain.measure) =
-        ∑' i : Index A, ∫ t in P.domain.domain,
-          kernel A ι η hS P X Y Z i t ∂P.domain.measure) ∧
-    (∀ (J : Type) (g : Index A → J),
-      Summable (fun j : J =>
-        ‖∑' i : {i : Index A // g i = j}, ∫ t in P.domain.domain,
-          kernel A ι η hS P X Y Z i.val t ∂P.domain.measure‖) ∧
-      (∑' j : J, ∑' i : {i : Index A // g i = j}, ∫ t in P.domain.domain,
-        kernel A ι η hS P X Y Z i.val t ∂P.domain.measure) =
-        ∑' i : Index A, ∫ t in P.domain.domain,
-          kernel A ι η hS P X Y Z i t ∂P.domain.measure) ∧
     (∀ (ρ : ProbeOrbitNormSum.Orbit A → ProbeOrbitNormSum.Nonzero A),
       ProbeOrbitNormSum.IsRepresentativeSection A ρ →
         Summable (fun i : OrbitIndex A => ‖orbitIntegral A ι η hS P X Y Z ρ i‖) ∧
@@ -999,11 +983,11 @@ theorem exchanges_and_orbit_convergence (A : SArithmeticData F) (ι : F →+* �
   letI : Countable A.Exterior := hcount.2.2.2.2.2.1
   letI : Countable (ExteriorSquarefreeIdeal A.cS) :=
     inferInstanceAs (Countable {I : A.Exterior // Squarefree I.val})
-  obtain ⟨C, hC, hscales⟩ := finite_absolute_mass A ι η hS P hne hnormalized 2 (by norm_num)
+  obtain ⟨C, hscales⟩ := finite_absolute_mass A ι η hS P hne hnormalized 2 (by norm_num)
   obtain ⟨hi, hs, _⟩ := hscales X Y Z hX hY hZ
   obtain ⟨hae, hint, hn, heq, hreindex, hfibers⟩ := joint_series_exchanges
     (P.domain.measure.restrict P.domain.domain) (kernel A ι η hS P X Y Z) hi hs
-  refine ⟨hae, hint, hn, heq, hreindex, hfibers, ?_⟩
+  refine ⟨hn, heq, ?_⟩
   intro ρ hρ
   have hr := arithmetic_orbit_regrouping A P.domain ρ hρ
     (kernel A ι η hS P X Y Z)

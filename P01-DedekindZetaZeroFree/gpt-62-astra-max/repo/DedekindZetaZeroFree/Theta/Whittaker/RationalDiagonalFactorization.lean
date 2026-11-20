@@ -10,10 +10,10 @@ set_option maxHeartbeats 4000000
 namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory KPAdelicCoverRestrictedProduct
 open scoped NumberField Classical
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_localIdele → eval_localIdele
+open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting (eval_localIdele)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def rationalLocalA (a : Fˣ) (w : KPHilbert.Place F) :=
   KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 w
@@ -53,7 +53,7 @@ lemma exteriorAList_eval (a : Fˣ) (L : List (ThetaBranch.ExteriorPrime R.A))
       · subst q; simp [localToRestricted]
       · rw [if_neg h]
         exact RestrictedProduct.mulSingle_eq_of_ne _ _
-          (by intro he; exact h (Subtype.ext (Sum.inr.inj he).symm))
+          (fun he => h (Subtype.ext (Sum.inr.inj he).symm))
     simp_rw [he]
     rw [list_single_value L hL, if_pos hp, if_pos ⟨p, hp, rfl⟩]
   · rw [if_neg hw]
@@ -117,8 +117,7 @@ lemma rationalTail_mem (a : Fˣ) (L : List (ThetaBranch.ExteriorPrime R.A))
         exact q.property (Sum.inr.inj he ▸ hp)
       simp [if_pos hp, if_neg hn, DigitMasks.exteriorFactor, hp]
     · by_cases hl : (⟨p, hp⟩ : ThetaBranch.ExteriorPrime R.A) ∈ L
-      · have he : ∃ q ∈ L, (Sum.inr p : KPHilbert.Place F) = Sum.inr q.val := ⟨⟨p, hp⟩, hl, rfl⟩
-        rw [if_neg hp, if_pos he]
+      · rw [if_neg hp, if_pos (⟨⟨p, hp⟩, hl, rfl⟩)]
         simp only [one_mul, inv_mul_cancel]
         exact Subgroup.one_mem _
       · have he : ¬ ∃ q ∈ L, (Sum.inr p : KPHilbert.Place F) = Sum.inr q.val := by
@@ -127,7 +126,6 @@ lemma rationalTail_mem (a : Fˣ) (L : List (ThetaBranch.ExteriorPrime R.A))
             Subtype.ext (Sum.inr.inj hq').symm
           exact hl (hqp ▸ hq)
         simp only [if_neg hp, if_neg he, one_mul, inv_one]
-        let p' : ThetaBranch.ExteriorPrime R.A := ⟨p, hp⟩
         have hu : ∃ u : KPHilbert.LocalIntegerUnits F p,
             KPHilbert.integerUnitInclusion F p u =
               Units.map (algebraMap F (p.adicCompletion F)).toMonoidHom a := by
@@ -135,10 +133,8 @@ lemma rationalTail_mem (a : Fˣ) (L : List (ThetaBranch.ExteriorPrime R.A))
           have hv : ValuativeRel.valuation (p.adicCompletion F) (x : p.adicCompletion F) = 1 := by
             letI : (Valued.v : Valuation (p.adicCompletion F)
                 (WithZero (Multiplicative ℤ))).Compatible := Valuation.Compatible.ofValuation _
-            rw [← (ValuativeRel.isEquiv (Valued.v : Valuation (p.adicCompletion F)
-              (WithZero (Multiplicative ℤ))) (ValuativeRel.valuation (p.adicCompletion F))).eq_one_iff_eq_one]
-            change Valued.v (algebraMap F (p.adicCompletion F) (a : F)) = 1
-            exact (p.valuedAdicCompletion_eq_valuation' (K := F) (a : F)).trans (ha p' hl)
+            rw [← (ValuativeRel.isEquiv Valued.v (ValuativeRel.valuation (p.adicCompletion F))).eq_one_iff_eq_one]
+            exact (p.valuedAdicCompletion_eq_valuation' (a : F)).trans (ha (⟨p, hp⟩) hl)
           let o : (ValuativeRel.valuation (p.adicCompletion F)).integer := ⟨x, hv.le⟩
           have ho : IsUnit o := (Valuation.integer.integers
             (ValuativeRel.valuation (p.adicCompletion F))).isUnit_iff_valuation_eq_one.mpr hv
@@ -161,7 +157,7 @@ lemma raw_s_commute (y : R.A.G)
   change _ * e w = e w * _
   cases w with
   | inl w =>
-    have hh : e (.inl w) = 1 := he (.inl w)
+    have hh := he (.inl w)
     rw [hh, mul_one, one_mul]
   | inr p =>
     by_cases hp : p ∈ R.A.Sf

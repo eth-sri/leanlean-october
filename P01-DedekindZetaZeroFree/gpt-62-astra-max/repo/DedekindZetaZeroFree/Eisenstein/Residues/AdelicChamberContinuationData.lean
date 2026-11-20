@@ -36,11 +36,11 @@ abbrev RawRationalQuotient := Quotient (QuotientGroup.rightRel (rawRationalBorel
 
 variable {F ζ hζ}
 variable (T : KPMsRationalCompactCrossPairing.ModelData F ζ hζ)
-variable (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ T D R P H)
+    (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ T D R P H)
 
 end DedekindZetaZeroFree.KPGlobalResidualKernel
 

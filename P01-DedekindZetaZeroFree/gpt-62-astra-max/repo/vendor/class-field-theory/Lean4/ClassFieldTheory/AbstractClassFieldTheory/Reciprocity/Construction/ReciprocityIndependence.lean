@@ -1,4 +1,5 @@
 module
+public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.FiniteGaloisSubextension
 
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.UnitCohomologyAxiom
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.ReciprocityDefinition
@@ -10,9 +11,6 @@ Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
-
-
-
 
 set_option autoImplicit false
 
@@ -38,10 +36,13 @@ variable {G : Type u} [Group G] [TopologicalSpace G]
 
 namespace FiniteIntermediateField
 
+section
+
+variable [IsTopologicalGroup G] {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
+
 /-- The normal core of a finite intermediate field, embedded back into the
 ambient absolute Galois group. -/
-def normalCoreField [IsTopologicalGroup G]
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K) :
+def normalCoreField :
     ClosedSubgroup G where
   toSubgroup :=
     (extensionSubgroup K M.field M.below).normalCore.map
@@ -55,11 +56,12 @@ def normalCoreField [IsTopologicalGroup G]
         (extensionSubgroup_isClosed K M.field M.below))
 
 /-- The normal core field lies below the field from which it is constructed. -/
-theorem normalCoreField_le [IsTopologicalGroup G]
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K) :
+theorem normalCoreField_le :
     (M.normalCoreField).toSubgroup ≤ K.toSubgroup := by
   rintro g ⟨k, _, rfl⟩
   exact k.2
+
+end
 
 /-- The normal core is contained in the specified refinement field. -/
 theorem normalCoreField_le_field [IsTopologicalGroup G]
@@ -69,9 +71,12 @@ theorem normalCoreField_le_field [IsTopologicalGroup G]
   exact (mem_extensionSubgroup_iff K M.field M.below k).1
     ((extensionSubgroup K M.field M.below).normalCore_le hk)
 
+section
+
+variable [IsTopologicalGroup G] {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
+
 /-- The subgroup representing the normal core field is the corresponding normal core. -/
-theorem extensionSubgroup_normalCoreField [IsTopologicalGroup G]
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K) :
+theorem extensionSubgroup_normalCoreField :
     extensionSubgroup K M.normalCoreField M.normalCoreField_le =
       (extensionSubgroup K M.field M.below).normalCore := by
   ext k
@@ -87,8 +92,7 @@ theorem extensionSubgroup_normalCoreField [IsTopologicalGroup G]
 
 /-- Every finite intermediate field admits a finite Galois refinement once
 the bottom extension is normal. -/
-def galoisRefinement [IsTopologicalGroup G]
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
+def galoisRefinement
     [hEnormal :
       (extensionSubgroup K E (M.above.trans M.below)).Normal] :
     FiniteIntermediateField E K where
@@ -96,33 +100,30 @@ def galoisRefinement [IsTopologicalGroup G]
   above := by
     intro e he
     let eK : K.toSubgroup := ⟨e, M.below (M.above he)⟩
-    have heE : eK ∈ extensionSubgroup K E (M.above.trans M.below) :=
-      (mem_extensionSubgroup_iff K E (M.above.trans M.below) eK).2 he
     have hle : extensionSubgroup K E (M.above.trans M.below) ≤
         extensionSubgroup K M.field M.below := by
       intro x hx
       apply (mem_extensionSubgroup_iff K M.field M.below x).2
       exact M.above
         ((mem_extensionSubgroup_iff K E (M.above.trans M.below) x).1 hx)
-    have heCore : eK ∈ (extensionSubgroup K M.field M.below).normalCore :=
-      (Subgroup.normal_le_normalCore.mpr hle) heE
-    exact ⟨eK, heCore, rfl⟩
+    exact ⟨eK, ((Subgroup.normal_le_normalCore.mpr hle) ((mem_extensionSubgroup_iff K E (M.above.trans M.below) eK).2 he)), rfl⟩
   below := M.normalCoreField_le
   finite := by
     let H := extensionSubgroup K M.field M.below
-    let : H.FiniteIndex :=
+    let :=
       @Subgroup.finiteIndex_of_finite_quotient K.toSubgroup _ H M.finite
     let : H.normalCore.FiniteIndex := inferInstance
     rw [M.extensionSubgroup_normalCoreField]
     infer_instance
 
 /-- A Galois refinement lies below the original finite field. -/
-theorem galoisRefinement_le_field [IsTopologicalGroup G]
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
+theorem galoisRefinement_le_field
     [_hEnormal :
       (extensionSubgroup K E (M.above.trans M.below)).Normal] :
     (M.galoisRefinement).field.toSubgroup ≤ M.field.toSubgroup :=
   M.normalCoreField_le_field
+
+end
 
 /-- The subgroup representing a Galois refinement is normal. -/
 instance galoisRefinement_normal [IsTopologicalGroup G]
@@ -135,49 +136,35 @@ instance galoisRefinement_normal [IsTopologicalGroup G]
   rw [M.extensionSubgroup_normalCoreField]
   infer_instance
 
+section
+
+variable {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K) (S : ClosedSubgroup G)
+
 /-- The field compositum `MΣ`, contravariantly represented by
 `G_M ∩ G_Σ`. -/
-def compositumWith
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
-    (S : ClosedSubgroup G) : ClosedSubgroup G :=
+def compositumWith : ClosedSubgroup G :=
   M.field ⊓ S
 
 /-- The common compositum refinement maps below its left input field. -/
-theorem compositumWith_le_left
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
-    (S : ClosedSubgroup G) :
+theorem compositumWith_le_left :
     (M.compositumWith S).toSubgroup ≤ M.field.toSubgroup :=
   inf_le_left
 
 /-- The common compositum refinement maps below its right input field. -/
-theorem compositumWith_le_right
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
-    (S : ClosedSubgroup G) :
+theorem compositumWith_le_right :
     (M.compositumWith S).toSubgroup ≤ S.toSubgroup :=
   inf_le_right
 
-/-- Any common refinement above both inputs lies below their constructed compositum. -/
-theorem above_le_compositumWith
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
-    (S : ClosedSubgroup G) (hES : E.toSubgroup ≤ S.toSubgroup) :
-    E.toSubgroup ≤ (M.compositumWith S).toSubgroup :=
-  fun _ h => ⟨M.above h, hES h⟩
-
 /-- The compositum of the two finite refinements has finite relative quotient. -/
-theorem compositumWith_finite
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
-    (S : ClosedSubgroup G) (hSK : S.toSubgroup ≤ K.toSubgroup) :
+theorem compositumWith_finite (hSK : S.toSubgroup ≤ K.toSubgroup) :
     Finite (S.toSubgroup ⧸
       extensionSubgroup S (M.compositumWith S) (M.compositumWith_le_right S)) := by
-  let : Finite (K.toSubgroup ⧸
-      extensionSubgroup K M.field M.below) := M.finite
+  let := M.finite
   have hMK : M.field.toSubgroup.relIndex K.toSubgroup ≠ 0 := by
     rw [Subgroup.relIndex]
     exact Subgroup.index_ne_zero_of_finite
   have hinter := Subgroup.relIndex_inter_ne_zero hMK S.toSubgroup
-  have hKinfS : K.toSubgroup ⊓ S.toSubgroup = S.toSubgroup :=
-    inf_eq_right.mpr hSK
-  rw [hKinfS] at hinter
+  rw [(inf_eq_right.mpr hSK)] at hinter
   apply Nat.finite_of_card_ne_zero
   change (extensionSubgroup S (M.compositumWith S)
       (M.compositumWith_le_right S)).index ≠ 0
@@ -193,27 +180,17 @@ theorem compositumWith_finite
   simpa [Subgroup.relIndex] using hinter
 
 /-- The compositum of normal refinements is again normal. -/
-theorem compositumWith_normal
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
-    (S : ClosedSubgroup G) (hSK : S.toSubgroup ≤ K.toSubgroup)
+theorem compositumWith_normal (hSK : S.toSubgroup ≤ K.toSubgroup)
     [hMnormal : (extensionSubgroup K M.field M.below).Normal] :
     (extensionSubgroup S (M.compositumWith S)
       (M.compositumWith_le_right S)).Normal := by
   constructor
   intro p hp s
-  have hpP : p.1 ∈ (M.compositumWith S).toSubgroup :=
-    (mem_extensionSubgroup_iff S (M.compositumWith S)
-      (M.compositumWith_le_right S) p).1 hp
   let pK : K.toSubgroup := ⟨p.1, hSK p.2⟩
   let sK : K.toSubgroup := ⟨s.1, hSK s.2⟩
-  have hpM : pK ∈ extensionSubgroup K M.field M.below :=
-    (mem_extensionSubgroup_iff K M.field M.below pK).2 hpP.1
-  have hconjM : sK * pK * sK⁻¹ ∈
-      extensionSubgroup K M.field M.below :=
-    hMnormal.conj_mem pK hpM sK
   have hconjM' : s.1 * p.1 * s.1⁻¹ ∈ M.field.toSubgroup := by
-    have := (mem_extensionSubgroup_iff K M.field M.below _).1 hconjM
-    change (sK * pK * sK⁻¹).1 ∈ M.field.toSubgroup
+    have := (mem_extensionSubgroup_iff K M.field M.below _).1 (hMnormal.conj_mem pK ((mem_extensionSubgroup_iff K M.field M.below pK).2 ((mem_extensionSubgroup_iff S (M.compositumWith S)
+      (M.compositumWith_le_right S) p).1 hp).1) sK)
     exact this
   apply (mem_extensionSubgroup_iff S (M.compositumWith S)
     (M.compositumWith_le_right S) _).2
@@ -223,9 +200,7 @@ theorem compositumWith_normal
 
 /-- The compositum of two finite extensions of `K` is finite over `K`.
 Contravariantly this is the finite-index theorem for an intersection. -/
-theorem compositumWith_finite_over_base
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
-    (S : ClosedSubgroup G) (hSK : S.toSubgroup ≤ K.toSubgroup)
+theorem compositumWith_finite_over_base (hSK : S.toSubgroup ≤ K.toSubgroup)
     [hSfinite : Finite (K.toSubgroup ⧸ extensionSubgroup K S hSK)] :
     Finite (K.toSubgroup ⧸ extensionSubgroup K (M.compositumWith S)
       ((M.compositumWith_le_right S).trans hSK)) := by
@@ -247,32 +222,14 @@ theorem compositumWith_finite_over_base
     rw [mem_extensionSubgroup_iff, Subgroup.mem_subgroupOf, Subgroup.mem_inf]
     rfl
   rw [hsub]
-  simpa only [Subgroup.relIndex] using
+  simpa [Subgroup.relIndex] using
     Subgroup.relIndex_inf_ne_zero hMindex hSindex
+
+end
 
 /-- If `P | K` is finite and `P` contains the intermediate field `M`, then
 `P | M` is finite. -/
-theorem finite_extension_of_le
-    {P M K : ClosedSubgroup G}
-    (hPK : P.toSubgroup ≤ K.toSubgroup)
-    (hMK : M.toSubgroup ≤ K.toSubgroup)
-    (hPM : P.toSubgroup ≤ M.toSubgroup)
-    [hPfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K P hPK)] :
-    Finite (M.toSubgroup ⧸ extensionSubgroup M P hPM) := by
-  have hPKindex : P.toSubgroup.relIndex K.toSubgroup ≠ 0 := by
-    rw [Subgroup.relIndex]
-    exact @Subgroup.index_ne_zero_of_finite K.toSubgroup _
-      (extensionSubgroup K P hPK) hPfinite
-  have hPMindex : P.toSubgroup.relIndex M.toSubgroup ≠ 0 := by
-    intro hzero
-    have hmul := Subgroup.relIndex_mul_relIndex
-      P.toSubgroup M.toSubgroup K.toSubgroup hPM hMK
-    rw [hzero, zero_mul] at hmul
-    exact hPKindex hmul.symm
-  apply Nat.finite_of_card_ne_zero
-  change (extensionSubgroup M P hPM).index ≠ 0
-  simpa [Subgroup.relIndex] using hPMindex
+alias finite_extension_of_le := ClassFormation.FiniteGaloisSubextension.finite_extension_over_intermediate
 
 end FiniteIntermediateField
 
@@ -297,10 +254,8 @@ theorem quotient_generator_of_unramified_degree_one (D : DegreeData G)
   intro x
   obtain ⟨q, hqx⟩ := D.frobeniusRestriction_surjective K L hLK x
   obtain ⟨n, _hn, hdegree⟩ := q.2
-  let t : K.field.toSubgroup := Quotient.out q.1
-  have htq :
-      (QuotientGroup.mk t :
-        K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) = q.1 :=
+  let t := Quotient.out q.1
+  have htq :=
     Quotient.out_eq' q.1
   have hdt : D.normalizedDegree K t =
       (Multiplicative.ofAdd (1 : ZHat)) ^ n := by
@@ -311,10 +266,9 @@ theorem quotient_generator_of_unramified_degree_one (D : DegreeData G)
       _ = D.extensionNormalizedDegree K L hLK q.1 :=
         congrArg (D.extensionNormalizedDegree K L hLK) htq
       _ = _ := hdegree
-  let z : K.field.toSubgroup := t⁻¹ * φ ^ n
+  let z := t⁻¹ * φ ^ n
   have hzI : z ∈ D.fieldInertiaWithin K.field := by
     rw [← D.normalizedDegree_ker K]
-    change D.normalizedDegree K z = 1
     calc
       D.normalizedDegree K z =
           (D.normalizedDegree K t)⁻¹ *
@@ -324,16 +278,12 @@ theorem quotient_generator_of_unramified_degree_one (D : DegreeData G)
             (Multiplicative.ofAdd (1 : ZHat)) ^ n := by
         rw [hdt, hφ]
       _ = 1 := by simp
-  have hzL : z.1 ∈ L.toSubgroup :=
-    ((DegreeData.AbstractExtension.mk L K.field hLK).isUnramified_iff_inertia_le D).1
-      hUnramified ⟨z.2, hzI⟩
-  have hzE : z ∈ extensionSubgroup K.field L hLK :=
-    (mem_extensionSubgroup_iff K.field L hLK z).2 hzL
   have htgen :
       (QuotientGroup.mk t : K.field.toSubgroup ⧸
         extensionSubgroup K.field L hLK) = (QuotientGroup.mk φ) ^ n := by
     apply QuotientGroup.eq.mpr
-    simpa [z] using hzE
+    simpa [z] using ((mem_extensionSubgroup_iff K.field L hLK z).2 (((DegreeData.AbstractExtension.mk L K.field hLK).isUnramified_iff_inertia_le D).1
+      hUnramified ⟨z.2, hzI⟩))
   have htx :
       (QuotientGroup.mk t : K.field.toSubgroup ⧸
         extensionSubgroup K.field L hLK) = x := by
@@ -345,7 +295,7 @@ theorem quotient_generator_of_unramified_degree_one (D : DegreeData G)
       _ = x := hqx
   have hxpow : x = (QuotientGroup.mk φ) ^ n := htx.symm.trans htgen
   rw [hxpow]
-  exact Subgroup.mem_zpowers_iff.mpr ⟨(n : ℤ), by simp⟩
+  simp
 
 /-- A finite unramified Galois quotient is generated by the restriction of
 an element of normalized degree `1`.  This is the cyclicity input needed to
@@ -361,11 +311,7 @@ theorem exists_quotient_generator_of_unramified
       (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
     ∃ g : K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK,
       ∀ x, x ∈ Subgroup.zpowers g := by
-  obtain ⟨φ, hφ⟩ := D.normalizedDegree_surjective K
-    (Multiplicative.ofAdd (1 : ZHat))
-  refine ⟨QuotientGroup.mk φ, ?_⟩
-  exact D.quotient_generator_of_unramified_degree_one
-    K L hLK hUnramified φ hφ
+  exact Exists.casesOn (normalizedDegree_surjective D K (Multiplicative.ofAdd 1)) fun φ hφ ↦ Exists.intro (↑φ) (quotient_generator_of_unramified_degree_one D K L hLK hUnramified φ hφ)
 
 end DegreeData
 
@@ -393,32 +339,32 @@ theorem reciprocityValueOfPrime_eq_reciprocityMap
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (σ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK
       (hLnormal := by
-        simpa only [FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal))
+        assumption))
     (π : ambientFixedAddSubgroup A
       (D.frobeniusFixedField (K.toFiniteResidueAbstractField D) L hLK
         (hLnormal := by
-          simpa only [FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal) σ))
+          assumption) σ))
     (hπ :
       let Sigma : FiniteAbstractField G :=
         { field := D.frobeniusFixedField
             (K.toFiniteResidueAbstractField D) L hLK
             (hLnormal := by
-              simpa only [FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal) σ
+              assumption) σ
           finite := D.frobeniusFixedField_absoluteFinite K L hLK σ }
       v.IsPrimeElement Sigma π) :
     D.reciprocityValueOfPrime A (K.toFiniteResidueAbstractField D)
         L hLK
         (hLnormal := by
-          simpa only [FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal)
+          assumption)
         (hLfinite := by
-          simpa only [FiniteAbstractField.toFiniteResidueAbstractField] using hLfinite) σ π =
+          assumption) σ π =
       D.reciprocityMap A v K L hLK σ := by
   let KR := K.toFiniteResidueAbstractField D
   let hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
+    assumption
   let hLfiniteKR : Finite
       (KR.field.toSubgroup ⧸ extensionSubgroup KR.field L hLK) := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLfinite
+    assumption
   let S := D.frobeniusFixedField KR L hLK σ
   let E := D.maximalUnramifiedField L
   have hSK : S.toSubgroup ≤ K.field.toSubgroup :=
@@ -442,7 +388,7 @@ theorem reciprocityValueOfPrime_eq_reciprocityMap
   rw [← map_sub]
   change relativeNorm A K.field S hSK u.1 ∈
     infiniteNormSubgroup A E K.field
-  rw [mem_infiniteNormSubgroup_iff]
+  simp
   intro M
   let hEnormal :
       (extensionSubgroup K.field E
@@ -465,8 +411,7 @@ theorem reciprocityValueOfPrime_eq_reciprocityMap
   let hPSfinite : Finite
       (S.toSubgroup ⧸ extensionSubgroup S P hPS) :=
     R.compositumWith_finite S hSK
-  let hPKfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field P hPK) :=
+  let hPKfinite :=
     R.compositumWith_finite_over_base S hSK
   have hSinertia : D.fieldInertia S = E := by
     dsimp [S, E]
@@ -483,20 +428,16 @@ theorem reciprocityValueOfPrime_eq_reciprocityMap
   let Sresidue := Sigma.toFiniteResidueAbstractField D
   let hPSnormalResidue :
       (extensionSubgroup Sresidue.field P hPS).Normal := by
-    simpa only [Sresidue, Sigma,
-      FiniteAbstractField.toFiniteResidueAbstractField] using hPSnormal
+    assumption
   let hPSfiniteResidue : Finite
       (Sresidue.field.toSubgroup ⧸
         extensionSubgroup Sresidue.field P hPS) := by
-    simpa only [Sresidue, Sigma,
-      FiniteAbstractField.toFiniteResidueAbstractField] using hPSfinite
+    assumption
   obtain ⟨g, hg⟩ :=
     D.exists_quotient_generator_of_unramified
       Sresidue P hPS (by
-        simpa only [Sresidue, Sigma,
-          FiniteAbstractField.toFiniteResidueAbstractField] using hPSunramified)
-  let hPabsolute : Finite ((baseField G).toSubgroup ⧸
-      extensionSubgroup (baseField G) P (le_baseField P)) :=
+        assumption)
+  let hPabsolute :=
     relativeTowerQuotientFinite (baseField G) S P hPS (le_baseField S)
   let : Fintype (S.toSubgroup ⧸ extensionSubgroup S P hPS) :=
     Fintype.ofFinite _
@@ -509,22 +450,15 @@ theorem reciprocityValueOfPrime_eq_reciprocityMap
       generator := g
       generates := hg
       unramified := hPSunramified }
-  have hzero :
-      CategoryTheory.Limits.IsZero
-          (tateCohomology (Euc.unitRepresentation v) 0) ∧
-        CategoryTheory.Limits.IsZero
-          (tateCohomology (Euc.unitRepresentation v) (-1)) :=
+  have hzero :=
     hAxiom Kuc Euc
   obtain ⟨ε, hε⟩ :=
     v.exists_unit_relativeNorm_eq_of_tateHZero_isZero
       Euc.toFiniteAbstractFieldExtension Euc.normal
         Euc.toFiniteAbstractFieldExtension_isUnramified
         g hg hzero.1 u
-  let hMfinite : Finite
-      (K.field.toSubgroup ⧸
-        extensionSubgroup K.field M.field M.below) := M.finite
-  let hPMfinite : Finite
-      (M.field.toSubgroup ⧸ extensionSubgroup M.field P hPM) :=
+  let hMfinite := M.finite
+  let hPMfinite :=
     FiniteIntermediateField.finite_extension_of_le hPK M.below hPM
   change relativeNorm A K.field S hSK u.1 ∈
     (relativeNorm A K.field M.field M.below).range

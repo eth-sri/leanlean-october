@@ -16,7 +16,7 @@ namespace TorusCoreComparison
 open KPGlobalTorusFiniteStages
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
@@ -37,20 +37,21 @@ theorem finiteTensorCore_lift_exists
           (KPGlobalTorusFiniteStages.localReference F ζ hζ P C) C.exceptional
           ⟨S, hS⟩ x) =
         KPGlobalTorusFiniteStages.finiteTensorRealization F ζ hζ P C S hS x := by
+  let LocalFiber₀ := KPGlobalTorusFiniteStages.LocalFiber F ζ hζ P C
   let g : ∀ s : RestrictedTensorSimple.Level C.exceptional,
-      RestrictedTensorSimple.Stage (KPGlobalTorusFiniteStages.LocalFiber F ζ hζ P C) s.1 →ₗ[ℂ]
+      RestrictedTensorSimple.Stage (LocalFiber₀) s.1 →ₗ[ℂ]
         KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ
           (KPGlobalTorusFiniteStages.productModel F ζ hζ P) :=
     fun s => KPGlobalTorusFiniteStages.finiteTensorRealization F ζ hζ P C s.1 s.2
   have Hg : ∀ i j (hij : i ≤ j) x,
-      g j (RestrictedTensorSimple.transition (KPGlobalTorusFiniteStages.LocalFiber F ζ hζ P C)
+      g j (RestrictedTensorSimple.transition (LocalFiber₀)
         (KPGlobalTorusFiniteStages.localReference F ζ hζ P C) C.exceptional i j hij x) = g i x :=
     fun i j hij x => congrFun (congrArg DFunLike.coe
       (KPGlobalTorusFiniteStages.tensor_insertion_compatible F ζ hζ P C i.1 j.1 i.2 hij)) x
   refine ⟨Module.DirectLimit.lift ℂ (RestrictedTensorSimple.Level C.exceptional)
     (fun s : RestrictedTensorSimple.Level C.exceptional =>
-      RestrictedTensorSimple.Stage (KPGlobalTorusFiniteStages.LocalFiber F ζ hζ P C) s.1)
-    (RestrictedTensorSimple.transition (KPGlobalTorusFiniteStages.LocalFiber F ζ hζ P C)
+      RestrictedTensorSimple.Stage (LocalFiber₀) s.1)
+    (RestrictedTensorSimple.transition (LocalFiber₀)
       (KPGlobalTorusFiniteStages.localReference F ζ hζ P C) C.exceptional) g Hg, ?_, ?_, ?_⟩
   · exact Module.DirectLimit.lift_injective (g := g) (Hg := Hg) (fun s =>
       KPGlobalTorusFiniteStages.finiteTensorRealization_injective F ζ hζ P C s.1 s.2)

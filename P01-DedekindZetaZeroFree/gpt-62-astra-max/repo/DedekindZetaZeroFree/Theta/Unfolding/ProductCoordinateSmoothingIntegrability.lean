@@ -13,17 +13,12 @@ open MomentSources NumberField MeasureTheory ThetaProfileHaarSheets ThetaSheetEx
 open ThetaExpansion.SignedExpansion
 open scoped NumberField Classical Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem sheetCoordinate_continuous (v₀ : InfinitePlace F) (Z : ℝ) (hZ : 0 < Z) :
     Continuous (fun p : PositiveAxis × R.A.G1 =>
       (sheetTranslation R.A v₀ ⟨p.1.val / Z, div_pos p.1.property hZ⟩ p.2).val) := by
-  have hc : Continuous (fun p : PositiveAxis × R.A.G1 =>
-      ((⟨p.1.val / Z, div_pos p.1.property hZ⟩ : PositiveAxis), p.2)) :=
-    (((continuous_subtype_val.comp continuous_fst).div_const Z).subtype_mk _).prodMk
-      continuous_snd
-  have h := (normSplit R.A v₀).continuous.comp hc
   have he : (fun p : PositiveAxis × R.A.G1 =>
       (sheetTranslation R.A v₀ ⟨p.1.val / Z, div_pos p.1.property hZ⟩ p.2).val) =
       (normSplit R.A v₀) ∘ (fun p : PositiveAxis × R.A.G1 =>
@@ -31,7 +26,8 @@ theorem sheetCoordinate_continuous (v₀ : InfinitePlace F) (Z : ℝ) (hZ : 0 < 
     funext p
     rfl
   rw [he]
-  exact h
+  exact (normSplit R.A v₀).continuous.comp ((((continuous_subtype_val.comp continuous_fst).div_const Z).subtype_mk _).prodMk
+    continuous_snd)
 
 theorem masked_orbit_product_integrable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
@@ -43,13 +39,10 @@ theorem masked_orbit_product_integrable {N : TraceHaarTransport R} (C : JointUpp
       (positiveHaar.prod ((kernelHaar R.A C.packet.v₀ C.transport.groupHaar).restrict
         (pregroupingDomain R.A).carrier)) := by
   letI := C.transport.groupHaar_isHaar
-  have hi := integrable_finset_sum Finset.univ
-    (fun d _ => C.absolute.orbit_product_integrable v m b Z hZ i d)
-  have hm := (sheetMultiplier_measurable R C.packet v).comp
-    (sheetCoordinate_continuous R C.packet.v₀ Z hZ).measurable
-  have h := hi.mul_bdd hm.aestronglyMeasurable (c := 1)
-    (Filter.Eventually.of_forall (fun p => sheetMultiplier_norm_le R C.packet v _))
-  convert h using 1
+  convert ((integrable_finset_sum Finset.univ
+    (fun d _ => C.absolute.orbit_product_integrable v m b Z hZ i d)).mul_bdd ((sheetMultiplier_measurable R C.packet v).comp
+    (sheetCoordinate_continuous R C.packet.v₀ Z hZ).measurable).aestronglyMeasurable
+    (Filter.Eventually.of_forall (fun p => sheetMultiplier_norm_le R C.packet v _))) using 1
   funext p
   simp only [orbitSheet, Function.comp_apply, sheetMultiplier, Pi.mul_apply,
     Finset.mul_sum, Finset.sum_mul]
@@ -65,8 +58,7 @@ theorem smoothingIntegrand_integrable {N : TraceHaarTransport R} (C : JointUpper
   letI := C.transport.groupHaar_isHaar
   letI : LocallyCompactSpace R.A.G1 := (NormSheetsCoordinates.normOne_geometry R.A).1
   letI : SecondCountableTopology R.A.G1 := (NormSheetsCoordinates.normOne_geometry R.A).2
-  have h := (masked_orbit_product_integrable R C v m b Z hZ i).integral_prod_left
-  convert h using 1
+  convert ((masked_orbit_product_integrable R C v m b Z hZ i).integral_prod_left) using 1
   funext t
   rw [orbitIntegral, ← integral_const_mul, pregroupingSheetHaar_eq_map,
     (sheetTranslation R.A C.packet.v₀ ⟨t.val / Z, div_pos t.property hZ⟩).measurableEmbedding.integral_map]

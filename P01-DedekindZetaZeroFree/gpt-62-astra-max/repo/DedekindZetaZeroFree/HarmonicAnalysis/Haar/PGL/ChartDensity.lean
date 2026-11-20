@@ -24,8 +24,6 @@ theorem coordinate_change_density
   apply Measure.ext
   intro s hs
   rw [Measure.map_apply_of_aemeasurable hm hs]
-  have hd : ∀ x ∈ e.source, HasFDerivAt e (fderiv ℝ e x) x := fun x hx =>
-    ((he x hx).differentiableAt (e.open_source.mem_nhds hx)).hasFDerivAt
   have himage : e.symm ⁻¹' s ∩ e.target = e '' (s ∩ e.source) := by
     ext y
     constructor
@@ -36,7 +34,8 @@ theorem coordinate_change_density
   have hpre : MeasurableSet (e.symm ⁻¹' s ∩ e.target) := by
     rw [himage]
     exact measurable_image_of_fderivWithin (hs.inter e.open_source.measurableSet)
-      (fun x hx => (hd x hx.2).hasFDerivWithinAt)
+      (fun x hx => ((fun x hx =>
+        ((he x hx).differentiableAt (e.open_source.mem_nhds hx)).hasFDerivAt) x hx.2).hasFDerivWithinAt)
       (e.injOn.mono Set.inter_subset_right)
   rw [Measure.restrict_apply₀ (hm.nullMeasurableSet_preimage hs),
     withDensity_apply w hpre, Measure.restrict_apply hs,
@@ -98,18 +97,18 @@ theorem coordinate_pullback_trans {X Y Z : Type*}
     rw [OpenPartialHomeomorph.trans_target]
     exact Set.inter_comm _ _
   rw [ht]
-  have hf' : AEMeasurable f.symm (μ.restrict (e.trans f).target) :=
-    hf.mono_measure (Measure.restrict_mono (by rw [OpenPartialHomeomorph.trans_target]; exact Set.inter_subset_left) le_rfl)
   have he : AEMeasurable e.symm (Measure.map f.symm (μ.restrict (e.trans f).target)) := by
     rw [← ht, ← Measure.restrict_restrict₀ (hf.nullMeasurableSet_preimage e.open_target.measurableSet),
       ← Measure.restrict_map_of_aemeasurable hf e.open_target.measurableSet]
     exact e.continuousOn_symm.aemeasurable e.open_target.measurableSet
-  rw [AEMeasurable.map_map_of_aemeasurable he hf']
+  rw [AEMeasurable.map_map_of_aemeasurable he (hf.mono_measure (Measure.restrict_mono (by rw [OpenPartialHomeomorph.trans_target]; exact Set.inter_subset_left) le_rfl))]
   rfl
-theorem coordinate_pullback_restrict {X Y : Type*}
-    [TopologicalSpace X] [TopologicalSpace Y]
-    [MeasurableSpace X] [BorelSpace X] [MeasurableSpace Y] [BorelSpace Y]
-    (e : OpenPartialHomeomorph X Y) (μ : Measure Y)
+section
+
+variable {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y] [MeasurableSpace X] [BorelSpace X]
+    [MeasurableSpace Y] [BorelSpace Y] (e : OpenPartialHomeomorph X Y) (μ : Measure Y)
+
+theorem coordinate_pullback_restrict
     (s : Set X) (hs : MeasurableSet s) (hss : s ⊆ e.source) :
     (Measure.map e.symm (μ.restrict e.target)).restrict s =
       Measure.map e.symm (μ.restrict (e '' s)) := by
@@ -120,30 +119,24 @@ theorem coordinate_pullback_restrict {X Y : Type*}
   congr 1
   exact congrArg μ.restrict (by rw [Set.inter_comm, ← e.image_eq_target_inter_inv_preimage hss])
 
-theorem coordinate_pullback_support {X Y : Type*}
-    [TopologicalSpace X] [TopologicalSpace Y]
-    [MeasurableSpace X] [BorelSpace X] [MeasurableSpace Y] [BorelSpace Y]
-    (e : OpenPartialHomeomorph X Y) (μ : Measure Y) :
+theorem coordinate_pullback_support :
     (Measure.map e.symm (μ.restrict e.target)).restrict e.source =
       Measure.map e.symm (μ.restrict e.target) := by
   rw [coordinate_pullback_restrict e μ e.source e.open_source.measurableSet Set.Subset.rfl,
     e.image_source_eq_target]
 
-theorem coordinate_pullback_inverse {X Y : Type*}
-    [TopologicalSpace X] [TopologicalSpace Y]
-    [MeasurableSpace X] [BorelSpace X] [MeasurableSpace Y] [BorelSpace Y]
-    (e : OpenPartialHomeomorph X Y) (μ : Measure Y) :
+theorem coordinate_pullback_inverse :
     Measure.map e (Measure.map e.symm (μ.restrict e.target)) = μ.restrict e.target := by
-  have he : AEMeasurable e.symm (μ.restrict e.target) :=
-    e.continuousOn_symm.aemeasurable e.open_target.measurableSet
   have hf : AEMeasurable e (Measure.map e.symm (μ.restrict e.target)) := by
     rw [← coordinate_pullback_support e μ]
     exact e.continuousOn.aemeasurable e.open_source.measurableSet
-  rw [AEMeasurable.map_map_of_aemeasurable hf he]
+  rw [AEMeasurable.map_map_of_aemeasurable hf (e.continuousOn_symm.aemeasurable e.open_target.measurableSet)]
   have hh : (e ∘ e.symm) =ᵐ[μ.restrict e.target] id := by
     filter_upwards [ae_restrict_mem e.open_target.measurableSet] with y hy
     exact e.right_inv hy
   rw [Measure.map_congr hh, Measure.map_id]
+
+end
 
 theorem coordinate_overlap_pullback {X Y Z : Type*}
     [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z]

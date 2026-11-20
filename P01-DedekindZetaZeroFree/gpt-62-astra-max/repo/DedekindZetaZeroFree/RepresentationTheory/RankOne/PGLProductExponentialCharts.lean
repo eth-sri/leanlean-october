@@ -29,20 +29,24 @@ namespace DedekindZetaZeroFree.LocalQuotientCharts.ExponentialHaarFrame
 open Raw
 open scoped NumberField Classical Manifold ContDiff Matrix.Norms.Operator
 
-def rawAffineChart (F : Type) [Field F] [NumberField F] (g : ArchGroup F) :
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+def rawAffineChart (g : ArchGroup F) :
     OpenPartialHomeomorph (Coordinates F) (ArchGroup F) :=
   (coordinateReindex F).toHomeomorph.toOpenPartialHomeomorph.trans
     (PGLComplex.productAffineChart (NumberField.InfinitePlace F) (fun w =>
       (PGLComplex.affineChart.trans
         (Homeomorph.mulLeft (g w)).toOpenPartialHomeomorph).symm)).symm
 
-def reindexChart (F : Type) [Field F] [NumberField F] :
+def reindexChart :
     OpenPartialHomeomorph (Coordinates F)
       (PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) :=
   (coordinateReindex F).toHomeomorph.toOpenPartialHomeomorph
 
 @[instance_reducible]
-def reindexChartedSpace (F : Type) [Field F] [NumberField F] :
+def reindexChartedSpace :
     ChartedSpace (Coordinates F)
       (PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) where
   atlas := {reindexChart F |>.symm}
@@ -50,14 +54,16 @@ def reindexChartedSpace (F : Type) [Field F] [NumberField F] :
   mem_chart_source := fun _ => by simp [reindexChart]
   chart_mem_atlas := fun _ => Set.mem_singleton _
 
-theorem chartAt_reindexChartedSpace (F : Type) [Field F] [NumberField F]
+theorem chartAt_reindexChartedSpace
     (x : PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) :
     @chartAt _ _ _ _ (reindexChartedSpace F) x = (reindexChart F).symm := rfl
+
+end
 
 section ReindexTransport
 
 variable (F : Type) [Field F] [NumberField F]
-variable {M : Type*} [TopologicalSpace M] [C₀ : ChartedSpace (PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) M]
+    {M : Type*} [TopologicalSpace M] [C₀ : ChartedSpace (PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) M]
 @[instance_reducible] private def transported : ChartedSpace (Coordinates F) M := by
   letI := reindexChartedSpace F
   exact ChartedSpace.comp (Coordinates F) (PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) M
@@ -66,8 +72,6 @@ private theorem ext_transport (x : M) :
     (extChartAt 𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) x).trans
       (reindexChart F).symm.toPartialEquiv := by
   letI := reindexChartedSpace F
-  change ((chartAt (PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) x).trans
-    (reindexChart F).symm).extend 𝓘(ℝ, Coordinates F) = _
   have h {V : Type} [NormedAddCommGroup V] [NormedSpace ℝ V] :
       (𝓘(ℝ, V)).toPartialEquiv = PartialEquiv.refl V := by ext <;> simp
   simp only [extChartAt, OpenPartialHomeomorph.extend, h, PartialEquiv.trans_refl,
@@ -75,8 +79,8 @@ private theorem ext_transport (x : M) :
   rfl
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-variable {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H}
-variable {N : Type*} [TopologicalSpace N] [ChartedSpace H N]
+    {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H}
+    {N : Type*} [TopologicalSpace N] [ChartedSpace H N]
 private theorem smooth_transport_right {n : ℕ∞ω} {f : N → M}
     (hf : ContMDiff I 𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) n f) :
     letI := transported F (M := M)
@@ -85,9 +89,8 @@ private theorem smooth_transport_right {n : ℕ∞ω} {f : N → M}
   intro x
   apply contMDiffAt_iff.mpr
   refine ⟨(hf x).continuousAt, ?_⟩
-  have hc := (contMDiffAt_iff.mp (hf x)).2
   rw [ext_transport]
-  exact (coordinateReindex F).symm.contDiff.contDiffAt.comp_contDiffWithinAt _ hc
+  exact (coordinateReindex F).symm.contDiff.contDiffAt.comp_contDiffWithinAt _ ((contMDiffAt_iff.mp (hf x)).2)
 
 private theorem smooth_transport_left {n : ℕ∞ω} {f : M → N}
     (hf : ContMDiff 𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) I n f) :
@@ -104,11 +107,10 @@ private theorem smooth_transport_left {n : ℕ∞ω} {f : M → N}
       ((extChartAt I (f x)) ∘ f ∘ (extChartAt 𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) x).symm)
       ((coordinateReindex F) ((coordinateReindex F).symm
         (extChartAt 𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) x x))) := by
-    simpa only [ContinuousLinearEquiv.apply_symm_apply] using contDiffWithinAt_univ.mp hc
+    simpa using contDiffWithinAt_univ.mp hc
   have hh := hc'.comp ((coordinateReindex F).symm
       (extChartAt 𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) x x))
-    ((coordinateReindex F).contDiff.contDiffAt (x := (coordinateReindex F).symm
-      (extChartAt 𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) x x)))
+    ((coordinateReindex F).contDiff.contDiffAt)
   convert hh.contDiffWithinAt using 1 <;> rfl
 
 private theorem manifold_transport [IsManifold 𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) ∞ M] :
@@ -131,7 +133,6 @@ private theorem manifold_transport [IsManifold 𝓘(ℝ, PGLComplex.ProductCoord
   have h : (𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F))).toPartialEquiv = PartialEquiv.refl _ := by ext <;> simp
   simp only [OpenPartialHomeomorph.extend, h, PartialEquiv.trans_refl] at hc
   change ContDiffOn ℝ ∞ (fun a => f (e.symm a)) (e.target ∩ e.symm ⁻¹' f.source) at hc
-  change ContDiffOn ℝ ∞ (fun a => (coordinateReindex F).symm (f (e.symm ((coordinateReindex F) a)))) _
   apply (coordinateReindex F).symm.contDiff.contDiffOn.comp
   · apply hc.comp (coordinateReindex F).contDiff.contDiffOn
     intro a ha
@@ -152,12 +153,8 @@ private theorem lie_transport [Group M]
   let e := identity_transport F (M := M)
   letI := transported F (M := M)
   letI := manifold_transport F (M := M)
-  have hm : ContMDiff (𝓘(ℝ, Coordinates F).prod 𝓘(ℝ, Coordinates F))
-      𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) ∞
-      (fun p : M × M => p.1 * p.2) := by
-    exact (e.contMDiff.comp contMDiff_fst).mul (e.contMDiff.comp contMDiff_snd)
   letI : ContMDiffMul 𝓘(ℝ, Coordinates F) ∞ M := {
-    contMDiff_mul := e.symm.contMDiff.comp hm }
+    contMDiff_mul := e.symm.contMDiff.comp ((e.contMDiff.comp contMDiff_fst).mul (e.contMDiff.comp contMDiff_snd))}
   exact { contMDiff_inv := e.symm.contMDiff.comp ((e.contMDiff).inv) }
 
 private def indexReindex : (NumberField.InfinitePlace F × Fin 3 × Fin 2) ≃ (NumberField.InfinitePlace F × Fin 6) :=
@@ -187,10 +184,9 @@ private def reindexedData [Group M]
   let e := identity_transport F (M := M)
   let r := coordinateReindex F
   let b := (D.basis.map r.symm.toLinearEquiv).reindex (indexReindex F).symm
-  let E₀ := r.toDiffeomorph.toPartialDiffeomorph.trans D.exponentialChart
   letI := transported F (M := M)
   letI := lie_transport F (M := M)
-  let EP := E₀.trans e.symm.toPartialDiffeomorph
+  let EP := (r.toDiffeomorph.toPartialDiffeomorph.trans D.exponentialChart).trans e.symm.toPartialDiffeomorph
   refine { basis := b
            exponential := D.exponential ∘ r
            exponential_zero := ?_
@@ -204,23 +200,20 @@ private def reindexedData [Group M]
            exponential_conjugation := ?_ }
   · simpa using D.exponential_zero
   · intro X s t
-    simpa only [Function.comp_apply, map_smul] using D.exponential_add_ray (r X) s t
+    simpa using D.exponential_add_ray (r X) s t
   · refine ⟨⟨Set.mem_univ _, ?_⟩, Set.mem_univ _⟩
     change r 0 ∈ D.exponentialChart.source
     simpa using D.zero_mem_source
   · intro a ha
     exact D.chart_eq_exponential _ ha.1.2
   · intro a c
-    have h := e.contMDiff
-    have hh := (D.adjoint_smooth ((indexReindex F) a) ((indexReindex F) c)).comp h
-    convert hh using 1
+    convert ((D.adjoint_smooth ((indexReindex F) a) ((indexReindex F) c)).comp e.contMDiff) using 1
     funext g
     simp [b, Module.Basis.equivFun, Module.Basis.reindex_apply, Module.Basis.map_apply,
       LinearEquiv.trans_apply, r]
     rfl
   · intro g X
-    simpa only [Function.comp_apply, LinearEquiv.trans_apply,
-      ContinuousLinearEquiv.coe_toLinearEquiv, ContinuousLinearEquiv.apply_symm_apply] using D.exponential_conjugation g (r X)
+    simpa using D.exponential_conjugation g (r X)
 
 end ReindexTransport
 

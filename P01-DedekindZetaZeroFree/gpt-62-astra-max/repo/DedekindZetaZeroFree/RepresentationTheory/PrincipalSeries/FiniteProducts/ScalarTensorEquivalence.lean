@@ -12,35 +12,15 @@ set_option maxHeartbeats 8000000
 set_option synthInstance.maxHeartbeats 200000
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.NativeScalarFiniteProductScalarInverse
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Cover → Cover
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Fiber → Fiber
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Source → Source
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductCover → ProductCover
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductFiber → ProductFiber
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductFunctions → ProductFunctions
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming productCovariance → productCovariance
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming tensorEvaluation → tensorEvaluation
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming tensorEvaluation_covariant → tensorEvaluation_covariant
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming tensorEvaluation_smooth → tensorEvaluation_smooth
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarTransitivity renaming fiberEvaluation → fiberEvaluation
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarTransitivity renaming scalarization → scalarization
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarTransitivity renaming coordinates_scaled → coordinates_scaled
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarTransitivity renaming scalarization_injective → scalarization_injective
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarTransitivity renaming scalarization_polarized_borel → scalarization_polarized_borel
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarTransitivity renaming scalarization_smooth → scalarization_smooth
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarTransitivity renaming scalarization_recovery → scalarization_recovery
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarTransitivity renaming deltaHalf_ne_zero → deltaHalf_ne_zero
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteSamplingGeneration renaming functionTensorEquiv → functionTensorEquiv
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteSamplingGeneration renaming functionTensorEquiv_formula → functionTensorEquiv_formula
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteSamplingGeneration renaming actualTensorSections → actualTensorSections
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteSamplingGeneration renaming actualTensorSections_bijective → actualTensorSections_bijective
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteSamplingGeneration renaming productSections → productSections
-open _root_.DedekindZetaZeroFree.KPLocalStoneVonNeumann renaming inducedCosetEquiv → inducedCosetEquiv
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation (Cover Fiber Source ProductCover ProductFiber ProductFunctions productCovariance tensorEvaluation tensorEvaluation_covariant tensorEvaluation_smooth)
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarTransitivity (fiberEvaluation scalarization coordinates_scaled scalarization_injective scalarization_polarized_borel scalarization_smooth scalarization_recovery deltaHalf_ne_zero)
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteSamplingGeneration (functionTensorEquiv functionTensorEquiv_formula actualTensorSections actualTensorSections_bijective productSections)
+open _root_.DedekindZetaZeroFree.KPLocalStoneVonNeumann (inducedCosetEquiv)
 local notation "Coordinates" => KPLiteralTensor.KernelAndHCRange.PointwiseKernel.tensorEvaluation
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (M : FourierContinuation.SourceReconstruction.InducingData F ζ hζ)
-variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
+    (M : FourierContinuation.SourceReconstruction.InducingData F ζ hζ)
+    (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
 
  abbrev Torus (q : S) := KPLocalExceptionalConstruction.actualTorus F ζ hζ q.val
  abbrev Polar (q : S) := (M q.val).polarization.L.comap
@@ -49,14 +29,18 @@ variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
 local instance (q : S) : Finite (Cosets F ζ hζ M S q) := inferInstance
 local instance (q : S) : Fintype (Cosets F ζ hζ M S q) := Fintype.ofFinite _
 
- def representative (q : S) : Cosets F ζ hζ M S q → Torus F ζ hζ S q :=
+ section
+
+variable (q : S)
+
+def representative : Cosets F ζ hζ M S q → Torus F ζ hζ S q :=
   Function.surjInv (QuotientGroup.mk'_surjective (Polar F ζ hζ M S q))
 
- theorem representative_coset (q : S) (c : Cosets F ζ hζ M S q) :
+ theorem representative_coset (c : Cosets F ζ hζ M S q) :
     QuotientGroup.mk (representative F ζ hζ M S q c) = c :=
   Function.surjInv_eq (QuotientGroup.mk'_surjective (Polar F ζ hζ M S q)) c
 
- def polarPart (q : S) (t : Torus F ζ hζ S q) : Polar F ζ hζ M S q :=
+ def polarPart (t : Torus F ζ hζ S q) : Polar F ζ hζ M S q :=
   ⟨t * (representative F ζ hζ M S q (QuotientGroup.mk t))⁻¹, by
     apply (QuotientGroup.eq_one_iff _).mp
     change QuotientGroup.mk' (Polar F ζ hζ M S q) (_ * _⁻¹) = 1
@@ -65,20 +49,22 @@ local instance (q : S) : Fintype (Cosets F ζ hζ M S q) := Fintype.ofFinite _
       (representative F ζ hζ M S q (QuotientGroup.mk t)))⁻¹ = 1
     rw [representative_coset, mul_inv_cancel]⟩
 
-private theorem polarPart_representative (q : S) (t : Torus F ζ hζ S q) :
+private theorem polarPart_representative (t : Torus F ζ hζ S q) :
     (polarPart F ζ hζ M S q t : Torus F ζ hζ S q) *
       representative F ζ hζ M S q (QuotientGroup.mk t) = t := by
   dsimp [polarPart]
   simp
 
- def fiberCosets (q : S) : Fiber F ζ hζ M S q ≃ₗ[ℂ]
+ def fiberCosets : Fiber F ζ hζ M S q ≃ₗ[ℂ]
     (Cosets F ζ hζ M S q → ℂ) :=
   inducedCosetEquiv (Polar F ζ hζ M S q) (M q.val).polarization.ωL.toMonoidHom
 
-private theorem fiberCosets_apply (q : S) (v : Fiber F ζ hζ M S q)
+private theorem fiberCosets_apply (v : Fiber F ζ hζ M S q)
     (c : Cosets F ζ hζ M S q) :
     fiberCosets F ζ hζ M S q v c =
       fiberEvaluation F ζ hζ M S q (representative F ζ hζ M S q c) v := rfl
+
+end
 
  def tensorFiberCosets : ProductFiber F ζ hζ M S ≃ₗ[ℂ]
     ((∀ q : S, Cosets F ζ hζ M S q) → ℂ) :=
@@ -104,7 +90,7 @@ private theorem tensorFiberCosets_apply (v : ProductFiber F ζ hζ M S)
       PiTensorProduct.lift.tprod, MultilinearMap.compLinearMap_apply,
       MultilinearMap.mkPiAlgebra_apply]
     exact PiTensorProduct.constantBaseRingEquiv_tprod _
-  | add v w hv hw => simpa only [map_add, Pi.add_apply] using congrArg₂ (· + ·) hv hw
+  | add v w hv hw => simpa using congrArg₂ (· + ·) hv hw
 
 private theorem coordinates_polarPart (v : ProductFiber F ζ hζ M S)
     (t : ∀ q : S, Torus F ζ hζ S q) :
@@ -117,14 +103,12 @@ private theorem coordinates_polarPart (v : ProductFiber F ζ hζ M S)
         fiberEvaluation F ζ hζ M S q
           (representative F ζ hζ M S q (QuotientGroup.mk (t q))) := by
     ext u
-    change u.val (t q) = _ * u.val _
     conv_lhs => rw [← polarPart_representative F ζ hζ M S q (t q)]
     exact u.property _ _
   simp only [h]
   exact coordinates_scaled F ζ hζ M S _ _ v
 
-open _root_.DedekindZetaZeroFree.KPLocalPrincipalSeries renaming normPower_mul → normPower_mul
-open _root_.DedekindZetaZeroFree.KPLocalPrincipalSeries renaming normPower_one → normPower_one
+open _root_.DedekindZetaZeroFree.KPLocalPrincipalSeries (normPower_mul normPower_one)
 
 private theorem half_mul (q : S) (b c : (M q.val).borel.B) :
     KPLocalPrincipalSeries.deltaHalf (M q.val).borel (b * c) =
@@ -178,8 +162,12 @@ private theorem half_one (q : S) :
     change _ * (a * _) = a * (_ * _)
     ring
 
+section
+
+variable (φ : ProductCover F ζ hζ S → ℂ) (hφ : φ ∈ scalarCovariance F ζ hζ M S)
+
+include hφ in
 private theorem recoveredCoordinate_polarPart
-    (φ : ProductCover F ζ hζ S → ℂ) (hφ : φ ∈ scalarCovariance F ζ hζ M S)
     (t : ∀ q : S, Torus F ζ hζ S q) (g : ProductCover F ζ hζ S) :
     recoveredCoordinate F ζ hζ M S φ t g =
       (∏ q, ((M q.val).polarization.ωL (polarPart F ζ hζ M S q (t q)) : ℂ)) *
@@ -229,8 +217,8 @@ private theorem recoveredCoordinate_polarPart
   dsimp only [a, r]
   field_simp
 
+include hφ in
 private theorem vectorization_coordinates
-    (φ : ProductCover F ζ hζ S → ℂ) (hφ : φ ∈ scalarCovariance F ζ hζ M S)
     (t : ∀ q : S, Torus F ζ hζ S q) (g : ProductCover F ζ hζ S) :
     Coordinates (fun q => fiberEvaluation F ζ hζ M S q (t q))
       (vectorization F ζ hζ M S φ g) = recoveredCoordinate F ζ hζ M S φ t g := by
@@ -240,16 +228,16 @@ private theorem vectorization_coordinates
     ((tensorFiberCosets F ζ hζ M S).symm _)) _ = _
   rw [LinearEquiv.apply_symm_apply]
 
- theorem scalarization_vectorization
-    (φ : ProductCover F ζ hζ S → ℂ) (hφ : φ ∈ scalarCovariance F ζ hζ M S) :
+ include hφ in
+theorem scalarization_vectorization :
     scalarization F ζ hζ M S (vectorization F ζ hζ M S φ) = φ := by
   funext g
   change Coordinates _ (vectorization F ζ hζ M S φ g) = _
   rw [vectorization_coordinates F ζ hζ M S φ hφ]
   simp [recoveredCoordinate, map_one, half_one]
 
+include hφ in
 private theorem recoveredCoordinate_borel
-    (φ : ProductCover F ζ hζ S → ℂ) (hφ : φ ∈ scalarCovariance F ζ hζ M S)
     (t : ∀ q : S, Torus F ζ hζ S q)
     (b : ∀ q : S, (M q.val).borel.B) (g : ProductCover F ζ hζ S) :
     recoveredCoordinate F ζ hζ M S φ t (fun q => b q * g q) =
@@ -298,7 +286,9 @@ private theorem recoveredCoordinate_borel
   field_simp
   rfl
 
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.PointwiseKernel renaming tensorEvaluation_map → tensorEvaluation_map
+end
+
+open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.PointwiseKernel (tensorEvaluation_map)
 
 private theorem coordinates_inducingAction
     (v : ProductFiber F ζ hζ M S) (t : ∀ q : S, Torus F ζ hζ S q)
@@ -323,8 +313,11 @@ private theorem coordinates_inducingAction
       fiberEvaluation]
   rw [he, coordinates_scaled]
 
- theorem vectorization_covariant
-    (φ : ProductCover F ζ hζ S → ℂ) (hφ : φ ∈ scalarCovariance F ζ hζ M S) :
+ section
+
+variable (φ : ProductCover F ζ hζ S → ℂ)
+
+theorem vectorization_covariant (hφ : φ ∈ scalarCovariance F ζ hζ M S) :
     vectorization F ζ hζ M S φ ∈ productCovariance F ζ hζ M S := by
   intro b g
   apply sub_eq_zero.mp
@@ -340,8 +333,7 @@ private theorem coordinates_inducingAction
       vectorization_coordinates F ζ hζ M S φ hφ,
       recoveredCoordinate_borel F ζ hζ M S φ hφ, sub_self]
 
-private theorem vectorization_right_stabilizer
-    (φ : ProductCover F ζ hζ S → ℂ) (J : OpenSubgroup (ProductCover F ζ hζ S))
+private theorem vectorization_right_stabilizer (J : OpenSubgroup (ProductCover F ζ hζ S))
     (hJ : ∀ a ∈ J, KPLocalPrincipalSeries.vectorRightTranslation a φ = φ) :
     ∀ a ∈ J, KPLocalPrincipalSeries.vectorRightTranslation a
       (vectorization F ζ hζ M S φ) = vectorization F ζ hζ M S φ := by
@@ -362,11 +354,12 @@ private theorem vectorization_right_stabilizer
   exact congrFun (hJ a ha) _
 
  theorem vectorization_smooth
-    (φ : ProductCover F ζ hζ S → ℂ)
     (hφ : SmoothVector KPLocalPrincipalSeries.vectorRightTranslation φ) :
     SmoothVector KPLocalPrincipalSeries.vectorRightTranslation (vectorization F ζ hζ M S φ) := by
   obtain ⟨J, hJ⟩ := hφ
   exact ⟨J, vectorization_right_stabilizer F ζ hζ M S φ J hJ⟩
+
+end
 
  theorem vectorization_scalarization
     (f : ProductFunctions F ζ hζ M S) (hf : f ∈ productCovariance F ζ hζ M S) :
@@ -404,8 +397,7 @@ local instance (q : S) : Module ℂ (Source F ζ hζ M S q) :=
   (LinearEquiv.ofBijective (actualTensorSections F ζ hζ M S)
     (actualTensorSections_bijective F ζ hζ M S)).trans (scalarTransitivity F ζ hζ M S)
 
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarTransitivity renaming scalarization_tensor_slot_action → scalarization_tensor_slot_action
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarTransitivity renaming scalarization_tensor_pure → scalarization_tensor_pure
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarTransitivity (scalarization_tensor_pure)
 
  theorem scalarTensorEquiv_pure
     (x : ∀ q : S, Source F ζ hζ M S q) (g : ProductCover F ζ hζ S) :

@@ -110,8 +110,6 @@ private lemma sum_mul_sum_swap {R G : Type*} [Fintype R] [Fintype G]
   have h1 : (∑ r, u r * (c * ∑ g, f r g)) = ∑ r, ∑ g, u r * (c * f r g) := by
     refine Finset.sum_congr rfl fun r _ => ?_
     rw [Finset.mul_sum, Finset.mul_sum]
-  have h2 : (∑ r, ∑ g, u r * (c * f r g)) = ∑ g, ∑ r, u r * (c * f r g) :=
-    Finset.sum_comm
   have h3 : (∑ g, ∑ r, u r * (c * f r g)) = ∑ g, ∑ r, c * (u r * f r g) := by
     refine Finset.sum_congr rfl fun g _ => Finset.sum_congr rfl fun r _ => ?_
     ring
@@ -119,17 +117,14 @@ private lemma sum_mul_sum_swap {R G : Type*} [Fintype R] [Fintype G]
     rw [Finset.mul_sum]
     refine Finset.sum_congr rfl fun g _ => ?_
     rw [Finset.mul_sum]
-  rw [h1, h2, h3, h4]
+  rw [h1, Finset.sum_comm, h3, h4]
 
 private lemma row_bound {R L G : Type*} [Fintype L] [Fintype G]
     (A : R → L → ℂ) (sector : L → G) (x : L → ℂ) (r : R) :
     ‖∑ l, A r l * x l‖ ^ 2 ≤
       (Fintype.card G : ℝ) *
         ∑ g, ‖∑ l, if sector l = g then A r l * x l else 0‖ ^ 2 := by
-  have hdecomp : (∑ l, A r l * x l) =
-      ∑ g, ∑ l, if sector l = g then A r l * x l else 0 :=
-    (sum_sector_eq_sum (fun l => A r l * x l) sector).symm
-  rw [hdecomp]
+  rw [((sum_sector_eq_sum (fun l => A r l * x l) sector).symm)]
   calc ‖∑ g, ∑ l, if sector l = g then A r l * x l else 0‖ ^ 2
       ≤ (∑ g, ‖∑ l, if sector l = g then A r l * x l else 0‖) ^ 2 :=
         pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le _ _) 2
@@ -137,7 +132,7 @@ private lemma row_bound {R L G : Type*} [Fintype L] [Fintype G]
           ∑ g, ‖∑ l, if sector l = g then A r l * x l else 0‖ ^ 2 := by
         have := sq_sum_le_card_mul_sum_sq (s := Finset.univ)
           (f := fun g => ‖∑ l, if sector l = g then A r l * x l else 0‖)
-        simpa using this
+        exact this
 
 theorem sector_weighted_energy_bound
     {R L G : Type*} [Fintype R] [Fintype L] [Fintype G]
@@ -146,7 +141,7 @@ theorem sector_weighted_energy_bound
       (Fintype.card G : ℝ) *
         ∑ g, ∑ r, (w r : ℝ) *
           ‖∑ l, if sector l = g then A r l * x l else 0‖ ^ 2 := by
-  calc ∑ r, (w r : ℝ) * ‖∑ l, A r l * x l‖ ^ 2
+  calc _
       ≤ ∑ r, (w r : ℝ) *
           ((Fintype.card G : ℝ) *
             ∑ g, ‖∑ l, if sector l = g then A r l * x l else 0‖ ^ 2) :=
@@ -158,11 +153,13 @@ theorem sector_weighted_energy_bound
         sum_mul_sum_swap (fun r => (w r : ℝ)) (Fintype.card G : ℝ)
           (fun r g => ‖∑ l, if sector l = g then A r l * x l else 0‖ ^ 2)
 
-theorem weighted_energy_eq_gcd_blocks
-    {R L G D : Type*} [Fintype R] [Fintype L]
-    (w : R → NNReal) (A : R → L → ℂ) (sector : L → G)
-    (gcdLabel : L → L → D) (x : L → ℂ) (g : G)
-    (pool : Finset D) (hpool : ∀ l k, gcdLabel l k ∈ pool) :
+section
+
+variable {R L G D : Type*} [Fintype R] [Fintype L] (w : R → NNReal) (A : R → L → ℂ) (sector : L → G)
+    (gcdLabel : L → L → D) (x : L → ℂ) (g : G) (pool : Finset D) (hpool : ∀ l k, gcdLabel l k ∈ pool)
+
+include hpool in
+theorem weighted_energy_eq_gcd_blocks :
     ((∑ r, (w r : ℝ) * ‖∑ l, if sector l = g then A r l * x l else 0‖ ^ 2 : ℝ) : ℂ) =
       ∑ d ∈ pool, gcdBlock w A sector gcdLabel x g d := by
   have hL : ((∑ r, (w r : ℝ) * ‖∑ l, if sector l = g then A r l * x l else 0‖ ^ 2 : ℝ) : ℂ)
@@ -190,19 +187,18 @@ theorem weighted_energy_eq_gcd_blocks
       ((A r l * x l) * star (A r k * x k))
   rw [hL, hR]
 
-private lemma sum_weight_normSq_le {R L G D : Type*} [Fintype R] [Fintype L]
-    (w : R → NNReal) (A : R → L → ℂ) (sector : L → G)
-    (gcdLabel : L → L → D) (x : L → ℂ) (g : G)
-    (pool : Finset D) (hpool : ∀ l k, gcdLabel l k ∈ pool) :
+include hpool in
+private lemma sum_weight_normSq_le :
     (∑ r, (w r : ℝ) * ‖∑ l, if sector l = g then A r l * x l else 0‖ ^ 2) ≤
       ∑ d ∈ pool, ‖gcdBlock w A sector gcdLabel x g d‖ := by
-  have h := weighted_energy_eq_gcd_blocks w A sector gcdLabel x g pool hpool
   calc (∑ r, (w r : ℝ) * ‖∑ l, if sector l = g then A r l * x l else 0‖ ^ 2)
       = (((∑ r, (w r : ℝ) * ‖∑ l, if sector l = g then A r l * x l else 0‖ ^ 2 : ℝ) : ℂ)).re :=
         (Complex.ofReal_re _).symm
-    _ = (∑ d ∈ pool, gcdBlock w A sector gcdLabel x g d).re := by rw [h]
+    _ = (∑ d ∈ pool, gcdBlock w A sector gcdLabel x g d).re := by rw [(weighted_energy_eq_gcd_blocks w A sector gcdLabel x g pool hpool)]
     _ ≤ ‖∑ d ∈ pool, gcdBlock w A sector gcdLabel x g d‖ := Complex.re_le_norm _
     _ ≤ ∑ d ∈ pool, ‖gcdBlock w A sector gcdLabel x g d‖ := norm_sum_le _ _
+
+end
 
 theorem weighted_energy_le_sector_gcd_blocks
     {R L G D : Type*} [Fintype R] [Fintype L] [Fintype G]
@@ -213,7 +209,7 @@ theorem weighted_energy_le_sector_gcd_blocks
     (∑ r, (w r : ℝ) * ‖∑ l, A r l * x l‖ ^ 2) ≤
       (Fintype.card G : ℝ) *
         ∑ g, ∑ d ∈ pool, ‖gcdBlock w A sector gcdLabel x g d‖ := by
-  calc (∑ r, (w r : ℝ) * ‖∑ l, A r l * x l‖ ^ 2)
+  calc _
       ≤ (Fintype.card G : ℝ) *
           ∑ g, ∑ r, (w r : ℝ) *
             ‖∑ l, if sector l = g then A r l * x l else 0‖ ^ 2 :=

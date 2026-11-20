@@ -9,24 +9,19 @@ open scoped Classical NumberField Topology BigOperators
 open Filter
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming native_second_word → native_second_word
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming nativeIndex → nativeIndex
-open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy renaming actualRightWord_compact_holomorphy → actualRightWord_compact_holomorphy
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming scalar_analytic_of_right_holomorphic → scalar_analytic_of_right_holomorphic
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming word_smul → word_smul
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {SS : SArithmeticData F} {η : RayClassCharacter F SS.modulus}
-variable (AR : PrincipalMellin.ActualRecipe SS η)
-variable (AP : KPGlobalTorusFiniteStages.CompatibleModelData F AR.A.zeta12 AR.A.primitive_zeta12)
-variable (AC : KPGlobalTorusFiniteStages.LocalFiberData F AR.A.zeta12 AR.A.primitive_zeta12 AP)
+    {SS : SArithmeticData F} {η : RayClassCharacter F SS.modulus}
+    (AR : PrincipalMellin.ActualRecipe SS η)
+    (AP : KPGlobalTorusFiniteStages.CompatibleModelData F AR.A.zeta12 AR.A.primitive_zeta12)
+    (AC : KPGlobalTorusFiniteStages.LocalFiberData F AR.A.zeta12 AR.A.primitive_zeta12 AP)
 local notation "G" => KPGlobalTorusFunctionData.G F AR.A.zeta12 AR.A.primitive_zeta12
 variable (D : KPGlobalTorusInducingPlan.ModelData F AR.A.zeta12 AR.A.primitive_zeta12)
-variable (Haar : KPSmoothLocalQuotientCharts.HaarRecipe F AR.A.zeta12 AR.A.primitive_zeta12)
-variable (Transport : KPMsFixedHaarDisintegration.SphericalTransport F AR.A.zeta12 AR.A.primitive_zeta12)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F AR.A.zeta12 AR.A.primitive_zeta12 Haar Transport)
-variable (U : KPMsRationalCompactCrossPairing.Level F AR.A.zeta12 AR.A.primitive_zeta12)
+    (Haar : KPSmoothLocalQuotientCharts.HaarRecipe F AR.A.zeta12 AR.A.primitive_zeta12)
+    (Transport : KPMsFixedHaarDisintegration.SphericalTransport F AR.A.zeta12 AR.A.primitive_zeta12)
+    (H : KPMsFixedHaarDisintegration.AllLevels F AR.A.zeta12 AR.A.primitive_zeta12 Haar Transport)
+    (U : KPMsRationalCompactCrossPairing.Level F AR.A.zeta12 AR.A.primitive_zeta12)
 local notation "level" => KPContActualAllCuspSource.level F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U
 
@@ -58,13 +53,14 @@ theorem spherical_scalar_native_boundary_centers
               F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U (N c) → N c = 0) := by
   obtain ⟨Z, hch, hl⟩ := LiteralSource.spherical_scalar_hilbert_boundary_centers
     AR AP AC D Haar Transport H U v hv
-  let A : ℂ → G → ℂ := fun s => groupScalar F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U (Z s)
+  let groupScalar₀ := groupScalar F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U
+  let A := fun s => groupScalar₀ (Z s)
   have hm (w) (g) : MeromorphicOn (fun s => actualRightWord F AR.A.zeta12 AR.A.primitive_zeta12 w (A s) g)
       KPContinuation.spectralDomain := by
     apply actual_word_meromorphic F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U A _ w g
     intro c hc
     obtain ⟨r, hr, hb, N, hN, he, hz, hcus⟩ := hl c hc
-    exact ⟨r, hr, hb, fun s => groupScalar F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U (N s),
+    exact ⟨r, hr, hb, fun s => groupScalar₀ (N s),
       hN.right_holomorphic, he⟩
   refine ⟨Z, hch, ?_⟩
   intro c hc
@@ -72,7 +68,7 @@ theorem spherical_scalar_native_boundary_centers
   refine ⟨r, hr, hb, N, hN, he, hz, ?_, hcus⟩
   intro g
   apply spherical_numerator_casimir F AR.A.zeta12 AR.A.primitive_zeta12 U v A hm _ c hc r hr
-    (fun s => groupScalar F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U (N s)) _ he g
+    (fun s => groupScalar₀ (N s)) _ he g
   · intro s hs
     exact funext (hch s hs)
   · intro w g

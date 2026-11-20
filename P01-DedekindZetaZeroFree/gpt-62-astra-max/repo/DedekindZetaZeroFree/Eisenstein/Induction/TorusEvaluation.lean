@@ -13,15 +13,18 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.SourceTorusEvaluation
 open KPAdelicCoverRestrictedProduct KPGlobalTorusFiniteStages
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 
  def evaluation (g : RestrictedCover F ζ hζ) (q : HeightOneSpectrum (𝓞 F))
     (x : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) : ℂ :=
   localUntwistedEvaluation F ζ hζ P C q ((LocalSeed.finite F ζ hζ P C q).val
     (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (g (Sum.inr q)))) x
 
- theorem formula (g raw : RestrictedCover F ζ hζ)
-    (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
+ section
+
+variable (g raw : RestrictedCover F ζ hζ) (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
+
+theorem formula
     (e : KPGlobalTorusFunctionData.E F ζ hζ)
     (ht : ∀ q, (t q).val = KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (raw (Sum.inr q)))
     (he : scalarQuotient F ζ hζ (amalgamation F ζ hζ raw) = e.val) :
@@ -45,21 +48,21 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
   · rfl
   · exact (SourceTensor.evaluatedStage_tail F ζ hζ P C g q hq).symm
 
- theorem evaluation_finiteSupport (g raw : RestrictedCover F ζ hζ)
-    (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
+ theorem evaluation_finiteSupport
     (ht : ∀ q, (t q).val = KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (raw (Sum.inr q))) :
     Function.HasFiniteMulSupport (fun q => evaluation F ζ hζ P C g q (t q)) := by
   let s := SourceTensor.evaluatedStage F ζ hζ P C g
-  have hf := local_evaluation_finiteSupport F ζ hζ P C s.val s.property
+  convert (local_evaluation_finiteSupport F ζ hζ P C s.val s.property
     (fun q => (LocalSeed.finite F ζ hζ P C q.val).val
-      (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q.val) (g (Sum.inr q.val)))) raw t ht
-  convert hf using 1
+      (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q.val) (g (Sum.inr q.val)))) raw t ht) using 1
   funext q
   unfold evaluation
   congr 1
   split_ifs with hq
   · rfl
   · exact SourceTensor.evaluatedStage_tail F ζ hζ P C g q hq
+
+end
 
  theorem norm_mul (q : HeightOneSpectrum (𝓞 F))
     (x t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :

@@ -37,15 +37,17 @@ structure Coefficients {n : ℕ} (B : LocalBall n) (cρ Cρ κ Λ : ℝ) where
   upper_bound : ∀ x ∈ B.carrier, ∀ ξ : Space n,
     (∑ i, ∑ j, matrix x i j * ξ i * ξ j) ≤ Λ * ‖ξ‖ ^ 2
 
-def divergenceOperator {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (u : Space n → ℂ) : Space n → ℂ :=
+section
+
+variable {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (D : Coefficients B cρ Cρ κ Λ)
+
+def divergenceOperator (u : Space n → ℂ) : Space n → ℂ :=
   fun x => -(D.density x : ℂ)⁻¹ * ∑ i,
     fderiv ℝ (fun y => (D.density y : ℂ) *
       ∑ j, (D.matrix y i j : ℂ) * coordinateDerivativeList [j] u y) x
         (EuclideanSpace.single i 1)
 
-def WeakEquation {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (z : ℂ)
+def WeakEquation (z : ℂ)
     (u : IntegerSobolev B 1) (h : BallL2 B) : Prop :=
   ∀ φ : TestFunction B.toOpens ℂ ⊤,
     (∫ x in B.carrier, (D.density x : ℂ) *
@@ -54,14 +56,20 @@ def WeakEquation {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
       z * (∫ x in B.carrier, (D.density x : ℂ) * value u x * star (φ x)) =
         ∫ x in B.carrier, (D.density x : ℂ) * h x * star (φ x)
 
-def Represents {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k)
-    (f : Space n → ℂ) : Prop :=
+end
+
+section
+
+variable {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k) (f : Space n → ℂ)
+
+def Represents : Prop :=
   ∀ᵐ x ∂volume.restrict B.carrier, value u x = f x
 
-def RepresentsClassicalDerivatives {n k : ℕ} {B : LocalBall n}
-    (u : IntegerSobolev B k) (f : Space n → ℂ) : Prop :=
+def RepresentsClassicalDerivatives : Prop :=
   ∀ α : MultiIndex n k,
     ∀ᵐ x ∂volume.restrict B.carrier, u.derivatives α x = coordinateDerivative α f x
+
+end
 
 def functionL2Norm {n : ℕ} (B : LocalBall n) (f : Space n → ℂ) : ℝ :=
   Real.sqrt (∫ x in B.carrier, ‖f x‖ ^ 2)

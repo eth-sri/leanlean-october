@@ -14,7 +14,7 @@ open KPLiteralScalarHCCompactOrbit KPLiteralScalarHCSliceCharts
 open KPGlobalTorusBorelTwistCompatibility KPComplexIntertwinerParameterMajorant
 open ArchMatrixGeometry
 open RepresentationTheory.KPComplexStandardIntertwinerGermProve
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_insertion → sectionTuple_insertion
+open _root_.DedekindZetaZeroFree.KPLiteralChamber (sectionTuple_insertion)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -22,8 +22,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 theorem literal_archMatrixInsertion (a : InfinitePlace F → ComplexGL2) :
     archMatrixInsertion F ζ hζ a =
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
-        (fun w => Matrix.ProjGenLinGroup.mk (a w)) := by
-  exact sectionTuple_insertion F ζ hζ a
+        (fun w => Matrix.ProjGenLinGroup.mk (a w)) := sectionTuple_insertion F ζ hζ a
 
 theorem literal_archNorm_factor
     (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
@@ -33,7 +32,7 @@ theorem literal_archNorm_factor
       (c.val * archMatrixInsertion F ζ hζ g) : ℝ≥0) : ℝ)) =
       (((iwasawaNorm F ζ hζ (KPLiteralChamber.literalIwasawa F ζ hζ K hK)
         c.val : ℝ≥0) : ℝ)) * ∏ w, rowRatio (g w) ^ 2 := by
-  obtain ⟨a, d, u, hg, hr⟩ := chosen_factorization F g
+  obtain ⟨a, d, u, hg⟩ := chosen_factorization F g
   have he : g = (fun w => upperTriangular (a w) (d w) (u w) *
       complexSU2Embedding (chosenCompact F g w)) := funext hg
   rw [he, inserted_factorization]
@@ -68,12 +67,7 @@ theorem literal_archNorm_exp_factor
       (c.val * archMatrixInsertion F ζ hζ g) : ℝ≥0) : ℝ)) : ℂ)) =
       literalFiniteDeformation F ζ hζ K hK s c *
         ∏ w, Complex.exp (2 * s * (Real.log (rowRatio (g w)) : ℂ)) := by
-  have hc : (((iwasawaNorm F ζ hζ
-      (KPLiteralChamber.literalIwasawa F ζ hζ K hK) c.val : ℝ≥0) : ℝ)) ≠ 0 :=
-    NNReal.coe_ne_zero.mpr (Units.ne_zero _)
-  have hp : (∏ w, rowRatio (g w) ^ 2) ≠ 0 :=
-    (Finset.prod_pos (fun w _ => pow_pos (rowRatio_positive _) 2)).ne'
-  rw [literal_archNorm_factor, Real.log_mul hc hp, Complex.ofReal_add, mul_add,
+  rw [literal_archNorm_factor, Real.log_mul (NNReal.coe_ne_zero.mpr (Units.ne_zero _)) ((Finset.prod_pos (fun w _ => pow_pos (rowRatio_positive _) 2)).ne'), Complex.ofReal_add, mul_add,
     Complex.exp_add]
   congr 1
   rw [Real.log_prod (fun w _ => (pow_pos (rowRatio_positive _) 2).ne')]

@@ -13,7 +13,6 @@ open MeasureTheory KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
 open KPCplxJacquetFunctional KPCplxActualImage
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
-open _root_.DedekindZetaZeroFree.KPLiteralScalarArchIndependentSlices renaming finite_interpolation → finite_interpolation
 
 def jacquetRightAction (g : ComplexPGL2) :
     PrincipalSeries positiveParameter →L[ℂ] PrincipalSeries positiveParameter where
@@ -42,7 +41,7 @@ theorem jacquet_evaluations_separate (f : PrincipalSeries positiveParameter)
     rfl
   have hc : IsClosed (U : Set (PrincipalSeries positiveParameter)) := by
     letI := principalSeries_t2 positiveParameter
-    have he : (U : Set (PrincipalSeries positiveParameter)) =
+    have he : U =
         ⋂ g : ComplexPGL2, ((J.comp (jacquetRightAction g)).ker :
           Set (PrincipalSeries positiveParameter)) := by
       ext x
@@ -65,12 +64,11 @@ theorem jacquet_evaluations_separate (f : PrincipalSeries positiveParameter)
     ext x
     have hx : x ∈ U := by rw [ht]; trivial
     simpa only [pi_one, ContinuousLinearMap.zero_apply] using (hmem _).mp hx 1
-  have hu : U = ⊥ := (exceptional_principalSeries_irreducible.1.2 U hc hi).resolve_right hn
   have hx : f ∈ U := by
     apply (hmem _).mpr
     intro g
     induction g using Quotient.inductionOn with | _ g => exact hf g
-  simpa only [hu, Submodule.mem_bot] using hx
+  simpa only [((exceptional_principalSeries_irreducible.1.2 U hc hi).resolve_right hn), Submodule.mem_bot] using hx
 
 def jacquetEvaluation : PrincipalSeries positiveParameter →ₗ[ℂ] (ComplexGL2 → ℂ) where
   toFun f g := jacquetIntegral standardComplexParameter
@@ -88,7 +86,6 @@ theorem jacquetEvaluation_injective : Function.Injective jacquetEvaluation := by
   apply LinearMap.ker_eq_bot.mp
   apply le_antisymm _ bot_le
   intro f hf
-  change f = 0
   apply jacquet_evaluations_separate
   intro g
   exact congrFun hf g

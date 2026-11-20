@@ -17,31 +17,33 @@ local instance exceptionalMasksClassGroupFinite (Q : QuadraticHeckeFamily F c) :
 noncomputable local instance exceptionalMasksClassGroupFintype (Q : QuadraticHeckeFamily F c) : Fintype Q.G :=
   Fintype.ofFinite Q.G
 
-private lemma sup_eq_top_of_le_of_sup_eq_top {a b d : Ideal (𝓞 F)}
+local notation "IntegerIdeal" => Ideal (𝓞 F)
+
+private lemma sup_eq_top_of_le_of_sup_eq_top {a b d : IntegerIdeal}
     (h : a ⊔ b = ⊤) (hbd : b ≤ d) : a ⊔ d = ⊤ := by
   rw [eq_top_iff]
   calc ⊤ = a ⊔ b := h.symm
     _ ≤ a ⊔ d := sup_le_sup_left hbd a
 
-private lemma exists_prime_dvd_of_sup_ne_top {u v : Ideal (𝓞 F)} (h : u ⊔ v ≠ ⊤) :
-    ∃ p : Ideal (𝓞 F), p.IsPrime ∧ p ∣ u ∧ p ∣ v := by
+private lemma exists_prime_dvd_of_sup_ne_top {u v : IntegerIdeal} (h : u ⊔ v ≠ ⊤) :
+    ∃ p : IntegerIdeal, p.IsPrime ∧ p ∣ u ∧ p ∣ v := by
   obtain ⟨p, hp, hle⟩ := Ideal.exists_le_maximal (u ⊔ v) h
   exact ⟨p, hp.isPrime, Ideal.dvd_iff_le.mpr (le_trans le_sup_left hle),
     Ideal.dvd_iff_le.mpr (le_trans le_sup_right hle)⟩
 
 private lemma prime_dvd_cond_of_dvd_of_not_dvd_q (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F))
-    (H : ∀ b : Ideal (𝓞 F), Squarefree b → b ⊔ c = ⊤ →
+    (q : IntegerIdeal)
+    (H : ∀ b : IntegerIdeal, Squarefree b → b ⊔ c = ⊤ →
       Q.cond b ∣ b * q ∧ b ∣ Q.cond b * q)
-    {b p : Ideal (𝓞 F)} (hb : Squarefree b) (hbc : b ⊔ c = ⊤)
+    {b p : IntegerIdeal} (hb : Squarefree b) (hbc : b ⊔ c = ⊤)
     (hp : p.IsPrime) (hpb : p ∣ b) (hpq : ¬ p ∣ q) : p ∣ Q.cond b := by
-  have hbq : p ∣ Q.cond b * q := dvd_trans hpb (H b hb hbc).2
+  have hbq := dvd_trans hpb (H b hb hbc).2
   rw [Ideal.dvd_iff_le] at hbq ⊢
   rcases (Ideal.IsPrime.mul_le hp).mp hbq with h | h
   · exact h
   · exact absurd (Ideal.dvd_iff_le.mpr h) hpq
 
-private lemma sup_mul_eq_top_of_sup_eq_top_of_sup_eq_top {t u v : Ideal (𝓞 F)}
+private lemma sup_mul_eq_top_of_sup_eq_top_of_sup_eq_top {t u v : IntegerIdeal}
     (ht : t ⊔ v = ⊤) (hu : u ⊔ v = ⊤) : t * u ⊔ v = ⊤ := by
   by_contra h
   obtain ⟨p, hp, hptu, hpv⟩ := exists_prime_dvd_of_sup_ne_top h
@@ -51,15 +53,17 @@ private lemma sup_mul_eq_top_of_sup_eq_top_of_sup_eq_top {t u v : Ideal (𝓞 F)
   · exact hp.ne_top (top_le_iff.mp (hu ▸ sup_le h hpv))
 
 noncomputable def exceptionalColumnMask (Q : QuadraticHeckeFamily F c)
-    (r t : Ideal (𝓞 F)) (g : Q.G) (u : Ideal (𝓞 F)) : ℂ :=
+    (r t : IntegerIdeal) (g : Q.G) (u : IntegerIdeal) : ℂ :=
   if Q.cls u = g then (Q.χ (t * u)) r else 0
 
 def exceptionalRowMask (Q : QuadraticHeckeFamily F c)
-    (t : Ideal (𝓞 F)) (g : Q.G) (v : Ideal (𝓞 F)) : ℂ :=
+    (t : IntegerIdeal) (g : Q.G) (v : IntegerIdeal) : ℂ :=
   (Q.χ v) t * Q.C (Q.cls t * g) (Q.cls v) * Q.C (Q.cls v) g
 
-theorem peeling_mask_transport (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hcq : c ∣ q)
+variable (Q : QuadraticHeckeFamily F c) (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hcq : c ∣ q)
+
+include hq hcq in
+theorem peeling_mask_transport
     (H : ∀ b : Ideal (𝓞 F), Squarefree b → b ⊔ c = ⊤ →
       Q.cond b ∣ b * q ∧ b ∣ Q.cond b * q)
     (r t u v : Ideal (𝓞 F))
@@ -70,40 +74,33 @@ theorem peeling_mask_transport (Q : QuadraticHeckeFamily F c)
       (Q.χ (t * u)) r * (Q.χ v) t * (Q.χ u) v *
         Q.C (Q.cls t * Q.cls u) (Q.cls v) * Q.C (Q.cls v) (Q.cls u) := by
   obtain ⟨-, -, ht_dvd, htc, -⟩ := exceptionalDivisors_properties hq ht
-  have htu_sq : Squarefree (t * u) :=
+  have htu_sq :=
     (exceptional_decomposition_converse hq hcq ht hu huq).1
-  have htu_c : t * u ⊔ c = ⊤ :=
+  have htu_c :=
     (exceptional_decomposition_converse hq hcq ht hu huq).2
-  have huc : u ⊔ c = ⊤ := sup_eq_top_of_le_of_sup_eq_top huq (Ideal.dvd_iff_le.mp hcq)
-  have hvc : v ⊔ c = ⊤ := sup_eq_top_of_le_of_sup_eq_top hvq (Ideal.dvd_iff_le.mp hcq)
+  have huc := sup_eq_top_of_le_of_sup_eq_top huq (Ideal.dvd_iff_le.mp hcq)
+  have hvc := sup_eq_top_of_le_of_sup_eq_top hvq (Ideal.dvd_iff_le.mp hcq)
   by_cases huv : u ⊔ v = ⊤
   · have htuv : t ⊔ v = ⊤ := by
       rw [sup_comm]
       exact sup_eq_top_of_le_of_sup_eq_top hvq (Ideal.dvd_iff_le.mp ht_dvd)
-    have htuv' : t * u ⊔ v = ⊤ :=
-      sup_mul_eq_top_of_sup_eq_top_of_sup_eq_top htuv huv
-    have hrec1 := Q.reciprocity (t * u) v htu_sq htu_c hv hvc htuv'
-    have huv' : v ⊔ u = ⊤ := by rw [sup_comm]; exact huv
-    have hrec2 := Q.reciprocity v u hv hvc hu huc huv'
-    have hcls : Q.cls (t * u) = Q.cls t * Q.cls u := Q.cls_mul t u htc huc
-    rw [(Q.χ (t * u)).map_mul' r v, hrec1, (Q.χ v).map_mul' t u, hrec2, hcls]
+    rw [(Q.χ (t * u)).map_mul' r v, (Q.reciprocity (t * u) v htu_sq htu_c hv hvc (sup_mul_eq_top_of_sup_eq_top_of_sup_eq_top htuv huv)), (Q.χ v).map_mul' t u, (Q.reciprocity v u hv hvc hu huc (by rw [sup_comm]; exact huv)), (Q.cls_mul t u htc huc)]
     ring
   · obtain ⟨p, hp, hpu, hpv⟩ := exists_prime_dvd_of_sup_ne_top huv
     have hpq : ¬ p ∣ q := by
       intro hpq
       rw [Ideal.dvd_iff_le] at hpu hpq
       exact hp.ne_top (top_le_iff.mp (huq ▸ sup_le hpu hpq))
-    have hpcond_u : p ∣ Q.cond u :=
+    have hpcond_u :=
       prime_dvd_cond_of_dvd_of_not_dvd_q Q q H hu huc hp hpu hpq
-    have hptu : p ∣ t * u := dvd_trans hpu (dvd_mul_left u t)
-    have hpcond_tu : p ∣ Q.cond (t * u) :=
-      prime_dvd_cond_of_dvd_of_not_dvd_q Q q H htu_sq htu_c hp hptu hpq
+    have hpcond_tu :=
+      prime_dvd_cond_of_dvd_of_not_dvd_q Q q H htu_sq htu_c hp (dvd_trans hpu (dvd_mul_left u t)) hpq
     have hL : (Q.χ (t * u)) (r * v) = 0 := by
       rw [quadraticFamily_eq_zero_iff Q htu_sq htu_c (r * v)]
       right
       intro hcop
       rw [Ideal.dvd_iff_le] at hpcond_tu
-      have hpv' : p ∣ r * v := dvd_trans hpv (dvd_mul_left v r)
+      have hpv' := dvd_trans hpv (dvd_mul_left v r)
       rw [Ideal.dvd_iff_le] at hpv'
       exact hp.ne_top (top_le_iff.mp (hcop ▸ sup_le hpv' hpcond_tu))
     have hχuv : (Q.χ u) v = 0 := by
@@ -115,35 +112,30 @@ theorem peeling_mask_transport (Q : QuadraticHeckeFamily F c)
     rw [hL, hχuv]
     ring
 
-theorem norm_exceptionalColumnMask_le_one (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hcq : c ∣ q)
+include hq hcq in
+theorem norm_exceptionalColumnMask_le_one
     (r t : Ideal (𝓞 F)) (g : Q.G) (u : Ideal (𝓞 F))
     (hr : r ∈ exceptionalDivisors F c q) (ht : t ∈ exceptionalDivisors F c q)
     (hu : Squarefree u) (huq : u ⊔ q = ⊤) :
     ‖exceptionalColumnMask Q r t g u‖ ≤ 1 := by
-  have htu_sq : Squarefree (t * u) :=
-    (exceptional_decomposition_converse hq hcq ht hu huq).1
-  have htu_c : t * u ⊔ c = ⊤ :=
-    (exceptional_decomposition_converse hq hcq ht hu huq).2
   by_cases h : Q.cls u = g
   · rw [exceptionalColumnMask, if_pos h]
-    exact quadraticFamily_norm_le_one Q htu_sq htu_c r
+    exact quadraticFamily_norm_le_one Q ((exceptional_decomposition_converse hq hcq ht hu huq).1) ((exceptional_decomposition_converse hq hcq ht hu huq).2) r
   · rw [exceptionalColumnMask, if_neg h]
     simp
 
-theorem norm_exceptionalRowMask_le_one (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hcq : c ∣ q)
+include hq hcq in
+theorem norm_exceptionalRowMask_le_one
     (t : Ideal (𝓞 F)) (g : Q.G) (v : Ideal (𝓞 F))
     (ht : t ∈ exceptionalDivisors F c q)
     (hv : Squarefree v) (hvq : v ⊔ q = ⊤) :
     ‖exceptionalRowMask Q t g v‖ ≤ 1 := by
-  have hvc : v ⊔ c = ⊤ := sup_eq_top_of_le_of_sup_eq_top hvq (Ideal.dvd_iff_le.mp hcq)
   rw [exceptionalRowMask, norm_mul, norm_mul, ClassTwists.norm_C, ClassTwists.norm_C,
     mul_one, mul_one]
-  exact quadraticFamily_norm_le_one Q hv hvc t
+  exact quadraticFamily_norm_le_one Q hv (sup_eq_top_of_le_of_sup_eq_top hvq (Ideal.dvd_iff_le.mp hcq)) t
 
-theorem peeling_mask_transport_sum (Q : QuadraticHeckeFamily F c)
-    (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hcq : c ∣ q)
+include hq hcq in
+theorem peeling_mask_transport_sum
     (H : ∀ b : Ideal (𝓞 F), Squarefree b → b ⊔ c = ⊤ →
       Q.cond b ∣ b * q ∧ b ∣ Q.cond b * q)
     (r t v : Ideal (𝓞 F))
@@ -161,14 +153,9 @@ theorem peeling_mask_transport_sum (Q : QuadraticHeckeFamily F c)
     intro u huU
     obtain ⟨hu_sq, hu_q⟩ := hU u huU
     rw [peeling_mask_transport Q q hq hcq H r t u v hr ht hu_sq hu_q hv hvq]
-    have hsum : (∑ g : Q.G, exceptionalRowMask Q t g v *
-        (lam (t * u) * exceptionalColumnMask Q r t g u * (Q.χ u) v)) =
-        exceptionalRowMask Q t (Q.cls u) v *
-          (lam (t * u) * exceptionalColumnMask Q r t (Q.cls u) u * (Q.χ u) v) :=
-      Finset.sum_eq_single (Q.cls u)
-        (fun b _ hb => by rw [exceptionalColumnMask, if_neg (Ne.symm hb)]; ring)
-        (fun hmem => absurd (Finset.mem_univ _) hmem)
-    rw [hsum, exceptionalRowMask, exceptionalColumnMask, if_pos rfl]
+    rw [(Finset.sum_eq_single (Q.cls u)
+      (fun b _ hb => by rw [exceptionalColumnMask, if_neg (Ne.symm hb)]; ring)
+      (fun hmem => absurd (Finset.mem_univ _) hmem)), exceptionalRowMask, exceptionalColumnMask, if_pos rfl]
     ring
   calc (∑ u ∈ U, lam (t * u) * (Q.χ (t * u)) (r * v))
       = ∑ u ∈ U, ∑ g : Q.G, exceptionalRowMask Q t g v *

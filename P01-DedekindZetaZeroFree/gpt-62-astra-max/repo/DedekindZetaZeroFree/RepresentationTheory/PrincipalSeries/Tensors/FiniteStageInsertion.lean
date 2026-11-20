@@ -13,8 +13,8 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.FourierContinuation.CurrentNativeStage
 open NativeScalarMixedTensorGeneration
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "M" => CurrentFiniteFamily.nativeInducingData A P C
 local notation "r₀" => LiteralSource.plusReference A P C
 local notation "Raw" => KPAdelicCoverRestrictedProduct.RestrictedCover F A.zeta12 A.primitive_zeta12
@@ -31,7 +31,7 @@ local instance (j : InfinitePlace F ⊕ T) : Module ℂ (mixedSource F A.zeta12 
 def fullStage (hT : C.exceptional ⊆ T) : RestrictedTensorSimple.Level (LiteralSource.bad A P C) :=
   ⟨Finset.univ.disjSum T, by
     intro v hv
-    change v ∈ KPGlobalResidualConstruction.ScalarAbsorption.fullBad (A := InfinitePlace F) C.exceptional at hv
+    change v ∈ KPGlobalResidualConstruction.ScalarAbsorption.fullBad C.exceptional at hv
     cases v with
     | inl w => simp
     | inr q =>

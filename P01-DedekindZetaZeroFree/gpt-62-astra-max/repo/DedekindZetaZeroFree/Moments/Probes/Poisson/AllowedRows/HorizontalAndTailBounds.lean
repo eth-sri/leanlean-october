@@ -13,8 +13,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonK
   DedekindZetaZeroFree.Quantitative.RowsGoodCentral
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 section helpers
 
@@ -31,12 +31,11 @@ lemma Jhoriz_norm_le (G : Set D.Row) (hG : G.Finite) (sgn x₀ x₁ y v T Z K : 
       ∫ σ in x₀..x₁, wzIntegral D u ((σ : ℂ) + (sgn * T : ℝ) * Complex.I) y v Z‖ ≤
       (2 * Real.pi)⁻¹ * (K * |x₁ - x₀|) := by
     intro u hu
-    have hu' : u ∈ G := hG.mem_toFinset.1 hu
     rw [norm_mul, norm_inv, norm_mul, norm_mul, Complex.norm_I, Complex.norm_real]
     simp only [Complex.norm_ofNat, mul_one, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
     refine mul_le_mul_of_nonneg_left ?_ (by positivity)
     refine intervalIntegral.norm_integral_le_of_norm_le_const (fun σ hσ => ?_)
-    exact hK u hu' σ (Set.uIoc_subset_uIcc hσ)
+    exact hK u (hG.mem_toFinset.1 hu) σ (Set.uIoc_subset_uIcc hσ)
   refine (Finset.sum_le_sum hterm).trans ?_
   rw [Finset.sum_const, nsmul_eq_mul, Set.ncard_eq_toFinset_card G hG]
 
@@ -86,21 +85,9 @@ lemma Jtail_norm_le (G : Set D.Row) (hG : G.Finite) (x y v T Z K B : ℝ) (hB : 
   refine (Finset.sum_le_sum hterm).trans ?_
   rw [Finset.sum_const, nsmul_eq_mul, Set.ncard_eq_toFinset_card G hG]
 
-theorem dyad_row_count :
-    ∃ C : ℝ, 0 < C ∧ ∀ U : ℝ, 1 ≤ U →
-      (dyadRows D U).Finite ∧ ((dyadRows D U).ncard : ℝ) ≤ C * U :=
-  DedekindZetaZeroFree.Quantitative.ActualRowCount.dyadRows_count D
+alias dyad_row_count := DedekindZetaZeroFree.Quantitative.ActualRowCount.dyadRows_count
 
-lemma entireNumerator (u : D.Row) (hu : u.u ≠ 1) : RowKernelGrowth.EntireNumerator D u := by
-  obtain ⟨hp, -⟩ := RowNonprincipal.inducers_nonprincipal D u hu
-  obtain ⟨g, hg, hgeq⟩ := RowHeckeBridge.hecke_exists_entire D.recipe.A (D.inducers u).plus hp
-  refine ⟨fun s => DedekindZetaZeroFree.Detector.finiteEulerDeletionMask F (RowHeckeBridge.deletionSet D u)
-      (fun v => (D.inducers u).plus.character v.asIdeal) s * g s,
-    (RowHeckeBridge.mask_differentiable D.recipe.A (D.inducers u).plus hp _
-      (RowHeckeBridge.deletionSet_finite D u)).mul hg, fun s hs => ?_⟩
-  have hs0 : 0 < s.re := by linarith
-  simp only
-  rw [RowHeckeBridge.Lpsi_eq_mask_mul D u hp s hs, hgeq s hs0]
+alias entireNumerator := DedekindZetaZeroFree.Quantitative.RowsGoodCentral.entireNumerator_of_ne_one
 
 theorem wz_height_bound (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) (B ε : ℝ) (hB : 0 < B) (hε : 0 < ε) :
@@ -274,7 +261,7 @@ theorem rows_height_errors_dyad (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : Convexi
 
 theorem rows_height_errors (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) (A₁ : ℝ) (hA₁ : 10 / ρ < A₁) :
-    ∃ C : ℝ, 0 < C ∧ ∃ Z₀ : ℝ, 2 ≤ Z₀ ∧ ∀ Z : ℝ, Z₀ ≤ Z →
+    ∃ C : ℝ, 0 < C ∧ ∃ Z₀ : ℝ, ∀ Z : ℝ, Z₀ ≤ Z →
       ‖∑ k ∈ intermediateDyads Z, heightErrors D ρ ((2 : ℝ) ^ k) Z‖ ≤
         C * Z ^ (Scales.mainExponent - 1) := by
   have hρpos : 0 < ρ := hρ.1
@@ -284,7 +271,7 @@ theorem rows_height_errors (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExp
   have hA₁pos : 0 < A₁ := lt_trans (by positivity) hA₁
   obtain ⟨Cd, hCd, U₀, hU₀, hd⟩ :=
     rows_height_errors_dyad D A_F ρ hA hconv hρ A₁ hA₁pos (1 / 100) (by norm_num)
-  refine ⟨3 * Cd, by positivity, max 2 (U₀ ^ (5 : ℝ)), le_max_left _ _, fun Z hZ => ?_⟩
+  refine ⟨3 * Cd, by positivity, max 2 (U₀ ^ (5 : ℝ)), fun Z hZ => ?_⟩
   have hZ2 : 2 ≤ Z := le_trans (le_max_left _ _) hZ
   have hZ1 : 1 ≤ Z := by linarith
   have hZpos : 0 < Z := by linarith

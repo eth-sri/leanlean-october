@@ -57,7 +57,6 @@ namespace DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.FiniteComp
     intro j _
     exact smul_comm _ _ _
 
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.GlobalScalarPin renaming germ_eq_of_open_agreement → germ_eq_of_open_agreement
 
 open MeasureTheory
 

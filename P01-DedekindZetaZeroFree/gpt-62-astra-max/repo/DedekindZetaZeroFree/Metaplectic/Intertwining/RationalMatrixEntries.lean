@@ -14,8 +14,8 @@ open KPActualScalarBinding
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-variable (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
+    (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg)
 variable [DecidableEq S.D]
 
 def actualUc (rep : S.D → KPExceptionalRaw.actualTorus F ζ hζ q)

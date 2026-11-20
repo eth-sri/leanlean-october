@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -74,29 +71,20 @@ private theorem finitePlaceArtinLocalizedCompletion_algebraMap
       finitePlaceAdicCompletionMap
         F M v U (eF x) := by
   let vF := NumberField.HeightOneSpectrum.adicAbv F v
-  let hvF : vF.IsNontrivial :=
+  let hvF :=
     RayClass.adicAbv_isNontrivial v
   let hMF :=
     AbsoluteValue.extensionCompletionAlgebra
       (K := F) w.1
   let : SMul F w.1.Completion := hMF.toSMul
-  let : Algebra vF.Completion w.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra vF w.1 w.2
   let E := AlgebraicNumberTheory.Valuations.LocalizedCompletion vF w
   let U := finitePlaceExtensionEquivAbove
-    (K := F) (L := M) v w
-  let eF :
-      vF.Completion ≃+* v.adicCompletion F :=
-    (relativeFinitePlaceCompletionAlgEquiv v).toRingEquiv
-  let eE :
-      E ≃+* U.1.adicCompletion M :=
-    (AlgebraicNumberTheory.Valuations.localizedCompletionEquivCompletion
-        vF hvF w).toRingEquiv.trans
-      (finitePlaceExtensionAdicCompletionRingEquiv
-        (K := F) (L := M) v w)
+      v w
   change
     finitePlaceExtensionAdicCompletionRingEquiv
-        (K := F) (L := M) v w
+          v w
         (AlgebraicNumberTheory.Valuations.localizedCompletionEquivCompletion
           vF hvF w (algebraMap vF.Completion E x)) =
       finitePlaceAdicCompletionMap
@@ -110,10 +98,10 @@ private theorem finitePlaceArtinLocalizedCompletion_algebraMap
       F M v w]
   change
     finitePlaceExtensionAdicCompletionRingEquiv
-        (K := F) (L := M) v w
+          v w
         (algebraMap vF.Completion w.1.Completion x) =
       finitePlaceExtensionAdicCompletionRingEquiv
-        (K := F) (L := M) v w
+          v w
         (AbsoluteValue.completionMap vF w.1 w.2
           ((relativeFinitePlaceCompletionAlgEquiv v).symm
             (relativeFinitePlaceCompletionAlgEquiv v x)))
@@ -121,12 +109,13 @@ private theorem finitePlaceArtinLocalizedCompletion_algebraMap
     (relativeFinitePlaceCompletionAlgEquiv v).symm_apply_apply,
     AbsoluteValue.completionAlgebra_algebraMap]
 
+section
+
+variable {K' : Type} [Field K'] [NumberField K'] [Algebra K K'] (v : HeightOneSpectrum (𝓞 K))
+    (W : HeightOneSpectrum (𝓞 K'))
+
 /-- The continuous ring homomorphism between base completions attached to a finite place lying above another. -/
 noncomputable def finitePlaceArtinRelativeCompletionRingHom
-    {K' : Type} [Field K'] [NumberField K']
-    [Algebra K K']
-    (v : HeightOneSpectrum (𝓞 K))
-    (W : HeightOneSpectrum (𝓞 K'))
     (hW : finitePlaceBelow (K := K) W = v) :
     (NumberField.HeightOneSpectrum.adicAbv K v).Completion →+*
       (NumberField.HeightOneSpectrum.adicAbv K' W).Completion :=
@@ -140,24 +129,20 @@ noncomputable def finitePlaceArtinRelativeCompletionRingHom
 
 /-- The finite-place map between the relative base completions is continuous. -/
 theorem finitePlaceArtinRelativeCompletionRingHom_continuous
-    {K' : Type} [Field K'] [NumberField K']
-    [Algebra K K']
-    (v : HeightOneSpectrum (𝓞 K))
-    (W : HeightOneSpectrum (𝓞 K'))
     (hW : finitePlaceBelow (K := K) W = v) :
     Continuous
       (finitePlaceArtinRelativeCompletionRingHom
         (K := K) (K' := K') v W hW) := by
   let eD :=
     (relativeFinitePlaceCompletionAlgEquiv W).toRingEquiv
-  have hDsymm : Isometry eD.symm :=
-    AddMonoidHomClass.isometry_of_norm eD.symm
-      (relativeFinitePlaceCompletionAlgEquiv_symm_norm W)
   exact
-    hDsymm.continuous.comp
+    (AddMonoidHomClass.isometry_of_norm eD.symm
+      (relativeFinitePlaceCompletionAlgEquiv_symm_norm W)).continuous.comp
       ((finitePlaceAdicCompletionMap_continuous
         K K' v ⟨W, hW⟩).comp
         (relativeFinitePlaceCompletionRingHom_isometry v).continuous)
+
+end
 
 /-- The localized completion at a finite place, with its completion-algebra
 tower hidden behind one named type. -/
@@ -218,10 +203,6 @@ noncomputable def finitePlaceArtinLocalizedCompletionRingHom
       finitePlaceArtinLocalizedCompletion K' L' W w' := by
   let vK := NumberField.HeightOneSpectrum.adicAbv K v
   let vK' := NumberField.HeightOneSpectrum.adicAbv K' W
-  let hvK : vK.IsNontrivial :=
-    RayClass.adicAbv_isNontrivial v
-  let hvK' : vK'.IsNontrivial :=
-    RayClass.adicAbv_isNontrivial W
   letI hwK :=
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) w.1
@@ -236,29 +217,25 @@ noncomputable def finitePlaceArtinLocalizedCompletionRingHom
     AbsoluteValue.completionAlgebra vK' w'.1 w'.2
   let U :=
     finitePlaceExtensionEquivAbove
-      (K := K) (L := L) v w
+        v w
   let U' :=
     finitePlaceExtensionEquivAbove
-      (K := K') (L := L') W w'
+        W w'
   have hU'L : finitePlaceBelow (K := L) U'.1 = U.1 := by
     simpa only [
       U, U',
       finitePlaceExtensionEquivAbove_coe
     ] using hcentres
-  let eE :
-      AlgebraicNumberTheory.Valuations.LocalizedCompletion vK w ≃+*
-        U.1.adicCompletion L :=
+  let eE :=
     (AlgebraicNumberTheory.Valuations.localizedCompletionEquivCompletion
-        vK hvK w).toRingEquiv.trans
+        vK (RayClass.adicAbv_isNontrivial v) w).toRingEquiv.trans
       (finitePlaceExtensionAdicCompletionRingEquiv
-        (K := K) (L := L) v w)
-  let eE' :
-      AlgebraicNumberTheory.Valuations.LocalizedCompletion vK' w' ≃+*
-        U'.1.adicCompletion L' :=
+          v w)
+  let eE' :=
     (AlgebraicNumberTheory.Valuations.localizedCompletionEquivCompletion
-        vK' hvK' w').toRingEquiv.trans
+        vK' (RayClass.adicAbv_isNontrivial W) w').toRingEquiv.trans
       (finitePlaceExtensionAdicCompletionRingEquiv
-        (K := K') (L := L') W w')
+          W w')
   exact
     eE'.symm.toRingHom.comp
       ((finitePlaceAdicCompletionMap
@@ -297,7 +274,7 @@ theorem finitePlaceArtinLocalizedCompletion_towerPoint
         (finitePlaceArtinLocalizedCompletionBaseRingHom K L v w x) := by
   let vK := NumberField.HeightOneSpectrum.adicAbv K v
   let vK' := NumberField.HeightOneSpectrum.adicAbv K' W
-  let hvK : vK.IsNontrivial :=
+  let hvK :=
     RayClass.adicAbv_isNontrivial v
   let hvK' : vK'.IsNontrivial :=
     RayClass.adicAbv_isNontrivial W
@@ -383,24 +360,21 @@ theorem finitePlaceArtinLocalizedCompletion_towerPoint
           K' L' W U' (eD y) :=
     finitePlaceArtinLocalizedCompletion_algebraMap
       (F := K') (M := L') W w' y
+  let finitePlaceAdicCompletionMap₀ := finitePlaceAdicCompletionMap K K' v ⟨W, hW⟩
   have hBaseMap (y : C) :
       eD (algebraMap C D y) =
-        finitePlaceAdicCompletionMap
-          K K' v ⟨W, hW⟩ (eC y) := by
+        finitePlaceAdicCompletionMap₀ (eC y) := by
     change
       eD (eD.symm
-        (finitePlaceAdicCompletionMap
-          K K' v ⟨W, hW⟩ (eC y))) =
-        finitePlaceAdicCompletionMap
-          K K' v ⟨W, hW⟩ (eC y)
+        (finitePlaceAdicCompletionMap₀ (eC y))) =
+        finitePlaceAdicCompletionMap₀ (eC y)
     rw [eD.apply_symm_apply]
   apply eE'.injective
   calc
     eE' (algebraMap C E' x) =
         finitePlaceAdicCompletionMap
           K' L' W U'
-          (finitePlaceAdicCompletionMap
-            K K' v ⟨W, hW⟩ (eC x)) := by
+          (finitePlaceAdicCompletionMap₀ (eC x)) := by
       change eE' (algebraMap D E' (algebraMap C D x)) = _
       rw [hUpperBase, hBaseMap]
     _ =
@@ -546,18 +520,17 @@ private theorem finitePlaceArtinLocalizedCompletion_globalEmbedding
     exact
       finitePlaceExtensionAdicCompletionRingEquiv_toCompletion
         (K := K) (L := L) v w x
+  let toAlgebraicLocalization₀ := AbsoluteValue.toAlgebraicLocalization vK' w'.1 w'.2 (algebraMap L L' x)
   have hUpperConcrete :
       eE'
-          (AbsoluteValue.toAlgebraicLocalization
-            vK' w'.1 w'.2 (algebraMap L L' x)) =
+          (toAlgebraicLocalization₀) =
         FinitePlace.embedding U'.1 (algebraMap L L' x) := by
     change
       finitePlaceExtensionAdicCompletionRingEquiv
           (K := K') (L := L') W w'
           (AlgebraicNumberTheory.Valuations.localizedCompletionEquivCompletion
             vK' hvK' w'
-            (AbsoluteValue.toAlgebraicLocalization
-              vK' w'.1 w'.2 (algebraMap L L' x))) =
+            (toAlgebraicLocalization₀)) =
         FinitePlace.embedding U'.1 (algebraMap L L' x)
     rw [
       AlgebraicNumberTheory.Valuations.localizedCompletionEquivCompletion_coe]
@@ -582,8 +555,7 @@ private theorem finitePlaceArtinLocalizedCompletion_globalEmbedding
               (AbsoluteValue.toAlgebraicLocalization
                 vK w.1 w.2 x)))) =
       eE'
-        (AbsoluteValue.toAlgebraicLocalization
-          vK' w'.1 w'.2 (algebraMap L L' x))
+        (toAlgebraicLocalization₀)
   rw [eE'.apply_symm_apply, hLowerConcrete, hUpperConcrete]
   change
     finitePlaceAdicCompletionMap
@@ -636,39 +608,33 @@ noncomputable def finitePlaceCrossLocalRestrictionMonoidHom
       finitePlaceArtinLocalizedAutomorphism K L v w := by
   let vK := NumberField.HeightOneSpectrum.adicAbv K v
   let vK' := NumberField.HeightOneSpectrum.adicAbv K' W
-  let hvK : vK.IsNontrivial :=
-    RayClass.adicAbv_isNontrivial v
   let C := vK.Completion
   let D := vK'.Completion
   let E := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK w
   let E' := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK' w'
   letI : Algebra C E :=
-    finitePlaceLocalArtinLocalizedAlgebra (K := K) (L := L) v w
+    finitePlaceLocalArtinLocalizedAlgebra v w
   letI : Algebra D E' :=
-    finitePlaceLocalArtinLocalizedAlgebra (K := K') (L := L') W w'
-  let lowerGlobalAlgebra : Algebra K E :=
-    LocalClassFieldTheory.localizedCompletionGlobalAlgebra vK w
-  let upperGlobalAlgebra : Algebra K' E' :=
+    finitePlaceLocalArtinLocalizedAlgebra W w'
+  let upperGlobalAlgebra :=
     LocalClassFieldTheory.localizedCompletionGlobalAlgebra vK' w'
   letI : Algebra C D :=
     (finitePlaceArtinRelativeCompletionRingHom
-      (K := K) (K' := K') v W hW).toAlgebra
+        v W hW).toAlgebra
   let derivedStructures :
       PProd (Algebra E E') (Normal C E) := by
-    letI : Algebra K E := lowerGlobalAlgebra
+    letI : Algebra K E := (LocalClassFieldTheory.localizedCompletionGlobalAlgebra vK w)
     letI : Algebra K' E' := upperGlobalAlgebra
-    let upperAlgebra : Algebra E E' :=
-      (finitePlaceArtinLocalizedCompletionRingHom
-        (K := K) (L := L) (K' := K') (L' := L')
-        v W w w' hcentres).toAlgebra
     letI : FiniteDimensional C E :=
-      finitePlaceLocalArtinFiniteDimensional (K := K) (L := L) v w
+      finitePlaceLocalArtinFiniteDimensional v w
     letI : IsAbelianGalois C E :=
-      finitePlaceLocalArtinIsAbelianGalois (K := K) (L := L) v w
-        (inferInstance : FiniteDimensional K L)
+      finitePlaceLocalArtinIsAbelianGalois v w
+        inferInstance
     letI hGaloisE : IsGalois C E :=
       (inferInstance : IsAbelianGalois C E).toIsGalois
-    exact ⟨upperAlgebra, hGaloisE.to_normal⟩
+    exact ⟨((finitePlaceArtinLocalizedCompletionRingHom
+
+      v W w w' hcentres).toAlgebra), hGaloisE.to_normal⟩
   letI : Algebra E E' := derivedStructures.fst
   letI : Algebra C E' :=
     ((algebraMap D E').comp (algebraMap C D)).toAlgebra
@@ -724,20 +690,18 @@ private theorem finitePlaceDecompositionEquiv_symm_action
   let hwF :=
     AbsoluteValue.extensionCompletionAlgebra
       (K := F) wF.1
-  let : SMul F wF.1.Completion := hwF.toSMul
-  let : Algebra vF.Completion wF.1.Completion :=
+  let := hwF.toSMul
+  let :=
     AbsoluteValue.completionAlgebra vF wF.1 wF.2
   let E :=
     AlgebraicNumberTheory.Valuations.LocalizedCompletion vF wF
-  let e :
-      absoluteValueDecompositionGroup F wF.1 ≃*
-        (E ≃ₐ[vF.Completion] E) :=
+  let e :=
     decompositionGroupEquivAlgebraicLocalizationAut
       vF hvF wF
-  let embedding : M →+* E :=
+  let embedding :=
     AbsoluteValue.toAlgebraicLocalization vF wF.1 wF.2
   calc
-    embedding (((e.symm tau).1 : M ≃ₐ[F] M) z) =
+    _ =
         e (e.symm tau) (embedding z) := by
       rw [
         localizationRamificationGroups_decompositionGroupEquiv_toLocalization]
@@ -783,14 +747,9 @@ private theorem finitePlaceCrossDecompositionTransport_core
   apply (algebraMap L L').injective
   apply upperEmbedding.injective
   calc
-    upperEmbedding
-        (algebraMap L L'
-          ((AlgEquiv.restrictNormalHom L
-            (AlgEquiv.restrictScalarsHom K
-              (phiUpper tauUpper))) z)) =
+    _ =
       upperEmbedding
-        (phiUpper tauUpper (algebraMap L L' z)) := by
-      exact congrArg upperEmbedding
+        (phiUpper tauUpper (algebraMap L L' z)) := congrArg upperEmbedding
         (AlgEquiv.restrictNormal_commutes
           (AlgEquiv.restrictScalarsHom K
             (phiUpper tauUpper)) L z)
@@ -801,9 +760,7 @@ private theorem finitePlaceCrossDecompositionTransport_core
         (algebraMap E E' (lowerEmbedding z)) := by
       rw [hEmbedding]
     _ = algebraMap E E'
-        (tauLower (lowerEmbedding z)) := by
-      exact
-        (AlgEquiv.restrictNormal_commutes
+        (tauLower (lowerEmbedding z)) := (AlgEquiv.restrictNormal_commutes
           (AlgEquiv.restrictScalarsHom C tauUpper)
           E (lowerEmbedding z)).symm
     _ = algebraMap E E'
@@ -849,30 +806,30 @@ theorem finitePlaceCrossDecompositionTransport
           v W hW w w' hcentres tauUpper) := by
     let vK := NumberField.HeightOneSpectrum.adicAbv K v
     let vK' := NumberField.HeightOneSpectrum.adicAbv K' W
-    let hvK : vK.IsNontrivial :=
+    let hvK :=
       RayClass.adicAbv_isNontrivial v
-    let hvK' : vK'.IsNontrivial :=
+    let hvK' :=
       RayClass.adicAbv_isNontrivial W
     let C := vK.Completion
     let D := vK'.Completion
     let E := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK w
     let E' := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK' w'
-    let : Algebra C E :=
-      finitePlaceLocalArtinLocalizedAlgebra (K := K) (L := L) v w
-    let : Algebra D E' :=
-      finitePlaceLocalArtinLocalizedAlgebra (K := K') (L := L') W w'
-    let : Algebra K E :=
+    let :=
+      finitePlaceLocalArtinLocalizedAlgebra v w
+    let :=
+      finitePlaceLocalArtinLocalizedAlgebra W w'
+    let :=
       LocalClassFieldTheory.localizedCompletionGlobalAlgebra vK w
-    let : Algebra K' E' :=
+    let :=
       LocalClassFieldTheory.localizedCompletionGlobalAlgebra vK' w'
-    let : Algebra C D :=
+    let :=
       (finitePlaceArtinRelativeCompletionRingHom
-        (K := K) (K' := K') v W hW).toAlgebra
-    let : Algebra E E' :=
+          v W hW).toAlgebra
+    let :=
       (finitePlaceArtinLocalizedCompletionRingHom
-        (K := K) (L := L) (K' := K') (L' := L')
+
         v W w w' hcentres).toAlgebra
-    let : Algebra C E' :=
+    let :=
       ((algebraMap D E').comp (algebraMap C D)).toAlgebra
     let : IsScalarTower C D E' :=
       IsScalarTower.of_algebraMap_eq' rfl
@@ -884,50 +841,40 @@ theorem finitePlaceCrossDecompositionTransport
           finitePlaceArtinLocalizedCompletion_towerPoint
             (K := K) (L := L) (K' := K') (L' := L')
             v W hW w w' hcentres x
-    let : FiniteDimensional C E :=
-      finitePlaceLocalArtinFiniteDimensional (K := K) (L := L) v w
-    let : IsAbelianGalois C E :=
-      finitePlaceLocalArtinIsAbelianGalois (K := K) (L := L) v w
-        (inferInstance : FiniteDimensional K L)
+    let :=
+      finitePlaceLocalArtinFiniteDimensional v w
+    let :=
+      finitePlaceLocalArtinIsAbelianGalois v w
+        inferInstance
     let hGaloisE : IsGalois C E :=
       (inferInstance : IsAbelianGalois C E).toIsGalois
     let : Normal C E := hGaloisE.to_normal
-    let eLower :
-        absoluteValueDecompositionGroup K w.1 ≃*
-          (E ≃ₐ[C] E) :=
+    let eLower :=
       decompositionGroupEquivAlgebraicLocalizationAut
         vK hvK w
-    let eUpper :
-        absoluteValueDecompositionGroup K' w'.1 ≃*
-          (E' ≃ₐ[D] E') :=
+    let eUpper :=
       decompositionGroupEquivAlgebraicLocalizationAut
         vK' hvK' w'
-    let lowerEmbedding : L →+* E :=
+    let lowerEmbedding :=
       AbsoluteValue.toAlgebraicLocalization vK w.1 w.2
-    let upperEmbedding : L' →+* E' :=
+    let upperEmbedding :=
       AbsoluteValue.toAlgebraicLocalization vK' w'.1 w'.2
     have hEmbedding (x : L) :
         algebraMap E E' (lowerEmbedding x) =
-          upperEmbedding (algebraMap L L' x) := by
-      exact
-        finitePlaceArtinLocalizedCompletion_globalEmbedding
-          (K := K) (L := L) (K' := K') (L' := L')
+          upperEmbedding (algebraMap L L' x) := finitePlaceArtinLocalizedCompletion_globalEmbedding
+
           v W w w' hcentres x
     have hUpperAction
         (tau : E' ≃ₐ[D] E') (z : L') :
         upperEmbedding
             (((eUpper.symm tau).1 : L' ≃ₐ[K'] L') z) =
-          tau (upperEmbedding z) := by
-      exact
-        finitePlaceDecompositionEquiv_symm_action
+          tau (upperEmbedding z) := finitePlaceDecompositionEquiv_symm_action
           vK' hvK' w' tau z
     have hLowerAction
         (tau : E ≃ₐ[C] E) (z : L) :
         tau (lowerEmbedding z) =
           lowerEmbedding
-            (((eLower.symm tau).1 : L ≃ₐ[K] L) z) := by
-      exact
-        (finitePlaceDecompositionEquiv_symm_action
+            (((eLower.symm tau).1 : L ≃ₐ[K] L) z) := (finitePlaceDecompositionEquiv_symm_action
           vK hvK w tau z).symm
     change
       ((AlgEquiv.restrictNormalHom L)

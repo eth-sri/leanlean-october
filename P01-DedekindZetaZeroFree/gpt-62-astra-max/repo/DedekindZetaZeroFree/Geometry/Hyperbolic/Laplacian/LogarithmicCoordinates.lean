@@ -23,7 +23,11 @@ variable (F : Type) [Field F] [NumberField F]
       apply Prod.ext <;> simp [KPCuspCutoffGraph.toArch, Complex.real_smul]
       apply Complex.ext <;> simp }
 
-private lemma toArch_coordinateVector (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) :
+section
+
+variable (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3)
+
+private lemma toArch_coordinateVector :
     KPCuspCutoffGraph.toArch F (HyperbolicChart.coordinateVector (KPCuspLogShape.dimension F) i k)
       = KPContFlatCuspCasimirSpecialization.coordinateDirection
           (KPCuspLogShape.dimension F) i k := by
@@ -37,11 +41,13 @@ private lemma toArch_coordinateVector (i : Fin (KPCuspLogShape.dimension F)) (k 
   · rw [Pi.single_eq_of_ne hj]
     simp [hj, Prod.ext_iff, Complex.ext_iff, Prod.mk.injEq]
 
-private lemma archCLM_coordinateVector (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) :
+private lemma archCLM_coordinateVector :
     archCLM F (HyperbolicChart.coordinateVector (KPCuspLogShape.dimension F) i k)
       = KPContFlatCuspCasimirSpecialization.coordinateDirection
           (KPCuspLogShape.dimension F) i k :=
   toArch_coordinateVector F i k
+
+end
 
 private lemma toArch_fromArch (x : KPCuspCutoffGraph.Arch F) :
     KPCuspCutoffGraph.toArch F (KPCuspCutoffGraph.fromArch F x) = x := by
@@ -57,18 +63,10 @@ private lemma first_deriv (f : KPCuspCutoffGraph.Arch F → ℂ) (hf : ContDiff 
             (KPCuspLogShape.dimension F) i k) := by
   have hT : HasFDerivAt (KPCuspCutoffGraph.toArch F) (archCLM F) p :=
     (archCLM F).hasFDerivAt
-  have hd : DifferentiableAt ℝ f (KPCuspCutoffGraph.toArch F p) :=
-    hf.differentiable (by simp) _
-  have h := (hd.hasFDerivAt.comp p hT).fderiv
+  have h := ((hf.differentiable (by simp) _).hasFDerivAt.comp p hT).fderiv
   rw [h]
   simp only [ContinuousLinearMap.comp_apply]
   rw [archCLM_coordinateVector]
-
-private lemma differentiableAt_fderiv_apply (f : KPCuspCutoffGraph.Arch F → ℂ)
-    (hf : ContDiff ℝ 2 f) (z : KPCuspCutoffGraph.Arch F)
-    (v : KPCuspCutoffGraph.Arch F) :
-    DifferentiableAt ℝ (fun y => fderiv ℝ f y v) z := by
-  fun_prop
 
 private lemma second_deriv (f : KPCuspCutoffGraph.Arch F → ℂ) (hf : ContDiff ℝ 2 f)
     (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) (x : KPCuspCutoffGraph.Arch F) :
@@ -95,19 +93,22 @@ private lemma second_deriv (f : KPCuspCutoffGraph.Arch F → ℂ) (hf : ContDiff
       (KPContFlatCuspCasimirSpecialization.coordinateDirection
         (KPCuspLogShape.dimension F) i k))
       (KPCuspCutoffGraph.toArch F (KPCuspCutoffGraph.fromArch F x)) :=
-    differentiableAt_fderiv_apply F f hf _ _
+    (by
+      fun_prop)
   have h := (hd.hasFDerivAt.comp _ hT).fderiv
   rw [h]
   simp only [ContinuousLinearMap.comp_apply]
   rw [toArch_fromArch, archCLM_coordinateVector]
 
-private lemma fromArch_apply_two (i : Fin (KPCuspLogShape.dimension F))
-    (x : KPCuspCutoffGraph.Arch F) :
+section
+
+variable (i : Fin (KPCuspLogShape.dimension F)) (x : KPCuspCutoffGraph.Arch F)
+
+private lemma fromArch_apply_two :
     (KPCuspCutoffGraph.fromArch F x) (i, 2) = (x i).2 := by
   simp [KPCuspCutoffGraph.fromArch]
 
-private lemma heightCoeff (i : Fin (KPCuspLogShape.dimension F))
-    (x : KPCuspCutoffGraph.Arch F) :
+private lemma heightCoeff :
     ((KPArch.height (x i) ^ 2 : ℝ) : ℂ)
       = (Real.exp (2 * (KPCuspCutoffGraph.fromArch F x) (i, 2)) : ℂ) := by
   rw [fromArch_apply_two]
@@ -115,8 +116,15 @@ private lemma heightCoeff (i : Fin (KPCuspLogShape.dimension F))
   congr 1
   rw [show (2 : ℝ) * (x i).2 = (x i).2 + (x i).2 by ring, Real.exp_add, pow_two]
 
-private lemma first_deriv_cd (f : KPCuspCutoffGraph.Arch F → ℂ) (hf : ContDiff ℝ 2 f)
-    (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3)
+end
+
+section
+
+variable (f : KPCuspCutoffGraph.Arch F → ℂ) (hf : ContDiff ℝ 2 f) (i : Fin (KPCuspLogShape.dimension F))
+    (k : Fin 3)
+
+include hf in
+private lemma first_deriv_cd
     (p : KPCuspCutoffGraph.Coordinates F) :
     HyperbolicChart.coordinateDerivative (KPCuspLogShape.dimension F) i k
         (f ∘ KPCuspCutoffGraph.toArch F) p
@@ -125,8 +133,8 @@ private lemma first_deriv_cd (f : KPCuspCutoffGraph.Arch F → ℂ) (hf : ContDi
             (KPCuspLogShape.dimension F) i k) :=
   first_deriv F f hf i k p
 
-private lemma second_deriv_cd (f : KPCuspCutoffGraph.Arch F → ℂ) (hf : ContDiff ℝ 2 f)
-    (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) (x : KPCuspCutoffGraph.Arch F) :
+include hf in
+private lemma second_deriv_cd (x : KPCuspCutoffGraph.Arch F) :
     HyperbolicChart.coordinateDerivative (KPCuspLogShape.dimension F) i k
         (HyperbolicChart.coordinateDerivative (KPCuspLogShape.dimension F) i k
           (f ∘ KPCuspCutoffGraph.toArch F)) (KPCuspCutoffGraph.fromArch F x)
@@ -136,6 +144,8 @@ private lemma second_deriv_cd (f : KPCuspCutoffGraph.Arch F → ℂ) (hf : ContD
           (KPContFlatCuspCasimirSpecialization.coordinateDirection
             (KPCuspLogShape.dimension F) i k) :=
   second_deriv F f hf i k x
+
+end
 
 theorem bridge (F : Type) [Field F] [NumberField F]
     (f : KPArch.Space (KPCuspLogShape.dimension F) → ℂ)
@@ -155,18 +165,20 @@ theorem bridge (F : Type) [Field F] [NumberField F]
       second_deriv_cd F f hf2 i 2 x, second_deriv_cd F f hf2 i 0 x,
       second_deriv_cd F f hf2 i 1 x,
       toArch_fromArch, heightCoeff F i x]
-  simp only [smul_eq_mul]
+  simp
 
- def labeled (d n : ℕ) (places : Fin d ≃ Fin n) :
+ variable (d n : ℕ) (places : Fin d ≃ Fin n)
+
+def labeled :
     HyperbolicChart.Space d ≃L[ℝ] KPArch.Space n :=
   (CotangentLogCoframe.A d).trans
     (ContinuousLinearEquiv.piCongrLeft ℝ (fun _ : Fin n => KPArch.H3) places)
-private lemma labeled_apply (d n : ℕ) (places : Fin d ≃ Fin n)
+private lemma labeled_apply
     (x : HyperbolicChart.Space d) (k : Fin n) :
     labeled d n places x k = CotangentLogCoframe.A d x (places.symm k) := by
   simp [labeled, ContinuousLinearEquiv.piCongrLeft, LinearEquiv.piCongrLeft,
     Equiv.piCongrLeft, Equiv.piCongrLeft', Equiv.piCongrLeft'_apply]
-private lemma labeled_vector (d n : ℕ) (places : Fin d ≃ Fin n) (i : Fin d) (k : Fin 3) :
+private lemma labeled_vector (i : Fin d) (k : Fin 3) :
     labeled d n places (HyperbolicChart.coordinateVector d i k) =
       KPContFlatCuspCasimirSpecialization.coordinateDirection n (places i) k := by
   funext j
@@ -177,11 +189,9 @@ private lemma labeled_vector (d n : ℕ) (places : Fin d ≃ Fin n) (i : Fin d) 
   · have hj : j = places i := by simpa using congrArg places h
     subst j
     fin_cases k <;> simp [Pi.single_eq_same]
-  · have hj : j ≠ places i := by
-      intro he
-      exact h (by simp [he])
+  · have hj : j ≠ places i := fun he => h (by simp [he])
     simp [h, hj]
-private lemma labeled_first (d n : ℕ) (places : Fin d ≃ Fin n)
+private lemma labeled_first
     (f : KPArch.Space n → ℂ) (hf : ContDiff ℝ 2 f) (i : Fin d) (k : Fin 3)
     (x : HyperbolicChart.Space d) :
     HyperbolicChart.coordinateDerivative d i k (f ∘ labeled d n places) x =
@@ -192,7 +202,7 @@ private lemma labeled_first (d n : ℕ) (places : Fin d ≃ Fin n)
   change fderiv ℝ (f ∘ labeled d n places) x _ = _
   rw [hh, ContinuousLinearMap.comp_apply]
   exact congrArg (fderiv ℝ f (labeled d n places x)) (labeled_vector d n places i k)
-private lemma labeled_second (d n : ℕ) (places : Fin d ≃ Fin n)
+private lemma labeled_second
     (f : KPArch.Space n → ℂ) (hf : ContDiff ℝ 2 f) (i : Fin d) (k : Fin 3)
     (x : HyperbolicChart.Space d) :
     HyperbolicChart.coordinateDerivative d i k
@@ -215,7 +225,7 @@ private lemma labeled_second (d n : ℕ) (places : Fin d ≃ Fin n)
   rw [hh, ContinuousLinearMap.comp_apply]
   exact congrArg _ (labeled_vector d n places i k)
 
-theorem bridge_equiv (d n : ℕ) (places : Fin d ≃ Fin n)
+theorem bridge_equiv
     (f : KPArch.Space n → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (x : HyperbolicChart.Space d) :
     KPContActualSphericalFlatStage.localLaplacian n f
@@ -248,7 +258,7 @@ theorem bridge_equiv (d n : ℕ) (places : Fin d ≃ Fin n)
     congr 1
     rw [show (2 : ℝ) * x (i,2) = x (i,2) + x (i,2) by ring, Real.exp_add, pow_two]
   rw [hheight]
-  simp only [smul_eq_mul]
+  simp
 
 end DedekindZetaZeroFree.KPContArchLaplacianCoordinateBridge
 

@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -35,10 +32,13 @@ open LocalFieldTheory.DiscreteValuationField
 open LocalFieldTheory.DiscreteValuationField.Examples.Qp
 open ValuationTheory.DiscreteValuationField
 
+section
+
+variable (p : ℕ) [Fact p.Prime]
+
 /-- The image of the canonical p-adic uniformizer is a uniformizer of the
 completed-unramified coefficient field. -/
-theorem padicCompletedUnramifiedIntegerMap_isUniformizer
-    (p : ℕ) [Fact p.Prime] :
+theorem padicCompletedUnramifiedIntegerMap_isUniformizer :
     let π :=
       padicIntEquivValuationSubring p (p : ℤ_[p])
     (padicCompletedUnramifiedCompleteDVF p).valuation.IsUniformizer
@@ -65,7 +65,7 @@ theorem padicCompletedUnramifiedIntegerMap_isUniformizer
     _ =
         Ideal.map (padicCompletedUnramifiedIntegerMap p)
           base.maximalIdeal := by
-      simpa only [F, base, target] using
+      simpa using
         (padicCompletedUnramifiedIntegerMap_map_maximalIdeal p).symm
     _ =
         Ideal.map (padicCompletedUnramifiedIntegerMap p)
@@ -78,11 +78,9 @@ theorem padicCompletedUnramifiedIntegerMap_isUniformizer
 
 /-- The completed integral primitive polynomial has the same positive degree
 as the original finite multiplicative Lubin--Tate polynomial. -/
-theorem padicCompletedPrimitivePolynomialInteger_natDegree
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitivePolynomialInteger_natDegree (n : ℕ) :
     (padicCompletedPrimitivePolynomialInteger p n).natDegree =
-      (p - 1) * p ^ n := by
-  exact ((padicCompletedPrimitivePolynomialInteger_monic p n).natDegree_map
+      (p - 1) * p ^ n := ((padicCompletedPrimitivePolynomialInteger_monic p n).natDegree_map
     (algebraMap
       (padicCompletedUnramifiedCompleteDVF p).valuationSubring
       (padicCompletedUnramifiedField p))).symm.trans
@@ -92,8 +90,7 @@ theorem padicCompletedPrimitivePolynomialInteger_natDegree
 
 /-- The completed integral primitive polynomial is genuinely Eisenstein at
 the maximal ideal of the completed-unramified valuation ring. -/
-theorem padicCompletedPrimitivePolynomialInteger_isEisensteinAt
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitivePolynomialInteger_isEisensteinAt (n : ℕ) :
     (padicCompletedPrimitivePolynomialInteger p n).IsEisensteinAt
       (padicCompletedUnramifiedCompleteDVF p).maximalIdeal := by
   let target := padicCompletedUnramifiedCompleteDVF p
@@ -121,8 +118,10 @@ theorem padicCompletedPrimitivePolynomialInteger_isEisensteinAt
       target.uniformizer_not_mem_maximalIdeal_sq hπE
     change ((standardLubinTatePrimitivePolynomial (padicLocalField p) π n).map
       (padicCompletedUnramifiedIntegerMap p)).coeff 0 ∉ target.maximalIdeal ^ 2
-    rw [Polynomial.coeff_map, standardLubinTatePrimitivePolynomial_coeff_zero]
+    simp
     exact hnotMem
+
+end
 
 /-- The completed integral primitive polynomial is irreducible in the
 completed-unramified valuation ring. -/
@@ -135,9 +134,7 @@ theorem padicCompletedPrimitivePolynomialInteger_irreducible
         (padicCompletedUnramifiedCompleteDVF p).valuationSubring).isPrime
       (padicCompletedPrimitivePolynomialInteger_monic p n).isPrimitive
   rw [padicCompletedPrimitivePolynomialInteger_natDegree]
-  exact Nat.mul_pos
-    (Nat.sub_pos_of_lt (Fact.out : p.Prime).one_lt)
-    (Nat.pow_pos (Fact.out : p.Prime).pos)
+  exact Nat.mul_pos (Nat.sub_pos_of_lt (Nat.Prime.one_lt Fact.out)) (Nat.pow_pos (Nat.Prime.pos Fact.out))
 
 /-- The primitive polynomial remains irreducible over the completed maximal
 unramified p-adic field. -/

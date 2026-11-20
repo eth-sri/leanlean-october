@@ -27,37 +27,35 @@ local instance normOneBorel (A : SArithmeticData F) : BorelSpace A.G1 := ⟨rfl�
 abbrev RemainingComplex (w : {v : InfinitePlace F // v.IsComplex}) :=
   {v : {v : InfinitePlace F // v.IsComplex} // v ≠ w}
 
-abbrev RemainingUnits (A : SArithmeticData F)
-    (w : {v : InfinitePlace F // v.IsComplex}) :=
+section
+
+variable (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
+
+abbrev RemainingUnits :=
   ((v : RemainingComplex w) → ℂˣ) × ((v : ↥A.Sf) → (v.val.adicCompletion F)ˣ)
 
-def remainingUnitsHom (A : SArithmeticData F)
-    (w : {v : InfinitePlace F // v.IsComplex}) : A.G →* RemainingUnits A w where
+def remainingUnitsHom : A.G →* RemainingUnits A w where
   toFun y := (fun v => Units.map
     (InfinitePlace.Completion.ringEquivComplexOfIsComplex v.val.property).toMonoidHom
       (y.1 v.val.val), y.2)
   map_one' := by ext <;> simp
   map_mul' := by intros; ext <;> simp
 
-def remainingProjection (A : SArithmeticData F)
-    (w : {v : InfinitePlace F // v.IsComplex}) : A.G1 →* RemainingUnits A w :=
+def remainingProjection : A.G1 →* RemainingUnits A w :=
   (remainingUnitsHom A w).comp A.G1.subtype
 
-def rawSheetProjection (A : SArithmeticData F)
-    (w : {v : InfinitePlace F // v.IsComplex}) (T : ℝ) (t : A.G1) :
+def rawSheetProjection (T : ℝ) (t : A.G1) :
     RemainingUnits A w :=
   remainingUnitsHom A w
     ((ProbeSheetFourierMellinBounds.localUnitsRaw A).symm (ProbeSheetFourierMellinBounds.sheetPointRaw A T t))
 
-def remainingProductMeasure (A : SArithmeticData F)
-    (w : {v : InfinitePlace F // v.IsComplex})
+def remainingProductMeasure
     (νComplex : RemainingComplex w → Measure ℂˣ)
     (νFinite : (v : ↥A.Sf) → Measure (v.val.adicCompletion F)ˣ) :
     Measure (RemainingUnits A w) :=
   (Measure.pi νComplex).prod (Measure.pi νFinite)
 
-private theorem continuous_remainingUnitsHom (A : SArithmeticData F)
-    (w : {v : InfinitePlace F // v.IsComplex}) : Continuous (remainingUnitsHom A w) := by
+private theorem continuous_remainingUnitsHom : Continuous (remainingUnitsHom A w) := by
   apply Continuous.prodMk
   · apply continuous_pi
     intro v
@@ -66,13 +64,14 @@ private theorem continuous_remainingUnitsHom (A : SArithmeticData F)
         ((continuous_apply v.val.val).comp continuous_fst)
   · exact continuous_snd
 
-private theorem rawSheetProjection_eq (A : SArithmeticData F)
-    (w : {v : InfinitePlace F // v.IsComplex}) (T : ℝ) (t : A.G1) :
+private theorem rawSheetProjection_eq (T : ℝ) (t : A.G1) :
     rawSheetProjection A w T t = remainingProjection A w t *
       remainingUnitsHom A w ((ProbeSheetFourierMellinBounds.localUnitsRaw A).symm
         (ProbeSheetFourierMellinBounds.ellRaw A T)) := by
   simp [rawSheetProjection, ProbeSheetFourierMellinBounds.sheetPointRaw, remainingProjection,
     MonoidHom.comp_apply]
+
+end
 
 private theorem complex_norm (v : {v : InfinitePlace F // v.IsComplex}) (z : v.val.Completion) :
     ‖InfinitePlace.Completion.ringEquivComplexOfIsComplex v.property z‖ = ‖z‖ := by
@@ -80,18 +79,20 @@ private theorem complex_norm (v : {v : InfinitePlace F // v.IsComplex}) (z : v.v
   change dist (InfinitePlace.Completion.ringEquivComplexOfIsComplex v.property z)
     (InfinitePlace.Completion.ringEquivComplexOfIsComplex v.property 0) = _ at h
   simpa [dist_zero_right] using h
- def fill (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
-    (z : ℂˣ) (y : RemainingUnits A w) : A.G :=
+ section
+
+variable (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex}) (z : ℂˣ)
+    (y : RemainingUnits A w)
+
+def fill : A.G :=
   (fun v => Units.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place v)).symm.toMonoidHom
-    (if hv : v = w.val then z else y.1 ⟨⟨v, A.complex_place v⟩, by intro h; exact hv (congrArg Subtype.val h)⟩), y.2)
-private theorem projection_fill (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
-    (z : ℂˣ) (y : RemainingUnits A w) : remainingUnitsHom A w (fill A w z y) = y := by
+    (if hv : v = w.val then z else y.1 ⟨⟨v, A.complex_place v⟩, fun h => hv (congrArg Subtype.val h)⟩), y.2)
+private theorem projection_fill : remainingUnitsHom A w (fill A w z y) = y := by
   ext v
   · have hv : v.val.val ≠ w.val := fun h => v.property (Subtype.ext h)
     simp [remainingUnitsHom, fill, hv]
   · rfl
- theorem norm_fill (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
-    (z : ℂˣ) (y : RemainingUnits A w) :
+ theorem norm_fill :
     A.norm (fill A w z y) = ‖z.val‖ ^ 2 *
       ((∏ v : RemainingComplex w, ‖(y.1 v).val‖ ^ 2) * ∏ v : ↥A.Sf, ‖(y.2 v).val‖) := by
   have he (v : InfinitePlace F) (u : ℂˣ) :
@@ -106,50 +107,53 @@ private theorem projection_fill (A : SArithmeticData F) (w : {v : InfinitePlace 
   congr 1
   congr 1
   have hprod : (∏ v ∈ Finset.univ.erase w.val,
-    ‖(if hv : v = w.val then z else y.1 ⟨⟨v, A.complex_place v⟩, by intro h; exact hv (congrArg Subtype.val h)⟩).val‖ ^ 2) =
-      ∏ v : {v : InfinitePlace F // v ≠ w.val}, ‖(y.1 ⟨⟨v.val, A.complex_place v.val⟩, by intro h; exact v.property (congrArg Subtype.val h)⟩).val‖ ^ 2 := by
+    ‖(if hv : v = w.val then z else y.1 ⟨⟨v, A.complex_place v⟩, fun h => hv (congrArg Subtype.val h)⟩).val‖ ^ 2) =
+      ∏ v : {v : InfinitePlace F // v ≠ w.val}, ‖(y.1 ⟨⟨v.val, A.complex_place v.val⟩, fun h => v.property (congrArg Subtype.val h)⟩).val‖ ^ 2 := by
     rw [Finset.prod_subtype (p := fun v => v ≠ w.val) (Finset.univ.erase w.val) (fun v => by simp)
-      (fun v => ‖(if hv : v = w.val then z else y.1 ⟨⟨v, A.complex_place v⟩, by intro h; exact hv (congrArg Subtype.val h)⟩).val‖ ^ 2)]
+      (fun v => ‖(if hv : v = w.val then z else y.1 ⟨⟨v, A.complex_place v⟩, fun h => hv (congrArg Subtype.val h)⟩).val‖ ^ 2)]
     apply Finset.prod_congr rfl
     intro v hv
     simp [v.property]
   rw [hprod]
   let e : {v : InfinitePlace F // v ≠ w.val} ≃ RemainingComplex w :=
-    { toFun := fun v => ⟨⟨v.val, A.complex_place v.val⟩, by intro h; exact v.property (congrArg Subtype.val h)⟩
+    { toFun := fun v => ⟨⟨v.val, A.complex_place v.val⟩, fun h => v.property (congrArg Subtype.val h)⟩
       invFun := fun v => ⟨v.val.val, fun h => v.property (Subtype.ext h)⟩
       left_inv := by intro; rfl
       right_inv := by intro; rfl }
   exact Fintype.prod_equiv e _ _ (fun v => rfl)
- def remNorm (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
-    (y : RemainingUnits A w) : ℝ :=
+
+end
+ section
+
+variable (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex}) (y : RemainingUnits A w)
+
+def remNorm : ℝ :=
   ((∏ v : RemainingComplex w, ‖(y.1 v).val‖ ^ 2) * ∏ v : ↥A.Sf, ‖(y.2 v).val‖)
-private theorem remNorm_pos (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
-    (y : RemainingUnits A w) : 0 < remNorm A w y :=
+private theorem remNorm_pos : 0 < remNorm A w y :=
   mul_pos (Finset.prod_pos fun v _ => pow_pos (norm_pos_iff.mpr (y.1 v).ne_zero) _)
     (Finset.prod_pos fun v _ => norm_pos_iff.mpr (y.2 v).ne_zero)
- def radius (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
-    (y : RemainingUnits A w) : ℝ := Real.sqrt (remNorm A w y)⁻¹
- theorem radius_pos (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
-    (y : RemainingUnits A w) : 0 < radius A w y := Real.sqrt_pos.mpr (inv_pos.mpr (remNorm_pos A w y))
- def radiusUnit (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
-    (y : RemainingUnits A w) : ℂˣ :=
+ def radius : ℝ := Real.sqrt (remNorm A w y)⁻¹
+ theorem radius_pos : 0 < radius A w y := Real.sqrt_pos.mpr (inv_pos.mpr (remNorm_pos A w y))
+ def radiusUnit : ℂˣ :=
   Units.mk0 (radius A w y : ℂ) (Complex.ofReal_ne_zero.mpr (radius_pos A w y).ne')
- theorem norm_radiusUnit (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
-    (y : RemainingUnits A w) : ‖(radiusUnit A w y).val‖ ^ 2 * remNorm A w y = 1 := by
+ theorem norm_radiusUnit : ‖(radiusUnit A w y).val‖ ^ 2 * remNorm A w y = 1 := by
   simp only [radiusUnit, Units.val_mk0, Complex.norm_real, Real.norm_eq_abs,
     abs_of_pos (radius_pos A w y)]
   rw [radius, Real.sq_sqrt (inv_nonneg.mpr (remNorm_pos A w y).le), inv_mul_cancel₀ (remNorm_pos A w y).ne']
- def remainingSection (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
-    (y : RemainingUnits A w) : A.G1 :=
+ def remainingSection : A.G1 :=
   ⟨fill A w (radiusUnit A w y) y, by
     change A.norm _ = 1
     rw [norm_fill]
     exact norm_radiusUnit A w y⟩
-private theorem surjective_remainingProjection (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex}) :
-    Function.Surjective (remainingProjection A w) := by
-  intro y
-  exact ⟨remainingSection A w y, projection_fill A w _ y⟩
-private theorem fill_projection (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
+
+end
+section
+
+variable (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
+
+private theorem surjective_remainingProjection :
+    Function.Surjective (remainingProjection A w) := fun y => ⟨remainingSection A w y, projection_fill A w _ y⟩
+private theorem fill_projection
     (t : A.G1) : fill A w
       (Units.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex w.property).toMonoidHom (t.val.1 w.val))
       (remainingProjection A w t) = t.val := by
@@ -160,17 +164,13 @@ private theorem fill_projection (A : SArithmeticData F) (w : {v : InfinitePlace 
       dsimp only [fill]
       rw [dif_pos rfl]
       apply Units.ext
-      change (InfinitePlace.Completion.ringEquivComplexOfIsComplex w.property).symm
-        ((InfinitePlace.Completion.ringEquivComplexOfIsComplex w.property) (t.val.1 w.val).val) = _
       exact ((InfinitePlace.Completion.ringEquivComplexOfIsComplex w.property).symm_apply_apply _)
     · dsimp only [fill]
       rw [dif_neg hv]
       apply Units.ext
-      change (InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place v)).symm
-        ((InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place v)) (t.val.1 v).val) = _
       exact (InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place v)).symm_apply_apply _
   · rfl
-private theorem continuous_fill (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex}) :
+private theorem continuous_fill :
     Continuous (fun p : ℂˣ × RemainingUnits A w => fill A w p.1 p.2) := by
   apply Continuous.prodMk
   · apply continuous_pi
@@ -183,25 +183,24 @@ private theorem continuous_fill (A : SArithmeticData F) (w : {v : InfinitePlace 
         Continuous (fun p : ℂˣ × RemainingUnits A w => p.2.1 ⟨⟨v, A.complex_place v⟩, by intro h; exact hv (congrArg Subtype.val h)⟩))
   · exact continuous_snd.comp continuous_snd
 
-private theorem continuous_radiusUnit (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex}) :
+private theorem continuous_radiusUnit :
     Continuous (radiusUnit A w) := by
   have hn : Continuous (remNorm A w) := by unfold remNorm; fun_prop
-  have hr : Continuous (radius A w) :=
+  have hr :=
     Real.continuous_sqrt.comp (hn.inv₀ fun y => (remNorm_pos A w y).ne')
   apply Units.continuous_iff.mpr
   constructor
   · exact Complex.continuous_ofReal.comp hr
-  · change Continuous (fun y => (radius A w y : ℂ)⁻¹)
-    exact (Complex.continuous_ofReal.comp hr).inv₀ fun y =>
+  · exact (Complex.continuous_ofReal.comp hr).inv₀ fun y =>
       Complex.ofReal_ne_zero.mpr (radius_pos A w y).ne'
- def circleFill (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
+ def circleFill
     (p : Circle × RemainingUnits A w) : A.G1 :=
   ⟨fill A w (Circle.toUnits p.1 * radiusUnit A w p.2) p.2, by
     change A.norm _ = 1
     rw [norm_fill]
     simpa only [Units.val_mul, norm_mul, Circle.toUnits_apply, Units.val_mk0,
       Circle.norm_coe, one_mul, remNorm] using norm_radiusUnit A w p.2⟩
-private theorem continuous_circleFill (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex}) :
+private theorem continuous_circleFill :
     Continuous (circleFill A w) := by
   apply Continuous.subtype_mk
   change Continuous ((fun p : ℂˣ × RemainingUnits A w => fill A w p.1 p.2) ∘
@@ -214,10 +213,10 @@ private theorem continuous_circleFill (A : SArithmeticData F) (w : {v : Infinite
   constructor
   · exact continuous_subtype_val
   · exact continuous_subtype_val.inv₀ fun z => Circle.coe_ne_zero z
-private theorem projection_circleFill (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
+private theorem projection_circleFill
     (p : Circle × RemainingUnits A w) : remainingProjection A w (circleFill A w p) = p.2 :=
   projection_fill A w _ _
-private theorem circleFill_covers (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
+private theorem circleFill_covers
     (t : A.G1) : ∃ z : Circle, circleFill A w (z, remainingProjection A w t) = t := by
   let y := remainingProjection A w t
   let u := Units.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex w.property).toMonoidHom (t.val.1 w.val)
@@ -241,8 +240,20 @@ private theorem circleFill_covers (A : SArithmeticData F) (w : {v : InfinitePlac
   have hz : Circle.toUnits z = u / radiusUnit A w y := Units.ext rfl
   change fill A w (Circle.toUnits z * radiusUnit A w y) y = t.val
   rw [hz, div_mul_cancel]
-  exact fill_projection A w t
-private theorem compact_preimage_remainingProjection (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
+  apply Prod.ext
+  · funext v
+    by_cases hv : v = w.val
+    · subst v
+      dsimp only [fill]
+      rw [dif_pos rfl]
+      apply Units.ext
+      exact ((InfinitePlace.Completion.ringEquivComplexOfIsComplex w.property).symm_apply_apply _)
+    · dsimp only [fill]
+      rw [dif_neg hv]
+      apply Units.ext
+      exact (InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place v)).symm_apply_apply _
+  · rfl
+private theorem compact_preimage_remainingProjection
     (K : Set (RemainingUnits A w)) (hK : IsCompact K) :
     IsCompact (remainingProjection A w ⁻¹' K) := by
   have heq : remainingProjection A w ⁻¹' K = circleFill A w '' (Set.univ ×ˢ K) := by
@@ -256,10 +267,13 @@ private theorem compact_preimage_remainingProjection (A : SArithmeticData F) (w 
   rw [heq]
   exact (isCompact_univ.prod hK).image (continuous_circleFill A w)
 
+end
+
+variable (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
+    (dt : @Measure A.G1 (borel _)) (hdt : @Measure.IsHaarMeasure A.G1 _ _ (borel _) dt)
+
+include hdt in
 theorem raw_remaining_projection_haar
-    (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
-    (dt : @Measure A.G1 (borel _))
-    (hdt : @Measure.IsHaarMeasure A.G1 _ _ (borel _) dt)
     (νComplex : RemainingComplex w → Measure ℂˣ)
     (hνComplex : ∀ v, (νComplex v).IsHaarMeasure)
     (νFinite : (v : ↥A.Sf) → Measure (v.val.adicCompletion F)ˣ)
@@ -291,9 +305,7 @@ theorem raw_remaining_projection_haar
   letI : ∀ v, SigmaFinite (νFinite v) := fun v => inferInstance
   have hp : Continuous (remainingProjection A w) :=
     (continuous_remainingUnitsHom A w).comp continuous_subtype_val
-  have hs : Function.Surjective (remainingProjection A w) := surjective_remainingProjection A w
-  have hk : IsCompact ((remainingProjection A w).ker : Set A.G1) :=
-    compact_preimage_remainingProjection A w {1} isCompact_singleton
+  have hs := surjective_remainingProjection A w
   have ht : Filter.Tendsto (remainingProjection A w) (Filter.cocompact A.G1)
       (Filter.cocompact (RemainingUnits A w)) := by
     apply Filter.hasBasis_cocompact.tendsto_right_iff.mpr
@@ -306,11 +318,10 @@ theorem raw_remaining_projection_haar
     Measure.isHaarMeasure_map dt (remainingProjection A w) hp hs ht
   let c := Measure.haarScalarFactor (Measure.map (remainingProjection A w) dt)
     (remainingProductMeasure A w νComplex νFinite)
-  have hc : c ≠ 0 := (Measure.haarScalarFactor_pos_of_isHaarMeasure _ _).ne'
   have hm : Measure.map (remainingProjection A w) dt =
       c • remainingProductMeasure A w νComplex νFinite :=
     Measure.isMulLeftInvariant_eq_smul _ _
-  refine ⟨hp, hs, hk, ht, c, hc, hm, ?_⟩
+  refine ⟨hp, hs, (compact_preimage_remainingProjection A w {1} isCompact_singleton), ht, c, ((Measure.haarScalarFactor_pos_of_isHaarMeasure _ _).ne'), hm, ?_⟩
   intro T hT
   have heq : rawSheetProjection A w T =
       (fun y => remainingUnitsHom A w ((ProbeSheetFourierMellinBounds.localUnitsRaw A).symm
@@ -322,10 +333,8 @@ theorem raw_remaining_projection_haar
     hm, Measure.map_smul, map_mul_left_eq_self]
   exact (measurable_const_mul _).aemeasurable
 
+include hdt in
 theorem raw_remaining_tensor_integral_bound
-    (A : SArithmeticData F) (w : {v : InfinitePlace F // v.IsComplex})
-    (dt : @Measure A.G1 (borel _))
-    (hdt : @Measure.IsHaarMeasure A.G1 _ _ (borel _) dt)
     (aComplex : {v : InfinitePlace F // v.IsComplex} → ℂ → ℝ)
     (aFinite : (v : ↥A.Sf) → v.val.adicCompletion F → ℝ)
     (hComplexContinuous : ∀ v, Continuous (aComplex v))
@@ -368,7 +377,7 @@ theorem raw_remaining_tensor_integral_bound
   let f : RemainingUnits A w → ℝ := fun y =>
     (∏ v : RemainingComplex w, aComplex v.val (y.1 v).val) *
       ∏ v : ↥A.Sf, aFinite v (y.2 v).val
-  have hf : Integrable f (remainingProductMeasure A w νComplex νFinite) :=
+  have hf :=
     (Integrable.fintype_prod hComplexIntegrable).mul_prod
       (Integrable.fintype_prod_dep hFiniteIntegrable)
   have hfcont : Continuous f := by

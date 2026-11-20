@@ -16,8 +16,8 @@ open KPCplxJacquetFunctional (standardWeylJacquet)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem archMatrixInsertion_local_diagonal (w : InfinitePlace F) (y : ℂˣ) :
     archMatrixInsertion F R.A.zeta12 R.A.primitive_zeta12
@@ -103,8 +103,7 @@ theorem selected_weyl_jacquet_identity {N : TraceHaarTransport R} (C : JointDigi
       selectedComplexWeyl R C v w = standardWeylJacquet κ f := by
   obtain ⟨f,hf⟩ := selected_residue_jacquet_image R C.sources C.realization v w
   let a := fourier R C.sources.dq (C.realization.theta v) 1
-  have ha : a ≠ 0 := ThetaExpansion.first_root_forward_period_ne_zero R C v
-  let κ : ℂˣ := (Units.mk0 a ha)⁻¹
+  let κ := (Units.mk0 a (ThetaExpansion.first_root_forward_period_ne_zero R C v))⁻¹
   refine ⟨κ,f,?_⟩
   funext y
   have hi : archMatrixInsertion F R.A.zeta12 R.A.primitive_zeta12

@@ -10,15 +10,15 @@ open scoped Classical NumberField Topology TensorProduct
 open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPLiteralRaw KPRankOneShellRepair
-open _root_.DedekindZetaZeroFree.KPLiteralResidueKernelTests renaming tensor_kernel_le_span → tensor_kernel_le_span
+open _root_.DedekindZetaZeroFree.KPLiteralResidueKernelTests (tensor_kernel_le_span)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -79,8 +79,7 @@ theorem upperStage_finiteQuotient_kernel (N : MomentSources.TraceHaarTransport R
       have hx0 : x ⟨Sum.inl w,hv⟩ = 0 := hx
       rw [(PiTensorProduct.tprod ℂ).map_coord_zero _ hx0, map_zero]
     | inr q =>
-      have hf : actualCanonicalForwardMap F ζ hζ q (C.canonical q) (C.polarization q)
-          (μ q) (hμ q) (x ⟨Sum.inr q,hv⟩) = 0 := by
+      have hf := by
         exact congrArg Subtype.val hx
       funext g
       change (coreResidueUpperLinear R P C)

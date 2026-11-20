@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -34,30 +29,27 @@ open LocalFieldTheory RamificationTheory CyclicCohomology KummerTheory
 open ClassFormation
 open scoped ValuativeRel
 
+section
+
+variable (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω] [IsGalois k Ω] [IsSepClosed Ω]
+    (K L : ClosedSubgroup Gal(Ω / k)) (hLK : L.toSubgroup ≤ K.toSubgroup)
+    [hfinite : Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+    [hKabsolute : Finite ((baseField Gal(Ω / k)).toSubgroup ⧸ extensionSubgroup (baseField Gal(Ω / k)) K (le_baseField K))]
+
 /-- The fixed-field units equivalence sends the cohomological finite norm
 subgroup to the additive form of the ordinary field-norm subgroup. -/
-theorem map_fixedFieldFiniteNormSubgroup_eq_additiveNormSubgroup
-    (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω]
-    [IsGalois k Ω] [IsSepClosed Ω]
-    (K L : ClosedSubgroup Gal(Ω / k))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    [hKabsolute : Finite
-      ((baseField Gal(Ω / k)).toSubgroup ⧸
-        extensionSubgroup (baseField Gal(Ω / k)) K
-          (le_baseField K))] :
+theorem map_fixedFieldFiniteNormSubgroup_eq_additiveNormSubgroup :
     (finiteNormSubgroup (galoisAmbientUnitsRep k Ω) K L hLK).map
         (abstractFixedFieldUnitsEquivGaloisFixed
           k Ω K).symm.toAddMonoidHom =
       additiveNormSubgroup
         (abstractFixedField k Ω K)
         (abstractRelativeFixedField k Ω hLK) := by
-  let F : IntermediateField k Ω :=
+  let F :=
     abstractFixedField k Ω K
-  let E : IntermediateField F Ω :=
+  let E :=
     abstractRelativeFixedField k Ω hLK
-  let : FiniteDimensional F E :=
+  let :=
     abstractRelativeFixedField_finiteDimensional
       k Ω K L hLK hKabsolute hfinite
   let e := abstractFixedFieldUnitsEquivGaloisFixed k Ω K
@@ -65,7 +57,7 @@ theorem map_fixedFieldFiniteNormSubgroup_eq_additiveNormSubgroup
   constructor
   · rintro ⟨a, ha, rfl⟩
     rcases ha with ⟨b, rfl⟩
-    let u : Eˣ := Additive.toMul
+    let u := Additive.toMul
       ((abstractRelativeFixedFieldUnitsEquivGaloisFixed
         k Ω K L hLK).symm b)
     have hb :
@@ -103,31 +95,21 @@ theorem map_fixedFieldFiniteNormSubgroup_eq_additiveNormSubgroup
 
 /-- The cohomological finite norm quotient for a pair of closed subgroups is
 additively equivalent to the ordinary norm quotient of their fixed fields. -/
-noncomputable def fixedFieldFiniteNormQuotientEquivNormQuotient
-    (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω]
-    [IsGalois k Ω] [IsSepClosed Ω]
-    (K L : ClosedSubgroup Gal(Ω / k))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    [hKabsolute : Finite
-      ((baseField Gal(Ω / k)).toSubgroup ⧸
-        extensionSubgroup (baseField Gal(Ω / k)) K
-          (le_baseField K))] :
+noncomputable def fixedFieldFiniteNormQuotientEquivNormQuotient :
     FiniteNormQuotient (galoisAmbientUnitsRep k Ω) K L hLK ≃+
       Additive
         (NormQuotient
           (abstractFixedField k Ω K)
           (abstractRelativeFixedField k Ω hLK)) := by
-  let F : IntermediateField k Ω :=
+  let F :=
     abstractFixedField k Ω K
-  let E : IntermediateField F Ω :=
+  let E :=
     abstractRelativeFixedField k Ω hLK
   letI : FiniteDimensional F E :=
     abstractRelativeFixedField_finiteDimensional
       k Ω K L hLK hKabsolute hfinite
   let S := finiteNormSubgroup (galoisAmbientUnitsRep k Ω) K L hLK
-  let normAdd : Additive Fˣ →+ Additive (NormQuotient F E) :=
+  let normAdd :=
     MonoidHom.toAdditive (normClass F E)
   let T := normAdd.ker
   let e := abstractFixedFieldUnitsEquivGaloisFixed k Ω K
@@ -138,7 +120,6 @@ noncomputable def fixedFieldFiniteNormQuotientEquivNormQuotient
         (additiveNormSubgroup_eq_ker_quotient_map F E)
   have hforward : S ≤ AddSubgroup.comap e.symm.toAddMonoidHom T := by
     intro x hx
-    change e.symm x ∈ T
     rw [← hmap]
     exact ⟨x, hx, rfl⟩
   have hinverse : T ≤ AddSubgroup.comap e.toAddMonoidHom S := by
@@ -153,19 +134,13 @@ noncomputable def fixedFieldFiniteNormQuotientEquivNormQuotient
       simpa using hxy.symm
     rw [heq]
     exact hx
-  let f :
-      (ambientFixedAddSubgroup (galoisAmbientUnitsRep k Ω) K ⧸ S) →+
-        (Additive Fˣ ⧸ T) :=
+  let f :=
     QuotientAddGroup.map S T e.symm.toAddMonoidHom hforward
-  let g :
-      (Additive Fˣ ⧸ T) →+
-        (ambientFixedAddSubgroup (galoisAmbientUnitsRep k Ω) K ⧸ S) :=
-    QuotientAddGroup.map T S e.toAddMonoidHom hinverse
   let modelEquiv :
       (ambientFixedAddSubgroup (galoisAmbientUnitsRep k Ω) K ⧸ S) ≃+
         (Additive Fˣ ⧸ T) :=
     { toFun := f
-      invFun := g
+      invFun := (QuotientAddGroup.map T S e.toAddMonoidHom hinverse)
       left_inv := by
         intro q
         refine QuotientAddGroup.induction_on q ?_
@@ -181,8 +156,7 @@ noncomputable def fixedFieldFiniteNormQuotientEquivNormQuotient
         change ↑(e.symm (e x)) = (↑x : Additive Fˣ ⧸ T)
         rw [e.symm_apply_apply]
       map_add' := f.map_add }
-  let quotientEquiv :
-      (Additive Fˣ ⧸ T) ≃+ Additive (NormQuotient F E) :=
+  let quotientEquiv :=
     QuotientAddGroup.quotientKerEquivOfSurjective normAdd
       (QuotientGroup.mk'_surjective
         (localNormSubgroup
@@ -196,16 +170,6 @@ noncomputable def fixedFieldFiniteNormQuotientEquivNormQuotient
 /-- The fixed-field norm-quotient equivalence sends a cohomological finite norm
 class to the ordinary norm class of the corresponding fixed-field unit. -/
 theorem fixedFieldFiniteNormQuotientEquivNormQuotient_finiteNormClass
-    (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω]
-    [IsGalois k Ω] [IsSepClosed Ω]
-    (K L : ClosedSubgroup Gal(Ω / k))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    [hKabsolute : Finite
-      ((baseField Gal(Ω / k)).toSubgroup ⧸
-        extensionSubgroup (baseField Gal(Ω / k)) K
-          (le_baseField K))]
     (a : ambientFixedAddSubgroup (galoisAmbientUnitsRep k Ω) K) :
     fixedFieldFiniteNormQuotientEquivNormQuotient
         k Ω K L hLK
@@ -215,15 +179,15 @@ theorem fixedFieldFiniteNormQuotientEquivNormQuotient_finiteNormClass
           (abstractFixedField k Ω K)
           (abstractRelativeFixedField k Ω hLK))
         ((abstractFixedFieldUnitsEquivGaloisFixed k Ω K).symm a) := by
-  let F : IntermediateField k Ω :=
+  let F :=
     abstractFixedField k Ω K
-  let E : IntermediateField F Ω :=
+  let E :=
     abstractRelativeFixedField k Ω hLK
-  let : FiniteDimensional F E :=
+  let :=
     abstractRelativeFixedField_finiteDimensional
       k Ω K L hLK hKabsolute hfinite
   let S := finiteNormSubgroup (galoisAmbientUnitsRep k Ω) K L hLK
-  let normAdd : Additive Fˣ →+ Additive (NormQuotient F E) :=
+  let normAdd :=
     MonoidHom.toAdditive (normClass F E)
   let T := normAdd.ker
   let e := abstractFixedFieldUnitsEquivGaloisFixed k Ω K
@@ -234,7 +198,6 @@ theorem fixedFieldFiniteNormQuotientEquivNormQuotient_finiteNormClass
         (additiveNormSubgroup_eq_ker_quotient_map F E)
   have hforward : S ≤ AddSubgroup.comap e.symm.toAddMonoidHom T := by
     intro x hx
-    change e.symm x ∈ T
     rw [← hmap]
     exact ⟨x, hx, rfl⟩
   simp only [fixedFieldFiniteNormQuotientEquivNormQuotient,
@@ -249,24 +212,20 @@ theorem fixedFieldFiniteNormQuotientEquivNormQuotient_finiteNormClass
   rw [QuotientAddGroup.map_mk', QuotientAddGroup.kerLift_mk]
   rfl
 
+end
+
+section
+
+variable (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω] [IsGalois k Ω] [IsSepClosed Ω]
+    (D : DegreeData Gal(Ω / k)) (v : ValuationData D (galoisAmbientUnitsRep k Ω))
+    (hcf : SatisfiesClassFieldAxiom (galoisAmbientUnitsRep k Ω)) (K L : ClosedSubgroup Gal(Ω / k))
+    (hLK : L.toSubgroup ≤ K.toSubgroup) [hnormal : (extensionSubgroup K L hLK).Normal]
+    [hfinite : Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+    [hKabsolute : Finite ((baseField Gal(Ω / k)).toSubgroup ⧸ extensionSubgroup (baseField Gal(Ω / k)) K (le_baseField K))]
+
 /-- The abstract fixed-field norm-residue symbol of the relative norm of a
 prime element is the prescribed Frobenius quotient class. -/
 theorem abstractFixedFieldNormResidueSymbol_apply_primeNorm
-    (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω]
-    [IsGalois k Ω] [IsSepClosed Ω]
-    (D : DegreeData Gal(Ω / k))
-    (v : ValuationData D (galoisAmbientUnitsRep k Ω))
-    (hcf : SatisfiesClassFieldAxiom
-      (galoisAmbientUnitsRep k Ω))
-    (K L : ClosedSubgroup Gal(Ω / k))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hnormal : (extensionSubgroup K L hLK).Normal]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    [hKabsolute : Finite
-      ((baseField Gal(Ω / k)).toSubgroup ⧸
-        extensionSubgroup (baseField Gal(Ω / k)) K
-          (le_baseField K))]
     (q : K.toSubgroup ⧸ extensionSubgroup K L hLK)
     (σ : D.FrobeniusElements
       ((⟨K, hKabsolute⟩ : FiniteAbstractField
@@ -364,21 +323,6 @@ theorem abstractFixedFieldNormResidueSymbol_apply_primeNorm
 /-- The abstract fixed-field norm-residue symbol depends only on the norm
 class of the input unit. -/
 theorem abstractFixedFieldNormResidueSymbol_eq_of_normClass_eq
-    (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω]
-    [IsGalois k Ω] [IsSepClosed Ω]
-    (D : DegreeData Gal(Ω / k))
-    (v : ValuationData D (galoisAmbientUnitsRep k Ω))
-    (hcf : SatisfiesClassFieldAxiom
-      (galoisAmbientUnitsRep k Ω))
-    (K L : ClosedSubgroup Gal(Ω / k))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hnormal : (extensionSubgroup K L hLK).Normal]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    [hKabsolute : Finite
-      ((baseField Gal(Ω / k)).toSubgroup ⧸
-        extensionSubgroup (baseField Gal(Ω / k)) K
-          (le_baseField K))]
     (x y : (abstractFixedField k Ω K)ˣ)
     (hxy :
       normClass (abstractFixedField k Ω K)
@@ -391,16 +335,15 @@ theorem abstractFixedFieldNormResidueSymbol_eq_of_normClass_eq
         k Ω D v hcf K L hLK (Additive.ofMul y) := by
   let F := abstractFixedField k Ω K
   let E := abstractRelativeFixedField k Ω hLK
-  let : FiniteDimensional F E :=
+  let :=
     abstractRelativeFixedField_finiteDimensional
       k Ω K L hLK hKabsolute hfinite
   let b :=
     abstractFixedFieldUnitsEquivGaloisFixed k Ω K
+  let finiteNormClass₀ := finiteNormClass (galoisAmbientUnitsRep k Ω) K L hLK
   have hfiniteClass :
-      finiteNormClass (galoisAmbientUnitsRep k Ω)
-          K L hLK (b (Additive.ofMul x)) =
-        finiteNormClass (galoisAmbientUnitsRep k Ω)
-          K L hLK (b (Additive.ofMul y)) := by
+      finiteNormClass₀ (b (Additive.ofMul x)) =
+        finiteNormClass₀ (b (Additive.ofMul y)) := by
     apply
       (fixedFieldFiniteNormQuotientEquivNormQuotient
         k Ω K L hLK).injective
@@ -418,8 +361,7 @@ theorem abstractFixedFieldNormResidueSymbol_eq_of_normClass_eq
             Gal(Ω / k))
           (⟨L, hLK, hnormal, hfinite⟩ :
             FiniteGaloisSubextension K)
-          (finiteNormClass (galoisAmbientUnitsRep k Ω)
-            K L hLK (b (Additive.ofMul x)))) =
+          (finiteNormClass₀ (b (Additive.ofMul x)))) =
       (MulEquiv.toAdditive
         (abstractExtensionQuotientEquivGaloisGroup
           k Ω K L hLK hnormal).abelianizationCongr)
@@ -429,9 +371,10 @@ theorem abstractFixedFieldNormResidueSymbol_eq_of_normClass_eq
             Gal(Ω / k))
           (⟨L, hLK, hnormal, hfinite⟩ :
             FiniteGaloisSubextension K)
-          (finiteNormClass (galoisAmbientUnitsRep k Ω)
-            K L hLK (b (Additive.ofMul y))))
+          (finiteNormClass₀ (b (Additive.ofMul y))))
   rw [hfiniteClass]
+
+end
 
 /-- The ambient abstract quotient equivalence and the intrinsic finite-Galois
 quotient equivalence agree on classes transported through a separable-closure
@@ -472,27 +415,22 @@ theorem fixedFieldQuotientEquiv_mk_compatibility
           F E i (QuotientGroup.mk τ) := by
   dsimp only
   let F := abstractFixedField K (SeparableClosure K) H.field
-  let : Algebra F (SeparableClosure F) :=
+  let :=
     (separableClosure F (AlgebraicClosure F)).algebra
   intro e τ
   let E := abstractRelativeFixedField K (SeparableClosure K) hJH
-  let : FiniteDimensional F E :=
+  let :=
     abstractRelativeFixedField_finiteDimensional
       K (SeparableClosure K) H.field J hJH H.finite hJfinite
-  let : IsGalois F E :=
+  let :=
     abstractRelativeFixedField_isGalois
       K (SeparableClosure K) H.field J hJH hJnormal
-  let i : E →ₐ[F] SeparableClosure F :=
+  let i :=
     e.symm.toAlgHom.comp E.val
-  let φ :
-      Gal(SeparableClosure F / F) ≃*
-        H.field.toSubgroup :=
+  let abstractSubgroupEquivGaloisGroup₀ := abstractSubgroupEquivGaloisGroup K (SeparableClosure K) H.field
+  let φ :=
     (AlgEquiv.autCongr e).trans
-      (abstractSubgroupEquivGaloisGroup
-        K (SeparableClosure K) H.field).symm
-  let qH :=
-    abstractExtensionQuotientEquivGaloisGroup
-      K (SeparableClosure K) H.field J hJH hJnormal
+      (abstractSubgroupEquivGaloisGroup₀).symm
   let qF :=
     finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
       F E i
@@ -500,34 +438,25 @@ theorem fixedFieldQuotientEquiv_mk_compatibility
   intro x
   apply E.val.injective
   have hφ :
-      abstractSubgroupEquivGaloisGroup
-          K (SeparableClosure K) H.field (φ τ.1) =
+      abstractSubgroupEquivGaloisGroup₀ (φ τ.1) =
         AlgEquiv.autCongr e τ.1 :=
     by
       let A :=
-        abstractSubgroupEquivGaloisGroup
-          K (SeparableClosure K) H.field
-      change A (A.symm (AlgEquiv.autCongr e τ.1)) =
-        AlgEquiv.autCongr e τ.1
+        abstractSubgroupEquivGaloisGroup₀
       exact A.apply_symm_apply (AlgEquiv.autCongr e τ.1)
   calc
-    E.val (qH (QuotientGroup.mk (φ τ.1)) x) =
+    _ =
         (φ τ.1).1 (E.val x) :=
       (abstractExtensionQuotientEquivGaloisGroup_mk_apply_val
         K (SeparableClosure K) H.field J hJH hJnormal
         (φ τ.1) x).symm
     _ =
-        abstractSubgroupEquivGaloisGroup
-          K (SeparableClosure K) H.field (φ τ.1) (E.val x) := by
-      exact
-        (abstractSubgroupEquivGaloisGroup_apply
+        abstractSubgroupEquivGaloisGroup₀ (φ τ.1) (E.val x) := (abstractSubgroupEquivGaloisGroup_apply
           K (SeparableClosure K) H.field (φ τ.1) (E.val x)).symm
-    _ = (AlgEquiv.autCongr e τ.1) (E.val x) := by
-      exact DFunLike.congr_fun hφ (E.val x)
+    _ = (AlgEquiv.autCongr e τ.1) (E.val x) := DFunLike.congr_fun hφ (E.val x)
     _ = e (τ.1 (e.symm (E.val x))) := rfl
     _ = e (τ.1 (i x)) := rfl
-    _ = e (i (qF (QuotientGroup.mk τ) x)) := by
-      exact congrArg e
+    _ = e (i (qF (QuotientGroup.mk τ) x)) := congrArg e
         (finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding_mk_apply
           F E i τ x).symm
     _ = E.val (qF (QuotientGroup.mk τ) x) :=

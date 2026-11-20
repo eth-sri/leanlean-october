@@ -14,23 +14,21 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPMsActualAngularSource KPMsNativeOffsetMass KPMsNativeOffsetComparison
 open KPContSectorCoveredQuotientVocabulary KPContFlatCuspIncomingEvaluation
 open KPGlobalResidualConstruction
-open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison renaming K_U_compact → K_U_compact
-open _root_.DedekindZetaZeroFree renaming canonicalRealization → canonicalRealization
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "Core" => RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C)
 variable (D : KPGlobalTorusInducingPlan.ModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (HR : KPSmoothLocalQuotientCharts.HaarRecipe F R.A.zeta12 R.A.primitive_zeta12)
-variable (HP : KPMsFixedHaarDisintegration.SphericalTransport F R.A.zeta12 R.A.primitive_zeta12)
-variable (M : NativeMeasuredSource F R.A.zeta12 R.A.primitive_zeta12 HR HP)
-variable (U : Level F R.A.zeta12 R.A.primitive_zeta12)
+    (HR : KPSmoothLocalQuotientCharts.HaarRecipe F R.A.zeta12 R.A.primitive_zeta12)
+    (HP : KPMsFixedHaarDisintegration.SphericalTransport F R.A.zeta12 R.A.primitive_zeta12)
+    (M : NativeMeasuredSource F R.A.zeta12 R.A.primitive_zeta12 HR HP)
+    (U : Level F R.A.zeta12 R.A.primitive_zeta12)
 local notation "H" => nativeFamily F ζ hζ HR HP
 local notation "V" => EisensteinSmoothGerms.ScalarSource.atlasLevel F ζ hζ U
 local instance ResidualCoreNormIdentityMeasurable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) : MeasurableSpace K := borel K
@@ -52,7 +50,7 @@ theorem exists_core_norm_boundary_identity
       (∀g, f.val (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)=coreResidue R P C x g) ∧
       (∫q, star (f.val q)*f.val q ∂ HR.quotientHaar) =
         finiteBoundaryPair R HR HP J dk (quotientCoreEvaluator R.A P C x) (coreResidue R P C x) := by
-  obtain ⟨n,Us,m,v,w,a,f,Vnew,hVJ,hVU,hfx,hs,hpair⟩ :=
+  obtain ⟨n, Us, m, v, w, a, f, Vnew, hVJ, hfx, hs, hpair⟩ :=
     exists_core_norm_boundary_expansion R P C D HR HP M J dk x hxJ
   refine ⟨f,hfx,?_⟩
   have hzero (i : Fin n) (j : Fin (m i)) :

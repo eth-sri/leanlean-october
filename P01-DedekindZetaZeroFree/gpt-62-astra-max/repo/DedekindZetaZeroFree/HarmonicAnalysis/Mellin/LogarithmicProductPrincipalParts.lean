@@ -23,23 +23,35 @@ def HasFinitePrincipalPart (M : ℂ → ℂ) (p : ℂ) (coeff : ℕ → ℂ) (N 
     ∀ᶠ s in nhdsWithin p ({p}ᶜ),
       M s = B s + ∑ j ∈ Finset.Icc 1 N, coeff j / (s - p) ^ j
 
-private lemma HolomorphicNear.analyticAt' {A : ℂ → ℂ} {p : ℂ} (h : HolomorphicNear A p) :
+section
+
+variable {A : ℂ → ℂ} {p : ℂ}
+
+private lemma HolomorphicNear.analyticAt' (h : HolomorphicNear A p) :
     AnalyticAt ℂ A p := Complex.analyticAt_iff_eventually_differentiableAt.mpr h
 
-private lemma AnalyticAt.holomorphicNear' {A : ℂ → ℂ} {p : ℂ} (h : AnalyticAt ℂ A p) :
+private lemma AnalyticAt.holomorphicNear' (h : AnalyticAt ℂ A p) :
     HolomorphicNear A p := Complex.analyticAt_iff_eventually_differentiableAt.mp h
 
-private lemma HolomorphicNear.add' {A B : ℂ → ℂ} {p : ℂ}
-    (hA : HolomorphicNear A p) (hB : HolomorphicNear B p) :
+end
+
+section
+
+variable {A B : ℂ → ℂ} {p : ℂ} (hA : HolomorphicNear A p) (hB : HolomorphicNear B p)
+
+include hA hB in
+private lemma HolomorphicNear.add' :
     HolomorphicNear (fun s => A s + B s) p := by
   filter_upwards [hA, hB] with s ha hb
   exact ha.add hb
 
-private lemma HolomorphicNear.mul' {A B : ℂ → ℂ} {p : ℂ}
-    (hA : HolomorphicNear A p) (hB : HolomorphicNear B p) :
+include hA hB in
+private lemma HolomorphicNear.mul' :
     HolomorphicNear (fun s => A s * B s) p := by
   filter_upwards [hA, hB] with s ha hb
   exact ha.mul hb
+
+end
 
 private lemma HolomorphicNear.const' (c : ℂ) (p : ℂ) :
     HolomorphicNear (fun _ => c) p :=
@@ -68,12 +80,9 @@ private lemma HolomorphicNear.finset_sum {ι : Type*} (K : Finset ι) {B : ι �
     HolomorphicNear (fun s => ∑ k ∈ K, B k s) p := by
   classical
   induction K using Finset.induction_on with
-  | empty => simpa using HolomorphicNear.const' 0 p
+  | empty => exact HolomorphicNear.const' 0 p
   | insert a s ha ih =>
-    have h1 : HolomorphicNear (B a) p := hB a (Finset.mem_insert_self a s)
-    have h2 : HolomorphicNear (fun t => ∑ k ∈ s, B k t) p :=
-      ih (fun k hk => hB k (Finset.mem_insert_of_mem hk))
-    simpa [Finset.sum_insert ha] using h1.add' h2
+    simpa [Finset.sum_insert ha] using (hB a (Finset.mem_insert_self a s)).add' (ih (fun k hk => hB k (Finset.mem_insert_of_mem hk)))
 
 private lemma taylor_split {g : ℂ → ℂ} {p : ℂ} (hg : HolomorphicNear g p) (n : ℕ) :
     ∃ F : ℂ → ℂ, HolomorphicNear F p ∧ ∀ᶠ s in 𝓝 p,
@@ -119,12 +128,12 @@ private lemma taylor_reindex (a : ℕ → ℂ) (z : ℂ) (N : ℕ) :
   rw [hset]
   rw [Finset.sum_image (by
     intro x hx y hy h
-    have hx' : x < N := Finset.mem_range.mp hx
+    have hx' := Finset.mem_range.mp hx
     have hy' : y < N := Finset.mem_range.mp hy
     have h' : N - x = N - y := h
     omega)]
   refine Finset.sum_congr rfl fun i hi => ?_
-  have hi' : i < N := Finset.mem_range.mp hi
+  have hi' := Finset.mem_range.mp hi
   rw [show N - (N - i) = i by omega]
 
 private lemma div_pow_split {A : ℂ → ℂ} {p : ℂ} {N : ℕ} (hN : 1 ≤ N)
@@ -134,14 +143,13 @@ private lemma div_pow_split {A : ℂ → ℂ} {p : ℂ} {N : ℕ} (hN : 1 ≤ N)
     HasFinitePrincipalPart (fun s => A s / (s - p) ^ N) p c N := by
   refine ⟨F, hF, ?_⟩
   filter_upwards [hA.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with s hAs hs
-  have hsp : s - p ≠ 0 := sub_ne_zero.mpr hs
+  have hsp := sub_ne_zero.mpr hs
   rw [hAs]
   have hterm : ∀ j ∈ Finset.Icc 1 N,
       c j * (s - p) ^ (N - j) / (s - p) ^ N = c j / (s - p) ^ j := by
     intro j hj
-    have hjN : j ≤ N := (Finset.mem_Icc.mp hj).2
     have h1 : (s - p) ^ (N - j) / (s - p) ^ N = ((s - p) ^ j)⁻¹ := by
-      rw [pow_sub₀ _ hsp hjN, mul_div_cancel_left₀ ((s - p) ^ j)⁻¹ (pow_ne_zero N hsp)]
+      rw [pow_sub₀ _ hsp ((Finset.mem_Icc.mp hj).2), mul_div_cancel_left₀ ((s - p) ^ j)⁻¹ (pow_ne_zero N hsp)]
     rw [mul_div_assoc, h1, div_eq_mul_inv]
   rw [add_div, Finset.sum_div, mul_div_cancel_left₀ (F s) (pow_ne_zero N hsp),
     Finset.sum_congr rfl hterm]
@@ -162,7 +170,11 @@ private lemma congr_fun {M M' : ℂ → ℂ} {p : ℂ} {coeff : ℕ → ℂ} {N 
   obtain ⟨B, hB, hEq⟩ := h
   exact ⟨B, hB, hMM'.symm.trans hEq⟩
 
-private lemma congr_coeff {M : ℂ → ℂ} {p : ℂ} {coeff coeff' : ℕ → ℂ} {N : ℕ}
+section
+
+variable {M : ℂ → ℂ} {p : ℂ}
+
+private lemma congr_coeff {coeff coeff' : ℕ → ℂ} {N : ℕ}
     (h : HasFinitePrincipalPart M p coeff N)
     (hcc : ∀ j ∈ Finset.Icc 1 N, coeff j = coeff' j) :
     HasFinitePrincipalPart M p coeff' N := by
@@ -173,7 +185,7 @@ private lemma congr_coeff {M : ℂ → ℂ} {p : ℂ} {coeff coeff' : ℕ → �
   congr 1
   exact Finset.sum_congr rfl fun j hj => by rw [hcc j hj]
 
-private lemma const_mul {M : ℂ → ℂ} {p : ℂ} {coeff : ℕ → ℂ} {N : ℕ} (c : ℂ)
+private lemma const_mul {coeff : ℕ → ℂ} {N : ℕ} (c : ℂ)
     (h : HasFinitePrincipalPart M p coeff N) :
     HasFinitePrincipalPart (fun s => c * M s) p (fun j => c * coeff j) N := by
   obtain ⟨B, hB, hEq⟩ := h
@@ -183,6 +195,8 @@ private lemma const_mul {M : ℂ → ℂ} {p : ℂ} {coeff : ℕ → ℂ} {N : �
   congr 1
   refine Finset.sum_congr rfl fun j _ => ?_
   rw [mul_div_assoc]
+
+end
 
 private lemma add {M M' : ℂ → ℂ} {p : ℂ} {coeff coeff' : ℕ → ℂ} {N : ℕ}
     (h : HasFinitePrincipalPart M p coeff N) (h' : HasFinitePrincipalPart M' p coeff' N) :
@@ -234,10 +248,7 @@ private lemma finset_sum {ι : Type*} (K : Finset ι) {M : ι → ℂ → ℂ}
     · exact ⟨0, HolomorphicNear.const' 0 p, fun hk' => absurd hk' hk⟩
   choose B hBhol hBeq using hB
   refine ⟨fun s => ∑ k ∈ K, B k s, HolomorphicNear.finset_sum K (fun k _ => hBhol k), ?_⟩
-  have hall : ∀ᶠ s in 𝓝[≠] p, ∀ k ∈ K,
-      M k s = B k s + ∑ j ∈ Finset.Icc 1 N, coeff k j / (s - p) ^ j :=
-    (Finset.eventually_all K).mpr (fun k hk => hBeq k hk)
-  filter_upwards [hall] with s hs
+  filter_upwards [((Finset.eventually_all K).mpr (fun k hk => hBeq k hk))] with s hs
   rw [Finset.sum_congr rfl hs, Finset.sum_add_distrib]
   congr 1
   rw [Finset.sum_comm]
@@ -305,17 +316,21 @@ theorem holomorphic_div_pow_principalPart (A : ℂ → ℂ) (p : ℂ)
 def logMellinProduct (H L : ℂ → ℂ) (X : ℝ) (s : ℂ) : ℂ :=
   H s * (X : ℂ) ^ s * L s
 
-def logProductPrincipalCoeff (P : Polynomial ℂ) (X : ℝ) (L : ℂ → ℂ) (j : ℕ) : ℂ :=
+section
+
+variable (P : Polynomial ℂ) (X : ℝ) (L : ℂ → ℂ)
+
+def logProductPrincipalCoeff (j : ℕ) : ℂ :=
   ∑ k ∈ P.support.filter (fun k => j ≤ k + 1),
     ((-1 : ℂ) ^ k * (k.factorial : ℂ) * P.coeff k) *
       iteratedDeriv (k + 1 - j) (fun s : ℂ => (X : ℂ) ^ s * L s) 0 /
         ((k + 1 - j).factorial : ℂ)
 
-def logProductResidue0 (P : Polynomial ℂ) (X : ℝ) (L : ℂ → ℂ) : ℂ :=
+def logProductResidue0 : ℂ :=
   ∑ k ∈ P.support, (-1 : ℂ) ^ k * P.coeff k *
     iteratedDeriv k (fun s : ℂ => (X : ℂ) ^ s * L s) 0
 
-theorem logProductPrincipalCoeff_one (P : Polynomial ℂ) (X : ℝ) (L : ℂ → ℂ) :
+theorem logProductPrincipalCoeff_one :
     logProductPrincipalCoeff P X L 1 = logProductResidue0 P X L := by
   unfold logProductPrincipalCoeff logProductResidue0
   rw [Finset.filter_true_of_mem (fun k _ => by omega : ∀ k ∈ P.support, 1 ≤ k + 1)]
@@ -324,14 +339,17 @@ theorem logProductPrincipalCoeff_one (P : Polynomial ℂ) (X : ℝ) (L : ℂ →
   have hfac : (k.factorial : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero k)
   field_simp
 
-theorem logMellinProduct_principalPart_zero {f : ℝ → ℂ} {δ : ℝ}
-    {P : Polynomial ℂ} {H : ℂ → ℂ} (h : LogMellinAdmissible f δ P H)
-    (X : ℝ) (hX : 0 < X) (L : ℂ → ℂ) (hL : HolomorphicNear L 0) :
+end
+
+variable {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ} (h : LogMellinAdmissible f δ P H) (X : ℝ)
+    (hX : 0 < X) (L : ℂ → ℂ)
+
+include h hX in
+theorem logMellinProduct_principalPart_zero (hL : HolomorphicNear L 0) :
     HasFinitePrincipalPart (logMellinProduct H L X) 0
       (logProductPrincipalCoeff P X L) (P.natDegree + 1) := by
   obtain ⟨A, hA, hAeq⟩ := h.decomp
-  have hc : HolomorphicNear (fun s : ℂ => (X : ℂ) ^ s) 0 := cpow_const_holomorphicNear X hX 0
-  have hG : HolomorphicNear (fun s : ℂ => (X : ℂ) ^ s * L s) 0 := hc.mul' hL
+  have hG := (cpow_const_holomorphicNear X hX 0).mul' hL
   set c : ℕ → ℂ := fun k => (-1 : ℂ) ^ k * (k.factorial : ℂ) * P.coeff k with hcdef
   have hpart2 : HasFinitePrincipalPart (fun s => logPrincipalPart P s * ((X : ℂ) ^ s * L s)) 0
       (logProductPrincipalCoeff P X L) (P.natDegree + 1) := by
@@ -343,7 +361,7 @@ theorem logMellinProduct_principalPart_zero {f : ℝ → ℂ} {δ : ℝ}
               ((k + 1 - j).factorial : ℂ)) else 0)
         (P.natDegree + 1) := by
       refine HasFinitePrincipalPart.finset_sum P.support fun k hk => ?_
-      have hkN : k ≤ P.natDegree := Polynomial.le_natDegree_of_mem_supp k hk
+      have hkN := Polynomial.le_natDegree_of_mem_supp k hk
       have hbase := (holomorphic_div_pow_principalPart
         (fun s : ℂ => (X : ℂ) ^ s * L s) 0 hG (k + 1) (by omega)).const_mul (c k)
       simpa using hbase.mono (show k + 1 ≤ P.natDegree + 1 by omega)
@@ -360,20 +378,15 @@ theorem logMellinProduct_principalPart_zero {f : ℝ → ℂ} {δ : ℝ}
       refine Finset.sum_congr rfl fun k _ => ?_
       simp only [hcdef]
       rw [mul_div_assoc]
-  have hpart1 : HasFinitePrincipalPart (fun s => A s * ((X : ℂ) ^ s * L s)) 0
-      (fun _ => 0) (P.natDegree + 1) :=
-    hasFinitePrincipalPart_of_holomorphicNear (hA.mul' hG) _
-  have hmain := hpart1.add hpart2
-  refine hmain.congr_fun ?_ |>.congr_coeff ?_
+  refine ((hasFinitePrincipalPart_of_holomorphicNear (hA.mul' hG) _).add hpart2).congr_fun ?_ |>.congr_coeff ?_
   · filter_upwards [hAeq] with s hs
     rw [logMellinProduct, hs]
     ring
   · intro j hj
     simp
 
-theorem logMellinProduct_principalPart_one {f : ℝ → ℂ} {δ : ℝ}
-    {P : Polynomial ℂ} {H : ℂ → ℂ} (h : LogMellinAdmissible f δ P H)
-    (X : ℝ) (hX : 0 < X) (L : ℂ → ℂ) (κ : ℂ)
+include h hX in
+theorem logMellinProduct_principalPart_one (κ : ℂ)
     (hL : HasFinitePrincipalPart L 1 (fun _ => κ) 1) :
     HasFinitePrincipalPart (logMellinProduct H L X) 1
       (fun _ => κ * (X : ℂ) * H 1) 1 := by
@@ -389,7 +402,7 @@ theorem logMellinProduct_principalPart_one {f : ℝ → ℂ} {δ : ℝ}
       with s hs hs' hs1
     have hs1' : L s = BL s + κ / (s - 1) := by simpa using hs
     have hGs : H s * (X : ℂ) ^ s = H 1 * (X : ℂ) + (s - 1) * F s := by simpa using hs'
-    have hsne : s - 1 ≠ 0 := sub_ne_zero.mpr hs1
+    have hsne := sub_ne_zero.mpr hs1
     rw [logMellinProduct, hs1', hGs]
     simp only [Finset.Icc_self, Finset.sum_singleton, pow_one]
     field_simp

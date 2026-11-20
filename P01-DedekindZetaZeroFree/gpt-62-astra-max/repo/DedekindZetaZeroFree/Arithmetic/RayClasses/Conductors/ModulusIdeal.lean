@@ -20,13 +20,16 @@ def kernelConductor (hc : NumberField.IsTotallyComplex F) (m : Ideal (𝓞 F))
       (RayClassBridge.narrowIdealModulus F m hm),
       RayClassBridge.ideleClassCharacter_congruenceSubgroup_le_ker F hc m hm η⟩⟩
 
-def modulusIdeal (s : HeightOneSpectrum (𝓞 F) →₀ ℕ) : Ideal (𝓞 F) :=
+section
+
+variable (s : HeightOneSpectrum (𝓞 F) →₀ ℕ)
+
+def modulusIdeal : Ideal (𝓞 F) :=
   ∏ v ∈ s.support, v.asIdeal ^ s v
 
-theorem modulusIdeal_ne_bot (s : HeightOneSpectrum (𝓞 F) →₀ ℕ) : modulusIdeal s ≠ ⊥ := by
-  exact Finset.prod_ne_zero_iff.mpr (fun v _ => pow_ne_zero _ v.ne_bot)
+theorem modulusIdeal_ne_bot : modulusIdeal s ≠ ⊥ := Finset.prod_ne_zero_iff.mpr (fun v _ => pow_ne_zero _ v.ne_bot)
 
-theorem modulusIdeal_count (s : HeightOneSpectrum (𝓞 F) →₀ ℕ) (v : HeightOneSpectrum (𝓞 F)) :
+theorem modulusIdeal_count (v : HeightOneSpectrum (𝓞 F)) :
     FractionalIdeal.count F v (modulusIdeal s : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) = s v := by
   unfold modulusIdeal
   change FractionalIdeal.count F v ((FractionalIdeal.coeIdealHom (nonZeroDivisors (𝓞 F)) F) (∏ w ∈ s.support, w.asIdeal ^ s w)) = _
@@ -47,20 +50,23 @@ theorem modulusIdeal_count (s : HeightOneSpectrum (𝓞 F) →₀ ℕ) (v : Heig
   · intro w _
     exact FractionalIdeal.coeIdeal_ne_zero.mpr (pow_ne_zero _ w.ne_bot)
 
-theorem modulusIdeal_M (s : HeightOneSpectrum (𝓞 F) →₀ ℕ) :
+theorem modulusIdeal_M :
     (M F (modulusIdeal s) (modulusIdeal_ne_bot s)).finitePart = s := by
   ext v
   change Int.toNat (FractionalIdeal.count F v (modulusIdeal s : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)) = s v
   rw [modulusIdeal_count, Int.toNat_natCast]
 
-theorem modulusIdeal_le (s : HeightOneSpectrum (𝓞 F) →₀ ℕ) (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+theorem modulusIdeal_le (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (hs : s ≤ (M F m hm).finitePart) : m ≤ modulusIdeal s := by
   apply (M_le_iff F _ _ (modulusIdeal_ne_bot s) hm).mp
   rw [ClassFieldTheory.RayClassModulus.le_iff]
   exact ⟨by rw [modulusIdeal_M]; exact fun v => hs v, by simp⟩
 
-theorem kernel_defining (hc : NumberField.IsTotallyComplex F) (m : Ideal (𝓞 F))
-    (hm : m ≠ ⊥) (η : RayClassCharacter F m) :
+end
+
+variable (hc : NumberField.IsTotallyComplex F) (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (η : RayClassCharacter F m)
+
+theorem kernel_defining :
     (ClassFieldTheory.GlobalClassFieldComparison.rayClassModulusToOriginal F
       (M F (modulusIdeal (kernelConductor hc m hm η).narrowFiniteConductor)
         (modulusIdeal_ne_bot _))).congruenceSubgroup ≤
@@ -75,20 +81,16 @@ theorem kernel_defining (hc : NumberField.IsTotallyComplex F) (m : Ideal (𝓞 F
     apply RayClass.Modulus.ext
     · exact (modulusIdeal_M _).trans he.symm
     · exact Subsingleton.elim _ _
-  change (ClassFieldTheory.GlobalClassFieldComparison.rayClassModulusToOriginal F
-      (M F (modulusIdeal H.narrowFiniteConductor) (modulusIdeal_ne_bot _))).congruenceSubgroup ≤ H.1
   rw [hMn]
   exact hn
 
-theorem kernel_bound (hc : NumberField.IsTotallyComplex F) (m : Ideal (𝓞 F))
-    (hm : m ≠ ⊥) (η : RayClassCharacter F m) :
+theorem kernel_bound :
     m ≤ modulusIdeal (kernelConductor hc m hm η).narrowFiniteConductor := by
   apply modulusIdeal_le _ m hm
   exact (kernelConductor hc m hm η).narrowFiniteConductor_le
     (RayClassBridge.ideleClassCharacter_congruenceSubgroup_le_ker F hc m hm η)
 
-theorem localTrivial (hc : NumberField.IsTotallyComplex F) (m : Ideal (𝓞 F))
-    (hm : m ≠ ⊥) (η : RayClassCharacter F m) (v : HeightOneSpectrum (𝓞 F))
+theorem localTrivial (v : HeightOneSpectrum (𝓞 F))
     (u : (v.adicCompletion F)ˣ)
     (hu : u ∈ ClassFieldTheory.rayLocalHigherUnitGroup v
       ((kernelConductor hc m hm η).narrowFiniteConductor v)) :

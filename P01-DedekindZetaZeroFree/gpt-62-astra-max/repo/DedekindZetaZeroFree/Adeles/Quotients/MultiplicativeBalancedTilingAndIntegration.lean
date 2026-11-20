@@ -27,7 +27,7 @@ theorem exists_multiplicative_quotient_balanced_tiling :
       MeasurableSet D ∧ IsCompact (closure D) ∧ D ⊆ K_bal ∧
       (∀ y : A.G1, ∃! γ : A.Gamma1, (γ : A.G1) * y ∈ D) := by
   obtain ⟨n, V, hV, hcover⟩ :=
-    exists_finite_relativelyCompact_quotient_slices (G := A.G1) A.Gamma1
+    exists_finite_relativelyCompact_quotient_slices A.Gamma1
   obtain ⟨D, hDmeas, hDcomp, htiling⟩ :=
     exists_measurable_relativelyCompact_exact_transversal_of_finite_slices
       A.G1 A.Gamma1 n V (fun i => (hV i).1) (fun i => (hV i).2.1)

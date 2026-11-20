@@ -20,38 +20,40 @@ local instance scaledBallCompletionMeasurable (v : HeightOneSpectrum (𝓞 F)) :
 local instance scaledBallCompletionBorel (v : HeightOneSpectrum (𝓞 F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-def finiteCompletionUnitOrder (v : HeightOneSpectrum (𝓞 F))
-    (b : (v.adicCompletion F)ˣ) : ℤ :=
+section
+
+variable (v : HeightOneSpectrum (𝓞 F)) (b : (v.adicCompletion F)ˣ)
+
+def finiteCompletionUnitOrder : ℤ :=
   -WithZero.log (Valued.v (b : v.adicCompletion F))
 
-theorem finiteCompletionUnitOrder_valuation (v : HeightOneSpectrum (𝓞 F))
-    (b : (v.adicCompletion F)ˣ) :
+theorem finiteCompletionUnitOrder_valuation :
     Valued.v (b : v.adicCompletion F) =
       WithZero.exp (-finiteCompletionUnitOrder F v b) := by
   simpa [finiteCompletionUnitOrder] using
     (WithZero.exp_log (Valued.v.ne_zero_iff.mpr b.ne_zero)).symm
 
-theorem finiteCompletionUnitOrder_norm (v : HeightOneSpectrum (𝓞 F))
-    (b : (v.adicCompletion F)ˣ) :
+theorem finiteCompletionUnitOrder_norm :
     ‖(b : v.adicCompletion F)‖ =
       (Ideal.absNorm v.asIdeal : ℝ) ^ (-finiteCompletionUnitOrder F v b) := by
   rw [FinitePlace.norm_def, finiteCompletionUnitOrder_valuation,
     WithZeroMulInt.toNNReal_neg_apply _ WithZero.exp_ne_zero]
   simp
 
-def localScaledBallDual (v : HeightOneSpectrum (𝓞 F))
-    (b : (v.adicCompletion F)ˣ) (m : ℤ) : AddSubgroup (v.adicCompletion F) :=
+end
+
+variable (v : HeightOneSpectrum (𝓞 F)) (b : (v.adicCompletion F)ˣ) (m : ℤ)
+
+def localScaledBallDual : AddSubgroup (v.adicCompletion F) :=
   (localFiniteAnnihilator F v (finiteCompletionBall F v m)).comap
     (AddMonoidHom.mulLeft (b : v.adicCompletion F))
 
-@[simp] theorem mem_localScaledBallDual (v : HeightOneSpectrum (𝓞 F))
-    (b : (v.adicCompletion F)ˣ) (m : ℤ) (x : v.adicCompletion F) :
+@[simp] theorem mem_localScaledBallDual (x : v.adicCompletion F) :
     x ∈ localScaledBallDual F v b m ↔
       (b : v.adicCompletion F) * x ∈
         localFiniteAnnihilator F v (finiteCompletionBall F v m) := Iff.rfl
 
-theorem localScaledBallDual_eq_finiteCompletionBall
-    (v : HeightOneSpectrum (𝓞 F)) (b : (v.adicCompletion F)ˣ) (m : ℤ) :
+theorem localScaledBallDual_eq_finiteCompletionBall :
     localScaledBallDual F v b m =
       finiteCompletionBall F v
         (-m - (localDifferentExponent F v : ℤ) - finiteCompletionUnitOrder F v b) := by
@@ -67,8 +69,7 @@ theorem localScaledBallDual_eq_finiteCompletionBall
   rw [he]
   exact mul_le_mul_iff_of_pos_left WithZero.exp_pos
 
-theorem localScaledBallDual_map_mul_eq_annihilator
-    (v : HeightOneSpectrum (𝓞 F)) (b : (v.adicCompletion F)ˣ) (m : ℤ) :
+theorem localScaledBallDual_map_mul_eq_annihilator :
     (localScaledBallDual F v b m).map
         (AddMonoidHom.mulLeft (b : v.adicCompletion F)) =
       localFiniteAnnihilator F v (finiteCompletionBall F v m) := by
@@ -76,8 +77,7 @@ theorem localScaledBallDual_map_mul_eq_annihilator
   intro x hx
   exact ⟨(↑b⁻¹ : v.adicCompletion F) * x, by simp [mul_assoc]⟩
 
-theorem localFiniteAnnihilator_map_localScaledBallDual
-    (v : HeightOneSpectrum (𝓞 F)) (b : (v.adicCompletion F)ˣ) (m : ℤ) :
+theorem localFiniteAnnihilator_map_localScaledBallDual :
     localFiniteAnnihilator F v
         ((localScaledBallDual F v b m).map
           (AddMonoidHom.mulLeft (b : v.adicCompletion F))) =
@@ -85,8 +85,7 @@ theorem localFiniteAnnihilator_map_localScaledBallDual
   rw [localScaledBallDual_map_mul_eq_annihilator,
     localFiniteAnnihilator_localFiniteAnnihilator_finiteCompletionBall]
 
-theorem localScaledBallDual_masses_pos_finite
-    (v : HeightOneSpectrum (𝓞 F)) (b : (v.adicCompletion F)ˣ) (m : ℤ) :
+theorem localScaledBallDual_masses_pos_finite :
     0 < (localNormalizedHaar F v
         (finiteCompletionBall F v m : Set (v.adicCompletion F))).toReal ∧
     0 < (localNormalizedHaar F v
@@ -101,8 +100,7 @@ theorem localScaledBallDual_masses_pos_finite
   exact ⟨localBallMass_pos F v _, localBallMass_pos F v _,
     ENNReal.ofReal_lt_top, ENNReal.ofReal_lt_top⟩
 
-theorem localScaledBallDual_mass_product
-    (v : HeightOneSpectrum (𝓞 F)) (b : (v.adicCompletion F)ˣ) (m : ℤ) :
+theorem localScaledBallDual_mass_product :
     (localNormalizedHaar F v
         (finiteCompletionBall F v m : Set (v.adicCompletion F))).toReal *
       (localNormalizedHaar F v
@@ -120,13 +118,11 @@ theorem localScaledBallDual_mass_product
   push_cast
   ring
 
-abbrev localScaledBallDualQuotient (v : HeightOneSpectrum (𝓞 F))
-    (b : (v.adicCompletion F)ˣ) (m : ℤ) :=
+abbrev localScaledBallDualQuotient :=
   localScaledBallDual F v b m ⧸
     (finiteCompletionBall F v m).comap (localScaledBallDual F v b m).subtype
 
 theorem finite_localScaledBallDualQuotient
-    (v : HeightOneSpectrum (𝓞 F)) (b : (v.adicCompletion F)ˣ) (m : ℤ)
     (hHL : finiteCompletionBall F v m ≤ localScaledBallDual F v b m) :
     Finite (localScaledBallDualQuotient F v b m) := by
   unfold localScaledBallDualQuotient
@@ -136,7 +132,6 @@ theorem finite_localScaledBallDualQuotient
   simpa only [localScaledBallDual_eq_finiteCompletionBall] using hHL
 
 theorem natCard_localScaledBallDualQuotient
-    (v : HeightOneSpectrum (𝓞 F)) (b : (v.adicCompletion F)ˣ) (m : ℤ)
     (hHL : finiteCompletionBall F v m ≤ localScaledBallDual F v b m) :
     (Nat.card (localScaledBallDualQuotient F v b m) : ℝ) =
       (localNormalizedHaar F v
@@ -167,13 +162,11 @@ theorem natCard_localScaledBallDualQuotient
       let y : localScaledBallDual F v b m := ⟨x, hx⟩
       let i : localScaledBallDualQuotient F v b m := QuotientAddGroup.mk y
       refine Set.mem_iUnion.mpr ⟨i, ?_⟩
-      have he : (QuotientAddGroup.mk y : localScaledBallDualQuotient F v b m) =
-          QuotientAddGroup.mk (r i) := (hr i).symm
-      exact QuotientAddGroup.eq_iff_sub_mem.mp he
+      exact QuotientAddGroup.eq_iff_sub_mem.mp ((hr i).symm)
     · intro hx
       obtain ⟨i, hi⟩ := Set.mem_iUnion.mp hx
       have := (localScaledBallDual F v b m).add_mem (hHL hi) (r i).property
-      simpa only [sub_add_cancel, SetLike.mem_coe] using this
+      simpa using this
   have hmeasure : localNormalizedHaar F v
       (localScaledBallDual F v b m : Set (v.adicCompletion F)) =
       (Nat.card (localScaledBallDualQuotient F v b m) : ENNReal) *

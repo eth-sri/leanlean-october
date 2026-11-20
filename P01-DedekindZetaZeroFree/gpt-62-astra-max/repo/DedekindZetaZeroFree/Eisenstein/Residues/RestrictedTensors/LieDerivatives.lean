@@ -11,10 +11,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.ComplexLines
 open LiteralSource MomentSources HCGeneration TensorActionSource
 open KPContActualSphericalRightFieldIdentification KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1800000
 
@@ -35,7 +35,7 @@ theorem restrictedSlot_residue_lie (N : TraceHaarTransport R)
   let H := actualImageData R P C μ hμ
   let u := fun v : complexCore => PiTensorProduct.tprod ℂ
     (Function.update x ⟨Sum.inl w,hw⟩ (harmonicInverse v))
-  let b : List (StageGenerator R P C s) :=
+  let b :=
     [Sum.inr i].map (stageComplexIndex R P C s w)
   have he : actualStageWord R P C μ hμ s b (sourceStageQuotient R H s.val (u v)) =
       sourceStageQuotient R H s.val (u (NativeComplexHCOperators.operators i v)) := by

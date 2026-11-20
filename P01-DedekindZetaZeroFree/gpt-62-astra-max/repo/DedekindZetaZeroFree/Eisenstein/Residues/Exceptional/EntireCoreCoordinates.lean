@@ -13,8 +13,7 @@ open KPLiteralRaw
 set_option maxHeartbeats 800000
 set_option synthInstance.maxHeartbeats 100000
 set_option backward.isDefEq.respectTransparency false
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CompactTupleTransfer renaming canonicalCutCore → canonicalCutCore
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CompactTupleTransfer renaming reweight_expansion_in_canonical_core → reweight_expansion_in_canonical_core
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CompactTupleTransfer (canonicalCutCore reweight_expansion_in_canonical_core)
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 

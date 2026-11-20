@@ -34,7 +34,7 @@ lemma derivativeEvaluation_continuous (hA : ∀ f, ContDiff ℝ (⊤ : ℕ∞) (
   induction n with
   | zero =>
     intro x
-    simpa only [iteratedFDeriv_zero_eq_comp, Function.comp_def] using
+    simpa [iteratedFDeriv_zero_eq_comp, Function.comp_def] using
       (continuousMultilinearCurryFin0 ℝ ℂ ℂ).symm.continuous.comp (hcont x)
   | succ n ih =>
     intro x
@@ -48,20 +48,16 @@ lemma derivativeEvaluation_continuous (hA : ∀ f, ContDiff ℝ (⊤ : ℕ∞) (
           (𝓝 (fun f => fderiv ℝ (iteratedFDeriv ℝ n (A f)) x v)) := by
         rw [tendsto_pi_nhds]
         intro f
-        have hd : Differentiable ℝ (iteratedFDeriv ℝ n (A f)) :=
-          ContDiff.differentiable_iteratedFDeriv (m := n)
-            (by exact_mod_cast (ENat.coe_lt_top n)) (hA f)
-        have hinner := ((hasFDerivAt_const (𝕜 := ℝ) x (0 : ℝ)).add
-          ((hasFDerivAt_id (𝕜 := ℝ) (0 : ℝ)).smul_const v))
-        have hh := (hd _).hasFDerivAt.comp (0 : ℝ) hinner
         have hder : HasDerivAt (fun t : ℝ => iteratedFDeriv ℝ n (A f) (x + t • v))
             (fderiv ℝ (iteratedFDeriv ℝ n (A f)) x v) 0 := by
-          convert hh.hasDerivAt using 1 <;> simp [Function.comp_def]
+          convert (((ContDiff.differentiable_iteratedFDeriv
+            (by exact_mod_cast (ENat.coe_lt_top n)) (hA f)) _).hasFDerivAt.comp (0 : ℝ) (((hasFDerivAt_const x (0 : ℝ)).add
+            ((hasFDerivAt_id (0 : ℝ)).smul_const v)))).hasDerivAt using 1 <;> simp [Function.comp_def]
         change Tendsto (fun t : ℝ => t⁻¹ •
           (iteratedFDeriv ℝ n (A f) (x + t • v) - iteratedFDeriv ℝ n (A f) x)) _ _
         simpa only [zero_add, zero_smul, add_zero] using hder.tendsto_slope_zero
       exact (continuousLinearMapOfTendsto D ht).continuous
-    simpa only [iteratedFDeriv_succ_eq_comp_left, Function.comp_def] using
+    simpa [iteratedFDeriv_succ_eq_comp_left, Function.comp_def] using
       (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => ℂ) ℂ).symm.continuous.comp hc
 
 end
@@ -81,8 +77,7 @@ lemma closedDiscSup_lowerSemicontinuous {E : Type*} [TopologicalSpace E]
   rw [he]
   apply lowerSemicontinuous_ciSup
   · intro f
-    have hb := ((isCompact_closedBall (0 : ℂ) 1).image (hcont f)).bddAbove
-    exact hb.mono (by rintro r ⟨x, rfl⟩; exact ⟨x, x.property, rfl⟩)
+    exact (((isCompact_closedBall (0 : ℂ) 1).image (hcont f)).bddAbove).mono (by rintro r ⟨x, rfl⟩; exact ⟨x, x.property, rfl⟩)
   · intro x
     exact (hF x).lowerSemicontinuous
 

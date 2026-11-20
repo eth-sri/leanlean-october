@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -83,7 +79,7 @@ noncomputable def localHenselianValuation
   let : Valued E ℝ≥0 := NormedField.toValued
   let vE : Valuation E ℝ≥0 := Valued.v
   let : vE.IsNontrivial :=
-    (inferInstance : (NormedField.valuation (K := E)).IsNontrivial)
+    (inferInstance : (NormedField.valuation).IsNontrivial)
   let : ValuativeRel E := ValuativeRel.ofValuation vE
   let : vE.Compatible := Valuation.Compatible.ofValuation vE
   let : ValuativeRel.IsNontrivial E :=
@@ -118,8 +114,7 @@ noncomputable def localHenselianValuation
         simpa [vE, NormedField.valuation_apply] using hyv
       exact_mod_cast hynnnorm
     change spectralNorm K E (y : E) ≤ 1 at hynorm
-    have hcoeffNorm :
-        ∀ n : ℕ, ‖(minpoly K (y : E)).coeff n‖ ≤ 1 :=
+    have hcoeffNorm :=
       (spectralValue_le_one_iff
         (minpoly.monic (Algebra.IsIntegral.isIntegral (y : E)))).1
         (by simpa [spectralNorm] using hynorm)
@@ -157,9 +152,7 @@ noncomputable def localHenselianValuation
       (ValuativeRel.valuation E).valuationSubring := by
     change Algebra.IsIntegral 𝒪[K] 𝒪[E]
     infer_instance
-  let hIntegralClosure : IsIntegralClosure
-      (ValuativeRel.valuation E).valuationSubring
-      (ValuativeRel.valuation K).valuationSubring E :=
+  let hIntegralClosure :=
     ValuationTheory.DiscreteValuationField.Valuation.valuationSubring_isIntegralClosure_of_isIntegral
       (ValuativeRel.valuation K) (ValuativeRel.valuation E)
   let : IsIntegralClosure 𝒪[E] 𝒪[K] E := by

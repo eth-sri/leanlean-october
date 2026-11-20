@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -49,17 +47,15 @@ noncomputable def finitePlaceLocalTensorDecompositionComponent
     wL.1.Completion := by
   let vK :=
     NumberField.HeightOneSpectrum.adicAbv K w
-  let hvK : vK.IsNontrivial :=
-    RayClass.adicAbv_isNontrivial w
   letI : ∀ u : AbsoluteValueExtension vK L,
       Algebra vK.Completion u.1.Completion :=
     fun u =>
       AbsoluteValue.completionAlgebra vK u.1 u.2
   exact
     completionTensorDecomposition_left
-      (K := K) (L := L) vK hvK
+        vK (RayClass.adicAbv_isNontrivial w)
       ((relativeFinitePlaceLocalTensorAlgEquiv
-        (K := K) (L := L) w).symm x) wL
+          w).symm x) wL
 
 /-- Integrality in the actual product of completion valuation rings
 on the local tensor-product side. -/
@@ -132,7 +128,6 @@ theorem scaledRelativeBasisDiscriminantIdeal_ne_bot :
   rw [scaledRelativeBasisDiscriminantIdeal,
     ne_eq, Ideal.span_singleton_eq_bot]
   exact scaledRelativeBasisDiscriminantInteger_ne_zero
-    (K := K) (L := L)
 
 /-- Finite set of places at which the scaled relative basis has
 nonunit discriminant. -/
@@ -179,16 +174,13 @@ theorem adicAbv_scaledRelativeBasisDiscriminant_eq_one_of_notMem
     NumberField.HeightOneSpectrum.adicAbv K w
         (Algebra.discr K
           (scaledRelativeExtensionBasis (K := K) (L := L))) = 1 := by
-  have hnorm :
-      ‖FinitePlace.embedding (K := K) w
-        (scaledRelativeBasisDiscriminantInteger
-          (K := K) (L := L))‖ = 1 :=
+  have hnorm :=
     (FinitePlace.norm_eq_one_iff_notMem
-      (R := 𝓞 K) K w
+       K w
       (scaledRelativeBasisDiscriminantInteger
-        (K := K) (L := L))).2
+         )).2
       (scaledRelativeBasisDiscriminantInteger_not_mem_of_notMem
-        (K := K) (L := L) w hw)
+          w hw)
   exact (FinitePlace.norm_embedding w
     (scaledRelativeBasisDiscriminantInteger (K := K) (L := L) : K)).symm.trans hnorm
 
@@ -201,18 +193,6 @@ noncomputable def integralTensorComparisonBadPlaces :
     integralTensorBadPlaces (K := K) (L := L) ∪
       scaledRelativeBasisDiscriminantBadPlaces
         (K := K) (L := L)
-
-/-- Membership in the combined comparison bad-place set is componentwise. -/
-
-@[simp]
-theorem mem_integralTensorComparisonBadPlaces_iff
-    (w : HeightOneSpectrum (𝓞 K)) :
-    w ∈ integralTensorComparisonBadPlaces
-        (K := K) (L := L) ↔
-      w ∈ integralTensorBadPlaces (K := K) (L := L) ∨
-        w ∈ scaledRelativeBasisDiscriminantBadPlaces
-          (K := K) (L := L) := by
-  simp [integralTensorComparisonBadPlaces]
 
 omit [NumberField L] in
 /-- The local tensor-decomposition component of a pure tensor has the expected value. -/
@@ -254,13 +234,9 @@ theorem finitePlaceLocalTensorDecomposition_coefficient_mem_integers
             K w) wL) := by
   rw [mem_absoluteValueCompletionIntegers_iff]
   calc
-    ‖AbsoluteValue.completionMap
-        (NumberField.HeightOneSpectrum.adicAbv K w)
-        wL.1 wL.2
-        ((relativeFinitePlaceCompletionAlgEquiv w).symm
-          (c : w.adicCompletion K))‖ =
+    _ =
       ‖(relativeFinitePlaceCompletionAlgEquiv w).symm
-          (c : w.adicCompletion K)‖ :=
+          c‖ :=
         (AbsoluteValue.completionMap_isometry
           (NumberField.HeightOneSpectrum.adicAbv K w)
           wL.1 wL.2).norm_map_of_map_zero
@@ -268,12 +244,12 @@ theorem finitePlaceLocalTensorDecomposition_coefficient_mem_integers
               (AbsoluteValue.completionMap
                 (NumberField.HeightOneSpectrum.adicAbv K w)
                 wL.1 wL.2)) _
-    _ = ‖(c : w.adicCompletion K)‖ :=
+    _ = ‖c‖ :=
       relativeFinitePlaceCompletionAlgEquiv_symm_norm
-        (K := K) w (c : w.adicCompletion K)
+         w c
     _ ≤ 1 :=
       norm_le_one_of_mem_adicCompletionIntegers
-        (K := K) w c.property
+         w c.property
 
 /-- Away from the bad set, every chosen relative basis vector maps to
 the valuation ring in each local completion factor. -/
@@ -296,7 +272,7 @@ theorem finitePlaceLocalTensorDecomposition_basis_mem_integers_of_notMem
   simpa [AbsoluteValue.toCompletion_apply,
     WithAbs.norm_eq_apply_ofAbs] using
       relativeExtensionBasis_absoluteValue_le_one_of_notMem
-        (K := K) (L := L) w hw wL i
+          w hw wL i
 
 /-- The chosen-basis integral lattice maps into the actual product of
 completion valuation rings under the local tensor decomposition, away from the finite
@@ -314,21 +290,21 @@ theorem relativeBasisIntegralAt_imp_localTensorDecompositionIntegral_of_notMem
   intro wL
   have hsum :
       finitePlaceLocalTensorDecompositionComponent
-          (K := K) (L := L) w wL
+            w wL
           (∑ i : RelativeAdeleBasisIndex
-              (K := K) (L := L),
+               ,
             ((c i : w.adicCompletionIntegers K) :
                 w.adicCompletion K) ⊗ₜ[K]
               relativeExtensionBasis
-                (K := K) (L := L) i) =
+                  i) =
         ∑ i : RelativeAdeleBasisIndex
-            (K := K) (L := L),
+             ,
           finitePlaceLocalTensorDecompositionComponent
-            (K := K) (L := L) w wL
+              w wL
             (((c i : w.adicCompletionIntegers K) :
                 w.adicCompletion K) ⊗ₜ[K]
               relativeExtensionBasis
-                (K := K) (L := L) i) := by
+                  i) := by
     simp [finitePlaceLocalTensorDecompositionComponent]
   rw [hsum]
   apply Subring.sum_mem
@@ -342,10 +318,10 @@ theorem relativeBasisIntegralAt_imp_localTensorDecompositionIntegral_of_notMem
           K w) wL)).mul_mem
   · exact
       finitePlaceLocalTensorDecomposition_coefficient_mem_integers
-        (K := K) (L := L) w wL (c i)
+          w wL (c i)
   · exact
       finitePlaceLocalTensorDecomposition_basis_mem_integers_of_notMem
-        (K := K) (L := L) w hw wL i
+          w hw wL i
 
 /-- Consequently, basis integrality of a tensor unit and its inverse
 is genuine integrality in every local tensor factor. -/
@@ -440,7 +416,7 @@ theorem scaledRelativeTensorCoordinates_isIntegral_of_localTensorDecompositionIn
         scaledRelativeExtensionBasis_absoluteValue_le_one
           (K := K) (L := L) vK hvK wL i
   have hM :
-      ∀ i j : RelativeAdeleBasisIndex (K := K) (L := L),
+      ∀ i j : RelativeAdeleBasisIndex,
         IsIntegral (absoluteValueCompletionIntegers vK hvK)
           (Algebra.trace vK.Completion
             (vK.Completion ⊗[K] L) (bA i * bA j)) := by
@@ -458,7 +434,7 @@ theorem scaledRelativeTensorCoordinates_isIntegral_of_localTensorDecompositionIn
         (absoluteValueExtension_isNonarchimedean
           vK hvK wL)).toSubring.mul_mem (hbA i wL) (hbA j wL)
   have ht :
-      ∀ i : RelativeAdeleBasisIndex (K := K) (L := L),
+      ∀ i : RelativeAdeleBasisIndex,
         IsIntegral (absoluteValueCompletionIntegers vK hvK)
           (Algebra.trace vK.Completion
             (vK.Completion ⊗[K] L) (xA * bA i)) := by
@@ -500,7 +476,7 @@ theorem scaledRelativeTensorCoordinates_isIntegral_of_localTensorDecompositionIn
     change AbsoluteValue.completionAbsoluteValue vK
       ((algebraMap K vK.Completion
         (Algebra.discr K
-          (scaledRelativeExtensionBasis (K := K) (L := L))))⁻¹) ≤ 1
+          (scaledRelativeExtensionBasis)))⁻¹) ≤ 1
     rw [map_inv₀]
     change
       ‖algebraMap K vK.Completion
@@ -513,7 +489,7 @@ theorem scaledRelativeTensorCoordinates_isIntegral_of_localTensorDecompositionIn
     exact (algebraMap K vK.Completion).injective.ne
       (Algebra.discr_not_zero_of_basis K
         (scaledRelativeExtensionBasis (K := K) (L := L)))
-  change ∀ i : RelativeAdeleBasisIndex (K := K) (L := L),
+  change ∀ i : RelativeAdeleBasisIndex,
     IsIntegral (absoluteValueCompletionIntegers vK hvK)
       (bA.equivFun xA i)
   intro i
@@ -569,7 +545,7 @@ theorem localTensorDecompositionIntegral_imp_relativeBasisIntegralAt_of_notMem
     exact hw (by
       simp [integralTensorComparisonBadPlaces, hw'])
   let vK := NumberField.HeightOneSpectrum.adicAbv K w
-  let hvK : IsNonarchimedean (vK : K → ℝ) :=
+  let hvK : IsNonarchimedean vK :=
     NumberField.HeightOneSpectrum.isNonarchimedean_adicAbv K w
   let xA : vK.Completion ⊗[K] L :=
     (relativeFinitePlaceLocalTensorAlgEquiv
@@ -602,7 +578,7 @@ theorem localTensorDecompositionIntegral_imp_relativeBasisIntegralAt_of_notMem
     exact isIntegral_algebraMap
   have hscaleAbs :
       vK (relativeBasisIntegralScaleInK
-        (K := K) (L := L)) ≤ 1 :=
+         ) ≤ 1 :=
     absoluteValue_le_one_of_isIntegral vK hvK hscaleIntegral
   have hscaleNorm :
       ‖algebraMap K vK.Completion
@@ -631,7 +607,7 @@ theorem localTensorDecompositionIntegral_imp_relativeBasisIntegralAt_of_notMem
     change ‖bA.equivFun xA i *
       algebraMap K vK.Completion
         (relativeBasisIntegralScaleInK
-          (K := K) (L := L))‖ ≤ 1
+           )‖ ≤ 1
     rw [norm_mul]
     calc
       ‖bA.equivFun xA i‖ *
@@ -649,7 +625,7 @@ theorem localTensorDecompositionIntegral_imp_relativeBasisIntegralAt_of_notMem
       (relativeFinitePlaceCompletionRingHom_isometry w).norm_map_of_map_zero
         (map_zero (relativeFinitePlaceCompletionRingHom w)) y
   let c :
-      RelativeAdeleBasisIndex (K := K) (L := L) →
+      RelativeAdeleBasisIndex →
         w.adicCompletionIntegers K :=
     fun i =>
       ⟨relativeFinitePlaceCompletionAlgEquiv w (cA i),
@@ -699,15 +675,13 @@ theorem relativeBasisIntegralAt_iff_localTensorDecompositionIntegral_of_notMem
     {x : w.adicCompletion K ⊗[K] L} :
     RelativeBasisIntegralAt (K := K) (L := L) w x ↔
       RelativeLocalTensorDecompositionIntegralAt (K := K) (L := L) w x := by
-  have hwold : w ∉ integralTensorBadPlaces (K := K) (L := L) := by
-    intro hw'
-    exact hw (by
-      simp [integralTensorComparisonBadPlaces, hw'])
-  exact
+  refine
     ⟨relativeBasisIntegralAt_imp_localTensorDecompositionIntegral_of_notMem
-        (K := K) (L := L) w hwold,
+          w ?_,
       localTensorDecompositionIntegral_imp_relativeBasisIntegralAt_of_notMem
-        (K := K) (L := L) w hw⟩
+          w hw⟩
+  exact fun hw' => hw (by
+  simp [integralTensorComparisonBadPlaces, hw'])
 
 /-- Unit version of the local tensor integral comparison. -/
 theorem relativeBasisIntegralUnitAt_iff_localTensorDecompositionIntegralUnit_of_notMem
@@ -717,15 +691,13 @@ theorem relativeBasisIntegralUnitAt_iff_localTensorDecompositionIntegralUnit_of_
     {x : (w.adicCompletion K ⊗[K] L)ˣ} :
     RelativeBasisIntegralUnitAt (K := K) (L := L) w x ↔
       RelativeLocalTensorDecompositionIntegralUnitAt (K := K) (L := L) w x := by
-  have hwold : w ∉ integralTensorBadPlaces (K := K) (L := L) := by
-    intro hw'
-    exact hw (by
-      simp [integralTensorComparisonBadPlaces, hw'])
-  exact
+  refine
     ⟨relativeBasisIntegralUnitAt_imp_localTensorDecompositionIntegralUnit_of_notMem
-        (K := K) (L := L) w hwold,
+          w ?_,
       localTensorDecompositionIntegralUnit_imp_relativeBasisIntegralUnitAt_of_notMem
-        (K := K) (L := L) w hw⟩
+          w hw⟩
+  exact fun hw' => hw (by
+  simp [integralTensorComparisonBadPlaces, hw'])
 
 end LocalTensorDecompositionIntegralComparison
 

@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -35,7 +31,7 @@ open CyclicCohomology.ProfiniteCohomology.Herbrand
 universe uG uA
 
 variable {G : Type uG} [Group G] [Fintype G]
-variable (A B : Type uA)
+    (A B : Type uA)
 variable [CommGroup A] [CommGroup B]
 variable [MulDistribMulAction G A] [MulDistribMulAction G B]
 
@@ -132,8 +128,7 @@ noncomputable def herbrandH0ProdEquiv :
   letI familyAction : ∀ i, MulDistribMulAction G
       (BinaryCoefficientFamily A B i) :=
     binaryCoefficientFamilyAction A B
-  letI piAction : MulDistribMulAction G
-      (∀ i, BinaryCoefficientFamily A B i) :=
+  letI piAction :=
     piMulDistribMulAction G
       (BinaryCoefficientFamily A B)
   exact
@@ -141,7 +136,7 @@ noncomputable def herbrandH0ProdEquiv :
       (prodEquivBinaryCoefficientFamily A B)
       (prodEquivBinaryCoefficientFamily_smul A B)).trans
       ((herbrandH0PiEquiv
-        (G := G) (BinaryCoefficientFamily A B)).trans
+         (BinaryCoefficientFamily A B)).trans
         (piHerbrandH0EquivProd A B))
 
 /-- Degree-minus-one Tate cohomology commutes with a binary product. -/
@@ -153,8 +148,7 @@ noncomputable def herbrandHMinusOneProdEquiv
   letI familyAction : ∀ i, MulDistribMulAction G
       (BinaryCoefficientFamily A B i) :=
     binaryCoefficientFamilyAction A B
-  letI piAction : MulDistribMulAction G
-      (∀ i, BinaryCoefficientFamily A B i) :=
+  letI piAction :=
     piMulDistribMulAction G
       (BinaryCoefficientFamily A B)
   exact
@@ -162,7 +156,7 @@ noncomputable def herbrandHMinusOneProdEquiv
       (prodEquivBinaryCoefficientFamily A B)
       (prodEquivBinaryCoefficientFamily_smul A B) σ).trans
       ((herbrandHMinusOnePiEquiv
-        (G := G) (BinaryCoefficientFamily A B) σ).trans
+         (BinaryCoefficientFamily A B) σ).trans
         (piHerbrandHMinusOneEquivProd A B σ))
 
 /-- Finiteness of degree zero is preserved by a binary product. -/
@@ -194,8 +188,7 @@ theorem herbrandH0Prod_card
     Nat.card (HerbrandH0 G (A × B)) =
       Nat.card (HerbrandH0 G A) *
         Nat.card (HerbrandH0 G B) := by
-  rw [Nat.card_congr (herbrandH0ProdEquiv A B).toEquiv,
-    Nat.card_prod]
+  simp [Nat.card_congr (herbrandH0ProdEquiv A B).toEquiv]
 
 /-- Cardinality of degree-minus-one Tate cohomology for a binary
 product. -/
@@ -208,9 +201,7 @@ theorem herbrandHMinusOneProd_card
     Nat.card (HerbrandHMinusOne G (A × B) σ) =
       Nat.card (HerbrandHMinusOne G A σ) *
         Nat.card (HerbrandHMinusOne G B σ) := by
-  rw [Nat.card_congr
-      (herbrandHMinusOneProdEquiv A B σ).toEquiv,
-    Nat.card_prod]
+  simp [Nat.card_congr (herbrandHMinusOneProdEquiv A B σ).toEquiv]
 
 /-- The Herbrand quotient of a binary product is the product of the
 two Herbrand quotients. -/
@@ -229,7 +220,7 @@ theorem herbrandQuotient_prod
         herbrandQuotient (G := G) (A := B) σ := by
   let : Finite (HerbrandH0 G (A × B)) :=
     herbrandH0ProdFinite A B
-  let : Finite (HerbrandHMinusOne G (A × B) σ) :=
+  let :=
     herbrandHMinusOneProdFinite A B σ
   rw [herbrandQuotient_eq_card_ratio,
     herbrandQuotient_eq_card_ratio,

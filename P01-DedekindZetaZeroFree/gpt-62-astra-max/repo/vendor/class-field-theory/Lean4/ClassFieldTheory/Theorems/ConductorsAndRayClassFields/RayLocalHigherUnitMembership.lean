@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -52,33 +48,30 @@ theorem mem_rayLocalHigherUnitGroup_iff
   rw [RayClass.mem_localHigherUnitGroup_iff]
   constructor
   · rintro ⟨y, hxy, hmap⟩
-    let z : (v.adicCompletionIntegers K)ˣ :=
+    let z :=
       (v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType y
     refine ⟨z, ?_, ?_⟩
     · have hback :
-          (v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType.symm z = y := by
-        exact Equiv.symm_apply_apply _ _
+          (v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType.symm z = y := Equiv.symm_apply_apply _ _
       rw [hback]
       exact hxy
     · have hq : Ideal.Quotient.mk
           ((IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)) ^ n)
-          (z : v.adicCompletionIntegers K) = 1 := by
+          z = 1 := by
         have hv := congrArg Units.val hmap
         change Ideal.Quotient.mk
           ((IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)) ^ n)
-          (z : v.adicCompletionIntegers K) = 1 at hv
+          z = 1 at hv
         exact hv
       exact (Ideal.Quotient.mk_eq_one_iff_sub_mem
         (I := (IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)) ^ n)
         (z : v.adicCompletionIntegers K)).mp hq
   · rintro ⟨z, hz, hcong⟩
-    let y : (v.adicCompletionIntegers K).units :=
-      (v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType.symm z
-    refine ⟨y, hz, ?_⟩
+    refine ⟨((v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType.symm z), hz, ?_⟩
     apply Units.ext
     change Ideal.Quotient.mk
       ((IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)) ^ n)
-      (z : v.adicCompletionIntegers K) = 1
+      z = 1
     exact (Ideal.Quotient.mk_eq_one_iff_sub_mem
       (I := (IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)) ^ n)
       (z : v.adicCompletionIntegers K)).mpr hcong

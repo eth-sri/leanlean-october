@@ -9,14 +9,14 @@ noncomputable section
 open scoped NumberField Classical Topology
 namespace DedekindZetaZeroFree.EisensteinSmoothGerms
 variable {F : Type} [Field F] [NumberField F]
-variable {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
+    {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
  theorem rightRel_mul (a : Matrix.ProjGenLinGroup (Fin 2) F)
     {x y : Matrix.ProjGenLinGroup (Fin 2) F}
     (h : QuotientGroup.rightRel (KPChamberBruhatTwoCells.rationalBorel F) x y) :
     QuotientGroup.rightRel (KPChamberBruhatTwoCells.rationalBorel F) (x * a) (y * a) := by
   rw [QuotientGroup.rightRel_apply] at h ⊢
-  simpa only [mul_inv_rev, mul_assoc, mul_inv_cancel_left] using h
+  simpa using h
 
 def rationalCosetRightMul (a : Matrix.ProjGenLinGroup (Fin 2) F) :
     KPChamberBruhatTwoCells.RationalQuotient F ≃ KPChamberBruhatTwoCells.RationalQuotient F where
@@ -25,11 +25,11 @@ def rationalCosetRightMul (a : Matrix.ProjGenLinGroup (Fin 2) F) :
   left_inv := by
     intro q
     induction q using Quotient.inductionOn with
-    | h x => simp only [Quotient.map_mk, mul_inv_cancel_right]
+    | h x => simp
   right_inv := by
     intro q
     induction q using Quotient.inductionOn with
-    | h x => simp only [Quotient.map_mk, inv_mul_cancel_right]
+    | h x => simp
 
 theorem literal_summand_right_mul {K : Subgroup (KPLiteralRaw.G F ζ hζ)}
     (f : KPLiteralRaw.Flat F ζ hζ K) (s : ℂ)

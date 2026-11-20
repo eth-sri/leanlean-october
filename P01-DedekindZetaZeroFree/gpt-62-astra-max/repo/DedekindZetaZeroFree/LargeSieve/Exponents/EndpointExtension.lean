@@ -25,13 +25,21 @@ private lemma rpow_one_eq_one (η : ℝ) : Real.rpow (1 : ℝ) η = 1 := by
 private lemma rpow_nonneg' (x : ℝ) (hx : 0 ≤ x) (y : ℝ) : 0 ≤ Real.rpow x y := by
   rw [Real.rpow_eq_pow]; exact Real.rpow_nonneg hx y
 
-private lemma one_le_rpow' (x : ℝ) (hx : 1 ≤ x) (y : ℝ) (hy : 0 ≤ y) : 1 ≤ Real.rpow x y := by
+section
+
+variable (x : ℝ) (hx : 1 ≤ x)
+
+include hx in
+private lemma one_le_rpow' (y : ℝ) (hy : 0 ≤ y) : 1 ≤ Real.rpow x y := by
   rw [Real.rpow_eq_pow]; exact Real.one_le_rpow hx hy
 
-private lemma rpow_ge_self (x : ℝ) (hx : 1 ≤ x) (a : ℝ) (ha : 1 ≤ a) : x ≤ Real.rpow x a := by
+include hx in
+private lemma rpow_ge_self (a : ℝ) (ha : 1 ≤ a) : x ≤ Real.rpow x a := by
   have h := Real.rpow_le_rpow_of_exponent_le hx ha
   rw [Real.rpow_one] at h
   rwa [← Real.rpow_eq_pow] at h
+
+end
 
 private lemma card_idealDyadicBlock_le (A : ℝ) (hA1 : 1 ≤ A)
     (hAset : ∀ X : ℝ, 1 ≤ X → ∀ s : Finset (Ideal (𝓞 F)),
@@ -58,8 +66,7 @@ private lemma mem_block_squarefree (j : ℕ) {b : Ideal (𝓞 F)}
     subst hb
     exact ⟨by rw [show (⊤ : Ideal (𝓞 F)) = 1 by simp]; exact squarefree_one, by simp⟩
   | succ k =>
-    have hb' : b ∈ paperShell F c ((2 : ℝ) ^ k) := by simpa [idealDyadicBlock] using hb
-    obtain ⟨h1, h2, -, -⟩ := (mem_paperShell F c ((2 : ℝ) ^ k) b).mp hb'
+    obtain ⟨h1, h2, -, -⟩ := (mem_paperShell F c ((2 : ℝ) ^ k) b).mp (by simpa [idealDyadicBlock] using hb)
     exact ⟨h1, h2⟩
 
 private lemma norm_row_le_card_mul (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
@@ -69,7 +76,7 @@ private lemma norm_row_le_card_mul (Q : DedekindZetaZeroFree.QuadraticHeckeFamil
   have h : ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ≤ ∑ b ∈ S, ‖lam b‖ := by
     refine le_trans (norm_sum_le _ _) (Finset.sum_le_sum (fun b hb => ?_))
     rw [norm_mul]
-    calc ‖lam b‖ * ‖(Q.χ b) a‖ ≤ ‖lam b‖ * 1 :=
+    calc _ ≤ ‖lam b‖ * 1 :=
           mul_le_mul_of_nonneg_left (quadraticFamily_norm_le_one Q (hSsf b hb).1 (hSsf b hb).2 a)
             (norm_nonneg _)
       _ = ‖lam b‖ := by ring
@@ -77,12 +84,13 @@ private lemma norm_row_le_card_mul (Q : DedekindZetaZeroFree.QuadraticHeckeFamil
         pow_le_pow_left₀ (norm_nonneg _) h 2
     _ ≤ (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 := sq_sum_le_card_mul_sum_sq
 
+alias EndpointExtension.norm_row_le_card_mul := norm_row_le_card_mul
+
 private lemma sum_sq_le_card_mul_energy (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (R S : Finset (Ideal (𝓞 F))) (lam : Ideal (𝓞 F) → ℂ)
     (hSsf : ∀ b ∈ S, Squarefree b ∧ b ⊔ c = ⊤) :
     ∑ a ∈ R, ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2
       ≤ (R.card : ℝ) * (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 := by
-  have hE0 : 0 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 := Finset.sum_nonneg (fun b _ => by positivity)
   calc ∑ a ∈ R, ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2
       ≤ ∑ _a ∈ R, (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 :=
         Finset.sum_le_sum (fun a _ => norm_row_le_card_mul Q S lam hSsf a)
@@ -90,44 +98,49 @@ private lemma sum_sq_le_card_mul_energy (Q : DedekindZetaZeroFree.QuadraticHecke
         rw [Finset.sum_const, nsmul_eq_mul]
     _ = (R.card : ℝ) * (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 := by ring
 
-private lemma arith_zero_row (C A η α : ℝ) (hA1 : 1 ≤ A) (hC : 2 * A ≤ C) (hη : 0 < η)
-    (hα1 : 1 ≤ α) (x : ℝ) (hx1 : 1 ≤ x) (E : ℝ) (hE0 : 0 ≤ E) :
+alias EndpointExtension.sum_sq_le_card_mul_energy := sum_sq_le_card_mul_energy
+
+section
+
+variable (C A η α : ℝ) (hA1 : 1 ≤ A) (hC : 2 * A ≤ C) (hη : 0 < η) (hα1 : 1 ≤ α)
+
+include hA1 hC hη hα1 in
+private lemma arith_zero_row (x : ℝ) (hx1 : 1 ≤ x) (E : ℝ) (hE0 : 0 ≤ E) :
     2 * A * x * E ≤ C * Real.rpow x η * (1 + Real.rpow x α) * E := by
   have hC0 : 0 ≤ C := by linarith
-  have hx0 : 0 ≤ x := le_trans zero_le_one hx1
-  have hX : 1 ≤ Real.rpow x η := one_le_rpow' x hx1 η hη.le
-  have hY : x ≤ Real.rpow x α := rpow_ge_self x hx1 α hα1
-  have hY0 : 0 ≤ Real.rpow x α := rpow_nonneg' x hx0 α
+  have hx0 := le_trans zero_le_one hx1
+  have hY := rpow_ge_self x hx1 α hα1
+  have hY0 := rpow_nonneg' x hx0 α
   have h1Y0 : 0 ≤ 1 + Real.rpow x α := by linarith
   have h1 : 2 * A * x ≤ C * x := mul_le_mul_of_nonneg_right hC hx0
   have h2 : C * x ≤ C * (1 + Real.rpow x α) :=
     mul_le_mul_of_nonneg_left (by linarith) hC0
   have h3 : C * (1 + Real.rpow x α) ≤ C * Real.rpow x η * (1 + Real.rpow x α) := by
     have hCX : C ≤ C * Real.rpow x η := by
-      simpa using mul_le_mul_of_nonneg_left hX hC0
+      simpa using mul_le_mul_of_nonneg_left (one_le_rpow' x hx1 η hη.le) hC0
     exact mul_le_mul_of_nonneg_right hCX h1Y0
   exact mul_le_mul_of_nonneg_right (le_trans h1 (le_trans h2 h3)) hE0
 
-private lemma arith_zero_col (C A η α : ℝ) (hA1 : 1 ≤ A) (hC : 2 * A ≤ C) (hη : 0 < η)
-    (hα1 : 1 ≤ α) (m : ℝ) (hm1 : 1 ≤ m) (E : ℝ) (hE0 : 0 ≤ E) :
+include hA1 hC hη hα1 in
+private lemma arith_zero_col (m : ℝ) (hm1 : 1 ≤ m) (E : ℝ) (hE0 : 0 ≤ E) :
     2 * A * m * E ≤ C * Real.rpow m η * (m + 1) * E := by
   have hC0 : 0 ≤ C := by linarith
-  have hm0 : 0 ≤ m := le_trans zero_le_one hm1
-  have hX : 1 ≤ Real.rpow m η := one_le_rpow' m hm1 η hη.le
-  have hm10 : 0 ≤ m + 1 := by linarith
-  have h1 : 2 * A * m ≤ C * m := mul_le_mul_of_nonneg_right hC hm0
+  have h1 := mul_le_mul_of_nonneg_right hC (le_trans zero_le_one hm1)
   have h2 : C * m ≤ C * (m + 1) := mul_le_mul_of_nonneg_left (by linarith) hC0
   have h3 : C * (m + 1) ≤ C * Real.rpow m η * (m + 1) := by
     have hCX : C ≤ C * Real.rpow m η := by
-      simpa using mul_le_mul_of_nonneg_left hX hC0
-    exact mul_le_mul_of_nonneg_right hCX hm10
+      simpa using mul_le_mul_of_nonneg_left (one_le_rpow' m hm1 η hη.le) hC0
+    exact mul_le_mul_of_nonneg_right hCX (by linarith)
   exact mul_le_mul_of_nonneg_right (le_trans h1 (le_trans h2 h3)) hE0
 
-theorem bilinear_endpoint_exponent_extension
-    (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (α : ℝ) (hα : α ∈ Set.Icc (1 : ℝ) 2)
-    (hExponent : HasSieveExponent F c Q α) :
+end
+
+variable (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
+    (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (α : ℝ) (hα : α ∈ Set.Icc (1 : ℝ) 2)
+    (hExponent : HasSieveExponent F c Q α)
+
+include hα hExponent in
+theorem bilinear_endpoint_exponent_extension :
     ∀ η : ℝ, 0 < η → ∃ C : ℝ, 1 ≤ C ∧
       ∀ (i j : ℕ) (R S : Finset (Ideal (𝓞 F))),
         R ⊆ idealDyadicBlock F c i → S ⊆ idealDyadicBlock F c j →
@@ -300,11 +313,8 @@ theorem bilinear_endpoint_exponent_extension
     exact mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_max_right _ _) hA0) hB0) hE0
 
-theorem bilinear_endpoint_exponent_extension_contractions
-    (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (α : ℝ) (hα : α ∈ Set.Icc (1 : ℝ) 2)
-    (hExponent : HasSieveExponent F c Q α) :
+include hα hExponent in
+theorem bilinear_endpoint_exponent_extension_contractions :
     ∀ η : ℝ, 0 < η → ∃ C : ℝ, 1 ≤ C ∧
       ∀ (i j : ℕ) (R S : Finset (Ideal (𝓞 F))),
         R ⊆ idealDyadicBlock F c i → S ⊆ idealDyadicBlock F c j →
@@ -326,31 +336,28 @@ theorem bilinear_endpoint_exponent_extension_contractions
       rw [Finset.mul_sum]
       refine Finset.sum_congr rfl (fun b _ => ?_); ring
     rw [hrow, norm_mul]
-    have hu' : ‖u a‖ ≤ 1 := hu a ha
     calc (‖u a‖ * ‖∑ b ∈ S, (lam b * v b) * (Q.χ b) a‖) ^ 2
         = ‖u a‖ ^ 2 * ‖∑ b ∈ S, (lam b * v b) * (Q.χ b) a‖ ^ 2 := by ring
       _ ≤ 1 * ‖∑ b ∈ S, (lam b * v b) * (Q.χ b) a‖ ^ 2 :=
-          mul_le_mul_of_nonneg_right (pow_le_one₀ (norm_nonneg _) hu') (by positivity)
+          mul_le_mul_of_nonneg_right (pow_le_one₀ (norm_nonneg _) (hu a ha)) (by positivity)
       _ = ‖∑ b ∈ S, (lam b * v b) * (Q.χ b) a‖ ^ 2 := by ring
   have henergy_le : ∑ b ∈ S, ‖lam b * v b‖ ^ 2 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 := by
     refine Finset.sum_le_sum (fun b hb => ?_)
     rw [norm_mul]
-    have hv' : ‖v b‖ ≤ 1 := hv b hb
-    calc (‖lam b‖ * ‖v b‖) ^ 2 = ‖lam b‖ ^ 2 * ‖v b‖ ^ 2 := by ring
+    calc _ = ‖lam b‖ ^ 2 * ‖v b‖ ^ 2 := by ring
       _ ≤ ‖lam b‖ ^ 2 * 1 :=
-          mul_le_mul_of_nonneg_left (pow_le_one₀ (norm_nonneg _) hv') (by positivity)
+          mul_le_mul_of_nonneg_left (pow_le_one₀ (norm_nonneg _) (hv b hb)) (by positivity)
       _ = ‖lam b‖ ^ 2 := by ring
-  have hC0 : 0 ≤ C := le_trans zero_le_one hC
-  have hM0 : 0 ≤ dyadicScale i := dyadicScale_nonneg i
-  have hN0 : 0 ≤ dyadicScale j := dyadicScale_nonneg j
+  have hM0 := dyadicScale_nonneg i
+  have hN0 := dyadicScale_nonneg j
   have hK0 : 0 ≤ C * Real.rpow (dyadicScale i * dyadicScale j) η *
       (dyadicScale i + Real.rpow (dyadicScale j) α) := by
-    have h1 : 0 ≤ Real.rpow (dyadicScale i * dyadicScale j) η :=
+    have h1 :=
       rpow_nonneg' _ (mul_nonneg hM0 hN0) η
     have h2 : 0 ≤ dyadicScale i + Real.rpow (dyadicScale j) α := by
       have := rpow_nonneg' _ hN0 α
       linarith
-    exact mul_nonneg (mul_nonneg hC0 h1) h2
+    exact mul_nonneg (mul_nonneg (le_trans zero_le_one hC) h1) h2
   exact le_trans (Finset.sum_le_sum hnorm)
     (le_trans (hmain i j R S hR hS (fun b => lam b * v b))
       (mul_le_mul_of_nonneg_left henergy_le hK0))

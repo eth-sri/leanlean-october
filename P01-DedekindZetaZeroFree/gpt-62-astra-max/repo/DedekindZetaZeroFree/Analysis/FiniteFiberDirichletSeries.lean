@@ -38,9 +38,7 @@ theorem hasSum_inversePower_eq_lSeries_fiberCard
       (LSeries (fun n ↦ (Nat.card {a : α // ν a = n} : ℂ)) s) := by
   let e := Equiv.sigmaFiberEquiv ν
   apply e.hasSum_iff.mp
-  have hsigma :
-      Summable (fun x : Σ n, {a : α // ν a = n} ↦
-        ((ν x.2.1 : ℂ) ^ (-s))) :=
+  have hsigma :=
     hsum.comp_injective e.injective
   have hfiber (n : ℕ) :
       Summable (fun a : {a : α // ν a = n} ↦
@@ -84,8 +82,7 @@ theorem summable_inversePower_of_lSeriesSummable_fiberCard
         (fun n ↦ (Nat.card {a : α // ν a = n} : ℂ)) s) :
     Summable (fun a ↦ ((ν a : ℂ) ^ (-s))) := by
   rw [← summable_norm_iff]
-  let e := Equiv.sigmaFiberEquiv ν
-  apply e.summable_iff.mp
+  apply (Equiv.sigmaFiberEquiv ν).summable_iff.mp
   change Summable (fun x : Σ n, {a : α // ν a = n} ↦
     ‖((ν x.2.1 : ℂ) ^ (-s))‖)
   apply (summable_sigma_of_nonneg fun _ ↦ norm_nonneg _).mpr

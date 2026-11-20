@@ -12,7 +12,9 @@ open NumberField
 
 variable {F : Type} [Field F] [NumberField F]
 
-lemma radialSection_complex (A : SArithmeticData F) (w : InfinitePlace F) (t : ℝ) :
+variable (A : SArithmeticData F) (w : InfinitePlace F) (t : ℝ)
+
+lemma radialSection_complex :
     InfinitePlace.Completion.extensionEmbedding w
       ((A.radialSection (Real.exp t) (Real.exp_pos t)).1 w : w.Completion) =
     (Real.exp (t / (2 * (InfinitePlace.nrComplexPlaces F : ℝ))) : ℂ) := by
@@ -23,8 +25,7 @@ lemma radialSection_complex (A : SArithmeticData F) (w : InfinitePlace F) (t : �
   congr 2
   ring
 
-lemma radialSection_complex_flow (A : SArithmeticData F) (w : InfinitePlace F)
-    (t : ℝ) (z : w.Completionˣ) :
+lemma radialSection_complex_flow (z : w.Completionˣ) :
     Units.map (InfinitePlace.Completion.extensionEmbedding w).toMonoidHom
       (z * (A.radialSection (Real.exp t) (Real.exp_pos t)).1 w) =
     KPCplxRotatedRapidDecay.logarithmicRadialFlow

@@ -16,7 +16,7 @@ theorem norm_le_of_unit_ball {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
     (hb : ∀ u : Fin m → E, (∀ i, ‖u i‖ ≤ 1) → ‖T u‖ ≤ C) : ‖T‖ ≤ C := by
   apply T.opNorm_le_bound hC
   intro u
-  let v : Fin m → E := fun i => (‖u i‖ : ℝ)⁻¹ • u i
+  let v := fun i => (‖u i‖ : ℝ)⁻¹ • u i
   have hv (i : Fin m) : ‖v i‖ ≤ 1 := by
     dsimp [v]
     rw [norm_smul, Real.norm_eq_abs, abs_inv, abs_of_nonneg (norm_nonneg _)]
@@ -29,7 +29,7 @@ theorem norm_le_of_unit_ball {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
     · simp [v,hz]
     · simp [v, smul_smul, norm_ne_zero_iff.mpr hz]
   calc
-    ‖T u‖ = ‖T (fun i => ‖u i‖ • v i)‖ := congrArg (fun a => ‖T a‖) hu
+    _ = ‖T (fun i => ‖u i‖ • v i)‖ := congrArg (fun a => ‖T a‖) hu
     _ = (∏ i, ‖u i‖) * ‖T v‖ := by
       rw [T.map_smul_univ, norm_smul, Real.norm_eq_abs,
         abs_of_nonneg (Finset.prod_nonneg (fun i _ => norm_nonneg (u i)))]

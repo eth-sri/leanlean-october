@@ -93,8 +93,7 @@ private lemma gram_form_bound {β : Type*} (S : Finset β) (M : β → β → �
     have hs : ∑ x ∈ S.erase b, ‖v b‖ * ‖v x‖ * (if x = b then D else H)
         = ∑ x ∈ S.erase b, ‖v b‖ * ‖v x‖ * H :=
       Finset.sum_congr rfl (fun d hd => by
-        have hdb : d ≠ b := (Finset.mem_erase.mp hd).1
-        simp [hdb])
+        simp [((Finset.mem_erase.mp hd).1)])
     rw [hs, if_pos rfl]
     ring
   have hsum : ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * (if d = b then D else H)
@@ -105,10 +104,7 @@ private lemma gram_form_bound {β : Type*} (S : Finset β) (M : β → β → �
       have : ∑ b ∈ S, ‖v b‖ * ‖v b‖ = ∑ b ∈ S, ‖v b‖ ^ 2 :=
         Finset.sum_congr rfl (fun b _ => by ring)
       rw [this]; ring
-    · have h : ∀ b ∈ S, ∑ d ∈ S.erase b, ‖v b‖ * ‖v d‖ * H
-          = (∑ d ∈ S.erase b, ‖v b‖ * ‖v d‖) * H :=
-        fun b _ => (Finset.sum_mul (S.erase b) (fun d => ‖v b‖ * ‖v d‖) H).symm
-      rw [Finset.sum_congr rfl h, ← Finset.sum_mul, mul_comm]
+    · rw [Finset.sum_congr rfl (fun b _ => (Finset.sum_mul (S.erase b) (fun d => ‖v b‖ * ‖v d‖) H).symm), ← Finset.sum_mul, mul_comm]
   have h3 : ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * (if d = b then D else H)
       ≤ (D + H * (S.card : ℝ)) * ∑ b ∈ S, ‖v b‖ ^ 2 := by
     calc ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * (if d = b then D else H)
@@ -133,18 +129,14 @@ theorem finite_weighted_gram_bound {α β : Type*}
       ‖∑ a ∈ R, (w a : ℂ) * k b a * (starRingEnd ℂ) (k d a)‖ ≤ H) :
     ∑ a ∈ R, w a * ‖∑ b ∈ S, lam b * k b a‖ ^ 2 ≤
       (D + H * (S.card : ℝ)) * ∑ b ∈ S, ‖lam b‖ ^ 2 := by
-  have hE : ∑ a ∈ R, w a * ‖∑ b ∈ S, lam b * k b a‖ ^ 2 =
-      (∑ b ∈ S, ∑ d ∈ S, (starRingEnd ℂ) (lam b) * lam d *
-        (∑ a ∈ R, (w a : ℂ) * k d a * (starRingEnd ℂ) (k b a))).re := by
-    rw [← energy_gram_identity R S w k lam, Complex.ofReal_re]
-  have hb := gram_form_bound S
-    (fun b d => ∑ a ∈ R, (w a : ℂ) * k b a * (starRingEnd ℂ) (k d a)) lam D H hD hH hdiag hoff
   calc ∑ a ∈ R, w a * ‖∑ b ∈ S, lam b * k b a‖ ^ 2
       = (∑ b ∈ S, ∑ d ∈ S, (starRingEnd ℂ) (lam b) * lam d *
-          (∑ a ∈ R, (w a : ℂ) * k d a * (starRingEnd ℂ) (k b a))).re := hE
+          (∑ a ∈ R, (w a : ℂ) * k d a * (starRingEnd ℂ) (k b a))).re := (by
+            rw [← energy_gram_identity R S w k lam, Complex.ofReal_re])
     _ ≤ ‖∑ b ∈ S, ∑ d ∈ S, (starRingEnd ℂ) (lam b) * lam d *
           (∑ a ∈ R, (w a : ℂ) * k d a * (starRingEnd ℂ) (k b a))‖ := Complex.re_le_norm _
-    _ ≤ (D + H * (S.card : ℝ)) * ∑ b ∈ S, ‖lam b‖ ^ 2 := hb
+    _ ≤ (D + H * (S.card : ℝ)) * ∑ b ∈ S, ‖lam b‖ ^ 2 := (gram_form_bound S
+      (fun b d => ∑ a ∈ R, (w a : ℂ) * k b a * (starRingEnd ℂ) (k d a)) lam D H hD hH hdiag hoff)
 
 theorem finite_weighted_gram_bound_subset {α β : Type*}
     (R0 R : Finset α) (S : Finset β) (w : α → ℝ) (k : β → α → ℂ) (lam : β → ℂ)

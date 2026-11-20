@@ -13,14 +13,9 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.NativeScalarMixedTensorGeneration
 open KPCplxPrincipalSeriesCharts KPCplxCharacterHaar KPCplxIntertwinerEigenvalues
 open KPLiteralScalarArchIndependentSlices KPLiteralScalarArchUniformBands
-open _root_.DedekindZetaZeroFree.KPLiteralScalarArchIndependentSlices renaming harmonicBand_finite → harmonicBand_finite
-open _root_.DedekindZetaZeroFree.KPLiteralScalarArchIndependentSlices renaming finite_interpolation → finite_interpolation
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Cover → Cover
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Source → Source
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductCover → ProductCover
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarInverse renaming scalarSections → scalarSections
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarInverse renaming scalarTensorEquiv → scalarTensorEquiv
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarInverse renaming scalarTensorEquiv_pure → scalarTensorEquiv_pure
+open _root_.DedekindZetaZeroFree.KPLiteralScalarArchIndependentSlices (harmonicBand_finite finite_interpolation)
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation (Source ProductCover)
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarInverse (scalarSections scalarTensorEquiv scalarTensorEquiv_pure)
 
 variable {ι Y : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -33,8 +28,7 @@ def familyOrbit (h : Y → multiPrincipalSeries positiveParameter ι) :
     Submodule ℂ (Y → multiPrincipalSeries positiveParameter ι) :=
   Submodule.span ℂ (Set.range (fun k => familyTranslate k h))
 
-open _root_.DedekindZetaZeroFree.KPLiteralScalarArchUniformBands renaming multiTranslate_mul → multiTranslate_mul
-open _root_.DedekindZetaZeroFree.KPLiteralScalarArchUniformBands renaming harmonicBand_mono → harmonicBand_mono
+open _root_.DedekindZetaZeroFree.KPLiteralScalarArchUniformBands (multiTranslate_mul harmonicBand_mono)
 
 omit [Fintype ι] in
 private theorem familyTranslate_mul (k l : ι → ComplexSU2)
@@ -104,22 +98,22 @@ private theorem bandTensorEvaluation_finite (N : ℕ) :
     Module.Finite ℂ (bandTensorEvaluation (ι := ι) N).range := by
   let : ∀ _ : ι, Module.Finite ℂ (harmonicBand positiveParameter N) :=
     fun _ => harmonicBand_finite _ _
-  let : Module.Finite ℂ (PiTensorProduct ℂ (fun _ : ι => harmonicBand positiveParameter N)) :=
+  let :=
     @PiTensorProduct.finite ℂ _ ι _ (fun _ : ι => harmonicBand positiveParameter N)
       (fun _ => inferInstance) (fun _ => inferInstance) (fun _ => harmonicBand_finite _ _)
   exact Module.Finite.range (bandTensorEvaluation N)
 
-theorem family_value_mem_band_range (h : Y → multiPrincipalSeries positiveParameter ι)
-    [FiniteDimensional ℂ (familyOrbit h)] (y : Y) :
+section
+
+variable (h : Y → multiPrincipalSeries positiveParameter ι) [FiniteDimensional ℂ (familyOrbit h)]
+
+theorem family_value_mem_band_range (y : Y) :
     (h y).val ∈ (bandTensorEvaluation (Module.finrank ℂ (familyOrbit h))).range := by
   let N := Module.finrank ℂ (familyOrbit h)
-  let S : Submodule ℂ (ComplexGL2 → ℂ) := (harmonicBandEvaluation positiveParameter N).range
+  let S := (harmonicBandEvaluation positiveParameter N).range
   let : Module.Finite ℂ (harmonicBand positiveParameter N) := harmonicBand_finite _ _
-  have hs : ∀ i a, (fun x => (h y).val (Function.update a i x)) ∈ S := by
-    intro i a
-    exact ⟨⟨evaluateSlice positiveParameter i a (h y), familyOrbit_uniform_bands h y i a⟩, rfl⟩
-  have hp := independent_slices_mem_product_span (fun _ : ι => S) (h y).val hs
-  apply (Submodule.span_le.mpr ?_) hp
+  have hs : ∀ i a, (fun x => (h y).val (Function.update a i x)) ∈ S := fun i a => ⟨⟨evaluateSlice positiveParameter i a (h y), familyOrbit_uniform_bands h y i a⟩, rfl⟩
+  apply (Submodule.span_le.mpr ?_) (independent_slices_mem_product_span (fun _ : ι => S) (h y).val hs)
   rintro _ ⟨f, rfl⟩
   choose b hb using fun i => (f i).property
   refine ⟨PiTensorProduct.tprod ℂ b, ?_⟩
@@ -130,8 +124,7 @@ theorem family_value_mem_band_range (h : Y → multiPrincipalSeries positivePara
   intro i _
   exact congrFun (hb i) (a i)
 
-theorem family_finite_interpolation (h : Y → multiPrincipalSeries positiveParameter ι)
-    [FiniteDimensional ℂ (familyOrbit h)] :
+theorem family_finite_interpolation :
     ∃ (n : ℕ) (a : Fin n → (ι → ComplexGL2))
       (t : Fin n → PiTensorProduct ℂ (fun _ : ι => KPLiteralTensor.harmonicPlus)),
       ∀ y x, (h y).val x = ∑ j, (h y).val (a j) * plusTensorEvaluation (t j) x := by
@@ -141,17 +134,18 @@ theorem family_finite_interpolation (h : Y → multiPrincipalSeries positivePara
   choose t ht using fun j => (b j).property
   refine ⟨n, a, fun j => PiTensorProduct.map (fun _ => bandInclusion _) (t j), ?_⟩
   intro y x
-  have hi := hb ⟨(h y).val, family_value_mem_band_range h y⟩ x
-  convert hi using 1
+  convert (hb ⟨(h y).val, family_value_mem_band_range h y⟩ x) using 1
   apply Finset.sum_congr rfl
   intro j _
   congr 1
   exact congrFun (ht j) x
 
+end
+
 section ActualFinitePlaces
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (M : FourierContinuation.SourceReconstruction.InducingData F ζ hζ)
-variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
+    (M : FourierContinuation.SourceReconstruction.InducingData F ζ hζ)
+    (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
 local instance (q : S) : AddCommGroup (Source F ζ hζ M S q) :=
   FourierContinuation.SourceReconstruction.localPlusAdd F ζ hζ M (Sum.inr q.val)
 local instance (q : S) : Module ℂ (Source F ζ hζ M S q) :=
@@ -190,13 +184,12 @@ theorem mixed_tensor_exists
         (PiTensorProduct ℂ (Source F ζ hζ M S)),
       ∀ a g, mixedTensorEvaluation F ζ hζ M S t a g = (h g).val a := by
   obtain ⟨n, a, u, hu⟩ := family_finite_interpolation h
-  let v : Fin n → PiTensorProduct ℂ (Source F ζ hζ M S) := fun j =>
+  let v := fun j =>
     (scalarTensorEquiv F ζ hζ M S).symm ⟨fun g => (h g).val (a j), hfinite (a j)⟩
   have hv (j : Fin n) (g : ProductCover F ζ hζ S) :
       finiteTensorEvaluation F ζ hζ M S (v j) g = (h g).val (a j) := by
-    have he := (scalarTensorEquiv F ζ hζ M S).apply_symm_apply
-      ⟨fun g => (h g).val (a j), hfinite (a j)⟩
-    exact congrArg (fun f : scalarSections F ζ hζ M S => f.val g) he
+    exact congrArg (fun f : scalarSections F ζ hζ M S => f.val g) ((scalarTensorEquiv F ζ hζ M S).apply_symm_apply
+      ⟨fun g => (h g).val (a j), hfinite (a j)⟩)
   refine ⟨∑ j, u j ⊗ₜ[ℂ] v j, ?_⟩
   intro x g
   simp only [map_sum, Finset.sum_apply, mixedTensorEvaluation_tmul, hv]
@@ -222,7 +215,7 @@ def allSlotEvaluation : PiTensorProduct ℂ (mixedSource (ι := ι) F ζ hζ M S
       (∏ i, (x (Sum.inl i)).val (a i)) *
         ∏ q : S, ((x (Sum.inr q)).val (g q)).val 1 := by
   change mixedTensorEvaluation F ζ hζ M S
-    ((PiTensorProduct.tmulEquivDep ℂ (mixedSource (ι := ι) F ζ hζ M S)).symm
+    ((PiTensorProduct.tmulEquivDep ℂ (mixedSource F ζ hζ M S)).symm
       (PiTensorProduct.tprod ℂ x)) a g = _
   rw [PiTensorProduct.tmulEquivDep_symm_apply, mixedTensorEvaluation_tmul]
   change plusTensorEvaluation (PiTensorProduct.tprod ℂ
@@ -241,11 +234,11 @@ theorem all_slot_tensor_exists
     ∃ t : PiTensorProduct ℂ (mixedSource (ι := ι) F ζ hζ M S),
       ∀ a g, allSlotEvaluation F ζ hζ M S t a g = (h g).val a := by
   obtain ⟨t, ht⟩ := mixed_tensor_exists F ζ hζ M S h hfinite
-  refine ⟨PiTensorProduct.tmulEquivDep ℂ (mixedSource (ι := ι) F ζ hζ M S) t, ?_⟩
+  refine ⟨PiTensorProduct.tmulEquivDep ℂ (mixedSource F ζ hζ M S) t, ?_⟩
   intro a g
   change mixedTensorEvaluation F ζ hζ M S
-    ((PiTensorProduct.tmulEquivDep ℂ (mixedSource (ι := ι) F ζ hζ M S)).symm
-      ((PiTensorProduct.tmulEquivDep ℂ (mixedSource (ι := ι) F ζ hζ M S)) t)) a g = _
+    ((PiTensorProduct.tmulEquivDep ℂ (mixedSource F ζ hζ M S)).symm
+      ((PiTensorProduct.tmulEquivDep ℂ (mixedSource F ζ hζ M S)) t)) a g = _
   rw [LinearEquiv.symm_apply_apply]
   exact ht a g
 

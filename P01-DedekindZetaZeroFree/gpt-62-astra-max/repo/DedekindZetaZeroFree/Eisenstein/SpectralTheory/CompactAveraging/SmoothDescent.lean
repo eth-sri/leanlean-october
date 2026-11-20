@@ -12,11 +12,9 @@ open KPContSectorCoveredQuotientVocabulary
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
 local notation "G" => ActualCover F ζ hζ
-open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison renaming K_U_compact → K_U_compact
-open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison renaming productEquiv → productEquiv
-open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison renaming productEquiv_apply → productEquiv_apply
+open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison (productEquiv productEquiv_apply)
 
 def descend (f : G → ℂ)
     (hr : ∀ γ : Gamma F ζ hζ, ∀ g, f (γ.val*g) = f g)
@@ -55,12 +53,10 @@ end DedekindZetaZeroFree.FourierContinuation.ResidualAverageDescent
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualAverageDescent
 open KPContSectorCoveredQuotientVocabulary
 open KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth
-open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison renaming productEquiv → productEquiv
-open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison renaming productEquiv_apply → productEquiv_apply
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming diagonalUnit → diagonalUnit
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming matrixPullback_at_units → matrixPullback_at_units
+open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison (productEquiv productEquiv_apply)
+open _root_.DedekindZetaZeroFree.KPLiteralChamber (diagonalUnit)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
 local notation "G" => ActualCover F ζ hζ
  theorem descend_coefficient_smooth (f : G → ℂ)
     (hf : RawWordKFinite.NativeSmooth f)
@@ -78,16 +74,14 @@ local notation "G" => ActualCover F ζ hζ
     fin_cases i
     · change ContDiff ℝ (⊤ : ℕ∞) (fun x : SymmetricSpace F => (x (KPContSectorArchSphericalFibers.infinitePlaceEquiv F ζ hζ w)).1)
       fun_prop
-    · change ContDiff ℝ (⊤ : ℕ∞) (fun x : SymmetricSpace F => (Real.exp (x (KPContSectorArchSphericalFibers.infinitePlaceEquiv F ζ hζ w)).2 : ℂ))
-      exact Complex.ofRealCLM.contDiff.comp ((show ContDiff ℝ (⊤ : ℕ∞) (fun x : SymmetricSpace F => (x (KPContSectorArchSphericalFibers.infinitePlaceEquiv F ζ hζ w)).2) from by fun_prop).exp)
+    · exact Complex.ofRealCLM.contDiff.comp ((show ContDiff ℝ (⊤ : ℕ∞) (fun x : SymmetricSpace F => (x (KPContSectorArchSphericalFibers.infinitePlaceEquiv F ζ hζ w)).2) from by fun_prop).exp)
     · exact contDiff_const
   have hqd : Set.MapsTo q Set.univ (KPGlobalResidualConstruction.archDomain F) := by
     intro x _ w
     change (Real.exp _ : ℂ) ≠ 0
     exact_mod_cast Real.exp_ne_zero _
-  have hs := (hf (c : G)).comp hq.contDiffOn hqd
   apply contDiffOn_univ.mp
-  apply hs.congr
+  apply ((hf (c : G)).comp hq.contDiffOn hqd).congr
   intro x _
   rw [descend_coefficient]
   have hpin : KPGlobalResidualConstruction.archChart F ζ hζ (q x) =
@@ -122,10 +116,9 @@ end DedekindZetaZeroFree.FourierContinuation.ResidualAverageDescent
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualAverageDescent
 open KPContSectorCoveredQuotientVocabulary KPContSectorScalarLineAlgebra
 open KPContSectorSmoothFramesSupport
-open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison renaming productEquiv → productEquiv
-open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison renaming productEquiv_apply → productEquiv_apply
+open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison (productEquiv productEquiv_apply)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
 local notation "G" => ActualCover F ζ hζ
 
 def genuineDescent (f : G → ℂ)

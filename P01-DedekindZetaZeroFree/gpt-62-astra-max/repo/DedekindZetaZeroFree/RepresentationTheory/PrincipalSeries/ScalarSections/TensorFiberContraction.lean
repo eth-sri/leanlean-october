@@ -11,14 +11,10 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPGlobalResidualConstruction
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming referenceStage → referenceStage
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming expand → expand
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming le_expand → le_expand
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming expand_mono → expand_mono
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming expand_tail → expand_tail
+open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource (expand le_expand expand_mono expand_tail)
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 

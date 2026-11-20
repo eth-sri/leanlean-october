@@ -28,8 +28,7 @@ theorem weil_finite_quadratic_gauss_modulus
       ∑ y : G, (finiteQuadraticPolarization Q h y : ℂ) =
         if h = 0 then (Fintype.card G : ℂ) else 0 := by
     by_cases hh : h = 0
-    · subst h
-      simp [finiteQuadraticPolarization, hQzero]
+    · simp_all [finiteQuadraticPolarization]
     · obtain ⟨y₀, hy₀⟩ := hBnondegenerate h hh
       have hc : (finiteQuadraticPolarization Q h y₀ : ℂ) ≠ 1 := by
         intro heq
@@ -40,9 +39,8 @@ theorem weil_finite_quadratic_gauss_modulus
             ∑ y : G, (finiteQuadraticPolarization Q h y : ℂ) =
             ∑ y : G, (finiteQuadraticPolarization Q h y : ℂ) := by
         rw [Finset.mul_sum]
-        exact Fintype.sum_equiv (Equiv.addLeft y₀) _ _ fun y ↦ by
-          exact (congrArg (fun z : Circle ↦ (z : ℂ)) (hBright h y₀ y)).symm
-      simpa [hh] using eq_zero_of_mul_eq_self_left hc htranslate
+        exact Fintype.sum_equiv (Equiv.addLeft y₀) _ _ fun y ↦ (congrArg (fun z : Circle ↦ (z : ℂ)) (hBright h y₀ y)).symm
+      grind [eq_zero_of_mul_eq_self_left]
   have hterm (h y : G) : (Q (h + y) : ℂ) * star (Q y : ℂ) =
       (Q h : ℂ) * (finiteQuadraticPolarization Q h y : ℂ) := by
     change (Q (h + y) : ℂ) * (starRingEnd ℂ) (Q y : ℂ) = _
@@ -51,7 +49,7 @@ theorem weil_finite_quadratic_gauss_modulus
       unfold finiteQuadraticPolarization
       simp only [div_eq_mul_inv, mul_inv_rev]
       calc
-        Q (h + y) * (Q y)⁻¹ = (Q h * (Q h)⁻¹) * (Q (h + y) * (Q y)⁻¹) := by rw [mul_inv_cancel, one_mul]
+        _ = (Q h * (Q h)⁻¹) * (Q (h + y) * (Q y)⁻¹) := by simp
         _ = Q h * (Q (h + y) * ((Q y)⁻¹ * (Q h)⁻¹)) := by ac_rfl
     exact congrArg (fun z : Circle ↦ (z : ℂ)) heq
   have hc : ((‖∑ x : G, (Q x : ℂ)‖ ^ 2 : ℝ) : ℂ) = (Fintype.card G : ℂ) := by
@@ -61,7 +59,7 @@ theorem weil_finite_quadratic_gauss_modulus
     simp_rw [Finset.mul_sum]
     rw [Finset.sum_comm]
     calc
-      ∑ y : G, ∑ x : G, (Q x : ℂ) * star (Q y : ℂ) =
+      _ =
           ∑ y : G, ∑ h : G, (Q (h + y) : ℂ) * star (Q y : ℂ) := by
         congr 1
         funext y

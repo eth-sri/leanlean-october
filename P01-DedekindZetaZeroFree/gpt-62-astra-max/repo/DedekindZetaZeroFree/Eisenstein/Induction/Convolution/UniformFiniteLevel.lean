@@ -20,22 +20,26 @@ local instance sourceStageBorelSpace (K : Subgroup (G F ζ hζ)) : BorelSpace K 
 local instance sourceStageTopGroup : IsTopologicalGroup (G F ζ hζ) :=
   (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
 
-def alpha (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K) (g : G F ζ hζ) : ℂ :=
+section
+
+variable (K : Subgroup (G F ζ hζ))
+
+def alpha (hK : IwasawaCompact F ζ hζ K) (g : G F ζ hζ) : ℂ :=
   (Real.log (((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ
     (KPLiteralChamber.literalIwasawa F ζ hζ K hK) g : NNReal) : ℝ)) : ℂ)
 
-def source (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+def source (hK : IwasawaCompact F ζ hζ K)
     (μ : Measure K) (f : Flat F ζ hζ K) (a : G F ζ hζ) (s : ℂ)
     (h : C(K, ℂ)) : Functions F ζ hζ :=
   fun g => Complex.exp (-s * alpha F ζ hζ K hK g) *
     ∫ k : K, h k * f.val s (g * k.val * a) ∂μ
 
-def kernelTranslate (K : Subgroup (G F ζ hζ)) (b : K) : C(K, ℂ) →ₗ[ℂ] C(K, ℂ) where
+def kernelTranslate (b : K) : C(K, ℂ) →ₗ[ℂ] C(K, ℂ) where
   toFun h := ⟨fun k => h (b⁻¹ * k), h.continuous.comp (continuous_const.mul continuous_id)⟩
   map_add' := by intros; rfl
   map_smul' := by intros; rfl
 
-def kernelRepresentation (K : Subgroup (G F ζ hζ)) : Representation ℂ K C(K, ℂ) where
+def kernelRepresentation : Representation ℂ K C(K, ℂ) where
   toFun := kernelTranslate F ζ hζ K
   map_one' := by ext h k; simp [kernelTranslate]
   map_mul' b c := by
@@ -43,13 +47,13 @@ def kernelRepresentation (K : Subgroup (G F ζ hζ)) : Representation ℂ K C(K,
     change h ((b * c)⁻¹ * k) = h (c⁻¹ * (b⁻¹ * k))
     rw [mul_inv_rev, mul_assoc]
 
-lemma alpha_right_compact (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+lemma alpha_right_compact (hK : IwasawaCompact F ζ hζ K)
     (g : G F ζ hζ) (b : K) : alpha F ζ hζ K hK (g * b.val) = alpha F ζ hζ K hK g := by
   unfold alpha
   rw [KPGlobalTorusBorelTwistCompatibility.iwasawaNorm_right_compact F ζ hζ
     (KPLiteralChamber.literalIwasawa F ζ hζ K hK) g b]
 
-lemma source_intertwines (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+lemma source_intertwines (hK : IwasawaCompact F ζ hζ K)
     (μ : Measure K) [μ.IsHaarMeasure] (f : Flat F ζ hζ K) (a : G F ζ hζ) (s : ℂ)
     (h : C(K, ℂ)) (b : K) :
     source F ζ hζ K hK μ f a s (kernelTranslate F ζ hζ K b h) =
@@ -64,17 +68,23 @@ lemma source_intertwines (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ h
   filter_upwards with k
   simp only [inv_mul_cancel_left, Subgroup.coe_mul, mul_assoc]
 
-lemma source_integrable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (μ : Measure K) [IsFiniteMeasure μ] (f : Flat F ζ hζ K) (a : G F ζ hζ) (s : ℂ)
+end
+
+section
+
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K) (μ : Measure K) [IsFiniteMeasure μ]
+    (f : Flat F ζ hζ K) (a : G F ζ hζ) (s : ℂ)
+
+include hK in
+lemma source_integrable
     (h : C(K, ℂ)) (g : G F ζ hζ) :
     Integrable (fun k : K => h k * f.val s (g * k.val * a)) μ := by
-  let : CompactSpace K := isCompact_iff_compactSpace.mp hK.1
+  let := isCompact_iff_compactSpace.mp hK.1
   exact (h.continuous.mul ((f.property.1 s).1.1.comp
     ((continuous_const.mul continuous_subtype_val).mul continuous_const))).integrable_of_hasCompactSupport
       (HasCompactSupport.of_compactSpace _)
 
-def sourceMap (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (μ : Measure K) [IsFiniteMeasure μ] (f : Flat F ζ hζ K) (a : G F ζ hζ) (s : ℂ) :
+def sourceMap :
     C(K, ℂ) →ₗ[ℂ] Functions F ζ hζ where
   toFun := source F ζ hζ K hK μ f a s
   map_add' h l := by
@@ -89,22 +99,25 @@ def sourceMap (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     simp only [RingHom.id_apply]
     ring
 
-lemma source_continuous (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (μ : Measure K) [IsFiniteMeasure μ] (f : Flat F ζ hζ K) (a : G F ζ hζ) (s : ℂ)
+lemma source_continuous
     (h : C(K, ℂ)) : Continuous (source F ζ hζ K hK μ f a s h) := by
-  let : CompactSpace K := isCompact_iff_compactSpace.mp hK.1
-  have hc : Continuous (fun p : G F ζ hζ × K => h p.2 * f.val s (p.1 * p.2.val * a)) :=
-    (h.continuous.comp continuous_snd).mul ((f.property.1 s).1.1.comp
-      ((continuous_fst.mul (continuous_subtype_val.comp continuous_snd)).mul continuous_const))
+  let := isCompact_iff_compactSpace.mp hK.1
   have hi : Continuous (fun g : G F ζ hζ => ∫ k : K, h k * f.val s (g * k.val * a) ∂μ) := by
     rw [← continuousOn_univ]
-    exact continuousOn_integral_of_compact_support (μ := μ) isCompact_univ
-      hc.continuousOn (fun _ _ _ hk => (hk (Set.mem_univ _)).elim)
+    exact continuousOn_integral_of_compact_support isCompact_univ
+      ((h.continuous.comp continuous_snd).mul ((f.property.1 s).1.1.comp
+        ((continuous_fst.mul (continuous_subtype_val.comp continuous_snd)).mul continuous_const))).continuousOn (fun _ _ _ hk => (hk (Set.mem_univ _)).elim)
   apply Continuous.mul _ hi
   exact (continuous_const.mul (Complex.continuous_ofReal.comp
     (KPLiteralChamber.JointProfile.literal_log_modulus_continuous F ζ hζ K hK))).cexp
 
-lemma alpha_borel (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+end
+
+section
+
+variable (K : Subgroup (G F ζ hζ))
+
+lemma alpha_borel (hK : IwasawaCompact F ζ hζ K)
     (t : KPGlobalTorusFunctionData.E F ζ hζ) (x : KPAdeles F) (g : G F ζ hζ) :
     alpha F ζ hζ K hK ((t.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) =
       (Real.log (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) : ℂ) +
@@ -116,7 +129,7 @@ lemma alpha_borel (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
       (NNReal.coe_ne_zero.mpr (Units.ne_zero _))
       (NNReal.coe_ne_zero.mpr (Units.ne_zero _)), Complex.ofReal_add]
 
-lemma source_covariance (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+lemma source_covariance (hK : IwasawaCompact F ζ hζ K)
     (μ : Measure K) (f : Flat F ζ hζ K) (a : G F ζ hζ) (s : ℂ) (h : C(K, ℂ))
     (r : R F ζ hζ) (x : KPAdeles F) (g : G F ζ hζ) :
     source F ζ hζ K hK μ f a s h ((r.val.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) =
@@ -124,7 +137,7 @@ lemma source_covariance (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ h�
         (((KPGlobalTorusFunctionData.delta F ζ hζ r.val : NNReal) : ℝ)) (1 / 2) *
         (KPGlobalCenterRationalCharacter.lambdaR F ζ hζ r : ℂ) *
         source F ζ hζ K hK μ f a s h g := by
-  let d : ℂ := (Real.log (((KPGlobalTorusFunctionData.delta F ζ hζ r.val : NNReal) : ℝ)) : ℂ)
+  let d := (Real.log (((KPGlobalTorusFunctionData.delta F ζ hζ r.val : NNReal) : ℝ)) : ℂ)
   simp only [source, alpha_borel]
   have hi : (∫ k : K, h k * f.val s
       (((r.val.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) * k.val * a) ∂μ) =
@@ -146,18 +159,16 @@ lemma source_covariance (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ h�
     rw [← Complex.exp_add, ← Complex.exp_add]
     congr 1
     ring
-  change Complex.exp (-s * (d + alpha F ζ hζ K hK g)) *
-    (Complex.exp ((1 / 2 + s) * d) * _ * _) = Complex.exp ((1 / 2) * d) * _ * (Complex.exp (-s * alpha F ζ hζ K hK g) * _)
   calc
     _ = (Complex.exp (-s * (d + alpha F ζ hζ K hK g)) * Complex.exp ((1 / 2 + s) * d)) *
       (KPGlobalCenterRationalCharacter.lambdaR F ζ hζ r : ℂ) * (∫ k : K, h k * f.val s (g * k.val * a) ∂μ) := by ring
     _ = _ := by rw [he]; ring
 
-def KernelFinite (K : Subgroup (G F ζ hζ)) (h : C(K, ℂ)) : Prop :=
+def KernelFinite (h : C(K, ℂ)) : Prop :=
   ∃ W : Submodule ℂ C(K, ℂ), Module.Finite ℂ W ∧ h ∈ W ∧
     ∀ b : K, ∀ l ∈ W, kernelTranslate F ζ hζ K b l ∈ W
 
-lemma kernelFinite_matrixCoeff (K : Subgroup (G F ζ hζ))
+lemma kernelFinite_matrixCoeff
     (n : ℕ) (π : ContRepresentation ℂ K (EuclideanSpace ℂ (Fin n)))
     (hπ : Continuous π) (v w : EuclideanSpace ℂ (Fin n)) :
     KernelFinite F ζ hζ K (TauCeti.ContRepresentation.matrixCoeff π hπ v w) := by
@@ -173,26 +184,11 @@ lemma kernelFinite_matrixCoeff (K : Subgroup (G F ζ hζ))
   congr 1
   rw [← mul_apply_eq_comp, ← map_mul]
 
-private lemma kernelFinite_add (K : Subgroup (G F ζ hζ)) (h l : C(K, ℂ))
-    (hh : KernelFinite F ζ hζ K h) (hl : KernelFinite F ζ hζ K l) :
-    KernelFinite F ζ hζ K (h + l) := by
-  obtain ⟨W, hW, hhW, hWi⟩ := hh
-  obtain ⟨V, hV, hlV, hVi⟩ := hl
-  let := hW
-  let := hV
-  refine ⟨W ⊔ V, inferInstance, Submodule.add_mem_sup hhW hlV, ?_⟩
-  intro b w hw
-  obtain ⟨x, hx, y, hy, rfl⟩ := Submodule.mem_sup.mp hw
-  rw [map_add]
-  exact Submodule.add_mem_sup (hWi b x hx) (hVi b y hy)
+end
 
-private lemma kernelFinite_smul (K : Subgroup (G F ζ hζ)) (h : C(K, ℂ))
-    (hh : KernelFinite F ζ hζ K h) (c : ℂ) :
-    KernelFinite F ζ hζ K (c • h) := by
-  obtain ⟨W, hW, hhW, hWi⟩ := hh
-  exact ⟨W, hW, W.smul_mem c hhW, hWi⟩
+variable (K : Subgroup (G F ζ hζ))
 
-lemma representative_kernelFinite (K : Subgroup (G F ζ hζ)) (h : C(K, ℂ))
+lemma representative_kernelFinite (h : C(K, ℂ))
     (hh : h ∈ TauCeti.representativeSubmodule ℂ K) : KernelFinite F ζ hζ K h := by
   rw [TauCeti.representativeSubmodule_eq_span] at hh
   induction hh using Submodule.span_induction with
@@ -204,10 +200,19 @@ lemma representative_kernelFinite (K : Subgroup (G F ζ hζ)) (h : C(K, ℂ))
       intro b l hl
       rw [Submodule.mem_bot] at hl ⊢
       rw [hl, map_zero]
-  | add h l _ _ ih₁ ih₂ => exact kernelFinite_add F ζ hζ K h l ih₁ ih₂
-  | smul c h _ ih => exact kernelFinite_smul F ζ hζ K h ih c
+  | add h l _ _ ih₁ ih₂ => obtain ⟨W, hW, hhW, hWi⟩ := ih₁
+                           obtain ⟨V, hV, hlV, hVi⟩ := ih₂
+                           let := hW
+                           let := hV
+                           refine ⟨W ⊔ V, inferInstance, Submodule.add_mem_sup hhW hlV, ?_⟩
+                           intro b w hw
+                           obtain ⟨x, hx, y, hy, rfl⟩ := Submodule.mem_sup.mp hw
+                           rw [map_add]
+                           exact Submodule.add_mem_sup (hWi b x hx) (hVi b y hy)
+  | smul c h _ ih => obtain ⟨W, hW, hhW, hWi⟩ := ih
+                     exact ⟨W, hW, W.smul_mem c hhW, hWi⟩
 
-lemma normalized_source_entire (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+lemma normalized_source_entire (hK : IwasawaCompact F ζ hζ K)
     (μ : Measure K) [IsFiniteMeasure μ] (f : Flat F ζ hζ K) (a : G F ζ hζ)
     (h : C(K, ℂ)) (g : G F ζ hζ) :
     Differentiable ℂ (fun s => source F ζ hζ K hK μ f a s h g) := by
@@ -250,11 +255,11 @@ lemma normalized_source_entire (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact 
     rw [he]
     dsimp only [alpha]
     ring
-  have heq : (fun s => A (j s)) = (fun s => source F ζ hζ K hK μ f a s h g) := funext he
+  have heq := funext he
   rw [← heq]
   exact A.differentiable.comp hj
 
-lemma normalized_source_kfinite (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+lemma normalized_source_kfinite (hK : IwasawaCompact F ζ hζ K)
     (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (f : Flat F ζ hζ K) (a : G F ζ hζ) (s : ℂ)
     (h : C(K, ℂ)) (hh : h ∈ TauCeti.representativeSubmodule ℂ K) :
@@ -268,7 +273,7 @@ lemma normalized_source_kfinite (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact
   refine ⟨⟨kernelTranslate F ζ hζ K b l.val, hWi b l.val l.property⟩, ?_⟩
   exact source_intertwines F ζ hζ K hK μ f a s l.val b
 
-def kernelOn (K : Subgroup (G F ζ hζ)) (W : Submodule ℂ C(K, ℂ))
+def kernelOn (W : Submodule ℂ C(K, ℂ))
     (hi : ∀ b : K, ∀ h ∈ W, kernelTranslate F ζ hζ K b h ∈ W) :
     Representation ℂ K W where
   toFun b :=
@@ -312,8 +317,9 @@ private lemma meetLevel_le (U V : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ
   · exact Subgroup.map_mono (by dsimp only [meetLevel]; rw [OpenSubgroup.toSubgroup_inf]; exact inf_le_left)
   · exact Subgroup.map_mono (by dsimp only [meetLevel]; rw [OpenSubgroup.toSubgroup_inf]; exact inf_le_right)
 
-private lemma flat_uniform_level_of_norm (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K)
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K)
+
+private lemma flat_uniform_level_of_norm
     (hlevel : ∃ U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ,
       ∀ g (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U),
         KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ
@@ -332,8 +338,7 @@ private lemma flat_uniform_level_of_norm (K : Subgroup (G F ζ hζ)) (hK : Iwasa
     KPLiteralChamber.JointProfile.literal_flat_multiplier_formula F ζ hζ K hK f s g,
     hV g ⟨u, hleV hu⟩, hU g u (hleU hu)]
 
-private lemma source_uniform_level_of_sources (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (a : G F ζ hζ)
+private lemma source_uniform_level_of_sources (a : G F ζ hζ)
     (hlevel : ∃ U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ,
       ∀ g (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U),
         KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ
@@ -350,9 +355,7 @@ private lemma source_uniform_level_of_sources (K : Subgroup (G F ζ hζ)) (hK : 
         u ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U →
           source F ζ hζ K hK μ f a s h (g*u) = source F ζ hζ K hK μ f a s h g := by
   obtain ⟨U, hU⟩ := flat_uniform_level_of_norm F ζ hζ K hK f hlevel
-  have hC : IsCompact ((fun k : G F ζ hζ => k * a) '' (K : Set (G F ζ hζ))) :=
-    hK.1.image (continuous_id.mul continuous_const)
-  obtain ⟨V, hV⟩ := hconj _ hC U
+  obtain ⟨V, hV⟩ := hconj _ (hK.1.image (continuous_id.mul continuous_const)) U
   obtain ⟨W, hW⟩ := hlevel
   refine ⟨meetLevel F ζ hζ V W, ?_⟩
   intro μ s h g u hu
@@ -364,27 +367,22 @@ private lemma source_uniform_level_of_sources (K : Subgroup (G F ζ hζ)) (hK : 
   congr 1
   apply integral_congr_ae
   filter_upwards with k
-  have hc : (k.val * a)⁻¹ * u * (k.val * a) ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U :=
-    hV (k.val*a) ⟨k.val,k.property,rfl⟩ u (hleV hu)
   have he : (g * u) * k.val * a = (g * k.val * a) * ((k.val * a)⁻¹ * u * (k.val * a)) := by group
-  rw [he, hU s (g*k.val*a) _ hc]
+  rw [he, hU s (g*k.val*a) _ (hV (k.val*a) ⟨k.val,k.property,rfl⟩ u (hleV hu))]
 
-theorem flat_uniform_level (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) :
+include hK in
+theorem flat_uniform_level :
     ∃ U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ,
       ∀ s g u, u ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U →
-        f.val s (g * u) = f.val s g := by
-  exact flat_uniform_level_of_norm F ζ hζ K hK f
+        f.val s (g * u) = f.val s g := flat_uniform_level_of_norm F ζ hζ K hK f
     (KPGlobalResidualKernel.ResidualChamberConstruction.RegularSymmetrySteps.exists_iwasawaNorm_right_level
       (KPLiteralChamber.literalIwasawa F ζ hζ K hK))
 
-theorem source_uniform_level (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (a : G F ζ hζ) :
+theorem source_uniform_level (a : G F ζ hζ) :
     ∃ U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ,
       ∀ (μ : Measure K) (s : ℂ) (h : C(K, ℂ)) (g u : G F ζ hζ),
         u ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U →
-          source F ζ hζ K hK μ f a s h (g*u) = source F ζ hζ K hK μ f a s h g := by
-  exact source_uniform_level_of_sources F ζ hζ K hK f a
+          source F ζ hζ K hK μ f a s h (g*u) = source F ζ hζ K hK μ f a s h g := source_uniform_level_of_sources F ζ hζ K hK f a
     (KPGlobalResidualKernel.ResidualChamberConstruction.RegularSymmetrySteps.exists_iwasawaNorm_right_level
       (KPLiteralChamber.literalIwasawa F ζ hζ K hK))
     (fun C hC U => compact_uniform_conjugated_finite_level F ζ hζ C hC U)

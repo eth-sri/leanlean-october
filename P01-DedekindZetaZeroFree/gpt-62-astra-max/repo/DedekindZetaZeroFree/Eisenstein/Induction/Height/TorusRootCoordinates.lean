@@ -22,7 +22,11 @@ private theorem row_map (A : KPChamberHeight.RatGL F) (B : KPChamberHeight.AdelG
       (GeneralLinearGroup.map f B) j := by
   simp [KPChamberHeight.rowAction, Fin.sum_univ_two, Matrix.mul_apply, map_add, map_mul]
 
-private theorem finite_rational_mul (A : RatGL F) (B : AdelGL F)
+section
+
+variable (A : RatGL F) (B : AdelGL F)
+
+private theorem finite_rational_mul
     (v : HeightOneSpectrum (RingOfIntegers F)) :
     finiteFactor F ![0,1] (GeneralLinearGroup.map (algebraMap F (Adele F)) A * B) v =
       finiteFactor F (fun i => A 1 i) B v /
@@ -44,7 +48,7 @@ private theorem finite_rational_mul (A : RatGL F) (B : AdelGL F)
       algebraMap F (v.adicCompletion F) := by ext a; rfl
   rw [hd, hc]
   ring
-private theorem infinite_rational_mul (A : RatGL F) (B : AdelGL F)
+private theorem infinite_rational_mul
     (v : InfinitePlace F) :
     infiniteFactor F ![0,1] (GeneralLinearGroup.map (algebraMap F (Adele F)) A * B) v =
       infiniteFactor F (fun i => A 1 i) B v /
@@ -68,9 +72,10 @@ private theorem infinite_rational_mul (A : RatGL F) (B : AdelGL F)
       v (GeneralLinearGroup.det A : F) :=
     InfinitePlace.Completion.norm_coe v ((WithAbs.equiv v.1).symm _)
   rw [hd, hc, hn]
-  change (_ / (Real.sqrt (v (GeneralLinearGroup.det A : F)) * _)) ^ v.mult = _
   rw [mul_comm (Real.sqrt (v (GeneralLinearGroup.det A : F))), div_mul_eq_div_div, div_pow]
   rfl
+
+end
 
 private theorem rational_det_sqrt_product (a : F) (ha : a ≠ 0) :
     (∏ v : InfinitePlace F, (Real.sqrt (v a)) ^ v.mult) *
@@ -112,27 +117,6 @@ private theorem rational_det_sqrt_product (a : F) (ha : a ≠ 0) :
       (finprod_nonneg (fun _ => Real.sqrt_nonneg _))
   nlinarith
 
-private theorem rowHeight_rational_mul (A : RatGL F) (B : AdelGL F) :
-    rowHeight F ![0,1] (GeneralLinearGroup.map (algebraMap F (Adele F)) A * B) =
-      rowHeight F (fun i => A 1 i) B := by
-  have hr : (fun i => A 1 i) ≠ 0 := by
-    intro h
-    have hz : ∀ i, A 1 i = 0 := fun i => congrFun h i
-    have hi := congrArg (fun M : Matrix (Fin 2) (Fin 2) F => M 1 1) A.mul_inv
-    simpa [Matrix.mul_apply, hz] using hi
-  have hf : Function.HasFiniteMulSupport (finiteFactor F (fun i => A 1 i) B) :=
-    Filter.eventually_cofinite.mp (finiteFactor_eventually_one F _ hr B)
-  have hd : Function.HasFiniteMulSupport
-      (fun v : HeightOneSpectrum (RingOfIntegers F) =>
-        Real.sqrt ‖algebraMap F (v.adicCompletion F) (GeneralLinearGroup.det A : F)‖) :=
-    (Function.HasFiniteMulSupport.fun_comp_of_injective
-      FinitePlace.equivHeightOneSpectrum.symm.injective
-      (FinitePlace.hasFiniteMulSupport (GeneralLinearGroup.det A).ne_zero)).comp Real.sqrt_one
-  unfold rowHeight
-  simp_rw [finite_rational_mul, infinite_rational_mul]
-  rw [Finset.prod_div_distrib, finprod_div_distrib hf hd, div_mul_div_comm,
-    rational_det_sqrt_product F _ (GeneralLinearGroup.det A).ne_zero, div_one]
-
 theorem actualBaseRowHeight_rational_mul
     (γ : Matrix.ProjGenLinGroup (Fin 2) F) (g : KPLiteralRaw.G F ζ hζ) :
     KPChamberHeight.height F (actualBaseRowLine F)
@@ -147,7 +131,21 @@ theorem actualBaseRowHeight_rational_mul
     (ProjGenLinGroup.mk (GeneralLinearGroup.map (algebraMap F (Adele F)) A) * ProjGenLinGroup.mk B) = _
   rw [← map_mul]
   simp only [actualBaseRowLine, height_mk]
-  exact rowHeight_rational_mul F A B
+  have hr : (fun i => A 1 i) ≠ 0 := by
+    intro h
+    simpa [Matrix.mul_apply, (fun i => congrFun h i)] using (congrArg (fun M : Matrix (Fin 2) (Fin 2) F => M 1 1) A.mul_inv)
+  have hf :=
+    Filter.eventually_cofinite.mp (finiteFactor_eventually_one F _ hr B)
+  have hd : Function.HasFiniteMulSupport
+      (fun v : HeightOneSpectrum (RingOfIntegers F) =>
+        Real.sqrt ‖algebraMap F (v.adicCompletion F) (GeneralLinearGroup.det A : F)‖) :=
+    (Function.HasFiniteMulSupport.fun_comp_of_injective
+      FinitePlace.equivHeightOneSpectrum.symm.injective
+      (FinitePlace.hasFiniteMulSupport (GeneralLinearGroup.det A).ne_zero)).comp Real.sqrt_one
+  unfold rowHeight
+  simp_rw [finite_rational_mul, infinite_rational_mul]
+  rw [Finset.prod_div_distrib, finprod_div_distrib hf hd, div_mul_div_comm,
+    rational_det_sqrt_product F _ (GeneralLinearGroup.det A).ne_zero, div_one]
 
 private theorem ideleAbs_product (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (y : KPGlobalTorusFunctionData.Ideles F) :
     (((KPGlobalTorusFunctionData.ideleAbs F y : NNReal) : ℝ)) =
@@ -169,7 +167,7 @@ private theorem ideleAbs_product (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (y : KPG
         (KPGlobalCubicIdelePairing.ideleEval F v y))))
   have hf : Function.HasFiniteMulSupport f :=
     (KPGlobalCenterRationalCharacterExtension.CubeDiagonalProduct.idele_localAbs_hasFiniteMulSupport F y).comp c.map_one
-  have hA : (Set.range (Sum.inl : InfinitePlace F → KPHilbert.Place F) ∩
+  have hA : (Set.range Sum.inl ∩
       Function.mulSupport f).Finite := hf.subset (Set.inter_subset_right)
   have hB : (Set.range (Sum.inr : HeightOneSpectrum (𝓞 F) → KPHilbert.Place F) ∩
       Function.mulSupport f).Finite := hf.subset (Set.inter_subset_right)
@@ -197,8 +195,7 @@ private theorem eval_upper_ratio {K : Type*} [NormedField K]
   unfold KPGlobalTorusBorelNormTwistTransport.iwasawaUpperRatio
   rw [Units.val_mul, map_mul, norm_mul]
   have hi : e (↑(KPGlobalTorusBorelNormTwistTransport.iwasawaUpperUnits F B hB).2.unit⁻¹ : KPAdeles F) =
-      (e (↑(KPGlobalTorusBorelNormTwistTransport.iwasawaUpperUnits F B hB).2.unit : KPAdeles F))⁻¹ := by
-    exact Units.val_inv_eq_inv_val (Units.map e.toMonoidHom _)
+      (e (↑(KPGlobalTorusBorelNormTwistTransport.iwasawaUpperUnits F B hB).2.unit : KPAdeles F))⁻¹ := Units.val_inv_eq_inv_val (Units.map e.toMonoidHom _)
   rw [hi, norm_inv, IsUnit.unit_spec, IsUnit.unit_spec, div_eq_mul_inv]
 
 private theorem root_projection (x : KPAdeles F) :
@@ -227,6 +224,8 @@ private theorem root_projection (x : KPAdeles F) :
     funext q
     exact congrArg (fun M : KPLocalCover.LocalGL2 F (Sum.inr q) => M i j)
       ((KPRationalAdelicSplitting.projection_N F ζ hζ x (Sum.inr q)).trans (ht (Sum.inr q)).symm)
+
+alias TorusRootCoordinates.root_projection := root_projection
 
 theorem actualBaseRowHeight_torus_root_modulus
     (t : KPGlobalTorusFunctionData.E F ζ hζ) (x : KPAdeles F) :

@@ -10,20 +10,11 @@ open MeasureTheory Filter Set Topology
 open scoped NumberField Classical Topology Matrix.Norms.Elementwise
 namespace DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.SourceSpatialRegularity
 open KPSpatialSmoothing KPSpatialSmoothing.ArchKernel KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming arch_insertion_continuous → arch_insertion_continuous
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming rightConv_integrable → rightConv_integrable
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming rightConv_linear → rightConv_linear
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming rightConv_continuous → rightConv_continuous
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming globalLevel_le_finite → globalLevel_le_finite
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming arch_commutes_finite → arch_commutes_finite
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming actual_kernel_pointwise_approximation → actual_kernel_pointwise_approximation
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing renaming actual_cover_of_torus_cosets → actual_cover_of_torus_cosets
-open _root_.DedekindZetaZeroFree.KPSpatialSamplingClosure renaming covariant_smooth_approximation_closed → covariant_smooth_approximation_closed
-open _root_.DedekindZetaZeroFree.KPSpatialCovariantOrbit renaming orbit_finiteDimensional → orbit_finiteDimensional
-open _root_.DedekindZetaZeroFree.KPSpatialCovariantOrbit renaming orbit_stable → orbit_stable
-open _root_.DedekindZetaZeroFree.KPSpatialCovariantOrbit renaming orbit_continuous → orbit_continuous
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming pgl_t2 → pgl_t2
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming pgl_locallyCompact → pgl_locallyCompact
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel (arch_insertion_continuous rightConv_integrable rightConv_linear rightConv_continuous globalLevel_le_finite arch_commutes_finite actual_kernel_pointwise_approximation)
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing (actual_cover_of_torus_cosets)
+open _root_.DedekindZetaZeroFree.KPSpatialSamplingClosure (covariant_smooth_approximation_closed)
+open _root_.DedekindZetaZeroFree.KPSpatialCovariantOrbit (orbit_finiteDimensional orbit_stable orbit_continuous)
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel (pgl_t2 pgl_locallyCompact)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 set_option synthInstance.maxHeartbeats 200000
@@ -63,7 +54,7 @@ private theorem character_right_convolution_calculus
         (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g)) (D0 F)) ∧
     (∀ g, Tendsto (fun m => rightConv F ζ hζ D μL μK (b m) v.val g)
       atTop (𝓝 (v.val g)))) := by
-  obtain ⟨hmap, _, hk, _⟩ :=
+  obtain ⟨hmap, hk⟩ :=
     actual_compact_averaged_kernels F ζ hζ D μL μK b hb
   refine ⟨?_, ?_⟩
   · intro m u v c hu hv
@@ -95,7 +86,7 @@ private theorem character_right_convolution_calculus
       simp only [rightConv, CovariantSampling.rho_J_apply]
       exact RightConvolution.conjugation_equivariance F ζ hζ μL
         (kappa F ζ hζ D μL μK (b m)) k.val (hmap k)
-        (fun a => (hk m).2.2.2.2.2 k a) v.val g
+        (fun a => (hk m).2.2.2 k a) v.val g
     · intro m g
       let : IsTopologicalGroup (KPLiteralRaw.G F ζ hζ) :=
         (KPCubicCoverConstruction.adelic_topological_covers F ζ hζ).2.2.2.1
@@ -137,7 +128,7 @@ private theorem kfinite_raw_orbit
     apply Submodule.span_le.mpr
     rintro _ ⟨k, rfl⟩
     exact hstable k v hvS
-  let : FiniteDimensional ℂ S := hS
+  let := hS
   exact FiniteDimensional.of_injective (Submodule.inclusion hs)
     (Submodule.inclusion_injective hs)
 
@@ -189,7 +180,7 @@ private theorem covariant_source_left_smooth
   let incl : τ.IntertwiningMap ρ :=
     W.subtype.intertwiningMap_of_isIntertwiningMap τ ρ (fun _ _ => rfl)
   have hwc (w : W) : Continuous w.val.val := orbit_continuous C D.K JG χ hn u hv w
-  obtain ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, b, hb⟩ :=
+  obtain ⟨b, hb⟩ :=
     actual_chart_bridge_and_normalized_bumps F ζ hζ μL
   obtain ⟨hlin, hcal⟩ :=
     character_right_convolution_calculus F ζ hζ D χ J0 hn μL μK b hb
@@ -245,10 +236,8 @@ private theorem covariant_source_left_smooth
     KPLiteralChamber.literal_right_to_left_chart_local_transition
       F ζ hζ g x₀ hx₀
   refine ⟨O, hO, hxO, ?_⟩
-  have hb := covariant_source_left_smooth F ζ hζ D χ v hv hc hf J hJ
-    (g * KPGlobalResidualConstruction.archChart F ζ hζ x₀)
-  have hcomp := hb.comp hq hqO
-  apply (hcomp.congr (fun x hx => ?_)).mono Set.inter_subset_right
+  apply (((covariant_source_left_smooth F ζ hζ D χ v hv hc hf J hJ
+    (g * KPGlobalResidualConstruction.archChart F ζ hζ x₀)).comp hq hqO).congr (fun x hx => ?_)).mono Set.inter_subset_right
   rw [heq x hx]
   rfl
 
@@ -257,8 +246,6 @@ local instance (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveR
     (K : Subgroup (KPLiteralRaw.G F ζ hζ)) : MeasurableSpace K := borel K
 local instance (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (K : Subgroup (KPLiteralRaw.G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.NormalizedFiniteSource renaming sourceChi → sourceChi
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.NormalizedFiniteSource renaming source_covariant → source_covariant
 
 end DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.SourceSpatialRegularity
 

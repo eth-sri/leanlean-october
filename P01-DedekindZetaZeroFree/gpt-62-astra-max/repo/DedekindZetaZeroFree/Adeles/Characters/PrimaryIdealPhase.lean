@@ -18,25 +18,29 @@ noncomputable section
 set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
- abbrev e (A : SArithmeticData F) := ClassCharacterGluing.exteriorFractionalUnit A
- def prod (A : SArithmeticData F) (I J : A.Exterior) : A.Exterior :=
+ abbrev e := @DedekindZetaZeroFree.SArithmeticData.ClassCharacterGluing.exteriorFractionalUnit
+ section
+
+variable (A : SArithmeticData F)
+
+def prod (I J : A.Exterior) : A.Exterior :=
   ⟨I.val * J.val, mul_ne_zero I.property.1 J.property.1,
     by rw [Ideal.mul_sup_eq_of_coprime_left I.property.2]; exact J.property.2⟩
- def unitIdeal (A : SArithmeticData F) : A.Exterior := ⟨⊤, by simp⟩
-private lemma e_inj (A : SArithmeticData F) : Function.Injective (e A) := by
+ def unitIdeal : A.Exterior := ⟨⊤, by simp⟩
+private lemma e_inj : Function.Injective (e A) := by
   intro I J h
   apply A.exteriorIdealEquiv.injective
   apply Subtype.ext
   apply (FractionalIdeal.coeIdeal_inj (K := F)).mp
-  simpa only [e, ClassCharacterGluing.exteriorFractionalUnit_val, A.exteriorIdealEquiv_apply] using congrArg Units.val h
-private lemma e_prod (A : SArithmeticData F) (I J : A.Exterior) :
+  simpa [e, ClassCharacterGluing.exteriorFractionalUnit_val, A.exteriorIdealEquiv_apply] using congrArg Units.val h
+private lemma e_prod (I J : A.Exterior) :
     e A (prod A I J) = e A I * e A J :=
   ClassCharacterGluing.exteriorFractionalUnit_mul A I J _ rfl
-private lemma e_unit (A : SArithmeticData F) : e A (unitIdeal A) = 1 := by
+private lemma e_unit : e A (unitIdeal A) = 1 := by
   apply Units.ext
   rw [e, ClassCharacterGluing.exteriorFractionalUnit_val]
   simp [SArithmeticData.extendIdeal, unitIdeal, Ideal.map_top]
-private lemma e_ratio (A : SArithmeticData F) (K : (FractionalIdeal A.R⁰ F)ˣ) :
+private lemma e_ratio (K : (FractionalIdeal A.R⁰ F)ˣ) :
     ∃ I J : A.Exterior, K = e A I / e A J := by
   let k : FractionalIdeal A.R⁰ F := K
   have hn : k.num ≠ ⊥ := by
@@ -58,16 +62,19 @@ private lemma e_ratio (A : SArithmeticData F) (K : (FractionalIdeal A.R⁰ F)ˣ)
   rw [show d = Ideal.span {(k.den : A.R)} from rfl, FractionalIdeal.coeIdeal_span_singleton,
     mul_comm]
   exact k.den_mul_self_eq_num'
- def phase (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
+
+end
+ variable (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
+
+def phase
     (I : A.Exterior) : Circle :=
   ⟨DHCubic.lambda F A ι I.val, by
     change DHCubic.lambda F A ι I.val ∈ Metric.sphere 0 1
     simpa [DHCubic.lambda] using DHCubic.lambdaF_exterior_norm (DHCubic.E0 F A) F A ι I⟩
-private lemma phase_prod (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
+private lemma phase_prod
     (I J : A.Exterior) : phase A ι (prod A I J) = phase A ι I * phase A ι J := by
-  apply Subtype.ext
-  exact DHCubic.lambdaF_mul (DHCubic.E0 F A) F ι I.val J.val
-private lemma phase_unit (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ) :
+  solve_by_elim [DHCubic.lambdaF_mul, Subtype.ext]
+private lemma phase_unit :
     phase A ι (unitIdeal A) = 1 := by
   have h : prod A (unitIdeal A) (unitIdeal A) = unitIdeal A := by
     apply Subtype.ext
@@ -75,17 +82,16 @@ private lemma phase_unit (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
   have hh := phase_prod A ι (unitIdeal A) (unitIdeal A)
   rw [h] at hh
   exact (mul_left_cancel (hh.symm.trans (mul_one _).symm))
-private lemma phase_ratio_eq (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
+private lemma phase_ratio_eq
     (I J I' J' : A.Exterior) (h : e A I / e A J = e A I' / e A J') :
     phase A ι I / phase A ι J = phase A ι I' / phase A ι J' := by
   apply (div_eq_div_iff_mul_eq_mul).mpr
   have he : prod A I J' = prod A I' J := e_inj A (by
-    rw [e_prod, e_prod]
+    simp [e_prod]
     exact (div_eq_div_iff_mul_eq_mul).mp h)
   rw [← phase_prod, ← phase_prod, he]
 
-theorem exists_fractional_ideal_character (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ) :
+theorem exists_fractional_ideal_character :
     ∃! κ : (FractionalIdeal A.R⁰ F)ˣ →* Circle,
       ∀ I : A.Exterior,
         (κ (ClassCharacterGluing.exteriorFractionalUnit A I) : ℂ) =
@@ -115,7 +121,7 @@ theorem exists_fractional_ideal_character (A : SArithmeticData F)
       rw [fs _ _ _ h, phase_prod, phase_prod, mul_div_mul_comm] }
   have kval (I : A.Exterior) : κ (e A I) = phase A ι I := by
     change f (e A I) = _
-    rw [fs _ I (unitIdeal A) (by rw [e_unit, div_one]), phase_unit, div_one]
+    rw [fs _ I (unitIdeal A) (by simp [e_unit]), phase_unit, div_one]
   refine ⟨κ, (fun I => congrArg (fun z : Circle => (z : ℂ)) (kval I)), ?_⟩
   intro κ' hκ'
   apply MonoidHom.ext
@@ -159,18 +165,11 @@ theorem exists_congruence_open_subgroup
           algebraMap F (v.adicCompletion F) (m : F)) ≤ 1 := by
     intro v
     have hs : IsOpen {x : v.adicCompletion F | Valued.v x = 1} := by
-      simpa only [Valuation.restrict_eq_one_iff] using
+      simpa using
         (Valued.isOpen_sphere (v.adicCompletion F) one_ne_zero)
-    have hi : IsOpen {x : v.adicCompletion F | Valued.v x ≤ 1} :=
-      Valued.isOpen_integer (v.adicCompletion F)
-    have hopen : IsOpen {x : (v.adicCompletion F)ˣ |
-        Valued.v (x : v.adicCompletion F) = 1 ∧
-        Valued.v (((x : v.adicCompletion F) - 1) /
-          algebraMap F (v.adicCompletion F) (m : F)) ≤ 1} :=
-      (hs.preimage Units.continuous_val).inter
-        (hi.preimage ((Units.continuous_val.sub continuous_const).div_const _))
     exact RayClass.exists_localHigherUnitGroup_subset v
-      (hopen.mem_nhds (by simp))
+      (((hs.preimage Units.continuous_val).inter
+        ((Valued.isOpen_integer (v.adicCompletion F)).preimage ((Units.continuous_val.sub continuous_const).div_const _))).mem_nhds (by simp))
   choose n hn using hlocal
   let H : Subgroup ((v : {v // v ∈ S}) → (v.val.adicCompletion F)ˣ) :=
     Subgroup.pi Set.univ (fun v => RayClass.localHigherUnitGroup v.val (n v.val))
@@ -233,25 +232,18 @@ variable {F : Type} [Field F] [NumberField F]
 private theorem clearing_coprime (x : F) (v : HeightOneSpectrum (𝓞 F))
     (hx : v.valuation F x ≤ 1) : clearingIdeal x ⊔ v.asIdeal = ⊤ := by
   obtain ⟨n, d, hd⟩ := v.exists_primeCompl_mul_eq_of_integer x hx
-  have hdmem : (d : 𝓞 F) ∈ clearingIdeal x := ⟨n, hd⟩
-  have hdnot : (d : 𝓞 F) ∉ v.asIdeal := d.prop
   by_contra h
-  have heq := v.isMaximal.eq_of_le h le_sup_right
-  have hmem : (d : 𝓞 F) ∈ clearingIdeal x ⊔ v.asIdeal :=
-    (show clearingIdeal x ≤ clearingIdeal x ⊔ v.asIdeal from le_sup_left) hdmem
-  exact hdnot (Eq.mp (congrArg (fun I : Ideal (𝓞 F) => (d : 𝓞 F) ∈ I) heq.symm) hmem)
+  exact d.prop (Eq.mp (congrArg (fun I : Ideal (𝓞 F) => (d : 𝓞 F) ∈ I) (v.isMaximal.eq_of_le h le_sup_right).symm) ((show clearingIdeal x ≤ clearingIdeal x ⊔ v.asIdeal from le_sup_left) (⟨n, hd⟩)))
 
 private theorem clearing_ne_bot (x : F) : clearingIdeal x ≠ ⊥ := by
   obtain ⟨⟨n, d⟩, hd⟩ := IsLocalization.surj (nonZeroDivisors (𝓞 F)) x
   intro h
   have : (d : 𝓞 F) ∈ clearingIdeal x := ⟨n, hd⟩
-  rw [h, Ideal.mem_bot] at this
-  exact (nonZeroDivisors.ne_zero d.prop) this
+  simp_all [h]
 
 private theorem nonzero_congruent (D J : Ideal (𝓞 F)) (hD : D ≠ ⊥)
     (h : D ⊔ J = ⊤) : ∃ b ∈ D, b ≠ 0 ∧ b - 1 ∈ J := by
-  have h1 : (1 : 𝓞 F) ∈ D ⊔ J := by rw [h]; trivial
-  obtain ⟨b, hb, c, hc, hbc⟩ := Submodule.mem_sup.mp h1
+  obtain ⟨b, hb, c, hc, hbc⟩ := Submodule.mem_sup.mp (by rw [h]; trivial)
   by_cases hb0 : b = 0
   · have hc1 : c = 1 := by simpa [hb0] using hbc
     have hJ : J = ⊤ := (Ideal.eq_top_iff_one J).mpr (hc1 ▸ hc)
@@ -262,7 +254,9 @@ private theorem nonzero_congruent (D J : Ideal (𝓞 F)) (hD : D ≠ ⊥)
     rw [this]
     exact J.neg_mem hc
 
-private theorem clearing_modulus_coprime (S : Finset (HeightOneSpectrum (𝓞 F)))
+variable (S : Finset (HeightOneSpectrum (𝓞 F)))
+
+private theorem clearing_modulus_coprime
     (m : 𝓞 F) (hm : m ≠ 0)
     (hSm : ∀ v : HeightOneSpectrum (𝓞 F), m ∈ v.asIdeal → v ∈ S)
     (x : F) (hx : ∀ v ∈ S, v.valuation F x ≤ 1) :
@@ -270,40 +264,29 @@ private theorem clearing_modulus_coprime (S : Finset (HeightOneSpectrum (𝓞 F)
   by_contra h
   obtain ⟨M, hM, hle⟩ := Ideal.ne_top_iff_exists_maximal.mp h
   have hmM : m ∈ M := hle ((show Ideal.span {m} ≤ clearingIdeal x ⊔ Ideal.span {m} from le_sup_right) (Ideal.subset_span (by simp)))
-  have hM0 : M ≠ ⊥ := by
-    intro heq
-    exact hm (Ideal.mem_bot.mp (heq ▸ hmM))
-  let v : HeightOneSpectrum (𝓞 F) := ⟨M, hM.isPrime, hM0⟩
-  have hcop := clearing_coprime x v (hx v (hSm v hmM))
-  have : clearingIdeal x ⊔ v.asIdeal ≤ M := sup_le (le_trans le_sup_left hle) le_rfl
-  rw [hcop] at this
+  let v : HeightOneSpectrum (𝓞 F) := ⟨M, hM.isPrime, fun heq => hm (Ideal.mem_bot.mp (heq ▸ hmM))⟩
+  have := sup_le (le_trans le_sup_left hle) le_rfl
+  rw [(clearing_coprime x v (hx v (hSm v hmM)))] at this
   exact hM.ne_top (top_unique this)
 
-private theorem prime_not_mem_of_congruent (S : Finset (HeightOneSpectrum (𝓞 F)))
+private theorem prime_not_mem_of_congruent
     (m b : 𝓞 F) (hb : b - 1 ∈ Ideal.span {m} * (∏ v ∈ S, v.asIdeal)) :
     ∀ v ∈ S, b ∉ v.asIdeal := by
   intro v hv hbv
-  have hp : (∏ w ∈ S, w.asIdeal) ≤ v.asIdeal := by
-    exact le_trans Ideal.prod_le_inf (Finset.inf_le hv)
-  have hb1 : b - 1 ∈ v.asIdeal := hp (Ideal.mul_le_right hb)
   have h1 : (1 : 𝓞 F) ∈ v.asIdeal := by
-    have := v.asIdeal.sub_mem hbv hb1
+    have := v.asIdeal.sub_mem hbv ((le_trans Ideal.prod_le_inf (Finset.inf_le hv)) (Ideal.mul_le_right hb))
     simpa using this
   exact v.isPrime.ne_top ((Ideal.eq_top_iff_one _).mpr h1)
 
-private theorem exterior_of_not_mem (S : Finset (HeightOneSpectrum (𝓞 F)))
+private theorem exterior_of_not_mem
     (b : 𝓞 F) (hb : ∀ v ∈ S, b ∉ v.asIdeal) :
     Ideal.span {b} ⊔ (∏ v ∈ S, v.asIdeal) = ⊤ := by
   apply Ideal.sup_prod_eq_top
   intro v hv
   by_contra h
-  have heq := v.isMaximal.eq_of_le h le_sup_right
-  have hmem : b ∈ Ideal.span {b} ⊔ v.asIdeal :=
-    (show Ideal.span {b} ≤ Ideal.span {b} ⊔ v.asIdeal from le_sup_left) (Ideal.subset_span (by simp))
-  exact hb v hv (heq.symm ▸ hmem)
+  exact hb v hv ((v.isMaximal.eq_of_le h le_sup_right).symm ▸ ((show Ideal.span {b} ≤ Ideal.span {b} ⊔ v.asIdeal from le_sup_left) (Ideal.subset_span (by simp))))
 
-theorem exists_primary_exterior_ratio
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (m : 𝓞 F) (hm : m ≠ 0)
+theorem exists_primary_exterior_ratio (m : 𝓞 F) (hm : m ≠ 0)
     (hSm : ∀ v : HeightOneSpectrum (𝓞 F), m ∈ v.asIdeal → v ∈ S)
     (a : Fˣ)
     (ha : ∀ v ∈ S, v.valuation F (a : F) = 1 ∧
@@ -314,16 +297,12 @@ theorem exists_primary_exterior_ratio
       Ideal.span {α} ⊔ (∏ v ∈ S, v.asIdeal) = ⊤ ∧
       Ideal.span {β} ⊔ (∏ v ∈ S, v.asIdeal) = ⊤ ∧
       (a : F) = (α : F) / (β : F) := by
-  let x : F := ((a : F) - 1) / (m : F)
+  let x := ((a : F) - 1) / (m : F)
   let D := clearingIdeal x
-  let P : Ideal (𝓞 F) := ∏ v ∈ S, v.asIdeal
-  have hDm : D ⊔ Ideal.span {m} = ⊤ :=
-    clearing_modulus_coprime S m hm hSm x (fun v hv => (ha v hv).2)
-  have hDP : D ⊔ P = ⊤ :=
-    Ideal.sup_prod_eq_top (fun v hv => clearing_coprime x v (ha v hv).2)
+  let P := ∏ v ∈ S, v.asIdeal
   have hDmp : D ⊔ Ideal.span {m} * P = ⊤ := by
-    rw [Ideal.sup_mul_eq_of_coprime_left hDm]
-    exact hDP
+    rw [Ideal.sup_mul_eq_of_coprime_left (clearing_modulus_coprime S m hm hSm x (fun v hv => (ha v hv).2))]
+    exact (Ideal.sup_prod_eq_top (fun v hv => clearing_coprime x v (ha v hv).2))
   obtain ⟨β, hβD, hβ0, hβcon⟩ :=
     nonzero_congruent D (Ideal.span {m} * P) (clearing_ne_bot x) hDmp
   obtain ⟨n, hn⟩ := hβD
@@ -356,7 +335,7 @@ theorem exists_primary_exterior_ratio
     apply (v.valuation_eq_one_iff_notMem (K := F)).mp
     change v.valuation F (α : F) = 1
     rw [hα, map_mul, (ha v hv).1, one_mul]
-    exact (v.valuation_eq_one_iff_notMem (K := F)).mpr (hβnot v hv)
+    exact (v.valuation_eq_one_iff_notMem).mpr (hβnot v hv)
   refine ⟨α, β, hα0, hβ0, hαm, hβm, exterior_of_not_mem S α hαnot,
     exterior_of_not_mem S β hβnot, ?_⟩
   exact (eq_div_iff hβF).mpr hα.symm
@@ -392,18 +371,14 @@ theorem extend_dense_character (e : H →* G) (he : DenseRange e)
   have hs : Function.Surjective f := by
     intro x
     obtain ⟨g, rfl⟩ := QuotientGroup.mk'_surjective K.toSubgroup x
-    have hopen : IsOpen (q ⁻¹' {q g}) := by
-      exact (isOpen_discrete {q g}).preimage continuous_quotient_mk'
-    have hn : (q ⁻¹' {q g}).Nonempty := ⟨g, rfl⟩
-    obtain ⟨a, ha⟩ := he.exists_mem_open hopen hn
+    obtain ⟨a, ha⟩ := he.exists_mem_open ((isOpen_discrete {q g}).preimage continuous_quotient_mk') (⟨g, rfl⟩)
     exact ⟨a, ha⟩
   have hk : f.ker ≤ d.ker := by
     intro a ha
     apply hK a
     exact (QuotientGroup.eq_one_iff _).mp ha
   let l := MonoidHom.liftOfSurjective f hs ⟨d, hk⟩
-  let τ := l.comp q
-  refine ⟨τ, ?_, ?_⟩
+  refine ⟨(l.comp q), ?_, ?_⟩
   · exact (continuous_of_discreteTopology : Continuous l).comp
       (continuous_quotient_mk' : Continuous q)
   · intro a
@@ -424,8 +399,7 @@ theorem finite_diagonal_dense (A : SArithmeticData F) :
     IsOpenEmbedding.piMap (fun v => IsOpenUnits.isOpenEmbedding_unitsVal)
   have hd : DenseRange (fun x : F => fun v : ↥A.Sf =>
       algebraMap F (v.val.adicCompletion F) x) := by
-    have h := PoissonSFiniteDensity.diagonal_denseRange F A.Sf
-    exact h.mono (by rintro x ⟨r, rfl⟩; exact ⟨(r : F), rfl⟩)
+    exact (PoissonSFiniteDensity.diagonal_denseRange F A.Sf).mono (by rintro x ⟨r, rfl⟩; exact ⟨(r : F), rfl⟩)
   obtain ⟨x, hx⟩ := hd.exists_mem_open (hv.isOpenMap _ hU) (hUne.image val)
   obtain ⟨u, hu, hux⟩ := hx
   by_cases hSf : A.Sf.Nonempty
@@ -451,34 +425,30 @@ end FiniteNormalizationTopology
   if w.embedding.comp (algebraMap (DHCubic.E0 F A) F) = ι then
     Eisenstein.archimedeanAngular.comp (Units.map w.embedding.toMonoidHom)
   else (Eisenstein.archimedeanAngular.comp (Units.map w.embedding.toMonoidHom))⁻¹
-private theorem infinityDiagonal_apply (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ) (w : InfinitePlace F) (a : Fˣ) :
-    (infinityDiagonal A ι w a : ℂ) =
-      DHCubic.infinityComponent (DHCubic.E0 F A) F ι w (w.embedding (a : F)) := by
-  unfold infinityDiagonal DHCubic.infinityComponent
-  split_ifs
-  · rfl
-  · rw [DHCubic.star_angular _ ((map_ne_zero w.embedding).mpr a.ne_zero), zpow_neg_one]
-    rfl
- def infinityDiagonalProduct (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ) : Fˣ →* Circle :=
+
+ variable (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
+
+def infinityDiagonalProduct : Fˣ →* Circle :=
   ∏ w : InfinitePlace F, infinityDiagonal A ι w
-private theorem infinityDiagonalProduct_apply (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ) (a : Fˣ) :
+private theorem infinityDiagonalProduct_apply (a : Fˣ) :
     (infinityDiagonalProduct A ι a : ℂ) =
       ∏ w : InfinitePlace F,
         DHCubic.infinityComponent (DHCubic.E0 F A) F ι w (w.embedding (a : F)) := by
   change Circle.coeHom ((∏ w : InfinitePlace F, infinityDiagonal A ι w) a) = _
-  rw [MonoidHom.finset_prod_apply, map_prod]
-  exact Finset.prod_congr rfl (fun w _ => infinityDiagonal_apply A ι w a)
+  simp
+  exact Finset.prod_congr rfl (fun w _ => (by
+    unfold infinityDiagonal DHCubic.infinityComponent
+    split_ifs
+    · rfl
+    · rw [DHCubic.star_angular _ ((map_ne_zero w.embedding).mpr a.ne_zero), zpow_neg_one]
+      rfl))
 
-def principalDiscrepancy (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ) :
+def principalDiscrepancy :
     Fˣ →* Circle :=
   ((Classical.choose (exists_fractional_ideal_character A ι).exists).comp
     (ClassCharacterSteps.principalIdealMap A)) * (infinityDiagonalProduct A ι)⁻¹
 
-theorem principalDiscrepancy_apply (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ) (a : Fˣ) :
+theorem principalDiscrepancy_apply (a : Fˣ) :
     (principalDiscrepancy A ι a : ℂ) =
       ((Classical.choose (exists_fractional_ideal_character A ι).exists)
         (ClassCharacterSteps.principalIdealMap A a) : ℂ) *
@@ -488,20 +458,18 @@ theorem principalDiscrepancy_apply (A : SArithmeticData F)
   simp only [principalDiscrepancy, MonoidHom.mul_apply, MonoidHom.comp_apply,
     MonoidHom.inv_apply, Circle.coe_mul, Circle.coe_inv, infinityDiagonalProduct_apply]
 
-theorem principalDiscrepancy_primary_congruence (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ) (α : 𝓞 F) (hα : α ≠ 0)
+theorem principalDiscrepancy_primary_congruence (α : 𝓞 F) (hα : α ≠ 0)
     (hα3 : α - 1 ∈ Ideal.span {(3 : 𝓞 F)})
     (I : A.Exterior) (hI : I.val = Ideal.span {α})
     (a : Fˣ) (ha : (a : F) = (α : F)) :
     principalDiscrepancy A ι a = 1 := by
-  let r : A.R := algebraMap (𝓞 F) A.R α
+  let r := algebraMap (𝓞 F) A.R α
   have hr : A.Generates I r := by
     constructor
     · intro h
       apply hα
       apply (IsFractionRing.injective (𝓞 F) F)
-      have h' := congrArg (fun x : A.R => (x : F)) h
-      simpa [r] using h'
+      exact (congrArg (fun x : A.R => (x : F)) h)
     · change Ideal.span {algebraMap (𝓞 F) A.R α} = Ideal.map _ I.val
       rw [hI, Ideal.map_span, Set.image_singleton]
   have har : (a : F) = (r : F) := by simpa [r] using ha
@@ -519,10 +487,9 @@ theorem principalDiscrepancy_primary_congruence (A : SArithmeticData F)
       DHCubic.infinityComponent (DHCubic.E0 F A) F ι w (w.embedding (α : F))) ≠ 0 := by
     rw [← ha, ← infinityDiagonalProduct_apply A ι a]
     exact Circle.coe_ne_zero _
-  simpa using mul_inv_cancel₀ hn
+  exact mul_inv_cancel₀ hn
 
-theorem principalDiscrepancy_primary_ratio (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ)
+theorem principalDiscrepancy_primary_ratio
     (α β : 𝓞 F) (hα : α ≠ 0) (hβ : β ≠ 0)
     (hα3 : α - 1 ∈ Ideal.span {(3 : 𝓞 F)})
     (hβ3 : β - 1 ∈ Ideal.span {(3 : 𝓞 F)})
@@ -530,10 +497,8 @@ theorem principalDiscrepancy_primary_ratio (A : SArithmeticData F)
     (hJ : J.val = Ideal.span {β}) (a : Fˣ)
     (ha : (a : F) = (α : F) / (β : F)) :
     principalDiscrepancy A ι a = 1 := by
-  have hα0 : (α : F) ≠ 0 := fun h => hα ((IsFractionRing.injective (𝓞 F) F) (by simpa using h))
-  have hβ0 : (β : F) ≠ 0 := fun h => hβ ((IsFractionRing.injective (𝓞 F) F) (by simpa using h))
-  let aα : Fˣ := Units.mk0 (α : F) hα0
-  let aβ : Fˣ := Units.mk0 (β : F) hβ0
+  let aα := Units.mk0 (α : F) (fun h => hα ((IsFractionRing.injective (𝓞 F) F) (by exact h)))
+  let aβ := Units.mk0 (β : F) (fun h => hβ ((IsFractionRing.injective (𝓞 F) F) (by exact h)))
   have ha' : a = aα / aβ := by
     apply Units.ext
     simpa [aα, aβ, Units.val_div_eq_div_val] using ha
@@ -542,8 +507,7 @@ theorem principalDiscrepancy_primary_ratio (A : SArithmeticData F)
     principalDiscrepancy_primary_congruence A ι β hβ hβ3 J hJ aβ rfl]
   simp
 
-theorem finite_normalization_of_open_conductor (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ)
+theorem finite_normalization_of_open_conductor
     (K : OpenSubgroup ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ))
     (hK : ∀ a : Fˣ, (A.diagonal a).2 ∈ K → principalDiscrepancy A ι a = 1) :
     ∃ τ : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ) →* Circle,
@@ -562,8 +526,7 @@ theorem finite_normalization_of_open_conductor (A : SArithmeticData F)
   exact (congrArg (fun z : Circle => (z : ℂ)) (hd a)).trans
     (principalDiscrepancy_apply A ι a)
 
-theorem exists_finite_normalization (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ) :
+theorem exists_finite_normalization :
     let κ := Classical.choose (exists_fractional_ideal_character A ι).exists
     ∃ τ : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ) →* Circle,
       Continuous τ ∧ ∀ a : Fˣ,
@@ -584,11 +547,9 @@ theorem exists_finite_normalization (A : SArithmeticData F)
     exact h6
   obtain ⟨α, β, hα, hβ, hα3, hβ3, hαS, hβS, hab⟩ :=
     FiniteNormalization.exists_primary_exterior_ratio A.Sf 3 h3 hS3 a (hK a ha)
-  let I : A.Exterior := ⟨Ideal.span {α}, by
-    simpa only [Ideal.span_singleton_eq_bot, ne_eq] using hα, hαS⟩
-  let J : A.Exterior := ⟨Ideal.span {β}, by
-    simpa only [Ideal.span_singleton_eq_bot, ne_eq] using hβ, hβS⟩
-  exact principalDiscrepancy_primary_ratio A ι α β hα hβ hα3 hβ3 I J rfl rfl a hab
+  exact principalDiscrepancy_primary_ratio A ι α β hα hβ hα3 hβ3 (⟨Ideal.span {α}, by
+    simpa using hα, hαS⟩) (⟨Ideal.span {β}, by
+    simpa using hβ, hβS⟩) rfl rfl a hab
 
 end
 end DedekindZetaZeroFree.SArithmeticData.GaussCorrection.EisensteinExtensionArithmetic
@@ -611,49 +572,48 @@ def angularCompletion (w : InfinitePlace F) : w.Completionˣ →* Circle :=
     (Units.map (InfinitePlace.Completion.extensionEmbedding w).toMonoidHom)
 
 theorem continuous_angularCompletion (w : InfinitePlace F) :
-    Continuous (angularCompletion w) := by
-  exact Eisenstein.continuous_archimedeanAngular.comp
+    Continuous (angularCompletion w) := Eisenstein.continuous_archimedeanAngular.comp
     ((InfinitePlace.Completion.isometry_extensionEmbedding w).continuous.units_map _)
 
-def character (A : SArithmeticData F) (σ : F →+* ℂ) (w : InfinitePlace F) :
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
+
+def character (w : InfinitePlace F) :
     w.Completionˣ →* Circle :=
   if w.embedding.comp (algebraMap (DHCubic.E0 F A) F) =
       σ.comp (algebraMap (DHCubic.E0 F A) F) then
     (angularCompletion w)⁻¹ else angularCompletion w
 
-theorem character_apply (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem character_apply
     (w : InfinitePlace F) (z : w.Completionˣ) :
     (character A σ w z : ℂ) =
       (DHCubic.infinityComponent (DHCubic.E0 F A) F
         (σ.comp (algebraMap (DHCubic.E0 F A) F)) w
         (InfinitePlace.Completion.extensionEmbedding w (z : w.Completion)))⁻¹ := by
-  have hz : InfinitePlace.Completion.extensionEmbedding w (z : w.Completion) ≠ 0 :=
-    (map_ne_zero (InfinitePlace.Completion.extensionEmbedding w)).mpr z.ne_zero
   unfold character DHCubic.infinityComponent
   split_ifs
-  · simp [angularCompletion, DHCubic.angular]
-  · rw [DHCubic.star_angular _ hz, zpow_neg_one, inv_inv]
+  · rfl
+  · simp [DHCubic.star_angular _ ((map_ne_zero (InfinitePlace.Completion.extensionEmbedding w)).mpr z.ne_zero)]
     rfl
 
-theorem continuous_character (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem continuous_character
     (w : InfinitePlace F) : Continuous (character A σ w) := by
   unfold character
   split_ifs
   · exact (continuous_angularCompletion w).inv
-  · exact continuous_angularCompletion w
+  apply continuous_angularCompletion
 
-def product (A : SArithmeticData F) (σ : F →+* ℂ) : A.G →* Circle where
+def product : A.G →* Circle where
   toFun y := ∏ w : InfinitePlace F, character A σ w (y.1 w)
   map_one' := by simp
   map_mul' x y := by simp [Finset.prod_mul_distrib]
 
-theorem continuous_product (A : SArithmeticData F) (σ : F →+* ℂ) :
+theorem continuous_product :
     Continuous (product A σ) := by
   apply continuous_finset_prod
   intro w _
   exact (continuous_character A σ w).comp ((continuous_apply w).comp continuous_fst)
 
-theorem character_diagonal (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem character_diagonal
     (w : InfinitePlace F) (a : Fˣ) :
     (character A σ w ((A.diagonal a).1 w) : ℂ) =
       (DHCubic.infinityComponent (DHCubic.E0 F A) F
@@ -670,8 +630,11 @@ namespace EisensteinIdelicDescent
 
 open scoped nonZeroDivisors
 
-theorem continuous_glue (A : SArithmeticData F) (χ : A.G →* Circle)
-    (κ : (FractionalIdeal A.R⁰ F)ˣ →* Circle)
+section
+
+variable (A : SArithmeticData F) (χ : A.G →* Circle) (κ : (FractionalIdeal A.R⁰ F)ˣ →* Circle)
+
+theorem continuous_glue
     (hχ : Continuous χ)
     (hprincipal : ∀ a : Fˣ,
       κ (ClassCharacterSteps.principalIdealMap A a) = χ (A.diagonal a)) :
@@ -686,7 +649,7 @@ theorem continuous_glue (A : SArithmeticData F) (χ : A.G →* Circle)
       ClassCharacterSteps.exteriorIdealMap A
         (NumberField.IdeleGroup.unitEmbedding (𝓞 F) F a) =
           ClassCharacterSteps.principalIdealMap A a := by
-    change Units.map (FractionalIdeal.extendedHom (K := F) F A.R).toMonoidHom
+    change Units.map (FractionalIdeal.extendedHom F A.R).toMonoidHom
       (_root_.IdeleGroup.fractionalIdeal (_root_.IdeleGroup.principalIdele F a)) = _
     rw [_root_.IdeleGroup.fractionalIdeal_principalIdele]
     apply Units.ext
@@ -696,7 +659,7 @@ theorem continuous_glue (A : SArithmeticData F) (χ : A.G →* Circle)
         FractionalIdeal.spanSingleton A.R⁰ (a : F)
     rw [FractionalIdeal.extendedHom_spanSingleton (A := 𝓞 F) (K := F) F A.R]
     congr 1
-    have hm : (IsFractionRing.map (K := F) (L := F)
+    have hm : (IsFractionRing.map
         (FaithfulSMul.algebraMap_injective (𝓞 F) A.R)) = RingHom.id F := by
       apply IsLocalization.ringHom_ext (𝓞 F)⁰
       ext x
@@ -712,15 +675,14 @@ theorem continuous_glue (A : SArithmeticData F) (χ : A.G →* Circle)
       (χ (ClassCharacterSteps.sRestriction A _))⁻¹ = 1
     rw [hi, hs, hprincipal]
     exact mul_inv_cancel _
-  let Φ : A.ArithmeticIdeleClasses →* Circle :=
+  let Φ :=
     QuotientGroup.lift _ (ClassCharacterSteps.rawCharacter A χ κ) hker
   have heval : ∀ x : NumberField.IdeleGroup (𝓞 F) F,
       Φ (QuotientGroup.mk x) = ClassCharacterSteps.rawCharacter A χ κ x :=
     fun _ => rfl
   exact ⟨Φ, ClassCharacterSteps.glued_character_continuous A χ κ Φ heval hχ, heval⟩
 
-theorem glued_infinity (A : SArithmeticData F) (χ : A.G →* Circle)
-    (κ : (FractionalIdeal A.R⁰ F)ˣ →* Circle)
+theorem glued_infinity
     (Φ : A.ArithmeticIdeleClasses →* Circle)
     (heval : ∀ x : NumberField.IdeleGroup (𝓞 F) F,
       Φ (QuotientGroup.mk x) = ClassCharacterSteps.rawCharacter A χ κ x)
@@ -735,35 +697,38 @@ theorem glued_infinity (A : SArithmeticData F) (χ : A.G →* Circle)
         A.ideleInfiniteComponent Φ w z := by
     rw [Finset.prod_eq_single w]
     · simp [ideleInfiniteComponent]
-    · intro u _ hu
-      rw [Pi.mulSingle_eq_of_ne hu, map_one, map_one]
+    · simp_all [Pi.mulSingle_eq_of_ne]
     · simp
   simpa only [Finset.prod_inv_distrib, inv_inv, hp, Pi.one_apply, map_one,
     Finset.prod_const_one, inv_one, mul_one] using congrArg Inv.inv h
 
-def sCharacter (A : SArithmeticData F) (σ : F →+* ℂ)
-    (τ : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ) →* Circle) :
+end
+
+section
+
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
+    (τ : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ) →* Circle)
+
+def sCharacter :
     A.G →* Circle :=
   (τ.comp (MonoidHom.snd _ _)) * (EisensteinInfinityRecipe.product A σ)⁻¹
 
-theorem continuous_sCharacter (A : SArithmeticData F) (σ : F →+* ℂ)
-    (τ : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ) →* Circle)
-    (hτ : Continuous τ) : Continuous (sCharacter A σ τ) := by
-  exact (hτ.comp continuous_snd).mul (EisensteinInfinityRecipe.continuous_product A σ).inv
+theorem continuous_sCharacter
+    (hτ : Continuous τ) : Continuous (sCharacter A σ τ) := (hτ.comp continuous_snd).mul (EisensteinInfinityRecipe.continuous_product A σ).inv
 
-theorem sCharacter_infinity (A : SArithmeticData F) (σ : F →+* ℂ)
-    (τ : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ) →* Circle)
+theorem sCharacter_infinity
     (w : InfinitePlace F) (z : w.Completionˣ) :
     (sCharacter A σ τ (Pi.mulSingle w z, 1))⁻¹ =
       EisensteinInfinityRecipe.character A σ w z := by
   change (τ 1 * (∏ u : InfinitePlace F, EisensteinInfinityRecipe.character A σ u
     (Pi.mulSingle (M := fun u : InfinitePlace F => u.Completionˣ) w z u))⁻¹)⁻¹ = _
-  rw [map_one, one_mul, inv_inv]
+  simp
   rw [Finset.prod_eq_single w]
   · simp
-  · intro u _ h
-    rw [Pi.mulSingle_eq_of_ne h, map_one]
+  · simp_all [Pi.mulSingle_eq_of_ne]
   · simp
+
+end
 
 theorem assemble (A : SArithmeticData F) (σ : F →+* ℂ)
     (κ : (FractionalIdeal A.R⁰ F)ˣ →* Circle)
@@ -824,14 +789,10 @@ theorem eisensteinExtension (A : SArithmeticData F) (σ : F →+* ℂ) :
   let ι := σ.comp (algebraMap (DHCubic.E0 F A) F)
   let κ := Classical.choose
     (EisensteinExtensionArithmetic.exists_fractional_ideal_character A ι).exists
-  have hideal : ∀ I : A.Exterior,
-      (κ (ClassCharacterGluing.exteriorFractionalUnit A I) : ℂ) =
-        DHCubic.lambda F A ι I.val :=
-    Classical.choose_spec
-      (EisensteinExtensionArithmetic.exists_fractional_ideal_character A ι).exists
   obtain ⟨τ, hτ, hprincipal⟩ :=
     EisensteinExtensionArithmetic.exists_finite_normalization A ι
-  apply EisensteinIdelicDescent.assemble A σ κ τ hτ ?_ hideal
+  apply EisensteinIdelicDescent.assemble A σ κ τ hτ ?_ (Classical.choose_spec
+    (EisensteinExtensionArithmetic.exists_fractional_ideal_character A ι).exists)
   intro a
   apply Circle.coe_injective
   rw [Circle.coe_mul, hprincipal]

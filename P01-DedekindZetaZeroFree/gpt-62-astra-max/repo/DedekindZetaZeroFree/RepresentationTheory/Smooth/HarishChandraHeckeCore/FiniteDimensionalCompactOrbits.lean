@@ -10,7 +10,7 @@ open scoped Classical NumberField ENNReal NNReal Topology BigOperators
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.ScatteringResidue.SourceCoreCompactOrbit
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
+    {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
 
 private theorem source_raw_compact_orbit_finiteDimensional
     (f : KPMsRationalCompactCrossPairing.Vplus F ζ hζ D) :
@@ -62,11 +62,7 @@ private theorem source_raw_compact_orbit_finiteDimensional
         (Submodule.mem_sup_right (Submodule.subset_span ⟨k, rfl⟩))
     exact Submodule.finiteDimensional_of_le hle
 
-theorem source_finiteDimensional
-    (f : KPMsRationalCompactCrossPairing.Vplus F ζ hζ D) :
-    FiniteDimensional ℂ (Submodule.span ℂ (Set.range
-      (fun k : D.K => fun g => f.val.val (g * k.val)))) :=
-  source_raw_compact_orbit_finiteDimensional f
+alias source_finiteDimensional := source_raw_compact_orbit_finiteDimensional
 
 end DedekindZetaZeroFree.KPGlobalResidualKernel.ScatteringResidue.SourceCoreCompactOrbit
 

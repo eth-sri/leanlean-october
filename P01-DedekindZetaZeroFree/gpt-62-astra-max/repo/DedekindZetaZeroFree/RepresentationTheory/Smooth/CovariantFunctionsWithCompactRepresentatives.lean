@@ -45,18 +45,14 @@ theorem covariant_smooth_of_compact_representatives
         simp only [Set.mem_singleton_iff] at hy
         simp only [Set.mem_setOf_eq]
         rw [hy, mul_one])
-  have hWc : ∀ c ∈ C, ∀ w ∈ W, f (c * w) = f c := by
-    intro c hc w hw
-    exact hVW (show (c, w) ∈ V ×ˢ W from ⟨hCV hc, hw⟩)
+  have hWc : ∀ c ∈ C, ∀ w ∈ W, f (c * w) = f c := fun c hc w hw => hVW (show (c, w) ∈ V ×ˢ W from ⟨hCV hc, hw⟩)
 
   have hstab : W ∩ W⁻¹ ⊆ (Representation.stabilizer vectorRightTranslation f : Set G) := by
     intro j hj
     change j ∈ Representation.stabilizer vectorRightTranslation f
     rw [Representation.mem_stabilizer]
     ext x
-    change f (x * j) = f x
-    have hj1 : j ∈ W := hj.1
-    have hj2 : j⁻¹ ∈ W := hj.2
+    have hj1 := hj.1
     by_cases hx : f x = 0
     ·
       rw [hx]
@@ -66,11 +62,10 @@ theorem covariant_smooth_of_compact_representatives
         calc x = x * j * j⁻¹ := by group
           _ = ((b : G) * c) * j⁻¹ := by rw [hxj]
           _ = (b : G) * (c * j⁻¹) := by group
-      have hcw : f (c * j⁻¹) = f c := hWc c hcC (j⁻¹) hj2
       have hthis : f x = f (x * j) := by
         calc f x = f ((b : G) * (c * j⁻¹)) := by rw [hx1]
           _ = ρ b (f (c * j⁻¹)) := hcov b (c * j⁻¹)
-          _ = ρ b (f c) := by rw [hcw]
+          _ = ρ b (f c) := by rw [(hWc c hcC (j⁻¹) hj.2)]
           _ = f ((b : G) * c) := (hcov b c).symm
           _ = f (x * j) := by rw [hxj]
       rw [hx] at hthis

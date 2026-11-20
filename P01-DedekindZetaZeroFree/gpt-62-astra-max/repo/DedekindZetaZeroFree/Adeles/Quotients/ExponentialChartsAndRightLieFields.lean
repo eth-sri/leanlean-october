@@ -13,7 +13,7 @@ open MeasureTheory Topology
 open scoped NumberField Classical Topology ENNReal Matrix.Norms.Operator
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 abbrev ActualCover := KPCubicCoverConstruction.AdelicPGL2Cover F ζ hζ
 
@@ -46,14 +46,20 @@ def levelSubgroup (U : FiniteLevel F ζ hζ) : Subgroup (ActualCover F ζ hζ) :
 
 abbrev centreMap := KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ
 
-def rightSubgroup (U : FiniteLevel F ζ hζ) (geometric : Bool) :
+section
+
+variable (U : FiniteLevel F ζ hζ) (geometric : Bool)
+
+def rightSubgroup :
     Subgroup (ActualCover F ζ hζ) :=
   if geometric then levelSubgroup F ζ hζ U ⊔ (centreMap F ζ hζ).range
   else levelSubgroup F ζ hζ U
 
-abbrev LevelSpace (U : FiniteLevel F ζ hζ) (geometric : Bool) :=
+abbrev LevelSpace :=
   DoubleCoset.Quotient (rationalSubgroup F ζ hζ : Set (ActualCover F ζ hζ))
     (rightSubgroup F ζ hζ U geometric : Set (ActualCover F ζ hζ))
+
+end
 
 instance (U : FiniteLevel F ζ hζ) (geometric : Bool) :
     TopologicalSpace (LevelSpace F ζ hζ U geometric) :=
@@ -83,10 +89,7 @@ open MeasureTheory Topology
 open scoped NumberField Classical Topology ENNReal Matrix.Norms.Operator
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-
-def quotientMap : ActualCover F ζ hζ → X F ζ hζ :=
-  _root_.Quotient.mk _
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 def levelMap (U : FiniteLevel F ζ hζ) (geometric : Bool) :
     ActualCover F ζ hζ → LevelSpace F ζ hζ U geometric :=
@@ -113,7 +116,6 @@ def glArchProjection : KPAdelicCoverRestrictedProduct.AdelicGL2 F →* ArchGroup
 theorem scalars_le_arch_kernel : KPAdelicCoverRestrictedProduct.scalarSubgroup F ≤
     (glArchProjection F ζ hζ).ker := by
   rintro g ⟨u, rfl⟩
-  change glArchProjection F ζ hζ (Matrix.GeneralLinearGroup.scalar (Fin 2) u) = 1
   ext w
   change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map _
     (Matrix.GeneralLinearGroup.scalar (Fin 2) u)) = 1
@@ -133,32 +135,26 @@ def ArchSupported (g : ActualCover F ζ hζ) : Prop :=
         (Matrix.GeneralLinearGroup.map
           (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr q)) r) = 1
 
-structure HaarRecipe where
-  adelicHaar : Measure (ActualCover F ζ hζ)
-  adelic_isHaar : adelicHaar.IsHaarMeasure
-  archHaar : Measure (ArchGroup F)
-  arch_isHaar : archHaar.IsHaarMeasure
-  quotientHaar : Measure (X F ζ hζ)
-  domain : Set (ActualCover F ζ hζ)
-  domain_measurable : MeasurableSet domain
-  domain_fundamental : IsFundamentalDomain (rationalSubgroup F ζ hζ) domain adelicHaar
-  quotient_normalization :
-    Measure.map (quotientMap F ζ hζ) (adelicHaar.restrict domain) = quotientHaar
+section
 
-def UFixedScalar (U : FiniteLevel F ζ hζ) (f : ActualCover F ζ hζ → ℂ) : Prop :=
+variable (U : FiniteLevel F ζ hζ)
+
+def UFixedScalar (f : ActualCover F ζ hζ → ℂ) : Prop :=
   (∀ γ : rationalSubgroup F ζ hζ, ∀ g, f (γ * g) = f g) ∧
   (∀ u : levelSubgroup F ζ hζ U, ∀ g, f (g * u) = f g)
 
-def ScalarAtLevel (U : FiniteLevel F ζ hζ) (χ : rootsOfUnity 3 F →* Circle)
+def ScalarAtLevel (χ : rootsOfUnity 3 F →* Circle)
     (f : ActualCover F ζ hζ → ℂ) : Prop :=
   (∀ γ : rationalSubgroup F ζ hζ, ∀ g, f (γ * g) = f g) ∧
   (∀ u : levelSubgroup F ζ hζ U, ∀ g, f (g * u) = f g) ∧
   (∀ ε : rootsOfUnity 3 F, ∀ g,
     f (g * centreMap F ζ hζ ε) = (χ ε : ℂ) * f g)
 
-def ChartScalar (U : FiniteLevel F ζ hζ) (geometric : Bool)
+def ChartScalar (geometric : Bool)
     (χ : rootsOfUnity 3 F →* Circle) (f : ActualCover F ζ hζ → ℂ) : Prop :=
   if geometric then ScalarAtLevel F ζ hζ U χ f else UFixedScalar F ζ hζ U f
+
+end
 
 structure LiftedChart (U : FiniteLevel F ζ hζ) (geometric : Bool)
     (χ : rootsOfUnity 3 F →* Circle) where
@@ -191,18 +187,6 @@ structure LiftedChart (U : FiniteLevel F ζ hζ) (geometric : Bool)
       (if geometric then (χ (centralLabel s) : ℂ) else 1) * f (lift x)
 
 attribute [instance] LiftedChart.stabilizer_group LiftedChart.stabilizer_finite
-
-structure SmallerChart {U : FiniteLevel F ζ hζ} {geometric : Bool}
-    {χ : rootsOfUnity 3 F →* Circle} (C : LiftedChart F ζ hζ U geometric χ) where
-  carrier : Set (ArchGroup F)
-  isOpen : IsOpen carrier
-  closure_compact : IsCompact (closure carrier)
-  closure_subset : closure carrier ⊆ C.openSet
-
-structure ExponentialChart (g : ArchGroup F) where
-  chart : PartialHomeomorph (Coordinates F) (ArchGroup F)
-  zero_mem : (0 : Coordinates F) ∈ chart.source
-  exponential_formula : ∀ x ∈ chart.source, chart x = g * matrixExp F x
 
 end DedekindZetaZeroFree.LocalQuotientCharts.Raw
 

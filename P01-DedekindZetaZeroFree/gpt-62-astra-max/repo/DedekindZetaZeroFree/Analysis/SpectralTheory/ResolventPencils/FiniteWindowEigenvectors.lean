@@ -22,30 +22,25 @@ private lemma eigenvector_spectral_parameter (B : H →L[ℂ] H) (hB : IsSelfAdj
  rw [spectrum.mem_iff]
  intro hu
  apply hμ
- have he : (1 - (μ + 1) • B) = (μ + 1) • (algebraMap ℝ (H →L[ℂ] H) (1 / (1 + μ)) - B) := by
+ let algebraMap₀ := algebraMap ℝ (H →L[ℂ] H)
+ have he : (1 - (μ + 1) • B) = (μ + 1) • (algebraMap₀ (1 / (1 + μ)) - B) := by
   have hh : (μ + 1) * (1 / (1 + μ)) = 1 := by rw [add_comm 1 μ]; field_simp
-  rw [smul_sub, Algebra.smul_def (μ + 1) (algebraMap ℝ (H →L[ℂ] H) (1 / (1 + μ))), ← map_mul, hh, map_one]
+  rw [smul_sub, Algebra.smul_def (μ + 1) (algebraMap₀ (1 / (1 + μ))), ← map_mul, hh, map_one]
  rw [he, Algebra.smul_def]
- exact ((isUnit_iff_ne_zero.mpr hn).map (algebraMap ℝ (H →L[ℂ] H))).mul hu
+ exact ((isUnit_iff_ne_zero.mpr hn).map (algebraMap₀)).mul hu
 
 private lemma eigenvector_local_radius (μ : ℝ) (hn : μ + 1 ≠ 0) (J : Set ℝ) (hμJ : μ ∈ interior J) :
  ∃ ε : ℝ, 0 < ε ∧ ∀ x : ℝ, |x - 1 / (1 + μ)| < ε → x ≠ 0 ∧ x⁻¹ - 1 ∈ J := by
  let t := 1 / (1 + μ)
  have ht : t ≠ 0 := by simpa [t, add_comm] using inv_ne_zero hn
  have he : t⁻¹ - 1 = μ := by simp [t, add_comm, hn]
- have hc : ContinuousAt (fun x : ℝ => x⁻¹ - 1) t :=
-  (continuousAt_id.inv₀ ht).sub continuousAt_const
- have hj : (fun x : ℝ => x⁻¹ - 1) ⁻¹' J ∈ nhds t :=
-  hc.preimage_mem_nhds (he.symm ▸ mem_interior_iff_mem_nhds.mp hμJ)
- have hz : ({0}ᶜ : Set ℝ) ∈ nhds t := isClosed_singleton.isOpen_compl.mem_nhds ht
- obtain ⟨ε, hε, hs⟩ := Metric.mem_nhds_iff.mp (Filter.inter_mem hz hj)
+ obtain ⟨ε, hε, hs⟩ := Metric.mem_nhds_iff.mp (Filter.inter_mem (isClosed_singleton.isOpen_compl.mem_nhds ht) (((continuousAt_id.inv₀ ht).sub continuousAt_const).preimage_mem_nhds (he.symm ▸ mem_interior_iff_mem_nhds.mp hμJ)))
  refine ⟨ε, hε, fun x hx => ?_⟩
- have hh := hs (show x ∈ Metric.ball t ε by simpa [Real.dist_eq, t] using hx)
- exact hh
+ exact hs (show x ∈ Metric.ball t ε by assumption)
 
 private lemma eigenvector_bump_identity (ε y : ℝ) (hε : ε ≠ 0) :
  (1 - max 0 (1 - y ^ 2 / ε ^ 2)) * max (ε ^ 2) (y ^ 2) = y ^ 2 := by
- have hp : 0 < ε ^ 2 := sq_pos_of_ne_zero hε
+ have hp := sq_pos_of_ne_zero hε
  by_cases h : y ^ 2 ≤ ε ^ 2
  · rw [max_eq_left h, max_eq_right (by apply sub_nonneg.mpr; exact (div_le_one hp).mpr h)]
    field_simp
@@ -64,10 +59,10 @@ lemma pencil_eigenvector_of_finite_window
     ∃ u : H, u ≠ 0 ∧ u = (μ + 1) • B u := by
  obtain ⟨hn, hspec⟩ := eigenvector_spectral_parameter B hB μ hμ
  obtain ⟨ε, hε, hlocal⟩ := eigenvector_local_radius μ hn J hμJ
- let t : ℝ := 1 / (1 + μ)
- let g : ℝ → ℝ := fun x => max 0 (1 - (x - t) ^ 2 / ε ^ 2)
+ let t := 1 / (1 + μ)
+ let g := fun x => max 0 (1 - (x - t) ^ 2 / ε ^ 2)
  have hg : Continuous g := by fun_prop
- let W : Submodule ℂ H := ⨅ (f : ℝ → ℝ) (_ : Continuous f)
+ let W := ⨅ (f : ℝ → ℝ) (_ : Continuous f)
      (_ : ∀ ν ∈ J, f (1 / (1 + ν)) = 0), (cfc f B).toLinearMap.ker
  letI : Module.Finite ℂ W := hfinite
  have hrange : ∀ u : H, (cfc g B) u ∈ W := by
@@ -93,9 +88,8 @@ lemma pencil_eigenvector_of_finite_window
   simpa only [← ContinuousLinearMap.mul_apply, hop, ContinuousLinearMap.zero_apply]
  let G := cfc g B
  have hcompact : IsCompactOperator G := by
-  let G' : H →L[ℂ] W := G.codRestrict W hrange
-  have hc : IsCompactOperator G' := isCompactOperator_of_locallyCompactSpace_dom G'
-  exact hc.clm_comp W.subtypeL
+  let G' := G.codRestrict W hrange
+  exact (isCompactOperator_of_locallyCompactSpace_dom G').clm_comp W.subtypeL
  have hGspec : (1 : ℂ) ∈ spectrum ℂ G := by
   apply (IsSelfAdjoint.coe_mem_spectrum_complex (cfc_predicate g B)).mpr
   rw [cfc_map_spectrum (a := B) (f := g) hB hg.continuousOn]
@@ -103,14 +97,12 @@ lemma pencil_eigenvector_of_finite_window
   simp [g]
  obtain ⟨u, hu⟩ := (hcompact.hasEigenvalue_iff_mem_spectrum one_ne_zero).mpr hGspec |>.exists_hasEigenvector
  have hGu : G u = u := by simpa using hu.apply_eq_smul
- have hu0 : u ≠ 0 := hu.2
- let k : ℝ → ℝ := fun x => max (ε ^ 2) ((x - t) ^ 2)
+ let k := fun x => max (ε ^ 2) ((x - t) ^ 2)
  have hk : Continuous k := by fun_prop
  have hform : (fun x => (1 - g x) * k x) = (fun x => (x - t) ^ 2) := by
   funext x
   exact eigenvector_bump_identity ε (x - t) hε.ne'
- let A : H →L[ℂ] H := B - algebraMap ℝ (H →L[ℂ] H) t
- have hA : IsSelfAdjoint A := hB.sub (cfc_predicate_algebraMap t)
+ let A := B - algebraMap ℝ (H →L[ℂ] H) t
  have hsq : A * A = (1 - G) * cfc k B := by
   have hv : Continuous (fun x : ℝ => x - t) := by fun_prop
   have ha : cfc (fun x : ℝ => x - t) B = A := by
@@ -125,18 +117,16 @@ lemma pencil_eigenvector_of_finite_window
  have hsqzero : (A * A) u = 0 := by
   rw [hsq]
   have hcomm : Commute (1 - G) (cfc k B) := by
-   have hgg := cfc_commute_cfc g k B
-   exact (Commute.one_left _).sub_left hgg
+   exact (Commute.one_left _).sub_left (cfc_commute_cfc g k B)
   rw [hcomm.eq, ContinuousLinearMap.mul_apply]
-  have he : (1 - G) u = 0 := by simpa using sub_eq_zero.mpr hGu.symm
+  have he : (1 - G) u = 0 := by exact sub_eq_zero.mpr hGu.symm
   rw [he, map_zero]
  have hAu : A u = 0 := by
   have hm : u ∈ (ContinuousLinearMap.adjoint A ∘L A).toLinearMap.ker := by
-   change (ContinuousLinearMap.adjoint A) (A u) = 0
-   rw [hA.adjoint_eq]
+   rw [(hB.sub (cfc_predicate_algebraMap t)).adjoint_eq]
    exact hsqzero
   rwa [ContinuousLinearMap.ker_adjoint_comp_self] at hm
- refine ⟨u, hu0, ?_⟩
+ refine ⟨u, hu.2, ?_⟩
  have he : B u = t • u := by
   have : B u - t • u = 0 := by simpa [A, Algebra.algebraMap_eq_smul_one] using hAu
   exact sub_eq_zero.mp this

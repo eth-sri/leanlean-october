@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -78,20 +74,6 @@ omit [NumberField L] in
         (chosenFinitePlaceExtension (L := L) w₀).1) :=
   Fintype.ofFinite _
 
-private theorem zpowers_generator_map
-    {G H : Type*} [Group G] [Group H]
-    (e : G ≃* H) (g : G)
-    (hg : ∀ x : G, x ∈ Subgroup.zpowers g) :
-    ∀ y : H, y ∈ Subgroup.zpowers (e g) := by
-  intro y
-  have hmem : e.symm y ∈ Subgroup.zpowers g :=
-    hg (e.symm y)
-  have himage : e (e.symm y) ∈
-      (Subgroup.zpowers g).map e.toMonoidHom :=
-    ⟨e.symm y, hmem, rfl⟩
-  rw [MonoidHom.map_zpowers] at himage
-  simpa using himage
-
 private theorem subsingleton_of_equiv_of_equiv
     {A B C : Type*}
     (eAB : A ≃ B) (eBC : B ≃ C)
@@ -115,47 +97,12 @@ private theorem apply_of_zpowers_generator_map
     (hP : ∀ h : H,
       (∀ y : H, y ∈ Subgroup.zpowers h) → P h) :
     P (e g) :=
-  hP (e g) (zpowers_generator_map e g hg)
-
-private theorem herbrandH0_subsingleton_of_action_and_group_equiv
-    {G H A X : Type*}
-    [Group G] [Fintype G] [Group H] [Fintype H]
-    [CommGroup A] [MulDistribMulAction H A] [Mul X]
-    (eGroup : G ≃* H)
-    (eAction :
-      X ≃*
-        letI : MulDistribMulAction G A :=
-          MulDistribMulAction.compHom A eGroup.toMonoidHom
-        HerbrandH0 G A)
-    (hH : Subsingleton (HerbrandH0 H A)) :
-    Subsingleton X := by
-  let : MulDistribMulAction G A :=
-    MulDistribMulAction.compHom A eGroup.toMonoidHom
-  let eChange :=
-    herbrandH0CompMulEquiv (A := A) eGroup
-  exact subsingleton_of_equiv_of_equiv
-    eAction.toEquiv eChange.toEquiv hH
-
-private theorem herbrandHMinusOne_subsingleton_of_action_and_group_equiv
-    {G H A X : Type*}
-    [Group G] [Fintype G] [Group H] [Fintype H]
-    [CommGroup A] [MulDistribMulAction H A] [Mul X]
-    (eGroup : G ≃* H) (g : G)
-    (eAction :
-      X ≃*
-        letI : MulDistribMulAction G A :=
-          MulDistribMulAction.compHom A eGroup.toMonoidHom
-        HerbrandHMinusOne G A g)
-    (hH : Subsingleton
-      (HerbrandHMinusOne H A (eGroup g))) :
-    Subsingleton X := by
-  let : MulDistribMulAction G A :=
-    MulDistribMulAction.compHom A eGroup.toMonoidHom
-  let eChange :=
-    herbrandHMinusOneCompMulEquiv
-      (A := A) eGroup g
-  exact subsingleton_of_equiv_of_equiv
-    eAction.toEquiv eChange.toEquiv hH
+  hP (e g) (by
+    intro y
+    have himage : e (e.symm y) ∈
+        (Subgroup.zpowers g).map e.toMonoidHom :=
+      ⟨e.symm y, (hg (e.symm y)), rfl⟩
+    simpa using himage)
 
 omit [NumberField L] in
 private theorem
@@ -265,7 +212,7 @@ theorem
     (K := K) (L := L) w₀
   let H := absoluteValueDecompositionGroup K
     (chosenFinitePlaceExtension (L := L) w₀).1
-  let : Fintype H :=
+  let :=
     chosenFinitePlaceDecompositionGroupFintypeProvider
       (K := K) (L := L) w₀
   let : MulDistribMulAction H 𝒪[E]ˣ :=
@@ -309,7 +256,7 @@ theorem
     (K := K) (L := L) w₀
   let H := absoluteValueDecompositionGroup K
     (chosenFinitePlaceExtension (L := L) w₀).1
-  let : Fintype H :=
+  let :=
     chosenFinitePlaceDecompositionGroupFintypeProvider
       (K := K) (L := L) w₀
   let : MulDistribMulAction H 𝒪[E]ˣ :=

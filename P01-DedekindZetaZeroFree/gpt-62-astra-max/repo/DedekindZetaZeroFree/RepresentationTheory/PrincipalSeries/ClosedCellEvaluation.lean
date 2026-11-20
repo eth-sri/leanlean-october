@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.RepresentationTheory.Jacquet.BruhatChartsAndCompactTransversal
 
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.LocalPGLCoverModules
 
@@ -39,15 +40,7 @@ def ev1 : Induced F ζ hζ w m τB →ₗ[ℂ] E where
 
 include hm
 
-private theorem projection_continuous :
-    letI := finiteCoverTopology F ζ hζ w m
-    Continuous (projection F ζ hζ w) := by
-  letI := finiteCoverTopology F ζ hζ w m
-  have ho : Continuous (ordinaryPGLMap F w) := by
-    apply (QuotientGroup.isQuotientMap_mk (KPPGLLocalCover.scalarSubgroup F (Sum.inr w))).continuous_iff.mpr
-    change Continuous (Matrix.ProjGenLinGroup.mk (n := Fin 2) (R := KPRankOneInduction.LocalField F w))
-    exact (QuotientGroup.isQuotientMap_mk _).continuous
-  exact ho.comp (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.2.1.continuous
+private alias projection_continuous := DedekindZetaZeroFree.KPJacquetBruhatCharts.BruhatChartsAndCompactTransversal.projection_continuous
 
 theorem inducingRepresentation_smooth (hm : KPLocalChartTopology.MatrixChartDepth F w m)
     (hτB : letI := finiteCoverTopology F ζ hζ w m; SmoothRepresentation τB) :
@@ -55,14 +48,12 @@ theorem inducingRepresentation_smooth (hm : KPLocalChartTopology.MatrixChartDept
     SmoothRepresentation (inducingRepresentation F ζ hζ w τB) := by
   letI := finiteCoverTopology F ζ hζ w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
-  have hd := KPRankOneInduction.dB_locallyConstant F w (projection F ζ hζ w)
-    (projection_continuous F ζ hζ w m hm)
-  let D : OpenSubgroup (Borel F ζ hζ w) := ⟨(dB F ζ hζ w).ker, hd.isOpen_fiber 1⟩
   intro e
   obtain ⟨J, hJ⟩ := hτB e
-  refine ⟨J ⊓ D, ?_⟩
+  refine ⟨J ⊓ (⟨(dB F ζ hζ w).ker, (KPRankOneInduction.dB_locallyConstant F w (projection F ζ hζ w)
+    (projection_continuous F ζ hζ w m hm)).isOpen_fiber 1⟩), ?_⟩
   intro b hb
-  have hbD : dB F ζ hζ w b = 1 := hb.2
+  have hbD := hb.2
   change (((dB F ζ hζ w b : ℝ≥0) : ℝ) : ℂ) • τB b e = e
   rw [hbD, hJ b hb.1]
   simp
@@ -131,7 +122,7 @@ private theorem exists_compact_open_in (U : Set (FiniteCover F ζ hζ w))
     rw [htrange]
     exact ho.isOpenMap _ ((KPLocalCube.Gamma_compact_open F w r (hm.1.trans hr)).2.preimage continuous_subtype_val)
   let Lgroup := (q.comp t).range
-  have hLrange : (Lgroup : Set (FiniteCover F ζ hζ w)) = q '' Set.range t := by
+  have hLrange : Lgroup = q '' Set.range t := by
     ext x
     simp [Lgroup, MonoidHom.mem_range, Set.mem_image, Function.comp_def]
   have hLo : IsOpen (Lgroup : Set (FiniteCover F ζ hζ w)) := by
@@ -154,7 +145,7 @@ theorem exists_bump_level (hm : KPLocalChartTopology.MatrixChartDepth F w m)
   letI := finiteCoverTopology F ζ hζ w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
   obtain ⟨J, hJ⟩ := inducingRepresentation_smooth F ζ hζ w m hm τB hm hτB e
-  have hJn : (J : Set (Borel F ζ hζ w)) ∈ nhds (1 : Borel F ζ hζ w) := J.mem_nhds_one
+  have hJn := J.mem_nhds_one
   rw [nhds_subtype] at hJn
   obtain ⟨U, hU, hUJ⟩ := Filter.mem_comap.mp hJn
   obtain ⟨L, hLU⟩ := exists_compact_open_in F ζ hζ w m hm U hU
@@ -182,7 +173,7 @@ theorem bump_well_defined (b b' : Borel F ζ hζ w)
     inducingRepresentation F ζ hζ w τB b e =
       inducingRepresentation F ζ hζ w τB b' e := by
   letI := finiteCoverTopology F ζ hζ w m
-  let c : Borel F ζ hζ w := b'⁻¹ * b
+  let c := b'⁻¹ * b
   have hc : c.val ∈ L.toOpenSubgroup := by
     have heq : c.val = l'.val * l.val⁻¹ := by
       change b'.val⁻¹ * b.val = l'.val * l.val⁻¹
@@ -205,8 +196,7 @@ theorem bumpFunction_on (b : Borel F ζ hζ w) (l : letI := finiteCoverTopology 
 
 theorem bumpFunction_off (g : FiniteCover F ζ hζ w)
     (hg : ¬ InBorelLevel F ζ hζ w m L g) :
-    bumpFunction F ζ hζ w m τB e L g = 0 := by
-  exact dif_neg hg
+    bumpFunction F ζ hζ w m τB e L g = 0 := dif_neg hg
 
 theorem bumpFunction_right_fixed (g : FiniteCover F ζ hζ w)
     (l : letI := finiteCoverTopology F ζ hζ w m; L.toOpenSubgroup) :
@@ -342,16 +332,13 @@ theorem ev1_upperRoot
   rw [hev]
   have hn : projection F ζ hζ w (upperRoot F ζ hζ w x) =
       KPRankOneInduction.upperRootElement F w (Multiplicative.toAdd x) := by
-    change Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n _ _) =
-      Matrix.ProjGenLinGroup.mk (KPRankOneInduction.upperRootMatrix F w _)
     rfl
-  have hd := KPRankOneInduction.deltaB_upperRoot F w (projection F ζ hζ w)
-    (Multiplicative.toAdd x) (rootInBorel F ζ hζ w x) hn
   change (((dB F ζ hζ w (rootInBorel F ζ hζ w x) : ℝ≥0) : ℝ) : ℂ) •
     τ (q (rootInBorel F ζ hζ w x)) _ = _
   rw [hqN]
   unfold KPLocalSmoothRepresentation.dB KPRankOneInduction.dB
-  rw [KPRankOneInduction.halfModulus_eq, hd]
+  rw [KPRankOneInduction.halfModulus_eq, (KPRankOneInduction.deltaB_upperRoot F w (projection F ζ hζ w)
+    (Multiplicative.toAdd x) (rootInBorel F ζ hζ w x) hn)]
   simp
 
 theorem ev1_torus

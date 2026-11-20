@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Metaplectic.Kubota.Complex.SU2CompactLift
 
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.SU2HaarCharacterAverages
 
@@ -13,16 +14,18 @@ private lemma lower_zero : lowerUnipotent 0 = 1 := by
   apply Units.ext
   ext i j
   fin_cases i <;> fin_cases j <;> simp [lowerUnipotent]
+
+alias CharacterAverageOrbitClosure.lower_zero := lower_zero
 private lemma eval_one_bound (s : ℝ) (f : PrincipalSeries s) : ‖f 1‖ ≤ chartSeminorm s 0 f := by
-  have hc : Continuous (fun u : ℂ => ‖infinityCoordinate f u‖) := f.property.2.2.continuous.norm
-  have hb := (isCompact_closedBall (0 : ℂ) 1).image hc
   have hh : ‖infinityCoordinate f 0‖ ≤ sSup ((fun u : ℂ => ‖infinityCoordinate f u‖) '' Metric.closedBall 0 1) := by
-    apply le_csSup hb.bddAbove
+    apply le_csSup ((isCompact_closedBall (0 : ℂ) 1).image f.property.2.2.continuous.norm).bddAbove
     exact ⟨0, by simp, rfl⟩
   change ‖f 1‖ ≤ chartSeminormValue s 0 f
   simpa only [chartSeminormValue, norm_iteratedFDeriv_zero, infinityCoordinate, lower_zero] using hh.trans (le_max_right
     (sSup ((fun x : ℂ => ‖openCoordinate f x‖) '' Metric.closedBall 0 1))
     (sSup ((fun u : ℂ => ‖infinityCoordinate f u‖) '' Metric.closedBall 0 1)))
+
+alias CharacterAverageOrbitClosure.eval_one_bound := eval_one_bound
 private lemma eval_one_cont (s : ℝ) : Continuous (fun f : PrincipalSeries s => f 1) := by
   let e : PrincipalSeries s →ₗ[ℂ] ℂ :=
     { toFun := fun f => f 1, map_add' := fun _ _ => rfl, map_smul' := fun _ _ => rfl }
@@ -30,34 +33,26 @@ private lemma eval_one_cont (s : ℝ) : Continuous (fun f : PrincipalSeries s =>
   refine ⟨{0}, 1, ?_⟩
   intro f
   simpa [e] using eval_one_bound s f
+
+alias CharacterAverageOrbitClosure.eval_one_cont := eval_one_cont
 private lemma eval_cont (s : ℝ) (g : ComplexGL2) : Continuous (fun f : PrincipalSeries s => f g) := by
-  have h := (eval_one_cont s).comp ((pi_continuous s).comp
-    (continuous_const.prodMk continuous_id : Continuous (fun f : PrincipalSeries s => (Matrix.ProjGenLinGroup.mk g, f))))
-  convert h using 1
+  convert ((eval_one_cont s).comp ((pi_continuous s).comp
+    (continuous_const.prodMk continuous_id : Continuous (fun f : PrincipalSeries s => (Matrix.ProjGenLinGroup.mk g, f))))) using 1
   ext f
   change f g = f (1 * g)
   rw [one_mul]
-private lemma su2_embed_cont : Continuous complexSU2Embedding := by
-  apply Units.continuous_iff.mpr
-  constructor
-  · exact continuous_subtype_val
-  · have he (k : ComplexSU2) : (↑(complexSU2Embedding k)⁻¹ : Matrix (Fin 2) (Fin 2) ℂ) = star (k : Matrix (Fin 2) (Fin 2) ℂ) := by
-      have hk : complexSU2Embedding k⁻¹ = (complexSU2Embedding k)⁻¹ := map_inv _ _
-      rw [← hk]
-      rfl
-    simp_rw [he]
-    exact continuous_subtype_val.star
+
+alias CharacterAverageOrbitClosure.eval_cont := eval_cont
+private alias su2_embed_cont := DedekindZetaZeroFree.KPActualReflectionData.StandardLocalSource.complexSU2Embedding_continuous
 private lemma proj_cont : Continuous (Matrix.ProjGenLinGroup.mk : ComplexGL2 → ComplexPGL2) :=
   continuous_coinduced_rng
 private lemma char_cont (ℓ : ℕ) : Continuous (su2HarmonicCharacter ℓ) := by
   let u : ComplexSU2 → KPCompactHarmonic.U2 := fun k => ⟨k.val, (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩
-  have hc : Continuous u := continuous_subtype_val.subtype_mk _
   have ht (n : ℕ) : Continuous (fun k : ComplexSU2 => KPCompactHarmonic.symmetricPowerTrace n (u k)) := by
     induction n using Nat.twoStepInduction with
     | zero => exact continuous_const
     | one => exact (by fun_prop : Continuous (fun k : ComplexSU2 => Matrix.trace k.val))
     | more n h0 h1 =>
-      change Continuous (fun k => Matrix.trace k.val * KPCompactHarmonic.symmetricPowerTrace (n+1) (u k) - Matrix.det k.val * KPCompactHarmonic.symmetricPowerTrace n (u k))
       exact ((show Continuous (fun k : ComplexSU2 => Matrix.trace k.val) by fun_prop).mul h1).sub
         ((show Continuous (fun k : ComplexSU2 => Matrix.det k.val) by fun_prop).mul h0)
   have hd (k : ComplexSU2) : Matrix.det k.val = 1 := (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2
@@ -67,6 +62,8 @@ private lemma char_cont (ℓ : ℕ) : Continuous (su2HarmonicCharacter ℓ) := b
     simp [su2HarmonicCharacter, KPCompactHarmonic.rankOneCharacter, hd k, u]
   rw [he]
   exact ht _
+
+alias CharacterAverageOrbitClosure.char_cont := char_cont
 
 open MeasureTheory
 private lemma compact_average_mem (s : ℝ) (μ : Measure ComplexSU2)
@@ -132,19 +129,13 @@ theorem character_average_mem_orbit_closure (s : ℝ) (μ : Measure ComplexSU2)
   letI : IsProbabilityMeasure μ := hprob
   letI : ContinuousSMul ℂ (PrincipalSeries s) :=
     (show WithSeminorms (chartSeminorm s) from ⟨rfl⟩).continuousSMul
-  let d : ℂ := ((2 * ℓ + 1 : ℕ) : ℂ)
-  let F : ComplexSU2 → PrincipalSeries s := fun k =>
+  let d := ((2 * ℓ + 1 : ℕ) : ℂ)
+  let F := fun k =>
     (d * star (su2HarmonicCharacter ℓ k)) •
       pi s (Matrix.ProjGenLinGroup.mk (complexSU2Embedding k)) f
-  have hFc : Continuous F :=
-    (continuous_const.mul (char_cont ℓ).star).smul
-      ((pi_continuous s).comp
-        ((proj_cont.comp su2_embed_cont).prodMk continuous_const))
   have hFe (k : ComplexSU2) (g : ComplexGL2) :
       F k g = d * (star (su2HarmonicCharacter ℓ k) *
         f (g * complexSU2Embedding k)) := by
-    change (d * star (su2HarmonicCharacter ℓ k)) *
-      f (g * complexSU2Embedding k) = _
     exact mul_assoc _ _ _
   have hFi (g : ComplexGL2) : Integrable (fun k => F k g) μ := by
     simp_rw [hFe]
@@ -153,16 +144,15 @@ theorem character_average_mem_orbit_closure (s : ℝ) (μ : Measure ComplexSU2)
     rw [hv g, characterAverage_formula]
     simp_rw [hFe]
     exact (integral_const_mul d _).symm
-  have hm := compact_average_mem s μ F hFc v hFi hFv
   let S := Submodule.span ℂ
     (Set.range (fun k : compactSubgroup => pi s k f))
-  have hFS : Set.range F ⊆ (S : Set (PrincipalSeries s)) := by
+  have hFS : Set.range F ⊆ S := by
     rintro _ ⟨k, rfl⟩
     apply S.smul_mem
     apply Submodule.subset_span
     exact ⟨⟨Matrix.ProjGenLinGroup.mk (complexSU2Embedding k), ⟨k, rfl⟩⟩, rfl⟩
-  have hCS : convexHull ℝ (Set.range F) ⊆ (S : Set (PrincipalSeries s)) :=
-    convexHull_min hFS (S.restrictScalars ℝ).convex
-  exact closure_mono hCS hm
+  exact closure_mono (convexHull_min hFS (S.restrictScalars ℝ).convex) (compact_average_mem s μ F ((continuous_const.mul (char_cont ℓ).star).smul
+    ((pi_continuous s).comp
+      ((proj_cont.comp su2_embed_cont).prodMk continuous_const))) v hFi hFv)
 
 end DedekindZetaZeroFree.KPCplxHarmonicExtraction

@@ -18,7 +18,7 @@ theorem nonprincipalRayHeckeData_exists
   obtain ⟨Λ, Λ', W, hΛ, hΛ', hW, hser, hser', hrefl, hord⟩ :=
     (DedekindZetaZeroFree.Hecke.heckeFunctionalEquation F hF 𝔪 hm η hprim).1 hnp
   refine ⟨fun s => if 0 < s.re then Λ s / heckeCompletionFactor F 𝔪 s else 0,
-    Λ, Λ', W, ?_, hΛ, hΛ', ?_, ?_, hser', hW, hrefl, hord⟩
+    Λ, Λ', W, ?_, hΛ, ?_, ?_, hser', hW, hrefl, hord⟩
   ·
     refine DifferentiableOn.congr (hΛ.differentiableOn.mul
       (differentiableOn_inv_heckeCompletionFactor F 𝔪 hm)) ?_

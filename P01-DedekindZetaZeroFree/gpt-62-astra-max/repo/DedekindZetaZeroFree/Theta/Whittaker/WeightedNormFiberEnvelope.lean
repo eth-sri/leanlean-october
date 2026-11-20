@@ -22,8 +22,11 @@ theorem archPowerMajorant_le_rpow_neg (B s r : ℝ) (hr : 0 < r)
   · exact Or.inl (Real.rpow_le_rpow_of_exponent_ge hr h1 (by linarith))
   · exact Or.inr (Real.rpow_le_rpow_of_exponent_le (le_of_lt (lt_of_not_ge h1)) (by linarith))
 
-theorem productPowerMajorant_le_sheet_bound (A : SArithmeticData F)
-    (v₀ : InfinitePlace F) (M B s : ℝ) (hM : 0 < M)
+section
+
+variable (A : SArithmeticData F) (v₀ : InfinitePlace F)
+
+theorem productPowerMajorant_le_sheet_bound (M B s : ℝ) (hM : 0 < M)
     (hs : -(1 / 4 : ℝ) < s) (hBs : s < B)
     (x : ThetaProfileHaarSheets.PositiveAxis) (y : A.G) (hy : A.norm y = (x : ℝ)) :
     productPowerMajorant A M B y ≤
@@ -124,7 +127,7 @@ theorem productPowerMajorant_le_sheet_bound (A : SArithmeticData F)
         rw [Finset.prod_mul_distrib, Finset.prod_mul_distrib]
         ring
 
-theorem sheetHaar_integral_eq (A : SArithmeticData F) (v₀ : InfinitePlace F)
+theorem sheetHaar_integral_eq
     (μG : Measure A.G) [μG.IsHaarMeasure] (x : ThetaProfileHaarSheets.PositiveAxis)
     (F : A.G → ℝ) :
     (∫ y : ThetaProfileHaarSheets.Sheet A x, F y.val
@@ -136,6 +139,8 @@ theorem sheetHaar_integral_eq (A : SArithmeticData F) (v₀ : InfinitePlace F)
   exact MeasureTheory.integral_map_equiv
     (ThetaProfileHaarSheets.sheetTranslation A v₀ x).toMeasurableEquiv
     (fun y : ThetaProfileHaarSheets.Sheet A x => F y.val)
+
+end
 
 set_option maxHeartbeats 1000000 in
 

@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -54,11 +50,7 @@ theorem equivariantMulEquiv_map_tateNorm
     (a : A) :
     e (tateNorm G A a) =
       tateNorm G B (e a) := by
-  simpa using
-    map_tateNorm
-      (G := G) (A := A) (B := B)
-      e.toMonoidHom
-      (fun g x ↦ by simpa using he g x) a
+  exact map_tateNorm e.toMonoidHom (fun g x ↦ he g x) a
 
 omit [Fintype G] in
 /-- An equivariant multiplicative equivalence commutes with the
@@ -70,18 +62,13 @@ theorem equivariantMulEquiv_map_sigmaMinusOne
     (σ : G) (a : A) :
     e (sigmaMinusOne G A σ a) =
       sigmaMinusOne G B σ (e a) := by
-  simpa using
-    map_sigmaMinusOne
-      (G := G) (A := A) (B := B)
-      e.toMonoidHom
-      (fun g x ↦ by simpa using he g x) σ a
+  exact map_sigmaMinusOne e.toMonoidHom (fun g x ↦ he g x) σ a
+
+variable (e : A ≃* B) (he : ∀ (g : G) (a : A), e (g • a) = g • e a)
 
 /-- An equivariant multiplicative equivalence restricted to fixed
 subgroups. -/
-noncomputable def fixedSubgroupEquivariantMulEquiv
-    (e : A ≃* B)
-    (he : ∀ (g : G) (a : A),
-      e (g • a) = g • e a) :
+noncomputable def fixedSubgroupEquivariantMulEquiv :
     fixedSubgroup G A ≃* fixedSubgroup G B where
   toFun a :=
     ⟨e a.1, fun g ↦ by
@@ -101,10 +88,7 @@ noncomputable def fixedSubgroupEquivariantMulEquiv
 
 /-- An equivariant multiplicative equivalence restricted to norm
 kernels. -/
-noncomputable def normKernelEquivariantMulEquiv
-    (e : A ≃* B)
-    (he : ∀ (g : G) (a : A),
-      e (g • a) = g • e a) :
+noncomputable def normKernelEquivariantMulEquiv :
     normKernelSubgroup G A ≃*
       normKernelSubgroup G B where
   toFun a :=
@@ -142,28 +126,22 @@ noncomputable def normKernelEquivariantMulEquiv
 
 /-- An equivariant multiplicative equivalence induces an equivalence on
 degree-zero Tate cohomology. -/
-noncomputable def herbrandH0EquivariantMulEquiv
-    (e : A ≃* B)
-    (he : ∀ (g : G) (a : A),
-      e (g • a) = g • e a) :
+noncomputable def herbrandH0EquivariantMulEquiv :
     HerbrandH0 G A ≃* HerbrandH0 G B := by
   let f := fixedSubgroupEquivariantMulEquiv e he
   let N :=
     (tateNormSubgroup G A).subgroupOf
       (fixedSubgroup G A)
-  let M :=
-    (tateNormSubgroup G B).subgroupOf
-      (fixedSubgroup G B)
-  exact quotientMulEquivOfSplit N M
+  exact quotientMulEquivOfSplit N ((tateNormSubgroup G B).subgroupOf
+    (fixedSubgroup G B))
     f.toMonoidHom f.symm.toMonoidHom
     (fun y ↦ f.apply_symm_apply y)
     (fun x hx ↦ by
       rw [Subgroup.mem_subgroupOf] at hx ⊢
       rcases hx with ⟨a, ha⟩
       refine ⟨e a, ?_⟩
-      change tateNorm G B (e a) = e x.1
       calc
-        tateNorm G B (e a) =
+        _ =
             e (tateNorm G A a) :=
           (equivariantMulEquiv_map_tateNorm
             e he a).symm
@@ -177,7 +155,7 @@ noncomputable def herbrandH0EquivariantMulEquiv
         e (tateNorm G A (e.symm b)) =
           e (e.symm y.1)
       calc
-        e (tateNorm G A (e.symm b)) =
+        _ =
             tateNorm G B (e (e.symm b)) :=
           equivariantMulEquiv_map_tateNorm
             e he (e.symm b)
@@ -195,20 +173,13 @@ noncomputable def herbrandH0EquivariantMulEquiv
 
 @[simp]
 theorem herbrandH0EquivariantMulEquiv_mk
-    (e : A ≃* B)
-    (he : ∀ (g : G) (a : A),
-      e (g • a) = g • e a)
     (a : fixedSubgroup G A) :
     herbrandH0EquivariantMulEquiv e he (HerbrandH0.mk a) =
-      HerbrandH0.mk (fixedSubgroupEquivariantMulEquiv e he a) := by
-  rfl
+      HerbrandH0.mk (fixedSubgroupEquivariantMulEquiv e he a) := rfl
 
 /-- An equivariant multiplicative equivalence induces an equivalence on
 degree-minus-one Tate cohomology. -/
 noncomputable def herbrandHMinusOneEquivariantMulEquiv
-    (e : A ≃* B)
-    (he : ∀ (g : G) (a : A),
-      e (g • a) = g • e a)
     (σ : G) :
     HerbrandHMinusOne G A σ ≃*
       HerbrandHMinusOne G B σ := by
@@ -216,19 +187,16 @@ noncomputable def herbrandHMinusOneEquivariantMulEquiv
   let N :=
     (augmentationSubgroup G A σ).subgroupOf
       (normKernelSubgroup G A)
-  let M :=
-    (augmentationSubgroup G B σ).subgroupOf
-      (normKernelSubgroup G B)
-  exact quotientMulEquivOfSplit N M
+  exact quotientMulEquivOfSplit N ((augmentationSubgroup G B σ).subgroupOf
+    (normKernelSubgroup G B))
     f.toMonoidHom f.symm.toMonoidHom
     (fun y ↦ f.apply_symm_apply y)
     (fun x hx ↦ by
       rw [Subgroup.mem_subgroupOf] at hx ⊢
       rcases hx with ⟨a, ha⟩
       refine ⟨e a, ?_⟩
-      change sigmaMinusOne G B σ (e a) = e x.1
       calc
-        sigmaMinusOne G B σ (e a) =
+        _ =
             e (sigmaMinusOne G A σ a) :=
           (equivariantMulEquiv_map_sigmaMinusOne
             e he σ a).symm
@@ -242,7 +210,7 @@ noncomputable def herbrandHMinusOneEquivariantMulEquiv
         e (sigmaMinusOne G A σ (e.symm b)) =
           e (e.symm y.1)
       calc
-        e (sigmaMinusOne G A σ (e.symm b)) =
+        _ =
             sigmaMinusOne G B σ (e (e.symm b)) :=
           equivariantMulEquiv_map_sigmaMinusOne
             e he σ (e.symm b)
@@ -258,24 +226,20 @@ noncomputable def herbrandHMinusOneEquivariantMulEquiv
       rw [hx1]
       exact N.one_mem)
 
+include he in
 /-- Finiteness of `H⁰` transports through an equivariant
 multiplicative equivalence. -/
 theorem herbrandH0Finite_of_equivariantMulEquiv
-    (e : A ≃* B)
-    (he : ∀ (g : G) (a : A),
-      e (g • a) = g • e a)
     [Finite (HerbrandH0 G A)] :
     Finite (HerbrandH0 G B) :=
   Finite.of_equiv
     (HerbrandH0 G A)
     (herbrandH0EquivariantMulEquiv e he).toEquiv
 
+include he in
 /-- Finiteness of `H⁻¹` transports through an equivariant
 multiplicative equivalence. -/
 theorem herbrandHMinusOneFinite_of_equivariantMulEquiv
-    (e : A ≃* B)
-    (he : ∀ (g : G) (a : A),
-      e (g • a) = g • e a)
     (σ : G)
     [Finite (HerbrandHMinusOne G A σ)] :
     Finite (HerbrandHMinusOne G B σ) :=
@@ -287,9 +251,6 @@ theorem herbrandHMinusOneFinite_of_equivariantMulEquiv
 /-- Herbrand quotients are invariant under equivariant multiplicative
 equivalence. -/
 theorem herbrandQuotient_eq_of_equivariantMulEquiv
-    (e : A ≃* B)
-    (he : ∀ (g : G) (a : A),
-      e (g • a) = g • e a)
     (σ : G)
     [Finite (HerbrandH0 G A)]
     [Finite (HerbrandHMinusOne G A σ)] :
@@ -301,27 +262,12 @@ theorem herbrandQuotient_eq_of_equivariantMulEquiv
         e he σ
     herbrandQuotient (G := G) (A := A) σ =
       herbrandQuotient (G := G) (A := B) σ := by
-  let h0B : Finite (HerbrandH0 G B) :=
-    herbrandH0Finite_of_equivariantMulEquiv e he
-  let hMinusOneB :
-      Finite (HerbrandHMinusOne G B σ) :=
-    herbrandHMinusOneFinite_of_equivariantMulEquiv
-      e he σ
-  have h0Card :
-      Nat.card (HerbrandH0 G A) =
-        Nat.card (HerbrandH0 G B) := by
-    exact Nat.card_congr
+  have h0Card := Nat.card_congr
       (herbrandH0EquivariantMulEquiv e he).toEquiv
-  have hMinusOneCard :
-      Nat.card (HerbrandHMinusOne G A σ) =
-        Nat.card
-          (HerbrandHMinusOne G B σ) := by
-    exact Nat.card_congr
+  have hMinusOneCard := Nat.card_congr
       (herbrandHMinusOneEquivariantMulEquiv
         e he σ).toEquiv
-  rw [herbrandQuotient_eq_card_ratio,
-    herbrandQuotient_eq_card_ratio,
-    h0Card, hMinusOneCard]
+  simp_all [herbrandQuotient_eq_card_ratio]
 
 end CyclicCohomology
 

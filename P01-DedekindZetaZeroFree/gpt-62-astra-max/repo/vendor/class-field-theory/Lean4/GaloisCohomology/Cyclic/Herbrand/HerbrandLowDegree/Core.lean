@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 namespace CyclicCohomology
@@ -47,9 +44,12 @@ noncomputable def herbrandQuotient (σ : G)
     [Finite (HerbrandH0 G A)] [Finite (HerbrandHMinusOne G A σ)] : ℚ :=
   (Nat.card (HerbrandH0 G A) : ℚ) / (Nat.card (HerbrandHMinusOne G A σ) : ℚ)
 
+section
+
+variable (σ : G) [Finite (HerbrandH0 G A)] [Finite (HerbrandHMinusOne G A σ)]
+
 /-- The Herbrand quotient is definitionally the ratio `#H⁰ / #H^{-1}`. -/
-theorem herbrandQuotient_eq_card_ratio (σ : G)
-    [Finite (HerbrandH0 G A)] [Finite (HerbrandHMinusOne G A σ)] :
+theorem herbrandQuotient_eq_card_ratio :
     herbrandQuotient (G := G) (A := A) σ =
       (Nat.card (HerbrandH0 G A) : ℚ) /
         (Nat.card (HerbrandHMinusOne G A σ) : ℚ) :=
@@ -57,23 +57,21 @@ theorem herbrandQuotient_eq_card_ratio (σ : G)
 
 /-- If the actual low-degree quotients have the same finite cardinality, then
 the Herbrand quotient is `1`. -/
-theorem herbrandQuotient_eq_one_of_card_eq (σ : G)
-    [Finite (HerbrandH0 G A)] [Finite (HerbrandHMinusOne G A σ)]
+theorem herbrandQuotient_eq_one_of_card_eq
     (hcard : Nat.card (HerbrandH0 G A) = Nat.card (HerbrandHMinusOne G A σ)) :
     herbrandQuotient (G := G) (A := A) σ = 1 := by
-  have hden : ((Nat.card (HerbrandHMinusOne G A σ) : ℚ) ≠ 0) :=
-    Nat.cast_ne_zero.mpr (Finite.card_pos (α := HerbrandHMinusOne G A σ)).ne'
   unfold herbrandQuotient
   rw [hcard]
-  exact div_self hden
+  exact div_self (Nat.cast_ne_zero.mpr (Finite.card_pos).ne')
+
+end
 
 /-- Herbrand-quotient theory Herbrand-quotient multiplicativity: the Herbrand quotient of a finite
 cyclic module is `1`. -/
 theorem herbrandQuotient_finite_module_eq_one
     (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ) [Finite A] :
-    herbrandQuotient (G := G) (A := A) σ = 1 := by
-  exact herbrandQuotient_eq_one_of_card_eq (G := G) (A := A) σ
-    (herbrand_finite_module_card_eq (G := G) (A := A) σ hgen)
+    herbrandQuotient (G := G) (A := A) σ = 1 := herbrandQuotient_eq_one_of_card_eq σ
+    (herbrand_finite_module_card_eq σ hgen)
 
 /-- Herbrand-quotient theory Herbrand-quotient multiplicativity: Herbrand quotient multiplicativity
 for a short exact sequence of multiplicative `G`-modules, proved from the
@@ -98,24 +96,11 @@ theorem herbrandQuotient_exact_multiplicative
     herbrandQuotient (G := G) (A := B) σ =
       herbrandQuotient (G := G) (A := A) σ *
         herbrandQuotient (G := G) (A := C) σ := by
-  have hcard :=
-    herbrand_exact_cardinality_identity
-      (G := G) (A := A) (B := B) (C := C)
-      i j hi hj hker hinj hsurj σ hgen
-  have hA :
-      ((Nat.card (HerbrandHMinusOne G A σ) : ℚ) ≠ 0) :=
-    Nat.cast_ne_zero.mpr
-      (Finite.card_pos (α := HerbrandHMinusOne G A σ)).ne'
-  have hB :
-      ((Nat.card (HerbrandHMinusOne G B σ) : ℚ) ≠ 0) :=
-    Nat.cast_ne_zero.mpr
-      (Finite.card_pos (α := HerbrandHMinusOne G B σ)).ne'
-  have hC :
-      ((Nat.card (HerbrandHMinusOne G C σ) : ℚ) ≠ 0) :=
-    Nat.cast_ne_zero.mpr
-      (Finite.card_pos (α := HerbrandHMinusOne G C σ)).ne'
   unfold herbrandQuotient
-  field_simp [hA, hB, hC]
+  field_simp [(Nat.cast_ne_zero.mpr
+    (Finite.card_pos).ne'), (Nat.cast_ne_zero.mpr
+    (Finite.card_pos).ne'), (Nat.cast_ne_zero.mpr
+    (Finite.card_pos).ne')]
   have hcardQ :
       (Nat.card (HerbrandH0 G B) : ℚ) *
           Nat.card (HerbrandHMinusOne G A σ) *
@@ -123,7 +108,9 @@ theorem herbrandQuotient_exact_multiplicative
         Nat.card (HerbrandH0 G A) *
           Nat.card (HerbrandH0 G C) *
           Nat.card (HerbrandHMinusOne G B σ) := by
-    exact_mod_cast hcard
+    exact_mod_cast (herbrand_exact_cardinality_identity
+
+      i j hi hj hker hinj hsurj σ hgen)
   simpa [mul_assoc, mul_left_comm, mul_comm] using hcardQ
 
 end Herbrand

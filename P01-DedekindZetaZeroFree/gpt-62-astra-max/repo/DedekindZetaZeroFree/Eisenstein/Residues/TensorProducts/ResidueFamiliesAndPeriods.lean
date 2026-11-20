@@ -10,7 +10,7 @@ open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.FourierContinuation.TensorActionSource
 open MomentSources KPLiteralRaw
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {K : Subgroup (G F ζ hζ)}
+    {K : Subgroup (G F ζ hζ)}
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
@@ -25,18 +25,19 @@ def ownedLiteralResidueFamily (hK : IwasawaCompact F ζ hζ K) : LiteralResidueF
   exact ⟨h.choose, h.choose_spec.choose, h.choose_spec.choose_spec.1,
     h.choose_spec.choose_spec.2⟩
 
-def LiteralResidueFamily.residue {hK : IwasawaCompact F ζ hζ K}
-    (A : LiteralResidueFamily hK) : literalZeroProfiles K →ₗ[ℂ] Functions F ζ hζ :=
+section
+
+variable {hK : IwasawaCompact F ζ hζ K} (A : LiteralResidueFamily hK)
+
+def LiteralResidueFamily.residue : literalZeroProfiles K →ₗ[ℂ] Functions F ζ hζ :=
   literalZeroProfileResidue hK A.E A.cleared A.germ (fun f g => (A.normal f g).meromorphicOn)
 
-@[simp] theorem LiteralResidueFamily.residue_flat {hK : IwasawaCompact F ζ hζ K}
-    (A : LiteralResidueFamily hK) (f : literalFlatModule K) :
+@[simp] theorem LiteralResidueFamily.residue_flat (f : literalFlatModule K) :
     A.residue (literalZeroProfileEquiv hK f) = A.cleared (asLiteralFlat f) 0 :=
   literalZeroProfileResidue_flat hK A.E A.cleared A.germ
     (fun f g => (A.normal f g).meromorphicOn) f
 
-theorem LiteralResidueFamily.residue_finite {hK : IwasawaCompact F ζ hζ K}
-    (A : LiteralResidueFamily hK) (q : KPFinitePlace F)
+theorem LiteralResidueFamily.residue_finite (q : KPFinitePlace F)
     (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
     (f : literalZeroProfiles K) (g : G F ζ hζ) :
     A.residue (literalZeroProfileFinite hK q a f) g =
@@ -45,9 +46,11 @@ theorem LiteralResidueFamily.residue_finite {hK : IwasawaCompact F ζ hζ K}
   literalZeroProfileResidue_finite hK A.E A.cleared A.germ
     (fun f g => (A.normal f g).meromorphicOn) q a f g
 
+end
+
 section Selected
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 
 def selectedZeroProfile (Q : AdmissibleFlatSources R) (v : R.A.UnitQuotient) :
     literalZeroProfiles Q.K :=

@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -43,7 +40,7 @@ theorem closedFixingSubgroup_bot_eq_baseField :
   ext σ
   change σ ∈ (⊥ : IntermediateField K Ω).fixingSubgroup ↔
     σ ∈ (⊤ : Subgroup (Gal(Ω / K)))
-  rw [IntermediateField.fixingSubgroup_bot]
+  simp
 
 /-- The fixing subgroup of an intermediate field lies in the fixing subgroup
 of the base field. -/
@@ -61,8 +58,7 @@ theorem extensionSubgroup_base_eq_subgroupOf
         (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
         (closedFixingSubgroup K Ω E) (fixingSubgroupLeBase K Ω E) =
       (closedFixingSubgroup K Ω E).toSubgroup.subgroupOf
-        (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω)).toSubgroup := by
-  rfl
+        (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω)).toSubgroup := rfl
 
 /-- The fixing subgroup of a Galois intermediate extension is normal in the
 ambient Galois group. -/
@@ -98,17 +94,19 @@ theorem baseFixingToAmbientQuotient_ker
       extensionSubgroup
         (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
         (closedFixingSubgroup K Ω E) (fixingSubgroupLeBase K Ω E) := by
-  rw [extensionSubgroup_base_eq_subgroupOf]
   ext x
   change
     (QuotientGroup.mk' (closedFixingSubgroup K Ω E).toSubgroup x.1 = 1) ↔
       x.1 ∈ (closedFixingSubgroup K Ω E).toSubgroup
   exact QuotientGroup.eq_one_iff x.1
 
+section
+
+variable (E : IntermediateField K Ω) [IsGalois K E]
+
 /-- The base fixing group is the whole ambient Galois group, hence its map to
 the ambient quotient is onto. -/
-theorem baseFixingToAmbientQuotient_surjective
-    (E : IntermediateField K Ω) [IsGalois K E] :
+theorem baseFixingToAmbientQuotient_surjective :
     Function.Surjective (baseFixingToAmbientQuotient K Ω E) := by
   intro q
   refine Quotient.inductionOn' q ?_
@@ -123,8 +121,7 @@ theorem baseFixingToAmbientQuotient_surjective
 
 /-- The abstract class-formation quotient for `E/K` is the ordinary quotient of the
 ambient Galois group by the subgroup fixing `E`. -/
-def baseFixingExtensionQuotientEquivAmbient
-    (E : IntermediateField K Ω) [IsGalois K E] :
+def baseFixingExtensionQuotientEquivAmbient :
     ((closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω)).toSubgroup ⧸
       extensionSubgroup
         (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
@@ -139,12 +136,13 @@ def baseFixingExtensionQuotientEquivAmbient
 /-- States the theorem `baseFixingExtensionQuotientEquivAmbient_mk`. -/
 @[simp]
 theorem baseFixingExtensionQuotientEquivAmbient_mk
-    (E : IntermediateField K Ω) [IsGalois K E]
     (σ : (closedFixingSubgroup K Ω
       (⊥ : IntermediateField K Ω)).toSubgroup) :
     baseFixingExtensionQuotientEquivAmbient K Ω E (QuotientGroup.mk σ) =
       QuotientGroup.mk σ.1 :=
   rfl
+
+end
 
 /-- The exact quotient group appearing in the abstract class-formation framework for the normal
 intermediate extension `E/K` is canonically the actual `Gal(E/K)`. -/
@@ -155,7 +153,7 @@ def baseFixingExtensionQuotientEquivGaloisGroup
         (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
         (closedFixingSubgroup K Ω E) (fixingSubgroupLeBase K Ω E)) ≃*
       Gal(E / K) := by
-  let H : ClosedSubgroup (Gal(Ω / K)) := closedFixingSubgroup K Ω E
+  let H := closedFixingSubgroup K Ω E
   letI : H.toSubgroup.Normal := closedFixingSubgroup_normal K Ω E
   exact (baseFixingExtensionQuotientEquivAmbient K Ω E).trans
     ((InfiniteGalois.normalAutEquivQuotient H).trans

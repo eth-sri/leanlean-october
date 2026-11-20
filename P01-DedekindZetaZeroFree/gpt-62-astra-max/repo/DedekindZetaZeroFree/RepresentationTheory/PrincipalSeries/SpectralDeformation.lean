@@ -21,10 +21,7 @@ def plusValue (f : PrincipalSeries positiveParameter) (s : ℂ) (g : ComplexGL2)
 def chamber : Set ℂ := {s | (-1 / 6 : ℝ) < s.re}
 
 theorem height_pos (g : ComplexGL2) : 0 < height g := by
-  have hb := bottom_pos g
-  have hd : 0 < ‖((Matrix.GeneralLinearGroup.det g : ℂˣ) : ℂ)‖ :=
-    norm_pos_iff.mpr (Matrix.GeneralLinearGroup.det g).ne_zero
-  exact pow_pos (div_pos hd hb) _
+  exact pow_pos (div_pos (norm_pos_iff.mpr (Matrix.GeneralLinearGroup.det g).ne_zero) (bottom_pos g)) _
 
 @[simp] theorem twist_zero (g : ComplexGL2) : twist 0 g = 1 := by
   simp [twist]
@@ -44,10 +41,8 @@ theorem height_upperTriangular (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
       ‖(a : ℂ)‖ * ‖(d : ℂ)‖ * ‖((Matrix.GeneralLinearGroup.det g : ℂˣ) : ℂ)‖ := by
     simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_mul, upperTriangular,
       Matrix.det_fin_two, norm_mul]
-  have hdn : ‖(d : ℂ)‖ ≠ 0 := norm_ne_zero_iff.mpr d.ne_zero
   simp only [height, hb, hd, complexAbs, norm_div]
-  field_simp [hdn, (bottom_pos g).ne']
-  <;> ring
+  grind
 
 theorem twist_upperTriangular (s : ℂ) (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
     twist s (upperTriangular a d b * g) =
@@ -86,13 +81,13 @@ theorem twist_chart_smooth (s : ℂ) :
     simp_rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
     exact contDiff_const.add ((Complex.reCLM.contDiff.mul Complex.reCLM.contDiff).add
       (Complex.imCLM.contDiff.mul Complex.imCLM.contDiff))
-  have hh := (hc.inv (by intro z; positivity)).pow 2
-  have hl := hh.log (by
-    intro z
-    exact pow_ne_zero 2 (inv_ne_zero (by positivity : (1 + ‖z‖ ^ 2 : ℝ) ≠ 0)))
-  exact (contDiff_const.mul (Complex.ofRealCLM.contDiff.comp hl)).cexp
+  exact (contDiff_const.mul (Complex.ofRealCLM.contDiff.comp (((hc.inv (by intro z; positivity)).pow 2).log (fun z => pow_ne_zero 2 (inv_ne_zero (by positivity : (1 + ‖z‖ ^ 2 : ℝ) ≠ 0)))))).cexp
 
-theorem plusValue_charts_smooth (f : PrincipalSeries positiveParameter) (s : ℂ) :
+section
+
+variable (f : PrincipalSeries positiveParameter)
+
+theorem plusValue_charts_smooth (s : ℂ) :
     ContDiff ℝ (⊤ : ℕ∞) (openCoordinate (plusValue f s)) ∧
     ContDiff ℝ (⊤ : ℕ∞) (infinityCoordinate (plusValue f s)) := by
   have ho : openCoordinate (plusValue f s) = fun z =>
@@ -107,28 +102,29 @@ theorem plusValue_charts_smooth (f : PrincipalSeries positiveParameter) (s : ℂ
   exact ⟨(twist_chart_smooth s).mul f.property.2.1,
     (twist_chart_smooth s).mul f.property.2.2⟩
 
-def realTwisted (f : PrincipalSeries positiveParameter) (r : ℝ) :
+def realTwisted (r : ℝ) :
     PrincipalSeries (positiveParameter + r) := by
   refine ⟨plusValue f (r : ℂ), ?_, (plusValue_charts_smooth f (r : ℂ)).1,
     (plusValue_charts_smooth f (r : ℂ)).2⟩
   intro a d b g
   rw [plusValue_covariance]
   congr 1
-  have hp : 0 < complexAbs ((a : ℂ) / (d : ℂ)) := by
-    exact pow_pos (norm_pos_iff.mpr (div_ne_zero a.ne_zero d.ne_zero)) _
-  change (((complexAbs ((a : ℂ) / (d : ℂ))) ^ (1 / 2 + positiveParameter) : ℝ) : ℂ) *
-    Complex.exp ((r : ℂ) * (Real.log (complexAbs ((a : ℂ) / (d : ℂ))) : ℂ)) =
-    (((complexAbs ((a : ℂ) / (d : ℂ))) ^ (1 / 2 + (positiveParameter + r)) : ℝ) : ℂ)
+  let complexAbs₀ := complexAbs ((a : ℂ) / (d : ℂ))
+  have hp : 0 < complexAbs₀ := pow_pos (norm_pos_iff.mpr (div_ne_zero a.ne_zero d.ne_zero)) _
+  change (((complexAbs₀) ^ (1 / 2 + positiveParameter) : ℝ) : ℂ) *
+    Complex.exp ((r : ℂ) * (Real.log (complexAbs₀) : ℂ)) =
+    (((complexAbs₀) ^ (1 / 2 + (positiveParameter + r)) : ℝ) : ℂ)
   simp only [Real.rpow_def_of_pos hp, Complex.ofReal_exp]
   rw [← Complex.ofReal_mul, ← Complex.exp_add, ← Complex.ofReal_add]
   congr 1
   push_cast
   ring
 
-@[simp] theorem norm_plusValue (f : PrincipalSeries positiveParameter) (s : ℂ)
+@[simp] theorem norm_plusValue (s : ℂ)
     (g : ComplexGL2) : ‖plusValue f s g‖ = ‖realTwisted f s.re g‖ := by
-  simp only [plusValue, twist, realTwisted, norm_mul, Complex.norm_exp,
-    Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
+  simp [plusValue, twist, realTwisted, norm_mul, Complex.norm_exp, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero]
+
+end
 
 private theorem transition_norm (r : ℝ) (f : PrincipalSeries r) (x : ℂ)
     (hx : 1 ≤ ‖x‖) :
@@ -136,7 +132,7 @@ private theorem transition_norm (r : ℝ) (f : PrincipalSeries r) (x : ℂ)
       ‖infinityCoordinate f x⁻¹‖ := by
   have hx0 : x ≠ 0 := by intro h; simp [h] at hx; norm_num at hx
   have h := coordinate_transition r f x⁻¹ (inv_ne_zero hx0)
-  have hxp : 0 < ‖x‖ := norm_pos_iff.mpr hx0
+  have hxp := norm_pos_iff.mpr hx0
   have hw : transitionWeight r x⁻¹ = ‖x‖ ^ (2 * (1 + 2 * r)) := by
     simp only [transitionWeight, norm_inv, Real.rpow_eq_pow]
     rw [Real.inv_rpow (norm_nonneg _), ← Real.rpow_neg (norm_nonneg _)]
@@ -159,7 +155,6 @@ theorem openCoordinate_envelope (r : ℝ) (hr : 0 < r) (f : PrincipalSeries r) (
   · have hxi : x⁻¹ ∈ Metric.closedBall (0 : ℂ) 1 := by
       simp only [Metric.mem_closedBall, dist_zero_right, norm_inv]
       exact inv_le_one_of_one_le₀ hx
-    have hi := infinityCoordinate_norm_le_chartSeminorm_zero r f x⁻¹ hxi
     have hp : ‖x‖ ^ (-2 * (1 + 2 * r)) ≤
         (2 : ℝ) ^ (2 * (1 + 2 * r)) * (1 + ‖x‖) ^ (-2 * (1 + 2 * r)) := by
       have h := Real.rpow_le_rpow_of_nonpos (by positivity : 0 < (1 + ‖x‖) / 2)
@@ -172,23 +167,21 @@ theorem openCoordinate_envelope (r : ℝ) (hr : 0 < r) (f : PrincipalSeries r) (
     rw [transition_norm r f x hx]
     calc
       _ ≤ ‖x‖ ^ (-2 * (1 + 2 * r)) * chartSeminorm r 0 f :=
-        mul_le_mul_of_nonneg_left hi (Real.rpow_nonneg (norm_nonneg _) _)
+        mul_le_mul_of_nonneg_left (infinityCoordinate_norm_le_chartSeminorm_zero r f x⁻¹ hxi) (Real.rpow_nonneg (norm_nonneg _) _)
       _ ≤ ((2 : ℝ) ^ (2 * (1 + 2 * r)) * (1 + ‖x‖) ^ (-2 * (1 + 2 * r))) *
           chartSeminorm r 0 f := mul_le_mul_of_nonneg_right hp hs
       _ = _ := by ring
-  · have hball : x ∈ Metric.closedBall (0 : ℂ) 1 := by
-      simpa [Metric.mem_closedBall, dist_zero_right] using (le_of_not_ge hx)
-    have ho := openCoordinate_norm_le_chartSeminorm_zero r f x hball
-    have hw : 1 ≤ (2 : ℝ) ^ (2 * (1 + 2 * r)) * (1 + ‖x‖) ^ (-2 * (1 + 2 * r)) := by
+  · have hw : 1 ≤ (2 : ℝ) ^ (2 * (1 + 2 * r)) * (1 + ‖x‖) ^ (-2 * (1 + 2 * r)) := by
       have h := Real.rpow_le_rpow_of_nonpos (by positivity : (0 : ℝ) < 1 + ‖x‖)
-        (by linarith [le_of_not_ge hx] : 1 + ‖x‖ ≤ (2 : ℝ)) ht
+        (by linarith : 1 + ‖x‖ ≤ (2 : ℝ)) ht
       have he : (2 : ℝ) ^ (2 * (1 + 2 * r)) * (2 : ℝ) ^ (-2 * (1 + 2 * r)) = 1 := by
         rw [← Real.rpow_add (by norm_num)]; simp
       calc
         1 = (2 : ℝ) ^ (2 * (1 + 2 * r)) * (2 : ℝ) ^ (-2 * (1 + 2 * r)) := he.symm
         _ ≤ _ := mul_le_mul_of_nonneg_left h (Real.rpow_nonneg (by norm_num) _)
     calc
-      ‖openCoordinate f x‖ ≤ chartSeminorm r 0 f := ho
+      _ ≤ chartSeminorm r 0 f := (openCoordinate_norm_le_chartSeminorm_zero r f x (by
+        simpa using (le_of_not_ge hx)))
       _ = 1 * chartSeminorm r 0 f := by ring
       _ ≤ ((2 : ℝ) ^ (2 * (1 + 2 * r)) * (1 + ‖x‖) ^ (-2 * (1 + 2 * r))) *
           chartSeminorm r 0 f := mul_le_mul_of_nonneg_right hw hs
@@ -199,7 +192,6 @@ theorem real_intertwiner_integrable (β : ℂˣ) (r : ℝ) (hr : 0 < r)
     Integrable (fun x : ℂ => f (weyl * upperUnipotent x * g)) (characterHaar β) := by
   letI := characterHaar_isAddHaarMeasure β
   let F := KPCplxPrincipalSeriesCharts.rightTranslate r g f
-  change Integrable (openCoordinate F) (characterHaar β)
   have hw : Integrable (fun x : ℂ => (1 + ‖x‖) ^ (-2 * (1 + 2 * r)))
       (characterHaar β) := by
     rw [show -2 * (1 + 2 * r) = -(2 * (1 + 2 * r)) by ring]
@@ -215,8 +207,8 @@ private theorem height_orbit_continuous (g : ComplexGL2) :
     Continuous (fun x : ℂ => height (weyl * upperUnipotent x * g)) := by
   have he : (fun x : ℂ => height (weyl * upperUnipotent x * g)) = fun x =>
       (‖((Matrix.GeneralLinearGroup.det g : ℂˣ) : ℂ)‖ /
-        (‖(g : Matrix (Fin 2) (Fin 2) ℂ) 0 0 + x * (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 +
-         ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 0 1 + x * (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2)) ^ 2 := by
+        (‖g 0 0 + x * g 1 0‖ ^ 2 +
+         ‖g 0 1 + x * g 1 1‖ ^ 2)) ^ 2 := by
     funext x
     simp [height, bottomRowNormSq, weyl, upperUnipotent,
       Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_mul, Matrix.det_fin_two,
@@ -226,9 +218,8 @@ private theorem height_orbit_continuous (g : ComplexGL2) :
   apply Continuous.div continuous_const
   · fun_prop
   · intro x
-    have hb := bottom_pos (weyl * upperUnipotent x * g)
     simpa [bottomRowNormSq, weyl, upperUnipotent, Matrix.mul_apply, Fin.sum_univ_two]
-      using hb.ne'
+      using (bottom_pos (weyl * upperUnipotent x * g)).ne'
 
 private theorem plusValue_orbit_continuous (f : PrincipalSeries positiveParameter)
     (s : ℂ) (g : ComplexGL2) :

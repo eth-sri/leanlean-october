@@ -32,7 +32,7 @@ theorem compactWord_of_expansion (s : ℝ)
     funext i
     exact (hk i).symm
   rw [hp,actualRightWord_finiteSlice]
-  have hf : (fun a=>h (finiteSlicePoint F ζ hζ c a))=(fun a=>∑j,d j*∏i,f j i (a i)) := funext he
+  have hf := funext he
   rw [hf,tupleWord_sum_pure]
   apply Finset.sum_congr rfl
   intro j hj

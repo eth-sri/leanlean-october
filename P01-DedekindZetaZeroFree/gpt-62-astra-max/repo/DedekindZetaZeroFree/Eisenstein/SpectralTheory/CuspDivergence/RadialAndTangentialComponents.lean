@@ -11,16 +11,16 @@ open scoped Classical Topology
 namespace DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration.Slice
 open KPMeanZeroWeightedEnergy HyperbolicChart
 
-def radialCoefficient (F : Type) [Field F] [NumberField F]
+variable (F : Type) [Field F] [NumberField F]
     (W : Space (KPCuspLogShape.dimension F) → Cotangent (KPCuspLogShape.dimension F))
-    (c : KPCuspCharts.Cross F) (t : ℝ) : ℝ :=
+    (c : KPCuspCharts.Cross F) (t : ℝ)
+
+def radialCoefficient : ℝ :=
   (∑ i : Fin (KPCuspLogShape.dimension F),
     (W (real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F (c, t))) i 0).re) /
       (KPCuspLogShape.dimension F : ℝ)
 
-def tangentialDivergence (F : Type) [Field F] [NumberField F]
-    (W : Space (KPCuspLogShape.dimension F) → Cotangent (KPCuspLogShape.dimension F))
-    (c : KPCuspCharts.Cross F) (t : ℝ) : ℝ :=
+def tangentialDivergence : ℝ :=
   let d := KPCuspLogShape.dimension F
   let x := real d (KPCuspCharts.toArch F (c, t))
   ∑ i : Fin d,

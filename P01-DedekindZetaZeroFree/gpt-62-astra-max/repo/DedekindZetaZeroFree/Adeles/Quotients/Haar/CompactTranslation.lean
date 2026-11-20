@@ -15,23 +15,20 @@ namespace DedekindZetaZeroFree.FourierContinuation.ResidualCompactHaar
 
  theorem compact_hom_one {K : Type*} [Group K] [TopologicalSpace K] [CompactSpace K]
     (χ : K →* ℝ≥0) (hχ : Continuous χ) (hpos : ∀ k, 0 < χ k) : ∀ k, χ k = 1 := by
-  obtain ⟨C, hC⟩ := (isCompact_univ : IsCompact (Set.univ : Set K)).exists_bound_of_continuousOn
+  obtain ⟨C, hC⟩ := isCompact_univ.exists_bound_of_continuousOn
     (NNReal.continuous_coe.comp hχ).continuousOn
-  have hb (k : K) : (χ k : ℝ) ≤ C := by
-    exact (le_abs_self _).trans (by simpa only [Function.comp_apply, Real.norm_eq_abs] using hC k (Set.mem_univ k))
+  have hb (k : K) : (χ k : ℝ) ≤ C := (le_abs_self _).trans (by simpa using hC k (Set.mem_univ k))
   have hle (k : K) : χ k ≤ 1 := by
     by_contra hh
-    have hhR : (1 : ℝ) < χ k := by exact_mod_cast lt_of_not_ge hh
-    obtain ⟨n,hn⟩ := pow_unbounded_of_one_lt C hhR
+    obtain ⟨n,hn⟩ := pow_unbounded_of_one_lt C (by exact_mod_cast lt_of_not_ge hh)
     have h := hb (k ^ n)
     rw [map_pow, NNReal.coe_pow] at h
     exact (not_lt_of_ge h) hn
   intro k
   apply le_antisymm (hle k)
-  have h := hle k⁻¹
   have he : χ k * χ k⁻¹ = 1 := by rw [← map_mul, mul_inv_cancel, map_one]
   have hp := hpos k
-  nlinarith [mul_le_mul_of_nonneg_left h hp.le]
+  nlinarith [mul_le_mul_of_nonneg_left (hle k⁻¹) hp.le]
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
  def compactHom : KPMsGreenFlux.K F →* KPSmoothLocalQuotientCharts.ActualCover F ζ hζ where
@@ -54,11 +51,9 @@ private theorem compact_modular_one (k : KPMsGreenFlux.K F) :
   letI : ∀ w : NumberField.InfinitePlace F, CompactSpace KPCplxPrincipalSeriesCharts.compactSubgroup :=
     fun _ => isCompact_iff_compactSpace.mp KPCplxPrincipalSeriesCharts.compactSubgroup_isCompact
   letI : CompactSpace (KPMsGreenFlux.K F) := inferInstance
-  have hc : Continuous (compactHom (F := F) (ζ := ζ) (hζ := hζ)) :=
-    (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1.comp
-      (continuous_pi fun w => continuous_subtype_val.comp (continuous_apply w))
   exact compact_hom_one ((Measure.modularCharacter).comp compactHom)
-    (KPSpatialSmoothing.ArchKernel.CompactHaar.continuous_modularCharacter.comp hc)
+    (KPSpatialSmoothing.ArchKernel.CompactHaar.continuous_modularCharacter.comp ((KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1.comp
+      (continuous_pi fun w => continuous_subtype_val.comp (continuous_apply w))))
     (fun k => Measure.modularCharacterFun_pos _) k
 
  theorem quotient_compact_measurePreserving

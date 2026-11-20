@@ -35,30 +35,20 @@ theorem global_power_of_cofinite_local_power
     apply hbad.subset
     intro v hv
     by_contra hpower
-    have hp : Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom b ∈
-        (powMonoidHom (n : ℕ) : (v.adicCompletion F)ˣ →* (v.adicCompletion F)ˣ).range :=
-      Classical.not_not.mp hpower
-    exact hv ((finitePlaceSplitsCompletely_iff_inExtension (K := F) (E := E) v).mp
+    exact hv ((finitePlaceSplitsCompletely_iff_inExtension v).mp
       (KummerTheory.chosenSimpleKummerExtension_finitePlaceSplitsCompletely_of_mem_nthPowerSubgroup
-        n hn hmu b v hp))
-  have hdim : Module.finrank F E = 1 :=
-    GlobalClassFieldTheory.Cohomology.finrank_eq_one_of_finite_nonSplittingPlaces F E hfin
-  have hsurj : Function.Surjective (algebraMap F E) :=
-    (Algebra.finrank_eq_one_iff_bijective_algebraMap.mp hdim).2
-  let β : Eˣ := KummerTheory.chosenSimpleKummerRootUnit F n hn b
-  obtain ⟨a, ha⟩ := hsurj (β : E)
-  have ha0 : a ≠ 0 := by
-    intro h
-    exact β.ne_zero (by simpa only [h, map_zero] using ha.symm)
+        n hn hmu b v (Classical.not_not.mp hpower)))
+  let β := KummerTheory.chosenSimpleKummerRootUnit F n hn b
+  obtain ⟨a, ha⟩ := ((Algebra.finrank_eq_one_iff_bijective_algebraMap.mp (GlobalClassFieldTheory.Cohomology.finrank_eq_one_of_finite_nonSplittingPlaces F E hfin)).2) (β : E)
+  have ha0 : a ≠ 0 := fun h => β.ne_zero (by simpa only [h, map_zero] using ha.symm)
   let aunit : Fˣ := Units.mk0 a ha0
   have hpow : aunit ^ (n : ℕ) = b := by
     apply Units.ext
     apply (FaithfulSMul.algebraMap_injective F E)
-    have hr := congrArg (fun z : Eˣ => (z : E))
-      (KummerTheory.chosenSimpleKummerRootUnit_pow F n hn b)
     change (algebraMap F E) (a ^ (n : ℕ)) = (algebraMap F E) (b : F)
     rw [map_pow, ha]
-    exact hr
+    exact congrArg (fun z : Eˣ => (z : E))
+      (KummerTheory.chosenSimpleKummerRootUnit_pow F n hn b)
   exact ⟨aunit, hpow⟩
 
 end DedekindZetaZeroFree.Detector.FrequencyLocalPower
@@ -77,9 +67,10 @@ open LocalFieldTheory.IsNonarchimedeanLocalField
 variable (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K]
 
-theorem local_power_of_tame_symbol_one (n : ℕ+)
-    (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
+variable (n : ℕ+) (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (u : 𝒪[K]ˣ)
+
+theorem local_power_of_tame_symbol_one
     (hu : localTamePowerResidueSymbol K n hn hmu u = 1) :
     integerUnitsToFieldUnits K u ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
   apply (localHilbertSymbol_left_kernel K n
@@ -87,9 +78,7 @@ theorem local_power_of_tame_symbol_one (n : ℕ+)
   intro b
   rw [localHilbertSymbol_tame_formula K n hn hmu, hu, one_zpow]
 
-theorem local_power_of_residue_symbol_one (n : ℕ+)
-    (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (u : 𝒪[K]ˣ)
+theorem local_power_of_residue_symbol_one
     (hu : letI : Fintype 𝓀[K] := Fintype.ofFinite _
       AlgebraicNumberTheory.PowerResidueSymbols.finiteFieldPowerResidueSymbol
         𝓀[K] n
@@ -102,9 +91,8 @@ theorem local_power_of_residue_symbol_one (n : ℕ+)
   rw [map_one, localNthRootsReductionEquiv_localTamePowerResidueSymbol]
   exact hu
 
-theorem local_power_of_residue_power_one (n : ℕ+)
-    (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (u : 𝒪[K]ˣ)
+include hn hmu in
+theorem local_power_of_residue_power_one
     (hu : (integerUnitsToResidueUnits K u) ^
       ((Nat.card 𝓀[K] - 1) / (n : ℕ)) = 1) :
     integerUnitsToFieldUnits K u ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
@@ -149,7 +137,8 @@ theorem local_power_of_valuation_residue (n : ℕ+)
   letI : ν.Compatible := Valuation.Compatible.ofValuation ν
   have hnorm (x : F) : ‖algebraMap F C x‖ = a x := by
     exact AbsoluteValue.completionAbsoluteValue_coe a x
-  have hbnorm : ‖algebraMap F C (b : F)‖ = 1 := by
+  let algebraMap₀ := algebraMap F C (b : F)
+  have hbnorm : ‖algebraMap₀‖ = 1 := by
     rw [hnorm, HeightOneSpectrum.adicAbv_def, hb]
     simp
   let y := Units.map (algebraMap F C).toMonoidHom b
@@ -159,7 +148,7 @@ theorem local_power_of_valuation_residue (n : ℕ+)
       exact hbnorm.le⟩
     inv := ⟨((y : C)⁻¹), by
       rw [finitePlaceCompletion_mem_integers_iff_norm_le_one a (HeightOneSpectrum.isNonarchimedean_adicAbv F v), norm_inv]
-      change ‖algebraMap F C (b : F)‖⁻¹ ≤ 1
+      change ‖algebraMap₀‖⁻¹ ≤ 1
       rw [hbnorm, inv_one]⟩
     val_inv := by apply Subtype.ext; exact mul_inv_cancel₀ y.ne_zero
     inv_val := by apply Subtype.ext; exact inv_mul_cancel₀ y.ne_zero }
@@ -183,7 +172,7 @@ theorem local_power_of_valuation_residue (n : ℕ+)
     apply (Valuation.mem_maximalIdeal_iff C (ValuativeRel.valuation C)).mpr
     rw [← (ValuativeRel.valuation C).vlt_one_iff, ν.vlt_one_iff]
     change ‖(((u ^ k : 𝒪[C]ˣ) : 𝒪[C]) : C) - 1‖₊ < 1
-    change ‖algebraMap F C (b : F) ^ k - 1‖₊ < 1
+    change ‖algebraMap₀ ^ k - 1‖₊ < 1
     rw [← map_pow, ← map_one (algebraMap F C), ← map_sub]
     change ‖algebraMap F C ((b : F) ^ k - 1)‖ < 1
     rw [hnorm, HeightOneSpectrum.adicAbv_def]
@@ -196,7 +185,7 @@ theorem local_power_of_valuation_residue (n : ℕ+)
   simp only [powMonoidHom_apply, Units.val_pow_eq_pow_val]
   change e (r : C) ^ (n : ℕ) = algebraMap F (v.adicCompletion F) (b : F)
   rw [← map_pow e]
-  have h : (r : C) ^ (n : ℕ) = algebraMap F C (b : F) :=
+  have h : (r : C) ^ (n : ℕ) = algebraMap₀ :=
     congrArg (fun z : Cˣ => (z : C)) hrp
   rw [h]
   exact e.commutes (b : F)
@@ -219,17 +208,12 @@ theorem valuation_unit_cofinite (x : Fˣ) :
     ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite,
       v.valuation F (x : F) = 1 := by
   obtain ⟨a, b, hb, hab⟩ := IsFractionRing.div_surjective (𝓞 F) (x : F)
-  have hb0 : b ≠ 0 := nonZeroDivisors.ne_zero hb
   have ha0 : a ≠ 0 := by
     intro ha
     apply x.ne_zero
     rw [← hab, ha, map_zero, zero_div]
-  have hA : Ideal.span {a} ≠ (0 : Ideal (𝓞 F)) := by
-    intro h
-    exact ha0 (Ideal.span_singleton_eq_bot.mp h)
-  have hB : Ideal.span {b} ≠ (0 : Ideal (𝓞 F)) := by
-    intro h
-    exact hb0 (Ideal.span_singleton_eq_bot.mp h)
+  have hA : Ideal.span {a} ≠ (0 : Ideal (𝓞 F)) := fun h => ha0 (Ideal.span_singleton_eq_bot.mp h)
+  have hB : Ideal.span {b} ≠ (0 : Ideal (𝓞 F)) := fun h => (nonZeroDivisors.ne_zero hb) (Ideal.span_singleton_eq_bot.mp h)
   apply Filter.eventually_cofinite.mpr
   apply ((Ideal.finite_factors hA).union (Ideal.finite_factors hB)).subset
   intro v hv
@@ -254,14 +238,10 @@ theorem global_power_of_cofinite_residue (n : ℕ+)
       v.valuation F ((b : F) ^ ((Ideal.absNorm v.asIdeal - 1) / (n : ℕ)) - 1) < 1) :
     ∃ x : Fˣ, x ^ (n : ℕ) = b := by
   have hn : ((n : ℕ) : F) ≠ 0 := Nat.cast_ne_zero.mpr n.ne_zero
-  let nu : Fˣ := Units.mk0 ((n : ℕ) : F) hn
-  have hp : ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite,
-      Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom b ∈
-        (powMonoidHom (n : ℕ) : (v.adicCompletion F)ˣ →* (v.adicCompletion F)ˣ).range := by
-    filter_upwards [hr, valuation_unit_cofinite b, valuation_unit_cofinite nu] with v hrv hbv hnv
-    exact FrequencyCompletionResidue.local_power_of_valuation_residue F n hmu v b hbv hnv hrv
-  exact FrequencyLocalPower.global_power_of_cofinite_local_power F n hn hmu b
-    (Filter.eventually_cofinite.mp hp)
+  refine FrequencyLocalPower.global_power_of_cofinite_local_power F n hn hmu b
+    (Filter.eventually_cofinite.mp ?_)
+  filter_upwards [hr, valuation_unit_cofinite b, valuation_unit_cofinite (Units.mk0 ((n : ℕ) : F) hn)] with v hrv hbv hnv
+  exact FrequencyCompletionResidue.local_power_of_valuation_residue F n hmu v b hbv hnv hrv
 
 end DedekindZetaZeroFree.Detector.FrequencyDetection
 

@@ -1,4 +1,6 @@
 module
+public import DedekindZetaZeroFree.Analysis.Complex.CompactMeromorphicFamilies
+public import DedekindZetaZeroFree.Analysis.EllipticEquations.DivergenceForm.ClassicalToWeakSolutions
 
 public import DedekindZetaZeroFree.Eisenstein.Continuation.IncomingCuspModes.LocalCubicSheetLifts
 public import DedekindZetaZeroFree.Eisenstein.Continuation.IncomingCuspModes.CuspLiftTransport
@@ -17,11 +19,7 @@ open KPContLocalNorm
 section Mixed
 variable {A E Y : Type*} [NormedAddCommGroup A] [NormedSpace ℝ A]
  [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup Y] [NormedSpace ℝ Y]
-set_option backward.isDefEq.respectTransparency.types false in
-private lemma partial_eq (h : A → E → Y) (s : A) (z : E)
- (hh : DifferentiableAt ℝ (Function.uncurry h) (s,z)) :
- fderiv ℝ (h s) z = (fderiv ℝ (Function.uncurry h) (s,z)).comp (ContinuousLinearMap.inr ℝ A E) := by
- exact (hh.hasFDerivAt.comp z (hasFDerivAt_prodMk_right s z)).fderiv
+
 set_option backward.isDefEq.respectTransparency.types false in
 private lemma mixed_partial (h : A → E → Y) (s : A) (z : E)
  (hh : ContDiffAt ℝ (⊤ : ℕ∞) (Function.uncurry h) (s,z)) (v : A) (w : E) :
@@ -29,29 +27,22 @@ private lemma mixed_partial (h : A → E → Y) (s : A) (z : E)
  (fderiv ℝ (fun x => fderiv ℝ (fun t => h t x) s) z) w v := by
  let H := Function.uncurry h
  let D := fderiv ℝ H
- let L := ContinuousLinearMap.inl ℝ A E
- let R := ContinuousLinearMap.inr ℝ A E
- let CR := (ContinuousLinearMap.compL ℝ E (A × E) Y).flip R
- let CL := (ContinuousLinearMap.compL ℝ A (A × E) Y).flip L
+ let CR := (ContinuousLinearMap.compL ℝ E (A × E) Y).flip (ContinuousLinearMap.inr ℝ A E)
+ let CL := (ContinuousLinearMap.compL ℝ A (A × E) Y).flip (ContinuousLinearMap.inl ℝ A E)
  have hD : HasFDerivAt D (fderiv ℝ D (s,z)) (s,z) :=
    (hh.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiableAt (by simp) |>.hasFDerivAt
  have hs : (fun t => fderiv ℝ (h t) z) =ᶠ[𝓝 s]
      (fun t => CR (D (t,z))) := by
-   have hn := (hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)
-   filter_upwards [(continuous_id.prodMk continuous_const).continuousAt.eventually hn] with t ht
-   exact partial_eq h t z (ht.differentiableAt (by simp))
+   filter_upwards [(continuous_id.prodMk continuous_const).continuousAt.eventually ((hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp))] with t ht
+   exact ((ht.differentiableAt (by simp)).hasFDerivAt.comp z (hasFDerivAt_prodMk_right t z)).fderiv
  have hz : (fun x => fderiv ℝ (fun t => h t x) s) =ᶠ[𝓝 z]
      (fun x => CL (D (s,x))) := by
-   have hn := (hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)
-   filter_upwards [(continuous_const.prodMk continuous_id).continuousAt.eventually hn] with x hx
-   have hd : HasFDerivAt H (D (s,x)) (s,x) := (hx.differentiableAt (by simp)).hasFDerivAt
+   filter_upwards [(continuous_const.prodMk continuous_id).continuousAt.eventually ((hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp))] with x hx
    have hleft : HasFDerivAt (fun t : A => H (t,x)) (CL (D (s,x))) s :=
-     by convert hd.comp s (hasFDerivAt_prodMk_left (𝕜 := ℝ) s x) using 1 <;> rfl
+     by convert ((hx.differentiableAt (by simp)).hasFDerivAt).comp s (hasFDerivAt_prodMk_left (𝕜 := ℝ) s x) using 1 <;> rfl
    exact hleft.fderiv
- have hsd := CR.hasFDerivAt.comp s (hD.comp s (hasFDerivAt_prodMk_left s z))
- have hzd := CL.hasFDerivAt.comp z (hD.comp z (hasFDerivAt_prodMk_right s z))
- have hsde := hsd.fderiv
- have hzde := hzd.fderiv
+ have hsde := (CR.hasFDerivAt.comp s (hD.comp s (hasFDerivAt_prodMk_left s z))).fderiv
+ have hzde := (CL.hasFDerivAt.comp z (hD.comp z (hasFDerivAt_prodMk_right s z))).fderiv
  dsimp only [Function.comp_def] at hsde hzde
  rw [hs.fderiv_eq, hz.fderiv_eq, hsde, hzde]
  exact (hh.isSymmSndFDerivAt (by simp)).eq (v,0) (0,w)
@@ -113,17 +104,15 @@ private lemma compact_hasDeriv (h k : ℂ → C(X,Y))
  apply HasDerivAt.of_isLittleO
  rw [Asymptotics.isLittleO_iff]
  intro c hc
- have hu := Metric.tendstoUniformly_iff.mp (hk.tendstoUniformly (fun t x => k t x) s) c hc
  have hseg : ∀ᶠ t in 𝓝 s, ∀ r ∈ segment ℝ s t, ∀ x : X, ‖k r x - k s x‖ ≤ c := by
    have hs : ∀ᶠ t in 𝓝[Set.univ] s, ∀ x : X, ‖k t x - k s x‖ ≤ c := by
-     simpa only [nhdsWithin_univ, dist_eq_norm_sub, norm_sub_rev] using hu.mono (fun t ht x => (ht x).le)
-   simpa only [nhdsWithin_univ] using (convex_univ : Convex ℝ (Set.univ : Set ℂ)).eventually_nhdsWithin_segment (Set.mem_univ s) hs
+     simpa only [nhdsWithin_univ, dist_eq_norm_sub, norm_sub_rev] using (Metric.tendstoUniformly_iff.mp (hk.tendstoUniformly (fun t x => k t x) s) c hc).mono (fun t ht x => (ht x).le)
+   simpa using convex_univ.eventually_nhdsWithin_segment (Set.mem_univ s) hs
  filter_upwards [hseg] with t ht
  apply (ContinuousMap.norm_le (h t - h s - (t-s) • k s) (mul_nonneg hc.le (norm_nonneg _))).mpr
  intro x
  have H := (convex_segment s t).norm_image_sub_le_of_norm_hasFDerivWithin_le'
-   (f := fun r => h r x) (f' := fun r => ContinuousLinearMap.toSpanSingleton ℂ (k r x))
-   (φ := ContinuousLinearMap.toSpanSingleton ℂ (k s x)) (C := c)
+
    (fun r _ => (hd r x).hasFDerivAt.hasFDerivWithinAt)
    (fun r hr => by
      have he : ContinuousLinearMap.toSpanSingleton ℂ (k r x) - ContinuousLinearMap.toSpanSingleton ℂ (k s x) =
@@ -131,11 +120,14 @@ private lemma compact_hasDeriv (h k : ℂ → C(X,Y))
      rw [he, ContinuousLinearMap.norm_toSpanSingleton]
      exact ht r hr x)
    (left_mem_segment ℝ s t) (right_mem_segment ℝ s t)
- simpa using H
+ exact H
 
 end CompactDifferentiation
 section Coordinates
- theorem joint_coordinate {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
+ variable {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
+
+include hU in
+theorem joint_coordinate
     (h : ℂ → Space n → ℂ)
     (hh : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry h) (Set.univ ×ˢ U))
     (l : List (Fin n)) :
@@ -145,15 +137,11 @@ section Coordinates
   | nil => exact hh
   | cons i l ih =>
     intro p hp
-    have hl := ih.contDiffAt ((isOpen_univ.prod hU).mem_nhds hp)
-    have hc : ContDiffAt ℝ (⊤ : ℕ∞)
-        (fun q : (ℂ × Space n) × Space n => coordinateDerivativeList l (h q.1.1) q.2) (p,p.2) :=
-      hl.comp (p,p.2) (contDiff_fst.fst.prodMk contDiff_snd).contDiffAt
-    have hd := ContDiffAt.fderiv (f := fun q : ℂ × Space n => coordinateDerivativeList l (h q.1))
-      (g := fun q : ℂ × Space n => q.2) (m := (⊤ : ℕ∞)) hc contDiff_snd.contDiffAt (by simp)
-    exact (hd.clm_apply contDiffAt_const).contDiffWithinAt
+    exact ((ContDiffAt.fderiv
+      ((ih.contDiffAt ((isOpen_univ.prod hU).mem_nhds hp)).comp (p,p.2) (contDiff_fst.fst.prodMk contDiff_snd).contDiffAt) contDiff_snd.contDiffAt (by simp)).clm_apply contDiffAt_const).contDiffWithinAt
 
-private theorem coordinate_hasDeriv {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
+include hU in
+private theorem coordinate_hasDeriv
     (h k : ℂ → Space n → ℂ)
     (hh : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry h) (Set.univ ×ˢ U))
     (hk : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry k) (Set.univ ×ˢ U))
@@ -164,24 +152,24 @@ private theorem coordinate_hasDeriv {n : ℕ} {U : Set (Space n)} (hU : IsOpen U
   induction l generalizing s x with
   | nil => exact hd s x hx
   | cons i l ih =>
-    have H := partial_snd_hasDeriv (fun t x => coordinateDerivativeList l (h t) x)
-      (fun t x => coordinateDerivativeList l (k t) x) U hU
-      (joint_coordinate hU h hh l) (joint_coordinate hU k hk l) ih s x hx
     let ev : (Space n →L[ℝ] ℂ) →L[ℂ] ℂ :=
       { toFun := fun L => L (EuclideanSpace.single i 1)
         map_add' := by intro L M; rfl
         map_smul' := by intro c L; rfl
         cont := (ContinuousLinearMap.apply ℝ ℂ (EuclideanSpace.single i 1)).continuous }
-    exact ev.hasFDerivAt.comp_hasDerivAt s H
+    exact ev.hasFDerivAt.comp_hasDerivAt s (partial_snd_hasDeriv (fun t x => coordinateDerivativeList l (h t) x)
+      (fun t x => coordinateDerivativeList l (k t) x) U hU
+      (joint_coordinate hU h hh l) (joint_coordinate hU k hk l) ih s x hx)
 
- def jet {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
+ def jet
     (K : Set (Space n)) (hKU : K ⊆ U) (m : ℕ) (h : ℂ → Space n → ℂ)
     (hh : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry h) (Set.univ ×ˢ U)) (s : ℂ) : CompactJets K m :=
   fun α => ⟨fun x => coordinateDerivative α (h s) x,
     (((joint_coordinate hU h hh α.directions).continuousOn.comp (continuousOn_const.prodMk continuousOn_id)
       (fun x hx => ⟨Set.mem_univ _,hKU hx⟩))).restrict⟩
 
-theorem compact_coordinate_hasDeriv {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
+include hU in
+theorem compact_coordinate_hasDeriv
     (h k : ℂ → Space n → ℂ)
     (hh : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry h) (Set.univ ×ˢ U))
     (hk : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry k) (Set.univ ×ˢ U))
@@ -204,14 +192,17 @@ theorem compact_coordinate_hasDeriv {n : ℕ} {U : Set (Space n)} (hU : IsOpen U
   exact differentiable_pi.mpr (fun α s => (H α s).differentiableAt)
 
 end Coordinates
-private theorem spatial_coordinate_smooth {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
-    (u : Space n → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (l : List (Fin n)) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l u) U := by
-  induction l with
-  | nil => exact hu
-  | cons i l ih => exact (ih.fderiv_of_isOpen hU (by simp)).clm_apply contDiffOn_const
+section
 
-private theorem coordinate_const_mul {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
+variable {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
+
+include hU in
+private theorem spatial_coordinate_smooth
+    (u : Space n → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (l : List (Fin n)) :
+    ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l u) U := by apply @DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates.coordinateDerivativeList_contDiffOn_open <;> assumption
+
+include hU in
+private theorem coordinate_const_mul
     (u : Space n → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (c : ℂ)
     (l : List (Fin n)) : Set.EqOn (coordinateDerivativeList l (fun x => c * u x))
       (fun x => c * coordinateDerivativeList l u x) U := by
@@ -219,7 +210,7 @@ private theorem coordinate_const_mul {n : ℕ} {U : Set (Space n)} (hU : IsOpen 
   | nil => intro x hx; rfl
   | cons i l ih =>
     intro x hx
-    have hd : DifferentiableAt ℝ (coordinateDerivativeList l u) x :=
+    have hd :=
       ((spatial_coordinate_smooth hU u hu l).contDiffAt (hU.mem_nhds hx)).differentiableAt (by simp)
     have he : coordinateDerivativeList l (fun x => c * u x) =ᶠ[𝓝 x]
         (fun x => c * coordinateDerivativeList l u x) :=
@@ -230,7 +221,8 @@ private theorem coordinate_const_mul {n : ℕ} {U : Set (Space n)} (hU : IsOpen 
       using congrArg (fun L : Space n →L[ℝ] ℂ => L (EuclideanSpace.single i 1))
         (fderiv_const_mul hd c)
 
-private theorem coordinate_congr_on {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
+include hU in
+private theorem coordinate_congr_on
     {u v : Space n → ℂ} (he : Set.EqOn u v U) (l : List (Fin n)) :
     Set.EqOn (coordinateDerivativeList l u) (coordinateDerivativeList l v) U := by
   induction l with
@@ -241,8 +233,8 @@ private theorem coordinate_congr_on {n : ℕ} {U : Set (Space n)} (hU : IsOpen U
       (hU.eventually_mem hx).mono (fun y hy => ih hy)
     exact congrArg (fun L : Space n →L[ℝ] ℂ => L (EuclideanSpace.single i 1)) hlocal.fderiv_eq
 
-private theorem affine_exponential_compactJets {n : ℕ} {U : Set (Space n)}
-    (hU : IsOpen U) (t ψ₀ ψ₁ : Space n → ℂ)
+include hU in
+private theorem affine_exponential_compactJets (t ψ₀ ψ₁ : Space n → ℂ)
     (ht : ContDiffOn ℝ (⊤ : ℕ∞) t U)
     (hψ₀ : ContDiffOn ℝ (⊤ : ℕ∞) ψ₀ U) (hψ₁ : ContDiffOn ℝ (⊤ : ℕ∞) ψ₁ U)
     (O : Set ℂ) (a : ℂ → ℂ) (ha : DifferentiableOn ℂ a O)
@@ -255,76 +247,26 @@ private theorem affine_exponential_compactJets {n : ℕ} {U : Set (Space n)}
   let h := fun s y => Complex.exp (s * t y) * (ψ₀ y + s * ψ₁ y)
   let k := fun s y => t y * h s y + Complex.exp (s * t y) * ψ₁ y
   have ht' := ht.comp contDiffOn_snd (fun p : ℂ × Space n => fun hp : p ∈ Set.univ ×ˢ U => hp.2)
-  have h₀ := hψ₀.comp contDiffOn_snd (fun p : ℂ × Space n => fun hp : p ∈ Set.univ ×ˢ U => hp.2)
   have h₁ := hψ₁.comp contDiffOn_snd (fun p : ℂ × Space n => fun hp : p ∈ Set.univ ×ˢ U => hp.2)
-  have hx : ContDiffOn ℝ (⊤ : ℕ∞) (fun p : ℂ × Space n => Complex.exp (p.1 * t p.2))
-      (Set.univ ×ˢ U) := Complex.contDiff_exp.comp_contDiffOn (contDiffOn_fst.mul ht')
-  have hh : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry h) (Set.univ ×ˢ U) :=
-    hx.mul (h₀.add (contDiffOn_fst.mul h₁))
-  have hk : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry k) (Set.univ ×ˢ U) :=
-    (ht'.mul hh).add (hx.mul h₁)
+  have hx := Complex.contDiff_exp.comp_contDiffOn (contDiffOn_fst.mul ht')
+  have hh :=
+    hx.mul ((hψ₀.comp contDiffOn_snd (fun p : ℂ × Space n => fun hp : p ∈ Set.univ ×ˢ U => hp.2)).add (contDiffOn_fst.mul h₁))
   have hd : ∀ s y, y ∈ U → HasDerivAt (fun r => h r y) (k s y) s := by
     intro s y hy
-    have he := (((hasDerivAt_id s).mul_const (t y)).cexp).mul
-      (hasDerivAt_const s (ψ₀ y) |>.add ((hasDerivAt_id s).mul_const (ψ₁ y)))
-    convert he using 1
+    convert ((((hasDerivAt_id s).mul_const (t y)).cexp).mul
+      (hasDerivAt_const s (ψ₀ y) |>.add ((hasDerivAt_id s).mul_const (ψ₁ y)))) using 1
     · funext r; dsimp [h]
     · dsimp [k,h]; ring
-  obtain ⟨J,hJ,hJspec⟩ := compact_coordinate_hasDeriv hU h k hh hk hd K hK hKU m
+  obtain ⟨J,hJ,hJspec⟩ := compact_coordinate_hasDeriv hU h k hh ((ht'.mul hh).add (hx.mul h₁)) hd K hK hKU m
   refine ⟨fun s => a s • J s, ha.smul hJ.differentiableOn, ?_⟩
   intro s hs α x
   change a s * J s α x = _
   rw [hJspec]
-  have hhs : ContDiffOn ℝ (⊤ : ℕ∞) (h s) U :=
-    hh.comp (contDiffOn_const.prodMk contDiffOn_id) (fun y hy => ⟨Set.mem_univ _,hy⟩)
-  exact (coordinate_const_mul hU _ hhs (a s) α.directions (hKU x.property)).symm
+  exact (coordinate_const_mul hU _ (hh.comp (contDiffOn_const.prodMk contDiffOn_id) (fun y hy => ⟨Set.mem_univ _,hy⟩)) (a s) α.directions (hKU x.property)).symm
 
-private theorem compact_family_holomorphic {X : Type*} [TopologicalSpace X] [CompactSpace X]
-    (O : Set ℂ) (hO : IsOpen O) (j : ℂ → C(X, ℂ))
-    (hc : ContinuousOn (fun p : ℂ × X => j p.1 p.2) (O ×ˢ Set.univ))
-    (hd : ∀ x : X, DifferentiableOn ℂ (fun z => j z x) O) :
-    DifferentiableOn ℂ j O := by
-  have hj : ContinuousOn j O := by
-    apply continuousOn_iff_continuous_restrict.mpr
-    apply ContinuousMap.continuous_of_continuous_uncurry
-    let a : O × X → ℂ × X := fun p => (p.1.val,p.2)
-    have ha : Continuous a := (continuous_subtype_val.comp continuous_fst).prodMk continuous_snd
-    exact hc.comp_continuous ha (fun p => ⟨p.1.property, Set.mem_univ _⟩)
-  intro s hs
-  obtain ⟨r, hr, hrO⟩ := Metric.mem_nhds_iff.mp (hO.mem_nhds hs)
-  let R := r/2
-  have hR : 0 < R := by dsimp [R]; positivity
-  have hclosed : Metric.closedBall s R ⊆ O :=
-    (Metric.closedBall_subset_ball (by dsimp [R]; linarith)).trans hrO
-  have hcircle : CircleIntegrable j s R :=
-    (hj.mono (Metric.sphere_subset_closedBall.trans hclosed)).circleIntegrable hR.le
-  let g : ℂ → C(X,ℂ) := fun w => (2 * Real.pi * Complex.I : ℂ)⁻¹ •
-    circleIntegral (fun z => (z-w)⁻¹ • j z) s R
-  have heq : Set.EqOn g j (Metric.ball s R) := by
-    intro w hw
-    ext x
-    let L : C(X,ℂ) →L[ℂ] ℂ := ContinuousMap.evalCLM ℂ x
-    have hw' : w ∉ Metric.sphere s |R| := by
-      rw [abs_of_pos hR]
-      intro hh
-      exact (ne_of_lt (Metric.mem_ball.mp hw)) hh
-    have hi := hcircle.sub_zpow_smul (-1) hw'
-    have hL : L (circleIntegral (fun z => (z-w)⁻¹ • j z) s R) =
-        circleIntegral (fun z => (z-w)⁻¹ • j z x) s R := by
-      rw [circleIntegral, circleIntegral, ← L.intervalIntegral_comp_comm (by simpa using hi.out)]
-      simp only [map_smul]
-      rfl
-    change L ((2 * Real.pi * Complex.I : ℂ)⁻¹ • _) = _
-    rw [map_smul, hL]
-    exact (((hd x).mono hclosed).mono Metric.closure_ball_subset_closedBall).diffContOnCl
-      |>.two_pi_i_inv_smul_circleIntegral_sub_inv_smul hw
-  have hg : DifferentiableAt ℂ g s := by
-    change DifferentiableAt ℂ (fun w => (2 * Real.pi * Complex.I : ℂ)⁻¹ •
-      circleIntegral (fun z => (z-w)⁻¹ • j z) s R) s
-    exact ((Complex.hasDerivAt_circleIntegral_sub_inv_smul (w := s) hcircle (by
-      simpa [abs_of_pos hR] using (ne_of_gt hR).symm)).const_smul (2 * Real.pi * Complex.I : ℂ)⁻¹).differentiableAt
-  have he : g =ᶠ[𝓝 s] j := Filter.eventually_of_mem (Metric.ball_mem_nhds s hR) (fun w hw => heq hw)
-  exact (hg.congr_of_eventuallyEq he.symm).differentiableWithinAt
+end
+
+private alias compact_family_holomorphic := DedekindZetaZeroFree.CompactPeriodAnalyticity.UpperPeriodContinuation.compact_family_holomorphic
 
 private theorem compact_family_of_local {E : Type*} [TopologicalSpace E]
     (O : Set ℂ) (hO : IsOpen O) (U : Set E) (f : ℂ → E → ℂ)
@@ -362,9 +304,7 @@ private theorem compact_family_of_local {E : Type*} [TopologicalSpace E]
   have hcC : ContinuousOn (fun p : ℂ × C => f p.1 p.2.val) (O ×ˢ Set.univ) :=
     hc.comp (continuous_fst.prodMk (continuous_subtype_val.comp continuous_snd)).continuousOn
       (fun p hp => ⟨hp.1,hCU p.2.property⟩)
-  have hslice : ∀ z ∈ O, Continuous (fun x : C => f z x.val) := by
-    intro z hz
-    exact hcC.comp_continuous (continuous_const.prodMk continuous_id) (fun x => ⟨hz,Set.mem_univ _⟩)
+  have hslice : ∀ z ∈ O, Continuous (fun x : C => f z x.val) := fun z hz => hcC.comp_continuous (continuous_const.prodMk continuous_id) (fun x => ⟨hz,Set.mem_univ _⟩)
   let j : ℂ → C(C,ℂ) := fun z => if hz : z ∈ O then ⟨fun x => f z x.val, hslice z hz⟩ else 0
   have hjval : ∀ z ∈ O, ∀ x : C, j z x = f z x.val := by
     intro z hz x
@@ -374,6 +314,8 @@ private theorem compact_family_of_local {E : Type*} [TopologicalSpace E]
   · exact hcC.congr (fun p hp => hjval p.1 hp.1 p.2)
   · intro x
     exact (hd x.val (hCU x.property)).congr (fun z hz => hjval z hz x)
+
+alias ChartJets.compact_family_of_local := compact_family_of_local
 
 private theorem chartJets_of_local_affine_exponential {n : ℕ} (B : LocalBall n)
     (O : Set ℂ) (hO : IsOpen O) (g : ℂ → Space n → ℂ)
@@ -386,10 +328,8 @@ private theorem chartJets_of_local_affine_exponential {n : ℕ} (B : LocalBall n
   have hsp : ∀ s ∈ O, ContDiffOn ℝ (⊤ : ℕ∞) (g s) B.carrier := by
     intro s hs x hx
     obtain ⟨V,hV,hxV,hVB,t,ψ₀,ψ₁,ht,h₀,h₁,a,ha,heq⟩ := hl x hx
-    have hc : ContDiffOn ℝ (⊤ : ℕ∞) (fun y => a s * (Complex.exp (s * t y) * (ψ₀ y + s * ψ₁ y))) V :=
-      contDiffOn_const.mul ((Complex.contDiff_exp.comp_contDiffOn
-      (contDiffOn_const.mul ht)).mul (h₀.add (contDiffOn_const.mul h₁)))
-    exact ((hc.contDiffAt (hV.mem_nhds hxV)).congr_of_eventuallyEq
+    exact (((contDiffOn_const.mul ((Complex.contDiff_exp.comp_contDiffOn
+      (contDiffOn_const.mul ht)).mul (h₀.add (contDiffOn_const.mul h₁)))).contDiffAt (hV.mem_nhds hxV)).congr_of_eventuallyEq
       ((hV.eventually_mem hxV).mono (fun y hy => heq s hs y hy))).contDiffWithinAt
   refine ⟨hsp,?_⟩
   intro C hC hCB m
@@ -403,10 +343,9 @@ private theorem chartJets_of_local_affine_exponential {n : ℕ} (B : LocalBall n
     let K := Metric.closedBall x (r/2)
     have hKV : K ⊆ V := (Metric.closedBall_subset_ball (by linarith)).trans hrV
     have hK : IsCompact K := isCompact_closedBall _ _
-    have hxK : x ∈ interior K := mem_interior_iff_mem_nhds.mpr (Metric.closedBall_mem_nhds x (by positivity))
     letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
     obtain ⟨J,hJ,hJspec⟩ := affine_exponential_compactJets hV t ψ₀ ψ₁ ht h₀ h₁ O a ha K hK hKV m
-    refine ⟨K,hK,hxK,hKV.trans hVB,fun s => J s α,?_,?_⟩
+    refine ⟨K,hK,(mem_interior_iff_mem_nhds.mpr (Metric.closedBall_mem_nhds x (by positivity))),hKV.trans hVB,fun s => J s α,?_,?_⟩
     · exact (ContinuousLinearMap.proj α).differentiable.comp_differentiableOn hJ
     · intro s hs y
       rw [hJspec s hs α y]
@@ -420,13 +359,13 @@ end ChartAnalyticHelpers
 
 section PointwiseHolomorphy
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
 variable (a : Cusps F ζ hζ C R P H U)
 
 theorem incoming_scalar_coefficient_holomorphic (Ω : Set ℂ) (f : ℂ → S)
@@ -434,7 +373,7 @@ theorem incoming_scalar_coefficient_holomorphic (Ω : Set ℂ) (f : ℂ → S)
     DifferentiableOn ℂ (fun s =>
       (KPContFlatCuspIncomingEvaluation.zeroProjection F ζ hζ C R P H U a
         (KPContFlatCuspIncomingEvaluation.sheetEvaluation F ζ hζ C R P H U a ι s (f s))).val 0) Ω := by
-  let E : (rootsOfUnity 3 F → ℂ) →ₗ[ℂ] ℂ :=
+  let E :=
     (KPContFlatCuspCoefficientTransition.zeroFiberEvaluation F ζ hζ C R P H U a).comp
       (KPContFlatCuspIncomingEvaluation.zeroProjection F ζ hζ C R P H U a)
   have hsheet : DifferentiableOn ℂ (fun s =>
@@ -444,19 +383,20 @@ theorem incoming_scalar_coefficient_holomorphic (Ω : Set ℂ) (f : ℂ → S)
     let g := (KPContFlatCuspIncomingEvaluation.finiteRepresentative F ζ hζ C R P H U a ε).val
     let ev : S →ₗ[ℂ] ℂ :=
       { toFun := fun v => (ι v).val.val.val g
-        map_add' := by intro v w; simp only [map_add, Submodule.coe_add, Pi.add_apply]
-        map_smul' := by intro c v; simp only [map_smul, Submodule.coe_smul, Pi.smul_apply, RingHom.id_apply] }
-    have he := ev.toContinuousLinearMap.differentiable.comp_differentiableOn hf
-    have hx := ((differentiableOn_id.mul_const
-      (KPContFlatSourceRecipe.alpha F ζ hζ g : ℂ)).cexp).mul he
-    apply hx.congr
+        map_add' := by intro v w; simp
+        map_smul' := by intro c v; simp}
+    apply (((differentiableOn_id.mul_const
+      (KPContFlatSourceRecipe.alpha F ζ hζ g : ℂ)).cexp).mul (ev.toContinuousLinearMap.differentiable.comp_differentiableOn hf)).congr
     intro s hs
-    change KPContFlatCommonLevelKernel.L F ζ hζ U ι s (f s) g = _
     exact KPContFlatCommonLevelKernel.L_formula F ζ hζ U ι s (f s) g
   exact E.toContinuousLinearMap.differentiable.comp_differentiableOn hsheet
 
-theorem incomingValue_scalar_formula (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
-    (v : S) (z : KPCuspCharts.Coordinates F) :
+section
+
+variable (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain) (v : S)
+
+include hs in
+theorem incomingValue_scalar_formula (z : KPCuspCharts.Coordinates F) :
     incomingValue F ζ hζ C R P H U ι a s v z =
       KPIncomingCasimir.heightFactor (Module.finrank ℚ F / 2) s z.2 *
         (KPContFlatCuspIncomingEvaluation.zeroProjection F ζ hζ C R P H U a
@@ -468,45 +408,41 @@ theorem incomingValue_scalar_formula (s : ℂ) (hs : s ∈ KPContinuation.spectr
   rw [((KPContFlatCuspIncomingEvaluation.b F ζ hζ C R P H U a ι s hs v).val z.1.2).property.2]
   rfl
 
-theorem incomingValue_uniformizing_contDiff (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain) (v : S) :
+include hs in
+theorem incomingValue_uniformizing_contDiff :
     ContDiff ℝ (⊤ : ℕ∞) (incomingValue F ζ hζ C R P H U ι a s v) := by
-  have he : incomingValue F ζ hζ C R P H U ι a s v =
-      (fun z : KPCuspCharts.Coordinates F =>
-        KPIncomingCasimir.heightFactor (Module.finrank ℚ F / 2) s z.2 *
-          (KPContFlatCuspIncomingEvaluation.zeroProjection F ζ hζ C R P H U a
-            (KPContFlatCuspIncomingEvaluation.sheetEvaluation F ζ hζ C R P H U a ι s v)).val 0) :=
-    funext (fun z => incomingValue_scalar_formula F ζ hζ C R P H U ι a s hs v z)
-  rw [he]
+  rw [(funext (fun z => incomingValue_scalar_formula F ζ hζ C R P H U ι a s hs v z))]
   unfold KPIncomingCasimir.heightFactor
-  have hcast : ContDiff ℝ (⊤ : ℕ∞) (fun z : KPCuspCharts.Coordinates F => (z.2 : ℂ)) :=
-    Complex.ofRealCLM.contDiff.comp contDiff_snd
-  exact (Complex.contDiff_exp.comp (contDiff_const.mul hcast)).mul contDiff_const
+  exact (Complex.contDiff_exp.comp (contDiff_const.mul (Complex.ofRealCLM.contDiff.comp contDiff_snd))).mul contDiff_const
 
-theorem incomingRealization_endLift_formula {T : ℝ}
-    (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
-      (level F ζ hζ C R P H U) R P H T)
+end
+
+section
+
+variable {T : ℝ} (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ (level F ζ hζ C R P H U) R P H T)
+
+theorem incomingRealization_endLift_formula
     (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
     (v : S) (x : Covered F ζ hζ C R P H U)
     (l : EndLift F ζ hζ C R P H U buffer x) :
     incomingRealization F ζ hζ C R P H U ι buffer s v x =
       (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ l.sheet : ℂ) *
         incomingValue F ζ hζ C R P H U ι l.cusp s v l.coordinates := by
-  have hx : Nonempty (EndLift F ζ hζ C R P H U buffer x) := ⟨l⟩
   change (if h : Nonempty (EndLift F ζ hζ C R P H U buffer x) then
     (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ (Classical.choice h).sheet : ℂ) *
       incomingValue F ζ hζ C R P H U ι (Classical.choice h).cusp s v (Classical.choice h).coordinates
     else 0) = _
-  rw [dif_pos hx]
+  rw [dif_pos (⟨l⟩)]
   exact actual_endLift_incoming_transport F ζ hζ C R P H U ι buffer s hs v x _ l
 
-private theorem height_of_coveredPoint {T : ℝ}
-    (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
-      (level F ζ hζ C R P H U) R P H T)
+local notation "cuspLevel" => level F ζ hζ C R P H U
+
+private theorem height_of_coveredPoint
     (ε : rootsOfUnity 3 F) (z : KPCuspCharts.Coordinates F) (hz : buffer.τ < z.2) :
     height F ζ hζ C R P H U buffer a (coveredPoint F ζ hζ C R P H U a ε z) = z.2 := by
-  have hbase : KPContSectorCoveredQuotientVocabulary.q F ζ hζ (level F ζ hζ C R P H U)
+  have hbase : KPContSectorCoveredQuotientVocabulary.q F ζ hζ cuspLevel
       (coveredPoint F ζ hζ C R P H U a ε z) =
-      KPContActualCollarBuffer.chartLift F ζ hζ (level F ζ hζ C R P H U) R P H a z := by
+      KPContActualCollarBuffer.chartLift F ζ hζ cuspLevel R P H a z := by
     unfold coveredPoint
     rw [KPContSectorCoveredQuotientVocabulary.q_mk]
     apply Quotient.sound
@@ -517,20 +453,18 @@ private theorem height_of_coveredPoint {T : ℝ}
   rw [hbase]
   exact buffer.height_coordinates a z hz
 
-private theorem physical_incoming_local_formula {T : ℝ}
-    (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
-      (level F ζ hζ C R P H U) R P H T)
-    (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
+private theorem physical_incoming_local_formula
+    (i : Fin (H.atlas cuspLevel).componentCount)
     (y : KPCuspGenuineMonodromy.SymmetricSpace F)
     (hy : Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-      (level F ζ hζ C R P H U)) (y,
-        (H.atlas (level F ζ hζ C R P H U)).representative i) ∈
+      cuspLevel) (y,
+        (H.atlas cuspLevel).representative i) ∈
           ends F ζ hζ C R P H U buffer a) :
     ∃ V : Set (KPCuspGenuineMonodromy.SymmetricSpace F), IsOpen V ∧ y ∈ V ∧
       ∃ ε : rootsOfUnity 3 F, ∃ t : KPCuspGenuineMonodromy.SymmetricSpace F → ℝ,
         ContDiffOn ℝ (⊤ : ℕ∞) t V ∧
         ∀ y' ∈ V, let x := Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-          (level F ζ hζ C R P H U)) (y', (H.atlas (level F ζ hζ C R P H U)).representative i);
+          cuspLevel) (y', (H.atlas cuspLevel).representative i);
           x ∈ ends F ζ hζ C R P H U buffer a ∧
           height F ζ hζ C R P H U buffer a x = t y' ∧
           ∀ s ∈ KPContinuation.spectralDomain, ∀ v : S,
@@ -547,16 +481,16 @@ private theorem physical_incoming_local_formula {T : ℝ}
   have hheight := height_of_coveredPoint F ζ hζ C R P H U a buffer ε (z y') hhigh
   rw [hpoint] at hheight
   have hmem : Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-      (level F ζ hζ C R P H U)) (y',
-        (H.atlas (level F ζ hζ C R P H U)).representative i) ∈
+      cuspLevel) (y',
+        (H.atlas cuspLevel).representative i) ∈
           ends F ζ hζ C R P H U buffer a := by
-    change KPContSectorCoveredQuotientVocabulary.q F ζ hζ (level F ζ hζ C R P H U)
+    change KPContSectorCoveredQuotientVocabulary.q F ζ hζ cuspLevel
       (Quotient.mk (KPContSectorCoveredQuotientVocabulary.coveredRelation F ζ hζ
-        (level F ζ hζ C R P H U)) (y', (H.atlas (level F ζ hζ C R P H U)).representative i)) ∈
-      KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H buffer.τ a
-    have hb : KPContSectorCoveredQuotientVocabulary.q F ζ hζ (level F ζ hζ C R P H U)
+        cuspLevel) (y', (H.atlas cuspLevel).representative i)) ∈
+      KPContActualCollarBuffer.endSet F ζ hζ cuspLevel R P H buffer.τ a
+    have hb : KPContSectorCoveredQuotientVocabulary.q F ζ hζ cuspLevel
       (coveredPoint F ζ hζ C R P H U a ε (z y')) =
-      KPContActualCollarBuffer.chartLift F ζ hζ (level F ζ hζ C R P H U) R P H a (z y') := by
+      KPContActualCollarBuffer.chartLift F ζ hζ cuspLevel R P H a (z y') := by
       unfold coveredPoint
       rw [KPContSectorCoveredQuotientVocabulary.q_mk]
       apply Quotient.sound
@@ -570,6 +504,8 @@ private theorem physical_incoming_local_formula {T : ℝ}
     (⟨a,ε,z y',hhigh,hpoint⟩ : EndLift F ζ hζ C R P H U buffer _)]
   rw [incomingValue_scalar_formula F ζ hζ C R P H U ι a s hs]
 
+end
+
 private theorem cutoff_multiplier_zero_below {T : ℝ} (χ : KPCutoffSource.SmoothCuspCutoff T)
     (d : ℕ) (b : Bool) (s : ℂ) (t : ℝ) (ht : t < T) :
     (if b then KPCutoffSource.incomingCommutatorMultiplier d χ.toFun s t
@@ -579,10 +515,8 @@ private theorem cutoff_multiplier_zero_below {T : ℝ} (χ : KPCutoffSource.Smoo
     exact χ.zero_below u hu.le
   have hd : deriv χ.toFun =ᶠ[𝓝 t] (fun _ => (0 : ℝ)) := by
     simpa using he.deriv
-  have hd₀ : deriv χ.toFun t = 0 := hd.eq_of_nhds
-  have hd₂ : deriv (deriv χ.toFun) t = 0 := by
-    simpa using hd.deriv_eq
-  cases b <;> simp [KPCutoffSource.incomingCommutatorMultiplier, χ.zero_below t ht.le, hd₀, hd₂]
+  cases b <;> simp [KPCutoffSource.incomingCommutatorMultiplier, χ.zero_below t ht.le, hd.eq_of_nhds, (by
+    exact hd.deriv_eq)]
 
 theorem incoming_cutoff_zero_germ {T : ℝ}
     (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
@@ -595,16 +529,16 @@ theorem incoming_cutoff_zero_germ {T : ℝ}
             χ.toFun s (height F ζ hζ C R P H U buffer a y)
           else (χ.toFun (height F ζ hζ C R P H U buffer a y) : ℂ)) *
           incomingRealization F ζ hζ C R P H U ι buffer s v y) y = 0 := by
-  let q := KPContSectorCoveredQuotientVocabulary.q F ζ hζ (level F ζ hζ C R P H U)
-  let E := KPContActualCollarBuffer.endSet F ζ hζ (level F ζ hζ C R P H U) R P H buffer.τ a
-  have hxE : q x ∉ E := hx
-  have hq : Continuous q := KPContSectorQuotientRelationsComparison.q_continuous F ζ hζ
-    (level F ζ hζ C R P H U)
+  let level₀ := level F ζ hζ C R P H U
+  let q := KPContSectorCoveredQuotientVocabulary.q F ζ hζ (level₀)
+  let E := KPContActualCollarBuffer.endSet F ζ hζ (level₀) R P H buffer.τ a
+  have hxE := hx
+  have hq := KPContSectorQuotientRelationsComparison.q_continuous F ζ hζ
+    (level₀)
   by_cases hcl : q x ∈ closure E
-  · have hfr : q x ∈ frontier E := by
+  · obtain ⟨V,hV,hxV,hVbound⟩ := buffer.boundary_height_buffer a (q x) (by
       rw [frontier, (buffer.open_ends a).interior_eq]
-      exact ⟨hcl,hxE⟩
-    obtain ⟨V,hV,hxV,hVbound⟩ := buffer.boundary_height_buffer a (q x) hfr
+      exact ⟨hcl,hxE⟩)
     filter_upwards [hq.continuousAt.eventually (hV.mem_nhds hxV)] with y hy
     intro s v
     by_cases hyE : y ∈ ends F ζ hζ C R P H U buffer a
@@ -633,7 +567,6 @@ theorem actual_incoming_cutoff_chart_jets
       (level F ζ hζ C R P H U) R P H T)
     (Ω : Set ℂ) (hopen : IsOpen Ω) (hΩspectral : Ω ⊆ KPContinuation.spectralDomain)
     (f : ℂ → S) (hf : DifferentiableOn ℂ f Ω) (hι : Function.Injective ι)
-    (hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
     (a : Cusps F ζ hζ C R P H U)
     {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}

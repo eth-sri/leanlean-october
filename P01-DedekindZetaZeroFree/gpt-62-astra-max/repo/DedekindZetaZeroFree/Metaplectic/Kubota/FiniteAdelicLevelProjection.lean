@@ -10,7 +10,7 @@ noncomputable section
 open scoped Classical NumberField
 namespace DedekindZetaZeroFree.KPCuspMonodromy
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 abbrev Cover := KPCubicCoverConstruction.AdelicPGL2Cover F ζ hζ
 

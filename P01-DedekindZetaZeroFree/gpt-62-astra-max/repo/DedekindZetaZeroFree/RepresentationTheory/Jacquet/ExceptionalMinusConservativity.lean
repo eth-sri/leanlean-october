@@ -15,9 +15,9 @@ set_option backward.isDefEq.respectTransparency false
 set_option synthInstance.maxHeartbeats 100000
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
-variable (S : RawFiniteInducingData F ζ hζ q)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
+    (S : RawFiniteInducingData F ζ hζ q)
 
  def rawSectionEquiv (P : Polarization S.heisenberg) :
     (IMinus S.borel P).Equiv
@@ -51,22 +51,20 @@ variable (S : RawFiniteInducingData F ζ hζ q)
 private theorem rawAdmissible (P : Polarization S.heisenberg) : by
     letI : AddCommGroup (sectionSpace S.borel P .minus 0) := inferInstance
     exact Admissible (IMinus S.borel P) := by
-  let m := KPAdelicCoverRestrictedProduct.depth F ζ hζ q
-  have hm := KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q
-  let ht := KPPGLLocalCover.finite_topological_cover F ζ hζ q m hm
+  let ht := KPPGLLocalCover.finite_topological_cover F ζ hζ q (KPAdelicCoverRestrictedProduct.depth F ζ hζ q) (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q)
   letI := ht.1
   letI : Module.Finite ℂ (InducedModule P) := tau_moduleFinite S.heisenberg P
-  have hc : Continuous (KPLocalSmoothRepresentation.projection F ζ hζ q) :=
+  have hc :=
     (by
       letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr q)
       apply (QuotientGroup.isQuotientMap_mk
         (KPPGLLocalCover.scalarSubgroup F (Sum.inr q))).continuous_iff.mpr
       exact QuotientGroup.continuous_mk : Continuous (KPLocalSmoothRepresentation.ordinaryPGLMap F q)).comp ht.2.2.2.1.continuous
-  have ho : IsOpenMap (KPLocalSmoothRepresentation.projection F ζ hζ q) :=
+  have ho :=
     (by
       letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr q)
       apply IsOpenMap.of_comp
-        (QuotientGroup.continuous_mk (N := KPPGLLocalCover.scalarSubgroup F (Sum.inr q)))
+        (QuotientGroup.continuous_mk)
         (QuotientGroup.mk'_surjective _)
       exact QuotientGroup.isOpenMap_coe : IsOpenMap (KPLocalSmoothRepresentation.ordinaryPGLMap F q)).comp ht.2.2.2.1.isOpenMap
   have hs : Function.Surjective (KPLocalSmoothRepresentation.projection F ζ hζ q) := by
@@ -90,18 +88,14 @@ private theorem rawAdmissible (P : Polarization S.heisenberg) : by
       fixedSubmodule (smoothIndRepresentation S.borel.B (inducingAction S.borel P .minus 0) 1)
         J.toOpenSubgroup.toSubgroup :=
     (e.toLinearMap.comp (fixedSubmodule (IMinus S.borel P) J.toOpenSubgroup.toSubgroup).subtype).codRestrict _
-      (fun x => fun g => by
-        exact (Representation.IntertwiningMap.isIntertwining _ _ e.toIntertwiningMap g.val x.val).symm.trans
+      (fun x => fun g => (Representation.IntertwiningMap.isIntertwining _ _ e.toIntertwiningMap g.val x.val).symm.trans
           (congrArg e (x.property g)))
   letI := ha J
   apply Module.Finite.of_injective f
   intro x y hxy
   apply Subtype.ext
   exact e.injective (congrArg Subtype.val hxy)
-private theorem rawRoot_eq (P : Polarization S.heisenberg) :
-    root S.borel = KPLocalSmoothRepresentation.upperRoot F ζ hζ q := by
-  ext x
-  exact (S.openCell P).upper_eq x
+private alias rawRoot_eq := DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.ImagesIrreducibilitySteps.PlusLengthSteps.ExceptionalPlusSubmoduleMonotonicity.rawRoot_eq
 
 private theorem rawMap_zero {V : Type} [AddCommGroup V] [Module ℂ V]
     (P : Polarization S.heisenberg)
@@ -216,75 +210,14 @@ variable {K G H D V W : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
   [Group H] [TopologicalSpace H] [IsTopologicalGroup H] [CommGroup D] [Finite D]
   {T : LocalHeisenbergData H D} [AddCommGroup V] [Module ℂ V]
   [AddCommGroup W] [Module ℂ W]
-private theorem oneTwist {K U : Type*} [Field K] [AddCommGroup U] [Module ℂ U]
-    (υ : Representation ℂ (Multiplicative K) U) : KPCoinvariants.twistedRepresentation υ 1 = υ := by
-  ext g v
-  simp [KPCoinvariants.twistedRepresentation]
-private theorem rootSmooth {K G V : Type*} [Field K] [TopologicalSpace K]
-    [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [AddCommGroup V] [Module ℂ V]
-    (ρ : Representation ℂ G V) (hs : SmoothRepresentation ρ)
-    (n : Multiplicative K →* G) (hn : Continuous n) : KPCoinvariants.IsSmooth (ρ.comp n) := by
-  intro v
-  have hl : IsLocallyConstant (fun g : G => ρ g v) := by
-    obtain ⟨J, hJ⟩ := hs v
-    apply (IsLocallyConstant.iff_exists_open _).mpr
-    intro g
-    refine ⟨{h : G | g⁻¹ * h ∈ J}, J.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
-    · simpa using J.one_mem
-    · intro h hh
-      have he := hJ (g⁻¹ * h) hh
-      have := congrArg (ρ g) he
-      simpa [← Module.End.mul_apply, ← map_mul] using this
-  exact (hl.isOpen_fiber v).preimage (hn.comp continuous_ofAdd)
+private alias oneTwist := DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.ImagesIrreducibilitySteps.PlusLengthSteps.ExceptionalPlusSubmoduleMonotonicity.oneTwist
+private alias rootSmooth := DedekindZetaZeroFree.KPCyclicQuotient.CyclicIrreducibleQuotients.root_smooth
 
-private theorem raw_jacquet_inclusion_injective (A : LocalBorelData (K := K) (G := G) T)
-    (ρ : Representation ℂ G V) (hρ : SmoothRepresentation ρ) (N : Subrepresentation ρ) :
-    Function.Injective (jacquetMap A (subrepresentationInclusion N)) := by
-  let τ := N.toRepresentation
-  let σ := ρ.quotient N.toSubmodule (fun g => N.apply_mem_toSubmodule g)
-  let n := root A
-  have hn : Continuous n := continuous_subtype_val.comp A.upperRoot_continuous
-  let i : Representation.IntertwiningMap (τ.comp n) (ρ.comp n) :=
-    { toLinearMap := N.toSubmodule.subtype, isIntertwining' _ := rfl }
-  let p : Representation.IntertwiningMap (ρ.comp n) (σ.comp n) :=
-    { toLinearMap := N.toSubmodule.mkQ, isIntertwining' _ := rfl }
-  change Function.Injective (Representation.Coinvariants.map (τ.comp n) (ρ.comp n) i)
-  apply KPCoinvariants.TransversalAverages.coinvariants_map_injective_of_annihilating_averages
-    (τ.comp n) (ρ.comp n) i Subtype.val_injective
-  intro v hv
-  have hv' : v ∈ Representation.Coinvariants.ker (KPCoinvariants.twistedRepresentation (ρ.comp n) 1) := by
-    simpa only [oneTwist] using hv
-  obtain ⟨J, L, R, hJo, hJc, hLo, hLc, hJL, hR, hRne, hψJ, hfix, hkill⟩ :=
-    KPCoinvariants.killsRelation (ρ.comp n) (rootSmooth ρ hρ n hn) 1
-      (by fun_prop) (IsLocallyConstant.of_constant _ (by intros; rfl)) v hv'
-  refine ⟨R, hRne, ?_⟩
-  simpa only [KPCoinvariants.psiAverage, MonoidHom.one_apply, Units.val_one, inv_one, one_smul] using hkill
+private alias raw_jacquet_inclusion_injective := DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.ImagesIrreducibilitySteps.PlusLengthSteps.ExceptionalPlusSubmoduleMonotonicity.raw_jacquet_inclusion_injective
 
-private theorem jacquet_range_eq_map (A : LocalBorelData (K := K) (G := G) T)
-    (ρ : Representation ℂ G V) (N : Subrepresentation ρ) :
-    (jacquetMap A (subrepresentationInclusion N)).range.toSubmodule =
-      N.toSubmodule.map (Representation.Coinvariants.mk (ρ.comp (root A))) := by
-  ext x
-  constructor
-  · rintro ⟨y, rfl⟩
-    obtain ⟨v, rfl⟩ := Representation.Coinvariants.mk_surjective _ y
-    exact ⟨v.val, v.property, rfl⟩
-  · rintro ⟨v, hv, rfl⟩
-    exact ⟨Representation.Coinvariants.mk _ ⟨v, hv⟩, rfl⟩
+private alias jacquet_range_eq_map := DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.ImagesIrreducibilitySteps.PlusLengthSteps.ExceptionalPlusSubmoduleMonotonicity.jacquet_range_eq_map
 
-private theorem image_mono (A : LocalBorelData (K := K) (G := G) T)
-    (ρ : Representation ℂ G V) : Monotone (jacquetSubmoduleImage A ρ) := by
-  intro N M hNM
-  change (jacquetMap A (subrepresentationInclusion
-    (Subrepresentation.subrepresentationSubmoduleOrderIso.symm N))).range.asSubmodule ≤ _
-  intro x hx
-  change x ∈ (jacquetMap A (subrepresentationInclusion
-    (Subrepresentation.subrepresentationSubmoduleOrderIso.symm M))).range.toSubmodule
-  change x ∈ (jacquetMap A (subrepresentationInclusion
-    (Subrepresentation.subrepresentationSubmoduleOrderIso.symm N))).range.toSubmodule at hx
-  rw [jacquet_range_eq_map] at hx ⊢
-  apply Submodule.map_mono _ hx
-  exact hNM
+private alias image_mono := DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.ImagesIrreducibilitySteps.PlusLengthSteps.ExceptionalPlusSubmoduleMonotonicity.image_mono
 end Generic
 
 theorem independent_minus_jacquet_strictMono (P : Polarization S.heisenberg) : by

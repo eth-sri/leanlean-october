@@ -10,13 +10,14 @@ open NumberField Filter
 namespace DedekindZetaZeroFree.RootDerivatives
 open KPLiteralRaw hiding G
 open KPGlobalResidualConstruction KPContActualSphericalRightFieldIdentification
-open _root_.DedekindZetaZeroFree.RootDerivatives renaming chamber_value_majorant → chamber_value_majorant
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
-private theorem generic_chamber_majorant {K : Subgroup (G F ζ hζ)}
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K)
+variable {K : Subgroup (G F ζ hζ)} (hK : IwasawaCompact F ζ hζ K)
+
+include hK in
+private theorem generic_chamber_majorant (f : Flat F ζ hζ K)
     (s : ℂ) (hs : (1/3 : ℝ) < s.re) (T : Set (G F ζ hζ)) (hT : IsCompact T) :
     ∃ B : KPChamberBruhatTwoCells.RationalQuotient F → ℝ, Summable B ∧
       ∀ c g, g ∈ T → ‖f.val s (rationalLift F ζ hζ (Quotient.out c) * g)‖ ≤ B c := by
@@ -29,8 +30,8 @@ private theorem generic_chamber_majorant {K : Subgroup (G F ζ hζ)}
   simpa only [KPLiteralChamber.rightJet, iteratedFDeriv_zero_apply,
     KPInterface.ResidueConstruction.Raw.archChart_base, mul_one] using h
 
-theorem native_chamber_affine {K : Subgroup (G F ζ hζ)}
-    (hK : IwasawaCompact F ζ hζ K) (f v u : Flat F ζ hζ K)
+include hK in
+theorem native_chamber_affine (f v u : Flat F ζ hζ K)
     (b : Fin (groupDimension F))
     (hsource : ∀ s g, actualRight F ζ hζ b (f.val s) g = v.val s g + s * u.val s g)
     (s : ℂ) (hs : (1/3 : ℝ) < s.re) (g : G F ζ hζ) :

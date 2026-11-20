@@ -16,37 +16,28 @@ variable (F : Type*) [Field F] [NumberField F]
 
 open scoped Matrix
 
-private lemma diag_ne_zero {A : GL2 F v} (hu : A 1 0 = 0) : A 0 0 ≠ 0 ∧ A 1 1 ≠ 0 := by
-  have hdet := Matrix.GeneralLinearGroup.det_ne_zero A
-  rw [Matrix.det_fin_two] at hdet
-  rw [show (A : Matrix (Fin 2) (Fin 2) (LocalField F v)) 1 0 = 0 from hu,
-    mul_zero, sub_zero] at hdet
-  exact mul_ne_zero_iff.mp hdet
-private lemma diagonal_mem (y : (LocalField F v)ˣ) : diagonalElement F v y ∈ diagonalTorus F v := by
-  refine ⟨diagonalMatrix F v y, rfl, ?_, ?_⟩ <;>
-    simp [diagonalMatrix, Matrix.GeneralLinearGroup.mkOfDetNeZero]
+private alias diag_ne_zero := DedekindZetaZeroFree.KPRankOneInductionRaw.diag_ne_zero
+
 private lemma ordinary_factor (b : upperBorel F v) :
     ∃ a : LocalField F v, (b : PGL2 F v) = upperRootElement F v a *
       diagonalElement F v (borelRatio F v b) := by
   obtain ⟨A, hA, hu⟩ := b.property
   have h11 := (diag_ne_zero F v hu).2
-  let u : (LocalField F v)ˣ := Units.mk0 (A 1 1) h11
+  let u := Units.mk0 (A 1 1) h11
   refine ⟨A 0 1 / A 1 1, ?_⟩
-  have heq : (upperRootMatrix F v (A 0 1 / A 1 1) *
-      diagonalMatrix F v (borelRatio F v b)) * Matrix.GeneralLinearGroup.scalar (Fin 2) u = A := by
-    apply Units.ext
-    ext i j
-    rw [Units.val_mul, Units.val_mul]
-    simp only [Matrix.GeneralLinearGroup.coe_scalar]
-    rw [Matrix.mul_apply, Fin.sum_univ_two]
-    fin_cases i <;> fin_cases j <;>
-      simp [upperRootMatrix, diagonalMatrix, Matrix.GeneralLinearGroup.mkOfDetNeZero,
-        Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, Matrix.diagonal_apply,
-        u, borelRatio_eq F v b A hA hu, hu, h11]
   rw [← hA]
   unfold upperRootElement diagonalElement
   rw [← map_mul]
-  exact (Matrix.ProjGenLinGroup.mk_eq_mk_iff).mpr ⟨u, heq⟩ |>.symm
+  refine (Matrix.ProjGenLinGroup.mk_eq_mk_iff).mpr ⟨u, ?_⟩ |>.symm
+  apply Units.ext
+  ext i j
+  rw [Units.val_mul, Units.val_mul]
+  simp only [Matrix.GeneralLinearGroup.coe_scalar]
+  rw [Matrix.mul_apply, Fin.sum_univ_two]
+  fin_cases i <;> fin_cases j <;>
+    simp [upperRootMatrix, diagonalMatrix, Matrix.GeneralLinearGroup.mkOfDetNeZero,
+      Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, Matrix.diagonal_apply,
+      u, borelRatio_eq F v b A hA hu, hu, h11]
 private lemma root_in_torus_zero (x : LocalField F v)
     (h : upperRootElement F v x ∈ diagonalTorus F v) : x = 0 := by
   obtain ⟨A, hA, hu, hv⟩ := h
@@ -84,7 +75,8 @@ theorem exists_unique_lifted_factorization
     simp [← mul_assoc, ← map_mul]
   have ht : π t ∈ diagonalTorus F v := by
     rw [hproj]
-    exact diagonal_mem F v _
+    refine ⟨diagonalMatrix F v _, rfl, ?_, ?_⟩ <;>
+      simp [diagonalMatrix, Matrix.GeneralLinearGroup.mkOfDetNeZero]
   refine ⟨a, t, ht, hfac, rfl, hproj, ?_⟩
   intro a' t' ht' hfac'
   have heq : n (Multiplicative.ofAdd (-a')) * n (Multiplicative.ofAdd a) = t' * t⁻¹ := by

@@ -33,17 +33,17 @@ def mobiusTail (q d : Ideal (𝓞 F)) (W : ℝ → ℝ) (M K : ℝ)
         (Real.sqrt (Ideal.absNorm (u * v) : ℝ) : ℂ))) *
       ∑' a : Ideal (𝓞 F), term q K dotW (scale M e u v) η a
 
-def blockTail (q d : Ideal (𝓞 F)) (W : ℝ → ℝ) (M K : ℝ)
-    (L : Finset (Ideal (𝓞 F))) (lam : Ideal (𝓞 F) → ℂ)
+section
+
+variable (q d : Ideal (𝓞 F)) (W : ℝ → ℝ) (M K : ℝ) (L : Finset (Ideal (𝓞 F))) (lam : Ideal (𝓞 F) → ℂ)
     (θ : Ideal (𝓞 F) → Ideal (𝓞 F) → ℂ)
-    (η : ∀ u v : Ideal (𝓞 F), DedekindZetaZeroFree.RayClassCharacter F (u * v)) : ℂ :=
+    (η : ∀ u v : Ideal (𝓞 F), DedekindZetaZeroFree.RayClassCharacter F (u * v))
+
+def blockTail : ℂ :=
   ∑ u ∈ L, ∑ v ∈ L, θ u v * lam u * star (lam v) *
     mobiusTail q d W M K u v (η u v)
 
-def majorant (q d : Ideal (𝓞 F)) (W : ℝ → ℝ) (M K : ℝ)
-    (L : Finset (Ideal (𝓞 F))) (lam : Ideal (𝓞 F) → ℂ)
-    (θ : Ideal (𝓞 F) → Ideal (𝓞 F) → ℂ)
-    (η : ∀ u v : Ideal (𝓞 F), DedekindZetaZeroFree.RayClassCharacter F (u * v)) : ℝ :=
+def majorant : ℝ :=
   let dotW := DedekindZetaZeroFree.LargeSieve.fieldTransform (DedekindZetaZeroFree.LargeSieve.principalDiscriminant F)
     (DedekindZetaZeroFree.LargeSieve.principalComplexPlaces F) (fun x => (W x : ℂ))
   ∑ u ∈ L, ∑ v ∈ L,
@@ -55,6 +55,8 @@ def majorant (q d : Ideal (𝓞 F)) (W : ℝ → ℝ) (M K : ℝ)
               (Real.sqrt (Ideal.absNorm (u * v) : ℝ) : ℂ)))‖ *
           ∑' a : Ideal (𝓞 F), ‖term q K dotW (scale M e u v) (η u v) a‖)
     else 0
+
+end
 
 theorem chooseOrder {F : Type} [Field F] [NumberField F]
     (hF : NumberField.IsTotallyComplex F)
@@ -121,7 +123,9 @@ open scoped NumberField Classical BigOperators
 
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.TransformTail
 
-private lemma sc_le_norm {F : Type} [Field F] [NumberField F]
+variable {F : Type} [Field F] [NumberField F]
+
+private lemma sc_le_norm
     (q a : Ideal (𝓞 F)) (ha : a ≠ ⊥) : sc q a ≤ (Ideal.absNorm a : ℝ) := by
   have hk := DedekindZetaZeroFree.LargeSieve.Sieve.UniversalB2.canonical_kernel_extraction a ha
   have hd : primeToSquarefreeKernel q a ∣ DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel a := by
@@ -129,14 +133,10 @@ private lemma sc_le_norm {F : Type} [Field F] [NumberField F]
     apply dvd_trans (Finset.prod_dvd_prod_of_subset _ _ id (Finset.filter_subset _ _))
     exact (Multiset.toFinset_prod_dvd_prod _).trans
       (dvd_of_eq (Ideal.prod_normalizedFactors_eq_self hk.1))
-  have hn := Ideal.absNorm_dvd_absNorm_of_le (Ideal.dvd_iff_le.mp (hd.trans hk.2.2.1))
-  have hpos : 0 < Ideal.absNorm a := Nat.pos_of_ne_zero (by
-    intro h0
-    exact ha (Ideal.absNorm_eq_zero_iff.mp h0))
   unfold sc
-  exact_mod_cast Nat.le_of_dvd hpos hn
+  exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (fun h0 => ha (Ideal.absNorm_eq_zero_iff.mp h0))) (Ideal.absNorm_dvd_absNorm_of_le (Ideal.dvd_iff_le.mp (hd.trans hk.2.2.1)))
 
-theorem idealTail {F : Type} [Field F] [NumberField F]
+theorem idealTail
     (A : ℕ) (hA : 2 < A) :
     ∃ B : ℝ, 0 ≤ B ∧
       ∀ (q : Ideal (𝓞 F)), q ≠ ⊥ →
@@ -220,11 +220,11 @@ theorem idealTail {F : Type} [Field F] [NumberField F]
     · simp only [term, if_neg ha, norm_zero]
       exact mul_nonneg (mul_nonneg hCW (Real.rpow_nonneg hX.le _)) (ht0 a)
   have hmaj := hts.mul_left (CW * Real.rpow X (A : ℝ))
-  have hsum : Summable (fun a : Ideal (𝓞 F) => ‖term q K h X η a‖) :=
+  have hsum :=
     Summable.of_nonneg_of_le (fun a => norm_nonneg _) hpoint hmaj
   refine ⟨hsum, ?_⟩
   calc
-    (∑' a, ‖term q K h X η a‖) ≤
+    _ ≤
         ∑' a, (CW * Real.rpow X (A : ℝ)) * t a :=
       Summable.tsum_le_tsum hpoint hsum hmaj
     _ = (CW * Real.rpow X (A : ℝ)) * ∑' a, t a := tsum_mul_left
@@ -323,26 +323,26 @@ private lemma power_identity (X K a : ℝ) (hX : 0 < X) (hK : 0 < K) :
 private lemma prefactor_identity (E U V M : ℝ) (hE : 0 < E) (hU : 0 < U)
     (hV : 0 < V) (hM : 0 < M) :
     (M / (E * Real.sqrt (U*V))) * (E*U*V/M) = Real.sqrt (U*V) := by
-  have hs : 0 < Real.sqrt (U*V) := Real.sqrt_pos.2 (mul_pos hU hV)
   have hsq := Real.sq_sqrt (mul_pos hU hV).le
   field_simp
   nlinarith
-private lemma absnorm_one {F : Type} [Field F] [NumberField F] (I : Ideal (𝓞 F))
+section
+
+variable {F : Type} [Field F] [NumberField F]
+
+private lemma absnorm_one (I : Ideal (𝓞 F))
     (hI : I ≠ ⊥) : 1 ≤ (Ideal.absNorm I : ℝ) := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
-private lemma divisor_bound {F : Type} [Field F] [NumberField F]
+private lemma divisor_bound
     (q d : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hd : d ≠ ⊥)
     (e : Ideal (𝓞 F)) (he : e ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors (q*d).radical) :
     (Ideal.absNorm e : ℝ) ≤ (Ideal.absNorm q : ℝ)*(Ideal.absNorm d : ℝ) := by
-  have h1 := DedekindZetaZeroFree.LargeSieve.absNorm_le_of_mem_idealDivisors he
-  have hqd : q*d ≠ ⊥ := by simpa only [← Ideal.zero_eq_bot] using mul_ne_zero (by simpa using hq) (by simpa using hd)
-  have h2 : Ideal.absNorm (q*d).radical ≤ Ideal.absNorm (q*d) :=
-    Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hqd))
-      (Ideal.absNorm_dvd_absNorm_of_le Ideal.le_radical)
-  have h := h1.trans h2
+  have hqd : q*d ≠ ⊥ := by simpa only [← Ideal.zero_eq_bot] using mul_ne_zero (by exact hq) (by exact hd)
+  have h := (DedekindZetaZeroFree.LargeSieve.absNorm_le_of_mem_idealDivisors he).trans (Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hqd))
+    (Ideal.absNorm_dvd_absNorm_of_le Ideal.le_radical))
   rw [map_mul] at h
   exact_mod_cast h
-private lemma coefficient_bound {F : Type} [Field F] [NumberField F]
+private lemma coefficient_bound
     (M : ℝ) (hM : 0 < M) (e u v : Ideal (𝓞 F))
     (he : e ≠ ⊥) (hu : u ≠ ⊥) (hv : v ≠ ⊥)
     (η : DedekindZetaZeroFree.RayClassCharacter F (u*v)) :
@@ -355,7 +355,7 @@ private lemma coefficient_bound {F : Type} [Field F] [NumberField F]
     rw [UniqueFactorizationMonoid.moebius]
     split <;> simp
   have huv : u*v ≠ ⊥ := by
-    simpa only [← Ideal.zero_eq_bot] using mul_ne_zero (by simpa using hu) (by simpa using hv)
+    simpa only [← Ideal.zero_eq_bot] using mul_ne_zero (by exact hu) (by exact hv)
   have hη := DedekindZetaZeroFree.LargeSieve.RayOperations.norm_le_one η e
   have hb : ‖(UniqueFactorizationMonoid.moebius e : ℂ) * η e‖ ≤ 1 := by
     rw [norm_mul]
@@ -364,7 +364,7 @@ private lemma coefficient_bound {F : Type} [Field F] [NumberField F]
   apply (mul_le_mul_of_nonneg_right hb (norm_nonneg _)).trans_eq
   simp [norm_div, norm_mul, Complex.norm_natCast, Complex.norm_real,
     abs_of_nonneg hM.le, abs_of_nonneg (Real.sqrt_nonneg _), map_mul]
-private lemma pair_scale_bounds {F : Type} [Field F] [NumberField F]
+private lemma pair_scale_bounds
     (q d e u v : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hd : d ≠ ⊥)
     (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N)
     (he : e ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors (q*d).radical)
@@ -378,83 +378,28 @@ private lemma pair_scale_bounds {F : Type} [Field F] [NumberField F]
   have hd1 := absnorm_one d hd
   have hd0 : 0 < (Ideal.absNorm d : ℝ) := by linarith
   have hN0 : 0 < N := by linarith
-  have hu0 : 0 < (Ideal.absNorm u : ℝ) := (div_pos hN0 hd0).trans hu'.2.2.1
-  have hv0 : 0 < (Ideal.absNorm v : ℝ) := (div_pos hN0 hd0).trans hv'.2.2.1
-  have hue : u ≠ ⊥ := by intro h; simp [h] at hu0
-  have hve : v ≠ ⊥ := by intro h; simp [h] at hv0
-  have he0 : 0 < (Ideal.absNorm e : ℝ) := lt_of_lt_of_le zero_lt_one
-    (absnorm_one e (DedekindZetaZeroFree.LargeSieve.ne_bot_of_mem_idealDivisors he))
+  have hu0 := (div_pos hN0 hd0).trans hu'.2.2.1
+  have hv0 := (div_pos hN0 hd0).trans hv'.2.2.1
   have hM0 : 0 < M := by linarith
-  have heb := divisor_bound q d hq hd e he
   have hprod : (Ideal.absNorm u : ℝ)*(Ideal.absNorm v : ℝ) ≤ (2*N/(Ideal.absNorm d : ℝ))^2 := by
-    have h1 : (Ideal.absNorm u : ℝ) ≤ 2*N/(Ideal.absNorm d : ℝ) := by simpa [mul_div_assoc] using hu'.2.2.2
     have h2 : (Ideal.absNorm v : ℝ) ≤ 2*N/(Ideal.absNorm d : ℝ) := by simpa [mul_div_assoc] using hv'.2.2.2
-    nlinarith [mul_le_mul h1 h2 hv0.le (by positivity : 0 ≤ 2*N/(Ideal.absNorm d : ℝ))]
-  refine ⟨hue, hve, div_pos (mul_pos (mul_pos he0 hu0) hv0) hM0, ?_, ?_⟩
+    nlinarith [mul_le_mul (by simpa [mul_div_assoc] using hu'.2.2.2) h2 hv0.le (by positivity : 0 ≤ 2*N/(Ideal.absNorm d : ℝ))]
+  refine ⟨by intro h; simp [h] at hu0, by intro h; simp [h] at hv0, div_pos (mul_pos (mul_pos (lt_of_lt_of_le zero_lt_one
+    (absnorm_one e (DedekindZetaZeroFree.LargeSieve.ne_bot_of_mem_idealDivisors he))) hu0) hv0) hM0, ?_, ?_⟩
   · unfold scale
     rw [mul_assoc]
-    apply (div_le_div_of_nonneg_right (mul_le_mul heb hprod (mul_pos hu0 hv0).le
+    apply (div_le_div_of_nonneg_right (mul_le_mul (divisor_bound q d hq hd e he) hprod (mul_pos hu0 hv0).le
       (by positivity)) hM0.le).trans_eq
     field_simp
     <;> ring
   · apply (Real.sqrt_le_sqrt hprod).trans_eq
     rw [Real.sqrt_sq (by positivity)]
-private lemma one_divisor_bound {F : Type} [Field F] [NumberField F]
-    (q d e u v : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hd : d ≠ ⊥)
-    (M N K B CW : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) (hK : 0 < K)
-    (hB : 0 ≤ B) (hCW : 0 ≤ CW) (a : ℝ) (ha : 1 ≤ a)
-    (he : e ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors (q*d).radical)
-    (hu : u ∈ DedekindZetaZeroFree.LargeSieve.Sieve.paperShell F ⊤ (N / (Ideal.absNorm d : ℝ)))
-    (hv : v ∈ DedekindZetaZeroFree.LargeSieve.Sieve.paperShell F ⊤ (N / (Ideal.absNorm d : ℝ)))
-    (η : DedekindZetaZeroFree.RayClassCharacter F (u*v)) (T : ℝ)
-    (hT : T ≤ B * CW * Real.rpow (scale M e u v) a * Real.rpow K (1-a)) :
-    ‖(UniqueFactorizationMonoid.moebius e : ℂ) * η e *
-      ((M : ℂ) / ((Ideal.absNorm e : ℂ) *
-        (Real.sqrt (Ideal.absNorm (u*v) : ℝ) : ℂ)))‖ * T ≤
-      B * CW * (2*N) * Real.rpow
-        ((4 * (Ideal.absNorm q : ℝ) * N^2 / (M * (Ideal.absNorm d : ℝ))) / K) (a-1) := by
-  obtain ⟨hu0, hv0, hX, hXb, hsb⟩ := pair_scale_bounds q d e u v hq hd M N hM hN he hu hv
-  have hM0 : 0 < M := by linarith
-  have hU := absnorm_one u hu0
-  have hV := absnorm_one v hv0
-  have hE := absnorm_one e (DedekindZetaZeroFree.LargeSieve.ne_bot_of_mem_idealDivisors he)
-  have hc := coefficient_bound M hM0 e u v (DedekindZetaZeroFree.LargeSieve.ne_bot_of_mem_idealDivisors he) hu0 hv0 η
-  have hp : Real.rpow (scale M e u v / K) (a-1) ≤ Real.rpow
-      ((4 * (Ideal.absNorm q : ℝ) * N^2 / (M * (Ideal.absNorm d : ℝ))) / K) (a-1) := by
-    simp only [Real.rpow_eq_pow]
-    exact Real.rpow_le_rpow (by positivity) (div_le_div_of_nonneg_right hXb hK.le) (by linarith)
-  have hs : Real.sqrt ((Ideal.absNorm u : ℝ)*(Ideal.absNorm v : ℝ)) ≤ 2*N := by
-    apply hsb.trans
-    exact div_le_self (by positivity) (absnorm_one d hd)
-  calc
-    _ ≤ ‖(UniqueFactorizationMonoid.moebius e : ℂ) * η e *
-      ((M : ℂ) / ((Ideal.absNorm e : ℂ) *
-        (Real.sqrt (Ideal.absNorm (u*v) : ℝ) : ℂ)))‖ *
-      (B * CW * Real.rpow (scale M e u v) a * Real.rpow K (1-a)) :=
-      mul_le_mul_of_nonneg_left hT (norm_nonneg _)
-    _ ≤ (M / ((Ideal.absNorm e : ℝ) * Real.sqrt
-      ((Ideal.absNorm u : ℝ)*(Ideal.absNorm v : ℝ)))) *
-      (B * CW * Real.rpow (scale M e u v) a * Real.rpow K (1-a)) :=
-      mul_le_mul_of_nonneg_right hc (mul_nonneg
-        (mul_nonneg (mul_nonneg hB hCW) (Real.rpow_nonneg hX.le _))
-        (Real.rpow_nonneg hK.le _))
-    _ = B * CW * Real.sqrt ((Ideal.absNorm u : ℝ)*(Ideal.absNorm v : ℝ)) *
-      Real.rpow (scale M e u v / K) (a-1) := by
-      rw [mul_assoc (B*CW), power_identity _ _ _ hX hK]
-      have hid := prefactor_identity (Ideal.absNorm e) (Ideal.absNorm u) (Ideal.absNorm v)
-        M (by linarith) (by linarith) (by linarith) hM0
-      unfold scale
-      calc
-        _ = B * CW * ((M / ((Ideal.absNorm e : ℝ) * Real.sqrt
-              ((Ideal.absNorm u : ℝ)*(Ideal.absNorm v : ℝ)))) *
-            ((Ideal.absNorm e : ℝ)*(Ideal.absNorm u : ℝ)*
-            (Ideal.absNorm v : ℝ)/M)) *
-            Real.rpow (((Ideal.absNorm e : ℝ)*(Ideal.absNorm u : ℝ)*
-            (Ideal.absNorm v : ℝ)/M)/K) (a-1) := by ring
-        _ = _ := by rw [hid]
-    _ ≤ _ := mul_le_mul (mul_le_mul_of_nonneg_left hs (mul_nonneg hB hCW)) hp
-      (Real.rpow_nonneg (div_pos hX hK).le _) (by positivity)
-private lemma block_bound {F : Type} [Field F] [NumberField F]
+
+end
+
+variable {F : Type} [Field F] [NumberField F]
+
+private lemma block_bound
     (q d : Ideal (𝓞 F)) (W : ℝ → ℝ) (M K : ℝ)
     (L : Finset (Ideal (𝓞 F))) (lam : Ideal (𝓞 F) → ℂ)
     (θ : Ideal (𝓞 F) → Ideal (𝓞 F) → ℂ)
@@ -484,7 +429,7 @@ private lemma block_bound {F : Type} [Field F] [NumberField F]
     apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
     exact norm_tsum_le_tsum_norm (hs u hu v hv ht e he)
 
-theorem aggregate {F : Type} [Field F] [NumberField F]
+theorem aggregate
     (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) (A : ℕ) (hA : 2 < A) :
     ∃ B : ℝ, 0 ≤ B ∧
       ∀ (W : ℝ → ℝ) (δ CW : ℝ), 0 < δ → δ ≤ (A : ℝ) → 0 ≤ CW →
@@ -551,9 +496,8 @@ theorem aggregate {F : Type} [Field F] [NumberField F]
   have hLcard : (L.card : ℝ) ≤ 2 * C * N := by
     apply (hcount (2*N) (by linarith) L ?_).trans_eq (by ring)
     intro u hu
-    have hub := ((DedekindZetaZeroFree.LargeSieve.Sieve.mem_paperShell F ⊤ _ u).mp (hL hu)).2.2.2
-    apply hub.trans
-    have : N / (Ideal.absNorm d : ℝ) ≤ N := div_le_self hN0.le hd1
+    apply (((DedekindZetaZeroFree.LargeSieve.Sieve.mem_paperShell F ⊤ _ u).mp (hL hu)).2.2.2).trans
+    have := div_le_self hN0.le hd1
     linarith
   have hdtotal : ∀ u ∈ L, ∀ v ∈ L,
       (∑ e ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors (q*d).radical,
@@ -567,8 +511,48 @@ theorem aggregate {F : Type} [Field F] [NumberField F]
       _ ≤ ∑ _e ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors (q*d).radical, B0*CW*(2*N)*R := by
         apply Finset.sum_le_sum
         intro e he
-        exact one_divisor_bound q d e u v hq hd M N K B0 CW hM hN hK hB0 hCW
-          A ha he (hL hu) (hL hv) (η u v) _ (ht u hu v hv e he).2
+        let η := (η u v)
+        obtain ⟨hu0, hv0, hX, hXb, hsb⟩ := pair_scale_bounds q d e u v hq hd M N hM hN he (hL hu) (hL hv)
+        have hM0 : 0 < M := by linarith
+        have hU := absnorm_one u hu0
+        have hV := absnorm_one v hv0
+        have hE := absnorm_one e (DedekindZetaZeroFree.LargeSieve.ne_bot_of_mem_idealDivisors he)
+        have hc := coefficient_bound M hM0 e u v (DedekindZetaZeroFree.LargeSieve.ne_bot_of_mem_idealDivisors he) hu0 hv0 η
+        have hp : Real.rpow (scale M e u v / K) (A-1) ≤ Real.rpow
+            ((4 * (Ideal.absNorm q : ℝ) * N^2 / (M * (Ideal.absNorm d : ℝ))) / K) (A-1) := by
+          simp only [Real.rpow_eq_pow]
+          exact Real.rpow_le_rpow (by positivity) (div_le_div_of_nonneg_right hXb hK.le) (by linarith)
+        have hs : Real.sqrt ((Ideal.absNorm u : ℝ)*(Ideal.absNorm v : ℝ)) ≤ 2*N := by
+          apply hsb.trans
+          exact div_le_self (by positivity) (absnorm_one d hd)
+        calc
+          _ ≤ ‖(UniqueFactorizationMonoid.moebius e : ℂ) * η e *
+            ((M : ℂ) / ((Ideal.absNorm e : ℂ) *
+              (Real.sqrt (Ideal.absNorm (u*v) : ℝ) : ℂ)))‖ *
+            (B0 * CW * Real.rpow (scale M e u v) A * Real.rpow K (1-A)) :=
+            mul_le_mul_of_nonneg_left (ht u hu v hv e he).2 (norm_nonneg _)
+          _ ≤ (M / ((Ideal.absNorm e : ℝ) * Real.sqrt
+            ((Ideal.absNorm u : ℝ)*(Ideal.absNorm v : ℝ)))) *
+            (B0 * CW * Real.rpow (scale M e u v) A * Real.rpow K (1-A)) :=
+            mul_le_mul_of_nonneg_right hc (mul_nonneg
+              (mul_nonneg (mul_nonneg hB0 hCW) (Real.rpow_nonneg hX.le _))
+              (Real.rpow_nonneg hK.le _))
+          _ = B0 * CW * Real.sqrt ((Ideal.absNorm u : ℝ)*(Ideal.absNorm v : ℝ)) *
+            Real.rpow (scale M e u v / K) (A-1) := by
+            rw [mul_assoc (B0*CW), power_identity _ _ _ hX hK]
+            have hid := prefactor_identity (Ideal.absNorm e) (Ideal.absNorm u) (Ideal.absNorm v)
+              M (by linarith) (by linarith) (by linarith) hM0
+            unfold scale
+            calc
+              _ = B0 * CW * ((M / ((Ideal.absNorm e : ℝ) * Real.sqrt
+                    ((Ideal.absNorm u : ℝ)*(Ideal.absNorm v : ℝ)))) *
+                  ((Ideal.absNorm e : ℝ)*(Ideal.absNorm u : ℝ)*
+                  (Ideal.absNorm v : ℝ)/M)) *
+                  Real.rpow (((Ideal.absNorm e : ℝ)*(Ideal.absNorm u : ℝ)*
+                  (Ideal.absNorm v : ℝ)/M)/K) (A-1) := by ring
+              _ = _ := by rw [hid]
+          _ ≤ _ := mul_le_mul (mul_le_mul_of_nonneg_left hs (mul_nonneg hB0 hCW)) hp
+            (Real.rpow_nonneg (div_pos hX hK).le _) (by positivity)
       _ = ((DedekindZetaZeroFree.LargeSieve.idealDivisors (q*d).radical).card : ℝ) * (B0*CW*(2*N)*R) := by simp
       _ ≤ _ := mul_le_mul_of_nonneg_right hdcard (by positivity)
   have hmask : ∀ u ∈ L, ∀ v ∈ L,

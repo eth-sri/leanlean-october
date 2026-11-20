@@ -13,16 +13,18 @@ namespace DedekindZetaZeroFree.Hecke
 
 open DedekindZetaZeroFree.AbelianQuotient.Theta
 
-private theorem continuous_slice (F : Type) [Field F] [NumberField F]
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (t : ℝ) (ht : 0 < t) :
+section
+
+variable (F : Type) [Field F] [NumberField F] (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (t : ℝ)
+
+private theorem continuous_slice (ht : 0 < t) :
     Continuous (mixedRadialTheta F I t) := by
   change Continuous ((fun p : ℝ × Angular F ↦ mixedRadialTheta F I p.1 p.2) ∘
     (fun u : Angular F ↦ (t, u)))
   exact (continuousOn_mixedRadialTheta F I).comp_continuous
     (continuous_const.prodMk continuous_id) (fun _ ↦ ⟨ht, Set.mem_univ _⟩)
 
-private theorem periodic_slice (F : Type) [Field F] [NumberField F]
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (t : ℝ)
+private theorem periodic_slice
     (z : {v : InfinitePlace F // v ≠ Units.dirichletUnitTheorem.w₀} → ℤ)
     (u : Angular F) :
     mixedRadialTheta F I t (u + fun i => (z i : ℝ)) = mixedRadialTheta F I t u := by
@@ -37,9 +39,15 @@ private theorem periodic_slice (F : Type) [Field F] [NumberField F]
       (angularLift F u + radialLift F ((Real.log t - Real.log (mixedThetaCovolume F I)) /
         (Module.finrank ℚ F : ℝ))) z
 
-private theorem principal_of_class (F : Type) [Field F] [NumberField F]
-    (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
-    (hclass : ClassGroup.mk F I = ClassGroup.mk F J) :
+end
+
+section
+
+variable (F : Type) [Field F] [NumberField F] (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
+    (hclass : ClassGroup.mk F I = ClassGroup.mk F J)
+
+include hclass in
+private theorem principal_of_class :
     ∃ a : Fˣ, (J : FractionalIdeal (𝓞 F)⁰ F) =
       FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F) * (I : FractionalIdeal (𝓞 F)⁰ F) := by
   have hq := congrArg (ClassGroup.equiv F) hclass
@@ -53,9 +61,8 @@ private theorem principal_of_class (F : Type) [Field F] [NumberField F]
   simpa only [Units.val_mul, coe_toPrincipalIdeal, mul_comm] using
     (congrArg (fun U : (FractionalIdeal (𝓞 F)⁰ F)ˣ => (U : FractionalIdeal (𝓞 F)⁰ F)) ha).symm
 
-theorem mixedAngularAverage_class_invariant (F : Type) [Field F] [NumberField F]
-    (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
-    (hclass : ClassGroup.mk F I = ClassGroup.mk F J)
+include hclass in
+theorem mixedAngularAverage_class_invariant
     (t : ℝ) (ht : 0 < t) :
     DedekindZetaZeroFree.AbelianQuotient.Theta.mixedAngularAverage F I t =
       DedekindZetaZeroFree.AbelianQuotient.Theta.mixedAngularAverage F J t := by
@@ -66,6 +73,8 @@ theorem mixedAngularAverage_class_invariant (F : Type) [Field F] [NumberField F]
   simp_rw [hd t ht]
   exact (periodicCubeIntegral_translation (mixedRadialTheta F I t)
     (continuous_slice F I t ht) (periodic_slice F I t) d).symm
+
+end
 
 theorem mixedNegAngularAverage_eq_mixedAngularAverage
     (F : Type) [Field F] [NumberField F]

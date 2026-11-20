@@ -33,7 +33,7 @@ theorem rayFractionalCharacterKernel
     exact hJ'
   obtain ⟨x, hx, hJx⟩ :=
     (ClassFieldTheory.mem_rayPrincipalIdealSubgroup_iff μ
-      (J : ClassFieldTheory.NumberFieldFractionalIdealGroup K)).1 hJmem
+      J).1 hJmem
   obtain ⟨a, d, ha, hd, had, ha1, hd1, hapos, hdpos⟩ :=
     positiveRayDenominator K m hm x hx
 
@@ -54,32 +54,26 @@ theorem rayFractionalCharacterKernel
     exact sub_mem (Submodule.mem_sup_left (Ideal.mem_span_singleton_self d))
       (Submodule.mem_sup_right hd1)
 
-  let Ja : P := rayIdealClassRepresentative K m hm (Ideal.span {a}) hIa hca
-  let Jd : P := rayIdealClassRepresentative K m hm (Ideal.span {d}) hId hcd
-  have hJa_coe : (Ja : ClassFieldTheory.NumberFieldFractionalIdealGroup K) =
+  let Ja := rayIdealClassRepresentative K m hm (Ideal.span {a}) hIa hca
+  let Jd := rayIdealClassRepresentative K m hm (Ideal.span {d}) hId hcd
+  have hJa_coe : Ja =
       rayIdealFractionalIdeal K (Ideal.span {a}) hIa := rfl
-  have hJd_coe : (Jd : ClassFieldTheory.NumberFieldFractionalIdealGroup K) =
+  have hJd_coe : Jd =
       rayIdealFractionalIdeal K (Ideal.span {d}) hId := rfl
-  have hJa_val : (((Ja : ClassFieldTheory.NumberFieldFractionalIdealGroup K) : F)) =
-      ((Ideal.span {a} : Ideal (𝓞 K)) : F) := by
-    rw [hJa_coe, rayIdealFractionalIdeal_coe]
-  have hJd_val : (((Jd : ClassFieldTheory.NumberFieldFractionalIdealGroup K) : F)) =
-      ((Ideal.span {d} : Ideal (𝓞 K)) : F) := by
-    rw [hJd_coe, rayIdealFractionalIdeal_coe]
-
   have hfa : f Ja = 1 := by
-    have h := hf (Ideal.span {a}) hIa hca Ja hJa_val
+    have h := hf (Ideal.span {a}) hIa hca Ja (by
+      rw [hJa_coe, rayIdealFractionalIdeal_coe])
     rw [χ.map_span' a ha ha1 hapos] at h
     exact Units.val_eq_one.mp h
   have hfd : f Jd = 1 := by
-    have h := hf (Ideal.span {d}) hId hcd Jd hJd_val
+    have h := hf (Ideal.span {d}) hId hcd Jd (by
+      rw [hJd_coe, rayIdealFractionalIdeal_coe])
     rw [χ.map_span' d hd hd1 hdpos] at h
     exact Units.val_eq_one.mp h
 
-  have hdK : (d : K) ≠ 0 := fun hzero =>
-    hd (IsFractionRing.injective (𝓞 K) K (by simpa using hzero))
   have hdiv : (a : K) / (d : K) = (x : K) := by
-    rw [had, mul_div_cancel_left₀ _ hdK]
+    rw [had, mul_div_cancel_left₀ _ (fun hzero =>
+      hd (IsFractionRing.injective (𝓞 K) K (by exact hzero)))]
   have hunit : toPrincipalIdeal (𝓞 K) K x =
       rayIdealFractionalIdeal K (Ideal.span {a}) hIa *
         (rayIdealFractionalIdeal K (Ideal.span {d}) hId)⁻¹ := by

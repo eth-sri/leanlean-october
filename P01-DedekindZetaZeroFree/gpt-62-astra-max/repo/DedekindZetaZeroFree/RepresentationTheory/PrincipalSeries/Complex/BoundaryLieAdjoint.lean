@@ -30,16 +30,11 @@ theorem pairing_lie_adjoint (β : ℂˣ) (s : ℝ)
   obtain ⟨C₁,hC₁,hg₁⟩ := translated_flow_seminorm_bound (-s) X (derivative (-s) X g)
   let b (z : ℂ) := (4*B₁*C₀+4*B₀*C₁)*(1+‖z‖^2)^(-2 : ℝ)
   have hbound (z : ℂ) (t : ℝ) (ht : t ∈ Set.Icc (-1 : ℝ) 1) : ‖J t z‖ ≤ b z := by
-    have h₁ := boundary_product_bound s (f₁ t) (g₀ t) z
-    have h₂ := boundary_product_bound s (f₀ t) (g₁ t) z
     have hn (r : ℝ) (u : PrincipalSeries r) : 0 ≤ chartSeminorm r 0 u :=
       apply_nonneg (chartSeminorm r 0) u
-    have ha := mul_le_mul (hf₁ t ht) (hg₀ t ht) (hn _ _) hB₁
-    have hb := mul_le_mul (hf₀ t ht) (hg₁ t ht) (hn _ _) hB₀
     have hp : 0 ≤ (1+‖z‖^2)^(-2 : ℝ) := Real.rpow_nonneg (by positivity) _
-    have hd := add_le_add (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left ha (by norm_num : (0:ℝ)≤4)) hp)
-      (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hb (by norm_num : (0:ℝ)≤4)) hp)
-    exact (norm_add_le _ _).trans ((add_le_add h₁ h₂).trans (by dsimp [b]; nlinarith [hd]))
+    exact (norm_add_le _ _).trans ((add_le_add (boundary_product_bound s (f₁ t) (g₀ t) z) (boundary_product_bound s (f₀ t) (g₁ t) z)).trans (by dsimp [b]; nlinarith [(add_le_add (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (mul_le_mul (hf₁ t ht) (hg₀ t ht) (hn _ _) hB₁) (by norm_num : (0:ℝ)≤4)) hp)
+      (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (mul_le_mul (hf₀ t ht) (hg₁ t ht) (hn _ _) hB₀) (by norm_num : (0:ℝ)≤4)) hp))]))
   have hint (t : ℝ) : Integrable (I t) (characterHaar β) := pairing_integrable β s (f₀ t) (g₀ t)
   have hjint (t : ℝ) : Integrable (J t) (characterHaar β) :=
     (pairing_integrable β s (f₁ t) (g₀ t)).add (pairing_integrable β s (f₀ t) (g₁ t))
@@ -50,12 +45,11 @@ theorem pairing_lie_adjoint (β : ℂˣ) (s : ℝ)
     have hi' : Integrable (fun z : ℂ => (1+‖z‖^2)^(-2 : ℝ)) (characterHaar β) := by
       convert hi using 1 <;> norm_num [mul_comm]
     exact hi'.const_mul _
-  have hdiff (z : ℂ) (t : ℝ) : HasDerivAt (fun u => I u z) (J t z) t := by
-    exact (flow_hasDerivAt s X f (weyl * upperUnipotent z) t).star.mul
+  have hdiff (z : ℂ) (t : ℝ) : HasDerivAt (fun u => I u z) (J t z) t := (flow_hasDerivAt s X f (weyl * upperUnipotent z) t).star.mul
       (flow_hasDerivAt (-s) X g (weyl * upperUnipotent z) t)
   have h := hasDerivAt_integral_of_dominated_loc_of_deriv_le
-    (μ := characterHaar β) (x₀ := (0:ℝ)) (F := I) (F' := J) (bound := b)
-    (s := Set.Icc (-1:ℝ) 1) (Icc_mem_nhds (by norm_num) (by norm_num))
+
+     (Icc_mem_nhds (by norm_num) (by norm_num))
     (Filter.Eventually.of_forall fun t => (hint t).aestronglyMeasurable) (hint 0)
     (hjint 0).aestronglyMeasurable (Filter.Eventually.of_forall hbound) hbint
     (Filter.Eventually.of_forall fun z t _ => hdiff z t)

@@ -23,7 +23,11 @@ instance sigmaFinite_positiveHaar : SigmaFinite «μ₊» := by
   unfold «μ₊»
   exact (withDensity_absolutelyContinuous _ _).ae_le
     (ae_restrict_mem measurableSet_Ioi)
-private theorem multiplicative_density_kernel (f : ℝ → ℂ) (s : ℂ)
+section
+
+variable (f : ℝ → ℂ) (s : ℂ)
+
+private theorem multiplicative_density_kernel
     (q : ℝ) (hq : 0 < q) :
     (ENNReal.ofReal q⁻¹).toReal • (f q * (q : ℂ) ^ s) =
       f q * (q : ℂ) ^ (s - 1) := by
@@ -32,7 +36,7 @@ private theorem multiplicative_density_kernel (f : ℝ → ℂ) (s : ℂ)
     Complex.cpow_one]
   ring
 
-theorem integrable_multiplicative_mellin_iff (f : ℝ → ℂ) (s : ℂ) :
+theorem integrable_multiplicative_mellin_iff :
     Integrable (fun q : ℝ ↦ f q * (q : ℂ) ^ s) «μ₊» ↔
       IntegrableOn (fun q : ℝ ↦ f q * (q : ℂ) ^ (s - 1)) (Set.Ioi 0) volume := by
   unfold «μ₊» IntegrableOn
@@ -42,7 +46,7 @@ theorem integrable_multiplicative_mellin_iff (f : ℝ → ℂ) (s : ℂ) :
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with q hq
   exact multiplicative_density_kernel f s q hq
 
-theorem integral_multiplicative_mellin (f : ℝ → ℂ) (s : ℂ) :
+theorem integral_multiplicative_mellin :
     (∫ q : ℝ, f q * (q : ℂ) ^ s ∂«μ₊») =
       ∫ q : ℝ in Set.Ioi 0, f q * (q : ℂ) ^ (s - 1) := by
   unfold «μ₊»
@@ -52,8 +56,14 @@ theorem integral_multiplicative_mellin (f : ℝ → ℂ) (s : ℂ) :
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with q hq
   exact multiplicative_density_kernel f s q hq
 
-theorem integrable_real_multiplicative_mellin
-    (s : ℂ) (hs : 0 < s.re) (a : ℝ) (ha : a ≠ 0) (e : Bool) :
+end
+
+section
+
+variable (s : ℂ) (hs : 0 < s.re) (a : ℝ)
+
+include hs in
+theorem integrable_real_multiplicative_mellin (ha : a ≠ 0) (e : Bool) :
     Integrable (fun q : ℝ ↦
       ((if e then ((q * a : ℝ) : ℂ) else 1) *
         Complex.exp (-((Real.pi * a ^ 2 * q ^ 2 : ℝ) : ℂ))) * (q : ℂ) ^ s)
@@ -63,8 +73,8 @@ theorem integrable_real_multiplicative_mellin
   ext q
   ring
 
-theorem integral_real_multiplicative_mellin
-    (s : ℂ) (hs : 0 < s.re) (a : ℝ) (ha : a ≠ 0) (e : Bool) :
+include hs in
+theorem integral_real_multiplicative_mellin (ha : a ≠ 0) (e : Bool) :
     (∫ q : ℝ,
       ((if e then ((q * a : ℝ) : ℂ) else 1) *
         Complex.exp (-((Real.pi * a ^ 2 * q ^ 2 : ℝ) : ℂ))) * (q : ℂ) ^ s ∂«μ₊») =
@@ -76,8 +86,8 @@ theorem integral_real_multiplicative_mellin
   ext q
   ring
 
-theorem integrable_complex_multiplicative_mellin
-    (s : ℂ) (hs : 0 < s.re) (a : ℝ) (ha : 0 < a) :
+include hs in
+theorem integrable_complex_multiplicative_mellin (ha : 0 < a) :
     Integrable (fun q : ℝ ↦
       Complex.exp (-((2 * Real.pi * a * q ^ 2 : ℝ) : ℂ)) * (q : ℂ) ^ (2 * s))
       «μ₊» := by
@@ -86,8 +96,8 @@ theorem integrable_complex_multiplicative_mellin
   ext q
   ring
 
-theorem integral_complex_multiplicative_mellin
-    (s : ℂ) (hs : 0 < s.re) (a : ℝ) (ha : 0 < a) :
+include hs in
+theorem integral_complex_multiplicative_mellin (ha : 0 < a) :
     (∫ q : ℝ, Complex.exp (-((2 * Real.pi * a * q ^ 2 : ℝ) : ℂ)) *
       (q : ℂ) ^ (2 * s) ∂«μ₊») =
       (4 : ℂ)⁻¹ * Complex.Gammaℂ s * (a : ℂ) ^ (-s) := by
@@ -100,6 +110,8 @@ theorem integral_complex_multiplicative_mellin
       exact Filter.Eventually.of_forall fun q ↦ mul_comm _ _
     _ = _ := by rw [gaussian_complex_place_mellin s a hs ha]; ring
 
+end
+
 variable (K : Type) [Field K] [NumberField K]
 
 def μ : Measure (InfinitePlace K → ℝ) :=
@@ -109,7 +121,7 @@ def μ : Measure (InfinitePlace K → ℝ) :=
     ∀ᵐ q ∂μ K, ∀ v, 0 < q v := by
   rw [Filter.eventually_all]
   intro v
-  exact (Measure.tendsto_eval_ae_ae (μ := fun _ : InfinitePlace K ↦ «μ₊»)).eventually
+  exact (Measure.tendsto_eval_ae_ae).eventually
     ae_positiveHaar_pos
 
 def J (q : InfinitePlace K → ℝ) : ℝ := ∏ v, (q v) ^ v.mult
@@ -235,8 +247,11 @@ def «N∞» (x : euclidean.mixedSpace K) : ℝ :=
     cpow_prod_nonneg _ _ (fun _ _ ↦ abs_nonneg _),
     cpow_prod_nonneg _ _ (fun _ _ ↦ sq_nonneg _)]
 
-theorem collect_place_mellin_factors (δ : Finset (RayCoset.RealPlaces K))
-    (x : euclidean.mixedSpace K) (s : ℂ) :
+section
+
+variable (δ : Finset (RayCoset.RealPlaces K)) (x : euclidean.mixedSpace K) (s : ℂ)
+
+theorem collect_place_mellin_factors :
     (∏ v : RayCoset.RealPlaces K,
       (2 : ℂ)⁻¹ * Complex.Gammaℝ (s + if v ∈ δ then 1 else 0) *
         (if v ∈ δ then (Real.sign ((Theta.traceToMixed K x).1 v) : ℂ) else 1) *
@@ -250,31 +265,28 @@ theorem collect_place_mellin_factors (δ : Finset (RayCoset.RealPlaces K))
   rw [κδ, NInfty_cpow_eq_prod]
   simp only [Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ,
     Fintype.prod_ite_mem, inv_pow]
-  change ((2 : ℂ) ^ nrRealPlaces K)⁻¹ *
-      (∏ v : RayCoset.RealPlaces K, Complex.Gammaℝ (s + if v ∈ δ then 1 else 0)) *
-      (∏ v ∈ δ, (Real.sign ((Theta.traceToMixed K x).1 v) : ℂ)) *
-      (∏ v : RayCoset.RealPlaces K, ((|(Theta.traceToMixed K x).1 v| : ℝ) : ℂ) ^ (-s)) *
-      (((4 : ℂ) ^ nrComplexPlaces K)⁻¹ * Complex.Gammaℂ s ^ nrComplexPlaces K *
-        ∏ v : {w : InfinitePlace K // IsComplex w},
-          ((‖(Theta.traceToMixed K x).2 v‖ ^ 2 : ℝ) : ℂ) ^ (-s)) = _
   ring
 
-def localKernel (δ : Finset (RayCoset.RealPlaces K))
-    (x : euclidean.mixedSpace K) (s : ℂ) (v : InfinitePlace K) (q : ℝ) : ℂ :=
+def localKernel (v : InfinitePlace K) (q : ℝ) : ℂ :=
   if h : IsReal v then
     ((if (⟨v,h⟩ : RayCoset.RealPlaces K) ∈ δ then
         ((q * (Theta.traceToMixed K x).1 ⟨v,h⟩ : ℝ) : ℂ) else 1) *
       Complex.exp (-((Real.pi * ((Theta.traceToMixed K x).1 ⟨v,h⟩) ^ 2 * q ^ 2 : ℝ) : ℂ))) * (q : ℂ) ^ s
   else
     Complex.exp (-((2 * Real.pi * ‖(Theta.traceToMixed K x).2 ⟨v,not_isReal_iff_isComplex.mp h⟩‖ ^ 2 * q ^ 2 : ℝ) : ℂ)) * (q : ℂ) ^ (2 * s)
+
+end
  theorem prod_places_split (f : InfinitePlace K → ℂ) :
     (∏ v, f v) = (∏ v : RayCoset.RealPlaces K, f v.1) *
       ∏ v : {w : InfinitePlace K // IsComplex w}, f v.1 := by
   rw [← Fintype.prod_subtype_mul_prod_subtype (p := fun v : InfinitePlace K ↦ IsReal v)]
   congr 1
   exact (Equiv.prod_comp (Equiv.subtypeEquivRight (fun _ ↦ not_isReal_iff_isComplex)).symm _).symm
- theorem kernel_eq_local_prod (δ : Finset (RayCoset.RealPlaces K))
-    (x : euclidean.mixedSpace K) (s : ℂ) (q : InfinitePlace K → ℝ)
+ section
+
+variable (δ : Finset (RayCoset.RealPlaces K)) (x : euclidean.mixedSpace K)
+
+theorem kernel_eq_local_prod (s : ℂ) (q : InfinitePlace K → ℝ)
     (hq : ∀ v, 0 < q v) :
     gδ K δ (Q K q x) * (J K q : ℂ) ^ s = ∏ v, localKernel K δ x s v (q v) := by
   rw [gδ_Q_eq_prod, J_cpow_eq_prod K q hq, prod_places_split, prod_places_split]
@@ -282,8 +294,7 @@ def localKernel (δ : Finset (RayCoset.RealPlaces K))
     dif_neg (not_isReal_iff_isComplex.mpr (Subtype.prop _)), mult_isComplex, Nat.cast_ofNat,
     Finset.prod_mul_distrib]
   ring
- theorem integrable_localKernel (δ : Finset (RayCoset.RealPlaces K))
-    (x : euclidean.mixedSpace K)
+ theorem integrable_localKernel
     (hr : ∀ v : RayCoset.RealPlaces K, (Theta.traceToMixed K x).1 v ≠ 0)
     (hc : ∀ v : {w : InfinitePlace K // IsComplex w}, (Theta.traceToMixed K x).2 v ≠ 0)
     (s : ℂ) (hs : 0 < s.re) (v : InfinitePlace K) :
@@ -298,23 +309,22 @@ def localKernel (δ : Finset (RayCoset.RealPlaces K))
         (‖(Theta.traceToMixed K x).2 ⟨v,not_isReal_iff_isComplex.mp hv⟩‖ ^ 2)
         (sq_pos_of_pos (norm_pos_iff.mpr (hc _)))
 
-theorem integrable_gδ_mellin (δ : Finset (RayCoset.RealPlaces K))
-    (x : euclidean.mixedSpace K)
+end
+
+variable (δ : Finset (RayCoset.RealPlaces K)) (x : euclidean.mixedSpace K)
     (hxReal : ∀ v : RayCoset.RealPlaces K, (Theta.traceToMixed K x).1 v ≠ 0)
-    (hxComplex : ∀ v : {w : InfinitePlace K // IsComplex w},
-      (Theta.traceToMixed K x).2 v ≠ 0)
-    (s : ℂ) (hs : 0 < s.re) :
+    (hxComplex : ∀ v : {w : InfinitePlace K // IsComplex w}, (Theta.traceToMixed K x).2 v ≠ 0) (s : ℂ)
+    (hs : 0 < s.re)
+
+include hxReal hxComplex hs in
+theorem integrable_gδ_mellin :
     Integrable (fun q ↦ gδ K δ (Q K q x) * (J K q : ℂ) ^ s) (μ K) := by
   refine (Integrable.fintype_prod_dep (integrable_localKernel K δ x hxReal hxComplex s hs)).congr ?_
   filter_upwards [ae_positiveShape K] with q hq
   exact (kernel_eq_local_prod K δ x s q hq).symm
 
-theorem integral_gδ_mellin (δ : Finset (RayCoset.RealPlaces K))
-    (x : euclidean.mixedSpace K)
-    (hxReal : ∀ v : RayCoset.RealPlaces K, (Theta.traceToMixed K x).1 v ≠ 0)
-    (hxComplex : ∀ v : {w : InfinitePlace K // IsComplex w},
-      (Theta.traceToMixed K x).2 v ≠ 0)
-    (s : ℂ) (hs : 0 < s.re) :
+include hxReal hxComplex hs in
+theorem integral_gδ_mellin :
     (∫ q, gδ K δ (Q K q x) * (J K q : ℂ) ^ s ∂μ K) =
       κδ K δ s *
         (∏ v ∈ δ, (Real.sign ((Theta.traceToMixed K x).1 v) : ℂ)) *

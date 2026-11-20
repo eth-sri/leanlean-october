@@ -12,12 +12,12 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualMeanZeroSectio
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (cusp : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (cusp : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
 open KPContFlatCuspIncomingEvaluation
 
 theorem actual_monodromy_preserves_fiberMeasure (s : stabilizer F ζ hζ C R P H U cusp) :
@@ -76,17 +76,17 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 open KPContFlatCuspIncomingEvaluation
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (a : Cusps F ζ hζ C R P H U)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (a : Cusps F ζ hζ C R P H U)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
 variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable (hι : Function.Injective ι) (f : ℂ → S)
-variable (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-variable (s:ℂ) (hs:s∈KPContActualChamberNormalSeries.V) (t:ℝ) (b:KPCuspCharts.Shape F)
+    (hι : Function.Injective ι) (f : ℂ → S)
+    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+    (s:ℂ) (hs:s∈KPContActualChamberNormalSeries.V) (t:ℝ) (b:KPCuspCharts.Shape F)
 include hι hf hs in
 theorem actualCuspSheet_rawMean_unit_covariance (h:stabilizer F ζ hζ C R P H U a) :
  let D := parabolic F ζ hζ C R P H U a
@@ -122,10 +122,8 @@ theorem actualCuspSheet_rawMean_unit_covariance (h:stabilizer F ζ hζ C R P H U
    have hrep := KPContinuation.ChamberModerateGrowth.actualCuspSheet_kernel_representative F ζ hζ C R P H U ι hι f hf a s hs t
      (Quotient.out (M z)) x' b' 1 ((Quotient.out_eq (M z)).trans hmx)
    exact hrep.trans hcov
- have hmp := actual_monodromy_preserves_fiberMeasure F ζ hζ C R P H U a h
  letI := KPContActualChamberOutgoingAdapter.kernelTorus_borelSpace F ζ hζ C R P H U a
- change (∫z,φ b' z ∂_) = _
- rw [← hmp.integral_comp M.toMeasurableEquiv.measurableEmbedding (φ b')]
+ rw [← (actual_monodromy_preserves_fiberMeasure F ζ hζ C R P H U a h).integral_comp M.toMeasurableEquiv.measurableEmbedding (φ b')]
  change (∫z,φ b' (M z) ∂_) = _
  simp_rw [hm]
  exact integral_const_mul _ _
@@ -139,7 +137,6 @@ theorem actualMeanZeroSheet_crossAction
     (KPCuspGenuineMonodromy.chi F ζ hζ (rho F ζ hζ C R P H U a h) : ℂ) *
       KPContActualChamberMeanZeroAdapter.meanZeroJetSheet F ζ hζ C R P H U a ι f 0 s t x b 1 := by
   obtain ⟨A, hA, hc⟩ := (parabolic F ζ hζ C R P H U a).upper h h.property
-  have hp := (geometry F ζ hζ C R P H U a).crossAction_formula h A hA hc (x,b)
   unfold KPContActualChamberMeanZeroAdapter.meanZeroJetSheet
   simp only [map_one, Units.val_one, one_mul]
   rw [KPContinuation.ChamberModerateGrowth.actualCuspSheet_crossAction F ζ hζ C R P H U ι hι f hf a s hs]
@@ -154,11 +151,7 @@ theorem actualMeanZeroSheet_crossAction
   simp_rw [hcst]
   rw [actualCuspSheet_projection_eq_rawMean F ζ hζ C R P H U a ι hι f hf s hs t,
     actualCuspSheet_projection_eq_rawMean F ζ hζ C R P H U a ι hι f hf s hs t]
-  rw [hp]
-  change _ - (∫ z, KPContActualChamberCasimirJets.cuspSheet F ζ hζ C R P H U ι f a 0 s t
-    (Quotient.out z) (b + KPCuspLogShape.logarithm F H.totallyComplex
-      (parabolic F ζ hζ C R P H U a).E (parabolic F ζ hζ C R P H U a).integralUnits
-      (Additive.ofMul ((parabolic F ζ hζ C R P H U a).ratio h))) 1 ∂_) = _
+  rw [((geometry F ζ hζ C R P H U a).crossAction_formula h A hA hc (x,b))]
   have hv := actualCuspSheet_rawMean_unit_covariance F ζ hζ C R P H U a ι hι f hf s hs t b h
   change _ - (∫ z : KernelTorus F ζ hζ C R P H U a,
     KPContActualChamberCasimirJets.cuspSheet F ζ hζ C R P H U ι f a 0 s t

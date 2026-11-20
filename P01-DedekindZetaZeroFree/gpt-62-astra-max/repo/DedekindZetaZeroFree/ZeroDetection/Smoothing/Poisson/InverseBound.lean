@@ -94,8 +94,8 @@ theorem detector_inverse_bound (F : Type) [Field F] [NumberField F] :
     rw [← Real.rpow_add (by linarith)]
     congr 1
     rw [he]; ring
-  have hfin : ∑ᶠ d, f d = ∑ d ∈ T, f d := finsum_eq_sum_of_support_subset f hf
-  have hhfin : ∑ᶠ d, h d = ∑ d ∈ T, h d := finsum_eq_sum_of_support_subset h hh
+  have hfin := finsum_eq_sum_of_support_subset f hf
+  have hhfin := finsum_eq_sum_of_support_subset h hh
   have hXpow : (U ^ DetectorDef.qExp) ^ (1 - DetectorDef.c) =
       U ^ (DetectorDef.qExp * (1 - DetectorDef.c)) := by
     rw [Real.rpow_mul hU0]

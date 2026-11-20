@@ -10,8 +10,7 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualAverageCasimir
 open KPLiteralRaw KPGlobalResidualConstruction KPContActualSphericalRightFieldIdentification
 open ResidualAverageWord
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming nativeIndex → nativeIndex
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming native_second_word → native_second_word
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir (nativeIndex native_second_word)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -43,9 +42,6 @@ theorem casimir_average
       (((((hi v 2 4).add (hi v 4 2)).sub (hi v 3 5)).sub (hi v 5 3)).const_mul 2)).const_mul _
   unfold KPMsGreenFlux.casimir
   simp_rw [he]
-  change (∑ v, -((1:ℂ)/4)*((∫k,D v 0 0 k ∂μ)-(∫k,D v 1 1 k ∂μ)+
-    2*((∫k,D v 2 4 k ∂μ)+(∫k,D v 4 2 k ∂μ)-(∫k,D v 3 5 k ∂μ)-(∫k,D v 5 3 k ∂μ)))) =
-    ∫k,∑v,-((1:ℂ)/4)*(D v 0 0 k-D v 1 1 k+2*(D v 2 4 k+D v 4 2 k-D v 3 5 k-D v 5 3 k)) ∂μ
   rw [integral_finsetSum _ (fun v _ => hslot v)]
   apply Finset.sum_congr rfl
   intro v _

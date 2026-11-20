@@ -12,9 +12,9 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.KPMsGreenFlux.IntrinsicFrameSpectral
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
  theorem smooth_intrinsic_scalar
     (f : Cover F ζ hζ → ℂ) (hs : Smooth F ζ hζ f)
@@ -24,11 +24,8 @@ variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       IntrinsicAveraging.pullback f₀ = f := by
   let f₀ : X F ζ hζ → ℂ := Quotient.lift f (by
     intro a b hab
-    have hm := QuotientGroup.rightRel_apply.mp hab
-    have he := hr ⟨b * a⁻¹, hm⟩ a
-    simpa using he.symm)
-  have hp : IntrinsicAveraging.pullback f₀ = f := rfl
-  refine ⟨f₀, ⟨?_, ?_⟩, hp⟩
+    simpa using (hr ⟨b * a⁻¹, (QuotientGroup.rightRel_apply.mp hab)⟩ a).symm)
+  refine ⟨f₀, ⟨?_, ?_⟩, rfl⟩
   · letI := QuotientGroup.rightRel (KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ)
     apply isQuotientMap_quotient_mk'.continuous_iff.mpr
     exact hs.1
@@ -37,11 +34,7 @@ variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     | h g => exact hs.2 g
 
  theorem finitePart_eq_chart : KPGlobalTorusFunctionData.finitePart F ζ hζ =
-    KPSmoothLocalQuotientCharts.finiteSubgroup F ζ hζ := by
-  unfold KPGlobalTorusFunctionData.finitePart KPSmoothLocalQuotientCharts.finiteSubgroup
-  congr 1
-  ext x
-  simp [KPSmoothLocalQuotientCharts.finiteTuples, Subgroup.mem_iInf, MonoidHom.mem_ker]
+    KPSmoothLocalQuotientCharts.finiteSubgroup F ζ hζ := by apply @DedekindZetaZeroFree.KPMsClearedTruncationL2.ActualWordSpatial.finitePart_eq <;> assumption
 
 end DedekindZetaZeroFree.KPMsGreenFlux.IntrinsicFrameSpectral
 

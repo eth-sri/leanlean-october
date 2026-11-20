@@ -35,26 +35,36 @@ structure IsCoefficient {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ) : P
   map_prime_pow : ∀ (p : PrimeIndex cS) (k : ℕ),
     a (pow p.val k) = a p.val ^ k
 
-def summand {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ) (s : ℂ)
+section
+
+variable {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ) (s : ℂ)
+
+def summand
     (I : ExteriorIdeal cS) : ℂ :=
   a I * (Ideal.absNorm I.val : ℂ) ^ (-s)
 
-def primeTerm {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ) (s : ℂ)
+def primeTerm
     (p : PrimeIndex cS) : ℂ :=
   summand a s p.val
 
-def factor {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ) (s : ℂ)
+def factor
     (p : PrimeIndex cS) : ℂ :=
   (1 - primeTerm a s p)⁻¹
 
-theorem summand_one {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ)
-    (ha : IsCoefficient a) (s : ℂ) : summand a s (one cS) = 1 := by
+end
+
+section
+
+variable {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a) (s : ℂ)
+
+include ha in
+theorem summand_one : summand a s (one cS) = 1 := by
   unfold summand
   rw [ha.map_one]
   simp [one]
 
-theorem summand_mul {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ)
-    (ha : IsCoefficient a) (s : ℂ) (I J : ExteriorIdeal cS)
+include ha in
+theorem summand_mul (I J : ExteriorIdeal cS)
     (h : I.val ⊔ J.val = ⊤) :
     summand a s (mul I J) = summand a s I * summand a s J := by
   unfold summand
@@ -63,8 +73,8 @@ theorem summand_mul {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ)
   rw [map_mul, Nat.cast_mul, Complex.natCast_mul_natCast_cpow]
   ring
 
-theorem summand_prime_pow {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ)
-    (ha : IsCoefficient a) (s : ℂ) (p : PrimeIndex cS) (k : ℕ) :
+include ha in
+theorem summand_prime_pow (p : PrimeIndex cS) (k : ℕ) :
     summand a s (pow p.val k) = primeTerm a s p ^ k := by
   simp only [primeTerm, summand]
   rw [ha.map_prime_pow p k]
@@ -72,19 +82,25 @@ theorem summand_prime_pow {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ)
   rw [map_pow, Nat.cast_pow, ← Complex.natCast_cpow_natCast_mul,
     Complex.cpow_nat_mul, mul_pow]
 
-theorem norm_summand_le {cS : Ideal (𝓞 F)}
-    (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a) (s : ℂ)
+include ha in
+theorem norm_summand_le
     (I : ExteriorIdeal cS) :
     ‖summand a s I‖ ≤ (idealNorm I.val) ^ (-s.re) := by
-  have hq0 : 0 < idealNorm I.val := lt_of_lt_of_le zero_lt_one
+  have hq0 := lt_of_lt_of_le zero_lt_one
     (idealNorm_ge_one _ I.property.1)
   have hc : (Ideal.absNorm I.val : ℂ) = (idealNorm I.val : ℂ) := by simp [idealNorm]
   rw [summand, norm_mul, hc, Complex.norm_cpow_eq_rpow_re_of_pos hq0, Complex.neg_re]
   simpa using mul_le_mul_of_nonneg_right (ha.norm_le_one I)
     (Real.rpow_nonneg hq0.le (-s.re))
 
-theorem summable_norm_summand {cS : Ideal (𝓞 F)}
-    (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a) (s : ℂ) (hs : 1 < s.re) :
+end
+
+section
+
+variable {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a) (s : ℂ) (hs : 1 < s.re)
+
+include ha hs in
+theorem summable_norm_summand :
     Summable (fun I : ExteriorIdeal cS => ‖summand a s I‖) := by
   let incl : ExteriorIdeal cS → NonzeroIdeal F := fun I => ⟨I.val, I.property.1⟩
   have hi : Function.Injective incl := by
@@ -93,10 +109,10 @@ theorem summable_norm_summand {cS : Ideal (𝓞 F)}
   exact ((ideal_norm_rpow_summable F s.re hs).comp_injective hi).of_nonneg_of_le
     (fun I => norm_nonneg _) (norm_summand_le a ha s)
 
-theorem norm_primeTerm_lt_one {cS : Ideal (𝓞 F)}
-    (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a) (s : ℂ) (hs : 1 < s.re)
+include ha hs in
+theorem norm_primeTerm_lt_one
     (p : PrimeIndex cS) : ‖primeTerm a s p‖ < 1 := by
-  have hq : 2 ≤ idealNorm p.val.val := idealNorm_prime_ge_two _ p.property
+  have hq := idealNorm_prime_ge_two _ p.property
   have hq0 : 0 < idealNorm p.val.val := by linarith
   calc
     ‖primeTerm a s p‖ ≤ (idealNorm p.val.val) ^ (-s.re) := norm_summand_le a ha s p.val
@@ -106,13 +122,13 @@ theorem norm_primeTerm_lt_one {cS : Ideal (𝓞 F)}
     _ ≤ (2 : ℝ)⁻¹ := inv_anti₀ (by norm_num) hq
     _ < 1 := by norm_num
 
-theorem summable_norm_primeTerm {cS : Ideal (𝓞 F)}
-    (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a) (s : ℂ) (hs : 1 < s.re) :
+include ha hs in
+theorem summable_norm_primeTerm :
     Summable (fun p : PrimeIndex cS => ‖primeTerm a s p‖) :=
   (summable_norm_summand a ha s hs).comp_injective Subtype.val_injective
 
-theorem inverse_factors_hasProd_ne_zero {cS : Ideal (𝓞 F)}
-    (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a) (s : ℂ) (hs : 1 < s.re) :
+include ha hs in
+theorem inverse_factors_hasProd_ne_zero :
     HasProd (fun p : PrimeIndex cS => 1 - primeTerm a s p)
       (∏' (p : PrimeIndex cS), (1 - primeTerm a s p)) ∧
       (∏' (p : PrimeIndex cS), (1 - primeTerm a s p)) ≠ 0 := by
@@ -128,15 +144,14 @@ theorem inverse_factors_hasProd_ne_zero {cS : Ideal (𝓞 F)}
     And.intro (multipliable_one_add_of_summable hn).hasProd
       (tprod_one_add_ne_zero_of_summable hne hn)
 
-theorem factors_hasProd {cS : Ideal (𝓞 F)}
-    (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a) (s : ℂ) (hs : 1 < s.re) :
+include ha hs in
+theorem factors_hasProd :
     HasProd (factor a s) (∏' (p : PrimeIndex cS), (1 - primeTerm a s p))⁻¹ :=
   (inverse_factors_hasProd_ne_zero a ha s hs).1.inv₀
     (inverse_factors_hasProd_ne_zero a ha s hs).2
 
-theorem exterior_ideal_euler {cS : Ideal (𝓞 F)}
-    (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a)
-    (s : ℂ) (hs : 1 < s.re) :
+include ha hs in
+theorem exterior_ideal_euler :
     Summable (fun I : ExteriorIdeal cS => ‖summand a s I‖) ∧
     HasProd (factor a s) (∑' I : ExteriorIdeal cS, summand a s I) ∧
     (∑' I : ExteriorIdeal cS, summand a s I) ≠ 0 ∧
@@ -162,14 +177,15 @@ theorem exterior_ideal_euler {cS : Ideal (𝓞 F)}
     rw [ht] at h
     exact h
   have hi := inverse_factors_hasProd_ne_zero a ha s hs
-  have heq : (∑' I : ExteriorIdeal cS, summand a s I) =
-      (∏' (p : PrimeIndex cS), (1 - primeTerm a s p))⁻¹ :=
+  have heq :=
     hp.unique (factors_hasProd a ha s hs)
   refine ⟨hn, hp, ?_, ?_⟩
   · rw [heq]
     exact inv_ne_zero hi.2
   · rw [heq, inv_inv]
     exact hi.1
+
+end
 
 theorem constant_one_isCoefficient (cS : Ideal (𝓞 F)) :
     IsCoefficient (fun _ : ExteriorIdeal cS => (1 : ℂ)) := by

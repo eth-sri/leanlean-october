@@ -47,8 +47,8 @@ variable (F : Type) [Field F] [NumberField F]
 theorem actualCoefficientOperator_finite_support :
     {n : ℤ | actualCoefficientOperator F ζ hζ q S P J hJ μ hμ π hπ ε n ≠ 0}.Finite := by
   classical
-  let V : Type := compactLevel S.borel P S.iwasawa (sourceSign ε) J
-  let W : Type := compactLevel S.borel P S.iwasawa (targetSign ε) J
+  let V := compactLevel S.borel P S.iwasawa (sourceSign ε) J
+  let W := compactLevel S.borel P S.iwasawa (targetSign ε) J
   letI : Module.Finite ℂ V := compact_level_finite S.borel P S.iwasawa _ J hJ
   letI : Module.Finite ℂ W := compact_level_finite S.borel P S.iwasawa _ J hJ
   letI : AddCommGroup V := Module.addCommMonoidToAddCommGroup ℂ
@@ -68,9 +68,8 @@ theorem actualCoefficientOperator_finite_support :
     apply Subtype.ext
     funext h
     exact hw (k, h))
-  let N : Finset ℤ := Finset.univ.biUnion (fun i => d.biUnion (fun z =>
-    (actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε (b i) z.1 z.2).support))
-  apply N.finite_toSet.subset
+  apply (Finset.univ.biUnion (fun i => d.biUnion (fun z =>
+    (actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε (b i) z.1 z.2).support))).finite_toSet.subset
   intro n hn
   by_contra hnot
   apply hn
@@ -78,13 +77,12 @@ theorem actualCoefficientOperator_finite_support :
   intro i
   apply hd
   intro z hz
-  have hns : n ∉ (actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε (b i) z.1 z.2).support := by
-    intro hmem
-    apply hnot
-    exact Finset.mem_biUnion.mpr ⟨i, Finset.mem_univ _, Finset.mem_biUnion.mpr ⟨z, hz, hmem⟩⟩
   change ((actualCoefficientOperator F ζ hζ q S P J hJ μ hμ π hπ ε n (b i)).val.val z.1).val z.2 = 0
   rw [actualCoefficientOperator_coordinate]
-  exact Finsupp.notMem_support_iff.mp hns
+  refine Finsupp.notMem_support_iff.mp ?_
+  intro hmem
+  apply hnot
+  exact Finset.mem_biUnion.mpr ⟨i, Finset.mem_univ _, Finset.mem_biUnion.mpr ⟨z, hz, hmem⟩⟩
 
 end DedekindZetaZeroFree.KPRankOneShellRepair
 

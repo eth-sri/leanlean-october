@@ -37,10 +37,10 @@ theorem globalMap_image_zero_of_all_borel (D : TensorActions R N)
         (depth (R := R) W) (depth_valid (R := R) W) (character W)
         (fiber D W) (action D W) (localData D W) E z) = 0 := by
   let u := subspaceEmbedding F R.A.zeta12 R.A.primitive_zeta12 W
-    (depth (R := R) W) (depth_valid (R := R) W) (character W)
+    (depth W) (depth_valid W) (character W)
     (fiber D W) (action D W) (localData D W) E z
   let θ := globalMap D W s hW x u
-  have hc : Continuous θ := (globalMap_regular D W s hW x u).1
+  have hc := (globalMap_regular D W s hW x u).1
   have hr := globalMap_rational D W s hW x u
   let := D.sources.quotientHaar
   let : IsProbabilityMeasure D.sources.dq := ⟨D.sources.probability⟩
@@ -49,8 +49,6 @@ theorem globalMap_image_zero_of_all_borel (D : TensorActions R N)
   have hn := (KPWildInverseBorelFrequencyReduction.borel_nontrivial_fourier_zero_iff_inverse_standard_trace_zero
     F R.A.zeta12 R.A.primitive_zeta12 D.sources.dq θ hc hr).mpr (by
       intro b
-      change (∫ y, θ (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
-        (Quotient.out y) * b.val) * (adelicTraceQuotientCharacter F y : ℂ)⁻¹ ∂D.sources.dq) = 0
       simp_rw [← Circle.coe_inv, Circle.coe_inv_eq_conj]
       exact hzero b)
   apply KPWildKernelUpperBound.uniqueFourierDensity F R.A.zeta12 R.A.primitive_zeta12 θ hc hr

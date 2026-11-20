@@ -12,13 +12,13 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.KPContActualSectorResolventSpecialization
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
-variable (hR : R.adelicHaar = μG)
-variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
+    (hR : R.adelicHaar = μG)
+    (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
 
 local notation "Hactual" => KPContSectorClosedLpSubspace.H F ζ hζ R U
 local notation "B" => KPContActualSectorFriedrichsSynthesis.B_U
@@ -35,21 +35,8 @@ local notation "Ractual" => R_U F ζ hζ U R P H μG hμG hR realization
 structure Properties : Prop where
   threshold_positive : 0 < d
 
-  compact_remainder : ∀ ε : ℝ, 0 < ε →
-    ∃ K : Hactual →L[ℂ] Hactual, IsCompactOperator K ∧
-      ∀ u : Hactual, (d - ε) * ‖B u‖ ^ 2 ≤
-        (inner ℂ (B u) (u - B u)).re + ‖K u‖ ^ 2
-
   resolvent_exact : ∀ z : ℂ, Ractual z = KPResolventPencil.shiftedResolvent B z
   norm_meromorphic : MeromorphicOn Ractual (KPBelowThresholdResolvent.domain d)
-  full_inverse_region :
-    KPResolventPencil.resolventSet Δ ∩ KPBelowThresholdResolvent.domain d =
-      KPBelowThresholdResolvent.domain d \ KPBelowThresholdResolvent.poleSet Δ d
-  base_inverse : KPResolventPencil.GenuineInverse Δ (-1) B
-  base_value : Ractual (-1) = B
-  bounded_positive : (B).IsPositive
-  bounded_selfadjoint : IsSelfAdjoint B
-  bounded_contraction : ‖B‖ ≤ 1
   norm_holomorphic_off_poles : AnalyticOnNhd ℂ Ractual
     (KPBelowThresholdResolvent.domain d \ KPBelowThresholdResolvent.poleSet Δ d)
   genuine_inverse_off_poles :
@@ -96,19 +83,7 @@ end DedekindZetaZeroFree.KPContActualSectorResolventSpecialization
 
 namespace DedekindZetaZeroFree
 
-private theorem eigen_not_resolvent_aux
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    (Δ : H →ₗ.[ℂ] H) (μ : ℝ)
-    (he : KPBelowThreshold.eigenspace Δ μ ≠ ⊥) :
-    (μ : ℂ) ∉ KPResolventPencil.resolventSet Δ := by
-  obtain ⟨x, hx, hx0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot he
-  obtain ⟨v, hv, rfl⟩ := (Submodule.mem_map).mp hx
-  intro hres
-  obtain ⟨R, hR⟩ := hres
-  have h := hR.2.2 v
-  have hz : Δ v - (μ : ℂ) • (v : H) = 0 := hv
-  rw [hz, map_zero] at h
-  exact hx0 h.symm
+private alias eigen_not_resolvent_aux := KPBelowThresholdResolvent.BelowThresholdMeromorphy.eigen_not_resolvent
 
 theorem kp_cont_actual_sector_resolvent_specialization
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -155,10 +130,8 @@ theorem kp_cont_actual_sector_resolvent_specialization
       (KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR realization)
       ((Module.finrank ℚ F : ℝ) / 2) hd hfr.laplacian_selfadjoint
       hfr.laplacian_nonnegative hfr.genuine_inverse hcoer
-  refine ⟨hd, hcoer, (fun z => rfl), ?_, hregion, hfr.genuine_inverse, ?_,
-    hBpos, hBsa, hBnorm, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨hd, (fun z => rfl), ?_, ?_, ?_, ?_, ?_, ?_⟩
   · exact hmero
-  · exact hbaseval
   · exact hanalytic
   · intro z hz
     exact hinvoff z hz

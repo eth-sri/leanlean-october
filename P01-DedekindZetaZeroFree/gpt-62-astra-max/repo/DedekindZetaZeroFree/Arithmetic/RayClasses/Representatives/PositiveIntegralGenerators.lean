@@ -22,8 +22,7 @@ theorem exists_positive_integral_generator
       (∀ φ : F →+* ℝ, 0 < φ (b : F)) := by
   classical
 
-  have hmem : toPrincipalIdeal (𝓞 F) F x ∈
-      ClassFieldTheory.rayClassPrimeToIdeals (fullModulus m hm) :=
+  have hmem :=
     ClassFieldTheory.rayPrincipalIdealSubgroup_le_primeToIdeals F (fullModulus m hm)
       (Subgroup.subset_closure ⟨x, hx, rfl⟩)
 
@@ -44,33 +43,27 @@ theorem exists_positive_integral_generator
         (u : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)) hmul
     simpa [integralIdealUnit, coe_toPrincipalIdeal] using h
   have hspanb : FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 F)) (b : F) ≤
-      (B : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) :=
+      B :=
     FractionalIdeal.spanSingleton_le_iff_mem.mpr
       (FractionalIdeal.mem_coeIdeal_of_mem (S := nonZeroDivisors (𝓞 F)) hbB)
 
   have hle : FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 F)) ((x : F) * (b : F)) ≤
       (1 : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) := by
     rw [← FractionalIdeal.spanSingleton_mul_spanSingleton (x : F) (b : F)]
-    calc FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 F)) (x : F) *
-            FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 F)) (b : F)
+    calc _
         ≤ FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 F)) (x : F) *
             (B : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) :=
           mul_le_mul_right hspanb _
       _ = (A : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) := hAB
       _ ≤ 1 := FractionalIdeal.coeIdeal_le_one
-  have hy1 : (x : F) * (b : F) ∈ (1 : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) :=
-    FractionalIdeal.spanSingleton_le_iff_mem.mp hle
-  obtain ⟨a, ha⟩ := (FractionalIdeal.mem_one_iff (nonZeroDivisors (𝓞 F))).mp hy1
-  have hbF : (algebraMap (𝓞 F) F) b ≠ 0 :=
-    fun h => hbne (IsFractionRing.injective (𝓞 F) F (by simpa using h))
+  obtain ⟨a, ha⟩ := (FractionalIdeal.mem_one_iff (nonZeroDivisors (𝓞 F))).mp (FractionalIdeal.spanSingleton_le_iff_mem.mp hle)
   have haF : (algebraMap (𝓞 F) F) a ≠ 0 := by
-    rw [ha]; exact mul_ne_zero (Units.ne_zero x) hbF
+    rw [ha]; exact mul_ne_zero (Units.ne_zero x) (fun h => hbne (IsFractionRing.injective (𝓞 F) F (by exact h)))
   have hane : a ≠ 0 := fun h => haF (by rw [h]; exact map_zero _)
   refine ⟨a, b, hane, hbne, ha, ?_, hb1, ?_, hbpos⟩
   ·
-    have h1 : a - b ∈ m := ray_congruent_sub_mem m hm x hx a b ha
     have : a - 1 = (a - b) + (b - 1) := by ring
-    rw [this]; exact m.add_mem h1 hb1
+    rw [this]; exact m.add_mem (ray_congruent_sub_mem m hm x hx a b ha) hb1
   ·
     intro φ
     change 0 < φ ((algebraMap (𝓞 F) F) a)

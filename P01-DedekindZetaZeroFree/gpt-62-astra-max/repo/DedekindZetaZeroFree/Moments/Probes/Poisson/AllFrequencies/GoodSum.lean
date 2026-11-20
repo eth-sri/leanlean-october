@@ -19,15 +19,15 @@ open DedekindZetaZeroFree.Quantitative.RawRowSumDefinitions31
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
 theorem tsum_set_finite {α : Type*} (G : Set α) (hG : G.Finite) (f : α → ℝ) :
     Summable (fun u : G => f u) ∧ ∑' u : G, f u = ∑ u ∈ hG.toFinset, f u := by
   haveI : Fintype G := hG.fintype
   refine ⟨Summable.of_finite, ?_⟩
   rw [tsum_fintype]
-  exact (Finset.sum_subtype (p := (· ∈ G)) hG.toFinset (fun x => hG.mem_toFinset) (fun x => f x)).symm
+  exact (Finset.sum_subtype hG.toFinset (fun x => hG.mem_toFinset) (fun x => f x)).symm
 
 theorem norm_add_four (a b c d : ℂ) : ‖a + b + c + d‖ ≤ ‖a‖ + ‖b‖ + ‖c‖ + ‖d‖ := by
   have h1 := norm_add_le (a + b + c) d
@@ -47,11 +47,11 @@ theorem good_row_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent
             Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) * U ^ (-(10 : ℝ))) := by
   obtain ⟨C1, hC1, U1, hU1, h1⟩ :=
     DedekindZetaZeroFree.Quantitative.RawGoodRowRectangle31.rawGood_central_bound D A ρ hA hconv hρ ε hε
-  obtain ⟨C2, hC2, U2, hU2, h2⟩ :=
+  obtain ⟨C2, hC2, U2, h2⟩ :=
     DedekindZetaZeroFree.Quantitative.RawGoodRowRectangle31.rawGood_horiz_bound D A ρ hA hconv hρ 10 (by norm_num)
-  obtain ⟨C3, hC3, U3, hU3, h3⟩ :=
+  obtain ⟨C3, hC3, U3, h3⟩ :=
     DedekindZetaZeroFree.Quantitative.RawGoodRowRectangle31.rawGood_tail_bound D A ρ hA hconv hρ 10 (by norm_num)
-  obtain ⟨U4, hU4, h4⟩ :=
+  obtain ⟨U4, h4⟩ :=
     DedekindZetaZeroFree.Quantitative.RawGoodRowRectangle31.rawGood_rectangle_decomp D A ρ hA hconv hρ
   refine ⟨C1 + C2 + C2 + C3, by positivity, max (max U1 U2) (max U3 U4),
     le_max_of_le_left (le_max_of_le_left hU1), ?_⟩
@@ -77,7 +77,7 @@ theorem good_row_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent
 
 theorem raw_good_rows_sum_abs (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
     (hρ : HeightSpec D A ρ) :
-    ∃ C : ℝ, 0 < C ∧ ∃ Z₀ : ℝ, 2 ≤ Z₀ ∧ ∀ Z : ℝ, Z₀ ≤ Z →
+    ∃ C : ℝ, ∃ Z₀ : ℝ, ∀ Z : ℝ, Z₀ ≤ Z →
       Summable (fun u : ↥(goodMedium D ρ Z) => ‖initialRowIntegral D u.1 Z‖) ∧
       ∑' u : ↥(goodMedium D ρ Z), ‖initialRowIntegral D u.1 Z‖ ≤ C * Z ^ (717 / 2000 : ℝ) := by
   obtain ⟨C, hC, U₀, hU₀, hrow⟩ :=
@@ -88,8 +88,7 @@ theorem raw_good_rows_sum_abs (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityE
       (by norm_num)
   obtain ⟨Cn, hCn, hCnB⟩ :=
     DedekindZetaZeroFree.Quantitative.DyadicPowerSums.sum_dyadic_neg_interval ((1 : ℝ) + -10) (by norm_num)
-  refine ⟨K * C * Ca + K * C * Cn, by positivity, max 2 ((2 * U₀) ^ (5 : ℝ)),
-    le_max_left _ _, fun Z hZ => ?_⟩
+  refine ⟨K * C * Ca + K * C * Cn, max 2 ((2 * U₀) ^ (5 : ℝ)), fun Z hZ => ?_⟩
   have hZ2 : 2 ≤ Z := le_trans (le_max_left _ _) hZ
   have hZ1 : 1 ≤ Z := by linarith
   have hZ0 : 0 < Z := by linarith

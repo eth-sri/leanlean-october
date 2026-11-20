@@ -22,7 +22,7 @@ theorem prod_finitePlaceNthPowerDefect (A : SArithmeticData F)
   apply GlobalClassFieldTheory.ClassFieldAxiom.prod_finitePlaceNthPowerDefect
   intro v hv
   apply A.above_six v
-  have hmem : (n : 𝓞 F) ∈ v.asIdeal :=
+  have hmem :=
     (Ideal.span_singleton_le_iff_mem _).mp (Ideal.dvd_iff_le.mp hv)
   rcases hn with rfl | rfl
   · convert v.asIdeal.mul_mem_left (3 : 𝓞 F) hmem using 1 <;> norm_num

@@ -41,18 +41,10 @@ lemma joint_continuous {ι : Type*} (p : SeminormFamily ℂ V ι) (hp : WithSemi
   apply (hp.tendsto_nhds _ _).mpr
   intro i ε hε
   obtain ⟨q, hq, hb⟩ := hbound g i
-  have hqzero : ContinuousAt (fun z : P × V => q (z.2 - v)) (g, v) :=
-    (hq.comp (continuous_snd.sub continuous_const)).continuousAt
   have hsmall : ∀ᶠ z : P × V in 𝓝 (g, v), q (z.2 - v) < ε / 2 := by
-    simpa using hqzero.eventually (Iio_mem_nhds (show q (v - v) < ε / 2 by
+    simpa using ((hq.comp (continuous_snd.sub continuous_const)).continuousAt).eventually (Iio_mem_nhds (show q (v - v) < ε / 2 by
       simpa using half_pos hε))
-  have ho : ∀ᶠ h in 𝓝 g, p i (T h v - T g v) < ε / 2 :=
-    (hp.tendsto_nhds _ _).mp (horbit v).continuousAt i (ε / 2) (half_pos hε)
-  have hb' : ∀ᶠ z : P × V in 𝓝 (g, v), ∀ w, p i (T z.1 w) ≤ q w :=
-    (continuous_fst.continuousAt (x := (g, v))).tendsto.eventually hb
-  have ho' : ∀ᶠ z : P × V in 𝓝 (g, v), p i (T z.1 v - T g v) < ε / 2 :=
-    (continuous_fst.continuousAt (x := (g, v))).tendsto.eventually ho
-  filter_upwards [hsmall, hb', ho'] with z hz hzb hzo
+  filter_upwards [hsmall, ((continuous_fst.continuousAt).tendsto.eventually hb), ((continuous_fst.continuousAt).tendsto.eventually ((hp.tendsto_nhds _ _).mp (horbit v).continuousAt i (ε / 2) (half_pos hε)))] with z hz hzb hzo
   have heq : T z.1 z.2 - T g v = T z.1 (z.2 - v) + (T z.1 v - T g v) := by
     rw [map_sub]
     abel

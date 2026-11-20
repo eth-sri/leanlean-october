@@ -11,7 +11,9 @@ open DedekindZetaZeroFree
 
 variable {F : Type} [Field F] [NumberField F]
 
-theorem exists_pow_eq_one {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
+variable {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
+
+theorem exists_pow_eq_one
     (hm : m ≠ ⊥) {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) (hcop : I ⊔ m = ⊤) :
     ∃ k : ℕ, 0 < k ∧ (η I) ^ k = 1 := by
   haveI : Finite (ClassFieldTheory.RayClassGroup (RayBridge.fullModulus m hm)) :=
@@ -29,7 +31,7 @@ theorem exists_pow_eq_one {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
   rw [← RayBridge.descendedCharacter_apply_idealClass m hm η I hI hcop]
   exact h2
 
-theorem norm_eq_one {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
+theorem norm_eq_one
     {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) (hcop : I ⊔ m = ⊤) : ‖η I‖ = 1 := by
   by_cases hm : m = ⊥
   · subst hm
@@ -38,7 +40,7 @@ theorem norm_eq_one {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
   · obtain ⟨k, hkpos, hk⟩ := exists_pow_eq_one η hm hI hcop
     exact Complex.norm_eq_one_of_pow_eq_one hk hkpos.ne'
 
-theorem norm_le_one {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
+theorem norm_le_one
     (I : Ideal (𝓞 F)) : ‖η I‖ ≤ 1 := by
   rcases eq_or_ne (η I) 0 with h | h
   · rw [h, norm_zero]; norm_num

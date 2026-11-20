@@ -47,11 +47,7 @@ theorem averageOperator_eq_finrank_inv_mul_trace_smul_id
     averageOperator π hπ π hπ T =
       ((Module.finrank 𝕜 V : 𝕜)⁻¹ * LinearMap.trace 𝕜 V (T : V →ₗ[𝕜] V)) •
         ContinuousLinearMap.id 𝕜 V := by
-  have hdim : (Module.finrank 𝕜 V : 𝕜) ≠ 0 :=
-    Representation.IsIrreducible.natCast_finrank_ne_zero hirr
-  have h := π.eq_finrank_inv_mul_trace_smul_id_of_isIrreducible hdim hirr
-    (averageIntertwiner π hπ π hπ T)
-  rwa [toContinuousLinearMap_averageIntertwiner, trace_averageOperator] at h
+  simpa [toContinuousLinearMap_averageIntertwiner, trace_averageOperator] using π.eq_finrank_inv_mul_trace_smul_id_of_isIrreducible (Representation.IsIrreducible.natCast_finrank_ne_zero hirr) hirr (averageIntertwiner π hπ π hπ T)
 
 end Average
 
@@ -67,8 +63,10 @@ local instance instCompleteSpaceSchurOrthogonality : CompleteSpace V :=
 
 variable (π : ContRepresentation 𝕜 G V) (hπ : Continuous π)
 
-theorem schur_orthogonality_self (hunitary : IsUnitary π)
-    (hirr : Representation.IsIrreducible π.toRepresentation) (v₁ w₁ v₂ w₂ : V) :
+variable (hunitary : IsUnitary π) (hirr : Representation.IsIrreducible π.toRepresentation)
+
+include hunitary hirr in
+theorem schur_orthogonality_self (v₁ w₁ v₂ w₂ : V) :
     ⟪matrixCoeffLp π hπ v₁ w₁, matrixCoeffLp π hπ v₂ w₂⟫_𝕜 =
       (Module.finrank 𝕜 V : 𝕜)⁻¹ *
         ((starRingEnd 𝕜) ⟪v₁, v₂⟫_𝕜 * ⟪w₁, w₂⟫_𝕜) := by
@@ -78,8 +76,8 @@ theorem schur_orthogonality_self (hunitary : IsUnitary π)
   rw [← inner_conj_symm v₂ v₁]
   ring
 
-theorem schur_orthogonality_basis (hunitary : IsUnitary π)
-    (hirr : Representation.IsIrreducible π.toRepresentation)
+include hunitary hirr in
+theorem schur_orthogonality_basis
     {d : ℕ} (e : OrthonormalBasis (Fin d) 𝕜 V) (i j k l : Fin d) :
     ⟪matrixCoeffLp π hπ (e j) (e i), matrixCoeffLp π hπ (e l) (e k)⟫_𝕜 =
       (d : 𝕜)⁻¹ *

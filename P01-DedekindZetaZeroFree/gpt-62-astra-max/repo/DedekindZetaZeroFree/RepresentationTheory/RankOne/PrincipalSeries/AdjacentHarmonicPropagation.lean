@@ -5,13 +5,9 @@ public import DedekindZetaZeroFree.RepresentationTheory.RankOne.HarishChandra.De
 
 @[expose] public section
 
-open _root_.DedekindZetaZeroFree.KPCplxLoweringCoordinateBoost.Geometry renaming raw_derivative → raw_derivative
-open _root_.DedekindZetaZeroFree.KPCplxLoweringCoordinateBoost.Geometry renaming cartanMatrix → cartanMatrix
-open _root_.DedekindZetaZeroFree.KPCplxLoweringCoordinateBoost.Geometry renaming rawNoncompactPath → rawNoncompactPath
-open _root_.DedekindZetaZeroFree.KPCplxLoweringCoordinateBoost.Geometry renaming noncompactCoefficient → noncompactCoefficient
-open _root_.DedekindZetaZeroFree.KPCplxLoweringCoordinateBoost.Geometry renaming noncompactAxis → noncompactAxis
+open _root_.DedekindZetaZeroFree.KPCplxLoweringCoordinateBoost.Geometry (raw_derivative cartanMatrix rawNoncompactPath noncompactCoefficient noncompactAxis)
 
-open _root_.DedekindZetaZeroFree.KPCplxHarmonicPropagation renaming compact_polynomial_ne_zero_lowering → compact_polynomial_ne_zero_lowering
+open _root_.DedekindZetaZeroFree.KPCplxHarmonicPropagation (compact_polynomial_ne_zero_lowering)
 
 noncomputable section
 open scoped Classical Topology Matrix.Norms.Elementwise
@@ -20,7 +16,11 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeComplexHCPropa
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues
 open NativeComplexHCOperators KPCplxHarmonicPropagation
 
-theorem conformal_gradient_derivative (s : ℝ) (j : Fin 3) (m : ℕ)
+section
+
+variable (s : ℝ)
+
+theorem conformal_gradient_derivative (j : Fin 3) (m : ℕ)
     (p : MvPolynomial (Fin 3) ℂ) (f : PrincipalSeries s)
     (hp : p.IsHomogeneous m) (hf : compactRestriction s f = polynomialCompactRestriction p) :
     compactRestriction s (derivative s (KPSmoothCoreCasimirEnergy.cartanMatrix (false,j)) f) =
@@ -31,7 +31,7 @@ theorem conformal_gradient_derivative (s : ℝ) (j : Fin 3) (m : ℕ)
   exact (hasDerivAt_flow s (KPSmoothCoreCasimirEnergy.cartanMatrix (false,j)) f
     (complexSU2Embedding k)).unique (raw_derivative j s m p f hp hf k)
 
-theorem adjacent_lowering (s : ℝ) (n : ℕ)
+theorem adjacent_lowering (n : ℕ)
     (hcoeff : (((n+1 : ℕ) : ℂ) - 2*(s : ℂ)) / (2*((n+1 : ℕ) : ℂ)+1) ≠ 0)
     (U : Submodule ℂ (PrincipalSeries s)) (hU : IsKInvariant s U)
     (hLie : ∀ (X : Matrix (Fin 2) (Fin 2) ℂ), Matrix.trace X = 0 →
@@ -46,8 +46,7 @@ theorem adjacent_lowering (s : ℝ) (n : ℕ)
       have hsqrt : (Real.sqrt 2 : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_ne_zero'.mpr (by norm_num))
       fin_cases i <;> simp [c,j,noncompactCoefficient, hsqrt]
     let D := c⁻¹ • derivative s (KPSmoothCoreCasimirEnergy.cartanMatrix (false,j)) f
-    have hDU : D ∈ U := U.smul_mem _ (hLie _ (by
-      exact (KPSmoothCoreCasimirEnergy.cartan_basis_normalization.1 j).2) f hf)
+    have hDU : D ∈ U := U.smul_mem _ (hLie _ ((KPSmoothCoreCasimirEnergy.cartan_basis_normalization.1 j).2) f hf)
     have hprofile : compactRestriction s D = polynomialCompactRestriction
         (MvPolynomial.pderiv i p - (((n+1 : ℕ) : ℂ)+1+2*(s : ℂ)) • (MvPolynomial.X i * p)) := by
       rw [map_smul, conformal_gradient_derivative s j (n+1) p f hp.1 he,
@@ -58,7 +57,7 @@ theorem adjacent_lowering (s : ℝ) (n : ℕ)
       (by rwa [← hD]), hbprofile⟩)
   exact harmonic_le_of_nonzero_vector s U hU n v hvU hvtype hv0
 
-theorem adjacent_raising (s : ℝ) (n : ℕ) (hcoeff : (n : ℂ)+1+2*(s : ℂ) ≠ 0)
+theorem adjacent_raising (n : ℕ) (hcoeff : (n : ℂ)+1+2*(s : ℂ) ≠ 0)
     (U : Submodule ℂ (PrincipalSeries s)) (hU : IsKInvariant s U)
     (hLie : ∀ (X : Matrix (Fin 2) (Fin 2) ℂ), Matrix.trace X = 0 →
       ∀ f ∈ U, derivative s X f ∈ U)
@@ -66,15 +65,11 @@ theorem adjacent_raising (s : ℝ) (n : ℕ) (hcoeff : (n : ℂ)+1+2*(s : ℂ) �
   let u := KPCplxHarmonicPropagation.RaisingCalculation.harmonicSection s n
   let p := KPCplxHarmonicPropagation.RaisingCalculation.transverse ^ n
   let D := derivative s (KPSmoothCoreCasimirEnergy.cartanMatrix (false,0)) u
-  let c : ℂ := -(Real.sqrt 2 : ℂ) * ((n : ℂ)+1+2*(s : ℂ))
-  have hp : p ∈ harmonicPolynomials n :=
-    KPCplxHarmonicPropagation.RaisingCalculation.transverse_harmonic n
-  have hu : u ∈ harmonicKType s n :=
-    KPCplxHarmonicPropagation.RaisingCalculation.harmonicSection_harmonic s n
-  have hDU : D ∈ U := hLie _
-    (KPSmoothCoreCasimirEnergy.cartan_basis_normalization.1 0).2 u (hn hu)
+  let c := -(Real.sqrt 2 : ℂ) * ((n : ℂ)+1+2*(s : ℂ))
+  have hDU := hLie _
+    (KPSmoothCoreCasimirEnergy.cartan_basis_normalization.1 0).2 u (hn (KPCplxHarmonicPropagation.RaisingCalculation.harmonicSection_harmonic s n))
   have hprof : compactRestriction s D = c • polynomialCompactRestriction (MvPolynomial.X 2 * p) := by
-    rw [conformal_gradient_derivative s 0 n p u hp.1
+    rw [conformal_gradient_derivative s 0 n p u (KPCplxHarmonicPropagation.RaisingCalculation.transverse_harmonic n).1
       (KPCplxHarmonicPropagation.RaisingCalculation.harmonicSection_compact s n)]
     have hpartial : MvPolynomial.pderiv 2 p = 0 := by
       simp [p, KPCplxHarmonicPropagation.RaisingCalculation.transverse,
@@ -88,23 +83,18 @@ theorem adjacent_raising (s : ℝ) (n : ℕ) (hcoeff : (n : ℂ)+1+2*(s : ℂ) �
     apply Submodule.smul_mem
     exact ⟨MvPolynomial.X 2 * p,
       KPCplxHarmonicPropagation.RaisingCalculation.height_transverse_harmonic n, rfl⟩
-  have hc : c ≠ 0 := mul_ne_zero (neg_ne_zero.mpr
-    (Complex.ofReal_ne_zero.mpr (Real.sqrt_ne_zero'.mpr (by norm_num)))) hcoeff
   have hD0 : D ≠ 0 := by
     intro hD
     rw [hD, map_zero] at hprof
     have hpoly : polynomialCompactRestriction (MvPolynomial.X 2 * p) ≠ 0 := by
-      have hhom : (MvPolynomial.X 2 * p).IsHomogeneous (n+1) :=
-        (KPCplxHarmonicPropagation.RaisingCalculation.height_transverse_harmonic n).1
-      have hp0 : MvPolynomial.X 2 * p ≠ 0 := by
-        intro hz
-        have hval := congrArg (MvPolynomial.eval (![1,0,1] : Fin 3 → ℂ)) hz
-        simpa [p, KPCplxHarmonicPropagation.RaisingCalculation.transverse] using hval
-      exact compact_polynomial_ne_zero_lowering (n+1) _ hhom hp0
-    exact hpoly ((smul_eq_zero.mp hprof.symm).resolve_left hc)
+      refine compact_polynomial_ne_zero_lowering (n+1) _ ((KPCplxHarmonicPropagation.RaisingCalculation.height_transverse_harmonic n).1) ?_
+      intro hz
+      simpa [p, KPCplxHarmonicPropagation.RaisingCalculation.transverse] using (congrArg (MvPolynomial.eval (![1,0,1] : Fin 3 → ℂ)) hz)
+    exact hpoly ((smul_eq_zero.mp hprof.symm).resolve_left (mul_ne_zero (neg_ne_zero.mpr
+      (Complex.ofReal_ne_zero.mpr (Real.sqrt_ne_zero'.mpr (by norm_num)))) hcoeff))
   exact harmonic_le_of_nonzero_vector s U hU (n+1) D hDU hDt hD0
 
-theorem all_harmonics_of_nonzero (s : ℝ)
+theorem all_harmonics_of_nonzero
     (hup : ∀ n : ℕ, (n : ℂ)+1+2*(s : ℂ) ≠ 0)
     (hdown : ∀ n : ℕ, (((n+1 : ℕ) : ℂ)-2*(s : ℂ)) /
       (2*((n+1 : ℕ) : ℂ)+1) ≠ 0)
@@ -130,25 +120,24 @@ theorem all_harmonics_of_nonzero (s : ℝ)
   | zero => exact hzero
   | succ n ih => exact adjacent_raising s n (hup n) U hU hLie ih
 
+end
+
 theorem negative_coefficients_nonzero :
     (∀ n : ℕ, (n : ℂ)+1+2*(negativeParameter : ℂ) ≠ 0) ∧
     (∀ n : ℕ, (((n+1 : ℕ) : ℂ)-2*(negativeParameter : ℂ)) /
       (2*((n+1 : ℕ) : ℂ)+1) ≠ 0) := by
   constructor
   · intro n h
-    have hn := Nat.cast_nonneg (α := ℝ) n
     have he := congrArg Complex.re h
     norm_num [negativeParameter] at he
     linarith
   · intro n
     apply div_ne_zero
     · intro h
-      have hn := Nat.cast_nonneg (α := ℝ) n
       have he := congrArg Complex.re h
       norm_num [negativeParameter] at he
       linarith
     · intro h
-      have hn := Nat.cast_nonneg (α := ℝ) n
       have he := congrArg Complex.re h
       norm_num at he
       linarith

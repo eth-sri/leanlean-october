@@ -54,8 +54,7 @@ lemma sum_MonLe {M : Type*} [AddCommMonoid M] (n : ℕ) (G : k[X] → M) :
   exact hde ((mem_Mon.1 h1).2.symm.trans (mem_Mon.1 h2).2)
 
 lemma mem_nf_monic {f P : k[X]} (h : P ∈ normalizedFactors f) : P.Monic := by
-  have h0 : P ≠ 0 := (irreducible_of_normalized_factor P h).ne_zero
-  rw [← normalize_eq_self_iff_monic h0]
+  rw [← normalize_eq_self_iff_monic ((irreducible_of_normalized_factor P h).ne_zero)]
   exact normalize_normalized_factor P h
 
 lemma natDegree_eq_sum_count {f : k[X]} (hf : f.Monic) :
@@ -98,22 +97,19 @@ lemma core {f : k[X]} (hf : f.Monic) :
     refine Finset.sum_subset ?_ ?_
     · intro P hP
       rw [Multiset.mem_toFinset] at hP
-      have hirr := irreducible_of_normalized_factor P hP
-      have hm := mem_nf_monic hP
       unfold MonLe
       rw [Finset.mem_biUnion]
-      refine ⟨P.natDegree, ?_, mem_Mon.2 ⟨hm, rfl⟩⟩
+      refine ⟨P.natDegree, ?_, mem_Mon.2 ⟨(mem_nf_monic hP), rfl⟩⟩
       rw [Finset.mem_Icc]
-      exact ⟨hirr.natDegree_pos, natDegree_le_of_dvd (dvd_of_mem_normalizedFactors hP)
+      exact ⟨(irreducible_of_normalized_factor P hP).natDegree_pos, natDegree_le_of_dvd (dvd_of_mem_normalizedFactors hP)
         hf.ne_zero⟩
     · intro P hP hPNF
       refine ite_eq_right_iff.2 fun ⟨hirr, hdvd⟩ => absurd ?_ hPNF
       unfold MonLe at hP
       obtain ⟨d, -, hd⟩ := Finset.mem_biUnion.1 hP
-      have hm := (mem_Mon.1 hd).1
       obtain ⟨q, hq, hassoc⟩ := exists_mem_normalizedFactors_of_dvd hf.ne_zero hirr
         ((dvd_pow_self P (by omega)).trans hdvd)
-      rw [eq_of_monic_of_associated hm (mem_nf_monic hq) hassoc]
+      rw [eq_of_monic_of_associated ((mem_Mon.1 hd).1) (mem_nf_monic hq) hassoc]
       exact Multiset.mem_toFinset.2 hq
   rw [Finset.sum_congr rfl step, Finset.sum_comm]
   refine Eq.trans ?_ (natDegree_eq_sum_count hf)

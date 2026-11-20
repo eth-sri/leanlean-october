@@ -22,11 +22,9 @@ variable (F : Type) [Field F] [NumberField F]
 private theorem exists_cube_root (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F)) :
     ∃ η : (valuation (LocalField F q)).integer, IsPrimitiveRoot η 3 := by
-  have hinj : Function.Injective (algebraMap F (LocalField F q)) :=
-    (algebraMap F (LocalField F q)).injective
-  let η : LocalField F q := (algebraMap F (LocalField F q) ζ) ^ 4
+  let η := (algebraMap F (LocalField F q) ζ) ^ 4
   have hη : IsPrimitiveRoot η 3 := by
-    simpa [η] using (hζ.map_of_injective hinj).pow_of_dvd (p := 4) (by norm_num) (by norm_num)
+    simpa [η] using (hζ.map_of_injective ((algebraMap F (LocalField F q)).injective)).pow_of_dvd (by norm_num) (by norm_num)
   have hv : valuation (LocalField F q) η = 1 := by
     have hp : (valuation (LocalField F q) η) ^ 3 = 1 := by
       rw [← map_pow, hη.pow_eq_one, map_one]
@@ -64,23 +62,22 @@ private theorem actual_compact_reverse_forward_zero
     actualCanonicalContinued F q ζ hζ S P μ hμ .minus 0
       (actualCanonicalContinued F q ζ hζ S P μ hμ .plus 0 φ) = 0 := by
   obtain ⟨η, hη⟩ := exists_cube_root F ζ hζ q
-  have hR := KPActualScalarBinding.actual_regular_point_output F ζ hζ q
-    (sourceRaw F ζ hζ q S) P μ hμ η hη
   obtain ⟨J, hJ, hφ⟩ := actual_common_level F ζ hζ q S P .plus φ
-  have hp := actualCanonicalLevelNumerator_spec F ζ hζ q S P J hJ μ hμ .plus
   have hpRev := actualCanonicalLevelNumerator_spec F ζ hζ q S P J hJ μ hμ .minus
   rw [actualCanonicalContinued_eq_level F q ζ hζ S P μ hμ .plus 0 J hJ ⟨φ, hφ⟩]
+  let actualCanonicalLevelNumerator₀ := actualCanonicalLevelNumerator F ζ hζ q S P J hJ μ hμ
   rw [actualCanonicalContinued_eq_level F q ζ hζ S P μ hμ .minus 0 J hJ
     (continuedLevel (LocalField F q) S.borel P S.iwasawa J .plus
-      (actualCanonicalLevelNumerator F ζ hζ q S P J hJ μ hμ .plus) 0 ⟨φ, hφ⟩)]
+      (actualCanonicalLevelNumerator₀ .plus) 0 ⟨φ, hφ⟩)]
   have hz := (both_level_compositions_zero (K := LocalField F q) S.borel P S.iwasawa J hJ
-    μ hμ η hη hR (actualCanonicalLevelNumerator F ζ hζ q S P J hJ μ hμ .plus)
-    (actualCanonicalLevelNumerator F ζ hζ q S P J hJ μ hμ .minus) hp hpRev).1
+    μ hμ η hη (KPActualScalarBinding.actual_regular_point_output F ζ hζ q
+      (sourceRaw F ζ hζ q S) P μ hμ η hη) (actualCanonicalLevelNumerator₀ .plus)
+    (actualCanonicalLevelNumerator₀ .minus) (actualCanonicalLevelNumerator_spec F ζ hζ q S P J hJ μ hμ .plus) hpRev).1
   have hv := LinearMap.congr_fun hz ⟨φ, hφ⟩
   have hv' : (continuedLevel (LocalField F q) S.borel P S.iwasawa J .minus
-      (actualCanonicalLevelNumerator F ζ hζ q S P J hJ μ hμ .minus) 0)
+      (actualCanonicalLevelNumerator₀ .minus) 0)
       ((continuedLevel (LocalField F q) S.borel P S.iwasawa J .plus
-        (actualCanonicalLevelNumerator F ζ hζ q S P J hJ μ hμ .plus) 0) ⟨φ, hφ⟩) = 0 := hv
+        (actualCanonicalLevelNumerator₀ .plus) 0) ⟨φ, hφ⟩) = 0 := hv
   rw [hv']
   rfl
 
@@ -90,23 +87,22 @@ private theorem actual_compact_forward_reverse_zero
     actualCanonicalContinued F q ζ hζ S P μ hμ .plus 0
       (actualCanonicalContinued F q ζ hζ S P μ hμ .minus 0 φ) = 0 := by
   obtain ⟨η, hη⟩ := exists_cube_root F ζ hζ q
-  have hR := KPActualScalarBinding.actual_regular_point_output F ζ hζ q
-    (sourceRaw F ζ hζ q S) P μ hμ η hη
   obtain ⟨J, hJ, hφ⟩ := actual_common_level F ζ hζ q S P .minus φ
-  have hp := actualCanonicalLevelNumerator_spec F ζ hζ q S P J hJ μ hμ .plus
   have hpRev := actualCanonicalLevelNumerator_spec F ζ hζ q S P J hJ μ hμ .minus
   rw [actualCanonicalContinued_eq_level F q ζ hζ S P μ hμ .minus 0 J hJ ⟨φ, hφ⟩]
+  let actualCanonicalLevelNumerator₀ := actualCanonicalLevelNumerator F ζ hζ q S P J hJ μ hμ
   rw [actualCanonicalContinued_eq_level F q ζ hζ S P μ hμ .plus 0 J hJ
     (continuedLevel (LocalField F q) S.borel P S.iwasawa J .minus
-      (actualCanonicalLevelNumerator F ζ hζ q S P J hJ μ hμ .minus) 0 ⟨φ, hφ⟩)]
+      (actualCanonicalLevelNumerator₀ .minus) 0 ⟨φ, hφ⟩)]
   have hz := (both_level_compositions_zero (K := LocalField F q) S.borel P S.iwasawa J hJ
-    μ hμ η hη hR (actualCanonicalLevelNumerator F ζ hζ q S P J hJ μ hμ .plus)
-    (actualCanonicalLevelNumerator F ζ hζ q S P J hJ μ hμ .minus) hp hpRev).2
+    μ hμ η hη (KPActualScalarBinding.actual_regular_point_output F ζ hζ q
+      (sourceRaw F ζ hζ q S) P μ hμ η hη) (actualCanonicalLevelNumerator₀ .plus)
+    (actualCanonicalLevelNumerator₀ .minus) (actualCanonicalLevelNumerator_spec F ζ hζ q S P J hJ μ hμ .plus) hpRev).2
   have hv := LinearMap.congr_fun hz ⟨φ, hφ⟩
   have hv' : (continuedLevel (LocalField F q) S.borel P S.iwasawa J .plus
-      (actualCanonicalLevelNumerator F ζ hζ q S P J hJ μ hμ .plus) 0)
+      (actualCanonicalLevelNumerator₀ .plus) 0)
       ((continuedLevel (LocalField F q) S.borel P S.iwasawa J .minus
-        (actualCanonicalLevelNumerator F ζ hζ q S P J hJ μ hμ .minus) 0) ⟨φ, hφ⟩) = 0 := hv
+        (actualCanonicalLevelNumerator₀ .minus) 0) ⟨φ, hφ⟩) = 0 := hv
   rw [hv']
   rfl
 

@@ -20,15 +20,13 @@ theorem rayDenominatorIdealCoprime
     D ⊔ m = ⊤ := by
   rw [← Ideal.isCoprime_iff_sup_eq]
   refine Ideal.coprime_of_no_prime_ge fun P hDP hmP hPprime => ?_
-  have hPne : P ≠ ⊥ := fun h => hm (le_bot_iff.mp (h ▸ hmP))
-  let v : HeightOneSpectrum (𝓞 K) := ⟨P, hPprime, hPne⟩
-  have hv : v ∈ (narrowIdealModulus K m hm).finitePart.support := by
-    rw [narrowModulus_support_iff K m hm v]
-    exact hmP
+  let v : HeightOneSpectrum (𝓞 K) := ⟨P, hPprime, (fun h => hm (le_bot_iff.mp (h ▸ hmP)))⟩
   obtain ⟨n, d, hnd⟩ :=
     v.exists_primeCompl_mul_eq_of_integer (x : K)
-      (narrowRayCongruent_valuation_le_one K m hm x hx v hv)
-  exact d.property (hDP ((hD (d : 𝓞 K)).mpr ⟨n, by simpa [mul_comm] using hnd.symm⟩))
+      (narrowRayCongruent_valuation_le_one K m hm x hx v (by
+        rw [narrowModulus_support_iff K m hm v]
+        exact hmP))
+  exact d.property (hDP ((hD d).mpr ⟨n, by simpa [mul_comm] using hnd.symm⟩))
 
 end DedekindZetaZeroFree.AbelianQuotient
 

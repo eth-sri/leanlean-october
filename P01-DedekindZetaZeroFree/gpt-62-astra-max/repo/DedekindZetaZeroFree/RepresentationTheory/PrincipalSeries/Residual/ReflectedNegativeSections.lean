@@ -14,15 +14,15 @@ open KPLiteralScalarArchUniformBands KPAdelicCoverRestrictedProduct
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 variable (s : RestrictedTensorSimple.Level (bad R P C))
-variable (hs : ∀ w : InfinitePlace F, Sum.inl w ∈ s.val)
-variable (r : Raw R) (hr : ∀ w : InfinitePlace F, r (.inl w) = 1)
+    (hs : ∀ w : InfinitePlace F, Sum.inl w ∈ s.val)
+    (r : Raw R) (hr : ∀ w : InfinitePlace F, r (.inl w) = 1)
 
 include hs hr
 theorem reflected_section_pure

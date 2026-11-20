@@ -20,8 +20,8 @@ set_option maxHeartbeats 1500000
 set_option synthInstance.maxHeartbeats 100000
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-variable (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
+    (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg)
 variable [DecidableEq S.D]
 
 omit [DecidableEq S.D] in
@@ -45,30 +45,28 @@ theorem center_compact_level_global_fixed
   exact congrArg (centerInducingAction F ζ hζ q S.heisenberg S.borel .plus z
     (S.iwasawa.borelPart x)) hk
 
-def center_conjugate_common_level
-    {N : ℕ} (J : CompactOpenLevel (Cover F ζ hζ q))
-    (J₀ : Fin N → CompactOpenLevel (Cover F ζ hζ q))
-    (g : Fin N → Cover F ζ hζ q) : CompactOpenLevel (Cover F ζ hζ q) :=
+section
+
+variable {N : ℕ} (J : CompactOpenLevel (Cover F ζ hζ q)) (J₀ : Fin N → CompactOpenLevel (Cover F ζ hζ q))
+    (g : Fin N → Cover F ζ hζ q)
+
+def center_conjugate_common_level : CompactOpenLevel (Cover F ζ hζ q) :=
   let U := J.toOpenSubgroup ⊓ Finset.univ.inf (fun i : Fin N => (J₀ i).toOpenSubgroup.comap
     (MulAut.conj (g i)⁻¹).toMonoidHom
     (by change Continuous (fun x : Cover F ζ hζ q => (g i)⁻¹ * x * ((g i)⁻¹)⁻¹); fun_prop))
   ⟨U, J.isCompact.of_isClosed_subset U.isClosed (fun _ hx => hx.1)⟩
 
-theorem center_conjugate_common_level_le
-    {N : ℕ} (J : CompactOpenLevel (Cover F ζ hζ q))
-    (J₀ : Fin N → CompactOpenLevel (Cover F ζ hζ q))
-    (g : Fin N → Cover F ζ hζ q) :
+theorem center_conjugate_common_level_le :
     (center_conjugate_common_level F ζ hζ q J J₀ g).toOpenSubgroup ≤ J.toOpenSubgroup :=
   inf_le_left
 
-theorem center_conjugate_common_level_le_conjugate
-    {N : ℕ} (J : CompactOpenLevel (Cover F ζ hζ q))
-    (J₀ : Fin N → CompactOpenLevel (Cover F ζ hζ q))
-    (g : Fin N → Cover F ζ hζ q) (i : Fin N) :
+theorem center_conjugate_common_level_le_conjugate (i : Fin N) :
     (center_conjugate_common_level F ζ hζ q J J₀ g).toOpenSubgroup ≤
       (J₀ i).toOpenSubgroup.comap (MulAut.conj (g i)⁻¹).toMonoidHom
       (by change Continuous (fun x : Cover F ζ hζ q => (g i)⁻¹ * x * ((g i)⁻¹)⁻¹); fun_prop) :=
   inf_le_right.trans (Finset.inf_le (Finset.mem_univ i))
+
+end
 
 omit [DecidableEq S.D] in
 
@@ -90,12 +88,11 @@ theorem center_translated_common_level_fixed
   let jg : (J₀ i).toOpenSubgroup := ⟨(g i)⁻¹ * j.val * (g i), by
     have hj := center_conjugate_common_level_le_conjugate F ζ hζ q J J₀ g i j.property
     change (g i)⁻¹ * j.val * ((g i)⁻¹)⁻¹ ∈ (J₀ i).toOpenSubgroup at hj
-    simpa only [inv_inv] using hj⟩
-  have h := center_compact_level_global_fixed F ζ hζ q S (J₀ i) (hJ₀ i) z
-    (a i) (ha i) jg (k.val * g i)
+    simpa using hj⟩
   change (a i).val (k'.val * g i) = (a i).val (k.val * g i)
   rw [hk]
-  simpa [jg, mul_assoc] using h
+  simpa [jg, mul_assoc] using (center_compact_level_global_fixed F ζ hζ q S (J₀ i) (hJ₀ i) z
+    (a i) (ha i) jg (k.val * g i))
 
 theorem actual_pure_sections_individual_and_translated_levels
     {N : ℕ} (J : CompactOpenLevel (Cover F ζ hζ q))
@@ -124,9 +121,8 @@ theorem actual_pure_sections_individual_and_translated_levels
   classical
   let a := fun i => actualSection F ζ hζ q S.heisenberg S.borel P (S.openCell P)
     rep hrep (d i) (φ i) (hφ i) (hcφ i) r
-  have hlevels := fun i => centerSection_has_compact_level F ζ hζ q S.heisenberg S.borel
-    S.iwasawa .plus (additiveParameter F q r) (a i)
-  choose J₀ hJ₀ v hv using hlevels
+  choose J₀ hJ₀ v hv using (fun i => centerSection_has_compact_level F ζ hζ q S.heisenberg S.borel
+    S.iwasawa .plus (additiveParameter F q r) (a i))
   have ha : ∀ i, (centerCompactTrivialization F ζ hζ q S.heisenberg S.borel S.iwasawa
       .plus (additiveParameter F q r)).symm (a i) ∈
       centerCompactLevel F ζ hζ q S.heisenberg S.borel S.iwasawa .plus (J₀ i) := by
@@ -155,14 +151,13 @@ theorem actual_cell_finite_center_coordinate_expansion
           rep hrep d (φ d) (hφ d) (hcφ d) r := by
   classical
   let := Fintype.ofFinite S.D
-  let p : LocalField F q → CenterModule S.heisenberg :=
+  let p :=
     fun x => a.val (openCoordinate F ζ hζ q x)
-  let φ : S.D → LocalField F q → ℂ := fun d x =>
+  let φ := fun d x =>
     centerCoordinates S.heisenberg rep hrep (p x) d
-  have hl := center_section_affine_locallyConstant F ζ hζ q S.heisenberg S.borel P
-    (S.openCell P) .plus (additiveParameter F q r) a
-  have hφ : ∀ d, IsLocallyConstant (φ d) := fun d =>
-    hl.comp (fun v => centerCoordinates S.heisenberg rep hrep v d)
+  have hφ := fun d =>
+    (center_section_affine_locallyConstant F ζ hζ q S.heisenberg S.borel P
+      (S.openCell P) .plus (additiveParameter F q r) a).comp (fun v => centerCoordinates S.heisenberg rep hrep v d)
   have hcφ : ∀ d, HasCompactSupport (φ d) := fun d =>
     hc.comp_left (g := fun v => centerCoordinates S.heisenberg rep hrep v d) (by simp)
   refine ⟨φ, hφ, hcφ, ?_⟩
@@ -196,12 +191,10 @@ private theorem center_scalar_lc (z : ℂ)
   obtain ⟨U,hU⟩ := a.property.2
   rw [IsLocallyConstant.iff_eventually_eq]
   intro x
-  have hc : Continuous (fun y : Cover F ζ hζ q => x⁻¹*y) := continuous_const.mul continuous_id
   have hm : ∀ᶠ y : Cover F ζ hζ q in nhds x, x⁻¹*y ∈ U :=
-    hc.continuousAt.preimage_mem_nhds (by simpa using U.isOpen.mem_nhds U.one_mem)
+    (continuous_const.mul continuous_id).continuousAt.preimage_mem_nhds (by simpa using U.isOpen.mem_nhds U.one_mem)
   filter_upwards [hm] with y hy
-  have he := congrFun (hU (x⁻¹*y) hy) x
-  simpa [vectorRightTranslation, mul_assoc] using he
+  simpa [vectorRightTranslation, mul_assoc] using (congrFun (hU (x⁻¹*y) hy) x)
 
 omit [DecidableEq S.D] in
 private theorem cell_cut_section (z : ℂ)

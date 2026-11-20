@@ -12,7 +12,7 @@ open MomentSources NumberField MeasureTheory
 open scoped Classical Topology
 open ThetaRawSheetEnvelope.WeightedWhittakerSheets
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem radial_sheet_jet_product_majorant (R : PrincipalMellin.ActualRecipe S η)
     {N : TraceHaarTransport R} (C : JointDigitDescentSources R N) :
@@ -29,7 +29,6 @@ theorem radial_sheet_jet_product_majorant (R : PrincipalMellin.ActualRecipe S η
   let Ca := (Fintype.card (InfinitePlace F → Fin 3) : ℝ) *
     Da ^ Fintype.card (InfinitePlace F)
   have hCf : 0 ≤ Cf := pow_nonneg hDf _
-  have hCa : 0 ≤ Ca := mul_nonneg (Nat.cast_nonneg _) (pow_nonneg hDa _)
   have hfb (v : R.A.UnitQuotient) (z : R.A.G) :
       finiteWeylProductEnvelope R C v z ≤
         Cf * ∏ p : R.A.Sf, finitePowerMajorant M ‖(z.2 p : p.val.adicCompletion F)‖ := by
@@ -48,7 +47,7 @@ theorem radial_sheet_jet_product_majorant (R : PrincipalMellin.ActualRecipe S η
         exact Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _)
           (fun w _ => ha v w (a w).val (by omega) (z.1 w))
       _ = _ := by simp [Ca, Finset.prod_mul_distrib]; ring
-  refine ⟨M, Dt * (Cf * Ca), hM, mul_nonneg hDt (mul_nonneg hCf hCa), ?_⟩
+  refine ⟨M, Dt * (Cf * Ca), hM, mul_nonneg hDt (mul_nonneg hCf (mul_nonneg (Nat.cast_nonneg _) (pow_nonneg hDa _))), ?_⟩
   intro v κ j hj u y
   let z := y.val * R.A.radialSection (Real.exp u) (Real.exp_pos u)
   have hprod := mul_le_mul (hfb v z) (hab v z)

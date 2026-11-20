@@ -11,8 +11,8 @@ namespace DedekindZetaZeroFree.DigitMasks
 open MomentSources NumberField IsDedekindDomain
 open scoped Classical BigOperators
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def diagonalTuple (y : R.A.G) :=
   KPRationalAdelicSplitting.ATuple F R.A.zeta12 R.A.primitive_zeta12 (MomentSources.localIdele R y)
@@ -39,10 +39,7 @@ private theorem diagonalTuple_S (y : R.A.G) (p : KPFinitePlace F) (hp : p ∈ R.
   rw [localIdele_finite R y p hp]
 private theorem diagonalTuple_exterior (y : R.A.G) (p : KPFinitePlace F) (hp : p ∉ R.A.Sf) :
     diagonalTuple R y (Sum.inr p) = 1 := by
-  change KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) _ = _
-  have he := localIdele_exterior R y p hp
-  have he' := congrArg (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p)) he
-  exact he'.trans (KPStandardLocalRootLifts.A_one F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p))
+  exact (congrArg (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p)) (localIdele_exterior R y p hp)).trans (KPStandardLocalRootLifts.A_one F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p))
 
 private theorem nt_eval (x : KPAdeles F) (w : KPHilbert.Place F) :
     KPRationalAdelicSplitting.NTuple F R.A.zeta12 R.A.primitive_zeta12 x w =
@@ -68,8 +65,7 @@ theorem digitRightTuple_arch (m : ThetaReflectionData.Row R.A) (u : R.A.U) (y : 
   rw [diagonalTuple_arch, diagonalTuple_arch, digitParameter_arch, digitParameter_arch,
     KPStandardLocalRootLifts.N_zero, mul_one, mul_one, rational_eval_pow]
   have hd : (R.A.diagonal (u.val ^ 6) * y).1 w =
-      (Units.map (algebraMap F w.Completion).toMonoidHom u.val) ^ 6 * y.1 w := by
-    exact congrArg (fun z => z * y.1 w) (map_pow _ _ _)
+      (Units.map (algebraMap F w.Completion).toMonoidHom u.val) ^ 6 * y.1 w := congrArg (fun z => z * y.1 w) (map_pow _ _ _)
   rw [hd, local_A_pow_six_mul]
   group
 
@@ -83,8 +79,7 @@ theorem digitRightTuple_S (m : ThetaReflectionData.Row R.A) (u : R.A.U) (y : R.A
     digitParameter_S R _ _ p hp, digitParameter_S R _ _ p hp,
     KPStandardLocalRootLifts.N_zero, mul_one, mul_one, rational_eval_pow]
   have hd : (R.A.diagonal (u.val ^ 6) * y).2 ⟨p, hp⟩ =
-      (Units.map (algebraMap F (p.adicCompletion F)).toMonoidHom u.val) ^ 6 * y.2 ⟨p, hp⟩ := by
-    exact congrArg (fun z => z * y.2 ⟨p, hp⟩) (map_pow _ _ _)
+      (Units.map (algebraMap F (p.adicCompletion F)).toMonoidHom u.val) ^ 6 * y.2 ⟨p, hp⟩ := congrArg (fun z => z * y.2 ⟨p, hp⟩) (map_pow _ _ _)
   rw [hd, local_A_pow_six_mul]
   group
 

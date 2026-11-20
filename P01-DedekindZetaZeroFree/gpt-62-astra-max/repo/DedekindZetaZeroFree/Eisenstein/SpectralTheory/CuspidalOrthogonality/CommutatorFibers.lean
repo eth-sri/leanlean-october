@@ -13,12 +13,12 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.IncomingFiberOrthogonality
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
 local notation "K" => KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U a
 local notation "μ" => KPContActualChamberOutgoingAdapter.fiberMeasure F ζ hζ C R P H U a
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U
@@ -48,9 +48,8 @@ private theorem frame_horizontal (u : Smooth) (b : KPCuspCharts.Shape F) (t : �
       (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H u.val a.1 a.2
       ((KPContFlatCuspIncomingEvaluation.parabolic F ζ hζ C R P H U a).inclusion
         (Multiplicative.ofAdd l)) (x,b) t).1
-    have he := KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection.crossAction_inclusion
-      (KPContFlatCuspIncomingEvaluation.geometry F ζ hζ C R P H U a) l (x,b)
-    rw [he] at h
+    rw [(KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection.crossAction_inclusion
+      (KPContFlatCuspIncomingEvaluation.geometry F ζ hζ C R P H U a) l (x,b))] at h
     exact congrArg Subtype.val h
 
 theorem frameFiber_mk (u : Smooth) (b : KPCuspCharts.Shape F) (t : ℝ)
@@ -72,13 +71,13 @@ theorem frameFiber_mk (u : Smooth) (b : KPCuspCharts.Shape F) (t : ℝ)
   exact he x
 
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable {T : ℝ}
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    {T : ℝ}
 variable (B : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H T)
 variable (Ω : Set ℂ) (f : ℂ → S)
-variable (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-variable (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι B Ω f χ)
+    (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
+    (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι B Ω f χ)
 
 theorem commutator_frameFiber_eq_constant (s : ℂ) (hs : s ∈ Ω)
     (b : KPCuspCharts.Shape F) (t : ℝ) (ht : B.τ < t) (q : K) :
@@ -97,8 +96,8 @@ theorem commutator_fiber_pairing_eq_zero (s : ℂ) (hs : s ∈ Ω)
   simp_rw [commutator_frameFiber_eq_constant F ζ hζ C R P H U a ι B Ω f χ source s hs b t ht]
   rw [integral_const_mul]
   have hav : (∫ q, star (frameFiber F ζ hζ C R P H U a u b t q) ∂μ) = 0 := by
-    simpa only [map_zero, starRingEnd_apply] using
-      (integral_conj (f := frameFiber F ζ hζ C R P H U a u b t)).trans
+    simpa using
+      (integral_conj).trans
         (congrArg (starRingEnd ℂ) (hu a b t))
   rw [hav, mul_zero]
 

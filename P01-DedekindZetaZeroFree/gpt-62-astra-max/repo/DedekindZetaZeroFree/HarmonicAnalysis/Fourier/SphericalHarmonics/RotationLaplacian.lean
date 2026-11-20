@@ -27,36 +27,36 @@ private theorem rot_eval_flow (i : Fin 3) (p : MvPolynomial (Fin 3) ℂ)
     have hd := hp.add hq
     change HasDerivAt (fun t => eval _ p + eval _ q) _ t at hd
     convert hd using 1
-    · simp only [map_add]
+    · simp
     · simp only [rot, map_add, map_sub, map_mul, eval_X]
       ring
   | mul_X p j hp =>
     have hj := Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt t
-      ((EuclideanSpace.proj (𝕜 := ℝ) j).hasFDerivAt.comp_hasDerivAt t
+      ((EuclideanSpace.proj j).hasFDerivAt.comp_hasDerivAt t
         (rotationFlow_hasDerivAt i x t))
     change HasDerivAt (fun t => ((rotationFlow i t x) j : ℂ))
       ((rotationVector i (rotationFlow i t x)) j : ℂ) t at hj
     have hd := hp.mul hj
     change HasDerivAt (fun t => eval _ p * ((rotationFlow i t x) j : ℂ)) _ t at hd
     convert hd using 1
-    · simp only [map_mul, eval_X]
+    · simp
     · rw [← rot_X i j (rotationFlow i t x)]
       simp only [rot, pderiv_mul, map_sub, map_add, map_mul, eval_X]
       ring
+
+alias RotationLaplacian.rot_eval_flow := rot_eval_flow
 
 private theorem rotationDeriv_polynomial (i : Fin 3) (p : MvPolynomial (Fin 3) ℂ) :
     rotationDeriv i (polynomialSphere p) = polynomialSphere (rot i p) := by
   funext x
   have h := sphereOrthogonal_rotationFlow_hasDerivAt i (polynomialSphere_smooth p) x 0
-  have g := rot_eval_flow i p (x : Ambient) 0
   have he : (fun t => polynomialSphere p (sphereOrthogonal (rotationFlow i t) x)) =
       (fun t => eval (fun j => ((rotationFlow i t (x : Ambient)) j : ℂ)) p) := rfl
   rw [he] at h
-  have hh := h.unique g
   have hz : sphereOrthogonal (rotationFlow i 0) x = x := by
     apply Subtype.ext
     exact rotationFlow_zero i x
-  simpa only [hz, rotationFlow_zero, polynomialSphere] using hh
+  simpa only [hz, rotationFlow_zero, polynomialSphere] using (h.unique (rot_eval_flow i p (x : Ambient) 0))
 
 noncomputable def euler (p : MvPolynomial (Fin 3) ℂ) :=
   ∑ i : Fin 3, X i * pderiv i p

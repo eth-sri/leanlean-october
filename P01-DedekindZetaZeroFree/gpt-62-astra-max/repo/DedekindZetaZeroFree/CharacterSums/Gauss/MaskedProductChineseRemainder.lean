@@ -15,17 +15,18 @@ noncomputable section
 set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
-def indexedPrime (A : SArithmeticData F)
-    (P : Finset (HeightOneSpectrum (𝓞 F)))
-    (p : P → A.Exterior) (hp : ∀ v : P, (p v).val = v.val.asIdeal)
-    (v : P) : LocalFiniteSums.ExteriorPrime A :=
+section
+
+variable (A : SArithmeticData F) (P : Finset (HeightOneSpectrum (𝓞 F))) (p : P → A.Exterior)
+    (hp : ∀ v : P, (p v).val = v.val.asIdeal) (v : P)
+
+def indexedPrime : LocalFiniteSums.ExteriorPrime A :=
   ⟨v.val, by rw [← hp v]; exact (p v).property.2⟩
 
-@[simp] theorem indexedPrime_ideal (A : SArithmeticData F)
-    (P : Finset (HeightOneSpectrum (𝓞 F)))
-    (p : P → A.Exterior) (hp : ∀ v : P, (p v).val = v.val.asIdeal) (v : P) :
-    LocalFiniteSums.primeIdeal (indexedPrime A P p hp v) = p v := by
-  exact Subtype.ext (hp v).symm
+@[simp] theorem indexedPrime_ideal :
+    LocalFiniteSums.primeIdeal (indexedPrime A P p hp v) = p v := Subtype.ext (hp v).symm
+
+end
 
 private theorem span_prod (A : SArithmeticData F) {ι : Type*}
     (T : Finset ι) (f : ι → A.R) :
@@ -44,16 +45,17 @@ private theorem product_generates (A : SArithmeticData F)
     A.Generates I (∏ v : P, π v ^ e v) := by
   refine ⟨Finset.prod_ne_zero_iff.mpr (fun v _ => pow_ne_zero _ (hπ v).1), ?_⟩
   rw [span_prod]
-  change _ = Ideal.map (algebraMap (𝓞 F) A.R) I.val
+  let algebraMap₀ := algebraMap (𝓞 F) A.R
+  change _ = Ideal.map (algebraMap₀) I.val
   conv_rhs => rw [hI]
-  rw [show Ideal.map (algebraMap (𝓞 F) A.R) =
-    Ideal.mapHom (algebraMap (𝓞 F) A.R) from rfl, map_prod]
+  rw [show Ideal.map (algebraMap₀) =
+    Ideal.mapHom (algebraMap₀) from rfl, map_prod]
   apply Finset.prod_congr rfl
   intro v _
   rw [← Ideal.span_singleton_pow, (hπ v).2]
-  change Ideal.map (algebraMap (𝓞 F) A.R) (p v).val ^ _ = _
+  change Ideal.map (algebraMap₀) (p v).val ^ _ = _
   rw [hp v]
-  exact (Ideal.map_pow (algebraMap (𝓞 F) A.R) v.val.asIdeal _).symm
+  exact (Ideal.map_pow (algebraMap₀) v.val.asIdeal _).symm
 
 private theorem exponent_mul (q I K : Ideal (𝓞 F)) (hI : I ≠ 0) (hK : K ≠ 0) :
     idealPrimeExponent q (I * K) = idealPrimeExponent q I + idealPrimeExponent q K := by
@@ -91,15 +93,6 @@ private theorem exponent_prime_product (P : Finset (HeightOneSpectrum (𝓞 F)))
   intro v _
   rw [exponent_pow, exponent_prime]
   split <;> simp_all
-
-private theorem exponent_off_support (P : Finset (HeightOneSpectrum (𝓞 F)))
-    (e : P → ℕ) (q : HeightOneSpectrum (𝓞 F))
-    (hq : ¬ ∃ v : P, q = v.val) :
-    idealPrimeExponent q.asIdeal (∏ v : P, v.val.asIdeal ^ e v) = 0 := by
-  rw [exponent_prime_product]
-  apply Finset.sum_eq_zero
-  intro v _
-  exact if_neg (fun h => hq ⟨v, h⟩)
 
 theorem prime_product_assembly_data
     (A : SArithmeticData F)
@@ -141,22 +134,16 @@ theorem prime_product_assembly_data
        exact Ideal.pow_sup_eq_top Ir.property.2⟩
   have hsupp (I : A.Exterior) (hI : I ∈ ({Ic, In, Is, Ir, Iu} : Finset A.Exterior)) :=
     hSupport I hI
-  have hIs := hsupp Is (by simp)
   have hIc := hsupp Ic (by simp)
-  have hIn := hsupp In (by simp)
-  have hIr := hsupp Ir (by simp)
-  have hIu := hsupp Iu (by simp)
   have hIa : Ia.val = ∏ v : P, v.val.asIdeal ^
       (idealPrimeExponent v.val.asIdeal Ic.val + n * idealPrimeExponent v.val.asIdeal In.val) := by
     change Ic.val * In.val ^ n = _
-    conv_lhs => rw [hIc, hIn]
+    conv_lhs => rw [hIc, (hsupp In (by simp))]
     rw [← Finset.prod_pow, ← Finset.prod_mul_distrib]
     apply Finset.prod_congr rfl
     intro v _
     rw [pow_add, Nat.mul_comm n, pow_mul]
-  have hs := product_generates A Is P p hp π hπ _ hIs
-  have ha := product_generates A Ia P p hp π hπ _ hIa
-  have hr := product_generates A Ir P p hp π hπ _ hIr
+  have hr := product_generates A Ir P p hp π hπ _ (hsupp Ir (by simp))
   have hh : A.Generates Ih
       (u * (∏ v : P, π v ^ idealPrimeExponent v.val.asIdeal Ir.val) ^ m) := by
     refine ⟨mul_ne_zero hu.1 (pow_ne_zero _ hr.1), ?_⟩
@@ -165,7 +152,7 @@ theorem prime_product_assembly_data
       Ideal.map (algebraMap (𝓞 F) A.R) Ir.val ^ m =
       Ideal.map (algebraMap (𝓞 F) A.R) (Iu.val * Ir.val ^ m)
     rw [Ideal.map_mul, Ideal.map_pow]
-  refine ⟨Ia, Ih, hs, ha, hh, ?_, ?_⟩
+  refine ⟨Ia, Ih, (product_generates A Is P p hp π hπ _ (hsupp Is (by simp))), (product_generates A Ia P p hp π hπ _ hIa), hh, ?_, ?_⟩
   · intro v
     change idealPrimeExponent v.val.asIdeal Is.val = _ ∧
       idealPrimeExponent v.val.asIdeal (Ic.val * In.val ^ n) = _ ∧
@@ -179,18 +166,16 @@ theorem prime_product_assembly_data
     have hz (I : A.Exterior) (hI : I ∈ ({Ic, In, Is, Ir, Iu} : Finset A.Exterior)) :
         idealPrimeExponent q.val.asIdeal I.val = 0 := by
       rw [hsupp I hI]
-      exact exponent_off_support P _ q.val hnot
-    have hzIs := hz Is (by simp)
-    have hzIc := hz Ic (by simp)
-    have hzIn := hz In (by simp)
-    have hzIr := hz Ir (by simp)
-    have hzIu := hz Iu (by simp)
+      rw [exponent_prime_product]
+      apply Finset.sum_eq_zero
+      intro v _
+      exact if_neg (fun h => hnot ⟨v, h⟩)
     change (idealPrimeExponent q.val.asIdeal Is.val ≠ 0 ∨
       idealPrimeExponent q.val.asIdeal (Ic.val * In.val ^ n) ≠ 0 ∨
       idealPrimeExponent q.val.asIdeal (Iu.val * Ir.val ^ m) ≠ 0) at hq
     rw [exponent_mul _ _ _ Ic.property.1 (pow_ne_zero _ In.property.1),
       exponent_mul _ _ _ Iu.property.1 (pow_ne_zero _ Ir.property.1),
-      exponent_pow, exponent_pow, hzIs, hzIc, hzIn, hzIr, hzIu] at hq
+      exponent_pow, exponent_pow, (hz Is (by simp)), (hz Ic (by simp)), (hz In (by simp)), (hz Ir (by simp)), (hz Iu (by simp))] at hq
     simpa using hq
 
 end
@@ -238,11 +223,9 @@ theorem indexed_coefficient_crt
         (MaskedQuotientCRT.localUnitPart C (indexedPrime A P p hp v) Is s hs)
         (MaskedQuotientCRT.localUnitPart C (indexedPrime A P p hp v) Ia a ha)
         (MaskedQuotientCRT.localUnitPart C (indexedPrime A P p hp v) Ih h hh) := by
-  let Q : Finset (LocalFiniteSums.ExteriorPrime A) :=
-    (Finset.univ : Finset P).image (indexedPrime A P p hp)
-  have hinj : Set.InjOn (indexedPrime A P p hp) ↑(Finset.univ : Finset P) := by
-    intro x _ y _ hxy
-    exact Subtype.ext (by
+  let Q :=
+    Finset.univ.image (indexedPrime A P p hp)
+  have hinj : Set.InjOn (indexedPrime A P p hp) ↑(Finset.univ : Finset P) := fun x _ y _ hxy => Subtype.ext (by
       simpa only [indexedPrime] using
         congrArg (fun z : LocalFiniteSums.ExteriorPrime A => z.val) hxy)
   have hmemS : ∀ q : LocalFiniteSums.ExteriorPrime A,
@@ -324,7 +307,7 @@ private theorem transport
   ring
 
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 private theorem unit_exists
     (p : LocalFiniteSums.ExteriorPrime A) (x : A.R)
@@ -335,13 +318,11 @@ private theorem unit_exists
   let i : LocalFiniteSums.LocalIntegers p :=
     ⟨algebraMap F (LocalFiniteSums.LocalField p) (x : F),
       CompatiblePrimeRawLocal.sInteger_local_integral p x⟩
-  let e := A.exteriorLocalResidueEquiv (LocalFiniteSums.primeIdeal p) p.val rfl
-  have he := A.exteriorLocalResidueEquiv_apply (LocalFiniteSums.primeIdeal p) p.val rfl x
   have hi_eq : i = A.exteriorIntegerMap (LocalFiniteSums.primeIdeal p) p.val rfl x := rfl
   have hr : IsUnit (IsLocalRing.residue (LocalFiniteSums.LocalIntegers p) i) := by
-    rw [hi_eq, ← he]
-    exact hx.map e.toRingHom
-  have hi : IsUnit i := (IsLocalRing.residue_ne_zero_iff_isUnit i).mp hr.ne_zero
+    rw [hi_eq, ← (A.exteriorLocalResidueEquiv_apply (LocalFiniteSums.primeIdeal p) p.val rfl x)]
+    exact hx.map (A.exteriorLocalResidueEquiv (LocalFiniteSums.primeIdeal p) p.val rfl).toRingHom
+  have hi := (IsLocalRing.residue_ne_zero_iff_isUnit i).mp hr.ne_zero
   refine ⟨hi.unit, ?_⟩
   rw [hi.unit_spec]
 
@@ -375,12 +356,9 @@ private theorem cross_unit
     (v w : P) (hwv : w ≠ v) :
     IsUnit (Ideal.Quotient.mk (A.extendIdeal (p v)) (π w)) := by
 
-  have hne : v.val ≠ w.val := fun h => hwv (Subtype.ext h).symm
-  have hcop : IsCoprime (v.val.asIdeal) (w.val.asIdeal) :=
-    HeightOneSpectrum.isCoprime_of_ne v.val w.val hne
   have hsup : (p v).val ⊔ (p w).val = ⊤ := by
     rw [hp v, hp w]
-    exact hcop.sup_eq
+    exact (HeightOneSpectrum.isCoprime_of_ne v.val w.val (fun h => hwv (Subtype.ext h).symm)).sup_eq
 
   have hcopR : A.extendIdeal (p v) ⊔ A.extendIdeal (p w) = ⊤ := by
     rw [SArithmeticData.extendIdeal, SArithmeticData.extendIdeal, ← Ideal.map_sup, hsup,
@@ -390,12 +368,10 @@ private theorem cross_unit
   rw [← (hπ w).2] at hj
   obtain ⟨y, hy⟩ := Ideal.mem_span_singleton.mp hj
 
-  have hunit : IsUnit (Ideal.Quotient.mk (A.extendIdeal (p v)) (π w)) := by
-    refine IsUnit.of_mul_eq_one (Ideal.Quotient.mk (A.extendIdeal (p v)) y) ?_
-    rw [← map_mul, ← hy]
-    have hj_eq : j = 1 - i := by rw [eq_sub_iff_add_eq, add_comm]; exact hij
-    rw [hj_eq, map_sub, map_one, Ideal.Quotient.eq_zero_iff_mem.mpr hi, sub_zero]
-  exact hunit
+  refine IsUnit.of_mul_eq_one (Ideal.Quotient.mk (A.extendIdeal (p v)) y) ?_
+  rw [← map_mul, ← hy]
+  have hj_eq : j = 1 - i := by rw [eq_sub_iff_add_eq, add_comm]; exact hij
+  rw [hj_eq, map_sub, map_one, Ideal.Quotient.eq_zero_iff_mem.mpr hi, sub_zero]
 
 private theorem chi_mul (p : LocalFiniteSums.ExteriorPrime A)
     (u v : (LocalFiniteSums.LocalIntegers p)ˣ) :
@@ -536,10 +512,6 @@ theorem prime_product_local_rescale
   rw [chi_mul q (b ^ (j v + 6 * l v)) (Uu * E l ^ 6), hχh,
     chi_mul q (b ^ k v) (E k), hχE,
     chi_mul q (b ^ t v) (E t), hχE]
-  change _ = σ (A.sexticResidue (p v) (uPrimeFree v)) ^ ((k v : ℤ) - t v) *
-    (∏ w ∈ ({v}ᶜ : Finset P), σ (A.sexticResidue (p v) (π w)) ^ k w) ^ (t v : ℤ) *
-    (∏ w ∈ ({v}ᶜ : Finset P), σ (A.sexticResidue (p v) (π w)) ^ t w) ^ ((t v : ℤ) - k v) *
-    CompatiblePrimeRawLocal.R C q (t v) (k v) (j v + 6 * l v) (b ^ k v) (b ^ t v) (b ^ (j v + 6 * l v))
   rw [CompatiblePrimeRawLocal.R_unit_rescale]
   simp only [mul_zpow]
   ring
@@ -567,12 +539,9 @@ theorem cross_prime_residue_ne_zero
     (v w : P) (hwv : w ≠ v) :
     σ (A.sexticResidue (p v) (π w)) ≠ 0 := by
 
-  have hne : v.val ≠ w.val := fun h => hwv (Subtype.ext h).symm
-  have hcop : IsCoprime (v.val.asIdeal) (w.val.asIdeal) :=
-    HeightOneSpectrum.isCoprime_of_ne v.val w.val hne
   have hsup : (p v).val ⊔ (p w).val = ⊤ := by
     rw [hp v, hp w]
-    exact hcop.sup_eq
+    exact (HeightOneSpectrum.isCoprime_of_ne v.val w.val (fun h => hwv (Subtype.ext h).symm)).sup_eq
 
   have hcopR : A.extendIdeal (p v) ⊔ A.extendIdeal (p w) = ⊤ := by
     rw [SArithmeticData.extendIdeal, SArithmeticData.extendIdeal, ← Ideal.map_sup, hsup,
@@ -609,10 +578,12 @@ noncomputable section
 set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
- theorem coefficient_eq_masked_crt
+ section
 
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
+variable (A : SArithmeticData F) (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)
+    (hS : A.ContainsTraceBadPlaces)
+
+theorem coefficient_eq_masked_crt
     (D : ComparisonPoissonCoefficientData F A)
     (hCharacter : ∀ (I : A.Exterior) (a : A.R) (ha : A.Generates I a),
       D.character a = GeneratorInvariance.transportCharacter _ _ ha.2.symm
@@ -632,8 +603,6 @@ variable {F : Type} [Field F] [NumberField F]
   congr 1 <;> exact Subsingleton.elim _ _
 
 theorem localUnitPart_primeFree_transport
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (C : A.GeneralArithmeticContext σ η hS)
     (p : LocalFiniteSums.ExteriorPrime A)
     (π : A.R) (hπ : A.Generates (LocalFiniteSums.primeIdeal p) π)
@@ -664,6 +633,8 @@ theorem localUnitPart_primeFree_transport
   simp only [map_mul, map_pow, div_pow]
   ring
 
+end
+
 theorem prime_product_allowed
     (A : SArithmeticData F) (B : Subgroup A.V)
     (P : Finset (HeightOneSpectrum (𝓞 F)))
@@ -686,7 +657,7 @@ theorem prime_product_allowed
   have hall : ∀ T : Finset P, (∏ v ∈ T, A.sClass (aπ v ^ e v)) ∈ B := by
     intro T
     induction T using Finset.induction_on with
-    | empty => simpa using B.one_mem
+    | empty => exact B.one_mem
     | @insert v T hv ih =>
       rw [Finset.prod_insert hv]
       exact B.mul_mem (by rw [map_pow]; exact B.pow_mem (hπAllowed v) _) ih
@@ -722,27 +693,33 @@ theorem masked_rescale_product_assembly
   rw [← hlocal v]
   ring
 
-theorem comparisonData_principal (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) : IsPrincipalIdealRing A.R := by
+section
+
+variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+
+include D in
+theorem comparisonData_principal : IsPrincipalIdealRing A.R := by
   constructor
   intro J
   by_cases hJ : J = ⊥
   · subst J; exact bot_isPrincipal
-  let I : A.Exterior := A.exteriorIdealEquiv.symm ⟨J, hJ⟩
+  let I := A.exteriorIdealEquiv.symm ⟨J, hJ⟩
   have he : A.extendIdeal I = J := by
     rw [← A.exteriorIdealEquiv_apply]
     exact congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply ⟨J, hJ⟩)
   rw [← he, ← (D.generates I).2]
   infer_instance
 
-theorem comparisonData_classGroup_trivial (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) : Subsingleton (ClassGroup A.R) := by
+include D in
+theorem comparisonData_classGroup_trivial : Subsingleton (ClassGroup A.R) := by
   letI := comparisonData_principal A D
   exact Fintype.card_le_one_iff_subsingleton.mp (by rw [card_classGroup_eq_one])
 
+end
+
 section AssemblyHelpers
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 def comparisonData_context
     (G : A.GaussCorrectionOutput σ η hS)
@@ -770,8 +747,7 @@ def comparisonData_context
     allowed_unique := fun I a b ha hb => A.allowed_generator_unique_mod_sixth
       (comparisonData_classGroup_trivial A D) G.H G.B G.B_complement I a b ha hb
     normOne_compact := ArithmeticContext.normOne_sixth_unit_quotient_compact A
-    prime_target := fun I v hIv p hp a ha hap x hx =>
-      G.prime_theta I v hIv p hp a ha hap x hx }
+     }
 
 private theorem assembly_power_generates (p : LocalFiniteSums.ExteriorPrime A)
     (π : A.R) (hπ : A.Generates (LocalFiniteSums.primeIdeal p) π) (n : ℕ) :
@@ -790,9 +766,12 @@ private theorem assembly_exponent_power (p q : LocalFiniteSums.ExteriorPrime A) 
   · simp [h]
   · have h' : q.val.asIdeal ≠ p.val.asIdeal := fun hh => h (Subtype.ext (HeightOneSpectrum.asIdeal_injective hh))
     simp [h, h', Ne.symm h']
+section
+
+variable (C : A.GeneralArithmeticContext σ η hS) (p : LocalFiniteSums.ExteriorPrime A) (π : A.R)
+    (hπ : A.Generates (LocalFiniteSums.primeIdeal p) π)
+
 private theorem assembly_power_allowed
-    (C : A.GeneralArithmeticContext σ η hS) (p : LocalFiniteSums.ExteriorPrime A)
-    (π : A.R) (hπ : A.Generates (LocalFiniteSums.primeIdeal p) π)
     (aπ : Fˣ) (haπ : (aπ : F) = (π : F)) (hAllowed : A.IsAllowed C.correction.B aπ)
     (n : ℕ) :
     A.IsAllowed C.correction.B (Units.mk0 ((π ^ n : A.R) : F)
@@ -803,16 +782,15 @@ private theorem assembly_power_allowed
     simp [haπ]
   rw [he, SArithmeticData.IsAllowed, map_pow]
   exact C.correction.B.pow_mem hAllowed n
-private theorem assembly_localUnit_power
-    (C : A.GeneralArithmeticContext σ η hS) (p : LocalFiniteSums.ExteriorPrime A)
-    (π : A.R) (hπ : A.Generates (LocalFiniteSums.primeIdeal p) π) (n : ℕ) :
+private theorem assembly_localUnit_power (n : ℕ) :
     MaskedQuotientCRT.localUnitPart C p (LocalFiniteSums.powerIdeal p n) (π ^ n)
       (assembly_power_generates p π hπ n) =
       MaskedQuotientCRT.localUnitPart C p (LocalFiniteSums.primeIdeal p) π hπ ^ n := by
-  have he := localUnitPart_primeFree_transport A σ η hS C p π hπ
+  simpa [assembly_exponent_power] using (localUnitPart_primeFree_transport A σ η hS C p π hπ
     (LocalFiniteSums.powerIdeal p n) (π ^ n) 1 (assembly_power_generates p π hπ n)
-    (by simp [assembly_exponent_power]) 1 (by simp)
-  simpa [assembly_exponent_power] using he
+    (by simp [assembly_exponent_power]) 1 (by simp))
+
+end
 
 theorem prime_generator_coefficient_eq_raw
     (C : A.GeneralArithmeticContext σ η hS)
@@ -917,37 +895,22 @@ theorem masked_product_assembly
   obtain ⟨Ia, Ih, hs, ha, hh, hdepth, hcoverage⟩ :=
     MaskedProductAssembly.prime_product_assembly_data
       A Ic In Is Ir Iu u hu P p hp π hπ hSupport 3 6
-  have hsAllowed : A.IsAllowed C.correction.B
-      (Units.mk0 ((∏ v : P, π v ^ k v : A.R) : F)
-        (by exact_mod_cast hs.1)) :=
-    prime_product_allowed A G.B P π aπ haπ hπAllowed k hs.1
-  have haAllowed : A.IsAllowed C.correction.B
-      (Units.mk0 ((∏ v : P, π v ^ t v : A.R) : F)
-        (by exact_mod_cast ha.1)) :=
-    prime_product_allowed A G.B P π aπ haπ hπAllowed t ha.1
   have hcrt := MaskedProductAssembly.indexed_coefficient_crt
     A σ η hS C D hCharacter hTrace Is Ia Ih
     (∏ v : P, π v ^ k v) (∏ v : P, π v ^ t v)
-    (u * (∏ v : P, π v ^ l v) ^ 6) hs ha hh hsAllowed haAllowed
+    (u * (∏ v : P, π v ^ l v) ^ 6) hs ha hh (prime_product_allowed A G.B P π aπ haπ hπAllowed k hs.1) (prime_product_allowed A G.B P π aπ haπ hπAllowed t ha.1)
     P p hp hcoverage
   have hsingle (v : P) : L v =
       let b := MaskedQuotientCRT.localUnitPart C (q v)
         (LocalFiniteSums.primeIdeal (q v)) (π v)
         (by simpa [q] using hπ v)
       CompatiblePrimeRawLocal.R C (q v) (t v) (k v) (j v + 6 * l v)
-        (b ^ k v) (b ^ t v) (b ^ (j v + 6 * l v)) := by
-    exact prime_generator_coefficient_eq_raw C D hCharacter hTrace
+        (b ^ k v) (b ^ t v) (b ^ (j v + 6 * l v)) := prime_generator_coefficient_eq_raw C D hCharacter hTrace
       (q v) (π v) (by simpa [q] using hπ v) (aπ v) (haπ v)
       (hπAllowed v) (t v) (k v) (j v + 6 * l v)
   have hlocal (v : P) := MaskedProductAssembly.prime_product_local_rescale
     A σ η hS C P p hp π hπ t k j l u Is Ia Ih hs ha hh hdepth
     uPrimeFree hPrimeFree hPrimeUnit v
-  change GeneratorInvariance.coefficient A D
-      (∏ v : P, π v ^ k v) (∏ v : P, π v ^ t v)
-      (u * (∏ v : P, π v ^ l v) ^ 6) _ _ =
-    (∏ v : P, θ v ^ ((k v : ℤ) - t v) * L v) *
-      (∏ v : P, ∏ w ∈ ({v}ᶜ : Finset P),
-        β v w ^ ((t v : ℤ) * k w + ((t v : ℤ) - k v) * t w))
   rw [hcrt]
   calc
     _ = ∏ v : P,

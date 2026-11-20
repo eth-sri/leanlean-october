@@ -64,12 +64,16 @@ abbrev IntegralTensor (p : Nat.Primes) := ℤ_[p] ⊗[ℤ] 𝓞 F
 instance integralTensorTopology (p : Nat.Primes) : TopologicalSpace (IntegralTensor F p) :=
   moduleTopology ℤ_[p] (IntegralTensor F p)
 
-def integralTensorMap (p : Nat.Primes) :
+section
+
+variable (p : Nat.Primes)
+
+def integralTensorMap :
     IntegralTensor F p →ₐ[ℤ_[p]] IntegralProduct F p :=
   Algebra.TensorProduct.lift (Algebra.ofId _ _)
     (integralDiagonalAt F p).toIntAlgHom (fun _ _ => Commute.all _ _)
 
-def fieldTensorEquiv (p : Nat.Primes) :
+def fieldTensorEquiv :
     (ℚ_[p] ⊗[ℚ] F) ≃+* FieldProduct F p :=
   letI : Algebra ℚ ((Rat.HeightOneSpectrum.primesEquiv.symm p).adicCompletion ℚ) :=
     HeightOneSpectrum.instAlgebraAdicCompletion (𝓞 ℚ) ℚ _
@@ -77,13 +81,13 @@ def fieldTensorEquiv (p : Nat.Primes) :
     (AlgEquiv.refl : F ≃ₐ[ℚ] F)).toRingEquiv.trans
       (finitePlaceTensorRingEquivAboveAdic (K := ℚ) (L := F) _)
 
-def integralToFieldTensor (p : Nat.Primes) :
+def integralToFieldTensor :
     IntegralTensor F p →ₗ[ℤ] (ℚ_[p] ⊗[ℚ] F) :=
   (TensorProduct.mapOfCompatibleSMul ℚ ℤ ℤ ℚ_[p] F).comp
     (TensorProduct.map (algebraMap ℤ_[p] ℚ_[p]).toIntAlgHom.toLinearMap
       (algebraMap (𝓞 F) F).toIntAlgHom.toLinearMap)
 
-theorem scalarMap_continuous (p : Nat.Primes) (v : PlacesAbove F p) :
+theorem scalarMap_continuous (v : PlacesAbove F p) :
     Continuous (integerScalarMap F p v) := by
   unfold integerScalarMap
   apply Continuous.subtype_mk
@@ -91,14 +95,15 @@ theorem scalarMap_continuous (p : Nat.Primes) (v : PlacesAbove F p) :
     (Rat.HeightOneSpectrum.primesEquiv.symm p) v).comp ?_
   exact continuous_subtype_val.comp (PadicInt.adicCompletionIntegersEquiv (𝓞 ℚ) p).continuous
 
-theorem scalarMap_continuousSMul (p : Nat.Primes) (v : PlacesAbove F p) :
+theorem scalarMap_continuousSMul (v : PlacesAbove F p) :
     ContinuousSMul ℤ_[p] (v.val.adicCompletionIntegers F) := by
   refine ⟨?_⟩
-  have hcont := scalarMap_continuous F p v
   rw [show (fun q : ℤ_[p] × v.val.adicCompletionIntegers F => q.1 • q.2) =
       fun q => integerScalarMap F p v q.1 * q.2 from by
     funext q; rw [Algebra.smul_def]; rfl]
-  exact (hcont.comp continuous_fst).mul continuous_snd
+  exact ((scalarMap_continuous F p v).comp continuous_fst).mul continuous_snd
+
+end
 
 instance integralProduct_continuousSMul (p : Nat.Primes) :
     ContinuousSMul ℤ_[p] (IntegralProduct F p) := by
@@ -117,14 +122,12 @@ theorem integralTensorMap_field_square (p : Nat.Primes) (x : IntegralTensor F p)
   | add x y hx hy => funext v; simp_all
   | tmul a b =>
     funext v
-    change finitePlaceTensorRingEquivAboveAdic (K := ℚ) (L := F) _
-      (((Padic.adicCompletionEquiv (𝓞 ℚ) p) (a : ℚ_[p])) ⊗ₜ[ℚ] (b : F)) v = _
+    change finitePlaceTensorRingEquivAboveAdic _
+      (((Padic.adicCompletionEquiv (𝓞 ℚ) p) a) ⊗ₜ[ℚ] (b : F)) v = _
     rw [finitePlaceTensorRingEquivAboveAdic_tmul]
     simp only [integralTensorMap, Algebra.TensorProduct.lift_tmul,
       Algebra.ofId_apply, RingHom.toIntAlgHom_apply, integralDiagonalAt, Pi.ringHom_apply,
       Subring.coe_mul]
-    change _ = (integerScalarMap F p v a : v.val.adicCompletion F) *
-      algebraMap F (v.val.adicCompletion F) (b : F)
     congr 1
     exact (PadicInt.coe_adicCompletionIntegersEquiv_apply (𝓞 ℚ) p a).symm ▸ rfl
 
@@ -143,14 +146,12 @@ theorem integralTensorMap_topology_bijective (p : Nat.Primes) :
     Module.Finite.compactSpace ℤ_[p] (IntegralTensor F p)
   letI : ∀ v : PlacesAbove F p, ContinuousSMul ℤ_[p] (v.val.adicCompletionIntegers F) :=
     fun v => ⟨by
-      change Continuous (fun z : ℤ_[p] × v.val.adicCompletionIntegers F =>
-        integerScalarMap F p v z.1 * z.2)
       have h : Continuous (integerScalarMap F p v) := by
         apply continuous_induced_rng.mpr
         exact (finitePlaceAdicCompletionMap_continuous ℚ F _ v).comp
           (continuous_subtype_val.comp (PadicInt.adicCompletionIntegersEquiv (𝓞 ℚ) p).continuous)
       exact (h.comp continuous_fst).mul continuous_snd⟩
-  have hc : Continuous (integralTensorMap F p) :=
+  have hc :=
     IsModuleTopology.continuous_of_linearMap (integralTensorMap F p).toLinearMap
   have hclosed : IsClosed (Set.range (integralTensorMap F p)) :=
     (isCompact_range hc).isClosed

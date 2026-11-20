@@ -10,15 +10,11 @@ section
 namespace DedekindZetaZeroFree.KPRankOneCubicCharacterProducts
 
 open CubicCharacters
- lemma mu_cube (z : Mu3) : z ^ 3 = 1 := by
-  apply Subtype.ext
-  exact (mem_rootsOfUnity 3 _).mp z.property
+ alias mu_cube := DedekindZetaZeroFree.CubicCharacters.FilteredCubicCharacterCounts.cube
 
  noncomputable def quotientChars (A : Type*) [CommGroup A]
     [TopologicalSpace A] [IsTopologicalGroup A] :
     ((A ⧸ cubes A) →ₜ* Mu3) ≃* (A →ₜ* Mu3) := by
-  let mk : A →ₜ* (A ⧸ cubes A) :=
-    ⟨QuotientGroup.mk' (cubes A), QuotientGroup.continuous_mk⟩
   have kills (f : A →ₜ* Mu3) : cubes A ≤ f.toMonoidHom.ker := by
     rintro x ⟨y, rfl⟩
     change f (y ^ 3) = 1
@@ -27,7 +23,7 @@ open CubicCharacters
     ⟨QuotientGroup.lift (cubes A) f.toMonoidHom (kills f),
       (QuotientGroup.isQuotientMap_mk (cubes A)).continuous_iff.mpr f.continuous⟩
   exact
-    { toFun := fun f => f.comp mk
+    { toFun := fun f => f.comp (⟨QuotientGroup.mk' (cubes A), QuotientGroup.continuous_mk⟩)
       invFun := lift
       left_inv := fun f => by
         ext q
@@ -83,9 +79,7 @@ private lemma cubes_closed : IsClosed (CubicCharacters.cubes Kˣ : Set Kˣ) := b
     · rintro ⟨x, rfl⟩
       exact ⟨(x : K), (Units.val_pow_eq_pow_val x 3).symm⟩
     · rintro ⟨x, hx⟩
-      have hn : x ≠ 0 := by
-        intro h
-        exact Units.ne_zero y (by simpa [h] using hx.symm)
+      have hn : x ≠ 0 := fun h => Units.ne_zero y (by simpa [h] using hx.symm)
       refine ⟨Units.mk0 x hn, ?_⟩
       apply Units.ext
       exact hx
@@ -94,14 +88,13 @@ private lemma cubes_closed : IsClosed (CubicCharacters.cubes Kˣ : Set Kˣ) := b
 
 private lemma class_pow (q : D K) : q ^ 3 = 1 := by
   obtain ⟨y, rfl⟩ := QuotientGroup.mk'_surjective (CubicCharacters.cubes Kˣ) q
-  rw [← map_pow]
   exact (QuotientGroup.eq_one_iff _).mpr ⟨y, rfl⟩
 
 theorem local_character_count (ζ : K) (hζ : IsPrimitiveRoot ζ 3) :
     DiscreteTopology (D K) ∧ Finite (D K) ∧
     Nat.card (D K) = N K ∧ Finite (X K) ∧ Nat.card (X K) = N K := by
   letI : Finite (D K) := KPLocalTorus.finite_cubeClasses K ζ hζ
-  letI : (CubicCharacters.cubes Kˣ).FiniteIndex := ⟨Nat.ne_of_gt (Nat.card_pos (α := D K))⟩
+  letI : (CubicCharacters.cubes Kˣ).FiniteIndex := ⟨Nat.ne_of_gt (Nat.card_pos)⟩
   letI : DiscreteTopology (D K) := QuotientGroup.discreteTopology
     ((CubicCharacters.cubes Kˣ).isOpen_of_isClosed_of_finiteIndex (cubes_closed K))
   let e : X K ≃ (D K →* ℂˣ) :=
@@ -124,18 +117,16 @@ theorem unit_mass (dx : Measure K) [dx.IsAddHaarMeasure]
     (m : ℝ) (hm : 0 < m) (hvol : dx (𝒪[K] : Set K) = ENNReal.ofReal m) :
     KPCubicHaar.multiplicativeHaar K dx
         {x : Kˣ | (x : K) ∈ 𝒪[K] ∧ ((x⁻¹ : Kˣ) : K) ∈ 𝒪[K]} =
-      ENNReal.ofReal (m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹)) := by
-  exact (kp_rankone_cubic_haar_power_measure K dx m hm hvol).2
+      ENNReal.ofReal (m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹)) := (kp_rankone_cubic_haar_power_measure K dx m hm hvol).2
 
 local instance : BorelSpace Kˣ := ⟨by
-  change MeasurableSpace.comap Units.val ‹MeasurableSpace K› = borel Kˣ
   calc
-    MeasurableSpace.comap Units.val ‹MeasurableSpace K› =
+    _ =
         MeasurableSpace.comap Units.val (borel K) :=
       congrArg (MeasurableSpace.comap Units.val)
-        (BorelSpace.measurable_eq (α := K))
+        (BorelSpace.measurable_eq)
     _ = borel Kˣ := by
-      rw [(Units.isEmbedding_val₀ (G₀ := K)).isInducing.eq_induced, borel_comap]⟩
+      rw [(Units.isEmbedding_val₀).isInducing.eq_induced, borel_comap]⟩
 
 theorem eta_uniformizer_coordinates (z : ℂˣ) (π : Kˣ)
     (hπ : valuation K (π : K) = ValuativeRel.uniformizer K)

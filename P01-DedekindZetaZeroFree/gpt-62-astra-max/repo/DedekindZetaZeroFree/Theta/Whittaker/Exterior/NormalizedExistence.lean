@@ -16,21 +16,21 @@ set_option autoImplicit false
 set_option synthInstance.maxHeartbeats 400000
 set_option maxHeartbeats 2000000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (v : HeightOneSpectrum (𝓞 F))
-variable (inducingData : CanonicalFiniteInducingData F ζ hζ v)
-variable (P : Polarization inducingData.heisenberg)
-variable (μ : MeasureTheory.Measure (LocalField F v)) [μ.IsAddHaarMeasure]
-variable (hμ : μ ((valuation (LocalField F v)).integer : Set (LocalField F v)) = 1)
+    (v : HeightOneSpectrum (𝓞 F))
+    (inducingData : CanonicalFiniteInducingData F ζ hζ v)
+    (P : Polarization inducingData.heisenberg)
+    (μ : MeasureTheory.Measure (LocalField F v)) [μ.IsAddHaarMeasure]
+    (hμ : μ ((valuation (LocalField F v)).integer : Set (LocalField F v)) = 1)
 variable [Fintype (IsLocalRing.ResidueField (valuation (LocalField F v)).integer)]
 variable (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
-variable (hgood : valuation (LocalField F v) (6 : LocalField F v) = 1)
-variable (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π)
-variable (ψ : AddChar (LocalField F v) ℂ)
-variable (hψcont : Continuous ψ) (hψunitary : ∀ x, ‖ψ x‖ = 1)
-variable (hcond : ConductorZero ψ π)
+    (hgood : valuation (LocalField F v) (6 : LocalField F v) = 1)
+    (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π)
+    (ψ : AddChar (LocalField F v) ℂ)
+    (hψcont : Continuous ψ) (hψunitary : ∀ x, ‖ψ x‖ = 1)
+    (hcond : ConductorZero ψ π)
 
 variable (φ : Image F ζ hζ v inducingData P μ hμ)
-variable (hφ : φ ∈ ImageFixed F ζ hζ v inducingData P μ hμ ht) (hne : φ ≠ 0)
+    (hφ : φ ∈ ImageFixed F ζ hζ v inducingData P μ hμ ht) (hne : φ ≠ 0)
 include ht hgood hπ hψcont hψunitary hcond hφ hne in
 theorem exists_normalized_whittaker :
     ∃ L : Image F ζ hζ v inducingData P μ hμ →ₗ[ℂ] ℂ,

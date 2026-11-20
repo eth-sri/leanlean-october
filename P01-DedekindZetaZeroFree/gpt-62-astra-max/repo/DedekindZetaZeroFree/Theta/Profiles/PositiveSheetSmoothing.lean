@@ -12,8 +12,8 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory ThetaProfileHaarSheets ThetaSheetExactUnfolding
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def positiveProfile {Q : AdmissibleFlatSources R} (P : Packet R Q) (y : R.A.G) : ℝ :=
   (if ∀ p : R.A.Sf, y.2 p ∈ P.cutoff p then 1 else 0) *
@@ -30,7 +30,7 @@ lemma forwardProfile_branch {Q : AdmissibleFlatSources R} (P : Packet R Q)
     simp only [one_mul, Finset.prod_mul_distrib]
     ring
   · rw [Packet.forwardProfile, positiveProfile, if_neg hc, if_neg hc]
-    simp only [zero_mul, Complex.ofReal_zero, mul_zero]
+    simp
 
 lemma cutoff_class_one {Q : AdmissibleFlatSources R} (P : Packet R Q)
     (y : R.A.G) (hc : ∀ p : R.A.Sf, y.2 p ∈ P.cutoff p) :
@@ -68,11 +68,9 @@ lemma positive_sheet_integrable {N : TraceHaarTransport R} (C : JointUpperVanish
     Integrable (fun y : Sheet R.A x => (positiveProfile R C.packet y.val : ℂ))
       (sheetHaar R.A C.packet.v₀ C.transport.groupHaar x) := by
   letI := C.transport.groupHaar_isHaar
-  have hu := (GaussianSmoothing.probeHaar_integrable _).mpr (positive_uniform_integrable R C x)
-  have ht := (complex_integrable_uniform_iff R C.transport C.packet.v₀ x
-    (fun y => (positiveProfile R C.packet y : ℂ))).mpr hu
   rw [sheetHaar, GaussianSmoothing.kernelHaar_eq_probe]
-  exact (sheetTranslation R.A C.packet.v₀ x).toMeasurableEquiv.measurableEmbedding.integrable_map_iff.mpr ht
+  exact (sheetTranslation R.A C.packet.v₀ x).toMeasurableEquiv.measurableEmbedding.integrable_map_iff.mpr ((complex_integrable_uniform_iff R C.transport C.packet.v₀ x
+    (fun y => (positiveProfile R C.packet y : ℂ))).mpr ((GaussianSmoothing.probeHaar_integrable _).mpr (positive_uniform_integrable R C x)))
 
 lemma positive_sheet_integral {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (x : PositiveAxis) :
@@ -90,12 +88,9 @@ lemma positive_sheet_integral {N : TraceHaarTransport R} (C : JointUpperVanishin
       ((GaussianSmoothing.probeHaar_integrable _).mpr (positive_uniform_integrable R C x)),
       GaussianSmoothing.probeHaar_integral]
     letI : MeasurableSpace R.A.G1 := borel _
-    change (∫ z : R.A.G1, (positiveProfile R C.packet
-      (z.val * R.A.radialSection x.val x.property) : ℂ) ∂(R.probe.domain.measure)) = _
     rw [integral_complex_ofReal]
     rfl
-  · have hm := (positive_sheet_integrable R C x).aestronglyMeasurable
-    simpa only [sheetHaar, GaussianSmoothing.kernelHaar_eq_probe] using hm
+  · simpa only [sheetHaar, GaussianSmoothing.kernelHaar_eq_probe] using ((positive_sheet_integrable R C x).aestronglyMeasurable)
 
 def forwardSheetWord {Q : AdmissibleFlatSources R} (P : Packet R Q)
     (v : R.A.UnitQuotient) (x : Fˣ)
@@ -114,8 +109,8 @@ lemma forwardSheetWord_eq {Q : AdmissibleFlatSources R} (P : Packet R Q)
     forwardSheetWord R P v x γ y = Characters.L R v x *
       (positiveProfile R P (R.A.diagonal (γ.val * x) * y) : ℂ) := by
   let z := R.A.diagonal (γ.val * x) * y
-  let k : R.A.G →* R.A.V := QuotientGroup.mk' R.A.sixthPowers
-  have hkγ : k (R.A.diagonal γ.val) = 1 := rational_gamma_class R γ
+  let k := QuotientGroup.mk' R.A.sixthPowers
+  have hkγ := rational_gamma_class R γ
   have hkx : k (R.A.diagonal (γ.val * x)) = k (R.A.diagonal x) := by
     rw [map_mul R.A.diagonal, map_mul k, hkγ]
     exact one_mul (k (R.A.diagonal x))
@@ -128,8 +123,7 @@ lemma forwardSheetWord_eq {Q : AdmissibleFlatSources R} (P : Packet R Q)
     have hprod : k (R.A.diagonal x) * k y = 1 := by
       simpa only [z, map_mul k, hkx] using hkz
     have hy : k y ∈ R.probe.correction.B := by
-      have heq : k y = (k (R.A.diagonal x))⁻¹ := by
-        exact @eq_inv_of_mul_eq_one_right R.A.V _ _ _ hprod
+      have heq : k y = (k (R.A.diagonal x))⁻¹ := @eq_inv_of_mul_eq_one_right R.A.V _ _ _ hprod
       rw [heq]
       exact R.probe.correction.B.inv_mem hx
     have hh : R.probe.correction.H (k (R.A.diagonal (γ.val * x))) (k y) = 1 := by
@@ -139,7 +133,6 @@ lemma forwardSheetWord_eq {Q : AdmissibleFlatSources R} (P : Packet R Q)
     rw [if_pos hy, one_mul, hh]
     simp only [Units.val_one, map_one, one_pow, inv_one, mul_one]
     rw [forwardProfile_branch, hb]
-    change (P.branch v y)⁻¹ * ((Characters.L R v x * P.branch v y) * _) = _
     calc
       _ = Characters.L R v x * (((P.branch v y)⁻¹ * P.branch v y) *
         (positiveProfile R P (R.A.diagonal (γ.val * x) * y) : ℂ)) := by ring
@@ -149,7 +142,6 @@ lemma forwardSheetWord_eq {Q : AdmissibleFlatSources R} (P : Packet R Q)
     have hp : positiveProfile R P z = 0 := by
       simp only [positiveProfile, if_neg hc, zero_mul]
     unfold forwardSheetWord
-    change _ * P.forwardProfile v z = _
     rw [hf, hp, Complex.ofReal_zero, mul_zero, mul_zero]
 
 theorem forward_sheet_orbit {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
@@ -175,27 +167,21 @@ theorem forward_sheet_orbit {N : TraceHaarTransport R} (C : JointUpperVanishingS
       forwardSheetWord R C.packet v x γ y.val =
         f ((gammaEquiv R γ).val.val * R.A.diagonal x * y.val) := by
     rw [forwardSheetWord_eq R C.packet v x hx, gammaEquiv_val, ← map_mul]
-  have hi := integral_mul_unfold R.A C.packet.v₀ C.transport.groupHaar x l Ω hΩ f hf
-  have ha := integral_mul_unfold R.A C.packet.v₀ C.transport.groupHaar x l Ω hΩ
-    (fun y => (‖f y‖ : ℂ)) (Complex.ofRealCLM.integrable_comp hf.norm)
-  have hn := ha.1.map Complex.reCLM Complex.reCLM.continuous
+  have hn := (integral_mul_unfold R.A C.packet.v₀ C.transport.groupHaar x l Ω hΩ
+    (fun y => (‖f y‖ : ℂ)) (Complex.ofRealCLM.integrable_comp hf.norm)).1.map Complex.reCLM Complex.reCLM.continuous
   simp only [integral_complex_ofReal, Function.comp_def, Complex.reCLM_apply,
     Complex.ofReal_re] at hn
   refine ⟨?_, ?_⟩
-  · have h := hn.comp_injective (gammaEquiv R).injective
-    simpa only [Function.comp_def, he] using h
+  · simpa only [Function.comp_def, he] using (hn.comp_injective (gammaEquiv R).injective)
   · simp_rw [he]
-    have hsum := (gammaEquiv R).toEquiv.tsum_eq (fun γ : R.A.Gamma1 =>
+    refine ((gammaEquiv R).toEquiv.tsum_eq (fun γ : R.A.Gamma1 =>
       ∫ y in Ω, f (γ.val.val * R.A.diagonal x * y.val)
-        ∂sheetHaar R.A C.packet.v₀ C.transport.groupHaar l)
-    refine hsum.trans (hi.2.trans ?_)
+        ∂sheetHaar R.A C.packet.v₀ C.transport.groupHaar l)).trans ((integral_mul_unfold R.A C.packet.v₀ C.transport.groupHaar x l Ω hΩ f hf).2.trans ?_)
     dsimp [f]
     rw [integral_const_mul, positive_sheet_integral]
 
 theorem forward_sheet_smoothing {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (x : Fˣ) (Z : ℝ) (hZ : 0 < Z) :
-    Integrable (fun t : PositiveAxis => C.packet.kernel t.val *
-      (C.packet.positiveSheet (q R.A x * ⟨t.val / Z, div_pos t.property hZ⟩) : ℂ)) positiveHaar ∧
     (∫ t : PositiveAxis, C.packet.kernel t.val *
       (C.packet.positiveSheet (q R.A x * ⟨t.val / Z, div_pos t.property hZ⟩) : ℂ) ∂positiveHaar) =
       (thetaReflectionGaussian ((q R.A x).val / Z) : ℂ) := by
@@ -207,7 +193,7 @@ theorem forward_sheet_smoothing {N : TraceHaarTransport R} (C : JointUpperVanish
     change (q R.A x).val * (t.val / Z) = ((q R.A x).val / Z) * t.val
     ring
   simp_rw [he]
-  exact ⟨C.mellin.smoothing_integrable a, C.mellin.smoothing a⟩
+  exact C.mellin.smoothing a
 
 end DedekindZetaZeroFree.OrbitExpansion
 

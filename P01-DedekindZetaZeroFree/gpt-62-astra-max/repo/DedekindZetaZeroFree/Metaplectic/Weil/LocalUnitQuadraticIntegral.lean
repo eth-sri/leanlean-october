@@ -28,14 +28,15 @@ private theorem two_norm (v : HeightOneSpectrum (𝓞 F))
     have hz : (2 : 𝓞 F ⧸ v.asIdeal) = 0 := by
       convert (Ideal.Quotient.eq_zero_iff_mem.mpr h) using 1
       exact (map_ofNat (Ideal.Quotient.mk v.asIdeal) 2).symm
-    have hd : (ResidueTrace.rationalPrimeBelow v).val ∣ 2 := by
-      exact (CharP.cast_eq_zero_iff (𝓞 F ⧸ v.asIdeal)
+    have hd := (CharP.cast_eq_zero_iff (𝓞 F ⧸ v.asIdeal)
         (ringChar (𝓞 F ⧸ v.asIdeal)) 2).mp hz
     exact hgood (hd.trans (by decide))
   have h := (FinitePlace.norm_eq_one_iff_notMem F v (2 : 𝓞 F)).mpr hn
   have he : FinitePlace.embedding v (algebraMap (𝓞 F) F 2) = (2 : v.adicCompletion F) := by
     rw [map_ofNat, map_ofNat]
   rwa [he] at h
+
+alias LocalUnitQuadraticIntegral.two_norm := two_norm
 
 theorem unit_cutoff_eventually
     (v : HeightOneSpectrum (𝓞 F))
@@ -83,7 +84,7 @@ theorem unit_cutoff_eventually
     { carrier := {x | ‖x‖ ≤ R}
       zero_mem' := by simpa using (zero_le_one.trans hR)
       add_mem' := fun hx hy => (IsUltrametricDist.norm_add_le_max _ _).trans (max_le hx hy)
-      neg_mem' := by intro x hx; simpa using hx }
+      neg_mem' := by simpa using hx}
   have hUc : IsCompact (U : Set (v.adicCompletion F)) := by
     change IsCompact {x : v.adicCompletion F | ‖x‖ ≤ R}
     simpa only [Metric.closedBall, dist_zero_right] using isCompact_closedBall (0 : v.adicCompletion F) R
@@ -129,7 +130,7 @@ theorem unit_cutoff_eventually
         simpa [norm_mul, htwo, ha] using hn
       · apply mem_adicCompletionIntegers_of_norm_le_one v
         simpa [norm_mul, htwo, ha] using norm_le_one_of_mem_adicCompletionIntegers v hx
-    rw [setIntegral_congr_fun hOc.measurableSet (fun h hh => hphase x h hh), integral_const_mul]
+    rw [setIntegral_congr_fun hOc.measurableSet ((hphase x)), integral_const_mul]
     change f x * (∫ h in (O : Set (v.adicCompletion F)), (χ h : ℂ) ∂μ) = _
     rw [(compactSubgroup_character_integral μ O hOc χ hc).2]
     by_cases hx : x ∈ O

@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -54,9 +51,8 @@ theorem numberFieldTowerExtensionSubgroup_normal :
   let j := numberFieldSeparableClosureEmbedding L
   let i :=
     j.comp (IsScalarTower.toAlgHom ℚ K L)
-  let : Algebra K (SeparableClosure ℚ) :=
+  let :=
     i.toRingHom.toAlgebra
-  let e := numberFieldTowerSeparableClosureEquiv K L
   change
     (extensionSubgroup
       (closedFixingSubgroup ℚ (SeparableClosure ℚ)
@@ -66,7 +62,7 @@ theorem numberFieldTowerExtensionSubgroup_normal :
       _).Normal
   exact
     ambientEmbeddedExtensionSubgroup_normal
-      ℚ K L j e
+      ℚ K L j (numberFieldTowerSeparableClosureEquiv K L)
 
 /-- The relative quotient of fixing subgroups in the compatible
 realization is finite. -/
@@ -82,9 +78,8 @@ theorem numberFieldTowerExtensionQuotient_finite :
   let j := numberFieldSeparableClosureEmbedding L
   let i :=
     j.comp (IsScalarTower.toAlgHom ℚ K L)
-  let : Algebra K (SeparableClosure ℚ) :=
+  let :=
     i.toRingHom.toAlgebra
-  let e := numberFieldTowerSeparableClosureEquiv K L
   change
     Finite
       ((closedFixingSubgroup ℚ (SeparableClosure ℚ)
@@ -97,7 +92,7 @@ theorem numberFieldTowerExtensionQuotient_finite :
           _)
   exact
     ambientEmbeddedExtensionQuotient_finite
-      ℚ K L j e
+      ℚ K L j (numberFieldTowerSeparableClosureEquiv K L)
 
 /-- The compatible realization of `L / K` as the finite Galois
 subextension consumed by abstract reciprocity. -/
@@ -158,7 +153,6 @@ noncomputable def
     closedFixingSubgroup ℚ (SeparableClosure ℚ)
       (AlgHom.fieldRange j)
   let hJH : J₀.toSubgroup ≤ H₀.toSubgroup := by
-    change j.fieldRange.fixingSubgroup ≤ i.fieldRange.fixingSubgroup
     apply i.fieldRange.fixingSubgroup_le
     intro x hx
     rcases hx with ⟨y, rfl⟩
@@ -196,38 +190,30 @@ theorem
       AlgEquiv.restrictNormalHom L σ := by
   let j :=
     numberFieldSeparableClosureEmbedding L
-  let : Algebra K (SeparableClosure ℚ) :=
+  let :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  let : Algebra L (SeparableClosure ℚ) :=
+  let :=
     numberFieldTowerSeparableClosureTopAlgebra L
-  let : IsScalarTower K L (SeparableClosure ℚ) :=
+  let :=
     numberFieldTowerSeparableClosureScalarTower K L
-  let e :=
-    numberFieldTowerSeparableClosureEquiv K L
   let :=
     numberFieldTowerExtensionSubgroup_normal K L
   apply AlgEquiv.ext
   intro x
   apply j.injective
   calc
-    j
-        (numberFieldTowerExtensionQuotientEquivGaloisGroup K L
-          (QuotientGroup.mk
-            (numberFieldTowerSeparableClosureEquivBaseSubgroup
-              K L σ)) x) =
+    _ =
         (numberFieldTowerSeparableClosureEquivBaseSubgroup
           K L σ).1.1 (j x) := by
       convert
         (ambientEmbeddedExtensionQuotientEquivGaloisGroup_mk_apply
-          ℚ K L j e
+          ℚ K L j (numberFieldTowerSeparableClosureEquiv K L)
           (numberFieldTowerSeparableClosureEquivBaseSubgroup
             K L σ) x) using 1; rfl
     _ = σ (j x) := rfl
     _ =
         j
-          ((AlgEquiv.restrictNormalHom L σ) x) := by
-      exact
-        (AlgEquiv.restrictNormal_commutes σ L x).symm
+          ((AlgEquiv.restrictNormalHom L σ) x) := (AlgEquiv.restrictNormal_commutes σ L x).symm
 
 end Reciprocity
 end GlobalClassFieldTheory

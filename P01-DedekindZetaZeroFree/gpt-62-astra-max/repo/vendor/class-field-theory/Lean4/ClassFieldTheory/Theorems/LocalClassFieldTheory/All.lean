@@ -1,5 +1,4 @@
 module
-
 public import ClassFieldTheory.Theorems.LocalClassFieldTheory.FiniteAbelianLocalExistence
 public import ClassFieldTheory.Theorems.LocalClassFieldTheory.FiniteAbelianLocalExistenceOrderIso
 public import ClassFieldTheory.Theorems.LocalClassFieldTheory.FiniteAbelianLocalReciprocity
@@ -21,43 +20,3 @@ public import ClassFieldTheory.Theorems.LocalClassFieldTheory.FieldNormSubgroupR
 public import ClassFieldTheory.Theorems.LocalClassFieldTheory.FieldNormSubgroupTower
 public import ClassFieldTheory.Theorems.LocalClassFieldTheory.MemFieldNormSubgroupIff
 public import ClassFieldTheory.Theorems.LocalClassFieldTheory.ProfiniteLocalReciprocity
-
-@[expose] public section
-
-/-
-Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
--/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
-/-!
-# Finite abelian local class field theory
-
-This module gathers the public local reciprocity, local existence, and
-norm-subgroup statements.  The theorem statements use Mathlib and the public
-definitions layer; their proofs may import implementation modules.
--/

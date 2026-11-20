@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -63,9 +60,6 @@ theorem valuationHerbrand_shortExact :
           integerUnitsToFieldUnits L y = x) ∧
       Function.Injective (integerUnitsToFieldUnits L) ∧
       Function.Surjective (valuationUnitsMulHom L) := by
-  let := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
-  let := galoisGroupFieldUnitsMulDistribMulAction K L
-  let := galoisGroupValueGroupMulDistribMulAction K L
   exact ⟨integerUnitsToFieldUnits_galoisGroup_equivariant K L,
     valuationUnitsMulHom_galoisGroup_equivariant K L,
     valuationUnitsMulHom_eq_one_iff_exists_integerUnit L,
@@ -83,8 +77,7 @@ trivial. -/
 theorem galoisGroupValueGroup_herbrandQuotientDefined
     (g : Gal(L / K)) :
     letI := galoisGroupValueGroupMulDistribMulAction K L
-    HerbrandQuotientDefined (Gal(L / K)) (Multiplicative Int) g := by
-  exact ⟨galoisGroupValueGroupHerbrandH0Finite K L,
+    HerbrandQuotientDefined (Gal(L / K)) (Multiplicative Int) g := ⟨galoisGroupValueGroupHerbrandH0Finite K L,
     galoisGroupValueGroupHerbrandHMinusOneFinite K L g⟩
 
 /-- Herbrand-quotient multiplicativity for the actual valuation sequence.  Once the
@@ -120,32 +113,23 @@ theorem valuationHerbrand_multiplicativity_of_integerUnits_defined
   let := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
   let := galoisGroupFieldUnitsMulDistribMulAction K L
   let := galoisGroupValueGroupMulDistribMulAction K L
-  let hZ : HerbrandQuotientDefined (Gal(L / K)) (Multiplicative Int) g :=
+  let hZ :=
     galoisGroupValueGroup_herbrandQuotientDefined K L g
   let hseq := valuationHerbrand_shortExact K L
   let hField := herbrandQuotientDefined_middle_of_left_right
-    (G := Gal(L / K))
-    (A := (ValuativeRel.valuation L).integerˣ)
-    (B := Lˣ) (C := Multiplicative Int)
+
     (integerUnitsToFieldUnits L) (valuationUnitsMulHom L)
     hseq.1 hseq.2.1 hseq.2.2.1 hseq.2.2.2.1 hseq.2.2.2.2
     g hg hU hZ
   refine ⟨hField, ?_⟩
-  let : Finite
-      (HerbrandH0 (Gal(L / K)) (ValuativeRel.valuation L).integerˣ) := hU.1
-  let : Finite
-      (HerbrandHMinusOne (Gal(L / K))
-        (ValuativeRel.valuation L).integerˣ g) := hU.2
-  let : Finite (HerbrandH0 (Gal(L / K)) Lˣ) := hField.1
-  let : Finite (HerbrandHMinusOne (Gal(L / K)) Lˣ g) := hField.2
-  let : Finite
-      (HerbrandH0 (Gal(L / K)) (Multiplicative Int)) := hZ.1
-  let : Finite
-      (HerbrandHMinusOne (Gal(L / K)) (Multiplicative Int) g) := hZ.2
+  let := hU.1
+  let := hU.2
+  let := hField.1
+  let := hField.2
+  let := hZ.1
+  let := hZ.2
   exact herbrandQuotient_multiplicative_of_shortExact
-    (G := Gal(L / K))
-    (A := (ValuativeRel.valuation L).integerˣ)
-    (B := Lˣ) (C := Multiplicative Int)
+
     (integerUnitsToFieldUnits L) (valuationUnitsMulHom L)
     hseq.1 hseq.2.1 hseq.2.2.1 hseq.2.2.2.1 hseq.2.2.2.2
     g hg

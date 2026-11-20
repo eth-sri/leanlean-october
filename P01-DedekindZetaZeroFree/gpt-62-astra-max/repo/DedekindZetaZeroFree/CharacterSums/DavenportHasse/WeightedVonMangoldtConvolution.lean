@@ -24,11 +24,10 @@ theorem convolution (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (n : ℕ) :
     by_cases h : d * j ≤ n
     · rw [if_pos h]
       refine Finset.sum_congr rfl fun P hP => ?_
-      have hPm := (mem_Mon.1 hP).1
       have hPd := (mem_Mon.1 hP).2
       by_cases hirr : Irreducible P
       · rw [if_pos hirr, mul_assoc]
-        have hr := mul_reindex χ ψ hPm j n (by simpa [hPd, Nat.mul_comm] using h)
+        have hr := mul_reindex χ ψ ((mem_Mon.1 hP).1) j n (by simpa [hPd, Nat.mul_comm] using h)
         rw [hPd, Nat.mul_comm j d] at hr
         rw [hr, Finset.mul_sum]
         refine Finset.sum_congr rfl fun f hf => ?_

@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 namespace LocalFieldTheory
@@ -47,7 +45,7 @@ theorem residueUnitHom_ker_eq :
     (higherPrincipalUnitGroup.residueUnitHom F).ker =
       higherPrincipalUnitGroup F 1 := by
   ext u
-  rw [MonoidHom.mem_ker, higherPrincipalUnitGroup.residueUnitHom_eq_one_iff]
+  simp [higherPrincipalUnitGroup.residueUnitHom_eq_one_iff]
 
 /-- The first-isomorphism form of the residue map on valuation-ring units:
 `O_K^* / U_K^1` is the unit group of the residue field. -/
@@ -71,30 +69,7 @@ u`.
     (u : F.valuationSubringˣ) :
     higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits F
         (QuotientGroup.mk' (higherPrincipalUnitGroup F 1) u) =
-      higherPrincipalUnitGroup.residueUnitHom F u := by
-  rfl
-
-/-- Compatibility of the induced action on `O^*/U^1` with the induced action
-on residue-field units. -/
-theorem unitsModOneEquivResidueFieldUnits_unitsModPrincipalUnitEquivOfPreserves_one
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
-    (q : F.valuationSubringˣ ⧸ higherPrincipalUnitGroup F 1) :
-    higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits F
-        (higherPrincipalUnitGroup.unitsModPrincipalUnitEquivOfPreserves
-          F e hmem 1 q) =
-      Units.map
-        (valuationSubringResidueFieldEquivOfPreserves F e hmem).toMonoidHom
-        (higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits F q) := by
-  obtain ⟨u, rfl⟩ := QuotientGroup.mk'_surjective
-    (higherPrincipalUnitGroup F 1) q
-  rw [higherPrincipalUnitGroup.unitsModPrincipalUnitEquivOfPreserves_mk,
-    higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits_mk,
-    higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits_mk,
-    residueUnitHom_valuationSubringUnitEquivOfPreserves]
+      higherPrincipalUnitGroup.residueUnitHom F u := rfl
 end higherPrincipalUnitGroup
 
 end CompleteDVF

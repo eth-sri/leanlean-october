@@ -11,10 +11,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.CurrentRepairedLocalBinding
 open MomentSources KPGlobalTorusFiniteStages FaithfulSource FaithfulSource.RepairedInducing
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
@@ -47,13 +47,12 @@ theorem full_multilinear_integral (Q : Finset (KPFinitePlace F)) (hQ : C.excepti
         rw [L.map_sum_finset]
         apply Finset.sum_congr rfl
         intro r _
-        simpa only [smul_eq_mul] using
+        simpa using
           L.map_smul_univ (fun i => e i (y i) (r i)) (fun i => w i (r i))
   have hi (r : ∀ i, J i) : Integrable
       (fun x : KPGlobalTorusFunctionData.Adeles F => (∏ i, e i (f i (rootCoordinate R x i.val)) (r i)) * L (fun i => w i (r i)))
       ((KPAdditiveHaar.adelicMeasure F).restrict (TraceBox.adelicBox F Q)) := (full_product_integrable R N P C Q hQ hD (fun i x => e i (f i x) (r i)) (fun i => hf i (r i))).mul_const _
-  have hef : (fun x : KPGlobalTorusFunctionData.Adeles F => L (fun i => f i (rootCoordinate R x i.val))) =
-      (fun x => ∑ r : ∀ i, J i, (∏ i, e i (f i (rootCoordinate R x i.val)) (r i)) * L (fun i => w i (r i))) :=
+  have hef :=
     funext (fun x => he (fun i => f i (rootCoordinate R x i.val)))
   constructor
   · rw [hef]
@@ -63,8 +62,7 @@ theorem full_multilinear_integral (Q : Finset (KPFinitePlace F)) (hQ : C.excepti
     apply Finset.sum_congr rfl
     intro r _
     rw [integral_mul_const]
-    have hp := full_product_integral R N P C Q hQ hD (fun i x => e i (f i x) (r i))
-    rw [hp]
+    rw [(full_product_integral R N P C Q hQ hD (fun i x => e i (f i x) (r i)))]
     congr 1
     apply Finset.prod_congr rfl
     intro i _

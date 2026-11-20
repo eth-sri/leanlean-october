@@ -46,7 +46,7 @@ variable [CompactSpace G] [MeasurableSpace G] [BorelSpace G]
 private theorem haarAverage_comp_conjMap {W : Type*} [NormedAddCommGroup W] [NormedSpace 𝕜 W]
     [NormedSpace ℝ W] [SMulCommClass ℝ 𝕜 W] (F : C(G, W)) (h : G) :
     haarAverage G (𝕜 := 𝕜) (F.comp (conjMap h)) = haarAverage G (𝕜 := 𝕜) F := by
-  rw [conjMap, ← ContinuousMap.comp_assoc, haarAverage_comp_mulRight, haarAverage_comp_mulLeft]
+  simp [conjMap, ← ContinuousMap.comp_assoc]
 
 end Conjugation
 
@@ -86,16 +86,7 @@ theorem integratedOperator_apply (f : C(G, 𝕜)) (v : V) :
     (weightFamily π hπ f)
   simp only [ContinuousLinearMap.apply_apply] at h
   rw [integratedOperator, ← h, haarAverage_apply]
-  simp only [ContinuousMap.comp_apply, ContinuousMap.coe_coe, ContinuousLinearMap.apply_apply,
-    weightFamily_apply, smul_apply]
-
-omit [CompleteSpace V] in
-@[simp]
-theorem integratedOperator_zero : integratedOperator π hπ (0 : C(G, 𝕜)) = 0 := by
-  have hzero : weightFamily π hπ (0 : C(G, 𝕜)) = 0 := by
-    ext g v
-    simp
-  rw [integratedOperator, hzero, map_zero]
+  simp
 
 omit [CompleteSpace V] in
 @[simp]
@@ -105,7 +96,7 @@ theorem integratedOperator_add (f₁ f₂ : C(G, 𝕜)) :
   have hadd : weightFamily π hπ (f₁ + f₂) = weightFamily π hπ f₁ + weightFamily π hπ f₂ := by
     ext g v
     simp [add_smul]
-  rw [integratedOperator, integratedOperator, integratedOperator, hadd, map_add]
+  simp [integratedOperator, hadd, map_add]
 
 omit [CompleteSpace V] in
 @[simp]
@@ -114,7 +105,7 @@ theorem integratedOperator_smul (c : 𝕜) (f : C(G, 𝕜)) :
   have hsmul : weightFamily π hπ (c • f) = c • weightFamily π hπ f := by
     ext g v
     simp [mul_smul]
-  rw [integratedOperator, integratedOperator, hsmul, map_smul]
+  simp [integratedOperator, hsmul, map_smul]
 
 omit [CompleteSpace V] in
 
@@ -138,7 +129,7 @@ omit hπ [TopologicalSpace G] [IsTopologicalGroup G] [CompactSpace G] [Measurabl
 
 private theorem conjOp_apply (h : G) (S : V →L[𝕜] V) :
     conjOp π h S = (π h⁻¹).comp (S.comp (π h)) := by
-  simp [conjOp, ContinuousLinearMap.compL_apply]
+  rfl
 
 variable {f : C(G, 𝕜)} (hf : ∀ g h : G, f (h * g * h⁻¹) = f g)
 
@@ -170,9 +161,9 @@ theorem integratedOperator_comp (h : G) :
   have hid : (π h).comp (π h⁻¹) = ContinuousLinearMap.id 𝕜 V := by
     rw [← ContinuousLinearMap.mul_def, ← map_mul, mul_inv_cancel, map_one,
       ContinuousLinearMap.one_def]
-  calc (integratedOperator π hπ f).comp (π h)
+  calc _
       = (ContinuousLinearMap.id 𝕜 V).comp ((integratedOperator π hπ f).comp (π h)) := by
-        rw [ContinuousLinearMap.id_comp]
+        rfl
     _ = ((π h).comp (π h⁻¹)).comp ((integratedOperator π hπ f).comp (π h)) := by rw [hid]
     _ = (π h).comp ((π h⁻¹).comp ((integratedOperator π hπ f).comp (π h))) :=
         ContinuousLinearMap.comp_assoc _ _ _
@@ -208,8 +199,7 @@ theorem trace_integratedOperator (f : C(G, 𝕜)) :
       = ∫ g, f g * character π hπ g ∂haarProb G := by
   have h := (traceCLM 𝕜 V).haarAverage_comp_comm (G := G) (weightFamily π hπ f)
   rw [← traceCLM_apply, integratedOperator, ← h, haarAverage_apply]
-  simp only [ContinuousMap.comp_apply, ContinuousMap.coe_coe, weightFamily_apply, map_smul,
-    traceCLM_apply, smul_eq_mul, character_apply]
+  simp
 
 variable [IsAlgClosed 𝕜] {f : C(G, 𝕜)} (hf : ∀ g h : G, f (h * g * h⁻¹) = f g)
 
@@ -220,17 +210,13 @@ theorem integratedOperator_eq_smul_id
     integratedOperator π hπ f
       = ((Module.finrank 𝕜 V : 𝕜)⁻¹ * ∫ g, f g * character π hπ g ∂haarProb G) •
         ContinuousLinearMap.id 𝕜 V := by
-  have hdim : (Module.finrank 𝕜 V : 𝕜) ≠ 0 :=
-    Representation.IsIrreducible.natCast_finrank_ne_zero hirr
-  have h := π.eq_finrank_inv_mul_trace_smul_id_of_isIrreducible hdim hirr
-    (integratedIntertwiner π hπ hf)
-  rwa [toContinuousLinearMap_integratedIntertwiner, trace_integratedOperator] at h
+  simpa [toContinuousLinearMap_integratedIntertwiner, trace_integratedOperator] using π.eq_finrank_inv_mul_trace_smul_id_of_isIrreducible (Representation.IsIrreducible.natCast_finrank_ne_zero hirr) hirr (integratedIntertwiner π hπ hf)
 
 theorem integratedOperator_eq_zero
     (hirr : Representation.IsIrreducible π.toRepresentation)
     (hzero : ∫ g, f g * character π hπ g ∂haarProb G = 0) :
     integratedOperator π hπ f = 0 := by
-  rw [integratedOperator_eq_smul_id π hπ hf hirr, hzero, mul_zero, zero_smul]
+  simp_all [integratedOperator_eq_smul_id]
 
 end Trace
 

@@ -30,7 +30,7 @@ theorem compact_kernel_representatives
   choose B hB hBn using fun z : T => exists_compact_mem_nhds (x z)
   have hn : ∀ z : T, (QuotientAddGroup.mk : KPCuspCharts.Horizontal F → T) '' B z ∈ 𝓝 z := by
     intro z
-    have hh : (QuotientAddGroup.mk : KPCuspCharts.Horizontal F → T) '' B z ∈
+    have hh : QuotientAddGroup.mk '' B z ∈
         𝓝 (QuotientAddGroup.mk (x z) : T) :=
       QuotientAddGroup.isOpenMap_coe.image_mem_nhds (hBn z)
     simpa only [hx z] using hh
@@ -38,7 +38,7 @@ theorem compact_kernel_representatives
   refine ⟨⋃ z ∈ J, B z, ?_, ?_⟩
   · exact J.finite_toSet.isCompact_biUnion (fun z _ => hB z)
   · intro z
-    have hz : z ∈ ⋃ y ∈ J, (QuotientAddGroup.mk : KPCuspCharts.Horizontal F → T) '' B y := by
+    have hz : z ∈ ⋃ y ∈ J, QuotientAddGroup.mk '' B y := by
       rw [hJ]; trivial
     simp only [Set.mem_iUnion] at hz
     obtain ⟨y, hy, v, hv, he⟩ := hz

@@ -11,9 +11,11 @@ open Filter
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 
-private theorem frame_observation_analytic
-    {V Y : Type*} [AddCommGroup V] [Module ℂ V] [FiniteDimensional ℂ V]
-    (J : ℂ → V →ₗ[ℂ] (Y → ℂ)) (b : ℂ → V) {z : ℂ}
+section
+
+variable {V Y : Type*} [AddCommGroup V] [Module ℂ V] [FiniteDimensional ℂ V] (J : ℂ → V →ₗ[ℂ] (Y → ℂ))
+
+private theorem frame_observation_analytic (b : ℂ → V) {z : ℂ}
     (hJ : ∀ v y, AnalyticAt ℂ (fun s => J s v y) z)
     (hb : ∀ l : V →ₗ[ℂ] ℂ, AnalyticAt ℂ (fun s => l (b s)) z) (y : Y) :
     AnalyticAt ℂ (fun s => J s (b s) y) z := by
@@ -21,16 +23,13 @@ private theorem frame_observation_analytic
   have he : (fun s => J s (b s) y) = fun s =>
       ∑ k, B.repr (b s) k * J s (B k) y := by
     funext s
-    have h := congrArg (fun v => J s v y) (B.sum_repr (b s))
-    simpa only [map_sum, map_smul, Finset.sum_apply, Pi.smul_apply, smul_eq_mul] using h.symm
+    simpa only [map_sum, map_smul, Finset.sum_apply, Pi.smul_apply, smul_eq_mul] using (congrArg (fun v => J s v y) (B.sum_repr (b s))).symm
   rw [he]
   apply Finset.analyticAt_fun_sum
   intro k _
   exact (hb ((Finsupp.lapply k).comp B.repr.toLinearMap)).mul (hJ (B k) y)
 
-private theorem frame_observation_meromorphic
-    {V Y : Type*} [AddCommGroup V] [Module ℂ V] [FiniteDimensional ℂ V]
-    (J : ℂ → V →ₗ[ℂ] (Y → ℂ)) (b : ℂ → V) {Ω : Set ℂ}
+private theorem frame_observation_meromorphic (b : ℂ → V) {Ω : Set ℂ}
     (hJ : ∀ v y, AnalyticOnNhd ℂ (fun s => J s v y) Ω)
     (hb : ∀ l : V →ₗ[ℂ] ℂ, MeromorphicOn (fun s => l (b s)) Ω) (y : Y) :
     MeromorphicOn (fun s => J s (b s) y) Ω := by
@@ -38,12 +37,13 @@ private theorem frame_observation_meromorphic
   have he : (fun s => J s (b s) y) = fun s =>
       ∑ k, B.repr (b s) k * J s (B k) y := by
     funext s
-    have h := congrArg (fun v => J s v y) (B.sum_repr (b s))
-    simpa only [map_sum, map_smul, Finset.sum_apply, Pi.smul_apply, smul_eq_mul] using h.symm
+    simpa only [map_sum, map_smul, Finset.sum_apply, Pi.smul_apply, smul_eq_mul] using (congrArg (fun v => J s v y) (B.sum_repr (b s))).symm
   rw [he]
   apply MeromorphicOn.fun_sum
   intro k _
   exact (hb ((Finsupp.lapply k).comp B.repr.toLinearMap)).mul (hJ (B k) y).meromorphicOn
+
+end
 
 theorem residue_mem_analytic_function_image
     {V Y : Type*} [AddCommGroup V] [Module ℂ V] [FiniteDimensional ℂ V]
@@ -57,7 +57,7 @@ theorem residue_mem_analytic_function_image
     (hpin : ∀ y, (fun s => H s y) =ᶠ[𝓝[≠] (0 : ℂ)] (fun s => s * I s y))
     (hch : ∀ s ∈ U, I s ∈ (J s).range) :
     H 0 ∈ (J 0).range := by
-  obtain ⟨n,p,b,hba,hbm,hnear,hgen⟩ := analytic_function_frame J hJ0 h0 hΩ hJa
+  obtain ⟨n, p, b, hba, hbm, hgen⟩ := analytic_function_frame J hJ0 h0 hΩ hJa
   let K := fun s y => ∑ i, I s (p i) * J s (b i s) y
   have hK : ∀ y, MeromorphicOn (fun s => K s y) Ω := by
     intro y

@@ -12,9 +12,7 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology
   KPAdelicCoverRestrictedProduct.pglLocalTopology
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming good_A → good_A
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming integral_iff → integral_iff
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_localIdele → eval_localIdele
+open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting (good_A integral_iff eval_localIdele)
 variable {F : Type} [Field F] [NumberField F]
 
 private theorem restricted_coordinates_continuous
@@ -84,7 +82,7 @@ theorem pglA_continuous (A : SArithmeticData F) :
         (fun q : KPFinitePlace F => Valued.isOpen_valuationSubring
           (q.adicCompletion F))).preimage continuous_snd
     let U : Set ((KPAdeles F)ˣ) := {y | (y : KPAdeles F) ∈ O ∧ (↑y⁻¹ : KPAdeles F) ∈ O}
-    have hU : IsOpen U := (hO.preimage Units.continuous_val).inter
+    have hU := (hO.preimage Units.continuous_val).inter
       (hO.preimage (Units.continuous_val.comp continuous_inv))
     refine ⟨U, hU, ⟨fun q hq => hq.2.1, fun q hq => hq.2.2⟩, S, hS, ?_⟩
     intro y hy v hv

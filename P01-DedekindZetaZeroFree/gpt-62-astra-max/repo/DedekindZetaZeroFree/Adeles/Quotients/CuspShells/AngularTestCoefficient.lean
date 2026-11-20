@@ -10,9 +10,9 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.KPMsNativeOffsetMass
 open KPMsActualAngularSource
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (S : NativeRecipe F ζ hζ R P)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (S : NativeRecipe F ζ hζ R P)
 
 namespace CoefficientAssembly
 open KPMsActualCuspSource KPMsActualAngularDescentSource
@@ -35,8 +35,7 @@ theorem fullShell_test_coefficient
     ∃ a : ℝ≥0∞, ∀ (Y : ℝ), OffsetAdmissible F ζ hζ R P S V Y →
       (∫⁻ ω, φ ω ∂fullShell F ζ hζ R P S V Y) = a := by
   classical
-  have hcoeff := fun j => ShellTestCoarea.cusp_test_coefficient S V j φ hφ
-  choose a ha using hcoeff
+  choose a ha using (fun j => ShellTestCoarea.cusp_test_coefficient S V j φ hφ)
   refine ⟨∑ j, a j, ?_⟩
   intro Y hY
   rw [fullShell, lintegral_finsetSum_measure]

@@ -11,29 +11,32 @@ namespace DedekindZetaZeroFree.ThetaArchInducedMajorant
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxRotatedKernelEstimates
 open MeasureTheory
 
-private lemma amplitude_diff (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
+section
+
+variable (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
+
+private lemma amplitude_diff
     (_hf : HasInducedAmplitudeEstimates β κ f) (u : ℂˣ) (_hu : ‖(u : ℂ)‖ = 1)
     (j h : ℕ) (ρ : ℝ) (hρ : 0 < ρ) :
-    Differentiable ℝ (amplitudeDerivative β κ f u j h ρ) := by
-  intro x
-  exact ((amplitudeDerivative_contDiffAt β κ f u j h (ρ, x) hρ).differentiableAt
+    Differentiable ℝ (amplitudeDerivative β κ f u j h ρ) := fun x => ((amplitudeDerivative_contDiffAt β κ f u j h (ρ, x) hρ).differentiableAt
     (by simp)).comp x (by fun_prop)
 
-private lemma amplitude_next (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
+private lemma amplitude_next
     (hf : HasInducedAmplitudeEstimates β κ f) (u : ℂˣ) (hu : ‖(u : ℂ)‖ = 1)
     (j h : ℕ) (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) :
     amplitudeDerivative β κ f u j (h + 1) ρ x =
       fderiv ℝ (amplitudeDerivative β κ f u j h ρ) x 1 := by
   have hh : HasDerivAt (fun t : ℝ => (⟨t, x.im⟩ : ℂ)) 1 x.re := by
-    convert (Complex.ofRealCLM.hasDerivAt (x := x.re)).add_const
+    convert (Complex.ofRealCLM.hasDerivAt).add_const
       ((x.im : ℂ) * Complex.I) using 1
     · funext t
       apply Complex.ext <;> simp
     · simp
-  have hd := ((amplitude_diff β κ f hf u hu j h ρ hρ x).hasFDerivAt.comp_hasDerivAt
-    x.re hh).deriv
   simpa [amplitudeDerivative, Function.iterate_succ_apply', horizontalRealDerivative,
-    Function.comp_def] using hd
+    Function.comp_def] using (((amplitude_diff β κ f hf u hu j h ρ hρ x).hasFDerivAt.comp_hasDerivAt
+      x.re hh).deriv)
+
+end
 
 private lemma phase_hasDerivAt (c : ℝ) (x : ℂ) :
     HasDerivAt
@@ -53,22 +56,18 @@ private lemma phase_deriv (c : ℝ) (x : ℂ) :
       (fun z : ℂ => Complex.exp (-Complex.I * ((c * z.re : ℝ) : ℂ))) := by
     fun_prop
   have ht : HasDerivAt (fun t : ℝ => x + (t : ℂ)) 1 0 := by
-    simpa using (Complex.ofRealCLM.hasDerivAt (x := (0 : ℝ))).const_add x
+    exact (Complex.ofRealCLM.hasDerivAt).const_add x
   have hx : HasFDerivAt
       (fun z : ℂ => Complex.exp (-Complex.I * ((c * z.re : ℝ) : ℂ)))
       (fderiv ℝ (fun z : ℂ => Complex.exp (-Complex.I * ((c * z.re : ℝ) : ℂ))) x)
       (x + (0 : ℝ)) := by
     simpa using (hd x).hasFDerivAt
   have ht' := hx.comp_hasDerivAt 0 ht
-  have hh : HasDerivAt
-      ((fun z : ℂ => Complex.exp (-Complex.I * ((c * z.re : ℝ) : ℂ))) ∘
-        (fun t : ℝ => x + (t : ℂ)))
-      (-Complex.I * (c : ℂ) * Complex.exp (-Complex.I * ((c * x.re : ℝ) : ℂ))) 0 :=
-    phase_hasDerivAt c x
-  simpa using ht'.unique hh
+  simpa using ht'.unique (phase_hasDerivAt c x)
 
-private lemma weighted_amplitude_integrable (β κ : ℂˣ)
-    (f : PrincipalSeries positiveParameter) (hf : HasInducedAmplitudeEstimates β κ f)
+variable (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
+
+private lemma weighted_amplitude_integrable (hf : HasInducedAmplitudeEstimates β κ f)
     (u : ℂˣ) (hu : ‖(u : ℂ)‖ = 1) (j h : ℕ) (hj : j ≤ 2)
     (ρ : ℝ) (hρ : 0 < ρ) :
     Integrable (fun x : ℂ =>
@@ -80,8 +79,7 @@ private lemma weighted_amplitude_integrable (β κ : ℂˣ)
   exact ((hf.2.2 j h hj u ρ hu hρ).1).bdd_mul hc.aestronglyMeasurable
     (c := 1) (by filter_upwards with x; simp [Complex.norm_exp, Complex.mul_re])
 
-private lemma induced_amplitude_integration_by_parts (β κ : ℂˣ)
-    (f : PrincipalSeries positiveParameter) (hf : HasInducedAmplitudeEstimates β κ f)
+private lemma induced_amplitude_integration_by_parts (hf : HasInducedAmplitudeEstimates β κ f)
     (j h : ℕ) (hj : j ≤ 2) (u : ℂˣ) (hu : ‖(u : ℂ)‖ = 1)
     (ρ : ℝ) (hρ : 0 < ρ) :
     ‖∫ x : ℂ, Complex.exp (-Complex.I * ((characterScale β * x.re : ℝ) : ℂ)) *
@@ -115,8 +113,7 @@ private lemma induced_amplitude_integration_by_parts (β κ : ℂˣ)
     simp only [pow_succ]
     ring
 
-lemma exists_norm_integral_exp_mul_amplitudeDerivative_zero_le (β κ : ℂˣ)
-    (f : PrincipalSeries positiveParameter) (hf : HasInducedAmplitudeEstimates β κ f)
+lemma exists_norm_integral_exp_mul_amplitudeDerivative_zero_le (hf : HasInducedAmplitudeEstimates β κ f)
     (j h : ℕ) (hj : j ≤ 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ (u : ℂˣ) (ρ : ℝ), ‖(u : ℂ)‖ = 1 → 0 < ρ →
       ‖∫ x : ℂ, Complex.exp (-Complex.I * ((characterScale β * x.re : ℝ) : ℂ)) *
@@ -128,12 +125,10 @@ lemma exists_norm_integral_exp_mul_amplitudeDerivative_zero_le (β κ : ℂˣ)
   intro u ρ hu hρ
   have hh := hb u ρ hu hρ
   rw [induced_amplitude_integration_by_parts β κ f hf j h hj u hu ρ hρ] at hh
-  have hp : 0 < characterScale β ^ h := pow_pos (characterScale_pos β) h
-  have hh' := mul_le_mul_of_nonneg_left hh (inv_nonneg.mpr hp.le)
-  simpa only [← mul_assoc, inv_mul_cancel₀ hp.ne', one_mul] using hh'
+  have hp := pow_pos (characterScale_pos β) h
+  simpa only [← mul_assoc, inv_mul_cancel₀ hp.ne', one_mul] using (mul_le_mul_of_nonneg_left hh (inv_nonneg.mpr hp.le))
 
-private lemma amplitude_radius_hasDerivAt (β κ : ℂˣ)
-    (f : PrincipalSeries positiveParameter) (_hf : HasInducedAmplitudeEstimates β κ f)
+private lemma amplitude_radius_hasDerivAt (_hf : HasInducedAmplitudeEstimates β κ f)
     (u : ℂˣ) (_hu : ‖(u : ℂ)‖ = 1) (j : ℕ) (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) :
     HasDerivAt (fun r : ℝ => amplitudeDerivative β κ f u j 0 r x)
       ((ρ : ℂ)⁻¹ * amplitudeDerivative β κ f u (j + 1) 0 ρ x) ρ := by
@@ -147,8 +142,7 @@ private lemma amplitude_radius_hasDerivAt (β κ : ℂˣ)
   rw [← mul_assoc, inv_mul_cancel₀ (Complex.ofReal_ne_zero.mpr hρ.ne'), one_mul]
   rfl
 
-lemma hasDerivAt_integral_exp_mul_amplitudeDerivative (β κ : ℂˣ)
-    (f : PrincipalSeries positiveParameter) (hf : HasInducedAmplitudeEstimates β κ f)
+lemma hasDerivAt_integral_exp_mul_amplitudeDerivative (hf : HasInducedAmplitudeEstimates β κ f)
     (u : ℂˣ) (hu : ‖(u : ℂ)‖ = 1) (j : ℕ) (hj : j + 1 ≤ 2)
     (ρ : ℝ) (hρ : 0 < ρ) :
     HasDerivAt (fun r : ℝ => ∫ x : ℂ,
@@ -176,7 +170,6 @@ lemma hasDerivAt_integral_exp_mul_amplitudeDerivative (β κ : ℂˣ)
         amplitudeDerivative β κ f u (j + 1) 0 r x)‖ ≤ (ρ / 2)⁻¹ * B x from by
       have hrp : 0 < r := by linarith [hr.1]
       have hb' := hb u r x hu ⟨hr.1.le, hr.2.le⟩
-      have hn : 0 ≤ B x := le_trans (norm_nonneg _) hb'
       simp only [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hrp]
       simpa [Complex.norm_exp, Complex.mul_re] using
         mul_le_mul ((inv_le_inv₀ hrp (by positivity)).mpr hr.1.le) hb'

@@ -15,8 +15,8 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
 
 set_option maxHeartbeats 1200000 in
 set_option backward.isDefEq.respectTransparency false in
@@ -66,11 +66,8 @@ theorem actual_weighted_compact_trivialization
     apply Subtype.ext
     funext h
     exact (hE f h).trans (hE₀ f h).symm
-  have hInv : ∀ f, E (E f) = f := heq ▸ hInv₀
-  have hAct : ∀ a f,
-      E ((centerTorus F ζ hζ q S.heisenberg S.borel .minus) a f) =
-        normPower (KPExceptionalRaw.LocalField F q) (S.borel.coordinate a) (-1/3) •
-          (centerTorus F ζ hζ q S.heisenberg S.borel .plus) a (E f) := heq ▸ hAct₀
+  have hInv := heq ▸ hInv₀
+  have hAct := heq ▸ hAct₀
   have hActPlus : ∀ a f,
       E ((centerTorus F ζ hζ q S.heisenberg S.borel .plus) a f) =
         normPower (KPExceptionalRaw.LocalField F q) (S.borel.coordinate a) (1/3) •
@@ -82,8 +79,7 @@ theorem actual_weighted_compact_trivialization
         normPower (KPExceptionalRaw.LocalField F q) (S.borel.coordinate a) (-1/3) = 1 := by
       simp only [normPower, ← Complex.exp_add, ← add_mul]
       norm_num
-    have hh := congrArg (normPower (KPExceptionalRaw.LocalField F q) (S.borel.coordinate a) (1/3) • ·) h
-    simpa only [smul_smul, hn, one_smul] using hh.symm
+    simpa only [smul_smul, hn, one_smul] using (congrArg (normPower (KPExceptionalRaw.LocalField F q) (S.borel.coordinate a) (1/3) • ·) h).symm
   have hCompact (ε : Sign) (b : S.borel.B)
       (hb : (b : KPRankOneOpenCellKernel.Cover F ζ hζ q) ∈ I.compact.toOpenSubgroup)
       (f : CenterModule S.heisenberg) :
@@ -118,9 +114,7 @@ theorem actual_weighted_compact_trivialization
         refine ⟨L, ?_⟩
         intro l hl
         funext k
-        exact congrArg E (congrFun (hL l hl) k)⟩, by
-      intro j k k' hk
-      exact congrArg E (φ.property j k k' hk)⟩
+        exact congrArg E (congrFun (hL l hl) k)⟩, fun j k k' hk => congrArg E (φ.property j k k' hk)⟩
     map_add' := by
       intro φ ψ
       apply Subtype.ext
@@ -151,10 +145,6 @@ theorem actual_weighted_compact_trivialization
       exact hInv _ }
   refine ⟨EM, EM.symm, rfl, fun φ k => rfl, fun φ k => rfl, ?_, ?_⟩
   · intro s φ g h
-    change (E (centerInducingAction F ζ hζ q S.heisenberg S.borel .minus (-s)
-      (I.borelPart g) (φ.val.val (I.compactPart g)))).val h =
-      (centerInducingAction F ζ hζ q S.heisenberg S.borel .plus (-s-1/3)
-        (I.borelPart g) (E (φ.val.val (I.compactPart g)))).val h
     change (E (inducingScalar S.borel (-s) (I.borelPart g) •
       (centerTorus F ζ hζ q S.heisenberg S.borel .minus) (S.borel.retract (I.borelPart g))
         (φ.val.val (I.compactPart g)))).val h =
@@ -174,10 +164,6 @@ theorem actual_weighted_compact_trivialization
       ring
     rw [he]
   · intro s φ g h
-    change (E (centerInducingAction F ζ hζ q S.heisenberg S.borel .plus s
-      (I.borelPart g) (φ.val.val (I.compactPart g)))).val h =
-      (centerInducingAction F ζ hζ q S.heisenberg S.borel .minus (s+1/3)
-        (I.borelPart g) (E (φ.val.val (I.compactPart g)))).val h
     change (E (inducingScalar S.borel s (I.borelPart g) •
       (centerTorus F ζ hζ q S.heisenberg S.borel .plus) (S.borel.retract (I.borelPart g))
         (φ.val.val (I.compactPart g)))).val h =

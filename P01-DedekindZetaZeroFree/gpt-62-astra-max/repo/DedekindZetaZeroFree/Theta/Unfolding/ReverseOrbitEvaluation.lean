@@ -12,8 +12,8 @@ open MomentSources NumberField MeasureTheory ThetaProfileHaarSheets ThetaSheetEx
 open ThetaExpansion.SignedExpansion
 open scoped Classical NumberField
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem orbitSheet_reverse_extraction {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)

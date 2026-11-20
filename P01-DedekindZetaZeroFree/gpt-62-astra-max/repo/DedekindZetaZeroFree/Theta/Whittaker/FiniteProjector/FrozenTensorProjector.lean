@@ -12,10 +12,10 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.FiniteWhittakerProjectors
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
-variable (D : SourceFactorization R Q T)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    (D : SourceFactorization R Q T)
 
 def rootSlotSum (s : RestrictedTensorSimple.Level D.bad)
     (x : ∀ p : s.val, actualLocal R D.finiteData p)
@@ -44,9 +44,6 @@ theorem tensor_rootSlotSum (s : RestrictedTensorSimple.Level D.bad)
   apply Finset.sum_congr rfl
   intro i _
   congr 1
-  change tensorFunction R D s (Function.update x j
-    (actualFiniteAction R D q.val
-      (KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val) (t i)) (x j))) g = _
   have hi := D.finite_intertwining q.val
     (KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val) (t i)) s hq x g
   rw [ExteriorWhittakerValues.StoredWhittaker.finite_root_injection R] at hi

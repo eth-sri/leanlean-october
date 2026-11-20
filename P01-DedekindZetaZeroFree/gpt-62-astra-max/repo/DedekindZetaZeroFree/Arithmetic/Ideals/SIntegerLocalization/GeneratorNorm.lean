@@ -11,17 +11,18 @@ namespace DedekindZetaZeroFree.SIntegerLocalization
 noncomputable section
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem exponent_eq_zero (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hext : I ⊔ (∏ v ∈ S, v.asIdeal) = ⊤)
+variable (S : Finset (HeightOneSpectrum (𝓞 F))) (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
+    (hext : I ⊔ (∏ v ∈ S, v.asIdeal) = ⊤)
+
+include hI hext in
+private theorem exponent_eq_zero
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∈ S) : idealPrimeExponent v.asIdeal I = 0 := by
   apply Multiset.count_eq_zero.mpr
   intro hf
-  have hle := (Ideal.mem_normalizedFactors_iff hI).mp hf |>.2
-  have hs : (∏ w ∈ S, w.asIdeal) ≤ v.asIdeal := v.isPrime.prod_le.mpr ⟨v, hv, le_rfl⟩
-  exact v.isPrime.ne_top (top_le_iff.mp (hext ▸ sup_le hle hs))
+  exact v.isPrime.ne_top (top_le_iff.mp (hext ▸ sup_le ((Ideal.mem_normalizedFactors_iff hI).mp hf |>.2) (v.isPrime.prod_le.mpr ⟨v, hv, le_rfl⟩)))
 
-theorem finite_norm_compensation (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hext : I ⊔ (∏ v ∈ S, v.asIdeal) = ⊤)
+include hI hext in
+theorem finite_norm_compensation
     (r : (S : Set (HeightOneSpectrum (𝓞 F))).integer F) (hr : r ≠ 0)
     (hspan : Ideal.span {r} = Ideal.map (algebraMap (𝓞 F) _) I) :
     (∏ᶠ w : FinitePlace F, w (r : F)) * (Ideal.absNorm I : ℝ) =
@@ -86,15 +87,14 @@ theorem finite_norm_compensation (S : Finset (HeightOneSpectrum (𝓞 F)))
     by_contra hn
     exact hv (hout v hn)
 
-theorem generator_norm (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hext : I ⊔ (∏ v ∈ S, v.asIdeal) = ⊤)
+include hI hext in
+theorem generator_norm
     (r : (S : Set (HeightOneSpectrum (𝓞 F))).integer F) (hr : r ≠ 0)
     (hspan : Ideal.span {r} = Ideal.map (algebraMap (𝓞 F) _) I) :
     (∏ w : InfinitePlace F, w (r : F) ^ w.mult) *
       (∏ v : S, HeightOneSpectrum.adicAbv F v.val (r : F)) = (Ideal.absNorm I : ℝ) := by
-  have hprod := NumberField.prod_abs_eq_one (fun h => hr (Subtype.ext h))
   rw [← finite_norm_compensation S I hI hext r hr hspan,
-    ← mul_assoc, hprod, one_mul]
+    ← mul_assoc, (NumberField.prod_abs_eq_one (fun h => hr (Subtype.ext h))), one_mul]
 
 end
 end DedekindZetaZeroFree.SIntegerLocalization

@@ -25,7 +25,6 @@ theorem continuous_of_closed_compact_factor
     · intro hg
       obtain ⟨b, hb, k, hk, rfl⟩ := hfactor g
       refine Set.mem_mul.mpr ⟨b, ⟨hb, ?_⟩, k, hk, rfl⟩
-      change f b ∈ s
       change f (b * k) ∈ s at hg
       rwa [hinvariant b hb k hk] at hg
     · intro hg
@@ -51,14 +50,13 @@ theorem fullCusp_isClosed_ordinaryBorel :
     IsClosed (KPGlobalTorusFunctionData.ordinaryBorel F : Set (AdelicPGL2 F)) := by
   letI : IsTopologicalGroup (AdelicGL2 F) := inferInstance
   rw [← (QuotientGroup.isQuotientMap_mk (scalarSubgroup F)).isClosed_preimage]
-  have he : (QuotientGroup.mk (s := scalarSubgroup F)) ⁻¹'
+  have he : (QuotientGroup.mk) ⁻¹'
       (KPGlobalTorusFunctionData.ordinaryBorel F : Set (AdelicPGL2 F)) =
       {A : AdelicGL2 F | A 1 0 = 0} := by
     ext A
     constructor
     · rintro ⟨B,hB,h10⟩
-      have hm := QuotientGroup.eq.mp hB
-      obtain ⟨z,hz⟩ := hm
+      obtain ⟨z,hz⟩ := (QuotientGroup.eq.mp hB)
       have he : A = B * Matrix.GeneralLinearGroup.scalar (Fin 2) z := by
         change Matrix.GeneralLinearGroup.scalar (Fin 2) z = B⁻¹ * A at hz
         rw [hz]
@@ -71,8 +69,7 @@ theorem fullCusp_isClosed_ordinaryBorel :
   rw [he]
   exact isClosed_eq (by fun_prop) continuous_const
 theorem fullCusp_isClosed_borel :
-    IsClosed (KPGlobalTorusFunctionData.borel F ζ hζ : Set (KPGlobalTorusFunctionData.G F ζ hζ)) := by
-  exact (fullCusp_isClosed_ordinaryBorel F).preimage
+    IsClosed (KPGlobalTorusFunctionData.borel F ζ hζ : Set (KPGlobalTorusFunctionData.G F ζ hζ)) := (fullCusp_isClosed_ordinaryBorel F).preimage
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous
 
 theorem fullCusp_iwasawaNorm_continuous_of_borel
@@ -145,11 +142,12 @@ private theorem upperRatio_det (A : AdelicGL2 F) (h : A 1 0 = 0) :
   have hd : Matrix.GeneralLinearGroup.det A =
       (iwasawaUpperUnits F A h).1.unit * (iwasawaUpperUnits F A h).2.unit := by
     apply Units.ext
-    change (A : Matrix (Fin 2) (Fin 2) (Adeles F)).det = _
     simp [Matrix.det_fin_two, h, IsUnit.unit_spec]
   rw [hd]
   unfold iwasawaUpperRatio
   constructor <;> simp [pow_two, mul_inv_rev, mul_assoc, mul_comm, mul_left_comm]
+
+alias BorelModulusAndIwasawaContinuity.upperRatio_det := upperRatio_det
 
 private theorem upperRatio_continuous :
     Continuous (fun A : {A : AdelicGL2 F | A 1 0 = 0} => iwasawaUpperRatio F A.val A.property) := by
@@ -157,15 +155,14 @@ private theorem upperRatio_continuous :
   have hc (i j : Fin 2) : Continuous (fun A : {A : AdelicGL2 F | A 1 0 = 0} => A.val i j) :=
     (Units.continuous_val.comp continuous_subtype_val).matrix_elem i j
   have hd : Continuous (fun A : {A : AdelicGL2 F | A 1 0 = 0} =>
-      ((Matrix.GeneralLinearGroup.det A.val)⁻¹ : (Adeles F)ˣ).val) := by
-    exact Units.continuous_coe_inv.comp (Matrix.GeneralLinearGroup.continuous_det.comp continuous_subtype_val)
+      ((Matrix.GeneralLinearGroup.det A.val)⁻¹ : (Adeles F)ˣ).val) := Units.continuous_coe_inv.comp (Matrix.GeneralLinearGroup.continuous_det.comp continuous_subtype_val)
   constructor
   · have he : (fun A : {A : AdelicGL2 F | A 1 0 = 0} =>
         (iwasawaUpperRatio F A.val A.property).val) =
         fun A => (A.val 0 0)^2 * ((Matrix.GeneralLinearGroup.det A.val)⁻¹ : (Adeles F)ˣ).val := by
       funext A
       rw [(upperRatio_det F A.val A.property).1]
-      simp only [Units.val_mul, Units.val_pow_eq_pow_val, IsUnit.unit_spec]
+      simp
     change Continuous (fun A : {A : AdelicGL2 F | A 1 0 = 0} => (iwasawaUpperRatio F A.val A.property).val)
     rw [he]
     exact (hc 0 0).pow 2 |>.mul hd
@@ -174,9 +171,11 @@ private theorem upperRatio_continuous :
         fun A => (A.val 1 1)^2 * ((Matrix.GeneralLinearGroup.det A.val)⁻¹ : (Adeles F)ˣ).val := by
       funext A
       rw [(upperRatio_det F A.val A.property).2]
-      simp only [Units.val_mul, Units.val_pow_eq_pow_val, IsUnit.unit_spec]
+      simp
     rw [he]
     exact (hc 1 1).pow 2 |>.mul hd
+
+alias BorelModulusAndIwasawaContinuity.upperRatio_continuous := upperRatio_continuous
 
  def ordinaryUpperRatio (b : KPGlobalTorusFunctionData.ordinaryBorel F) : (Adeles F)ˣ :=
   iwasawaUpperRatio F (Classical.choose b.property) (Classical.choose_spec b.property).2
@@ -187,18 +186,21 @@ private theorem ordinaryUpperRatio_formula (b : KPGlobalTorusFunctionData.ordina
   apply iwasawaUpperRatio_scalar
   exact (Classical.choose_spec b.property).1.trans hA.symm
 
+alias BorelModulusAndIwasawaContinuity.ordinaryUpperRatio_formula := ordinaryUpperRatio_formula
+
 private theorem upper_preimage_zero (A : AdelicGL2 F)
     (h : QuotientGroup.mk' (scalarSubgroup F) A ∈ KPGlobalTorusFunctionData.ordinaryBorel F) :
     A 1 0 = 0 := by
   obtain ⟨B,hB,h10⟩ := h
-  have hm := QuotientGroup.eq.mp hB
-  obtain ⟨z,hz⟩ := hm
+  obtain ⟨z,hz⟩ := (QuotientGroup.eq.mp hB)
   have he : A = B * Matrix.GeneralLinearGroup.scalar (Fin 2) z := by
     change Matrix.GeneralLinearGroup.scalar (Fin 2) z = B⁻¹ * A at hz
     rw [hz]; group
   rw [he]
   simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
     Fin.sum_univ_two, Matrix.scalar, h10]
+
+alias BorelModulusAndIwasawaContinuity.upper_preimage_zero := upper_preimage_zero
 
 private theorem ordinaryUpperRatio_continuous : Continuous (ordinaryUpperRatio F) := by
   let q : AdelicGL2 F → AdelicPGL2 F := QuotientGroup.mk' (scalarSubgroup F)
@@ -214,19 +216,19 @@ private theorem ordinaryUpperRatio_continuous : Continuous (ordinaryUpperRatio F
   rw [he]
   exact (upperRatio_continuous F).comp (continuous_subtype_val.subtype_mk _)
 
+alias BorelModulusAndIwasawaContinuity.ordinaryUpperRatio_continuous := ordinaryUpperRatio_continuous
+
 private theorem fullCusp_ideleAbs_continuous : Continuous (KPGlobalTorusFunctionData.ideleAbs F) := by
   have hfinite : Continuous (FiniteIdeleGroup.absoluteNorm (K := F)) := by
     apply continuous_of_continuousAt_one
-    apply (continuousAt_const (y := (1 : ℝ≥0ˣ))).congr_of_eventuallyEq
+    apply (continuousAt_const).congr_of_eventuallyEq
     have ho : IsOpen (FiniteIdeleGroup.integralSubgroup (K := F) : Set (FiniteIdeleGroup F)) := by
       simpa only [Finset.coe_empty, FiniteIdeleGroup.supportedAt_empty] using
         (FiniteIdeleGroup.isOpen_supportedAt (K := F) ∅)
     filter_upwards [ho.mem_nhds (Subgroup.one_mem _)] with a ha
     exact IdeleGroup.finite_absoluteNorm_eq_one_of_integral a ha
-  have hidele : Continuous (IdeleGroup.absoluteNorm (K := F)) :=
-    (hfinite.comp continuous_snd).mul
-      ((InfiniteIdeleGroup.continuous_archimedeanNorm.comp continuous_fst).inv)
-  exact (hidele.comp (IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm.continuous).inv
+  exact (((hfinite.comp continuous_snd).mul
+    ((InfiniteIdeleGroup.continuous_archimedeanNorm.comp continuous_fst).inv)).comp (IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm.continuous).inv
 
 theorem fullCusp_iwasawaNorm_continuousOn_borel
     (D : KPGlobalTorusBorelTwistCompatibility.IwasawaData F ζ hζ) :
@@ -236,24 +238,21 @@ theorem fullCusp_iwasawaNorm_continuousOn_borel
   apply continuousOn_iff_continuous_restrict.mpr
   let proj : KPGlobalTorusFunctionData.borel F ζ hζ → KPGlobalTorusFunctionData.ordinaryBorel F :=
     fun b => ⟨pglProjection F ζ hζ b.val, b.property⟩
-  have hp : Continuous proj :=
-    ((adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous.comp
-      continuous_subtype_val).subtype_mk _
   have he : (KPGlobalTorusFunctionData.borel F ζ hζ : Set _).domRestrict (fun g =>
       (((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D g : ℝ≥0) : ℝ))) =
       fun b => (((KPGlobalTorusFunctionData.ideleAbs F (ordinaryUpperRatio F (proj b)) : ℝ≥0) : ℝ)) := by
     funext b
     obtain ⟨t,x,hb⟩ := actual_borel_factorization F ζ hζ b
     obtain ⟨B,hB,h10⟩ := b.property
-    have hr := iwasawaUpperRatio_torus_root F ζ hζ t x B h10 (hB.trans (congrArg (pglProjection F ζ hζ) hb))
     have hf := KPGlobalTorusBorelTwistCompatibility.iwasawaNorm_formula F ζ hζ D t x 1
     simp only [OneMemClass.coe_one, mul_one] at hf
     change (((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D b.val : ℝ≥0) : ℝ)) = _
-    rw [hb, hf, ordinaryUpperRatio_formula F (proj b) B hB h10, hr]
+    rw [hb, hf, ordinaryUpperRatio_formula F (proj b) B hB h10, (iwasawaUpperRatio_torus_root F ζ hζ t x B h10 (hB.trans (congrArg (pglProjection F ζ hζ) hb)))]
     rfl
   rw [he]
   exact NNReal.continuous_coe.comp (Units.continuous_val.comp
-    ((fullCusp_ideleAbs_continuous F).comp ((ordinaryUpperRatio_continuous F).comp hp)))
+    ((fullCusp_ideleAbs_continuous F).comp ((ordinaryUpperRatio_continuous F).comp (((adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous.comp
+      continuous_subtype_val).subtype_mk _))))
 
 theorem fullCusp_iwasawaNorm_continuous
     (D : KPGlobalTorusBorelTwistCompatibility.IwasawaData F ζ hζ) :

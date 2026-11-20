@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -35,21 +31,26 @@ namespace SameUniformizer
 open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
-variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
-variable {σ : Type*}
+    {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    {σ : Type*}
+
+section
+
+variable (e : LubinTateSeries F π) (i : σ)
 
 /-- Insert a one-variable Lubin--Tate series into the variable `X_i`. -/
-noncomputable def inVariable (e : LubinTateSeries F π) (i : σ) :
+noncomputable def inVariable :
     MvPowerSeries σ F.valuationSubring :=
   PowerSeries.subst (MvPowerSeries.X i) e.toPowerSeries
 
 /-- States the theorem `constantCoeff_inVariable`. -/
 @[simp]
-theorem constantCoeff_inVariable (e : LubinTateSeries F π) (i : σ) :
-    MvPowerSeries.constantCoeff (inVariable e i) = 0 := by
-  exact PowerSeries.constantCoeff_subst_eq_zero
-    (MvPowerSeries.constantCoeff_X (R := F.valuationSubring) i)
+theorem constantCoeff_inVariable :
+    MvPowerSeries.constantCoeff (inVariable e i) = 0 := PowerSeries.constantCoeff_subst_eq_zero
+    (MvPowerSeries.constantCoeff_X i)
     e.toPowerSeries e.constantCoeff_eq_zero
+
+end
 
 /-- The family `i |-> e(X_i)` admits genuine multivariable
 substitution. -/
@@ -58,27 +59,29 @@ theorem inVariable_hasSubst [Finite σ] (e : LubinTateSeries F π) :
   MvPowerSeries.hasSubst_of_constantCoeff_zero
     (fun i ↦ constantCoeff_inVariable e i)
 
+section
+
+variable (e ebar : LubinTateSeries F π) (H : MvPowerSeries σ F.valuationSubring)
+
 /-- The literal same-uniformizer equation
 `e(H(X_i)) = H(ebar(X_i))`. -/
-def Intertwines (e ebar : LubinTateSeries F π)
-    (H : MvPowerSeries σ F.valuationSubring) : Prop :=
+def Intertwines : Prop :=
   PowerSeries.subst H e.toPowerSeries =
     MvPowerSeries.subst (fun i : σ ↦ inVariable ebar i) H
 
 /-- The coefficientwise defect whose vanishing is the intertwining
 equation. -/
-noncomputable def defect (e ebar : LubinTateSeries F π)
-    (H : MvPowerSeries σ F.valuationSubring) :
+noncomputable def defect :
     MvPowerSeries σ F.valuationSubring :=
   PowerSeries.subst H e.toPowerSeries -
     MvPowerSeries.subst (fun i : σ ↦ inVariable ebar i) H
 
 /-- States the theorem `intertwines_iff_defect_eq_zero`. -/
-theorem intertwines_iff_defect_eq_zero
-    (e ebar : LubinTateSeries F π)
-    (H : MvPowerSeries σ F.valuationSubring) :
+theorem intertwines_iff_defect_eq_zero :
     Intertwines e ebar H ↔ defect e ebar H = 0 := by
   simp only [Intertwines, defect, sub_eq_zero]
+
+end
 
 /-- Each variable itself intertwines a Lubin--Tate series with itself. -/
 theorem intertwines_X [Finite σ]

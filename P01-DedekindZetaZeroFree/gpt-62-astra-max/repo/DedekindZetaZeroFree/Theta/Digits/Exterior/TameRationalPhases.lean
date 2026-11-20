@@ -12,8 +12,8 @@ namespace DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 open MomentSources NumberField IsDedekindDomain ThetaExpansion ValuativeRel
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem localUnit_factorization (p : ThetaBranch.ExteriorPrime R.A) (x : Fˣ) :
     x = R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p) ^ ThetaBranch.order p.val x *

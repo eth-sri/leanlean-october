@@ -17,24 +17,20 @@ noncomputable def harmonicQuotient :
   ((standardIntertwiner (1 : ℂˣ)).toLinearMap.domRestrict harmonicPlus).codRestrict
     KPGlobalResidualConstruction.complexCore (by
       intro x
-      show (standardIntertwiner (1 : ℂˣ)) (x : PrincipalSeries positiveParameter) ∈
+      show (standardIntertwiner (1 : ℂˣ)) x ∈
         KPComplexStandardIntertwinerGerm.thetaCore (1 : ℂˣ)
-      have hx : (x : PrincipalSeries positiveParameter) ∈
-          KPComplexStandardIntertwinerGerm.ownedCore positiveParameter := x.property
-      have himg := KPComplexStandardIntertwinerGerm.actual_harishChandra_image (1 : ℂˣ)
-      have hmem : (standardIntertwiner (1 : ℂˣ)) (x : PrincipalSeries positiveParameter) ∈
+      have hmem : (standardIntertwiner (1 : ℂˣ)) x ∈
           (KPComplexStandardIntertwinerGerm.ownedCore positiveParameter).map
-            (standardIntertwiner (1 : ℂˣ)).toLinearMap := ⟨x, hx, rfl⟩
-      rw [himg] at hmem
+            (standardIntertwiner (1 : ℂˣ)).toLinearMap := ⟨x, x.property, rfl⟩
+      rw [(KPComplexStandardIntertwinerGerm.actual_harishChandra_image (1 : ℂˣ))] at hmem
       exact hmem)
 
 theorem harmonicQuotient_surjective : Function.Surjective harmonicQuotient := by
   intro y
-  have himg := KPComplexStandardIntertwinerGerm.actual_harishChandra_image (1 : ℂˣ)
   have hy : (y : PrincipalSeries negativeParameter) ∈
       (KPComplexStandardIntertwinerGerm.ownedCore positiveParameter).map
         (standardIntertwiner (1 : ℂˣ)).toLinearMap := by
-    rw [himg]
+    rw [(KPComplexStandardIntertwinerGerm.actual_harishChandra_image (1 : ℂˣ))]
     exact y.property
   obtain ⟨f, hf, hfeq⟩ := hy
   exact ⟨⟨f, hf⟩, Subtype.ext hfeq⟩

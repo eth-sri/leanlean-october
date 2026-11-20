@@ -14,10 +14,13 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayParity.ThetaMellinIntegral
 variable {K : Type} [Field K] [NumberField K]
 
  instance radSFinite : SFinite OrbitSlabMellin.μrad := by
-  change SFinite RayParity.«μ₊»
   infer_instance
 
- def cosetLatticeEquiv (D : RayCoset.Data K) :
+ section
+
+variable (D : RayCoset.Data K)
+
+def cosetLatticeEquiv :
     RayCoset.C D ≃ RayCoset.normalizedLattice D :=
   (RayCoset.normalizedEmbedding_bijOn D).equiv (RayCoset.normalizedEmbedding D) |>.trans
     { toFun := fun x => ⟨x.val - RayCoset.normalizedBasepoint D, x.property⟩
@@ -27,21 +30,21 @@ variable {K : Type} [Field K] [NumberField K]
       left_inv := fun x => by apply Subtype.ext; dsimp; abel
       right_inv := fun x => by apply Subtype.ext; dsimp; abel }
 
-private theorem cosetLatticeEquiv_apply (D : RayCoset.Data K) (α : RayCoset.C D) :
+private theorem cosetLatticeEquiv_apply (α : RayCoset.C D) :
     RayCoset.normalizedBasepoint D + (cosetLatticeEquiv D α).val =
       RayCoset.normalizedEmbedding D α.val := by
   change RayCoset.normalizedBasepoint D +
     (RayCoset.normalizedEmbedding D α.val - RayCoset.normalizedBasepoint D) = _
   abel
 
- def nonzeroCosetEquiv (D : RayCoset.Data K) :
+ def nonzeroCosetEquiv :
     RayCoset.Cx D ≃ {α : RayCoset.C D // α.val ≠ 0} where
   toFun α := ⟨⟨α.val, α.property.1⟩, by simpa using α.property.2⟩
   invFun α := ⟨α.val.val, α.val.property, by simpa using α.property⟩
   left_inv _ := rfl
   right_inv _ := rfl
 
-private theorem zero_mem_iff (D : RayCoset.Data K) :
+private theorem zero_mem_iff :
     (0 : 𝓞 K) ∈ RayCoset.C D ↔
       (0 : NumberField.mixedEmbedding.euclidean.mixedSpace K) ∈
         RayCoset.normalizedAffineCoset D := by
@@ -54,12 +57,11 @@ private theorem zero_mem_iff (D : RayCoset.Data K) :
       intro x y hxy
       apply RingOfIntegers.coe_injective
       apply NumberField.mixedEmbedding_injective K
-      have hh := (smul_right_injective _ (RayCoset.normalizationScale_pos D).ne').eq_iff.mp hxy
-      simpa [Theta.traceEmbedding] using congrArg (Theta.traceToMixed K) hh
-    have : α = 0 := hi (he.trans (map_zero _).symm)
+      simpa [Theta.traceEmbedding] using congrArg (Theta.traceToMixed K) ((smul_right_injective _ (RayCoset.normalizationScale_pos D).ne').eq_iff.mp hxy)
+    have := hi (he.trans (map_zero _).symm)
     simpa [this] using hα
 
-private theorem theta_sum_split (D : RayCoset.Data K)
+private theorem theta_sum_split
     (δ : Finset (RayCoset.RealPlaces K)) (t : ℝ) (ht : 0 < t)
     (h : RayCoset.logHyperplane K) :
     (∑' ℓ : RayCoset.normalizedLattice D,
@@ -82,8 +84,7 @@ private theorem theta_sum_split (D : RayCoset.Data K)
       (RayTheta.q K t h)
       (fun v => mul_pos (Real.rpow_pos_of_pos ht _) (Real.exp_pos _))
       (RayCoset.normalizedBasepoint D)).2.2.summable
-    have hc := (cosetLatticeEquiv D).summable_iff.mpr hl
-    simpa only [Function.comp_def, cosetLatticeEquiv_apply, f] using hc
+    simpa only [Function.comp_def, cosetLatticeEquiv_apply, f] using ((cosetLatticeEquiv D).summable_iff.mpr hl)
   have hnon : (∑' α : RayCoset.Cx D, gδ K δ
       (Q K (RayTheta.q K t h) (RayCoset.normalizedEmbedding D α.val))) =
       ∑' α : {α : RayCoset.C D // α.val ≠ 0}, f α.val := by
@@ -113,8 +114,12 @@ private theorem theta_sum_split (D : RayCoset.Data K)
     rw [← e.tsum_eq]
     simp [hz, e]
 
-theorem ae_weighted_tail_eq (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :
+end
+
+variable (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) (hs : 1 < s.re)
+
+include hs in
+theorem ae_weighted_tail_eq :
     ∀ᵐ t : ℝ ∂OrbitSlabMellin.μrad,
       (t : ℂ) ^ s * (RayTheta.fδ D δ t - RayTheta.f0δ D δ) =
         (RayCoset.rayUnitTorsionCard K D.m : ℂ)⁻¹ *
@@ -126,9 +131,8 @@ theorem ae_weighted_tail_eq (D : RayCoset.Data K)
   letI : IsFiniteMeasure ν :=
     (isFiniteMeasure_restrict).mpr
       (RayCoset.measure_rayUnitHalfOpenDomain_lt_top K D.m D.modulus_ne_bot).ne
-  have hi := (SlabAbsoluteSummability.integrable_tsum D δ s hs).prod_right_ae
-  filter_upwards [hi, RayParity.ae_positiveHaar_pos] with t hit ht
-  let G : RayCoset.logHyperplane K → ℂ := fun h =>
+  filter_upwards [((SlabAbsoluteSummability.integrable_tsum D δ s hs).prod_right_ae), RayParity.ae_positiveHaar_pos] with t hit ht
+  let G := fun h =>
     ∑' α : RayCoset.Cx D, gδ K δ
       (Q K (RayTheta.q K t h) (RayCoset.normalizedEmbedding D α.val))
   let c : ℂ := if δ = ∅ ∧ (0 : 𝓞 K) ∈ RayCoset.C D then 1 else 0
@@ -168,25 +172,21 @@ theorem ae_weighted_tail_eq (D : RayCoset.Data K)
   simp_rw [hF]
   rw [integral_const_mul]
   rw [RayTheta.fδ, if_pos ht]
-  change (t : ℂ)^s *
-    ((RayCoset.rayUnitTorsionCard K D.m : ℂ)⁻¹ * _ - _) = _
   rw [hsum, ← hc]
   ring
 
-theorem mellinConvergent (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :
-    MellinConvergent (fun t : ℝ => RayTheta.fδ D δ t - RayTheta.f0δ D δ) s := by
-  exact (RayTheta.Pδ D δ).hasMellin (s := s) hs |>.1
+include hs in
+theorem mellinConvergent :
+    MellinConvergent (fun t : ℝ => RayTheta.fδ D δ t - RayTheta.f0δ D δ) s := (RayTheta.Pδ D δ).hasMellin hs |>.1
 
-theorem mellin_eq_integral_tsum (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :
+include hs in
+theorem mellin_eq_integral_tsum :
     mellin (fun t : ℝ => RayTheta.fδ D δ t - RayTheta.f0δ D δ) s =
       (RayCoset.rayUnitTorsionCard K D.m : ℂ)⁻¹ *
         ∫ p, (∑' α : RayCoset.Cx D, OrbitSlabMellin.integrand D δ α s p)
           ∂(OrbitSlabMellin.μB D) := by
-  let ν := (Theta.normalizedLogHaar K).restrict
-    (RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot)
-  letI : IsFiniteMeasure ν :=
+  letI : IsFiniteMeasure ((Theta.normalizedLogHaar K).restrict
+    (RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot)) :=
     (isFiniteMeasure_restrict).mpr
       (RayCoset.measure_rayUnitHalfOpenDomain_lt_top K D.m D.modulus_ne_bot).ne
   have hconvert : (∫ t : ℝ,
@@ -199,10 +199,9 @@ theorem mellin_eq_integral_tsum (D : RayCoset.Data K)
     unfold mellin
     apply integral_congr_ae
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-    have ht0 : (t : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt ht)
     rw [ENNReal.toReal_ofReal (le_of_lt (inv_pos.mpr ht)),
       RCLike.real_smul_eq_coe_mul, smul_eq_mul]
-    rw [Complex.cpow_sub s 1 ht0, Complex.cpow_one, div_eq_mul_inv]
+    rw [Complex.cpow_sub s 1 (Complex.ofReal_ne_zero.mpr (ne_of_gt ht)), Complex.cpow_one, div_eq_mul_inv]
     rw [show RCLike.ofReal t⁻¹ = (↑t)⁻¹ from Complex.ofReal_inv t]
     ring
   rw [← hconvert]
@@ -210,8 +209,8 @@ theorem mellin_eq_integral_tsum (D : RayCoset.Data K)
   congr 1
   exact (integral_prod _ (SlabAbsoluteSummability.integrable_tsum D δ s hs)).symm
 
-theorem hasMellin (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :
+include hs in
+theorem hasMellin :
     HasMellin (fun t : ℝ => RayTheta.fδ D δ t - RayTheta.f0δ D δ) s
       (κδ K δ s * RayCoset.Zδ D δ s) := by
   refine ⟨mellinConvergent D δ s hs, ?_⟩

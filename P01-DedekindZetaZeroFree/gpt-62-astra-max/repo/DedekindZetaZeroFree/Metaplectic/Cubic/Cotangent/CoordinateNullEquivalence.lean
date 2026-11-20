@@ -23,10 +23,10 @@ open KPContActualCotangentCountableShrinking KPContCotangentActualGenuineTwistIs
 open KPContSectorPhaseComponentCharts
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 def BallInside (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F)) : Prop :=
   IsCompact (closure B.carrier) ∧
@@ -70,11 +70,7 @@ private lemma sectionNorm_toBase (a : ActualChart (U := U) (H := H))
   rw [toBase_eq (a := a) y]
   exact sectionNorm_component F ζ hζ U R P H u a.component y.val
 
-private lemma continuous_toActual :
-    Continuous (toActual (F := F) (ζ := ζ) (hζ := hζ)) := by
-  unfold KPContActualSectorChartEquivariantInputs.toActual
-    KPContCotangentActualOverlap.labeledA
-  fun_prop
+private alias continuous_toActual := DedekindZetaZeroFree.KPContActualSectorChartEquivariantInputs.continuous_toActual_aux
 
 private lemma measurable_toActual :
     Measurable (toActual (F := F) (ζ := ζ) (hζ := hζ)) :=
@@ -83,12 +79,9 @@ private lemma measurable_toActual :
 private lemma isOpen_chart (a : ActualChart (U := U) (H := H)) : IsOpen (chart a) :=
   a.domain_open.preimage continuous_toActual
 
-private lemma toActual_fromActual (y : KPCuspGenuineMonodromy.SymmetricSpace F) :
-    toActual (ζ := ζ) (hζ := hζ) (fromActual (ζ := ζ) (hζ := hζ) y) = y := by
-  simp only [KPContActualSectorChartEquivariantInputs.toActual,
-    KPContActualSectorChartEquivariantInputs.fromActual, LinearIsometryEquiv.symm_apply_apply]
-  funext k
-  simp [KPContCotangentActualOverlap.labeledA, KPContCotangentActualOverlap.labeledAInv]
+alias CoordinateNullEquivalence.isOpen_chart := isOpen_chart
+
+private alias toActual_fromActual := DedekindZetaZeroFree.KPContActualSectorChartEquivariantInputs.toActual_fromActual_aux
 
 private theorem sectionFields_apply_actual (s : Sections F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (x : omega a) :
@@ -101,20 +94,22 @@ private theorem sectionFields_apply_actual (s : Sections F ζ hζ U R P H)
   rw [sectionFields, hcoe]
   simp [isotropyChart, KPContCotangentActualOverlap.ChartKind.representative]
 
+alias CoordinateNullEquivalence.sectionFields_apply_actual := sectionFields_apply_actual
+
 private lemma scalar_eq_on_chart (s : BorelL2Sections F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (x : Space (3 * d F)) (hx : x ∈ chart a) :
     scalar s a x = (s.val a.component).val (toActual (ζ := ζ) (hζ := hζ) x) := by
-  have hx' : (baseReindex (F := F)).symm x ∈ omega a := by
+  have hx' : (baseReindex).symm x ∈ omega a := by
     rw [chart_eq_preimage] at hx; exact hx
   unfold scalar liftExtension
   rw [dif_pos hx', sectionFields_apply_actual]
   rfl
 
+alias CoordinateNullEquivalence.scalar_eq_on_chart := scalar_eq_on_chart
+
 private lemma sectionNorm_eq_zero_measurableSet (u : Sections F ζ hζ U R P H)
     (hu : ∀ i, Measurable (u i).val) :
     MeasurableSet {b | sectionNorm F ζ hζ U R P H u b = 0} := by
-  have hsq : Measurable (squaredNorm F ζ hζ U R P H u) :=
-    squaredNorm_measurable F ζ hζ U R P H u hu
   have hset : {b | sectionNorm F ζ hζ U R P H u b = 0} =
       {b | KPContSectorLineL2Isometry.squaredNorm F ζ hζ U R P H u b = 0} := by
     ext b
@@ -124,10 +119,9 @@ private lemma sectionNorm_eq_zero_measurableSet (u : Sections F ζ hζ U R P H)
     · intro h; rw [h]; simp
     · intro h
       simp only [ENNReal.ofReal_eq_zero] at h
-      have h2 : sectionNorm F ζ hζ U R P H u b ^ 2 = 0 := le_antisymm h (sq_nonneg _)
-      exact sq_eq_zero_iff.mp h2
+      exact sq_eq_zero_iff.mp (le_antisymm h (sq_nonneg _))
   rw [hset]
-  exact measurableSet_eq_fun hsq measurable_const
+  exact measurableSet_eq_fun (squaredNorm_measurable F ζ hζ U R P H u hu) measurable_const
 
 theorem scalar_ae_of_mk_eq (s t : BorelL2Sections F ζ hζ U R P H)
     (hst : mk F ζ hζ U R P H s = mk F ζ hζ U R P H t)

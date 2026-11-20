@@ -39,7 +39,7 @@ theorem primeToSquarefreeKernel_eq_of_coprime (c I : Ideal (𝓞 F)) (hI : I ≠
     intro p hp
     rw [hSdef, Finset.mem_filter, Multiset.mem_toFinset] at hp
     exact hp
-  have hprime : ∀ p ∈ S, Prime p := fun p hp =>
+  have hprime := fun p hp =>
     prime_of_normalized_factor p (hmem p hp).1
   have hkerne : DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I ≠ ⊥ := by
     rw [hker]
@@ -47,7 +47,7 @@ theorem primeToSquarefreeKernel_eq_of_coprime (c I : Ideal (𝓞 F)) (hI : I ≠
   have hnf : normalizedFactors (DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I) = S.val := by
     rw [hker]
     simpa using (normalizedFactors_prod_of_prime (m := S.val)
-      fun p hp => hprime p (by simpa using hp))
+      fun p hp => hprime p (by exact hp))
   have hsq : Squarefree (DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I) := by
     rw [squarefree_iff_nodup_normalizedFactors hkerne, hnf]
     exact S.nodup
@@ -55,13 +55,13 @@ theorem primeToSquarefreeKernel_eq_of_coprime (c I : Ideal (𝓞 F)) (hI : I ≠
     rw [dvd_iff_normalizedFactors_le_normalizedFactors hkerne hI, hnf]
     refine Multiset.le_iff_count.mpr fun p => ?_
     by_cases hp : p ∈ S
-    · have h1 : Multiset.count p S.val = 1 := Multiset.count_eq_one_of_mem S.nodup hp
+    · have h1 := Multiset.count_eq_one_of_mem S.nodup hp
       have h2 : 1 ≤ Multiset.count p (normalizedFactors I) := by
         have := (hmem p hp).2
         omega
       omega
-    · have h0 : Multiset.count p S.val = 0 :=
-        Multiset.count_eq_zero.mpr fun hc => hp (by simpa using hc)
+    · have h0 :=
+        Multiset.count_eq_zero.mpr fun hc => hp (by exact hc)
       omega
   have hrad : radical (DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I) =
       DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I := by
@@ -70,16 +70,10 @@ theorem primeToSquarefreeKernel_eq_of_coprime (c I : Ideal (𝓞 F)) (hI : I ≠
   have hfilter : ∀ p ∈ (normalizedFactors (DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I)).toFinset,
       ¬ p ∣ c := by
     intro p hp
-    have hpmem : p ∈ normalizedFactors (DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I) :=
+    have hpmem :=
       Multiset.mem_toFinset.mp hp
-    have hpprime : Prime p := prime_of_normalized_factor p hpmem
-    have hpdvd : p ∣ DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I := dvd_of_mem_normalizedFactors hpmem
     intro hpc
-    have h1 : I ≤ p := Ideal.dvd_iff_le.mp (hpdvd.trans hdvd)
-    have h2 : c ≤ p := Ideal.dvd_iff_le.mp hpc
-    have h3 : (⊤ : Ideal (𝓞 F)) ≤ p := by rw [← hcop]; exact sup_le h1 h2
-    have h4 : p = ⊤ := top_le_iff.mp h3
-    exact hpprime.not_isUnit (Ideal.isUnit_iff.mpr h4)
+    exact (prime_of_normalized_factor p hpmem).not_isUnit (Ideal.isUnit_iff.mpr (top_le_iff.mp (by rw [← hcop]; exact sup_le (Ideal.dvd_iff_le.mp ((dvd_of_mem_normalizedFactors hpmem).trans hdvd)) (Ideal.dvd_iff_le.mp hpc))))
   rw [primeToSquarefreeKernel, Finset.filter_true_of_mem hfilter]
   have : (∏ p ∈ (normalizedFactors (DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I)).toFinset, p)
       = radical (DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I) := by

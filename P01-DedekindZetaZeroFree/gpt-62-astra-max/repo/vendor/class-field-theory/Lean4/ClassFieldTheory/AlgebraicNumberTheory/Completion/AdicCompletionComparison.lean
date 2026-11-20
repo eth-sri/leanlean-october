@@ -18,16 +18,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -52,12 +42,13 @@ variable
     [Field K] [NumberField K]
     [Field L] [NumberField L] [Algebra K L]
 
+section
+
+variable (w : HeightOneSpectrum (𝓞 K)) (a : AbsoluteValueExtension (HeightOneSpectrum.adicAbv K w) L)
+
 /-- The concrete homomorphism of adic completions associated with an
 exact extension of the normalized absolute value. -/
-noncomputable def finitePlaceExtensionAdicCompletionMap
-    (w : HeightOneSpectrum (𝓞 K))
-    (a : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K w) L) :
+noncomputable def finitePlaceExtensionAdicCompletionMap :
     w.adicCompletion K →+*
       (finitePlaceExtensionCentre
         (K := K) (L := L) w a).adicCompletion L :=
@@ -70,9 +61,6 @@ noncomputable def finitePlaceExtensionAdicCompletionMap
 /-- The exact-extension completion map agrees with the field embedding
 on elements of the base number field. -/
 theorem finitePlaceExtensionAdicCompletionMap_coe
-    (w : HeightOneSpectrum (𝓞 K))
-    (a : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K w) L)
     (x : K) :
     finitePlaceExtensionAdicCompletionMap K L w a
         (x : w.adicCompletion K) =
@@ -81,7 +69,7 @@ theorem finitePlaceExtensionAdicCompletionMap_coe
           (K := K) (L := L) w a).adicCompletion L) := by
   have hcomparison :
       (relativeFinitePlaceCompletionAlgEquiv w).symm
-          (x : w.adicCompletion K) =
+          x =
         algebraMap K
           (HeightOneSpectrum.adicAbv K w).Completion x := by
     change
@@ -92,11 +80,11 @@ theorem finitePlaceExtensionAdicCompletionMap_coe
     exact (relativeFinitePlaceCompletionAlgEquiv w).symm.commutes x
   change
     finitePlaceExtensionAdicCompletionRingEquiv
-        (K := K) (L := L) w a
+          w a
         (AbsoluteValue.completionMap
           (HeightOneSpectrum.adicAbv K w) a.1 a.2
           ((relativeFinitePlaceCompletionAlgEquiv w).symm
-            (x : w.adicCompletion K))) =
+            x)) =
       _
   rw [hcomparison,
     AbsoluteValue.completionMap_coe,
@@ -105,40 +93,31 @@ theorem finitePlaceExtensionAdicCompletionMap_coe
 
 /-- The completion map defined using an exact absolute-value extension
 is continuous. -/
-theorem finitePlaceExtensionAdicCompletionMap_continuous
-    (w : HeightOneSpectrum (𝓞 K))
-    (a : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K w) L) :
+theorem finitePlaceExtensionAdicCompletionMap_continuous :
     Continuous
       (finitePlaceExtensionAdicCompletionMap K L w a) := by
-  have hrelative :
-      Isometry (relativeFinitePlaceCompletionAlgEquiv w).symm :=
-    AddMonoidHomClass.isometry_of_norm
-      (relativeFinitePlaceCompletionAlgEquiv w).symm
-      (relativeFinitePlaceCompletionAlgEquiv_symm_norm w)
   exact
     ((relativeFinitePlaceCompletionRingHom_isometry
       (finitePlaceExtensionCentre
-        (K := K) (L := L) w a)).continuous.comp
+          w a)).continuous.comp
       (finitePlaceExtensionCompletionRingEquiv_continuous
-        (K := K) (L := L) w a)).comp
+          w a)).comp
       ((AbsoluteValue.completionMap_isometry
         (HeightOneSpectrum.adicAbv K w) a.1 a.2).continuous.comp
-        hrelative.continuous)
+        (AddMonoidHomClass.isometry_of_norm
+          (relativeFinitePlaceCompletionAlgEquiv w).symm
+          (relativeFinitePlaceCompletionAlgEquiv_symm_norm w)).continuous)
 
 /-- The exact-extension construction and the canonical completion of the
 field embedding agree.  Equality on the dense copy of `K` is extended by
 continuity. -/
 theorem finitePlaceExtensionAdicCompletionMap_eq_finitePlaceAdicCompletionMap
-    (w : HeightOneSpectrum (𝓞 K))
-    (a : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K w) L)
     (x : w.adicCompletion K) :
     finitePlaceExtensionAdicCompletionMap K L w a x =
       finitePlaceAdicCompletionMap K L w
         (finitePlaceExtensionEquivAbove
           (K := K) (L := L) w a) x := by
-  let P : (w.valuation K).Completion → Prop := fun y =>
+  let P := fun y =>
     finitePlaceExtensionAdicCompletionMap K L w a
         (HeightOneSpectrum.adicCompletion.ofCompletion y) =
       finitePlaceAdicCompletionMap K L w
@@ -175,21 +154,23 @@ theorem finitePlaceExtensionAdicCompletionMap_eq_finitePlaceAdicCompletionMap
             (r : (w.valuation K).Completion))
     change
       finitePlaceExtensionAdicCompletionMap K L w a
-          (k : w.adicCompletion K) =
+          k =
         finitePlaceAdicCompletionMap K L w
           (finitePlaceExtensionEquivAbove
-            (K := K) (L := L) w a)
-          (k : w.adicCompletion K)
+              w a)
+          k
     rw [finitePlaceExtensionAdicCompletionMap_coe,
       finitePlaceAdicCompletionMap_coe]
     change
       (algebraMap K L k :
         (finitePlaceExtensionCentre
-          (K := K) (L := L) w a).adicCompletion L) =
+            w a).adicCompletion L) =
       (algebraMap K L k :
         (finitePlaceExtensionCentre
-          (K := K) (L := L) w a).adicCompletion L)
+            w a).adicCompletion L)
     rfl
+
+end
 
 /-- The concrete completion at a finite place above `w` is finite over the
 concrete completion at `w`, for the canonical completion map. -/
@@ -204,38 +185,33 @@ theorem finitePlaceAdicCompletionMap_moduleFinite
   classical
   obtain ⟨a, rfl⟩ :=
     (finitePlaceExtensionEquivAbove
-      (K := K) (L := L) w).surjective W
+        w).surjective W
   let vK := HeightOneSpectrum.adicAbv K w
-  let hvK : vK.IsNontrivial :=
-    RayClass.adicAbv_isNontrivial w
-  let : Algebra
-      (w.adicCompletion K)
-      ((finitePlaceExtensionEquivAbove
-        (K := K) (L := L) w a).1.adicCompletion L) :=
+  let :=
     (finitePlaceAdicCompletionMap K L w
       (finitePlaceExtensionEquivAbove
-        (K := K) (L := L) w a)).toAlgebra
+          w a)).toAlgebra
   let : Module
       (w.adicCompletion K)
       ((finitePlaceExtensionEquivAbove
-        (K := K) (L := L) w a).1.adicCompletion L) :=
+          w a).1.adicCompletion L) :=
     Algebra.toModule
-  let : Algebra (w.adicCompletion K) vK.Completion :=
+  let :=
     (relativeFinitePlaceCompletionAlgEquiv w).symm.toRingHom.toAlgebra
-  let : Algebra vK.Completion a.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra vK a.1 a.2
-  let : Algebra (w.adicCompletion K) a.1.Completion :=
+  let :=
     ((algebraMap vK.Completion a.1.Completion).comp
       (relativeFinitePlaceCompletionAlgEquiv w).symm.toRingHom).toAlgebra
   let : IsScalarTower
       (w.adicCompletion K) vK.Completion a.1.Completion :=
     IsScalarTower.of_algebraMap_eq' rfl
-  let : Module.Finite (w.adicCompletion K) vK.Completion :=
+  let :=
     Module.Finite.of_surjective
       (Algebra.linearMap (w.adicCompletion K) vK.Completion)
       (relativeFinitePlaceCompletionAlgEquiv w).symm.surjective
-  let : Module.Finite vK.Completion a.1.Completion :=
-    completionModuleFinite vK hvK a
+  let :=
+    completionModuleFinite vK (RayClass.adicAbv_isNontrivial w) a
   let : Module.Finite (w.adicCompletion K) a.1.Completion :=
     Module.Finite.trans vK.Completion a.1.Completion
   let e :
@@ -256,10 +232,13 @@ theorem finitePlaceAdicCompletionMap_moduleFinite
             K L w a x }
   exact Module.Finite.equiv e.toLinearEquiv
 
+section
+
+variable (w : HeightOneSpectrum (𝓞 K))
+
 /-- The norm of the image under the concrete adic-completion map is
 raised to the exact-extension exponent. -/
 theorem finitePlaceExtensionAdicCompletionMap_norm
-    (w : HeightOneSpectrum (𝓞 K))
     (a : AbsoluteValueExtension
       (HeightOneSpectrum.adicAbv K w) L)
     (x : w.adicCompletion K) :
@@ -268,7 +247,7 @@ theorem finitePlaceExtensionAdicCompletionMap_norm
         (K := K) (L := L) w a := by
   change
     ‖finitePlaceExtensionAdicCompletionRingEquiv
-        (K := K) (L := L) w a
+          w a
         (AbsoluteValue.completionMap
           (HeightOneSpectrum.adicAbv K w) a.1 a.2
           ((relativeFinitePlaceCompletionAlgEquiv w).symm x))‖ =
@@ -285,7 +264,6 @@ theorem finitePlaceExtensionAdicCompletionMap_norm
 /-- The canonical map between concrete adic completions preserves the
 valuation ring, expressed by the norm bound defining its unit ball. -/
 theorem finitePlaceAdicCompletionMap_norm_le_one_iff
-    (w : HeightOneSpectrum (𝓞 K))
     (W : {W : HeightOneSpectrum (𝓞 L) //
       finitePlaceBelow (K := K) W = w})
     (x : w.adicCompletion K) :
@@ -293,21 +271,23 @@ theorem finitePlaceAdicCompletionMap_norm_le_one_iff
       ‖x‖ ≤ 1 := by
   obtain ⟨a, rfl⟩ :=
     (finitePlaceExtensionEquivAbove
-      (K := K) (L := L) w).surjective W
+        w).surjective W
   have hnorm :
       ‖finitePlaceExtensionAdicCompletionMap K L w a x‖ =
         ‖finitePlaceAdicCompletionMap K L w
           (finitePlaceExtensionEquivAbove
-            (K := K) (L := L) w a) x‖ :=
+              w a) x‖ :=
     congrArg (fun y => ‖y‖)
       (finitePlaceExtensionAdicCompletionMap_eq_finitePlaceAdicCompletionMap
         K L w a x)
   rw [← hnorm,
     finitePlaceExtensionAdicCompletionMap_norm]
-  simpa only [Real.one_rpow] using
+  simpa using
     Real.rpow_le_rpow_iff (norm_nonneg x) zero_le_one
       (finitePlaceExtensionExponent_pos
-        (K := K) (L := L) w a)
+          w a)
+
+end
 
 /-- The valuation of the image under the concrete adic-completion map
 is multiplied by the ramification index.  This extends the corresponding
@@ -323,22 +303,18 @@ theorem finitePlaceExtensionAdicCompletionMap_valued
           (K := K) (L := L) w a).asIdeal := by
   let W :=
     finitePlaceExtensionCentre
-      (K := K) (L := L) w a
-  let : W.asIdeal.LiesOver w.asIdeal :=
+        w a
+  let :=
     finitePlaceExtensionCentre_liesOver
-      (K := K) (L := L) w a
+        w a
   by_cases hx : x = 0
   · subst x
-    have he :
-        w.asIdeal.ramificationIdx' W.asIdeal ≠ 0 :=
-      Ideal.IsDedekindDomain.ramificationIdx'_ne_zero_of_liesOver
-        W.asIdeal w.ne_bot
     simp only [map_zero]
-    exact (zero_pow he).symm
+    exact (zero_pow (Ideal.IsDedekindDomain.ramificationIdx'_ne_zero_of_liesOver
+      W.asIdeal w.ne_bot)).symm
   obtain ⟨r, hr⟩ := Valued.exists_coe_eq_v x.toCompletion
-  let k : K := WithVal.equiv (w.valuation K) r
+  let k := WithVal.equiv (w.valuation K) r
   have hkval : w.valuation K k = Valued.v x := by
-    change Valued.v r = Valued.v x
     rw [← HeightOneSpectrum.adicCompletion.valued_toCompletion]
     exact hr.symm
   have hk : k ≠ 0 := by
@@ -347,7 +323,7 @@ theorem finitePlaceExtensionAdicCompletionMap_valued
       rw [← hkval, hk, map_zero]
     apply hx
     simpa using this
-  let z : w.adicCompletion K := x * (k : w.adicCompletion K)⁻¹
+  let z := x * (k : w.adicCompletion K)⁻¹
   have hzval : Valued.v z = 1 := by
     simp [z, hkval, hx]
   have hznorm : ‖z‖ = 1 := by
@@ -356,14 +332,13 @@ theorem finitePlaceExtensionAdicCompletionMap_valued
       ‖finitePlaceExtensionAdicCompletionMap K L w a z‖ = 1 := by
     rw [finitePlaceExtensionAdicCompletionMap_norm, hznorm]
     simp
+  let v₀ := Valued.v (finitePlaceExtensionAdicCompletionMap K L w a z)
   have hmapzval :
-      Valued.v
-        (finitePlaceExtensionAdicCompletionMap K L w a z) = 1 := by
+      v₀ = 1 := by
     rw [FinitePlace.norm_def] at hmapznorm
     exact
       (WithZeroMulInt.toNNReal_eq_one_iff
-        (Valued.v
-          (finitePlaceExtensionAdicCompletionMap K L w a z))
+        (v₀)
         (HeightOneSpectrum.absNorm_ne_zero W)
         (HeightOneSpectrum.one_lt_absNorm_nnreal W).ne').mp
         (NNReal.eq hmapznorm)
@@ -383,8 +358,7 @@ theorem finitePlaceExtensionAdicCompletionMap_valued
           (finitePlaceExtensionAdicCompletionMap K L w a
             (z * (k : w.adicCompletion K))) := by
           rw [← hx_factor]
-    _ = Valued.v
-          (finitePlaceExtensionAdicCompletionMap K L w a z) *
+    _ = v₀ *
         Valued.v
           (finitePlaceExtensionAdicCompletionMap K L w a
             (k : w.adicCompletion K)) := by
@@ -415,7 +389,7 @@ theorem finitePlaceAdicCompletionMap_valued
       Valued.v x ^ w.asIdeal.ramificationIdx' W.1.asIdeal := by
   obtain ⟨a, rfl⟩ :=
     (finitePlaceExtensionEquivAbove
-      (K := K) (L := L) w).surjective W
+        w).surjective W
   rw [←
     finitePlaceExtensionAdicCompletionMap_eq_finitePlaceAdicCompletionMap]
   exact finitePlaceExtensionAdicCompletionMap_valued K L w a x

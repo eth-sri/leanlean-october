@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -55,16 +53,15 @@ theorem normFormula_extension_valuationSubring_eq_integralClosure_of_mem_or_inv
     wL.valuationSubring =
       integralClosureValuationSubringOfMemOrInv
         (L := L) V.valuation hval := by
-  let B : ValuationSubring L :=
+  let B :=
     integralClosureValuationSubringOfMemOrInv
-      (L := L) V.valuation hval
-  change wL.valuationSubring = B
-  let : V.valuation.HasExtension B.valuation :=
+       V.valuation hval
+  let :=
     integralClosureValuationSubringOfMemOrInv_hasExtension
-      (L := L) V.valuation hval
-  have hBW : B ≤ wL.valuationSubring :=
+       V.valuation hval
+  have hBW :=
     integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-      (L := L) V.valuation wL hval
+       V.valuation wL hval
   let i : V.valuation.valuationSubring →+* B :=
     { toFun := fun a =>
         ⟨algebraMap K L (a : K),
@@ -72,12 +69,12 @@ theorem normFormula_extension_valuationSubring_eq_integralClosure_of_mem_or_inv
             (L := L) V.valuation hval (a : K)).2 a.2⟩
       map_zero' := by ext; simp
       map_one' := by ext; simp
-      map_add' := by intro a b; ext; simp
-      map_mul' := by intro a b; ext; simp }
-  let : Algebra V.valuation.valuationSubring B := i.toAlgebra
+      map_add' := by simp
+      map_mul' := by simp}
+  let := i.toAlgebra
   let : IsScalarTower V.valuation.valuationSubring B L :=
     IsScalarTower.of_algebraMap_eq fun _ => rfl
-  let P : Ideal B :=
+  let P :=
     ValuationSubring.idealOfLE B wL.valuationSubring hBW
   have hPcomap :
       P.comap i =
@@ -89,12 +86,11 @@ theorem normFormula_extension_valuationSubring_eq_integralClosure_of_mem_or_inv
       B.inclusion wL.valuationSubring hBW (i a) ∈
           IsLocalRing.maximalIdeal wL.valuationSubring ↔
         a ∈ IsLocalRing.maximalIdeal V.valuation.valuationSubring
-    rw [Valuation.mem_maximalIdeal_iff (v := wL)]
-    rw [Valuation.mem_maximalIdeal_iff (v := V.valuation)]
+    rw [Valuation.mem_maximalIdeal_iff]
+    rw [Valuation.mem_maximalIdeal_iff]
     have hcoe :
         ((B.inclusion wL.valuationSubring hBW (i a) :
-          wL.valuationSubring) : L) = algebraMap K L (a : K) := by
-      rfl
+          wL.valuationSubring) : L) = algebraMap K L (a : K) := rfl
     rw [hcoe]
     exact
       _root_.Valuation.HasExtension.val_map_lt_one_iff
@@ -103,29 +99,22 @@ theorem normFormula_extension_valuationSubring_eq_integralClosure_of_mem_or_inv
       IsIntegralClosure B V.valuation.valuationSubring L := by
     simpa [B] using
       (integralClosureValuationSubringOfMemOrInv_isIntegralClosure
-        (L := L) V.valuation hval)
+         V.valuation hval)
   let : IsIntegralClosure B V.valuation.valuationSubring L := hBClosure
   have hBIntegral :
       Algebra.IsIntegral V.valuation.valuationSubring B :=
     IsIntegralClosure.isIntegral_algebra V.valuation.valuationSubring L
   let : Algebra.IsIntegral V.valuation.valuationSubring B := hBIntegral
   have hPmax : P.IsMaximal := by
-    have hcomapMax :
-        (P.comap (algebraMap V.valuation.valuationSubring B)).IsMaximal := by
-      change (P.comap i).IsMaximal
-      rw [hPcomap]
-      exact
-        IsLocalRing.maximalIdeal.isMaximal
-          V.valuation.valuationSubring
-    exact Ideal.isMaximal_of_isIntegral_of_isMaximal_comap i
-      (fun x => Algebra.IsIntegral.isIntegral x) P hcomapMax
-  have hP :
-      ValuationSubring.idealOfLE B wL.valuationSubring hBW =
-        IsLocalRing.maximalIdeal B :=
-    IsLocalRing.eq_maximalIdeal hPmax
+    refine Ideal.isMaximal_of_isIntegral_of_isMaximal_comap i
+      (fun x => Algebra.IsIntegral.isIntegral x) P ?_
+    rw [hPcomap]
+    exact
+      IsLocalRing.maximalIdeal.isMaximal
+        V.valuation.valuationSubring
   exact
     valuationSubring_eq_of_le_of_idealOfLE_eq_maximalIdeal
-      B wL.valuationSubring hBW hP
+      B wL.valuationSubring hBW (IsLocalRing.eq_maximalIdeal hPmax)
 
 end Valuation
 end DiscreteValuationField

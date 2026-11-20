@@ -28,12 +28,7 @@ set_option maxHeartbeats 800000 in
       (KPArithmeticAction.productProjectiveSection d (a • x))⁻¹ * a *
         KPArithmeticAction.productProjectiveSection d x) := by
     have hs := KPArithmeticAction.productProjectiveSection_continuous d
-    have ha : Continuous (fun x : X d => a • x) := continuous_const_smul a
-    have hb : Continuous (fun x : X d =>
-      (KPArithmeticAction.productProjectiveSection d (a • x))⁻¹) := (hs.comp ha).inv
-    have hm : Continuous (fun x : X d =>
-      (KPArithmeticAction.productProjectiveSection d (a • x))⁻¹ * a) := hb.mul_const a
-    exact hm.mul hs
+    exact (((hs.comp (continuous_const_smul a)).inv).mul_const a).mul hs
   exact hc.subtype_mk (fun x => (cocycle d a x).property)
 
 set_option maxHeartbeats 800000 in
@@ -69,7 +64,7 @@ theorem compact_fiber_lift_isHaar (d : ℕ)
     rw [he, he]
     change KPArithmeticAction.productProjectiveSection d (a • p.1) *
       (((KPArithmeticAction.productProjectiveSection d (a • p.1))⁻¹ * a *
-        KPArithmeticAction.productProjectiveSection d p.1) * (p.2 : G d)) = _
+        KPArithmeticAction.productProjectiveSection d p.1) * p.2) = _
     simp only [mul_assoc, mul_inv_cancel_left]
   rw [Measure.map_map (measurable_const_mul a) e.symm.measurable]
   have hh' := congrArg (Measure.map e.symm) hp.map_eq

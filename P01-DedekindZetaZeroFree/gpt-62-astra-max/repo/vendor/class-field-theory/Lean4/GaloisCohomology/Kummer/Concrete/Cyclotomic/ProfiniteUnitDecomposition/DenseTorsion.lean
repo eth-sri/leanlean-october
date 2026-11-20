@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -41,7 +39,7 @@ theorem dense_torsion_pi_of_finite
   rintro U hU ⟨x, hx⟩
   obtain ⟨S, u, hu, hSu⟩ :=
     isOpen_pi_iff.mp hU x hx
-  let y : (i : ι) → G i :=
+  let y :=
     fun i => if hi : i ∈ S then x i else 1
   refine ⟨y, hSu ?_, ?_⟩
   · intro i hi
@@ -49,13 +47,10 @@ theorem dense_torsion_pi_of_finite
     change (if _ : i ∈ S then x i else 1) ∈ u i
     simp only [hiS, ↓reduceDIte]
     exact (hu i hi).2
-  · change IsOfFinOrder y
-    let N := ∏ i ∈ S, orderOf (x i)
-    have hN : 0 < N := by
-      dsimp only [N]
-      exact Finset.prod_pos fun i _ => orderOf_pos (x i)
+  · let N := ∏ i ∈ S, orderOf (x i)
     apply isOfFinOrder_iff_pow_eq_one.mpr
-    refine ⟨N, hN, ?_⟩
+    refine ⟨N, by
+      exact Finset.prod_pos fun i _ => orderOf_pos (x i), ?_⟩
     funext i
     by_cases hi : i ∈ S
     · rw [Pi.pow_apply]

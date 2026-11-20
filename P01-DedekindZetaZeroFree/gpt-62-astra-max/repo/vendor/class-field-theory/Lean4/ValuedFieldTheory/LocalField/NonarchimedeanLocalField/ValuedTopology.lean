@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -40,9 +38,9 @@ theorem isValuativeTopology_of_valued_ofValuation
     letI := ValuativeRel.ofValuation (Valued.v : Valuation F Γ)
     IsValuativeTopology F := by
   let v : Valuation F Γ := Valued.v
-  let : ValuativeRel F := ValuativeRel.ofValuation v
-  let : v.Compatible := Valuation.Compatible.ofValuation v
-  let : ValuativeRel.IsNontrivial F :=
+  let := ValuativeRel.ofValuation v
+  let := Valuation.Compatible.ofValuation v
+  let :=
     (ValuativeRel.isNontrivial_iff_isNontrivial v).2 inferInstance
   apply IsValuativeTopology.of_zero
   intro s
@@ -54,24 +52,17 @@ theorem isValuativeTopology_of_valued_ofValuation
           (ValuativeRel.ValueGroupWithZero.orderMonoidIso v).symm, ?_⟩
     intro z hz
     apply hδ
-    exact
-      (ValuativeRel.valuation_lt_symm_orderMonoidIso
-        v δ.1 z).1
-        (by simpa using hz)
+    exact (ValuativeRel.valuation_lt_symm_orderMonoidIso v (↑δ) z).mp hz
   · rintro ⟨γ, hγ⟩
     refine
       ⟨γ.mapEquiv
           (ValuativeRel.ValueGroupWithZero.orderMonoidIso v), ?_⟩
     intro z hz
     apply hγ
-    have hz' :
-        v.restrict z <
-          (ValuativeRel.ValueGroupWithZero.orderMonoidIso v)
-            γ.1 := by
-      exact hz
-    exact
+    refine
       (ValuativeRel.restrict_lt_orderMonoidIso
-        v γ.1 z).1 hz'
+        v γ.1 z).1 ?_
+    exact hz
 
 end LocalFieldTheory
 

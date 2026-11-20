@@ -13,29 +13,22 @@ noncomputable section
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem finite_mulChar_norm_le_one {R : Type*} [CommRing R] [Fintype R]
-    (χ : MulChar R ℂ) (r : R) : ‖χ r‖ ≤ 1 := by
-  by_cases hr : IsUnit r
-  · obtain ⟨u, rfl⟩ := hr
-    exact (Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)).le
-  · simp [χ.map_nonunit hr]
-
 private theorem gaussian_square_norm_bound (qc qn Z : ℝ)
     (hc : 0 < qc) (hn : 0 < qn) (hZ : 0 < Z) :
     |thetaReflectionGaussian (qc * qn ^ 3 / Z)| / (Real.sqrt qc * qn) ≤
       (Real.exp 4 / (2 * Real.sqrt Real.pi) * Z ^ 2) *
         qc ^ (-(5 / 2 : ℝ)) * qn ^ (-(7 : ℝ)) := by
-  have hq : 0 < qc * qn ^ 3 := by positivity
   have hg := ProbePoissonGaussianRowBound.gaussian_power_bound 2
-    (qc * qn ^ 3 / Z) (div_pos hq hZ)
+    (qc * qn ^ 3 / Z) (div_pos (by positivity) hZ)
   rw [Real.rpow_two] at hg
-  have hb : |thetaReflectionGaussian (qc * qn ^ 3 / Z)| ≤
+  let thetaReflectionGaussian₀ := thetaReflectionGaussian (qc * qn ^ 3 / Z)
+  have hb : |thetaReflectionGaussian₀| ≤
       (Real.exp 4 / (2 * Real.sqrt Real.pi) * Z ^ 2) / (qc ^ 2 * qn ^ 6) := by
     apply (le_div_iff₀ (by positivity : 0 < qc ^ 2 * qn ^ 6)).mpr
     have hh := mul_le_mul_of_nonneg_right hg (sq_nonneg Z)
     have he : (qc * qn ^ 3 / Z) ^ 2 *
-        |thetaReflectionGaussian (qc * qn ^ 3 / Z)| * Z ^ 2 =
-        |thetaReflectionGaussian (qc * qn ^ 3 / Z)| * (qc ^ 2 * qn ^ 6) := by
+        |thetaReflectionGaussian₀| * Z ^ 2 =
+        |thetaReflectionGaussian₀| * (qc ^ 2 * qn ^ 6) := by
       field_simp
     rw [he] at hh
     norm_num at hh ⊢
@@ -68,7 +61,7 @@ theorem forwardSummand_norm_summable_of_weight
       let a := ThetaReflectionData.forwardModulus A D c n
       have ha : a ≠ 0 := mul_ne_zero (D.generates c.val).1 (pow_ne_zero _ (D.generates n).1)
       letI := D.finiteResidue a ha
-      exact finite_mulChar_norm_le_one _ _
+      apply @DedekindZetaZeroFree.FiniteTransform.ResidueRowFourierTransform.char_norm_le_one <;> assumption
     apply le_trans (b := |thetaReflectionGaussian
       (A.exteriorNorm c.val * A.exteriorNorm n ^ 3 / Z)| /
         (Real.sqrt (A.exteriorNorm c.val) * A.exteriorNorm n))
@@ -87,7 +80,7 @@ theorem forwardSummand_norm_summable_of_weight
   have hf : Summable f :=
     (ProbeExteriorIdealCount.ideal_norm_summable F A.cS (5 / 2) (by norm_num)).comp_injective
       Subtype.val_injective
-  have hg : Summable g := ProbeExteriorIdealCount.ideal_norm_summable F A.cS 7 (by norm_num)
+  have hg := ProbeExteriorIdealCount.ideal_norm_summable F A.cS 7 (by norm_num)
   have hf0 : ∀ c, 0 ≤ f c := fun c => Real.rpow_nonneg (A.exteriorNorm_pos c.val).le _
   have hg0 : ∀ n, 0 ≤ g n := fun n => Real.rpow_nonneg (A.exteriorNorm_pos n).le _
   have hfg : Summable (fun i : ExteriorSquarefreeIdeal A.cS × A.Exterior => f i.1 * g i.2) :=

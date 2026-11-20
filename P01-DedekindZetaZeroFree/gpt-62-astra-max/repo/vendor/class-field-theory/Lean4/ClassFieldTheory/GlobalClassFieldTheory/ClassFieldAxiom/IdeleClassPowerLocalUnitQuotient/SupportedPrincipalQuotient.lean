@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -60,17 +54,17 @@ noncomputable def sUnitEquivSupportedPrincipalIdeleSubgroup
     SUnitGroup (K := K) (S ∪ T) ≃*
       supportedPrincipalIdeleSubgroup (K := K) S T := by
   let f :
-      SUnitGroup (K := K) (S ∪ T) →*
-        supportedPrincipalIdeleSubgroup (K := K) S T :=
+      SUnitGroup (S ∪ T) →*
+        supportedPrincipalIdeleSubgroup S T :=
     { toFun := fun x => by
         have hsupp :
             IdeleGroup.principalIdele K (x : Kˣ) ∈
               IdeleGroup.supportedAt
-                (K := K)
+
                 (S ∪ T : Set (HeightOneSpectrum (𝓞 K))) := by
-          simpa only [Finset.coe_union] using
+          simpa using
             (_root_.principalIdele_mem_supportedAt_iff_sUnit
-              (L := K) (S ∪ T) (x : Kˣ)).2 x.property
+               (S ∪ T) (x : Kˣ)).2 x.property
         refine ⟨⟨IdeleGroup.principalIdele K (x : Kˣ), hsupp⟩, ?_⟩
         exact ⟨(x : Kˣ), rfl⟩
       map_one' := by
@@ -90,12 +84,8 @@ noncomputable def sUnitEquivSupportedPrincipalIdeleSubgroup
     have h :=
       congrArg
         (fun z :
-          supportedPrincipalIdeleSubgroup (K := K) S T =>
-            ((z :
-                IdeleGroup.supportedAt
-                  (K := K)
-                  (S ∪ T :
-                    Set (HeightOneSpectrum (𝓞 K)))) :
+          supportedPrincipalIdeleSubgroup S T =>
+            (z :
               IdeleGroup K))
         hxy
     exact h
@@ -104,14 +94,14 @@ noncomputable def sUnitEquivSupportedPrincipalIdeleSubgroup
     have hsupp :
         IdeleGroup.principalIdele K x ∈
           IdeleGroup.supportedAt
-            (K := K)
+
             (S ∪ T : Set (HeightOneSpectrum (𝓞 K))) := by
       rw [hx]
       exact y.1.property
-    have hxS : x ∈ SUnitGroup (K := K) (S ∪ T) := by
+    have hxS : x ∈ SUnitGroup (S ∪ T) := by
       apply
         (_root_.principalIdele_mem_supportedAt_iff_sUnit
-          (L := K) (S ∪ T) x).1
+           (S ∪ T) x).1
       simpa only [Finset.coe_union] using hsupp
     refine ⟨⟨x, hxS⟩, ?_⟩
     apply Subtype.ext
@@ -134,20 +124,20 @@ theorem sUnitEquivSupportedPrincipalIdeleSubgroup_coe
         IdeleGroup.principalIdele K (x : Kˣ) :=
   rfl
 
+section
+
+variable (n : ℕ+) (S T : Finset (HeightOneSpectrum (𝓞 K)))
+
 /-- Under the preceding diagonal equivalence, this is the subgroup of
 `(S ∪ T)`-units whose principal ideles belong to `h(S,T)`. -/
-def sUnitPrincipalIdelePowerSubgroup
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+def sUnitPrincipalIdelePowerSubgroup :
     Subgroup (SUnitGroup (K := K) (S ∪ T)) :=
   (principalIdelePowerLocalUnitSubgroup (K := K) n S T).comap
     (SUnitGroup (K := K) (S ∪ T)).subtype
 
 /-- The diagonal equivalence carries the principal part of `h(S,T)`
 to the intersection of `h(S,T)` with the supported principal ideles. -/
-theorem sUnitPrincipalIdelePowerSubgroup_map
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem sUnitPrincipalIdelePowerSubgroup_map :
     (sUnitPrincipalIdelePowerSubgroup (K := K) n S T).map
         (sUnitEquivSupportedPrincipalIdeleSubgroup
           (K := K) S T).toMonoidHom =
@@ -157,47 +147,44 @@ theorem sUnitPrincipalIdelePowerSubgroup_map
   ext x
   constructor
   · rintro ⟨y, hy, rfl⟩
-    have hy' :
-      IdeleGroup.principalIdele K (y : Kˣ) ∈
-        idelePowerLocalUnitSubgroup (K := K) n S T := by
-      exact hy
     show
       (((sUnitEquivSupportedPrincipalIdeleSubgroup
-            (K := K) S T y :
-          supportedPrincipalIdeleSubgroup (K := K) S T) :
+             S T y :
+          supportedPrincipalIdeleSubgroup S T) :
         IdeleGroup.supportedAt
-          (K := K)
+
           (S ∪ T : Set (HeightOneSpectrum (𝓞 K)))) :
         IdeleGroup K) ∈
-          idelePowerLocalUnitSubgroup (K := K) n S T
+          idelePowerLocalUnitSubgroup n S T
     rw [sUnitEquivSupportedPrincipalIdeleSubgroup_coe]
-    exact hy'
+    exact hy
   · intro hx
     let e :=
       sUnitEquivSupportedPrincipalIdeleSubgroup
-        (K := K) S T
+         S T
     refine ⟨e.symm x, ?_, e.apply_symm_apply x⟩
     have hx' :
         e (e.symm x) ∈
           (supportedIdelePowerLocalUnitSubgroup
-            (K := K) n S T).subgroupOf
-              (supportedPrincipalIdeleSubgroup (K := K) S T) := by
+             n S T).subgroupOf
+              (supportedPrincipalIdeleSubgroup S T) := by
       rw [e.apply_symm_apply]
       exact hx
     change
       IdeleGroup.principalIdele K ((e.symm x : _) : Kˣ) ∈
-        idelePowerLocalUnitSubgroup (K := K) n S T
+        idelePowerLocalUnitSubgroup n S T
     have hxIdele :
         (((e (e.symm x) :
-              supportedPrincipalIdeleSubgroup (K := K) S T) :
+              supportedPrincipalIdeleSubgroup S T) :
             IdeleGroup.supportedAt
-              (K := K)
+
               (S ∪ T : Set (HeightOneSpectrum (𝓞 K)))) :
           IdeleGroup K) ∈
-            idelePowerLocalUnitSubgroup (K := K) n S T := by
-      exact hx'
+            idelePowerLocalUnitSubgroup n S T := hx'
     rw [sUnitEquivSupportedPrincipalIdeleSubgroup_coe] at hxIdele
     exact hxIdele
+
+end
 
 /-- The left term in the supported exact sequence, expressed as the
 actual quotient of `(S ∪ T)`-units satisfying the principal
@@ -257,11 +244,11 @@ local instance supportedClassQuotient_isMulCommutative :
     IsMulCommutative (IdeleClassGroup K) :=
   ⟨⟨fun a b => mul_comm a b⟩⟩
 
+variable (n : ℕ+) (S T : Finset (HeightOneSpectrum (𝓞 K)))
+
 /-- The natural map from supported ideles to
 `C_K/C_K(S,T)`. -/
-def supportedIdeleToClassPowerQuotient
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+def supportedIdeleToClassPowerQuotient :
     IdeleGroup.supportedAt
           (K := K) (S ∪ T : Set (HeightOneSpectrum (𝓞 K))) →*
       IdeleClassPowerLocalUnitQuotient (K := K) n S T :=
@@ -274,54 +261,35 @@ def supportedIdeleToClassPowerQuotient
 
 /-- The kernel of the supported class-quotient map is precisely the
 subgroup generated by `h(S,T)` and the supported principal ideles. -/
-theorem supportedIdeleToClassPowerQuotient_ker
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem supportedIdeleToClassPowerQuotient_ker :
     (supportedIdeleToClassPowerQuotient
       (K := K) n S T).ker =
       supportedIdeleClassPowerDenominator (K := K) n S T := by
   let U :=
     IdeleGroup.supportedAt
-      (K := K) (S ∪ T : Set (HeightOneSpectrum (𝓞 K)))
-  let H :=
-    supportedIdelePowerLocalUnitSubgroup (K := K) n S T
-  let P := supportedPrincipalIdeleSubgroup (K := K) S T
+       (S ∪ T : Set (HeightOneSpectrum (𝓞 K)))
+  let P := supportedPrincipalIdeleSubgroup S T
   ext x
   rw [MonoidHom.mem_ker]
   change
     QuotientGroup.mk'
-        (ideleClassPowerLocalUnitSubgroup (K := K) n S T)
+        (ideleClassPowerLocalUnitSubgroup n S T)
         (QuotientGroup.mk'
-          (IdeleGroup.principalSubgroup K) (x : IdeleGroup K)) = 1 ↔
-      x ∈ H ⊔ P
+          (IdeleGroup.principalSubgroup K) x) = 1 ↔
+      x ∈ (supportedIdelePowerLocalUnitSubgroup n S T) ⊔ P
   constructor
   · intro hx
-    have hxClass :
-        QuotientGroup.mk'
-            (IdeleGroup.principalSubgroup K)
-            (x : IdeleGroup K) ∈
-          ideleClassPowerLocalUnitSubgroup (K := K) n S T :=
-      (QuotientGroup.eq_one_iff _).mp hx
-    rcases hxClass with ⟨h, hh, heq⟩
-    have hhU :
-        h ∈ U :=
-      idelePowerLocalUnitSubgroup_le_supportedAt
-        (K := K) n S T hh
-    let hU : U := ⟨h, hhU⟩
+    rcases ((QuotientGroup.eq_one_iff _).mp hx) with ⟨h, hh, heq⟩
+    let hU : U := ⟨h, (idelePowerLocalUnitSubgroup_le_supportedAt
+      n S T hh)⟩
     have hpDiv :
-        (x : IdeleGroup K) / h ∈
+        x / h ∈
           IdeleGroup.principalSubgroup K := by
-      have hpInv :
-          h / (x : IdeleGroup K) ∈
-            IdeleGroup.principalSubgroup K :=
-        (QuotientGroup.eq_iff_div_mem).mp heq
       simpa [div_eq_mul_inv, mul_comm] using
-        (IdeleGroup.principalSubgroup K).inv_mem hpInv
-    let pU : U := x / hU
-    have hpU : pU ∈ P := by
-      exact hpDiv
+        (IdeleGroup.principalSubgroup K).inv_mem ((QuotientGroup.eq_iff_div_mem).mp heq)
+    let pU := x / hU
     apply Subgroup.mem_sup.mpr
-    refine ⟨hU, hh, pU, hpU, ?_⟩
+    refine ⟨hU, hh, pU, hpDiv, ?_⟩
     simp [pU]
   · intro hx
     apply (QuotientGroup.eq_one_iff _).mpr
@@ -330,13 +298,13 @@ theorem supportedIdeleToClassPowerQuotient_ker
     have hhClass :
         QuotientGroup.mk'
             (IdeleGroup.principalSubgroup K)
-            (h : IdeleGroup K) ∈
+            h ∈
           ideleClassPowerLocalUnitSubgroup (K := K) n S T := by
       exact ⟨(h : IdeleGroup K), hh, rfl⟩
     have hpOne :
         QuotientGroup.mk'
             (IdeleGroup.principalSubgroup K)
-            (p : IdeleGroup K) = 1 :=
+            p = 1 :=
       (QuotientGroup.eq_one_iff _).mpr hp
     have hmul :
         QuotientGroup.mk'
@@ -351,15 +319,13 @@ theorem supportedIdeleToClassPowerQuotient_ker
       simp
     rw [hmul, hpOne]
     exact
-      (ideleClassPowerLocalUnitSubgroup (K := K) n S T).mul_mem
+      (ideleClassPowerLocalUnitSubgroup n S T).mul_mem
         hhClass
-        (ideleClassPowerLocalUnitSubgroup (K := K) n S T).one_mem
+        (ideleClassPowerLocalUnitSubgroup n S T).one_mem
 
 /-- If `S ∪ T` is sufficiently large, every class modulo `C_K(S,T)`
 has a supported representative. -/
 theorem supportedIdeleToClassPowerQuotient_surjective
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
     (hLarge :
       IdeleGroup.supportedAt
             (K := K) (S ∪ T : Set (HeightOneSpectrum (𝓞 K))) ⊔
@@ -373,24 +339,18 @@ theorem supportedIdeleToClassPowerQuotient_surjective
   intro c
   refine c.inductionOn' ?_
   intro a
-  have ha :
-      a ∈
-        IdeleGroup.supportedAt
-              (K := K) (S ∪ T :
-                Set (HeightOneSpectrum (𝓞 K))) ⊔
-            IdeleGroup.principalSubgroup K := by
+  rcases Subgroup.mem_sup.mp (by
     rw [hLarge]
-    exact Subgroup.mem_top a
-  rcases Subgroup.mem_sup.mp ha with
+    exact Subgroup.mem_top a) with
     ⟨u, hu, p, hp, hup⟩
   refine ⟨⟨u, hu⟩, ?_⟩
   change
     QuotientGroup.mk'
-        (ideleClassPowerLocalUnitSubgroup (K := K) n S T)
+        (ideleClassPowerLocalUnitSubgroup n S T)
         (QuotientGroup.mk'
           (IdeleGroup.principalSubgroup K) u) =
       QuotientGroup.mk'
-        (ideleClassPowerLocalUnitSubgroup (K := K) n S T)
+        (ideleClassPowerLocalUnitSubgroup n S T)
         (QuotientGroup.mk'
           (IdeleGroup.principalSubgroup K) a)
   rw [← hup, map_mul]
@@ -404,8 +364,6 @@ theorem supportedIdeleToClassPowerQuotient_surjective
 /-- Supported realization of the idele-class index quotient. -/
 noncomputable def
     supportedIdeleClassPowerQuotientEquiv
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
     (hLarge :
       IdeleGroup.supportedAt
             (K := K) (S ∪ T : Set (HeightOneSpectrum (𝓞 K))) ⊔
@@ -427,8 +385,6 @@ noncomputable def
 /-- Cardinal form of the supported realization of
 `[C_K:C_K(S,T)]`. -/
 theorem card_ideleClassPowerLocalUnitQuotient_eq_supported
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
     (hLarge :
       IdeleGroup.supportedAt
             (K := K) (S ∪ T : Set (HeightOneSpectrum (𝓞 K))) ⊔
@@ -472,12 +428,9 @@ theorem card_supportedPrincipalQuotient_mul_card_supportedClassQuotient
               (K := K) (S ∪ T :
                 Set (HeightOneSpectrum (𝓞 K))) ⧸
           supportedIdelePowerLocalUnitSubgroup (K := K) n S T) := by
-  let U :=
-    IdeleGroup.supportedAt
-      (K := K) (S ∪ T : Set (HeightOneSpectrum (𝓞 K)))
   let H :=
-    supportedIdelePowerLocalUnitSubgroup (K := K) n S T
-  let P := supportedPrincipalIdeleSubgroup (K := K) S T
+    supportedIdelePowerLocalUnitSubgroup n S T
+  let P := supportedPrincipalIdeleSubgroup S T
   change
     (H.subgroupOf P).index * (H ⊔ P).index = H.index
   have h :=
@@ -509,10 +462,10 @@ theorem card_supportedPrincipalQuotient_mul_card_ideleClassQuotient
           supportedIdelePowerLocalUnitSubgroup (K := K) n S T) := by
   rw [
     card_ideleClassPowerLocalUnitQuotient_eq_supported
-      (K := K) n S T hLarge]
+       n S T hLarge]
   exact
     card_supportedPrincipalQuotient_mul_card_supportedClassQuotient
-      (K := K) n S T
+       n S T
 
 /-- The exact-sequence identity in intrinsic `S`-unit notation. -/
 theorem card_sUnitPrincipalQuotient_mul_card_ideleClassQuotient
@@ -535,11 +488,10 @@ theorem card_sUnitPrincipalQuotient_mul_card_ideleClassQuotient
           supportedIdelePowerLocalUnitSubgroup (K := K) n S T) := by
   rw [
     ← card_supportedPrincipalQuotient_eq_sUnitPrincipalQuotient
-      (K := K) n S T]
+       n S T]
   exact
     card_supportedPrincipalQuotient_mul_card_ideleClassQuotient
-      (K := K) n S T hLarge
-
+       n S T hLarge
 
 end GlobalClassFieldTheory.ClassFieldAxiom
 

@@ -22,20 +22,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -76,35 +62,34 @@ def valuationPreservingWithAbsRingEquiv
           ((WithAbs.equiv w.1).symm x)) = σ x :=
   rfl
 
-theorem valuationPreservingWithAbsRingEquiv_isometry
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x) :
+variable (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x)
+
+include hσ in
+theorem valuationPreservingWithAbsRingEquiv_isometry :
     Isometry (valuationPreservingWithAbsRingEquiv vK w σ) := by
   apply AddMonoidHomClass.isometry_of_norm
   intro x
   rw [WithAbs.norm_eq_apply_ofAbs, WithAbs.norm_eq_apply_ofAbs]
   exact hσ (WithAbs.equiv w.1 x)
 
-theorem valuationPreservingWithAbsRingEquiv_symm_isometry
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x) :
+include hσ in
+theorem valuationPreservingWithAbsRingEquiv_symm_isometry :
     Isometry (valuationPreservingWithAbsRingEquiv vK w σ).symm := by
   apply AddMonoidHomClass.isometry_of_norm
   intro x
   rw [WithAbs.norm_eq_apply_ofAbs, WithAbs.norm_eq_apply_ofAbs]
-  have h := hσ (σ⁻¹ (WithAbs.equiv w.1 x))
-  simpa [valuationPreservingWithAbsRingEquiv] using h.symm
+  simpa [valuationPreservingWithAbsRingEquiv] using (hσ (σ⁻¹ (WithAbs.equiv w.1 x))).symm
 
 /-- A valuation-preserving automorphism of `L` extends functorially to a ring
 automorphism of the metric completion of `(L,w)`. -/
-def valuationPreservingCompletionRingEquiv
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x) :
+def valuationPreservingCompletionRingEquiv :
     w.1.Completion ≃+* w.1.Completion :=
   UniformSpace.Completion.mapRingEquiv
     (valuationPreservingWithAbsRingEquiv vK w σ)
     (valuationPreservingWithAbsRingEquiv_isometry vK w σ hσ).continuous
     (valuationPreservingWithAbsRingEquiv_symm_isometry vK w σ hσ).continuous
 
-@[simp] theorem valuationPreservingCompletionRingEquiv_toCompletion
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x) (x : L) :
+@[simp] theorem valuationPreservingCompletionRingEquiv_toCompletion (x : L) :
     valuationPreservingCompletionRingEquiv vK w σ hσ
         (AbsoluteValue.toCompletion w.1 x) =
       AbsoluteValue.toCompletion w.1 (σ x) := by
@@ -122,7 +107,6 @@ def valuationPreservingCompletionRingEquiv
 
 /-- The extended automorphism fixes the embedded completed base field. -/
 theorem valuationPreservingCompletionRingEquiv_completionMap
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x)
     (x : vK.Completion) :
     valuationPreservingCompletionRingEquiv vK w σ hσ
         (AbsoluteValue.completionMap vK w.1 w.2 x) =
@@ -153,7 +137,6 @@ theorem valuationPreservingCompletionRingEquiv_completionMap
 
 /-- The completion lift preserves the algebraic localization `L K_v`. -/
 theorem valuationPreservingCompletionRingEquiv_mem_localization
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x)
     {z : w.1.Completion} (hz : z ∈ AbsoluteValue.algebraicLocalization vK w.1 w.2) :
     valuationPreservingCompletionRingEquiv vK w σ hσ z ∈
       AbsoluteValue.algebraicLocalization vK w.1 w.2 := by
@@ -176,16 +159,15 @@ theorem valuationPreservingCompletionRingEquiv_mem_localization
     rw [valuationPreservingCompletionRingEquiv_completionMap]
     exact E.algebraMap_mem x
   · intro x y hx hy hx' hy'
-    simpa only [map_add] using E.add_mem hx' hy'
+    simpa using E.add_mem hx' hy'
   · intro x hx hx'
-    simpa only [map_inv₀] using E.inv_mem hx'
+    simpa using E.inv_mem hx'
   · intro x y hx hy hx' hy'
-    simpa only [map_mul] using E.mul_mem hx' hy'
+    simpa using E.mul_mem hx' hy'
   · exact hz
 
 /-- The inverse completion lift also preserves `L K_v`. -/
 theorem valuationPreservingCompletionRingEquiv_symm_mem_localization
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x)
     {z : w.1.Completion} (hz : z ∈ AbsoluteValue.algebraicLocalization vK w.1 w.2) :
     (valuationPreservingCompletionRingEquiv vK w σ hσ).symm z ∈
       AbsoluteValue.algebraicLocalization vK w.1 w.2 := by
@@ -211,32 +193,30 @@ theorem valuationPreservingCompletionRingEquiv_symm_mem_localization
     rw [hsymm]
     exact IntermediateField.subset_adjoin vK.Completion _ ⟨σ⁻¹ a, rfl⟩
   · intro x
-    have hbase := valuationPreservingCompletionRingEquiv_completionMap
-      vK w σ hσ x
     have hsymm :
         (valuationPreservingCompletionRingEquiv vK w σ hσ).symm
             (AbsoluteValue.completionMap vK w.1 w.2 x) =
           AbsoluteValue.completionMap vK w.1 w.2 x := by
       rw [← (valuationPreservingCompletionRingEquiv vK w σ hσ).injective.eq_iff,
         (valuationPreservingCompletionRingEquiv vK w σ hσ).apply_symm_apply]
-      exact hbase.symm
+      exact (valuationPreservingCompletionRingEquiv_completionMap
+        vK w σ hσ x).symm
     change
       (valuationPreservingCompletionRingEquiv vK w σ hσ).symm
           (AbsoluteValue.completionMap vK w.1 w.2 x) ∈ E
     rw [hsymm]
     exact E.algebraMap_mem x
   · intro x y hx hy hx' hy'
-    simpa only [map_add] using E.add_mem hx' hy'
+    simpa using E.add_mem hx' hy'
   · intro x hx hx'
-    simpa only [map_inv₀] using E.inv_mem hx'
+    simpa using E.inv_mem hx'
   · intro x y hx hy hx' hy'
-    simpa only [map_mul] using E.mul_mem hx' hy'
+    simpa using E.mul_mem hx' hy'
   · exact hz
 
 /-- A valuation-preserving automorphism of `L` extends to a
 `K_v`-automorphism of the algebraic localization. -/
-def valuationPreservingLocalizationAlgEquiv
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x) :
+def valuationPreservingLocalizationAlgEquiv :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
     letI : SMul K w.1.Completion := hK.toSMul
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -245,7 +225,6 @@ def valuationPreservingLocalizationAlgEquiv
   letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
   letI : SMul K w.1.Completion := hK.toSMul
   letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-  let E := AbsoluteValue.algebraicLocalization vK w.1 w.2
   let e := valuationPreservingCompletionRingEquiv vK w σ hσ
   exact
     { toFun := fun z =>
@@ -272,8 +251,7 @@ def valuationPreservingLocalizationAlgEquiv
         exact valuationPreservingCompletionRingEquiv_completionMap
           vK w σ hσ x }
 
-@[simp] theorem valuationPreservingLocalizationAlgEquiv_toLocalization
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x) (x : L) :
+@[simp] theorem valuationPreservingLocalizationAlgEquiv_toLocalization (x : L) :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
     letI : SMul K w.1.Completion := hK.toSMul
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -300,12 +278,9 @@ equivalence, of the normalized absolute-value representatives. -/
 theorem absoluteValueDecompositionGroup_preserves_absoluteValue
     (σ : absoluteValueDecompositionGroup K w.1) (x : L) :
     w.1 ((σ : L ≃ₐ[K] L) x) = w.1 x := by
-  have hσ :=
-    (mem_absoluteValueDecompositionGroup_iff_extensionConjugate_eq
-      vK hvK w (σ : L ≃ₐ[K] L)).mp σ.property
-  have hx := congrArg (fun q : AbsoluteValueExtension vK L => q.1 x) hσ
   simpa [absoluteValueExtensionConjugate,
-    absoluteValueConjugate, AbsoluteValue.comp] using hx
+    absoluteValueConjugate, AbsoluteValue.comp] using (congrArg (fun q : AbsoluteValueExtension vK L => q.1 x) ((mem_absoluteValueDecompositionGroup_iff_extensionConjugate_eq
+      vK hvK w σ).mp σ.property))
 
 omit hvK
 
@@ -356,9 +331,8 @@ theorem localizationAbsoluteValue_algEquiv
     change wloc (τ (algebraMap vK.Completion E y)) = vhat y
     rw [τ.commutes]
     exact AbsoluteValue.algebraicLocalizationAbsoluteValue_extends vK w.1 w.2 y
-  have h := congrArg (fun q : AbsoluteValue E ℝ => q x)
+  exact congrArg (fun q : AbsoluteValue E ℝ => q x)
     (hwconj.trans hwloc.symm)
-  exact h
 
 omit hvK
 
@@ -375,12 +349,11 @@ def localizationAlgEquivRestrict
   letI : SMul K w.1.Completion := hK.toSMul
   letI := AbsoluteValue.completionAlgebra vK w.1 w.2
   let E := AbsoluteValue.algebraicLocalization vK w.1 w.2
-  let i : L →+* E := AbsoluteValue.toAlgebraicLocalization vK w.1 w.2
+  let i := AbsoluteValue.toAlgebraicLocalization vK w.1 w.2
   letI : Algebra K E := (i.comp (algebraMap K L)).toAlgebra
   let iAlg : L →ₐ[K] E :=
     { __ := i
       commutes' := fun x => by
-        change i (algebraMap K L x) = (i.comp (algebraMap K L)) x
         rfl }
   letI : Algebra L E := i.toAlgebra
   letI : IsScalarTower K L E :=
@@ -412,12 +385,11 @@ theorem localizationAlgEquivRestrict_toLocalization
   let : SMul K w.1.Completion := hK.toSMul
   let := AbsoluteValue.completionAlgebra vK w.1 w.2
   let E := AbsoluteValue.algebraicLocalization vK w.1 w.2
-  let i : L →+* E := AbsoluteValue.toAlgebraicLocalization vK w.1 w.2
-  let : Algebra K E := (i.comp (algebraMap K L)).toAlgebra
+  let i := AbsoluteValue.toAlgebraicLocalization vK w.1 w.2
+  let := (i.comp (algebraMap K L)).toAlgebra
   let iAlg : L →ₐ[K] E :=
     { __ := i
       commutes' := fun x => by
-        change i (algebraMap K L x) = (i.comp (algebraMap K L)) x
         rfl }
   let : Algebra L E := i.toAlgebra
   let : IsScalarTower K L E :=
@@ -449,7 +421,7 @@ def localizationToDecompositionGroup
   intro x
   have habs : w.1 (σ x) = w.1 x := by
     calc
-      w.1 (σ x) = AbsoluteValue.algebraicLocalizationAbsoluteValue vK w.1 w.2
+      _ = AbsoluteValue.algebraicLocalizationAbsoluteValue vK w.1 w.2
           (AbsoluteValue.toAlgebraicLocalization vK w.1 w.2 (σ x)) :=
         (AbsoluteValue.algebraicLocalizationAbsoluteValue_toAlgebraicLocalization vK w.1 w.2 (σ x)).symm
       _ = AbsoluteValue.algebraicLocalizationAbsoluteValue vK w.1 w.2
@@ -508,9 +480,7 @@ theorem localizationToDecompositionGroup_decompositionGroupToLocalization
   let i := AbsoluteValue.toAlgebraicLocalization vK w.1 w.2
   apply i.injective
   calc
-    i ((localizationToDecompositionGroup vK hvK w
-          (decompositionGroupToLocalization vK hvK w σ) :
-        L ≃ₐ[K] L) x) =
+    _ =
         decompositionGroupToLocalization vK hvK w σ (i x) :=
       localizationAlgEquivRestrict_toLocalization vK w
         (decompositionGroupToLocalization vK hvK w σ) x
@@ -542,7 +512,6 @@ theorem decompositionGroupToLocalization_localizationToDecompositionGroup
     rcases hz with ⟨x, rfl⟩
     change ρ (i x) = τ (i x)
     rw [decompositionGroupToLocalization_toLocalization]
-    change i (localizationAlgEquivRestrict vK w τ x) = τ (i x)
     exact localizationAlgEquivRestrict_toLocalization vK w τ x
   exact AlgEquiv.ext fun x => DFunLike.congr_fun hρ x
 
@@ -582,8 +551,7 @@ theorem decompositionGroupToLocalization_mul
         (decompositionGroupToLocalization_toLocalization
           vK hvK w σ ((τ : L ≃ₐ[K] L) x)).symm
       _ = decompositionGroupToLocalization vK hvK w σ
-          (decompositionGroupToLocalization vK hvK w τ (i x)) := by
-        exact congrArg (decompositionGroupToLocalization vK hvK w σ)
+          (decompositionGroupToLocalization vK hvK w τ (i x)) := congrArg (decompositionGroupToLocalization vK hvK w σ)
           (decompositionGroupToLocalization_toLocalization
             vK hvK w τ x).symm
       _ = ρR (i x) := rfl

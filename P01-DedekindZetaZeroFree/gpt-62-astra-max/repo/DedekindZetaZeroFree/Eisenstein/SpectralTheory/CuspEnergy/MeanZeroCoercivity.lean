@@ -47,9 +47,7 @@ private theorem smooth_cross (G : KPCuspCharts.ChartOutput F hF S D)
     (v : Representative ζ hζ S ρ V T) (t : Set.Ioi T) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : KPCuspCharts.Cross F => v.scalar (x,t.val)) := by
   apply v.smooth.comp_contDiff
-  · have hh : ContDiff ℝ (⊤ : ℕ∞) (KPCuspCharts.toArch F) :=
-      (KPCuspCharts.toArch_contDiff F).of_le (by simp)
-    exact hh.comp (contDiff_id.prodMk contDiff_const)
+  · exact ((KPCuspCharts.toArch_contDiff F).of_le (by simp)).comp (contDiff_id.prodMk contDiff_const)
   · intro x
     change T < KPCuspLogShape.meanHeight _ (KPCuspCharts.toArch F (x,t.val))
     rw [KPCuspCharts.toArch_meanHeight F G.positive_dimension]
@@ -57,8 +55,7 @@ private theorem smooth_cross (G : KPCuspCharts.ChartOutput F hF S D)
 private theorem slice_deriv (f : KPCuspCharts.Cross F → ℂ)
     (hf : Differentiable ℝ f) (y : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F) :
     fderiv ℝ (fun z => f (z,b)) y =
-      (fderiv ℝ f (y,b)).comp (ContinuousLinearMap.inl ℝ _ _) := by
-  exact ((hf (y,b)).hasFDerivAt.comp y
+      (fderiv ℝ f (y,b)).comp (ContinuousLinearMap.inl ℝ _ _) := ((hf (y,b)).hasFDerivAt.comp y
     ((hasFDerivAt_id y).prodMk (hasFDerivAt_const b y))).fderiv
 private theorem continuous_energy (f : KPCuspCharts.Cross F → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (t : ℝ) :
@@ -85,21 +82,22 @@ private theorem diagonal_single (a : KPCuspCharts.Horizontal F)
   by_cases h : j = i
   · subst j; simp [diagonal]
   · simp [diagonal, Pi.single_eq_of_ne h]
+section
+
+variable (f g : KPCuspCharts.Horizontal F → ℂ) (hf : Differentiable ℝ f) (hg : Differentiable ℝ g)
+    (a b y : KPCuspCharts.Horizontal F) (c : ℂ)
+
+include hf hg in
 private theorem transformed_deriv
-    (f g : KPCuspCharts.Horizontal F → ℂ) (hf : Differentiable ℝ f)
-    (hg : Differentiable ℝ g) (a b y : KPCuspCharts.Horizontal F) (c : ℂ)
     (he : ∀ z, g (diagonal a z + b) = c * f z) :
     (fderiv ℝ g (diagonal a y + b)).comp (diagonal a) = c • fderiv ℝ f y := by
   have hd := (hg _).hasFDerivAt.comp y
     ((diagonal a).hasFDerivAt.add_const b)
-  have hc := (hf y).hasFDerivAt.const_mul c
-  have hh : (fun z => g (diagonal a z + b)) = (fun z => c * f z) := funext he
   change HasFDerivAt (fun z => g (diagonal a z + b)) _ y at hd
-  rw [hh] at hd
-  exact hd.unique hc
+  rw [(funext he)] at hd
+  exact hd.unique ((hf y).hasFDerivAt.const_mul c)
+include hf hg in
 private theorem derivative_rotation
-    (f g : KPCuspCharts.Horizontal F → ℂ) (hf : Differentiable ℝ f)
-    (hg : Differentiable ℝ g) (a b y : KPCuspCharts.Horizontal F) (c : ℂ)
     (hc : ‖c‖ = 1) (he : ∀ z, g (diagonal a z + b) = c * f z)
     (i : Fin (KPCuspLogShape.dimension F)) :
     ‖a i‖ ^ 2 *
@@ -109,18 +107,18 @@ private theorem derivative_rotation
        ‖fderiv ℝ f y (Pi.single i Complex.I)‖ ^ 2 := by
   let L := (fderiv ℝ g (diagonal a y + b)).comp (ContinuousLinearMap.single ℝ (fun _ => ℂ) i)
   have hh := rotation L (a i)
-  have hd := transformed_deriv f g hf hg a b y c he
   have hz (z : ℂ) : fderiv ℝ g (diagonal a y + b) (Pi.single i (a i * z)) =
       c * fderiv ℝ f y (Pi.single i z) := by
-    have h := congrArg (fun A : KPCuspCharts.Horizontal F →L[ℝ] ℂ => A (Pi.single i z)) hd
     simpa only [ContinuousLinearMap.comp_apply, diagonal_single,
-      ContinuousLinearMap.smul_apply, smul_eq_mul] using h
+      ContinuousLinearMap.smul_apply, smul_eq_mul] using (congrArg (fun A : KPCuspCharts.Horizontal F →L[ℝ] ℂ => A (Pi.single i z)) (transformed_deriv f g hf hg a b y c he))
   dsimp [L] at hh
   simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.single_apply] at hh
   have hz1 := hz 1
   simp only [mul_one] at hz1
   rw [hz1, hz Complex.I, norm_mul, norm_mul, hc, one_mul, one_mul] at hh
   exact hh.symm
+
+end
 
 private theorem chi_norm (s : S) :
     ‖(KPCuspGenuineMonodromy.chi F ζ hζ (ρ s) : ℂ)‖ = 1 := by
@@ -130,7 +128,7 @@ private theorem chi_norm (s : S) :
   have hp : (ρ s) ^ 3 = 1 := by
     apply Subtype.ext
     exact (mem_rootsOfUnity 3 _).mp (ρ s).property
-  simpa only [map_pow, map_one, Units.val_pow_eq_pow_val, Units.val_one] using
+  simpa using
     congrArg (fun u => (KPCuspGenuineMonodromy.chi F ζ hζ u : ℂ)) hp
 private theorem invariant_energy
     (G : KPCuspCharts.ChartOutput F hF S D)
@@ -234,12 +232,10 @@ private theorem kernel_borel (G : KPCuspCharts.ChartOutput F hF S D)
     BorelSpace (KPCuspGenuineMonodromy.KernelTorus S D ρ) := by
   obtain ⟨hd, hf⟩ := G.lattice
   letI := hd
-  have hle : KPCuspCharts.translationLattice F (KPCuspGenuineMonodromy.kernelLattice S D ρ) ≤
-      KPCuspCharts.translationLattice F D.L := by
-    rintro y ⟨x, hx, rfl⟩
-    exact ⟨x, H.kernel_le hx, rfl⟩
   letI : DiscreteTopology (KPCuspCharts.translationLattice F (KPCuspGenuineMonodromy.kernelLattice S D ρ)) :=
-    DiscreteTopology.of_subset hd hle
+    DiscreteTopology.of_subset hd (by
+      rintro y ⟨x, hx, rfl⟩
+      exact ⟨x, H.kernel_le hx, rfl⟩)
   letI : IsClosed (KPCuspCharts.translationLattice F (KPCuspGenuineMonodromy.kernelLattice S D ρ) : Set (KPCuspCharts.Horizontal F)) :=
     AddSubgroup.isClosed_of_discreteTopology
   exact AddCosetSpace.borelSpace
@@ -288,7 +284,11 @@ private theorem monodromy_preserving (G : KPCuspCharts.ChartOutput F hF S D)
   ext z
   change M z = (M z + - M 0) + M 0
   abel
-private theorem slice_mk {T : ℝ} (G : KPCuspCharts.ChartOutput F hF S D)
+section
+
+variable {T : ℝ} (G : KPCuspCharts.ChartOutput F hF S D)
+
+private theorem slice_mk
     (H : KPCuspGenuineMonodromy.CuspOutput (ζ := ζ) (hζ := hζ) S D ρ V)
     (v : Representative ζ hζ S ρ V T) (b : KPCuspCharts.Shape F)
     (t : Set.Ioi T) (y : KPCuspCharts.Horizontal F) :
@@ -297,17 +297,15 @@ private theorem slice_mk {T : ℝ} (G : KPCuspCharts.ChartOutput F hF S D)
   simp only [LinearEquiv.apply_symm_apply] at h
   exact h.symm
 
-private theorem scalar_norm_action {T : ℝ} (G : KPCuspCharts.ChartOutput F hF S D)
+private theorem scalar_norm_action
     (v : Representative ζ hζ S ρ V T) (t : Set.Ioi T)
     (s : S) (x : KPCuspCharts.Cross F) :
     ‖v.scalar (G.crossAction s x, t.val)‖ = ‖v.scalar (x, t.val)‖ := by
   obtain ⟨A, hA, hc⟩ := D.upper s.val s.property
   rw [G.crossAction_formula s A hA hc]
-  have hh : T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
-      (KPCuspCharts.toArch F (x, t.val)) := by
+  have he := v.equivariant s (KPCuspCharts.toArch F (x, t.val)) (by
     rw [KPCuspCharts.toArch_meanHeight F G.positive_dimension]
-    exact t.property
-  have he := v.equivariant s (KPCuspCharts.toArch F (x, t.val)) hh
+    exact t.property)
   rw [G.actual_action s A hA hc] at he
   change v.scalar (KPCuspCharts.crossAffine F hF D.E D.integralUnits
       (D.ratio s) (A 0 1 / A 1 1) x, t.val) =
@@ -319,9 +317,11 @@ private theorem scalar_norm_action {T : ℝ} (G : KPCuspCharts.ChartOutput F hF 
     have hp : (ρ s) ^ 3 = 1 := by
       apply Subtype.ext
       exact (mem_rootsOfUnity 3 _).mp (ρ s).property
-    simpa only [map_pow, map_one, Units.val_pow_eq_pow_val, Units.val_one] using
+    simpa using
       congrArg (fun u => (KPCuspGenuineMonodromy.chi F ζ hζ u : ℂ)) hp
   rw [he, norm_mul, hu, one_mul]
+
+end
 
 theorem slice_coercivity_transport
     {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
@@ -418,16 +418,11 @@ theorem gradientSq_cross_section_integrable
     Integrable (fun x : KPCuspCharts.Cross F => v.gradientSq (x, t.val))
       ((volume.prod G.shapeMeasure).restrict G.fundamentalDomain) := by
   have hgeom := KPCompactGreenRadialIntegrability.gradientSq_continuousOn_and_invariant G v
-  have hcont : Continuous (fun x : KPCuspCharts.Cross F => v.gradientSq (x, t.val)) :=
+  have hcont :=
     hgeom.1.comp_continuous (continuous_id.prodMk continuous_const) (fun _ => t.property)
   have hinv : ∀ x y : KPCuspCharts.Cross F, KPCuspCharts.crossRelation F S x y →
-      v.gradientSq (x, t.val) = v.gradientSq (y, t.val) := by
-    intro x y hxy
-    exact hgeom.2 ⟨(x, t.val), t.property⟩ ⟨(y, t.val), t.property⟩
+      v.gradientSq (x, t.val) = v.gradientSq (y, t.val) := fun x y hxy => hgeom.2 ⟨(x, t.val), t.property⟩ ⟨(y, t.val), t.property⟩
       ((KPCuspCharts.highRelation_product F hF S D T _ _).mpr ⟨hxy, rfl⟩)
-  let energy : KPCuspCharts.CrossQuotient F S → ℝ :=
-    Quotient.lift (fun x => v.gradientSq (x, t.val)) hinv
-  have hecont : Continuous energy := hcont.quotient_lift hinv
   letI := G.compact_cross
   letI : IsFiniteMeasure G.sectionMeasure := G.finite_sectionMeasure
   have hmap : IsFiniteMeasure (Measure.map (Quotient.mk (KPCuspCharts.crossRelation F S))
@@ -439,7 +434,7 @@ theorem gradientSq_cross_section_integrable
     Measure.isFiniteMeasure_of_map
       (f := Quotient.mk (KPCuspCharts.crossRelation F S))
       measurable_quotient_mk''.aemeasurable
-  obtain ⟨C, hC⟩ := isCompact_univ.exists_bound_of_continuousOn hecont.continuousOn
+  obtain ⟨C, hC⟩ := isCompact_univ.exists_bound_of_continuousOn (hcont.quotient_lift hinv).continuousOn
   refine ⟨hcont.aestronglyMeasurable, HasFiniteIntegral.of_bounded (C := C) ?_⟩
   exact Filter.Eventually.of_forall fun x =>
     hC (Quotient.mk (KPCuspCharts.crossRelation F S) x) (Set.mem_univ _)
@@ -468,8 +463,11 @@ theorem gradientSq_nonneg (v : Representative ζ hζ S ρ V T)
   unfold Representative.gradientSq
   exact Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun k _ => sq_nonneg _
 
-theorem cross_section_coercivity_zero (G : KPCuspCharts.ChartOutput F hF S D)
-    (v : Representative ζ hζ S ρ V T) (t : Set.Ioi T) :
+section
+
+variable (G : KPCuspCharts.ChartOutput F hF S D) (v : Representative ζ hζ S ρ V T) (t : Set.Ioi T)
+
+theorem cross_section_coercivity_zero :
     ((0 : ℝ) * Real.exp (2 * t.val)) *
       (∫ x : KPCuspCharts.Cross F, ‖v.scalar (x, t.val)‖ ^ 2
         ∂(volume.prod G.shapeMeasure).restrict G.fundamentalDomain) ≤
@@ -478,19 +476,16 @@ theorem cross_section_coercivity_zero (G : KPCuspCharts.ChartOutput F hF S D)
   simp only [zero_mul]
   exact integral_nonneg fun x => gradientSq_nonneg v (x, t.val)
 
+include G in
 theorem scalar_norm_crossAffine
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    (v : Representative ζ hζ S ρ V T) (t : Set.Ioi T)
     (s : S) (A : Matrix.GeneralLinearGroup (Fin 2) F)
     (hA : Matrix.ProjGenLinGroup.mk A = (s : KPCuspArithmetic.PGL2 F))
     (hc : A 1 0 = 0) (x : KPCuspCharts.Cross F) :
     ‖v.scalar (KPCuspCharts.crossAffine F hF D.E D.integralUnits
       (D.ratio s) (A 0 1 / A 1 1) x, t.val)‖ = ‖v.scalar (x, t.val)‖ := by
-  have hh : T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
-      (KPCuspCharts.toArch F (x, t.val)) := by
+  have he := v.equivariant s (KPCuspCharts.toArch F (x, t.val)) (by
     rw [KPCuspCharts.toArch_meanHeight F G.positive_dimension]
-    exact t.property
-  have he := v.equivariant s (KPCuspCharts.toArch F (x, t.val)) hh
+    exact t.property)
   rw [G.actual_action s A hA hc] at he
   change v.scalar (KPCuspCharts.crossAffine F hF D.E D.integralUnits
       (D.ratio s) (A 0 1 / A 1 1) x, t.val) =
@@ -502,38 +497,35 @@ theorem scalar_norm_crossAffine
     have hp : (ρ s) ^ 3 = 1 := by
       apply Subtype.ext
       exact (mem_rootsOfUnity 3 _).mp (ρ s).property
-    simpa only [map_pow, map_one, Units.val_pow_eq_pow_val, Units.val_one] using
+    simpa using
       congrArg (fun u => (KPCuspGenuineMonodromy.chi F ζ hζ u : ℂ)) hp
   rw [he, norm_mul, hu, one_mul]
 
-theorem scalar_norm_crossAction
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    (v : Representative ζ hζ S ρ V T) (t : Set.Ioi T)
-    (s : S) (x : KPCuspCharts.Cross F) :
-    ‖v.scalar (G.crossAction s x, t.val)‖ = ‖v.scalar (x, t.val)‖ := by
-  obtain ⟨A, hA, hc⟩ := D.upper s.val s.property
-  rw [G.crossAction_formula s A hA hc]
-  exact scalar_norm_crossAffine G v t s A hA hc x
+end
+
+alias scalar_norm_crossAction := CrossSection.scalar_norm_action
 
 theorem scalar_slice_continuous
     (G : KPCuspCharts.ChartOutput F hF S D)
     (v : Representative ζ hζ S ρ V T) (t : Set.Ioi T) :
     Continuous (fun x : KPCuspCharts.Cross F => v.scalar (x, t.val)) := by
-  have hx : Continuous (fun x : KPCuspCharts.Cross F => KPCuspCharts.toArch F (x, t.val)) :=
-    (KPCuspCharts.toArch_contDiff F).continuous.comp (continuous_id.prodMk continuous_const)
-  exact v.smooth.continuousOn.comp_continuous hx (fun x => by
+  exact v.smooth.continuousOn.comp_continuous ((KPCuspCharts.toArch_contDiff F).continuous.comp (continuous_id.prodMk continuous_const)) (fun x => by
     change T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
       (KPCuspCharts.toArch F (x, t.val))
     rw [KPCuspCharts.toArch_meanHeight F G.positive_dimension]
     exact t.property)
 
- def horizontalRealLinear (d : ℕ) : (Fin d → ℂ) →L[ℝ] HyperbolicChart.Space d :=
+ section
+
+variable (d : ℕ)
+
+def horizontalRealLinear : (Fin d → ℂ) →L[ℝ] HyperbolicChart.Space d :=
   (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Fin d × Fin 3 => ℝ)).symm.toContinuousLinearMap.comp
     (ContinuousLinearMap.pi (fun j =>
       if j.2 = 0 then Complex.reCLM.comp (ContinuousLinearMap.proj j.1)
       else if j.2 = 1 then Complex.imCLM.comp (ContinuousLinearMap.proj j.1)
       else 0))
-private theorem horizontalRealLinear_apply (d : ℕ) (y : Fin d → ℂ) (j : Fin d × Fin 3) :
+private theorem horizontalRealLinear_apply (y : Fin d → ℂ) (j : Fin d × Fin 3) :
     horizontalRealLinear d y j = if j.2 = 0 then (y j.1).re else
       if j.2 = 1 then (y j.1).im else 0 := by
   change (if j.2 = 0 then Complex.reCLM.comp (ContinuousLinearMap.proj j.1)
@@ -541,7 +533,7 @@ private theorem horizontalRealLinear_apply (d : ℕ) (y : Fin d → ℂ) (j : Fi
       else (0 : (Fin d → ℂ) →L[ℝ] ℝ)) y = _
   split_ifs <;> rfl
 
-private theorem horizontalRealLinear_single_one (d : ℕ) (i : Fin d) :
+private theorem horizontalRealLinear_single_one (i : Fin d) :
     horizontalRealLinear d (Pi.single i 1) = HyperbolicChart.coordinateVector d i 0 := by
   ext ⟨j, k⟩
   simp only [horizontalRealLinear_apply, HyperbolicChart.coordinateVector,
@@ -550,7 +542,7 @@ private theorem horizontalRealLinear_single_one (d : ℕ) (i : Fin d) :
   · subst i
     fin_cases k <;> simp
   · fin_cases k <;> simp [Pi.single_eq_of_ne hi, hi, Prod.ext_iff]
-private theorem horizontalRealLinear_single_I (d : ℕ) (i : Fin d) :
+private theorem horizontalRealLinear_single_I (i : Fin d) :
     horizontalRealLinear d (Pi.single i Complex.I) = HyperbolicChart.coordinateVector d i 1 := by
   ext ⟨j, k⟩
   simp only [horizontalRealLinear_apply, HyperbolicChart.coordinateVector,
@@ -560,16 +552,10 @@ private theorem horizontalRealLinear_single_I (d : ℕ) (i : Fin d) :
     fin_cases k <;> simp
   · fin_cases k <;> simp [Pi.single_eq_of_ne hi, hi, Prod.ext_iff]
 
-private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply ContDiff.prodMk
-  · exact Complex.equivRealProdCLM.symm.contDiff.comp
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
-       (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
-private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  ext i <;> simp [arch, real]
+end
+
+private alias smooth_arch := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.smooth_arch
+private alias arch_real := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.arch_real
 private theorem representative_differentiableAt (G : KPCuspCharts.ChartOutput F hF S D)
     (v : Representative ζ hζ S ρ V T) (x : KPCuspCharts.Cross F) (t : Set.Ioi T) :
     DifferentiableAt ℝ (v.val ∘ arch (KPCuspLogShape.dimension F))
@@ -618,14 +604,7 @@ private theorem scalar_slice_fderiv (G : KPCuspCharts.ChartOutput F hF S D)
   exact ((representative_differentiableAt G v (y,b) t).hasFDerivAt.comp y
     (horizontal_real_deriv b t.val y)).fderiv
 
-theorem torusSlice_mk (G : KPCuspCharts.ChartOutput F hF S D)
-    (H : KPCuspGenuineMonodromy.CuspOutput (ζ := ζ) (hζ := hζ) S D ρ V)
-    (v : Representative ζ hζ S ρ V T) (b : KPCuspCharts.Shape F)
-    (t : Set.Ioi T) (y : KPCuspCharts.Horizontal F) :
-    v.torusSlice G H b t (QuotientAddGroup.mk y) = v.scalar ((y,b),t.val) := by
-  have h := H.realization_formula (H.realization.symm (v.horizontalSlice G b t)) y
-  simp only [LinearEquiv.apply_symm_apply] at h
-  exact h.symm
+alias torusSlice_mk := CrossSection.slice_mk
 
 theorem torusHorizontalSq_le_gradientSq (G : KPCuspCharts.ChartOutput F hF S D)
     (H : KPCuspGenuineMonodromy.CuspOutput (ζ := ζ) (hζ := hζ) S D ρ V)
@@ -634,10 +613,7 @@ theorem torusHorizontalSq_le_gradientSq (G : KPCuspCharts.ChartOutput F hF S D)
     torusHorizontalSq S D ρ b t.val (v.torusSlice G H b t) (QuotientAddGroup.mk y) ≤
       v.gradientSq ((y,b),t.val) := by
   rw [torusHorizontalSq_mk]
-  have he : (fun z : KPCuspCharts.Horizontal F =>
-      v.torusSlice G H b t (QuotientAddGroup.mk z)) =
-      (fun z => v.scalar ((z,b),t.val)) := funext (torusSlice_mk G H v b t)
-  rw [he, scalar_slice_fderiv G v b t y]
+  rw [(funext (torusSlice_mk G H v b t)), scalar_slice_fderiv G v b t y]
   simp only [ContinuousLinearMap.comp_apply, horizontalRealLinear_single_one,
     horizontalRealLinear_single_I]
   unfold Representative.gradientSq
@@ -689,9 +665,9 @@ theorem cross_section_coercivity
   by_cases hzero : c = 0
   · subst c
     exact cross_section_coercivity_zero G v t
-  let mass : KPCuspGenuineMonodromy.KernelTorus S D ρ → KPCuspCharts.Shape F → ℝ :=
+  let mass :=
     fun z b => ‖v.torusSlice G H b t z‖ ^ 2
-  let energy : KPCuspGenuineMonodromy.KernelTorus S D ρ → KPCuspCharts.Shape F → ℝ :=
+  let energy :=
     fun z b => torusHorizontalSq S D ρ b t.val (v.torusSlice G H b t) z
   have hm_cont : Continuous (fun x : KPCuspCharts.Cross F =>
       mass (QuotientAddGroup.mk x.1) x.2) := by
@@ -709,28 +685,18 @@ theorem cross_section_coercivity
     (∀ (s : S) (x : KPCuspCharts.Cross F),
       energy (QuotientAddGroup.mk (G.crossAction s x).1) (G.crossAction s x).2 =
         energy (QuotientAddGroup.mk x.1) x.2) at he_data
-  have hfiber := CrossSection.slice_coercivity_transport G H μ hμ hprob B
-    hcover v c hslice
   have hcomp := CrossSection.invariant_fiber_integral_comparison G μ hμ hprob
     mass energy hm_cont he_data.1 hm_inv he_data.2 (c * Real.exp (2 * t.val))
-      (fun b => hfiber b t)
+      (fun b => (CrossSection.slice_coercivity_transport G H μ hμ hprob B
+        hcover v c hslice) b t)
   have hg := CrossSection.gradientSq_cross_section_integrable G v t
   have hle : ∀ x : KPCuspCharts.Cross F,
-      energy (QuotientAddGroup.mk x.1) x.2 ≤ v.gradientSq (x, t.val) := by
-    intro x
-    exact torusHorizontalSq_le_gradientSq G H v x.2 t x.1
+      energy (QuotientAddGroup.mk x.1) x.2 ≤ v.gradientSq (x, t.val) := fun x => torusHorizontalSq_le_gradientSq G H v x.2 t x.1
   have he_nonneg : ∀ x : KPCuspCharts.Cross F,
-      0 ≤ energy (QuotientAddGroup.mk x.1) x.2 := by
-    intro x
-    exact torusHorizontalSq_nonneg S D ρ x.2 t.val (v.torusSlice G H x.2 t) _
-  have he_int : Integrable (fun x : KPCuspCharts.Cross F =>
-      energy (QuotientAddGroup.mk x.1) x.2)
-        ((volume.prod G.shapeMeasure).restrict G.fundamentalDomain) :=
-    hg.mono_nonneg he_data.1.measurable.aestronglyMeasurable
-      (Filter.Eventually.of_forall he_nonneg) (Filter.Eventually.of_forall hle)
-  have hdom := integral_mono he_int hg hle
+      0 ≤ energy (QuotientAddGroup.mk x.1) x.2 := fun x => torusHorizontalSq_nonneg S D ρ x.2 t.val (v.torusSlice G H x.2 t) _
   simp only [mass, torusSlice_mk] at hcomp
-  exact hcomp.trans hdom
+  exact hcomp.trans (integral_mono (hg.mono_nonneg he_data.1.measurable.aestronglyMeasurable
+    (Filter.Eventually.of_forall he_nonneg) (Filter.Eventually.of_forall hle)) hg hle)
 
 end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity
 
@@ -773,21 +739,15 @@ theorem smooth_periodic_slice
       (v.val ∘ fun y : KPCuspCharts.Horizontal F =>
         KPCuspCharts.toArch F ((y, b), t.val)) from funext hpt]
 
-  have hf : ContDiff ℝ (⊤ : ℕ∞) (fun y : KPCuspCharts.Horizontal F =>
-      KPCuspCharts.toArch F ((y, b), t.val)) := by
-    rw [contDiff_pi]
+  refine v.smooth.comp_contDiff ?_ ?_
+  · rw [contDiff_pi]
     intro i
     simp only [KPCuspCharts.toArch]
     fun_prop
-
-  have hs : ∀ y : KPCuspCharts.Horizontal F,
-      KPCuspCharts.toArch F ((y, b), t.val) ∈
-        {x | T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) x} := by
-    intro y
+  · intro y
     simp only [Set.mem_setOf_eq]
     rw [KPCuspCharts.toArch_meanHeight F G.positive_dimension]
     exact t.property
-  exact v.smooth.comp_contDiff hf hs
 
 end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity
 

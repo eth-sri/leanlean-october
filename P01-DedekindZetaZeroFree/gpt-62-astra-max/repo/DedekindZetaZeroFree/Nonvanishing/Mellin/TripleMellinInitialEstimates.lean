@@ -12,7 +12,7 @@ open MeasureTheory
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 end DedekindZetaZeroFree.PrincipalMellinComparison.ContinuationSteps
 
@@ -26,7 +26,7 @@ open Filter Asymptotics MeasureTheory
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 end DedekindZetaZeroFree.PrincipalMellinComparison
 

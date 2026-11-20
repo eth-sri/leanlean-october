@@ -49,14 +49,10 @@ theorem proper_rawActionCorrespondence [IsTopologicalGroup G] [T2Space G]
     fun_prop
   refine isProperMap_iff_isCompact_preimage.mpr ⟨hc, ?_⟩
   intro C hC
-  have hB : IsCompact ((Prod.fst '' C) * (K : Set G) * (Prod.snd '' C)⁻¹) :=
-    ((hC.image continuous_fst).mul hK).mul (hC.image continuous_snd).inv
-  have hΓB := hΓ.isProperMap_subtypeVal.isCompact_preimage hB
-  refine ((hΓB.prod (isCompact_univ : IsCompact (Set.univ : Set K))).prod (hC.image continuous_snd)).of_isClosed_subset
+  refine (((hΓ.isProperMap_subtypeVal.isCompact_preimage (((hC.image continuous_fst).mul hK).mul (hC.image continuous_snd).inv)).prod isCompact_univ).prod (hC.image continuous_snd)).of_isClosed_subset
     (hC.isClosed.preimage hc) ?_
   rintro ⟨⟨γ, k⟩, x⟩ hx
   refine ⟨⟨?_, Set.mem_univ k⟩, ⟨_, hx, rfl⟩⟩
-  change (γ : G) ∈ (Prod.fst '' C) * (K : Set G) * (Prod.snd '' C)⁻¹
   refine Set.mem_mul.mpr ⟨(γ : G) * x, ?_, x⁻¹, ?_, by simp⟩
   · refine Set.mem_mul.mpr ⟨(γ : G) * x * (k : G)⁻¹, ⟨_, hx, rfl⟩,
       (k : G), k.property, by simp⟩
@@ -72,9 +68,8 @@ theorem locallyCompact_secondCountable_polish (Y : Type*)
     rw [isOpen_iff_mem_nhds]
     rintro _ ⟨x, rfl⟩
     obtain ⟨C, hC, hx⟩ := exists_compact_mem_nhds x
-    have hc : IsClosed (e '' C) := (hC.image he.continuous).isClosed
     have hn := he.isDenseInducing.closure_image_mem_nhds hx
-    rw [hc.closure_eq] at hn
+    rw [((hC.image he.continuous).isClosed).closure_eq] at hn
     exact Filter.mem_of_superset hn (Set.image_subset_range e C)
   letI : PolishSpace (Set.range e) := ho.polishSpace
   exact he.isEmbedding.toHomeomorph.isClosedEmbedding.polishSpace
@@ -111,7 +106,6 @@ theorem proper_rawDoubleQuotient_topology [IsTopologicalGroup G] [T2Space G]
     ext p
     constructor
     · rintro ⟨⟨⟨γ, k⟩, x⟩, rfl⟩
-      change DoubleCoset.mk Γ K ((γ : G) * x * (k : G)⁻¹) = DoubleCoset.mk Γ K x
       exact DoubleCoset.eq.mpr ⟨(γ : G)⁻¹, Γ.inv_mem γ.property,
         (k : G), k.property, by simp [mul_assoc]⟩
     · intro he
@@ -119,9 +113,7 @@ theorem proper_rawDoubleQuotient_topology [IsTopologicalGroup G] [T2Space G]
       exact ⟨((⟨γ, hγ⟩, ⟨k⁻¹, K.inv_mem hk⟩), p.2), by
         simp only [rawActionCorrespondence, Subgroup.coe_mk, inv_inv]
         exact Prod.ext he.symm rfl⟩
-  have ht : T2Space (RawDoubleQuotient Γ K) :=
-    (t2Space_iff_of_isOpenQuotientMap h).mpr (hr ▸ hp.isClosed_range)
-  exact ⟨h.locallyCompactSpace, ht, h.secondCountableTopology,
+  exact ⟨h.locallyCompactSpace, ((t2Space_iff_of_isOpenQuotientMap h).mpr (hr ▸ hp.isClosed_range)), h.secondCountableTopology,
     h.continuous, ho, hq⟩
 
 end DedekindZetaZeroFree.ActualQuotientTopology.Generic

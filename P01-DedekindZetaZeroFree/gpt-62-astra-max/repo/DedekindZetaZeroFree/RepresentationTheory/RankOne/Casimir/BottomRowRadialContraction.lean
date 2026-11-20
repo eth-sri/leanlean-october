@@ -23,8 +23,7 @@ section JetCalculus
     HasDerivAt (fun s => Complex.normSq (z s)) (2 * (v * star (z t)).re) t := by
   have hre := Complex.reCLM.hasFDerivAt.comp_hasDerivAt t hz
   have him := Complex.imCLM.hasFDerivAt.comp_hasDerivAt t hz
-  have h := (hre.mul hre).add (him.mul him)
-  convert h using 1
+  convert ((hre.mul hre).add (him.mul him)) using 1
   · ext s; simp [Complex.normSq_apply]
   · simp [Complex.mul_re, Complex.star_def]; ring
 
@@ -32,12 +31,10 @@ open scoped Matrix.Norms.Operator in
  theorem matrix_path_components (g X : Matrix (Fin 2) (Fin 2) ℂ) :
     ∀ i j, HasDerivAt (fun t : ℝ => (g * NormedSpace.exp ((t : ℂ) • X)) i j)
       ((g * X) i j) 0 := by
-  have h := ((hasDerivAt_exp_smul_const (𝕂 := ℂ) X ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt (f := fun t : ℝ => (t : ℂ)) 0 Complex.ofRealCLM.hasDerivAt
-  have hmat := h.const_mul g
+  have hmat := (((hasDerivAt_exp_smul_const X ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt 0 Complex.ofRealCLM.hasDerivAt).const_mul g
   simp only [Complex.ofRealCLM_apply, Complex.ofReal_one, ContinuousLinearMap.coe_restrictScalars, ContinuousLinearMap.toSpanSingleton_apply, one_smul, zero_smul, NormedSpace.exp_zero, mul_one, one_mul] at hmat
   intro i j
-  have hi := (ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt 0 hmat
-  have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt 0 hi
+  have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt 0 ((ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt 0 hmat)
   change HasDerivAt (fun t : ℝ => (g * NormedSpace.exp ((t : ℂ) • X)) i j)
     ((g * (ContinuousLinearMap.restrictScalars ℝ (ContinuousLinearMap.toSpanSingleton ℂ
       (NormedSpace.exp (((0 : ℝ) : ℂ) • X) * X))) 1) i j) 0 at hj
@@ -81,39 +78,42 @@ open scoped Matrix.Norms.Operator in
     HasDerivAt (fun t : ℝ => matrixHeightSquared
       (g * NormedSpace.exp ((t : ℂ) • KPSmoothActualFlowData.basisMatrix j)))
       (bottomRowJet (g 1 0) (g 1 1) (matrixHeightSquared g) j) 0 := by
-  have hdet := normSq_hasDerivAt (matrix_det_basis_jet g j)
-  have hden := matrix_bottom_basis_jet g j
-  have hd := hdet.div (hden.pow 2) (by simpa using pow_ne_zero 2 hbot)
+  have hd := (normSq_hasDerivAt (matrix_det_basis_jet g j)).div ((matrix_bottom_basis_jet g j).pow 2) (by simpa using pow_ne_zero 2 hbot)
   simp only [Complex.ofReal_zero, zero_smul, NormedSpace.exp_zero, mul_one,
     zero_mul, Complex.zero_re, mul_zero, zero_sub] at hd
   convert hd using 1
   · rfl
   · fin_cases j <;> simp [bottomRowJet, matrixHeightSquared] <;> field_simp <;> ring
 
- theorem gl_bottom_nonzero (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
-    Complex.normSq (g 1 0) + Complex.normSq (g 1 1) ≠ 0 := by
-  have hp := KPArch.actionDenominator_pos g (0,0)
-  simpa [KPArch.actionDenominator, KPArch.height, Complex.sq_norm, add_comm] using ne_of_gt hp
+ section
 
- theorem matrix_height_squared_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
+variable (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
+
+theorem gl_bottom_nonzero :
+    Complex.normSq (g 1 0) + Complex.normSq (g 1 1) ≠ 0 := by
+  simpa [KPArch.actionDenominator, KPArch.height, Complex.sq_norm, add_comm] using ne_of_gt (KPArch.actionDenominator_pos g (0,0))
+
+ theorem matrix_height_squared_action :
     matrixHeightSquared g = Real.exp (2 * (KPArch.action g (0,0)).2) := by
   rw [two_mul, Real.exp_add, ← pow_two]
   change matrixHeightSquared g = (KPArch.height (KPArch.action g (0,0)))^2
   rw [KPArch.action_height]
   simp [matrixHeightSquared, KPArch.height, div_pow, Complex.sq_norm, add_comm]
 
-private theorem matrix_height_squared_scalar (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (u : ℂˣ) :
+private theorem matrix_height_squared_scalar (u : ℂˣ) :
     matrixHeightSquared ((g * Matrix.GeneralLinearGroup.scalar (Fin 2) u : Matrix.GeneralLinearGroup (Fin 2) ℂ) : Matrix (Fin 2) (Fin 2) ℂ) = matrixHeightSquared g := by
   rw [matrix_height_squared_action, matrix_height_squared_action,
     (KPArch.action_laws g (Matrix.GeneralLinearGroup.scalar (Fin 2) u) (0,0)).2,
     KPArch.scalar_action]
 
-private theorem matrix_height_squared_pgl_out (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
+private theorem matrix_height_squared_pgl_out :
     matrixHeightSquared (Matrix.ProjGenLinGroup.mk g).out = matrixHeightSquared g := by
   obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp
     (show Matrix.ProjGenLinGroup.mk g = Matrix.ProjGenLinGroup.mk (Matrix.ProjGenLinGroup.mk g).out from
       (Quotient.out_eq _).symm)
   rw [← hu, matrix_height_squared_scalar]
+
+end
 
  def pglHeightSquared (g : Matrix.ProjGenLinGroup (Fin 2) ℂ) : ℝ :=
   Real.exp (2 * (KPArch.action g.out (0,0)).2)
@@ -198,8 +198,7 @@ variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
  theorem projection_insertion (g : KPSmoothActualFlowData.GInfinity F) :
     KPSmoothLocalQuotientCharts.archProjection F ζ hζ
-      (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ g) = g := by
-  exact PGLComplex.AdelicSlicesRaw.archProjection_archimedeanInsertion F ζ hζ g
+      (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ g) = g := PGLComplex.AdelicSlicesRaw.archProjection_archimedeanInsertion F ζ hζ g
 
  def upstairsHeightSquared (q : Cover F ζ hζ) : ℝ :=
   globalPglHeightSquared F (KPSmoothLocalQuotientCharts.archProjection F ζ hζ q)

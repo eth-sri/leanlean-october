@@ -8,7 +8,7 @@ noncomputable section
 set_option backward.isDefEq.respectTransparency false
 open scoped Classical NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualWeakEnergy
-open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualCompactSecondL2 renaming compactAction → compactAction
+open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualCompactSecondL2 (compactAction)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
 theorem original_compact_orbit_finite
@@ -37,8 +37,7 @@ theorem original_compact_orbit_finite
     | zero => exact W.zero_mem
     | add x y hx hy ihx ihy => exact W.add_mem ihx ihy
     | smul a x hx ih => exact W.smul_mem a ih
-  let L : V →ₗ[ℂ] W := (pull.domRestrict V).codRestrict W (fun u => hmem u.val u.property)
-  apply FiniteDimensional.of_injective L
+  apply FiniteDimensional.of_injective ((pull.domRestrict V).codRestrict W (fun u => hmem u.val u.property))
   intro u v huv
   apply Subtype.ext
   funext x

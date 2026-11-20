@@ -47,14 +47,13 @@ theorem weighted_finitePowerMajorant_integrable
     intro x hx
     simp only [hg]
     exact if_neg (by rw [Metric.mem_closedBall, dist_eq_norm] at hx; simpa using hx)
-  have hz : 0 < (((s + 1 / 4 : ℝ) : ℂ)).re := by
-    simp only [Complex.ofReal_re]; linarith
   have h := DedekindZetaZeroFree.ProbeSheetGlobalIntegrability.finiteUnitsMellin_integrable
-    F v g hglc hgc ν (((s + 1 / 4 : ℝ) : ℂ)) hz
+    F v g hglc hgc ν (((s + 1 / 4 : ℝ) : ℂ)) (by
+      simp only [Complex.ofReal_re]; linarith)
   refine h.norm.congr ?_
   filter_upwards with x
   simp only [hg]
-  have hnpos : 0 < ‖x.val‖ := norm_pos_iff.mpr (Units.ne_zero x)
+  have hnpos := norm_pos_iff.mpr (Units.ne_zero x)
   have hnorm : ‖(((‖x.val‖ : ℝ)) : ℂ) ^ ((s + 1 / 4 : ℝ) : ℂ)‖
       = ‖x.val‖ ^ (s + 1 / 4) := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hnpos, Complex.ofReal_re]

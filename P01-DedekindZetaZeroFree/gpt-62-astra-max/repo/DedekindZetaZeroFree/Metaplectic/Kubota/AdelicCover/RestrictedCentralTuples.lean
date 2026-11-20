@@ -13,7 +13,7 @@ set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option maxRecDepth 4000
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 def depth (q : HeightOneSpectrum (𝓞 F)) : ℕ :=
   (KPLocalChartTopology.deep_chart_topology F ζ hζ q).choose
@@ -60,19 +60,20 @@ lemma char_mem (q : HeightOneSpectrum (𝓞 F)) (n : ℕ)
 theorem bad_finite : {q : HeightOneSpectrum (𝓞 F) | Bad F q}.Finite := by
   have hfin : {q : HeightOneSpectrum (𝓞 F) | q.asIdeal ∣ Ideal.span {(6 : 𝓞 F)}}.Finite :=
     Ideal.finite_factors (by
-      simpa only [Submodule.zero_eq_bot, ne_eq, Ideal.span_singleton_eq_bot] using
-        (show (6 : 𝓞 F) ≠ 0 by norm_num))
+      simp)
   apply hfin.subset
   intro q hq
   change q.asIdeal ∣ Ideal.span {(6 : 𝓞 F)}
   rw [Ideal.dvd_iff_le, Ideal.span_le, Set.singleton_subset_iff]
   rcases hq with h2 | h3
-  · have h := char_mem F q 2 h2
-    convert q.asIdeal.mul_mem_left 3 h using 1 <;> norm_num
-  · have h := char_mem F q 3 h3
-    convert q.asIdeal.mul_mem_left 2 h using 1 <;> norm_num
+  · convert q.asIdeal.mul_mem_left 3 (char_mem F q 2 h2) using 1 <;> norm_num
+  · convert q.asIdeal.mul_mem_left 2 (char_mem F q 3 h3) using 1 <;> norm_num
 
-theorem deepLift_mul (q : HeightOneSpectrum (𝓞 F))
+section
+
+variable (q : HeightOneSpectrum (𝓞 F))
+
+theorem deepLift_mul
     (g h : KPLocalCube.Gamma F q (depth F ζ hζ q)) :
     KPLocalCover.sectionMap F ζ hζ (Sum.inr q) (g * h).val =
       KPLocalCover.sectionMap F ζ hζ (Sum.inr q) g.val *
@@ -84,18 +85,20 @@ theorem deepLift_mul (q : HeightOneSpectrum (𝓞 F))
   rw [← hs, ← hs, ← hs]
   exact s.map_mul g h
 
-def deepLift (q : HeightOneSpectrum (𝓞 F)) :
+def deepLift :
     KPLocalCube.Gamma F q (depth F ζ hζ q) →*
       KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q) where
   toFun g := KPLocalCover.sectionMap F ζ hζ (Sum.inr q) g.val
   map_one' := rfl
   map_mul' := deepLift_mul F ζ hζ q
 
-def finiteCompact (q : HeightOneSpectrum (𝓞 F)) :
+def finiteCompact :
     Subgroup (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) :=
   if h : Bad F q then (deepLift F ζ hζ q).range
   else (KPGoodCompactSplitting.kStar F ζ hζ q
     (fun h3 => h (Or.inr h3))).range
+
+end
 
 def compact (v : KPHilbert.Place F) : Subgroup (KPLocalCover.CubicGL2Raw F ζ hζ v) :=
   match v with
@@ -121,10 +124,7 @@ abbrev CentralTuples := RestrictedProduct
 
 theorem centralTuples_finiteSupport (ε : CentralTuples F) :
     Function.HasFiniteMulSupport (fun v => ε v) := by
-  have h : ∀ᶠ v in Filter.cofinite, ε v = 1 :=
-    ε.eventually.mono (fun _ hv => hv)
-  simpa only [Filter.eventually_cofinite, Function.HasFiniteMulSupport,
-    Function.mulSupport] using h
+  simpa [Filter.eventually_cofinite, Function.HasFiniteMulSupport, Function.mulSupport] using ε.eventually.mono (fun _ hv => hv)
 
 def centralProduct : CentralTuples F →* rootsOfUnity 3 F where
   toFun ε := ∏ᶠ v, ε v
@@ -145,22 +145,18 @@ theorem finiteCompact_compact_open (q : HeightOneSpectrum (𝓞 F)) :
       IsOpen (finiteCompact F ζ hζ q : Set (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))) := by
   let m := depth F ζ hζ q
   have hm := depth_admissible F ζ hζ q
-  change @IsCompact _ (KPLocalChartTopology.translatedTopology F ζ hζ q m) _ ∧
-    @IsOpen _ (KPLocalChartTopology.translatedTopology F ζ hζ q m) _
-  letI := KPLocalChartTopology.translatedTopology F ζ hζ q m
   unfold finiteCompact
   split_ifs with hb
   · have he : (deepLift F ζ hζ q : KPLocalCube.Gamma F q m → _ ) =
         KPLocalChartTopology.translatedChart F ζ hζ q m 1 := by
       funext g
       exact (one_mul _).symm
-    rw [MonoidHom.coe_range, he]
+    simp [he]
     letI : CompactSpace (KPLocalCube.Gamma F q m) :=
       isCompact_iff_compactSpace.mp (KPLocalCube.Gamma_compact_open F q m hm.1).1
     have ho := KPLocalChartTopology.translatedChart_isOpenEmbedding F ζ hζ q m hm 1
     exact ⟨isCompact_range ho.continuous, ho.isOpen_range⟩
-  · rw [MonoidHom.coe_range]
-    exact ⟨KPGoodCompactSplitting.kStar_compact_image F ζ hζ q _ m hm,
+  · exact ⟨KPGoodCompactSplitting.kStar_compact_image F ζ hζ q _ m hm,
       KPGoodCompactSplitting.kStar_open_image F ζ hζ q _ m hm⟩
 
 theorem compact_open (v : KPHilbert.Place F) :

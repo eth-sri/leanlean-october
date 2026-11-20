@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory
 open scoped Classical Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem sheet_product_power_majorant_integrals (R : PrincipalMellin.ActualRecipe S η)
     (N : TraceHaarTransport R) (_C : JointDigitDescentSources R N)

@@ -11,16 +11,20 @@ noncomputable section
 open scoped NumberField
 open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.TameWhittakerSteps.RawTransport
-private theorem scalar_on_ball (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (χ : AddChar (v.adicCompletion F) Circle)
-    (hc : Continuous χ) (n : ℤ) :
+section
+
+variable (F : Type) [Field F] [NumberField F] (v : HeightOneSpectrum (𝓞 F))
+    (χ : AddChar (v.adicCompletion F) Circle) (hc : Continuous χ)
+
+include hc in
+private theorem scalar_on_ball (n : ℤ) :
     ∃ y : v.adicCompletion F, ∀ x ∈ finiteCompletionBall F v n,
       χ x = localFiniteCharacter F v (x * y) := by
   letI : MeasurableSpace (v.adicCompletion F) := borel _
   letI : BorelSpace (v.adicCompletion F) := ⟨rfl⟩
   letI := localNormalizedHaar_isAddHaarMeasure F v
   let U := finiteCompletionBall F v n
-  let f : v.adicCompletion F → ℂ := fun x => (χ x : ℂ) * localCosetIndicator F v 0 U x
+  let f := fun x => (χ x : ℂ) * localCosetIndicator F v 0 U x
   have hχlc : IsLocallyConstant χ := by
     obtain ⟨r, hr, hb⟩ := KPFiniteLocal.character_trivial_near_zero χ hc
     apply (IsLocallyConstant.iff_eventually_eq _).mpr
@@ -42,12 +46,10 @@ private theorem scalar_on_ball (F : Type) [Field F] [NumberField F]
     simp [localInverseFourierIntegral, localFourierIntegral_apply, f, U,
       localCosetIndicator_apply] at h
   obtain ⟨y, hy⟩ := hn
-  let δ : AddChar (v.adicCompletion F) Circle :=
+  let δ :=
     χ * (localFiniteCharacter F v).mulShift (-y)
-  have hδ : Continuous δ := hc.mul ((continuous_localFiniteCharacter F v).comp
-    (continuous_const.mul continuous_id))
   have heq : localFourierIntegral F v f y =
-      ∫ x in (U : Set (v.adicCompletion F)), (δ x : ℂ) ∂localNormalizedHaar F v := by
+      ∫ x in U, (δ x : ℂ) ∂localNormalizedHaar F v := by
     rw [localFourierIntegral_apply, ← integral_indicator (isCompact_finiteCompletionBall F v n).measurableSet]
     apply integral_congr_ae
     filter_upwards with x
@@ -58,7 +60,8 @@ private theorem scalar_on_ball (F : Type) [Field F] [NumberField F]
     · simp [f, U, localCosetIndicator_apply, hx, Set.indicator_of_notMem]
       exact lt_of_not_ge hx
   rw [heq, (compactSubgroup_character_integral (localNormalizedHaar F v) U
-    (isCompact_finiteCompletionBall F v n) δ hδ).2] at hy
+    (isCompact_finiteCompletionBall F v n) δ (hc.mul ((continuous_localFiniteCharacter F v).comp
+      (continuous_const.mul continuous_id)))).2] at hy
   have ht : ∀ x ∈ U, δ x = 1 := by
     by_contra h
     simp [h] at hy
@@ -68,9 +71,8 @@ private theorem scalar_on_ball (F : Type) [Field F] [NumberField F]
   have ha : -y * x = -(x * y) := by ring
   rw [ha, AddChar.map_neg_eq_inv, mul_inv_eq_one] at h
   exact h
-theorem scalar_global (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) (χ : AddChar (v.adicCompletion F) Circle)
-    (hc : Continuous χ) :
+include hc in
+theorem scalar_global :
     ∃ y : v.adicCompletion F, ∀ x, χ x = localFiniteCharacter F v (x * y) := by
   obtain ⟨r, hr, hb⟩ := KPFiniteLocal.character_trivial_near_zero χ hc
   obtain ⟨m, _, hm⟩ := (finiteCompletionBall_hasBasis_nhds F v 0).mem_iff.mp
@@ -100,9 +102,7 @@ theorem scalar_global (F : Type) [Field F] [NumberField F]
     exact ⟨fun h x hx => (h x hx).symm.trans (hk x hx),
       fun h x hx => (hk x hx).trans (h x hx).symm⟩
   obtain ⟨y, hy⟩ := IsCompact.nonempty_iInter_of_sequence_nonempty_isCompact_isClosed S
-    (by
-      intro n y hy x hx
-      exact hy x ((finiteCompletionBall_le_iff F v _ _).mpr (by omega) hx))
+    (fun n y hy x hx => hy x ((finiteCompletionBall_le_iff F v _ _).mpr (by omega) hx))
     hsne (by
       rw [hs0]
       exact isCompact_localFiniteAnnihilator F v _
@@ -114,6 +114,8 @@ theorem scalar_global (F : Type) [Field F] [NumberField F]
   obtain ⟨n, hn⟩ := Set.mem_iUnion.mp hu
   exact (Set.mem_iInter.mp hy (n + m.toNat)) x
     ((finiteCompletionBall_le_iff F v _ _).mpr (by omega) hn)
+
+end
 
 theorem conjugation_quotient
     {G N V : Type*} [Group G] [Group N] [AddCommGroup V] [Module ℂ V]
@@ -159,13 +161,14 @@ theorem conjugation_quotient
       change Representation.Coinvariants.mk β (ρ g (ρ g⁻¹ v)) = _
       simp [← Module.End.mul_apply, ← mul_assoc, ← map_mul, α, β]
 
-theorem character_scalar (F : Type) [Field F] [NumberField F]
+variable (F : Type) [Field F] [NumberField F]
+
+theorem character_scalar
     (q : HeightOneSpectrum (𝓞 F)) (χ : AddChar (q.adicCompletion F) ℂˣ)
     (hc : Continuous χ) (hne : χ ≠ 1) :
     ∃ a : (q.adicCompletion F)ˣ, ∀ x,
       χ x = Circle.toUnits (localFiniteCharacter F q ((a : q.adicCompletion F) * x)) := by
-  let χC := KPJacquetCharacter.circleCharacter F q χ hc
-  obtain ⟨a, ha⟩ := scalar_global F q χC
+  obtain ⟨a, ha⟩ := scalar_global F q (KPJacquetCharacter.circleCharacter F q χ hc)
     (KPJacquetCharacter.continuous_circleCharacter F q χ hc)
   have hphase (x : q.adicCompletion F) :
       χ x = Circle.toUnits (localFiniteCharacter F q (x * a)) := by
@@ -180,8 +183,7 @@ theorem character_scalar (F : Type) [Field F] [NumberField F]
   change χ x = Circle.toUnits (localFiniteCharacter F q (a * x))
   simpa only [mul_comm] using hphase x
 
-theorem actual_character_quotient
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+theorem actual_character_quotient (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (q : HeightOneSpectrum (𝓞 F))
     {V : Type*} [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ (KPLocalSmoothRepresentation.FiniteCover F ζ hζ q) V)
@@ -191,8 +193,8 @@ theorem actual_character_quotient
       RootCoinvariants ρ (KPLocalSmoothRepresentation.upperRoot F ζ hζ q)
         (KPKirillovProjectorGerms.frequencyCharacter F q 1)) := by
   obtain ⟨u, hu⟩ := character_scalar F q χ hc hne
-  let a : q.adicCompletion F := u
-  have hane : a ≠ 0 := u.ne_zero
+  let a := u
+  have hane := u.ne_zero
   let s : Multiplicative (q.adicCompletion F) ≃* Multiplicative (q.adicCompletion F) :=
     { toFun := fun x => Multiplicative.ofAdd (a * Multiplicative.toAdd x)
       invFun := fun x => Multiplicative.ofAdd (a⁻¹ * Multiplicative.toAdd x)
@@ -200,7 +202,6 @@ theorem actual_character_quotient
       right_inv := by intro x; simp [← mul_assoc, hane]
       map_mul' := by
         intro x y
-        change Multiplicative.ofAdd (a * (x.toAdd + y.toAdd)) = _
         simp [mul_add] }
   have hconj (x : Multiplicative (q.adicCompletion F)) :
       KPPGLLocalCover.A F ζ hζ (Sum.inr q) u *

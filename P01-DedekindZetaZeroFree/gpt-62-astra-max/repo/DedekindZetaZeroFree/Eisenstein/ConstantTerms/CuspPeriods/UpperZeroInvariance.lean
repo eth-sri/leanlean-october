@@ -11,10 +11,10 @@ open MeasureTheory NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualCuspBoundary
 open KPGlobalResidualConstruction KPContActualCommonDiskRightHolomorphy
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 local notation "G" => KPLiteralRaw.G F ζ hζ
 local notation "A" => KPGlobalTorusFunctionData.Adeles F
 local notation "Y" => KPAdditiveQuotient F
@@ -62,9 +62,7 @@ theorem lift_integrand_continuous
       ((KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous F ζ hζ).mul continuous_const)
 
 open KPGlobalResidualConstruction.CommonSphericalDisk.PolarDetection
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CommonSphericalDisk.PolarDetection renaming section_localGroup_frame → section_localGroup_frame
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CommonSphericalDisk.PolarDetection renaming section_arch_root_orbit → section_arch_root_orbit
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CommonSphericalDisk.PolarDetection renaming section_finite_root_orbit → section_finite_root_orbit
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CommonSphericalDisk.PolarDetection (section_localGroup_frame section_arch_root_orbit section_finite_root_orbit)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 section ActualKernelPeriodTransport
@@ -73,12 +71,12 @@ open NumberField
 open KPContFlatCuspIncomingEvaluation
 open KPMsResidualTailRestoration.SharpConstantTerm.FiberStability
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (Z : KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (Z : KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U)
 local notation "lZ" => KPContActualCommonDiskRightHolomorphy.lift F ζ hζ (atlasLevel F ζ hζ C R P H U) R P H Z.val
 variable (a : Cusps F ζ hζ C R P H U) (t : ℝ) (b : KPCuspCharts.Shape F)
 theorem section_kernel_period_eq_literal :
@@ -91,7 +89,6 @@ theorem section_kernel_period_eq_literal :
   obtain ⟨K,hc,ho,hroot,hkernel⟩ := KPContinuation.ChamberOutgoingSource.actual_cusp_finite_kernel_level F ζ hζ C R P H U a
   let g := localGroup F ζ hζ C R P H U a t 0 b 1
   let GG : KPCompactFourier.AdditiveQuotient F → ℂ := fun q => lZ (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out q) * g)
-  have hG : Continuous GG := lift_integrand_continuous F ζ hζ (atlasLevel F ζ hζ C R P H U) R P H Z g
   have hinv : ∀q h, h ∈ finiteLevelImage K → GG (q+h)=GG q := by
     intro q h hh
     obtain ⟨z,hz,rfl⟩ := hh
@@ -105,11 +102,10 @@ theorem section_kernel_period_eq_literal :
       exact section_finite_root_orbit F ζ hζ C R P H U Z a t b z (hroot z hz) x
   letI := KPAdditiveHaar.finiteMeasure_isAddHaarMeasure F
   obtain ⟨D,hD,hfd⟩ := additiveProductHaar_exists_fundamentalDomain F (KPAdditiveHaar.finiteMeasure F)
-  have hnorm : KPAdditiveHaar.finiteMeasure F (integralFiniteAdeles F : Set _) =
-    ENNReal.ofReal (1 / Real.sqrt |(NumberField.discr F : ℝ)|) :=
+  have hnorm :=
     (KPAdditiveHaar.finiteMeasure_integral_mass F).trans (KPAdditiveHaar.finiteMass_eq_discriminant F).1
   obtain ⟨GK,hGK,hformula,hint⟩ := finiteLevel_quotient_integral_torus_probability F
-    (KPAdditiveHaar.finiteMeasure F) hnorm D hD hfd K hc ho GG hG hinv
+    (KPAdditiveHaar.finiteMeasure F) hnorm D hD hfd K hc ho GG (lift_integrand_continuous F ζ hζ (atlasLevel F ζ hζ C R P H U) R P H Z g) hinv
   obtain ⟨ν,hν,hprob⟩ := finiteLevel_torus_exists_haar_probability K hc ho
   letI := hν
   letI := hprob
@@ -146,20 +142,18 @@ theorem section_kernel_period_eq_literal :
         (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x,0) : KPGlobalTorusFunctionData.Adeles F))) * localGroup F ζ hζ C R P H U a t 0 b 1) = _
       dsimp only [liftZ]
       rw [lift_integrand_mk F ζ hζ (atlasLevel F ζ hζ C R P H U) R P H Z.val]
-      change lZ (KPGlobalTorusFunctionData.N F ζ hζ ((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x,0) * localGroup F ζ hζ C R P H U a t 0 b 1) = _
       rw [section_arch_root_orbit F ζ hζ C R P H U Z a t b,
         section_localGroup_frame F ζ hζ C R P H U Z a t b,
         IncomingFiberOrthogonality.frameFiber_mk]
       rw [RingEquiv.apply_symm_apply]
   change (∫ z, φ z ∂_) = ∫q, GG q ∂_
   rw [hGI,heq]
-  have hm := KPContinuation.ChamberOutgoingSource.actual_kernelTorus_probabilityHaar_transport F ζ hζ C R P H U a K hc ho hle ν
   letI := finiteLevelLattice_discrete K hc ho
   letI : DiscreteTopology (finiteLevelLattice K).toAddSubgroup := inferInstanceAs (DiscreteTopology (finiteLevelLattice K))
   letI : IsClosed ((finiteLevelLattice K).toAddSubgroup : Set (mixedEmbedding.mixedSpace F)) := AddSubgroup.isClosed_of_discreteTopology
   letI : BorelSpace (mixedEmbedding.mixedSpace F ⧸ (finiteLevelLattice K).toAddSubgroup) := AddCosetSpace.borelSpace
   letI := KPContActualChamberOutgoingAdapter.kernelTorus_borelSpace F ζ hζ C R P H U a
-  rw [← hm]
+  rw [← (KPContinuation.ChamberOutgoingSource.actual_kernelTorus_probabilityHaar_transport F ζ hζ C R P H U a K hc ho hle ν)]
   exact integral_map (KPContinuation.ChamberOutgoingSource.mixedHorizontalQuotientMap_continuous F K L hle).measurable.aemeasurable hφ.measurable.aestronglyMeasurable
 
 theorem allCuspMeanZero_of_original_upper_zero

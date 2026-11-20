@@ -16,15 +16,21 @@ namespace DedekindZetaZeroFree.PrincipalMellinSource.ProfileCore.FixedSupport
 
 variable {F : Type} [Field F] [NumberField F]
 
-abbrev StandardResidue (p : KPFinitePlace F) :=
+section
+
+variable (p : KPFinitePlace F)
+
+abbrev StandardResidue :=
   IsLocalRing.ResidueField (p.adicCompletionIntegers F)
 
-def standardReduction (p : KPFinitePlace F) :
+def standardReduction :
     p.adicCompletionIntegers F →+* StandardResidue p := IsLocalRing.residue _
 
-def standardResidueFieldEquiv (p : KPFinitePlace F) :
+def standardResidueFieldEquiv :
     StandardResidue p ≃+* (𝓞 F ⧸ p.asIdeal) :=
   (GlobalClassFieldTheory.ClassFieldAxiom.ringOfIntegersQuotientEquivAdicResidueField p).symm
+
+end
 
 instance standardResidueFinite (p : KPFinitePlace F) : Finite (StandardResidue p) := by
   letI := Ideal.finiteQuotientOfFreeOfNeBot p.asIdeal p.ne_bot

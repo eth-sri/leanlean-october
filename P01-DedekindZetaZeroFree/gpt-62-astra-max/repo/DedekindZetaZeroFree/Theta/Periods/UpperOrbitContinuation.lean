@@ -11,13 +11,12 @@ open scoped Classical NumberField Topology
 open NumberField MeasureTheory Filter
 namespace DedekindZetaZeroFree.CompactPeriodAnalyticity.UpperPeriodContinuation
 open MomentSources ThetaExpansion.ChamberPeriods
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.CompactPeriodDescent renaming extension_of_compact_period → extension_of_compact_period
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.QuotientUpperOrbit renaming upper_fiber_eq → upper_fiber_eq
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.QuotientUpperOrbit renaming compact_additive_representatives → compact_additive_representatives
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.CompactPeriodDescent (extension_of_compact_period)
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.QuotientUpperOrbit (upper_fiber_eq compact_additive_representatives)
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 
 theorem period_of_representative_source (C : JointForwardIdentitySources R N) (v : R.A.UnitQuotient)
     (g : Group R) {X : Type*} [TopologicalSpace X] [CompactSpace X]
@@ -135,7 +134,7 @@ theorem period_of_representative_source (C : JointForwardIdentitySources R N) (v
       rw [toMeromorphicNFAt_eq_self.mpr hba.meromorphicNFAt] at he
       exact he
     rw [hid]
-    exact (CompactPeriod.localPeriod_clears C.realization v s hs hn g).2
+    exact (CompactPeriod.localPeriod_clears C.realization v s hs hn g)
 
 theorem native_period_exists (C : JointForwardIdentitySources R N) (v : R.A.UnitQuotient) (g : Group R) :
     ∃ I : ℂ → ℂ, MeromorphicOn I KPContinuation.spectralDomain ∧
@@ -153,7 +152,7 @@ theorem native_period_exists (C : JointForwardIdentitySources R N) (v : R.A.Unit
       QuotientAddGroup.continuous_mk.comp continuous_subtype_val⟩
   have hq : Function.Surjective q := by
     intro y
-    have hy : y ∈ (QuotientAddGroup.mk : KPAdeles F → KPAdditiveQuotient F) '' X := by
+    have hy : y ∈ QuotientAddGroup.mk '' X := by
       rw [hqX]
       exact Set.mem_univ y
     obtain ⟨x, hx, he⟩ := hy
@@ -163,7 +162,7 @@ theorem native_period_exists (C : JointForwardIdentitySources R N) (v : R.A.Unit
       ((KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous
         F R.A.zeta12 R.A.primitive_zeta12).comp continuous_subtype_val).mul continuous_const⟩
   let D := j '' Set.univ
-  have hD : IsCompact D := isCompact_univ.image j.continuous
+  have hD := isCompact_univ.image j.continuous
   letI : CompactSpace D := isCompact_iff_compactSpace.mp hD
   let jj : C(X, D) :=
     ⟨fun x => ⟨j x, ⟨x, Set.mem_univ x, rfl⟩⟩, j.continuous.subtype_mk _⟩

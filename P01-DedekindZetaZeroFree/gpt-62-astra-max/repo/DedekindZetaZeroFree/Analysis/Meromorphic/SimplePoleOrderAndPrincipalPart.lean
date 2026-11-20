@@ -19,10 +19,7 @@ theorem order_ge_neg_one_of_clearing {f N : ℂ → E} {c : ℂ}
   have ho := hN.meromorphicOrderAt_nonneg
   rw [meromorphicOrderAt_congr he] at ho
   change 0 ≤ meromorphicOrderAt ((fun s => s - c) • f) c at ho
-  rw [meromorphicOrderAt_smul
-    (show MeromorphicAt (fun s : ℂ => s - c) c from
-      (analyticAt_id.sub (analyticAt_const (v := c))).meromorphicAt) hf,
-    meromorphicOrderAt_id_sub_const] at ho
+  simp [meromorphicOrderAt_smul (show MeromorphicAt (fun s : ℂ => s - c) c from (analyticAt_id.sub (analyticAt_const)).meromorphicAt) hf] at ho
   cases h : meromorphicOrderAt f c with
   | top => exact le_top
   | coe n =>

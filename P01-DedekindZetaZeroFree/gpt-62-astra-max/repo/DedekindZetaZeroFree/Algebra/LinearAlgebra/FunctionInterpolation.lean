@@ -12,11 +12,12 @@ open scoped Classical
 
 namespace DedekindZetaZeroFree.FiniteFunctionSpaces
 
-private def pointEvaluation {X : Type*} (S : Submodule ℂ (X → ℂ)) (x : X) :
+variable {X : Type*} (S : Submodule ℂ (X → ℂ))
+
+private def pointEvaluation (x : X) :
     Module.Dual ℂ S := (LinearMap.proj x).comp S.subtype
 
-theorem exists_finite_evaluation_interpolation {X : Type*}
-    (S : Submodule ℂ (X → ℂ)) [FiniteDimensional ℂ S] :
+theorem exists_finite_evaluation_interpolation [FiniteDimensional ℂ S] :
     ∃ (n : ℕ) (x : Fin n → X) (b : Fin n → S),
       ∀ (f : S) (y : X), f.val y = ∑ i, f.val (x i) * (b i).val y := by
   have htop : Submodule.span ℂ (Set.range (pointEvaluation S)) = ⊤ := by
@@ -27,15 +28,14 @@ theorem exists_finite_evaluation_interpolation {X : Type*}
       exact hf (Subtype.ext (funext hn))
     obtain ⟨x, hx⟩ := hx
     exact ⟨pointEvaluation S x, ⟨x, rfl⟩, hx⟩
-  have hfg : (Submodule.span ℂ (Set.range (pointEvaluation S))).FG := by
+  obtain ⟨s, hs, he⟩ := (Submodule.fg_span_iff_fg_span_finset_subset _).mp (by
     rw [htop]
-    exact Module.Finite.fg_top
-  obtain ⟨s, hs, he⟩ := (Submodule.fg_span_iff_fg_span_finset_subset _).mp hfg
+    exact Module.Finite.fg_top)
   choose x hx using fun e : s => hs e.property
   let E := Fintype.equivFin s
-  let p : Fin (Fintype.card s) → X := fun i => x (E.symm i)
+  let p := fun i => x (E.symm i)
   have hr : Set.range (fun i => pointEvaluation S (p i)) =
-      (s : Set (Module.Dual ℂ S)) := by
+      s := by
     ext e
     constructor
     · rintro ⟨i, rfl⟩

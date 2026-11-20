@@ -14,26 +14,27 @@ namespace Subgroup
 
 variable {G : Type*} [Group G]
 
-abbrev normalizerQuotient (H : Subgroup G) : Type _ :=
+variable (H : Subgroup G)
+
+abbrev normalizerQuotient : Type _ :=
   normalizer (H : Set G) ⧸
     H.subgroupOf (normalizer (H : Set G))
 
-abbrev normalizerQuotientMk (H : Subgroup G) :
+abbrev normalizerQuotientMk :
     normalizer (H : Set G) →* H.normalizerQuotient :=
   QuotientGroup.mk' (H.subgroupOf (normalizer (H : Set G)))
 
 @[simp]
-lemma normalizerQuotientMk_apply (H : Subgroup G) (g : normalizer (H : Set G)) :
+lemma normalizerQuotientMk_apply (g : normalizer (H : Set G)) :
     H.normalizerQuotientMk g = (g : H.normalizerQuotient) :=
   rfl
 
-lemma normalizerQuotientMk_eq_one_iff (H : Subgroup G)
+lemma normalizerQuotientMk_eq_one_iff
     (g : normalizer (H : Set G)) :
     H.normalizerQuotientMk g = 1 ↔ (g : G) ∈ H := by
-  simp [normalizerQuotientMk, normalizerQuotient, mem_subgroupOf,
-    QuotientGroup.eq_one_iff]
+  simp [normalizerQuotientMk, normalizerQuotient, mem_subgroupOf]
 
-lemma normalizerQuotientMk_surjective (H : Subgroup G) :
+lemma normalizerQuotientMk_surjective :
     Function.Surjective H.normalizerQuotientMk :=
   QuotientGroup.mk'_surjective
     (H.subgroupOf (normalizer (H : Set G)))

@@ -20,19 +20,19 @@ set_option synthInstance.maxHeartbeats 400000
 set_option maxHeartbeats 2000000
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (v : HeightOneSpectrum (𝓞 F))
-variable (inducingData : CanonicalFiniteInducingData F ζ hζ v)
-variable (P : Polarization inducingData.heisenberg)
-variable (μ : MeasureTheory.Measure (LocalField F v)) [μ.IsAddHaarMeasure]
-variable (hμ : μ ((valuation (LocalField F v)).integer : Set (LocalField F v)) = 1)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (v : HeightOneSpectrum (𝓞 F))
+    (inducingData : CanonicalFiniteInducingData F ζ hζ v)
+    (P : Polarization inducingData.heisenberg)
+    (μ : MeasureTheory.Measure (LocalField F v)) [μ.IsAddHaarMeasure]
+    (hμ : μ ((valuation (LocalField F v)).integer : Set (LocalField F v)) = 1)
 abbrev Image := actualCanonicalImageModule F ζ hζ v inducingData P μ hμ
 abbrev ImageAction := actualCanonicalImageRepresentation F ζ hζ v inducingData P μ hμ
 abbrev imageInclusion := (actualCanonicalImage F ζ hζ v inducingData P μ hμ).toSubmodule.subtype
 abbrev ImageFixed (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3) :=
   fixedSubmodule (ImageAction F ζ hζ v inducingData P μ hμ) (Compact F ζ hζ v ht)
 variable (N : AddGroupNorm (VMinus F ζ hζ v inducingData P))
-variable (hN : ∀ (c : ℂ) (b : VMinus F ζ hζ v inducingData P), N (c • b) = ‖c‖ * N b)
+    (hN : ∀ (c : ℂ) (b : VMinus F ζ hζ v inducingData P), N (c • b) = ‖c‖ * N b)
 
 def sphericalFunctional
     (J : IMinusActual F ζ hζ v inducingData P →ₗ[ℂ] VMinus F ζ hζ v inducingData P)
@@ -55,16 +55,16 @@ def normalizedWhittaker
   L (ImageAction F ζ hζ v inducingData P μ hμ g φ) / L φ
 
 variable (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
-variable (hgood : valuation (LocalField F v) (6 : LocalField F v) = 1)
-variable (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π)
-variable (ψ : AddChar (LocalField F v) ℂ)
-variable (hψcont : Continuous ψ) (hψunitary : ∀ x, ‖ψ x‖ = 1)
-variable (hcond : ConductorZero ψ π)
-variable (J : IMinusActual F ζ hζ v inducingData P →ₗ[ℂ] VMinus F ζ hζ v inducingData P)
-variable (hJ : IsStableJacquet F ζ hζ v inducingData P μ N hN ψ π J)
+    (hgood : valuation (LocalField F v) (6 : LocalField F v) = 1)
+    (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π)
+    (ψ : AddChar (LocalField F v) ℂ)
+    (hψcont : Continuous ψ) (hψunitary : ∀ x, ‖ψ x‖ = 1)
+    (hcond : ConductorZero ψ π)
+    (J : IMinusActual F ζ hζ v inducingData P →ₗ[ℂ] VMinus F ζ hζ v inducingData P)
+    (hJ : IsStableJacquet F ζ hζ v inducingData P μ N hN ψ π J)
 variable (φ : Image F ζ hζ v inducingData P μ hμ)
-variable (hφ : φ ∈ ImageFixed F ζ hζ v inducingData P μ hμ ht) (hne : φ ≠ 0)
-variable (Eφ : (Fin 3 → ℂ) ≃ₗ[ℂ] VMinus F ζ hζ v inducingData P)
+    (hφ : φ ∈ ImageFixed F ζ hζ v inducingData P μ hμ ht) (hne : φ ≠ 0)
+    (Eφ : (Fin 3 → ℂ) ≃ₗ[ℂ] VMinus F ζ hζ v inducingData P)
 variable (hEφ : ∀ j : ℤ, Eφ (KPThreeShell.basis j) =
   bCoordinate F ζ hζ v inducingData P (uniformizerUnit F v π hπ) φ.val j)
 

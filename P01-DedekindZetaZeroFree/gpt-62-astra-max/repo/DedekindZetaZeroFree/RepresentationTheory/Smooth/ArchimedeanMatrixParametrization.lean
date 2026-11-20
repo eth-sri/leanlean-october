@@ -26,9 +26,9 @@ private theorem smooth_arch_orbit
       (fun a => u (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a)) := by
   intro a
   let E := D.toOpenPartialHomeomorph
-  let q : KPSmoothActualFlowData.GInfinity F → ℂ :=
+  let q :=
     fun b => u (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ b)
-  let φ : KPSmoothActualFlowData.LieCoordinates F → ℂ :=
+  let φ :=
     fun v => q (a * KPSmoothActualFlowData.exponential F v)
   have hφ : ContDiff ℝ (⊤ : ℕ∞) φ := by
     convert hu.2 (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) using 1
@@ -39,19 +39,12 @@ private theorem smooth_arch_orbit
     (hD 0 h0).trans hz
   have hi : ContMDiffAt 𝓘(ℝ, KPSmoothActualFlowData.LieCoordinates F)
       𝓘(ℝ, KPSmoothActualFlowData.LieCoordinates F) (⊤ : ℕ∞) E.symm
-      (1 : KPSmoothActualFlowData.GInfinity F) := by
-    exact h1 ▸ D.symm.contMDiffOn.contMDiffAt
+      (1 : KPSmoothActualFlowData.GInfinity F) := h1 ▸ D.symm.contMDiffOn.contMDiffAt
       (E.open_target.mem_nhds (E.map_source h0))
-  have hψ : ContMDiffAt 𝓘(ℝ, KPSmoothActualFlowData.LieCoordinates F)
-      𝓘(ℝ, KPSmoothActualFlowData.LieCoordinates F) (⊤ : ℕ∞)
-      (fun b : KPSmoothActualFlowData.GInfinity F => E.symm (a⁻¹ * b)) a :=
-    hi.comp_of_eq (contMDiffAt_const.mul contMDiffAt_id) (inv_mul_cancel a)
-  have hh := hφ.contMDiff.contMDiffAt.comp a hψ
-  apply hh.congr_of_eventuallyEq
-  have hn : ∀ᶠ b in 𝓝 a, a⁻¹ * b ∈ E.target :=
+  apply (hφ.contMDiff.contMDiffAt.comp a (hi.comp_of_eq (contMDiffAt_const.mul contMDiffAt_id) (inv_mul_cancel a))).congr_of_eventuallyEq
+  have hn :=
     (show ContinuousAt (fun b : KPSmoothActualFlowData.GInfinity F => a⁻¹ * b) a from
       continuousAt_const.mul continuousAt_id).preimage_mem_nhds (by
-        change E.target ∈ 𝓝 (a⁻¹ * a)
         rw [inv_mul_cancel]
         exact E.open_target.mem_nhds (h1 ▸ E.map_source h0))
   filter_upwards [hn] with b hb
@@ -67,7 +60,7 @@ open scoped Matrix.Norms.Operator in
 private theorem matrixClass_continuousAt (M : Matrix (Fin 2) (Fin 2) ℂ) (hM : M.det ≠ 0) :
     ContinuousAt matrixClass M := by
   apply (QuotientGroup.continuous_mk).continuousAt.comp
-  apply (Units.isOpenEmbedding_val (R := Matrix (Fin 2) (Fin 2) ℂ)).isEmbedding.isInducing.continuousAt_iff.mpr
+  apply (Units.isOpenEmbedding_val).isEmbedding.isInducing.continuousAt_iff.mpr
   apply ContinuousAt.congr_of_eventuallyEq continuousAt_id
   filter_upwards [(isOpen_ne_fun continuous_id.matrix_det continuous_const).mem_nhds hM] with N hN
   change (if h : N.det ≠ 0 then Matrix.GeneralLinearGroup.mkOfDetNeZero N h else 1).val = N
@@ -95,8 +88,6 @@ private theorem matrixClass_contMDiffAt
   have hmg : Matrix.ProjGenLinGroup.mk m = g⁻¹ := by
     rw [map_inv]; exact congrArg Inv.inv (Quotient.out_eq g)
   simp only [Function.comp_def, PartialEquiv.refl_symm, PartialEquiv.refl_coe, Set.range_id]
-  change ContDiffWithinAt ℝ (⊤ : ℕ∞)
-    (fun y => PGLComplex.affineChart.symm (g⁻¹ * matrixClass (M y))) Set.univ x
   have hn : ∀ᶠ y in 𝓝 x, (M y).det ≠ 0 :=
     hM.continuousAt.preimage_mem_nhds
       ((isOpen_ne_fun continuous_id.matrix_det continuous_const).mem_nhds hx)
@@ -117,7 +108,6 @@ private theorem matrixClass_contMDiffAt
   have hd : (m.val * M x) 0 0 ≠ 0 := by
     have hmk : Matrix.ProjGenLinGroup.mk (m * Matrix.GeneralLinearGroup.mkOfDetNeZero (M x) hx) = 1 := by
       rw [map_mul, hmg]
-      change g⁻¹ * Matrix.ProjGenLinGroup.mk _ = 1
       rw [show Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.mkOfDetNeZero (M x) hx) = g by simp [g, matrixClass, hx]]
       exact inv_mul_cancel g
     have hh := PGLComplex.mk_mem_affineTarget_iff (m * Matrix.GeneralLinearGroup.mkOfDetNeZero (M x) hx)
@@ -149,13 +139,12 @@ private theorem matrixClass_contMDiffAt
   obtain ⟨D, hD, _, _⟩ := PGLComplex.single_lie_exponential_data hC
   let CP := PGLComplex.productAffineChartedSpace (NumberField.InfinitePlace F) (C := C)
   letI := CP
-  let LP := PGLComplex.productAffineLieGroup (NumberField.InfinitePlace F) (C := C)
-  letI := LP
+  letI := (PGLComplex.productAffineLieGroup (NumberField.InfinitePlace F))
   let EP := PGLComplex.productExponentialDiffeomorph (NumberField.InfinitePlace F) D
   have h0 : (0 : KPSmoothActualFlowData.LieCoordinates F) ∈ EP.source := by
     refine ⟨Set.mem_univ _, ?_⟩
     intro w hw
-    simpa using D.zero_mem_source
+    exact D.zero_mem_source
   have he (a : KPSmoothActualFlowData.LieCoordinates F) (ha : a ∈ EP.source) :
       EP a = KPSmoothActualFlowData.exponential F a := by
     funext w
@@ -184,10 +173,12 @@ private theorem matrixClass_contMDiffAt
     exact contDiffWithinAt_pi.mpr hc
   exact (ho.contMDiffAt.comp x hm).contDiffAt
 
- def rightPolynomial {ι : Type*} (x : ι → Fin 3 → ℂ) : ι → Matrix (Fin 2) (Fin 2) ℂ :=
+ variable {ι : Type*}
+
+def rightPolynomial (x : ι → Fin 3 → ℂ) : ι → Matrix (Fin 2) (Fin 2) ℂ :=
   fun w => !![x w 1 + x w 0 * x w 2, x w 0; x w 2, 1]
 
- theorem rightPolynomial_smooth {ι : Type*} [Fintype ι] :
+ theorem rightPolynomial_smooth [Fintype ι] :
     ContDiff ℝ (⊤ : ℕ∞) (rightPolynomial (ι := ι)) := by
   apply contDiff_pi.mpr
   intro w
@@ -205,7 +196,7 @@ private theorem matrixClass_contMDiffAt
   · change ContDiff ℝ (⊤ : ℕ∞) (fun _ : ι → Fin 3 → ℂ => (1 : ℂ))
     fun_prop
 
- theorem rightPolynomial_det {ι : Type*} (x : ι → Fin 3 → ℂ) (w : ι) :
+ theorem rightPolynomial_det (x : ι → Fin 3 → ℂ) (w : ι) :
     (rightPolynomial x w).det = x w 1 := by
   simp [rightPolynomial, Matrix.det_fin_two]
 

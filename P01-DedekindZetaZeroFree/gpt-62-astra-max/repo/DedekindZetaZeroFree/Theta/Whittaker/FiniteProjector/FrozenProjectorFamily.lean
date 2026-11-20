@@ -12,12 +12,12 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.FiniteWhittakerProjectors
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
-variable (D : SourceFactorization R Q T)
-variable (I : R.A.Sf → Type) [∀ q, Fintype (I q)]
-variable (c : ∀ q, I q → ℂ) (t : ∀ q, I q → q.val.adicCompletion F)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    (D : SourceFactorization R Q T)
+    (I : R.A.Sf → Type) [∀ q, Fintype (I q)]
+    (c : ∀ q, I q → ℂ) (t : ∀ q, I q → q.val.adicCompletion F)
 
 def rootProjectorWord (l : List R.A.Sf) : Functions R →ₗ[ℂ] Functions R :=
   l.foldr (fun q a => (rightTranslateSum R Finset.univ (c q)

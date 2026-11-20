@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -84,12 +81,8 @@ theorem residueAlgActionOfEqTop_surjective
   intro tau
   obtain ⟨sigma, hsigma⟩ :=
     decompositionGroupResidueAction_surjective (K := K) A tau
-  refine ⟨(sigma : L ≃ₐ[K] L), ?_⟩
-  have heq :
-      toDecompositionGroupOfEqTop K A hA (sigma : L ≃ₐ[K] L) = sigma := by
-    ext
-    rfl
-  simpa [residueAlgActionOfEqTop, heq] using hsigma
+  refine ⟨sigma, ?_⟩
+  exact hsigma
 
 section FiniteImageIndex
 

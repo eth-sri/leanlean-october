@@ -10,29 +10,7 @@ open scoped Classical
 
 namespace DedekindZetaZeroFree.KPCuspSiegel
 
-private theorem compact_orbit_lifts {H X : Type*} [Group H] [TopologicalSpace X]
-    [LocallyCompactSpace X] [T2Space X] [MulAction H X] [ContinuousConstSMul H X]
-    [CompactSpace (Quotient (MulAction.orbitRel H X))] :
-    ∃ K : Set X, IsCompact K ∧ ∀ x : X, ∃ g : H, g • x ∈ K := by
-  have hq : IsOpenMap (Quotient.mk (MulAction.orbitRel H X)) :=
-    MulAction.isOpenQuotientMap_quotientMk.isOpenMap
-  choose V hVopen hxV hVcomp using fun x : X => exists_isOpen_mem_isCompact_closure x
-  have hcover : (Set.univ : Set (Quotient (MulAction.orbitRel H X))) ⊆
-      ⋃ x, Quotient.mk (MulAction.orbitRel H X) '' V x := by
-    intro y _
-    obtain ⟨x, rfl⟩ := MulAction.isOpenQuotientMap_quotientMk.surjective y
-    exact Set.mem_iUnion.2 ⟨x, x, hxV x, rfl⟩
-  obtain ⟨t, ht⟩ := isCompact_univ.elim_finite_subcover _
-    (fun x => hq _ (hVopen x)) hcover
-  refine ⟨⋃ x ∈ t, closure (V x), t.isCompact_biUnion fun x _ => hVcomp x, ?_⟩
-  intro x
-  have hx : Quotient.mk (MulAction.orbitRel H X) x ∈
-      ⋃ y ∈ t, Quotient.mk (MulAction.orbitRel H X) '' V y := ht (Set.mem_univ _)
-  obtain ⟨y, hy⟩ := Set.mem_iUnion.1 hx
-  obtain ⟨hyt, v, hvV, hvq⟩ := Set.mem_iUnion.1 hy
-  obtain ⟨g, hg⟩ := MulAction.mem_orbit_iff.mp
-    (MulAction.orbitRel_apply.mp (Quotient.exact hvq))
-  exact ⟨g, hg ▸ Set.mem_iUnion.2 ⟨y, Set.mem_iUnion.2 ⟨hyt, subset_closure hvV⟩⟩⟩
+private alias compact_orbit_lifts := DedekindZetaZeroFree.KPCuspChart.SectionConstruction.FiniteInvariantMeasure.compact_lifts
 
 variable (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -50,16 +28,12 @@ private theorem chart_action_radial (g : S) (p : KPCuspCharts.Cross F) (t : ℝ)
 private theorem chart_cross_orbit_relation :
     letI := KPCuspCharts.homeomorphAction O.crossAction
     KPCuspCharts.crossRelation F S = MulAction.orbitRel S (KPCuspCharts.Cross F) := by
-  letI := KPCuspCharts.homeomorphAction O.crossAction
   have hinj : Function.Injective (fun p : KPCuspCharts.Cross F =>
       KPCuspCharts.toArch F (p, 0)) := by
     intro p q h
-    have he := (KPCuspCharts.toArchHomeomorph F O.positive_dimension).injective h
-    exact congrArg Prod.fst he
+    exact congrArg Prod.fst ((KPCuspCharts.toArchHomeomorph F O.positive_dimension).injective h)
   apply Setoid.ext
   intro p q
-  change (∃ g : S, g • KPCuspCharts.toArch F (q, 0) = KPCuspCharts.toArch F (p, 0)) ↔
-    (∃ g : S, O.crossAction g q = p)
   constructor
   · rintro ⟨g, hg⟩
     exact ⟨g, hinj ((chart_action_radial F hF S D O g q 0).symm.trans hg)⟩
@@ -100,7 +74,6 @@ theorem exists_compact_cross_section_representatives :
   have ht : p.2 = KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z := by
     rw [← hp, KPCuspCharts.toArch_meanHeight F O.positive_dimension]
   rw [← hp, chart_action_radial F hF S D O g p.1 p.2]
-  change KPCuspCharts.toArch F (O.crossAction g p.1, p.2) = _
   rw [← hp] at ht
   rw [← ht]
   rfl

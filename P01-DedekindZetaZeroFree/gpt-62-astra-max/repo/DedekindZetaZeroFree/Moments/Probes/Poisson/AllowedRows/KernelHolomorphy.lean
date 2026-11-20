@@ -16,8 +16,8 @@ open DedekindZetaZeroFree NumberField MeasureTheory DedekindZetaZeroFree.Quantit
   DedekindZetaZeroFree.Quantitative.DetectorHeight
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 private lemma exp_shift (x₀ δ r : ℝ) (h : |δ| ≤ r) :
     Real.exp (-(x₀ + δ) ^ 2) ≤
@@ -26,13 +26,13 @@ private lemma exp_shift (x₀ δ r : ℝ) (h : |δ| ≤ r) :
   rcases le_total 0 x₀ with hx | hx
   · have : -(x₀ + δ) ^ 2 ≤ r ^ 2 + -(x₀ - r) ^ 2 := by
       nlinarith [mul_nonneg hx (show 0 ≤ δ + r by linarith [h1.1]), sq_nonneg δ]
-    calc Real.exp (-(x₀ + δ) ^ 2) ≤ Real.exp (r ^ 2 + -(x₀ - r) ^ 2) := Real.exp_le_exp.2 this
+    calc _ ≤ Real.exp (r ^ 2 + -(x₀ - r) ^ 2) := Real.exp_le_exp.2 this
       _ = Real.exp (r ^ 2) * Real.exp (-(x₀ - r) ^ 2) := Real.exp_add _ _
       _ ≤ _ := mul_le_mul_of_nonneg_left
           (le_add_of_nonneg_right (Real.exp_pos _).le) (Real.exp_pos _).le
   · have : -(x₀ + δ) ^ 2 ≤ r ^ 2 + -(x₀ + r) ^ 2 := by
       nlinarith [mul_nonneg (neg_nonneg.2 hx) (show 0 ≤ r - δ by linarith [h1.2]), sq_nonneg δ]
-    calc Real.exp (-(x₀ + δ) ^ 2) ≤ Real.exp (r ^ 2 + -(x₀ + r) ^ 2) := Real.exp_le_exp.2 this
+    calc _ ≤ Real.exp (r ^ 2 + -(x₀ + r) ^ 2) := Real.exp_le_exp.2 this
       _ = Real.exp (r ^ 2) * Real.exp (-(x₀ + r) ^ 2) := Real.exp_add _ _
       _ ≤ _ := mul_le_mul_of_nonneg_left
           (le_add_of_nonneg_left (Real.exp_pos _).le) (Real.exp_pos _).le
@@ -159,27 +159,22 @@ theorem differentiableOn_nested_integral (V : Set ℂ) (hV : IsOpen V) (G : ℂ 
       G ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I) ((v : ℂ) + (p.1 : ℂ) * Complex.I) :=
     ⟨fun ξ p => G ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I) ((v : ℂ) + (p.1 : ℂ) * Complex.I),
       fun _ _ => rfl⟩
-  have hHf : ∀ ξ, H ξ = fun p : ℝ × ℝ =>
-      G ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I) ((v : ℂ) + (p.1 : ℂ) * Complex.I) :=
-    fun ξ => funext (hH ξ)
   have hdom : ∀ ξ₀ ∈ V, ∃ r : ℝ, 0 < r ∧ Metric.ball ξ₀ r ⊆ V ∧
       ∃ g : ℝ × ℝ → ℝ, Integrable g ∧ ∀ ξ ∈ Metric.ball ξ₀ r, ∀ p, ‖H ξ p‖ ≤ g p := by
     intro ξ₀ hξ₀
     obtain ⟨r, hr, hball, C, k, hC, hk, hb⟩ := hmaj ξ₀ hξ₀
     obtain ⟨C', -, hC'⟩ := WeightConvolution.weight_kernel_decay D v v y y ξ₀.re ξ₀.re hv
       le_rfl le_rfl le_rfl 1 k one_pos hk
-    have hr' : 0 < min r 1 := lt_min hr one_pos
+    have hr' := lt_min hr one_pos
     obtain ⟨ξp, hpre, hpim⟩ : ∃ ξp : ℂ, ξp.re = ξ₀.re ∧ ξp.im = ξ₀.im + min r 1 :=
       ⟨⟨ξ₀.re, ξ₀.im + min r 1⟩, rfl, rfl⟩
     obtain ⟨ξm, hmre, hmim⟩ : ∃ ξm : ℂ, ξm.re = ξ₀.re ∧ ξm.im = ξ₀.im - min r 1 :=
       ⟨⟨ξ₀.re, ξ₀.im - min r 1⟩, rfl, rfl⟩
-    have hIp := (hC' ξp hpre.ge hpre.le v y le_rfl le_rfl le_rfl le_rfl).1
-    have hIm := (hC' ξm hmre.ge hmre.le v y le_rfl le_rfl le_rfl le_rfl).1
     refine ⟨min r 1, hr', (Metric.ball_subset_ball (min_le_left _ _)).trans hball,
       fun p => C * Real.exp ((|ξ₀.re| + |v| + 2) ^ 2 + 1) * 2 ^ k *
         (WeightConvolution.weightModulus D ξp v y p * (2 + |p.1| + |p.2| + |ξp.im|) ^ k +
          WeightConvolution.weightModulus D ξm v y p * (2 + |p.1| + |p.2| + |ξm.im|) ^ k),
-      (hIp.add hIm).const_mul _, ?_⟩
+      (((hC' ξp hpre.ge hpre.le v y le_rfl le_rfl le_rfl le_rfl).1).add ((hC' ξm hmre.ge hmre.le v y le_rfl le_rfl le_rfl le_rfl).1)).const_mul _, ?_⟩
     intro ξ hξ p
     have hd : ‖ξ - ξ₀‖ < min r 1 := by rwa [Metric.mem_ball, dist_eq_norm] at hξ
     have hX : |ξ.re - ξ₀.re| ≤ 1 := by
@@ -190,28 +185,23 @@ theorem differentiableOn_nested_integral (V : Set ℂ) (hV : IsOpen V) (G : ℂ 
       have := Complex.abs_im_le_norm (ξ - ξ₀)
       rw [Complex.sub_im] at this
       linarith
-    have hb' := hb ξ (Metric.ball_subset_ball (min_le_left _ _) hξ) p
     have hb'' : ‖H ξ p‖ ≤ C * WeightConvolution.weightModulus D ξ v y p *
-        (2 + |p.1| + |p.2| + |ξ.im|) ^ k := by rw [hH]; exact hb'
+        (2 + |p.1| + |p.2| + |ξ.im|) ^ k := by rw [hH]; exact (hb ξ (Metric.ball_subset_ball (min_le_left _ _) hξ) p)
     refine hb''.trans ?_
     beta_reduce
-    have key := pt_env ξ.re ξ₀.re ξ.im ξ₀.im (min r 1) v p.1 p.1 p.2 k
-      (D.M ((v : ℂ) + (p.1 : ℂ) * Complex.I)) (D.W1Hat ((y : ℂ) + (p.2 : ℂ) * Complex.I))
-      hk hr' (min_le_right _ _) hX ha
-    have key2 := mul_le_mul_of_nonneg_left key hC
     rw [wM_eq D ξ v y p, wM_eq D ξp v y p, wM_eq D ξm v y p, hpre, hpim, hmre, hmim]
-    calc C * (Real.exp ((ξ.re + v - 1) ^ 2 - (ξ.im + p.1) ^ 2) *
-          ‖D.M ((v : ℂ) + (p.1 : ℂ) * Complex.I)‖ *
-          ‖D.W1Hat ((y : ℂ) + (p.2 : ℂ) * Complex.I)‖) * (2 + |p.1| + |p.2| + |ξ.im|) ^ k
+    calc _
         = C * (Real.exp ((ξ.re + v - 1) ^ 2 - (ξ.im + p.1) ^ 2) *
           ‖D.M ((v : ℂ) + (p.1 : ℂ) * Complex.I)‖ *
           ‖D.W1Hat ((y : ℂ) + (p.2 : ℂ) * Complex.I)‖ * (2 + |p.1| + |p.2| + |ξ.im|) ^ k) := by
           ring
-      _ ≤ _ := key2
+      _ ≤ _ := (mul_le_mul_of_nonneg_left (pt_env ξ.re ξ₀.re ξ.im ξ₀.im (min r 1) v p.1 p.1 p.2 k
+        (D.M ((v : ℂ) + (p.1 : ℂ) * Complex.I)) (D.W1Hat ((y : ℂ) + (p.2 : ℂ) * Complex.I))
+        hk hr' (min_le_right _ _) hX ha) hC)
       _ = _ := by ring
-  have hmeas : ∀ ξ ∈ V, AEStronglyMeasurable (H ξ) (volume : Measure (ℝ × ℝ)) := by
+  have hmeas : ∀ ξ ∈ V, AEStronglyMeasurable (H ξ) volume := by
     intro ξ hξ
-    rw [hHf ξ]
+    rw [(fun ξ => funext (hH ξ)) ξ]
     exact (hcont ξ hξ).aestronglyMeasurable
   have hdiffp : ∀ p, DifferentiableOn ℂ (fun ξ => H ξ p) V := by
     intro p ξ hξ
@@ -222,7 +212,7 @@ theorem differentiableOn_nested_integral (V : Set ℂ) (hV : IsOpen V) (G : ℂ 
       comparisonVerticalIntegral v (fun z => G ξ w z)) =
         ((2 * (Real.pi : ℂ))⁻¹) ^ 2 * ∫ p, H ξ p := by
     intro ξ hξ
-    have hint : Integrable (H ξ) :=
+    have hint :=
       HolomorphicDominatedIntegral.integrable_of_locally_dominated (μ := volume) hmeas hdom hξ
     have e0 : ∫ p, H ξ p = ∫ s : ℝ, ∫ t : ℝ, H ξ (t, s) := integral_prod_symm (H ξ) hint
     have e1 : ∫ s : ℝ, ∫ t : ℝ, H ξ (t, s) = ∫ s : ℝ, ∫ t : ℝ,
@@ -238,13 +228,15 @@ private lemma zpow_bound (Z : ℝ) (hZ : 0 < Z) (c x x₀ : ℝ) (hx : |x - x₀
     Z ^ (c + x) ≤ Real.exp (|Real.log Z| * (|c| + |x₀| + 1)) := by
   rw [Real.rpow_def_of_pos hZ]
   apply Real.exp_le_exp.2
-  calc Real.log Z * (c + x) ≤ |Real.log Z * (c + x)| := le_abs_self _
+  calc _ ≤ |Real.log Z * (c + x)| := le_abs_self _
     _ = |Real.log Z| * |c + x| := abs_mul _ _
     _ ≤ |Real.log Z| * (|c| + |x₀| + 1) := by
         apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
         have h1 := abs_add_le c x
         have h2 := abs_sub_abs_le_abs_sub x x₀
         linarith
+
+alias KernelHolomorphy.zpow_bound := zpow_bound
 
 private lemma K_norm_eq' (u : D.Row) (hq : 0 < D.q u) (ξ : ℂ) (v y : ℝ) (p : ℝ × ℝ) (Z : ℝ)
     (hZ : 0 < Z) :
@@ -254,21 +246,21 @@ private lemma K_norm_eq' (u : D.Row) (hq : 0 < D.q u) (ξ : ℂ) (v y : ℝ) (p 
         ‖rowFactor D u ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I)
           ((v : ℂ) + (p.1 : ℂ) * Complex.I)‖ := by
   unfold K kernelWith
-  have hZc : (0 : ℝ) < Z := hZ
-  have hqc : (0 : ℝ) < D.q u := hq
   have hre : ∀ A B C X E R : ℂ, A * B * C * X * E * R = A * E * (B * C * X) * R := by
     intro A B C X E R; ring
   have hkey : ∀ A E X R : ℂ, ‖A * E * X * R‖ = ‖A‖ * ‖E‖ * ‖X‖ * ‖R‖ := by
-    intro A E X R; simp only [norm_mul]
+    intro A E X R; simp
   rw [hre, hkey]
   unfold WeightConvolution.weightModulus
-  rw [Complex.norm_cpow_eq_rpow_re_of_pos hZc, Complex.norm_cpow_eq_rpow_re_of_pos hqc]
+  rw [Complex.norm_cpow_eq_rpow_re_of_pos hZ, Complex.norm_cpow_eq_rpow_re_of_pos hq]
   simp only [Complex.add_re, Complex.sub_re, Complex.mul_re, Complex.ofReal_re,
     Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.add_im, Complex.sub_im,
     Complex.mul_im, Complex.one_re, Complex.one_im, Complex.neg_re, Complex.neg_im,
     Complex.natCast_re, Complex.natCast_im, Complex.ofReal_natCast]
   simp only [zero_mul, mul_zero, sub_zero, add_zero, zero_add, zero_sub]
   try ring_nf
+
+alias KernelHolomorphy.K_norm_eq' := K_norm_eq'
 
 theorem K_local_majorant (A_F : ℝ) (hconv : ConvexityExponent D A_F) (u : D.Row)
     (hu1 : u.toFrequency.u ≠ 1) (hq2 : 2 ≤ D.q u)

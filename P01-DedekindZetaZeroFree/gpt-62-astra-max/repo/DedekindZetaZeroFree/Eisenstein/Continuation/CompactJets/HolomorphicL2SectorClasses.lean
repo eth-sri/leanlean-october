@@ -26,10 +26,10 @@ variable (μ : Measure X) (q : X → C) (hq : Measurable q)
 end CompactReconstruction
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 theorem smooth_supported_mem_borelL2
     (K : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hK : IsCompact K)
@@ -37,20 +37,18 @@ theorem smooth_supported_mem_borelL2
     (hv : IsSmoothSections F ζ hζ U R P H v)
     (hs : tsupport (sectionNorm F ζ hζ U R P H v) ⊆ K) :
     v ∈ BorelL2Sections F ζ hζ U R P H := by
-  have hc : ∀ i, Continuous (v i).val := fun i => (hv i).continuous
+  have hc := fun i => (hv i).continuous
   have hs' : HasCompactSupport (sectionNorm F ζ hζ U R P H v) :=
     hK.of_isClosed_subset (isClosed_tsupport _) hs
   have hscalar : HasCompactSupport (scalarRepresentative F ζ hζ U R P H v).val := by
     apply (hasCompactSupport_iff F ζ hζ U R P H _).mpr
     simpa [scalarRepresentative_eq_symm] using hs'
-  have hlp := KPContSectorFixedMeasureLocalFiniteness.compactSupport_memLp
-    F ζ hζ R U _ ((continuous_iff F ζ hζ U R P H v).mp hc) hscalar
   exact ⟨fun i => (hc i).measurable,
-    (finite_integral_iff F ζ hζ U R P H v (fun i => (hc i).measurable)).mpr hlp⟩
+    (finite_integral_iff F ζ hζ U R P H v (fun i => (hc i).measurable)).mpr (KPContSectorFixedMeasureLocalFiniteness.compactSupport_memLp
+      F ζ hζ R U _ ((continuous_iff F ζ hζ U R P H v).mp hc) hscalar)⟩
 
 theorem toSector_represents (b : BorelL2Sections F ζ hζ U R P H) :
-    Represents (toSector F ζ hζ U R P H b) b.val := by
-  exact ⟨MemLp.coeFn_toLp (representative_memLp F ζ hζ U R P H b), b, rfl, rfl⟩
+    Represents (toSector F ζ hζ U R P H b) b.val := ⟨MemLp.coeFn_toLp (representative_memLp F ζ hζ U R P H b), b, rfl, rfl⟩
 
 theorem represents_unique {v : Sections F ζ hζ U R P H}
     {V W : KPContSectorClosedLpSubspace.H F ζ hζ R U}
@@ -80,30 +78,32 @@ private lemma scalar_jets (w : ℂ → Sections F ζ hζ U R P H) (O : Set ℂ) 
     (x : CoveredSpherical F ζ hζ U) :
     (scalarRepresentative F ζ hζ U R P H (pointwiseJets w O k s)).val x =
       iteratedDerivWithin k (fun z => (scalarRepresentative F ζ hζ U R P H (w z)).val x) O s := by
-  obtain ⟨⟨i,v⟩,rfl⟩ := (KPContSectorPhaseComponentCharts.componentHomeomorph F ζ hζ U R P H).surjective x
+  let componentHomeomorph₀ := KPContSectorPhaseComponentCharts.componentHomeomorph F ζ hζ U R P H
+  obtain ⟨⟨i,v⟩,rfl⟩ := (componentHomeomorph₀).surjective x
   refine Quotient.inductionOn v ?_
   rintro ⟨m,y⟩
   refine Quotient.inductionOn m ?_
   intro e
+  let scalarRepresentative₀ := scalarRepresentative F ζ hζ U R P H
   have hf : ∀ a : Sections F ζ hζ U R P H,
-      (scalarRepresentative F ζ hζ U R P H a).val
-        (KPContSectorPhaseComponentCharts.componentHomeomorph F ζ hζ U R P H
+      (scalarRepresentative₀ a).val
+        (componentHomeomorph₀
           ⟨i,Quotient.mk _ (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ U e,y)⟩) =
       (chi F ζ hζ e : ℂ) * (a i).val y := by
     intro a
-    have ht := phase_component_restriction F ζ hζ U R P H (scalarRepresentative F ζ hζ U R P H a) i
+    have ht := phase_component_restriction F ζ hζ U R P H (scalarRepresentative₀ a) i
       (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ U e) y
-    have hS : KPContSectorScalarLineAlgebra.S F ζ hζ U R P H (scalarRepresentative F ζ hζ U R P H a) = a :=
+    have hS : KPContSectorScalarLineAlgebra.S F ζ hζ U R P H (scalarRepresentative₀ a) = a :=
       (KPContSectorScalarLineAlgebra.S F ζ hζ U R P H).apply_symm_apply a
     rw [hS, phaseCoefficient_class] at ht
     exact ht
   have hf' : ∀ a : Sections F ζ hζ U R P H,
-      (scalarRepresentative F ζ hζ U R P H a).val
-        (KPContSectorPhaseComponentCharts.componentHomeomorph F ζ hζ U R P H
+      (scalarRepresentative₀ a).val
+        (componentHomeomorph₀
           ⟨i,Quotient.mk _ (Quotient.mk _ e,y)⟩) = (chi F ζ hζ e : ℂ) * (a i).val y := hf
   rw [hf']
-  have he : (fun z => (scalarRepresentative F ζ hζ U R P H (w z)).val
-      (KPContSectorPhaseComponentCharts.componentHomeomorph F ζ hζ U R P H
+  have he : (fun z => (scalarRepresentative₀ (w z)).val
+      (componentHomeomorph₀
         ⟨i, Quotient.mk _ (Quotient.mk _ e,y)⟩)) = fun z => (chi F ζ hζ e : ℂ) * (w z i).val y := by
     funext z; exact hf (w z)
   rw [he, pointwiseJets_apply, iteratedDerivWithin_const_mul_field]
@@ -139,15 +139,15 @@ theorem parameter_jets_sector_classes_source
   have he' : ∀ i s, s ∈ O → ∀ x : C i, j i s x = (isotropyChart (charts i)).coefficient (w s) x.val := by
     intro i s hs x
     simpa [iteratedFDerivWithin_zero_apply] using he i s hs x
-  let J : ℂ → ((i : Fin m) → ContinuousMap (C i) ℂ) := fun s i => j i s
-  have hJ : DifferentiableOn ℂ J O := differentiableOn_pi.mpr hj
+  let J := fun s i => j i s
+  have hJ := differentiableOn_pi.mpr hj
   have hwpoint : ∀ k s, s ∈ O → wk k s = pointwiseJets w O k s := by
     intro k s hs
     funext i; apply Subtype.ext; funext x
     exact _hderiv k s hs i x
   let b : ∀ k s, s ∈ O → BorelL2Sections F ζ hζ U R P H := fun k s hs =>
     ⟨wk k s, smooth_supported_mem_borelL2 K _hK (wk k s) (_hsupp k s hs).1 (_hsupp k s hs).2⟩
-  let W : ℕ → ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U := fun k s =>
+  let W := fun k s =>
     if hs : s ∈ O then toSector F ζ hζ U R P H (b k s hs) else 0
   have hrep : ∀ k s (hs : s ∈ O), Represents (W k s) (wk k s) := by
     intro k s hs
@@ -155,34 +155,29 @@ theorem parameter_jets_sector_classes_source
   have hcoeff : ∀ k s (hs : s ∈ O) i (x : C i),
       iteratedDerivWithin k J O s i x = (isotropyChart (charts i)).coefficient (wk k s) x.val := by
     intro k s hs i x
-    let E := ((i : Fin m) → ContinuousMap (C i) ℂ)
-    let ev : E →L[ℂ] ℂ := (ContinuousMap.evalCLM ℂ x).comp (ContinuousLinearMap.proj i)
-    have hd := clm_iterated ev J O _hO hJ k s hs
+    have hd := clm_iterated ((ContinuousMap.evalCLM ℂ x).comp (ContinuousLinearMap.proj i)) J O _hO hJ k s hs
     change iteratedDerivWithin k (fun z => j i z x) O s = iteratedDerivWithin k J O s i x at hd
     rw [← hd, hwpoint k s hs, pointwiseJets_frame]
     exact iteratedDerivWithin_congr (n := k) (fun z hz => he' i z hz x) hs
   have hclass : ∀ k s (hs : s ∈ O), T (iteratedDerivWithin k J O s) =
       (W k s : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R U) := by
     intro k s hs
-    have ht := hT (wk k s) (_hsupp k s hs).1 (_hsupp k s hs).2
-      (iteratedDerivWithin k J O s) (hcoeff k s hs) (b k s hs) rfl
-    simpa only [W, dite_eq_left hs] using ht
+    simpa only [W, dite_eq_left hs] using (hT (wk k s) (_hsupp k s hs).1 (_hsupp k s hs).2
+      (iteratedDerivWithin k J O s) (hcoeff k s hs) (b k s hs) rfl)
   let Pj := (KPContSectorClosedLpSubspace.H F ζ hζ R U).orthogonalProjectionOnto
   have hpr : ∀ k s (hs : s ∈ O), Pj (T (iteratedDerivWithin k J O s)) = W k s := by
     intro k s hs
     rw [hclass k s hs]
     exact Submodule.orthogonalProjectionOnto_mem_subspace_eq_self (W k s)
-  have hdiff : ∀ k, DifferentiableOn ℂ (W k) O := by
-    intro k
-    exact (Pj.differentiable.comp_differentiableOn
+  have hdiff : ∀ k, DifferentiableOn ℂ (W k) O := fun k => (Pj.differentiable.comp_differentiableOn
       (T.differentiable.comp_differentiableOn (jet_differentiable J O _hO hJ k))).congr
         (fun s hs => (hpr k s hs).symm)
   refine ⟨W, (fun k s hs => ⟨hrep k s hs, fun V hV => represents_unique hV (hrep k s hs)⟩), hdiff, ?_, ?_, ?_⟩
   · intro k s hs
     have h0 : Set.EqOn (W 0) (fun z => Pj (T (J z))) O := by
       intro z hz
-      simpa only [iteratedDerivWithin_zero] using (hpr 0 z hz).symm
-    rw [iteratedDerivWithin_congr (n := k) h0 hs]
+      simpa using (hpr 0 z hz).symm
+    rw [iteratedDerivWithin_congr h0 hs]
     change iteratedDerivWithin k (fun z => (Pj.comp T) (J z)) O s = W k s
     rw [clm_iterated (Pj.comp T) J O _hO hJ k s hs]
     exact hpr k s hs

@@ -12,7 +12,11 @@ namespace DedekindZetaZeroFree.LargeSieve.PoissonCoprimeExact
 
 open UniqueFactorizationMonoid
 
-private lemma sum_mu {F : Type*} [Field F] [NumberField F]
+section
+
+variable {F : Type*} [Field F] [NumberField F]
+
+private lemma sum_mu
     (a : Ideal (𝓞 F)) (ha : a ≠ ⊥) :
     (∑ d ∈ idealDivisors a, (moebius d : ℂ)) = if a = ⊤ then 1 else 0 := by
   let r := UniqueFactorizationMonoid.radical a
@@ -62,13 +66,13 @@ private lemma sum_mu {F : Type*} [Field F] [NumberField F]
       simp only [factors_one, Multiset.toFinset_zero]
   by_cases h : a = ⊤
   · rw [hP.mpr h, Finset.prod_empty, if_pos h]
-  · have hne : (factors r).toFinset.Nonempty := Finset.nonempty_iff_ne_empty.mpr
+  · have hne := Finset.nonempty_iff_ne_empty.mpr
       (fun he => h (hP.mp he))
     rw [if_neg h]
     simp only [add_neg_cancel]
     obtain ⟨p, hp⟩ := hne
     exact Finset.prod_eq_zero hp rfl
-private lemma indicator {F : Type*} [Field F] [NumberField F]
+private lemma indicator
     (m I : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hI : I ≠ ⊥) :
     (∑ d ∈ idealDivisors m, if d ∣ I then (moebius d : ℂ) else 0) =
       if I ⊔ m = ⊤ then 1 else 0 := by
@@ -79,6 +83,10 @@ private lemma indicator {F : Type*} [Field F] [NumberField F]
       Ideal.dvd_iff_le, sup_le_iff]
     exact and_comm
   rw [← Finset.sum_filter, heq, sum_mu _ hsup]
+
+end
+
+alias MoebiusCoprimality.indicator := indicator
 
 theorem coprimeFinsum_eq_moebiusMultiples
     {F : Type*} [Field F] [NumberField F]
@@ -108,15 +116,14 @@ theorem coprimeFinsum_eq_moebiusMultiples
   intro I hIS
   by_cases hI : I = ⊥
   · simp [hI]
-  · have hid := indicator m I hm hI
-    have he : (∑ d ∈ idealDivisors m, (moebius d : ℂ) *
+  · have he : (∑ d ∈ idealDivisors m, (moebius d : ℂ) *
         (if I ≠ ⊥ ∧ d ∣ I then g I else 0)) =
         (∑ d ∈ idealDivisors m, if d ∣ I then (moebius d : ℂ) else 0) * g I := by
       rw [Finset.sum_mul]
       apply Finset.sum_congr rfl
       intro d hd
       by_cases hdI : d ∣ I <;> simp [hI, hdI]
-    rw [he, hid]
+    rw [he, (indicator m I hm hI)]
     by_cases hc : I ⊔ m = ⊤ <;> simp [hI, hc]
 
 end DedekindZetaZeroFree.LargeSieve.PoissonCoprimeExact

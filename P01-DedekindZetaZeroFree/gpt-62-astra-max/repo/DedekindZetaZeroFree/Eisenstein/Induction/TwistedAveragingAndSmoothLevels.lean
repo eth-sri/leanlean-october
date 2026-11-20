@@ -20,7 +20,7 @@ set_option backward.isDefEq.respectTransparency false
 open scoped Topology
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 local instance functionsQLevelFunctionsAddGroup (P : Polarization F ζ hζ) :
     AddCommGroup (InducedFunctions F ζ hζ P) :=
@@ -32,8 +32,9 @@ local instance functionsQLevelAddGroup (P : Polarization F ζ hζ)
   @Submodule.addCommGroup ℂ (InducedFunctions F ζ hζ P)
     inferInstance inferInstance inferInstance (InducedLevel F ζ hζ P J)
 
-theorem functionsQ_level_continuous_of_isBounded (C : ModelData F ζ hζ) (s : ℂ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+variable (C : ModelData F ζ hζ) (s : ℂ) (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+
+theorem functionsQ_level_continuous_of_isBounded
     (hbound : Seminorm.IsBounded
       (fun i : G F ζ hζ × ℕ × KPGlobalTorusFunctionData.JetCompact (groupArchDomain F) =>
         inducedJet F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J i.1 i.2.1 i.2.2)
@@ -50,18 +51,9 @@ theorem functionsQ_level_continuous_of_isBounded (C : ModelData F ζ hζ) (s : �
         (functionsQ_preserves_level F ζ hζ C s) J) := by
   letI := inducedLevelTopology F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J
   letI := inducedLevelTopology F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J
-  have hp : WithSeminorms (fun i : G F ζ hζ × ℕ ×
-      KPGlobalTorusFunctionData.JetCompact (groupArchDomain F) =>
-      inducedJet F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J i.1 i.2.1 i.2.2) :=
-    ⟨rfl⟩
-  have hq : WithSeminorms (fun i : G F ζ hζ × ℕ ×
-      KPGlobalTorusFunctionData.JetCompact (groupArchDomain F) =>
-      inducedJet F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J i.1 i.2.1 i.2.2) :=
-    ⟨rfl⟩
-  exact WithSeminorms.continuous_of_isBounded hp hq _ hbound
+  exact WithSeminorms.continuous_of_isBounded (⟨rfl⟩) (⟨rfl⟩) _ hbound
 
-theorem functionsQ_chart_integral_jets (C : ModelData F ζ hζ) (s : ℂ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+theorem functionsQ_chart_integral_jets
     (r : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (f : InducedLevel F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J)
     (g : G F ζ hζ) (n : ℕ) (z : GroupArch F) (hz : z ∈ groupArchDomain F) :
@@ -82,8 +74,7 @@ theorem functionsQ_chart_integral_jets (C : ModelData F ζ hζ) (s : ℂ)
         ((hAj m).comp (continuous_const.prodMk continuous_id)).aestronglyMeasurable_of_compactSpace)
     (by
       intro m y _
-      obtain ⟨B, hB⟩ := ((isCompact_closedBall y 1).prod (isCompact_univ : IsCompact
-        (Set.univ : Set (KPGlobalTorusPeriodizationInverse.CompactIndex F ζ hζ C)))).exists_bound_of_continuousOn
+      obtain ⟨B, hB⟩ := ((isCompact_closedBall y 1).prod isCompact_univ).exists_bound_of_continuousOn
           (hAj m).continuousOn
       refine ⟨Metric.closedBall y 1, (fun _ => B), Metric.closedBall_mem_nhds _ zero_lt_one,
         Set.subset_univ _, integrable_const B, Filter.Eventually.of_forall ?_⟩
@@ -96,14 +87,13 @@ theorem functionsQ_chart_integral_jets (C : ModelData F ζ hζ) (s : ℂ)
     change (twistedQ F ζ hζ C s (f.val.val (groupArchChart F ζ hζ y * g))).val.val 1 = _
     rw [← TorusChartTransport.weightedChart_integral_eq F ζ hζ C s r f.val g y]
     exact integral_congr_ae (Filter.Eventually.of_forall (fun x => (hEq y hy x).symm))
-  have hset : groupArchDomain F =ᶠ[nhds z] (Set.univ : Set (GroupArch F)) :=
+  have hset : groupArchDomain F =ᶠ[nhds z] Set.univ :=
     Filter.eventually_of_mem ((groupArchDomain_open F).mem_nhds hz)
       (fun y hy => by simp [hy])
-  rw [iteratedFDerivWithin_congr_set (𝕜 := ℝ)
-    (f := fun y => ((functionsQ F ζ hζ C s f.val).val
-      (groupArchChart F ζ hζ y * g)).val.val 1) hset n]
-  refine ((heq.filter_mono (nhdsWithin_le_nhds (s := Set.univ))).iteratedFDerivWithin_eq
-    (𝕜 := ℝ) heq.eq_of_nhds n).trans (hj.trans ?_)
+  rw [iteratedFDerivWithin_congr_set
+     hset n]
+  refine ((heq.filter_mono (nhdsWithin_le_nhds)).iteratedFDerivWithin_eq
+     heq.eq_of_nhds n).trans (hj.trans ?_)
   apply integral_congr_ae
   apply Filter.Eventually.of_forall
   intro x
@@ -117,8 +107,7 @@ theorem functionsQ_chart_integral_jets (C : ModelData F ζ hζ) (s : ℂ)
       (f := fun y => TorusChartTransport.weightedChartIntegrand F ζ hζ C s r f.val g y x)
       hset.symm n)
 
-theorem functionsQ_jet_le_of_integral_jets (C : ModelData F ζ hζ) (s : ℂ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+theorem functionsQ_jet_le_of_integral_jets
     (r : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (g : G F ζ hζ) (n : ℕ)
     (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
@@ -151,11 +140,9 @@ theorem functionsQ_jet_le_of_integral_jets (C : ModelData F ζ hζ) (s : ℂ)
     simpa using norm_integral_le_of_norm_le_const
       (μ := KPGlobalTorusPeriodizationInverse.probabilityHaar F ζ hζ C)
       (Filter.Eventually.of_forall (hbound z hz))
-  · have hE : K.set = ∅ := Set.not_nonempty_iff_eq_empty.mp hK
-    simpa only [hE, Set.image_empty, Real.sSup_empty] using hB
+  · simpa only [(Set.not_nonempty_iff_eq_empty.mp hK), Set.image_empty, Real.sSup_empty] using hB
 
-theorem functionsQ_level_continuous (C : ModelData F ζ hζ) (s : ℂ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
+theorem functionsQ_level_continuous :
     @Continuous
       (InducedLevel F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J)
       (InducedLevel F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J)
@@ -169,16 +156,13 @@ theorem functionsQ_level_continuous (C : ModelData F ζ hζ) (s : ℂ)
   let r := Classical.choice
     (KPGlobalTorusPeriodizationInverse.averaging_representatives_exist F ζ hζ C)
   let h := TorusChartTransport.weightedChart_source_jet_bound F ζ hζ C s J r i.1 i.2.1 i.2.2
-  let S := h.choose
   let B := h.choose_spec.choose
-  have hB : 0 ≤ B := h.choose_spec.choose_spec.1
-  have hb := h.choose_spec.choose_spec.2
-  refine ⟨S, B, fun f => ?_⟩
+  refine ⟨h.choose, B, fun f => ?_⟩
   apply functionsQ_jet_le_of_integral_jets F ζ hζ C s J r i.1 i.2.1 i.2.2 f
-  · exact mul_nonneg hB (apply_nonneg _ _)
+  · exact mul_nonneg h.choose_spec.choose_spec.1 (apply_nonneg _ _)
   · intro z hz
     exact functionsQ_chart_integral_jets F ζ hζ C s J r f i.1 i.2.1 z (i.2.2.inside hz)
-  · exact hb f
+  · exact h.choose_spec.choose_spec.2 f
 
 end
 end DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction
@@ -199,7 +183,7 @@ set_option maxHeartbeats 800000
 set_option synthInstance.maxHeartbeats 100000
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 local instance smoothTopology3 (P : Polarization F ζ hζ) :
     TopologicalSpace (Smooth F ζ hζ P) :=
@@ -219,7 +203,9 @@ local instance inducedAddGroup3 (P : Polarization F ζ hζ) :
     AddCommGroup (Induced F ζ hζ P) := @Submodule.addCommGroup ℂ (InducedFunctions F ζ hζ P)
       inferInstance inferInstance inferInstance (Induced F ζ hζ P)
 
-def borelP (C : ModelData F ζ hζ) (s : ℂ) :
+variable (C : ModelData F ζ hζ) (s : ℂ)
+
+def borelP :
     Induced F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) →L[ℂ]
       Induced F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) :=
   ⟨unionMap F ζ hζ _ _ (functionsP F ζ hζ C s)
@@ -228,7 +214,7 @@ def borelP (C : ModelData F ζ hζ) (s : ℂ) :
       (functionsP_preserves_level F ζ hζ C s)
       (functionsP_level_continuous F ζ hζ C s)⟩
 
-def borelQ (C : ModelData F ζ hζ) (s : ℂ) :
+def borelQ :
     Induced F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) →L[ℂ]
       Induced F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) :=
   ⟨unionMap F ζ hζ _ _ (functionsQ F ζ hζ C s)
@@ -237,13 +223,13 @@ def borelQ (C : ModelData F ζ hζ) (s : ℂ) :
       (functionsQ_preserves_level F ζ hζ C s)
       (functionsQ_level_continuous F ζ hζ C s)⟩
 
- theorem borelP_fiberwise (C : ModelData F ζ hζ) (s : ℂ)
+ theorem borelP_fiberwise
     (f : Induced F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s)) (g : G F ζ hζ) :
-    (borelP F ζ hζ C s f).val.val g = twistedP F ζ hζ C s (f.val.val g) := by rfl
+    (borelP F ζ hζ C s f).val.val g = twistedP F ζ hζ C s (f.val.val g) := rfl
 
- theorem borelQ_fiberwise (C : ModelData F ζ hζ) (s : ℂ)
+ theorem borelQ_fiberwise
     (f : Induced F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s)) (g : G F ζ hζ) :
-    (borelQ F ζ hζ C s f).val.val g = twistedQ F ζ hζ C s (f.val.val g) := by rfl
+    (borelQ F ζ hζ C s f).val.val g = twistedQ F ζ hζ C s (f.val.val g) := rfl
 
 end
 end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport

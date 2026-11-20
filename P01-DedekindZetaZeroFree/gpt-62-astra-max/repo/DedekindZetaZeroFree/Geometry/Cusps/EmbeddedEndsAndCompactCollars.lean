@@ -12,8 +12,9 @@ open MeasureTheory Topology
 
 namespace DedekindZetaZeroFree.KPActualCollarBuffer
 
+variable (F : Type) [Field F] [NumberField F]
+
 private theorem endSet_antitone
-    (F : Type) [Field F] [NumberField F]
     (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (σ : KPCuspArithmetic.PGL2 F)
     {T₀ T : ℝ} (hT : T₀ ≤ T) :
     KPFiniteCuspAtlas.endSet F Γ σ T ⊆ KPFiniteCuspAtlas.endSet F Γ σ T₀ := by
@@ -22,8 +23,7 @@ private theorem endSet_antitone
   intro z hz
   exact lt_of_le_of_lt hT hz
 
-theorem actual_end_charts_compact_collars
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+theorem actual_end_charts_compact_collars (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
@@ -102,7 +102,7 @@ theorem actual_end_charts_compact_collars
     rcases b with ⟨j, bj⟩
     simp only at hij
     subst j
-    have hyx' : y = x := eq_of_heq hyx
+    have hyx' := eq_of_heq hyx
     subst y
     have hne : ai ≠ bj := fun h => hab (by rw [h])
     have hd := (A.cuspAtlas i).disjoint_ends hne
@@ -200,8 +200,7 @@ theorem actual_end_charts_compact_collars
     have hK : IsCompact (Set.univ ×ˢ {s : Set.Ioi τ | (s : ℝ) ∈ Set.Icc T (T + 1)} :
         Set (KPCuspCharts.CrossQuotient F S × Set.Ioi τ)) := by
       simpa only [Set.univ_prod] using (isCompact_univ.prod hIcc)
-    have hcont : Continuous (fun x : KPCuspCharts.CrossQuotient F S × Set.Ioi τ =>
-        C a (G.highPresentation τ x)) :=
+    have hcont :=
       (hemb a).continuous.comp (G.highPresentation τ).continuous
     have hset : (fun x : KPCuspCharts.CrossQuotient F S × Set.Ioi τ =>
           C a (G.highPresentation τ x)) ''

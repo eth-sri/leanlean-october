@@ -35,7 +35,11 @@ section CommSemiring
 variable [CommSemiring R]
 variable [AddCommMonoid M] [Module R M]
 
-theorem map_rel {N : Type*} [AddCommMonoid N] [Module R N] (f : M →ₗ[R] N) :
+section
+
+variable {N : Type*} [AddCommMonoid N] [Module R N] (f : M →ₗ[R] N)
+
+theorem map_rel :
     addConGen (Rel R ι M) ≤
       AddCon.ker ((mk R ι N).toAddMonoidHom.comp
         (PiTensorProduct.map fun _ : ι => f).toAddMonoidHom) := by
@@ -44,11 +48,9 @@ theorem map_rel {N : Type*} [AddCommMonoid N] [Module R N] (f : M →ₗ[R] N) :
   cases h with
   | perm e m =>
       apply (AddCon.ker_rel _).2
-      simpa only [AddMonoidHom.comp_apply, LinearMap.toAddMonoidHom_coe,
-        PiTensorProduct.map_tprod, tprod, LinearMap.compMultilinearMap_apply,
-        Function.comp_apply] using (tprod_equiv (R := R) e (f ∘ m)).symm
+      simpa [tprod] using (tprod_equiv e (f ∘ m)).symm
 
-noncomputable def map {N : Type*} [AddCommMonoid N] [Module R N] (f : M →ₗ[R] N) :
+noncomputable def map :
     Sym[R] ι M →ₗ[R] Sym[R] ι N where
   toFun :=
     (addConGen (Rel R ι M)).lift
@@ -60,15 +62,16 @@ noncomputable def map {N : Type*} [AddCommMonoid N] [Module R N] (f : M →ₗ[R
     exact congrArg (mk R ι N) ((PiTensorProduct.map fun _ : ι => f).map_smul r x)
 
 @[simp]
-theorem map_mk {N : Type*} [AddCommMonoid N] [Module R N] (f : M →ₗ[R] N) (x : ⨂[R] (_ : ι), M) :
+theorem map_mk (x : ⨂[R] (_ : ι), M) :
     map f (mk R ι M x) = mk R ι N (PiTensorProduct.map (fun _ : ι => f) x) :=
   AddCon.lift_mk' (map_rel f) x
 
 @[simp]
-theorem map_tprod {N : Type*} [AddCommMonoid N] [Module R N] (f : M →ₗ[R] N) (m : ι → M) :
+theorem map_tprod (m : ι → M) :
     map f (⨂ₛ[R] i, m i) = ⨂ₛ[R] i, f (m i) := by
-  simp only [tprod, LinearMap.compMultilinearMap_apply, map_mk,
-    PiTensorProduct.map_tprod]
+  simp [tprod]
+
+end
 
 @[simp]
 theorem map_id :

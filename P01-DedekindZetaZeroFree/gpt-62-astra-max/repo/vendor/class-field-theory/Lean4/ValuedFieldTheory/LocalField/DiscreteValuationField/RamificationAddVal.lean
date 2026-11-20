@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -60,13 +57,10 @@ theorem addVal_integerMap_eq_ramificationIndex_nsmul
     rw [show ramificationIndex base.toDVF target.toDVF = e from rfl,
       he, pow_zero] at hmap
     rw [hmap] at hle
-    have hle_top :
-        (⊤ : Ideal target.valuationSubring) ≤
-          IsLocalRing.maximalIdeal target.valuationSubring := by
-      simpa only [Ideal.one_eq_top] using hle
-    exact
+    refine
       (IsLocalRing.maximalIdeal.isMaximal
-        target.valuationSubring).ne_top (top_unique hle_top)
+        target.valuationSubring).ne_top (top_unique ?_)
+    simpa using hle
   by_cases ha : a = 0
   · subst a
     have he_coe_ne : (e : ℕ∞) ≠ 0 := by
@@ -86,20 +80,14 @@ theorem addVal_integerMap_eq_ramificationIndex_nsmul
             Set target.valuationSubring) =
         Ideal.span ({varpi ^ e} : Set target.valuationSubring) := by
     calc
-      Ideal.span
-          ({integerMap base.toDVF target.toDVF pi} :
-            Set target.valuationSubring) =
+      _ =
           Ideal.map (integerMap base.toDVF target.toDVF)
             (Ideal.span ({pi} : Set base.valuationSubring)) := by
-              rw [Ideal.map_span, Set.image_singleton]
+              simp [Ideal.map_span]
       _ = Ideal.map (integerMap base.toDVF target.toDVF)
           base.maximalIdeal := by
-            rw [show base.maximalIdeal =
-                IsLocalRing.maximalIdeal base.valuationSubring from rfl,
-              hpi.maximalIdeal_eq]
-      _ = target.maximalIdeal ^ e := by
-            exact
-              maximalIdeal_map_eq_target_maximalIdeal_pow_ramificationIndex
+            simp [hpi.maximalIdeal_eq]
+      _ = target.maximalIdeal ^ e := maximalIdeal_map_eq_target_maximalIdeal_pow_ramificationIndex
                 base target
       _ = Ideal.span ({varpi ^ e} : Set target.valuationSubring) := by
             rw [show target.maximalIdeal =
@@ -108,28 +96,22 @@ theorem addVal_integerMap_eq_ramificationIndex_nsmul
   have hmap_uniformizer :
       IsDiscreteValuationRing.addVal target.valuationSubring
           (integerMap base.toDVF target.toDVF pi) =
-        (e : ℕ∞) := by
+        e := by
     calc
-      IsDiscreteValuationRing.addVal target.valuationSubring
-          (integerMap base.toDVF target.toDVF pi) =
+      _ =
           IsDiscreteValuationRing.addVal target.valuationSubring
             (varpi ^ e) :=
         (IsDiscreteValuationRing.addVal_eq_iff_associated _ _).2
           (Ideal.span_singleton_eq_span_singleton.mp hspan)
-      _ = (e : ℕ∞) := hvarpi.addVal_pow e
+      _ = e := hvarpi.addVal_pow e
   rw [ha_decomp, map_mul, map_pow,
     IsDiscreteValuationRing.addVal_mul,
     IsDiscreteValuationRing.addVal_pow, hmap_uniformizer,
     IsDiscreteValuationRing.addVal_def
       ((unit : base.valuationSubring) * pi ^ m)
       unit hpi m rfl]
-  have hmap_unit :
-      IsDiscreteValuationRing.addVal target.valuationSubring
-          (integerMap base.toDVF target.toDVF
-            (unit : base.valuationSubring)) = 0 := by
-    exact
-      IsDiscreteValuationRing.addVal_eq_zero_iff.mpr
-        ((unit.isUnit : IsUnit (unit : base.valuationSubring)).map
+  have hmap_unit := IsDiscreteValuationRing.addVal_eq_zero_iff.mpr
+        (unit.isUnit.map
           (integerMap base.toDVF target.toDVF))
   rw [hmap_unit, zero_add]
   simp [e, nsmul_eq_mul, mul_comm]
@@ -141,8 +123,7 @@ theorem addVal_integerMap_eq_ramificationIndex_of_irreducible
     IsDiscreteValuationRing.addVal target.valuationSubring
         (integerMap base.toDVF target.toDVF a) =
       (ramificationIndex base.toDVF target.toDVF : ℕ∞) := by
-  rw [addVal_integerMap_eq_ramificationIndex_nsmul base target a,
-    IsDiscreteValuationRing.addVal_uniformizer ha, nsmul_eq_mul, mul_one]
+  simp_all [addVal_integerMap_eq_ramificationIndex_nsmul]
 
 /-- If a base uniformizer remains a uniformizer after applying the
 valuation-ring map, then the relative ramification index is one. -/
@@ -154,23 +135,15 @@ theorem ramificationIndex_eq_one_of_integerMap_uniformizer
         ((integerMap base.toDVF target.toDVF a :
           target.valuationSubring) : L)) :
     ramificationIndex base.toDVF target.toDVF = 1 := by
-  have haIrreducible : Irreducible a :=
-    (IsDiscreteValuationRing.irreducible_iff_uniformizer a).2
-      (base.maximalIdeal_eq_span_uniformizer ha)
-  have hmapIrreducible :
-      Irreducible (integerMap base.toDVF target.toDVF a) :=
-    (IsDiscreteValuationRing.irreducible_iff_uniformizer
-      (integerMap base.toDVF target.toDVF a)).2
-      (target.maximalIdeal_eq_span_uniformizer hmap)
   have hadd :=
     addVal_integerMap_eq_ramificationIndex_nsmul base target a
-  rw [IsDiscreteValuationRing.addVal_uniformizer hmapIrreducible,
-    IsDiscreteValuationRing.addVal_uniformizer haIrreducible,
+  rw [IsDiscreteValuationRing.addVal_uniformizer ((IsDiscreteValuationRing.irreducible_iff_uniformizer
+    (integerMap base.toDVF target.toDVF a)).2
+    (target.maximalIdeal_eq_span_uniformizer hmap)),
+    IsDiscreteValuationRing.addVal_uniformizer ((IsDiscreteValuationRing.irreducible_iff_uniformizer a).2
+      (base.maximalIdeal_eq_span_uniformizer ha)),
     nsmul_eq_mul, mul_one] at hadd
-  have hcoe :
-      (ramificationIndex base.toDVF target.toDVF : ℕ∞) = 1 :=
-    hadd.symm
-  exact_mod_cast hcoe
+  exact_mod_cast hadd.symm
 
 end ValuedExtension
 end LocalFieldTheory.DiscreteValuationField

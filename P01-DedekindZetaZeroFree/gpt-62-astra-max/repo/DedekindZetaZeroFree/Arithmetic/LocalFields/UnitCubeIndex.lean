@@ -78,8 +78,12 @@ private theorem cube_near_one (K : Type*) [Field K] [CharZero K] [ValuativeRel K
     simpa [p, IsLocalRing.mem_maximalIdeal, mem_nonunits_iff] using hnone
   exact ⟨htu.unit, by rwa [htu.unit_spec]⟩
 
-private theorem deep_units_cubes (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] :
+section
+
+variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K]
+
+private theorem deep_units_cubes :
     ∃ m : ℕ, principalUnits K m ≤ cubeUnits K := by
   obtain ⟨π, hπ⟩ := IsDiscreteValuationRing.exists_irreducible (Integers K)
   have h9 : Ideal.span ({(9 : Integers K)} : Set (Integers K)) ≠ ⊥ := by
@@ -93,15 +97,13 @@ private theorem deep_units_cubes (K : Type*) [Field K] [CharZero K] [ValuativeRe
   rw [pow_succ, hp] at hu
   obtain ⟨c, hc, hcx⟩ := Ideal.mem_span_singleton_mul.mp hu
   obtain ⟨t, ht⟩ := cube_near_one K c hc
-  change ∃ t : (Integers K)ˣ, t^3 = u
   refine ⟨t, ?_⟩
   apply Units.ext
   change (t : Integers K)^3 = (u : Integers K)
   rw [ht, hcx]
   ring
 
-private theorem log_integer (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+private theorem log_integer
     (a : Integers K) (ha : a ≠ 0) :
     WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
       (valuation K (a : K))) = -((IsDiscreteValuationRing.addVal (Integers K) a).toNat : ℤ) := by
@@ -146,9 +148,15 @@ private theorem log_integer (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   rw [← WithZero.exp_nsmul, WithZero.log_exp]
   simp [nsmul_eq_mul]
 
-private theorem depth_three (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (ζ : Integers K) (hζ : IsPrimitiveRoot ζ 3) :
+end
+
+alias UnitCubeIndex.log_integer := log_integer
+
+variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K] (ζ : Integers K) (hζ : IsPrimitiveRoot ζ 3)
+
+include hζ in
+private theorem depth_three :
     (IsDiscreteValuationRing.addVal (Integers K) (3 : Integers K)).toNat = 2 * rootDepth K ζ := by
   let v := IsDiscreteValuationRing.addVal (Integers K)
   have hvz : v ζ = 0 := by
@@ -156,11 +164,10 @@ private theorem depth_three (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     rw [← hu]
     exact IsDiscreteValuationRing.addVal_eq_zero_of_unit u
   have hpoly : ζ^2 + ζ + 1 = 0 := by
-    have h : (ζ-1)*(ζ^2+ζ+1) = 0 := by
-      calc
-        _ = ζ^3 - 1 := by ring
-        _ = 0 := by rw [hζ.pow_eq_one]; ring
-    exact (mul_eq_zero.mp h).resolve_left (sub_ne_zero.mpr (hζ.ne_one (by decide)))
+    refine (mul_eq_zero.mp ?_).resolve_left (sub_ne_zero.mpr (hζ.ne_one (by decide)))
+    calc
+    _ = ζ^3 - 1 := by ring
+    _ = 0 := by rw [hζ.pow_eq_one]; ring
   have hsecond : v (1-ζ^2) = v (1-ζ) := by
     have h : 1-ζ^2 = -ζ^2*(1-ζ) := by
       calc
@@ -171,7 +178,6 @@ private theorem depth_three (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     calc
       _ = (ζ^3-1)-(ζ^2+ζ+1)+3 := by ring
       _ = _ := by rw [hζ.pow_eq_one, hpoly]; ring
-  change (v 3).toNat = _
   have hfinite : v (1-ζ) ≠ ⊤ := by
     exact fun h => hζ.ne_one (by decide)
       (sub_eq_zero.mp (IsDiscreteValuationRing.addVal_eq_top_iff.mp h)).symm
@@ -179,19 +185,14 @@ private theorem depth_three (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   change _ = 2 * (v (1-ζ)).toNat
   omega
 
-theorem unit_cube_index
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (ζ : Integers K) (hζ : IsPrimitiveRoot ζ 3) :
+include hζ in
+theorem unit_cube_index :
     ((cubeUnits K).index : ℝ) = 3 / abs K (3 : K) := by
   obtain ⟨m, hm⟩ := deep_units_cubes K
   let j := max m (3 * rootDepth K ζ + 1)
-  have hj : principalUnits K j ≤ cubeUnits K :=
-    (principalUnits_antitone K m j (le_max_left _ _)).trans hm
   have hind : (cubeUnits K).index = 3 * residueCard K ^ (2 * rootDepth K ζ) := by
-    have h := (kp_cubic_unit_truncated_indices K ζ hζ).2.2.2 j
-      (by dsimp [j]; omega)
-    simpa only [truncatedIndex, sup_eq_left.mpr hj] using h
+    simpa only [truncatedIndex, sup_eq_left.mpr ((principalUnits_antitone K m j (le_max_left _ _)).trans hm)] using ((kp_cubic_unit_truncated_indices K ζ hζ).2.2.2 j
+      (by dsimp [j]; omega))
   have h3 : abs K (3 : K) = (residueCard K : ℝ) ^ (-((2 * rootDepth K ζ : ℕ) : ℤ)) := by
     have hne : (3 : K) ≠ 0 := by norm_num
     have hO : (3 : Integers K) ≠ 0 := by norm_num

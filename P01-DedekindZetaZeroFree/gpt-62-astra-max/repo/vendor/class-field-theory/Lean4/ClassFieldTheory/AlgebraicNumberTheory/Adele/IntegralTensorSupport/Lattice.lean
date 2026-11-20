@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -47,10 +45,10 @@ theorem exists_integral_relativeBasis_scale :
           (d • relativeExtensionBasis
             (K := K) (L := L) i) := by
   classical
-  let : Algebra.IsAlgebraic ℤ L :=
+  let :=
     (IsFractionRing.isAlgebraic_iff' ℤ (𝓞 L) L).mp
       inferInstance
-  let s : Finset L :=
+  let s :=
     Finset.univ.image fun i :
       RelativeAdeleBasisIndex (K := K) (L := L) =>
         relativeExtensionBasis (K := K) (L := L) i
@@ -58,11 +56,7 @@ theorem exists_integral_relativeBasis_scale :
     Algebra.IsAlgebraic.exists_integral_multiples ℤ s
   refine ⟨d, hd, ?_⟩
   intro i
-  exact
-    hint
-      (relativeExtensionBasis (K := K) (L := L) i)
-      (Finset.mem_image.mpr
-        ⟨i, Finset.mem_univ i, rfl⟩)
+  grind
 
 /-- The chosen common integral scale. -/
 noncomputable def chosenRelativeBasisIntegralScale : ℤ :=
@@ -105,7 +99,7 @@ theorem relativeBasisIntegralScaleInK_ne_zero :
     simpa [relativeBasisIntegralScaleInK] using h
   exact
     chosenRelativeBasisIntegralScale_ne_zero
-      (K := K) (L := L)
+
       (Int.cast_injective hc)
 
 /-- The integral scale as a unit of `K`. -/
@@ -146,7 +140,7 @@ theorem scaledRelativeExtensionBasis_isIntegral
   simpa [scaledRelativeExtensionBasis_apply,
     relativeBasisIntegralScaleInK, Algebra.smul_def] using
       chosenRelativeBasisIntegralScale_isIntegral
-        (K := K) (L := L) i
+          i
 
 /-- Every scaled basis vector belongs to the valuation ring of every
 nonarchimedean extension of an absolute value of `K`. -/
@@ -219,17 +213,15 @@ theorem scaledRelativeIntegerLattice_map_toField :
   congr 1
   exact
     (Set.range_comp
-      (ringOfIntegersToFieldLinearMap (K := K) (L := L))
-      (scaledRelativeExtensionInteger (K := K) (L := L))).symm
+      (ringOfIntegersToFieldLinearMap)
+      (scaledRelativeExtensionInteger)).symm
 
 omit [NumberField K] [NumberField L] [FiniteDimensional K L] in
 /-- The inclusion `𝓞 L → L` used above is injective. -/
 theorem ringOfIntegersToFieldLinearMap_injective :
     Function.Injective
       (ringOfIntegersToFieldLinearMap
-        (K := K) (L := L)) := by
-  intro x y h
-  exact NumberField.RingOfIntegers.ext h
+        (K := K) (L := L)) := fun x y h => NumberField.RingOfIntegers.ext h
 
 /-- Every algebraic integer becomes a member of the scaled lattice
 after multiplication by some non-zero-divisor of `𝓞 K`.  This is the
@@ -252,9 +244,9 @@ theorem exists_nonZeroDivisor_smul_mem_scaledRelativeIntegerLattice
         Submodule.span K
           (Set.range
             (scaledRelativeExtensionBasis
-              (K := K) (L := L)))
+               ))
     rw [(scaledRelativeExtensionBasis
-      (K := K) (L := L)).span_eq]
+       ).span_eq]
     exact Submodule.mem_top
   obtain ⟨d, hd⟩ :=
     multiple_mem_span_of_mem_localization_span
@@ -339,16 +331,6 @@ noncomputable def scaledRelativeIntegerLatticeAnnihilator :
   (chosenScaledRelativeIntegerLatticeAnnihilatorData
     (K := K) (L := L) : 𝓞 K)
 
-/-- The selected annihilator element lies in the annihilator ideal. -/
-theorem scaledRelativeIntegerLatticeAnnihilator_mem :
-    scaledRelativeIntegerLatticeAnnihilator
-        (K := K) (L := L) ∈
-      (⊤ : Submodule (𝓞 K)
-        (ScaledRelativeIntegerLatticeQuotient
-          (K := K) (L := L))).annihilator :=
-  (chosenScaledRelativeIntegerLatticeAnnihilatorData
-    (K := K) (L := L)).2.1
-
 /-- The selected annihilator element is nonzero. -/
 theorem scaledRelativeIntegerLatticeAnnihilator_ne_zero :
     scaledRelativeIntegerLatticeAnnihilator
@@ -356,26 +338,6 @@ theorem scaledRelativeIntegerLatticeAnnihilator_ne_zero :
   nonZeroDivisors.ne_zero
     (chosenScaledRelativeIntegerLatticeAnnihilatorData
       (K := K) (L := L)).2.2
-
-/-- The chosen annihilator uniformly carries all of `𝓞 L` into the
-scaled basis lattice. -/
-theorem scaledRelativeIntegerLatticeAnnihilator_smul_mem
-    (x : 𝓞 L) :
-    scaledRelativeIntegerLatticeAnnihilator
-          (K := K) (L := L) • x ∈
-      scaledRelativeIntegerLattice
-        (K := K) (L := L) := by
-  have hkill :
-      scaledRelativeIntegerLatticeAnnihilator
-          (K := K) (L := L) •
-          Submodule.Quotient.mk x = 0 :=
-    Submodule.mem_annihilator.mp
-      (scaledRelativeIntegerLatticeAnnihilator_mem
-        (K := K) (L := L))
-      (Submodule.Quotient.mk x) Submodule.mem_top
-  rw [← Submodule.Quotient.mk_smul,
-    Submodule.Quotient.mk_eq_zero] at hkill
-  exact hkill
 
 /-- The original integral scaling factor, now viewed in `𝓞 K`. -/
 noncomputable def relativeBasisIntegralScaleInRingOfIntegers :
@@ -395,7 +357,7 @@ theorem relativeBasisIntegralScaleInRingOfIntegers_ne_zero :
     simpa [relativeBasisIntegralScaleInRingOfIntegers] using h
   exact
     chosenRelativeBasisIntegralScale_ne_zero
-      (K := K) (L := L)
+
       (Int.cast_injective hc)
 
 /-- One nonzero element controlling both the initial basis scaling and
@@ -430,7 +392,6 @@ theorem integralTensorControlIdeal_ne_bot :
   rw [integralTensorControlIdeal,
     ne_eq, Ideal.span_singleton_eq_bot]
   exact integralTensorControlElement_ne_zero
-    (K := K) (L := L)
 
 /-- The actual finite set of primes at which either the basis scaling
 or the lattice index can fail to be invertible. -/
@@ -463,27 +424,7 @@ theorem integralTensorControlElement_not_mem_of_notMem
       (K := K) (L := L)) :
     integralTensorControlElement
         (K := K) (L := L) ∉ w.asIdeal := by
-  intro hmem
-  apply hw
-  rw [mem_integralTensorBadPlaces_iff,
-    integralTensorControlIdeal,
-    Ideal.dvd_span_singleton]
-  exact hmem
-
-/-- The annihilator alone is invertible away from the bad set. -/
-theorem scaledRelativeIntegerLatticeAnnihilator_not_mem_of_notMem
-    (w : HeightOneSpectrum (𝓞 K))
-    (hw : w ∉ integralTensorBadPlaces
-      (K := K) (L := L)) :
-    scaledRelativeIntegerLatticeAnnihilator
-        (K := K) (L := L) ∉ w.asIdeal := by
-  intro hmem
-  exact
-    integralTensorControlElement_not_mem_of_notMem
-      (K := K) (L := L) w hw
-      (w.asIdeal.mul_mem_left
-        (relativeBasisIntegralScaleInRingOfIntegers
-          (K := K) (L := L)) hmem)
+  simp_all [mem_integralTensorBadPlaces_iff, integralTensorControlIdeal, Ideal.dvd_span_singleton]
 
 /-- The initial integer scale is also invertible away from the bad
 set. -/
@@ -492,14 +433,11 @@ theorem relativeBasisIntegralScale_not_mem_of_notMem
     (hw : w ∉ integralTensorBadPlaces
       (K := K) (L := L)) :
     relativeBasisIntegralScaleInRingOfIntegers
-        (K := K) (L := L) ∉ w.asIdeal := by
-  intro hmem
-  exact
-    integralTensorControlElement_not_mem_of_notMem
-      (K := K) (L := L) w hw
+        (K := K) (L := L) ∉ w.asIdeal := fun hmem => integralTensorControlElement_not_mem_of_notMem
+        w hw
       (w.asIdeal.mul_mem_right
         (scaledRelativeIntegerLatticeAnnihilator
-          (K := K) (L := L)) hmem)
+           ) hmem)
 
 /-- Away from the bad set, the original (unscaled) relative basis is
 integral for every extension of the corresponding finite absolute
@@ -516,26 +454,12 @@ theorem relativeExtensionBasis_absoluteValue_le_one_of_notMem
         (K := K) (L := L) i) ≤ 1 := by
   let vK :=
     NumberField.HeightOneSpectrum.adicAbv K w
-  have hdnot :
-      relativeBasisIntegralScaleInRingOfIntegers
-          (K := K) (L := L) ∉ w.asIdeal :=
-    relativeBasisIntegralScale_not_mem_of_notMem
-      (K := K) (L := L) w hw
-  have hnorm :
-      ‖FinitePlace.embedding w
-        (algebraMap (𝓞 K) K
-          (relativeBasisIntegralScaleInRingOfIntegers
-            (K := K) (L := L)))‖ = 1 :=
+  have hnorm :=
     (FinitePlace.norm_eq_one_iff_notMem
-      (R := 𝓞 K) K w
+       K w
       (relativeBasisIntegralScaleInRingOfIntegers
-        (K := K) (L := L))).2 hdnot
-  have hvscaleInteger :
-      vK
-        (algebraMap (𝓞 K) K
-          (relativeBasisIntegralScaleInRingOfIntegers
-            (K := K) (L := L))) = 1 := by
-    simpa [vK, FinitePlace.norm_embedding] using hnorm
+         )).2 (relativeBasisIntegralScale_not_mem_of_notMem
+          w hw)
   have hscaleField :
       relativeBasisIntegralScaleInK
           (K := K) (L := L) =
@@ -544,22 +468,19 @@ theorem relativeExtensionBasis_absoluteValue_le_one_of_notMem
             (K := K) (L := L)) := by
     simp [relativeBasisIntegralScaleInK,
       relativeBasisIntegralScaleInRingOfIntegers]
-  have hvscale :
-      vK
-        (relativeBasisIntegralScaleInK
-          (K := K) (L := L)) = 1 := by
-    rw [hscaleField]
-    exact hvscaleInteger
   have hwscale :
       wL.1
         (algebraMap K L
           (relativeBasisIntegralScaleInK
             (K := K) (L := L))) = 1 := by
     rw [wL.2]
-    exact hvscale
+    exact (by
+      rw [hscaleField]
+      exact (by
+        simpa [vK, FinitePlace.norm_embedding] using hnorm))
   have hscaled :=
     scaledRelativeExtensionBasis_absoluteValue_le_one
-      (K := K) (L := L) vK
+        vK
       (NumberField.HeightOneSpectrum.isNonarchimedean_adicAbv
         K w) wL i
   rw [scaledRelativeExtensionBasis_apply,

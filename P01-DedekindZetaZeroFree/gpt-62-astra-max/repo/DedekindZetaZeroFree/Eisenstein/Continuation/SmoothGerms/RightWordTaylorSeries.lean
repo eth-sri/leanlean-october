@@ -10,11 +10,11 @@ namespace DedekindZetaZeroFree.SharedSource
 open KPGlobalResidualConstruction KPContSectorSmoothFramesSupport
 open KPContActualCommonDiskRightHolomorphy
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming smooth_smul → smooth_smul
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy (smooth_smul)
 
 theorem coherentSectionWord_compact_taylor
     (W : ℂ → smoothSections F ζ hζ U R P H)
@@ -48,9 +48,6 @@ theorem coherentSectionWord_compact_taylor
       map_sub, map_sum, map_smul]
     rfl
   have hsm (n : ℕ) := sectionLift_smooth U R P H (b n)
-  have hsum := nativeSmooth_finset_sum (Finset.range M) _
-    (fun n _ => smooth_smul F ζ hζ ((s-c)^n) _ (hsm n))
-  have hneg := smooth_smul F ζ hζ (-1) _ (sectionLift_smooth U R P H (W s))
   have he : rightCombination F ζ hζ [(1,w)]
       (lift F ζ hζ U R P H ((∑ n ∈ Finset.range M, (s-c)^n • b n) - W s).val) =
       fun a => (∑ n ∈ Finset.range M, (s-c)^n *
@@ -63,7 +60,8 @@ theorem coherentSectionWord_compact_taylor
     funext a
     simp only [rightCombination, List.map_cons, List.map_nil, List.sum_cons,
       List.sum_nil, one_mul, add_zero]
-    rw [actualRightWord_add _ _ hsum hneg w,
+    rw [actualRightWord_add _ _ (nativeSmooth_finset_sum (Finset.range M) _
+      (fun n _ => smooth_smul F ζ hζ ((s-c)^n) _ (hsm n))) (smooth_smul F ζ hζ (-1) _ (sectionLift_smooth U R P H (W s))) w,
       actualRightWord_finset_sum _ _ (fun n _ => smooth_smul F ζ hζ ((s-c)^n) _ (hsm n)) w]
     simp only [actualRightWord_smul _ _ (hsm _) w,
       actualRightWord_smul _ _ (sectionLift_smooth U R P H (W s)) w,
@@ -82,9 +80,9 @@ theorem coherentSectionWord_compact_taylor
         KPContActualSphericalRightFieldIdentification.actualRightWord F ζ hζ w
           (lift F ζ hζ U R P H (W s).val) (g * archChart F ζ hζ y)) := by
     funext y
-    simp only [Pi.neg_apply, neg_sub]
+    simp
   rw [hfun, iteratedFDeriv_neg]
-  simpa only [Pi.neg_apply, norm_neg] using h
+  simpa using h
 
 end DedekindZetaZeroFree.SharedSource
 

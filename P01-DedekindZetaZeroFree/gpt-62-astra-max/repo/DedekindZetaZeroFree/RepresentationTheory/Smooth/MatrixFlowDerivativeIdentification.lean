@@ -60,7 +60,6 @@ theorem actualRightWord_eq_wordDerivative
   induction w generalizing g with
   | nil => rfl
   | cons b w ih =>
-    change deriv _ 0 = deriv _ 0
     apply congrArg (fun q : ℝ → ℂ => deriv q 0)
     funext t
     rw [matrixExp_eq_flow]

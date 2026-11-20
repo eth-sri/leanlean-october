@@ -15,13 +15,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -87,10 +80,6 @@ omit [FiniteDimensional K L] [IsGalois K L] in
     NumberField
       (abstractFixedField ℚ (SeparableClosure ℚ)
         (numberFieldTowerBaseSubgroup K L)) := by
-  let hFiniteDimensional : FiniteDimensional ℚ
-      (abstractFixedField ℚ (SeparableClosure ℚ)
-        (numberFieldTowerBaseSubgroup K L)) :=
-    numberFieldTowerFixedBaseFiniteDimensionalPackage K L
   exact
     NumberField.of_module_finite ℚ
       (abstractFixedField ℚ (SeparableClosure ℚ)
@@ -120,20 +109,8 @@ of this same package. -/
     ClassFormation.FiniteAbelianSubextension.NormOpenAddSubgroup
       rationalIdeleClassRepresentation
       (numberFieldTowerBaseSubgroup K L) := by
-  let f : Additive (IdeleClassGroup K) →+
-      KummerTheory.ambientFixedAddSubgroup
-        rationalIdeleClassRepresentation (numberFieldTowerBaseSubgroup K L) :=
-    (numberFieldTowerIdeleClassEquivAmbientFixed K L).toAddMonoidHom
-  refine ⟨H.toAddSubgroup.map f, ?_⟩
+  refine ⟨H.toAddSubgroup.map ((numberFieldTowerIdeleClassEquivAmbientFixed K L).toAddMonoidHom), ?_⟩
   exact numberFieldTowerTransport_isNormOpen_of_normRange_le K L H hLH
-
-private theorem ordinaryNormOpenSubgroup_val
-    (H : Subgroup (IdeleClassGroup K))
-    (hLH : (_root_.ideleClassNorm K L).range ≤ H) :
-    (ordinaryNormOpenSubgroup K L H hLH).1 =
-      H.toAddSubgroup.map
-        (numberFieldTowerIdeleClassEquivAmbientFixed K L).toAddMonoidHom :=
-  rfl
 
 section FixedBaseTransport
 
@@ -146,16 +123,12 @@ private theorem numberFieldTowerIdeleClassEquivAmbientFixed_symm_apply
         MulEquiv.toAdditive
           (ideleClassCongr
             (numberFieldTowerAbstractBaseFieldEquiv K L)) c := by
-  let eFixed :=
-    rationalAbstractFixedFieldIdeleClassEquivFixed
-      (numberFieldTowerBaseSubgroup K L)
-  let eBase :=
-    MulEquiv.toAdditive
-      (ideleClassCongr
-        (numberFieldTowerAbstractBaseFieldEquiv K L))
   simpa only [numberFieldTowerIdeleClassEquivAmbientFixed,
     AddEquiv.trans_apply] using
-      eFixed.symm_apply_apply (eBase c)
+      (rationalAbstractFixedFieldIdeleClassEquivFixed
+        (numberFieldTowerBaseSubgroup K L)).symm_apply_apply ((MulEquiv.toAdditive
+        (ideleClassCongr
+          (numberFieldTowerAbstractBaseFieldEquiv K L))) c)
 
 omit [FiniteDimensional K L] [IsGalois K L] in
 private theorem numberFieldTowerIdeleClassEquivAmbientFixed_comp :
@@ -169,79 +142,19 @@ private theorem numberFieldTowerIdeleClassEquivAmbientFixed_comp :
   intro c
   exact
     numberFieldTowerIdeleClassEquivAmbientFixed_symm_apply
-      K L (c : Additive (IdeleClassGroup K))
-
-private theorem numberFieldTowerBaseTransport_isOpen_of_normRange_le_core
-    (H : Subgroup (IdeleClassGroup K))
-    (hLH : (_root_.ideleClassNorm K L).range ≤ H) :
-    IsOpen
-      (((H.toAddSubgroup).map
-        (MulEquiv.toAdditive
-          (ideleClassCongr
-            (numberFieldTowerAbstractBaseFieldEquiv
-              K L))).toAddMonoidHom :
-        AddSubgroup
-          (Additive
-            (IdeleClassGroup
-              (abstractFixedField ℚ (SeparableClosure ℚ)
-                (numberFieldTowerBaseSubgroup K L))))) :
-        Set
-          (Additive
-            (IdeleClassGroup
-              (abstractFixedField ℚ (SeparableClosure ℚ)
-                (numberFieldTowerBaseSubgroup K L))))) := by
-  let B := numberFieldTowerBaseSubgroup K L
-  let F := abstractFixedField ℚ (SeparableClosure ℚ) B
-  let eFixed :
-      Additive (IdeleClassGroup F) ≃+
-        KummerTheory.ambientFixedAddSubgroup rationalIdeleClassRepresentation B :=
-    rationalAbstractFixedFieldIdeleClassEquivFixed B
-  let eBase : Additive (IdeleClassGroup K) ≃+ Additive (IdeleClassGroup F) :=
-    MulEquiv.toAdditive
-      (ideleClassCongr
-        (numberFieldTowerAbstractBaseFieldEquiv K L))
-  let eTower :
-      Additive (IdeleClassGroup K) ≃+
-        KummerTheory.ambientFixedAddSubgroup rationalIdeleClassRepresentation B :=
-    numberFieldTowerIdeleClassEquivAmbientFixed K L
-  let N : AddSubgroup
-      (KummerTheory.ambientFixedAddSubgroup
-        rationalIdeleClassRepresentation B) :=
-    (ordinaryNormOpenSubgroup K L H hLH).1
-  have hN :
-      IsNormOpen rationalIdeleClassRepresentation B N :=
-    (ordinaryNormOpenSubgroup K L H hLH).2
-  have hopen :=
-    rationalNormOpenSubgroup_isOpen B N hN
-  have hcomp :
-      eFixed.symm.toAddMonoidHom.comp
-          eTower.toAddMonoidHom =
-        eBase.toAddMonoidHom :=
-    numberFieldTowerIdeleClassEquivAmbientFixed_comp K L
-  have hmap :
-      rationalTransportedNormSubgroup B N =
-        H.toAddSubgroup.map eBase.toAddMonoidHom := by
-    simpa only [rationalTransportedNormSubgroup, N,
-      ordinaryNormOpenSubgroup_val, AddSubgroup.map_map] using
-      congrArg
-        (fun f : Additive (IdeleClassGroup K) →+
-            Additive (IdeleClassGroup F) =>
-          AddSubgroup.map (N := Additive (IdeleClassGroup F)) f H.toAddSubgroup)
-        hcomp
-  exact
-    (congrArg
-      (fun S : AddSubgroup (Additive (IdeleClassGroup F)) =>
-        IsOpen (S : Set (Additive (IdeleClassGroup F))))
-      hmap).mp hopen
+      K L c
 
 end FixedBaseTransport
 
+section
+
+variable (H : Subgroup (IdeleClassGroup K)) (hLH : (_root_.ideleClassNorm K L).range ≤ H)
+
+include hLH in
 /-- A finite Galois norm neighbourhood inside an ordinary idele-class
 subgroup produces a finite abelian subextension whose abstract norm
 subgroup is exactly the transported ordinary subgroup. -/
-theorem exists_finiteAbelianSubextension_normSubgroup_eq_of_normRange_le
-    (H : Subgroup (IdeleClassGroup K))
-    (hLH : (_root_.ideleClassNorm K L).range ≤ H) :
+theorem exists_finiteAbelianSubextension_normSubgroup_eq_of_normRange_le :
     ∃ M : FiniteAbelianSubextension
         (numberFieldTowerBaseSubgroup K L),
       M.normSubgroup rationalIdeleClassRepresentation =
@@ -266,44 +179,19 @@ theorem exists_finiteAbelianSubextension_normSubgroup_eq_of_normRange_le
   refine ⟨M, ?_⟩
   rw [← FiniteAbelianSubextension.normSubgroupMap_val]
   rw [congrArg Subtype.val hM]
-  exact ordinaryNormOpenSubgroup_val K L H hLH
-
-/-- The ordinary subgroup transported from `K` to its compatible
-embedded fixed-field copy is open whenever it contains an actual finite
-Galois norm subgroup.  This is the concrete comparison between the norm
-topology and the usual idele-class topology at the chosen realization. -/
-theorem numberFieldTowerBaseTransport_isOpen_of_normRange_le
-    (H : Subgroup (IdeleClassGroup K))
-    (hLH : (_root_.ideleClassNorm K L).range ≤ H) :
-    let B := numberFieldTowerBaseSubgroup K L
-    let F := abstractFixedField ℚ (SeparableClosure ℚ) B
-    IsOpen
-      (((H.toAddSubgroup).map
-        (MulEquiv.toAdditive
-          (ideleClassCongr
-            (numberFieldTowerAbstractBaseFieldEquiv
-              K L))).toAddMonoidHom :
-        AddSubgroup (Additive (IdeleClassGroup F))) :
-        Set (Additive (IdeleClassGroup F))) := by
-  exact
-    numberFieldTowerBaseTransport_isOpen_of_normRange_le_core
-      K L H hLH
+  exact rfl
 
 /-- The finite abelian subextension selected from an ordinary norm
 neighbourhood.  This is the unique choice point for the realization API
 below. -/
-noncomputable def ordinaryNormClassFieldSubextension
-    (H : Subgroup (IdeleClassGroup K))
-    (hLH : (_root_.ideleClassNorm K L).range ≤ H) :
+noncomputable def ordinaryNormClassFieldSubextension :
     FiniteAbelianSubextension (numberFieldTowerBaseSubgroup K L) :=
   Classical.choose
     (exists_finiteAbelianSubextension_normSubgroup_eq_of_normRange_le
       K L H hLH)
 
 /-- The selected subextension has the prescribed abstract norm subgroup. -/
-theorem ordinaryNormClassFieldSubextension_normSubgroup
-    (H : Subgroup (IdeleClassGroup K))
-    (hLH : (_root_.ideleClassNorm K L).range ≤ H) :
+theorem ordinaryNormClassFieldSubextension_normSubgroup :
     (ordinaryNormClassFieldSubextension K L H hLH).normSubgroup
         rationalIdeleClassRepresentation =
       H.toAddSubgroup.map
@@ -312,6 +200,8 @@ theorem ordinaryNormClassFieldSubextension_normSubgroup
   Classical.choose_spec
     (exists_finiteAbelianSubextension_normSubgroup_eq_of_normRange_le
       K L H hLH)
+
+end
 
 /-- The canonical fixed-field copy of the base used by every ordinary
 norm-neighbourhood realization in the ambient extension `L / K`. -/
@@ -407,8 +297,7 @@ private theorem ordinaryNormClassFieldBaseIdeleClassTransport_comp :
         (ideleClassCongr (ordinaryNormClassFieldBaseEquiv K L))
     let eTower := numberFieldTowerIdeleClassEquivAmbientFixed K L
     eFixed.symm.toAddMonoidHom.comp eTower.toAddMonoidHom =
-      eBase.toAddMonoidHom := by
-  exact numberFieldTowerIdeleClassEquivAmbientFixed_comp K L
+      eBase.toAddMonoidHom := numberFieldTowerIdeleClassEquivAmbientFixed_comp K L
 
 /-- The determinant-norm range of the selected ordinary class field is
 the original subgroup transported to the canonical fixed-field base. -/
@@ -424,9 +313,7 @@ theorem ordinaryNormClassField_ideleClassNorm_range
               (ordinaryNormClassFieldBaseEquiv K L))).toAddMonoidHom := by
   let M := ordinaryNormClassFieldSubextension K L H hLH
   let B := numberFieldTowerBaseSubgroup K L
-  let hRelativeQuotientFinite : Finite
-      (B.toSubgroup ⧸
-        CyclicCohomology.extensionSubgroup B M.field M.below) :=
+  let hRelativeQuotientFinite :=
     M.finite
   let eFixed := rationalAbstractFixedFieldIdeleClassEquivFixed B
   let eTower := numberFieldTowerIdeleClassEquivAmbientFixed K L
@@ -434,12 +321,13 @@ theorem ordinaryNormClassField_ideleClassNorm_range
       KummerTheory.ambientFixedAddSubgroup
         rationalIdeleClassRepresentation B :=
     eTower.toAddMonoidHom
+  let Additive₀ := Additive (IdeleClassGroup (ordinaryNormClassFieldBase K L))
   let g : KummerTheory.ambientFixedAddSubgroup
       rationalIdeleClassRepresentation B →+
-        Additive (IdeleClassGroup (ordinaryNormClassFieldBase K L)) :=
+        Additive₀ :=
     eFixed.symm.toAddMonoidHom
   let h : Additive (IdeleClassGroup K) →+
-      Additive (IdeleClassGroup (ordinaryNormClassFieldBase K L)) :=
+      Additive₀ :=
     (MulEquiv.toAdditive
       (ideleClassCongr
         (ordinaryNormClassFieldBaseEquiv K L))).toAddMonoidHom
@@ -472,7 +360,7 @@ theorem ordinaryNormClassField_ideleClassNorm_range
               (KummerTheory.ambientFixedAddSubgroup
                 rationalIdeleClassRepresentation B) =>
             AddSubgroup.map
-              (N := Additive (IdeleClassGroup (ordinaryNormClassFieldBase K L))) g S)
+              (N := Additive₀) g S)
           (ordinaryNormClassFieldSubextension_normSubgroup
             K L H hLH)
     _ = H.toAddSubgroup.map h := by
@@ -481,8 +369,7 @@ theorem ordinaryNormClassField_ideleClassNorm_range
           (A := Additive (IdeleClassGroup K))
           (B := KummerTheory.ambientFixedAddSubgroup
             rationalIdeleClassRepresentation B)
-          (C := Additive
-            (IdeleClassGroup (ordinaryNormClassFieldBase K L)))
+          (C := Additive₀)
           (S := H.toAddSubgroup)
           (f := f) (g := g) (h := h)
           (hcomp := hcomp)

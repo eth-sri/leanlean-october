@@ -15,8 +15,8 @@ open KPActualScalarBinding
 noncomputable section
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
 
 local notation "K" => KPExceptionalRaw.LocalField F q
 local notation "H₀" => KPExceptionalRaw.actualTorus F ζ hζ q
@@ -42,13 +42,13 @@ private theorem pgl_diagonal_injective (L : Type*) [Field L] (u v : Lˣ)
     (huv : Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d L u 1) =
       Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d L v 1)) : u = v := by
   obtain ⟨c, hc⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp huv
-  have h11 := congrArg (fun g : GL (Fin 2) L => (g : Matrix (Fin 2) (Fin 2) L) 1 1) hc
-  have h00 := congrArg (fun g : GL (Fin 2) L => (g : Matrix (Fin 2) (Fin 2) L) 0 0) hc
+  have h11 := congrArg (fun g : GL (Fin 2) L => g 1 1) hc
+  have h00 := congrArg (fun g : GL (Fin 2) L => g 0 0) hc
   simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.scalar, Matrix.diagonal_apply] at h11 h00
   apply Units.ext
   calc
-    (u : L) = (u : L) * (c : L) := by simp [h11]
+    _ = (u : L) * (c : L) := by simp [h11]
     _ = (v : L) := h00
 
 private theorem pgl_weyl_diagonal (L : Type*) [Field L] (u : Lˣ) :
@@ -95,10 +95,9 @@ private theorem weyl_sheet (S : ActualKPBinding F ζ hζ q) (e : rootsOfUnity 3 
   apply Subtype.ext
   rw [S.borel.weylCenter_coe, ← S.torus_full, S.borel.weyl_from_lift,
     S.torus_full, S.central_actual]
-  have hc := Subgroup.mem_center_iff.mp
+  rw [mul_assoc, ← (Subgroup.mem_center_iff.mp
     (KPPGLLocalCover.centralInjection_range_le_center F ζ hζ (Sum.inr q) ⟨e,rfl⟩)
-    S.borel.liftedW
-  rw [mul_assoc, ← hc, ← mul_assoc, inv_mul_cancel, one_mul]
+    S.borel.liftedW), ← mul_assoc, inv_mul_cancel, one_mul]
 
 private theorem coord_sheet (S : ActualKPBinding F ζ hζ q) (e : rootsOfUnity 3 F) :
     S.borel.coordinate (S.central e : H₀) = 1 := by

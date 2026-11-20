@@ -12,11 +12,11 @@ open Module MeasureTheory
 
 namespace DedekindZetaZeroFree.PoissonArch
 
-private theorem integrableOn_character_periodisation
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
-    (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L) (f : 𝓢(V, ℂ)) (w : V) :
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
+    [MeasurableSpace V] [BorelSpace V] (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
+    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L) (f : 𝓢(V, ℂ))
+
+private theorem integrableOn_character_periodisation (w : V) :
     IntegrableOn (fun v : V => (𝐞 (-inner ℝ v w) : ℂ) • periodisation L f v)
       (basisDomain L b) volume := by
   classical
@@ -26,8 +26,8 @@ private theorem integrableOn_character_periodisation
   have hDmeas : MeasurableSet (basisDomain L b) := by
     rw [basisDomain]
     rw [Set.image_eq_preimage_of_inverse
-      (fun x => (b.ofZLatticeBasis ℝ L).equivFun.apply_symm_apply x)
-      (fun x => (b.ofZLatticeBasis ℝ L).equivFun.symm_apply_apply x)]
+      (((b.ofZLatticeBasis ℝ L).equivFun.apply_symm_apply))
+      (((b.ofZLatticeBasis ℝ L).equivFun.symm_apply_apply))]
     exact hboxmeas.preimage (continuous_equivFun_basis (b.ofZLatticeBasis ℝ L)).measurable
   have hsub : basisDomain L b ⊆ (b.ofZLatticeBasis ℝ L).equivFun.symm ''
       (Set.pi Set.univ (fun _ : ι => Set.Icc (0:ℝ) 1)) := by
@@ -35,33 +35,20 @@ private theorem integrableOn_character_periodisation
     simp only [basisDomain, coordinateBoxIco] at hx
     obtain ⟨y, hy, rfl⟩ := hx
     exact ⟨y, by
-      rw [Set.mem_univ_pi]
-      intro i
-      exact ⟨(hy i).1, le_of_lt (hy i).2⟩, rfl⟩
+      grind, rfl⟩
   have hKc : IsCompact ((b.ofZLatticeBasis ℝ L).equivFun.symm ''
       (Set.pi Set.univ (fun _ : ι => Set.Icc (0:ℝ) 1))) :=
     (isCompact_univ_pi (fun _ => isCompact_Icc)).image
       ((b.ofZLatticeBasis ℝ L).equivFun.symm.toLinearMap.continuous_of_finiteDimensional)
-  have hDfin : volume (basisDomain L b) < ⊤ :=
-    lt_of_le_of_lt (measure_mono hsub) hKc.measure_lt_top
   have hchar : Continuous (fun v : V => (𝐞 (-inner ℝ v w) : ℂ)) := by fun_prop
-  have hcont : Continuous (fun v : V => (𝐞 (-inner ℝ v w) : ℂ) • periodisation L f v) :=
-    hchar.smul (continuous_periodisation L f)
-  have hgmeas : AEStronglyMeasurable
-      (fun v : V => (𝐞 (-inner ℝ v w) : ℂ) • periodisation L f v)
-      (volume.restrict (basisDomain L b)) := hcont.aestronglyMeasurable
   obtain ⟨C, hC⟩ := hKc.exists_bound_of_continuousOn (continuous_periodisation L f).continuousOn
-  refine IntegrableOn.of_bound hDfin hgmeas C ?_
+  refine IntegrableOn.of_bound (lt_of_le_of_lt (measure_mono hsub) hKc.measure_lt_top) (hchar.smul (continuous_periodisation L f)).aestronglyMeasurable C ?_
   filter_upwards [self_mem_ae_restrict hDmeas] with x hx
-  calc ‖(𝐞 (-inner ℝ x w) : ℂ) • periodisation L f x‖ = ‖periodisation L f x‖ := by
-        rw [norm_smul, Circle.norm_coe, one_mul]
+  calc _ = ‖periodisation L f x‖ := by
+        simp
     _ ≤ C := hC x (hsub hx)
 
 theorem torusPeriodisation_mFourierCoeff
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
-    (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L) (f : 𝓢(V, ℂ))
     (n : ι → ℤ) :
     UnitAddTorus.mFourierCoeff (torusPeriodisation b f : UnitAddTorus ι → ℂ) n =
       (ZLattice.covolume L volume : ℂ)⁻¹ *
@@ -98,8 +85,8 @@ theorem torusPeriodisation_mFourierCoeff
       (by
         rw [basisDomain]
         rw [Set.image_eq_preimage_of_inverse
-          (fun x => (b.ofZLatticeBasis ℝ L).equivFun.apply_symm_apply x)
-          (fun x => (b.ofZLatticeBasis ℝ L).equivFun.symm_apply_apply x)]
+          (((b.ofZLatticeBasis ℝ L).equivFun.apply_symm_apply))
+          (((b.ofZLatticeBasis ℝ L).equivFun.symm_apply_apply))]
         rw [coordinateBoxIco]
         exact (MeasurableSet.univ_pi' (fun _ => measurableSet_Ico)).preimage
           (continuous_equivFun_basis (b.ofZLatticeBasis ℝ L)).measurable)

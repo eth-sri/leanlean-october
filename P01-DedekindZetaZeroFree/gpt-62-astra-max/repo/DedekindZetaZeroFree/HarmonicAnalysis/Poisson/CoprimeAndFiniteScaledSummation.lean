@@ -58,9 +58,8 @@ theorem finite_scaled_principalPoisson
           T (X * (Ideal.absNorm I : ℝ) / (Ideal.absNorm d : ℝ))) := by
     intro d hd
     have hdpos : (0 : ℝ) < (Ideal.absNorm d : ℝ) := by
-      have hne : Ideal.absNorm d ≠ 0 := by
-        rw [Ne, Ideal.absNorm_eq_zero_iff]; exact hD d hd
-      exact_mod_cast Nat.pos_of_ne_zero hne
+      exact_mod_cast Nat.pos_of_ne_zero (by
+        rw [Ne, Ideal.absNorm_eq_zero_iff]; exact hD d hd)
     have hpp := principalPoisson F hF h hh hcompact
       (X / (Ideal.absNorm d : ℝ)) (div_pos hX hdpos)
     dsimp only at hpp
@@ -113,7 +112,7 @@ namespace DedekindZetaZeroFree.LargeSieve.PoissonCoprimeExact
 private theorem finsum_ite_eq_finsum_subtype {α : Type*} {M : Type*} [AddCommMonoid M]
     (p : α → Prop) [DecidablePred p] (g : α → M) :
     (∑ᶠ a : α, if p a then g a else 0) = ∑ᶠ a : Subtype p, g a := by
-  rw [finsum_subtype_eq_finsum_cond (f := g) (p := p)]
+  rw [finsum_subtype_eq_finsum_cond]
   apply finsum_congr
   intro i
   by_cases hp : p i
@@ -153,16 +152,8 @@ theorem multiplesFinsum_eq_scaledPrincipal
     congr 1
     show (Ideal.absNorm J.val : ℝ) / (X / (Ideal.absNorm d : ℝ)) =
       (Ideal.absNorm (d * J.val) : ℝ) / X
-    have hdN : (Ideal.absNorm d : ℝ) ≠ 0 := by
-      have : Ideal.absNorm d ≠ 0 := by rwa [Ne, Ideal.absNorm_eq_zero_iff]
-      exact_mod_cast this
     rw [map_mul, Nat.cast_mul]
     field_simp
-  have key : (∑ᶠ J : {J : Ideal (𝓞 F) // J ≠ ⊥},
-        h ((Ideal.absNorm J.val : ℝ) / (X / (Ideal.absNorm d : ℝ)))) =
-      ∑ᶠ I : {I : Ideal (𝓞 F) // I ≠ ⊥ ∧ d ∣ I},
-        h ((Ideal.absNorm I.val : ℝ) / X) :=
-    finsum_eq_of_bijective e he heq
   rw [finsum_ite_eq_finsum_subtype (fun I : Ideal (𝓞 F) => I ≠ ⊥ ∧ d ∣ I)
     (fun I => h ((Ideal.absNorm I : ℝ) / X))]
   rw [show (∑ᶠ I : Ideal (𝓞 F), if I = ⊥ then 0 else
@@ -174,7 +165,7 @@ theorem multiplesFinsum_eq_scaledPrincipal
     by_cases hI : I = ⊥ <;> simp [hI]]
   rw [finsum_ite_eq_finsum_subtype (fun I : Ideal (𝓞 F) => I ≠ ⊥)
     (fun I => h ((Ideal.absNorm I : ℝ) / (X / (Ideal.absNorm d : ℝ))))]
-  exact key.symm
+  exact (finsum_eq_of_bijective e he heq).symm
 
 end DedekindZetaZeroFree.LargeSieve.PoissonCoprimeExact
 
@@ -226,9 +217,7 @@ theorem poissonCoprimeExact
       funext I
       simp [idealMellinWeight]
     rw [← heq]
-    exact idealMellinWeight_hasFiniteSupport (F := F) (fun _ => (1 : ℂ)) hcompact hX
-  change (∑ᶠ I : Ideal (𝓞 F),
-      if I ≠ ⊥ ∧ I ⊔ m = ⊤ then h ((Ideal.absNorm I : ℝ) / X) else 0) = _
+    exact idealMellinWeight_hasFiniteSupport (fun _ => (1 : ℂ)) hcompact hX
   rw [PoissonCoprimeExact.coprimeFinsum_eq_moebiusMultiples
     (fun I => h ((Ideal.absNorm I : ℝ) / X)) hg m hm]
   calc

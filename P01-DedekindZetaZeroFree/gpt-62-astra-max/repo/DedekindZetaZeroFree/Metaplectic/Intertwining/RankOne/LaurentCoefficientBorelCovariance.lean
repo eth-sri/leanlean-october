@@ -20,8 +20,7 @@ theorem actual_compact_action_eval (δ : Sign) (b : S.borel.B)
     (v : InducedModule P) (h : actualTorus F ζ hζ q) :
     (inducingAction S.borel P δ 0 b v).val h =
       v.val (h * (if δ = .plus then S.borel.retract b else S.borel.weyl (S.borel.retract b))) := by
-  have hn := S.iwasawa.intersection_norm b hb
-  cases δ <;> simp [inducingAction, inducingScalar, deltaHalf, normPower, hn,
+  cases δ <;> simp [inducingAction, inducingScalar, deltaHalf, normPower, (S.iwasawa.intersection_norm b hb),
     borelAction, weylConjugate]
   all_goals rfl
 
@@ -34,15 +33,17 @@ variable (J : CompactOpenLevel (ActualCover F ζ hζ q))
     (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
   (ε : Sign)
 
+variable (φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J)
+
 theorem actual_scalar_coefficient_fiber
-    (φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J)
     (k : S.iwasawa.compact.toOpenSubgroup) (n : ℤ) :
     (fun h => actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε φ k h n) ∈
       InducedModule P := by
   intro a h
   let c : ℂ := P.ωL a
-  have he : actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε φ k ((a : actualTorus F ζ hζ q) * h) =
-      c • actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε φ k h := by
+  let actualScalarNumerator₀ := actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε φ k
+  have he : actualScalarNumerator₀ ((a : actualTorus F ζ hζ q) * h) =
+      c • actualScalarNumerator₀ h := by
     apply KPTameTransposeUnitNumeratorSteps.Augmentation.scalar_laurent_chamber_unique (LocalField F q) ε
     intro s hs
     have h1 := Classical.choose_spec (actual_scalar_numerator_coordinate F ζ hζ q S P J hJ μ hμ π hπ ε φ k ((a : actualTorus F ζ hζ q) * h)) s hs
@@ -56,21 +57,19 @@ theorem actual_scalar_coefficient_fiber
       filter_upwards [] with x
       exact (compactTrivialization S.borel P S.iwasawa (sourceSign ε) (sourceParameter ε s) φ.val).val
         (kernelW (LocalField F q) S.borel ε * (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) * k) |>.property a h
-    change _ = (actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε φ k ((a : actualTorus F ζ hζ q) * h)).sum _ at h1
-    change _ = (actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε φ k h).sum _ at h2
+    change _ = (actualScalarNumerator₀ ((a : actualTorus F ζ hζ q) * h)).sum _ at h1
+    change _ = (actualScalarNumerator₀ h).sum _ at h2
     rw [Finsupp.sum_smul_index (by intro i; simp)]
     simp_rw [mul_left_comm _ c]
     simp only [Finsupp.sum]
     rw [← Finset.mul_sum]
-    change (actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε φ k ((a : actualTorus F ζ hζ q) * h)).sum _ =
-      c * (actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε φ k h).sum _
+    change (actualScalarNumerator₀ (a * h)).sum _ =
+      c * (actualScalarNumerator₀ h).sum _
     rw [← h1, ← h2, hi]
     ring
-  have H := congrArg (fun p : ℤ →₀ ℂ => p n) he
-  exact H
+  exact congrArg (fun p : ℤ →₀ ℂ => p n) he
 
 theorem actual_scalar_coefficient_borel
-    (φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J)
     (b : S.borel.B) (k k' : S.iwasawa.compact.toOpenSubgroup)
     (hk : (k' : ActualCover F ζ hζ q) = (b : ActualCover F ζ hζ q) * k)
     (h : actualTorus F ζ hζ q) :

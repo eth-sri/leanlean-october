@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -29,7 +26,7 @@ namespace LubinTate
 namespace SameUniformizer
 
 variable {R : Type*} [CommRing R]
-variable {σ : Type*} [Fintype σ]
+    {σ : Type*} [Fintype σ]
 
 /-- The multivariable linear form `sum_i L_i X_i`. -/
 noncomputable def linearForm (L : σ → R) : MvPowerSeries σ R :=
@@ -54,10 +51,8 @@ variable {H : MvPowerSeries σ R} {L : σ → R}
 coefficient. -/
 theorem constantCoeff_eq_zero (h : HasLinearTerm H L) :
     MvPowerSeries.constantCoeff H = 0 := by
-  have horder : (1 : ℕ∞) ≤ (H - linearForm L).order :=
-    (by norm_num : (1 : ℕ∞) ≤ 2).trans h
   have hconstant :=
-    MvPowerSeries.one_le_order_iff_constCoeff_eq_zero.mp horder
+    MvPowerSeries.one_le_order_iff_constCoeff_eq_zero.mp ((by norm_num : (1 : ℕ∞) ≤ 2).trans h)
   simpa using hconstant
 
 /-- Consequently the series can genuinely be substituted into a

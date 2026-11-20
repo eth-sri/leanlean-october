@@ -31,13 +31,9 @@ private lemma norm_exp_eps_sq (ε x T : ℝ) :
 private lemma tendsto_stripReg_zero (f : ℂ → ℂ) (s : ℂ) :
     Tendsto (fun ε : ℝ => stripReg f ε s) (𝓝[>] (0 : ℝ)) (𝓝 (f s)) := by
   have h1 : Tendsto (fun ε : ℝ => (ε : ℂ) * s ^ 2) (𝓝[>] (0 : ℝ)) (𝓝 0) := by
-    have h : Tendsto (fun ε : ℝ => (ε : ℂ)) (𝓝[>] (0 : ℝ)) (𝓝 (0 : ℂ)) :=
-      (Complex.continuous_ofReal.tendsto 0).mono_left nhdsWithin_le_nhds
-    simpa using h.mul_const (s ^ 2)
+    simpa using ((Complex.continuous_ofReal.tendsto 0).mono_left nhdsWithin_le_nhds).mul_const (s ^ 2)
   have h2 : Tendsto (fun ε : ℝ => Complex.exp ((ε : ℂ) * s ^ 2)) (𝓝[>] (0 : ℝ)) (𝓝 1) := by
-    have h := (Complex.continuous_exp.tendsto 0).comp h1
-    have h' : Tendsto (fun ε : ℝ => Complex.exp ((ε : ℂ) * s ^ 2)) (𝓝[>] (0 : ℝ))
-        (𝓝 (Complex.exp 0)) := h
+    have h' := ((Complex.continuous_exp.tendsto 0).comp h1)
     rwa [Complex.exp_zero] at h'
   simpa [stripReg] using tendsto_const_nhds.mul h2
 

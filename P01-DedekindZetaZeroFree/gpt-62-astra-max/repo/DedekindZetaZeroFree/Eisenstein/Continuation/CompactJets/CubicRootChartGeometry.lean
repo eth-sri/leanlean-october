@@ -17,16 +17,13 @@ open KPContCotangentActualOverlap KPContCotangentOverlapRationalBranches
 open KPContCotangentActualGenuineTwistIsotropy
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 private lemma central_comm (e : rootsOfUnity 3 F) (c : FiniteCover F ζ hζ) :
-    KPCuspGenuineMonodromy.central F ζ hζ e * c = c * KPCuspGenuineMonodromy.central F ζ hζ e := by
-  apply Subtype.ext
-  exact (Subgroup.mem_center_iff.mp
-    (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨e,rfl⟩) c).symm
+    KPCuspGenuineMonodromy.central F ζ hζ e * c = c * KPCuspGenuineMonodromy.central F ζ hζ e := by apply @DedekindZetaZeroFree.KPMsActualCuspSource.central_comm <;> assumption
 
 private lemma comparison_member (a : ActualChart (U := U) (H := H))
     (g : KPCuspArithmetic.PGL2 F) (e : rootsOfUnity 3 F) (u : U.toOpenSubgroup)
@@ -35,11 +32,11 @@ private lemma comparison_member (a : ActualChart (U := U) (H := H))
     g ∈ KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component := by
   have hz : KPCuspGenuineMonodromy.finiteBase F ζ hζ (KPCuspGenuineMonodromy.central F ζ hζ e) = 1 := by
     apply MonoidHom.mem_ker.mp
-    rw [← (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.1]
+    rw [← (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).1]
     exact ⟨e, rfl⟩
   have hp := congrArg (KPCuspGenuineMonodromy.finiteBase F ζ hζ) he
   simp only [map_mul, hz, one_mul] at hp
-  rw [← MonoidHom.comp_apply, (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2.2.1] at hp
+  rw [← MonoidHom.comp_apply, (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2] at hp
   change KPFiniteComponents.diagonal F g ∈
     (U.toOpenSubgroup.toSubgroup.map (KPCuspGenuineMonodromy.finiteBase F ζ hζ)).map
       (MulAut.conj (KPCuspGenuineMonodromy.finiteBase F ζ hζ ((H.atlas U).representative a.component))).toMonoidHom
@@ -58,20 +55,15 @@ private lemma separated_member (a : ActualChart (U := U) (H := H))
   let ga : KPContSectorPhaseComponentCharts.ArchComponent F ζ hζ U R P H a.component :=
     ⟨KPContSectorPhaseComponentCharts.complexProjectiveEmbedding F g.val,
       Subgroup.mem_map.mpr ⟨g.val,g.property,rfl⟩⟩
-  have hh : ga ∈ MulAction.stabilizer _ a.center := a.larger.separated ga
+  have hh := a.larger.separated ga
     ⟨g.val • x, ⟨x,a.closure_subset (subset_closure hx),
       KPContSectorPhaseComponentCharts.complexProjectiveEmbedding_smul F g.val x⟩,
       a.closure_subset (subset_closure hg)⟩
   change ga • a.center = a.center at hh
-  change g.val • a.center = a.center
   exact (KPContSectorPhaseComponentCharts.complexProjectiveEmbedding_smul F g.val a.center).symm.trans hh
 
-private lemma la_al (x : KPCuspGenuineMonodromy.SymmetricSpace F) :
-    labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) x) = x := by
-  funext k; simp [labeledA, labeledAInv]
-private lemma al_la (x : M F) :
-    labeledAInv (placeEquiv F ζ hζ) (labeledA (placeEquiv F ζ hζ) x) = x := by
-  simp [labeledA, labeledAInv]
+private alias la_al := DedekindZetaZeroFree.KPContActualSectorMultiplier.CompactCutoffDifferentialBounds.la
+private alias al_la := DedekindZetaZeroFree.KPContActualSectorMultiplier.CompactCutoffDifferentialBounds.al
 
 private lemma root_fibers (a : ActualChart (U := U) (H := H))
     (C : Set (M F)) (hD : C ⊆ omega a) (p r : rootsOfUnity 3 F × C) :
@@ -151,11 +143,10 @@ theorem compact_root_chart_geometry_source (a : ActualChart (U := U) (H := H))
   · rintro _ ⟨p, rfl⟩
     exact ⟨p.2.val, p.2.property, (base_raw_root a p.1 p.2.val).symm⟩
   · rintro z ⟨x, hx, he⟩
-    let v : CoveredSpherical F ζ hζ U := Quotient.mk (coveredRelation F ζ hζ U)
+    let v := Quotient.mk (coveredRelation F ζ hζ U)
       (labeledA (placeEquiv F ζ hζ) x, (H.atlas U).representative a.component)
     have hv : KPContSectorCoveredQuotientVocabulary.q F ζ hζ U v = q a x := by
-      have ht := base_raw_root a (1 : rootsOfUnity 3 F) x
-      simpa [v] using ht
+      simpa [v] using (base_raw_root a (1 : rootsOfUnity 3 F) x)
     obtain ⟨e, he⟩ := (KPContSectorQuotientRelationsComparison.q_eq_iff F ζ hζ U v z).mp (hv.trans he)
     refine ⟨(e, ⟨x,hx⟩), ?_⟩
     rw [he, z_mk]

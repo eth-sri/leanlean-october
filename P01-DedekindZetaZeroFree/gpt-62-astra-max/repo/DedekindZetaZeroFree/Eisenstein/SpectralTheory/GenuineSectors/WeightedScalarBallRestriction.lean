@@ -19,10 +19,10 @@ open KPContCotangentOverlapRationalBranches KPContCotangentActualOverlap
 open KPContActualSectorCoordinateNullEquivalence
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 abbrev BallInside (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F)) : Prop :=
   KPContActualSectorCoordinateNullEquivalence.BallInside a B
@@ -31,12 +31,8 @@ abbrev BallL2 {n : ℕ} (B : LocalBall n) := KPContLocalNorm.BallL2 B
 
 theorem weight_positive_lower (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F))
     (hB : BallInside a B) : ∃ c : ℝ, 0 < c ∧ ∀ x ∈ closure B.carrier, c ≤ weight a x := by
-  have hs : closure B.carrier ⊆ chart a := hB.2
-  have hc : ContinuousOn (weight a) (closure B.carrier) :=
-    (scalarData a).smooth_weight.continuousOn.mono hs
-  have hn : (closure B.carrier).Nonempty :=
-    ⟨B.center, subset_closure (Metric.mem_ball_self B.radius_pos)⟩
-  obtain ⟨p, hp, hmin⟩ := hB.1.exists_isMinOn hn hc
+  have hs := hB.2
+  obtain ⟨p, hp, hmin⟩ := hB.1.exists_isMinOn (⟨B.center, subset_closure (Metric.mem_ball_self B.radius_pos)⟩) ((scalarData a).smooth_weight.continuousOn.mono hs)
   exact ⟨weight a p, (scalarData a).positive_weight p (hs hp), fun x hx => hmin hx⟩
 theorem ball_measure_le_weighted (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F))
     (hB : BallInside a B) (c : ℝ) (hc : 0 < c)
@@ -64,24 +60,29 @@ theorem ball_measure_le_weighted (a : ActualChart (U := U) (H := H)) (B : LocalB
     ENNReal.ofReal_ne_top] using hi
 
 variable {α : Type*} [MeasurableSpace α] {μ ν : Measure α} {c : ENNReal}
-def lpRestrictionOfMeasureLeSMul (hc : c ≠ ⊤) (h : μ ≤ c • ν) :
+section
+
+variable (hc : c ≠ ⊤) (h : μ ≤ c • ν)
+
+def lpRestrictionOfMeasureLeSMul :
     Lp ℂ 2 ν →L[ℂ] Lp ℂ 2 μ := by
   let L := Lp.LpToLpOfMeasureLeSMul (E := ℂ) (p := 2) hc h
   refine { toFun := L, map_add' := L.map_add, map_smul' := ?_, cont := L.continuous }
   intro z f
   apply Lp.ext
-  have habs : μ ≪ ν := Measure.absolutelyContinuous_of_le_smul h
   filter_upwards [Lp.coeFn_LpToLpOfMeasureLeSMul hc h (z • f),
     Lp.coeFn_LpToLpOfMeasureLeSMul hc h f,
-    Lp.coeFn_smul z (L f), habs.ae_eq (Lp.coeFn_smul z f)] with x h1 h2 h3 h4
+    Lp.coeFn_smul z (L f), (Measure.absolutelyContinuous_of_le_smul h).ae_eq (Lp.coeFn_smul z f)] with x h1 h2 h3 h4
   change L (z • f) x = (z • L f) x
   change L f x = f x at h2
   change (z • L f) x = z • L f x at h3
   change (z • f) x = z • f x at h4
   rw [h1, h3, h2, h4]
-theorem lpRestrictionOfMeasureLeSMul_ae (hc : c ≠ ⊤) (h : μ ≤ c • ν) (f : Lp ℂ 2 ν) :
+theorem lpRestrictionOfMeasureLeSMul_ae (f : Lp ℂ 2 ν) :
     lpRestrictionOfMeasureLeSMul hc h f =ᵐ[μ] f :=
   Lp.coeFn_LpToLpOfMeasureLeSMul hc h f
+
+end
 
 theorem ball_measure_domination (a : ActualChart (U := U) (H := H))
     (B : LocalBall (3 * d F)) (hB : BallInside a B) :

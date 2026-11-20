@@ -14,22 +14,21 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.FiniteStageAnalytic
 variable {G₀ V J S : Type*} [TopologicalSpace G₀] [AddCommGroup V] [Module ℂ V]
   [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
 
- def compactJet (D : J → V →ₗ[ℂ] C(G₀, ℂ))
-    (ι : S →ₗ[ℂ] V) (i : KPGlobalEisensteinData.DifferentialCompact G₀ J) :
+ variable (D : J → V →ₗ[ℂ] C(G₀, ℂ)) (ι : S →ₗ[ℂ] V)
+
+def compactJet (i : KPGlobalEisensteinData.DifferentialCompact G₀ J) :
     S →ₗ[ℂ] C(i.compact, ℂ) where
   toFun v := (D i.operator (ι v)).restrict i.compact
   map_add' := by intros; ext; simp
   map_smul' := by intros; ext; simp
 
-private theorem compactJet_bound (D : J → V →ₗ[ℂ] C(G₀, ℂ))
-    (ι : S →ₗ[ℂ] V) (i : KPGlobalEisensteinData.DifferentialCompact G₀ J) :
+private theorem compactJet_bound (i : KPGlobalEisensteinData.DifferentialCompact G₀ J) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ v, KPGlobalEisensteinData.smoothSeminorm D i (ι v) ≤ C * ‖v‖ := by
   letI : CompactSpace i.compact := isCompact_iff_compactSpace.mp i.isCompact
   let T := (compactJet D ι i).toContinuousLinearMap
   exact ⟨‖T‖, norm_nonneg _, T.le_opNorm⟩
 
-theorem powerSeries_into_smooth (D : J → V →ₗ[ℂ] C(G₀, ℂ))
-    (ι : S →ₗ[ℂ] V) {f : ℂ → S} {p : FormalMultilinearSeries ℂ ℂ S}
+theorem powerSeries_into_smooth {f : ℂ → S} {p : FormalMultilinearSeries ℂ ℂ S}
     {z₀ : ℂ} {ρ : ℝ} (hρ : 0 < ρ)
     (hf : HasFPowerSeriesOnBall f p z₀ (ENNReal.ofReal ρ)) :
     KPGlobalEisensteinData.SmoothPowerSeriesOn D z₀ ρ
@@ -62,8 +61,7 @@ theorem powerSeries_into_smooth (D : J → V →ₗ[ℂ] C(G₀, ℂ))
       (lt_div_iff₀ (by positivity : 0 < C + 1)).mp hn
   nlinarith [norm_nonneg (p.partialSum M (z - z₀) - f z)]
 
-theorem holomorphic_into_smooth (D : J → V →ₗ[ℂ] C(G₀, ℂ))
-    (ι : S →ₗ[ℂ] V) {f : ℂ → S} {O : Set ℂ}
+theorem holomorphic_into_smooth {f : ℂ → S} {O : Set ℂ}
     (hO : IsOpen O) (hf : DifferentiableOn ℂ f O) :
     KPGlobalEisensteinData.SmoothHolomorphicOn D (fun z => ι (f z)) O := by
   letI : CompleteSpace S := FiniteDimensional.complete ℂ S

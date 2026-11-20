@@ -12,8 +12,8 @@ open KPCplxActualImage KPCplxWhittakerUnique
 open KPActualReflectionData.StandardLocalSource
 open KPReferenceChange.StandardComplexImage
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
@@ -42,8 +42,7 @@ theorem factorization_trace_forms (D : TensorLocalLines R N)
       (∀w,L w sphericalSeed ≠ 0) := by
   have hex (w : InfinitePlace F) : ∃L:Theta traceFrequency →L[ℂ] ℂ,
       L∈whittakerSpace traceFrequency traceCharacter ∧
-      restriction L=D.localEll (Sum.inl w) := by
-    exact Submodule.mem_map.mp (hline w (D.localEll_mem (Sum.inl w)))
+      restriction L=D.localEll (Sum.inl w) := Submodule.mem_map.mp (hline w (D.localEll_mem (Sum.inl w)))
   choose L hL he using hex
   have hr (w : InfinitePlace F) (v : KPGlobalResidualConstruction.complexCore) :
       L w (coreInStandardImage v)=D.factorization.ell (Sum.inl w) v := by
@@ -56,8 +55,7 @@ theorem factorization_trace_forms (D : TensorLocalLines R N)
     intro hz
     apply D.localEll_ne (Sum.inl w)
     rw [←he w,hz,map_zero]
-  have h := continuous_whittaker_sphericalCore_ne_zero R.A w (L w) (hw w) hn
-  simpa only [coreInStandardImage_spherical] using h
+  simpa using (continuous_whittaker_sphericalCore_ne_zero R.A w (L w) (hw w) hn)
 end DedekindZetaZeroFree.RootDerivatives
 
 end

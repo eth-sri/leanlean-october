@@ -12,7 +12,7 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.EisensteinSmoothGerms.ScalarSource
 open MomentSources ThetaExpansion ResidueContinuity.ScalarSourcePoleGeometry
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem selected_pole_set
     (R : PrincipalMellin.ActualRecipe S η) {N : TraceHaarTransport R}
@@ -30,7 +30,7 @@ theorem selected_pole_set
   obtain ⟨C, _⟩ := KPGlobalTorusFiniteStages.compatibleModelData_exists F ζ hζ L
   obtain ⟨Haar, _, _, P, ⟨H⟩⟩ :=
     kp_ms_fixed_haar_disintegration F ζ hζ
-      (Measure.haar : Measure (KPLiteralRaw.G F ζ hζ)) inferInstance
+      Measure.haar inferInstance
   obtain ⟨Q, A, hQ, hQ0, hch, hlocal⟩ :=
     finite_word_local_numerator F ζ hζ C Haar P H
       B.sources.K B.sources.iwasawa (B.sources.flat v)
@@ -42,13 +42,10 @@ theorem selected_pole_set
     intro c hc
     obtain ⟨r, w, hr, hb, ha, he⟩ := hlocal c hc
     exact ⟨r, 1, w, hr, hb, ha, fun s hs hn g => by simpa using he s hs hn g⟩
-  let Z : Set ℂ := {s | s ∈ KPContinuation.spectralDomain ∧
-    ∃ g, ¬ AnalyticAt ℂ (fun z => A z g) s}
-  have hm := KPScalarContinuation.meromorphicOn_of_local_clearing A KPContinuation.spectralDomain hc
-  have hi := KPScalarContinuation.scalar_singularities_isolated_of_local_clearing
-    A KPContinuation.spectralDomain hc
-  apply selectedPoleSet_of_weighted_comparison D Z (fun _ hs => hs.1) hi Q A
-    hQ (by rw [hQ0]; exact one_ne_zero) hm hch
+  apply selectedPoleSet_of_weighted_comparison D ({s | s ∈ KPContinuation.spectralDomain ∧
+    ∃ g, ¬ AnalyticAt ℂ (fun z => A z g) s}) (fun _ hs => hs.1) (KPScalarContinuation.scalar_singularities_isolated_of_local_clearing
+    A KPContinuation.spectralDomain hc) Q A
+    hQ (by rw [hQ0]; exact one_ne_zero) (KPScalarContinuation.meromorphicOn_of_local_clearing A KPContinuation.spectralDomain hc) hch
   intro s hs hn g
   by_contra ha
   exact hn ⟨hs, g, ha⟩

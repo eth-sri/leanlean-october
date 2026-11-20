@@ -33,8 +33,7 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     FiniteDimensional.of_injective ContinuousMultilinearMap.toMultilinearMapLinear
       ContinuousMultilinearMap.toMultilinearMap_injective
   let ec := ev.toContinuousLinearMap
-  have hc := ev.isClosedEmbedding_of_injective (LinearMap.ker_eq_bot.mpr hi)
-  obtain ⟨A, hA⟩ := ec.antilipschitz_of_isEmbedding hc.isEmbedding
+  obtain ⟨A, hA⟩ := ec.antilipschitz_of_isEmbedding (ev.isClosedEmbedding_of_injective (LinearMap.ker_eq_bot.mpr hi)).isEmbedding
   refine ⟨A, A.coe_nonneg, fun L => ?_⟩
   calc
     ‖L‖ ≤ A * ‖ec L‖ := ec.bound_of_antilipschitz hA L

@@ -11,8 +11,8 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open NumberField KPGlobalTorusFiniteStages TensorActionSource KPGlobalResidualConstruction
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 
 theorem quotientCoreEvaluator_compact (w : InfinitePlace F)
     (k : KPCplxCharacterHaar.ComplexSU2)

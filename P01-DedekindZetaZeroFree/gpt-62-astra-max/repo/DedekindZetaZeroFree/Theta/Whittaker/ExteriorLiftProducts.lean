@@ -11,10 +11,10 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
-variable (D : SourceFactorization R Q T)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    (D : SourceFactorization R Q T)
 lemma commute_list_product {G : Type*} [Group G] (L : List G) (b : G)
     (h : ∀ a ∈ L, Commute a b) : Commute L.prod b := by
   induction L with
@@ -52,19 +52,18 @@ lemma fourier_exterior_list (v : R.A.UnitQuotient)
       intro b hb
       obtain ⟨q, hq, rfl⟩ := List.mem_map.mp hb
       exact finiteLift_commute_distinct R q.val p.val
-        (by intro he; exact hn.1 ((Subtype.ext he) ▸ hq)) _ _
+        (fun he => hn.1 ((Subtype.ext he) ▸ hq)) _ _
     have hr (t : p.val.adicCompletion F) :
         Commute (g * (L.map (fun q => finiteLift R q.val (a q))).prod)
           (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
             (KPRationalAdelicSplitting.localAdele F (Sum.inr p.val) t)) := by
       apply (hg p (List.mem_cons_self) t).mul_left
-      change Commute (L.map (fun q => finiteLift R q.val (a q))).prod _
       rw [← ExteriorWhittakerValues.StoredWhittaker.finite_root_injection R p.val t]
       apply commute_list_product
       intro b hb
       obtain ⟨q, hq, rfl⟩ := List.mem_map.mp hb
       exact finiteLift_commute_distinct R q.val p.val
-        (by intro he; exact hn.1 ((Subtype.ext he) ▸ hq)) _ _
+        (fun he => hn.1 ((Subtype.ext he) ▸ hq)) _ _
     simp only [List.map_cons, List.prod_cons]
     rw [hc.eq, ← mul_assoc, fourier_forward_exterior_single R D v p _ hr,
       ih hn.2 (fun q hq => hg q (List.mem_cons_of_mem _ hq))]

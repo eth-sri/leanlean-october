@@ -11,8 +11,8 @@ namespace DedekindZetaZeroFree.DigitMasks
 open MomentSources NumberField
 open scoped Classical BigOperators
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem digitRight_inverse_fixed {Q : AdmissibleFlatSources R} (T : Realization R Q)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (u : R.A.U) (y : R.A.G)

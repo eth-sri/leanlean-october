@@ -43,18 +43,12 @@ section TopologicalSemiring
 variable [IsTopologicalSemiring 𝕜]
 
 instance : IsTopologicalGroup (Matrix.specialUnitaryGroup n 𝕜) where
-
 end TopologicalSemiring
 
 variable [IsTopologicalRing 𝕜]
 
 theorem isClosed_specialUnitaryGroup [T1Space 𝕜] :
     IsClosed (Matrix.specialUnitaryGroup n 𝕜 : Set (Matrix n n 𝕜)) := by
-  have hinter : (Matrix.specialUnitaryGroup n 𝕜 : Set (Matrix n n 𝕜))
-      = (Matrix.unitaryGroup n 𝕜 : Set (Matrix n n 𝕜)) ∩ {A | A.det = 1} := by
-    ext A
-    simpa using Matrix.mem_specialUnitaryGroup_iff
-  rw [hinter]
   exact isClosed_unitary.inter
     (isClosed_singleton.preimage (Continuous.matrix_det continuous_id))
 
@@ -66,7 +60,6 @@ variable [RCLike 𝕜]
 
 theorem isCompact_unitaryGroup :
     IsCompact (Matrix.unitaryGroup n 𝕜 : Set (Matrix n n 𝕜)) := by
-  have : ProperSpace 𝕜 := FiniteDimensional.proper_rclike 𝕜 𝕜
   exact ((isCompact_closedBall (0 : 𝕜) 1).matrix).of_isClosed_subset isClosed_unitary
     fun _ hA _ _ => mem_closedBall_zero_iff.mpr (entry_norm_bound_of_unitary hA _ _)
 

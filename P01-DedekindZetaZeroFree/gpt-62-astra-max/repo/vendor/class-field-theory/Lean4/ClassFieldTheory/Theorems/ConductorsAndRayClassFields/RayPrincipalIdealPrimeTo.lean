@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -46,7 +42,7 @@ theorem rayPrincipalIdealSubgroup_le_primeToIdeals
   intro v hv
   rw [← hIx, ← IdeleGroup.fractionalIdeal_principalIdele]
   change FractionalIdeal.count K v
-      (((FractionalIdealGroup.factorization (K := K))
+      (((FractionalIdealGroup.factorization)
         (FiniteIdeleGroup.valuationVector
           (IdeleGroup.principalIdele K x).2) : FractionalIdealGroup K) :
         FractionalIdeal (nonZeroDivisors (𝓞 K)) K) = 0

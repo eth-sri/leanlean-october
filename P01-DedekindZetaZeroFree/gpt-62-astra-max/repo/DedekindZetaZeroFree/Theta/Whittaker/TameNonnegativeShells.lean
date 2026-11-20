@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem exterior_whittaker_value_generator_pow_nat (R : PrincipalMellin.ActualRecipe S η)
     (hR : RootAligned R) {N : TraceHaarTransport R} (C : JointHaarFactorizedSources R N)

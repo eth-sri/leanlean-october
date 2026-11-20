@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Metaplectic.Torus.IwasawaDoubleAveraging
 
 public import DedekindZetaZeroFree.Eisenstein.Induction.UnipotentInvariance
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.PGLComplex.AdelicSlices
@@ -14,31 +15,7 @@ open KPLiteralRaw
 open KPAdelicCoverRestrictedProduct
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
- theorem tuple_prod (a : RestrictedCover F ζ hζ)
-    (ha : ∀ q, a (Sum.inr q) = 1) :
-    a = ((Finset.univ : Finset (InfinitePlace F)).toList.map
-      (fun w => localToRestricted F ζ hζ (Sum.inl w) (a (Sum.inl w)))).prod := by
-  apply RestrictedProduct.ext
-  intro v
-  change a v = (RestrictedProduct.evalMonoidHom _ v) _
-  rw [map_list_prod, List.map_map]
-  cases v with
-  | inl w =>
-    simp only [Function.comp_def, localToRestricted, RestrictedProduct.mulSingleMonoidHom_apply]
-    simp only [RestrictedProduct.evalMonoidHom_apply, RestrictedProduct.coe_mulSingle_apply]
-    have he : (fun x : InfinitePlace F => Pi.mulSingle (Sum.inl x) (a (Sum.inl x)) (Sum.inl w)) =
-        fun x => if x = w then a (Sum.inl w) else 1 := by
-      funext x
-      by_cases h : x=w
-      · subst x; simp
-      · simp [Pi.mulSingle_apply, Sum.inl_injective.ne h, h]
-    rw [he]
-    rw [List.prod_map_eq_pow_single w _ (by intro x hx _; simp [hx])]
-    rw [List.nodup_iff_count_le_one.mp (Finset.nodup_toList _) w |>.antisymm
-      (Nat.succ_le_of_lt (List.count_pos_iff.mpr (by simp)))]
-    simp
-  | inr q =>
-    simp [ha, localToRestricted, Function.comp_def, RestrictedProduct.coe_mulSingle_apply, Pi.mulSingle_apply]
+ alias tuple_prod := DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.IwasawaTransport.ArchRowFactorization.IwasawaDoubleAveraging.tuple_prod
 def sectionTuple (r : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     RestrictedCover F ζ hζ :=
   ⟨fun v => match v with
@@ -51,10 +28,7 @@ def sectionTuple (r : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (r : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     scalarQuotient F ζ hζ (amalgamation F ζ hζ (sectionTuple F ζ hζ r)) =
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
-        (fun w => Matrix.ProjGenLinGroup.mk (r w)) := by
-  rw [tuple_prod F ζ hζ (sectionTuple F ζ hζ r) (by intro q; rfl)]
-  rw [map_list_prod, map_list_prod, List.map_map, List.map_map]
-  exact (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.2.2 r |>.symm
+        (fun w => Matrix.ProjGenLinGroup.mk (r w)) := by apply @DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.IwasawaTransport.ArchRowFactorization.IwasawaDoubleAveraging.sectionTuple_insertion <;> assumption
  def complexSectionHom (w : InfinitePlace F) :
     Matrix.GeneralLinearGroup (Fin 2) ℂ →* KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w) where
   toFun r := KPLocalCover.sectionMap F ζ hζ (Sum.inl w)
@@ -89,6 +63,8 @@ private theorem mapped_diagonalUnit (w : InfinitePlace F) (x : ℂ) :
   · simp [diagonalUnit, hx]
   · simp only [diagonalUnit, hx, ↓reduceDIte]
     apply Units.ext; rfl
+
+alias TranslatedBigCellCoordinates.mapped_diagonalUnit := mapped_diagonalUnit
 theorem sectionTuple_right (x : KPGlobalResidualConstruction.ArchCoordinates F) :
     scalarQuotient F ζ hζ (amalgamation F ζ hζ
       (sectionTuple F ζ hζ (fun w => rightMatrix (x w)))) =
@@ -115,30 +91,7 @@ theorem sectionTuple_right (x : KPGlobalResidualConstruction.ArchCoordinates F) 
 theorem sectionTuple_left (x : KPGlobalTorusBorelTwistCompatibility.GroupArch F) :
     scalarQuotient F ζ hζ (amalgamation F ζ hζ
       (sectionTuple F ζ hζ (fun w => leftMatrix (x w)))) =
-      KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ x := by
-  congr 2
-  apply RestrictedProduct.ext
-  intro v
-  cases v with
-  | inr q => rfl
-  | inl w =>
-    change complexSectionHom F ζ hζ w (leftMatrix (x w)) = _
-    simp only [leftMatrix, map_mul]
-    congr 1
-    · congr 1
-      · simp [complexSectionHom, KPStandardLocalRootLifts.LowerN, KPLocalCover.sectionMap]
-        apply Matrix.GeneralLinearGroup.ext
-        intro i j
-        fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map, KPStandardLocalRootLifts.lowerN]
-      · simp [complexSectionHom, KPStandardLocalRootLifts.A, KPLocalCover.sectionMap]
-        rw [← mapped_diagonalUnit F ζ hζ w (x w 1)]
-        apply Matrix.GeneralLinearGroup.ext
-        intro i j
-        fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map]
-    · simp [complexSectionHom, KPStandardLocalRootLifts.N, KPLocalCover.sectionMap]
-      apply Matrix.GeneralLinearGroup.ext
-      intro i j
-      fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map]
+      KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ x := by apply @DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.IwasawaTransport.ArchRowFactorization.IwasawaDoubleAveraging.sectionTuple_left <;> assumption
 theorem right_insertion (x : KPGlobalResidualConstruction.ArchCoordinates F) :
     KPGlobalResidualConstruction.archChart F ζ hζ x =
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
@@ -155,11 +108,7 @@ theorem rightMatrix_val (x : Fin 3 → ℂ) (hx : x 1 ≠ 0) :
   fin_cases i <;> fin_cases j <;> simp [rightMatrix, diagonalUnit, hx,
     KPStandardLocalRootLifts.lowerN, Matrix.mul_apply, Fin.sum_univ_two]
 theorem leftMatrix_val (x : Fin 3 → ℂ) (hx : x 1 ≠ 0) :
-    (leftMatrix x).val = !![x 1, x 1*x 2; x 0*x 1, 1+x 0*x 1*x 2] := by
-  ext i j
-  fin_cases i <;> fin_cases j <;> simp [leftMatrix, diagonalUnit, hx,
-    KPStandardLocalRootLifts.lowerN, Matrix.mul_apply, Fin.sum_univ_two]
-  ring
+    (leftMatrix x).val = !![x 1, x 1*x 2; x 0*x 1, 1+x 0*x 1*x 2] := by apply @DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.IwasawaTransport.ArchRowFactorization.leftMatrix_val <;> assumption
 def rightCoordinates (M : Matrix (Fin 2) (Fin 2) ℂ) : Fin 3 → ℂ :=
   ![M 0 1 / M 1 1, M.det / (M 1 1)^2, M 1 0 / M 1 1]
  theorem rightCoordinates_nonzero (M : Matrix.GeneralLinearGroup (Fin 2) ℂ)
@@ -220,7 +169,6 @@ private theorem geometric_coordinates
   let m := transitionMatrix F a z₀
   let O := D ∩ {z | ∀ w, (m z w).val 1 1 ≠ 0}
   let q := fun z w => rightCoordinates (m z w).val
-  have hD : IsOpen D := KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F
   have hm (w : InfinitePlace F) : ContDiffOn ℝ (⊤ : ℕ∞) (fun z => (m z w).val) D :=
     transitionMatrix_smooth F a z₀ w
   have he (w : InfinitePlace F) (i j : Fin 2) :
@@ -230,7 +178,7 @@ private theorem geometric_coordinates
     have ho : IsOpen (⋂ w, D ∩ {z | (m z w).val 1 1 ≠ 0}) := by
       apply isOpen_iInter_of_finite
       intro w
-      exact (he w 1 1).continuousOn.isOpen_inter_preimage hD
+      exact (he w 1 1).continuousOn.isOpen_inter_preimage (KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F)
         (isOpen_ne_fun continuous_id continuous_const)
     convert ho using 1
     ext z
@@ -250,10 +198,10 @@ private theorem geometric_coordinates
       simp only [Matrix.det_fin_two]
       exact ((hentry 0 0).mul (hentry 1 1)).sub ((hentry 0 1).mul (hentry 1 0))
     fin_cases i <;> simp [q, rightCoordinates]
-    · simpa only [div_eq_mul_inv] using! (hentry 0 1).mul ((hentry 1 1).inv hn)
-    · simpa only [div_eq_mul_inv] using! hdet.mul
+    · simpa using! (hentry 0 1).mul ((hentry 1 1).inv hn)
+    · simpa using! hdet.mul
         (((hentry 1 1).pow 2).inv (fun z hz => pow_ne_zero _ (hn z hz)))
-    · simpa only [div_eq_mul_inv] using! (hentry 1 0).mul ((hentry 1 1).inv hn)
+    · simpa using! (hentry 1 0).mul ((hentry 1 1).inv hn)
   · intro z hz w
     exact rightCoordinates_nonzero (m z w) (hz.2 w)
   · intro z hz w
@@ -271,7 +219,7 @@ theorem literal_group_chart_local_transition (g : G F ζ hζ)
         (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z₀ * g) *
           KPGlobalResidualConstruction.archChart F ζ hζ (q z) := by
   let S := KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
-  obtain ⟨e, he, _⟩ := PGLComplex.AdelicSlices.actual_product_splitting F ζ hζ
+  obtain ⟨e, he⟩ := PGLComplex.AdelicSlices.actual_product_splitting F ζ hζ
   let b := (e.symm g).1
   let c := (e.symm g).2
   have hg : g = S b * c.val := by

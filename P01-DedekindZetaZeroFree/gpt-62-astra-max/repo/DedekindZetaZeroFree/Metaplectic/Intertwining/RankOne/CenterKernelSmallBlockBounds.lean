@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.ReverseCompactLaurentAnnulus
 
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.ReverseRegulatorShellData
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.LocalBeta.RamifiedConductorFormula
@@ -18,13 +19,13 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
 variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField F q)]
 variable {H₀ D : Type} [Group H₀] [TopologicalSpace H₀] [IsTopologicalGroup H₀]
   [CommGroup D] [Finite D] [DecidableEq D]
 variable (T : LocalHeisenbergData H₀ D)
 variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
-variable (P : Polarization T)
+    (P : Polarization T)
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
 def smallBlock (N n : ℕ) : Set (LocalField F q)ˣ :=
@@ -70,7 +71,12 @@ theorem centerTorus_minus_cube_scalar (y : (LocalField F q)ˣ) (V : CenterModule
   rw [inv_pow, hi, Real.log_inv]
   simp
 
-private theorem projection_kernel (B : Binding F ζ hζ q A P)
+section
+
+variable (B : Binding F ζ hζ q A P)
+
+include B in
+private theorem projection_kernel
     (g : Cover F ζ hζ q) (hg : A.projection g = 1) :
     ∃ e, KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e = g := by
   letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr q)
@@ -90,7 +96,7 @@ private theorem projection_kernel (B : Binding F ζ hζ q A P)
     rw [KPPGLLocalCover.range_centralInjection_eq_ker_projection]
     exact hp
 
-private theorem coordinate_kernel (B : Binding F ζ hζ q A P)
+private theorem coordinate_kernel
     (a : H₀) (ha : A.coordinate a = 1) : ∃ e, B.centralTorus e = a := by
   obtain ⟨e, he⟩ := projection_kernel F ζ hζ q T A P B (A.torus a)
     (by
@@ -101,7 +107,7 @@ private theorem coordinate_kernel (B : Binding F ζ hζ q A P)
   refine ⟨e, A.torus_injective (Subtype.ext ?_)⟩
   exact (B.central_eq e).trans he
 
-private theorem root_decomposition (B : Binding F ζ hζ q A P)
+private theorem root_decomposition
     (v r y : (LocalField F q)ˣ) (hv : v = r * y ^ 3) :
     ∃ e, B.rootTorus v = B.centralTorus e * B.rootTorus r * (A.cubeLift (y ^ 2) : H₀) := by
   let a := B.rootTorus v * (B.rootTorus r * (A.cubeLift (y ^ 2) : H₀))⁻¹
@@ -116,34 +122,38 @@ private theorem root_decomposition (B : Binding F ζ hζ q A P)
   rw [he, mul_assoc]
   simp [a, mul_assoc]
 
-private theorem localAbs_pow (v : (LocalField F q)ˣ) (n : ℕ) :
-    localAbs (LocalField F q) (v ^ n) = localAbs (LocalField F q) v ^ n := by
+end
+
+local notation "LocalCompletion" => LocalField F q
+
+private theorem localAbs_pow (v : LocalCompletionˣ) (n : ℕ) :
+    localAbs LocalCompletion (v ^ n) = localAbs LocalCompletion v ^ n := by
   induction n with
   | zero => simp [localAbs_one]
   | succ n ih => rw [pow_succ, localAbs_mul, ih, pow_succ]
 
-private theorem norm_normPower (v : (LocalField F q)ˣ) (w : ℂ) :
-    ‖normPower (LocalField F q) v w‖ = (localAbs (LocalField F q) v).rpow w.re := by
+private theorem norm_normPower (v : LocalCompletionˣ) (w : ℂ) :
+    ‖normPower LocalCompletion v w‖ = (localAbs LocalCompletion v).rpow w.re := by
   rw [normPower, Complex.norm_exp, Real.rpow_eq_pow, Real.rpow_def_of_pos (localAbs_pos _ _)]
   simp [Complex.mul_re, mul_comm]
 
 private theorem center_root_norm (B : Binding F ζ hζ q A P)
-    (v u y : (LocalField F q)ˣ) (hv : v = u * y ^ 3)
+    (v u y : LocalCompletionˣ) (hv : v = u * y ^ 3)
     (V : CenterModule T) (h : H₀) :
     ∃ e : rootsOfUnity 3 F,
       ‖(centerTorus F ζ hζ q T A .minus (B.rootTorus v) V).val h‖ =
-        (localAbs (LocalField F q) v).rpow (-(1 / 3)) *
-        ((localAbs (LocalField F q) u).rpow (1 / 3) *
+        (localAbs LocalCompletion v).rpow (-(1 / 3)) *
+        ((localAbs LocalCompletion u).rpow (1 / 3) *
           ‖(centerTorus F ζ hζ q T A .minus (B.centralTorus e * B.rootTorus u) V).val h‖) := by
   obtain ⟨e, he⟩ := root_decomposition F ζ hζ q T A P B v u y hv
   refine ⟨e, ?_⟩
   rw [he, map_mul, Module.End.mul_apply, centerTorus_minus_cube_scalar, map_smul]
-  change ‖normPower (LocalField F q) ((y ^ 2) ^ 3) (-(1 / 6)) *
+  change ‖normPower LocalCompletion ((y ^ 2) ^ 3) (-(1 / 6)) *
     (centerTorus F ζ hζ q T A .minus (B.centralTorus e * B.rootTorus u) V).val h‖ = _
   rw [norm_mul, norm_normPower]
-  have hp := localAbs_pos (LocalField F q) y
-  have hu := localAbs_pos (LocalField F q) u
-  have hx : localAbs (LocalField F q) v = localAbs (LocalField F q) u * localAbs (LocalField F q) y ^ 3 := by
+  have hp := localAbs_pos LocalCompletion y
+  have hu := localAbs_pos LocalCompletion u
+  have hx : localAbs LocalCompletion v = localAbs LocalCompletion u * localAbs LocalCompletion y ^ 3 := by
     rw [hv, localAbs_mul, localAbs_pow]
   rw [localAbs_pow, localAbs_pow, hx]
   norm_num
@@ -167,28 +177,24 @@ private theorem center_root_bound (B : Binding F ζ hζ q A P)
   letI : Fintype X := Fintype.ofFinite X
   letI : Fintype (rootsOfUnity 3 F) := Fintype.ofFinite _
   let proj : Kˣ →* X := QuotientGroup.mk' _
-  let u : X → Kˣ := Function.surjInv (QuotientGroup.mk'_surjective (CubicCharacters.cubes Kˣ))
+  let u := Function.surjInv (QuotientGroup.mk'_surjective (CubicCharacters.cubes Kˣ))
   have hu (d : X) : proj (u d) = d := Function.surjInv_eq _ d
   let b : X × rootsOfUnity 3 F → ℝ := fun de =>
     (localAbs K (u de.1)).rpow (1 / 3) *
       ‖(centerTorus F ζ hζ q T A .minus (B.centralTorus de.2 * B.rootTorus (u de.1)) V).val h‖
-  let C : ℝ := ∑ de, b de
+  let C := ∑ de, b de
   have hb (de : X × rootsOfUnity 3 F) : 0 ≤ b de :=
     mul_nonneg (Real.rpow_nonneg (le_of_lt (localAbs_pos K (u de.1))) _) (norm_nonneg _)
   refine ⟨C, Finset.sum_nonneg (fun de _ => hb de), ?_⟩
   intro v
-  have heq : (v : X) = (u (proj v) : X) := (hu (proj v)).symm
-  obtain ⟨y, hy⟩ := (QuotientGroup.eq_iff_div_mem.mp heq : v / u (proj v) ∈ CubicCharacters.cubes Kˣ)
-  have hv : v = u (proj v) * y ^ 3 := by
+  obtain ⟨y, hy⟩ := (QuotientGroup.eq_iff_div_mem.mp ((hu (proj v)).symm) : v / u (proj v) ∈ CubicCharacters.cubes Kˣ)
+  obtain ⟨e, he⟩ := center_root_norm F ζ hζ q T A P B v (u (proj v)) y (by
     change y ^ 3 = v / u (proj v) at hy
-    rw [hy, mul_comm, div_mul_cancel]
-  obtain ⟨e, he⟩ := center_root_norm F ζ hζ q T A P B v (u (proj v)) y hv V h
+    rw [hy, mul_comm, div_mul_cancel]) V h
   rw [he]
-  have hle : b (proj v, e) ≤ C :=
-    Finset.single_le_sum (fun de _ => hb de) (Finset.mem_univ (proj v, e))
   calc
     _ ≤ (localAbs K v).rpow (-(1 / 3)) * C :=
-      mul_le_mul_of_nonneg_left hle (Real.rpow_nonneg (le_of_lt (localAbs_pos K v)) _)
+      mul_le_mul_of_nonneg_left (Finset.single_le_sum (fun de _ => hb de) (Finset.mem_univ (proj v, e))) (Real.rpow_nonneg (le_of_lt (localAbs_pos K v)) _)
     _ = C * (localAbs K v).rpow (-(1 / 3)) := mul_comm _ _
 
 private theorem kernel_power_bound (B : Binding F ζ hζ q A P)
@@ -209,8 +215,7 @@ private theorem kernel_power_bound (B : Binding F ζ hζ q A P)
   calc
     _ ≤ ((localAbs (LocalField F q) v ^ 2).rpow (-(additiveParameter F q r).re) *
       (C * (localAbs (LocalField F q) v).rpow (-(1 / 3)))) *
-        (localAbs (LocalField F q) v).rpow lam.re := by
-      exact mul_le_mul_of_nonneg_right
+        (localAbs (LocalField F q) v).rpow lam.re := mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left (hb v)
           (Real.rpow_nonneg (sq_nonneg _) _))
         (Real.rpow_nonneg (le_of_lt (localAbs_pos _ v)) _)
@@ -321,119 +326,41 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
 variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField F q)]
 variable {H₀ D : Type} [Group H₀] [TopologicalSpace H₀] [IsTopologicalGroup H₀]
   [CommGroup D] [Finite D] [DecidableEq D]
 variable (T : LocalHeisenbergData H₀ D)
 variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
-variable (P : Polarization T)
+    (P : Polarization T)
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
-private lemma root_cont (B : Binding F ζ hζ q A P) : Continuous B.rootTorus := by
- have hc := (KPPGLLocalCover.finite_lifts_continuous F ζ hζ q _
-   (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q)).2.2
- have ht : Continuous (fun v => A.torus (B.rootTorus v)) := by
-   apply Continuous.subtype_mk
-   change Continuous (fun v => (A.torus (B.rootTorus v) : Cover F ζ hζ q))
-   simp_rw [B.torus_eq]
-   exact hc.comp (continuous_id.pow 2)
- have he : B.rootTorus = fun v => A.retract (A.torus (B.rootTorus v)) := by
-   funext v; exact (A.retract_torus _).symm
- rw [he]
- exact A.retract_continuous.comp ht
-private lemma kappa_lc : IsLocallyConstant (fun v : (LocalField F q)ˣ => kappa F ζ hζ q v 0) := by
- let m := KPAdelicCoverRestrictedProduct.depth F ζ hζ q
- have hm := KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q
- letI := KPLocalChartTopology.translatedTopology F ζ hζ q m
- letI := (KPLocalChartTopology.finite_topological_group F ζ hζ q m hm).2.2
- have hn := KPStandardLocalRootLifts.finite_N_continuous F ζ hζ q m hm
- have ha := KPStandardLocalRootLifts.finite_A_continuous F ζ hζ q m hm
- have hs := (KPScalarSplitCentral.finite_continuous_closed F ζ hζ q m hm).1
- have hl : Continuous (fun v : (LocalField F q)ˣ => bruhatLeft F ζ hζ q v 0) :=
-   (((continuous_const.mul (hn.comp (Units.continuous_val.comp continuous_inv).neg)).mul continuous_const).mul continuous_const)
- have hr : Continuous (fun v : (LocalField F q)ˣ => bruhatRight F ζ hζ q v 0) :=
-   (hs.comp continuous_inv).mul
-     (((ha.comp (continuous_id.pow 2)).mul (hn.comp (Units.continuous_val.comp continuous_inv))).mul continuous_const |>.mul
-       (hn.comp (continuous_const.add Units.continuous_val)))
- have hq : Continuous (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)) := QuotientGroup.continuous_mk
- have he (v : (LocalField F q)ˣ) :
-     KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
-       (bruhatLeft F ζ hζ q v 0 * (bruhatRight F ζ hζ q v 0)⁻¹) =
-     KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) (kappa F ζ hζ q v 0) := by
-   rw [raw_bruhat_identity, mul_inv_cancel_right]
-   rfl
- have hc : Continuous (fun v : (LocalField F q)ˣ =>
-     KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) (kappa F ζ hζ q v 0)) := by
-   simp_rw [← he]
-   exact hq.comp (hl.mul hr.inv)
- letI : Group (KPPGLLocalCover.LocalPGL2 F (Sum.inr q)) :=
-   @QuotientGroup.Quotient.group _ _ (KPPGLLocalCover.scalarSubgroup F (Sum.inr q))
-    (KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr q))
- letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
- letI := (KPPGLLocalCover.finite_discrete_kernel F ζ hζ q m hm).1
- have hsub : Continuous (fun v : (LocalField F q)ˣ =>
-   (⟨KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) (kappa F ζ hζ q v 0),
-     by rw [← KPPGLLocalCover.range_centralInjection_eq_ker_projection]; exact ⟨_, rfl⟩⟩ :
-     (KPPGLLocalCover.projection F ζ hζ (Sum.inr q)).ker)) := hc.subtype_mk _
- have hh := (IsLocallyConstant.iff_continuous _).mpr hsub
- rw [IsLocallyConstant.iff_eventually_eq] at hh ⊢
- intro v
- filter_upwards [hh v] with w hw
- exact KPPGLLocalCover.centralInjection_injective F ζ hζ (Sum.inr q) (congrArg Subtype.val hw)
+private alias root_cont := DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion.FiniteAnnulusSteps.ReverseCompactLaurentAnnulus.root_cont
+private alias kappa_lc := DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion.FiniteAnnulusSteps.ReverseCompactLaurentAnnulus.kappa_lc
 
-private lemma center_lc (f : CenterModule T) : IsLocallyConstant f.val := by
- let J : Subgroup H₀ := T.ω.toMonoidHom.ker.map T.C.subtype
- have hJ : IsOpen (J : Set H₀) := by
-   exact T.center_open.isOpenMap_subtype_val _ T.character_kernel_open
- rw [IsLocallyConstant.iff_eventually_eq]
- intro h
- have hc : Continuous (fun y : H₀ => y * h⁻¹) := continuous_id.mul continuous_const
- have hn : ∀ᶠ y in nhds h, y * h⁻¹ ∈ J :=
-   hc.continuousAt.preimage_mem_nhds (by simpa using hJ.mem_nhds J.one_mem)
- filter_upwards [hn] with y hy
- obtain ⟨c, hc, he⟩ := hy
- have hw : T.ω c = 1 := hc
- have hf := f.property c h
- change (c : H₀) = y * h⁻¹ at he
- have hey : (c : H₀) * h = y := by rw [he]; group
- simpa [hey, hw] using hf
+private alias center_lc := DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion.FiniteAnnulusSteps.ReverseCompactLaurentAnnulus.center_lc
 
 private lemma normPower_lc (s : ℂ) :
     IsLocallyConstant (fun v : (LocalField F q)ˣ => normPower (LocalField F q) v s) := by
   rw [IsLocallyConstant.iff_eventually_eq]
   intro v
-  have hc := (valuation (LocalField F q)).locally_const
-    (x := (v : LocalField F q)) (by simp)
-  have hn := Units.continuous_val.continuousAt.preimage_mem_nhds hc
-  filter_upwards [hn] with w hw
-  change valuation (LocalField F q) (w : LocalField F q) =
-    valuation (LocalField F q) (v : LocalField F q) at hw
+  filter_upwards [(Units.continuous_val.continuousAt.preimage_mem_nhds ((valuation (LocalField F q)).locally_const
+    (by simp)))] with w hw
+  change valuation (LocalField F q) w =
+    valuation (LocalField F q) v at hw
   simp only [normPower, localAbs, hw]
 
 theorem constantKernel_stronglyMeasurable (B : Binding F ζ hζ q A P)
     (V : CenterModule T) (r : ℂˣ) (lam : ℂ) (h : H₀) :
     StronglyMeasurable (constantKernel F ζ hζ q T A P B V r lam h) := by
   letI : BorelSpace (LocalField F q)ˣ := ⟨by
-    change MeasurableSpace.comap Units.val ‹MeasurableSpace (LocalField F q)› =
-      borel (LocalField F q)ˣ
-    rw [(Units.isEmbedding_val₀ (G₀ := LocalField F q)).eq_induced, borel_comap]
+    rw [(Units.isEmbedding_val₀).eq_induced, borel_comap]
     congr 1
     exact BorelSpace.measurable_eq⟩
-  have hr := root_cont F ζ hζ q T A P B
-  have hv := (center_lc T V).comp_continuous
-    (continuous_const.mul (A.weyl.continuous.comp hr) :
-      Continuous (fun v : (LocalField F q)ˣ => h * A.weyl (B.rootTorus v)))
-  have hk := (kappa_lc F ζ hζ q).comp (fun e => (B.eta e : ℂ))
-  have hz := (normPower_lc F q (-additiveParameter F q r)).comp_continuous
-    (continuous_id.pow 2)
-  have hl := normPower_lc F q lam
-  have hc := ((hk.continuous.mul (hz.continuous.mul hv.continuous)).mul hl.continuous)
-  change StronglyMeasurable (fun v : (LocalField F q)ˣ =>
-    (B.eta (kappa F ζ hζ q v 0) : ℂ) *
-      (normPower (LocalField F q) (v ^ 2) (-additiveParameter F q r) *
-        V.val (h * A.weyl (B.rootTorus v))) * normPower (LocalField F q) v lam)
-  exact hc.stronglyMeasurable
+  exact (((((kappa_lc F ζ hζ q).comp (fun e => (B.eta e : ℂ))).continuous.mul (((normPower_lc F q (-additiveParameter F q r)).comp_continuous
+    (continuous_id.pow 2)).continuous.mul ((center_lc T V).comp_continuous
+    (continuous_const.mul (A.weyl.continuous.comp (root_cont F ζ hζ q T A P B)) :
+      Continuous (fun v : (LocalField F q)ˣ => h * A.weyl (B.rootTorus v)))).continuous)).mul (normPower_lc F q lam).continuous)).stronglyMeasurable
 
 end
 end DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion.SmallTail.AbsoluteBlock
@@ -450,7 +377,7 @@ open KPRankOneOpenCellKernel KPRankOneReverseRegulatorShellsRaw
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (q : HeightOneSpectrum (𝓞 F))
+    (q : HeightOneSpectrum (𝓞 F))
 variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField F q)]
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
@@ -461,16 +388,15 @@ private theorem smallBlock_units_borel (K : Type*) [Field K] [TopologicalSpace K
   rw [BorelSpace.measurable_eq (α := K),
     (Units.isEmbedding_val₀ (G₀ := K)).isInducing.eq_induced, borel_comap]
 
+alias CenterKernelSmallBlockBounds.smallBlock_units_borel := smallBlock_units_borel
+
 theorem smallBlock_measurableSet (N n : ℕ) :
     MeasurableSet (smallBlock F q N n) := by
   letI : BorelSpace (LocalField F q)ˣ := smallBlock_units_borel (LocalField F q)
   have hc : IsLocallyConstant (valuationIndex F q) := by
     rw [IsLocallyConstant.iff_eventually_eq]
     intro v
-    have hv : valuation (LocalField F q) (v : LocalField F q) ≠ 0 :=
-      (valuation (LocalField F q)).ne_zero_iff.mpr v.ne_zero
-    have he := (valuation (LocalField F q)).locally_const hv
-    filter_upwards [Units.continuous_val.continuousAt.preimage_mem_nhds he] with w hw
+    filter_upwards [Units.continuous_val.continuousAt.preimage_mem_nhds ((valuation (LocalField F q)).locally_const ((valuation (LocalField F q)).ne_zero_iff.mpr v.ne_zero))] with w hw
     exact congrArg (fun a => WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt
       (LocalField F q) a)) hw
   have hset : smallBlock F q N n = {v : (LocalField F q)ˣ |
@@ -494,18 +420,19 @@ open KPRankOneOpenCellKernel KPRankOneReverseRegulatorShellsRaw
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (q : HeightOneSpectrum (𝓞 F))
+    (q : HeightOneSpectrum (𝓞 F))
 variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField F q)]
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
 theorem smallBlock_uniform_mass (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure] :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ N n : ℕ,
       multiplicativeMeasure F q μ (smallBlock F q N n) ≤ ENNReal.ofReal M := by
+  let Set₀ := Set (LocalField F q)
   classical
   let qK : ℝ := (CubicUnitCharacters.residueCard (LocalField F q) : ℝ)
   let A : LocalField F q → ℝ := KPCubicHaar.abs (LocalField F q)
   let ν : Measure (LocalField F q) := μ.withDensity (fun x => ENNReal.ofReal ((A x)⁻¹))
-  let O : Set (LocalField F q) := ((valuation (LocalField F q)).integer : Set (LocalField F q))
+  let O : Set₀ := ((valuation (LocalField F q)).integer : Set₀)
   have hAv : ∀ v : (LocalField F q)ˣ, A (v : LocalField F q) = qK ^ (valuationIndex F q v) := by
     intro v
     simp only [A, qK, KPCubicHaar.abs, valuationIndex, if_neg v.ne_zero]
@@ -522,11 +449,11 @@ theorem smallBlock_uniform_mass (μ : Measure (LocalField F q)) [μ.IsAddHaarMea
     (IsNonarchimedeanLocalField.isCompact_closedBall (LocalField F q) 1).measure_lt_top.ne
   refine ⟨3 * (μ O).toReal, by positivity, ?_⟩
   intro N n
-  let S : ℤ → Set (LocalField F q) := fun k => {x | A x = qK ^ k}
+  let S : ℤ → Set₀ := fun k => {x | A x = qK ^ k}
   let k1 : ℤ := -((N + 3 * n + 3 : ℕ) : ℤ)
   let k2 : ℤ := -((N + 3 * n + 2 : ℕ) : ℤ)
   let k3 : ℤ := -((N + 3 * n + 1 : ℕ) : ℤ)
-  let T : Set (LocalField F q) := S k1 ∪ S k2 ∪ S k3
+  let T : Set₀ := S k1 ∪ S k2 ∪ S k3
   have hmeasS : ∀ k : ℤ, MeasurableSet (S k) := fun k => hmeasA (measurableSet_singleton _)
   have hmeasT : MeasurableSet T := ((hmeasS k1).union (hmeasS k2)).union (hmeasS k3)
   have hmem : ∀ v : (LocalField F q)ˣ, v ∈ smallBlock F q N n → (v : LocalField F q) ∈ T := by
@@ -590,16 +517,18 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
 variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField F q)]
 variable {H₀ D : Type} [Group H₀] [TopologicalSpace H₀] [IsTopologicalGroup H₀]
   [CommGroup D] [Finite D] [DecidableEq D]
 variable (T : LocalHeisenbergData H₀ D)
 variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
-variable (P : Polarization T)
+    (P : Polarization T)
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
-theorem reverseIntegrand_on_small_block (I : IwasawaData A) (μ : Measure (LocalField F q))
+variable (I : IwasawaData A) (μ : Measure (LocalField F q))
+
+theorem reverseIntegrand_on_small_block
     (J : CenterStandardFamily F ζ hζ q T A I μ) (B : Binding F ζ hζ q A P)
     (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
     (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
@@ -626,7 +555,7 @@ theorem reverseIntegrand_on_small_block (I : IwasawaData A) (μ : Measure (Local
   unfold reverseIntegrand
   rw [hprofile r hr v hs]
 
-theorem absolute_block_majorant (I : IwasawaData A) (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
+theorem absolute_block_majorant [μ.IsAddHaarMeasure]
     (J : CenterStandardFamily F ζ hζ q T A I μ) (B : Binding F ζ hζ q A P)
     (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
     (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
@@ -648,34 +577,28 @@ theorem absolute_block_majorant (I : IwasawaData A) (μ : Measure (LocalField F 
           valuationIndex F q v ∧ valuationIndex F q v < -((N + 3 * n : ℕ) : ℤ)},
         ‖reverseIntegrand F ζ hζ q T A P I μ J B rep hrep d φ hφ hcφ r lam h v‖ ∂multiplicativeMeasure F q μ) ≤
         M * ‖(t F q (r : ℂ))⁻¹ * Q F q lam ^ 3‖ ^ n) := by
-  let V : CenterModule T :=
+  let V :=
     (forwardSection F ζ hζ q T A P I μ J B rep hrep d φ hφ hcφ r).val
       (openCoordinate F ζ hζ q 0)
   let f := reverseIntegrand F ζ hζ q T A P I μ J B rep hrep d φ hφ hcφ r lam h
   let k := AbsoluteBlock.constantKernel F ζ hζ q T A P B V r lam h
   let ν := multiplicativeMeasure F q μ
   let ρ := ‖(t F q (r : ℂ))⁻¹ * Q F q lam ^ 3‖
-  change ∃ M : ℝ,
-    (∀ n : ℕ, IntegrableOn f (AbsoluteBlock.smallBlock F q N n) ν) ∧
-    (∀ n : ℕ, (∫ v in AbsoluteBlock.smallBlock F q N n, ‖f v‖ ∂ν) ≤ M * ρ ^ n)
   obtain ⟨C, hC, hbound⟩ :=
     AbsoluteBlock.constantKernel_geometric_bound F ζ hζ q T A P B V N r lam h
   obtain ⟨M, hM, hmass⟩ := AbsoluteBlock.smallBlock_uniform_mass F q μ
-  have heq (n : ℕ) : Set.EqOn k f (AbsoluteBlock.smallBlock F q N n) := by
-    intro v hv
-    exact (reverseIntegrand_on_small_block F ζ hζ q T A P I μ J B rep hrep d
+  have heq (n : ℕ) : Set.EqOn k f (AbsoluteBlock.smallBlock F q N n) := fun v hv => (reverseIntegrand_on_small_block F ζ hζ q T A P I μ J B rep hrep d
       φ hφ hcφ N hprofile r hr lam h n v hv).symm
   have hfinite (n : ℕ) : ν (AbsoluteBlock.smallBlock F q N n) ≠ ⊤ :=
     ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hmass N n)
-  have hmassReal (n : ℕ) : (ν (AbsoluteBlock.smallBlock F q N n)).toReal ≤ M := by
-    exact (ENNReal.toReal_mono ENNReal.ofReal_ne_top (hmass N n)).trans_eq
+  have hmassReal (n : ℕ) : (ν (AbsoluteBlock.smallBlock F q N n)).toReal ≤ M := (ENNReal.toReal_mono ENNReal.ofReal_ne_top (hmass N n)).trans_eq
       (ENNReal.toReal_ofReal hM)
   have hboundf (n : ℕ) (v : (LocalField F q)ˣ)
       (hv : v ∈ AbsoluteBlock.smallBlock F q N n) : ‖f v‖ ≤ C * ρ ^ n := by
     rw [← heq n hv]
     exact hbound n v hv
   have hint (n : ℕ) : IntegrableOn f (AbsoluteBlock.smallBlock F q N n) ν := by
-    have hk : IntegrableOn k (AbsoluteBlock.smallBlock F q N n) ν :=
+    have hk :=
       IntegrableOn.of_bound (lt_top_iff_ne_top.mpr (hfinite n))
         (AbsoluteBlock.constantKernel_stronglyMeasurable F ζ hζ q T A P B V r lam h).aestronglyMeasurable
         (C * ρ ^ n)
@@ -684,7 +607,7 @@ theorem absolute_block_majorant (I : IwasawaData A) (μ : Measure (LocalField F 
     exact hk.congr_fun (heq n) (AbsoluteBlock.smallBlock_measurableSet F q N n)
   refine ⟨M * C, hint, fun n => ?_⟩
   calc
-    (∫ v in AbsoluteBlock.smallBlock F q N n, ‖f v‖ ∂ν) ≤
+    _ ≤
         ∫ _v in AbsoluteBlock.smallBlock F q N n, C * ρ ^ n ∂ν :=
       setIntegral_mono_on (hint n).norm (integrableOn_const (hfinite n))
         (AbsoluteBlock.smallBlock_measurableSet F q N n) (hboundf n)

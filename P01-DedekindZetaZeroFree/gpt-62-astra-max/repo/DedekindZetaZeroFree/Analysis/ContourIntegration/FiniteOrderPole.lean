@@ -10,27 +10,29 @@ open MeasureTheory Filter
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-private lemma verticalIntegrable_finset_sum {ι : Type*} (s : Finset ι) {c₀ : ℝ} {f : ι → ℂ → ℂ}
+section
+
+variable {ι : Type*} (s : Finset ι)
+
+private lemma verticalIntegrable_finset_sum {c₀ : ℝ} {f : ι → ℂ → ℂ}
     (hf : ∀ i ∈ s, Complex.VerticalIntegrable (f i) c₀) :
     Complex.VerticalIntegrable (fun z => ∑ i ∈ s, f i z) c₀ := by
-  have hf' : ∀ i ∈ s, Integrable (fun t : ℝ => f i (c₀ + t * Complex.I)) volume := hf
-  have h : Integrable (∑ i ∈ s, fun t : ℝ => f i (c₀ + t * Complex.I)) volume :=
-    Finset.sum_induction (fun i => fun t : ℝ => f i (c₀ + t * Complex.I))
-      (fun g => Integrable g volume) (fun a b ha hb => ha.add hb)
-      (integrable_zero ℝ ℂ volume) hf'
   show Integrable (fun t : ℝ => (fun z => ∑ i ∈ s, f i z) (c₀ + t * Complex.I)) volume
-  convert h using 1
+  convert (Finset.sum_induction (fun i => fun t : ℝ => f i (c₀ + t * Complex.I))
+    (fun g => Integrable g volume) (fun a b ha hb => ha.add hb)
+    (integrable_zero ℝ ℂ volume) hf) using 1
   ext t
-  simp only [Finset.sum_apply]
+  simp
 
-private lemma verticalIntegral_finset_sum {ι : Type*} (s : Finset ι) (c₀ : ℝ) (f : ι → ℂ → ℂ)
+private lemma verticalIntegral_finset_sum (c₀ : ℝ) (f : ι → ℂ → ℂ)
     (hf : ∀ i ∈ s, Complex.VerticalIntegrable (f i) c₀) :
     verticalIntegral c₀ (fun z => ∑ i ∈ s, f i z) = ∑ i ∈ s, verticalIntegral c₀ (f i) := by
-  have hf' : ∀ i ∈ s, Integrable (fun t : ℝ => f i (c₀ + t * Complex.I)) volume := hf
   simp only [verticalIntegral]
   rw [← Finset.mul_sum]
   congr 1
-  exact integral_finsetSum s hf'
+  exact integral_finsetSum s hf
+
+end
 
 theorem verticalIntegral_sub_eq_of_finite_order_pole
     {a b p : ℝ} (hap : a < p) (hpb : p < b)

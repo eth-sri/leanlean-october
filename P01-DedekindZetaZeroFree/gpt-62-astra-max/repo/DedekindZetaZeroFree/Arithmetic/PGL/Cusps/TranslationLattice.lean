@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Arithmetic.Ideals.FractionalIdealComplexLattice
 
 public import DedekindZetaZeroFree.Geometry.Cusps.AffineTorusBundles.QuotientCoordinates
 
@@ -9,8 +10,11 @@ open scoped Classical Matrix
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPCuspChart
 
- def mixedChart (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) :
+ section
+
+variable (F : Type*) [Field F] [NumberField F] (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+
+def mixedChart :
     NumberField.mixedEmbedding.mixedSpace F ≃ₗ[ℝ] Horizontal F := by
   letI : IsEmpty {w : NumberField.InfinitePlace F // w.IsReal} :=
     Fintype.card_eq_zero_iff.mp hF
@@ -27,11 +31,12 @@ namespace DedekindZetaZeroFree.KPCuspChart
       map_add' := by intro x y; rfl
       map_smul' := by intro r x; rfl }
 
-private theorem mixedChart_embedding (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (x : F) :
+private theorem mixedChart_embedding (x : F) :
     mixedChart F hF (NumberField.mixedEmbedding F x) = embedding F x := by
   ext i
   simp [mixedChart, embedding, KPCusp.complexPlace]
+
+end
 
 theorem arithmetic_extension_lattice
     (F : Type*) [Field F] [NumberField F]
@@ -57,7 +62,6 @@ theorem arithmetic_extension_lattice
       ratio := ρ
       integralUnits := hE
       unitIndex := hEindex
-      injective := hinj
       surjective := hsurj
       exact := hexact
       upper := hupper

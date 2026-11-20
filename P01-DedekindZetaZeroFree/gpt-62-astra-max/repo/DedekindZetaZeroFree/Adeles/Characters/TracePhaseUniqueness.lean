@@ -24,6 +24,8 @@ private theorem archPhase_eq_archTraceCharacter_product (A : SArithmeticData F)
   intro w hw
   ring
 
+alias TracePhaseUniqueness.archPhase_eq_archTraceCharacter_product := archPhase_eq_archTraceCharacter_product
+
 private theorem archPhase_diagonal (A : SArithmeticData F) (t : F) :
     ProbeAdditive.archPhase F (sLocalDiagonal F A.Sf t).1 =
       ∏ w : InfinitePlace F, (archTraceCharacter w (algebraMap F w.Completion t) : ℂ) := by
@@ -36,32 +38,13 @@ private theorem sLocalTraceCharacter_sIntegerDiagonal_eq_one
     (S : Finset (HeightOneSpectrum (𝓞 F))) (t : sIntegerRing F S) :
     sLocalTraceCharacter F S (sIntegerDiagonal F S t) = 1 := by
 
-  have hfinite : ∀ v : HeightOneSpectrum (𝓞 F), v ∉ S →
-      localFiniteCharacter F v (algebraMap F (v.adicCompletion F) (t : F)) = 1 :=
-    fun v hv =>
-      localFiniteCharacter_eq_one_of_mem_integers F v _
-        ((mem_sIntegerRing_iff F S (t : F)).1 t.2 v hv)
-
-  have hsub : Function.mulSupport
-      (fun v : HeightOneSpectrum (𝓞 F) =>
-        localFiniteCharacter F v (algebraMap F (v.adicCompletion F) (t : F)))
-      ⊆ (S : Set (HeightOneSpectrum (𝓞 F))) :=
-    Function.mulSupport_subset_iff'.2 fun v hv => hfinite v hv
-  have hfin :
-      (∏ᶠ v : HeightOneSpectrum (𝓞 F),
-        localFiniteCharacter F v (algebraMap F (v.adicCompletion F) (t : F))) =
-      ∏ v ∈ S, localFiniteCharacter F v (algebraMap F (v.adicCompletion F) (t : F)) :=
-    finprod_eq_prod_of_mulSupport_subset _ hsub
-  have hcoe :
-      (∏ v : S, localFiniteCharacter F v.1 (algebraMap F (v.1.adicCompletion F) (t : F))) =
-      ∏ v ∈ S, localFiniteCharacter F v (algebraMap F (v.adicCompletion F) (t : F)) :=
-    (Finset.prod_subtype S (fun _ => Iff.rfl)
-      (fun w => localFiniteCharacter F w (algebraMap F (w.adicCompletion F) (t : F)))).symm
-  have hdiag := traceCharacter_diagonal_product_formula F (t : F)
   rw [sLocalTraceCharacter_apply]
   simp only [sIntegerDiagonal_apply, sLocalDiagonal_infinite, sLocalDiagonal_finite]
-  rw [hcoe, ← hfin]
-  exact hdiag
+  rw [((Finset.prod_subtype S (fun _ => Iff.rfl)
+    (fun w => localFiniteCharacter F w (algebraMap F (w.adicCompletion F) (t : F)))).symm), ← (finprod_eq_prod_of_mulSupport_subset _ (Function.mulSupport_subset_iff'.2 fun v hv => (fun v hv =>
+    localFiniteCharacter_eq_one_of_mem_integers F v _
+      ((mem_sIntegerRing_iff F S (t : F)).1 t.2 v hv)) v hv))]
+  exact traceCharacter_diagonal_product_formula F (t : F)
 
 theorem compatible_phase_eq_trace (A : SArithmeticData F)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
@@ -80,7 +63,7 @@ theorem compatible_phase_eq_trace (A : SArithmeticData F)
     intro w hw
     exact continuous_subtype_val.comp
       ((continuous_localFiniteCharacter F w.val).comp (continuous_apply w))
-  have heq : f = g := (PoissonSFiniteDensity.diagonal_denseRange F A.Sf).equalizer hf hg (by
+  have heq := (PoissonSFiniteDensity.diagonal_denseRange F A.Sf).equalizer hf hg (by
     funext r
     have hp := htrace r
     have hc := congrArg (fun z : Circle => (z : ℂ))
@@ -99,9 +82,7 @@ theorem compatible_phase_eq_trace (A : SArithmeticData F)
         (archTraceCharacter w (algebraMap F w.Completion (r : F)) : ℂ)) *
       g (fun w => algebraMap F (w.val.adicCompletion F) (r : F)) = 1 at hc
     rw [← archPhase_diagonal F A] at hc
-    have hn : ProbeAdditive.archPhase F (sLocalDiagonal F A.Sf (r : F)).1 ≠ 0 :=
-      Complex.exp_ne_zero _
-    exact mul_left_cancel₀ hn (hp.trans hc.symm))
+    exact mul_left_cancel₀ (Complex.exp_ne_zero _) (hp.trans hc.symm))
   have hloc : ∀ (v : ↥A.Sf) (x : v.val.adicCompletion F),
       e v x = localFiniteCharacter F v.val x := by
     intro v x

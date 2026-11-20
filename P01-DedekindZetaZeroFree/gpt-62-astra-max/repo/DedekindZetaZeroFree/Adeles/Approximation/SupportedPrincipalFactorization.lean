@@ -27,29 +27,29 @@ private lemma ext_coe (I : FractionalIdeal (𝓞 F)⁰ F) :
   change Submodule.span A.R ((IsFractionRing.map (FaithfulSMul.algebraMap_injective (𝓞 F) A.R)) '' (I : Set F)) = _
   rw [map_id]
   simp
-private lemma member_bound (J : FractionalIdealGroup F) (v : HeightOneSpectrum (𝓞 F))
-    (y : F) (hy : y ∈ (J : FractionalIdeal (𝓞 F)⁰ F)) :
-    v.valuation F y ≤ WithZero.exp (-FractionalIdeal.count F v (J : FractionalIdeal (𝓞 F)⁰ F)) := by
-  by_cases hy0 : y = 0
-  · simp [hy0]
-  let x : Fˣ := Units.mk0 y hy0
-  have hc := FractionalIdeal.count_mono F v
-    (I := FractionalIdeal.spanSingleton (𝓞 F)⁰ y)
-    (FractionalIdeal.spanSingleton_ne_zero_iff.mpr hy0)
-    (FractionalIdeal.spanSingleton_le_iff_mem.mpr hy)
-  have hp := IdeleGroup.count_toPrincipalIdeal x v
-  simp only [coe_toPrincipalIdeal, x, Units.val_mk0] at hp
-  rw [hp] at hc
-  have hv0 : v.valuation F y ≠ 0 := (v.valuation F).ne_zero_iff.mpr hy0
-  rw [← WithZero.exp_log hv0, WithZero.exp_le_exp]
-  omega
-private lemma extended_bound (J : FractionalIdealGroup F) (v : HeightOneSpectrum (𝓞 F))
+
+section
+
+variable (J : FractionalIdealGroup F) (v : HeightOneSpectrum (𝓞 F))
+
+private lemma extended_bound
     (hv : v ∉ A.Sf) (y : F) (hy : y ∈ extHom F A (J : FractionalIdeal (𝓞 F)⁰ F)) :
     v.valuation F y ≤ WithZero.exp (-FractionalIdeal.count F v (J : FractionalIdeal (𝓞 F)⁰ F)) := by
   change y ∈ (extHom F A (J : FractionalIdeal (𝓞 F)⁰ F) : Submodule A.R F) at hy
   rw [ext_coe] at hy
   induction hy using Submodule.span_induction with
-  | mem y hy => exact member_bound F J v y hy
+  | mem y hy => by_cases hy0 : y = 0
+                · simp [hy0]
+                let x := Units.mk0 y hy0
+                have hc := FractionalIdeal.count_mono F v
+
+                  (FractionalIdeal.spanSingleton_ne_zero_iff.mpr hy0)
+                  (FractionalIdeal.spanSingleton_le_iff_mem.mpr hy)
+                have hp := IdeleGroup.count_toPrincipalIdeal x v
+                simp only [coe_toPrincipalIdeal, x, Units.val_mk0] at hp
+                rw [hp] at hc
+                rw [← WithZero.exp_log ((v.valuation F).ne_zero_iff.mpr hy0), WithZero.exp_le_exp]
+                omega
   | zero => simp
   | add y z _ _ hy hz => exact ((v.valuation F).map_add y z).trans (max_le hy hz)
   | smul r y _ hy =>
@@ -59,23 +59,17 @@ private lemma extended_bound (J : FractionalIdealGroup F) (v : HeightOneSpectrum
       Set.integer_valuation_le_one (R := 𝓞 F) (A.Sf : Set (HeightOneSpectrum (𝓞 F))) F r (v := v) hv
     have hm := mul_le_mul_of_nonneg_right hr (show 0 ≤ v.valuation F y from zero_le)
     exact hm.trans (by simpa using hy)
-private lemma count_le_extended (J : FractionalIdealGroup F) (v : HeightOneSpectrum (𝓞 F))
+private lemma count_le_extended
     (hv : v ∉ A.Sf) (x : Fˣ) (hx : (x : F) ∈ extHom F A (J : FractionalIdeal (𝓞 F)⁰ F)) :
     FractionalIdeal.count F v (J : FractionalIdeal (𝓞 F)⁰ F) ≤
       FractionalIdeal.count F v (toPrincipalIdeal (𝓞 F) F x : FractionalIdeal (𝓞 F)⁰ F) := by
   have h := extended_bound F A J v hv x hx
   rw [IdeleGroup.count_toPrincipalIdeal]
-  have hv0 : v.valuation F (x : F) ≠ 0 := (v.valuation F).ne_zero_iff.mpr x.ne_zero
-  rw [← WithZero.exp_log hv0, WithZero.exp_le_exp] at h
+  rw [← WithZero.exp_log ((v.valuation F).ne_zero_iff.mpr x.ne_zero), WithZero.exp_le_exp] at h
   omega
-private lemma exists_generator (hCl : Subsingleton (ClassGroup A.R)) (J : FractionalIdealGroup F) :
-    ∃ x : Fˣ, extHom F A (J : FractionalIdeal (𝓞 F)⁰ F) =
-      FractionalIdeal.spanSingleton A.R⁰ (x : F) := by
-  letI := hCl
-  have hu : IsUnit (extHom F A (J : FractionalIdeal (𝓞 F)⁰ F)) :=
-    J.isUnit.map (extHom F A).toMonoidHom
-  exact exists_unit_of_isPrincipal _
-    (ClassGroup.isPrincipal_coeSubmodule_of_isUnit _ hu) hu.ne_zero
+
+end
+
 private lemma count_eq (J : FractionalIdealGroup F) (x : Fˣ)
     (hx : extHom F A (J : FractionalIdeal (𝓞 F)⁰ F) = FractionalIdeal.spanSingleton A.R⁰ (x : F))
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) :
@@ -102,22 +96,24 @@ private lemma exists_factor (hCl : Subsingleton (ClassGroup A.R)) (a : IdeleGrou
       u ∈ IdeleGroup.supportedAt (K := F) (A.Sf : Set (HeightOneSpectrum (𝓞 F))) ∧
       a = u * IdeleGroup.principalIdele F x := by
   let J := IdeleGroup.fractionalIdeal a
-  obtain ⟨x, hx⟩ := exists_generator F A hCl J
+  obtain ⟨x, hx⟩ := (by
+    letI := hCl
+    have hu :=
+      J.isUnit.map (extHom F A).toMonoidHom
+    exact exists_unit_of_isPrincipal _
+      (ClassGroup.isPrincipal_coeSubmodule_of_isUnit _ hu) hu.ne_zero)
   refine ⟨a * (IdeleGroup.principalIdele F x)⁻¹, x, ?_, by simp⟩
   rw [IdeleGroup.mem_supportedAt_iff]
   intro v hv
   apply (FiniteIdeleGroup.localOrder_eq_zero_iff v _).mp
   have hc := count_eq F A J x hx v hv
-  have hp := congrArg (fun I : FractionalIdealGroup F => FractionalIdeal.count F v (I : FractionalIdeal (𝓞 F)⁰ F)) (IdeleGroup.fractionalIdeal_principalIdele x)
-  rw [← hp] at hc
-  change FractionalIdeal.count F v (((FractionalIdealGroup.factorization (K := F)) (FiniteIdeleGroup.valuationVector a.2)) : FractionalIdeal (𝓞 F)⁰ F) =
-    FractionalIdeal.count F v (((FractionalIdealGroup.factorization (K := F)) (FiniteIdeleGroup.valuationVector (IdeleGroup.principalIdele F x).2)) : FractionalIdeal (𝓞 F)⁰ F) at hc
+  rw [← (congrArg (fun I : FractionalIdealGroup F => FractionalIdeal.count F v I) (IdeleGroup.fractionalIdeal_principalIdele x))] at hc
+  change FractionalIdeal.count F v (((FractionalIdealGroup.factorization) (FiniteIdeleGroup.valuationVector a.2)) : FractionalIdeal (𝓞 F)⁰ F) =
+    FractionalIdeal.count F v (((FractionalIdealGroup.factorization) (FiniteIdeleGroup.valuationVector (IdeleGroup.principalIdele F x).2)) : FractionalIdeal (𝓞 F)⁰ F) at hc
   rw [FractionalIdealGroup.count_factorization, FractionalIdealGroup.count_factorization,
     FiniteIdeleGroup.valuationVector_apply, FiniteIdeleGroup.valuationVector_apply] at hc
   change (FiniteIdeleGroup.localOrder v (a.2 v * ((IdeleGroup.principalIdele F x).2 v)⁻¹)).toAdd = 0
   rw [map_mul, map_inv]
-  change (FiniteIdeleGroup.localOrder v (a.2 v)).toAdd -
-    (FiniteIdeleGroup.localOrder v ((IdeleGroup.principalIdele F x).2 v)).toAdd = 0
   exact sub_eq_zero.mpr hc
 end DedekindZetaZeroFree.SUnitFactorProof
 
@@ -134,13 +130,7 @@ theorem supportedAt_sup_principalSubgroup_eq_top_of_classGroup_subsingleton
   rw [hux]
   exact Subgroup.mul_mem_sup hu ⟨x, rfl⟩
 
-theorem exists_supportedAt_mul_principalIdele_of_classGroup_subsingleton
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
-    (hCl : Subsingleton (ClassGroup A.R)) (a : IdeleGroup F) :
-    ∃ (u : IdeleGroup F) (x : Fˣ),
-      u ∈ IdeleGroup.supportedAt (K := F) (A.Sf : Set (HeightOneSpectrum (𝓞 F))) ∧
-      a = u * IdeleGroup.principalIdele F x := by
-  exact SUnitFactorProof.exists_factor F A hCl a
+alias exists_supportedAt_mul_principalIdele_of_classGroup_subsingleton := SUnitFactorProof.exists_factor
 
 end DedekindZetaZeroFree
 

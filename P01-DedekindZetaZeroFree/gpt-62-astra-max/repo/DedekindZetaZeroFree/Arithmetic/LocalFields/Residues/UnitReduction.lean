@@ -10,8 +10,8 @@ noncomputable section
 namespace DedekindZetaZeroFree.LocalFiniteSumCompatibility
 open LocalFiniteSums
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 theorem reduction_isUnit (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (n : ℕ) (hn : n ≠ 0) (x : Residue C p n) :
@@ -22,11 +22,7 @@ theorem reduction_isUnit (C : A.GeneralArithmeticContext σ η hS)
   rw [← Ideal.span_singleton_pow, (generator_generates C p).2]
   exact (Ideal.Quotient.isUnit_mk_pow_iff_isUnit_mk _ hn).symm
 
-theorem exterior_notMem (p : ExteriorPrime A) : p.val ∉ A.Sf := by
-  intro hp
-  have h := (A.exterior_iff ⟨p.val.asIdeal, p.val.ne_bot⟩).mp p.property p.val hp
-  rw [sup_idem] at h
-  exact p.val.isPrime.ne_top h
+alias exterior_notMem := DedekindZetaZeroFree.CompatiblePrimeRawLocal.SIntegerConductor.exterior_notMem
 end DedekindZetaZeroFree.LocalFiniteSumCompatibility
 
 end

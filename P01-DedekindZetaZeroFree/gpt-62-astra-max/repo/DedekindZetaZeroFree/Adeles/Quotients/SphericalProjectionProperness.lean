@@ -23,35 +23,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 
 theorem actual_arch_finite_transport_homeomorph : ∃ e : (KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ
     KPMsFixedHaarDisintegration.Cover F ζ hζ,
-    ∀ a c, e (a,c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val := by
-  obtain ⟨e, he, _, _, hker, _, _⟩ := PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ
-  have hf : PGLComplex.AdelicSlicesRaw.finiteSubgroup F ζ hζ = KPFiniteCuspAtlas.FiniteCover F ζ hζ := by
-    rw [← hker]
-    ext g
-    simp only [MonoidHom.mem_ker]
-    constructor
-    · intro h
-      funext w
-      have hw := congrFun h w
-      rw [archProjection_compare] at hw
-      let e := NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
-        (KPHilbert.infinite_isComplex F ζ hζ w)
-      change Matrix.ProjGenLinGroup.map e.toRingHom
-        (KPCuspGenuineMonodromy.archProjection F ζ hζ g w) = 1 at hw
-      have hh := congrArg (Matrix.ProjGenLinGroup.map e.symm.toRingHom) hw
-      simpa only [← MonoidHom.comp_apply, ← Matrix.ProjGenLinGroup.map_comp,
-        RingEquiv.symm_toRingHom_comp_toRingHom, Matrix.ProjGenLinGroup.map_id, MonoidHom.id_apply,
-        map_one, Pi.one_apply] using hh
-    · intro h
-      funext w
-      rw [archProjection_compare, h]
-      exact map_one _
-  let ee : (KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ
-      KPMsFixedHaarDisintegration.Cover F ζ hζ :=
-    (Homeomorph.prodCongr (Homeomorph.refl _)
-      (Homeomorph.setCongr (congrArg (fun L : Subgroup (KPMsFixedHaarDisintegration.Cover F ζ hζ) =>
-        (L : Set (KPMsFixedHaarDisintegration.Cover F ζ hζ))) hf.symm))).trans e.toHomeomorph
-  exact ⟨ee, fun a c => he a _⟩
+    ∀ a c, e (a,c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val := by apply @DedekindZetaZeroFree.KPMsFixedHaar.actual_split <;> assumption
 
 theorem rational_lift_finite_factor_mod_center (γ : KPCuspArithmetic.PGL2 F) :
     ∃ ε : rootsOfUnity 3 F,
@@ -66,11 +38,11 @@ theorem rational_lift_finite_factor_mod_center (γ : KPCuspArithmetic.PGL2 F) :
   have hf : KPCuspGenuineMonodromy.finiteBase F ζ hζ s =
       KPCuspGenuineMonodromy.finiteBase F ζ hζ
         (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ) := by
-    rw [← MonoidHom.comp_apply, (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2.2.1]
+    rw [← MonoidHom.comp_apply, (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2]
     exact hp.symm
   have hm : s * (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ)⁻¹ ∈
       (KPCuspGenuineMonodromy.central F ζ hζ).range := by
-    rw [(KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.1, MonoidHom.mem_ker,
+    rw [(KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).1, MonoidHom.mem_ker,
       map_mul, map_inv, hf, mul_inv_cancel]
   obtain ⟨ε, hε⟩ := hm
   refine ⟨ε, ?_⟩
@@ -106,12 +78,10 @@ private theorem local_basepoint_fiber_compact (x : KPArch.H3) :
 theorem arch_basepoint_compact_fiber (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (x : KPFiniteCuspAtlas.SymmetricSpace F) :
     IsCompact (KPMsFixedHaarDisintegration.archBasepoint F ⁻¹' {x}) := by
-  let ix : NumberField.InfinitePlace F → Fin (NumberField.InfinitePlace.nrComplexPlaces F) :=
+  let ix :=
     fun w => Fintype.equivFin {v : NumberField.InfinitePlace F // v.IsComplex}
       ⟨w, KPHilbert.infinite_isComplex F ζ hζ w⟩
-  have hix : ∀ w, KPCusp.complexPlace F (ix w) = w := by
-    intro w
-    exact congrArg Subtype.val ((Fintype.equivFin _).symm_apply_apply _)
+  have hix : ∀ w, KPCusp.complexPlace F (ix w) = w := fun w => congrArg Subtype.val ((Fintype.equivFin _).symm_apply_apply _)
   have hi : ∀ i, ix (KPCusp.complexPlace F i) = i := by
     intro i
     unfold ix KPCusp.complexPlace
@@ -129,13 +99,7 @@ theorem arch_basepoint_compact_fiber (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
   rw [he]
   exact isCompact_pi_infinite fun w => local_basepoint_fiber_compact (x (ix w))
 
-theorem arch_basepoint_continuous : Continuous (KPMsFixedHaarDisintegration.archBasepoint F) := by
-  simp only [show KPMsFixedHaarDisintegration.archBasepoint F =
-    (fun g i => g (KPCusp.complexPlace F i) • ((0,0) : KPArch.H3)) from funext (basepoint_eq_smul F)]
-  change Continuous (fun g : KPSmoothActualFlowData.GInfinity F =>
-    fun i => g (KPCusp.complexPlace F i) • ((0,0) : KPArch.H3))
-  letI := KPArithmeticAction.hyperbolicContinuousSMul
-  exact continuous_pi fun i => (continuous_apply _).smul continuous_const
+theorem arch_basepoint_continuous : Continuous (KPMsFixedHaarDisintegration.archBasepoint F) := by apply @DedekindZetaZeroFree.KPMsFixedHaar.SphericalProjection.archBasepoint_continuous <;> assumption
 private theorem local_bp_compact (C : Set KPArch.H3) (hC : IsCompact C) :
     IsCompact {g : Matrix.ProjGenLinGroup (Fin 2) ℂ | g • ((0,0) : KPArch.H3) ∈ C} := by
   have h := KPArithmeticAction.compact_transporter_of_section ((0,0) : KPArch.H3)
@@ -144,9 +108,14 @@ private theorem local_bp_compact (C : Set KPArch.H3) (hC : IsCompact C) :
     (fun z => KPArithmeticAction.hyperbolicGLSection_action z)
     KPArithmeticAction.hyperbolic_origin_stabilizer_compact
     (isCompact_singleton (x := ((0,0) : KPArch.H3))) hC
-  simpa only [Set.image_singleton, Set.singleton_inter_nonempty] using h
+  simpa using h
 
-theorem arch_basepoint_compact_preimage (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (C : Set (KPFiniteCuspAtlas.SymmetricSpace F)) (hC : IsCompact C) :
+section
+
+variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+
+include hζ in
+theorem arch_basepoint_compact_preimage (C : Set (KPFiniteCuspAtlas.SymmetricSpace F)) (hC : IsCompact C) :
     IsCompact (KPMsFixedHaarDisintegration.archBasepoint F ⁻¹' C) := by
   let ix : NumberField.InfinitePlace F → Fin (NumberField.InfinitePlace.nrComplexPlaces F) :=
     fun w => Fintype.equivFin {v : NumberField.InfinitePlace F // v.IsComplex}
@@ -156,16 +125,19 @@ theorem arch_basepoint_compact_preimage (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (
     exact congrArg Subtype.val ((Fintype.equivFin _).symm_apply_apply _)
   let B : Set (KPSmoothActualFlowData.GInfinity F) :=
     {g | ∀ w, g w • ((0,0) : KPArch.H3) ∈ (fun x => x (ix w)) '' C}
-  have hB : IsCompact B := isCompact_pi_infinite fun w =>
+  have hB := isCompact_pi_infinite fun w =>
     local_bp_compact _ (hC.image (continuous_apply (ix w)))
   apply hB.of_isClosed_subset (hC.isClosed.preimage (arch_basepoint_continuous F))
   intro g hg w
   refine ⟨KPMsFixedHaarDisintegration.archBasepoint F g, hg, ?_⟩
   simp only [basepoint_eq_smul, hix]
 
-theorem arch_basepoint_proper (ζ : F) (hζ : IsPrimitiveRoot ζ 12) : IsProperMap (KPMsFixedHaarDisintegration.archBasepoint F) := by
+include hζ in
+theorem arch_basepoint_proper : IsProperMap (KPMsFixedHaarDisintegration.archBasepoint F) := by
   apply isProperMap_iff_isCompact_preimage.mpr
   exact ⟨arch_basepoint_continuous F, arch_basepoint_compact_preimage F ζ hζ⟩
+
+end
 
 local instance : MulAction (KPCuspArithmetic.PGL2 F) (KPFiniteCuspAtlas.SymmetricSpace F) :=
   KPCuspSiegel.instMulActionPGL2SpaceDimension F
@@ -206,9 +178,8 @@ private theorem remove_rat (γ : KPCuspArithmetic.PGL2 F)
       ((KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ *
         KPCuspGenuineMonodromy.central F ζ hζ ε * c) : KPFiniteCuspAtlas.FiniteCover F ζ hζ) := by
     rw [hδ]
-    have hc := insertion_commutes_cover F ζ hζ b
-      (KPCuspGenuineMonodromy.central F ζ hζ δ * KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ)
-    rw [mul_assoc, ← mul_assoc _ _ d.val, ← hc.eq, ← mul_assoc, ← mul_assoc,
+    rw [mul_assoc, ← mul_assoc _ _ d.val, ← (insertion_commutes_cover F ζ hζ b
+      (KPCuspGenuineMonodromy.central F ζ hζ δ * KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ)).eq, ← mul_assoc, ← mul_assoc,
       ← (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1, show archRational γ * b = a by dsimp [b]; group]
     rw [mul_assoc]
     congr 1
@@ -241,14 +212,9 @@ theorem spherical_projection_compact_fiber (P : KPMsFixedHaarDisintegration.Sphe
   let f := fun p : KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ =>
     KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
       (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ p.1 * p.2.val)
-  have hf : Continuous f := continuous_quot_mk.comp
-    (((KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1.comp continuous_fst).mul
-      (continuous_subtype_val.comp continuous_snd))
   let D := ⋃ ε : rootsOfUnity 3 F,
     (fun u : KPFiniteCuspAtlas.FiniteCover F ζ hζ => KPCuspGenuineMonodromy.central F ζ hζ ε * c * u) ''
-      (U.toOpenSubgroup : Set (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
-  have hD : IsCompact D := isCompact_iUnion fun ε => U.isCompact.image
-    ((continuous_const.mul continuous_const).mul continuous_id)
+      U.toOpenSubgroup
   have he : P.projection U ⁻¹' {Quotient.mk _ (x,c)} =
       f '' ((KPMsFixedHaarDisintegration.archBasepoint F ⁻¹' {x}) ×ˢ D) := by
     ext z
@@ -280,10 +246,13 @@ theorem spherical_projection_compact_fiber (P : KPMsFixedHaarDisintegration.Sphe
       apply Quotient.sound
       apply (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U).symm
       refine ⟨1,ε,⟨u,hu⟩,?_,?_⟩
-      · simpa only [one_smul, Set.mem_preimage, Set.mem_singleton_iff] using ha
+      · simpa using ha
       · simp
   rw [he]
-  exact ((arch_basepoint_compact_fiber F ζ hζ x).prod hD).image hf
+  exact ((arch_basepoint_compact_fiber F ζ hζ x).prod (isCompact_iUnion fun ε => U.isCompact.image
+    ((continuous_const.mul continuous_const).mul continuous_id))).image (continuous_quot_mk.comp
+    (((KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1.comp continuous_fst).mul
+      (continuous_subtype_val.comp continuous_snd)))
 private theorem finite_saturation_closed
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (B : Set (KPFiniteCuspAtlas.SymmetricSpace F × KPFiniteCuspAtlas.FiniteCover F ζ hζ))
@@ -297,10 +266,9 @@ private theorem finite_saturation_closed
   let T := {q : (KPFiniteCuspAtlas.SymmetricSpace F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ×
         (rootsOfUnity 3 F × U.toOpenSubgroup) |
     (q.1.1, (KPCuspGenuineMonodromy.central F ζ hζ q.2.1) * q.1.2 * q.2.2.val) ∈ B}
-  have hc : Continuous (KPCuspGenuineMonodromy.central F ζ hζ) := continuous_of_discreteTopology
   have hT : IsClosed T := hB.preimage
     ((continuous_fst.comp continuous_fst).prodMk
-      (((hc.comp (continuous_fst.comp continuous_snd)).mul
+      (((continuous_of_discreteTopology.comp (continuous_fst.comp continuous_snd)).mul
         (continuous_snd.comp continuous_fst)).mul
           (continuous_subtype_val.comp (continuous_snd.comp continuous_snd))))
   convert isClosedMap_fst_of_compactSpace T hT using 1
@@ -318,12 +286,7 @@ theorem spherical_projection_isClosedMap (P : KPMsFixedHaarDisintegration.Spheri
   let f := fun p : KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ =>
     KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
       (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ p.1 * p.2.val)
-  have hf : Continuous f := continuous_quot_mk.comp
-    (((KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1.comp continuous_fst).mul
-      (continuous_subtype_val.comp continuous_snd))
-  let H := Prod.map (KPMsFixedHaarDisintegration.archBasepoint F) (id : KPFiniteCuspAtlas.FiniteCover F ζ hζ → _)
-  let B := H '' (f ⁻¹' A)
-  have hB : IsClosed B := ((arch_basepoint_proper F ζ hζ).prodMap isProperMap_id).isClosedMap _ (hA.preimage hf)
+  let B := (Prod.map (KPMsFixedHaarDisintegration.archBasepoint F) id) '' (f ⁻¹' A)
   letI := KPFiniteCuspAtlas.sphericalRelation F ζ hζ U
   rw [← isQuotientMap_quotient_mk'.isClosed_preimage]
   have he : (Quotient.mk' : KPFiniteCuspAtlas.SymmetricSpace F × KPFiniteCuspAtlas.FiniteCover F ζ hζ →
@@ -359,21 +322,20 @@ theorem spherical_projection_isClosedMap (P : KPMsFixedHaarDisintegration.Spheri
         exact hz
       · exact Prod.ext (bp_unrat F ζ hζ γ a p.1 ha) rfl
     · rintro ⟨ε,u,⟨a,d⟩,had,he⟩
-      have ha : KPMsFixedHaarDisintegration.archBasepoint F a = p.1 := congrArg Prod.fst he
-      have hd : d = KPCuspGenuineMonodromy.central F ζ hζ ε * p.2 * u.val := congrArg Prod.snd he
       refine ⟨f (a,d),had,?_⟩
-      change P.projection U (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ _) = _
       rw [P.formula]
       apply Quotient.sound
       apply (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U).symm
-      exact ⟨1,ε,u,by simpa using ha,by simpa using hd⟩
+      exact ⟨1,ε,u,by simpa using (congrArg Prod.fst he),by simpa using (congrArg Prod.snd he)⟩
   rw [he]
-  exact finite_saturation_closed F ζ hζ U B hB
+  exact finite_saturation_closed F ζ hζ U B (((arch_basepoint_proper F ζ hζ).prodMap isProperMap_id).isClosedMap _ (hA.preimage (continuous_quot_mk.comp
+    (((KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1.comp continuous_fst).mul
+      (continuous_subtype_val.comp continuous_snd)))))
 
 end ActualGeometry
 
 variable {F : Type} [Field F] [NumberField F]
-variable {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
+    {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
 theorem spherical_projection_compact_preimage
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
@@ -381,7 +343,7 @@ theorem spherical_projection_compact_preimage
     (C : Set (KPMsFixedHaarDisintegration.Spherical F ζ hζ U))
     (hC : IsCompact C) :
     IsCompact (P.projection U ⁻¹' C) := by
-  have hp : IsProperMap (P.projection U) :=
+  have hp :=
     isProperMap_iff_isClosedMap_and_compact_fibers.mpr
       ⟨P.continuous U, spherical_projection_isClosedMap F ζ hζ P U, fun y => by
         induction y using Quotient.inductionOn with

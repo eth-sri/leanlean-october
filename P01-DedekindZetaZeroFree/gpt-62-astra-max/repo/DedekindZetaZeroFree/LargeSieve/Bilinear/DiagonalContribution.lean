@@ -19,9 +19,7 @@ theorem primitive_product_not_principal
     (u v : Ideal (𝓞 F)) (hu : u ≠ ⊥) (hv : v ≠ ⊥)
     (huv : u ⊔ v = ⊤) (hne : u * v ≠ ⊤)
     (ψ : RayClassCharacter F (u * v)) (hψ : ψ.IsPrimitive) :
-    ¬ ψ.IsPrincipal := by
-  intro hp
-  exact hne (RayOperations.modulus_eq_top_of_primitive_principal ψ hψ hp)
+    ¬ ψ.IsPrincipal := fun hp => hne (RayOperations.modulus_eq_top_of_primitive_principal ψ hψ hp)
 
 theorem annular_diagonal_restricted_bound (F : Type) [Field F] [NumberField F]
     (W : ℝ → ℝ) (hWcont : Continuous W) (hWnonneg : ∀ x, 0 ≤ W x)
@@ -37,7 +35,7 @@ theorem annular_diagonal_restricted_bound (F : Type) [Field F] [NumberField F]
   obtain ⟨x₀, -, hx₀max⟩ := isCompact_Icc.exists_isMaxOn
     (Set.nonempty_Icc.mpr (by norm_num : (1 / 2 : ℝ) ≤ 5 / 2)) hWcont.continuousOn
   set B : ℝ := W x₀ with hBdef
-  have hB0 : 0 ≤ B := hBdef ▸ hWnonneg x₀
+  have hB0 := hBdef ▸ hWnonneg x₀
   have hBW : ∀ t : ℝ, W t ≤ B := by
     intro t
     by_cases ht : t ∈ Set.Icc (1 / 2 : ℝ) (5 / 2)
@@ -48,7 +46,6 @@ theorem annular_diagonal_restricted_bound (F : Type) [Field F] [NumberField F]
   obtain ⟨A, hA1, hA⟩ := DedekindZetaZeroFree.LargeSieve.exists_ideal_count_bound F
   refine ⟨B * A * (5 / 2), by nlinarith [hB0, hA1], ?_⟩
   intro c Q M d z P hM hdsq hdc
-  have hMpos : 0 < M := lt_of_lt_of_le one_pos hM
   have hz0 : (0 : ℝ) ≤ ‖z‖ ^ 2 := by positivity
   have hterm : ∀ a : Ideal (𝓞 F),
       (if a ≠ ⊥ ∧ a ⊔ c = ⊤ ∧ P a then
@@ -56,11 +53,10 @@ theorem annular_diagonal_restricted_bound (F : Type) [Field F] [NumberField F]
     intro a
     by_cases h : a ≠ ⊥ ∧ a ⊔ c = ⊤ ∧ P a
     · rw [if_pos h]
-      have hχ : ‖(Q.χ d) a‖ ≤ 1 := quadraticFamily_norm_le_one Q hdsq hdc a
       have hz : ‖z * (Q.χ d) a‖ ^ 2 ≤ ‖z‖ ^ 2 := by
         have h1 : ‖z * (Q.χ d) a‖ ≤ ‖z‖ := by
           rw [norm_mul]
-          exact (mul_le_mul_of_nonneg_left hχ (norm_nonneg z)).trans_eq (mul_one _)
+          exact (mul_le_mul_of_nonneg_left (quadraticFamily_norm_le_one Q hdsq hdc a) (norm_nonneg z)).trans_eq (mul_one _)
         nlinarith [norm_nonneg (z * (Q.χ d) a), norm_nonneg z]
       exact mul_le_mul (hBW _) hz (by positivity) hB0
     · rw [if_neg h]
@@ -81,7 +77,7 @@ theorem annular_diagonal_restricted_bound (F : Type) [Field F] [NumberField F]
         by_contra hcon
         exact hWne (hWsupp _ (Or.inr (not_le.mp hcon)))
       have : (Ideal.absNorm a : ℝ) ≤ (5 / 2) * M := by
-        rw [div_le_iff₀ hMpos] at hlt
+        rw [div_le_iff₀ (lt_of_lt_of_le one_pos hM)] at hlt
         linarith
       simpa using this
     · rw [if_neg h] at ha
@@ -169,8 +165,12 @@ noncomputable def offDiagonalT3
             (Q.χ b1) a * (starRingEnd ℂ) ((Q.χ b2) a))
     else 0
 
-noncomputable def t3Term {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    (Q : QuadraticHeckeFamily F c) (W : ℝ → ℝ) (M K : ℝ) (d : Ideal (𝓞 F)) (g : Q.G)
+section
+
+variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)} (Q : QuadraticHeckeFamily F c)
+    (W : ℝ → ℝ) (M K : ℝ)
+
+noncomputable def t3Term (d : Ideal (𝓞 F)) (g : Q.G)
     (lam : Ideal (𝓞 F) → ℂ) (b1 b2 : Ideal (𝓞 F)) : ℂ :=
   if b1 ⊔ b2 = d ∧ Q.cls b1 = g ∧ Q.cls b2 = g then
     lam b1 * (starRingEnd ℂ) (lam b2) *
@@ -179,13 +179,14 @@ noncomputable def t3Term {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F
           (Q.χ b1) a * (starRingEnd ℂ) ((Q.χ b2) a))
   else 0
 
-noncomputable def t3Diag {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    (Q : QuadraticHeckeFamily F c) (W : ℝ → ℝ) (M K : ℝ)
+noncomputable def t3Diag
     (lam : Ideal (𝓞 F) → ℂ) (b : Ideal (𝓞 F)) : ℂ :=
   lam b * (starRingEnd ℂ) (lam b) *
     (∑ a ∈ Sieve.kernelRows F c M K,
       (W ((Ideal.absNorm a : ℝ) / M) : ℂ) *
         (Q.χ b) a * (starRingEnd ℂ) ((Q.χ b) a))
+
+end
 
 private theorem sum_diagonal_split {α : Type*} [DecidableEq α] (s : Finset α)
     (f : α → α → ℂ) :
@@ -267,7 +268,7 @@ theorem T3_eq_diagonal_add_offDiagonal
             rw [h0, zero_mul] at ha
             exact ha rfl
           have hle : (Ideal.absNorm a : ℝ) ≤ (5 / 2) * M := by
-            have hMpos : 0 < M := lt_of_lt_of_le one_pos hM
+            have hMpos := lt_of_lt_of_le one_pos hM
             have hlt : (Ideal.absNorm a : ℝ) / M ≤ 5 / 2 := by
               by_contra hcon
               exact hWne (hW.zero_outside _ (fun hmem =>

@@ -13,7 +13,7 @@ set_option autoImplicit false
 set_option maxHeartbeats 1000000
 set_option maxRecDepth 2000
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 def rationalArchUnits (y : Fˣ) (w : InfinitePlace F) : ℂˣ :=
   Units.map ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
@@ -79,13 +79,12 @@ theorem rational_eval_contDiffOn (P : Polarization F ζ hζ)
     simp [KPGlobalTorusFunctionData.deltaHalf,
       KPGlobalTorusPeriodizationInverse.rationalLift, delta_rational]
   rw [hhalf, inv_one, one_mul, he]
-  have hcomm := (TorusChartTransport.groupArchChart_commutes_finite F ζ hζ b hb z).eq
   have hm : (KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ
         (fun w => (rationalArchUnits F ζ hζ y w : ℂ)) * b) *
         (groupArchChart F ζ hζ z * g) =
       (KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ
         (fun w => (rationalArchUnits F ζ hζ y w : ℂ)) * groupArchChart F ζ hζ z) * (b * g) := by
-    rw [mul_assoc, ← mul_assoc b, ← hcomm]
+    rw [mul_assoc, ← mul_assoc b, ← ((TorusChartTransport.groupArchChart_commutes_finite F ζ hζ b hb z).eq)]
     group
   rw [hm, TorusChartTransport.groupArchDiagonalTransport_absorption F ζ hζ _ z hz]
   rfl

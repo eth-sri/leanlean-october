@@ -10,8 +10,8 @@ open scoped NumberField Classical
 namespace DedekindZetaZeroFree.CorrectionFactors.ValuationGenerator
 open LocalFiniteSums
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 theorem exists_unitPart (C : A.GeneralArithmeticContext σ η hS)
     (I : A.Exterior) (u : A.R) (hu : A.Generates I u) (p : ExteriorPrime A) :

@@ -11,9 +11,9 @@ namespace DedekindZetaZeroFree.SheetRescaling.WeylTensorTransport
 open MomentSources NumberField MeasureTheory KPGlobalResidualConstruction
 open scoped Classical Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {N : TraceHaarTransport R} (C : JointDigitDescentSources R N)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {N : TraceHaarTransport R} (C : JointDigitDescentSources R N)
 
 def localUniformCoordinates (w : InfinitePlace F) (t : ℝ) : ArchCoordinates F :=
   Function.update (archBase F) w (SheetRescaling.uniformCoordinates R t w)

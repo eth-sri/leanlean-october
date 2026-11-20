@@ -23,12 +23,9 @@ theorem compact_root_evaluation_representatives :
   classical
 
   obtain ⟨B, hB, hcover⟩ := KPAdelicQuotient.exists_compact_infinite_cover F
-  let S : Set (KPAdeles F) :=
+  let S :=
     B ×ˢ (KPAdelicTopology.integralAdeles F : Set (KPAdelicTopology.FiniteAdeles F))
-  have hS : IsCompact S := hB.prod (KPAdelicTopology.integralAdeles_isCompact F)
-  have hcont : Continuous (KPGlobalTorusFunctionData.N F ζ hζ) :=
-    KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous F ζ hζ
-  refine ⟨KPGlobalTorusFunctionData.N F ζ hζ '' S, hS.image hcont, ?_⟩
+  refine ⟨KPGlobalTorusFunctionData.N F ζ hζ '' S, (hB.prod (KPAdelicTopology.integralAdeles_isCompact F)).image (KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous F ζ hζ), ?_⟩
   intro x
 
   have hx : QuotientAddGroup.mk' (NumberField.AdeleRing.principalSubgroup (𝓞 F) F)
@@ -38,9 +35,9 @@ theorem compact_root_evaluation_representatives :
         KPAdelicQuotient.quotientMap F '' S from rfl, hcover]
     exact Set.mem_univ _
   obtain ⟨p, hpS, hpeq⟩ := hx
-  have hpq : (p : KPAdditiveQuotient F) =
+  have hpq : p =
       ((Quotient.out x : KPAdeles F) : KPAdditiveQuotient F) := by
-    simpa only [QuotientAddGroup.mk'_apply] using hpeq
+    simpa using hpeq
   have hsub : p - (Quotient.out x : KPAdeles F) ∈
       NumberField.AdeleRing.principalSubgroup (𝓞 F) F :=
     QuotientAddGroup.eq_iff_sub_mem.mp hpq

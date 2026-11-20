@@ -26,10 +26,6 @@ theorem uniqueFourierDensity
   letI := (KPAdelicCoverRestrictedProduct.adelic_topological_cover F ζ hζ).2.2.1
   have hroot (x : KPGlobalTorusFunctionData.Adeles F) :
       KPGlobalTorusFunctionData.N F ζ hζ x ∈ KPGlobalTorusFunctionData.borel F ζ hζ := by
-    change ∃ A : KPGlobalTorusFunctionData.AdelicMatrixGroup F,
-      QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A =
-        KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ
-          (KPGlobalTorusFunctionData.N F ζ hζ x) ∧ A 1 0 = 0
     refine ⟨KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ
       (KPGlobalTorusFunctionData.rootTuple F ζ hζ x), rfl, ?_⟩
     apply Prod.ext

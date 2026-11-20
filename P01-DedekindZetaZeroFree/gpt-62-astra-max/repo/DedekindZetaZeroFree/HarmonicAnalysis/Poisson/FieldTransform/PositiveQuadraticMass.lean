@@ -30,7 +30,7 @@ private theorem mellinConvergent_of_contDiff_hasCompactSupport {h : ℝ → ℂ}
 private theorem mellinConvergent_comp_sq {f : ℝ → ℂ} (hf : MellinConvergent f (1 / 2)) :
     MellinConvergent (fun t : ℝ => f (t ^ 2)) 1 := by
   have h2 := (MellinConvergent.comp_rpow (f := f) (s := 1) (a := 2) (by norm_num)).mpr
-    (by simpa using hf)
+    (by exact hf)
   simpa [MellinConvergent, Complex.cpow_zero, sub_self, one_smul, Real.rpow_ofNat] using h2
 
 private lemma Gammaℂ_half_ne_zero : Complex.Gammaℂ (1 / 2 : ℂ) ≠ 0 := by
@@ -43,38 +43,35 @@ private lemma Gammaℂ_half_ne_zero : Complex.Gammaℂ (1 / 2 : ℂ) ≠ 0 := by
 private lemma Gammaℂ_half_pow_mul_inv_pow_mul_div (r : ℕ) (hr : 1 ≤ r) (m : ℂ) :
     Complex.Gammaℂ (1 / 2 : ℂ) ^ r * ((Complex.Gammaℂ (1 / 2 : ℂ))⁻¹) ^ (r - 1) *
         (m / Complex.Gammaℂ (1 / 2 : ℂ)) = m := by
-  have hg := Gammaℂ_half_ne_zero
-  have hstep : ((Complex.Gammaℂ (1 / 2 : ℂ))⁻¹) ^ (r - 1) *
-        (Complex.Gammaℂ (1 / 2 : ℂ))⁻¹ = ((Complex.Gammaℂ (1 / 2 : ℂ))⁻¹) ^ r := by
+  let Gammaℂ₀ := Complex.Gammaℂ (1 / 2 : ℂ)
+  have hstep : ((Gammaℂ₀)⁻¹) ^ (r - 1) *
+        (Gammaℂ₀)⁻¹ = ((Gammaℂ₀)⁻¹) ^ r := by
     rw [← pow_succ, Nat.sub_add_cancel hr]
-  calc Complex.Gammaℂ (1 / 2 : ℂ) ^ r * ((Complex.Gammaℂ (1 / 2 : ℂ))⁻¹) ^ (r - 1) *
-        (m / Complex.Gammaℂ (1 / 2 : ℂ))
-      = Complex.Gammaℂ (1 / 2 : ℂ) ^ r *
-          (((Complex.Gammaℂ (1 / 2 : ℂ))⁻¹) ^ (r - 1) *
-            (Complex.Gammaℂ (1 / 2 : ℂ))⁻¹) * m := by
+  calc Gammaℂ₀ ^ r * ((Gammaℂ₀)⁻¹) ^ (r - 1) *
+        (m / Gammaℂ₀)
+      = Gammaℂ₀ ^ r *
+          (((Gammaℂ₀)⁻¹) ^ (r - 1) *
+            (Gammaℂ₀)⁻¹) * m := by
         rw [div_eq_mul_inv]; ring
-    _ = Complex.Gammaℂ (1 / 2 : ℂ) ^ r * ((Complex.Gammaℂ (1 / 2 : ℂ))⁻¹) ^ r * m := by
+    _ = Gammaℂ₀ ^ r * ((Gammaℂ₀)⁻¹) ^ r * m := by
         rw [hstep]
-    _ = (Complex.Gammaℂ (1 / 2 : ℂ) * (Complex.Gammaℂ (1 / 2 : ℂ))⁻¹) ^ r * m := by
+    _ = (Gammaℂ₀ * (Gammaℂ₀)⁻¹) ^ r * m := by
         rw [← mul_pow]
-    _ = m := by rw [mul_inv_cancel₀ hg, one_pow, one_mul]
+    _ = m := by rw [mul_inv_cancel₀ Gammaℂ_half_ne_zero, one_pow, one_mul]
 
 theorem B_half_eq_mellin (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
     (hhc : HasCompactSupport h) :
     B D r h (1 / 2 : ℂ) = mellin h (1 / 2 : ℂ) := by
-  have hq := Vendor.originMellinQ_eq_mellin_div_Gammaℂ h hh hhc (1 / 2 : ℂ) (by norm_num)
   rw [B, show (1 / 2 : ℂ) - 1 / 2 = 0 by norm_num, Complex.cpow_zero, one_mul,
-    show (1 : ℂ) - 1 / 2 = 1 / 2 by norm_num, hq]
+    show (1 : ℂ) - 1 / 2 = 1 / 2 by norm_num, (Vendor.originMellinQ_eq_mellin_div_Gammaℂ h hh hhc (1 / 2 : ℂ) (by norm_num))]
   exact Gammaℂ_half_pow_mul_inv_pow_mul_div r hr _
 
 theorem compact_comp_sq_integrableOn (h : ℝ → ℂ)
     (hh : ContDiff ℝ ∞ h) (hhc : HasCompactSupport h) :
     MeasureTheory.IntegrableOn (fun x : ℝ => h (x ^ 2))
       (Set.Ioi 0) MeasureTheory.volume := by
-  have hm := mellinConvergent_of_contDiff_hasCompactSupport hh hhc (by norm_num : (0:ℝ) < (1 / 2 : ℂ).re)
-  have h2 := mellinConvergent_comp_sq hm
-  simpa [MellinConvergent, Complex.cpow_zero, sub_self, one_smul] using h2
+  simpa [MellinConvergent, Complex.cpow_zero, sub_self, one_smul] using (mellinConvergent_comp_sq (mellinConvergent_of_contDiff_hasCompactSupport hh hhc (by norm_num : (0:ℝ) < (1 / 2 : ℂ).re)))
 
 end DedekindZetaZeroFree.LargeSieve
 

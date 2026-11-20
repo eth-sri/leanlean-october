@@ -15,38 +15,10 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.SheetRescaling
 open MomentSources KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
-theorem branch_measurable {Q : AdmissibleFlatSources R} (P : Packet R Q) (v : R.A.UnitQuotient) :
-    Measurable (P.branch v) := by
-  let D := R.probe.correction
-  have hc : Continuous (R.A.correctionLS D.Λ D.G D.η_id) := by
-    unfold SArithmeticData.correctionLS SArithmeticData.ideleSInverseProduct
-    have hθ := SArithmeticData.CorrectionAssembly.correctionTheta_continuous R.A
-      D.Λ D.G D.η_id D.Λ_continuous D.G_continuous D.eta_continuous
-    apply Continuous.mul
-    · apply continuous_finset_prod
-      intro w hw
-      exact (hθ.comp ((SArithmeticData.CorrectionTopology.infinite_embedding_continuous w).comp
-        ((continuous_apply w).comp continuous_fst))).inv
-    · apply continuous_finset_prod
-      intro p hp
-      exact (hθ.comp ((SArithmeticData.CorrectionTopology.finite_embedding_continuous p.val).comp
-        ((continuous_apply p).comp continuous_snd))).inv
-  have hh := finiteClass_measurable R (fun q => R.σ
-    ((D.H (QuotientGroup.mk' R.A.sixthPowers
-      (R.A.diagonal (R.probe.unitReps.representative v).val)) q : Fˣ) : F))
-  have hh' : Measurable (fun y : R.A.G => R.σ
-      ((R.A.H_S (R.A.diagonal (R.probe.unitReps.representative v).val) y : Fˣ) : F)) := by
-    simpa only [D.H_actual] using hh
-  have h := (continuous_subtype_val.comp hc).measurable.mul hh'
-  have he : P.branch v = (fun y : R.A.G =>
-      (R.A.correctionLS D.Λ D.G D.η_id y : ℂ) *
-      R.σ ((R.A.H_S (R.A.diagonal (R.probe.unitReps.representative v).val) y : Fˣ) : F)) :=
-    funext (P.branch_global v)
-  rw [he]
-  exact h
+alias branch_measurable := DedekindZetaZeroFree.DigitMasks.branch_measurable
 
 theorem sheet_radial_contDiff {Q : AdmissibleFlatSources R} (T : Realization R Q)
     (P : Packet R Q) (v : R.A.UnitQuotient) (κ : R.A.V) (y : R.A.G1) :
@@ -84,22 +56,12 @@ theorem sheet_radial_measurable {Q : AdmissibleFlatSources R} (T : Realization R
     fun p => Units.isEmbedding_val₀.secondCountableTopology
   letI : IsTopologicalGroup (Group R) :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F R.A.zeta12 R.A.primitive_zeta12).2.2.1
-  have hr : Continuous (fun t : ℝ => R.A.radialSection (Real.exp t) (Real.exp_pos t)) :=
+  have hr :=
     R.A.continuous_radialSection.comp (Real.continuous_exp.subtype_mk Real.exp_pos)
   have hy : Continuous (fun p : R.A.G1 × ℝ =>
       p.1.val * R.A.radialSection (Real.exp p.2) (Real.exp_pos p.2)) :=
     (continuous_subtype_val.comp continuous_fst).mul (hr.comp continuous_snd)
-  have hp : Measurable (fun p : R.A.G1 × ℝ => sheetPhase R κ
-      (p.1.val * R.A.radialSection (Real.exp p.2) (Real.exp_pos p.2))) :=
-    (sheetPhase_measurable R κ).comp hy.measurable
-  have hb : Measurable (fun p : R.A.G1 × ℝ => P.branch v
-      (p.1.val * R.A.radialSection (Real.exp p.2) (Real.exp_pos p.2))) :=
-    (branch_measurable R P v).comp hy.measurable
-  have hf : Continuous (fun p : R.A.G1 × ℝ => fourier R Q.dq (T.theta v)
-      (diagonal R (p.1.val * R.A.radialSection (Real.exp p.2) (Real.exp_pos p.2)) *
-        KPRationalAdelicSplitting.pglW F R.A.zeta12 R.A.primitive_zeta12)) :=
-    (fourier_continuous T v).comp (((diagonal_continuous R).comp hy).mul continuous_const)
-  exact (hp.mul hb).mul hf.measurable
+  exact (((sheetPhase_measurable R κ).comp hy.measurable).mul ((branch_measurable R P v).comp hy.measurable)).mul ((fourier_continuous T v).comp (((diagonal_continuous R).comp hy).mul continuous_const)).measurable
 
 theorem sheet_radial_jets_aestronglyMeasurable {Q : AdmissibleFlatSources R} (T : Realization R Q)
     (P : Packet R Q) (v : R.A.UnitQuotient) (κ : R.A.V) (j : ℕ) (hj : j ≤ 2) (u : ℝ) :

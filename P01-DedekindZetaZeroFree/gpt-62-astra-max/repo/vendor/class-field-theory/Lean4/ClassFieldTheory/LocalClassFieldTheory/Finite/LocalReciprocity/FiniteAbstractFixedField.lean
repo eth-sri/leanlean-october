@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -39,20 +34,25 @@ noncomputable section
 
 variable (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω] [IsGalois k Ω]
 
+section
+
+variable (H : ClosedSubgroup (Gal(Ω / k)))
+
 /-- The concrete fixed field represented by an abstract closed subgroup. -/
-abbrev abstractFixedField (H : ClosedSubgroup (Gal(Ω / k))) :
+abbrev abstractFixedField :
     IntermediateField k Ω :=
   IntermediateField.fixedField H.toSubgroup
 
 /-- Passing from an abstract field to its concrete fixed field
 and back recovers the original closed subgroup. -/
-theorem closedFixingSubgroup_abstractFixedField_eq
-    (H : ClosedSubgroup (Gal(Ω / k))) :
+theorem closedFixingSubgroup_abstractFixedField_eq :
     closedFixingSubgroup k Ω (abstractFixedField k Ω H) = H := by
   ext σ
   change σ ∈ (abstractFixedField k Ω H).fixingSubgroup ↔ σ ∈ H
   rw [InfiniteGalois.fixingSubgroup_fixedField H]
   rfl
+
+end
 
 omit [IsGalois k Ω] in
 /-- Absolute finiteness in the abstract class-formation quotient presentation gives a
@@ -65,8 +65,6 @@ theorem ambientQuotientFiniteOfAbstractFinite
   apply Nat.finite_of_card_ne_zero
   change H.toSubgroup.index ≠ 0
   rw [← Subgroup.relIndex_top_right]
-  change (extensionSubgroup (baseField (Gal(Ω / k))) H
-    (le_baseField H)).index ≠ 0
   exact @Subgroup.index_ne_zero_of_finite
     (baseField (Gal(Ω / k))).toSubgroup _
     (extensionSubgroup (baseField (Gal(Ω / k))) H (le_baseField H))
@@ -80,9 +78,9 @@ theorem abstractFiniteClosedSubgroup_isOpen
     (hfinite : Finite ((baseField (Gal(Ω / k))).toSubgroup ⧸
       extensionSubgroup (baseField (Gal(Ω / k))) H (le_baseField H))) :
     IsOpen H.carrier := by
-  let : Finite (Gal(Ω / k) ⧸ H.toSubgroup) :=
+  let :=
     ambientQuotientFiniteOfAbstractFinite k Ω H hfinite
-  let : Subgroup.FiniteIndex H.toSubgroup :=
+  let :=
     H.toSubgroup.finiteIndex_of_finite_quotient
   exact Subgroup.isOpen_of_isClosed_of_finiteIndex H.toSubgroup H.isClosed'
 
@@ -94,9 +92,9 @@ theorem abstractFixedField_finiteDimensional
       extensionSubgroup (baseField (Gal(Ω / k))) H (le_baseField H))) :
     FiniteDimensional k (abstractFixedField k Ω H) := by
   apply (InfiniteGalois.isOpen_iff_finite
-    (K := Ω) (abstractFixedField k Ω H)).1
+     (abstractFixedField k Ω H)).1
   rw [InfiniteGalois.fixingSubgroup_fixedField H]
-  exact abstractFiniteClosedSubgroup_isOpen k Ω H hfinite
+  grind [abstractFiniteClosedSubgroup_isOpen]
 
 omit [IsGalois k Ω] in
 /-- Inclusion of abstract subgroups reverses to inclusion of their concrete
@@ -106,10 +104,13 @@ theorem abstractFixedField_le {K L : ClosedSubgroup (Gal(Ω / k))}
     abstractFixedField k Ω K ≤ abstractFixedField k Ω L :=
   IntermediateField.fixedField_le hLK
 
+section
+
+variable (H : ClosedSubgroup (Gal(Ω / k)))
+
 /-- The abstract subgroup representing a fixed field is canonically the
 absolute Galois group of the ambient extension over that fixed field. -/
-def abstractSubgroupEquivGaloisGroup
-    (H : ClosedSubgroup (Gal(Ω / k))) :
+def abstractSubgroupEquivGaloisGroup :
     H.toSubgroup ≃* Gal(Ω / abstractFixedField k Ω H) :=
   (MulEquiv.subgroupCongr
       (InfiniteGalois.fixingSubgroup_fixedField H).symm).trans
@@ -117,10 +118,11 @@ def abstractSubgroupEquivGaloisGroup
 
 /-- States the theorem `abstractSubgroupEquivGaloisGroup_apply`. -/
 @[simp]
-theorem abstractSubgroupEquivGaloisGroup_apply
-    (H : ClosedSubgroup (Gal(Ω / k))) (σ : H.toSubgroup) (x : Ω) :
+theorem abstractSubgroupEquivGaloisGroup_apply (σ : H.toSubgroup) (x : Ω) :
     abstractSubgroupEquivGaloisGroup k Ω H σ x = σ.1 x :=
   rfl
+
+end
 
 /-- The upper fixed field, regarded as an intermediate field over the lower
 fixed field in a relative abstract extension. -/
@@ -143,33 +145,28 @@ theorem map_extensionSubgroup_abstractSubgroupEquiv
   · rintro ⟨σ, hσ, rfl⟩
     rw [IntermediateField.mem_fixingSubgroup_iff]
     intro x hx
-    have hσL : (σ.1 : Gal(Ω / k)) ∈ L :=
-      (mem_extensionSubgroup_iff K L hLK σ).1 hσ
     have hfix : ∀ y ∈ abstractFixedField k Ω L, σ.1 y = y := by
-      have hσfix : σ.1 ∈ (abstractFixedField k Ω L).fixingSubgroup := by
-        rw [InfiniteGalois.fixingSubgroup_fixedField L]
-        exact hσL
-      exact (IntermediateField.mem_fixingSubgroup_iff
-        (abstractFixedField k Ω L) σ.1).1 hσfix
+      refine (IntermediateField.mem_fixingSubgroup_iff
+        (abstractFixedField k Ω L) σ.1).1 ?_
+      rw [InfiniteGalois.fixingSubgroup_fixedField L]
+      exact ((mem_extensionSubgroup_iff K L hLK σ).1 hσ)
     exact hfix x hx
   · intro hτ
-    let σ : K.toSubgroup :=
+    let σ :=
       (abstractSubgroupEquivGaloisGroup k Ω K).symm τ
     refine ⟨σ, ?_, (abstractSubgroupEquivGaloisGroup k Ω K).apply_symm_apply τ⟩
     apply (mem_extensionSubgroup_iff K L hLK σ).2
-    have hσfix : (σ.1 : Gal(Ω / k)) ∈
+    have hσfix : σ.1 ∈
         (abstractFixedField k Ω L).fixingSubgroup := by
       rw [IntermediateField.mem_fixingSubgroup_iff]
       intro x hx
-      have hτfix := (IntermediateField.mem_fixingSubgroup_iff
-        (abstractRelativeFixedField k Ω hLK) τ).1 hτ x hx
       calc
         σ.1 x = abstractSubgroupEquivGaloisGroup k Ω K σ x :=
           (abstractSubgroupEquivGaloisGroup_apply k Ω K σ x).symm
         _ = τ x := by
-          rw [show abstractSubgroupEquivGaloisGroup k Ω K σ = τ by
-            exact (abstractSubgroupEquivGaloisGroup k Ω K).apply_symm_apply τ]
-        _ = x := hτfix
+          rfl
+        _ = x := ((IntermediateField.mem_fixingSubgroup_iff
+          (abstractRelativeFixedField k Ω hLK) τ).1 hτ x hx)
     rw [InfiniteGalois.fixingSubgroup_fixedField L] at hσfix
     exact hσfix
 
@@ -180,8 +177,7 @@ theorem abstractRelativeFixingSubgroup_normal
     (hLK : L.toSubgroup ≤ K.toSubgroup)
     (hnormal : (extensionSubgroup K L hLK).Normal) :
     (abstractRelativeFixedField k Ω hLK).fixingSubgroup.Normal := by
-  have hmap : ((extensionSubgroup K L hLK).map
-      (abstractSubgroupEquivGaloisGroup k Ω K).toMonoidHom).Normal :=
+  have hmap :=
     hnormal.map (abstractSubgroupEquivGaloisGroup k Ω K).toMonoidHom
       (abstractSubgroupEquivGaloisGroup k Ω K).surjective
   rw [map_extensionSubgroup_abstractSubgroupEquiv k Ω K L hLK] at hmap
@@ -199,12 +195,14 @@ theorem abstractRelativeFixedField_isGalois
     (abstractRelativeFixedField k Ω hLK)).1
   exact abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
 
+section
+
+variable (K L : ClosedSubgroup (Gal(Ω / k))) (hLK : L.toSubgroup ≤ K.toSubgroup)
+    (hnormal : (extensionSubgroup K L hLK).Normal)
+
 /-- Restriction through the lower fixed field, followed by quotienting by
 the upper fixing subgroup. -/
-def abstractRelativeToAmbientQuotient
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal) :
+def abstractRelativeToAmbientQuotient :
     letI := abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
     K.toSubgroup →*
       Gal(Ω / abstractFixedField k Ω K) ⧸
@@ -217,14 +215,11 @@ def abstractRelativeToAmbientQuotient
 
 /-- The kernel of the preceding quotient map is the exact abstract class-formation
 relative subgroup. -/
-theorem abstractRelativeToAmbientQuotient_ker
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal) :
+theorem abstractRelativeToAmbientQuotient_ker :
     letI := abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
     (abstractRelativeToAmbientQuotient k Ω K L hLK hnormal).ker =
       extensionSubgroup K L hLK := by
-  let : (abstractRelativeFixedField k Ω hLK).fixingSubgroup.Normal :=
+  let :=
     abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
   ext σ
   change
@@ -234,40 +229,26 @@ theorem abstractRelativeToAmbientQuotient_ker
   rw [QuotientGroup.mk'_apply, QuotientGroup.eq_one_iff]
   rw [← map_extensionSubgroup_abstractSubgroupEquiv k Ω K L hLK]
   constructor
-  · rintro ⟨τ, hτ, hτσ⟩
-    have : τ = σ :=
-      (abstractSubgroupEquivGaloisGroup k Ω K).injective hτσ
-    simpa [this] using hτ
-  · intro hσ
-    exact ⟨σ, hσ, rfl⟩
+  · simpa [this] using hτ
+  · simp
 
 /-- The quotient map from the abstract lower subgroup is surjective. -/
-theorem abstractRelativeToAmbientQuotient_surjective
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal) :
+theorem abstractRelativeToAmbientQuotient_surjective :
     letI := abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
     Function.Surjective
       (abstractRelativeToAmbientQuotient k Ω K L hLK hnormal) := by
-  let : (abstractRelativeFixedField k Ω hLK).fixingSubgroup.Normal :=
+  let :=
     abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
   intro q
   refine Quotient.inductionOn' q ?_
   intro τ
   refine ⟨(abstractSubgroupEquivGaloisGroup k Ω K).symm τ, ?_⟩
-  change QuotientGroup.mk
-    (abstractSubgroupEquivGaloisGroup k Ω K
-      ((abstractSubgroupEquivGaloisGroup k Ω K).symm τ)) =
-      QuotientGroup.mk τ
-  rw [(abstractSubgroupEquivGaloisGroup k Ω K).apply_symm_apply]
+  rfl
 
 /-- The exact abstract class-formation quotient of a relative normal extension is the
 ordinary quotient of the lower absolute Galois group by the upper fixing
 subgroup. -/
-def abstractExtensionQuotientEquivAmbient
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal) :
+def abstractExtensionQuotientEquivAmbient :
     letI := hnormal
     letI := abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
     K.toSubgroup ⧸ extensionSubgroup K L hLK ≃*
@@ -284,6 +265,8 @@ def abstractExtensionQuotientEquivAmbient
       (abstractRelativeToAmbientQuotient_surjective
         k Ω K L hLK hnormal))
 
+end
+
 /-- The quotient group appearing in the abstract class-field-axiom predicate is
 canonically the actual Galois group of the two concrete fixed fields. -/
 def abstractExtensionQuotientEquivGaloisGroup
@@ -296,11 +279,10 @@ def abstractExtensionQuotientEquivGaloisGroup
   letI := hnormal
   letI : (abstractRelativeFixedField k Ω hLK).fixingSubgroup.Normal :=
     abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
-  let H : ClosedSubgroup (Gal(Ω / abstractFixedField k Ω K)) :=
+  let H :=
     closedFixingSubgroup (abstractFixedField k Ω K) Ω
       (abstractRelativeFixedField k Ω hLK)
-  letI : H.toSubgroup.Normal := by
-    exact abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
+  letI : H.toSubgroup.Normal := abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
   exact (abstractExtensionQuotientEquivAmbient
       k Ω K L hLK hnormal).trans
     ((InfiniteGalois.normalAutEquivQuotient H).trans
@@ -329,15 +311,12 @@ theorem abstractFixedField_relativeFiniteDimensional
   let : IsScalarTower k (abstractFixedField k Ω K)
       (abstractFixedField k Ω L) :=
     IsScalarTower.of_algebraMap_eq' rfl
-  let : Finite ((baseField (Gal(Ω / k))).toSubgroup ⧸
-      extensionSubgroup (baseField (Gal(Ω / k))) K (le_baseField K)) :=
+  let :=
     hKfinite
-  let : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK) := hLKfinite
-  let : Finite ((baseField (Gal(Ω / k))).toSubgroup ⧸
-      extensionSubgroup (baseField (Gal(Ω / k))) L (le_baseField L)) :=
+  let := hLKfinite
+  let :=
     FiniteGaloisSubextension.finite_extension_trans hLK (le_baseField K)
-  let : FiniteDimensional k (abstractFixedField k Ω L) :=
+  let :=
     abstractFixedField_finiteDimensional k Ω L inferInstance
   exact FiniteDimensional.right k
     (abstractFixedField k Ω K) (abstractFixedField k Ω L)
@@ -353,22 +332,7 @@ theorem abstractRelativeFixedField_finiteDimensional
       (K.toSubgroup ⧸ extensionSubgroup K L hLK)) :
     FiniteDimensional (abstractFixedField k Ω K)
       (abstractRelativeFixedField k Ω hLK) := by
-  let : Algebra (abstractFixedField k Ω K) (abstractFixedField k Ω L) :=
-    RingHom.toAlgebra
-      (IntermediateField.inclusion (abstractFixedField_le k Ω hLK))
-  let : FiniteDimensional (abstractFixedField k Ω K)
-      (abstractFixedField k Ω L) :=
-    abstractFixedField_relativeFiniteDimensional
-      k Ω K L hLK hKfinite hLKfinite
-  let e : abstractFixedField k Ω L ≃ₗ[abstractFixedField k Ω K]
-      abstractRelativeFixedField k Ω hLK :=
-    { toFun := fun x => ⟨x.1, x.2⟩
-      invFun := fun x => ⟨x.1, x.2⟩
-      left_inv := fun _ => rfl
-      right_inv := fun _ => rfl
-      map_add' := fun _ _ => rfl
-      map_smul' := fun _ _ => rfl }
-  exact e.finiteDimensional
+  exact abstractFixedField_relativeFiniteDimensional k Ω K L hLK hKfinite hLKfinite
 
 /-- The abstract extension degree is the ordinary degree of the concrete
 finite Galois extension represented by the same pair of fixed fields. -/
@@ -384,17 +348,14 @@ theorem finiteAbstractExtension_degree_eq_finrank
       Module.finrank (abstractFixedField k Ω K)
         (abstractRelativeFixedField k Ω hLK) := by
   let := hnormal
-  let : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK) := hLKfinite
-  let : FiniteDimensional (abstractFixedField k Ω K)
-      (abstractRelativeFixedField k Ω hLK) :=
+  let := hLKfinite
+  let :=
     abstractRelativeFixedField_finiteDimensional
       k Ω K L hLK hKfinite hLKfinite
-  let : IsGalois (abstractFixedField k Ω K)
-      (abstractRelativeFixedField k Ω hLK) :=
+  let :=
     abstractRelativeFixedField_isGalois k Ω K L hLK hnormal
   calc
-    ((DegreeData.FiniteAbstractExtension.ofInclusion L K hLK).degree : ℕ) =
+    _ =
         (extensionSubgroup K L hLK).index :=
       (DegreeData.FiniteAbstractExtension.ofInclusion L K hLK).extensionSubgroup_index_eq_degree.symm
     _ = Nat.card

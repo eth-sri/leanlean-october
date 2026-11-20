@@ -44,15 +44,17 @@ structure Coefficients {n : ℕ} (B : LocalBall n) (cρ Cρ κ Λ : ℝ) where
   upper_bound : ∀ x ∈ B.carrier, ∀ ξ : Space n,
     (∑ i, ∑ j, matrix x i j * ξ i * ξ j) ≤ Λ * ‖ξ‖ ^ 2
 
-def divergenceOperator {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (u : Space n → ℂ) : Space n → ℂ :=
+section
+
+variable {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (D : Coefficients B cρ Cρ κ Λ)
+
+def divergenceOperator (u : Space n → ℂ) : Space n → ℂ :=
   fun x => -(D.density x : ℂ)⁻¹ * ∑ i,
     fderiv ℝ (fun y => (D.density y : ℂ) *
       ∑ j, (D.matrix y i j : ℂ) * coordinateDerivativeList [j] u y) x
         (EuclideanSpace.single i 1)
 
-def WeakEquation {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (z : ℂ)
+def WeakEquation (z : ℂ)
     (u : IntegerSobolev B 1) (h : BallL2 B) : Prop :=
   ∀ φ : TestFunction B.toOpens ℂ ⊤,
     (∫ x in B.carrier, (D.density x : ℂ) *
@@ -61,27 +63,33 @@ def WeakEquation {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
       z * (∫ x in B.carrier, (D.density x : ℂ) * value u x * star (φ x)) =
         ∫ x in B.carrier, (D.density x : ℂ) * h x * star (φ x)
 
-def Represents {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k)
-    (f : Space n → ℂ) : Prop :=
+end
+
+section
+
+variable {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k) (f : Space n → ℂ)
+
+def Represents : Prop :=
   ∀ᵐ x ∂volume.restrict B.carrier, value u x = f x
 
-def RepresentsClassicalDerivatives {n k : ℕ} {B : LocalBall n}
-    (u : IntegerSobolev B k) (f : Space n → ℂ) : Prop :=
+def RepresentsClassicalDerivatives : Prop :=
   ∀ α : MultiIndex n k,
     ∀ᵐ x ∂volume.restrict B.carrier, u.derivatives α x = coordinateDerivative α f x
+
+end
 
 def functionL2Norm {n : ℕ} (B : LocalBall n) (f : Space n → ℂ) : ℝ :=
   Real.sqrt (∫ x in B.carrier, ‖f x‖ ^ 2)
 
-def WeakEnergyEstimate {n : ℕ} (inner outer : LocalBall n)
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ) (M C : ℝ) : Prop :=
+variable {n : ℕ} (inner outer : LocalBall n) {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ) (M C : ℝ)
+
+def WeakEnergyEstimate : Prop :=
   ∀ (z : ℂ), ‖z‖ ≤ M → ∀ (u : IntegerSobolev outer 1) (h : BallL2 outer),
     WeakEquation D z u h → ∃ v : IntegerSobolev inner 1,
       Represents v (fun x => value u x) ∧
       v.sobolevNorm ≤ C * (‖value u‖ + ‖h‖)
 
-def SmoothEnergyEstimate {n : ℕ} (inner outer : LocalBall n)
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ) (M C : ℝ) : Prop :=
+def SmoothEnergyEstimate : Prop :=
   ∀ (z : ℂ), ‖z‖ ≤ M → ∀ (u : Space n → ℂ) (h : BallL2 outer)
     (U : Set (Space n)), IsOpen U →
     Metric.closedBall outer.center outer.radius ⊆ U → ContDiffOn ℝ (⊤ : ℕ∞) u U →
@@ -137,14 +145,12 @@ theorem kp_cont_local_energy_h1 (n : ℕ) (hn : 0 < n)
       simp
     obtain ⟨φ, hφ⟩ := approximate_compact_integerSobolev outer w
       (tsupport (fun y => η y)) η.hasCompactSupport η.tsupport_subset hwsupport
-    have htest := weakEquation_of_test_limit outer cρ Cρ κ Λ hcρ hκ Dr z u h heq w φ hφ
-    have hbound := hηenergy Dr z hz u h w hwvalue hwgradient htest
     obtain ⟨v, hvderivatives, hvnorm⟩ := restrict_integerSobolev inner outer hsub u
     refine ⟨v, hvderivatives, ?_⟩
     apply (sq_le_sq₀ (Real.sqrt_nonneg _) (mul_nonneg hC.le (by positivity))).mp
     change v.sobolevNorm ^ 2 ≤ (C * (‖value u‖ + ‖h‖)) ^ 2
     rw [v.sobolevNorm_sq, hvnorm]
-    exact hbound
+    exact hηenergy Dr z hz u h w hwvalue hwgradient (weakEquation_of_test_limit outer cρ Cρ κ Λ hcρ hκ Dr z u h heq w φ hφ)
   constructor
   · intro z hz u h heq
     obtain ⟨v, hv, hnorm⟩ := estimate z hz u h heq
@@ -155,8 +161,7 @@ theorem kp_cont_local_energy_h1 (n : ℕ) (hn : 0 < n)
     obtain ⟨v, hv, hnorm⟩ := estimate z hz w h hweq
     refine ⟨v, ?_, ?_⟩
     · intro α
-      have hwα := ae_restrict_of_ae_restrict_of_subset hsub (hwclassical α)
-      filter_upwards [hv α, hwα] with x hxv hxw
+      filter_upwards [hv α, (ae_restrict_of_ae_restrict_of_subset hsub (hwclassical α))] with x hxv hxw
       exact hxv.trans hxw
     · change ‖value w‖ = functionL2Norm outer u at hwnorm
       simpa only [hwnorm] using hnorm

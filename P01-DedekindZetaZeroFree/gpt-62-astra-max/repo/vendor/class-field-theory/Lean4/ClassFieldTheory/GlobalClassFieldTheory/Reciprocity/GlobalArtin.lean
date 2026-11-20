@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -60,27 +55,24 @@ theorem globalArtinMonoidHom_continuous :
         (K := K) (L := L)) :=
   (infinitePlaceGlobalArtinMonoidHom_continuous
     (K := K) (L := L)).mul
-      (finitePlaceGlobalArtinMonoidHom_continuous
-        (K := K) (L := L))
+      (finitePlaceGlobalArtinMonoidHom_continuous)
 
 /-- The preliminary global Artin symbol is the product of its actual
 archimedean and finite local factors. -/
 theorem globalArtinMonoidHom_apply
     (a : IdeleGroup K) :
-    globalArtinMonoidHom (K := K) (L := L) a =
+    globalArtinMonoidHom (L := L) a =
       (∏ v : InfinitePlace K,
-        chosenInfinitePlaceArtinMonoidHom
-          (K := K) (L := L) v
+        chosenInfinitePlaceArtinMonoidHom (L := L) v
           (IdeleGroup.infiniteComponent v a)) *
       ∏ᶠ v : HeightOneSpectrum (𝓞 K),
-        chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) v
+        chosenFinitePlaceArtinMonoidHom (L := L) v
           (IdeleGroup.finiteComponent v a) := by
   change
     infinitePlaceGlobalArtinMonoidHom
-          (K := K) (L := L) a *
+            a *
         finitePlaceGlobalArtinMonoidHom
-          (K := K) (L := L) a = _
+            a = _
   unfold infinitePlaceGlobalArtinMonoidHom
   rw [MonoidHom.finsetProd_apply]
   rfl
@@ -91,19 +83,13 @@ this is exactly the corresponding local reciprocity kernel theorem. -/
 @[simp]
 theorem globalArtinMonoidHom_relativeIdeleNorm_eq_one
     (z : RelativeIdeleGroup K L) :
-    globalArtinMonoidHom
-        (K := K) (L := L)
+    globalArtinMonoidHom (L := L)
         (RelativeIdeleGroup.norm K L z) =
       1 := by
   rw [globalArtinMonoidHom_apply]
-  have hnorm :
-      RelativeIdeleGroup.norm K L z ∈
-        (RelativeIdeleGroup.norm K L).range :=
-    ⟨z, rfl⟩
   have hinfinite :
       (∏ v : InfinitePlace K,
-        chosenInfinitePlaceArtinMonoidHom
-          (K := K) (L := L) v
+        chosenInfinitePlaceArtinMonoidHom (L := L) v
           (IdeleGroup.infiniteComponent v
             (RelativeIdeleGroup.norm K L z))) =
         1 := by
@@ -111,15 +97,14 @@ theorem globalArtinMonoidHom_relativeIdeleNorm_eq_one
     intro v _
     apply MonoidHom.mem_ker.mp
     rw [chosenInfinitePlaceArtinMonoidHom_ker
-      (K := K) (L := L) v]
+        v]
     exact
       _root_.infiniteComponent_mem_infiniteTensorNormSubgroup_of_mem_relativeNorm_range
-          (K := K) (L := L)
-          (RelativeIdeleGroup.norm K L z) hnorm v
+
+          (RelativeIdeleGroup.norm K L z) (⟨z, rfl⟩) v
   have hfinite :
       (∏ᶠ v : HeightOneSpectrum (𝓞 K),
-        chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) v
+        chosenFinitePlaceArtinMonoidHom (L := L) v
           (IdeleGroup.finiteComponent v
             (RelativeIdeleGroup.norm K L z))) =
         1 := by
@@ -127,10 +112,10 @@ theorem globalArtinMonoidHom_relativeIdeleNorm_eq_one
     intro v
     apply MonoidHom.mem_ker.mp
     rw [chosenFinitePlaceArtinMonoidHom_ker
-      (K := K) (L := L) v]
+        v]
     exact
       _root_.relativeIdeleNorm_finiteComponent_mem_chosenLocalNormSubgroup
-          (K := K) (L := L) v z
+            v z
   rw [hinfinite, hfinite, mul_one]
 
 /-- The preliminary global Artin homomorphism kills the ordinary idele
@@ -140,128 +125,21 @@ the definition of `IdeleGroup.norm`. -/
 @[simp]
 theorem globalArtinMonoidHom_ideleNorm_eq_one
     (a : IdeleGroup L) :
-    globalArtinMonoidHom
-        (K := K) (L := L)
+    globalArtinMonoidHom (L := L)
         (IdeleGroup.norm K L a) =
       1 := by
   change
     globalArtinMonoidHom
-        (K := K) (L := L)
+
         (RelativeIdeleGroup.norm K L
           ((relativeIdeleBaseChangeMulEquiv
-            (K := K) (L := L)).symm a)) =
+             ).symm a)) =
       1
   exact
     globalArtinMonoidHom_relativeIdeleNorm_eq_one
-      (K := K) (L := L)
+
       ((relativeIdeleBaseChangeMulEquiv
-        (K := K) (L := L)).symm a)
-
-/-- The actual global Artin symbol after an ordinary idele norm, expanded
-simultaneously at all archimedean and finite places.  The factors are
-indexed by the genuine places upstairs, and use the ordinary LCFT field
-norm on the corresponding completions. -/
-theorem globalArtinMonoidHom_norm_eq_place_products
-    {M : Type}
-    [Field M] [NumberField M] [Algebra K M]
-    (a : IdeleGroup M) :
-    letI : ∀ W : InfinitePlace M,
-        W.1.LiesOver
-      (infinitePlaceBelow (K := K) W).1 :=
-      fun _ => ⟨rfl⟩
-    letI : ∀ W : HeightOneSpectrum (𝓞 M),
-        Algebra
-          ((finitePlaceBelow
-            (K := K) W).adicCompletion K)
-          (W.adicCompletion M) :=
-      fun W =>
-        (finitePlaceAdicCompletionMap
-          K M
-          (finitePlaceBelow (K := K) W)
-          ⟨W, rfl⟩).toAlgebra
-    globalArtinMonoidHom
-        (K := K) (L := L)
-        (IdeleGroup.norm K M a) =
-      (∏ W : InfinitePlace M,
-        chosenInfinitePlaceArtinMonoidHom
-          (K := K) (L := L)
-          (infinitePlaceBelow (K := K) W)
-          (LocalFieldTheory.normUnits
-            (infinitePlaceBelow
-              (K := K) W).Completion
-            W.Completion
-            (IdeleGroup.infiniteComponent W a))) *
-      ∏ᶠ W : HeightOneSpectrum (𝓞 M),
-        chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L)
-          (finitePlaceBelow (K := K) W)
-          (LocalFieldTheory.normUnits
-            ((finitePlaceBelow
-              (K := K) W).adicCompletion K)
-            (W.adicCompletion M)
-            (IdeleGroup.finiteComponent W a)) := by
-  classical
-  let : ∀ W : InfinitePlace M,
-      W.1.LiesOver
-        (infinitePlaceBelow (K := K) W).1 :=
-    fun _ => ⟨rfl⟩
-  let : ∀ W : HeightOneSpectrum (𝓞 M),
-      Algebra
-        ((finitePlaceBelow
-          (K := K) W).adicCompletion K)
-        (W.adicCompletion M) :=
-    fun W =>
-      (finitePlaceAdicCompletionMap
-        K M
-        (finitePlaceBelow (K := K) W)
-        ⟨W, rfl⟩).toAlgebra
-  change
-    infinitePlaceGlobalArtinMonoidHom
-        (K := K) (L := L)
-        (IdeleGroup.norm K M a) *
-      finitePlaceGlobalArtinMonoidHom
-        (K := K) (L := L)
-        (IdeleGroup.norm K M a) = _
-  rw [infinitePlaceGlobalArtinMonoidHom_norm_eq_prod,
-    finitePlaceGlobalArtinMonoidHom_norm_eq_finprod]
-
-omit [NumberField K] [NumberField L] in
-/-- In an actual field diamond `K ⊂ K'`, `L ⊂ L'`, the standard
-restriction map distributes over every local factor of the upper global
-Artin symbol.  The vertical Galois map is exactly the composite supplied
-by mathlib: first restrict scalars from `K'` to `K`, then restrict the
-automorphism of `L'` to the normal subextension `L`. -/
-theorem restrict_globalArtinMonoidHom_apply
-    {K' L' : Type}
-    [Field K'] [NumberField K']
-    [Field L'] [NumberField L']
-    [Algebra K K'] [Algebra K' L'] [Algebra K L']
-    [IsScalarTower K K' L']
-    [Algebra L L'] [IsScalarTower K L L']
-    [IsAbelianGalois K' L']
-    (a : IdeleGroup K') :
-    ((AlgEquiv.restrictNormalHom L).comp
-        (AlgEquiv.restrictScalarsHom K))
-        (globalArtinMonoidHom
-          (K := K') (L := L') a) =
-      (∏ v : InfinitePlace K',
-        ((AlgEquiv.restrictNormalHom L).comp
-            (AlgEquiv.restrictScalarsHom K))
-          (chosenInfinitePlaceArtinMonoidHom
-            (K := K') (L := L') v
-            (IdeleGroup.infiniteComponent v a))) *
-      ∏ᶠ v : HeightOneSpectrum (𝓞 K'),
-        ((AlgEquiv.restrictNormalHom L).comp
-            (AlgEquiv.restrictScalarsHom K))
-          (chosenFinitePlaceArtinMonoidHom
-            (K := K') (L := L') v
-            (IdeleGroup.finiteComponent v a)) := by
-  rw [globalArtinMonoidHom_apply, map_mul, map_prod]
-  rw [MonoidHom.map_finprod
-    ((AlgEquiv.restrictNormalHom L).comp
-      (AlgEquiv.restrictScalarsHom K))
-    (finitePlaceArtinFactors_hasFiniteMulSupport
-      (K := K') (L := L') a)]
+         ).symm a)
 
 /-- Norm--restriction for the actual global Artin homomorphism.  In a number-field
 diamond `K ⊂ K'`, `L ⊂ L'`, the ordinary idele norm and mathlib's standard
@@ -286,24 +164,18 @@ theorem globalArtinMonoidHom_norm_restriction
   change
     ((AlgEquiv.restrictNormalHom L).comp
         (AlgEquiv.restrictScalarsHom K))
-        (infinitePlaceGlobalArtinMonoidHom
-            (K := K') (L := L') a *
-          finitePlaceGlobalArtinMonoidHom
-            (K := K') (L := L') a) =
-      infinitePlaceGlobalArtinMonoidHom
-          (K := K) (L := L)
+        (infinitePlaceGlobalArtinMonoidHom (L := L') a *
+          finitePlaceGlobalArtinMonoidHom (L := L') a) =
+      infinitePlaceGlobalArtinMonoidHom (L := L)
           (IdeleGroup.norm K K' a) *
-        finitePlaceGlobalArtinMonoidHom
-          (K := K) (L := L)
+        finitePlaceGlobalArtinMonoidHom (L := L)
           (IdeleGroup.norm K K' a)
   rw [map_mul]
   have hinfinite :
       ((AlgEquiv.restrictNormalHom L).comp
           (AlgEquiv.restrictScalarsHom K))
-          (infinitePlaceGlobalArtinMonoidHom
-            (K := K') (L := L') a) =
-        infinitePlaceGlobalArtinMonoidHom
-          (K := K) (L := L)
+          (infinitePlaceGlobalArtinMonoidHom (L := L') a) =
+        infinitePlaceGlobalArtinMonoidHom (L := L)
           (IdeleGroup.norm K K' a) := by
     simpa only [MonoidHom.comp_apply] using
       DFunLike.congr_fun
@@ -313,10 +185,8 @@ theorem globalArtinMonoidHom_norm_restriction
   have hfinite :
       ((AlgEquiv.restrictNormalHom L).comp
           (AlgEquiv.restrictScalarsHom K))
-          (finitePlaceGlobalArtinMonoidHom
-            (K := K') (L := L') a) =
-        finitePlaceGlobalArtinMonoidHom
-          (K := K) (L := L)
+          (finitePlaceGlobalArtinMonoidHom (L := L') a) =
+        finitePlaceGlobalArtinMonoidHom (L := L)
           (IdeleGroup.norm K K' a) := by
     simpa only [MonoidHom.comp_apply] using
       DFunLike.congr_fun
@@ -342,14 +212,10 @@ theorem globalArtinMonoidHom_restrict_tower
   intro a
   change
     AlgEquiv.restrictNormalHom E
-        (infinitePlaceGlobalArtinMonoidHom
-            (K := K) (L := L) a *
-          finitePlaceGlobalArtinMonoidHom
-            (K := K) (L := L) a) =
-      infinitePlaceGlobalArtinMonoidHom
-          (K := K) (L := E) a *
-        finitePlaceGlobalArtinMonoidHom
-          (K := K) (L := E) a
+        (infinitePlaceGlobalArtinMonoidHom (L := L) a *
+          finitePlaceGlobalArtinMonoidHom (L := L) a) =
+      infinitePlaceGlobalArtinMonoidHom (L := E) a *
+        finitePlaceGlobalArtinMonoidHom (L := E) a
   rw [map_mul]
   congr 1
   · simp only [infinitePlaceGlobalArtinMonoidHom,
@@ -358,18 +224,15 @@ theorem globalArtinMonoidHom_restrict_tower
     apply Finset.prod_congr rfl
     intro v _
     exact DFunLike.congr_fun
-      (chosenInfinitePlaceArtinMonoidHom_restrict_tower
-        (K := K) (L := L) (E := E) v)
+      (chosenInfinitePlaceArtinMonoidHom_restrict_tower (L := L) (E := E) v)
       (IdeleGroup.infiniteComponent v a)
   · change
       AlgEquiv.restrictNormalHom E
           (∏ᶠ v : HeightOneSpectrum (𝓞 K),
-            chosenFinitePlaceArtinMonoidHom
-              (K := K) (L := L) v
+            chosenFinitePlaceArtinMonoidHom (L := L) v
               (IdeleGroup.finiteComponent v a)) =
         ∏ᶠ v : HeightOneSpectrum (𝓞 K),
-          chosenFinitePlaceArtinMonoidHom
-            (K := K) (L := E) v
+          chosenFinitePlaceArtinMonoidHom (L := E) v
             (IdeleGroup.finiteComponent v a)
     rw [MonoidHom.map_finprod
       (AlgEquiv.restrictNormalHom E)
@@ -388,24 +251,20 @@ local infinite-place Artin symbol. -/
 theorem globalArtinMonoidHom_infinitePlaceIdele
     (v : InfinitePlace K)
     (x : v.Completionˣ) :
-    globalArtinMonoidHom
-        (K := K) (L := L)
+    globalArtinMonoidHom (L := L)
         (infinitePlaceIdele v x) =
-      chosenInfinitePlaceArtinMonoidHom
-        (K := K) (L := L) v x := by
+      chosenInfinitePlaceArtinMonoidHom (L := L) v x := by
   classical
   change
     infinitePlaceGlobalArtinMonoidHom
-          (K := K) (L := L) (infinitePlaceIdele v x) *
+            (infinitePlaceIdele v x) *
         finitePlaceGlobalArtinMonoidHom
-          (K := K) (L := L) (infinitePlaceIdele v x) =
+            (infinitePlaceIdele v x) =
       chosenInfinitePlaceArtinMonoidHom
-        (K := K) (L := L) v x
+          v x
   have hinfinite :
-      infinitePlaceGlobalArtinMonoidHom
-          (K := K) (L := L) (infinitePlaceIdele v x) =
-        chosenInfinitePlaceArtinMonoidHom
-          (K := K) (L := L) v x := by
+      infinitePlaceGlobalArtinMonoidHom (L := L) (infinitePlaceIdele v x) =
+        chosenInfinitePlaceArtinMonoidHom (L := L) v x := by
     unfold infinitePlaceGlobalArtinMonoidHom
     rw [MonoidHom.finsetProd_apply, Finset.prod_eq_single v]
     · rw [MonoidHom.comp_apply,
@@ -417,13 +276,12 @@ theorem globalArtinMonoidHom_infinitePlaceIdele
     · intro hv
       exact (hv (Finset.mem_univ v)).elim
   have hfinite :
-      finitePlaceGlobalArtinMonoidHom
-          (K := K) (L := L) (infinitePlaceIdele v x) =
+      finitePlaceGlobalArtinMonoidHom (L := L) (infinitePlaceIdele v x) =
         1 := by
     change
       (∏ᶠ w : HeightOneSpectrum (𝓞 K),
         chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) w
+            w
           (IdeleGroup.finiteComponent w
             (infinitePlaceIdele v x))) = 1
     apply finprod_eq_one_of_forall_eq_one
@@ -437,18 +295,16 @@ finite-place Artin symbol. -/
 theorem globalArtinMonoidHom_finitePlaceIdele
     (v : HeightOneSpectrum (𝓞 K))
     (x : (v.adicCompletion K)ˣ) :
-    globalArtinMonoidHom
-        (K := K) (L := L)
+    globalArtinMonoidHom (L := L)
         (finitePlaceIdele v x) =
-      chosenFinitePlaceArtinMonoidHom
-        (K := K) (L := L) v x := by
+      chosenFinitePlaceArtinMonoidHom (L := L) v x := by
   change
     infinitePlaceGlobalArtinMonoidHom
-          (K := K) (L := L) (finitePlaceIdele v x) *
+            (finitePlaceIdele v x) *
         finitePlaceGlobalArtinMonoidHom
-          (K := K) (L := L) (finitePlaceIdele v x) =
+            (finitePlaceIdele v x) =
       chosenFinitePlaceArtinMonoidHom
-        (K := K) (L := L) v x
+          v x
   rw [infinitePlaceGlobalArtinMonoidHom_finitePlaceIdele,
     finitePlaceGlobalArtinMonoidHom_finitePlaceIdele, one_mul]
 
@@ -456,18 +312,17 @@ theorem globalArtinMonoidHom_finitePlaceIdele
 image of the global Artin homomorphism. -/
 theorem finitePlaceDecompositionGroup_le_globalArtinMonoidHom_range
     (v : HeightOneSpectrum (𝓞 K)) :
-    finitePlaceDecompositionGroup
-        (K := K) (L := L) v ≤
+    finitePlaceDecompositionGroup (L := L) v ≤
       (globalArtinMonoidHom
         (K := K) (L := L)).range := by
   rw [← chosenFinitePlaceArtinMonoidHom_range
-    (K := K) (L := L) v]
+      v]
   intro σ hσ
   rcases hσ with ⟨x, rfl⟩
   exact
     ⟨finitePlaceIdele v x,
       globalArtinMonoidHom_finitePlaceIdele
-        (K := K) (L := L) v x⟩
+          v x⟩
 
 /-- The actual global Artin homomorphism of a finite abelian extension
 of number fields is surjective. -/
@@ -478,48 +333,37 @@ theorem globalArtinMonoidHom_surjective :
   let H : Subgroup (L ≃ₐ[K] L) :=
     (globalArtinMonoidHom
       (K := K) (L := L)).range
-  let : H.Normal :=
+  let :=
     H.normal_of_isMulCommutative
-  let E : IntermediateField K L :=
+  let E :=
     IntermediateField.fixedField H
   let : IsGalois K E := by
     dsimp only [E]
     infer_instance
   have hsplit :
       ∀ v : HeightOneSpectrum (𝓞 K),
-        FinitePlaceSplitsCompletely
-          (K := K) (L := E) v := by
+        FinitePlaceSplitsCompletely (L := E) v := by
     intro v
     apply
-      _root_.finitePlaceSplitsCompletely_of_decompositionGroup_le_restrictNormalHom_ker
-          (K := K) (E := E) (N := L) v
+      _root_.finitePlaceSplitsCompletely_of_decompositionGroup_le_restrictNormalHom_ker (E := E) (N := L) v
     rw [IntermediateField.restrictNormalHom_ker]
     change
       finitePlaceDecompositionGroup
-          (K := K) (L := L) v ≤
+            v ≤
         (IntermediateField.fixedField H).fixingSubgroup
     rw [IntermediateField.fixingSubgroup_fixedField]
     simpa only [H] using
-      finitePlaceDecompositionGroup_le_globalArtinMonoidHom_range
-        (K := K) (L := L) v
+      finitePlaceDecompositionGroup_le_globalArtinMonoidHom_range (L := L) v
   have hfinite :
       {v : HeightOneSpectrum (𝓞 K) |
-        ¬ FinitePlaceSplitsCompletelyInExtension
-          (K := K) (E := E) v}.Finite := by
+        ¬ FinitePlaceSplitsCompletelyInExtension (E := E) v}.Finite := by
     apply Set.finite_empty.subset
     intro v hv
     exact
       (hv
         ((_root_.finitePlaceSplitsCompletely_iff_inExtension
-          (K := K) (E := E) v).mp
+            v).mp
             (hsplit v))).elim
-  have hdegree :
-      Module.finrank K E = 1 :=
-    Cohomology.finrank_eq_one_of_finite_nonSplittingPlaces
-      K E hfinite
-  have hEbot :
-      E = (⊥ : IntermediateField K L) :=
-    IntermediateField.finrank_eq_one_iff.mp hdegree
   have hHtop :
       H = (⊤ : Subgroup (L ≃ₐ[K] L)) := by
     calc
@@ -531,11 +375,12 @@ theorem globalArtinMonoidHom_surjective :
         congrArg
           (fun F : IntermediateField K L =>
             F.fixingSubgroup)
-          hEbot
+          (IntermediateField.finrank_eq_one_iff.mp (Cohomology.finrank_eq_one_of_finite_nonSplittingPlaces
+            K E hfinite))
       _ = ⊤ := by
         rw [IntermediateField.fixingSubgroup_bot]
   apply MonoidHom.range_eq_top.mp
-  simpa only [H] using hHtop
+  simpa using hHtop
 
 end Reciprocity
 end GlobalClassFieldTheory

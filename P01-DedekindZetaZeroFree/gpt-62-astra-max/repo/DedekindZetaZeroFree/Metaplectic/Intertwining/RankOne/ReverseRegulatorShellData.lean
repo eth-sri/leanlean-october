@@ -15,7 +15,7 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
 variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField F q)]
 
 def additiveParameter (r : ℂˣ) : ℂ :=
@@ -36,7 +36,7 @@ variable {H₀ D : Type} [Group H₀] [TopologicalSpace H₀] [IsTopologicalGrou
   [CommGroup D] [Finite D] [DecidableEq D]
 variable (T : LocalHeisenbergData H₀ D)
 variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
-variable (P : Polarization T)
+    (P : Polarization T)
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
 def actualSection (B : Binding F ζ hζ q A P)
@@ -66,25 +66,26 @@ def reverseRoot (B : Binding F ζ hζ q A P) (r : ℂˣ)
   normPower (LocalField F q) (v ^ 2) (-additiveParameter F q r) •
     centerTorus F ζ hζ q T A .minus (B.rootTorus v)
 
-def reverseIntegrand (I : IwasawaData A) (μ : Measure (LocalField F q))
-    (J : CenterStandardFamily F ζ hζ q T A I μ) (B : Binding F ζ hζ q A P)
-    (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
-    (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
-    (r : ℂˣ) (lam : ℂ) (h : H₀) (v : (LocalField F q)ˣ) : ℂ :=
+section
+
+variable (I : IwasawaData A) (μ : Measure (LocalField F q)) (J : CenterStandardFamily F ζ hζ q T A I μ)
+    (B : Binding F ζ hζ q A P) (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
+    (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ) (r : ℂˣ) (lam : ℂ)
+    (h : H₀)
+
+def reverseIntegrand (v : (LocalField F q)ˣ) : ℂ :=
   (B.eta (kappa F ζ hζ q v 0) : ℂ) *
     (reverseRoot F ζ hζ q T A P B r v
       ((forwardSection F ζ hζ q T A P I μ J B rep hrep d φ hφ hcφ r).val
         (openCoordinate F ζ hζ q (v : LocalField F q)))).val h *
     normPower (LocalField F q) v lam
 
-def H (I : IwasawaData A) (μ : Measure (LocalField F q))
-    (J : CenterStandardFamily F ζ hζ q T A I μ) (B : Binding F ζ hζ q A P)
-    (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
-    (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
-    (r : ℂˣ) (lam : ℂ) (h : H₀) : ℂ :=
+def H : ℂ :=
   ∫ v : (LocalField F q)ˣ,
     reverseIntegrand F ζ hζ q T A P I μ J B rep hrep d φ hφ hcφ r lam h v
       ∂multiplicativeMeasure F q μ
+
+end
 
 abbrev ShellNumerator := (ℤ × ℤ) →₀ ℂ
 

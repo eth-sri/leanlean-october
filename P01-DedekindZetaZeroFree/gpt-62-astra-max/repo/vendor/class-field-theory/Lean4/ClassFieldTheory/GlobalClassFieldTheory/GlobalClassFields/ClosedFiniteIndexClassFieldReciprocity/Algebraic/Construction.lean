@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -38,10 +32,7 @@ namespace GlobalClassFieldTheory
 namespace GlobalClassFields
 
 /-- Canonical class-group commutativity supplies normality of the defining subgroup. -/
-theorem closedFiniteIndexAlgebraicClassGroupIsMulCommutative
-    (F : Type) [Field F] [NumberField F] :
-    IsMulCommutative (IdeleClassGroup F) :=
-  IsMulCommutative.of_comm (fun a b => mul_comm a b)
+alias closedFiniteIndexAlgebraicClassGroupIsMulCommutative := GlobalClassFieldTheory.Reciprocity.realizedTowerIdeleClassIsMulCommutative
 
 attribute [local instance] closedFiniteIndexAlgebraicClassGroupIsMulCommutative
 

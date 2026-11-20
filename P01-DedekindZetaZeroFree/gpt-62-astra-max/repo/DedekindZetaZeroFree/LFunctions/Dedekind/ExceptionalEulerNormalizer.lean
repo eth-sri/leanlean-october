@@ -13,58 +13,63 @@ noncomputable section
 open scoped NumberField Topology
 open Filter IsDedekindDomain
 
- def principalCharacter (F : Type) [Field F] [NumberField F] :
+ section
+
+variable (F : Type) [Field F] [NumberField F]
+
+def principalCharacter :
     RayClassCharacter F (⊤ : Ideal (𝓞 F)) :=
   Classical.choose (PrincipalMu12Pointwise.principal_primitive_top_character_exists F)
 
- theorem principalCharacter_principal (F : Type) [Field F] [NumberField F] :
+ theorem principalCharacter_principal :
     (principalCharacter F).IsPrincipal :=
   (Classical.choose_spec
     (PrincipalMu12Pointwise.principal_primitive_top_character_exists F)).1
 
- theorem principalCharacter_primitive (F : Type) [Field F] [NumberField F] :
+ theorem principalCharacter_primitive :
     (principalCharacter F).IsPrimitive :=
   (Classical.choose_spec
     (PrincipalMu12Pointwise.principal_primitive_top_character_exists F)).2
 
-def principalData
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
+end
+
+section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+
+def principalData :
     PrincipalRayHeckeData F ⊤ (principalCharacter F) :=
   principalRayHeckeData  F (primitive12_totallyComplex F ζ hζ) ⊤ top_ne_bot
     (principalCharacter F) (principalCharacter_primitive F) (principalCharacter_principal F)
 
 def zetaRegularization
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (z : ℂ) : ℂ :=
   principalHeckeEntireRegularization F ⊤ (principalCharacter F)
     (principalData  F ζ hζ) z
 
 def zeta
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (z : ℂ) : ℂ :=
   zetaRegularization  F ζ hζ z / (z - 1)
 
 def exteriorZeta
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (S : Finset (HeightOneSpectrum (𝓞 F))) (z : ℂ) : ℂ :=
   zeta  F ζ hζ z * PositiveZetaResidue.exteriorEulerFactor F S z
 
 def exteriorRegularization
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (S : Finset (HeightOneSpectrum (𝓞 F))) (z : ℂ) : ℂ :=
   zetaRegularization  F ζ hζ z * PositiveZetaResidue.exteriorEulerFactor F S z
 
 def exceptionalNormalizer
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (S : Finset (HeightOneSpectrum (𝓞 F))) (s : ℂ) : ℂ :=
   exteriorZeta  F ζ hζ S (1 + 6 * s) /
     exteriorZeta  F ζ hζ S (2 + 6 * s)
 
 def exceptionalRegularization
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (S : Finset (HeightOneSpectrum (𝓞 F))) (s : ℂ) : ℂ :=
   exteriorRegularization  F ζ hζ S (1 + 6 * s) /
     (6 * exteriorZeta  F ζ hζ S (2 + 6 * s))
+
+end
 
 theorem actual_principal_continuation
 
@@ -76,8 +81,6 @@ theorem actual_principal_continuation
     Differentiable ℂ R ∧
     (∀ z : ℂ, z ≠ 1 → R z = (z - 1) * Z z) ∧
     (∀ z : ℂ, 0 < z.re → R z = P.R z) ∧
-    (∀ z : ℂ, 0 < z.re → z ≠ 1 → Z z = P.L z) ∧
-    (∀ z : ℂ, 1 < z.re → Z z = NumberField.dedekindZeta F z) ∧
     (∀ z : ℂ, 1 < z.re →
       HasSum (fun I : Ideal (𝓞 F) => (Ideal.absNorm I : ℂ) ^ (-z)) (Z z)) := by
   dsimp only
@@ -96,17 +99,13 @@ theorem actual_principal_continuation
   have hZ : MeromorphicOn (zeta  F ζ hζ) Set.univ := by
     exact (hR.differentiableOn.analyticOnNhd isOpen_univ).meromorphicOn.div
       ((analyticOnNhd_id.sub analyticOnNhd_const).meromorphicOn)
-  refine ⟨hZ, ?_, hR, ?_, hbridge, hL, ?_, ?_⟩
+  refine ⟨hZ, ?_, hR, ?_, hbridge, ?_⟩
   · intro z hz
     exact ((hR z).div (differentiableAt_id.sub_const 1)
       (sub_ne_zero.mpr (by simpa using hz))).differentiableWithinAt
   · intro z hz
     change R z = (z - 1) * (R z / (z - 1))
     field_simp
-  · intro z hz
-    rw [hL z (zero_lt_one.trans hz) (by intro h; rw [h] at hz; norm_num at hz)]
-    exact PositiveZetaResidue.principal_continuation_eq_dedekindZeta F
-      (principalCharacter F) (principalCharacter_principal F) P z hz
   · intro z hz
     rw [hL z (zero_lt_one.trans hz) (by intro h; rw [h] at hz; norm_num at hz)]
     convert P.series z hz using 1
@@ -123,7 +122,7 @@ theorem exterior_zeta_at_two_pos
     (S : Finset (HeightOneSpectrum (𝓞 F))) :
     (exteriorZeta  F ζ hζ S 2).im = 0 ∧
     0 < (exteriorZeta  F ζ hζ S 2).re := by
-  have hs := (actual_principal_continuation  F ζ hζ).2.2.2.2.2.2.2 2 (by norm_num)
+  have hs := (actual_principal_continuation F ζ hζ).2.2.2.2.2 2 (by norm_num)
   have hterm (I : Ideal (𝓞 F)) :
       (Ideal.absNorm I : ℂ) ^ (-(2 : ℂ)) = (((Ideal.absNorm I : ℝ) ^ 2)⁻¹ : ℝ) := by
     simp [Complex.cpow_neg, Complex.cpow_two]
@@ -171,11 +170,7 @@ theorem exterior_positive_simple_residue
     let RS := exteriorRegularization  F ζ hζ S
     let rS := PositiveZetaResidue.exteriorResidue F S
     MeromorphicOn ZS Set.univ ∧
-    0 < rS ∧ RS 1 = (rS : ℂ) ∧
-    (∃ V : Set ℂ, IsOpen V ∧ (1 : ℂ) ∈ V ∧ DifferentiableOn ℂ RS V ∧
-      (∀ z ∈ V, z ≠ 1 → RS z = (z - 1) * ZS z)) ∧
-    meromorphicOrderAt ZS 1 = (-1 : WithTop ℤ) ∧
-    Tendsto (fun z : ℂ => (z - 1) * ZS z) (𝓝[≠] 1) (𝓝 (rS : ℂ)) := by
+    0 < rS ∧ RS 1 = (rS : ℂ) := by
   dsimp only
   let ZS := exteriorZeta  F ζ hζ S
   let RS := exteriorRegularization  F ζ hζ S
@@ -200,13 +195,7 @@ theorem exterior_positive_simple_residue
       inv_mul_cancel₀ hn, one_mul]
   have han : AnalyticAt ℂ RS 1 := hg.differentiableOn.analyticOnNhd isOpen_univ 1 trivial
   have hne : RS 1 ≠ 0 := by rw [hv]; exact_mod_cast hp.ne'
-  refine ⟨hm, hp, hv, ⟨Set.univ, isOpen_univ, trivial, hg.differentiableOn,
-    fun z _ hz => heq z hz⟩, ?_, ?_⟩
-  · exact (meromorphicOrderAt_eq_int_iff (hm 1 trivial)).mpr ⟨RS, han, hne, hev⟩
-  · rw [← hv]
-    apply (hg.continuous.continuousAt.tendsto.mono_left nhdsWithin_le_nhds).congr'
-    filter_upwards [self_mem_nhdsWithin] with z hz
-    exact heq z (by simpa using hz)
+  refine ⟨hm, hp, hv⟩
 
 theorem positive_simple_exceptional_normalizer
 
@@ -277,7 +266,7 @@ theorem positive_simple_exceptional_normalizer
     field_simp
   have hv : gS 0 = (rS : ℂ) / (6 * ZS 2) := by
     simpa [gS, exceptionalRegularization, rS] using
-      congrArg (fun w : ℂ => w / (6 * ZS 2)) hr.2.2.1
+      congrArg (fun w : ℂ => w / (6 * ZS 2)) hr.2.2
   have hreal : ZS 2 = ((ZS 2).re : ℂ) := by
     apply Complex.ext
     · simp

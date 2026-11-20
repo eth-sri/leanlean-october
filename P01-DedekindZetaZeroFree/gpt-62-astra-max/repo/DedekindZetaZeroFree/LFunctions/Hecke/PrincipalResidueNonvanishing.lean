@@ -10,26 +10,29 @@ namespace DedekindZetaZeroFree.PrincipalMellinComparison
 open scoped NumberField Topology
 open Filter ExteriorIdealEuler
 
-private theorem full_sum_eq_zeta
-    (F : Type) [Field F] [NumberField F] (s : ℂ) (hs : 1 < s.re) :
-    (∑' I : ExteriorIdeal (⊤ : Ideal (𝓞 F)), summand (fun _ => 1) s I) =
+variable (F : Type) [Field F] [NumberField F]
+
+local notation "IntegerIdeal" => Ideal (𝓞 F)
+
+private theorem full_sum_eq_zeta (s : ℂ) (hs : 1 < s.re) :
+    (∑' I : ExteriorIdeal (⊤ : IntegerIdeal), summand (fun _ => 1) s I) =
       NumberField.dedekindZeta F s := by
+  let ExteriorIdeal₀ := ExteriorIdeal (⊤ : IntegerIdeal)
   classical
-  have hsum := (summable_norm_summand (fun _ : ExteriorIdeal (⊤ : Ideal (𝓞 F)) => 1)
-    (constant_one_isCoefficient _) s hs).of_norm
-  have hg := hsum.hasSum.tsum_fiberwise (fun I => Ideal.absNorm I.val)
+  have hg := ((summable_norm_summand (fun _ : ExteriorIdeal₀ => 1)
+    (constant_one_isCoefficient _) s hs).of_norm).hasSum.tsum_fiberwise (fun I => Ideal.absNorm I.val)
   have hf (n : ℕ) :
-      (∑' I : {I : ExteriorIdeal (⊤ : Ideal (𝓞 F)) // Ideal.absNorm I.val = n},
+      (∑' I : {I : ExteriorIdeal₀ // Ideal.absNorm I.val = n},
         summand (fun _ => 1) s I.val) =
-      LSeries.term (fun n => (Nat.card {I : Ideal (𝓞 F) // Ideal.absNorm I = n} : ℂ)) s n := by
+      LSeries.term (fun n => (Nat.card {I : IntegerIdeal // Ideal.absNorm I = n} : ℂ)) s n := by
     by_cases hn : n = 0
     · subst n
-      have hnone : IsEmpty {I : ExteriorIdeal (⊤ : Ideal (𝓞 F)) // Ideal.absNorm I.val = 0} :=
+      have hnone : IsEmpty {I : ExteriorIdeal₀ // Ideal.absNorm I.val = 0} :=
         ⟨fun I => I.val.property.1 (Ideal.absNorm_eq_zero_iff.mp I.property)⟩
       letI := hnone
       simp [LSeries.term]
-    · let e : {I : ExteriorIdeal (⊤ : Ideal (𝓞 F)) // Ideal.absNorm I.val = n} ≃
-          {I : Ideal (𝓞 F) // Ideal.absNorm I = n} :=
+    · let e : {I : ExteriorIdeal₀ // Ideal.absNorm I.val = n} ≃
+          {I : IntegerIdeal // Ideal.absNorm I = n} :=
         { toFun := fun I => ⟨I.val.val, I.property⟩
           invFun := fun I => ⟨⟨I.val, by
             constructor
@@ -39,33 +42,29 @@ private theorem full_sum_eq_zeta
             · simp⟩, I.property⟩
           left_inv := fun _ => rfl
           right_inv := fun _ => rfl }
-      have ht (I : {I : ExteriorIdeal (⊤ : Ideal (𝓞 F)) // Ideal.absNorm I.val = n}) :
+      have ht (I : {I : ExteriorIdeal₀ // Ideal.absNorm I.val = n}) :
           summand (fun _ => 1) s I.val = (n : ℂ) ^ (-s) := by
         simp [summand, I.property]
       simp_rw [ht]
       rw [tsum_const, nsmul_eq_mul, Nat.card_congr e, LSeries.term_of_ne_zero hn]
       simp [Complex.cpow_neg, div_eq_mul_inv]
-  change HasSum (fun n => ∑' I : {I : ExteriorIdeal (⊤ : Ideal (𝓞 F)) //
+  change HasSum (fun n => ∑' I : {I : ExteriorIdeal₀ //
     Ideal.absNorm I.val = n}, summand (fun _ => 1) s I.val) _ at hg
   simpa only [hf, NumberField.dedekindZeta, LSeries] using hg.tsum_eq.symm
 
 theorem principal_regularization_ne_zero
-    (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+    (m : IntegerIdeal) (hm : m ≠ ⊥)
     (η : RayClassCharacter F m) (hη : η.IsPrincipal)
     (P : PrincipalRayHeckeData F m η) : P.R 1 ≠ 0 := by
+  let ExteriorIdeal₀ := ExteriorIdeal (⊤ : IntegerIdeal)
   classical
-  let Q := PrimeIndex (⊤ : Ideal (𝓞 F))
+  let Q := PrimeIndex (⊤ : IntegerIdeal)
   let bad : Set Q := {p | p.val.val ⊔ m ≠ ⊤}
   have hbad_le (p : Q) (hp : p ∈ bad) : m ≤ p.val.val := by
-    have hmax := (Ideal.isPrime_of_prime p.property).isMaximal p.val.property.1
-    have heq := hmax.eq_of_le hp le_sup_left
-    rw [heq]
+    rw [(((Ideal.isPrime_of_prime p.property).isMaximal p.val.property.1).eq_of_le hp le_sup_left)]
     exact le_sup_right
   have hbad_fin : bad.Finite := by
-    have hinj : Function.Injective (fun p : Q => p.val.val) := by
-      intro p q h
-      exact Subtype.ext (Subtype.ext h)
+    have hinj : Function.Injective (fun p : Q => p.val.val) := fun p q h => Subtype.ext (Subtype.ext h)
     apply ((Ideal.finite_setOfPred_absNorm_le (S := 𝓞 F) (Ideal.absNorm m)).preimage
       hinj.injOn).subset
     intro p hp
@@ -73,21 +72,21 @@ theorem principal_regularization_ne_zero
       (Ideal.absNorm_dvd_absNorm_of_le (hbad_le p hp))
   let B : Finset Q := hbad_fin.toFinset
   let e : ℂ → ℂ := fun s => ∏ p ∈ B, (1 - (Ideal.absNorm p.val.val : ℂ) ^ (-s))
-  have hc : IsCoefficient (fun I : ExteriorIdeal (⊤ : Ideal (𝓞 F)) => η I.val) := by
-    have hc' := zeroMaskedRay_isCoefficient (cS := (⊤ : Ideal (𝓞 F))) m hm η ⊤
-    have hf : zeroMaskedRayCoefficient (cS := (⊤ : Ideal (𝓞 F))) η ⊤ =
+  have hc : IsCoefficient (fun I : ExteriorIdeal₀ => η I.val) := by
+    have hc' := zeroMaskedRay_isCoefficient (cS := (⊤ : IntegerIdeal)) m hm η ⊤
+    have hf : zeroMaskedRayCoefficient (cS := (⊤ : IntegerIdeal)) η ⊤ =
         (fun I => η I.val) := by
       funext I
       simp [zeroMaskedRayCoefficient]
     rw [hf] at hc'
     exact hc'
   have hseries (s : ℂ) (hs : 1 < s.re) :
-      (∑' I : ExteriorIdeal (⊤ : Ideal (𝓞 F)), summand (fun I => η I.val) s I) = P.L s := by
-    rw [show (∑' I : ExteriorIdeal (⊤ : Ideal (𝓞 F)), summand (fun I => η I.val) s I) =
-      ∑' I : Ideal (𝓞 F), η I * (Ideal.absNorm I : ℂ) ^ (-s) from ?_]
+      (∑' I : ExteriorIdeal₀, summand (fun I => η I.val) s I) = P.L s := by
+    rw [show (∑' I : ExteriorIdeal₀, summand (fun I => η I.val) s I) =
+      ∑' I : IntegerIdeal, η I * (Ideal.absNorm I : ℂ) ^ (-s) from ?_]
     · exact (P.series s hs).tsum_eq
     · unfold summand ExteriorIdeal
-      apply tsum_subtype_eq_of_support_subset (s := {I : Ideal (𝓞 F) | I ≠ ⊥ ∧ I ⊔ ⊤ = ⊤})
+      apply tsum_subtype_eq_of_support_subset (s := {I : IntegerIdeal | I ≠ ⊥ ∧ I ⊔ ⊤ = ⊤})
         (f := fun I => η I * (Ideal.absNorm I : ℂ) ^ (-s))
       intro I hI
       constructor
@@ -96,10 +95,10 @@ theorem principal_regularization_ne_zero
         simp [h, (η.eq_zero_iff' ⊥).mpr (Or.inl rfl)]
       · simp
   have heq (s : ℂ) (hs : 1 < s.re) : P.L s = NumberField.dedekindZeta F s * e s := by
-    have hmprod := (exterior_ideal_euler (fun I : ExteriorIdeal (⊤ : Ideal (𝓞 F)) => η I.val)
+    have hmprod := (exterior_ideal_euler (fun I : ExteriorIdeal₀ => η I.val)
       hc s hs).2.2.2
     rw [hseries s hs] at hmprod
-    have hzprod := (exterior_ideal_euler (fun _ : ExteriorIdeal (⊤ : Ideal (𝓞 F)) => 1)
+    have hzprod := (exterior_ideal_euler (fun _ : ExteriorIdeal₀ => 1)
       (constant_one_isCoefficient _) s hs).2.2.2
     rw [full_sum_eq_zeta F s hs] at hzprod
     let f : Q → ℂ := fun p => if p ∈ B then 1 - (Ideal.absNorm p.val.val : ℂ) ^ (-s) else 1
@@ -110,7 +109,7 @@ theorem principal_regularization_ne_zero
         (fun p : Q => 1 - primeTerm (fun _ => 1) s p) := by
       funext p
       by_cases hp : p ∈ B
-      · have hp' : p.val.val ⊔ m ≠ ⊤ := hbad_fin.mem_toFinset.mp hp
+      · have hp' := hbad_fin.mem_toFinset.mp hp
         have hzero := (η.eq_zero_iff' p.val.val).mpr (Or.inr hp')
         simp [primeTerm, summand, f, hp, hzero]
       · have hp' : p.val.val ⊔ m = ⊤ := by
@@ -136,10 +135,8 @@ theorem principal_regularization_ne_zero
     left
     exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr p.val.property.1)
   have hlim : Tendsto (fun x : ℝ => P.R (x : ℂ)) (𝓝[>] 1) (𝓝 (P.R 1)) := by
-    have ho : IsOpen {s : ℂ | 0 < s.re} := isOpen_lt continuous_const Complex.continuous_re
-    have h := (P.R_holo.continuousOn.continuousAt (ho.mem_nhds (by norm_num :
-      (1 : ℂ) ∈ {s : ℂ | 0 < s.re}))).tendsto.comp Complex.continuous_ofReal.continuousAt.tendsto
-    simpa only [Function.comp_def, Complex.ofReal_one] using h.mono_left nhdsWithin_le_nhds
+    simpa only [Function.comp_def, Complex.ofReal_one] using ((P.R_holo.continuousOn.continuousAt ((isOpen_lt continuous_const Complex.continuous_re).mem_nhds (by norm_num :
+      (1 : ℂ) ∈ {s : ℂ | 0 < s.re}))).tendsto.comp Complex.continuous_ofReal.continuousAt.tendsto).mono_left nhdsWithin_le_nhds
   have hr := (NumberField.tendsto_sub_one_mul_dedekindZeta_nhdsGT F).mul
     ((hecont.comp Complex.continuous_ofReal).continuousAt.tendsto.mono_left nhdsWithin_le_nhds)
   have hv : P.R 1 = (NumberField.dedekindZeta_residue F : ℂ) * e 1 := by
@@ -164,7 +161,6 @@ theorem principal_regularization_ne_zero
     simp only [Complex.cpow_neg, Complex.cpow_one, sub_ne_zero]
     intro h
     apply hn
-    have hh := congrArg Inv.inv h
-    simpa using hh.symm
+    simpa using (congrArg Inv.inv h).symm
 
 end DedekindZetaZeroFree.PrincipalMellinComparison

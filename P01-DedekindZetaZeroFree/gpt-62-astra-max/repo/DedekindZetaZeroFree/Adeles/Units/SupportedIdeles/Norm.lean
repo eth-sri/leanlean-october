@@ -31,7 +31,7 @@ theorem finite_norm (S : Finset (HeightOneSpectrum (𝓞 F))) (a : FiniteIdeleGr
   rw [FiniteIdeleGroup.absoluteNorm_apply, Finsupp.prod]
   simp only [Units.coe_prod, Units.val_zpow_eq_zpow_val, NNReal.coe_prod, NNReal.coe_zpow]
   simp_rw [local_norm, zpow_neg]
-  rw [← Finset.prod_subtype S (p := fun v => v ∈ S) (by simp)
+  rw [← Finset.prod_subtype S (by simp)
     (fun v => (((FiniteIdeleGroup.primeNorm v : ℝ≥0) : ℝ) ^
       (FiniteIdeleGroup.localOrder v (a v)).toAdd)⁻¹)]
   rw [Finset.prod_inv_distrib]

@@ -36,7 +36,7 @@ theorem tupleWord_sum_pure (s : ℝ) (w : List (MatrixLetter ι))
   induction w generalizing a with
   | nil => rfl
   | cons b w hw =>
-    let h : κ → ι → PrincipalSeries s := fun j i =>
+    let h := fun j i =>
       CurrentComplexBoundary.matrixWord s (slotWords i w) (f j i)
     change deriv (fun t : ℝ => tupleWord w _ _) 0 = _
     simp_rw [hw]

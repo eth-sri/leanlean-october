@@ -16,8 +16,8 @@ open KPAdelicCoverRestrictedProduct
 open KPContActualSphericalRightFieldIdentification
 open KPActualReflectionData.LiteralProductEvaluator
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def rawBasisExponential (w : InfinitePlace F) (b : Fin 6) (t : ℝ) :
     KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (.inl w) :=

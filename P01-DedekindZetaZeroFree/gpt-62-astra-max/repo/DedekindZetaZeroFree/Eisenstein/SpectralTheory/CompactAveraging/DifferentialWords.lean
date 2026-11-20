@@ -12,7 +12,7 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualAverageWord
 open KPLiteralRaw KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation
 open KPGlobalResidualConstruction KPContActualSphericalRightFieldIdentification
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming native_word_chart_jets → native_word_chart_jets
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir (native_word_chart_jets)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -28,7 +28,6 @@ theorem translated_word_continuous
   letI : IsFiniteMeasureOnCompacts μ := ⟨fun _ _ => measure_lt_top μ _⟩
   obtain ⟨m,c,j,hword⟩ := native_word_chart_jets F ζ hζ w
   let D := archDomain F
-  have hD : IsOpen D := KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F
   have hb : archBase F ∈ D := by simp [D, archBase, archDomain]
   have hs (k : K) : ∀ a, ContDiffOn ℝ (⊤ : ℕ∞)
       (fun x => u ((a*archChart F ζ hζ x)*k.val)) D :=
@@ -36,15 +35,13 @@ theorem translated_word_continuous
   let J (i : Fin m) (k : K) := iteratedFDeriv ℝ (j i).1
     (fun x => u ((g*archChart F ζ hζ x)*k.val)) (archBase F) (j i).2
   have hc (i : Fin m) : Continuous (J i) := by
-    have hj := ArchRegularity.continuous_parameter_arch_spatial_jets
-      F ζ hζ u hu g (fun k : K => k.val) continuous_subtype_val (j i).1
     have hh : Continuous (fun k : K => iteratedFDeriv ℝ (j i).1
         (fun x => u ((g*archChart F ζ hζ x)*k.val)) (archBase F)) := by
       rw [← continuousOn_univ]
-      exact hj.comp (continuous_const.prodMk continuous_id).continuousOn
-        (by intro k hk; exact ⟨hb,hk⟩)
-    have hv := hh.eval_const (j i).2
-    simpa only [J,iteratedFDerivWithin_of_isOpen _ hD hb] using hv
+      exact (ArchRegularity.continuous_parameter_arch_spatial_jets
+        F ζ hζ u hu g (fun k : K => k.val) continuous_subtype_val (j i).1).comp (continuous_const.prodMk continuous_id).continuousOn
+        (fun k hk => ⟨hb,hk⟩)
+    simpa using (hh.eval_const (j i).2)
   have hfun : (fun k : K => actualRightWord F ζ hζ w (fun a => u (a*k.val)) g) =
       fun k => ∑ i, c i * J i k := by
     funext k
@@ -62,25 +59,22 @@ theorem word_average
   letI : IsFiniteMeasureOnCompacts μ := ⟨fun _ _ => measure_lt_top μ _⟩
   obtain ⟨m,c,j,hword⟩ := native_word_chart_jets F ζ hζ w
   let D := archDomain F
-  have hD : IsOpen D := KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F
+  have hD := KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F
   have hb : archBase F ∈ D := by simp [D, archBase, archDomain]
-  have hav := (ResidualRawAverage.average_smooth F ζ hζ K hK μ u hu).2.1
-  rw [hword _ hav]
+  rw [hword _ ((ResidualRawAverage.average_smooth F ζ hζ K hK μ u hu).2.1)]
   have hs (k : K) : ∀ a, ContDiffOn ℝ (⊤ : ℕ∞)
       (fun x => u ((a*archChart F ζ hζ x)*k.val)) D :=
     fun a => ArchRegularity.right_translate_arch_slice_smooth F ζ hζ u hu a k.val
   let J (i : Fin m) (k : K) := iteratedFDeriv ℝ (j i).1
     (fun x => u ((g*archChart F ζ hζ x)*k.val)) (archBase F) (j i).2
   have hc (i : Fin m) : Continuous (J i) := by
-    have hj := ArchRegularity.continuous_parameter_arch_spatial_jets
-      F ζ hζ u hu g (fun k : K => k.val) continuous_subtype_val (j i).1
     have hh : Continuous (fun k : K => iteratedFDeriv ℝ (j i).1
         (fun x => u ((g*archChart F ζ hζ x)*k.val)) (archBase F)) := by
       rw [← continuousOn_univ]
-      exact hj.comp (continuous_const.prodMk continuous_id).continuousOn
-        (by intro k hk; exact ⟨hb,hk⟩)
-    have hv := hh.eval_const (j i).2
-    simpa only [J,iteratedFDerivWithin_of_isOpen _ hD hb] using hv
+      exact (ArchRegularity.continuous_parameter_arch_spatial_jets
+        F ζ hζ u hu g (fun k : K => k.val) continuous_subtype_val (j i).1).comp (continuous_const.prodMk continuous_id).continuousOn
+        (fun k hk => ⟨hb,hk⟩)
+    simpa using (hh.eval_const (j i).2)
   have hi (i : Fin m) : Integrable (J i) μ :=
     (hc i).integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
   have he (i : Fin m) : iteratedFDeriv ℝ (j i).1
@@ -92,11 +86,10 @@ theorem word_average
     simp_rw [iteratedFDerivWithin_of_isOpen (𝕜 := ℝ) (s := archDomain F) (j i).1 hD hb] at hh
     change iteratedFDeriv ℝ (j i).1 (fun x => ∫ k:K,u ((g*archChart F ζ hζ x)*k.val) ∂μ) (archBase F) (j i).2 = _
     rw [hh,ContinuousMultilinearMap.integral_apply]
-    · have hj := ArchRegularity.continuous_parameter_arch_spatial_jets F ζ hζ u hu g (fun k:K => k.val) continuous_subtype_val (j i).1
-      have ht : Continuous (fun k:K => iteratedFDeriv ℝ (j i).1 (fun x => u ((g*archChart F ζ hζ x)*k.val)) (archBase F)) := by
+    · have ht : Continuous (fun k:K => iteratedFDeriv ℝ (j i).1 (fun x => u ((g*archChart F ζ hζ x)*k.val)) (archBase F)) := by
         rw [← continuousOn_univ]
-        exact hj.comp (continuous_const.prodMk continuous_id).continuousOn (by intro k hk; exact ⟨hb,hk⟩)
-      simpa only [iteratedFDerivWithin_of_isOpen _ hD hb] using ht.integrable_of_hasCompactSupport (μ:=μ) (HasCompactSupport.of_compactSpace _)
+        exact (ArchRegularity.continuous_parameter_arch_spatial_jets F ζ hζ u hu g (fun k:K => k.val) continuous_subtype_val (j i).1).comp (continuous_const.prodMk continuous_id).continuousOn (fun k hk => ⟨hb,hk⟩)
+      simpa using ht.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
   simp_rw [he]
   simp_rw [← integral_const_mul]
   rw [← integral_finsetSum _ (fun i _ => (hi i).const_mul (c i))]

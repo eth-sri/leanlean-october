@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -67,11 +63,7 @@ theorem rationalTowerRelativeIdeleClass_fixed_of_directLimit_fixed
     rw [IntermediateField.mem_fixingSubgroup_iff]
     intro y hy
     let yK : K := ⟨y, hy⟩
-    let yU : U := algebraMap K U yK
-    have hη : η yU = yU := by
-      exact η.commutes yK
-    have hres :=
-      DFunLike.congr_fun hσU yU
+    let yU := algebraMap K U yK
     calc
       σ y =
           σ ((yU : U) : SeparableClosure ℚ) := by
@@ -81,20 +73,17 @@ theorem rationalTowerRelativeIdeleClass_fixed_of_directLimit_fixed
             SeparableClosure ℚ) :=
         (AlgEquiv.restrictNormal_commutes σ U yU).symm
       _ = ((τ yU : U) : SeparableClosure ℚ) :=
-        congrArg Subtype.val hres
+        congrArg Subtype.val (DFunLike.congr_fun hσU yU)
       _ = ((η yU : U) : SeparableClosure ℚ) := rfl
       _ = ((yU : U) : SeparableClosure ℚ) :=
-        congrArg Subtype.val hη
+        congrArg Subtype.val (η.commutes yK)
       _ = y :=
         h_algebraMap yK
   have hzσ := hz_fixed σ hσK
   rw [hzU, DirectLimit.smul_def] at hzσ
-  have hdQ :
-      (AlgEquiv.restrictNormalHom U σ) • d = d :=
-    (rationalRelativeIdeleClassToDirectLimit_injective U) hzσ
   have hdτ : τ • d = d := by
     rw [← hσU]
-    exact hdQ
+    exact ((rationalRelativeIdeleClassToDirectLimit_injective U) hzσ)
   calc
     η •
         towerRelativeIdeleClassBaseChangeMulEquiv ℚ K U
@@ -192,9 +181,7 @@ theorem rationalIntermediateIdeleClassEquivGaloisFixed_coe
         RelativeIdeleGroup.galoisFixedClassSubgroup K U) :
       RelativeIdeleGroup.ClassGroup K U) =
         RelativeIdeleGroup.classInclusion K U q := by
-  let :
-      MulDistribMulAction (U ≃ₐ[K] U)
-        (RelativeIdeleGroup.ClassGroup K U) :=
+  let :=
     RelativeIdeleGroup.Cohomology.ideleClassMulDistribMulAction K U
   change
     ((RelativeIdeleGroup.Cohomology.baseIdeleClassEquivFixed K U q :
@@ -205,7 +192,6 @@ theorem rationalIntermediateIdeleClassEquivGaloisFixed_coe
         RelativeIdeleGroup.classInclusion K U q
   exact
     RelativeIdeleGroup.Cohomology.baseIdeleClassEquivFixed_coe K U q
-
 
 end Reciprocity
 end GlobalClassFieldTheory

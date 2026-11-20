@@ -44,12 +44,6 @@ omit [TopologicalSpace G] in
 theorem conjugate_apply (g : G) : conjugate e π g = conjCLM e (π g) :=
   (rfl)
 
-omit [TopologicalSpace G] in
-
-@[simp]
-theorem conjugate_conjugate : conjugate e (conjugate e π) = π :=
-  DFunLike.ext _ _ fun g ↦ by simp
-
 theorem continuous_conjugate (hπ : Continuous π) : Continuous (conjugate e π) :=
   (lipschitzWith_one_conjCLM e).continuous.comp hπ
 
@@ -57,8 +51,7 @@ theorem star_matrixCoeff_eq_matrixCoeff_conjugate (hπ : Continuous π) (v w : V
     star (matrixCoeff π hπ v w) =
       matrixCoeff (conjugate e π) (continuous_conjugate e π hπ)
         (conjugation e v) (conjugation e w) := by
-  ext g
-  simp [inner_conjugation_conjugation, RCLike.star_def]
+  ext <;> simp [inner_conjugation_conjugation]
 
 end ContRepresentation
 

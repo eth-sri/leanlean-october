@@ -11,8 +11,8 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.ThetaExpansion.ChamberPeriods
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 
 def archDiagonal (w : InfinitePlace F) (z : w.Completionˣ) : Group R :=
   KPRationalAdelicSplitting.pglA F R.A.zeta12 R.A.primitive_zeta12
@@ -48,15 +48,9 @@ theorem residue_integrable (C : JointForwardIdentitySources R N) (v : R.A.UnitQu
   rw [hunit, mul_one]
 
 theorem selected_compact_period_germ (C : JointForwardIdentitySources R N) :
-    (∀ v s, s ∈ Metric.ball (0 : ℂ) C.realization.radius → ∀ g,
-      Integrable (fun q => C.realization.cleared v s
-        (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g)) C.sources.dq) ∧
     (∀ v g, ContinuousAt (fun s => clearedPeriod C v s g) 0) := by
-  constructor
-  · intro v s hs g
-    exact DedekindZetaZeroFree.CompactPeriodAnalyticity.CompactPeriod.cleared_integrable C.realization v s hs g
-  · intro v g
-    exact DedekindZetaZeroFree.CompactPeriodAnalyticity.CompactPeriod.upper_cleared_continuousAt_zero C.realization v g
+  intro v g
+  exact DedekindZetaZeroFree.CompactPeriodAnalyticity.CompactPeriod.upper_cleared_continuousAt_zero C.realization v g
 
 end DedekindZetaZeroFree.ThetaExpansion.ChamberPeriods
 

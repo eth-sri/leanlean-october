@@ -15,7 +15,7 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.SourceTensor
 open KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 
 abbrev Core := RestrictedTensorSimple.Core (LocalFiber F ζ hζ P C)
   (localReference F ζ hζ P C) C.exceptional
@@ -27,9 +27,7 @@ def realization : Core F ζ hζ P C →ₗ[ℂ]
     (RestrictedTensorSimple.transition (LocalFiber F ζ hζ P C)
       (localReference F ζ hζ P C) C.exceptional)
     (fun s => finiteTensorRealization F ζ hζ P C s.val s.property)
-    (by
-      intro s t hst x
-      exact congrArg (fun l => l x)
+    (fun s t hst x => congrArg (fun l => l x)
         (tensor_insertion_compatible F ζ hζ P C s.val t.val s.property hst))
 
 @[simp] theorem realization_stage (s : RestrictedTensorSimple.Level C.exceptional)
@@ -41,7 +39,11 @@ def realization : Core F ζ hζ P C →ₗ[ℂ]
   unfold realization RestrictedTensorSimple.stageInclusion
   rw [Module.DirectLimit.lift_of]
 
-theorem evaluated_tail (raw : RestrictedCover F ζ hζ) :
+section
+
+variable (raw : RestrictedCover F ζ hζ)
+
+theorem evaluated_tail :
     ∀ᶠ q in Filter.cofinite,
       (LocalSeed.finite F ζ hζ P C q).val
         (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (raw (Sum.inr q))) =
@@ -63,16 +65,18 @@ theorem evaluated_tail (raw : RestrictedCover F ζ hζ) :
   rw [one_mul, LocalSeed.finite_one] at hf
   exact hf
 
-def evaluatedStage (raw : RestrictedCover F ζ hζ) :
+def evaluatedStage :
     RestrictedTensorSimple.Level C.exceptional :=
   ⟨C.exceptional ∪ (Filter.eventually_cofinite.mp (evaluated_tail F ζ hζ P C raw)).toFinset,
     Finset.subset_union_left⟩
 
-def evaluatedTensor (raw : RestrictedCover F ζ hζ) : Core F ζ hζ P C :=
+def evaluatedTensor : Core F ζ hζ P C :=
   RestrictedTensorSimple.stageInclusion (LocalFiber F ζ hζ P C)
     (localReference F ζ hζ P C) C.exceptional (evaluatedStage F ζ hζ P C raw)
     (PiTensorProduct.tprod ℂ (fun q => (LocalSeed.finite F ζ hζ P C q.val).val
       (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q.val) (raw (Sum.inr q.val)))))
+
+end
 
 theorem evaluatedTensor_one :
     realization F ζ hζ P C (evaluatedTensor F ζ hζ P C 1) =
@@ -113,26 +117,23 @@ theorem evaluatedTensor_stage (raw : RestrictedCover F ζ hζ)
     ⟨t.val ∪ s.val, t.property.trans Finset.subset_union_left⟩
   have htu : t ≤ u := Finset.subset_union_left
   have hsu : s ≤ u := Finset.subset_union_right
+  let stageInclusion₀ := RestrictedTensorSimple.stageInclusion (LocalFiber F ζ hζ P C) (localReference F ζ hζ P C) C.exceptional
   have hins (v : RestrictedTensorSimple.Level C.exceptional) (hv : v ≤ u)
       (htail : ∀ q, q ∉ v.val → (LocalSeed.finite F ζ hζ P C q).val
         (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (raw (Sum.inr q))) =
           localReference F ζ hζ P C q) :
-      RestrictedTensorSimple.stageInclusion (LocalFiber F ζ hζ P C)
-        (localReference F ζ hζ P C) C.exceptional v
+      stageInclusion₀ v
         (PiTensorProduct.tprod ℂ (fun q => (LocalSeed.finite F ζ hζ P C q.val).val
           (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q.val) (raw (Sum.inr q.val))))) =
-      RestrictedTensorSimple.stageInclusion (LocalFiber F ζ hζ P C)
-        (localReference F ζ hζ P C) C.exceptional u
+      stageInclusion₀ u
         (PiTensorProduct.tprod ℂ (fun q => (LocalSeed.finite F ζ hζ P C q.val).val
           (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q.val) (raw (Sum.inr q.val))))) := by
-    have hi : RestrictedTensorSimple.stageInclusion (LocalFiber F ζ hζ P C)
-        (localReference F ζ hζ P C) C.exceptional u
+    have hi : stageInclusion₀ u
         (RestrictedTensorSimple.transition (LocalFiber F ζ hζ P C)
           (localReference F ζ hζ P C) C.exceptional v u hv
           (PiTensorProduct.tprod ℂ (fun q => (LocalSeed.finite F ζ hζ P C q.val).val
             (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q.val) (raw (Sum.inr q.val)))))) =
-        RestrictedTensorSimple.stageInclusion (LocalFiber F ζ hζ P C)
-          (localReference F ζ hζ P C) C.exceptional v
+        stageInclusion₀ v
           (PiTensorProduct.tprod ℂ (fun q => (LocalSeed.finite F ζ hζ P C q.val).val
             (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q.val) (raw (Sum.inr q.val))))) :=
       Module.DirectLimit.of_f

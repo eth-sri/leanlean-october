@@ -10,8 +10,8 @@ open NumberField MeasureTheory
 open scoped Classical
 open MomentSources ThetaProfileHaarSheets ThetaSheetExactUnfolding
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
  instance sheetContinuousConstSMul (A : SArithmeticData F) (l : PositiveAxis) :
     ContinuousConstSMul A.Gamma1 (Sheet A l) where
@@ -61,7 +61,7 @@ theorem quotient_integral_zero_of_odd (A : SArithmeticData F) (w : InfinitePlace
   have hep : MeasurePreserving e μ μ :=
     hT.comp ((measurePreserving_mul_left (kernelHaar A w μG) t).comp
       (hT.symm T.toMeasurableEquiv))
-  obtain ⟨Ω, _, _, _, hΩ⟩ := exists_sheetFundamentalDomain A w μG l
+  obtain ⟨Ω, _, hΩ⟩ := exists_sheetFundamentalDomain A w μG l
   have hΩ' : IsFundamentalDomain A.Gamma1 (e '' Ω) μ := by
     apply hΩ.image_of_equiv e.toEquiv (hep.symm e.toMeasurableEquiv).quasiMeasurePreserving
       (Equiv.refl A.Gamma1)
@@ -101,8 +101,7 @@ lemma quotientUpper_projection {N : TraceHaarTransport R} {Q : AdmissibleFlatSou
     quotientUpper R Q T P v m b l (sheetProjection R.A l y) =
       weightedUpper R Q T P v m b y.val := by
   unfold quotientUpper
-  have h := Quotient.exact (Quotient.out_eq (sheetProjection R.A l y))
-  obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp h)
+  obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp (Quotient.exact (Quotient.out_eq (sheetProjection R.A l y))))
   have hv := congrArg Subtype.val hγ
   change γ.val.val * y.val = (Quotient.out (sheetProjection R.A l y)).val at hv
   rw [← hv]
@@ -113,8 +112,7 @@ theorem bothUpperZero {N : TraceHaarTransport R} {Q : AdmissibleFlatSources R}
     (D : DigitsDescent R N Q T P) : BothUpperZero R N Q T P := by
   letI := N.groupHaar_isHaar
   intro v m b l
-  let t : R.A.G1 := ⟨infiniteInsertion R.A P.v₀ (-1), norm_insertion_one R P.v₀ (-1) (by simp)⟩
-  apply quotient_integral_zero_of_odd R.A P.v₀ N.groupHaar l t
+  apply quotient_integral_zero_of_odd R.A P.v₀ N.groupHaar l (⟨infiniteInsertion R.A P.v₀ (-1), norm_insertion_one R P.v₀ (-1) (by simp)⟩)
     (quotientUpper R Q T P v m b l) (D.upper_integrable v m b l)
   intro y y' hy'
   rw [quotientUpper_projection R D, quotientUpper_projection R D, hy']

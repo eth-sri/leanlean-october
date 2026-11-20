@@ -27,13 +27,13 @@ theorem inertiaCharacterDeterminant
         exact h y hy⟩
       left_inv := fun ρ => rfl
       right_inv := fun ρ => rfl }
-  let e : {ρ : ComplexDual G // H ≤ ρ.ker} ≃ ComplexDual (G ⧸ H) :=
+  let e :=
     e1.trans (MonoidHom.domRestrictHomKerEquiv ℂˣ H).toEquiv
 
   have heval : ∀ (ρ : {ρ : ComplexDual G // H ≤ ρ.ker}),
       (e ρ) ((QuotientGroup.mk' H) g) = ρ.val g := by
     intro ρ
-    change (MonoidHom.domRestrictHomKerEquiv ℂˣ H (e1 ρ)) (g : G ⧸ H) = ρ.val g
+    change (MonoidHom.domRestrictHomKerEquiv ℂˣ H (e1 ρ)) g = ρ.val g
     rw [MonoidHom.domRestrictHomKerEquiv_apply_coe]
     rfl
 

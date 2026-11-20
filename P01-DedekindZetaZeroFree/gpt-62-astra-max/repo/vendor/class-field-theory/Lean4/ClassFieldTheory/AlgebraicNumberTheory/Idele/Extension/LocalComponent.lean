@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -32,7 +30,6 @@ open NumberField IsDedekindDomain
 
 noncomputable section
 
-
 universe u v
 
 variable
@@ -41,10 +38,13 @@ variable
     [Field L] [NumberField L] [Algebra K L]
     [FiniteDimensional K L]
 
+section
+
+variable (v : InfinitePlace K)
+
 /-- Evaluation of an adele at an infinite place, as a `K`-algebra
 homomorphism. -/
-def infiniteAdeleComponentAlgHom
-    (v : InfinitePlace K) :
+def infiniteAdeleComponentAlgHom :
     NumberField.AdeleRing (𝓞 K) K →ₐ[K]
       v.Completion :=
   (Pi.evalAlgHom K
@@ -55,14 +55,12 @@ def infiniteAdeleComponentAlgHom
 
 @[simp]
 theorem infiniteAdeleComponentAlgHom_apply
-    (v : InfinitePlace K)
     (a : NumberField.AdeleRing (𝓞 K) K) :
     infiniteAdeleComponentAlgHom v a = a.1 v :=
   rfl
 
 @[simp]
-theorem infiniteAdeleComponentAlgHom_algebraMap
-    (v : InfinitePlace K) (x : K) :
+theorem infiniteAdeleComponentAlgHom_algebraMap (x : K) :
     infiniteAdeleComponentAlgHom v
         (algebraMap K
           (NumberField.AdeleRing (𝓞 K) K) x) =
@@ -71,28 +69,31 @@ theorem infiniteAdeleComponentAlgHom_algebraMap
 
 /-- The relative-adele component at an infinite place:
 `𝔸_K ⊗[K] L → K_v ⊗[K] L`. -/
-def relativeAdeleInfiniteComponent
-    (v : InfinitePlace K) :
+def relativeAdeleInfiniteComponent :
     RelativeAdeleRing K L →ₐ[K]
       v.Completion ⊗[K] L :=
   Algebra.TensorProduct.map
     (infiniteAdeleComponentAlgHom v)
     (AlgHom.id K L)
 
+end
+
 omit [NumberField L] [FiniteDimensional K L] in
 @[simp]
 theorem relativeAdeleInfiniteComponent_tmul
     (v : InfinitePlace K)
     (a : NumberField.AdeleRing (𝓞 K) K) (x : L) :
-    relativeAdeleInfiniteComponent
-        (K := K) (L := L) v (a ⊗ₜ[K] x) =
+    relativeAdeleInfiniteComponent v (a ⊗ₜ[K] x) =
       a.1 v ⊗ₜ[K] x := by
-  simp [relativeAdeleInfiniteComponent]
+  rfl
+
+section
+
+variable (v : HeightOneSpectrum (𝓞 K))
 
 /-- Evaluation of an adele at a finite place, as a `K`-algebra
 homomorphism. -/
-def finiteAdeleComponentAlgHom
-    (v : HeightOneSpectrum (𝓞 K)) :
+def finiteAdeleComponentAlgHom :
     NumberField.AdeleRing (𝓞 K) K →ₐ[K]
       v.adicCompletion K :=
   { __ :=
@@ -108,19 +109,19 @@ def finiteAdeleComponentAlgHom
 
 @[simp]
 theorem finiteAdeleComponentAlgHom_apply
-    (v : HeightOneSpectrum (𝓞 K))
     (a : NumberField.AdeleRing (𝓞 K) K) :
     finiteAdeleComponentAlgHom v a = a.2 v :=
   rfl
 
 @[simp]
-theorem finiteAdeleComponentAlgHom_algebraMap
-    (v : HeightOneSpectrum (𝓞 K)) (x : K) :
+theorem finiteAdeleComponentAlgHom_algebraMap (x : K) :
     finiteAdeleComponentAlgHom v
         (algebraMap K
           (NumberField.AdeleRing (𝓞 K) K) x) =
       algebraMap K (v.adicCompletion K) x :=
   rfl
+
+end
 
 omit [NumberField L] [FiniteDimensional K L] in
 /-- The relative-adele component at a finite place:
@@ -138,10 +139,10 @@ omit [NumberField L] [FiniteDimensional K L] in
 theorem relativeAdeleFiniteComponent_tmul
     (v : HeightOneSpectrum (𝓞 K))
     (a : NumberField.AdeleRing (𝓞 K) K) (x : L) :
-    relativeAdeleFiniteComponent (K := K) (L := L) v
+    relativeAdeleFiniteComponent v
         (a ⊗ₜ[K] x) =
       a.2 v ⊗ₜ[K] x := by
-  simp [relativeAdeleFiniteComponent]
+  rfl
 
 omit [NumberField K] [NumberField L] in
 /-- Determinant norm commutes with scalar extension along a homomorphism
@@ -171,7 +172,7 @@ theorem map_norm_tensorProduct_baseChange
     | tmul a x =>
         simp
   calc
-    f (Algebra.norm A z) =
+    _ =
         f
           (MvPolynomial.eval₂ (algebraMap K A)
             ((Algebra.TensorProduct.basis A b).repr z)
@@ -193,8 +194,7 @@ theorem map_norm_tensorProduct_baseChange
               (AlgHom.id K L) z))
           (RelativeIdeleGroup.normPolynomial b) := by
       congr 1
-      · ext x
-        exact f.commutes x
+      · simp
       · funext i
         exact (hrepr i).symm
     _ =
@@ -218,12 +218,10 @@ omit [NumberField L] [FiniteDimensional K L] in
 theorem RelativeIdeleGroup.infiniteComponent_coe
     (v : InfinitePlace K)
     (a : RelativeIdeleGroup K L) :
-    ((RelativeIdeleGroup.infiniteComponent
-        (K := K) (L := L) v a :
+    ((RelativeIdeleGroup.infiniteComponent v a :
         (v.Completion ⊗[K] L)ˣ) :
         v.Completion ⊗[K] L) =
-      relativeAdeleInfiniteComponent
-        (K := K) (L := L) v
+      relativeAdeleInfiniteComponent v
         (a : RelativeAdeleRing K L) :=
   rfl
 
@@ -241,12 +239,10 @@ omit [NumberField L] [FiniteDimensional K L] in
 theorem RelativeIdeleGroup.finiteComponent_coe
     (v : HeightOneSpectrum (𝓞 K))
     (a : RelativeIdeleGroup K L) :
-    ((RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) v a :
+    ((RelativeIdeleGroup.finiteComponent v a :
         (v.adicCompletion K ⊗[K] L)ˣ) :
         v.adicCompletion K ⊗[K] L) =
-      relativeAdeleFiniteComponent
-        (K := K) (L := L) v
+      relativeAdeleFiniteComponent v
         (a : RelativeAdeleRing K L) :=
   rfl
 
@@ -267,20 +263,9 @@ theorem RelativeIdeleGroup.finiteComponent_norm
     IdeleGroup.finiteComponent v
         (RelativeIdeleGroup.norm K L a) =
       localTensorNorm (K := K) (L := L) v
-        (RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L) v a) := by
+        (RelativeIdeleGroup.finiteComponent v a) := by
   apply Units.ext
-  change
-    finiteAdeleComponentAlgHom v
-        (Algebra.norm
-          (NumberField.AdeleRing (𝓞 K) K)
-          (a : RelativeAdeleRing K L)) =
-      Algebra.norm (v.adicCompletion K)
-        (relativeAdeleFiniteComponent
-          (K := K) (L := L) v
-          (a : RelativeAdeleRing K L))
   exact map_norm_tensorProduct_baseChange
-    (K := K) (L := L)
     (finiteAdeleComponentAlgHom v)
     (a : RelativeAdeleRing K L)
 
@@ -294,20 +279,9 @@ theorem RelativeIdeleGroup.infiniteComponent_norm
     IdeleGroup.infiniteComponent v
         (RelativeIdeleGroup.norm K L a) =
       Units.map (Algebra.norm v.Completion)
-        (RelativeIdeleGroup.infiniteComponent
-          (K := K) (L := L) v a) := by
+        (RelativeIdeleGroup.infiniteComponent v a) := by
   apply Units.ext
-  change
-    infiniteAdeleComponentAlgHom v
-        (Algebra.norm
-          (NumberField.AdeleRing (𝓞 K) K)
-          (a : RelativeAdeleRing K L)) =
-      Algebra.norm v.Completion
-        (relativeAdeleInfiniteComponent
-          (K := K) (L := L) v
-          (a : RelativeAdeleRing K L))
   exact map_norm_tensorProduct_baseChange
-    (K := K) (L := L)
     (infiniteAdeleComponentAlgHom v)
     (a : RelativeAdeleRing K L)
 
@@ -339,13 +313,10 @@ extension of its ordinary infinite component. -/
 theorem RelativeIdeleGroup.infiniteComponent_inclusion
     (v : InfinitePlace K)
     (a : IdeleGroup K) :
-    RelativeIdeleGroup.infiniteComponent
-        (K := K) (L := L) v
+    RelativeIdeleGroup.infiniteComponent v
         (RelativeIdeleGroup.inclusion K L a) =
-      infiniteLocalIdeleInclusion
-        (K := K) (L := L) v
+      infiniteLocalIdeleInclusion (L := L) v
         (IdeleGroup.infiniteComponent v a) := by
-  apply Units.ext
   rfl
 
 omit [NumberField L] [FiniteDimensional K L] in
@@ -354,12 +325,9 @@ diagonal extension-field unit in the local tensor algebra. -/
 @[simp]
 theorem RelativeIdeleGroup.infiniteComponent_principalIdele
     (v : InfinitePlace K) (x : Lˣ) :
-    RelativeIdeleGroup.infiniteComponent
-        (K := K) (L := L) v
+    RelativeIdeleGroup.infiniteComponent v
         (RelativeIdeleGroup.principalIdele K L x) =
-      infiniteLocalFieldIdeleInclusion
-        (K := K) (L := L) v x := by
-  apply Units.ext
+      infiniteLocalFieldIdeleInclusion v x := by
   rfl
 
 /-- Scalar extension of a local base-field unit into the local tensor
@@ -380,12 +348,10 @@ extension of its ordinary local component. -/
 theorem RelativeIdeleGroup.finiteComponent_inclusion
     (v : HeightOneSpectrum (𝓞 K))
     (a : IdeleGroup K) :
-    RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) v
+    RelativeIdeleGroup.finiteComponent v
         (RelativeIdeleGroup.inclusion K L a) =
-      localIdeleInclusion (K := K) (L := L) v
+      localIdeleInclusion (L := L) v
         (IdeleGroup.finiteComponent v a) := by
-  apply Units.ext
   rfl
 
 /-- Scalar extension of an extension-field unit into the local tensor
@@ -404,11 +370,9 @@ extension-field unit in the local tensor algebra. -/
 @[simp]
 theorem RelativeIdeleGroup.finiteComponent_principalIdele
     (v : HeightOneSpectrum (𝓞 K)) (x : Lˣ) :
-    RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) v
+    RelativeIdeleGroup.finiteComponent v
         (RelativeIdeleGroup.principalIdele K L x) =
-      localFieldIdeleInclusion (K := K) (L := L) v x := by
-  apply Units.ext
+      localFieldIdeleInclusion v x := by
   rfl
 
 end

@@ -18,13 +18,10 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.KPMsNativeWeightedShapeSource.OffsetShapeDescent
 open KPMsActualAngularSource KPMsNativeOffsetMass
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (S : NativeRecipe F ζ hζ R P)
-open _root_.DedekindZetaZeroFree.KPMsActualAngularRadialShapeSource renaming radialArch → radialArch
-open _root_.DedekindZetaZeroFree.KPMsActualAngularRadialShapeSource renaming archBasepoint_radial_rescale → archBasepoint_radial_rescale
-open _root_.DedekindZetaZeroFree.KPMsActualAngularRadialShapeSource renaming radial_conjugation_split → radial_conjugation_split
-open _root_.DedekindZetaZeroFree.KPMsActualAngularRadialShapeSource renaming sectionShape_mul → sectionShape_mul
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (S : NativeRecipe F ζ hζ R P)
+open _root_.DedekindZetaZeroFree.KPMsActualAngularRadialShapeSource (radialArch archBasepoint_radial_rescale radial_conjugation_split sectionShape_mul)
 
 theorem sectionShape_intrinsic_split
     (V : Level F ζ hζ) (j : NativeCusp F ζ hζ R P S V)
@@ -51,31 +48,26 @@ open KPMsActualAngularDescentSource KPMsActualAngularFixedRadiusRelationSource
 open KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent
 open KPMsActualAngularRadialShapeSource (radialCross)
 open KPMsResidualTailRestoration.SharpConstantTerm.FiberStability
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeFullDomain → nativeFullDomain
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeDomainProjects → nativeDomainProjects
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeDomainOpen → nativeDomainOpen
-open _root_.DedekindZetaZeroFree.KPMsActualAngularRadialShapeSource renaming radialArch → radialArch
-open _root_.DedekindZetaZeroFree.KPMsActualAngularRadialShapeSource renaming radialArch_insertion → radialArch_insertion
-open _root_.DedekindZetaZeroFree.KPMsActualAngularRadialShapeSource renaming radialArch_action → radialArch_action
-open _root_.DedekindZetaZeroFree.KPMsActualAngularRadialShapeSource renaming archBasepoint_radial_rescale → archBasepoint_radial_rescale
-open _root_.DedekindZetaZeroFree.KPMsActualAngularRadialShapeSource renaming radial_conjugation_split → radial_conjugation_split
-open _root_.DedekindZetaZeroFree.KPMsActualAngularRadialShapeSource renaming sectionShape_mul → sectionShape_mul
+open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof (nativeFullDomain nativeDomainProjects nativeDomainOpen)
+open _root_.DedekindZetaZeroFree.KPMsActualAngularRadialShapeSource (radialArch radialArch_insertion radialArch_action archBasepoint_radial_rescale radial_conjugation_split sectionShape_mul)
 
-open _root_.DedekindZetaZeroFree.KPMsResidualTailRestoration.SharpConstantTerm.FiberStability renaming level_frame_algebra → level_frame_algebra
+open _root_.DedekindZetaZeroFree.KPMsResidualTailRestoration.SharpConstantTerm.FiberStability (level_frame_algebra)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 
- def representative (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
-    (j : NativeCusp F ζ hζ R P S V) : G F ζ hζ :=
+ section
+
+variable (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) (j : NativeCusp F ζ hζ R P S V)
+
+def representative : G F ζ hζ :=
   KPMsActualCuspSource.rationalLift F ζ hζ
     (((nativeAtlas F ζ hζ R P S V).cuspAtlas j.1).representative j.2)
 
- abbrev fullDomain (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
-    (j : NativeCusp F ζ hζ R P S V) (Y : ℝ) :=
+ abbrev fullDomain (Y : ℝ) :=
   nativeFullDomain F ζ hζ R P S V j Y
 
-private theorem chart_projection (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) (j : NativeCusp F ζ hζ R P S V)
+private theorem chart_projection
     (a : KPSmoothActualFlowData.GInfinity F) (ε : rootsOfUnity 3 F)
     (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ V)) :
     P.projection (S.atlasLevel (cofinalLevel F ζ hζ V)) (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
@@ -95,7 +87,6 @@ private theorem chart_projection (S : NativeRecipe F ζ hζ R P) (V : Level F ζ
   simp only [mul_assoc]
   rw [← Subgroup.coe_mul, ← Subgroup.coe_mul, P.formula]
   apply Quotient.sound
-  change (KPFiniteCuspAtlas.sphericalRelation F ζ hζ (S.atlasLevel (cofinalLevel F ζ hζ V))).r _ _
   refine ⟨1, ε⁻¹, uf'⁻¹, by simp, ?_⟩
   simp only [map_one, one_mul, mul_assoc]
   have hc : KPCuspGenuineMonodromy.central F ζ hζ ε⁻¹ *
@@ -109,8 +100,13 @@ private theorem chart_projection (S : NativeRecipe F ζ hζ R P) (V : Level F ζ
   rw [← mul_assoc (KPCuspGenuineMonodromy.central F ζ hζ ε⁻¹), hc]
   simp [map_inv, mul_assoc]
 
+end
+
+section
+
+variable (S : NativeRecipe F ζ hζ R P)
+
 private theorem spherical_projection_right_level
-    (S : NativeRecipe F ζ hζ R P)
     (V : KPMsActualAngularSource.Level F ζ hζ)
     (g : KPMsActualAngularSource.G F ζ hζ)
     (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ V)) :
@@ -123,25 +119,27 @@ private theorem spherical_projection_right_level
   have hum := u.property
   simp only [S.level_matching (cofinalLevel F ζ hζ V)] at hum
   obtain ⟨uf,huf,hufeq⟩ := hum
-  have hu : (uf : KPMsActualAngularSource.G F ζ hζ) = u.val := hufeq
+  have hu : uf = u.val := hufeq
   rw [← hu, mul_assoc, ← Subgroup.coe_mul, P.formula, P.formula]
   apply Quotient.sound
   refine ⟨1,1, (⟨uf,huf⟩ : (S.atlasLevel (cofinalLevel F ζ hζ V)).toOpenSubgroup)⁻¹, ?_, ?_⟩
   · simp
   · simp
 
-private theorem angularProjection_continuous (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) :
+private theorem angularProjection_continuous (V : Level F ζ hζ) :
     Continuous (KPMsFixedHaarDisintegration.angularProjection (nativeAtlas F ζ hζ R P S V)) := by
   apply continuous_sigma
   intro j
   exact continuous_sigmaMk.comp
     (KPMsFixedHaarDisintegration.Geometry (nativeAtlas F ζ hζ R P S V) j).atlas.continuous_projection
 
+end
+
 private theorem pinned_chart_shape (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
     (Y : ℝ) (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y) :
     ∃ s : KPMsFixedHaarDisintegration.Spherical F ζ hζ (S.atlasLevel (cofinalLevel F ζ hζ V)) →
         KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V),
-      Measurable s ∧ ContinuousOn s (KPMsFixedHaarDisintegration.cuspEnds (nativeAtlas F ζ hζ R P S V) Y) ∧
+      ContinuousOn s (KPMsFixedHaarDisintegration.cuspEnds (nativeAtlas F ζ hζ R P S V) Y) ∧
       ∀ x r, s ((nativeDisintegration F ζ hζ R P S V).chart Y hY (x,r)) =
         KPMsFixedHaarDisintegration.angularProjection _ x := by
   let A := nativeAtlas F ζ hζ R P S V
@@ -172,16 +170,19 @@ private theorem pinned_chart_shape (S : NativeRecipe F ζ hζ R P) (V : Level F 
   have hsc : ∀ x r, s (D.chart Y hY (x,r)) = KPMsFixedHaarDisintegration.angularProjection A x := by
     intro x r
     simp only [s, Function.comp_apply, emb.leftInverse_invFun (x,r)]
-  refine ⟨s,hs,?_,hsc⟩
+  refine ⟨s, ?_, hsc⟩
   rw [← D.chart_range Y hY, ← Set.image_univ]
   apply (D.chart_embedding Y hY).isInducing.continuousOn_image_iff.mpr
   apply ((angularProjection_continuous S V).comp continuous_fst).continuousOn.congr
   rintro ⟨z,r⟩ _
   exact hsc z r
 
-private theorem pinned_shapeCoordinate_on_actual_frame (S : NativeRecipe F ζ hζ R P)
-    (V : KPMsActualAngularSource.Level F ζ hζ)
-    (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
+section
+
+variable (S : NativeRecipe F ζ hζ R P) (V : KPMsActualAngularSource.Level F ζ hζ)
+    (j : NativeCusp F ζ hζ R P S V)
+
+private theorem pinned_shapeCoordinate_on_actual_frame (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y)
     (a : KPSmoothActualFlowData.GInfinity F) (p : KPCuspCharts.Cross F)
     (r : Set.Ioi Y) (ε : rootsOfUnity 3 F)
@@ -203,7 +204,7 @@ private theorem pinned_shapeCoordinate_on_actual_frame (S : NativeRecipe F ζ h�
           KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V)) := by
   let b := KPMsFixedHaarDisintegration.sectionShape F (nativeFamily F ζ hζ R P).totallyComplex
     (nativeDisintegration F ζ hζ R P S V).radial.slot ⟨r.val, lt_trans hY.1 r.property⟩
-  let p₀ : KPCuspCharts.Cross F := (p.1, p.2 - b)
+  let p₀ := (p.1, p.2 - b)
   have hcross : (p₀.1, p₀.2 + b) = p := by
     apply Prod.ext
     · rfl
@@ -217,7 +218,6 @@ private theorem pinned_shapeCoordinate_on_actual_frame (S : NativeRecipe F ζ h�
     rw [chart_projection S V j a ε u, ha]
     rw [(nativeDisintegration F ζ hζ R P S V).chart_formula Y hY j p₀ r]
     simp only [KPFiniteCuspAtlas.componentMap, KPCuspSiegel.projection, Quotient.lift_mk]
-    change Quotient.mk _ (_, _) = Quotient.mk _ (_, _)
     rw [hcross]
     rfl
   rw [← hchart, hsc]
@@ -225,9 +225,6 @@ private theorem pinned_shapeCoordinate_on_actual_frame (S : NativeRecipe F ζ h�
   rw [(KPMsFixedHaarDisintegration.Geometry (nativeAtlas F ζ hζ R P S V) j).atlas.projection_formula]
 
 private theorem actual_frame_radial_rescale
-    (S : NativeRecipe F ζ hζ R P)
-    (V : KPMsActualAngularSource.Level F ζ hζ)
-    (j : NativeCusp F ζ hζ R P S V)
     (w : NumberField.InfinitePlace F) (r : KPMsFixedHaarDisintegration.Radius)
     (a : KPSmoothActualFlowData.GInfinity F) (p : KPCuspCharts.Cross F)
     (t : ℝ) (ε : rootsOfUnity 3 F) (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ V))
@@ -252,14 +249,10 @@ private theorem actual_frame_radial_rescale
     archBasepoint_radial_rescale σ a w (nativeFamily F ζ hζ R P).totallyComplex r p t ha⟩
   rw [show representative S V j = KPMsActualCuspSource.rationalLift F ζ hζ σ from rfl,
     radial_conjugation_split]
-  have hmul := (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1
-  simp only [hmul]
+  simp only [((KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1)]
   group
 
-private theorem pinned_shape_under_reduced_root
-    (S : NativeRecipe F ζ hζ R P)
-    (V : KPMsActualAngularSource.Level F ζ hζ)
-    (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
+private theorem pinned_shape_under_reduced_root (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y)
     (a : KPSmoothActualFlowData.GInfinity F) (p : KPCuspCharts.Cross F)
     (r : Set.Ioi Y) (ε : rootsOfUnity 3 F)
@@ -303,11 +296,6 @@ private theorem pinned_shape_under_reduced_root
       (KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ V)).mul_mem hu u.property⟩
   let σ := archRational (((nativeAtlas F ζ hζ R P S V).cuspAtlas j.1).representative j.2)
   let a' := σ * archRoot (complexParameter F ζ hζ a₀) * σ⁻¹ * a
-  have he : ∀ g : KPMsActualAngularSource.G F ζ hζ,
-      g * KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε =
-        KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * g :=
-    Subgroup.mem_center_iff.mp
-      (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε,rfl⟩)
   have hsplit := conjugated_root_split F ζ hζ
     (((nativeAtlas F ζ hζ R P S V).cuspAtlas j.1).representative j.2) v hv a₀ z
   change representative S V j * _ * (representative S V j)⁻¹ = _ at hsplit
@@ -316,7 +304,8 @@ private theorem pinned_shape_under_reduced_root
       (σ * archRoot (complexParameter F ζ hζ a₀) * σ⁻¹))
     (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) f.val c.val
     (KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε) u.val
-    (insertion_commutes_cover F ζ hζ a f).symm he
+    (insertion_commutes_cover F ζ hζ a f).symm (Subgroup.mem_center_iff.mp
+      (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε,rfl⟩))
   have hframe : representative S V j * KPGlobalTorusFunctionData.N F ζ hζ (a₀,z) *
       (representative S V j)⁻¹ *
       (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val *
@@ -324,20 +313,20 @@ private theorem pinned_shape_under_reduced_root
     KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a' * c.val *
       KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u'.val := by
     rw [hsplit]
-    change _ * f.val * _ = _
     rw [halg]
     dsimp only [a',u']
     rw [(KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1
       (σ * archRoot (complexParameter F ζ hζ a₀) * σ⁻¹) a]
     simp only [Subgroup.coe_mul, Subgroup.coe_inv]
     group
-  have ha' := archBasepoint_rational_conjugated_root
-    (((nativeAtlas F ζ hζ R P S V).cuspAtlas j.1).representative j.2) a
-    (complexParameter F ζ hζ a₀) p (KPMsFixedHaarDisintegration.logHeight (F := F) r.val) ha
   rw [hframe, pinned_shapeCoordinate_on_actual_frame S V j Y hY a'
-    (translateCross (complexParameter F ζ hζ a₀) p) r ε u' s hsc ha',
+    (translateCross (complexParameter F ζ hζ a₀) p) r ε u' s hsc (archBasepoint_rational_conjugated_root
+      (((nativeAtlas F ζ hζ R P S V).cuspAtlas j.1).representative j.2) a
+      (complexParameter F ζ hζ a₀) p (KPMsFixedHaarDisintegration.logHeight r.val) ha),
     pinned_shapeCoordinate_on_actual_frame S V j Y hY a p r ε u s hsc ha]
   rfl
+
+end
 
 private theorem unipotent_fiber_principal_shift
     (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) (j : NativeCusp F ζ hζ R P S V)
@@ -365,16 +354,17 @@ private theorem unipotent_fiber_principal_shift
     congr 1
     rw [← KPRationalAdelicSplitting.N_rational F ζ hζ b]
     rfl
-  have hmem := (KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ).mul_mem
+  convert (KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ).inv_mem ((KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ).mul_mem
     ((KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ).mul_mem hr hn)
-    ((KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ).inv_mem hr)
-  convert (KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ).inv_mem hmem using 1 <;> group
+    ((KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ).inv_mem hr)) using 1 <;> group
 
-private theorem actual_finite_root_shape_invariant
-    (S : NativeRecipe F ζ hζ R P)
-    (V : KPMsActualAngularSource.Level F ζ hζ)
+section
+
+variable (S : NativeRecipe F ζ hζ R P) (V : KPMsActualAngularSource.Level F ζ hζ)
     (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y)
+
+private theorem actual_finite_root_shape_invariant
     (a : KPSmoothActualFlowData.GInfinity F) (p : KPCuspCharts.Cross F)
     (r : Set.Ioi Y) (ε : rootsOfUnity 3 F)
     (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ V))
@@ -415,10 +405,6 @@ private theorem actual_finite_root_shape_invariant
   exact pinned_shape_under_reduced_root S V j Y hY a p r ε u _ _ v hv hb s hsc ha
 
 private theorem pinned_shape_unipotent_actual_domain
-    (S : NativeRecipe F ζ hζ R P)
-    (V : KPMsActualAngularSource.Level F ζ hζ)
-    (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
-    (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y)
     (g : KPMsActualAngularSource.G F ζ hζ)
     (hg : g ∈ fullDomain S V j Y)
     (n : KPGlobalTorusFunctionData.Adeles F)
@@ -443,21 +429,22 @@ private theorem pinned_shape_unipotent_actual_domain
   apply actual_finite_root_shape_invariant S V j Y hY a p r ε u n s hsc
   rwa [hlog]
 
- def fixedRadiusDomain
-    (S : NativeRecipe F ζ hζ R P)
-    (V : KPMsActualAngularSource.Level F ζ hζ) (Y : ℝ)
-    (r₀ : KPMsFixedHaarDisintegration.Radius) :
+end
+
+ section
+
+variable (S : NativeRecipe F ζ hζ R P) (V : KPMsActualAngularSource.Level F ζ hζ) (Y : ℝ)
+    (r₀ : KPMsFixedHaarDisintegration.Radius)
+
+def fixedRadiusDomain :
     Set (KPMsActualAngularSource.NormOne F ζ hζ (nativeDatum F ζ hζ)) :=
   ⋃ j : NativeCusp F ζ hζ R P S V,
     {g | representative S V j *
       KPMsFixedHaarDisintegration.radialSection F ζ hζ
         (nativeDisintegration F ζ hζ R P S V).radial.slot r₀ * g.val ∈ fullDomain S V j Y}
 
-private theorem fixedRadiusDomain_isOpen
-    (S : NativeRecipe F ζ hζ R P)
-    (V : KPMsActualAngularSource.Level F ζ hζ) (Y : ℝ)
-    (r₀ : KPMsFixedHaarDisintegration.Radius) : IsOpen (fixedRadiusDomain S V Y r₀) := by
-  let : IsTopologicalGroup (KPMsActualAngularSource.G F ζ hζ) :=
+private theorem fixedRadiusDomain_isOpen : IsOpen (fixedRadiusDomain S V Y r₀) := by
+  let :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
   apply isOpen_iUnion
   intro j
@@ -469,6 +456,8 @@ private theorem fixedRadiusDomain_isOpen
             KPMsFixedHaarDisintegration.radialSection F ζ hζ
               (nativeDisintegration F ζ hζ R P S V).radial.slot r₀)).mul continuous_subtype_val)
 
+end
+
  theorem fixedRadiusDomain_right_level
     (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) (Y : ℝ)
     (r₀ : KPMsFixedHaarDisintegration.Radius) (g : NormOne F ζ hζ (nativeDatum F ζ hζ))
@@ -476,23 +465,23 @@ private theorem fixedRadiusDomain_isOpen
     (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ V)) :
     ∃ h : NormOne F ζ hζ (nativeDatum F ζ hζ),
       h.val = g.val * u.val ∧ h ∈ fixedRadiusDomain S V Y r₀ := by
-  have hn : KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ (nativeDatum F ζ hζ)
-      (g.val * u.val) = 1 := by
-    rw [KPShift81CoherentLevel.norm_right_level F ζ hζ V, g.property]
-  refine ⟨⟨g.val * u.val,hn⟩,rfl,?_⟩
+  refine ⟨⟨g.val * u.val,(by
+    rw [KPShift81CoherentLevel.norm_right_level F ζ hζ V, g.property])⟩,rfl,?_⟩
   obtain ⟨j,a,p,t,ε,v,ht,ha,he⟩ := Set.mem_iUnion.mp hg
   refine Set.mem_iUnion.mpr ⟨j,a,p,t,ε,v*u,ht,ha,?_⟩
   simp only [Subgroup.coe_mul]
   rw [← mul_assoc, he]
   group
 
- def fixedRadius_right_homeomorph
-    (S : NativeRecipe F ζ hζ R P)
-    (V : KPMsActualAngularSource.Level F ζ hζ) (Y : ℝ)
+ section
+
+variable (S : NativeRecipe F ζ hζ R P) (V : KPMsActualAngularSource.Level F ζ hζ) (Y : ℝ)
     (r₀ : KPMsFixedHaarDisintegration.Radius)
-    (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ V)) :
+    (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ V))
+
+def fixedRadius_right_homeomorph :
     fixedRadiusDomain S V Y r₀ ≃ₜ fixedRadiusDomain S V Y r₀ := by
-  let : IsTopologicalGroup (KPMsActualAngularSource.G F ζ hζ) :=
+  let :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
   let trans (v : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ V))
       (g : fixedRadiusDomain S V Y r₀) : fixedRadiusDomain S V Y r₀ :=
@@ -520,20 +509,18 @@ private theorem fixedRadiusDomain_isOpen
     continuous_invFun := hcont u⁻¹ }
 
 private theorem fixedRadius_right_homeomorph_val
-    (S : NativeRecipe F ζ hζ R P)
-    (V : KPMsActualAngularSource.Level F ζ hζ) (Y : ℝ)
-    (r₀ : KPMsFixedHaarDisintegration.Radius)
-    (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ V))
     (g : fixedRadiusDomain S V Y r₀) :
     (fixedRadius_right_homeomorph S V Y r₀ u g).val.val = g.val.val * u.val :=
   (fixedRadiusDomain_right_level S V Y r₀ g.val g.property u).choose_spec.1
+
+end
 
  def angular_left_homeomorph
     (D : KPMsActualAngularSource.Iwasawa F ζ hζ)
     (y : Fˣ) (n : KPGlobalTorusFunctionData.Adeles F) :
     KPMsActualAngularSource.NormOne F ζ hζ D ≃ₜ
       KPMsActualAngularSource.NormOne F ζ hζ D := by
-  let : IsTopologicalGroup (KPMsActualAngularSource.G F ζ hζ) :=
+  let :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
   exact (Homeomorph.mulLeft (((KPGlobalTorusFunctionData.s F ζ hζ y).val *
     KPGlobalTorusFunctionData.N F ζ hζ n) : KPMsActualAngularSource.G F ζ hζ)).subtype (by
@@ -543,9 +530,11 @@ private theorem fixedRadius_right_homeomorph_val
       rw [KPGlobalTorusBorelTwistCompatibility.iwasawaNorm_borel_mul,
         KPGlobalTorusBorelTwistCompatibility.delta_rational,one_mul])
 
-private theorem fixedRadius_angular_quotient_open
-    (S : NativeRecipe F ζ hζ R P)
-    (V : KPMsActualAngularSource.Level F ζ hζ) (Y : ℝ)
+section
+
+variable (S : NativeRecipe F ζ hζ R P) (V : KPMsActualAngularSource.Level F ζ hζ)
+
+private theorem fixedRadius_angular_quotient_open (Y : ℝ)
     (r₀ : KPMsFixedHaarDisintegration.Radius) :
     IsOpenMap (fun g : fixedRadiusDomain S V Y r₀ =>
       (Quotient.mk _ g.val : KPMsActualAngularSource.Omega F ζ hζ (nativeDatum F ζ hζ) (cofinalLevel F ζ hζ V))) := by
@@ -563,8 +552,7 @@ private theorem fixedRadius_angular_quotient_open
     ext b
     constructor
     · rintro ⟨a,ha,hq⟩
-      have hrel := (KPMsActualAngularFixedRadiusDomainSource.angular_eqvgen_iff (nativeDatum F ζ hζ) (cofinalLevel F ζ hζ V) a.val b).mp (Quotient.exact hq)
-      obtain ⟨y,n,u,hb⟩ := hrel
+      obtain ⟨y,n,u,hb⟩ := ((KPMsActualAngularFixedRadiusDomainSource.angular_eqvgen_iff (nativeDatum F ζ hζ) (cofinalLevel F ζ hζ V) a.val b).mp (Quotient.exact hq))
       refine Set.mem_iUnion.mpr ⟨y,Set.mem_iUnion.mpr ⟨n,Set.mem_iUnion.mpr ⟨u,?_⟩⟩⟩
       refine ⟨(fixedRadius_right_homeomorph S V Y r₀ u a).val,
         ⟨_,⟨a,ha,rfl⟩,rfl⟩,?_⟩
@@ -597,8 +585,6 @@ private theorem fixedRadius_angular_quotient_open
       ((fixedRadius_right_homeomorph S V Y r₀ u).isOpenMap _ hO))
 
 private theorem fixed_radius_shape_angular_relation
-    (S : NativeRecipe F ζ hζ R P)
-    (V : KPMsActualAngularSource.Level F ζ hζ)
     (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y)
     (r₀ : KPMsFixedHaarDisintegration.Radius)
@@ -624,10 +610,11 @@ private theorem fixed_radius_shape_angular_relation
   let t := KPGlobalTorusFunctionData.torusArchChart F ζ hζ
     (KPMsFixedHaarDisintegration.positiveSlots F B.slot r₀)
   let n' := (KPGlobalTorusFunctionData.p F ζ hζ t : KPGlobalTorusFunctionData.Adeles F) * n
-  have halg : KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r₀ * h.val =
+  let radialSection₀ := KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r₀
+  have halg : radialSection₀ * h.val =
       (KPGlobalTorusFunctionData.s F ζ hζ y).val *
         (KPGlobalTorusFunctionData.N F ζ hζ n' *
-          (KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r₀ * g.val)) * u.val :=
+          (radialSection₀ * g.val)) * u.val :=
     by
       have hn := ActualBorelRetraction.torus_conjugates_root F ζ hζ t n
       rw [he]
@@ -641,36 +628,38 @@ private theorem fixed_radius_shape_angular_relation
             (KPGlobalTorusFunctionData.N F ζ hζ n * g.val * u.val) := by group
         _ = _ := by rw [hc.eq]; change _ = (KPGlobalTorusFunctionData.s F ζ hζ y).val * (t.val * KPGlobalTorusFunctionData.N F ζ hζ n * t.val⁻¹ * (t.val * g.val)) * u.val; group
   change s (P.projection _ (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
-    (KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r₀ * h.val))) = _
+    (radialSection₀ * h.val))) = _
   rw [halg, spherical_projection_right_level S V, quotientMap_left_s]
   have hinv := pinned_shape_unipotent_actual_domain S V j Y hY
     (representative S V j *
-      KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r₀ * g.val) hg n' s hsc
+      radialSection₀ * g.val) hg n' s hsc
   have heq : representative S V j * KPGlobalTorusFunctionData.N F ζ hζ n' *
       (representative S V j)⁻¹ *
         (representative S V j *
-          KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r₀ * g.val) =
+          radialSection₀ * g.val) =
       representative S V j * (KPGlobalTorusFunctionData.N F ζ hζ n' *
-        (KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r₀ * g.val)) := by group
+        (radialSection₀ * g.val)) := by group
   rw [heq] at hinv
   simp only [representative, mul_assoc, quotientMap_left_rational] at hinv
   exact hinv
 
- def correctShape (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) :
+end
+
+ section
+
+variable (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
+
+def correctShape :
     KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V) →
       KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V) :=
   fun ω => ⟨ω.1, ω.2 - QuotientAddGroup.mk
     (KPMsFixedHaarDisintegration.sectionShape F (nativeFamily F ζ hζ R P).totallyComplex
       (nativeDisintegration F ζ hζ R P S V).radial.slot (cuspOffset F ζ hζ R P S V ω.1))⟩
 
-private theorem correctShape_continuous (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) :
+private theorem correctShape_continuous :
     Continuous (correctShape S V) := by
   apply continuous_sigma
   intro j
-  change Continuous (fun a => (⟨j, a - QuotientAddGroup.mk
-    (KPMsFixedHaarDisintegration.sectionShape F (nativeFamily F ζ hζ R P).totallyComplex
-      (nativeDisintegration F ζ hζ R P S V).radial.slot (cuspOffset F ζ hζ R P S V j))⟩ :
-      KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V)))
   apply continuous_sigmaMk.comp
   apply continuous_id.sub
   exact continuous_const (y := (QuotientAddGroup.mk
@@ -680,7 +669,7 @@ private theorem correctShape_continuous (S : NativeRecipe F ζ hζ R P) (V : Lev
           (KPMsFixedHaarDisintegration.Parabolic (nativeAtlas F ζ hζ R P S V) j).E
           (KPMsFixedHaarDisintegration.Parabolic (nativeAtlas F ζ hζ R P S V) j).integralUnits))
 
-private theorem corrected_chart_formula (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
+private theorem corrected_chart_formula
     (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y)
     (a : KPSmoothActualFlowData.GInfinity F) (p : KPCuspCharts.Cross F)
@@ -708,16 +697,18 @@ private theorem corrected_chart_formula (S : NativeRecipe F ζ hζ R P) (V : Lev
   congr 1
   rw [← QuotientAddGroup.mk_sub]
   congr 1
-  have hh := sectionShape_mul (nativeFamily F ζ hζ R P).totallyComplex
+  rw [(sectionShape_mul (nativeFamily F ζ hζ R P).totallyComplex
     (nativeDisintegration F ζ hζ R P S V).radial.slot
-    (cuspOffset F ζ hζ R P S V j) (⟨r.val, lt_trans hY.1 r.property⟩ : KPMsFixedHaarDisintegration.Radius)
-  rw [hh]
+    (cuspOffset F ζ hζ R P S V j) (⟨r.val, lt_trans hY.1 r.property⟩ : KPMsFixedHaarDisintegration.Radius))]
   abel
 
-private theorem source_recovery
-    (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
-    (Y : ℝ) (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y)
+end
+
+variable (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) (Y : ℝ)
+    (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y)
     (rb : KPMsFixedHaarDisintegration.Radius)
+
+private theorem source_recovery
     (hrb : ∀ j : NativeCusp F ζ hζ R P S V, Y < rb.val / (cuspOffset F ζ hζ R P S V j).val)
     (s : KPMsFixedHaarDisintegration.Spherical F ζ hζ (S.atlasLevel (cofinalLevel F ζ hζ V)) →
       KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V))
@@ -760,13 +751,14 @@ private theorem source_recovery
   have hrad : framedRadius F ζ hζ (nativeDatum F ζ hζ) (representative S V j) frame = ra := by
     apply Subtype.ext
     exact FrameNorm.actual_frame_norm_coherent F ζ hζ R P S V j a p t ε u ha
+  let radialSection₀ := KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot rb
   have hm : KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot d =
-      KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot rb *
+      radialSection₀ *
         (KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot ra)⁻¹ := by
     apply eq_mul_inv_iff_mul_eq.mpr
     rw [← B.section_mul, hd]
   obtain ⟨a',he,ha'⟩ := actual_frame_radial_rescale S V j B.slot d a p t ε u ha
-  have halg : representative S V j * KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot rb * g.val =
+  have halg : representative S V j * radialSection₀ * g.val =
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a' *
         ((nativeAtlas F ζ hζ R P S V).representative j.1).val *
           KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val := by
@@ -774,8 +766,9 @@ private theorem source_recovery
     rw [hrad, ← he, hm]
     dsimp only [frame, B]
     group
+  let nativeFamily₀ := nativeFamily F ζ hζ R P
   have hdim : 0 < (2 : ℝ) * (KPCuspLogShape.dimension F : ℝ) := by
-    exact mul_pos (by norm_num) (Nat.cast_pos.mpr (KPCuspLogShape.dimension_pos F (nativeFamily F ζ hζ R P).totallyComplex))
+    exact mul_pos (by norm_num) (Nat.cast_pos.mpr (KPCuspLogShape.dimension_pos F (nativeFamily₀).totallyComplex))
   let r : Set.Ioi Y := ⟨rb.val / c.val,hrb j⟩
   have hlog : t + KPMsFixedHaarDisintegration.logHeight (F := F) d.val =
       KPMsFixedHaarDisintegration.logHeight (F := F) r.val := by
@@ -796,21 +789,21 @@ private theorem source_recovery
     rw [hlog]
     exact div_lt_div_of_pos_right (Real.log_lt_log hY.1 r.property) hdim
   refine ⟨Set.mem_iUnion.mpr ⟨j,?_⟩,?_⟩
-  · change representative S V j * KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot rb * g.val ∈ fullDomain S V j Y
+  · change representative S V j * radialSection₀ * g.val ∈ fullDomain S V j Y
     rw [halg]
-    exact ⟨a',radialCross B.slot (nativeFamily F ζ hζ R P).totallyComplex d p,
+    exact ⟨a',radialCross B.slot (nativeFamily₀).totallyComplex d p,
       t + KPMsFixedHaarDisintegration.logHeight (F := F) d.val,ε,u,ht',ha',rfl⟩
   · have hdrop := quotientMap_left_rational
       (((nativeAtlas F ζ hζ R P S V).cuspAtlas j.1).representative j.2)
-      (KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot rb * g.val)
+      (radialSection₀ * g.val)
     change KPSmoothLocalQuotientCharts.quotientMap F ζ hζ (representative S V j * _) = _ at hdrop
     have hqa := congrArg (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ) halg
     rw [mul_assoc, hdrop] at hqa
     change correctShape S V (s (P.projection _ (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
-      (KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot rb * g.val)))) = _
+      (radialSection₀ * g.val)))) = _
     rw [hqa]
     rw [hlog] at ha'
-    rw [corrected_chart_formula S V j Y hY a' (radialCross B.slot (nativeFamily F ζ hζ R P).totallyComplex d p) r ε u s hsc ha']
+    rw [corrected_chart_formula S V j Y hY a' (radialCross B.slot (nativeFamily₀).totallyComplex d p) r ε u s hsc ha']
     have hcr : (⟨c.val * r.val, mul_pos c.property (lt_trans hY.1 r.property)⟩ : KPMsFixedHaarDisintegration.Radius) = rb := by
       apply Subtype.ext
       exact mul_div_cancel₀ _ c.property.ne'
@@ -820,15 +813,13 @@ private theorem source_recovery
       KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V)) = _
     rw [hcr]
     congr 2
-    have hh := sectionShape_mul (nativeFamily F ζ hζ R P).totallyComplex B.slot d ra
+    have hh := sectionShape_mul (nativeFamily₀).totallyComplex B.slot d ra
     rw [hd] at hh
     rw [hh]
     abel
 
+include hY in
 private theorem fixed_shape_continuous
-    (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
-    (Y : ℝ) (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y)
-    (rb : KPMsFixedHaarDisintegration.Radius)
     (s : KPMsFixedHaarDisintegration.Spherical F ζ hζ (S.atlasLevel (cofinalLevel F ζ hζ V)) →
       KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V))
     (hs : ContinuousOn s (KPMsFixedHaarDisintegration.cuspEnds (nativeAtlas F ζ hζ R P S V) Y)) :
@@ -853,10 +844,8 @@ private theorem fixed_shape_continuous
   rw [mul_assoc,hdrop] at hx
   exact Set.mem_iUnion.mpr ⟨j,hx⟩
 
+include hY in
 theorem fixed_radius_shape_descent
-    (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) (Y : ℝ)
-    (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y)
-    (rb : KPMsFixedHaarDisintegration.Radius)
     (hrb : ∀ j : NativeCusp F ζ hζ R P S V, Y < rb.val / (cuspOffset F ζ hζ R P S V j).val) :
     ∃ shape : Omega F ζ hζ (nativeDatum F ζ hζ) (cofinalLevel F ζ hζ V) →
         KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V),
@@ -879,11 +868,13 @@ theorem fixed_radius_shape_descent
         ⟨(cuspOffset F ζ hζ R P S V j).val * Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * t),
           mul_pos (cuspOffset F ζ hζ R P S V j).property (Real.exp_pos _)⟩)⟩ :
         KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V)) := by
-  letI : BorelSpace (Omega F ζ hζ (nativeDatum F ζ hζ) (cofinalLevel F ζ hζ V)) := ⟨rfl⟩
-  obtain ⟨s,hs,hscnt,hsc⟩ := pinned_chart_shape S V Y hY
+  let Omega₀ := Omega F ζ hζ (nativeDatum F ζ hζ) (cofinalLevel F ζ hζ V)
+  letI : BorelSpace (Omega₀) := ⟨rfl⟩
+  obtain ⟨s, hscnt, hsc⟩ := pinned_chart_shape S V Y hY
   let E := fixedRadiusDomain S V Y rb
-  let q : E → Omega F ζ hζ (nativeDatum F ζ hζ) (cofinalLevel F ζ hζ V) := fun g => Quotient.mk _ g.val
-  let f : E → KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V) := fun g =>
+  let q : E → Omega₀ := fun g => Quotient.mk _ g.val
+  let nativeAtlas₀ := nativeAtlas F ζ hζ R P S V
+  let f : E → KPMsFixedHaarDisintegration.Omega (nativeAtlas₀) := fun g =>
     correctShape S V (s (P.projection (S.atlasLevel (cofinalLevel F ζ hζ V)) (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
       (KPMsFixedHaarDisintegration.radialSection F ζ hζ (nativeDisintegration F ζ hζ R P S V).radial.slot rb * g.val.val))))
   have hfi : ∀ a b : E, q a = q b → f a = f b := by
@@ -899,7 +890,7 @@ theorem fixed_radius_shape_descent
   let qr : E → Z := fun a => ⟨q a,Set.mem_range_self a⟩
   have hqc : Continuous qr := (continuous_quotient_mk'.comp continuous_subtype_val).subtype_mk _
   have hqs : Function.Surjective qr := by rintro ⟨v,a,rfl⟩; exact ⟨a,rfl⟩
-  let tr : Z → KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V) := fun v => f (Classical.choose v.property)
+  let tr : Z → KPMsFixedHaarDisintegration.Omega (nativeAtlas₀) := fun v => f (Classical.choose v.property)
   have htr : ∀ a, tr (qr a) = f a := fun a => hfi _ a (Classical.choose_spec (qr a).property)
   have hqro : IsOpenMap qr := hqo.codRestrict _
   have htc : Continuous tr := (hqro.isQuotientMap hqc hqs).continuous_iff.mpr (by
@@ -907,17 +898,17 @@ theorem fixed_radius_shape_descent
     have hh : tr ∘ qr = f := funext htr
     rw [hh]
     exact hf)
-  let i : Fin (nativeAtlas F ζ hζ R P S V).componentCount := ⟨0,(nativeAtlas F ζ hζ R P S V).positive_componentCount⟩
-  let j₀ : NativeCusp F ζ hζ R P S V := ⟨i,⟨0,((nativeAtlas F ζ hζ R P S V).cuspAtlas i).positive_cuspCount⟩⟩
-  let ω₀ : KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V) := ⟨j₀,QuotientAddGroup.mk 0⟩
-  let shape : Omega F ζ hζ (nativeDatum F ζ hζ) (cofinalLevel F ζ hζ V) →
-      KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V) := fun ω => if h : ω ∈ Z then tr ⟨ω,h⟩ else ω₀
+  let i : Fin (nativeAtlas₀).componentCount := ⟨0,(nativeAtlas₀).positive_componentCount⟩
+  let j₀ : NativeCusp F ζ hζ R P S V := ⟨i,⟨0,((nativeAtlas₀).cuspAtlas i).positive_cuspCount⟩⟩
+  let ω₀ : KPMsFixedHaarDisintegration.Omega (nativeAtlas₀) := ⟨j₀,QuotientAddGroup.mk 0⟩
+  let shape : Omega₀ →
+      KPMsFixedHaarDisintegration.Omega (nativeAtlas₀) := fun ω => if h : ω ∈ Z then tr ⟨ω,h⟩ else ω₀
   have hshape : Measurable shape := htc.measurable.dite measurable_const hZ.measurableSet
   refine ⟨shape,hshape,?_⟩
   intro j a p t ε u ha
   have hg := source_recovery S V Y hY rb hrb s hsc j a p t ε u ha
   let frame := KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a *
-    ((nativeAtlas F ζ hζ R P S V).representative j.1).val * KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val
+    ((nativeAtlas₀).representative j.1).val * KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val
   let g : NormOne F ζ hζ (nativeDatum F ζ hζ) := ⟨framedNormalization F ζ hζ (nativeDatum F ζ hζ)
     (nativeDisintegration F ζ hζ R P S V).radial (representative S V j) frame,
     (framedNormalization_normOne_continuous F ζ hζ (nativeDatum F ζ hζ)
@@ -999,9 +990,8 @@ theorem native_shape_descent :
     obtain ⟨shape,hs,hframe⟩ := fixed_radius_shape_descent S V Y hY rb hrb
     refine ⟨shape,hs,?_⟩
     intro j Z hZ x hx a p t ε u he ha
-    have hh := hframe j a p t ε u ha
     change shape (Quotient.mk _ _) = _
-    simpa only [fullCoordinate, fullToLevel_mk, representative, he] using hh
+    simpa only [fullCoordinate, fullToLevel_mk, representative, he] using (hframe j a p t ε u ha)
   choose shape hs hframe using hex
   exact ⟨shape,hs,hframe⟩
 

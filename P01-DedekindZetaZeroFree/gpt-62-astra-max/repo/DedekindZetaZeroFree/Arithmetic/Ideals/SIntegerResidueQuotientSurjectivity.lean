@@ -28,18 +28,13 @@ private theorem denominatorIdeal_sup (A : SArithmeticData F) (I : A.Exterior) (x
   obtain ⟨M, hM, hle⟩ := Ideal.exists_le_maximal _ h
   let v : IsDedekindDomain.HeightOneSpectrum (𝓞 F) :=
     ⟨M, hM.isPrime, Ring.ne_bot_of_isMaximal_of_not_isField hM (RingOfIntegers.not_isField F)⟩
-  have hi : I.val ≤ v.asIdeal := le_sup_right.trans hle
   have hv : v ∉ A.Sf := by
     intro hv
-    have hc : A.cS ≤ v.asIdeal := by
-      exact Ideal.prod_le_inf.trans (Finset.inf_le hv)
-    have ht : (⊤ : Ideal (𝓞 F)) ≤ M := by
-      rw [← I.property.2]
-      exact sup_le hi hc
-    exact hM.ne_top (top_unique ht)
+    refine hM.ne_top (top_unique ?_)
+    rw [← I.property.2]
+    exact sup_le (le_sup_right.trans hle) (Ideal.prod_le_inf.trans (Finset.inf_le hv))
   obtain ⟨n, d, hd⟩ := v.exists_primeCompl_mul_eq_of_integer (x : F) (x.property v hv)
-  have hm : (d : 𝓞 F) ∈ denominatorIdeal (x : F) := ⟨n, hd⟩
-  exact d.property ((le_sup_left.trans hle) hm)
+  exact d.property ((le_sup_left.trans hle) (⟨n, hd⟩))
 
 theorem exteriorQuotientMap_surjective (A : SArithmeticData F) (I : A.Exterior) :
     Function.Surjective

@@ -15,11 +15,7 @@ theorem selected_certified_packet_exists
     ∃ R : PrincipalMellin.ActualRecipe S η, Nonempty (CertifiedPacket R) := by
   obtain ⟨R, hR⟩ := root_aligned_recipe_exists S η hη P
   obtain ⟨N⟩ := trace_haar_transport_exists R hR
-  have p5 := admissible_flat_sources R hR N
-  have p6 := common_smooth_laurent_germ_exists R hR N p5
-  have p7 := detected_period_factorization R hR N p6
-  have p8 := exterior_coefficients R hR N p7
-  have p9 := first_root_packet R hR N p8
+  have p9 := first_root_packet R hR N
   have p10 := residual_constant_term R hR N p9
   have p11 := mellin_gaussian R N p10
   have p12 := weighted_digits_descent R hR N p11

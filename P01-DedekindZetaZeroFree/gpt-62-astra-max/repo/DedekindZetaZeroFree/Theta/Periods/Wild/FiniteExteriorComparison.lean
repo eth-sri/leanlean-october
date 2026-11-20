@@ -54,8 +54,6 @@ theorem period_finite_tame (D : TensorDetected R N) (W : Finset (KPFinitePlace F
   induction t using Finset.induction_on with
   | empty => simp
   | @insert p t hpt ih =>
-    have hp := ht p (Finset.mem_insert_self p t)
-    have hop := ho p (Finset.mem_insert_self p t)
     have he : (insert p t).piecewise v x = Function.update (t.piecewise v x) p (v p) := by
       funext q
       by_cases hq : q = p
@@ -64,7 +62,7 @@ theorem period_finite_tame (D : TensorDetected R N) (W : Finset (KPFinitePlace F
     have hr : Function.update (t.piecewise v x) p (x p) = t.piecewise v x := by
       apply Function.update_eq_self_iff.mpr
       simp [hpt]
-    rw [he, period_slot_compare D W s hW x hx _ p hp hop, hr,
+    rw [he, period_slot_compare D W s hW x hx _ p (ht p (Finset.mem_insert_self p t)) (ho p (Finset.mem_insert_self p t)), hr,
       ih (fun q hq => ht q (Finset.mem_insert_of_mem hq))
         (fun q hq => ho q (Finset.mem_insert_of_mem hq)), Finset.prod_insert hpt]
     ring
@@ -91,11 +89,6 @@ theorem stage_extend (D : TensorActions R N) (s t : RestrictedTensorSimple.Level
     coreStageMultilinear _ D.references D.bad (D.toTensorHC.literalPeriod 1) t
       (extendTuple D s t x) =
     coreStageMultilinear _ D.references D.bad (D.toTensorHC.literalPeriod 1) s x := by
-  change D.toTensorHC.literalPeriod 1
-    (RestrictedTensorSimple.stageInclusion _ D.references D.bad t
-      (PiTensorProduct.tprod ℂ (extendTuple D s t x))) =
-    D.toTensorHC.literalPeriod 1
-    (RestrictedTensorSimple.stageInclusion _ D.references D.bad s (PiTensorProduct.tprod ℂ x))
   apply congrArg (D.toTensorHC.literalPeriod 1)
   change RestrictedTensorSimple.stageInclusion _ D.references D.bad t
     (PiTensorProduct.tprod ℂ (fun p ↦ if hp : p.val ∈ s.val then x ⟨p.val, hp⟩ else D.references p)) = _

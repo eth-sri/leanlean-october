@@ -48,7 +48,7 @@ theorem finiteShell_weighted_fourier_integral_ne_zero
       TateFiniteShell.fourier_rescaledCharacter F v _ μ _ a ha0]
     simp only [localHalfDifferentFactor, Int.cast_neg, Int.cast_natCast]
     rfl
-  have hz := TateFiniteShell.mellin_fourier_annularTest F v ψ hψ hc μ hμ s hs hs1
+  have hz := TateFiniteShell.mellin_fourier_annularTest_ne_zero F v ψ hψ hc μ hμ s hs hs1
   have hn : TateFiniteShell.mellin F v μ g s ≠ 0 := by
     rw [hg]
     unfold TateFiniteShell.mellin
@@ -61,7 +61,7 @@ theorem finiteShell_weighted_fourier_integral_ne_zero
     · exact_mod_cast (localHalfDifferentFactor_pos F v).ne'
     · apply mul_ne_zero
       · exact_mod_cast (Real.rpow_pos_of_pos (norm_pos_iff.mpr ha0) s).ne'
-      · exact hz.2.2.2
+      · exact hz
   letI : NullSingletonClass μ := KPRankOneMellin.completion_addHaar_nullSingletonClass F v μ
   have hm : TateFiniteShell.mellin F v μ g s =
       (↑((1 - (TateFiniteShell.q F v : ℝ)⁻¹)⁻¹) : ℂ) *

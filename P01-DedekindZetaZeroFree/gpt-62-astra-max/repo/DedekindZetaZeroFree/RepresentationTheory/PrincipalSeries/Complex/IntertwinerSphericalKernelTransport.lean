@@ -26,35 +26,39 @@ noncomputable def rawLatitudeKernel (w : ℝ → ℝ) (x : rawSphere)
 
 private theorem coords_norm (k : ComplexSU2) :
     ‖(WithLp.toLp 2 (fun i => (compactSphereCoordinate k i).re) : rawAmbient)‖ = 1 := by
-  have hu := Matrix.mem_unitaryGroup_iff.mp (Matrix.specialUnitaryGroup_le_unitaryGroup k.property)
-  have h := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => (A 1 1).re) hu
+  let Matrix₀ := Matrix (Fin 2) (Fin 2) ℂ
+  have h := congrArg (fun A : Matrix₀ => (A 1 1).re) (Matrix.mem_unitaryGroup_iff.mp (Matrix.specialUnitaryGroup_le_unitaryGroup k.property))
   simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
     Complex.mul_re, Complex.star_def, Complex.normSq_apply] at h
   have hs : ‖(WithLp.toLp 2 (fun i => (compactSphereCoordinate k i).re) : rawAmbient)‖ ^ 2 = 1 := by
     rw [EuclideanSpace.real_norm_sq_eq]
     simp [compactSphereCoordinate, Fin.sum_univ_three, Complex.mul_re, Complex.mul_im,
       Complex.star_def, ← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
-    nlinarith [sq_nonneg (((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0).re ^ 2 +
-      ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0).im ^ 2 +
-      ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1).re ^ 2 +
-      ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1).im ^ 2 - 1)]
+    nlinarith [sq_nonneg (((k : Matrix₀) 1 0).re ^ 2 +
+      ((k : Matrix₀) 1 0).im ^ 2 +
+      ((k : Matrix₀) 1 1).re ^ 2 +
+      ((k : Matrix₀) 1 1).im ^ 2 - 1)]
   nlinarith [norm_nonneg (WithLp.toLp 2 (fun i => (compactSphereCoordinate k i).re) : rawAmbient)]
 
 namespace TransportGeometry
 
-noncomputable def radius (z : ℂ) : ℝ := Real.sqrt (denominator z)
+section
 
-theorem radius_pos (z : ℂ) : 0 < radius z := by
+variable (z : ℂ)
+
+noncomputable def radius : ℝ := Real.sqrt (denominator z)
+
+theorem radius_pos : 0 < radius z := by
   apply Real.sqrt_pos.mpr
   unfold denominator
   positivity
 
-theorem radius_sq (z : ℂ) : radius z ^ 2 = denominator z := by
+theorem radius_sq : radius z ^ 2 = denominator z := by
   apply Real.sq_sqrt
   unfold denominator
   positivity
 
-noncomputable def kappa (z : ℂ) : ComplexSU2 :=
+noncomputable def kappa : ComplexSU2 :=
   ⟨!![star z / (radius z : ℂ), -1 / (radius z : ℂ);
       1 / (radius z : ℂ), z / (radius z : ℂ)], by
     have hn : ‖(1 : ℂ) / (radius z : ℂ)‖ ^ 2 +
@@ -82,19 +86,18 @@ noncomputable def kappa (z : ℂ) : ComplexSU2 :=
     · simp [Matrix.det_fin_two, Complex.star_def, Complex.mul_conj',
         mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, hn, hn']⟩
 
-noncomputable def unsignedUpper (z : ℂ) : ComplexGL2 :=
-  upperTriangular (Units.mk0 (-1 / (radius z : ℂ)) (by
-    exact div_ne_zero (by simp) (Complex.ofReal_ne_zero.mpr (radius_pos z).ne')))
+noncomputable def unsignedUpper : ComplexGL2 :=
+  upperTriangular (Units.mk0 (-1 / (radius z : ℂ)) (div_ne_zero (by simp) (Complex.ofReal_ne_zero.mpr (radius_pos z).ne')))
     (Units.mk0 (radius z : ℂ) (Complex.ofReal_ne_zero.mpr (radius_pos z).ne'))
     (star z / (radius z : ℂ))
 
-private theorem normalized_bruhat_factorization (z : ℂ) :
+private theorem normalized_bruhat_factorization :
     weyl * upperUnipotent z = unsignedUpper z * complexSU2Embedding (kappa z) ∧
       (∀ (f : PrincipalSeries positiveParameter) (k : ComplexSU2),
         f (weyl * upperUnipotent z * complexSU2Embedding k) =
           ((denominator z ^ (-(4 / 3) : ℝ) : ℝ) : ℂ) *
             compactRestriction positiveParameter f (kappa z * k)) := by
-  have hr : (radius z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (radius_pos z).ne'
+  have hr := Complex.ofReal_ne_zero.mpr (radius_pos z).ne'
   have hs : (radius z : ℂ)^2 = 1 + z * star z := by
     rw [← Complex.ofReal_pow, radius_sq, denominator, Complex.star_def,
       Complex.mul_conj', ← Complex.ofReal_pow]
@@ -108,10 +111,9 @@ private theorem normalized_bruhat_factorization (z : ℂ) :
     ext i j
     fin_cases i <;> fin_cases j <;>
       simp [Matrix.mul_apply, Fin.sum_univ_two]
+    · ring
     · field_simp
-      ring
-    · field_simp
-      simpa [Complex.star_def, mul_comm] using hs
+      simpa [mul_comm] using hs
     · field_simp
     · field_simp
   refine ⟨hfac, ?_⟩
@@ -120,7 +122,6 @@ private theorem normalized_bruhat_factorization (z : ℂ) :
   have hc := f.property.1
   dsimp [HasCovariance] at hc
   rw [unsignedUpper, hc]
-  change _ * _ = _ * _
   congr 1
   congr 1
   dsimp [inductionWeight, complexAbs]
@@ -135,23 +136,26 @@ private theorem normalized_bruhat_factorization (z : ℂ) :
   congr 1
   norm_num [positiveParameter]
 
+end
+
 def HasRawHopfCoordinates (H : ComplexSU2 → rawSphere) : Prop :=
   ∀ k, (H k : rawAmbient) =
     WithLp.toLp 2 (fun i => (compactSphereCoordinate k i).re)
 
-private theorem su2_entries (k : ComplexSU2) : (k : Matrix (Fin 2) (Fin 2) ℂ) 0 0 = star ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1) ∧
-  (k : Matrix (Fin 2) (Fin 2) ℂ) 0 1 = -star ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0) := by
-  let m : Matrix (Fin 2) (Fin 2) ℂ := k
-  have hu := Matrix.mem_unitaryGroup_iff.mp (Matrix.specialUnitaryGroup_le_unitaryGroup k.property)
+local notation "Mat₂ℂ" => Matrix (Fin 2) (Fin 2) ℂ
+
+private theorem su2_entries (k : ComplexSU2) : (k : Mat₂ℂ) 0 0 = star ((k : Mat₂ℂ) 1 1) ∧
+  (k : Mat₂ℂ) 0 1 = -star ((k : Mat₂ℂ) 1 0) := by
+  let m : Mat₂ℂ := k
   have hd := (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2
   have ha : star m = Matrix.adjugate m := by
     calc
       star m = 1 * star m := by simp
       _ = (Matrix.adjugate m * m) * star m := by rw [Matrix.adjugate_mul, hd]; simp
       _ = Matrix.adjugate m * (m * star m) := by rw [mul_assoc]
-      _ = Matrix.adjugate m := by rw [hu]; simp
-  have h00 := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => A 0 0) ha
-  have h10 := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => A 1 0) ha
+      _ = Matrix.adjugate m := by rw [(Matrix.mem_unitaryGroup_iff.mp (Matrix.specialUnitaryGroup_le_unitaryGroup k.property))]; simp
+  have h00 := congrArg (fun A : Mat₂ℂ => A 0 0) ha
+  have h10 := congrArg (fun A : Mat₂ℂ => A 1 0) ha
   simp only [Matrix.star_apply, Matrix.adjugate_fin_two, Matrix.of_apply,
     Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one] at h00 h10
   constructor
@@ -159,12 +163,11 @@ private theorem su2_entries (k : ComplexSU2) : (k : Matrix (Fin 2) (Fin 2) ℂ) 
   · simpa using congrArg star h10
 
 private theorem su2_row_norm (k : ComplexSU2) :
-    ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0).re ^ 2 +
-    ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0).im ^ 2 +
-    ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1).re ^ 2 +
-    ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1).im ^ 2 = 1 := by
-  have hu := Matrix.mem_unitaryGroup_iff.mp (Matrix.specialUnitaryGroup_le_unitaryGroup k.property)
-  have h := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => (A 1 1).re) hu
+    ((k : Mat₂ℂ) 1 0).re ^ 2 +
+    ((k : Mat₂ℂ) 1 0).im ^ 2 +
+    ((k : Mat₂ℂ) 1 1).re ^ 2 +
+    ((k : Mat₂ℂ) 1 1).im ^ 2 = 1 := by
+  have h := congrArg (fun A : Mat₂ℂ => (A 1 1).re) (Matrix.mem_unitaryGroup_iff.mp (Matrix.specialUnitaryGroup_le_unitaryGroup k.property))
   simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
     Complex.mul_re, Complex.star_def, Complex.normSq_apply] at h
   nlinarith
@@ -194,8 +197,10 @@ private theorem hopfLinear_norm (a b : ℂ)
       _ = _ := by rw [h]; ring
   nlinarith [norm_nonneg x, norm_nonneg (hopfLinear a b x)]
 
-private theorem hopfLinear_action (H : ComplexSU2 → rawSphere)
-    (hH : HasRawHopfCoordinates H) (l k : ComplexSU2) :
+variable (H : ComplexSU2 → rawSphere) (hH : HasRawHopfCoordinates H)
+
+include hH in
+private theorem hopfLinear_action (l k : ComplexSU2) :
     (H (l * k) : rawAmbient) = hopfLinear
       ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0)
       ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1) (H l) := by
@@ -207,11 +212,11 @@ private theorem hopfLinear_action (H : ComplexSU2 → rawSphere)
       h0, h1, Complex.mul_re, Complex.mul_im, Complex.star_def,
       ← Complex.normSq_eq_norm_sq, Complex.normSq_apply] <;> ring
 
-private theorem hopf_kappa (H : ComplexSU2 → rawSphere)
-    (hH : HasRawHopfCoordinates H) (z : ℂ) : H (kappa z) = sigma z := by
+include hH in
+private theorem hopf_kappa (z : ℂ) : H (kappa z) = sigma z := by
   apply Subtype.ext
   rw [hH]
-  have hr : radius z ≠ 0 := (radius_pos z).ne'
+  have hr := (radius_pos z).ne'
   ext i
   fin_cases i <;>
     simp [compactSphereCoordinate, kappa, sigma, sigmaVector, Complex.star_def,
@@ -226,12 +231,10 @@ private theorem hopf_kappa (H : ComplexSU2 → rawSphere)
       ← Complex.ofReal_pow, Complex.ofReal_re, abs_of_pos (radius_pos z)]
     have hn := Complex.normSq_eq_norm_sq z
     simp [Complex.normSq_apply] at hn
-    rw [div_pow, ← hn, ← radius_sq]
-    field_simp
-    ring
+    simp [div_pow, hn, radius_sq] <;> ring
 
-private theorem hopf_rotation_geometry (H : ComplexSU2 → rawSphere)
-    (hH : HasRawHopfCoordinates H) :
+include hH in
+private theorem hopf_rotation_geometry :
     (∀ z : ℂ, H (kappa z) = sigma z) ∧
       (∀ k : ComplexSU2, ∃ R : rawAmbient ≃ₗᵢ[ℝ] rawAmbient,
         (∀ l : ComplexSU2, H (l * k) = rotation R (H l)) ∧
@@ -263,8 +266,8 @@ private theorem hopf_rotation_geometry (H : ComplexSU2 → rawSphere)
   field_simp
   ring
 
-private theorem positive_section_stereographic (H : ComplexSU2 → rawSphere)
-    (hH : HasRawHopfCoordinates H) (f : PrincipalSeries positiveParameter)
+include hH in
+private theorem positive_section_stereographic (f : PrincipalSeries positiveParameter)
     (F : rawSphere → ℂ)
     (hf : ∀ k, compactRestriction positiveParameter f k = F (H k))
     (k : ComplexSU2) :
@@ -291,14 +294,13 @@ private theorem positive_section_stereographic (H : ComplexSU2 → rawSphere)
     exact hmp.comp stereographic_measure_transport.1
   · intro z
     rw [(normalized_bruhat_factorization z).2 f k, hf, ht]
-    have hD : 0 < denominator z := by unfold denominator; positivity
     have hs : denominator z ^ (-(4 / 3) : ℝ) =
         3 * Real.pi * (denominator z ^ (-2 : ℝ) / Real.pi) *
         ((1 / 3 : ℝ) * (1 / denominator z) ^ (1 / 3 - 1 : ℝ)) := by
       rw [show (1 / denominator z) = (denominator z)⁻¹ by simp,
         ← Real.rpow_neg_eq_inv_rpow]
       have he : -(4 / 3 : ℝ) = -2 + -(1 / 3 - 1) := by norm_num
-      rw [he, Real.rpow_add hD]
+      rw [he, Real.rpow_add (by unfold denominator; positivity)]
       field_simp
     rw [show (3 * Real.pi : ℂ) *
         (↑(denominator z ^ (-2 : ℝ) / Real.pi) : ℂ) *
@@ -339,7 +341,7 @@ theorem compact_section_spherical_transport (k : ComplexSU2) :
       unfold rawPolynomialSphere
       rw [show (fun i => ((H h : rawAmbient) i : ℂ)) = compactSphereCoordinate h from funext (hc h)]
     intro z
-    simpa only [rawLatitudeKernel, mul_assoc] using
+    simpa [rawLatitudeKernel, mul_assoc] using
       (positive_section_stereographic H hH f (rawPolynomialSphere p) hp k).2 z
 
 end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum.HarmonicIntegral
@@ -378,7 +380,7 @@ theorem raw_polynomial_latitude_integrable (p : MvPolynomial (Fin 3) ℂ)
   have h := (show IntegrableOn (fun y => (w (φ y) : ℂ)) Set.univ rawSphereArea by
     simpa using hi).mul_continuousOn hp.continuousOn isCompact_univ
   change Integrable (fun y => (w (φ y) : ℂ) * rawPolynomialSphere p y) rawSphereArea
-  simpa only [IntegrableOn, Measure.restrict_univ] using h
+  simp_all [IntegrableOn]
 
 end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum.HarmonicIntegral
 

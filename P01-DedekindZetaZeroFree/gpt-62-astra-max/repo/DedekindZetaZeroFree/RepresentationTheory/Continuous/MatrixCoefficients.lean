@@ -32,25 +32,25 @@ section Coefficients
 variable {𝕜 G V : Type*} [RCLike 𝕜] [Monoid G] [TopologicalSpace G]
   [NormedAddCommGroup V] [InnerProductSpace 𝕜 V]
 
-noncomputable def matrixCoeff (π : ContRepresentation 𝕜 G V) (hπ : Continuous π)
-    (v w : V) : C(G, 𝕜) where
+section
+
+variable (π : ContRepresentation 𝕜 G V) (hπ : Continuous π) (v w : V)
+
+noncomputable def matrixCoeff : C(G, 𝕜) where
   toFun g := ⟪π g v, w⟫_𝕜
   continuous_toFun := by fun_prop
 
 @[simp]
-theorem matrixCoeff_apply (π : ContRepresentation 𝕜 G V) (hπ : Continuous π) (v w : V) (g : G) :
+theorem matrixCoeff_apply (g : G) :
     matrixCoeff π hπ v w g = ⟪π g v, w⟫_𝕜 :=
   (rfl)
+
+end
 
 variable (π : ContRepresentation 𝕜 G V) (hπ : Continuous π)
 
 @[simp]
 theorem matrixCoeff_zero_left (w : V) : matrixCoeff π hπ 0 w = 0 := by
-  ext g
-  simp
-
-@[simp]
-theorem matrixCoeff_zero_right (v : V) : matrixCoeff π hπ v 0 = 0 := by
   ext g
   simp
 
@@ -91,24 +91,11 @@ theorem matrixCoeffₛₗ_apply_apply (v w : V) :
     matrixCoeffₛₗ π hπ v w = matrixCoeff π hπ v w :=
   (rfl)
 
-theorem matrixCoeff_apply_mul_right (v w : V) (g g₀ : G) :
-    matrixCoeff π hπ v w (g * g₀) = matrixCoeff π hπ (π g₀ v) w g := by
-  simp [map_mul]
-
 @[simp]
 theorem matrixCoeff_trivial (v w : V) :
     matrixCoeff (ContRepresentation.trivial 𝕜 G V) continuous_const v w =
       ContinuousMap.const G ⟪v, w⟫_𝕜 := by
-  ext g
-  simp
   rfl
-
-@[simp]
-theorem matrixCoeff_restrict {H : Type*} [Monoid H] [TopologicalSpace H] (φ : H →* G)
-    (hφ : Continuous φ) (v w : V) :
-    matrixCoeff (π.restrict φ) (hπ.comp hφ) v w = (matrixCoeff π hπ v w).comp ⟨φ, hφ⟩ := by
-  ext h
-  simp
 
 end Coefficients
 
@@ -119,11 +106,6 @@ variable {𝕜 G V : Type*} [RCLike 𝕜] [Monoid G] [TopologicalSpace G] [Separ
 
 variable (π : ContRepresentation 𝕜 G V) (hπ : Continuous π)
 
-@[simp]
-theorem matrixCoeff_comp_mulRight (v w : V) (g₀ : G) :
-    (matrixCoeff π hπ v w).comp (ContinuousMap.mulRight g₀) = matrixCoeff π hπ (π g₀ v) w :=
-  ContinuousMap.ext fun g ↦ matrixCoeff_apply_mul_right π hπ v w g g₀
-
 end TranslationRight
 
 section Group
@@ -132,28 +114,6 @@ variable {𝕜 G V : Type*} [RCLike 𝕜] [Group G] [TopologicalSpace G]
   [NormedAddCommGroup V] [InnerProductSpace 𝕜 V]
 
 variable {π : ContRepresentation 𝕜 G V}
-
-theorem matrixCoeff_apply_mul_left (hπ : Continuous π) (hunitary : IsUnitary π) (v w : V)
-    (g₀ g : G) :
-    matrixCoeff π hπ v w (g₀ * g) = matrixCoeff π hπ v (π g₀⁻¹ w) g := by
-  have hmul : π (g₀ * g) v = π g₀ (π g v) := by simp [map_mul]
-  rw [matrixCoeff_apply, matrixCoeff_apply, hmul, hunitary.inner_map_left]
-
-theorem matrixCoeff_apply_inv (hπ : Continuous π) (hunitary : IsUnitary π) (v w : V) (g : G) :
-    matrixCoeff π hπ v w g⁻¹ = (starRingEnd 𝕜) (matrixCoeff π hπ w v g) := by
-  rw [matrixCoeff_apply, matrixCoeff_apply, hunitary.inner_map_left, inv_inv, inner_conj_symm]
-
-@[simp]
-theorem matrixCoeff_comp_mulLeft [SeparatelyContinuousMul G] (hπ : Continuous π)
-    (hunitary : IsUnitary π) (v w : V) (g₀ : G) :
-    (matrixCoeff π hπ v w).comp (ContinuousMap.mulLeft g₀) = matrixCoeff π hπ v (π g₀⁻¹ w) :=
-  ContinuousMap.ext fun g ↦ matrixCoeff_apply_mul_left hπ hunitary v w g₀ g
-
-@[simp]
-theorem star_matrixCoeff [ContinuousInv G] (hπ : Continuous π) (hunitary : IsUnitary π) (v w : V) :
-    star (matrixCoeff π hπ v w) =
-      (matrixCoeff π hπ w v).comp ⟨Inv.inv, continuous_inv⟩ :=
-  ContinuousMap.ext fun g ↦ (matrixCoeff_apply_inv hπ hunitary w v g).symm
 
 end Group
 

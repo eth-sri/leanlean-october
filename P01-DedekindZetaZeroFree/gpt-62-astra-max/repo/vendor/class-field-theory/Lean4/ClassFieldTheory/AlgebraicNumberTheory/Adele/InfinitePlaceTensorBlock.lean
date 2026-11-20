@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -34,7 +30,6 @@ open NumberField
 noncomputable section
 
 open LocalClassFieldTheory
-
 
 open AlgebraicNumberTheory.Valuations
 open HilbertRamification
@@ -80,7 +75,7 @@ theorem infinitePlaceCompletionAlgEquiv_algebraMap
   let u : AbsoluteValueExtension v.1 L :=
     ⟨w.1, fun x =>
       congrArg (fun q : InfinitePlace K => q.1 x) hw⟩
-  let : Algebra v.1.Completion u.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra v.1 u.1 u.2
   ext x
   refine InfinitePlace.Completion.induction_on v x ?_ ?_
@@ -126,8 +121,7 @@ theorem infinitePlaceLocalTensorAlgEquiv_tmul
     (w : InfinitePlace K) (a : w.Completion) (x : L) :
     infinitePlaceLocalTensorAlgEquiv
         (K := K) (L := L) w (a ⊗ₜ[K] x) =
-      infinitePlaceCompletionAlgEquiv w a ⊗ₜ[K] x := by
-  rfl
+      infinitePlaceCompletionAlgEquiv w a ⊗ₜ[K] x := rfl
 
 /-- The induced multiplicative equivalence on local tensor units. -/
 noncomputable def infinitePlaceLocalTensorUnitsEquiv
@@ -172,14 +166,10 @@ theorem infinitePlaceLocalTensorUnitsEquiv_smul
         (K := K) (L := L) w (σ • z) =
       σ • infinitePlaceLocalTensorUnitsEquiv
         (K := K) (L := L) w z := by
-  let := scalarTensorUnitsAction
-    (K := K) (L := L) (A := w.Completion)
-  let := localTensorUnitsAction
-    (K := K) (L := L) w.1
   apply Units.ext
   exact infinitePlaceLocalTensorAlgEquiv_conjugation
-    (K := K) (L := L) w σ
-      (z : w.Completion ⊗[K] L)
+      w σ
+      z
 
 section Galois
 
@@ -224,7 +214,7 @@ noncomputable def
         w.1 u'.1 u'.2
   exact
     (infinitePlaceLocalTensorUnitsEquiv
-      (K := K) (L := L) w).trans
+        w).trans
       (localTensorUnitsEquivLocalPlaceBlock
         w.1 hw u)
 
@@ -278,29 +268,23 @@ theorem
           (K := K) (L := L) w hw u z := by
   let :=
     decompositionGroupLocalUnitsAction w.1 hw u
-  have hsource :
-      infinitePlaceLocalTensorUnitsEquiv
-          (K := K) (L := L) w (σ • z) =
-        σ • infinitePlaceLocalTensorUnitsEquiv
-          (K := K) (L := L) w z :=
-    infinitePlaceLocalTensorUnitsEquiv_smul
-      (K := K) (L := L) w σ z
   calc
     infinitePlaceTensorUnitsEquivLocalPlaceBlock
-        (K := K) (L := L) w hw u (σ • z) =
+          w hw u (σ • z) =
       localTensorUnitsEquivLocalPlaceBlock w.1 hw u
         (σ • infinitePlaceLocalTensorUnitsEquiv
-          (K := K) (L := L) w z) :=
+            w z) :=
       congrArg
         (localTensorUnitsEquivLocalPlaceBlock w.1 hw u)
-        hsource
+        (infinitePlaceLocalTensorUnitsEquiv_smul
+          w σ z)
     _ =
       σ • infinitePlaceTensorUnitsEquivLocalPlaceBlock
-        (K := K) (L := L) w hw u z :=
+          w hw u z :=
       localTensorUnitsEquivLocalPlaceBlock_smul
         w.1 hw u σ
         (infinitePlaceLocalTensorUnitsEquiv
-          (K := K) (L := L) w z)
+            w z)
 
 end Equivariance
 

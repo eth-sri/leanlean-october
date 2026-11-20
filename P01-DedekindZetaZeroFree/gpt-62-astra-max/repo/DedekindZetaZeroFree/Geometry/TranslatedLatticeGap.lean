@@ -11,9 +11,9 @@ theorem thetaTranslateGap
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E] (L : Submodule ℤ E) [DiscreteTopology L] (z : E) :
     ∃ η : ℝ, 0 < η ∧ ∀ ℓ : L, z + (ℓ : E) ≠ 0 → η ≤ ‖z + (ℓ : E)‖ := by
-  haveI : ProperSpace E := FiniteDimensional.proper ℝ E
+  haveI := FiniteDimensional.proper ℝ E
   have hdisc : IsDiscrete ((L : Set E)) := DiscreteTopology.isDiscrete
-  have hclosed : IsClosed ((L : Set E)) :=
+  have hclosed :=
     AddSubgroup.isClosed_of_discreteTopology (U := L.toAddSubgroup)
 
   have hbdd : Bornology.IsBounded (Metric.closedBall (0 : E) (1 + ‖z‖)) :=
@@ -29,7 +29,7 @@ theorem thetaTranslateGap
     linarith [hx.2]
   have hfin : Set.Finite ({ℓ : L | ‖z + (ℓ : E)‖ ≤ 1} : Set L) :=
     (hSfin.preimage_embedding (Function.Embedding.subtype (· ∈ (L : Set E)))).subset
-      (by intro ℓ hℓ; exact ⟨ℓ.2, hℓ⟩)
+      (by simp)
   rcases Set.eq_empty_or_nonempty
       ({ℓ : L | z + (ℓ : E) ≠ 0 ∧ ‖z + (ℓ : E)‖ ≤ 1} : Set L) with hempty | hne
   ·
@@ -45,9 +45,7 @@ theorem thetaTranslateGap
       Set.exists_min_image _ (fun ℓ : L => ‖z + (ℓ : E)‖) hfin' hne
     refine ⟨min 1 ‖z + (b : E)‖, lt_min one_pos (norm_pos_iff.mpr hb.1), fun ℓ hℓ => ?_⟩
     by_cases h2 : ‖z + (ℓ : E)‖ ≤ 1
-    · have hmem : ℓ ∈ ({ℓ : L | z + (ℓ : E) ≠ 0 ∧ ‖z + (ℓ : E)‖ ≤ 1} : Set L) :=
-        ⟨hℓ, h2⟩
-      exact (min_le_right _ _).trans (hmin ℓ hmem)
+    · exact LE.le.trans (min_le_right 1 ‖z + ↑b‖) (hmin ℓ ⟨hℓ, h2⟩)
     · exact (min_le_left _ _).trans (le_of_lt (not_le.mp h2))
 
 end DedekindZetaZeroFree

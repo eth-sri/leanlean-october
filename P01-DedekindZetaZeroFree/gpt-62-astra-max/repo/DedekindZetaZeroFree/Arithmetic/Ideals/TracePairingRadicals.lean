@@ -52,7 +52,7 @@ theorem traceQuotientPairing_right_radical
       (traceDualFractionalIdeal J) (traceDualFractionalIdeal I) b).mpr
     apply (mem_traceDualFractionalIdeal_iff_tracePhase_eq_one I hI (b : F)).mpr
     intro a ha
-    simpa only [traceQuotientPairing_mk] using
+    simpa using
       hy (fractionalIdealQuotientMk I J ⟨a, ha⟩)
   · rintro rfl x
     exact traceQuotientPairing_zero_right I J hI hJ hJI x
@@ -88,8 +88,7 @@ def traceQuotientPairingTranspose :
       (traceDualFractionalIdeal J) (traceDualFractionalIdeal I))
     (x : fractionalIdealQuotient I J) :
     traceQuotientPairingTranspose I J hI hJ hJI y x =
-      traceQuotientPairing I J hI hJ hJI x y := by
-  rfl
+      traceQuotientPairing I J hI hJ hJI x y := rfl
 
 theorem traceQuotientPairingTranspose_injective :
     Function.Injective (traceQuotientPairingTranspose I J hI hJ hJI) := by

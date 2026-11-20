@@ -19,17 +19,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -59,11 +48,13 @@ attribute [local instance]
   padicCompletedMultiplicativeTargetCompleteSpace
   padicCompletedMultiplicativeTargetT2Space
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
+
 /-- The changed-uniformizer theta value at the genuine completed
 multiplicative primitive point. -/
-noncomputable def padicChangedUniformizerThetaValue
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+noncomputable def padicChangedUniformizerThetaValue :
     (padicCompletedLevelCompleteDVF p n).valuationSubring :=
   padicCompletedLevelPowerSeriesEval p n
     (padicCompletedMultiplicativePrimitivePoint p n)
@@ -71,23 +62,22 @@ noncomputable def padicChangedUniformizerThetaValue
     (padicChangedUniformizerIntertwiner p u)
 
 /-- The changed-uniformizer theta value is topologically nilpotent. -/
-theorem padicChangedUniformizerThetaValue_hasEval
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
-    PowerSeries.HasEval (padicChangedUniformizerThetaValue p u n) := by
-  exact
-    padicCompletedLevelPowerSeriesEval_hasEval p n
+theorem padicChangedUniformizerThetaValue_hasEval :
+    PowerSeries.HasEval (padicChangedUniformizerThetaValue p u n) := padicCompletedLevelPowerSeriesEval_hasEval p n
       (padicCompletedMultiplicativePrimitivePoint p n)
       (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
       (padicChangedUniformizerIntertwiner p u)
       (padicChangedUniformizerIntertwiner_hasSubst p u)
 
+end
+
+section
+
+variable (p : ℕ) [Fact p.Prime] (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
+    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring) (hx : PowerSeries.HasEval x)
+
 /-- Analytic action of a completed changed-standard scalar endomorphism. -/
 noncomputable def padicCompletedChangedStandardScalarEndomorphismValue
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x)
     (a : (padicLocalField p).valuationSubring) :
     (padicCompletedLevelCompleteDVF p n).valuationSubring :=
   padicCompletedLevelPowerSeriesEval p n x hx
@@ -96,10 +86,6 @@ noncomputable def padicCompletedChangedStandardScalarEndomorphismValue
 /-- A completed changed-standard scalar value remains a convergent
 evaluation point. -/
 theorem padicCompletedChangedStandardScalarEndomorphismValue_hasEval
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x)
     (a : (padicLocalField p).valuationSubring) :
     PowerSeries.HasEval
       (padicCompletedChangedStandardScalarEndomorphismValue
@@ -111,10 +97,6 @@ theorem padicCompletedChangedStandardScalarEndomorphismValue_hasEval
 /-- Multiplication of changed-standard scalars is composition of their
 completed analytic actions. -/
 theorem padicCompletedChangedStandardScalarEndomorphismValue_mul
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x)
     (a b : (padicLocalField p).valuationSubring) :
     padicCompletedChangedStandardScalarEndomorphismValue
         p u n x hx (a * b) =
@@ -130,32 +112,21 @@ theorem padicCompletedChangedStandardScalarEndomorphismValue_mul
       (padicCompletedChangedStandardScalarEndomorphism p u b)
       (padicCompletedChangedStandardScalarEndomorphism p u a)
       (padicCompletedChangedStandardScalarEndomorphism_hasSubst p u b)
-      (padicCompletedChangedStandardScalarEndomorphismValue_hasEval
-        p u n x hx b)
+      ((by apply padicCompletedChangedStandardScalarEndomorphismValue_hasEval))
 
 /-- The scalar `1` fixes every completed changed-standard evaluation
 point. -/
 @[simp]
-theorem padicCompletedChangedStandardScalarEndomorphismValue_one
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x) :
+theorem padicCompletedChangedStandardScalarEndomorphismValue_one :
     padicCompletedChangedStandardScalarEndomorphismValue
         p u n x hx 1 =
       x := by
-  rw [padicCompletedChangedStandardScalarEndomorphismValue,
-    padicCompletedChangedStandardScalarEndomorphism_one,
-    padicCompletedLevelPowerSeriesEval_X]
+  simp [padicCompletedChangedStandardScalarEndomorphismValue]
 
 /-- Evaluating a power of the changed uniformizer is evaluation of the
 corresponding changed standard division-polynomial iterate. -/
 theorem
-    padicCompletedChangedStandardScalarEndomorphismValue_uniformizer_pow
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x) (r : ℕ) :
+    padicCompletedChangedStandardScalarEndomorphismValue_uniformizer_pow (r : ℕ) :
     padicCompletedChangedStandardScalarEndomorphismValue p u n x hx
         ((standardLubinTateChangedUniformizer
           (padicLocalField p)
@@ -170,10 +141,10 @@ theorem
   let hπ :=
     standardLubinTateChangedUniformizer_isUniformizer
       (padicMultiplicativeLubinTateSeries_isUniformizer p) u
-  let πu : (padicLocalField p).valuationSubring :=
+  let πu :=
     standardLubinTateChangedUniformizer
       (padicLocalField p)
-      (padicIntEquivValuationSubring p (p : ℤ_[p])) u
+      (padicIntEquivValuationSubring p p) u
   change
     padicCompletedChangedStandardScalarEndomorphismValue
         p u n x hx (πu ^ r) =
@@ -183,10 +154,7 @@ theorem
           (padicLocalField p) πu r)
   induction r with
   | zero =>
-      rw [pow_zero,
-        padicCompletedChangedStandardScalarEndomorphismValue_one,
-        standardLubinTatePolynomialIterate_zero,
-        Polynomial.eval₂_X]
+      simp
   | succ r ih =>
       rw [pow_succ',
         padicCompletedChangedStandardScalarEndomorphismValue_mul]
@@ -199,11 +167,15 @@ theorem
         standardLubinTatePolynomialIterate_succ,
         Polynomial.eval₂_comp]
 
+end
+
+section
+
+variable (p : ℕ) [Fact p.Prime] (u : (padicLocalField p).valuationSubringˣ)
+
 /-- Genuine completed-level evaluation of the changed-uniformizer scalar
 intertwining identity. -/
 theorem padicChangedUniformizerIntertwiner_endomorphism_evaluation
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
     (a : (padicLocalField p).valuationSubring) (n : ℕ)
     (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
     (hx : PowerSeries.HasEval x) :
@@ -226,18 +198,16 @@ theorem padicChangedUniformizerIntertwiner_endomorphism_evaluation
   let xM :=
     padicCompletedMultiplicativeScalarEndomorphismValue p n x hx a
   let xH := padicCompletedLevelPowerSeriesEval p n x hx H
-  let hxM : PowerSeries.HasEval xM :=
+  let hxM :=
     padicCompletedMultiplicativeScalarEndomorphismValue_hasEval
       p n x hx a
-  let hxH : PowerSeries.HasEval xH :=
+  let hxH :=
     padicCompletedLevelPowerSeriesEval_hasEval p n x hx H
       (padicChangedUniformizerIntertwiner_hasSubst p u)
   calc
-    padicCompletedLevelPowerSeriesEval p n xM hxM H =
+    _ =
         padicCompletedLevelPowerSeriesEval p n x hx
-          (PowerSeries.subst M H) := by
-      exact
-        (padicCompletedLevelPowerSeriesEval_subst p n x hx
+          (PowerSeries.subst M H) := (padicCompletedLevelPowerSeriesEval_subst p n x hx
           M H
           (padicCompletedMultiplicativeScalarEndomorphism_hasSubst p a)
           hxM).symm
@@ -246,53 +216,14 @@ theorem padicChangedUniformizerIntertwiner_endomorphism_evaluation
           (PowerSeries.subst H S) := by
       rw [padicChangedUniformizerIntertwiner_endomorphism]
     _ =
-        padicCompletedLevelPowerSeriesEval p n xH hxH S := by
-      exact
-        padicCompletedLevelPowerSeriesEval_subst p n x hx
+        padicCompletedLevelPowerSeriesEval p n xH hxH S := padicCompletedLevelPowerSeriesEval_subst p n x hx
           H S (padicChangedUniformizerIntertwiner_hasSubst p u) hxH
-
-/-- The changed-uniformizer intertwiner carries the actual multiplicative
-action of `u p` to the defining changed standard Lubin--Tate series. -/
-theorem padicChangedUniformizerIntertwiner_changedSeries_evaluation
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x) :
-    padicCompletedLevelPowerSeriesEval p n
-        (padicCompletedMultiplicativeScalarEndomorphismValue p n x hx
-          (standardLubinTateChangedUniformizer
-            (padicLocalField p)
-            (padicIntEquivValuationSubring p (p : ℤ_[p])) u))
-        (padicCompletedMultiplicativeScalarEndomorphismValue_hasEval
-          p n x hx
-          (standardLubinTateChangedUniformizer
-            (padicLocalField p)
-            (padicIntEquivValuationSubring p (p : ℤ_[p])) u))
-        (padicChangedUniformizerIntertwiner p u) =
-      padicCompletedLevelPowerSeriesEval p n
-        (padicCompletedLevelPowerSeriesEval p n x hx
-          (padicChangedUniformizerIntertwiner p u))
-        (padicCompletedLevelPowerSeriesEval_hasEval p n x hx
-          (padicChangedUniformizerIntertwiner p u)
-          (padicChangedUniformizerIntertwiner_hasSubst p u))
-        (padicCompletedChangedStandardSeries p u) := by
-  simpa only [
-    padicCompletedChangedStandardScalarEndomorphismValue,
-    padicCompletedChangedStandardScalarEndomorphism_uniformizer] using
-      padicChangedUniformizerIntertwiner_endomorphism_evaluation
-        p u
-        (standardLubinTateChangedUniformizer
-          (padicLocalField p)
-          (padicIntEquivValuationSubring p (p : ℤ_[p])) u)
-        n x hx
 
 /-- Evaluation of the changed-uniformizer intertwiner is injective on
 topologically nilpotent completed-level integers.  Its inverse is the
 formal substitution inverse determined by the genuine Witt-unit linear
 coefficient. -/
-theorem padicChangedUniformizerIntertwiner_eval_injective
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
+theorem padicChangedUniformizerIntertwiner_eval_injective (n : ℕ)
     {x y : (padicCompletedLevelCompleteDVF p n).valuationSubring}
     (hx : PowerSeries.HasEval x) (hy : PowerSeries.HasEval y)
     (hxy :
@@ -311,27 +242,21 @@ theorem padicChangedUniformizerIntertwiner_eval_injective
 
 /-- The changed-uniformizer intertwiner evaluates to zero at the zero
 point. -/
-theorem padicChangedUniformizerIntertwiner_eval_zero
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedUniformizerIntertwiner_eval_zero (n : ℕ) :
     padicCompletedLevelPowerSeriesEval p n
         0 PowerSeries.HasEval.zero
         (padicChangedUniformizerIntertwiner p u) =
       0 := by
   obtain ⟨B, hB⟩ :
-      (PowerSeries.X :
-          PowerSeries (padicCompletedUnramifiedWittRing p)) ∣
+      PowerSeries.X ∣
         padicChangedUniformizerIntertwiner p u := by
     rw [PowerSeries.X_dvd_iff]
-    exact padicChangedUniformizerIntertwiner_constantCoeff p u
-  rw [hB, map_mul,
-    padicCompletedLevelPowerSeriesEval_X, zero_mul]
+    apply padicChangedUniformizerIntertwiner_constantCoeff
+  simp [hB]
 
 /-- The changed-uniformizer theta value is killed by the `n + 1`-fold
 changed standard division-polynomial iterate. -/
-theorem padicChangedUniformizerThetaValue_iterate_succ_eq_zero
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedUniformizerThetaValue_iterate_succ_eq_zero (n : ℕ) :
     Polynomial.eval₂
         (padicCompletedLevelPadicIntegerCoefficientHom p n)
         (padicChangedUniformizerThetaValue p u n)
@@ -342,9 +267,9 @@ theorem padicChangedUniformizerThetaValue_iterate_succ_eq_zero
             (padicIntEquivValuationSubring p (p : ℤ_[p])) u)
           (n + 1)) =
       0 := by
-  let π : (padicLocalField p).valuationSubring :=
-    padicIntEquivValuationSubring p (p : ℤ_[p])
-  let πu : (padicLocalField p).valuationSubring :=
+  let π :=
+    padicIntEquivValuationSubring p p
+  let πu :=
     standardLubinTateChangedUniformizer
       (padicLocalField p) π u
   change
@@ -359,12 +284,9 @@ theorem padicChangedUniformizerThetaValue_iterate_succ_eq_zero
   let xChanged :=
     padicCompletedMultiplicativeScalarEndomorphismValue
       p n x hx (πu ^ (n + 1))
-  let hxChanged : PowerSeries.HasEval xChanged :=
+  let hxChanged :=
     padicCompletedMultiplicativeScalarEndomorphismValue_hasEval
       p n x hx (πu ^ (n + 1))
-  have hbridge :=
-    padicChangedUniformizerIntertwiner_endomorphism_evaluation
-      p u (πu ^ (n + 1)) n x hx
   have hxChangedZero : xChanged = 0 := by
     change
       padicCompletedMultiplicativeScalarEndomorphismValue p n
@@ -372,7 +294,7 @@ theorem padicChangedUniformizerThetaValue_iterate_succ_eq_zero
           (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
           ((standardLubinTateChangedUniformizer
             (padicLocalField p)
-            (padicIntEquivValuationSubring p (p : ℤ_[p])) u) ^
+            (padicIntEquivValuationSubring p p) u) ^
               (n + 1)) =
         0
     exact
@@ -392,13 +314,6 @@ theorem padicChangedUniformizerThetaValue_iterate_succ_eq_zero
           (padicChangedUniformizerIntertwiner p u)
       _ = 0 :=
         padicChangedUniformizerIntertwiner_eval_zero p u n
-  have hrightZero :
-      padicCompletedChangedStandardScalarEndomorphismValue p u n
-          (padicChangedUniformizerThetaValue p u n)
-          (padicChangedUniformizerThetaValue_hasEval p u n)
-          (πu ^ (n + 1)) =
-        0 :=
-    hbridge.symm.trans hleftZero
   have hpow :
       padicCompletedChangedStandardScalarEndomorphismValue p u n
           (padicChangedUniformizerThetaValue p u n)
@@ -415,12 +330,11 @@ theorem padicChangedUniformizerThetaValue_iterate_succ_eq_zero
         (padicChangedUniformizerThetaValue p u n)
         (padicChangedUniformizerThetaValue_hasEval p u n)
         (n + 1))
-  exact hpow.symm.trans hrightZero
+  exact hpow.symm.trans ((padicChangedUniformizerIntertwiner_endomorphism_evaluation
+    p u (πu ^ (n + 1)) n x hx).symm.trans hleftZero)
 
 /-- The changed-uniformizer theta value is not killed one level early. -/
-theorem padicChangedUniformizerThetaValue_iterate_ne_zero
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedUniformizerThetaValue_iterate_ne_zero (n : ℕ) :
     Polynomial.eval₂
         (padicCompletedLevelPadicIntegerCoefficientHom p n)
         (padicChangedUniformizerThetaValue p u n)
@@ -430,9 +344,9 @@ theorem padicChangedUniformizerThetaValue_iterate_ne_zero
             (padicLocalField p)
             (padicIntEquivValuationSubring p (p : ℤ_[p])) u) n) ≠
       0 := by
-  let π : (padicLocalField p).valuationSubring :=
-    padicIntEquivValuationSubring p (p : ℤ_[p])
-  let πu : (padicLocalField p).valuationSubring :=
+  let π :=
+    padicIntEquivValuationSubring p p
+  let πu :=
     standardLubinTateChangedUniformizer
       (padicLocalField p) π u
   change
@@ -448,12 +362,9 @@ theorem padicChangedUniformizerThetaValue_iterate_ne_zero
   let xChanged :=
     padicCompletedMultiplicativeScalarEndomorphismValue
       p n x hx (πu ^ n)
-  let hxChanged : PowerSeries.HasEval xChanged :=
+  let hxChanged :=
     padicCompletedMultiplicativeScalarEndomorphismValue_hasEval
       p n x hx (πu ^ n)
-  have hbridge :=
-    padicChangedUniformizerIntertwiner_endomorphism_evaluation
-      p u (πu ^ n) n x hx
   have hpow :
       padicCompletedChangedStandardScalarEndomorphismValue p u n
           (padicChangedUniformizerThetaValue p u n)
@@ -469,18 +380,8 @@ theorem padicChangedUniformizerThetaValue_iterate_ne_zero
         p u n
         (padicChangedUniformizerThetaValue p u n)
         (padicChangedUniformizerThetaValue_hasEval p u n) n)
-  have hrightZero :
-      padicCompletedChangedStandardScalarEndomorphismValue p u n
-          (padicChangedUniformizerThetaValue p u n)
-          (padicChangedUniformizerThetaValue_hasEval p u n)
-          (πu ^ n) =
-        0 :=
-    hpow.trans hzero
-  have hleftZero :
-      padicCompletedLevelPowerSeriesEval p n xChanged hxChanged
-          (padicChangedUniformizerIntertwiner p u) =
-        0 := by
-    exact hbridge.trans hrightZero
+  have hleftZero := (padicChangedUniformizerIntertwiner_endomorphism_evaluation
+      p u (πu ^ n) n x hx).trans (hpow.trans hzero)
   have hxChangedZero : xChanged = 0 := by
     apply padicChangedUniformizerIntertwiner_eval_injective
       p u n hxChanged PowerSeries.HasEval.zero
@@ -489,8 +390,9 @@ theorem padicChangedUniformizerThetaValue_iterate_ne_zero
   apply
     padicCompletedMultiplicativePrimitivePoint_changedUniformizer_pow_ne_zero
       p u n
-  change xChanged = 0
   exact hxChangedZero
+
+end
 
 /-- The changed-uniformizer theta value is an actual root of the genuine
 changed primitive Lubin--Tate polynomial in the completed level. -/
@@ -505,10 +407,10 @@ theorem padicChangedUniformizerThetaValue_isRoot
       (padicCompletedLevelPadicIntegerCoefficientHom p n)).IsRoot
         (padicChangedUniformizerThetaValue p u n) := by
   let F := padicLocalField p
-  let πu : (padicLocalField p).valuationSubring :=
+  let πu :=
     standardLubinTateChangedUniformizer
       (padicLocalField p)
-      (padicIntEquivValuationSubring p (p : ℤ_[p])) u
+      (padicIntEquivValuationSubring p p) u
   let φ := padicCompletedLevelPadicIntegerCoefficientHom p n
   let theta := padicChangedUniformizerThetaValue p u n
   have hfactor :=
@@ -517,19 +419,14 @@ theorem padicChangedUniformizerThetaValue_isRoot
   rw [Polynomial.eval₂_mul,
     padicChangedUniformizerThetaValue_iterate_succ_eq_zero p u n]
       at hfactor
-  have hprimitive :
-      Polynomial.eval₂ φ theta
-          (standardLubinTatePrimitivePolynomial F πu n) =
-        0 :=
-    (mul_eq_zero.mp hfactor.symm).resolve_left
-      (padicChangedUniformizerThetaValue_iterate_ne_zero p u n)
   rw [Polynomial.IsRoot, Polynomial.eval_map]
-  exact hprimitive
+  exact (mul_eq_zero.mp hfactor.symm).resolve_left
+    (padicChangedUniformizerThetaValue_iterate_ne_zero p u n)
+
+variable (p : ℕ) [Fact p.Prime] (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
 
 /-- Field-valued form of the changed primitive-root equation. -/
-theorem padicChangedUniformizerThetaValue_field_isRoot
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedUniformizerThetaValue_field_isRoot :
     ((standardLubinTatePrimitivePolynomialOverField
         (padicLocalField p)
         (standardLubinTateChangedUniformizer
@@ -540,20 +437,19 @@ theorem padicChangedUniformizerThetaValue_field_isRoot
           (padicCompletedLevelCompleteDVF p n).valuationSubring) :
             padicCompletedLevelField p n) := by
   let F := padicLocalField p
-  let πu : (padicLocalField p).valuationSubring :=
+  let πu :=
     standardLubinTateChangedUniformizer
       (padicLocalField p)
-      (padicIntEquivValuationSubring p (p : ℤ_[p])) u
+      (padicIntEquivValuationSubring p p) u
   let Q := standardLubinTatePrimitivePolynomial F πu n
   let theta := padicChangedUniformizerThetaValue p u n
-  have hroot := padicChangedUniformizerThetaValue_isRoot p u n
   have hinteger :
       Polynomial.eval₂
           (padicCompletedLevelPadicIntegerCoefficientHom p n)
           theta Q =
         0 := by
     simpa only [Polynomial.IsRoot, Polynomial.eval_map, F, πu, Q, theta]
-      using hroot
+      using (padicChangedUniformizerThetaValue_isRoot p u n)
   have hcoe := congrArg
     (fun z : (padicCompletedLevelCompleteDVF p n).valuationSubring =>
       (z : padicCompletedLevelField p n)) hinteger
@@ -576,15 +472,13 @@ theorem padicChangedUniformizerThetaValue_field_isRoot
   change
     Polynomial.eval₂
         (padicCompletedLevelPadicFieldCoefficientHom p n)
-        (theta : padicCompletedLevelField p n) Q =
+        theta Q =
       0
   exact hfield
 
 /-- The theta value annihilates the minimal polynomial of the canonical
 generator of the changed finite Lubin--Tate level. -/
-theorem padicChangedUniformizerThetaValue_aeval_levelMinpoly
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedUniformizerThetaValue_aeval_levelMinpoly :
     let hπ :=
       standardLubinTateChangedUniformizer_isUniformizer
         (padicMultiplicativeLubinTateSeries_isUniformizer p) u
@@ -606,14 +500,12 @@ theorem padicChangedUniformizerThetaValue_aeval_levelMinpoly
       0
   rw [standardLubinTateLevelPowerBasis_minpoly hπ n,
     Polynomial.aeval_def]
-  simpa only [Polynomial.IsRoot, Polynomial.eval_map] using
+  simpa [Polynomial.eval_map] using
     padicChangedUniformizerThetaValue_field_isRoot p u n
 
 /-- The genuine embedding of the changed finite Lubin--Tate level into
 the completed standard level, sending its canonical generator to theta. -/
-noncomputable def padicChangedUniformizerLevelEmbedding
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+noncomputable def padicChangedUniformizerLevelEmbedding :
     let hπ :=
       standardLubinTateChangedUniformizer_isUniformizer
         (padicMultiplicativeLubinTateSeries_isUniformizer p) u
@@ -622,7 +514,7 @@ noncomputable def padicChangedUniformizerLevelEmbedding
   let hπ :=
     standardLubinTateChangedUniformizer_isUniformizer
       (padicMultiplicativeLubinTateSeries_isUniformizer p) u
-  let theta : padicCompletedLevelField p n :=
+  let theta :=
     ((padicChangedUniformizerThetaValue p u n :
       (padicCompletedLevelCompleteDVF p n).valuationSubring) :
         padicCompletedLevelField p n)
@@ -632,15 +524,13 @@ noncomputable def padicChangedUniformizerLevelEmbedding
   exact
     (standardLubinTateLevelPowerBasis hπ n).lift theta
       (by
-        simpa only [theta] using
+        simpa using
           padicChangedUniformizerThetaValue_aeval_levelMinpoly p u n)
 
 /-- The changed-level embedding sends the canonical power-basis generator
 to the actual theta value. -/
 @[simp]
-theorem padicChangedUniformizerLevelEmbedding_apply_gen
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedUniformizerLevelEmbedding_apply_gen :
     let hπ :=
       standardLubinTateChangedUniformizer_isUniformizer
         (padicMultiplicativeLubinTateSeries_isUniformizer p) u
@@ -652,7 +542,7 @@ theorem padicChangedUniformizerLevelEmbedding_apply_gen
   let hπ :=
     standardLubinTateChangedUniformizer_isUniformizer
       (padicMultiplicativeLubinTateSeries_isUniformizer p) u
-  let theta : padicCompletedLevelField p n :=
+  let theta :=
     ((padicChangedUniformizerThetaValue p u n :
       (padicCompletedLevelCompleteDVF p n).valuationSubring) :
         padicCompletedLevelField p n)
@@ -670,8 +560,6 @@ intertwiner is the same as first applying the multiplicative unit
 endomorphism to the evaluation point and then evaluating the original
 intertwiner. -/
 theorem padicChangedUniformizerIntertwiner_frobenius_evaluation
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
     (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
     (hx : PowerSeries.HasEval x) :
     padicCompletedLevelPowerSeriesEval p n x hx
@@ -697,26 +585,6 @@ theorem padicChangedUniformizerIntertwiner_frobenius_evaluation
       (padicCompletedMultiplicativeUnitEndomorphism_hasSubst p u)
       (padicCompletedLevelPowerSeriesEval_hasEval p n x hx U
         (padicCompletedMultiplicativeUnitEndomorphism_hasSubst p u))
-
-/-- At the completed multiplicative primitive point, coefficient Frobenius
-on theta is evaluation of theta at the corresponding unit translate. -/
-theorem
-    padicChangedUniformizerThetaValue_frobeniusCoefficients
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
-    padicCompletedLevelPowerSeriesEval p n
-        (padicCompletedMultiplicativePrimitivePoint p n)
-        (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
-        (PowerSeries.map WittVector.frobenius
-          (padicChangedUniformizerIntertwiner p u)) =
-      padicCompletedLevelPowerSeriesEval p n
-        (padicCompletedMultiplicativePrimitivePointUnitAction p u n)
-        (padicCompletedMultiplicativePrimitivePointUnitAction_hasEval p u n)
-        (padicChangedUniformizerIntertwiner p u) := by
-  simpa only [padicCompletedMultiplicativePrimitivePointUnitAction] using
-    padicChangedUniformizerIntertwiner_frobenius_evaluation p u n
-      (padicCompletedMultiplicativePrimitivePoint p n)
-      (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
 
 end LubinTate
 

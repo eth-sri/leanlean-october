@@ -13,11 +13,11 @@ open scoped Classical NumberField BigOperators
 namespace DedekindZetaZeroFree.KPContFlatCuspIncomingEvaluation
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 abbrev atlasLevel :=
   let _ := C; let _ := R; let _ := P; let _ := H
@@ -81,14 +81,7 @@ def finiteRepresentative (ε : rootsOfUnity 3 F) : KPFiniteCuspAtlas.FiniteCover
       (sigma F ζ hζ C R P H U a)⁻¹ *
         (atlas F ζ hζ C R P H U).representative a.1
 
- theorem central_comm (ε : rootsOfUnity 3 F)
-    (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
-    KPCuspGenuineMonodromy.central F ζ hζ ε * c =
-      c * KPCuspGenuineMonodromy.central F ζ hζ ε := by
-  apply Subtype.ext
-  exact (Subgroup.mem_center_iff.mp
-    (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
-      ⟨ε, rfl⟩) c).symm
+ alias central_comm := DedekindZetaZeroFree.KPMsActualCuspSource.central_comm
 
 theorem atlasLevel_mem_globalLevel
     (u : (atlasLevel F ζ hζ C R P H U).toOpenSubgroup) :
@@ -167,20 +160,24 @@ theorem reindex_mk (γ : KPCuspArithmetic.PGL2 F) :
       KPChamberBruhatTwoCells.rationalCoset F (γ * sigma F ζ hζ C R P H U a) :=
   rfl
 
-def localGroup (t : ℝ) (x : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F)
-    (ε : rootsOfUnity 3 F) : KPGlobalTorusFunctionData.G F ζ hζ :=
+section
+
+variable (t : ℝ) (x : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F)
+
+def localGroup : KPGlobalTorusFunctionData.G F ζ hζ :=
   KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
     (KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ
       (KPCuspCharts.toArch F ((x,b),t))) *
     (finiteRepresentative F ζ hζ C R P H U a ε).val
 
-def cuspGroup (t : ℝ) (x : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F)
-    (ε : rootsOfUnity 3 F) : KPGlobalTorusFunctionData.G F ζ hζ :=
+def cuspGroup : KPGlobalTorusFunctionData.G F ζ hζ :=
   KPContFlatRationalCosetCovariance.matrixRationalHom F ζ hζ
     (sigma F ζ hζ C R P H U a) * localGroup F ζ hζ C R P H U a t x b ε
 
+end
+
 variable {S : Type*} [AddCommGroup S] [Module ℂ S]
-variable (ι : S →ₗ[ℂ] KPContFlatCommonLevelKernel.CommonSphericalStage F ζ hζ U)
+    (ι : S →ₗ[ℂ] KPContFlatCommonLevelKernel.CommonSphericalStage F ζ hζ U)
 
 def sheetEvaluation (s : ℂ) : S →ₗ[ℂ] (rootsOfUnity 3 F → ℂ) where
   toFun v ε := KPContFlatCommonLevelKernel.L F ζ hζ U ι s v
@@ -224,16 +221,19 @@ theorem sheetEvaluation_phase (s : ℂ) (v : S) (ε η : rootsOfUnity 3 F) :
   rw [KPContFlatRationalCosetCovariance.L_centre,
     KPContSectorCoveredQuotientVocabulary.chi_coe]
 
-def identitySheet (s : ℂ) (v : S) (t : ℝ) (x : KPCuspCharts.Horizontal F)
-    (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F) : ℂ :=
+section
+
+variable (s : ℂ) (v : S) (t : ℝ) (x : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F)
+    (ε : rootsOfUnity 3 F)
+
+def identitySheet : ℂ :=
   KPContFlatRationalCosetCovariance.rationalTerm F ζ hζ s (ι v).val
     (cuspGroup F ζ hζ C R P H U a t x b ε)
     (KPContFlatRationalCosetCovariance.cosetEquiv F ζ hζ
       ((reindex F ζ hζ C R P H U a).symm
         (KPChamberBruhatTwoCells.rationalCoset F 1)))
 
-theorem identitySheet_reindexed (s : ℂ) (v : S) (t : ℝ)
-    (x : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F) :
+theorem identitySheet_reindexed :
     identitySheet F ζ hζ C R P H U a ι s v t x b ε =
       KPContFlatCommonLevelKernel.L F ζ hζ U ι s v
         (localGroup F ζ hζ C R P H U a t x b ε) := by
@@ -252,8 +252,7 @@ theorem identitySheet_reindexed (s : ℂ) (v : S) (t : ℝ)
           (KPGlobalResidualKernel.RawStageL2.Outgoing.ChamberQuotient.rationalEquiv F).toMonoidHom := by
       rw [KPContFlatRationalCosetCovariance.rationalBorel_eq F ζ hζ]
       exact bb.property
-    have hb : KPGlobalResidualKernel.RawStageL2.Outgoing.ChamberQuotient.rationalEquiv F bb ∈
-        KPGlobalResidualKernel.rationalBorel F ζ hζ := Subgroup.mem_comap.mp hmem
+    have hb := Subgroup.mem_comap.mp hmem
     show KPContFlatRationalCosetCovariance.L F ζ hζ s (ι v).val
         (KPRationalAdelicSplitting.rationalPGLHom F ζ hζ
           (KPGlobalResidualKernel.RawStageL2.Outgoing.ChamberQuotient.rationalEquiv F bb) * g) = _
@@ -276,6 +275,8 @@ theorem identitySheet_reindexed (s : ℂ) (v : S) (t : ℝ)
       localGroup F ζ hζ C R P H U a t x b ε from by
     rw [cuspGroup, map_inv, ← mul_assoc, inv_mul_cancel, one_mul]]
   rfl
+
+end
 
 theorem flatR_unipotent_left (s : ℂ)
     (f : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
@@ -365,33 +366,11 @@ private theorem rationalLift_eq_matrixRationalHom (γ : KPCuspArithmetic.PGL2 F)
       KPRationalAdelicSplitting.rationalPGLHom_mk, KPMsClearedTruncationL2.rationalLift_mk]
     rfl
 
+alias IncomingSheetEvaluation.rationalLift_eq_matrixRationalHom := rationalLift_eq_matrixRationalHom
+
 private theorem arch_comm_finite (r : KPSmoothActualFlowData.GInfinity F)
     (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
-    Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ r) c.val := by
-  apply RepresentationTheory.ArchFiniteSplitting.insertion_commutes_finite F ζ hζ r
-    ⟨c.val, RepresentationTheory.ArchFiniteSplitting.arch_kernel_le_finite F ζ hζ ?_⟩
-  have hc := c.property
-  rw [MonoidHom.mem_ker] at hc ⊢
-  obtain ⟨d, hd⟩ := QuotientGroup.mk'_surjective
-    (KPAdelicCoverRestrictedProduct.splitScalarSubgroup F ζ hζ) c.val
-  rw [← hd] at hc ⊢
-  funext w
-  have hw := congrFun hc w
-  change Matrix.ProjGenLinGroup.mk
-    (KPAdelicCoverRestrictedProduct.matrixEval F (Sum.inl w)
-      (KPAdelicCoverRestrictedProduct.projection F ζ hζ d)) = 1 at hw
-  have hh := congrArg
-    (Matrix.ProjGenLinGroup.map
-      (NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
-        (KPHilbert.infinite_isComplex F ζ hζ w)).toRingHom) hw
-  change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map
-    ((NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
-      (KPHilbert.infinite_isComplex F ζ hζ w)).toRingHom.comp
-        (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inl w)))
-      (KPAdelicCoverRestrictedProduct.projection F ζ hζ d)) = 1
-  simpa only [Matrix.ProjGenLinGroup.map_mk, map_one,
-    Matrix.GeneralLinearGroup.map_comp, MonoidHom.comp_apply,
-    KPAdelicCoverRestrictedProduct.matrixEval] using hh
+    Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ r) c.val := by apply @DedekindZetaZeroFree.KPMsActualCuspSource.insertion_commutes <;> assumption
 
 open KPMsResidualTailRestoration.SharpConstantTerm.FiberStability in
 private theorem stabilizer_arch_height_zero
@@ -406,7 +385,7 @@ private theorem stabilizer_arch_height_zero
       (0 : KPCuspCharts.Shape F)),0) = fun _ => (0,0) := by
     funext i; simp [KPCuspCharts.toArch]
   rw [hz] at h
-  change KPMsFixedHaarDisintegration.archBasepoint F (archRational (g : KPCuspArithmetic.PGL2 F)) = _ at h
+  change KPMsFixedHaarDisintegration.archBasepoint F (archRational g) = _ at h
   refine ⟨_, _, h⟩
 
 open KPMsResidualTailRestoration.SharpConstantTerm.FiberStability in
@@ -420,7 +399,7 @@ private theorem L_stabilizer_arch [FiniteDimensional ℂ S]
   obtain ⟨x,b,hb⟩ := stabilizer_arch_height_zero F ζ hζ C R P H U a g
   obtain ⟨k,hk⟩ := (KPContSectorArchSphericalFibers.archBasepoint_eq_iff F
     (KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ
-      (KPCuspCharts.toArch F ((x,b),0))) (archRational (g : KPCuspArithmetic.PGL2 F))).mp
+      (KPCuspCharts.toArch F ((x,b),0))) (archRational g)).mp
         (by rw [KPContSectorArchSphericalFibers.archBasepoint_iwasawaSection, hb])
   rw [hk, (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1]
   rw [mul_assoc, (arch_comm_finite F ζ hζ k.val
@@ -448,11 +427,12 @@ theorem sheetEvaluation_stabilizer [FiniteDimensional ℂ S]
         (KPGlobalResidualKernel.RawStageL2.Outgoing.ChamberQuotient.rationalEquiv F).toMonoidHom
     rw [KPContFlatRationalCosetCovariance.rationalBorel_eq]
     exact hgB
+  let finiteRepresentative₀ := finiteRepresentative F ζ hζ C R P H U a ε
   have hrat := KPContFlatRationalCosetCovariance.L_rationalBorel F ζ hζ s (ι v).val
-    ⟨_,hgR⟩ (finiteRepresentative F ζ hζ C R P H U a ε).val
+    ⟨_,hgR⟩ (finiteRepresentative₀).val
   change KPContFlatCommonLevelKernel.L F ζ hζ U ι s v
     (KPContFlatRationalCosetCovariance.matrixRationalHom F ζ hζ g *
-      (finiteRepresentative F ζ hζ C R P H U a ε).val) =
+      (finiteRepresentative₀).val) =
     sheetEvaluation F ζ hζ C R P H U a ι s v ε at hrat
   rw [← rationalLift_eq_matrixRationalHom,
     KPContinuation.RationalArchFiniteSplitting.rationalLift_product, mul_assoc] at hrat
@@ -462,23 +442,24 @@ theorem sheetEvaluation_stabilizer [FiniteDimensional ℂ S]
   rw [hu', ← mul_assoc,
     (KPContFlatCommonLevelKernel.stage_properties F ζ hζ U ι s hs).1 v _
       ⟨u.val, atlasLevel_mem_globalLevel F ζ hζ C R P H U u⟩] at hrat
+  let rho₀ := rho F ζ hζ C R P H U a g
   rw [← mul_assoc, (arch_comm_finite F ζ hζ _
-    (KPCuspGenuineMonodromy.central F ζ hζ (rho F ζ hζ C R P H U a g)⁻¹)).eq,
+    (KPCuspGenuineMonodromy.central F ζ hζ (rho₀)⁻¹)).eq,
     mul_assoc] at hrat
   have hc := (KPContFlatCommonLevelKernel.stage_properties F ζ hζ U ι s hs).2.2.1
-    v (rho F ζ hζ C R P H U a g)⁻¹
+    v (rho₀)⁻¹
     (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
       (KPMsResidualTailRestoration.SharpConstantTerm.FiberStability.archRational
-        (g : KPCuspArithmetic.PGL2 F)) * (finiteRepresentative F ζ hζ C R P H U a ε).val)
+        (g : KPCuspArithmetic.PGL2 F)) * (finiteRepresentative₀).val)
   change KPContFlatCommonLevelKernel.L F ζ hζ U ι s v
-    ((KPCuspGenuineMonodromy.central F ζ hζ (rho F ζ hζ C R P H U a g)⁻¹).val * _) = _ at hc
+    ((KPCuspGenuineMonodromy.central F ζ hζ (rho₀)⁻¹).val * _) = _ at hc
   rw [hc, L_stabilizer_arch F ζ hζ C R P H U a ι s hs v g ε] at hrat
   have hh := congrArg (fun z : ℂ =>
-    (KPCuspGenuineMonodromy.chi F ζ hζ (rho F ζ hζ C R P H U a g) : ℂ) * z) hrat
+    (KPCuspGenuineMonodromy.chi F ζ hζ (rho₀) : ℂ) * z) hrat
   have hchi : (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ
-      (rho F ζ hζ C R P H U a g)⁻¹ : ℂ) =
-        (KPCuspGenuineMonodromy.chi F ζ hζ (rho F ζ hζ C R P H U a g) : ℂ)⁻¹ := by
-    change (KPCuspGenuineMonodromy.chi F ζ hζ (rho F ζ hζ C R P H U a g)⁻¹ : ℂ) = _
+      (rho₀)⁻¹ : ℂ) =
+        (KPCuspGenuineMonodromy.chi F ζ hζ (rho₀) : ℂ)⁻¹ := by
+    change (KPCuspGenuineMonodromy.chi F ζ hζ (rho₀)⁻¹ : ℂ) = _
     simp only [map_inv, Units.val_inv_eq_inv_val]
   rw [hchi, ← mul_assoc, mul_inv_cancel₀ (Units.ne_zero _), one_mul] at hh
   exact hh.symm
@@ -507,10 +488,7 @@ theorem deckCoefficient_mk (x : (parabolic F ζ hζ C R P H U a).L) :
         ((parabolic F ζ hζ C R P H U a).inclusion
           (Multiplicative.ofAdd x))) : ℂ)⁻¹
   have heq : QuotientAddGroup.mk (Quotient.out q) = q := Quotient.out_eq _
-  have hmem : -Quotient.out q + x ∈
-      (KPCuspGenuineMonodromy.kernelLattice (stabilizer F ζ hζ C R P H U a)
-        (parabolic F ζ hζ C R P H U a) (rho F ζ hζ C R P H U a)).addSubgroupOf
-        (parabolic F ζ hζ C R P H U a).L :=
+  have hmem :=
     QuotientAddGroup.leftRel_apply.mp (Quotient.exact heq)
   have hmemK : ((-Quotient.out q + x : (parabolic F ζ hζ C R P H U a).L) : F) ∈
       KPCuspGenuineMonodromy.kernelLattice (stabilizer F ζ hζ C R P H U a)
@@ -609,13 +587,7 @@ private lemma phiC_neg (x : (parabolic F ζ hζ C R P H U a).L) :
     rw [Finset.sum_congr rfl (fun q _ => (hkey q).symm)]
     exact Equiv.sum_comp (Equiv.addRight (QuotientAddGroup.mk (-x)))
       (fun q => deckCoefficient F ζ hζ C R P H U a q)
-  calc (KPCuspGenuineMonodromy.chi F ζ hζ
-        (rho F ζ hζ C R P H U a
-          ((parabolic F ζ hζ C R P H U a).inclusion
-            (Multiplicative.ofAdd x))) : ℂ) *
-      ((Fintype.card (TranslationDeck F ζ hζ C R P H U a) : ℂ)⁻¹ *
-        ∑ q : TranslationDeck F ζ hζ C R P H U a,
-          deckCoefficient F ζ hζ C R P H U a q) =
+  calc _ =
         (Fintype.card (TranslationDeck F ζ hζ C R P H U a) : ℂ)⁻¹ *
           ((KPCuspGenuineMonodromy.chi F ζ hζ
             (rho F ζ hζ C R P H U a
@@ -627,64 +599,58 @@ private lemma phiC_neg (x : (parabolic F ζ hζ C R P H U a).L) :
         ∑ q : TranslationDeck F ζ hζ C R P H U a,
           deckCoefficient F ζ hζ C R P H U a q := by rw [hT]
 
- lemma cent_avg_invariance
+ local notation "cuspLevel" => atlasLevel F ζ hζ C R P H U
+
+lemma cent_avg_invariance
     [Fintype (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-      (atlasLevel F ζ hζ C R P H U))]
+      cuspLevel)]
     (ε : rootsOfUnity 3 F)
     (hε : ε ∈ KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-      (atlasLevel F ζ hζ C R P H U)) :
+      cuspLevel) :
     (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) *
       ((Fintype.card (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-          (atlasLevel F ζ hζ C R P H U)) : ℂ)⁻¹ *
+          cuspLevel) : ℂ)⁻¹ *
         ∑ η : KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-          (atlasLevel F ζ hζ C R P H U),
+          cuspLevel,
           (KPCuspGenuineMonodromy.chi F ζ hζ η.val : ℂ)⁻¹) =
     (Fintype.card (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-        (atlasLevel F ζ hζ C R P H U)) : ℂ)⁻¹ *
+        cuspLevel) : ℂ)⁻¹ *
       ∑ η : KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-        (atlasLevel F ζ hζ C R P H U),
+        cuspLevel,
         (KPCuspGenuineMonodromy.chi F ζ hζ η.val : ℂ)⁻¹ := by
+  let centralLevel₀ := KPContSectorPhaseComponentCharts.centralLevel F ζ hζ cuspLevel
   have h := chi_mul_sum_inv
     ((KPCuspGenuineMonodromy.chi F ζ hζ).comp
-      (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-        (atlasLevel F ζ hζ C R P H U)).subtype) ⟨ε, hε⟩
+      (centralLevel₀).subtype) ⟨ε, hε⟩
   have h' : (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) *
-      (∑ η : KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-        (atlasLevel F ζ hζ C R P H U),
+      (∑ η : centralLevel₀,
         (KPCuspGenuineMonodromy.chi F ζ hζ η.val : ℂ)⁻¹) =
-      ∑ η : KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-        (atlasLevel F ζ hζ C R P H U),
+      ∑ η : centralLevel₀,
         (KPCuspGenuineMonodromy.chi F ζ hζ η.val : ℂ)⁻¹ := h
   calc (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) *
-      ((Fintype.card (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-          (atlasLevel F ζ hζ C R P H U)) : ℂ)⁻¹ *
-        ∑ η : KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-          (atlasLevel F ζ hζ C R P H U),
+      ((Fintype.card (centralLevel₀) : ℂ)⁻¹ *
+        ∑ η : centralLevel₀,
           (KPCuspGenuineMonodromy.chi F ζ hζ η.val : ℂ)⁻¹) =
-        (Fintype.card (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-          (atlasLevel F ζ hζ C R P H U)) : ℂ)⁻¹ *
+        (Fintype.card (centralLevel₀) : ℂ)⁻¹ *
           ((KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) *
-            ∑ η : KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-              (atlasLevel F ζ hζ C R P H U),
+            ∑ η : centralLevel₀,
               (KPCuspGenuineMonodromy.chi F ζ hζ η.val : ℂ)⁻¹) := by ring
-    _ = (Fintype.card (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-        (atlasLevel F ζ hζ C R P H U)) : ℂ)⁻¹ *
-      ∑ η : KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-        (atlasLevel F ζ hζ C R P H U),
+    _ = (Fintype.card (centralLevel₀) : ℂ)⁻¹ *
+      ∑ η : centralLevel₀,
         (KPCuspGenuineMonodromy.chi F ζ hζ η.val : ℂ)⁻¹ := by rw [h']
 
 def projectedScalar (e : rootsOfUnity 3 F → ℂ) : ℂ := by
   letI : Fintype (rootsOfUnity 3 F) := Fintype.ofFinite _
   letI := (monodromy F ζ hζ C R P H U a).finite_deck
-  letI := Fintype.ofFinite (TranslationDeck F ζ hζ C R P H U a)
+  let TranslationDeck₀ := TranslationDeck F ζ hζ C R P H U a
+  letI := Fintype.ofFinite (TranslationDeck₀)
+  let centralLevel₀ := KPContSectorPhaseComponentCharts.centralLevel F ζ hζ cuspLevel
   letI := Fintype.ofFinite
-    (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ (atlasLevel F ζ hζ C R P H U))
-  exact ((Fintype.card (TranslationDeck F ζ hζ C R P H U a) : ℂ)⁻¹ *
-    ∑ q : TranslationDeck F ζ hζ C R P H U a, deckCoefficient F ζ hζ C R P H U a q) *
-    ((Fintype.card (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-      (atlasLevel F ζ hζ C R P H U)) : ℂ)⁻¹ *
-      ∑ η : KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-        (atlasLevel F ζ hζ C R P H U), (KPCuspGenuineMonodromy.chi F ζ hζ η.val : ℂ)⁻¹) *
+    (centralLevel₀)
+  exact ((Fintype.card (TranslationDeck₀) : ℂ)⁻¹ *
+    ∑ q : TranslationDeck₀, deckCoefficient F ζ hζ C R P H U a q) *
+    ((Fintype.card (centralLevel₀) : ℂ)⁻¹ *
+      ∑ η : centralLevel₀, (KPCuspGenuineMonodromy.chi F ζ hζ η.val : ℂ)⁻¹) *
     ((Fintype.card (rootsOfUnity 3 F) : ℂ)⁻¹ *
       ∑ ε : rootsOfUnity 3 F, (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ)⁻¹ * e ε)
 
@@ -698,15 +664,15 @@ def zeroProjection : (rootsOfUnity 3 F → ℂ) →ₗ[ℂ] ZeroFiber F ζ hζ C
         (monodromy F ζ hζ C R P H U a).finite_deck
       letI : Fintype (TranslationDeck F ζ hζ C R P H U a) := Fintype.ofFinite _
       letI : Fintype (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-        (atlasLevel F ζ hζ C R P H U)) := Fintype.ofFinite _
+        cuspLevel) := Fintype.ofFinite _
       simp only [projectedScalar]
       set A : ℂ := (Fintype.card (TranslationDeck F ζ hζ C R P H U a) : ℂ)⁻¹ *
         ∑ q : TranslationDeck F ζ hζ C R P H U a,
           deckCoefficient F ζ hζ C R P H U a q with hAdef
       set B : ℂ := (Fintype.card (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-          (atlasLevel F ζ hζ C R P H U)) : ℂ)⁻¹ *
+          cuspLevel) : ℂ)⁻¹ *
         ∑ η : KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-          (atlasLevel F ζ hζ C R P H U),
+          cuspLevel,
           (KPCuspGenuineMonodromy.chi F ζ hζ η.val : ℂ)⁻¹ with hBdef
       set D : ℂ := (Fintype.card (rootsOfUnity 3 F) : ℂ)⁻¹ *
         ∑ ε : rootsOfUnity 3 F,
@@ -726,15 +692,15 @@ def zeroProjection : (rootsOfUnity 3 F → ℂ) →ₗ[ℂ] ZeroFiber F ζ hζ C
         (monodromy F ζ hζ C R P H U a).finite_deck
       letI : Fintype (TranslationDeck F ζ hζ C R P H U a) := Fintype.ofFinite _
       letI : Fintype (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-        (atlasLevel F ζ hζ C R P H U)) := Fintype.ofFinite _
+        cuspLevel) := Fintype.ofFinite _
       simp only [projectedScalar]
       set A : ℂ := (Fintype.card (TranslationDeck F ζ hζ C R P H U a) : ℂ)⁻¹ *
         ∑ q : TranslationDeck F ζ hζ C R P H U a,
           deckCoefficient F ζ hζ C R P H U a q with hAdef
       set B : ℂ := (Fintype.card (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-          (atlasLevel F ζ hζ C R P H U)) : ℂ)⁻¹ *
+          cuspLevel) : ℂ)⁻¹ *
         ∑ η : KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-          (atlasLevel F ζ hζ C R P H U),
+          cuspLevel,
           (KPCuspGenuineMonodromy.chi F ζ hζ η.val : ℂ)⁻¹ with hBdef
       set D : ℂ := (Fintype.card (rootsOfUnity 3 F) : ℂ)⁻¹ *
         ∑ ε : rootsOfUnity 3 F,
@@ -778,8 +744,12 @@ theorem zeroProjection_formula (e : rootsOfUnity 3 F → ℂ)
       projectedScalar F ζ hζ C R P H U a e :=
   rfl
 
-theorem projectedScalar_stabilizer [FiniteDimensional ℂ S]
-    (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain) (v : S)
+section
+
+variable [FiniteDimensional ℂ S] (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
+
+include hs in
+theorem projectedScalar_stabilizer (v : S)
     (g : stabilizer F ζ hζ C R P H U a) :
     (KPCuspGenuineMonodromy.chi F ζ hζ (rho F ζ hζ C R P H U a g) : ℂ) *
       projectedScalar F ζ hζ C R P H U a
@@ -787,12 +757,14 @@ theorem projectedScalar_stabilizer [FiniteDimensional ℂ S]
       projectedScalar F ζ hζ C R P H U a
         (sheetEvaluation F ζ hζ C R P H U a ι s v) := by
   letI : Fintype (rootsOfUnity 3 F) := Fintype.ofFinite _
-  letI : Finite (TranslationDeck F ζ hζ C R P H U a) :=
+  let TranslationDeck₀ := TranslationDeck F ζ hζ C R P H U a
+  letI : Finite (TranslationDeck₀) :=
     (monodromy F ζ hζ C R P H U a).finite_deck
-  letI : Fintype (TranslationDeck F ζ hζ C R P H U a) := Fintype.ofFinite _
-  letI : Fintype (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-    (atlasLevel F ζ hζ C R P H U)) := Fintype.ofFinite _
-  have hsum : (KPCuspGenuineMonodromy.chi F ζ hζ (rho F ζ hζ C R P H U a g) : ℂ) *
+  letI : Fintype (TranslationDeck₀) := Fintype.ofFinite _
+  let centralLevel₀ := KPContSectorPhaseComponentCharts.centralLevel F ζ hζ (atlasLevel F ζ hζ C R P H U)
+  letI : Fintype (centralLevel₀) := Fintype.ofFinite _
+  let chi₀ := KPCuspGenuineMonodromy.chi F ζ hζ (rho F ζ hζ C R P H U a g)
+  have hsum : (chi₀ : ℂ) *
       (∑ ε : rootsOfUnity 3 F, (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ)⁻¹ *
         sheetEvaluation F ζ hζ C R P H U a ι s v ε) =
       ∑ ε : rootsOfUnity 3 F, (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ)⁻¹ *
@@ -801,23 +773,21 @@ theorem projectedScalar_stabilizer [FiniteDimensional ℂ S]
     apply Finset.sum_congr rfl
     intro ε _
     rw [mul_left_comm, sheetEvaluation_stabilizer F ζ hζ C R P H U a ι s hs v g ε]
-  let M : ℂ := ((Fintype.card (TranslationDeck F ζ hζ C R P H U a) : ℂ)⁻¹ *
-      ∑ q : TranslationDeck F ζ hζ C R P H U a, deckCoefficient F ζ hζ C R P H U a q) *
-    ((Fintype.card (KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-      (atlasLevel F ζ hζ C R P H U)) : ℂ)⁻¹ *
-      ∑ η : KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
-        (atlasLevel F ζ hζ C R P H U), (KPCuspGenuineMonodromy.chi F ζ hζ η.val : ℂ)⁻¹)
-  let N : ℂ := ∑ ε : rootsOfUnity 3 F, (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ)⁻¹ *
+  let M := ((Fintype.card (TranslationDeck₀) : ℂ)⁻¹ *
+      ∑ q : TranslationDeck₀, deckCoefficient F ζ hζ C R P H U a q) *
+    ((Fintype.card (centralLevel₀) : ℂ)⁻¹ *
+      ∑ η : centralLevel₀, (KPCuspGenuineMonodromy.chi F ζ hζ η.val : ℂ)⁻¹)
+  let N := ∑ ε : rootsOfUnity 3 F, (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ)⁻¹ *
     sheetEvaluation F ζ hζ C R P H U a ι s v ε
-  change (KPCuspGenuineMonodromy.chi F ζ hζ (rho F ζ hζ C R P H U a g) : ℂ) *
+  change (chi₀ : ℂ) *
     (M * ((Fintype.card (rootsOfUnity 3 F) : ℂ)⁻¹ * N)) = M *
       ((Fintype.card (rootsOfUnity 3 F) : ℂ)⁻¹ * N)
   calc
     _ = M * ((Fintype.card (rootsOfUnity 3 F) : ℂ)⁻¹ *
-      ((KPCuspGenuineMonodromy.chi F ζ hζ (rho F ζ hζ C R P H U a g) : ℂ) * N)) := by ring
+      ((chi₀ : ℂ) * N)) := by ring
     _ = _ := by rw [hsum]
 
-def b [FiniteDimensional ℂ S] (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain) :
+def b :
     S →ₗ[ℂ] LocalZeroSections F ζ hζ C R P H U a where
   toFun v := ⟨fun _ => zeroProjection F ζ hζ C R P H U a
     (sheetEvaluation F ζ hζ C R P H U a ι s v), by
@@ -839,14 +809,16 @@ def b [FiniteDimensional ℂ S] (s : ℂ) (hs : s ∈ KPContinuation.spectralDom
     funext shape
     simp only [Submodule.coe_smul, Pi.smul_apply]
     rw [map_smul (sheetEvaluation F ζ hζ C R P H U a ι s) c v, map_smul]
-    simp only [RingHom.id_apply]
+    simp
 
-theorem b_formula [FiniteDimensional ℂ S] (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
+theorem b_formula
     (v : S) (shape : KPCuspCharts.Shape F) :
     (b F ζ hζ C R P H U a ι s hs v).val shape =
       zeroProjection F ζ hζ C R P H U a
         (sheetEvaluation F ζ hζ C R P H U a ι s v) :=
   rfl
+
+end
 
 def W (s : ℂ) (v : S) (t : ℝ) (shape : KPCuspCharts.Shape F) :
     ZeroFiber F ζ hζ C R P H U a :=

@@ -38,7 +38,7 @@ private lemma prefix_numeric_bound (α η Ce : ℝ) (ha : α ∈ Set.Icc (1 : �
   have hprod : M * N ≤ 4 * (B * Y) := by
     calc _ ≤ (2 * B) * (2 * Y) := mul_le_mul hiB hjY (by linarith) (by linarith)
          _ = _ := by ring
-  have hp : (M * N) ^ d ≤ (4 * (B * Y)) ^ d :=
+  have hp :=
     Real.rpow_le_rpow (mul_nonneg (by linarith) (by linarith)) hprod hd.le
   have hna : (N) ^ α ≤ 4 * Y ^ α := by
     calc _ ≤ (2 * Y) ^ α := Real.rpow_le_rpow (by linarith) hjY (by linarith [ha.1])
@@ -48,13 +48,12 @@ private lemma prefix_numeric_bound (α η Ce : ℝ) (ha : α ∈ Set.Icc (1 : �
            have hh := Real.rpow_le_rpow_of_exponent_le (show (1 : ℝ) ≤ 2 by norm_num) ha.2
            norm_num [Real.rpow_two] at hh ⊢
            exact hh
-  have hs : M + (N) ^ α ≤ 4 * (B + Y ^ α) := by
-    nlinarith
   have hCe0 : 0 ≤ Ce := by linarith
   have hloc : Ce * (M * N) ^ d *
       (M + (N) ^ α) ≤
       Ce * (4 * (B * Y)) ^ d * (4 * (B + Y ^ α)) :=
-    mul_le_mul (mul_le_mul_of_nonneg_left hp hCe0) hs
+    mul_le_mul (mul_le_mul_of_nonneg_left hp hCe0) (by
+      nlinarith)
       (by positivity) (by positivity)
   have hcount : (DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength (2 * B) + 1 : ℝ) *
       (DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength (2 * Y) + 1 : ℝ) ≤
@@ -69,14 +68,12 @@ private lemma prefix_numeric_bound (α η Ce : ℝ) (ha : α ∈ Set.Icc (1 : �
       Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 4) hP.le]
     have hfour : (2 : ℝ) ^ d * (2 : ℝ) ^ d = (4 : ℝ) ^ d := by
       rw [← Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) (by norm_num : (0 : ℝ) ≤ 2)]; norm_num
-    have hby : B ^ d * Y ^ d = (B * Y) ^ d := (Real.mul_rpow hB0 hY0).symm
     have hpp : (B * Y) ^ d * (B * Y) ^ d = (B * Y) ^ η := by
       rw [← Real.rpow_add hP]; congr 1; dsimp [d]; ring
     calc _ = D * D * Ce * 4 * ((2 : ℝ) ^ d * (2 : ℝ) ^ d * (4 : ℝ) ^ d) *
           (B ^ d * Y ^ d * (B * Y) ^ d) * (B + Y ^ α) := by ring
-         _ = _ := by rw [hfour, hby, hpp]
+         _ = _ := by rw [hfour, ((Real.mul_rpow hB0 hY0).symm), hpp]
   rw [heq] at htotal
-  change _ ≤ max 1 C0 * (B * Y) ^ η * (B + Y ^ α)
   exact htotal.trans (mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_right (le_max_right 1 C0) (by positivity)) (by positivity))
 
@@ -105,7 +102,6 @@ theorem direct_prefix_bound
   intro B X hB hX R S hR hS u v lam hu hv
   let Y := max 1 X
   have hY : 1 ≤ Y := le_max_left _ _
-  have hB0 : 0 ≤ B := by linarith
   have hY0 : 0 ≤ Y := by linarith
   have h2B : 1 ≤ 2 * B := by linarith
   have h2Y : 1 ≤ 2 * Y := by linarith
@@ -114,7 +110,6 @@ theorem direct_prefix_bound
     obtain ⟨hsf, hcop, hnorm⟩ := (mem_idealAdmissibleFinset F q Z a).mp ha
     exact (mem_idealAdmissibleFinset F c Z a).mpr
       ⟨hsf, top_unique (hcop ▸ sup_le_sup_left (Ideal.dvd_iff_le.mp hcq) a), hnorm⟩
-  have hRc : R ⊆ idealAdmissibleFinset F c (2 * B) := hR.trans (hcore _)
   have hSc : S ⊆ idealAdmissibleFinset F c (2 * Y) := by
     intro b hb
     obtain ⟨hsf, hcop, hnorm⟩ :=
@@ -136,32 +131,20 @@ theorem direct_prefix_bound
       obtain ⟨i, hi, hai⟩ := Finset.mem_biUnion.mp ha
       exact (Finset.mem_inter.mp hai).2
     · intro ha
-      have hah : a ∈ (Finset.range (DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength Z + 1)).biUnion
-          (clippedDyadicBlock F c Z) := by
+      obtain ⟨i, hi, hai⟩ := Finset.mem_biUnion.mp (by
         rw [biUnion_clippedDyadicBlock F c Z hZ]
-        exact hA ha
-      obtain ⟨i, hi, hai⟩ := Finset.mem_biUnion.mp hah
+        exact hA ha)
       exact Finset.mem_biUnion.mpr ⟨i, hi, Finset.mem_inter.mpr ⟨hai, ha⟩⟩
   have hdisj : ∀ (Z : ℝ) (hZ : 1 ≤ Z) (A : Finset (Ideal (𝓞 F))),
       Set.PairwiseDisjoint (↑(Finset.range (DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength Z + 1)) : Set ℕ)
-        (fun i => clippedDyadicBlock F c Z i ∩ A) := by
-    intro Z hZ A i hi j hj hij
-    exact (pairwiseDisjoint_clippedDyadicBlock F c Z hZ hi hj hij).mono
+        (fun i => clippedDyadicBlock F c Z i ∩ A) := fun Z hZ A i hi j hj hij => (pairwiseDisjoint_clippedDyadicBlock F c Z hZ hi hj hij).mono
       Finset.inter_subset_left Finset.inter_subset_left
   let L := Ce * Real.rpow ((2 * B) * (2 * Y)) (η / 2) *
     (2 * B + Real.rpow (2 * Y) α)
-  have hL : 0 ≤ L := by dsimp [L]; positivity
   have hlocal : ∀ i ∈ I, ∀ j ∈ J, ∀ l : Ideal (𝓞 F) → ℂ,
       ∑ a ∈ RB i, ‖∑ b ∈ SB j, l b * (u a * (Q.χ b) a * v b)‖ ^ 2 ≤
         L * ∑ b ∈ SB j, ‖l b‖ ^ 2 := by
     intro i hi j hj l
-    have hr : RB i ⊆ idealDyadicBlock F c i :=
-      Finset.inter_subset_left.trans (clippedDyadicBlock_subset_idealDyadicBlock F c _ i)
-    have hs : SB j ⊆ idealDyadicBlock F c j :=
-      Finset.inter_subset_left.trans (clippedDyadicBlock_subset_idealDyadicBlock F c _ j)
-    have hbound := hendpoint i j (RB i) (SB j) hr hs u v l
-      (fun a ha => hu a (Finset.mem_inter.mp ha).2)
-      (fun b hb => hv b (Finset.mem_inter.mp hb).2)
     have hrew : (∑ a ∈ RB i, ‖∑ b ∈ SB j, l b * (u a * (Q.χ b) a * v b)‖ ^ 2) =
         ∑ a ∈ RB i, ‖∑ b ∈ SB j, u a * (l b * (Q.χ b) a) * v b‖ ^ 2 := by
       apply Finset.sum_congr rfl
@@ -171,22 +154,18 @@ theorem direct_prefix_bound
       intro b hb
       ring
     rw [hrew]
-    refine hbound.trans (mul_le_mul_of_nonneg_right ?_ (by positivity))
+    refine (hendpoint i j (RB i) (SB j) (Finset.inter_subset_left.trans (clippedDyadicBlock_subset_idealDyadicBlock F c _ i)) (Finset.inter_subset_left.trans (clippedDyadicBlock_subset_idealDyadicBlock F c _ j)) u v l
+      (fun a ha => hu a (Finset.mem_inter.mp ha).2)
+      (fun b hb => hv b (Finset.mem_inter.mp hb).2)).trans (mul_le_mul_of_nonneg_right ?_ (by positivity))
     obtain ⟨hi1, hi2⟩ := dyadicScale_bounds (2 * B) h2B i hi
     obtain ⟨hj1, hj2⟩ := dyadicScale_bounds (2 * Y) h2Y j hj
-    have hprod : dyadicScale i * dyadicScale j ≤ (2 * B) * (2 * Y) :=
-      mul_le_mul hi2 hj2 (by linarith) (by linarith)
     have hp := Real.rpow_le_rpow
-      (show 0 ≤ dyadicScale i * dyadicScale j by positivity) hprod (show 0 ≤ η / 2 by positivity)
+      (show 0 ≤ dyadicScale i * dyadicScale j by positivity) (mul_le_mul hi2 hj2 (by linarith) (by linarith)) (show 0 ≤ η / 2 by positivity)
     have hs' : dyadicScale i + Real.rpow (dyadicScale j) α ≤
-        2 * B + Real.rpow (2 * Y) α := by
-      exact add_le_add hi2 (Real.rpow_le_rpow (by linarith) hj2 (by linarith [hα.1]))
+        2 * B + Real.rpow (2 * Y) α := add_le_add hi2 (Real.rpow_le_rpow (by linarith) hj2 (by linarith [hα.1]))
     simp only [Real.rpow_eq_pow] at hs' ⊢
     exact mul_le_mul (mul_le_mul_of_nonneg_left hp (by linarith)) hs'
       (by positivity) (mul_nonneg (by linarith) (by rw [Real.rpow_eq_pow]; positivity))
-  have hassembled := finite_partition_quadratic_bound I J R S RB SB
-    (hcover _ h2B R hRc) (hcover _ h2Y S hSc) (hdisj _ h2B R) (hdisj _ h2Y S)
-    (fun b a => u a * (Q.χ b) a * v b) L hL hlocal lam
   have hrew : (∑ a ∈ R, ‖∑ b ∈ S, u a * (lam b * (Q.χ b) a) * v b‖ ^ 2) =
       ∑ a ∈ R, ‖∑ b ∈ S, lam b * (u a * (Q.χ b) a * v b)‖ ^ 2 := by
     apply Finset.sum_congr rfl
@@ -196,9 +175,10 @@ theorem direct_prefix_bound
     intro b hb
     ring
   rw [hrew]
-  refine hassembled.trans (mul_le_mul_of_nonneg_right ?_ (by positivity))
-  have hh := hn B Y hB hY (2 * B) (2 * Y) h2B le_rfl h2Y le_rfl
-  simpa [I, J, L, Finset.card_range] using hh
+  refine (finite_partition_quadratic_bound I J R S RB SB
+    (hcover _ h2B R (hR.trans (hcore _))) (hcover _ h2Y S hSc) (hdisj _ h2B R) (hdisj _ h2Y S)
+    (fun b a => u a * (Q.χ b) a * v b) L (by dsimp [L]; positivity) hlocal lam).trans (mul_le_mul_of_nonneg_right ?_ (by positivity))
+  simpa [I, J, L, Finset.card_range] using (hn B Y hB hY (2 * B) (2 * Y) h2B le_rfl h2Y le_rfl)
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.SplitPrefixEnvelope
 
@@ -210,29 +190,13 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve.SplitPrefixEnvelope
 
 open scoped NumberField Classical
 
-private lemma prefix_partition {A : Type*} [DecidableEq A]
-    (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ) (U : Finset A)
-    (hU : P.biUnion blocks = U) (hR : R ⊆ U) :
-    R = P.biUnion (fun i => R ∩ blocks i) := by
-  ext a
-  simp only [Finset.mem_biUnion, Finset.mem_inter]
-  constructor
-  · intro ha
-    have := hR ha
-    rw [← hU, Finset.mem_biUnion] at this
-    obtain ⟨i, hi, hai⟩ := this
-    exact ⟨i, hi, ha, hai⟩
-  · rintro ⟨i, hi, ha, _⟩; exact ha
+private alias prefix_partition := DedekindZetaZeroFree.LargeSieve.Sieve.NormalizedShellTranspose.transpose_partition
 
-private lemma prefix_partition_disjoint {A : Type*} [DecidableEq A]
-    (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ)
-    (h : Set.PairwiseDisjoint (↑P : Set ℕ) blocks) :
-    Set.PairwiseDisjoint (↑P : Set ℕ) (fun i => R ∩ blocks i) := by
-  intro i hi j hj hij
-  exact (h hi hj hij).mono Finset.inter_subset_right Finset.inter_subset_right
+private alias prefix_partition_disjoint := DedekindZetaZeroFree.LargeSieve.Sieve.NormalizedShellTranspose.transpose_partition_disjoint
 
-private lemma prefix_block_type
-    (F : Type) [Field F] [NumberField F] (q : Ideal (𝓞 F))
+variable (F : Type) [Field F] [NumberField F]
+
+private lemma prefix_block_type (q : Ideal (𝓞 F))
     (T : ℝ) (R : Finset (Ideal (𝓞 F))) (j : ℕ) :
     (R ∩ clippedDyadicBlock F q T j) ⊆ paperShell F q (dyadicScale j) ∨
       (dyadicScale j = 1 ∧ (R ∩ clippedDyadicBlock F q T j) ⊆ {⊤}) := by
@@ -244,7 +208,6 @@ private lemma prefix_block_type
   | succ k => exact Or.inl hh
 
 theorem transposed_prefix_bound
-    (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hcq : c ∣ q)
     (hreciprocity : ∀ a b : Ideal (𝓞 F), Squarefree a → a ⊔ q = ⊤ →
@@ -277,7 +240,6 @@ theorem transposed_prefix_bound
   have hY0 : 0 ≤ Y := by linarith
   have h2B : 1 ≤ 2 * B := by linarith
   have h2Y : 1 ≤ 2 * Y := by linarith
-  have hC0 : 0 ≤ Cext := by linarith
   have ha : 0 ≤ α := by linarith [hα.1]
   have hSY : S ⊆ idealAdmissibleFinset F q (2 * Y) := by
     intro a ha
@@ -315,16 +277,14 @@ theorem transposed_prefix_bound
       have hm : dyadicScale i * dyadicScale j ≤ 4 * B * Y := by
         calc _ ≤ (2 * B) * (2 * Y) := mul_le_mul hi'.2 hj'.2 hj0 (by positivity)
              _ = _ := by ring
-      have hp : Real.rpow (dyadicScale i * dyadicScale j) e ≤ Real.rpow (4 * B * Y) e := by
-        simp only [Real.rpow_eq_pow]
-        exact Real.rpow_le_rpow (mul_nonneg hi0 hj0) hm he.le
-      have hs : dyadicScale j + Real.rpow (dyadicScale i) α ≤ 2 * Y + Real.rpow (2 * B) α := by
-        simp only [Real.rpow_eq_pow]
-        exact add_le_add hj'.2 (Real.rpow_le_rpow hi0 hi'.2 ha)
-      exact mul_le_mul (mul_le_mul_of_nonneg_left hp hC0) hs
+      refine mul_le_mul (mul_le_mul_of_nonneg_left ?_ (by linarith)) ?_
         (by simp only [Real.rpow_eq_pow]; positivity)
-        (by simp only [Real.rpow_eq_pow]; positivity))
-  have hk : 0 ≤ k := (Vendor.dyadicLength_small_power_constant_pos he).le
+        (by simp only [Real.rpow_eq_pow]; positivity)
+      · simp only [Real.rpow_eq_pow]
+        exact Real.rpow_le_rpow (mul_nonneg hi0 hj0) hm he.le
+      · simp only [Real.rpow_eq_pow]
+        exact add_le_add hj'.2 (Real.rpow_le_rpow hi0 hi'.2 ha))
+  have hk := (Vendor.dyadicLength_small_power_constant_pos he).le
   have hp : (P.card : ℝ) * (T.card : ℝ) ≤
       k ^ 2 * Real.rpow (4 * B * Y) e := by
     have hh := mul_le_mul (Vendor.dyadicLength_small_power he h2B)
@@ -357,8 +317,7 @@ theorem transposed_prefix_bound
       rw [heq, show 4 * B * Y = 4 * (B * Y) by ring,
         Real.mul_rpow (by norm_num) (mul_nonneg hB0 hY0)]
     have h2a : (2 : ℝ) ≤ (2 : ℝ) ^ α := by
-      have ht := Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ) ≤ 2) hα.1
-      simpa only [Real.rpow_one] using ht
+      simpa using (Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ) ≤ 2) hα.1)
     have hs : 2 * Y + (2 * B) ^ α ≤ (2 : ℝ) ^ α * (Y + B ^ α) := by
       rw [Real.mul_rpow (by norm_num) hB0, mul_add]
       exact add_le_add (mul_le_mul_of_nonneg_right h2a hY0) le_rfl
@@ -374,9 +333,8 @@ theorem transposed_prefix_bound
     simp only [Real.rpow_eq_pow]
     exact mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right (le_max_right 1 D) (by positivity)) (by positivity)
-  have hfinal := hpart.trans (mul_le_mul_of_nonneg_right (hh'.trans harith)
-    (Finset.sum_nonneg (fun _ _ => sq_nonneg _)))
-  simpa only [mul_assoc, mul_left_comm, mul_comm] using hfinal
+  simpa only [mul_assoc, mul_left_comm, mul_comm] using (hpart.trans (mul_le_mul_of_nonneg_right (hh'.trans harith)
+    (Finset.sum_nonneg (fun _ _ => sq_nonneg _))))
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.SplitPrefixEnvelope
 
@@ -415,9 +373,9 @@ theorem bilinear_prefix_two_orientation_envelope
     hq hcq hreciprocity α hα hExponent η hη
   refine ⟨max Cd Ct, le_trans hCd (le_max_left _ _), ?_⟩
   intro B X hB hX R S hR hS u v lam hu hv
-  let d : ℝ := B + Real.rpow (max 1 X) α
-  let t : ℝ := max 1 X + Real.rpow B α
-  let P : ℝ := Real.rpow (B * max 1 X) η
+  let d := B + Real.rpow (max 1 X) α
+  let t := max 1 X + Real.rpow B α
+  let P := Real.rpow (B * max 1 X) η
   let E : ℝ := ∑ b ∈ S, ‖lam b‖ ^ 2
   have hP : 0 ≤ P := by
     dsimp [P]
@@ -449,8 +407,7 @@ theorem bilinear_prefix_two_orientation_envelope
       _ = max Cd Ct * P * t * E := by ring
   by_cases hdt : d ≤ t
   · simpa only [d, t, P, E, min_eq_left hdt] using hdirect
-  · have htd : t ≤ d := le_of_not_ge hdt
-    simpa only [d, t, P, E, min_eq_right htd] using htrans
+  · simpa only [d, t, P, E, min_eq_right (le_of_not_ge hdt)] using htrans
 
 end DedekindZetaZeroFree.LargeSieve.Sieve
 

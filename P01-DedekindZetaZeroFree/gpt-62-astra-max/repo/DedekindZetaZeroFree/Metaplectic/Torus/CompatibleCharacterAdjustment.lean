@@ -16,13 +16,8 @@ open ProductPolarization.FiniteAdjustmentSupport
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
-open _root_.DedekindZetaZeroFree.ProductPolarization.FiniteAdjustmentSupport renaming local_discrete → local_discrete
-open _root_.DedekindZetaZeroFree.ProductPolarization.FiniteAdjustmentSupport renaming local_finite → local_finite
-open _root_.DedekindZetaZeroFree.ProductPolarization.FiniteAdjustmentSupport renaming trivialAdjustment → trivialAdjustment
-open _root_.DedekindZetaZeroFree.ProductPolarization.FiniteAdjustmentSupport renaming rawProjection_coord → rawProjection_coord
-open _root_.DedekindZetaZeroFree.ProductPolarization.FiniteAdjustmentSupport renaming pD_one_center → pD_one_center
-open _root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter renaming toRawData → toRawData
-open _root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter renaming fromRawAdjustment → fromRawAdjustment
+open _root_.DedekindZetaZeroFree.ProductPolarization.FiniteAdjustmentSupport (local_discrete local_finite trivialAdjustment rawProjection_coord pD_one_center)
+open _root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter (toRawData fromRawAdjustment)
 
 private theorem adjustment_product_frozen (P : CompatibleLocalData F ζ hζ)
     (ψ : ((q : A.Sf) → (P.localData (Sum.inr q.val)).L) →* ℂˣ) :

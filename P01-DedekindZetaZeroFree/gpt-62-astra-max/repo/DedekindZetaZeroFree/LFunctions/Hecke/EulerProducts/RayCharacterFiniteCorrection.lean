@@ -11,14 +11,14 @@ namespace DedekindZetaZeroFree.HeckeCorollary
 
 open AbelianQuotient IsDedekindDomain
 
-noncomputable def finiteEulerCorrection
-    (K : Type) [Field K] [NumberField K]
-    (w : Ideal (𝓞 K) → ℂ) (S : Finset (HeightOneSpectrum (𝓞 K))) (s : ℂ) : ℂ :=
+section
+
+variable (K : Type) [Field K] [NumberField K] (w : Ideal (𝓞 K) → ℂ)
+
+noncomputable def finiteEulerCorrection (S : Finset (HeightOneSpectrum (𝓞 K))) (s : ℂ) : ℂ :=
   ∏ P ∈ S, (1 - w P.asIdeal * (Ideal.absNorm P.asIdeal : ℂ) ^ (-s))
 
-theorem eulerCorrectionFactor_ne_zero
-    (K : Type) [Field K] [NumberField K]
-    (w : Ideal (𝓞 K) → ℂ) (hnorm : ∀ I, ‖w I‖ ≤ 1)
+theorem eulerCorrectionFactor_ne_zero (hnorm : ∀ I, ‖w I‖ ≤ 1)
     (P : HeightOneSpectrum (𝓞 K)) (s : ℂ) (hs : 0 < s.re) :
     1 - w P.asIdeal * (Ideal.absNorm P.asIdeal : ℂ) ^ (-s) ≠ 0 := by
   have hq : 1 < Ideal.absNorm P.asIdeal := Odlyzko.one_lt_primeIdealNorm K P
@@ -32,20 +32,14 @@ theorem eulerCorrectionFactor_ne_zero
     exact (mul_le_mul_of_nonneg_right (hnorm P.asIdeal) (norm_nonneg _)).trans_lt
       (by simpa using hpow)
   intro heq
-  have hval := (sub_eq_zero.mp heq).symm
-  rw [hval, norm_one] at hlt
+  rw [((sub_eq_zero.mp heq).symm), norm_one] at hlt
   exact (lt_irrefl 1 hlt)
 
-theorem finiteEulerCorrection_ne_zero
-    (K : Type) [Field K] [NumberField K]
-    (w : Ideal (𝓞 K) → ℂ) (hnorm : ∀ I, ‖w I‖ ≤ 1)
+theorem finiteEulerCorrection_ne_zero (hnorm : ∀ I, ‖w I‖ ≤ 1)
     (S : Finset (HeightOneSpectrum (𝓞 K))) (s : ℂ) (hs : 0 < s.re) :
-    finiteEulerCorrection K w S s ≠ 0 := by
-  exact Finset.prod_ne_zero_iff.mpr (fun P _ ↦ eulerCorrectionFactor_ne_zero K w hnorm P s hs)
+    finiteEulerCorrection K w S s ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun P _ ↦ eulerCorrectionFactor_ne_zero K w hnorm P s hs)
 
-theorem finiteEulerCorrection_differentiable
-    (K : Type) [Field K] [NumberField K]
-    (w : Ideal (𝓞 K) → ℂ) (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem finiteEulerCorrection_differentiable (S : Finset (HeightOneSpectrum (𝓞 K))) :
     Differentiable ℂ (finiteEulerCorrection K w S) := by
   apply Differentiable.fun_finsetProd
   intro P _
@@ -54,6 +48,8 @@ theorem finiteEulerCorrection_differentiable
     exact_mod_cast (show Ideal.absNorm P.asIdeal ≠ 0 by omega)
   exact (differentiable_const 1).sub
     (((differentiable_id.neg).const_cpow (Or.inl hq)).const_mul _)
+
+end
 
 theorem rayCharacter_eulerCorrection
     (K : Type) [Field K] [NumberField K]
@@ -67,18 +63,16 @@ theorem rayCharacter_eulerCorrection
       (∑' I : Ideal (𝓞 K), χ₀ I * (Ideal.absNorm I : ℂ) ^ (-s)) *
         finiteEulerCorrection K χ₀ S s := by
   classical
-  have hχ := weightedIdealEulerProduct_hasProd K χ χ.map_mul' χ.map_top'
-    ((χ.eq_zero_iff' ⊥).mpr (Or.inl rfl)) (rayCharacter_norm_le_one K m hm χ) s hs
-  have hχ₀ := weightedIdealEulerProduct_hasProd K χ₀ χ₀.map_mul' χ₀.map_top'
-    ((χ₀.eq_zero_iff' ⊥).mpr (Or.inl rfl)) (rayCharacter_norm_le_one K m₀ hm₀ χ₀) s hs
   let c := fun P : HeightOneSpectrum (𝓞 K) ↦
     if P ∈ S then 1 - χ₀ P.asIdeal * (Ideal.absNorm P.asIdeal : ℂ) ^ (-s) else 1
   have hc : HasProd c (finiteEulerCorrection K χ₀ S s) := by
     have hc' : HasProd c (∏ P ∈ S, c P) :=
       hasProd_prod_of_ne_finset_one (fun P hP ↦ by simp [c, hP])
     simpa [finiteEulerCorrection, c] using hc'
-  apply hχ.unique
-  convert hχ₀.mul hc using 1
+  apply (weightedIdealEulerProduct_hasProd K χ χ.map_mul' χ.map_top'
+    ((χ.eq_zero_iff' ⊥).mpr (Or.inl rfl)) (rayCharacter_norm_le_one K m hm χ) s hs).unique
+  convert (weightedIdealEulerProduct_hasProd K χ₀ χ₀.map_mul' χ₀.map_top'
+    ((χ₀.eq_zero_iff' ⊥).mpr (Or.inl rfl)) (rayCharacter_norm_le_one K m₀ hm₀ χ₀) s hs).mul hc using 1
   funext P
   by_cases hP : P ∈ S
   · simp only [hzero P hP, zero_mul, sub_zero, inv_one, c, ite_eq_left hP]

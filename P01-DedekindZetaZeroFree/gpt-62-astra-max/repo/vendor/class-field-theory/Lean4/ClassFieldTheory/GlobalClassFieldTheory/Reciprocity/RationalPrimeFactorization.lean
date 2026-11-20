@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -44,8 +42,11 @@ def rationalPrimeFactorizationSupport
     (max (max (x : ℚ).num.natAbs (x : ℚ).den) p.1 + 1)).filter
       Nat.Prime
 
-theorem mem_rationalPrimeFactorizationSupport
-    (x : ℚˣ) (p : Nat.Primes) :
+section
+
+variable (x : ℚˣ) (p : Nat.Primes)
+
+theorem mem_rationalPrimeFactorizationSupport :
     p.1 ∈ rationalPrimeFactorizationSupport x p := by
   rw [rationalPrimeFactorizationSupport, Finset.mem_filter,
     Finset.mem_range]
@@ -57,12 +58,12 @@ theorem mem_rationalPrimeFactorizationSupport
 
 /-- The rational `p`-adic unit part of `x`: multiply `x` by the inverse of
 its `p`-power. -/
-def rationalPrimeUnit (x : ℚˣ) (p : Nat.Primes) : ℚˣ :=
+def rationalPrimeUnit : ℚˣ :=
   (Units.mk0 (p.1 : ℚ) (by exact_mod_cast p.2.ne_zero)) ^
       (-padicValRat p.1 (x : ℚ)) * x
 
 @[simp]
-theorem rationalPrimeUnit_val (x : ℚˣ) (p : Nat.Primes) :
+theorem rationalPrimeUnit_val :
     (rationalPrimeUnit x p : ℚ) =
       (p.1 : ℚ) ^ (-padicValRat p.1 (x : ℚ)) * (x : ℚ) := by
   simp [rationalPrimeUnit]
@@ -70,48 +71,38 @@ theorem rationalPrimeUnit_val (x : ℚˣ) (p : Nat.Primes) :
 /-- Removing the `p`-power from a nonzero rational number leaves
 `p`-adic valuation zero. -/
 @[simp]
-theorem padicValRat_rationalPrimeUnit
-    (x : ℚˣ) (p : Nat.Primes) :
+theorem padicValRat_rationalPrimeUnit :
     padicValRat p.1 (rationalPrimeUnit x p : ℚ) = 0 := by
-  have hp0 : (p.1 : ℚ) ≠ 0 := by
-    exact_mod_cast p.2.ne_zero
-  have hpow0 :
-      (p.1 : ℚ) ^ (-padicValRat p.1 (x : ℚ)) ≠ 0 :=
-    zpow_ne_zero _ hp0
   rw [rationalPrimeUnit_val,
-    padicValRat.mul hpow0 x.ne_zero,
+    padicValRat.mul (zpow_ne_zero _ (by
+      exact_mod_cast p.2.ne_zero)) x.ne_zero,
     padicValRat.zpow,
     padicValRat.self p.2.one_lt]
   ring
 
 /-- The ordinary prime factorization of a nonzero rational number, over the
 finite support chosen by `rationalPrimeFactorizationSupport`. -/
-theorem rational_factorization_over_support
-    (x : ℚˣ) (p : Nat.Primes) :
+theorem rational_factorization_over_support :
     (x : ℚ) =
       (((x : ℚ).num.sign : ℤ) : ℚ) *
         ∏ q ∈ rationalPrimeFactorizationSupport x p,
           (q : ℚ) ^ padicValRat q (x : ℚ) := by
   let r : ℚ := x
   let B : ℕ := max (max r.num.natAbs r.den) p.1 + 1
-  let s : Finset ℕ := (Finset.range B).filter Nat.Prime
+  let s := (Finset.range B).filter Nat.Prime
   have hsupport :
       rationalPrimeFactorizationSupport x p = s := by
     rfl
-  have hnum0 : r.num.natAbs ≠ 0 :=
+  have hnum0 :=
     Int.natAbs_ne_zero.mpr
       (Rat.num_ne_zero.mpr x.ne_zero)
-  have hden0 : r.den ≠ 0 :=
+  have hden0 :=
     r.den_ne_zero
-  have hnum_lt : r.num.natAbs < B := by
-    exact
-      Nat.lt_succ_of_le
+  have hnum_lt := Nat.lt_succ_of_le
         (le_trans
           (le_max_left r.num.natAbs r.den)
           (le_max_left (max r.num.natAbs r.den) p.1))
-  have hden_lt : r.den < B := by
-    exact
-      Nat.lt_succ_of_le
+  have hden_lt := Nat.lt_succ_of_le
         (le_trans
           (le_max_right r.num.natAbs r.den)
           (le_max_left (max r.num.natAbs r.den) p.1))
@@ -134,13 +125,10 @@ theorem rational_factorization_over_support
   have hsign :
       (r.num : ℚ) =
         (((r.num.sign : ℤ) : ℚ)) * (r.num.natAbs : ℚ) := by
-    have hsignInt :
-        r.num.sign * (r.num.natAbs : ℤ) = r.num :=
-      Int.sign_mul_natAbs r.num
     calc
-      (r.num : ℚ) =
+      _ =
           ((r.num.sign * (r.num.natAbs : ℤ) : ℤ) : ℚ) :=
-        congrArg (fun z : ℤ => (z : ℚ)) hsignInt.symm
+        congrArg (fun z : ℤ => (z : ℚ)) (Int.sign_mul_natAbs r.num).symm
       _ =
           (((r.num.sign : ℤ) : ℚ)) * (r.num.natAbs : ℚ) := by
         norm_num
@@ -154,10 +142,8 @@ theorem rational_factorization_over_support
               (q : ℚ) ^ padicValNat q r.den := by
         apply Finset.prod_congr rfl
         intro q hq
-        have hqprime : q.Prime :=
-          (Finset.mem_filter.mp hq).2
         rw [padicValRat_def, padicValInt,
-          zpow_sub₀ (by exact_mod_cast hqprime.ne_zero),
+          zpow_sub₀ (by exact_mod_cast ((Finset.mem_filter.mp hq).2).ne_zero),
           zpow_natCast, zpow_natCast]
       _ =
           (∏ q ∈ s,
@@ -169,8 +155,8 @@ theorem rational_factorization_over_support
         rw [hnum, hden]
   rw [hsupport]
   calc
-    (x : ℚ) = (r.num : ℚ) / (r.den : ℚ) := by
-      simpa only [r] using r.num_div_den.symm
+    _ = (r.num : ℚ) / (r.den : ℚ) := by
+      simpa using r.num_div_den.symm
     _ =
         (((r.num.sign : ℤ) : ℚ)) *
           ((r.num.natAbs : ℚ) / (r.den : ℚ)) := by
@@ -181,13 +167,11 @@ theorem rational_factorization_over_support
       rw [hprod]
     _ =
         ((((x : ℚ).num.sign : ℤ) : ℚ)) *
-          ∏ q ∈ s, (q : ℚ) ^ padicValRat q (x : ℚ) := by
-      rfl
+          ∏ q ∈ s, (q : ℚ) ^ padicValRat q (x : ℚ) := rfl
 
 /-- The `p`-adic unit part of `x` is its sign times the finite product of
 `q ^ padicValRat q x` over the primes `q ≠ p`. -/
-theorem rationalPrimeUnit_factorization
-    (x : ℚˣ) (p : Nat.Primes) :
+theorem rationalPrimeUnit_factorization :
     (rationalPrimeUnit x p : ℚ) =
       (((x : ℚ).num.sign : ℤ) : ℚ) *
         ∏ q ∈ (rationalPrimeFactorizationSupport x p).erase p.1,
@@ -195,46 +179,42 @@ theorem rationalPrimeUnit_factorization
   let s := rationalPrimeFactorizationSupport x p
   let f : ℕ → ℚ :=
     fun q => (q : ℚ) ^ padicValRat q (x : ℚ)
-  have hp_mem : p.1 ∈ s :=
-    mem_rationalPrimeFactorizationSupport x p
-  have hsplit :
-      f p.1 * ∏ q ∈ s.erase p.1, f q =
-        ∏ q ∈ s, f q :=
-    Finset.mul_prod_erase s f hp_mem
+  have hsplit :=
+    Finset.mul_prod_erase s f (mem_rationalPrimeFactorizationSupport x p)
   have hfactor :
       (x : ℚ) =
         (((x : ℚ).num.sign : ℤ) : ℚ) *
           ∏ q ∈ s, f q := by
-    simpa only [s, f] using
+    simpa using
       rational_factorization_over_support x p
-  have hp0 : (p.1 : ℚ) ≠ 0 := by
-    exact_mod_cast p.2.ne_zero
   rw [rationalPrimeUnit_val]
+  let padicValRat₀ := padicValRat p.1 (x : ℚ)
   calc
-    (p.1 : ℚ) ^ (-padicValRat p.1 (x : ℚ)) * (x : ℚ) =
-        (p.1 : ℚ) ^ (-padicValRat p.1 (x : ℚ)) *
+    (p.1 : ℚ) ^ (-padicValRat₀) * (x : ℚ) =
+        (p.1 : ℚ) ^ (-padicValRat₀) *
           ((((x : ℚ).num.sign : ℤ) : ℚ) *
             ∏ q ∈ s, f q) :=
       congrArg
         (fun y : ℚ =>
-          (p.1 : ℚ) ^ (-padicValRat p.1 (x : ℚ)) * y)
+          (p.1 : ℚ) ^ (-padicValRat₀) * y)
         hfactor
     _ =
-        (p.1 : ℚ) ^ (-padicValRat p.1 (x : ℚ)) *
+        (p.1 : ℚ) ^ (-padicValRat₀) *
           ((((x : ℚ).num.sign : ℤ) : ℚ) *
             (f p.1 * ∏ q ∈ s.erase p.1, f q)) := by
       rw [hsplit]
     _ =
         (((x : ℚ).num.sign : ℤ) : ℚ) *
-          (((p.1 : ℚ) ^ (-padicValRat p.1 (x : ℚ)) *
-              (p.1 : ℚ) ^ padicValRat p.1 (x : ℚ)) *
+          (((p.1 : ℚ) ^ (-padicValRat₀) *
+              (p.1 : ℚ) ^ padicValRat₀) *
             ∏ q ∈ s.erase p.1, f q) := by
       dsimp only [f]
       ring
     _ =
         (((x : ℚ).num.sign : ℤ) : ℚ) *
           ∏ q ∈ s.erase p.1, f q := by
-      rw [← zpow_add₀ hp0, neg_add_cancel, zpow_zero, one_mul]
+      rw [← zpow_add₀ (by
+        exact_mod_cast p.2.ne_zero), neg_add_cancel, zpow_zero, one_mul]
     _ =
         (((x : ℚ).num.sign : ℤ) : ℚ) *
           ∏ q ∈
@@ -242,11 +222,15 @@ theorem rationalPrimeUnit_factorization
             (q : ℚ) ^ padicValRat q (x : ℚ) := by
       rfl
 
+end
+
+section
+
+variable (p : Nat.Primes) (y : ℚ) (hy : y ≠ 0) (hval : padicValRat p.1 y = 0)
+
 /-- A nonzero rational number of `p`-adic valuation zero, regarded as a
 unit of the `p`-adic integers. -/
-def padicIntUnitOfRat
-    (p : Nat.Primes) (y : ℚ)
-    (hy : y ≠ 0) (hval : padicValRat p.1 y = 0) :
+def padicIntUnitOfRat :
     ℤ_[p.1]ˣ :=
   PadicInt.mkUnits (u := (y : ℚ_[p.1])) (by
     rw [Padic.eq_padicNorm,
@@ -256,21 +240,21 @@ def padicIntUnitOfRat
 /-- The underlying `p`-adic number of `padicIntUnitOfRat` is the original
 rational number. -/
 @[simp]
-theorem padicIntUnitOfRat_coe
-    (p : Nat.Primes) (y : ℚ)
-    (hy : y ≠ 0) (hval : padicValRat p.1 y = 0) :
+theorem padicIntUnitOfRat_coe :
     (((padicIntUnitOfRat p y hy hval : ℤ_[p.1]) : ℚ_[p.1])) =
-      (y : ℚ_[p.1]) := by
-  exact PadicInt.mkUnits_eq _
+      (y : ℚ_[p.1]) := PadicInt.mkUnits_eq _
+
+end
+
+section
+
+variable (x : ℚˣ) (p : Nat.Primes)
 
 /-- The sign of a nonzero rational numerator is a unit at every finite
 prime. -/
-theorem padicValRat_rational_num_sign
-    (x : ℚˣ) (p : Nat.Primes) :
+theorem padicValRat_rational_num_sign :
     padicValRat p.1 ((((x : ℚ).num.sign : ℤ) : ℚ)) = 0 := by
-  have hnum : (x : ℚ).num ≠ 0 :=
-    Rat.num_ne_zero.mpr x.ne_zero
-  rcases lt_or_gt_of_ne hnum with hneg | hpos
+  rcases lt_or_gt_of_ne (Rat.num_ne_zero.mpr x.ne_zero) with hneg | hpos
   · have hsign : (x : ℚ).num.sign = -1 := by
       rw [Int.sign_eq_sign, sign_neg hneg]
       rfl
@@ -283,8 +267,7 @@ theorem padicValRat_rational_num_sign
     simp
 
 /-- The actual sign of `x`, regarded as a unit of the `p`-adic integers. -/
-def rationalSignPadicUnit
-    (x : ℚˣ) (p : Nat.Primes) : ℤ_[p.1]ˣ :=
+def rationalSignPadicUnit : ℤ_[p.1]ˣ :=
   padicIntUnitOfRat p ((((x : ℚ).num.sign : ℤ) : ℚ))
     (by
       exact_mod_cast
@@ -295,11 +278,11 @@ def rationalSignPadicUnit
 /-- The underlying `p`-adic number of `rationalSignPadicUnit` is the sign of
 the rational numerator. -/
 @[simp]
-theorem rationalSignPadicUnit_coe
-    (x : ℚˣ) (p : Nat.Primes) :
+theorem rationalSignPadicUnit_coe :
     (((rationalSignPadicUnit x p : ℤ_[p.1]) : ℚ_[p.1])) =
-      (((((x : ℚ).num.sign : ℤ) : ℚ) : ℚ_[p.1])) := by
-  exact padicIntUnitOfRat_coe _ _ _ _
+      (((((x : ℚ).num.sign : ℤ) : ℚ) : ℚ_[p.1])) := padicIntUnitOfRat_coe _ _ _ _
+
+end
 
 /-- The value in `ℤ_[p]` of `rationalSignPadicUnit` is the integer sign. -/
 @[simp]
@@ -308,20 +291,20 @@ theorem rationalSignPadicUnit_val
     (rationalSignPadicUnit x p : ℤ_[p.1]) =
       ((x : ℚ).num.sign : ℤ) := by
   apply Subtype.ext
-  simp only [rationalSignPadicUnit_coe, PadicInt.coe_intCast,
-    Rat.cast_intCast]
+  simp
+
+section
+
+variable (x : ℚˣ) (p : Nat.Primes)
 
 /-- The rational sign unit has square one. -/
 @[simp]
-theorem rationalSignPadicUnit_sq
-    (x : ℚˣ) (p : Nat.Primes) :
+theorem rationalSignPadicUnit_sq :
     rationalSignPadicUnit x p ^ 2 = 1 := by
   apply Units.ext
   change (rationalSignPadicUnit x p : ℤ_[p.1]) ^ 2 = 1
   rw [rationalSignPadicUnit_val]
-  have hnum : (x : ℚ).num ≠ 0 :=
-    Rat.num_ne_zero.mpr x.ne_zero
-  rcases lt_or_gt_of_ne hnum with hneg | hpos
+  rcases lt_or_gt_of_ne (Rat.num_ne_zero.mpr x.ne_zero) with hneg | hpos
   · have hsign : (x : ℚ).num.sign = -1 := by
       rw [Int.sign_eq_sign, sign_neg hneg]
       rfl
@@ -336,8 +319,7 @@ theorem rationalSignPadicUnit_sq
 /-- Reduction of the rational sign unit modulo `p ^ k` has the expected
 integer value. -/
 @[simp]
-theorem rationalSignPadicUnit_toZModPow_val
-    (x : ℚˣ) (p : Nat.Primes) (k : ℕ) :
+theorem rationalSignPadicUnit_toZModPow_val (k : ℕ) :
     ((Units.map (PadicInt.toZModPow k).toMonoidHom
         (rationalSignPadicUnit x p) :
           (ZMod (p.1 ^ k))ˣ) : ZMod (p.1 ^ k)) =
@@ -351,29 +333,34 @@ theorem rationalSignPadicUnit_toZModPow_val
 
 /-- Reduction of the rational sign unit still has square one. -/
 @[simp]
-theorem rationalSignPadicUnit_toZModPow_sq
-    (x : ℚˣ) (p : Nat.Primes) (k : ℕ) :
+theorem rationalSignPadicUnit_toZModPow_sq (k : ℕ) :
     Units.map (PadicInt.toZModPow k).toMonoidHom
           (rationalSignPadicUnit x p) ^ 2 =
       1 := by
   rw [← map_pow, rationalSignPadicUnit_sq, map_one]
 
+end
+
+section
+
+variable (p : Nat.Primes) (q : ℕ) (h : p.1.Coprime q)
+
 /-- A natural number prime to `p`, regarded as a unit of `ℤ_[p]`. -/
-def padicNatUnit
-    (p : Nat.Primes) (q : ℕ) (h : p.1.Coprime q) :
+def padicNatUnit :
     ℤ_[p.1]ˣ :=
   PadicInt.mkUnits
     (u := (((q : ℤ_[p.1]) : ℚ_[p.1])))
     (by
       simpa using
-        (PadicInt.norm_natCast_eq_one_iff (p := p.1)).2 h)
+        (PadicInt.norm_natCast_eq_one_iff).2 h)
 
 @[simp]
-theorem padicNatUnit_val
-    (p : Nat.Primes) (q : ℕ) (h : p.1.Coprime q) :
+theorem padicNatUnit_val :
     (padicNatUnit p q h : ℤ_[p.1]) = q := by
   apply Subtype.ext
   rfl
+
+end
 
 /-- Reducing the canonical `p`-adic unit attached to `q` modulo `p ^ k`
 gives the canonical unit represented by `q` in `ZMod (p ^ k)`. -/
@@ -390,13 +377,10 @@ theorem padicNatUnit_toZModPow
 theorem padicValRat_rationalPrime_succ
     (p : Nat.Primes) :
     padicValRat p.1 (((p.1 + 1 : ℕ) : ℚ)) = 0 := by
-  have hnot :
-      ¬ p.1 ∣ p.1 + 1 :=
-    p.2.coprime_iff_not_dvd.mp
-      (Nat.coprime_self_add_right.mpr
-        (Nat.coprime_one_right p.1))
   rw [padicValRat.of_nat,
-    padicValNat.eq_zero_of_not_dvd hnot]
+    padicValNat.eq_zero_of_not_dvd (p.2.coprime_iff_not_dvd.mp
+      (Nat.coprime_self_add_right.mpr
+        (Nat.coprime_one_right p.1)))]
   norm_num
 
 /-- A positive natural number greater than one, prime to `p`, gives a
@@ -418,22 +402,24 @@ theorem padicNatUnit_not_isOfFinOrder_of_one_lt
       padicNatUnit_val] at hval
     simp at hval
     apply Nat.cast_injective (R := ℤ_[p.1])
-    simpa only [Nat.cast_pow, Nat.cast_one] using hval
+    simpa using hval
   exact
     (Nat.ne_of_gt
       (Nat.one_lt_pow hk.ne' hn)) hnat
 
+section
+
+variable (x : ℚˣ) (p : Nat.Primes)
+
 /-- Every member of the rational factorization support is prime. -/
-theorem prime_of_mem_rationalPrimeFactorizationSupport
-    (x : ℚˣ) (p : Nat.Primes) {q : ℕ}
+theorem prime_of_mem_rationalPrimeFactorizationSupport {q : ℕ}
     (hq : q ∈ rationalPrimeFactorizationSupport x p) :
     q.Prime :=
   (Finset.mem_filter.mp hq).2
 
 /-- The canonical embedding of the natural-number factorization support
 into the type of natural primes. -/
-def rationalPrimeFactorizationSupportEmbedding
-    (x : ℚˣ) (p : Nat.Primes) :
+def rationalPrimeFactorizationSupportEmbedding :
     ↥(rationalPrimeFactorizationSupport x p) ↪ Nat.Primes where
   toFun q :=
     ⟨q.1,
@@ -445,10 +431,11 @@ def rationalPrimeFactorizationSupportEmbedding
       congrArg (fun z : Nat.Primes => (z : ℕ)) h
 
 /-- The factorization support as an actual finite set of `Nat.Primes`. -/
-def rationalPrimeFactorizationPrimeSupport
-    (x : ℚˣ) (p : Nat.Primes) : Finset Nat.Primes :=
+def rationalPrimeFactorizationPrimeSupport : Finset Nat.Primes :=
   Finset.univ.map
     (rationalPrimeFactorizationSupportEmbedding x p)
+
+end
 
 /-- Membership in the prime-valued support is exactly membership of the
 underlying natural number in the original support. -/
@@ -472,10 +459,13 @@ theorem mem_rationalPrimeFactorizationPrimeSupport_iff
     apply Subtype.ext
     rfl
 
+section
+
+variable (x : ℚˣ)
+
 /-- The distinguished prime belongs to the prime-valued support. -/
 @[simp]
-theorem mem_rationalPrimeFactorizationPrimeSupport
-    (x : ℚˣ) (p : Nat.Primes) :
+theorem mem_rationalPrimeFactorizationPrimeSupport (p : Nat.Primes) :
     p ∈ rationalPrimeFactorizationPrimeSupport x p :=
   (mem_rationalPrimeFactorizationPrimeSupport_iff x p p).2
     (mem_rationalPrimeFactorizationSupport x p)
@@ -483,8 +473,7 @@ theorem mem_rationalPrimeFactorizationPrimeSupport
 /-- Erasing `p` commutes with passing from natural-number support to
 prime-valued support. -/
 @[simp]
-theorem mem_rationalPrimeFactorizationPrimeSupport_erase_iff
-    (x : ℚˣ) (p q : Nat.Primes) :
+theorem mem_rationalPrimeFactorizationPrimeSupport_erase_iff (p q : Nat.Primes) :
     q ∈ (rationalPrimeFactorizationPrimeSupport x p).erase p ↔
       q.1 ∈ (rationalPrimeFactorizationSupport x p).erase p.1 := by
   rw [Finset.mem_erase, Finset.mem_erase]
@@ -502,8 +491,7 @@ theorem mem_rationalPrimeFactorizationPrimeSupport_erase_iff
 
 /-- The canonical prime associated with an element of the erased natural
 support. -/
-def rationalPrimeOfMemFactorizationSupportErase
-    (x : ℚˣ) (p : Nat.Primes)
+def rationalPrimeOfMemFactorizationSupportErase (p : Nat.Primes)
     (q : ↥((rationalPrimeFactorizationSupport x p).erase p.1)) :
     Nat.Primes :=
   ⟨q.1,
@@ -512,8 +500,7 @@ def rationalPrimeOfMemFactorizationSupportErase
 
 /-- The erased natural support and the erased prime-valued support have
 canonically equivalent element types. -/
-def rationalPrimeFactorizationSupportEraseEquiv
-    (x : ℚˣ) (p : Nat.Primes) :
+def rationalPrimeFactorizationSupportEraseEquiv (p : Nat.Primes) :
     ↥((rationalPrimeFactorizationSupport x p).erase p.1) ≃
       ↥((rationalPrimeFactorizationPrimeSupport x p).erase p) where
   toFun q :=
@@ -532,24 +519,24 @@ def rationalPrimeFactorizationSupportEraseEquiv
     apply Subtype.ext
     rfl
 
+end
+
 /-- A prime in the support with `p` erased is coprime to `p`. -/
 theorem coprime_of_mem_rationalPrimeFactorizationSupport_erase
     (x : ℚˣ) (p : Nat.Primes) {q : ℕ}
     (hq :
       q ∈ (rationalPrimeFactorizationSupport x p).erase p.1) :
     p.1.Coprime q := by
-  have hqprime :
-      q.Prime :=
-    prime_of_mem_rationalPrimeFactorizationSupport x p
-      (Finset.mem_of_mem_erase hq)
   exact
-    (Nat.coprime_primes p.2 hqprime).2
+    (Nat.coprime_primes p.2 (prime_of_mem_rationalPrimeFactorizationSupport x p
+      (Finset.mem_of_mem_erase hq))).2
       (Finset.ne_of_mem_erase hq).symm
+
+variable (x : ℚˣ) (p : Nat.Primes)
 
 /-- The rational prime-unit factorization, lifted from `ℚ` to an exact
 identity of units of `ℤ_[p]`. -/
-theorem padicIntUnitOfRat_rationalPrimeUnit_factorization
-    (x : ℚˣ) (p : Nat.Primes) :
+theorem padicIntUnitOfRat_rationalPrimeUnit_factorization :
     padicIntUnitOfRat p (rationalPrimeUnit x p : ℚ)
         (rationalPrimeUnit x p).ne_zero
         (padicValRat_rationalPrimeUnit x p) =
@@ -561,14 +548,9 @@ theorem padicIntUnitOfRat_rationalPrimeUnit_factorization
                 x p q.2)) ^
             padicValRat q.1 (x : ℚ) := by
   let : Fact p.1.Prime := ⟨p.2⟩
-  have hQ :=
-    congrArg (algebraMap ℚ ℚ_[p.1])
-      (rationalPrimeUnit_factorization x p)
   let ι := PadicInt.Coe.ringHom (p := p.1)
   have hι_apply (z : ℤ_[p.1]) :
-      ι z = (z : ℚ_[p.1]) := rfl
-  have hι : Function.Injective ι :=
-    fun _ _ h => PadicInt.ext h
+      ι z = z := rfl
   have hprod :
       (∏ q :
           ↥((rationalPrimeFactorizationSupport x p).erase p.1),
@@ -586,11 +568,11 @@ theorem padicIntUnitOfRat_rationalPrimeUnit_factorization
             (q.1 : ℚ_[p.1]) ^ padicValRat q.1 (x : ℚ) := by
         apply Finset.prod_congr rfl
         intro q _
-        let u : ℤ_[p.1]ˣ :=
+        let u :=
           padicNatUnit p q.1
             (coprime_of_mem_rationalPrimeFactorizationSupport_erase
               x p q.2)
-        let n : ℤ := padicValRat q.1 (x : ℚ)
+        let n := padicValRat q.1 (x : ℚ)
         have hu : (u : ℤ_[p.1]) = q.1 := by
           dsimp only [u]
           exact
@@ -600,10 +582,10 @@ theorem padicIntUnitOfRat_rationalPrimeUnit_factorization
         have huQ : ((u : ℤ_[p.1]) : ℚ_[p.1]) = (q.1 : ℚ_[p.1]) := by
           simpa only [PadicInt.coe_natCast] using
             congrArg (fun z : ℤ_[p.1] => (z : ℚ_[p.1])) hu
-        let U : ℤ_[p.1]ˣ →* ℚ_[p.1]ˣ :=
+        let U :=
           Units.map ι.toMonoidHom
         have hUQ : ((U u : ℚ_[p.1]ˣ) : ℚ_[p.1]) =
-            (q.1 : ℚ_[p.1]) := by
+            q.1 := by
           change ι (u : ℤ_[p.1]) = (q.1 : ℚ_[p.1])
           simpa only [hι_apply] using huQ
         change
@@ -623,7 +605,7 @@ theorem padicIntUnitOfRat_rationalPrimeUnit_factorization
           (fun q : ℕ =>
             (q : ℚ_[p.1]) ^ padicValRat q (x : ℚ))
   apply Units.ext
-  apply hι
+  apply fun _ _ h => PadicInt.ext h
   rw [Units.val_mul, Units.coe_prod]
   change
     ι
@@ -648,12 +630,11 @@ theorem padicIntUnitOfRat_rationalPrimeUnit_factorization
           (((x : ℚ).num.sign : ℤ) : ℚ) *
         ∏ q ∈ (rationalPrimeFactorizationSupport x p).erase p.1,
           (q : ℚ_[p.1]) ^ padicValRat q (x : ℚ)
-  simpa only [map_mul, map_prod, map_zpow₀,
-    map_natCast] using hQ
+  simpa using (congrArg (algebraMap ℚ ℚ_[p.1])
+      (rationalPrimeUnit_factorization x p))
 
 /-- The rational prime-unit factorization after reduction modulo `p ^ k`. -/
-theorem padicIntUnitOfRat_rationalPrimeUnit_toZModPow
-    (x : ℚˣ) (p : Nat.Primes) (k : ℕ) :
+theorem padicIntUnitOfRat_rationalPrimeUnit_toZModPow (k : ℕ) :
     Units.map (PadicInt.toZModPow k).toMonoidHom
         (padicIntUnitOfRat p (rationalPrimeUnit x p : ℚ)
           (rationalPrimeUnit x p).ne_zero
@@ -666,17 +647,14 @@ theorem padicIntUnitOfRat_rationalPrimeUnit_toZModPow
               ((coprime_of_mem_rationalPrimeFactorizationSupport_erase
                 x p q.2).symm.pow_right k)) ^
             padicValRat q.1 (x : ℚ) := by
-  have h :=
-    congrArg
-      (Units.map (PadicInt.toZModPow k).toMonoidHom)
-      (padicIntUnitOfRat_rationalPrimeUnit_factorization x p)
   simpa only [map_mul, map_prod, map_zpow,
-    padicNatUnit_toZModPow] using h
+    padicNatUnit_toZModPow] using (congrArg
+      (Units.map (PadicInt.toZModPow k).toMonoidHom)
+      (padicIntUnitOfRat_rationalPrimeUnit_factorization x p))
 
 /-- Multiplying the reduced rational prime-unit by the inverse powers of all
 prime factors away from `p` recovers the reduced sign. -/
-theorem padicIntUnitOfRat_rationalPrimeUnit_mul_inverseFactors_toZModPow
-    (x : ℚˣ) (p : Nat.Primes) (k : ℕ) :
+theorem padicIntUnitOfRat_rationalPrimeUnit_mul_inverseFactors_toZModPow (k : ℕ) :
     Units.map (PadicInt.toZModPow k).toMonoidHom
           (padicIntUnitOfRat p (rationalPrimeUnit x p : ℚ)
             (rationalPrimeUnit x p).ne_zero
@@ -697,8 +675,7 @@ theorem padicIntUnitOfRat_rationalPrimeUnit_mul_inverseFactors_toZModPow
 The direct `p`-adic unit factor times all inverse away-from-`p` factors
 is the reduced rational sign. -/
 theorem
-    padicIntUnitOfRat_rationalPrimeUnit_mul_primeSupportInverseFactors_toZModPow
-    (x : ℚˣ) (p : Nat.Primes) (k : ℕ) :
+    padicIntUnitOfRat_rationalPrimeUnit_mul_primeSupportInverseFactors_toZModPow (k : ℕ) :
     Units.map (PadicInt.toZModPow k).toMonoidHom
           (padicIntUnitOfRat p (rationalPrimeUnit x p : ℚ)
             (rationalPrimeUnit x p).ne_zero
@@ -738,45 +715,6 @@ theorem
   exact
     padicIntUnitOfRat_rationalPrimeUnit_mul_inverseFactors_toZModPow
       x p k
-
-/-- Multiplication by the reduced sign cancels the sign in the reduced
-prime-unit factorization. -/
-theorem rationalSignPadicUnit_mul_primeUnit_toZModPow
-    (x : ℚˣ) (p : Nat.Primes) (k : ℕ) :
-    Units.map (PadicInt.toZModPow k).toMonoidHom
-          (rationalSignPadicUnit x p) *
-        Units.map (PadicInt.toZModPow k).toMonoidHom
-          (padicIntUnitOfRat p (rationalPrimeUnit x p : ℚ)
-            (rationalPrimeUnit x p).ne_zero
-            (padicValRat_rationalPrimeUnit x p)) =
-      ∏ q :
-          ↥((rationalPrimeFactorizationSupport x p).erase p.1),
-        (ZMod.unitOfCoprime q.1
-            ((coprime_of_mem_rationalPrimeFactorizationSupport_erase
-              x p q.2).symm.pow_right k)) ^
-          padicValRat q.1 (x : ℚ) := by
-  rw [padicIntUnitOfRat_rationalPrimeUnit_toZModPow]
-  rw [← mul_assoc, ← pow_two,
-    rationalSignPadicUnit_toZModPow_sq, one_mul]
-
-/-- Inverse/cancellation form of the reduced prime-unit factorization. -/
-theorem padicIntUnitOfRat_rationalPrimeUnit_toZModPow_inv_mul
-    (x : ℚˣ) (p : Nat.Primes) (k : ℕ) :
-    (Units.map (PadicInt.toZModPow k).toMonoidHom
-        (padicIntUnitOfRat p (rationalPrimeUnit x p : ℚ)
-          (rationalPrimeUnit x p).ne_zero
-          (padicValRat_rationalPrimeUnit x p)))⁻¹ *
-      (Units.map (PadicInt.toZModPow k).toMonoidHom
-          (rationalSignPadicUnit x p) *
-        ∏ q :
-            ↥((rationalPrimeFactorizationSupport x p).erase p.1),
-          (ZMod.unitOfCoprime q.1
-              ((coprime_of_mem_rationalPrimeFactorizationSupport_erase
-                x p q.2).symm.pow_right k)) ^
-            padicValRat q.1 (x : ℚ)) =
-      1 := by
-  rw [← padicIntUnitOfRat_rationalPrimeUnit_toZModPow]
-  simp
 
 end Reciprocity
 end GlobalClassFieldTheory

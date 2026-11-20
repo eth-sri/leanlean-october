@@ -19,16 +19,21 @@ set_option maxHeartbeats 1000000
   invFun f := f.codRestrict _ (by intro x; change f x ^ 3 = 1; rw [← map_pow, hp, map_one])
   left_inv f := by ext; rfl
   right_inv f := by ext; rfl
-private theorem charCard (G K : Type*) [CommGroup G] [Finite G] [Field K]
-    (z : K) (hz : IsPrimitiveRoot z 3) (hp : ∀ x : G, x ^ 3 = 1) :
+section
+
+variable (G K : Type*) [CommGroup G] [Finite G] [Field K] (z : K) (hz : IsPrimitiveRoot z 3)
+    (hp : ∀ x : G, x ^ 3 = 1)
+
+include hz hp in
+private theorem charCard :
     Nat.card (G →* rootsOfUnity 3 K) = Nat.card G := by
   letI : HasEnoughRootsOfUnity K 3 := ⟨⟨z, hz⟩, inferInstance⟩
   letI : HasEnoughRootsOfUnity K (Monoid.exponent G) :=
     HasEnoughRootsOfUnity.of_dvd K (Monoid.exponent_dvd_of_forall_pow_eq_one hp)
   rw [Nat.card_congr (charUnitsEquiv G K hp)]
   exact CommGroup.card_monoidHom_of_hasEnoughRootsOfUnity G K
-private theorem charSeparate (G K : Type*) [CommGroup G] [Finite G] [Field K]
-    (z : K) (hz : IsPrimitiveRoot z 3) (hp : ∀ x : G, x ^ 3 = 1)
+include hz hp in
+private theorem charSeparate
     (x y : G) (h : ∀ χ : G →* rootsOfUnity 3 K, χ x = χ y) : x = y := by
   letI : HasEnoughRootsOfUnity K 3 := ⟨⟨z, hz⟩, inferInstance⟩
   letI : HasEnoughRootsOfUnity K (Monoid.exponent G) :=
@@ -36,8 +41,8 @@ private theorem charSeparate (G K : Type*) [CommGroup G] [Finite G] [Field K]
   apply (CommGroup.forall_apply_eq_apply_iff G (M := K)).mp
   intro χ
   exact congrArg Subtype.val (h ((charUnitsEquiv G K hp).symm χ))
-private theorem isotropicDuality (G K : Type*) [CommGroup G] [Finite G] [Field K]
-    (z : K) (hz : IsPrimitiveRoot z 3) (hp : ∀ x : G, x ^ 3 = 1)
+include hz hp in
+private theorem isotropicDuality
     (B : G →* G →* rootsOfUnity 3 K)
     (hnd : ∀ x, (∀ y, B x y = 1) → x = 1)
     (H : Subgroup G) (hi : ∀ x y : H, B x.val y.val = 1)
@@ -68,7 +73,7 @@ private theorem isotropicDuality (G K : Type*) [CommGroup G] [Finite G] [Field K
     apply hnd
     intro a
     simp [he', map_mul, map_inv]
-  have hfin : Finite ((G ⧸ H) →* rootsOfUnity 3 K) :=
+  have hfin :=
     Nat.finite_of_card_ne_zero (by rw [charCard _ K z hz hq]; exact Nat.card_pos.ne')
   letI := hfin
   have hL : Function.Bijective L :=
@@ -83,7 +88,7 @@ private theorem isotropicDuality (G K : Type*) [CommGroup G] [Finite G] [Field K
     intro χ
     obtain ⟨x, rfl⟩ := hL.2 χ
     exact DFunLike.congr_fun hab x
-  have hfinU : Finite (H →* rootsOfUnity 3 K) :=
+  have hfinU :=
     Nat.finite_of_card_ne_zero (by rw [charCard _ K z hz hu]; exact Nat.card_pos.ne')
   letI := hfinU
   have hR : Function.Bijective R :=
@@ -99,8 +104,10 @@ private theorem isotropicDuality (G K : Type*) [CommGroup G] [Finite G] [Field K
     refine ⟨a, fun x => DFunLike.congr_fun ha x, ?_⟩
     intro b hb
     exact hR.1 (by apply MonoidHom.ext; intro x; exact (hb x).trans (DFunLike.congr_fun ha x).symm)
+
+end
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 include ζ hζ in
 private theorem localData (q : HeightOneSpectrum (𝓞 F))
     (hgood : ¬ KPAdelicCoverRestrictedProduct.Bad F q) :
@@ -109,11 +116,9 @@ private theorem localData (q : HeightOneSpectrum (𝓞 F))
   let K := q.adicCompletion F
   letI : ValuativeRel K := ClassFieldTheory.finitePlaceCompletionValuativeRel F q
   letI : IsNonarchimedeanLocalField K := ClassFieldTheory.finitePlaceCompletionIsNonarchimedeanLocalField F q
-  let z : K := algebraMap F K (ζ ^ 4)
-  have hz : IsPrimitiveRoot z 3 := (KPHilbert.primitive_three F ζ hζ).map_of_injective (algebraMap F K).injective
+  let z := algebraMap F K (ζ ^ 4)
+  have hz := (KPHilbert.primitive_three F ζ hζ).map_of_injective (algebraMap F K).injective
   have htame : (3 : (ValuativeRel.valuation K).integer) ∉ IsLocalRing.maximalIdeal _ := by
-    change (3 : KPTameCompact.O F q) ∉ KPTameCompact.p F q
-    have hv : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3 := fun h => hgood (Or.inr h)
     letI : Nontrivial (KPTameCompact.O F q ⧸ KPTameCompact.p F q) :=
       Ideal.Quotient.nontrivial_iff.mpr (IsLocalRing.maximalIdeal.isMaximal (KPTameCompact.O F q)).ne_top
     letI : (KPTameCompact.p F q).IsMaximal := IsLocalRing.maximalIdeal.isMaximal _
@@ -124,19 +129,18 @@ private theorem localData (q : HeightOneSpectrum (𝓞 F))
       letI : Field (KPTameCompact.O F q ⧸ KPTameCompact.p F q) := Ideal.Quotient.field _
       apply isUnit_iff_ne_zero.mpr
       simpa only [f, map_ofNat, Nat.cast_ofNat] using
-        CharP.cast_ne_zero_of_ne_of_prime (KPTameCompact.O F q ⧸ KPTameCompact.p F q) Nat.prime_three hv
-    exact fun h => (IsLocalRing.mem_maximalIdeal _).mp h (by simpa only [mem_nonunits_iff] using hu)
-  have h9 : Nat.card (LocalD F (Sum.inr q)) = 9 := KPLocalTorus.card_cubeClasses_tame K z hz htame
-  have hf : Finite (LocalD F (Sum.inr q)) := KPLocalTorus.finite_cubeClasses K z hz
+        CharP.cast_ne_zero_of_ne_of_prime (KPTameCompact.O F q ⧸ KPTameCompact.p F q) Nat.prime_three (fun h => hgood (Or.inr h))
+    exact fun h => (IsLocalRing.mem_maximalIdeal _).mp h (by simpa using hu)
+  have h9 := KPLocalTorus.card_cubeClasses_tame K z hz htame
+  have hf := KPLocalTorus.finite_cubeClasses K z hz
   have hidx : (KPCubicUnitIndices.cubeUnits K).index = 3 := by
     have hh := KPCubicHaarTransport.field_cube_index K
     change Nat.card (LocalD F (Sum.inr q)) = 3 * (KPCubicUnitIndices.cubeUnits K).index at hh
     rw [h9] at hh
     omega
-  let f : KPHilbert.LocalIntegerUnits F q →* LocalD F (Sum.inr q) :=
+  let f :=
     (localClass F (Sum.inr q)).comp (KPHilbert.integerUnitInclusion F q)
-  have hr : f.range = U F (Sum.inr q) := by
-    exact MonoidHom.range_comp _ _
+  have hr : f.range = U F (Sum.inr q) := MonoidHom.range_comp _ _
   have hk : f.ker = KPCubicUnitIndices.cubeUnits K := by
     ext u
     change localClass F (Sum.inr q) (KPHilbert.integerUnitInclusion F q u) = 1 ↔ _
@@ -159,7 +163,8 @@ theorem tame_arithmetic_unit_valuation_duality (q : HeightOneSpectrum (𝓞 F))
         unitValuationPairing F ζ hζ q hgood u a = χ u) := by
   obtain ⟨hf, h3, h9⟩ := localData F ζ hζ q hgood
   letI := hf
-  let B : LocalD F (Sum.inr q) →* LocalD F (Sum.inr q) →* rootsOfUnity 3 F :=
+  let LocalD₀ := LocalD F (Sum.inr q)
+  let B : LocalD₀ →* LocalD₀ →* rootsOfUnity 3 F :=
     KPHilbert.finiteThreePairing F ζ hζ q
   have heq : ∀ a b, localPairing F ζ hζ (Sum.inr q) a b = B a b := by
     intro a b
@@ -167,7 +172,7 @@ theorem tame_arithmetic_unit_valuation_duality (q : HeightOneSpectrum (𝓞 F))
     | H a =>
       induction b using QuotientGroup.induction_on with
       | H b => exact KPHilbert.B3_canonical F ζ hζ q a b
-  have hp : ∀ a : LocalD F (Sum.inr q), a ^ 3 = 1 := by
+  have hp : ∀ a : LocalD₀, a ^ 3 = 1 := by
     intro a
     induction a using QuotientGroup.induction_on with
     | H a =>
@@ -179,22 +184,23 @@ theorem tame_arithmetic_unit_valuation_duality (q : HeightOneSpectrum (𝓞 F))
       (KPHilbert.finiteRootsThree F ζ hζ q) _
       (ClassFieldTheory.finitePlaceAdicHilbertPairingFamily_isLocallyHilbert F 3
         (KPHilbert.rootsThree F ζ hζ) q).2.2.1.1
-  have hi : ∀ a b : U F (Sum.inr q), B a.val b.val = 1 := by
+  let U₀ := U F (Sum.inr q)
+  have hi : ∀ a b : U₀, B a.val b.val = 1 := by
     intro a b
     rw [← heq]
     exact tame_unit_isotropic F ζ hζ q hgood _ _ a.property b.property
-  have hc : Nat.card (U F (Sum.inr q)) = Nat.card (LocalValuationClasses F (Sum.inr q)) := by
-    have hh := (U F (Sum.inr q)).card_eq_card_quotient_mul_card_subgroup
-    change Nat.card (LocalD F (Sum.inr q)) =
-      Nat.card (LocalValuationClasses F (Sum.inr q)) * Nat.card (U F (Sum.inr q)) at hh
+  have hc : Nat.card (U₀) = Nat.card (LocalValuationClasses F (Sum.inr q)) := by
+    have hh := (U₀).card_eq_card_quotient_mul_card_subgroup
+    change Nat.card (LocalD₀) =
+      Nat.card (LocalValuationClasses F (Sum.inr q)) * Nat.card (U₀) at hh
     rw [h3, h9] at hh
     rw [h3]
     omega
   have hh := isotropicDuality _ F (ζ ^ 4) (KPHilbert.primitive_three F ζ hζ) hp B hnd
-    (U F (Sum.inr q)) hi hc
-  have heq' (u : U F (Sum.inr q)) (a : LocalValuationClasses F (Sum.inr q)) :
+    (U₀) hi hc
+  have heq' (u : U₀) (a : LocalValuationClasses F (Sum.inr q)) :
       unitValuationPairing F ζ hζ q hgood u a =
-      QuotientGroup.lift (U F (Sum.inr q)) (B u.val) (by
+      QuotientGroup.lift (U₀) (B u.val) (by
         intro x hx; exact hi u ⟨x, hx⟩) a := by
     induction a using QuotientGroup.induction_on with
     | H a => exact heq u.val a

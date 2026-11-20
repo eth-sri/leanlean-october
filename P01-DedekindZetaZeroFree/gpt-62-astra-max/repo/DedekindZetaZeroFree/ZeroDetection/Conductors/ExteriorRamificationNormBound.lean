@@ -23,39 +23,33 @@ theorem norm_le_exterior_prime_product
           C * (∏ v ∈ T, (Ideal.absNorm v.asIdeal : ℝ)) := by
   classical
   let U := hS.toFinset
-  let M : Multiset (Ideal (𝓞 F)) :=
+  let M :=
     U.val.bind (fun v => Multiset.replicate (b v) v.asIdeal)
   have hM : M.prod ≠ ⊥ := by
     apply Multiset.prod_ne_zero
     intro hJ
     obtain ⟨v, hv, hvJ⟩ := Multiset.mem_bind.mp hJ
-    have heq := Multiset.eq_of_mem_replicate hvJ
-    exact v.ne_bot heq.symm
-  have hnormM : 0 < Ideal.absNorm M.prod := by
-    exact Nat.pos_of_ne_zero (mt Ideal.absNorm_eq_zero_iff.mp hM)
-  refine ⟨(Ideal.absNorm M.prod : ℝ), by exact_mod_cast hnormM, ?_⟩
+    exact v.ne_bot (Multiset.eq_of_mem_replicate hvJ).symm
+  have hnormM := Nat.pos_of_ne_zero (mt Ideal.absNorm_eq_zero_iff.mp hM)
+  refine ⟨(Ideal.absNorm M.prod : ℝ), by positivity, ?_⟩
   intro I hI T hin hout hT
-  let N : Multiset (Ideal (𝓞 F)) := T.val.map HeightOneSpectrum.asIdeal
+  let N := T.val.map HeightOneSpectrum.asIdeal
   have hsub : normalizedFactors I ≤ M + N := by
     apply Multiset.le_iff_count.mpr
     intro J
     by_cases hJ : J ∈ normalizedFactors I
-    · have hprime := prime_of_normalized_factor J hJ
-      let v : HeightOneSpectrum (𝓞 F) := HeightOneSpectrum.ofPrime hprime
+    · let v := HeightOneSpectrum.ofPrime (prime_of_normalized_factor J hJ)
       have hvJ : v.asIdeal = J := rfl
       by_cases hvS : v ∈ S
-      · have hvU : v ∈ U.val := by simpa [U] using hvS
-        have hrepl : Multiset.replicate (b v) J ≤ M := by
-          simpa [M, hvJ] using (Multiset.le_bind U.val hvU :
+      · have hrepl : Multiset.replicate (b v) J ≤ M := by
+          simpa [M, hvJ] using (Multiset.le_bind U.val (by simpa [U] using hvS) :
             Multiset.replicate (b v) v.asIdeal ≤ M)
         have hcount := Multiset.le_iff_count.mp hrepl J
-        have hbound := hin v hvS
         simp only [Multiset.count_replicate_self] at hcount
-        exact le_trans hbound (le_trans hcount (by simp [Multiset.count_add]))
-      · have hvT : v ∈ T := hT v hvS ((Ideal.mem_normalizedFactors_iff hI).mp hJ).2
-        have hJN : J ∈ N := Multiset.mem_map.mpr ⟨v, hvT, hvJ⟩
+        exact le_trans (hin v hvS) (le_trans hcount (by simp))
+      · have hJN := Multiset.mem_map.mpr ⟨v, (hT v hvS ((Ideal.mem_normalizedFactors_iff hI).mp hJ).2), hvJ⟩
         have hcount : 1 ≤ N.count J := Multiset.one_le_count_iff_mem.mpr hJN
-        exact le_trans (hout v hvS) (le_trans hcount (by simp [Multiset.count_add]))
+        exact le_trans (hout v hvS) (le_trans hcount (by simp))
     · simp [Multiset.count_eq_zero.mpr hJ]
   have hdvd : I ∣ M.prod * N.prod := by
     rw [← Ideal.prod_normalizedFactors_eq_self hI, ← Multiset.prod_add]

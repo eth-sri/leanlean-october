@@ -13,15 +13,15 @@ namespace DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 open ResidualSphericalGeometry ResidualWeakEnergy KPGlobalResidualConstruction
 open KPMsClearedTruncationL2.NativeWordBridge
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (M : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable {n : ℕ} (U : Fin n → KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (m : Fin n → ℕ)
-variable (w : ∀ i, Fin (m i) → List (Fin (KPContActualSphericalRightFieldIdentification.groupDimension F)))
+    (M : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    {n : ℕ} (U : Fin n → KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (m : Fin n → ℕ)
+    (w : ∀ i, Fin (m i) → List (Fin (KPContActualSphericalRightFieldIdentification.groupDimension F)))
 variable (a : ∀ i, Fin (m i) → ℂ)
-variable (Z : ∀ i, Fin (m i) → KPContActualAllCuspSource.SmoothSections F ζ hζ M R P H (U i))
+    (Z : ∀ i, Fin (m i) → KPContActualAllCuspSource.SmoothSections F ζ hζ M R P H (U i))
  abbrev genuineWordDerivative := KPSmoothActualFlowData.wordDerivative F ζ hζ
 
 def originalGenuineSpace : Submodule ℂ (KPSmoothActualFlowData.X F ζ hζ → ℂ) where
@@ -48,14 +48,10 @@ theorem finiteCenterSum_genuine :
   apply Submodule.sum_mem
   intro j hj
   apply Submodule.smul_mem
-  let f : KPMsClearedTruncationL2.smoothSpace F ζ hζ
-      (ActualSectionLift.nativeLevel F ζ hζ
-        (KPContActualAllCuspSource.level F ζ hζ M R P H (U i))) :=
-    ⟨originalScalar F ζ hζ _ R P H (Z i j), originalScalar_mem_smoothSpace F ζ hζ _ R P H (Z i j)⟩
   exact (KPMsClearedTruncationL2.ActualSmoothWordAction.word_mem F ζ hζ _
-    ((w i j).map (wordIndexEquiv F)) f).2.2
+    ((w i j).map (wordIndexEquiv F)) (⟨originalScalar F ζ hζ _ R P H (Z i j), originalScalar_mem_smoothSpace F ζ hζ _ R P H (Z i j)⟩)).2.2
 
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.ActualSmoothWordAction renaming word_right_covariant → word_right_covariant
+open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.ActualSmoothWordAction (word_right_covariant)
 
 theorem original_word_genuine
     (f : KPSmoothActualFlowData.X F ζ hζ → ℂ)
@@ -80,10 +76,9 @@ theorem original_word_genuine_left
       (KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ ε * g)) =
     (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) *
       genuineWordDerivative F ζ hζ v f (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g) := by
-  have hcentral := Subgroup.mem_center_iff.mp
+  rw [← (Subgroup.mem_center_iff.mp
     ((KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ)
-      (MonoidHom.mem_range.mpr ⟨ε, rfl⟩)) g
-  rw [← hcentral]
+      (MonoidHom.mem_range.mpr ⟨ε, rfl⟩)) g)]
   exact original_word_genuine F ζ hζ f hf hc v g ε
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters

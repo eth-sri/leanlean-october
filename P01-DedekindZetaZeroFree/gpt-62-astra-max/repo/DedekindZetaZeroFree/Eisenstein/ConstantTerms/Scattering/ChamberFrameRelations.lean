@@ -10,10 +10,10 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPLiteralRaw KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -46,7 +46,7 @@ theorem coreScattering_chamber_frame (N : MomentSources.TraceHaarTransport R)
   let H := (coreScatteringLinear R P C z hz
     (scalarQuotient F ζ hζ (amalgamation F ζ hζ g))).comp
       (slotCore R P C t x q hq)
-  have hk : A.ker ≤ H.ker := scatteringSlotOutputLinear_ker_le R P C N t x q hq g μ hμ z hz
+  have hk := scatteringSlotOutputLinear_ker_le R P C N t x q hq g μ hμ z hz
   have hsumA : A (∑ i, c f z i • tests i) = ∑ i, c f z i • A (tests i) := by
     rw [map_sum]
     apply Finset.sum_congr rfl

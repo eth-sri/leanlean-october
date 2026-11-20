@@ -11,10 +11,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.ComplexLines
 open MomentSources KPGlobalTorusFiniteStages KPGlobalResidualConstruction KPCplxPrincipalSeriesCharts
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1500000
 
@@ -42,8 +42,7 @@ theorem restrictedSlot_residue_word_compact_bound
   obtain ⟨y,a,ha,hseminorm⟩ := restrictedSlot_native_word R P C N s x w hw b
   obtain ⟨os,B,hB,hy⟩ := restrictedSlot_residue_compact_bound R N P C D HR HP M  dk s y w hw K hK
   obtain ⟨orders,Cd,hCd,hc⟩ := hseminorm os
-  have hCdpos : 0 < (Cd : ℝ) := by exact_mod_cast (pos_iff_ne_zero.mpr hCd)
-  refine ⟨orders,B*Cd,mul_pos hB hCdpos,?_⟩
+  refine ⟨orders,B*Cd,mul_pos hB (by exact_mod_cast (pos_iff_ne_zero.mpr hCd)),?_⟩
   intro v g hg
   rw [ha]
   exact ((hy (HCGeneration.complexWord a v) g hg).trans

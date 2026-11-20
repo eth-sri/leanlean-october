@@ -14,11 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -33,7 +28,6 @@ open scoped BigOperators TensorProduct
 open NumberField
 
 noncomputable section
-
 
 namespace RelativeIdeleGroup
 
@@ -85,32 +79,32 @@ theorem eval_conjugatePolynomial
   rw [conjugatePolynomial, map_sum]
   simp only [map_mul, MvPolynomial.eval_X, MvPolynomial.eval_C]
   calc
-    ∑ i, algebraMap K L (b.repr x i) * σ (b i) =
+    _ =
         ∑ i, σ ((b.repr x i) • b i) := by
-      apply Finset.sum_congr rfl
-      intro i hi
       simp [Algebra.smul_def]
     _ = σ (∑ i, (b.repr x i) • b i) := by
       rw [map_sum]
     _ = σ x := by rw [b.sum_repr]
 
+section
+
+variable {ι : Type w} [Fintype ι] [DecidableEq ι] (b : Module.Basis ι K L)
+
 /-- The product of the universal conjugates, written as a polynomial over
 the splitting field. -/
-def galoisProductPolynomial
-    {ι : Type w} [Fintype ι] [DecidableEq ι]
-    (b : Module.Basis ι K L) :
+def galoisProductPolynomial :
     MvPolynomial ι L :=
   ∏ σ : L ≃ₐ[K] L, conjugatePolynomial b σ
 
 @[simp]
-theorem eval_galoisProductPolynomial
-    {ι : Type w} [Fintype ι] [DecidableEq ι]
-    (b : Module.Basis ι K L) (x : L) :
+theorem eval_galoisProductPolynomial (x : L) :
     MvPolynomial.eval
         (fun i ↦ algebraMap K L (b.repr x i))
         (galoisProductPolynomial b) =
       ∏ σ : L ≃ₐ[K] L, σ x := by
   simp [galoisProductPolynomial]
+
+end
 
 /-- The universal determinant norm polynomial becomes the product of the
 universal Galois conjugates after extending its coefficients to `L`. -/
@@ -127,7 +121,7 @@ theorem map_normPolynomial_eq_galoisProductPolynomial
       (algebraMap K L).injective
   · intro c hc
     choose d hd using fun i ↦ hc i (Set.mem_univ i)
-    let x : L :=
+    let x :=
       b.repr.symm (Finsupp.equivFunOnFinite.symm d)
     have hcoords :
         c = fun i ↦ algebraMap K L (b.repr x i) := by
@@ -136,13 +130,13 @@ theorem map_normPolynomial_eq_galoisProductPolynomial
         c i = algebraMap K L (d i) := (hd i).symm
         _ = algebraMap K L (b.repr x i) := by simp [x]
     rw [hcoords, eval_galoisProductPolynomial]
-    rw [MvPolynomial.eval_map]
+    simp
     change MvPolynomial.eval₂ (algebraMap K L)
         ((algebraMap K L) ∘ fun i ↦ b.repr x i)
         (normPolynomial b) =
       _
     rw [← MvPolynomial.eval₂_comp]
-    rw [eval_normPolynomial]
+    simp
     exact Algebra.norm_eq_prod_automorphisms K x
 
 omit [FiniteDimensional K L] in
@@ -165,14 +159,15 @@ theorem baseChangedLmul_eq
       | add y₁ y₂ hy₁ hy₂ =>
           rw [map_add, map_add, hy₁, hy₂]
       | tmul b t =>
-          simp [LinearMap.tensorProduct,
-            Algebra.TensorProduct.tmul_mul_tmul,
-            Algebra.smul_def, mul_comm]
+          simp [LinearMap.tensorProduct, Algebra.TensorProduct.tmul_mul_tmul, Algebra.smul_def]
+
+section
+
+variable (A : Type*) [CommRing A] [Algebra K A]
 
 /-- Evaluation of the universal norm polynomial after arbitrary scalar
 extension is the determinant norm on the scalar-extended algebra. -/
-theorem eval₂_normPolynomial_baseChange
-    (A : Type*) [CommRing A] [Algebra K A] [Nontrivial A]
+theorem eval₂_normPolynomial_baseChange [Nontrivial A]
     {ι : Type w} [Fintype ι] [DecidableEq ι]
     (b : Module.Basis ι K L) (z : A ⊗[K] L) :
     MvPolynomial.eval₂ (algebraMap K A)
@@ -184,9 +179,7 @@ theorem eval₂_normPolynomial_baseChange
       (LinearMap.polyCharpoly_baseChange
         (Algebra.lmul K L).toLinearMap b A)
   rw [Polynomial.coeff_map] at hcoeff
-  rw [normPolynomial, MvPolynomial.eval₂_mul,
-    MvPolynomial.eval₂_pow, MvPolynomial.eval₂_neg,
-    MvPolynomial.eval₂_one]
+  simp [normPolynomial]
   have heval :=
     MvPolynomial.eval₂_eq_eval_map
       (algebraMap K A)
@@ -194,7 +187,7 @@ theorem eval₂_normPolynomial_baseChange
       (((Algebra.lmul K L).toLinearMap.polyCharpoly b).coeff 0)
   rw [heval, ← hcoeff]
   rw [LinearMap.polyCharpoly_coeff_eval]
-  rw [baseChangedLmul_eq (K := K) (L := L) A]
+  rw [baseChangedLmul_eq A]
   rw [Algebra.norm_apply,
     LinearMap.det_eq_sign_charpoly_coeff,
     Module.finrank_baseChange]
@@ -203,17 +196,18 @@ theorem eval₂_normPolynomial_baseChange
 /-- Galois conjugation after scalar extension to an arbitrary commutative
 `K`-algebra. -/
 def scalarConjugation
-    (A : Type*) [CommRing A] [Algebra K A]
     (σ : L ≃ₐ[K] L) :
     A ⊗[K] L →ₐ[A] A ⊗[K] L :=
   Algebra.TensorProduct.map (AlgHom.id A A) σ.toAlgHom
+
+end
 
 omit [FiniteDimensional K L] in
 @[simp]
 theorem scalarConjugation_tmul
     (A : Type*) [CommRing A] [Algebra K A]
     (σ : L ≃ₐ[K] L) (a : A) (x : L) :
-    scalarConjugation (K := K) (L := L) A σ (a ⊗ₜ[K] x) =
+    scalarConjugation A σ (a ⊗ₜ[K] x) =
       a ⊗ₜ[K] σ x :=
   rfl
 
@@ -232,29 +226,27 @@ theorem eval₂_conjugatePolynomial_baseChange
           (R := K) (S := K) (A := A) (B := L))
           ((Algebra.TensorProduct.basis A b).repr z i))
         (conjugatePolynomial b σ) =
-      scalarConjugation (K := K) (L := L) A σ z := by
+      scalarConjugation A σ z := by
   simp only [conjugatePolynomial, MvPolynomial.eval₂_sum,
     MvPolynomial.eval₂_mul, MvPolynomial.eval₂_X,
     MvPolynomial.eval₂_C]
   calc
     ∑ i, (Algebra.TensorProduct.includeLeft
-          (R := K) (S := K) (A := A) (B := L))
+             )
           ((Algebra.TensorProduct.basis A b).repr z i) *
         (Algebra.TensorProduct.includeRight
-          (R := K) (A := A) (B := L)) (σ (b i)) =
-        ∑ i, scalarConjugation (K := K) (L := L) A σ
+            ) (σ (b i)) =
+        ∑ i, scalarConjugation A σ
           (((Algebra.TensorProduct.basis A b).repr z i) •
             Algebra.TensorProduct.basis A b i) := by
-      apply Finset.sum_congr rfl
-      intro i hi
       simp [scalarConjugation, Algebra.TensorProduct.basis_apply,
         Algebra.TensorProduct.tmul_mul_tmul,
         Algebra.smul_def]
-    _ = scalarConjugation (K := K) (L := L) A σ
+    _ = scalarConjugation A σ
           (∑ i, ((Algebra.TensorProduct.basis A b).repr z i) •
             Algebra.TensorProduct.basis A b i) := by
       rw [map_sum]
-    _ = scalarConjugation (K := K) (L := L) A σ z := by
+    _ = scalarConjugation A σ z := by
       rw [(Algebra.TensorProduct.basis A b).sum_repr]
 
 /-- The full scalar-extension formula: extending
@@ -268,15 +260,15 @@ theorem includeLeft_norm_eq_prod_scalarConjugations
       (R := K) (S := K) (A := A) (B := L))
         (Algebra.norm A z) =
       ∏ σ : L ≃ₐ[K] L,
-        scalarConjugation (K := K) (L := L) A σ z := by
+        scalarConjugation A σ z := by
   classical
   let b := Module.Free.chooseBasis K L
-  let c : Module.Free.ChooseBasisIndex K L → A :=
+  let c :=
     fun i ↦ (Algebra.TensorProduct.basis A b).repr z i
-  let iL : A →+* A ⊗[K] L :=
+  let iL :=
     (Algebra.TensorProduct.includeLeft
       (R := K) (S := K) (A := A) (B := L)).toRingHom
-  let iR : L →+* A ⊗[K] L :=
+  let iR :=
     (Algebra.TensorProduct.includeRight
       (R := K) (A := A) (B := L)).toRingHom
   have hmaps :
@@ -297,16 +289,16 @@ theorem includeLeft_norm_eq_prod_scalarConjugations
       MvPolynomial.eval₂ iR (fun i ↦ iL (c i))
           (galoisProductPolynomial b) =
         ∏ σ : L ≃ₐ[K] L,
-          scalarConjugation (K := K) (L := L) A σ z := by
+          scalarConjugation A σ z := by
     rw [galoisProductPolynomial,
       MvPolynomial.eval₂_prod]
     apply Finset.prod_congr rfl
     intro σ hσ
     exact eval₂_conjugatePolynomial_baseChange
-      (K := K) (L := L) A b σ z
+        A b σ z
   change iL (Algebra.norm A z) =
     ∏ σ : L ≃ₐ[K] L,
-      scalarConjugation (K := K) (L := L) A σ z
+      scalarConjugation A σ z
   rw [← hright, ← hleft,
     map_normPolynomial_eq_galoisProductPolynomial b]
 
@@ -330,17 +322,7 @@ theorem adeleInclusion_norm_eq_prod_conjugates
         (Algebra.norm
           (NumberField.AdeleRing (𝓞 K) K) z) =
       ∏ σ : L ≃ₐ[K] L, conjugation K L σ z := by
-  change
-    (Algebra.TensorProduct.includeLeft
-      (R := K) (S := K)
-      (A := NumberField.AdeleRing (𝓞 K) K) (B := L))
-        (Algebra.norm
-          (NumberField.AdeleRing (𝓞 K) K) z) =
-      _
-  simpa only [scalarConjugation_baseAdele_apply] using
-    (includeLeft_norm_eq_prod_scalarConjugations
-      (K := K) (L := L)
-      (NumberField.AdeleRing (𝓞 K) K) z)
+  apply includeLeft_norm_eq_prod_scalarConjugations
 
 /-- In full idèle form,
 `i_{L/K}(N_{L/K}(a)) = ∏_{σ ∈ Gal(L/K)} σ(a)` for every relative
@@ -354,8 +336,7 @@ theorem inclusion_norm_eq_prod_conjugates
   simp only [inclusion, norm, MonoidHom.comp_apply,
     Units.coe_map, Units.coe_prod,
     smul_def, conjugationIdele_coe]
-  exact adeleInclusion_norm_eq_prod_conjugates
-    (K := K) (L := L) (a : RelativeAdeleRing K L)
+  apply adeleInclusion_norm_eq_prod_conjugates
 
 end RelativeIdeleGroup
 

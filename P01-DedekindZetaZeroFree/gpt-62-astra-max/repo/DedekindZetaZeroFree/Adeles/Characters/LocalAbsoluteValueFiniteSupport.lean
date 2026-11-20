@@ -27,31 +27,28 @@ theorem idele_localAbs_hasFiniteMulSupport (y : Ideles F) :
   intro v hv
   rcases v with w | q
   · exact Or.inl ⟨w, trivial, rfl⟩
+  let Completion₀ := KPHilbert.Completion F (Sum.inr q)
   · refine Or.inr ⟨q, ?_, rfl⟩
     intro h1
     have hnorm : ‖((KPGlobalCubicIdelePairing.ideleEval F (Sum.inr q) y :
-        (KPHilbert.Completion F (Sum.inr q))ˣ) :
-          KPHilbert.Completion F (Sum.inr q))‖ =
+        (Completion₀)ˣ) :
+          Completion₀)‖ =
         ‖(z : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F) q‖ :=
       rfl
     have hreal : ‖((KPGlobalCubicIdelePairing.ideleEval F (Sum.inr q) y :
-        (KPHilbert.Completion F (Sum.inr q))ˣ) :
-          KPHilbert.Completion F (Sum.inr q))‖ = 1 := by
+        (Completion₀)ˣ) :
+          Completion₀)‖ = 1 := by
       rw [hnorm]; exact h1
     have hnn : ‖((KPGlobalCubicIdelePairing.ideleEval F (Sum.inr q) y :
-        (KPHilbert.Completion F (Sum.inr q))ˣ) :
-          KPHilbert.Completion F (Sum.inr q))‖₊ = 1 := by
+        (Completion₀)ˣ) :
+          Completion₀)‖₊ = 1 := by
       apply NNReal.coe_injective
       rw [coe_nnnorm, hreal]
       simp
-    have hf1 : Units.mk0 (localAbs F (Sum.inr q)
-        (KPGlobalCubicIdelePairing.ideleEval F (Sum.inr q) y))
-        (ne_of_gt (localAbs_pos F (Sum.inr q)
-          (KPGlobalCubicIdelePairing.ideleEval F (Sum.inr q) y))) = 1 := by
-      refine Units.ext ?_
-      rw [Units.val_mk0, Units.val_one]
-      exact hnn
-    exact hv hf1
+    apply hv
+    refine Units.ext ?_
+    rw [Units.val_mk0, Units.val_one]
+    exact hnn
 
 end
 end DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension.CubeDiagonalProduct

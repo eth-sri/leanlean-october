@@ -11,12 +11,12 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2400000
 namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 open MomentSources TensorActionSource KPGlobalTorusFiniteStages KPLocalPrincipalSeries
-open _root_.DedekindZetaZeroFree.KPGlobalResidualKernel.IntertwinerRegularization.FactorizationSources.NormalizedCoordinateAnalyticity.ActualOutputAnalytic renaming multilinear_coordinate_analytic → multilinear_coordinate_analytic
+open _root_.DedekindZetaZeroFree.KPGlobalResidualKernel.IntertwinerRegularization.FactorizationSources.NormalizedCoordinateAnalyticity.ActualOutputAnalytic (multilinear_coordinate_analytic)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 
 def parameterStage (J : ∀ q, IwasawaData (C.canonical q).borel)
     (s : RestrictedTensorSimple.Level (bad R P C)) (a : Raw R) (z : ℂ) :
@@ -65,7 +65,7 @@ theorem parameterStage_analytic
         (fun u => (parameterStage R N P C J s a u y).val.val t +
           (parameterStage R N P C J s a u z).val.val t) := by
       funext u
-      simp only [map_add, Submodule.coe_add, Pi.add_apply]
+      simp
     rw [he]
     exact hy.add hz
 

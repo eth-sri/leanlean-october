@@ -13,26 +13,33 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayCompletedRegularization
 
 variable (K : Type) [Field K] [NumberField K]
 
-def amplitude (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) : ℝ :=
+section
+
+variable (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
+
+def amplitude : ℝ :=
   RayCoset.rayUnitDomainVolume K m hm /
     ((RayCoset.rayUnitTorsionCard K m : ℝ) * RayCoset.modulusCovolume K m)
 
-def residue (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) : ℂ :=
+def residue : ℂ :=
   ((2 : ℂ) ^ NumberField.InfinitePlace.nrRealPlaces K)⁻¹ *
     (amplitude K m hm : ℂ) * RayParity.hδ K ∅ 1
 
+end
+
 variable {K}
 
-def Eδ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) : ℂ → ℂ :=
+section
+
+variable (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
+
+def Eδ : ℂ → ℂ :=
   (RayTheta.Pδ D δ).Λ₀
 
-theorem differentiable_Eδ (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) :
-    Differentiable ℂ (Eδ D δ) := by
-  exact (RayTheta.Pδ D δ).differentiable_Λ₀
+theorem differentiable_Eδ :
+    Differentiable ℂ (Eδ D δ) := (RayTheta.Pδ D δ).differentiable_Λ₀
 
-theorem uncompleted_eq (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :
+theorem uncompleted_eq (s : ℂ) (hs : 1 < s.re) :
     RayCoset.Zδ D δ s = RayParity.hδ K δ s *
       (Eδ D δ s + RayParity.εδ K δ * RayTheta.g0δ D δ / (s - 1) -
         RayTheta.f0δ D δ / s) := by
@@ -44,11 +51,15 @@ theorem uncompleted_eq (D : RayCoset.Data K)
   rw [hn, div_neg]
   ring
 
-theorem g0δ_empty_eq_amplitude (D : RayCoset.Data K) :
+end
+
+variable (D : RayCoset.Data K)
+
+theorem g0δ_empty_eq_amplitude :
     RayTheta.g0δ D ∅ = (amplitude K D.m D.modulus_ne_bot : ℂ) := by
   simp [RayTheta.g0δ, amplitude]
 
-def entirePart (D : RayCoset.Data K) : ℂ → ℂ :=
+def entirePart : ℂ → ℂ :=
   fun s ↦ ((2 : ℂ) ^ NumberField.InfinitePlace.nrRealPlaces K)⁻¹ *
     ((∑ δ ∈ (Finset.univ : Finset (RayCoset.RealPlaces K)).powerset,
         RayParity.hδ K δ s * Eδ D δ s) +
@@ -56,14 +67,14 @@ def entirePart (D : RayCoset.Data K) : ℂ → ℂ :=
         entireDividedDifference (RayParity.hδ K ∅) 1 s -
       RayTheta.f0δ D ∅ * entireDividedDifference (RayParity.hδ K ∅) 0 s)
 
-theorem differentiable_entirePart (D : RayCoset.Data K) :
+theorem differentiable_entirePart :
     Differentiable ℂ (entirePart D) := by
   unfold entirePart
   apply Differentiable.mul (differentiable_const _)
   apply Differentiable.sub
   · apply Differentiable.add
     · convert (Differentiable.sum
-        (u := (Finset.univ : Finset (RayCoset.RealPlaces K)).powerset)
+        (u := Finset.univ.powerset)
         (fun δ _ => (RayParity.differentiable_hδ K δ).mul (differentiable_Eδ D δ))) using 1
       ext s
       simp
@@ -72,7 +83,7 @@ theorem differentiable_entirePart (D : RayCoset.Data K) :
   · exact (differentiable_const _).mul
       (differentiable_entireDividedDifference _ (RayParity.differentiable_hδ K ∅) 0)
 
-theorem hasSum (D : RayCoset.Data K)
+theorem hasSum
     (c : RayIdealClass K D.m D.modulus_ne_bot)
     (hc : rayIdealClass K D.m D.modulus_ne_bot D.a = some c⁻¹)
     (s : ℂ) (hs : 1 < s.re) :
@@ -82,15 +93,9 @@ theorem hasSum (D : RayCoset.Data K)
           (Ideal.absNorm I : ℂ) ^ (-s)
         else 0)
       (entirePart D s + residue K D.m D.modulus_ne_bot / (s - 1)) := by
-  have hs0 : s ≠ 0 := by
-    intro h
-    norm_num [h] at hs
-  have hs1 : s ≠ 1 := by
-    intro h
-    simp [h] at hs
-  let A : ℂ := (amplitude K D.m D.modulus_ne_bot : ℂ)
-  let B : ℂ := RayTheta.f0δ D ∅
-  let T : ℂ := A * entireDividedDifference (RayParity.hδ K ∅) 1 s -
+  let A := (amplitude K D.m D.modulus_ne_bot : ℂ)
+  let B := RayTheta.f0δ D ∅
+  let T := A * entireDividedDifference (RayParity.hδ K ∅) 1 s -
     B * entireDividedDifference (RayParity.hδ K ∅) 0 s +
     (A * RayParity.hδ K ∅ 1) / (s - 1)
   have hchannel (δ : Finset (RayCoset.RealPlaces K)) :
@@ -101,17 +106,20 @@ theorem hasSum (D : RayCoset.Data K)
     · subst δ
       simp only [if_true, RayParity.εδ, Finset.card_empty, pow_zero, one_mul]
       rw [g0δ_empty_eq_amplitude]
-      have h := RayGammaPoleRemoval.completed_pole_decomposition
-        (RayParity.hδ K ∅) (Eδ D ∅) (RayParity.hδ_empty_zero K) A B s hs0 hs1
-      convert h using 1 <;>
+      convert (RayGammaPoleRemoval.completed_pole_decomposition
+        (RayParity.hδ K ∅) (Eδ D ∅) (RayParity.hδ_empty_zero K) A B s (by
+          intro h
+          norm_num [h] at hs) (by
+          intro h
+          simp [h] at hs)) using 1 <;>
         dsimp [RayGammaPoleRemoval.completedEntirePart, T, A, B] <;> ring
-    · have hne : δ.Nonempty := Finset.nonempty_iff_ne_empty.mpr hd
+    · have hne := Finset.nonempty_iff_ne_empty.mpr hd
       rw [RayTheta.g0δ_of_nonempty D δ hne, RayTheta.f0δ_of_nonempty D δ hne]
       simp [hd]
   have hsum :
-      (∑ δ ∈ (Finset.univ : Finset (RayCoset.RealPlaces K)).powerset,
+      (∑ δ ∈ Finset.univ.powerset,
         RayCoset.Zδ D δ s) =
-      (∑ δ ∈ (Finset.univ : Finset (RayCoset.RealPlaces K)).powerset,
+      (∑ δ ∈ Finset.univ.powerset,
         RayParity.hδ K δ s * Eδ D δ s) + T := by
     simp_rw [hchannel]
     rw [Finset.sum_add_distrib]

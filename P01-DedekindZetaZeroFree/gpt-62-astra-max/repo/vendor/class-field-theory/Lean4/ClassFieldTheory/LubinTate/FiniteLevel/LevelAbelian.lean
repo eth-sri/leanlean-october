@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -40,12 +37,14 @@ open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
 
+section
+
+variable (F : LocalField.{u, v} K) {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+
 /-- The multiplicative map from finite unit parameters to automorphisms of
 the standard Lubin--Tate level field. -/
-noncomputable def standardLubinTateUnitParameterToGalHom
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) :
+noncomputable def standardLubinTateUnitParameterToGalHom :
     standardLubinTateUnitParameter F n →*
       Gal((standardLubinTateLevelField hπ n) / K) where
   toFun := standardLubinTateUnitParameterToGal F hπ n
@@ -55,36 +54,25 @@ noncomputable def standardLubinTateUnitParameterToGalHom
 /-- The homomorphism has the original parameter-to-Galois map as its
 underlying function. -/
 @[simp]
-theorem standardLubinTateUnitParameterToGalHom_apply
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a : standardLubinTateUnitParameter F n) :
+theorem standardLubinTateUnitParameterToGalHom_apply (a : standardLubinTateUnitParameter F n) :
     standardLubinTateUnitParameterToGalHom F hπ n a =
       standardLubinTateUnitParameterToGal F hπ n a :=
   rfl
 
 /-- Finite unit parameters are multiplicatively equivalent to the full
 Galois group of the standard level field. -/
-noncomputable def standardLubinTateUnitParameterEquivGal
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) :
+noncomputable def standardLubinTateUnitParameterEquivGal :
     standardLubinTateUnitParameter F n ≃*
       Gal((standardLubinTateLevelField hπ n) / K) :=
   MulEquiv.ofBijective
     (standardLubinTateUnitParameterToGalHom F hπ n)
     (by
-      change Function.Bijective
-        (standardLubinTateUnitParameterToGal F hπ n)
       exact standardLubinTateUnitParameterToGal_bijective F hπ n)
 
 /-- The multiplicative equivalence evaluates as the original explicit
 parameter automorphism. -/
 @[simp]
-theorem standardLubinTateUnitParameterEquivGal_apply
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a : standardLubinTateUnitParameter F n) :
+theorem standardLubinTateUnitParameterEquivGal_apply (a : standardLubinTateUnitParameter F n) :
     standardLubinTateUnitParameterEquivGal F hπ n a =
       standardLubinTateUnitParameterToGal F hπ n a :=
   rfl
@@ -96,26 +84,13 @@ This is the pointwise `[u⁻¹]` target needed for the later comparison with
 the actual local Artin map; it does not identify the two maps merely from
 their kernels. -/
 @[simp]
-theorem standardLubinTateUnitParameterEquivGal_inv_class_apply_gen
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (u : F.valuationSubringˣ) :
+theorem standardLubinTateUnitParameterEquivGal_inv_class_apply_gen (u : F.valuationSubringˣ) :
     (standardLubinTateUnitParameterEquivGal F hπ n
         (standardLubinTateUnitParameterClass F n u))⁻¹
         (standardLubinTateLevelPowerBasis hπ n).gen =
       standardLubinTatePrimitiveLevelAction hπ n u⁻¹ := by
-  have hgal :
-      (standardLubinTateUnitParameterEquivGal F hπ n
-          (standardLubinTateUnitParameterClass F n u))⁻¹ =
-        standardLubinTateUnitParameterEquivGal F hπ n
-          (standardLubinTateUnitParameterClass F n u)⁻¹ :=
-    ((standardLubinTateUnitParameterEquivGal F hπ n).map_inv _).symm
-  rw [hgal]
-  have hclass :
-      (standardLubinTateUnitParameterClass F n u)⁻¹ =
-        standardLubinTateUnitParameterClass F n u⁻¹ :=
-    ((standardLubinTateUnitParameterClass F n).map_inv u).symm
-  rw [hclass, standardLubinTateUnitParameterEquivGal_apply]
+  rw [(((standardLubinTateUnitParameterEquivGal F hπ n).map_inv _).symm)]
+  rw [(((standardLubinTateUnitParameterClass F n).map_inv u).symm), standardLubinTateUnitParameterEquivGal_apply]
   change
     standardLubinTateUnitParameterAlgEquiv F hπ n
         (standardLubinTateUnitParameterClass F n u⁻¹)
@@ -130,17 +105,16 @@ theorem standardLubinTateUnitParameterEquivGal_inv_class_apply_gen
 /-- The full Galois group of a standard finite Lubin--Tate level is
 commutative. -/
 theorem standardLubinTateLevelField_gal_comm
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ)
     (σ τ : Gal((standardLubinTateLevelField hπ n) / K)) :
     σ * τ = τ * σ := by
   let e := standardLubinTateUnitParameterEquivGal F hπ n
   apply e.symm.injective
   calc
-    e.symm (σ * τ) = e.symm σ * e.symm τ := e.symm.map_mul σ τ
+    _ = e.symm σ * e.symm τ := e.symm.map_mul σ τ
     _ = e.symm τ * e.symm σ := mul_comm _ _
     _ = e.symm (τ * σ) := (e.symm.map_mul τ σ).symm
+
+end
 
 /-- The Galois group of the standard level field is a commutative group. -/
 instance standardLubinTateLevelField_isMulCommutative

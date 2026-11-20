@@ -36,12 +36,10 @@ theorem multiplicativeHaar_sigmaFinite
     rw [← e.toOrderIso.le_iff_le]
     change e (ValuativeRel.valuation K x) ≤ e (e.symm (WithZero.exp (l.toNat : ℤ)))
     rw [e.apply_symm_apply, ← WithZero.exp_log hv, WithZero.exp_le_exp]
-    change l ≤ (l.toNat : ℤ)
     omega
   letI : T2Space K := CubicUnitCharacters.t2Space_of_isValuativeTopology K
   letI : BorelSpace Kˣ := ⟨by
-    change MeasurableSpace.comap Units.val ‹MeasurableSpace K› = borel Kˣ
-    rw [(Units.isEmbedding_val₀ (G₀ := K)).eq_induced, borel_comap]
+    rw [(Units.isEmbedding_val₀).eq_induced, borel_comap]
     congr 1
     exact BorelSpace.measurable_eq⟩
   have hf : MeasurableEmbedding (fun x : Kˣ => (x : K)) :=
@@ -196,12 +194,11 @@ variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
 theorem exists_uniformizer_units :
     ∃ π : Kˣ, ValuativeRel.valuation K (π : K) = ValuativeRel.uniformizer K := by
   obtain ⟨x, hx⟩ := ValuativeRel.valuation_surjective
-    (K := K) (ValuativeRel.uniformizer K)
-  have hx0 : x ≠ 0 := by
-    rintro rfl
-    rw [map_zero] at hx
-    exact (ValuativeRel.uniformizer_ne_zero (R := K)) hx.symm
-  exact ⟨Units.mk0 x hx0, by simpa using hx⟩
+     (ValuativeRel.uniformizer K)
+  refine ⟨Units.mk0 x ?_, by exact hx⟩
+  rintro rfl
+  rw [map_zero] at hx
+  exact (ValuativeRel.uniformizer_ne_zero) hx.symm
 
 theorem abs_eq_rpow_valuationExponent (y : Kˣ) :
     KPCubicHaar.abs K (y : K) =
@@ -225,14 +222,14 @@ namespace KPJointRegulator
 
 open MeasureTheory
 
-def cone (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (t : ℂˣ) (s : ℂ) : Prop :=
+variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+
+def cone (t : ℂˣ) (s : ℂ) : Prop :=
   0 < s.re ∧ s.re < 1 ∧
     (KPCubicUnitIndices.residueCard K : ℝ).rpow (-3 * s.re) < ‖(t : ℂ)‖ ∧
     ‖(t : ℂ)‖ < 1
 
-def mellinIntegrand (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (φ : K → ℂ) (s : ℂ) (x : Kˣ) : ℂ :=
+def mellinIntegrand (φ : K → ℂ) (s : ℂ) (x : Kˣ) : ℂ :=
   φ (x : K) * Complex.exp (s * (Real.log (KPCubicHaar.abs K (x : K)) : ℂ))
 
 end KPJointRegulator
@@ -244,14 +241,15 @@ open MeasureTheory
 variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   [TopologicalSpace K] [IsNonarchimedeanLocalField K]
 
-lemma abs_pos (x : K) (hx : x ≠ 0) : 0 < KPCubicHaar.abs K x := by
-  have hq : 0 < (KPCubicUnitIndices.residueCard K : ℝ) := by
-    exact_mod_cast (lt_of_lt_of_le (by norm_num : 0 < 2)
-      (KPCubicUnitIndices.two_le_residueCard K))
-  simp only [KPCubicHaar.abs, if_neg hx]
-  exact zpow_pos hq _
+section
 
-lemma abs_continuousAt (x : K) (hx : x ≠ 0) : ContinuousAt (KPCubicHaar.abs K) x := by
+variable (x : K) (hx : x ≠ 0)
+
+include hx in
+lemma abs_pos : 0 < KPCubicHaar.abs K x := by apply @DedekindZetaZeroFree.KPCubicHaar.abs_pos <;> assumption
+
+include hx in
+lemma abs_continuousAt : ContinuousAt (KPCubicHaar.abs K) x := by
   have hv := (ValuativeRel.valuation K).locally_const
     ((Valuation.ne_zero_iff (ValuativeRel.valuation K)).mpr hx)
   apply Filter.EventuallyEq.continuousAt (y := KPCubicHaar.abs K x)
@@ -261,6 +259,8 @@ lemma abs_continuousAt (x : K) (hx : x ≠ 0) : ContinuousAt (KPCubicHaar.abs K)
     have : ValuativeRel.valuation K x = 0 := by simpa [hy0] using hy.symm
     exact hx ((Valuation.zero_iff (ValuativeRel.valuation K)).mp this)
   simp only [KPCubicHaar.abs, if_neg hx, if_neg hy0, hy]
+
+end
 
 variable [MeasurableSpace K] [BorelSpace K]
 

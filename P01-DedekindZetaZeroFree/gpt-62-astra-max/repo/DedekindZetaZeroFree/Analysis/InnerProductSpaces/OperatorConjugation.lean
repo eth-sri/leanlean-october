@@ -48,13 +48,7 @@ theorem inner_conjugation (x : V) (j : ι) :
     by_cases hij : i = j
     · subst hij; simp
     · simp [hij, Ne.symm hij]
-  rw [conjugation_apply, inner_sum]
-  simp only [h]
-  simp
-
-@[simp]
-theorem conjugation_zero : conjugation e (0 : V) = 0 := by
-  simp [conjugation_apply]
+  simp_all [conjugation_apply, inner_sum, h]
 
 @[simp]
 theorem conjugation_add (x y : V) :
@@ -67,31 +61,17 @@ theorem conjugation_smul (c : 𝕜) (x : V) :
   simp [conjugation_apply, inner_smul_right, Finset.smul_sum, smul_smul]
 
 @[simp]
-theorem conjugation_neg (x : V) : conjugation e (-x) = -conjugation e x := by
-  simp [conjugation_apply, inner_neg_right, neg_smul, Finset.sum_neg_distrib]
-
-@[simp]
 theorem conjugation_sub (x y : V) :
     conjugation e (x - y) = conjugation e x - conjugation e y := by
-  simp [conjugation_apply, inner_sub_right, sub_smul, Finset.sum_sub_distrib]
+  simp [conjugation_apply, inner_sub_right, sub_smul]
 
 @[simp]
 theorem conjugation_conjugation (x : V) : conjugation e (conjugation e x) = x := by
   have h : ∀ i, (starRingEnd 𝕜) ⟪e i, conjugation e x⟫_𝕜 = ⟪e i, x⟫_𝕜 := fun i ↦ by
-    rw [inner_conjugation]; simp
-  rw [conjugation_apply (x := conjugation e x)]
-  simp only [h]
-  exact e.sum_repr' x
-
-@[simp]
-theorem conjugation_basis (j : ι) : conjugation e (e j) = e j := by
-  classical
-  have h : ∀ i, (starRingEnd 𝕜) ⟪e i, e j⟫_𝕜 = ⟪e i, e j⟫_𝕜 := fun i ↦ by
-    rw [orthonormal_iff_ite.mp e.orthonormal]
-    split <;> simp
+    simp
   rw [conjugation_apply]
   simp only [h]
-  exact e.sum_repr' (e j)
+  exact e.sum_repr' x
 
 @[simp]
 theorem inner_conjugation_conjugation (x y : V) :
@@ -101,15 +81,7 @@ theorem inner_conjugation_conjugation (x y : V) :
     rw [sum_inner]
     simp [inner_smul_left]
   rw [conjugation_apply e x, sum_inner, hxy, map_sum]
-  refine Finset.sum_congr rfl fun i _ ↦ ?_
-  rw [inner_smul_left, inner_conjugation]
-  simp [mul_comm]
-
-@[simp]
-theorem inner_conjugation_left_basis (x : V) (j : ι) :
-    ⟪conjugation e x, e j⟫_𝕜 = ⟪e j, x⟫_𝕜 := by
-  conv_lhs => rw [← conjugation_basis e j]
-  rw [inner_conjugation_conjugation, inner_conj_symm]
+  simp [inner_smul_left]
 
 @[simp]
 theorem norm_conjugation (x : V) : ‖conjugation e x‖ = ‖x‖ := by
@@ -152,29 +124,9 @@ theorem conjCLM_conjCLM (A : V →L[𝕜] V) : conjCLM e (conjCLM e A) = A := by
   simp
 
 @[simp]
-theorem conjCLM_zero : conjCLM e (0 : V →L[𝕜] V) = 0 := by
-  ext x
-  simp
-
-@[simp]
-theorem conjCLM_add (A B : V →L[𝕜] V) : conjCLM e (A + B) = conjCLM e A + conjCLM e B := by
-  ext x
-  simp
-
-@[simp]
-theorem conjCLM_neg (A : V →L[𝕜] V) : conjCLM e (-A) = -conjCLM e A := by
-  ext x
-  simp
-
-@[simp]
 theorem conjCLM_sub (A B : V →L[𝕜] V) : conjCLM e (A - B) = conjCLM e A - conjCLM e B := by
   ext x
   simp
-
-@[simp]
-theorem conjCLM_smul (c : 𝕜) (A : V →L[𝕜] V) : conjCLM e (c • A) = star c • conjCLM e A := by
-  ext x
-  simp [RCLike.star_def]
 
 theorem norm_conjCLM_le (A : V →L[𝕜] V) : ‖conjCLM e A‖ ≤ ‖A‖ :=
   LinearMap.mkContinuous_norm_le _ (norm_nonneg A) _

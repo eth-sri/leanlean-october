@@ -22,7 +22,7 @@ theorem fullDiagonal_torus_sheet_at_coordinate (h : HL F ζ hζ q S P) :
         KPPGLLocalCover.A F ζ hζ (Sum.inr q) (S.borel.coordinate h.val) := by
   obtain ⟨⟨e, y⟩, he, _⟩ := (ActualFiniteTorus.actual_torus_normal_form F ζ hζ q).2.1 h.val
   dsimp only at he
-  have he' : (h.val : ActualCover F ζ hζ q) =
+  have he' : h.val =
       KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e *
         KPPGLLocalCover.A F ζ hζ (Sum.inr q) y := he
   let c : actualTorus F ζ hζ q := (S.openCell P).centralTorus e
@@ -35,9 +35,8 @@ theorem fullDiagonal_torus_sheet_at_coordinate (h : HL F ζ hζ q S P) :
     change (c : ActualCover F ζ hζ q)⁻¹ * (h.val : ActualCover F ζ hζ q) = _
     rw [hc, he', inv_mul_cancel_left]
   have hcoord : S.borel.coordinate h.val = y := by
-    have hh := S.coordinate_lift (c⁻¹ * h.val) y ha
     simpa only [map_mul, map_inv, c, (S.openCell P).central_coordinate e,
-      inv_one, one_mul] using hh
+      inv_one, one_mul] using (S.coordinate_lift (c⁻¹ * h.val) y ha)
   exact ⟨e, hcoord ▸ he'⟩
 
 theorem fullDiagonal_coordinate_unit_sheet

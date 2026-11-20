@@ -9,7 +9,7 @@ noncomputable section
 open scoped Classical NumberField Topology NNReal
 namespace DedekindZetaZeroFree.KPGlobalResidualKernelSplit.RawStageL2.OutgoingSplit.ZeroProfileSteps.FiniteNormPartition
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
+    {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
 
 theorem iwasawaNorm_finite_locallyConstant :
     IsLocallyConstant (fun n : KPGlobalTorusFunctionData.finitePart F ζ hζ =>
@@ -17,15 +17,15 @@ theorem iwasawaNorm_finite_locallyConstant :
   obtain ⟨J, hJ⟩ := KPGlobalResidualKernel.ResidualChamberConstruction.RegularSymmetrySteps.exists_iwasawaNorm_right_level D
   apply (IsLocallyConstant.iff_exists_open _).mpr
   intro x
-  refine ⟨(fun y => x⁻¹ * y) ⁻¹' (J.toOpenSubgroup : Set _),
+  refine ⟨(fun y => x⁻¹ * y) ⁻¹' J.toOpenSubgroup,
     J.toOpenSubgroup.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
   · simp
   · intro y hy
-    have h := hJ x.val ⟨(x⁻¹ * y).val, ⟨x⁻¹ * y, hy, rfl⟩⟩
-    simpa using h
+    simpa using (hJ x.val ⟨(x⁻¹ * y).val, ⟨x⁻¹ * y, hy, rfl⟩⟩)
 
-theorem logIncrement_finite_locallyConstant
-    (u : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
+variable (u : KPGlobalTorusFunctionData.finitePart F ζ hζ)
+
+theorem logIncrement_finite_locallyConstant :
     IsLocallyConstant (fun k : D.K => logIncrement (D := D) k.val u.val) := by
   have hn : (KPGlobalTorusFunctionData.finitePart F ζ hζ).Normal := by
     rw [KPGlobalTorusFiniteStagesCofinality.finitePart_eq_closure F ζ hζ]
@@ -52,24 +52,21 @@ theorem logIncrement_finite_locallyConstant
     KPGlobalTorusBorelNormTwistTransport.iwasawaNorm_compact F ζ hζ d k
   simp [logIncrement, h₁, h₂]
 
-theorem logIncrement_finite_range
-    (u : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
+theorem logIncrement_finite_range :
     (Set.range (fun g => logIncrement (D := D) g u.val)).Finite :=
   logIncrement_range_finite u.val (logIncrement_finite_locallyConstant u)
 
-theorem logIncrement_finite_global_locallyConstant
-    (u : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
+theorem logIncrement_finite_global_locallyConstant :
     IsLocallyConstant (fun g => logIncrement (D := D) g u.val) := by
   have hn := KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_iwasawaNorm_continuous F ζ hζ D
   have hn0 (g : KPMsRationalCompactCrossPairing.G F ζ hζ) :
       (((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D g : ℝ≥0) : ℝ)) ≠ 0 :=
     NNReal.coe_ne_zero.mpr (Units.ne_zero _)
-  have hc : Continuous (fun g => logIncrement (D := D) g u.val) := by
-    exact ((hn.comp (continuous_id.mul continuous_const)).log (fun g => hn0 (g * u.val))).sub
+  have hc := ((hn.comp (continuous_id.mul continuous_const)).log (fun g => hn0 (g * u.val))).sub
       (hn.log hn0)
   let B := Set.range (fun g => logIncrement (D := D) g u.val)
   letI : Finite B := (logIncrement_finite_range u).to_subtype
-  have hb : Continuous (fun g => (⟨logIncrement (D := D) g u.val, Set.mem_range_self g⟩ : B)) :=
+  have hb : Continuous (fun g => (⟨logIncrement g u.val, Set.mem_range_self g⟩ : B)) :=
     hc.subtype_mk _
   exact ((IsLocallyConstant.iff_continuous _).mpr hb).comp Subtype.val
 

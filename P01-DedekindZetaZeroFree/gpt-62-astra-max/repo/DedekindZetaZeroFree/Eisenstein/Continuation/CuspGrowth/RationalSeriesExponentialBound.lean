@@ -11,31 +11,19 @@ set_option maxHeartbeats 1600000
 
 namespace DedekindZetaZeroFree.KPContinuation.ChamberModerateGrowth
 
-private theorem norm_flat_between
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (K₀ : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK₀ : KPLiteralRaw.IwasawaCompact F ζ hζ K₀)
-    (φ : KPLiteralRaw.Flat F ζ hζ K₀) (s s₀ s₁ : ℂ)
-    (hlo : s₀.re ≤ s.re) (hhi : s.re ≤ s₁.re) (g : KPLiteralRaw.G F ζ hζ) :
-    ‖φ.val s g‖ ≤ ‖φ.val s₀ g‖ + ‖φ.val s₁ g‖ := by
-  obtain ⟨t, x, k, rfl⟩ := hK₀.2.1 g
-  simp only [KPLiteralExceptionalResidue.val_torus_root_compact, KPLiteralExceptionalResidue.norm_val_torus_compact]
-  let δ : ℝ := ((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)
-  have hδ : 0 < δ := NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr (Units.ne_zero _))
-  have hp : 0 ≤ KPLiteralExceptionalResidue.normalizedTorusProfile F ζ hζ K₀ φ t k :=
-    div_nonneg (norm_nonneg _) (Real.rpow_nonneg hδ.le _)
-  by_cases hδ1 : 1 ≤ δ
-  · exact (mul_le_mul_of_nonneg_right
-      (Real.rpow_le_rpow_of_exponent_le hδ1 (by linarith : 2/3+s.re ≤ 2/3+s₁.re)) hp).trans
-      (le_add_of_nonneg_left (mul_nonneg (Real.rpow_nonneg hδ.le _) hp))
-  · exact (mul_le_mul_of_nonneg_right
-      (Real.rpow_le_rpow_of_exponent_ge hδ (le_of_not_ge hδ1)
-        (by linarith : 2/3+s₀.re ≤ 2/3+s.re)) hp).trans
-      (le_add_of_nonneg_right (mul_nonneg (Real.rpow_nonneg hδ.le _) hp))
+section
 
-private theorem fixed_parameter_majorant
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (K₀ : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK₀ : KPLiteralRaw.IwasawaCompact F ζ hζ K₀)
-    (φ : KPLiteralRaw.Flat F ζ hζ K₀) (z : ℂ) (hz : (1 : ℝ)/3 < z.re)
+    (φ : KPLiteralRaw.Flat F ζ hζ K₀)
+
+include hK₀ in
+private theorem norm_flat_between (s s₀ s₁ : ℂ)
+    (hlo : s₀.re ≤ s.re) (hhi : s.re ≤ s₁.re) (g : KPLiteralRaw.G F ζ hζ) :
+    ‖φ.val s g‖ ≤ ‖φ.val s₀ g‖ + ‖φ.val s₁ g‖ := by apply @DedekindZetaZeroFree.KPLiteralChamber.FlatSectionContinuityAndExponentialJets.norm_flat_between_parameters <;> assumption
+
+include hK₀ in
+private theorem fixed_parameter_majorant (z : ℂ) (hz : (1 : ℝ)/3 < z.re)
     (B : Set (KPCuspCharts.Cross F)) (hB : IsCompact B)
     (D : Set (KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ)) (hD : IsCompact D) :
     ∃ b : KPChamberBruhatTwoCells.RationalQuotient F → ℝ,
@@ -46,28 +34,23 @@ private theorem fixed_parameter_majorant
         b q * Real.exp ((2 * (KPCuspLogShape.dimension F : ℝ) * (2/3 + z.re)) * t) := by
   obtain ⟨m, hm, hlow⟩ := movingRowHeight_lower F ζ hζ B hB D hD
   obtain ⟨C, hC, hdec⟩ := KPLiteralExceptionalResidue.actualScalarHeightDecay F ζ hζ K₀ hK₀ φ z hz
-  let a : ℝ := 2/3 + z.re
-  have ha : 1 < a := by dsimp [a]; linarith
+  let a := 2/3 + z.re
   let b := fun q => (C * m ^ (-2*a)) *
     KPHeightSeries.term Projectivization.mulHeight a (KPLiteralExceptionalResidue.chamberCosetIndex F q)
-  have hb : Summable b :=
-    ((KPHeightSeries.relativeHeight_summable_tail F a ha).1.comp_injective
-      (KPLiteralExceptionalResidue.chamberCosetIndex_injective F)).mul_left (C * m ^ (-2*a))
-  refine ⟨b, hb, ?_, ?_⟩
+  refine ⟨b, (((KPHeightSeries.relativeHeight_summable_tail F a (by dsimp [a]; linarith)).1.comp_injective
+    (KPLiteralExceptionalResidue.chamberCosetIndex_injective F)).mul_left (C * m ^ (-2*a))), ?_, ?_⟩
   · intro q
     dsimp [b, KPHeightSeries.term]
     positivity
   · intro q xb hxb c hc t ht
-    let g := KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
-      (KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ (KPCuspCharts.toArch F (xb,t))) * c.val
-    have h := hdec (KPLiteralRaw.rationalLift F ζ hζ (Quotient.out q) * g)
+    have h := hdec (KPLiteralRaw.rationalLift F ζ hζ (Quotient.out q) * (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
+      (KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ (KPCuspCharts.toArch F (xb,t))) * c.val))
     rw [KPLiteralExceptionalResidue.actualBaseRowHeight_rational_mul] at h
     have hl := hlow (KPChamberHeight.bottomRow F (Quotient.out q)) xb hxb c hc t ht
     rw [← KPLiteralExceptionalResidue.chamberCosetIndex_mulHeight_out] at hl
-    have hp := Real.rpow_le_rpow_of_nonpos
+    refine h.trans ((mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_nonpos
       (mul_pos (mul_pos hm (Real.exp_pos _)) (Projectivization.mulHeight_pos _)) hl
-      (by dsimp [a]; linarith : -2*a ≤ 0)
-    refine h.trans ((mul_le_mul_of_nonneg_left hp hC).trans_eq ?_)
+      (by dsimp [a]; linarith : -2*a ≤ 0)) hC).trans_eq ?_)
     rw [Real.mul_rpow (mul_nonneg hm.le (Real.exp_pos _).le) (Projectivization.mulHeight_pos _).le,
       Real.mul_rpow hm.le (Real.exp_pos _).le, Real.rpow_def_of_pos (Real.exp_pos _), Real.log_exp]
     dsimp [b, KPHeightSeries.term, a]
@@ -75,10 +58,8 @@ private theorem fixed_parameter_majorant
       (2 * ↑(KPCuspLogShape.dimension F) * (2/3+z.re)) * t by ring]
     ring
 
+include hK₀ in
 private theorem compact_parameter_majorant
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (K₀ : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK₀ : KPLiteralRaw.IwasawaCompact F ζ hζ K₀)
-    (φ : KPLiteralRaw.Flat F ζ hζ K₀)
     (K : Set ℂ) (hK : IsCompact K) (hKV : K ⊆ KPContActualChamberNormalSeries.V)
     (B : Set (KPCuspCharts.Cross F)) (hB : IsCompact B)
     (D : Set (KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ)) (hD : IsCompact D) :
@@ -116,6 +97,8 @@ private theorem compact_parameter_majorant
   · refine ⟨0, 0, le_rfl, summable_zero, fun _ => le_rfl, ?_⟩
     intro s hs
     exact (hne ⟨s, hs⟩).elim
+
+end
 
 theorem actualSeries_exponential_bound
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

@@ -11,15 +11,19 @@ open MeasureTheory Topology
 
 namespace DedekindZetaZeroFree.CoreChartLocalizers
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
+    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+    (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
 abbrev X := KPFiniteCuspAtlas.rawXU F ζ hζ U
 abbrev V := KPCuspGenuineMonodromy.scalarFiber F ζ hζ U
 
 instance : MeasurableSpace (X F ζ hζ U) := borel _
 
-def quotientMeasure (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
+section
+
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+
+def quotientMeasure :
     Measure (X F ζ hζ U) :=
   ∑ i : Fin A.componentCount,
     Measure.map (KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative i))
@@ -27,11 +31,11 @@ def quotientMeasure (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
         (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative i))
         (A.cuspAtlas i).fundamentalDomain)
 
-abbrev Line (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :=
+abbrev Line :=
   Σ i : Fin A.componentCount, KPCuspGenuineMonodromy.OrbifoldLine F ζ hζ U
     (A.representative i) (A.line i).rho
 
-def lineBase (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
+def lineBase :
     Line F ζ hζ hF U A → X F ζ hζ U := fun p =>
   Quotient.lift (fun q => KPFiniteCuspAtlas.componentMap F ζ hζ U
     (A.representative p.1) (KPCuspSiegel.projection F _ q.1)) (by
@@ -45,6 +49,8 @@ def lineBase (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
         change γ⁻¹ • (γ • q.1) = q.1
         simp⟩) p.2
 
+end
+
 structure Realization (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) where
   component : X F ζ hζ U → Fin A.componentCount
   lift : X F ζ hζ U → KPFiniteCuspAtlas.SymmetricSpace F
@@ -53,8 +59,6 @@ structure Realization (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) where
   lift_formula : ∀ x, KPFiniteCuspAtlas.componentMap F ζ hζ U
     (A.representative (component x))
     (KPCuspSiegel.projection F _ (lift x)) = x
-  lift_in_domain : ∀ᵐ x ∂quotientMeasure F ζ hζ hF U A,
-    lift x ∈ (A.cuspAtlas (component x)).fundamentalDomain
   free_ae : ∀ᵐ x ∂quotientMeasure F ζ hζ hF U A,
     ∀ γ : KPCuspGenuineMonodromy.Component F ζ hζ U
       (A.representative (component x)),
@@ -65,34 +69,25 @@ structure Realization (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) where
   section_formula : ∀ s x, (representative s x : ℂ) =
     s.val (lift x, A.representative (component x))
 
-  frame : (x : X F ζ hζ U) → V F ζ hζ U → Line F ζ hζ hF U A
-  frame_formula : ∀ x a, frame x a =
-    ⟨component x, Quotient.mk _ (lift x, a)⟩
-  frame_base : ∀ x a, lineBase F ζ hζ hF U A (frame x a) = x
-  frame_injective_ae : ∀ᵐ x ∂quotientMeasure F ζ hζ hF U A,
-    Function.Injective (frame x)
-  frame_surjective_ae : ∀ᵐ x ∂quotientMeasure F ζ hζ hF U A,
-    ∀ l : Line F ζ hζ hF U A, lineBase F ζ hζ hF U A l = x →
-      ∃ a, frame x a = l
+section
 
-  smooth_test_memLp : ∀ s : KPFiniteCuspAtlas.genuineScalars F ζ hζ U,
-    (∀ i, ContDiff ℝ (⊤ : ℕ∞) (fun z => s.val (z, A.representative i))) →
-    HasCompactSupport (representative s) →
-    MemLp (representative s) 2 (quotientMeasure F ζ hζ hF U A)
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
-abbrev H (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :=
+abbrev H :=
   Lp (V F ζ hζ U) 2 (quotientMeasure F ζ hζ hF U A)
 
-abbrev HK (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (K : Set (X F ζ hζ U)) :=
+abbrev HK (K : Set (X F ζ hζ U)) :=
   Lp (V F ζ hζ U) 2 ((quotientMeasure F ζ hζ hF U A).restrict K)
 
-def core (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+def core
     (M : Realization F ζ hζ hF U A) : Set (H F ζ hζ hF U A) :=
   {v | ∃ s : KPFiniteCuspAtlas.genuineScalars F ζ hζ U,
     (∀ i, ContDiff ℝ (⊤ : ℕ∞) (fun z => s.val (z, A.representative i))) ∧
     HasCompactSupport (M.representative s) ∧
     (v : X F ζ hζ U → V F ζ hζ U) =ᵐ[quotientMeasure F ζ hζ hF U A]
       M.representative s}
+
+end
 
 abbrev E (n : ℕ) := EuclideanSpace ℝ (Fin n)
 
@@ -101,7 +96,6 @@ def cube (n : ℕ) (a : ℝ) : Set (E n) := {x | ∀ j, -a ≤ x j ∧ x j ≤ a
 structure Chart (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) where
   n : ℕ
   positive_n : 0 < n
-  dimension : n = 3 * KPCuspLogShape.dimension F
   a : ℝ
   positive_a : 0 < a
   radius : ℝ
@@ -137,7 +131,6 @@ structure Chart (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) where
       γ ∈ MulAction.stabilizer _ center
   weight : E n → ℝ
   smooth_weight : ContDiffOn ℝ (⊤ : ℕ∞) weight extendedDomain
-  invariant_weight : ∀ g x, x ∈ extendedDomain → weight (orthogonal g x) = weight x
   lower : ℝ
   upper : ℝ
   positive_lower : 0 < lower
@@ -152,39 +145,36 @@ structure Chart (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) where
 
 attribute [instance] Chart.finite_stabilizer
 
-abbrev Chart.G {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) :=
+section
+
+variable {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U} (C : Chart F ζ hζ hF U A)
+
+abbrev Chart.G :=
   MulAction.stabilizer (KPCuspGenuineMonodromy.Component F ζ hζ U
     (A.representative C.component)) C.center
 
-def Chart.rho {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) : C.G F ζ hζ hF U →* ℂˣ :=
+def Chart.rho : C.G F ζ hζ hF U →* ℂˣ :=
   (KPCuspGenuineMonodromy.chi F ζ hζ).comp
     ((A.line C.component).rho.comp (MulAction.stabilizer _ C.center).subtype)
 
-def Chart.toBase {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) (x : E C.n) : X F ζ hζ U :=
+def Chart.toBase (x : E C.n) : X F ζ hζ U :=
   KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative C.component)
     (KPCuspSiegel.projection F _ (C.coordinates x))
 
-def Chart.toLine {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) (x : E C.n) (a : V F ζ hζ U) :
+def Chart.toLine (x : E C.n) (a : V F ζ hζ U) :
     Line F ζ hζ hF U A :=
   ⟨C.component, Quotient.mk _ (C.coordinates x, a)⟩
 
-def Chart.O {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) : Set (X F ζ hζ U) :=
+def Chart.O : Set (X F ζ hζ U) :=
   C.toBase F ζ hζ hF U '' Metric.ball 0 C.radius
 
-def Chart.average {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) (f : E C.n → ℂ) : E C.n → ℂ :=
+def Chart.average (f : E C.n → ℂ) : E C.n → ℂ :=
   (Metric.ball 0 C.radius).indicator (fun x =>
     (Fintype.card (C.G F ζ hζ hF U) : ℂ)⁻¹ *
       ∑ g : C.G F ζ hζ hF U, ((C.rho F ζ hζ hF U g)⁻¹ : ℂˣ) *
         f (C.orthogonal g x))
 
-def Chart.metricMatrix {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) (x : E C.n) : Matrix (Fin C.n) (Fin C.n) ℝ :=
+def Chart.metricMatrix (x : E C.n) : Matrix (Fin C.n) (Fin C.n) ℝ :=
   fun j k =>
     (KPArch.metric (KPCuspLogShape.dimension F) (C.coordinates x)
       (fderiv ℝ C.coordinates x (EuclideanSpace.single j 1 + EuclideanSpace.single k 1)) -
@@ -193,9 +183,10 @@ def Chart.metricMatrix {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
     KPArch.metric (KPCuspLogShape.dimension F) (C.coordinates x)
       (fderiv ℝ C.coordinates x (EuclideanSpace.single k 1))) / 2
 
-def Chart.energyMatrix {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) (x : E C.n) : Matrix (Fin C.n) (Fin C.n) ℝ :=
+def Chart.energyMatrix (x : E C.n) : Matrix (Fin C.n) (Fin C.n) ℝ :=
   (C.metricMatrix F ζ hζ hF U x)⁻¹
+
+end
 
 structure FiniteCutoffs (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (K : Set (X F ζ hζ U)) where
@@ -250,11 +241,6 @@ structure FrameComparison (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     ∀ᵐ x ∂volume.restrict (Metric.ball 0 (C.chart i).radius),
       (phase i ((C.chart i).orthogonal g x) : ℂ) =
         ((C.chart i).rho F ζ hζ hF U g : ℂ) * (phase i x : ℂ)
-  phase_frame : ∀ i,
-    ∀ᵐ x ∂volume.restrict (Metric.ball 0 (C.chart i).radius),
-      ∀ a : V F ζ hζ U,
-        (C.chart i).toLine F ζ hζ hF U x ((phase i x : ℂ) • a) =
-          M.frame ((C.chart i).toBase F ζ hζ hF U x) a
 
 structure LocalOperators (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}

@@ -23,7 +23,7 @@ noncomputable def finitePlacesAboveFintype (K : Type*) (L : Type*)
   letI := AlgebraicNumberTheory.Valuations.completionTensorDecomposition_extensionFintype
     (K := K) (L := L) (HeightOneSpectrum.adicAbv K w)
     (RayClass.adicAbv_isNontrivial w)
-  exact Fintype.ofEquiv _ (finitePlaceExtensionEquivAbove (K := K) (L := L) w)
+  exact Fintype.ofEquiv _ (finitePlaceExtensionEquivAbove w)
 
 noncomputable def finitePlacesAboveRationalPrimeFintype (L : Type*)
     [Field L] [NumberField L] (p : Nat.Primes) :

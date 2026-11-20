@@ -17,15 +17,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -63,14 +54,10 @@ theorem exists_infinitePositiveSubgroup_nthRoot
     (hx : x ∈ RayClass.infinitePositiveSubgroup v) :
     ∃ y : v.Completionˣ, y ^ n = x := by
   by_cases hv : v.IsReal
-  · let e : v.Completion ≃+* ℝ :=
-      InfinitePlace.Completion.ringEquivRealOfIsReal hv
-    let eu : v.Completionˣ ≃* ℝˣ :=
-      Units.mapEquiv e.toMulEquiv
-    have hxpos : 0 < ((eu x : ℝˣ) : ℝ) := by
-      exact
-        ((RayClass.mem_infinitePositiveSubgroup_iff v x).mp hx) hv
-    let yr : ℝ :=
+  · let eu :=
+      Units.mapEquiv (InfinitePlace.Completion.ringEquivRealOfIsReal hv).toMulEquiv
+    have hxpos := ((RayClass.mem_infinitePositiveSubgroup_iff v x).mp hx) hv
+    let yr :=
       ((eu x : ℝˣ) : ℝ) ^ ((n : ℝ)⁻¹)
     have hyrpow :
         yr ^ n = ((eu x : ℝˣ) : ℝ) := by
@@ -79,18 +66,13 @@ theorem exists_infinitePositiveSubgroup_nthRoot
       intro hyr
       rw [hyr, zero_pow hn.ne'] at hyrpow
       exact (eu x).ne_zero hyrpow.symm
-    let yu : ℝˣ := Units.mk0 yr hyrne
-    refine ⟨eu.symm yu, ?_⟩
+    refine ⟨eu.symm (Units.mk0 yr hyrne), ?_⟩
     apply eu.injective
     simp only [map_pow, eu.apply_symm_apply]
     apply Units.ext
     exact hyrpow
-  · have hvc : v.IsComplex :=
-      InfinitePlace.not_isReal_iff_isComplex.mp hv
-    let e : v.Completion ≃+* ℂ :=
-      InfinitePlace.Completion.ringEquivComplexOfIsComplex hvc
-    let eu : v.Completionˣ ≃* ℂˣ :=
-      Units.mapEquiv e.toMulEquiv
+  · let eu :=
+      Units.mapEquiv (InfinitePlace.Completion.ringEquivComplexOfIsComplex (InfinitePlace.not_isReal_iff_isComplex.mp hv)).toMulEquiv
     obtain ⟨z, hz⟩ :=
       IsAlgClosed.exists_pow_nat_eq
         ((eu x : ℂˣ) : ℂ) hn
@@ -98,8 +80,7 @@ theorem exists_infinitePositiveSubgroup_nthRoot
       intro hzero
       rw [hzero, zero_pow hn.ne'] at hz
       exact (eu x).ne_zero hz.symm
-    let zu : ℂˣ := Units.mk0 z hz0
-    refine ⟨eu.symm zu, ?_⟩
+    refine ⟨eu.symm (Units.mk0 z hz0), ?_⟩
     apply eu.injective
     simp only [map_pow, eu.apply_symm_apply]
     apply Units.ext
@@ -129,16 +110,12 @@ theorem infinitePositiveSubgroup_le_infiniteTensorNormSubgroup
       infiniteTensorNormSubgroup (K := K) (L := L) v := by
   intro x hx
   let n := Module.finrank K L
-  have hn : 0 < n :=
-    Module.finrank_pos
   obtain ⟨y, hy⟩ :=
     exists_infinitePositiveSubgroup_nthRoot
-      v n hn x hx
-  let z : (v.Completion ⊗[K] L)ˣ :=
-    Units.map
-      (algebraMap v.Completion
-        (v.Completion ⊗[K] L)).toMonoidHom y
-  refine ⟨z, ?_⟩
+      v n Module.finrank_pos x hx
+  refine ⟨(Units.map
+    (algebraMap v.Completion
+      (v.Completion ⊗[K] L)).toMonoidHom y), ?_⟩
   apply Units.ext
   change
     Algebra.norm v.Completion
@@ -153,7 +130,7 @@ theorem infinitePositiveSubgroup_le_infiniteTensorNormSubgroup
 end ArchimedeanNorm
 
 variable {K : Type} [Field K] [NumberField K]
-variable {L : Type} [Field L] [Algebra K L]
+    {L : Type} [Field L] [Algebra K L]
     [FiniteDimensional K L]
 
 /-- Complete splitting at a finite place makes the chosen local norm
@@ -171,24 +148,22 @@ theorem chosenFinitePlaceLocalNormSubgroup_eq_top_of_splitsCompletely
   let vK :=
     NumberField.HeightOneSpectrum.adicAbv K v
   let w := chosenFinitePlaceExtension (L := L) v
-  let hvK : vK.IsNontrivial :=
-    RayClass.adicAbv_isNontrivial v
   let hK :=
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) w.1
-  let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let := hK.toSMul
+  let :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   let E :=
     AlgebraicNumberTheory.Valuations.LocalizedCompletion vK w
-  let : FiniteDimensional vK.Completion E :=
+  let :=
     AlgebraicNumberTheory.Valuations.localizedCompletionModuleFinite
-      vK hvK w
+      vK (RayClass.adicAbv_isNontrivial v) w
   have hdegree :
       Module.finrank vK.Completion E = 1 := by
     simpa [finitePlaceLocalDegree, vK, w, E] using
       (finitePlaceSplitsCompletely_iff_localDegree_eq_one
-        (K := K) (L := L) v).mp hsplit
+          v).mp hsplit
   let e :
       vK.Completionˣ ≃ₜ* (v.adicCompletion K)ˣ :=
     finitePlaceCompletionUnitsContinuousMulEquiv v
@@ -208,11 +183,11 @@ theorem chosenFinitePlaceLocalNormSubgroup_eq_top_of_splitsCompletely
     (LocalFieldTheory.IsNonarchimedeanLocalField.normUnits_algebraMap_base
       (K := vK.Completion) (L := E) (e.symm x))
 
+variable [IsGalois K L] (S : Finset (HeightOneSpectrum (𝓞 K)))
+
 /-- Simultaneous weak approximation into the concrete finite local norm
 subgroups and into the archimedean tensor-norm images. -/
 theorem exists_principal_quotient_mem_localNormSubgroups
-    [IsGalois K L]
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (a : IdeleGroup K) :
     ∃ x : Kˣ,
       (∀ v : ↥S,
@@ -242,14 +217,12 @@ theorem exists_principal_quotient_mem_localNormSubgroups
   intro w
   exact
     infinitePositiveSubgroup_le_infiniteTensorNormSubgroup
-      (K := K) (L := L) w (hinfinite w)
+        w (hinfinite w)
 
 /-- If all finite places outside a finite set split completely, one
 principal correction makes a given idele a determinant norm locally at
 every finite and infinite place. -/
 theorem exists_principal_quotient_locallyNormEverywhere_of_splitsOutside
-    [IsGalois K L]
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (hsplit :
       ∀ v : HeightOneSpectrum (𝓞 K), v ∉ S →
         FinitePlaceSplitsCompletely
@@ -277,7 +250,7 @@ theorem exists_principal_quotient_locallyNormEverywhere_of_splitsOutside
   · exact hfinite ⟨v, hv⟩
   · rw [
       chosenFinitePlaceLocalNormSubgroup_eq_top_of_splitsCompletely
-        (K := K) (L := L) v (hsplit v hv)]
+          v (hsplit v hv)]
     exact Subgroup.mem_top _
 
 end

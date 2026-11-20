@@ -14,9 +14,9 @@ open MeasureTheory
 open scoped Classical NumberField Topology ENNReal
 namespace DedekindZetaZeroFree.KPMsGreenFlux.TruncatedL2Geometry
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
 theorem endSet_isOpen (j : Cusps A) (Y : ℝ) : IsOpen (endSet A j Y) := by
   have hmap : IsOpenMap (KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative j.1)) := by
@@ -56,9 +56,9 @@ open MeasureTheory
 open scoped Classical NumberField Topology ENNReal
 namespace DedekindZetaZeroFree.KPMsGreenFlux.TruncatedL2Geometry
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
 theorem quotientCore_compact_measurable_finite
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
@@ -70,10 +70,9 @@ theorem quotientCore_compact_measurable_finite
   have he : quotientCore A P Y = (P.projection U) ⁻¹'
       (KPMsFixedHaarDisintegration.cuspEnds A Y)ᶜ := by
     rw [Set.preimage_compl, ← quotientCore_compl_eq_preimage A P Y, compl_compl]
-  have hc := KPGlobalResidualKernel.RawStageL2.TruncatedEstimate.CompactCore.ArchimedeanGeometry.spherical_core_isCompact A Y hY
   have hk : IsCompact (quotientCore A P Y) := by
     rw [he]
-    exact KPGlobalResidualKernel.RawStageL2.TruncatedEstimate.CompactCore.ArchimedeanGeometry.spherical_projection_compact_preimage P U _ hc
+    exact KPGlobalResidualKernel.RawStageL2.TruncatedEstimate.CompactCore.ArchimedeanGeometry.spherical_projection_compact_preimage P U _ (KPGlobalResidualKernel.RawStageL2.TruncatedEstimate.CompactCore.ArchimedeanGeometry.spherical_core_isCompact A Y hY)
   refine ⟨hk, ?_, ?_⟩
   · rw [he]
     exact (cuspEnds_isOpen A Y).isClosed_compl.measurableSet.preimage (P.continuous U).measurable

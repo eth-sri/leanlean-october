@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllowedRows.LargeFrequencySum
 
 public import DedekindZetaZeroFree.LFunctions.Hecke.PoissonRows.Reciprocals.FrequencyRectangles
 public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllFrequencies.LargeZControls
@@ -16,33 +17,32 @@ open DedekindZetaZeroFree.Quantitative.RawFixed DedekindZetaZeroFree.Quantitativ
 open scoped Classical Topology
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
-theorem raw_z_shift (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : ℂ) (hξ : ξ.re = 4) (hw : w.re = 4) :
-    Iz D u ξ w 2 Z = Iz D u ξ w Scales.tailShift Z :=
-  DedekindZetaZeroFree.Quantitative.RawLargeZControls31.Iz_shift_two_R D u hu Z hZ ξ w hξ hw
+alias raw_z_shift := DedekindZetaZeroFree.Quantitative.RawLargeZControls31.Iz_shift_two_R
 
-private lemma cvi_congr {σ : ℝ} {f g : ℂ → ℂ}
-    (h : ∀ t : ℝ, f ((σ : ℂ) + (t : ℂ) * Complex.I) = g ((σ : ℂ) + (t : ℂ) * Complex.I)) :
-    comparisonVerticalIntegral σ f = comparisonVerticalIntegral σ g := by
-  unfold comparisonVerticalIntegral
-  simp only [h]
+private alias cvi_congr := DedekindZetaZeroFree.Quantitative.RowsLarge.LargeFrequencySum.cvi_congr
 
-theorem raw_Iwz_shift (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 2 ≤ Z) (ξ : ℂ) (hξ : ξ.re = 4) :
+section
+
+variable (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 2 ≤ Z)
+
+include hu hZ in
+theorem raw_Iwz_shift (ξ : ℂ) (hξ : ξ.re = 4) :
     Iwz D u ξ 4 2 Z = Iwz D u ξ 4 Scales.tailShift Z := by
   unfold Iwz
   refine cvi_congr (fun t => ?_)
   exact raw_z_shift D u hu Z hZ ξ _ hξ (by simp)
 
-theorem raw_initialRowIntegral_shift (u : Frequency D.recipe)
-    (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 2 ≤ Z) :
+include hu hZ in
+theorem raw_initialRowIntegral_shift :
     initialRowIntegral D u Z = triple D u 4 4 Scales.tailShift Z := by
   unfold initialRowIntegral triple
   refine cvi_congr (fun t => ?_)
   exact raw_Iwz_shift D u hu Z hZ _ (by simp)
+
+end
 
 theorem raw_large_triple_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (u : Frequency D.recipe), u ≠ principalFrequency D.recipe →
@@ -58,28 +58,12 @@ theorem raw_large_triple_bound (ε : ℝ) (hε : 0 < ε) :
   refine ⟨C, hC, fun u hu Z hZ => ?_⟩
   obtain ⟨h1, h2⟩ := H u hu Z hZ
   refine ⟨h1, h2.trans ?_⟩
-  have hZ0 : 0 < Z := by linarith
-  have hE : Z ^ (Scales.kernelExponent 4 4 Scales.tailShift) ≤ Z ^ ((44675 / 10000 : ℝ) + 33 / 100 * Scales.tailShift) := by
-    apply Real.rpow_le_rpow_of_exponent_le (by linarith)
-    unfold Scales.kernelExponent Scales.xExponent Scales.yExponent Scales.smoothingExponent
-    linarith
-  have hq : 0 ≤ frequencyNorm D.recipe u ^ (-Scales.tailShift + ε) :=
-    Real.rpow_nonneg (by linarith [RawFrequencyCount.one_le_frequencyNorm D.recipe u]) _
-  exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hE hC.le) hq
+  refine mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left ?_ hC.le) (Real.rpow_nonneg (by linarith [RawFrequencyCount.one_le_frequencyNorm D.recipe u]) _)
+  apply Real.rpow_le_rpow_of_exponent_le (by linarith)
+  unfold Scales.kernelExponent Scales.xExponent Scales.yExponent Scales.smoothingExponent
+  linarith
 
-private lemma iter_triple (g : ℝ → ℝ → ℝ → ℂ)
-    (hg : MeasureTheory.Integrable (fun t : ℝ × ℝ × ℝ => g t.1 t.2.1 t.2.2)) :
-    ∫ a : ℝ, ∫ b : ℝ, ∫ c : ℝ, g a b c = ∫ t : ℝ × ℝ × ℝ, g t.1 t.2.1 t.2.2 := by
-  have h1 : ∀ᵐ a : ℝ ∂MeasureTheory.volume,
-      MeasureTheory.Integrable (fun y : ℝ × ℝ => g a y.1 y.2) MeasureTheory.volume :=
-    MeasureTheory.Integrable.prod_right_ae hg
-  calc ∫ a : ℝ, ∫ b : ℝ, ∫ c : ℝ, g a b c
-      = ∫ a : ℝ, ∫ y : ℝ × ℝ, g a y.1 y.2 := by
-        refine MeasureTheory.integral_congr_ae ?_
-        filter_upwards [h1] with a ha
-        exact (MeasureTheory.integral_prod (fun y : ℝ × ℝ => g a y.1 y.2) ha).symm
-    _ = ∫ t : ℝ × ℝ × ℝ, g t.1 t.2.1 t.2.2 :=
-        (MeasureTheory.integral_prod (fun t : ℝ × ℝ × ℝ => g t.1 t.2.1 t.2.2) hg).symm
+private alias iter_triple := DedekindZetaZeroFree.Quantitative.RowsLarge.LargeFrequencySum.iter_triple
 
 theorem raw_large_row_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (u : Frequency D.recipe), u ≠ principalFrequency D.recipe →

@@ -9,10 +9,10 @@ open scoped Classical NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open NumberField IsDedekindDomain KPGlobalTorusFiniteStages
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 
 def stageScalarInsertion (s : RestrictedTensorSimple.Level (bad R.A P C)) :
     RestrictedTensorSimple.Stage (Plus R.A P C) s.val →ₗ[ℂ]
@@ -53,7 +53,7 @@ theorem reference_fixed_outside (s : RestrictedTensorSimple.Level (bad R.A P C))
       localMaxAction R P C v ⟨k.val v, k.property v⟩ (plusReference R.A P C v) =
         plusReference R.A P C v := by
   intro v hv
-  have hb : v ∉ bad R.A P C := fun h => hv (s.property h)
+  have hb := fun h => hv (s.property h)
   cases v with
   | inl w => simp [bad, KPGlobalResidualConstruction.ScalarAbsorption.fullBad] at hb
   | inr q =>
@@ -67,18 +67,14 @@ theorem stageScalarInsertion_kFinite (s : RestrictedTensorSimple.Level (bad R.A 
     KPLiteralRaw.KFinite F R.A.zeta12 R.A.primitive_zeta12 (ThetaExpansion.fullProductCompact R)
       (stageScalarInsertion R P C s x) := by
   obtain ⟨U, hU, hx, hstable⟩ := stageMax_finite_subspace R P C s x
-  let : Module.Finite ℂ U := hU
-  let inc := (stageScalarInsertion R P C s).comp U.subtype
-  refine ⟨inc.range, inferInstance, ⟨⟨x, hx⟩, rfl⟩, ?_⟩
+  let := hU
+  refine ⟨((stageScalarInsertion R P C s).comp U.subtype).range, inferInstance, ⟨⟨x, hx⟩, rfl⟩, ?_⟩
   intro k y hy
   obtain ⟨z, rfl⟩ := hy
   obtain ⟨a, ha, hak⟩ := Subgroup.mem_map.mp k.property
   let ak : ThetaExpansion.fullProductCompactPreimage R := ⟨a, ha⟩
   let ks (j : s.val) : ThetaExpansion.iwasawaCompactFactor R j.val := ⟨ak.val j.val, ak.property j.val⟩
   refine ⟨⟨stageMaxAction R P C s ks z.val, hstable ks z.val z.property⟩, ?_⟩
-  change stageScalarInsertion R P C s (stageMaxAction R P C s ks z.val) =
-    KPLiteralRaw.rightAction F R.A.zeta12 R.A.primitive_zeta12 k.val
-      (stageScalarInsertion R P C s z.val)
   rw [← hak]
   exact (stageScalarInsertion_maxAction R P C s ak (reference_fixed_outside R P C s hgood ak) z.val).symm
 

@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.RepresentationTheory.RankOne.PGLComplex.BruhatHopfCoordinates
 
 public import DedekindZetaZeroFree.Theta.Whittaker.RotatedKernelDerivativeEstimates
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.HarmonicPolynomials.SymmetricPowerAction
@@ -11,49 +12,25 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 open KPCplxCharacterHaar
 open scoped BigOperators
 
-noncomputable def linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ) :
+section
+
+variable (A : Matrix (Fin 3) (Fin 3) ℂ)
+
+noncomputable def linearSubstitution :
     MvPolynomial (Fin 3) ℂ →ₐ[ℂ] MvPolynomial (Fin 3) ℂ :=
   MvPolynomial.aeval (fun i => ∑ j, MvPolynomial.C (A i j) * MvPolynomial.X j)
 
-private theorem pderiv_linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ)
+private theorem pderiv_linearSubstitution
     (p : MvPolynomial (Fin 3) ℂ) (j : Fin 3) :
     MvPolynomial.pderiv j (linearSubstitution A p) =
-      ∑ i, MvPolynomial.C (A i j) * linearSubstitution A (MvPolynomial.pderiv i p) := by
-  classical
-  induction p using MvPolynomial.induction_on with
-  | C c => simp [linearSubstitution]
-  | add p q ihp ihq =>
-      simp only [map_add, ihp, ihq, mul_add, Finset.sum_add_distrib]
-  | mul_X p i ih =>
-      simp only [map_mul, linearSubstitution, MvPolynomial.aeval_X]
-      rw [MvPolynomial.pderiv_mul]
-      simp only [MvPolynomial.pderiv_mul, MvPolynomial.pderiv_X,
-        map_add, map_mul, map_sum, MvPolynomial.pderiv_C, zero_mul, zero_add]
-      unfold linearSubstitution at ih
-      rw [ih]
-      simp [Finset.sum_mul, Finset.mul_sum, Finset.sum_add_distrib,
-        Pi.single_apply, mul_add, mul_ite, mul_assoc, mul_comm, mul_left_comm]
+      ∑ i, MvPolynomial.C (A i j) * linearSubstitution A (MvPolynomial.pderiv i p) := by apply @DedekindZetaZeroFree.HarmonicVendor.HomogeneousRaw.EquivariantFischer.pderiv_linearSubstitution <;> assumption
 
-private theorem polynomialLaplacian_linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ)
+private theorem polynomialLaplacian_linearSubstitution
     (hA : ∀ i k, ∑ j, A i j * A k j = if i = k then 1 else 0)
     (p : MvPolynomial (Fin 3) ℂ) :
-    polynomialLaplacian (linearSubstitution A p) = linearSubstitution A (polynomialLaplacian p) := by
-  classical
-  simp only [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply,
-    map_sum]
-  change (∑ j, MvPolynomial.pderiv j (MvPolynomial.pderiv j (linearSubstitution A p))) =
-    ∑ j, linearSubstitution A (MvPolynomial.pderiv j (MvPolynomial.pderiv j p))
-  simp only [pderiv_linearSubstitution, map_sum, MvPolynomial.pderiv_C_mul]
-  simp only [pderiv_linearSubstitution, Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro i hi
-  rw [Finset.sum_comm]
-  simp_rw [← Finset.sum_mul, ← map_sum]
-  simp_rw [hA]
-  simp
+    polynomialLaplacian (linearSubstitution A p) = linearSubstitution A (polynomialLaplacian p) := by apply @DedekindZetaZeroFree.HarmonicVendor.HomogeneousRaw.EquivariantFischer.polynomialLaplacian_linearSubstitution <;> assumption
 
-private theorem linearSubstitution_homogeneous (A : Matrix (Fin 3) (Fin 3) ℂ)
+private theorem linearSubstitution_homogeneous
     (p : MvPolynomial (Fin 3) ℂ) (ℓ : ℕ) (hp : p.IsHomogeneous ℓ) :
     (linearSubstitution A p).IsHomogeneous ℓ := by
   unfold linearSubstitution
@@ -61,45 +38,20 @@ private theorem linearSubstitution_homogeneous (A : Matrix (Fin 3) (Fin 3) ℂ)
     (fun i => MvPolynomial.IsHomogeneous.sum _ _ 1 (fun j _ =>
       MvPolynomial.isHomogeneous_C_mul_X _ _))
 
-private theorem linearSubstitution_harmonic (A : Matrix (Fin 3) (Fin 3) ℂ)
+private theorem linearSubstitution_harmonic
     (hA : ∀ i k, ∑ j, A i j * A k j = if i = k then 1 else 0)
     (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ) (hp : p ∈ harmonicPolynomials ℓ) :
     linearSubstitution A p ∈ harmonicPolynomials ℓ := by
   refine ⟨linearSubstitution_homogeneous A p ℓ hp.1, ?_⟩
   change polynomialLaplacian (linearSubstitution A p) = 0
   rw [polynomialLaplacian_linearSubstitution A hA]
-  have hh : polynomialLaplacian p = 0 := hp.2
-  rw [hh, map_zero]
+  rw [hp.2, map_zero]
 
-private theorem su2_entries (k : ComplexSU2) : (k : Matrix (Fin 2) (Fin 2) ℂ) 0 0 = star ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1) ∧
-  (k : Matrix (Fin 2) (Fin 2) ℂ) 0 1 = -star ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0) := by
-  let m : Matrix (Fin 2) (Fin 2) ℂ := k
-  have hu := Matrix.mem_unitaryGroup_iff.mp (Matrix.specialUnitaryGroup_le_unitaryGroup k.property)
-  have hd := (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2
-  have ha : star m = Matrix.adjugate m := by
-    calc
-      star m = 1 * star m := by simp
-      _ = (Matrix.adjugate m * m) * star m := by rw [Matrix.adjugate_mul, hd]; simp
-      _ = Matrix.adjugate m * (m * star m) := by rw [mul_assoc]
-      _ = Matrix.adjugate m := by rw [hu]; simp
-  have h00 := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => A 0 0) ha
-  have h10 := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => A 1 0) ha
-  simp only [Matrix.star_apply, Matrix.adjugate_fin_two, Matrix.of_apply,
-    Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one] at h00 h10
-  constructor
-  · simpa using congrArg star h00
-  · simpa using congrArg star h10
+end
 
-private theorem su2_row_norm (k : ComplexSU2) :
-    ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0).re ^ 2 +
-    ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0).im ^ 2 +
-    ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1).re ^ 2 +
-    ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1).im ^ 2 = 1 := by
-  have hu := Matrix.mem_unitaryGroup_iff.mp (Matrix.specialUnitaryGroup_le_unitaryGroup k.property)
-  have h := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => (A 1 1).re) hu
-  simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-    Complex.mul_re, Complex.star_def, Complex.normSq_apply] at h
-  nlinarith
+private alias su2_entries := DedekindZetaZeroFree.ComplexLocal.StereographicTransport.BruhatHopfCoordinates.su2_entries
+
+private alias su2_row_norm := DedekindZetaZeroFree.ComplexLocal.StereographicTransport.BruhatHopfCoordinates.su2_row_norm
 
 noncomputable def hopfMatrix (a b : ℂ) : Matrix (Fin 3) (Fin 3) ℂ :=
   fun i j => (((!![
@@ -163,12 +115,18 @@ open KPCplxPrincipalSeriesCharts KPCplxCharacterHaar
 open scoped Matrix.Norms.Elementwise
 
 abbrev Mat := Matrix (Fin 2) (Fin 2) ℂ
-noncomputable def rowB (m : Mat) : ℝ := ‖m 1 0‖ ^ 2 + ‖m 1 1‖ ^ 2
-noncomputable def rowW (m : Mat) : ℂ := 2 * m 1 0 * star (m 1 1) / (rowB m : ℂ)
-noncomputable def rowZ (m : Mat) : ℂ :=
+section
+
+variable (m : Mat)
+
+noncomputable def rowB : ℝ := ‖m 1 0‖ ^ 2 + ‖m 1 1‖ ^ 2
+noncomputable def rowW : ℂ := 2 * m 1 0 * star (m 1 1) / (rowB m : ℂ)
+noncomputable def rowZ : ℂ :=
   ((‖m 1 0‖ ^ 2 - ‖m 1 1‖ ^ 2 : ℝ) : ℂ) / (rowB m : ℂ)
-noncomputable def rowSphere (m : Mat) : Fin 3 → ℂ :=
+noncomputable def rowSphere : Fin 3 → ℂ :=
   ![(rowW m).re, (rowW m).im, rowZ m]
+
+end
 
 private theorem rowB_pos (g : ComplexGL2) : 0 < rowB g :=
   KPCplxRotatedKernelEstimates.bottomRowNormSq_pos g
@@ -204,19 +162,20 @@ private theorem rowSphere_smooth (i : Fin 3) :
   · exact Complex.ofRealCLM.contDiff.comp_contDiffOn (Complex.imCLM.contDiff.comp_contDiffOn rowW_smooth)
   · exact rowZ_smooth
 
-private theorem rowB_left (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
+section
+
+variable (a d : ℂˣ) (b : ℂ) (g : ComplexGL2)
+
+private theorem rowB_left :
     rowB (upperTriangular a d b * g) = ‖(d : ℂ)‖ ^ 2 * rowB g := by
   change rowB ((upperTriangular a d b : Mat) * (g : Mat)) = _
   change rowB (!![(a : ℂ), b; 0, (d : ℂ)] * (g : Mat)) = _
   simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, norm_mul, mul_pow, mul_add]
 
-private theorem rowW_left (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
+private theorem rowW_left :
     rowW (upperTriangular a d b * g) = rowW g := by
   unfold rowW
   rw [rowB_left]
-  change 2 * ((!![(a : ℂ), b; 0, (d : ℂ)] * (g : Mat)) 1 0) *
-    star ((!![(a : ℂ), b; 0, (d : ℂ)] * (g : Mat)) 1 1) /
-    (‖(d : ℂ)‖ ^ 2 * rowB g : ℝ) = _
   simp only [Matrix.mul_apply, Fin.sum_univ_two]
   change 2 * ((0 : ℂ) * (g : Mat) 0 0 + (d : ℂ) * (g : Mat) 1 0) *
     star ((0 : ℂ) * (g : Mat) 0 1 + (d : ℂ) * (g : Mat) 1 1) / _ = _
@@ -227,12 +186,18 @@ private theorem rowW_left (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
   push_cast
   exact mul_div_mul_left _ _ (pow_ne_zero 2 (Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr d.ne_zero)))
 
-private theorem rowZ_left (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
+end
+
+alias HarmonicHighestWeightCyclicity.rowW_left := rowW_left
+
+section
+
+variable (a d : ℂˣ) (b : ℂ) (g : ComplexGL2)
+
+private theorem rowZ_left :
     rowZ (upperTriangular a d b * g) = rowZ g := by
   unfold rowZ
   rw [rowB_left]
-  change ((‖(!![(a : ℂ), b; 0, (d : ℂ)] * (g : Mat)) 1 0‖ ^ 2 -
-    ‖(!![(a : ℂ), b; 0, (d : ℂ)] * (g : Mat)) 1 1‖ ^ 2 : ℝ) : ℂ) / _ = _
   simp only [Matrix.mul_apply, Fin.sum_univ_two]
   change ((‖(0 : ℂ) * (g : Mat) 0 0 + (d : ℂ) * (g : Mat) 1 0‖ ^ 2 -
     ‖(0 : ℂ) * (g : Mat) 0 1 + (d : ℂ) * (g : Mat) 1 1‖ ^ 2 : ℝ) : ℂ) / _ = _
@@ -240,9 +205,11 @@ private theorem rowZ_left (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
   push_cast
   exact mul_div_mul_left _ _ (pow_ne_zero 2 (Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr d.ne_zero)))
 
-private theorem rowSphere_left (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
+private theorem rowSphere_left :
     rowSphere (upperTriangular a d b * g) = rowSphere g := by
   simp only [rowSphere, rowW_left, rowZ_left]
+
+end
 
 private theorem polynomial_smooth (p : MvPolynomial (Fin 3) ℂ) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun m => MvPolynomial.eval (rowSphere m) p) {m | m.det ≠ 0} := by
@@ -251,26 +218,29 @@ private theorem polynomial_smooth (p : MvPolynomial (Fin 3) ℂ) :
   | add p q hp hq => simpa using hp.add hq
   | mul_X p i hp => simpa using hp.mul (rowSphere_smooth i)
 
-noncomputable def polynomialFunction (s : ℝ) (p : MvPolynomial (Fin 3) ℂ)
+section
+
+variable (s : ℝ) (p : MvPolynomial (Fin 3) ℂ)
+
+noncomputable def polynomialFunction
     (g : ComplexGL2) : ℂ := sphericalSection s g * MvPolynomial.eval (rowSphere g) p
 
-private theorem polynomialFunction_mem (s : ℝ) (p : MvPolynomial (Fin 3) ℂ) :
+private theorem polynomialFunction_mem :
     polynomialFunction s p ∈ principalSeriesSubmodule s := by
   apply (principalSeries_mem_iff s _).mpr
   constructor
   · intro a d b g
-    have hc := (sphericalSection s).property.1 a d b g
     unfold polynomialFunction
-    rw [hc]
+    rw [((sphericalSection s).property.1 a d b g)]
     simp only [Matrix.GeneralLinearGroup.coe_mul, rowSphere_left]
     ring
-  · have hs := ((principalSeries_mem_iff s _).mp (sphericalSection s).property).2
-    have hh := hs.mul (polynomial_smooth p)
-    apply hh.congr
+  · apply ((((principalSeries_mem_iff s _).mp (sphericalSection s).property).2).mul (polynomial_smooth p)).congr
     intro m hm
     change m.det ≠ 0 at hm
     simp only [matrixFunction, dif_pos hm, polynomialFunction]
     rfl
+
+end
 
 private theorem rowB_compact (k : ComplexSU2) : rowB k = 1 := by
   have hrow := congrArg (fun B : Mat => (B 1 1).re)
@@ -282,11 +252,15 @@ private theorem rowB_compact (k : ComplexSU2) : rowB k = 1 := by
   simpa only [rowB, Complex.mul_conj', Complex.add_re, ← Complex.ofReal_pow,
     Complex.ofReal_re] using hrow
 
+alias HarmonicHighestWeightCyclicity.rowB_compact := rowB_compact
+
 private theorem spherical_compact (s : ℝ) (k : ComplexSU2) :
     sphericalSection s (complexSU2Embedding k) = 1 := by
   have hd := (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2
   change (Real.rpow (‖(k : Mat).det‖ / rowB k) (1 + 2 * s) : ℂ) = 1
   rw [hd, rowB_compact]; simp
+
+alias HarmonicHighestWeightCyclicity.spherical_compact := spherical_compact
 
 private theorem rowSphere_compact (k : ComplexSU2) : rowSphere k = compactSphereCoordinate k := by
   ext i
@@ -327,6 +301,8 @@ private theorem highestWeightIsotropicPower_directionalDerivative_eq_zero (ℓ :
     rw [← map_pow]; norm_num
   linear_combination (ℓ : MvPolynomial (Fin 3) ℂ) *
     (MvPolynomial.X 0 + MvPolynomial.C Complex.I * MvPolynomial.X 1) ^ (ℓ - 1) * hI
+
+alias HarmonicHighestWeightCyclicity.highestWeightIsotropicPower_directionalDerivative_eq_zero := highestWeightIsotropicPower_directionalDerivative_eq_zero
 private theorem highestWeightIsotropicPower_mem_harmonicPolynomials (ℓ : ℕ) : highestWeightIsotropicLinearPolynomial ^ ℓ ∈ harmonicPolynomials ℓ := by
   refine ⟨?_, ?_⟩
   · simpa [highestWeightIsotropicLinearPolynomial] using ((MvPolynomial.isHomogeneous_X ℂ (0 : Fin 3)).add
@@ -343,6 +319,8 @@ private theorem highestWeightIsotropicPower_mem_harmonicPolynomials (ℓ : ℕ) 
     | succ n ih =>
       rw [pow_succ', hmul, ih, highestWeightIsotropicPower_directionalDerivative_eq_zero]
       simp
+
+alias HarmonicHighestWeightCyclicity.highestWeightIsotropicPower_mem_harmonicPolynomials := highestWeightIsotropicPower_mem_harmonicPolynomials
 
 theorem highestWeightCompactHarmonic_mem_orbit_span (ℓ : ℕ)
     (v : ComplexSU2 → ℂ)
@@ -385,9 +363,7 @@ theorem highestWeightCompactHarmonic_mem_orbit_span (ℓ : ℕ)
       have hpz : p = 0 := congrArg Subtype.val hz
       simp [hpz]
     · exact htop
-  let r : HarmonicVendor.Harmonic ℓ →ₗ[ℂ] (ComplexSU2 → ℂ) :=
-    polynomialCompactRestriction.comp (harmonicPolynomials ℓ).subtype
-  have hmap : W.toSubmodule.map r =
+  have hmap : W.toSubmodule.map (polynomialCompactRestriction.comp (harmonicPolynomials ℓ).subtype) =
       Submodule.span ℂ (Set.range (fun k : ComplexSU2 => fun h => v (h * k))) := by
     rw [Submodule.map_span, ← Set.range_comp]
     apply congrArg (Submodule.span ℂ)
@@ -423,7 +399,6 @@ theorem cyclic_of_extraction {G E : Type*} [Group G] [NormedAddCommGroup E]
   apply W.orthogonal_eq_bot_iff.mp
   apply le_antisymm ?_ bot_le
   intro v hv
-  change v = 0
   by_contra hne
   have horbit : Submodule.span ℂ (Set.range (fun g => ρ g v)) ≤ Wᗮ := by
     apply Submodule.span_le.mpr
@@ -442,7 +417,7 @@ theorem cyclic_of_extraction {G E : Type*} [Group G] [NormedAddCommGroup E]
     have he : ρ g (ρ g⁻¹ u) = u := by rw [← hρ, mul_inv_cancel, h1]
     rw [← he, hunit]
     exact (W.mem_orthogonal _).mp hv _ hinv
-  have hwo : w ∈ Wᗮ := horbit (hextract v hne)
+  have hwo := horbit (hextract v hne)
   have hww : w ∈ W := by
     have := Submodule.subset_span (R := ℂ) (s := Set.range (fun g => ρ g w)) ⟨1, rfl⟩
     simpa [h1] using this
@@ -461,11 +436,9 @@ private theorem restriction_cont (p : MvPolynomial (Fin 3) ℂ) :
     intro i
     fin_cases i <;> simp <;> fun_prop
   exact hc.comp continuous_subtype_val
-private theorem harmonic_cont (ℓ : ℕ) (v : (harmonicPolynomials ℓ).map polynomialCompactRestriction) :
-    Continuous (v : ComplexSU2 → ℂ) := by
-  obtain ⟨p, hp, he⟩ := v.property
-  rw [← he]
-  exact restriction_cont p
+
+alias HarmonicHighestWeightCyclicity.restriction_cont := restriction_cont
+
 private theorem harmonic_finite (ℓ : ℕ) :
     FiniteDimensional ℂ ((harmonicPolynomials ℓ).map polynomialCompactRestriction) := by
   letI : Module.Finite ℂ (MvPolynomial.homogeneousSubmodule (Fin 3) ℂ ℓ) :=
@@ -474,47 +447,24 @@ private theorem harmonic_finite (ℓ : ℕ) :
     Submodule.finiteDimensional_of_le (show harmonicPolynomials ℓ ≤
       MvPolynomial.homogeneousSubmodule (Fin 3) ℂ ℓ from inf_le_left)
   infer_instance
-private theorem harmonic_stable (ℓ : ℕ) (k : ComplexSU2)
-    (v : (harmonicPolynomials ℓ).map polynomialCompactRestriction) :
-    (fun h => (v : ComplexSU2 → ℂ) (h * k)) ∈
-      (harmonicPolynomials ℓ).map polynomialCompactRestriction := by
-  obtain ⟨p, hp, he⟩ := v.property
-  obtain ⟨q, hq, heq⟩ := harmonicPolynomials_su2_translation ℓ k p hp
-  refine ⟨q, hq, ?_⟩
-  ext h
-  exact (heq h).symm.trans (congrFun he (h * k))
+
 noncomputable def highestWeightNullLinearPolynomial : MvPolynomial (Fin 3) ℂ :=
   MvPolynomial.X 0 + MvPolynomial.C Complex.I * MvPolynomial.X 1
-private theorem highestWeightNullLinearPolynomial_pow_nullDirectionalDerivative_eq_zero (ℓ : ℕ) :
+section
+
+variable (ℓ : ℕ)
+
+private theorem highestWeightNullLinearPolynomial_pow_nullDirectionalDerivative_eq_zero :
     MvPolynomial.pderiv 0 (highestWeightNullLinearPolynomial ^ ℓ) +
-      MvPolynomial.C Complex.I * MvPolynomial.pderiv 1 (highestWeightNullLinearPolynomial ^ ℓ) = 0 := by
-  simp only [MvPolynomial.pderiv_pow]
-  simp [highestWeightNullLinearPolynomial, MvPolynomial.pderiv_C_mul, Pi.single_apply]
-  have hI : (MvPolynomial.C Complex.I : MvPolynomial (Fin 3) ℂ) ^ 2 = -1 := by
-    rw [← map_pow]; norm_num
-  linear_combination (ℓ : MvPolynomial (Fin 3) ℂ) *
-    (MvPolynomial.X 0 + MvPolynomial.C Complex.I * MvPolynomial.X 1) ^ (ℓ - 1) * hI
-private theorem highestWeightNullLinearPolynomial_pow_mem_harmonicPolynomials (ℓ : ℕ) : highestWeightNullLinearPolynomial ^ ℓ ∈ harmonicPolynomials ℓ := by
-  refine ⟨?_, ?_⟩
-  · simpa [highestWeightNullLinearPolynomial] using ((MvPolynomial.isHomogeneous_X ℂ (0 : Fin 3)).add
-      ((MvPolynomial.isHomogeneous_X ℂ (1 : Fin 3)).C_mul Complex.I)).pow ℓ
-  · change polynomialLaplacian (highestWeightNullLinearPolynomial ^ ℓ) = 0
-    have hmul (p : MvPolynomial (Fin 3) ℂ) :
-        polynomialLaplacian (highestWeightNullLinearPolynomial * p) = highestWeightNullLinearPolynomial * polynomialLaplacian p +
-          2 * (MvPolynomial.pderiv 0 p + MvPolynomial.C Complex.I * MvPolynomial.pderiv 1 p) := by
-      simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply,
-        Fin.sum_univ_succ, highestWeightNullLinearPolynomial, MvPolynomial.pderiv_mul, MvPolynomial.pderiv_C_mul]
-      ring
-    induction ℓ with
-    | zero => simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply]
-    | succ n ih =>
-      rw [pow_succ', hmul, ih, highestWeightNullLinearPolynomial_pow_nullDirectionalDerivative_eq_zero]
-      simp
-private theorem highest_mem (ℓ : ℕ) : highestWeightCompactHarmonic ℓ ∈
-    (harmonicPolynomials ℓ).map polynomialCompactRestriction :=
-  ⟨highestWeightNullLinearPolynomial ^ ℓ, highestWeightNullLinearPolynomial_pow_mem_harmonicPolynomials ℓ, rfl⟩
-private theorem highest_ne (ℓ : ℕ) : highestWeightCompactHarmonic ℓ ≠ 0 := by
-  let r : ℝ := Real.sqrt 2 / 2
+      MvPolynomial.C Complex.I * MvPolynomial.pderiv 1 (highestWeightNullLinearPolynomial ^ ℓ) = 0 := by apply @highestWeightIsotropicPower_directionalDerivative_eq_zero <;> assumption
+private theorem highestWeightNullLinearPolynomial_pow_mem_harmonicPolynomials : highestWeightNullLinearPolynomial ^ ℓ ∈ harmonicPolynomials ℓ := by apply @highestWeightIsotropicPower_mem_harmonicPolynomials <;> assumption
+
+end
+
+variable (ℓ : ℕ)
+
+private theorem highest_ne : highestWeightCompactHarmonic ℓ ≠ 0 := by
+  let r := Real.sqrt 2 / 2
   have hr2 : r ^ 2 = 1 / 2 := by dsimp [r]; nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2)]
   have hrc : (r : ℂ) ^ 2 = 1 / 2 := by
     rw [← Complex.ofReal_pow, hr2]
@@ -537,7 +487,7 @@ private theorem highest_ne (ℓ : ℕ) : highestWeightCompactHarmonic ℓ ≠ 0 
   rw [he] at hh
   exact one_ne_zero hh
 
-theorem highestWeightCompactHarmonic_orbit_span (ℓ : ℕ) :
+theorem highestWeightCompactHarmonic_orbit_span :
     (harmonicPolynomials ℓ).map polynomialCompactRestriction ≤
       Submodule.span ℂ (Set.range (fun k : ComplexSU2 => fun h =>
         highestWeightCompactHarmonic ℓ (h * k))) := by
@@ -561,7 +511,10 @@ theorem highestWeightCompactHarmonic_orbit_span (ℓ : ℕ) :
   let H := (harmonicPolynomials ℓ).map polynomialCompactRestriction
   letI := harmonic_finite ℓ
   let c : H →ₗ[ℂ] C(ComplexSU2, ℂ) :=
-    { toFun := fun v => ⟨v.val, harmonic_cont ℓ v⟩
+    { toFun := fun v => ⟨v.val, (by
+      obtain ⟨p, hp, he⟩ := v.property
+      rw [← he]
+      exact restriction_cont p)⟩
       map_add' := by intros; ext; rfl
       map_smul' := by intros; ext; rfl }
   let f : H →ₗ[ℂ] Lp ℂ 2 ν := (ContinuousMap.toLp 2 ν ℂ).toLinearMap.comp c
@@ -574,7 +527,12 @@ theorem highestWeightCompactHarmonic_orbit_span (ℓ : ℕ) :
   letI := NormedSpace.induced ℂ H _ f
   letI : InnerProductSpace ℂ H := InnerProductSpace.induced f
   let ρ : ComplexSU2 → H →ₗ[ℂ] H := fun k =>
-    { toFun := fun v => ⟨fun h => v.val (h * k), harmonic_stable ℓ k v⟩
+    { toFun := fun v => ⟨fun h => v.val (h * k), (by
+      obtain ⟨p, hp, he⟩ := v.property
+      obtain ⟨q, hq, heq⟩ := harmonicPolynomials_su2_translation ℓ k p hp
+      refine ⟨q, hq, ?_⟩
+      ext h
+      exact (heq h).symm.trans (congrFun he (h * k)))⟩
       map_add' := by intros; rfl
       map_smul' := by intros; rfl }
   have hρ (g k : ComplexSU2) (v : H) : ρ (g * k) v = ρ g (ρ k v) := by
@@ -591,7 +549,7 @@ theorem highestWeightCompactHarmonic_orbit_span (ℓ : ℕ) :
     simp only [f, LinearMap.comp_apply, ContinuousLinearMap.coe_coe]
     rw [ContinuousMap.inner_toLp, ContinuousMap.inner_toLp]
     exact integral_mul_right_eq_self (fun h => w.val h * star (v.val h)) g
-  let w : H := ⟨highestWeightCompactHarmonic ℓ, highest_mem ℓ⟩
+  let w : H := ⟨highestWeightCompactHarmonic ℓ, (⟨highestWeightNullLinearPolynomial ^ ℓ, highestWeightNullLinearPolynomial_pow_mem_harmonicPolynomials ℓ, rfl⟩)⟩
   have hw : w ≠ 0 := by
     intro hz
     exact highest_ne ℓ (congrArg Subtype.val hz)
@@ -687,14 +645,12 @@ theorem polynomialCompactHarmonics_irreducible (ℓ : ℕ)
         apply Submodule.span_le.mpr
         rintro w ⟨k, rfl⟩
         exact hstable k v hv
-      have hhighest : HighestWeightOrbit.highestWeightCompactHarmonic ℓ ∈ V :=
-        hspan (HighestWeightOrbit.highestWeightCompactHarmonic_mem_orbit_span
-          ℓ v (hV hv) hne)
       apply le_antisymm hV
       refine (HighestWeightOrbit.highestWeightCompactHarmonic_orbit_span ℓ).trans
         (Submodule.span_le.mpr ?_)
       rintro w ⟨k, rfl⟩
-      exact hstable k _ hhighest
+      exact hstable k _ (hspan (HighestWeightOrbit.highestWeightCompactHarmonic_mem_orbit_span
+        ℓ v (hV hv) hne))
 
 end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 
@@ -738,7 +694,6 @@ theorem harmonicKType_invariant_of_polynomial_translation (s : ℝ) (ℓ : ℕ)
   apply (harmonicKType_mem_iff s ℓ _).mpr
   refine ⟨q, hq, ?_⟩
   intro h
-  change compactRestriction s (pi s (k : ComplexPGL2) f) h = _
   rw [← hk']
   change compactRestriction s (pi s (Matrix.ProjGenLinGroup.mk (complexSU2Embedding k')) f) h = _
   rw [compactRestriction_pi_su2]
@@ -753,10 +708,7 @@ theorem harmonicPolynomials_finiteDimensional (ℓ : ℕ) :
       MvPolynomial.homogeneousSubmodule (Fin 3) ℂ ℓ from inf_le_left))
     (Submodule.inclusion_injective _)
 
-theorem polynomialCompactHarmonics_finiteDimensional (ℓ : ℕ) :
-    FiniteDimensional ℂ ((harmonicPolynomials ℓ).map polynomialCompactRestriction) := by
-  letI := harmonicPolynomials_finiteDimensional ℓ
-  infer_instance
+alias polynomialCompactHarmonics_finiteDimensional := HighestWeightOrbit.harmonic_finite
 
 lemma su2_matrix (a b : ℂ) (h : Complex.normSq a + Complex.normSq b = 1) :
     (!![star b, -star a; a, b] : Matrix (Fin 2) (Fin 2) ℂ) ∈ ComplexSU2 := by
@@ -777,7 +729,7 @@ lemma su2_matrix (a b : ℂ) (h : Complex.normSq a + Complex.normSq b = 1) :
   · simp [Matrix.det_fin_two]
     convert hc using 1 <;> ring
 noncomputable def openSU2 (x : ℂ) : ComplexSU2 := by
-  let r : ℝ := Real.sqrt (1 + Complex.normSq x)
+  let r := Real.sqrt (1 + Complex.normSq x)
   have hn := Complex.normSq_nonneg x
   have hr : r ^ 2 = 1 + Complex.normSq x := Real.sq_sqrt (by linarith)
   refine ⟨!![(star x) / r, -(1 / r); 1 / r, x / r], ?_⟩
@@ -815,8 +767,9 @@ private lemma openSU2_factor (x : ℂ) :
     linear_combination hrc
   · change (1 : ℂ) = (r : ℂ) * (r : ℂ)⁻¹
     simp [hrne]
-  · change x = (r : ℂ) * (x / r)
-    field_simp
+  · field_simp
+
+alias HarmonicHighestWeightCyclicity.openSU2_factor := openSU2_factor
 
 theorem compactRestriction_injective (s : ℝ) : Function.Injective (compactRestriction s) := by
   intro f h hfh
@@ -828,20 +781,22 @@ theorem compactRestriction_injective (s : ℝ) : Function.Injective (compactRest
   congr 1
   exact congrFun hfh (openSU2 x)
 
-noncomputable def harmonicKTypeRestrictionEquiv (s : ℝ) (ℓ : ℕ)
+variable (s : ℝ) (ℓ : ℕ)
+
+noncomputable def harmonicKTypeRestrictionEquiv
     (h : (harmonicPolynomials ℓ).map polynomialCompactRestriction ≤
       (compactRestriction s).range) :
     harmonicKType s ℓ ≃ₗ[ℂ] (harmonicPolynomials ℓ).map polynomialCompactRestriction :=
   Submodule.comap_equiv_self_of_inj_of_le (compactRestriction_injective s) h
 
-theorem harmonicKType_finrank_of_extension (s : ℝ) (ℓ : ℕ)
+theorem harmonicKType_finrank_of_extension
     (h : (harmonicPolynomials ℓ).map polynomialCompactRestriction ≤
       (compactRestriction s).range) :
     Module.finrank ℂ (harmonicKType s ℓ) =
       Module.finrank ℂ ((harmonicPolynomials ℓ).map polynomialCompactRestriction) :=
   (harmonicKTypeRestrictionEquiv s ℓ h).finrank_eq
 
-theorem harmonicKType_finite (s : ℝ) (ℓ : ℕ) : Module.Finite ℂ (harmonicKType s ℓ) := by
+theorem harmonicKType_finite : Module.Finite ℂ (harmonicKType s ℓ) := by
   letI := polynomialCompactHarmonics_finiteDimensional ℓ
   let r : harmonicKType s ℓ →ₗ[ℂ]
       (harmonicPolynomials ℓ).map polynomialCompactRestriction :=
@@ -853,24 +808,19 @@ theorem harmonicKType_finite (s : ℝ) (ℓ : ℕ) : Module.Finite ℂ (harmonic
   apply compactRestriction_injective s
   exact congrArg Subtype.val hfg
 
-theorem harmonicKType_structure (s : ℝ) (ℓ : ℕ) :
+theorem harmonicKType_structure :
     IsKInvariant s (harmonicKType s ℓ) ∧
     Module.finrank ℂ (harmonicKType s ℓ) = 2 * ℓ + 1 ∧
     (∀ U : Submodule ℂ (PrincipalSeries s), U ≤ harmonicKType s ℓ →
       IsKInvariant s U → U = ⊥ ∨ U = harmonicKType s ℓ) := by
   have hext := polynomialCompactHarmonics_extend s ℓ
-  have hmap : (harmonicKType s ℓ).map (compactRestriction s) =
-      (harmonicPolynomials ℓ).map polynomialCompactRestriction :=
+  have hmap :=
     Submodule.map_comap_eq_self hext
   refine ⟨harmonicKType_invariant_of_polynomial_translation s ℓ
     (harmonicPolynomials_su2_translation ℓ), ?_, ?_⟩
   · exact (harmonicKType_finrank_of_extension s ℓ hext).trans
       (polynomialCompactHarmonics_finrank ℓ)
   · intro U hU hinv
-    have hV : U.map (compactRestriction s) ≤
-        (harmonicPolynomials ℓ).map polynomialCompactRestriction := by
-      rw [← hmap]
-      exact Submodule.map_mono hU
     have hstable : ∀ (k : ComplexSU2) (v : ComplexSU2 → ℂ),
         v ∈ U.map (compactRestriction s) →
           (fun h => v (h * k)) ∈ U.map (compactRestriction s) := by
@@ -883,7 +833,9 @@ theorem harmonicKType_structure (s : ℝ) (ℓ : ℕ) :
       funext h
       exact compactRestriction_pi_su2 s k h f
     rcases polynomialCompactHarmonics_irreducible ℓ
-      (U.map (compactRestriction s)) hV hstable with hzero | hfull
+      (U.map (compactRestriction s)) (by
+        rw [← hmap]
+        exact Submodule.map_mono hU) hstable with hzero | hfull
     · left
       apply Submodule.map_injective_of_injective (compactRestriction_injective s)
       simpa using hzero

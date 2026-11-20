@@ -16,8 +16,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonK
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 section Aux
 open IsDedekindDomain Filter
@@ -32,26 +32,22 @@ private theorem finite_prime_delete_hasSum
   induction V using Finset.induction_on with
   | empty => simpa using hW
   | @insert p V hp ih =>
-    let G : Ideal (𝓞 F) → ℂ := fun I => if ∃ v ∈ V, I ≤ v.asIdeal then 0 else W I
-    have G0 : G ⊥ = 0 := by simp [G, W0]
+    let G := fun I => if ∃ v ∈ V, I ≤ v.asIdeal then 0 else W I
     have Gmul (I : Ideal (𝓞 F)) : G (I * p.asIdeal) = G I * W p.asIdeal := by
       have he : (∃ v ∈ V, I * p.asIdeal ≤ v.asIdeal) ↔ ∃ v ∈ V, I ≤ v.asIdeal := by
         constructor
         · rintro ⟨v, hv, h⟩
-          have hprime := Ideal.prime_of_isPrime v.ne_bot v.isPrime
-          have hd : v.asIdeal ∣ I * p.asIdeal := Ideal.dvd_iff_le.mpr h
-          rcases hprime.dvd_or_dvd hd with hd | hd
+          have hd := Ideal.dvd_iff_le.mpr h
+          rcases (Ideal.prime_of_isPrime v.ne_bot v.isPrime).dvd_or_dvd hd with hd | hd
           · exact ⟨v, hv, Ideal.dvd_iff_le.mp hd⟩
-          · have heq : v = p := HeightOneSpectrum.ext ((Ideal.IsMaximal.eq_of_le p.isMaximal (Ideal.IsMaximal.ne_top v.isMaximal) (Ideal.dvd_iff_le.mp hd)).symm)
-            exact (hp (heq ▸ hv)).elim
+          · exact (hp ((HeightOneSpectrum.ext ((Ideal.IsMaximal.eq_of_le p.isMaximal (Ideal.IsMaximal.ne_top v.isMaximal) (Ideal.dvd_iff_le.mp hd)).symm)) ▸ hv)).elim
         · rintro ⟨v, hv, h⟩
           exact ⟨v, hv, (Ideal.mul_le_left).trans h⟩
       simp only [G, he]
       split_ifs <;> simp [Wmul]
-    let H : Ideal (𝓞 F) → ℂ := fun I => if I ≤ p.asIdeal then G I else 0
+    let H := fun I => if I ≤ p.asIdeal then G I else 0
     have hH : HasSum H ((L * ∏ v ∈ V, (1 - W v.asIdeal)) * W p.asIdeal) := by
-      have hi : Function.Injective (fun I : Ideal (𝓞 F) => I * p.asIdeal) := mul_left_injective₀ p.ne_bot
-      apply (hi.hasSum_iff ?_).mp
+      apply ((mul_left_injective₀ p.ne_bot).hasSum_iff ?_).mp
       · have heq : H ∘ (fun I : Ideal (𝓞 F) => I * p.asIdeal) = fun I => G I * W p.asIdeal := by
           funext I
           simp [H, Function.comp_def, Ideal.mul_le_right, Gmul]
@@ -84,7 +80,7 @@ private theorem norm_power (q : ℝ) (hq : 0 < q) (s : ℂ) :
 
 private theorem L_eq_zeta
     (s : ℂ) (hs : 1 < s.re) : D.recipe.L s = InitialSeparatedEuler.zetaS D.recipe.A s := by
-  let W : Ideal (𝓞 F) → ℂ := fun I => D.recipe.target I * (Ideal.absNorm I : ℂ) ^ (-s)
+  let W := fun I => D.recipe.target I * (Ideal.absNorm I : ℂ) ^ (-s)
   have hW0 : W ⊥ = 0 := by simp [W, (D.recipe.target.eq_zero_iff' ⊥).mpr (Or.inl rfl)]
   have hWmul (a b : Ideal (𝓞 F)) : W (a*b) = W a * W b := by
     dsimp [W]
@@ -95,43 +91,35 @@ private theorem L_eq_zeta
         (Nat.cast_nonneg (Ideal.absNorm a) : (0 : ℝ) ≤ Ideal.absNorm a)
         (Nat.cast_nonneg (Ideal.absNorm b) : (0 : ℝ) ≤ Ideal.absNorm b) (-s)
     rw [hp]; ring
-  have hdel := finite_prime_delete_hasSum F W hW0 hWmul _
-    (D.recipe.continuation.series s hs) D.recipe.A.Sf
-  let g : Ideal (𝓞 F) → ℂ := fun I => if ∃ v ∈ D.recipe.A.Sf, I ≤ v.asIdeal then 0 else W I
+  let g := fun I => if ∃ v ∈ D.recipe.A.Sf, I ≤ v.asIdeal then 0 else W I
   have hg : Function.support g ⊆ {I | I ≠ ⊥ ∧ I ⊔ D.recipe.A.cS = ⊤} := by
     intro I hI
     have hi : I ≠ ⊥ := by intro h; subst I; simpa [g, W, hW0] using hI
     refine ⟨hi, ?_⟩
     apply (D.recipe.A.exterior_iff ⟨I, hi⟩).mpr
     intro v hv
-    have hn : ¬ I ≤ v.asIdeal := by
-      intro h
-      exact hI (by simp [g, show ∃ v ∈ D.recipe.A.Sf, I ≤ v.asIdeal from ⟨v,hv,h⟩])
+    have hn : ¬ I ≤ v.asIdeal := fun h => hI (by simp [g, show ∃ v ∈ D.recipe.A.Sf, I ≤ v.asIdeal from ⟨v,hv,h⟩])
     by_contra ht
-    have he := v.isMaximal.eq_of_le ht le_sup_right
-    exact hn (by rw [he]; exact le_sup_left)
-  have hext := (hasSum_subtype_iff_of_support_subset hg).mpr hdel
+    exact hn (by rw [(v.isMaximal.eq_of_le ht le_sup_right)]; exact le_sup_left)
   have heq (I : D.recipe.A.Exterior) : g I.val = (Ideal.absNorm I.val : ℂ)^(-s) := by
     have hn : ¬ ∃ v ∈ D.recipe.A.Sf, I.val ≤ v.asIdeal := by
       rintro ⟨v,hv,h⟩
-      have ht := (D.recipe.A.exterior_iff ⟨I.val,I.property.1⟩).mp I.property.2 v hv
-      have : I.val ⊔ v.asIdeal ≤ v.asIdeal := sup_le h le_rfl
-      rw [ht] at this
+      have := sup_le h le_rfl
+      rw [((D.recipe.A.exterior_iff ⟨I.val,I.property.1⟩).mp I.property.2 v hv)] at this
       exact v.isMaximal.ne_top (top_unique this)
     rw [show g I.val = W I.val by simp [g,hn]]
     dsimp [W]
     rw [D.recipe.probe.principal I.val I.property.1 ?_, one_mul]
     by_contra h
     obtain ⟨p,hp,hle⟩ := Ideal.exists_le_maximal (I.val ⊔ D.recipe.A.modulus) h
-    have hmod : D.recipe.A.modulus ≤ p := le_sup_right.trans hle
-    have hp0 : p ≠ ⊥ := ne_bot_of_le_ne_bot D.recipe.A.modulus_ne_zero hmod
-    let v : HeightOneSpectrum (𝓞 F) := ⟨p,hp.isPrime,hp0⟩
-    have ht := (D.recipe.A.exterior_iff ⟨I.val,I.property.1⟩).mp I.property.2 v
-      (D.recipe.A.modulus_support v hmod)
-    have : I.val ⊔ p ≤ p := sup_le (le_sup_left.trans hle) le_rfl
-    rw [ht] at this
+    have hmod := le_sup_right.trans hle
+    let v : HeightOneSpectrum (𝓞 F) := ⟨p,hp.isPrime,(ne_bot_of_le_ne_bot D.recipe.A.modulus_ne_zero hmod)⟩
+    have := sup_le (le_sup_left.trans hle) le_rfl
+    rw [((D.recipe.A.exterior_iff ⟨I.val,I.property.1⟩).mp I.property.2 v
+      (D.recipe.A.modulus_support v hmod))] at this
     exact hp.ne_top (top_unique this)
-  have hres := hext.tsum_eq.symm
+  have hres := ((hasSum_subtype_iff_of_support_subset hg).mpr (finite_prime_delete_hasSum F W hW0 hWmul _
+    (D.recipe.continuation.series s hs) D.recipe.A.Sf)).tsum_eq.symm
   simp only [Function.comp_def] at hres
   change _ = ∑' I : D.recipe.A.Exterior, g I.val at hres
   simp_rw [heq] at hres
@@ -143,7 +131,7 @@ private theorem L_eq_zeta
     dsimp [W, idealNorm]
     rw [← norm_power (Ideal.absNorm v.asIdeal : ℝ) (by
       exact_mod_cast (lt_trans Nat.zero_lt_one (NumberField.HeightOneSpectrum.one_lt_absNorm v)))]
-    simp only [Complex.ofReal_natCast]
+    simp
   · rfl
 
 end Aux
@@ -153,11 +141,7 @@ theorem zetaSCont_eq_zetaS (s : ℂ) (hs : 1 < s.re) : D.zetaSCont s = D.zetaS s
 
 theorem zetaSCont_analytic :
     AnalyticOnNhd ℂ D.zetaSCont ({s : ℂ | 0 < s.re} \ {1}) := by
-  have hopen : IsOpen ({s : ℂ | 0 < s.re} \ {1}) :=
-    (isOpen_lt continuous_const Complex.continuous_re).sdiff isClosed_singleton
-  refine DifferentiableOn.analyticOnNhd ?_ hopen
-  have hL : DifferentiableOn ℂ D.recipe.continuation.L ({s : ℂ | 0 < s.re} \ {1}) :=
-    D.recipe.continuation.L_holo.mono (fun s hs => ⟨hs.1, hs.2⟩)
+  refine DifferentiableOn.analyticOnNhd ?_ ((isOpen_lt continuous_const Complex.continuous_re).sdiff isClosed_singleton)
   have hE : Differentiable ℂ (fun s : ℂ => ∏ v ∈ D.recipe.A.Sf,
       (1 - D.recipe.target v.asIdeal * comparisonRealPower (idealNorm v.asIdeal) (-s))) := by
     intro s
@@ -165,7 +149,7 @@ theorem zetaSCont_analytic :
     intro v _
     unfold comparisonRealPower
     fun_prop
-  exact hL.mul hE.differentiableOn
+  exact (D.recipe.continuation.L_holo.mono (fun s hs => ⟨hs.1, hs.2⟩)).mul hE.differentiableOn
 
 private theorem eqOn_punctured {f g : ℂ → ℂ}
     (hf : AnalyticOnNhd ℂ f ({s : ℂ | 0 < s.re} \ {1}))
@@ -178,9 +162,6 @@ private theorem eqOn_punctured {f g : ℂ → ℂ}
       (hf.mono hsub).eqOn_of_preconnected_of_eventuallyEq (hg.mono hsub) hT hz₀ hev hs
   have hop1 : IsOpen {z : ℂ | 1 < z.re} := isOpen_lt continuous_const Complex.continuous_re
 
-  have hT2o : IsOpen ({c : ℂ | 0 < c.re} ∩ {c : ℂ | 0 < c.im}) :=
-    (isOpen_lt continuous_const Complex.continuous_re).inter
-      (isOpen_lt continuous_const Complex.continuous_im)
   have h2 : ∀ s ∈ ({c : ℂ | 0 < c.re} ∩ {c : ℂ | 0 < c.im}), f s = g s := by
     refine step _ ((convex_halfSpace_re_gt (0 : ℝ)).inter
       (convex_halfSpace_im_gt (0 : ℝ))).isPreconnected ?_ ((2 : ℂ) + Complex.I) ?_ ?_
@@ -189,9 +170,7 @@ private theorem eqOn_punctured {f g : ℂ → ℂ}
       rintro rfl
       simp at hx2
     · exact ⟨by norm_num, by norm_num⟩
-    · have hm : {z : ℂ | 1 < z.re} ∈ nhds ((2 : ℂ) + Complex.I) :=
-        hop1.mem_nhds (by norm_num)
-      exact Filter.eventually_of_mem hm (fun z hz => h z hz)
+    · exact Filter.eventually_of_mem (hop1.mem_nhds (by norm_num)) (fun z hz => h z hz)
   have h3 : ∀ s ∈ ({c : ℂ | 0 < c.re} ∩ {c : ℂ | c.im < 0}), f s = g s := by
     refine step _ ((convex_halfSpace_re_gt (0 : ℝ)).inter
       (convex_halfSpace_im_lt (0 : ℝ))).isPreconnected ?_ ((2 : ℂ) - Complex.I) ?_ ?_
@@ -200,9 +179,7 @@ private theorem eqOn_punctured {f g : ℂ → ℂ}
       rintro rfl
       simp at hx2
     · exact ⟨by norm_num, by norm_num⟩
-    · have hm : {z : ℂ | 1 < z.re} ∈ nhds ((2 : ℂ) - Complex.I) :=
-        hop1.mem_nhds (by norm_num)
-      exact Filter.eventually_of_mem hm (fun z hz => h z hz)
+    · exact Filter.eventually_of_mem (hop1.mem_nhds (by norm_num)) (fun z hz => h z hz)
   have h4 : ∀ s ∈ ({c : ℂ | 0 < c.re} ∩ {c : ℂ | c.re < 1}), f s = g s := by
     refine step _ ((convex_halfSpace_re_gt (0 : ℝ)).inter
       (convex_halfSpace_re_lt (1 : ℝ))).isPreconnected ?_ ((1 / 2 : ℂ) + Complex.I) ?_ ?_
@@ -215,15 +192,14 @@ private theorem eqOn_punctured {f g : ℂ → ℂ}
         norm_num
       · show ((1 / 2 : ℂ) + Complex.I).re < (1 : ℝ)
         norm_num
-    · have hm : ({c : ℂ | 0 < c.re} ∩ {c : ℂ | 0 < c.im}) ∈ nhds ((1 / 2 : ℂ) + Complex.I) :=
-        hT2o.mem_nhds ⟨by show (0 : ℝ) < ((1 / 2 : ℂ) + Complex.I).re; norm_num,
-          by show (0 : ℝ) < ((1 / 2 : ℂ) + Complex.I).im; norm_num⟩
-      exact Filter.eventually_of_mem hm (fun z hz => h2 z hz)
+    · exact Filter.eventually_of_mem (((isOpen_lt continuous_const Complex.continuous_re).inter
+        (isOpen_lt continuous_const Complex.continuous_im)).mem_nhds ⟨by show (0 : ℝ) < ((1 / 2 : ℂ) + Complex.I).re; norm_num,
+        by show (0 : ℝ) < ((1 / 2 : ℂ) + Complex.I).im; norm_num⟩) (fun z hz => h2 z hz)
   rcases lt_trichotomy s.im 0 with him | him | him
   · exact h3 s ⟨hs, him⟩
   · rcases lt_trichotomy s.re 1 with hre | hre | hre
     · exact h4 s ⟨hs, hre⟩
-    · exact absurd (Complex.ext (by simpa using hre) (by simpa using him)) hs1
+    · exact absurd (Complex.ext (by exact hre) (by exact him)) hs1
     · exact h s hre
   · exact h2 s ⟨hs, him⟩
 
@@ -231,19 +207,21 @@ private theorem exterior_coprime (I : D.recipe.A.Exterior) :
     I.val ⊔ D.recipe.A.modulus = ⊤ := by
   by_contra h
   obtain ⟨p, hp, hle⟩ := Ideal.exists_le_maximal (I.val ⊔ D.recipe.A.modulus) h
-  have hmod : D.recipe.A.modulus ≤ p := le_sup_right.trans hle
-  have hp0 : p ≠ ⊥ := ne_bot_of_le_ne_bot D.recipe.A.modulus_ne_zero hmod
-  let v : IsDedekindDomain.HeightOneSpectrum (𝓞 F) := ⟨p, hp.isPrime, hp0⟩
-  have ht := (D.recipe.A.exterior_iff ⟨I.val, I.property.1⟩).mp I.property.2 v
-    (D.recipe.A.modulus_support v hmod)
-  have : I.val ⊔ p ≤ p := sup_le (le_sup_left.trans hle) le_rfl
-  rw [ht] at this
+  have hmod := le_sup_right.trans hle
+  let v : IsDedekindDomain.HeightOneSpectrum (𝓞 F) := ⟨p, hp.isPrime, (ne_bot_of_le_ne_bot D.recipe.A.modulus_ne_zero hmod)⟩
+  have := sup_le (le_sup_left.trans hle) le_rfl
+  rw [((D.recipe.A.exterior_iff ⟨I.val, I.property.1⟩).mp I.property.2 v
+    (D.recipe.A.modulus_support v hmod))] at this
   exact hp.ne_top (top_unique this)
 
-private theorem LpsiRaw_principal (u : D.Row) (hu : u.u = 1) (s : ℂ) :
+section
+
+variable (u : D.Row) (hu : u.u = 1)
+
+include hu in
+private theorem LpsiRaw_principal (s : ℂ) :
     D.LpsiRaw u s = InitialSeparatedEuler.zetaS D.recipe.A s := by
   unfold FixedData.LpsiRaw MaskedHeckeMeromorphic.incompleteL
-  have hu' : u.toFrequency.u = 1 := hu
   have hsupport : Function.support (fun I : Ideal (𝓞 F) =>
       MaskedHeckeMeromorphic.coefficient u.toFrequency MaskedHeckeMeromorphic.Row.plus I *
         (Ideal.absNorm I : ℂ) ^ (-s)) ⊆
@@ -258,12 +236,12 @@ private theorem LpsiRaw_principal (u : D.Row) (hu : u.u = 1) (s : ℂ) :
   apply tsum_congr
   intro I
   simp [MaskedHeckeMeromorphic.coefficient, FrequencyCharacterMasks.plusCoefficient,
-    I.property.1, I.property.2, FrequencyCharacterMasks.plusExteriorCoefficient, hu']
+    I.property.1, I.property.2, FrequencyCharacterMasks.plusExteriorCoefficient, hu]
 
-private theorem LlamRaw_principal (u : D.Row) (hu : u.u = 1) (s : ℂ) :
+include hu in
+private theorem LlamRaw_principal (s : ℂ) :
     D.LlamRaw u s = InitialSeparatedEuler.zetaS D.recipe.A s := by
   unfold FixedData.LlamRaw MaskedHeckeMeromorphic.incompleteL
-  have hu' : u.toFrequency.u = 1 := hu
   have hsupport : Function.support (fun I : Ideal (𝓞 F) =>
       MaskedHeckeMeromorphic.coefficient u.toFrequency MaskedHeckeMeromorphic.Row.minus I *
         (Ideal.absNorm I : ℂ) ^ (-s)) ⊆
@@ -278,33 +256,34 @@ private theorem LlamRaw_principal (u : D.Row) (hu : u.u = 1) (s : ℂ) :
   unfold InitialSeparatedEuler.zetaS
   apply tsum_congr
   intro I
-  have hη := D.recipe.probe.principal I.val I.property.1 (exterior_coprime D I)
   simp [MaskedHeckeMeromorphic.coefficient, FrequencyCharacterMasks.minusCoefficient,
     FrequencyCharacterMasks.plusCoefficient, I.property.1, I.property.2,
-    FrequencyCharacterMasks.plusExteriorCoefficient, hu', hη]
+    FrequencyCharacterMasks.plusExteriorCoefficient, hu, (D.recipe.probe.principal I.val I.property.1 (exterior_coprime D I))]
 
-theorem q_principal (u : D.Row) (hu : u.u = 1) : D.q u = 1 := by
+include hu in
+theorem q_principal : D.q u = 1 := by
   rw [ActualRowCount.eq_principalRow D hu]; exact ActualRowCount.q_principalRow D
 
-theorem Lpsi_principal_eq (u : D.Row) (hu : u.u = 1) (s : ℂ) (hs : 0 < s.re) (hs1 : s ≠ 1) :
+include hu in
+theorem Lpsi_principal_eq (s : ℂ) (hs : 0 < s.re) (hs1 : s ≠ 1) :
     D.Lpsi u s = D.zetaSCont s := by
-  have h1 : ∀ s : ℂ, 1 < s.re → D.Lpsi u s = D.zetaSCont s := by
-    intro s hs
-    rw [D.Lpsi_eq_raw u s hs, LpsiRaw_principal D u hu s]
-    exact (zetaSCont_eq_zetaS D s hs).symm
-  exact eqOn_punctured (D.Lpsi_analyticOnNhd u) (zetaSCont_analytic D)
-    h1 s hs hs1
+  refine eqOn_punctured (D.Lpsi_analyticOnNhd u) (zetaSCont_analytic D)
+    ?_ s hs hs1
+  intro s hs
+  rw [D.Lpsi_eq_raw u s hs, LpsiRaw_principal D u hu s]
+  exact (zetaSCont_eq_zetaS D s hs).symm
 
-theorem Llam_principal_eq (u : D.Row) (hu : u.u = 1) (s : ℂ) (hs : 0 < s.re) (hs1 : s ≠ 1) :
+include hu in
+theorem Llam_principal_eq (s : ℂ) (hs : 0 < s.re) (hs1 : s ≠ 1) :
     D.Llam u s = D.zetaSCont s := by
-  have h1 : ∀ s : ℂ, 1 < s.re → D.Llam u s = D.zetaSCont s := by
-    intro s hs
-    rw [D.Llam_eq_raw u s hs, LlamRaw_principal D u hu s]
-    exact (zetaSCont_eq_zetaS D s hs).symm
-  exact eqOn_punctured (D.Llam_analyticOnNhd u) (zetaSCont_analytic D)
-    h1 s hs hs1
+  refine eqOn_punctured (D.Llam_analyticOnNhd u) (zetaSCont_analytic D)
+    ?_ s hs hs1
+  intro s hs
+  rw [D.Llam_eq_raw u s hs, LlamRaw_principal D u hu s]
+  exact (zetaSCont_eq_zetaS D s hs).symm
 
-theorem Hu_slice_eq_H (u : D.Row) (hu : u.u = 1) (ξ : ℂ) (hξ : 1 < ξ.re) :
+include hu in
+theorem Hu_slice_eq_H (ξ : ℂ) (hξ : 1 < ξ.re) :
     EulerDomain.Hu D u ξ 1 (1 / 6) = Spectral.H D ξ := by
   have h1 : EulerDomain.Hu D u ξ 1 (1 / 6) =
       PrincipalMellinComparison.principalContourCorrection D.recipe ξ 1 (1 / 6) := by
@@ -313,6 +292,8 @@ theorem Hu_slice_eq_H (u : D.Row) (hu : u.u = 1) (ξ : ℂ) (hξ : 1 < ξ.re) :
   rw [h1]
   exact PrincipalMellinComparison.principalContourCorrection_at_double_residue D.recipe ξ
     (by linarith)
+
+end
 
 def remainingKernel (u : D.Row) (ξ z : ℂ) (Z : ℝ) : ℂ :=
   (Z : ℂ) ^ ((Scales.xExponent / 2 : ℝ) + ξ - 1 + (Scales.smoothingExponent : ℂ) * z) *
@@ -329,7 +310,7 @@ theorem wResidue_eq (u : D.Row) (hu : u.u = 1) (ξ z : ℂ) (Z : ℝ) (hZ : 0 < 
     simp only [EulerDomain.pad] at hz
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
   have hHu : ContinuousAt (fun w : ℂ => EulerDomain.Hu D u ξ w z) 1 := by
-    have hd := (EulerDomain.Hu_normal_convergence D u).2.2.1
+    have hd := (EulerDomain.Hu_normal_convergence D u).2
     have hat : DifferentiableAt ℂ
         (fun p : EulerDomain.Coordinates => EulerDomain.Hu D u p.1 p.2.1 p.2.2) (ξ, 1, z) :=
       hd.differentiableAt (EulerDomain.OmegaStar_isOpen.mem_nhds hmem)
@@ -393,10 +374,9 @@ theorem zetaSCont_six_residue :
     intro h
     apply hz
     linear_combination h / 6
-  have hmain := ((Spectral.RS_spec D).comp hφ).const_mul (1 / 6 : ℂ)
   have key : Spectral.RS D / 6 = 1 / 6 * Spectral.RS D := by ring
   rw [key]
-  refine hmain.congr (fun z => ?_)
+  refine (((Spectral.RS_spec D).comp hφ).const_mul (1 / 6 : ℂ)).congr (fun z => ?_)
   simp only [Function.comp]
   ring
 
@@ -412,7 +392,7 @@ theorem zResidue_eq (u : D.Row) (hu : u.u = 1) (ξ : ℂ) (hξ : 1 < ξ.re) (Z :
     simp only [EulerDomain.OmegaStar, Set.mem_setOf_eq, Complex.one_re, h16re]
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
   have hHuz : ContinuousAt (fun z : ℂ => EulerDomain.Hu D u ξ 1 z) (1 / 6) := by
-    have hd := (EulerDomain.Hu_normal_convergence D u).2.2.1
+    have hd := (EulerDomain.Hu_normal_convergence D u).2
     have hat : DifferentiableAt ℂ
         (fun p : EulerDomain.Coordinates => EulerDomain.Hu D u p.1 p.2.1 p.2.2)
         (ξ, 1, 1 / 6) :=

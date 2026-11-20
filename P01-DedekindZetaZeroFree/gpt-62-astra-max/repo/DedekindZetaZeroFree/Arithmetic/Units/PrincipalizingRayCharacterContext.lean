@@ -49,24 +49,16 @@ structure GeneralArithmeticContext (A : SArithmeticData F) (σ : F →+* ℂ)
     A.IsAllowedGenerator correction.B I b → a / b ∈ A.sUnitSixthPowers
   normOne_compact : CompactSpace (A.G1 ⧸ A.Gamma1)
 
-  prime_target : ∀ (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F))
-    (hIv : I.val = v.asIdeal) (p : A.R) (hp : A.Generates I p)
-    (a : Fˣ) (ha : A.IsAllowed correction.B a) (hap : (a : F) = (p : F))
-    (x : NumberField.IdeleGroup (𝓞 F) F), A.RepresentsExteriorIdeal I x →
-      A.idealGauss σ hS I p hp 1 * A.idealGauss σ hS I p hp 2 *
-        (A.correctionTheta correction.Λ correction.G correction.η_id
-          (QuotientGroup.mk x) : ℂ) = -η I.val
+variable (A : SArithmeticData F)
 
-theorem unitQuotientClass_injective (A : SArithmeticData F)
+theorem unitQuotientClass_injective
     (hCl : Subsingleton (ClassGroup A.R)) :
     Function.Injective A.unitQuotientClass := by
   apply (injective_iff_map_eq_one A.unitQuotientClass).mpr
   intro q hq
   induction q using QuotientGroup.induction_on with
   | H u =>
-    have hpow : A.diagonal u.val ∈ A.sixthPowers :=
-      (QuotientGroup.eq_one_iff _).mp hq
-    obtain ⟨g, hg⟩ := hpow
+    obtain ⟨g, hg⟩ := ((QuotientGroup.eq_one_iff _).mp hq)
     have hlocal :
         (∀ w, ∃ b, b ^ 6 = (A.diagonal u.val).1 w) ∧
         (∀ v, ∃ b, b ^ 6 = (A.diagonal u.val).2 v) := by
@@ -79,7 +71,7 @@ theorem unitQuotientClass_injective (A : SArithmeticData F)
     apply (QuotientGroup.eq_one_iff _).mpr
     exact ⟨b, hb⟩
 
-theorem unitQuotientClass_range (A : SArithmeticData F) :
+theorem unitQuotientClass_range :
     A.unitQuotientClass.range = A.E := by
   ext v
   constructor
@@ -90,7 +82,7 @@ theorem unitQuotientClass_range (A : SArithmeticData F) :
   · rintro ⟨g, ⟨u, hu, rfl⟩, rfl⟩
     exact ⟨QuotientGroup.mk' A.unitSixthPowers ⟨u, hu⟩, rfl⟩
 
-theorem classGroup_subsingleton_of_principalization (A : SArithmeticData F)
+theorem classGroup_subsingleton_of_principalization
     (hfrac : ∀ I : FractionalIdeal A.R⁰ F, IsUnit I →
       ∃ x : Fˣ, I = FractionalIdeal.spanSingleton A.R⁰ (x : F)) :
     Subsingleton (ClassGroup A.R) := by
@@ -102,7 +94,7 @@ theorem classGroup_subsingleton_of_principalization (A : SArithmeticData F)
     exact (FractionalIdeal.isPrincipal_iff _).mpr ⟨x, hx⟩
   exact ⟨fun C D => (hall C).trans (hall D).symm⟩
 
-theorem principalIdealRing_of_classGroup_subsingleton (A : SArithmeticData F)
+theorem principalIdealRing_of_classGroup_subsingleton
     (hCl : Subsingleton (ClassGroup A.R)) :
     IsPrincipalIdealRing A.R := by
   letI := hCl
@@ -126,8 +118,9 @@ theorem principalIdealRing_of_classGroup_subsingleton (A : SArithmeticData F)
 
 end SArithmeticData
 
+variable (F : Type) [Field F] [NumberField F]
+
 theorem exists_principalizing_sArithmeticData_with_trace_bad_set
-    (F : Type) [Field F] [NumberField F]
     (S₀ T : Finset (HeightOneSpectrum (𝓞 F)))
     (hT : ∀ v : HeightOneSpectrum (𝓞 F), v ∉ T → ResidueTrace.IsSelfDual v)
     (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
@@ -139,11 +132,9 @@ theorem exists_principalizing_sArithmeticData_with_trace_bad_set
         ∃ x : Fˣ, I = FractionalIdeal.spanSingleton A.R⁰ (x : F)) := by
   obtain ⟨A, hbad, hmod, hζ, hfrac⟩ :=
     exists_principalizing_sArithmeticData F (S₀ ∪ T) 𝔪 h𝔪 zeta12 hzeta12
-  let A' : SArithmeticData F := { A with
+  let A' := { A with
     S₀ := S₀
-    bad_subset := by
-      intro v hv
-      exact A.bad_subset (hbad ▸ Finset.mem_union_left T hv) }
+    bad_subset := fun v hv => A.bad_subset (hbad ▸ Finset.mem_union_left T hv)}
   refine ⟨A', rfl, hmod, hζ, ?_, hfrac⟩
   intro v hv
   apply hT v
@@ -152,7 +143,6 @@ theorem exists_principalizing_sArithmeticData_with_trace_bad_set
   exact A.bad_subset (hbad ▸ Finset.mem_union_right S₀ hvT)
 
 theorem exists_generalArithmeticContext
-    (F : Type) [Field F] [NumberField F]
     (S₀ : Finset (HeightOneSpectrum (𝓞 F)))
     (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
     (zeta12 : F) (hzeta12 : IsPrimitiveRoot zeta12 12)
@@ -187,8 +177,7 @@ theorem exists_generalArithmeticContext
     allowed_unique := fun I a b ha hb =>
       A.allowed_generator_unique_mod_sixth hCl D.H D.B D.B_complement I a b ha hb
     normOne_compact := ArithmeticContext.normOne_sixth_unit_quotient_compact A
-    prime_target := fun I v hIv p hp a ha hap x hx =>
-      D.prime_theta I v hIv p hp a ha hap x hx }⟩⟩
+     }⟩⟩
 
 end
 end DedekindZetaZeroFree

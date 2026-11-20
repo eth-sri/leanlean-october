@@ -13,10 +13,10 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.KPContActualCollarBuffer
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 abbrev Base := KPFiniteCuspAtlas.rawXU F ζ hζ U
 
@@ -25,25 +25,35 @@ abbrev Covered := KPContSectorCoveredQuotientVocabulary.CoveredSpherical F ζ h�
 abbrev CuspIndex := Σ i : Fin (H.atlas U).componentCount,
   Fin ((H.atlas U).cuspAtlas i).cuspCount
 
-abbrev Stabilizer (a : CuspIndex F ζ hζ U R P H) :=
+section
+
+variable (a : CuspIndex F ζ hζ U R P H)
+
+abbrev Stabilizer :=
   KPCuspArithmetic.conjugatedStabilizer F
     (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.1))
     (((H.atlas U).cuspAtlas a.1).cusp a.2)
     (((H.atlas U).cuspAtlas a.1).representative a.2)
 
-def chartLift (a : CuspIndex F ζ hζ U R P H)
+def chartLift
     (z : KPCuspCharts.Coordinates F) : Base F ζ hζ U :=
   Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U)
     ((((H.atlas U).cuspAtlas a.1).representative a.2 • KPCuspCharts.toArch F z),
       (H.atlas U).representative a.1)
 
-def endSet (τ : ℝ) (a : CuspIndex F ζ hζ U R P H) : Set (Base F ζ hζ U) :=
+end
+
+section
+
+variable (τ : ℝ) (a : CuspIndex F ζ hζ U R P H)
+
+def endSet : Set (Base F ζ hζ U) :=
   KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.1) ''
     KPFiniteCuspAtlas.endSet F
       (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.1))
       (((H.atlas U).cuspAtlas a.1).representative a.2) τ
 
-def endChart (τ : ℝ) (a : CuspIndex F ζ hζ U R P H) :
+def endChart :
     KPCuspCharts.HighQuotient F (Stabilizer F ζ hζ U R P H a) τ → Base F ζ hζ U :=
   KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.1) ∘
     KPFiniteCuspAtlas.endMap F
@@ -51,16 +61,18 @@ def endChart (τ : ℝ) (a : CuspIndex F ζ hζ U R P H) :
       (((H.atlas U).cuspAtlas a.1).cusp a.2)
       (((H.atlas U).cuspAtlas a.1).representative a.2) τ
 
-def height (τ : ℝ) (a : CuspIndex F ζ hζ U R P H)
+def height
     (x : Base F ζ hζ U) : ℝ :=
   if h : ∃ z : KPCuspCharts.Coordinates F,
       τ < z.2 ∧ chartLift F ζ hζ U R P H a z = x
   then (Classical.choose h).2 else 0
 
-def zeroExtension (τ : ℝ) (a : CuspIndex F ζ hζ U R P H)
+def zeroExtension
     (f : ℝ → ℝ) : Base F ζ hζ U → ℝ :=
   (endSet F ζ hζ U R P H τ a).indicator
     (fun x => f (height F ζ hζ U R P H τ a x))
+
+end
 
 def collars (τ T : ℝ) : Set (Base F ζ hζ U) :=
   KPCutoffSource.closedCollars (endSet F ζ hζ U R P H τ)
@@ -78,9 +90,6 @@ structure CollarBuffer (T : ℝ) where
   open_ends : ∀ a, IsOpen (endSet F ζ hζ U R P H τ a)
   disjoint_ends : Pairwise (fun a b => Disjoint
     (endSet F ζ hζ U R P H τ a) (endSet F ζ hζ U R P H τ b))
-  chart_embedding : ∀ a, Topology.IsEmbedding (endChart F ζ hζ U R P H τ a)
-  chart_range : ∀ a, Set.range (endChart F ζ hζ U R P H τ a) =
-    endSet F ζ hζ U R P H τ a
   lift_range : ∀ a, chartLift F ζ hζ U R P H a ''
     {z : KPCuspCharts.Coordinates F | τ < z.2} = endSet F ζ hζ U R P H τ a
 
@@ -88,30 +97,7 @@ structure CollarBuffer (T : ℝ) where
     height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a z) = z.2
   height_continuous : ∀ a,
     ContinuousOn (height F ζ hζ U R P H τ a) (endSet F ζ hζ U R P H τ a)
-  height_smooth : ∀ a, ContDiffOn ℝ (⊤ : ℕ∞)
-    (fun z : KPCuspCharts.Coordinates F =>
-      height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a z))
-    {z | τ < z.2}
 
-  height_stabilizer : ∀ a (g : Stabilizer F ζ hζ U R P H a)
-      (z : KPCuspCharts.Coordinates F), τ < z.2 →
-    height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a
-      ((((H.atlas U).cuspAtlas a.1).geometry a.2).crossAction g z.1, z.2)) =
-      height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a z)
-
-  height_transitions : ∀ a (g : Stabilizer F ζ hζ U R P H a)
-      (A : Matrix.GeneralLinearGroup (Fin 2) F),
-    Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) → A 1 0 = 0 →
-    ∀ (z : KPCuspCharts.Coordinates F), τ < z.2 →
-      let D := ((H.atlas U).cuspAtlas a.1).parabolic a.2
-      let z' := KPCuspCharts.affine F H.totallyComplex D.E D.integralUnits
-        (D.ratio g) (A 0 1 / A 1 1) z
-      chartLift F ζ hζ U R P H a z' = chartLift F ζ hζ U R P H a z ∧
-      height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a z') =
-        height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a z)
-  compact_each_collar : ∀ a, IsCompact (closure
-    {x | x ∈ endSet F ζ hζ U R P H τ a ∧
-      height F ζ hζ U R P H τ a x ∈ Set.Icc T (T + 1)})
   collar_in_chart_interior : ∀ a, closure
     {x | x ∈ endSet F ζ hζ U R P H τ a ∧
       height F ζ hζ U R P H τ a x ∈ Set.Icc T (T + 1)} ⊆
@@ -179,15 +165,9 @@ theorem kp_cont_actual_collar_buffer
             positive_dimension := KPCuspCharts.positive_dimension F H.totallyComplex
             open_ends := ?_
             disjoint_ends := ?_
-            chart_embedding := ?_
-            chart_range := ?_
             lift_range := ?_
             height_coordinates := ?_
             height_continuous := ?_
-            height_smooth := ?_
-            height_stabilizer := ?_
-            height_transitions := ?_
-            compact_each_collar := ?_
             collar_in_chart_interior := ?_
             compact_collars := hc
             compact_covered_collars := hcovered
@@ -200,15 +180,9 @@ theorem kp_cont_actual_collar_buffer
       KPContActualCollarBuffer.endChart]
   · exact hopen
   · exact hdisj
-  · exact hemb
-  · exact hrange
   · exact hlift
   · exact hcoord
   · exact hcont
-  · exact hsmooth
-  · exact hstab
-  · exact htrans
-  · exact heach
   · exact hinterior
   · exact hbuffer
   · exact hzero

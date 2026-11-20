@@ -29,7 +29,7 @@ theorem character_parameter_mem_inverseDifferent
     (hy : ∀ x, χ x = Circle.exp (2 * Real.pi * PoissonArch.tracePairing F x y))
     (hIχ : ∀ a : F, a ∈ I → χ (embedding F a) = 1) :
     y ∈ embedding F '' (↑(inverseDifferent F * I⁻¹) : Set F) := by
-  let J : PoissonArch.NonzeroFractionalIdeal F := Units.mk0 I hI
+  let J := Units.mk0 I hI
   have hydual : y ∈ PoissonArch.idealTraceDual F J := by
     intro a ha
     have hexp : Circle.exp (2 * Real.pi * PoissonArch.tracePairing F
@@ -78,7 +78,6 @@ theorem infinite_character_parameter_mem_inverseDifferent
       (↑(inverseDifferent F * I⁻¹) : Set F) := by
   let e := PoissonArch.infiniteAdeleToSpace F
   let ψ := χ.compAddMonoidHom e.symm.toLinearEquiv.toAddMonoidHom
-  have hψ : Continuous ψ := hχ.comp e.symm.continuous
   have hdiag (a : F) : e (algebraMap F (InfiniteAdeleRing F) a) = embedding F a := by
     rw [← infiniteToSpace_eq]
     unfold infiniteToSpace embedding
@@ -93,7 +92,7 @@ theorem infinite_character_parameter_mem_inverseDifferent
     change χ (e.symm (embedding F a)) = 1
     rw [← hdiag, ContinuousLinearEquiv.symm_apply_apply]
     exact hIχ a ha
-  obtain ⟨a, ha, hea⟩ := character_parameter_mem_inverseDifferent F I hI ψ hψ (e y) hψy hψI
+  obtain ⟨a, ha, hea⟩ := character_parameter_mem_inverseDifferent F I hI ψ (hχ.comp e.symm.continuous) (e y) hψy hψI
   refine ⟨a, ha, ?_⟩
   apply e.injective
   exact (hdiag a).trans hea

@@ -32,11 +32,9 @@ theorem finite_prime_liesOver (p : HeightOneSpectrum (𝓞 F)) :
   let f : {Q : HeightOneSpectrum (𝓞 E) // Q.asIdeal.LiesOver p.asIdeal} →
       p.asIdeal.primesOver (𝓞 E) :=
     fun Q => ⟨Q.1.asIdeal, Q.1.isPrime, Q.2⟩
-  have hf : Function.Injective f := by
-    intro Q1 Q2 h
-    have h2 : Q1.1.asIdeal = Q2.1.asIdeal := congrArg Subtype.val h
-    exact Subtype.ext (HeightOneSpectrum.asIdeal_injective h2)
-  exact Finite.of_injective f hf
+  apply Finite.of_injective f
+  intro Q1 Q2 h
+  exact Subtype.ext (HeightOneSpectrum.asIdeal_injective (congrArg Subtype.val h))
 
 theorem finite_prime_under_fiber (p : HeightOneSpectrum (𝓞 F)) :
     Finite {Q : HeightOneSpectrum (𝓞 E) // Q.under (𝓞 F) = p} := by

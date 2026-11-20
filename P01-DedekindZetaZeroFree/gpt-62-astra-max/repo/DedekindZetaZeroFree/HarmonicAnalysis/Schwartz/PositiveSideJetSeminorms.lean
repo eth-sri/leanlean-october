@@ -27,17 +27,17 @@ theorem EulerIter_succ_of_pos (j : ℕ) (f : ℝ → ℂ) (x : ℝ) (hx : 0 < x)
     EulerIter (j + 1) f x = (x : ℂ) * deriv (EulerIter j f) x := by
   simp [EulerIter, hx]
 
-theorem S_finite (b : ℝ) (hb : 0 < b) (N : ℕ) (h : ℝ → ℂ)
-    (hh : ContDiff ℝ ∞ h) :
+variable (b : ℝ) (hb : 0 < b) (N : ℕ) (h : ℝ → ℂ) (hh : ContDiff ℝ ∞ h)
+
+include hb hh in
+theorem S_finite :
     ∀ i ∈ Finset.range (N + 1),
       BddAbove ((fun x : ℝ => ‖iteratedDeriv i h x‖) '' Set.Icc 0 b) := by
   intro i _
-  have hcont : Continuous (fun x : ℝ => ‖iteratedDeriv i h x‖) :=
-    (hh.continuous_iteratedDeriv i (by simp)).norm
-  exact (isCompact_Icc.image hcont).bddAbove
+  exact (isCompact_Icc.image ((hh.continuous_iteratedDeriv i (by simp)).norm)).bddAbove
 
-theorem S_nonneg (b : ℝ) (hb : 0 < b) (N : ℕ) (h : ℝ → ℂ)
-    (hh : ContDiff ℝ ∞ h) : 0 ≤ S b N h := by
+include hb hh in
+theorem S_nonneg : 0 ≤ S b N h := by
   unfold S
   exact Finset.sum_nonneg fun i _ =>
     Real.sSup_nonneg fun y ⟨x, _, hy⟩ => hy ▸ norm_nonneg _

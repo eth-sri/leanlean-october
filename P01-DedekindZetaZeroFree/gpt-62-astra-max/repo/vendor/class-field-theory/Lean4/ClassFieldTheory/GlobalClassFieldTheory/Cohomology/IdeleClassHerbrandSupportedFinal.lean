@@ -33,31 +33,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -100,13 +75,13 @@ theorem
     ChosenFinitePlaceIsUnramified
       (K := K) (L := L) v := by
   apply chosenFinitePlaceIsUnramified_of_isUnramifiedAt
-    (K := K) (L := L) v
+      v
   apply isUnramifiedAt_of_notMem_ideleClassHerbrandSupport
-    (K := K) (L := L) v hv
+      v hv
   exact
     finitePlaceBelow_finitePlaceExtensionCentre
-      (K := K) (L := L) v
-      (chosenFinitePlaceExtension (L := L) v)
+        v
+      (chosenFinitePlaceExtension v)
 
 omit [NumberField L] in
 /-- If every chosen finite extension outside `S` is unramified, both
@@ -144,12 +119,13 @@ theorem
   let outsideAction :=
     relativeOutsideSPlaceFactorsAction
       (K := K) (L := L) S
+  let HerbrandH0₀ := HerbrandH0 (L ≃ₐ[K] L)
   let e0 :
-      HerbrandH0 (L ≃ₐ[K] L)
+      HerbrandH0₀
           (RelativeOutsideSPlaceFactors
             (K := K) (L := L) S) ≃*
         ∀ w : {w : HeightOneSpectrum (𝓞 K) // w ∉ S},
-          HerbrandH0 (L ≃ₐ[K] L)
+          HerbrandH0₀
             (relativeLocalTensorDecompositionIntegralUnitSubgroup
               (K := K) (L := L) w.1) :=
     herbrandH0PiEquiv
@@ -177,7 +153,7 @@ theorem
     funext w
     let :
         Subsingleton
-          (HerbrandH0 (L ≃ₐ[K] L)
+          (HerbrandH0₀
             (relativeLocalTensorDecompositionIntegralUnitSubgroup
               (K := K) (L := L) w.1)) :=
       relativeLocalTensorDecompositionIntegralUnitSubgroup_unramifiedHerbrandH0_subsingleton
@@ -187,13 +163,9 @@ theorem
     intro x y
     apply em.injective
     funext w
-    let :
-        Subsingleton
-          (HerbrandHMinusOne (L ≃ₐ[K] L)
-            (relativeLocalTensorDecompositionIntegralUnitSubgroup
-              (K := K) (L := L) w.1) σ) :=
+    let :=
       relativeLocalTensorDecompositionIntegralUnitSubgroup_unramifiedHerbrandHMinusOne_subsingleton
-        (K := K) (L := L) w.1 σ hgen (hUnram w.1 w.2)
+          w.1 σ hgen (hUnram w.1 w.2)
     exact Subsingleton.elim _ _
 
 omit [NumberField L] in
@@ -264,12 +236,15 @@ theorem
     Nat.card_unique]
   norm_num
 
+section
+
+variable (S : Finset (HeightOneSpectrum (𝓞 K)))
+
 /-- After the unramified outside factors have been removed, the supported
 relative ideles have Herbrand quotient equal to the product of the local
 degrees at the unrestricted factors. -/
 theorem
     relativeIdeleSupported_herbrandQuotient_eq_localDegreeProduct
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (σ : L ≃ₐ[K] L)
     (hgen : ∀ τ : L ≃ₐ[K] L,
       τ ∈ Subgroup.zpowers σ)
@@ -318,27 +293,29 @@ theorem
   let hUm := hU.2
   let hO0 := hO.1
   let hOm := hO.2
+  let HerbrandH0₀ := HerbrandH0 (L ≃ₐ[K] L)
   let hProd0 :
       Finite
-        (HerbrandH0 (L ≃ₐ[K] L)
+        (HerbrandH0₀
           (RelativeUnrestrictedSPlaceFactors
               (K := K) (L := L) S ×
             RelativeOutsideSPlaceFactors
               (K := K) (L := L) S)) :=
     herbrandH0ProdFinite _ _
+  let HerbrandHMinusOne₀ := HerbrandHMinusOne (L ≃ₐ[K] L)
   let hProdm :
       Finite
-        (HerbrandHMinusOne (L ≃ₐ[K] L)
+        (HerbrandHMinusOne₀
           (RelativeUnrestrictedSPlaceFactors
               (K := K) (L := L) S ×
             RelativeOutsideSPlaceFactors
               (K := K) (L := L) S) σ) :=
     herbrandHMinusOneProdFinite _ _ σ
   let e0 :
-      HerbrandH0 (L ≃ₐ[K] L)
+      HerbrandH0₀
           (relativeIdeleLocalTensorDecompositionSupportedSubgroup
             (K := K) (L := L) S) ≃*
-        HerbrandH0 (L ≃ₐ[K] L)
+        HerbrandH0₀
           (RelativeUnrestrictedSPlaceFactors
               (K := K) (L := L) S ×
             RelativeOutsideSPlaceFactors
@@ -346,10 +323,10 @@ theorem
     relativeIdeleSupportedHerbrandH0EquivUnrestrictedProdOutside
       (K := K) (L := L) S
   let em :
-      HerbrandHMinusOne (L ≃ₐ[K] L)
+      HerbrandHMinusOne₀
           (relativeIdeleLocalTensorDecompositionSupportedSubgroup
             (K := K) (L := L) S) σ ≃*
-        HerbrandHMinusOne (L ≃ₐ[K] L)
+        HerbrandHMinusOne₀
           (RelativeUnrestrictedSPlaceFactors
               (K := K) (L := L) S ×
             RelativeOutsideSPlaceFactors
@@ -409,8 +386,7 @@ theorem
 
 /-- The diagonal map from extension-field `S`-units directly into the
 supported relative ideles. -/
-noncomputable def sUnitToRelativeIdeleSupported
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def sUnitToRelativeIdeleSupported :
     SUnitGroup (K := L)
         (finitePlacesAbove (K := K) (L := L) S) →*
       relativeIdeleLocalTensorDecompositionSupportedSubgroup
@@ -423,8 +399,7 @@ noncomputable def sUnitToRelativeIdeleSupported
 
 /-- The restriction of the idele-class quotient map to the supported
 relative ideles. -/
-noncomputable def relativeIdeleSupportedToClass
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def relativeIdeleSupportedToClass :
     relativeIdeleLocalTensorDecompositionSupportedSubgroup
         (K := K) (L := L) S →*
       RelativeIdeleGroup.ClassGroup K L :=
@@ -432,6 +407,8 @@ noncomputable def relativeIdeleSupportedToClass
       (RelativeIdeleGroup.principalSubgroup K L)).comp
     (relativeIdeleLocalTensorDecompositionSupportedSubgroup
       (K := K) (L := L) S).subtype
+
+end
 
 omit [IsGalois K L] in
 /-- Equivariance of the diagonal `S`-unit map into supported relative
@@ -457,9 +434,9 @@ theorem sUnitToRelativeIdeleSupported_equivariant
             (K := K) (L := L) S x := by
   let sUnitAction :=
     sUnitMulDistribMulAction K L
-      (finitePlacesAbove (K := K) (L := L) S)
+      (finitePlacesAbove S)
       (finitePlacesAbove_isGaloisStable
-        (K := K) (L := L) S)
+          S)
   let supportedAction :=
     relativeIdeleLocalTensorDecompositionSupportedSubgroupAction
       (K := K) (L := L) S
@@ -525,11 +502,11 @@ theorem sUnitToRelativeIdeleSupported_injective
   intro x y hxy
   apply
     (sUnitEquivRelativePrincipalSupportedIntersection
-      (K := K) (L := L) S).injective
+        S).injective
   apply
     ((RelativeIdeleGroup.principalSubgroup K L).subgroupOf
       (relativeIdeleLocalTensorDecompositionSupportedSubgroup
-        (K := K) (L := L) S)).subtype_injective
+          S)).subtype_injective
   exact hxy
 
 omit [NumberField L] [IsGalois K L] in
@@ -551,7 +528,7 @@ theorem relativeIdeleSupportedToClass_surjective
   have hg :
       g ∈
         relativeIdeleLocalTensorDecompositionSupportedSubgroup
-              (K := K) (L := L) S ⊔
+                S ⊔
             RelativeIdeleGroup.principalSubgroup K L := by
     rw [hSP]
     exact Subgroup.mem_top g
@@ -606,11 +583,11 @@ theorem sUnit_supportedIdele_ideleClass_exact
     let y :
         (RelativeIdeleGroup.principalSubgroup K L).subgroupOf
           (relativeIdeleLocalTensorDecompositionSupportedSubgroup
-            (K := K) (L := L) S) :=
+              S) :=
       ⟨z, hzPrincipal⟩
     obtain ⟨x, hx⟩ :=
       (sUnitEquivRelativePrincipalSupportedIntersection
-        (K := K) (L := L) S).surjective y
+          S).surjective y
     refine ⟨x, ?_⟩
     apply Subtype.ext
     have hcoerce :=
@@ -637,10 +614,13 @@ theorem sUnit_supportedIdele_ideleClass_exact
           RelativeIdeleGroup.principalIdele K L (x : Lˣ))).2
         ⟨(x : Lˣ), rfl⟩
 
+section
+
+variable (S : Finset (HeightOneSpectrum (𝓞 K)))
+
 /-- Finiteness of the low Tate groups of the `S`-unit module for the
 support pulled back from `K`. -/
 def AboveSUnitHerbrandQuotientDefined
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (σ : L ≃ₐ[K] L) : Prop :=
   letI :=
     sUnitMulDistribMulAction K L
@@ -655,7 +635,6 @@ def AboveSUnitHerbrandQuotientDefined
 /-- Finiteness of the low Tate groups of the supported relative-idele
 module. -/
 def RelativeIdeleSupportedHerbrandQuotientDefined
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (σ : L ≃ₐ[K] L) : Prop :=
   letI :=
     relativeIdeleLocalTensorDecompositionSupportedSubgroupAction
@@ -669,8 +648,7 @@ def RelativeIdeleSupportedHerbrandQuotientDefined
 logarithmic places above a base support.  This is the presentation used
 by the `S`-unit Herbrand theorem. -/
 @[reducible]
-noncomputable def aboveSLogPlaceMulAction
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def aboveSLogPlaceMulAction :
     MulAction (L ≃ₐ[K] L)
       (SUnitGroup.LogPlace
         (K := L)
@@ -683,8 +661,7 @@ noncomputable def aboveSLogPlaceMulAction
 
 /-- Send a logarithmic place of `L` lying over the pulled-back support
 to its underlying unrestricted place of `K`. -/
-noncomputable def logPlaceBelowRelativeUnrestrictedIndex
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def logPlaceBelowRelativeUnrestrictedIndex :
     SUnitGroup.LogPlace
         (K := L)
         (finitePlacesAbove (K := K) (L := L) S) →
@@ -696,6 +673,8 @@ noncomputable def logPlaceBelowRelativeUnrestrictedIndex
         ⟨finitePlaceBelow (K := K) W.1,
           (mem_finitePlacesAbove_iff
             (K := K) (L := L) S W.1).1 W.2⟩
+
+end
 
 omit [FiniteDimensional K L] [IsGalois K L] in
 /-- The place-below map is constant on Galois orbits of logarithmic
@@ -714,20 +693,17 @@ theorem logPlaceBelowRelativeUnrestrictedIndex_smul
         (K := K) (L := L) S (σ • q) =
       logPlaceBelowRelativeUnrestrictedIndex
         (K := K) (L := L) S q := by
-  let logAction :=
-    aboveSLogPlaceMulAction
-      (K := K) (L := L) S
   cases q with
   | inl W =>
       change
         logPlaceBelowRelativeUnrestrictedIndex
-            (K := K) (L := L) S
+              S
             (logPlacePermutationHom K L
-              (finitePlacesAbove (K := K) (L := L) S)
+              (finitePlacesAbove S)
               (finitePlacesAbove_isGaloisStable
-                (K := K) (L := L) S) σ (Sum.inl W)) =
+                  S) σ (Sum.inl W)) =
           logPlaceBelowRelativeUnrestrictedIndex
-            (K := K) (L := L) S (Sum.inl W)
+              S (Sum.inl W)
       rw [logPlacePermutationHom_apply]
       change
         Sum.inl ((σ • W).comap (algebraMap K L)) =
@@ -740,27 +716,27 @@ theorem logPlaceBelowRelativeUnrestrictedIndex_smul
   | inr W =>
       change
         logPlaceBelowRelativeUnrestrictedIndex
-            (K := K) (L := L) S
+              S
             (logPlacePermutationHom K L
-              (finitePlacesAbove (K := K) (L := L) S)
+              (finitePlacesAbove S)
               (finitePlacesAbove_isGaloisStable
-                (K := K) (L := L) S) σ (Sum.inr W)) =
+                  S) σ (Sum.inr W)) =
           logPlaceBelowRelativeUnrestrictedIndex
-            (K := K) (L := L) S (Sum.inr W)
+              S (Sum.inr W)
       rw [logPlacePermutationHom_apply]
       change
         Sum.inr
-            (⟨finitePlaceBelow (K := K)
+            (⟨finitePlaceBelow
                 (finitePlaceEquiv K L σ W.1), _⟩ :
               {v : HeightOneSpectrum (𝓞 K) // v ∈ S}) =
           Sum.inr
-            (⟨finitePlaceBelow (K := K) W.1, _⟩ :
+            (⟨finitePlaceBelow W.1, _⟩ :
               {v : HeightOneSpectrum (𝓞 K) // v ∈ S})
       congr 1
       apply Subtype.ext
       exact
         finitePlaceBelow_finitePlaceEquiv
-          (K := K) (L := L) σ W.1
+            σ W.1
 
 /-- The map on Galois orbits induced by taking the place below. -/
 noncomputable def logPlaceOrbitBelowRelativeUnrestrictedIndex
@@ -780,14 +756,14 @@ noncomputable def logPlaceOrbitBelowRelativeUnrestrictedIndex
   exact
     Quotient.lift
       (logPlaceBelowRelativeUnrestrictedIndex
-        (K := K) (L := L) S)
+          S)
       (by
         intro a b hab
         rcases hab with ⟨σ, hσ⟩
         rw [← hσ]
         exact
           logPlaceBelowRelativeUnrestrictedIndex_smul
-            (K := K) (L := L) S σ b)
+              S σ b)
 
 omit [FiniteDimensional K L] [IsGalois K L] in
 /-- Evaluating the orbit-descended log-place map on a quotient class gives
@@ -1336,16 +1312,17 @@ theorem
       i j hi hj hker hinj hsurj σ hgen
       inferInstance inferInstance inferInstance
       inferInstance inferInstance inferInstance
+  let card₀ := Fintype.card (L ≃ₐ[K] L)
   have hcard :
-      (Fintype.card (L ≃ₐ[K] L) : ℚ) ≠ 0 :=
+      (card₀ : ℚ) ≠ 0 :=
     Nat.cast_ne_zero.mpr Fintype.card_ne_zero
   have hfactor :
-      q / (Fintype.card (L ≃ₐ[K] L) : ℚ) ≠ 0 :=
+      q / (card₀ : ℚ) ≠ 0 :=
     div_ne_zero hq hcard
   refine ⟨hC, ?_⟩
   apply mul_left_cancel₀ hfactor
   calc
-    (q / (Fintype.card (L ≃ₐ[K] L) : ℚ)) *
+    (q / (card₀ : ℚ)) *
           @herbrandQuotient
             (L ≃ₐ[K] L)
             (RelativeIdeleGroup.ClassGroup K L)
@@ -1353,97 +1330,21 @@ theorem
         q := by
       rw [← hUnit, ← hmul, hSupported]
     _ =
-        (q / (Fintype.card (L ≃ₐ[K] L) : ℚ)) *
-          (Fintype.card (L ≃ₐ[K] L) : ℚ) := by
+        (q / (card₀ : ℚ)) *
+          (card₀ : ℚ) := by
       rw [div_mul_cancel₀ q hcard]
 
-/-- The norm-index lower bound obtained from the supported short exact
-sequence. -/
-theorem
-    card_le_ideleClassNorm_index_of_sUnit_supported_values
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ)
-    (hSP :
-      relativeIdeleLocalTensorDecompositionSupportedSubgroup
-            (K := K) (L := L) S ⊔
-          RelativeIdeleGroup.principalSubgroup K L =
-        ⊤)
-    (hUnitDefined :
-      AboveSUnitHerbrandQuotientDefined
-        (K := K) (L := L) S σ)
-    (hSupportedDefined :
-      RelativeIdeleSupportedHerbrandQuotientDefined
-        (K := K) (L := L) S σ)
-    (q : ℚ) (hq : q ≠ 0)
-    (hSupported :
-      letI :=
-        relativeIdeleLocalTensorDecompositionSupportedSubgroupAction
-          (K := K) (L := L) S
-      letI : Finite
-          (HerbrandH0 (L ≃ₐ[K] L)
-            (relativeIdeleLocalTensorDecompositionSupportedSubgroup
-              (K := K) (L := L) S)) :=
-        hSupportedDefined.1
-      letI : Finite
-          (HerbrandHMinusOne (L ≃ₐ[K] L)
-            (relativeIdeleLocalTensorDecompositionSupportedSubgroup
-              (K := K) (L := L) S) σ) :=
-        hSupportedDefined.2
-      herbrandQuotient
-          (G := L ≃ₐ[K] L)
-          (A := relativeIdeleLocalTensorDecompositionSupportedSubgroup
-            (K := K) (L := L) S) σ = q)
-    (hUnit :
-      letI :=
-        sUnitMulDistribMulAction K L
-          (finitePlacesAbove (K := K) (L := L) S)
-          (finitePlacesAbove_isGaloisStable
-            (K := K) (L := L) S)
-      letI : Finite
-          (HerbrandH0 (L ≃ₐ[K] L)
-            (SUnitGroup (K := L)
-              (finitePlacesAbove
-                (K := K) (L := L) S))) :=
-        hUnitDefined.1
-      letI : Finite
-          (HerbrandHMinusOne (L ≃ₐ[K] L)
-            (SUnitGroup (K := L)
-              (finitePlacesAbove
-                (K := K) (L := L) S)) σ) :=
-        hUnitDefined.2
-      herbrandQuotient
-          (G := L ≃ₐ[K] L)
-          (A := SUnitGroup (K := L)
-            (finitePlacesAbove (K := K) (L := L) S)) σ =
-        q / (Fintype.card (L ≃ₐ[K] L) : ℚ)) :
-    Fintype.card (L ≃ₐ[K] L) ≤
-      (RelativeIdeleGroup.Cohomology.ideleClassNorm K L).range.index := by
-  let classAction := ideleClassMulDistribMulAction K L
-  obtain ⟨hC, hCvalue⟩ :=
-    ideleClass_herbrandQuotient_eq_card_of_sUnit_supported_values
-      (K := K) (L := L) S σ hgen hSP
-      hUnitDefined hSupportedDefined q hq hSupported hUnit
-  let hC0 := hC.1
-  let hCm := hC.2
-  rw [ideleClassNorm_index_eq_herbrandH0_card K L]
-  apply
-    le_herbrandH0_card_of_herbrandQuotient_eq_nat
-      (G := L ≃ₐ[K] L)
-      (A := RelativeIdeleGroup.ClassGroup K L)
-      σ (Fintype.card (L ≃ₐ[K] L))
-  simpa using hCvalue
+section
 
+variable (S : Finset (HeightOneSpectrum (𝓞 K))) (σ : L ≃ₐ[K] L)
+    (hgen : ∀ τ : L ≃ₐ[K] L, τ ∈ Subgroup.zpowers σ)
+
+include hgen in
 /-- With all local and `S`-unit calculations substituted, an unramified
 sufficiently large support gives an idele-class Herbrand quotient equal
 to the order of the Galois group. -/
 theorem
     ideleClass_herbrandQuotient_eq_card_of_supported_local_calculation
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ)
     (hSP :
       relativeIdeleLocalTensorDecompositionSupportedSubgroup
             (K := K) (L := L) S ⊔
@@ -1479,16 +1380,15 @@ theorem
       MulDistribMulAction (L ≃ₐ[K] L)
         (SUnitGroup (K := L) T) :=
     sUnitMulDistribMulAction K L T hT
+  let Quotient₀ := MulAction.orbitRel.Quotient (L ≃ₐ[K] L)
   let orbitFintype :
       Fintype
-        (MulAction.orbitRel.Quotient
-          (L ≃ₐ[K] L)
+        (Quotient₀
           (SUnitGroup.LogPlace (K := L) T)) :=
     Fintype.ofFinite _
   let stabilizerFintype :
       ∀ ω :
-          MulAction.orbitRel.Quotient
-            (L ≃ₐ[K] L)
+          Quotient₀
             (SUnitGroup.LogPlace (K := L) T),
         Fintype (permutationOrbitStabilizer ω) :=
     fun _ => Fintype.ofFinite _
@@ -1518,8 +1418,7 @@ theorem
   have hProducts :
       q =
         ∏ ω :
-            MulAction.orbitRel.Quotient
-              (L ≃ₐ[K] L)
+            Quotient₀
               (SUnitGroup.LogPlace (K := L) T),
           (logPlaceLocalDegree K L T ω.out : ℚ) := by
     simpa [q, T, hT, ρ] using
@@ -1547,14 +1446,11 @@ theorem
       hUnit hSupported q hq
       hSupportedValue' hUnitValue'
 
+include hgen in
 /-- The corresponding norm-index lower bound with all supported local
 calculations substituted. -/
 theorem
     card_le_ideleClassNorm_index_of_supported_local_calculation
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ)
     (hSP :
       relativeIdeleLocalTensorDecompositionSupportedSubgroup
             (K := K) (L := L) S ⊔
@@ -1579,6 +1475,8 @@ theorem
       (A := RelativeIdeleGroup.ClassGroup K L)
       σ (Fintype.card (L ≃ₐ[K] L))
   simpa using hCvalue
+
+end
 
 /-- Unconditional norm-index lower bound for a cyclic extension, in
 Galois-group-order form. -/

@@ -12,7 +12,7 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory
 open scoped Classical NumberField Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
  theorem height_borel (R : PrincipalMellin.ActualRecipe S η)
     (t : KPGlobalTorusFunctionData.E F R.A.zeta12 R.A.primitive_zeta12) (x : KPAdeles F) (g : Group R) :

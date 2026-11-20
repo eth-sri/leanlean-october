@@ -20,24 +20,30 @@ def rawPrincipalClass : Fˣ →* KPGlobalCubicIdelePairing.D F :=
   (QuotientGroup.mk' (CubicCharacters.cubes (KPGlobalCubicIdelePairing.Ideles F))).comp
     (IdeleGroup.unitEmbedding (𝓞 F) F)
 
-def rawFinitePrimes (S : Finset (KPHilbert.Place F)) : Finset (HeightOneSpectrum (𝓞 F)) :=
+section
+
+variable (S : Finset (KPHilbert.Place F))
+
+def rawFinitePrimes : Finset (HeightOneSpectrum (𝓞 F)) :=
   S.biUnion (fun v => match v with | Sum.inl _ => ∅ | Sum.inr q => {q})
 
-abbrev rawSUnits (S : Finset (KPHilbert.Place F)) :=
+abbrev rawSUnits :=
   (rawFinitePrimes F S : Set (HeightOneSpectrum (𝓞 F))).unit F
 
-def rawClassKillingS (S : Finset (KPHilbert.Place F)) : Prop :=
+def rawClassKillingS : Prop :=
   KPGlobalCubicIdelePairing.AdmissibleS F S ∧
   (∀ q : HeightOneSpectrum (𝓞 F), (6 : 𝓞 F) ∈ q.asIdeal → Sum.inr q ∈ S) ∧
   Subsingleton (ClassGroup
     ((rawFinitePrimes F S : Set (HeightOneSpectrum (𝓞 F))).integer F))
 
-def rawFiniteClass (S : Finset (KPHilbert.Place F)) :
+def rawFiniteClass :
     Fˣ →* KPGlobalCubicIdelePairing.FiniteSClasses F S where
   toFun a v := KPGlobalCubicIdelePairing.localClass F v.val
     (Units.map (algebraMap F (KPHilbert.Completion F v.val)).toMonoidHom a)
   map_one' := by ext v; simp
   map_mul' a b := by ext v; simp
+
+end
 
 def rawBetaS (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
     (x y : KPGlobalCubicIdelePairing.FiniteSClasses F S) : rootsOfUnity 3 F :=
@@ -92,9 +98,12 @@ set_option backward.isDefEq.respectTransparency false
     | inl w => simp at h
     | inr r => simp only [Finset.mem_singleton] at h; subst r; exact hv
   · intro h; exact ⟨Sum.inr q, h, by simp⟩
- def data (F : Type) [Field F] [NumberField F] (ζ : F)
-    (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
-    (hS : rawClassKillingS F S) : SArithmeticData F where
+ section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (S : Finset (KPHilbert.Place F)) (hS : rawClassKillingS F S)
+
+def data : SArithmeticData F where
   zeta12 := ζ
   primitive_zeta12 := hζ
   Sf := rawFinitePrimes F S
@@ -104,9 +113,7 @@ set_option backward.isDefEq.respectTransparency false
   modulus_ne_zero := top_ne_bot
   above_six q hq := (mem_fp F S q).mpr (hS.2.1 q hq)
   modulus_support q hq := False.elim (q.isPrime.ne_top (top_le_iff.mp hq))
- def classesEquiv (F : Type) [Field F] [NumberField F] (ζ : F)
-    (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
-    (hS : rawClassKillingS F S) :
+ def classesEquiv :
     KPGlobalCubicIdelePairing.FiniteSClasses F S ≃*
       SArithmeticData.Vn F (data F ζ hζ S hS) 3 where
   toFun x := by
@@ -122,15 +129,11 @@ set_option backward.isDefEq.respectTransparency false
   left_inv x := by ext ⟨v,hv⟩; cases v <;> rfl
   right_inv y := by ext v; cases v <;> rfl
   map_mul' x y := by ext v; cases v <;> rfl
-private theorem classes_unit (F : Type) [Field F] [NumberField F] (ζ : F)
-    (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
-    (hS : rawClassKillingS F S) (u : rawSUnits F S) :
+private theorem classes_unit (u : rawSUnits F S) :
     classesEquiv F ζ hζ S hS (rawFiniteClass F S u.val) =
       SArithmeticData.GaussCorrection.unitPrimeHom (data F ζ hζ S hS) 3 u := by
   ext v; cases v <;> rfl
-private theorem local_compare (F : Type) [Field F] [NumberField F] (ζ : F)
-    (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
-    (hS : rawClassKillingS F S) (q : HeightOneSpectrum (𝓞 F))
+private theorem local_compare (q : HeightOneSpectrum (𝓞 F))
     (a b : KPGlobalCubicIdelePairing.LocalD F (Sum.inr q)) :
     KPGlobalCubicIdelePairing.localPairing F ζ hζ (Sum.inr q) a b =
       (data F ζ hζ S hS).actualLocalHilbert q 3 (Or.inr (Or.inl rfl)) a b := by
@@ -141,9 +144,7 @@ private theorem local_compare (F : Type) [Field F] [NumberField F] (ζ : F)
       change KPHilbert.B3 F ζ hζ (Sum.inr q) a b = _
       rw [KPHilbert.B3_canonical]
       rfl
-private theorem pairing_compare (F : Type) [Field F] [NumberField F] (ζ : F)
-    (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
-    (hS : rawClassKillingS F S) (x y : KPGlobalCubicIdelePairing.FiniteSClasses F S) :
+private theorem pairing_compare (x y : KPGlobalCubicIdelePairing.FiniteSClasses F S) :
     rawBetaS F ζ hζ S x y =
       (data F ζ hζ S hS).H_Sn 3 (Or.inr (Or.inl rfl))
         (classesEquiv F ζ hζ S hS x) (classesEquiv F ζ hζ S hS y) := by
@@ -168,14 +169,13 @@ private theorem pairing_compare (F : Type) [Field F] [NumberField F] (ζ : F)
         | H b => simp [KPGlobalCubicIdelePairing.localPairing, KPHilbert.B3, KPHilbert.B6, KPHilbert.squareToThree]
     | inr q =>
       let a : ↥A.Sf := ⟨q, (mem_fp F S q).mpr hv⟩
-      have hna : A.actualLocalHilbert a.val 3 (Or.inr (Or.inl rfl))
-          (classesEquiv F ζ hζ S hS x (Sum.inr a))
-          (classesEquiv F ζ hζ S hS y (Sum.inr a)) ≠ 1 := by
-        rw [← local_compare F ζ hζ S hS]
-        exact hn
-      exact ⟨a, Finset.mem_univ _, hna, rfl⟩
+      refine ⟨a, Finset.mem_univ _, ?_, rfl⟩
+      rw [← local_compare F ζ hζ S hS]
+      exact hn
   · intro a ha hna
     exact (local_compare F ζ hζ S hS a.val (x (i a)) (y (i a))).symm
+
+end
 private theorem prime_criterion {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) (hCl : Subsingleton (ClassGroup A.R))
     (x : SArithmeticData.Vn F A 3) :
@@ -210,7 +210,6 @@ private theorem prime_criterion {F : Type} [Field F] [NumberField F]
       intro y
       obtain ⟨⟨a,c⟩, hay, _⟩ := hs y
       rw [← hay]
-      change P (a.val * c.val) b.val = 1
       rw [SArithmeticData.H_Sn_mul_left, hb a.val a.property, hBi c.val c.property b.val b.property, mul_one]
     apply (hE x).mp
     rw [← hab, hb1, mul_one]
@@ -251,15 +250,7 @@ set_option autoImplicit false
 set_option maxHeartbeats 800000
 variable (F : Type) [Field F] [NumberField F]
 
-private lemma finite_mem (S : Finset (KPHilbert.Place F)) (q : HeightOneSpectrum (𝓞 F)) :
-    q ∈ rawFinitePrimes F S ↔ Sum.inr q ∈ S := by
-  simp only [rawFinitePrimes, Finset.mem_biUnion]
-  constructor
-  · rintro ⟨v, hv, hq⟩
-    cases v with
-    | inl w => simp at hq
-    | inr p => simpa using (Finset.mem_singleton.mp hq) ▸ hv
-  · intro h; exact ⟨Sum.inr q, h, by simp⟩
+private alias finite_mem := mem_fp
 
 private lemma principal_unit (S : Finset (KPHilbert.Place F)) (u : rawSUnits F S)
     (v : KPHilbert.Place F) (hv : v ∉ S) :
@@ -268,14 +259,12 @@ private lemma principal_unit (S : Finset (KPHilbert.Place F)) (u : rawSUnits F S
   cases v with
   | inl w => exact Subgroup.mem_top _
   | inr q =>
-    have hu := u.property q (by simpa [finite_mem] using hv)
     letI : ValuativeRel (q.adicCompletion F) := ClassFieldTheory.finitePlaceCompletionValuativeRel F q
     letI : (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ))).Compatible := Valuation.Compatible.ofValuation _
     let z := Units.map (algebraMap F (q.adicCompletion F)).toMonoidHom u.val
-    have hz : ValuativeRel.valuation (q.adicCompletion F) (z : q.adicCompletion F) = 1 := by
-      rw [← (ValuativeRel.isEquiv (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ))) (ValuativeRel.valuation (q.adicCompletion F))).eq_one_iff_eq_one]
-      change Valued.v (algebraMap F (q.adicCompletion F) (u.val : F)) = 1
-      exact (q.valuedAdicCompletion_eq_valuation' (u.val : F)).trans hu
+    have hz : ValuativeRel.valuation (q.adicCompletion F) z = 1 := by
+      rw [← (ValuativeRel.isEquiv Valued.v (ValuativeRel.valuation (q.adicCompletion F))).eq_one_iff_eq_one]
+      exact (q.valuedAdicCompletion_eq_valuation' (u.val : F)).trans (u.property q (by simpa [finite_mem] using hv))
     have mem (a : (q.adicCompletion F)ˣ) (ha : ValuativeRel.valuation _ (a : q.adicCompletion F) = 1) :
         (a : q.adicCompletion F) ∈ (ValuativeRel.valuation (q.adicCompletion F)).integer := by
       rw [Valuation.mem_integer_iff, ha]
@@ -295,14 +284,14 @@ private lemma exists_classkill (T : Finset (KPHilbert.Place F)) :
     ext q
     rw [finite_mem]
     simp [S]
-  have hCl : Subsingleton (ClassGroup ((Sf : Set (HeightOneSpectrum (𝓞 F))).integer F)) := by
-    have hOne : ∀ C : ClassGroup ((Sf : Set (HeightOneSpectrum (𝓞 F))).integer F), C = 1 := by
+  let Set₀ := Set (HeightOneSpectrum (𝓞 F))
+  have hCl : Subsingleton (ClassGroup ((Sf : Set₀).integer F)) := by
+    have hOne : ∀ C : ClassGroup ((Sf : Set₀).integer F), C = 1 := by
       intro C
       refine ClassGroup.induction F (fun I => ?_) C
       obtain ⟨a, ha⟩ := hp _ I.isUnit
       apply ClassGroup.mk_eq_one_iff.mpr
-      rw [show (I : Submodule ((Sf : Set (HeightOneSpectrum (𝓞 F))).integer F) F) = Submodule.span _ {(a : F)} by
-        change ((I : FractionalIdeal ((Sf : Set (HeightOneSpectrum (𝓞 F))).integer F)⁰ F) : Submodule ((Sf : Set (HeightOneSpectrum (𝓞 F))).integer F) F) = _
+      rw [show (I : Submodule ((Sf : Set₀).integer F) F) = Submodule.span _ {(a : F)} by
         rw [ha, FractionalIdeal.coe_spanSingleton]]
       exact ⟨⟨(a : F), rfl⟩⟩
     exact ⟨fun C D => (hOne C).trans (hOne D).symm⟩
@@ -311,14 +300,12 @@ private lemma exists_classkill (T : Finset (KPHilbert.Place F)) :
     cases v with
     | inl w => simp [S]
     | inr q =>
-      have hq : q ∈ Sf := hSf (Finset.mem_union_left _ ((finite_mem F T q).mpr hv))
-      simp [S, hq]
+      simp [S, (hSf (Finset.mem_union_left _ ((finite_mem F T q).mpr hv)))]
   · intro w; simp [S]
   · intro q hq
-    have hm : q ∈ Sf := hSf (Finset.mem_union_right _ (by simpa [bad] using hq))
-    simp [S, hm]
+    simp [S, (hSf (Finset.mem_union_right _ (by simpa [bad] using hq)))]
   · intro q hq; simp [S, hsix q hq]
-  · change Subsingleton (ClassGroup ((rawFinitePrimes F S : Set (HeightOneSpectrum (𝓞 F))).integer F))
+  · change Subsingleton (ClassGroup ((rawFinitePrimes F S : Set₀).integer F))
     rw [hfin]; exact hCl
 
 private lemma principal_closed :
@@ -331,8 +318,7 @@ private lemma principal_closed :
     rw [KPCubicIdele.mem_rationalCubes_iff]
     constructor
     · rintro ⟨a, ha⟩
-      have hmem : x / IdeleGroup.unitEmbedding (𝓞 F) F a ∈ CubicCharacters.cubes (KPGlobalCubicIdelePairing.Ideles F) := QuotientGroup.eq_iff_div_mem.mp ha.symm
-      obtain ⟨b, hb⟩ := hmem
+      obtain ⟨b, hb⟩ := (QuotientGroup.eq_iff_div_mem.mp ha.symm)
       refine ⟨a, b, ?_⟩
       change b ^ 3 = x / IdeleGroup.unitEmbedding (𝓞 F) F a at hb
       rw [hb]; simp
@@ -435,7 +421,7 @@ theorem principal_of_finite_orthogonality (F : Type) [Field F] [NumberField F]
     · exact ⟨rawPrincipalClass F a, ⟨a, rfl⟩, he _⟩
   rw [hsclosed.closure_eq] at hcl
   obtain ⟨b, hb, hbe⟩ := hcl
-  have hbx : b = x := e.injective (hbe.trans (he x).symm)
+  have hbx := e.injective (hbe.trans (he x).symm)
   exact hbx ▸ hb
 
 end
@@ -454,7 +440,7 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 def principalClass : Fˣ →* KPGlobalCubicIdelePairing.D F :=
   (QuotientGroup.mk' (CubicCharacters.cubes (KPGlobalCubicIdelePairing.Ideles F))).comp
@@ -477,16 +463,12 @@ theorem principal_discrete : DiscreteTopology (A F) := by
     have heq : (QuotientGroup.mk ⁻¹' (A F : Set (KPGlobalCubicIdelePairing.D F))) =
         (KPCubicIdele.rationalCubes F : Set _) := by
       ext x
-      change (∃ a : Fˣ, principalClass F a = QuotientGroup.mk x) ↔ _
       change (∃ a : Fˣ, principalClass F a = QuotientGroup.mk x) ↔
         x ∈ KPCubicIdele.rationalCubes F
       rw [KPCubicIdele.mem_rationalCubes_iff]
       constructor
       · rintro ⟨a, ha⟩
-        have hmem : x / IdeleGroup.unitEmbedding (𝓞 F) F a ∈
-            CubicCharacters.cubes (KPGlobalCubicIdelePairing.Ideles F) :=
-          QuotientGroup.eq_iff_div_mem.mp ha.symm
-        obtain ⟨b, hb⟩ := hmem
+        obtain ⟨b, hb⟩ := (QuotientGroup.eq_iff_div_mem.mp ha.symm)
         refine ⟨a, b, ?_⟩
         change b ^ 3 = x / IdeleGroup.unitEmbedding (𝓞 F) F a at hb
         rw [hb]
@@ -573,7 +555,7 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 include ζ hζ
 

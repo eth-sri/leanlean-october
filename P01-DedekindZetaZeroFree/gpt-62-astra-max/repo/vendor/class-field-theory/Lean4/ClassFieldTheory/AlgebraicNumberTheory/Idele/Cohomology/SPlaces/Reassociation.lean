@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -34,7 +29,6 @@ open NumberField IsDedekindDomain
 
 noncomputable section
 
-
 open CyclicCohomology.ProfiniteCohomology.Herbrand
 open CyclicCohomology
 
@@ -44,10 +38,13 @@ variable
     [Field L] [NumberField L] [Algebra K L]
     [FiniteDimensional K L] [IsGalois K L]
 
+section
+
+variable (S : Finset (HeightOneSpectrum (𝓞 K)))
+
 /-- The product of the actual integral tensor-unit factors outside
 `S`. -/
-abbrev RelativeOutsideSPlaceFactors
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :=
+abbrev RelativeOutsideSPlaceFactors :=
   ∀ w : {w : HeightOneSpectrum (𝓞 K) // w ∉ S},
     relativeLocalTensorDecompositionIntegralUnitSubgroup
       (K := K) (L := L) w.1
@@ -55,8 +52,7 @@ abbrev RelativeOutsideSPlaceFactors
 /-- The componentwise Galois action on the integral factors outside
 `S`. -/
 @[reducible]
-noncomputable def relativeOutsideSPlaceFactorsAction
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def relativeOutsideSPlaceFactorsAction :
     MulDistribMulAction (L ≃ₐ[K] L)
       (RelativeOutsideSPlaceFactors
         (K := K) (L := L) S) := by
@@ -64,23 +60,22 @@ noncomputable def relativeOutsideSPlaceFactorsAction
       {w : HeightOneSpectrum (𝓞 K) // w ∉ S},
       MulDistribMulAction (L ≃ₐ[K] L)
         (relativeLocalTensorDecompositionIntegralUnitSubgroup
-          (K := K) (L := L) w.1) :=
+            w.1) :=
     fun w =>
       relativeLocalTensorDecompositionIntegralUnitSubgroupAction
-        (K := K) (L := L) w.1
+          w.1
   exact
     piMulDistribMulAction
       (L ≃ₐ[K] L)
       (fun w :
         {w : HeightOneSpectrum (𝓞 K) // w ∉ S} =>
           relativeLocalTensorDecompositionIntegralUnitSubgroup
-            (K := K) (L := L) w.1)
+              w.1)
 
 /-- The componentwise Galois action on the product of unrestricted and
 outside-integral local factors. -/
 @[reducible]
-noncomputable def relativeUnrestrictedProdOutsideAction
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def relativeUnrestrictedProdOutsideAction :
     MulDistribMulAction (L ≃ₐ[K] L)
       (RelativeUnrestrictedSPlaceFactors
           (K := K) (L := L) S ×
@@ -97,8 +92,7 @@ noncomputable def relativeUnrestrictedProdOutsideAction
 /-- Reassociate all supported local factors as
 `(unrestricted factors) × (outside integral factors)`. -/
 noncomputable def
-    relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+    relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside :
     RelativeIdeleSPlaceFactors (K := K) (L := L) S ≃*
       RelativeUnrestrictedSPlaceFactors
           (K := K) (L := L) S ×
@@ -125,27 +119,7 @@ noncomputable def
       cases i <;> rfl
     · rfl
 
-omit [NumberField L] [IsGalois K L] in
-/-- The reassociation of supported local factors is Galois
-equivariant. -/
-theorem
-    relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside_smul
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (σ : L ≃ₐ[K] L)
-    (z : RelativeIdeleSPlaceFactors
-      (K := K) (L := L) S) :
-    relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside
-        (K := K) (L := L) S
-        ((relativeIdeleSPlaceFactorsAction
-          (K := K) (L := L) S).smul σ z) =
-      (relativeUnrestrictedProdOutsideAction
-        (K := K) (L := L) S).smul σ
-        (relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside
-          (K := K) (L := L) S z) := by
-  apply Prod.ext
-  · funext i
-    cases i <;> rfl
-  · rfl
+end
 
 /-- The complete supported relative-idele group, with its restricted-product
 condition already built into the subtype, is the product of the unrestricted
@@ -190,7 +164,7 @@ theorem
             (K := K) (L := L) (A := w.Completion)
         exact
           RelativeIdeleGroup.infiniteComponent_smul
-            (K := K) (L := L) w σ z
+              w σ z
     | inr w =>
         let :=
           scalarTensorUnitsAction
@@ -198,7 +172,7 @@ theorem
             (A := w.1.adicCompletion K)
         exact
           RelativeIdeleGroup.finiteComponent_smul
-            (K := K) (L := L) w.1 σ z
+              w.1 σ z
   · funext w
     apply Subtype.ext
     let :=
@@ -207,14 +181,15 @@ theorem
         (A := w.1.adicCompletion K)
     exact
       RelativeIdeleGroup.finiteComponent_smul
-        (K := K) (L := L) w.1 σ z
+          w.1 σ z
+
+variable (S : Finset (HeightOneSpectrum (𝓞 K)))
 
 /-- Transport of degree-zero Tate cohomology from the actual
 supported relative ideles to the unrestricted and outside-integral
 factorization. -/
 noncomputable def
-    relativeIdeleSupportedHerbrandH0EquivUnrestrictedProdOutside
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+    relativeIdeleSupportedHerbrandH0EquivUnrestrictedProdOutside :
     letI :=
       relativeIdeleLocalTensorDecompositionSupportedSubgroupAction
         (K := K) (L := L) S
@@ -238,16 +213,15 @@ noncomputable def
   exact
     herbrandH0EquivariantMulEquiv
       (relativeIdeleSupportedEquivUnrestrictedProdOutside
-        (K := K) (L := L) S)
+          S)
       (relativeIdeleSupportedEquivUnrestrictedProdOutside_smul
-        (K := K) (L := L) S)
+          S)
 
 /-- Transport of degree-minus-one Tate cohomology from the
 actual supported relative ideles to the unrestricted and outside-integral
 factorization. -/
 noncomputable def
     relativeIdeleSupportedHerbrandHMinusOneEquivUnrestrictedProdOutside
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (σ : L ≃ₐ[K] L) :
     letI :=
       relativeIdeleLocalTensorDecompositionSupportedSubgroupAction
@@ -272,8 +246,8 @@ noncomputable def
   exact
     herbrandHMinusOneEquivariantMulEquiv
       (relativeIdeleSupportedEquivUnrestrictedProdOutside
-        (K := K) (L := L) S)
+          S)
       (relativeIdeleSupportedEquivUnrestrictedProdOutside_smul
-        (K := K) (L := L) S) σ
+          S) σ
 
 end

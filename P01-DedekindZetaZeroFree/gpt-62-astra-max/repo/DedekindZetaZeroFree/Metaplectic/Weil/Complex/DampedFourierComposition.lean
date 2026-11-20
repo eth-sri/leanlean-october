@@ -18,6 +18,8 @@ private lemma psi_add (β u v : ℂ) : psi β (u + v) = psi β u * psi β v := b
   push_cast
   ring
 
+alias DampedFourierComposition.psi_add := psi_add
+
 private lemma norm_exp_damped (ε : ℝ) (x : ℂ) :
     ‖Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ))‖ = Real.exp (-ε * ‖x‖ ^ 2) := by
   rw [Complex.norm_exp, Complex.ofReal_re]
@@ -29,8 +31,12 @@ theorem norm_damped_fubini_integrand (β a : ℂ) (ε : ℝ)
       Real.exp (-ε * ‖x‖ ^ 2) * ‖f z‖ := by
   rw [norm_mul, norm_mul, Complex.norm_exp, Complex.ofReal_re, norm_psi, mul_one]
 
-theorem integrable_damped_fubini_integrand (β a : ℂ) (hβ : β ≠ 0)
-    (ha : a ≠ 0) (ε : ℝ) (hε : 0 < ε) (f : SchwartzMap ℂ ℂ) (y : ℂ) :
+section
+
+variable (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) (ε : ℝ) (hε : 0 < ε) (f : SchwartzMap ℂ ℂ) (y : ℂ)
+
+include hβ ha hε in
+theorem integrable_damped_fubini_integrand :
     Integrable (fun p : ℂ × ℂ =>
       Complex.exp (((-ε * ‖p.1‖ ^ 2 : ℝ) : ℂ)) * f p.2 *
         psi β (a * p.1 ^ 2 - p.1 * (y + p.2)))
@@ -49,25 +55,22 @@ theorem integrable_damped_fubini_integrand (β a : ℂ) (hβ : β ≠ 0)
   have hgauss : Integrable (fun x : ℂ => Real.exp (-ε * ‖x‖^2)) (mu β) := by
     have := hgaussvol.smul_measure (ENNReal.ofReal_ne_top (r := ‖β‖))
     simpa only [mu] using this
-  have hfnorm : Integrable (fun z : ℂ => ‖f z‖) (mu β) := (integrable_schwartz_mu β f).norm
-  have hprod := hgauss.mul_prod hfnorm
   have hcont : Continuous (fun p : ℂ × ℂ =>
       Complex.exp (((-ε * ‖p.1‖ ^ 2 : ℝ) : ℂ)) * f p.2 *
         psi β (a * p.1 ^ 2 - p.1 * (y + p.2))) := by
     have hpsi : Continuous fun z : ℂ => psi β z := by unfold psi; fun_prop
     fun_prop
-  refine Integrable.mono' hprod hcont.aestronglyMeasurable ?_
+  refine Integrable.mono' (hgauss.mul_prod ((integrable_schwartz_mu β f).norm)) hcont.aestronglyMeasurable ?_
   · filter_upwards with p
     rw [norm_damped_fubini_integrand]
 
-theorem F_damped_M_F_eq_integral_K (β a : ℂ) (hβ : β ≠ 0)
-    (ha : a ≠ 0) (ε : ℝ) (hε : 0 < ε) (f : SchwartzMap ℂ ℂ) (y : ℂ) :
+include hβ ha hε in
+theorem F_damped_M_F_eq_integral_K :
     F β (fun x : ℂ =>
       Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) *
         psi β (a * x ^ 2) * F β (⇑f) x) y =
       ∫ z : ℂ, f z * K β ε a (y + z) ∂mu β := by
   haveI : SFinite (mu β) := by rw [mu]; infer_instance
-  have hDint := integrable_damped_fubini_integrand β a hβ ha ε hε f y
   have hfac : ∀ x z : ℂ,
       Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * f z * psi β (a * x ^ 2 - x * (y + z)) =
         Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * psi β (a * x ^ 2) *
@@ -82,8 +85,7 @@ theorem F_damped_M_F_eq_integral_K (β a : ℂ) (hβ : β ≠ 0)
         (Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * psi β (a * x ^ 2) *
           F β (⇑f) x) * psi β (-x * y) := by
     intro x
-    calc ∫ z : ℂ, Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * f z *
-            psi β (a * x ^ 2 - x * (y + z)) ∂mu β
+    calc _
         = ∫ z : ℂ, Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * psi β (a * x ^ 2) *
             psi β (-x * y) * (f z * psi β (-x * z)) ∂mu β :=
           integral_congr_ae (Eventually.of_forall (fun z => hfac x z))
@@ -103,8 +105,7 @@ theorem F_damped_M_F_eq_integral_K (β a : ℂ) (hβ : β ≠ 0)
           psi β (a * x ^ 2 - x * (y + z)) ∂mu β) =
         f z * K β ε a (y + z) := by
     intro z
-    calc ∫ x : ℂ, Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * f z *
-            psi β (a * x ^ 2 - x * (y + z)) ∂mu β
+    calc _
         = ∫ x : ℂ, f z * (Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) *
             psi β (a * x ^ 2 - x * (y + z))) ∂mu β :=
           integral_congr_ae (Eventually.of_forall (fun x => by ring))
@@ -113,17 +114,17 @@ theorem F_damped_M_F_eq_integral_K (β a : ℂ) (hβ : β ≠ 0)
           rw [integral_const_mul]
       _ = f z * K β ε a (y + z) := by rw [K]
   rw [F]
-  calc ∫ x : ℂ, (Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * psi β (a * x ^ 2) *
-          F β (⇑f) x) * psi β (-x * y) ∂mu β
+  calc _
       = ∫ x : ℂ, ∫ z : ℂ, Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * f z *
           psi β (a * x ^ 2 - x * (y + z)) ∂mu β ∂mu β :=
         integral_congr_ae (Eventually.of_forall (fun x => (hinner x).symm))
     _ = ∫ z : ℂ, ∫ x : ℂ, Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * f z *
           psi β (a * x ^ 2 - x * (y + z)) ∂mu β ∂mu β :=
-        integral_integral_swap (f := fun x z : ℂ => Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * f z *
-          psi β (a * x ^ 2 - x * (y + z))) hDint
+        integral_integral_swap (integrable_damped_fubini_integrand β a hβ ha ε hε f y)
     _ = ∫ z : ℂ, f z * K β ε a (y + z) ∂mu β :=
         integral_congr_ae (Eventually.of_forall (fun z => hinner2 z))
+
+end
 
 theorem tendsto_F_damped_M_F (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
     (f : SchwartzMap ℂ ℂ) (y : ℂ) :
@@ -135,9 +136,9 @@ theorem tendsto_F_damped_M_F (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
       (nhds (F β (M β a (F β (⇑f))) y)) := by
   haveI : SFinite (mu β) := by rw [mu]; infer_instance
   have hpsi : Continuous fun z : ℂ => psi β z := by unfold psi; fun_prop
-  have hFint : Integrable (fun x : ℂ => F β (⇑f) x) (mu β) := integrable_F_schwartz_mu β f
-  have hFmeas : AEStronglyMeasurable (fun x : ℂ => F β (⇑f) x) (mu β) := hFint.aestronglyMeasurable
-  have hbint : Integrable (fun x : ℂ => ‖F β (⇑f) x‖) (mu β) := hFint.norm
+  have hFint := integrable_F_schwartz_mu β f
+  have hFmeas := hFint.aestronglyMeasurable
+  have hbint := hFint.norm
   change Tendsto (fun ε : ℝ => ∫ x : ℂ,
       (Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * psi β (a * x ^ 2) * F β (⇑f) x) *
         psi β (-x * y) ∂mu β)

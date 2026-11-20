@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 /-! Provides the public declarations in the `LocalClassFieldTheory.Finite.Unramified.ResidueNorm` Lean module. -/
 
@@ -55,15 +49,17 @@ noncomputable def integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure
       exact normIntegerUnits_mem_principalUnits_of_unramifiedValuation_of_isIntegralClosure
         K L 1 u hu)
 
+section
+
+variable (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
+    [FiniteDimensional K L] [IsGalois K L]
+    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
+    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
+
 /-- States the theorem `integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_mk`. -/
 @[simp]
 theorem integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_mk
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
     [Module.Finite 𝒪[K] 𝒪[L]]
     [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
     (u : 𝒪[L]ˣ) :
@@ -76,12 +72,6 @@ theorem integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_mk
 /-- After extending the residue of the integer-unit norm back to `𝓀[L]`, it
 is the product of the integral-closure residue actions. -/
 theorem residueUnitsMap_normIntegerUnits_eq_galoisGroup_residue_prod_of_isIntegralClosure
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
     (u : 𝒪[L]ˣ) :
     residueUnitsMapOfValuationExtension K L
         (integerUnitsToResidueUnits K (normIntegerUnits K L u)) =
@@ -101,12 +91,6 @@ theorem residueUnitsMap_normIntegerUnits_eq_galoisGroup_residue_prod_of_isIntegr
 /-- AlgEquiv-typed form of
 `residueUnitsMap_normIntegerUnits_eq_galoisGroup_residue_prod_of_isIntegralClosure`. -/
 theorem residueUnitsMap_normIntegerUnits_eq_galoisGroup_residue_algEquiv_prod_of_isIntegralClosure
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
     (u : 𝒪[L]ˣ) :
     residueUnitsMapOfValuationExtension K L
         (integerUnitsToResidueUnits K (normIntegerUnits K L u)) =
@@ -124,12 +108,6 @@ theorem residueUnitsMap_normIntegerUnits_eq_galoisGroup_residue_algEquiv_prod_of
 /-- Quotient-level form of the residue product formula for the
 integer-unit norm. -/
 theorem integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_residue_algEquiv_base_extend
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
     [Module.Finite 𝒪[K] 𝒪[L]]
     [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
     (x : IntegerUnitsModPrincipalUnits L) :
@@ -151,9 +129,6 @@ theorem integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_residue_alg
             (integerUnitsModPrincipalUnitsEquivResidueUnits L x)))
     x ?_
   intro u
-  rw [integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_mk]
-  rw [integerUnitsModPrincipalUnitsEquivResidueUnits_mk]
-  rw [integerUnitsModPrincipalUnitsEquivResidueUnits_mk]
   exact
     residueUnitsMap_normIntegerUnits_eq_galoisGroup_residue_algEquiv_prod_of_isIntegralClosure
       K L u
@@ -161,12 +136,6 @@ theorem integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_residue_alg
 /-- In the unramified valuation case, the integral-closure quotient norm
 agrees after base extension with the quotient-level finite residue norm model. -/
 theorem integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_residue_base_extend_eq_residueNorm
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
     [Module.Finite 𝒪[K] 𝒪[L]]
     [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
     (x : IntegerUnitsModPrincipalUnits L) :
@@ -185,12 +154,6 @@ theorem integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_residue_bas
 /-- In the unramified valuation case, the actual integral-closure quotient norm
 on `𝒪[L]ˣ/U_L¹` is the quotient-level finite-field residue norm model. -/
 theorem integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_eq_residueNorm_of_unramifiedValuation
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
     [Module.Finite 𝒪[K] 𝒪[L]]
     [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
     integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure K L =
@@ -202,6 +165,8 @@ theorem integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_eq_residueN
   exact
     integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_residue_base_extend_eq_residueNorm
       K L x
+
+end
 
 /-- The actual integral-closure quotient norm on `𝒪[L]ˣ/U_L¹` is surjective in
 the unramified valuation case. -/
@@ -218,7 +183,7 @@ theorem integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_surjective_
       (integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure K L) := by
   rw [integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_eq_residueNorm_of_unramifiedValuation
     K L]
-  exact integerUnitsModPrincipalUnitsResidueNorm_surjective_of_valuationExtension K L
+  apply integerUnitsModPrincipalUnitsResidueNorm_surjective_of_valuationExtension
 
 end LocalClassFieldTheory
 

@@ -25,23 +25,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -65,16 +48,12 @@ namespace GlobalClassFieldTheory.ClassFieldAxiom
 variable {K L : Type} [Field K] [NumberField K] [Field L] [NumberField L]
     [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
 
+variable (n : ℕ+) (r : ℕ) (eG : (L ≃ₐ[K] L) ≃* (Fin r → Multiplicative (ZMod (n : ℕ))))
+    (S T : Finset (HeightOneSpectrum (𝓞 K))) (harch : Even (n : ℕ) ∨ ∀ w : InfinitePlace K, ¬ w.IsReal)
+
+include eG harch in
 /-- The idele norm inclusion `h(S,T) ⊆ N_{L/K} I_L`. -/
 theorem idelePowerLocalUnitSubgroup_le_relativeIdeleNorm_range
-    (n : ℕ+) (r : ℕ)
-    (eG :
-      (L ≃ₐ[K] L) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
-    (harch :
-      Even (n : ℕ) ∨
-        ∀ w : InfinitePlace K, ¬ w.IsReal)
     (hT :
       ∀ v, v ∈ T →
         _root_.FinitePlaceSplitsCompletely
@@ -91,33 +70,24 @@ theorem idelePowerLocalUnitSubgroup_le_relativeIdeleNorm_range
   · intro w
     apply
       _root_.infinitePositiveSubgroup_le_infiniteTensorNormSubgroup
-        (K := K) (L := L) w
+          w
     apply
       nthPowerSubgroup_le_infinitePositiveSubgroup
-        (K := K) n w
+         n w
     · exact harch.imp_right (fun h => h w)
     · exact
         ((mem_idelePowerLocalUnitSubgroup_iff
-          (K := K) n S T a).mp ha).1 w
+           n S T a).mp ha).1 w
   · intro v
     rw [
       _root_.finitePlaceLocalTensorNorm_range_eq_chosenLocalNormSubgroup]
-    have hall :=
-      idelePowerLocalUnitSubgroup_le_allFinitePlaceLocalNormCondition
-        (K := K) (L := L) n r eG S T hT hAway ha
-    exact Subgroup.mem_iInf.mp hall v
+    exact Subgroup.mem_iInf.mp (idelePowerLocalUnitSubgroup_le_allFinitePlaceLocalNormCondition
+      n r eG S T hT hAway ha) v
 
+include eG harch in
 /-- The induced norm inclusion on idele class groups:
 `N_{L/K} C_L ⊇ C_K(S,T)`. -/
 theorem ideleClassPowerLocalUnitSubgroup_le_ideleClassNorm_range
-    (n : ℕ+) (r : ℕ)
-    (eG :
-      (L ≃ₐ[K] L) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
-    (harch :
-      Even (n : ℕ) ∨
-        ∀ w : InfinitePlace K, ¬ w.IsReal)
     (hT :
       ∀ v, v ∈ T →
         _root_.FinitePlaceSplitsCompletely
@@ -131,12 +101,11 @@ theorem ideleClassPowerLocalUnitSubgroup_le_ideleClassNorm_range
   rintro c ⟨a, ha, rfl⟩
   obtain ⟨b, hb⟩ :=
     idelePowerLocalUnitSubgroup_le_relativeIdeleNorm_range
-      (K := K) (L := L) n r eG S T harch hT hAway ha
+        n r eG S T harch hT hAway ha
   refine
     ⟨QuotientGroup.mk'
         (RelativeIdeleGroup.principalSubgroup K L) b, ?_⟩
   rw [RelativeIdeleGroup.Cohomology.ideleClassNorm_mk, hb]
-
 
 end GlobalClassFieldTheory.ClassFieldAxiom
 

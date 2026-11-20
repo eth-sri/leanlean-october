@@ -13,8 +13,8 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.TorusNorms
 open KPAdelicCoverRestrictedProduct
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
 
  def localNorm (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
     (a d : InfinitePlace F → ℂˣ) : KPHilbert.Place F → ℝ
@@ -34,10 +34,8 @@ variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
     rw [← S.borel.torus_projection, S.torus_full, ht]
     exact (S.openCell (C.polarization q)).projection_eq g
   let b : KPRankOneInduction.upperBorel F q := ⟨Matrix.ProjGenLinGroup.mk g.g, g.g, rfl, h10⟩
-  have h1 := KPRankOneInduction.borelRatio_eq F q b
-    (KubotaRankTwo.d (q.adicCompletion F) (S.borel.coordinate t) 1) hp (by simp [KubotaRankTwo.d])
-  have h2 := KPRankOneInduction.borelRatio_eq F q b g.g rfl h10
-  simpa [KubotaRankTwo.coe_d] using h1.symm.trans h2
+  simpa [KubotaRankTwo.coe_d] using (KPRankOneInduction.borelRatio_eq F q b
+    (KubotaRankTwo.d (q.adicCompletion F) (S.borel.coordinate t) 1) hp (by simp [KubotaRankTwo.d])).symm.trans (KPRankOneInduction.borelRatio_eq F q b g.g rfl h10)
 
  theorem arch_matrix (w : InfinitePlace F)
     (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w))
@@ -146,18 +144,14 @@ variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
       (∀ w, LocalCovariance.complexMatrix F ζ hζ w (u (Sum.inl w)) =
         KPCplxPrincipalSeriesCharts.upperTriangular (a w) (d w) 0) ∧
       scalarQuotient F ζ hζ (amalgamation F ζ hζ u) = e.val := by
-  have hsur : Function.Surjective (fun u : RestrictedCover F ζ hζ =>
-      scalarQuotient F ζ hζ (amalgamation F ζ hζ u)) :=
-    (QuotientGroup.mk'_surjective _).comp (QuotientGroup.mk'_surjective _)
-  obtain ⟨u, he⟩ := hsur e.val
+  obtain ⟨u, he⟩ := ((QuotientGroup.mk'_surjective _).comp (QuotientGroup.mk'_surjective _)) e.val
   have hd := FullTorusFormula.raw_diagonal F ζ hζ e u he
   let h v := (KPGlobalCenterRationalCharacterModulus.raw_torus_local_ratio F ζ hζ u e he v).choose
-  let t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q := fun q =>
-    ⟨KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (u (Sum.inr q)),
-      (u (Sum.inr q)).g, rfl, (hd _).1, (hd _).2⟩
   let E w := (InfinitePlace.Completion.ringEquivComplexOfIsComplex
     (KPHilbert.infinite_isComplex F ζ hζ w)).toRingHom
-  refine ⟨u, t, (fun w => Units.map (E w) (h (Sum.inl w)).1.unit),
+  refine ⟨u, (fun q =>
+    ⟨KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (u (Sum.inr q)),
+      (u (Sum.inr q)).g, rfl, (hd _).1, (hd _).2⟩), (fun w => Units.map (E w) (h (Sum.inl w)).1.unit),
     (fun w => Units.map (E w) (h (Sum.inl w)).2.unit), fun _ => rfl, ?_, he⟩
   intro w
   exact arch_matrix F ζ hζ w _ (h _) (hd _).1 (hd _).2

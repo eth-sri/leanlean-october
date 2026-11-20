@@ -10,18 +10,18 @@ open scoped Classical NumberField Topology ContDiff
 open MeasureTheory Filter
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming cutoff → cutoff
-open _root_.DedekindZetaZeroFree renaming canonicalRealization → canonicalRealization
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming lift_eq → lift_eq
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer (cutoff)
+open _root_.DedekindZetaZeroFree (canonicalRealization)
+
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (lift_eq)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "level" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U
 local notation "G" => KPContSectorCoveredQuotientVocabulary.ActualCover F ζ hζ
@@ -86,14 +86,13 @@ theorem spherical_scalar_hilbert_orthogonal_centers
     unfold KPContActualChamberNormalSeries.term KPContActualSphericalFlatStage.L
       KPContFlatCommonLevelKernel.L
     simp [ι, lift_eq]
-  · have hStage := stageConclusions F ζ hζ C R P H U ι hι
-    have hHilb := kp_cont_actual_hilbert_simple_germs F ζ hζ C R P H U
-      R.adelicHaar R.adelic_isHaar rfl realization ι hι hStage
+  · have hHilb := kp_cont_actual_hilbert_simple_germs F ζ hζ C R P H U
+      R.adelicHaar R.adelic_isHaar rfl realization ι hι
       KPContinuation.spectralDomain KPContinuation.spectralDomain_isOpen Set.Subset.rfl
       (fun _ => 1) hf buffer χ source
     intro c hc
     obtain ⟨r, hr, hb, hi, w, hw, he, _⟩ := hHilb.simple_germs c hc
-    obtain ⟨N⟩ := hW.continuation.every_germ c hc r hr hb hi w hw he
+    obtain ⟨N⟩ := hW.every_germ c hc r hr hb hi w hw he
     refine ⟨r, hr, hb, numerator F ζ hζ C R P H U source.descent.cutoff c N.W,
       N.numerator_data, N.punctured_group, ?_, ?_⟩
     · refine ⟨w c, ?_, ?_, ?_⟩

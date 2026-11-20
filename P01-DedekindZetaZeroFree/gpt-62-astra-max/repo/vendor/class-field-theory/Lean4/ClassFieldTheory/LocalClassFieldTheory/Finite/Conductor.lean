@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -81,12 +77,13 @@ theorem localConductorExponent_spec
   classical
   exact Nat.find_spec (exists_fieldPrincipalUnits_le_normSubgroup K L)
 
+section
+
+variable (K L : Type) [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L]
+    [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+
 /-- Minimality of the conductor exponent. -/
 theorem localConductorExponent_min
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
     {n : ℕ} (hn : LocalFieldTheory.fieldPrincipalUnits K n ≤ localNormSubgroup K L) :
     localConductorExponent K L ≤ n := by
   classical
@@ -95,10 +92,6 @@ theorem localConductorExponent_min
 /-- A depth contains the conductor depth exactly when its principal units are
 already norms.  This records both the defining property and its minimality. -/
 theorem localConductorExponent_le_iff
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
     (n : ℕ) :
     localConductorExponent K L ≤ n ↔
       LocalFieldTheory.fieldPrincipalUnits K n ≤ localNormSubgroup K L := by
@@ -107,6 +100,8 @@ theorem localConductorExponent_le_iff
     exact (fieldPrincipalUnits_antitone K hn).trans
       (localConductorExponent_spec K L)
   · exact localConductorExponent_min K L
+
+end
 
 /-- The conductor ideal `p_K ^ n`, where `n` is the least principal-unit
 depth contained in the norm subgroup. -/

@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -37,35 +32,27 @@ namespace ClassFieldTheory
 
 universe u
 
- def rayLocalIntegralValue
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K))
+ section
+
+variable {K : Type u} [Field K] [NumberField K] (v : HeightOneSpectrum (𝓞 K))
+
+def rayLocalIntegralValue
     (y : (v.adicCompletionIntegers K).units) :
     v.adicCompletionIntegers K :=
   ((v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType y :
     (v.adicCompletionIntegers K)ˣ).1
 
-private theorem rayLocalHigherUnitMap_eq_one_iff
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K)) (n : ℕ)
+private theorem rayLocalHigherUnitMap_eq_one_iff (n : ℕ)
     (y : (v.adicCompletionIntegers K).units) :
     rayLocalHigherUnitMap v n y = 1 ↔
       rayLocalIntegralValue v y - 1 ∈
         (IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)) ^ n := by
-  let I := (IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)) ^ n
-  change Units.map (Ideal.Quotient.mk I).toMonoidHom
-      ((v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType y) =
-        1 ↔ _
   rw [Units.ext_iff]
-  change Ideal.Quotient.mk I (rayLocalIntegralValue v y) =
-      Ideal.Quotient.mk I 1 ↔ _
   exact Ideal.Quotient.mk_eq_mk_iff_sub_mem
-    (I := I) (rayLocalIntegralValue v y)
+     (rayLocalIntegralValue v y)
       (1 : v.adicCompletionIntegers K)
 
 private theorem rayLocalHigherUnitGroup_antitone
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K))
     {m n : ℕ} (hmn : m ≤ n) :
     rayLocalHigherUnitGroup v n ≤ rayLocalHigherUnitGroup v m := by
   intro x hx
@@ -83,36 +70,36 @@ private theorem rayLocalHigherUnitGroup_antitone
   rw [rayLocalHigherUnitMap_eq_one_iff] at hy ⊢
   exact Ideal.pow_le_pow_right hmn hy
 
+end
+
+section
+
+variable {K : Type u} [Field K] [NumberField K] {m n : RayClassModulus K} (hmn : m ≤ n)
+
+include hmn in
 private theorem rayCongruent_of_le
-    {K : Type u} [Field K] [NumberField K]
-    {m n : RayClassModulus K} (hmn : m ≤ n)
     {x : Kˣ} (hx : IsRayCongruent n x) :
     IsRayCongruent m x := by
   constructor
   · intro v hv
-    have hvn : v ∈ n.finitePart.support := by
-      apply Finsupp.mem_support_iff.mpr
-      have hpos : 0 < m.finitePart v :=
-        Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hv)
-      exact Nat.ne_of_gt (lt_of_lt_of_le hpos (hmn.1 v))
-    exact rayLocalHigherUnitGroup_antitone v (hmn.1 v) (hx.1 v hvn)
+    refine rayLocalHigherUnitGroup_antitone v (hmn.1 v) (hx.1 v ?_)
+    apply Finsupp.mem_support_iff.mpr
+    exact Nat.ne_of_gt (lt_of_lt_of_le (Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hv)) (hmn.1 v))
   · intro v hv
     exact hx.2 v (hmn.2 hv)
 
- theorem rayPrimeToIdeals_antitone
-    {K : Type u} [Field K] [NumberField K]
-    {m n : RayClassModulus K} (hmn : m ≤ n) :
-    rayClassPrimeToIdeals n ≤ rayClassPrimeToIdeals m := by
-  intro I hI v hv
-  exact hI v (Finsupp.support_mono hmn.1 hv)
+ include hmn in
+theorem rayPrimeToIdeals_antitone :
+    rayClassPrimeToIdeals n ≤ rayClassPrimeToIdeals m := fun I hI v hv => hI v (Finsupp.support_mono hmn.1 hv)
 
- theorem rayPrincipalIdeals_antitone
-    {K : Type u} [Field K] [NumberField K]
-    {m n : RayClassModulus K} (hmn : m ≤ n) :
+ include hmn in
+theorem rayPrincipalIdeals_antitone :
     rayPrincipalIdealSubgroup n ≤ rayPrincipalIdealSubgroup m := by
   apply Subgroup.closure_mono
   rintro I ⟨x, hx, hIx⟩
   exact ⟨x, rayCongruent_of_le hmn hx, hIx⟩
+
+end
 
 /-- The ideal-theoretic ray class group modulo a larger modulus projects to
 the ray class group modulo a smaller modulus. -/
@@ -120,19 +107,15 @@ def rayClassIdealModulusProjection
     (K : Type u) [Field K] [NumberField K]
     {m n : RayClassModulus K} (hmn : m ≤ n) :
     RayClassGroup n →* RayClassGroup m := by
-  let hI : rayClassPrimeToIdeals n ≤ rayClassPrimeToIdeals m :=
-    rayPrimeToIdeals_antitone hmn
   letI : (rayPrincipalIdealSubgroupInPrimeTo m).Normal :=
     Subgroup.normal_of_isMulCommutative _
   refine QuotientGroup.map
     (rayPrincipalIdealSubgroupInPrimeTo n)
     (rayPrincipalIdealSubgroupInPrimeTo m)
-    (Subgroup.inclusion hI) ?_
+    (Subgroup.inclusion (rayPrimeToIdeals_antitone hmn)) ?_
   intro I hI'
   change (I : NumberFieldFractionalIdealGroup K) ∈
     rayPrincipalIdealSubgroup n at hI'
-  change (I : NumberFieldFractionalIdealGroup K) ∈
-    rayPrincipalIdealSubgroup m
   exact rayPrincipalIdeals_antitone hmn hI'
 
 end ClassFieldTheory

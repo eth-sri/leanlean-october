@@ -23,12 +23,13 @@ theorem defect_w_open
     (hgh21 : (g * h : Matrix (Fin 2) (Fin 2) K) 1 0 ≠ 0)
     (hgh22 : (g * h : Matrix (Fin 2) (Fin 2) K) 1 1 ≠ 0) :
     KubotaElementaryLastArgument.defect K M B g h (KubotaRankTwo.w K) = 1 := by
+  let Matrix₀ := Matrix (Fin 2) (Fin 2) K
   classical
-  let c : Kˣ := Units.mk0 ((g : Matrix (Fin 2) (Fin 2) K) 1 0) hg21
-  let e : Kˣ := Units.mk0 ((h : Matrix (Fin 2) (Fin 2) K) 1 0) hh21
-  let f : Kˣ := Units.mk0 ((h : Matrix (Fin 2) (Fin 2) K) 1 1) hh22
-  let C : Kˣ := Units.mk0 ((g * h : Matrix (Fin 2) (Fin 2) K) 1 0) hgh21
-  let D : Kˣ := Units.mk0 ((g * h : Matrix (Fin 2) (Fin 2) K) 1 1) hgh22
+  let c := Units.mk0 (g 1 0) hg21
+  let e := Units.mk0 (h 1 0) hh21
+  let f := Units.mk0 (h 1 1) hh22
+  let C := Units.mk0 ((g * h : Matrix₀) 1 0) hgh21
+  let D := Units.mk0 ((g * h : Matrix₀) 1 1) hgh22
   let q := KubotaRankTwo.det K h
   have xg : KubotaRankTwo.X K g = c := by
     apply Units.ext
@@ -45,18 +46,18 @@ theorem defect_w_open
   have xghw : KubotaRankTwo.X K (g * h * KubotaRankTwo.w K) = D := by
     apply Units.ext
     have hb : ((g * h * KubotaRankTwo.w K : KubotaRankTwo.GL2 K) :
-        Matrix (Fin 2) (Fin 2) K) 1 0 =
-        (g * h : Matrix (Fin 2) (Fin 2) K) 1 1 := by
+        Matrix₀) 1 0 =
+        (g * h : Matrix₀) 1 1 := by
       simp [Matrix.mul_apply]
     change KubotaRankTwo.x K (g * h * KubotaRankTwo.w K) =
-      (g * h : Matrix (Fin 2) (Fin 2) K) 1 1
+      (g * h : Matrix₀) 1 1
     simp [KubotaRankTwo.x, hb, hgh22]
   have rel : (C : K) * (f : K) - (D : K) * (e : K) = (c : K) * (q : K) := by
     simp [C, D, c, e, f, q, KubotaRankTwo.det,
       Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, Matrix.mul_apply]
     ring
-  let s : Kˣ := c * q / (C * f)
-  let a : Kˣ := D * e / (C * f)
+  let s := c * q / (C * f)
+  let a := D * e / (C * f)
   have ha : (a : K) = 1 - (s : K) := by
     dsimp [a, s]
     simp only [Units.val_div_eq_div_val, Units.val_mul]
@@ -83,7 +84,7 @@ theorem defect_w_open
     c e f C D (1 : Kˣ) (KubotaRankTwo.det K g) q
   simp only [one_mul] at hf ⊢
   rw [hf]
-  simpa [a, s, q] using cancel
+  simpa [s] using cancel
 
 end KubotaWeylOpenCell
 end DedekindZetaZeroFree

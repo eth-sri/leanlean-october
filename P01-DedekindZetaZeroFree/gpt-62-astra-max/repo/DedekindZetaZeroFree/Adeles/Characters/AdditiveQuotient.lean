@@ -7,12 +7,18 @@ public import DedekindZetaZeroFree.Theta.Whittaker.NormalizedFiniteTensorProduct
 
 namespace DedekindZetaZeroFree
 
-abbrev KPAdeles (F : Type*) [Field F] [NumberField F] :=
+section
+
+variable (F : Type*) [Field F] [NumberField F]
+
+abbrev KPAdeles :=
   NumberField.AdeleRing (NumberField.RingOfIntegers F) F
 
-abbrev KPAdditiveQuotient (F : Type*) [Field F] [NumberField F] :=
+abbrev KPAdditiveQuotient :=
   KPAdeles F ⧸
     NumberField.AdeleRing.principalSubgroup (NumberField.RingOfIntegers F) F
+
+end
 
 structure ContinuousAddChar (A : Type*) [AddMonoid A] [TopologicalSpace A]
     extends AddChar A ℂ where

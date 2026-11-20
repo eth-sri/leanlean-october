@@ -25,22 +25,17 @@ theorem cleared_limit_of_chamber_transformation
     (hclearC : C =ᶠ[𝓝[≠] (0 : ℂ)] (fun s => s * A s))
     (hclearD : D =ᶠ[𝓝[≠] (0 : ℂ)] (fun s => s * B s)) :
     C 0 = m 0 * D 0 := by
-  let L : ℂ → ℂ := fun s => A s - p s
-  let R : ℂ → ℂ := fun s => m s * (B s - q s)
-  have hL : MeromorphicOn L U := hA.sub hp
-  have hR : MeromorphicOn R U := hm.mul (hB.sub hq)
+  let L := fun s => A s - p s
+  let R := fun s => m s * (B s - q s)
   obtain ⟨z, hzV⟩ := hne
-  have hlocal : L =ᶠ[𝓝[≠] z] R :=
-    (Filter.Eventually.filter_mono nhdsWithin_le_nhds (hV.mem_nhds hzV)).mono
-      (fun s hs => heq s hs)
   have htop : meromorphicOrderAt (L - R) z = ⊤ := by
     apply meromorphicOrderAt_eq_top_iff.mpr
-    filter_upwards [hlocal] with s hs
+    filter_upwards [((Filter.Eventually.filter_mono nhdsWithin_le_nhds (hV.mem_nhds hzV)).mono
+      (fun s hs => heq s hs))] with s hs
     exact sub_eq_zero.mpr hs
-  have htop0 := (hL.sub hR).meromorphicOrderAt_eq_top_of_isPreconnected
-    hc.isPreconnected (hsub hzV) hz htop
   have hout : L =ᶠ[𝓝[≠] (0 : ℂ)] R := by
-    filter_upwards [meromorphicOrderAt_eq_top_iff.mp htop0] with s hs
+    filter_upwards [meromorphicOrderAt_eq_top_iff.mp (((hA.sub hp).sub (hm.mul (hB.sub hq))).meromorphicOrderAt_eq_top_of_isPreconnected
+      hc.isPreconnected (hsub hzV) hz htop)] with s hs
     exact sub_eq_zero.mp hs
   have hcleared : (fun s => C s - s * p s) =ᶠ[𝓝[≠] (0 : ℂ)]
       (fun s => m s * (D s - s * q s)) := by
@@ -51,13 +46,8 @@ theorem cleared_limit_of_chamber_transformation
       s * A s - s * p s = s * (A s - p s) := by ring
       _ = s * (m s * (B s - q s)) := by rw [hs]
       _ = m s * (s * B s - s * q s) := by ring
-  have hlcont : ContinuousAt (fun s => C s - s * p s) 0 :=
-    hC.sub (continuousAt_id.mul hp0)
-  have hrcont : ContinuousAt (fun s => m s * (D s - s * q s)) 0 :=
-    hm0.mul (hD.sub (continuousAt_id.mul hq0))
-  have he := Filter.EventuallyEq.eq_of_nhds
-    ((hlcont.eventuallyEq_nhds_iff_eventuallyEq_nhdsNE hrcont).mp hcleared)
-  simpa using he
+  simpa using (Filter.EventuallyEq.eq_of_nhds
+    (((hC.sub (continuousAt_id.mul hp0)).eventuallyEq_nhds_iff_eventuallyEq_nhdsNE (hm0.mul (hD.sub (continuousAt_id.mul hq0)))).mp hcleared))
 
 end DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.ResidueCovariance
 

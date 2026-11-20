@@ -10,8 +10,8 @@ open scoped Classical NumberField
 namespace DedekindZetaZeroFree.FiniteWhittakerProjectors
 open MomentSources ThetaExpansion
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η}
 
 theorem prepare_cutoffs {N : TraceHaarTransport R}
     (A : FirstRootSphericalSeed R N) (B : FirstRootCutoffs R) :

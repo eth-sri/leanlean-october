@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -55,20 +51,18 @@ theorem frobeniusExponent_mul (D : DegreeData G)
       D.frobeniusExponent K L hLK σ₂ := by
   apply proCIntegerOne_pow_nat_injective
   calc
-    (Multiplicative.ofAdd (1 : ZHat)) ^
-        D.frobeniusExponent K L hLK (σ₁ * σ₂) =
+    _ =
       D.extensionNormalizedDegree K L hLK (σ₁ * σ₂).1 :=
         (D.extensionNormalizedDegree_frobenius_eq_pow K L hLK
           (σ₁ * σ₂)).symm
     _ = D.extensionNormalizedDegree K L hLK σ₁.1 *
         D.extensionNormalizedDegree K L hLK σ₂.1 := by
-      rw [frobeniusMul_coe, map_mul]
+      simp
     _ = (Multiplicative.ofAdd (1 : ZHat)) ^
             D.frobeniusExponent K L hLK σ₁ *
         (Multiplicative.ofAdd (1 : ZHat)) ^
             D.frobeniusExponent K L hLK σ₂ := by
-      rw [D.extensionNormalizedDegree_frobenius_eq_pow,
-        D.extensionNormalizedDegree_frobenius_eq_pow]
+      simp [D.extensionNormalizedDegree_frobenius_eq_pow]
     _ = (Multiplicative.ofAdd (1 : ZHat)) ^
             (D.frobeniusExponent K L hLK σ₁ +
               D.frobeniusExponent K L hLK σ₂) := by
@@ -105,7 +99,7 @@ theorem frobeniusQuotientAction_fixedFieldInclusion (D : DegreeData G)
       fixedFieldInclusion A (D.frobeniusFixedField K L hLK σ)
         (D.maximalUnramifiedField L)
         (D.fieldInertia_le_frobeniusFixedField K L hLK σ) a := by
-  let k : K.field.toSubgroup := Quotient.out σ.1
+  let k := Quotient.out σ.1
   have hσk : σ.1 = QuotientGroup.mk k := (Quotient.out_eq' σ.1).symm
   have hσClosure : σ.1 ∈
       (D.frobeniusClosure K L hLK σ).toSubgroup := by
@@ -137,23 +131,21 @@ variable {G : Type u} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
+section
+
+variable (D : DegreeData G) (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+    (hLK : L.toSubgroup ≤ K.field.toSubgroup) [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+    (φ σ : D.FrobeniusElements K L hLK)
+
 /-- For the left `Rep` action, the remainder corresponding to the
 right-action notation is `φⁿσ⁻¹`. -/
-def frobeniusActionRemainder (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (φ σ : D.FrobeniusElements K L hLK) :
+def frobeniusActionRemainder :
     K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK :=
   φ.1 ^ D.frobeniusExponent K L hLK σ * σ.1⁻¹
 
 /-- If `φ` has Frobenius exponent one, its action remainder has normalized
 degree zero. -/
-theorem frobeniusActionRemainder_mem_degreeKernel (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (φ σ : D.FrobeniusElements K L hLK)
+theorem frobeniusActionRemainder_mem_degreeKernel
     (hφ : D.frobeniusExponent K L hLK φ = 1) :
     D.frobeniusActionRemainder K L hLK φ σ ∈
       (D.extensionNormalizedDegreeContinuous K L hLK).toMonoidHom.ker := by
@@ -166,11 +158,7 @@ theorem frobeniusActionRemainder_mem_degreeKernel (D : DegreeData G)
 
 /-- Conjugate adapted to the left action:
 `σ₄ˡ = φⁿ²σ₁φ⁻ⁿ²`. -/
-def frobeniusActionConjugate (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (φ σ : D.FrobeniusElements K L hLK) (m : ℕ) :
+def frobeniusActionConjugate (m : ℕ) :
     D.FrobeniusElements K L hLK := by
   let n := D.frobeniusExponent K L hLK σ
   refine ⟨φ.1 ^ m * σ.1 * φ.1⁻¹ ^ m, n,
@@ -181,30 +169,20 @@ def frobeniusActionConjugate (D : DegreeData G)
 
 /-- The underlying quotient element of the Frobenius action conjugate. -/
 @[simp]
-theorem frobeniusActionConjugate_coe (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (φ σ : D.FrobeniusElements K L hLK) (m : ℕ) :
+theorem frobeniusActionConjugate_coe (m : ℕ) :
     (D.frobeniusActionConjugate K L hLK φ σ m).1 =
       φ.1 ^ m * σ.1 * φ.1⁻¹ ^ m := by
   simp [frobeniusActionConjugate]
 
 /-- Frobenius action conjugation preserves the Frobenius exponent. -/
 @[simp]
-theorem frobeniusExponent_actionConjugate (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (φ σ : D.FrobeniusElements K L hLK) (m : ℕ) :
+theorem frobeniusExponent_actionConjugate (m : ℕ) :
     D.frobeniusExponent K L hLK
         (D.frobeniusActionConjugate K L hLK φ σ m) =
       D.frobeniusExponent K L hLK σ := by
   apply proCIntegerOne_pow_nat_injective
   calc
-    (Multiplicative.ofAdd (1 : ZHat)) ^
-        D.frobeniusExponent K L hLK
-          (D.frobeniusActionConjugate K L hLK φ σ m) =
+    _ =
       D.extensionNormalizedDegree K L hLK
         (D.frobeniusActionConjugate K L hLK φ σ m).1 :=
           (D.extensionNormalizedDegree_frobenius_eq_pow K L hLK
@@ -215,6 +193,8 @@ theorem frobeniusExponent_actionConjugate (D : DegreeData G)
         map_inv,
         D.extensionNormalizedDegree_frobenius_eq_pow K L hLK σ]
       simp [mul_assoc]
+
+end
 
 /-- The fixed field of the left-action conjugate
 `φᵐσφ⁻ᵐ` is the corresponding conjugate of the fixed field of
@@ -234,7 +214,7 @@ theorem conjugate_frobeniusFixedField_actionConjugate
         (D.frobeniusActionConjugate K L hLK φ σ m) := by
   dsimp only
   let q := φ.1 ^ m
-  let k : K.field.toSubgroup := Quotient.out q
+  let k := Quotient.out q
   let σ' := D.frobeniusActionConjugate K L hLK φ σ m
   have hkq :
       (QuotientGroup.mk k :
@@ -291,14 +271,9 @@ theorem conjugate_frobeniusFixedField_actionConjugate
   · intro hx
     obtain ⟨t, htClosure, htx⟩ := hx
     let yK : K.field.toSubgroup := ⟨k.1⁻¹ * x * k.1, by
-      have htK : t.1 ∈ K.field.toSubgroup := t.2
       rw [← htx]
       exact K.field.toSubgroup.mul_mem
-        (K.field.toSubgroup.mul_mem (K.field.toSubgroup.inv_mem k.2) htK) k.2⟩
-    have htClosure' : QuotientGroup.mk t ∈
-        (closedSubgroupGenerated ({σ'.1} : Set
-          (K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK))).toSubgroup := by
-      simpa [DegreeData.frobeniusClosure] using htClosure
+        (K.field.toSubgroup.mul_mem (K.field.toSubgroup.inv_mem k.2) t.2) k.2⟩
     have hyClosure' : QuotientGroup.mk yK ∈
         (closedSubgroupGenerated ({σ.1} : Set
           (K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK))).toSubgroup := by
@@ -312,13 +287,14 @@ theorem conjugate_frobeniusFixedField_actionConjugate
           (QuotientGroup.mk t :
             K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) := by
         rw [← hkq]
-        simpa using congrArg
+        exact congrArg
           (fun z : K.field.toSubgroup =>
             (QuotientGroup.mk z :
               K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)) hyK
       rw [hyKq]
       rw [← hσ']
-      exact htClosure'
+      exact (by
+        simpa [DegreeData.frobeniusClosure] using htClosure)
     exact ⟨yK, by simpa [DegreeData.frobeniusClosure] using hyClosure', by simp [yK]⟩
 
 end DegreeData
@@ -351,19 +327,7 @@ theorem frobeniusActionRemainder_mul (D : DegreeData G)
       φ.1 ^ D.frobeniusExponent K L hLK σ₂ *
         φ.1 ^ D.frobeniusExponent K L hLK σ₁ := by
     rw [← pow_add, ← pow_add, Nat.add_comm]
-  calc
-    φ.1 ^ D.frobeniusExponent K L hLK σ₁ *
-          (φ.1 ^ D.frobeniusExponent K L hLK σ₂ *
-            (σ₂.1⁻¹ * σ₁.1⁻¹)) =
-        (φ.1 ^ D.frobeniusExponent K L hLK σ₁ *
-          φ.1 ^ D.frobeniusExponent K L hLK σ₂) *
-            (σ₂.1⁻¹ * σ₁.1⁻¹) := by rw [mul_assoc]
-    _ = (φ.1 ^ D.frobeniusExponent K L hLK σ₂ *
-          φ.1 ^ D.frobeniusExponent K L hLK σ₁) *
-            (σ₂.1⁻¹ * σ₁.1⁻¹) := by rw [hp]
-    _ = φ.1 ^ D.frobeniusExponent K L hLK σ₂ *
-          (φ.1 ^ D.frobeniusExponent K L hLK σ₁ *
-            (σ₂.1⁻¹ * σ₁.1⁻¹)) := by rw [mul_assoc]
+  grind
 
 end DegreeData
 
@@ -405,7 +369,6 @@ theorem frobeniusActionRemainder_apply_fixedField (D : DegreeData G)
     (D.fieldInertia_le_frobeniusFixedField K L hLK σ) a
   let B := D.frobeniusQuotientRepresentation A K.field L hLK
   have hfix : B.ρ σ.1 aI = aI := by
-    change D.frobeniusQuotientAction A K.field L hLK σ.1 aI = aI
     exact D.frobeniusQuotientAction_fixedFieldInclusion A K L hLK σ a
   have hinv : B.ρ σ.1⁻¹ aI = aI := by
     have hmul : B.ρ (σ.1⁻¹ * σ.1) aI = aI := by
@@ -415,12 +378,13 @@ theorem frobeniusActionRemainder_apply_fixedField (D : DegreeData G)
     change B.ρ σ.1⁻¹ (B.ρ σ.1 aI) = aI at hmul
     rw [hfix] at hmul
     exact hmul
+  let ρ₀ := B.ρ (φ.1 ^ D.frobeniusExponent K L hLK σ)
   change B.ρ
       (φ.1 ^ D.frobeniusExponent K L hLK σ * σ.1⁻¹) aI =
-    B.ρ (φ.1 ^ D.frobeniusExponent K L hLK σ) aI
+    ρ₀ aI
   rw [map_mul]
-  change B.ρ (φ.1 ^ D.frobeniusExponent K L hLK σ) (B.ρ σ.1⁻¹ aI) =
-    B.ρ (φ.1 ^ D.frobeniusExponent K L hLK σ) aI
+  change ρ₀ (B.ρ σ.1⁻¹ aI) =
+    ρ₀ aI
   rw [hinv]
 
 end DegreeData

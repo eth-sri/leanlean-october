@@ -57,8 +57,11 @@ private theorem central_comm (ε : rootsOfUnity 3 F) (c : FiniteCover F ζ hζ) 
     (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
       ⟨ε, rfl⟩) c).symm
 
- theorem central_translation_respects
-    (U : CompactOpenLevel (FiniteCover F ζ hζ)) (ε : rootsOfUnity 3 F)
+ section
+
+variable (U : CompactOpenLevel (FiniteCover F ζ hζ)) (ε : rootsOfUnity 3 F)
+
+theorem central_translation_respects
     (p p' : SymmetricSpace F × FiniteCover F ζ hζ)
     (h : (coveredRelation F ζ hζ U).r p p') :
     Quotient.mk (coveredRelation F ζ hζ U)
@@ -73,7 +76,7 @@ private theorem central_comm (ε : rootsOfUnity 3 F) (c : FiniteCover F ζ hζ) 
     central_comm F ζ hζ ε (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ)]
   simp only [mul_assoc]
 
-def z (U : CompactOpenLevel (FiniteCover F ζ hζ)) (ε : rootsOfUnity 3 F) :
+def z :
     CoveredSpherical F ζ hζ U ≃ₜ CoveredSpherical F ζ hζ U where
   toFun := Quotient.lift (fun p => Quotient.mk (coveredRelation F ζ hζ U)
     (p.1, KPCuspGenuineMonodromy.central F ζ hζ ε * p.2))
@@ -85,15 +88,11 @@ def z (U : CompactOpenLevel (FiniteCover F ζ hζ)) (ε : rootsOfUnity 3 F) :
     intro a
     induction a using Quotient.inductionOn with
     | h p =>
-      change Quotient.mk _ (p.1, KPCuspGenuineMonodromy.central F ζ hζ ε⁻¹ *
-        (KPCuspGenuineMonodromy.central F ζ hζ ε * p.2)) = Quotient.mk _ p
       simp [map_inv]
   right_inv := by
     intro a
     induction a using Quotient.inductionOn with
     | h p =>
-      change Quotient.mk _ (p.1, KPCuspGenuineMonodromy.central F ζ hζ ε *
-        (KPCuspGenuineMonodromy.central F ζ hζ ε⁻¹ * p.2)) = Quotient.mk _ p
       simp [map_inv]
   continuous_toFun := by
     letI := (KPCubicCoverConstruction.adelic_topological_covers F ζ hζ).2.2.2.1
@@ -106,11 +105,12 @@ def z (U : CompactOpenLevel (FiniteCover F ζ hζ)) (ε : rootsOfUnity 3 F) :
     exact continuous_quotient_mk'.comp
       (continuous_fst.prodMk (continuous_const.mul continuous_snd))
 
-theorem z_mk (U : CompactOpenLevel (FiniteCover F ζ hζ))
-    (ε : rootsOfUnity 3 F) (x : SymmetricSpace F) (c : FiniteCover F ζ hζ) :
+theorem z_mk (x : SymmetricSpace F) (c : FiniteCover F ζ hζ) :
     z F ζ hζ U ε (Quotient.mk (coveredRelation F ζ hζ U) (x, c)) =
       Quotient.mk (coveredRelation F ζ hζ U)
         (x, KPCuspGenuineMonodromy.central F ζ hζ ε * c) := rfl
+
+end
 
 def centralAction (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
     rootsOfUnity 3 F →* (CoveredSpherical F ζ hζ U ≃ₜ CoveredSpherical F ζ hζ U) where
@@ -141,7 +141,11 @@ instance instMulActionCoveredSpherical (U : CompactOpenLevel (FiniteCover F ζ h
     exact congrArg (fun e : CoveredSpherical F ζ hζ U ≃ₜ CoveredSpherical F ζ hζ U => e a)
       ((centralAction F ζ hζ U).map_mul ε δ)
 
-def q (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
+section
+
+variable (U : CompactOpenLevel (FiniteCover F ζ hζ))
+
+def q :
     CoveredSpherical F ζ hζ U → KPFiniteCuspAtlas.rawXU F ζ hζ U :=
   Quotient.lift (fun p => Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U) p)
     (by
@@ -149,12 +153,12 @@ def q (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
       apply Quotient.sound
       exact ⟨γ, 1, u, hx, by simpa using hc⟩)
 
-theorem q_mk (U : CompactOpenLevel (FiniteCover F ζ hζ))
+theorem q_mk
     (x : SymmetricSpace F) (c : FiniteCover F ζ hζ) :
     q F ζ hζ U (Quotient.mk (coveredRelation F ζ hζ U) (x, c)) =
       Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U) (x, c) := rfl
 
-theorem q_z (U : CompactOpenLevel (FiniteCover F ζ hζ))
+theorem q_z
     (ε : rootsOfUnity 3 F) (a : CoveredSpherical F ζ hζ U) :
     q F ζ hζ U (z F ζ hζ U ε a) = q F ζ hζ U a := by
   induction a using Quotient.inductionOn with
@@ -164,6 +168,8 @@ theorem q_z (U : CompactOpenLevel (FiniteCover F ζ hζ))
     apply Eq.symm
     apply Quotient.sound
     exact ⟨1, ε, 1, by simp, by simp⟩
+
+end
 
 abbrev Gamma : Subgroup (ActualCover F ζ hζ) :=
   KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ
@@ -204,8 +210,7 @@ theorem coveredActualMap_mk (U : CompactOpenLevel (FiniteCover F ζ hζ))
       DoubleCoset.mk (Gamma F ζ hζ) (K_U F ζ hζ U) g := rfl
 
 theorem chi_norm (ε : rootsOfUnity 3 F) :
-    ‖(KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ)‖ = 1 := by
-  exact KPSmoothLocalQuotientCharts.ordinary_genuine_norm F ζ hζ ε
+    ‖(KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ)‖ = 1 := KPSmoothLocalQuotientCharts.ordinary_genuine_norm F ζ hζ ε
 
 def chi : rootsOfUnity 3 F →* Circle where
   toFun ε := ⟨(KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ), by

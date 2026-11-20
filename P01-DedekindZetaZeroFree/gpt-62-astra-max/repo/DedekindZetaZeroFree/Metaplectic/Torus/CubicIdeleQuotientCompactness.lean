@@ -11,19 +11,23 @@ namespace DedekindZetaZeroFree.KPCubicIdele
 noncomputable section
 open scoped NumberField NNReal IsMulCommutative
 
-abbrev Ideles (F : Type) [Field F] [NumberField F] :=
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+abbrev Ideles :=
   NumberField.IdeleGroup (𝓞 F) F
 
-def cubes (F : Type) [Field F] [NumberField F] : Subgroup (Ideles F) :=
+def cubes : Subgroup (Ideles F) :=
   (powMonoidHom (α := Ideles F) 3).range
 
-def rationalCubes (F : Type) [Field F] [NumberField F] : Subgroup (Ideles F) :=
+def rationalCubes : Subgroup (Ideles F) :=
   NumberField.IdeleGroup.principalSubgroup (𝓞 F) F ⊔ cubes F
 
-abbrev CubicClasses (F : Type) [Field F] [NumberField F] :=
+abbrev CubicClasses :=
   Ideles F ⧸ rationalCubes F
 
-theorem mem_rationalCubes_iff (F : Type) [Field F] [NumberField F]
+theorem mem_rationalCubes_iff
     (x : Ideles F) :
     x ∈ rationalCubes F ↔ ∃ (r : Fˣ) (a : Ideles F),
       x = NumberField.IdeleGroup.unitEmbedding (𝓞 F) F r * a ^ 3 := by
@@ -36,31 +40,36 @@ theorem mem_rationalCubes_iff (F : Type) [Field F] [NumberField F]
   · rintro ⟨r, a, rfl⟩
     exact ⟨_, ⟨r, rfl⟩, a ^ 3, ⟨a, rfl⟩, rfl⟩
 
-private theorem positive_cube (r : ℝ≥0ˣ) : ∃ s : ℝ≥0ˣ, s ^ 3 = r := by
-  let s := Units.map (NNReal.rpowMonoidHom (3 : ℝ)⁻¹) r
-  refine ⟨s, ?_⟩
-  apply Units.ext
-  exact NNReal.rpow_inv_natCast_pow (r : ℝ≥0) (by norm_num : (3 : ℕ) ≠ 0)
+end
 
- def classToCubic (F : Type) [Field F] [NumberField F] :
+private theorem positive_cube (r : ℝ≥0ˣ) : ∃ s : ℝ≥0ˣ, s ^ 3 = r := by
+  refine ⟨(Units.map (NNReal.rpowMonoidHom (3 : ℝ)⁻¹) r), ?_⟩
+  apply Units.ext
+  exact NNReal.rpow_inv_natCast_pow r (by norm_num : (3 : ℕ) ≠ 0)
+
+ section
+
+variable (F : Type) [Field F] [NumberField F]
+
+def classToCubic :
     IdeleClassGroup F →* CubicClasses F :=
   (QuotientGroup.map (NumberField.IdeleGroup.principalSubgroup (𝓞 F) F)
     (rationalCubes F) (MonoidHom.id _) le_sup_left).comp
     (IdeleGroup.ideleClassGroupEquivMathlib F).toMonoidHom
 
-private theorem classToCubic_continuous (F : Type) [Field F] [NumberField F] :
+private theorem classToCubic_continuous :
     Continuous (classToCubic F) := by
   apply Continuous.comp _ (IdeleGroup.continuous_ideleClassGroupEquivMathlib F)
   exact (QuotientGroup.isQuotientMap_mk
     (NumberField.IdeleGroup.principalSubgroup (𝓞 F) F)).continuous_iff.mpr
     QuotientGroup.continuous_mk
 
-private theorem classToCubic_mk (F : Type) [Field F] [NumberField F]
+private theorem classToCubic_mk
     (a : IdeleGroup F) :
     classToCubic F (QuotientGroup.mk' (IdeleGroup.principalSubgroup F) a) =
       QuotientGroup.mk' (rationalCubes F) (IdeleGroup.equivAdeleRingUnits a) := rfl
 
-private theorem classToCubic_section (F : Type) [Field F] [NumberField F]
+private theorem classToCubic_section
     (r : ℝ≥0ˣ) : classToCubic F (ideleClassPositiveArchimedeanSection F r) = 1 := by
   obtain ⟨s, rfl⟩ := positive_cube r
   rw [map_pow, map_pow]
@@ -70,44 +79,28 @@ private theorem classToCubic_section (F : Type) [Field F] [NumberField F]
   apply (QuotientGroup.eq_one_iff _).mpr
   exact (le_sup_right : cubes F ≤ rationalCubes F) ⟨_, rfl⟩
 
-private theorem cubic_compact (F : Type) [Field F] [NumberField F] :
-    CompactSpace (CubicClasses F) := by
-  let f : IdeleClassGroup.normOneSubgroup (K := F) → CubicClasses F :=
-    fun c => classToCubic F c
-  have hc : Continuous f := (classToCubic_continuous F).comp continuous_subtype_val
-  have hs : Function.Surjective f := by
-    intro z
-    obtain ⟨x, rfl⟩ := QuotientGroup.mk'_surjective (rationalCubes F) z
-    let a := (IdeleGroup.equivAdeleRingUnits (K := F)).symm x
-    refine ⟨ideleClassNormOneCorrection F a, ?_⟩
-    have h := congrArg (classToCubic F)
-      (ideleClass_mk_eq_normOneCorrection_mul_positiveSection_inv F a)
-    rw [map_mul, map_inv, classToCubic_section, inv_one] at h
-    change _ = (classToCubic F) (ideleClassNormOneCorrection F a) *
-      (1 : CubicClasses F) at h
-    rw [mul_one (M := CubicClasses F)] at h
-    simpa only [classToCubic_mk, a,
-      (IdeleGroup.equivAdeleRingUnits (K := F)).apply_symm_apply] using h.symm
-  exact hs.compactSpace hc
+end
 
-private theorem continuous_classNorm (F : Type) [Field F] [NumberField F] :
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+private theorem continuous_classNorm :
     Continuous (IdeleClassGroup.absoluteNorm (K := F)) := by
   have hfinite : Continuous (FiniteIdeleGroup.absoluteNorm (K := F)) := by
     apply continuous_of_continuousAt_one
-    apply (continuousAt_const (y := (1 : ℝ≥0ˣ))).congr_of_eventuallyEq
+    apply (continuousAt_const).congr_of_eventuallyEq
     have ho : IsOpen (FiniteIdeleGroup.integralSubgroup (K := F) :
         Set (FiniteIdeleGroup F)) := by
       simpa only [Finset.coe_empty, FiniteIdeleGroup.supportedAt_empty] using
         (FiniteIdeleGroup.isOpen_supportedAt (K := F) ∅)
     filter_upwards [ho.mem_nhds (Subgroup.one_mem _)] with a ha
     exact IdeleGroup.finite_absoluteNorm_eq_one_of_integral a ha
-  have hidele : Continuous (IdeleGroup.absoluteNorm (K := F)) :=
-    (hfinite.comp continuous_snd).mul
-      ((InfiniteIdeleGroup.continuous_archimedeanNorm.comp continuous_fst).inv)
   exact (QuotientGroup.isQuotientMap_mk
-    (IdeleGroup.principalSubgroup F)).continuous_iff.mpr hidele
+    (IdeleGroup.principalSubgroup F)).continuous_iff.mpr ((hfinite.comp continuous_snd).mul
+      ((InfiniteIdeleGroup.continuous_archimedeanNorm.comp continuous_fst).inv))
 
- def normProjection (F : Type) [Field F] [NumberField F] :
+ def normProjection :
     IdeleClassGroup F →* IdeleClassGroup F :=
   MonoidHom.mk'
     (fun c => c * ideleClassPositiveArchimedeanSection F (IdeleClassGroup.absoluteNorm c))
@@ -115,29 +108,23 @@ private theorem continuous_classNorm (F : Type) [Field F] [NumberField F] :
       simp only [map_mul]
       exact mul_mul_mul_comm (G := IdeleClassGroup F) _ _ _ _)
 
-private theorem normProjection_mem (F : Type) [Field F] [NumberField F]
-    (c : IdeleClassGroup F) : normProjection F c ∈ IdeleClassGroup.normOneSubgroup := by
-  change IdeleClassGroup.absoluteNorm
-    (c * ideleClassPositiveArchimedeanSection F (IdeleClassGroup.absoluteNorm c)) = 1
-  rw [map_mul, ideleClassPositiveArchimedeanSection_absoluteNorm, mul_inv_cancel]
+end
 
-private theorem normProjection_continuous (F : Type) [Field F] [NumberField F] :
-    Continuous (normProjection F) :=
-  continuous_id.mul ((ideleClassPositiveArchimedeanSectionContinuous F).continuous.comp
-    (continuous_classNorm F))
+variable (F : Type) [Field F] [NumberField F]
 
-private theorem class_cubes_closed (F : Type) [Field F] [NumberField F] :
+private theorem class_cubes_closed :
     IsClosed (Set.range (fun c : IdeleClassGroup F => c ^ 3)) := by
   let H := IdeleClassGroup.normOneSubgroup (K := F)
   let K : Set (IdeleClassGroup F) := (fun c : IdeleClassGroup F => c ^ 3) '' H
-  have hK : IsClosed K :=
-    (IdeleClassGroup.normOneSubgroup_isCompact.image (continuous_id.pow 3)).isClosed
   have heq : Set.range (fun c : IdeleClassGroup F => c ^ 3) =
       normProjection F ⁻¹' K := by
     ext c
     constructor
     · rintro ⟨a, rfl⟩
-      exact ⟨normProjection F a, normProjection_mem F a, (map_pow _ _ _).symm⟩
+      exact ⟨normProjection F a, (by
+        change IdeleClassGroup.absoluteNorm
+          (a * ideleClassPositiveArchimedeanSection F (IdeleClassGroup.absoluteNorm a)) = 1
+        rw [map_mul, ideleClassPositiveArchimedeanSection_absoluteNorm, mul_inv_cancel]), (map_pow _ _ _).symm⟩
     · rintro ⟨a, ha, h⟩
       obtain ⟨s, hs⟩ := positive_cube (IdeleClassGroup.absoluteNorm c)
       refine ⟨a * (ideleClassPositiveArchimedeanSection F s)⁻¹, ?_⟩
@@ -147,15 +134,13 @@ private theorem class_cubes_closed (F : Type) [Field F] [NumberField F] :
       rw [mul_pow (M := IdeleClassGroup F), inv_pow, ← map_pow, hs, h]
       exact mul_inv_cancel_right _ _
   rw [heq]
-  exact hK.preimage (normProjection_continuous F)
+  exact ((IdeleClassGroup.normOneSubgroup_isCompact.image (continuous_id.pow 3)).isClosed).preimage ((continuous_id.mul ((ideleClassPositiveArchimedeanSectionContinuous F).continuous.comp
+    (continuous_classNorm F))))
 
-theorem rationalCubes_isClosed (F : Type) [Field F] [NumberField F] :
+theorem rationalCubes_isClosed :
     IsClosed (rationalCubes F : Set (Ideles F)) := by
   let e := IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F
   let q := QuotientGroup.mk' (IdeleGroup.principalSubgroup F)
-  have hclosed : IsClosed ((q ∘ e.symm) ⁻¹'
-      Set.range (fun c : IdeleClassGroup F => c ^ 3)) :=
-    (class_cubes_closed F).preimage (QuotientGroup.continuous_mk.comp e.symm.continuous)
   have heq : (rationalCubes F : Set (Ideles F)) =
       (q ∘ e.symm) ⁻¹' Set.range (fun c : IdeleClassGroup F => c ^ 3) := by
     ext x
@@ -164,8 +149,6 @@ theorem rationalCubes_isClosed (F : Type) [Field F] [NumberField F] :
     constructor
     · rintro ⟨r, a, rfl⟩
       refine ⟨q (e.symm a), ?_⟩
-      change q (e.symm a) ^ 3 = q (e.symm
-        (NumberField.IdeleGroup.unitEmbedding (𝓞 F) F r * a ^ 3))
       rw [map_mul, map_pow, map_mul, map_pow]
       have hr : q (e.symm (NumberField.IdeleGroup.unitEmbedding (𝓞 F) F r)) = 1 := by
         apply (QuotientGroup.eq_one_iff _).mpr
@@ -190,17 +173,33 @@ theorem rationalCubes_isClosed (F : Type) [Field F] [NumberField F] :
       rw [IdeleGroup.equivAdeleRingUnits_principalIdele] at hx
       exact hx
   rw [heq]
-  exact hclosed
+  exact (class_cubes_closed F).preimage (QuotientGroup.continuous_mk.comp e.symm.continuous)
 
-theorem cubicClasses_compact_hausdorff (F : Type) [Field F] [NumberField F] :
+theorem cubicClasses_compact_hausdorff :
     CompactSpace (CubicClasses F) ∧ T2Space (CubicClasses F) ∧
       IsTopologicalGroup (CubicClasses F) := by
 
   haveI : IsClosed (rationalCubes F : Set (Ideles F)) := rationalCubes_isClosed F
   refine ⟨?_, inferInstance, inferInstance⟩
-  exact cubic_compact F
+  let f : IdeleClassGroup.normOneSubgroup (K := F) → CubicClasses F :=
+    fun c => classToCubic F c
+  have hc : Continuous f := (classToCubic_continuous F).comp continuous_subtype_val
+  have hs : Function.Surjective f := by
+    intro z
+    obtain ⟨x, rfl⟩ := QuotientGroup.mk'_surjective (rationalCubes F) z
+    let a := (IdeleGroup.equivAdeleRingUnits (K := F)).symm x
+    refine ⟨ideleClassNormOneCorrection F a, ?_⟩
+    have h := congrArg (classToCubic F)
+      (ideleClass_mk_eq_normOneCorrection_mul_positiveSection_inv F a)
+    rw [map_mul, map_inv, classToCubic_section, inv_one] at h
+    change _ = (classToCubic F) (ideleClassNormOneCorrection F a) *
+      (1 : CubicClasses F) at h
+    rw [mul_one (M := CubicClasses F)] at h
+    simpa only [classToCubic_mk, a,
+      (IdeleGroup.equivAdeleRingUnits).apply_symm_apply] using h.symm
+  exact hs.compactSpace hc
 
-theorem coveringTorus_quotient_compact (F : Type) [Field F] [NumberField F]
+theorem coveringTorus_quotient_compact
     (E : Type*) [Group E] [TopologicalSpace E] [IsTopologicalGroup E]
     (π : E →* Ideles F) (hπ : Continuous π) (hopen : IsOpenMap π)
     (hsurj : Function.Surjective π) (R : Subgroup E) [R.Normal]
@@ -276,8 +275,8 @@ theorem coveringTorus_quotient_compact (F : Type) [Field F] [NumberField F]
       exact QuotientGroup.lift_mk (N := R) (φ := fq) hfker x
     rw [h1]
     exact (QuotientGroup.isOpenMap_coe (G := Ideles F) (N := Mq)).comp hopen
-  let e : E ⧸ R ≃ Ideles F ⧸ Mq := Equiv.ofBijective φ ⟨hφinj, hφsurj⟩
-  have homeo : E ⧸ R ≃ₜ Ideles F ⧸ Mq :=
+  let e := Equiv.ofBijective φ ⟨hφinj, hφsurj⟩
+  have homeo :=
     e.toHomeomorphOfContinuousOpen hφcont hopenmap
   exact Homeomorph.compactSpace homeo.symm
 

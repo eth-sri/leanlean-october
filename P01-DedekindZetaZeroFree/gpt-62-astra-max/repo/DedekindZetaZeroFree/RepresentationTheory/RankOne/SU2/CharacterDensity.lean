@@ -29,42 +29,38 @@ namespace DedekindZetaZeroFree.TauCeti
 
 namespace SU2
 
-private theorem trace_mul_character_symPower_torusHom (d : ℕ) (z : Circle) :
-    Matrix.trace ((torusHom z : SU2) : Matrix (Fin 2) (Fin 2) ℂ)
-        * (symPower (d + 1)).character (torusHom z)
-      = (symPower (d + 2)).character (torusHom z) + (symPower d).character (torusHom z) := by
-  have hz : (z : ℂ) ≠ 0 := z.coe_ne_zero
-  have hstep : ∀ i : ℕ, ((z : ℂ) + ((z : ℂ))⁻¹) * (z : ℂ) ^ (2 * (i : ℤ) - ((d : ℤ) + 1))
-      = (z : ℂ) ^ (2 * (i : ℤ) - (d : ℤ)) + (z : ℂ) ^ (2 * (i : ℤ) - ((d : ℤ) + 2)) := by
-    intro i
-    have hsucc : 2 * (i : ℤ) - (d : ℤ) = (2 * (i : ℤ) - ((d : ℤ) + 1)) + 1 := by ring
-    have hpred : 2 * (i : ℤ) - ((d : ℤ) + 2) = (2 * (i : ℤ) - ((d : ℤ) + 1)) - 1 := by ring
-    rw [hsucc, hpred, zpow_add_one₀ hz, zpow_sub_one₀ hz]
-    field_simp
-  rw [coe_torusHom, trace_torusMatrix, character_symPower_torusHom_zpow,
-    character_symPower_torusHom_zpow, character_symPower_torusHom_zpow]
-  push_cast
-  rw [Finset.mul_sum, Finset.sum_congr rfl fun i _ => hstep i, Finset.sum_add_distrib,
-    Finset.sum_range_succ (fun i : ℕ => (z : ℂ) ^ (2 * (i : ℤ) - (d : ℤ))) (d + 1),
-    Finset.sum_range_succ (fun i : ℕ => (z : ℂ) ^ (2 * (i : ℤ) - ((d : ℤ) + 2))) (d + 2)]
-  push_cast
-
-  have hlast : 2 * ((d : ℤ) + 1) - (d : ℤ) = (d : ℤ) + 2 := by ring
-  have hlast' : 2 * ((d : ℤ) + 2) - ((d : ℤ) + 2) = (d : ℤ) + 2 := by ring
-  rw [hlast, hlast']
-  ring
+local notation "Mat₂ℂ" => Matrix (Fin 2) (Fin 2) ℂ
 
 theorem trace_mul_character_symPower (d : ℕ) (g : SU2) :
-    Matrix.trace (g : Matrix (Fin 2) (Fin 2) ℂ) * (symPower (d + 1)).character g
+    Matrix.trace (g : Mat₂ℂ) * (symPower (d + 1)).character g
       = (symPower (d + 2)).character g + (symPower d).character g := by
-  have h : (fun g : SU2 => Matrix.trace (g : Matrix (Fin 2) (Fin 2) ℂ)
+  have h : (fun g : SU2 => Matrix.trace (g : Mat₂ℂ)
         * (symPower (d + 1)).character g)
       = fun g : SU2 => (symPower (d + 2)).character g + (symPower d).character g := by
     refine eq_of_conjInvariant_of_eqOn_torus (fun u g => ?_) (fun u g => ?_) fun x hx => ?_
     · rw [(trace_eq_of_isConj (isConj_iff.mpr ⟨u, rfl⟩)).symm, Representation.char_conj]
-    · rw [Representation.char_conj, Representation.char_conj]
+    · simp
     · obtain ⟨z, rfl⟩ := mem_torus_iff_exists_torusHom.mp hx
-      exact trace_mul_character_symPower_torusHom d z
+      have hz := z.coe_ne_zero
+      have hstep : ∀ i : ℕ, ((z : ℂ) + ((z : ℂ))⁻¹) * (z : ℂ) ^ (2 * (i : ℤ) - ((d : ℤ) + 1))
+          = (z : ℂ) ^ (2 * (i : ℤ) - (d : ℤ)) + (z : ℂ) ^ (2 * (i : ℤ) - ((d : ℤ) + 2)) := by
+        intro i
+        have hsucc : 2 * (i : ℤ) - (d : ℤ) = (2 * (i : ℤ) - ((d : ℤ) + 1)) + 1 := by ring
+        have hpred : 2 * (i : ℤ) - ((d : ℤ) + 2) = (2 * (i : ℤ) - ((d : ℤ) + 1)) - 1 := by ring
+        rw [hsucc, hpred, zpow_add_one₀ hz, zpow_sub_one₀ hz]
+        field_simp
+      rw [coe_torusHom, trace_torusMatrix, character_symPower_torusHom_zpow,
+        character_symPower_torusHom_zpow, character_symPower_torusHom_zpow]
+      push_cast
+      rw [Finset.mul_sum, Finset.sum_congr rfl fun i _ => hstep i, Finset.sum_add_distrib,
+        Finset.sum_range_succ (fun i : ℕ => (z : ℂ) ^ (2 * (i : ℤ) - (d : ℤ))) (d + 1),
+        Finset.sum_range_succ (fun i : ℕ => (z : ℂ) ^ (2 * (i : ℤ) - ((d : ℤ) + 2))) (d + 2)]
+      push_cast
+
+      have hlast : 2 * ((d : ℤ) + 1) - (d : ℤ) = (d : ℤ) + 2 := by ring
+      have hlast' : 2 * ((d : ℤ) + 2) - ((d : ℤ) + 2) = (d : ℤ) + 2 := by ring
+      rw [hlast, hlast']
+      ring
   exact congrFun h g
 
 @[simp]
@@ -78,9 +74,9 @@ theorem character_symPower_zero (g : SU2) : (symPower 0).character g = 1 := by
 
 @[simp]
 theorem character_symPower_one_eq_trace (g : SU2) :
-    (symPower 1).character g = Matrix.trace (g : Matrix (Fin 2) (Fin 2) ℂ) := by
+    (symPower 1).character g = Matrix.trace (g : Mat₂ℂ) := by
   have h : (fun g : SU2 => (symPower 1).character g)
-      = fun g : SU2 => Matrix.trace (g : Matrix (Fin 2) (Fin 2) ℂ) := by
+      = fun g : SU2 => Matrix.trace (g : Mat₂ℂ) := by
     refine eq_of_conjInvariant_of_eqOn_torus (fun u g => Representation.char_conj _ g u)
       (fun u g => (trace_eq_of_isConj (isConj_iff.mpr ⟨u, rfl⟩)).symm) fun x hx => ?_
     obtain ⟨z, rfl⟩ := mem_torus_iff_exists_torusHom.mp hx
@@ -93,33 +89,26 @@ theorem character_symPower_one_eq_trace (g : SU2) :
 
 theorem character_symPower_eq_chebyshevU_eval (d : ℕ) (g : SU2) :
     (symPower d).character g
-      = (Chebyshev.U ℂ d).eval (Matrix.trace (g : Matrix (Fin 2) (Fin 2) ℂ) / 2) := by
+      = (Chebyshev.U ℂ d).eval (Matrix.trace (g : Mat₂ℂ) / 2) := by
   induction d using Nat.twoStepInduction with
-  | zero => simp [character_symPower_zero]
-  | one => simp [character_symPower_one_eq_trace, Chebyshev.U_one]; ring
+  | zero => simp
+  | one => simp [character_symPower_one_eq_trace] <;> ring
   | more n ihn ihn1 =>
-    have hrec := trace_mul_character_symPower n g
-    have hU : (Chebyshev.U ℂ ((n : ℤ) + 2))
-        = 2 * X * Chebyshev.U ℂ ((n : ℤ) + 1) - Chebyshev.U ℂ (n : ℤ) :=
-      Chebyshev.U_add_two ℂ (n : ℤ)
     have hcast : ((n + 2 : ℕ) : ℤ) = (n : ℤ) + 2 := by push_cast; ring
     have hcast1 : ((n + 1 : ℕ) : ℤ) = (n : ℤ) + 1 := by push_cast; ring
-    rw [hcast, hU, ← hcast1]
+    rw [hcast, (Chebyshev.U_add_two ℂ (n : ℤ)), ← hcast1]
     simp only [eval_sub, eval_mul, eval_ofNat, eval_X]
     rw [← ihn, ← ihn1]
-    linear_combination -hrec
+    linear_combination -(trace_mul_character_symPower n g)
 
 private theorem continuous_trace :
-    Continuous fun g : SU2 => Matrix.trace (g : Matrix (Fin 2) (Fin 2) ℂ) :=
+    Continuous fun g : SU2 => Matrix.trace (g : Mat₂ℂ) :=
   Continuous.matrix_trace continuous_subtype_val
 
 theorem continuous_character_symPower (d : ℕ) :
     Continuous fun g : SU2 => (symPower d).character g := by
-  have h : (fun g : SU2 => (symPower d).character g)
-      = fun g : SU2 => (Chebyshev.U ℂ d).eval (Matrix.trace (g : Matrix (Fin 2) (Fin 2) ℂ) / 2) :=
-    funext (character_symPower_eq_chebyshevU_eval d)
-  rw [h]
-  exact (Chebyshev.U ℂ d).continuous.comp (continuous_trace.div_const 2)
+  rw [(funext (character_symPower_eq_chebyshevU_eval d))]
+  fun_prop
 
 noncomputable def symPowerCharacter (d : ℕ) : C(SU2, ℂ) :=
   ⟨fun g => (symPower d).character g, continuous_character_symPower d⟩
@@ -130,7 +119,7 @@ theorem symPowerCharacter_apply (d : ℕ) (g : SU2) :
 
 @[simp]
 theorem symPowerCharacter_zero : symPowerCharacter 0 = 1 :=
-  ContinuousMap.ext fun g => character_symPower_zero g
+  ContinuousMap.ext character_symPower_zero
 
 noncomputable def characterSpan : Submodule ℂ C(SU2, ℂ) :=
   Submodule.span ℂ (Set.range symPowerCharacter)
@@ -148,7 +137,7 @@ private theorem symPowerCharacter_one_mul_symPowerCharacter_mem (d : ℕ) :
     symPowerCharacter 1 * symPowerCharacter d ∈ characterSpan := by
   match d with
   | 0 =>
-    rw [symPowerCharacter_zero, mul_one]
+    simp
     exact symPowerCharacter_mem_characterSpan 1
   | (e + 1) =>
     have : symPowerCharacter 1 * symPowerCharacter (e + 1)
@@ -163,8 +152,7 @@ private theorem symPowerCharacter_one_mul_mem {f : C(SU2, ℂ)} (hf : f ∈ char
     symPowerCharacter 1 * f ∈ characterSpan := by
   induction hf using Submodule.span_induction with
   | mem x hx =>
-    obtain ⟨d, rfl⟩ := hx
-    exact symPowerCharacter_one_mul_symPowerCharacter_mem d
+    grind [symPowerCharacter_one_mul_symPowerCharacter_mem]
   | zero => simp
   | add x y _ _ hx hy => simpa [mul_add] using Submodule.add_mem _ hx hy
   | smul a x _ hx => simpa [mul_smul_comm] using Submodule.smul_mem _ a hx
@@ -172,31 +160,35 @@ private theorem symPowerCharacter_one_mul_mem {f : C(SU2, ℂ)} (hf : f ∈ char
 theorem pow_symPowerCharacter_one_mem_characterSpan (n : ℕ) :
     symPowerCharacter 1 ^ n ∈ characterSpan := by
   induction n with
-  | zero => simpa [← symPowerCharacter_zero] using symPowerCharacter_mem_characterSpan 0
+  | zero => simpa using symPowerCharacter_mem_characterSpan 0
   | succ n ih => rw [pow_succ']; exact symPowerCharacter_one_mul_mem ih
 
-noncomputable def polyTrace (p : Polynomial ℝ) : C(SU2, ℂ) :=
+section
+
+variable (p : Polynomial ℝ)
+
+noncomputable def polyTrace : C(SU2, ℂ) :=
   aeval (symPowerCharacter 1) p
 
-private theorem polyTrace_mem_characterSpan (p : Polynomial ℝ) :
+private theorem polyTrace_mem_characterSpan :
     polyTrace p ∈ characterSpan := by
   rw [polyTrace, aeval_eq_sum_range]
   exact Submodule.sum_mem _ fun i _ =>
     Submodule.smul_of_tower_mem _ _ (pow_symPowerCharacter_one_mem_characterSpan i)
 
-private theorem polyTrace_apply (p : Polynomial ℝ) {g : SU2} {t : ℝ}
+private theorem polyTrace_apply {g : SU2} {t : ℝ}
     (ht : Matrix.trace (g : Matrix (Fin 2) (Fin 2) ℂ) = (t : ℂ)) :
     polyTrace p g = ((p.eval t : ℝ) : ℂ) := by
-  rw [polyTrace, aeval_eq_sum_range, p.eval_eq_sum_range]
-  push_cast
-  simp [ContinuousMap.sum_apply, ht, Complex.real_smul]
+  simp [ContinuousMap.sum_apply, ht, Complex.real_smul, polyTrace, aeval_eq_sum_range, p.eval_eq_sum_range]
+
+end
 
 theorem exists_mem_characterSpan_norm_sub_lt {f : C(SU2, ℂ)}
     (hf : ∀ u g : SU2, f (u * g * u⁻¹) = f g) {ε : ℝ} (hε : 0 < ε) :
     ∃ h ∈ characterSpan, ‖f - h‖ < ε := by
 
   set F : ℝ → ℂ := fun t => f (torusExp (Real.arccos (t / 2))) with hF
-  have hFc : Continuous F :=
+  have hFc :=
     f.continuous.comp (continuous_torusExp.comp
       (Real.continuous_arccos.comp (continuous_id.div_const 2)))
   obtain ⟨p₁, hp₁⟩ := exists_polynomial_near_of_continuousOn (-2) 2 (fun t => (F t).re)
@@ -257,19 +249,19 @@ theorem mem_topologicalClosure_characterSpan_iff {f : C(SU2, ℂ)} :
   constructor
   · intro hf u g
     have hspan : Set.EqOn (fun h : C(SU2, ℂ) => h (u * g * u⁻¹)) (fun h : C(SU2, ℂ) => h g)
-        (characterSpan : Set C(SU2, ℂ)) := by
+        characterSpan := by
       intro h hh
       induction hh using Submodule.span_induction with
       | mem x hx =>
         obtain ⟨d, rfl⟩ := hx
         exact Representation.char_conj _ g u
       | zero => rfl
-      | add x y _ _ hx hy => simpa using congrArg₂ (· + ·) hx hy
-      | smul a x _ hx => simpa using congrArg (a * ·) hx
+      | add x y _ _ hx hy => exact congrArg₂ (· + ·) hx hy
+      | smul a x _ hx => exact congrArg (a * ·) hx
     refine hspan.closure (continuous_eval_const _) (continuous_eval_const _) ?_
     rwa [← Submodule.topologicalClosure_coe]
   · intro hf
-    have hclosure : f ∈ closure (characterSpan : Set C(SU2, ℂ)) := by
+    have hclosure : f ∈ closure characterSpan := by
       rw [Metric.mem_closure_iff]
       intro ε hε
       obtain ⟨h, hh, hlt⟩ := exists_mem_characterSpan_norm_sub_lt hf hε

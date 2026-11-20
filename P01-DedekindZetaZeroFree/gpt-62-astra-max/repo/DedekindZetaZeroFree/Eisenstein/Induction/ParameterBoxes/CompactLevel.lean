@@ -11,10 +11,10 @@ open NumberField MomentSources KPGlobalTorusFiniteStages FaithfulSource.Repaired
 open KPLocalPrincipalSeries KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 open LiteralSource.CofactorChamber KPAdelicCoverRestrictedProduct KPLocalExceptionalConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -48,14 +48,11 @@ theorem compact_box_stage
   obtain ⟨E,hsE,hCE,hKtail⟩ := compact_split_tail R P C K hK s.val.toRight
   refine ⟨E,hsE,hCE,?_⟩
   intro Q hEQ a ha y hy z v
-  have hCQ : C.exceptional ⊆ Q := hCE.trans hEQ
-  have hsQ : s.val.toRight ⊆ Q := hsE.trans hEQ
+  have hCQ := hCE.trans hEQ
   let t := fullLevel R P C Q hCQ
-  have hst : s ≤ t := sourceStage_le_fullLevel R P C s Q hCQ hsQ
+  have hst := sourceStage_le_fullLevel R P C s Q hCQ (hsE.trans hEQ)
   have hat : ∀ q, q ∉ Q → KPPGLLocalCover.coverQuotient F ζ hζ (.inr q) (a (.inr q)) ∈
-      (C.canonical q).iwasawa.compact.toOpenSubgroup := by
-    intro q hq
-    exact hKtail a ha q (fun h => hq (hEQ h))
+      (C.canonical q).iwasawa.compact.toOpenSubgroup := fun q hq => hKtail a ha q (fun h => hq (hEQ h))
   have h := current_chamber_stage R N P C t y a
     (box_right_reference_tail R N P C Q hCQ y hy a hat)
     (box_right_log_tail R P C Q hCQ y hy a hat) z

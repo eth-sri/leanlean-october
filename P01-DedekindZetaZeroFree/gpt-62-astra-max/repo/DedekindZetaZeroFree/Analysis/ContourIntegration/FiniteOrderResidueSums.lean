@@ -27,9 +27,8 @@ private lemma sum_Icc_one_eq (f : ℕ → ℂ) (m : ℕ) :
 private lemma differentiableOn_rational_principal (R : ℂ) (p : ℝ) (k : ℕ) :
     DifferentiableOn ℂ (fun s : ℂ => R / (s - (p : ℂ)) ^ k) {s | s ≠ (p : ℂ)} := by
   intro s hs
-  have hne : s - (p : ℂ) ≠ 0 := sub_ne_zero.mpr hs
   exact ((differentiableAt_const R).div ((differentiableAt_id.sub_const (p : ℂ)).pow k)
-    (pow_ne_zero k hne)).differentiableWithinAt
+    (pow_ne_zero k (sub_ne_zero.mpr hs))).differentiableWithinAt
 
 private theorem verticalIntegral_finset_sum {ι : Type*} (s : Finset ι) (f : ι → ℂ → ℂ)
     (c : ℝ) (hf : ∀ i ∈ s, Complex.VerticalIntegrable (f i) c) :
@@ -42,13 +41,10 @@ private theorem verticalIntegral_finset_sum {ι : Type*} (s : Finset ι) (f : ι
     simp [verticalIntegral]
   | insert a s ha ih =>
     intro hf
-    have hfa : Complex.VerticalIntegrable (f a) c := hf a (Finset.mem_insert_self a s)
-    have hfs : Complex.VerticalIntegrable (fun z => ∑ i ∈ s, f i z) c :=
-      integrable_finsetSum s (fun i hi => hf i (Finset.mem_insert_of_mem hi))
     have hsplit : (fun z => ∑ i ∈ insert a s, f i z)
         = (fun z => f a z + ∑ i ∈ s, f i z) := by
       funext z; rw [Finset.sum_insert ha]
-    rw [hsplit, verticalIntegral_add c (f a) (fun z => ∑ i ∈ s, f i z) hfa hfs,
+    rw [hsplit, verticalIntegral_add c (f a) (fun z => ∑ i ∈ s, f i z) (hf a (Finset.mem_insert_self a s)) (integrable_finsetSum s (fun i hi => hf i (Finset.mem_insert_of_mem hi))),
       ih (fun i hi => hf i (Finset.mem_insert_of_mem hi)), Finset.sum_insert ha]
 
 theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
@@ -74,17 +70,13 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
   classical
   have hcard : Fintype.card ↥S = S.card := by simp [Finset.card_attach]
   let e : ↥S ≃ Fin S.card := Fintype.equivFinOfCardEq hcard
-  let p : Fin S.card → ℝ := fun j => (e.symm j).val
-  let R : Fin S.card → ℂ := fun j => if n (e.symm j) = 0 then 0 else C (e.symm j) 1
-  let H : ℂ → ℂ := fun s => ∑ q : ↥S, ∑ k ∈ Finset.Icc 2 (n q),
+  let p := fun j => (e.symm j).val
+  let R := fun j => if n (e.symm j) = 0 then 0 else C (e.symm j) 1
+  let H := fun s => ∑ q : ↥S, ∑ k ∈ Finset.Icc 2 (n q),
       C q k / (s - (q.val : ℂ)) ^ k
-  let G : ℂ → ℂ := fun s => F s - H s
-  have hp_inj : Function.Injective p := by
-    intro j₁ j₂ h
-    exact e.symm.injective (Subtype.ext h)
-  have hp_mem : ∀ j, p j ∈ Set.Ioo a b := by
-    intro j
-    exact hp_strip (e.symm j).val (e.symm j).property
+  let G := fun s => F s - H s
+  have hp_inj : Function.Injective p := fun j₁ j₂ h => e.symm.injective (Subtype.ext h)
+  have hp_mem : ∀ j, p j ∈ Set.Ioo a b := fun j => hp_strip (e.symm j).val (e.symm j).property
   have hrange : Set.range (fun j : Fin S.card => (p j : ℂ))
       = Set.range (fun q : ↥S => (q.val : ℂ)) := by
     ext z
@@ -128,11 +120,11 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
 
   have hH_diff : DifferentiableOn ℂ H (U \ Set.range (fun q : ↥S => (q.val : ℂ))) := by
     simp only [H]
-    refine DifferentiableOn.fun_sum (u := Finset.univ)
-      (A := fun q s => ∑ k ∈ Finset.Icc 2 (n q), C q k / (s - (q.val : ℂ)) ^ k) ?_
+    refine DifferentiableOn.fun_sum
+       ?_
     intro q _
-    refine DifferentiableOn.fun_sum (u := Finset.Icc 2 (n q))
-      (A := fun k s => C q k / (s - (q.val : ℂ)) ^ k) ?_
+    refine DifferentiableOn.fun_sum
+       ?_
     intro k _
     exact (differentiableOn_rational_principal (C q k) q.val k).mono (by
       intro s hs
@@ -146,14 +138,12 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
 
   have hG_int (c : ℝ) (hFc : Complex.VerticalIntegrable F c)
       (hc : ∀ q : ↥S, c ≠ (q.val : ℝ)) : Complex.VerticalIntegrable G c := by
-    have hHint : Complex.VerticalIntegrable H c := hH_int_of c hc
     show Integrable (fun y : ℝ => G (c + y * Complex.I)) volume
     simp only [G]
-    exact hFc.sub hHint
+    exact hFc.sub (hH_int_of c hc)
   have hG_vert_eq (c : ℝ) (hFc : Complex.VerticalIntegrable F c)
       (hc : ∀ q : ↥S, c ≠ (q.val : ℝ)) :
       verticalIntegral c G = verticalIntegral c F := by
-    have hHint : Complex.VerticalIntegrable H c := hH_int_of c hc
     have hsplit : verticalIntegral c G = verticalIntegral c F - verticalIntegral c H := by
       show (1 / (2 * Real.pi) : ℂ) * ∫ t : ℝ, G (c + t * Complex.I) = _
       rw [show (fun t : ℝ => G (c + t * Complex.I))
@@ -161,7 +151,7 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
         funext t; simp only [G]]
       rw [verticalIntegral, verticalIntegral, ← mul_sub, integral_sub]
       · exact hFc
-      · exact hHint
+      · exact (hH_int_of c hc)
     rw [hsplit, hH_vert_zero c hc, sub_zero]
 
   have hgrowthG : ∃ C A : ℝ, 0 ≤ C ∧ 0 ≤ A ∧
@@ -169,7 +159,7 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
         ‖G ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤
           C * Real.exp (A * (1 + |t|) ^ (3 / 2 : ℝ)) := by
     obtain ⟨C₀, A, hC₀, hA, hgr⟩ := hgrowth
-    let K : ℝ := ∑ q : ↥S, ∑ k ∈ Finset.Icc 2 (n q), ‖C q k‖
+    let K := ∑ q : ↥S, ∑ k ∈ Finset.Icc 2 (n q), ‖C q k‖
     have hKnn : 0 ≤ K := by
       simp only [K]
       exact Finset.sum_nonneg (fun q _ => Finset.sum_nonneg (fun k _ => norm_nonneg _))
@@ -180,8 +170,6 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
     have hexp1 : 1 ≤ Real.exp (A * (1 + |t|) ^ (3 / 2 : ℝ)) := by
       rw [Real.one_le_exp_iff]
       exact mul_nonneg hA (Real.rpow_nonneg (by positivity) _)
-    have hFs : ‖F ((σ : ℂ) + (t : ℂ) * Complex.I)‖
-        ≤ C₀ * Real.exp (A * (1 + |t|) ^ (3 / 2 : ℝ)) := hgr σ t hσ ht
     have hstep : ∀ q : ↥S, ‖∑ k ∈ Finset.Icc 2 (n q),
         C q k / (((σ : ℂ) + (t : ℂ) * Complex.I) - (q.val : ℂ)) ^ k‖
         ≤ ∑ k ∈ Finset.Icc 2 (n q), ‖C q k‖ := by
@@ -191,7 +179,7 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
         (Finset.mem_Icc.mp hk).1 (a := a) (b := b)
         (s := ((σ : ℂ) + (t : ℂ) * Complex.I))
         (by rw [hsre]; exact hσ) (by rw [hsim]; exact ht)
-      simpa using hle
+      exact hle
     have hHs : ‖H ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ K := by
       simp only [H, K]
       exact le_trans (norm_sum_le _ _) (Finset.sum_le_sum (fun q _ => hstep q))
@@ -200,13 +188,11 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
       have := norm_sub_le (F ((σ : ℂ) + (t : ℂ) * Complex.I))
         (H ((σ : ℂ) + (t : ℂ) * Complex.I))
       simp only [G]
-      exact le_trans this (add_le_add hFs hHs)
-    have hKexp : K ≤ K * Real.exp (A * (1 + |t|) ^ (3 / 2 : ℝ)) :=
-      le_mul_of_one_le_right hKnn hexp1
-    calc ‖G ((σ : ℂ) + (t : ℂ) * Complex.I)‖
+      exact le_trans this (add_le_add (hgr σ t hσ ht) hHs)
+    calc _
         ≤ C₀ * Real.exp (A * (1 + |t|) ^ (3 / 2 : ℝ)) + K := hGle
       _ ≤ C₀ * Real.exp (A * (1 + |t|) ^ (3 / 2 : ℝ))
-            + K * Real.exp (A * (1 + |t|) ^ (3 / 2 : ℝ)) := add_le_add le_rfl hKexp
+            + K * Real.exp (A * (1 + |t|) ^ (3 / 2 : ℝ)) := add_le_add le_rfl (le_mul_of_one_le_right hKnn hexp1)
       _ = (C₀ + K) * Real.exp (A * (1 + |t|) ^ (3 / 2 : ℝ)) := by ring
 
   obtain ⟨Freg, hFreg_diff, hFreg_eq⟩ := hregular

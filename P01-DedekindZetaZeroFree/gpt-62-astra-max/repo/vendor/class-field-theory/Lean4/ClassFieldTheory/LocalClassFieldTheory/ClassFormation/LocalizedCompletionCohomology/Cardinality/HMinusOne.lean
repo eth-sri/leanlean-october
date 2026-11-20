@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -81,42 +79,18 @@ theorem localHerbrandHMinusOne_card_eq_one
   let := localizedCompletionBaseAlgebra vK w
   let := localizedCompletionGlobalAlgebra vK w
   let := localizedCompletionIsScalarTower vK w
-  let : FiniteDimensional vK.Completion
-      (LocalizedCompletion vK w) :=
+  let :=
     localizedCompletionFiniteDimensional vK hvK w
-  let : IsGalois vK.Completion
-      (LocalizedCompletion vK w) :=
+  let :=
     localizedCompletionIsGalois vK w
   let := localizedCompletionDecompositionGroupFintype vK w
   let :=
     decompositionGroupLocalUnitsAction vK hvK w
-  let : Finite
-      (HerbrandHMinusOne
-        (absoluteValueDecompositionGroup k w.1)
-        (LocalizedCompletion vK w)ˣ
-        (subgroupGeneratorOfGenerator
-          (absoluteValueDecompositionGroup k w.1)
-          σ hgen)) :=
+  let :=
     localHerbrandHMinusOneFinite
       vK hvK w σ hgen
-  let g :=
-    localizedCompletionGaloisGenerator
-      vK hvK w σ hgen
-  let hg :=
-    localizedCompletionGaloisGenerator_generates
-      vK hvK w σ hgen
-  let hcard :=
-    finiteExtensionUnits_tate_card_of_generator
-      vK.Completion (LocalizedCompletion vK w)
-      g hg
   calc
-    Nat.card
-        (HerbrandHMinusOne
-          (absoluteValueDecompositionGroup k w.1)
-          (LocalizedCompletion vK w)ˣ
-          (subgroupGeneratorOfGenerator
-            (absoluteValueDecompositionGroup k w.1)
-            σ hgen)) =
+    _ =
       Nat.card
         (tateCohomology
           (Rep.ofAlgebraAutOnUnits vK.Completion
@@ -124,8 +98,11 @@ theorem localHerbrandHMinusOne_card_eq_one
       Nat.card_congr
         (localHerbrandHMinusOneEquivUnitsTateHminusOne
           vK hvK w σ hgen)
-    _ = 1 := hcard.cardHminusOne
-
+    _ = 1 := (finiteExtensionUnits_tate_card_of_generator
+      vK.Completion (LocalizedCompletion vK w)
+      (localizedCompletionGaloisGenerator
+        vK hvK w σ hgen) (localizedCompletionGaloisGenerator_generates
+        vK hvK w σ hgen)).cardHminusOne
 
 end LocalTateComparison
 

@@ -13,10 +13,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPLiteralRaw KPGlobalTorusFiniteStages ThetaExpansion TensorActionSource
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "V" => RestrictedTensorSimple.Core (Plus R.A P C)
@@ -35,23 +35,17 @@ theorem coreResidue_regular (x : V) :
     funext g
     exact (he g).trans (ResidualHilbertCenters.finiteCenterSum_lift
       F ζ hζ M HR HP HH U m w a Z g).symm
-  have hsm := ResidualHilbertCenters.finiteCenterSum_raw_smooth
-    F ζ hζ M HR HP HH U m w a Z
-  have hm := ResidualHilbertCenters.finiteCenterSum_mem
-    F ζ hζ M HR HP HH U m w a Z z hz
-    (KPContinuation.spectralCoordinate (KPCuspLogShape.dimension F : ℤ) 0) hnative
   rw [hpin]
-  refine ⟨hsm.1, ?_, ?_⟩
+  refine ⟨(ResidualHilbertCenters.finiteCenterSum_raw_smooth
+    F ζ hζ M HR HP HH U m w a Z).1, ?_, ?_⟩
   · intro γ g
-    have hq : KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
-        (KPLiteralRaw.rationalLift F ζ hζ γ * g) =
-        KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g :=
-      Quotient.sound ⟨⟨_, ⟨KPRationalAdelicSplitting.rationalPGLQuotient F (Quotient.out γ),
-        KPRationalAdelicSplitting.rationalPGLHom_mk F ζ hζ (Quotient.out γ)⟩⟩, rfl⟩
-    exact congrArg f hq
+    exact congrArg f (Quotient.sound ⟨⟨_, ⟨KPRationalAdelicSplitting.rationalPGLQuotient F (Quotient.out γ),
+      KPRationalAdelicSplitting.rationalPGLHom_mk F ζ hζ (Quotient.out γ)⟩⟩, rfl⟩)
   · intro ε g
     exact ResidualHilbertCenters.original_word_genuine_left F ζ hζ f
-      (hm [] ).1 (ResidualHilbertCenters.finiteCenterSum_genuine
+      ((ResidualHilbertCenters.finiteCenterSum_mem
+        F ζ hζ M HR HP HH U m w a Z z hz
+        (KPContinuation.spectralCoordinate (KPCuspLogShape.dimension F : ℤ) 0) hnative) []).1 (ResidualHilbertCenters.finiteCenterSum_genuine
         F ζ hζ M HR HP HH U m w a Z) [] ε g
 
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource

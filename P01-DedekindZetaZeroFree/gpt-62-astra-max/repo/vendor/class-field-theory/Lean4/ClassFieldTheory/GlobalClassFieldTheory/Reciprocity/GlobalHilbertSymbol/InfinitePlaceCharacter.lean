@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -52,12 +48,10 @@ noncomputable def infinitePlaceKummerRootCharacter
   letI : IsAbelianGalois K L :=
     chosenSimpleKummerExtension_isAbelianGalois K n hnK hmu b
   letI : NumberField L := NumberField.of_module_finite K L
-  let a_v : v.Completionˣ :=
-    Units.map (algebraMap K v.Completion).toMonoidHom a
   exact
     (nthRootsSubgroupEquivOfPrimitiveRoots K L n hmu).symm
       (chosenSimpleKummerRootCharacter K n hnK hmu b
-        (chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v a_v))
+        (chosenInfinitePlaceArtinMonoidHom v (Units.map (algebraMap K v.Completion).toMonoidHom a)))
 
 omit [NumberField K] in
 private theorem chosenInfinitePlaceArtinMonoidHom_eq_one_of_isComplex
@@ -65,54 +59,47 @@ private theorem chosenInfinitePlaceArtinMonoidHom_eq_one_of_isComplex
     (v : InfinitePlace K) (hv : v.IsComplex) (x : v.Completionˣ) :
     chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v x = 1 := by
   let w := chosenInfinitePlaceAbove (L := L) v
-  have hw : w.comap (algebraMap K L) = v :=
-    chosenInfinitePlaceAbove_comap (L := L) v
   have hwUnramified : w.IsUnramified K := by
     apply InfinitePlace.isUnramified_iff.mpr
     apply Or.inr
-    rw [hw]
+    rw [(chosenInfinitePlaceAbove_comap v)]
     exact hv
   have hwUnramified' :
       (chosenInfinitePlaceAbove (L := L) v).IsUnramified K := by
-    simpa only [w] using hwUnramified
+    simpa using hwUnramified
   unfold chosenInfinitePlaceArtinMonoidHom
   unfold infinitePlaceArtinMonoidHomOfPlace
   rw [dite_eq_left hwUnramified']
   rfl
 
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+    (v : InfinitePlace K) (a b : Kˣ) (hv : v.IsComplex)
+
+include hv in
 /-- At a complex place the infinite-place Kummer root character is
 trivial. -/
 @[simp]
-theorem infinitePlaceKummerRootCharacter_eq_one_of_isComplex
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (v : InfinitePlace K) (a b : Kˣ) (hv : v.IsComplex) :
+theorem infinitePlaceKummerRootCharacter_eq_one_of_isComplex :
     infinitePlaceKummerRootCharacter K n hnK hmu v a b = 1 := by
   let L := chosenSimpleKummerExtension K n hnK b
-  let : FiniteDimensional K L :=
+  let :=
     chosenSimpleKummerExtension_finiteDimensional K n hnK b
-  let : IsAbelianGalois K L :=
+  let :=
     chosenSimpleKummerExtension_isAbelianGalois K n hnK hmu b
-  let : NumberField L := NumberField.of_module_finite K L
-  let a_v : v.Completionˣ :=
+  let := NumberField.of_module_finite K L
+  let a_v :=
     Units.map (algebraMap K v.Completion).toMonoidHom a
-  have hArtin :
-      chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v
-          a_v = 1 :=
-    chosenInfinitePlaceArtinMonoidHom_eq_one_of_isComplex K v hv a_v
   change
     (nthRootsSubgroupEquivOfPrimitiveRoots K L n hmu).symm
         (chosenSimpleKummerRootCharacter K n hnK hmu b
           (chosenInfinitePlaceArtinMonoidHom
-            (K := K) (L := L) v a_v)) = 1
-  rw [hArtin, map_one, map_one]
+              v a_v)) = 1
+  rw [(chosenInfinitePlaceArtinMonoidHom_eq_one_of_isComplex K v hv a_v), map_one, map_one]
 
+include hv in
 /-- The Kummer root character and the explicit Hilbert factor agree at every
 complex infinite place. -/
-theorem infinitePlaceKummerRootCharacter_localGlobal_of_isComplex
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (v : InfinitePlace K) (a b : Kˣ) (hv : v.IsComplex) :
+theorem infinitePlaceKummerRootCharacter_localGlobal_of_isComplex :
     infinitePlaceKummerRootCharacter K n hnK hmu v a b =
       infinitePlaceHilbertSymbol K n v a b := by
   rw [infinitePlaceKummerRootCharacter_eq_one_of_isComplex

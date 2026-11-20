@@ -12,10 +12,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.ComplexLines
 open ThetaExpansion MomentSources KPGlobalTorusFiniteStages KPGlobalResidualConstruction KPCplxPrincipalSeriesCharts
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1500000
 set_option synthInstance.maxHeartbeats 150000
@@ -34,9 +34,9 @@ local instance observationCoreUniform : IsUniformAddGroup complexCore :=
   complexCore.toAddSubgroup.isUniformAddGroup
 
 variable (s : RestrictedTensorSimple.Level (LiteralSource.bad R.A P C))
-variable (x : ∀j : s.val,LiteralSource.Plus R.A P C j.val)
-variable (w : InfinitePlace F) (hw : Sum.inl w∈s.val)
-variable (g : MomentSources.Group R)
+    (x : ∀j : s.val,LiteralSource.Plus R.A P C j.val)
+    (w : InfinitePlace F) (hw : Sum.inl w∈s.val)
+    (g : MomentSources.Group R)
 local notation "slot" => restrictedSlotTensor R.A P C s x w hw
 
 theorem slot_orbit_continuous (v : complexCore) :
@@ -46,10 +46,10 @@ theorem slot_orbit_continuous (v : complexCore) :
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
   have hf := LiteralSource.coreResidue_raw_automorphic R P C (slot v)
   apply (QuotientAddGroup.isOpenQuotientMap_mk
-    (N:=AdeleRing.principalSubgroup (𝓞 F) F)).continuous_comp_iff.mp
+    ).continuous_comp_iff.mp
   convert hf.1.1.comp
     ((KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous F ζ hζ).mul
-      (continuous_const (y:=g))) using 1
+      (continuous_const)) using 1
   funext a
   obtain ⟨r,he⟩ := QuotientAddGroup.mk_out_eq_add (AdeleRing.principalSubgroup (𝓞 F) F) a
   obtain ⟨t,ht⟩ := r.property

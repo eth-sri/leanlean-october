@@ -19,9 +19,8 @@ theorem actual_regular_point_output
     (ω : (valuation (KPExceptionalRaw.LocalField F q)).integer)
     (hω : IsPrimitiveRoot ω 3) :
     RegularPointResidueOutput (KPExceptionalRaw.LocalField F q) S.borel P S.iwasawa dx := by
-  have hm : 0 < integerMass (KPExceptionalRaw.LocalField F q) dx := by
-    simp [integerMass, hμ]
-  exact ResidueSteps.regular_point_residue F ζ hζ q S P dx hm ω hω
+  refine ResidueSteps.regular_point_residue F ζ hζ q S P dx ?_ ω hω
+  simp [integerMass, hμ]
 
 end
 end DedekindZetaZeroFree.KPActualScalarBinding

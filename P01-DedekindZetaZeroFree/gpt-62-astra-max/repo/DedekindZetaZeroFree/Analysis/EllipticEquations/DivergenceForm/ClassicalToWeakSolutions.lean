@@ -29,10 +29,8 @@ theorem coordinateDerivative_memLp_of_closedBall {n k : ℕ} (B : LocalBall n)
     isCompact_closedBall _ _
   have hc := (coordinateDerivativeList_contDiffOn_open hU hu α.directions).continuousOn
   obtain ⟨C, hC⟩ := hcompact.exists_bound_of_continuousOn (hc.mono hclosed)
-  have hfinite : volume B.carrier < ⊤ :=
-    lt_of_le_of_lt (measure_mono hsub) hcompact.measure_lt_top
   letI : IsFiniteMeasure (volume.restrict B.carrier) :=
-    isFiniteMeasure_restrict.mpr hfinite.ne
+    isFiniteMeasure_restrict.mpr (lt_of_le_of_lt (measure_mono hsub) hcompact.measure_lt_top).ne
   apply MemLp.of_enorm_bound ((hc.mono (hsub.trans hclosed)).aestronglyMeasurable
     Metric.isOpen_ball.measurableSet) ENNReal.ofReal_ne_top
   filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
@@ -77,22 +75,26 @@ theorem l2_norm_eq_functionL2Norm_of_ae {n : ℕ} (B : LocalBall n)
           rw [if_neg (by intro he; subst j; exact hn.1 hj)]
         simp [hz]
       · rw [if_neg hj]
-        simpa using ih hn.2 (hi.resolve_left (Ne.symm hj))
+        exact ih hn.2 (hi.resolve_left (Ne.symm hj))
   rw [MultiIndex.directions]
   convert h (List.finRange n) (List.nodup_finRange n) (List.mem_finRange i) using 1
   apply List.flatMap_congr
   intro j _
   by_cases hj : j = i <;> simp [firstIndex, hj]
 
-def derivativeTest {n : ℕ} {B : LocalBall n}
-    (φ : TestFunction B.toOpens ℂ ⊤) (i : Fin n) : TestFunction B.toOpens ℂ ⊤ :=
+section
+
+variable {n : ℕ} {B : LocalBall n} (φ : TestFunction B.toOpens ℂ ⊤) (i : Fin n)
+
+def derivativeTest : TestFunction B.toOpens ℂ ⊤ :=
   TestFunction.lineDerivCLM ℝ (EuclideanSpace.single i 1) φ
 
-@[simp] theorem derivativeTest_apply {n : ℕ} {B : LocalBall n}
-    (φ : TestFunction B.toOpens ℂ ⊤) (i : Fin n) (x : Space n) :
+@[simp] theorem derivativeTest_apply (x : Space n) :
     derivativeTest φ i x = coordinateDerivativeList [i] (fun y => φ y) x := by
   rw [derivativeTest, TestFunction.lineDerivCLM_apply_of_le (by simp)]
   exact (φ.contDiff.differentiable (by simp) x).lineDeriv_eq_fderiv
+
+end
 
 theorem integral_mul_coordinateDerivative_test {n : ℕ} (B : LocalBall n)
     {f : Space n → ℂ} (hf : ContDiffOn ℝ (⊤ : ℕ∞) f B.carrier)
@@ -130,28 +132,33 @@ theorem integrable_mul_test {n : ℕ} (B : LocalBall n) {g : Space n → ℂ}
     ψ.integrable_bilin (ContinuousLinearMap.mul ℝ ℂ)
       (hg.locallyIntegrableOn Metric.isOpen_ball.measurableSet)
 
-def conjugateTest {n : ℕ} {B : LocalBall n}
-    (φ : TestFunction B.toOpens ℂ ⊤) : TestFunction B.toOpens ℂ ⊤ :=
+section
+
+variable {n : ℕ} {B : LocalBall n} (φ : TestFunction B.toOpens ℂ ⊤)
+
+def conjugateTest : TestFunction B.toOpens ℂ ⊤ :=
   TestFunction.postcompCLM Complex.conjCLE.toContinuousLinearMap φ
 
-@[simp] theorem conjugateTest_apply {n : ℕ} {B : LocalBall n}
-    (φ : TestFunction B.toOpens ℂ ⊤) (x : Space n) :
+@[simp] theorem conjugateTest_apply (x : Space n) :
     conjugateTest φ x = star (φ x) := rfl
 
-@[simp] theorem coordinateDerivative_conjugateTest {n : ℕ} {B : LocalBall n}
-    (φ : TestFunction B.toOpens ℂ ⊤) (i : Fin n) (x : Space n) :
+@[simp] theorem coordinateDerivative_conjugateTest (i : Fin n) (x : Space n) :
     coordinateDerivativeList [i] (fun y => conjugateTest φ y) x =
       star (coordinateDerivativeList [i] (fun y => φ y) x) := by
   simp only [coordinateDerivativeList, conjugateTest_apply, fderiv_star]
   rfl
 
-def classicalFlux {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (u : Space n → ℂ) (i : Fin n) : Space n → ℂ :=
+end
+
+section
+
+variable {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (D : Coefficients B cρ Cρ κ Λ)
+
+def classicalFlux (u : Space n → ℂ) (i : Fin n) : Space n → ℂ :=
   fun x => (D.density x : ℂ) * ∑ j, (D.matrix x i j : ℂ) *
     coordinateDerivativeList [j] u x
 
- theorem classicalFlux_smooth {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) {u : Space n → ℂ}
+ theorem classicalFlux_smooth {u : Space n → ℂ}
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier) (i : Fin n) :
     ContDiffOn ℝ (⊤ : ℕ∞) (classicalFlux D u i) B.carrier := by
   apply (Complex.ofRealCLM.contDiff.comp_contDiffOn D.density_smooth).mul
@@ -159,6 +166,8 @@ def classicalFlux {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
   intro j _
   exact (Complex.ofRealCLM.contDiff.comp_contDiffOn (D.matrix_smooth i j)).mul
     (coordinateDerivativeList_contDiffOn_open Metric.isOpen_ball hu [j])
+
+end
 
 theorem classical_weighted_weak {n : ℕ} (B : LocalBall n)
     {cρ Cρ κ Λ : ℝ} (hcρ : 0 < cρ) (D : Coefficients B cρ Cρ κ Λ)
@@ -232,7 +241,7 @@ theorem smooth_solution_to_weak {n : ℕ} (outer : LocalBall n)
     ∃ w : IntegerSobolev outer 1,
       RepresentsClassicalDerivatives w u ∧ WeakEquation D z w h ∧
       ‖value w‖ = functionL2Norm outer u := by
-  have hsub : outer.carrier ⊆ U := Metric.ball_subset_closedBall.trans hclosed
+  have hsub := Metric.ball_subset_closedBall.trans hclosed
   have hL2 (α : MultiIndex n 1) :=
     coordinateDerivative_memLp_of_closedBall outer hU hclosed hu α
   obtain ⟨w, hw⟩ := smooth_has_integerSobolev_data outer u (hu.mono hsub) hL2
@@ -263,7 +272,6 @@ theorem smooth_solution_to_weak {n : ℕ} (outer : LocalBall n)
       apply integral_congr_ae
       filter_upwards [hv] with x hx
       rw [hx]
-    change _ - z * _ = _
     rw [henergy, hmass]
     exact classical_weighted_weak outer hcρ D z (hu.mono hsub) h heq φ
   · apply l2_norm_eq_functionL2Norm_of_ae

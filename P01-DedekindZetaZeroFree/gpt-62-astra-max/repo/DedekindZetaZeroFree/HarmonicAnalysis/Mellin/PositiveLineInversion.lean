@@ -20,7 +20,7 @@ theorem mellin_inversion_positive_line (h : ℝ → ℂ)
 
   have hF : ∀ s : ℂ, 0 < s.re → DifferentiableAt ℂ (mellin h) s := by
     intro s hs
-    have hd := differentiableAt_mellin_iteratedDeriv_of_pos (h := h) h_smooth h_compact 0 hs
+    have hd := differentiableAt_mellin_iteratedDeriv_of_pos h_smooth h_compact 0 hs
     rwa [iteratedDeriv_zero] at hd
   have hcont : Continuous fun t : ℝ => mellin h ((σ : ℂ) + (t : ℂ) * Complex.I) := by
     rw [continuous_iff_continuousAt]
@@ -44,7 +44,7 @@ theorem mellin_inversion_positive_line (h : ℝ → ℂ)
     have hdt : d⁻¹ ≤ (1 + t ^ 2)⁻¹ := by
       rw [hd]
       exact inv_anti₀ (by positivity) (by nlinarith [abs_nonneg t, sq_abs t])
-    calc ‖mellin h ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ d⁻¹ * C := h3
+    calc _ ≤ d⁻¹ * C := h3
       _ = C * d⁻¹ := by ring
       _ ≤ C * (1 + t ^ 2)⁻¹ := mul_le_mul_of_nonneg_left hdt hCpos.le
   have hgi : Integrable (fun t : ℝ => C * (1 + t ^ 2)⁻¹) volume := by
@@ -66,16 +66,14 @@ theorem mellin_inversion_positive_line (h : ℝ → ℂ)
     filter_upwards [ae_restrict_mem measurableSet_Ici] with t ht
     exact hbound t (le_trans ht (le_abs_self t))
 
-  have hIcc : IntegrableOn (fun t : ℝ => mellin h ((σ : ℂ) + (t : ℂ) * Complex.I))
-      (Set.Icc (-1) 1) volume := hcont.continuousOn.integrableOn_compact isCompact_Icc
   have hVI : Complex.VerticalIntegrable (mellin h) σ MeasureTheory.volume := by
     have hIic1 : IntegrableOn (fun t : ℝ => mellin h ((σ : ℂ) + (t : ℂ) * Complex.I))
         (Set.Iic 1) volume := by
       rw [← Set.Iic_union_Icc_eq_Iic (by norm_num : (-1 : ℝ) ≤ 1)]
-      exact hIic.union hIcc
+      exact hIic.union (hcont.continuousOn.integrableOn_compact isCompact_Icc)
     have huniv : IntegrableOn (fun t : ℝ => mellin h ((σ : ℂ) + (t : ℂ) * Complex.I))
         Set.univ volume := by
-      rw [← Set.Iic_union_Ici (a := (1 : ℝ))]
+      rw [← Set.Iic_union_Ici]
       exact hIic1.union hIci
     have : Integrable (fun t : ℝ => mellin h ((σ : ℂ) + (t : ℂ) * Complex.I)) volume := by
       rwa [IntegrableOn, Measure.restrict_univ] at huniv

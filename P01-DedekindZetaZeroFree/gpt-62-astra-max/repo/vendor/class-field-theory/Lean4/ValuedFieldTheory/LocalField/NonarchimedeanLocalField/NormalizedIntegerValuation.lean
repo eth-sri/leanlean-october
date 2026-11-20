@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -57,8 +54,6 @@ theorem localIntegerValuation_apply (x : K) :
 /-- The valuation in the canonical complete-DVF package is the original local valuation. -/
 theorem localCompleteDVF_valuation_eq :
     (localCompleteDVF K).valuation = ValuativeRel.valuation K := by
-  unfold localCompleteDVF
-  unfold ValuationTheory.Valuations.completeDVFOfCompleteValuedField
   rfl
 
 /-- A finite separable local extension is finite over the actual canonical
@@ -73,63 +68,7 @@ theorem integerRing_moduleFinite_of_finite_separable
     Module.Finite
       (ValuativeRel.valuation K).integer
       (ValuativeRel.valuation L).integer := by
-  let :
-      (localCompleteDVF K).valuation.HasExtension
-        (localCompleteDVF L).valuation :=
-    localCompleteDVFValuation_hasExtension K L
-  let :
-      IsScalarTower (localCompleteDVF K).valuationSubring
-        (localCompleteDVF L).valuationSubring L :=
-    IsScalarTower.of_algebraMap_eq' rfl
-  let :
-      Module.Finite (localCompleteDVF K).valuationSubring
-        (localCompleteDVF L).valuationSubring :=
-    ValuationTheory.DiscreteValuationField.ValuedExtension.moduleFinite_target_valuationSubring_of_finite_separable
-      (localCompleteDVF K) (localCompleteDVF L)
-  have hK :
-      (ValuativeRel.valuation K).integer =
-        ((localCompleteDVF K).valuation.valuationSubring).toSubring := by
-    ext x
-    change
-      (ValuativeRel.valuation K) x ≤ 1 ↔
-        (localCompleteDVF K).valuation x ≤ 1
-    rw [localCompleteDVF_valuation_eq]
-    rfl
-  have hL :
-      (ValuativeRel.valuation L).integer =
-        ((localCompleteDVF L).valuation.valuationSubring).toSubring := by
-    ext x
-    change
-      (ValuativeRel.valuation L) x ≤ 1 ↔
-        (localCompleteDVF L).valuation x ≤ 1
-    rw [localCompleteDVF_valuation_eq]
-    rfl
-  let eK :
-      (localCompleteDVF K).valuationSubring ≃+*
-        (ValuativeRel.valuation K).integer :=
-    RingEquiv.subringCongr hK.symm
-  let eL :
-      (localCompleteDVF L).valuationSubring ≃+*
-        (ValuativeRel.valuation L).integer :=
-    RingEquiv.subringCongr hL.symm
-  refine Module.Finite.of_equiv_equiv eK eL ?_
-  ext x
-  rfl
-
-/-- Normalizing the value group does not change the valuation ring. -/
-theorem localIntegerValuation_valuationSubring_eq :
-    (localIntegerValuation K).valuationSubring =
-      (localCompleteDVF K).valuation.valuationSubring := by
-  rw [localCompleteDVF_valuation_eq]
-  ext x
-  change
-    IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-          (ValuativeRel.valuation K x) ≤ 1 ↔
-      ValuativeRel.valuation K x ≤ 1
-  simpa only [map_one] using
-    (map_le_map_iff
-      (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K)
-      (a := ValuativeRel.valuation K x) (b := 1))
+  apply localCompleteDVF_integerRing_moduleFinite
 
 /-- The normalized integer valuation is onto. -/
 theorem localIntegerValuation_surjective :
@@ -156,7 +95,7 @@ noncomputable def localIntegerValuationSubringEquiv :
       have hxmem := x.property
       change localIntegerValuation K (x : K) ≤ 1 at hxmem
       rw [localIntegerValuation_apply] at hxmem
-      simpa only [map_one] using hxmem
+      simpa using hxmem
     exact
       (map_le_map_iff
         (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K)).mp hx⟩
@@ -183,8 +122,7 @@ noncomputable def localIntegerValuationSubringEquiv :
 theorem localIntegerValuationSubringEquiv_apply_coe
     (x : (localIntegerValuation K).valuationSubring) :
     ((localIntegerValuationSubringEquiv K x :
-      (localCompleteDVF K).valuationSubring) : K) = x := by
-  rfl
+      (localCompleteDVF K).valuationSubring) : K) = x := rfl
 
 /-- The valuation-subring equivalence preserves membership in the maximal ideal. -/
 theorem localIntegerValuationSubringEquiv_mem_maximalIdeal_iff
@@ -193,16 +131,7 @@ theorem localIntegerValuationSubringEquiv_mem_maximalIdeal_iff
         IsLocalRing.maximalIdeal (localCompleteDVF K).valuationSubring ↔
       x ∈ IsLocalRing.maximalIdeal
         (localIntegerValuation K).valuationSubring := by
-  rw [_root_.Valuation.mem_maximalIdeal_iff,
-    _root_.Valuation.mem_maximalIdeal_iff]
-  change
-    ValuativeRel.valuation K (x : K) < 1 ↔
-      IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-        (ValuativeRel.valuation K (x : K)) < 1
-  simpa only [map_one] using
-    (map_lt_map_iff
-      (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K)
-      (a := ValuativeRel.valuation K (x : K)) (b := 1)).symm
+  simp
 
 /-- The valuation-subring equivalence maps the integer maximal ideal onto the canonical one. -/
 @[simp]
@@ -213,20 +142,7 @@ theorem localIntegerValuationSubringEquiv_map_maximalIdeal :
         (localIntegerValuation K).valuationSubring →+*
           (localCompleteDVF K).valuationSubring) =
       IsLocalRing.maximalIdeal (localCompleteDVF K).valuationSubring := by
-  let e := localIntegerValuationSubringEquiv K
-  ext y
-  rw [Ideal.mem_map_iff_of_surjective (e :
-    (localIntegerValuation K).valuationSubring →+*
-      (localCompleteDVF K).valuationSubring) e.surjective]
-  constructor
-  · rintro ⟨x, hx, rfl⟩
-    exact
-      (localIntegerValuationSubringEquiv_mem_maximalIdeal_iff K x).2 hx
-  · intro hy
-    refine ⟨e.symm y, ?_, by simp [e]⟩
-    exact
-      (localIntegerValuationSubringEquiv_mem_maximalIdeal_iff K
-        (e.symm y)).1 (by simpa [e] using hy)
+  apply IsLocalRing.map_ringEquiv_maximalIdeal
 
 /-- The normalized valuation is a complete discrete valuation. -/
 noncomputable instance localIntegerValuation_isCompleteDiscrete :
@@ -241,24 +157,20 @@ noncomputable instance localIntegerValuation_isCompleteDiscrete :
       · rw [hx]
         simp
       · rw [hx]
-        change WithZero.exp (-1 : ℤ) ≠ WithZero.exp (0 : ℤ)
         simp
-    have : IsCyclic (MonoidWithZeroHom.valueGroup v.toMonoidWithZeroHom) :=
+    have :=
       Subgroup.isCyclic_of_le
         (show MonoidWithZeroHom.valueGroup v.toMonoidWithZeroHom ≤ ⊤ from le_top)
     exact _root_.Valuation.IsRankOneDiscrete.mk' v
   isAdicComplete := by
     let e := localIntegerValuationSubringEquiv K
-    let : IsAdicComplete
-        (IsLocalRing.maximalIdeal (localCompleteDVF K).valuationSubring)
-        (localCompleteDVF K).valuationSubring :=
+    let :=
       (localCompleteDVF K).isAdicComplete
     have hcomplete :
         IsAdicComplete
           ((IsLocalRing.maximalIdeal
             (localCompleteDVF K).valuationSubring).map
-              (e.symm : (localCompleteDVF K).valuationSubring →+*
-                (localIntegerValuation K).valuationSubring))
+              e.symm)
           (localIntegerValuation K).valuationSubring :=
       ValuationTheory.DiscreteValuationField.isAdicComplete_map_ringEquiv
         (I := IsLocalRing.maximalIdeal
@@ -266,14 +178,12 @@ noncomputable instance localIntegerValuation_isCompleteDiscrete :
     have hmap :
         (IsLocalRing.maximalIdeal
           (localCompleteDVF K).valuationSubring).map
-            (e.symm : (localCompleteDVF K).valuationSubring →+*
-              (localIntegerValuation K).valuationSubring) =
+            e.symm =
           IsLocalRing.maximalIdeal
             (localIntegerValuation K).valuationSubring := by
       ext x
       rw [Ideal.mem_map_iff_of_surjective
-        (e.symm : (localCompleteDVF K).valuationSubring →+*
-          (localIntegerValuation K).valuationSubring) e.symm.surjective]
+        e.symm e.symm.surjective]
       constructor
       · rintro ⟨y, hy, rfl⟩
         exact

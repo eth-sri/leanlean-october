@@ -57,12 +57,9 @@ theorem finiteAdele_strongApprox (F : Type*) [Field F] [NumberField F]
     (hKcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
     (z : FiniteAdeleRing (𝓞 F) F) :
     ∃ lam : F, ∃ k : K, z = algebraMap F (FiniteAdeleRing (𝓞 F) F) lam + k := by
-  let U := (Homeomorph.addLeft z) '' (K : Set (FiniteAdeleRing (𝓞 F) F))
-  have hU : IsOpen U := (Homeomorph.addLeft z).isOpenMap _ hKopen
-  have hz : z ∈ U := ⟨0, K.zero_mem, by simp⟩
-  obtain ⟨lam, k', hk', heq⟩ := (finiteAdele_dense F).exists_mem_open hU ⟨z, hz⟩
+  let U := (Homeomorph.addLeft z) '' K
+  obtain ⟨lam, k', hk', heq⟩ := (finiteAdele_dense F).exists_mem_open ((Homeomorph.addLeft z).isOpenMap _ hKopen) ⟨z, (⟨0, K.zero_mem, by simp⟩)⟩
   refine ⟨lam, ⟨-k', K.neg_mem hk'⟩, ?_⟩
-  change z = algebraMap F (FiniteAdeleRing (𝓞 F) F) lam + -k'
   change z + k' = algebraMap F (FiniteAdeleRing (𝓞 F) F) lam at heq
   rw [← heq, add_neg_cancel_right]
 

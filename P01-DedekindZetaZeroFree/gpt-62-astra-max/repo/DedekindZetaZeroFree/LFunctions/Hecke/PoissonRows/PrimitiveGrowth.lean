@@ -21,8 +21,7 @@ theorem euler_bound (σ0 : ℝ) (hσ0 : 1 < σ0) :
       σ0 ≤ s.re → ‖Detector.idealLSeries F ω s‖ ≤ B := by
   obtain ⟨hsum, hnn, hpos, -⟩ := idealAbsoluteSum_converges F σ0 hσ0
   refine ⟨idealAbsoluteSum F σ0, hpos, fun m hm ω s hs => ?_⟩
-  have hs1 : 1 < s.re := lt_of_lt_of_le hσ0 hs
-  obtain ⟨hsum', hnn', -, -⟩ := idealAbsoluteSum_converges F s.re hs1
+  obtain ⟨hsum', hnn', -, -⟩ := idealAbsoluteSum_converges F s.re (lt_of_lt_of_le hσ0 hs)
   have hterm : ∀ I : Ideal (𝓞 F),
       ‖(if I ≠ ⊥ then ω I * (Ideal.absNorm I : ℂ) ^ (-s) else 0)‖ ≤ idealAbsoluteWeight F σ0 I := by
     intro I
@@ -33,20 +32,19 @@ theorem euler_bound (σ0 : ℝ) (hσ0 : 1 < σ0) :
         exact_mod_cast Nat.pos_of_ne_zero (by simpa [Ideal.absNorm_eq_zero_iff] using hI)
       have hN1 : (1 : ℝ) ≤ Ideal.absNorm I := by
         exact_mod_cast Nat.pos_of_ne_zero (by simpa [Ideal.absNorm_eq_zero_iff] using hI)
-      have h1 := AbelianQuotient.rayCharacter_norm_le_one F m hm ω I
       have h2 : ‖(Ideal.absNorm I : ℂ) ^ (-s)‖ = (Ideal.absNorm I : ℝ) ^ (-s.re) := by
         rw [show ((Ideal.absNorm I : ℕ) : ℂ) = (((Ideal.absNorm I : ℕ) : ℝ) : ℂ) by simp,
           Complex.norm_cpow_eq_rpow_re_of_pos hN]
         simp
       rw [h2]
       refine le_trans (b := (Ideal.absNorm I : ℝ) ^ (-σ0)) ?_ (by simp)
-      calc ‖ω I‖ * (Ideal.absNorm I : ℝ) ^ (-s.re) ≤ 1 * (Ideal.absNorm I : ℝ) ^ (-s.re) :=
-            mul_le_mul_of_nonneg_right h1 (by positivity)
+      calc _ ≤ 1 * (Ideal.absNorm I : ℝ) ^ (-s.re) :=
+            mul_le_mul_of_nonneg_right (AbelianQuotient.rayCharacter_norm_le_one F m hm ω I) (by positivity)
         _ ≤ (Ideal.absNorm I : ℝ) ^ (-σ0) := by
             rw [one_mul]
             exact Real.rpow_le_rpow_of_exponent_le hN1 (by linarith)
   unfold Detector.idealLSeries
-  calc ‖∑' I : Ideal (𝓞 F), (if I ≠ ⊥ then ω I * (Ideal.absNorm I : ℂ) ^ (-s) else 0)‖
+  calc _
       ≤ ∑' I : Ideal (𝓞 F),
           ‖(if I ≠ ⊥ then ω I * (Ideal.absNorm I : ℂ) ^ (-s) else 0)‖ :=
         norm_tsum_le_tsum_norm (Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hterm hsum)
@@ -54,12 +52,15 @@ theorem euler_bound (σ0 : ℝ) (hσ0 : 1 < σ0) :
         Summable.tsum_le_tsum hterm
           (Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hterm hsum) hsum
 
-def heckeData (hF : NumberField.IsTotallyComplex F) (ν : Detector.PrimitiveFrequencyCharacter F)
-    (hν : ¬ ν.character.IsPrincipal) : NonprincipalRayHeckeData F ν.conductor ν.character :=
+section
+
+variable (hF : NumberField.IsTotallyComplex F) (ν : Detector.PrimitiveFrequencyCharacter F)
+    (hν : ¬ ν.character.IsPrincipal)
+
+def heckeData : NonprincipalRayHeckeData F ν.conductor ν.character :=
   nonprincipalRayHeckeData F hF ν.conductor ν.conductor_ne_zero ν.character ν.primitive hν
 
-theorem heckeData_eq (hF : NumberField.IsTotallyComplex F)
-    (ν : Detector.PrimitiveFrequencyCharacter F) (hν : ¬ ν.character.IsPrincipal)
+theorem heckeData_eq
     (s : ℂ) (hs : 1 < s.re) :
     (heckeData hF ν hν).L s = Detector.idealLSeries F ν.character s := by
   rw [← ((heckeData hF ν hν).series s hs).tsum_eq]
@@ -70,8 +71,7 @@ theorem heckeData_eq (hF : NumberField.IsTotallyComplex F)
     simp [(ν.character.eq_zero_iff' ⊥).mpr (Or.inl rfl)]
   · simp [h]
 
-theorem entire_eq_continuation (hF : NumberField.IsTotallyComplex F)
-    (ν : Detector.PrimitiveFrequencyCharacter F) (hν : ¬ ν.character.IsPrincipal)
+theorem entire_eq_continuation
     {g : ℂ → ℂ} (hg : Differentiable ℂ g)
     (h : ∀ s : ℂ, 1 < s.re → g s = Detector.idealLSeries F ν.character s) :
     g = nonprincipalHeckeEntireContinuation F ν.conductor ν.character (heckeData hF ν hν) := by
@@ -80,6 +80,8 @@ theorem entire_eq_continuation (hF : NumberField.IsTotallyComplex F)
       ν.character (heckeData hF ν hν)) fun s hs => ?_
   rw [h s hs, nonprincipalHeckeEntireContinuation_eq F hF ν.conductor ν.conductor_ne_zero
     ν.character (heckeData hF ν hν) s (by linarith), heckeData_eq hF ν hν s hs]
+
+end
 
 theorem convex_core (hF : NumberField.IsTotallyComplex F) :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ d : ℝ, 0 < d → d ≤ 1 / 10 → ∃ C : ℝ, 0 < C ∧
@@ -93,15 +95,14 @@ theorem convex_core (hF : NumberField.IsTotallyComplex F) :
   refine ⟨A, hA, fun d hd hd1 => ?_⟩
   obtain ⟨C, hC, HC⟩ := H d hd hd1
   refine ⟨C, hC, fun ν hν g hg h s h1 h2 => ?_⟩
-  have hge := entire_eq_continuation hF ν hν hg h
-  rw [hge]
+  rw [(entire_eq_continuation hF ν hν hg h)]
   exact HC ν.conductor ν.conductor_ne_zero ν.character ν.primitive hν (heckeData hF ν hν) s h1 h2
 
 theorem rpow_scale {Q U c e : ℝ} (hc : 0 < c) (hU : 1 ≤ U) (hQ1 : 1 ≤ Q) (hQ : Q ≤ c * U)
     (he0 : 0 ≤ e) (he1 : e ≤ 1) : Q ^ e ≤ max 1 c * U ^ e := by
   have hU0 : 0 < U := by linarith
   have hQ0 : 0 < Q := by linarith
-  have h1 : Q ^ e ≤ (c * U) ^ e := Real.rpow_le_rpow hQ0.le hQ he0
+  have h1 := Real.rpow_le_rpow hQ0.le hQ he0
   rw [Real.mul_rpow hc.le hU0.le] at h1
   have h2 : c ^ e ≤ max 1 c := by
     calc c ^ e ≤ (max 1 c) ^ e := Real.rpow_le_rpow hc.le (le_max_right _ _) he0
@@ -111,7 +112,12 @@ theorem rpow_scale {Q U c e : ℝ} (hc : 0 < c) (hU : 1 ≤ U) (hQ1 : 1 ≤ Q) (
   calc Q ^ e ≤ c ^ e * U ^ e := h1
     _ ≤ max 1 c * U ^ e := mul_le_mul_of_nonneg_right h2 (by positivity)
 
-theorem primitive_growth (hF : NumberField.IsTotallyComplex F) :
+section
+
+variable (hF : NumberField.IsTotallyComplex F)
+
+include hF in
+theorem primitive_growth :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ ε : ℝ, 0 < ε → ∀ c : ℝ, 0 < c → ∃ C : ℝ, 0 < C ∧
       ∀ (ν : Detector.PrimitiveFrequencyCharacter F) (_ : ¬ ν.character.IsPrincipal)
         (U : ℝ), 1 ≤ U → 1 + (Ideal.absNorm ν.conductor : ℝ) ≤ c * U →
@@ -150,7 +156,8 @@ theorem primitive_growth (hF : NumberField.IsTotallyComplex F) :
         exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left h3 hC0.le) hX
     _ = C0 * max 1 c * U ^ ((1 - σ) / 2 + ε) * (2 + |t|) ^ A := by ring
 
-theorem primitive_strip_growth (hF : NumberField.IsTotallyComplex F) :
+include hF in
+theorem primitive_strip_growth :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ ε : ℝ, 0 < ε → ∀ c : ℝ, 0 < c → ∃ C : ℝ, 0 < C ∧
       ∀ (ν : Detector.PrimitiveFrequencyCharacter F) (_ : ¬ ν.character.IsPrincipal)
         (U : ℝ), 1 ≤ U → 1 + (Ideal.absNorm ν.conductor : ℝ) ≤ c * U →
@@ -211,7 +218,8 @@ theorem primitive_strip_growth (hF : NumberField.IsTotallyComplex F) :
     have h6 : 0 ≤ C0 * max 1 c * U ^ ((1 : ℝ) / 10 + ε) * (2 + |t|) ^ A := by positivity
     linarith
 
-theorem primitive_fixed_strip (hF : NumberField.IsTotallyComplex F) :
+include hF in
+theorem primitive_fixed_strip :
     ∃ A : ℝ, 0 ≤ A ∧
       ∀ (ν : Detector.PrimitiveFrequencyCharacter F) (_ : ¬ ν.character.IsPrincipal),
         ∃ C : ℝ, 0 < C ∧ ∀ g : ℂ → ℂ, Differentiable ℂ g →
@@ -255,10 +263,12 @@ theorem primitive_fixed_strip (hF : NumberField.IsTotallyComplex F) :
         (2 + |s.im|) ^ A := by positivity
     linarith
 
+end
+
 section Fixed
 
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    (D : FixedData S η)
 
 include D in
 theorem totallyComplex : NumberField.IsTotallyComplex F :=

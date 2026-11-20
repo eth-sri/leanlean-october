@@ -43,7 +43,7 @@ theorem bilinear_error_optimization
   intro ε hε
   let ε' := ε / (α + 2)
   have hα2 : 0 < α + 2 := by linarith
-  have hε' : 0 < ε' := div_pos hε hα2
+  have hε' := div_pos hε hα2
   have hε'le : ε' ≤ ε := by
     dsimp [ε']
     exact (div_le_self hε.le (by linarith))
@@ -57,18 +57,18 @@ theorem bilinear_error_optimization
   · intro M N K hM hN hKlow hKhigh d hd0 hd hdc hnN g lam
     have hM0 : 0 ≤ M := by linarith
     have hMN : 1 ≤ M * N := by nlinarith
-    have hK : 1 ≤ K := (le_max_left _ _).trans hKlow
+    have hK := (le_max_left _ _).trans hKlow
     have hK0 : 0 ≤ K := by linarith
     have hN0 : 0 ≤ N := by linarith
     have hpow : Real.rpow (M * N) (-ε) ≤ 1 := by
       simpa using (Real.rpow_le_rpow_of_exponent_le hMN (show -ε ≤ 0 by linarith))
     have hKM : K ≤ M := hKhigh.trans (by nlinarith)
     have hn : 1 ≤ (Ideal.absNorm d : ℝ) := by
-      have hn' : 1 ≤ Ideal.absNorm d := Nat.one_le_iff_ne_zero.mpr
+      have hn' := Nat.one_le_iff_ne_zero.mpr
         (fun hz => hd0 (Ideal.absNorm_eq_zero_iff.mp hz))
       exact_mod_cast hn'
     have hs := hbound M N K hM hN hK hKM d hd0 hd hdc hn hnN g lam
-    have hpow' : Real.rpow (M * N) ε' ≤ Real.rpow (M * N) ε :=
+    have hpow' :=
       Real.rpow_le_rpow_of_exponent_le hMN hε'le
     have hE : 0 ≤ energy F c N lam := by unfold energy; positivity
     have hRp : 0 ≤ Real.rpow K (α - 1 / 2) := Real.rpow_nonneg hK0 _

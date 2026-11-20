@@ -43,9 +43,7 @@ noncomputable def rightRegularLp : ContRepresentation 𝕜 G (Lp 𝕜 2 (haarPro
 
       map_one' := ContinuousLinearMap.ext fun x => one_smul (MulOpposite G)ᵈᵐᵃ x
       map_mul' g h := ContinuousLinearMap.ext fun x => by
-        have hfun : (fun y : G => y * (g * h)) = (fun y : G => y * h) ∘ (fun y : G => y * g) :=
-          funext fun y => (mul_assoc y g h).symm
-        simp only [mul_apply_eq_comp, hfun]
+        simp only [mul_apply_eq_comp, (funext fun y => (mul_assoc y g h).symm)]
         exact Lp.compMeasurePreserving_comp_apply x (measurePreserving_mul_right (haarProb G) h)
           (measurePreserving_mul_right (haarProb G) g) }
 
@@ -56,10 +54,8 @@ theorem rightRegularLp_apply (g : G) (f : Lp 𝕜 2 (haarProb G)) :
 
 theorem continuous_rightRegularLp_apply (f : Lp 𝕜 2 (haarProb G)) :
     Continuous fun g : G => rightRegularLp 𝕜 G g f := by
-  have hg : Continuous fun g : G => ContinuousMap.mulRight (X := G) g :=
-    (ContinuousMap.curry ⟨fun p : G × G => p.2 * p.1, continuous_snd.mul continuous_fst⟩).continuous
   simp only [rightRegularLp_apply]
-  exact continuous_const.compMeasurePreservingLp hg _ (by simp)
+  exact continuous_const.compMeasurePreservingLp ((ContinuousMap.curry ⟨fun p : G × G => p.2 * p.1, continuous_snd.mul continuous_fst⟩).continuous) _ (by simp)
 
 end CompactGroup
 

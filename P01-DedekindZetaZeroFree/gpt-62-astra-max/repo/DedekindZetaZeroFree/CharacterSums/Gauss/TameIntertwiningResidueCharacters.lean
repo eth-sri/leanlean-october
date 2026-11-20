@@ -14,38 +14,38 @@ open KPTameTransposeLiteralCoefficients
 variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
 
+local notation "LocalCompletion" => LocalField F q
+
 theorem actual_conductor_one_residue
     [Fintype (Residue F q)]
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ) (hψ : Continuous ψ)
+    (π : LocalCompletionˣ)
+    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt LocalCompletion
+      (valuation LocalCompletion (π : LocalCompletion)) = WithZero.exp (-1 : ℤ))
+    (ψ : Multiplicative LocalCompletion →* ℂˣ) (hψ : Continuous ψ)
     (hconductor : HasConductorIntegers F q ψ) :
     ∃! ψbar : AddChar (Residue F q) ℂ,
       HasConductorOneResidue F q π ψ ψbar := by
   obtain ⟨p, hp, he⟩ := KPTameTransposeLiteral.uniformizer_integer_irreducible F q π hπ
-  let Ψ : AddChar (LocalField F q) ℂ :=
+  let Ψ : AddChar LocalCompletion ℂ :=
     { toFun := fun x => (ψ (Multiplicative.ofAdd x) : ℂ)
       map_zero_eq_one' := by simp
-      map_add_eq_mul' := by intro x y; exact congrArg Units.val (ψ.map_mul _ _) }
-  have hΨ : Continuous Ψ := Units.continuous_val.comp hψ
-  have hO : ∀ u : 𝒪[LocalField F q], Ψ (u : LocalField F q) = 1 := by
+      map_add_eq_mul' := fun x y => congrArg Units.val (ψ.map_mul _ _)}
+  have hO : ∀ u : 𝒪[LocalCompletion], Ψ u = 1 := by
     intro u
-    have h := (hconductor 1).mpr (by simp)
-    simpa [Ψ] using congrArg Units.val (h u)
-  have hexact : ∃ u : 𝒪[LocalField F q], Ψ ((u : LocalField F q) / (p : LocalField F q)) ≠ 1 := by
-    have hnot : (π : LocalField F q)⁻¹ ∉ (valuation (LocalField F q)).integer := by
+    simpa [Ψ] using congrArg Units.val (((hconductor 1).mpr (by simp)) u)
+  have hexact : ∃ u : 𝒪[LocalCompletion], Ψ ((u : LocalCompletion) / (p : LocalCompletion)) ≠ 1 := by
+    have hnot : (π : LocalCompletion)⁻¹ ∉ (valuation LocalCompletion).integer := by
       intro H
-      change valuation (LocalField F q) ((π : LocalField F q)⁻¹) ≤ 1 at H
+      change valuation LocalCompletion (π⁻¹) ≤ 1 at H
       have hh := (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt
-        (LocalField F q)).toOrderIso.monotone H
-      change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-        (valuation (LocalField F q) ((π : LocalField F q)⁻¹)) ≤
-        IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) 1 at hh
+        LocalCompletion).toOrderIso.monotone H
+      change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt LocalCompletion
+        (valuation LocalCompletion (π⁻¹)) ≤
+        IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt LocalCompletion 1 at hh
       rw [map_inv₀, map_inv₀, hπ, map_one, ← WithZero.exp_neg, ← WithZero.exp_zero,
         WithZero.exp_le_exp] at hh
       omega
-    have hn := (hconductor (π : LocalField F q)⁻¹).not.mpr hnot
+    have hn := (hconductor π⁻¹).not.mpr hnot
     push Not at hn
     obtain ⟨u, hu⟩ := hn
     refine ⟨u, ?_⟩
@@ -53,7 +53,7 @@ theorem actual_conductor_one_residue
     apply hu
     apply Units.ext
     simpa [Ψ, he, div_eq_mul_inv] using H
-  obtain ⟨ψbar, hbar, huniq⟩ := KPTameGauss.exists_residue_addChar p hp Ψ hΨ hO hexact
+  obtain ⟨ψbar, hbar, huniq⟩ := KPTameGauss.exists_residue_addChar p hp Ψ (Units.continuous_val.comp hψ) hO hexact
   refine ⟨ψbar, ?_, ?_⟩
   · exact ⟨hbar.1, fun u => by simpa [Ψ, he] using hbar.2 u⟩
   · intro ψbar' hbar'
@@ -62,7 +62,7 @@ theorem actual_conductor_one_residue
 
 theorem actual_pi_first_residue
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (π : (LocalField F q)ˣ) :
+    (π : LocalCompletionˣ) :
     ∃! κ : MulChar (Residue F q) ℂ, HasPiFirstOrientation F ζ hζ q π κ := by
   let r := Units.map (IsLocalRing.residue (KPTameCompact.O F q)).toMonoidHom
   have hr : Function.Surjective r :=

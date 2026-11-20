@@ -14,10 +14,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.ComplexLines
 open ThetaExpansion MomentSources KPGlobalTorusFiniteStages KPGlobalResidualConstruction KPCplxPrincipalSeriesCharts
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1500000
 set_option synthInstance.maxHeartbeats 150000
@@ -36,9 +36,9 @@ local instance rootActionCoreUniform : IsUniformAddGroup complexCore :=
   complexCore.toAddSubgroup.isUniformAddGroup
 
 variable (s : RestrictedTensorSimple.Level (LiteralSource.bad R.A P C))
-variable (x : ∀j : s.val,LiteralSource.Plus R.A P C j.val)
-variable (w : InfinitePlace F) (hw : Sum.inl w∈s.val)
-variable (g : MomentSources.Group R)
+    (x : ∀j : s.val,LiteralSource.Plus R.A P C j.val)
+    (w : InfinitePlace F) (hw : Sum.inl w∈s.val)
+    (g : MomentSources.Group R)
 local notation "slot" => restrictedSlotTensor R.A P C s x w hw
 
 open KPSmoothActualFlowData KPCplxCharacterHaar
@@ -79,8 +79,7 @@ theorem actualFlow_slot (i : Fin 6) (t : ℝ) :
     archimedeanInsertion F ζ hζ
       (flow F (wordIndexEquiv F ((actualLieIndexEquiv (F:=F)).symm (w,i))) t)=
       actualMatrixSlot R w (sourceFlow (KPSmoothActualFlowData.basisMatrix i) t) := by
-  have he : wordIndexEquiv F ((actualLieIndexEquiv (F:=F)).symm (w,i))=(w,i) := by
-    change actualLieIndexEquiv ((actualLieIndexEquiv (F:=F)).symm (w,i))=(w,i)
+  have he : wordIndexEquiv F ((actualLieIndexEquiv).symm (w,i))=(w,i) := by
     exact Equiv.apply_symm_apply _ _
   rw [he,ResidualPrincipalSlices.flow_matrix_update]
   rfl

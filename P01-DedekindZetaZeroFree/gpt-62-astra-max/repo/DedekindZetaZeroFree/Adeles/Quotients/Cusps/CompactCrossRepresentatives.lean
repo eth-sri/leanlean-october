@@ -23,7 +23,6 @@ theorem compact_cross_representatives
   obtain ⟨γ, x, hx, b, hb, he⟩ := hrep (KPCuspCharts.toArch F (p, 0))
   obtain ⟨A, hA, hc⟩ := D.upper γ γ.property
   rw [G.actual_action γ A hA hc] at he
-  have hmean := KPCuspCharts.toArch_meanHeight F G.positive_dimension (p, 0)
   have hp : KPCuspCharts.crossAffine F hF D.E D.integralUnits
       (D.ratio γ) (A 0 1 / A 1 1) p = (x, b) := by
     apply Prod.ext
@@ -31,9 +30,7 @@ theorem compact_cross_representatives
       exact congrArg Prod.fst (congrFun he i)
     · apply Subtype.ext
       funext i
-      have hi := congrArg Prod.snd (congrFun he i)
-      simpa only [KPCuspCharts.crossAffine, KPCuspCharts.affine,
-        KPCuspCharts.toArch, hmean, zero_add] using hi
+      simpa [KPCuspCharts.crossAffine, KPCuspCharts.affine, KPCuspCharts.toArch, (KPCuspCharts.toArch_meanHeight F G.positive_dimension (p, 0)), zero_add] using (congrArg Prod.snd (congrFun he i))
   refine ⟨γ, ?_⟩
   rw [G.crossAction_formula γ A hA hc p, hp]
   exact ⟨hx, hb⟩

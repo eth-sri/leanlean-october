@@ -35,9 +35,8 @@ theorem exists_additive_dual_level
         intro x y
         apply Subtype.ext
         exact e.toAddChar.map_add_eq_mul x y }
-  have hχ : Continuous χ := e.continuous_toFun.subtype_mk _
   obtain ⟨a, ha⟩ :=
-    KPExceptionalRaw.FiniteSource.TameWhittakerSteps.RawTransport.scalar_global F v χ hχ
+    KPExceptionalRaw.FiniteSource.TameWhittakerSteps.RawTransport.scalar_global F v χ (e.continuous_toFun.subtype_mk _)
   have heq (x : v.adicCompletion F) :
       e.toAddChar x = (localFiniteCharacter F v (x * a) : ℂ) :=
     congrArg (fun c : Circle => (c : ℂ)) (ha x)
@@ -53,11 +52,9 @@ theorem exists_additive_dual_level
       map_zero' := mul_zero a
       map_add' := mul_add a }
   let B := A.comap f
-  have hAc : IsCompact (A : Set (v.adicCompletion F)) :=
-    isCompact_localFiniteAnnihilator F v H hHcompact hHopen
-  have hAo : IsOpen (A : Set (v.adicCompletion F)) :=
+  have hAo :=
     isOpen_localFiniteAnnihilator F v H hHcompact hHopen
-  refine ⟨B, (Homeomorph.mulLeft₀ a hane).isCompact_preimage.mpr hAc,
+  refine ⟨B, (Homeomorph.mulLeft₀ a hane).isCompact_preimage.mpr (isCompact_localFiniteAnnihilator F v H hHcompact hHopen),
     hAo.preimage (continuous_const.mul continuous_id), ?_⟩
   intro z
   have hd : (∀ u ∈ A, localFiniteCharacter F v (u * z) = 1) ↔ z ∈ H := by
@@ -74,13 +71,12 @@ theorem exists_additive_dual_level
     have hm : z * (a⁻¹ * u) * a = u * z := by
       field_simp
     rw [hm] at h
-    exact Subtype.ext (by simpa using h)
+    exact Subtype.ext (by exact h)
   · intro hz t ht
     change a * t ∈ A at ht
     rw [heq]
-    have h := hz (a * t) ht
     have hm : z * t * a = a * t * z := by ring
-    rw [hm, h]
+    rw [hm, (hz (a * t) ht)]
     rfl
 
 end DedekindZetaZeroFree.ThetaFiniteCutoff.PhaseSublevels
@@ -113,8 +109,7 @@ theorem exists_uniform_phase_sublevel
         intro x y
         apply Circle.ext
         exact e.toAddChar.map_add_eq_mul x y }
-  have hψ : Continuous ψ := e.continuous_toFun.subtype_mk _
-  obtain ⟨r, hr, hkill⟩ := KPFiniteLocal.character_trivial_near_zero ψ hψ
+  obtain ⟨r, hr, hkill⟩ := KPFiniteLocal.character_trivial_near_zero ψ (e.continuous_toFun.subtype_mk _)
   let D : ℝ := max M 0 + 1
   have hD : 0 < D := by dsimp [D]; positivity
   let L : AddSubgroup (v.adicCompletion F) :=
@@ -130,15 +125,12 @@ theorem exists_uniform_phase_sublevel
       simpa only [Metric.ball, dist_zero_right] using
         (Metric.isOpen_ball : IsOpen (Metric.ball (0 : v.adicCompletion F) (r / D))))
   · intro z hz j hj
-    have hj' : ‖j‖ < r / D := hj.2
-    have hz' : ‖z‖ ≤ D := hz.trans (by dsimp [D]; linarith [le_max_left M 0])
-    have hprod : ‖z * j‖ < r := by
-      rw [norm_mul]
-      calc
-        ‖z‖ * ‖j‖ ≤ D * ‖j‖ := mul_le_mul_of_nonneg_right hz' (norm_nonneg j)
-        _ < D * (r / D) := mul_lt_mul_of_pos_left hj' hD
-        _ = r := mul_div_cancel₀ r (ne_of_gt hD)
-    exact congrArg (fun c : Circle => (c : ℂ)) (hkill (z * j) hprod)
+    refine congrArg (fun c : Circle => (c : ℂ)) (hkill (z * j) ?_)
+    rw [norm_mul]
+    calc
+      _ ≤ D * ‖j‖ := mul_le_mul_of_nonneg_right (hz.trans (by dsimp [D]; linarith [le_max_left M 0])) (norm_nonneg j)
+      _ < D * (r / D) := mul_lt_mul_of_pos_left hj.2 hD
+      _ = r := mul_div_cancel₀ r (ne_of_gt hD)
 
 end DedekindZetaZeroFree.ThetaFiniteCutoff.PhaseSublevels
 
@@ -177,7 +169,7 @@ theorem additive_quotient_character_sum
     apply Units.ext
     simpa [χ, AddChar.mulShift_apply, mul_comm] using hzJ j hj
   let χq := KPRootAverage.quotientCharacter χ B J hχJ
-  let f : Multiplicative (KPRootAverage.LevelQuotient B J) →* ℂ :=
+  let f :=
     (Units.coeHom ℂ).comp χq
   have hf (q : KPRootAverage.LevelQuotient B J) :
       f (Multiplicative.ofAdd q) =
@@ -186,8 +178,7 @@ theorem additive_quotient_character_sum
   have hiff : f = 1 ↔ ∀ t ∈ B, e (z * t) = 1 := by
     constructor
     · intro h t ht
-      have hm := KPRootAverage.quotientCharacter_mk χ B J hχJ (⟨t, ht⟩ : B)
-      have hu := congrArg (fun w : ℂˣ => (w : ℂ)) hm
+      have hu := congrArg (fun w : ℂˣ => (w : ℂ)) (KPRootAverage.quotientCharacter_mk χ B J hχJ (⟨t, ht⟩ : B))
       have hv : f (Multiplicative.ofAdd
           (QuotientAddGroup.mk' (J.addSubgroupOf B) (⟨t, ht⟩ : B))) = 1 := by
         rw [h]; rfl
@@ -206,18 +197,16 @@ theorem additive_quotient_character_sum
   have hsum : (∑ q : KPRootAverage.LevelQuotient B J,
       e (z * (KPRootAverage.representative B J q : k))) =
       ∑ q : Multiplicative (KPRootAverage.LevelQuotient B J), f q := by
-    change (∑ q : KPRootAverage.LevelQuotient B J, _) = _
     simp_rw [← hf]
-    exact Fintype.sum_equiv (Multiplicative.ofAdd : _ ≃ _) _ _ (fun _ => rfl)
+    exact Fintype.sum_equiv Multiplicative.ofAdd _ _ (fun _ => rfl)
   rw [hsum]
   by_cases h : ∀ t ∈ B, e (z * t) = 1
   · rw [if_pos h, hiff.mpr h]
     simp only [MonoidHom.one_apply, Finset.sum_const, Finset.card_univ, nsmul_eq_mul,
       mul_one]
-    rw [Fintype.card_congr (Multiplicative.ofAdd :
-      KPRootAverage.LevelQuotient B J ≃ Multiplicative (KPRootAverage.LevelQuotient B J)).symm]
+    rw [Fintype.card_congr Multiplicative.ofAdd.symm]
     exact inv_mul_cancel₀ (Nat.cast_ne_zero.mpr
-      (Fintype.card_ne_zero : Fintype.card (KPRootAverage.LevelQuotient B J) ≠ 0))
+      Fintype.card_ne_zero)
   · rw [if_neg h, sum_hom_units_eq_zero f (fun he => h (hiff.mp he)), mul_zero]
 
 end

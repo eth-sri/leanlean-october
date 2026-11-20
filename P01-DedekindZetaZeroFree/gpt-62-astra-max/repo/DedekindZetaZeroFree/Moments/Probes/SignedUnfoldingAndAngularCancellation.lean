@@ -9,8 +9,8 @@ namespace DedekindZetaZeroFree.MomentSources
 open scoped NumberField Classical
 open NumberField MeasureTheory
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem finite_profiles_of_same_residue {Q : AdmissibleFlatSources R}
     {T : Realization R Q} {P : Packet R Q} (H : SameResidueProfiles R Q T P) :
@@ -79,7 +79,6 @@ def CertifiedPacket.toMomentSource (C : CertifiedPacket R) : SelectedMomentSourc
   primitive := Characters.primitive R
   L := Characters.L R
   norm_one := Characters.norm_one R
-  characters_compatible := Characters.compatible R
   H := C.realization.H C.packet
   profiles := finite_profiles_of_same_residue R C.profiles
   reflected_domination := by

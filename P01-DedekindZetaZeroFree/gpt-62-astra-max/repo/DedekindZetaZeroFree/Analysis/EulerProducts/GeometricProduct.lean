@@ -31,9 +31,7 @@ private theorem finite_geom (ι : Type*) [Fintype ι] (z : ι → ℂ) (hz : ∀
     · apply E.hasSum_iff.mp
       simpa [E, Function.comp_def, ← Equiv.prod_comp e] using h.2
   · intro z hz
-    have h : (fun f : PEmpty → ℕ => ∏ i, z i ^ f i) = fun _ => (1 : ℂ) := by ext f; simp
-    rw [h]
-    exact ⟨(hasSum_fintype _).summable, by simpa using (hasSum_fintype (fun _ : PEmpty → ℕ => (1 : ℂ)))⟩
+    exact ⟨(hasSum_fintype _).summable, by simp⟩
   · intro α _ ih z hz
     have h := ih (fun i => z (some i)) (fun i => hz (some i))
     have hg := hasSum_geometric_of_norm_lt_one (hz none)
@@ -48,30 +46,31 @@ private theorem finite_geom (ι : Type*) [Fintype ι] (z : ι → ℂ) (hz : ∀
     · simpa [E, Function.comp_def, Fintype.prod_option, mul_comm] using
         E.hasSum_iff.mpr (hg.mul h.2 hp.of_norm)
 
-private theorem supported_hasSum {P : Type*} (r : P → ℂ) (hr : ∀ p, ‖r p‖ < 1) (s : Finset P) :
+variable {P : Type*} (r : P → ℂ) (hr : ∀ p, ‖r p‖ < 1)
+
+include hr in
+private theorem supported_hasSum (s : Finset P) :
     HasSum (fun e : {e : P →₀ ℕ // (↑e.support : Set P) ⊆ (s : Set P)} =>
       e.val.prod (fun p k => r p ^ k)) (∏ p ∈ s, (1 - r p)⁻¹) := by
   classical
   let E := (Finsupp.restrictSupportEquiv (s : Set P) ℕ).trans Finsupp.equivFunOnFinite
-  have he (e : {e : P →₀ ℕ // (↑e.support : Set P) ⊆ (s : Set P)}) :
-      e.val.prod (fun p k => r p ^ k) = ∏ p : (s : Set P), r p ^ (E e) p := by
+  have he (e : {e : P →₀ ℕ // (↑e.support : Set P) ⊆ s}) :
+      e.val.prod (fun p k => r p ^ k) = ∏ p : s, r p ^ (E e) p := by
     rw [← Finsupp.prod_subtypeDomain_index (fun p hp => e.property hp), Finsupp.prod_fintype]
     · rfl
-    · intro i; simp
-  have hh := (finite_geom (s : Set P) (fun p => r p) (fun p => hr p)).2
-  have ht : (∏ p : (s : Set P), (1 - r p)⁻¹) = ∏ p ∈ s, (1 - r p)⁻¹ := by
-    exact Finset.prod_coe_sort s (fun p : P => (1 - r p)⁻¹)
+    · simp
+  have ht := Finset.prod_coe_sort s (fun p : P => (1 - r p)⁻¹)
   rw [← ht]
-  simpa only [Function.comp_def, ← he] using E.hasSum_iff.mpr hh
+  simpa only [Function.comp_def, ← he] using E.hasSum_iff.mpr ((finite_geom s (fun p => r p) (fun p => hr p)).2)
 
-theorem hasProd_geometric {P : Type*} (r : P → ℂ)
-    (hr : ∀ p, ‖r p‖ < 1)
+include hr in
+theorem hasProd_geometric
     (h : Summable (fun e : P →₀ ℕ => ‖e.prod (fun p k => r p ^ k)‖)) :
     HasProd (fun p => (1 - r p)⁻¹)
       (∑' e : P →₀ ℕ, e.prod (fun p k => r p ^ k)) := by
   classical
   let f : (P →₀ ℕ) → ℂ := fun e => e.prod (fun p k => r p ^ k)
-  let g : Finset P → (P →₀ ℕ) → ℂ := fun s e =>
+  let g := fun s e =>
     if e.support ⊆ s then f e else 0
   have ht : Tendsto (fun s : Finset P => ∑' e, g s e) atTop (𝓝 (∑' e, f e)) := by
     apply tendsto_tsum_of_dominated_convergence h
@@ -83,13 +82,13 @@ theorem hasProd_geometric {P : Type*} (r : P → ℂ)
         dsimp [g]; split_ifs <;> simp [f])
   have he (s : Finset P) : (∑' e, g s e) = ∏ p ∈ s, (1 - r p)⁻¹ := by
     have hsame (e : P →₀ ℕ) : g s e =
-        {e : P →₀ ℕ | (↑e.support : Set P) ⊆ (s : Set P)}.indicator f e := by
+        {e : P →₀ ℕ | (↑e.support : Set P) ⊆ s}.indicator f e := by
       simp [g, Set.indicator, Finset.coe_subset]
     simp_rw [hsame]
     rw [← tsum_subtype]
     exact (supported_hasSum r hr s).tsum_eq
   change Tendsto (fun s : Finset P => ∏ p ∈ s, (1 - r p)⁻¹) atTop _
-  simpa only [he] using ht
+  simpa [he] using ht
 
 end
 end DedekindZetaZeroFree.ExteriorEulerGeometricProduct

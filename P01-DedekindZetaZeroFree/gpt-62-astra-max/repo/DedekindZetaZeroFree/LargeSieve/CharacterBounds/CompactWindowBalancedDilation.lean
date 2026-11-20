@@ -11,16 +11,15 @@ noncomputable section
 open NumberField IsDedekindDomain
 open scoped Classical
 
-def normalizedFrequency (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F)))
+variable (F : Type) [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (𝓞 F)))
+
+def normalizedFrequency
     (r : F → sIntegerRing F S) (a : F) : PoissonArch.Space F :=
   PoissonArch.traceAdapter F
     (PoissonArch.infiniteAdeleToSpace F
       (sLocalDiagonal F S (a + (r a : F))).1)
 
 theorem compact_window_balanced_dilation
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F)))
     (ell : ℝ → SLocalProduct F S)
     (hell : ∀ N, ell N =
       ((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm
@@ -47,7 +46,7 @@ theorem compact_window_balanced_dilation
     exact ⟨n + 1, fun x hx => (hC x hx).trans
       ((le_max_left C 1).trans hn.2.le)⟩
   choose n hn using hb
-  let k : (v : S) → ℤ := fun v => -(n v : ℤ)
+  let k := fun v => -(n v : ℤ)
   have hcl : IsClopen (PoissonS.finiteBall F S k) := by
     have heq : PoissonS.finiteBall F S k =
         ⋂ v : S, (fun x : PoissonFinite.Space F S => x v) ⁻¹'
@@ -61,9 +60,8 @@ theorem compact_window_balanced_dilation
       intro v
       apply IsOpen.preimage (continuous_apply v)
       apply IsUltrametricDist.isOpen_closedBall
-      have hq : (0 : ℝ) < (v.val.asIdeal.absNorm : ℝ) := by
-        exact_mod_cast (Nat.zero_lt_one.trans (HeightOneSpectrum.one_lt_absNorm v.val))
-      exact (zpow_pos hq _).ne'
+      refine (zpow_pos ?_ _).ne'
+      exact_mod_cast (Nat.zero_lt_one.trans (HeightOneSpectrum.one_lt_absNorm v.val))
   obtain ⟨C, hC⟩ := hK.exists_bound_of_continuousOn
     (f := fun x : SLocalProduct F S => PoissonArch.infiniteAdeleToSpace F x.1)
     (by fun_prop)

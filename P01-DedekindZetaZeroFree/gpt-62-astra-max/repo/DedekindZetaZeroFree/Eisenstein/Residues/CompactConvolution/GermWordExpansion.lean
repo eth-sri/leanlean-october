@@ -24,18 +24,15 @@ theorem compactWord_of_germ_expansion (s : ℝ)
     actualRightWord F ζ hζ w h (KPMsGreenFlux.compactInsertion F ζ hζ k*c.val) =
       ∑j,d j*pureCompact s (fun i=>matrixWord s (slotWords i (w.map (matrixLetter F))) (f j i)) k := by
   choose u hu using fun i => compactQuotient_surjective (k i)
-  let a : InfinitePlace F → ComplexGL2 := fun i => complexSU2Embedding (u i)
-  have hk : ∀i, Matrix.ProjGenLinGroup.mk (a i)=(k i).val := by
-    intro i
-    exact congrArg Subtype.val (hu i)
+  let a := fun i => complexSU2Embedding (u i)
+  have hk : ∀i, Matrix.ProjGenLinGroup.mk (a i)=(k i).val := fun i => congrArg Subtype.val (hu i)
   have hp : KPMsGreenFlux.compactInsertion F ζ hζ k*c.val = finiteSlicePoint F ζ hζ c a := by
     unfold finiteSlicePoint KPMsGreenFlux.compactInsertion
     congr 2
     funext i
     exact (hk i).symm
   rw [hp,actualRightWord_finiteSlice]
-  have hw := (tupleWord_germ (w.map (matrixLetter F)) (he u)).eq_of_nhds
-  rw [hw,tupleWord_sum_pure]
+  rw [((tupleWord_germ (w.map (matrixLetter F)) (he u)).eq_of_nhds),tupleWord_sum_pure]
   apply Finset.sum_congr rfl
   intro j hj
   congr 1

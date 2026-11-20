@@ -11,7 +11,7 @@ open scoped Classical NumberField Topology
 open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualBoundaryInvariance
 open KPGlobalResidualConstruction
-open _root_.DedekindZetaZeroFree.KPGlobalCenterRationalCharacter renaming p_rational → p_rational
+open _root_.DedekindZetaZeroFree.KPGlobalCenterRationalCharacter (p_rational)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
@@ -59,8 +59,7 @@ theorem upper_rational (f : G → ℂ) (hc : Continuous f)
   simp_rw [he]
   obtain ⟨e,heq⟩ := KPAdditiveRationalDilation.quotientDilation_is_additive_homeomorphism F y⁻¹
   have hmp := KPAdditiveRationalDilation.quotientDilation_measurePreserving F y⁻¹ μ
-  have hfun : (e : KPAdditiveQuotient F → KPAdditiveQuotient F) = KPAdditiveRationalDilation.quotientDilation F y⁻¹ := funext heq
-  rw [← hfun] at hmp ⊢
+  rw [← (funext heq)] at hmp ⊢
   exact hmp.integral_comp e.toHomeomorph.measurableEmbedding φ
 end DedekindZetaZeroFree.FourierContinuation.ResidualBoundaryInvariance
 

@@ -20,49 +20,34 @@ theorem exists_conductor_split
   classical
 
   let g : HeightOneSpectrum (𝓞 F) → Ideal (𝓞 F) := fun v => v.maxPowDividing f
-  have hgfin : (Function.mulSupport g).Finite := Ideal.hasFiniteMulSupport hf
-  let M : Finset (HeightOneSpectrum (𝓞 F)) := hgfin.toFinset
-  have hMsupp : Function.mulSupport g ⊆ (M : Set (HeightOneSpectrum (𝓞 F))) := by
-    intro v hv; exact hgfin.mem_toFinset.mpr hv
+  have hgfin := Ideal.hasFiniteMulSupport hf
+  let M := hgfin.toFinset
   have hfac : ∏ v ∈ M, g v = f := by
     rw [← Ideal.finprod_heightOneSpectrum_factorization hf]
-    exact (finprod_eq_prod_of_mulSupport_subset g hMsupp).symm
+    exact (finprod_eq_prod_of_mulSupport_subset g (fun v hv => hgfin.mem_toFinset.mpr hv)).symm
 
-  let fS : Ideal (𝓞 F) := ∏ v ∈ M.filter (fun v => v ∈ A.Sf), g v
-  let qO : Ideal (𝓞 F) := ∏ v ∈ M.filter (fun v => v ∉ A.Sf), g v
+  let fS := ∏ v ∈ M.filter (fun v => v ∈ A.Sf), g v
+  let qO := ∏ v ∈ M.filter (fun v => v ∉ A.Sf), g v
   have hsplit : f = fS * qO := by
     rw [← hfac]
     exact (Finset.prod_filter_mul_prod_filter_not M (fun v => v ∈ A.Sf) g).symm
   have hne : fS * qO ≠ ⊥ := by rw [← hsplit]; exact hf
-  have hfS : fS ≠ ⊥ := fun h => hne (Ideal.mul_eq_bot.mpr (Or.inl h))
-  have hqO : qO ≠ ⊥ := fun h => hne (Ideal.mul_eq_bot.mpr (Or.inr h))
-
-  have hsupp : ∀ v : HeightOneSpectrum (𝓞 F), fS ≤ v.asIdeal → v ∈ A.Sf := by
-    intro v hvle
-    have hdvd : v.asIdeal ∣ fS := Ideal.dvd_iff_le.mpr hvle
-    have hprime : Prime v.asIdeal := v.prime
-    obtain ⟨v', hv'mem, hv'dvd⟩ := (Prime.dvd_finsetProd_iff hprime g).mp hdvd
-    have hv'Sf : v' ∈ A.Sf := (Finset.mem_filter.mp hv'mem).2
+  refine ⟨fS, qO, hf, (fun h => hne (Ideal.mul_eq_bot.mpr (Or.inl h))), (fun h => hne (Ideal.mul_eq_bot.mpr (Or.inr h))), hsplit, ?_, ?_⟩
+  · intro v hvle
+    have hprime := v.prime
+    obtain ⟨v', hv'mem, hv'dvd⟩ := (Prime.dvd_finsetProd_iff hprime g).mp (Ideal.dvd_iff_le.mpr hvle)
+    have hv'Sf := (Finset.mem_filter.mp hv'mem).2
     have hv'dvd' : v.asIdeal ∣ v'.asIdeal := by
       apply hprime.dvd_of_dvd_pow
       simpa [g, IsDedekindDomain.HeightOneSpectrum.maxPowDividing] using hv'dvd
-    have hle : v'.asIdeal ≤ v.asIdeal := Ideal.dvd_iff_le.mp hv'dvd'
-    have heq : v'.asIdeal = v.asIdeal := v'.isMaximal.eq_of_le v.isMaximal.ne_top hle
-    have hv'v : v' = v := HeightOneSpectrum.ext heq
-    rwa [hv'v] at hv'Sf
-
-  have hqOsup : qO ⊔ A.cS = ⊤ := by
-    apply Ideal.prod_sup_eq_top (I := A.cS) (s := M.filter (fun v => v ∉ A.Sf)) (J := g)
+    rwa [(HeightOneSpectrum.ext (v'.isMaximal.eq_of_le v.isMaximal.ne_top (Ideal.dvd_iff_le.mp hv'dvd')))] at hv'Sf
+  · apply Ideal.prod_sup_eq_top
     intro v hv
-    have hvnot : v ∉ A.Sf := (Finset.mem_filter.mp hv).2
-    apply Ideal.sup_prod_eq_top (I := g v) (s := A.Sf) (J := fun v' => v'.asIdeal)
+    apply Ideal.sup_prod_eq_top
     intro v' hv'
-    have hne' : v ≠ v' := fun h => hvnot (h ▸ hv')
-    have hcop := HeightOneSpectrum.isCoprime_pow_of_ne v v' hne'
-      ((Associates.mk v.asIdeal).count (Associates.mk f).factors) 1
     simpa [g, IsDedekindDomain.HeightOneSpectrum.maxPowDividing, pow_one] using
-      Ideal.isCoprime_iff_sup_eq.mp hcop
-  exact ⟨fS, qO, hf, hfS, hqO, hsplit, hsupp, hqOsup⟩
+      Ideal.isCoprime_iff_sup_eq.mp (HeightOneSpectrum.isCoprime_pow_of_ne v v' (fun h => ((Finset.mem_filter.mp hv).2) (h ▸ hv'))
+        ((Associates.mk v.asIdeal).count (Associates.mk f).factors) 1)
 
 end DedekindZetaZeroFree.Detector.ExteriorDyadic.ResidueFiberAdapter
 
@@ -77,41 +62,21 @@ open NumberField IsDedekindDomain FixedSResidue
 
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem exponent_zero_iff (v : HeightOneSpectrum (𝓞 F))
-    (f : Ideal (𝓞 F)) (hf : f ≠ ⊥) :
-    idealPrimeExponent v.asIdeal f = 0 ↔ v.asIdeal ⊔ f = ⊤ := by
-  rw [idealPrimeExponent, Multiset.count_eq_zero]
-  rw [UniqueFactorizationMonoid.mem_normalizedFactors_iff hf]
-  simp only [v.prime, true_and, Ideal.dvd_iff_le]
-  constructor
-  · intro h
-    exact (Ideal.isMaximal_def.mp v.isMaximal).2 _ (show v.asIdeal < v.asIdeal ⊔ f from
-      lt_of_le_of_ne le_sup_left (by
-        intro he
-        exact h (he ▸ le_sup_right)))
-  · intro h hle
-    have : v.asIdeal ⊔ f = v.asIdeal := sup_eq_left.mpr hle
-    exact v.isPrime.ne_top (this.symm.trans h)
+private alias exponent_zero_iff := DedekindZetaZeroFree.Detector.FixedSInjectivity.ExteriorResidueCharacterInjectivity.exponent_zero_iff
 
 private theorem exponent_mul (v : HeightOneSpectrum (𝓞 F))
     (I J : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hJ : J ≠ ⊥) :
     idealPrimeExponent v.asIdeal (I * J) =
-      idealPrimeExponent v.asIdeal I + idealPrimeExponent v.asIdeal J := by
-  simp [idealPrimeExponent, UniqueFactorizationMonoid.normalizedFactors_mul hI hJ,
-    Multiset.count_add]
+      idealPrimeExponent v.asIdeal I + idealPrimeExponent v.asIdeal J := by apply @ExteriorCharacterSteps.ExteriorCRTIdelicCongruence.exp_mul <;> assumption
 
 private theorem cS_le_asIdeal (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     (hv : v ∈ A.Sf) : A.cS ≤ v.asIdeal := by
   rw [SArithmeticData.cS]
-  exact (Ideal.prod_le_inf : (∏ w ∈ A.Sf, w.asIdeal) ≤ A.Sf.inf (fun w => w.asIdeal)).trans
+  exact Ideal.prod_le_inf.trans
     (Finset.inf_le hv)
 
 private theorem pow_le_of_exponent (v : HeightOneSpectrum (𝓞 F)) (I : Ideal (𝓞 F))
-    (hI : I ≠ ⊥) : I ≤ v.asIdeal ^ idealPrimeExponent v.asIdeal I := by
-  rw [← Ideal.dvd_iff_le]
-  rw [pow_dvd_iff_le_emultiplicity,
-    UniqueFactorizationMonoid.emultiplicity_eq_count_normalizedFactors v.irreducible hI]
-  simp [idealPrimeExponent]
+    (hI : I ≠ ⊥) : I ≤ v.asIdeal ^ idealPrimeExponent v.asIdeal I := by apply @ExteriorCharacterSteps.ExteriorCRTIdelicCongruence.le_pow_exp <;> assumption
 
 theorem slocal_conductor_trivial_of_sprime_compatibility
     (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
@@ -122,10 +87,6 @@ theorem slocal_conductor_trivial_of_sprime_compatibility
     (hcompat : FixedSInjectivity.SPrimeCompatibility A f omega sigma) :
     FixedSResidue.SLocalConductorTrivial A fS sigma := by
   intro alpha n hn hfS hcS
-  have halpha0 : alpha ≠ 0 := by
-    intro h
-    have h1 : (n.val : F) = 0 := by rw [hn, h]; simp
-    exact n.property (Subtype.ext (by simpa using h1))
   have hlocal : ∀ v : {v // v ∈ A.Sf},
       CRTLocalHigherUnits F v.val (idealPrimeExponent v.val.asIdeal f)
         ((A.diagonal (fieldUnit A n)).2 v) := by
@@ -136,47 +97,35 @@ theorem slocal_conductor_trivial_of_sprime_compatibility
       exact top_le_iff.mp hle
     have hmem : alpha ∉ v.val.asIdeal := by
       intro hmem
-      have hle2 : Ideal.span {alpha} ≤ v.val.asIdeal :=
-        Ideal.span_singleton_le_iff_mem _ |>.mpr hmem
-      rw [sup_eq_right.mpr hle2] at hsup
+      rw [sup_eq_right.mpr (Ideal.span_singleton_le_iff_mem _ |>.mpr hmem)] at hsup
       exact v.val.isPrime.ne_top hsup
     have hqO0 : idealPrimeExponent v.val.asIdeal qO = 0 := by
       rw [exponent_zero_iff v.val qO hsplit.2.2.1, sup_comm]
-      have hle : qO ⊔ A.cS ≤ qO ⊔ v.val.asIdeal :=
+      have hle :=
         sup_le_sup_left (cS_le_asIdeal A v.val v.property) qO
       rw [hsplit.2.2.2.2.2] at hle
       exact top_le_iff.mp hle
     have hexp : idealPrimeExponent v.val.asIdeal f
         = idealPrimeExponent v.val.asIdeal fS := by
       rw [hsplit.2.2.2.1, exponent_mul v.val fS qO hsplit.2.1 hsplit.2.2.1, hqO0, add_zero]
-    have hcong : alpha - 1 ∈ v.val.asIdeal ^ idealPrimeExponent v.val.asIdeal f := by
-      rw [hexp]
-      exact pow_le_of_exponent v.val fS hsplit.2.1 hfS
-    let b : v.val.adicCompletionIntegers F :=
+    let b :=
       algebraMap (𝓞 F) (v.val.adicCompletionIntegers F) alpha
     have hb1 : b - 1 ∈ IsLocalRing.maximalIdeal (v.val.adicCompletionIntegers F)
         ^ idealPrimeExponent v.val.asIdeal f := by
-      have h := (CRT_completed_power_mem_iff F v.val (alpha - 1)
-        (idealPrimeExponent v.val.asIdeal f)).mpr hcong
-      simpa [b] using h
+      simpa [b] using ((CRT_completed_power_mem_iff F v.val (alpha - 1)
+        (idealPrimeExponent v.val.asIdeal f)).mpr (by
+          rw [hexp]
+          exact pow_le_of_exponent v.val fS hsplit.2.1 hfS))
     have hbnot : b ∉ IsLocalRing.maximalIdeal (v.val.adicCompletionIntegers F) := by
       intro hb
-      have h1 : algebraMap (𝓞 F) (v.val.adicCompletionIntegers F) alpha ∈
-          IsLocalRing.maximalIdeal (v.val.adicCompletionIntegers F) ^ 1 := by
-        simpa [b] using hb
-      have h2 : alpha ∈ v.val.asIdeal ^ 1 :=
-        (CRT_completed_power_mem_iff F v.val alpha 1).mp h1
-      exact hmem (by simpa using h2)
-    have hunit : IsUnit b := IsLocalRing.notMem_maximalIdeal.mp hbnot
-    refine ⟨hunit.unit, ?_, ?_⟩
+      exact hmem (by simpa using ((CRT_completed_power_mem_iff F v.val alpha 1).mp (by
+        simpa [b] using hb)))
+    refine ⟨(IsLocalRing.notMem_maximalIdeal.mp hbnot).unit, ?_, ?_⟩
     · apply Units.ext
       rw [Units.coe_map, IsUnit.unit_spec]
       simp only [b, SArithmeticData.diagonal, MonoidHom.coe_mk, OneHom.coe_mk,
         FixedSResidue.fieldUnit, Units.val_mk0, hn]
       simp
-      change ({toCompletion := ↑(WithVal.toVal (HeightOneSpectrum.valuation F v.val)
-          (algebraMap (𝓞 F) F alpha))} : v.val.adicCompletion F)
-        = algebraMap F (v.val.adicCompletion F) (algebraMap (𝓞 F) F alpha)
       rw [← IsScalarTower.algebraMap_apply (𝓞 F) F (v.val.adicCompletion F) alpha]
       rfl
     · simpa [IsUnit.unit_spec] using hb1
@@ -220,9 +169,9 @@ theorem conductor_split_residue_modulus_bounds
 
 open FixedSResidue FixedSInjectivity
 
+variable (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+
 theorem primitive_residue_fibers_of_decomposition
-    (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F)
     (hprincipal : ExteriorPrincipalization A)
     (sigma : FullLocalCharacters A) (hSigma : HasFiniteOrder A sigma)
     (I : Type) [Fintype I] (omega : I → PrimitiveFrequencyCharacter F)
@@ -284,7 +233,7 @@ theorem primitive_residue_fibers_of_decomposition
     ?_, ?_, ?_, ?_, ?_, ?_⟩
   · intro j
     let i := Classical.choose (e.symm j).property
-    have hi : qO i = (e.symm j).val := Classical.choose_spec (e.symm j).property
+    have hi := Classical.choose_spec (e.symm j).property
     change Fintype (A.R ⧸ residueModulus A (e.symm j).val)
     rw [← hi]
     exact hfinite i
@@ -332,8 +281,6 @@ theorem primitive_residue_fibers_of_decomposition
     exact transport_bridge i.val (qO' j) (hg i.val j i.property) a m hm
 
 theorem primitive_residue_fibers
-    (F : Type) [Field F] [NumberField F]
-    (A : SArithmeticData F)
     (hprincipal : FixedSInjectivity.ExteriorPrincipalization A)
     (sigma : FixedSResidue.FullLocalCharacters A)
     (hSigma : FixedSResidue.HasFiniteOrder A sigma)
@@ -361,34 +308,25 @@ theorem primitive_residue_fibers
         Ideal.span {m.val} = A.extendIdeal a →
           (omega i).character a.val = FixedSResidue.localInverseProduct A sigma m *
             chi j i (Ideal.Quotient.mk (q j) m.val)) := by
-  have hs : ∀ i, ∃ fS qO : Ideal (𝓞 F),
-      ConductorSplit A (omega i).conductor fS qO := fun i =>
+  choose fS qO hsplit using (fun i =>
     ResidueFiberAdapter.exists_conductor_split F A (omega i).conductor
-      (omega i).conductor_ne_zero
-  choose fS qO hsplit using hs
-  have hcompat : ∀ i, SPrimeCompatibility A (omega i).conductor
-      (omega i).character sigma := fun i =>
+      (omega i).conductor_ne_zero)
+  have hcompat := fun i =>
     ResidueFiberAdapter.sprime_compatibility_of_frequency_local_components
       F A (omega i) sigma (hlocal i).2
-  have htrivial : ∀ i, SLocalConductorTrivial A (fS i) sigma := fun i =>
+  have htrivial := fun i =>
     ResidueFiberAdapter.slocal_conductor_trivial_of_sprime_compatibility
       F A (omega i).conductor (fS i) (qO i) (omega i).character
       (hsplit i) sigma (hlocal i).1 (hcompat i)
-  have hlam : ∀ i, ∃ lam : ResidueCharacter A (residueModulus A (qO i)),
-      ExteriorDecomposition A (omega i).conductor (omega i).character sigma
-        (residueModulus A (qO i)) lam := fun i =>
+  choose lam hbridge using (fun i =>
     ResidueFiberAdapter.exists_exterior_residue_character F A (omega i)
-      (fS i) (qO i) (hsplit i) sigma (hlocal i).1 (hlocal i).2
-  choose lam hbridge using hlam
-  have hfinite : ∀ i, Fintype (A.R ⧸ residueModulus A (qO i)) := fun i =>
-    Classical.choice (conductor_split_residue_modulus_bounds F A
-      (omega i).conductor (fS i) (qO i) (hsplit i)).2.1
-  have hbound : ∀ i, (Nat.card (A.R ⧸ residueModulus A (qO i)) : ℝ) ≤ V := by
-    intro i
-    exact (Nat.cast_le.mpr (conductor_split_residue_modulus_bounds F A
-      (omega i).conductor (fS i) (qO i) (hsplit i)).2.2).trans (hconductor i)
-  exact primitive_residue_fibers_of_decomposition F A hprincipal sigma hSigma
-    I omega hdist V qO fS hsplit hcompat htrivial hfinite hbound lam hbridge
+      (fS i) (qO i) (hsplit i) sigma (hlocal i).1 (hlocal i).2)
+  refine primitive_residue_fibers_of_decomposition F A hprincipal sigma hSigma
+    I omega hdist V qO fS hsplit hcompat htrivial (fun i =>
+      Classical.choice (conductor_split_residue_modulus_bounds F A
+        (omega i).conductor (fS i) (qO i) (hsplit i)).2.1) ?_ lam hbridge
+  exact fun i => (Nat.cast_le.mpr (conductor_split_residue_modulus_bounds F A
+  (omega i).conductor (fS i) (qO i) (hsplit i)).2.2).trans (hconductor i)
 
 end
 end DedekindZetaZeroFree.Detector.ExteriorDyadic

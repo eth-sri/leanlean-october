@@ -22,7 +22,7 @@ theorem geometric_shell_integral {K : Type*} [MeasurableSpace K]
     IntegrableOn f (⋃ j, shell j) ν ∧
       (∫ x in ⋃ j, shell j, f x ∂ν) = (m : ℂ) * ∑' j : ℕ, r ^ (j + 1) := by
   have hi (j : ℕ) : IntegrableOn f (shell j) ν :=
-    (integrableOn_const (hfinite j) (C := r ^ (j + 1))).congr_fun
+    (integrableOn_const (hfinite j)).congr_fun
       (fun x hx => (hval j x hx).symm) (hm j)
   have hin (j : ℕ) : (∫ x in shell j, ‖f x‖ ∂ν) = m * ‖r‖ ^ (j + 1) := by
     rw [setIntegral_congr_fun (hm j) (fun x hx => congrArg norm (hval j x hx)),

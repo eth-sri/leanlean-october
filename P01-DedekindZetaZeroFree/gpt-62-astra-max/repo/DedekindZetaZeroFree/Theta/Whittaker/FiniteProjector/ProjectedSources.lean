@@ -10,12 +10,12 @@ open scoped Classical NumberField Topology
 open NumberField Filter
 namespace DedekindZetaZeroFree.FiniteWhittakerProjectors
 open MomentSources
-open _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum renaming level_exists → level_exists
+open _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum (level_exists)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem finite_common_level {J : Type} [Finite J] (U : J → KPGlobalTorusFunctionData.FiniteLevel
     F R.A.zeta12 R.A.primitive_zeta12) :
@@ -30,9 +30,7 @@ theorem finite_common_level {J : Type} [Finite J] (U : J → KPGlobalTorusFuncti
     | empty => exact ⟨Classical.choice (level_exists F R.A.zeta12 R.A.primitive_zeta12), by simp⟩
     | @insert j s hj ih =>
       obtain ⟨V,hV⟩ := ih
-      let W : KPGlobalTorusFunctionData.FiniteLevel F R.A.zeta12 R.A.primitive_zeta12 :=
-        ⟨V.toOpenSubgroup ⊓ (U j).toOpenSubgroup, V.isCompact.inter_right (U j).toOpenSubgroup.isClosed⟩
-      refine ⟨W, ?_⟩
+      refine ⟨(⟨V.toOpenSubgroup ⊓ (U j).toOpenSubgroup, V.isCompact.inter_right (U j).toOpenSubgroup.isClosed⟩), ?_⟩
       intro k hk
       rcases Finset.mem_insert.mp hk with rfl | hk
       · exact Subgroup.map_mono inf_le_right
@@ -66,7 +64,7 @@ theorem canonical_family_level {J : Type} [Finite J]
         KPContFlatSourceRecipe.alpha F R.A.zeta12 R.A.primitive_zeta12 g := by
       apply Real.exp_injective
       apply Complex.ofReal_injective
-      simpa only [Complex.ofReal_exp] using he
+      simpa using he
     rw [ha]
 
 end DedekindZetaZeroFree.FiniteWhittakerProjectors
@@ -83,8 +81,8 @@ open MomentSources
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem projected_sources {N : TraceHaarTransport R} (A : JointExteriorCoefficientSources R N)
     (I : R.A.Sf → Type) [∀ q, Fintype (I q)]
@@ -94,8 +92,7 @@ theorem projected_sources {N : TraceHaarTransport R} (A : JointExteriorCoefficie
       ∀ v, ∃ B : FlatScalarResidue F R.A.zeta12 R.A.primitive_zeta12 (Q.flat v),
         B.numerator 0 = FiniteWhittakerProjectors.rootProjectorWord R I c t l (A.realization.theta v) := by
   obtain ⟨f,B,hf,hB⟩ := selected_root_word_flat_lifts R I c t A l
-  have hc := fun v => canonical_flat_residue F R.A.zeta12 R.A.primitive_zeta12 A.sources.iwasawa (f v) (B v)
-  choose w C hw hC using hc
+  choose w C hw hC using (fun v => canonical_flat_residue F R.A.zeta12 R.A.primitive_zeta12 A.sources.iwasawa (f v) (B v))
   have hw0 (v) : (w v).val 0 = (f v).val 0 := by
     funext g
     simp [hw]

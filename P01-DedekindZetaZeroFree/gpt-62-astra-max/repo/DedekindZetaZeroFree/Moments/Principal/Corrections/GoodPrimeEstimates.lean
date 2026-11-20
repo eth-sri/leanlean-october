@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Moments.Principal.Corrections.BadPrimeEstimates
 
 public import DedekindZetaZeroFree.Moments.Principal.Corrections.Definitions
 
@@ -14,16 +15,12 @@ set_option autoImplicit false
 open LocalFiniteSums
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-private lemma correction_Q_gt_one (p : ExteriorPrime A) : 1 < Q p := by
-  change 1 < (Ideal.absNorm p.val.asIdeal : ℝ)
-  exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm p.val
+private alias correction_Q_gt_one := DedekindZetaZeroFree.LocalFiniteSums.GoodPrimeSeries.good_series_Q_gt_one
 
-private lemma correction_Q_ge_two (p : ExteriorPrime A) : 2 ≤ Q p := by
-  change 2 ≤ (Ideal.absNorm p.val.asIdeal : ℝ)
-  exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm p.val
+private alias correction_Q_ge_two := BadPrimeEstimates.two_le_Q
 
 private lemma correction_chi_le (p : ExteriorPrime A) (u : A.R) :
     ‖chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u)‖ ≤ 1 := by
@@ -32,10 +29,11 @@ private lemma correction_chi_le (p : ExteriorPrime A) (u : A.R) :
   by_cases hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u)
   · obtain ⟨v, hv⟩ := hu
     rw [← hv]
-    have h := Complex.norm_eq_one_of_mem_rootsOfUnity
-      ((chi (σ := σ) p).apply_mem_rootsOfUnity v)
-    simpa only [MulChar.coe_equivToUnitHom] using h.le
+    simpa using (Complex.norm_eq_one_of_mem_rootsOfUnity
+      ((chi p).apply_mem_rootsOfUnity v)).le
   · simp [MulChar.map_nonunit _ hu]
+
+alias GoodPrimeEstimates.correction_chi_le := correction_chi_le
 
 private lemma correction_eta_le (p : ExteriorPrime A) : ‖η p.val.asIdeal‖ ≤ 1 := by
   by_cases h : η p.val.asIdeal = 0
@@ -44,24 +42,30 @@ private lemma correction_eta_le (p : ExteriorPrime A) : ‖η p.val.asIdeal‖ �
       (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12)
       A.modulus A.modulus_ne_zero η p.val.asIdeal h).le
 
-private lemma correction_qPower_norm (p : ExteriorPrime A) (s : ℂ) :
-    ‖qPower p s‖ = Real.exp (s.re * Real.log (Q p)) := by
-  simp [qPower, Complex.norm_exp]
+alias GoodPrimeEstimates.correction_eta_le := correction_eta_le
+
+private alias correction_qPower_norm := DedekindZetaZeroFree.LocalFiniteSums.GoodPrimeSeries.good_series_qPower_norm
 
 private lemma correction_norm_V (p : ExteriorPrime A) (z : ℂ) :
     ‖V p z‖ = Real.exp ((-6 * z.re) * Real.log (Q p)) := by
   simp [V, correction_qPower_norm]
+
+alias GoodPrimeEstimates.correction_norm_V := correction_norm_V
 
 private lemma correction_norm_W (p : ExteriorPrime A) (u : A.R) (w : ℂ) :
     ‖W (σ := σ) p u w‖ ≤ Real.exp (-w.re * Real.log (Q p)) := by
   simp only [W, norm_mul, correction_qPower_norm, Complex.neg_re]
   exact mul_le_of_le_one_left (Real.exp_pos _).le (correction_chi_le p u)
 
+alias GoodPrimeEstimates.correction_norm_W := correction_norm_W
+
 private lemma correction_norm_D (p : ExteriorPrime A) (u : A.R) (ξ : ℂ) :
     ‖D (σ := σ) (η := η) p u ξ‖ ≤ Real.exp (-ξ.re * Real.log (Q p)) := by
   simp only [D, norm_mul, norm_star, correction_qPower_norm, Complex.neg_re]
   exact mul_le_of_le_one_left (Real.exp_pos _).le
     (mul_le_one₀ (correction_eta_le p) (norm_nonneg _) (correction_chi_le p u))
+
+alias GoodPrimeEstimates.correction_norm_D := correction_norm_D
 
 private lemma correction_norm_E (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (ξ z : ℂ) :
@@ -74,6 +78,8 @@ private lemma correction_norm_E (C : A.GeneralArithmeticContext σ η hS)
   simp
   ring
 
+alias GoodPrimeEstimates.correction_norm_E := correction_norm_E
+
 private lemma correction_region (x : Coordinates) (hx : x ∈ Omega) :
     1 / 1000 < 6 * x.2.2.re ∧ 1 / 1000 < x.2.1.re ∧
     1 / 1000 < x.1.re ∧ 1 / 1000 < 6 * x.1.re + 6 * x.2.2.re - 4 := by
@@ -85,10 +91,7 @@ private lemma correction_norms_lt_one (C : A.GeneralArithmeticContext σ η hS)
     ‖V p x.2.2‖ < 1 ∧ ‖W (σ := σ) p u x.2.1‖ < 1 ∧
     ‖D (σ := σ) (η := η) p u x.1‖ < 1 ∧ ‖E C p x.1 x.2.2‖ < 1 := by
   obtain ⟨hz, hw, hξ, he⟩ := correction_region x hx
-  have hlog := Real.log_pos (correction_Q_gt_one p)
-  have hexp : ∀ a : ℝ, a < 0 → Real.exp (a * Real.log (Q p)) < 1 := by
-    intro a ha
-    exact Real.exp_lt_one_iff.mpr (mul_neg_of_neg_of_pos ha hlog)
+  have hexp : ∀ a : ℝ, a < 0 → Real.exp (a * Real.log (Q p)) < 1 := fun a ha => Real.exp_lt_one_iff.mpr (mul_neg_of_neg_of_pos ha (Real.log_pos (correction_Q_gt_one p)))
   refine ⟨?_, ?_, ?_, ?_⟩
   · rw [correction_norm_V]; exact hexp _ (by linarith)
   · exact (correction_norm_W p u _).trans_lt (hexp _ (by linarith))
@@ -115,13 +118,12 @@ private lemma correction_monomial_bounds (C : A.GeneralArithmeticContext σ η h
   obtain ⟨hvw, hdv, hdw, hdwv, he⟩ := correction_decay_exponents x hx
   have hQ := correction_Q_gt_one p
   have hQ0 := (lt_trans zero_lt_one hQ)
-  have hlog := (Real.log_pos hQ).le
   have ht : (Q p) ^ (-(1 + 1 / 4000 : ℝ)) =
       Real.exp ((-(1 + 1 / 4000 : ℝ)) * Real.log (Q p)) := by
-    rw [Real.rpow_def_of_pos hQ0]; congr 1; (try simp only [Real.log_exp]); ring
+    rw [Real.rpow_def_of_pos hQ0]; congr 1; (try simp); ring
   have hm : ∀ a : ℝ, a ≤ -(1 + 1 / 4000 : ℝ) →
       Real.exp (a * Real.log (Q p)) ≤ (Q p) ^ (-(1 + 1 / 4000 : ℝ)) := by
-    intro a ha; rw [ht]; exact Real.exp_le_exp.mpr (mul_le_mul_of_nonneg_right ha hlog)
+    intro a ha; rw [ht]; exact Real.exp_le_exp.mpr (mul_le_mul_of_nonneg_right ha ((Real.log_pos hQ).le))
   dsimp only
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · calc
@@ -129,14 +131,14 @@ private lemma correction_monomial_bounds (C : A.GeneralArithmeticContext σ η h
           Real.exp (-x.2.1.re * Real.log (Q p)) := by
         rw [correction_norm_V]; gcongr; exact correction_norm_W p u _
       _ = Real.exp ((-6 * x.2.2.re - x.2.1.re) * Real.log (Q p)) := by
-        rw [← Real.exp_add]; congr 1; (try simp only [Real.log_exp]); ring
+        rw [← Real.exp_add]; congr 1; (try simp); ring
       _ ≤ _ := hm _ hvw
   · calc
       _ ≤ Real.exp (-x.1.re * Real.log (Q p)) *
           Real.exp ((-6 * x.2.2.re) * Real.log (Q p)) := by
         rw [correction_norm_V]; gcongr; exact correction_norm_D p u _
       _ = Real.exp ((-x.1.re - 6 * x.2.2.re) * Real.log (Q p)) := by
-        rw [← Real.exp_add]; congr 1; (try simp only [Real.log_exp]); ring
+        rw [← Real.exp_add]; congr 1; (try simp); ring
       _ ≤ _ := hm _ hdv
   · calc
       _ ≤ Real.exp (-x.1.re * Real.log (Q p)) *
@@ -145,7 +147,7 @@ private lemma correction_monomial_bounds (C : A.GeneralArithmeticContext σ η h
         · exact correction_norm_D p u _
         · exact correction_norm_W p u _
       _ = Real.exp ((-x.1.re - x.2.1.re) * Real.log (Q p)) := by
-        rw [← Real.exp_add]; congr 1; (try simp only [Real.log_exp]); ring
+        rw [← Real.exp_add]; congr 1; (try simp); ring
       _ ≤ _ := hm _ hdw
   · calc
       _ ≤ Q p * Real.exp (-x.1.re * Real.log (Q p)) *
@@ -156,7 +158,7 @@ private lemma correction_monomial_bounds (C : A.GeneralArithmeticContext σ η h
         · exact correction_norm_W p u _
       _ = Real.exp ((1 - x.1.re - x.2.1.re - 6 * x.2.2.re) * Real.log (Q p)) := by
         rw [← Real.exp_log hQ0, ← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
-        congr 1; (try simp only [Real.log_exp]); ring
+        congr 1; (try simp); ring
       _ ≤ _ := hm _ hdwv
   · rw [correction_norm_E]; exact hm _ he
 
@@ -165,8 +167,6 @@ private lemma correction_denominator_gap (C : A.GeneralArithmeticContext σ η h
     let c := 1 - Real.exp (-(1 / 1000 : ℝ) * Real.log 2)
     c ≤ ‖1 - D (σ := σ) (η := η) p u x.1‖ ∧ c ≤ ‖1 - E C p x.1 x.2.2‖ := by
   obtain ⟨hz, hw, hξ, he⟩ := correction_region x hx
-  have hlog : Real.log 2 ≤ Real.log (Q p) :=
-    Real.log_le_log (by norm_num) (correction_Q_ge_two p)
   have hm : ∀ a : ℝ, a ≤ -(1 / 1000 : ℝ) →
       Real.exp (a * Real.log (Q p)) ≤ Real.exp (-(1 / 1000 : ℝ) * Real.log 2) := by
     intro a ha
@@ -174,13 +174,13 @@ private lemma correction_denominator_gap (C : A.GeneralArithmeticContext σ η h
     calc
       _ ≤ -(1 / 1000 : ℝ) * Real.log (Q p) :=
         mul_le_mul_of_nonneg_right ha (Real.log_pos (correction_Q_gt_one p)).le
-      _ ≤ _ := mul_le_mul_of_nonpos_left hlog (by norm_num)
+      _ ≤ _ := mul_le_mul_of_nonpos_left (Real.log_le_log (by norm_num) (correction_Q_ge_two p)) (by norm_num)
   have hd := (correction_norm_D (σ := σ) (η := η) p u x.1).trans
     (hm _ (by linarith))
   have he' : ‖E C p x.1 x.2.2‖ ≤ Real.exp (-(1 / 1000 : ℝ) * Real.log 2) := by
     rw [correction_norm_E]; exact hm _ (by linarith)
   have hsub : ∀ a : ℂ, 1 - ‖a‖ ≤ ‖1 - a‖ := by
-    intro a; simpa only [norm_one] using norm_sub_norm_le (1 : ℂ) a
+    intro a; simpa using norm_sub_norm_le (1 : ℂ) a
   dsimp only
   constructor
   · linarith [hsub (D (σ := σ) (η := η) p u x.1)]
@@ -249,7 +249,7 @@ theorem good_correction_denominators_ne_zero
   obtain ⟨hv, hw, hd, he⟩ := correction_norms_lt_one C p u x hx
   have h : ∀ a : ℂ, ‖a‖ < 1 → 1 - a ≠ 0 := by
     intro a ha heq
-    have : a = 1 := (sub_eq_zero.mp heq).symm
+    have := (sub_eq_zero.mp heq).symm
     simp [this] at ha
   exact ⟨h _ hv, h _ hw, h _ hd, h _ he⟩
 
@@ -303,8 +303,7 @@ theorem good_correction_numerator
   <;> ring
 
 theorem good_correction_uniform_bound :
-    ∃ M : ℝ, 0 < M ∧
-      ∀ (F : Type) [Field F] [NumberField F]
+    ∃ M : ℝ, ∀ (F : Type) [Field F] [NumberField F]
         (A : SArithmeticData F) (σ : F →+* ℂ)
         (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
         (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (u : A.R),
@@ -319,7 +318,7 @@ theorem good_correction_uniform_bound :
     have he : Real.exp (-(1 / 1000 : ℝ) * Real.log 2) < 1 :=
       Real.exp_lt_one_iff.mpr (mul_neg_of_neg_of_pos (by norm_num) hl)
     linarith
-  refine ⟨12 / (c * c), by positivity, ?_⟩
+  refine ⟨12 / (c * c), ?_⟩
   intro F _ _ A σ η hS C p u hu x hx
   have ht : 0 ≤ (Q p) ^ (-(1 + 1 / 4000 : ℝ)) :=
     (Real.rpow_pos_of_pos (lt_trans zero_lt_one (correction_Q_gt_one p)) _).le

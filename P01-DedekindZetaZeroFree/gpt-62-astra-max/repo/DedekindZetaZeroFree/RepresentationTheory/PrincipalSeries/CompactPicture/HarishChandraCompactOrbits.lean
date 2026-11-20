@@ -14,8 +14,6 @@ namespace DedekindZetaZeroFree.KPLiteralScalarHCCompactOrbit
 open KPLiteralRaw KPAdelicCoverRestrictedProduct KPLiteralChamber
 open KPCplxCharacterHaar KPLiteralScalarArchUniformBands KPLiteralScalarMixedTensorGeneration
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming complexSectionHom → complexSectionHom
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming tuple_prod → tuple_prod
 
 variable {Y : Type*}
 
@@ -50,10 +48,9 @@ theorem archRestriction_orbit_finite (K : Subgroup (G F ζ hζ))
     Module.Finite ℂ (Submodule.span ℂ (Set.range (fun k =>
       scalarFamilyTranslate F k (archRestriction F ζ hζ anchor φ)))) := by
   obtain ⟨V, hV, hφV, hstable⟩ := hφ
-  let : Module.Finite ℂ V := hV
-  let L := (archRestriction F ζ hζ anchor).comp V.subtype
+  let := hV
   have hle : Submodule.span ℂ (Set.range (fun k =>
-      scalarFamilyTranslate F k (archRestriction F ζ hζ anchor φ))) ≤ L.range := by
+      scalarFamilyTranslate F k (archRestriction F ζ hζ anchor φ))) ≤ ((archRestriction F ζ hζ anchor).comp V.subtype).range := by
     apply Submodule.span_le.mpr
     rintro _ ⟨k, rfl⟩
     refine ⟨⟨rightAction F ζ hζ
@@ -86,16 +83,14 @@ theorem actual_familyOrbit_finite (K : Subgroup (G F ζ hζ))
     Module.Finite ℂ (familyOrbit h) := by
   let V := Submodule.span ℂ (Set.range (fun k =>
     scalarFamilyTranslate F k (archRestriction F ζ hζ anchor φ)))
-  let : Module.Finite ℂ V := archRestriction_orbit_finite F ζ hζ K hK φ hφ anchor
+  let := archRestriction_orbit_finite F ζ hζ K hK φ hφ anchor
   have hle : familyOrbit h ≤ V.comap (forgetFamily F) := by
     apply Submodule.span_le.mpr
     rintro _ ⟨k, rfl⟩
     change forgetFamily F (familyTranslate k h) ∈ V
     rw [forgetFamily_translate, hpin]
     exact Submodule.subset_span ⟨k, rfl⟩
-  let L : familyOrbit h →ₗ[ℂ] V :=
-    ((forgetFamily F).comp (familyOrbit h).subtype).codRestrict V (fun v => hle v.property)
-  apply Module.Finite.of_injective L
+  apply Module.Finite.of_injective (((forgetFamily F).comp (familyOrbit h).subtype).codRestrict V (fun v => hle v.property))
   intro x y he
   apply Subtype.ext
   apply forgetFamily_injective F

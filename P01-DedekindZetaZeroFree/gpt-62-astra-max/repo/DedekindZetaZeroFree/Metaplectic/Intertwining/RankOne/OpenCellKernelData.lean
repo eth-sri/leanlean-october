@@ -13,8 +13,8 @@ open KPLocalPrincipalSeries KPLocalStoneVonNeumann KPRankOneShellContinuation
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
 abbrev LocalField := q.adicCompletion F
 abbrev Cover := KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q)
 abbrev RawCover := KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)
@@ -51,23 +51,14 @@ structure Binding
   projection_eq : ∀ g : RawCover F ζ hζ q,
     A.projection (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) g) =
       Matrix.ProjGenLinGroup.mk g.g
-  weyl_eq : A.liftedW = signedWeyl F ζ hζ q
-  upper_eq : ∀ s : LocalField F q,
-    (A.upperRoot (Multiplicative.ofAdd s) : Cover F ζ hζ q) = nLift F ζ hζ q s
   rootTorus : (LocalField F q)ˣ → H
-  torus_eq : ∀ v, (A.torus (rootTorus v) : Cover F ζ hζ q) = hLift F ζ hζ q v
   coordinate_eq : ∀ v, A.coordinate (rootTorus v) = v ^ 2
   centralTorus : rootsOfUnity 3 F → H
   central_eq : ∀ e, (A.torus (centralTorus e) : Cover F ζ hζ q) =
     KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e
-  central_coordinate : ∀ e, A.coordinate (centralTorus e) = 1
-  eta : rootsOfUnity 3 F →* ℂˣ
-  eta_injective : Function.Injective eta
-  genuine : ∀ (ε : Sign) e (V : InducedModule P),
-    (borelAction A P ε) (A.torus (centralTorus e)) V = (eta e : ℂ) • V
 
 variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
-variable (P : Polarization T)
+    (P : Polarization T)
 
 def openCoordinate (s : LocalField F q) : Cover F ζ hζ q :=
   (signedWeyl F ζ hζ q)⁻¹ * nLift F ζ hζ q s

@@ -17,7 +17,7 @@ theorem finite_geometric_tail (c : ℤ → ℂ) (C r : ℂ)
     HasSum (fun k : ℕ => c (nmin + (k : ℤ)) * r ^ (nmin + (k : ℤ)))
       ((∑ j ∈ Finset.Ico nmin n₀, c j * r ^ j) +
         C * r ^ n₀ / (1 - r)) := by
-  let d : ℕ := (n₀ - nmin).toNat
+  let d := (n₀ - nmin).toNat
   have hd : nmin + (d : ℤ) = n₀ := by
     dsimp [d]
     omega

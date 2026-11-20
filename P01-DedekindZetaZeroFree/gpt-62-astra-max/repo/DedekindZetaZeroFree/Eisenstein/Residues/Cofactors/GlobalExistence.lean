@@ -7,12 +7,8 @@ public import DedekindZetaZeroFree.LFunctions.Hecke.EulerProducts.ExteriorNormal
 @[expose] public section
 
 noncomputable section
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.TraceBox renaming adelic_measure_box → adelic_measure_box
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.TraceBox renaming finite_measure_sigmaFinite → finite_measure_sigmaFinite
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.TraceBox renaming arch_measure_sigmaFinite → arch_measure_sigmaFinite
 local instance cofactorGlobalProducerArchMeasurable (F : Type) [Field F] [NumberField F] : MeasurableSpace (NumberField.InfiniteAdeleRing F) := borel _
 local instance cofactorGlobalProducerArchBorel (F : Type) [Field F] [NumberField F] : BorelSpace (NumberField.InfiniteAdeleRing F) := ⟨rfl⟩
-open _root_.DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant renaming forwardSection_real_formula → forwardSection_real_formula
 open scoped Classical NumberField TensorProduct BigOperators Topology
 open Filter
 open NumberField MeasureTheory ValuativeRel
@@ -21,10 +17,10 @@ open KPLocalPrincipalSeries KPGlobalTorusFiniteStages KPLocalExceptionalConstruc
 open KPGlobalResidualConstruction
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -63,14 +59,13 @@ theorem exists_current_global_cofactor
     ∃ (φ : ∀ q : E, compactPicture (C.canonical q.val).borel (C.polarization q.val)
         (C.canonical q.val).iwasawa .plus)
       (t : KPGlobalTorusFunctionData.E F ζ hζ) (b : ℂ → ℂ),
-      KPGlobalTorusFunctionData.delta F ζ hζ t = 1 ∧
       MeromorphicOn b Set.univ ∧ AnalyticAt ℂ b 0 ∧ b 0 ≠ 0 ∧
       ∀ z : ℂ, (1/3 : ℝ) < z.re →
         coreScattering R P C (cofactorSourceCore R P C E hE φ) z
           (NormOneTorusAlgebra.rightEvaluation F ζ hζ t) =
           KPGlobalFiniteSIntertwiner.normalizer F  ζ hζ E z * b z := by
   obtain ⟨φ,t,b,ht,hm,ha,hn,hbox⟩ := exists_current_boxed_cofactor R P C E hE hD
-  refine ⟨φ,t,b,ht,hm,ha,hn,?_⟩
+  refine ⟨φ, t, b, hm, ha, hn, ?_⟩
   intro z hz
   let x := cofactorSourceCore R P C E hE φ
   have hi := coreFlatFiber_chamber_integrable R P C x z hz t ht

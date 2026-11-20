@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Eisenstein.Induction.Convolution.EntireFiniteDimensionalExpansion
 
 public import DedekindZetaZeroFree.Metaplectic.Torus.PolarizationFiniteLevelCovers
 public import DedekindZetaZeroFree.RepresentationTheory.Induction.FiniteDimensionalIntertwiners
@@ -13,13 +14,9 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.NormalizedFiniteSource
 open KPLiteralRaw
 open KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation.ConvolutionSpan.ActualSourceStage
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing renaming half_ne_zero → half_ne_zero
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing renaming half_one → half_one
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing renaming half_mul → half_mul
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing renaming cToBorel → cToBorel
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing renaming actual_cover_of_torus_cosets → actual_cover_of_torus_cosets
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing (half_one half_mul cToBorel actual_cover_of_torus_cosets)
 
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.FiniteScalarEvaluation renaming finite_evaluation_reconstruction → finite_evaluation_reconstruction
+open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.FiniteScalarEvaluation (finite_evaluation_reconstruction)
 set_option maxHeartbeats 1600000
 set_option synthInstance.maxHeartbeats 120000
 set_option backward.isDefEq.respectTransparency false
@@ -27,11 +24,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 local instance (K : Subgroup (G F ζ hζ)) : MeasurableSpace K := borel K
 local instance (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
 
- theorem target_subgroup_eq :
-    (KPSpatialSmoothing.P0 F ζ hζ).H = R F ζ hζ := by
-  unfold KPSpatialSmoothing.P0 KPMsRationalCompactCrossPairing.targetPolarization
-  rw [KPMsRationalCompactCrossPairing.actual_weyl_fibre]
-  rfl
+ alias target_subgroup_eq := DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation.ConvolutionSpan.ActualSourceStage.ParameterStage.targetH_eq_R
 
  def sourceH : KPSpatialSmoothing.actualC F ζ hζ →* R F ζ hζ :=
   (MulEquiv.subgroupCongr (target_subgroup_eq F ζ hζ)).toMonoidHom.comp
@@ -93,11 +86,12 @@ private theorem half_power (t : KPGlobalTorusFunctionData.E F ζ hζ) :
   rw [sourceChi_hN F ζ hζ r x c hc, hc]
   exact hh
 
-private theorem normalized_parameter_span_finite
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
-    (f : Flat F ζ hζ K) (a : G F ζ hζ) (h : C(K, ℂ))
-    (hh : h ∈ TauCeti.representativeSubmodule ℂ K) :
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K) (μ : Measure K) [μ.IsHaarMeasure]
+    [IsProbabilityMeasure μ] (f : Flat F ζ hζ K) (a : G F ζ hζ) (h : C(K, ℂ))
+    (hh : h ∈ TauCeti.representativeSubmodule ℂ K)
+
+include hh in
+private theorem normalized_parameter_span_finite :
     Module.Finite ℂ (Submodule.span ℂ
       (Set.range (fun s : ℂ => source F ζ hζ K hK μ f a s h))) := by
   obtain ⟨W, hW, hhW, hi⟩ := representative_kernelFinite F ζ hζ K h hh
@@ -106,31 +100,27 @@ private theorem normalized_parameter_span_finite
   let D := KPLiteralChamber.literalIwasawa F ζ hζ K hK
   obtain ⟨J0, n, r, hle, hnorm, htorus⟩ :=
     KPSpatialSmoothing.actual_normalized_torus_finite_cover F ζ hζ D J
-  have hcover := actual_cover_of_torus_cosets F ζ hζ D J0 n r hnorm htorus
   let C := KPSpatialSmoothing.actualC F ζ hζ
   let χ := sourceChi F ζ hζ
   let JG := KPGlobalTorusFunctionData.globalLevel F ζ hζ J0
   let τ := kernelOn F ζ hζ K W hi
-  let ρ := CovariantSampling.rho_J C K JG χ hnorm
-  let A := τ.IntertwiningMap ρ
+  let A := τ.IntertwiningMap (CovariantSampling.rho_J C K JG χ hnorm)
   have hcov : ∀ g : G F ζ hζ, ∃ (i : Fin n) (c : C) (k : K) (j : JG),
       g = c.val * (r i).val * k.val * j.val := by
     intro g
-    obtain ⟨i, u, x, k, j, hg⟩ := hcover g
-    let c : C := ⟨u.val.val * KPGlobalTorusFunctionData.N F ζ hζ x,
-      (KPSpatialSmoothing.mem_actualC_iff F ζ hζ _).mpr ⟨u, x, rfl⟩⟩
-    exact ⟨i, c, k, j, hg⟩
+    obtain ⟨i, u, x, k, j, hg⟩ := (actual_cover_of_torus_cosets F ζ hζ D J0 n r hnorm htorus) g
+    exact ⟨i, (⟨u.val.val * KPGlobalTorusFunctionData.N F ζ hζ x,
+      (KPSpatialSmoothing.mem_actualC_iff F ζ hζ _).mpr ⟨u, x, rfl⟩⟩), k, j, hg⟩
   let : Module.Finite ℂ A := by
     change Module.Finite ℂ (τ.IntertwiningMap (CovariantSampling.rho_J C K JG χ hnorm))
     exact CovariantSampling.intertwiningMap_finiteDimensional
       (W := W) C K JG χ n (fun i => (r i).val) hcov hnorm τ
   let T : ℂ → A := fun s =>
     { toLinearMap :=
-        { toFun := fun w => ⟨source F ζ hζ K hK μ f a s w.val, by
-            exact ⟨source_covariant F ζ hζ K hK μ f a s w.val,
+        { toFun := fun w => ⟨source F ζ hζ K hK μ f a s w.val, ⟨source_covariant F ζ hζ K hK μ f a s w.val,
               fun j g => hJ μ s w.val g j.val (hle j.property)⟩⟩
-          map_add' := by intro u v; exact Subtype.ext ((sourceMap F ζ hζ K hK μ f a s).map_add u.val v.val)
-          map_smul' := by intro c u; exact Subtype.ext ((sourceMap F ζ hζ K hK μ f a s).map_smul c u.val) }
+          map_add' := fun u v => Subtype.ext ((sourceMap F ζ hζ K hK μ f a s).map_add u.val v.val)
+          map_smul' := fun c u => Subtype.ext ((sourceMap F ζ hζ K hK μ f a s).map_smul c u.val)}
       isIntertwining' := by
         intro k
         ext w g
@@ -143,36 +133,30 @@ private theorem normalized_parameter_span_finite
     apply Submodule.span_le.mpr
     rintro _ ⟨s, rfl⟩
     exact ⟨T s, rfl⟩
-  let : Module.Finite ℂ ev.range := Module.Finite.range ev
+  let := Module.Finite.range ev
   exact Module.Finite.of_injective (Submodule.inclusion hsub)
     (Submodule.inclusion_injective hsub)
 
- theorem normalized_entire_finite_expansion
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
-    (f : Flat F ζ hζ K) (a : G F ζ hζ) (h : C(K, ℂ))
-    (hh : h ∈ TauCeti.representativeSubmodule ℂ K) :
+ include hh in
+theorem normalized_entire_finite_expansion :
     ∃ (n : ℕ) (v : Fin n → Functions F ζ hζ) (c : Fin n → ℂ → ℂ),
       (∀ j, v j ∈ Submodule.span ℂ
         (Set.range (fun s : ℂ => source F ζ hζ K hK μ f a s h))) ∧
       (∀ j, AnalyticOnNhd ℂ (c j) Set.univ) ∧
       ∀ s, source F ζ hζ K hK μ f a s h = ∑ j, c j s • v j := by
   let V := Submodule.span ℂ (Set.range (fun s : ℂ => source F ζ hζ K hK μ f a s h))
-  let : Module.Finite ℂ V := normalized_parameter_span_finite F ζ hζ K hK μ f a h hh
+  let := normalized_parameter_span_finite F ζ hζ K hK μ f a h hh
   obtain ⟨n, m, x, A, b, hb⟩ :=
     finite_evaluation_reconstruction V
-  let c : Fin n → ℂ → ℂ := fun j s => ∑ i, A j i * source F ζ hζ K hK μ f a s h (x i)
+  let c := fun j s => ∑ i, A j i * source F ζ hζ K hK μ f a s h (x i)
   refine ⟨n, fun j => (b j).val, c, fun j => (b j).property, ?_, ?_⟩
   · intro j s _
     apply Finset.analyticAt_fun_sum
     intro i _
-    have hs : AnalyticAt ℂ (fun s => source F ζ hζ K hK μ f a s h (x i)) s :=
-      (normalized_source_entire F ζ hζ K hK μ f a h (x i)).analyticAt s
-    exact analyticAt_const.mul hs
+    exact analyticAt_const.mul ((normalized_source_entire F ζ hζ K hK μ f a h (x i)).analyticAt s)
   · intro s
     funext g
-    have hv : source F ζ hζ K hK μ f a s h ∈ V := Submodule.subset_span ⟨s, rfl⟩
-    simpa only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul, c] using hb ⟨_, hv⟩ g
+    simpa using hb ⟨_, (Submodule.subset_span ⟨s, rfl⟩)⟩ g
 
 end DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.NormalizedFiniteSource
 

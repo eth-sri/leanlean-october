@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -36,10 +33,7 @@ theorem rayLocalHigherUnitGroup_zero
     {K : Type u} [Field K] [NumberField K]
     (v : HeightOneSpectrum (𝓞 K)) :
     rayLocalHigherUnitGroup v 0 =
-      (v.adicCompletionIntegers K).units := by
-  change RayClass.localHigherUnitGroup v 0 =
-    (v.adicCompletionIntegers K).units
-  exact RayClass.localHigherUnitGroup_zero v
+      (v.adicCompletionIntegers K).units := by apply @RayClass.localHigherUnitGroup_zero <;> assumption
 
 end ClassFieldTheory
 

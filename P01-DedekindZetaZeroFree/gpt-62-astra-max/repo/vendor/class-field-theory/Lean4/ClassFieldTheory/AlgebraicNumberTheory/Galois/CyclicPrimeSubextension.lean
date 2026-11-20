@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -43,12 +41,13 @@ section ValuationRestriction
 variable {F E : Type}
     [Field F] [Field E] [Algebra F E]
 
+section
+
+variable (vF : AbsoluteValue F ℝ) (w : AbsoluteValueExtension vF E) (M : IntermediateField F E)
+
 /-- Restrict an actual extension of an absolute value to an
 intermediate field. -/
-def restrictAbsoluteValueExtensionToIntermediate
-    (vF : AbsoluteValue F ℝ)
-    (w : AbsoluteValueExtension vF E)
-    (M : IntermediateField F E) :
+def restrictAbsoluteValueExtensionToIntermediate :
     AbsoluteValueExtension vF M where
   val :=
     w.1.comp (f := M.val.toRingHom)
@@ -59,9 +58,6 @@ def restrictAbsoluteValueExtensionToIntermediate
 
 @[simp]
 theorem restrictAbsoluteValueExtensionToIntermediate_apply
-    (vF : AbsoluteValue F ℝ)
-    (w : AbsoluteValueExtension vF E)
-    (M : IntermediateField F E)
     (x : M) :
     (restrictAbsoluteValueExtensionToIntermediate
       vF w M).1 x = w.1 x :=
@@ -69,32 +65,14 @@ theorem restrictAbsoluteValueExtensionToIntermediate_apply
 
 /-- Regard the original extension as an extension of its restriction
 to an intermediate field. -/
-def absoluteValueExtensionOverIntermediate
-    (vF : AbsoluteValue F ℝ)
-    (w : AbsoluteValueExtension vF E)
-    (M : IntermediateField F E) :
+def absoluteValueExtensionOverIntermediate :
     AbsoluteValueExtension
       (restrictAbsoluteValueExtensionToIntermediate
         vF w M).1 E where
   val := w.1
   property _ := rfl
 
-/-- Restriction of an extension of a nontrivial absolute value remains
-nontrivial. -/
-theorem restrictAbsoluteValueExtensionToIntermediate_isNontrivial
-    (vF : AbsoluteValue F ℝ)
-    (hvF : vF.IsNontrivial)
-    (w : AbsoluteValueExtension vF E)
-    (M : IntermediateField F E) :
-    (restrictAbsoluteValueExtensionToIntermediate
-      vF w M).1.IsNontrivial := by
-  rcases hvF with ⟨a, ha, hva⟩
-  refine
-    ⟨algebraMap F M a,
-      (map_ne_zero (algebraMap F M)).2 ha, ?_⟩
-  simpa only
-    [(restrictAbsoluteValueExtensionToIntermediate
-      vF w M).2 a] using hva
+end
 
 /-- For a normal subextension represented by a field type, its
 decomposition group is the restriction image of the decomposition
@@ -262,7 +240,7 @@ theorem absoluteValueDecompositionGroup_eq_of_absoluteValue_isEquiv
     (hww' : w.IsEquiv w') :
     absoluteValueDecompositionGroup F w =
       absoluteValueDecompositionGroup F w' := by
-  have hlt : ∀ x : L, w x < 1 ↔ w' x < 1 :=
+  have hlt :=
     AbsoluteValue.isEquiv_iff_lt_one_iff.mp hww'
   ext σ
   simp only [mem_absoluteValueDecompositionGroup_iff]
@@ -298,7 +276,7 @@ theorem absoluteValueDecompositionGroup_conjugate_eq_of_isMulCommutative
     have hleft :
         ρ (τ (ρ⁻¹ x)) = τ x := by
       calc
-        ρ (τ (ρ⁻¹ x)) =
+        _ =
             τ (ρ (ρ⁻¹ x)) := by
           change
             (ρ * τ) (ρ⁻¹ x) =
@@ -329,7 +307,7 @@ theorem absoluteValueDecompositionGroup_eq_of_exactExtensions_of_isMulCommutativ
     absoluteValueConjugacy vF hvF w w'
   rw [hρ,
     absoluteValueDecompositionGroup_conjugate_eq_of_isMulCommutative
-      (F := F) vF w ρ]
+       vF w ρ]
 
 end DecompositionGroupChoice
 
@@ -357,7 +335,7 @@ theorem absoluteValueDecompositionGroup_conjugate_eq_bot
       w.1 (ρ (τ x)) < 1 ↔
         w.1 (ρ x) < 1
     at hτ
-  let δ : E ≃ₐ[F] E :=
+  let δ :=
     ρ * τ * ρ⁻¹
   have hδ :
       δ ∈ absoluteValueDecompositionGroup F w.1 := by
@@ -367,11 +345,9 @@ theorem absoluteValueDecompositionGroup_conjugate_eq_bot
           w.1 x < 1
     intro x
     simpa [δ] using hτ (ρ⁻¹ x)
-  have hδOne : δ = 1 :=
-    Subgroup.mem_bot.mp (hbot ▸ hδ)
   have hconj :=
     congrArg (fun z : E ≃ₐ[F] E =>
-      ρ⁻¹ * z * ρ) hδOne
+      ρ⁻¹ * z * ρ) (Subgroup.mem_bot.mp (hbot ▸ hδ))
   simpa [δ, mul_assoc] using hconj
 
 /-- For a Galois extension, triviality of the decomposition group is
@@ -419,7 +395,7 @@ theorem exists_index_prime_normal_subgroup
     rw [hcard]
     exact
       one_lt_pow₀ hp.one_lt hexponent.ne'
-  let : Nontrivial (L ≃ₐ[K] L) :=
+  let :=
     Finite.one_lt_card_iff_nontrivial.mp
       hgroupCard
   obtain
@@ -521,13 +497,9 @@ noncomputable instance cyclicPrimeSubextension_isGalois
         (K := K) (L := L)
         hp hexponent hcard) := by
   unfold cyclicPrimeSubextension
-  let P :=
-    cyclicPrimeIndexSubgroup
-      (K := K) (L := L)
-      hp hexponent hcard
-  let : P.Normal :=
+  let :=
     cyclicPrimeIndexSubgroup_normal
-      (K := K) (L := L)
+
       hp hexponent hcard
   infer_instance
 
@@ -547,19 +519,19 @@ theorem cyclicPrimeSubextension_finrank
       p := by
   let P :=
     cyclicPrimeIndexSubgroup
-      (K := K) (L := L)
+
       hp hexponent hcard
   let M :=
     cyclicPrimeSubextension
-      (K := K) (L := L)
+
       hp hexponent hcard
-  let : P.Normal :=
+  let :=
     cyclicPrimeIndexSubgroup_normal
-      (K := K) (L := L)
+
       hp hexponent hcard
-  let : IsGalois K M :=
+  let :=
     cyclicPrimeSubextension_isGalois
-      (K := K) (L := L)
+
       hp hexponent hcard
   calc
     Module.finrank K M =
@@ -570,7 +542,7 @@ theorem cyclicPrimeSubextension_finrank
         (IsGalois.normalAutEquivQuotient P).symm.toEquiv
     _ = p :=
       cyclicPrimeIndexSubgroup_quotient_card
-        (K := K) (L := L)
+
         hp hexponent hcard
 
 omit [NumberField K] [NumberField L] in
@@ -592,20 +564,17 @@ theorem cyclicPrimeSubextension_isCyclic
           hp hexponent hcard) := by
   let P :=
     cyclicPrimeIndexSubgroup
-      (K := K) (L := L)
+
       hp hexponent hcard
-  let : P.Normal :=
+  let :=
     cyclicPrimeIndexSubgroup_normal
-      (K := K) (L := L)
+
       hp hexponent hcard
-  have hquotient :
-      IsCyclic ((L ≃ₐ[K] L) ⧸ P) :=
-    isCyclic_of_surjective
-      (QuotientGroup.mk' P)
-      (QuotientGroup.mk'_surjective P)
   exact
     (IsGalois.normalAutEquivQuotient P).isCyclic.mp
-      hquotient
+      (isCyclic_of_surjective
+        (QuotientGroup.mk' P)
+        (QuotientGroup.mk'_surjective P))
 
 /-- The decomposition subgroup in the constructed subextension,
 obtained by restricting the decomposition subgroup in `L / K`. -/
@@ -626,11 +595,11 @@ noncomputable def cyclicPrimeSubextensionDecompositionGroup
           hp hexponent hcard) := by
   let M :=
     cyclicPrimeSubextension
-      (K := K) (L := L)
+
       hp hexponent hcard
   letI : IsGalois K M :=
     cyclicPrimeSubextension_isGalois
-      (K := K) (L := L)
+
       hp hexponent hcard
   exact
     (finitePlaceDecompositionGroup
@@ -663,164 +632,29 @@ theorem cyclicPrimeSubextensionDecompositionGroup_eq_quotient_image
             hp hexponent hcard)).toMonoidHom := by
   let P :=
     cyclicPrimeIndexSubgroup
-      (K := K) (L := L)
+
       hp hexponent hcard
   let M :=
     cyclicPrimeSubextension
-      (K := K) (L := L)
+
       hp hexponent hcard
-  let : P.Normal :=
+  let :=
     cyclicPrimeIndexSubgroup_normal
-      (K := K) (L := L)
+
       hp hexponent hcard
-  let : IsGalois K M :=
+  let :=
     cyclicPrimeSubextension_isGalois
-      (K := K) (L := L)
+
       hp hexponent hcard
   change
     (finitePlaceDecompositionGroup
-      (K := K) (L := L) v).map
+        v).map
         (AlgEquiv.restrictNormalHom M) =
       ((finitePlaceDecompositionGroup
-        (K := K) (L := L) v).map
+          v).map
           (QuotientGroup.mk' P)).map
         (IsGalois.normalAutEquivQuotient P).toMonoidHom
   rw [Subgroup.map_map]
   congr 1
-
-omit [NumberField L] in
-/-- Complete splitting in `L` implies complete splitting in the
-constructed prime-degree subextension. -/
-theorem finitePlaceSplitsCompletely_in_cyclicPrimeSubextension
-    {p exponent : ℕ}
-    (hp : p.Prime)
-    (hexponent : 0 < exponent)
-    (hcard :
-      Nat.card (L ≃ₐ[K] L) =
-        p ^ exponent)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hsplit :
-      FinitePlaceSplitsCompletely
-        (K := K) (L := L) v) :
-    cyclicPrimeSubextensionDecompositionGroup
-        (K := K) (L := L)
-        hp hexponent hcard v = ⊥ := by
-  unfold
-    cyclicPrimeSubextensionDecompositionGroup
-  rw [show
-      finitePlaceDecompositionGroup
-          (K := K) (L := L) v = ⊥
-      from hsplit]
-  exact Subgroup.map_bot _
-
-omit [NumberField L] in
-/-- Complete splitting in `L` implies complete splitting, in the
-standard chosen-extension sense, in the actual fixed intermediate
-field. -/
-theorem finitePlaceSplitsCompletely_in_cyclicPrimeSubextension_actual
-    {p exponent : ℕ}
-    (hp : p.Prime)
-    (hexponent : 0 < exponent)
-    (hcard :
-      Nat.card (L ≃ₐ[K] L) =
-        p ^ exponent)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hsplit :
-      FinitePlaceSplitsCompletely
-        (K := K) (L := L) v) :
-    FinitePlaceSplitsCompletely
-      (K := K)
-      (L := cyclicPrimeSubextension
-        (K := K) (L := L)
-        hp hexponent hcard) v := by
-  let M :=
-    cyclicPrimeSubextension
-      (K := K) (L := L)
-      hp hexponent hcard
-  let : IsGalois K M :=
-    cyclicPrimeSubextension_isGalois
-      (K := K) (L := L)
-      hp hexponent hcard
-  let vK :=
-    NumberField.HeightOneSpectrum.adicAbv K v
-  let hvK : vK.IsNontrivial :=
-    RayClass.adicAbv_isNontrivial v
-  let w :=
-    chosenFinitePlaceExtension (L := L) v
-  let wM :=
-    restrictAbsoluteValueExtensionToIntermediate
-      vK w M
-  have hwBot :
-      absoluteValueDecompositionGroup K w.1 = ⊥ :=
-    hsplit
-  have hwMbot :
-      absoluteValueDecompositionGroup K wM.1 = ⊥ := by
-    change
-      absoluteValueDecompositionGroup K
-        (w.1.comp (f := algebraMap M L)
-          (algebraMap M L).injective) = ⊥
-    rw [← absoluteValueDecompositionGroup_map_restrictNormalHom
-      (M := M) vK hvK w]
-    rw [hwBot]
-    exact Subgroup.map_bot _
-  change
-    absoluteValueDecompositionGroup K
-      (chosenFinitePlaceExtension
-        (L := M) v).1 = ⊥
-  exact
-    absoluteValueDecompositionGroup_eq_bot_independent_extension
-      vK hvK wM
-      (chosenFinitePlaceExtension (L := M) v)
-      hwMbot
-
-omit [NumberField L] in
-/-- Contrapositive in the standard chosen-extension sense: a place
-nonsplit in the constructed degree-`p` field is nonsplit in `L`. -/
-theorem finitePlace_not_splitsCompletely_of_not_in_cyclicPrimeSubextension_actual
-    {p exponent : ℕ}
-    (hp : p.Prime)
-    (hexponent : 0 < exponent)
-    (hcard :
-      Nat.card (L ≃ₐ[K] L) =
-        p ^ exponent)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hnonsplit :
-      ¬ FinitePlaceSplitsCompletely
-        (K := K)
-        (L := cyclicPrimeSubextension
-          (K := K) (L := L)
-          hp hexponent hcard) v) :
-    ¬ FinitePlaceSplitsCompletely
-        (K := K) (L := L) v := by
-  intro hsplit
-  exact
-    hnonsplit
-      (finitePlaceSplitsCompletely_in_cyclicPrimeSubextension_actual
-        (K := K) (L := L)
-        hp hexponent hcard v hsplit)
-
-omit [NumberField L] in
-/-- Contrapositive form: a finite place nonsplit in the prime-degree
-subextension is already nonsplit in `L`. -/
-theorem finitePlace_not_splitsCompletely_of_not_in_cyclicPrimeSubextension
-    {p exponent : ℕ}
-    (hp : p.Prime)
-    (hexponent : 0 < exponent)
-    (hcard :
-      Nat.card (L ≃ₐ[K] L) =
-        p ^ exponent)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hnonsplit :
-      cyclicPrimeSubextensionDecompositionGroup
-          (K := K) (L := L)
-          hp hexponent hcard v ≠ ⊥) :
-    ¬ FinitePlaceSplitsCompletely
-        (K := K) (L := L) v := by
-  intro hsplit
-  exact
-    hnonsplit
-      (finitePlaceSplitsCompletely_in_cyclicPrimeSubextension
-        (K := K) (L := L)
-        hp hexponent hcard v hsplit)
 
 end

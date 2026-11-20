@@ -12,10 +12,10 @@ set_option maxHeartbeats 2000000
 namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 open MomentSources TensorActionSource KPGlobalTorusFiniteStages
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 
 theorem localValue_scalar (p : KPHilbert.Place F) (f : Plus R N P C p)
@@ -115,9 +115,7 @@ theorem localValue_central (p : KPHilbert.Place F) (f : Plus R N P C p)
     change f.val (KPPGLLocalCover.coverQuotient F R.A.zeta12
       R.A.primitive_zeta12 (Sum.inr q) (_ * _)) = _
     rw [map_mul]
-    have heta : B.eta = KPSourceConvention.ordinaryGenuineCharacter F R.A.zeta12
-        R.A.primitive_zeta12 := T.openCell_ordinary T.polarization
-    rw [heta] at hv
+    rw [(T.openCell_ordinary T.polarization)] at hv
     exact hv
 
 theorem rawCoreVector_centralTuple (x : PlusCore R N P C)
@@ -196,31 +194,33 @@ theorem rawCoreVector_amalgamation_invariant (x : PlusCore R N P C)
 
 local notation "GL" => KPAdelicCoverRestrictedProduct.CubicGL2Adelic F R.A.zeta12 R.A.primitive_zeta12
 
- theorem rawCoreVector_amalgamation_eq (x : PlusCore R N P C) (g h : Raw R)
+ section
+
+variable (x : PlusCore R N P C)
+
+theorem rawCoreVector_amalgamation_eq (g h : Raw R)
     (he : KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12 g =
       KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12 h) :
     rawCoreVector R N P C g x = rawCoreVector R N P C h x := by
-  have hm : g⁻¹ * h ∈ KPAdelicCoverRestrictedProduct.M F R.A.zeta12 R.A.primitive_zeta12 :=
+  have hm :=
     QuotientGroup.eq.mp he
-  have hc := KPAdelicCoverRestrictedProduct.M_central F R.A.zeta12 R.A.primitive_zeta12 hm
   have hh : (⟨g⁻¹ * h, hm⟩ : KPAdelicCoverRestrictedProduct.M
       F R.A.zeta12 R.A.primitive_zeta12).val * g = h := by
-    change (g⁻¹ * h) * g = h
-    rw [← Subgroup.mem_center_iff.mp hc g, ← mul_assoc, mul_inv_cancel, one_mul]
+    rw [← Subgroup.mem_center_iff.mp (KPAdelicCoverRestrictedProduct.M_central F R.A.zeta12 R.A.primitive_zeta12 hm) g, ← mul_assoc, mul_inv_cancel, one_mul]
   have hi := rawCoreVector_amalgamation_invariant R N P C x ⟨_, hm⟩ g
   rw [hh] at hi
   exact hi.symm
 
-def amalgamatedCoreVector (x : PlusCore R N P C) : GL → FiberCore R P C :=
+def amalgamatedCoreVector : GL → FiberCore R P C :=
   Quotient.lift (fun g : Raw R => rawCoreVector R N P C g x)
     (fun g h he => rawCoreVector_amalgamation_eq R N P C x g h (Quotient.sound he))
 
-@[simp] theorem amalgamatedCoreVector_raw (x : PlusCore R N P C) (g : Raw R) :
+@[simp] theorem amalgamatedCoreVector_raw (g : Raw R) :
     amalgamatedCoreVector R N P C x
       (KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12 g) =
       rawCoreVector R N P C g x := rfl
 
-theorem amalgamatedCoreVector_scalar (x : PlusCore R N P C)
+theorem amalgamatedCoreVector_scalar
     (z : KPAdelicCoverRestrictedProduct.Ideles F) (g : GL) :
     amalgamatedCoreVector R N P C x (KPAdelicCoverRestrictedProduct.scalarHom F R.A.zeta12
       R.A.primitive_zeta12 z * g) = amalgamatedCoreVector R N P C x g := by
@@ -231,31 +231,31 @@ theorem amalgamatedCoreVector_scalar (x : PlusCore R N P C)
         (KPAdelicCoverRestrictedProduct.scalarTuple F R.A.zeta12 R.A.primitive_zeta12 z) *
         KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12 g) = _
     rw [← map_mul, amalgamatedCoreVector_raw]
-    change _ = rawCoreVector R N P C g x
     exact rawCoreVector_scalar R N P C x z g
 
- theorem amalgamatedCoreVector_quotient_eq (x : PlusCore R N P C) (g h : GL)
+ theorem amalgamatedCoreVector_quotient_eq (g h : GL)
     (he : KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12 g =
       KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12 h) :
     amalgamatedCoreVector R N P C x g = amalgamatedCoreVector R N P C x h := by
   obtain ⟨z, hz⟩ := QuotientGroup.eq.mp he
-  have hc := KPAdelicCoverRestrictedProduct.scalarHom_central F R.A.zeta12
-    R.A.primitive_zeta12 (MonoidHom.mem_range.mpr ⟨z, rfl⟩)
   have hh : KPAdelicCoverRestrictedProduct.scalarHom F R.A.zeta12
       R.A.primitive_zeta12 z * g = h := by
-    rw [← Subgroup.mem_center_iff.mp hc g, hz, ← mul_assoc, mul_inv_cancel, one_mul]
+    rw [← Subgroup.mem_center_iff.mp (KPAdelicCoverRestrictedProduct.scalarHom_central F R.A.zeta12
+      R.A.primitive_zeta12 (MonoidHom.mem_range.mpr ⟨z, rfl⟩)) g, hz, ← mul_assoc, mul_inv_cancel, one_mul]
   have hi := amalgamatedCoreVector_scalar R N P C x z g
   rw [hh] at hi
   exact hi.symm
 
-def quotientCoreVector (x : PlusCore R N P C) : Group R → FiberCore R P C :=
+def quotientCoreVector : Group R → FiberCore R P C :=
   Quotient.lift (fun g : GL => amalgamatedCoreVector R N P C x g)
     (fun g h he => amalgamatedCoreVector_quotient_eq R N P C x g h (Quotient.sound he))
 
-@[simp] theorem quotientCoreVector_raw (x : PlusCore R N P C) (g : Raw R) :
+@[simp] theorem quotientCoreVector_raw (g : Raw R) :
     quotientCoreVector R N P C x (KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12
       R.A.primitive_zeta12 (KPAdelicCoverRestrictedProduct.amalgamation
         F R.A.zeta12 R.A.primitive_zeta12 g)) = rawCoreVector R N P C g x := rfl
+
+end
 
 def quotientCoreEvaluator : PlusCore R N P C →ₗ[ℂ] (Group R → FiberCore R P C) where
   toFun := quotientCoreVector R N P C

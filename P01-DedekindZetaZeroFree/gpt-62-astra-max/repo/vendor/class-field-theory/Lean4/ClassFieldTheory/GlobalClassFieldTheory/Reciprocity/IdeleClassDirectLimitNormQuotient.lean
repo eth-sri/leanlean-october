@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -68,10 +65,6 @@ local instance
           K (le_baseField K))] :
     NumberField
       (abstractFixedField ℚ (SeparableClosure ℚ) K) := by
-  let _ : FiniteDimensional ℚ
-      (abstractFixedField ℚ (SeparableClosure ℚ) K) :=
-    abstractFixedField_finiteDimensional
-      ℚ (SeparableClosure ℚ) K hKfinite
   exact
     NumberField.of_module_finite ℚ
       (abstractFixedField ℚ (SeparableClosure ℚ) K)
@@ -93,10 +86,10 @@ local instance
       (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK) := by
   let F := abstractFixedField ℚ (SeparableClosure ℚ) K
   let E := abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK
-  let _ : FiniteDimensional ℚ F :=
+  let _ :=
     abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K hKfinite
-  let _ : FiniteDimensional F E :=
+  let _ :=
     abstractRelativeFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K L hLK hKfinite hfinite
   let _ : IsScalarTower ℚ F E :=
@@ -104,44 +97,7 @@ local instance
   let _ : FiniteDimensional ℚ E := FiniteDimensional.trans ℚ F E
   exact NumberField.of_module_finite ℚ E
 
-private theorem addEquiv_trans_symm_trans_symm_trans_apply_eq
-    {V A B C D : Type*}
-    [Add V] [Add A] [Add B] [Add C] [Add D]
-    (eV : V ≃+ D) (eB : B ≃+ D)
-    (eA : A ≃+ B) (eC : A ≃+ C)
-    {y : V} {z : A} {w : C}
-    (h : eV y = eB (eA z))
-    (ht : eC z = w) :
-    (((eV.trans eB.symm).trans eA.symm).trans eC) y = w := by
-  change eC (eA.symm (eB.symm (eV y))) = w
-  rw [h, eB.symm_apply_apply, eA.symm_apply_apply]
-  exact ht
-
-private theorem rationalTowerRelativeClass_baseChange
-    (F E : Type)
-    [Field F] [NumberField F]
-    [Field E] [NumberField E]
-    [Algebra ℚ F] [Algebra F E] [Algebra ℚ E]
-    [IsScalarTower ℚ F E]
-    [FiniteDimensional ℚ F] [FiniteDimensional F E]
-    (c : Additive (IdeleClassGroup E)) :
-    _root_.relativeIdeleClassBaseChangeMulEquiv
-        (K := F) (L := E)
-        (towerRelativeIdeleClassBaseChangeMulEquiv ℚ F E
-          ((TowerRelativeIdeleGroup.classGroupEquiv
-            ℚ F E).symm
-            ((_root_.relativeIdeleClassBaseChangeMulEquiv
-              (K := ℚ) (L := E)).symm (Additive.toMul c)))) =
-      Additive.toMul c := by
-  let dQ : RelativeIdeleGroup.ClassGroup ℚ E :=
-    (_root_.relativeIdeleClassBaseChangeMulEquiv
-      (K := ℚ) (L := E)).symm (Additive.toMul c)
-  have hTower :=
-    relativeIdeleClassBaseChangeMulEquiv_tower ℚ F E dQ
-  have hBase :=
-    (_root_.relativeIdeleClassBaseChangeMulEquiv
-      (K := ℚ) (L := E)).apply_symm_apply (Additive.toMul c)
-  exact Eq.trans hTower hBase
+private alias addEquiv_trans_symm_trans_symm_trans_apply_eq := IdeleClassDirectLimitExtensionNorm.fourStepAddEquiv_apply_eq
 
 private theorem rationalTowerRelativeClass_norm
     (F E : Type)
@@ -165,19 +121,24 @@ private theorem rationalTowerRelativeClass_norm
       ((TowerRelativeIdeleGroup.classGroupEquiv
         ℚ F E).symm
         ((_root_.relativeIdeleClassBaseChangeMulEquiv
-          (K := ℚ) (L := E)).symm (Additive.toMul c)))
-  have hbase := rationalTowerRelativeClass_baseChange F E c
+           ).symm (Additive.toMul c)))
+  have hbase := (by
+    exact Eq.trans (relativeIdeleClassBaseChangeMulEquiv_tower ℚ F E ((_root_.relativeIdeleClassBaseChangeMulEquiv
+      ).symm (Additive.toMul c))) ((_root_.relativeIdeleClassBaseChangeMulEquiv
+      ).apply_symm_apply (Additive.toMul c)))
   change
     _root_.relativeIdeleClassBaseChangeMulEquiv
-        (K := F) (L := E) dF = Additive.toMul c at hbase
+          dF = Additive.toMul c at hbase
   exact
     (ordinaryIdeleClassNorm_relativeIdeleClassBaseChange dF).symm.trans
       (congrArg (_root_.ideleClassNorm F E) hbase)
 
- noncomputable abbrev rationalRelativeFixedFieldIdeleClassAdditiveType
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+ section
+
+variable (K L : ClosedSubgroup (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
+
+noncomputable abbrev rationalRelativeFixedFieldIdeleClassAdditiveType
     [hKfinite : Finite
       ((baseField
         (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
@@ -203,9 +164,6 @@ private theorem rationalTowerRelativeClass_norm
   Additive (IdeleClassGroup E)
 
  noncomputable abbrev rationalOrdinaryNormQuotientAdditiveType
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
     (hnormal : (extensionSubgroup K L hLK).Normal)
     [hKfinite : Finite
       ((baseField
@@ -236,6 +194,8 @@ private theorem rationalTowerRelativeClass_norm
       ℚ (SeparableClosure ℚ) K L hLK hnormal
   Additive
     (IdeleClassGroup F ⧸ (_root_.ideleClassNorm F E).range)
+
+end
 
 @[instance_reducible]  noncomputable instance
     rationalOrdinaryNormQuotientAdditiveTypeAddCommGroup
@@ -291,7 +251,6 @@ private theorem rationalTowerRelativeClass_norm
   have hforward :
       S ≤ AddSubgroup.comap e.symm.toAddMonoidHom T := by
     intro x hx
-    change e.symm x ∈ T
     rw [← hmap]
     exact ⟨x, hx, rfl⟩
   have hinverse :
@@ -307,13 +266,11 @@ private theorem rationalTowerRelativeClass_norm
       simpa using hxy.symm
     rw [heq]
     exact hx
-  let f : (A ⧸ S) →+ (B ⧸ T) :=
+  let f :=
     QuotientAddGroup.map S T e.symm.toAddMonoidHom hforward
-  let g : (B ⧸ T) →+ (A ⧸ S) :=
-    QuotientAddGroup.map T S e.toAddMonoidHom hinverse
   exact
     { toFun := f
-      invFun := g
+      invFun := (QuotientAddGroup.map T S e.toAddMonoidHom hinverse)
       left_inv := by
         intro q
         refine QuotientAddGroup.induction_on q ?_
@@ -328,33 +285,11 @@ private theorem rationalTowerRelativeClass_norm
         rw [e.symm_apply_apply]
       map_add' := f.map_add }
 
-private theorem quotientAddEquivOfEquivMapEq_mk
-    {A B : Type*} [AddCommGroup A] [AddCommGroup B]
-    (S : AddSubgroup A) (T : AddSubgroup B)
-    (e : B ≃+ A)
-    (hmap : S.map e.symm.toAddMonoidHom = T)
-    (x : A) :
-    quotientAddEquivOfEquivMapEq S T e hmap
-        (QuotientAddGroup.mk' S x) =
-      QuotientAddGroup.mk' T (e.symm x) := by
-  have hforward :
-      S ≤ AddSubgroup.comap e.symm.toAddMonoidHom T := by
-    intro y hy
-    change e.symm y ∈ T
-    rw [← hmap]
-    exact ⟨y, hy, rfl⟩
-  change
-    QuotientAddGroup.map S T e.symm.toAddMonoidHom hforward
-        (QuotientAddGroup.mk' S x) =
-      QuotientAddGroup.mk' T (e.symm x)
-  rw [QuotientAddGroup.map_mk']
-  rfl
-
  noncomputable def additiveQuotientEquiv
     {G : Type*} [CommGroup G] (H : Subgroup G) :
     (Additive G ⧸ H.toAddSubgroup) ≃+
       Additive (G ⧸ H) := by
-  let normAdd : Additive G →+ Additive (G ⧸ H) :=
+  let normAdd :=
     MonoidHom.toAdditive (QuotientGroup.mk' H)
   let T := normAdd.ker
   have hT : H.toAddSubgroup = T := by
@@ -370,22 +305,16 @@ private theorem quotientAddEquivOfEquivMapEq_mk
       H.toAddSubgroup.map (AddMonoidHom.id (Additive G)) = T
     rw [AddSubgroup.map_id]
     exact hT
-  let modelEquiv :
-      (Additive G ⧸ H.toAddSubgroup) ≃+
-        (Additive G ⧸ T) :=
-    quotientAddEquivOfEquivMapEq
-      H.toAddSubgroup T (AddEquiv.refl (Additive G)) hmap
-  have hsurjective : Function.Surjective normAdd := by
-    intro q
-    obtain ⟨g, hg⟩ :=
-      QuotientGroup.mk'_surjective H (Additive.toMul q)
-    refine ⟨Additive.ofMul g, ?_⟩
-    apply Additive.toMul.injective
-    change QuotientGroup.mk' H g = Additive.toMul q
-    exact hg
-  exact modelEquiv.trans
+  refine (quotientAddEquivOfEquivMapEq
+    H.toAddSubgroup T (AddEquiv.refl (Additive G)) hmap).trans
     (QuotientAddGroup.quotientKerEquivOfSurjective
-      normAdd hsurjective)
+      normAdd ?_)
+  intro q
+  obtain ⟨g, hg⟩ :=
+    QuotientGroup.mk'_surjective H (Additive.toMul q)
+  refine ⟨Additive.ofMul g, ?_⟩
+  apply Additive.toMul.injective
+  exact hg
 
  noncomputable def quotientAddEquivOfEquivMapEqToQuotient
     {A G : Type*} [AddCommGroup A] [CommGroup G]
@@ -419,7 +348,7 @@ private theorem map_addRange_eq_monoidRange_toAddSubgroup_of_equiv
   constructor
   · intro hy
     obtain ⟨n, ⟨u, hu⟩, hny⟩ := hy
-    let c : Additive G := eU.symm u
+    let c := eU.symm u
     refine ⟨Additive.toMul c, ?_⟩
     apply Additive.ofMul.injective
     exact
@@ -429,8 +358,8 @@ private theorem map_addRange_eq_monoidRange_toAddSubgroup_of_equiv
           ((congrArg eA.symm hu).trans hny))
   · intro hy
     obtain ⟨d, hd⟩ := hy
-    let c : Additive G := Additive.ofMul d
-    let u : U := eU c
+    let c := Additive.ofMul d
+    let u := eU c
     exact
       ⟨f u, ⟨u, rfl⟩,
         (hcompat c).trans (congrArg Additive.ofMul hd)⟩
@@ -475,9 +404,6 @@ noncomputable def
     FiniteDimensional.trans ℚ F E
   letI : NumberField E :=
     NumberField.of_module_finite ℚ E
-  change Additive (IdeleClassGroup E) ≃+
-    KummerTheory.ambientFixedAddSubgroup
-      rationalIdeleClassRepresentation L
   exact
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixedOfFiniteDimensional
       K L hLK
@@ -526,20 +452,14 @@ noncomputable def
       (Additive.ofMul
         (_root_.ideleClassNorm F E (Additive.toMul c))))
 
- noncomputable def rationalRelativeFixedFieldNormPreimageComparison
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+ section
+
+variable (K L : ClosedSubgroup (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+    (hLK : L.toSubgroup ≤ K.toSubgroup) (hnormal : (extensionSubgroup K L hLK).Normal)
+    [hKfinite : Finite ((baseField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸ extensionSubgroup (baseField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)) K (le_baseField K))]
+    [hfinite : Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+
+noncomputable def rationalRelativeFixedFieldNormPreimageComparison
     (c : rationalRelativeFixedFieldIdeleClassAdditiveType
       (hKfinite := hKfinite) (hfinite := hfinite)
       K L hLK) :=
@@ -571,19 +491,6 @@ noncomputable def
     Additive.ofMul dF)
 
 private theorem rationalRelativeFixedFieldNormPreimageComparison_eq
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (c : rationalRelativeFixedFieldIdeleClassAdditiveType
       (hKfinite := hKfinite) (hfinite := hfinite)
       K L hLK) :
@@ -592,21 +499,21 @@ private theorem rationalRelativeFixedFieldNormPreimageComparison_eq
   let F := abstractFixedField ℚ (SeparableClosure ℚ) K
   let E := abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK
   let _ := hnormal
-  let _ : FiniteDimensional ℚ F :=
+  let _ :=
     abstractFixedField_finiteDimensional ℚ (SeparableClosure ℚ) K hKfinite
-  let _ : FiniteDimensional F E :=
+  let _ :=
     abstractRelativeFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K L hLK hKfinite hfinite
   let _ : IsScalarTower ℚ F E :=
     IsScalarTower.of_algebraMap_eq' (RingHom.ext_rat _ _)
-  let _ : FiniteDimensional ℚ E := FiniteDimensional.trans ℚ F E
-  let _ : NumberField F := NumberField.of_module_finite ℚ F
-  let _ : NumberField E := NumberField.of_module_finite ℚ E
+  let _ := FiniteDimensional.trans ℚ F E
+  let _ := NumberField.of_module_finite ℚ F
+  let _ := NumberField.of_module_finite ℚ E
   let eUpper := rationalAbstractRelativeFixedFieldIdeleClassEquivFixed K L hLK
   let dQ : RelativeIdeleGroup.ClassGroup ℚ E :=
     (_root_.relativeIdeleClassBaseChangeMulEquiv (K := ℚ) (L := E)).symm
       (Additive.toMul c)
-  let dF : RelativeIdeleGroup.ClassGroup F E :=
+  let dF :=
     towerRelativeIdeleClassBaseChangeMulEquiv ℚ F E
       ((TowerRelativeIdeleGroup.classGroupEquiv ℚ F E).symm dQ)
   let eAmbient := extensionFixedRepresentationEquiv
@@ -619,9 +526,7 @@ private theorem rationalRelativeFixedFieldNormPreimageComparison_eq
         Additive (IdeleClassGroup E) :=
     MulEquiv.toAdditive
       (_root_.relativeIdeleClassBaseChangeMulEquiv (K := ℚ) (L := E))
-  let eTower :
-      Additive (RelativeIdeleGroup.ClassGroup ℚ E) ≃+
-        Additive (RelativeIdeleGroup.ClassGroup F E) :=
+  let eTower :=
     MulEquiv.toAdditive ((TowerRelativeIdeleGroup.classGroupEquiv ℚ F E).symm.trans
       (towerRelativeIdeleClassBaseChangeMulEquiv ℚ F E))
   change
@@ -630,35 +535,19 @@ private theorem rationalRelativeFixedFieldNormPreimageComparison_eq
       Additive.ofMul dF
   apply addEquiv_trans_symm_trans_symm_trans_apply_eq
       eAmbient eFixed eRelative eTower
-      (z := Additive.ofMul dQ)
-  · have hAmbient := eAmbient.apply_symm_apply (eUpper c)
-    have heUpper : eUpper c = eFixed c := rfl
-    have heRelative : eRelative (Additive.ofMul dQ) = c := by
-      apply Additive.toMul.injective
-      change
-        _root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := E) dQ =
-          Additive.toMul c
-      exact
-        (_root_.relativeIdeleClassBaseChangeMulEquiv
-          (K := ℚ) (L := E)).apply_symm_apply _
-    exact hAmbient.trans (heUpper.trans (congrArg eFixed heRelative).symm)
+
+  · refine (eAmbient.apply_symm_apply (eUpper c)).trans (rfl.trans (congrArg eFixed ?_).symm)
+    apply Additive.toMul.injective
+    change
+      _root_.relativeIdeleClassBaseChangeMulEquiv
+            dQ =
+        Additive.toMul c
+    exact
+      (_root_.relativeIdeleClassBaseChangeMulEquiv
+         ).apply_symm_apply _
   · rfl
 
  noncomputable def rationalRelativeFixedFieldNormCohomologyComparison
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (c : rationalRelativeFixedFieldIdeleClassAdditiveType
       (hKfinite := hKfinite) (hfinite := hfinite)
       K L hLK) :=
@@ -692,19 +581,6 @@ private theorem rationalRelativeFixedFieldNormPreimageComparison_eq
         (Additive.toMul comparison.2)))
 
 private theorem rationalRelativeFixedFieldNormCohomologyComparison_eq
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (c : rationalRelativeFixedFieldIdeleClassAdditiveType
       (hKfinite := hKfinite) (hfinite := hfinite)
       K L hLK) :
@@ -715,20 +591,16 @@ private theorem rationalRelativeFixedFieldNormCohomologyComparison_eq
   let F := abstractFixedField ℚ (SeparableClosure ℚ) K
   let E := abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK
   let _ := hnormal
-  let _ : FiniteDimensional ℚ F :=
+  let _ :=
     abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K hKfinite
-  let _ : FiniteDimensional F E :=
+  let _ :=
     abstractRelativeFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K L hLK hKfinite hfinite
   let _ : IsScalarTower ℚ F E :=
     IsScalarTower.of_algebraMap_eq' (RingHom.ext_rat _ _)
-  let _ : FiniteDimensional ℚ E := FiniteDimensional.trans ℚ F E
-  let _ : NumberField F := NumberField.of_module_finite ℚ F
-  let _ : NumberField E := NumberField.of_module_finite ℚ E
-  let _ : IsGalois F E :=
-    abstractRelativeFixedField_isGalois
-      ℚ (SeparableClosure ℚ) K L hLK hnormal
+  let _ := FiniteDimensional.trans ℚ F E
+  let _ := NumberField.of_module_finite ℚ F
   let eUpper :=
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixed K L hLK
   let comparison :=
@@ -741,9 +613,6 @@ private theorem rationalRelativeFixedFieldNormCohomologyComparison_eq
       Additive.ofMul
         (RelativeIdeleGroup.Cohomology.ideleClassNorm F E
           (Additive.toMul comparison.2))
-  have htransport : comparison.1 = comparison.2 :=
-    rationalRelativeFixedFieldNormPreimageComparison_eq
-      K L hLK hnormal c
   have hnorm :=
     rationalAbstractFixedFieldIdeleClassEquivFixed_relativeNorm
       K L hLK hnormal (eUpper c)
@@ -755,7 +624,8 @@ private theorem rationalRelativeFixedFieldNormCohomologyComparison_eq
         (RelativeIdeleGroup.Cohomology.ideleClassNorm F E
           (Additive.toMul comparison.1))
     at hnorm
-  rw [htransport] at hnorm
+  rw [(rationalRelativeFixedFieldNormPreimageComparison_eq
+    K L hLK hnormal c)] at hnorm
   exact hnorm
 
 /-- For a finite Galois pair of abstract fixed fields, the direct upper
@@ -763,19 +633,6 @@ fixed-part comparison intertwines the class-formation relative norm with
 the ordinary idele-class norm. -/
 theorem
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_relativeNorm
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (c : rationalRelativeFixedFieldIdeleClassAdditiveType
       (hKfinite := hKfinite) (hfinite := hfinite)
       K L hLK) :
@@ -787,21 +644,21 @@ theorem
     abstractFixedField ℚ (SeparableClosure ℚ) K
   let E :=
     abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK
-  let _ : FiniteDimensional ℚ F :=
+  let _ :=
     abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K hKfinite
-  let _ : FiniteDimensional F E :=
+  let _ :=
     abstractRelativeFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K L hLK hKfinite hfinite
   let _ : IsScalarTower ℚ F E :=
     IsScalarTower.of_algebraMap_eq' (RingHom.ext_rat _ _)
-  let _ : FiniteDimensional ℚ E :=
+  let _ :=
     FiniteDimensional.trans ℚ F E
-  let _ : NumberField F :=
+  let _ :=
     NumberField.of_module_finite ℚ F
-  let _ : NumberField E :=
+  let _ :=
     NumberField.of_module_finite ℚ E
-  let _ : IsGalois F E :=
+  let _ :=
     abstractRelativeFixedField_isGalois
       ℚ (SeparableClosure ℚ) K L hLK hnormal
   change
@@ -814,11 +671,9 @@ theorem
   let eUpper :=
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixed
       K L hLK
-  let comparison :=
-    rationalRelativeFixedFieldNormPreimageComparison
-      K L hLK hnormal c
-  let dF : RelativeIdeleGroup.ClassGroup F E :=
-    Additive.toMul comparison.2
+  let dF :=
+    Additive.toMul (rationalRelativeFixedFieldNormPreimageComparison
+      K L hLK hnormal c).2
   have hcohom :=
     rationalRelativeFixedFieldNormCohomologyComparison_eq
       K L hLK hnormal c
@@ -835,7 +690,7 @@ theorem
     RelativeIdeleGroup.Cohomology.ideleClassNorm F E dF =
       _root_.ideleClassNorm F E (Additive.toMul c) at hbridge
   calc
-    relativeNorm rationalIdeleClassRepresentation K L hLK (eUpper c) =
+    _ =
         rationalAbstractFixedFieldIdeleClassEquivFixed K
           ((rationalAbstractFixedFieldIdeleClassEquivFixed K).symm
             (relativeNorm rationalIdeleClassRepresentation
@@ -846,6 +701,8 @@ theorem
             (_root_.ideleClassNorm F E (Additive.toMul c))) :=
       congrArg (rationalAbstractFixedFieldIdeleClassEquivFixed K)
         (hcohom.trans (congrArg Additive.ofMul hbridge))
+
+end
 
 /-- The fixed-field comparison carries the abstract finite norm subgroup
 exactly to the ordinary idele-class norm range of the actual fixed fields. -/
@@ -989,9 +846,7 @@ noncomputable def
       (abstractFixedField ℚ (SeparableClosure ℚ) K)
       (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK) :=
     IsScalarTower.of_algebraMap_eq'
-      (R := ℚ)
-      (S := abstractFixedField ℚ (SeparableClosure ℚ) K)
-      (A := abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)
+
       (RingHom.ext_rat
         (algebraMap ℚ (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK))
         ((algebraMap
@@ -1000,10 +855,10 @@ noncomputable def
           (algebraMap ℚ (abstractFixedField ℚ (SeparableClosure ℚ) K))))
   letI : NumberField (abstractFixedField ℚ (SeparableClosure ℚ) K) :=
     rationalNormQuotientAbstractFixedFieldNumberField
-      (hKfinite := hKfinite) K
+       K
   letI : NumberField (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK) :=
     rationalNormQuotientAbstractRelativeFixedFieldNumberField
-      (hKfinite := hKfinite) (hfinite := hfinite) K L hLK
+        K L hLK
   letI : IsGalois
       (abstractFixedField ℚ (SeparableClosure ℚ) K)
       (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK) :=
@@ -1016,7 +871,7 @@ noncomputable def
       (abstractFixedField ℚ (SeparableClosure ℚ) K)
       (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)).range.Normal :=
     rationalNormQuotientIdeleClassSubgroupNormal
-      (F := abstractFixedField ℚ (SeparableClosure ℚ) K)
+
       (_root_.ideleClassNorm
         (abstractFixedField ℚ (SeparableClosure ℚ) K)
         (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)).range
@@ -1042,22 +897,13 @@ noncomputable def
     (hmap := map_rationalFiniteNormSubgroup_eq_ordinaryIdeleClassNormRange_concrete
       (hKfinite := hKfinite) (hfinite := hfinite) K L hLK hnormal)
 
- noncomputable def rationalFiniteNormQuotientClassValue
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    (a : KummerTheory.ambientFixedAddSubgroup
-      rationalIdeleClassRepresentation K) :
+ variable (K L : ClosedSubgroup (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+    (hLK : L.toSubgroup ≤ K.toSubgroup) (hnormal : (extensionSubgroup K L hLK).Normal)
+    [hKfinite : Finite ((baseField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸ extensionSubgroup (baseField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)) K (le_baseField K))]
+    [hfinite : Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
+    (a : KummerTheory.ambientFixedAddSubgroup rationalIdeleClassRepresentation K)
+
+noncomputable def rationalFiniteNormQuotientClassValue :
     rationalOrdinaryNormQuotientAdditiveType
       (hKfinite := hKfinite) (hfinite := hfinite)
       K L hLK hnormal :=
@@ -1089,22 +935,7 @@ norm class to the ordinary idele class of the transported
 representative. -/
 @[simp]
 theorem
-    rationalFiniteNormQuotientEquivIdeleClassNormQuotient_finiteNormClass
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    (a : KummerTheory.ambientFixedAddSubgroup
-      rationalIdeleClassRepresentation K) :
+    rationalFiniteNormQuotientEquivIdeleClassNormQuotient_finiteNormClass :
     rationalFiniteNormQuotientEquivIdeleClassNormQuotient
         K L hLK hnormal
         (finiteNormClass rationalIdeleClassRepresentation
@@ -1126,8 +957,8 @@ theorem
   let _ : FiniteDimensional ℚ E :=
     FiniteDimensional.trans ℚ F E
   let _ : NumberField F := NumberField.of_module_finite ℚ F
-  let _ : NumberField E := NumberField.of_module_finite ℚ E
-  let _ : IsGalois F E :=
+  let _ := NumberField.of_module_finite ℚ E
+  let _ :=
     abstractRelativeFixedField_isGalois
       ℚ (SeparableClosure ℚ) K L hLK hnormal
   change

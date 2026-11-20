@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -47,18 +44,16 @@ theorem henselFactorization_of_complete
   have hproduct : gbar * hbar ≠ 0 := by
     rw [← hfactor]
     exact hprimitive
-  have hgbar : gbar ≠ 0 := left_ne_zero_of_mul hproduct
-  have hhbar : hbar ≠ 0 := right_ne_zero_of_mul hproduct
   have hG : G ≠ 0 := by
     intro hzero
     subst G
     simp at hGresidue
-    exact hgbar hGresidue.symm
+    exact (left_ne_zero_of_mul hproduct) hGresidue.symm
   have hH : H ≠ 0 := by
     intro hzero
     subst H
     simp at hHresidue
-    exact hhbar hHresidue.symm
+    exact (right_ne_zero_of_mul hproduct) hHresidue.symm
   have hdegree :
       H.natDegree = f.natDegree - gbar.natDegree := by
     rw [hGH, Polynomial.natDegree_mul hG hH, hGdegree,

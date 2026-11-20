@@ -18,7 +18,12 @@ variable {K : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K]
  def B (p : K) (k : ℤ) : Set K := {x | ∃ u : (valuation K).integer, x = p ^ k * (u : K)}
  def S (p : K) (k : ℤ) : Set K := {x | ∃ u ∈ KPTameGauss.integerUnitShell K, x = p ^ k * u}
-private lemma B_mem (p : K) (hp : p ≠ 0) (k : ℤ) (x : K) :
+section
+
+variable (p : K) (hp : p ≠ 0) (k : ℤ)
+
+include hp in
+private lemma B_mem (x : K) :
     x ∈ B p k ↔ p ^ (-k) * x ∈ ((valuation K).integer : Set K) := by
   constructor
   · rintro ⟨u, rfl⟩
@@ -27,16 +32,24 @@ private lemma B_mem (p : K) (hp : p ≠ 0) (k : ℤ) (x : K) :
   · intro hx
     refine ⟨⟨p ^ (-k) * x, hx⟩, ?_⟩
     rw [← mul_assoc, ← zpow_add₀ hp, add_neg_cancel, zpow_zero, one_mul]
-private lemma B_measurable (p : K) (hp : p ≠ 0) (k : ℤ) : MeasurableSet (B p k) := by
+include hp in
+private lemma B_measurable : MeasurableSet (B p k) := by
   have he : B p k = (fun x : K => p ^ (-k) * x) ⁻¹' ((valuation K).integer : Set K) := by
     ext x; exact B_mem p hp k x
   rw [he]
   exact (valuation K).isClosed_integer.measurableSet.preimage (by fun_prop)
-private lemma parts (π : (valuation K).integer) (hπ : Irreducible π) (k : ℤ) :
+
+end
+section
+
+variable (π : (valuation K).integer) (hπ : Irreducible π) (k : ℤ)
+
+include hπ in
+private lemma parts :
     B (π : K) k = B (π : K) (k + 1) ∪ S (π : K) k ∧
     Disjoint (B (π : K) (k + 1)) (S (π : K) k) := by
-  have hp : (π : K) ≠ 0 := by intro h; exact hπ.ne_zero (Subtype.ext h)
-  have hval : valuation K (π : K) < 1 :=
+  have hp : (π : K) ≠ 0 := fun h => hπ.ne_zero (Subtype.ext h)
+  have hval :=
     (Valuation.integer.integers (valuation K)).valuation_irreducible_lt_one hπ
   constructor
   · ext x
@@ -68,21 +81,23 @@ private lemma parts (π : (valuation K).integer) (hπ : Irreducible π) (k : ℤ
       exact lt_of_le_of_lt (mul_le_of_le_one_right zero_le u.property) hval
     rw [he, htval] at hv
     exact (lt_irrefl _ hv)
-private lemma S_measurable (π : (valuation K).integer) (hπ : Irreducible π) (k : ℤ) :
+include hπ in
+private lemma S_measurable :
     MeasurableSet (S (π : K) k) := by
-  have hp : (π : K) ≠ 0 := by intro h; exact hπ.ne_zero (Subtype.ext h)
+  have hp : (π : K) ≠ 0 := fun h => hπ.ne_zero (Subtype.ext h)
   have he : S (π : K) k = B (π : K) k \ B (π : K) (k+1) := by
     rw [(parts π hπ k).1]
     ext x
-    have hd := Set.disjoint_left.mp (parts π hπ k).2
     simp only [Set.mem_diff, Set.mem_union]
     constructor
-    · intro hx; exact ⟨Or.inr hx, fun hb => hd hb hx⟩
+    · intro hx; exact ⟨Or.inr hx, fun hb => (Set.disjoint_left.mp (parts π hπ k).2) hb hx⟩
     · rintro ⟨h | h, hn⟩
       · exact (hn h).elim
       · exact h
   rw [he]
   exact (B_measurable _ hp k).diff (B_measurable _ hp (k+1))
+
+end
 private lemma integral_partition {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
     (μ : Measure K) (π : (valuation K).integer) (hπ : Irreducible π)
     (f : K → V) (e : ℤ) (n : ℕ) (hf : IntegrableOn f (B (π : K) (e - n)) μ) :

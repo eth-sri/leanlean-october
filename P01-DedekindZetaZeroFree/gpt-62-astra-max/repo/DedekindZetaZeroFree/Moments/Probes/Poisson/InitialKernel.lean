@@ -16,17 +16,21 @@ open DedekindZetaZeroFree.PrincipalMellinComparison
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
-def rawInitialIntegrand (u : Frequency D.recipe) (Z : ℝ) (t : ℝ × ℝ × ℝ) : ℂ :=
+section
+
+variable (u : Frequency D.recipe)
+
+def rawInitialIntegrand (Z : ℝ) (t : ℝ × ℝ × ℝ) : ℂ :=
   RawFixed.FixedData.rawKernel D u ((4 : ℂ) + (t.1 : ℂ) * Complex.I)
     ((4 : ℂ) + (t.2.1 : ℂ) * Complex.I) ((2 : ℂ) + (t.2.2 : ℂ) * Complex.I) Z
 
-def rawinitialRowIntegral (u : Frequency D.recipe) (Z : ℝ) : ℂ :=
+def rawinitialRowIntegral (Z : ℝ) : ℂ :=
   (2 * (Real.pi : ℂ))⁻¹ ^ 3 * ∫ t : ℝ × ℝ × ℝ, rawInitialIntegrand D u Z t
 
-theorem separatedSeries_eq_rawFactor (u : Frequency D.recipe) (ξ w z : ℂ)
+theorem separatedSeries_eq_rawFactor (ξ w z : ℂ)
     (hξ : ξ.re = 4) (hw : w.re = 4) (hz : z.re = 2) :
     separatedSeries D.recipe u ξ w z = RawFixed.FixedData.rawFactor D u ξ w z := by
   let P := RawFixed.FixedData.pkg D
@@ -42,6 +46,8 @@ theorem separatedSeries_eq_rawFactor (u : Frequency D.recipe) (ξ w z : ℂ)
       plus_series := P.plus_eq
       minus_series := P.minus_eq }
   exact RawFrequencyPublicBridge.Bridge.quotient_right_eq h u ξ w z hξ hw hz
+
+end
 
 abbrev AIdx : Type :=
   ExteriorSquarefreeIdeal D.recipe.A.cS × D.recipe.A.Exterior × D.recipe.A.Exterior ×
@@ -67,26 +73,22 @@ private theorem aIndex_countable' : Countable (AIdx D) := by
     infer_instance
   infer_instance
 
-private theorem integral_three' {f : (ℝ × ℝ × ℝ) → ℂ} (hf : Integrable f) :
-    (∫ t : ℝ × ℝ × ℝ, f t) =
-      ∫ x : ℝ, ∫ y : ℝ, ∫ z : ℝ, f (x, y, z) := by
-  rw [MeasureTheory.Measure.volume_eq_prod] at hf
-  rw [MeasureTheory.Measure.volume_eq_prod, integral_prod _ hf]
-  apply integral_congr_ae
-  filter_upwards [hf.prod_right_ae] with x hx
-  rw [MeasureTheory.Measure.volume_eq_prod] at hx
-  exact integral_prod _ hx
+private alias integral_three' := DedekindZetaZeroFree.Quantitative.PoissonFrequencyDecomposition.FrequencyDecomposition.integral_three''
 
 theorem frequencyNorm_pos' (u : Frequency D.recipe) : 0 < frequencyNorm D.recipe u := by
   rw [← RawFixed.FixedData.rawFrequency_norm D u]
   exact_mod_cast D.recipe.A.exteriorNorm_pos _
 
-theorem rawKernel_eq_tsum (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ)
+section
+
+variable (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z)
+
+include hZ in
+theorem rawKernel_eq_tsum (ξ w z : ℂ)
     (hξ : ξ.re = 4) (hw : w.re = 4) (hz : z.re = 2) :
     RawFixed.FixedData.rawKernel D u ξ w z Z =
       ∑' a : AIdx D, NormalizedProbe.tripleMellinWeight D.recipe.probe (Scales.xScale Z) (Scales.yScale Z)
         Z ξ w z * NormalizedProbe.weightedSeparatedSummand D.recipe.probe (u, a) ξ w z := by
-  have hq := frequencyNorm_pos' D u
   rw [tsum_mul_left]
   have hs : ∑' a : AIdx D, NormalizedProbe.weightedSeparatedSummand D.recipe.probe (u, a) ξ w z =
       comparisonRealPower (frequencyNorm D.recipe u) (-z) * separatedSeries D.recipe u ξ w z := by
@@ -95,55 +97,49 @@ theorem rawKernel_eq_tsum (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ w 
   rw [hs, PoissonInitialBridge.tripleMellinWeight_eq D Z hZ ξ w z]
   unfold RawFixed.FixedData.rawKernel
   rw [← separatedSeries_eq_rawFactor D u ξ w z hξ hw hz,
-    PoissonInitialBridge.cpow_eq_comparisonRealPower hq]
+    PoissonInitialBridge.cpow_eq_comparisonRealPower (frequencyNorm_pos' D u)]
   ring
 
-theorem rawInitialIntegrand_eq_twisted (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z)
+include hZ in
+theorem rawInitialIntegrand_eq_twisted
     (t : ℝ × ℝ × ℝ) :
     rawInitialIntegrand D u Z t = TwistedProbeRowDefinitions.rawIntegrand D u Z t := by
-  have h1 : (NormalizedProbe.initialMellinPoint t).1.re = 4 := by
-    simp [NormalizedProbe.initialMellinPoint]
-  have h2 : (NormalizedProbe.initialMellinPoint t).2.1.re = 4 := by
-    simp [NormalizedProbe.initialMellinPoint]
-  have h3 : (NormalizedProbe.initialMellinPoint t).2.2.re = 2 := by
-    simp [NormalizedProbe.initialMellinPoint]
-  exact rawKernel_eq_tsum D u Z hZ _ _ _ h1 h2 h3
+  refine rawKernel_eq_tsum D u Z hZ _ _ _ ?_ ?_ ?_
+  · simp [NormalizedProbe.initialMellinPoint]
+  · simp [NormalizedProbe.initialMellinPoint]
+  · simp [NormalizedProbe.initialMellinPoint]
 
-private theorem rawInit_eq_tsum (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z)
+include hZ in
+private theorem rawInit_eq_tsum
     (t : ℝ × ℝ × ℝ) :
     rawInitialIntegrand D u Z t = ∑' a : AIdx D,
       NormalizedProbe.initialTripleMellinSummand D.recipe.probe
         (Scales.xScale Z) (Scales.yScale Z) Z (u, a) t :=
   rawInitialIntegrand_eq_twisted D u Z hZ t
 
-theorem rawInitialIntegrand_integrable (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z) :
+include hZ in
+theorem rawInitialIntegrand_integrable :
     Integrable (rawInitialIntegrand D u Z) := by
   obtain ⟨hmaj, hint, hsum⟩ := PoissonInitialBridge.initial_majorant D Z hZ
   letI := aIndex_countable' D
-  have heq : rawInitialIntegrand D u Z = fun t => ∑' a : AIdx D,
-      NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-        (Scales.xScale Z) (Scales.yScale Z) Z (u, a) t :=
-    funext fun t => rawInit_eq_tsum D u Z hZ t
-  rw [heq]
+  rw [(funext fun t => rawInit_eq_tsum D u Z hZ t)]
   refine hmaj.mono' (AEStronglyMeasurable.tsum (fun a => (hint (u, a)).1)) ?_
   refine Filter.Eventually.of_forall (fun t => ?_)
   have hd : NormalizedProbe.initialMellinPoint t ∈ NormalizedProbe.separatedSeriesDomain := by
     norm_num [NormalizedProbe.initialMellinPoint, NormalizedProbe.separatedSeriesDomain,
       Complex.mul_re, Complex.add_re, Complex.ofReal_re, Complex.ofReal_im]
-  have hn := (NormalizedProbe.separatedSeries_absolute_locallyUniform D.recipe.probe).1
-    (NormalizedProbe.initialMellinPoint t) hd
   have htn : Summable (fun i : NormalizedProbe.MellinSeriesIndex D.recipe.probe =>
       ‖NormalizedProbe.initialTripleMellinSummand D.recipe.probe
         (Scales.xScale Z) (Scales.yScale Z) Z i t‖) := by
     simpa only [NormalizedProbe.initialTripleMellinSummand, norm_mul] using
-      hn.mul_left (‖NormalizedProbe.tripleMellinWeight D.recipe.probe (Scales.xScale Z) (Scales.yScale Z) Z
+      ((NormalizedProbe.separatedSeries_absolute_locallyUniform D.recipe.probe).1
+        (NormalizedProbe.initialMellinPoint t) hd).mul_left (‖NormalizedProbe.tripleMellinWeight D.recipe.probe (Scales.xScale Z) (Scales.yScale Z) Z
         (NormalizedProbe.initialMellinPoint t).1
         (NormalizedProbe.initialMellinPoint t).2.1 (NormalizedProbe.initialMellinPoint t).2.2‖)
   have hinj : Function.Injective (fun a : AIdx D =>
       ((u, a) : NormalizedProbe.MellinSeriesIndex D.recipe.probe)) :=
     fun a b h => (Prod.mk.inj h).2
-  calc ‖∑' a : AIdx D, NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-          (Scales.xScale Z) (Scales.yScale Z) Z (u, a) t‖
+  calc _
       ≤ ∑' a : AIdx D, ‖NormalizedProbe.initialTripleMellinSummand D.recipe.probe
           (Scales.xScale Z) (Scales.yScale Z) Z (u, a) t‖ :=
         norm_tsum_le_tsum_norm (htn.comp_injective hinj)
@@ -157,26 +153,24 @@ theorem rawInitialIntegrand_integrable (u : Frequency D.recipe) (Z : ℝ) (hZ : 
       simp only [NormalizedProbe.initialTripleMellinSummand,
         NormalizedProbe.initialAbsoluteMellinMajorant, norm_mul, tsum_mul_left]
 
+end
+
 theorem rawInitialIntegrand_norm_summable (Z : ℝ) (hZ : 0 < Z) :
     Summable (fun u : Frequency D.recipe => ∫ t : ℝ × ℝ × ℝ, ‖rawInitialIntegrand D u Z t‖) := by
   obtain ⟨hmaj, hint, hsum⟩ := PoissonInitialBridge.initial_majorant D Z hZ
   letI := aIndex_countable' D
-  have hfib : ∀ u : Frequency D.recipe, ∫ t : ℝ × ℝ × ℝ, ‖rawInitialIntegrand D u Z t‖ ≤
-      ∑' a : AIdx D, ∫ t : ℝ × ℝ × ℝ, ‖NormalizedProbe.initialTripleMellinSummand
-        D.recipe.probe (Scales.xScale Z) (Scales.yScale Z) Z (u, a) t‖ := by
-    intro u
-    simp_rw [rawInit_eq_tsum D u Z hZ]
-    exact (PoissonInitialBridge.integrable_tsum_norm_bound
-      (fun a : AIdx D => NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-        (Scales.xScale Z) (Scales.yScale Z) Z (u, a))
-      (fun a => hint _) (hsum.prod_factor _)).2
-  exact Summable.of_nonneg_of_le (fun u => integral_nonneg fun t => norm_nonneg _) hfib hsum.prod
+  refine Summable.of_nonneg_of_le (fun u => integral_nonneg fun t => norm_nonneg _) ?_ hsum.prod
+  intro u
+  simp_rw [rawInit_eq_tsum D u Z hZ]
+  exact (PoissonInitialBridge.integrable_tsum_norm_bound
+    (fun a : AIdx D => NormalizedProbe.initialTripleMellinSummand D.recipe.probe
+      (Scales.xScale Z) (Scales.yScale Z) Z (u, a))
+    (fun a => hint _) (hsum.prod_factor _)).2
 
 theorem initialRowIntegral_eq (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z) :
     RawFixed.FixedData.initialRowIntegral D u Z = rawinitialRowIntegral D u Z := by
-  have hint := rawInitialIntegrand_integrable D u Z hZ
   unfold rawinitialRowIntegral
-  rw [integral_three' hint]
+  rw [integral_three' (rawInitialIntegrand_integrable D u Z hZ)]
   simp only [RawFixed.FixedData.initialRowIntegral, RawFixed.FixedData.triple,
     RawFixed.FixedData.Iwz, RawFixed.FixedData.Iz, comparisonVerticalIntegral,
     rawInitialIntegrand, integral_const_mul, Complex.ofReal_ofNat]
@@ -189,8 +183,7 @@ theorem twisted_ne_principal (f : TwistedProbeRowDefinitions.TwistedRow D) :
   refine ⟨ActualRowCount.principalRow D, ?_⟩
   apply Subtype.ext
   apply Subtype.ext
-  have h1 : (principalFrequency D.recipe).val.val = 1 := rfl
-  have h2 : (f.val).val.val = 1 := by rw [h]; exact h1
+  have h2 : (f.val).val.val = 1 := by rw [h]; exact rfl
   rw [h2]
   exact ActualRowCount.principalRow_u D
 
@@ -212,7 +205,7 @@ private theorem tsum_omit (g : ↥(PoissonFrequencyDecomposition.allowedIndices 
     ∑' i, g i = ∑' f : TwistedProbeRowDefinitions.TwistedRow D, ∑' a : AIdx D,
       g (omitEquiv D (f, a)) := by
   rw [← (omitEquiv D).tsum_eq g]
-  have hg' : Summable (fun p => g (omitEquiv D p)) := (omitEquiv D).summable_iff.mpr hg
+  have hg' := (omitEquiv D).summable_iff.mpr hg
   exact hg'.tsum_prod' (fun f => hg'.prod_factor f)
 
 theorem omittedSum_eq_twisted (Z : ℝ) (hZ : 0 < Z) :
@@ -220,30 +213,24 @@ theorem omittedSum_eq_twisted (Z : ℝ) (hZ : 0 < Z) :
       ∑' f : TwistedProbeRowDefinitions.TwistedRow D, rawinitialRowIntegral D f.val Z := by
   letI := aIndex_countable' D
   obtain ⟨-, hint, hsum⟩ := PoissonInitialBridge.initial_majorant D Z hZ
-  have hOsum : Summable (fun i : ↥(PoissonFrequencyDecomposition.allowedIndices D)ᶜ =>
-      ∫ t : ℝ × ℝ × ℝ, ‖NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-        (Scales.xScale Z) (Scales.yScale Z) Z i.val t‖) := hsum.subtype _
+  let initialTripleMellinSummand₀ := NormalizedProbe.initialTripleMellinSummand D.recipe.probe (Scales.xScale Z) (Scales.yScale Z) Z
   have hOsum' : Summable (fun i : ↥(PoissonFrequencyDecomposition.allowedIndices D)ᶜ =>
       (2 * (Real.pi : ℂ))⁻¹ ^ 3 *
-      ∫ t : ℝ × ℝ × ℝ, NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-        (Scales.xScale Z) (Scales.yScale Z) Z i.val t) := by
-    refine (hOsum.mul_left ‖(2 * (Real.pi : ℂ))⁻¹ ^ 3‖).of_norm_bounded (fun i => ?_)
+      ∫ t : ℝ × ℝ × ℝ, initialTripleMellinSummand₀ i.val t) := by
+    refine ((hsum.subtype _).mul_left ‖(2 * (Real.pi : ℂ))⁻¹ ^ 3‖).of_norm_bounded (fun i => ?_)
     rw [norm_mul]
     exact mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm _) (norm_nonneg _)
   unfold PoissonFrequencyDecomposition.omittedSum
   rw [tsum_omit D _ hOsum']
   refine tsum_congr fun f => ?_
-  have h := integral_tsum_of_summable_integral_norm (fun a : AIdx D => hint (f.val, a))
-    (hsum.prod_factor f.val)
   have hrow : ∫ t : ℝ × ℝ × ℝ, rawInitialIntegrand D f.val Z t =
-      ∑' a : AIdx D, ∫ t : ℝ × ℝ × ℝ, NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-        (Scales.xScale Z) (Scales.yScale Z) Z (f.val, a) t := by
-    calc ∫ t : ℝ × ℝ × ℝ, rawInitialIntegrand D f.val Z t
-        = ∫ t : ℝ × ℝ × ℝ, ∑' a : AIdx D, NormalizedProbe.initialTripleMellinSummand
-            D.recipe.probe (Scales.xScale Z) (Scales.yScale Z) Z (f.val, a) t :=
+      ∑' a : AIdx D, ∫ t : ℝ × ℝ × ℝ, initialTripleMellinSummand₀ (f.val, a) t := by
+    calc _
+        = ∫ t : ℝ × ℝ × ℝ, ∑' a : AIdx D, initialTripleMellinSummand₀ (f.val, a) t :=
           integral_congr_ae
             (Filter.Eventually.of_forall fun t => rawInit_eq_tsum D f.val Z hZ t)
-      _ = _ := h.symm
+      _ = _ := (integral_tsum_of_summable_integral_norm (fun a : AIdx D => hint (f.val, a))
+        (hsum.prod_factor f.val)).symm
   unfold rawinitialRowIntegral
   rw [hrow, tsum_mul_left]
   rfl

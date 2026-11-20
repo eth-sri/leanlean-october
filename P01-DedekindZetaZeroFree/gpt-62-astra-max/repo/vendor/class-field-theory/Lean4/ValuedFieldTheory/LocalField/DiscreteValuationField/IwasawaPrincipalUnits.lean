@@ -16,14 +16,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -85,22 +77,13 @@ noncomputable def iwasawaResidueBasis (F : LocalField.{u, v} K) :
       (ZMod F.residueCharacteristic) F.residueField :=
   Module.finBasis (ZMod F.residueCharacteristic) F.residueField
 
-/-- The rank chosen above is the exponent in the finite-field cardinality
-identity `q = p^f`. -/
-theorem residueField_card_eq_residueCharacteristic_pow_iwasawaResidueRank
-    (F : LocalField.{u, v} K) :
-    Nat.card F.residueField =
-      F.residueCharacteristic ^ iwasawaResidueRank F := by
-  simpa [iwasawaResidueRank, Nat.card_zmod] using
-    (Module.natCard_eq_pow_finrank
-      (K := ZMod F.residueCharacteristic) (V := F.residueField))
+section
+
+variable (F : LocalField.{u, v} K) {pi : F.valuationSubring} (hpi : F.valuation.IsUniformizer (pi : K))
+    (n : ℕ) (i : Fin (iwasawaResidueRank F))
 
 /-- The element `[omega_i] pi^n` of the `n`-th maximal-ideal power. -/
-noncomputable def iwasawaSeedIdeal
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (i : Fin (iwasawaResidueRank F)) :
+noncomputable def iwasawaSeedIdeal :
     ((F.maximalIdeal ^ n : Ideal F.valuationSubring) : Type u) :=
   DVF.maximalIdealPowMulUniformizerPowMap F.toDVF hpi n
     (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.residueTeichmullerLift F.toCompleteDVF
@@ -111,22 +94,21 @@ Establishes the identity `(iwasawaSeedIdeal F hpi n i : F.valuationSubring) =
 CompleteDVF.higherPrincipalUnitGroup.residueTeichmullerLift F.toCompleteDVF (iwasawaResidueBasis F
 i) * pi ^ n`.
 -/
-@[simp] theorem iwasawaSeedIdeal_val
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (i : Fin (iwasawaResidueRank F)) :
+@[simp] theorem iwasawaSeedIdeal_val :
     (iwasawaSeedIdeal F hpi n i : F.valuationSubring) =
       LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.residueTeichmullerLift F.toCompleteDVF
           (iwasawaResidueBasis F i) * pi ^ n :=
   rfl
 
+end
+
+section
+
+variable (F : LocalField.{u, v} K) {pi : F.valuationSubring} (hpi : F.valuation.IsUniformizer (pi : K))
+    (n : ℕ) (hn : 1 ≤ n) (i : Fin (iwasawaResidueRank F))
+
 /-- The generator `1 + [omega_i] pi^n`, first as an element of `U^n`. -/
-noncomputable def iwasawaSeedAtLevel
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (i : Fin (iwasawaResidueRank F)) :
+noncomputable def iwasawaSeedAtLevel :
     ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n :=
   LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.principalUnitOneAddOfMemPowSubgroup
     F.toCompleteDVF hn (iwasawaSeedIdeal F hpi n i)
@@ -138,49 +120,23 @@ Establishes the identity `(((iwasawaSeedAtLevel F hpi n hn i :
 F.valuationSubring) = 1 + CompleteDVF.higherPrincipalUnitGroup.residueTeichmullerLift
 F.toCompleteDVF (iwasawaResidueBasis F i) * pi ^ n`.
 -/
-@[simp] theorem iwasawaSeedAtLevel_val
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (i : Fin (iwasawaResidueRank F)) :
+@[simp] theorem iwasawaSeedAtLevel_val :
     (((iwasawaSeedAtLevel F hpi n hn i :
         ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n) : F.valuationSubringˣ) :
       F.valuationSubring) =
       1 + LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.residueTeichmullerLift F.toCompleteDVF
           (iwasawaResidueBasis F i) * pi ^ n := by
-  rw [iwasawaSeedAtLevel,
-    LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.principalUnitOneAddOfMemPowSubgroup_val,
-    LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.principalUnitOneAddOfMemPow_val]
   rfl
 
 /-- The same generator regarded as a first principal unit, so that the
 canonical p-adic scalar action is available. -/
-noncomputable def iwasawaSeed
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (i : Fin (iwasawaResidueRank F)) :
+noncomputable def iwasawaSeed :
     ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1 :=
   ⟨(iwasawaSeedAtLevel F hpi n hn i : F.valuationSubringˣ),
     LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.antitone F.toCompleteDVF hn
       (iwasawaSeedAtLevel F hpi n hn i).property⟩
 
-/--
-Establishes the identity `(((iwasawaSeed F hpi n hn i : ((CompleteDVF.higherPrincipalUnitGroup
-F.toCompleteDVF)) 1) : F.valuationSubringˣ) : F.valuationSubring) = 1 +
-CompleteDVF.higherPrincipalUnitGroup.residueTeichmullerLift F.toCompleteDVF (iwasawaResidueBasis F
-i) * pi ^ n`.
--/
-@[simp] theorem iwasawaSeed_val
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (i : Fin (iwasawaResidueRank F)) :
-    (((iwasawaSeed F hpi n hn i : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1) :
-        F.valuationSubringˣ) : F.valuationSubring) =
-      1 + LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.residueTeichmullerLift F.toCompleteDVF
-          (iwasawaResidueBasis F i) * pi ^ n := by
-  exact iwasawaSeedAtLevel_val F hpi n hn i
+end
 
 /-- The leading coefficient of `1 + [omega_i] pi^n` in
 `U^n/U^(n+1)` is exactly the basis vector `omega_i`. -/
@@ -195,19 +151,16 @@ i) * pi ^ n`.
         (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.principalUnitSuccQuotMk F.toCompleteDVF n
           (iwasawaSeedAtLevel F hpi n hn i))) =
       iwasawaResidueBasis F i := by
-  let r : F.valuationSubring :=
+  let r :=
     LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.residueTeichmullerLift F.toCompleteDVF
       (iwasawaResidueBasis F i)
   let e :=
     LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.principalUnitSuccQuotAddEquivResidueOfUniformizer
       F.toCompleteDVF hpi n hn
-  have hs :=
-    LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.principalUnitSuccQuotAddEquivResidueOfUniformizer_symm_residue
-      F.toCompleteDVF hpi n hn r
-  have he := congrArg e hs
   simpa [e, r, iwasawaSeedAtLevel, iwasawaSeedIdeal,
     LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.principalUnitSuccQuotOfIdealPow_apply,
-    LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.residueMap_residueTeichmullerLift] using he.symm
+    LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.residueMap_residueTeichmullerLift] using (congrArg e (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.principalUnitSuccQuotAddEquivResidueOfUniformizer_symm_residue
+      F.toCompleteDVF hpi n hn r)).symm
 
 /-- The basis-coordinate form of the leading-layer calculation.  This is the
 linear algebra behind formula (1) at `s = 0`: the chosen `f` seed units give
@@ -245,32 +198,14 @@ Establishes the identity `iwasawaLeadingLayerAddEquiv F hpi n hn (Pi.single i 1)
     (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.principalUnitSuccQuotMk F.toCompleteDVF n
       (iwasawaSeedAtLevel F hpi n hn i))
   calc
-    iwasawaLeadingLayerAddEquiv F hpi n hn (Pi.single i 1) =
+    _ =
         e.symm ((iwasawaResidueBasis F).equivFun.symm (Pi.single i 1)) := rfl
     _ = e.symm (iwasawaResidueBasis F i) := by
-      rw [Basis.equivFun_symm_single]
-    _ = e.symm (e z) := by
-      exact congrArg e.symm
+      simp
+    _ = e.symm (e z) := congrArg e.symm
         (principalUnitSuccQuotAddEquivResidue_iwasawaSeed
           F hpi n hn i).symm
     _ = z := e.symm_apply_apply z
-
-/--
-Characterizes `iwasawaLeadingLayerAddEquiv F hpi n hn a = 0` by the equivalent condition `a = 0`.
--/
-theorem iwasawaLeadingLayerAddEquiv_eq_zero_iff
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n)
-    (a : Fin (iwasawaResidueRank F) → ZMod F.residueCharacteristic) :
-    iwasawaLeadingLayerAddEquiv F hpi n hn a = 0 ↔ a = 0 := by
-  constructor
-  · intro ha
-    apply (iwasawaLeadingLayerAddEquiv F hpi n hn).injective
-    simpa using ha
-  · rintro rfl
-    exact map_zero _
 
 /-! ## Reduction of p-adic exponents on one graded layer -/
 
@@ -286,9 +221,7 @@ theorem exists_padicInt_sub_toZMod_val_eq_residueCharacteristic_mul
   rw [PadicInt.maximalIdeal_eq_span_p] at h
   rw [Ideal.mem_span_singleton] at h
   obtain ⟨b, hb⟩ := h
-  refine ⟨b, ?_⟩
-  rw [ZMod.cast_eq_val] at hb
-  simpa [mul_comm] using hb
+  simp_all [ZMod.cast_eq_val, mul_comm]
 
 /-- A p-adic power of a first principal unit, remembered at a specified
 higher-unit level. -/
@@ -336,17 +269,17 @@ theorem principalUnitSuccQuotMk_padicSmulAtLevel_eq_toZMod_val
             Additive.ofMul x) : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1) :
       ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1) : F.valuationSubringˣ) ∈
         ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) (r + 1)
-  have hsub := sub_smul a
+  rw [(sub_smul a
     ((PadicInt.toZMod a).val : ℤ_[F.residueCharacteristic])
-    (Additive.ofMul x)
-  rw [hsub] at hdeep
+    (Additive.ofMul x))] at hdeep
   exact hdeep
+
+section
+
+variable (F : LocalField.{u, v} K) {pi : F.valuationSubring} (hpi : F.valuation.IsUniformizer (pi : K))
 
 /-- The leading coefficient map `U^r -> k`, written additively. -/
 noncomputable def principalUnitLeadingCoefficientAddHom
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
     (r : ℕ) (hr : 1 ≤ r) :
     Additive (((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) r) →+ F.residueField :=
   (principalUnitSuccQuotAddEquivResidueOfUniformizer
@@ -354,8 +287,6 @@ noncomputable def principalUnitLeadingCoefficientAddHom
     { toFun := fun x => Additive.ofMul
         (principalUnitSuccQuotMk F.toCompleteDVF r (Additive.toMul x))
       map_zero' := by
-        change Additive.ofMul
-            (principalUnitSuccQuotMk F.toCompleteDVF r 1) = 0
         simp
       map_add' := by
         intro x y
@@ -375,9 +306,6 @@ equivalent condition `((x : F.valuationSubringˣ) : F.valuationSubringˣ) ∈
 ((CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) (n + 1)`.
 -/
 theorem principalUnitLeadingCoefficientAddHom_eq_zero_iff_mem_succ
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
     (n : ℕ) (hn : 1 ≤ n) (x : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n) :
     principalUnitLeadingCoefficientAddHom F hpi n hn (Additive.ofMul x) = 0 ↔
       ((x : F.valuationSubringˣ) : F.valuationSubringˣ) ∈
@@ -391,12 +319,11 @@ theorem principalUnitLeadingCoefficientAddHom_eq_zero_iff_mem_succ
     have hqadd : Additive.ofMul q = 0 := by
       apply e.injective
       simpa using h
-    have hq : q = 1 := Additive.ofMul.injective hqadd
-    exact (principalUnitSuccQuotMk_eq_one_iff F.toCompleteDVF n x).1 hq
+    exact (principalUnitSuccQuotMk_eq_one_iff F.toCompleteDVF n x).mp (Equiv.injective Additive.ofMul hqadd)
   · intro hx
-    have hq : q = 1 :=
-      (principalUnitSuccQuotMk_eq_one_iff F.toCompleteDVF n x).2 hx
-    simp [hq]
+    simpa using (principalUnitSuccQuotMk_eq_one_iff F.toCompleteDVF n x).2 hx
+
+end
 
 /-- Reduction modulo `p` detects divisibility by `p` in `Z_p`. -/
 theorem padicInt_toZMod_eq_zero_iff_exists_residueCharacteristic_mul
@@ -407,12 +334,10 @@ theorem padicInt_toZMod_eq_zero_iff_exists_residueCharacteristic_mul
   constructor
   · intro ha
     have hker : a ∈ RingHom.ker
-        (PadicInt.toZMod : ℤ_[F.residueCharacteristic] →+*
-          ZMod F.residueCharacteristic) := ha
+        PadicInt.toZMod := ha
     rw [PadicInt.ker_toZMod, PadicInt.maximalIdeal_eq_span_p,
       Ideal.mem_span_singleton] at hker
-    obtain ⟨b, hb⟩ := hker
-    exact ⟨b, by simpa [mul_comm] using hb⟩
+    assumption
   · rintro ⟨b, rfl⟩
     simp
 
@@ -432,10 +357,7 @@ theorem exists_residueCharacteristic_smul_eq_iff_toZMod_eq_zero
     choose b hb using fun i =>
       (padicInt_toZMod_eq_zero_iff_exists_residueCharacteristic_mul
         F (a i)).1 (h i)
-    refine ⟨b, funext fun i => ?_⟩
-    change a i = (F.residueCharacteristic :
-      ℤ_[F.residueCharacteristic]) * b i
-    exact hb i
+    solve_by_elim [funext, hb]
 
 /-- The residue-basis combination is zero exactly when all reduced
 coordinates are zero. -/
@@ -451,18 +373,16 @@ theorem iwasawa_residue_combination_eq_zero_iff
       apply (iwasawaResidueBasis F).equivFun.symm.injective
       simpa using h
     exact congrFun hf i
-  · intro h
-    have hf : (fun i => PadicInt.toZMod (a i)) = 0 :=
-      funext fun i => h i
-    rw [hf, map_zero]
+  simp_all
+
+section
+
+variable (F : LocalField.{u, v} K) {pi : F.valuationSubring} (hpi : F.valuation.IsUniformizer (pi : K))
+    (n : ℕ) (hn : 1 ≤ n) (r : F.valuationSubring)
 
 /-- The principal unit `1 + r*pi^n`, used as a canonical representative of
 a prescribed leading residue coefficient. -/
-noncomputable def principalUnitOneAddUniformizerPowAtLevel
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (r : F.valuationSubring) :
+noncomputable def principalUnitOneAddUniformizerPowAtLevel :
     ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n :=
   principalUnitOneAddOfMemPowSubgroup F.toCompleteDVF hn
     (DVF.maximalIdealPowMulUniformizerPowMap F.toDVF hpi n r)
@@ -473,40 +393,29 @@ Establishes the identity `(((principalUnitOneAddUniformizerPowAtLevel F hpi n hn
 ((CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n) : F.valuationSubringˣ) :
 F.valuationSubring) = 1 + r * pi ^ n`.
 -/
-@[simp] theorem principalUnitOneAddUniformizerPowAtLevel_val
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (r : F.valuationSubring) :
+@[simp] theorem principalUnitOneAddUniformizerPowAtLevel_val :
     (((principalUnitOneAddUniformizerPowAtLevel F hpi n hn r :
         ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n) : F.valuationSubringˣ) :
       F.valuationSubring) = 1 + r * pi ^ n := by
-  rw [principalUnitOneAddUniformizerPowAtLevel,
-    principalUnitOneAddOfMemPowSubgroup_val,
-    principalUnitOneAddOfMemPow_val]
   rfl
 
 /-- The leading coefficient of `1 + r*pi^n` is the residue of `r`. -/
-@[simp] theorem principalUnitLeadingCoefficientAddHom_oneAddUniformizerPow
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (r : F.valuationSubring) :
+@[simp] theorem principalUnitLeadingCoefficientAddHom_oneAddUniformizerPow :
     principalUnitLeadingCoefficientAddHom F hpi n hn
         (Additive.ofMul
           (principalUnitOneAddUniformizerPowAtLevel F hpi n hn r)) =
       F.residueMap r := by
   let e := principalUnitSuccQuotAddEquivResidueOfUniformizer
     F.toCompleteDVF hpi n hn
-  have hs :=
-    principalUnitSuccQuotAddEquivResidueOfUniformizer_symm_residue
-      F.toCompleteDVF hpi n hn r
   change e
       (Additive.ofMul
         (principalUnitSuccQuotOfIdealPow F.toCompleteDVF n hn
           (DVF.maximalIdealPowMulUniformizerPowMap F.toDVF hpi n r))) =
     F.residueMap r
-  rw [← hs, e.apply_symm_apply]
+  rw [← (principalUnitSuccQuotAddEquivResidueOfUniformizer_symm_residue
+    F.toCompleteDVF hpi n hn r), e.apply_symm_apply]
+
+end
 
 /-- In equal characteristic, a `p^s`-th power sends `U^n` into
 `U^(n*p^s)`.  This is the depth multiplication used in both (1) and (2). -/
@@ -522,24 +431,19 @@ theorem pow_residueCharacteristic_pow_mem_higher_mul
         ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF))
           (n * F.residueCharacteristic ^ s) := by
   rw [LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.mem_iff]
-  have ha :
-      (((x : F.valuationSubringˣ) : F.valuationSubring) - 1) ∈
-        F.maximalIdeal ^ n :=
-    (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.mem_iff F.toCompleteDVF n
-      (x : F.valuationSubringˣ)).1 hx
   have hapow :
       ((((x : F.valuationSubringˣ) : F.valuationSubring) - 1) ^
           (F.residueCharacteristic ^ s)) ∈
         F.maximalIdeal ^ (n * F.residueCharacteristic ^ s) := by
-    have h := Ideal.pow_mem_pow ha (F.residueCharacteristic ^ s)
-    simpa [pow_mul] using h
+    simpa [pow_mul] using (Ideal.pow_mem_pow ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.mem_iff F.toCompleteDVF n
+      (x : F.valuationSubringˣ)).1 hx) (F.residueCharacteristic ^ s))
   have heq :
       ((((x ^ (F.residueCharacteristic ^ s) :
           ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1) : F.valuationSubringˣ) :
         F.valuationSubring) - 1) =
         (((x : F.valuationSubringˣ) : F.valuationSubring) - 1) ^
           (F.residueCharacteristic ^ s) := by
-    let z : F.valuationSubring :=
+    let z :=
       ((x : F.valuationSubringˣ) : F.valuationSubring) - 1
     have hxz : ((x : F.valuationSubringˣ) : F.valuationSubring) = 1 + z := by
       dsimp [z]
@@ -553,26 +457,25 @@ theorem pow_residueCharacteristic_pow_mem_higher_mul
   rw [heq]
   exact hapow
 
+section
+
+variable (F : LocalField.{u, v} K)
+
 /-- Inclusion `U^n -> U^1`. -/
-def higherUnitToFirst
-    (F : LocalField.{u, v} K) (n : ℕ) (hn : 1 ≤ n)
+def higherUnitToFirst (n : ℕ) (hn : 1 ≤ n)
     (x : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n) :
     ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1 :=
   ⟨(x : F.valuationSubringˣ),
     LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.antitone F.toCompleteDVF hn x.property⟩
 
 /-- Proves the bound `1 ≤ n * F.residueCharacteristic ^ s`. -/
-theorem one_le_mul_residueCharacteristic_pow
-    (F : LocalField.{u, v} K) {n : ℕ} (hn : 1 ≤ n) (s : ℕ) :
+theorem one_le_mul_residueCharacteristic_pow {n : ℕ} (hn : 1 ≤ n) (s : ℕ) :
     1 ≤ n * F.residueCharacteristic ^ s := by
-  have hp : 0 < F.residueCharacteristic ^ s :=
-    pow_pos F.residueCharacteristic_prime.pos s
-  exact Nat.mul_pos (lt_of_lt_of_le Nat.zero_lt_one hn) hp
+  exact Nat.mul_pos (lt_of_lt_of_le Nat.zero_lt_one hn) (pow_pos F.residueCharacteristic_prime.pos s)
 
 /-- A `p^s`-th power from `U^n`, with its exact equal-characteristic depth
 `n*p^s` built into the codomain. -/
 noncomputable def principalUnitFrobeniusAtLevel
-    (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (n : ℕ) (hn : 1 ≤ n) (s : ℕ)
     (x : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n) :
@@ -582,14 +485,16 @@ noncomputable def principalUnitFrobeniusAtLevel
     pow_residueCharacteristic_pow_mem_higher_mul F s
       (higherUnitToFirst F n hn x) x.property⟩
 
+end
+
+section
+
+variable (F : LocalField.{u, v} K) [CharP K F.residueCharacteristic] {pi : F.valuationSubring}
+    (hpi : F.valuation.IsUniformizer (pi : K)) (n : ℕ) (hn : 1 ≤ n) (s : ℕ)
+
 /-- Frobenius on a canonical representative:
 `(1+r*pi^n)^(p^s) = 1+r^(p^s) pi^(n*p^s)`. -/
-theorem principalUnitFrobeniusAtLevel_oneAddUniformizerPow
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (s : ℕ) (r : F.valuationSubring) :
+theorem principalUnitFrobeniusAtLevel_oneAddUniformizerPow (r : F.valuationSubring) :
     let m := n * F.residueCharacteristic ^ s
     let hm : 1 ≤ m := one_le_mul_residueCharacteristic_pow F hn s
     principalUnitFrobeniusAtLevel F n hn s
@@ -609,11 +514,6 @@ theorem principalUnitFrobeniusAtLevel_oneAddUniformizerPow
 /-- Frobenius raises the leading residue coefficient to its `p^s`-th
 power. -/
 theorem principalUnitLeadingCoefficientAddHom_frobenius
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (s : ℕ)
     (x : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n) :
     let m := n * F.residueCharacteristic ^ s
     let hm : 1 ≤ m := one_le_mul_residueCharacteristic_pow F hn s
@@ -622,17 +522,14 @@ theorem principalUnitLeadingCoefficientAddHom_frobenius
       (principalUnitLeadingCoefficientAddHom F hpi n hn
         (Additive.ofMul x)) ^ (F.residueCharacteristic ^ s) := by
   dsimp only
-  let q : ℕ := F.residueCharacteristic ^ s
-  let m : ℕ := n * q
-  have hq : 1 ≤ q := by
-    exact pow_pos F.residueCharacteristic_prime.pos s
-  have hm : 1 ≤ m := by
-    exact one_le_mul_residueCharacteristic_pow F hn s
-  let lead : F.residueField :=
+  let q := F.residueCharacteristic ^ s
+  let m := n * q
+  have hm := one_le_mul_residueCharacteristic_pow F hn s
+  let lead :=
     principalUnitLeadingCoefficientAddHom F hpi n hn (Additive.ofMul x)
-  let r : F.valuationSubring :=
+  let r :=
     residueTeichmullerLift F.toCompleteDVF lead
-  let y : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n :=
+  let y :=
     principalUnitOneAddUniformizerPowAtLevel F hpi n hn r
   have hyLead :
       principalUnitLeadingCoefficientAddHom F hpi n hn
@@ -648,26 +545,21 @@ theorem principalUnitLeadingCoefficientAddHom_frobenius
       principalUnitLeadingCoefficientAddHom F hpi n hn (Additive.ofMul x) =
         principalUnitLeadingCoefficientAddHom F hpi n hn (Additive.ofMul y)
     exact hyLead.symm
-  have hxyDeep :
-      (((x / y : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n) : F.valuationSubringˣ) :
-        F.valuationSubringˣ) ∈ ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) (n + 1) :=
-    (principalUnitSuccQuotMk_eq_iff_div_mem F.toCompleteDVF n x y).1 hxyQuot
   let d : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) (n + 1) :=
-    ⟨((x / y : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n) : F.valuationSubringˣ), hxyDeep⟩
-  have hdPow := pow_residueCharacteristic_pow_mem_higher_mul F s
-    (higherUnitToFirst F (n + 1) (Nat.succ_le_succ (Nat.zero_le n)) d)
-    d.property
+    ⟨((x / y : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n) : F.valuationSubringˣ), ((principalUnitSuccQuotMk_eq_iff_div_mem F.toCompleteDVF n x y).1 hxyQuot)⟩
   have hlevel : m + 1 ≤ (n + 1) * q := by
     calc
-      m + 1 ≤ m + q := Nat.add_le_add_left hq m
-      _ = (n + 1) * q := by simp [m, Nat.add_mul]
+      m + 1 ≤ m + q := Nat.add_le_add_left (pow_pos F.residueCharacteristic_prime.pos s) m
+      _ = (n + 1) * q := by ring
   have hdPow' :
       ((((higherUnitToFirst F (n + 1)
           (Nat.succ_le_succ (Nat.zero_le n)) d) ^ q :
           ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1) : F.valuationSubringˣ) :
         F.valuationSubringˣ) ∈ ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) (m + 1) :=
     LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.antitone F.toCompleteDVF hlevel (by
-      simpa [q] using hdPow)
+      exact (pow_residueCharacteristic_pow_mem_higher_mul F s
+        (higherUnitToFirst F (n + 1) (Nat.succ_le_succ (Nat.zero_le n)) d)
+        d.property))
   have hpowQuot :
       principalUnitSuccQuotMk F.toCompleteDVF m
           (principalUnitFrobeniusAtLevel F n hn s x) =
@@ -692,23 +584,10 @@ theorem principalUnitLeadingCoefficientAddHom_frobenius
           F.toCompleteDVF hpi m hm) (Additive.ofMul z)) hpowQuot
   rw [hleadEq, principalUnitFrobeniusAtLevel_oneAddUniformizerPow,
     principalUnitLeadingCoefficientAddHom_oneAddUniformizerPow, map_pow]
-  change F.residueMap r ^ q = lead ^ q
   rw [show F.residueMap r = lead from
     residueMap_residueTeichmullerLift F.toCompleteDVF lead]
 
-/--
-Establishes the identity `principalUnitLeadingCoefficientAddHom F hpi r hr (Additive.ofMul
-(iwasawaSeedAtLevel F hpi r hr i)) = iwasawaResidueBasis F i`.
--/
-@[simp] theorem principalUnitLeadingCoefficientAddHom_iwasawaSeed
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (r : ℕ) (hr : 1 ≤ r) (i : Fin (iwasawaResidueRank F)) :
-    principalUnitLeadingCoefficientAddHom F hpi r hr
-        (Additive.ofMul (iwasawaSeedAtLevel F hpi r hr i)) =
-      iwasawaResidueBasis F i :=
-  principalUnitSuccQuotAddEquivResidue_iwasawaSeed F hpi r hr i
+end
 
 /-- The leading coefficient of one p-adically powered seed only depends on
 the exponent modulo `p`. -/
@@ -726,22 +605,23 @@ theorem principalUnitLeadingCoefficientAddHom_padicSmul_iwasawaSeed
             (iwasawaSeedAtLevel F hpi r hr i).property)) =
       PadicInt.toZMod a •
         iwasawaResidueBasis F i := by
-  let k : ℕ := (PadicInt.toZMod a).val
+  let k := (PadicInt.toZMod a).val
+  let iwasawaSeedAtLevel₀ := iwasawaSeedAtLevel F hpi r hr i
   let xa := principalUnitPadicSmulAtLevel F r hr a
     (iwasawaSeed F hpi r hr i)
-    (iwasawaSeedAtLevel F hpi r hr i).property
+    (iwasawaSeedAtLevel₀).property
   let xk := principalUnitPadicSmulAtLevel F r hr
-    (k : ℤ_[F.residueCharacteristic])
+    k
     (iwasawaSeed F hpi r hr i)
-    (iwasawaSeedAtLevel F hpi r hr i).property
+    (iwasawaSeedAtLevel₀).property
   have hquot :
       principalUnitSuccQuotMk F.toCompleteDVF r xa =
         principalUnitSuccQuotMk F.toCompleteDVF r xk := by
     simpa [xa, xk, k] using
       principalUnitSuccQuotMk_padicSmulAtLevel_eq_toZMod_val
         F r hr a (iwasawaSeed F hpi r hr i)
-          (iwasawaSeedAtLevel F hpi r hr i).property
-  have hxk : xk = (iwasawaSeedAtLevel F hpi r hr i) ^ k := by
+          (iwasawaSeedAtLevel₀).property
+  have hxk : xk = (iwasawaSeedAtLevel₀) ^ k := by
     apply Subtype.ext
     exact congrArg
       (fun z : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1 => (z : F.valuationSubringˣ))
@@ -757,11 +637,11 @@ theorem principalUnitLeadingCoefficientAddHom_padicSmul_iwasawaSeed
       F.toCompleteDVF hpi r hr)
         (k • Additive.ofMul
           (principalUnitSuccQuotMk F.toCompleteDVF r
-            (iwasawaSeedAtLevel F hpi r hr i))) = _
+            (iwasawaSeedAtLevel₀))) = _
   rw [map_nsmul,
     principalUnitSuccQuotAddEquivResidue_iwasawaSeed]
   calc
-    k • iwasawaResidueBasis F i =
+    _ =
         (k : ZMod F.residueCharacteristic) • iwasawaResidueBasis F i :=
       (Nat.cast_smul_eq_nsmul
         (R := ZMod F.residueCharacteristic) k
@@ -843,16 +723,17 @@ noncomputable def iwasawaGnAtLevel
       ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1),
     iwasawaGn_mem_higher F hpi n hn a⟩
 
+section
+
+variable (F : LocalField.{u, v} K) {pi : F.valuationSubring} (hpi : F.valuation.IsUniformizer (pi : K))
+    (n : ℕ) (hn : 1 ≤ n)
+
 /--
 Establishes the identity `Additive.ofMul (iwasawaGnAtLevel F hpi n hn a) = ∑ i, Additive.ofMul
 (principalUnitPadicSmulAtLevel F n hn (a i) (iwasawaSeed F hpi n hn i) (iwasawaSeedAtLevel F hpi n
 hn i).property)`.
 -/
 theorem additive_iwasawaGnAtLevel_eq_sum
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n)
     (a : Fin (iwasawaResidueRank F) → ℤ_[F.residueCharacteristic]) :
     Additive.ofMul (iwasawaGnAtLevel F hpi n hn a) =
       ∑ i, Additive.ofMul
@@ -903,23 +784,19 @@ theorem additive_iwasawaGnAtLevel_eq_sum
                   (iwasawaSeedAtLevel F hpi n hn i).property :
                 ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n) : F.valuationSubringˣ) := rfl
         rw [hfirst, ih]
-  simpa only [Finset.sum_filter, Finset.mem_univ, ↓reduceIte] using
-    hsum (Finset.univ : Finset (Fin (iwasawaResidueRank F)))
+  simpa using
+    hsum Finset.univ
 
 /-- The exact leading coefficient of `g_n(a)`: it is the residue-basis
 linear combination of the reductions of the p-adic coordinates. -/
 theorem principalUnitLeadingCoefficientAddHom_iwasawaGnAtLevel
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n)
     (a : Fin (iwasawaResidueRank F) → ℤ_[F.residueCharacteristic]) :
     principalUnitLeadingCoefficientAddHom F hpi n hn
         (Additive.ofMul (iwasawaGnAtLevel F hpi n hn a)) =
       ∑ i,
         PadicInt.toZMod (a i) •
           iwasawaResidueBasis F i := by
-  rw [additive_iwasawaGnAtLevel_eq_sum, map_sum]
+  simp [additive_iwasawaGnAtLevel_eq_sum]
   apply Finset.sum_congr rfl
   intro i _hi
   exact principalUnitLeadingCoefficientAddHom_padicSmul_iwasawaSeed
@@ -927,11 +804,7 @@ theorem principalUnitLeadingCoefficientAddHom_iwasawaGnAtLevel
 
 /-- Multiplying every coordinate by the ordinary scalar `p^s` turns `g_n`
 into the ordinary `p^s`-th power of `g_n(a)`. -/
-theorem iwasawaGn_residueCharacteristic_pow_smul_eq_pow
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (s : ℕ)
+theorem iwasawaGn_residueCharacteristic_pow_smul_eq_pow (s : ℕ)
     (a : Fin (iwasawaResidueRank F) → ℤ_[F.residueCharacteristic]) :
     Additive.toMul
         (iwasawaGn F hpi n hn
@@ -945,22 +818,21 @@ theorem iwasawaGn_residueCharacteristic_pow_smul_eq_pow
       ((iwasawaGn F hpi n hn).toFun
         ((F.residueCharacteristic ^ s : ℤ_[F.residueCharacteristic]) • a)) = _
   rw [hlinear]
-  change Additive.toMul
-      ((F.residueCharacteristic ^ s : ℤ_[F.residueCharacteristic]) •
-        Additive.ofMul (Additive.toMul (iwasawaGn F hpi n hn a))) = _
-  simpa only [Nat.cast_pow] using
+  simpa using
     principalUnitPadic_nsmul_eq_pow F
       (F.residueCharacteristic ^ s)
       (Additive.toMul (iwasawaGn F hpi n hn a))
 
+end
+
+section
+
+variable (F : LocalField.{u, v} K) [CharP K F.residueCharacteristic] {pi : F.valuationSubring}
+    (hpi : F.valuation.IsUniformizer (pi : K)) (n : ℕ) (hn : 1 ≤ n) (s : ℕ)
+
 /-- The canonical `g_n(p^s a)`, with the exact depth `m = n*p^s` built into
 its type. -/
 noncomputable def iwasawaGnScaledAtLevel
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (s : ℕ)
     (a : Fin (iwasawaResidueRank F) → ℤ_[F.residueCharacteristic]) :
     ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF))
       (n * F.residueCharacteristic ^ s) :=
@@ -979,11 +851,6 @@ Establishes the identity `iwasawaGnScaledAtLevel F hpi n hn s a = principalUnitF
 n hn s (iwasawaGnAtLevel F hpi n hn a)`.
 -/
 theorem iwasawaGnScaledAtLevel_eq_frobenius
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (s : ℕ)
     (a : Fin (iwasawaResidueRank F) → ℤ_[F.residueCharacteristic]) :
     iwasawaGnScaledAtLevel F hpi n hn s a =
       principalUnitFrobeniusAtLevel F n hn s
@@ -997,11 +864,6 @@ theorem iwasawaGnScaledAtLevel_eq_frobenius
 the leading coefficient of `g_n(p^s a)` is the `p^s`-th power of the
 residue-basis combination represented by `a`. -/
 theorem principalUnitLeadingCoefficientAddHom_iwasawaGnScaledAtLevel
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (s : ℕ)
     (a : Fin (iwasawaResidueRank F) → ℤ_[F.residueCharacteristic]) :
     let m := n * F.residueCharacteristic ^ s
     let hm : 1 ≤ m := one_le_mul_residueCharacteristic_pow F hn s
@@ -1009,19 +871,11 @@ theorem principalUnitLeadingCoefficientAddHom_iwasawaGnScaledAtLevel
         (Additive.ofMul (iwasawaGnScaledAtLevel F hpi n hn s a)) =
       (∑ i, PadicInt.toZMod (a i) • iwasawaResidueBasis F i) ^
         (F.residueCharacteristic ^ s) := by
-  dsimp only
-  rw [iwasawaGnScaledAtLevel_eq_frobenius,
-    principalUnitLeadingCoefficientAddHom_frobenius,
-    principalUnitLeadingCoefficientAddHom_iwasawaGnAtLevel]
+  simp [iwasawaGnScaledAtLevel_eq_frobenius, principalUnitLeadingCoefficientAddHom_frobenius, principalUnitLeadingCoefficientAddHom_iwasawaGnAtLevel]
 
 /-- The first coefficient congruence, for `m = n*p^s`:
 `U^m = g_n(p^s Z_p^f) U^(m+1)`. -/
 theorem exists_iwasawaGnScaled_mul_mem_succ
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (s : ℕ)
     (x : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF))
       (n * F.residueCharacteristic ^ s)) :
     ∃ a : Fin (iwasawaResidueRank F) →
@@ -1032,38 +886,35 @@ theorem exists_iwasawaGnScaled_mul_mem_succ
         F.valuationSubringˣ) ∈
           ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF))
             (n * F.residueCharacteristic ^ s + 1) := by
-  let m : ℕ := n * F.residueCharacteristic ^ s
-  have hm : 1 ≤ m := one_le_mul_residueCharacteristic_pow F hn s
-  let lead : F.residueField :=
+  let m := n * F.residueCharacteristic ^ s
+  have hm := one_le_mul_residueCharacteristic_pow F hn s
+  let lead :=
     principalUnitLeadingCoefficientAddHom F hpi m hm (Additive.ofMul x)
-  let beta : F.residueField :=
+  let beta :=
     ((frobeniusEquiv F.residueField F.residueCharacteristic).symm^[s]) lead
-  have hbeta : beta ^ (F.residueCharacteristic ^ s) = lead := by
-    exact iterate_frobeniusEquiv_symm_pow_p_pow
+  have hbeta := iterate_frobeniusEquiv_symm_pow_p_pow
       F.residueField F.residueCharacteristic lead s
-  let c : Fin (iwasawaResidueRank F) → ZMod F.residueCharacteristic :=
+  let c :=
     (iwasawaResidueBasis F).equivFun beta
-  let a : Fin (iwasawaResidueRank F) →
-      ℤ_[F.residueCharacteristic] :=
+  let a :=
     fun i => ((c i).val : ℤ_[F.residueCharacteristic])
   refine ⟨a, ?_⟩
   have hcoord :
       (∑ i, PadicInt.toZMod (a i) • iwasawaResidueBasis F i) = beta := by
     have hcmod : ∀ i, PadicInt.toZMod (a i) = c i := by
       intro i
-      change PadicInt.toZMod
-          ((c i).val : ℤ_[F.residueCharacteristic]) = c i
       rw [map_natCast]
       exact ZMod.natCast_zmod_val (c i)
     simp_rw [hcmod]
     simp [c, beta]
+  let iwasawaGnScaledAtLevel₀ := iwasawaGnScaledAtLevel F hpi n hn s a
   have hscaledLead :
       principalUnitLeadingCoefficientAddHom F hpi m hm
-          (Additive.ofMul (iwasawaGnScaledAtLevel F hpi n hn s a)) =
+          (Additive.ofMul (iwasawaGnScaledAtLevel₀)) =
         lead := by
     rw [principalUnitLeadingCoefficientAddHom_iwasawaGnScaledAtLevel,
       hcoord, hbeta]
-  change (x / iwasawaGnScaledAtLevel F hpi n hn s a) ∈
+  change (x / iwasawaGnScaledAtLevel₀) ∈
     (((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) (m + 1)).subgroupOf
       (((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) m)
   apply (principalUnitSuccQuotMk_eq_one_iff F.toCompleteDVF m _).1
@@ -1071,27 +922,22 @@ theorem exists_iwasawaGnScaled_mul_mem_succ
   have hquot :
       principalUnitSuccQuotMk F.toCompleteDVF m x =
         principalUnitSuccQuotMk F.toCompleteDVF m
-          (iwasawaGnScaledAtLevel F hpi n hn s a) := by
+          (iwasawaGnScaledAtLevel₀) := by
     apply (principalUnitSuccQuotAddEquivResidueOfUniformizer
       F.toCompleteDVF hpi m hm).injective
     change
       principalUnitLeadingCoefficientAddHom F hpi m hm (Additive.ofMul x) =
         principalUnitLeadingCoefficientAddHom F hpi m hm
-          (Additive.ofMul (iwasawaGnScaledAtLevel F hpi n hn s a))
+          (Additive.ofMul (iwasawaGnScaledAtLevel₀))
     exact hscaledLead.symm
   rw [hquot]
   exact div_self'
     (principalUnitSuccQuotMk F.toCompleteDVF m
-      (iwasawaGnScaledAtLevel F hpi n hn s a))
+      (iwasawaGnScaledAtLevel₀))
 
 /-- Positive form of formula (2): `g_n(p^s a)` drops into `U^(m+1)`
 exactly when every coordinate of `a` is divisible by `p`. -/
 theorem iwasawaGnScaled_mem_succ_iff_exists_residueCharacteristic_smul
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (s : ℕ)
     (a : Fin (iwasawaResidueRank F) → ℤ_[F.residueCharacteristic]) :
     (((iwasawaGnScaledAtLevel F hpi n hn s a :
         ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF))
@@ -1102,53 +948,42 @@ theorem iwasawaGnScaled_mem_succ_iff_exists_residueCharacteristic_smul
       ∃ b : Fin (iwasawaResidueRank F) →
           ℤ_[F.residueCharacteristic],
         a = (F.residueCharacteristic : ℤ_[F.residueCharacteristic]) • b := by
-  let m : ℕ := n * F.residueCharacteristic ^ s
-  have hm : 1 ≤ m := one_le_mul_residueCharacteristic_pow F hn s
-  let omega : F.residueField :=
+  let m := n * F.residueCharacteristic ^ s
+  have hm := one_le_mul_residueCharacteristic_pow F hn s
+  let omega :=
     ∑ i, PadicInt.toZMod (a i) • iwasawaResidueBasis F i
+  let iwasawaGnScaledAtLevel₀ := iwasawaGnScaledAtLevel F hpi n hn s a
   have hlead :
       principalUnitLeadingCoefficientAddHom F hpi m hm
-          (Additive.ofMul (iwasawaGnScaledAtLevel F hpi n hn s a)) =
+          (Additive.ofMul (iwasawaGnScaledAtLevel₀)) =
         omega ^ (F.residueCharacteristic ^ s) := by
     simpa [m, omega] using
       principalUnitLeadingCoefficientAddHom_iwasawaGnScaledAtLevel
         F hpi n hn s a
-  have hq0 : F.residueCharacteristic ^ s ≠ 0 :=
+  have hq0 :=
     pow_ne_zero s F.residueCharacteristic_prime.ne_zero
   constructor
   · intro hz
-    have hzero :
-        principalUnitLeadingCoefficientAddHom F hpi m hm
-            (Additive.ofMul (iwasawaGnScaledAtLevel F hpi n hn s a)) = 0 :=
+    have hzero :=
       (principalUnitLeadingCoefficientAddHom_eq_zero_iff_mem_succ
-        F hpi m hm (iwasawaGnScaledAtLevel F hpi n hn s a)).2 hz
+        F hpi m hm (iwasawaGnScaledAtLevel₀)).2 hz
     rw [hlead] at hzero
-    have homega : omega = 0 := (pow_eq_zero_iff hq0).1 hzero
-    have hall : ∀ i, PadicInt.toZMod (a i) = 0 :=
-      (iwasawa_residue_combination_eq_zero_iff F a).1 (by
-        simpa [omega] using homega)
-    exact (exists_residueCharacteristic_smul_eq_iff_toZMod_eq_zero F a).2 hall
+    exact (exists_residueCharacteristic_smul_eq_iff_toZMod_eq_zero F a).2 ((iwasawa_residue_combination_eq_zero_iff F a).1 (by
+      exact (pow_eq_zero_iff hq0).mp hzero))
   · intro ha
-    have hall : ∀ i, PadicInt.toZMod (a i) = 0 :=
-      (exists_residueCharacteristic_smul_eq_iff_toZMod_eq_zero F a).1 ha
     have homega : omega = 0 := by
       apply (iwasawa_residue_combination_eq_zero_iff F a).2
-      exact hall
+      exact ((exists_residueCharacteristic_smul_eq_iff_toZMod_eq_zero F a).1 ha)
     have hzero :
         principalUnitLeadingCoefficientAddHom F hpi m hm
-            (Additive.ofMul (iwasawaGnScaledAtLevel F hpi n hn s a)) = 0 := by
+            (Additive.ofMul (iwasawaGnScaledAtLevel₀)) = 0 := by
       rw [hlead, homega]
       exact zero_pow hq0
     exact (principalUnitLeadingCoefficientAddHom_eq_zero_iff_mem_succ
-      F hpi m hm (iwasawaGnScaledAtLevel F hpi n hn s a)).1 hzero
+      F hpi m hm (iwasawaGnScaledAtLevel₀)).1 hzero
 
 /-- The second coefficient congruence. -/
 theorem iwasawa_formula_two
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) (s : ℕ)
     (a : Fin (iwasawaResidueRank F) → ℤ_[F.residueCharacteristic]) :
     (¬ ∃ b : Fin (iwasawaResidueRank F) →
           ℤ_[F.residueCharacteristic],
@@ -1158,10 +993,11 @@ theorem iwasawa_formula_two
             (n * F.residueCharacteristic ^ s)) : F.valuationSubringˣ) :
         F.valuationSubringˣ) ∈
           ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF))
-            (n * F.residueCharacteristic ^ s + 1) := by
-  exact (not_congr
+            (n * F.residueCharacteristic ^ s + 1) := (not_congr
     (iwasawaGnScaled_mem_succ_iff_exists_residueCharacteristic_smul
       F hpi n hn s a)).symm
+
+end
 
 /-! ## Algebraic injectivity of each Iwasawa factor -/
 
@@ -1172,7 +1008,7 @@ theorem padicInt_eq_zero_of_forall_exists_eq_pow_mul
       a = (F.residueCharacteristic : ℤ_[F.residueCharacteristic]) ^ r * b) :
     a = 0 := by
   by_contra ha
-  have hnorm : 0 < ‖a‖ := (norm_pos_iff.mpr ha)
+  have hnorm := (norm_pos_iff.mpr ha)
   obtain ⟨r, hr⟩ := PadicInt.exists_pow_neg_lt
     (p := F.residueCharacteristic) hnorm
   obtain ⟨b, hb⟩ := h r
@@ -1183,129 +1019,11 @@ theorem padicInt_eq_zero_of_forall_exists_eq_pow_mul
           ℤ_[F.residueCharacteristic]) ^ r‖ * ‖b‖ := by
             rw [hb, norm_mul]
       _ ≤ ‖(F.residueCharacteristic :
-          ℤ_[F.residueCharacteristic]) ^ r‖ * 1 := by
-            exact mul_le_mul_of_nonneg_left (PadicInt.norm_le_one b)
+          ℤ_[F.residueCharacteristic]) ^ r‖ * 1 := mul_le_mul_of_nonneg_left (PadicInt.norm_le_one b)
               (norm_nonneg _)
       _ = (F.residueCharacteristic : ℝ) ^ (-(r : ℤ)) := by
-            rw [PadicInt.norm_p_pow, mul_one]
+            simp
   exact (not_lt_of_ge hle) hr
-
-/-- Equal-characteristic first principal units have no `p`-torsion. -/
-theorem principalUnit_residueCharacteristic_smul_eq_zero
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (x : Additive (((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1))
-    (hx : (F.residueCharacteristic :
-        ℤ_[F.residueCharacteristic]) • x = 0) :
-    x = 0 := by
-  let u : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1 := Additive.toMul x
-  have hpowAdd : Additive.ofMul (u ^ F.residueCharacteristic) = 0 := by
-    change (F.residueCharacteristic :
-      ℤ_[F.residueCharacteristic]) • Additive.ofMul u = 0 at hx
-    rw [principalUnitPadic_natCast_smul] at hx
-    exact hx
-  have hpow : u ^ F.residueCharacteristic = 1 :=
-    Additive.ofMul.injective hpowAdd
-  let z : K := (((u : F.valuationSubringˣ) : F.valuationSubring) : K)
-  have hpowK : z ^ F.residueCharacteristic = 1 := by
-    simpa [z] using congrArg
-      (fun w : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1 =>
-        ((((w : F.valuationSubringˣ) : F.valuationSubring) : K))) hpow
-  have hdiffpow : (z - 1) ^ F.residueCharacteristic = 0 := by
-    have hf := sub_pow_char_pow z 1 1
-    simpa [hpowK] using hf
-  have hdiff : z - 1 = 0 :=
-    (pow_eq_zero_iff F.residueCharacteristic_prime.ne_zero).1 hdiffpow
-  have hz : z = 1 := sub_eq_zero.mp hdiff
-  apply Additive.toMul.injective
-  apply Subtype.ext
-  apply Units.ext
-  apply Subtype.ext
-  simpa [u, z] using hz
-
-/-- If `g_n(a)=1`, then all coordinates of `a` are divisible by every
-power of `p`. -/
-theorem forall_exists_iwasawaGn_eq_pow_smul_of_eq_zero
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n)
-    (a : Fin (iwasawaResidueRank F) → ℤ_[F.residueCharacteristic])
-    (ha : iwasawaGn F hpi n hn a = 0) :
-    ∀ r : ℕ, ∃ b : Fin (iwasawaResidueRank F) →
-        ℤ_[F.residueCharacteristic],
-      a = (F.residueCharacteristic ^ r :
-        ℤ_[F.residueCharacteristic]) • b := by
-  have H : ∀ r : ℕ, ∃ b : Fin (iwasawaResidueRank F) →
-      ℤ_[F.residueCharacteristic],
-      a = (F.residueCharacteristic ^ r :
-          ℤ_[F.residueCharacteristic]) • b ∧
-        iwasawaGn F hpi n hn b = 0 := by
-    intro r
-    induction r with
-    | zero =>
-        exact ⟨a, by simp [ha]⟩
-    | succ r ih =>
-        obtain ⟨b, hab, hb⟩ := ih
-        have hscaledMem :
-            (((iwasawaGnScaledAtLevel F hpi n hn 0 b :
-                ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF))
-                  (n * F.residueCharacteristic ^ 0)) : F.valuationSubringˣ) :
-              F.valuationSubringˣ) ∈
-                ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF))
-                  (n * F.residueCharacteristic ^ 0 + 1) := by
-          simp [iwasawaGnScaledAtLevel, hb]
-        obtain ⟨c, hbc⟩ :=
-          (iwasawaGnScaled_mem_succ_iff_exists_residueCharacteristic_smul
-            F hpi n hn 0 b).1 hscaledMem
-        have hgcScalar :
-            (F.residueCharacteristic : ℤ_[F.residueCharacteristic]) •
-              iwasawaGn F hpi n hn c = 0 := by
-          rw [← map_smul, ← hbc, hb]
-        have hgc : iwasawaGn F hpi n hn c = 0 :=
-          principalUnit_residueCharacteristic_smul_eq_zero F
-            (iwasawaGn F hpi n hn c) hgcScalar
-        refine ⟨c, ?_, hgc⟩
-        calc
-          a = (F.residueCharacteristic ^ r :
-              ℤ_[F.residueCharacteristic]) • b := hab
-          _ = (F.residueCharacteristic ^ r :
-              ℤ_[F.residueCharacteristic]) •
-                ((F.residueCharacteristic :
-                    ℤ_[F.residueCharacteristic]) • c) := by rw [hbc]
-          _ = (F.residueCharacteristic ^ (r + 1) :
-              ℤ_[F.residueCharacteristic]) • c := by
-                rw [← mul_smul, pow_succ]
-  intro r
-  obtain ⟨b, hb, _⟩ := H r
-  exact ⟨b, hb⟩
-
-/-- Every individual Iwasawa map `g_n` is injective in equal
-characteristic. -/
-theorem iwasawaGn_injective
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n) :
-    Function.Injective (iwasawaGn F hpi n hn) := by
-  intro a b hab
-  have hzero : iwasawaGn F hpi n hn (a - b) = 0 := by
-    rw [map_sub, hab]
-    exact sub_self _
-  have habzero : a - b = 0 := by
-    apply funext
-    intro i
-    apply padicInt_eq_zero_of_forall_exists_eq_pow_mul F ((a - b) i)
-    intro r
-    obtain ⟨c, hc⟩ :=
-      forall_exists_iwasawaGn_eq_pow_smul_of_eq_zero
-        F hpi n hn (a - b) hzero r
-    refine ⟨c i, ?_⟩
-    have hi := congrFun hc i
-    simpa [Pi.smul_apply] using hi
-  exact sub_eq_zero.mp habzero
 
 /-- A vector of p-adic coefficients is primitive when it is not divisible
 coordinatewise by the residue characteristic. -/
@@ -1344,7 +1062,7 @@ theorem exists_pow_smul_iwasawaPrimitive_of_ne_zero
     obtain ⟨c, hc⟩ := h r
     refine ⟨c i, ?_⟩
     simpa [Pi.smul_apply] using congrFun hc i
-  let r : ℕ := Nat.find hex
+  let r := Nat.find hex
   have hrSpec : ¬ ∃ c : Fin (iwasawaResidueRank F) →
       ℤ_[F.residueCharacteristic],
       a = (F.residueCharacteristic ^ r :
@@ -1355,15 +1073,14 @@ theorem exists_pow_smul_iwasawaPrimitive_of_ne_zero
     apply hrSpec
     refine ⟨a, ?_⟩
     simp [hr]
-  let s : ℕ := r - 1
+  let s := r - 1
   have hsr : s + 1 = r := by
     omega
   have hslt : s < r := by omega
   have hsNot : ¬ (¬ ∃ c : Fin (iwasawaResidueRank F) →
       ℤ_[F.residueCharacteristic],
       a = (F.residueCharacteristic ^ s :
-        ℤ_[F.residueCharacteristic]) • c) := by
-    exact Nat.find_min hex (by simpa [r] using hslt)
+        ℤ_[F.residueCharacteristic]) • c) := Nat.find_min hex (by omega)
   obtain ⟨b, hab⟩ := not_not.mp hsNot
   refine ⟨s, b, hab, ?_⟩
   intro hdiv
@@ -1382,64 +1099,6 @@ theorem exists_pow_smul_iwasawaPrimitive_of_ne_zero
       rw [← mul_smul, pow_succ]
     _ = (F.residueCharacteristic ^ r :
           ℤ_[F.residueCharacteristic]) • c := by rw [hsr]
-
-/-- The first coefficient congruence in the base case `s = 0`:
-`U^n = g_n(Z_p^f) U^(n+1)`. -/
-theorem exists_iwasawaGn_mul_mem_succ
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (n : ℕ) (hn : 1 ≤ n)
-    (x : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n) :
-    ∃ a : Fin (iwasawaResidueRank F) →
-        ℤ_[F.residueCharacteristic],
-      (((x / iwasawaGnAtLevel F hpi n hn a :
-          ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n) : F.valuationSubringˣ) :
-        F.valuationSubringˣ) ∈ ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) (n + 1) := by
-  let lead : F.residueField :=
-    principalUnitLeadingCoefficientAddHom F hpi n hn (Additive.ofMul x)
-  let c : Fin (iwasawaResidueRank F) → ZMod F.residueCharacteristic :=
-    (iwasawaResidueBasis F).equivFun lead
-  let a : Fin (iwasawaResidueRank F) →
-      ℤ_[F.residueCharacteristic] :=
-    fun i => ((c i).val : ℤ_[F.residueCharacteristic])
-  refine ⟨a, ?_⟩
-  have hlead :
-      principalUnitLeadingCoefficientAddHom F hpi n hn
-          (Additive.ofMul (iwasawaGnAtLevel F hpi n hn a)) = lead := by
-    rw [principalUnitLeadingCoefficientAddHom_iwasawaGnAtLevel]
-    change
-      (∑ i, PadicInt.toZMod ((c i).val :
-          ℤ_[F.residueCharacteristic]) • iwasawaResidueBasis F i) = lead
-    have hcmod : ∀ i,
-        PadicInt.toZMod ((c i).val : ℤ_[F.residueCharacteristic]) = c i := by
-      intro i
-      rw [map_natCast]
-      exact ZMod.natCast_zmod_val (c i)
-    simp_rw [hcmod]
-    simp [c, lead]
-  change (x / iwasawaGnAtLevel F hpi n hn a) ∈
-    (((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) (n + 1)).subgroupOf
-      (((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n)
-  apply (principalUnitSuccQuotMk_eq_one_iff F.toCompleteDVF n _).1
-  rw [map_div]
-  have hquot :
-      principalUnitSuccQuotMk F.toCompleteDVF n x =
-        principalUnitSuccQuotMk F.toCompleteDVF n
-          (iwasawaGnAtLevel F hpi n hn a) := by
-    apply
-      (principalUnitSuccQuotAddEquivResidueOfUniformizer
-        F.toCompleteDVF hpi n hn).injective
-    change
-      principalUnitLeadingCoefficientAddHom F hpi n hn
-          (Additive.ofMul x) =
-        principalUnitLeadingCoefficientAddHom F hpi n hn
-          (Additive.ofMul (iwasawaGnAtLevel F hpi n hn a))
-    exact hlead.symm
-  rw [hquot]
-  exact div_self'
-    (principalUnitSuccQuotMk F.toCompleteDVF n
-      (iwasawaGnAtLevel F hpi n hn a))
 
 end higherPrincipalUnitGroup
 end CompleteDVF
@@ -1522,9 +1181,8 @@ theorem exists_minimal_iwasawaDepthWitness_of_ne_zero
         (iwasawaBlock F a d) hd
     exact ⟨d.1 * F.residueCharacteristic ^ s,
       d, s, b, hab, hb, rfl⟩
-  let m : ℕ := Nat.find hex
   obtain ⟨d, s, b, hab, hb, hm⟩ := Nat.find_spec hex
-  refine ⟨m, d, s, b, hab, hb, hm, ?_⟩
+  refine ⟨(Nat.find hex), d, s, b, hab, hb, hm, ?_⟩
   intro e t c hec hc
   apply Nat.find_min' hex
   exact ⟨e, t, c, hec, hc, rfl⟩
@@ -1538,9 +1196,12 @@ noncomputable def iwasawaSingleBlock
   classical
   exact fun j => if j.1 = d then b j.2 else 0
 
+section
+
+variable (F : LocalField.{u, v} K)
+
 /-- Establishes the identity `iwasawaSingleBlock F d b (d, i) = b i`. -/
 @[simp] theorem iwasawaSingleBlock_apply_same
-    (F : LocalField.{u, v} K)
     (d : IwasawaDegree F.residueCharacteristic)
     (b : Fin (iwasawaResidueRank F) → ℤ_[F.residueCharacteristic])
     (i : Fin (iwasawaResidueRank F)) :
@@ -1550,7 +1211,6 @@ noncomputable def iwasawaSingleBlock
 
 /-- Establishes the identity `iwasawaSingleBlock F d b (e, i) = 0`. -/
 @[simp] theorem iwasawaSingleBlock_apply_ne
-    (F : LocalField.{u, v} K)
     {d e : IwasawaDegree F.residueCharacteristic} (hde : e ≠ d)
     (b : Fin (iwasawaResidueRank F) → ℤ_[F.residueCharacteristic])
     (i : Fin (iwasawaResidueRank F)) :
@@ -1559,40 +1219,35 @@ noncomputable def iwasawaSingleBlock
   simp [iwasawaSingleBlock, hde]
 
 /-- Remove the largest residue-characteristic power from a positive depth. -/
-def iwasawaPrimeToPPart (F : LocalField.{u, v} K) (m : ℕ) : ℕ :=
+def iwasawaPrimeToPPart (m : ℕ) : ℕ :=
   m / F.residueCharacteristic ^ padicValNat F.residueCharacteristic m
 
 /-- Every positive depth has the canonical form `m = n*p^s`, with `n`
 positive and prime to `p`. -/
-theorem iwasawaPrimeToPPart_spec
-    (F : LocalField.{u, v} K) {m : ℕ} (hm : 1 ≤ m) :
+theorem iwasawaPrimeToPPart_spec {m : ℕ} (hm : 1 ≤ m) :
     1 ≤ iwasawaPrimeToPPart F m ∧
       Nat.Coprime (iwasawaPrimeToPPart F m) F.residueCharacteristic ∧
       iwasawaPrimeToPPart F m *
           F.residueCharacteristic ^ padicValNat F.residueCharacteristic m = m := by
-  let p : ℕ := F.residueCharacteristic
-  let s : ℕ := padicValNat p m
-  let n : ℕ := m / p ^ s
-  have hm0 : m ≠ 0 := Nat.ne_zero_of_lt (lt_of_lt_of_le Nat.zero_lt_one hm)
-  have hp0 : p ≠ 0 := F.residueCharacteristic_prime.ne_zero
-  have hpPow0 : p ^ s ≠ 0 := pow_ne_zero s hp0
+  let p := F.residueCharacteristic
+  let s := padicValNat p m
+  let n := m / p ^ s
   have hdiv : p ^ s ∣ m := pow_padicValNat_dvd
-  have heq : n * p ^ s = m := Nat.div_mul_cancel hdiv
+  have heq := Nat.div_mul_cancel hdiv
   have hnpos : 1 ≤ n := by
-    have hle : p ^ s ≤ m := Nat.le_of_dvd (lt_of_lt_of_le Nat.zero_lt_one hm) hdiv
-    exact Nat.div_pos hle (Nat.zero_lt_of_ne_zero hpPow0)
+    exact Nat.div_pos (Nat.le_of_dvd (lt_of_lt_of_le Nat.zero_lt_one hm) hdiv) (Nat.zero_lt_of_ne_zero (pow_ne_zero s F.residueCharacteristic_prime.ne_zero))
   have hnot : ¬ p ∣ n := by
     intro hpn
-    apply pow_succ_padicValNat_not_dvd (p := p) hm0
+    apply pow_succ_padicValNat_not_dvd (p := p) (Nat.ne_zero_of_lt (lt_of_lt_of_le Nat.zero_lt_one hm))
     obtain ⟨c, hc⟩ := hpn
     refine ⟨c, ?_⟩
     calc
       m = n * p ^ s := heq.symm
       _ = (p * c) * p ^ s := by rw [hc]
-      _ = p ^ (s + 1) * c := by rw [pow_succ]; ring
-  have hcop : Nat.Coprime n p :=
-    (F.residueCharacteristic_prime.coprime_iff_not_dvd.mpr hnot).symm
-  simpa [iwasawaPrimeToPPart, p, s, n] using ⟨hnpos, hcop, heq⟩
+      _ = p ^ (s + 1) * c := by ring
+  exact ⟨hnpos, ((F.residueCharacteristic_prime.coprime_iff_not_dvd.mpr hnot).symm), heq⟩
+
+end
 
 /-- The depths `n*p^s` attached to distinct prime-to-`p` factors are
 distinct.  This is the uniqueness assertion used in Iwasawa's injectivity
@@ -1603,32 +1258,22 @@ theorem iwasawaDepth_eq_iff
     d.1 * F.residueCharacteristic ^ s =
         e.1 * F.residueCharacteristic ^ t ↔
       d = e ∧ s = t := by
-  let p : ℕ := F.residueCharacteristic
-  have hd0 : d.1 ≠ 0 :=
-    Nat.ne_zero_of_lt (lt_of_lt_of_le Nat.zero_lt_one d.property.1)
-  have he0 : e.1 ≠ 0 :=
-    Nat.ne_zero_of_lt (lt_of_lt_of_le Nat.zero_lt_one e.property.1)
-  have hpd : ¬ p ∣ d.1 :=
-    F.residueCharacteristic_prime.coprime_iff_not_dvd.mp d.property.2.symm
-  have hpe : ¬ p ∣ e.1 :=
-    F.residueCharacteristic_prime.coprime_iff_not_dvd.mp e.property.2.symm
+  let p := F.residueCharacteristic
   have hvd : padicValNat p (d.1 * p ^ s) = s := by
-    rw [padicValNat.mul hd0 (pow_ne_zero s
+    rw [padicValNat.mul (Nat.ne_zero_of_lt (lt_of_lt_of_le Nat.zero_lt_one d.property.1)) (pow_ne_zero s
       F.residueCharacteristic_prime.ne_zero),
-      padicValNat.eq_zero_of_not_dvd hpd, padicValNat.prime_pow, zero_add]
+      padicValNat.eq_zero_of_not_dvd (F.residueCharacteristic_prime.coprime_iff_not_dvd.mp d.property.2.symm), padicValNat.prime_pow, zero_add]
   have hve : padicValNat p (e.1 * p ^ t) = t := by
-    rw [padicValNat.mul he0 (pow_ne_zero t
+    rw [padicValNat.mul (Nat.ne_zero_of_lt (lt_of_lt_of_le Nat.zero_lt_one e.property.1)) (pow_ne_zero t
       F.residueCharacteristic_prime.ne_zero),
-      padicValNat.eq_zero_of_not_dvd hpe, padicValNat.prime_pow, zero_add]
+      padicValNat.eq_zero_of_not_dvd (F.residueCharacteristic_prime.coprime_iff_not_dvd.mp e.property.2.symm), padicValNat.prime_pow, zero_add]
   constructor
   · intro hdepth
     have hst : s = t := by
       rw [← hvd, ← hve, hdepth]
     subst t
-    have hde : d.1 = e.1 :=
-      Nat.mul_right_cancel
-        (pow_pos F.residueCharacteristic_prime.pos s) hdepth
-    exact ⟨Subtype.ext hde, rfl⟩
+    exact ⟨Subtype.ext (Nat.mul_right_cancel
+      (pow_pos F.residueCharacteristic_prime.pos s) hdepth), rfl⟩
   · rintro ⟨rfl, rfl⟩
     rfl
 
@@ -1681,30 +1326,27 @@ theorem iwasawaDegreeTerm_eq_iwasawaGnScaled
     rfl
   · exact (hvalid d.property).elim
 
+section
+
+variable (F : LocalField.{u, v} K) {pi : F.valuationSubring} (hpi : F.valuation.IsUniformizer (pi : K))
+
 /--
 Establishes the membership statement `((iwasawaDegreeTerm F hpi a n :
 ((CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1) : F.valuationSubringˣ) ∈
 ((CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n`.
 -/
 theorem iwasawaDegreeTerm_mem_higher
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
     (a : iwasawaDomain F) (n : ℕ) :
     ((iwasawaDegreeTerm F hpi a n : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1) :
       F.valuationSubringˣ) ∈ ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n := by
   classical
   unfold iwasawaDegreeTerm
   split_ifs with hn
-  · exact iwasawaGn_mem_higher F hpi n hn.1
-      (fun i => a (⟨n, hn⟩, i))
-  · exact (((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) n).one_mem
+  · apply iwasawaGn_mem_higher
+  · exact Subgroup.one_mem (higherPrincipalUnitGroup F.toCompleteDVF n)
 
 /-- Establishes the identity `iwasawaDegreeTerm F hpi (0 : iwasawaDomain F) n = 1`. -/
-@[simp] theorem iwasawaDegreeTerm_zero
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) (n : ℕ) :
+@[simp] theorem iwasawaDegreeTerm_zero (n : ℕ) :
     iwasawaDegreeTerm F hpi (0 : iwasawaDomain F) n = 1 := by
   classical
   rw [iwasawaDegreeTerm]
@@ -1721,9 +1363,6 @@ theorem iwasawaDegreeTerm_mem_higher
 iwasawaDegreeTerm F hpi a n * iwasawaDegreeTerm F hpi b n`.
 -/
 theorem iwasawaDegreeTerm_add
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
     (a b : iwasawaDomain F) (n : ℕ) :
     iwasawaDegreeTerm F hpi (a + b) n =
       iwasawaDegreeTerm F hpi a n * iwasawaDegreeTerm F hpi b n := by
@@ -1742,9 +1381,6 @@ theorem iwasawaDegreeTerm_add
 
 /-- The product of the Iwasawa factors of degree at most `r`. -/
 noncomputable def iwasawaPartialProduct
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
     (a : iwasawaDomain F) (r : ℕ) :
     ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1 :=
   ∏ n ∈ Finset.range (r + 1), iwasawaDegreeTerm F hpi a n
@@ -1752,9 +1388,6 @@ noncomputable def iwasawaPartialProduct
 /-- A single-block domain element contributes precisely its one `g_n`
 factor to every sufficiently deep partial product. -/
 theorem iwasawaPartialProduct_singleBlock
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
     (d : IwasawaDegree F.residueCharacteristic)
     (b : Fin (iwasawaResidueRank F) → ℤ_[F.residueCharacteristic])
     {r : ℕ} (hdr : d.1 ≤ r) :
@@ -1771,13 +1404,10 @@ theorem iwasawaPartialProduct_singleBlock
           rw [iwasawaDegreeTerm]
           split_ifs with hkvalid
           · let e : IwasawaDegree F.residueCharacteristic := ⟨k, hkvalid⟩
-            have hed : e ≠ d := by
-              intro heq
-              exact hkd (congrArg Subtype.val heq)
             have hvec :
                 (fun i => iwasawaSingleBlock F d b (e, i)) = 0 := by
               funext i
-              exact iwasawaSingleBlock_apply_ne F hed b i
+              exact iwasawaSingleBlock_apply_ne F (fun heq => hkd (congrArg Subtype.val heq)) b i
             rw [hvec, map_zero]
             rfl
           · rfl
@@ -1800,10 +1430,7 @@ theorem iwasawaPartialProduct_singleBlock
       · exact (hvalid d.property).elim
 
 /-- Establishes the identity `iwasawaPartialProduct F hpi (0 : iwasawaDomain F) r = 1`. -/
-@[simp] theorem iwasawaPartialProduct_zero_input
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) (r : ℕ) :
+@[simp] theorem iwasawaPartialProduct_zero_input (r : ℕ) :
     iwasawaPartialProduct F hpi (0 : iwasawaDomain F) r = 1 := by
   classical
   simp [iwasawaPartialProduct]
@@ -1813,9 +1440,6 @@ theorem iwasawaPartialProduct_singleBlock
 iwasawaPartialProduct F hpi a r * iwasawaPartialProduct F hpi b r`.
 -/
 theorem iwasawaPartialProduct_add
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
     (a b : iwasawaDomain F) (r : ℕ) :
     iwasawaPartialProduct F hpi (a + b) r =
       iwasawaPartialProduct F hpi a r *
@@ -1826,9 +1450,6 @@ theorem iwasawaPartialProduct_add
 
 /-- Establishes the identity `iwasawaDegreeTerm F hpi a n = 1`. -/
 theorem iwasawaDegreeTerm_eq_one_of_block_eq_zero
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
     (a : iwasawaDomain F) (n : ℕ)
     (ha : ∀ hn : 1 ≤ n ∧ Nat.Coprime n F.residueCharacteristic,
       ∀ i : Fin (iwasawaResidueRank F), a (⟨n, hn⟩, i) = 0) :
@@ -1849,19 +1470,14 @@ theorem iwasawaDegreeTerm_eq_one_of_block_eq_zero
 /-- Expanding the cutoff by one only adds the factor whose degree is the
 new cutoff. -/
 theorem iwasawaPartialProduct_succ
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
     (a : iwasawaDomain F) (r : ℕ) :
     iwasawaPartialProduct F hpi a (r + 1) =
       iwasawaPartialProduct F hpi a r *
         iwasawaDegreeTerm F hpi a (r + 1) := by
   classical
-  unfold iwasawaPartialProduct
-  change
-    (∏ n ∈ Finset.range (Nat.succ (r + 1)),
-        iwasawaDegreeTerm F hpi a n) = _
-  rw [Finset.prod_range_succ]
+  simp [Finset.prod_range_succ, iwasawaPartialProduct]
+
+end
 
 /-- The finite approximation implicit in formula (1): every first
 principal unit is represented modulo `U^(r+1)` by the product of the
@@ -1884,19 +1500,17 @@ theorem exists_iwasawaPartialProduct_div_mem_higher
       refine ⟨0, ?_, ?_⟩
       · intro j _hj
         rfl
-      · simp [iwasawaPartialProduct]
+      · simp
   | succ r ih =>
       obtain ⟨a, haSupport, haDeep⟩ := ih
-      let n : ℕ := iwasawaPrimeToPPart F (r + 1)
-      let s : ℕ := padicValNat F.residueCharacteristic (r + 1)
-      have hm : 1 ≤ r + 1 := Nat.succ_le_succ (Nat.zero_le r)
-      have hspec := iwasawaPrimeToPPart_spec F hm
+      let n := iwasawaPrimeToPPart F (r + 1)
+      let s := padicValNat F.residueCharacteristic (r + 1)
+      have hspec := iwasawaPrimeToPPart_spec F (Nat.succ_le_succ (Nat.zero_le r))
       have hn : 1 ≤ n := by simpa [n] using hspec.1
-      have hcop : Nat.Coprime n F.residueCharacteristic := by
-        simpa [n] using hspec.2.1
       have hdepth : n * F.residueCharacteristic ^ s = r + 1 := by
         simpa [n, s] using hspec.2.2
-      let d : IwasawaDegree F.residueCharacteristic := ⟨n, hn, hcop⟩
+      let d : IwasawaDegree F.residueCharacteristic := ⟨n, hn, by
+        exact hspec.2.1⟩
       have hnle : n ≤ r + 1 := by
         rw [← hdepth]
         exact Nat.le_mul_of_pos_right n
@@ -1908,11 +1522,10 @@ theorem exists_iwasawaPartialProduct_div_mem_higher
           simpa [hdepth] using haDeep⟩
       obtain ⟨beta, hbeta⟩ :=
         exists_iwasawaGnScaled_mul_mem_succ F hpi n hn s z
-      let b : Fin (iwasawaResidueRank F) →
-          ℤ_[F.residueCharacteristic] :=
+      let b :=
         (F.residueCharacteristic ^ s :
           ℤ_[F.residueCharacteristic]) • beta
-      let a' : iwasawaDomain F := a + iwasawaSingleBlock F d b
+      let a' := a + iwasawaSingleBlock F d b
       refine ⟨a', ?_, ?_⟩
       · intro j hj
         have haj : a j = 0 := haSupport j (by omega)
@@ -1940,14 +1553,6 @@ theorem exists_iwasawaPartialProduct_div_mem_higher
             iwasawaPartialProduct_add, hpartialSucc,
             iwasawaPartialProduct_singleBlock F hpi d b hnle]
         rw [hpartial]
-        have hbeta' :
-            (((z / iwasawaGnScaledAtLevel F hpi n hn s beta :
-                ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF))
-                  (n * F.residueCharacteristic ^ s)) :
-              F.valuationSubringˣ) : F.valuationSubringˣ) ∈
-                ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) (r + 1 + 1) := by
-          rw [← hdepth]
-          exact hbeta
         have hunitEq :
             (((x /
                 (iwasawaPartialProduct F hpi a r *
@@ -1971,7 +1576,9 @@ theorem exists_iwasawaPartialProduct_div_mem_higher
                   ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1) : F.valuationSubringˣ)
           exact div_mul_eq_div_div _ _ _
         rw [hunitEq]
-        exact hbeta'
+        exact by
+          rw [← hdepth]
+          exact hbeta
 
 /-- Higher-degree factors disappear in every fixed finite quotient.  Thus
 the partial products define a compatible family; this is the formal
@@ -2009,7 +1616,7 @@ theorem Internal.principalUnitQuotientCarrier_mk_iwasawaPartialProduct_eq_of_le
       have hterm :
           QuotientGroup.mk' N (iwasawaDegreeTerm F hpi a (r + 1)) = 1 := by
         apply (QuotientGroup.eq_one_iff
-          (N := N) (iwasawaDegreeTerm F hpi a (r + 1))).2
+           (iwasawaDegreeTerm F hpi a (r + 1))).2
         change
           ((iwasawaDegreeTerm F hpi a (r + 1) :
               ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1) : F.valuationSubringˣ) ∈
@@ -2021,12 +1628,13 @@ theorem Internal.principalUnitQuotientCarrier_mk_iwasawaPartialProduct_eq_of_le
       exact mul_one
         (QuotientGroup.mk' N (iwasawaPartialProduct F hpi a m))
 
+section
+
+variable (F : LocalField.{u, v} K) {pi : F.valuationSubring} (hpi : F.valuation.IsUniformizer (pi : K))
+    (a : iwasawaDomain F)
+
 /-- The compatible family of all finite Iwasawa partial products. -/
-noncomputable def Internal.iwasawaGlobalInverseLimitCarrier
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (a : iwasawaDomain F) :
+noncomputable def Internal.iwasawaGlobalInverseLimitCarrier :
     Internal.principalUnitInverseLimitCarrier F.toCompleteDVF :=
   ⟨fun r =>
       (higherPrincipalUnitGroup.toPrincipalUnitFiltration
@@ -2044,16 +1652,14 @@ The defining evaluation formula for `Internal.iwasawaGlobalInverseLimitCarrier` 
 (higherPrincipalUnitGroup.toPrincipalUnitFiltration F.toCompleteDVF).principalUnitSubquotientMk 1
 (r + 1) (iwasawaPartialProduct F hpi a r)`.
 -/
-@[simp] theorem Internal.iwasawaGlobalInverseLimitCarrier_apply
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (a : iwasawaDomain F) (r : ℕ) :
+@[simp] theorem Internal.iwasawaGlobalInverseLimitCarrier_apply (r : ℕ) :
     (iwasawaGlobalInverseLimitCarrier F hpi a).1 r =
       (higherPrincipalUnitGroup.toPrincipalUnitFiltration
         F.toCompleteDVF).principalUnitSubquotientMk
           1 (r + 1) (iwasawaPartialProduct F hpi a r) :=
   rfl
+
+end
 
 /-- Every finite coordinate of the Iwasawa product is onto.  This is the
 finite-quotient consequence of formula (1) used in the compactness argument
@@ -2077,8 +1683,7 @@ theorem Internal.surjective_iwasawaGlobalInverseLimitCarrier_coordinate
         Internal.principalUnitQuotientCarrier F.toCompleteDVF r) =
       QuotientGroup.mk x
   symm
-  let U := LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.toPrincipalUnitFiltration F.toCompleteDVF
-  exact (U.principalUnitSubquotient_mk_eq_iff_div_mem x
+  exact ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.toPrincipalUnitFiltration F.toCompleteDVF).principalUnitSubquotient_mk_eq_iff_div_mem x
     (iwasawaPartialProduct F hpi a r)).2 ha
 
 /-- One Iwasawa factor valued in the type-level adic principal-unit model. -/
@@ -2112,12 +1717,13 @@ noncomputable def adicIwasawaPartialProduct
   AdicPrincipalUnits.of F.toCompleteDVF
     (Additive.ofMul (iwasawaPartialProduct F hpi a r))
 
+section
+
+variable (F : LocalField.{u, v} K) {pi : F.valuationSubring} (hpi : F.valuation.IsUniformizer (pi : K))
+
 /-- Continuity of one Iwasawa factor; the adic topology is carried by the
 codomain type. -/
 theorem continuous_adicIwasawaGn
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
     (n : ℕ) (hn : 1 ≤ n) :
     Continuous (adicIwasawaGn F hpi n hn) := by
   have h : Continuous fun a : Fin (iwasawaResidueRank F) →
@@ -2146,10 +1752,7 @@ theorem continuous_adicIwasawaGn
 The specified map is continuous: `Continuous fun a : iwasawaDomain F => adicIwasawaDegreeTerm F
 hpi a n`.
 -/
-theorem continuous_adicIwasawaDegreeTerm
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) (n : ℕ) :
+theorem continuous_adicIwasawaDegreeTerm (n : ℕ) :
     Continuous fun a : iwasawaDomain F =>
       adicIwasawaDegreeTerm F hpi a n := by
   classical
@@ -2173,23 +1776,18 @@ theorem continuous_adicIwasawaDegreeTerm
 The specified map is continuous: `Continuous fun a : iwasawaDomain F => adicIwasawaPartialProduct
 F hpi a r`.
 -/
-theorem continuous_adicIwasawaPartialProduct
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) (r : ℕ) :
+theorem continuous_adicIwasawaPartialProduct (r : ℕ) :
     Continuous fun a : iwasawaDomain F =>
       adicIwasawaPartialProduct F hpi a r := by
   unfold adicIwasawaPartialProduct iwasawaPartialProduct
   classical
   induction Finset.range (r + 1) using Finset.induction_on with
   | empty =>
-      simpa only [Finset.prod_empty, ofMul_one] using
-        (continuous_const : Continuous fun _ : iwasawaDomain F =>
-          AdicPrincipalUnits.of F.toCompleteDVF 0)
+      simpa using
+        continuous_const
   | @insert n s hns ih =>
       simp only [Finset.prod_insert hns]
-      have hcont := (continuous_adicIwasawaDegreeTerm F hpi n).add ih
-      apply hcont.congr
+      apply ((continuous_adicIwasawaDegreeTerm F hpi n).add ih).congr
       intro a
       apply (AdicPrincipalUnits.addEquiv F.toCompleteDVF).injective
       change
@@ -2203,33 +1801,25 @@ theorem continuous_adicIwasawaPartialProduct
 
 /-- Internal bridge from the type-level adic partial product to the raw
 carrier used by the algebraic inverse-limit construction. -/
-theorem Internal.continuous_iwasawaPartialProduct
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) (r : ℕ) :
+theorem Internal.continuous_iwasawaPartialProduct (r : ℕ) :
     letI : TopologicalSpace F.valuationSubring :=
       (LubinTate.Valuations.uniformizerPowerIdeal
         (chosenPrincipalUnitPadicUniformizer F.toCompleteDVF) 1).adicTopology
     Continuous fun a : iwasawaDomain F =>
       iwasawaPartialProduct F hpi a r := by
-  let : TopologicalSpace F.valuationSubring :=
+  let :=
     (LubinTate.Valuations.uniformizerPowerIdeal
       (chosenPrincipalUnitPadicUniformizer F.toCompleteDVF) 1).adicTopology
-  let e := Internal.adicPrincipalUnitsHomeomorphUnderlying F.toCompleteDVF
-  have h := e.continuous.comp
+  exact (Internal.adicPrincipalUnitsHomeomorphUnderlying F.toCompleteDVF).continuous.comp
     (continuous_adicIwasawaPartialProduct F hpi r)
-  exact h
 
 /-- Continuity of the compatible finite products.  The target has the
 product topology of the discrete finite principal-unit quotients. -/
-theorem Internal.continuous_iwasawaGlobalInverseLimitCarrier
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) :
+theorem Internal.continuous_iwasawaGlobalInverseLimitCarrier :
     letI : (n : ℕ) → TopologicalSpace
         (Internal.principalUnitQuotientCarrier F.toCompleteDVF n) := fun _ => ⊥
     Continuous (iwasawaGlobalInverseLimitCarrier F hpi) := by
-  let : TopologicalSpace F.valuationSubring :=
+  let :=
     (LubinTate.Valuations.uniformizerPowerIdeal
       (chosenPrincipalUnitPadicUniformizer F.toCompleteDVF) 1).adicTopology
   let : (n : ℕ) → TopologicalSpace
@@ -2249,9 +1839,9 @@ theorem Internal.continuous_iwasawaGlobalInverseLimitCarrier
             F.toCompleteDVF).principalUnitSubquotientMk 1 (r + 1) x := by
         simpa only [principalUnitMulEquivInverseLimitCarrier_apply] using hcoord
       exact hquot.comp (Internal.continuous_iwasawaPartialProduct F hpi r))
-    (fun a => by
-      intro m r hmr
-      exact (iwasawaGlobalInverseLimitCarrier F hpi a).property hmr)
+    (fun a => fun m r hmr => (iwasawaGlobalInverseLimitCarrier F hpi a).property hmr)
+
+end
 
 /-- Additive-homomorphism form of the infinite product in the inverse
 limit. -/
@@ -2309,20 +1899,13 @@ theorem Internal.continuous_iwasawaGlobalProdiscreteLimitAddHom
     Continuous (iwasawaGlobalProdiscreteLimitAddHom F hpi) := by
   let : (n : ℕ) → TopologicalSpace
       (Internal.principalUnitQuotientCarrier F.toCompleteDVF n) := fun _ => ⊥
-  let e := Internal.principalUnitProdiscreteLimitHomeomorphUnderlying
-    F.toCompleteDVF
-  have h := e.continuous_symm.comp
+  exact (Internal.principalUnitProdiscreteLimitHomeomorphUnderlying
+    F.toCompleteDVF).continuous_symm.comp
     (Internal.continuous_iwasawaGlobalInverseLimitCarrier F hpi)
-  exact h
 
 /-- Continuity of the Iwasawa compatible family; discreteness of every
 finite coordinate is encoded by the codomain type. -/
-theorem continuous_iwasawaGlobalProdiscreteLimitAddHom
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) :
-    Continuous (iwasawaGlobalProdiscreteLimitAddHom F hpi) :=
-  Internal.continuous_iwasawaGlobalProdiscreteLimitAddHom F hpi
+alias continuous_iwasawaGlobalProdiscreteLimitAddHom := Internal.continuous_iwasawaGlobalProdiscreteLimitAddHom
 
 /-- Compactness upgrades formula (1), already proved on every finite
 coordinate, to surjectivity of the complete Iwasawa product. -/
@@ -2340,60 +1923,7 @@ theorem surjective_iwasawaGlobalProdiscreteLimitAddHom
   obtain ⟨a, ha⟩ :=
     surjective_iwasawaGlobalInverseLimitCarrier_coordinate F hpi r
       (Additive.toMul y.val)
-  refine ⟨a, ?_⟩
-  apply DiscretePrincipalUnitQuotient.ext
-  exact congrArg Additive.ofMul ha
-
-/--
-The specified map is surjective: `Function.Surjective (iwasawaGlobalInverseLimitCarrierAddHom F
-hpi)`.
--/
-theorem Internal.surjective_iwasawaGlobalInverseLimitCarrierAddHom
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) :
-    Function.Surjective (iwasawaGlobalInverseLimitCarrierAddHom F hpi) := by
-  have h := surjective_iwasawaGlobalProdiscreteLimitAddHom F hpi
-  exact (PrincipalUnitProdiscreteLimit.addEquiv F.toCompleteDVF).surjective.comp h
-
-/-- Iwasawa's product homomorphism `g : A -> U^1`, obtained from its
-compatible finite quotients via the adic inverse-limit isomorphism. -/
-noncomputable def Internal.iwasawaGlobalAddHom
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) :
-    iwasawaDomain F →+
-      Additive (((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1) :=
-  (principalUnitAddEquivInverseLimitCarrier F.toCompleteDVF).symm.toAddMonoidHom.comp
-    (iwasawaGlobalInverseLimitCarrierAddHom F hpi)
-
-/-- The specified map is surjective: `Function.Surjective (iwasawaGlobalAddHom F hpi)`. -/
-theorem Internal.surjective_iwasawaGlobalAddHom
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) :
-    Function.Surjective (iwasawaGlobalAddHom F hpi) := by
-  exact
-    (principalUnitAddEquivInverseLimitCarrier
-      F.toCompleteDVF).symm.surjective.comp
-        (surjective_iwasawaGlobalInverseLimitCarrierAddHom F hpi)
-
-/--
-Establishes the identity `principalUnitAddEquivInverseLimitCarrier F.toCompleteDVF
-(iwasawaGlobalAddHom F hpi a) = Additive.ofMul (iwasawaGlobalInverseLimitCarrier F hpi a)`.
--/
-@[simp] theorem Internal.principalUnitAddEquivInverseLimitCarrier_iwasawaGlobalAddHom
-    (F : LocalField.{u, v} K)
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (a : iwasawaDomain F) :
-    principalUnitAddEquivInverseLimitCarrier F.toCompleteDVF
-        (iwasawaGlobalAddHom F hpi a) =
-      Additive.ofMul (iwasawaGlobalInverseLimitCarrier F hpi a) := by
-  exact (principalUnitAddEquivInverseLimitCarrier
-    F.toCompleteDVF).apply_symm_apply _
+  exact Exists.intro a (DiscretePrincipalUnitQuotient.ext ha)
 
 /-- Every factor distinct from a chosen least-depth factor vanishes in the
 next finite quotient. -/
@@ -2437,35 +1967,18 @@ theorem iwasawaDegreeTerm_mem_succ_of_ne_minimal
   · obtain ⟨t, c, hec, hc⟩ :=
       exists_pow_smul_iwasawaPrimitive_of_ne_zero F
         (iwasawaBlock F a e) he0
-    have hle : m ≤ e.1 * F.residueCharacteristic ^ t :=
-      hmin e t c hec hc
     have hne : m ≠ e.1 * F.residueCharacteristic ^ t := by
       intro heqDepth
-      have hdepth :
-          d.1 * F.residueCharacteristic ^ s =
-            e.1 * F.residueCharacteristic ^ t := by
-        rw [← hm, heqDepth]
-      have hde := (iwasawaDepth_eq_iff F d e s t).1 hdepth
       apply hkd
-      exact congrArg Subtype.val hde.1.symm
-    have hlevel : m + 1 ≤ e.1 * F.residueCharacteristic ^ t :=
-      Nat.succ_le_of_lt (lt_of_le_of_ne hle hne)
-    have hscaled :
-        (((iwasawaGnScaledAtLevel F hpi e.1 e.property.1 t c :
-            ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF))
-              (e.1 * F.residueCharacteristic ^ t)) :
-          F.valuationSubringˣ) : F.valuationSubringˣ) ∈
-            ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) (m + 1) :=
-      LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.antitone F.toCompleteDVF hlevel
-        (iwasawaGnScaledAtLevel F hpi e.1 e.property.1 t c).property
-    have hterm :=
-      iwasawaDegreeTerm_eq_iwasawaGnScaled F hpi a e t c hec
+      exact congrArg Subtype.val ((iwasawaDepth_eq_iff F d e s t).1 (by
+        omega)).1.symm
     change
       ((iwasawaDegreeTerm F hpi a e.1 :
           ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1) : F.valuationSubringˣ) ∈
         ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) (m + 1)
-    rw [hterm]
-    exact hscaled
+    rw [(iwasawaDegreeTerm_eq_iwasawaGnScaled F hpi a e t c hec)]
+    exact LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.antitone F.toCompleteDVF (Nat.succ_le_of_lt (lt_of_le_of_ne (hmin e t c hec hc) hne))
+      (iwasawaGnScaledAtLevel F hpi e.1 e.property.1 t c).property
 
 /-- The chosen primitive least-depth factor survives in the next quotient;
 this is the second coefficient congruence. -/
@@ -2485,14 +1998,10 @@ theorem iwasawaDegreeTerm_not_mem_succ_of_primitive
     ¬ (((iwasawaDegreeTerm F hpi a d.1 :
           ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1) : F.valuationSubringˣ) ∈
         ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) (m + 1)) := by
-  have hnotScaled :=
-    (iwasawa_formula_two F hpi d.1 d.property.1 s b).1 hb
   intro htermMem
-  apply hnotScaled
-  have hterm :=
-    iwasawaDegreeTerm_eq_iwasawaGnScaled F hpi a d s b hab
-  rw [← hterm]
-  simpa only [hm] using htermMem
+  apply (iwasawa_formula_two F hpi d.1 d.property.1 s b).1 hb
+  rw [← (iwasawaDegreeTerm_eq_iwasawaGnScaled F hpi a d s b hab)]
+  simpa [hm] using htermMem
 
 /-- A nonzero coefficient family has nonzero image in the inverse limit.
 The least depth supplied above is detected in its `m`-th coordinate. -/
@@ -2510,11 +2019,6 @@ theorem Internal.iwasawaGlobalInverseLimitCarrierAddHom_ne_zero_of_ne_zero
     rw [hm]
     exact Nat.le_mul_of_pos_right d.1
       (pow_pos F.residueCharacteristic_prime.pos s)
-  have hdmem : d.1 ∈ Finset.range (m + 1) :=
-    Finset.mem_range.mpr (Nat.lt_succ_of_le hdle)
-  have hchosenNot :=
-    iwasawaDegreeTerm_not_mem_succ_of_primitive
-      F hpi a m d s b hab hb hm
   have hpartialEq :
       (QuotientGroup.mk (iwasawaPartialProduct F hpi a m) :
           Internal.principalUnitQuotientCarrier F.toCompleteDVF m) =
@@ -2532,20 +2036,17 @@ theorem Internal.iwasawaGlobalInverseLimitCarrierAddHom_ne_zero_of_ne_zero
       by_cases hvalid :
           1 ≤ k ∧ Nat.Coprime k F.residueCharacteristic
       · apply (QuotientGroup.eq_one_iff
-          (N := (((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) (m + 1)).subgroupOf
-            (((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1))
+
           (iwasawaDegreeTerm F hpi a k)).2
         change
           ((iwasawaDegreeTerm F hpi a k :
               ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) 1) : F.valuationSubringˣ) ∈
             ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF)) (m + 1)
-        exact iwasawaDegreeTerm_mem_succ_of_ne_minimal
-          F hpi a m d s hm hmin k hvalid hkd
+        apply iwasawaDegreeTerm_mem_succ_of_ne_minimal <;> assumption
       · have hterm : iwasawaDegreeTerm F hpi a k = 1 := by
           simp [iwasawaDegreeTerm, hvalid]
-        rw [hterm, map_one]
-    · intro hdnot
-      exact (hdnot hdmem).elim
+        simp [hterm]
+    · simp_all
   intro hzero
   have hcoord := congrArg
     (fun z : Additive
@@ -2557,7 +2058,8 @@ theorem Internal.iwasawaGlobalInverseLimitCarrierAddHom_ne_zero_of_ne_zero
     apply Additive.ofMul.injective
     exact hcoord
   rw [hpartialEq] at hpartialOne
-  apply hchosenNot
+  apply iwasawaDegreeTerm_not_mem_succ_of_primitive
+    F hpi a m d s b hab hb hm
   exact (QuotientGroup.eq_one_iff
     (N :=
       ((((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup
@@ -2566,34 +2068,29 @@ theorem Internal.iwasawaGlobalInverseLimitCarrierAddHom_ne_zero_of_ne_zero
           F.toCompleteDVF)) 1)))
     (iwasawaDegreeTerm F hpi a d.1)).1 hpartialOne
 
+section
+
+variable (F : LocalField.{u, v} K) [CharP K F.residueCharacteristic] {pi : F.valuationSubring}
+    (hpi : F.valuation.IsUniformizer (pi : K))
+
 /--
 The specified map is injective: `Function.Injective (iwasawaGlobalInverseLimitCarrierAddHom F
 hpi)`.
 -/
-theorem Internal.injective_iwasawaGlobalInverseLimitCarrierAddHom
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) :
+theorem Internal.injective_iwasawaGlobalInverseLimitCarrierAddHom :
     Function.Injective (iwasawaGlobalInverseLimitCarrierAddHom F hpi) := by
   intro a b hab
-  have hzero : iwasawaGlobalInverseLimitCarrierAddHom F hpi (a - b) = 0 := by
-    rw [map_sub, hab]
-    exact sub_self _
-  have habzero : a - b = 0 := by
-    by_contra hne
-    exact (iwasawaGlobalInverseLimitCarrierAddHom_ne_zero_of_ne_zero
-      F hpi (a - b) hne) hzero
-  exact sub_eq_zero.mp habzero
+  apply sub_eq_zero.mp
+  by_contra hne
+  exact (iwasawaGlobalInverseLimitCarrierAddHom_ne_zero_of_ne_zero
+    F hpi (a - b) hne) (by
+      rw [map_sub, hab]
+      exact sub_self _)
 
 /--
 The specified map is injective: `Function.Injective (iwasawaGlobalProdiscreteLimitAddHom F hpi)`.
 -/
-theorem injective_iwasawaGlobalProdiscreteLimitAddHom
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) :
+theorem injective_iwasawaGlobalProdiscreteLimitAddHom :
     Function.Injective (iwasawaGlobalProdiscreteLimitAddHom F hpi) := by
   intro a b hab
   apply injective_iwasawaGlobalInverseLimitCarrierAddHom F hpi
@@ -2604,6 +2101,8 @@ theorem injective_iwasawaGlobalProdiscreteLimitAddHom
         (iwasawaGlobalInverseLimitCarrierAddHom F hpi b) at hab
   exact (PrincipalUnitProdiscreteLimit.addEquiv
     F.toCompleteDVF).symm.injective hab
+
+end
 
 /-- The equal-characteristic Iwasawa isomorphism, with the prodiscrete
 topology fixed in its codomain type.  In the local-field case this topology
@@ -2618,27 +2117,21 @@ noncomputable def iwasawaGlobalProdiscreteLimitAddEquiv
     ⟨injective_iwasawaGlobalProdiscreteLimitAddHom F hpi,
       surjective_iwasawaGlobalProdiscreteLimitAddHom F hpi⟩
 
+variable (F : LocalField.{u, v} K) [CharP K F.residueCharacteristic] {pi : F.valuationSubring}
+    (hpi : F.valuation.IsUniformizer (pi : K))
+
 /-- The Iwasawa product is a homeomorphism onto the type-level prodiscrete
 principal-unit limit. -/
-noncomputable def iwasawaGlobalProdiscreteLimitContinuousAddEquiv
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) :
+noncomputable def iwasawaGlobalProdiscreteLimitContinuousAddEquiv :
     iwasawaDomain F ≃ₜ+ PrincipalUnitProdiscreteLimit F.toCompleteDVF := by
   let e := iwasawaGlobalProdiscreteLimitAddEquiv F hpi
-  have he : Continuous e :=
+  have he :=
     continuous_iwasawaGlobalProdiscreteLimitAddHom F hpi
-  let h := e.toEquiv.toHomeomorphOfContinuousClosed he he.isClosedMap
-  exact ContinuousAddEquiv.mk' h (fun x y => e.map_add x y)
+  exact ContinuousAddEquiv.mk' (e.toEquiv.toHomeomorphOfContinuousClosed he he.isClosedMap) (fun x y => e.map_add x y)
 
 /-- Topological form of the equal-characteristic Iwasawa isomorphism.  The
 adic topology is part of the codomain type. -/
-noncomputable def iwasawaGlobalAdicPrincipalUnitsContinuousAddEquiv
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) :
+noncomputable def iwasawaGlobalAdicPrincipalUnitsContinuousAddEquiv :
     iwasawaDomain F ≃ₜ+ AdicPrincipalUnits F.toCompleteDVF :=
   (iwasawaGlobalProdiscreteLimitContinuousAddEquiv F hpi).trans
     (adicPrincipalUnitsContinuousAddEquivProdiscreteLimit

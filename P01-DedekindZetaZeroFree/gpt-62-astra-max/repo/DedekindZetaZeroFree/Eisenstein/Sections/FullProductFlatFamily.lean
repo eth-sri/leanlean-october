@@ -12,7 +12,7 @@ open NumberField
 namespace DedekindZetaZeroFree.KPContFlatFullProductIwasawa
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
  def rawIwasawa (D : KPGlobalTorusBorelTwistCompatibility.IwasawaData F ζ hζ) :
     KPGlobalTorusBorelNormTwistTransport.IwasawaData F ζ hζ where
@@ -88,7 +88,7 @@ open NumberField
 namespace DedekindZetaZeroFree.KPContFlatFullProductIwasawa
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 @[simp] theorem iwasawaData_K :
     (iwasawaData F ζ hζ).K =

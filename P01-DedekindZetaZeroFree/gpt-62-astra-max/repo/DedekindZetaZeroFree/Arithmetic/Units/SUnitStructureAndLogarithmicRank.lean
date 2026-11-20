@@ -72,14 +72,9 @@ def unitStructure : A.Rˣ ≃*
     NumberField.Units.torsion F × Multiplicative (Fin A.sunitRank → ℤ) := by
   letI : IsTotallyComplex F :=
     primitive12_totallyComplex F A.zeta12 A.primitive_zeta12
-  have hrank : SUnitGroup.logRank A.Sf = A.sunitRank :=
-    SUnitStructureAdapter.logRank_totallyComplex A.Sf
-  let upstream := A.unitEquiv.symm.trans (SUnitGroup.decomposition A.Sf)
-  let coordinates : Multiplicative (Fin (SUnitGroup.logRank A.Sf) →₀ ℤ) ≃*
-      Multiplicative (Fin A.sunitRank → ℤ) := by
-    rw [hrank]
-    exact SUnitStructureAdapter.finiteCoordinates
-  exact upstream.trans ((MulEquiv.refl (NumberField.Units.torsion F)).prodCongr coordinates)
+  exact (A.unitEquiv.symm.trans (SUnitGroup.decomposition A.Sf)).trans ((MulEquiv.refl (NumberField.Units.torsion F)).prodCongr (by
+    rw [(SUnitStructureAdapter.logRank_totallyComplex A.Sf)]
+    exact SUnitStructureAdapter.finiteCoordinates))
 
 theorem torsion_finite : Finite (NumberField.Units.torsion F) := inferInstance
 

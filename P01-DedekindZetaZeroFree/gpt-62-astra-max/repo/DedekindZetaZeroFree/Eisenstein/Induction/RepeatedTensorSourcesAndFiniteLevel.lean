@@ -10,13 +10,12 @@ open scoped NumberField Classical Topology
 open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages MomentSources ThetaExpansion TensorActionSource
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming refinedLevel → refinedLevel
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource renaming refinedLevel_le → refinedLevel_le
+open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource (refinedLevel refinedLevel_le)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 local notation "V" => RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C)
@@ -55,8 +54,7 @@ def repeatedCoreSources (x : V)
   exterior_spherical := fun _ => hspherical
   dq := KPWildKernelUpperBound.quotientHaar F
   quotientHaar := inferInstance
-  probability := by
-    exact Measure.addHaarMeasure_self (K₀ := ⊤)
+  probability := Measure.addHaarMeasure_self
 
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource
 

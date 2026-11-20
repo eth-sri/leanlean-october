@@ -11,9 +11,9 @@ namespace DedekindZetaZeroFree.FourierContinuation.CurrentExteriorReference
 open KPLocalPrincipalSeries KPLocalGoodSphericalImage KPGlobalTorusFiniteStages
 open KPActualReflectionData
 variable {F : Type} [Field F] [NumberField F]
-variable (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (A : SArithmeticData F)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
  theorem plusReference_eq_normalized (q : KPFinitePlace F) (hq : q ∉ C.exceptional) :
     LiteralSource.plusReference A P C (Sum.inr q) =

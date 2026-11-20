@@ -19,8 +19,6 @@ private theorem shellExponent_le_margin_aux (δ x y v : ℝ) (hδ : 0 < δ) (e�
     (hC : 1 + δ ≤ x + y) (hv : δ ≤ v) :
     shellExponent x y v e₀ k ℓ m ≤ -(δ / 2) - (δ / 2) * (ℓ : ℝ) - (δ / 2) * (m : ℝ) := by
   unfold shellExponent
-  have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-  have hm6 : δ * m ≤ 6 * v * m := by nlinarith
   rcases Nat.eq_zero_or_pos ℓ with h | h
   · subst h
     have he : e₀ = 1 := by omega

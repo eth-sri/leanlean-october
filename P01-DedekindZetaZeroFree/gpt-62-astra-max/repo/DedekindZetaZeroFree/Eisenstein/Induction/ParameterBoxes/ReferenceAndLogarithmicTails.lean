@@ -11,10 +11,10 @@ open NumberField MomentSources KPGlobalTorusFiniteStages FaithfulSource.Repaired
 open KPLocalPrincipalSeries KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 open LiteralSource.CofactorChamber KPAdelicCoverRestrictedProduct KPLocalExceptionalConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -39,21 +39,17 @@ theorem box_right_reference_tail
   cases p with
   | inl w => exact False.elim (hp (by simp [fullLevel,LiteralSource.cofactorSourceLevel]))
   | inr q =>
-    have hq : q ∉ Q := by simpa [fullLevel,LiteralSource.cofactorSourceLevel] using hp
-    have hb : Sum.inr q ∉ bad R P C := fun h => hp ((fullLevel R P C Q hQ).property h)
-    have h := exterior_parameter_compact R N P C q hb 0
+    have h := exterior_parameter_compact R N P C q (fun h => hp ((fullLevel R P C Q hQ).property h)) 0
       (KPPGLLocalCover.coverQuotient F ζ hζ (.inr q) (chamberRaw F ζ hζ y (.inr q)))
-      ⟨_,ha q hq⟩
+      ⟨_,ha q (by simpa [fullLevel,LiteralSource.cofactorSourceLevel] using hp)⟩
     have hf0 : finiteParameterInput R N P C q (fullCompact R P C q) 0
         (plusReference R N P C (.inr q)) = plusReference R N P C (.inr q) := by
       apply Subtype.ext
       funext g
-      simpa only [zero_mul,Complex.exp_zero,one_smul] using
+      simpa using
         finiteParameterInput_displacement R N P C q (fullCompact R P C q) 0
           (plusReference R N P C (.inr q)) g
     rw [hf0] at h
-    change (plusReference R N P C (.inr q)).val
-      (KPPGLLocalCover.coverQuotient F ζ hζ (.inr q) ((chamberRaw F ζ hζ y * a) (.inr q))) = _
     simp only [RestrictedProduct.mul_apply,map_mul]
     exact h.trans (chamber_raw_tail R P C Q hQ y hy (.inr q) hp)
 
@@ -68,11 +64,10 @@ theorem box_right_log_tail
   | inl w => exact False.elim (hp (by simp [fullLevel,LiteralSource.cofactorSourceLevel]))
   | inr q =>
     have hq : q ∉ Q := by simpa [fullLevel,LiteralSource.cofactorSourceLevel] using hp
-    have hqC : q ∉ C.exceptional := fun h => hq (hQ h)
     have h := LocalCompactChange.forwardAbs_mul_compact F ζ hζ q (C.canonical q)
       (fullCompact R P C q)
       (KPPGLLocalCover.coverQuotient F ζ hζ (.inr q) (chamberRaw F ζ hζ y (.inr q)))
-      ⟨_,good_compact_le_full R P C q hqC (ha q hq)⟩
+      ⟨_,good_compact_le_full R P C q (fun h => hq (hQ h)) (ha q hq)⟩
     simp only [localLog,RestrictedProduct.mul_apply,map_mul,h]
     exact chamber_log_tail R P C Q hQ y hy (.inr q) hp
 

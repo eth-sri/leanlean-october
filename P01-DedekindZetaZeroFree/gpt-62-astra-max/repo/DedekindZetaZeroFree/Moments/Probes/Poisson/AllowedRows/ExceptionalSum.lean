@@ -12,8 +12,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonK
   DedekindZetaZeroFree.Quantitative.DetectorHeight
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def intermediateDyads (Z : ℝ) : Finset ℕ :=
   (Finset.range (⌊Real.logb 2 (Z ^ Scales.largeCutoffExponent)⌋₊ + 1)).filter
@@ -23,18 +23,15 @@ def exceptionalDyadSum (ρ Z : ℝ) : ℂ :=
   ∑ k ∈ intermediateDyads Z, J D (exceptionalSet D ρ ((2 : ℝ) ^ k)) 4 4 2 Z
 
 theorem exceptionalSet_sub (ρ U : ℝ) :
-    exceptionalSet D ρ U ⊆ {u : D.Row | u.u ≠ 1} ∩ dyadRows D U := by
-  intro u hu
-  exact ⟨hu.1, hu.2.1, hu.2.2.1⟩
+    exceptionalSet D ρ U ⊆ {u : D.Row | u.u ≠ 1} ∩ dyadRows D U := fun u hu => ⟨hu.1, hu.2.1, hu.2.2.1⟩
 
 theorem exceptional_row_contour (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) (U Z : ℝ) (hU : 2 ≤ U) (hZ : 2 ≤ Z) :
-    (exceptionalSet D ρ U).Finite ∧
-      J D (exceptionalSet D ρ U) 4 4 2 Z =
+    J D (exceptionalSet D ρ U) 4 4 2 Z =
         RowLowContour.JCont D (exceptionalSet D ρ U) Scales.rightLine Scales.wLine Scales.zLine Z := by
   have hfin : (exceptionalSet D ρ U).Finite :=
     (ActualRowCount.dyadRows_finite D U).subset ((exceptionalSet_sub D ρ U).trans Set.inter_subset_right)
-  exact ⟨hfin, RowLowContour.J_initial_eq D U Z hU hZ _ (exceptionalSet_sub D ρ U) hfin⟩
+  exact RowLowContour.J_initial_eq D U Z hU hZ _ (exceptionalSet_sub D ρ U) hfin
 
 private lemma card_intermediateDyads_le (δ : ℝ) (hδ : 0 < δ) (Z : ℝ) (hZ : 2 ≤ Z) :
     ((intermediateDyads Z).card : ℝ) ≤ (1 / (δ * Real.log 2) + 1) * Z ^ δ := by
@@ -71,7 +68,7 @@ private lemma card_intermediateDyads_le (δ : ℝ) (hδ : 0 < δ) (Z : ℝ) (hZ 
 
 theorem rows_exceptional (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) (ε : ℝ) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∃ Z₀ : ℝ, 2 ≤ Z₀ ∧ ∀ Z : ℝ, Z₀ ≤ Z →
+    ∃ C : ℝ, 0 < C ∧ ∃ Z₀ : ℝ, ∀ Z : ℝ, Z₀ ≤ Z →
       ‖exceptionalDyadSum D ρ Z‖ ≤ C * Z ^ (Scales.mainExponent - 2617 / 80000 + ε) := by
   obtain ⟨Cc, hCc, U₀, hU₀, hcard⟩ := Detect.exceptionalSet_card D A_F ρ hA hconv hρ
   have hε4 : (0 : ℝ) < ε / 4 := by linarith
@@ -87,8 +84,7 @@ theorem rows_exceptional (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpon
   have hκs : Scales.smallCutoffExponent = 1 / 5 := by unfold Scales.smallCutoffExponent; norm_num
   have hκ1 : Scales.largeCutoffExponent ≤ 1 := by unfold Scales.largeCutoffExponent; norm_num
   have hκ0 : (0 : ℝ) ≤ Scales.largeCutoffExponent := by unfold Scales.largeCutoffExponent; norm_num
-  refine ⟨(1 / (ε / 4 * Real.log 2) + 1) * Cj, by positivity, max 2 (U₀ ^ (5 : ℝ)),
-    le_max_left _ _, ?_⟩
+  refine ⟨(1 / (ε / 4 * Real.log 2) + 1) * Cj, by positivity, max 2 (U₀ ^ (5 : ℝ)), ?_⟩
   intro Z hZ
   have hZ2 : 2 ≤ Z := le_trans (le_max_left _ _) hZ
   have hZpos : 0 < Z := by linarith
@@ -121,7 +117,7 @@ theorem rows_exceptional (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpon
     have hcardb : ((exceptionalSet D ρ ((2 : ℝ) ^ k)).ncard : ℝ) ≤ Cc * ((2 : ℝ) ^ k) ^ (317 / 500 : ℝ) :=
       (hcard _ hUU₀).2
     have hJc := hJ ((2 : ℝ) ^ k) Z hU2 hZ2 (exceptionalSet D ρ ((2 : ℝ) ^ k)) hsub hfin hcardb
-    rw [(exceptional_row_contour D A_F ρ hA hconv hρ ((2 : ℝ) ^ k) Z hU2 hZ2).2]
+    rw [(exceptional_row_contour D A_F ρ hA hconv hρ ((2 : ℝ) ^ k) Z hU2 hZ2)]
     have hp : (0 : ℝ) ≤ 317 / 500 + 1 / 25 + ε / 4 := by linarith
     have hUp : ((2 : ℝ) ^ k) ^ (317 / 500 + 1 / 25 + ε / 4) ≤
         Z ^ (Scales.largeCutoffExponent * (317 / 500 + 1 / 25 + ε / 4)) := by

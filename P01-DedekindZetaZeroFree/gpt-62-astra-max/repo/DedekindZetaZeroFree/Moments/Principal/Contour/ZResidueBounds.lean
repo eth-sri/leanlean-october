@@ -13,8 +13,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonK
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def zResidue (u : D.Row) (ξ : ℂ) (Z : ℝ) : ℂ :=
   Filter.limUnder (nhdsWithin (1 / 6 : ℂ) {1 / 6}ᶜ)
@@ -28,12 +28,7 @@ theorem cvi_sub_aux (σ : ℝ) (f g : ℂ → ℂ)
   unfold comparisonVerticalIntegral
   rw [← mul_sub, ← MeasureTheory.integral_sub hf hg]
 
-theorem principalRows_eq_single :
-    principalRows D = {ActualRowCount.principalRow D} := by
-  ext r
-  simp only [principalRows, Set.mem_setOf_eq, Set.mem_singleton_iff]
-  exact ⟨fun h => ActualRowCount.eq_principalRow D h,
-    fun h => by rw [h]; exact ActualRowCount.principalRow_u D⟩
+alias principalRows_eq_single := DedekindZetaZeroFree.Quantitative.PrincipalWShift.principalRows_eq
 
 theorem Jwres_sub_Rz (Z : ℝ) (hZ : 2 ≤ Z) :
     Jwres D Z -
@@ -44,7 +39,7 @@ theorem Jwres_sub_Rz (Z : ℝ) (hZ : 2 ≤ Z) :
   have hset := principalRows_eq_single D
   have hu : (ActualRowCount.principalRow D).u = (1 : ↥D.recipe.A.R) :=
     ActualRowCount.principalRow_u D
-  obtain ⟨_, _, hw⟩ := PrincipalResidueIntegrability.residue_integrability_w D
+  obtain ⟨_, hw⟩ := PrincipalResidueIntegrability.residue_integrability_w D
     (ActualRowCount.principalRow D) hu
   obtain ⟨_, _, hz⟩ := PrincipalResidueIntegrability.residue_integrability_z D
     (ActualRowCount.principalRow D) hu
@@ -88,18 +83,14 @@ theorem Rz_integral_bound :
           comparisonVerticalIntegral (1 / 20) (fun z => wResidue D u ξ z Z))‖ ≤
         C * Z ^ (Scales.mainExponent - 384999 / 10000000) := by
   classical
-  have hset := principalRows_eq_single D
-  have hu : (ActualRowCount.principalRow D).u = (1 : ↥D.recipe.A.R) :=
-    ActualRowCount.principalRow_u D
   obtain ⟨C, hC, h⟩ := PrincipalResidueIntegrability.residue_integrability_z D
-    (ActualRowCount.principalRow D) hu
+    (ActualRowCount.principalRow D) (ActualRowCount.principalRow_u D)
   have hE : Scales.kernelExponent Scales.rightLine 1 (1 / 20) = Scales.mainExponent - 384999 / 10000000 := by
     unfold Scales.kernelExponent Scales.rightLine Scales.contourOffset Scales.xExponent Scales.smoothingExponent Scales.yExponent Scales.mainExponent
     norm_num
   refine ⟨C, hC, fun Z hZ => ?_⟩
-  have hb := (h Z hZ).2.2.2
-  rw [hset, finsum_mem_singleton, ← hE]
-  exact hb
+  rw [(principalRows_eq_single D), finsum_mem_singleton, ← hE]
+  exact (h Z hZ).2.2.2
 
 end
 

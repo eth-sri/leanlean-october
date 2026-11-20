@@ -1,5 +1,4 @@
 module
-
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.ClassField
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.ClassFieldAxiom
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.ClassFieldCandidate
@@ -23,44 +22,3 @@ public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Sylow
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.TotallyRamified
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.TotallyRamifiedCase.All
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.ValuationContinuity
-
-@[expose] public section
-
-/-
-Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
--/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
-/-!
-# Abstract reciprocity
-
-Public aggregate for the class-formation reciprocity theorem and the canonical
-construction and naturality of its reciprocity maps.
--/

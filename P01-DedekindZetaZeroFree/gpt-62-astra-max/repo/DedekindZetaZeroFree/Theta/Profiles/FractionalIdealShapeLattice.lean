@@ -41,14 +41,12 @@ theorem traceIdealLattice_eq_comap_euclideanIdealLattice
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
     traceIdealLattice K I =
       ZLattice.comap ℝ (euclideanIdealLattice K I)
-        (traceToEuclidean K).toLinearMap := by
-  rfl
+        (traceToEuclidean K).toLinearMap := rfl
 
 open Classical in
 private theorem divideBySqrtTwo_toLinearMap :
     (divideBySqrtTwo : ℂ ≃L[ℝ] ℂ).toLinearMap =
-      (Real.sqrt 2)⁻¹ • LinearMap.id := by
-  rfl
+      (Real.sqrt 2)⁻¹ • LinearMap.id := rfl
 
 open Classical in
 private theorem det_divideBySqrtTwo :
@@ -87,8 +85,7 @@ private theorem det_traceToEuclidean :
       (traceToEuclidean K).toLinearMap =
         (mixedEmbedding.euclidean.toMixed K).symm.toLinearMap.comp
           (u.toLinearMap.comp
-            (mixedEmbedding.euclidean.toMixed K).toLinearMap) := by
-    rfl
+            (mixedEmbedding.euclidean.toMixed K).toLinearMap) := rfl
   rw [hmap]
   rw [show LinearMap.det
       ((mixedEmbedding.euclidean.toMixed K).symm.toLinearMap.comp
@@ -131,8 +128,7 @@ theorem covolume_comap_continuousLinearEquiv
   have hmeasure :
       μ (e ⁻¹' ZSpan.fundamentalDomain (b.ofZLatticeBasis ℝ L)) =
         ENNReal.ofReal |(LinearMap.det e.toLinearMap)⁻¹| *
-          μ (ZSpan.fundamentalDomain (b.ofZLatticeBasis ℝ L)) := by
-    exact MeasureTheory.Measure.addHaar_preimage_linearMap
+          μ (ZSpan.fundamentalDomain (b.ofZLatticeBasis ℝ L)) := MeasureTheory.Measure.addHaar_preimage_linearMap
       μ (LinearEquiv.isUnit_det' e.toLinearEquiv).ne_zero _
   rw [ZLattice.covolume_eq_measure_fundamentalDomain _
       μ
@@ -398,27 +394,22 @@ theorem mem_dualLattice_shapeIdealLattice_iff
   constructor
   · intro hv x
     have hx :
-        traceRadialScale K q hq (x : mixedEmbedding.euclidean.mixedSpace K) ∈
+        traceRadialScale K q hq x ∈
           shapeIdealLattice K I q hq := by
       change
         (traceRadialScale K q hq).symm
             (traceRadialScale K q hq
-              (x : mixedEmbedding.euclidean.mixedSpace K)) ∈
+              x) ∈
           traceIdealLattice K I
       simp
     obtain ⟨n, hn⟩ := hv
       ⟨traceRadialScale K q hq
-        (x : mixedEmbedding.euclidean.mixedSpace K), hx⟩
+        x, hx⟩
     exact ⟨n, (inner_traceRadialScale K q hq v x).trans hn⟩
   · intro hv z
-    have hz :
-        (traceRadialScale K q hq).symm
-            (z : mixedEmbedding.euclidean.mixedSpace K) ∈
-          traceIdealLattice K I :=
-      z.prop
     obtain ⟨n, hn⟩ := hv
       ⟨(traceRadialScale K q hq).symm
-        (z : mixedEmbedding.euclidean.mixedSpace K), hz⟩
+        z, z.prop⟩
     refine ⟨n, ?_⟩
     rw [inner_traceRadialScale K q hq,
       ContinuousLinearEquiv.apply_symm_apply] at hn
@@ -597,10 +588,7 @@ theorem fractionalIdealElementShapeMap_bijective
     apply mixedEmbedding_injective K
     simpa [traceEmbedding] using congrArg (traceToMixed K) htrace
   · intro v
-    have hv :
-        (traceRadialScale K q hq).symm
-            (v : mixedEmbedding.euclidean.mixedSpace K) ∈
-          traceIdealLattice K I :=
+    have hv :=
       v.prop
     obtain ⟨x, hx, hxv⟩ :=
       exists_traceEmbedding_eq_of_mem_traceIdealLattice K I hv

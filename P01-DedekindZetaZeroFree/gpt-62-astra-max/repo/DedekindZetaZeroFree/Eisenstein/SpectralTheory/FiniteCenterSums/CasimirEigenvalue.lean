@@ -13,7 +13,7 @@ open ResidualSphericalGeometry ResidualWeakEnergy KPGlobalResidualConstruction
 open KPMsClearedTruncationL2.NativeWordBridge
 open KPContActualSphericalRightFieldIdentification
 open RawWordKFinite
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction renaming actual_eq_word → actual_eq_word
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction (actual_eq_word)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 local notation "G" => KPSmoothActualFlowData.G F ζ hζ
 local notation "NS" => scalarSpace (F := F) (ζ := ζ) (hζ := hζ)
@@ -38,13 +38,13 @@ theorem nativeCasimir_val (f : NS) : (nativeCasimir f).val =
 
 variable (F ζ hζ)
 variable (M : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable {n : ℕ} (U : Fin n → KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (m : Fin n → ℕ)
-variable (w : ∀ i, Fin (m i) → List (Fin (groupDimension F)))
-variable (a : ∀ i, Fin (m i) → ℂ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    {n : ℕ} (U : Fin n → KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (m : Fin n → ℕ)
+    (w : ∀ i, Fin (m i) → List (Fin (groupDimension F)))
+    (a : ∀ i, Fin (m i) → ℂ)
 variable (Z : ∀ i, Fin (m i) → KPContActualAllCuspSource.SmoothSections F ζ hζ M R P H (U i))
 
  def centerWord (i : Fin n) (j : Fin (m i)) : NS :=
@@ -52,9 +52,8 @@ variable (Z : ∀ i, Fin (m i) → KPContActualAllCuspSource.SmoothSections F ζ
   let up := fun g => f (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)
   let hs : NativeSmooth up := by
     intro g
-    have hh := ActualSectionLift.lift_arch_smooth F ζ hζ
-      (KPContActualAllCuspSource.level F ζ hζ M R P H (U i)) R P H (Z i j) g
-    convert hh using 1
+    convert (ActualSectionLift.lift_arch_smooth F ζ hζ
+      (KPContActualAllCuspSource.level F ζ hζ M R P H (U i)) R P H (Z i j) g) using 1
     funext x
     exact originalScalar_lift F ζ hζ _ R P H (Z i j) _
   ⟨sixWord ((w i j).map (wordIndexEquiv F)) up,
@@ -102,18 +101,12 @@ theorem finiteCenterSum_native_eigen (eig : ℂ)
     simp only [Submodule.coe_smul, Pi.smul_apply, smul_eq_mul]
     rw [centerWord_val]
     let f := originalScalar F ζ hζ (KPContActualAllCuspSource.level F ζ hζ M R P H (U i)) R P H (Z i j)
-    have hs : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fun x => f
-        (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ (b * archChart F ζ hζ x))) (archDomain F) := by
-      intro b
-      have hh := ActualSectionLift.lift_arch_smooth F ζ hζ
-        (KPContActualAllCuspSource.level F ζ hζ M R P H (U i)) R P H (Z i j) b
-      convert hh using 1
-      funext x
-      exact originalScalar_lift F ζ hζ _ R P H (Z i j) _
-    have hfe : ∀ g, KPMsGreenFlux.casimir F ζ hζ
-        (fun x => f (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ x)) g =
-        eig * f (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g) := he i j
-    exact original_word_eigen f hs eig hfe _ g
+    refine original_word_eigen f ?_ eig (he i j) _ g
+    intro b
+    convert (ActualSectionLift.lift_arch_smooth F ζ hζ
+      (KPContActualAllCuspSource.level F ζ hζ M R P H (U i)) R P H (Z i j) b) using 1
+    funext x
+    exact originalScalar_lift F ζ hζ _ R P H (Z i j) _
   have hsum : nativeCasimir (finiteCenterVector F ζ hζ M R P H U m w a Z) =
       eig • finiteCenterVector F ζ hζ M R P H U m w a Z := by
     simp only [finiteCenterVector, map_sum, map_smul, hc, Finset.smul_sum]
@@ -122,9 +115,8 @@ theorem finiteCenterSum_native_eigen (eig : ℂ)
     congr 1
     funext j
     exact smul_comm _ _ _
-  have h := congrArg (fun x : NS => x.val g) hsum
   simpa only [nativeCasimir_val, Submodule.coe_smul, Pi.smul_apply,
-    smul_eq_mul, finiteCenterVector_val] using h
+    smul_eq_mul, finiteCenterVector_val] using (congrArg (fun x : NS => x.val g) hsum)
 
 theorem finiteCenterSum_word_eigen (eig : ℂ)
     (he : ∀ i j g, KPMsGreenFlux.casimir F ζ hζ
@@ -134,8 +126,7 @@ theorem finiteCenterSum_word_eigen (eig : ℂ)
     KPMsGreenFlux.casimir F ζ hζ (fun x => KPSmoothActualFlowData.wordDerivative F ζ hζ q
       (finiteCenterSum F ζ hζ M R P H U m w a Z) (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ x)) g =
       eig * KPSmoothActualFlowData.wordDerivative F ζ hζ q (finiteCenterSum F ζ hζ M R P H U m w a Z)
-        (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g) := by
-  exact original_word_eigen _ (finiteCenterSum_native_smooth F ζ hζ M R P H U m w a Z) eig
+        (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g) := original_word_eigen _ (finiteCenterSum_native_smooth F ζ hζ M R P H U m w a Z) eig
     (finiteCenterSum_native_eigen F ζ hζ M R P H U m w a Z eig he) q g
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters

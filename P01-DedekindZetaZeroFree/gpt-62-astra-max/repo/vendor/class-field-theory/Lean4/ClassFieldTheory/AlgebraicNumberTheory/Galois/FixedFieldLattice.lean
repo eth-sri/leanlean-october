@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -36,19 +34,13 @@ theorem fixedField_sup_eq_inf
       (IntermediateField.fixedField_le le_sup_left)
       (IntermediateField.fixedField_le le_sup_right)
   · intro x hx
-    rw [IntermediateField.mem_fixedField_iff]
+    simp
     intro σ hσ
-    let stabilizer : Subgroup (Gal(Ω / k)) :=
+    let stabilizer :=
       MulAction.stabilizer (Gal(Ω / k)) x
     have hS : S ≤ stabilizer := by
       intro τ hτ
-      change τ x = x
       exact (IntermediateField.mem_fixedField_iff S x).1 hx.1 τ hτ
-    have hT : T ≤ stabilizer := by
-      intro τ hτ
-      change τ x = x
-      exact (IntermediateField.mem_fixedField_iff T x).1 hx.2 τ hτ
-    have hfix : σ ∈ stabilizer := (sup_le hS hT) hσ
-    exact hfix
+    exact sup_le hS (fun ⦃τ⦄ hτ ↦ (mem_fixedField_iff T x).mp hx.right τ hτ) hσ
 
 end IntermediateField

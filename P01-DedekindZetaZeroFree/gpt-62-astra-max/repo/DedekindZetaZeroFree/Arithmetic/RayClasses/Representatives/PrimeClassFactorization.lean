@@ -26,13 +26,10 @@ theorem rayClassFinitePrimeFactorization
   let f := ClassFieldTheory.NumberFieldFractionalIdealGroup.countVector J.val
   have hf : ∀ v ∈ f.support, v ∉ μ.finitePart.support := by
     intro v hv hμ
-    have hz := J.property v hμ
-    exact (Finsupp.mem_support_iff.mp hv) hz
-  let s : Finset V := f.support.subtype (fun v => v ∉ μ.finitePart.support)
+    exact (Finsupp.mem_support_iff.mp hv) (J.property v hμ)
+  let s := f.support.subtype (fun v => v ∉ μ.finitePart.support)
   let P : V → ClassFieldTheory.rayClassPrimeToIdeals μ := fun v =>
-    ⟨ClassFieldTheory.finitePrimeFractionalIdeal v.val, by
-      intro w hw
-      exact FractionalIdeal.count_maximal_coprime K w
+    ⟨ClassFieldTheory.finitePrimeFractionalIdeal v.val, fun w hw => FractionalIdeal.count_maximal_coprime K w
         (fun h => (h ▸ v.property) hw)⟩
   have hfac : J.val = ∏ v ∈ f.support,
       ClassFieldTheory.finitePrimeFractionalIdeal v ^ f v := by

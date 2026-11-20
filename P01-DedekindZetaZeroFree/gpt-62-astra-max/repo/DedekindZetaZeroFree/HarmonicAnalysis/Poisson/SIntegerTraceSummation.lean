@@ -21,30 +21,35 @@ local instance completionMeasurable (v : HeightOneSpectrum (RingOfIntegers F)) :
 local instance completionBorel (v : HeightOneSpectrum (RingOfIntegers F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-abbrev finiteCharacter (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :=
+section
+
+variable (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+
+abbrev finiteCharacter :=
   fun v : S => localFiniteCharacter F v.val
 
-abbrev finiteHaar (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :=
+abbrev finiteHaar :=
   fun v : S => localNormalizedHaar F v.val
 
-abbrev productHaar (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :=
+abbrev productHaar :=
   PoissonS.productMeasure F S (finiteHaar F S)
 
-abbrev phase (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :=
+abbrev phase :=
   PoissonS.tracePhase F S (finiteCharacter F S)
 
-abbrev fourier (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :=
+abbrev fourier :=
   PoissonS.fourierIntegral F S (finiteCharacter F S) (finiteHaar F S)
+
+end
 
 private theorem norm_le_one_iff (v : HeightOneSpectrum (RingOfIntegers F))
     (x : v.adicCompletion F) : ‖x‖ ≤ 1 ↔ Valued.v x ≤ 1 := by
   rw [FinitePlace.norm_def]
-  change (WithZeroMulInt.toNNReal (HeightOneSpectrum.absNorm_ne_zero v) (Valued.v x) : ℝ) ≤ 1 ↔ _
   rw [← NNReal.coe_one, NNReal.coe_le_coe]
   apply WithZeroMulInt.toNNReal_le_one_iff
   exact_mod_cast RingOfIntegers.HeightOneSpectrum.one_lt_absNorm v
 
-private theorem localNormalization_finiteHaar
+theorem localNormalization_finiteHaar
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :
     PoissonS.LocalNormalization F S (finiteHaar F S) := by
   intro v
@@ -61,8 +66,9 @@ private theorem localNormalization_finiteHaar
     zpow_natCast, localHalfDifferentFactor_eq_inv_sqrt F v.val, localDifferentNorm,
     Nat.cast_pow, one_div]
 
-private theorem productHaar_isAddHaarMeasure
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :
+variable (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+
+private theorem productHaar_isAddHaarMeasure :
     (productHaar F S).IsAddHaarMeasure := by
   haveI : (PoissonArch.traceMeasure F).IsAddHaarMeasure :=
     Measure.IsAddHaarMeasure.smul volume
@@ -72,8 +78,7 @@ private theorem productHaar_isAddHaarMeasure
   unfold productHaar PoissonS.productMeasure
   exact Measure.prod.instIsAddHaarMeasure _ _
 
-theorem phase_eq_traceCharacter
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (x y : PoissonS.Space F S) :
+theorem phase_eq_traceCharacter (x y : PoissonS.Space F S) :
     phase F S x y =
       (sLocalTraceCharacter F S
         ((PoissonS.localProductToSpace F S).symm x *
@@ -128,8 +133,7 @@ theorem phase_eq_traceCharacter
   rw [map_prod, map_prod]
   rfl
 
-theorem productHaar_normalization
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :
+theorem productHaar_normalization :
     (productHaar F S).IsAddHaarMeasure ∧
     PoissonS.LocalNormalization F S (finiteHaar F S) ∧
     (∀ (f : PoissonS.Space F S → ℂ) (y : PoissonS.Space F S),

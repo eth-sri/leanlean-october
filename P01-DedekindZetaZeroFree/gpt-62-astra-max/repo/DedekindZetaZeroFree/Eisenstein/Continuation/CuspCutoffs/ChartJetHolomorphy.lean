@@ -15,11 +15,11 @@ namespace DedekindZetaZeroFree.KPContActualCutoffChartJetHolomorphy
 open KPContLocalNorm
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 abbrev dimension := KPContCotangentActualOverlap.d F * 3
 
@@ -33,17 +33,23 @@ def coordinates (x : Space (dimension F)) : KPContCotangentActualOverlap.M F :=
 
 variable {i : Fin (H.atlas (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U)).componentCount}
 
-def chartDomain (q : Chart F ζ hζ C R P H U i) : Set (Space (dimension F)) :=
+section
+
+variable (q : Chart F ζ hζ C R P H U i)
+
+def chartDomain : Set (Space (dimension F)) :=
   coordinates F ⁻¹' q.omega
 
-def framePullback (q : Chart F ζ hζ C R P H U i)
+def framePullback
     (w : KPContActualCutoffSmoothDescent.SmoothSections F ζ hζ C R P H U) :
     Space (dimension F) → ℂ :=
   fun x => q.coefficient w.val (coordinates F x)
 
+end
+
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable {T : ℝ}
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    {T : ℝ}
 variable (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U) R P H T)
 variable (Ω : Set ℂ) (f : ℂ → S)
@@ -67,21 +73,18 @@ theorem coordinates_contDiff : ContDiff ℝ (⊤ : ℕ∞) (coordinates F) := by
     exact (EuclideanSpace.proj (𝕜 := ℝ) (finProdFinEquiv ik)).contDiff
   exact PiLp.contDiff_toLp.comp hh
 
-theorem chartDomain_isOpen (q : Chart F ζ hζ C R P H U i) :
+section
+
+variable (q : Chart F ζ hζ C R P H U i)
+
+theorem chartDomain_isOpen :
     IsOpen (chartDomain F ζ hζ C R P H U q) :=
   q.isOpen_omega.preimage (coordinates_contDiff F).continuous
 
-theorem framePullback_smooth (q : Chart F ζ hζ C R P H U i)
+theorem framePullback_smooth
     (w : KPContActualCutoffSmoothDescent.SmoothSections F ζ hζ C R P H U) :
     ContDiffOn ℝ (⊤ : ℕ∞) (framePullback F ζ hζ C R P H U q w)
       (chartDomain F ζ hζ C R P H U q) := by
-  have hA : ContDiff ℝ (⊤ : ℕ∞)
-      (fun x : Space (dimension F) => KPContCotangentActualOverlap.labeledA q.places (coordinates F x)) := by
-    apply contDiff_pi.mpr
-    intro k
-    exact ((contDiff_apply ℝ (ℂ × ℝ) (q.places.symm k)).comp
-      (CotangentLogCoframe.A (KPContCotangentActualOverlap.d F)).contDiff).comp
-        (coordinates_contDiff F)
   have hact : ContDiff ℝ (⊤ : ℕ∞)
       (fun x : KPCuspGenuineMonodromy.SymmetricSpace F => q.kind.representative • x) := by
     obtain ⟨G, hG⟩ := Matrix.ProjGenLinGroup.mk_surjective q.kind.representative
@@ -94,8 +97,7 @@ theorem framePullback_smooth (q : Chart F ζ hζ C R P H U i)
       (fun k => Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F k).embedding G)).of_le le_top
   have hphase : IsLocallyConstant
       (fun x : chartDomain F ζ hζ C R P H U q =>
-        (KPCuspGenuineMonodromy.chi F ζ hζ (q.splitting (coordinates F x.val)) : ℂ)) := by
-    exact (q.splitting_locallyConstant.comp_continuous
+        (KPCuspGenuineMonodromy.chi F ζ hζ (q.splitting (coordinates F x.val)) : ℂ)) := (q.splitting_locallyConstant.comp_continuous
       (((coordinates_contDiff F).continuous.comp continuous_subtype_val).subtype_mk
         (fun x => x.property))).comp (fun ε => (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ))
   have hphaseSmooth : ContDiffOn ℝ (⊤ : ℕ∞)
@@ -105,10 +107,14 @@ theorem framePullback_smooth (q : Chart F ζ hζ C R P H U i)
     apply contDiffWithinAt_const.congr_of_eventuallyEq _ rfl
     rw [nhdsWithin_eq_map_subtype_coe hx]
     exact hphase.eventually_eq ⟨x, hx⟩
-  exact hphaseSmooth.mul (((w.property i).comp (hact.comp hA)).contDiffOn)
+  refine hphaseSmooth.mul (((w.property i).comp (hact.comp ?_)).contDiffOn)
+  apply contDiff_pi.mpr
+  intro k
+  exact ((contDiff_apply ℝ (ℂ × ℝ) (q.places.symm k)).comp
+    (CotangentLogCoframe.A (KPContCotangentActualOverlap.d F)).contDiff).comp
+      (coordinates_contDiff F)
 
 theorem framePullback_scalar
-    (q : Chart F ζ hζ C R P H U i)
     (w : KPContActualCutoffSmoothDescent.SmoothSections F ζ hζ C R P H U) (x : Space (dimension F)) :
     framePullback F ζ hζ C R P H U q w x =
       (KPCuspGenuineMonodromy.chi F ζ hζ (q.splitting (coordinates F x)) : ℂ) *
@@ -125,6 +131,8 @@ theorem framePullback_scalar
   unfold framePullback KPContCotangentActualOverlap.LiftedChart.coefficient
   rw [hw, KPContSectorScalarLineAlgebra.S_apply]
   rfl
+
+end
 
 theorem pullback_formula
     (D : KPContActualCutoffSmoothDescent.Descent F ζ hζ C R P H U ι buffer Ω f χ)
@@ -165,11 +173,7 @@ theorem parameter_derivatives_bounded {E : Type*} [NormedAddCommGroup E]
  theorem coordinateDerivativeList_contDiffOn {n : ℕ} {U : Set (Space n)}
     (hU : IsOpen U) (u : Space n → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
     (l : List (Fin n)) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l u) U := by
-  induction l with
-  | nil => exact hu
-  | cons i is ih =>
-    exact (ih.fderiv_of_isOpen hU (by simp)).clm_apply contDiffOn_const
+    ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l u) U := by apply @DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates.coordinateDerivativeList_contDiffOn_open <;> assumption
 
  def chartJet {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
     (L : Set (Space n)) (hLU : L ⊆ U) (m : ℕ) (g : Space n → ℂ)
@@ -186,9 +190,7 @@ private theorem coordinateDerivativeList_add_on {n : ℕ} {U : Set (Space n)} (h
   | nil => intro x hx; rfl
   | cons i l ih =>
     intro x hx
-    have hu' : DifferentiableAt ℝ (coordinateDerivativeList l u) x :=
-      ((coordinateDerivativeList_contDiffOn hU u hu l).contDiffAt (hU.mem_nhds hx)).differentiableAt (by simp)
-    have hv' : DifferentiableAt ℝ (coordinateDerivativeList l v) x :=
+    have hv' :=
       ((coordinateDerivativeList_contDiffOn hU v hv l).contDiffAt (hU.mem_nhds hx)).differentiableAt (by simp)
     have he : coordinateDerivativeList l (fun x => u x + v x) =ᶠ[𝓝 x]
         (fun x => coordinateDerivativeList l u x + coordinateDerivativeList l v x) :=
@@ -197,7 +199,7 @@ private theorem coordinateDerivativeList_add_on {n : ℕ} {U : Set (Space n)} (h
     rw [he.fderiv_eq]
     simpa only [coordinateDerivativeList, ContinuousLinearMap.add_apply, Pi.add_def]
       using congrArg (fun L : Space n →L[ℝ] ℂ => L (EuclideanSpace.single i 1))
-        (fderiv_add hu' hv')
+        (fderiv_add (((coordinateDerivativeList_contDiffOn hU u hu l).contDiffAt (hU.mem_nhds hx)).differentiableAt (by simp)) hv')
 
 private theorem coordinateDerivativeList_sum_on {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
     {J : Type*} (I : Finset J) (u : J → Space n → ℂ)
@@ -215,12 +217,11 @@ private theorem coordinateDerivativeList_sum_on {n : ℕ} {U : Set (Space n)} (h
     intro x hx
     exact congrFun hz x
   | @insert j I hj ih =>
-    have huj := hu j (Finset.mem_insert_self j I)
-    have huI : ∀ k ∈ I, ContDiffOn ℝ (⊤ : ℕ∞) (u k) U :=
+    have huI :=
       fun k hk => hu k (Finset.mem_insert_of_mem hk)
     simp only [Finset.sum_insert hj]
     intro x hx
-    rw [coordinateDerivativeList_add_on hU (u j) (fun x => ∑ k ∈ I, u k x) huj (ContDiffOn.sum huI) l hx]
+    rw [coordinateDerivativeList_add_on hU (u j) (fun x => ∑ k ∈ I, u k x) (hu j (Finset.mem_insert_self j I)) (ContDiffOn.sum huI) l hx]
     exact congrArg (fun a => coordinateDerivativeList l (u j) x + a) (ih huI hx)
 
 def ChartPowerSeriesOn (n : ℕ) (U : Set (Space n)) (O : Set ℂ)
@@ -269,7 +270,7 @@ theorem chartPowerSeries_compactJets {n : ℕ} {U : Set (Space n)} (hU : IsOpen 
     intro z hz
     obtain ⟨ρ, hρ, _, _, _, hg, _⟩ := hps z hz
     exact hg z (Metric.mem_ball_self hρ)
-  let j : ℂ → CompactJets L m := fun z =>
+  let j := fun z =>
     if hz : z ∈ O then chartJet hU L hLU m (g z) (hsmooth z hz) else 0
   have hj : ∀ z ∈ O, ∀ α, ∀ x : L, j z α x = coordinateDerivative α (g z) x := by
     intro z hz α x
@@ -279,30 +280,23 @@ theorem chartPowerSeries_compactJets {n : ℕ} {U : Set (Space n)} (hU : IsOpen 
   refine ⟨j, ?_, hj⟩
   intro z₀ hz₀
   obtain ⟨ρ, hρ, hball, coeff, hcoeff, hg, hconv⟩ := hps z₀ hz₀
-  let aj : ℕ → CompactJets L m := fun q => chartJet hU L hLU m (coeff q) (hcoeff q)
+  let aj := fun q => chartJet hU L hLU m (coeff q) (hcoeff q)
   have hhalf : 0 < ρ / 2 := by positivity
-  have hlim : ∀ ε > 0, ∃ N : ℕ, ∀ M ≥ N, ∀ z ∈ Metric.closedBall z₀ (ρ / 2),
-      ‖(∑ q ∈ Finset.range M, (z - z₀) ^ q • aj q) - j z‖ < ε := by
-    intro ε hε
-    obtain ⟨N, hN⟩ := hconv L hL hLU m (ρ / 2) hhalf.le
-      (by linarith) (ε / 2) (by positivity)
-    refine ⟨N, fun M hM z hz => ?_⟩
-    have hzρ : z ∈ Metric.ball z₀ ρ := Metric.closedBall_subset_ball (by linarith) hz
-    have hzO : z ∈ O := hball hzρ
-    apply lt_of_le_of_lt _ (show ε / 2 < ε by linarith)
-    apply (pi_norm_le_iff_of_nonneg (by positivity)).2
-    intro α
-    apply (ContinuousMap.norm_le _ (by positivity)).2
-    intro x
-    have hb := hN M hM z hz α x
-    simp only [Pi.sub_apply, Finset.sum_apply, Pi.smul_apply,
-      ContinuousMap.sub_apply, ContinuousMap.sum_apply, ContinuousMap.smul_apply,
-      smul_eq_mul, hj z hzO]
-    change ‖(∑ q ∈ Finset.range M, (z - z₀) ^ q * coordinateDerivative α (coeff q) x) -
-      coordinateDerivative α (g z) x‖ ≤ ε / 2
-    exact hb.le
-  exact ((polynomial_limit_holomorphic z₀ (ρ / 2) aj j hlim).differentiableAt
+  refine ((polynomial_limit_holomorphic z₀ (ρ / 2) aj j ?_).differentiableAt
     (Metric.isOpen_ball.mem_nhds (Metric.mem_ball_self hhalf))).differentiableWithinAt
+  intro ε hε
+  obtain ⟨N, hN⟩ := hconv L hL hLU m (ρ / 2) hhalf.le
+    (by linarith) (ε / 2) (by positivity)
+  refine ⟨N, fun M hM z hz => ?_⟩
+  apply lt_of_le_of_lt _ (show ε / 2 < ε by linarith)
+  apply (pi_norm_le_iff_of_nonneg (by positivity)).2
+  intro α
+  apply (ContinuousMap.norm_le _ (by positivity)).2
+  intro x
+  simp only [Pi.sub_apply, Finset.sum_apply, Pi.smul_apply,
+    ContinuousMap.sub_apply, ContinuousMap.sum_apply, ContinuousMap.smul_apply,
+    smul_eq_mul, hj z (hball (Metric.closedBall_subset_ball (by linarith) hz))]
+  exact (hN M hM z hz α x).le
 
 theorem chartSmoothHolomorphic_finset_sum {n : ℕ} (B : LocalBall n)
     {O : Set ℂ} {J : Type*} (I : Finset J) (g : J → ℂ → Space n → ℂ)
@@ -316,7 +310,6 @@ theorem chartSmoothHolomorphic_finset_sum {n : ℕ} (B : LocalBall n)
   refine ⟨fun s => ∑ j ∈ I, jets j s, DifferentiableOn.fun_sum (fun j hj => hjets j), ?_⟩
   intro s hs α x
   simp only [Finset.sum_apply, ContinuousMap.sum_apply]
-  change (∑ j ∈ I, jets j s α x) = _
   simp_rw [hspec _ s hs α x]
   exact (coordinateDerivativeList_sum_on Metric.isOpen_ball I (fun j => g j s)
     (fun j hj => (hg j).1 s hs) α.directions (hKB x.property)).symm
@@ -330,32 +323,33 @@ private theorem ballJet_continuous {n : ℕ} (A : LocalBall n)
   intro z₀ hz₀ K hK hKA m ε hε
   letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
   obtain ⟨j, hj, hspec⟩ := hh.2 K hK hKA m
-  have hc := hj.continuousOn z₀ hz₀
   have he : ∀ᶠ z in nhdsWithin z₀ Ω, ‖j z - j z₀‖ < ε := by
-    simpa only [dist_eq_norm] using hc.eventually (Metric.ball_mem_nhds (j z₀) hε)
+    simpa only [dist_eq_norm] using (hj.continuousOn z₀ hz₀).eventually (Metric.ball_mem_nhds (j z₀) hε)
   obtain ⟨δ, hδ, hd⟩ := Metric.mem_nhdsWithin_iff.mp he
   refine ⟨δ, hδ, ?_⟩
   intro z hz hdist α x
-  have hb := hd ⟨hdist, hz⟩
   have hp := (ContinuousMap.norm_coe_le_norm ((j z - j z₀) α) x).trans
     (norm_le_pi_norm (j z - j z₀) α)
   change ‖j z α x - j z₀ α x‖ ≤ _ at hp
   rw [hspec z hz α x, hspec z₀ hz₀ α x] at hp
   rw [coordinateDerivative, finite_coordinate_derivative_sub A (hh.1 z hz) (hh.1 z₀ hz₀)
     α.directions (hKA x.property), ← coordinateDerivative, ← coordinateDerivative]
-  exact hp.trans_lt hb
+  exact hp.trans_lt (hd ⟨hdist, hz⟩)
+
+alias ChartJetHolomorphy.ballJet_continuous := ballJet_continuous
 
 private theorem ballScalarJet_holomorphic {n : ℕ} (A : LocalBall n) (Ω : Set ℂ)
     (f : ℂ → Space n → ℂ) (hf : KPCutoffSource.ChartSmoothHolomorphicOn A f Ω)
     (m : ℕ) (α : MultiIndex n m) (x : Space n) (hx : x ∈ A.carrier) :
     DifferentiableOn ℂ (fun s => coordinateDerivative α (f s) x) Ω := by
   let K : Set (Space n) := {x}
-  have hKA : K ⊆ A.carrier := Set.singleton_subset_iff.mpr hx
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp (isCompact_singleton : IsCompact K)
-  obtain ⟨j, hj, hv⟩ := hf.2 K isCompact_singleton hKA m
+  letI : CompactSpace K := isCompact_iff_compactSpace.mp isCompact_singleton
+  obtain ⟨j, hj, hv⟩ := hf.2 K isCompact_singleton (Set.singleton_subset_iff.mpr hx) m
   let L : CompactJets K m →L[ℂ] ℂ :=
     (ContinuousMap.evalCLM ℂ (⟨x, rfl⟩ : K)).comp (ContinuousLinearMap.proj α)
   exact (L.differentiable.comp_differentiableOn hj).congr (fun s hs => (hv s hs α ⟨x, rfl⟩).symm)
+
+alias ChartJetHolomorphy.ballScalarJet_holomorphic := ballScalarJet_holomorphic
 
 private theorem closedContainedBall_at {n : ℕ} (hn : 0 < n) {U : Set (Space n)} (hU : IsOpen U)
     {x : Space n} (hx : x ∈ U) :
@@ -443,15 +437,16 @@ private theorem chartSmoothHolomorphicOn_congr {n : ℕ} (B : LocalBall n) {O : 
     exact ⟨j, hj, fun s hs α x => by
       rw [funext (h s hs)]; exact hspec s hs α x⟩
 
+local notation "localChartDomain" => chartDomain F ζ hζ C R P H U
+
 theorem pullback_chartPowerSeries
     (hΩ : IsOpen Ω)
     (hΩspectral : Ω ⊆ KPContinuation.spectralDomain)
     (hf : DifferentiableOn ℂ f Ω)
     (hι : Function.Injective ι)
-    (hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (D : KPContActualCutoffSmoothDescent.Descent F ζ hζ C R P H U ι buffer Ω f χ)
     (q : Chart F ζ hζ C R P H U i) (b : Bool) :
-    ChartPowerSeriesOn (dimension F) (chartDomain F ζ hζ C R P H U q) Ω
+    ChartPowerSeriesOn (dimension F) (localChartDomain q) Ω
       (pullback F ζ hζ C R P H U ι buffer Ω f χ D q b) := by
   have hn : 0 < dimension F := by
     show 0 < KPContCotangentActualOverlap.d F * 3
@@ -485,7 +480,7 @@ theorem pullback_chartPowerSeries
               (H.atlas (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U)).representative i))
     have hg : ∀ a, KPCutoffSource.ChartSmoothHolomorphicOn B (term a) Ω := fun a =>
       KPContActualCutoffSmoothDescent.actual_incoming_cutoff_chart_jets
-        F ζ hζ C R P H U ι buffer Ω hΩ hΩspectral f hf hι hStage χ a q b B hB
+        F ζ hζ C R P H U ι buffer Ω hΩ hΩspectral f hf hι χ a q b B hB
     refine chartSmoothHolomorphicOn_congr (B := B) (O := Ω)
       (g := pullback F ζ hζ C R P H U ι buffer Ω f χ D q b)
       (g' := fun s x => ∑ a, term a s x) (fun s hs x => ?_)
@@ -508,28 +503,23 @@ theorem compact_jets_holomorphic
     (hΩspectral : Ω ⊆ KPContinuation.spectralDomain)
     (hf : DifferentiableOn ℂ f Ω)
     (hι : Function.Injective ι)
-    (hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (D : KPContActualCutoffSmoothDescent.Descent F ζ hζ C R P H U ι buffer Ω f χ)
     (q : Chart F ζ hζ C R P H U i) (b : Bool)
     (L : Set (Space (dimension F))) (hL : IsCompact L)
-    (hLD : L ⊆ chartDomain F ζ hζ C R P H U q) (m : ℕ) :
+    (hLD : L ⊆ localChartDomain q) (m : ℕ) :
     letI : CompactSpace L := isCompact_iff_compactSpace.mp hL
     ∃ j : ℂ → CompactJets L m,
       DifferentiableOn ℂ j Ω ∧
       ∀ s ∈ Ω, ∀ α, ∀ x : L, j s α x = coordinateDerivative α
         (pullback F ζ hζ C R P H U ι buffer Ω f χ D q b s) x :=
   chartPowerSeries_compactJets (chartDomain_isOpen F ζ hζ C R P H U q) hΩ
-    (pullback_chartPowerSeries F ζ hζ C R P H U ι buffer Ω f χ hΩ hΩspectral hf hι hStage D q b) L hL hLD m
+    (pullback_chartPowerSeries F ζ hζ C R P H U ι buffer Ω f χ hΩ hΩspectral hf hι D q b) L hL hLD m
 
 structure Conclusions
     (D : KPContActualCutoffSmoothDescent.Descent F ζ hζ C R P H U ι buffer Ω f χ)
     (q : Chart F ζ hζ C R P H U i) (B : LocalBall (dimension F)) : Prop where
-  smooth : ∀ b : Bool, ∀ s ∈ Ω,
-    ContDiffOn ℝ (⊤ : ℕ∞)
-      (pullback F ζ hζ C R P H U ι buffer Ω f χ D q b s)
-      (chartDomain F ζ hζ C R P H U q)
   compact_jets : ∀ b : Bool, ∀ (L : Set (Space (dimension F))) (hL : IsCompact L),
-    L ⊆ chartDomain F ζ hζ C R P H U q → ∀ m : ℕ,
+    L ⊆ localChartDomain q → ∀ m : ℕ,
       letI : CompactSpace L := isCompact_iff_compactSpace.mp hL
       ∃ j : ℂ → CompactJets L m,
         DifferentiableOn ℂ j Ω ∧
@@ -544,17 +534,17 @@ theorem Conclusions.of_compact_jets
     (hΩ : IsOpen Ω)
     (D : KPContActualCutoffSmoothDescent.Descent F ζ hζ C R P H U ι buffer Ω f χ)
     (q : Chart F ζ hζ C R P H U i) (B : LocalBall (dimension F))
-    (hB : Metric.closedBall B.center B.radius ⊆ chartDomain F ζ hζ C R P H U q)
+    (hB : Metric.closedBall B.center B.radius ⊆ localChartDomain q)
     (hj : ∀ b : Bool, ∀ (L : Set (Space (dimension F))) (hL : IsCompact L),
-      L ⊆ chartDomain F ζ hζ C R P H U q → ∀ m : ℕ,
+      L ⊆ localChartDomain q → ∀ m : ℕ,
         letI : CompactSpace L := isCompact_iff_compactSpace.mp hL
         ∃ j : ℂ → CompactJets L m, DifferentiableOn ℂ j Ω ∧
           ∀ s ∈ Ω, ∀ α, ∀ x : L, j s α x = coordinateDerivative α
             (pullback F ζ hζ C R P H U ι buffer Ω f χ D q b s) x) :
     Conclusions F ζ hζ C R P H U ι buffer Ω f χ D q B := by
-  have hB' : B.carrier ⊆ chartDomain F ζ hζ C R P H U q :=
+  have hB' : B.carrier ⊆ localChartDomain q :=
     Metric.ball_subset_closedBall.trans hB
-  refine ⟨fun b s _ => pullback_smooth F ζ hζ C R P H U ι buffer Ω f χ D q b s, ?_, ?_⟩
+  refine ⟨?_, ?_⟩
   · intro b L hL hLD m
     letI : CompactSpace L := isCompact_iff_compactSpace.mp hL
     obtain ⟨j, hhol, heq⟩ := hj b L hL hLD m
@@ -582,7 +572,6 @@ theorem kp_cont_actual_cutoff_chart_jet_holomorphy
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
     (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (_hι : Function.Injective ι)
-    (_hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (Ω : Set ℂ) (_hΩ : Ω ⊆ KPContinuation.spectralDomain) (_hopen : IsOpen Ω)
     (f : ℂ → S) (_hf : DifferentiableOn ℂ f Ω)
     (χ : KPContActualCutoffSmoothDescent.Cusps F ζ hζ C R P H U →
@@ -601,7 +590,7 @@ theorem kp_cont_actual_cutoff_chart_jet_holomorphy
   intro b L hL hLD m
 
   exact KPContActualCutoffChartJetHolomorphy.compact_jets_holomorphic
-    F ζ hζ C R P H U ι buffer Ω f χ _hopen _hΩ _hf _hι _hStage D q b L hL hLD m
+    F ζ hζ C R P H U ι buffer Ω f χ _hopen _hΩ _hf _hι D q b L hL hLD m
 
 end DedekindZetaZeroFree
 

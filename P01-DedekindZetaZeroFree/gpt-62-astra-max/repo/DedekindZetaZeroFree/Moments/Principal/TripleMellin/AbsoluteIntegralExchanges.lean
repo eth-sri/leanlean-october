@@ -11,8 +11,8 @@ noncomputable section
 open MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 theorem kernel_eq_summed (P : PrincipalData A σ η hS) (X Y Z : ℝ)
     (t : ℝ × ℝ × ℝ) :
@@ -28,16 +28,17 @@ theorem kernel_eq_summed (P : PrincipalData A σ η hS) (X Y Z : ℝ)
     (by norm_num [initialMellinPoint]) (by norm_num [initialMellinPoint])]
   rfl
 
-theorem heights_integrable (P : PrincipalData A σ η hS) (X Y Z : ℝ)
-    (hX : 0 < X) (hY : 0 < Y) (hZ : 0 < Z) :
-    Integrable (principalTripleMellinHeights A σ η hS P X Y Z) := by
-  have h := (tripleMellin_sum_integral_interchange P X Y Z hX hY hZ).1
-  apply ((heightEquiv_preserving.symm heightEquiv).integrable_comp_emb
-    heightEquiv.symm.measurableEmbedding (g := principalTripleMellinHeights A σ η hS P X Y Z)).mp
-  simpa only [Function.comp_def, kernel_eq_summed] using h
+variable (P : PrincipalData A σ η hS) (X Y Z : ℝ) (hX : 0 < X) (hY : 0 < Y) (hZ : 0 < Z)
 
-theorem integral_eq_sum (P : PrincipalData A σ η hS) (X Y Z : ℝ)
-    (hX : 0 < X) (hY : 0 < Y) (hZ : 0 < Z) :
+include hX hY hZ in
+theorem heights_integrable :
+    Integrable (principalTripleMellinHeights A σ η hS P X Y Z) := by
+  apply ((heightEquiv_preserving.symm heightEquiv).integrable_comp_emb
+    heightEquiv.symm.measurableEmbedding).mp
+  simpa only [Function.comp_def, kernel_eq_summed] using ((tripleMellin_sum_integral_interchange P X Y Z hX hY hZ).1)
+
+include hX hY hZ in
+theorem integral_eq_sum :
     principalTripleMellinIntegral A σ η hS P X Y Z =
       tripleMellinNormalization * ∑' i : MellinSeriesIndex P,
         ∫ t : ℝ × ℝ × ℝ, initialTripleMellinSummand P X Y Z i t := by
@@ -47,8 +48,8 @@ theorem integral_eq_sum (P : PrincipalData A σ η hS) (X Y Z : ℝ)
   simp_rw [kernel_eq_summed]
   rw [(tripleMellin_sum_integral_interchange P X Y Z hX hY hZ).2]
 
-theorem integral_eq_every_order (P : PrincipalData A σ η hS) (X Y Z : ℝ)
-    (hX : 0 < X) (hY : 0 < Y) (hZ : 0 < Z) (order : Equiv.Perm (Fin 3)) :
+include hX hY hZ in
+theorem integral_eq_every_order (order : Equiv.Perm (Fin 3)) :
     principalTripleMellinIntegral A σ η hS P X Y Z =
       iteratedTripleMellinIntegral (principalTripleMellinHeights A σ η hS P X Y Z) order := by
   unfold principalTripleMellinIntegral iteratedTripleMellinIntegral

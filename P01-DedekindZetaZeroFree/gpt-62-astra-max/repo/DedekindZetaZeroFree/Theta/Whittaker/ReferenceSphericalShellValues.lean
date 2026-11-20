@@ -14,7 +14,7 @@ namespace DedekindZetaZeroFree.ExteriorWhittakerValues.ActualStoredShells
 open MomentSources ThetaExpansion ActualSpherical ActualJacquet ActualShellNormalization ActualShellValues
 open KPLocalExceptionalConstruction KPLocalPrincipalSeries KPExteriorUnitShellIntegrals
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem reference_fixed (R : PrincipalMellin.ActualRecipe S η)
     {N : TraceHaarTransport R} (C : JointHaarFactorizedSources R N) (p : ThetaBranch.ExteriorPrime R.A)
@@ -32,7 +32,6 @@ theorem reference_fixed (R : PrincipalMellin.ActualRecipe S η)
       change _ ∈ KPAdelicCoverRestrictedProduct.finiteCompact F R.A.zeta12 R.A.primitive_zeta12 p.val
       rw [KPAdelicCoverRestrictedProduct.finiteCompact, dif_neg hn]
       exact ⟨a, rfl⟩)
-  change exteriorImageAction R C p k.val _ = _
   have hk : KPPGLLocalCover.coverQuotient F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val)
       (KPGoodCompactSplitting.kStar F R.A.zeta12 R.A.primitive_zeta12 p.val ht a) = k.val := ha
   simpa only [hk] using hh
@@ -57,24 +56,18 @@ theorem stored_nonnegative_values (R : PrincipalMellin.ActualRecipe S η)
     exteriorWhittakerValue R C p (uniformizerUnit F p.val π hπ ^ (e : ℤ)) =
       radialValue F p.val (g χκ ψbar 2) (e : ℤ) := by
   let M := C.factorization.finiteData p.val
-  have hL : IsWhittaker F R.A.zeta12 R.A.primitive_zeta12 p.val M.inducing
-      M.inducing.polarization M.haar M.haar_integer ψ (C.factorization.ell (Sum.inr p.val)) := by
-    intro t f
-    have hu : (M.inducing.borel.upperRoot (Multiplicative.ofAdd t) :
-        ActualCover F R.A.zeta12 R.A.primitive_zeta12 p.val) =
-        KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) t :=
-      (M.inducing.openCell M.inducing.polarization).upper_eq t
-    exact (congrArg (fun g : ActualCover F R.A.zeta12 R.A.primitive_zeta12 p.val =>
-      C.factorization.ell (Sum.inr p.val) (exteriorImageAction R C p g f)) hu).trans
-        ((hW p t f).trans (congrArg (fun z : ℂ => z * C.factorization.ell (Sum.inr p.val) f)
-          (hψ t).symm))
   unfold exteriorWhittakerValue
   rw [exterior_diagonal_eq_standard_lift]
-  exact (nonnegative_values F R.A.zeta12 R.A.primitive_zeta12 p.val M.inducing M.inducing.polarization
+  refine (nonnegative_values F R.A.zeta12 R.A.primitive_zeta12 p.val M.inducing M.inducing.polarization
       M.haar M.haar_integer ht hgood π hπ ψ hψcont hψunitary hcond χκ hactual ψbar hbar
       (C.factorization.references (Sum.inr p.val)) (reference_fixed R C p ht hn)
       (C.factorization.spherical_reference p.val p.property).1
-      (C.factorization.ell (Sum.inr p.val)) hL (exterior_reference_value_eq_one R C p) e)
+      (C.factorization.ell (Sum.inr p.val)) ?_ (exterior_reference_value_eq_one R C p) e)
+  intro t f
+  exact (congrArg (fun g : ActualCover F R.A.zeta12 R.A.primitive_zeta12 p.val =>
+    C.factorization.ell (Sum.inr p.val) (exteriorImageAction R C p g f)) ((M.inducing.openCell M.inducing.polarization).upper_eq t)).trans
+      ((hW p t f).trans (congrArg (fun z : ℂ => z * C.factorization.ell (Sum.inr p.val) f)
+        (hψ t).symm))
 
 end DedekindZetaZeroFree.ExteriorWhittakerValues.ActualStoredShells
 

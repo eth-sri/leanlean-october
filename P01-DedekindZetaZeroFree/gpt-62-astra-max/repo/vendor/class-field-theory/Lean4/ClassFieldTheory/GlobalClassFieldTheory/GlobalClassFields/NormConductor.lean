@@ -17,15 +17,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -155,7 +146,7 @@ theorem ideleClassNormLocalHigherUnitExponent_eq_zero_iff
     apply Nat.eq_zero_of_le_zero
     apply
       ideleClassNormLocalHigherUnitExponent_min
-        (K := K) (L := L) v
+          v
     simpa only [RayClass.localHigherUnitGroup_zero] using hunits
 
 omit [NumberField L] in
@@ -171,11 +162,11 @@ theorem ideleClassNormLocalHigherUnitExponent_eq_zero_of_chosenUnramified
   apply Nat.eq_zero_of_le_zero
   apply Nat.find_min'
     (exists_localHigherUnitGroup_le_chosenFinitePlaceLocalNormSubgroup
-      (K := K) (L := L) v)
+        v)
   rw [RayClass.localHigherUnitGroup_zero]
   exact
     _root_.adicCompletionIntegerUnits_le_chosenFinitePlaceLocalNormSubgroup
-      (K := K) (L := L) v hunram
+        v hunram
 
 /-- Outside the finite set of ramified base places, the selected local
 higher-unit exponent is zero. -/
@@ -188,20 +179,20 @@ theorem ideleClassNormLocalHigherUnitExponent_eq_zero_of_not_mem_ramified
         (K := K) (L := L) v = 0 := by
   apply
     ideleClassNormLocalHigherUnitExponent_eq_zero_of_chosenUnramified
-      (K := K) (L := L) v
+        v
   apply
     _root_.chosenFinitePlaceIsUnramified_of_isUnramifiedAt
-      (K := K) (L := L) v
+        v
   by_contra hram
   apply hv
   rw [_root_.mem_ramifiedBaseFinitePlaces_iff]
   exact
     ⟨_root_.finitePlaceExtensionCentre
-        (K := K) (L := L) v
-        (_root_.chosenFinitePlaceExtension (L := L) v),
+          v
+        (_root_.chosenFinitePlaceExtension v),
       _root_.finitePlaceExtensionCentre_liesOver
-        (K := K) (L := L) v
-        (_root_.chosenFinitePlaceExtension (L := L) v),
+          v
+        (_root_.chosenFinitePlaceExtension v),
       hram⟩
 
 /-- A finite modulus built from the actual local norm subgroups.  Its
@@ -217,7 +208,7 @@ noncomputable def ideleClassNormDefiningModulus :
       exact
         hv
           (ideleClassNormLocalHigherUnitExponent_eq_zero_of_not_mem_ramified
-            (K := K) (L := L) v hvRamified))
+              v hvRamified))
 
 /-- Evaluation of the actual norm defining modulus is the selected local
 higher-unit exponent. -/
@@ -240,7 +231,7 @@ theorem ideleClassNormDefiningModulus_local_spec
   rw [ideleClassNormDefiningModulus_apply]
   exact
     ideleClassNormLocalHigherUnitExponent_spec
-      (K := K) (L := L) v
+        v
 
 /-- The norm defining modulus is pointwise minimal among all moduli whose
 prescribed local higher-unit groups consist of chosen local norms. -/
@@ -256,7 +247,7 @@ theorem ideleClassNormDefiningModulus_le_of_localHigherUnitGroup_le
   rw [ideleClassNormDefiningModulus_apply]
   exact
     ideleClassNormLocalHigherUnitExponent_min
-      (K := K) (L := L) v (hm v)
+        v (hm v)
 
 /-- A finite place occurs in the constructed norm modulus exactly when
 some integral unit at that place is not a norm from the chosen localized
@@ -274,25 +265,7 @@ theorem mem_ideleClassNormDefiningModulus_support_iff
   exact
     not_congr
       (ideleClassNormLocalHigherUnitExponent_eq_zero_iff
-        (K := K) (L := L) v)
-
-/-- The constructed defining modulus is supported only at ramified
-finite places of the base field. -/
-theorem ideleClassNormDefiningModulus_support_subset_ramifiedBaseFinitePlaces :
-    (ideleClassNormDefiningModulus
-        (K := K) (L := L)).support ⊆
-      _root_.ramifiedBaseFinitePlaces
-        (K := K) (L := L) := by
-  intro v hv
-  by_contra hvRamified
-  have hne :
-      ideleClassNormDefiningModulus
-          (K := K) (L := L) v ≠ 0 :=
-    Finsupp.mem_support_iff.mp hv
-  rw [ideleClassNormDefiningModulus_apply,
-    ideleClassNormLocalHigherUnitExponent_eq_zero_of_not_mem_ramified
-      (K := K) (L := L) v hvRamified] at hne
-  exact hne rfl
+          v)
 
 /-- The raw idele congruence subgroup of the constructed modulus lies
 in the image of the actual relative-idele norm. -/
@@ -306,25 +279,21 @@ theorem
   rw [RayClass.Modulus.ideleCongruenceSubgroup_narrowOfFinite] at ha
   refine
     (_root_.mem_relativeIdeleNorm_range_iff_localTensorNorms
-      (K := K) (L := L) a).2 ⟨?_, ?_⟩
+        a).2 ⟨?_, ?_⟩
   · intro w
     apply
       _root_.infinitePositiveSubgroup_le_infiniteTensorNormSubgroup
-        (K := K) (L := L) w
-    have hw :=
-      (RayClass.mem_narrowInfiniteCongruenceSubgroup_iff a.1).1 ha.1 w
-    simpa only [IdeleGroup.infiniteComponent_apply] using hw
+          w
+    simpa using ((RayClass.mem_narrowInfiniteCongruenceSubgroup_iff a.1).1 ha.1 w)
   · intro v
     rw [
       _root_.finitePlaceLocalTensorNorm_range_eq_chosenLocalNormSubgroup]
     apply
       ideleClassNormDefiningModulus_local_spec
-        (K := K) (L := L) v
-    have hv :=
-      (RayClass.mem_finiteCongruenceSubgroup_iff
-        (ideleClassNormDefiningModulus (K := K) (L := L)) a.2).1
-          ha.2 v
-    simpa only [IdeleGroup.finiteComponent_apply] using hv
+          v
+    simpa using ((RayClass.mem_finiteCongruenceSubgroup_iff
+      (ideleClassNormDefiningModulus) a.2).1
+        ha.2 v)
 
 /-- The explicitly constructed modulus is a defining modulus for the
 actual idele-class norm subgroup. -/
@@ -343,18 +312,18 @@ theorem ideleClassNormDefiningModulus_isDefiningModulus :
         (_root_.ideleClassNorm K L).range
     obtain ⟨z, hz⟩ :=
       ideleCongruenceSubgroup_normDefiningModulus_le_relativeIdeleNorm_range
-        (K := K) (L := L) ha
+          ha
     refine
       ⟨QuotientGroup.mk'
           (IdeleGroup.principalSubgroup L)
           (_root_.relativeIdeleBaseChangeMulEquiv
-            (K := K) (L := L) z), ?_⟩
+              z), ?_⟩
     change
       QuotientGroup.mk'
           (IdeleGroup.principalSubgroup K)
           (IdeleGroup.norm K L
             (_root_.relativeIdeleBaseChangeMulEquiv
-              (K := K) (L := L) z)) =
+                z)) =
         QuotientGroup.mk'
           (IdeleGroup.principalSubgroup K) a
     rw [IdeleGroup.norm_relativeIdeleBaseChangeMulEquiv, hz]
@@ -392,10 +361,8 @@ theorem ideleClassNorm_range_isOpen :
     IsOpen
       (((_root_.ideleClassNorm K L).range :
         Subgroup (IdeleClassGroup K)) :
-        Set (IdeleClassGroup K)) := by
-  exact
-    (ideleClassNormConductorialSubgroup
-      (K := K) (L := L)).isOpen
+        Set (IdeleClassGroup K)) := (ideleClassNormConductorialSubgroup
+       ).isOpen
 
 /-- The actual idele-class norm subgroup is closed. -/
 theorem ideleClassNorm_range_isClosed :
@@ -457,158 +424,6 @@ theorem narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient_mk
         ((_root_.ideleClassNorm K L).range) x :=
   rfl
 
-/-- The canonical map from the conductor ray class group to the actual
-idele-class norm quotient is surjective. -/
-theorem
-    narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient_surjective :
-    Function.Surjective
-      (narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient
-        (K := K) (L := L)) := by
-  intro q
-  obtain ⟨x, rfl⟩ :=
-    QuotientGroup.mk'_surjective
-      ((_root_.ideleClassNorm K L).range) q
-  exact
-    ⟨QuotientGroup.mk'
-        (RayClass.Modulus.congruenceSubgroup
-          (RayClass.Modulus.narrowOfFinite
-            (ideleClassNormNarrowFiniteConductor
-              (K := K) (L := L)))) x,
-      rfl⟩
-
-/-- The kernel of the conductor ray-class quotient map is the image of
-the actual norm subgroup modulo the conductor congruence subgroup. -/
-theorem
-    narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient_ker :
-    MonoidHom.ker
-        (narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient
-          (K := K) (L := L)) =
-      Subgroup.map
-        (QuotientGroup.mk'
-          (RayClass.Modulus.congruenceSubgroup
-            (RayClass.Modulus.narrowOfFinite
-              (ideleClassNormNarrowFiniteConductor
-                (K := K) (L := L)))))
-        ((_root_.ideleClassNorm K L).range) := by
-  unfold narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient
-  let N :=
-    RayClass.Modulus.congruenceSubgroup
-      (RayClass.Modulus.narrowOfFinite
-        (ideleClassNormNarrowFiniteConductor (K := K) (L := L)))
-  let M := (_root_.ideleClassNorm K L).range
-  change
-    (QuotientGroup.map N M (MonoidHom.id (IdeleClassGroup K)) _).ker =
-      Subgroup.map (QuotientGroup.mk' N) M
-  simpa only [Subgroup.comap_id] using
-    (QuotientGroup.ker_map (N := N) M
-      (MonoidHom.id (IdeleClassGroup K))
-      (show N ≤ Subgroup.comap (MonoidHom.id (IdeleClassGroup K)) M from
-        fun _ hx =>
-          ideleClassNorm_narrowFiniteConductor_isDefiningModulus
-            (K := K) (L := L) hx))
-
-/-- Quotienting the conductor ray class group by the image of the actual
-norm subgroup recovers the actual idele-class norm quotient. -/
-noncomputable def
-    narrowFiniteConductorRayClassNormSubgroupQuotientEquivIdeleClassNormQuotient :
-    (RayClass.RayClassGroup
-          (RayClass.Modulus.narrowOfFinite
-            (ideleClassNormNarrowFiniteConductor
-              (K := K) (L := L))) ⧸
-        Subgroup.map
-          (QuotientGroup.mk'
-            (RayClass.Modulus.congruenceSubgroup
-              (RayClass.Modulus.narrowOfFinite
-                (ideleClassNormNarrowFiniteConductor
-                  (K := K) (L := L)))))
-          ((_root_.ideleClassNorm K L).range)) ≃*
-      IdeleClassGroup K ⧸
-        (_root_.ideleClassNorm K L).range :=
-  (QuotientGroup.quotientMulEquivOfEq
-      (narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient_ker
-        (K := K) (L := L)).symm).trans
-    (QuotientGroup.quotientKerEquivOfSurjective
-      (narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient
-        (K := K) (L := L))
-      (narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient_surjective
-        (K := K) (L := L)))
-
-/-- The conductor ray class number factors as the order of the norm
-subgroup modulo conductor congruence times the order of the actual
-idele-class norm quotient. -/
-theorem
-    narrowFiniteConductorRayClassGroup_card_eq_normSubgroupImage_card_mul_normQuotient_card :
-    Nat.card
-        (RayClass.RayClassGroup
-          (RayClass.Modulus.narrowOfFinite
-            (ideleClassNormNarrowFiniteConductor
-              (K := K) (L := L)))) =
-      Nat.card
-          (Subgroup.map
-            (QuotientGroup.mk'
-              (RayClass.Modulus.congruenceSubgroup
-                (RayClass.Modulus.narrowOfFinite
-                  (ideleClassNormNarrowFiniteConductor
-                    (K := K) (L := L)))))
-            ((_root_.ideleClassNorm K L).range)) *
-        Nat.card
-          (IdeleClassGroup K ⧸
-            (_root_.ideleClassNorm K L).range) := by
-  let f :=
-    narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient
-      (K := K) (L := L)
-  have hf : Function.Surjective f :=
-    narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient_surjective
-      (K := K) (L := L)
-  calc
-    Nat.card
-        (RayClass.RayClassGroup
-          (RayClass.Modulus.narrowOfFinite
-            (ideleClassNormNarrowFiniteConductor
-              (K := K) (L := L)))) =
-        Nat.card (MonoidHom.ker f) *
-          (MonoidHom.ker f).index :=
-      (Subgroup.card_mul_index (MonoidHom.ker f)).symm
-    _ = Nat.card (MonoidHom.ker f) *
-        Nat.card f.range := by
-      rw [Subgroup.index_ker f]
-    _ = Nat.card (MonoidHom.ker f) *
-        Nat.card
-          (IdeleClassGroup K ⧸
-            (_root_.ideleClassNorm K L).range) := by
-      rw [f.range_eq_top_of_surjective hf, Subgroup.card_top]
-    _ = Nat.card
-          (Subgroup.map
-            (QuotientGroup.mk'
-              (RayClass.Modulus.congruenceSubgroup
-                (RayClass.Modulus.narrowOfFinite
-                  (ideleClassNormNarrowFiniteConductor
-                    (K := K) (L := L)))))
-            ((_root_.ideleClassNorm K L).range)) *
-        Nat.card
-          (IdeleClassGroup K ⧸
-            (_root_.ideleClassNorm K L).range) := by
-      rw [
-        narrowFiniteConductorRayClassGroupToIdeleClassNormQuotient_ker
-          (K := K) (L := L)]
-
-/-- The order of the actual idèle-class norm quotient divides the order of
-the ray class group at its narrow finite conductor. -/
-theorem
-    ideleClassNormQuotient_card_dvd_narrowFiniteConductorRayClassGroup_card :
-    Nat.card
-        (IdeleClassGroup K ⧸
-          (_root_.ideleClassNorm K L).range) ∣
-      Nat.card
-        (RayClass.RayClassGroup
-          (RayClass.Modulus.narrowOfFinite
-            (ideleClassNormNarrowFiniteConductor
-              (K := K) (L := L)))) := by
-  simpa only [Subgroup.index_eq_card] using
-    Subgroup.index_dvd_of_le
-      (ideleClassNorm_narrowFiniteConductor_isDefiningModulus
-        (K := K) (L := L))
-
 /-- The narrow finite conductor of the actual norm subgroup is bounded by
 the modulus obtained from the chosen local norm subgroups. -/
 theorem ideleClassNorm_narrowFiniteConductor_le_normDefiningModulus :
@@ -618,23 +433,6 @@ theorem ideleClassNorm_narrowFiniteConductor_le_normDefiningModulus :
     (K := K) (L := L)).narrowFiniteConductor_le
     (ideleClassNormDefiningModulus_isDefiningModulus
       (K := K) (L := L))
-
-/-- At every finite place, the exponent of the narrow finite conductor of
-the actual norm subgroup is bounded by the least higher-unit depth already
-contained in the chosen local norm subgroup. -/
-theorem ideleClassNorm_narrowFiniteConductor_apply_le_localHigherUnitExponent
-    (v : HeightOneSpectrum (𝓞 K)) :
-    ideleClassNormNarrowFiniteConductor (K := K) (L := L) v ≤
-      ideleClassNormLocalHigherUnitExponent
-        (K := K) (L := L) v := by
-  have hle :=
-    (ideleClassNormConductorialSubgroup
-      (K := K) (L := L)).narrowFiniteConductor_le
-      (ideleClassNormDefiningModulus_isDefiningModulus
-        (K := K) (L := L))
-  simpa only [ideleClassNormNarrowFiniteConductor,
-    RayClass.Modulus.finitePart_narrowOfFinite,
-    ideleClassNormDefiningModulus_apply] using hle v
 
 /-- Every finite prime occurring in the narrow finite conductor of the
 actual norm subgroup already occurs in the modulus constructed from the
@@ -646,110 +444,12 @@ theorem
       (ideleClassNormDefiningModulus
         (K := K) (L := L)).support := by
   intro v hv
-  have hfinite_ne :
-      ideleClassNormNarrowFiniteConductor
-          (K := K) (L := L) v ≠ 0 :=
-    Finsupp.mem_support_iff.mp hv
   apply Finsupp.mem_support_iff.mpr
   intro hlocal_zero
-  apply hfinite_ne
+  apply Finsupp.mem_support_iff.mp hv
   exact Nat.eq_zero_of_le_zero
     ((ideleClassNorm_narrowFiniteConductor_le_normDefiningModulus
-      (K := K) (L := L) v).trans_eq hlocal_zero)
-
-/-- If the zeroth one-place higher-unit class subgroup lies in the
-actual idèle-class norm range, then that finite place is absent from
-the narrow finite conductor support. -/
-theorem
-    not_mem_ideleClassNorm_narrowFiniteConductor_support_of_localHigherUnitClassSubgroup_zero_le
-    (v : HeightOneSpectrum (𝓞 K))
-    (hlocal :
-      RayClass.localHigherUnitClassSubgroup v 0 ≤
-        (_root_.ideleClassNorm K L).range) :
-    v ∉
-      (ideleClassNormNarrowFiniteConductor
-        (K := K) (L := L)).support := by
-  change v ∉
-    (ideleClassNormConductorialSubgroup
-      (K := K) (L := L)).narrowFiniteConductor.support
-  rw [Finsupp.notMem_support_iff,
-    (ideleClassNormConductorialSubgroup
-      (K := K) (L := L)).narrowFiniteConductor_apply_eq_narrowFiniteLocalConductorExponent v]
-  exact
-    Nat.eq_zero_of_le_zero
-      ((ideleClassNormConductorialSubgroup
-        (K := K) (L := L)).narrowFiniteLocalConductorExponent_le v hlocal)
-
-/-- If the chosen prime of `L` above `v` is algebraically unramified,
-then `v` does not occur in the conductor of the actual idele-class norm
-subgroup. -/
-theorem
-    not_mem_ideleClassNorm_narrowFiniteConductor_support_of_isUnramifiedAt
-    (v : HeightOneSpectrum (𝓞 K))
-    (hunram :
-      Algebra.IsUnramifiedAt (𝓞 K)
-        (_root_.finitePlaceExtensionCentre
-          (K := K) (L := L) v
-          (_root_.chosenFinitePlaceExtension (L := L) v)).asIdeal) :
-    v ∉
-      (ideleClassNormNarrowFiniteConductor
-        (K := K) (L := L)).support := by
-  apply
-    not_mem_ideleClassNorm_narrowFiniteConductor_support_of_localHigherUnitClassSubgroup_zero_le
-      (K := K) (L := L) v
-  exact
-    localHigherUnitClassSubgroup_zero_le_ideleClassNorm_range_of_isUnramifiedAt
-      (K := K) (L := L) v hunram
-
-/-- A finite place which splits completely does not occur in the narrow
-finite conductor of the actual idèle-class norm subgroup. -/
-theorem
-    not_mem_ideleClassNorm_narrowFiniteConductor_support_of_splitsCompletely
-    (v : HeightOneSpectrum (𝓞 K))
-    (hsplit :
-      _root_.FinitePlaceSplitsCompletely
-        (K := K) (L := L) v) :
-    v ∉
-      (ideleClassNormNarrowFiniteConductor
-        (K := K) (L := L)).support := by
-  apply
-    not_mem_ideleClassNorm_narrowFiniteConductor_support_of_localHigherUnitClassSubgroup_zero_le
-      (K := K) (L := L) v
-  intro c hc
-  obtain ⟨x, hx, rfl⟩ := hc
-  apply
-    finitePlaceIdeleClass_range_le_ideleClassNorm_range_of_splitsCompletely
-      (K := K) (L := L) v hsplit
-  exact ⟨x, rfl⟩
-
-/-- The narrow finite conductor of an actual finite Galois idèle-class norm
-subgroup is supported only at ramified finite places of the base field. -/
-theorem ideleClassNorm_narrowFiniteConductor_support_subset_ramifiedBaseFinitePlaces :
-    (ideleClassNormNarrowFiniteConductor
-      (K := K) (L := L)).support ⊆
-      _root_.ramifiedBaseFinitePlaces
-        (K := K) (L := L) := by
-  intro v hv
-  by_contra hvRamified
-  have hunram :
-      Algebra.IsUnramifiedAt (𝓞 K)
-        (_root_.finitePlaceExtensionCentre
-          (K := K) (L := L) v
-          (_root_.chosenFinitePlaceExtension (L := L) v)).asIdeal := by
-    by_contra hram
-    apply hvRamified
-    rw [_root_.mem_ramifiedBaseFinitePlaces_iff]
-    exact
-      ⟨_root_.finitePlaceExtensionCentre
-          (K := K) (L := L) v
-          (_root_.chosenFinitePlaceExtension (L := L) v),
-        _root_.finitePlaceExtensionCentre_liesOver
-          (K := K) (L := L) v
-          (_root_.chosenFinitePlaceExtension (L := L) v),
-        hram⟩
-  exact
-    (not_mem_ideleClassNorm_narrowFiniteConductor_support_of_isUnramifiedAt
-      (K := K) (L := L) v hunram) hv
+        v).trans_eq hlocal_zero)
 
 end GlobalClassFields
 end GlobalClassFieldTheory

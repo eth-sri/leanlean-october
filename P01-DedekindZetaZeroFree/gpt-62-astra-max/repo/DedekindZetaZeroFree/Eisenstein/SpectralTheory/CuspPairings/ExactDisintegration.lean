@@ -12,11 +12,11 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.SourceCuspidalOrthog
 open KPContSectorCoveredQuotientVocabulary KPContSectorFixedPushforwardSupport
 open KPContActualCutoffSmoothDescent
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "V" => level F ζ hζ C R P H U
 local notation "A" => H.atlas V
 local notation "D" => H.disintegration V
@@ -51,7 +51,7 @@ local instance exactDisintegrationRoots : Fintype (rootsOfUnity 3 F) := Fintype.
             ∂Transport.cuspRadial Y := by
   let m := KPContActualAllCuspSource.measure F ζ hζ C R P H U
   let v := source.descent.commutator s
-  let g : X → ℂ := fun x => star (scalar F ζ hζ C R P H U u x) * scalar F ζ hζ C R P H U v x
+  let g := fun x => star (scalar F ζ hζ C R P H U u x) * scalar F ζ hζ C R P H U v x
   have hint : Integrable g m := by
     apply (L2.integrable_inner u_H.val (source.h s).val).congr
     filter_upwards [hu_H, source.source_ae s hs] with x hx hy
@@ -62,24 +62,20 @@ local instance exactDisintegrationRoots : Fintype (rootsOfUnity 3 F) := Fintype.
     filter_upwards [hu_H, source.source_ae s hs] with x hx hy
     simp only [hx,hy,RCLike.inner_apply]
     exact mul_comm _ _
-  have hgm : Measurable g := ((scalar_continuous F ζ hζ C R P H U u).star.measurable).mul
-    (scalar_continuous F ζ hζ C R P H U v).measurable
   let Y := Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * B.τ)
-  have hd : 0 < KPCuspLogShape.dimension F := by
-    exact KPCuspCharts.positive_dimension F H.totallyComplex
-  have hy : KPMsFixedHaarDisintegration.logHeight (F := F) Y = B.τ := logHeight_exp F B.τ hd
+  have hy := logHeight_exp F B.τ (KPCuspCharts.positive_dimension F H.totallyComplex)
   have hY : KPMsFixedHaarDisintegration.AdmissibleCutoff A Y :=
     ⟨Real.exp_pos _, by rw [hy]; exact B.chart_threshold_le⟩
   obtain ⟨a,ha,he,hi⟩ := Transport.covered_integral_cusp_disintegration
-    F ζ hζ R P H V Y hY g hint hgm (by
+    F ζ hζ R P H V Y hY g hint (((scalar_continuous F ζ hζ C R P H U u).star.measurable).mul
+      (scalar_continuous F ζ hζ C R P H U v).measurable) (by
       intro x hx
-      have hx' : ∀ j, x ∉ ends F ζ hζ C R P H U B j := by
-        intro j hj
-        apply hx
-        unfold KPMsFixedHaarDisintegration.cuspEnds
-        rw [hy]
-        exact Set.mem_iUnion.mpr ⟨j,hj⟩
-      exact mul_eq_zero_of_right _ (source.descent.off_ends s hs x hx').2)
+      refine mul_eq_zero_of_right _ (source.descent.off_ends s hs x ?_).2
+      intro j hj
+      apply hx
+      unfold KPMsFixedHaarDisintegration.cuspEnds
+      rw [hy]
+      exact Set.mem_iUnion.mpr ⟨j,hj⟩)
   refine ⟨Y,hY,a,rfl,ha,?_,?_⟩
   · intro x
     rw [he,pairing_centralAverage]

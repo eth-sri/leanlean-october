@@ -12,8 +12,8 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.CoreChartLocalizers.Reconstruction
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
+    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+    (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
 theorem average_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
@@ -54,7 +54,7 @@ theorem average_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       ext x
       exact hball_mem g x
     have hm : MeasurePreserving ((C.chart i).orthogonal g)
-        (volume : Measure (E (C.chart i).n)) volume :=
+        volume volume :=
       LinearIsometryEquiv.measurePreserving ((C.chart i).orthogonal g)
     have hr := hm.restrict_preimage (s := Metric.ball 0 (C.chart i).radius)
       Metric.isOpen_ball.measurableSet
@@ -80,8 +80,7 @@ theorem average_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       rw [hx g]
     · simp only [Chart.average, Set.indicator_of_notMem hball]
 
-  have hsub : Metric.ball (0 : E (C.chart i).n) (C.chart i).radius ⊆
-      cube (C.chart i).n (C.chart i).a :=
+  have hsub :=
     (subset_closure).trans ((C.chart i).closed_ball_in_cube.trans interior_subset)
   have hle : volume.restrict (Metric.ball 0 (C.chart i).radius) ≤
       volume.restrict (cube (C.chart i).n (C.chart i).a) :=
@@ -160,8 +159,8 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.CoreChartLocalizers.Reconstruction
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
+    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+    (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
 theorem extend_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
@@ -197,8 +196,8 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.CoreChartLocalizers.Reconstruction
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
+    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+    (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
 set_option maxHeartbeats 800000 in
 theorem descend_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
@@ -214,7 +213,7 @@ theorem descend_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     ∀ᵐ x ∂(quotientMeasure F ζ hζ hF U A).restrict K,
       x ∈ (C.chart i).O F ζ hζ hF U →
         B.R i (B.T i v) x = (C.phi i x : ℂ) • v x := by
-  let base : E (C.chart i).n → X F ζ hζ U := (C.chart i).toBase F ζ hζ hF U
+  let base := (C.chart i).toBase F ζ hζ hF U
   let ball : Set (E (C.chart i).n) := Metric.ball 0 (C.chart i).radius
   let O : Set (X F ζ hζ U) := (C.chart i).O F ζ hζ hF U
   let ν : Measure (E (C.chart i).n) :=
@@ -223,8 +222,9 @@ theorem descend_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   have hAvg_ae : ∀ᵐ x ∂volume.restrict ball,
       (C.chart i).average F ζ hζ hF U (B.T i v) x =
         (C.phi i (base x) : ℂ) * (P.phase i x : ℂ) * (v (base x) : ℂ) := haverage
+  let R₀ := B.R i (B.T i v)
   have hball_ae : ∀ᵐ x ∂volume.restrict ball, base x ∈ K →
-      B.R i (B.T i v) (base x) = (C.phi i (base x) : ℂ) • v (base x) := by
+      R₀ (base x) = (C.phi i (base x) : ℂ) • v (base x) := by
     filter_upwards [B.R_formula i (B.T i v), hAvg_ae] with x hR hAvg
     intro hxK
     rw [hR hxK, hAvg]
@@ -237,7 +237,7 @@ theorem descend_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       rw [inv_mul_cancel_left₀ (Units.ne_zero (P.phase i x))]
     have hmem : (C.phi i (base x) : ℂ) * (v (base x) : ℂ) ∈ V F ζ hζ U := by
       have h := (V F ζ hζ U).smul_mem (C.phi i (base x) : ℂ) (v (base x)).2
-      simpa using h
+      exact h
     rw [hz, Submodule.orthogonalProjectionOnto_mem_subspace_eq_self (K := V F ζ hζ U)
       (v := ⟨(C.phi i (base x) : ℂ) * (v (base x) : ℂ), hmem⟩)]
     apply Subtype.ext
@@ -248,8 +248,7 @@ theorem descend_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
         (fun x => ENNReal.ofReal ((C.chart i).weight x)))
       (c := (Fintype.card ((C.chart i).G F ζ hζ hF U) : ℝ≥0∞)⁻¹)).trans
       (withDensity_absolutelyContinuous (volume.restrict ball) _)
-  have hν_ae : ∀ᵐ x ∂ν, base x ∈ K →
-      B.R i (B.T i v) (base x) = (C.phi i (base x) : ℂ) • v (base x) :=
+  have hν_ae :=
     hball_ae.filter_mono hνac.ae_le
   have hbase_aemeas : AEMeasurable base ν := by
     letI : BorelSpace (X F ζ hζ U) := ⟨rfl⟩
@@ -268,7 +267,7 @@ theorem descend_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       exact h
     exact (hb.mono_ac (withDensity_absolutelyContinuous (volume.restrict ball) _)).smul_measure _
   have hO_ae : ∀ᵐ x ∂(quotientMeasure F ζ hζ hF U A).restrict O, x ∈ K →
-      B.R i (B.T i v) x = (C.phi i x : ℂ) • v x := by
+      R₀ x = (C.phi i x : ℂ) • v x := by
     have hphi : Measurable (C.phi i) := by
       have hs : Measurable (fun p : Fin A.componentCount × KPFiniteCuspAtlas.SymmetricSpace F =>
           C.phi i (KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative p.1)
@@ -277,50 +276,41 @@ theorem descend_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       have hh := hs.comp (M.measurable_component.prodMk M.measurable_lift)
       simpa only [Function.comp_def, M.lift_formula] using hh
     let μ := quotientMeasure F ζ hζ hF U A
-    let bad : Set (X F ζ hζ U) :=
-      {x | ¬ (B.R i (B.T i v) x = (C.phi i x : ℂ) • v x)}
+    let bad :=
+      {x | ¬ (R₀ x = (C.phi i x : ℂ) • v x)}
     have hbad : NullMeasurableSet bad (μ.restrict K) := by
-      have hr := Lp.aestronglyMeasurable (B.R i (B.T i v))
-      have hv := (Lp.aestronglyMeasurable v).restrict (s := K)
-      have hp : AEStronglyMeasurable (fun x => (C.phi i x : ℂ)) (μ.restrict K) :=
-        (Complex.measurable_ofReal.comp hphi).aestronglyMeasurable
-      exact (hr.nullMeasurableSet_eq_fun (hp.smul hv)).compl
-    have hbadK : NullMeasurableSet (bad ∩ K) μ :=
-      (nullMeasurableSet_restrict hK.nullMeasurableSet).mp hbad
-    have hmap : Measure.map base ν = μ.restrict O := C.chart_measure i
+      exact ((Lp.aestronglyMeasurable (R₀)).nullMeasurableSet_eq_fun (((Complex.measurable_ofReal.comp hphi).aestronglyMeasurable).smul ((Lp.aestronglyMeasurable v).restrict))).compl
+    have hmap := C.chart_measure i
     have hnull : ν (base ⁻¹' (bad ∩ K)) = 0 := by
-      have hh := ae_iff.mp hν_ae
       simpa only [not_imp, Set.preimage_setOf_eq, Set.inter_def, bad,
-        Set.mem_setOf_eq, and_comm] using hh
+        Set.mem_setOf_eq, and_comm] using (ae_iff.mp hν_ae)
     have hzero : (μ.restrict O) (bad ∩ K) = 0 := by
       rw [← hmap, Measure.map_apply₀ hbase_aemeas]
       · exact hnull
       · rw [hmap]
-        exact hbadK.mono Measure.restrict_le_self
+        exact ((nullMeasurableSet_restrict hK.nullMeasurableSet).mp hbad).mono Measure.restrict_le_self
     apply ae_iff.mpr
     simpa only [not_imp, Set.inter_def, bad, Set.mem_setOf_eq, and_comm] using hzero
   rw [ae_restrict_iff' hK]
   refine ae_iff.mpr ?_
   have hset : {x : X F ζ hζ U |
-        ¬ (x ∈ K → x ∈ O → B.R i (B.T i v) x = (C.phi i x : ℂ) • v x)}
-      = {x | x ∈ K ∧ x ∈ O ∧ ¬ (B.R i (B.T i v) x = (C.phi i x : ℂ) • v x)} := by
-    ext x; simp only [Set.mem_setOf_eq, not_imp]
+        ¬ (x ∈ K → x ∈ O → R₀ x = (C.phi i x : ℂ) • v x)}
+      = {x | x ∈ K ∧ x ∈ O ∧ ¬ (R₀ x = (C.phi i x : ℂ) • v x)} := by
+    ext x; simp
   rw [hset]
-  have h0 : ((quotientMeasure F ζ hζ hF U A).restrict O)
-      {x | ¬ (x ∈ K → B.R i (B.T i v) x = (C.phi i x : ℂ) • v x)} = 0 := ae_iff.mp hO_ae
   refine nonpos_iff_eq_zero.mp ?_
   calc (quotientMeasure F ζ hζ hF U A)
-        {x | x ∈ K ∧ x ∈ O ∧ ¬ (B.R i (B.T i v) x = (C.phi i x : ℂ) • v x)}
+        {x | x ∈ K ∧ x ∈ O ∧ ¬ (R₀ x = (C.phi i x : ℂ) • v x)}
       = (quotientMeasure F ζ hζ hF U A)
-          ({x | x ∈ K ∧ ¬ (B.R i (B.T i v) x = (C.phi i x : ℂ) • v x)} ∩ O) := by
+          ({x | x ∈ K ∧ ¬ (R₀ x = (C.phi i x : ℂ) • v x)} ∩ O) := by
         congr 1; ext x; simp only [Set.mem_inter_iff, Set.mem_setOf_eq]; tauto
     _ ≤ ((quotientMeasure F ζ hζ hF U A).restrict O)
-          {x | x ∈ K ∧ ¬ (B.R i (B.T i v) x = (C.phi i x : ℂ) • v x)} :=
+          {x | x ∈ K ∧ ¬ (R₀ x = (C.phi i x : ℂ) • v x)} :=
         Measure.le_restrict_apply _ _
     _ ≤ ((quotientMeasure F ζ hζ hF U A).restrict O)
-          {x | ¬ (x ∈ K → B.R i (B.T i v) x = (C.phi i x : ℂ) • v x)} :=
+          {x | ¬ (x ∈ K → R₀ x = (C.phi i x : ℂ) • v x)} :=
         measure_mono (fun x hx => by simp only [Set.mem_setOf_eq] at hx ⊢; tauto)
-    _ = 0 := h0
+    _ = 0 := (ae_iff.mp hO_ae)
 
 end DedekindZetaZeroFree.CoreChartLocalizers.Reconstruction
 
@@ -346,18 +336,15 @@ theorem finite_partition_restriction {Y : Type*} [MeasurableSpace Y]
     LpToLpRestrictCLM Y W ℂ μ p K v = ∑ i, w i := by
   rw [Lp.ext_iff]
 
-  have hrestrict : LpToLpRestrictCLM Y W ℂ μ p K v =ᵐ[μ.restrict K] ⇑v :=
-    LpToLpRestrictCLM_coeFn ℂ K v
-
   have hsum : ⇑(∑ i, w i) =ᵐ[μ.restrict K] fun x => ∑ i, phi i x • v x := by
-    refine (Lp.coeFn_finsetSum (Finset.univ : Finset ι) w).trans ?_
+    refine (Lp.coeFn_finsetSum Finset.univ w).trans ?_
     refine (eventuallyEq_sum fun i _ => hw i).trans ?_
     exact Filter.EventuallyEq.of_eq (by funext x; rw [Finset.sum_apply])
 
   have hone : (fun x => ∑ i, phi i x • v x) =ᵐ[μ.restrict K] ⇑v := by
     filter_upwards [ae_restrict_mem hK] with x hx
     rw [← Finset.sum_smul, hpartition x hx, one_smul]
-  exact hrestrict.trans (hone.symm.trans hsum.symm)
+  exact (LpToLpRestrictCLM_coeFn ℂ K v).trans (hone.symm.trans hsum.symm)
 
 end DedekindZetaZeroFree.CoreChartLocalizers.Reconstruction
 
@@ -373,8 +360,8 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.CoreChartLocalizers
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
+    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+    (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
 theorem local_reconstruction (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
@@ -388,8 +375,7 @@ theorem local_reconstruction (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (quotientMeasure F ζ hζ hF U A) 2 hK
     (fun i x => (C.phi i x : ℂ)) ?_ v (fun i => B.R i (B.T i v)) ?_
   · intro x hx
-    have hp := C.partition x (C.covers_compact hx)
-    exact_mod_cast hp
+    exact_mod_cast (C.partition x (C.covers_compact hx))
   · intro i
     apply Reconstruction.extend_local_lift F ζ hζ hF U A M C P B v i
     apply Reconstruction.descend_local_lift F ζ hζ hF U A M hK C P B v i

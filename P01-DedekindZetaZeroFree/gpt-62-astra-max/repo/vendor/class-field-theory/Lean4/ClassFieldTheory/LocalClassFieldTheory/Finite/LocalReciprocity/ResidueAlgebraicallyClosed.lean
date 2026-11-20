@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -70,17 +65,14 @@ theorem valuationSubring_residueField_isAlgClosed
           (A.valuation_le_one_iff (a : Omega)).mpr a.property
         exists_of_le_one := fun {r} hr =>
           ⟨⟨r, (A.valuation_le_one_iff r).mp hr⟩, rfl⟩ }
-    have hxValuation : A.valuation x ≤ 1 :=
-      (hAIntegers.isIntegral_iff_v_le_one).mp hxIntegral
-    exact (A.valuation_le_one_iff x).mp hxValuation
+    exact (A.valuation_le_one_iff x).mp ((hAIntegers.isIntegral_iff_v_le_one).mp hxIntegral)
   let xA : A := ⟨x, hxA⟩
-  have hxrootEval₂ : Polynomial.eval₂ A.subtype x q = 0 := by
-    rw [← Polynomial.eval_map]
-    exact hxroot
   have hxrootA : q.eval xA = 0 := by
     apply A.subtype_injective
     rw [← Polynomial.eval₂_at_apply A.subtype xA]
-    simpa [xA] using hxrootEval₂
+    simpa [xA] using (by
+      rw [← Polynomial.eval_map]
+      exact hxroot)
   refine ⟨IsLocalRing.residue A xA, ?_⟩
   rw [← hqmap]
   simp [Polynomial.eval_map, hxrootA]
@@ -91,9 +83,13 @@ section PurelyInseparableComap
 
 variable {F Omega : Type u} [Field F] [Field Omega] [Algebra F Omega]
 
+section
+
+variable (A : ValuationSubring Omega)
+
 /-- The inclusion from the pullback of a valuation ring to the ambient
 valuation ring. -/
-def valuationSubringComapMap (A : ValuationSubring Omega) :
+def valuationSubringComapMap :
     A.comap (algebraMap F Omega) →+* A where
   toFun x := ⟨algebraMap F Omega x, x.property⟩
   map_one' := by ext; simp
@@ -102,31 +98,26 @@ def valuationSubringComapMap (A : ValuationSubring Omega) :
   map_add' x y := by ext; simp
 
 /-- Pullback along a field embedding gives a local map of valuation rings. -/
-theorem valuationSubringComapMap_isLocalHom (A : ValuationSubring Omega) :
+theorem valuationSubringComapMap_isLocalHom :
     IsLocalHom (valuationSubringComapMap (F := F) A) := by
   constructor
   intro x hx
   obtain ⟨u, hu⟩ := hx
   have hx0 : (x : F) ≠ 0 := by
     intro hzero
-    have hmapZero : valuationSubringComapMap (F := F) A x = 0 := by
-      apply Subtype.ext
-      simp [valuationSubringComapMap, hzero]
-    exact Units.ne_zero u (hu.trans hmapZero)
+    refine Units.ne_zero u (hu.trans ?_)
+    apply Subtype.ext
+    simp [valuationSubringComapMap, hzero]
   let xinv : A.comap (algebraMap F Omega) :=
     ⟨(x : F)⁻¹, by
       change algebraMap F Omega ((x : F)⁻¹) ∈ A
       rw [map_inv₀]
       have hu' : algebraMap F Omega (x : F) = ((u : A) : Omega) := by
-        have h := congrArg Subtype.val hu
-        exact h.symm
+        exact (congrArg Subtype.val hu).symm
       rw [hu']
       have hinv : (((u : A) : Omega))⁻¹ = (((u⁻¹ : Aˣ) : A) : Omega) := by
-        have hprod :
-            ((u : A) : Omega) * (((u⁻¹ : Aˣ) : A) : Omega) = 1 := by
-          have hprodA : (u : A) * ((u⁻¹ : Aˣ) : A) = 1 := u.val_inv
-          exact congrArg A.subtype hprodA
-        exact (eq_inv_of_mul_eq_one_right hprod).symm
+        refine (eq_inv_of_mul_eq_one_right ?_).symm
+        exact congrArg A.subtype u.val_inv
       rw [hinv]
       exact (u⁻¹ : Aˣ).val.property⟩
   let xu : (A.comap (algebraMap F Omega))ˣ :=
@@ -137,22 +128,22 @@ theorem valuationSubringComapMap_isLocalHom (A : ValuationSubring Omega) :
   exact ⟨xu, rfl⟩
 
 /-- The residue-field embedding induced by pullback of a valuation ring. -/
-noncomputable def valuationSubringComapResidueMap
-    (A : ValuationSubring Omega) :
+noncomputable def valuationSubringComapResidueMap :
     IsLocalRing.ResidueField (A.comap (algebraMap F Omega)) →+*
       IsLocalRing.ResidueField A := by
   letI : IsLocalHom (valuationSubringComapMap (F := F) A) :=
     valuationSubringComapMap_isLocalHom (F := F) A
-  exact IsLocalRing.ResidueField.map (valuationSubringComapMap (F := F) A)
+  exact IsLocalRing.ResidueField.map (valuationSubringComapMap A)
 
 /-- States the theorem `valuationSubringComapResidueMap_residue`. -/
 @[simp] theorem valuationSubringComapResidueMap_residue
-    (A : ValuationSubring Omega)
     (x : A.comap (algebraMap F Omega)) :
     valuationSubringComapResidueMap (F := F) A
         (IsLocalRing.residue (A.comap (algebraMap F Omega)) x) =
       IsLocalRing.residue A (valuationSubringComapMap (F := F) A x) :=
   rfl
+
+end
 
 /-- A purely inseparable extension remains purely inseparable after passing
 to the residue fields of a valuation ring and its pullback.  In positive

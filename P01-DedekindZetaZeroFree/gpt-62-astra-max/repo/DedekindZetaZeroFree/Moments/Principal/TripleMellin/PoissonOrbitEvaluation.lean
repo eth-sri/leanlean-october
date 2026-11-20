@@ -12,11 +12,14 @@ noncomputable section
 open MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-def poissonNormalization (P : PrincipalData A σ η hS)
-    (N : MellinNormalizationData A σ η hS P) :
+section
+
+variable (P : PrincipalData A σ η hS) (N : MellinNormalizationData A σ η hS P)
+
+def poissonNormalization :
     PoissonNormalizedRow.Normalization A σ η hS P where
   localMeasure := N.finiteMeasure
   localHaar := N.finiteHaar
@@ -30,12 +33,14 @@ def poissonNormalization (P : PrincipalData A σ η hS)
     rw [N.sameAdditiveMeasure]
     rfl
 
-theorem finiteTrace_nontrivial (P : PrincipalData A σ η hS)
-    (N : MellinNormalizationData A σ η hS P) : ∀ v, P.finiteTrace v ≠ 1 := by
+include N in
+theorem finiteTrace_nontrivial : ∀ v, P.finiteTrace v ≠ 1 := by
   intro v h
   obtain ⟨x, hx⟩ := PoissonS.ScaleShift.traceConductor_nontrivial
     F A.Sf P.finiteTrace (poissonNormalization P N).traceConductor v
   exact hx (by rw [h]; rfl)
+
+end
 
 theorem probe_eq_orbit_sum (P : PrincipalData A σ η hS)
     (N : MellinNormalizationData A σ η hS P)
@@ -50,7 +55,7 @@ theorem probe_eq_orbit_sum (P : PrincipalData A σ η hS)
   have h := ProbePoissonOrbitFormula.exact_orbit_formula A σ η hS P
     (poissonNormalization P N) (finiteTrace_nontrivial P N) N.disintegration
     ρ hρ X.val Y.val Z.val X.property Y.property Z.property
-  exact ⟨h.1, h.2.2⟩
+  exact ⟨h.1, h.2⟩
 
 end
 end DedekindZetaZeroFree.NormalizedProbe.TripleMellin

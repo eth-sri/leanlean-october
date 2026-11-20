@@ -42,10 +42,8 @@ theorem exists_multiplier
       ‖N‖ ≤ B ∧ ∀ W : T_U F ζ hζ U R P H,
         N (j W) = j (cotangentMultiply η W) := by
   classical
-  have hdense : DenseRange (j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)) :=
-    KPContActualSectorFriedrichsSynthesis.cotangentDense F ζ hζ U R P H μG hμG hR realization
-  let f : T_U F ζ hζ U R P H →ₗ[ℂ] KPContActualSectorCotangentL2.V F ζ hζ U R P H :=
-    (j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)).comp (cotangentMultiply η)
+  let f :=
+    (j).comp (cotangentMultiply η)
   have hnorm : ∀ W : T_U F ζ hζ U R P H,
       ‖f W‖ ≤ B * ‖j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) W‖ := by
     intro W
@@ -53,8 +51,8 @@ theorem exists_multiplier
         (normSquare (cotangentMultiply η W).val x : ℝ)
           = (η.val x)^2 * (normSquare W.val x : ℝ) := by
       intro x
-      obtain ⟨a, y, hy⟩ := KPContActualGlobalGreen.base_covered (F := F) (ζ := ζ)
-        (hζ := hζ) (U := U) (R := R) (P := P) (H := H) x
+      obtain ⟨a, y, hy⟩ := KPContActualGlobalGreen.base_covered
+             x
       rw [← hy, normSquare_chart, normSquare_chart]
       simp only [NNReal.coe_pow, coe_nnnorm]
       rw [show (coefficient (cotangentMultiply η W) a y)
@@ -66,38 +64,36 @@ theorem exists_multiplier
         sq_abs]
     have hr1 : toAeQuotient (cotangentSquareFamily (cotangentMultiply η W))
         = intrinsicClass (KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H)
-            (j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)
+            (j
               (cotangentMultiply η W)) := by
-      rw [show j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)
+      rw [show j
             (cotangentMultiply η W)
           = KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H
               (cotangentSquareFamily (cotangentMultiply η W)) from rfl]
       rfl
     have hr2 : toAeQuotient (cotangentSquareFamily W)
         = intrinsicClass (KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H)
-            (j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) W) := by
-      rw [show j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) W
+            (j W) := by
+      rw [show j W
           = KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H
               (cotangentSquareFamily W) from rfl]
       rfl
-    have h1 := norm_sq_eq_integral (KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H)
-      (j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) (cotangentMultiply η W))
-      (cotangentSquareFamily (cotangentMultiply η W)) hr1
-    have h2 := norm_sq_eq_integral (KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H)
-      (j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) W)
-      (cotangentSquareFamily W) hr2
-    have h1' : ‖j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)
+    have h1' : ‖j
           (cotangentMultiply η W)‖^2
         = ∫ x, (η.val x)^2 * (normSquare W.val x : ℝ)
             ∂(KPContActualSectorCotangentL2.muU F ζ hζ U R P) := by
-      rw [h1]
+      rw [(norm_sq_eq_integral (KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H)
+        (j (cotangentMultiply η W))
+        (cotangentSquareFamily (cotangentMultiply η W)) hr1)]
       apply integral_congr_ae
       filter_upwards with x
       exact hns x
-    have h2' : ‖j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) W‖^2
+    have h2' : ‖j W‖^2
         = ∫ x, (normSquare W.val x : ℝ)
             ∂(KPContActualSectorCotangentL2.muU F ζ hζ U R P) := by
-      rw [h2]
+      rw [(norm_sq_eq_integral (KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H)
+        (j W)
+        (cotangentSquareFamily W) hr2)]
       apply integral_congr_ae
       filter_upwards with x
       rfl
@@ -114,40 +110,37 @@ theorem exists_multiplier
         have hx : (η.val x)^2 ≤ B^2 := by nlinarith [habs.1, habs.2, hB]
         have hns0 : (0:ℝ) ≤ (normSquare W.val x : ℝ) := by positivity
         nlinarith [hx, hns0]
-    have hkey : ‖j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)
+    have hkey : ‖j
           (cotangentMultiply η W)‖^2
-        ≤ B^2 * ‖j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) W‖^2 := by
+        ≤ B^2 * ‖j W‖^2 := by
       rw [h1', h2']
-      calc (∫ x, (η.val x)^2 * (normSquare W.val x : ℝ)
-            ∂(KPContActualSectorCotangentL2.muU F ζ hζ U R P))
+      calc _
           ≤ ∫ x, B^2 * (normSquare W.val x : ℝ)
               ∂(KPContActualSectorCotangentL2.muU F ζ hζ U R P) := hle
         _ = B^2 * ∫ x, (normSquare W.val x : ℝ)
               ∂(KPContActualSectorCotangentL2.muU F ζ hζ U R P) := integral_const_mul _ _
-    have hbound : ‖j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)
+    have hbound : ‖j
           (cotangentMultiply η W)‖
-        ≤ B * ‖j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) W‖ := by
-      calc ‖j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)
+        ≤ B * ‖j W‖ := by
+      calc ‖j
             (cotangentMultiply η W)‖
-          = Real.sqrt (‖j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)
+          = Real.sqrt (‖j
               (cotangentMultiply η W)‖^2) := (Real.sqrt_sq (norm_nonneg _)).symm
-        _ ≤ Real.sqrt ((B * ‖j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) W‖)^2) :=
+        _ ≤ Real.sqrt ((B * ‖j W‖)^2) :=
             Real.sqrt_le_sqrt (by rw [mul_pow]; exact hkey)
-        _ = B * ‖j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) W‖ :=
+        _ = B * ‖j W‖ :=
             Real.sqrt_sq (by positivity)
-    show ‖f W‖ ≤ B * ‖j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) W‖
-    rw [show f W = j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)
+    show ‖f W‖ ≤ B * ‖j W‖
+    rw [show f W = j
         (cotangentMultiply η W) from rfl]
     exact hbound
-  let e : T_U F ζ hζ U R P H →ₗ[ℂ] KPContActualSectorCotangentL2.V F ζ hζ U R P H :=
-    j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)
   let cover := KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H
   exact @dense_linear_extension (T_U F ζ hζ U R P H)
     (KPContActualSectorCotangentL2.V F ζ hζ U R P H)
     (inferInstance : AddCommGroup (T_U F ζ hζ U R P H))
     (inferInstance : Module ℂ (T_U F ζ hζ U R P H))
     (intrinsicNormedAddCommGroup cover) (intrinsicNormedSpace cover)
-    (intrinsicCompleteSpace cover) e f hdense B hB hnorm
+    (intrinsicCompleteSpace cover) (j) f (KPContActualSectorFriedrichsSynthesis.cotangentDense F ζ hζ U R P H μG hμG hR realization) B hB hnorm
 
 end DedekindZetaZeroFree.KPContActualCotangentBoundedScalarMultiplier
 

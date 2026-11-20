@@ -9,7 +9,7 @@ namespace DedekindZetaZeroFree.EisensteinSmoothGerms
 open MomentSources
 open scoped Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 structure ScalarContinuation (R : PrincipalMellin.ActualRecipe S η)
     (Q : AdmissibleFlatSources R) where

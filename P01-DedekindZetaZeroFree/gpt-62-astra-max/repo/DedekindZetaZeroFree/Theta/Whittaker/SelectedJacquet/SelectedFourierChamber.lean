@@ -11,8 +11,8 @@ open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.SheetRescaling
 open MomentSources NumberField MeasureTheory
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (Q : AdmissibleFlatSources R)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (Q : AdmissibleFlatSources R)
 open KPLiteralChamberWeight
 
 theorem selected_quotientHaar_eq :
@@ -27,9 +27,8 @@ theorem selected_chamber_fourier_integrable (v : R.A.UnitQuotient)
       Q.K (Q.flat v) s
       (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g) *
         star (adelicTraceQuotientCharacter F q : ℂ)) Q.dq := by
-  have hi := CompactPeriodAnalyticity.Chamber.upper_integrable F R.A.zeta12 R.A.primitive_zeta12
-    Q.K Q.iwasawa (Q.flat v) Q.dq Q.quotientHaar s hs g
-  exact hi.mul_bdd
+  exact (CompactPeriodAnalyticity.Chamber.upper_integrable F R.A.zeta12 R.A.primitive_zeta12
+    Q.K Q.iwasawa (Q.flat v) Q.dq Q.quotientHaar s hs g).mul_bdd
     ((continuous_subtype_val.comp (continuous_adelicTraceQuotientCharacter F)).star).aestronglyMeasurable
     (c := 1) (Filter.Eventually.of_forall (fun q => by simp))
 
@@ -40,9 +39,8 @@ theorem selected_open_cell_fourier_integrable (v : R.A.UnitQuotient)
         KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 x * g) *
       star (adelicTraceQuotientCharacter F (QuotientAddGroup.mk x) : ℂ))
       (KPAdditiveHaar.adelicMeasure F) := by
-  have hi := standard_integrable F R.A.zeta12 R.A.primitive_zeta12
-    Q.K Q.iwasawa (Q.flat v) s hs g
-  exact hi.mul_bdd
+  exact (standard_integrable F R.A.zeta12 R.A.primitive_zeta12
+    Q.K Q.iwasawa (Q.flat v) s hs g).mul_bdd
     (((continuous_subtype_val.comp (continuous_adelicTraceQuotientCharacter F)).comp
       QuotientAddGroup.continuous_mk).star).aestronglyMeasurable
     (c := 1) (Filter.Eventually.of_forall (fun x => by simp))
@@ -56,8 +54,6 @@ theorem selected_chamber_fourier_unfolding (v : R.A.UnitQuotient)
         KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 x * g) *
       star (adelicTraceQuotientCharacter F (QuotientAddGroup.mk x) : ℂ)
       ∂KPAdditiveHaar.adelicMeasure F := by
-  have hi := selected_chamber_fourier_integrable R Q v s hs g
-  have hu := selected_open_cell_fourier_integrable R Q v s hs g
   unfold MomentSources.fourier
   rw [selected_quotientHaar_eq R Q]
   exact KPLiteralResidueKernelTests.FiniteFactorSplit.FourierChamber.literal_nontrivial_fourier_unfolding

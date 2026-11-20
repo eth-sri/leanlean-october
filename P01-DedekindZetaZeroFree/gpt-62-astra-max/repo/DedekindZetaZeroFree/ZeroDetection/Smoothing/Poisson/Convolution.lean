@@ -11,19 +11,27 @@ noncomputable section
 open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Detector
 open scoped Classical
 
-def cutoffMoebius (F : Type) [Field F] [NumberField F] (V : ℝ) (n : Ideal (𝓞 F)) : ℝ :=
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+def cutoffMoebius (V : ℝ) (n : Ideal (𝓞 F)) : ℝ :=
   ∑ᶠ d : Ideal (𝓞 F),
     if d ≠ ⊥ ∧ d ∣ n ∧ (Ideal.absNorm d : ℝ) ≤ V then (idealMoebius F d : ℝ) else 0
 
-def cutoffInverse (F : Type) [Field F] [NumberField F] {m : Ideal (𝓞 F)}
+def cutoffInverse {m : Ideal (𝓞 F)}
     (ω : RayClassCharacter F m) (V : ℝ) (s : ℂ) : ℂ :=
   ∑ᶠ d : Ideal (𝓞 F),
     if d ≠ ⊥ ∧ (Ideal.absNorm d : ℝ) ≤ V then
       (idealMoebius F d : ℂ) * ω d * (Ideal.absNorm d : ℂ) ^ (-s) else 0
 
-theorem idealLSeries_mul_cutoffInverse (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ω : RayClassCharacter F m)
-    (hω : ω.IsPrimitive) (V : ℝ) (s : ℂ) (hs : 1 < s.re) :
+end
+
+variable (F : Type) [Field F] [NumberField F] (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ω : RayClassCharacter F m)
+    (hω : ω.IsPrimitive)
+
+include hm hω in
+theorem idealLSeries_mul_cutoffInverse (V : ℝ) (s : ℂ) (hs : 1 < s.re) :
     Summable (fun n : Ideal (𝓞 F) =>
       if n ≠ ⊥ then (cutoffMoebius F V n : ℂ) *
         ω n * (Ideal.absNorm n : ℂ) ^ (-s) else 0) ∧
@@ -35,10 +43,9 @@ theorem idealLSeries_mul_cutoffInverse (F : Type) [Field F] [NumberField F]
   let K := (ideals_bounded_norm_finite F (V)).toFinset
   have hK (d : Ideal (𝓞 F)) : d ∈ K ↔ d ≠ ⊥ ∧ (Ideal.absNorm d : ℝ) ≤ V :=
     Set.Finite.mem_toFinset _
-  let W : Ideal (𝓞 F) → ℂ := fun n => ω n * (Ideal.absNorm n : ℂ) ^ (-s)
+  let W := fun n => ω n * (Ideal.absNorm n : ℂ) ^ (-s)
   have hzero : W ⊥ = 0 := by
-    have hz : ω ⊥ = 0 := (ω.eq_zero_iff' ⊥).mpr (Or.inl rfl)
-    simp [W, hz]
+    simp [W, ((ω.eq_zero_iff' ⊥).mpr (Or.inl rfl))]
   have hmul (a b : Ideal (𝓞 F)) : W (a * b) = W a * W b := by
     dsimp [W]
     rw [ω.map_mul', map_mul Ideal.absNorm, Nat.cast_mul]
@@ -57,14 +64,12 @@ theorem idealLSeries_mul_cutoffInverse (F : Type) [Field F] [NumberField F]
     rw [heq]
     exact ((idealLSeries_summable F m hm ω hω s hs).congr
       (fun n => congrFun heq n)).hasSum
-  let T : Ideal (𝓞 F) → Ideal (𝓞 F) → ℂ := fun d n =>
+  let T := fun d n =>
     if n ≠ ⊥ ∧ d ∣ n then (idealMoebius F d : ℂ) * W n else 0
   have hT (d : Ideal (𝓞 F)) (hd : d ∈ K) :
       HasSum (T d) (idealLSeries F ω s * ((idealMoebius F d : ℂ) * W d)) := by
     have hd0 := ((hK d).mp hd).1
-    have hinj : Function.Injective (fun n : Ideal (𝓞 F) => n * d) :=
-      mul_left_injective₀ hd0
-    apply (hinj.hasSum_iff ?_).mp
+    apply ((mul_left_injective₀ hd0).hasSum_iff ?_).mp
     · have heq : T d ∘ (fun n : Ideal (𝓞 F) => n * d) =
           fun n => W n * ((idealMoebius F d : ℂ) * W d) := by
         funext n
@@ -89,7 +94,7 @@ theorem idealLSeries_mul_cutoffInverse (F : Type) [Field F] [NumberField F]
       have ha : cutoffMoebius F V n = ∑ d ∈ K,
           if d ∣ n then (idealMoebius F d : ℝ) else 0 := by
         unfold cutoffMoebius
-        rw [finsum_eq_sum_of_support_subset _ (s := K)]
+        rw [finsum_eq_sum_of_support_subset _]
         · apply Finset.sum_congr rfl
           intro d hd
           simp [((hK d).mp hd).1, ((hK d).mp hd).2]
@@ -107,7 +112,7 @@ theorem idealLSeries_mul_cutoffInverse (F : Type) [Field F] [NumberField F]
     have hi : cutoffInverse F ω V s =
         ∑ d ∈ K, (idealMoebius F d : ℂ) * W d := by
       unfold cutoffInverse
-      rw [finsum_eq_sum_of_support_subset _ (s := K)]
+      rw [finsum_eq_sum_of_support_subset _]
       · apply Finset.sum_congr rfl
         intro d hd
         rw [if_pos ((hK d).mp hd)]
@@ -119,15 +124,11 @@ theorem idealLSeries_mul_cutoffInverse (F : Type) [Field F] [NumberField F]
         exact hd (if_neg h)
     rw [hi, Finset.mul_sum]
   rw [hvalue] at hsum
-  have heq : (fun n => ∑ d ∈ K, T d n) =
-      (fun n => if n ≠ ⊥ then (cutoffMoebius F V n : ℂ) * W n else 0) :=
-    funext hcoef
-  rw [heq] at hsum
+  rw [(funext hcoef)] at hsum
   simpa only [W, mul_assoc] using And.intro hsum.summable hsum
 
-theorem idealLSeries_mul_D (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ω : RayClassCharacter F m)
-    (hω : ω.IsPrimitive) (U : ℝ) (s : ℂ) (hs : 1 < s.re) :
+include hm hω in
+theorem idealLSeries_mul_D (U : ℝ) (s : ℂ) (hs : 1 < s.re) :
     Summable (fun n : Ideal (𝓞 F) =>
       if n ≠ ⊥ then (DetectorDef.a F U n : ℂ) *
         ω n * (Ideal.absNorm n : ℂ) ^ (-s) else 0) ∧

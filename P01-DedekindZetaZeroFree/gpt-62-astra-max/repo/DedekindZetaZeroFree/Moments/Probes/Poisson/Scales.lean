@@ -38,13 +38,19 @@ def kernelExponent (x y z : ℝ) : ℝ := xExponent / 2 + x - 1 + smoothingExpon
 
 def mainExponent : ℝ := 39 / 100
 
-def xScale (Z : ℝ) : ℝ := Z ^ xExponent
+section
 
-def yScale (Z : ℝ) : ℝ := Z ^ yExponent
+variable (Z : ℝ)
 
-theorem xScale_pos (Z : ℝ) (hZ : 0 < Z) : 0 < xScale Z := Real.rpow_pos_of_pos hZ _
+def xScale : ℝ := Z ^ xExponent
 
-theorem yScale_pos (Z : ℝ) (hZ : 0 < Z) : 0 < yScale Z := Real.rpow_pos_of_pos hZ _
+def yScale : ℝ := Z ^ yExponent
+
+theorem xScale_pos (hZ : 0 < Z) : 0 < xScale Z := Real.rpow_pos_of_pos hZ _
+
+theorem yScale_pos (hZ : 0 < Z) : 0 < yScale Z := Real.rpow_pos_of_pos hZ _
+
+end
 
 theorem rightLine_eq : rightLine = 10000001 / 10000000 := by
   unfold rightLine contourOffset; norm_num

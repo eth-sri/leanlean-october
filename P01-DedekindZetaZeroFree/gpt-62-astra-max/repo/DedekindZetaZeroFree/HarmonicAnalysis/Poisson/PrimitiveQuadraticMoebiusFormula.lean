@@ -20,20 +20,20 @@ private theorem sup_radical_eq_top_iff {F : Type} [Field F] [NumberField F]
     apply Ideal.radical_eq_top.mp
     have heq : (I ⊔ m).radical = (I ⊔ m.radical).radical := by
       calc
-        (I ⊔ m).radical = (I.radical ⊔ m.radical).radical := Ideal.radical_sup I m
+        _ = (I.radical ⊔ m.radical).radical := Ideal.radical_sup I m
         _ = (I ⊔ m.radical).radical := by
           rw [Ideal.radical_sup I m.radical, Ideal.radical_idem]
     rw [heq, h, Ideal.radical_top]
   · intro h
     apply top_unique
     calc
-      (⊤ : Ideal (𝓞 F)) = I ⊔ m := h.symm
+      _ = I ⊔ m := h.symm
       _ ≤ I ⊔ m.radical := sup_le_sup_left Ideal.le_radical _
 
 private theorem finsum_ite_subtype {α : Type*} (p : α → Prop) [DecidablePred p] (g : α → ℂ) :
     (∑ᶠ a : α, if p a then g a else 0) = ∑ᶠ a : Subtype p, g a := by
   classical
-  rw [finsum_subtype_eq_finsum_cond (f := g) (p := p)]
+  rw [finsum_subtype_eq_finsum_cond]
   apply finsum_congr
   intro i
   by_cases hp : p i
@@ -44,7 +44,9 @@ private theorem finsum_ite_subtype {α : Type*} (p : α → Prop) [DecidablePred
     haveI : IsEmpty (p i) := ⟨fun x => hp x⟩
     exact (finsum_of_isEmpty (fun _ : p i => g i)).symm
 
-private theorem multiples_character {F : Type} [Field F] [NumberField F]
+variable {F : Type} [Field F] [NumberField F]
+
+private theorem multiples_character
     {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f)
     (h : ℝ → ℂ) (X : ℝ) (d : Ideal (𝓞 F)) (hd : d ≠ ⊥) :
     (∑ᶠ I : Ideal (𝓞 F), if I ≠ ⊥ ∧ d ∣ I then
@@ -62,8 +64,6 @@ private theorem multiples_character {F : Type} [Field F] [NumberField F]
       obtain ⟨J, hJ⟩ := I.2.2
       refine ⟨⟨J, fun hbot => I.2.1 ?_⟩, Subtype.ext hJ.symm⟩
       rw [hJ, hbot, Ideal.mul_bot]
-  have hNd : (Ideal.absNorm d : ℝ) ≠ 0 := by
-    exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr hd)
   rw [finsum_ite_subtype (fun I : Ideal (𝓞 F) => I ≠ ⊥ ∧ d ∣ I)
     (fun I => h ((Ideal.absNorm I : ℝ) / X) * η I)]
   rw [mul_finsum]
@@ -76,16 +76,12 @@ private theorem multiples_character {F : Type} [Field F] [NumberField F]
   symm
   apply finsum_eq_of_bijective e he
   intro J
-  change η d * (η J.val * h ((Ideal.absNorm J.val : ℝ) /
-    (X / (Ideal.absNorm d : ℝ)))) =
-    h ((Ideal.absNorm (d * J.val) : ℝ) / X) * η (d * J.val)
   rw [η.map_mul', map_mul, Nat.cast_mul]
   have harg : (Ideal.absNorm J.val : ℝ) / (X / (Ideal.absNorm d : ℝ)) =
       (Ideal.absNorm d : ℝ) * (Ideal.absNorm J.val : ℝ) / X := by field_simp
   rw [harg]; ring
 
 theorem S4all_primitive_mobius_poisson
-    {F : Type} [Field F] [NumberField F]
     (hF : NumberField.IsTotallyComplex F)
     {m f : Ideal (𝓞 F)} (hm : m ≠ ⊥) (hf : f ≠ ⊥)
     (η : DedekindZetaZeroFree.RayClassCharacter F f)

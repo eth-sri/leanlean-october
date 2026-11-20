@@ -34,7 +34,7 @@ theorem shell_reassembly {X : Type*} [MeasurableSpace X]
 
   have hIntOn : IntegrableOn (fun y => g y * r ^ e y) (⋃ k, s k) ν :=
     integrableOn_iUnion_of_summable_integral_norm (s := s) (fun k => hint k)
-      (by simpa only [hs] using hsum)
+      (by assumption)
   have hU : MeasurableSet (⋃ k, s k) := MeasurableSet.iUnion hmeas'
 
   have hzero : ∀ x, x ∉ ⋃ k, s k → g x * r ^ e x = 0 := by
@@ -71,8 +71,7 @@ theorem shell_reassembly {X : Type*} [MeasurableSpace X]
   have hlim : (∫ x in ⋃ k : ℕ, {y | e y = nmin + (k : ℤ)}, g x * r ^ e x ∂ν) =
       ∫ x, g x * r ^ e x ∂ν :=
     setIntegral_eq_integral_of_forall_compl_eq_zero fun x hx => by
-      refine hzero x ?_
-      simpa only [hs] using hx
-  simpa only [hterm, hlim] using hHS
+      apply hzero <;> assumption
+  simpa [hterm, hlim] using hHS
 
 end DedekindZetaZeroFree.KPRankOneMellinShellReassembly

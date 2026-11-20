@@ -55,6 +55,8 @@ private theorem tuple_prod (a : KPAdelicCoverRestrictedProduct.RestrictedCover F
     simp [ha, KPAdelicCoverRestrictedProduct.localToRestricted, Function.comp_def,
       RestrictedProduct.coe_mulSingle_apply, Pi.mulSingle_apply]
 
+alias IwasawaDoubleAveraging.tuple_prod := tuple_prod
+
 private theorem sectionTuple_insertion
     (r : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
@@ -94,10 +96,11 @@ private theorem sectionTuple_insertion
     refine ⟨Units.map e.symm.toRingHom u, ?_⟩
     simp [f, KPScalarSplitCentral.scalarHom, KPScalarSplitCentral.scalarLift,
       KPScalarSplitCentral.scalarMatrix, Matrix.GeneralLinearGroup.map_scalar]
-  have he := Matrix.ProjGenLinGroup.lift_mk hf (r w)
   have he' := Matrix.ProjGenLinGroup.lift_mk hf (Matrix.ProjGenLinGroup.mk (r w)).out
   rw [show Matrix.ProjGenLinGroup.mk (Matrix.ProjGenLinGroup.mk (r w)).out = Matrix.ProjGenLinGroup.mk (r w) from Quotient.out_eq _] at he'
-  exact he.symm.trans he'
+  exact (Matrix.ProjGenLinGroup.lift_mk hf (r w)).symm.trans he'
+
+alias IwasawaDoubleAveraging.sectionTuple_insertion := sectionTuple_insertion
 
 private lemma gl_map_d {K L : Type*} [Field K] [Field L] (φ : K →+* L) (u v : Kˣ) :
     Matrix.GeneralLinearGroup.map φ (KubotaRankTwo.d K u v) =
@@ -107,12 +110,16 @@ private lemma gl_map_d {K L : Type*} [Field K] [Field L] (φ : K →+* L) (u v :
   fin_cases i <;> fin_cases j <;>
     simp [KubotaRankTwo.d, Matrix.GeneralLinearGroup.map_apply, Units.coe_map]
 
+alias IwasawaDoubleAveraging.gl_map_d := gl_map_d
+
 private lemma gl_map_n {K L : Type*} [Field K] [Field L] (φ : K →+* L) (t : K) :
     Matrix.GeneralLinearGroup.map φ (KubotaRankTwo.n K t) = KubotaRankTwo.n L (φ t) := by
   apply Units.ext
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [KubotaRankTwo.n, Matrix.GeneralLinearGroup.map_apply]
+
+alias IwasawaDoubleAveraging.gl_map_n := gl_map_n
 
 private lemma archDiagonalTuple_eq_sectionTuple (u : InfinitePlace F → ℂˣ) :
     KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ (fun w => (u w : ℂ)) =
@@ -137,12 +144,16 @@ private lemma archDiagonalTuple_eq_sectionTuple (u : InfinitePlace F → ℂˣ) 
     simp [Units.coe_map]
   | inr q => rfl
 
+alias IwasawaDoubleAveraging.archDiagonalTuple_eq_sectionTuple := archDiagonalTuple_eq_sectionTuple
+
 private theorem archDiagonalLift_eq_insertion (u : InfinitePlace F → ℂˣ) :
     KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ (fun w => (u w : ℂ)) =
       PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ
         (fun w => Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d ℂ (u w) 1)) := by
   unfold KPGlobalTorusFunctionData.archDiagonalLift
   rw [archDiagonalTuple_eq_sectionTuple F ζ hζ u, sectionTuple_insertion]
+
+alias IwasawaDoubleAveraging.archDiagonalLift_eq_insertion := archDiagonalLift_eq_insertion
 
  def adeleOfArch (c : InfinitePlace F → ℂ) : KPGlobalTorusFunctionData.Adeles F :=
   ((fun w => (InfinitePlace.Completion.ringEquivComplexOfIsComplex
@@ -170,6 +181,8 @@ private theorem rootTuple_eq_sectionTuple (c : InfinitePlace F → ℂ) :
     change KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) 0 = 1
     simp
 
+alias IwasawaDoubleAveraging.rootTuple_eq_sectionTuple := rootTuple_eq_sectionTuple
+
 private theorem N_eq_insertion (c : InfinitePlace F → ℂ) :
     KPGlobalTorusFunctionData.N F ζ hζ (adeleOfArch F ζ hζ c) =
       PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ
@@ -177,10 +190,16 @@ private theorem N_eq_insertion (c : InfinitePlace F → ℂ) :
   unfold KPGlobalTorusFunctionData.N
   rw [rootTuple_eq_sectionTuple F ζ hζ c, sectionTuple_insertion]
 
- def archDen (A : Matrix (Fin 2) (Fin 2) ℂ) : ℝ := ‖A 1 0‖ ^ 2 + ‖A 1 1‖ ^ 2
- def archS (A : Matrix (Fin 2) (Fin 2) ℂ) : ℝ := Real.sqrt (archDen A)
+alias IwasawaDoubleAveraging.N_eq_insertion := N_eq_insertion
 
- lemma archDen_pos (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) : 0 < archDen A := by
+ section
+
+variable (A : Matrix (Fin 2) (Fin 2) ℂ)
+
+def archDen : ℝ := ‖A 1 0‖ ^ 2 + ‖A 1 1‖ ^ 2
+ def archS : ℝ := Real.sqrt (archDen A)
+
+ lemma archDen_pos (hA : A.det ≠ 0) : 0 < archDen A := by
   unfold archDen
   have h : A 1 0 ≠ 0 ∨ A 1 1 ≠ 0 := by
     by_contra hc; push Not at hc
@@ -189,28 +208,36 @@ private theorem N_eq_insertion (c : InfinitePlace F → ℂ) :
   · nlinarith [norm_pos_iff.mpr h, sq_nonneg ‖A 1 1‖, sq_nonneg ‖A 1 0‖]
   · nlinarith [norm_pos_iff.mpr h, sq_nonneg ‖A 1 1‖, sq_nonneg ‖A 1 0‖]
 
-private lemma archS_sq (A : Matrix (Fin 2) (Fin 2) ℂ) : archS A ^ 2 = archDen A :=
+private lemma archS_sq : archS A ^ 2 = archDen A :=
   Real.sq_sqrt (by unfold archDen; positivity)
+
+end
+
+alias IwasawaDoubleAveraging.archS_sq := archS_sq
 
 private lemma archS_pos (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) : 0 < archS A :=
   Real.sqrt_pos.mpr (archDen_pos A hA)
 
- def archK (A : Matrix (Fin 2) (Fin 2) ℂ) : Matrix (Fin 2) (Fin 2) ℂ :=
+alias IwasawaDoubleAveraging.archS_pos := archS_pos
+
+ section
+
+variable (A : Matrix (Fin 2) (Fin 2) ℂ)
+
+def archK : Matrix (Fin 2) (Fin 2) ℂ :=
   !![star (A 1 1) / ((archS A : ℝ) : ℂ), -star (A 1 0) / ((archS A : ℝ) : ℂ);
      A 1 0 / ((archS A : ℝ) : ℂ), A 1 1 / ((archS A : ℝ) : ℂ)]
- def archY (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) : ℂˣ :=
+ def archY (hA : A.det ≠ 0) : ℂˣ :=
   Units.mk0 (A.det / ((archDen A : ℝ) : ℂ))
     (div_ne_zero hA (by
       simp only [ne_eq, Complex.ofReal_eq_zero]
       exact ne_of_gt (archDen_pos A hA)))
- def archX (A : Matrix (Fin 2) (Fin 2) ℂ) : ℂ :=
+ def archX : ℂ :=
   (A 0 0 * star (A 1 0) + A 0 1 * star (A 1 1)) / A.det
 
-private lemma archK_mul_star (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
+private lemma archK_mul_star (hA : A.det ≠ 0) :
     archK A * star (archK A) = 1 := by
-  have hspos : 0 < archS A := archS_pos A hA
-  have hs : ((archS A : ℝ) : ℂ) ≠ 0 := by
-    simp only [ne_eq, Complex.ofReal_eq_zero]; exact ne_of_gt hspos
+  have hspos := archS_pos A hA
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [archK, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
@@ -222,11 +249,14 @@ private lemma archK_mul_star (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0)
   · ring
   · rw [abs_of_pos hspos]; field_simp; rw [archS_sq]; unfold archDen; ring
 
+end
+
+alias IwasawaDoubleAveraging.archK_mul_star := archK_mul_star
+
 private lemma archK_det (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
     (archK A).det = 1 := by
-  have hspos : 0 < archS A := archS_pos A hA
   have hs : ((archS A : ℝ) : ℂ) ≠ 0 := by
-    simp only [ne_eq, Complex.ofReal_eq_zero]; exact ne_of_gt hspos
+    simp only [ne_eq, Complex.ofReal_eq_zero]; exact ne_of_gt (archS_pos A hA)
   rw [Matrix.det_fin_two]
   simp only [archK, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero,
     Matrix.cons_val_one, Matrix.head_cons, Matrix.empty_val', Matrix.cons_val_fin_one]
@@ -238,10 +268,14 @@ private lemma archK_det (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
   unfold archDen
   ring
 
+alias IwasawaDoubleAveraging.archK_det := archK_det
+
 private lemma archK_mem (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
     archK A ∈ Matrix.specialUnitaryGroup (Fin 2) ℂ := by
   rw [Matrix.mem_specialUnitaryGroup_iff]
   exact ⟨Matrix.mem_unitaryGroup_iff.mpr (archK_mul_star A hA), archK_det A hA⟩
+
+alias IwasawaDoubleAveraging.archK_mem := archK_mem
 
 end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.IwasawaTransport.ArchRowFactorization
 
@@ -251,6 +285,8 @@ open scoped Matrix
 private lemma archY_norm (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
     ‖(archY A hA : ℂ)‖ = ‖A.det‖ / archDen A := by
   rw [archY, Units.val_mk0, norm_div, Complex.norm_of_nonneg (le_of_lt (archDen_pos A hA))]
+
+alias IwasawaDoubleAveraging.archY_norm := archY_norm
 
 private lemma archY_archX_left (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
     (archY A hA : ℂ) * (star (A 1 1) + archX A * A 1 0) = A 0 0 := by
@@ -263,6 +299,8 @@ private lemma archY_archX_left (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 
   rw [mul_assoc, Complex.mul_conj', mul_assoc, Complex.mul_conj']
   rw [← mul_add, ← Complex.ofReal_pow, ← Complex.ofReal_pow, ← Complex.ofReal_add]
   rw [show ‖A 1 1‖ ^ 2 + ‖A 1 0‖ ^ 2 = archDen A by unfold archDen; ring]
+
+alias IwasawaDoubleAveraging.archY_archX_left := archY_archX_left
 
 end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.IwasawaTransport.ArchRowFactorization
 
@@ -282,6 +320,8 @@ private lemma archY_archX_right (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠
   rw [← mul_add, ← Complex.ofReal_pow, ← Complex.ofReal_pow, ← Complex.ofReal_add]
   rw [show ‖A 1 1‖ ^ 2 + ‖A 1 0‖ ^ 2 = archDen A by unfold archDen; ring]
 
+alias IwasawaDoubleAveraging.archY_archX_right := archY_archX_right
+
 end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.IwasawaTransport.ArchRowFactorization
 
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.IwasawaTransport.ArchRowFactorization
@@ -291,9 +331,6 @@ private lemma arch_matrix_identity (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det 
     (KubotaRankTwo.d ℂ (archY A hA) 1 : Matrix (Fin 2) (Fin 2) ℂ) *
       (KubotaRankTwo.n ℂ (archX A) : Matrix (Fin 2) (Fin 2) ℂ) * archK A =
       Matrix.scalar (Fin 2) (((archS A : ℝ) : ℂ)⁻¹) * A := by
-  have hspos : 0 < archS A := archS_pos A hA
-  have hs : ((archS A : ℝ) : ℂ) ≠ 0 := by
-    simp only [ne_eq, Complex.ofReal_eq_zero]; exact ne_of_gt hspos
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [archK, KubotaRankTwo.d, KubotaRankTwo.n, Matrix.mul_apply, Fin.sum_univ_two,
@@ -304,6 +341,8 @@ private lemma arch_matrix_identity (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det 
   · rw [← archY_archX_right A hA]; field_simp; rw [Complex.star_def]
   · field_simp
   · field_simp
+
+alias IwasawaDoubleAveraging.arch_matrix_identity := arch_matrix_identity
 
 end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.IwasawaTransport.ArchRowFactorization
 
@@ -326,9 +365,9 @@ theorem archimedean_factorization
         ‖((a w).out : Matrix (Fin 2) (Fin 2) ℂ).det‖ /
           (‖(a w).out 1 0‖ ^ 2 + ‖(a w).out 1 1‖ ^ 2) := by
   classical
-  let Aw : InfinitePlace F → Matrix (Fin 2) (Fin 2) ℂ :=
+  let Aw :=
     fun w => ((a w).out : Matrix (Fin 2) (Fin 2) ℂ)
-  have hAw : ∀ w, (Aw w).det ≠ 0 :=
+  have hAw :=
     fun w => Matrix.GeneralLinearGroup.det_ne_zero (a w).out
   obtain ⟨ih, hih⟩ := RepresentationTheory.ArchFiniteSplitting.insertion_hom F ζ hζ
   have hhom (g h : PGLComplex.AdelicSlicesRaw.ArchGroup F) :
@@ -416,6 +455,8 @@ private theorem mapped_diagonalUnit (w : InfinitePlace F) (x : ℂ) :
   · simp only [diagonalUnit, hx, ↓reduceDIte]
     apply Units.ext; rfl
 
+alias IwasawaDoubleAveraging.mapped_diagonalUnit := mapped_diagonalUnit
+
 private theorem sectionTuple_left (x : KPGlobalTorusBorelNormTwistTransport.GroupArch F) :
     KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
         (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ
@@ -445,6 +486,8 @@ private theorem sectionTuple_left (x : KPGlobalTorusBorelNormTwistTransport.Grou
       intro i j
       fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map]
 
+alias IwasawaDoubleAveraging.sectionTuple_left := sectionTuple_left
+
 theorem groupArchChart_eq_archimedeanInsertion
     (x : KPGlobalTorusBorelNormTwistTransport.GroupArch F) :
     KPGlobalTorusBorelNormTwistTransport.groupArchChart F ζ hζ x =
@@ -466,33 +509,8 @@ namespace DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.IwasawaTrans
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 open KPAdelicCoverRestrictedProduct
 
-theorem fullCusp_isClosed_ordinaryBorel :
-    IsClosed (KPGlobalTorusFunctionData.ordinaryBorel F : Set (AdelicPGL2 F)) := by
-  letI : IsTopologicalGroup (AdelicGL2 F) := inferInstance
-  rw [← (QuotientGroup.isQuotientMap_mk (scalarSubgroup F)).isClosed_preimage]
-  have he : (QuotientGroup.mk (s := scalarSubgroup F)) ⁻¹'
-      (KPGlobalTorusFunctionData.ordinaryBorel F : Set (AdelicPGL2 F)) =
-      {A : AdelicGL2 F | A 1 0 = 0} := by
-    ext A
-    constructor
-    · rintro ⟨B,hB,h10⟩
-      have hm := QuotientGroup.eq.mp hB
-      obtain ⟨z,hz⟩ := hm
-      have he : A = B * Matrix.GeneralLinearGroup.scalar (Fin 2) z := by
-        change Matrix.GeneralLinearGroup.scalar (Fin 2) z = B⁻¹ * A at hz
-        rw [hz]
-        group
-      rw [he]
-      simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-        Fin.sum_univ_two, Matrix.scalar, h10]
-    · intro h
-      exact ⟨A,rfl,h⟩
-  rw [he]
-  exact isClosed_eq (by fun_prop) continuous_const
-theorem fullCusp_isClosed_borel :
-    IsClosed (KPGlobalTorusFunctionData.borel F ζ hζ : Set (KPGlobalTorusFunctionData.G F ζ hζ)) := by
-  exact (fullCusp_isClosed_ordinaryBorel F).preimage
-    (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous
+alias fullCusp_isClosed_ordinaryBorel := DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_isClosed_ordinaryBorel
+alias fullCusp_isClosed_borel := DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_isClosed_borel
 
 theorem fullCusp_iwasawaNorm_continuous_of_borel
     (D : KPGlobalTorusBorelNormTwistTransport.IwasawaData F ζ hζ)
@@ -552,44 +570,9 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 open KPAdelicCoverRestrictedProduct
 open KPGlobalTorusBorelNormTwistTransport
 
-private theorem upperRatio_det (A : AdelicGL2 F) (h : A 1 0 = 0) :
-    iwasawaUpperRatio F A h = (iwasawaUpperUnits F A h).1.unit ^ 2 * (Matrix.GeneralLinearGroup.det A)⁻¹ ∧
-    (iwasawaUpperRatio F A h)⁻¹ = (iwasawaUpperUnits F A h).2.unit ^ 2 * (Matrix.GeneralLinearGroup.det A)⁻¹ := by
-  have hd : Matrix.GeneralLinearGroup.det A =
-      (iwasawaUpperUnits F A h).1.unit * (iwasawaUpperUnits F A h).2.unit := by
-    apply Units.ext
-    change (A : Matrix (Fin 2) (Fin 2) (Adeles F)).det = _
-    simp [Matrix.det_fin_two, h, IsUnit.unit_spec]
-  rw [hd]
-  unfold iwasawaUpperRatio
-  constructor <;> simp [pow_two, mul_inv_rev, mul_assoc, mul_comm, mul_left_comm]
+private alias upperRatio_det := DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.BorelModulusAndIwasawaContinuity.upperRatio_det
 
-private theorem upperRatio_continuous :
-    Continuous (fun A : {A : AdelicGL2 F | A 1 0 = 0} => iwasawaUpperRatio F A.val A.property) := by
-  apply Units.continuous_iff.mpr
-  have hc (i j : Fin 2) : Continuous (fun A : {A : AdelicGL2 F | A 1 0 = 0} => A.val i j) :=
-    (Units.continuous_val.comp continuous_subtype_val).matrix_elem i j
-  have hd : Continuous (fun A : {A : AdelicGL2 F | A 1 0 = 0} =>
-      ((Matrix.GeneralLinearGroup.det A.val)⁻¹ : (Adeles F)ˣ).val) := by
-    exact Units.continuous_coe_inv.comp (Matrix.GeneralLinearGroup.continuous_det.comp continuous_subtype_val)
-  constructor
-  · have he : (fun A : {A : AdelicGL2 F | A 1 0 = 0} =>
-        (iwasawaUpperRatio F A.val A.property).val) =
-        fun A => (A.val 0 0)^2 * ((Matrix.GeneralLinearGroup.det A.val)⁻¹ : (Adeles F)ˣ).val := by
-      funext A
-      rw [(upperRatio_det F A.val A.property).1]
-      simp only [Units.val_mul, Units.val_pow_eq_pow_val, IsUnit.unit_spec]
-    change Continuous (fun A : {A : AdelicGL2 F | A 1 0 = 0} => (iwasawaUpperRatio F A.val A.property).val)
-    rw [he]
-    exact (hc 0 0).pow 2 |>.mul hd
-  · have he : (fun A : {A : AdelicGL2 F | A 1 0 = 0} =>
-        ((iwasawaUpperRatio F A.val A.property)⁻¹).val) =
-        fun A => (A.val 1 1)^2 * ((Matrix.GeneralLinearGroup.det A.val)⁻¹ : (Adeles F)ˣ).val := by
-      funext A
-      rw [(upperRatio_det F A.val A.property).2]
-      simp only [Units.val_mul, Units.val_pow_eq_pow_val, IsUnit.unit_spec]
-    rw [he]
-    exact (hc 1 1).pow 2 |>.mul hd
+private alias upperRatio_continuous := DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.BorelModulusAndIwasawaContinuity.upperRatio_continuous
 
  def ordinaryUpperRatio (b : KPGlobalTorusFunctionData.ordinaryBorel F) : (Adeles F)ˣ :=
   iwasawaUpperRatio F (Classical.choose b.property) (Classical.choose_spec b.property).2
@@ -600,46 +583,21 @@ private theorem ordinaryUpperRatio_formula (b : KPGlobalTorusFunctionData.ordina
   apply iwasawaUpperRatio_scalar
   exact (Classical.choose_spec b.property).1.trans hA.symm
 
-private theorem upper_preimage_zero (A : AdelicGL2 F)
-    (h : QuotientGroup.mk' (scalarSubgroup F) A ∈ KPGlobalTorusFunctionData.ordinaryBorel F) :
-    A 1 0 = 0 := by
-  obtain ⟨B,hB,h10⟩ := h
-  have hm := QuotientGroup.eq.mp hB
-  obtain ⟨z,hz⟩ := hm
-  have he : A = B * Matrix.GeneralLinearGroup.scalar (Fin 2) z := by
-    change Matrix.GeneralLinearGroup.scalar (Fin 2) z = B⁻¹ * A at hz
-    rw [hz]; group
-  rw [he]
-  simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.scalar, h10]
+private alias upper_preimage_zero := DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.BorelModulusAndIwasawaContinuity.upper_preimage_zero
 
-private theorem ordinaryUpperRatio_continuous : Continuous (ordinaryUpperRatio F) := by
-  let q : AdelicGL2 F → AdelicPGL2 F := QuotientGroup.mk' (scalarSubgroup F)
-  let S : Set (AdelicPGL2 F) := KPGlobalTorusFunctionData.ordinaryBorel F
-  have hq : IsOpenQuotientMap q := QuotientGroup.isOpenQuotientMap_mk (N := scalarSubgroup F)
-  apply (hq.restrictPreimage S).isQuotientMap.continuous_iff.mpr
-  let u : (q ⁻¹' S) → {A : AdelicGL2 F | A 1 0 = 0} :=
-    fun A => ⟨A.val, upper_preimage_zero F A.val A.property⟩
-  have he : (ordinaryUpperRatio F) ∘ S.restrictPreimage q =
-      (fun A : {A : AdelicGL2 F | A 1 0 = 0} => iwasawaUpperRatio F A.val A.property) ∘ u := by
-    funext A
-    exact ordinaryUpperRatio_formula F _ _ rfl (u A).property
-  rw [he]
-  exact (upperRatio_continuous F).comp (continuous_subtype_val.subtype_mk _)
+private theorem ordinaryUpperRatio_continuous : Continuous (ordinaryUpperRatio F) := by apply @DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.BorelModulusAndIwasawaContinuity.ordinaryUpperRatio_continuous <;> assumption
 
 private theorem fullCusp_ideleAbs_continuous : Continuous (KPGlobalTorusFunctionData.ideleAbs F) := by
   have hfinite : Continuous (FiniteIdeleGroup.absoluteNorm (K := F)) := by
     apply continuous_of_continuousAt_one
-    apply (continuousAt_const (y := (1 : ℝ≥0ˣ))).congr_of_eventuallyEq
+    apply (continuousAt_const).congr_of_eventuallyEq
     have ho : IsOpen (FiniteIdeleGroup.integralSubgroup (K := F) : Set (FiniteIdeleGroup F)) := by
       simpa only [Finset.coe_empty, FiniteIdeleGroup.supportedAt_empty] using
         (FiniteIdeleGroup.isOpen_supportedAt (K := F) ∅)
     filter_upwards [ho.mem_nhds (Subgroup.one_mem _)] with a ha
     exact IdeleGroup.finite_absoluteNorm_eq_one_of_integral a ha
-  have hidele : Continuous (IdeleGroup.absoluteNorm (K := F)) :=
-    (hfinite.comp continuous_snd).mul
-      ((InfiniteIdeleGroup.continuous_archimedeanNorm.comp continuous_fst).inv)
-  exact (hidele.comp (IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm.continuous).inv
+  exact (((hfinite.comp continuous_snd).mul
+    ((InfiniteIdeleGroup.continuous_archimedeanNorm.comp continuous_fst).inv)).comp (IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm.continuous).inv
 
 theorem fullCusp_iwasawaNorm_continuousOn_borel
     (D : KPGlobalTorusBorelNormTwistTransport.IwasawaData F ζ hζ) :
@@ -649,24 +607,21 @@ theorem fullCusp_iwasawaNorm_continuousOn_borel
   apply continuousOn_iff_continuous_restrict.mpr
   let proj : KPGlobalTorusFunctionData.borel F ζ hζ → KPGlobalTorusFunctionData.ordinaryBorel F :=
     fun b => ⟨pglProjection F ζ hζ b.val, b.property⟩
-  have hp : Continuous proj :=
-    ((adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous.comp
-      continuous_subtype_val).subtype_mk _
   have he : (KPGlobalTorusFunctionData.borel F ζ hζ : Set _).domRestrict (fun g =>
       (((KPGlobalTorusBorelNormTwistTransport.iwasawaNorm F ζ hζ D g : ℝ≥0) : ℝ))) =
       fun b => (((KPGlobalTorusFunctionData.ideleAbs F (ordinaryUpperRatio F (proj b)) : ℝ≥0) : ℝ)) := by
     funext b
     obtain ⟨t,x,hb⟩ := actual_borel_factorization F ζ hζ b
     obtain ⟨B,hB,h10⟩ := b.property
-    have hr := iwasawaUpperRatio_torus_root F ζ hζ t x B h10 (hB.trans (congrArg (pglProjection F ζ hζ) hb))
     have hf := KPGlobalTorusBorelNormTwistTransport.iwasawaNorm_formula F ζ hζ D t x 1
     simp only [OneMemClass.coe_one, mul_one] at hf
     change (((KPGlobalTorusBorelNormTwistTransport.iwasawaNorm F ζ hζ D b.val : ℝ≥0) : ℝ)) = _
-    rw [hb, hf, ordinaryUpperRatio_formula F (proj b) B hB h10, hr]
+    rw [hb, hf, ordinaryUpperRatio_formula F (proj b) B hB h10, (iwasawaUpperRatio_torus_root F ζ hζ t x B h10 (hB.trans (congrArg (pglProjection F ζ hζ) hb)))]
     rfl
   rw [he]
   exact NNReal.continuous_coe.comp (Units.continuous_val.comp
-    ((fullCusp_ideleAbs_continuous F).comp ((ordinaryUpperRatio_continuous F).comp hp)))
+    ((fullCusp_ideleAbs_continuous F).comp ((ordinaryUpperRatio_continuous F).comp (((adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous.comp
+      continuous_subtype_val).subtype_mk _))))
 
 theorem fullCusp_iwasawaNorm_continuous
     (D : KPGlobalTorusBorelNormTwistTransport.IwasawaData F ζ hζ) :
@@ -722,13 +677,15 @@ lemma compactInsert_mul (k l : ArchCompact F) :
   rw [← hih, ← hih, ← hih, ← map_mul]
   congr 1
   funext w
-  simp only [Pi.mul_apply, map_mul]
+  simp
 
-def firstAverage (D : IwasawaData F ζ hζ) (g : G F ζ hζ) : ℝ :=
+variable (D : IwasawaData F ζ hζ)
+
+def firstAverage (g : G F ζ hζ) : ℝ :=
   ∫ k : ArchCompact F,
     (((iwasawaNorm F ζ hζ D (g * compactInsert F ζ hζ k) : ℝ≥0) : ℝ)).rpow (-(1:ℝ)/2) ∂Measure.haar
 
-lemma firstAverage_compactInsert (D : IwasawaData F ζ hζ) (g : G F ζ hζ)
+lemma firstAverage_compactInsert (g : G F ζ hζ)
     (k : ArchCompact F) :
     firstAverage F ζ hζ D (g * compactInsert F ζ hζ k) = firstAverage F ζ hζ D g := by
   unfold firstAverage
@@ -739,9 +696,9 @@ lemma firstAverage_compactInsert (D : IwasawaData F ζ hζ) (g : G F ζ hζ)
     funext l
     rw [compactInsert_mul, mul_assoc]
   rw [he]
-  exact integral_mul_left_eq_self (μ := (Measure.haar : Measure (ArchCompact F))) (fun l : ArchCompact F => (((iwasawaNorm F ζ hζ D (g * compactInsert F ζ hζ l) : ℝ≥0) : ℝ)).rpow (-(1:ℝ)/2)) k
+  exact integral_mul_left_eq_self (fun l : ArchCompact F => (((iwasawaNorm F ζ hζ D (g * compactInsert F ζ hζ l) : ℝ≥0) : ℝ)).rpow (-(1:ℝ)/2)) k
 
-lemma firstAverage_borel (D : IwasawaData F ζ hζ) (t : E F ζ hζ)
+lemma firstAverage_borel (t : E F ζ hζ)
     (x : KPGlobalTorusFunctionData.Adeles F) (g : G F ζ hζ) :
     firstAverage F ζ hζ D ((t.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) =
       (((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ)).rpow (-(1:ℝ)/2) *
@@ -759,7 +716,7 @@ lemma firstAverage_borel (D : IwasawaData F ζ hζ) (t : E F ζ hζ)
   simp_rw [he]
   rw [integral_const_mul]
 
-lemma firstAverage_pos (D : IwasawaData F ζ hζ) (g : G F ζ hζ)
+lemma firstAverage_pos (g : G F ζ hζ)
     (hcont : Continuous (fun g => (((iwasawaNorm F ζ hζ D g : ℝ≥0) : ℝ)))) :
     0 < firstAverage F ζ hζ D g := by
   let v (k : ArchCompact F) : ℝ :=
@@ -778,7 +735,7 @@ lemma firstAverage_pos (D : IwasawaData F ζ hζ) (g : G F ζ hζ)
       left
       exact_mod_cast (Units.ne_zero (iwasawaNorm F ζ hζ D (g * compactInsert F ζ hζ k)))
   apply (integral_pos_iff_support_of_nonneg
-    (μ := (Measure.haar : Measure (ArchCompact F))) (fun k => (hp k).le)
+     (fun k => (hp k).le)
     (hc.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _))).mpr
   have he : Function.support v = Set.univ := by
     ext k
@@ -786,7 +743,7 @@ lemma firstAverage_pos (D : IwasawaData F ζ hζ) (g : G F ζ hζ)
   rw [he]
   exact isOpen_univ.measure_pos _ Set.univ_nonempty
 
-lemma firstAverage_continuous (D : IwasawaData F ζ hζ)
+lemma firstAverage_continuous
     (hcont : Continuous (fun g => (((iwasawaNorm F ζ hζ D g : ℝ≥0) : ℝ)))) :
     Continuous (firstAverage F ζ hζ D) := by
   letI : SecondCountableTopology (G F ζ hζ) := ActualQuotient.actual_cover_secondCountable F ζ hζ
@@ -801,7 +758,7 @@ lemma firstAverage_continuous (D : IwasawaData F ζ hζ)
       left
       exact_mod_cast (Units.ne_zero (iwasawaNorm F ζ hζ D (p.1 * compactInsert F ζ hζ p.2)))
   simpa using continuous_parametric_integral_of_continuous
-    (μ := (Measure.haar : Measure (ArchCompact F))) hc isCompact_univ
+    (μ := Measure.haar) hc isCompact_univ
 
 end
 end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.IwasawaTransport.DoubleAverage
@@ -913,7 +870,6 @@ lemma secondAverage_smooth (D : IwasawaData F ζ hζ) (g : G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z => ∫ k : D.K, firstAverage F ζ hζ D ((groupArchChart F ζ hζ z * g) * k.val) ∂Measure.haar)
       (groupArchDomain F) := by
-  have hn := NormContinuity.fullCusp_iwasawaNorm_continuous F ζ hζ D
   let B (k : D.K) (w : InfinitePlace F) :=
     PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ (g * k.val) w
   let h (k : D.K) := firstAverage F ζ hζ D (finiteComponent F ζ hζ (g * k.val))
@@ -922,9 +878,6 @@ lemma secondAverage_smooth (D : IwasawaData F ζ hζ) (g : G F ζ hζ) :
     (continuous_apply w).comp
       ((RepresentationTheory.ArchFiniteSplitting.splitting_maps_continuous F ζ hζ).2.comp
         (continuous_const.mul continuous_subtype_val))
-  have hh : Continuous h :=
-    (firstAverage_continuous F ζ hζ D hn).comp
-      ((finiteComponent_continuous F ζ hζ).comp (continuous_const.mul continuous_subtype_val))
   have hA (w : InfinitePlace F) (p q : Fin 2) :
       ContDiffOn ℝ (⊤ : ℕ∞) (fun z : GroupArch F => A z w p q) (groupArchDomain F) := by
     have hs : ContDiff ℝ (⊤ : ℕ∞) (fun z : GroupArch F =>
@@ -935,9 +888,9 @@ lemma secondAverage_smooth (D : IwasawaData F ζ hζ) (g : G F ζ hζ) :
     dsimp [A]
     rw [leftMatrix_val _ (hz w)]
     rfl
-  have hs := projective_compact_average_smooth (Measure.haar : Measure D.K) B h hB hh
-    (groupArchDomain F) A hA
-  apply hs.congr
+  apply (projective_compact_average_smooth Measure.haar B h hB ((firstAverage_continuous F ζ hζ D (NormContinuity.fullCusp_iwasawaNorm_continuous F ζ hζ D)).comp
+    ((finiteComponent_continuous F ζ hζ).comp (continuous_const.mul continuous_subtype_val)))
+    (groupArchDomain F) A hA).congr
   intro z hz
   apply integral_congr_ae
   filter_upwards [] with k
@@ -950,8 +903,7 @@ lemma secondAverage_smooth (D : IwasawaData F ζ hζ) (g : G F ζ hζ) :
     PGLComplex.AdelicSlicesRaw.archProjection_archimedeanInsertion]
   rfl
 
-open _root_.DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport renaming iwasawa_compactAverage_normalization → iwasawa_compactAverage_normalization
-open _root_.DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport renaming iwasawaNorm_pos → iwasawaNorm_pos
+open _root_.DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport (iwasawa_compactAverage_normalization iwasawaNorm_pos)
 
 lemma genuine_weight_smooth (D : IwasawaData F ζ hζ) (s : ℂ) (g : G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞)

@@ -28,25 +28,25 @@ private theorem norm_arch_mixed (F : Type) [Field F] [NumberField F]
   congr 1
   · apply Finset.prod_congr rfl; intro v _
     rw [v.2.mult_eq_one, pow_one]
-    change ‖z v.1‖ = |NumberField.InfinitePlace.Completion.extensionEmbeddingOfIsReal v.2 (z v.1)|
-    simpa only [dist_zero_right, map_zero, Real.norm_eq_abs] using
+    simpa using
       ((NumberField.InfinitePlace.Completion.isometry_extensionEmbeddingOfIsReal v.2).dist_eq
         (z v.1) 0).symm
-  · let equiv : {v : InfinitePlace F // ¬ v.IsReal} ≃
-        {v : InfinitePlace F // v.IsComplex} :=
-      Equiv.subtypeEquivRight fun _ => InfinitePlace.not_isReal_iff_isComplex
-    apply Fintype.prod_equiv equiv
+  · apply Fintype.prod_equiv (Equiv.subtypeEquivRight fun _ => InfinitePlace.not_isReal_iff_isComplex)
     intro v
-    have hv := InfinitePlace.not_isReal_iff_isComplex.mp v.2
-    rw [hv.mult_eq_two, Complex.normSq_eq_norm_sq]
+    rw [(InfinitePlace.not_isReal_iff_isComplex.mp v.2).mult_eq_two, Complex.normSq_eq_norm_sq]
     change ‖z v.1‖ ^ 2 = ‖NumberField.InfinitePlace.Completion.extensionEmbedding v.1 (z v.1)‖ ^ 2
     congr 1
     simpa only [dist_zero_right, map_zero] using
       ((NumberField.InfinitePlace.Completion.isometry_extensionEmbedding v.1).dist_eq
         (z v.1) 0).symm
 
-def localArchEquiv (F : Type) [Field F] [NumberField F]
-    (d : (InfiniteAdeleRing F)ˣ) : PoissonArch.Space F ≃L[ℝ] PoissonArch.Space F :=
+alias ArchimedeanAdditiveHaarScaling.norm_arch_mixed := norm_arch_mixed
+
+section
+
+variable (F : Type) [Field F] [NumberField F] (d : (InfiniteAdeleRing F)ˣ)
+
+def localArchEquiv : PoissonArch.Space F ≃L[ℝ] PoissonArch.Space F :=
   let w : (mixedEmbedding.mixedSpace F)ˣ :=
     Units.map (InfiniteAdeleRing.ringEquiv_mixedSpace F).toMonoidHom d
   ((mixedEmbedding.euclidean.toMixed F).trans
@@ -60,8 +60,7 @@ def localArchEquiv (F : Type) [Field F] [NumberField F]
             (Units.map (RingHom.snd _ _).toMonoidHom w))).restrictScalars ℝ))).trans
     (mixedEmbedding.euclidean.toMixed F).symm
 
-private theorem localArchEquiv_apply (F : Type) [Field F] [NumberField F]
-    (d : (InfiniteAdeleRing F)ˣ) (x : PoissonArch.Space F) :
+private theorem localArchEquiv_apply (x : PoissonArch.Space F) :
     localArchEquiv F d x = PoissonArch.infiniteAdeleToSpace F
       (d.val * (PoissonArch.infiniteAdeleToSpace F).symm x) := by
   apply (mixedEmbedding.euclidean.toMixed F).injective
@@ -75,13 +74,17 @@ private theorem localArchEquiv_apply (F : Type) [Field F] [NumberField F]
   ext v <;> simp [ContinuousLinearEquiv.piCongrRight_apply,
     ContinuousLinearEquiv.unitsEquivAut_apply, mul_comm]
 
+end
+
+alias ArchimedeanAdditiveHaarScaling.localArchEquiv_apply := localArchEquiv_apply
+
 private theorem localArchEquiv_abs_det (F : Type) [Field F] [NumberField F]
     (d : (InfiniteAdeleRing F)ˣ) :
     |LinearMap.det (localArchEquiv F d).toLinearMap| = ‖d.val‖ := by
   let z := InfiniteAdeleRing.ringEquiv_mixedSpace F d.val
-  let R : {v : InfinitePlace F // v.IsReal} → ℝ →ₗ[ℝ] ℝ :=
+  let R :=
     fun v => LinearMap.mulLeft ℝ (z.1 v)
-  let C : {v : InfinitePlace F // v.IsComplex} → ℂ →ₗ[ℝ] ℂ :=
+  let C :=
     fun v => (LinearMap.mulLeft ℂ (z.2 v)).restrictScalars ℝ
   have he : (localArchEquiv F d).toLinearMap =
     (mixedEmbedding.euclidean.toMixed F).symm.toLinearMap.comp
@@ -114,6 +117,8 @@ private theorem localArchEquiv_abs_det (F : Type) [Field F] [NumberField F]
     abs_of_nonneg (Finset.prod_nonneg fun v _ => Complex.normSq_nonneg _)]
   exact (norm_arch_mixed F d.val).symm
 
+alias ArchimedeanAdditiveHaarScaling.localArchEquiv_abs_det := localArchEquiv_abs_det
+
 theorem archimedean_map_mul (g : (InfiniteAdeleRing F)ˣ) :
     Measure.map (fun x : InfiniteAdeleRing F => g.val * x)
         (Measure.map (PoissonArch.infiniteAdeleToSpace F).symm
@@ -126,30 +131,27 @@ theorem archimedean_map_mul (g : (InfiniteAdeleRing F)ˣ) :
   let μ := PoissonArch.traceMeasure F
   have hmm : Measurable (fun x : InfiniteAdeleRing F => g.val * x) :=
     (continuous_const.mul continuous_id).measurable
-  have hes : Measurable (e.symm : PoissonArch.Space F → InfiniteAdeleRing F) :=
+  have hes :=
     e.symm.continuous.measurable
-  have hAmeas : Measurable (A : PoissonArch.Space F → PoissonArch.Space F) :=
+  have hAmeas :=
     A.continuous.measurable
   have hA : (fun x : InfiniteAdeleRing F => g.val * x) ∘
-        (e.symm : PoissonArch.Space F → InfiniteAdeleRing F) =
-      (e.symm : PoissonArch.Space F → InfiniteAdeleRing F) ∘
-        (A : PoissonArch.Space F → PoissonArch.Space F) := by
+        e.symm =
+      e.symm ∘
+        A := by
     funext x
     simp only [Function.comp_apply]
     rw [show A x = e (g.val * e.symm x) from localArchEquiv_apply F g x]
     simp
-  have hdetabs : |LinearMap.det A.toLinearMap| = ‖g.val‖ := localArchEquiv_abs_det F g
   have hmap : Measure.map (A : PoissonArch.Space F → PoissonArch.Space F) μ =
       (ENNReal.ofReal ‖g.val‖)⁻¹ • μ := by
-    have hdet : LinearMap.det A.toLinearMap ≠ 0 := A.toLinearEquiv.isUnit_det'.ne_zero
-    have h := Measure.map_linearMap_addHaar_eq_smul_addHaar μ hdet
     have hpos : 0 < ‖g.val‖ := by
       rw [InfiniteAdeleRing.norm_def]
       refine Finset.prod_pos fun v _ => pow_pos ?_ _
       exact norm_pos_iff.mpr (Pi.isUnit_iff.mp g.isUnit v).ne_zero
-    have hcoe : Measure.map (A : PoissonArch.Space F → PoissonArch.Space F) μ =
+    have hcoe : Measure.map A μ =
         Measure.map (A.toLinearMap) μ := rfl
-    rw [hcoe, h, abs_inv, hdetabs, ENNReal.ofReal_inv_of_pos hpos]
+    rw [hcoe, (Measure.map_linearMap_addHaar_eq_smul_addHaar μ A.toLinearEquiv.isUnit_det'.ne_zero), abs_inv, (localArchEquiv_abs_det F g), ENNReal.ofReal_inv_of_pos hpos]
   calc
     Measure.map (fun x : InfiniteAdeleRing F => g.val * x)
         (Measure.map e.symm μ)

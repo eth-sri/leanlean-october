@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -59,8 +56,6 @@ theorem concreteNormResidueSymbolOfEmbedding_apply_primeNorm
     (hpi :
       letI : Finite ((intrinsicFiniteAbstractBase K).field.toSubgroup ⧸
           extensionSubgroup (intrinsicFiniteAbstractBase K).field (Eᵢ).field (Eᵢ).below) := by
-        change Finite ((intrinsicAbstractBase K).toSubgroup ⧸
-          extensionSubgroup (intrinsicAbstractBase K) (Eᵢ).field (Eᵢ).below)
         exact (Eᵢ).finite
       let KR := (intrinsicFiniteAbstractBase K).toFiniteResidueAbstractField D
       let S := D.frobeniusFixedField KR (Eᵢ).field (Eᵢ).below sigma
@@ -88,13 +83,10 @@ theorem concreteNormResidueSymbolOfEmbedding_apply_primeNorm
         (finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding K L i q) := by
   dsimp only at hx
   let BK := intrinsicFiniteAbstractBase K
-  let hEfinite : Finite ((intrinsicAbstractBase K).toSubgroup ⧸
-      extensionSubgroup (intrinsicAbstractBase K) (Eᵢ).field (Eᵢ).below) :=
+  let hEfinite :=
     (Eᵢ).finite
   let hBKEfinite : Finite (BK.field.toSubgroup ⧸
       extensionSubgroup BK.field (Eᵢ).field (Eᵢ).below) := by
-    change Finite ((intrinsicAbstractBase K).toSubgroup ⧸
-      extensionSubgroup (intrinsicAbstractBase K) (Eᵢ).field (Eᵢ).below)
     exact hEfinite
   let KR := BK.toFiniteResidueAbstractField D
   let S := D.frobeniusFixedField KR (Eᵢ).field (Eᵢ).below sigma
@@ -174,7 +166,7 @@ theorem concreteNormResidueSymbolOfEmbedding_apply_primeNorm
       Abelianization.of
         (finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding K L i q)
   apply (concreteReciprocityEquivOfEmbedding K L i D v hcf).injective
-  rw [(concreteReciprocityEquivOfEmbedding K L i D v hcf).apply_symm_apply]
+  simp
   exact (congrArg Additive.toMul hforward).symm
 
 end LocalClassFieldTheory

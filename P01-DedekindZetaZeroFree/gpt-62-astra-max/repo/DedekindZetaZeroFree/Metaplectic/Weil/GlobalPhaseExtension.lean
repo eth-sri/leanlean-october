@@ -16,18 +16,21 @@ set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 set_option backward.isDefEq.respectTransparency false
 
-private lemma two_six_coeff (A : SArithmeticData F) (σ : F →+* ℂ)
+section
+
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
+
+private lemma two_six_coeff
     (v : HeightOneSpectrum (𝓞 F)) (a b : (v.adicCompletion F)ˣ) :
     σ (((A.actualLocalSymbol v 2 (Or.inl rfl) a b : Fˣ) : F)) =
     σ (((A.actualLocalSymbol v 6 (Or.inr (Or.inr rfl)) a b : Fˣ) : F)) ^ 3 := by
   have he : ((A.actualLocalSymbol v 2 (Or.inl rfl) a b : Fˣ) : F) =
       ((A.actualLocalSymbol v 6 (Or.inr (Or.inr rfl)) a b : Fˣ) : F) ^ 3 := by
     apply (algebraMap F (v.adicCompletion F)).injective
-    have h := congrArg Units.val (A.actualLocalSymbol_two_six v a b)
-    simpa only [Units.val_pow_eq_pow_val, A.finiteRootsEquiv_apply, map_pow] using h
+    simpa only [Units.val_pow_eq_pow_val, A.finiteRootsEquiv_apply, map_pow] using (congrArg Units.val (A.actualLocalSymbol_two_six v a b))
   rw [he, map_pow]
 
-theorem actualWeilSStructuralLaws (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem actualWeilSStructuralLaws
     (H : A.V → A.V → Fˣ)
     (hActual : ∀ x y : A.G, H (QuotientGroup.mk' A.sixthPowers x)
       (QuotientGroup.mk' A.sixthPowers y) = (A.H_S x y : Fˣ)) :
@@ -54,6 +57,8 @@ theorem actualWeilSStructuralLaws (A : SArithmeticData F) (σ : F →+* ℂ)
     simp only [hloc, Finset.prod_mul_distrib]
     congr 1
     simp only [H_S, SubmonoidClass.coe_finsetProd, Units.coe_prod, map_prod, Finset.prod_pow]
+
+end
 
 theorem classCharacterExtension_infinity (A : SArithmeticData F) (B : Subgroup A.V)
     (φ : B →* ℂˣ) (D : A.ClassCharacterExtension B φ)

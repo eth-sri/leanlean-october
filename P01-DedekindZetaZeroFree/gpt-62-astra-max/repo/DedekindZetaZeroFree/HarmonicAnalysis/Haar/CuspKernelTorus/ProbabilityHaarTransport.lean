@@ -10,12 +10,12 @@ open scoped Classical NumberField Topology
 open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.KPContinuation.ChamberOutgoingSource
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
 
 theorem actual_fiberMeasure_isAddHaarMeasure :
     (KPContActualChamberOutgoingAdapter.fiberMeasure F ζ hζ C R P H U a).IsAddHaarMeasure := by
@@ -28,8 +28,9 @@ theorem actual_fiberMeasure_isAddHaarMeasure :
   · apply ENNReal.inv_ne_top.mpr
     exact (isOpen_univ.measure_pos (μ := Measure.addHaar) Set.univ_nonempty).ne'
 
+variable (K : AddSubgroup (IsDedekindDomain.FiniteAdeleRing (𝓞 F) F))
+
 theorem finiteLevelLattice_le_horizontal_of_rational_kernel
-    (K : AddSubgroup (IsDedekindDomain.FiniteAdeleRing (𝓞 F) F))
     (L : AddSubgroup F)
     (hr : ∀ r : F, algebraMap F (IsDedekindDomain.FiniteAdeleRing (𝓞 F) F) r ∈ K → r ∈ L) :
     (finiteLevelLattice K).toAddSubgroup ≤
@@ -41,7 +42,6 @@ theorem finiteLevelLattice_le_horizontal_of_rational_kernel
   exact AddSubgroup.mem_map.mpr ⟨r, hr r hrK, rfl⟩
 
 theorem actual_kernelTorus_probabilityHaar_transport
-    (K : AddSubgroup (IsDedekindDomain.FiniteAdeleRing (𝓞 F) F))
     (hc : IsCompact (K : Set (IsDedekindDomain.FiniteAdeleRing (𝓞 F) F)))
     (ho : IsOpen (K : Set (IsDedekindDomain.FiniteAdeleRing (𝓞 F) F)))
     (h : (finiteLevelLattice K).toAddSubgroup ≤

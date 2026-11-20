@@ -14,10 +14,10 @@ open KPContActualCotangentCountableShrinking KPContCotangentActualOverlap
 open KPContCotangentOverlapRationalBranches
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 def liftedMeasure (a : ShrunkChart F ζ hζ U R P H) : Measure (M F) :=
   Measure.map (fun y : a.domain => labeledAInv (placeEquiv F ζ hζ) y.val)
@@ -55,7 +55,7 @@ private theorem lifted_formula (a : ShrunkChart F ζ hζ U R P H) :
   let c := coordHomeomorph (F := F) (ζ := ζ) (hζ := hζ)
   rw [liftedMeasure, ShrunkChart.liftedMeasure, Measure.map_smul]
   · congr 1
-    change Measure.map (c.symm ∘ (Subtype.val : a.domain → _)) _ = _
+    change Measure.map (c.symm ∘ Subtype.val) _ = _
     rw [← Measure.map_map c.symm.measurable measurable_subtype_coe,
       map_comap_subtype_coe a.domain_open.measurableSet,
       Measure.restrict_restrict a.domain_open.measurableSet]
@@ -69,6 +69,8 @@ private theorem lifted_formula (a : ShrunkChart F ζ hζ U R P H) :
       ((KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)).restrict s)) he.symm
   · exact (c.symm.measurable.comp measurable_subtype_coe).aemeasurable
 
+alias OverlapMeasureNonsingularity.lifted_formula := lifted_formula
+
 private theorem lifted_equivalent (a : ShrunkChart F ζ hζ U R P H) :
     liftedMeasure a ≪ (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)).restrict (omega a) ∧
     (coordinateMeasure (F := F) (ζ := ζ) (hζ := hζ)).restrict (omega a) ≪ liftedMeasure a := by
@@ -76,6 +78,8 @@ private theorem lifted_equivalent (a : ShrunkChart F ζ hζ U R P H) :
   refine ⟨Measure.smul_absolutelyContinuous, Measure.absolutelyContinuous_smul ?_⟩
   exact ENNReal.div_ne_zero.mpr ⟨ne_of_gt ((H.disintegration U).positive_componentWeight a.component),
     ENNReal.natCast_ne_top _⟩
+
+alias OverlapMeasureNonsingularity.lifted_equivalent := lifted_equivalent
 
 private theorem rational_preserving (g : KPCuspArithmetic.PGL2 F) :
     MeasurePreserving (fun x => labeledAInv (placeEquiv F ζ hζ)
@@ -89,6 +93,8 @@ private theorem rational_preserving (g : KPCuspArithmetic.PGL2 F) :
   exact (hs.comp (KPFiniteAdelicCuspEnds.arch_smul_measurePreserving F g)).comp
     (hs.symm c.symm.toMeasurableEquiv)
 
+alias OverlapMeasureNonsingularity.rational_preserving := rational_preserving
+
 private theorem cast_fields {i j : Fin (H.atlas U).componentCount}
     (h : j = i) (c : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
       (U := U) (R := R) (P := P) (H := H) j) :
@@ -96,11 +102,14 @@ private theorem cast_fields {i j : Fin (H.atlas U).componentCount}
   cases h
   exact ⟨rfl, rfl⟩
 
+alias OverlapMeasureNonsingularity.cast_fields := cast_fields
+
 private theorem target_chart_fields (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component) :
     (targetChart a b h).kind.representative = 1 ∧
-      (targetChart a b h).places = placeEquiv F ζ hζ := by
-  exact cast_fields h.symm (KPContCotangentActualGenuineTwistIsotropy.isotropyChart b)
+      (targetChart a b h).places = placeEquiv F ζ hζ := cast_fields h.symm (KPContCotangentActualGenuineTwistIsotropy.isotropyChart b)
+
+alias OverlapMeasureNonsingularity.target_chart_fields := target_chart_fields
 
 private theorem branch_quasi (e : Branch a b) :
     Measure.QuasiMeasurePreserving e.psi
@@ -119,11 +128,11 @@ private theorem branch_quasi (e : Branch a b) :
       funext x
       change labeledAInv (targetChart a b e.component_eq).places
         (((targetChart a b e.component_eq).kind.representative⁻¹ *
-          (e.arrow.gamma : KPCuspArithmetic.PGL2 F) * 1) •
+          e.arrow.gamma * 1) •
             labeledA (placeEquiv F ζ hζ) x) = _
       rw [ht.1, ht.2]
-      simp only [inv_one, one_mul, mul_one]
-    · convert (rational_preserving (F := F) (ζ := ζ) (hζ := hζ)
+      simp
+    · convert (rational_preserving
         (e.arrow.gamma⁻¹ : KPCuspArithmetic.PGL2 F)).quasiMeasurePreserving using 1
       funext x
       change labeledAInv (placeEquiv F ζ hζ)
@@ -131,7 +140,7 @@ private theorem branch_quasi (e : Branch a b) :
           (targetChart a b e.component_eq).kind.representative) •
             labeledA (targetChart a b e.component_eq).places x) = _
       rw [ht.1, ht.2]
-      simp only [inv_one, one_mul, mul_one, Subgroup.coe_inv]
+      simp
 
 private theorem ambient_quasi (e : Branch a b) (he : e.Properties) :
     Measure.QuasiMeasurePreserving e.psi
@@ -146,9 +155,7 @@ private theorem ambient_quasi (e : Branch a b) (he : e.Properties) :
   have hb'r := hb.2.restrict e.targetDomain
   rw [Measure.restrict_restrict_of_subset he.source_subset] at har ha'r
   rw [Measure.restrict_restrict_of_subset he.target_subset] at hbr hb'r
-  have hf := (branch_quasi e).1.restrict (Set.mapsTo_image e.psi e.domain)
-  have hg := (branch_quasi e).2.restrict he.inverse_target
-  exact ⟨(hf.mono_left har).mono_right hb'r, (hg.mono_left hbr).mono_right ha'r⟩
+  exact ⟨(((branch_quasi e).1.restrict (Set.mapsTo_image e.psi e.domain)).mono_left har).mono_right hb'r, (((branch_quasi e).2.restrict he.inverse_target).mono_left hbr).mono_right ha'r⟩
 
 private theorem subtype_quasi (s t : Set (M F)) (hs : MeasurableSet s)
     (ht : MeasurableSet t) (μ ν : Measure (M F)) (f : M F → M F)
@@ -166,7 +173,10 @@ private theorem subtype_quasi (s t : Set (M F)) (hs : MeasurableSet s)
   rintro _ ⟨x, hx, rfl⟩
   exact ⟨g x, hx, rfl⟩
 
-private theorem image_null (e : Branch a b) (he : e.Properties)
+variable (e : Branch a b) (he : e.Properties)
+
+include he in
+private theorem image_null
     (S : Set (M F)) (hS : S ⊆ e.domain) :
     ((liftedMeasure a).restrict e.domain) S = 0 ↔
       ((liftedMeasure b).restrict e.targetDomain) (e.psi '' S) = 0 := by
@@ -179,7 +189,8 @@ private theorem image_null (e : Branch a b) (he : e.Properties)
   · intro hnull
     exact measure_mono_null (Set.subset_preimage_image e.psi S) (hq.1.preimage_null hnull)
 
-private theorem preimage_null (e : Branch a b) (he : e.Properties)
+include he in
+private theorem preimage_null
     (Z : Set (M F)) (hZ : Z ⊆ e.targetDomain) :
     ((liftedMeasure b).restrict e.targetDomain) Z = 0 ↔
       ((liftedMeasure a).restrict e.domain) (e.psi ⁻¹' Z) = 0 := by
@@ -191,7 +202,7 @@ private theorem preimage_null (e : Branch a b) (he : e.Properties)
     intro x hx
     simpa only [Set.mem_preimage, he.right_inverse x (hZ hx)] using hx
 
-theorem actual_nonsingularity (e : Branch a b) (he : e.Properties) :
+theorem actual_nonsingularity :
     Measure.QuasiMeasurePreserving (forward e)
       (Measure.comap (Subtype.val : e.domain → M F) ((liftedMeasure a).restrict e.domain))
       (Measure.comap (Subtype.val : e.targetDomain → M F) ((liftedMeasure b).restrict e.targetDomain)) ∧

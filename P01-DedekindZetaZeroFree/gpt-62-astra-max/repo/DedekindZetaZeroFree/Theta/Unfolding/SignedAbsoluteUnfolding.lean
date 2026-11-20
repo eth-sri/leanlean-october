@@ -8,7 +8,7 @@ public import DedekindZetaZeroFree.Theta.Unfolding.DyadicFactorizationAndSignedS
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem signed_unfolding (R : PrincipalMellin.ActualRecipe S η)
     (hR : RootAligned R) (N : TraceHaarTransport R)

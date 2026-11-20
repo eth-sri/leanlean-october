@@ -13,9 +13,9 @@ open KPMsGreenFlux
 set_option backward.isDefEq.respectTransparency true
 set_option maxHeartbeats 500000
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 local instance (K : Subgroup (Cover F ζ hζ)) : MeasurableSpace K := borel K
 local instance (K : Subgroup (Cover F ζ hζ)) : BorelSpace K := ⟨rfl⟩
 theorem constantTerm_average_zero (K : Subgroup (Cover F ζ hζ))
@@ -50,7 +50,7 @@ theorem constantTerm_average_zero (K : Subgroup (Cover F ζ hζ))
       ∫ q, ∫ k, L (q,k) ∂ν ∂dn by simp only [L,mul_assoc], he]
   have hz' (k : K) : (∫ q, L (q,k) ∂dn) = 0 := congrFun hz (g*k.val)
   simp only [hz', integral_zero]
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabActualMean renaming cuspRepresentative_mem_rational → cuspRepresentative_mem_rational
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabActualMean (cuspRepresentative_mem_rational)
 
 theorem upper_zero_iff_constantTerm (j : Cusps A) (f : Cover F ζ hζ → ℂ)
     (hr : ∀ γ : KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ, ∀ g, f (γ.val*g)=f g) :
@@ -71,7 +71,7 @@ theorem upper_zero_iff_constantTerm (j : Cusps A) (f : Cover F ζ hζ → ℂ)
   · intro hz g
     have ht := he (cuspRepresentative A j * g)
     rw [hz] at ht
-    simpa only [Pi.zero_apply, inv_mul_cancel_left] using ht.symm
+    simpa using ht.symm
 
 theorem upperZero_average (j : Cusps A) (K : Subgroup (Cover F ζ hζ))
     (hK : IsCompact (K : Set (Cover F ζ hζ))) (ν : Measure K) [IsFiniteMeasure ν]

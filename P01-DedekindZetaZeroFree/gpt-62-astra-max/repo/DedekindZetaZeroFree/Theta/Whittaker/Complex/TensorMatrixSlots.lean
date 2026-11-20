@@ -18,8 +18,8 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 local notation "Raw" => KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ
@@ -41,8 +41,8 @@ def matrix (w : InfinitePlace F)
     (InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place w)).toRingHom g.g
 
 variable (s : RestrictedTensorSimple.Level (bad A P C))
-variable (x : ∀ j : s.val, Plus A P C j.val)
-variable (g : KPAdelicCoverRestrictedProduct.RestrictedCover F A.zeta12 A.primitive_zeta12)
+    (x : ∀ j : s.val, Plus A P C j.val)
+    (g : KPAdelicCoverRestrictedProduct.RestrictedCover F A.zeta12 A.primitive_zeta12)
 
 def finiteTuple (x : ∀ j : s.val, Plus A P C j.val)
     (g : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ) (q : s.val.toRight) : LocalFiber F ζ hζ P C q.val :=

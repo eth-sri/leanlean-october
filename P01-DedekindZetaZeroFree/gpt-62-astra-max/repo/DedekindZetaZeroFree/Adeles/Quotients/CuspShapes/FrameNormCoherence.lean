@@ -40,9 +40,8 @@ private theorem central_right_norm
   have hd : KPGlobalTorusFunctionData.delta F ζ hζ z = 1 := by
     change KPGlobalTorusFunctionData.ideleAbs F (KPGlobalTorusFunctionData.p F ζ hζ z) = 1
     rw [hp, map_one]
-  have hc := Subgroup.mem_center_iff.mp
-    (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩) g
-  rw [hc]
+  rw [(Subgroup.mem_center_iff.mp
+    (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩) g)]
   have hn := KPGlobalTorusBorelTwistCompatibility.iwasawaNorm_borel_mul F ζ hζ
     (KPMsAngularSourceRecipe.D F ζ hζ) z 0 g
   have hN : KPGlobalTorusFunctionData.N F ζ hζ 0 = 1 :=

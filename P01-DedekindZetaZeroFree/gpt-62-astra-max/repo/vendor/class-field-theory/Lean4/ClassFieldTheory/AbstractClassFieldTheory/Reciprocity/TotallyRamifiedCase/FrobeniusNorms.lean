@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -44,8 +42,6 @@ noncomputable def abstractReciprocityTotallyRamifiedFrobeniusInM
     (q : L.extensionQuotient) :
     (D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
       K L hTot q).extensionQuotient := by
-  let σ := D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
-    K L hTot q
   let M := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
     K L hTot q
   letI : (extensionSubgroup K.field M.field M.below).Normal := M.normal
@@ -57,15 +53,13 @@ noncomputable def abstractReciprocityTotallyRamifiedFrobeniusInM
       K L hTot q
     exact ⟨(mem_extensionSubgroup_iff K.field L.field L.below x).1 hx.1,
       (D.mem_fieldInertiaWithin_iff K.field x).1 hx.2⟩
-  let r : (K.field.toSubgroup ⧸
-      D.extensionInertiaWithin K.field L.field L.below) →*
-      (K.field.toSubgroup ⧸
-        extensionSubgroup K.field M.field M.below) :=
+  let r :=
     QuotientGroup.map
       (D.extensionInertiaWithin K.field L.field L.below)
       (extensionSubgroup K.field M.field M.below)
       (MonoidHom.id K.field.toSubgroup) hIM
-  exact M.extensionQuotientMulEquiv.symm (r σ.1)
+  exact M.extensionQuotientMulEquiv.symm (r (D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
+    K L hTot q).1)
 
 /-- The Frobenius chosen in the auxiliary field has the expected restriction. -/
 @[simp]
@@ -89,7 +83,7 @@ theorem abstractReciprocityTotallyRamifiedFrobeniusInM_restriction
     K L hTot q
   let hML := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension_le_L
     K L hTot q
-  let : (extensionSubgroup K.field M.field M.below).Normal := M.normal
+  let := M.normal
   have hIM : D.extensionInertiaWithin K.field L.field L.below ≤
       extensionSubgroup K.field M.field M.below := by
     intro x hx
@@ -98,17 +92,11 @@ theorem abstractReciprocityTotallyRamifiedFrobeniusInM_restriction
       K L hTot q
     exact ⟨(mem_extensionSubgroup_iff K.field L.field L.below x).1 hx.1,
       (D.mem_fieldInertiaWithin_iff K.field x).1 hx.2⟩
-  let r : (K.field.toSubgroup ⧸
-      D.extensionInertiaWithin K.field L.field L.below) →*
-      (K.field.toSubgroup ⧸
-        extensionSubgroup K.field M.field M.below) :=
+  let r :=
     QuotientGroup.map
       (D.extensionInertiaWithin K.field L.field L.below)
       (extensionSubgroup K.field M.field M.below)
       (MonoidHom.id K.field.toSubgroup) hIM
-  change L.extensionQuotientMulEquiv.symm
-      (abstractReciprocityRestriction K.field L.field M.field hML L.below
-        (r σ.1)) = q
   refine L.extensionQuotientMulEquiv.symm_apply_eq.mpr ?_
   have hcompat : ∀ z : K.field.toSubgroup ⧸
       D.extensionInertiaWithin K.field L.field L.below,
@@ -122,15 +110,15 @@ theorem abstractReciprocityTotallyRamifiedFrobeniusInM_restriction
     (D.frobeniusRestriction_chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified_underlying
       K L hTot q)
 
+section
+
+variable (D : DegreeData G) [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
+    (K : FiniteResidueAbstractField D) (L : FiniteGaloisSubextension K.field)
+    (hTot : L.IsTotallyRamified D) (q : L.extensionQuotient)
+
 /-- Including the lower generator and then restricting recovers its prescribed action. -/
 @[simp]
-theorem abstractReciprocityTotallyRamifiedLowerGenerator_inclusion_restriction
-    (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+theorem abstractReciprocityTotallyRamifiedLowerGenerator_inclusion_restriction :
     let M := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
       K L hTot q
     let S := M.inertiaImage D
@@ -149,8 +137,6 @@ theorem abstractReciprocityTotallyRamifiedLowerGenerator_inclusion_restriction
     K L hTot q
   let g := D.abstractReciprocityTotallyRamifiedLowerGenerator
     K L hTot q
-  change M.bundledRestrictionHom L hML
-      (M.lowerInclusionHom S g) = q
   have hcompat : ∀ x,
       M.bundledRestrictionHom L hML
         (M.lowerInclusionHom S x) = e x := by
@@ -164,13 +150,7 @@ theorem abstractReciprocityTotallyRamifiedLowerGenerator_inclusion_restriction
     (D.abstractReciprocityTotallyRamifiedRestrictionEquiv_lowerGenerator K L hTot q)
 
 /-- The lower cyclic generator commutes with the selected Frobenius element. -/
-theorem abstractReciprocityTotallyRamified_generator_commutes_frobenius
-    (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+theorem abstractReciprocityTotallyRamified_generator_commutes_frobenius :
     let M := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
       K L hTot q
     let S := M.inertiaImage D
@@ -194,7 +174,6 @@ theorem abstractReciprocityTotallyRamified_generator_commutes_frobenius
     base := K.field
     below := L.below }
   let : (extensionSubgroup EL.base EL.field EL.below).Normal := by
-    change (extensionSubgroup K.field L.field L.below).Normal
     exact L.normal
   have hresBundled :
       M.bundledRestrictionHom L hML (M.lowerInclusionHom S g) =
@@ -216,7 +195,9 @@ theorem abstractReciprocityTotallyRamified_generator_commutes_frobenius
     (M.extensionQuotientMulEquiv t) hresRaw
   rw [Commute]
   apply M.extensionQuotientMulEquiv.injective
-  simpa only [map_mul] using hcommRaw.eq
+  simpa using hcommRaw.eq
+
+end
 
 /-- Frobenius fixes the automorphism used in the totally ramified construction. -/
 theorem abstractReciprocityTotallyRamified_frobenius_fixes_sigma
@@ -315,7 +296,6 @@ theorem abstractReciprocityTotallyRamified_actions_agree_on_L
             K L hTot q)) := by
   let M := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
     K L hTot q
-  let S := M.inertiaImage D
   let hML := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension_le_L
     K L hTot q
   let EL : DegreeData.AbstractExtension G := {
@@ -323,13 +303,12 @@ theorem abstractReciprocityTotallyRamified_actions_agree_on_L
     base := K.field
     below := L.below }
   let : (extensionSubgroup EL.base EL.field EL.below).Normal := by
-    change (extensionSubgroup K.field L.field L.below).Normal
     exact L.normal
   apply M.relativeCosetAction_eq_of_restriction_eq A EL hML
   apply L.extensionQuotientMulEquiv.symm.injective
   simpa [FiniteGaloisSubextension.bundledRestrictionHom] using
     (show M.bundledRestrictionHom L hML
-        (M.lowerInclusionHom S
+        (M.lowerInclusionHom (M.inertiaImage D)
           (D.abstractReciprocityTotallyRamifiedLowerGenerator
             K L hTot q)) =
       M.bundledRestrictionHom L hML
@@ -369,20 +348,15 @@ theorem abstractReciprocity_totallyRamified_relativeNorm_L
         (relativeNorm A K.field L.field L.below a) := by
   let M := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
     K L hTot q
-  let hML := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension_le_L
-    K L hTot q
-  let : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L.field L.below) :=
+  let :=
     L.finite
-  have hInertia : ∀ i : K.field.toSubgroup,
-      i ∈ D.fieldInertiaWithin K.field →
-      i.1 ∈ L.field.toSubgroup → i.1 ∈ M.field.toSubgroup := by
-    intro i hiI hiL
-    apply D.maximalUnramifiedField_le_abstractReciprocityTotallyRamifiedFiniteGaloisExtension
-      K L hTot q
-    exact ⟨hiL, (D.mem_fieldInertiaWithin_iff K.field i).1 hiI⟩
-  exact M.abstractReciprocity_relativeNorm_fixedFieldInclusion
-    A D L.toFiniteAbstractExtension hML hTot hInertia a
+  refine M.abstractReciprocity_relativeNorm_fixedFieldInclusion
+    A D L.toFiniteAbstractExtension (D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension_le_L
+      K L hTot q) hTot ?_ a
+  intro i hiI hiL
+  apply D.maximalUnramifiedField_le_abstractReciprocityTotallyRamifiedFiniteGaloisExtension
+    K L hTot q
+  exact ⟨hiL, (D.mem_fieldInertiaWithin_iff K.field i).1 hiI⟩
 
 /-- The second norm restriction used:
 `N_{M/M⁰}|_{A_Σ}=N_{Σ/K}`, again in the actual fixed group
@@ -426,17 +400,15 @@ theorem abstractReciprocity_totallyRamified_relativeNorm_sigma
         (fixedFieldInclusion A Sigma M.field hMSigma a) =
       fixedFieldInclusion A K.field M₀ hM₀K
         (relativeNorm A K.field Sigma hSigmaK a) := by
-  let : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L.field L.below) :=
+  let :=
     L.finite
   let σ := D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
     K L hTot q
   let Sigma := D.frobeniusFixedField K L.field L.below σ
   let hSigmaK := D.frobeniusFixedField_le K L.field L.below σ
-  let hSigmaFinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field Sigma hSigmaK) :=
+  let hSigmaFinite :=
     D.frobeniusFixedField_finite K L.field L.below σ
-  let ESigma : DegreeData.FiniteAbstractExtension G :=
+  let ESigma :=
     DegreeData.FiniteAbstractExtension.ofInclusion Sigma K.field hSigmaK
   let M := D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
     K L hTot q
@@ -444,15 +416,14 @@ theorem abstractReciprocity_totallyRamified_relativeNorm_sigma
     D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension_le_sigma
       K L hTot q
   have hSigmaTot : ESigma.IsTotallyRamified D := by
-    have hrelative : (ESigma.residueDegree D : ℕ) = 1 := by
-      calc
-        (ESigma.residueDegree D : ℕ) =
-            D.frobeniusExponent K L.field L.below σ :=
-          D.frobeniusFixedField_residueDegreeOverBase K L.field L.below σ
-        _ = 1 :=
-          D.frobeniusExponent_chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
-            K L hTot q
-    exact ESigma.isTotallyRamified_of_residueDegree_eq_one D hrelative
+    refine ESigma.isTotallyRamified_of_residueDegree_eq_one D ?_
+    calc
+    _ =
+        D.frobeniusExponent K L.field L.below σ :=
+      D.frobeniusFixedField_residueDegreeOverBase K L.field L.below σ
+    _ = 1 :=
+      D.frobeniusExponent_chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
+        K L hTot q
   have hInertia : ∀ i : K.field.toSubgroup,
       i ∈ D.fieldInertiaWithin K.field →
       i.1 ∈ Sigma.toSubgroup → i.1 ∈ M.field.toSubgroup := by

@@ -12,15 +12,7 @@ set_option maxRecDepth 10000
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualFullGroupTranslation
 open KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming slice_smooth → slice_smooth
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming slice_slot_omega → slice_slot_omega
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming slotCasimir → slotCasimir
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming productCasimir → productCasimir
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming productWord_congr → productWord_congr
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming matrixPullback_casimir_units → matrixPullback_casimir_units
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming invertibleProducts_open → invertibleProducts_open
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth renaming matrixPullback_at_units → matrixPullback_at_units
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming rightOmega → rightOmega
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth (slice_smooth slice_slot_omega slotCasimir productCasimir productWord_congr matrixPullback_casimir_units invertibleProducts_open matrixPullback_at_units)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 local notation "MP" => MatrixProduct F
 local notation "O" => invertibleProducts (F := F)
@@ -48,12 +40,10 @@ private theorem product_translate (f : MP → ℂ) (hf : ContDiffOn ℝ (⊤ : �
     (m : MP) (hm : m ∈ O) :
     productCasimir (fun a => f (rightProduct k a)) m = productCasimir f (rightProduct k m) := by
   have hm' := rightProduct_mem k m hm
-  have hs : ContDiffOn ℝ (⊤ : ℕ∞) (fun a => f (rightProduct k a)) O :=
-    hf.comp (rightProduct_smooth k).contDiffOn (fun a ha => rightProduct_mem k a ha)
   unfold productCasimir
   apply Finset.sum_congr rfl
   intro v _
-  have hleft := slice_slot_omega v (fun a => f (rightProduct k a)) m hm hs (m v) (hm v)
+  have hleft := slice_slot_omega v (fun a => f (rightProduct k a)) m hm (hf.comp (rightProduct_smooth k).contDiffOn (fun a ha => rightProduct_mem k a ha)) (m v) (hm v)
   have hright := slice_slot_omega v f (rightProduct k m) hm' hf (rightProduct k m v) (hm' v)
   simp only [Function.update_eq_self] at hleft hright
   rw [hleft, hright]

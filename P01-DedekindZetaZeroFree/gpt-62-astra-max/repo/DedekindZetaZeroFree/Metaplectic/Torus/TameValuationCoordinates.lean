@@ -41,8 +41,7 @@ lemma unit_of_exponent_zero (y : Kˣ)
     change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K (y : K)) =
       IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K 1
     rw [map_one, ← WithZero.exp_log hn]
-    have hlog : WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-        (valuation K (y : K))) = 0 := neg_eq_zero.mp h
+    have hlog := neg_eq_zero.mp h
     rw [hlog, WithZero.exp_zero]
   let a : 𝒪[K] := ⟨(y : K), hv.le⟩
   have ha : IsUnit a := (Valuation.Integers.isUnit_iff_valuation_eq_one
@@ -60,6 +59,8 @@ private lemma cubes_le_modVal_ker : CubicCharacters.cubes Kˣ ≤ (modVal K).ker
   rw [← zpow_natCast x 3, KPCubicExpansion.valuationExponent_zpow, Int.cast_mul]
   change (3 : ZMod 3) * (KPCubicExpansion.valuationExponent K x : ZMod 3) = 0
   rw [show (3 : ZMod 3) = 0 from rfl, zero_mul]
+
+alias TameValuationCoordinates.cubes_le_modVal_ker := cubes_le_modVal_ker
 
 private lemma modVal_ker (π : Kˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
@@ -93,7 +94,6 @@ private lemma modVal_ker (π : Kˣ)
   · refine sup_le ?_ (cubes_le_modVal_ker K)
     intro y hy
     obtain ⟨u, rfl⟩ := hy
-    change (KPCubicExpansion.valuationExponent K ((KPRamifiedBeta.unitsInclusion K) u) : ZMod 3) = 0
     change (KPCubicExpansion.valuationExponent K (Units.map (𝒪[K]).subtype.toMonoidHom u) : ZMod 3) = 0
     rw [KPCubicExpansion.valuationExponent_unit]
     rfl
@@ -113,11 +113,8 @@ theorem valuation_quotient_coordinates [CharZero K]
         e (QuotientGroup.mk' (unitCubeClasses K)
           (uniformizerClass K π (j.val : ℤ))) =
             Multiplicative.ofAdd (j.val : ZMod 3)) := by
-  let φ : KPLocalTorus.CubeClasses Kˣ →* Multiplicative (ZMod 3) :=
+  let φ :=
     QuotientGroup.lift (CubicCharacters.cubes Kˣ) (modVal K) (cubes_le_modVal_ker K)
-  have hker : unitCubeClasses K = φ.ker := by
-    rw [QuotientGroup.ker_lift, modVal_ker K π hπ]
-    rfl
   have hp : KPCubicExpansion.valuationExponent K π = 1 := by
     simp only [KPCubicExpansion.valuationExponent, hπ, WithZero.log_exp]
     norm_num
@@ -127,9 +124,10 @@ theorem valuation_quotient_coordinates [CharZero K]
     change Multiplicative.ofAdd (KPCubicExpansion.valuationExponent K
       (π ^ (j.toAdd.val : ℤ)) : ZMod 3) = j
     rw [KPCubicExpansion.valuationExponent_zpow, hp, mul_one]
-    change (((j.toAdd.val : ℤ) : ZMod 3)) = j.toAdd
     simp
-  refine ⟨QuotientGroup.liftEquiv (unitCubeClasses K) hsurj hker, ?_, ?_⟩
+  refine ⟨QuotientGroup.liftEquiv (unitCubeClasses K) hsurj (by
+    rw [QuotientGroup.ker_lift, modVal_ker K π hπ]
+    rfl), ?_, ?_⟩
   · intro y
     rfl
   · intro j

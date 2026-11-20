@@ -62,14 +62,17 @@ theorem integrable_of_majorant2_continuous (Fn : ℝ × ℝ → ℂ) (hF : Conti
     Integrable Fn volume :=
   integrable_of_majorant2 Fn hF.aestronglyMeasurable g hg A (Filter.Eventually.of_forall hb)
 
-theorem outer_integrable2 (Fn : ℝ × ℝ → ℂ) (hF : AEStronglyMeasurable Fn volume)
-    (g : ℝ × ℝ → ℝ) (hg : Integrable g volume) (A : ℝ)
+variable (Fn : ℝ × ℝ → ℂ) (hF : AEStronglyMeasurable Fn volume) (g : ℝ × ℝ → ℝ)
+    (hg : Integrable g volume) (A : ℝ)
+
+include hF hg in
+theorem outer_integrable2
     (hb : ∀ᵐ p ∂(volume : Measure (ℝ × ℝ)), ‖Fn p‖ ≤ A * g p) :
     Integrable (fun t : ℝ => c * ∫ s : ℝ, Fn (t, s)) volume :=
   (integrable_of_majorant2 Fn hF g hg A hb).integral_prod_left.const_mul c
 
-theorem norm_double_le (Fn : ℝ × ℝ → ℂ) (hF : AEStronglyMeasurable Fn volume)
-    (g : ℝ × ℝ → ℝ) (hg : Integrable g volume) (A : ℝ) (hA : 0 ≤ A)
+include hF hg in
+theorem norm_double_le (hA : 0 ≤ A)
     (hb : ∀ᵐ p ∂(volume : Measure (ℝ × ℝ)), ‖Fn p‖ ≤ A * g p) :
     ‖c * ∫ t : ℝ, c * ∫ s : ℝ, Fn (t, s)‖
       ≤ ((2 * Real.pi)⁻¹) ^ 2 * A * ∫ p : ℝ × ℝ, g p := by
@@ -79,7 +82,7 @@ theorem norm_double_le (Fn : ℝ × ℝ → ℂ) (hF : AEStronglyMeasurable Fn v
     rfl
   rw [h1, ← mul_assoc, norm_mul, norm_mul, norm_c]
   have h2 : ‖∫ p, Fn p‖ ≤ A * ∫ p, g p := by
-    calc ‖∫ p, Fn p‖ ≤ ∫ p, ‖Fn p‖ := norm_integral_le_integral_norm _
+    calc _ ≤ ∫ p, ‖Fn p‖ := norm_integral_le_integral_norm _
       _ ≤ ∫ p, A * g p := integral_mono_ae hI.norm (hg.const_mul A) hb
       _ = A * ∫ p, g p := integral_const_mul _ _
   have := norm_nonneg c

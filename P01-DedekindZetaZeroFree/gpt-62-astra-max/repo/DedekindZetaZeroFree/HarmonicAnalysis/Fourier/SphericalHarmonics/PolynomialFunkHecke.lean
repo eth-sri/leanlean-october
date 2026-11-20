@@ -44,7 +44,7 @@ theorem polynomial_funkHecke_zero (p : MvPolynomial (Fin 3) ℂ)
       ((∫ u : ℝ in Set.Icc 0 1,
         k u * (Polynomial.shiftedLegendre 0).eval₂ (Int.castRingHom ℝ) u : ℝ) : ℂ) *
         polynomialSphere p x := by
-  have hp' : p = MvPolynomial.C (p.coeff 0) :=
+  have hp' :=
     MvPolynomial.totalDegree_eq_zero_iff_eq_C.mp
       ((MvPolynomial.totalDegree_zero_iff_isHomogeneous (Fin 3)).mpr hp.1)
   conv_lhs => rw [hp']

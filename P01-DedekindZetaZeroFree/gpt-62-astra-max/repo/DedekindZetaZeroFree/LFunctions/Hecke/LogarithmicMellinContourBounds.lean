@@ -36,15 +36,14 @@ theorem completedGrowth
   obtain ⟨CU, hU⟩ := hgrowth (1 / 2) (by norm_num)
   obtain ⟨CG, AG, hCG, hAG, hG⟩ := Vendor.inverse_Gammaℂ_strip_exp_bound a b r
   obtain ⟨CH, hCH, hH⟩ := hf.rapid_vertical_decay a b haδ hab 0
-  let B : ℝ := 1 + |a| + |b|
-  let E : ℝ := Real.exp ((|Real.log X| + |Real.log D|) * B)
+  let B := 1 + |a| + |b|
+  let E := Real.exp ((|Real.log X| + |Real.log D|) * B)
   have hB : 1 ≤ B := by dsimp [B]; linarith [abs_nonneg a, abs_nonneg b]
   have hB0 : 0 ≤ B := le_trans (by norm_num) hB
-  have hE : 0 ≤ E := Real.exp_nonneg _
   refine ⟨CH * E * (max CU 0 * CG), B ^ (3 / 2 : ℝ) + AG,
     by positivity, by positivity, ?_⟩
   intro σ t hσ ht
-  let s : ℂ := (σ : ℂ) + (t : ℂ) * Complex.I
+  let s := (σ : ℂ) + (t : ℂ) * Complex.I
   have hre : s.re = σ := by simp [s]
   have him : s.im = t := by simp [s]
   have hs0 : s ≠ 0 := by
@@ -61,10 +60,6 @@ theorem completedGrowth
     have hb := le_abs_self b
     dsimp [B]
     constructor <;> linarith [hσ.1, hσ.2, abs_nonneg a, abs_nonneg b]
-  have hH' : ‖H s‖ ≤ CH := by
-    simpa [s] using hH σ t hσ.1 hσ.2 ht
-  have hG' : ‖(Complex.Gammaℂ s)⁻¹‖ ^ r ≤ CG * Real.exp (AG * |t|) := by
-    simpa [him] using hG s (by simpa [hre] using hσ)
   have hden : 1 ≤ ‖(s * (s - 1)) ^ n‖ := by
     rw [norm_pow, norm_mul]
     apply one_le_pow₀
@@ -74,7 +69,7 @@ theorem completedGrowth
   have hpowX : ‖(X : ℂ) ^ s‖ ≤ Real.exp (|Real.log X| * B) := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hX, hre, Real.rpow_def_of_pos hX]
     apply Real.exp_le_exp.mpr
-    calc Real.log X * σ ≤ |Real.log X * σ| := le_abs_self _
+    calc _ ≤ |Real.log X * σ| := le_abs_self _
       _ = |Real.log X| * |σ| := abs_mul _ _
       _ ≤ |Real.log X| * B := mul_le_mul_of_nonneg_left hσabs (abs_nonneg _)
   have hpowD : ‖(D : ℂ) ^ (-(s / 2))‖ ≤ Real.exp (|Real.log D| * B) := by
@@ -84,7 +79,7 @@ theorem completedGrowth
     have heabs : |(-(s / 2)).re| ≤ B := by
       rw [he, abs_neg, abs_div, show |(2 : ℝ)| = 2 by norm_num]
       linarith [abs_nonneg σ]
-    calc Real.log D * (-(s / 2)).re ≤ |Real.log D * (-(s / 2)).re| := le_abs_self _
+    calc _ ≤ |Real.log D * (-(s / 2)).re| := le_abs_self _
       _ = |Real.log D| * |(-(s / 2)).re| := abs_mul _ _
       _ ≤ |Real.log D| * B := mul_le_mul_of_nonneg_left heabs (abs_nonneg _)
   have hpow : ‖(X : ℂ) ^ s‖ * ‖(D : ℂ) ^ (-(s / 2))‖ ≤ E := by
@@ -118,7 +113,8 @@ theorem completedGrowth
         (1 + |t|) ^ (3 / 2 : ℝ)) := by
     calc _ ≤ (max CU 0 * Real.exp (B ^ (3 / 2 : ℝ) * (1 + |t|) ^ (3 / 2 : ℝ))) *
         (CG * Real.exp (AG * |t|)) :=
-          mul_le_mul hU' hG' (by positivity) (by positivity)
+          mul_le_mul hU' (by
+            simpa [him] using hG s (by simpa [hre] using hσ)) (by positivity) (by positivity)
       _ = (max CU 0 * CG) * Real.exp
           (B ^ (3 / 2 : ℝ) * (1 + |t|) ^ (3 / 2 : ℝ) + AG * |t|) := by
         rw [Real.exp_add]; ring
@@ -126,7 +122,6 @@ theorem completedGrowth
         apply mul_le_mul_of_nonneg_left _ (by positivity)
         apply Real.exp_le_exp.mpr
         nlinarith [mul_le_mul_of_nonneg_left htS hAG]
-  change ‖Vendor.logMellinProduct H L X s‖ ≤ _
   rw [Vendor.logMellinProduct, hformula s hs0 hs1, norm_mul, norm_mul,
     norm_div, norm_mul, norm_mul, norm_pow]
   calc _ ≤ ‖H s‖ * ‖(X : ℂ) ^ s‖ *
@@ -138,7 +133,8 @@ theorem completedGrowth
     _ ≤ CH * E * ((max CU 0 * CG) * Real.exp ((B ^ (3 / 2 : ℝ) + AG) *
         (1 + |t|) ^ (3 / 2 : ℝ))) := by
       apply mul_le_mul
-      · exact mul_le_mul hH' hpow (by positivity) hCH
+      · exact mul_le_mul (by
+        simpa [s] using hH σ t hσ.1 hσ.2 ht) hpow (by positivity) hCH
       · exact hUG
       · positivity
       · positivity
@@ -193,8 +189,7 @@ private lemma powerDiff (X : ℝ) (hX : 0 < X) (s : ℂ) :
 private lemma productDiff {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
     (hf : Vendor.LogMellinAdmissible f δ P H) (L : ℂ → ℂ) (X : ℝ) (hX : 0 < X)
     (s : ℂ) (hs : -δ < s.re) (hs0 : s ≠ 0) (hL : DifferentiableAt ℂ L s) :
-    DifferentiableAt ℂ (Vendor.logMellinProduct H L X) s := by
-  exact ((hf.differentiableAt s hs hs0).mul (powerDiff X hX s)).mul hL
+    DifferentiableAt ℂ (Vendor.logMellinProduct H L X) s := ((hf.differentiableAt s hs hs0).mul (powerDiff X hX s)).mul hL
 
 private lemma partDiff (c : ℕ → ℂ) (N : ℕ) (p s : ℂ) (hs : s ≠ p) :
     DifferentiableAt ℂ (fun z : ℂ => ∑ j ∈ Finset.Icc 1 N, c j / (z - p) ^ j) s := by
@@ -224,9 +219,7 @@ theorem principalContour
   have hp0 := Vendor.logMellinProduct_principalPart_zero hf X hX L hL0
   have hp1 := Vendor.logMellinProduct_principalPart_one hf X hX L κ hLp
   have hdiff : ∀ s : ℂ, -δ < s.re → s ≠ 0 → s ≠ 1 →
-      DifferentiableAt ℂ (Vendor.logMellinProduct H L X) s := by
-    intro s hs hs0 hs1
-    exact productDiff hf L X hX s hs hs0 (hL s hs1).differentiableAt
+      DifferentiableAt ℂ (Vendor.logMellinProduct H L X) s := fun s hs hs0 hs1 => productDiff hf L X hX s hs hs0 (hL s hs1).differentiableAt
   refine ⟨fun s hs => (hdiff s hs.1 hs.2.1 hs.2.2).differentiableWithinAt, hp0, hp1, ?_⟩
   let C := κ * (X : ℂ) * H 1
   let Q0 := fun s : ℂ => ∑ j ∈ Finset.Icc 1 (P.natDegree + 1),
@@ -236,9 +229,7 @@ theorem principalContour
   have hQ0 : ∀ s : ℂ, s ≠ 0 → DifferentiableAt ℂ Q0 s := by
     intro s hs
     simpa [Q0] using partDiff (Vendor.logProductPrincipalCoeff P X L) (P.natDegree + 1) 0 s hs
-  have hQ1 : ∀ s : ℂ, s ≠ 1 → DifferentiableAt ℂ Q1 s := by
-    intro s hs
-    exact (differentiableAt_const C).div (by fun_prop) (sub_ne_zero.mpr hs)
+  have hQ1 : ∀ s : ℂ, s ≠ 1 → DifferentiableAt ℂ Q1 s := fun s hs => (differentiableAt_const C).div (by fun_prop) (sub_ne_zero.mpr hs)
   obtain ⟨B0, hB0, heq0⟩ := hp0
   obtain ⟨B1, hB1, heq1⟩ := hp1
   have hnear0 : Vendor.HolomorphicNear (fun s => B0 s - Q1 s) 0 := by
@@ -251,9 +242,7 @@ theorem principalContour
     rw [hs]
     ring
   obtain ⟨G0, hG0, heqG0⟩ := patchPoint R (fun s => B0 s - Q1 s) 0
-    {s : ℂ | -δ < s.re ∧ s ≠ 1} hnear0 heqR0 (by
-      intro s hs hs0
-      exact ((hdiff s hs.1 hs0 hs.2).sub (hQ0 s hs0)).sub (hQ1 s hs.2))
+    {s : ℂ | -δ < s.re ∧ s ≠ 1} hnear0 heqR0 (fun s hs hs0 => ((hdiff s hs.1 hs0 hs.2).sub (hQ0 s hs0)).sub (hQ1 s hs.2))
   have hnear1 : Vendor.HolomorphicNear (fun s => B1 s - Q0 s) 1 := by
     filter_upwards [hB1, isOpen_ne.mem_nhds (show (1 : ℂ) ≠ 0 by norm_num)] with s hb hs
     exact hb.sub (hQ0 s hs)
@@ -268,9 +257,7 @@ theorem principalContour
     rw [hs]
     ring
   obtain ⟨G, hG, heqG⟩ := patchPoint G0 (fun s => B1 s - Q0 s) 1
-    {s : ℂ | -δ < s.re} hnear1 heqR1 (by
-      intro s hs hs1
-      exact hG0 s ⟨hs, hs1⟩)
+    {s : ℂ | -δ < s.re} hnear1 heqR1 (fun s hs hs1 => hG0 s ⟨hs, hs1⟩)
   refine ⟨G, fun s hs => (hG s hs).differentiableWithinAt, ?_⟩
   intro s hs hs0 hs1
   rw [heqG s hs1, heqG0 s hs0]
@@ -307,7 +294,7 @@ theorem positiveLine
       Complex.VerticalIntegrable (Vendor.logMellinProduct H L X) b MeasureTheory.volume := by
   let a : Ideal (𝓞 F) → ℝ := fun I =>
     if I = ⊥ then 0 else (Ideal.absNorm I : ℝ) ^ (-b)
-  have ha : Summable a := DedekindZetaZeroFree.LargeSieve.summable_ideal_inverse_power F b hb
+  have ha := DedekindZetaZeroFree.LargeSieve.summable_ideal_inverse_power F b hb
   have ha0 : ∀ I, 0 ≤ a I := by
     intro I
     dsimp [a]
@@ -321,43 +308,33 @@ theorem positiveLine
     by_cases hI : I = ⊥
     · simp [hI, a]
     · have hn : 0 < (Ideal.absNorm I : ℝ) := by
-        have hn0 : Ideal.absNorm I ≠ 0 := fun hz => hI (Ideal.absNorm_eq_zero_iff.mp hz)
-        exact_mod_cast Nat.pos_of_ne_zero hn0
+        exact_mod_cast Nat.pos_of_ne_zero (fun hz => hI (Ideal.absNorm_eq_zero_iff.mp hz))
       simp only [if_neg hI, a, norm_mul]
       rw [← Complex.ofReal_natCast, Complex.norm_cpow_eq_rpow_re_of_pos hn]
       simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re, Complex.mul_re,
         Complex.I_re, Complex.ofReal_im, Complex.I_im, mul_zero, zero_mul, sub_self, add_zero]
-      simpa only [one_mul] using
+      simpa using
         mul_le_mul_of_nonneg_right (hc I) (Real.rpow_nonneg hn.le (-b))
-  let B : ℝ := ∑' I, a I
-  have hB : 0 ≤ B := tsum_nonneg ha0
+  let B := ∑' I, a I
   have hbound : ∀ t : ℝ, ‖L ((b : ℂ) + (t : ℂ) * Complex.I)‖ ≤ B := by
     intro t
     have hs : 1 < ((b : ℂ) + (t : ℂ) * Complex.I).re := by simpa using hb
     rw [hseries _ hs]
-    have hnorm : Summable (fun I : Ideal (𝓞 F) =>
-        ‖(if I = ⊥ then 0 else
-          c I * (Ideal.absNorm I : ℂ) ^ (-((b : ℂ) + (t : ℂ) * Complex.I)))‖) :=
+    have hnorm :=
       Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (hterm t) ha
     exact (norm_tsum_le_tsum_norm hnorm).trans (hnorm.tsum_le_tsum (hterm t) ha)
-  refine ⟨B, hB, hbound, ?_⟩
+  refine ⟨B, (tsum_nonneg ha0), hbound, ?_⟩
   have hLc : Continuous (fun t : ℝ => L ((b : ℂ) + (t : ℂ) * Complex.I)) := by
     refine continuous_iff_continuousAt.mpr fun t => ?_
     exact (hhol _ (by simpa using hb)).continuousAt.comp
       (continuousAt_const.add (Complex.continuous_ofReal.continuousAt.mul continuousAt_const))
   haveI : NeZero (X : ℂ) := ⟨Complex.ofReal_ne_zero.mpr hX.ne'⟩
-  have hXc : Continuous (fun t : ℝ => (X : ℂ) ^ ((b : ℂ) + (t : ℂ) * Complex.I)) :=
-    (continuous_const_cpow (X : ℂ)).comp (by fun_prop)
   have hXbound : ∀ t : ℝ,
       ‖(X : ℂ) ^ ((b : ℂ) + (t : ℂ) * Complex.I)‖ ≤ X ^ b := by
     intro t
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hX]
     simp
-  have hH : MeasureTheory.Integrable
-      (fun t : ℝ => H ((b : ℂ) + (t : ℂ) * Complex.I)) MeasureTheory.volume :=
-    hf.verticalIntegrable b (by linarith)
-  have hHX := hH.mul_bdd hXc.aestronglyMeasurable (Filter.Eventually.of_forall hXbound)
-  exact hHX.mul_bdd hLc.aestronglyMeasurable (Filter.Eventually.of_forall hbound)
+  exact ((hf.verticalIntegrable b (by linarith)).mul_bdd ((continuous_const_cpow (X : ℂ)).comp (by fun_prop)).aestronglyMeasurable (Filter.Eventually.of_forall hXbound)).mul_bdd hLc.aestronglyMeasurable (Filter.Eventually.of_forall hbound)
 
 end DedekindZetaZeroFree.LargeSieve.WeightedSeries.PoissonLogHeckeStrip
 
@@ -409,8 +386,7 @@ theorem negativeLine
   have hgamma' (t : ℝ) :
       ‖Complex.Gammaℂ (1 - z t) ^ r * (Complex.Gammaℂ (z t))⁻¹ ^ r‖ ≤
         C * (1 + |t|) ^ k := by
-    have hg := hgamma (1 - z t) (by simp [hzre]) (by simp [hzre])
-    simpa [div_eq_mul_inv, mul_pow, z] using hg
+    simpa [div_eq_mul_inv, mul_pow, z] using (hgamma (1 - z t) (by simp [hzre]) (by simp [hzre]))
   have hDpow (t : ℝ) : ‖(D : ℂ) ^ ((1 / 2 : ℂ) - z t)‖ = D ^ (1 / 2 - a) := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hD]
     congr 1
@@ -426,19 +402,18 @@ theorem negativeLine
           (Complex.Gammaℂ (1 - z t) ^ r * (Complex.Gammaℂ (z t))⁻¹ ^ r) * Lbar (1 - z t) by ring]
     simp only [norm_mul, hDpow]
     rw [← norm_mul (Complex.Gammaℂ (1 - z t) ^ r) ((Complex.Gammaℂ (z t))⁻¹ ^ r)]
-    calc ‖W‖ * D ^ (1 / 2 - a) *
-          ‖Complex.Gammaℂ (1 - z t) ^ r * (Complex.Gammaℂ (z t))⁻¹ ^ r‖ * ‖Lbar (1 - z t)‖
+    calc _
         ≤ (1 * D ^ (1 / 2 - a)) * (C * (1 + |t|) ^ k) * B :=
           mul_le_mul (mul_le_mul (mul_le_mul_of_nonneg_right hW (by positivity))
             (hgamma' t) (norm_nonneg _) (by positivity))
             (hbar t) (norm_nonneg _) (by positivity)
       _ = (D ^ (1 / 2 - a) * C * B) * (1 + |t|) ^ k := by ring
-  let A : ℝ := X ^ a * (D ^ (1 / 2 - a) * C * B)
+  let A := X ^ a * (D ^ (1 / 2 - a) * C * B)
   have hA : 0 ≤ A := by dsimp [A]; positivity
   have hprod (t : ℝ) : ‖Vendor.logMellinProduct H L X (z t)‖ ≤
       A * ((1 + |t|) ^ k * ‖H (z t)‖) := by
     simp only [Vendor.logMellinProduct, norm_mul, hXpow]
-    calc ‖H (z t)‖ * X ^ a * ‖L (z t)‖
+    calc _
         ≤ (‖H (z t)‖ * X ^ a) * ((D ^ (1 / 2 - a) * C * B) * (1 + |t|) ^ k) :=
           mul_le_mul_of_nonneg_left (hLbound t) (by positivity)
       _ = A * ((1 + |t|) ^ k * ‖H (z t)‖) := by dsimp [A]; ring
@@ -447,33 +422,30 @@ theorem negativeLine
       ‖Vendor.logMellinProduct H L X (z t)‖ ≤ (A * CH) * ((1 + |t|) ^ 2)⁻¹ := by
     have hb := hdec a t le_rfl le_rfl ht
     change (1 + |t|) ^ (k + 2) * ‖H (z t)‖ ≤ CH at hb
-    have hm := mul_le_mul_of_nonneg_left (hprod t) (show 0 ≤ (1 + |t|) ^ 2 by positivity)
     have hb' : (1 + |t|) ^ 2 * ‖Vendor.logMellinProduct H L X (z t)‖ ≤ A * CH := by
-      calc (1 + |t|) ^ 2 * ‖Vendor.logMellinProduct H L X (z t)‖
-          ≤ (1 + |t|) ^ 2 * (A * ((1 + |t|) ^ k * ‖H (z t)‖)) := hm
+      calc _
+          ≤ (1 + |t|) ^ 2 * (A * ((1 + |t|) ^ k * ‖H (z t)‖)) := (mul_le_mul_of_nonneg_left (hprod t) (show 0 ≤ (1 + |t|) ^ 2 by positivity))
         _ = A * ((1 + |t|) ^ (k + 2) * ‖H (z t)‖) := by rw [pow_add]; ring
         _ ≤ A * CH := mul_le_mul_of_nonneg_left hb hA
     rw [← div_eq_mul_inv, le_div_iff₀ (by positivity : 0 < (1 + |t|) ^ 2)]
     nlinarith [hb']
   obtain ⟨C1, hC1⟩ :=
-    isCompact_Icc.exists_bound_of_continuousOn (hcont.continuousOn (s := Set.Icc (-1) 1))
-  let K : ℝ := 4 * (A * CH + max C1 0)
+    isCompact_Icc.exists_bound_of_continuousOn (hcont.continuousOn)
+  let K := 4 * (A * CH + max C1 0)
   have hK : 0 ≤ K := by dsimp [K]; positivity
   have hbound (t : ℝ) : ‖Vendor.logMellinProduct H L X (z t)‖ ≤ K * (1 + t ^ 2)⁻¹ := by
     have hstep : ((1 + |t|) ^ 2)⁻¹ ≤ (1 + t ^ 2)⁻¹ := by
       have hle : 1 + t ^ 2 ≤ (1 + |t|) ^ 2 := by nlinarith [abs_nonneg t, sq_abs t]
-      simpa only [one_div] using one_div_le_one_div_of_le (show 0 < 1 + t ^ 2 by positivity) hle
+      simpa using one_div_le_one_div_of_le (show 0 < 1 + t ^ 2 by positivity) hle
     by_cases ht : 1 ≤ |t|
-    · have hCK : A * CH ≤ K := by dsimp [K]; nlinarith [mul_nonneg hA hCH, le_max_right C1 0]
-      exact (htail t ht).trans ((mul_le_mul_of_nonneg_right hCK (by positivity)).trans
+    · refine (htail t ht).trans ((mul_le_mul_of_nonneg_right ?_ (by positivity)).trans
         (mul_le_mul_of_nonneg_left hstep hK))
-    · have ht' : |t| < 1 := not_le.mp ht
-      have hb := hC1 t (show t ∈ Set.Icc (-1) 1 from
+      dsimp [K]; nlinarith [mul_nonneg hA hCH, le_max_right C1 0]
+    · have hb := hC1 t (show t ∈ Set.Icc (-1) 1 from
         ⟨by linarith [neg_abs_le t], by linarith [le_abs_self t]⟩)
-      have h4 : (1 + |t|) ^ 2 ≤ 4 := by nlinarith [abs_nonneg t, sq_abs t, sq_nonneg t]
       have hinv : (4 : ℝ)⁻¹ ≤ ((1 + |t|) ^ 2)⁻¹ := by
-        simpa only [one_div] using one_div_le_one_div_of_le
-          (show 0 < (1 + |t|) ^ 2 by positivity) h4
+        simpa using one_div_le_one_div_of_le
+          (show 0 < (1 + |t|) ^ 2 by positivity) (by nlinarith [abs_nonneg t, sq_abs t, sq_nonneg t])
       have hCK : C1 ≤ K * (4 : ℝ)⁻¹ := by
         dsimp [K]
         have := le_max_left C1 0
@@ -501,11 +473,11 @@ open scoped NumberField Classical Topology
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-theorem principalLogMellinProduct_boundary_integrable
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
-    (hf : Vendor.LogMellinAdmissible f δ P H)
-    (X : ℝ) (hX : 0 < X) (a b : ℝ)
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) {f : ℝ → ℂ} {δ : ℝ}
+    {P : Polynomial ℂ} {H : ℂ → ℂ} (hf : Vendor.LogMellinAdmissible f δ P H) (X : ℝ) (hX : 0 < X)
+
+include hf hX in
+theorem principalLogMellinProduct_boundary_integrable (a b : ℝ)
     (haδ : -δ < a) (ha : a < 0) (hb : 1 < b) :
     Complex.VerticalIntegrable
         (Vendor.logMellinProduct H (principalZetaContinuation F hF) X)
@@ -514,9 +486,7 @@ theorem principalLogMellinProduct_boundary_integrable
         (Vendor.logMellinProduct H (principalZetaContinuation F hF) X)
         b MeasureTheory.volume := by
   have hhol : ∀ s : ℂ, s ≠ 1 →
-      DifferentiableAt ℂ (principalZetaContinuation F hF) s := by
-    intro s hs
-    exact (principalZetaContinuation_analyticOnNhd F hF s (by simpa using hs)).differentiableAt
+      DifferentiableAt ℂ (principalZetaContinuation F hF) s := fun s hs => (principalZetaContinuation_analyticOnNhd F hF s (by exact hs)).differentiableAt
   have hseries : ∀ s : ℂ, 1 < s.re →
       principalZetaContinuation F hF s =
         ∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else
@@ -549,11 +519,8 @@ theorem principalLogMellinProduct_boundary_integrable
   intro t
   convert hbound (-t) using 1 <;> congr 1 <;> push_cast <;> ring
 
-theorem principalLogMellinProduct_subquadratic_growth
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
-    (hf : Vendor.LogMellinAdmissible f δ P H)
-    (X : ℝ) (hX : 0 < X) (a b : ℝ)
+include hf hX in
+theorem principalLogMellinProduct_subquadratic_growth (a b : ℝ)
     (haδ : -δ < a) (ha : a < 0) (hb : 1 < b) :
     ∃ C A : ℝ, 0 ≤ C ∧ 0 ≤ A ∧
       ∀ σ t : ℝ, σ ∈ Set.Icc a b → 1 ≤ |t| →
@@ -569,10 +536,8 @@ theorem principalLogMellinProduct_subquadratic_growth
     (principalHeckeData F hF).E_growth hf X hX a b haδ
   linarith
 
-theorem principalLogMellinProduct_contour_data
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
-    (hf : Vendor.LogMellinAdmissible f δ P H) (X : ℝ) (hX : 0 < X) :
+include hf hX in
+theorem principalLogMellinProduct_contour_data :
     DifferentiableOn ℂ
         (Vendor.logMellinProduct H (principalZetaContinuation F hF) X)
         {s : ℂ | -δ < s.re ∧ s ≠ 0 ∧ s ≠ 1} ∧

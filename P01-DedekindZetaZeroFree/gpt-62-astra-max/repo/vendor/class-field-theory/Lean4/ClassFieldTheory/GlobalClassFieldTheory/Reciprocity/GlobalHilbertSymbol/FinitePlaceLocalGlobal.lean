@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -67,21 +65,12 @@ theorem finitePlaceLocalArtinInput_globalUnit
       finitePlaceHilbert_completionUnit K v a := by
   apply Units.ext
   apply (finitePlaceCompletionRingEquiv v).injective
-  let x : (v.adicCompletion K)ˣ :=
+  let x :=
     Units.map (algebraMap K (v.adicCompletion K)).toMonoidHom a
-  have hleft :
-      finitePlaceCompletionRingEquiv v
-          (finitePlaceLocalArtinInput v x :
-            finitePlaceKummerBaseCompletion K v) =
-        (x : v.adicCompletion K) := by
-    exact congrArg Units.val
+  have hleft := congrArg Units.val
       ((finitePlaceCompletionUnitsContinuousMulEquiv v).apply_symm_apply x)
   calc
-    finitePlaceCompletionRingEquiv v
-        (finitePlaceLocalArtinInput v
-          (Units.map
-            (algebraMap K (v.adicCompletion K)).toMonoidHom a) :
-          finitePlaceKummerBaseCompletion K v) =
+    _ =
       (x : v.adicCompletion K) := hleft
     _ = algebraMap K (v.adicCompletion K) (a : K) := rfl
     _ = finitePlaceCompletionRingEquiv v
@@ -106,12 +95,13 @@ theorem finitePlaceKummerLocalFiniteDimensional
     (finitePlaceHilbert_natCast_ne_zero K n hnK v)
     (finitePlaceHilbert_completionUnit K v b)
 
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+    (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ)
+
+include hmu in
 /-- The simple Kummer extension chosen directly over the completion is a
 splitting field of the finite-place Kummer polynomial. -/
-theorem finitePlaceKummerLocal_isSplittingField
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ) :
+theorem finitePlaceKummerLocal_isSplittingField :
     Polynomial.IsSplittingField
       (finitePlaceKummerBaseCompletion K v)
       (finitePlaceKummerLocalExtension K n hnK v b)
@@ -120,10 +110,8 @@ theorem finitePlaceKummerLocal_isSplittingField
   let hnC := finitePlaceHilbert_natCast_ne_zero K n hnK v
   let bC := finitePlaceHilbert_completionUnit K v b
   let S := chosenSimpleKummerExtension C n hnC bC
-  let : FiniteDimensional C S :=
+  let :=
     finitePlaceKummerLocalFiniteDimensional K n hnK v b
-  change Polynomial.IsSplittingField C S
-    (Polynomial.X ^ (n : ℕ) - Polynomial.C (bC : C))
   apply
     isSplittingField_X_pow_sub_C_of_root_adjoin_eq_top_of_primitiveRoots
       C S n (finitePlaceHilbert_primitiveRoots_nonempty K n hmu v)
@@ -138,9 +126,6 @@ extension and the localization of the chosen global Kummer extension.  It is
 constructed solely from the fact that both fields split the same polynomial;
 no compatibility between their chosen roots is assumed. -/
 noncomputable def finitePlaceKummerLocalGlobalAlgEquiv
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ)
     (w : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K v)
       (chosenSimpleKummerExtension K n hnK b)) :

@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 /-!
 Proves the universal norm-descent argument from maximal-unramified units to finite intermediate
@@ -75,16 +69,9 @@ theorem universalNormDescent_endpoint_descent
         (D.maximalUnramifiedField_le K.field) aK.1 =
         relativeNorm A (D.maximalUnramifiedField K.field)
           (D.maximalUnramifiedField L) (D.maximalUnramifiedField_mono hLK) u.1 := by
-  let : Finite
-      ((D.maximalUnramifiedField K.field).toSubgroup ⧸
-        extensionSubgroup (D.maximalUnramifiedField K.field)
-          (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK)) :=
-    D.maximalUnramifiedExtension_finite K.field L hLK
-  have hfixed := D.maximalUnramifiedNorm_fixed_of_hstar A
+  exact v.descend_maximalUnramifiedNorm_unit K L hLK φ hφ u.1 u.2 (D.maximalUnramifiedNorm_fixed_of_hstar A
     (K.toFiniteResidueAbstractField D) L hLK
-    s φ.1 τ u.1 (fun i => (uᵢ i).1) hstar
-  exact v.descend_maximalUnramifiedNorm_unit K L hLK φ hφ u.1 u.2 hfixed
+    s φ.1 τ u.1 (fun i => (uᵢ i).1) hstar)
 
 /-- The universal norm-descent lemma, finite target step.  After placing the finite support in a
 common finite Galois overfield, the descended unit is a norm from every
@@ -231,8 +218,6 @@ theorem universalNormDescent_mem_finiteUnitNormRange
   let : Finite
       ((Mu.toFiniteAbstractField K).field.toSubgroup ⧸
         extensionSubgroup (Mu.toFiniteAbstractField K).field S hSMu) := by
-    change Finite
-      (Mu.field.toSubgroup ⧸ extensionSubgroup Mu.field S hSMu)
     exact hSMufinite
   let ESMu : FiniteAbstractFieldExtension G :=
     FiniteAbstractFieldExtension.ofInclusion
@@ -249,9 +234,6 @@ theorem universalNormDescent_mem_finiteUnitNormRange
   let hSMifiniteBundled (j : ιs) : Finite
       (((Mi j).toFiniteAbstractField K).field.toSubgroup ⧸
         extensionSubgroup ((Mi j).toFiniteAbstractField K).field S (hSMi j)) := by
-    change Finite
-      ((Mi j).field.toSubgroup ⧸
-        extensionSubgroup (Mi j).field S (hSMi j))
     exact hSMifinite j
   let ESMi (j : ιs) : FiniteAbstractFieldExtension G :=
     FiniteAbstractFieldExtension.ofInclusion
@@ -568,8 +550,6 @@ theorem universalNormDescent_mem_finiteUnitNormRange
   let : Finite
       ((P.toFiniteAbstractField K).field.toSubgroup ⧸
         extensionSubgroup (P.toFiniteAbstractField K).field S hSP) := by
-    change Finite
-      (P.field.toSubgroup ⧸ extensionSubgroup P.field S hSP)
     exact hPSfinite
   let EPS : FiniteAbstractFieldExtension G :=
     FiniteAbstractFieldExtension.ofInclusion
@@ -599,15 +579,12 @@ theorem universalNormDescent_mem_finiteUnitNormRange
     rfl
   let yPraw : ambientFixedAddSubgroup A P.field :=
     ⟨yP.1.1, by
-      intro g
       apply yP.1.2⟩
   let zPraw : ambientFixedAddSubgroup A P.field :=
     ⟨zP.1.1, by
-      intro g
       apply zP.1.2⟩
   let aPraw : ambientFixedAddSubgroup A P.field :=
     ⟨aP.1.1, by
-      intro g
       apply aP.1.2⟩
   have haPnorm : relativeNorm A K.field P.field P.below aP.1 = aK.1 := by
     change relativeNorm A K.field P.field P.below aPraw = aK.1
@@ -675,19 +652,14 @@ theorem universalNormDescent
           (D.maximalUnramifiedField L)
           (D.maximalUnramifiedField_mono hLK) u.1 ∧
       aK.1 ∈ v.infiniteUnitNormSubgroup (D.maximalUnramifiedField L) K := by
-  let : Finite
-      ((D.maximalUnramifiedField K.field).toSubgroup ⧸
-        extensionSubgroup (D.maximalUnramifiedField K.field)
-          (D.maximalUnramifiedField L)
-          (D.maximalUnramifiedField_mono hLK)) :=
+  let :=
     D.maximalUnramifiedExtension_finite K.field L hLK
   obtain ⟨aK, haK⟩ := v.universalNormDescent_endpoint_descent K L hLK φ hφ
     s τ u uᵢ hstar
   refine ⟨aK, haK, ?_⟩
-  rw [v.mem_infiniteUnitNormSubgroup_iff]
+  simp
   intro M
-  exact v.universalNormDescent_mem_finiteUnitNormRange hAxiom K L hLK φ hφ
-    s τ u uᵢ hstar aK haK M
+  apply v.universalNormDescent_mem_finiteUnitNormRange <;> assumption
 
 end ValuationData
 

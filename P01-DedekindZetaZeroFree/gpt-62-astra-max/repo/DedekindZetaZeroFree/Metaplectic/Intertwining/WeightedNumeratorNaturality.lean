@@ -18,15 +18,14 @@ set_option maxHeartbeats 1200000
 set_option backward.isDefEq.respectTransparency false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
 private theorem evaluation_analytic (ε : Sign) (s : ℂ) :
     AnalyticAt ℂ (fun z => (evaluationUnit (KPExceptionalRaw.LocalField F q) ε z : ℂ)) s := by
   cases ε
   · change AnalyticAt ℂ (fun z => KPRankOneRootParameter.r (KPExceptionalRaw.LocalField F q) z) s
     unfold KPRankOneRootParameter.r
     fun_prop
-  · change AnalyticAt ℂ (fun z => (KPRankOneRootParameter.r (KPExceptionalRaw.LocalField F q) z)⁻¹) s
-    apply AnalyticAt.inv
+  · apply AnalyticAt.inv
     · unfold KPRankOneRootParameter.r
       fun_prop
     · exact Complex.exp_ne_zero _
@@ -54,11 +53,11 @@ private theorem scalar_laurent_analytic {V : Type*} [AddCommMonoid V] [Module �
   exact (hu.zpow (Units.ne_zero (u s))).mul analyticAt_const
 
 variable (S : ActualKPBinding F ζ hζ q) (I : IwasawaData S.borel)
-variable (E : CenterModule S.heisenberg ≃ₗ[ℂ] CenterModule S.heisenberg)
+    (E : CenterModule S.heisenberg ≃ₗ[ℂ] CenterModule S.heisenberg)
 variable (hE : ∀ (f : CenterModule S.heisenberg) (h : KPExceptionalRaw.actualTorus F ζ hζ q),
   (E f).val h = normPower (KPExceptionalRaw.LocalField F q) (S.borel.coordinate h) (1/3) * f.val (S.borel.weyl h))
 variable (J : CompactOpenLevel (KPRankOneOpenCellKernel.Cover F ζ hζ q))
-variable (hJ : J.toOpenSubgroup ≤ I.compact.toOpenSubgroup)
+    (hJ : J.toOpenSubgroup ≤ I.compact.toOpenSubgroup)
 
 theorem actual_weighted_numerator_all_parameters
     (μ : Measure (KPExceptionalRaw.LocalField F q)) (ε : Sign)

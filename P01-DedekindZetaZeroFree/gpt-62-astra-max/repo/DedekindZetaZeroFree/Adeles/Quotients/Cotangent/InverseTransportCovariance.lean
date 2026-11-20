@@ -16,30 +16,38 @@ open KPContCotangentActualOverlap KPContCotangentActualGenuineTwistIsotropy
 open KPContCotangentOverlapRationalBranches
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 private theorem eqRec_places {i j : Fin (H.atlas U).componentCount} (h : i = j)
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i) :
     (h ▸ s).places = s.places := by
   cases h; rfl
 
-private theorem eqRec_rep {i j : Fin (H.atlas U).componentCount} (h : i = j)
+alias InverseTransportCovariance.eqRec_places := eqRec_places
+
+section
+
+variable {i j : Fin (H.atlas U).componentCount} (h : i = j)
+
+private theorem eqRec_rep
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i) :
     (h ▸ s).kind.representative = s.kind.representative := by
   cases h; rfl
 
-private theorem eqRec_splitting {i j : Fin (H.atlas U).componentCount} (h : i = j)
+private theorem eqRec_splitting
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i) :
     (h ▸ s).splitting = s.splitting := by
   cases h; rfl
 
-private theorem eqRec_cast_symm {i j : Fin (H.atlas U).componentCount} (h : i = j)
+private theorem eqRec_cast_symm
     (y : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) j) :
     h ▸ (h.symm ▸ y) = y := by
   cases h; rfl
+
+end
 
 private theorem eqRec_trans_symm {i j k : Fin (H.atlas U).componentCount}
     (h₁ : i = j) (h₂ : j = k)
@@ -47,32 +55,34 @@ private theorem eqRec_trans_symm {i j k : Fin (H.atlas U).componentCount}
     h₁.symm ▸ (h₂.symm ▸ X) = (h₁.trans h₂).symm ▸ X := by
   cases h₁; cases h₂; rfl
 
-private theorem targetChart_places (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component) :
+section
+
+variable (a b : ShrunkChart F ζ hζ U R P H) (h : a.component = b.component)
+
+private theorem targetChart_places :
     (targetChart a b h).places = placeEquiv F ζ hζ := by
   unfold targetChart
   rw [eqRec_places]
   rfl
 
-private theorem targetChart_rep (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component) :
+private theorem targetChart_rep :
     (targetChart a b h).kind.representative = 1 := by
   unfold targetChart
   rw [eqRec_rep]
   rfl
 
-private theorem targetChart_splitting (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component) :
+private theorem targetChart_splitting :
     (targetChart a b h).splitting = fun _ => 1 := by
   unfold targetChart
   rw [eqRec_splitting]
   rfl
 
-private theorem targetChart_cast (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component) :
+private theorem targetChart_cast :
     h ▸ targetChart a b h = isotropyChart b := by
   unfold targetChart
   exact eqRec_cast_symm h (isotropyChart b)
+
+end
 
 private theorem shrunkChart_separated (C : ShrunkChart F ζ hζ U R P H)
     (g : KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H C.component)
@@ -81,7 +91,7 @@ private theorem shrunkChart_separated (C : ShrunkChart F ζ hζ U R P H)
   let g' : KPContSectorPhaseComponentCharts.ArchComponent F ζ hζ U R P H C.component :=
     ⟨KPContSectorPhaseComponentCharts.complexProjectiveEmbedding F g.val,
       Subgroup.mem_map.mpr ⟨g.val, g.property, rfl⟩⟩
-  have hh : g' ∈ MulAction.stabilizer _ C.center :=
+  have hh :=
     C.larger.separated g' ⟨g • x,
       ⟨x, C.closure_subset (subset_closure hx),
         KPContSectorPhaseComponentCharts.complexProjectiveEmbedding_smul F g.val x⟩,
@@ -98,14 +108,22 @@ private theorem labeledA_labeledAInv' (p : Fin (d F) ≃ Fin (KPCuspLogShape.dim
   funext k
   simp [labeledAInv, labeledA]
 
- def Phi (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+alias InverseTransportCovariance.labeledA_labeledAInv' := labeledA_labeledAInv'
+
+ section
+
+variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+
+def Phi
     (γ : KPCuspArithmetic.PGL2 F) (x : M F) : M F :=
   labeledAInv (placeEquiv F ζ hζ) (γ • labeledA (placeEquiv F ζ hζ) x)
 
-private theorem Phi_mul (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+private theorem Phi_mul
     (γ δ : KPCuspArithmetic.PGL2 F) (x : M F) :
     Phi ζ hζ (γ * δ) x = Phi ζ hζ γ (Phi ζ hζ δ x) := by
   simp only [Phi, mul_smul, labeledA_labeledAInv']
+
+end
 
 private theorem arrow_psi_eq_Phi {i : Fin (H.atlas U).componentCount}
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
@@ -143,16 +161,22 @@ private theorem twistedOperator_eq_Op {i : Fin (H.atlas U).componentCount}
   congr 1
   simp only [Q, hpsi]
 
- def castArrow {i j : Fin (H.atlas U).componentCount} (h : i = j)
+ section
+
+variable {i j : Fin (H.atlas U).componentCount} (h : i = j)
+
+def castArrow
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e : Arrow A B) : Arrow (h ▸ A) (h ▸ B) :=
   cast (by cases h; rfl) e
 
-private theorem arrow_gamma_index_cast {i j : Fin (H.atlas U).componentCount} (h : i = j)
+private theorem arrow_gamma_index_cast
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e : Arrow A B) :
     ((castArrow h e).gamma : KPCuspArithmetic.PGL2 F) = (e.gamma : KPCuspArithmetic.PGL2 F) := by
   cases h; rfl
+
+end
 
 private theorem arrow_gamma_chart_cast {i : Fin (H.atlas U).componentCount}
     {A B B' : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
@@ -217,16 +241,14 @@ private theorem T_domain_irrel {i : Fin (H.atlas U).componentCount}
   intro v
   rfl
 
-private theorem central_comm' (ε : rootsOfUnity 3 F)
-    (c : KPCuspGenuineMonodromy.FiniteCover F ζ hζ) :
-    KPCuspGenuineMonodromy.central F ζ hζ ε * c =
-      c * KPCuspGenuineMonodromy.central F ζ hζ ε := by
-  apply Subtype.ext
-  exact (Subgroup.mem_center_iff.mp
-    (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩) c).symm
+private alias central_comm' := DedekindZetaZeroFree.KPContCotangentActualOverlap.central_commute
 
-private theorem comparison_mul {i : Fin (H.atlas U).componentCount}
-    (R₀ : KPCuspGenuineMonodromy.FiniteCover F ζ hζ)
+section
+
+variable {i : Fin (H.atlas U).componentCount} (R₀ : KPCuspGenuineMonodromy.FiniteCover F ζ hζ)
+
+include i in
+private theorem comparison_mul
     (γ δ : KPCuspGenuineMonodromy.Component F ζ hζ U R₀)
     (c d : rootsOfUnity 3 F) (u v : U.toOpenSubgroup)
     (hγ : KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ * R₀ =
@@ -237,16 +259,13 @@ private theorem comparison_mul {i : Fin (H.atlas U).componentCount}
       KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ (γ * δ) * R₀ =
         KPCuspGenuineMonodromy.central F ζ hζ (c * d) * R₀ * w.val := by
   refine ⟨u * v, ?_⟩
-  change KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ (γ * δ) * R₀ =
-    KPCuspGenuineMonodromy.central F ζ hζ (c * d) * R₀ *
-      ((u : KPCuspGenuineMonodromy.FiniteCover F ζ hζ) * v)
-  calc KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ (γ * δ) * R₀
+  calc _
       = KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ *
           (KPCuspGenuineMonodromy.central F ζ hζ d * R₀ * v.val) := by
         rw [map_mul, mul_assoc, hδ]
     _ = KPCuspGenuineMonodromy.central F ζ hζ d *
           (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ * R₀) * v.val := by
-        rw [← mul_assoc, ← mul_assoc, ← central_comm' (F := F) (ζ := ζ) (hζ := hζ) d]
+        rw [← mul_assoc, ← mul_assoc, ← central_comm' d]
         group
     _ = KPCuspGenuineMonodromy.central F ζ hζ d *
           (KPCuspGenuineMonodromy.central F ζ hζ c * R₀ * u.val) * v.val := by rw [hγ]
@@ -255,13 +274,13 @@ private theorem comparison_mul {i : Fin (H.atlas U).componentCount}
             KPCuspGenuineMonodromy.central F ζ hζ d *
               KPCuspGenuineMonodromy.central F ζ hζ c := by
           rw [map_mul]
-          exact (central_comm' (F := F) (ζ := ζ) (hζ := hζ) d
+          exact (central_comm' d
             (KPCuspGenuineMonodromy.central F ζ hζ c)).symm
         rw [hcd]
         group
 
-private theorem comparison_inv {i : Fin (H.atlas U).componentCount}
-    (R₀ : KPCuspGenuineMonodromy.FiniteCover F ζ hζ)
+include i in
+private theorem comparison_inv
     (γ : KPCuspGenuineMonodromy.Component F ζ hζ U R₀)
     (c : rootsOfUnity 3 F) (u : U.toOpenSubgroup)
     (hγ : KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ * R₀ =
@@ -273,18 +292,15 @@ private theorem comparison_inv {i : Fin (H.atlas U).componentCount}
   have hγ' : KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ =
       KPCuspGenuineMonodromy.central F ζ hζ c * R₀ * u.val * R₀⁻¹ := by
     rw [← hγ]; group
-  have hcinv : ((KPCuspGenuineMonodromy.central F ζ hζ) c)⁻¹ =
-      KPCuspGenuineMonodromy.central F ζ hζ c⁻¹ :=
-    (map_inv (KPCuspGenuineMonodromy.central F ζ hζ) c).symm
   rw [Subgroup.coe_inv, map_inv, hγ']
   simp only [mul_inv_rev, inv_inv]
-  rw [hcinv]
-  rw [central_comm' (F := F) (ζ := ζ) (hζ := hζ) c⁻¹ R₀]
-  calc R₀ * ((↑u)⁻¹ * (R₀⁻¹ * KPCuspGenuineMonodromy.central F ζ hζ c⁻¹)) * R₀
+  rw [((map_inv (KPCuspGenuineMonodromy.central F ζ hζ) c).symm)]
+  rw [central_comm' c⁻¹ R₀]
+  calc _
       = R₀ * (↑u)⁻¹ * R₀⁻¹ * KPCuspGenuineMonodromy.central F ζ hζ c⁻¹ * R₀ := by group
     _ = R₀ * (↑u)⁻¹ * R₀⁻¹ * (KPCuspGenuineMonodromy.central F ζ hζ c⁻¹ * R₀) := by group
     _ = R₀ * (↑u)⁻¹ * R₀⁻¹ * (R₀ * KPCuspGenuineMonodromy.central F ζ hζ c⁻¹) := by
-          rw [central_comm' (F := F) (ζ := ζ) (hζ := hζ) c⁻¹ R₀]
+          rw [central_comm' c⁻¹ R₀]
     _ = R₀ * (↑u)⁻¹ * KPCuspGenuineMonodromy.central F ζ hζ c⁻¹ := by group
     _ = R₀ * (KPCuspGenuineMonodromy.central F ζ hζ c⁻¹ * (↑u)⁻¹) := by
           rw [mul_assoc R₀ (↑u)⁻¹ (KPCuspGenuineMonodromy.central F ζ hζ c⁻¹)]
@@ -292,28 +308,33 @@ private theorem comparison_inv {i : Fin (H.atlas U).componentCount}
             ((u : KPCuspGenuineMonodromy.FiniteCover F ζ hζ)⁻¹)]
     _ = R₀ * KPCuspGenuineMonodromy.central F ζ hζ c⁻¹ * (↑u)⁻¹ := by group
 
-private theorem cast_lifted_places {i j : Fin (H.atlas U).componentCount} (h : i = j)
+end
+
+section
+
+variable {i j : Fin (H.atlas U).componentCount} (h : i = j)
+
+private theorem cast_lifted_places
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i)
     (hs : s.places = placeEquiv F ζ hζ) :
     (h ▸ s).places = placeEquiv F ζ hζ := by
   rw [eqRec_places, hs]
 
-private theorem cast_lifted_rep {i j : Fin (H.atlas U).componentCount} (h : i = j)
+private theorem cast_lifted_rep
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i)
     (hs : s.kind.representative = 1) :
     (h ▸ s).kind.representative = 1 := by
   rw [eqRec_rep, hs]
 
-private theorem cast_lifted_splitting {i j : Fin (H.atlas U).componentCount} (h : i = j)
+private theorem cast_lifted_splitting
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i)
     (hs : s.splitting = fun _ => 1) :
     (h ▸ s).splitting = fun _ => 1 := by
   rw [eqRec_splitting, hs]
 
-theorem omega_subset_larger (a : ShrunkChart F ζ hζ U R P H) :
-    omega a ⊆ (isotropyChart a).omega := by
-  intro x hx
-  exact a.closure_subset (subset_closure hx)
+end
+
+alias omega_subset_larger := DedekindZetaZeroFree.KPContCotangentOverlapRationalBranches.omega_subset
 
 def EquivariantSequence (cover : CountableCover F ζ hζ U R P H)
     (f : ℕ → M F → E F) : Prop :=
@@ -333,28 +354,12 @@ structure Properties (cover : CountableCover F ζ hζ U R P H)
     (ψ φ : Branch a (cover.chart n)) (x : M F)
     (hψ : x ∈ ψ.domain) (hφ : x ∈ φ.domain),
     inverseTransport ψ (f n) x hψ = inverseTransport φ (f n) x hφ
-  composition : ∀ (n : ℕ)
-    (a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-      (U := U) (R := R) (P := P) (H := H) (cover.chart n).component)
-    (θ : Arrow a b) (ψ : Arrow b (isotropyChart (cover.chart n)))
-    (x : M F) (hθ : x ∈ θ.domain) (hψ : θ.psi x ∈ ψ.domain),
-    (T (comp ψ θ) x ⟨hθ, hψ⟩).symm (f n (ψ.psi (θ.psi x))) =
-      (T θ x hθ).symm ((T ψ (θ.psi x) hψ).symm (f n (ψ.psi (θ.psi x))))
   mixed_charts : ∀ (a b : ShrunkChart F ζ hζ U R P H) (n : ℕ)
     (θ : Branch a b) (φ : Branch a (cover.chart n))
     (ψ : Branch b (cover.chart n)) (x : M F)
     (hθ : x ∈ θ.domain) (hφ : x ∈ φ.domain) (hψ : θ.psi x ∈ ψ.domain),
     inverseTransport ψ (f n) (θ.psi x) hψ =
       θ.transport x hθ (inverseTransport φ (f n) x hφ)
-  identity : ∀ (n : ℕ) (y : M F) (hy : y ∈ omega (cover.chart n)),
-    (T (KPContCotangentActualOverlap.identity (isotropyChart (cover.chart n)))
-      y (omega_subset_larger (cover.chart n) hy)).symm
-        (f n ((KPContCotangentActualOverlap.identity (isotropyChart (cover.chart n))).psi y)) =
-      f n y
-  fixed_fiber : ∀ (n : ℕ) (y : M F) (hy : y ∈ omega (cover.chart n)),
-    f n y ∈ Fixed (cover.chart n) y (omega_subset_larger (cover.chart n) hy)
-  zero_fixed_fiber : ∀ (n : ℕ) (y : M F) (hy : y ∈ omega (cover.chart n)),
-    Fixed (cover.chart n) y (omega_subset_larger (cover.chart n) hy) = ⊥ → f n y = 0
 
 end DedekindZetaZeroFree.KPContActualCotangentTransportChoiceAlgebra
 
@@ -557,11 +562,8 @@ theorem kp_cont_actual_cotangent_transport_choice_algebra
         rw [hT₂, hcomp, LinearIsometryEquiv.symm_trans, LinearIsometryEquiv.trans_apply,
           hTδ, hequiv, LinearIsometryEquiv.symm_apply_apply, hTE₁]
 
-  refine ⟨hCI, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨hCI, ?_⟩
 
-  ·
-    intro n a b θ ψ x hθ hψ
-    rw [T_comp ψ θ x hθ hψ, LinearIsometryEquiv.symm_trans, LinearIsometryEquiv.trans_apply]
   ·
     intro a b n θ φ ψ x hθ hφ hψ
     cases θ with
@@ -693,28 +695,6 @@ theorem kp_cont_actual_cotangent_transport_choice_algebra
           rw [LinearIsometryEquiv.symm_trans, LinearIsometryEquiv.trans_apply,
             LinearIsometryEquiv.apply_symm_apply] at hkey
           exact hkey
-
-  ·
-    intro n y hy
-    rw [KPContCotangentActualGroupoidIdentities.identity_psi, T_identity]
-    rfl
-  ·
-    intro n y hy
-    rw [mem_Fixed_iff]
-    intro γ hγ
-    have h := hf n γ y hy
-    rw [show (isotropyArrow (cover.chart n) γ).psi y = y from hγ] at h
-    exact h.symm
-  ·
-    intro n y hy hzero
-    have hmem : f n y ∈ Fixed (cover.chart n) y (omega_subset_larger (cover.chart n) hy) := by
-      rw [mem_Fixed_iff]
-      intro γ hγ
-      have h := hf n γ y hy
-      rw [show (isotropyArrow (cover.chart n) γ).psi y = y from hγ] at h
-      exact h.symm
-    rw [hzero] at hmem
-    simpa using hmem
 
 end DedekindZetaZeroFree
 

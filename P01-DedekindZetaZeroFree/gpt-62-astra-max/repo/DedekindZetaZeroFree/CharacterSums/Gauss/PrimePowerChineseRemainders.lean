@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.CharacterSums.Gauss.LocalUnitRescaling
 
 public import DedekindZetaZeroFree.CharacterSums.Gauss.GeneratorInvariance
 public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.Sextic.LocalCharacterCompatibility
@@ -17,8 +18,8 @@ open LocalFiniteSums LocalFiniteSumCompatibility
 set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 private theorem transport_apply_mk (J K : Ideal A.R) (h : J = K)
     (χ : MulChar (A.R ⧸ J) ℂ) (x : A.R) :
@@ -32,17 +33,7 @@ private theorem sexticExponent_intNat (n : ℕ) :
   have h : ((n : ℤ) % 6) = ((n % 6 : ℕ) : ℤ) := by norm_num
   rw [h, Int.toNat_natCast]
 
-private theorem gaussCRT_char_base (A : SArithmeticData F) (σ : F →+* ℂ)
-    (I : A.Exterior) (x : A.R) :
-    MulChar.ofUnitHom ((Units.map σ.toMonoidHom).comp (A.sexticResidueFamily I))
-      (Ideal.Quotient.mk (A.extendIdeal I) x) = σ (A.sexticResidue I x) := by
-  by_cases hx : IsUnit (Ideal.Quotient.mk (A.extendIdeal I) x)
-  · change _ = σ (MulChar.ofUnitHom (A.sexticResidueFamily I) _)
-    rw [← hx.unit_spec, MulChar.ofUnitHom_coe, MulChar.ofUnitHom_coe]
-    rfl
-  · rw [MulChar.map_nonunit _ hx]
-    change 0 = σ (MulChar.ofUnitHom (A.sexticResidueFamily I) _)
-    rw [MulChar.map_nonunit _ hx, map_zero]
+private alias gaussCRT_char_base := DedekindZetaZeroFree.SArithmeticData.SexticChineseRemainderReciprocity.gaussCRT_char_base
 
 private theorem sexticPowerChar_one_apply (A : SArithmeticData F) (σ : F →+* ℂ)
     (I : A.Exterior) (x : A.R) :
@@ -52,22 +43,7 @@ private theorem sexticPowerChar_one_apply (A : SArithmeticData F) (σ : F →+* 
   rw [show SArithmeticData.sexticExponent 1 = 1 by decide, pow_one]
   exact gaussCRT_char_base A σ I x
 
-private theorem gaussCRT_char_unit (A : SArithmeticData F) (σ : F →+* ℂ)
-    (I : A.Exterior) (x : A.R) (hx : IsUnit (Ideal.Quotient.mk (A.extendIdeal I) x))
-    (j : ℤ) : A.sexticResiduePowerChar σ I j (Ideal.Quotient.mk (A.extendIdeal I) x) =
-    σ (A.sexticResidue I x) ^ SArithmeticData.sexticExponent j := by
-  unfold SArithmeticData.sexticResiduePowerChar
-  rw [← hx.unit_spec, MulChar.pow_apply_coe]
-  rw [hx.unit_spec, gaussCRT_char_base]
-
-private theorem sexticResidue_unit_six (A : SArithmeticData F) (σ : F →+* ℂ)
-    (I : A.Exterior) (x : A.R) (hx : IsUnit (Ideal.Quotient.mk (A.extendIdeal I) x)) :
-    (σ (A.sexticResidue I x)) ^ 6 = 1 := by
-  have hv : A.sexticResidue I x = (A.sexticResidueFamily I hx.unit : F) :=
-    (congrArg (MulChar.ofUnitHom (A.sexticResidueFamily I)) hx.unit_spec.symm).trans
-      (MulChar.ofUnitHom_coe _ _)
-  rw [hv, ← map_pow, ← Units.val_pow_eq_pow_val,
-    A.sexticResidueFamily_normalized.1 I hx.unit, Units.val_one, map_one]
+private alias gaussCRT_char_unit := DedekindZetaZeroFree.SArithmeticData.SexticChineseRemainderReciprocity.gaussCRT_char_unit
 
 private theorem maskedPower_apply (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (n : ℕ) (r : A.R) :
@@ -84,7 +60,13 @@ private theorem maskedPower_apply (C : A.GeneralArithmeticContext σ η hS)
       rw [residueMap, reduction]; exact Ideal.Quotient.factor_mk _ _]
     by_cases hx : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) r)
     · rw [gaussCRT_char_unit A σ (primeIdeal p) r hx (n : ℤ), sexticExponent_intNat]
-      exact (pow_eq_pow_mod n (sexticResidue_unit_six A σ (primeIdeal p) r hx)).symm
+      exact (pow_eq_pow_mod n (by
+        let I := (primeIdeal p)
+        have hv : A.sexticResidue I r = (A.sexticResidueFamily I hx.unit : F) :=
+          (congrArg (MulChar.ofUnitHom (A.sexticResidueFamily I)) hx.unit_spec.symm).trans
+            (MulChar.ofUnitHom_coe _ _)
+        rw [hv, ← map_pow, ← Units.val_pow_eq_pow_val,
+          A.sexticResidueFamily_normalized.1 I hx.unit, Units.val_one, map_one])).symm
     · rw [A.sexticResiduePowerChar_nonunit σ (primeIdeal p) (n : ℤ) _ hx,
         ArithmeticContext.actual_sextic_nonunit A (primeIdeal p) r hx]
       simp [hn]
@@ -104,28 +86,18 @@ private theorem sexticResidue_finset_prod (A : SArithmeticData F) (σ : F →+* 
     simp only [g, dif_pos h]
     congr 1
     exact Subtype.ext hQ.symm
-  have hfac := ArithmeticContext.actual_sextic_factorization_finprod A r g hg I
-  let f : HeightOneSpectrum (𝓞 F) → F := fun v => g v ^ idealPrimeExponent v.asIdeal I.val
+  let f := fun v => g v ^ idealPrimeExponent v.asIdeal I.val
   have hsub : Function.mulSupport f ⊆ (P.image (fun p : ExteriorPrime A => p.val)) := by
     intro v hv
-    have he : idealPrimeExponent v.asIdeal I.val ≠ 0 := by
-      intro h0
-      exact hv (by simp [f, h0])
-    have hmem : v.asIdeal ∈ normalizedFactors I.val :=
-      Multiset.count_pos.mp (Nat.pos_of_ne_zero he)
-    have hdvd : v.asIdeal ∣ I.val := UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hmem
+    have he : idealPrimeExponent v.asIdeal I.val ≠ 0 := fun h0 => hv (by simp [f, h0])
     have htop : v.asIdeal ⊔ A.cS = ⊤ := by
       rw [eq_top_iff, ← I.property.2]
-      exact sup_le_sup_right (Ideal.dvd_iff_le.mp hdvd) A.cS
+      exact sup_le_sup_right (Ideal.dvd_iff_le.mp (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors (Multiset.count_pos.mp (Nat.pos_of_ne_zero he)))) A.cS
     let q : ExteriorPrime A := ⟨v, htop⟩
-    have hqP : q ∈ P := by
-      apply hSupport q
-      change idealPrimeExponent q.val.asIdeal I.val ≠ 0
-      exact he
-    exact Finset.mem_image.mpr ⟨q, hqP, rfl⟩
-  have h1 : A.sexticResidue I r = ∏ v ∈ (P.image (fun p : ExteriorPrime A => p.val)), f v :=
-    hfac.trans (finprod_eq_prod_of_mulSupport_subset f hsub)
-  rw [h1, Finset.prod_image (s := P) (g := fun p : ExteriorPrime A => p.val)
+    refine Finset.mem_image.mpr ⟨q, ?_, rfl⟩
+    apply hSupport q
+    exact he
+  rw [((ArithmeticContext.actual_sextic_factorization_finprod A r g hg I).trans (finprod_eq_prod_of_mulSupport_subset f hsub)), Finset.prod_image
       (fun p _ q _ h => Subtype.ext h)]
   rw [Finset.univ_eq_attach]
   rw [Finset.prod_attach P (fun p : ExteriorPrime A =>
@@ -147,11 +119,7 @@ theorem character_crt (C : A.GeneralArithmeticContext σ η hS)
         (A.sexticResiduePowerChar σ I 1) d =
       ∏ p : P, maskedPower C p.val (exponent p.val I) (exponent p.val I) (E d p) := by
   obtain ⟨r, rfl⟩ := Ideal.Quotient.mk_surjective d
-  have htr : GeneratorInvariance.transportCharacter (A.extendIdeal I) (Ideal.span {s}) hs.2.symm
-      (A.sexticResiduePowerChar σ I 1) (Ideal.Quotient.mk (Ideal.span {s}) r)
-      = (A.sexticResiduePowerChar σ I 1) (Ideal.Quotient.mk (A.extendIdeal I) r) :=
-    transport_apply_mk _ _ _ _ _
-  refine htr.trans ?_
+  refine (transport_apply_mk _ _ _ _ _).trans ?_
   rw [sexticPowerChar_one_apply]
   symm
   trans ∏ p : P, (σ (A.sexticResidue (primeIdeal p.val) r)) ^ (exponent p.val I)
@@ -181,51 +149,27 @@ open LocalFiniteSums
 set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
- def quo (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ) :
+ section
+
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ)
+
+def quo :
     LocalIntegers p →+* Residue C p n :=
   (LocalFiniteSumCompatibility.residueEquiv C p n).symm.toRingHom.comp (Ideal.Quotient.mk _)
 
-private lemma quo_integer (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
-    (n : ℕ) (x : A.R) :
-    quo C p n (LocalFiniteSumCompatibility.integerMap p x) = residueMap C p n x := by
-  apply (LocalFiniteSumCompatibility.residueEquiv C p n).injective
-  change (LocalFiniteSumCompatibility.residueEquiv C p n)
-    ((LocalFiniteSumCompatibility.residueEquiv C p n).symm
-      (Ideal.Quotient.mk _ (LocalFiniteSumCompatibility.integerMap p x))) = _
-  rw [RingEquiv.apply_symm_apply]
-  exact (LocalFiniteSumCompatibility.residueEquiv_mk C p n x).symm
+private lemma quo_integer (x : A.R) :
+    quo C p n (LocalFiniteSumCompatibility.integerMap p x) = residueMap C p n x := by apply @DedekindZetaZeroFree.CompatiblePrimeRawLocal.LocalUnitRescaling.quo_integer <;> assumption
 
-private lemma quo_eq_iff (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
-    (n : ℕ) (x y : LocalIntegers p) :
+private lemma quo_eq_iff (x y : LocalIntegers p) :
     quo C p n x = quo C p n y ↔
-      CompatiblePrimeRawLocal.Congruent C p n (x : LocalField p) (y : LocalField p) := by
-  change (LocalFiniteSumCompatibility.residueEquiv C p n).symm (Ideal.Quotient.mk _ x) =
-    (LocalFiniteSumCompatibility.residueEquiv C p n).symm (Ideal.Quotient.mk _ y) ↔ _
-  rw [(LocalFiniteSumCompatibility.residueEquiv C p n).symm.injective.eq_iff,
-    Ideal.Quotient.eq]
-  rw [Ideal.mem_span_singleton']
-  constructor
-  · rintro ⟨r, hr⟩
-    refine ⟨r, ?_⟩
-    have hh := congrArg (fun z : LocalIntegers p => (z : LocalField p)) hr
-    simpa [LocalFiniteSumCompatibility.localUniformizer, LocalFiniteSumCompatibility.integerMap,
-      uniformizer, mul_comm] using hh.symm
-  · rintro ⟨r, hr⟩
-    refine ⟨r, ?_⟩
-    apply Subtype.ext
-    simpa [LocalFiniteSumCompatibility.localUniformizer, LocalFiniteSumCompatibility.integerMap,
-      uniformizer, mul_comm] using hr.symm
+      CompatiblePrimeRawLocal.Congruent C p n (x : LocalField p) (y : LocalField p) := by apply @DedekindZetaZeroFree.CompatiblePrimeRawLocal.LocalUnitRescaling.quo_eq_iff <;> assumption
 
-private lemma uniformizer_ne_zero (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) : uniformizer C p ≠ 0 := by
-  rw [uniformizer]
-  intro h0
-  have h0' : (generator C p : F) = 0 :=
-    (algebraMap F (LocalField p)).injective (by rw [h0, map_zero])
-  exact (generator_generates C p).1 (Subtype.ext h0')
+end
+
+private alias uniformizer_ne_zero := DedekindZetaZeroFree.CRTRawLocalPhaseAlgebra.uniformizer_ne_zero
 
 private lemma numerator_crt_point
     (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
@@ -238,35 +182,37 @@ private lemma numerator_crt_point
     CompatiblePrimeRawLocal.numeratorCongruence C p t k J aU hU
         (CompatiblePrimeRawLocal.canonicalLocalRepresentative C p k d) ↔
       residueMap C p k h = residueMap C p k a * d := by
-  have hπ : uniformizer C p ≠ 0 := uniformizer_ne_zero C p
-  have hXi : (hU : LocalIntegers p) *
+  have hπ := uniformizer_ne_zero C p
+  let algebraMap₀ := algebraMap F (LocalField p)
+  have hXi : hU *
       (LocalFiniteSumCompatibility.localUniformizer C p) ^ J =
       LocalFiniteSumCompatibility.integerMap p h := by
     apply Subtype.ext
-    change (hU : LocalField p) *
+    change hU *
       (LocalFiniteSumCompatibility.localUniformizer C p : LocalField p) ^ J =
-      algebraMap F (LocalField p) (h : F)
+      algebraMap₀ (h : F)
     rw [show ((hU : LocalIntegers p) : LocalField p) =
-        algebraMap F (LocalField p) (h : F) / uniformizer C p ^ J from hhU]
+        algebraMap₀ (h : F) / uniformizer C p ^ J from hhU]
     rw [show ((LocalFiniteSumCompatibility.localUniformizer C p : LocalIntegers p) : LocalField p)
         = uniformizer C p from rfl]
     exact div_mul_cancel₀ _ (pow_ne_zero _ hπ)
-  have hYi : (aU : LocalIntegers p) *
+  let integerMap₀ := LocalFiniteSumCompatibility.integerMap p ((lifts C p k).val d)
+  have hYi : aU *
       (LocalFiniteSumCompatibility.localUniformizer C p) ^ t *
-      LocalFiniteSumCompatibility.integerMap p ((lifts C p k).val d) =
+      integerMap₀ =
       LocalFiniteSumCompatibility.integerMap p (a * (lifts C p k).val d) := by
     apply Subtype.ext
-    change (aU : LocalField p) *
+    change aU *
       (LocalFiniteSumCompatibility.localUniformizer C p : LocalField p) ^ t *
-      algebraMap F (LocalField p) (((lifts C p k).val d : A.R) : F) =
-      algebraMap F (LocalField p) ((a : F) * (((lifts C p k).val d : A.R) : F))
+      algebraMap₀ (((lifts C p k).val d : A.R) : F) =
+      algebraMap₀ ((a : F) * (((lifts C p k).val d : A.R) : F))
     rw [show ((aU : LocalIntegers p) : LocalField p) =
-        algebraMap F (LocalField p) (a : F) / uniformizer C p ^ t from haU]
+        algebraMap₀ (a : F) / uniformizer C p ^ t from haU]
     rw [show ((LocalFiniteSumCompatibility.localUniformizer C p : LocalIntegers p) : LocalField p)
         = uniformizer C p from rfl]
     rw [div_mul_cancel₀ _ (pow_ne_zero _ hπ), map_mul]
   have hdrep : CompatiblePrimeRawLocal.canonicalLocalRepresentative C p k d =
-      ((LocalFiniteSumCompatibility.integerMap p ((lifts C p k).val d) : LocalIntegers p)
+      ((integerMap₀ : LocalIntegers p)
         : LocalField p) := rfl
   have hkey : CompatiblePrimeRawLocal.numeratorCongruence C p t k J aU hU
         (CompatiblePrimeRawLocal.canonicalLocalRepresentative C p k d) ↔
@@ -274,7 +220,7 @@ private lemma numerator_crt_point
         (LocalFiniteSumCompatibility.localUniformizer C p) ^ J) =
       quo C p k ((aU : LocalIntegers p) *
         (LocalFiniteSumCompatibility.localUniformizer C p) ^ t *
-        LocalFiniteSumCompatibility.integerMap p ((lifts C p k).val d)) := by
+        integerMap₀) := by
     rw [CompatiblePrimeRawLocal.numeratorCongruence, quo_eq_iff, hdrep]
     rfl
   rw [hkey, hXi, hYi, quo_integer, quo_integer]
@@ -319,8 +265,7 @@ theorem numerator_crt (C : A.GeneralArithmeticContext σ η hS)
       rw [Pi.mul_apply, hE h p, hE a p]
       exact (numerator_crt_point C p.val (exponent p.val Ia) (exponent p.val Is)
         (exponent p.val Ih) a h (aU p) (hU p) (haU p) (hhU p) (E d p)).mp (hl p)
-    have h2 := congrArg (fun z => E.symm z) h1
-    simpa only [RingEquiv.symm_apply_apply, map_mul] using h2
+    simpa using (congrArg (fun z => E.symm z) h1)
 
 end DedekindZetaZeroFree.MaskedPrimePowerCRTFactorization
 
@@ -381,9 +326,8 @@ theorem constrained_sum_crt
         rw [hχv, hφ d v hd]
       · rw [if_neg hd, if_neg (fun h => hd ((hc d).mpr h))]
     _ = ∑ d : (i : ι) → Dp i, ∏ i, if cs i (d i) then
-          χdp i (d i) * ∑ v : Vp i, χvp i v * φp i (d i) v else 0 := by
-      exact Finset.sum_congr rfl (fun d _ => hprod d)
-    _ = _ := (Fintype.prod_sum (fun i (d : Dp i) => if cs i d then
+          χdp i (d i) * ∑ v : Vp i, χvp i v * φp i (d i) v else 0 := Finset.sum_congr rfl (fun d _ => hprod d)
+    _ = _ := (Fintype.prod_sum (fun i d => if cs i d then
       χdp i d * ∑ v : Vp i, χvp i v * φp i d v else 0)).symm
 
 end DedekindZetaZeroFree.MaskedPrimePowerCRTFactorization
@@ -403,20 +347,13 @@ open LocalFiniteSums
 set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 def primeExponent (p : ExteriorPrime A) (I : A.Exterior) : ℕ :=
   idealPrimeExponent p.val.asIdeal I.val
 
- theorem prime_outside (p : ExteriorPrime A) : p.val ∉ A.Sf := by
-  intro hp
-  have hc : A.cS ≤ p.val.asIdeal := Ideal.IsPrime.prod_le p.val.isPrime |>.mpr ⟨p.val, hp, le_rfl⟩
-  apply p.val.isPrime.ne_top
-  apply top_le_iff.mp
-  calc
-    ⊤ = p.val.asIdeal ⊔ A.cS := p.property.symm
-    _ ≤ p.val.asIdeal := sup_le le_rfl hc
+ alias prime_outside := DedekindZetaZeroFree.LocalFiniteSumCompatibility.exterior_notMem
 
  def boundIdeal (p : ExteriorPrime A) (n : ℕ) : Ideal A.R where
   carrier := {a | p.val.valuation F (a : F) ≤ WithZero.exp (-(n : ℤ))}
@@ -433,53 +370,15 @@ def primeExponent (p : ExteriorPrime A) (I : A.Exterior) : ℕ :=
 
 private theorem generates_valuation (p : ExteriorPrime A)
     (I : A.Exterior) (r : A.R) (hr : A.Generates I r) :
-    p.val.valuation F (r : F) = WithZero.exp (-(primeExponent p I : ℤ)) := by
-  let n := primeExponent p I
-  have hdvd (k : ℕ) : p.val.asIdeal ^ k ∣ I.val ↔ k ≤ n := by
-    rw [pow_dvd_iff_le_emultiplicity,
-      UniqueFactorizationMonoid.emultiplicity_eq_count_normalizedFactors p.val.irreducible I.property.1]
-    simp [n, primeExponent, idealPrimeExponent]
-  have hIn : I.val ≤ p.val.asIdeal ^ n := Ideal.dvd_iff_le.mp ((hdvd n).mpr le_rfl)
-  have hnot : ¬ I.val ≤ p.val.asIdeal ^ (n + 1) := by
-    rw [← Ideal.dvd_iff_le, hdvd]; omega
-  have hmap : A.extendIdeal I ≤ boundIdeal p n := by
-    apply Ideal.map_le_iff_le_comap.mpr
-    intro a ha
-    change p.val.valuation F (a : F) ≤ WithZero.exp (-(n : ℤ))
-    rw [p.val.valuation_of_algebraMap]
-    exact (p.val.intValuation_le_pow_iff_mem a n).mpr (hIn ha)
-  have hrv : p.val.valuation F (r : F) ≤ WithZero.exp (-(n : ℤ)) := by
-    apply hmap
-    rw [← hr.2]
-    exact Ideal.subset_span (Set.mem_singleton r)
-  obtain ⟨a, ha, han⟩ : ∃ a : 𝓞 F, a ∈ I.val ∧ a ∉ p.val.asIdeal ^ (n + 1) := by
-    contrapose! hnot
-    exact hnot
-  have ham : algebraMap (𝓞 F) A.R a ∈ Ideal.span ({r} : Set A.R) := by
-    rw [hr.2]
-    exact Ideal.mem_map_of_mem _ ha
-  obtain ⟨y, hy⟩ := Ideal.mem_span_singleton.mp ham
-  have hav : p.val.valuation F (a : F) ≤ p.val.valuation F (r : F) := by
-    have hh := congrArg (fun t : A.R => (t : F)) hy
-    change (a : F) = (r : F) * (y : F) at hh
-    rw [hh, map_mul]
-    exact (mul_le_mul_of_nonneg_left (y.property p.val (prime_outside p)) zero_le).trans (by simp)
-  have hrv' : ¬ p.val.valuation F (r : F) ≤ WithZero.exp (-((n + 1 : ℕ) : ℤ)) := by
-    intro h
-    apply han
-    apply (p.val.intValuation_le_pow_iff_mem a (n + 1)).mp
-    rw [← p.val.valuation_of_algebraMap (K := F)]
-    exact hav.trans h
-  have hnz : p.val.valuation F (r : F) ≠ 0 :=
-    (Valuation.ne_zero_iff _).mpr (by exact_mod_cast hr.1)
-  rw [← WithZero.exp_log hnz, WithZero.exp_le_exp] at hrv hrv'
-  have hv : WithZero.log (p.val.valuation F (r : F)) = -(n : ℤ) := by
-    push_cast at hrv'
-    omega
-  rw [← WithZero.exp_log hnz, hv]
+    p.val.valuation F (r : F) = WithZero.exp (-(primeExponent p I : ℤ)) := by apply @DedekindZetaZeroFree.MaskedPrimePowerCRTFactorization.TracePhaseChineseRemainder.generates_valuation <;> assumption
 
-theorem localUnitPart_exists (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (I : A.Exterior) (x : A.R) (hx : A.Generates I x) :
+section
+
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (I : A.Exterior) (x : A.R)
+    (hx : A.Generates I x)
+
+include hx in
+theorem localUnitPart_exists :
     ∃ u : (LocalIntegers p)ˣ,
       (u.val : LocalField p) = algebraMap F (LocalField p) (x : F) /
         uniformizer C p ^ primeExponent p I := by
@@ -506,16 +405,16 @@ theorem localUnitPart_exists (C : A.GeneralArithmeticContext σ η hS)
   refine ⟨hu.unit, ?_⟩
   rw [hu.unit_spec]
 
-def localUnitPart (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (I : A.Exterior) (x : A.R) (hx : A.Generates I x) :
+def localUnitPart :
     (LocalIntegers p)ˣ :=
   Classical.choose (localUnitPart_exists C p I x hx)
 
-theorem localUnitPart_spec (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (I : A.Exterior) (x : A.R) (hx : A.Generates I x) :
+theorem localUnitPart_spec :
     ((localUnitPart C p I x hx).val : LocalField p) =
       algebraMap F (LocalField p) (x : F) / uniformizer C p ^ primeExponent p I :=
   Classical.choose_spec (localUnitPart_exists C p I x hx)
+
+end
 
 def coefficient (C : A.GeneralArithmeticContext σ η hS)
     (Is Ia : A.Exterior) (s a h : A.R)
@@ -570,10 +469,6 @@ theorem full_prime_power_crt (C : A.GeneralArithmeticContext σ η hS)
   let sU := fun p : P => localUnitPart C p.val Is s hs
   let aU := fun p : P => localUnitPart C p.val Ia a ha
   let hU := fun p : P => localUnitPart C p.val Ih h hh
-  have hsU : ∀ p : P, ((sU p).val : LocalField p.val) =
-      algebraMap F (LocalField p.val) (s : F) /
-        uniformizer C p.val ^ MaskedPrimePowerCRTFactorization.exponent p.val Is :=
-    fun p => localUnitPart_spec C p.val Is s hs
   have haU : ∀ p : P, ((aU p).val : LocalField p.val) =
       algebraMap F (LocalField p.val) (a : F) /
         uniformizer C p.val ^ MaskedPrimePowerCRTFactorization.exponent p.val Ia :=
@@ -608,7 +503,7 @@ theorem full_prime_power_crt (C : A.GeneralArithmeticContext σ η hS)
     (fun d => MaskedPrimePowerCRTFactorization.character_crt C Is s hs P hSupportS Es hEs d)
     (fun v => MaskedPrimePowerCRTFactorization.character_crt C Ia a ha P hSupportA Ea hEa v)
     (fun d v hc => MaskedPrimePowerCRTFactorization.phase_crt C Is Ia Ih s a h hs ha P
-      hSupportS hSupportA Es Ea hEs hEa sU aU hU hsU haU hhU d v hc)
+      hSupportS hSupportA Es Ea hEs hEa sU aU hU (fun p => localUnitPart_spec C p.val Is s hs) haU hhU d v hc)
   rw [← Finset.prod_coe_sort P (fun p => CompatiblePrimeRawLocal.R C p
     (primeExponent p Ia) (primeExponent p Is) (primeExponent p Ih)
     (localUnitPart C p Is s hs) (localUnitPart C p Ia a ha)

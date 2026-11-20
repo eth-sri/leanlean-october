@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -101,19 +98,10 @@ theorem
   ext x
   constructor
   · intro hx
-    have hxLocal :
-        ∀ w : T,
-          Units.map
-                (algebraMap K
-                  ((w : HeightOneSpectrum (𝓞 K)).adicCompletion K)).toMonoidHom
-                (x : Kˣ) ∈
-            (powMonoidHom (n : ℕ) :
-              ((w : HeightOneSpectrum (𝓞 K)).adicCompletion K)ˣ →*
-                ((w : HeightOneSpectrum (𝓞 K)).adicCompletion K)ˣ).range :=
+    have hxLocal :=
       (mem_sUnitLocalPowerKernel_iff
         (K := K) n S' T x).mp hx
-    let aFull :
-        (fullSUnitKummerSubgroup (K := K) n S').1 :=
+    let aFull :=
       sUnitToFullSUnitKummerSubgroup
         (K := K) n S' x
     have haN :
@@ -158,12 +146,7 @@ theorem
               (wi.adicCompletion K)ˣ →*
                 (wi.adicCompletion K)ˣ).range := by
         simpa [wT, wi] using hxLocal wT
-      have hfixed :
-          (beta : N) ∈
-            IntermediateField.fixedField
-              (HilbertRamification.absoluteValueDecompositionGroup K
-                (_root_.chosenFinitePlaceExtension
-                  (L := N) wi).1) :=
+      have hfixed :=
         (KummerTheory.finitePlaceKummerRadicand_mem_nthPowerSubgroup_iff_root_mem_decompositionFixedField
             (K := K) (L := N) wi n hmu (x : Kˣ) beta hbeta).mp
           hlocal
@@ -208,7 +191,7 @@ theorem
                 (K := K) (Omega := Omega) E n hmu
                 p v hp hv hn r eG S i :
                   R).1))
-      rw [show Fix = MulAction.stabilizer R (beta : N) from rfl,
+      rw [show Fix = Fix from rfl,
         MulAction.mem_stabilizer_iff]
       simpa only [
         MulAction.subgroup_smul_def,
@@ -251,7 +234,7 @@ theorem
         exact
           MulAction.mem_stabilizer_iff.mp
             (show
-              sigmaR ∈ MulAction.stabilizer R (beta : N) by
+              sigmaR ∈ Fix by
               simpa only [Fix] using hsigmaFix)
       simpa only [
         MulAction.subgroup_smul_def,
@@ -278,7 +261,7 @@ theorem
       calc
         (beta : N) = algebraMap E N gamma := hgamma.symm
         _ = 0 := by rw [hgammaZero, map_zero]
-    let gammaUnit : Eˣ :=
+    let gammaUnit :=
       Units.mk0 gamma hgamma_ne
     change
       (x : Kˣ) ∈
@@ -359,7 +342,7 @@ theorem
     have hbetaCoordinate :
         (betaN : N) ∈
           sUnitKummerCoordinateFixedField
-            (K := K) (Omega := Omega) E n hmu
+              E n hmu
             p v hp hv hn r eG S i := by
       exact
         enlargedSUnitKummerEmbeddedExtension_le_cyclicFixedField
@@ -433,7 +416,7 @@ theorem supportedAt_sup_principalSubgroup_eq_top_of_enlargeByRadicalSupport
               (K := K) (L := L) n hmu S : Set _) by
           intro v hv
           exact subset_enlargeByFiniteKummerRadicalSupport
-            (K := K) (L := L) n hmu S hv)).trans le_sup_left
+              n hmu S hv)).trans le_sup_left
   · exact le_sup_right
 
 end FinitePlaces

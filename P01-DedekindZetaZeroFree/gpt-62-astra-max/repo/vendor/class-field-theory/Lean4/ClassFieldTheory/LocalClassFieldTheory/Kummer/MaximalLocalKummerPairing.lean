@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -48,13 +46,12 @@ noncomputable def maximalLocalKummerNormResidueAutomorphism
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
     Kˣ →* Gal((maximalLocalKummerExtension K n)/K) := by
-  let Delta := maximalKummerSubgroup K n
   let E := maximalLocalKummerExtension K n
   letI : FiniteDimensional K E :=
     maximalKummerRadicalExtension_finiteDimensional K n hnK hmu
   letI : IsAbelianGalois K E :=
     kummerRadicalExtension_isAbelianGalois
-      (K := K) (Omega := SeparableClosure K) n hmu Delta.1
+        n hmu (maximalKummerSubgroup K n).1
   exact abelianLocalArtinMonoidHom K E
 
  noncomputable def maximalLocalKummerPairingSource
@@ -63,14 +60,11 @@ noncomputable def maximalLocalKummerNormResidueAutomorphism
     Kˣ →* nthRootsSubgroup (maximalLocalKummerExtension K n) (n : ℕ) := by
   let Delta := maximalKummerSubgroup K n
   let E := maximalLocalKummerExtension K n
-  let hDelta : Delta.1 ≤
-      finiteKummerRadicalSubgroup (K := K) (L := E) n :=
-    le_finiteKummerRadicalSubgroup_kummerRadicalExtension n hnK Delta.1
   let incl : Kˣ →* Delta.1 :=
     { toFun := fun b => ⟨b, by simp [Delta, maximalKummerSubgroup]⟩
       map_one' := rfl
       map_mul' := fun _ _ => rfl }
-  let sigma : Gal(E/K) :=
+  let sigma :=
     maximalLocalKummerNormResidueAutomorphism K n hnK hmu a
   let evaluate : (Gal(E/K) →* nthRootsSubgroup E (n : ℕ)) →*
       nthRootsSubgroup E (n : ℕ) :=
@@ -78,7 +72,7 @@ noncomputable def maximalLocalKummerNormResidueAutomorphism
       map_one' := rfl
       map_mul' := fun _ _ => rfl }
   exact evaluate.comp
-    ((restrictedSubgroupKummerCharacter n hmu Delta hDelta).comp incl)
+    ((restrictedSubgroupKummerCharacter n hmu Delta (le_finiteKummerRadicalSubgroup_kummerRadicalExtension n hnK Delta.1)).comp incl)
 
 /-- The maximal finite Kummer pairing, evaluated at the local Artin
 automorphism of `a`, is multiplicative in its radical variable. -/
@@ -90,10 +84,10 @@ noncomputable def maximalLocalKummerPairingRightHom
       K (maximalLocalKummerExtension K n) n hmu).symm.toMonoidHom.comp
     (maximalLocalKummerPairingSource K n hnK hmu a)
 
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+
 @[simp]
-theorem maximalLocalKummerPairingRightHom_apply
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
+theorem maximalLocalKummerPairingRightHom_apply (a b : Kˣ) :
     maximalLocalKummerPairingRightHom K n hnK hmu a b =
       (nthRootsSubgroupEquivOfPrimitiveRoots
         K (maximalLocalKummerExtension K n) n hmu).symm
@@ -102,9 +96,7 @@ theorem maximalLocalKummerPairingRightHom_apply
 
 /-- Mapping the maximal pairing into its defining extension identifies its
 value with the root quotient of any radical having the prescribed power. -/
-theorem maximalLocalKummerPairingRightHom_map_eq_rootQuotient_of_pow
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ)
+theorem maximalLocalKummerPairingRightHom_map_eq_rootQuotient_of_pow (a b : Kˣ)
     (beta : (maximalLocalKummerExtension K n)ˣ)
     (hbeta : beta ^ (n : ℕ) =
       Units.map
@@ -149,13 +141,11 @@ theorem maximalLocalKummerPairingRightHom_map_eq_rootQuotient_of_pow
   rw [(nthRootsSubgroupEquivOfPrimitiveRoots K E n hmu).apply_symm_apply]
   apply Subtype.ext
   change D.rootCharacter delta hfixed sigma =
-    rootQuotient (K := K) (L := E) beta sigma
+    rootQuotient beta sigma
   exact (D.rootCharacter_eq_of_same_pow hfixed delta hbeta' sigma).symm
 
 @[simp]
-theorem maximalLocalKummerPairing_mul_right
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b c : Kˣ) :
+theorem maximalLocalKummerPairing_mul_right (a b c : Kˣ) :
     maximalLocalKummerPairingRightHom K n hnK hmu a (b * c) =
       maximalLocalKummerPairingRightHom K n hnK hmu a b *
         maximalLocalKummerPairingRightHom K n hnK hmu a c :=

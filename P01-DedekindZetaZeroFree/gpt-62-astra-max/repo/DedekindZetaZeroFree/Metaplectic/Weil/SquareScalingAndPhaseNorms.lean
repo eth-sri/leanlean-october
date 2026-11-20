@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Metaplectic.Weil.FiniteQuadraticFourierKernel
 
 public import DedekindZetaZeroFree.Metaplectic.Weil.Finite.OscillatoryIntegralStabilization
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.SIntegers.DilationAndTranslation
@@ -58,24 +59,7 @@ private lemma squareScaling_cutoff_scale (v : HeightOneSpectrum (𝓞 F))
   change ((Real.sqrt ‖(2 : v.adicCompletion F) * a.val‖ : ℂ) * (‖t.val‖ : ℂ)) *
     ((‖t⁻¹.val‖ : ℂ) * _) = _
   rw [mul_assoc, ← mul_assoc (‖t.val‖ : ℂ), ht, one_mul]
-private lemma squareScaling_traceHaar (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) :
-    (A.finiteTraceHaar v).IsAddHaarMeasure := by
-  let K := v.adicCompletion F
-  letI : LocallyCompactSpace K :=
-    (PoissonS.finite_components_locallyCompact F {v}).1 ⟨v, Finset.mem_singleton_self v⟩
-  let μ : Measure K := Measure.addHaar
-  have hp : 0 < μ {x | ‖x‖ ≤ (1 : ℝ)} := by
-    apply IsOpen.measure_pos
-    · simpa [Metric.closedBall, dist_zero_right] using
-        IsUltrametricDist.isOpen_closedBall (0 : K) one_ne_zero
-    · exact ⟨0, by simp⟩
-  have hf : μ {x | ‖x‖ ≤ (1 : ℝ)} ≠ ⊤ := by
-    have hc : IsCompact {x : K | ‖x‖ ≤ (1 : ℝ)} := by
-      simpa [Metric.closedBall, dist_zero_right] using isCompact_closedBall (0 : K) (1 : ℝ)
-    exact hc.measure_lt_top.ne
-  apply Measure.IsAddHaarMeasure.smul μ
-  · exact ENNReal.div_ne_zero.mpr ⟨by simpa using PoissonS.integerVolume_pos F v, hf⟩
-  · exact ENNReal.div_ne_top ENNReal.ofReal_ne_top hp.ne'
+private alias squareScaling_traceHaar := FiniteQuadraticFourierKernel.finiteKernel_traceHaar
 
 theorem finiteGamma_mul_sq (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (a t : (v.adicCompletion F)ˣ) :
@@ -103,18 +87,17 @@ theorem finiteGamma_mul_sq (A : SArithmeticData F)
   rw [← hN n (by dsimp [n]; omega), ← hM m (by dsimp [m]; omega)]
   exact squareScaling_cutoff_scale v (A.finiteTraceHaar v) a t n m hh
 
-theorem finiteGamma_norm (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
-    ‖A.finiteGamma v a‖ = 1 := by
-  exact A.norm_finiteGamma v a
+alias finiteGamma_norm := norm_finiteGamma
 
-theorem finiteWeilPhase_mul_sq (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a t : (v.adicCompletion F)ˣ) :
+section
+
+variable (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+
+theorem finiteWeilPhase_mul_sq (a t : (v.adicCompletion F)ˣ) :
     A.finiteWeilPhase v (a * t ^ 2) = A.finiteWeilPhase v a := by
   rw [finiteWeilPhase, finiteWeilPhase, finiteGamma_mul_sq]
 
-theorem finiteWeilPhase_one (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) : A.finiteWeilPhase v 1 = 1 := by
+theorem finiteWeilPhase_one : A.finiteWeilPhase v 1 = 1 := by
   have hne : A.finiteGamma v 1 ≠ 0 := by
     intro h0
     have h := A.finiteGamma_norm v 1
@@ -122,23 +105,23 @@ theorem finiteWeilPhase_one (A : SArithmeticData F)
     exact one_ne_zero h.symm
   rw [finiteWeilPhase, div_self hne]
 
-theorem finiteWeilPhase_sq (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
+theorem finiteWeilPhase_sq (a : (v.adicCompletion F)ˣ) :
     A.finiteWeilPhase v (a ^ 2) = 1 := by
   rw [← one_mul (a ^ 2), finiteWeilPhase_mul_sq, finiteWeilPhase_one]
 
-theorem finiteWeilPhase_norm (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
+theorem finiteWeilPhase_norm (a : (v.adicCompletion F)ˣ) :
     ‖A.finiteWeilPhase v a‖ = 1 := by
   rw [finiteWeilPhase, norm_div, A.finiteGamma_norm v a, A.finiteGamma_norm v 1, div_one]
 
-theorem complexWeilPhase_mul_sq (A : SArithmeticData F)
-    (w : InfinitePlace F) (a t : w.Completionˣ) :
+end
+
+variable (A : SArithmeticData F) (w : InfinitePlace F)
+
+theorem complexWeilPhase_mul_sq (a t : w.Completionˣ) :
     A.complexWeilPhase w (a * t ^ 2) = A.complexWeilPhase w a := by
   simp [complexWeilPhase, complexGamma]
 
-theorem complexWeilPhase_one (A : SArithmeticData F)
-    (w : InfinitePlace F) : A.complexWeilPhase w 1 = 1 := by
+theorem complexWeilPhase_one : A.complexWeilPhase w 1 = 1 := by
   simp [complexWeilPhase, complexGamma]
 
 end DedekindZetaZeroFree.SArithmeticData

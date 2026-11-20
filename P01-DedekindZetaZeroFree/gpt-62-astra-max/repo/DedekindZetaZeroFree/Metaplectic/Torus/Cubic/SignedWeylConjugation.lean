@@ -10,7 +10,7 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.ActualFiniteBorel.Geometry
 noncomputable section
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (q : HeightOneSpectrum (𝓞 F))
 local notation "K" => q.adicCompletion F
 local notation "v" => Sum.inr q
 private lemma w_d (y : Kˣ) : KubotaRankTwo.w K * KubotaRankTwo.d K y 1 =
@@ -89,11 +89,10 @@ theorem signedW_conjugates_A (y : Kˣ) :
 theorem signedW_conjugates_normalWord (e : rootsOfUnity 3 F) (y : Kˣ) :
     (KPPGLLocalCover.signedW F ζ hζ v)⁻¹ * ActualFiniteTorus.normalWord F ζ hζ q e y *
       KPPGLLocalCover.signedW F ζ hζ v = ActualFiniteTorus.normalWord F ζ hζ q e y⁻¹ := by
-  have hc := Subgroup.mem_center_iff.mp
-    (KPPGLLocalCover.centralInjection_range_le_center F ζ hζ v ⟨e, rfl⟩)
-    ((KPPGLLocalCover.signedW F ζ hζ v)⁻¹)
   unfold ActualFiniteTorus.normalWord
-  rw [← mul_assoc, hc, mul_assoc, mul_assoc, ← mul_assoc
+  rw [← mul_assoc, (Subgroup.mem_center_iff.mp
+    (KPPGLLocalCover.centralInjection_range_le_center F ζ hζ v ⟨e, rfl⟩)
+    ((KPPGLLocalCover.signedW F ζ hζ v)⁻¹)), mul_assoc, mul_assoc, ← mul_assoc
     ((KPPGLLocalCover.signedW F ζ hζ v)⁻¹), signedW_conjugates_A]
 
 theorem signedW_preserves_torus (t : ActualFiniteTorus.H F ζ hζ q) :

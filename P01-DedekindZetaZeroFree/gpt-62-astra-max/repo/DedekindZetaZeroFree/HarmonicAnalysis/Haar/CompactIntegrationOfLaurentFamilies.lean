@@ -18,8 +18,9 @@ private lemma laurentValue_eq (u : ℂˣ) (p : ℤ →₀ ℂ) :
     complexUnitLaurentLinearEvaluation u p = p.sum (fun n c => (u : ℂ) ^ n * c) := by
   simp [complexUnitLaurentLinearEvaluation, Finsupp.linearCombination_apply, smul_eq_mul, mul_comm]
 
-private theorem finite_family_integral {X T : Type*} [MeasurableSpace X]
-    [TopologicalSpace X] [BorelSpace X] [CompactSpace X]
+variable {X T : Type*} [MeasurableSpace X] [TopologicalSpace X] [BorelSpace X]
+
+private theorem finite_family_integral [CompactSpace X]
     (μ : Measure X) [IsFiniteMeasure μ]
     (H : X → T → ℂ) (hH : IsLocallyConstant H) (t : T) :
     ∫ x, H x t ∂μ = ∑ y ∈ hH.range_finite.toFinset, μ.real (H ⁻¹' {y}) • y t := by
@@ -36,11 +37,9 @@ private theorem finite_family_integral {X T : Type*} [MeasurableSpace X]
     · intro hx
       exact False.elim (hx (hH.range_finite.mem_toFinset.mpr ⟨x, rfl⟩))
   simp_rw [he]
-  rw [integral_finsetSum D (fun y _ => hi y)]
-  exact Finset.sum_congr rfl (fun y _ => integral_indicator_const _ (hm y))
+  simp_all [integral_finsetSum, D, hi]
 
 theorem compact_set_integral_laurent_family
-    {X T : Type*} [MeasurableSpace X] [TopologicalSpace X] [BorelSpace X]
     (μ : Measure X) (A : Set X) (hAc : IsCompact A) (hAm : MeasurableSet A)
     (hAf : μ A ≠ ⊤) (u : T → ℂˣ) (H : X → T → ℂ)
     (hH : IsLocallyConstant (fun x : A => H x.val))
@@ -52,7 +51,7 @@ theorem compact_set_integral_laurent_family
   letI : CompactSpace A := isCompact_iff_compactSpace.mp hAc
   let ν := μ.comap (Subtype.val : A → X)
   letI : IsFiniteMeasure ν := ⟨by
-    change μ.comap (Subtype.val : A → X) Set.univ < ⊤
+    change μ.comap Subtype.val Set.univ < ⊤
     rw [comap_subtype_coe_apply hAm μ Set.univ]
     simpa using hAf.lt_top⟩
   let G : A → T → ℂ := fun x => H x.val
@@ -81,7 +80,7 @@ theorem compact_set_integral_laurent_family
   change _ = ∑ y ∈ D.attach, ν.real (G ⁻¹' {y.val}) • y.val t
   rw [Finset.sum_attach D (fun y : T → ℂ => ν.real (G ⁻¹' {y}) • y t)]
   rw [← finite_family_integral ν G hG t]
-  exact (integral_subtype_comap hAm (fun x => H x t)).symm
+  grind [integral_subtype_comap]
 
 end DedekindZetaZeroFree.KPTameTransposeBaseChartNumerator
 

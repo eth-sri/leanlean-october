@@ -24,10 +24,12 @@ def radialMean
         (KPCuspLogShape.dimension F : ℝ)
     ∂((volume.prod G.shapeMeasure).restrict G.fundamentalDomain)
 
-def scalarDifferential (d : ℕ) (u : KPArch.Space d → ℝ) : Space d → Cotangent d :=
+variable (d : ℕ) (u : KPArch.Space d → ℝ)
+
+def scalarDifferential : Space d → Cotangent d :=
   differential d (fun q => (u (arch d q) : ℂ))
 
-def cutoffScalarFlux (d : ℕ) (u : KPArch.Space d → ℝ) (a : ℝ → ℝ) :
+def cutoffScalarFlux (a : ℝ → ℝ) :
     Space d → Cotangent d :=
   fun x i k => (a (KPCuspLogShape.meanHeight d (arch d x)) : ℂ) *
     scalarDifferential d u x i k

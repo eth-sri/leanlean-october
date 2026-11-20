@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -72,16 +70,12 @@ theorem frobeniusMultiplicativityCorrectionAction_mem_degreeKernel
   dsimp only
   let σ₄ := D.frobeniusActionConjugate K L hLK φ σ₂
     (D.frobeniusExponent K L hLK σ₁)
-  let τ₁ := D.frobeniusActionRemainder K L hLK φ σ₁
-  let τ₄ := D.frobeniusActionRemainder K L hLK φ σ₄
-  have hτ₁ := D.frobeniusActionRemainder_mem_degreeKernel
-    K L hLK φ σ₁ hφ
   have hτ₄ := D.frobeniusActionRemainder_mem_degreeKernel
     K L hLK φ σ₄ hφ
   intro i
   fin_cases i
   · exact hτ₄
-  · exact hτ₁
+  · solve_by_elim [D.frobeniusActionRemainder_mem_degreeKernel]
   · exact hτ₄
 
 end DegreeData
@@ -99,10 +93,6 @@ theorem frobeniusMultiplicativity_actionDifference_eq_correctionSum
         (B.ρ (frobeniusMultiplicativityCorrectionAction τ₁ τ₄ i)
           (frobeniusMultiplicativityCorrectionTerm B τ₁ p₁ p₃ p₄ i) -
           frobeniusMultiplicativityCorrectionTerm B τ₁ p₁ p₃ p₄ i) := by
-  have hmul : B.ρ (τ₄ * τ₁) p₃ = B.ρ τ₄ (B.ρ τ₁ p₃) := by
-    rw [map_mul]
-    rfl
-  rw [hmul]
   simp [frobeniusMultiplicativityCorrectionAction,
     frobeniusMultiplicativityCorrectionTerm, Fin.sum_univ_succ, map_sub]
   abel

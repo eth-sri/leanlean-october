@@ -30,26 +30,32 @@ attribute [local instance] quotientProbability_finiteMeasurable
         (Homeomorph.piCongrLeft (Y := fun _ => ℂ)
           (Equiv.subtypeEquivRight (fun _ => not_isReal_iff_isComplex))))))
 
- def tilingEquiv (F : Type) [Field F] [NumberField F] :
+ section
+
+variable (F : Type) [Field F] [NumberField F]
+
+def tilingEquiv :
     mixedEmbedding.mixedSpace F × FiniteAdeleRing (𝓞 F) F ≃ᵐ AdeleRing (𝓞 F) F :=
   let e : mixedEmbedding.mixedSpace F × FiniteAdeleRing (𝓞 F) F ≃ₜ AdeleRing (𝓞 F) F :=
     (tilingMixedHomeo F).symm.prodCongr (Homeomorph.refl _)
   e.toMeasurableEquiv
 
-private theorem tilingEquiv_apply (F : Type) [Field F] [NumberField F]
+private theorem tilingEquiv_apply
     (x : mixedEmbedding.mixedSpace F × FiniteAdeleRing (𝓞 F) F) :
     tilingEquiv F x = ((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x.1, x.2) := rfl
 
-private theorem tilingEquiv_measure (F : Type) [Field F] [NumberField F]
+private theorem tilingEquiv_measure
     (μf : Measure (FiniteAdeleRing (𝓞 F) F)) :
     MeasurePreserving (tilingEquiv F) ((finiteLevelInfiniteHaar F).prod μf)
       (additiveProductHaar F μf) := ⟨(tilingEquiv F).measurable, rfl⟩
 
-private theorem tilingEquiv_add (F : Type) [Field F] [NumberField F]
+private theorem tilingEquiv_add
     (x y : mixedEmbedding.mixedSpace F × FiniteAdeleRing (𝓞 F) F) :
     tilingEquiv F (x + y) = tilingEquiv F x + tilingEquiv F y := by
   simp only [tilingEquiv_apply, Prod.fst_add, Prod.snd_add, map_add]
   rfl
+
+end
 
 theorem product_domain_tiles
     {F : Type} [Field F] [NumberField F]
@@ -63,6 +69,7 @@ theorem product_domain_tiles
     MeasurableSet (finiteLevelProductDomain K D) ∧
       IsAddFundamentalDomain (AdeleRing.principalSubgroup (𝓞 F) F).op
         (finiteLevelProductDomain K D) (additiveProductHaar F μf) := by
+  let algebraMap₀ := algebraMap F (FiniteAdeleRing (𝓞 F) F)
   classical
   open scoped Pointwise in
   haveI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
@@ -79,7 +86,7 @@ theorem product_domain_tiles
   have he := tilingEquiv_measure F μf
   have hes := (MeasurePreserving.symm e he)
   have hΩ : MeasurableSet (finiteLevelProductDomain K D) := by
-    have hpre : finiteLevelProductDomain K D = e.symm ⁻¹' (D ×ˢ (K : Set _)) := by rfl
+    have hpre : finiteLevelProductDomain K D = e.symm ⁻¹' (D ×ˢ K) := rfl
     rw [hpre]
     exact e.symm.measurable (hDmeas.prod hopen.measurableSet)
   refine ⟨hΩ, IsAddFundamentalDomain.mk'' hΩ.nullMeasurableSet ?_ ?_ ?_⟩
@@ -90,10 +97,9 @@ theorem product_domain_tiles
       intro r
       exact (measurePreserving_add_right (finiteLevelInfiniteHaar F)
         (-mixedEmbedding F r)).quasiMeasurePreserving.ae hD.ae_covers
-    have hprod := (Measure.quasiMeasurePreserving_fst (μ := finiteLevelInfiniteHaar F)
-      (ν := μf)).ae hall
     apply e.measurableEmbedding.ae_map_iff.mpr
-    filter_upwards [hprod] with x hx
+    filter_upwards [((Measure.quasiMeasurePreserving_fst
+      ).ae hall)] with x hx
     obtain ⟨r, k, hr⟩ := finiteAdele_strongApprox F K hopen hcompact x.2
     obtain ⟨l, hl⟩ := hx r
     obtain ⟨t, htK, ht⟩ := (mem_finiteLevelLattice_iff K _).mp l.property
@@ -110,7 +116,7 @@ theorem product_domain_tiles
         rw [map_add, RingEquiv.apply_symm_apply,
           ← InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp, map_sub, ht]
         simpa only [sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using hl
-      · change x.2 + algebraMap F (FiniteAdeleRing (𝓞 F) F) (t - r) ∈ K
+      · change x.2 + algebraMap₀ (t - r) ∈ K
         rw [hr, map_sub]
         convert K.add_mem k.property htK using 1 <;> abel
   · intro g hg
@@ -122,7 +128,7 @@ theorem product_domain_tiles
       change (g : Aᵃᵒᵖ) = 0
       apply AddOpposite.unop_injective
       simpa only [hz, map_zero, AddOpposite.unop_zero] using hr.symm
-    by_cases hrK : algebraMap F (FiniteAdeleRing (𝓞 F) F) r ∈ K
+    by_cases hrK : algebraMap₀ r ∈ K
     · let l : (finiteLevelLattice K).toAddSubgroup.op :=
         ⟨AddOpposite.op (mixedEmbedding F r),
           (mem_finiteLevelLattice_iff K _).mpr ⟨r, hrK, rfl⟩⟩
@@ -171,14 +177,12 @@ theorem product_domain_tiles
       have heq := congrArg (fun a : A => a.2) hya
       change y.2 + (AddOpposite.unop g.val).2 = a.2 at heq
       rw [← hr] at heq
-      change y.2 + algebraMap F (FiniteAdeleRing (𝓞 F) F) r = a.2 at heq
+      change y.2 + algebraMap₀ r = a.2 at heq
       have hm := K.sub_mem hb.2 hy.2
       rw [← heq, add_sub_cancel_left] at hm
       exact hm
   · intro g
-    have hm := measurePreserving_add_right ν (e.symm (AddOpposite.unop g))
-    have hc := he.comp (hm.comp hes)
-    convert hc.quasiMeasurePreserving using 1
+    convert (he.comp ((measurePreserving_add_right ν (e.symm (AddOpposite.unop g))).comp hes)).quasiMeasurePreserving using 1
     funext x
     change x + AddOpposite.unop g = e (e.symm x + e.symm (AddOpposite.unop g))
     rw [tilingEquiv_add, e.apply_symm_apply, e.apply_symm_apply]
@@ -219,10 +223,9 @@ set_option backward.isDefEq.respectTransparency false in
           (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x v =
             (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).symm (x.1 ⟨v,hv⟩) := by
         apply (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).injective
-        have hh := congrArg (fun y : mixedEmbedding.mixedSpace F => y.1 ⟨v,hv⟩)
-          ((InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply x)
         rw [IsometryEquiv.apply_symm_apply]
-        exact hh
+        exact congrArg (fun y : mixedEmbedding.mixedSpace F => y.1 ⟨v,hv⟩)
+          ((InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply x)
       convert (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).symm.continuous.comp
         ((continuous_apply (⟨v,hv⟩ : {w : InfinitePlace F // w.IsReal})).comp
           (continuous_fst : Continuous (Prod.fst : mixedEmbedding.mixedSpace F → _))) using 1
@@ -233,10 +236,9 @@ set_option backward.isDefEq.respectTransparency false in
           (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x v =
             (InfinitePlace.Completion.isometryEquivComplexOfIsComplex hv').symm (x.2 ⟨v,hv'⟩) := by
         apply (InfinitePlace.Completion.isometryEquivComplexOfIsComplex hv').injective
-        have hh := congrArg (fun y : mixedEmbedding.mixedSpace F => y.2 ⟨v,hv'⟩)
-          ((InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply x)
         rw [IsometryEquiv.apply_symm_apply]
-        exact hh
+        exact congrArg (fun y : mixedEmbedding.mixedSpace F => y.2 ⟨v,hv'⟩)
+          ((InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply x)
       convert (InfinitePlace.Completion.isometryEquivComplexOfIsComplex hv').symm.continuous.comp
         ((continuous_apply (⟨v,hv'⟩ : {w : InfinitePlace F // w.IsComplex})).comp
           (continuous_snd : Continuous (Prod.snd : mixedEmbedding.mixedSpace F → _))) using 1
@@ -256,7 +258,6 @@ private theorem product_haar (F : Type) [Field F] [NumberField F]
       continuous_invFun := (archEquiv F).continuous.prodMap continuous_id }
   letI : SigmaFinite μf := inferInstance
   letI : SigmaFinite (finiteLevelInfiniteHaar F) := inferInstance
-  change (Measure.map e ((finiteLevelInfiniteHaar F).prod μf)).IsAddHaarMeasure
   exact e.isAddHaarMeasure_map _
 
 private theorem abstract_haar {G : Type*} [AddCommGroup G]
@@ -270,14 +271,13 @@ private theorem abstract_haar {G : Type*} [AddCommGroup G]
     ∀ Ω' : Set G, MeasurableSet Ω' → IsAddFundamentalDomain Γ.op Ω' ν →
       Measure.map (QuotientAddGroup.mk' Γ) (ν.restrict Ω) =
       Measure.map (QuotientAddGroup.mk' Γ) (ν.restrict Ω') := by
-  have hm : mQ = (QuotientAddGroup.measurableSpace Γ) := by
-    exact (BorelSpace.measurable_eq (α := G ⧸ Γ)).trans
+  have hm := (BorelSpace.measurable_eq).trans
       (@BorelSpace.measurable_eq _ _ (QuotientAddGroup.measurableSpace Γ)
-        (AddCosetSpace.borelSpace (G := G))).symm
+        (AddCosetSpace.borelSpace)).symm
   cases hm
   letI : BorelSpace (G ⧸ Γ) := AddCosetSpace.borelSpace
   letI : HasAddFundamentalDomain Γ.op G ν := ⟨Ω, hΩ⟩
-  let μ : Measure (G ⧸ Γ) := Measure.map (QuotientAddGroup.mk' Γ) (ν.restrict Ω)
+  let μ := Measure.map (QuotientAddGroup.mk' Γ) (ν.restrict Ω)
   letI : AddQuotientMeasureEqMeasurePreimage ν μ :=
     hΩ.addQuotientMeasureEqMeasurePreimage rfl
   letI : μ.IsAddLeftInvariant :=
@@ -294,7 +294,7 @@ private theorem abstract_haar {G : Type*} [AddCommGroup G]
     simpa [hν] using hp
   have hfin : μ Set.univ ≠ ⊤ := by
     intro ht
-    obtain ⟨n, hn⟩ := (Measure.exists_measure_inter_spanningSets_pos (μ := μ) Set.univ).mpr
+    obtain ⟨n, hn⟩ := (Measure.exists_measure_inter_spanningSets_pos Set.univ).mpr
       (bot_lt_iff_ne_bot.mpr hpos)
     have hnfin : μ (Set.univ ∩ spanningSets μ n) < ⊤ := by
       simpa using measure_spanningSets_lt_top μ n
@@ -311,8 +311,8 @@ private theorem abstract_haar {G : Type*} [AddCommGroup G]
   have hhaar : μ.IsAddHaarMeasure := by
     rw [hscalar]
     apply Measure.IsAddHaarMeasure.smul
-    · simpa only [TopologicalSpace.PositiveCompacts.coe_top] using hpos
-    · simpa only [TopologicalSpace.PositiveCompacts.coe_top] using hfin
+    · simpa using hpos
+    · simpa using hfin
   refine ⟨hhaar, ?_⟩
   intro Ω' _ hΩ'
   exact hΩ.addQuotientMeasure_eq ν hΩ'
@@ -331,29 +331,25 @@ theorem quotient_haar_and_domain_independence
           additiveQuotientMeasureFromDomain F μf Ω' := by
   letI : (additiveProductHaar F μf).IsAddHaarMeasure := product_haar F μf
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
+  let AdeleRing₀ := AdeleRing (𝓞 F) F
   letI : Countable (AdeleRing.principalSubgroup (𝓞 F) F) := by
     have hs : Function.Surjective (fun x : F =>
-        (⟨algebraMap F (AdeleRing (𝓞 F) F) x, ⟨x, rfl⟩⟩ :
+        (⟨algebraMap F (AdeleRing₀) x, ⟨x, rfl⟩⟩ :
           AdeleRing.principalSubgroup (𝓞 F) F)) := by
       rintro ⟨a, x, rfl⟩
       exact ⟨x,rfl⟩
     exact hs.countable
   letI := (additiveAdeleQuotient_compactHausdorff F).1
   letI := (additiveAdeleQuotient_compactHausdorff F).2
-  letI : BorelSpace (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) := ⟨rfl⟩
-  letI : PolishSpace (AdeleRing (𝓞 F) F) := by
-    letI := IsTopologicalAddGroup.rightUniformSpace (AdeleRing (𝓞 F) F)
-    letI := isUniformAddGroup_of_addCommGroup (G := AdeleRing (𝓞 F) F)
-    letI := IsRightUniformAddGroup.completeSpace_of_weaklyLocallyCompactSpace (AdeleRing (𝓞 F) F)
-    letI := IsUniformAddGroup.uniformity_countably_generated (α := AdeleRing (𝓞 F) F)
+  letI : BorelSpace (AdeleRing₀ ⧸ AdeleRing.principalSubgroup (𝓞 F) F) := ⟨rfl⟩
+  letI : PolishSpace (AdeleRing₀) := by
+    letI := IsTopologicalAddGroup.rightUniformSpace (AdeleRing₀)
+    letI := isUniformAddGroup_of_addCommGroup (G := AdeleRing₀)
+    letI := IsRightUniformAddGroup.completeSpace_of_weaklyLocallyCompactSpace (AdeleRing₀)
+    letI := IsUniformAddGroup.uniformity_countably_generated (α := AdeleRing₀)
     infer_instance
   letI : HasAddFundamentalDomain (AdeleRing.principalSubgroup (𝓞 F) F).op
-      (AdeleRing (𝓞 F) F) (additiveProductHaar F μf) := ⟨Ω, hΩ⟩
-  have hMeas : (quotientProbability_quotientMeasurable F) =
-      (Quotient.instMeasurableSpace : MeasurableSpace
-        (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F)) := by
-    exact (@BorelSpace.measurable_eq _ _ (Quotient.instMeasurableSpace)
-      (AddCosetSpace.borelSpace (G := AdeleRing (𝓞 F) F))).symm
+      (AdeleRing₀) (additiveProductHaar F μf) := ⟨Ω, hΩ⟩
   unfold additiveQuotientMeasureFromDomain
   exact
     abstract_haar (AdeleRing.principalSubgroup (𝓞 F) F) (additiveProductHaar F μf) Ω hΩ
@@ -376,7 +372,6 @@ private lemma fd_op {A : Type*} [AddCommGroup A] [MeasurableSpace A] (L : AddSub
     (D : Set A) (μ : Measure A) (h : IsAddFundamentalDomain L D μ) :
     IsAddFundamentalDomain L.op D μ := by
   have hv (g : L.op) (x : A) : g +ᵥ x = (L.equivOp.symm g) +ᵥ x := by
-    change x + AddOpposite.unop g.val = AddOpposite.unop g.val + x
     exact add_comm _ _
   refine ⟨h.nullMeasurableSet, ?_, ?_⟩
   · filter_upwards [h.ae_covers] with x hx
@@ -384,9 +379,8 @@ private lemma fd_op {A : Type*} [AddCommGroup A] [MeasurableSpace A] (L : AddSub
     refine ⟨L.equivOp g, ?_⟩
     simpa only [hv, Equiv.symm_apply_apply] using hg
   · intro a b hab
-    have hh := h.aedisjoint (show L.equivOp.symm a ≠ L.equivOp.symm b from
-      fun he => hab (L.equivOp.symm.injective he))
-    simpa only [← Set.image_vadd, hv] using hh
+    simpa only [← Set.image_vadd, hv] using (h.aedisjoint (show L.equivOp.symm a ≠ L.equivOp.symm b from
+      fun he => hab (L.equivOp.symm.injective he)))
 
 theorem real_domain_exists
     {F : Type} [Field F] [NumberField F]
@@ -456,10 +450,9 @@ set_option backward.isDefEq.respectTransparency false in
           (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x v =
             (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).symm (x.1 ⟨v,hv⟩) := by
         apply (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).injective
-        have hh := congrArg (fun y : mixedEmbedding.mixedSpace F => y.1 ⟨v,hv⟩)
-          ((InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply x)
         rw [IsometryEquiv.apply_symm_apply]
-        exact hh
+        exact congrArg (fun y : mixedEmbedding.mixedSpace F => y.1 ⟨v,hv⟩)
+          ((InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply x)
       convert (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).symm.continuous.comp
         ((continuous_apply (⟨v,hv⟩ : {w : InfinitePlace F // w.IsReal})).comp
           (continuous_fst : Continuous (Prod.fst : mixedEmbedding.mixedSpace F → _))) using 1
@@ -470,10 +463,9 @@ set_option backward.isDefEq.respectTransparency false in
           (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x v =
             (InfinitePlace.Completion.isometryEquivComplexOfIsComplex hv').symm (x.2 ⟨v,hv'⟩) := by
         apply (InfinitePlace.Completion.isometryEquivComplexOfIsComplex hv').injective
-        have hh := congrArg (fun y : mixedEmbedding.mixedSpace F => y.2 ⟨v,hv'⟩)
-          ((InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply x)
         rw [IsometryEquiv.apply_symm_apply]
-        exact hh
+        exact congrArg (fun y : mixedEmbedding.mixedSpace F => y.2 ⟨v,hv'⟩)
+          ((InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply x)
       convert (InfinitePlace.Completion.isometryEquivComplexOfIsComplex hv').symm.continuous.comp
         ((continuous_apply (⟨v,hv'⟩ : {w : InfinitePlace F // w.IsComplex})).comp
           (continuous_snd : Continuous (Prod.snd : mixedEmbedding.mixedSpace F → _))) using 1
@@ -499,13 +491,15 @@ theorem quotient_mass_eq_covolume_mul
         μf.real (K : Set (FiniteAdeleRing (𝓞 F) F))) := by
   letI : MeasurableSpace (InfiniteAdeleRing F) := borel _
   letI : BorelSpace (InfiniteAdeleRing F) := ⟨rfl⟩
-  letI : MeasurableSpace (InfiniteAdeleRing F × FiniteAdeleRing (𝓞 F) F) := borel _
-  letI : BorelSpace (InfiniteAdeleRing F × FiniteAdeleRing (𝓞 F) F) := ⟨rfl⟩
+  let FiniteAdeleRing₀ := FiniteAdeleRing (𝓞 F) F
+  letI : MeasurableSpace (InfiniteAdeleRing F × FiniteAdeleRing₀) := borel _
+  letI : BorelSpace (InfiniteAdeleRing F × FiniteAdeleRing₀) := ⟨rfl⟩
   letI : MeasurableSpace (Quotient (QuotientAddGroup.leftRel (AdeleRing.principalSubgroup (𝓞 F) F))) := borel _
   letI : BorelSpace (Quotient (QuotientAddGroup.leftRel (AdeleRing.principalSubgroup (𝓞 F) F))) := ⟨rfl⟩
-  letI : BorelSpace (FiniteAdeleRing (𝓞 F) F) := ⟨rfl⟩
-  letI : BorelSpace (AdeleRing (𝓞 F) F) := ⟨rfl⟩
-  letI : BorelSpace (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) := ⟨rfl⟩
+  letI : BorelSpace (FiniteAdeleRing₀) := ⟨rfl⟩
+  let AdeleRing₀ := AdeleRing (𝓞 F) F
+  letI : BorelSpace (AdeleRing₀) := ⟨rfl⟩
+  letI : BorelSpace (AdeleRing₀ ⧸ AdeleRing.principalSubgroup (𝓞 F) F) := ⟨rfl⟩
   letI : (finiteLevelInfiniteHaar F).IsAddHaarMeasure :=
     Measure.IsAddHaarMeasure.smul volume
       (ENNReal.ofReal_ne_zero_iff.mpr (PoissonArch.haarScalar_pos F)) ENNReal.ofReal_ne_top
@@ -557,30 +551,30 @@ theorem quotient_mass_eq_covolume_mul
     have hn := ZLattice.covolume_ne_zero (finiteLevelLattice K) (finiteLevelInfiniteHaar F)
     rw [hcovol] at hn
     exact hn (by simp [Measure.real_def, htop])
-  have hKfinite : μf (K : Set (FiniteAdeleRing (𝓞 F) F)) ≠ ⊤ :=
+  have hKfinite : μf (K : Set (FiniteAdeleRing₀)) ≠ ⊤ :=
     hcompact.measure_lt_top.ne
   obtain ⟨hPm, hP⟩ := product_domain_tiles μf K hcompact hopen D hDmeas hD
   rw [(quotient_haar_and_domain_independence F μf Ω hΩmeas hΩ).2
     (finiteLevelProductDomain K D) hPm hP]
   have hπ : Measurable (QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F)) :=
-    (continuous_quotient_mk' : Continuous (QuotientAddGroup.mk : AdeleRing (𝓞 F) F →
-      AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F)).measurable
+    (continuous_quotient_mk' : Continuous (QuotientAddGroup.mk : AdeleRing₀ →
+      AdeleRing₀ ⧸ AdeleRing.principalSubgroup (𝓞 F) F)).measurable
   rw [additiveQuotientMeasureFromDomain, Measure.map_apply hπ MeasurableSet.univ]
   simp only [Set.preimage_univ, Measure.restrict_apply MeasurableSet.univ, Set.univ_inter]
-  have he : Continuous (fun x : mixedEmbedding.mixedSpace F × FiniteAdeleRing (𝓞 F) F =>
-      (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x.1, x.2) : AdeleRing (𝓞 F) F)) :=
+  have he : Continuous (fun x : mixedEmbedding.mixedSpace F × FiniteAdeleRing₀ =>
+      (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x.1, x.2) : AdeleRing₀)) :=
     (massArchEquiv F).symm.continuous.prodMap continuous_id
-  have hem : Measurable (fun x : mixedEmbedding.mixedSpace F × FiniteAdeleRing (𝓞 F) F =>
-      (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x.1, x.2) : AdeleRing (𝓞 F) F)) := he.measurable
+  have hem : Measurable (fun x : mixedEmbedding.mixedSpace F × FiniteAdeleRing₀ =>
+      (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x.1, x.2) : AdeleRing₀)) := he.measurable
   unfold additiveProductHaar
   have hm := Measure.map_apply (μ := (finiteLevelInfiniteHaar F).prod μf) hem hPm
-  change (Measure.map (fun x : mixedEmbedding.mixedSpace F × FiniteAdeleRing (𝓞 F) F =>
-      (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x.1, x.2) : AdeleRing (𝓞 F) F))
+  change (Measure.map (fun x : mixedEmbedding.mixedSpace F × FiniteAdeleRing₀ =>
+      (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x.1, x.2) : AdeleRing₀))
         ((finiteLevelInfiniteHaar F).prod μf)) (finiteLevelProductDomain K D) = _
   rw [hm]
-  have hpre : (fun x : mixedEmbedding.mixedSpace F × FiniteAdeleRing (𝓞 F) F =>
-      (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x.1, x.2) : AdeleRing (𝓞 F) F)) ⁻¹'
-        finiteLevelProductDomain K D = D ×ˢ (K : Set (FiniteAdeleRing (𝓞 F) F)) := by
+  have hpre : (fun x : mixedEmbedding.mixedSpace F × FiniteAdeleRing₀ =>
+      (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x.1, x.2) : AdeleRing₀)) ⁻¹'
+        finiteLevelProductDomain K D = D ×ˢ (K : Set (FiniteAdeleRing₀)) := by
     ext x
     change (InfiniteAdeleRing.ringEquiv_mixedSpace F
       ((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x.1) ∈ D ∧ x.2 ∈ K) ↔
@@ -608,11 +602,15 @@ local instance quotientProbability_adeleMeasurable (F : Type) [Field F] [NumberF
 local instance quotientProbability_quotientMeasurable (F : Type) [Field F] [NumberField F] :
     MeasurableSpace (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) := borel _
 
-def finiteLevelInfiniteHaar (F : Type) [Field F] [NumberField F] :
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+def finiteLevelInfiniteHaar :
     Measure (mixedEmbedding.mixedSpace F) :=
   ENNReal.ofReal (PoissonArch.haarScalar F) • volume
 
-def additiveProductHaar (F : Type) [Field F] [NumberField F]
+def additiveProductHaar
     (μf : Measure (FiniteAdeleRing (𝓞 F) F)) : Measure (AdeleRing (𝓞 F) F) :=
   Measure.map
     (fun x : mixedEmbedding.mixedSpace F × FiniteAdeleRing (𝓞 F) F =>
@@ -620,62 +618,36 @@ def additiveProductHaar (F : Type) [Field F] [NumberField F]
         AdeleRing (𝓞 F) F))
     ((finiteLevelInfiniteHaar F).prod μf)
 
-def additiveQuotientMeasureFromDomain (F : Type) [Field F] [NumberField F]
+def additiveQuotientMeasureFromDomain
     (μf : Measure (FiniteAdeleRing (𝓞 F) F)) (Ω : Set (AdeleRing (𝓞 F) F)) :
     Measure (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) :=
   Measure.map (QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F))
     ((additiveProductHaar F μf).restrict Ω)
+
+end
 
 def finiteLevelProductDomain {F : Type} [Field F] [NumberField F]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (D : Set (mixedEmbedding.mixedSpace F)) : Set (AdeleRing (𝓞 F) F) :=
   {a | InfiniteAdeleRing.ringEquiv_mixedSpace F a.1 ∈ D ∧ a.2 ∈ K}
 
-private theorem quotientProbability_integral_compact (F : Type) [Field F] [NumberField F] :
-    IsCompact (integralFiniteAdeles F : Set (FiniteAdeleRing (𝓞 F) F)) := by
-  let A := fun v : HeightOneSpectrum (𝓞 F) => (v.adicCompletionIntegers F : Set (v.adicCompletion F))
-  let h : (Filter.cofinite : Filter (HeightOneSpectrum (𝓞 F))) ≤ ⊤ := le_top
-  letI (v : HeightOneSpectrum (𝓞 F)) : CompactSpace (A v) :=
-    Valued.integer.properSpace_iff_compactSpace_integer.mp inferInstance
-  have hc : IsCompact (Set.univ : Set (Π v, A v)) := isCompact_univ
-  have he := (RestrictedProduct.continuous_inclusion (R := fun v : HeightOneSpectrum (𝓞 F) => v.adicCompletion F) (A := A) h).comp
-    (RestrictedProduct.homeoTop (R := fun v : HeightOneSpectrum (𝓞 F) => v.adicCompletion F) (A := A)).continuous
-  have hi := hc.image he
-  change IsCompact ((RestrictedProduct.inclusion (fun v => v.adicCompletion F) A h ∘
-    RestrictedProduct.homeoTop) '' Set.univ) at hi
-  have heq : (integralFiniteAdeles F : Set (FiniteAdeleRing (𝓞 F) F)) =
-      (RestrictedProduct.inclusion (fun v => v.adicCompletion F) A h ∘
-        RestrictedProduct.homeoTop) '' Set.univ := by
-    ext x
-    simp only [Set.image_univ, Set.mem_range]
-    constructor
-    · intro hx
-      refine ⟨fun v => ⟨x v, hx v⟩, ?_⟩
-      rfl
-    · rintro ⟨y, rfl⟩ v
-      exact (y v).property
-  rw [heq]
-  exact hi
+private alias quotientProbability_integral_compact := TraceCovolumeHaarCancellation.integral_isCompact
 
-private theorem quotientProbability_integral_open (F : Type) [Field F] [NumberField F] :
-    IsOpen (integralFiniteAdeles F : Set (FiniteAdeleRing (𝓞 F) F)) := by
-  exact RestrictedProduct.isOpen_forall_mem
-    (R := fun v : HeightOneSpectrum (𝓞 F) => v.adicCompletion F)
-    (A := fun v => (v.adicCompletionIntegers F : Set _))
-    (fun v => Valued.isOpen_valuationSubring _)
+private alias quotientProbability_integral_open := TraceCovolumeHaarCancellation.integral_isOpen
+
+section
+
+variable {F : Type} [Field F] [NumberField F]
 
 theorem finiteLevel_exists_real_fundamentalDomain
-    {F : Type} [Field F] [NumberField F]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
     (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F))) :
     ∃ D : Set (mixedEmbedding.mixedSpace F), MeasurableSet D ∧
       IsAddFundamentalDomain (finiteLevelLattice K).toAddSubgroup.op D
-        (finiteLevelInfiniteHaar F) := by
-  exact QuotientProbability.real_domain_exists K hcompact hopen
+        (finiteLevelInfiniteHaar F) := QuotientProbability.real_domain_exists K hcompact hopen
 
 theorem finiteLevel_product_isFundamentalDomain
-    {F : Type} [Field F] [NumberField F]
     (μf : Measure (FiniteAdeleRing (𝓞 F) F)) [μf.IsAddHaarMeasure]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
@@ -685,26 +657,26 @@ theorem finiteLevel_product_isFundamentalDomain
       (finiteLevelInfiniteHaar F)) :
     MeasurableSet (finiteLevelProductDomain K D) ∧
       IsAddFundamentalDomain (AdeleRing.principalSubgroup (𝓞 F) F).op
-        (finiteLevelProductDomain K D) (additiveProductHaar F μf) := by
-  exact QuotientProbability.product_domain_tiles μf K hcompact hopen D hDmeas hD
+        (finiteLevelProductDomain K D) (additiveProductHaar F μf) := by apply @QuotientProbability.product_domain_tiles <;> assumption
 
-theorem additiveProductHaar_exists_fundamentalDomain
-    (F : Type) [Field F] [NumberField F]
-    (μf : Measure (FiniteAdeleRing (𝓞 F) F)) [μf.IsAddHaarMeasure] :
+end
+
+variable (F : Type) [Field F] [NumberField F] (μf : Measure (FiniteAdeleRing (𝓞 F) F))
+    [μf.IsAddHaarMeasure]
+
+theorem additiveProductHaar_exists_fundamentalDomain :
     ∃ Ω : Set (AdeleRing (𝓞 F) F), MeasurableSet Ω ∧
       IsAddFundamentalDomain (AdeleRing.principalSubgroup (𝓞 F) F).op Ω
         (additiveProductHaar F μf) := by
-  have hc : IsCompact (integralFiniteAdeles F : Set (FiniteAdeleRing (𝓞 F) F)) :=
+  have hc :=
     KPAdelicTopology.integralAdeles_isCompact F
-  have ho : IsOpen (integralFiniteAdeles F : Set (FiniteAdeleRing (𝓞 F) F)) :=
+  have ho :=
     KPAdelicTopology.integralAdeles_isOpen F
   obtain ⟨D, hDm, hD⟩ := finiteLevel_exists_real_fundamentalDomain (integralFiniteAdeles F) hc ho
   exact ⟨finiteLevelProductDomain (integralFiniteAdeles F) D,
     finiteLevel_product_isFundamentalDomain μf (integralFiniteAdeles F) hc ho D hDm hD⟩
 
 theorem additiveQuotientMeasureFromDomain_haar_probability
-    (F : Type) [Field F] [NumberField F]
-    (μf : Measure (FiniteAdeleRing (𝓞 F) F)) [μf.IsAddHaarMeasure]
     (hnorm : μf (integralFiniteAdeles F : Set (FiniteAdeleRing (𝓞 F) F)) =
       ENNReal.ofReal (1 / Real.sqrt |(NumberField.discr F : ℝ)|))
     (Ω : Set (AdeleRing (𝓞 F) F)) (hΩmeas : MeasurableSet Ω)
@@ -763,13 +735,13 @@ theorem finiteLevel_torus_exists_haar_probability
       QuotientAddGroup.continuous_mk (by
         intro z w hw
         rw [QuotientAddGroup.mk_add, (QuotientAddGroup.eq_zero_iff w).mpr hw, add_zero])
-    simpa only [Set.range_eq_univ.mpr QuotientAddGroup.mk_surjective] using hp
+    simpa using hp
   letI := hcomp
   letI : DiscreteTopology L := inferInstanceAs (DiscreteTopology (finiteLevelLattice K))
   letI : IsClosed (L : Set (mixedEmbedding.mixedSpace F)) :=
     AddSubgroup.isClosed_of_discrete
   letI : BorelSpace (mixedEmbedding.mixedSpace F ⧸ L) := AddCosetSpace.borelSpace
-  let ν : Measure (mixedEmbedding.mixedSpace F ⧸ L) :=
+  let ν :=
     Measure.addHaarMeasure (⊤ : PositiveCompacts (mixedEmbedding.mixedSpace F ⧸ L))
   refine ⟨ν, inferInstance, ?_⟩
   exact ⟨by simpa only [ν, PositiveCompacts.coe_top] using
@@ -817,7 +789,7 @@ theorem finiteLevel_quotient_integral_torus_probability
   obtain ⟨e, he⟩ := finiteLevel_torus_homeomorph K hcompact hopen
   let gg : R → ℂ := Quotient.lift g (by
     intro a b hab
-    have hab' : -a + b ∈ finiteLevelImage K := QuotientAddGroup.leftRel_apply.mp hab
+    have hab' := QuotientAddGroup.leftRel_apply.mp hab
     have hh := hinv a (-a + b) hab'
     simpa only [add_neg_cancel_left] using hh.symm)
   have hgg : Continuous gg := by

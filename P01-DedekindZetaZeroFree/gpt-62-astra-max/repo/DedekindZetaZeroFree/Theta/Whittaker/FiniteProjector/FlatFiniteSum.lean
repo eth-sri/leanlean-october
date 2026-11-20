@@ -22,9 +22,9 @@ set_option maxRecDepth 4000
     ⟨U.toOpenSubgroup ⊓ V.toOpenSubgroup, U.isCompact.inter_right V.toOpenSubgroup.isClosed⟩
   refine ⟨hf.1.add hg.1, fun a => (hf.2.1 a).add (hg.2.1 a), W, ?_⟩
   intro a u hu
-  have hwu : u ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U :=
+  have hwu :=
     Subgroup.map_mono inf_le_left hu
-  have hwv : u ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ V :=
+  have hwv :=
     Subgroup.map_mono inf_le_right hu
   simp only [Pi.add_apply, hU a u hwu, hV a u hwv]
 
@@ -89,12 +89,14 @@ def zero (K : Subgroup (G F ζ hζ)) : Flat F ζ hζ K :=
     rw [Submodule.mem_bot] at hv ⊢
     rw [hv, map_zero])⟩
 
-def sum {K : Subgroup (G F ζ hζ)} {I : Type} (s : Finset I)
-    (c : I → ℂ) (f : I → Flat F ζ hζ K) : Flat F ζ hζ K :=
+section
+
+variable {K : Subgroup (G F ζ hζ)} {I : Type} (s : Finset I) (c : I → ℂ) (f : I → Flat F ζ hζ K)
+
+def sum : Flat F ζ hζ K :=
   s.toList.foldr (fun i a => add F ζ hζ (smul F ζ hζ (c i) (f i)) a) (zero F ζ hζ K)
 
-@[simp] theorem sum_val {K : Subgroup (G F ζ hζ)} {I : Type} (s : Finset I)
-    (c : I → ℂ) (f : I → Flat F ζ hζ K) (z : ℂ) (g : G F ζ hζ) :
+@[simp] theorem sum_val (z : ℂ) (g : G F ζ hζ) :
     (sum F ζ hζ s c f).val z g = ∑ i ∈ s, c i * (f i).val z g := by
   unfold sum
   have hl (l : List I) :
@@ -106,6 +108,8 @@ def sum {K : Subgroup (G F ζ hζ)} {I : Type} (s : Finset I)
         Pi.add_apply, Pi.smul_apply, smul_eq_mul] using congrArg (fun a => c i * (f i).val z g + a) ih
   rw [hl]
   exact Finset.sum_map_toList _ _
+
+end
 
 theorem translate_lift (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (f : Flat F ζ hζ K) (q : KPFinitePlace F)
@@ -121,9 +125,9 @@ theorem translate_lift (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ
     F ζ hζ K hK f q a
   refine ⟨sum F ζ hζ Finset.univ (fun _ => 1) w,n,b,w,he,?_,?_⟩
   · intro z g
-    simp only [sum_val, one_mul]
+    simp
   · intro g
-    simpa only [sum_val, one_mul, zero_mul, Complex.exp_zero] using (he 0 g).symm
+    simpa using (he 0 g).symm
 
 end DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum
 

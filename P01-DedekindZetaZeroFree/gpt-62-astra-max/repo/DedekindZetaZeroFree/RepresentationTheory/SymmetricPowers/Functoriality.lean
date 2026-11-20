@@ -34,7 +34,9 @@ section CommSemiring
 variable [CommSemiring R] [Monoid G]
 variable [AddCommMonoid M] [Module R M]
 
-noncomputable def symmetricPower (ρ : Representation R G M) (d : ℕ) :
+variable (ρ : Representation R G M) (d : ℕ)
+
+noncomputable def symmetricPower :
     Representation R G (Sym[R]^d M) where
   toFun g := SymmetricPower.map (ι := Fin d) (ρ g)
   map_one' := by
@@ -45,13 +47,13 @@ noncomputable def symmetricPower (ρ : Representation R G M) (d : ℕ) :
       (SymmetricPower.map_comp (ι := Fin d) (ρ h) (ρ g))
 
 @[simp]
-theorem symmetricPower_apply (ρ : Representation R G M) (d : ℕ) (g : G) :
+theorem symmetricPower_apply (g : G) :
     ρ.symmetricPower d g = SymmetricPower.map (ι := Fin d) (ρ g) :=
   (rfl)
 
-theorem symmetricPower_apply_tprod (ρ : Representation R G M) (d : ℕ) (g : G) (m : Fin d → M) :
+theorem symmetricPower_apply_tprod (g : G) (m : Fin d → M) :
     ρ.symmetricPower d g (⨂ₛ[R] i, m i) = ⨂ₛ[R] i, ρ g (m i) := by
-  rw [symmetricPower_apply, SymmetricPower.map_tprod]
+  simp [symmetricPower_apply]
 
 end CommSemiring
 

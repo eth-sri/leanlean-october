@@ -21,8 +21,9 @@ private theorem torus_delta_pos (t : KPGlobalTorusFunctionData.E F ζ hζ) :
   NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr
     (Units.ne_zero (KPGlobalTorusFunctionData.delta F ζ hζ t)))
 
-theorem normalizedTorusProfile_R_invariant (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (r : R F ζ hζ)
+variable (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K)
+
+theorem normalizedTorusProfile_R_invariant (r : R F ζ hζ)
     (t : KPGlobalTorusFunctionData.E F ζ hζ) (k : K) :
     normalizedTorusProfile F ζ hζ K f (r.val * t) k =
       normalizedTorusProfile F ζ hζ K f t k := by
@@ -36,14 +37,9 @@ theorem normalizedTorusProfile_R_invariant (K : Subgroup (G F ζ hζ))
   exact mul_div_mul_left _ _ (ne_of_gt (Real.rpow_pos_of_pos
     (torus_delta_pos F ζ hζ r.val) _))
 
-theorem normalizedTorusProfile_continuous (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) :
+theorem normalizedTorusProfile_continuous :
     Continuous (fun p : KPGlobalTorusFunctionData.E F ζ hζ × K =>
       normalizedTorusProfile F ζ hζ K f p.1 p.2) := by
-  have hn : Continuous (fun t : KPGlobalTorusFunctionData.E F ζ hζ =>
-      ((KPGlobalCenterRationalCharacter.nu F ζ hζ t : NNReal) : ℝ)) :=
-    NNReal.continuous_coe.comp (Units.continuous_val.comp
-      (KPGlobalCenterRationalCharacter.nu_continuous F ζ hζ))
   have hd : Continuous (fun t : KPGlobalTorusFunctionData.E F ζ hζ =>
       ((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) := by
     have he : (fun t : KPGlobalTorusFunctionData.E F ζ hζ =>
@@ -57,7 +53,8 @@ theorem normalizedTorusProfile_continuous (K : Subgroup (G F ζ hζ))
       rw [← Real.rpow_mul (torus_delta_pos F ζ hζ t).le]
       norm_num
     rw [he]
-    exact hn.rpow_const (fun t => Or.inl (ne_of_gt
+    exact (NNReal.continuous_coe.comp (Units.continuous_val.comp
+      (KPGlobalCenterRationalCharacter.nu_continuous F ζ hζ))).rpow_const (fun t => Or.inl (ne_of_gt
       (KPGlobalCenterRationalCharacter.nu_positive F ζ hζ t)))
   unfold normalizedTorusProfile
   apply Continuous.div
@@ -69,7 +66,7 @@ theorem normalizedTorusProfile_continuous (K : Subgroup (G F ζ hζ))
   · intro p
     exact ne_of_gt (Real.rpow_pos_of_pos (torus_delta_pos F ζ hζ p.1) _)
 
-theorem norm_val_torus_compact (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K)
+theorem norm_val_torus_compact
     (s : ℂ) (t : KPGlobalTorusFunctionData.E F ζ hζ) (k : K) :
     ‖f.val s (t.val * k.val)‖ =
       (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) ^

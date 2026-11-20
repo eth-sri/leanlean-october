@@ -11,15 +11,15 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.KPContActualChamberMeanZeroAdapter
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
-abbrev V : Set ℂ := KPContActualChamberNormalSeries.V
-abbrev level := KPContActualAllCuspSource.level F ζ hζ C R P H U
-abbrev Cusps := KPContActualAllCuspSource.Cusps F ζ hζ C R P H U
+abbrev V := @DedekindZetaZeroFree.KPContActualChamberNormalSeries.V
+abbrev level := @DedekindZetaZeroFree.KPContActualAllCuspSource.level
+abbrev Cusps := @DedekindZetaZeroFree.KPContActualAllCuspSource.Cusps
 abbrev d := KPCuspLogShape.dimension F
 
 variable (a : Cusps F ζ hζ C R P H U)
@@ -36,8 +36,8 @@ abbrev tail (T : ℝ) : Set (KPCuspCharts.Coordinates F) :=
   KPContActualChamberOutgoingAdapter.tail F T
 
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable (f : ℂ → S)
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (f : ℂ → S)
 
 def meanZeroJetSheet (k : ℕ) (s : ℂ) (t : ℝ) (x : KPCuspCharts.Horizontal F)
     (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F) : ℂ :=

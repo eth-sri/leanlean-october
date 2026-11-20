@@ -10,7 +10,7 @@ noncomputable section
 open scoped Classical NumberField
 open IsDedekindDomain LocalFiniteSums
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 def rawDeletionSet {A : SArithmeticData F}
     (U : AllRowEuler.InitialSeparation.RawFrequency A) :
@@ -21,7 +21,7 @@ def rawDeletionSet {A : SArithmeticData F}
 section Raw
 
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η' : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {η' : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 private theorem rawDeletionSet_finite
     (U : AllRowEuler.InitialSeparation.RawFrequency A) :
@@ -29,23 +29,18 @@ private theorem rawDeletionSet_finite
   unfold rawDeletionSet
   apply Set.Finite.union
   · exact A.Sf.finite_toSet
-  · let s : Finset (Ideal (𝓞 F)) := (UniqueFactorizationMonoid.normalizedFactors U.ideal.val).toFinset
-    have hinj : Function.Injective (fun v : HeightOneSpectrum (𝓞 F) => v.asIdeal) :=
-      HeightOneSpectrum.asIdeal_injective
-    have hsub : {v : HeightOneSpectrum (𝓞 F) | U.ideal.val ≤ v.asIdeal} ⊆
-        (fun v : HeightOneSpectrum (𝓞 F) => v.asIdeal) ⁻¹' (↑s : Set (Ideal (𝓞 F))) := by
-      intro v hv
-      simp only [Set.mem_preimage, Finset.mem_coe]
-      exact Multiset.mem_toFinset.mpr
-        ((Ideal.mem_normalizedFactors_iff U.ideal.property.1).mpr ⟨v.isPrime, hv⟩)
-    exact (s.finite_toSet.preimage hinj.injOn).subset hsub
+  · let s := (UniqueFactorizationMonoid.normalizedFactors U.ideal.val).toFinset
+    refine (s.finite_toSet.preimage HeightOneSpectrum.asIdeal_injective.injOn).subset ?_
+    intro v hv
+    simp only [Set.mem_preimage, Finset.mem_coe]
+    exact Multiset.mem_toFinset.mpr
+      ((Ideal.mem_normalizedFactors_iff U.ideal.property.1).mpr ⟨v.isPrime, hv⟩)
 
 private theorem raw_coefficients_zero_at_frequency_primes
     (C : A.GeneralArithmeticContext σ η' hS)
     (U : AllRowEuler.InitialSeparation.RawFrequency A)
     (p : ExteriorPrime A) (hp : (U.j p).val ≠ 0) :
-    AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U (primeIdeal p) = 0 ∧
-      AllRowEuler.InitialSeparation.minusExteriorCoefficient σ η' U (primeIdeal p) = 0 := by
+    AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U (primeIdeal p) = 0 := by
   letI : Nontrivial (A.R ⧸ A.extendIdeal (primeIdeal p)) :=
     Ideal.Quotient.nontrivial_iff.mpr
       (A.residue_extendIdeal_ne_top (primeIdeal p) p.val.isPrime.ne_top)
@@ -58,19 +53,16 @@ private theorem raw_coefficients_zero_at_frequency_primes
       hg, zero_pow hp, zero_mul]
   have hchi : chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u) = 0 := by
     rw [hu, MulChar.map_zero]
-  refine ⟨?_, ?_⟩
-  · exact hchi
-  · rw [AllRowEuler.InitialSeparation.minusExteriorCoefficient]
-    rw [show AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U (primeIdeal p) =
-      chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u) from rfl,
-      hchi, star_zero, mul_zero]
+  exact hchi
+
+local notation "FinitePlace" => HeightOneSpectrum (𝓞 F)
 
 private theorem raw_exterior_prime_identification
     (C : A.GeneralArithmeticContext σ η' hS)
     (U : AllRowEuler.InitialSeparation.RawFrequency A)
     (χ ψ : Detector.PrimitiveFrequencyCharacter F)
     (hχ : Detector.IsKummerFrequencyCharacter F A.zeta12 σ
-      (A.Sf : Set (HeightOneSpectrum (𝓞 F)))
+      (A.Sf : Set FinitePlace)
       (Units.mk0 (U.u : F) (by exact_mod_cast U.generates.1)) χ)
     (hψ : Detector.conductorSupportedOn F (rawDeletionSet U) ψ)
     (htwist : ∀ J : Ideal (𝓞 F), J ≠ ⊥ →
@@ -87,7 +79,7 @@ private theorem raw_exterior_prime_identification
   intro p hj
   have hv : p.val ∉ A.Sf :=
     ArithmeticContext.actual_exterior_prime_outside A (primeIdeal p) p.val rfl
-  have he : idealPrimeExponent p.val.asIdeal U.ideal.val = 0 := hj
+  have he := hj
   have hnot : ¬ U.ideal.val ≤ p.val.asIdeal := by
     intro hle
     have hm := (Ideal.mem_normalizedFactors_iff U.ideal.property.1).mpr
@@ -140,7 +132,7 @@ private theorem raw_exterior_prime_identification
   obtain ⟨k, hk, hkchar, hkred⟩ :=
     A.sexticResidueFamily_normalized.2.1 (primeIdeal p) p.val rfl u
   rw [A.exteriorResidue_card, hu] at hkred
-  have hkj : k = j.val :=
+  have hkj :=
     (A.exterior_sextic_primitive (primeIdeal p) p.val.isPrime.ne_top).pow_inj hk j.isLt (by
       have hh := hkred.trans hred.symm
       simpa only [z, ← map_pow, pow_mul] using hh)
@@ -167,38 +159,33 @@ private theorem raw_multiplicative_mask_identification
     (hprime : ∀ p : ExteriorPrime A,
       f p.val.asIdeal = if (U.j p).val = 0 then χ.character p.val.asIdeal else 0) :
     ∀ I : Ideal (𝓞 F), f I = Detector.deletedPrimitiveIdealCoefficient F χ
-      ((A.Sf : Set (HeightOneSpectrum (𝓞 F))) ∪ {v | U.ideal.val ≤ v.asIdeal}) I := by
+      ((A.Sf : Set FinitePlace) ∪ {v | U.ideal.val ≤ v.asIdeal}) I := by
   classical
-  let D : Set (HeightOneSpectrum (𝓞 F)) :=
-    (A.Sf : Set (HeightOneSpectrum (𝓞 F))) ∪ {v | U.ideal.val ≤ v.asIdeal}
-  let g : Ideal (𝓞 F) → ℂ := Detector.deletedPrimitiveIdealCoefficient F χ D
-  have hdelete (v : HeightOneSpectrum (𝓞 F)) :
+  let D : Set FinitePlace :=
+    (A.Sf : Set FinitePlace) ∪ {v | U.ideal.val ≤ v.asIdeal}
+  let g := Detector.deletedPrimitiveIdealCoefficient F χ D
+  have hdelete (v : FinitePlace) :
       (∃ w ∈ D, v.asIdeal ≤ w.asIdeal) ↔ v ∈ D := by
     constructor
     · rintro ⟨w, hw, hvw⟩
-      have he : v = w := HeightOneSpectrum.ext
-        (v.isMaximal.eq_of_le w.isPrime.ne_top hvw)
-      simpa [he] using hw
+      simpa [(HeightOneSpectrum.ext
+        (v.isMaximal.eq_of_le w.isPrime.ne_top hvw))] using hw
     · intro hv
       exact ⟨v, hv, le_rfl⟩
-  have hgprime (v : HeightOneSpectrum (𝓞 F)) :
+  have hgprime (v : FinitePlace) :
       g v.asIdeal = if v ∈ D then 0 else χ.character v.asIdeal := by
     simp only [g, Detector.deletedPrimitiveIdealCoefficient, hdelete]
-  have hexterior (v : HeightOneSpectrum (𝓞 F)) :
+  have hexterior (v : FinitePlace) :
       v.asIdeal ⊔ A.cS = ⊤ ↔ v ∉ A.Sf := by
     constructor
     · intro h hv
-      have hc : A.cS ≤ v.asIdeal :=
-        v.isPrime.prod_le.mpr ⟨v, hv, le_rfl⟩
-      exact v.isPrime.ne_top (top_le_iff.mp (h ▸ sup_le le_rfl hc))
+      exact v.isPrime.ne_top (top_le_iff.mp (h ▸ sup_le le_rfl (v.isPrime.prod_le.mpr ⟨v, hv, le_rfl⟩)))
     · intro hv
       by_contra hn
-      have he : v.asIdeal = v.asIdeal ⊔ A.cS :=
-        v.isMaximal.eq_of_le hn le_sup_left
-      have hc : A.cS ≤ v.asIdeal := le_sup_right.trans_eq he.symm
+      have hc := le_sup_right.trans_eq (v.isMaximal.eq_of_le hn le_sup_left).symm
       obtain ⟨w, hw, hwv⟩ := v.isPrime.prod_le.mp hc
       exact hv ((HeightOneSpectrum.ext (w.isMaximal.eq_of_le v.isPrime.ne_top hwv)) ▸ hw)
-  have hprimes (v : HeightOneSpectrum (𝓞 F)) : f v.asIdeal = g v.asIdeal := by
+  have hprimes (v : FinitePlace) : f v.asIdeal = g v.asIdeal := by
     by_cases hv : v ∈ A.Sf
     · rw [houtside v.asIdeal (by simpa [v.ne_bot] using (hexterior v).not.mpr (by simpa using hv)),
         hgprime]
@@ -243,7 +230,7 @@ private theorem raw_multiplicative_mask_identification
     simp only [g, Detector.deletedPrimitiveIdealCoefficient, if_neg hd,
       RayClassCharacter.map_top']
   · intro J p hJ hp hInd
-    let v : HeightOneSpectrum (𝓞 F) :=
+    let v : FinitePlace :=
       ⟨p, Ideal.isPrime_of_prime (UniqueFactorizationMonoid.irreducible_iff_prime.mp hp),
         (UniqueFactorizationMonoid.irreducible_iff_prime.mp hp).ne_zero⟩
     change f (p * J) = g (p * J)
@@ -263,30 +250,21 @@ private theorem exterior_mul_iff (I J : Ideal (𝓞 F)) :
       (I ≠ ⊥ ∧ I ⊔ A.cS = ⊤) ∧ (J ≠ ⊥ ∧ J ⊔ A.cS = ⊤) := by
   constructor
   · intro h
-    have hI : I ⊔ A.cS = ⊤ := top_unique (by
-      rw [← h.2]; exact sup_le_sup_right Ideal.mul_le_left _)
-    have hJ : J ⊔ A.cS = ⊤ := top_unique (by
-      rw [← h.2]; exact sup_le_sup_right Ideal.mul_le_right _)
-    exact ⟨⟨left_ne_zero_of_mul h.1, hI⟩, right_ne_zero_of_mul h.1, hJ⟩
+    exact ⟨⟨left_ne_zero_of_mul h.1, (top_unique (by
+      rw [← h.2]; exact sup_le_sup_right Ideal.mul_le_left _))⟩, right_ne_zero_of_mul h.1, (top_unique (by
+      rw [← h.2]; exact sup_le_sup_right Ideal.mul_le_right _))⟩
   · rintro ⟨hI, hJ⟩
     refine ⟨mul_ne_zero hI.1 hJ.1, ?_⟩
     rw [Ideal.mul_sup_eq_of_coprime_left hI.2]
     exact hJ.2
 
+alias MaskedPrimitiveInducers.exterior_mul_iff := exterior_mul_iff
+
 private theorem raw_plus_ext_mul (σ : F →+* ℂ)
     (U : AllRowEuler.InitialSeparation.RawFrequency A) (I J : A.Exterior) :
     AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U (ExteriorIdealEuler.mul I J) =
       AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U I *
-        AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U J := by
-  have hb : ∀ K : A.Exterior,
-      AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U K =
-        σ (A.sexticResidue K U.u) := fun K =>
-    AllRowEuler.UnitCovariance.residueCoefficient_eq (σ := σ) K U.u
-  rw [hb, hb, hb,
-    show A.sexticResidue (ExteriorIdealEuler.mul I J) U.u =
-      A.sexticResidue I U.u * A.sexticResidue J U.u from
-      A.sexticResidueFamily_normalized.2.2 I J _ rfl U.u,
-    map_mul]
+        AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U J := by apply @DedekindZetaZeroFree.AllRowEuler.InitialSeparation.AllRowEulerFactorization.plus_ext_mul_raw <;> assumption
 
 private theorem raw_plus_mul (σ : F →+* ℂ)
     (U : AllRowEuler.InitialSeparation.RawFrequency A) (I J : Ideal (𝓞 F)) :
@@ -300,6 +278,8 @@ private theorem raw_plus_mul (σ : F →+* ℂ)
     · rw [dif_neg (fun h => hJ (he.mp h).2), dif_pos hI, dif_neg hJ, mul_zero]
   · rw [dif_neg (fun h => hI (he.mp h).1), dif_neg hI, zero_mul]
 
+alias MaskedPrimitiveInducers.raw_plus_mul := raw_plus_mul
+
 private theorem raw_minus_mul (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)
     (U : AllRowEuler.InitialSeparation.RawFrequency A) (I J : Ideal (𝓞 F)) :
     rawMinusCoefficient σ η U (I * J) =
@@ -311,8 +291,9 @@ private theorem raw_minus_mul (σ : F →+* ℂ) (η : RayClassCharacter F A.mod
 private theorem raw_plus_one (σ : F →+* ℂ)
     (U : AllRowEuler.InitialSeparation.RawFrequency A) :
     rawPlusCoefficient σ U ⊤ = 1 := by
-  have h := (AllRowEuler.InitialSeparation.raw_plus_isCoefficient (σ := σ) U).map_one
-  simpa [rawPlusCoefficient, ExteriorIdealEuler.one] using h
+  simpa [rawPlusCoefficient, ExteriorIdealEuler.one] using ((AllRowEuler.InitialSeparation.raw_plus_isCoefficient U).map_one)
+
+alias MaskedPrimitiveInducers.raw_plus_one := raw_plus_one
 
 private theorem raw_minus_one (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)
     (U : AllRowEuler.InitialSeparation.RawFrequency A) :
@@ -341,7 +322,7 @@ private theorem raw_plus_prime_value
     rw [dif_pos ⟨p.val.ne_bot, p.property⟩]
     exact h
   · rw [if_neg hp]
-    have h := (raw_coefficients_zero_at_frequency_primes C U p hp).1
+    have h := (raw_coefficients_zero_at_frequency_primes C U p hp)
     unfold rawPlusCoefficient
     rw [dif_pos ⟨p.val.ne_bot, p.property⟩]
     exact h
@@ -406,7 +387,7 @@ theorem actual_raw_masked_inducers
         (rawDeletionSet (U u)) (Set.subset_union_left) χ hχS 6 (by decide) hχord
     refine ⟨χ, ψ, ?_, ?_⟩
     · intro I
-      have hmask := raw_multiplicative_mask_identification (A := R.A) (U u) χ
+      have hmask := raw_multiplicative_mask_identification (U u) χ
         (rawPlusCoefficient R.σ (U u)) (raw_plus_one R.σ (U u))
         (raw_plus_mul R.σ (U u))
         (fun I hI => by simp only [rawPlusCoefficient]; exact dif_neg hI)
@@ -417,11 +398,11 @@ theorem actual_raw_masked_inducers
         unfold rawPlusCoefficient
         rw [dif_pos I.property]
         exact congrArg (AllRowEuler.InitialSeparation.plusExteriorCoefficient R.σ (U u))
-          (Subtype.ext (rfl : (⟨I.val, I.property⟩ : R.A.Exterior).val = I.val))
+          (Subtype.ext rfl)
       rw [← hbridge]
       simpa [rawDeletionSet] using hmask
     · intro I
-      have hmask := raw_multiplicative_mask_identification (A := R.A) (U u) ψ
+      have hmask := raw_multiplicative_mask_identification (U u) ψ
         (rawMinusCoefficient R.σ R.target (U u)) (raw_minus_one R.σ R.target (U u))
         (raw_minus_mul R.σ R.target (U u))
         (fun I hI => by
@@ -439,7 +420,7 @@ theorem actual_raw_masked_inducers
             unfold rawPlusCoefficient
             rw [dif_pos I.property]
             exact congrArg (AllRowEuler.InitialSeparation.plusExteriorCoefficient R.σ (U u))
-              (Subtype.ext (rfl : (⟨I.val, I.property⟩ : R.A.Exterior).val = I.val))]
+              (Subtype.ext rfl)]
         rfl
       rw [← hbridge]
       simpa [rawDeletionSet] using hmask

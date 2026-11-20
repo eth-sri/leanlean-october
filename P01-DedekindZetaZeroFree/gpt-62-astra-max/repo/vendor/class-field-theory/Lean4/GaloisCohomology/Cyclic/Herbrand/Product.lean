@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -33,8 +31,8 @@ open CyclicCohomology.ProfiniteCohomology.Herbrand
 universe uG uι uA
 
 variable {G : Type uG} [Group G] [Fintype G]
-variable {ι : Type uι} [Fintype ι]
-variable (A : ι → Type uA)
+    {ι : Type uι} [Fintype ι]
+    (A : ι → Type uA)
 variable [∀ i, CommGroup (A i)]
 variable [∀ i, MulDistribMulAction G (A i)]
 
@@ -59,27 +57,26 @@ theorem herbrandQuotient_pi
           (G := G) A σ).symm.toEquiv
     herbrandQuotient (G := G) (A := ∀ i, A i) σ =
       ∏ i, herbrandQuotient (G := G) (A := A i) σ := by
-  let : Finite (HerbrandH0 G (∀ i, A i)) :=
+  let :=
     Finite.of_equiv
       (∀ i, HerbrandH0 G (A i))
-      (herbrandH0PiEquiv (G := G) A).symm.toEquiv
-  let : Finite (HerbrandHMinusOne G (∀ i, A i) σ) :=
+      (herbrandH0PiEquiv A).symm.toEquiv
+  let :=
     Finite.of_equiv
       (∀ i, HerbrandHMinusOne G (A i) σ)
       (herbrandHMinusOnePiEquiv
-        (G := G) A σ).symm.toEquiv
+         A σ).symm.toEquiv
   unfold herbrandQuotient
   rw [Nat.card_congr
-      (herbrandH0PiEquiv (G := G) A).toEquiv,
+      (herbrandH0PiEquiv A).toEquiv,
     Nat.card_congr
       (herbrandHMinusOnePiEquiv
-        (G := G) A σ).toEquiv,
+         A σ).toEquiv,
     Nat.card_pi, Nat.card_pi]
   simp only [Nat.cast_prod]
-  simpa only [Finset.mem_univ, Finset.prod_const_one,
-    Finset.prod_filter, true_and] using
+  simpa using
     (Finset.prod_div_distrib
-      (s := Finset.univ)
+
       (fun i : ι ↦
         (Nat.card (HerbrandH0 G (A i)) : ℚ))
       (fun i : ι ↦

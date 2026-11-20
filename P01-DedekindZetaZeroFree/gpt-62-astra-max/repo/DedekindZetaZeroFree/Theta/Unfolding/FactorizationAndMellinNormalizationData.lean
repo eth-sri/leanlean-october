@@ -20,16 +20,13 @@ namespace DedekindZetaZeroFree.MomentSources
 open scoped NumberField Classical Topology ENNReal
 open NumberField MeasureTheory ValuativeRel
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 structure TraceHaarTransport where
-  signedUniformizer : SignedUniformizerTransport R
   finiteHaar : ∀ p : KPFinitePlace F, Measure (p.adicCompletion F)
   finiteHaar_add : ∀ p, (finiteHaar p).IsAddHaarMeasure
   finite_mass : ∀ p, finiteHaar p {x | ‖x‖ ≤ 1} = ENNReal.ofReal (PoissonS.integerVolume F p)
-  complexHaar : Measure ℂ
-  complex_mass : complexHaar = (2 : ℝ≥0∞) • KPCplxCharacterHaar.euclideanArea
   finiteMultHaar : ∀ p : R.A.Sf, Measure (p.val.adicCompletion F)ˣ
   finiteMultHaar_isHaar : ∀ p, (finiteMultHaar p).IsHaarMeasure
   angularHaar : InfinitePlace F → Measure Circle
@@ -165,11 +162,6 @@ structure ResidualConstantTerm (Q : AdmissibleFlatSources R) (T : Realization R 
       (Real.rpow (‖(z : w.Completion)‖ ^ 2) (1 / 3) : ℂ) * upper R Q.dq (T.theta v) g
 
 structure MellinGaussian (N : TraceHaarTransport R) (Q : AdmissibleFlatSources R) (P : Packet R Q) : Prop where
-
-  C₀_exact : P.C₀ =
-    (∏ p : R.A.Sf, (N.finiteMultHaar p (P.cutoff p : Set (p.val.adicCompletion F)ˣ)).toReal) *
-    (∏ w : InfinitePlace F, (N.angularHaar w Set.univ).toReal) *
-    ∏ w : InfinitePlace F, (2 / P.scale w ^ 2)
   positive_sheet_integrable : ∀ x : ThetaProfileHaarSheets.PositiveAxis,
     letI : MeasurableSpace R.A.G1 := borel _;
     Integrable (fun z : R.A.G1 =>
@@ -178,13 +170,6 @@ structure MellinGaussian (N : TraceHaarTransport R) (Q : AdmissibleFlatSources R
         ∏ w : InfinitePlace F, ‖(y.1 w : w.Completion)‖ ^ 2 *
           KThird (P.scale w * Real.sqrt (‖(y.1 w : w.Completion)‖ ^ 2))) R.probe.domain.measure
   C₀_pos : 0 < P.C₀
-  mellin_integrable : ∀ s : ℂ, -(5 / 6 : ℝ) < s.re → Integrable
-    (fun x : ThetaProfileHaarSheets.PositiveAxis => (P.positiveSheet x : ℂ) * (x.val : ℂ) ^ s)
-    ThetaProfileHaarSheets.positiveHaar
-  mellin : ∀ s : ℂ, -(5 / 6 : ℝ) < s.re →
-    (∫ x : ThetaProfileHaarSheets.PositiveAxis, (P.positiveSheet x : ℂ) * (x.val : ℂ) ^ s
-      ∂ThetaProfileHaarSheets.positiveHaar) = (P.C₀ : ℂ) * (P.A₀ : ℂ) ^ s *
-        (Complex.Gamma (s + 5 / 6) * Complex.Gamma (s + 7 / 6)) ^ Fintype.card (InfinitePlace F)
   smoothing_integrable : ∀ x : ThetaProfileHaarSheets.PositiveAxis, Integrable
     (fun t : ThetaProfileHaarSheets.PositiveAxis => P.kernel t.val *
       (P.positiveSheet ⟨x.val * t.val, mul_pos x.property t.property⟩ : ℂ)) ThetaProfileHaarSheets.positiveHaar

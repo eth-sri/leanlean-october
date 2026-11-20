@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory
 open scoped Classical Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 def radialSheetIntegrand (R : PrincipalMellin.ActualRecipe S η)
     {N : TraceHaarTransport R} (C : JointDigitDescentSources R N)

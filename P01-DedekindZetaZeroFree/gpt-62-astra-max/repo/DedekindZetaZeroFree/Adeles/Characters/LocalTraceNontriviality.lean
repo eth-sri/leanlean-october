@@ -15,7 +15,11 @@ set_option maxHeartbeats 3000000
 
 variable (F : Type) [Field F] [NumberField F]
 
-def actualQuotientCircle (ψ : ContinuousAddChar (KPAdditiveQuotient F)) :
+section
+
+variable (ψ : ContinuousAddChar (KPAdditiveQuotient F))
+
+def actualQuotientCircle :
     AddChar (KPAdditiveQuotient F) Circle where
   toFun := characterCircle F ψ
   map_zero_eq_one' := by apply Subtype.ext; exact ψ.toAddChar.map_zero_eq_one
@@ -24,8 +28,7 @@ def actualQuotientCircle (ψ : ContinuousAddChar (KPAdditiveQuotient F)) :
     apply Subtype.ext
     exact ψ.toAddChar.map_add_eq_mul x y
 
-theorem actualQuotientCircle_trace_parameter
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F)) :
+theorem actualQuotientCircle_trace_parameter :
     ∃! t : F, ∀ x : KPAdeles F,
       ψ.toAddChar (QuotientAddGroup.mk x) =
         (adelicTraceCharacter F (algebraMap F (KPAdeles F) t * x) : ℂ) := by
@@ -33,9 +36,8 @@ theorem actualQuotientCircle_trace_parameter
     (actualQuotientCircle F ψ) (characterCircle F ψ).continuous
   refine ⟨t, ?_, ?_⟩
   · intro x
-    have h := congrArg (fun χ : AddChar (KPAdditiveQuotient F) Circle =>
+    exact congrArg (fun χ : AddChar (KPAdditiveQuotient F) Circle =>
       (χ (QuotientAddGroup.mk x) : ℂ)) ht
-    exact h
   · intro s hs
     apply hu s
     apply AddChar.ext
@@ -45,7 +47,6 @@ theorem actualQuotientCircle_trace_parameter
     exact hs x
 
 theorem actualQuotientCircle_nonzero_trace_parameter
-    (ψ : ContinuousAddChar (KPAdditiveQuotient F))
     (hψ : KPReflectionSpec.NontrivialCharacter ψ) :
     ∃ t : F, t ≠ 0 ∧ ∀ x : KPAdeles F,
       ψ.toAddChar (QuotientAddGroup.mk x) =
@@ -58,6 +59,8 @@ theorem actualQuotientCircle_nonzero_trace_parameter
   have h := ht x
   simp only [hz, map_zero, zero_mul, AddChar.map_zero_eq_one, Circle.coe_one] at h
   exact hq h
+
+end
 
 theorem actualLocalAdditive_principal_mul (t : F) (v : KPHilbert.Place F)
     (x : KPHilbert.Completion F v) :
@@ -89,24 +92,23 @@ theorem actualLocalPsi_nontrivial (ψ : ContinuousAddChar (KPAdditiveQuotient F)
     have h := hf (actualLocalAdditive F v x)
     rw [actualLocalAdditive_principal_mul] at h
     exact h.symm.trans (hn x)
-  have hzero : algebraMap F (KPHilbert.Completion F v) t = 0 := by
-    cases v with
-    | inl w =>
-      apply (archTraceCharacter_nondegenerate w _).mp
-      intro x
-      have h := hall x
-      change adelicTraceCharacter F ((Pi.single w
-        (algebraMap F w.Completion t * x), 0) : KPAdeles F) = 1 at h
-      rwa [adelicTraceCharacter_arch_single] at h
-    | inr q =>
-      apply (localFiniteCharacter_nondegenerate F q _).mp
-      intro x
-      have h := hall x
-      change adelicTraceCharacter F ((0, RestrictedProduct.single
-        (fun w : HeightOneSpectrum (𝓞 F) => w.adicCompletionIntegers F) q
-        (algebraMap F (q.adicCompletion F) t * x)) : KPAdeles F) = 1 at h
-      rwa [adelicTraceCharacter_finite_single] at h
-  exact ht ((map_eq_zero (algebraMap F (KPHilbert.Completion F v))).mp hzero)
+  refine ht ((map_eq_zero (algebraMap F (KPHilbert.Completion F v))).mp ?_)
+  cases v with
+  | inl w =>
+    apply (archTraceCharacter_nondegenerate w _).mp
+    intro x
+    have h := hall x
+    change adelicTraceCharacter F ((Pi.single w
+      (algebraMap F w.Completion t * x), 0) : KPAdeles F) = 1 at h
+    rwa [adelicTraceCharacter_arch_single] at h
+  | inr q =>
+    apply (localFiniteCharacter_nondegenerate F q _).mp
+    intro x
+    have h := hall x
+    change adelicTraceCharacter F ((0, RestrictedProduct.single
+      (fun w : HeightOneSpectrum (𝓞 F) => w.adicCompletionIntegers F) q
+      (algebraMap F (q.adicCompletion F) t * x)) : KPAdeles F) = 1 at h
+    rwa [adelicTraceCharacter_finite_single] at h
 
 end DedekindZetaZeroFree.KPInterface.ResidueConstruction.Raw
 

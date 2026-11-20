@@ -10,8 +10,12 @@ namespace DedekindZetaZeroFree
 noncomputable section
 open scoped NumberField
 
-theorem heckeNonprincipalRegularization_quadratic_strip_growth
-    (Q : ℝ) (hQ : 0 < Q) (r : ℕ) (a b : ℝ) (hab : a ≤ b)
+section
+
+variable (Q : ℝ) (hQ : 0 < Q) (r : ℕ)
+
+include hQ in
+theorem heckeNonprincipalRegularization_quadratic_strip_growth (a b : ℝ) (hab : a ≤ b)
     (Λ : ℂ → ℂ)
     (hΛ : ∃ C : ℝ, ∀ s : ℂ, ‖Λ s‖ ≤ C * Real.exp (‖s‖ ^ 2)) :
     ∃ M B : ℝ, 0 ≤ M ∧ 0 ≤ B ∧
@@ -24,8 +28,6 @@ theorem heckeNonprincipalRegularization_quadratic_strip_growth
   have hm0 : 0 ≤ m := by
     rw [hm]; exact le_trans (abs_nonneg a) (le_max_left _ _)
   set Qb : ℝ := max (Q ^ (-a / 2)) (Q ^ (-b / 2)) with hQb
-  have hQb0 : 0 ≤ Qb := by
-    rw [hQb]; exact le_trans (Real.rpow_nonneg hQ.le _) (le_max_left _ _)
   refine ⟨Qb * GC ^ r * max C 1, 2 * (m ^ 2 + 1) + r * Real.pi, ?_, ?_, ?_⟩
   · positivity
   · positivity
@@ -89,8 +91,8 @@ theorem heckeNonprincipalRegularization_quadratic_strip_growth
           gcongr
           nlinarith [hA, hsq]
 
-theorem heckePrincipalRegularization_quadratic_strip_growth
-    (Q : ℝ) (hQ : 0 < Q) (r : ℕ) (hr : 1 ≤ r)
+include hQ in
+theorem heckePrincipalRegularization_quadratic_strip_growth (hr : 1 ≤ r)
     (a b : ℝ) (hab : a ≤ b) (E : ℂ → ℂ)
     (hE : ∃ C : ℝ, ∀ s : ℂ, ‖E s‖ ≤ C * Real.exp (‖s‖ ^ 2)) :
     ∃ M B : ℝ, 0 ≤ M ∧ 0 ≤ B ∧
@@ -106,8 +108,6 @@ theorem heckePrincipalRegularization_quadratic_strip_growth
   have hm0 : 0 ≤ m := by
     rw [hm]; exact le_trans (abs_nonneg a) (le_max_left _ _)
   set Qb : ℝ := max (Q ^ (-a / 2)) (Q ^ (-b / 2)) with hQb
-  have hQb0 : 0 ≤ Qb := by
-    rw [hQb]; exact le_trans (Real.rpow_nonneg hQ.le _) (le_max_left _ _)
   refine ⟨Qb * (2 * Real.pi)⁻¹ * GC1 * GC ^ (r - 1) * max C 1,
     2 * (m ^ 2 + 1) + r * Real.pi, ?_, ?_, ?_⟩
   · positivity
@@ -192,16 +192,18 @@ theorem heckePrincipalRegularization_quadratic_strip_growth
             Real.exp ((2 * (m ^ 2 + 1) + r * Real.pi) * (1 + |s.im|) ^ 2) := by
           rw [heT]
 
+end
+
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) (𝔪 : Ideal (𝓞 F))
+    (hm : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
+
+include hF hm in
 theorem nonprincipalHeckeEntireContinuation_quadratic_strip_growth
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
     (D : NonprincipalRayHeckeData F 𝔪 η) (a b : ℝ) (hab : a ≤ b) :
     ∃ M B : ℝ, 0 ≤ M ∧ 0 ≤ B ∧
       ∀ (s : ℂ), a ≤ s.re → s.re ≤ b →
         ‖nonprincipalHeckeEntireContinuation F 𝔪 η D s‖ ≤
           M * Real.exp (B * (1 + |s.im|) ^ 2) := by
-  have hQ : 0 < heckeConductorScale F 𝔪 :=
-    lt_of_lt_of_le zero_lt_one (one_le_heckeConductorScale F 𝔪 hm)
   have hΛ : ∃ C : ℝ, ∀ s : ℂ, ‖D.Λ s‖ ≤ C * Real.exp (‖s‖ ^ 2) := by
     obtain ⟨C, hC⟩ := D.order_bound 1 (by norm_num)
     refine ⟨C, fun s => ?_⟩
@@ -209,21 +211,16 @@ theorem nonprincipalHeckeEntireContinuation_quadratic_strip_growth
     rw [show (1 : ℝ) + 1 = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast] at h
     exact h
   simpa only [nonprincipalHeckeEntireContinuation, heckeReciprocalCompletionFactor]
-    using heckeNonprincipalRegularization_quadratic_strip_growth (heckeConductorScale F 𝔪) hQ
+    using heckeNonprincipalRegularization_quadratic_strip_growth (heckeConductorScale F 𝔪) (lt_of_lt_of_le zero_lt_one (one_le_heckeConductorScale F 𝔪 hm))
       (NumberField.InfinitePlace.nrComplexPlaces F) a b hab D.Λ hΛ
 
+include hF hm in
 theorem principalHeckeEntireRegularization_quadratic_strip_growth
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
     (D : PrincipalRayHeckeData F 𝔪 η) (a b : ℝ) (hab : a ≤ b) :
     ∃ M B : ℝ, 0 ≤ M ∧ 0 ≤ B ∧
       ∀ (s : ℂ), a ≤ s.re → s.re ≤ b →
         ‖principalHeckeEntireRegularization F 𝔪 η D s‖ ≤
           M * Real.exp (B * (1 + |s.im|) ^ 2) := by
-  have hQ : 0 < heckeConductorScale F 𝔪 :=
-    lt_of_lt_of_le zero_lt_one (one_le_heckeConductorScale F 𝔪 hm)
-  have hr : 1 ≤ NumberField.InfinitePlace.nrComplexPlaces F :=
-    one_le_nrComplexPlaces_of_totallyComplex F hF
   have hE : ∃ C : ℝ, ∀ s : ℂ, ‖D.E s‖ ≤ C * Real.exp (‖s‖ ^ 2) := by
     obtain ⟨C, hC⟩ := D.order_bound 1 (by norm_num)
     refine ⟨C, fun s => ?_⟩
@@ -231,8 +228,8 @@ theorem principalHeckeEntireRegularization_quadratic_strip_growth
     rw [show (1 : ℝ) + 1 = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast] at h
     exact h
   simpa only [principalHeckeEntireRegularization]
-    using heckePrincipalRegularization_quadratic_strip_growth (heckeConductorScale F 𝔪) hQ
-      (NumberField.InfinitePlace.nrComplexPlaces F) hr a b hab D.E hE
+    using heckePrincipalRegularization_quadratic_strip_growth (heckeConductorScale F 𝔪) (lt_of_lt_of_le zero_lt_one (one_le_heckeConductorScale F 𝔪 hm))
+      (NumberField.InfinitePlace.nrComplexPlaces F) (one_le_nrComplexPlaces_of_totallyComplex F hF) a b hab D.E hE
 
 end
 end DedekindZetaZeroFree

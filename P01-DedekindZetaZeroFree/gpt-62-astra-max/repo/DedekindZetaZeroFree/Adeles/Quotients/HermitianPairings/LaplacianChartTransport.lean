@@ -14,17 +14,19 @@ open KPContActualSectorSmoothTestModules KPContActualSectorTestDifferentialDesce
 open KPContCotangentOverlapRationalBranches KPContActualCotangentPieceHilbertSum
 open KPContActualCotangentCountableShrinking KPContCotangentActualOverlap
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {C : KPGlobalTorusInducingPlan.ModelData F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable {U : KPMsRationalCompactCrossPairing.Level F ζ hζ}
+    {C : KPGlobalTorusInducingPlan.ModelData F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsRationalCompactCrossPairing.Level F ζ hζ}
 
 namespace LaplacianReindex
 variable {d d' : ℕ}
- def reindex (e : Fin d ≃ Fin d') : HyperbolicChart.Space d ≃ₗᵢ[ℝ] HyperbolicChart.Space d' :=
+ variable (e : Fin d ≃ Fin d')
+
+def reindex : HyperbolicChart.Space d ≃ₗᵢ[ℝ] HyperbolicChart.Space d' :=
   LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ (e.prodCongr (Equiv.refl (Fin 3)))
-private theorem vector_reindex (e : Fin d ≃ Fin d') (i : Fin d) (k : Fin 3) :
+private theorem vector_reindex (i : Fin d) (k : Fin 3) :
     reindex e (HyperbolicChart.coordinateVector d i k) =
       HyperbolicChart.coordinateVector d' (e i) k := by
   ext j
@@ -32,7 +34,7 @@ private theorem vector_reindex (e : Fin d ≃ Fin d') (i : Fin d) (k : Fin 3) :
   obtain ⟨j, rfl⟩ := e.surjective j
   simp [reindex, HyperbolicChart.coordinateVector, LinearIsometryEquiv.piLpCongrLeft,
     Equiv.prodCongr]
-private theorem deriv_reindex (e : Fin d ≃ Fin d') (g : HyperbolicChart.Space d' → ℂ)
+private theorem deriv_reindex (g : HyperbolicChart.Space d' → ℂ)
     (i : Fin d) (k : Fin 3) (x : HyperbolicChart.Space d) :
     HyperbolicChart.coordinateDerivative d i k (g ∘ reindex e) x =
       HyperbolicChart.coordinateDerivative d' (e i) k g (reindex e x) := by
@@ -42,7 +44,7 @@ private theorem deriv_reindex (e : Fin d ≃ Fin d') (g : HyperbolicChart.Space 
   change fderiv ℝ g (reindex e x) (reindex e (HyperbolicChart.coordinateVector d i k)) = _
   rw [vector_reindex]
   rfl
-private theorem lap_reindex (e : Fin d ≃ Fin d') (g : HyperbolicChart.Space d' → ℂ)
+private theorem lap_reindex (g : HyperbolicChart.Space d' → ℂ)
     (x : HyperbolicChart.Space d) :
     HyperbolicChart.laplacian d (g ∘ reindex e) x =
       HyperbolicChart.laplacian d' g (reindex e x) := by
@@ -77,6 +79,8 @@ private theorem coefficient_eq (s : KPContSectorSmoothFramesSupport.Sections F �
     sectionFields s a x = (s a.component).val (labeledA (placeEquiv F ζ hζ) x.val) := by
   simp [sectionFields, LiftedChart.coefficient,
     KPContCotangentActualGenuineTwistIsotropy.isotropyChart, ChartKind.representative]
+
+alias LaplacianChartTransport.coefficient_eq := coefficient_eq
 
 theorem canonical_laplacian_chart (φ : Tests F ζ hζ C R P H U)
     (a : ShrunkChart F ζ hζ (level F ζ hζ C R P H U) R P H) (x : omega a) :
@@ -117,41 +121,45 @@ private theorem smooth_laplacian {d : ℕ} (g : HyperbolicChart.Space d → ℂ)
     exact Complex.ofRealCLM.contDiff.comp hreal
   exact ((hd _ (hd g hg i 2) i 2).neg.add (contDiff_const.mul (hd g hg i 2))).sub
     (he.mul ((hd _ (hd g hg i 0) i 0).add (hd _ (hd g hg i 1) i 1)))
+
+alias LaplacianChartTransport.smooth_laplacian := smooth_laplacian
 private theorem continuous_laplacian_section (ψ : Tests F ζ hζ C R P H U) :
     ∀ i, Continuous (KPCuspCutoffGraph.localLaplacianSection F ζ hζ H.totallyComplex
       (level F ζ hζ C R P H U) (H.atlas (level F ζ hζ C R P H U))
       ⟨ψ.val, ψ.property.1⟩ i).val := by
   intro i
-  have hi := ψ.property.1 i
-  have hg : ContDiff ℝ (⊤ : ℕ∞) ((ψ.val i).val ∘ KPCuspCutoffGraph.toArch F) :=
-    hi.comp (KPCuspCutoffGraphApproximation.cutoff_toArch_contDiff F)
-  change Continuous (HyperbolicChart.laplacian _ _ ∘ KPCuspCutoffGraph.fromArch F)
-  exact (smooth_laplacian _ hg).continuous.comp (by
-    change Continuous (CotangentLogCoframe.A (KPCuspLogShape.dimension F)).symm
+  exact (smooth_laplacian _ ((ψ.property.1 i).comp (KPCuspCutoffGraphApproximation.cutoff_toArch_contDiff F))).continuous.comp (by
     exact (CotangentLogCoframe.A _).symm.continuous)
+
+alias LaplacianChartTransport.continuous_laplacian_section := continuous_laplacian_section
 private theorem basePoint_continuous (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount) :
     Continuous (KPCuspCutoffGraph.basePoint F ζ hζ H.totallyComplex (level F ζ hζ C R P H U)
       (H.atlas (level F ζ hζ C R P H U)) i) := by
-  have he : KPCuspCutoffGraph.basePoint F ζ hζ H.totallyComplex (level F ζ hζ C R P H U)
-      (H.atlas (level F ζ hζ C R P H U)) i =
-      fun z => (H.atlas (level F ζ hζ C R P H U)).components ⟨i, Quotient.mk _ z⟩ := by
+  let level₀ := level F ζ hζ C R P H U
+  have he : KPCuspCutoffGraph.basePoint F ζ hζ H.totallyComplex (level₀)
+      (H.atlas (level₀)) i =
+      fun z => (H.atlas (level₀)).components ⟨i, Quotient.mk _ z⟩ := by
     funext z
     rw [(H.atlas _).components_formula]
     rfl
   rw [he]
   exact (H.atlas _).components.continuous.comp (continuous_sigmaMk.comp continuous_quot_mk)
-private theorem laplacian_supported (ψ : Tests F ζ hζ C R P H U)
-    (K : Set (KPFiniteCuspAtlas.rawXU F ζ hζ (level F ζ hζ C R P H U))) (hK : IsCompact K)
-    (hs : ∀ j z, KPCuspCutoffGraph.basePoint F ζ hζ H.totallyComplex (level F ζ hζ C R P H U)
-      (H.atlas (level F ζ hζ C R P H U)) j z ∉ K → (ψ.val j).val z = 0) :
-    ∀ j z, KPCuspCutoffGraph.basePoint F ζ hζ H.totallyComplex (level F ζ hζ C R P H U)
-      (H.atlas (level F ζ hζ C R P H U)) j z ∉ K →
+variable (ψ : Tests F ζ hζ C R P H U)
+
+local notation "cuspLevel" => level F ζ hζ C R P H U
+
+private theorem laplacian_supported
+    (K : Set (KPFiniteCuspAtlas.rawXU F ζ hζ cuspLevel)) (hK : IsCompact K)
+    (hs : ∀ j z, KPCuspCutoffGraph.basePoint F ζ hζ H.totallyComplex cuspLevel
+      (H.atlas cuspLevel) j z ∉ K → (ψ.val j).val z = 0) :
+    ∀ j z, KPCuspCutoffGraph.basePoint F ζ hζ H.totallyComplex cuspLevel
+      (H.atlas cuspLevel) j z ∉ K →
       (KPCuspCutoffGraph.localLaplacianSection F ζ hζ H.totallyComplex
-        (level F ζ hζ C R P H U) (H.atlas (level F ζ hζ C R P H U))
+        cuspLevel (H.atlas cuspLevel)
         ⟨ψ.val, ψ.property.1⟩ j).val z = 0 := by
   intro j z hz
   have hN : ∀ᶠ y in nhds z, KPCuspCutoffGraph.basePoint F ζ hζ H.totallyComplex
-      (level F ζ hζ C R P H U) (H.atlas (level F ζ hζ C R P H U)) j y ∉ K :=
+      cuspLevel (H.atlas cuspLevel) j y ∉ K :=
     (basePoint_continuous j).continuousAt (hK.isClosed.isOpen_compl.mem_nhds hz)
   have hc : Continuous (KPCuspCutoffGraph.toArch F) := (KPCuspCutoffGraphApproximation.cutoff_toArch_contDiff F).continuous
   have hN' : Filter.Tendsto (KPCuspCutoffGraph.toArch F)
@@ -172,40 +180,40 @@ private theorem laplacian_supported (ψ : Tests F ζ hζ C R P H U)
   simp only [HyperbolicChart.laplacian, hd, neg_zero, mul_zero, add_zero, sub_zero,
     Finset.sum_const_zero]
 
-theorem single_chart_pairing (ψ : Tests F ζ hζ C R P H U)
-    (a : ShrunkChart F ζ hζ (level F ζ hζ C R P H U) R P H)
-    (hψ : ∃ K : Set (KPFiniteCuspAtlas.rawXU F ζ hζ (level F ζ hζ C R P H U)),
+theorem single_chart_pairing
+    (a : ShrunkChart F ζ hζ cuspLevel R P H)
+    (hψ : ∃ K : Set (KPFiniteCuspAtlas.rawXU F ζ hζ cuspLevel),
       IsCompact K ∧ K ⊆ a.baseDomain ∧ ∀ j z,
-        KPCuspCutoffGraph.basePoint F ζ hζ H.totallyComplex (level F ζ hζ C R P H U)
-          (H.atlas (level F ζ hζ C R P H U)) j z ∉ K → (ψ.val j).val z = 0)
+        KPCuspCutoffGraph.basePoint F ζ hζ H.totallyComplex cuspLevel
+          (H.atlas cuspLevel) j z ∉ K → (ψ.val j).val z = 0)
     (w : SmoothSections F ζ hζ C R P H U) :
     Integrable (coveredPair F ζ hζ C R P H U w (testScalar F ζ hζ C R P H U ψ))
       (KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R
-        (level F ζ hζ C R P H U)) ∧
+        cuspLevel) ∧
     Integrable (coveredPair F ζ hζ C R P H U w (testLaplacian F ζ hζ C R P H U ψ))
       (KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R
-        (level F ζ hζ C R P H U)) ∧
+        cuspLevel) ∧
     ((∫ x, coveredPair F ζ hζ C R P H U w (testScalar F ζ hζ C R P H U ψ) x
       ∂KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R
-        (level F ζ hζ C R P H U)) =
+        cuspLevel) =
       ∫ y, sectionFields w.val a (coordinates a y) *
         star (sectionFields ψ.val a (coordinates a y)) ∂a.liftedMeasure) ∧
     ((∫ x, coveredPair F ζ hζ C R P H U w (testLaplacian F ζ hζ C R P H U ψ) x
       ∂KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R
-        (level F ζ hζ C R P H U)) =
+        cuspLevel) =
       ∫ y, sectionFields w.val a (coordinates a y) *
         star (HyperbolicChart.laplacian (KPContCotangentActualOverlap.d F)
           (liftExtension a (sectionFields ψ.val a)) (coordinates a y).val)
         ∂a.liftedMeasure) := by
   obtain ⟨K,hK,hKa,hψK⟩ := hψ
-  have hw : ∀ i, Continuous (w.val i).val := fun i => (w.property i).continuous
-  have hψc : ∀ i, Continuous (ψ.val i).val := fun i => (ψ.property.1 i).continuous
+  have hw := fun i => (w.property i).continuous
+  let level₀ := cuspLevel
   have hp := KPContActualPartitionTransport.compact_original_scalar_chart_transport
-    (level F ζ hζ C R P H U) w.val ψ.val hw hψc a K hK hKa hψK
+    (level₀) w.val ψ.val hw (fun i => (ψ.property.1 i).continuous) a K hK hKa hψK
   have hpΔ := KPContActualPartitionTransport.compact_original_scalar_chart_transport
-    (level F ζ hζ C R P H U) w.val
-    (KPCuspCutoffGraph.localLaplacianSection F ζ hζ H.totallyComplex (level F ζ hζ C R P H U)
-      (H.atlas (level F ζ hζ C R P H U)) ⟨ψ.val, ψ.property.1⟩)
+    (level₀) w.val
+    (KPCuspCutoffGraph.localLaplacianSection F ζ hζ H.totallyComplex (level₀)
+      (H.atlas (level₀)) ⟨ψ.val, ψ.property.1⟩)
     hw (continuous_laplacian_section ψ) a K hK hKa (laplacian_supported ψ K hK hψK)
   refine ⟨hp.1, hpΔ.1, hp.2, hpΔ.2.trans ?_⟩
   apply integral_congr_ae

@@ -20,10 +20,14 @@ local instance completionMeasurable (v : HeightOneSpectrum (RingOfIntegers F)) :
 local instance completionBorel (v : HeightOneSpectrum (RingOfIntegers F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-abbrev Space (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :=
+section
+
+variable (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+
+abbrev Space :=
   PoissonArch.Space F × PoissonFinite.Space F S
 
-def diagonalHom (S : Finset (HeightOneSpectrum (RingOfIntegers F))) : F →+ Space F S where
+def diagonalHom : F →+ Space F S where
   toFun m := ((NumberField.mixedEmbedding.euclidean.toMixed F).symm
     (NumberField.mixedEmbedding F m), PoissonFinite.diagonal F S m)
   map_zero' := by
@@ -36,13 +40,15 @@ def diagonalHom (S : Finset (HeightOneSpectrum (RingOfIntegers F))) : F →+ Spa
     · simp
     · simp [PoissonFinite.diagonal]
 
-def lattice (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (a : F) :
+def lattice (a : F) :
     AddSubgroup (Space F S) :=
   AddSubgroup.map ((diagonalHom F S).comp
     { toFun := fun m : F => a * m
       map_zero' := mul_zero a
       map_add' := fun m n => mul_add a m n })
     ((S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F).toSubring.toAddSubgroup
+
+end
 
 def differentExponent (v : HeightOneSpectrum (RingOfIntegers F)) : ℤ :=
   FractionalIdeal.count F v (FractionalIdeal.coeIdeal (differentIdeal ℤ (RingOfIntegers F)))

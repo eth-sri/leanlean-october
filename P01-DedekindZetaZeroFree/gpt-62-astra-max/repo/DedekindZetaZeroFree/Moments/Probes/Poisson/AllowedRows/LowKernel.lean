@@ -11,25 +11,31 @@ noncomputable section
 open DedekindZetaZeroFree
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
-def Iz (u : D.Row) (ξ w : ℂ) (v Z : ℝ) : ℂ :=
+section
+
+variable (u : D.Row)
+
+def Iz (ξ w : ℂ) (v Z : ℝ) : ℂ :=
   comparisonVerticalIntegral v (fun z => PoissonKernel.K D u ξ w z Z)
 
-def Iwz (u : D.Row) (ξ : ℂ) (y v Z : ℝ) : ℂ :=
+def Iwz (ξ : ℂ) (y v Z : ℝ) : ℂ :=
   comparisonVerticalIntegral y (fun w => Iz D u ξ w v Z)
 
-def triple (u : D.Row) (x y v Z : ℝ) : ℂ :=
+def triple (x y v Z : ℝ) : ℂ :=
   comparisonVerticalIntegral x (fun ξ => Iwz D u ξ y v Z)
 
-def explicitFactor (u : D.Row) (ξ w z : ℂ) : ℂ :=
+def explicitFactor (ξ w z : ℂ) : ℂ :=
   D.zetaSCont (6 * z) * D.Lpsi u w * EulerDomain.Hu D u ξ w z / D.Llam u ξ
 
-theorem explicitFactor_eq_rowFactor (u : D.Row) (ξ w z : ℂ) :
+theorem explicitFactor_eq_rowFactor (ξ w z : ℂ) :
     explicitFactor D u ξ w z = PoissonKernel.rowFactor D u ξ w z := by
   unfold explicitFactor PoissonKernel.rowFactor
   ring
+
+end
 
 theorem explicitFactor_funext : explicitFactor D = PoissonKernel.rowFactor D := by
   funext u ξ w z

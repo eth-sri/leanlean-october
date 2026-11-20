@@ -10,8 +10,8 @@ open scoped Classical NumberField
 namespace DedekindZetaZeroFree.FiniteWhittakerProjectors
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 lemma diagonal_upper_projector (y : R.A.G) (x : KPAdeles F) :
     diagonal R y * KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 x =

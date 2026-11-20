@@ -84,8 +84,7 @@ theorem positiveKernel_uniform_approximation
             mul_le_mul_of_nonneg_left he (hKnonneg N x y)
           _ ≤ b δ N * (2 * C) := mul_le_mul_of_nonneg_right hk (by positivity)
           _ ≤ (ε / 2) * K N x y + b δ N * (2 * C) := by
-            have := mul_nonneg (show 0 ≤ ε / 2 by positivity) (hKnonneg N x y)
-            linarith
+            bound
     _ = ε / 2 + b δ N * (2 * C) := by
       rw [integral_add (hKi.const_mul _) (integrable_const _), integral_const_mul,
         hKmass N x]

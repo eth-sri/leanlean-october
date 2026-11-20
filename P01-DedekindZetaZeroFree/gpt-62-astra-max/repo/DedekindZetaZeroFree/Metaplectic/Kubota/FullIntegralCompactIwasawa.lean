@@ -11,14 +11,12 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualFullCompactTransport
 open KPLocalPrincipalSeries KPLocalExceptionalConstruction KPLocalStoneVonNeumann
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F)) (S : CanonicalFiniteInducingData F ζ hζ q)
+    (q : HeightOneSpectrum (𝓞 F)) (S : CanonicalFiniteInducingData F ζ hζ q)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
 private theorem projection_eq (g : ActualCover F ζ hζ q) :
-    S.borel.projection g = KPLocalSmoothRepresentation.projection F ζ hζ q g := by
-  induction g using QuotientGroup.induction_on with
-  | _ g => exact (S.openCell S.polarization).projection_eq g
+    S.borel.projection g = KPLocalSmoothRepresentation.projection F ζ hζ q g := by apply @DedekindZetaZeroFree.KPLocalTameValuationWhittakerBasis.RawSectionBridge.TameValuationBases.projection_binding <;> assumption
 
 theorem canonical_borel_ratio (b : S.borel.B)
     (hb : (b : ActualCover F ζ hζ q) ∈ KPLocalSmoothRepresentation.Borel F ζ hζ q) :
@@ -92,9 +90,9 @@ end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProduce
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualFullCompactTransport
 open NumberField KPLocalPrincipalSeries KPLocalExceptionalConstruction
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
-variable (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
+    (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
 def fullCompactProfiles
     (φ : ∀ q : E, compactPicture (C.canonical q.val).borel (C.polarization q.val)
       (C.canonical q.val).iwasawa .plus) (s : ℂ) (q : E) :=
@@ -102,7 +100,6 @@ def fullCompactProfiles
     (C.canonical q.val).iwasawa (fullCompactIwasawa F ζ hζ q.val (C.canonical q.val))
     (C.polarization q.val) .plus (φ q) s
 
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor renaming actual_arch_trace_spherical_parameter_integral → actual_arch_trace_spherical_parameter_integral
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualFullCompactTransport
 

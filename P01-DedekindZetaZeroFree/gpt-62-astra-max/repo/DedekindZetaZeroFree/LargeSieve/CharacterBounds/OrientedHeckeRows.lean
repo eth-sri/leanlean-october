@@ -10,11 +10,11 @@ namespace DedekindZetaZeroFree
 noncomputable section
 open scoped NumberField Classical
 
-theorem rm_hgl_oriented
-    (F : Type) [Field F] [NumberField F]
-    (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12)
-    (qS : Ideal (𝓞 F)) (𝓕 : QuadraticHeckeFamily F qS)
-    (b : ℝ) (hb : 0 < b) :
+variable (F : Type) [Field F] [NumberField F] (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12)
+    (qS : Ideal (𝓞 F)) (𝓕 : QuadraticHeckeFamily F qS) (b : ℝ) (hb : 0 < b)
+
+include hζ12 hb in
+theorem rm_hgl_oriented :
     ∃ L : ℝ, 0 < L ∧
       ∀ (X Y : ℝ) (z : Ideal (𝓞 F) →₀ ℂ),
         1 ≤ X → 1 ≤ Y →
@@ -65,11 +65,8 @@ theorem rm_hgl_oriented
       (mul_le_mul_of_nonneg_right (le_max_left C 1) (Real.rpow_nonneg (by positivity) _))
       hXY) hnorm
 
-theorem rm_hgl_oriented_masked
-    (F : Type) [Field F] [NumberField F]
-    (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12)
-    (qS : Ideal (𝓞 F)) (𝓕 : QuadraticHeckeFamily F qS)
-    (b : ℝ) (hb : 0 < b) :
+include hζ12 hb in
+theorem rm_hgl_oriented_masked :
     ∃ L : ℝ, 0 < L ∧
       ∀ (X Y : ℝ) (z : Ideal (𝓞 F) →₀ ℂ)
         (R : Ideal (𝓞 F) → Prop) (ρ : Ideal (𝓞 F) → ℂ),
@@ -113,7 +110,7 @@ theorem rm_hgl_oriented_masked
       simp only [if_pos hd, if_pos hd', norm_mul]
       have hmul : ‖ρ d‖ * ‖∑ c ∈ z.support, z c * (𝓕.χ c) d‖ ≤
           ‖∑ c ∈ z.support, z c * (𝓕.χ c) d‖ := by
-        simpa only [one_mul] using mul_le_mul_of_nonneg_right (hρ d) (norm_nonneg _)
+        simpa using mul_le_mul_of_nonneg_right (hρ d) (norm_nonneg _)
       exact pow_le_pow_left₀ (by positivity) hmul 2
     · simp only [if_neg hd]
       split_ifs <;> positivity

@@ -9,14 +9,10 @@ open scoped Classical NumberField Topology
 open NumberField Filter
 namespace DedekindZetaZeroFree.FiniteWhittakerProjectors
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CompactTupleTransfer renaming kfinite_fullCompact → kfinite_fullCompact
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.DiscrepancyCuts renaming cutFlat → cutFlat
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.DiscrepancyCuts renaming cut → cut
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy renaming discrepancy → discrepancy
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy renaming discrepancy_range_finite → discrepancy_range_finite
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy renaming discrepancy_borel → discrepancy_borel
-open _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum renaming smooth_add → smooth_add
-open _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum renaming smooth_smul → smooth_smul
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CompactTupleTransfer (kfinite_fullCompact)
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.DiscrepancyCuts (cutFlat cut)
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy (discrepancy discrepancy_range_finite discrepancy_borel)
+open _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum (smooth_add smooth_smul)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -32,14 +28,10 @@ open scoped Classical NumberField Topology
 open NumberField Filter
 namespace DedekindZetaZeroFree.RootDerivatives
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CompactTupleTransfer renaming kfinite_fullCompact → kfinite_fullCompact
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.DiscrepancyCuts renaming cutFlat → cutFlat
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.DiscrepancyCuts renaming cut → cut
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy renaming discrepancy → discrepancy
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy renaming discrepancy_range_finite → discrepancy_range_finite
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy renaming discrepancy_borel → discrepancy_borel
-open _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum renaming smooth_add → smooth_add
-open _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum renaming smooth_smul → smooth_smul
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CompactTupleTransfer (kfinite_fullCompact)
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.DiscrepancyCuts (cutFlat cut)
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy (discrepancy discrepancy_range_finite discrepancy_borel)
+open _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum (smooth_add smooth_smul)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -184,8 +176,7 @@ theorem canonical_flat_residue {K : Subgroup (G F ζ hζ)}
       Complex.exp (z * (a : ℂ)) * (W a).E z g
     rw [(W a).chamber z hz]
     rfl
-  have hall : ∀ᶠ z in 𝓝[≠] (0 : ℂ), ∀ a ∈ C,
-      (W a).numerator z g = z * (W a).E z g :=
+  have hall :=
     (Filter.eventually_all_finite C.finite_toSet).mpr (fun a ha => (W a).clears g)
   have hn : (fun z => A.numerator z g) =ᶠ[𝓝[≠] (0 : ℂ)]
       (fun z => ∑ a ∈ C, Complex.exp (z * (a : ℂ)) * (W a).numerator z g) := by

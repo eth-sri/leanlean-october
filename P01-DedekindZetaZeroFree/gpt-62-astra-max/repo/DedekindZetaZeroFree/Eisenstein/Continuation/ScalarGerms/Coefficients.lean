@@ -10,8 +10,8 @@ open scoped Topology
 namespace DedekindZetaZeroFree.EisensteinSmoothGerms
 open MomentSources Complex
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 
 def ScalarGerm.coefficients {C : ScalarContinuation R Q}
     {v : R.A.UnitQuotient} (H : ScalarGerm C v) (n : ℕ) : Functions R := fun g =>
@@ -47,10 +47,8 @@ theorem ScalarGerm.coefficients_level {C : ScalarContinuation R Q}
   apply (show _ = (1 : ℂ) * _ from coefficient_covariance _ _ _
     (half_pos H.radius_pos) 1 ?_ n).trans (one_mul _)
   intro z hz
-  have hb : z ∈ Metric.ball (0 : ℂ) H.radius :=
-    Metric.closedBall_subset_ball (by linarith [H.radius_pos])
-      (Metric.sphere_subset_closedBall hz)
-  simpa using scalarGerm_level H hb g u hu
+  simpa using scalarGerm_level H (Metric.closedBall_subset_ball (by linarith [H.radius_pos])
+    (Metric.sphere_subset_closedBall hz)) g u hu
 
 end DedekindZetaZeroFree.EisensteinSmoothGerms
 

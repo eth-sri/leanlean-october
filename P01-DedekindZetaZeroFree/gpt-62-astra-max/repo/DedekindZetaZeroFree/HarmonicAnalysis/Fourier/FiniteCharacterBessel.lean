@@ -20,7 +20,7 @@ theorem detector_finite_character_bessel
   let ψ : J → AddChar (Additive G) ℂ := fun j =>
     { toFun := fun g => (χ j g.toMul : ℂ)
       map_zero_eq_one' := by simp
-      map_add_eq_mul' := by intros; simp }
+      map_add_eq_mul' := by simp}
   have hψ : Function.Injective ψ := by
     intro i j h
     apply hχ

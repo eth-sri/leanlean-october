@@ -16,17 +16,17 @@ namespace DedekindZetaZeroFree.KPMsNativeWeightedShapeSource.NativeCoarea
 open KPMsActualAngularSource KPCompactStabilizerHaarSources KPActualComponentHaarSources
 attribute [local instance] KPCompactStabilizerHaarSources.groupMeasurableSpace
   KPCompactStabilizerHaarSources.groupBorelSpace
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTransport → toRawTransport
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure renaming actual_high_cusp_joint_coarea → actual_high_cusp_joint_coarea
+open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration (toRawTransport)
+open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure (actual_high_cusp_joint_coarea)
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 local instance : MulAction (KPCuspArithmetic.PGL2 F) (KPArch.Space (KPCuspLogShape.dimension F)) :=
   KPCuspSiegel.instMulActionPGL2SpaceDimension F
 variable (S : KPMsAngularSourceRecipe.OffsetSourceRecipe F ζ hζ R P H)
-variable (V : KPMsActualAngularSource.Level F ζ hζ)
+    (V : KPMsActualAngularSource.Level F ζ hζ)
 
 theorem actual_full_cusp_coarea
     (j : KPMsFixedHaarDisintegration.CuspIndex
@@ -35,8 +35,7 @@ theorem actual_full_cusp_coarea
       (e : KPSmoothActualFlowData.GInfinity F ≃ₜ
         (KPArch.Space (KPCuspLogShape.dimension F) × K (KPCuspLogShape.dimension F)))
       (c : ℝ≥0),
-      ν.IsHaarMeasure ∧ SFinite ν ∧ 0 < c ∧
-      (∀ a, (e a).1 = KPMsFixedHaarDisintegration.archBasepoint F a) ∧
+      ν.IsHaarMeasure ∧ SFinite ν ∧ (∀ a, (e a).1 = KPMsFixedHaarDisintegration.archBasepoint F a) ∧
       (∀ x k i, (e.symm (x,k)) (KPCusp.complexPlace F i) =
         (KPArithmeticAction.productProjectiveSection (KPCuspLogShape.dimension F) x *
           (k : G (KPCuspLogShape.dimension F))) i) ∧
@@ -66,7 +65,7 @@ theorem actual_full_cusp_coarea
     H.totallyComplex (S.atlasLevel (KPShift81CoherentLevel.level F ζ hζ V))
     (H.atlas (S.atlasLevel (KPShift81CoherentLevel.level F ζ hζ V))) R
     (toRawTransport F ζ hζ P) j.1
-  exact ⟨ν,e,c,hν,hνsf,hc,heBase,heFiber,fun Y hY φ hφ =>
+  exact ⟨ν, e, c, hν, hνsf, heBase, heFiber, fun Y hY φ hφ =>
     hcoarea j.2 (KPMsFixedHaarDisintegration.logHeight (F := F) Y) hY.2 φ hφ⟩
 
 end DedekindZetaZeroFree.KPMsNativeWeightedShapeSource.NativeCoarea

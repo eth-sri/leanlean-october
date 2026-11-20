@@ -21,19 +21,18 @@ theorem smul_mem_rankOneGenerators_iff (z : M)
   constructor
   · intro hw
     obtain ⟨l, hl⟩ := hw.2 z
-    have h : l * k = 1 := hz.1 (by simpa only [smul_smul, one_smul] using hl)
-    exact ⟨⟨k, l, by simpa only [mul_comm] using h, h⟩, rfl⟩
+    have h : l * k = 1 := hz.1 (by simpa [smul_smul] using hl)
+    exact ⟨⟨k, l, by simpa [mul_comm] using h, h⟩, rfl⟩
   · rintro ⟨u, rfl⟩
     constructor
     · intro a b hab
       have h : a * (u : R) = b * (u : R) := hz.1 (by
-        simpa only [smul_smul] using hab)
-      have := congrArg (fun x : R => x * (↑(u⁻¹) : R)) h
-      simpa [mul_assoc] using this
+        simpa [smul_smul] using hab)
+      simp_all
     · intro w
       obtain ⟨k, hk⟩ := hz.2 w
       refine ⟨k * (↑(u⁻¹) : R), ?_⟩
-      simpa [smul_smul, mul_assoc] using hk
+      simpa [smul_smul] using hk
 
 end
 

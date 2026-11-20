@@ -16,43 +16,52 @@ abbrev H3 := ℂ × ℝ
 
 def height (z : H3) : ℝ := Real.exp z.2
 
-def actionDenominator (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) : ℝ :=
+section
+
+variable (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3)
+
+def actionDenominator : ℝ :=
   ‖g 1 0 * z.1 + g 1 1‖ ^ 2 + ‖g 1 0‖ ^ 2 * height z ^ 2
 
-def action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) : H3 :=
+def action : H3 :=
   (((g 0 0 * z.1 + g 0 1) * star (g 1 0 * z.1 + g 1 1) +
       g 0 0 * star (g 1 0) * (height z ^ 2 : ℝ)) /
       (actionDenominator g z : ℂ),
     Real.log (‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ * height z /
       actionDenominator g z))
 
+end
+
 abbrev Space (d : ℕ) := Fin d → H3
 
 def productAction (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (z : Space d) : Space d := fun i => action (g i) (z i)
 
-theorem actionDenominator_pos (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
+section
+
+variable (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3)
+
+theorem actionDenominator_pos :
     0 < actionDenominator g z := by
-  have hy : 0 < height z := Real.exp_pos _
-  have hd := g.det_ne_zero
   by_cases hc : g 1 0 = 0
   · have hd' : g 1 1 ≠ 0 := by
       intro h
-      apply hd
+      apply g.det_ne_zero
       simp [Matrix.det_fin_two, hc, h]
     simpa [actionDenominator, hc] using sq_pos_of_pos (norm_pos_iff.mpr hd')
   · unfold actionDenominator
     exact add_pos_of_nonneg_of_pos (sq_nonneg _)
-      (mul_pos (sq_pos_of_pos (norm_pos_iff.mpr hc)) (sq_pos_of_pos hy))
+      (mul_pos (sq_pos_of_pos (norm_pos_iff.mpr hc)) (sq_pos_of_pos (Real.exp_pos _)))
 
-theorem action_height (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
+theorem action_height :
     height (action g z) =
       ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ * height z /
         (‖g 1 0 * z.1 + g 1 1‖ ^ 2 + ‖g 1 0‖ ^ 2 * height z ^ 2) := by
-  change Real.exp (Real.log _) = _
   apply Real.exp_log
   exact div_pos (mul_pos (norm_pos_iff.mpr g.det_ne_zero) (Real.exp_pos _))
     (actionDenominator_pos g z)
+
+end
 
 def den (a b : ℂ) (x : ℂ) (Y : ℝ) : ℂ :=
   (a*x+b)*star (a*x+b)+a*star a*(Y:ℂ)
@@ -81,16 +90,20 @@ private lemma num_comp (a b c d A B C D x : ℂ) (Y : ℝ) :
 private lemma norm_cast (a : ℂ) : (‖a‖ ^ 2 : ℝ) = (a*star a : ℂ) := by
   simpa [Complex.normSq_eq_norm_sq] using (Complex.mul_conj a).symm
 
-private lemma den_eq (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
+section
+
+variable (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3)
+
+private lemma den_eq :
     (actionDenominator g z : ℂ) = den (g 1 0) (g 1 1) z.1 (height z ^ 2) := by
   simp only [actionDenominator, Complex.ofReal_add, Complex.ofReal_mul, norm_cast, den]
 
-private lemma fst_eq (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
+private lemma fst_eq :
     (action g z).1 = num (g 0 0) (g 0 1) (g 1 0) (g 1 1) z.1 (height z ^ 2) /
       den (g 1 0) (g 1 1) z.1 (height z ^ 2) := by
   simp [action, num, ← den_eq]
 
-private lemma height_sq (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
+private lemma height_sq :
     ((height (action g z) ^ 2 : ℝ) : ℂ) =
       ((g : Matrix (Fin 2) (Fin 2) ℂ).det * star ((g : Matrix (Fin 2) (Fin 2) ℂ).det) *
       ((height z ^ 2 : ℝ) : ℂ)) / (actionDenominator g z : ℂ)^2 := by
@@ -100,7 +113,13 @@ private lemma height_sq (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
     Complex.ofReal_pow]
   rw [← Complex.ofReal_pow, norm_cast]
 
-private lemma den_mul (g h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
+end
+
+section
+
+variable (g h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3)
+
+private lemma den_mul :
     (actionDenominator g (action h z) : ℂ) * (actionDenominator h z : ℂ) =
       (actionDenominator (g*h) z : ℂ) := by
   have hd : (actionDenominator h z : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt (actionDenominator_pos h z)
@@ -119,7 +138,7 @@ private lemma den_mul (g h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
   field_simp
   linear_combination hc
 
-private lemma fst_mul (g h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
+private lemma fst_mul :
     (action g (action h z)).1 = (action (g*h) z).1 := by
   have hd : (actionDenominator h z : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt (actionDenominator_pos h z)
   have hg : (actionDenominator g (action h z) : ℂ) ≠ 0 := by
@@ -138,37 +157,39 @@ private lemma fst_mul (g h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
   field_simp
   linear_combination hc
 
-theorem action_laws (g h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
+theorem action_laws :
     action 1 z = z ∧ action (g * h) z = action g (action h z) := by
   constructor
   · apply Prod.ext
     · simp [action, actionDenominator]
     · simp [action, actionDenominator, height]
+  let actionDenominator₀ := actionDenominator g (action h z)
   · apply Prod.ext
     · exact (fst_mul g h z).symm
     · apply Real.exp_injective
       change height (action (g*h) z) = height (action g (action h z))
       have hd : actionDenominator h z ≠ 0 := ne_of_gt (actionDenominator_pos h z)
-      have hg : actionDenominator g (action h z) ≠ 0 :=
+      have hg : actionDenominator₀ ≠ 0 :=
         ne_of_gt (actionDenominator_pos g (action h z))
-      have hm : actionDenominator g (action h z) * actionDenominator h z =
+      have hm : actionDenominator₀ * actionDenominator h z =
           actionDenominator (g*h) z := by exact_mod_cast den_mul g h z
       rw [action_height (g*h), action_height g]
       change ‖((g*h) : Matrix.GeneralLinearGroup (Fin 2) ℂ).val.det‖ * height z /
           actionDenominator (g*h) z =
-        ‖g.val.det‖ * height (action h z) / actionDenominator g (action h z)
+        ‖g.val.det‖ * height (action h z) / actionDenominator₀
       rw [action_height h]
       change ‖((g*h) : Matrix.GeneralLinearGroup (Fin 2) ℂ).val.det‖ * height z /
           actionDenominator (g*h) z =
         ‖g.val.det‖ * (‖h.val.det‖ * height z / actionDenominator h z) /
-          actionDenominator g (action h z)
+          actionDenominator₀
       rw [Matrix.GeneralLinearGroup.coe_mul, Matrix.det_mul, norm_mul, ← hm]
       field_simp
 
+end
+
 theorem scalar_action (a : ℂˣ) (z : H3) :
     action (Matrix.GeneralLinearGroup.scalar (Fin 2) a) z = z := by
-  have ha : ‖(a : ℂ)‖ ≠ 0 := norm_ne_zero_iff.mpr a.ne_zero
-  have hac : ((‖(a : ℂ)‖ ^ 2 : ℝ) : ℂ) ≠ 0 := by exact_mod_cast pow_ne_zero 2 ha
+  have ha := norm_ne_zero_iff.mpr a.ne_zero
   have hc : (a : ℂ) * star (a : ℂ) = (‖(a : ℂ)‖ ^ 2 : ℝ) := by
     simpa [Complex.normSq_eq_norm_sq] using Complex.mul_conj (a : ℂ)
   apply Prod.ext
@@ -178,7 +199,7 @@ theorem scalar_action (a : ℂˣ) (z : H3) :
     norm_num only [OfNat.ofNat_ne_zero, zero_pow, zero_mul, add_zero]
     rw [show (a : ℂ) * z.1 * star (a : ℂ) =
       z.1 * ((‖(a : ℂ)‖ ^ 2 : ℝ) : ℂ) by rw [← hc]; ring]
-    exact mul_div_cancel_right₀ _ hac
+    exact mul_div_cancel_right₀ _ (by exact_mod_cast pow_ne_zero 2 ha)
   · simp only [action, actionDenominator, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.scalar_apply, Matrix.diagonal_apply, Fin.reduceEq, if_true, if_false,
       zero_mul, zero_add, norm_zero, zero_pow, mul_zero, add_zero, star_zero,
@@ -243,22 +264,28 @@ noncomputable section
 open scoped Matrix
 open MeasureTheory
 
-def metric (d : ℕ) (z v : Space d) : ℝ :=
+section
+
+variable (d : ℕ)
+
+def metric (z v : Space d) : ℝ :=
   ∑ i, ((height (z i))⁻¹ ^ 2 * ‖(v i).1‖ ^ 2 + (v i).2 ^ 2)
 
-def volumeDensity (d : ℕ) (z : Space d) : ℝ :=
+def volumeDensity (z : Space d) : ℝ :=
   ∏ i, (height (z i))⁻¹ ^ 2
 
-def hyperbolicVolume (d : ℕ) : Measure (Space d) :=
+def hyperbolicVolume : Measure (Space d) :=
   volume.withDensity (fun z => ENNReal.ofReal (volumeDensity d z))
 
-abbrev SplitSpace (d : ℕ) := (Fin (d + 1) → ℂ) × ℝ × (Fin d → ℝ)
+abbrev SplitSpace := (Fin (d + 1) → ℂ) × ℝ × (Fin d → ℝ)
 
-def shape (d : ℕ) (b : Fin d → ℝ) : Fin (d + 1) → ℝ :=
+def shape (b : Fin d → ℝ) : Fin (d + 1) → ℝ :=
   Fin.snoc b (-∑ i, b i)
 
-def splitCoordinates (d : ℕ) (p : SplitSpace d) : Space (d + 1) :=
+def splitCoordinates (p : SplitSpace d) : Space (d + 1) :=
   fun i => (p.1 i, p.2.1 + shape d p.2.2 i)
+
+end
 
 theorem complex_places_of_primitive_twelfth_root (F : Type) [Field F]
     [NumberField F] (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12) :
@@ -292,8 +319,7 @@ private lemma metric_alg (a b c d x v : ℂ) (Y w : ℝ) :
   ring
 
 private def path (z v : H3) (t : ℝ) : H3 := z + t • v
-private lemma path_deriv (z v : H3) : HasDerivAt (path z v) v 0 := by
-  exact ((hasDerivAt_id (0:ℝ)).smul_const v).const_add z |>.congr_deriv (by simp)
+private lemma path_deriv (z v : H3) : HasDerivAt (path z v) v 0 := ((hasDerivAt_id (0:ℝ)).smul_const v).const_add z |>.congr_deriv (by simp)
 private lemma norm2_cast (a : ℂ) : norm2 a = (‖a‖^2 : ℝ) := by
   simpa [norm2, Complex.normSq_eq_norm_sq] using Complex.mul_conj a
 private lemma D_cast (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
@@ -302,59 +328,66 @@ private lemma D_cast (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
 private lemma dD_real (c d x v : ℂ) (Y w : ℝ) :
     (Complex.re (dD c d x v Y w) : ℂ) = dD c d x v Y w := by
   apply Complex.ext <;> simp [dD, Complex.mul_re, Complex.mul_im, Complex.star_def] <;> ring
-private lemma path_x (z v : H3) : HasDerivAt (fun t => (path z v t).1) v.1 0 :=
+section
+
+variable (z v : H3)
+
+private lemma path_x : HasDerivAt (fun t => (path z v t).1) v.1 0 :=
   (ContinuousLinearMap.fst ℝ ℂ ℝ).hasFDerivAt.comp_hasDerivAt _ (path_deriv z v)
-private lemma path_u (z v : H3) : HasDerivAt (fun t => (path z v t).2) v.2 0 :=
+private lemma path_u : HasDerivAt (fun t => (path z v t).2) v.2 0 :=
   (ContinuousLinearMap.snd ℝ ℂ ℝ).hasFDerivAt.comp_hasDerivAt _ (path_deriv z v)
-private lemma path_Y (z v : H3) :
+private lemma path_Y :
     HasDerivAt (fun t => height (path z v t)^2) (2 * height z^2 * v.2) 0 := by
   convert ((path_u z v).exp.pow 2) using 1
   · rfl
   · simp [path, height]
     ring
-private lemma path_N (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3) :
+
+end
+section
+
+variable (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3)
+
+private lemma path_N :
     HasDerivAt (fun t => N (g 0 0) (g 0 1) (g 1 0) (g 1 1) (path z v t).1
       (height (path z v t)^2))
       (dN (g 0 0) (g 0 1) (g 1 0) (g 1 1) z.1 v.1 (height z^2) v.2) 0 := by
   have hx := path_x z v
-  have hy := Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt _ (path_Y z v)
-  have hc := Complex.conjCLE.toContinuousLinearMap.hasFDerivAt.comp_hasDerivAt _
-    ((hx.const_mul (g 1 0)).add_const (g 1 1))
-  convert (((hx.const_mul (g 0 0)).add_const (g 0 1)).mul hc).add
-    (hy.const_mul (g 0 0 * star (g 1 0))) using 1
+  convert (((hx.const_mul (g 0 0)).add_const (g 0 1)).mul (Complex.conjCLE.toContinuousLinearMap.hasFDerivAt.comp_hasDerivAt _
+    ((hx.const_mul (g 1 0)).add_const (g 1 1)))).add
+    ((Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt _ (path_Y z v)).const_mul (g 0 0 * star (g 1 0))) using 1
   · rfl
   · simp [N, dN, path, Complex.star_def]
-private lemma path_D (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3) :
+private lemma path_D :
     HasDerivAt (fun t => D (g 1 0) (g 1 1) (path z v t).1 (height (path z v t)^2))
       (dD (g 1 0) (g 1 1) z.1 v.1 (height z^2) v.2) 0 := by
   have hx := (path_x z v).const_mul (g 1 0) |>.add_const (g 1 1)
-  have hy := Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt _ (path_Y z v)
-  have hc := Complex.conjCLE.toContinuousLinearMap.hasFDerivAt.comp_hasDerivAt _ hx
-  convert (hx.mul hc).add (hy.const_mul (g 1 0 * star (g 1 0))) using 1
+  convert (hx.mul (Complex.conjCLE.toContinuousLinearMap.hasFDerivAt.comp_hasDerivAt _ hx)).add ((Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt _ (path_Y z v)).const_mul (g 1 0 * star (g 1 0))) using 1
   · rfl
   · simp [D, norm2, dD, path, Complex.star_def]
-private lemma path_R (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3) :
-    HasDerivAt (fun t => actionDenominator g (path z v t))
-      (Complex.re (dD (g 1 0) (g 1 1) z.1 v.1 (height z^2) v.2)) 0 := by
-  simpa only [Function.comp_def, Complex.reCLM_apply, D_cast, Complex.ofReal_re] using
-    Complex.reCLM.hasFDerivAt.comp_hasDerivAt _ (path_D g z v)
-private def diffX (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3) : ℂ :=
+
+end
+
+section
+
+variable (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3)
+
+private def diffX : ℂ :=
   (dN (g 0 0) (g 0 1) (g 1 0) (g 1 1) z.1 v.1 (height z^2) v.2 *
       (actionDenominator g z : ℂ) -
     N (g 0 0) (g 0 1) (g 1 0) (g 1 1) z.1 (height z^2) *
       dD (g 1 0) (g 1 1) z.1 v.1 (height z^2) v.2) /
       (actionDenominator g z : ℂ)^2
-private def diffU (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3) : ℝ :=
+private def diffU : ℝ :=
   v.2 - Complex.re (dD (g 1 0) (g 1 1) z.1 v.1 (height z^2) v.2) / actionDenominator g z
-private lemma path_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3) :
+private lemma path_action :
     HasDerivAt (fun t => action g (path z v t)) (diffX g z v, diffU g z v) 0 := by
-  have hr := path_R g z v
-  have hy := (path_u z v).exp
-  have hn : actionDenominator g z ≠ 0 := ne_of_gt (actionDenominator_pos g z)
-  have hc : (actionDenominator g z : ℂ) ≠ 0 := by exact_mod_cast hn
-  have hdet : ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ ≠ 0 := norm_ne_zero_iff.mpr g.det_ne_zero
-  have hx := (path_N g z v).div (path_D g z v) (by simpa [path, D_cast] using hc)
-  have hu := ((hy.const_mul ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖).div hr
+  have hn := ne_of_gt (actionDenominator_pos g z)
+  have hdet := norm_ne_zero_iff.mpr g.det_ne_zero
+  have hx := (path_N g z v).div (path_D g z v) (by simpa [path, D_cast] using (by exact_mod_cast hn))
+  have hu := ((((path_u z v).exp).const_mul ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖).div (by
+    simpa only [Function.comp_def, Complex.reCLM_apply, D_cast, Complex.ofReal_re] using
+      Complex.reCLM.hasFDerivAt.comp_hasDerivAt _ (path_D g z v))
     (by simpa [path] using hn)).log (by
       simpa [path, height] using
         div_ne_zero (mul_ne_zero hdet (ne_of_gt (Real.exp_pos z.2))) hn)
@@ -369,28 +402,26 @@ private lemma path_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3)
         Pi.div_apply, ne_eq, Real.exp_ne_zero, not_false_eq_true, mul_one, Prod.snd_add,
         Prod.snd_smul, Prod.snd_zero]
       field_simp
-private lemma action_diff (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3)
+private lemma action_diff
     (hg : DifferentiableAt ℝ (action g) z) :
     fderiv ℝ (action g) z v = (diffX g z v, diffU g z v) := by
-  have hp := path_deriv z v
   have hg' : HasFDerivAt (action g) (fderiv ℝ (action g) z) (path z v 0) := by
     simpa [path] using hg.hasFDerivAt
-  have hcomp := hg'.comp_hasDerivAt 0 hp
-  have h := (path_action g z v).deriv.symm.trans hcomp.deriv
-  simpa [Function.comp_def, path] using h.symm
-private lemma rankOne_metric (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3) :
+  simpa [Function.comp_def, path] using ((path_action g z v).deriv.symm.trans (hg'.comp_hasDerivAt 0 (path_deriv z v)).deriv).symm
+private lemma rankOne_metric :
     (height (action g z))⁻¹ ^ 2 * ‖diffX g z v‖^2 + (diffU g z v)^2 =
       (height z)⁻¹ ^ 2 * ‖v.1‖^2 + v.2^2 := by
   have hy : height z ≠ 0 := ne_of_gt (Real.exp_pos _)
-  have hdet : ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ ≠ 0 := norm_ne_zero_iff.mpr g.det_ne_zero
+  let Matrix₀ := Matrix (Fin 2) (Fin 2) ℂ
+  have hdet : ‖(g : Matrix₀).det‖ ≠ 0 := norm_ne_zero_iff.mpr g.det_ne_zero
   have hd : actionDenominator g z ≠ 0 := ne_of_gt (actionDenominator_pos g z)
   have hyc : (height z : ℂ) ≠ 0 := by exact_mod_cast hy
   have hdc : (actionDenominator g z : ℂ) ≠ 0 := by exact_mod_cast hd
-  have hdetc : (‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ : ℂ) ≠ 0 := by exact_mod_cast hdet
+  have hdetc : (‖(g : Matrix₀).det‖ : ℂ) ≠ 0 := by exact_mod_cast hdet
   have h := metric_alg (g 0 0) (g 0 1) (g 1 0) (g 1 1) z.1 v.1 (height z^2) v.2
   rw [D_cast] at h
   have ht : norm2 (g 0 0*g 1 1-g 0 1*g 1 0) =
-      (‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ : ℂ)^2 := by
+      (‖(g : Matrix₀).det‖ : ℂ)^2 := by
     rw [norm2_cast, Matrix.det_fin_two, Complex.ofReal_pow]
   rw [ht, Complex.ofReal_pow] at h
   apply Complex.ofReal_injective
@@ -399,7 +430,7 @@ private lemma rankOne_metric (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : 
   rw [← Complex.ofReal_pow ‖diffX g z v‖, ← Complex.ofReal_pow ‖v.1‖,
     ← norm2_cast, ← norm2_cast]
   rw [action_height]
-  change (↑(‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ * height z / actionDenominator g z) : ℂ)⁻¹ ^ 2 * _ + _ = _
+  change (↑(‖(g : Matrix₀).det‖ * height z / actionDenominator g z) : ℂ)⁻¹ ^ 2 * _ + _ = _
   simp only [Complex.ofReal_div, Complex.ofReal_mul, Complex.ofReal_inv]
   unfold diffX diffU
   simp only [Complex.ofReal_sub, Complex.ofReal_div, Complex.ofReal_pow,
@@ -411,7 +442,13 @@ private lemma rankOne_metric (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : 
   simp only [map_sub, map_mul, Complex.conj_ofReal] at h ⊢
   linear_combination h
 
-theorem metric_invariant (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+end
+
+section
+
+variable (d : ℕ)
+
+theorem metric_invariant (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (z v : Space d) :
     metric d (productAction d g z) (fderiv ℝ (productAction d g) z v) =
       metric d z v := by
@@ -427,7 +464,6 @@ theorem metric_invariant (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin
     funext i
     rw [fderiv_comp z (ha i) (differentiableAt_apply i z)]
     congr 1
-    change fderiv ℝ (ContinuousLinearMap.proj i : Space d →L[ℝ] H3) z = _
     exact (ContinuousLinearMap.proj i : Space d →L[ℝ] H3).hasFDerivAt.fderiv
   unfold metric
   rw [hp]
@@ -437,16 +473,16 @@ theorem metric_invariant (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin
     ContinuousLinearMap.proj_apply, action_diff (g i) (z i) (v i) (ha i)]
   exact rankOne_metric (g i) (z i) (v i)
 
-private abbrev Idx (d : ℕ) := (i : Fin d) × (Fin 2 ⊕ Unit)
-private def B (d : ℕ) : Module.Basis (Idx d) ℝ (Space d) :=
+private abbrev Idx := (i : Fin d) × (Fin 2 ⊕ Unit)
+private def B : Module.Basis (Idx d) ℝ (Space d) :=
   Pi.basis (fun _ => Complex.basisOneI.prod (Module.Basis.singleton Unit ℝ))
-private def weights (d : ℕ) (z : Space d) (i : Idx d) : ℝ :=
+private def weights (z : Space d) (i : Idx d) : ℝ :=
   match i.2 with
   | Sum.inl _ => (height (z i.1))⁻¹ ^ 2
   | Sum.inr _ => 1
-private def Q (d : ℕ) (z : Space d) : QuadraticForm ℝ (Space d) :=
+private def Q (z : Space d) : QuadraticForm ℝ (Space d) :=
   (QuadraticMap.weightedSumSquares ℝ (weights d z)).comp (B d).equivFun.toLinearMap
-private lemma Q_eq (d : ℕ) (z v : Space d) : Q d z v = metric d z v := by
+private lemma Q_eq (z v : Space d) : Q d z v = metric d z v := by
   simp only [Q, QuadraticMap.comp_apply, LinearEquiv.coe_coe,
     Module.Basis.equivFun_apply, QuadraticMap.weightedSumSquares_apply,
     Fintype.sum_sigma, Fintype.sum_sum_type, Fin.sum_univ_two, Fintype.sum_unique,
@@ -457,6 +493,8 @@ private lemma Q_eq (d : ℕ) (z v : Space d) : Q d z v = metric d z v := by
   intro i _
   rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
   ring
+
+end
 private lemma w_discr {ι : Type*} [Fintype ι] [DecidableEq ι] (w : ι → ℝ) :
     QuadraticForm.discr' (QuadraticMap.weightedSumSquares ℝ w) = ∏ i, w i := by
   have hm : QuadraticForm.toMatrix' (QuadraticMap.weightedSumSquares ℝ w) = Matrix.diagonal w := by
@@ -492,6 +530,8 @@ private lemma density_pos (d : ℕ) (z : Space d) : 0 < volumeDensity d z := by
   apply Finset.prod_pos
   intro i _
   exact sq_pos_of_pos (inv_pos.mpr (Real.exp_pos _))
+
+alias HyperbolicActionMetricAndVolume.density_pos := density_pos
 private lemma jacobian_metric (d : ℕ) (f : Space d → Space d) (z : Space d)
     (hm : ∀ v, metric d (f z) (fderiv ℝ f z v) = metric d z v) :
     |(fderiv ℝ f z).det| * volumeDensity d (f z) = volumeDensity d z := by
@@ -502,16 +542,19 @@ private lemma jacobian_metric (d : ℕ) (f : Space d → Space d) (z : Space d)
   rw [hq, Q_discr, Q_discr, LinearMap.det_toMatrix] at hh
   change volumeDensity d z ^ 2 =
     (fderiv ℝ f z).det * (fderiv ℝ f z).det * volumeDensity d (f z) ^ 2 at hh
-  have ha : (|(fderiv ℝ f z).det| * volumeDensity d (f z)) ^ 2 = volumeDensity d z ^ 2 := by
-    rw [mul_pow, sq_abs]
-    nlinarith [hh]
-  exact (sq_eq_sq₀ (mul_nonneg (abs_nonneg _) (le_of_lt (density_pos d (f z))))
-    (le_of_lt (density_pos d z))).mp ha
+  refine (sq_eq_sq₀ (mul_nonneg (abs_nonneg _) (le_of_lt (density_pos d (f z))))
+    (le_of_lt (density_pos d z))).mp ?_
+  rw [mul_pow, sq_abs]
+  nlinarith [hh]
 private lemma action_inv (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     Function.LeftInverse (action g⁻¹) (action g) := by
   intro z
   rw [← (action_laws g⁻¹ g z).2, inv_mul_cancel, (action_laws g g z).1]
-private lemma product_bij (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
+section
+
+variable (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+
+private lemma product_bij :
     Function.Bijective (productAction d g) := by
   have h : Function.LeftInverse (productAction d (fun i => (g i)⁻¹)) (productAction d g) := by
     intro z
@@ -522,7 +565,7 @@ private lemma product_bij (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fi
     funext i
     simpa only [productAction, inv_inv] using action_inv ((g i)⁻¹) (z i)
   exact ⟨h.injective, h'.surjective⟩
-theorem hyperbolicVolume_invariant (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
+theorem hyperbolicVolume_invariant :
     Measure.map (productAction d g) (hyperbolicVolume d) = hyperbolicVolume d := by
   letI : (volume : Measure H3).IsAddHaarMeasure := by
     change ((volume : Measure ℂ).prod (volume : Measure ℝ)).IsAddHaarMeasure
@@ -532,25 +575,27 @@ theorem hyperbolicVolume_invariant (d : ℕ) (g : Fin d → Matrix.GeneralLinear
     exact MeasureTheory.Measure.pi.isAddHaarMeasure _
   have hc := (productAction_contDiff d g).continuous
   have hb := product_bij d g
-  have hd : ∀ z, DifferentiableAt ℝ (productAction d g) z :=
-    fun z => (productAction_contDiff d g).differentiable (by simp) z
   have hj (z : Space d) := jacobian_metric d (productAction d g) z (metric_invariant d g z)
   apply Measure.ext
   intro s hs
   rw [Measure.map_apply hc.measurable hs]
   unfold hyperbolicVolume
   rw [withDensity_apply _ (hc.measurable hs), withDensity_apply _ hs]
-  have hi : productAction d g '' (productAction d g ⁻¹' s) = s :=
-    Set.image_preimage_eq s hb.surjective
-  conv_rhs => rw [← hi]
-  rw [lintegral_image_eq_lintegral_abs_det_fderiv_mul (volume : Measure (Space d)) (hc.measurable hs)
-    (fun z _ => (hd z).hasFDerivAt.hasFDerivWithinAt) hb.injective.injOn]
+  conv_rhs => rw [← (Set.image_preimage_eq s hb.surjective)]
+  rw [lintegral_image_eq_lintegral_abs_det_fderiv_mul volume (hc.measurable hs)
+    (fun z _ => ((fun z => (productAction_contDiff d g).differentiable (by simp) z) z).hasFDerivAt.hasFDerivWithinAt) hb.injective.injOn]
   apply setLIntegral_congr_fun (hc.measurable hs)
   intro z _
   dsimp only
   rw [← ENNReal.ofReal_mul (abs_nonneg _), hj]
 
-theorem volumeDensity_split (d : ℕ) (p : SplitSpace d) :
+end
+
+section
+
+variable (d : ℕ)
+
+theorem volumeDensity_split (p : SplitSpace d) :
     volumeDensity (d + 1) (splitCoordinates d p) =
       Real.exp (-2 * (d + 1 : ℝ) * p.2.1) := by
   have hs : ∑ i, shape d p.2.2 i = 0 := by
@@ -567,9 +612,9 @@ theorem volumeDensity_split (d : ℕ) (p : SplitSpace d) :
   push_cast
   ring
 
-private def shearB (d : ℕ) (p : ℝ × (Fin d → ℝ)) : ℝ × (Fin d → ℝ) :=
+private def shearB (p : ℝ × (Fin d → ℝ)) : ℝ × (Fin d → ℝ) :=
   (p.1, fun i => p.2 i + p.1)
-private lemma shearB_mp (d : ℕ) : MeasurePreserving (shearB d) := by
+private lemma shearB_mp : MeasurePreserving (shearB d) := by
   change MeasurePreserving (fun p : ℝ × (Fin d → ℝ) => (id p.1, fun i => p.2 i + p.1))
     (volume.prod volume) (volume.prod volume)
   apply MeasurePreserving.skew_product (MeasurePreserving.id (volume : Measure ℝ))
@@ -577,10 +622,10 @@ private lemma shearB_mp (d : ℕ) : MeasurePreserving (shearB d) := by
   ·
     fun_prop
   · filter_upwards [] with t
-    exact (measurePreserving_add_right (volume : Measure (Fin d → ℝ)) (fun _ => t)).map_eq
-private def shearT (d : ℕ) (p : ℝ × (Fin d → ℝ)) : ℝ × (Fin d → ℝ) :=
+    exact (measurePreserving_add_right volume (fun _ => t)).map_eq
+private def shearT (p : ℝ × (Fin d → ℝ)) : ℝ × (Fin d → ℝ) :=
   (p.1 - ∑ i, p.2 i, p.2)
-private lemma shearT_mp (d : ℕ) : MeasurePreserving (shearT d) := by
+private lemma shearT_mp : MeasurePreserving (shearT d) := by
   have h := MeasurePreserving.skew_product (MeasurePreserving.id (volume : Measure (Fin d → ℝ)))
     (g := fun b t => t + (-∑ i, b i)) (by fun_prop)
     (Filter.Eventually.of_forall (fun b => (measurePreserving_add_right volume (-∑ i, b i)).map_eq))
@@ -590,7 +635,7 @@ private lemma shearT_mp (d : ℕ) : MeasurePreserving (shearT d) := by
     Prod.fst_swap, Prod.snd_swap, id_eq] using
     (Measure.measurePreserving_swap (μ := volume) (ν := volume)).comp
       (h.comp (Measure.measurePreserving_swap (μ := volume) (ν := volume)))
-private lemma scaleT_mp (d : ℕ) : MeasurePreserving
+private lemma scaleT_mp : MeasurePreserving
     (fun p : ℝ × (Fin d → ℝ) => ((d+1 : ℝ)*p.1, p.2))
     (ENNReal.ofReal (d+1 : ℝ) • volume) volume := by
   have hn : (d+1 : ℝ) ≠ 0 := by positivity
@@ -605,14 +650,11 @@ private lemma scaleT_mp (d : ℕ) : MeasurePreserving
     (ENNReal.ofReal (d+1 : ℝ) • volume.prod volume) (volume.prod volume)
   simpa only [Measure.prod_smul_left] using hh
 
-private lemma shape_mp (d : ℕ) : MeasurePreserving
+private lemma shape_mp : MeasurePreserving
     (fun p : ℝ × (Fin d → ℝ) => fun i => p.1 + shape d p.2 i)
     (ENNReal.ofReal (d+1 : ℝ) • volume) volume := by
-  let e := MeasurableEquiv.piFinSuccAbove (fun _ : Fin (d+1) => ℝ) (Fin.last d)
-  have he := (volume_preserving_piFinSuccAbove (fun _ : Fin (d+1) => ℝ) (Fin.last d)).symm
-  have hh := he.comp ((shearT_mp d).comp ((scaleT_mp d).comp
-    ((shearB_mp d).smul_measure (ENNReal.ofReal (d+1 : ℝ)))))
-  convert hh using 1
+  convert (((volume_preserving_piFinSuccAbove (fun _ : Fin (d+1) => ℝ) (Fin.last d)).symm).comp ((shearT_mp d).comp ((scaleT_mp d).comp
+    ((shearB_mp d).smul_measure (ENNReal.ofReal (d+1 : ℝ)))))) using 1
   funext p i
   simp only [Function.comp_def, shearB, shearT, Prod.map_apply, id_eq]
   refine Fin.lastCases ?_ (fun j => ?_) i
@@ -621,17 +663,15 @@ private lemma shape_mp (d : ℕ) : MeasurePreserving
     ring
   · simp [shape, MeasurableEquiv.piFinSuccAbove, Fin.insertNthEquiv, Fin.insertNth,
       add_comm]
-private lemma split_mp (d : ℕ) : MeasurePreserving (splitCoordinates d)
+private lemma split_mp : MeasurePreserving (splitCoordinates d)
     (ENNReal.ofReal (d+1 : ℝ) • volume) volume := by
-  have hh := (MeasurePreserving.id (volume : Measure (Fin (d+1) → ℂ))).prod (shape_mp d)
-  have he := (volume_measurePreserving_arrowProdEquivProdArrow ℂ ℝ (Fin (d+1))).symm
-  have hc := he.comp hh
-  change MeasurePreserving (splitCoordinates d)
-    (ENNReal.ofReal (d+1 : ℝ) • volume.prod volume) volume
+  have hc := ((volume_measurePreserving_arrowProdEquivProdArrow ℂ ℝ (Fin (d+1))).symm).comp ((MeasurePreserving.id volume).prod (shape_mp d))
   rw [Measure.prod_smul_right] at hc
   convert hc using 1
   funext p i
   rfl
+
+end
 
 private lemma weighted_map {A B : Type*} [MeasurableSpace A] [MeasurableSpace B]
     {μ : Measure A} {ν : Measure B} {f : A → B} (hf : MeasurePreserving f μ ν)
@@ -645,6 +685,8 @@ private lemma weighted_map {A B : Type*} [MeasurableSpace A] [MeasurableSpace B]
     lintegral_map (hρ.indicator hs) hf.measurable]
   congr 1
 
+alias HyperbolicActionMetricAndVolume.weighted_map := weighted_map
+
 theorem hyperbolicVolume_split (d : ℕ) :
     Measure.map (splitCoordinates d)
       (volume.withDensity (fun p : SplitSpace d =>
@@ -653,9 +695,8 @@ theorem hyperbolicVolume_split (d : ℕ) :
   have hr : Measurable (fun z : Space (d+1) => ENNReal.ofReal (volumeDensity (d+1) z)) := by
     unfold volumeDensity height
     fun_prop
-  have h := weighted_map (split_mp d) _ hr
   unfold hyperbolicVolume
-  rw [← h]
+  rw [← (weighted_map (split_mp d) _ hr)]
   congr 1
   rw [withDensity_smul_measure]
   rw [← withDensity_smul _ (hr.comp (split_mp d).measurable)]

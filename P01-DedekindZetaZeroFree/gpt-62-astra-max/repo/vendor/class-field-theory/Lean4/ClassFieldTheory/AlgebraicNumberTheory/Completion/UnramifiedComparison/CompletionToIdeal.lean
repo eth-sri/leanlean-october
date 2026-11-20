@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -132,11 +127,12 @@ theorem chosenFinitePlace_integralUniformizer_map_isUniformizer
     Valuation.isUniformizer_of_maximalIdeal_eq_span
       (v := targetDVF.valuation) hpiTargetMaximalIdeal
 
+variable (v : HeightOneSpectrum (𝓞 K))
+
 /-- Completed unramifiedness forces ramification index one at the actual
 global centre of the chosen finite-place extension. -/
 theorem
     finitePlaceExtensionCentre_ramificationIdx'_eq_one_of_chosenFinitePlaceIsUnramified
-    (v : HeightOneSpectrum (𝓞 K))
     (hunram :
       ChosenFinitePlaceIsUnramified
         (K := K) (L := L) v) :
@@ -181,20 +177,17 @@ theorem
         (W.adicCompletion L) :=
     { ValueGroup := WithZero (Multiplicative ℤ)
       valuation := Valued.v }
-  have hpiTargetConcreteUniformizer :
-      targetDVF.valuation.IsUniformizer
-        ((eTarget πTarget :
-          W.adicCompletionIntegers L) :
-          W.adicCompletion L) :=
+  have hpiTargetConcreteUniformizer :=
     Valuation.isUniformizer_of_maximalIdeal_eq_span
       (v := targetDVF.valuation)
       hpiTargetConcreteIrreducible.maximalIdeal_eq
+  let exp₀ := WithZero.exp (-1 : ℤ)
   have hpiTargetConcreteValuation :
       targetDVF.valuation
           ((eTarget πTarget :
             W.adicCompletionIntegers L) :
             W.adicCompletion L) =
-        WithZero.exp (-1 : ℤ) := by
+        exp₀ := by
     have h := hpiTargetConcreteUniformizer
     rw [Valuation.IsUniformizer.iff,
       Valuation.IsRankOneDiscrete.generator_eq_exp_neg_one_of_surjective
@@ -245,21 +238,21 @@ theorem
       Valued.v
           (algebraMap K (v.adicCompletion K)
             (πData.integer : K)) =
-        WithZero.exp (-1 : ℤ) := by
+        exp₀ := by
     change
       Valued.v
           (πData.integer : v.adicCompletion K) =
-        WithZero.exp (-1 : ℤ)
+        exp₀
     rw [HeightOneSpectrum.valuedAdicCompletion_eq_valuation',
       HeightOneSpectrum.valuation_of_algebraMap,
       πData.intValuation_eq_exp_neg_one]
   let eGlobal : ℕ :=
     v.asIdeal.ramificationIdx' W.asIdeal
   have hvalued :
-      WithZero.exp (-1 : ℤ) =
-        WithZero.exp (-1 : ℤ) ^ eGlobal := by
+      exp₀ =
+        exp₀ ^ eGlobal := by
     calc
-      WithZero.exp (-1 : ℤ) =
+      exp₀ =
           Valued.v
             (eTarget πTarget :
               W.adicCompletion L) :=
@@ -283,15 +276,15 @@ theorem
               K L v w
               (algebraMap K (v.adicCompletion K)
                 (πData.integer : K))
-      _ = WithZero.exp (-1 : ℤ) ^ eGlobal := by
+      _ = exp₀ ^ eGlobal := by
         exact congrArg (fun z => z ^ eGlobal)
           hpiConcreteValuation
   have hexp :
-      WithZero.exp (-1 : ℤ) =
+      exp₀ =
         WithZero.exp (-(eGlobal : ℤ)) := by
     calc
-      WithZero.exp (-1 : ℤ) =
-          WithZero.exp (-1 : ℤ) ^ eGlobal :=
+      exp₀ =
+          exp₀ ^ eGlobal :=
         hvalued
       _ =
           WithZero.exp (eGlobal • (-1 : ℤ)) :=
@@ -300,11 +293,10 @@ theorem
           WithZero.exp (-(eGlobal : ℤ)) := by
         congr 1
         simp
-  have hint :
-      (-1 : ℤ) = -(eGlobal : ℤ) :=
+  have hint :=
     WithZero.exp_injective hexp
   have heGlobal : eGlobal = 1 := by
-    have heInt : (1 : ℤ) = (eGlobal : ℤ) :=
+    have heInt :=
       neg_injective hint
     exact_mod_cast heInt.symm
   exact heGlobal
@@ -312,7 +304,6 @@ theorem
 /-- Unramifiedness of the actual chosen localized completion forces
 ideal-theoretic unramifiedness at its global centre. -/
 theorem isUnramifiedAt_of_chosenFinitePlaceIsUnramified
-    (v : HeightOneSpectrum (𝓞 K))
     (hunram :
       ChosenFinitePlaceIsUnramified
         (K := K) (L := L) v) :
@@ -323,10 +314,10 @@ theorem isUnramifiedAt_of_chosenFinitePlaceIsUnramified
   let w := chosenFinitePlaceExtension (L := L) v
   let W :=
     finitePlaceExtensionCentre
-      (K := K) (L := L) v w
-  let : W.asIdeal.LiesOver v.asIdeal :=
+        v w
+  let :=
     finitePlaceExtensionCentre_liesOver
-      (K := K) (L := L) v w
+        v w
   have hBasePrime :
       W.asIdeal.under (𝓞 K) ≠ ⊥ := by
     rw [← W.asIdeal.over_def v.asIdeal]
@@ -342,14 +333,13 @@ theorem isUnramifiedAt_of_chosenFinitePlaceIsUnramified
     v.asIdeal W.asIdeal v.ne_bot]
   exact
     finitePlaceExtensionCentre_ramificationIdx'_eq_one_of_chosenFinitePlaceIsUnramified
-      (K := K) (L := L) v hunram
+        v hunram
 
 /-- In a finite Galois number-field extension, completed unramifiedness at
 the chosen place implies ideal-theoretic unramifiedness at every finite place
 above the same base place. -/
 theorem
     isUnramifiedAt_at_finitePlaceAbove_of_chosenFinitePlaceIsUnramified
-    (v : HeightOneSpectrum (𝓞 K))
     (P : HeightOneSpectrum (𝓞 L))
     (hP : finitePlaceBelow (K := K) P = v)
     (hunram :
@@ -359,33 +349,22 @@ theorem
   let w := chosenFinitePlaceExtension (L := L) v
   let W :=
     finitePlaceExtensionCentre
-      (K := K) (L := L) v w
-  let : Finite (L ≃ₐ[K] L) :=
+        v w
+  let :=
     IsGaloisGroup.finite (L ≃ₐ[K] L) K L
-  let :
-      IsGaloisGroup
-        (L ≃ₐ[K] L) (𝓞 K) (𝓞 L) :=
+  let :=
     IsGaloisGroup.of_isFractionRing
       (L ≃ₐ[K] L) (𝓞 K) (𝓞 L) K L
   let : P.asIdeal.LiesOver v.asIdeal := by
     constructor
-    have h := congrArg HeightOneSpectrum.asIdeal hP
-    simpa only [finitePlaceBelow_asIdeal] using h.symm
-  let : W.asIdeal.LiesOver v.asIdeal :=
+    simpa using (congrArg HeightOneSpectrum.asIdeal hP).symm
+  let :=
     finitePlaceExtensionCentre_liesOver
-      (K := K) (L := L) v w
-  have hChosen :
-      Algebra.IsUnramifiedAt (𝓞 K) W.asIdeal :=
+        v w
+  have hChosen :=
     isUnramifiedAt_of_chosenFinitePlaceIsUnramified
-      (K := K) (L := L) v hunram
-  have hChosenRamification :
-      W.asIdeal.ramificationIdx (𝓞 K) = 1 := by
-    let : Algebra.IsUnramifiedAt (𝓞 K) W.asIdeal :=
-      hChosen
-    exact Ideal.ramificationIdx_eq_one W.asIdeal (𝓞 K)
-  have hRamification :
-      P.asIdeal.ramificationIdx (𝓞 K) =
-        W.asIdeal.ramificationIdx (𝓞 K) :=
+        v hunram
+  have hRamification :=
     HilbertRamification.Dedekind.dedekindRamification_ramificationIdx_eq
       v.asIdeal P.asIdeal W.asIdeal (L ≃ₐ[K] L)
   have hWBasePrime :
@@ -409,6 +388,9 @@ theorem
         (P.asIdeal.under (𝓞 K)).ResidueField :=
     PerfectField.ofFinite
   apply Ideal.ramificationIdx_eq_one_iff.mp
-  exact hRamification.trans hChosenRamification
+  refine hRamification.trans ?_
+  let :=
+    hChosen
+  exact Ideal.ramificationIdx_eq_one W.asIdeal (𝓞 K)
 
 end

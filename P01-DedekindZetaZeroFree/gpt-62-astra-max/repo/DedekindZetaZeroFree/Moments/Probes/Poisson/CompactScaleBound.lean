@@ -14,8 +14,8 @@ open DedekindZetaZeroFree.Quantitative.RawInitialKernel31
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def Einit : ℝ := Scales.kernelExponent 4 4 2
 
@@ -47,25 +47,31 @@ theorem norm_rawKernel_scale (u : Frequency D.recipe) (ξ w z : ℂ)
   have : (0 : ℝ) < 2 ^ Einit := Real.rpow_pos_of_pos h2 _
   field_simp
 
-theorem norm_rawInitialIntegrand_scale (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z)
+section
+
+variable (u : Frequency D.recipe) (Z : ℝ)
+
+theorem norm_rawInitialIntegrand_scale (hZ : 0 < Z)
     (t : ℝ × ℝ × ℝ) :
     ‖rawInitialIntegrand D u Z t‖ = (Z / 2) ^ Einit * ‖rawInitialIntegrand D u 2 t‖ := by
   unfold rawInitialIntegrand
   exact norm_rawKernel_scale D u _ _ _ (by simp) (by simp) (by simp) Z hZ
 
-theorem integral_norm_rawInitialIntegrand_scale (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z) :
+theorem integral_norm_rawInitialIntegrand_scale (hZ : 0 < Z) :
     ∫ t : ℝ × ℝ × ℝ, ‖rawInitialIntegrand D u Z t‖ =
       (Z / 2) ^ Einit * ∫ t : ℝ × ℝ × ℝ, ‖rawInitialIntegrand D u 2 t‖ := by
   rw [← integral_const_mul]
   exact integral_congr_ae
     (Filter.Eventually.of_forall fun t => norm_rawInitialIntegrand_scale D u Z hZ t)
 
-theorem norm_rawinitialRowIntegral_le (u : Frequency D.recipe) (Z : ℝ) :
+theorem norm_rawinitialRowIntegral_le :
     ‖rawinitialRowIntegral D u Z‖ ≤
       ‖(2 * (Real.pi : ℂ))⁻¹ ^ 3‖ * ∫ t : ℝ × ℝ × ℝ, ‖rawInitialIntegrand D u Z t‖ := by
   unfold rawinitialRowIntegral
   rw [norm_mul]
   exact mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm _) (norm_nonneg _)
+
+end
 
 theorem omittedSum_norm_le_scale :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ Z : ℝ, 0 < Z →
@@ -114,9 +120,8 @@ theorem omittedSum_locally_bounded (T : ℝ) (hT : 2 ≤ T) :
     ∃ M : ℝ, ∀ Z : ℝ, 2 ≤ Z → Z ≤ T → ‖PoissonFrequencyDecomposition.omittedSum D Z‖ ≤ M := by
   obtain ⟨C, hC, h⟩ := omittedSum_norm_le D
   refine ⟨C * T ^ Scales.kernelExponent 4 4 2, fun Z hZ hZT => (h Z hZ).trans ?_⟩
-  have hE : 0 < Scales.kernelExponent 4 4 2 := Einit_pos
   exact mul_le_mul_of_nonneg_left
-    (Real.rpow_le_rpow (by linarith) hZT hE.le) hC.le
+    (Real.rpow_le_rpow (by linarith) hZT Einit_pos.le) hC.le
 
 theorem bound_all_of_bound_ge {f : ℝ → ℂ} {p Z₀ C : ℝ} (hp : 0 < p) (hZ₀ : 2 ≤ Z₀)
     (hloc : ∀ T : ℝ, 2 ≤ T → ∃ M : ℝ, ∀ Z : ℝ, 2 ≤ Z → Z ≤ T → ‖f Z‖ ≤ M)
@@ -130,11 +135,9 @@ theorem bound_all_of_bound_ge {f : ℝ → ℂ} {p Z₀ C : ℝ} (hp : 0 < p) (h
   by_cases hZZ : Z₀ ≤ Z
   · refine (hbd Z hZZ).trans ?_
     nlinarith [le_max_left C 0, le_max_right C 0]
-  · have hZZ' : Z ≤ Z₀ := (not_le.mp hZZ).le
-    have h1 := hM Z hZ hZZ'
-    have h3 : (2 : ℝ) ^ p ≤ Z ^ p := Real.rpow_le_rpow (by norm_num) hZ hp.le
-    have h4 : |M| / 2 ^ p * 2 ^ p ≤ |M| / 2 ^ p * Z ^ p :=
-      mul_le_mul_of_nonneg_left h3 hpos
+  · have h1 := hM Z hZ ((not_le.mp hZZ).le)
+    have h4 :=
+      mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by norm_num) hZ hp.le) hpos
     rw [div_mul_cancel₀ _ h2.ne'] at h4
     have := le_abs_self M
     nlinarith [le_max_right C 0, le_max_left C 0]

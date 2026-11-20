@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -22,21 +20,20 @@ namespace ClassFieldTheory
 
 universe u
 
+variable (K : Type u) [Field K] [NumberField K]
+
 /-- The modulus with no finite exponent and no positivity condition.  Its ray
 class group is the ordinary ideal class group. -/
-def ordinaryRayClassModulus
-    (K : Type u) [Field K] [NumberField K] : RayClassModulus K where
+def ordinaryRayClassModulus : RayClassModulus K where
   finitePart := 0
   infinitePart := ∅
 
 /-- The ordinary class-group modulus is below every ray modulus. -/
 theorem ordinaryRayClassModulus_le
-    (K : Type u) [Field K] [NumberField K]
     (m : RayClassModulus K) :
     ordinaryRayClassModulus K ≤ m := by
   constructor
-  · change ∀ v, 0 ≤ m.finitePart v
-    exact fun _ => Nat.zero_le _
-  · exact Finset.empty_subset _
+  · positivity
+  apply Finset.empty_subset
 
 end ClassFieldTheory

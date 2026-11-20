@@ -35,9 +35,7 @@ theorem basis_of_delta_tests
     · intro hj
       exact absurd (Finset.mem_univ j) hj
 
-  have hcard : Fintype.card ι = Module.finrank K W :=
-    le_antisymm (LinearIndependent.fintype_card_le_finrank hli) hdim
-  exact ⟨basisOfLinearIndependentOfCardEqFinrank' (K := K) L hli hcard, fun i => by simp⟩
+  exact ⟨basisOfLinearIndependentOfCardEqFinrank' L hli (le_antisymm (LinearIndependent.fintype_card_le_finrank hli) hdim), fun i => by simp⟩
 
 end DedekindZetaZeroFree.KPTameJacquetBruhatTests
 
@@ -93,14 +91,13 @@ theorem root_restriction_and_mass
         KPPGLLocalCover.N F ζ hζ (Sum.inr q) x) =
           (rootLevelSet F ζ hζ q m).indicator (fun _ => if i = j then 1 else 0) x) := by
   have hfinite : μ (rootLevelSet F ζ hζ q m) ≠ ⊤ := hcompact.measure_ne_top
-  have hpositive : 0 < rootMass F ζ hζ q μ m := by
-    exact ENNReal.toReal_pos (hopen.measure_pos μ ⟨0, hzero⟩).ne' hfinite
+  have hpositive := ENNReal.toReal_pos (hopen.measure_pos μ ⟨0, hzero⟩).ne' hfinite
   have hπint : (π : LocalField F q) ∈ (valuation (LocalField F q)).integer := by
     rw [Valuation.mem_integer_iff]
     apply (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt
       (LocalField F q)).toOrderIso.le_iff_le.mp
     change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) ≤
+      (valuation (LocalField F q) π) ≤
       IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) 1
     rw [hπ, map_one]
     norm_num
@@ -168,28 +165,32 @@ namespace ScalarConstruction
 variable {G : Type*} [Group G] (B K : Subgroup G) (a : G) (χ : B →* ℂ)
  def chart (g : G) : Prop := ∃ (b : B) (k : K), g = b * a * k
  def f (g : G) : ℂ := if h : chart B K a g then χ h.choose else 0
-private theorem unique (hd : ∀ b : B, a⁻¹ * (b : G) * a ∈ K → χ b = 1)
+variable (hd : ∀ b : B, a⁻¹ * (b : G) * a ∈ K → χ b = 1)
+
+include hd in
+private theorem unique
     (b c : B) (k l : K) (he : (b : G) * a * k = c * a * l) : χ b = χ c := by
   have hm : a⁻¹ * ((c⁻¹ * b : B) : G) * a ∈ K := by
     have h : a⁻¹ * ((c⁻¹ * b : B) : G) * a = (l : G) * (k : G)⁻¹ := by
       simp only [Subgroup.coe_mul, Subgroup.coe_inv]
       calc
-        a⁻¹ * ((c : G)⁻¹ * b) * a = a⁻¹ * (c : G)⁻¹ * ((b : G) * a * k) * (k : G)⁻¹ := by group
+        _ = a⁻¹ * (c : G)⁻¹ * ((b : G) * a * k) * (k : G)⁻¹ := by group
         _ = a⁻¹ * (c : G)⁻¹ * ((c : G) * a * l) * (k : G)⁻¹ := by rw [he]
         _ = (l : G) * (k : G)⁻¹ := by group
     rw [h]
     exact K.mul_mem l.property (K.inv_mem k.property)
-  have hχ := hd (c⁻¹ * b) hm
   calc
     χ b = χ (c * (c⁻¹ * b)) := by simp
-    _ = χ c := by rw [map_mul, hχ, mul_one]
-private theorem f_chart (hd : ∀ b : B, a⁻¹ * (b : G) * a ∈ K → χ b = 1)
+    _ = χ c := by rw [map_mul, (hd (c⁻¹ * b) hm), mul_one]
+include hd in
+private theorem f_chart
     (b : B) (k : K) : f B K a χ ((b : G) * a * k) = χ b := by
   have h : chart B K a ((b : G) * a * k) := ⟨b, k, rfl⟩
   rw [f, dif_pos h]
   obtain ⟨l, hl⟩ := h.choose_spec
   exact unique B K a χ hd _ b l k hl.symm
-private theorem right (hd : ∀ b : B, a⁻¹ * (b : G) * a ∈ K → χ b = 1)
+include hd in
+private theorem right
     (g : G) (k : K) : f B K a χ (g * k) = f B K a χ g := by
   by_cases h : chart B K a g
   · obtain ⟨b, l, rfl⟩ := h
@@ -203,7 +204,8 @@ private theorem right (hd : ∀ b : B, a⁻¹ * (b : G) * a ∈ K → χ b = 1)
       rw [he, hl]
       simp [mul_assoc]
     simp [f, dif_neg h, dif_neg hn]
-private theorem covariant (hd : ∀ b : B, a⁻¹ * (b : G) * a ∈ K → χ b = 1)
+include hd in
+private theorem covariant
     (b : B) (g : G) : f B K a χ ((b : G) * g) = χ b * f B K a χ g := by
   by_cases h : chart B K a g
   · obtain ⟨c, l, rfl⟩ := h
@@ -232,12 +234,15 @@ variable (F : Type) [Field F] [NumberField F]
     exact map_one _
   map_mul' b c := by
     apply Subtype.ext
-    change S.borel.retract (inBorel F ζ hζ q S P (b * c)) = _
-    have he : inBorel F ζ hζ q S P (b * c) =
-        inBorel F ζ hζ q S P b * inBorel F ζ hζ q S P c := rfl
+    let inBorel₀ := inBorel F ζ hζ q S P
+    change S.borel.retract (inBorel₀ (b * c)) = _
+    have he : inBorel₀ (b * c) =
+        inBorel₀ b * inBorel₀ c := rfl
     rw [he, map_mul]
     rfl
- def chiHom (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
+ variable (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+
+def chiHom :
     BL F ζ hζ q S P →* ℂ where
   toFun := chi F ζ hζ q S P hP ε
   map_one' := by
@@ -256,7 +261,6 @@ variable (F : Type) [Field F] [NumberField F]
     cases ε <;> simp only [chi, chiH, hr, map_mul, Subgroup.coe_mul, Units.val_mul] <;>
       rw [hn] <;> ring
 theorem scalar_characteristic_sections
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
     (π : (LocalField F q)ˣ) (m : ℕ)
     (K : OpenSubgroup (ActualCover F ζ hζ q))
     (hK : (K : Set (ActualCover F ζ hζ q)) = splitCongruenceSet F ζ hζ q m)
@@ -331,7 +335,7 @@ theorem scalar_characteristic_sections
       refine ⟨b, W * (k : ActualCover F ζ hζ q) * W⁻¹, ?_, ?_⟩
       · rw [← hK]
         exact (hweyl _).mp k.property
-      · change g = (b : ActualCover F ζ hζ q) * eta F ζ hζ q π j * (W * (k : ActualCover F ζ hζ q) * W⁻¹) * W
+      · change g = b * eta F ζ hζ q π j * (W * k * W⁻¹) * W
         rw [hk]
         group
   · intro j k hk
@@ -383,9 +387,7 @@ theorem eventually_matrixChartDepth :
   refine ⟨r₀, ?_⟩
   intro r hr
   rw [hvalue]
-  have hi : Integrable ((rootLevelSet F ζ hζ q m).indicator (fun _ => c)) μ :=
-    (integrable_indicator_iff hs).mpr (integrableOn_const hfinite)
-  refine ⟨hi.integrableOn, ?_⟩
+  refine ⟨((integrable_indicator_iff hs).mpr (integrableOn_const hfinite)).integrableOn, ?_⟩
   rw [integral_indicator hs, Measure.restrict_restrict_of_subset (hr₀ r hr)]
   simp [rootMass, integral_const, smul_eq_mul, Measure.real]
 theorem conductor_trivial_on_integers
@@ -393,9 +395,7 @@ theorem conductor_trivial_on_integers
     (hc : HasConductorIntegers F q ψ)
     {x : LocalField F q} (hx : x ∈ (valuation (LocalField F q)).integer) :
     ψ (Multiplicative.ofAdd (-x)) = 1 := by
-  have hn := ((valuation (LocalField F q)).integer).neg_mem hx
-  have hh := (hc (-x)).mpr hn (1 : 𝒪[LocalField F q])
-  simpa using hh
+  simpa using ((hc (-x)).mpr (((valuation (LocalField F q)).integer).neg_mem hx) (1 : 𝒪[LocalField F q]))
 
 theorem stable_delta_of_root_restriction
     (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
@@ -507,13 +507,13 @@ private theorem pgl_diagonal_injective (K : Type*) [Field K] (u v : Kˣ)
     (huv : Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d K u 1) =
       Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d K v 1)) : u = v := by
   obtain ⟨c, hc⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp huv
-  have h11 := congrArg (fun g : GL (Fin 2) K => (g : Matrix (Fin 2) (Fin 2) K) 1 1) hc
-  have h00 := congrArg (fun g : GL (Fin 2) K => (g : Matrix (Fin 2) (Fin 2) K) 0 0) hc
+  have h11 := congrArg (fun g : GL (Fin 2) K => g 1 1) hc
+  have h00 := congrArg (fun g : GL (Fin 2) K => g 0 0) hc
   simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.scalar, Matrix.diagonal_apply] at h11 h00
   apply Units.ext
   calc
-    (u : K) = (u : K) * (c : K) := by simp [h11]
+    _ = (u : K) * (c : K) := by simp [h11]
     _ = (v : K) := h00
 
 private theorem pgl_weyl_diagonal (K : Type*) [Field K] (u : Kˣ) :
@@ -530,32 +530,11 @@ private theorem pgl_weyl_diagonal (K : Type*) [Field K] (u : Kˣ) :
     simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.scalar, Matrix.diagonal_apply]
 
-private theorem weyl_coordinate (h : actualTorus F ζ hζ q) :
-    S.borel.coordinate (S.borel.weyl h) = (S.borel.coordinate h)⁻¹ := by
-  apply pgl_diagonal_injective
-  rw [← S.borel.torus_projection]
-  rw [S.borel.weyl_from_lift, map_mul, map_mul, map_inv, S.borel.liftedW_projection,
-    S.borel.torus_projection]
-  apply mul_left_cancel (a := Matrix.ProjGenLinGroup.mk (KubotaRankTwo.w (LocalField F q)))
-  simp only [← mul_assoc, mul_inv_cancel, one_mul]
-  exact (pgl_weyl_diagonal (LocalField F q) (S.borel.coordinate h)).symm
+private alias weyl_coordinate := DedekindZetaZeroFree.KPTameJacquetBruhatTests.Raw.TamePolarizationsAndTwistedCoinvariants.weyl_coordinate
 
 theorem weyl_preserves_HL (hP : IsTamePolarization F ζ hζ q S P)
     (h : HL F ζ hζ q S P) :
-    S.borel.weyl (h : actualTorus F ζ hζ q) ∈ HL F ζ hζ q S P := by
-  have hm : S.cubeClassEquiv (S.heisenberg.π (h : actualTorus F ζ hζ q)) ∈
-      KPTameValuationCoordinates.unitCubeClasses (LocalField F q) := by
-    rw [← hP]
-    exact ⟨S.heisenberg.π h, h.property, rfl⟩
-  have hw : S.cubeClassEquiv (S.heisenberg.π (S.borel.weyl h)) =
-      (S.cubeClassEquiv (S.heisenberg.π (h : actualTorus F ζ hζ q)))⁻¹ := by
-    rw [S.cube_class, S.cube_class, weyl_coordinate F ζ hζ q S]
-    exact map_inv (QuotientGroup.mk' _) _
-  change S.heisenberg.π (S.borel.weyl h) ∈ P.L
-  have hi := (KPTameValuationCoordinates.unitCubeClasses (LocalField F q)).inv_mem hm
-  rw [← hw, ← hP] at hi
-  obtain ⟨d, hd, he⟩ := hi
-  exact S.cubeClassEquiv.injective he ▸ hd
+    S.borel.weyl (h : actualTorus F ζ hζ q) ∈ HL F ζ hζ q S P := by apply @DedekindZetaZeroFree.KPTameJacquetBruhatTests.Raw.weyl_preserves_HL <;> assumption
 
 def weylHL (hP : IsTamePolarization F ζ hζ q S P) :
     HL F ζ hζ q S P →* HL F ζ hζ q S P where
@@ -579,18 +558,22 @@ def retractL (b : BL F ζ hζ q S P) : HL F ζ hζ q S P :=
     rw [he']
     exact ha⟩
 
-def chiH (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+section
+
+variable (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+
+def chiH
     (h : HL F ζ hζ q S P) : ℂ :=
   (match ε with
     | .plus => (P.ωL h : ℂ)
     | .minus => (P.ωL (weylHL F ζ hζ q S P hP h) : ℂ)) *
     normPower (LocalField F q) (S.borel.coordinate h) (1 / 2)
 
-def chi (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+def chi
     (b : BL F ζ hζ q S P) : ℂ :=
   chiH F ζ hζ q S P hP ε (retractL F ζ hζ q S P b)
 
-def scalarSections (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
+def scalarSections :
     Submodule ℂ (ActualCover F ζ hζ q → ℂ) where
   carrier := {f | (∀ (b : BL F ζ hζ q S P) (g : ActualCover F ζ hζ q),
     f ((b : ActualCover F ζ hζ q) * g) = chi F ζ hζ q S P hP ε b * f g) ∧
@@ -610,22 +593,16 @@ def scalarSections (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
     simp only [Pi.smul_apply, smul_eq_mul, hf.1]
     ring
 
- theorem scalarSections_stable
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) (g : ActualCover F ζ hζ q) :
+ theorem scalarSections_stable (g : ActualCover F ζ hζ q) :
     scalarSections F ζ hζ q S P hP ε ≤
-      (scalarSections F ζ hζ q S P hP ε).comap (rightTranslationRepresentation g) := by
-  intro f hf
-  refine ⟨?_, (mem_smoothSubmodule _ _).mp (smoothSubmodule_stable _ g
-    ((mem_smoothSubmodule _ _).mpr hf.2))⟩
-  intro b x
-  change f (((b : ActualCover F ζ hζ q) * x) * g) = _
-  rw [mul_assoc, hf.1]
-  rfl
+      (scalarSections F ζ hζ q S P hP ε).comap (rightTranslationRepresentation g) := by apply @DedekindZetaZeroFree.KPTameJacquetBruhatTests.Raw.scalarSections_stable <;> assumption
 
-def scalarAction (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
+def scalarAction :
     Representation ℂ (ActualCover F ζ hζ q) (scalarSections F ζ hζ q S P hP ε) :=
   rightTranslationRepresentation.subrepresentation _
     (scalarSections_stable F ζ hζ q S P hP ε)
+
+end
 
 def eta (π : (LocalField F q)ˣ) (j : Fin 3) : ActualCover F ζ hζ q :=
   KPPGLLocalCover.A F ζ hζ (Sum.inr q) (π ^ j.val)
@@ -640,27 +617,28 @@ def jacquetIntegrand (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
     KPPGLLocalCover.N F ζ hζ (Sum.inr q) x) *
     (ψ (Multiplicative.ofAdd (-x)) : ℂ)
 
-def HasStableValue (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (π : (LocalField F q)ˣ) (ψ : Multiplicative (LocalField F q) →* ℂˣ)
-    (μ : Measure (LocalField F q)) (a : ActualCover F ζ hζ q)
-    (f : scalarSections F ζ hζ q S P hP ε) (z : ℂ) : Prop :=
+section
+
+variable (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) (π : (LocalField F q)ˣ)
+    (ψ : Multiplicative (LocalField F q) →* ℂˣ) (μ : Measure (LocalField F q)) (a : ActualCover F ζ hζ q)
+    (f : scalarSections F ζ hζ q S P hP ε)
+
+def HasStableValue (z : ℂ) : Prop :=
   ∃ r₀ : ℕ, ∀ r ≥ r₀,
     IntegrableOn (jacquetIntegrand F ζ hζ q S P hP ε ψ a f)
       (expandingBall F q π r) μ ∧
     (∫ x in expandingBall F q π r,
       jacquetIntegrand F ζ hζ q S P hP ε ψ a f x ∂μ) = z
 
-theorem stable_value_unique
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (π : (LocalField F q)ˣ) (ψ : Multiplicative (LocalField F q) →* ℂˣ)
-    (μ : Measure (LocalField F q)) (a : ActualCover F ζ hζ q)
-    (f : scalarSections F ζ hζ q S P hP ε) {z z' : ℂ}
+theorem stable_value_unique {z z' : ℂ}
     (hz : HasStableValue F ζ hζ q S P hP ε π ψ μ a f z)
     (hz' : HasStableValue F ζ hζ q S P hP ε π ψ μ a f z') : z = z' := by
   obtain ⟨r, hr⟩ := hz
   obtain ⟨r', hr'⟩ := hz'
   exact (hr (max r r') (le_max_left _ _)).2.symm.trans
     (hr' (max r r') (le_max_right _ _)).2
+
+end
 
 def HasConductorIntegers (ψ : Multiplicative (LocalField F q) →* ℂˣ) : Prop :=
   ∀ y : LocalField F q,
@@ -684,28 +662,28 @@ def bruhatSupport (π : (LocalField F q)ˣ) (j : Fin 3) (m : ℕ) :
     k ∈ splitCongruenceSet F ζ hζ q m ∧
       g = b * eta F ζ hζ q π j * k * KPPGLLocalCover.W F ζ hζ (Sum.inr q)}
 
-abbrev whittakerSpace (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ) :=
+section
+
+variable (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) (ψ : Multiplicative (LocalField F q) →* ℂˣ)
+
+abbrev whittakerSpace :=
   algebraicWhittaker (scalarAction F ζ hζ q S P hP ε)
     (KPLocalSmoothRepresentation.upperRoot F ζ hζ q) ψ
 
-abbrev Jacquet (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ) :=
+abbrev Jacquet :=
   RootCoinvariants (scalarAction F ζ hζ q S P hP ε)
     (KPLocalSmoothRepresentation.upperRoot F ζ hζ q) ψ
 
-def descend (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ)
+def descend
     (L : whittakerSpace F ζ hζ q S P hP ε ψ) :
     Jacquet F ζ hζ q S P hP ε ψ →ₗ[ℂ] ℂ :=
   rootCoinvariantsLift (scalarAction F ζ hζ q S P hP ε)
     (KPLocalSmoothRepresentation.upperRoot F ζ hζ q) ψ
     ⟨L.val, by
       intro t f
-      simpa only [smul_eq_mul] using L.property t f⟩
+      simpa using L.property t f⟩
 
-def jacquetDualEquiv (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ) :
+def jacquetDualEquiv :
     (Jacquet F ζ hζ q S P hP ε ψ →ₗ[ℂ] ℂ) ≃ₗ[ℂ]
       whittakerSpace F ζ hζ q S P hP ε ψ := by
   let e : RootEquivariantMaps (scalarAction F ζ hζ q S P hP ε)
@@ -713,10 +691,10 @@ def jacquetDualEquiv (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
       whittakerSpace F ζ hζ q S P hP ε ψ :=
     { toFun := fun L => ⟨L.val, by
         intro t f
-        simpa only [smul_eq_mul] using L.property t f⟩
+        simpa using L.property t f⟩
       invFun := fun L => ⟨L.val, by
         intro t f
-        simpa only [smul_eq_mul] using L.property t f⟩
+        simpa using L.property t f⟩
       left_inv := by intro L; rfl
       right_inv := by intro L; rfl
       map_add' := by intros; rfl
@@ -725,25 +703,19 @@ def jacquetDualEquiv (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
     (KPLocalSmoothRepresentation.upperRoot F ζ hζ q) ψ ℂ).trans e
 
 @[simp] theorem descend_mk
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ)
     (L : whittakerSpace F ζ hζ q S P hP ε ψ)
     (f : scalarSections F ζ hζ q S P hP ε) :
     descend F ζ hζ q S P hP ε ψ L
       (rootCoinvariantsMk (scalarAction F ζ hζ q S P hP ε)
-        (KPLocalSmoothRepresentation.upperRoot F ζ hζ q) ψ f) = L.val f := by
-  exact rootCoinvariantsLift_mk _ _ _ _ _
+        (KPLocalSmoothRepresentation.upperRoot F ζ hζ q) ψ f) = L.val f := rootCoinvariantsLift_mk _ _ _ _ _
 
 theorem descend_basis_separates
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ)
     (Λ : Module.Basis (Fin 3) ℂ (whittakerSpace F ζ hζ q S P hP ε ψ))
     {x y : Jacquet F ζ hζ q S P hP ε ψ}
     (hxy : ∀ i, descend F ζ hζ q S P hP ε ψ (Λ i) x =
       descend F ζ hζ q S P hP ε ψ (Λ i) y) : x = y := by
-  let b := Λ.map (jacquetDualEquiv F ζ hζ q S P hP ε ψ).symm
   have he : Module.Dual.eval ℂ _ x = Module.Dual.eval ℂ _ y := by
-    apply b.ext
+    apply (Λ.map (jacquetDualEquiv F ζ hζ q S P hP ε ψ).symm).ext
     exact hxy
   apply sub_eq_zero.mp
   apply (Module.forall_dual_apply_eq_zero_iff ℂ (x - y)).mp
@@ -752,8 +724,6 @@ theorem descend_basis_separates
   simpa using sub_eq_zero.mpr hφ
 
 theorem normalized_test_dual_basis
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ)
     (Λ : Module.Basis (Fin 3) ℂ (whittakerSpace F ζ hζ q S P hP ε ψ))
     (v : ℂ) (hv : v ≠ 0)
     (test : Fin 3 → scalarSections F ζ hζ q S P hP ε)
@@ -763,10 +733,10 @@ theorem normalized_test_dual_basis
         (KPLocalSmoothRepresentation.upperRoot F ζ hζ q) ψ (v⁻¹ • test j)) ∧
       (∀ i j, descend F ζ hζ q S P hP ε ψ (Λ i) (dual j) =
         if i = j then 1 else 0) := by
-  let e : Fin 3 → Jacquet F ζ hζ q S P hP ε ψ := fun j =>
+  let e := fun j =>
     rootCoinvariantsMk (scalarAction F ζ hζ q S P hP ε)
       (KPLocalSmoothRepresentation.upperRoot F ζ hζ q) ψ (v⁻¹ • test j)
-  let d : Fin 3 → Module.Dual ℂ (Jacquet F ζ hζ q S P hP ε ψ) :=
+  let d :=
     fun i => descend F ζ hζ q S P hP ε ψ (Λ i)
   have hd : ∀ i j, d i (e j) = if i = j then 1 else 0 := by
     intro i j
@@ -780,14 +750,18 @@ theorem normalized_test_dual_basis
   · intro j
     exact congrFun hdual.coe_basis j
   · intro i j
-    change d i (hdual.basis j) = _
     rw [show hdual.basis j = e j from congrFun hdual.coe_basis j]
     exact hd i j
 
-theorem stable_value_torus_covariance
-    (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
-    (π : (LocalField F q)ˣ) (ψ : Multiplicative (LocalField F q) →* ℂˣ)
-    (μ : Measure (LocalField F q)) (h : HL F ζ hζ q S P)
+end
+
+variable (hP : IsTamePolarization F ζ hζ q S P)
+
+local notation "LocalCompletion" => LocalField F q
+
+theorem stable_value_torus_covariance (ε : Sign)
+    (π : LocalCompletionˣ) (ψ : Multiplicative LocalCompletion →* ℂˣ)
+    (μ : Measure LocalCompletion) (h : HL F ζ hζ q S P)
     (a : ActualCover F ζ hζ q) (f : scalarSections F ζ hζ q S P hP ε) (z : ℂ)
     (hz : HasStableValue F ζ hζ q S P hP ε π ψ μ a f z) :
     HasStableValue F ζ hζ q S P hP ε π ψ μ
@@ -826,8 +800,7 @@ theorem stable_value_torus_covariance
   rw [he]
   exact ⟨hint.const_mul _, by rw [integral_const_mul, hval]⟩
 
-def TameJacquetTestDualityOutput
-    (hP : IsTamePolarization F ζ hζ q S P) (π : (LocalField F q)ˣ)
+def TameJacquetTestDualityOutput (π : (LocalField F q)ˣ)
     (ψ : Multiplicative (LocalField F q) →* ℂˣ) (μ : Measure (LocalField F q)) : Prop :=
   ∀ ε : Sign, ∃ Λ : Module.Basis (Fin 3) ℂ (whittakerSpace F ζ hζ q S P hP ε ψ),
     (∀ j f, HasStableValue F ζ hζ q S P hP ε π ψ μ
@@ -856,47 +829,46 @@ def TameJacquetTestDualityOutput
             if i = j then 1 else 0))
 
 theorem tame_jacquet_test_duality
-    (hP : IsTamePolarization F ζ hζ q S P)
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ)
+    (π : LocalCompletionˣ)
+    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt LocalCompletion
+      (valuation LocalCompletion (π : LocalCompletion)) = WithZero.exp (-1 : ℤ))
+    (ψ : Multiplicative LocalCompletion →* ℂˣ)
     (hψ : Continuous ψ) (hunitary : ∀ x, ‖(ψ x : ℂ)‖ = 1)
     (hconductor : HasConductorIntegers F q ψ)
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-    (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1) :
+    (μ : Measure LocalCompletion) [μ.IsAddHaarMeasure]
+    (hμ : μ ((valuation LocalCompletion).integer : Set LocalCompletion) = 1) :
     TameJacquetTestDualityOutput F ζ hζ q S P hP π ψ μ := by
   intro ε
   have hL := KPTameJacquetBruhatTests.stable_whittaker_family
     F ζ hζ q S P hP htame π hπ ψ hψ hunitary hconductor μ hμ ε
+  let HasStableValue₀ := HasStableValue F ζ hζ q S P hP ε π ψ μ
   change ∃ L : Fin 3 → whittakerSpace F ζ hζ q S P hP ε ψ,
-    ∀ j f, HasStableValue F ζ hζ q S P hP ε π ψ μ
+    ∀ j f, HasStableValue₀
       (eta F ζ hζ q π j) f ((L j).val f) at hL
   obtain ⟨L, hstable⟩ := hL
   have htests := KPTameJacquetBruhatTests.compact_bruhat_tests
     F ζ hζ q S P hP htame π hπ ψ hψ hunitary hconductor μ hμ ε
+  let rootMass₀ := rootMass F ζ hζ q μ
   change ∃ m₀ : ℕ, ∀ m ≥ m₀,
     KPLocalChartTopology.MatrixChartDepth F q m ∧
-    μ (rootLevelSet F ζ hζ q m) ≠ ⊤ ∧ 0 < rootMass F ζ hζ q μ m ∧
+    μ (rootLevelSet F ζ hζ q m) ≠ ⊤ ∧ 0 < rootMass₀ m ∧
     ∃ test : Fin 3 → scalarSections F ζ hζ q S P hP ε,
       (∀ j, (∀ k ∈ splitCongruenceSet F ζ hζ q m,
         scalarAction F ζ hζ q S P hP ε k (test j) = test j) ∧
         Function.support (test j).val ⊆ bruhatSupport F ζ hζ q S P π j m ∧
         (test j).val (eta F ζ hζ q π j *
           KPPGLLocalCover.W F ζ hζ (Sum.inr q)) = 1) ∧
-      (∀ i j, HasStableValue F ζ hζ q S P hP ε π ψ μ
+      (∀ i j, HasStableValue₀
         (eta F ζ hζ q π i) (test j)
-        ((rootMass F ζ hζ q μ m : ℂ) * if i = j then 1 else 0)) at htests
+        ((rootMass₀ m : ℂ) * if i = j then 1 else 0)) at htests
   obtain ⟨m₀, htests⟩ := htests
   have hpair : ∀ m ≥ m₀, ∀ test : Fin 3 → scalarSections F ζ hζ q S P hP ε,
-      (∀ i j, HasStableValue F ζ hζ q S P hP ε π ψ μ
+      (∀ i j, HasStableValue₀
         (eta F ζ hζ q π i) (test j)
-        ((rootMass F ζ hζ q μ m : ℂ) * if i = j then 1 else 0)) →
+        ((rootMass₀ m : ℂ) * if i = j then 1 else 0)) →
       ∀ i j, (L i).val (test j) =
-        (rootMass F ζ hζ q μ m : ℂ) * if i = j then 1 else 0 := by
-    intro m hm test hv i j
-    exact stable_value_unique F ζ hζ q S P hP ε π ψ μ _ _
+        (rootMass₀ m : ℂ) * if i = j then 1 else 0 := fun m hm test hv i j => stable_value_unique F ζ hζ q S P hP ε π ψ μ _ _
       (hstable i (test j)) (hv i j)
   have hdim := KPTameJacquetBruhatTests.whittaker_dimension_bound
     F ζ hζ q S P hP htame ψ hψ hunitary hconductor ε
@@ -904,14 +876,13 @@ theorem tame_jacquet_test_duality
     Module.finrank ℂ (whittakerSpace F ζ hζ q S P hP ε ψ) ≤ 3 at hdim
   letI := hdim.1
   obtain ⟨_, _, hpos, test, _, hv⟩ := htests m₀ le_rfl
-  have hnonzero : (rootMass F ζ hζ q μ m₀ : ℂ) ≠ 0 := by
-    exact_mod_cast ne_of_gt hpos
   obtain ⟨Λ, hΛ⟩ := KPTameJacquetBruhatTests.basis_of_delta_tests
     (algebraicWhittaker (scalarAction F ζ hζ q S P hP ε)
       (KPLocalSmoothRepresentation.upperRoot F ζ hζ q) ψ)
-    L test (rootMass F ζ hζ q μ m₀ : ℂ) hnonzero
+    L test (rootMass₀ m₀ : ℂ) (by
+      exact_mod_cast ne_of_gt hpos)
     (by intro i j; simpa using hpair m₀ le_rfl test hv i j)
-    (by simpa using hdim.2)
+    (by exact hdim.2)
   refine ⟨Λ, ?_, ?_, m₀, ?_⟩
   · intro j f
     rw [hΛ]
@@ -921,13 +892,13 @@ theorem tame_jacquet_test_duality
   · intro m hm
     obtain ⟨hdepth, hfinite, hpositive, test, hsupport, hvalues⟩ := htests m hm
     have hp : ∀ i j, (Λ i).val (test j) =
-        (rootMass F ζ hζ q μ m : ℂ) * if i = j then 1 else 0 := by
+        (rootMass₀ m : ℂ) * if i = j then 1 else 0 := by
       intro i j
       rw [hΛ]
       exact hpair m hm test hvalues i j
     refine ⟨hdepth, hfinite, hpositive, test, hsupport, hp, ?_⟩
     apply normalized_test_dual_basis F ζ hζ q S P hP ε ψ Λ
-      (rootMass F ζ hζ q μ m : ℂ) _ test hp
+      (rootMass₀ m : ℂ) _ test hp
     exact_mod_cast ne_of_gt hpositive
 
 end DedekindZetaZeroFree.KPTameJacquetTestDuality

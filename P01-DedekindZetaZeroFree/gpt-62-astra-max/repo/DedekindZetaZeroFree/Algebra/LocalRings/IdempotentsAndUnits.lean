@@ -31,9 +31,7 @@ theorem IsLocalRing.eq_zero_or_eq_one_of_isIdempotentElem {R : Type*} [Ring R] [
   rcases IsLocalRing.isUnit_or_isUnit_of_isUnit_add hsum with hu | hu
   · exact Or.inr (hu.mul_left_cancel (by rw [ha, mul_one]))
   · refine Or.inl ?_
-    have hidem : IsIdempotentElem (1 - a) := IsIdempotentElem.one_sub ha
-    have hone : (1 : R) - a = 1 := hu.mul_left_cancel (by rw [hidem, mul_one])
-    exact sub_eq_self.mp hone
+    exact sub_eq_self.mp (hu.mul_left_cancel (by rw [(IsIdempotentElem.one_sub ha), mul_one]))
 
 instance IsLocalRing.isDedekindFiniteMonoid {R : Type*} [Ring R] [IsLocalRing R] :
     IsDedekindFiniteMonoid R where

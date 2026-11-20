@@ -14,8 +14,8 @@ open KPContSectorCoveredQuotientVocabulary
 open KPContSectorFixedPushforwardSupport
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
 
 abbrev CoveredL2 := Lp ℂ 2 (coveredMeasure F ζ hζ R U)
 
@@ -27,30 +27,32 @@ def T (ε : rootsOfUnity 3 F) :
     (KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε⁻¹)
   left_inv := by
     intro u
+    let z_measurePreserving₀ := KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U
     change Lp.compMeasurePreserving (z F ζ hζ U ε⁻¹)
-        (KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε⁻¹)
+        (z_measurePreserving₀ ε⁻¹)
         (Lp.compMeasurePreserving (z F ζ hζ U ε)
-          (KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε) u) = u
+          (z_measurePreserving₀ ε) u) = u
     rw [← Lp.compMeasurePreserving_comp_apply u
-      (KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε)
-      (KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε⁻¹)]
+      (z_measurePreserving₀ ε)
+      (z_measurePreserving₀ ε⁻¹)]
     have hfun : (z F ζ hζ U ε) ∘ (z F ζ hζ U ε⁻¹) = id := by
       funext x
-      exact smul_inv_smul (ε : rootsOfUnity 3 F) x
+      exact smul_inv_smul ε x
     simp only [hfun]
     exact Lp.compMeasurePreserving_id_apply u
   right_inv := by
     intro u
+    let z_measurePreserving₀ := KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U
     change Lp.compMeasurePreserving (z F ζ hζ U ε)
-        (KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε)
+        (z_measurePreserving₀ ε)
         (Lp.compMeasurePreserving (z F ζ hζ U ε⁻¹)
-          (KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε⁻¹) u) = u
+          (z_measurePreserving₀ ε⁻¹) u) = u
     rw [← Lp.compMeasurePreserving_comp_apply u
-      (KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε⁻¹)
-      (KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε)]
+      (z_measurePreserving₀ ε⁻¹)
+      (z_measurePreserving₀ ε)]
     have hfun : (z F ζ hζ U ε⁻¹) ∘ (z F ζ hζ U ε) = id := by
       funext x
-      exact inv_smul_smul (ε : rootsOfUnity 3 F) x
+      exact inv_smul_smul ε x
     simp only [hfun]
     exact Lp.compMeasurePreserving_id_apply u
 
@@ -71,8 +73,7 @@ theorem H_isClosed : IsClosed (H F ζ hζ R U : Set (CoveredL2 F ζ hζ R U)) :=
   rw [Submodule.coe_iInf]
   exact isClosed_iInter (fun ε => ContinuousLinearMap.isClosed_ker _)
 
-instance instCompleteSpaceH : CompleteSpace (H F ζ hζ R U) := by
-  exact (H_isClosed F ζ hζ R U).isComplete.completeSpace_coe
+instance instCompleteSpaceH : CompleteSpace (H F ζ hζ R U) := (H_isClosed F ζ hζ R U).isComplete.completeSpace_coe
 
 instance instInnerProductSpaceH : InnerProductSpace ℂ (H F ζ hζ R U) :=
   inferInstanceAs (InnerProductSpace ℂ ↥(H F ζ hζ R U))
@@ -86,8 +87,7 @@ theorem mem_H_iff (u : CoveredL2 F ζ hζ R U) :
   rw [Submodule.mem_iInf]
   constructor
   · intro h ε
-    have hker : (((T F ζ hζ R U ε).toLinearIsometry.toContinuousLinearMap -
-        (chi F ζ hζ ε : ℂ) • ContinuousLinearMap.id ℂ (CoveredL2 F ζ hζ R U)) u) = 0 :=
+    have hker :=
       LinearMap.mem_ker.mp (h ε)
     have heq : T F ζ hζ R U ε u = (chi F ζ hζ ε : ℂ) • u := sub_eq_zero.mp hker
     refine (T_coeFn F ζ hζ R U ε u).symm.trans ?_

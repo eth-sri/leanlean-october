@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -78,18 +73,17 @@ private theorem ordinaryRayIdealsEquiv_apply
   constructor
   · rintro ⟨J, hJ, rfl⟩
     change J.1 ∈ rayPrincipalIdealSubgroup (ordinaryRayClassModulus K) at hJ
-    rw [ordinary_rayPrincipalIdealSubgroup_eq_range (K := K)] at hJ
+    rw [ordinary_rayPrincipalIdealSubgroup_eq_range] at hJ
     change ordinaryRayIdealsEquiv J ∈ (toPrincipalIdeal (𝓞 K) K).range
     rw [ordinaryRayIdealsEquiv_apply]
     exact hJ
   · intro hI
     let J : rayClassPrimeToIdeals (ordinaryRayClassModulus K) :=
-      ⟨I, by rw [ordinary_rayClassPrimeToIdeals_eq_top]; trivial⟩
+      ⟨I, by simp [ordinary_rayClassPrimeToIdeals_eq_top]⟩
     refine ⟨J, ?_, ?_⟩
     · change I ∈ rayPrincipalIdealSubgroup (ordinaryRayClassModulus K)
-      rw [ordinary_rayPrincipalIdealSubgroup_eq_range (K := K)]
-      exact hI
-    · exact ordinaryRayIdealsEquiv_apply J
+      simp_all [ordinary_rayPrincipalIdealSubgroup_eq_range]
+    rfl
 
 /-- The ideal-theoretic ray class group at the trivial modulus is the
 ordinary ideal class group. -/
@@ -101,22 +95,6 @@ noncomputable def ordinaryRayClassGroupEquivClassGroup :
       ordinaryRayIdealsEquiv
       ordinary_rayPrincipalIdealSubgroup_map).trans
     (ClassGroup.equiv K).symm
-
-/-- The equivalence takes the ordinary ray class of a finite prime to the
-usual prime ideal class. -/
-theorem ordinaryRayClassGroupEquivClassGroup_prime
-    (v : HeightOneSpectrum (𝓞 K)) :
-    ordinaryRayClassGroupEquivClassGroup
-        (ordinaryRayClassOfFinitePrime v) =
-      ClassGroup.mk K (finitePrimeFractionalIdeal v) := by
-  apply (ClassGroup.equiv K).injective
-  simp only [ordinaryRayClassGroupEquivClassGroup, MulEquiv.trans_apply,
-    MulEquiv.apply_symm_apply, ordinaryRayClassOfFinitePrime,
-    rayClassOfFinitePrime, ClassGroup.equiv_mk]
-  rw [QuotientGroup.congr_mk']
-  simp only [ordinaryRayIdealsEquiv_apply]
-  simp only [FractionalIdeal.canonicalEquiv_self, RingEquiv.coe_mulEquiv_refl]
-  congr 1
 
 end ClassFieldTheory
 

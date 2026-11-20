@@ -14,7 +14,7 @@ set_option maxHeartbeats 1000000
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 local notation "G" => KPGlobalTorusFunctionData.G F ζ hζ
 open KPGlobalResidualConstruction KPMsGreenFlux
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabActualMean renaming root_mem_rational → root_mem_rational
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabActualMean (root_mem_rational)
 
 theorem upper_integrand_descends (f : G → ℂ)
     (hr : ∀ γ : KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ, ∀g, f (γ.val*g)=f g)
@@ -23,7 +23,6 @@ theorem upper_integrand_descends (f : G → ℂ)
     f (KPGlobalTorusFunctionData.N F ζ hζ b*g)=f (KPGlobalTorusFunctionData.N F ζ hζ c*g) := by
   obtain ⟨t,ht⟩ := QuotientAddGroup.eq.mp hbc
   have he : c = algebraMap F (KPGlobalTorusFunctionData.Adeles F) t + b := by
-    change c = algebraMap F (NumberField.AdeleRing (𝓞 F) F) t + b
     rw [ht]
     abel
   rw [he,KPGlobalTorusFunctionData.N_add,mul_assoc]
@@ -33,9 +32,9 @@ theorem upper_integrand_continuous (f : G → ℂ) (hc : Continuous f)
     (hr : ∀ γ : KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ, ∀g, f (γ.val*g)=f g) :
     Continuous (fun p : KPAdditiveQuotient F × G =>
       f (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out p.1)*p.2)) := by
-  let : IsTopologicalGroup G :=
+  let :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
-  apply (QuotientAddGroup.isOpenQuotientMap_mk.prodMap (IsOpenQuotientMap.id (X:=G))).continuous_comp_iff.mp
+  apply (QuotientAddGroup.isOpenQuotientMap_mk.prodMap (IsOpenQuotientMap.id)).continuous_comp_iff.mp
   change Continuous (fun z : KPGlobalTorusFunctionData.Adeles F × G =>
     f (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out (QuotientAddGroup.mk z.1))*z.2))
   have he (z : KPGlobalTorusFunctionData.Adeles F × G) :
@@ -49,12 +48,9 @@ theorem upper_integrand_continuous (f : G → ℂ) (hc : Continuous f)
 theorem upper_continuous (f : G → ℂ) (hc : Continuous f)
     (hr : ∀ γ : KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ, ∀g, f (γ.val*g)=f g) :
     Continuous (upperConstantTerm F ζ hζ (KPWildKernelUpperBound.quotientHaar F) f) := by
-  have hj := upper_integrand_continuous f hc hr
-  change Continuous (fun g => ∫q : KPAdditiveQuotient F,
-    f (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out q)*g) ∂KPWildKernelUpperBound.quotientHaar F)
   apply continuousOn_univ.mp
-  apply continuousOn_integral_of_compact_support (k:=Set.univ) isCompact_univ
-  · exact (hj.comp continuous_swap).continuousOn
+  apply continuousOn_integral_of_compact_support isCompact_univ
+  · exact ((upper_integrand_continuous f hc hr).comp continuous_swap).continuousOn
   · intro p x hp hx
     exact False.elim (hx (Set.mem_univ x))
 
@@ -73,14 +69,15 @@ theorem upper_unipotent (f : G → ℂ)
       rw [QuotientAddGroup.mk_add]
       exact (Quotient.out_eq (q+QuotientAddGroup.mk a)).trans
         (congrArg (fun x : KPAdditiveQuotient F => x+QuotientAddGroup.mk a) (Quotient.out_eq q).symm)
-    have hd := upper_integrand_descends f hr g _ _ hq
     dsimp [φ]
-    rw [hd,KPGlobalTorusFunctionData.N_add,mul_assoc]
+    rw [(upper_integrand_descends f hr g _ _ hq),KPGlobalTorusFunctionData.N_add,mul_assoc]
   change (∫q, f (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out q)*(KPGlobalTorusFunctionData.N F ζ hζ a*g)) ∂KPWildKernelUpperBound.quotientHaar F) = ∫q,φ q ∂KPWildKernelUpperBound.quotientHaar F
   simp_rw [he]
   exact integral_add_right_eq_self φ (QuotientAddGroup.mk a)
 
-theorem source_central (s : ℂ) (f : KPMsRationalCompactCrossPairing.Source F ζ hζ s)
+variable (s : ℂ) (f : KPMsRationalCompactCrossPairing.Source F ζ hζ s)
+
+theorem source_central
     (ε : rootsOfUnity 3 F) (g : G) :
     f.val (KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * g) =
       (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ ε : ℂ) * f.val g := by
@@ -123,11 +120,9 @@ theorem source_central (s : ℂ) (f : KPMsRationalCompactCrossPairing.Source F �
     (KPGlobalTorusFunctionData.Nhom F ζ hζ).map_one
   simpa only [htv, hN, mul_one, hhalf, hc, one_mul] using f.property t 0 g
 
-theorem source_unipotent (s : ℂ) (f : KPMsRationalCompactCrossPairing.Source F ζ hζ s)
+theorem source_unipotent
     (a : KPGlobalTorusFunctionData.Adeles F) (g : G) :
-    f.val (KPGlobalTorusFunctionData.N F ζ hζ a*g)=f.val g := by
-  have h := f.property 1 a g
-  simpa [KPGlobalTorusFunctionData.deltaHalf] using h
+    f.val (KPGlobalTorusFunctionData.N F ζ hζ a*g)=f.val g := by apply @DedekindZetaZeroFree.KPGlobalResidualKernel.RawStageL2.Outgoing.ActualBruhat.section_unipotent_invariant <;> assumption
 end DedekindZetaZeroFree.FourierContinuation.ResidualBoundaryInvariance
 
 end

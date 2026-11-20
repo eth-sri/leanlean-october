@@ -16,9 +16,9 @@ open scoped Matrix
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
 
 variable {F : Type} [Field F] [NumberField F]
-variable {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
 
  def rationalHom : KPCuspArithmetic.PGL2 F →*
     KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ :=
@@ -37,18 +37,22 @@ variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
   conv_lhs => rw [← Quotient.out_eq g]
   rfl
 
-def actualFiniteRepresentative (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (j : KPMsGreenFlux.Cusps A) : KPFiniteCuspAtlas.FiniteCover F ζ hζ :=
+section
+
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (j : KPMsGreenFlux.Cusps A)
+
+def actualFiniteRepresentative : KPFiniteCuspAtlas.FiniteCover F ζ hζ :=
   (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ
     ((A.cuspAtlas j.1).representative j.2))⁻¹ * A.representative j.1
 
-def actualCuspLift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (j : KPMsGreenFlux.Cusps A) (p : KPCuspCharts.Cross F)
+def actualCuspLift (p : KPCuspCharts.Cross F)
     (k : KPMsGreenFlux.K F) (r : ℝ) : KPMsGreenFlux.Cover F ζ hζ :=
   KPMsGreenFlux.cuspRepresentative A j *
     KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
       (KPMsGreenFlux.balancedArch (ζ := ζ) (hζ := hζ) p k r) *
         (actualFiniteRepresentative A j).val
+
+end
 
  theorem rationalHom_product (g : KPCuspArithmetic.PGL2 F) :
     (rationalHom (ζ := ζ) (hζ := hζ) g).val =
@@ -65,12 +69,6 @@ def actualCuspLift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     rfl
   rw [hl]
   exact KPContinuation.RationalArchFiniteSplitting.rationalLift_product F ζ hζ g
-
-private theorem insertion_commutes_finite (a : KPSmoothActualFlowData.GInfinity F)
-    (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
-    Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) c.val :=
-  KPMsResidualTailRestoration.SharpConstantTerm.FiberStability.insertion_commutes_cover
-    F ζ hζ a c
 
 theorem actualCuspLift_arch_finite_formula
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
@@ -89,7 +87,8 @@ theorem actualCuspLift_arch_finite_formula
   unfold actualCuspLift actualFiniteRepresentative
   rw [hσ, rationalHom_product,
     (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1]
-  have hs := (insertion_commutes_finite (ζ := ζ) (hζ := hζ) a s).symm
+  have hs := ((KPMsResidualTailRestoration.SharpConstantTerm.FiberStability.insertion_commutes_cover
+    F ζ hζ a s)).symm
   change (_ * s.val) * _ * (s.val⁻¹ * _) = _
   rw [mul_assoc _ s.val _, hs.eq]
   dsimp only [σ, a]

@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -53,12 +50,8 @@ variable (A B)
 extension ramify over the base. -/
 theorem finite_ramified_heightOne_primes :
     {v : IsDedekindDomain.HeightOneSpectrum B |
-        ¬ Algebra.IsUnramifiedAt A v.asIdeal}.Finite := by
-  exact
-    (Ideal.finite_factors (R := B) (I := differentIdeal A B)
-        (differentIdeal_ne_bot (A := A) (B := B))).subset (by
-      intro v hv
-      exact (dvd_differentIdeal_iff (A := A) (B := B) (P := v.asIdeal)).mpr hv)
+        ¬ Algebra.IsUnramifiedAt A v.asIdeal}.Finite := (Ideal.finite_factors
+        (differentIdeal_ne_bot)).subset (fun v hv => (dvd_differentIdeal_iff).mpr hv)
 
 /-- Only finitely many height-one primes of the base ramify in a finite
 separable Dedekind extension. -/
@@ -66,16 +59,13 @@ theorem finite_ramified_base_heightOne_primes :
     {v : IsDedekindDomain.HeightOneSpectrum A |
         ∃ w : IsDedekindDomain.HeightOneSpectrum B,
           w.asIdeal.LiesOver v.asIdeal ∧ ¬ Algebra.IsUnramifiedAt A w.asIdeal}.Finite := by
-  let f : IsDedekindDomain.HeightOneSpectrum B →
-      IsDedekindDomain.HeightOneSpectrum A :=
+  let f :=
     heightOnePrimeBelow (A := A) (B := B)
   refine (finite_ramified_heightOne_primes A B).image f |>.subset ?_
   intro v hv
   rcases hv with ⟨w, hlie, hram⟩
   refine ⟨w, hram, ?_⟩
   apply IsDedekindDomain.HeightOneSpectrum.ext
-  dsimp [f, heightOnePrimeBelow]
-  let : w.asIdeal.LiesOver v.asIdeal := hlie
   exact (Ideal.over_def w.asIdeal v.asIdeal).symm
 
 end AlgebraicNumberTheory.Ramification

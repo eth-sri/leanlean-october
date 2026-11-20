@@ -27,8 +27,6 @@ private lemma numerator_bound (r : ℝ) (hr : 0 ≤ r) (hr' : r ≤ 1/2)
   have hc : ‖(r : ℂ)+(r : ℂ)^2-(r : ℂ)^3‖ ≤ 2*r := by
     have he : (r : ℂ)+(r : ℂ)^2-(r : ℂ)^3 = ((r+r^2-r^3 : ℝ) : ℂ) := by push_cast; rfl
     rw [he, Complex.norm_real, Real.norm_eq_abs]
-    have hr2 : r^2 ≤ r := by nlinarith
-    have hr3 : 0 ≤ r^3 := by positivity
     have hr32 : r^3 ≤ r^2 := by nlinarith [mul_nonneg (sq_nonneg r) (by linarith : 0 ≤ 1-r)]
     rw [abs_of_nonneg (by linarith)]
     nlinarith
@@ -78,7 +76,7 @@ theorem principal_local_majorant (σ₀ : ℝ) (hσ₀ : (2 : ℝ) / 3 < σ₀) 
   have hQpos : 0 < Q := by linarith
   have hr : 0 ≤ r := by dsimp [r]; positivity
   have hr' : r ≤ 1/2 := by dsimp [r]; exact (inv_le_comm₀ hQpos (by norm_num)).mpr (by norm_num; exact hQ)
-  have hD : ‖D‖ ≤ Real.rpow Q (-σ₀) :=
+  have hD :=
     exp_norm_bound Q (-s.re) (-σ₀) hQ (by linarith) α hα (-s) (by simp)
   have hE : ‖E‖ ≤ Real.rpow Q (3 - 6 * σ₀) :=
     exp_norm_bound Q (3 - 6*s.re) (3 - 6*σ₀) hQ (by linarith) β hβ (3 - 6*s) (by simp)
@@ -147,11 +145,8 @@ theorem principal_majorant_summable
       Real.rpow (idealNorm p.val.asIdeal) (-2) +
       Real.rpow (idealNorm p.val.asIdeal) (-1 - σ₀) +
       Real.rpow (idealNorm p.val.asIdeal) (3 - 6 * σ₀)) := by
-  have h₂ := summable_exterior_prime_norm_rpow F S 2 (by norm_num)
-  have h₁ := summable_exterior_prime_norm_rpow F S (1 + σ₀) (by linarith)
-  have h₃ := summable_exterior_prime_norm_rpow F S (6 * σ₀ - 3) (by linarith)
   have he : -(1 + σ₀) = -1 - σ₀ := by ring
-  convert (h₂.add h₁).add h₃ using 1 <;>
+  convert ((summable_exterior_prime_norm_rpow F S 2 (by norm_num)).add (summable_exterior_prime_norm_rpow F S (1 + σ₀) (by linarith))).add (summable_exterior_prime_norm_rpow F S (6 * σ₀ - 3) (by linarith)) using 1 <;>
     simp only [idealNorm, he, neg_sub, neg_neg, Real.rpow_eq_pow]
 
 end DedekindZetaZeroFree

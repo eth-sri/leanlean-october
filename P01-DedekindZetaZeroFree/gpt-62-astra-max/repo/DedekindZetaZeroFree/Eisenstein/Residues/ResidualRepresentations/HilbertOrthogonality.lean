@@ -12,10 +12,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPLiteralRaw KPGlobalTorusFiniteStages ThetaExpansion TensorActionSource
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "V" => RestrictedTensorSimple.Core (Plus R.A P C)
@@ -57,7 +57,7 @@ theorem core_residue_hilbert_orthogonal_centers (x : V) :
   obtain ⟨L⟩ := KPGlobalProductPolarizationCharacter.exists_compatible_local_data F ζ hζ
   obtain ⟨M, _⟩ := KPGlobalTorusFiniteStages.compatibleModelData_exists F ζ hζ L
   obtain ⟨HR, _, _, HP, ⟨HH⟩⟩ :=
-    kp_ms_fixed_haar_disintegration F ζ hζ (Measure.haar : Measure (G F ζ hζ)) inferInstance
+    kp_ms_fixed_haar_disintegration F ζ hζ Measure.haar inferInstance
   let A := ownedLiteralResidueFamily (full_product_compact_iwasawa R)
   obtain ⟨n, U, m, w, B, Z, z, hz, heig, horth, hnative, hcus, he⟩ :=
     ResidualHilbertCenters.finite_owned_residue_hilbert_orthogonal_centers F ζ hζ M HR HP HH
@@ -66,8 +66,6 @@ theorem core_residue_hilbert_orthogonal_centers (x : V) :
   refine ⟨M, HR, HP, HH, n, U, m, w, B, Z, z, hz, heig, horth, hnative, hcus, ?_⟩
   intro g
   have hpin : coreResidue R P C x = A.cleared (asLiteralFlat (coreFlatInsertion R P C x)) 0 := by
-    change A.residue (literalZeroProfileEquiv (full_product_compact_iwasawa R)
-      (coreFlatInsertion R P C x)) = _
     exact A.residue_flat _
   rw [hpin]
   exact he g

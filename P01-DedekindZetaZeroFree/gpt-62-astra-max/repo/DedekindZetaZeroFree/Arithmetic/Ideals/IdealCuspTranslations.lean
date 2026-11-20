@@ -47,11 +47,13 @@ theorem entries_of_preserves (I : FI) (hI : I ≠ 0)
       change _ ∧ (A • !![0; y]) 1 0 ∈ I at h
       simpa [Matrix.GeneralLinearGroup.smul_def, Matrix.mul_apply, Fin.sum_univ_two] using h.2
     simpa [div_self hI] using hd
+local notation "Mat₂" => Matrix (Fin 2) (Fin 2) F
+
 private theorem det_mem_one_of_preserves (I : FI) (hI : I ≠ 0)
     (A : Matrix.GeneralLinearGroup (Fin 2) F)
     (hA : ∀ V : Matrix (Fin 2) (Fin 1) F, V ∈ KPFiniteAdelicLatticeStabilizers.idealVectors F I →
       A • V ∈ KPFiniteAdelicLatticeStabilizers.idealVectors F I) :
-    ((A : Matrix (Fin 2) (Fin 2) F).det) ∈ (1 : FI) := by
+    ((A : Mat₂).det) ∈ (1 : FI) := by
   obtain ⟨ha, hb, hc, hd⟩ := entries_of_preserves F I hI A hA
   rw [Matrix.det_fin_two]
   exact (1 : FI).val.sub_mem (by simpa using FractionalIdeal.mul_mem_mul ha hd)
@@ -97,13 +99,12 @@ private theorem scalar_preserves (I : FI) (v : Rˣ) :
   constructor
   · exact hf v V
   · intro h
-    have hh := hf v⁻¹ (scalar v • V) h
     have he : scalar v⁻¹ = (scalar v)⁻¹ := by simp [scalar]
-    simpa [he] using hh
+    simpa [he] using (hf v⁻¹ (scalar v • V) h)
 
 theorem determinant_one_projective_iff (I : FI) (hI : I ≠ 0)
     (A : Matrix.GeneralLinearGroup (Fin 2) F)
-    (hd : (A : Matrix (Fin 2) (Fin 2) F).det = 1) :
+    (hd : (A : Mat₂).det = 1) :
     Matrix.ProjGenLinGroup.mk A ∈ KPFiniteAdelicLatticeStabilizers.idealProjectiveAut F I ↔
       A ∈ MulAction.stabilizer (KPFiniteAdelicLatticeStabilizers.RationalGL F)
         (KPFiniteAdelicLatticeStabilizers.idealVectors F I) := by
@@ -111,30 +112,26 @@ theorem determinant_one_projective_iff (I : FI) (hI : I ≠ 0)
   · intro h
     obtain ⟨C, hC, he⟩ := Subgroup.mem_map.mp h
     obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp he.symm
-    have hdet := det_mem_one_of_preserves F I hI C
-      (fun V hV => ((preserves_iff F I C).mp hC V).mp hV)
-    have hdeti := det_mem_one_of_preserves F I hI C⁻¹
-      (fun V hV => ((preserves_iff F I C⁻¹).mp
-        ((MulAction.stabilizer _ _).inv_mem hC) V).mp hV)
-    have hdC : (C : Matrix (Fin 2) (Fin 2) F).det = (u : F)^2 := by
+    have hdC : C.det = (u : F)^2 := by
       rw [← hu]
       simp [Matrix.det_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.det_fin_two, hd]
-    have hdCi : (↑(C⁻¹) : Matrix (Fin 2) (Fin 2) F).det = ((u⁻¹ : Fˣ) : F)^2 := by
-      have hh := congrArg (fun X : Matrix.GeneralLinearGroup (Fin 2) F =>
-        ((Matrix.GeneralLinearGroup.det X) : F)) (congrArg Inv.inv hu)
+    have hdCi : (↑(C⁻¹) : Mat₂).det = ((u⁻¹ : Fˣ) : F)^2 := by
       simpa [map_mul, map_inv, Matrix.GeneralLinearGroup.det_scalar,
-        Matrix.GeneralLinearGroup.val_det_apply, hd, Fintype.card_fin] using hh.symm
+        Matrix.GeneralLinearGroup.val_det_apply, hd, Fintype.card_fin] using (congrArg (fun X : Matrix.GeneralLinearGroup (Fin 2) F =>
+          ((Matrix.GeneralLinearGroup.det X) : F)) (congrArg Inv.inv hu)).symm
     obtain ⟨v, hv⟩ := scalar_unit_of_square_integral F u
-      (hdC ▸ hdet) (hdCi ▸ (show (↑(C⁻¹) : Matrix (Fin 2) (Fin 2) F).det ∈ (1 : FI) from hdeti))
+      (hdC ▸ (det_mem_one_of_preserves F I hI C
+        (fun V hV => ((preserves_iff F I C).mp hC V).mp hV))) (hdCi ▸ (show (↑(C⁻¹) : Mat₂).det ∈ (1 : FI) from (det_mem_one_of_preserves F I hI C⁻¹
+        (fun V hV => ((preserves_iff F I C⁻¹).mp
+          ((MulAction.stabilizer _ _).inv_mem hC) V).mp hV))))
     have hs := scalar_preserves F I v
     rw [hv] at hs
-    have ha := (MulAction.stabilizer _ _).mul_mem hC
-      ((MulAction.stabilizer _ _).inv_mem hs)
-    simpa [← hu] using ha
+    simpa [← hu] using ((MulAction.stabilizer _ _).mul_mem hC
+      ((MulAction.stabilizer _ _).inv_mem hs))
   · intro h
     exact Subgroup.mem_map.mpr ⟨A, h, rfl⟩
 theorem preserves_of_entries (I : FI) (hI : I ≠ 0)
-    (A : Matrix (Fin 2) (Fin 2) F)
+    (A : Mat₂)
     (ha : A 0 0 ∈ (1 : FI)) (hb : A 0 1 ∈ I⁻¹)
     (hc : A 1 0 ∈ I) (hd : A 1 1 ∈ (1 : FI)) :
     ∀ V : Matrix (Fin 2) (Fin 1) F, V ∈ KPFiniteAdelicLatticeStabilizers.idealVectors F I →
@@ -157,7 +154,7 @@ theorem preserves_of_entries (I : FI) (hI : I ≠ 0)
       exact I.val.smul_mem d hV
 theorem determinant_one_stabilizer_iff_entries (I : FI) (hI : I ≠ 0)
     (A : Matrix.GeneralLinearGroup (Fin 2) F)
-    (hdet : (A : Matrix (Fin 2) (Fin 2) F).det = 1) :
+    (hdet : (A : Mat₂).det = 1) :
     A ∈ MulAction.stabilizer (KPFiniteAdelicLatticeStabilizers.RationalGL F)
       (KPFiniteAdelicLatticeStabilizers.idealVectors F I) ↔
     A 0 0 ∈ (1 : FI) ∧ A 0 1 ∈ I⁻¹ ∧ A 1 0 ∈ I ∧ A 1 1 ∈ (1 : FI) := by
@@ -166,8 +163,7 @@ theorem determinant_one_stabilizer_iff_entries (I : FI) (hI : I ≠ 0)
     exact entries_of_preserves F I hI A
       (fun V hV => ((preserves_iff F I A).mp h V).mp hV)
   · rintro ⟨ha, hb, hc, hd⟩
-    have hf := preserves_of_entries F I hI (A : Matrix (Fin 2) (Fin 2) F) ha hb hc hd
-    have hinv : (↑(A⁻¹) : Matrix (Fin 2) (Fin 2) F) =
+    have hinv : (↑(A⁻¹) : Mat₂) =
         !![A 1 1, -A 0 1; -A 1 0, A 0 0] := by
       rw [Matrix.GeneralLinearGroup.coe_inv]
       rw [Matrix.inv_def, hdet]
@@ -175,8 +171,6 @@ theorem determinant_one_stabilizer_iff_entries (I : FI) (hI : I ≠ 0)
     have hi : ∀ V : Matrix (Fin 2) (Fin 1) F,
         V ∈ KPFiniteAdelicLatticeStabilizers.idealVectors F I →
           A⁻¹ • V ∈ KPFiniteAdelicLatticeStabilizers.idealVectors F I := by
-      change ∀ V, V ∈ KPFiniteAdelicLatticeStabilizers.idealVectors F I →
-        (↑(A⁻¹) : Matrix (Fin 2) (Fin 2) F) * V ∈ KPFiniteAdelicLatticeStabilizers.idealVectors F I
       apply preserves_of_entries F I hI
       · simpa [hinv] using hd
       · rw [hinv]; exact I⁻¹.val.neg_mem hb
@@ -185,9 +179,9 @@ theorem determinant_one_stabilizer_iff_entries (I : FI) (hI : I ≠ 0)
     apply (preserves_iff F I A).mpr
     intro V
     constructor
-    · exact hf V
+    · exact (preserves_of_entries F I hI A ha hb hc hd) V
     · intro h
-      simpa only [inv_smul_smul] using hi (A • V) h
+      simpa using hi (A • V) h
  def constraints (K : Fin 4 → FI) (c : Fin 4 → F) : Submodule R F where
   carrier := {x | ∀ i, x * c i ∈ K i}
   zero_mem' := by intro i; simpa using (K i).zero_mem
@@ -226,18 +220,15 @@ private theorem constraints_nonzero (K : Fin 4 → FI) (hK : ∀ i, K i ≠ 0) (
     constraints F K c ≠ ⊥ := by
   classical
   choose r hr hm using fun i => coeff_integer F (K i) (hK i) (c i)
-  let p : R := ∏ i : Fin 4, r i
-  have hp : p ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun i _ => hr i)
+  let p := ∏ i : Fin 4, r i
   have hpm : algebraMap R F p ∈ constraints F K c := by
     intro i
-    have he : p = (∏ j ∈ Finset.univ.erase i, r j) * r i := by
-      exact (Finset.prod_erase_mul _ _ (Finset.mem_univ i)).symm
+    have he : p = (∏ j ∈ Finset.univ.erase i, r j) * r i := (Finset.prod_erase_mul _ _ (Finset.mem_univ i)).symm
     rw [he, map_mul, mul_assoc, ← Algebra.smul_def]
     exact (K i).val.smul_mem _ (hm i)
   intro hb
   rw [hb] at hpm
-  have hz : algebraMap R F p = 0 := hpm
-  exact hp (NumberField.RingOfIntegers.coe_injective (by simpa using hz))
+  exact (Finset.prod_ne_zero_iff.mpr (fun i _ => hr i)) (NumberField.RingOfIntegers.coe_injective (by exact hpm))
  def unipotent (x : F) : Matrix.GeneralLinearGroup (Fin 2) F :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero !![1, x; 0, 1] (by simp [Matrix.det_fin_two])
 private theorem unipotent_fixes (x : F) :
@@ -253,15 +244,17 @@ private theorem conjugated_membership (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
     σ * Matrix.ProjGenLinGroup.mk (unipotent F x) * σ⁻¹ ∈ Γ := by
   rw [KPCuspArithmetic.conjugatedStabilizer, Subgroup.mem_map_equiv]
   simp only [MulAut.conj_symm_apply, inv_inv, MulAut.conj_apply, Subgroup.mem_inf]
-  have hf : σ * Matrix.ProjGenLinGroup.mk (unipotent F x) * σ⁻¹ ∈
-      MulAction.stabilizer (KPCuspArithmetic.PGL2 F) q := by
-    rw [MulAction.mem_stabilizer_iff]
-    rw [mul_smul, mul_smul, ← hσ, inv_smul_smul, unipotent_fixes]
-  exact and_iff_left hf
- def rootMatrix : Matrix (Fin 2) (Fin 2) F := !![0, 1; 0, 0]
- def coefficient (B : Matrix.GeneralLinearGroup (Fin 2) F) : Matrix (Fin 2) (Fin 2) F :=
+  apply and_iff_left
+  rw [MulAction.mem_stabilizer_iff]
+  rw [mul_smul, mul_smul, ← hσ, inv_smul_smul, unipotent_fixes]
+ def rootMatrix : Mat₂ := !![0, 1; 0, 0]
+ section
+
+variable (B : Matrix.GeneralLinearGroup (Fin 2) F)
+
+def coefficient : Matrix (Fin 2) (Fin 2) F :=
   (B : Matrix (Fin 2) (Fin 2) F) * rootMatrix F * (↑(B⁻¹) : Matrix (Fin 2) (Fin 2) F)
-private theorem coefficient_ne (B : Matrix.GeneralLinearGroup (Fin 2) F) : coefficient F B ≠ 0 := by
+private theorem coefficient_ne : coefficient F B ≠ 0 := by
   intro h
   have he := congrArg (fun M : Matrix (Fin 2) (Fin 2) F =>
     (↑(B⁻¹) : Matrix (Fin 2) (Fin 2) F) * M * (↑B : Matrix (Fin 2) (Fin 2) F)) h
@@ -273,7 +266,7 @@ private theorem coefficient_ne (B : Matrix.GeneralLinearGroup (Fin 2) F) : coeff
   rw [Matrix.mul_assoc, hb, Matrix.mul_one] at he
   have := congrArg (fun M : Matrix (Fin 2) (Fin 2) F => M 0 1) he
   simpa [rootMatrix] using this
-private theorem conjugate_formula (B : Matrix.GeneralLinearGroup (Fin 2) F) (x : F) :
+private theorem conjugate_formula (x : F) :
     (↑(B * unipotent F x * B⁻¹) : Matrix (Fin 2) (Fin 2) F) =
       1 + x • coefficient F B := by
   have hn : (↑(unipotent F x) : Matrix (Fin 2) (Fin 2) F) = 1 + x • rootMatrix F := by
@@ -281,6 +274,8 @@ private theorem conjugate_formula (B : Matrix.GeneralLinearGroup (Fin 2) F) (x :
     fin_cases i <;> fin_cases j <;> simp [unipotent, rootMatrix]
   rw [Units.val_mul, Units.val_mul, hn, Matrix.mul_add, Matrix.add_mul]
   simp [coefficient, Matrix.mul_smul, Matrix.smul_mul]
+
+end
 private theorem one_add_mem (z : F) : 1 + z ∈ (1 : FI) ↔ z ∈ (1 : FI) := by
   constructor
   · intro h
@@ -305,8 +300,8 @@ private theorem exists_translation_ideal (I : FI) (hI : I ≠ 0)
     (B : Matrix.GeneralLinearGroup (Fin 2) F) :
     ∃ J : FI, J ≠ 0 ∧ ∀ x : F,
       Matrix.ProjGenLinGroup.mk (B * unipotent F x * B⁻¹) ∈ KPFiniteAdelicLatticeStabilizers.idealProjectiveAut F I ↔ x ∈ J := by
-  let K : Fin 4 → FI := ![1, I⁻¹, I, 1]
-  let c : Fin 4 → F := ![coefficient F B 0 0, coefficient F B 0 1, coefficient F B 1 0, coefficient F B 1 1]
+  let K := ![1, I⁻¹, I, 1]
+  let c := ![coefficient F B 0 0, coefficient F B 0 1, coefficient F B 1 0, coefficient F B 1 1]
   have hc : ∃ i, c i ≠ 0 := by
     by_contra h
     push Not at h
@@ -317,12 +312,11 @@ private theorem exists_translation_ideal (I : FI) (hI : I ≠ 0)
     · exact h 1
     · exact h 2
     · exact h 3
-  have hK : ∀ i, K i ≠ 0 := by
-    intro i
-    fin_cases i <;> simp [K, hI]
   refine ⟨⟨constraints F K c, constraints_fractional F K c hc⟩, ?_, ?_⟩
   · intro hz
-    apply constraints_nonzero F K hK c
+    apply constraints_nonzero F K (by
+      intro i
+      fin_cases i <;> simp [K, hI]) c
     simpa using congrArg Subtype.val hz
   · intro x
     exact conjugate_membership F I hI B x

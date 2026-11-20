@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -40,15 +36,15 @@ universe u
 theorem nonarchimedeanLocalField_small
     (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] : Small.{0} K := by
-  let F : CompleteDVF.{u, u} K := localCompleteDVF K
+  let F := localCompleteDVF K
   let O := F.valuationSubring
   let I := F.maximalIdeal
   let : Finite F.residueField := by
     change Finite 𝓀[K]
     infer_instance
-  let : IsAdicComplete I O := F.isAdicComplete
+  let := F.isAdicComplete
   have hO : Small.{0} O := by
-    let f : O → (∀ n : ℕ, O ⧸ I ^ n) :=
+    let f :=
       fun x n => Ideal.Quotient.mk (I ^ n) x
     have hf : Function.Injective f := by
       intro x y h
@@ -56,8 +52,8 @@ theorem nonarchimedeanLocalField_small
       intro n
       simpa [f, Ideal.Quotient.mk_eq_mk_iff_sub_mem, SModEq] using congrFun h n
     exact small_of_injective hf
-  let : Small.{0} O := hO
-  let : IsFractionRing O K := F.toDVF.valuationSubring_isFractionRing
+  let := hO
+  let := F.toDVF.valuationSubring_isFractionRing
   apply small_of_surjective
     (f := fun p : O × O => (algebraMap O K p.1) / (algebraMap O K p.2))
   intro x

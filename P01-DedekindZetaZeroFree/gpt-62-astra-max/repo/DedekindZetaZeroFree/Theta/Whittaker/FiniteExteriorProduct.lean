@@ -12,10 +12,10 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open scoped Classical NumberField
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
-variable (D : SourceFactorization R Q T)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    (D : SourceFactorization R Q T)
 
 abbrev exteriorSlotValue (p : KPFinitePlace F)
     (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p)) : ℂ :=
@@ -169,11 +169,9 @@ theorem fourier_exterior_tuple (v : R.A.UnitQuotient)
   let b := exteriorFiniteTuple R P (fun p => a (Sum.inr p.val))
   let k := b⁻¹ * a
   have hk (w : KPHilbert.Place F) : k w ∈ DigitMasks.exteriorFactor R w := by
-    change (b⁻¹ * a) w ∈ _
     rw [RestrictedProduct.mul_apply, RestrictedProduct.inv_apply]
     by_cases hw : ∃ p : ThetaBranch.ExteriorPrime R.A, w = Sum.inr p.val
     · obtain ⟨p, rfl⟩ := hw
-      change (exteriorFiniteTuple R P (fun p => a (Sum.inr p.val)) (Sum.inr p.val))⁻¹ * a (Sum.inr p.val) ∈ _
       rw [exteriorFiniteTuple_at]
       by_cases hp : p ∈ P
       · rw [if_pos hp, inv_mul_cancel]
@@ -181,17 +179,13 @@ theorem fourier_exterior_tuple (v : R.A.UnitQuotient)
       · rw [if_neg hp, inv_one, one_mul]
         exact hP p hp
     · rw [ha w hw]
-      have hb : b w = 1 := exteriorFiniteTuple_off R P _ w (fun p _ he => hw ⟨p, he⟩)
-      rw [hb, inv_one, one_mul]
+      rw [(exteriorFiniteTuple_off R P _ w (fun p _ he => hw ⟨p, he⟩)), inv_one, one_mul]
       exact (DigitMasks.exteriorFactor R _).one_mem
   have hsupport : Function.mulSupport (fun p : ThetaBranch.ExteriorPrime R.A => exteriorSlotValue R D p.val (a (Sum.inr p.val))) ⊆ P := by
     intro p hp
     by_contra hn
     exact hp (exteriorSlotValue_compact R D p _ (hP p hn))
-  have hs : Function.HasFiniteMulSupport (fun p : ThetaBranch.ExteriorPrime R.A => exteriorSlotValue R D p.val (a (Sum.inr p.val))) :=
-    P.finite_toSet.subset hsupport
-  refine ⟨hs, ?_⟩
-  have he : b * k = a := mul_inv_cancel_left b a
+  refine ⟨(P.finite_toSet.subset hsupport), ?_⟩
   have hi (q : KPAdditiveQuotient F) := DigitMasks.theta_full_exterior R T v k hk
     (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * (restrictedLift R g * restrictedLift R b))
   have hfourier : fourier R Q.dq (T.theta v) (restrictedLift R g * restrictedLift R a) =
@@ -201,7 +195,7 @@ theorem fourier_exterior_tuple (v : R.A.UnitQuotient)
     filter_upwards [] with q
     have h := hi q
     change T.theta v ((_ * (restrictedLift R g * restrictedLift R b)) * restrictedLift R k) = _ at h
-    rw [mul_assoc, mul_assoc, ← map_mul, he] at h
+    rw [mul_assoc, mul_assoc, ← map_mul, (mul_inv_cancel_left b a)] at h
     rw [h]
   rw [hfourier, fourier_exterior_finite R D v P _ g hg]
   rw [finprod_eq_prod_of_mulSupport_subset _ hsupport]
@@ -214,14 +208,11 @@ theorem exterior_tuple_finite_exceptional
     have h := a.property
     rw [Filter.eventually_cofinite] at h
     exact h
-  have he : Function.Injective (fun p : ThetaBranch.ExteriorPrime R.A => (Sum.inr p.val : KPHilbert.Place F)) := by
-    intro p q h
-    exact Subtype.ext (Sum.inr_injective h)
-  have hp := hf.preimage he.injOn
-  refine ⟨hp.toFinset, ?_⟩
+  have he : Function.Injective (fun p : ThetaBranch.ExteriorPrime R.A => (Sum.inr p.val : KPHilbert.Place F)) := fun p q h => Subtype.ext (Sum.inr_injective h)
+  refine ⟨(hf.preimage he.injOn).toFinset, ?_⟩
   intro p hn
   have hmem : a (Sum.inr p.val) ∈ KPAdelicCoverRestrictedProduct.compact F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) := by
-    simpa only [Set.Finite.mem_toFinset, Set.mem_preimage, Set.mem_setOf_eq, not_not] using hn
+    simpa using hn
   simpa only [DigitMasks.exteriorFactor, dif_pos p.property,
     KPAdelicCoverRestrictedProduct.compact, KPAdelicCoverRestrictedProduct.finiteCompact,
     dif_neg (DigitMasks.exterior_not_bad R p.val p.property)] using hmem

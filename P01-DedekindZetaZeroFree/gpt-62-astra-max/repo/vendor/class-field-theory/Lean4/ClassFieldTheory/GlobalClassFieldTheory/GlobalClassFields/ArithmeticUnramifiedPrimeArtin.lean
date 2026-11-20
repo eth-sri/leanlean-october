@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -46,10 +40,13 @@ variable
     [Field L] [NumberField L] [Algebra K L]
     [IsAbelianGalois K L]
 
+section
+
+variable (v : HeightOneSpectrum (𝓞 K))
+
 /-- The arithmetic global Artin element of the ordinary normalized
 one-place prime idèle. -/
-noncomputable def arithmeticFinitePlacePrimeArtin
-    (v : HeightOneSpectrum (𝓞 K)) :
+noncomputable def arithmeticFinitePlacePrimeArtin :
     L ≃ₐ[K] L :=
   Reciprocity.arithmeticGlobalArtinMonoidHom K L
     (finitePrimeIdele v)
@@ -57,8 +54,7 @@ noncomputable def arithmeticFinitePlacePrimeArtin
 /-- The arithmetic prime Artin element is the arithmetic chosen local
 Artin value of the normalized order-one element. -/
 @[simp]
-theorem arithmeticFinitePlacePrimeArtin_eq_arithmeticChosenFinitePlaceArtin
-    (v : HeightOneSpectrum (𝓞 K)) :
+theorem arithmeticFinitePlacePrimeArtin_eq_arithmeticChosenFinitePlaceArtin :
     arithmeticFinitePlacePrimeArtin (K := K) (L := L) v =
       Reciprocity.arithmeticChosenFinitePlaceArtinMonoidHom
         K L v (FiniteIdeleGroup.chosenLocalOrderSection v 1) := by
@@ -68,8 +64,7 @@ theorem arithmeticFinitePlacePrimeArtin_eq_arithmeticChosenFinitePlaceArtin
 /-- Arithmetic and geometric prime Artin elements are inverse
 automorphisms. -/
 @[simp]
-theorem arithmeticFinitePlacePrimeArtin_eq_inv
-    (v : HeightOneSpectrum (𝓞 K)) :
+theorem arithmeticFinitePlacePrimeArtin_eq_inv :
     arithmeticFinitePlacePrimeArtin (K := K) (L := L) v =
       (finitePlacePrimeArtin (K := K) (L := L) v)⁻¹ := by
   rw [arithmeticFinitePlacePrimeArtin,
@@ -81,16 +76,16 @@ transported through its decomposition group into the global Galois group.
 The unramifiedness hypothesis concerns this chosen extension, not an
 unrelated abstract local field. -/
 noncomputable def chosenFinitePlaceArithmeticFrobenius
-    (v : HeightOneSpectrum (𝓞 K))
     (hunram :
       _root_.ChosenFinitePlaceIsUnramified
         (K := K) (L := L) v) :
     L ≃ₐ[K] L := by
-  let w := chosenFinitePlaceExtension (L := L) v
   exact Reciprocity.finitePlaceLocalToGlobalMonoidHom
-    (K := K) (L := L) v w
+      v (chosenFinitePlaceExtension v)
     (Reciprocity.chosenFinitePlaceLocalArithmeticFrobenius
-      (K := K) (L := L) v hunram)
+        v hunram)
+
+end
 
 /-- At an unramified chosen finite place, the arithmetic prime Artin
 element really is the global decomposition-group transport of local
@@ -106,63 +101,26 @@ theorem arithmeticFinitePlacePrimeArtin_eq_chosenFinitePlaceArithmeticFrobenius
       chosenFinitePlaceArithmeticFrobenius
         (K := K) (L := L) v hunram := by
   let w := chosenFinitePlaceExtension (L := L) v
-  let x : (v.adicCompletion K)ˣ :=
+  let x :=
     FiniteIdeleGroup.chosenLocalOrderSection v 1
   have hgeometric :
       Reciprocity.chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) v x =
+            v x =
         (chosenFinitePlaceArithmeticFrobenius
-          (K := K) (L := L) v hunram)⁻¹ := by
+            v hunram)⁻¹ := by
     change Reciprocity.finitePlaceArtinMonoidHomOfExtension
-        (K := K) (L := L) v w x = _
+          v w x = _
     rw [Reciprocity.finitePlaceArtinMonoidHomOfExtension_factor]
     change Reciprocity.finitePlaceLocalToGlobalMonoidHom
-        (K := K) (L := L) v w
+          v w
         (Reciprocity.finitePlaceLocalArtinMonoidHom
-          (K := K) (L := L) v w x) = _
+            v w x) = _
     rw [Reciprocity.chosenFinitePlaceLocalArtin_eq_arithmeticFrobenius_inv_of_unramified
       (K := K) (L := L) v hunram, map_inv]
     rfl
   rw [arithmeticFinitePlacePrimeArtin_eq_arithmeticChosenFinitePlaceArtin,
     Reciprocity.arithmeticChosenFinitePlaceArtinMonoidHom_apply]
   rw [hgeometric, inv_inv]
-
-/-- At an unramified chosen place, the arithmetic prime Artin element
-has order equal to the local extension degree. -/
-theorem
-    orderOf_arithmeticFinitePlacePrimeArtin_eq_finitePlaceLocalDegree_of_chosenUnramified
-    (v : HeightOneSpectrum (𝓞 K))
-    (hunram :
-      _root_.ChosenFinitePlaceIsUnramified
-        (K := K) (L := L) v) :
-    orderOf
-        (arithmeticFinitePlacePrimeArtin
-          (K := K) (L := L) v) =
-      _root_.finitePlaceLocalDegree
-        (K := K) (L := L) v := by
-  rw [arithmeticFinitePlacePrimeArtin_eq_inv,
-    orderOf_inv]
-  exact
-    orderOf_finitePlacePrimeArtin_eq_finitePlaceLocalDegree_of_chosenUnramified
-      (K := K) (L := L) v hunram
-
-/-- An unramified finite place splits completely exactly when its
-arithmetic Frobenius is trivial. -/
-theorem
-    arithmeticFinitePlacePrimeArtin_eq_one_iff_splitsCompletely_of_chosenUnramified
-    (v : HeightOneSpectrum (𝓞 K))
-    (hunram :
-      _root_.ChosenFinitePlaceIsUnramified
-        (K := K) (L := L) v) :
-    arithmeticFinitePlacePrimeArtin
-          (K := K) (L := L) v =
-        1 ↔
-      _root_.FinitePlaceSplitsCompletely
-        (K := K) (L := L) v := by
-  rw [arithmeticFinitePlacePrimeArtin_eq_inv, inv_eq_one]
-  exact
-    finitePlacePrimeArtin_eq_one_iff_splitsCompletely_of_chosenUnramified
-      (K := K) (L := L) v hunram
 
 end GlobalClassFields
 end GlobalClassFieldTheory

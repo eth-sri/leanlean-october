@@ -17,12 +17,16 @@ namespace LocalExponentHelpers
 open scoped BigOperators
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
-def shellRestriction (C : Context Q) : Context Q :=
+section
+
+variable (C : Context Q)
+
+def shellRestriction : Context Q :=
   { C with lam := fun b => if b ∈ Sieve.paperShell F c C.N then C.lam b else 0 }
 
-theorem shellRestriction_support (C : Context Q) :
+theorem shellRestriction_support :
     Function.support (shellRestriction C).lam ⊆
       (Sieve.paperShell F c C.N : Set (Ideal (𝓞 F))) := by
   intro b hb
@@ -30,41 +34,37 @@ theorem shellRestriction_support (C : Context Q) :
   by_contra h
   exact hb (by simp [shellRestriction, h])
 
-theorem shellRestriction_energy (C : Context Q) :
+theorem shellRestriction_energy :
     Sieve.energy F c C.N (shellRestriction C).lam =
       Sieve.energy F c C.N C.lam := by
   apply Finset.sum_congr rfl
   intro b hb
   simp [shellRestriction, hb]
 
-theorem shellRestriction_validPair (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) :
+theorem shellRestriction_validPair (p : Ideal (𝓞 F) × Ideal (𝓞 F)) :
     (shellRestriction C).ValidPair p ↔ C.ValidPair p := by
   constructor <;> intro h <;> cases h <;> constructor <;> assumption
 
-theorem shellRestriction_pairs (C : Context Q) :
+theorem shellRestriction_pairs :
     (shellRestriction C).pairs = C.pairs := by
   ext p
   simp only [Context.pairs, Finset.mem_filter, Finset.mem_product,
     shellRestriction_validPair]
   rfl
 
-theorem shellRestriction_E3 (C : Context Q) (B : ℝ) (unit : Bool) :
+theorem shellRestriction_E3 (B : ℝ) (unit : Bool) :
     E3 (shellRestriction C) B unit = E3 C B unit := by
   unfold E3 Context.pairSum
   rw [shellRestriction_pairs]
   apply Finset.sum_congr rfl
   intro p hp
-  have hp' : p ∈ C.pairs := hp
-  have hpc := (Finset.mem_filter.mp hp').1
-  have hc1 := (Finset.mem_product.mp hpc).1
-  have hc2 := (Finset.mem_product.mp hpc).2
-  have hs1 := (Finset.mem_filter.mp hc1).2.1
-  have hs2 := (Finset.mem_filter.mp hc2).2.1
-  have hv : C.ValidPair p := (Finset.mem_filter.mp hp).2
-  have hv' := (shellRestriction_validPair C p).mpr hv
-  rw [dif_pos hv', dif_pos hv]
-  simp only [shellRestriction, Context.coefficient, hs1, hs2, if_pos]
+  have hpc := (Finset.mem_filter.mp hp).1
+  have hv := (Finset.mem_filter.mp hp).2
+  rw [dif_pos ((shellRestriction_validPair C p).mpr hv), dif_pos hv]
+  simp only [shellRestriction, Context.coefficient, ((Finset.mem_filter.mp ((Finset.mem_product.mp hpc).1)).2.1), ((Finset.mem_filter.mp ((Finset.mem_product.mp hpc).2)).2.1), if_pos]
   rfl
+
+end
 
 theorem finiteSup_mul_le (S : Finset (ℝ × ℝ)) (f : ℝ × ℝ → ℝ)
     (k R : ℝ) (hk : 0 < k) (hR : 0 ≤ R)
@@ -78,29 +78,7 @@ theorem finiteSup_mul_le (S : Finset (ℝ × ℝ)) (f : ℝ × ℝ → ℝ)
     simpa only [hz0] using div_nonneg hR hk.le
   · exact (le_div_iff₀ hk).mpr (by simpa only [mul_comm] using h P hP)
 
-theorem prefix_U_nonneg (B X : ℝ) : 0 ≤ ErrorRectangles.U Q B X := by
-  unfold ErrorRectangles.U
-  dsimp only
-  by_cases h : BddAbove ({0} ∪ {z : ℝ | ∃ lam : Ideal (𝓞 F) → ℂ,
-    (∑ b ∈ Sieve.idealAdmissibleFinset F c (2 * X), ‖lam b‖ ^ 2) ≤ 1 ∧
-    z = ∑ a ∈ Sieve.idealAdmissibleFinset F c (2 * B),
-      ‖∑ b ∈ Sieve.idealAdmissibleFinset F c (2 * X), lam b * (Q.χ b) a‖ ^ 2})
-  · exact le_csSup h (Or.inl rfl)
-  · rw [Real.sSup_of_not_bddAbove h]
-
-private theorem max_prefix_bound (B M N n P η A : ℝ)
-    (hB : 1 ≤ B) (hBM : B ≤ M) (hN : 1 ≤ N) (hn : 1 ≤ n)
-    (hP : 1 ≤ P) (hη : 0 ≤ η) (hA : 0 ≤ A) :
-    A * (B * max 1 (N / (n * P))) ^ η ≤ A * (2 * (M*N)) ^ η := by
-  have hnP : 1 ≤ n*P := by nlinarith
-  have hN0 : 0 ≤ N := by linarith
-  have hx : max 1 (N/(n*P)) ≤ 2*N := max_le (by linarith)
-    ((div_le_self hN0 hnP).trans (by linarith))
-  have hbase : B * max 1 (N/(n*P)) ≤ 2*(M*N) := by
-    calc _ ≤ B*(2*N) := mul_le_mul_of_nonneg_left hx (by linarith)
-         _ ≤ M*(2*N) := mul_le_mul_of_nonneg_right hBM (by positivity)
-         _ = _ := by ring
-  exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) hbase hη) hA
+alias prefix_U_nonneg := DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.LargeDirect.LargeDirectRectangles.U_nonneg
 
 private theorem rectangle_thresholds (C : Context Q) (B α η A : ℝ)
     (hM : 1 ≤ C.M) (hN : 1 ≤ C.N) (hn : 1 ≤ norm C.d)
@@ -121,34 +99,38 @@ private theorem rectangle_thresholds (C : Context Q) (B α η A : ℝ)
       C.estimatePrefactor * ErrorRectangles.originScore C B P ≤
         L*(2*C.M + norm C.d*t*(Real.sqrt C.M*B^(α-1/2)))) := by
   obtain ⟨h1, h2, hp1, hp2⟩ := ErrorRectangles.rectangle_endpoints C P hP
-  have hn0 : 0 < norm C.d := by linarith
   have bound : ∀ T : ℝ, 1 ≤ T →
       ErrorRectangles.U Q B (C.N/(norm C.d*T)) ≤
         (A*(2*(C.M*C.N))^η)*(max 1 ((C.N/norm C.d)/T)+B^α) := by
     intro T hT
-    have ht0 : 0 < T := by linarith
     calc _ ≤ A*(B*max 1 (C.N/(norm C.d*T)))^η *
         (max 1 (C.N/(norm C.d*T))+B^α) := hb _ (by positivity)
       _ ≤ A*(2*(C.M*C.N))^η *
         (max 1 (C.N/(norm C.d*T))+B^α) :=
           mul_le_mul_of_nonneg_right
-            (max_prefix_bound B C.M C.N (norm C.d) T η A hB hBM hN hn hT hη hA)
+            (by
+              refine mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) ?_ hη) hA
+              calc _ ≤ B*(2*C.N) := mul_le_mul_of_nonneg_left (max_le (by linarith)
+              ((div_le_self (by linarith) (by nlinarith)).trans (by linarith))) (by linarith)
+                 _ ≤ C.M*(2*C.N) := mul_le_mul_of_nonneg_right hBM (by positivity)
+                 _ = _ := by ring)
             (by positivity)
       _ = _ := by rw [div_div]
+  let U₀ := ErrorRectangles.U Q B (C.N/(norm C.d*P.1))
   have hh := Sieve.bilinear_rectangle_three_thresholds C.M C.N (norm C.d) B α
-    P.1 P.2 (ErrorRectangles.U Q B (C.N/(norm C.d*P.1)))
+    P.1 P.2 (U₀)
     (ErrorRectangles.U Q B (C.N/(norm C.d*P.2))) (A*(2*(C.M*C.N))^η)
     hM hN hn hB hnN hα ⟨h1, by simpa [mul_div_assoc] using hp1⟩
     ⟨h2, by simpa [mul_div_assoc] using hp2⟩
     (prefix_U_nonneg _ _) (prefix_U_nonneg _ _) (by positivity)
     (bound _ h1) (bound _ h2)
   have hs : ErrorRectangles.largeScore C B P =
-      Real.sqrt (ErrorRectangles.U Q B (C.N/(norm C.d*P.1)) *
+      Real.sqrt (U₀ *
       ErrorRectangles.U Q B (C.N/(norm C.d*P.2))/(P.1*P.2)) := by
     rw [ErrorRectangles.largeScore, Real.sqrt_div (mul_nonneg
       (prefix_U_nonneg _ _) (prefix_U_nonneg _ _))]
   have ho : ErrorRectangles.originScore C B P =
-      Real.sqrt ((P.1*P.2)*ErrorRectangles.U Q B (C.N/(norm C.d*P.1))*
+      Real.sqrt ((P.1*P.2)*U₀*
         ErrorRectangles.U Q B (C.N/(norm C.d*P.2))) := by
     rw [ErrorRectangles.originScore, ← Real.sqrt_mul (by nlinarith : 0 ≤ P.1*P.2)]
     congr 1; ring
@@ -156,9 +138,11 @@ private theorem rectangle_thresholds (C : Context Q) (B α η A : ℝ)
 
 section
 open MiddleFinite
-private lemma middle_rectangle_bound (A η α B M N n θ Cq : ℝ)
-    (hA : 0 < A) (hη : 0 ≤ η) (hB : 1 ≤ B) (hBM : B ≤ M)
-    (hN : 1 ≤ N) (hn : 1 ≤ n)
+variable (A η α B M N n θ Cq : ℝ) (hA : 0 < A) (hη : 0 ≤ η) (hB : 1 ≤ B) (hBM : B ≤ M) (hN : 1 ≤ N)
+    (hn : 1 ≤ n)
+
+include hA hη hB hBM hN hn in
+private lemma middle_rectangle_bound
     (hU0 : ∀ X, 0 < X → 0 ≤ U Q B X)
     (hU : ∀ X, 0 < X → U Q B X ≤ A * (B * max 1 X) ^ η * (max 1 X + B ^ α))
     (ij : ℕ × ℕ) (hij : ij ∈ rectangles F B M N n θ Cq) :
@@ -166,7 +150,7 @@ private lemma middle_rectangle_bound (A η α B M N n θ Cq : ℝ)
       2 * A * (2 * (M*N)) ^ η *
         (N / n + B ^ α * (Cq*N*θ / Real.sqrt (B*M))) := by
   have hB0 : 0 < B := by linarith
-  have hM : 1 ≤ M := hB.trans hBM
+  have hM := hB.trans hBM
   have hM0 : 0 < M := by linarith
   have hN0 : 0 < N := by linarith
   have hn0 : 0 < n := by linarith
@@ -209,9 +193,10 @@ private lemma middle_rectangle_bound (A η α B M N n θ Cq : ℝ)
   have hsum : P+S ≤ 2*(P*S) := by nlinarith [mul_nonneg (sub_nonneg.mpr hP) (sub_nonneg.mpr hS)]
   have hps1 : 1 ≤ P*S := by nlinarith
   have ht : 0 ≤ Cq*N*θ / Real.sqrt (B*M) := le_trans (by positivity : 0 ≤ P*S) hp
-  have hprod : P*S*U Q B (N/(n*P))*U Q B (N/(n*S)) ≤
+  let U₀ := U Q B (N/(n*P))
+  have hprod : P*S*U₀*U Q B (N/(n*S)) ≤
       (2*A*(2*(M*N))^η*(N/n+B^α*(P*S)))^2 := by
-    calc P*S*U Q B (N/(n*P))*U Q B (N/(n*S))
+    calc P*S*U₀*U Q B (N/(n*S))
         ≤ P*S*(A*(2*(M*N))^η*(2*N/(n*P)+B^α)) * (A*(2*(M*N))^η*(2*N/(n*S)+B^α)) := by
           exact mul_le_mul (mul_le_mul_of_nonneg_left hu hps) hv hv0 (by positivity)
       _ ≤ _ := by
@@ -227,12 +212,11 @@ private lemma middle_rectangle_bound (A η α B M N n θ Cq : ℝ)
         have hc := mul_le_mul_of_nonneg_left hvv (sq_nonneg (A*(2*(M*N))^η))
         nlinarith only [hc]
   unfold rectangleValue
-  change Real.sqrt (P*S*U Q B (N/(n*P))*U Q B (N/(n*S))) ≤ _
+  change Real.sqrt (P*S*U₀*U Q B (N/(n*S))) ≤ _
   calc _ ≤ 2*A*(2*(M*N))^η*(N/n+B^α*(P*S)) := (Real.sqrt_le_left (by positivity)).mpr hprod
        _ ≤ _ := mul_le_mul_of_nonneg_left (add_le_add_right (mul_le_mul_of_nonneg_left hp (Real.rpow_nonneg hB0.le α)) _) (by positivity)
-private lemma middle_R_bound (A η α B M N n θ Cq : ℝ)
-    (hA : 0 < A) (hη : 0 ≤ η) (hB : 1 ≤ B) (hBM : B ≤ M)
-    (hN : 1 ≤ N) (hn : 1 ≤ n) (hθ : 1 ≤ θ) (hCq : 1 ≤ Cq)
+include hA hη hB hBM hN hn in
+private lemma middle_R_bound (hθ : 1 ≤ θ) (hCq : 1 ≤ Cq)
     (hU0 : ∀ X, 0 < X → 0 ≤ U Q B X)
     (hU : ∀ X, 0 < X → U Q B X ≤ A * (B * max 1 X) ^ η * (max 1 X + B ^ α)) :
     (n*M/N) * MiddleFinite.R Q B M N n θ Cq ≤
@@ -352,27 +336,17 @@ private theorem envelope_bounds (C : Context Q) (B α η A H : ℝ)
   let S := C.M+C.N+Real.sqrt C.M*B^(α-1/2)
   have hM0 : 0 < C.M := by linarith
   have hN0 : 0 < C.N := by linarith
-  have hn0 : 0 < norm C.d := by linarith
-  have hB0 : 0 < B := by linarith
   have hMN : 1 ≤ C.M*C.N := by nlinarith
   have ht : 1 ≤ θ := Real.one_le_rpow hMN hδ.le
-  have ht0 : 0 < θ := by linarith
   have ha : 0 < ErrorRectangles.lowerConstant c := by
     unfold ErrorRectangles.lowerConstant; positivity
   have hH : 2/ErrorRectangles.lowerConstant c + 2 ≤ H := by
-    have hh : 0 ≤ 2 / ErrorRectangles.lowerConstant c := by positivity
     have hid : 4 / ErrorRectangles.lowerConstant c =
         2 * (2 / ErrorRectangles.lowerConstant c) := by ring
     rw [hid] at hH4
     linarith
   have ha5 : 0 < ErrorRectangles.lowerConstant c / 2 := by positivity
-  have hH5 : 2 / (ErrorRectangles.lowerConstant c / 2) + 2 ≤ H := by
-    convert hH4 using 1 <;> field_simp <;> ring
-  have hsh5 := shape_bound C.M C.N (norm C.d) θ H (ErrorRectangles.lowerConstant c / 2)
-    (Real.sqrt C.M*B^(α-1/2)) hM0.le hN0.le hn ht (by positivity) ha5 hH5
   have hR0 : 0 ≤ L*H*norm C.d*θ*S := by dsimp [L,S]; positivity
-  have hsh := shape_bound C.M C.N (norm C.d) θ H (ErrorRectangles.lowerConstant c)
-    (Real.sqrt C.M*B^(α-1/2)) hM0.le hN0.le hn ht (by positivity) ha hH
   have hS := fun P hP => rectangle_thresholds C B α η A hM hN hn hnN hB hBM hα hη hA hb P hP
   have scale : ∀ r, r ≤ H*norm C.d*θ*S → L*r ≤ L*H*norm C.d*θ*S := by
     intro r hr
@@ -381,7 +355,8 @@ private theorem envelope_bounds (C : Context Q) (B α η A H : ℝ)
   · apply finiteSup_mul_le _ _ _ _ (by positivity) hR0
     intro P hP
     obtain ⟨hp, hthr⟩ := Finset.mem_filter.mp hP
-    apply le_trans ((hS P hp).1 _ ha ?_) (scale _ hsh.1)
+    apply le_trans ((hS P hp).1 _ ha ?_) (scale _ (shape_bound C.M C.N (norm C.d) θ H (ErrorRectangles.lowerConstant c)
+      (Real.sqrt C.M*B^(α-1/2)) hM0.le hN0.le hn ht (by positivity) ha hH).1)
     exact le_trans (le_mul_of_one_le_right (by positivity) ht) hthr
   · apply finiteSup_mul_le _ _ _ _ (by dsimp [Context.estimatePrefactor]; positivity) hR0
     intro P hP
@@ -400,8 +375,7 @@ private theorem envelope_bounds (C : Context Q) (B α η A H : ℝ)
     obtain ⟨hp, hthr⟩ := Finset.mem_filter.mp hP
     apply le_trans ((hS P hp).2.1 _ 1 ha le_rfl ?_) (scale _ ?_)
     · simp only [mul_one]
-      have hh := le_mul_of_one_le_right (show 0 ≤ ErrorRectangles.lowerConstant c * Real.sqrt (C.M/B)/norm C.d by positivity) ht
-      exact le_trans hh (by convert hthr using 1; dsimp [θ]; ring)
+      exact le_trans (le_mul_of_one_le_right (show 0 ≤ ErrorRectangles.lowerConstant c * Real.sqrt (C.M/B)/norm C.d by positivity) ht) (by convert hthr using 1; dsimp [θ]; ring)
     · simpa only [mul_one] using (shape_bound C.M C.N (norm C.d) θ H
         (ErrorRectangles.lowerConstant c) (Real.sqrt C.M*B^(α-1/2))
         hM0.le hN0.le hn ht (by positivity) ha hH).2.trans' (by
@@ -416,7 +390,9 @@ private theorem envelope_bounds (C : Context Q) (B α η A H : ℝ)
   · apply finiteSup_mul_le _ _ _ _ (by positivity) hR0
     intro P hP
     obtain ⟨hp, hthr⟩ := Finset.mem_filter.mp hP
-    apply le_trans ((hS P hp).2.1 _ θ ha5 ht ?_) (scale _ hsh5.2)
+    apply le_trans ((hS P hp).2.1 _ θ ha5 ht ?_) (scale _ (shape_bound C.M C.N (norm C.d) θ H (ErrorRectangles.lowerConstant c / 2)
+      (Real.sqrt C.M*B^(α-1/2)) hM0.le hN0.le hn ht (by positivity) ha5 (by
+        convert hH4 using 1 <;> field_simp <;> ring)).2)
     change (ErrorRectangles.lowerConstant c / 2)*Real.sqrt (C.M/B)*(C.M*C.N)^(-C.δ)/norm C.d ≤ P.1*P.2 at hthr
     rw [Real.rpow_neg (by positivity : 0 ≤ C.M*C.N)] at hthr
     convert hthr using 1 <;> dsimp [θ] <;> ring
@@ -429,14 +405,12 @@ private theorem combine_bound (X n ζ δ Cj C0 Ai A0 H S E e : ℝ)
     (hb : e ≤ Ai*(X*n)^(ζ/4)*X^(Cj*δ)*
       (A0*(2*X)^(ζ/4)*H*n*X^δ*S)*E) :
     e ≤ Ai*A0*H*2^(ζ/2)*n*X^(8*ζ+(C0+2)*δ)*S*E := by
-  have hp := loss_bound X n ζ δ Cj C0 hX (by linarith) hnX hζ hδ hj hC0
-  have hs : 0 ≤ Ai*A0*H*n*S*E := by positivity
   calc
     e ≤ _ := hb
     _ = (Ai*A0*H*n*S*E) *
         ((X*n)^(ζ/4)*X^(Cj*δ)*(2*X)^(ζ/4)*X^δ) := by ring
     _ ≤ (Ai*A0*H*n*S*E) *
-        (2^(ζ/2)*X^(8*ζ+(C0+2)*δ)) := mul_le_mul_of_nonneg_left hp hs
+        (2^(ζ/2)*X^(8*ζ+(C0+2)*δ)) := mul_le_mul_of_nonneg_left (loss_bound X n ζ δ Cj C0 hX (by linarith) hnX hζ hδ hj hC0) (by positivity)
     _ = _ := by ring
 
 end LocalExponentHelpers
@@ -583,6 +557,7 @@ theorem bilinear_error_local_exponent_bound
          _ ≤ _ := by simpa only [C,X,n,S,E] using
            mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left eb5
              (show 0 ≤ A5*(X*n)^(ζ/4)*X^(C5*δ) by positivity)) hEn
+  let R₀ := MiddleFinite.R Q B M N n (X^δ) Cq
   have b3 : ‖E3 C B unit‖ ≤ A3*T*n*X^(8*ζ+(C0+2)*δ)*S*E := by
     simp only [T, ← mul_assoc]
     apply comb C3 C0 A3 A0 H S E _ hx hn' hnX hζ hδ (le_max_left _ _) hC0
@@ -599,7 +574,7 @@ theorem bilinear_error_local_exponent_bound
       (X^δ) Cq (by linarith) hη.le hB hBM hN hn'
       (Real.one_le_rpow hx hδ.le) hCq
       (fun Z _ => Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩) hUs
-    have hr' : (n*M/N)*MiddleFinite.R Q B M N n (X^δ) Cq ≤
+    have hr' : (n*M/N)*R₀ ≤
         A0*(2*X)^(ζ/4)*H*n*X^δ*S := by
       calc _ ≤ (2*As*2^(ζ/4)*Cq)*X^(ζ/4)*n*X^δ*
           (M+Real.sqrt M*B^(α-1/2)) := hr
@@ -616,11 +591,11 @@ theorem bilinear_error_local_exponent_bound
     have hEeq := LocalExponentHelpers.shellRestriction_E3 C B unit
     have heeq := LocalExponentHelpers.shellRestriction_energy C
     have hh' : ‖E3 C B unit‖ ≤ A3*(X*n)^(ζ/4)*X^(C3*δ)*
-        ((n*M/N)*MiddleFinite.R Q B M N n (X^δ) Cq)*E := by
+        ((n*M/N)*R₀)*E := by
       rw [← hEeq]
       change ‖E3 (LocalExponentHelpers.shellRestriction C) B unit‖ ≤
         A3*(X*n)^(ζ/4)*X^(C3*δ)*
-        ((n*M/N)*MiddleFinite.R Q B M N n (X^δ) Cq)*Sieve.energy F c N C.lam
+        ((n*M/N)*R₀)*Sieve.energy F c N C.lam
       rw [← heeq]
       simpa only [Real.rpow_eq_pow,C,X,n,E,lam',LocalExponentHelpers.shellRestriction,mul_assoc] using hh
     exact le_trans hh' (mul_le_mul_of_nonneg_right

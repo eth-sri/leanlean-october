@@ -13,28 +13,23 @@ namespace DedekindZetaZeroFree.KPMsNativeWeightedShapeSource.OffsetShapeCoarea
 
 open KPMsActualAngularSource KPMsNativeOffsetMass
 
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps renaming component → component
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps renaming ends → ends
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps renaming end_measurable → end_measurable
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass renaming pinned_cusp_lintegral → pinned_cusp_lintegral
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass renaming forward_offset_factor → forward_offset_factor
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTransport → toRawTransport
+open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps (component ends end_measurable)
+open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass (pinned_cusp_lintegral forward_offset_factor)
+open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration (toRawTransport)
 
 section
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps renaming component → component
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps renaming ends → ends
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps renaming end_measurable → end_measurable
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass renaming pinned_cusp_lintegral → pinned_cusp_lintegral
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass renaming forward_offset_factor → forward_offset_factor
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming fromRawDisintegration → fromRawDisintegration
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTransport → toRawTransport
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming actualFrame_spec → actualFrame_spec
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeFullDomain → nativeFullDomain
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps (component ends end_measurable)
+open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass (pinned_cusp_lintegral forward_offset_factor)
+open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration (fromRawDisintegration toRawTransport)
 
- def offsetTranslation (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) :
+ section
+
+variable (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
+
+def offsetTranslation :
     KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V) →
       KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V) :=
   fun ω => ⟨ω.1, ω.2 - QuotientAddGroup.mk
@@ -42,8 +37,7 @@ open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming n
       (nativeDisintegration F ζ hζ R P S V).radial.slot
       (cuspOffset F ζ hζ R P S V ω.1))⟩
 
-private theorem offsetTranslation_measurable (S : NativeRecipe F ζ hζ R P)
-    (V : Level F ζ hζ) : Measurable (offsetTranslation F ζ hζ R P S V) := by
+private theorem offsetTranslation_measurable : Measurable (offsetTranslation F ζ hζ R P S V) := by
   apply Continuous.measurable
   apply continuous_sigma
   intro j
@@ -54,8 +48,7 @@ private theorem offsetTranslation_measurable (S : NativeRecipe F ζ hζ R P)
   apply continuous_sigmaMk.comp
   exact continuous_id.sub (continuous_const (y := QuotientAddGroup.mk _))
 
-private theorem offsetTranslation_section (S : NativeRecipe F ζ hζ R P)
-    (V : Level F ζ hζ) (j : NativeCusp F ζ hζ R P S V)
+private theorem offsetTranslation_section (j : NativeCusp F ζ hζ R P S V)
     (φ : KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V) → ℝ≥0∞)
     (hφ : Measurable φ) :
     (∫⁻ p, φ (offsetTranslation F ζ hζ R P S V
@@ -80,6 +73,8 @@ private theorem offsetTranslation_section (S : NativeRecipe F ζ hζ R P)
   simpa only [offsetTranslation, KPMsFixedHaarDisintegration.angularProjection,
     (KPMsFixedHaarDisintegration.Geometry A j).atlas.projection_formula,
     QuotientAddGroup.mk_sub, QuotientAddGroup.mk_add, QuotientAddGroup.mk_neg, sub_eq_add_neg, b] using ht
+
+end
 
 private theorem spherical_cusp_test (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
     (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
@@ -155,8 +150,7 @@ private theorem spherical_cusp_test (S : NativeRecipe F ζ hζ R P) (V : Level F
     lintegral_const, Measure.restrict_apply_univ, Measure.restrict_apply measurableSet_Iic] at hi
   have hI : Set.Iic (2 * Z) ∩ Set.Ioi Z = Set.Ioc Z (2 * Z) := by ext r; simp [and_comm]
   rw [hI, KPMsFixedHaar.RadialIntegrationSteps.radial_shell Z (hY j).1] at hi
-  have ht : 0 < 2 * Z := mul_pos (by norm_num) (hY j).1
-  rw [ENNReal.ofReal_inv_of_pos ht] at hi
+  rw [ENNReal.ofReal_inv_of_pos (mul_pos (by norm_num) (hY j).1)] at hi
   have hpush : Measure.map (P.projection U) (R.quotientHaar.restrict (cuspShell F ζ hζ R P S V j Y)) =
       (KPMsFixedHaar.sphericalMeasure F ζ hζ R (toRawTransport F ζ hζ P) U).restrict (B ∩ E) := by
     rw [heq, ← Measure.restrict_map (P.continuous U).measurable (hB.inter hE)]
@@ -164,13 +158,10 @@ private theorem spherical_cusp_test (S : NativeRecipe F ζ hζ R P) (V : Level F
   change ENNReal.ofReal (2 * Y) * (∫⁻ x, g (P.projection U x)
     ∂ R.quotientHaar.restrict (cuspShell F ζ hζ R P S V j Y)) = _
   rw [← lintegral_map hg (P.continuous U).measurable, hpush, hi]
-  have hpos : 0 < Y := (div_pos_iff.mp (hY j).1).resolve_right
-    (fun h => (not_lt_of_gt (cuspOffset F ζ hζ R P S V j).property) h.2) |>.1
-  have hc := forward_offset_factor Y (cuspOffset F ζ hζ R P S V j).val hpos
-    (cuspOffset F ζ hζ R P S V j).property
   rw [show 2 * Z = 2 * Y / (cuspOffset F ζ hζ R P S V j).val by dsimp [Z]; ring]
-  rw [← hc]
-  change ENNReal.ofReal (2 * Y) * ((_ / _) * (_ * _)) = (_ * _) * _
+  rw [← (forward_offset_factor Y (cuspOffset F ζ hζ R P S V j).val ((div_pos_iff.mp (hY j).1).resolve_right
+    (fun h => (not_lt_of_gt (cuspOffset F ζ hζ R P S V j).property) h.2) |>.1)
+    (cuspOffset F ζ hζ R P S V j).property)]
   dsimp only [D, A, U, nativeDisintegration, nativeFamily, KPMsActualNativeHaarFamily.family, fromRawDisintegration]
   ring
 
@@ -236,7 +227,7 @@ theorem native_shape_measure
     lintegral_map (f := fun a => f (KPMsFixedHaarDisintegration.angularProjection A a))
       (hf.comp (KPMsActualNativeWeightedShapeMeasure.angularProjection_measurable A))
       (continuous_sigmaMk.measurable)]
-  obtain ⟨s,hs,hsc,_⟩ := KPMsActualNativeWeightedShapeMeasure.spherical_shell_shape_measure A D
+  obtain ⟨s, hs, hsc⟩ := KPMsActualNativeWeightedShapeMeasure.spherical_shell_shape_measure A D
     (Y / (cuspOffset F ζ hζ R P S V j).val) (hY j)
   have hpoint : ∀ x ∈ cuspShell F ζ hζ R P S V j Y,
       q (fullCoordinate F ζ hζ R P S V j Y x) =

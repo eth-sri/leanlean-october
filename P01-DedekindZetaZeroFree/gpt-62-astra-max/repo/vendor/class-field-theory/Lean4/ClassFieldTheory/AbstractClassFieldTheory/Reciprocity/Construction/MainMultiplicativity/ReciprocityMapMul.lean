@@ -15,13 +15,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -75,10 +68,10 @@ theorem reciprocityMap_mul
         D.reciprocityMap A v K L hLK sigma2 := by
   let KR := K.toFiniteResidueAbstractField D
   let hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
+    assumption
   let hLfiniteKR : Finite
       (KR.field.toSubgroup ⧸ extensionSubgroup KR.field L hLK) := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLfinite
+    assumption
   let phi := D.chosenDegreeOneFrobeniusElement KR L hLK
   have hphi : D.frobeniusExponent KR L hLK phi = 1 :=
     D.frobeniusExponent_chosenDegreeOneFrobeniusElement KR L hLK
@@ -121,11 +114,11 @@ theorem reciprocityMap_mul
   let Sigma2 : FiniteAbstractField G := ⟨S2, hS2absolute⟩
   let Sigma3 : FiniteAbstractField G := ⟨S3, hS3absolute⟩
   let pi1 : ambientFixedAddSubgroup A S1 := by
-    simpa [Sigma1] using v.chosenPrimeElement Sigma1
+    exact v.chosenPrimeElement Sigma1
   let pi2 : ambientFixedAddSubgroup A S2 := by
-    simpa [Sigma2] using v.chosenPrimeElement Sigma2
+    exact v.chosenPrimeElement Sigma2
   let pi3 : ambientFixedAddSubgroup A S3 := by
-    simpa [Sigma3] using v.chosenPrimeElement Sigma3
+    exact v.chosenPrimeElement Sigma3
   have hpi1 : v.IsPrimeElement Sigma1 pi1 := by
     simpa [Sigma1, pi1] using v.chosenPrimeElement_isPrime Sigma1
   have hpi2 : v.IsPrimeElement Sigma2 pi2 := by
@@ -186,7 +179,7 @@ theorem reciprocityMap_mul
   let tau : Fin 3 →
       (D.extensionNormalizedDegreeContinuous KR L hLK).toMonoidHom.ker :=
     fun i ↦ ⟨frobeniusMultiplicativityCorrectionAction tau1 tau4 i, by
-      simpa [tau1, tau4, sigma4, m] using hactionMem i⟩
+      apply hactionMem⟩
   let uU : v.infiniteUnitAddSubgroup E K
       (D.maximalUnramifiedField_le_of_le hLK) := ⟨u, huMem⟩
   let uiU : Fin 3 → v.infiniteUnitAddSubgroup E K
@@ -215,8 +208,7 @@ theorem reciprocityMap_mul
       (D.frobeniusQuotientAction A KR.field L hLK tau4 p4 - p4) +
       (D.frobeniusQuotientAction A KR.field L hLK tau1 p1 - p1) +
       (p3 - D.frobeniusQuotientAction A KR.field L hLK (tau4 * tau1) p3) by
-        simpa [u, p1, p3, p4, tau1, tau4, sigma3, sigma4, m,
-          E, S1, S3, S4, pi1, pi3] using hraw]
+        assumption]
     simpa only [tau, uiU, correction, B,
       D.frobeniusQuotientRepresentation_apply] using hdiff
   let hIfinite : Finite
@@ -241,7 +233,7 @@ theorem reciprocityMap_mul
       r4 r1 r3 u hnormu
     refine ⟨aK.1, haKdescend, ?_⟩
     exact (D.mem_maximalUnramifiedNormSubgroup_iff A K.field L aK.1).2 (by
-      simpa only [E] using haKnormRaw)
+      assumption)
   have hclasses12 :
       D.maximalUnramifiedNormClass A K.field L r1 +
         D.maximalUnramifiedNormClass A K.field L r2 =
@@ -253,8 +245,7 @@ theorem reciprocityMap_mul
   apply D.reciprocityMap_mul_of_primeNormClass_eq
     A v hAxiom K L hLK sigma1 sigma2 pi1 pi2 pi3
       hpi1 hpi2 hpi3
-  simpa [r1, r2, r3, E, S1, S2, S3, sigma3, pi1, pi2, pi3]
-    using hclasses12
+  exact hclasses12
 
 end DegreeData
 end reciprocityMapMultiplicativity

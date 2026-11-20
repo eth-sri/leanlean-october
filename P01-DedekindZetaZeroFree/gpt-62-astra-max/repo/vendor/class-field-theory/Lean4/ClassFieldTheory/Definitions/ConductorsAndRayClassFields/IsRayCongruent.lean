@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -29,9 +26,12 @@ namespace ClassFieldTheory
 
 universe u
 
+section
+
+variable {K : Type u} [Field K] [NumberField K]
+
 /-- The diagonal embedding of field units into a finite completion. -/
 def finitePlaceUnitEmbedding
-    {K : Type u} [Field K] [NumberField K]
     (v : HeightOneSpectrum (𝓞 K)) :
     Kˣ →* (v.adicCompletion K)ˣ :=
   Units.map (algebraMap K (v.adicCompletion K)).toMonoidHom
@@ -39,7 +39,6 @@ def finitePlaceUnitEmbedding
 /-- A field unit satisfies the finite congruences and real positivity
 conditions specified by a ray modulus. -/
 def IsRayCongruent
-    {K : Type u} [Field K] [NumberField K]
     (m : RayClassModulus K) (x : Kˣ) : Prop :=
   (∀ v, v ∈ m.finitePart.support →
       finitePlaceUnitEmbedding v x ∈
@@ -47,39 +46,41 @@ def IsRayCongruent
     (∀ v, v ∈ m.infinitePart →
       0 < v.1.embedding_of_isReal v.2 (x : K))
 
+end
+
 namespace IsRayCongruent
 
+variable {K : Type u} [Field K] [NumberField K]
+
 /-- The identity satisfies every ray congruence. -/
-theorem one {K : Type u} [Field K] [NumberField K]
+theorem one
     (m : RayClassModulus K) : IsRayCongruent m 1 := by
   constructor
-  · intro v _
-    simpa only [map_one] using (rayLocalHigherUnitGroup v (m.finitePart v)).one_mem
-  · intro v _
-    simp
+  · simp
+  simp
 
 /-- Ray-congruent nonzero elements are closed under multiplication. -/
-theorem mul {K : Type u} [Field K] [NumberField K]
+theorem mul
     {m : RayClassModulus K} {x y : Kˣ}
     (hx : IsRayCongruent m x) (hy : IsRayCongruent m y) :
     IsRayCongruent m (x * y) := by
   constructor
   · intro v hv
-    simpa only [map_mul] using
+    simpa using
       (rayLocalHigherUnitGroup v (m.finitePart v)).mul_mem (hx.1 v hv) (hy.1 v hv)
   · intro v hv
-    simpa only [Units.val_mul, map_mul] using mul_pos (hx.2 v hv) (hy.2 v hv)
+    simpa using mul_pos (hx.2 v hv) (hy.2 v hv)
 
 /-- Ray-congruent nonzero elements are closed under inversion. -/
-theorem inv {K : Type u} [Field K] [NumberField K]
+theorem inv
     {m : RayClassModulus K} {x : Kˣ}
     (hx : IsRayCongruent m x) : IsRayCongruent m x⁻¹ := by
   constructor
   · intro v hv
-    simpa only [map_inv] using
+    simpa using
       (rayLocalHigherUnitGroup v (m.finitePart v)).inv_mem (hx.1 v hv)
   · intro v hv
-    simpa only [Units.val_inv_eq_inv_val, map_inv₀] using inv_pos.mpr (hx.2 v hv)
+    simpa using inv_pos.mpr (hx.2 v hv)
 
 end IsRayCongruent
 

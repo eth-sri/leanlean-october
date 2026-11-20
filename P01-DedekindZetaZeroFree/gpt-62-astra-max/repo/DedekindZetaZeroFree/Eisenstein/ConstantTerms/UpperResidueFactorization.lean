@@ -14,10 +14,10 @@ open MomentSources KPGlobalTorusFiniteStages FaithfulSource FaithfulSource.Repai
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 open LiteralSource.CofactorChamber KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -42,17 +42,13 @@ theorem current_upper_residue_factorization
   obtain ⟨E,hsE,hCE,hfactor⟩ := current_normalized_scattering R N P C  s K hK
   refine ⟨E,hsE,hCE,?_⟩
   intro a ha v
-  let x := coreEquiv R N P C (RestrictedTensorSimple.stageInclusion _ _ _ s v)
-  let g := scalarQuotient F ζ hζ (amalgamation F ζ hζ a)
   let ve := RestrictedTensorSimple.transition (Plus R N P C) (plusReference R N P C)
     (bad R P C) s (fullLevel R P C E hCE)
     (sourceStage_le_fullLevel R P C s E hCE hsE) v
-  let b := fun z => (parameterStage R N P C (fullCompact R P C)
-    (fullLevel R P C E hCE) a z ve).val.val 1
-  have hb : AnalyticOnNhd ℂ b KPContinuation.spectralDomain :=
+  have hb :=
     parameterStage_analytic R N P C (fullCompact R P C) (fullLevel R P C E hCE) a 1 ve
   obtain ⟨M,B,r,hM,hMch,hr,hrb,hB,hclear,hcenter⟩ :=
-    LiteralSource.core_scattering_continuation R P C x g
+    LiteralSource.core_scattering_continuation R P C (coreEquiv R N P C (RestrictedTensorSimple.stageInclusion _ _ _ s v)) (scalarQuotient F ζ hζ (amalgamation F ζ hζ a))
   have h0 : (0 : ℂ) ∈ KPContinuation.spectralDomain := by
     norm_num [KPContinuation.spectralDomain]
   have hnear : B =ᶠ[𝓝[≠] (0 : ℂ)] fun z => z * M z := by

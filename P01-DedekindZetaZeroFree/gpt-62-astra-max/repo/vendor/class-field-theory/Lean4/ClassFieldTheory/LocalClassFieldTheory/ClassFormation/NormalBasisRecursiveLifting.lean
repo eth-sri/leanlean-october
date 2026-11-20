@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -54,8 +51,7 @@ private theorem filteredCorrectionProduct_eq_chosenNormalBasisProduct
   induction d with
   | zero => rfl
   | succ d ih =>
-      rw [filteredCorrectionProduct_succ,
-        chosenNormalBasisPrincipalUnitCorrectionProduct_succ, ih]
+      simp_all
 
 /-- Recursive `H⁰` lifting.  At every sufficiently deep
 normal-basis level, an actually fixed unit is the norm of a unit at the same
@@ -89,23 +85,24 @@ theorem exists_chosenNormalBasisPrincipalUnit_fixed_is_tateNorm :
   let R : 𝒪[L]ˣ → Prop := fun x =>
     ∀ sigma : Gal(L / K), sigma • x = x
   let F : 𝒪[L]ˣ →* 𝒪[L]ˣ :=
-    tateNormHom (G := Gal(L / K)) (A := 𝒪[L]ˣ)
-  let initial : FilteredLiftState 𝒪[L]ˣ P R n 0 :=
-    ⟨a, by simpa [P] using ha, hfixed⟩
-  let step : ∀ i (s : FilteredLiftState 𝒪[L]ˣ P R n i),
+    tateNormHom (G := Gal(L / K))
+  let FilteredLiftState₀ := FilteredLiftState 𝒪[L]ˣ P R n
+  let initial : FilteredLiftState₀ 0 :=
+    ⟨a, by exact ha, hfixed⟩
+  let step : ∀ i (s : FilteredLiftState₀ i),
       Nonempty (FilteredLiftStep 𝒪[L]ˣ P R F n i s) := by
     intro i s
     have hlevel : cStep ≤ n + i :=
       le_trans hcStep (Nat.le_add_right n i)
-    rcases hStep (n + i) hlevel s.value (by simpa [P] using s.mem)
-        (by simpa [R] using s.stable) with
+    rcases hStep (n + i) hlevel s.value (by exact s.mem)
+        (by exact s.stable) with
       ⟨z, a', hz, ha', hfixed', heq⟩
     refine ⟨⟨z, ?_, ⟨a', ?_, ?_⟩, ?_⟩⟩
-    · simpa [P] using hz
-    · simpa [P, Nat.add_assoc] using ha'
-    · simpa [R] using hfixed'
-    · simpa [F] using heq
-  let states : (i : Nat) → FilteredLiftState 𝒪[L]ˣ P R n i :=
+    · exact hz
+    · assumption
+    · assumption
+    · exact heq
+  let states : (i : Nat) → FilteredLiftState₀ i :=
     chosenFilteredLiftStateSequence 𝒪[L]ˣ P R F n initial step
   let z : Nat → 𝒪[L]ˣ :=
     chosenFilteredLiftCorrectionSequence 𝒪[L]ˣ P R F n initial step
@@ -123,9 +120,10 @@ theorem exists_chosenNormalBasisPrincipalUnit_fixed_is_tateNorm :
       (K := K) (L := L) hb hbn (fun i => (states i).value) hstates
   have hnorm := tendsto_galoisGroupIntegerUnits_tateNorm_of_tendsto
     (K := K) (L := L)
-    (fun d => chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z d) x hx
+    ((chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z)) x hx
+  let tateNorm₀ := tateNorm (Gal(L / K)) 𝒪[L]ˣ
   have hrec (d : Nat) :
-      a = tateNorm (Gal(L / K)) 𝒪[L]ˣ
+      a = tateNorm₀
           (chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z d) *
         (states d).value := by
     have h := filteredLift_initial_eq_correctionProduct_mul_state
@@ -135,16 +133,16 @@ theorem exists_chosenNormalBasisPrincipalUnit_fixed_is_tateNorm :
     simpa [initial, states, F] using h
   have hmul : Tendsto
       (fun d : Nat =>
-        ((tateNorm (Gal(L / K)) 𝒪[L]ˣ
+        ((tateNorm₀
             (chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z d) :
           𝒪[L]ˣ) : 𝒪[L]) * (((states d).value : 𝒪[L]ˣ) : 𝒪[L]))
       atTop
-      (nhds (((tateNorm (Gal(L / K)) 𝒪[L]ˣ x : 𝒪[L]ˣ) : 𝒪[L]) * 1)) :=
+      (nhds (((tateNorm₀ x : 𝒪[L]ˣ) : 𝒪[L]) * 1)) :=
     hnorm.mul hrem
   have hconst : Tendsto (fun _d : Nat => ((a : 𝒪[L]ˣ) : 𝒪[L])) atTop
       (nhds ((a : 𝒪[L]ˣ) : 𝒪[L])) := tendsto_const_nhds
   have heqO : ((a : 𝒪[L]ˣ) : 𝒪[L]) =
-      ((tateNorm (Gal(L / K)) 𝒪[L]ˣ x : 𝒪[L]ˣ) : 𝒪[L]) * 1 := by
+      ((tateNorm₀ x : 𝒪[L]ˣ) : 𝒪[L]) * 1 := by
     apply tendsto_nhds_unique hconst
     exact hmul.congr' (Eventually.of_forall (fun d => by
       simpa using congrArg (fun q : 𝒪[L]ˣ => (q : 𝒪[L])) (hrec d).symm))
@@ -186,23 +184,24 @@ theorem exists_chosenNormalBasisPrincipalUnit_normOne_is_sigmaMinusOne
   let R : 𝒪[L]ˣ → Prop := fun x =>
     tateNorm (Gal(L / K)) 𝒪[L]ˣ x = 1
   let F : 𝒪[L]ˣ →* 𝒪[L]ˣ :=
-    sigmaMinusOneHom (G := Gal(L / K)) (A := 𝒪[L]ˣ) g
-  let initial : FilteredLiftState 𝒪[L]ˣ P R n 0 :=
-    ⟨a, by simpa [P] using ha, hnorma⟩
-  let step : ∀ i (s : FilteredLiftState 𝒪[L]ˣ P R n i),
+    sigmaMinusOneHom g
+  let FilteredLiftState₀ := FilteredLiftState 𝒪[L]ˣ P R n
+  let initial : FilteredLiftState₀ 0 :=
+    ⟨a, by exact ha, hnorma⟩
+  let step : ∀ i (s : FilteredLiftState₀ i),
       Nonempty (FilteredLiftStep 𝒪[L]ˣ P R F n i s) := by
     intro i s
     have hlevel : cStep ≤ n + i :=
       le_trans hcStep (Nat.le_add_right n i)
-    rcases hStep (n + i) hlevel s.value (by simpa [P] using s.mem)
-        (by simpa [R] using s.stable) with
+    rcases hStep (n + i) hlevel s.value (by exact s.mem)
+        (by exact s.stable) with
       ⟨z, a', hz, ha', hnorm', heq⟩
     refine ⟨⟨z, ?_, ⟨a', ?_, ?_⟩, ?_⟩⟩
-    · simpa [P] using hz
-    · simpa [P, Nat.add_assoc] using ha'
-    · simpa [R] using hnorm'
-    · simpa [F] using heq
-  let states : (i : Nat) → FilteredLiftState 𝒪[L]ˣ P R n i :=
+    · exact hz
+    · assumption
+    · assumption
+    · exact heq
+  let states : (i : Nat) → FilteredLiftState₀ i :=
     chosenFilteredLiftStateSequence 𝒪[L]ˣ P R F n initial step
   let z : Nat → 𝒪[L]ˣ :=
     chosenFilteredLiftCorrectionSequence 𝒪[L]ˣ P R F n initial step
@@ -220,9 +219,10 @@ theorem exists_chosenNormalBasisPrincipalUnit_normOne_is_sigmaMinusOne
       (K := K) (L := L) hb hbn (fun i => (states i).value) hstates
   have hcob := tendsto_galoisGroupIntegerUnits_sigmaMinusOne_of_tendsto
     (K := K) (L := L) g
-    (fun d => chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z d) x hx
+    ((chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z)) x hx
+  let sigmaMinusOne₀ := sigmaMinusOne (Gal(L / K)) 𝒪[L]ˣ g
   have hrec (d : Nat) :
-      a = sigmaMinusOne (Gal(L / K)) 𝒪[L]ˣ g
+      a = sigmaMinusOne₀
           (chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z d) *
         (states d).value := by
     have h := filteredLift_initial_eq_correctionProduct_mul_state
@@ -232,16 +232,16 @@ theorem exists_chosenNormalBasisPrincipalUnit_normOne_is_sigmaMinusOne
     simpa [initial, states, F] using h
   have hmul : Tendsto
       (fun d : Nat =>
-        ((sigmaMinusOne (Gal(L / K)) 𝒪[L]ˣ g
+        ((sigmaMinusOne₀
             (chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z d) :
           𝒪[L]ˣ) : 𝒪[L]) * (((states d).value : 𝒪[L]ˣ) : 𝒪[L]))
       atTop
-      (nhds (((sigmaMinusOne (Gal(L / K)) 𝒪[L]ˣ g x : 𝒪[L]ˣ) : 𝒪[L]) * 1)) :=
+      (nhds (((sigmaMinusOne₀ x : 𝒪[L]ˣ) : 𝒪[L]) * 1)) :=
     hcob.mul hrem
   have hconst : Tendsto (fun _d : Nat => ((a : 𝒪[L]ˣ) : 𝒪[L])) atTop
       (nhds ((a : 𝒪[L]ˣ) : 𝒪[L])) := tendsto_const_nhds
   have heqO : ((a : 𝒪[L]ˣ) : 𝒪[L]) =
-      ((sigmaMinusOne (Gal(L / K)) 𝒪[L]ˣ g x : 𝒪[L]ˣ) : 𝒪[L]) * 1 := by
+      ((sigmaMinusOne₀ x : 𝒪[L]ˣ) : 𝒪[L]) * 1 := by
     apply tendsto_nhds_unique hconst
     exact hmul.congr' (Eventually.of_forall (fun d => by
       simpa using congrArg (fun q : 𝒪[L]ˣ => (q : 𝒪[L])) (hrec d).symm))

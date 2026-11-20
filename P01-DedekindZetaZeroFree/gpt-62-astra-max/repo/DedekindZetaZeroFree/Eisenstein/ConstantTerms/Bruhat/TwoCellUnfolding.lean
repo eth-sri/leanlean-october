@@ -41,15 +41,14 @@ theorem actual_upper_constantTerm_eq
             (Quotient.out c)) v.val
         (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out q) * g) := by
     intro q
-    have hh := KPContActualChamberNormalSeries.mixed_summable F ζ hζ U ι f hι hf
-      0 [] s hs (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out q) * g)
     change Summable (fun c => ‖KPContActualSphericalFlatStage.L F ζ hζ U ι s (f s)
       (KPGlobalResidualKernel.RawStageL2.Outgoing.ActualBruhat.rational F ζ hζ
         (Quotient.out c) * (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out q) * g))‖)
     simpa only [KPGlobalEisensteinData.EisensteinSummable,
       KPContActualChamberNormalSeries.mixedJet, KPContActualChamberNormalSeries.rightWord,
       List.foldr_nil, iteratedDerivWithin_zero, KPContActualChamberNormalSeries.term,
-      chamber_lift_eq_rational] using hh
+      chamber_lift_eq_rational] using (KPContActualChamberNormalSeries.mixed_summable F ζ hζ U ι f hι hf
+        0 [] s hs (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out q) * g))
   have h := KPGlobalResidualKernel.RawStageL2.Outgoing.ActualBruhat.integral_two_cells
     F ζ hζ s v (KPAdditiveHaar.adelicMeasure F) (KPWildKernelUpperBound.quotientHaar F)
     (actual_quotientHaar_compatible F) g hsum

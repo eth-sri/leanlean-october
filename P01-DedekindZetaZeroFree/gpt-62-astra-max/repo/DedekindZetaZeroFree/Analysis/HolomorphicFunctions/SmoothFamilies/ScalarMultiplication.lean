@@ -14,11 +14,7 @@ open scoped NNReal
 theorem finite_coordinate_derivative_smooth {n : ℕ} (B : LocalBall n)
     {f : Space n → ℂ} (hf : ContDiffOn ℝ (⊤ : ℕ∞) f B.carrier)
     (l : List (Fin n)) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l f) B.carrier := by
-  induction l with
-  | nil => exact hf
-  | cons i l ih =>
-    exact (ih.fderiv_of_isOpen Metric.isOpen_ball (by simp)).clm_apply contDiffOn_const
+    ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l f) B.carrier := by apply @DedekindZetaZeroFree.KPContLocalNorm.coordinateDerivativeList_smooth <;> assumption
 
 theorem finite_coordinate_derivative_const_mul {n : ℕ} (l : List (Fin n))
     (c : ℂ) (f : Space n → ℂ) :
@@ -33,7 +29,11 @@ theorem finite_coordinate_derivative_const_mul {n : ℕ} (l : List (Fin n))
       congrArg (fun L : Space n →L[ℝ] ℂ => L (EuclideanSpace.single i 1))
         (congrFun (fderiv_const_smul_field (𝕜 := ℝ) (f := coordinateDerivativeList l f) c) x)
 
-theorem finite_coordinate_derivative_sum {n : ℕ} (B : LocalBall n)
+section
+
+variable {n : ℕ} (B : LocalBall n)
+
+theorem finite_coordinate_derivative_sum
     {ι : Type*} (s : Finset ι) (f : ι → Space n → ℂ)
     (hf : ∀ j ∈ s, ContDiffOn ℝ (⊤ : ℕ∞) (f j) B.carrier)
     (l : List (Fin n)) :
@@ -43,19 +43,16 @@ theorem finite_coordinate_derivative_sum {n : ℕ} (B : LocalBall n)
   | nil => intro x hx; rfl
   | cons i l ih =>
     intro x hx
-    have he : coordinateDerivativeList l (fun y => ∑ j ∈ s, f j y) =ᶠ[nhds x]
-        (fun y => ∑ j ∈ s, coordinateDerivativeList l (f j) y) :=
-      Filter.eventuallyEq_iff_exists_mem.mpr ⟨B.carrier,
-        Metric.isOpen_ball.mem_nhds hx, ih⟩
     simp only [coordinateDerivativeList]
-    rw [he.fderiv_eq]
+    rw [(Filter.eventuallyEq_iff_exists_mem.mpr ⟨B.carrier,
+      Metric.isOpen_ball.mem_nhds hx, ih⟩).fderiv_eq]
     rw [fderiv_fun_sum]
-    · simp only [ContinuousLinearMap.sum_apply]
+    · simp
     · intro j hj
       exact ((finite_coordinate_derivative_smooth B (hf j hj) l).contDiffAt
         (Metric.isOpen_ball.mem_nhds hx)).differentiableAt (by simp)
 
-theorem finite_coordinate_derivative_sub {n : ℕ} (B : LocalBall n)
+theorem finite_coordinate_derivative_sub
     {f g : Space n → ℂ}
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) f B.carrier)
     (hg : ContDiffOn ℝ (⊤ : ℕ∞) g B.carrier) (l : List (Fin n)) :
@@ -66,26 +63,28 @@ theorem finite_coordinate_derivative_sub {n : ℕ} (B : LocalBall n)
   | nil => intro x hx; rfl
   | cons i l ih =>
     intro x hx
-    have he : coordinateDerivativeList l (fun y => f y - g y) =ᶠ[nhds x]
-        (fun y => coordinateDerivativeList l f y - coordinateDerivativeList l g y) :=
-      Filter.eventuallyEq_iff_exists_mem.mpr ⟨B.carrier,
-        Metric.isOpen_ball.mem_nhds hx, ih⟩
     simp only [coordinateDerivativeList]
-    rw [he.fderiv_eq, fderiv_fun_sub]
-    · simp only [ContinuousLinearMap.sub_apply]
+    rw [(Filter.eventuallyEq_iff_exists_mem.mpr ⟨B.carrier,
+      Metric.isOpen_ball.mem_nhds hx, ih⟩).fderiv_eq, fderiv_fun_sub]
+    · simp
     · exact ((finite_coordinate_derivative_smooth B hf l).contDiffAt
         (Metric.isOpen_ball.mem_nhds hx)).differentiableAt (by simp)
     · exact ((finite_coordinate_derivative_smooth B hg l).contDiffAt
         (Metric.isOpen_ball.mem_nhds hx)).differentiableAt (by simp)
 
-theorem cauchy_product_coefficients_smooth {n : ℕ} (B : LocalBall n)
+theorem cauchy_product_coefficients_smooth
     (a : ℕ → ℂ) (b : ℕ → Space n → ℂ)
     (hb : ∀ j, ContDiffOn ℝ (⊤ : ℕ∞) (b j) B.carrier) (k : ℕ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun y => ∑ p ∈ Finset.HasAntidiagonal.antidiagonal k, a p.1 * b p.2 y) B.carrier := by
-  exact ContDiffOn.sum fun p _ => contDiffOn_const.mul (hb p.2)
+      (fun y => ∑ p ∈ Finset.HasAntidiagonal.antidiagonal k, a p.1 * b p.2 y) B.carrier := ContDiffOn.sum fun p _ => contDiffOn_const.mul (hb p.2)
 
-theorem coordinate_derivative_cauchy_product {n m : ℕ} (B : LocalBall n)
+end
+
+section
+
+variable {n m : ℕ} (B : LocalBall n)
+
+theorem coordinate_derivative_cauchy_product
     (a : ℕ → ℂ) (b : ℕ → Space n → ℂ)
     (hb : ∀ j, ContDiffOn ℝ (⊤ : ℕ∞) (b j) B.carrier)
     (k : ℕ) (α : MultiIndex n m) :
@@ -102,7 +101,7 @@ theorem coordinate_derivative_cauchy_product {n m : ℕ} (B : LocalBall n)
     (fun p _ => contDiffOn_const.mul (hb p.2)) α.directions hx]
   simp only [finite_coordinate_derivative_const_mul, coordinateDerivative]
 
-theorem coordinate_derivative_taylor_remainder {n m : ℕ} (B : LocalBall n)
+theorem coordinate_derivative_taylor_remainder
     (b : ℕ → Space n → ℂ) (hb : ∀ j, ContDiffOn ℝ (⊤ : ℕ∞) (b j) B.carrier)
     (f : Space n → ℂ) (hf : ContDiffOn ℝ (⊤ : ℕ∞) f B.carrier)
     (w : ℂ) (M : ℕ) (α : MultiIndex n m) :
@@ -121,28 +120,32 @@ theorem coordinate_derivative_taylor_remainder {n m : ℕ} (B : LocalBall n)
       (fun j _ => contDiffOn_const.mul (hb j)) α.directions hx]
   simp only [finite_coordinate_derivative_const_mul, coordinateDerivative]
 
-theorem smooth_power_series_tail_coefficient_bound {n : ℕ} (B : LocalBall n)
-    (z₀ : ℂ) (ρ : ℝ) (b : ℕ → Space n → ℂ) (f : ℂ → Space n → ℂ)
-    (hb : Raw.SmoothPowerSeriesOn B z₀ ρ b f)
-    (K : Set (Space n)) (hK : IsCompact K) (hKB : K ⊆ B.carrier)
-    (m : ℕ) (t : ℝ) (ht : 0 ≤ t) (htρ : t < ρ) :
+end
+
+section
+
+variable {n : ℕ} (B : LocalBall n) (z₀ : ℂ) (ρ : ℝ) (b : ℕ → Space n → ℂ) (f : ℂ → Space n → ℂ)
+    (hb : Raw.SmoothPowerSeriesOn B z₀ ρ b f) (K : Set (Space n)) (hK : IsCompact K)
+    (hKB : K ⊆ B.carrier) (m : ℕ) (t : ℝ) (ht : 0 ≤ t) (htρ : t < ρ)
+
+include hb hK hKB ht htρ in
+theorem smooth_power_series_tail_coefficient_bound :
     ∃ N : ℕ, ∀ j ≥ N, ∀ α : MultiIndex n m, ∀ x : K,
       t ^ j * ‖coordinateDerivative α (b j) x‖ < 2 := by
   obtain ⟨N, hN⟩ := hb.2.2 K hK hKB m t ht htρ 1 (by norm_num)
   refine ⟨N, ?_⟩
   intro j hj α x
-  let z : ℂ := z₀ + (t : ℂ)
+  let z := z₀ + (t : ℂ)
   have hzt : z - z₀ = (t : ℂ) := by dsimp [z]; ring
   have hz : z ∈ Metric.closedBall z₀ t := by
     rw [Metric.mem_closedBall, dist_eq_norm, hzt, Complex.norm_real, Real.norm_eq_abs,
       abs_of_nonneg ht]
-  have hzball : z ∈ Metric.ball z₀ ρ := Metric.mem_ball.mpr
-    ((Metric.mem_closedBall.mp hz).trans_lt htρ)
   have hbound (M : ℕ) (hM : N ≤ M) :
       ‖(∑ k ∈ Finset.range M, (z - z₀) ^ k * coordinateDerivative α (b k) x) -
           coordinateDerivative α (f z) x‖ < 1 := by
     have he := coordinate_derivative_taylor_remainder B b hb.1 (f z)
-      (hb.2.1 z hzball) (z - z₀) M α (hKB x.property)
+      (hb.2.1 z (Metric.mem_ball.mpr
+        ((Metric.mem_closedBall.mp hz).trans_lt htρ))) (z - z₀) M α (hKB x.property)
     have hbound := hN M hM z hz α x
     rw [he] at hbound
     exact hbound
@@ -161,16 +164,13 @@ theorem smooth_power_series_tail_coefficient_bound {n : ℕ} (B : LocalBall n)
   simpa only [norm_mul, norm_pow, hzt, Complex.norm_real, Real.norm_eq_abs,
     abs_of_nonneg ht] using hnorm
 
-theorem smooth_power_series_coefficient_bound {n : ℕ} (B : LocalBall n)
-    (z₀ : ℂ) (ρ : ℝ) (b : ℕ → Space n → ℂ) (f : ℂ → Space n → ℂ)
-    (hb : Raw.SmoothPowerSeriesOn B z₀ ρ b f)
-    (K : Set (Space n)) (hK : IsCompact K) (hKB : K ⊆ B.carrier)
-    (m : ℕ) (t : ℝ) (ht : 0 ≤ t) (htρ : t < ρ) :
+include hb hK hKB ht htρ in
+theorem smooth_power_series_coefficient_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ j : ℕ, ∀ α : MultiIndex n m, ∀ x : K,
       t ^ j * ‖coordinateDerivative α (b j) x‖ ≤ C := by
   obtain ⟨N, hN⟩ := smooth_power_series_tail_coefficient_bound B z₀ ρ b f hb
     K hK hKB m t ht htρ
-  let F : Space n → ℝ := fun x => ∑ j ∈ Finset.range N,
+  let F := fun x => ∑ j ∈ Finset.range N,
     ∑ α : MultiIndex n m, t ^ j * ‖coordinateDerivative α (b j) x‖
   have hF : ContinuousOn F K := by
     apply continuousOn_finsetSum
@@ -186,7 +186,7 @@ theorem smooth_power_series_coefficient_bound {n : ℕ} (B : LocalBall n)
   · exact (hN j hj α x).le.trans (by have := abs_nonneg D; linarith)
   · have hterm : t ^ j * ‖coordinateDerivative α (b j) x‖ ≤ F x := by
       calc
-        t ^ j * ‖coordinateDerivative α (b j) x‖ ≤
+        _ ≤
             ∑ β : MultiIndex n m, t ^ j * ‖coordinateDerivative β (b j) x‖ :=
           Finset.single_le_sum
             (fun β _ => mul_nonneg (pow_nonneg ht j)
@@ -200,6 +200,8 @@ theorem smooth_power_series_coefficient_bound {n : ℕ} (B : LocalBall n)
     exact hterm.trans ((le_abs_self (F x)).trans
       ((hD x x.property).trans ((le_abs_self D).trans (by linarith))))
 
+end
+
 theorem uniform_cauchy_product_of_majorants {X : Type*}
     (a b : ℕ → X → ℂ) (u v : ℕ → ℝ)
     (hu : Summable u) (hv : Summable v)
@@ -209,10 +211,6 @@ theorem uniform_cauchy_product_of_majorants {X : Type*}
       (fun N x => ∑ j ∈ Finset.range N,
         ∑ p ∈ Finset.HasAntidiagonal.antidiagonal j, a p.1 x * b p.2 x)
       (fun x => (∑' j, a j x) * ∑' j, b j x) Filter.atTop := by
-  have hmajor : Summable (fun j =>
-      ∑ p ∈ Finset.HasAntidiagonal.antidiagonal j, u p.1 * v p.2) :=
-    summable_sum_mul_antidiagonal_of_summable_mul
-      (hu.mul_of_nonneg hv hu0 hv0)
   have hbound : ∀ j x,
       ‖∑ p ∈ Finset.HasAntidiagonal.antidiagonal j, a p.1 x * b p.2 x‖ ≤
         ∑ p ∈ Finset.HasAntidiagonal.antidiagonal j, u p.1 * v p.2 := by
@@ -220,7 +218,8 @@ theorem uniform_cauchy_product_of_majorants {X : Type*}
     refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun p hp => ?_)
     rw [norm_mul]
     exact mul_le_mul (ha p.1 x) (hb p.2 x) (norm_nonneg _) (hu0 p.1)
-  have hconv := tendstoUniformly_tsum_nat hmajor hbound
+  have hconv := tendstoUniformly_tsum_nat (summable_sum_mul_antidiagonal_of_summable_mul
+    (hu.mul_of_nonneg hv hu0 hv0)) hbound
   have heq : (fun x => ∑' j,
       ∑ p ∈ Finset.HasAntidiagonal.antidiagonal j, a p.1 x * b p.2 x) =
       (fun x => (∑' j, a j x) * ∑' j, b j x) := by
@@ -240,7 +239,7 @@ theorem smooth_series_jet_majorant {n : ℕ} (B : LocalBall n)
       ∀ j z, z ∈ Metric.closedBall z₀ r → ∀ α : MultiIndex n m, ∀ x : K,
         ‖(z - z₀) ^ j * coordinateDerivative α (b j) x‖ ≤ v j := by
   obtain ⟨t, hrt, htρ⟩ := exists_between hrρ
-  have ht : 0 < t := hr.trans_lt hrt
+  have ht := hr.trans_lt hrt
   obtain ⟨C, hC, hbound⟩ := smooth_power_series_coefficient_bound B z₀ ρ b f hb
     K hK hKB m t ht.le htρ
   refine ⟨fun j => C * (r / t) ^ j,
@@ -269,22 +268,17 @@ theorem smooth_series_jet_tsum {n m : ℕ} (B : LocalBall n)
     (hs : Summable (fun j => (z - z₀) ^ j * coordinateDerivative α (b j) x)) :
     (∑' j, (z - z₀) ^ j * coordinateDerivative α (b j) x) =
       coordinateDerivative α (f z) x := by
-  have hzball := Metric.mem_ball.mpr ((Metric.mem_closedBall.mp hz).trans_lt hrρ)
-  have hc : Filter.Tendsto
-      (fun M => ∑ j ∈ Finset.range M, (z - z₀) ^ j * coordinateDerivative α (b j) x)
-      Filter.atTop (nhds (coordinateDerivative α (f z) x)) := by
-    apply Metric.tendsto_nhds.mpr
-    intro ε hε
-    obtain ⟨N, hN⟩ := hb.2.2 K hK hKB m r hr hrρ ε hε
-    apply Filter.eventually_atTop.mpr
-    refine ⟨N, fun M hM => ?_⟩
-    rw [dist_eq_norm]
-    have he := coordinate_derivative_taylor_remainder B b hb.1 (f z)
-      (hb.2.1 z hzball) (z - z₀) M α (hKB x.property)
-    have hh := hN M hM z hz α x
-    rw [he] at hh
-    exact hh
-  exact tendsto_nhds_unique hs.hasSum.tendsto_sum_nat hc
+  apply tendsto_nhds_unique hs.hasSum.tendsto_sum_nat
+  apply Metric.tendsto_nhds.mpr
+  intro ε hε
+  obtain ⟨N, hN⟩ := hb.2.2 K hK hKB m r hr hrρ ε hε
+  apply Filter.eventually_atTop.mpr
+  refine ⟨N, fun M hM => ?_⟩
+  rw [dist_eq_norm]
+  have hh := hN M hM z hz α x
+  rw [(coordinate_derivative_taylor_remainder B b hb.1 (f z)
+    (hb.2.1 z (Metric.mem_ball.mpr ((Metric.mem_closedBall.mp hz).trans_lt hrρ))) (z - z₀) M α (hKB x.property))] at hh
+  exact hh
 
 set_option maxHeartbeats 800000 in
 
@@ -295,14 +289,11 @@ theorem scalar_series_majorant (q : ℂ → ℂ) (z₀ : ℂ) (R : ℝ≥0)
     ∃ u : ℕ → ℝ, Summable u ∧ (∀ j, 0 ≤ u j) ∧
       ∀ j z, z ∈ Metric.closedBall z₀ r → ‖(z - z₀) ^ j * p.coeff j‖ ≤ u j := by
   let r' : ℝ≥0 := ⟨r, hr⟩
-  have hradius : (r' : ENNReal) < p.radius :=
-    (ENNReal.coe_lt_coe.mpr (show r' < R from hrR)).trans_le hp.r_le
-  refine ⟨fun j => ‖p j‖ * r ^ j, p.summable_norm_mul_pow hradius,
+  refine ⟨fun j => ‖p j‖ * r ^ j, p.summable_norm_mul_pow ((ENNReal.coe_lt_coe.mpr (show r' < R from hrR)).trans_le hp.r_le),
     fun j => mul_nonneg (norm_nonneg _) (pow_nonneg hr j), ?_⟩
   intro j z hz
   have hcoeff : ‖p.coeff j‖ ≤ ‖p j‖ := by
-    simpa only [FormalMultilinearSeries.coeff, Pi.one_def, norm_one, Finset.prod_const_one,
-      mul_one] using (p j).le_opNorm (fun _ => (1 : ℂ))
+    simpa using (p j).le_opNorm (fun _ => (1 : ℂ))
   have hz' : ‖z - z₀‖ ≤ r := by simpa only [dist_eq_norm] using Metric.mem_closedBall.mp hz
   rw [norm_mul, norm_pow]
   exact (mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) hz' j) hcoeff (norm_nonneg _)
@@ -315,9 +306,7 @@ theorem scalar_series_tsum (q : ℂ → ℂ) (z₀ : ℂ) (R : ℝ≥0)
   have hz' : z - z₀ ∈ Metric.eball 0 (R : ENNReal) := by
     rw [Metric.eball_coe, Metric.mem_ball, dist_zero_right]
     simpa only [dist_eq_norm] using Metric.mem_ball.mp hz
-  have hh := (hp.hasSum hz').tsum_eq
-  simpa only [FormalMultilinearSeries.apply_eq_pow_smul_coeff, smul_eq_mul,
-    add_sub_cancel] using hh
+  simpa using ((hp.hasSum hz').tsum_eq)
 
 set_option maxHeartbeats 800000 in
 
@@ -330,9 +319,9 @@ theorem smooth_series_scalar_product {n : ℕ} (B : LocalBall n)
     Raw.SmoothPowerSeriesOn B z₀ ρ
       (fun j y => ∑ a ∈ Finset.HasAntidiagonal.antidiagonal j, p.coeff a.1 * b a.2 y)
       (fun z y => q z * f z y) := by
-  let c : ℕ → Space n → ℂ := fun j y =>
+  let c := fun j y =>
     ∑ a ∈ Finset.HasAntidiagonal.antidiagonal j, p.coeff a.1 * b a.2 y
-  have hc : ∀ j, ContDiffOn ℝ (⊤ : ℕ∞) (c j) B.carrier :=
+  have hc :=
     cauchy_product_coefficients_smooth B p.coeff b hb.1
   refine ⟨hc, fun z hz => contDiffOn_const.mul (hb.2.1 z hz), ?_⟩
   intro K hK hKB m r hr hrρ ε hε
@@ -341,21 +330,15 @@ theorem smooth_series_scalar_product {n : ℕ} (B : LocalBall n)
   let X := Metric.closedBall z₀ r × MultiIndex n m × K
   let A : ℕ → X → ℂ := fun j x => (x.1.val - z₀) ^ j * p.coeff j
   let D : ℕ → X → ℂ := fun j x => (x.1.val - z₀) ^ j * coordinateDerivative x.2.1 (b j) x.2.2
-  have hA : ∀ j x, ‖A j x‖ ≤ u j := fun j x => ha j x.1 x.1.property
   have hD : ∀ j x, ‖D j x‖ ≤ v j := fun j x => hbnd j x.1 x.1.property x.2.1 x.2.2
-  have hconv := uniform_cauchy_product_of_majorants A D u v hu hv hu0 hv0 hA hD
+  have hconv := uniform_cauchy_product_of_majorants A D u v hu hv hu0 hv0 (fun j x => ha j x.1 x.1.property) hD
   obtain ⟨N, hN⟩ := Filter.eventually_atTop.mp (Metric.tendstoUniformly_iff.mp hconv ε hε)
   refine ⟨N, ?_⟩
   intro M hM z hz α x
   let t : X := (⟨z, hz⟩, α, x)
   have hest := hN M hM t
-  have hzball : z ∈ Metric.ball z₀ ρ := Metric.mem_ball.mpr
+  have hzball := Metric.mem_ball.mpr
     ((Metric.mem_closedBall.mp hz).trans_lt hrρ)
-  have hsA : (∑' j, A j t) = q z := scalar_series_tsum q z₀ R p hp z
-    (Metric.ball_subset_ball hρR hzball)
-  have hsD : (∑' j, D j t) = coordinateDerivative α (f z) x :=
-    smooth_series_jet_tsum B z₀ ρ b f hb K hK hKB r hr hrρ z hz α x
-      (hv.of_nonneg_of_le (fun j => norm_nonneg _) (fun j => hD j t)).of_norm
   have hprod (j : ℕ) :
       (∑ a ∈ Finset.HasAntidiagonal.antidiagonal j, A a.1 t * D a.2 t) =
         (z - z₀) ^ j * coordinateDerivative α (c j) x := by
@@ -364,18 +347,14 @@ theorem smooth_series_scalar_product {n : ℕ} (B : LocalBall n)
     rw [Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro a ha
-    have he := Finset.HasAntidiagonal.mem_antidiagonal.mp ha
-    rw [← he, pow_add]
+    rw [← (Finset.HasAntidiagonal.mem_antidiagonal.mp ha), pow_add]
     ring
-  rw [hsA, hsD] at hest
-  have he := coordinate_derivative_taylor_remainder B c hc (fun y => q z * f z y)
-    (contDiffOn_const.mul (hb.2.1 z hzball)) (z - z₀) M α (hKB x.property)
-  rw [he, coordinateDerivative, finite_coordinate_derivative_const_mul]
-  have hsum : (∑ j ∈ Finset.range M, ∑ a ∈ Finset.HasAntidiagonal.antidiagonal j,
-      A a.1 t * D a.2 t) = ∑ j ∈ Finset.range M,
-        (z - z₀) ^ j * coordinateDerivative α (c j) x :=
-    Finset.sum_congr rfl (fun j _ => hprod j)
-  rw [hsum, dist_eq_norm, norm_sub_rev] at hest
+  rw [(scalar_series_tsum q z₀ R p hp z
+    (Metric.ball_subset_ball hρR hzball)), (smooth_series_jet_tsum B z₀ ρ b f hb K hK hKB r hr hrρ z hz α x
+    (hv.of_nonneg_of_le (fun j => norm_nonneg _) (fun j => hD j t)).of_norm)] at hest
+  rw [(coordinate_derivative_taylor_remainder B c hc (fun y => q z * f z y)
+    (contDiffOn_const.mul (hb.2.1 z hzball)) (z - z₀) M α (hKB x.property)), coordinateDerivative, finite_coordinate_derivative_const_mul]
+  rw [(Finset.sum_congr rfl (fun j _ => hprod j)), dist_eq_norm, norm_sub_rev] at hest
   exact hest
 
 end DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly

@@ -14,11 +14,15 @@ set_option maxHeartbeats 1600000
 set_option maxRecDepth 4000
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {N : TraceHaarTransport R} (C : JointDigitDescentSources R N)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {N : TraceHaarTransport R} (C : JointDigitDescentSources R N)
 
-theorem finiteWeyl_factor (v : R.A.UnitQuotient) (z : R.A.G) (q : R.A.Sf) :
+section
+
+variable (v : R.A.UnitQuotient) (z : R.A.G)
+
+theorem finiteWeyl_factor (q : R.A.Sf) :
     fourier R C.sources.dq (C.realization.theta v) (finiteLift q.val (finiteWeylRaw R z q.val)) /
       fourier R C.sources.dq (C.realization.theta v) 1 =
     ThetaExpansion.normalizedLocalWeylValue R C v (Sum.inr q.val) (z.2 q) := by
@@ -28,12 +32,10 @@ theorem finiteWeyl_factor (v : R.A.UnitQuotient) (z : R.A.G) (q : R.A.Sf) :
   congr 1
   congr 1
   unfold finiteWeylRaw
-  have h : Units.map (adeleEval F (Sum.inr q.val)).toMonoidHom (localIdele R z) = z.2 q :=
-    DigitMasks.localIdele_finite R z q.val q.property
   exact congrArg (fun y => KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val) y *
-    KPRationalAdelicSplitting.WCoordinates F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val)) h
+    KPRationalAdelicSplitting.WCoordinates F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val)) (DigitMasks.localIdele_finite R z q.val q.property)
 
-theorem archWeyl_factor (v : R.A.UnitQuotient) (z : R.A.G) (w : InfinitePlace F) :
+theorem archWeyl_factor (w : InfinitePlace F) :
     archCoefficient (C := C) v w (archWeylMatrix R z w) =
       ThetaExpansion.normalizedLocalWeylValue R C v (Sum.inl w) (z.1 w) := by
   let y := Units.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex (R.A.complex_place w)).toMonoidHom (z.1 w)
@@ -60,11 +62,9 @@ theorem archWeyl_factor (v : R.A.UnitQuotient) (z : R.A.G) (w : InfinitePlace F)
   apply congrArg (KPRationalAdelicSplitting.pglA F R.A.zeta12 R.A.primitive_zeta12)
   apply congrArg (KPRationalAdelicSplitting.localIdele F (Sum.inl w))
   apply Units.ext
-  change (InfinitePlace.Completion.ringEquivComplexOfIsComplex (R.A.complex_place w)).symm
-    ((InfinitePlace.Completion.ringEquivComplexOfIsComplex (R.A.complex_place w)) (z.1 w : w.Completion)) = _
   exact (InfinitePlace.Completion.ringEquivComplexOfIsComplex (R.A.complex_place w)).symm_apply_apply _
 
-theorem globalWeyl_product (v : R.A.UnitQuotient) (z : R.A.G) :
+theorem globalWeyl_product :
     fourier R C.sources.dq (C.realization.theta v)
       (MomentSources.diagonal R z * KPRationalAdelicSplitting.pglW F R.A.zeta12 R.A.primitive_zeta12) =
     fourier R C.sources.dq (C.realization.theta v) 1 *
@@ -73,6 +73,8 @@ theorem globalWeyl_product (v : R.A.UnitQuotient) (z : R.A.G) :
   rw [fourier_right_sWeyl R C.realization v,diagonal_sWeyl_geometry,
     fullMatrix_product v (finiteWeylRaw R z) (archWeylMatrix R z)]
   simp_rw [finiteWeyl_factor R C v z,archWeyl_factor R C v z]
+
+end
 
 theorem radial_transport :
     ∃ D : ℝ, 0 ≤ D ∧ ∀ v κ (j : ℕ), j ≤ 2 → ∀ u : ℝ, ∀ y : R.A.G1,

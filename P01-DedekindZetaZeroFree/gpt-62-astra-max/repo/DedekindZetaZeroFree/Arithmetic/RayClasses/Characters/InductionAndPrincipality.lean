@@ -42,7 +42,7 @@ theorem initial_ray_principal_descent_equiv {F : Type} [Field F] [NumberField F]
     have hθε : ∀ I : Ideal (𝓞 F), θ I = ε I :=
       RayComparison.away_uniqueness hf hm θ ε (by
         intro I hI hIfm
-        have hIf : I ⊔ f = ⊤ :=
+        have hIf :=
           top_unique (le_trans (le_of_eq hIfm.symm) (sup_le_sup_left Ideal.mul_le_left I))
         have hIm : I ⊔ m = ⊤ :=
           top_unique (le_trans (le_of_eq hIfm.symm) (sup_le_sup_left Ideal.mul_le_right I))
@@ -52,7 +52,7 @@ theorem initial_ray_principal_descent_equiv {F : Type} [Field F] [NumberField F]
     rw [hθε I, hεprincipal I hI hIf]
   ·
     intro hθ I hI hIm
-    have hIf : I ⊔ f = ⊤ :=
+    have hIf :=
       top_unique (le_trans (le_of_eq hIm.symm) (sup_le_sup_left hmf I))
     rw [hηθ I hI hIm]
     exact hθ I hI hIf

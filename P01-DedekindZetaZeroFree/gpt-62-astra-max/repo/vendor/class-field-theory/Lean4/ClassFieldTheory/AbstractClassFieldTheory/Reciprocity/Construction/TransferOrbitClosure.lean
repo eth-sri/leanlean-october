@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 namespace ClassFormation
@@ -63,12 +59,11 @@ theorem closedSubgroupGenerated_pow_eq_inf_stabilizer
     simpa only [inv_inv] using
       hHclosed.preimage (IsTopologicalGroup.continuous_conj t⁻¹)
   let : V.FiniteIndex := by
-    rw [Subgroup.finiteIndex_iff, hVeq,
-      Subgroup.index_map_of_bijective (MulAut.conj t).bijective H]
-    exact Subgroup.FiniteIndex.index_ne_zero
+    simp_all [Subgroup.finiteIndex_iff]
   have hVopen : IsOpen (V : Set Q) :=
     V.isOpen_of_isClosed_of_finiteIndex hVclosed
-  have halg : Subgroup.zpowers g ⊓ V = Subgroup.zpowers (g ^ m) := by
+  let zpowers₀ := Subgroup.zpowers (g ^ m)
+  have halg : Subgroup.zpowers g ⊓ V = zpowers₀ := by
     ext y
     constructor
     · rintro ⟨hy, hyV⟩
@@ -80,31 +75,30 @@ theorem closedSubgroupGenerated_pow_eq_inf_stabilizer
       obtain ⟨k, rfl⟩ := hdvd
       apply Subgroup.mem_zpowers_iff.mpr
       refine ⟨k, ?_⟩
-      rw [zpow_mul, zpow_natCast]
+      simp [zpow_mul]
     · intro hy
       obtain ⟨z, hz⟩ := Subgroup.mem_zpowers_iff.mp hy
       rw [← hz]
       constructor
       · apply Subgroup.mem_zpowers_iff.mpr
         refine ⟨(m : ℤ) * z, ?_⟩
-        rw [zpow_mul, zpow_natCast]
-      · apply (mem_stabilizer_iff (G := Q)).mpr
-        rw [← zpow_natCast g m, ← zpow_mul]
+        simp [zpow_mul]
+      · rw [← zpow_natCast g m, ← zpow_mul]
         apply zpow_smul_eq_iff_minimalPeriod_dvd.mpr
         exact dvd_mul_right (m : ℤ) z
-  have hpow_le : Subgroup.zpowers (g ^ m) ≤ Subgroup.zpowers g :=
+  have hpow_le : zpowers₀ ≤ Subgroup.zpowers g :=
     Subgroup.zpowers_le_of_mem (Subgroup.npow_mem_zpowers g m)
-  have hpowV : Subgroup.zpowers (g ^ m) ≤ V := by
+  have hpowV : zpowers₀ ≤ V := by
     rw [← halg]
     exact inf_le_right
   have hsets : ((Subgroup.zpowers g : Set Q) ∩ (V : Set Q)) =
-      (Subgroup.zpowers (g ^ m) : Set Q) :=
+      (zpowers₀ : Set Q) :=
     congrArg (fun U : Subgroup Q => (U : Set Q)) halg
   change (Subgroup.closure ({g ^ m} : Set Q)).topologicalClosure =
     (Subgroup.closure ({g} : Set Q)).topologicalClosure ⊓ V
-  rw [← Subgroup.zpowers_eq_closure, ← Subgroup.zpowers_eq_closure]
+  simp [← Subgroup.zpowers_eq_closure]
   ext y
-  change y ∈ closure (Subgroup.zpowers (g ^ m) : Set Q) ↔
+  change y ∈ closure (zpowers₀ : Set Q) ↔
     y ∈ closure (Subgroup.zpowers g : Set Q) ∧ y ∈ V
   constructor
   · intro hy

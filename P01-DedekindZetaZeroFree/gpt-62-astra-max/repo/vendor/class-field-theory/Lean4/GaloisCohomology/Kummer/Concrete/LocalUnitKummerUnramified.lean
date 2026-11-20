@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -63,23 +59,15 @@ theorem isUnramifiedValuedExtension_of_unit_kummer_generator
   let base := LocalFieldTheory.localCompleteDVF C
   let target := LocalFieldTheory.localCompleteDVF F
   let : base.valuation.HasExtension target.valuation := by
-    apply Valuation.HasExtension.ofComapInteger
-    ext x
-    change vF (algebraMap C F x) ≤ 1 ↔ vC x ≤ 1
-    exact Valuation.HasExtension.val_map_le_one_iff vC vF x
-  let : IsScalarTower base.valuationSubring
-      target.valuationSubring F :=
+    assumption
+  let :=
     ValuationTheory.DiscreteValuationField.Valuation.valuationSubring_isScalarTower_of_hasExtension
       base.valuation target.valuation
   let bBase : base.valuationSubring := by
     refine ⟨b, ?_⟩
-    change base.valuation b ≤ 1
-    rw [LocalFieldTheory.localCompleteDVF_valuation_eq]
     exact hb.le
   let z : target.valuationSubring := by
     refine ⟨beta, ?_⟩
-    change target.valuation beta ≤ 1
-    rw [LocalFieldTheory.localCompleteDVF_valuation_eq]
     exact hbeta.le
   have hnBaseUnit :
       IsUnit ((n : ℕ) : base.valuationSubring) := by
@@ -92,7 +80,6 @@ theorem isUnramifiedValuedExtension_of_unit_kummer_generator
       z ^ (n : ℕ) =
         algebraMap base.valuationSubring target.valuationSubring bBase := by
     apply Subtype.ext
-    change beta ^ (n : ℕ) = algebraMap C F b
     exact hpow
   have hzUnit : IsUnit z := by
     apply
@@ -100,10 +87,8 @@ theorem isUnramifiedValuedExtension_of_unit_kummer_generator
     change target.valuation beta = 1
     rw [LocalFieldTheory.localCompleteDVF_valuation_eq]
     exact hbeta
-  let P : Polynomial base.valuationSubring :=
+  let P :=
     Polynomial.X ^ (n : ℕ) - Polynomial.C bBase
-  have hP : Polynomial.aeval z P = 0 := by
-    simp [P, hzpow]
   have hPderiv :
       IsUnit (Polynomial.aeval z (Polynomial.derivative P)) := by
     have hderivative :
@@ -111,38 +96,23 @@ theorem isUnramifiedValuedExtension_of_unit_kummer_generator
           Polynomial.C ((n : ℕ) : base.valuationSubring) *
             Polynomial.X ^ ((n : ℕ) - 1) := by
       simp [P, Polynomial.derivative_X_pow]
-    have hCUnit :
-        IsUnit
-          (Polynomial.aeval z
-            (Polynomial.C ((n : ℕ) : base.valuationSubring))) :=
-      hnBaseUnit.map
-        ((Polynomial.aeval z).toRingHom.comp Polynomial.C)
-    have hXUnit :
-        IsUnit
-          (Polynomial.aeval z
-            ((Polynomial.X : Polynomial base.valuationSubring) ^
-              ((n : ℕ) - 1))) := by
-      simpa only [map_pow, Polynomial.aeval_X] using
-        hzUnit.pow ((n : ℕ) - 1)
     rw [hderivative, map_mul]
-    exact hCUnit.mul hXUnit
-  have hzgen :
-      Algebra.adjoin C {(algebraMap target.valuationSubring F) z} = ⊤ := by
-    change Algebra.adjoin C {beta} = ⊤
-    exact hgen
-  have hunramifiedAt :
-      Algebra.IsUnramifiedAt
-        base.valuationSubring target.maximalIdeal :=
+    refine (hnBaseUnit.map
+      ((Polynomial.aeval z).toRingHom.comp Polynomial.C)).mul ?_
+    simpa using
+    hzUnit.pow ((n : ℕ) - 1)
+  have hunramifiedAt :=
     RamificationTheory.DiscreteValuationField.ValuedExtension.isUnramifiedAt_of_aeval_derivative_isUnit
-      base target z hzgen P hP hPderiv
+      base target z (by
+        exact hgen) P (by
+        simp [P, hzpow]) hPderiv
   refine ⟨?_⟩
   change target.maximalIdeal.ramificationIdx base.valuationSubring = 1
   let : Module.Finite
       base.valuationSubring target.valuationSubring := by
     change Module.Finite 𝒪[C] 𝒪[F]
     infer_instance
-  let : Algebra.IsUnramifiedAt
-      base.valuationSubring target.maximalIdeal := hunramifiedAt
+  let := hunramifiedAt
   exact Ideal.ramificationIdx_eq_one_of_isUnramifiedAt
 
 end KummerTheory

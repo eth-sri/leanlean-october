@@ -16,8 +16,7 @@ private theorem tail_shell_sum_le
     (s : Finset ι) (hlo : ∀ i ∈ s, A < w i)
     (hup : ∀ i ∈ s, w i ≤ 2 * A) :
     ∑ i ∈ s, (w i) ^ (-p) ≤ 2 * C * A ^ (1 - p) := by
-  have hA0 : 0 < A := lt_of_lt_of_le zero_lt_one hA
-  have hc := hcount (2 * A) (by linarith) s hup
+  have hA0 := lt_of_lt_of_le zero_lt_one hA
   calc
     ∑ i ∈ s, (w i) ^ (-p) ≤ ∑ _i ∈ s, A ^ (-p) := by
       apply Finset.sum_le_sum
@@ -25,7 +24,7 @@ private theorem tail_shell_sum_le
       exact Real.rpow_le_rpow_of_nonpos hA0 (hlo i hi).le (by linarith)
     _ = (s.card : ℝ) * A ^ (-p) := by simp
     _ ≤ (C * (2 * A)) * A ^ (-p) :=
-      mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg hA0.le _)
+      mul_le_mul_of_nonneg_right (hcount (2 * A) (by linarith) s hup) (Real.rpow_nonneg hA0.le _)
     _ = 2 * C * A ^ (1 - p) := by
       rw [show 1 - p = 1 + (-p) by ring, Real.rpow_add hA0, Real.rpow_one]
       ring
@@ -37,8 +36,9 @@ private theorem tail_scale_rpow (X p : ℝ) (hX : 0 < X) (n : ℕ) :
   rw [mul_comm (n : ℝ), Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2), Real.rpow_natCast]
   ring
 
-private theorem tail_partial_sum_le
-    {ι : Type*} (w : ι → ℝ) (C : ℝ)
+variable {ι : Type*} (w : ι → ℝ)
+
+private theorem tail_partial_sum_le (C : ℝ)
     (hcount : ∀ Y : ℝ, 1 ≤ Y → ∀ s : Finset ι,
       (∀ i ∈ s, w i ≤ Y) → (s.card : ℝ) ≤ C * Y)
     (p : ℝ) (hp : 1 < p) (X : ℝ) (hX : 1 ≤ X) (n : ℕ) :
@@ -84,8 +84,7 @@ private theorem tail_partial_sum_le
       rw [hsplit, Finset.sum_range_succ, mul_add]
       exact add_le_add ht (by simpa [mul_assoc] using hu')
 
-theorem inversePower_tail_sum_le
-    {ι : Type*} (w : ι → ℝ) (hw : ∀ i, 1 ≤ w i)
+theorem inversePower_tail_sum_le (hw : ∀ i, 1 ≤ w i)
     (C : ℝ) (hC : 0 ≤ C)
     (hcount : ∀ Y : ℝ, 1 ≤ Y → ∀ s : Finset ι,
       (∀ i ∈ s, w i ≤ Y) → (s.card : ℝ) ≤ C * Y)
@@ -94,7 +93,6 @@ theorem inversePower_tail_sum_le
     ∑ i ∈ s, (w i) ^ (-p) ≤
       (2 * C / (1 - (2 : ℝ) ^ (1 - p))) * X ^ (1 - p) := by
   classical
-  have hX0 : 0 < X := lt_of_lt_of_le zero_lt_one hX
   obtain ⟨n, hn⟩ := pow_unbounded_of_one_lt ((∑ i ∈ s, w i) / X)
     (by norm_num : (1 : ℝ) < 2)
   have hu : ∀ i ∈ s, w i ≤ (2 : ℝ) ^ n * X := by
@@ -102,7 +100,7 @@ theorem inversePower_tail_sum_le
     calc
       w i ≤ ∑ j ∈ s, w j :=
         Finset.single_le_sum (fun j _ => by linarith [hw j]) hi
-      _ ≤ (2 : ℝ) ^ n * X := ((div_lt_iff₀ hX0).mp hn).le
+      _ ≤ (2 : ℝ) ^ n * X := ((div_lt_iff₀ (lt_of_lt_of_le zero_lt_one hX)).mp hn).le
   have hr0 : 0 ≤ (2 : ℝ) ^ (1 - p) := Real.rpow_nonneg (by norm_num) _
   have hr1 : (2 : ℝ) ^ (1 - p) < 1 :=
     Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)

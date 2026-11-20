@@ -12,7 +12,7 @@ open scoped NumberField Classical NNReal
 open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.NormOneTorusAlgebra
 open KPGlobalResidualConstruction
-open _root_.DedekindZetaZeroFree.KPMsRationalCompactCrossPairing.ActualWeylFibreProof renaming p_weyl → p_weyl
+open _root_.DedekindZetaZeroFree.KPMsRationalCompactCrossPairing.ActualWeylFibreProof (p_weyl)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 local notation "W" => KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ (KPCubicCoverConstruction.adelicW F ζ hζ)
 set_option backward.isDefEq.respectTransparency false
@@ -27,15 +27,9 @@ private theorem W_squared : W * W = 1 := by
     simpa only [KPCubicCoverConstruction.adelicW,pow_two] using KPRationalAdelicSplitting.W_sq F ζ hζ
   rw [he,map_one]
 
-private theorem W_rightEvaluation (t : KPGlobalTorusFunctionData.E F ζ hζ) :
-    W * rightEvaluation F ζ hζ t = t.val * W := by
-  change W * (W * t.val * W⁻¹) = t.val * W
-  have hw : W⁻¹ = W := inv_eq_of_mul_eq_one_left (W_squared F ζ hζ)
-  rw [hw]
-  calc W * (W * t.val * W) = (W*W)*t.val*W := by group
-       _ = t.val*W := by rw [W_squared,one_mul]
+variable (t : KPGlobalTorusFunctionData.E F ζ hζ)
 
-theorem chamber_rightEvaluation (t : KPGlobalTorusFunctionData.E F ζ hζ)
+theorem chamber_rightEvaluation
     (x : A F) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     W * KPGlobalTorusFunctionData.N F ζ hζ x * (rightEvaluation F ζ hζ t * g) =
       t.val * (W * KPGlobalTorusFunctionData.N F ζ hζ
@@ -57,12 +51,17 @@ theorem chamber_rightEvaluation (t : KPGlobalTorusFunctionData.E F ζ hζ)
     group
   change W * KPGlobalTorusFunctionData.N F ζ hζ x * (u.val*g) = _
   rw [← mul_assoc, mul_assoc W,hr,← mul_assoc W]
-  have hw : W * u.val = t.val*W := W_rightEvaluation F ζ hζ t
+  have hw : W * u.val = t.val*W := (by
+    change W * (W * t.val * W⁻¹) = t.val * W
+    have hw : W⁻¹ = W := inv_eq_of_mul_eq_one_left (W_squared F ζ hζ)
+    rw [hw]
+    calc _ = (W*W)*t.val*W := by group
+         _ = t.val*W := by rw [W_squared,one_mul])
   rw [hw]
   dsimp [u]
   group
 
-theorem rightEvaluation_abs (t : KPGlobalTorusFunctionData.E F ζ hζ)
+theorem rightEvaluation_abs
     (ht : KPGlobalTorusFunctionData.delta F ζ hζ t = 1) :
     KPGlobalTorusFunctionData.ideleAbs F
       (KPGlobalTorusFunctionData.p F ζ hζ

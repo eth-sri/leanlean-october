@@ -10,9 +10,10 @@ open scoped NumberField Classical
 
 open UniqueFactorizationMonoid
 
-theorem idealDivisorCount_le_normalizedFactors_box
-    {F : Type*} [Field F] [NumberField F]
-    (A : Ideal (𝓞 F)) (hA : A ≠ ⊥) :
+variable {F : Type*} [Field F] [NumberField F] (A : Ideal (𝓞 F)) (hA : A ≠ ⊥)
+
+include hA in
+theorem idealDivisorCount_le_normalizedFactors_box :
     let m := UniqueFactorizationMonoid.normalizedFactors A
     let S := m.toFinset
     (idealDivisorCount A : ℝ) ≤ ∏ P ∈ S, ((m.count P : ℝ) + 1) := by
@@ -29,7 +30,7 @@ theorem idealDivisorCount_le_normalizedFactors_box
     exact (Finset.mem_filter.mp hD).2
   have hne : ∀ D : Ideal (𝓞 F), D ∈ idealDivisors A → D ≠ ⊥ := by
     intro D hD hDb
-    have hdvd : Ideal.absNorm D ∣ Ideal.absNorm A := map_dvd Ideal.absNorm (hmemA D hD)
+    have hdvd := map_dvd Ideal.absNorm (hmemA D hD)
     rw [hDb, Ideal.absNorm_bot] at hdvd
     exact (Ideal.absNorm_eq_zero_iff.not.mpr hA) (Nat.zero_dvd.mp hdvd)
   have hle : ∀ D : Ideal (𝓞 F), D ∈ idealDivisors A →
@@ -38,16 +39,11 @@ theorem idealDivisorCount_le_normalizedFactors_box
     rw [hm]
     exact (dvd_iff_normalizedFactors_le_normalizedFactors (hne D hD) hA).mp (hmemA D hD)
 
-  have hcoord : ∀ D : Ideal (𝓞 F), D ∈ idealDivisors A →
-      ∀ P : {x : Ideal (𝓞 F) // x ∈ S},
-        (UniqueFactorizationMonoid.normalizedFactors D).count P.val ≤ m.count P.val := by
-    intro D hD P
-    exact Multiset.le_iff_count.mp (hle D hD) P.val
   let box := (P : {x : Ideal (𝓞 F) // x ∈ S}) → Fin (m.count P.val + 1)
   let f : {D : Ideal (𝓞 F) // D ∈ idealDivisors A} →
-      {x : box // x ∈ (Finset.univ : Finset box)} :=
+      {x : box // x ∈ Finset.univ} :=
     fun D => ⟨fun P => ⟨(UniqueFactorizationMonoid.normalizedFactors D.val).count P.val,
-        Nat.lt_succ_of_le (hcoord D.val D.property P)⟩, Finset.mem_univ _⟩
+        Nat.lt_succ_of_le ((fun D hD P => Multiset.le_iff_count.mp (hle D hD) P.val) D.val D.property P)⟩, Finset.mem_univ _⟩
   have hf_inj : Function.Injective f := by
     rintro ⟨D₁, hD₁⟩ ⟨D₂, hD₂⟩ heq
     simp only [Subtype.mk.injEq]
@@ -55,9 +51,8 @@ theorem idealDivisorCount_le_normalizedFactors_box
         (UniqueFactorizationMonoid.normalizedFactors D₁).count P.val =
           (UniqueFactorizationMonoid.normalizedFactors D₂).count P.val := by
       intro P
-      have h2 := congrArg (fun (g : {x : box // x ∈ (Finset.univ : Finset box)}) =>
-        (g.val P).val) heq
-      simpa [f] using h2
+      simpa [f] using (congrArg (fun g =>
+        (g.val P).val) heq)
     have hext : UniqueFactorizationMonoid.normalizedFactors D₁ =
         UniqueFactorizationMonoid.normalizedFactors D₂ := by
       rw [Multiset.ext]
@@ -74,10 +69,8 @@ theorem idealDivisorCount_le_normalizedFactors_box
     rw [← Ideal.prod_normalizedFactors_eq_self (hne D₁ hD₁),
       ← Ideal.prod_normalizedFactors_eq_self (hne D₂ hD₂), hext]
   have hcard : idealDivisorCount A ≤ ∏ P ∈ S, (m.count P + 1) := by
-    have h1 : (idealDivisors A).card ≤ (Finset.univ : Finset box).card :=
-      Finset.card_le_card_of_injective (s := idealDivisors A) (t := Finset.univ) hf_inj
     rw [idealDivisorCount]
-    calc (idealDivisors A).card ≤ (Finset.univ : Finset box).card := h1
+    calc _ ≤ Finset.univ.card := (Finset.card_le_card_of_injective hf_inj)
       _ = Fintype.card box := Finset.card_univ
       _ = ∏ P : {x : Ideal (𝓞 F) // x ∈ S}, (m.count P.val + 1) := by
             rw [Fintype.card_pi]; simp
@@ -85,9 +78,8 @@ theorem idealDivisorCount_le_normalizedFactors_box
             (Finset.prod_subtype S (fun x => Iff.rfl) (fun P => m.count P + 1)).symm
   exact_mod_cast hcard
 
-theorem absNorm_eq_prod_normalizedFactors_counts
-    {F : Type*} [Field F] [NumberField F]
-    (A : Ideal (𝓞 F)) (hA : A ≠ ⊥) :
+include hA in
+theorem absNorm_eq_prod_normalizedFactors_counts :
     let m := UniqueFactorizationMonoid.normalizedFactors A
     let S := m.toFinset
     Ideal.absNorm A = ∏ P ∈ S, Ideal.absNorm P ^ m.count P := by
@@ -95,7 +87,7 @@ theorem absNorm_eq_prod_normalizedFactors_counts
   dsimp only
   have h1 : Ideal.absNorm (UniqueFactorizationMonoid.normalizedFactors A).prod =
       ((UniqueFactorizationMonoid.normalizedFactors A).map Ideal.absNorm).prod :=
-    map_multiset_prod (f := (Ideal.absNorm : Ideal (𝓞 F) →*₀ ℕ)) _
+    map_multiset_prod (f := Ideal.absNorm) _
   calc Ideal.absNorm A
       = Ideal.absNorm (UniqueFactorizationMonoid.normalizedFactors A).prod := by
           rw [Ideal.prod_normalizedFactors_eq_self hA]
@@ -104,16 +96,15 @@ theorem absNorm_eq_prod_normalizedFactors_counts
           Ideal.absNorm P ^ (UniqueFactorizationMonoid.normalizedFactors A).count P :=
           Finset.prod_multiset_map_count _ _
 
-theorem two_le_absNorm_of_mem_normalizedFactors
-    {F : Type*} [Field F] [NumberField F]
-    (A : Ideal (𝓞 F)) (hA : A ≠ ⊥) :
+include hA in
+theorem two_le_absNorm_of_mem_normalizedFactors :
     let m := UniqueFactorizationMonoid.normalizedFactors A
     let S := m.toFinset
     ∀ P ∈ S, 2 ≤ Ideal.absNorm P := by
   classical
   dsimp only
   intro P hP
-  have hPrime : Prime P := prime_of_normalized_factor _ (Multiset.mem_toFinset.mp hP)
+  have hPrime := prime_of_normalized_factor _ (Multiset.mem_toFinset.mp hP)
   rw [Nat.two_le_iff]
   exact ⟨fun h => hPrime.ne_zero (Ideal.absNorm_eq_zero_iff.mp h),
     fun h => hPrime.not_unit (Ideal.isUnit_iff.mpr (Ideal.absNorm_eq_one_iff.mp h))⟩

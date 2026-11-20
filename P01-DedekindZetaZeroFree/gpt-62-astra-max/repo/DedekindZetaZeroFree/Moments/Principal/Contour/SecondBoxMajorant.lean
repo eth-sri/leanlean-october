@@ -14,8 +14,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonK
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 private def hh (t : ℝ) : ℝ := (1 + |t|) ^ (-2 : ℝ)
 
@@ -42,7 +42,7 @@ private lemma gaussShear_nonneg (p : ℝ × ℝ) : 0 ≤ gaussShear p :=
 private lemma gaussShear_integrable : Integrable gaussShear := by
   have hg : Integrable (fun x : ℝ => Real.exp (-(x) ^ 2)) := by
     simpa using integrable_exp_neg_mul_sq (b := 1) one_pos
-  have h1 : Integrable (fun p : ℝ × ℝ => hh p.1 * Real.exp (-(p.2) ^ 2)) :=
+  have h1 :=
     hh_integrable.mul_prod hg
   have h2 := (measurePreserving_prod_add_swap (volume : Measure ℝ)
     (volume : Measure ℝ)).integrable_comp_of_integrable h1
@@ -56,15 +56,8 @@ private lemma tripleG_nonneg (p : ℝ × ℝ × ℝ) : 0 ≤ tripleG p :=
   mul_nonneg (gaussShear_nonneg _) (hh_pos _).le
 
 private lemma tripleG_integrable : Integrable tripleG := by
-  have h : Integrable (fun q : (ℝ × ℝ) × ℝ => gaussShear q.1 * hh q.2) :=
-    gaussShear_integrable.mul_prod hh_integrable
-  have h1 : MeasurePreserving (Prod.map (id : ℝ → ℝ) (Prod.swap : ℝ × ℝ → ℝ × ℝ))
-      (volume : Measure (ℝ × ℝ × ℝ)) (volume : Measure (ℝ × ℝ × ℝ)) :=
-    (MeasurePreserving.id (volume : Measure ℝ)).prod MeasureTheory.Measure.measurePreserving_swap
-  have h2 := MeasurePreserving.symm MeasurableEquiv.prodAssoc
-    (measurePreserving_prodAssoc (volume : Measure ℝ) (volume : Measure ℝ) (volume : Measure ℝ))
-  have h3 := (h2.comp h1).integrable_comp_of_integrable h
-  exact h3.congr (Filter.Eventually.of_forall fun p => rfl)
+  exact (((MeasurePreserving.symm MeasurableEquiv.prodAssoc
+    (measurePreserving_prodAssoc volume volume volume)).comp ((MeasurePreserving.id volume).prod MeasureTheory.Measure.measurePreserving_swap)).integrable_comp_of_integrable (gaussShear_integrable.mul_prod hh_integrable)).congr (Filter.Eventually.of_forall fun p => rfl)
 
 private lemma norm_kernel_principal (u : D.Row) (hq : D.q u = 1) (x y v Z : ℝ) (hZ : 0 < Z)
     (t : ℝ × ℝ × ℝ) :

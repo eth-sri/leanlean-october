@@ -19,20 +19,19 @@ namespace DedekindZetaZeroFree.KPInterface.ActualFiniteOutputSteps
 open KPLocalExceptionalConstruction KPLocalPrincipalSeries KPLocalStoneVonNeumann KPLocalJacquetImage
 open KPRankOneShellRepair
 variable {F : Type} [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (RingOfIntegers F))
-variable (S : CanonicalFiniteInducingData F ζ hζ v) (P : Polarization S.heisenberg)
-variable (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
-variable (hμ : μ ((valuation (LocalField F v)).integer : Set (LocalField F v)) = 1)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (RingOfIntegers F))
+    (S : CanonicalFiniteInducingData F ζ hζ v) (P : Polarization S.heisenberg)
+    (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
+    (hμ : μ ((valuation (LocalField F v)).integer : Set (LocalField F v)) = 1)
 
 private theorem residue_card : residueCardinality (LocalField F v) = v.asIdeal.absNorm := by
   let e : v.adicCompletionIntegers F ≃+* (valuation (LocalField F v)).integer := by
     letI : (Valued.v : Valuation (LocalField F v) (WithZero (Multiplicative ℤ))).Compatible :=
       Valuation.Compatible.ofValuation _
     have he := (Valuation.isEquiv_iff_valuationSubring _ _).mp
-      (ValuativeRel.isEquiv (Valued.v : Valuation (LocalField F v)
-        (WithZero (Multiplicative ℤ))) (valuation (LocalField F v)))
+      (ValuativeRel.isEquiv Valued.v (valuation (LocalField F v)))
     exact RingEquiv.restrict (RingEquiv.refl _) _ _ (fun x => by
-      change x ∈ (Valued.v : Valuation (LocalField F v) (WithZero (Multiplicative ℤ))).valuationSubring ↔
+      change x ∈ Valued.v.valuationSubring ↔
         x ∈ (valuation (LocalField F v)).valuationSubring
       rw [he])
   let er := (GlobalClassFieldTheory.ClassFieldAxiom.ringOfIntegersQuotientEquivAdicResidueField v).trans
@@ -40,6 +39,8 @@ private theorem residue_card : residueCardinality (LocalField F v) = v.asIdeal.a
   unfold residueCardinality
   rw [← Nat.card_congr er.toEquiv, Ideal.absNorm_apply]
   rfl
+
+alias SmallNormDecay.residue_card := residue_card
 
 private theorem normalized_valuation (x : LocalField F v) :
     IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)
@@ -51,14 +52,11 @@ private theorem normalized_valuation (x : LocalField F v) :
   have hsame : e = IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v) := by
     let f := e.symm.trans (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v))
     have hf : f = OrderMonoidIso.refl _ := by
-      have h := Subsingleton.elim (OrderMonoidIso.withZero.symm f)
-        (OrderMonoidIso.refl (Multiplicative ℤ))
-      have hh := congrArg OrderMonoidIso.withZero h
-      exact (show f = OrderMonoidIso.withZero (OrderMonoidIso.refl (Multiplicative ℤ)) by simpa using hh).trans
+      exact (show f = OrderMonoidIso.withZero (OrderMonoidIso.refl (Multiplicative ℤ)) by simpa using (congrArg OrderMonoidIso.withZero (Subsingleton.elim (OrderMonoidIso.withZero.symm f)
+        (OrderMonoidIso.refl (Multiplicative ℤ))))).trans
         (by ext x; cases x <;> rfl)
     ext a
-    have h := congrArg (fun k => k (e a)) hf
-    simpa [f] using h.symm
+    simpa [f] using (congrArg (fun k => k (e a)) hf).symm
   rw [← hsame]
   change Valuation.IsRankOneDiscrete.valueGroup₀_equiv_withZeroMulInt ν
     (ValuativeRel.ValueGroupWithZero.orderMonoidIso ν (valuation (LocalField F v) x)) = _
@@ -86,8 +84,7 @@ private theorem actual_relation (π : (LocalField F v)ˣ)
   have hv := hweight (e (q φ))
   have hc := residue_card (F := F) v
   simp only [hc, zpow_neg_one] at hv
-  have ht : (S.borel.torus (S.borel.cubeLift π) : ActualCover F ζ hζ v) =
-      KPPGLLocalCover.A F ζ hζ (Sum.inr v) (π ^ 3) :=
+  have ht :=
     (S.torus_full _).trans (S.cube_actual π)
   have hq : q (ρ (KPPGLLocalCover.A F ζ hζ (Sum.inr v) (π ^ 3)) φ) =
       (v.asIdeal.absNorm : ℂ)⁻¹ • q φ := by
@@ -149,60 +146,47 @@ theorem actual_small_norm_decay_canonical
     intro he
     rw [he, map_zero] at hp
     exact WithZero.coe_ne_zero hp.symm
-  let π : (LocalField F v)ˣ := Units.mk0 (algebraMap F (LocalField F v) p)
+  let π := Units.mk0 (algebraMap F (LocalField F v) p)
     ((algebraMap F (LocalField F v)).injective.ne hpne)
   have hπ : Valued.v π.val = WithZero.exp (-1 : ℤ) := by
-    change Valued.v (algebraMap F (v.adicCompletion F) p) = _
     exact (v.valuedAdicCompletion_eq_valuation' p).trans hp
-  have hπnorm : ‖π.val‖ = (v.asIdeal.absNorm : ℝ)⁻¹ := by
-    rw [FinitePlace.norm_def,
-      WithZeroMulInt.toNNReal_neg_apply _ (by simpa only [ne_eq, Valuation.zero_iff] using π.ne_zero),
-      NNReal.coe_zpow, hπ, WithZero.log_exp]
-    simp
-  have hJ : ∀ η : CanonicalSmoothModule (actualCanonicalImageModule F ζ hζ v S P μ hμ),
-      ((ρ (a (π ^ 3)) - (v.asIdeal.absNorm : ℂ)⁻¹ • LinearMap.id) *
-        (ρ (a (π ^ 3)) - ((v.asIdeal.absNorm : ℂ) ^ 2)⁻¹ • LinearMap.id) : Module.End ℂ _) η ∈
-      KPFiniteLocal.ordinaryDifferences ρ n := by
-    intro η
-    have he := actual_differences_eq ζ hζ v S P μ hμ
-    change KPFiniteLocal.ordinaryDifferences ρ n = _ at he
-    rw [he]
-    exact actual_relation ζ hζ v S P μ hμ π hπ _
   let χ : AddChar (LocalField F v) Circle :=
     { toFun x := ⟨ψ.toAddChar x, mem_sphere_zero_iff_norm.mpr (ψ.unitary x)⟩
       map_zero_eq_one' := by apply Subtype.ext; exact ψ.toAddChar.map_zero_eq_one
       map_add_eq_mul' := by intro x y; apply Subtype.ext; exact ψ.toAddChar.map_add_eq_mul x y }
-  have hn : Continuous n := by
-    exact (KPPGLLocalCover.finite_lifts_continuous F ζ hζ v
-      (KPAdelicCoverRestrictedProduct.depth F ζ hζ v)
-      (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ v)).1
-  have ha : Continuous a := by
-    exact (KPPGLLocalCover.finite_lifts_continuous F ζ hζ v
-      (KPAdelicCoverRestrictedProduct.depth F ζ hζ v)
-      (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ v)).2.2
-  have hconj : ∀ (y : (LocalField F v)ˣ) (x : LocalField F v),
-      a y * n x = n (y.val * x) * a y := by
-    intro y x
-    have hh := (KPCorrectedBruhatLifts.quotient_upper_diagonal F ζ hζ (Sum.inr v) (y.val * x) y).symm
-    rw [mul_div_cancel_left₀ x y.ne_zero] at hh
-    exact hh
-  have hcube : ∀ y : (LocalField F v)ˣ, a (y * π ^ 3) = a y * a (π ^ 3) := by
-    intro y
-    have hs : KPHilbert.B3 F ζ hζ (Sum.inr v) y (π ^ 3) = 1 := by
-      exact ((KPHilbert.B3_laws F ζ hζ (Sum.inr v)).2.2.2.2.1 y π).2
-    have hh := KPPGLLocalCover.A_mul F ζ hζ (Sum.inr v) y (π ^ 3)
-    simp only [hs, one_pow, map_one, one_mul] at hh
-    exact hh.symm
-  exact KPFiniteLocal.generic_fixed_vector_small_norm v ρ
+  refine KPFiniteLocal.generic_fixed_vector_small_norm v ρ
     (smoothRepresentation_orbit_isLocallyConstant _
-      (actualCanonicalImage_smooth F ζ hζ v S P μ hμ)) n hn a ha hconj π hπnorm hcube hJ χ
+      (actualCanonicalImage_smooth F ζ hζ v S P μ hμ)) n ?_ a ?_ ?_ π ?_ ?_ ?_ χ
     (ψ.continuous_toFun.subtype_mk _) ell.toLinearMap
     (fun x η => by
       have h := hell (Multiplicative.ofAdd x) η
-      have hr := (S.openCell P).upper_eq x
       change ell (ρ (S.borel.upperRoot (Multiplicative.ofAdd x)) η) = _ at h
-      rw [hr] at h
+      rw [((S.openCell P).upper_eq x)] at h
       exact h) φ δ hδ hδthird
+  · exact (KPPGLLocalCover.finite_lifts_continuous F ζ hζ v
+    (KPAdelicCoverRestrictedProduct.depth F ζ hζ v)
+    (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ v)).1
+  · exact (KPPGLLocalCover.finite_lifts_continuous F ζ hζ v
+    (KPAdelicCoverRestrictedProduct.depth F ζ hζ v)
+    (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ v)).2.2
+  · intro y x
+    have hh := (KPCorrectedBruhatLifts.quotient_upper_diagonal F ζ hζ (Sum.inr v) (y.val * x) y).symm
+    rw [mul_div_cancel_left₀ x y.ne_zero] at hh
+    exact hh
+  · rw [FinitePlace.norm_def,
+      WithZeroMulInt.toNNReal_neg_apply _ (by simpa using π.ne_zero),
+      NNReal.coe_zpow, hπ, WithZero.log_exp]
+    simp
+  · intro y
+    have hs := ((KPHilbert.B3_laws F ζ hζ (Sum.inr v)).2.2.2.2.1 y π).2
+    have hh := KPPGLLocalCover.A_mul F ζ hζ (Sum.inr v) y (π ^ 3)
+    simp only [hs, one_pow, map_one, one_mul] at hh
+    exact hh.symm
+  · intro η
+    have he := actual_differences_eq ζ hζ v S P μ hμ
+    change KPFiniteLocal.ordinaryDifferences ρ n = _ at he
+    rw [he]
+    exact actual_relation ζ hζ v S P μ hμ π hπ _
 
 end ActualFiniteOutputSteps
 end KPInterface

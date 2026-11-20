@@ -54,25 +54,6 @@ theorem character_apply (g : G) :
     character π hπ g = LinearMap.trace 𝕜 V (π g : V →ₗ[𝕜] V) :=
   (rfl)
 
-@[simp]
-theorem character_trivial :
-    character (ContRepresentation.trivial 𝕜 G V) continuous_const =
-      ContinuousMap.const G (Module.finrank 𝕜 V : 𝕜) := by
-  ext g
-  have hid : ((ContRepresentation.trivial 𝕜 G V g : V →L[𝕜] V) : V →ₗ[𝕜] V) = LinearMap.id :=
-    LinearMap.ext fun v ↦ ContRepresentation.trivial_apply (R := 𝕜) (G := G) (V := V) g v
-
-  rw [character_apply (ContRepresentation.trivial 𝕜 G V) continuous_const, hid,
-    LinearMap.trace_id, ContinuousMap.const_apply]
-
-@[simp]
-theorem character_restrict {H : Type*} [Monoid H] [TopologicalSpace H] (φ : H →* G)
-    (hφ : Continuous φ) :
-    character (π.restrict φ) (hπ.comp hφ) = (character π hπ).comp ⟨φ, hφ⟩ := by
-  ext h
-  rw [character_apply, ContinuousMap.comp_apply, character_apply, ContinuousMap.coe_mk,
-    ContRepresentation.restrict_apply]
-
 end Monoid
 
 section MonoidInner
@@ -81,11 +62,13 @@ variable {𝕜 G V : Type*} [RCLike 𝕜] [Monoid G] [TopologicalSpace G]
   [NormedAddCommGroup V] [InnerProductSpace 𝕜 V] [FiniteDimensional 𝕜 V]
 variable (π : ContRepresentation 𝕜 G V) (hπ : Continuous π)
 
-theorem character_apply_eq_sum_inner {ι : Type*} [Fintype ι] (e : OrthonormalBasis ι 𝕜 V) (g : G) :
+variable {ι : Type*} [Fintype ι] (e : OrthonormalBasis ι 𝕜 V)
+
+theorem character_apply_eq_sum_inner (g : G) :
     character π hπ g = ∑ i, ⟪e i, π g (e i)⟫_𝕜 :=
   LinearMap.trace_eq_sum_inner _ e
 
-theorem star_character {ι : Type*} [Fintype ι] (e : OrthonormalBasis ι 𝕜 V) :
+theorem star_character :
     star (character π hπ) = ∑ i, matrixCoeff π hπ (e i) (e i) := by
   ext g
   rw [ContinuousMap.star_apply, character_apply_eq_sum_inner π hπ e g]

@@ -13,22 +13,25 @@ open NativeComplexHCOperators
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
-def compactBoundary (ν : Measure ComplexSU2) (s : ℝ)
-    (f : PrincipalSeries s) (g : PrincipalSeries (-s)) : ℂ :=
+section
+
+variable (ν : Measure ComplexSU2) (s : ℝ) (f : PrincipalSeries s) (g : PrincipalSeries (-s))
+
+def compactBoundary : ℂ :=
   ∫ k, f (complexSU2Embedding k) * star (g (complexSU2Embedding k)) ∂ν
 
-theorem compactBoundary_eq_star (ν : Measure ComplexSU2) (s : ℝ)
-    (f : PrincipalSeries s) (g : PrincipalSeries (-s)) :
+theorem compactBoundary_eq_star :
     compactBoundary ν s f g = star (compactPairing ν s f g) := by
   simp only [compactBoundary,compactPairing,Complex.star_def,← integral_conj,map_mul,starRingEnd_self_apply]
+
+end
 
 theorem compactBoundary_lie_adjoint (ν : Measure ComplexSU2) [IsProbabilityMeasure ν]
     [ν.IsMulLeftInvariant] (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ)
     (f : PrincipalSeries s) (g : PrincipalSeries (-s)) :
     compactBoundary ν s (derivative s X f) g +
       compactBoundary ν s f (derivative (-s) X g) = 0 := by
-  have h := congrArg star (compact_pairing_lie_adjoint ν s X f g)
-  simpa only [compactBoundary_eq_star,star_add,star_zero] using h
+  simpa only [compactBoundary_eq_star,star_add,star_zero] using (congrArg star (compact_pairing_lie_adjoint ν s X f g))
 
 def matrixWord (s : ℝ) : List (Matrix (Fin 2) (Fin 2) ℂ) → PrincipalSeries s → PrincipalSeries s
   | [],f => f

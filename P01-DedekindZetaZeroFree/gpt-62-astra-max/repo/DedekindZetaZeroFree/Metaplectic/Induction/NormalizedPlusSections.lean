@@ -21,7 +21,7 @@ private theorem value_one_fixed (B : LocalBorelData (K := K) (G := G) T)
  (hf : f ∈ fixedSubmodule (IPlus B P) I.compact.toOpenSubgroup) :
  f.val 1 ∈ fixedSubmodule (tau P) (compactTorus B I) := by
  intro j
- have hj : (B.torus j.val : G) ∈ I.compact.toOpenSubgroup := j.property
+ have hj := j.property
  have hfix := congrArg (fun u : sectionSpace B P .plus 0 => u.val 1)
    (hf ⟨B.torus j.val, hj⟩)
  have hcov := f.property.1 (B.torus j.val) 1
@@ -37,8 +37,8 @@ private theorem value_one_fixed (B : LocalBorelData (K := K) (G := G) T)
  exact hcov.symm.trans hfix
 
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 
@@ -51,7 +51,7 @@ theorem normalized_canonical_section (q : IsDedekindDomain.HeightOneSpectrum (�
  obtain ⟨f, hf, _⟩ := normalized_plus_spherical_vector (C.canonical q).borel
    (C.polarization q) (C.canonical q).iwasawa (C.unramified q hq)
  refine ⟨f, hf.1, ?_⟩
- exact (KPGlobalTorusFiniteStages.referenceGoodSpherical F ζ hζ P C q hq).2.2
+ exact (KPGlobalTorusFiniteStages.referenceGoodSpherical F ζ hζ P C q hq).2
    (f.val 1) (value_one_fixed _ _ _ f hf.1) hf.2
 
 end DedekindZetaZeroFree.KPActualReflectionData.CanonicalPlusReferences

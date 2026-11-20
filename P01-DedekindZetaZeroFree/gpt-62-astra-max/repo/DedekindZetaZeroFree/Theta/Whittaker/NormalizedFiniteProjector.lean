@@ -12,7 +12,7 @@ open MomentSources ThetaExpansion NumberField
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2400000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem finite_projector_native
     (R : PrincipalMellin.ActualRecipe S η) (hR : RootAligned R)
@@ -51,7 +51,7 @@ theorem finite_projector_native
   have hn (v : R.A.UnitQuotient) : fourier R Q.dq (T.theta v) 1 ≠ 0 := by
     rw [← hd1,hrad]
     exact FiniteWhittakerProjectors.radialProfile_one_ne_zero R C
-  obtain ⟨D,hDN,hM,hH,E⟩ := projected_factorization_native R A.base I c t T hdq hpin hn hNative
+  obtain ⟨D, hDN, hH, E⟩ := projected_factorization_native R A.base I c t T hdq hpin hn hNative
   let base : JointExteriorCoefficientSources R N := {
     aligned := hR
     transport := N
@@ -64,7 +64,7 @@ theorem finite_projector_native
       rw [A.base.transport_exact] at hh
       exact hh.trans (congrArg (fun μ => ENNReal.ofReal (PoissonS.integerVolume F q) • μ) (hH q).symm)
     exterior := E }
-  exact ⟨⟨C,he,hle,hsub,base,hrad⟩,hDN⟩
+  exact ⟨⟨C,base,hrad⟩,hDN⟩
 end DedekindZetaZeroFree.RootDerivatives
 
 end

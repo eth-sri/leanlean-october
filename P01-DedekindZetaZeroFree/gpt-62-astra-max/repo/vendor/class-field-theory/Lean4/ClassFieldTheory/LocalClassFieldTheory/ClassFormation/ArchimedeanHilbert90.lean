@@ -19,17 +19,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -54,14 +43,12 @@ variable {K L : Type}
     [Field K] [Field L] [Algebra K L]
     [FiniteDimensional K L] [IsGalois K L]
 
+variable (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) (w : AbsoluteValueExtension vK L)
+    (σ : L ≃ₐ[K] L) (hgen : ∀ τ : L ≃ₐ[K] L, τ ∈ Subgroup.zpowers σ)
+
 /-- Hilbert 90 makes the local `H⁻¹` group trivial for an arbitrary
 nontrivial absolute value, including an infinite place. -/
-theorem localHerbrandHMinusOne_subsingleton
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L)
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ) :
+theorem localHerbrandHMinusOne_subsingleton :
     letI hK :=
       AbsoluteValue.extensionCompletionAlgebra
         (K := K) w.1
@@ -90,16 +77,14 @@ theorem localHerbrandHMinusOne_subsingleton
   let hK :=
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) w.1
-  let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let := hK.toSMul
+  let :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   let := localizedCompletionGlobalAlgebra vK w
   let := localizedCompletionIsScalarTower vK w
-  let : FiniteDimensional vK.Completion
-      (LocalizedCompletion vK w) :=
+  let :=
     localizedCompletionModuleFinite vK hvK w
-  let : IsGalois vK.Completion
-      (LocalizedCompletion vK w) :=
+  let :=
     HilbertRamification.algebraicLocalization_isGalois vK w
   let : Fintype (absoluteValueDecompositionGroup K w.1) :=
     Fintype.ofFinite _
@@ -108,37 +93,18 @@ theorem localHerbrandHMinusOne_subsingleton
   let E :=
     localHerbrandHMinusOneEquivUnitsTateHminusOne
       vK hvK w σ hgen
-  let g :=
-    localizedCompletionGaloisGenerator
-      vK hvK w σ hgen
-  let hg :=
-    localizedCompletionGaloisGenerator_generates
-      vK hvK w σ hgen
-  have hzero :
-      CategoryTheory.Limits.IsZero
-        (tateCohomology
-          (Rep.ofAlgebraAutOnUnits vK.Completion
-            (LocalizedCompletion vK w)) (-1)) :=
-    hilbert90_unitsTateHminusOne_isZero
-      vK.Completion (LocalizedCompletion vK w) g hg
-  let :
-      Subsingleton
-        (tateCohomology
-          (Rep.ofAlgebraAutOnUnits vK.Completion
-            (LocalizedCompletion vK w)) (-1)) :=
-    ModuleCat.subsingleton_of_isZero hzero
+  let :=
+    ModuleCat.subsingleton_of_isZero (hilbert90_unitsTateHminusOne_isZero
+      vK.Completion (LocalizedCompletion vK w) (localizedCompletionGaloisGenerator
+        vK hvK w σ hgen) (localizedCompletionGaloisGenerator_generates
+        vK hvK w σ hgen))
   exact
     ⟨fun x y =>
       E.injective (Subsingleton.elim (E x) (E y))⟩
 
 /-- The same universal Hilbert-90 conclusion as a finite-cardinality
 statement. -/
-theorem localHerbrandHMinusOne_card_eq_one_of_absoluteValue
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L)
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ) :
+theorem localHerbrandHMinusOne_card_eq_one_of_absoluteValue :
     letI hK :=
       AbsoluteValue.extensionCompletionAlgebra
         (K := K) w.1
@@ -167,29 +133,20 @@ theorem localHerbrandHMinusOne_card_eq_one_of_absoluteValue
   let hK :=
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) w.1
-  let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let := hK.toSMul
+  let :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   let := localizedCompletionGlobalAlgebra vK w
   let := localizedCompletionIsScalarTower vK w
-  let : FiniteDimensional vK.Completion
-      (LocalizedCompletion vK w) :=
+  let :=
     localizedCompletionModuleFinite vK hvK w
-  let : IsGalois vK.Completion
-      (LocalizedCompletion vK w) :=
+  let :=
     HilbertRamification.algebraicLocalization_isGalois vK w
   let : Fintype (absoluteValueDecompositionGroup K w.1) :=
     Fintype.ofFinite _
   let :=
     decompositionGroupLocalUnitsAction vK hvK w
-  let :
-      Subsingleton
-        (HerbrandHMinusOne
-          (absoluteValueDecompositionGroup K w.1)
-          (LocalizedCompletion vK w)ˣ
-          (subgroupGeneratorOfGenerator
-            (absoluteValueDecompositionGroup K w.1)
-            σ hgen)) :=
+  let :=
     localHerbrandHMinusOne_subsingleton
       vK hvK w σ hgen
   exact Nat.card_unique

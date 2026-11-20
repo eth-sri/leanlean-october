@@ -13,7 +13,9 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayParity
 
 variable (K : Type) [Field K] [NumberField K]
 
-theorem exists_rayParitySchwartz (δ : Finset (RayCoset.RealPlaces K)) :
+variable (δ : Finset (RayCoset.RealPlaces K))
+
+theorem exists_rayParitySchwartz :
     ∃ f : SchwartzMap (euclidean.mixedSpace K) ℂ,
       ∀ x, f x = gδ K δ x := by
 
@@ -44,11 +46,11 @@ theorem exists_rayParitySchwartz (δ : Finset (RayCoset.RealPlaces K)) :
   change g x * Theta.latticeGaussian Real.pi x = gδ K δ x
   rw [gδ]
 
-def rayParitySchwartz (δ : Finset (RayCoset.RealPlaces K)) :
+def rayParitySchwartz :
     SchwartzMap (euclidean.mixedSpace K) ℂ :=
   Classical.choose (exists_rayParitySchwartz K δ)
 
-@[simp] theorem rayParitySchwartz_apply (δ : Finset (RayCoset.RealPlaces K))
+@[simp] theorem rayParitySchwartz_apply
     (x : euclidean.mixedSpace K) :
     rayParitySchwartz K δ x = gδ K δ x :=
   Classical.choose_spec (exists_rayParitySchwartz K δ) x

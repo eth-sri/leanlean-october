@@ -13,10 +13,10 @@ set_option maxHeartbeats 2000000
 namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 open MomentSources TensorActionSource KPGlobalTorusFiniteStages
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 
 theorem localValue_upperRoot (p : KPHilbert.Place F) (f : Plus R N P C p)
@@ -30,9 +30,8 @@ theorem localValue_upperRoot (p : KPHilbert.Place F) (f : Plus R N P C p)
     have hf := f.property.1 (T.borel.upperRoot (Multiplicative.ofAdd y))
       (KPPGLLocalCover.coverQuotient F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) g)
     rw [KPLocalPrincipalSeries.upperRoot_trivial] at hf
-    have hn := (T.openCell T.polarization).upper_eq y
     change f.val (_ * _) = _ at hf
-    rw [hn] at hf
+    rw [((T.openCell T.polarization).upper_eq y)] at hf
     change f.val (KPPGLLocalCover.coverQuotient F R.A.zeta12 R.A.primitive_zeta12
       (Sum.inr q) (_ * _)) = _
     rw [map_mul]

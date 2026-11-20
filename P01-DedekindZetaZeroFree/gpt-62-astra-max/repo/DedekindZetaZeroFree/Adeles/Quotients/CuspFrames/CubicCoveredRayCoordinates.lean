@@ -7,16 +7,16 @@ public import DedekindZetaZeroFree.Geometry.SymmetricSpaces.ArchimedeanSpherical
 
 @[expose] public section
 
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabFullAngularHaar renaming compactSubgroup_eq_origin_stabilizer → compactSubgroup_eq_origin_stabilizer
-open _root_.DedekindZetaZeroFree.KPContSectorArchSphericalFibers renaming mem_KInfinity_iff_stab → mem_KInfinity_iff_stab
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualFrames renaming archBasepoint_rational_mul → archBasepoint_rational_mul
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabFullAngularHaar (compactSubgroup_eq_origin_stabilizer)
+open _root_.DedekindZetaZeroFree.KPContSectorArchSphericalFibers (mem_KInfinity_iff_stab)
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualFrames (archBasepoint_rational_mul)
 noncomputable section
 open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.KPMsGreenFlux.ActualFrames
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
  theorem balancedArch_eq_section (p : KPCuspCharts.Cross F) (t : ℝ)
     (r : ℝ) (hr : KPMsFixedHaarDisintegration.logHeight (F := F) r = t) :

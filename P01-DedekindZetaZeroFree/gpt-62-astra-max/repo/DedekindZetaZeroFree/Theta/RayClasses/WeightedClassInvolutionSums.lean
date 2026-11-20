@@ -28,7 +28,7 @@ def weightedInverseClassEquiv (d : H) : H ≃ H where
 theorem weightedInverseClassEquiv_involutive (d : H) :
     Function.Involutive (weightedInverseClassEquiv d) := by
   intro c
-  simp [mul_inv_rev, mul_comm, mul_left_comm]
+  simp
 
 theorem weightedInvolution_sum [Fintype H] (ψ : H →* ℂ)
     (hψ : ∀ c : H, ‖ψ c‖ = 1) (d : H) (B : H → ℂ) :
@@ -42,18 +42,12 @@ theorem weightedInvolution_sum [Fintype H] (ψ : H →* ℂ)
         (weightedInverseClassEquiv d).sum_comp
           (fun c => ψ c * B (weightedInverseClassEquiv d c))
     _ = ψ (d⁻¹) * ∑ c : H, (starRingEnd ℂ) (ψ c) * B c := by
-      rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro c _
-      simp only [weightedInverseClassEquiv_apply, map_mul, map_inv,
-        Complex.inv_eq_conj (hψ c), mul_assoc]
+      simp_all [Finset.mul_sum, weightedInverseClassEquiv_apply, map_mul, map_inv, Complex.inv_eq_conj, mul_assoc]
 
 theorem weightedInvolution_factor_ne_zero (ψ : H →* ℂ)
     (hψ : ∀ c : H, ‖ψ c‖ = 1) (d : H) : ψ (d⁻¹) ≠ 0 := by
   intro h
-  have hnorm := hψ (d⁻¹)
-  rw [h, norm_zero] at hnorm
-  exact zero_ne_one hnorm
+  simpa [h] using hψ (d⁻¹)
 
 end DedekindZetaZeroFree.Hecke.Theta
 

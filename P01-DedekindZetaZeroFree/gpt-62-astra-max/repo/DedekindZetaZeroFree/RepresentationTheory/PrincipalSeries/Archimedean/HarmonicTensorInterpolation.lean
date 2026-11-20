@@ -15,12 +15,11 @@ namespace DedekindZetaZeroFree.FourierContinuation.CurrentArchFamily
 open KPLiteralRaw KPAdelicCoverRestrictedProduct KPLiteralChamber
 open KPLiteralScalarHCCompactOrbit KPLiteralScalarHCSliceCharts KPLiteralScalarHCExtraction
 open KPCplxCharacterHaar KPGlobalTorusBorelTwistCompatibility
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming complexSectionHom → complexSectionHom
-open _root_.DedekindZetaZeroFree.ScalarRationalProductTransport renaming scalar → scalar
+open _root_.DedekindZetaZeroFree.ScalarRationalProductTransport (scalar)
 open KPLiteralScalarHCLocalCovariance
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-variable (C : ModelData F ζ hζ) (f : Flat F ζ hζ K)
+    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+    (C : ModelData F ζ hζ) (f : Flat F ζ hζ K)
 theorem productHCScalar_borel
     (t : (productModel F ζ hζ C).H) (x : KPGlobalTorusFunctionData.Adeles F)
     (g : KPLiteralRaw.G F ζ hζ) :
@@ -60,48 +59,12 @@ theorem productHCScalar_arch_borel_zero
   rw [show (1 / 2 : ℝ) + 1 / 6 = 2 / 3 by norm_num,
     KPGlobalTorusBorelNormTwistTransport.AnalyticInputs.delta_chart_formula F ζ hζ z hz]
 
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_insertion → sectionTuple_insertion
 
-theorem archMatrixInsertion_projective_congr
-    (a b : InfinitePlace F → ComplexGL2)
-    (h : ∀ w, Matrix.ProjGenLinGroup.mk (a w) = Matrix.ProjGenLinGroup.mk (b w)) :
-    archMatrixInsertion F ζ hζ a = archMatrixInsertion F ζ hζ b := by
-  change scalarQuotient F ζ hζ (amalgamation F ζ hζ (sectionTuple F ζ hζ a)) =
-    scalarQuotient F ζ hζ (amalgamation F ζ hζ (sectionTuple F ζ hζ b))
-  rw [sectionTuple_insertion, sectionTuple_insertion]
-  congr 1
-  exact funext h
+alias archMatrixInsertion_projective_congr := DedekindZetaZeroFree.KPLiteralScalarHCLocalCovariance.archMatrixInsertion_projective_congr
 
-theorem archMatrixInsertion_diagonal (z : InfinitePlace F → ℂˣ) :
-    archMatrixInsertion F ζ hζ (fun w => KubotaRankTwo.d ℂ (z w) 1) =
-      (KPGlobalTorusFunctionData.torusArchChart F ζ hζ (fun w => (z w : ℂ))).val := by
-  change scalarQuotient F ζ hζ (amalgamation F ζ hζ _) =
-    scalarQuotient F ζ hζ (amalgamation F ζ hζ _)
-  congr 2
-  apply RestrictedProduct.ext
-  intro v
-  cases v with
-  | inr q => rfl
-  | inl w =>
-    change complexSectionHom F ζ hζ w (KubotaRankTwo.d ℂ (z w) 1) = _
-    simp only [KPGlobalTorusFunctionData.archDiagonalTuple]
-    change KPLocalCover.CubicGL2Raw.mk _ 1 = KPLocalCover.CubicGL2Raw.mk _ 1
-    congr 1
-    apply Matrix.GeneralLinearGroup.ext
-    intro i j
-    fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map]
+alias archMatrixInsertion_diagonal := DedekindZetaZeroFree.KPLiteralScalarHCLocalCovariance.archMatrixInsertion_diagonal
 
-private theorem upper_projective (a d : ℂˣ) (b : ℂ) :
-    Matrix.ProjGenLinGroup.mk (KPCplxPrincipalSeriesCharts.upperTriangular a d b) =
-      Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d ℂ (a / d) 1 * upperUnipotent (b / a)) := by
-  apply (Matrix.ProjGenLinGroup.mk_eq_mk_iff).mpr
-  refine ⟨Units.mk0 ((d : ℂ)⁻¹) (inv_ne_zero d.ne_zero), ?_⟩
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;>
-    simp [KPCplxPrincipalSeriesCharts.upperTriangular, upperUnipotent,
-      Matrix.mul_apply, Fin.sum_univ_two, div_eq_mul_inv]
-  field_simp
+private alias upper_projective := DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal.upper_projective
 
 theorem productHCScalar_arch_upperTriangular_zero
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ)
@@ -185,7 +148,6 @@ def positiveHCFamily : KPGlobalTorusFunctionData.finitePart F ζ hζ →
       (c.val * archMatrixInsertion F ζ hζ g),
     productHCScalar_slice_mem_positive F ζ hζ K hK C f c⟩
 
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal.SphericalReseeding renaming full_torus_split → full_torus_split
 
 end DedekindZetaZeroFree.FourierContinuation.CurrentArchFamily
 

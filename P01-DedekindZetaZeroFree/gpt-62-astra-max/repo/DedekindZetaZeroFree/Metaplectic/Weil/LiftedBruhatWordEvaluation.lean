@@ -17,9 +17,7 @@ theorem representation_bruhat {G V : Type*} [Group G] [AddCommGroup V] [Module �
     (hprod : a * a' = z * a'')
     (hz : ∀ v, ρ z v = c • v) :
     ell (ρ (a * w * n) b) = ψ * c * ell (ρ a'' b) := by
-  rw [hword, hprod]
-  simp only [map_mul, Module.End.mul_apply, hl, hroot, hz, map_smul, smul_eq_mul]
-  ring
+  simp [map_mul, Module.End.mul_apply, hl, hroot, hz, map_smul, smul_eq_mul, hword, hprod] <;> ring
 
 end DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 

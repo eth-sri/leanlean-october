@@ -12,7 +12,7 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.NormOneCofactor
 open KPLocalPrincipalSeries KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPRankOneShellRepair
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingGeometry renaming arch_center → arch_center
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingGeometry (arch_center)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 private theorem central_norm_one_correction
@@ -20,10 +20,10 @@ private theorem central_norm_one_correction
     ∃ c : KPGlobalCenterRationalCharacter.Z F ζ hζ,
       KPGlobalTorusFunctionData.delta F ζ hζ (c.val * t) = 1 := by
   let w₀ : NumberField.InfinitePlace F := Classical.choice inferInstance
-  let d : ℝ := ((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ)
+  let d := ((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ)
   have hd : 0 < d := by
     exact_mod_cast (pos_iff_ne_zero.mpr (Units.ne_zero (KPGlobalTorusFunctionData.delta F ζ hζ t)))
-  let z : KPGlobalTorusFunctionData.TorusArch F := fun w =>
+  let z := fun w =>
     if w = w₀ then (Real.exp (-Real.log d / 2) : ℂ) else 1
   have hz : z ∈ KPGlobalTorusFunctionData.torusArchDomain F := by
     intro w
@@ -47,7 +47,6 @@ private theorem central_norm_one_correction
   refine ⟨c,?_⟩
   apply Units.ext
   apply NNReal.eq
-  change ((KPGlobalTorusFunctionData.delta F ζ hζ (c.val * t) : ℝ≥0) : ℝ) = 1
   rw [map_mul, Units.val_mul, NNReal.coe_mul,hc,hzdelta]
   exact inv_mul_cancel₀ hd.ne'
 
@@ -58,10 +57,9 @@ private theorem central_scalar_covariance
   let r : KPGlobalCenterRationalCharacter.R F ζ hζ :=
     ⟨c.val,Subgroup.mem_sup_right c.property⟩
   have he := f.val.property r t
-  have hc := KPGlobalCenterRationalCharacter.lambdaR_formula F ζ hζ r 1 c (by simp [r])
   change f.val.val (c.val*t) = (KPGlobalCenterRationalCharacter.lambdaR F ζ hζ r : ℂ) * f.val.val t at he
-  rw [hc] at he
-  simpa only [map_one, one_mul] using he
+  rw [(KPGlobalCenterRationalCharacter.lambdaR_formula F ζ hζ r 1 c (by simp [r]))] at he
+  simpa using he
 
 private theorem rationalStageEval_central
     (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
@@ -71,8 +69,7 @@ private theorem rationalStageEval_central
     (y : ∀ q : E, KPGlobalTorusFiniteStages.LocalFiber F ζ hζ P C q.val) :
     ActualCofactor.rationalStageEval F ζ hζ P C E hE (c.val*t) y =
       (KPGlobalCenterRationalCharacter.omegaA F ζ hζ c : ℂ) *
-        ActualCofactor.rationalStageEval F ζ hζ P C E hE t y := by
-  exact central_scalar_covariance F ζ hζ
+        ActualCofactor.rationalStageEval F ζ hζ P C E hE t y := central_scalar_covariance F ζ hζ
     (PrincipalOfKP.ResidueCoreBridge.CanonicalBinding.productUnitaryToRational F ζ hζ P
       (KPGlobalTorusFiniteStages.finiteTensorRealization F ζ hζ P C E hE
         (PiTensorProduct.tprod ℂ y))) c t
@@ -87,7 +84,7 @@ theorem exists_norm_one_rational_cofactor
         (C.canonical q.val).iwasawa .plus)
       (t : KPGlobalTorusFunctionData.E F ζ hζ) (b : ℂ → ℂ),
       KPGlobalTorusFunctionData.delta F ζ hζ t = 1 ∧
-      MeromorphicOn b Set.univ ∧ AnalyticAt ℂ b 0 ∧ b 0 ≠ 0 ∧
+      b 0 ≠ 0 ∧
       ∀ s : ℂ, b s = ActualCofactor.rationalStageEval F ζ hζ P C E hE t
         (fun q => (localHalfDifferentFactor F q.val : ℂ) •
           (actualCanonicalContinued F q.val ζ hζ (C.canonical q.val) (C.polarization q.val)
@@ -96,9 +93,7 @@ theorem exists_norm_one_rational_cofactor
   obtain ⟨φ,t,b,hm,ha,hn,hb⟩ := ActualCofactor.actual_rational_nonzero_cofactor F ζ hζ P C E hE
   obtain ⟨c,hc⟩ := central_norm_one_correction F ζ hζ t
   let z : ℂ := KPGlobalCenterRationalCharacter.omegaA F ζ hζ c
-  refine ⟨φ,c.val*t,fun s => z*b s,hc,?_,?_,?_,?_⟩
-  · exact fun s hs => analyticAt_const.meromorphicAt.mul (hm s hs)
-  · exact analyticAt_const.mul ha
+  refine ⟨φ, c.val*t, fun s => z*b s, hc, ?_, ?_⟩
   · exact mul_ne_zero (Units.ne_zero _) hn
   · intro s
     dsimp only

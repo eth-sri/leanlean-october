@@ -11,7 +11,9 @@ open Set Topology
 variable {G H : Type*} [Group G] [Group H]
   [TopologicalSpace H] [IsTopologicalGroup H]
 
-def topology (s : H →* G) : TopologicalSpace G where
+variable (s : H →* G)
+
+def topology : TopologicalSpace G where
   IsOpen U := ∀ g, IsOpen ((fun h => g * s h) ⁻¹' U)
   isOpen_univ := by intro g; simp
   isOpen_inter := by
@@ -22,7 +24,7 @@ def topology (s : H →* G) : TopologicalSpace G where
     rw [preimage_sUnion]
     exact isOpen_biUnion (fun U hU => hS U hU g)
 
-theorem isOpenEmbedding (s : H →* G) (hs : Function.Injective s) (g : G) :
+theorem isOpenEmbedding (hs : Function.Injective s) (g : G) :
     letI := topology s
     IsOpenEmbedding (fun h => g * s h) := by
   letI := topology s
@@ -36,8 +38,7 @@ theorem isOpenEmbedding (s : H →* G) (hs : Function.Injective s) (g : G) :
     · obtain ⟨k₀, u₀, hu₀, he⟩ := hex
       have htr : ∀ k, t * s k = g * s (u₀ * k₀⁻¹ * k) := by
         intro k
-        have ht : t = g * s u₀ * (s k₀)⁻¹ := (eq_mul_inv_iff_mul_eq).mpr he
-        rw [ht]
+        rw [((eq_mul_inv_iff_mul_eq).mpr he)]
         simp only [map_mul, map_inv]
         simp only [mul_assoc]
       have heq : (fun k => t * s k) ⁻¹' ((fun h => g * s h) '' U) =
@@ -47,7 +48,7 @@ theorem isOpenEmbedding (s : H →* G) (hs : Function.Injective s) (g : G) :
         constructor
         · rintro ⟨u, hu, heq⟩
           have := hs (mul_left_cancel heq)
-          simpa only [← this] using hu
+          simpa [← this] using hu
         · intro hk
           exact ⟨_, hk, rfl⟩
       rw [heq]
@@ -59,15 +60,14 @@ theorem isOpenEmbedding (s : H →* G) (hs : Function.Injective s) (g : G) :
       rw [heq]
       exact isOpen_empty
 
-theorem continuous_left (s : H →* G) (g : G) :
+theorem continuous_left (g : G) :
     letI := topology s
     Continuous (fun x => g * x) := by
-  letI := topology s
   apply continuous_def.mpr
   intro U hU t
-  simpa only [preimage_preimage, Function.comp_def, mul_assoc] using hU (g * t)
+  simpa [preimage_preimage, Function.comp_def, mul_assoc] using hU (g * t)
 
-def leftHomeomorph (s : H →* G) (g : G) :
+def leftHomeomorph (g : G) :
     letI := topology s
     G ≃ₜ G :=
   letI := topology s
@@ -75,22 +75,22 @@ def leftHomeomorph (s : H →* G) (g : G) :
     continuous_toFun := continuous_left s g
     continuous_invFun := continuous_left s g⁻¹ }
 
-theorem topologicalGroup (s : H →* G) (hs : Function.Injective s)
+theorem topologicalGroup (hs : Function.Injective s)
     (hconj : letI := topology s
       ∀ g : G, Filter.Tendsto (fun x => g * x * g⁻¹) (nhds 1) (nhds 1)) :
     letI := topology s
     IsTopologicalGroup G := by
   letI := topology s
-  have ho : IsOpenEmbedding (s : H → G) := by
-    simpa only [one_mul] using isOpenEmbedding s hs 1
+  have ho : IsOpenEmbedding s := by
+    simpa using isOpenEmbedding s hs 1
   have hn : Filter.map s (nhds 1) = nhds 1 := by
-    simpa only [map_one] using ho.map_nhds_eq 1
+    simpa using ho.map_nhds_eq 1
   apply IsTopologicalGroup.of_nhds_one _ _ _ hconj
   · conv_lhs => rw [← hn, Filter.prod_map_map_eq]
     apply Filter.tendsto_map'_iff.mpr
     simpa only [Function.comp_def, Function.uncurry, Prod.map_fst, Prod.map_snd,
       ← map_mul, map_one, nhds_prod_eq, one_mul] using (ho.continuous.tendsto 1).comp
-        (by simpa only [one_mul, nhds_prod_eq] using
+        (by simpa [nhds_prod_eq] using
           (continuous_mul : Continuous (fun p : H × H => p.1 * p.2)).tendsto (1, 1))
   · conv_lhs => rw [← hn]
     apply Filter.tendsto_map'_iff.mpr
@@ -100,27 +100,26 @@ theorem topologicalGroup (s : H →* G) (hs : Function.Injective s)
   · intro g
     have hh := ((leftHomeomorph s g).map_nhds_eq 1).symm
     change nhds (g * (1 : G)) = Filter.map (fun x => g * x) (nhds 1) at hh
-    simpa only [mul_one] using hh
+    simpa using hh
 
-theorem conjugation_tendsto (s : H →* G) (hs : Function.Injective s) (g : G)
+theorem conjugation_tendsto (hs : Function.Injective s) (g : G)
     (J : Subgroup H) (hJ : IsOpen (J : Set H)) (c : J → H) (hc : Continuous c)
     (he : ∀ k : J, g * s k.val * g⁻¹ = s (c k)) :
     letI := topology s
     Filter.Tendsto (fun x => g * x * g⁻¹) (nhds 1) (nhds 1) := by
   letI := topology s
-  have ho : IsOpenEmbedding (s : H → G) := by
-    simpa only [one_mul] using isOpenEmbedding s hs 1
-  have hj := ho.comp hJ.isOpenEmbedding_subtypeVal
+  have ho : IsOpenEmbedding s := by
+    simpa using isOpenEmbedding s hs 1
   have hc1 : c 1 = 1 := by
     apply hs
-    simpa only [OneMemClass.coe_one, map_one, mul_one, mul_inv_cancel] using (he 1).symm
+    simpa using (he 1).symm
   have ht : Filter.Tendsto (s ∘ c) (nhds 1) (nhds 1) := by
     simpa only [Function.comp_apply, hc1, map_one] using
       (ho.continuous.comp hc).tendsto 1
   have hfun : (fun x => g * x * g⁻¹) ∘ (s ∘ Subtype.val : J → G) = s ∘ c := by
     funext k
     exact he k
-  have hh := hj.tendsto_nhds_iff'.mp (hfun ▸ ht)
-  simpa only [Function.comp_apply, OneMemClass.coe_one, map_one] using hh
+  have hh := (ho.comp hJ.isOpenEmbedding_subtypeVal).tendsto_nhds_iff'.mp (hfun ▸ ht)
+  simpa using hh
 
 end DedekindZetaZeroFree.CubicCoverTranslatedCharts

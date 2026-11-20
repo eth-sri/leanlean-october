@@ -11,22 +11,20 @@ open Filter
 namespace DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator
 open KPLiteralRaw KPContActualSphericalRightFieldIdentification
 open KPContActualCutoffPlusClearedGerm
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming scalar_line_construction → scalar_line_construction
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming word_smul → word_smul
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming word_zero → word_zero
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming literal_finite_word_chamber → literal_finite_word_chamber
-open _root_.DedekindZetaZeroFree renaming canonicalRealization → canonicalRealization
-open _root_.DedekindZetaZeroFree.KPContActualCommonDiskRightHolomorphy renaming continuous_of_pieces → continuous_of_pieces
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer (scalar_line_construction word_smul)
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (word_zero literal_finite_word_chamber)
+open _root_.DedekindZetaZeroFree (canonicalRealization)
+open _root_.DedekindZetaZeroFree.KPContActualCommonDiskRightHolomorphy (continuous_of_pieces)
 set_option maxHeartbeats 1600000
 set_option synthInstance.maxHeartbeats 120000
 set_option backward.isDefEq.respectTransparency false
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "level" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U
 
@@ -71,7 +69,7 @@ local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F ζ hζ C R
   obtain ⟨b, hb, _⟩ := hZ.disks z ρ hρ hρO
   obtain ⟨f, a, hf, _, hfd, _, _⟩ :=
     (kp_cont_actual_common_disk_right_holomorphy F ζ hζ level R P H re O hO
-      Z b z ρ hρ (Metric.ball_subset_closedBall.trans hρO) hb D hD terms).2.2
+      Z b z ρ hρ (Metric.ball_subset_closedBall.trans hρO) hb D hD terms).2
   have heq : Set.EqOn A f (Metric.ball z ρ) := by
     intro s hs
     ext g
@@ -115,10 +113,8 @@ private theorem spherical_word_compact_producer
       simp
     · exact fun _ _ => analyticAt_const
   · obtain ⟨Z, hch, hlocal⟩ := scalar_line_construction F ζ hζ C R P H U v hv
-    let re : KPContActualFixedSectorRealization.LevelRealization F ζ hζ level R P H :=
-      canonicalRealization
     let terms : KPContActualCommonDiskRightHolomorphy.Combination F := [(1, w)]
-    obtain ⟨n, p, hp⟩ := KPContActualRightCanonicalRefinement.compact_refinement re D hD
+    obtain ⟨n, p, hp⟩ := KPContActualRightCanonicalRefinement.compact_refinement canonicalRealization D hD
     have hc (s : ℂ) : ContinuousOn
         (actualRightWord F ζ hζ w (groupScalar F ζ hζ C R P H U (Z s))) D := by
       simpa only [terms, singleton_combination, scalar_eq_lift] using
@@ -141,9 +137,8 @@ private theorem spherical_word_compact_producer
     have hm : MeromorphicOn A KPContinuation.spectralDomain := by
       intro z hz
       obtain ⟨r, N, hr, hb, hN, he⟩ := hAnum z hz
-      have hn := (hN z (Metric.mem_ball_self hr)).meromorphicAt
       have hq : MeromorphicAt (fun s => (s - z)⁻¹ • N s) z :=
-        ((analyticAt_id.sub analyticAt_const).meromorphicAt.inv).smul hn
+        ((analyticAt_id.sub analyticAt_const).meromorphicAt.inv).smul ((hN z (Metric.mem_ball_self hr)).meromorphicAt)
       apply hq.congr
       filter_upwards [nhdsWithin_le_nhds (Metric.isOpen_ball.mem_nhds (Metric.mem_ball_self hr)),
         self_mem_nhdsWithin] with s hs hne
@@ -152,14 +147,10 @@ private theorem spherical_word_compact_producer
     obtain ⟨r, N, hr, hb, hN, he⟩ := hAnum 0 (by norm_num [KPContinuation.spectralDomain])
     refine ⟨A, N, ?_, hm, r, hr, hb, ?_, hN⟩
     · intro s hs g
-      have hz : groupScalar F ζ hζ C R P H U (Z s) =
-          fun h => ∑' c : KPChamberBruhatTwoCells.RationalQuotient F,
-            (KPContFlatSourceRecipe.flatR F ζ hζ s v.val).val
-              (rationalLift F ζ hζ (Quotient.out c) * h) := funext (hch s hs)
-      exact congrFun (congrArg (actualRightWord F ζ hζ w) hz) g
-    · simpa only [sub_zero] using he
+      exact congrFun (congrArg (actualRightWord F ζ hζ w) (funext (hch s hs))) g
+    · simpa using he
 
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.FiniteCompactAssembly renaming finite_compact_numerator → finite_compact_numerator
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.FiniteCompactAssembly (finite_compact_numerator)
 
 include C R P H in
 

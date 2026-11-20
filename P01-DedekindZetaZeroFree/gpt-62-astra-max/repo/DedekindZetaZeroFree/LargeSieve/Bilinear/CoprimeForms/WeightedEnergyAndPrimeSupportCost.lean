@@ -10,14 +10,20 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve.GcdTail
 
 open scoped NumberField Classical
 
-def primeSupportCost {F : Type} [Field F] [NumberField F]
+section
+
+variable {F : Type} [Field F] [NumberField F]
+
+def primeSupportCost
     (u : Ideal (𝓞 F)) : ℝ :=
   (2 : ℝ) ^ (UniqueFactorizationMonoid.normalizedFactors u).toFinset.card
 
-def maskedRowWeight {F : Type} [Field F] [NumberField F]
+def maskedRowWeight
     (W : ℝ → ℝ) (q d : Ideal (𝓞 F)) (M : ℝ)
     (rowMask : Ideal (𝓞 F) → ℝ) (a : Ideal (𝓞 F)) : ℝ :=
   if a ⊔ (q * d) = ⊤ then W ((Ideal.absNorm a : ℝ) / M) * rowMask a else 0
+
+end
 
 def weightedEnergy {F : Type} [Field F] [NumberField F]
     {R : Type*} (rows : Finset R) (cols : Finset (Ideal (𝓞 F)))

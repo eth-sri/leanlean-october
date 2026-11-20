@@ -11,40 +11,11 @@ open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
 open DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant MeasureTheory Set
 open scoped ContDiff Matrix.Norms.Elementwise
 
-private lemma line_open (x : ℂ) :
-    bottomRowLine (weyl * upperUnipotent x) = projectiveOpen x := by
-  unfold bottomRowLine weyl upperUnipotent
-  simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
+private alias line_open := DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant.ComplexParameterMajorants.bottomRowLine_wn
 
-private lemma line_infinity (u : ℂ) :
-    bottomRowLine (lowerUnipotent u) = projectiveInfinity u := by
-  by_cases hu : u = 0
-  · subst u
-    simp [bottomRowLine, lowerUnipotent]
-  · have hlo : (lowerUnipotent u : Matrix (Fin 2) (Fin 2) ℂ) = !![1, 0; u, 1] := rfl
-    unfold bottomRowLine
-    rw [hlo]
-    simp [Matrix.cons_val_one, Matrix.cons_val_zero, Matrix.cons_val_fin_one, hu]
-    exact (projective_chart_transition u hu).symm
+private alias line_infinity := DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant.ComplexParameterMajorants.bottomRowLine_lower
 
-private lemma ratio_pos (g : ComplexGL2) : 0 < rowRatio g := by
-  have hdet : Matrix.det (g : Matrix (Fin 2) (Fin 2) ℂ) ≠ 0 :=
-    (Matrix.GeneralLinearGroup.det g).ne_zero
-  have hr : 0 < bottomRowNormSq g := by
-    unfold bottomRowNormSq
-    by_contra hn
-    have he : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 +
-        ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 = 0 :=
-      le_antisymm (le_of_not_gt hn) (by positivity)
-    have h0 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 = 0 := by
-      apply norm_eq_zero.mp
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖]
-    have h1 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 = 0 := by
-      apply norm_eq_zero.mp
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖]
-    apply hdet
-    simp [Matrix.det_fin_two, h0, h1]
-  exact div_pos (norm_pos_iff.mpr (Matrix.GeneralLinearGroup.det g).ne_zero) hr
+private alias ratio_pos := DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant.ComplexParameterMajorants.rowRatio_pos
 
 private lemma exp_eq_sphere (t : ℝ) (g : ComplexGL2) :
     Complex.exp ((1 + 2 * (t : ℂ)) * (Real.log (rowRatio g) : ℂ)) =
@@ -79,19 +50,23 @@ private lemma infinity_not_open (x : ℂ) : projectiveInfinity 0 ≠ projectiveO
   simp at h0 h1
   simp [h0] at h1
 
- noncomputable def glue (F H : ℂ → ℂ) (p : ComplexProjectiveLine) : ℂ :=
+ section
+
+variable (F H : ℂ → ℂ)
+
+noncomputable def glue (p : ComplexProjectiveLine) : ℂ :=
   by
     classical
     exact if h : ∃ x, p = projectiveOpen x then F (Classical.choose h) else H 0
 
- lemma glue_open (F H : ℂ → ℂ) (x : ℂ) : glue F H (projectiveOpen x) = F x := by
+ lemma glue_open (x : ℂ) : glue F H (projectiveOpen x) = F x := by
   classical
   unfold glue
   rw [dif_pos ⟨x, rfl⟩]
   congr 1
   exact open_injective (Classical.choose_spec (show ∃ y, projectiveOpen x = projectiveOpen y from ⟨x, rfl⟩)).symm
 
- lemma glue_infinity (F H : ℂ → ℂ)
+ lemma glue_infinity
     (hFH : ∀ u, u ≠ 0 → H u = F u⁻¹) (u : ℂ) :
     glue F H (projectiveInfinity u) = H u := by
   classical
@@ -102,6 +77,8 @@ private lemma infinity_not_open (x : ℂ) : projectiveInfinity 0 ≠ projectiveO
     rintro ⟨x, hx⟩
     exact infinity_not_open x hx
   · rw [projective_chart_transition u hu, glue_open, hFH u hu]
+
+end
 
  lemma quotient_transition (t : ℝ) (f : PrincipalSeries t) (u : ℂ) (hu : u ≠ 0) :
     infinityCoordinate f u / infinityCoordinate (sphericalSection t) u =
@@ -121,7 +98,7 @@ private lemma infinity_not_open (x : ℂ) : projectiveInfinity 0 ≠ projectiveO
       funext x
       exact glue_open _ _ x
     rw [he]
-    simpa only [div_eq_mul_inv] using! f.property.2.1.mul
+    simpa using! f.property.2.1.mul
       ((sphericalSection t).property.2.1.inv (fun x => sphere_ne t (weyl * upperUnipotent x)))
   infinity_smooth := by
     have he : glue (fun x => openCoordinate f x / openCoordinate (sphericalSection t) x)
@@ -130,7 +107,7 @@ private lemma infinity_not_open (x : ℂ) : projectiveInfinity 0 ≠ projectiveO
       funext u
       exact glue_infinity _ _ (quotient_transition t f) u
     rw [he]
-    simpa only [div_eq_mul_inv] using! f.property.2.2.mul
+    simpa using! f.property.2.2.mul
       ((sphericalSection t).property.2.2.inv (fun u => sphere_ne t (lowerUnipotent u)))
 
 private lemma multiplier_bound (n : ℕ) (w : ℂ → ℂ)
@@ -146,7 +123,6 @@ private lemma multiplier_bound (n : ℕ) (w : ℂ → ℂ)
       Metric.closedBall (0 : ℂ) 1) :=
     (isCompact_closedBall (0 : ℂ) 1).bddAbove_image
       (hw.continuous_iteratedFDeriv (by simp)).norm.continuousOn
-  have hB (i : ℕ) : 0 ≤ B i := le_max_left _ _
   have hbound (i : ℕ) (z : ℂ) (hz : z ∈ Metric.closedBall (0 : ℂ) 1) :
       ‖iteratedFDeriv ℝ i w z‖ ≤ B i :=
     (le_csSup (hb i) ⟨z, hz, rfl⟩).trans (le_max_right _ _)
@@ -162,8 +138,7 @@ private lemma multiplier_bound (n : ℕ) (w : ℂ → ℂ)
     · exact norm_iteratedFDeriv_infinity_le_sourceSeminorm n (n-i) (Nat.sub_le _ _) φ z hz
   calc
     _ ≤ ∑ i ∈ Finset.range (n+1), (n.choose i : ℝ) *
-        ‖iteratedFDeriv ℝ i w z‖ * ‖iteratedFDeriv ℝ (n-i) (φ ∘ chart) z‖ := by
-      exact norm_iteratedFDeriv_mul_le hw hsmooth z (by simp)
+        ‖iteratedFDeriv ℝ i w z‖ * ‖iteratedFDeriv ℝ (n-i) (φ ∘ chart) z‖ := norm_iteratedFDeriv_mul_le hw hsmooth z (by simp)
     _ ≤ ∑ i ∈ Finset.range (n+1), (n.choose i : ℝ) * B i * sourceSeminorm n φ := by
       apply Finset.sum_le_sum
       intro i hi

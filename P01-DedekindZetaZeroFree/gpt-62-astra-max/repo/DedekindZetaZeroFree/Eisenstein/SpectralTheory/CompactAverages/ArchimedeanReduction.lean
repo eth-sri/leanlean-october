@@ -9,12 +9,11 @@ open scoped Classical NumberField Topology
 open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualCompactAverageProjection
 open KPContSectorCoveredQuotientVocabulary KPMsGreenFlux
-open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison renaming productEquiv → productEquiv
-open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison renaming productEquiv_apply → productEquiv_apply
+open _root_.DedekindZetaZeroFree.KPContSectorQuotientRelationsComparison (productEquiv productEquiv_apply)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : CompactOpenLevel (FiniteCover F ζ hζ))
+    (U : CompactOpenLevel (FiniteCover F ζ hζ))
 local instance : MeasurableSpace (K_U F ζ hζ U) := borel _
 local instance : BorelSpace (K_U F ζ hζ U) := ⟨rfl⟩
 
@@ -38,13 +37,9 @@ theorem average_eq_arch
       productEquiv F ζ hζ ((fun w => (k w).val),1) := by
     rw [productEquiv_apply]
     simp [compactInsertion]
-  have hp : Continuous (fun k : K F => productEquiv F ζ hζ ((fun w => (k w).val),1)) :=
-    (productEquiv F ζ hζ).continuous.comp
-      ((continuous_pi fun w => continuous_subtype_val.comp (continuous_apply w)).prodMk continuous_const)
-  have hins : Continuous (fun k : K F => compactInsertion F ζ hζ k) :=
-    hp.congr (fun k => (hi k).symm)
   have hc : Continuous (fun k : K F => φ (g * compactInsertion F ζ hζ k)) :=
-    hφ.comp (continuous_const.mul hins)
+    hφ.comp (continuous_const.mul (((productEquiv F ζ hζ).continuous.comp
+      ((continuous_pi fun w => continuous_subtype_val.comp (continuous_apply w)).prodMk continuous_const)).congr (fun k => (hi k).symm)))
   have he := integral_map (μ := μ) (archProjection_continuous F ζ hζ U).measurable.aemeasurable
     hc.aestronglyMeasurable
   rw [(archProjection_measurePreserving F ζ hζ U μ ν).map_eq] at he

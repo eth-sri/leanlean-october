@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.EisensteinFourierContinuation
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem flat_entire (R : PrincipalMellin.ActualRecipe S η)
     (Q : AdmissibleFlatSources R) (v : R.A.UnitQuotient) (g : Group R) :

@@ -12,17 +12,7 @@ namespace DedekindZetaZeroFree.ExteriorGauss
 noncomputable section
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem two_norm (v : HeightOneSpectrum (𝓞 F)) (hgood : ¬ (ResidueTrace.rationalPrimeBelow v).val ∣ 6) :
-    ‖(2 : v.adicCompletion F)‖ = 1 := by
-  have hnot : (2 : 𝓞 F) ∉ v.asIdeal := by
-    intro h
-    have hz : (2 : 𝓞 F ⧸ v.asIdeal) = 0 := by
-      simpa only [map_ofNat] using (Ideal.Quotient.eq_zero_iff_mem.mpr h)
-    have hd : (ResidueTrace.rationalPrimeBelow v).val ∣ 2 :=
-      (ringChar.spec (𝓞 F ⧸ v.asIdeal) 2).mp hz
-    exact hgood (hd.trans (by norm_num))
-  simpa only [map_ofNat] using
-    (FinitePlace.norm_eq_one_iff_notMem F v (2 : 𝓞 F)).mpr hnot
+private alias two_norm := LocalUnitQuadraticIntegral.two_norm
 private theorem cutoff_set (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
     (ha : Valued.v (a : v.adicCompletion F) = WithZero.exp (-1 : ℤ))
     (n : ℕ) :
@@ -120,7 +110,7 @@ private theorem restrict_integral (v : HeightOneSpectrum (𝓞 F))
       let y : U := ⟨x, hx⟩
       let i : Q := QuotientAddGroup.mk y
       refine Set.mem_iUnion.mpr ⟨i, ?_⟩
-      have he : (QuotientAddGroup.mk y : Q) = QuotientAddGroup.mk (r i) := (hr i).symm
+      have he := (hr i).symm
       exact QuotientAddGroup.eq_iff_sub_mem.mp he
     · intro hx
       obtain ⟨i, hi⟩ := Set.mem_iUnion.mp hx
@@ -162,7 +152,7 @@ private theorem restrict_integral (v : HeightOneSpectrum (𝓞 F))
           change h + x - (r i : K) ∈ H
           convert H.add_mem hh hx using 1 <;> abel
       let c : ℂ := (ResidueTrace.localTraceCharacter v ((2:K) * (r i : K) * (o : K)) : ℂ)
-      have hc : c ≠ 1 := fun he => ho (Circle.coe_eq_one.mp he)
+      have hc := fun he => ho (Circle.coe_eq_one.mp he)
       have hphase (x : K) (hx : x ∈ C i) : f (h + x) = c * f x := by
         have hexp : (a⁻¹ : (v.adicCompletion F)ˣ) * (h + x)^2 =
             (a⁻¹ : (v.adicCompletion F)ˣ) * h^2 +
@@ -192,8 +182,8 @@ private theorem restrict_integral (v : HeightOneSpectrum (𝓞 F))
       rw [htranslate, integral_const_mul, integral_indicator (hCc i).measurableSet] at heq
       by_contra hI
       exact hc ((mul_eq_right₀ hI).mp heq)
-  have hUL : (U : Set K) ∩ O = O := Set.inter_eq_right.mpr hOU
-  change (∫ x in (U : Set K), f x ∂μ) = ∫ x in (O : Set K), f x ∂μ
+  have hUL := Set.inter_eq_right.mpr hOU
+  change (∫ x in U, f x ∂μ) = ∫ x in O, f x ∂μ
   rw [hunion, integral_iUnion_fintype (fun i => (hCc i).measurableSet) hdis
     (fun i => hf.continuousOn.integrableOn_compact (hCc i))]
   rw [show (∑ i, ∫ x in C i, f x ∂μ) = ∑ i, ∫ x in C i ∩ (O : Set K), f x ∂μ from Finset.sum_congr rfl (fun i _ => hrestrict i)]

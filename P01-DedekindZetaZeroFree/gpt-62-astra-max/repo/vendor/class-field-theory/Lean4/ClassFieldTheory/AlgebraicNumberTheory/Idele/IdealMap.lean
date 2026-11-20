@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -32,7 +28,6 @@ open scoped NumberField RestrictedProduct WithZero
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -62,35 +57,35 @@ theorem localOrder_eq_zero_iff (v : HeightOneSpectrum (𝓞 K))
       x ∈ (v.adicCompletionIntegers K).units := by
   rw [localOrder_apply]
   rw [HeightOneSpectrum.adicCompletionIntegers.mem_units_iff_valued_eq_one]
-  change -WithZero.log (Valued.v (x : v.adicCompletion K)) = 0 ↔
-    Valued.v (x : v.adicCompletion K) = 1
   rw [neg_eq_zero]
   let z : ℤᵐ⁰ := Valued.v (x : v.adicCompletion K)
-  have hz : z ≠ 0 := by
-    dsimp [z]
-    simp
   constructor
   · intro h
     have h' :
-        WithZero.logEquiv (Units.mk0 z hz) =
+        WithZero.logEquiv (Units.mk0 z (by
+          dsimp [z]
+          simp)) =
           WithZero.logEquiv (1 : (ℤᵐ⁰)ˣ) := by
       simpa [WithZero.logEquiv_apply] using h
-    have hu := (WithZero.logEquiv (G := ℤ)).injective h'
-    simpa [z] using congrArg Units.val hu
+    exact congrArg Units.val (Equiv.injective WithZero.logEquiv h')
   · intro h
     rw [h]
     rfl
 
+section
+
+variable (a : FiniteIdeleGroup K)
+
 /-- The set of finite places where a finite idele is not an integral unit is
 finite. -/
-theorem finite_nonLocalUnits (a : FiniteIdeleGroup K) :
+theorem finite_nonLocalUnits :
     {v : HeightOneSpectrum (𝓞 K) |
       a v ∉ (v.adicCompletionIntegers K).units}.Finite :=
   Filter.eventually_cofinite.mp a.2
 
 /-- The finitely supported family of normalized local orders of a finite
 idele. -/
-def valuationVectorAdd (a : FiniteIdeleGroup K) :
+def valuationVectorAdd :
     HeightOneSpectrum (𝓞 K) →₀ ℤ :=
   Finsupp.onFinset (finite_nonLocalUnits a).toFinset
     (fun v => (localOrder v (a v)).toAdd) (fun v hv => by
@@ -99,10 +94,12 @@ def valuationVectorAdd (a : FiniteIdeleGroup K) :
       exact hv ((localOrder_eq_zero_iff v (a v)).2 hmem))
 
 @[simp]
-theorem valuationVectorAdd_apply (a : FiniteIdeleGroup K)
+theorem valuationVectorAdd_apply
     (v : HeightOneSpectrum (𝓞 K)) :
     valuationVectorAdd a v = (localOrder v (a v)).toAdd :=
   rfl
+
+end
 
 /-- The finite valuation vector is a homomorphism from finite ideles to the
 free abelian group on finite places. -/
@@ -123,8 +120,12 @@ theorem valuationVector_apply (a : FiniteIdeleGroup K)
       (localOrder v (a v)).toAdd :=
   rfl
 
+section
+
+variable (v : HeightOneSpectrum (𝓞 K)) (n : ℤ)
+
 /-- A chosen local element of prescribed normalized order. -/
-def chosenLocalOrderSection (v : HeightOneSpectrum (𝓞 K)) (n : ℤ) :
+def chosenLocalOrderSection :
     (v.adicCompletion K)ˣ :=
   let x := Classical.choose
     (HeightOneSpectrum.valuedAdicCompletion_surjective K v
@@ -139,10 +140,8 @@ def chosenLocalOrderSection (v : HeightOneSpectrum (𝓞 K)) (n : ℤ) :
     exact WithZero.exp_ne_zero hval.symm)
 
 @[simp]
-theorem localOrder_chosenLocalOrderSection
-    (v : HeightOneSpectrum (𝓞 K)) (n : ℤ) :
+theorem localOrder_chosenLocalOrderSection :
     (localOrder v (chosenLocalOrderSection v n)).toAdd = n := by
-  rw [localOrder_apply]
   change -WithZero.log
     (Valued.v (Classical.choose
       (HeightOneSpectrum.valuedAdicCompletion_surjective K v
@@ -152,9 +151,14 @@ theorem localOrder_chosenLocalOrderSection
       (WithZero.exp (-n)))]
   simp
 
+end
+
+section
+
+variable (e : HeightOneSpectrum (𝓞 K) →₀ ℤ)
+
 /-- A finite idele with a prescribed finitely supported valuation vector. -/
-def valuationVectorSection
-    (e : HeightOneSpectrum (𝓞 K) →₀ ℤ) :
+def valuationVectorSection :
     FiniteIdeleGroup K :=
   ⟨fun v => chosenLocalOrderSection v (e v), by
     filter_upwards [e.support.eventually_cofinite_notMem] with v hv
@@ -162,21 +166,19 @@ def valuationVectorSection
     rw [localOrder_chosenLocalOrderSection, Finsupp.notMem_support_iff.mp hv]⟩
 
 @[simp]
-theorem valuationVector_valuationVectorSection
-    (e : HeightOneSpectrum (𝓞 K) →₀ ℤ) :
+theorem valuationVector_valuationVectorSection :
     valuationVector (valuationVectorSection e) =
       Multiplicative.ofAdd e := by
   apply Multiplicative.ext
   ext v
-  rw [valuationVector_apply]
   change (localOrder v (chosenLocalOrderSection v (e v))).toAdd = e v
   rw [localOrder_chosenLocalOrderSection]
 
+end
+
 theorem valuationVector_surjective :
     Function.Surjective (valuationVector (K := K)) := by
-  intro e
-  refine ⟨valuationVectorSection e.toAdd, ?_⟩
-  exact valuationVector_valuationVectorSection e.toAdd
+  solve_by_elim [valuationVector_valuationVectorSection, valuationVectorSection]
 
 end FiniteIdeleGroup
 
@@ -206,8 +208,7 @@ def factorization :
       FractionalIdealGroup K :=
   MonoidHom.mk' (fun exps =>
       exps.toAdd.prod fun v n => primePowerHom v (Multiplicative.ofAdd n))
-    fun a b => by
-      exact Finsupp.prod_hom_add_index (fun v => primePowerHom v)
+    fun a b => Finsupp.prod_hom_add_index (fun v => primePowerHom v)
 
 @[simp]
 theorem factorization_val (exps :
@@ -219,7 +220,11 @@ theorem factorization_val (exps :
   classical
   simp [factorization, primePowerHom, prime, Finsupp.prod]
 
-theorem finite_count_support (I : FractionalIdealGroup K) :
+section
+
+variable (I : FractionalIdealGroup K)
+
+theorem finite_count_support :
     {v : HeightOneSpectrum (𝓞 K) |
       FractionalIdeal.count K v
         (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) ≠ 0}.Finite :=
@@ -229,7 +234,7 @@ theorem finite_count_support (I : FractionalIdealGroup K) :
 
 /-- The finitely supported vector of prime exponents of a nonzero
 fractional ideal. -/
-def countVector (I : FractionalIdealGroup K) :
+def countVector :
     HeightOneSpectrum (𝓞 K) →₀ ℤ :=
   Finsupp.onFinset (finite_count_support I).toFinset
     (fun v => FractionalIdeal.count K v
@@ -239,12 +244,14 @@ def countVector (I : FractionalIdealGroup K) :
       exact hv)
 
 @[simp]
-theorem countVector_apply (I : FractionalIdealGroup K)
+theorem countVector_apply
     (v : HeightOneSpectrum (𝓞 K)) :
     countVector I v =
       FractionalIdeal.count K v
         (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) :=
   rfl
+
+end
 
 @[simp]
 theorem count_factorization (exps :
@@ -254,8 +261,8 @@ theorem count_factorization (exps :
       ((factorization exps : FractionalIdealGroup K) :
         FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
       exps.toAdd v := by
-  rw [factorization_val]
-  exact FractionalIdeal.count_finsuppProd K v exps.toAdd
+  simp
+  apply FractionalIdeal.count_finsuppProd
 
 theorem ext_count {I J : FractionalIdealGroup K}
     (h : ∀ v : HeightOneSpectrum (𝓞 K),
@@ -287,10 +294,7 @@ theorem factorization_surjective :
   apply ext_count
   intro v
   rw [count_factorization]
-  change countVector I v =
-    FractionalIdeal.count K v
-      (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K)
-  exact countVector_apply I v
+  apply countVector_apply
 
 /-- Multiplicative unique factorization of nonzero fractional ideals by
 finite primes. -/
@@ -342,7 +346,7 @@ theorem fractionalIdeal_ker :
           (1 : Multiplicative
             (HeightOneSpectrum (𝓞 K) →₀ ℤ)) := by
       apply (FractionalIdealGroup.factorizationEquiv
-        (K := K)).injective
+        ).injective
       simpa [fractionalIdeal] using ha
     apply (localOrder_eq_zero_iff v (a v)).1
     rw [← valuationVector_apply a v, hv]
@@ -357,15 +361,6 @@ theorem fractionalIdeal_ker :
       rw [valuationVector_apply]
       exact (localOrder_eq_zero_iff v (a v)).2 (ha v)
     simp [fractionalIdeal, hv]
-
-/-- The ideal group as the quotient of finite ideles by the everywhere
-integral finite ideles. -/
-def quotientIntegralEquiv :
-    FiniteIdeleGroup K ⧸ integralSubgroup ≃*
-      FractionalIdealGroup K := by
-  rw [← fractionalIdeal_ker]
-  exact QuotientGroup.quotientKerEquivOfSurjective
-    fractionalIdeal fractionalIdeal_surjective
 
 end FiniteIdeleGroup
 
@@ -382,7 +377,7 @@ theorem fractionalIdeal_surjective :
     Function.Surjective (fractionalIdeal (K := K)) := by
   intro I
   obtain ⟨a, rfl⟩ :=
-    FiniteIdeleGroup.fractionalIdeal_surjective (K := K) I
+    FiniteIdeleGroup.fractionalIdeal_surjective I
   exact ⟨(1, a), rfl⟩
 
 /-- Ideles integral at every finite place; this is the subgroup
@@ -399,15 +394,6 @@ theorem fractionalIdeal_ker :
   rw [← MonoidHom.mem_ker,
     FiniteIdeleGroup.fractionalIdeal_ker]
 
-/-- The ideal group as the quotient of all ideles by those integral at
-every finite place. -/
-def quotientIntegralEquiv :
-    IdeleGroup K ⧸ integralAtFinitePlaces ≃*
-      FractionalIdealGroup K := by
-  rw [← fractionalIdeal_ker]
-  exact QuotientGroup.quotientKerEquivOfSurjective
-    fractionalIdeal fractionalIdeal_surjective
-
 /-- The canonical surjection from ideles to the ordinary ideal class
 group. -/
 def idealClass :
@@ -419,7 +405,7 @@ theorem idealClass_surjective :
   intro c
   induction c using ClassGroup.induction (R := 𝓞 K) K with
   | h I =>
-      obtain ⟨a, ha⟩ := fractionalIdeal_surjective (K := K) I
+      obtain ⟨a, ha⟩ := fractionalIdeal_surjective I
       exact ⟨a, by simp [idealClass, ha]⟩
 
 /-- A quotient form of the ideal-class map. The following results identify

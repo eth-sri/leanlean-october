@@ -25,19 +25,19 @@ private lemma uniform_slices {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
   let g : ℝ × E → ℂ := fun p => fderiv ℝ H p v
   have hgs : ContDiff ℝ (⊤ : ℕ∞) g :=
     (hs.fderiv_right (by simp)).clm_apply contDiff_const
-  have hgc : HasCompactSupport g := (hc.fderiv ℝ).comp_left (g := fun L : (ℝ × E) →L[ℝ] ℂ => L v) (by simp)
+  have hgc := (hc.fderiv ℝ).comp_left (g := fun L : (ℝ × E) →L[ℝ] ℂ => L v) (by simp)
   let d : ℝ × E → ℂ := fun p => fderiv ℝ g p v
   have hds : ContDiff ℝ (⊤ : ℕ∞) d :=
     (hgs.fderiv_right (by simp)).clm_apply contDiff_const
-  have hdc : HasCompactSupport d := (hgc.fderiv ℝ).comp_left (g := fun L : (ℝ × E) →L[ℝ] ℂ => L v) (by simp)
+  have hdc := (hgc.fderiv ℝ).comp_left (g := fun L : (ℝ × E) →L[ℝ] ℂ => L v) (by simp)
   have hder (z : E) : deriv (fun t => H (t,z)) = fun t => g (t,z) := by
     funext t
-    have hv : HasDerivAt (fun t : ℝ => (t,z)) v t :=
+    have hv :=
       (hasDerivAt_id t).prodMk (hasDerivAt_const t z)
     exact ((hs.differentiable (by simp) (t,z)).hasFDerivAt.comp_hasDerivAt t hv).deriv
   have hdder (z : E) : deriv (fun t => g (t,z)) = fun t => d (t,z) := by
     funext t
-    have hv : HasDerivAt (fun t : ℝ => (t,z)) v t :=
+    have hv :=
       (hasDerivAt_id t).prodMk (hasDerivAt_const t z)
     exact ((hgs.differentiable (by simp) (t,z)).hasFDerivAt.comp_hasDerivAt t hv).deriv
   obtain ⟨B, hB⟩ := hs.continuous.norm.bddAbove_range_of_hasCompactSupport hc.norm
@@ -48,13 +48,15 @@ private lemma uniform_slices {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
   exact add_le_add ((hB (Set.mem_range_self _)).trans (le_max_left _ _))
     ((hD (Set.mem_range_self _)).trans (le_max_left _ _))
 
- def archRow {I : Type*} [Fintype I] (W : ProbeRealAnnularWeight)
-    (f : I → ℂ → ℂ) (c : ℝ) (p : ℝ × (I → ℂ)) : ℂ :=
+ section
+
+variable {I : Type*} [Fintype I] (W : ProbeRealAnnularWeight) (f : I → ℂ → ℂ)
+
+def archRow (c : ℝ) (p : ℝ × (I → ℂ)) : ℂ :=
   (Real.exp (-p.1 / 2) : ℂ) * (W (Real.exp p.1) : ℂ) *
     ∏ i, f i (p.2 i * (Real.exp (-p.1 / c) : ℂ))
 
-private lemma arch_smooth {I : Type*} [Fintype I] (W : ProbeRealAnnularWeight)
-    (f : I → ℂ → ℂ) (hf : ∀ i, ContDiff ℝ (⊤ : ℕ∞) (f i)) (c : ℝ) :
+private lemma arch_smooth (hf : ∀ i, ContDiff ℝ (⊤ : ℕ∞) (f i)) (c : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (archRow W f c) := by
   apply ContDiff.mul
   · exact (Complex.ofRealCLM.contDiff.comp (Real.contDiff_exp.comp (contDiff_fst.neg.div_const 2))).mul
@@ -64,29 +66,24 @@ private lemma arch_smooth {I : Type*} [Fintype I] (W : ProbeRealAnnularWeight)
     exact (hf i).comp (((contDiff_pi.mp contDiff_id i).comp contDiff_snd).mul
       (Complex.ofRealCLM.contDiff.comp (Real.contDiff_exp.comp (contDiff_fst.neg.div_const c))))
 
-private lemma arch_compact {I : Type*} [Fintype I] (W : ProbeRealAnnularWeight)
-    (f : I → ℂ → ℂ) (hf : ∀ i, HasCompactSupport (f i)) (c : ℝ) :
+private lemma arch_compact (hf : ∀ i, HasCompactSupport (f i)) (c : ℝ) :
     HasCompactSupport (archRow W f c) := by
-  let K : Set ℝ := Real.log '' tsupport W
-  have hK : IsCompact K := W.compactSupport.image_of_continuousOn
-    (Real.continuousOn_log.mono (fun x hx => (W.support_positive hx).ne'))
-  let Z : Set (I → ℂ) := Set.pi Set.univ (fun i => tsupport (f i))
-  have hZ : IsCompact Z := isCompact_univ_pi hf
+  let K := Real.log '' tsupport W
+  let Z := Set.pi Set.univ (fun i => tsupport (f i))
   let T : ℝ × (I → ℂ) → ℝ × (I → ℂ) :=
     fun p => (p.1, fun i => p.2 i * (Real.exp (p.1 / c) : ℂ))
   have hT : Continuous T := by fun_prop
-  have hC : IsCompact (T '' (K ×ˢ Z)) := (hK.prod hZ).image hT
+  have hC : IsCompact (T '' (K ×ˢ Z)) := ((W.compactSupport.image_of_continuousOn
+    (Real.continuousOn_log.mono (fun x hx => (W.support_positive hx).ne'))).prod (isCompact_univ_pi hf)).image hT
   apply hC.of_isClosed_subset (isClosed_tsupport _) (closure_minimal ?_ hC.isClosed)
   intro p hp
-  have hn : archRow W f c p ≠ 0 := hp
+  have hn := hp
   have hw : W (Real.exp p.1) ≠ 0 := by
     intro hw
     apply hn
     simp [archRow, hw]
   have hz : ∀ i, f i (p.2 i * (Real.exp (-p.1 / c) : ℂ)) ≠ 0 := by
-    have hp' : (∏ i, f i (p.2 i * (Real.exp (-p.1 / c) : ℂ))) ≠ 0 := by
-      intro he
-      exact hn (by unfold archRow; rw [he, mul_zero])
+    have hp' : (∏ i, f i (p.2 i * (Real.exp (-p.1 / c) : ℂ))) ≠ 0 := fun he => hn (by unfold archRow; rw [he, mul_zero])
     exact fun i => (Finset.prod_ne_zero_iff.mp hp') i (Finset.mem_univ i)
   refine ⟨(p.1, fun i => p.2 i * (Real.exp (-p.1 / c) : ℂ)), ?_, ?_⟩
   · exact ⟨⟨Real.exp p.1, subset_tsupport _ hw, Real.log_exp _⟩,
@@ -97,7 +94,11 @@ private lemma arch_compact {I : Type*} [Fintype I] (W : ProbeRealAnnularWeight)
     rw [mul_assoc, ← Complex.ofReal_mul, ← Real.exp_add]
     simp [show -p.1 / c + p.1 / c = 0 by ring]
 
-private theorem row_coordinate {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
+end
+
+variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
+
+private theorem row_coordinate
     (u : ℝ) (y : SLocalProduct F A.Sf) (w : {v : InfinitePlace F // v.IsComplex}) :
     (InfiniteAdeleRing.ringEquiv_mixedSpace F
       (y * (ProbeSheet.ell A (Real.exp u))⁻¹.val).1).2 w =
@@ -111,7 +112,7 @@ private theorem row_coordinate {F : Type} [Field F] [NumberField F] (A : SArithm
   have hh : (A.radialSection (Real.exp u) (Real.exp_pos u)).1 w.1 =
       Units.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex w.2).symm.toMonoidHom
         (Units.mk0 ((Real.exp u ^ (1 / (2 * (InfinitePlace.nrComplexPlaces F : ℝ))) : ℝ) : ℂ)
-          (Complex.ofReal_ne_zero.mpr (Real.rpow_pos_of_pos (Real.exp_pos u) _).ne')) := by rfl
+          (Complex.ofReal_ne_zero.mpr (Real.rpow_pos_of_pos (Real.exp_pos u) _).ne')) := rfl
   rw [hh]
   change (InfinitePlace.Completion.ringEquivComplexOfIsComplex w.2)
     ((InfinitePlace.Completion.ringEquivComplexOfIsComplex w.2).symm
@@ -120,8 +121,7 @@ private theorem row_coordinate {F : Type} [Field F] [NumberField F] (A : SArithm
   congr 2
   ring
 
-theorem uniform_log_derivatives {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
+theorem uniform_log_derivatives (W0 : SLocalProduct F A.Sf → ℂ)
     (W1 : ProbeRealAnnularWeight) (hW0 : ProbeWeight.IsAnnularTensor F A.Sf W0)
     (hcompact : HasCompactSupport W0) (hannular : tsupport W0 ⊆ {x | IsUnit x}) :
     (∀ y, ContDiff ℝ (2 : ℕ∞) (fun u => logRow A W0 W1 u y)) ∧

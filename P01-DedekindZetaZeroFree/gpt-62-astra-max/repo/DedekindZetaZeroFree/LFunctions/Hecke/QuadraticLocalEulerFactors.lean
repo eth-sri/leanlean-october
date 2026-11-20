@@ -44,9 +44,13 @@ private lemma fiber_card {F E : Type} [Field F] [Field E]
   rw [Nat.card_congr (fiberEquiv p), Set.ncard_eq_toFinset_card']
   simp
 
-private lemma constant_local {F : Type} [Field F] [NumberField F]
-    {f : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F f}
-    (d : QuadraticRayExtensionData η) (p : HeightOneSpectrum (𝓞 F))
+section
+
+variable {F : Type} [Field F] [NumberField F] {f : Ideal (𝓞 F)}
+    {η : DedekindZetaZeroFree.RayClassCharacter F f} (d : QuadraticRayExtensionData η)
+    (p : HeightOneSpectrum (𝓞 F))
+
+private lemma constant_local
     (Q : HeightOneSpectrum (𝓞 d.extension)) (hQ : Q.asIdeal.LiesOver p.asIdeal)
     (s : ℂ) (n g : ℕ)
     (hn : Q.asIdeal.inertiaDeg (𝓞 F) = n)
@@ -60,9 +64,8 @@ private lemma constant_local {F : Type} [Field F] [NumberField F]
         ((Ideal.absNorm p.asIdeal : ℂ) ^ (-s)) ^ n := by
     letI : Q.asIdeal.LiesOver p.asIdeal := hQ
     letI : R.1.asIdeal.LiesOver p.asIdeal := R.2
-    have hr := Ideal.inertiaDeg_eq_of_isGaloisGroup p.asIdeal R.1.asIdeal Q.asIdeal
-      (d.extension ≃ₐ[F] d.extension)
-    rw [← Ideal.absNorm_pow_inertiaDeg p.asIdeal R.1.asIdeal, hr, hn]
+    rw [← Ideal.absNorm_pow_inertiaDeg p.asIdeal R.1.asIdeal, (Ideal.inertiaDeg_eq_of_isGaloisGroup p.asIdeal R.1.asIdeal Q.asIdeal
+      (d.extension ≃ₐ[F] d.extension)), hn]
     push_cast
     have hpow := Complex.cpow_mul_ofReal_nonneg
       (Nat.cast_nonneg (Ideal.absNorm p.asIdeal) : (0 : ℝ) ≤ _)
@@ -74,9 +77,7 @@ private lemma constant_local {F : Type} [Field F] [NumberField F]
   letI := Fintype.ofFinite {Q : HeightOneSpectrum (𝓞 d.extension) // Q.asIdeal.LiesOver p.asIdeal}
   rw [tprod_fintype, Finset.prod_const, Finset.card_univ, ← Nat.card_eq_fintype_card,
     fiber_card, hg]
-private lemma unramified_cases {F : Type} [Field F] [NumberField F]
-    {f : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F f}
-    (d : QuadraticRayExtensionData η) (p : HeightOneSpectrum (𝓞 F))
+private lemma unramified_cases
     (hgood : p.asIdeal ⊔ f = ⊤)
     (Q : HeightOneSpectrum (𝓞 d.extension)) (hQ : Q.asIdeal.LiesOver p.asIdeal) :
     (η p.asIdeal = 1 ∧ Q.asIdeal.inertiaDeg (𝓞 F) = 1 ∧
@@ -86,9 +87,8 @@ private lemma unramified_cases {F : Type} [Field F] [NumberField F]
   letI : Q.asIdeal.LiesOver p.asIdeal := hQ
   have hunr := d.unramified p hgood Q.asIdeal Q.isPrime hQ
   letI := hunr
-  have he := Ideal.ramificationIdx_eq_one Q.asIdeal (𝓞 F)
   have hefg := invs d p Q hQ
-  rw [he, one_mul] at hefg
+  rw [(Ideal.ramificationIdx_eq_one Q.asIdeal (𝓞 F)), one_mul] at hefg
   have hord := ClassFieldTheory.orderOf_arithmeticFrobeniusAt_eq_inertiaDegree p Q hQ hunr
   have hχ := d.frobenius p hgood Q hQ
   have hs : (η p.asIdeal) ^ 2 = 1 := by
@@ -122,9 +122,7 @@ private lemma unramified_cases {F : Type} [Field F] [NumberField F]
         norm_num at hh
     rw [hi] at hefg
     exact ⟨hm, hi, by omega⟩
-private lemma ramified_cases {F : Type} [Field F] [NumberField F]
-    {f : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F f}
-    (d : QuadraticRayExtensionData η) (p : HeightOneSpectrum (𝓞 F))
+private lemma ramified_cases
     (Q : HeightOneSpectrum (𝓞 d.extension)) (hQ : Q.asIdeal.LiesOver p.asIdeal)
     (hunr : ¬ Algebra.IsUnramifiedAt (𝓞 F) Q.asIdeal) :
     Q.asIdeal.inertiaDeg (𝓞 F) = 1 ∧
@@ -154,6 +152,8 @@ private lemma ramified_cases {F : Type} [Field F] [NumberField F]
   rw [hi, mul_one] at heupper
   exact ⟨hi, by omega⟩
 
+end
+
 theorem quadratic_local_euler_factors
     (F : Type) [Field F] [NumberField F]
     (hF : NumberField.IsTotallyComplex F)
@@ -169,30 +169,25 @@ theorem quadratic_local_euler_factors
       (1 - (Ideal.absNorm p.asIdeal : ℂ) ^ (-s))⁻¹ *
         (1 - η p.asIdeal * (Ideal.absNorm p.asIdeal : ℂ) ^ (-s))⁻¹ := by
   classical
-  let x : ℂ := (Ideal.absNorm p.asIdeal : ℂ) ^ (-s)
+  let x := (Ideal.absNorm p.asIdeal : ℂ) ^ (-s)
   by_cases hgood : p.asIdeal ⊔ f = ⊤
   · obtain ⟨Q⟩ : Nonempty (p.asIdeal.primesOver (𝓞 d.extension)) := inferInstance
     let Q' : HeightOneSpectrum (𝓞 d.extension) :=
       ⟨Q.1, Q.2.1, by
         letI : Q.1.LiesOver p.asIdeal := Q.2.2
         exact Ideal.ne_bot_of_liesOver_of_ne_bot p.ne_bot Q.1⟩
-    have hQ : Q'.asIdeal.LiesOver p.asIdeal := Q.2.2
+    have hQ := Q.2.2
     rcases unramified_cases d p hgood Q' hQ with ⟨hη, hi, hg⟩ | ⟨hη, hi, hg⟩
     · rw [constant_local d p Q' hQ s 1 2 hi hg, hη]
-      change (1 - x ^ 1)⁻¹ ^ 2 = (1 - x)⁻¹ * (1 - 1 * x)⁻¹
       simp [pow_two]
     · rw [constant_local d p Q' hQ s 2 1 hi hg, hη]
-      change (1 - x ^ 2)⁻¹ ^ 1 = (1 - x)⁻¹ * (1 - -1 * x)⁻¹
       rw [pow_one, neg_one_mul, sub_neg_eq_add, ← mul_inv_rev]
       congr 1
       ring
   · obtain ⟨Q, hQ, hunr⟩ :=
       (quadratic_primitive_ramification F hF f hf η hq hn hp d p).mp hgood
     have ⟨hi, hg⟩ := ramified_cases d p Q hQ hunr
-    have hη : η p.asIdeal = 0 :=
-      (η.eq_zero_iff' p.asIdeal).mpr (Or.inr hgood)
-    rw [constant_local d p Q hQ s 1 1 hi hg, hη]
-    change (1 - x ^ 1)⁻¹ ^ 1 = (1 - x)⁻¹ * (1 - 0 * x)⁻¹
+    rw [constant_local d p Q hQ s 1 1 hi hg, ((η.eq_zero_iff' p.asIdeal).mpr (Or.inr hgood))]
     simp
 
 end DedekindZetaZeroFree.LargeSieve

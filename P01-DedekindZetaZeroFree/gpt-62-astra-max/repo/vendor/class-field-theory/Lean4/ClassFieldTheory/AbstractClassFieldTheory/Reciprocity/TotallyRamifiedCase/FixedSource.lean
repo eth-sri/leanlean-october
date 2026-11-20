@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -44,34 +41,17 @@ theorem abstractReciprocity_fixedCombination_of_commute
     B.ρ g (b + a - B.ρ t a) = b + a - B.ρ t a := by
   have hcommAction : B.ρ g (B.ρ t a) = B.ρ t (B.ρ g a) := by
     calc
-      B.ρ g (B.ρ t a) = B.ρ (g * t) a := by
-        rw [map_mul]
-        rfl
+      _ = B.ρ (g * t) a := by
+        simp [map_mul]
       _ = B.ρ (t * g) a := by rw [hcomm.eq]
       _ = B.ρ t (B.ρ g a) := by
-        rw [map_mul]
-        rfl
+        simp [map_mul]
   have hb : b = c + B.ρ g a - a := by
     calc
       b = (b - c) + c := by abel
       _ = (B.ρ g a - a) + c := by rw [hbc]
       _ = c + B.ρ g a - a := by abel
-  have htbc := congrArg (fun z : B.V ↦ B.ρ t z) hbc
-  have htbc' : B.ρ t b - c = B.ρ t (B.ρ g a) - B.ρ t a := by
-    simpa only [map_sub, htc] using htbc
-  have htb : B.ρ t b = c + B.ρ t (B.ρ g a) - B.ρ t a := by
-    calc
-      B.ρ t b = (B.ρ t b - c) + c := by abel
-      _ = (B.ρ t (B.ρ g a) - B.ρ t a) + c := by rw [htbc']
-      _ = c + B.ρ t (B.ρ g a) - B.ρ t a := by abel
-  calc
-    B.ρ g (b + a - B.ρ t a) =
-        B.ρ g b + B.ρ g a - B.ρ g (B.ρ t a) := by
-      simp only [map_add, map_sub]
-    _ = B.ρ t b + B.ρ g a - B.ρ t (B.ρ g a) := by
-      rw [hgb, hcommAction]
-    _ = c + B.ρ g a - B.ρ t a := by rw [htb]; abel
-    _ = b + a - B.ρ t a := by rw [hb]; abel
+  grind
 
 namespace FiniteGaloisSubextension
 /-- The lower inclusion homomorphism preserves the relative coset action. -/
@@ -93,9 +73,11 @@ end FiniteGaloisSubextension
 
 namespace FiniteCyclicSubextension
 variable {K : FiniteAbstractField G}
+    (E : FiniteCyclicSubextension K)
+
 /-- Forget only the chosen cyclic generator.  The resulting finite Galois
 bundle is the canonical input to the finite reciprocity construction. -/
-def toFiniteGaloisSubextension (E : FiniteCyclicSubextension K) :
+def toFiniteGaloisSubextension :
     FiniteGaloisSubextension K.field where
   field := E.field
   below := E.below
@@ -103,12 +85,12 @@ def toFiniteGaloisSubextension (E : FiniteCyclicSubextension K) :
   finite := E.finite
 /-- The cyclic generator transported across the finite Galois quotient
 boundary. -/
-def galoisGenerator (E : FiniteCyclicSubextension K) :
+def galoisGenerator :
     E.toFiniteGaloisSubextension.extensionQuotient :=
   E.toFiniteGaloisSubextension.extensionQuotientMulEquiv.symm E.generator
 /-- The transported generator still generates the whole finite Galois
 quotient. -/
-theorem galoisGenerator_generates (E : FiniteCyclicSubextension K) :
+theorem galoisGenerator_generates :
     ∀ x, x ∈ Subgroup.zpowers E.galoisGenerator := by
   intro x
   let e := E.toFiniteGaloisSubextension.extensionQuotientMulEquiv
@@ -116,9 +98,7 @@ theorem galoisGenerator_generates (E : FiniteCyclicSubextension K) :
   apply Subgroup.mem_zpowers_iff.mpr
   refine ⟨n, ?_⟩
   apply e.injective
-  change e (e.symm E.generator ^ n) = e x
-  exact (map_zpow e _ n).trans
-    ((congrArg (fun y => y ^ n) (e.apply_symm_apply E.generator)).trans hn)
+  exact hn
 
 end FiniteCyclicSubextension
 
@@ -158,10 +138,6 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
         ((baseField G).toSubgroup ⧸
           extensionSubgroup (baseField G) KR.field
             (le_baseField KR.field)) := by
-      change Finite
-        ((baseField G).toSubgroup ⧸
-          extensionSubgroup (baseField G) K.field
-            (le_baseField K.field))
       exact K.finite
     let LG := E.toFiniteGaloisSubextension
     letI : Finite
@@ -213,20 +189,12 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
   let hLGfiniteOverK : Finite
       (K.field.toSubgroup ⧸
         extensionSubgroup K.field LG.field LG.below) := by
-    have h := hLGfinite
-    change Finite
-      (K.field.toSubgroup ⧸
-        extensionSubgroup K.field LG.field LG.below) at h
-    exact h
+    assumption
   let q := E.galoisGenerator
   let hq := E.galoisGenerator_generates
   let hLGTot := hTot
   let hKRabsolute : Finite ((baseField G).toSubgroup ⧸
       extensionSubgroup (baseField G) KR.field (le_baseField KR.field)) := by
-    change Finite
-      ((baseField G).toSubgroup ⧸
-        extensionSubgroup (baseField G) K.field
-          (le_baseField K.field))
     exact K.finite
   let σ := D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
     KR LG hLGTot q
@@ -467,7 +435,7 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
           relativeCosetAction A K.field M.field M.below
               (fixedFieldInclusion A Sigma M.field hMSigma piSigma) tB =
             (fixedFieldInclusion A Sigma M.field hMSigma piSigma).1 at h
-        simpa [piSigmaM] using h
+        exact h
       _ = (eB cB).1 := rfl
   have hgb : B.ρ gB bB = B.ρ tB bB := by
     apply eB.injective
@@ -517,7 +485,6 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
     rfl
   let T := Rep.FiniteCyclicGroup.normHomCompSub B₀ g
   let xCycle : T.moduleCatLeftHomologyData.K := ⟨xB₀, by
-    change B₀.ρ g xB₀ - xB₀ = 0
     exact sub_eq_zero.mpr hxB₀⟩
   let x : ambientFixedAddSubgroup A M₀ :=
     (cyclicFixedCycleEquiv A M₀ M.field hMM₀

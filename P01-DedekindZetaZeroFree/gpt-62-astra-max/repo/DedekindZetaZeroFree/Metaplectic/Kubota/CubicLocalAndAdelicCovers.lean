@@ -13,14 +13,18 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-abbrev LocalGL2Cover (v : KPHilbert.Place F) := KPLocalCover.CubicGL2Raw F ζ hζ v
+section
 
-abbrev localTopology (v : KPHilbert.Place F) :=
+variable (v : KPHilbert.Place F)
+
+abbrev LocalGL2Cover := KPLocalCover.CubicGL2Raw F ζ hζ v
+
+abbrev localTopology :=
   KPAdelicCoverRestrictedProduct.localTopology F ζ hζ v
 
-theorem local_topological_cover (v : KPHilbert.Place F) :
+theorem local_topological_cover :
     letI := localTopology F ζ hζ v
     T2Space (LocalGL2Cover F ζ hζ v) ∧
       LocallyCompactSpace (LocalGL2Cover F ζ hζ v) ∧
@@ -31,7 +35,7 @@ theorem local_topological_cover (v : KPHilbert.Place F) :
         Nat.card {x : LocalGL2Cover F ζ hζ v |
           KPLocalCover.projection F ζ hζ v x = g} = 3 := by
   cases v with
-  | inl w => exact KPLocalChartTopology.complex_topological_cover F ζ hζ w
+  | inl w => apply KPLocalChartTopology.complex_topological_cover
   | inr q =>
     let m := KPAdelicCoverRestrictedProduct.depth F ζ hζ q
     have hm := KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q
@@ -39,6 +43,8 @@ theorem local_topological_cover (v : KPHilbert.Place F) :
     have hp := KPLocalChartTopology.finite_projection F ζ hζ q m hm
     exact ⟨ht.1, ht.2.1, ht.2.2, hp.1,
       (KPLocalChartTopology.finite_discrete_kernel F ζ hζ q m hm).1, hp.2⟩
+
+end
 
 abbrev AdelicGL2Cover := KPAdelicCoverRestrictedProduct.CubicGL2Adelic F ζ hζ
 
@@ -50,8 +56,7 @@ theorem adelic_topological_covers :
       IsLocalHomeomorph (KPAdelicCoverRestrictedProduct.projection F ζ hζ)) ∧
     (T2Space (AdelicPGL2Cover F ζ hζ) ∧ LocallyCompactSpace (AdelicPGL2Cover F ζ hζ) ∧
       IsTopologicalGroup (AdelicPGL2Cover F ζ hζ) ∧
-      IsLocalHomeomorph (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ)) := by
-  exact ⟨KPAdelicCoverRestrictedProduct.adelic_topological_cover F ζ hζ,
+      IsLocalHomeomorph (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ)) := ⟨KPAdelicCoverRestrictedProduct.adelic_topological_cover F ζ hζ,
     KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ⟩
 
 abbrev adelicW := KPRationalAdelicSplitting.W F ζ hζ

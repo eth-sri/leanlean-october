@@ -13,7 +13,12 @@ open MeasureTheory Topology
 open scoped Classical
 open KPContLocalNorm KPContLocalEnergy
 
-private theorem interior_ball {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Opens (Space n))
+section
+
+variable {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Opens (Space n))
+
+include hn in
+private theorem interior_ball
     (x : Space n) (hx : x ∈ Ω) :
     ∃ B : LocalBall n, x ∈ B.carrier ∧ closure B.carrier ⊆ (Ω : Set (Space n)) := by
   obtain ⟨r, hr, hsub⟩ := Metric.isOpen_iff.mp Ω.isOpen x hx
@@ -22,14 +27,15 @@ private theorem interior_ball {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Open
   · rw [LocalBall.carrier, closure_ball _ (ne_of_gt (half_pos hr))]
     exact (Metric.closedBall_subset_ball (by linarith)).trans hsub
 
-private theorem compact_memLp {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Opens (Space n))
+include hn in
+private theorem compact_memLp
     (f : Space n → ℂ) (hf : Measurable f)
     (hl : ∀ B : LocalBall n, closure B.carrier ⊆ (Ω : Set (Space n)) →
       MemLp f 2 (volume.restrict B.carrier))
     (K : Set (Space n)) (hK : IsCompact K) (hKO : K ⊆ Ω) :
     MemLp f 2 (volume.restrict K) := by
   apply (memLp_two_iff_integrable_sq_norm hf.aestronglyMeasurable).mpr
-  have hloc : LocallyIntegrableOn (fun x => ‖f x‖ ^ 2) (Ω : Set (Space n)) := by
+  have hloc : LocallyIntegrableOn (fun x => ‖f x‖ ^ 2) Ω := by
     intro x hx
     obtain ⟨B, hxB, hBO⟩ := interior_ball hn Ω x hx
     refine ⟨B.carrier, ?_, ?_⟩
@@ -37,22 +43,32 @@ private theorem compact_memLp {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Open
     · exact (memLp_two_iff_integrable_sq_norm (hl B hBO).aestronglyMeasurable).mp (hl B hBO)
   exact hloc.integrableOn_compact_subset hKO hK
 
- def derivativeTest {n : ℕ} {Ω : TopologicalSpace.Opens (Space n)}
-    (φ : TestFunction Ω ℂ ⊤) (j : Fin n) : TestFunction Ω ℂ ⊤ :=
+end
+
+ section
+
+variable {n : ℕ} {Ω : TopologicalSpace.Opens (Space n)} (φ : TestFunction Ω ℂ ⊤) (j : Fin n)
+
+def derivativeTest : TestFunction Ω ℂ ⊤ :=
   TestFunction.lineDerivCLM ℝ (EuclideanSpace.single j 1) φ
 
-private theorem derivativeTest_eq {n : ℕ} {Ω : TopologicalSpace.Opens (Space n)}
-    (φ : TestFunction Ω ℂ ⊤) (j : Fin n) :
+private theorem derivativeTest_eq :
     (fun x => derivativeTest φ j x) = KPCompactInteriorH1.coordinatePartial j (fun x => φ x) := by
   funext x
   rw [derivativeTest, TestFunction.lineDerivCLM_eq_fderivCLM,
     TestFunction.fderivCLM_apply_of_le _ (by simp)]
   rfl
 
-private theorem test_mul_integrable {n : ℕ} (B : LocalBall n) (f : Space n → ℂ)
+end
+
+section
+
+variable {n : ℕ} (B : LocalBall n) (f : Space n → ℂ)
+
+private theorem test_mul_integrable
     (hf : MemLp f 2 (volume.restrict B.carrier)) (φ : TestFunction B.toOpens ℂ ⊤) :
     Integrable (fun x => f x * φ x) volume := by
-  apply (integrableOn_iff_integrable_of_support_subset (s := B.carrier) ?_).mp
+  apply (integrableOn_iff_integrable_of_support_subset ?_).mp
   · exact hf.integrable_mul
       (φ.continuous.memLp_of_hasCompactSupport (p := 2) φ.hasCompactSupport)
   · intro x hx
@@ -62,7 +78,7 @@ private theorem test_mul_integrable {n : ℕ} (B : LocalBall n) (f : Space n →
     apply hx
     simp [h]
 
-private theorem ball_IBP {n : ℕ} (B : LocalBall n) (f : Space n → ℂ)
+private theorem ball_IBP
     (g : Fin n → Space n → ℂ) (h : IntegerSobolev B 1)
     (h0 : (fun x => value h x) =ᵐ[volume.restrict B.carrier] f)
     (h1 : ∀ j, (fun x => gradient h j x) =ᵐ[volume.restrict B.carrier] g j)
@@ -101,13 +117,15 @@ private theorem ball_IBP {n : ℕ} (B : LocalBall n) (f : Space n → ℂ)
       filter_upwards [h1 j] with x hx
       rw [hx]
 
+end
+
 private theorem finite_test_decomposition {n : ℕ} (hn : 0 < n)
     (Ω : TopologicalSpace.Opens (Space n)) (ψ : TestFunction Ω ℂ ⊤) :
     ∃ (ι : Type) (_ : Fintype ι) (B : ι → LocalBall n),
       (∀ i, closure (B i).carrier ⊆ (Ω : Set (Space n))) ∧
       ∃ φ : ∀ i, TestFunction (B i).toOpens ℂ ⊤,
         (fun x => ∑ i, φ i x) = fun x => ψ x := by
-  let I := {B : LocalBall n // closure B.carrier ⊆ (Ω : Set (Space n))}
+  let I := {B : LocalBall n // closure B.carrier ⊆ Ω}
   have hcover : tsupport ψ ⊆ ⋃ i : I, i.val.carrier := by
     intro x hx
     obtain ⟨B, hxB, hBO⟩ := interior_ball hn Ω x (ψ.tsupport_subset hx)
@@ -140,15 +158,54 @@ private theorem finite_test_decomposition {n : ℕ} (hn : 0 < n)
     simp [hsum]
   · simp [image_eq_zero_of_notMem_tsupport hx]
 
-private theorem global_IBP {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Opens (Space n))
+theorem weakFirst_of_all_interior_balls (n : ℕ) (hn : 0 < n)
+    (Ω : TopologicalSpace.Opens (Space n))
     (f : Space n → ℂ) (g : Fin n → Space n → ℂ)
+    (hf : Measurable f) (hg : ∀ j, Measurable (g j))
     (hlocal : ∀ B : LocalBall n, closure B.carrier ⊆ (Ω : Set (Space n)) →
       ∃ h : IntegerSobolev B 1,
         (fun x => value h x) =ᵐ[volume.restrict B.carrier] f ∧
-        ∀ j, (fun x => gradient h j x) =ᵐ[volume.restrict B.carrier] g j)
-    (ψ : TestFunction Ω ℂ ⊤) (j : Fin n) :
-    (∫ x, f x * KPCompactInteriorH1.coordinatePartial j (fun x => ψ x) x) =
-      -(∫ x, g j x * ψ x) := by
+        ∀ j, (fun x => gradient h j x) =ᵐ[volume.restrict B.carrier] g j) :
+    KPCompactInteriorH1.WeakFirst Ω
+      (fun x => WithLp.toLp 2 (fun _ : Fin 1 => f x))
+      (fun j x => WithLp.toLp 2 (fun _ : Fin 1 => g j x)) := by
+  have hflp : ∀ B : LocalBall n, closure B.carrier ⊆ Ω →
+      MemLp f 2 (volume.restrict B.carrier) := by
+    intro B hB
+    obtain ⟨h, h0, h1⟩ := hlocal B hB
+    exact (Lp.memLp (value h)).ae_eq h0
+  have hglp : ∀ j, ∀ B : LocalBall n, closure B.carrier ⊆ Ω →
+      MemLp (g j) 2 (volume.restrict B.carrier) := by
+    intro j B hB
+    obtain ⟨h, h0, h1⟩ := hlocal B hB
+    exact (Lp.memLp (gradient h j)).ae_eq (h1 j)
+  have hlift (f : Space n → ℂ) (hf : Measurable f)
+      (hl : ∀ B : LocalBall n, closure B.carrier ⊆ Ω →
+        MemLp f 2 (volume.restrict B.carrier)) :
+      KPCompactInteriorH1.LocallyL2 Ω (fun x => WithLp.toLp 2 (fun _ : Fin 1 => f x)) := by
+    constructor
+    · exact ((PiLp.continuous_toLp 2 (fun _ : Fin 1 => ℂ)).measurable.comp
+        (measurable_pi_iff.mpr (fun _ => hf))).aestronglyMeasurable
+    · intro K hK hKO
+      apply (compact_memLp hn Ω f hf hl K hK hKO).of_le_mul ((PiLp.continuous_toLp 2 (fun _ : Fin 1 => ℂ)).measurable.comp (measurable_pi_iff.mpr (fun _ => hf))).aestronglyMeasurable
+      apply Filter.Eventually.of_forall
+      intro x
+      rw [one_mul, EuclideanSpace.norm_eq]
+      simp
+  refine ⟨hlift f hf hflp, fun j => hlift (g j) (hg j) (hglp j), ?_⟩
+  intro j ψ a
+  have hL : (∫ x in Ω, f x * KPCompactInteriorH1.coordinatePartial j (fun x => ψ x) x) =
+      ∫ x, f x * KPCompactInteriorH1.coordinatePartial j (fun x => ψ x) x := by
+    apply setIntegral_eq_integral_of_forall_compl_eq_zero
+    intro x hx
+    rw [← derivativeTest_eq ψ j]
+    simpa using congrArg (fun z : ℂ => f x * z)
+      ((derivativeTest ψ j).zero_on_compl hx)
+  have hR : (∫ x in Ω, g j x * ψ x) = ∫ x, g j x * ψ x := by
+    apply setIntegral_eq_integral_of_forall_compl_eq_zero
+    intro x hx
+    simpa using congrArg (fun z : ℂ => g j x * z) (ψ.zero_on_compl hx)
+  rw [hL, hR]
   obtain ⟨ι, hι, B, hBO, φ, hsum⟩ := finite_test_decomposition hn Ω ψ
   letI : Fintype ι := hι
   have hlocal' i := hlocal (B i) (hBO i)
@@ -165,7 +222,7 @@ private theorem global_IBP {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Opens (
       (φ i).contDiff.differentiable (by simp) |>.differentiableAt (x := x))
     have he : (∑ i, fun x => φ i x) = (fun x => ψ x) := by
       funext x
-      simpa only [Finset.sum_apply] using congrFun hsum x
+      simpa using congrFun hsum x
     rw [he] at hd
     rw [hd]
     simp
@@ -194,65 +251,6 @@ private theorem global_IBP {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Opens (
       congr 1
       funext x
       rw [← Finset.mul_sum, congrFun hsum x]
-
-private theorem scalar_lift_memLp {n : ℕ} (f : Space n → ℂ) (hf : Measurable f)
-    (K : Set (Space n)) (hlp : MemLp f 2 (volume.restrict K)) :
-    MemLp (fun x => WithLp.toLp 2 (fun _ : Fin 1 => f x)) 2 (volume.restrict K) := by
-  have hm : Measurable (fun x => WithLp.toLp 2 (fun _ : Fin 1 => f x)) :=
-    (PiLp.continuous_toLp 2 (fun _ : Fin 1 => ℂ)).measurable.comp (measurable_pi_iff.mpr (fun _ => hf))
-  apply hlp.of_le_mul hm.aestronglyMeasurable (c := 1)
-  apply Filter.Eventually.of_forall
-  intro x
-  rw [one_mul, EuclideanSpace.norm_eq]
-  simp
-
-theorem weakFirst_of_all_interior_balls (n : ℕ) (hn : 0 < n)
-    (Ω : TopologicalSpace.Opens (Space n))
-    (f : Space n → ℂ) (g : Fin n → Space n → ℂ)
-    (hf : Measurable f) (hg : ∀ j, Measurable (g j))
-    (hlocal : ∀ B : LocalBall n, closure B.carrier ⊆ (Ω : Set (Space n)) →
-      ∃ h : IntegerSobolev B 1,
-        (fun x => value h x) =ᵐ[volume.restrict B.carrier] f ∧
-        ∀ j, (fun x => gradient h j x) =ᵐ[volume.restrict B.carrier] g j) :
-    KPCompactInteriorH1.WeakFirst Ω
-      (fun x => WithLp.toLp 2 (fun _ : Fin 1 => f x))
-      (fun j x => WithLp.toLp 2 (fun _ : Fin 1 => g j x)) := by
-  have hflp : ∀ B : LocalBall n, closure B.carrier ⊆ (Ω : Set (Space n)) →
-      MemLp f 2 (volume.restrict B.carrier) := by
-    intro B hB
-    obtain ⟨h, h0, h1⟩ := hlocal B hB
-    exact (Lp.memLp (value h)).ae_eq h0
-  have hglp : ∀ j, ∀ B : LocalBall n, closure B.carrier ⊆ (Ω : Set (Space n)) →
-      MemLp (g j) 2 (volume.restrict B.carrier) := by
-    intro j B hB
-    obtain ⟨h, h0, h1⟩ := hlocal B hB
-    exact (Lp.memLp (gradient h j)).ae_eq (h1 j)
-  have hlift (f : Space n → ℂ) (hf : Measurable f)
-      (hl : ∀ B : LocalBall n, closure B.carrier ⊆ (Ω : Set (Space n)) →
-        MemLp f 2 (volume.restrict B.carrier)) :
-      KPCompactInteriorH1.LocallyL2 Ω (fun x => WithLp.toLp 2 (fun _ : Fin 1 => f x)) := by
-    constructor
-    · exact ((PiLp.continuous_toLp 2 (fun _ : Fin 1 => ℂ)).measurable.comp
-        (measurable_pi_iff.mpr (fun _ => hf))).aestronglyMeasurable
-    · intro K hK hKO
-      exact scalar_lift_memLp f hf K (compact_memLp hn Ω f hf hl K hK hKO)
-  refine ⟨hlift f hf hflp, fun j => hlift (g j) (hg j) (hglp j), ?_⟩
-  intro j ψ a
-  change (∫ x in (Ω : Set (Space n)), f x *
-      KPCompactInteriorH1.coordinatePartial j (fun x => ψ x) x) = -(∫ x in (Ω : Set (Space n)), g j x * ψ x)
-  have hL : (∫ x in (Ω : Set (Space n)), f x * KPCompactInteriorH1.coordinatePartial j (fun x => ψ x) x) =
-      ∫ x, f x * KPCompactInteriorH1.coordinatePartial j (fun x => ψ x) x := by
-    apply setIntegral_eq_integral_of_forall_compl_eq_zero
-    intro x hx
-    rw [← derivativeTest_eq ψ j]
-    simpa only [Pi.zero_apply, mul_zero] using congrArg (fun z : ℂ => f x * z)
-      ((derivativeTest ψ j).zero_on_compl hx)
-  have hR : (∫ x in (Ω : Set (Space n)), g j x * ψ x) = ∫ x, g j x * ψ x := by
-    apply setIntegral_eq_integral_of_forall_compl_eq_zero
-    intro x hx
-    simpa only [Pi.zero_apply, mul_zero] using congrArg (fun z : ℂ => g j x * z) (ψ.zero_on_compl hx)
-  rw [hL, hR]
-  exact global_IBP hn Ω f g hlocal ψ j
 
 end DedekindZetaZeroFree
 

@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 universe u
@@ -49,54 +46,40 @@ def chosenUnramifiedFrobeniusLift
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
     [hnormal : (extensionSubgroup K.field L hLK).Normal] :
     D.FrobeniusElements K L hLK := by
-  let φ : K.field.toSubgroup := Classical.choose
+  let φ := Classical.choose
     (D.normalizedDegree_surjective K
       (Multiplicative.ofAdd (1 : ZHat)))
-  have hφ : D.normalizedDegree K φ =
-      Multiplicative.ofAdd (1 : ZHat) :=
-    Classical.choose_spec
-      (D.normalizedDegree_surjective K
-        (Multiplicative.ofAdd (1 : ZHat)))
   refine ⟨QuotientGroup.mk φ, 1, Nat.zero_lt_one, ?_⟩
-  rw [D.extensionNormalizedDegree_mk K L hLK φ, hφ, pow_one]
+  rw [D.extensionNormalizedDegree_mk K L hLK φ, (Classical.choose_spec
+    (D.normalizedDegree_surjective K
+      (Multiplicative.ofAdd (1 : ZHat)))), pow_one]
+
+section
+
+variable (D : DegreeData G) (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+    (hLK : L.toSubgroup ≤ K.field.toSubgroup) [hnormal : (extensionSubgroup K.field L hLK).Normal]
 
 /--
 Establishes the identity `D.frobeniusExponent K L hLK (D.chosenUnramifiedFrobeniusLift K L hLK) =
 1`.
 -/
 @[simp]
-theorem chosenUnramifiedFrobeniusLift_exponent
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal] :
+theorem chosenUnramifiedFrobeniusLift_exponent :
     D.frobeniusExponent K L hLK
       (D.chosenUnramifiedFrobeniusLift K L hLK) = 1 := by
   apply proCIntegerOne_pow_nat_injective
   calc
-    (Multiplicative.ofAdd (1 : ZHat)) ^
-        D.frobeniusExponent K L hLK
-          (D.chosenUnramifiedFrobeniusLift K L hLK) =
+    _ =
       D.extensionNormalizedDegree K L hLK
         (D.chosenUnramifiedFrobeniusLift K L hLK).1 :=
       (D.extensionNormalizedDegree_frobenius_eq_pow K L hLK
         (D.chosenUnramifiedFrobeniusLift K L hLK)).symm
     _ = Multiplicative.ofAdd (1 : ZHat) := by
-      change D.normalizedDegree K
-          (Classical.choose
-            (D.normalizedDegree_surjective K
-              (Multiplicative.ofAdd (1 : ZHat)))) = _
-      exact Classical.choose_spec
-        (D.normalizedDegree_surjective K
-          (Multiplicative.ofAdd (1 : ZHat)))
+      exact Classical.choose_spec (normalizedDegree_surjective D K (Multiplicative.ofAdd 1))
     _ = (Multiplicative.ofAdd (1 : ZHat)) ^ 1 := (pow_one _).symm
 
 /-- The arithmetic Frobenius `φ_{L/K}`, obtained by restricting `φ_K`. -/
-def unramifiedFrobenius
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal] :
+def unramifiedFrobenius :
     K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK :=
   D.frobeniusRestriction K L hLK
     (D.chosenUnramifiedFrobeniusLift K L hLK)
@@ -104,27 +87,21 @@ def unramifiedFrobenius
 /-- In an unramified extension, arithmetic Frobenius generates the actual
 finite Galois quotient. -/
 theorem unramifiedFrobenius_generates
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
     [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
       (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
     ∀ x : K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK,
       x ∈ Subgroup.zpowers (D.unramifiedFrobenius K L hLK) := by
-  let φ : K.field.toSubgroup := Classical.choose
+  let φ := Classical.choose
     (D.normalizedDegree_surjective K
       (Multiplicative.ofAdd (1 : ZHat)))
-  have hφ : D.normalizedDegree K φ =
-      Multiplicative.ofAdd (1 : ZHat) :=
-    Classical.choose_spec
-      (D.normalizedDegree_surjective K
-        (Multiplicative.ofAdd (1 : ZHat)))
-  simpa only [unramifiedFrobenius, chosenUnramifiedFrobeniusLift, φ,
-    frobeniusRestriction, extensionRestriction_mk] using
+  simpa [unramifiedFrobenius, chosenUnramifiedFrobeniusLift, φ, frobeniusRestriction, extensionRestriction_mk] using
     D.quotient_generator_of_unramified_degree_one
-      K L hLK hUnramified φ hφ
+      K L hLK hUnramified φ (Classical.choose_spec
+        (D.normalizedDegree_surjective K
+          (Multiplicative.ofAdd (1 : ZHat))))
+
+end
 
 /-- Additive form of the preceding generator statement, matching the
 domain of the reciprocity homomorphism in the finite reciprocity equivalence. -/
@@ -140,16 +117,12 @@ theorem unramifiedFrobenius_zmultiples_eq_top
       (Additive.ofMul (D.unramifiedFrobenius K L hLK)) = ⊤ := by
   ext x
   constructor
-  · intro _
-    exact AddSubgroup.mem_top x
+  · simp
   · intro _
     obtain ⟨m, hm⟩ := Subgroup.mem_zpowers_iff.mp
       (D.unramifiedFrobenius_generates K L hLK hUnramified x.toMul)
     apply AddSubgroup.mem_zmultiples_iff.mpr
-    refine ⟨m, ?_⟩
-    change Additive.ofMul
-      ((D.unramifiedFrobenius K L hLK) ^ m) = x
-    exact congrArg Additive.ofMul hm
+    solve_by_elim [congrArg]
 
 end DegreeData
 
@@ -186,11 +159,13 @@ private theorem valueModulo_eq_zero_iff
         ((QuotientAddGroup.mk' (nsmulWithin v.valueGroup n)) (n • w)) = 0
     rw [hq, map_zero]
 
- def unramifiedValuationHom
-    (v : ValuationData D A) (K : FiniteAbstractField G)
-    (L : ClosedSubgroup G)
+ section
+
+variable (v : ValuationData D A) (K : FiniteAbstractField G) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)] :
+    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
+
+def unramifiedValuationHom :
     ambientFixedAddSubgroup A K.field →+
       ZMod ((FiniteAbstractFieldExtension.ofInclusion L K hLK).degree : ℕ) :=
   (v.valueModulo
@@ -199,10 +174,6 @@ private theorem valueModulo_eq_zero_iff
     (v.valuationAt K)
 
 theorem finiteNormSubgroup_le_unramifiedValuationHom_ker
-    (v : ValuationData D A)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
       (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
     finiteNormSubgroup A K.field L hLK ≤
@@ -211,7 +182,6 @@ theorem finiteNormSubgroup_le_unramifiedValuationHom_ker
   let E := FiniteAbstractFieldExtension.ofInclusion L K hLK
   let n := (E.degree : ℕ)
   have hUn : E.IsUnramified D := by
-    change (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D
     exact hUnramified
   have htower := v.normalizedValuation_tower E a
   change (E.residueDegree D : ℕ) • _ = _ at htower
@@ -228,10 +198,6 @@ theorem finiteNormSubgroup_le_unramifiedValuationHom_ker
 
 /-- The valuation map induced on the finite norm quotient. -/
 def unramifiedNormQuotientValuation
-    (v : ValuationData D A)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
       (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
     FiniteNormQuotient A K.field L hLK →+
@@ -246,10 +212,6 @@ K.field L hLK a) = v.unramifiedValuationHom K L hLK a`.
 -/
 @[simp]
 theorem unramifiedNormQuotientValuation_finiteNormClass
-    (v : ValuationData D A)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
       (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D)
     (a : ambientFixedAddSubgroup A K.field) :
@@ -263,10 +225,6 @@ The specified map is surjective: `Function.Surjective (v.unramifiedNormQuotientV
 hUnramified)`.
 -/
 theorem unramifiedNormQuotientValuation_surjective
-    (v : ValuationData D A)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
       (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
     Function.Surjective
@@ -278,19 +236,24 @@ theorem unramifiedNormQuotientValuation_surjective
     v.valueModulo_surjective n E.degree.property z
   obtain ⟨a, ha⟩ := v.normalizedValuation_surjective K c
   refine ⟨finiteNormClass A K.field L hLK a, ?_⟩
-  rw [v.unramifiedNormQuotientValuation_finiteNormClass]
+  simp
   change v.valueModulo n E.degree.property
       (v.valuationAt K a) = z
   rw [ha]
   exact hc
 
+end
+
+section
+
+variable (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
+    (K : FiniteAbstractField G) (L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+    [hnormal : (extensionSubgroup K.field L hLK).Normal]
+
+include hAxiom in
 /-- The unit argument: modulo valuation, the unit-cohomology axiom makes the
 remaining unit an actual norm. -/
 theorem unramifiedNormQuotientValuation_injective
-    (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
     [hfinite : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
@@ -328,15 +291,12 @@ theorem unramifiedNormQuotientValuation_injective
         _ = (((n • z : v.valueGroup)) : ZHat) := rfl
     let u : v.unitAddSubgroup K :=
       ⟨a - normb, by
-        rw [v.mem_unitAddSubgroup_iff, map_sub, haz, hnormb, sub_self]⟩
+        simp_all [v.mem_unitAddSubgroup_iff]⟩
     let KR := K.toFiniteResidueAbstractField D
     let : (extensionSubgroup KR.field L hLK).Normal := by
-      change (extensionSubgroup K.field L hLK).Normal
       exact hnormal
     let : Finite
         (KR.field.toSubgroup ⧸ extensionSubgroup KR.field L hLK) := by
-      change Finite
-        (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)
       exact hfinite
     obtain ⟨g, hg⟩ :=
       D.exists_quotient_generator_of_unramified
@@ -352,11 +312,7 @@ theorem unramifiedNormQuotientValuation_injective
         generator := g
         generates := hg
         unramified := hUnramified }
-    have hzero :
-        CategoryTheory.Limits.IsZero
-            (tateCohomology (Euc.unitRepresentation v) 0) ∧
-          CategoryTheory.Limits.IsZero
-            (tateCohomology (Euc.unitRepresentation v) (-1)) :=
+    have hzero :=
       hAxiom K Euc
     obtain ⟨ε, hε⟩ :=
       v.exists_unit_relativeNorm_eq_of_tateHZero_isZero
@@ -373,15 +329,11 @@ theorem unramifiedNormQuotientValuation_injective
   intro x y hxy
   apply sub_eq_zero.mp
   apply hkernel
-  rw [map_sub, hxy, sub_self]
+  simp [hxy]
 
 /-- **the unramified norm-quotient equivalence (valuation part).**  For finite unramified `L / K`,
 valuation induces `A_K / N_{L/K}A_L ≃ ℤ/[L:K]ℤ`. -/
 def unramifiedReciprocity_valuationEquiv
-    (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
     [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
       (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
@@ -392,6 +344,8 @@ def unramifiedReciprocity_valuationEquiv
     ⟨v.unramifiedNormQuotientValuation_injective hAxiom K L hLK
         hUnramified,
       v.unramifiedNormQuotientValuation_surjective K L hLK hUnramified⟩
+
+end
 
 /-- A prime class has exact additive order `[L : K]` in an unramified
 norm quotient.  The lower bound is read after reduction in `ℤ̂/nℤ̂`; the
@@ -410,13 +364,11 @@ theorem primeClass_addOrderOf
   let E := FiniteAbstractFieldExtension.ofInclusion L K hLK
   let n := (E.degree : ℕ)
   have hUn : E.IsUnramified D := by
-    change (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D
     exact hUnramified
-  let g : FiniteNormQuotient A K.field L hLK :=
+  let g :=
     finiteNormClass A K.field L hLK π
-  have hn : 0 < n := E.degree.property
+  have hn := E.degree.property
   have hng : n • g = 0 := by
-    change n • finiteNormClass A K.field L hLK π = 0
     rw [← finiteNormClass_nsmul]
     apply (finiteNormClass_eq_zero_iff A K.field L hLK _).2
     refine ⟨fixedFieldInclusion A K.field L hLK π, ?_⟩
@@ -444,16 +396,14 @@ theorem primeClass_addOrderOf
               v.valueGroup) : ZHat) := htower
         _ = ((v.valuationAt K (m • π) : v.valueGroup) : ZHat) := by
           rw [hb]
-        _ = m • ((v.valuationAt K π : v.valueGroup) : ZHat) := by
-          exact congrArg Subtype.val (map_nsmul (v.valuationAt K) m π)
+        _ = m • ((v.valuationAt K π : v.valueGroup) : ZHat) := congrArg Subtype.val (map_nsmul (v.valuationAt K) m π)
         _ = m • (1 : ZHat) := by rw [hπ, v.oneValue_coe]
-    have hred := congrArg (fun z : ZHat => zHatReduction n hn z) hval
     have hredOne : zHatReduction n hn (1 : ZHat) = 1 := rfl
     have hred' :
         n • zHatReduction n hn
             ((v.valuationAt E.field b : v.valueGroup) : ZHat) =
           m • (1 : ZMod n) := by
-      simpa only [map_nsmul, hredOne] using hred
+      simpa only [map_nsmul, hredOne] using (congrArg (fun z : ZHat => zHatReduction n hn z) hval)
     have hmzero : (m : ZMod n) = 0 := by
       have hmzero' : m • (1 : ZMod n) = 0 := by
         rw [← hred']
@@ -481,12 +431,11 @@ theorem primeClass_zmultiples_eq_top
   let E := FiniteAbstractFieldExtension.ofInclusion L K hLK
   let : NeZero (E.degree : ℕ) :=
     ⟨E.degree.property.ne'⟩
-  let : Finite (FiniteNormQuotient A K.field L hLK) :=
+  let :=
     Finite.of_equiv (ZMod (E.degree : ℕ)) (by
-      simpa [E] using e.symm.toEquiv)
+      exact e.symm.toEquiv)
   apply AddSubgroup.eq_top_of_card_eq
-  rw [Nat.card_zmultiples,
-    v.primeClass_addOrderOf K L hLK hUnramified π hπ]
+  simp [v.primeClass_addOrderOf K L hLK hUnramified π hπ]
   exact ((Nat.card_congr e.toEquiv).trans (Nat.card_zmod _)).symm
 
 end ValuationData

@@ -31,8 +31,6 @@ theorem actualRootAction_cube_rescale (P : Polarization S.heisenberg)
     rw [KPPGLLocalCover.A_mul, hb, one_pow, map_one, one_mul, mul_pow]
   unfold actualRootAction
   rw [ht, map_mul]
-  change actualRootAction F ζ hζ q S P ε s (u ^ 3)
-    (actualRootAction F ζ hζ q S P ε s v V) = _
   exact actualRootAction_cube F ζ hζ q S P ε s u _
 
 end DedekindZetaZeroFree.KPRankOneShellRepair

@@ -22,24 +22,20 @@ private theorem coprime_of_residue_unit {R : Type*} [CommRing R]
     exact sub_self _
   have hmem : x * y - 1 ∈ M := Ideal.Quotient.eq_zero_iff_mem.mp hxy
   apply (Ideal.eq_top_iff_one _).mpr
-  have hxmem : x * y ∈ Ideal.span {x} :=
-    Ideal.mul_mem_right y _ (Ideal.subset_span (Set.mem_singleton x))
-  have hm1 : x * y ∈ Ideal.span {x} ⊔ M :=
-    (show Ideal.span {x} ≤ Ideal.span {x} ⊔ M from le_sup_left) hxmem
   have hm2 : x * y - 1 ∈ Ideal.span {x} ⊔ M :=
     (show M ≤ Ideal.span {x} ⊔ M from le_sup_right) hmem
-  have := (Ideal.span {x} ⊔ M).sub_mem hm1 hm2
-  simpa only [sub_sub_cancel] using this
+  have := (Ideal.span {x} ⊔ M).sub_mem ((show Ideal.span {x} ≤ Ideal.span {x} ⊔ M from le_sup_left) (Ideal.mul_mem_right y _ (Ideal.subset_span (Set.mem_singleton x)))) hm2
+  simpa using this
 
-private theorem extended_sup_ne_top (A : SArithmeticData F) (I J : A.Exterior)
+variable (A : SArithmeticData F)
+
+private theorem extended_sup_ne_top (I J : A.Exterior)
     (h : I.val ⊔ J.val ≠ ⊤) : A.extendIdeal I ⊔ A.extendIdeal J ≠ ⊤ := by
   let K : A.Exterior := ⟨I.val ⊔ J.val, by
     constructor
     · intro he
-      have hl : I.val ≤ (⊥ : Ideal (𝓞 F)) := le_sup_left.trans he.le
-      exact I.property.1 (le_bot_iff.mp hl)
-    · apply top_unique
-      exact I.property.2.ge.trans (sup_le_sup_right le_sup_left _)⟩
+      exact I.property.1 (le_bot_iff.mp (le_sup_left.trans he.le))
+    · grind⟩
   have hcon : (A.extendIdeal K).comap (algebraMap (𝓞 F) A.R) ≤ K.val := by
     intro x hx
     apply Ideal.Quotient.eq_zero_iff_mem.mp
@@ -52,7 +48,7 @@ private theorem extended_sup_ne_top (A : SArithmeticData F) (I J : A.Exterior)
   rw [hk, Ideal.comap_top] at hcon
   exact h (top_unique hcon)
 
-theorem actual_sextic_noncoprime_vanishing (A : SArithmeticData F)
+theorem actual_sextic_noncoprime_vanishing
     (I J : A.Exterior) (a b : A.R) (ha : A.Generates I a) (hb : A.Generates J b)
     (h : I.val ⊔ J.val ≠ ⊤) :
     A.sexticResidue I b = 0 ∧ A.sexticResidue J a = 0 := by
@@ -69,7 +65,7 @@ theorem actual_sextic_noncoprime_vanishing (A : SArithmeticData F)
     rw [← ha.2]
     exact coprime_of_residue_unit _ _ hunit
 
-theorem actual_sextic_unit_twisted_of_coprime_law (A : SArithmeticData F)
+theorem actual_sextic_unit_twisted_of_coprime_law
     (B : Subgroup A.V)
     (hrec : ∀ (I J : A.Exterior) (a b : A.R) (ua ub : Fˣ),
       A.Generates I a → A.Generates J b →
@@ -84,7 +80,7 @@ theorem actual_sextic_unit_twisted_of_coprime_law (A : SArithmeticData F)
       A.sexticResidue I (A.unitEquiv ε : A.R) * A.sexticResidue J a := by
   have he : A.sexticResidue I b = A.sexticResidue J a := by
     by_cases hc : I.val ⊔ J.val = ⊤
-    · exact hrec I J a b ua ub ha hb hua hub hBa hBb hc
+    · apply hrec <;> assumption
     · obtain ⟨hi, hj⟩ := actual_sextic_noncoprime_vanishing A I J a b ha hb hc
       exact hi.trans hj.symm
   change MulChar.ofUnitHom (A.sexticResidueFamily I)
@@ -93,7 +89,7 @@ theorem actual_sextic_unit_twisted_of_coprime_law (A : SArithmeticData F)
   change A.sexticResidue I (A.unitEquiv ε : A.R) * A.sexticResidue I b = _
   rw [he]
 
-theorem actual_hilbert_sextic_reciprocity (A : SArithmeticData F)
+theorem actual_hilbert_sextic_reciprocity
     (H : A.V → A.V → Fˣ) (B : Subgroup A.V)
     (hActual : ∀ x y : A.G,
       H (QuotientGroup.mk' A.sixthPowers x) (QuotientGroup.mk' A.sixthPowers y) =
@@ -109,8 +105,7 @@ theorem actual_hilbert_sextic_reciprocity (A : SArithmeticData F)
     have hH : (A.H_S (A.diagonal ua) (A.diagonal ub) : Fˣ) = 1 := by
       rw [← hActual]
       exact hB.2.1 (A.sClass ua) hBa (A.sClass ub) hBb
-    have hr := actual_sextic_coprime_reciprocity A I J a b ua ub ha hb hua hub hc
-    simpa only [Subgroup.coe_inv, hH, inv_one, Units.val_one, one_mul] using hr
+    simpa only [Subgroup.coe_inv, hH, inv_one, Units.val_one, one_mul] using (actual_sextic_coprime_reciprocity A I J a b ua ub ha hb hua hub hc)
   refine ⟨hrec, ?_, ?_, actual_sextic_noncoprime_vanishing A⟩
   · intro I a ua ε ha hua _
     rw [actual_sextic_sunit_symbol A I a ua ε ha hua]

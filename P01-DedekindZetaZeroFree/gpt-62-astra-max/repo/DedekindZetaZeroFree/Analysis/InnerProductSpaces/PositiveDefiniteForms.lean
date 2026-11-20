@@ -47,7 +47,6 @@ theorem exists_continuousLinearEquiv_inner_map_map (S : V →L[𝕜] V)
 
   set w : Fin n → 𝕜 := fun i ↦ ((Real.sqrt (lam i))⁻¹ : ℝ) with hwdef
   have hw : ∀ i, IsUnit (w i) := fun i ↦ by
-    refine isUnit_iff_ne_zero.mpr ?_
     simp [hwdef, Real.sqrt_eq_zero', (hlam i).not_ge]
   set el : V ≃ₗ[𝕜] V := b.toBasis.equiv (b.toBasis.isUnitSMul hw) (Equiv.refl (Fin n)) with heldef
   set e : V ≃L[𝕜] V := el.toContinuousLinearEquiv with hedef
@@ -59,7 +58,7 @@ theorem exists_continuousLinearEquiv_inner_map_map (S : V →L[𝕜] V)
     rw [he i, he j, map_smul, hSb i, smul_smul, inner_smul_left, inner_smul_right, hbb i j]
     rcases eq_or_ne i j with rfl | hij
     · have hr : ((Real.sqrt (lam i))⁻¹ * lam i * (Real.sqrt (lam i))⁻¹ : ℝ) = 1 := by
-        have hne : Real.sqrt (lam i) ≠ 0 := (Real.sqrt_pos.mpr (hlam i)).ne'
+        have hne := (Real.sqrt_pos.mpr (hlam i)).ne'
         field_simp
         exact (Real.sq_sqrt (hlam i).le).symm
       rw [ite_eq_left rfl, mul_one, hwdef, ← RCLike.ofReal_mul, conj_ofReal, ← RCLike.ofReal_mul,

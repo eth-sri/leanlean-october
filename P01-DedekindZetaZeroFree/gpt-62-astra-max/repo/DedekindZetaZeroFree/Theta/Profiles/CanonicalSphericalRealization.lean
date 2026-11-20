@@ -13,17 +13,17 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages MomentSources ThetaExpansion TensorActionSource
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 local notation "V" => RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C)
 
 variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 
 variable
     (hR : RootAligned R) (N : TraceHaarTransport R) (hC : C.exceptional = R.A.Sf)
@@ -53,8 +53,7 @@ def canonicalStage08 : JointExteriorCoefficientSources R N :=
 set_option quotPrecheck false
 local notation "A8" => canonicalStage08 R P C μ hμ  hR N hC u hspherical hx
 
-theorem canonicalStage08_native : SourceNativeLie R (A8).factorization := by
-  exact canonicalCovariantNative_native R P C μ hμ  hR N hC u hspherical hx
+theorem canonicalStage08_native : SourceNativeLie R (A8).factorization := canonicalCovariantNative_native R P C μ hμ hR N hC u hspherical hx
 
 theorem canonical_spherical_transport : Nonempty (SphericalTransportData R (A8)) := by
   let D := (DL).factorization
@@ -80,11 +79,9 @@ theorem canonical_spherical_transport : Nonempty (SphericalTransportData R (A8))
   obtain ⟨Q0,T0,hT0⟩ := hQ
   refine ⟨{ tensor := K
             localForm := L
-            restriction := hr
             whittaker := fun w=>traceWhittaker_actual (R:=R) w (L w) (hL w)
             seed_nonzero := hn
             period_nonzero := prepared_spherical_period_ne_zero D K L hr hn
-            source_detected := factorization_source_detected D
             arch_product := ?_
             core_generated := core_spherical_generated_of_realization D K
               (canonicalStage08_native R P C μ hμ  hR N hC u hspherical hx) T0 hT0 }⟩

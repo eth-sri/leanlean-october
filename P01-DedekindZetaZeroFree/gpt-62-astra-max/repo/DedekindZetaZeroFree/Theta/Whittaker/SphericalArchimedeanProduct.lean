@@ -11,13 +11,13 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ComplexLines
 open LiteralSource MomentSources HCGeneration TensorActionSource KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 local notation "H" => actualImageData R P C μ hμ
 local notation "W" => actualLocal R H
 local notation "E" => bad R.A P C
@@ -54,7 +54,6 @@ theorem actual_spherical_arch_product (N : TraceHaarTransport R)
   apply Finset.prod_congr rfl
   intro w _
   rw [diagonal_standard_action]
-  change (L w (imageAction traceFrequency _ sphericalSeed)/L w sphericalSeed)*L w sphericalSeed=_
   exact div_mul_cancel₀ _ (hn w)
 end DedekindZetaZeroFree.FourierContinuation.ComplexLines
 

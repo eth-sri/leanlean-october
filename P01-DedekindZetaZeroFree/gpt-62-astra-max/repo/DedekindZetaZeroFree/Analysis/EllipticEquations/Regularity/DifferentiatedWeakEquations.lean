@@ -13,15 +13,17 @@ open MeasureTheory KPContLocalNorm
 namespace Raw
 open KPContLocalEnergy.SobolevEnergyEstimates.Raw
 
-def SmoothNearClosedBall {n : ℕ} {outer : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients outer cρ Cρ κ Λ) : Prop :=
+section
+
+variable {n : ℕ} {outer : LocalBall n} {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ)
+
+def SmoothNearClosedBall : Prop :=
   ∃ U : Set (Space n), IsOpen U ∧
     Metric.closedBall outer.center outer.radius ⊆ U ∧
     ContDiffOn ℝ (⊤ : ℕ∞) D.density U ∧
     ∀ i j : Fin n, ContDiffOn ℝ (⊤ : ℕ∞) (fun x => D.matrix x i j) U
 
-def BoundedCoefficientDerivatives {n : ℕ} {outer : LocalBall n}
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ)
+def BoundedCoefficientDerivatives
     (k : ℕ) (L : ℝ) : Prop :=
   ∀ α : MultiIndex n k, ∀ x ∈ outer.carrier,
     ‖coordinateDerivative α (fun y => (D.density y : ℂ)) x‖ ≤ L ∧
@@ -29,13 +31,16 @@ def BoundedCoefficientDerivatives {n : ℕ} {outer : LocalBall n}
       ‖coordinateDerivative α
         (fun y => ((D.density y * D.matrix y i j : ℝ) : ℂ)) x‖ ≤ L
 
+end
+
 def functionSobolevNorm {n : ℕ} (B : LocalBall n) (r : ℕ)
     (h : Space n → ℂ) : ℝ :=
   Real.sqrt (∑ α : MultiIndex n r, (functionL2Norm B (coordinateDerivative α h)) ^ 2)
 
-def WeakIntegerEstimate {n : ℕ} (inner outer : LocalBall n)
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ)
-    (r : ℕ) (M C : ℝ) : Prop :=
+variable {n : ℕ} (inner outer : LocalBall n) {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ) (r : ℕ)
+    (M C : ℝ)
+
+def WeakIntegerEstimate : Prop :=
   ∀ z : ℂ, ‖z‖ ≤ M →
     ∀ (u : IntegerSobolev outer 1) (h : IntegerSobolev outer r),
       WeakEquation D z u (value h) →
@@ -43,9 +48,7 @@ def WeakIntegerEstimate {n : ℕ} (inner outer : LocalBall n)
         Represents v (fun x => value u x) ∧
         v.sobolevNorm ≤ C * (‖value u‖ + h.sobolevNorm)
 
-def SmoothSourceIntegerEstimate {n : ℕ} (inner outer : LocalBall n)
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ)
-    (r : ℕ) (M C : ℝ) : Prop :=
+def SmoothSourceIntegerEstimate : Prop :=
   ∀ z : ℂ, ‖z‖ ≤ M →
     ∀ (u : IntegerSobolev outer 1) (h : Space n → ℂ)
       (U : Set (Space n)), IsOpen U →
@@ -57,9 +60,7 @@ def SmoothSourceIntegerEstimate {n : ℕ} (inner outer : LocalBall n)
           Represents v (fun x => value u x) ∧
           v.sobolevNorm ≤ C * (‖value u‖ + functionSobolevNorm outer r h)
 
-def SmoothIntegerEstimate {n : ℕ} (inner outer : LocalBall n)
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ)
-    (r : ℕ) (M C : ℝ) : Prop :=
+def SmoothIntegerEstimate : Prop :=
   ∀ z : ℂ, ‖z‖ ≤ M →
     ∀ (u h : Space n → ℂ) (U : Set (Space n)), IsOpen U →
       Metric.closedBall outer.center outer.radius ⊆ U →
@@ -148,7 +149,7 @@ theorem restrict_weak_equation {n : ℕ} {inner outer : LocalBall n}
     · symm
       apply setIntegral_eq_of_subset_of_forall_sdiff_eq_zero Metric.isOpen_ball.measurableSet hsub
       intro x hx
-      have hz : φ x = 0 := image_eq_zero_of_notMem_tsupport (fun hm => hx.2 (φ.tsupport_subset hm))
+      have hz := image_eq_zero_of_notMem_tsupport (fun hm => hx.2 (φ.tsupport_subset hm))
       simp [hz]
   rw [hi, h0 h]
   change (∫ x in outer.carrier, _) - z * (∫ x in inner.carrier,
@@ -158,17 +159,23 @@ theorem restrict_weak_equation {n : ℕ} {inner outer : LocalBall n}
 
 abbrev Counts (n : ℕ) := Fin n → ℕ
 
-def counts {n k : ℕ} (α : MultiIndex n k) : Counts n := fun i => (α.val i).val
+section
 
-def indexOfCounts {n k : ℕ} (γ : Counts n) (hγ : (∑ i, γ i) ≤ k) : MultiIndex n k :=
+variable {n k : ℕ}
+
+def counts (α : MultiIndex n k) : Counts n := fun i => (α.val i).val
+
+def indexOfCounts (γ : Counts n) (hγ : (∑ i, γ i) ≤ k) : MultiIndex n k :=
   ⟨fun i => ⟨γ i, by
-      have hi : γ i ≤ ∑ j, γ j :=
+      have hi :=
         Finset.single_le_sum (fun j _ => Nat.zero_le (γ j)) (Finset.mem_univ i)
       omega⟩, hγ⟩
 
-def jet {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k)
+def jet {B : LocalBall n} (u : IntegerSobolev B k)
     (γ : Counts n) : BallL2 B :=
   if hγ : (∑ i, γ i) ≤ k then u.derivatives (indexOfCounts γ hγ) else 0
+
+end
 
 def coefficientJet {n : ℕ} (γ : Counts n) (f : Space n → ℂ) : Space n → ℂ :=
   coordinateDerivativeList ((List.finRange n).flatMap (fun i => List.replicate (γ i) i)) f
@@ -185,7 +192,7 @@ def commutatorSource {n r : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
   classical
   let below := Finset.univ.filter (fun β : MultiIndex n r => ∀ i, counts β i ≤ counts α i)
   let positive := below.filter (fun β => 0 < β.degree)
-  let ρ : Space n → ℂ := fun x => (D.density x : ℂ)
+  let ρ := fun x => (D.density x : ℂ)
   let b (i j : Fin n) : Space n → ℂ := fun x => ((D.density x * D.matrix x i j : ℝ) : ℂ)
   exact fun x => (ρ x)⁻¹ *
     ((∑ β ∈ below, (multiChoose α β : ℂ) * coefficientJet (counts β) ρ x *
@@ -200,42 +207,16 @@ def commutatorSource {n r : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
 
 open KPContLocalEnergy.SobolevEnergyEstimates.Raw
 
- theorem list_smooth {n : ℕ} (l : List (Fin n)) {f : Space n → ℂ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞) (coordinateDerivativeList l f) := by
-  induction l with
-  | nil => exact hf
-  | cons i l ih => exact (ih.fderiv_right (by simp)).clm_apply contDiff_const
+ alias list_smooth := DedekindZetaZeroFree.WeakJets.Raw.list_smooth
 
-private theorem list_perm {n : ℕ} {l k : List (Fin n)} (hp : l.Perm k)
-    {f : Space n → ℂ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    coordinateDerivativeList l f = coordinateDerivativeList k f := by
-  induction hp with
-  | nil => rfl
-  | cons i hp ih => simp only [coordinateDerivativeList, ih]
-  | swap i j l =>
-    have hs := list_smooth l hf
-    funext x
-    simp only [coordinateDerivativeList]
-    have hd : Differentiable ℝ (fderiv ℝ (coordinateDerivativeList l f)) :=
-      (hs.fderiv_right (m := (1 : ℕ∞)) (by simp)).differentiable (by norm_num)
-    simpa [fderiv_clm_apply (hd x) (differentiableAt_const _)] using
-      (hs.contDiffAt (x := x) |>.isSymmSndFDerivAt (by simp)).eq
-        (EuclideanSpace.single j 1) (EuclideanSpace.single i 1)
-  | trans hp hq ih ij => exact ih.trans ij
+private alias list_perm := DedekindZetaZeroFree.WeakJets.Raw.MultiIndexLeibnizRule.list_perm
 
 private theorem list_append {n : ℕ} (l k : List (Fin n)) (f : Space n → ℂ) :
     coordinateDerivativeList (l ++ k) f =
-      coordinateDerivativeList l (coordinateDerivativeList k f) := by
-  induction l with
-  | nil => rfl
-  | cons i l ih => simp only [List.cons_append, coordinateDerivativeList, ih]
+      coordinateDerivativeList l (coordinateDerivativeList k f) := by apply @DedekindZetaZeroFree.KPContLocalNorm.CompactOpenHolomorphyAndMeromorphy.list_append <;> assumption
 
 private theorem directions_count {n k : ℕ} (α : MultiIndex n k) (i : Fin n) :
-    α.directions.count i = counts α i := by
-  rw [MultiIndex.directions, List.count_flatMap,
-    ← List.sum_toFinset _ (List.nodup_finRange n)]
-  simp [Function.comp_def, List.count_replicate, counts]
+    α.directions.count i = counts α i := by apply @DedekindZetaZeroFree.WeakJets.Raw.MultiIndexLeibnizRule.directions_count <;> assumption
 
 private theorem counts_index {n k : ℕ} (γ : Counts n) (hγ : (∑ i, γ i) ≤ k) :
     counts (indexOfCounts γ hγ) = γ := rfl
@@ -244,12 +225,7 @@ private theorem coordinate_add {n a b k : ℕ} (α : MultiIndex n a) (β : Multi
     (hab : (∑ i, (counts α + counts β) i) ≤ k) {f : Space n → ℂ}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     coordinateDerivative α (coordinateDerivative β f) =
-      coordinateDerivative (indexOfCounts (counts α + counts β) hab) f := by
-  rw [coordinateDerivative, coordinateDerivative, ← list_append]
-  apply list_perm _ hf
-  apply List.perm_iff_count.mpr
-  intro i
-  simp only [List.count_append, directions_count, counts_index, Pi.add_apply]
+      coordinateDerivative (indexOfCounts (counts α + counts β) hab) f := by apply @DedekindZetaZeroFree.WeakJets.Raw.MultiIndexLeibnizRule.coordinate_add <;> assumption
 
  def derivativeTest {n k : ℕ} {B : LocalBall n} (α : MultiIndex n k)
     (φ : TestFunction B.toOpens ℂ ⊤) : TestFunction B.toOpens ℂ ⊤ :=
@@ -262,34 +238,7 @@ private theorem coordinate_add {n a b k : ℕ} (α : MultiIndex n a) (β : Multi
     (u : IntegerSobolev B k) (α : MultiIndex n a) (β : MultiIndex n b)
     (ha : (∑ i, counts α i) ≤ k)
     (hab : (∑ i, (counts α + counts β) i) ≤ k) :
-    IsWeakDerivative B β (jet u (counts α)) (jet u (counts α + counts β)) := by
-  intro φ
-  let A := indexOfCounts (counts α) ha
-  let AB := indexOfCounts (counts α + counts β) hab
-  have h₁ := u.weak_derivatives A (derivativeTest β φ)
-  have h₂ := u.weak_derivatives AB φ
-  have hcomp : coordinateDerivative A (coordinateDerivative β (fun y => φ y)) =
-      coordinateDerivative AB (fun y => φ y) := by
-    exact coordinate_add A β hab φ.contDiff
-  change (∫ x in B.carrier, u.derivatives (KPContLocalEnergy.SobolevEnergyEstimates.Raw.zeroIndex n k) x *
-    coordinateDerivative A (coordinateDerivative β (fun y => φ y)) x) =
-    (-1 : ℂ) ^ A.degree *
-      (∫ x in B.carrier, u.derivatives A x * coordinateDerivative β (fun y => φ y) x) at h₁
-  rw [hcomp] at h₁
-  change (∫ x in B.carrier, u.derivatives (KPContLocalEnergy.SobolevEnergyEstimates.Raw.zeroIndex n k) x *
-    coordinateDerivative AB (fun y => φ y) x) =
-    (-1 : ℂ) ^ AB.degree * (∫ x in B.carrier, u.derivatives AB x * φ x) at h₂
-  rw [h₂] at h₁
-  have hdeg : AB.degree = A.degree + β.degree := by
-    change (∑ i, (counts α + counts β) i) = (∑ i, counts α i) + (∑ i, counts β i)
-    exact Finset.sum_add_distrib
-  rw [hdeg, pow_add] at h₁
-  have hne : (-1 : ℂ) ^ A.degree ≠ 0 := pow_ne_zero _ (by norm_num)
-  change (∫ x in B.carrier, jet u (counts α) x * coordinateDerivative β (fun y => φ y) x) =
-    (-1 : ℂ) ^ β.degree * (∫ x in B.carrier, jet u (counts α + counts β) x * φ x)
-  simp only [jet, dif_pos ha, dif_pos hab]
-  apply (mul_left_cancel₀ hne)
-  simpa only [mul_assoc] using h₁.symm
+    IsWeakDerivative B β (jet u (counts α)) (jet u (counts α + counts β)) := by apply @DedekindZetaZeroFree.WeakJets.Raw.jet_weak_derivative <;> assumption
 
 theorem shifted_jet_sobolev {n r : ℕ} {B : LocalBall n}
     (u : IntegerSobolev B (r + 1)) (α : MultiIndex n r) :
@@ -298,26 +247,23 @@ theorem shifted_jet_sobolev {n r : ℕ} {B : LocalBall n}
   have hab (δ : MultiIndex n 1) : (∑ i, (counts α + counts δ) i) ≤ r + 1 := by
     simpa only [Pi.add_apply, Finset.sum_add_distrib, counts] using
       Nat.add_le_add α.property δ.property
-  have ha : (∑ i, counts α i) ≤ r + 1 := α.property.trans (Nat.le_succ r)
   have hz : counts (KPContLocalEnergy.SobolevEnergyEstimates.Raw.zeroIndex n 1) = 0 := rfl
   refine ⟨⟨fun δ => jet u (counts α + counts δ), ?_⟩, fun _ => rfl⟩
   intro δ
   change IsWeakDerivative B δ (jet u (counts α + counts (KPContLocalEnergy.SobolevEnergyEstimates.Raw.zeroIndex n 1))) _
   rw [hz, add_zero]
-  exact jet_weak_derivative u α δ ha (hab δ)
+  exact jet_weak_derivative u α δ (α.property.trans (Nat.le_succ r)) (hab δ)
 
 private theorem counts_zero {n k : ℕ} :
     counts (KPContLocalEnergy.SobolevEnergyEstimates.Raw.zeroIndex n k) = 0 := rfl
 
 private theorem counts_first {n : ℕ} (i : Fin n) :
-    counts (KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex i) = unitCount i := by
-  classical
-  funext j
-  by_cases hji : j = i <;> simp [counts, KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex, unitCount, hji]
+    counts (KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex i) = unitCount i := by apply @DedekindZetaZeroFree.WeakJets.Raw.MultiIndexLeibnizRule.counts_first <;> assumption
 
-theorem differentiated_weak_equation_of_jet_pairing {n r : ℕ} {B : LocalBall n}
-    {cρ Cρ κ Λ : ℝ}
-    (D : KPContLocalEnergy.SobolevEnergyEstimates.Raw.Coefficients B cρ Cρ κ Λ) (z : ℂ)
+variable {n r : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
+    (D : KPContLocalEnergy.SobolevEnergyEstimates.Raw.Coefficients B cρ Cρ κ Λ)
+
+theorem differentiated_weak_equation_of_jet_pairing (z : ℂ)
     (u : IntegerSobolev B (r + 1)) (h : IntegerSobolev B r)
     (α : MultiIndex n r)
     (hg : MemLp (commutatorSource D z u h α) 2 (volume.restrict B.carrier))
@@ -342,19 +288,13 @@ theorem differentiated_weak_equation_of_jet_pairing {n r : ℕ} {B : LocalBall n
   have hvalue : KPContLocalEnergy.SobolevEnergyEstimates.Raw.value w = jet u (counts α) := by
     simpa only [KPContLocalEnergy.SobolevEnergyEstimates.Raw.value, counts_zero, add_zero] using
       hw (KPContLocalEnergy.SobolevEnergyEstimates.Raw.zeroIndex n 1)
-  change (∫ x in B.carrier, (D.density x : ℂ) *
-      ∑ i, ∑ j, (D.matrix x i j : ℂ) * KPContLocalEnergy.SobolevEnergyEstimates.Raw.gradient w j x *
-        star (coordinateDerivativeList [i] (fun y => φ y) x)) -
-      z * (∫ x in B.carrier, (D.density x : ℂ) * KPContLocalEnergy.SobolevEnergyEstimates.Raw.value w x * star (φ x)) = _
   simp only [hgrad, hvalue]
   rw [hpair φ]
   apply integral_congr_ae
   filter_upwards [hg.coeFn_toLp] with x hx
   rw [hx]
 
-theorem differentiated_weak_equation {n r : ℕ} {B : LocalBall n}
-    {cρ Cρ κ Λ : ℝ}
-    (D : KPContLocalEnergy.SobolevEnergyEstimates.Raw.Coefficients B cρ Cρ κ Λ)
+theorem differentiated_weak_equation
     (hcρ : 0 < cρ) (z : ℂ)
     (u₁ : IntegerSobolev B 1) (u : IntegerSobolev B (r + 1))
     (h : IntegerSobolev B r)

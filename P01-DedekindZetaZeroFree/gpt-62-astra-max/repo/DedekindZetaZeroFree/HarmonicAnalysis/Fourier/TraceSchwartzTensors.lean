@@ -29,13 +29,17 @@ local instance (F : Type) [Field F] [NumberField F]
           (InfinitePlace.not_isReal_iff_isComplex.mp v.2)).toHomeomorph)).trans
         (Homeomorph.piCongrLeft (Y := fun _ => ℂ)
           (Equiv.subtypeEquivRight (fun _ => InfinitePlace.not_isReal_iff_isComplex))))))
- def coord (F : Type) [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (𝓞 F))) :
+ section
+
+variable (F : Type) [Field F] [NumberField F]
+
+def coord (S : Finset (HeightOneSpectrum (𝓞 F))) :
     SLocalProduct F S ≃ₜ+ (mixedEmbedding.mixedSpace F × ((v : S) → v.val.adicCompletion F)) where
   toAddEquiv := ((InfiniteAdeleRing.ringEquiv_mixedSpace F).toAddEquiv).prodCongr (AddEquiv.refl _)
   continuous_toFun := ((mixedHomeo F).prodCongr (Homeomorph.refl _)).continuous
   continuous_invFun := ((mixedHomeo F).prodCongr (Homeomorph.refl _)).symm.continuous
 
-private theorem unique_fourier (F : Type) [Field F] [NumberField F]
+private theorem unique_fourier
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) [Unique S]
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (μ : (v : S) → Measure (v.val.adicCompletion F)) [∀ v, (μ v).IsAddHaarMeasure]
@@ -43,31 +47,8 @@ private theorem unique_fourier (F : Type) [Field F] [NumberField F]
     (φ : (default : S).val.adicCompletion F → ℂ) (hlocal : IsLocallyConstant φ)
     (hsupport : HasCompactSupport φ) :
     IsLocallyConstant (fun y => ∫ x, φ x * (e default (-x*y) : ℂ) ∂μ default) ∧
-    HasCompactSupport (fun y => ∫ x, φ x * (e default (-x*y) : ℂ) ∂μ default) := by
-  let h : PoissonFinite.Space F S ≃ₜ (default : S).val.adicCompletion F := Homeomorph.piUnique _
-  let Φ : PoissonFinite.Space F S → ℂ := φ ∘ h
-  have hΦlocal : IsLocallyConstant Φ := hlocal.comp_continuous h.continuous
-  have hΦsupport : HasCompactSupport Φ := hsupport.comp_homeomorph h
-  obtain ⟨U, hoU, hpU⟩ := PoissonFinite.BallExpansion.exists_open_phase_annihilator F S e he
-    (tsupport Φ) hΦsupport.isCompact
-  have hf := PoissonFinite.fourierIntegral_isLocallyConstant_of_open_phase F S e μ Φ U hoU
-    (fun u hu x hx => hpU u hu x (subset_tsupport Φ hx))
-  obtain ⟨V, hoV, hpV⟩ := PoissonFinite.BallExpansion.exists_open_period_subgroup F S Φ hΦlocal hΦsupport
-  letI : ∀ v : S, SigmaCompactSpace (v.val.adicCompletion F) :=
-    fun v => PoissonFinite.BallExpansion.finite_completion_sigmaCompact F v.val
-  have hg := PoissonFinite.fourierIntegral_hasCompactSupport_of_period F S e μ Φ V hpV
-    (PoissonFinite.BallExpansion.isCompact_phase_annihilator F S e he hne V hoV)
-  have heq : (PoissonFinite.fourierIntegral F S e μ Φ) ∘ h.symm =
-      (fun y => ∫ x, φ x * (e default (-x*y) : ℂ) ∂μ default) := by
-    funext y
-    unfold PoissonFinite.fourierIntegral
-    simp only [Function.comp_apply, Fintype.prod_unique]
-    exact (measurePreserving_piUnique μ).integral_comp
-      (MeasurableEquiv.piUnique _).measurableEmbedding
-      (fun x => φ x * (e default (-x*y) : ℂ))
-  rw [← heq]
-  exact ⟨hf.comp_continuous h.symm.continuous, hg.comp_homeomorph h.symm⟩
-private theorem local_fourier (F : Type) [Field F] [NumberField F]
+    HasCompactSupport (fun y => ∫ x, φ x * (e default (-x*y) : ℂ) ∂μ default) := by apply @DedekindZetaZeroFree.PoissonS.TensorTransformsAndLatticeSummability.unique_fourier <;> assumption
+private theorem local_fourier
     (v : HeightOneSpectrum (RingOfIntegers F))
     (e : AddChar (v.adicCompletion F) Circle)
     (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
@@ -75,41 +56,9 @@ private theorem local_fourier (F : Type) [Field F] [NumberField F]
     (φ : v.adicCompletion F → ℂ) (hlocal : IsLocallyConstant φ)
     (hsupport : HasCompactSupport φ) :
     IsLocallyConstant (fun y => ∫ x, φ x * (e (-x*y) : ℂ) ∂μ) ∧
-    HasCompactSupport (fun y => ∫ x, φ x * (e (-x*y) : ℂ) ∂μ) := by
-  let S : Finset (HeightOneSpectrum (RingOfIntegers F)) := {v}
-  letI : Unique S := ⟨⟨⟨v, Finset.mem_singleton_self v⟩⟩,
-    fun w => Subtype.ext (Finset.mem_singleton.mp w.property)⟩
-  have hw (w : S) : w.val = v := Finset.mem_singleton.mp w.property
-  let e' : (w : S) → AddChar (w.val.adicCompletion F) Circle :=
-    fun w => (hw w) ▸ e
-  let μ' : (w : S) → Measure (w.val.adicCompletion F) :=
-    fun w => (hw w) ▸ μ
-  let φ' : (default : S).val.adicCompletion F → ℂ := (hw default) ▸ φ
-  letI (w : S) : (μ' w).IsAddHaarMeasure := by
-    rcases w with ⟨w, hwm⟩
-    have h : w = v := Finset.mem_singleton.mp hwm
-    subst w
-    exact inferInstance
-  have he' (w : S) : Continuous (e' w) := by
-    rcases w with ⟨w, hwm⟩
-    have h : w = v := Finset.mem_singleton.mp hwm
-    subst w
-    exact he
-  have hne' (w : S) : ∃ x, e' w x ≠ 1 := by
-    rcases w with ⟨w, hwm⟩
-    have h : w = v := Finset.mem_singleton.mp hwm
-    subst w
-    exact hne
-  have hl : IsLocallyConstant φ' := by dsimp [φ']; cases hw default; exact hlocal
-  have hs : HasCompactSupport φ' := by dsimp [φ']; cases hw default; exact hsupport
-  have h := unique_fourier F S e' μ' he' hne' φ' hl hs
-  have hv : (default : S).val = v := rfl
-  change IsLocallyConstant (fun y : v.adicCompletion F =>
-    ∫ x, φ x * (e (-x*y) : ℂ) ∂μ) ∧
-    HasCompactSupport (fun y : v.adicCompletion F =>
-    ∫ x, φ x * (e (-x*y) : ℂ) ∂μ)
-  at h
-  exact h
+    HasCompactSupport (fun y => ∫ x, φ x * (e (-x*y) : ℂ) ∂μ) := by apply @DedekindZetaZeroFree.PoissonS.TensorTransformsAndLatticeSummability.local_fourier <;> assumption
+
+end
 
 private lemma archPhase_coordinates {F : Type} [Field F] [NumberField F]
     (x : InfiniteAdeleRing F) :
@@ -133,6 +82,8 @@ private lemma archPhase_coordinates {F : Type} [Field F] [NumberField F]
       (Equiv.subtypeEquivRight (fun _ => InfinitePlace.not_isReal_iff_isComplex))
     intro v
     rfl
+
+alias TraceSchwartzTensors.archPhase_coordinates := archPhase_coordinates
 
 private lemma local_schwartz_transforms
     (fR : SchwartzMap ℝ ℂ) (fC : SchwartzMap ℂ ℂ) :
@@ -166,6 +117,8 @@ private lemma local_schwartz_transforms
     filter_upwards with x
     congr 2
     ring
+
+alias TraceSchwartzTensors.local_schwartz_transforms := local_schwartz_transforms
 
 def IsSchwartzTensor (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (h : SLocalProduct F S → ℂ) : Prop :=

@@ -22,31 +22,25 @@ private theorem weighted_strip (G : ℂ → ℂ) (x a b : ℝ) (hx : 0 < x) (ha 
     (Real.continuous_const_rpow hx.ne').continuousOn
   let B := max B₀ 0
   have hB : 0 ≤ B := le_max_right _ _
-  have hpow : ∀ r ∈ Icc a b, x ^ r ≤ B := by
-    intro r hr
-    exact (le_abs_self _).trans ((hB₀ r hr).trans (le_max_left _ _))
-  have hhol : DifferentiableOn ℂ (fun s : ℂ => (x : ℂ) ^ s * G s) {s : ℂ | 1 < s.re} :=
+  have hpow : ∀ r ∈ Icc a b, x ^ r ≤ B := fun r hr => (le_abs_self _).trans ((hB₀ r hr).trans (le_max_left _ _))
+  have hhol :=
     (differentiableOn_id.const_cpow (Or.inl (ofReal_ne_zero.mpr hx.ne'))).mul hG
   have hopen : IsOpen {s : ℂ | 1 < s.re} := isOpen_lt continuous_const continuous_re
-  have hstrip : comparisonClosedStrip a b ⊆ {s : ℂ | 1 < s.re} := by
-    intro s hs
-    exact ha.trans_le hs.1
+  have hstrip : comparisonClosedStrip a b ⊆ {s : ℂ | 1 < s.re} := fun s hs => ha.trans_le hs.1
   have hbound : ∀ s ∈ comparisonClosedStrip a b,
       ‖(x : ℂ) ^ s * G s‖ ≤ (B * (2 * C)) * (1 + |s.im|) ^ (-2 : ℝ) := by
     intro s hs
-    have hg : ‖G s‖ ≤ C / (1 + s.im ^ 2) := by
-      simpa only [re_add_im] using hCb s.re hs s.im
-    have hp : ‖(x : ℂ) ^ s‖ ≤ B := by
-      rw [norm_cpow_eq_rpow_re_of_pos hx]
-      exact hpow s.re hs
     have hd : C / (1 + s.im ^ 2) ≤ (2 * C) * (1 + |s.im|) ^ (-2 : ℝ) := by
       rw [Real.rpow_neg (by positivity : 0 ≤ 1 + |s.im|), Real.rpow_two, ← div_eq_mul_inv]
       apply (div_le_div_iff₀ (by positivity) (by positivity)).mpr
       have habs : |s.im| ^ 2 = s.im ^ 2 := sq_abs _
       nlinarith [sq_nonneg (|s.im| - 1)]
     calc
-      ‖(x : ℂ) ^ s * G s‖ = ‖(x : ℂ) ^ s‖ * ‖G s‖ := norm_mul _ _
-      _ ≤ B * (C / (1 + s.im ^ 2)) := mul_le_mul hp hg (norm_nonneg _) hB
+      _ = ‖(x : ℂ) ^ s‖ * ‖G s‖ := norm_mul _ _
+      _ ≤ B * (C / (1 + s.im ^ 2)) := mul_le_mul (by
+        rw [norm_cpow_eq_rpow_re_of_pos hx]
+        exact hpow s.re hs) (by
+        simpa using hCb s.re hs s.im) (norm_nonneg _) hB
       _ ≤ B * ((2 * C) * (1 + |s.im|) ^ (-2 : ℝ)) := mul_le_mul_of_nonneg_left hd hB
       _ = _ := by ring
   exact ⟨verticalIntegral_eq_of_strip_decay a b (B * (2 * C)) _ _ hab (by positivity)
@@ -92,7 +86,6 @@ theorem mellin_gaussian_contour_shift
   obtain ⟨heqc, hi⟩ := weighted_strip G x a c hx ha hac hG (hdecay a c ha hac.le)
   constructor
   · rw [hinv x hx]
-    change mellinInv (-(2 : ℝ)) (fun z : ℂ => G (-z)) x = _
     rw [reflected_mellin, reflected_mellin, ← heq2, heqc]
   · simpa only [reflected_line, smul_eq_mul] using (hi c ⟨hac.le, le_rfl⟩).comp_neg
 

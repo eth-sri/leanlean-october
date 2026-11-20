@@ -19,16 +19,16 @@ local instance completionBorel (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-def scalarAction (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+variable (F : Type) [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+
+def scalarAction
     (a : F) (x : Space F S) : Space F S :=
   (PoissonArch.infiniteAdeleToSpace F
     ((algebraMap F (InfiniteAdeleRing F) a) *
       (PoissonArch.infiniteAdeleToSpace F).symm x.1),
     fun v => algebraMap F (v.val.adicCompletion F) a * x.2 v)
 
-def rawPhase (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+def rawPhase
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (x y : Space F S) : ℂ :=
   Complex.exp (2 * (Real.pi : ℂ) * Complex.I *

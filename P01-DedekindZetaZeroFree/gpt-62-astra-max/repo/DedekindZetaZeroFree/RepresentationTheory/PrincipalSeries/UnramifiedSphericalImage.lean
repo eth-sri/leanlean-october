@@ -26,7 +26,6 @@ def compactTorus (A : LocalBorelData (K := K) (G := G) T) (I : IwasawaData A) :
 structure UnramifiedCompactInducingData
     (A : LocalBorelData (K := K) (G := G) T)
     (P : Polarization T) (I : IwasawaData A) : Prop where
-  tame : (3 : 𝒪[K]) ∉ 𝓂[K]
   polarization_image : (compactTorus A I).map T.π = P.L
   character_trivial : ∀ u : compactTorus A I,
     ∀ hu : T.π (u : H) ∈ P.L, P.ωL ⟨(u : H), hu⟩ = 1
@@ -36,8 +35,7 @@ structure UnramifiedCompactInducingData
 private lemma orth_mem (P : Polarization T) (d : D)
     (hd : ∀ l ∈ P.L, T.pairing d l = 1) : d ∈ P.L := by
   have hsym (l : D) (hl : l ∈ P.L) : T.pairing l d = 1 := by
-    have hh := T.alternating (d * l)
-    simpa [map_mul, T.alternating, hd l hl] using hh
+    simpa [map_mul, T.alternating, hd l hl] using (T.alternating (d * l))
   let S : Set D := insert d (P.L : Set D)
   have hs (x : D) (hx : x ∈ S) (y : D) (hy : y ∈ S) : T.pairing x y = 1 := by
     rcases hx with rfl | hx <;> rcases hy with rfl | hy
@@ -57,7 +55,7 @@ private lemma orth_mem (P : Polarization T) (d : D)
     | one => simp
     | mul x z hx hz ihx ihz => simp [map_mul, ihx, ihz]
     | inv x hx ih => simp [map_inv, ih]
-  have he : Subgroup.closure S = P.L := P.maximal.2 _
+  have he := P.maximal.2 _
     (fun l hl => Subgroup.subset_closure (Set.mem_insert_of_mem d hl)) hc
   rw [← he]
   exact Subgroup.subset_closure (Set.mem_insert d _)
@@ -143,8 +141,7 @@ private lemma fixed_support (A : LocalBorelData (K := K) (G := G) T)
   apply Subtype.ext
   funext x
   by_cases hx : T.π x ∈ P.L
-  · have hh := v.property ⟨x, hx⟩ 1
-    simpa [baseVector, hx, mul_comm] using hh
+  · simpa [baseVector, hx, mul_comm] using (v.property ⟨x, hx⟩ 1)
   · have hz : v.val x = 0 := by
       by_contra hh
       exact hx (fixed_support A P I h v hv x hh)
@@ -207,8 +204,7 @@ theorem normalized_inducing_vector
     (P : Polarization T) (I : IwasawaData A)
     (φ : compactPicture A P I .plus)
     (hφ : φ ∈ compactLevel A P I .plus I.compact)
-    (k : I.compact.toOpenSubgroup) : φ.val k = φ.val 1 := by
-  exact hφ k 1 k (by simp)
+    (k : I.compact.toOpenSubgroup) : φ.val k = φ.val 1 := hφ k 1 k (by simp)
 
  lemma picture_fiber_fixed (A : LocalBorelData (K := K) (G := G) T)
     (P : Polarization T) (I : IwasawaData A)
@@ -216,7 +212,7 @@ theorem normalized_inducing_vector
     (hφ : φ ∈ compactLevel A P I .plus I.compact) :
     φ.val 1 ∈ fixedSubmodule (tau P) (compactTorus A I) := by
   intro j
-  have hj : (A.torus (j : H) : G) ∈ I.compact.toOpenSubgroup := j.property
+  have hj := j.property
   let k : I.compact.toOpenSubgroup := ⟨A.torus (j : H), hj⟩
   have hc := φ.property.1 (A.torus (j : H)) 1 k (by simp [k])
   rw [picture_constant A P I φ hφ k, action_compact A P I _ hj,
@@ -273,13 +269,12 @@ theorem normalized_plus_spherical_vector
       have he := section_equiv_one A P I cg
       rw [(compactSectionEquiv A P I).apply_symm_apply] at he
       exact he.symm
-    have hvg : cg.val.val 1 = v := hu _ ⟨picture_fiber_fixed A P I cg.val cg.property,
-      by rw [hev]; exact hg.2⟩
     have hc : cg = c := by
       apply Subtype.ext
       apply Subtype.ext
       funext k
-      rw [picture_constant A P I cg.val cg.property k, hvg]
+      rw [picture_constant A P I cg.val cg.property k, (hu _ ⟨picture_fiber_fixed A P I cg.val cg.property,
+        by rw [hev]; exact hg.2⟩)]
       rfl
     have he := congrArg (compactSectionEquiv A P I) hc
     rw [(compactSectionEquiv A P I).apply_symm_apply] at he

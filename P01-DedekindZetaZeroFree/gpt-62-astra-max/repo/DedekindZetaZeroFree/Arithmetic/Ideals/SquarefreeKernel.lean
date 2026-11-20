@@ -28,27 +28,15 @@ theorem canonical_kernel_extraction
     rw [hkernel]
     exact Finset.prod_ne_zero_iff.mpr fun p h =>
       (hp p (Multiset.mem_toFinset.mp (Finset.mem_filter.mp h).1)).ne_zero
-  have ht0 : t ≠ ⊥ := by
-    apply Finset.prod_ne_zero_iff.mpr
-    intro p h
-    exact pow_ne_zero _ (hp p (Multiset.mem_toFinset.mp h)).ne_zero
   have hnf : UniqueFactorizationMonoid.normalizedFactors (squarefreeKernel a) = S.val := by
     rw [hkernel, Finset.prod_eq_multiset_prod, Multiset.map_id']
     rw [UniqueFactorizationMonoid.normalizedFactors_prod_eq]
-    · simp only [normalize_eq, Multiset.map_id']
+    · simp
     · intro p h
       exact (hp p (Multiset.mem_toFinset.mp (Finset.mem_filter.mp h).1)).irreducible
-  have hsf : Squarefree (squarefreeKernel a) := by
-    apply (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors hk0).mpr
-    rw [hnf]
-    exact S.nodup
   have heq : a = squarefreeKernel a * t ^ 2 := by
     conv_lhs => rw [← Ideal.prod_normalizedFactors_eq_self ha, Finset.prod_multiset_count]
-    change (∏ p ∈ v.toFinset, p ^ v.count p) = squarefreeKernel a * t ^ 2
     rw [hkernel, Finset.prod_filter]
-    change (∏ p ∈ v.toFinset, p ^ v.count p) =
-      (∏ p ∈ v.toFinset, if v.count p % 2 = 1 then p else 1) *
-        (∏ p ∈ v.toFinset, p ^ (v.count p / 2)) ^ 2
     rw [← Finset.prod_pow, ← Finset.prod_mul_distrib]
     apply Finset.prod_congr rfl
     intro p _
@@ -61,7 +49,13 @@ theorem canonical_kernel_extraction
     · simp [h]
     · have hzero : v.count p % 2 = 0 := by omega
       simp [h, hzero]
-  exact ⟨hk0, hsf, ⟨t ^ 2, heq⟩, t, ht0, heq⟩
+  refine ⟨hk0, ?_, ⟨t ^ 2, heq⟩, t, ?_, heq⟩
+  · apply (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors hk0).mpr
+    rw [hnf]
+    exact S.nodup
+  · apply Finset.prod_ne_zero_iff.mpr
+    intro p h
+    exact pow_ne_zero _ (hp p (Multiset.mem_toFinset.mp h)).ne_zero
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.UniversalB2
 

@@ -21,26 +21,28 @@ variable (F : Type) [Field F] [NumberField F]
  (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
  (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
  (hP : IsTamePolarization F ζ hζ q S P)
-def unitRegion : Set (LocalField F q) :=
- ((valuation (LocalField F q)).integer : Set (LocalField F q)) \
-  ((valuation (LocalField F q)).integer.subtype ''
-   (IsLocalRing.maximalIdeal (valuation (LocalField F q)).integer : Set (valuation (LocalField F q)).integer))
-theorem anchor_monomial (π : (LocalField F q)ˣ) :
+local notation "LocalCompletion" => LocalField F q
+
+def unitRegion : Set LocalCompletion :=
+ ((valuation LocalCompletion).integer : Set LocalCompletion) \
+  ((valuation LocalCompletion).integer.subtype ''
+   (IsLocalRing.maximalIdeal (valuation LocalCompletion).integer : Set (valuation LocalCompletion).integer))
+theorem anchor_monomial (π : LocalCompletionˣ) :
  ∃ d : ℤ, ∀ s : ℂ, diagonalAnchorTwist F ζ hζ q S π 0 s =
- (evaluationUnit (LocalField F q) .minus s : ℂ)^d := by
+ (evaluationUnit LocalCompletion .minus s : ℂ)^d := by
  let y := S.borel.coordinate (S.borel.retract (S.iwasawa.borelPart
   (eta F ζ hζ q π 0 * KPPGLLocalCover.W F ζ hζ (Sum.inr q))))
  let d := WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt
-  (LocalField F q) (valuation (LocalField F q) (y : LocalField F q)))
+  LocalCompletion (valuation LocalCompletion (y : LocalCompletion)))
  refine ⟨-d, fun s => ?_⟩
- have hqpos : 0 < (residueCardinality (LocalField F q) : ℝ) := by exact_mod_cast Nat.card_pos
- have hl : (Real.log (localAbs (LocalField F q) y) : ℂ) =
-  (d : ℂ) * (Real.log (residueCardinality (LocalField F q) : ℝ) : ℂ) := by
+ have hqpos : 0 < (residueCardinality LocalCompletion : ℝ) := by exact_mod_cast Nat.card_pos
+ have hl : (Real.log (localAbs LocalCompletion y) : ℂ) =
+  (d : ℂ) * (Real.log (residueCardinality LocalCompletion : ℝ) : ℂ) := by
   rw [localAbs, Real.log_rpow hqpos]
   simp only [d]
   push_cast
   rfl
- change normPower (LocalField F q) y (-s) = _
+ change normPower LocalCompletion y (-s) = _
  simp only [normPower, hl, evaluationUnit, reduceCtorEq, ite_false,
   rUnit, Units.val_inv_eq_inv_val, Units.val_mk0, r, ← Complex.exp_neg]
  rw [← Complex.exp_int_mul]
@@ -69,9 +71,8 @@ theorem eventual_all_tests
  · intro g hg
    obtain ⟨b, k, hk, rfl⟩ := (hf.1 i).2 hg
    exact ⟨b, k, hk, by rw [heta]⟩
- · have h := hf.2.2 i 1 h1
-   rw [← heta]
-   simpa using h
+ · rw [← heta]
+   simpa using (hf.2.2 i 1 h1)
 include hP in
 theorem eventual_cleared_base_value
  (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -86,11 +87,12 @@ theorem eventual_cleared_base_value
  obtain ⟨M₁, hM₁⟩ := CubeShell.eventual_baseChart_cube_shell_decomposition F ζ hζ q S P hP μ htame π hπ
  obtain ⟨M₂, hM₂⟩ := CubeShell.eventual_baseChart_reverse_cube_shell_coefficient F ζ hζ q S P hP μ htame hnormalized π hπ
  refine ⟨max M₁ M₂, fun m hm => ?_⟩
+ let valuation₀ := valuation (LocalField F q)
  let c : ℂ := (rootMass F ζ hζ q μ m : ℂ) *
-   (μ.real (((valuation (LocalField F q)).integer : Set (LocalField F q)) \
-     ((valuation (LocalField F q)).integer.subtype ''
-       (IsLocalRing.maximalIdeal (valuation (LocalField F q)).integer :
-         Set (valuation (LocalField F q)).integer))) : ℂ)
+   (μ.real (((valuation₀).integer : Set (LocalField F q)) \
+     ((valuation₀).integer.subtype ''
+       (IsLocalRing.maximalIdeal (valuation₀).integer :
+         Set (valuation₀).integer))) : ℂ)
  let a : ℂ → ℂ := fun s =>
    KPTameTransposeLiteralMassTransport.DiagonalLiftGeometry.diagonalAnchorTwist
      F ζ hζ q S π (0 : Fin 3) s

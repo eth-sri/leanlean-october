@@ -9,8 +9,8 @@ namespace DedekindZetaZeroFree.ThetaExpansion.SignedExpansion
 open MomentSources MeasureTheory ThetaProfileHaarSheets ThetaSheetExactUnfolding
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def exteriorDigitFactor {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (m : ThetaReflectionData.Row R.A) (x : Fˣ)

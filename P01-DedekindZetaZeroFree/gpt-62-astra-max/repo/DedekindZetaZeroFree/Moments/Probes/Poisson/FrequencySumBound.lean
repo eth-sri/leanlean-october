@@ -15,10 +15,10 @@ open DedekindZetaZeroFree.PrincipalMellinComparison
 open DedekindZetaZeroFree.Quantitative.RawRowSumDefinitions31
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem large_norm_le (D : DedekindZetaZeroFree.Quantitative.FixedData S η) :
-    ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z →
+    ∃ C : ℝ, ∀ Z : ℝ, 2 ≤ Z →
       Summable (fun u : ↥(largeSet D Z) =>
         ‖RawFixed.FixedData.initialRowIntegral D u.1 Z‖) ∧
       ∑' u : ↥(largeSet D Z), ‖RawFixed.FixedData.initialRowIntegral D u.1 Z‖ ≤
@@ -44,7 +44,7 @@ theorem large_norm_le (D : DedekindZetaZeroFree.Quantitative.FixedData S η) :
   have hp : (1 : ℝ) < Scales.tailShift - 1 := by unfold Scales.tailShift; norm_num
   obtain ⟨Ct, hCt, ht⟩ := FrequencyPowerTails.tail_dominated (q D) (Scales.tailShift - 1) (2 * K) hp
     (fun Y => finite_q_le D Y) hcount
-  refine ⟨C0 * Ct, mul_pos hC0 hCt, fun Z hZ => ?_⟩
+  refine ⟨C0 * Ct, fun Z hZ => ?_⟩
   have hZ0 : (0 : ℝ) < Z := by linarith
   have hZ1 : (1 : ℝ) ≤ Z := by linarith
   have hX : (1 : ℝ) ≤ Z ^ Scales.largeCutoffExponent :=
@@ -93,11 +93,11 @@ theorem rawOmittedSum_bound (D : DedekindZetaZeroFree.Quantitative.FixedData S �
     ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z →
       ‖PoissonFrequencyDecomposition.omittedSum D Z‖ ≤ C * Z ^ (717 / 2000 : ℝ) := by
   obtain ⟨A, ρ, hA, hconv, hρ, -⟩ := RawDetector31.detector_exists D
-  obtain ⟨Cs, hCs, hs⟩ := RawSmallRowsSum31.smallRows_norm_tsum_le D
-  obtain ⟨Ce, hCe, Ze, hZe, he⟩ :=
+  obtain ⟨Cs, hs⟩ := RawSmallRowsSum31.smallRows_norm_tsum_le D
+  obtain ⟨Ce, Ze, hZe, he⟩ :=
     RawExceptionalRowsSum31.exceptionalRows_norm_tsum_le D A ρ hA hconv hρ
-  obtain ⟨Cg, hCg, Zg, hZg, hg⟩ := RawGoodRowsSum31.raw_good_rows_sum_abs D A ρ hA hconv hρ
-  obtain ⟨Cl, hCl, hl⟩ := large_norm_le D
+  obtain ⟨Cg, Zg, hg⟩ := RawGoodRowsSum31.raw_good_rows_sum_abs D A ρ hA hconv hρ
+  obtain ⟨Cl, hl⟩ := large_norm_le D
   have hbd : ∀ Z : ℝ, max Ze Zg ≤ Z →
       ‖PoissonFrequencyDecomposition.omittedSum D Z‖ ≤
         (Cs + Ce + Cg + Cl) * Z ^ ((717 : ℝ) / 2000) := by

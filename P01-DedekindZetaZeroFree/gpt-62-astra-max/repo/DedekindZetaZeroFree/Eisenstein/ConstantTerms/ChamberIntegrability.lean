@@ -10,23 +10,23 @@ open MeasureTheory NumberField
 namespace DedekindZetaZeroFree.CompactPeriodAnalyticity.Chamber
 open KPLiteralRaw KPLiteralChamber
 open KPGlobalResidualKernel.RawStageL2.Outgoing
-open _root_.DedekindZetaZeroFree.KPLiteralChamberWeight renaming standard_measurable → standard_measurable
-open _root_.DedekindZetaZeroFree.KPLiteralChamberWeight renaming standard_integrable → standard_integrable
+open _root_.DedekindZetaZeroFree.KPLiteralChamberWeight (standard_measurable standard_integrable)
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-theorem upper_integrable_probability (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K)
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K)
+
+include hK in
+theorem upper_integrable_probability
     (s : ℂ) (hs : (1 / 3 : ℝ) < s.re) (g : G F ζ hζ) :
     Integrable (fun q : KPAdditiveQuotient F => eisenstein F ζ hζ K f s
       (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out q) * g))
       (KPWildKernelUpperBound.quotientHaar F) := by
   letI := KPAdditiveHaar.adelicMeasure_isAddHaarMeasure F
-  let dq := KPWildKernelUpperBound.quotientHaar F
-  let h : KPAdeles F → ℂ := fun x => f.val s
+  let h := fun x => f.val s
     (KPRationalAdelicSplitting.pglW F ζ hζ * KPGlobalTorusFunctionData.N F ζ hζ x * g)
   have hp := (BruhatIntegral.integral_period_of_integrable F
-    (KPAdditiveHaar.adelicMeasure F) dq
+    (KPAdditiveHaar.adelicMeasure F) (KPWildKernelUpperBound.quotientHaar F)
     (KPContinuation.ChamberOutgoingSource.actual_quotientHaar_compatible F) h
     (standard_measurable F ζ hζ K f s g)
     (standard_integrable F ζ hζ K hK f s hs g)).1
@@ -75,8 +75,8 @@ theorem upper_integrable_probability (K : Subgroup (G F ζ hζ))
   exact ((integrable_const (f.val s g)).add hp).congr
     (Filter.Eventually.of_forall fun q => (hformula q).symm)
 
-theorem upper_integrable (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K)
+include hK in
+theorem upper_integrable
     (μ : Measure (KPAdditiveQuotient F)) (hμ : μ.IsAddHaarMeasure)
     (s : ℂ) (hs : (1 / 3 : ℝ) < s.re) (g : G F ζ hζ) :
     Integrable (fun q : KPAdditiveQuotient F => eisenstein F ζ hζ K f s

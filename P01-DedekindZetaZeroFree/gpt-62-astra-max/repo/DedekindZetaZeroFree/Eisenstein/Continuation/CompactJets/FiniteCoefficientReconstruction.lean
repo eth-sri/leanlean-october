@@ -35,8 +35,7 @@ include hS in
   exact ENNReal.toReal_mono (Lp.eLpNorm_lt_top f).ne (eLpNorm_indicator_le f hS.nullMeasurableSet)
  def cutLp : Lp ℂ 2 μ →L[ℂ] Lp ℂ 2 μ := (cutLinear μ S hS).mkContinuous 1 (cut_bound μ S hS)
 private lemma cutLp_ae (f : Lp ℂ 2 μ) : (cutLp μ S hS f : X → ℂ) =ᵐ[μ] S.indicator (f : X → ℂ) := by
-  change (((Lp.memLp f).indicator hS.nullMeasurableSet).toLp (S.indicator (f : X → ℂ)) : X → ℂ) =ᵐ[μ] _
-  exact @MemLp.coeFn_toLp X ℂ _ 2 μ _ (S.indicator (f : X → ℂ)) ((Lp.memLp f).indicator hS.nullMeasurableSet)
+  exact @MemLp.coeFn_toLp X ℂ _ 2 μ _ (S.indicator f) ((Lp.memLp f).indicator hS.nullMeasurableSet)
 
 end Cut
 
@@ -64,8 +63,7 @@ end Cut
       (fun y _ => hCc y)
   · intro i x hx
     obtain ⟨y, hy, hxy⟩ := Set.mem_iUnion₂.mp hx
-    have he : idx y = i := (Finset.mem_filter.mp hy).2
-    exact he ▸ hCD y hxy
+    exact ((Finset.mem_filter.mp hy).2) ▸ hCD y hxy
   · intro y hy
     obtain ⟨p, hp, x, hx, hxy⟩ := Set.mem_iUnion₂.mp (ht hy)
     refine Set.mem_iUnion.mpr ⟨idx p, x, ?_, hxy⟩
@@ -79,10 +77,10 @@ open KPContCotangentActualOverlap KPContCotangentOverlapRationalBranches
 open KPContCotangentActualGenuineTwistIsotropy
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
  def labeledHomeomorph : M F ≃ₜ KPCuspGenuineMonodromy.SymmetricSpace F where
   toFun := labeledA (placeEquiv F ζ hζ)
@@ -113,7 +111,7 @@ private theorem chart_q_open (a : ActualChart (U := U) (H := H)) :
         (KPCuspGenuineMonodromy.SymmetricSpace F) :=
       ⟨fun g => KPCuspSiegel.continuous_action F g.val⟩
     exact isOpenMap_quotient_mk'_mul
-  exact hc.isOpenMap.comp (hp.comp (labeledHomeomorph (ζ := ζ) (hζ := hζ)).isOpenMap)
+  exact hc.isOpenMap.comp (hp.comp (labeledHomeomorph).isOpenMap)
 
 theorem finite_actual_compact_lifts
     (K : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hK : IsCompact K)
@@ -125,38 +123,21 @@ theorem finite_actual_compact_lifts
     intro y hy
     obtain ⟨i, x, hx⟩ := Set.mem_iUnion.mp (cover hy)
     refine Set.mem_iUnion.mpr ⟨i, labeledAInv (placeEquiv F ζ hζ) x.val, ?_, ?_⟩
-    · change labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) x.val) ∈ (charts i).domain
-      change (labeledHomeomorph (ζ := ζ) (hζ := hζ))
-        ((labeledHomeomorph (ζ := ζ) (hζ := hζ)).symm x.val) ∈ (charts i).domain
+    · change (labeledHomeomorph)
+        ((labeledHomeomorph).symm x.val) ∈ (charts i).domain
       rw [Homeomorph.apply_symm_apply]
       exact x.property
-    · change q (charts i) ((labeledHomeomorph (ζ := ζ) (hζ := hζ)).symm x.val) = y
-      change KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative (charts i).component)
-        (KPCuspSiegel.projection F _ ((labeledHomeomorph (ζ := ζ) (hζ := hζ))
-          ((labeledHomeomorph (ζ := ζ) (hζ := hζ)).symm x.val))) = y
+    · change KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative (charts i).component)
+        (KPCuspSiegel.projection F _ ((labeledHomeomorph)
+          ((labeledHomeomorph).symm x.val))) = y
       rw [Homeomorph.apply_symm_apply]
       exact hx
   obtain ⟨C, hC, hD, hcov⟩ := finite_compact_lifts K hK m (fun i => omega (charts i))
     (fun i => q (charts i)) (fun i => (charts i).domain_open.preimage
-      (labeledHomeomorph (ζ := ζ) (hζ := hζ)).continuous) (fun i => chart_q_open (charts i)) hc
+      (labeledHomeomorph).continuous) (fun i => chart_q_open (charts i)) hc
   exact ⟨C, hC, hD, hcov⟩
 
-private theorem gamma_continuous (a : ActualChart (U := U) (H := H))
-    (g : Gamma a) : Continuous ((isotropyArrow a g).psi) := by
-  have hA : Continuous (labeledA (placeEquiv F ζ hζ)) := by
-    apply continuous_pi
-    intro k
-    exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
-  have hAi : Continuous (labeledAInv (placeEquiv F ζ hζ)) := by
-    apply (CotangentLogCoframe.A (d F)).symm.continuous.comp
-    exact continuous_pi (fun k => continuous_apply _)
-  have he : (isotropyArrow a g).psi = fun x => labeledAInv (placeEquiv F ζ hζ)
-      ((g.val.1.val : KPCuspArithmetic.PGL2 F) • labeledA (placeEquiv F ζ hζ) x) := by
-    funext x
-    change coordinateMap (isotropyChart a) (isotropyChart a) g.val.1.val x = _
-    simp [coordinateMap, isotropyChart, ChartKind.representative]
-  rw [he]
-  exact hAi.comp ((KPCuspSiegel.continuous_action F _).comp hA)
+private alias gamma_continuous := ChartCoefficientAveraging.psi_cont
 
 private theorem finite_invariant_compact_lift
     (a : ActualChart (U := U) (H := H)) (C : Set (M F)) (hC : IsCompact C)
@@ -202,16 +183,7 @@ theorem finite_actual_invariant_compact_lifts
   obtain ⟨i, x, hx, hxy⟩ := Set.mem_iUnion.mp (hcov hy)
   exact Set.mem_iUnion.mpr ⟨i, x, hDC i hx, hxy⟩
 
-private lemma continuous_chartQ (a : ActualChart (U := U) (H := H)) : Continuous (q a) := by
-  have he : KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component) =
-      fun x => (H.atlas U).components ⟨a.component,x⟩ := by
-    funext x; exact ((H.atlas U).components_formula a.component x).symm
-  have hc : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component)) := by
-    rw [he]; exact (H.atlas U).components.continuous.comp continuous_sigmaMk
-  have hA : Continuous (labeledA (placeEquiv F ζ hζ)) := by
-    apply continuous_pi; intro k
-    exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
-  exact hc.comp (continuous_quotient_mk'.comp hA)
+private alias continuous_chartQ := DedekindZetaZeroFree.KPContActualSectorMultiplier.CompactCutoffDifferentialBounds.continuous_q
 
 private lemma lp_finsetSum_ae {X : Type*} [MeasurableSpace X] (μ : Measure X)
     {I : Type*} (t : Finset I) (f : I → Lp ℂ 2 μ) :
@@ -267,29 +239,26 @@ theorem finite_compact_coefficient_reconstruction_source
   obtain ⟨C,hC,hD,hI,hcov⟩ := finite_actual_invariant_compact_lifts K hK m charts cover
   letI : ∀ i, CompactSpace (C i) := fun i => isCompact_iff_compactSpace.mp (hC i)
   choose T hT0 hT using fun i => one_chart_compact_coefficient_averaging_source (charts i) (C i) (hC i) (hD i) (hI i)
-  let A : Fin m → Set (KPFiniteCuspAtlas.rawXU F ζ hζ U) := fun i => q (charts i) '' C i
-  have hA : ∀ i, MeasurableSet (A i) := fun i => ((hC i).image (continuous_chartQ (charts i))).isClosed.measurableSet
-  let S : Fin m → Set (CoveredSpherical F ζ hζ U) := fun i =>
+  let A := fun i => q (charts i) '' C i
+  have hA := fun i => ((hC i).image (continuous_chartQ (charts i))).isClosed.measurableSet
+  let S := fun i =>
     KPContSectorCoveredQuotientVocabulary.q F ζ hζ U ⁻¹' disjointed A i
   have hS : ∀ i, MeasurableSet (S i) := by
     intro i
     apply (KPContSectorQuotientRelationsComparison.q_continuous F ζ hζ U).measurable
     rw [disjointed_eq_inter_compl]
     exact (hA i).inter (MeasurableSet.iInter fun j => MeasurableSet.iInter fun _ => (hA j).compl)
-  let L : ((i : Fin m) → ContinuousMap (C i) ℂ) →L[ℂ] KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R U :=
+  let L :=
     ∑ i : Fin m, ((cutLp (coveredMeasure F ζ hζ R U) (S i) (hS i)).comp (T i)).comp (ContinuousLinearMap.proj i)
   refine ⟨C,hC,hD,hcov,L,?_⟩
   intro v hv hs f hf b hb
   have hi : ∀ i, (cutLp (coveredMeasure F ζ hζ R U) (S i) (hS i) (T i (f i)) : CoveredSpherical F ζ hζ U → ℂ) =ᵐ[
       coveredMeasure F ζ hζ R U] (S i).indicator (scalarRepresentative F ζ hζ U R P H v).val := by
     intro i
-    have h1 := cutLp_ae (coveredMeasure F ζ hζ R U) (S i) (hS i) (T i (f i))
-    have h2 := (hT i v (f i) (hf i) b hb).indicator (s := S i)
-    refine h1.trans (h2.trans (Filter.Eventually.of_forall ?_))
+    refine (cutLp_ae (coveredMeasure F ζ hζ R U) (S i) (hS i) (T i (f i))).trans (((hT i v (f i) (hf i) b hb).indicator).trans (Filter.Eventually.of_forall ?_))
     intro x
     by_cases hx : x ∈ S i
-    · have ha : KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x ∈ A i := disjointed_subset A i hx
-      simp [hx, ha, A]
+    · simp [hx, (disjointed_subset A i hx), A]
     · simp [hx]
   apply Lp.ext
   have hsum := lp_finsetSum_ae (coveredMeasure F ζ hζ R U) Finset.univ
@@ -297,7 +266,6 @@ theorem finite_compact_coefficient_reconstruction_source
   have hmatch := Filter.eventually_all.mpr hi
   have hb' := MemLp.coeFn_toLp (representative_memLp F ζ hζ U R P H b)
   filter_upwards [hsum, hmatch, hb'] with x hsum hmatch hb'
-  change (L f : CoveredSpherical F ζ hζ U → ℂ) x = _
   have hL : L f = ∑ i : Fin m, cutLp (coveredMeasure F ζ hζ R U) (S i) (hS i) (T i (f i)) := by simp [L]
   rw [hL, hsum]
   simp_rw [hmatch]

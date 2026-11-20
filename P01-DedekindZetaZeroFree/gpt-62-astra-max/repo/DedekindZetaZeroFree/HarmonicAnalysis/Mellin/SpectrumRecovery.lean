@@ -29,15 +29,13 @@ theorem mellin_eq_of_eq_mellinInv (f : ℝ → ℂ) (A : ℂ → ℂ) (c : ℝ) 
     funext y
     simp [q, Function.comp_def, Complex.ofReal_mul, mul_comm, mul_left_comm, mul_assoc]
   have hreal : MellinConvergent f (c : ℂ) := by
-    have hpow : ContinuousOn (fun x : ℝ => (x : ℂ) ^ ((c : ℂ) - z)) (Set.Ioi 0) :=
-      continuousOn_of_forall_continuousAt fun x hx =>
-        Complex.continuousAt_ofReal_cpow_const _ _ (Or.inr hx.ne')
     have hb : ∀ᵐ x : ℝ ∂MeasureTheory.volume.restrict (Set.Ioi 0),
         ‖(x : ℂ) ^ ((c : ℂ) - z)‖ ≤ 1 := by
       filter_upwards [MeasureTheory.ae_restrict_mem measurableSet_Ioi] with x hx
       rw [Complex.norm_cpow_eq_rpow_re_of_pos hx]
       simp [hz]
-    have hi := hf.bdd_mul (hpow.aestronglyMeasurable measurableSet_Ioi) hb
+    have hi := hf.bdd_mul ((continuousOn_of_forall_continuousAt fun x hx =>
+      Complex.continuousAt_ofReal_cpow_const _ _ (Or.inr hx.ne')).aestronglyMeasurable measurableSet_Ioi) hb
     apply hi.congr
     filter_upwards [MeasureTheory.ae_restrict_mem measurableSet_Ioi] with x hx
     simp only [smul_eq_mul]
@@ -76,8 +74,7 @@ theorem mellin_eq_of_eq_mellinInv (f : ℝ → ℂ) (A : ℂ → ℂ) (c : ℝ) 
     simp [q]
   have hFq : MeasureTheory.Integrable (FourierTransform.fourier q) := by
     have hinv : MeasureTheory.Integrable (FourierTransform.fourierInv q) := by rwa [← hgeq]
-    have hn := hinv.comp_neg
-    simpa only [Real.fourierInv_eq_fourier_neg, neg_neg] using hn
+    simpa only [Real.fourierInv_eq_fourier_neg, neg_neg] using hinv.comp_neg
   rw [mellin_eq_fourier, hz]
   change FourierTransform.fourier g (z.im / (2 * Real.pi)) = _
   rw [hgeq, hqc.fourier_fourierInv_eq hq hFq]
@@ -87,6 +84,6 @@ theorem mellin_eq_of_eq_mellinInv (f : ℝ → ℂ) (A : ℂ → ℂ) (c : ℝ) 
     ← Complex.ofReal_mul,
     mul_div_cancel₀ _ (show 2 * Real.pi ≠ 0 by positivity)]
   rw [← hz]
-  exact Complex.re_add_im z
+  simp
 
 end DedekindZetaZeroFree.LargeSieve.Vendor

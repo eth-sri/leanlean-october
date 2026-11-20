@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 /-! Provides the public declarations in the `LocalClassFieldTheory.ClassFormation.ValueGroupCohomology` Lean module. -/
 
@@ -50,8 +45,7 @@ theorem galoisGroupValueGroup_tateNorm_toAdd (a : Multiplicative Int) :
       a ^ Fintype.card (Gal(L / K)) := by
     simp only [tateNorm, galoisGroupValueGroupMulDistribMulAction_smul,
       Finset.prod_const, Finset.card_univ]
-  simpa only [toAdd_pow, nsmul_eq_mul] using
-    congrArg Multiplicative.toAdd hnorm
+  exact hnorm
 
 /-- Reduction modulo `|G|` on the fixed subgroup of the trivial value-group
 module. -/
@@ -62,7 +56,7 @@ def galoisGroupValueGroupFixedToZModHom :
   letI := galoisGroupValueGroupMulDistribMulAction K L
   exact
     { toFun := fun x => Multiplicative.ofAdd
-        ((Multiplicative.toAdd (x : Multiplicative Int) : Int) :
+        ((Multiplicative.toAdd x : Int) :
           ZMod (Fintype.card (Gal(L / K))))
       map_one' := by simp
       map_mul' := by
@@ -78,11 +72,7 @@ theorem galoisGroupValueGroupFixedToZModHom_surjective :
   rcases ZMod.intCast_surjective (Multiplicative.toAdd y) with ⟨z, hz⟩
   let x : fixedSubgroup (Gal(L / K)) (Multiplicative Int) :=
     ⟨Multiplicative.ofAdd z, by intro σ; rfl⟩
-  refine ⟨x, ?_⟩
-  rw [show galoisGroupValueGroupFixedToZModHom K L x =
-      Multiplicative.ofAdd
-        ((z : Int) : ZMod (Fintype.card (Gal(L / K)))) by rfl]
-  exact congrArg Multiplicative.ofAdd hz
+  solve_by_elim [congrArg]
 
 /-- The kernel of reduction modulo `|G|` is exactly the norm subgroup inside
 the fixed subgroup. -/
@@ -93,16 +83,10 @@ theorem galoisGroupValueGroupFixedToZModHom_ker :
         (fixedSubgroup (Gal(L / K)) (Multiplicative Int)) := by
   let := galoisGroupValueGroupMulDistribMulAction K L
   ext x
-  rw [MonoidHom.mem_ker]
+  simp
   constructor
   · intro hx
-    have hx0 :
-        ((Multiplicative.toAdd (x : Multiplicative Int) : Int) :
-          ZMod (Fintype.card (Gal(L / K)))) = 0 := by
-      exact congrArg Multiplicative.toAdd hx
-    rcases (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 hx0 with ⟨z, hz⟩
-    change (x : Multiplicative Int) ∈
-      tateNormSubgroup (Gal(L / K)) (Multiplicative Int)
+    rcases (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 (congrArg Multiplicative.toAdd hx) with ⟨z, hz⟩
     refine ⟨Multiplicative.ofAdd z, ?_⟩
     have htoAdd :
         Multiplicative.toAdd
@@ -111,19 +95,16 @@ theorem galoisGroupValueGroupFixedToZModHom_ker :
           Multiplicative.toAdd (x : Multiplicative Int) := by
       rw [galoisGroupValueGroup_tateNorm_toAdd]
       exact hz.symm
-    exact congrArg Multiplicative.ofAdd htoAdd
+    exact htoAdd
   · intro hx
     change (x : Multiplicative Int) ∈
       tateNormSubgroup (Gal(L / K)) (Multiplicative Int) at hx
     rcases hx with ⟨z, hz⟩
     rw [tateNormHom_apply] at hz
     exact congrArg Multiplicative.ofAdd (by
-      change
-        ((Multiplicative.toAdd (x : Multiplicative Int) : Int) :
-            ZMod (Fintype.card (Gal(L / K)))) = 0
       rw [← hz, galoisGroupValueGroup_tateNorm_toAdd]
       apply (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).2
-      exact ⟨Multiplicative.toAdd z, rfl⟩)
+      simp)
 
 /-- The actual custom Tate `H⁰` of the trivial value group is `Z/|G|Z`. -/
 noncomputable def galoisGroupValueGroupHerbrandH0MulEquivZMod :
@@ -133,7 +114,7 @@ noncomputable def galoisGroupValueGroupHerbrandH0MulEquivZMod :
   letI := galoisGroupValueGroupMulDistribMulAction K L
   exact
     (HerbrandH0.equiv
-      (G := Gal(L / K)) (A := Multiplicative Int)).trans
+       ).trans
       ((QuotientGroup.quotientMulEquivOfEq
         (galoisGroupValueGroupFixedToZModHom_ker K L).symm).trans
         (QuotientGroup.quotientKerEquivOfSurjective
@@ -145,10 +126,7 @@ description rather than assumed as an extra hypothesis. -/
 theorem galoisGroupValueGroupHerbrandH0Finite :
     letI := galoisGroupValueGroupMulDistribMulAction K L
     Finite (HerbrandH0 (Gal(L / K)) (Multiplicative Int)) := by
-  let := galoisGroupValueGroupMulDistribMulAction K L
-  exact Finite.of_equiv
-    (Multiplicative (ZMod (Fintype.card (Gal(L / K)))))
-    (galoisGroupValueGroupHerbrandH0MulEquivZMod K L).symm.toEquiv
+  exact Finite.of_equiv (Multiplicative (ZMod (Fintype.card Gal(L/K)))) (galoisGroupValueGroupHerbrandH0MulEquivZMod K L).symm.toEquiv
 
 /-- Value-group factor for the local class-field axiom: `#H⁰(G,ℤ)=|G|`. -/
 theorem galoisGroupValueGroup_herbrandH0_card :
@@ -156,7 +134,6 @@ theorem galoisGroupValueGroup_herbrandH0_card :
     letI := galoisGroupValueGroupHerbrandH0Finite K L
     Nat.card (HerbrandH0 (Gal(L / K)) (Multiplicative Int)) =
       Fintype.card (Gal(L / K)) := by
-  let := galoisGroupValueGroupMulDistribMulAction K L
   rw [Nat.card_congr (galoisGroupValueGroupHerbrandH0MulEquivZMod K L).toEquiv]
   simp
 
@@ -167,7 +144,6 @@ theorem galoisGroupValueGroup_herbrandH0_card_eq_finrank [IsGalois K L] :
     letI := galoisGroupValueGroupHerbrandH0Finite K L
     Nat.card (HerbrandH0 (Gal(L / K)) (Multiplicative Int)) =
       Module.finrank K L := by
-  let := galoisGroupValueGroupMulDistribMulAction K L
   rw [galoisGroupValueGroup_herbrandH0_card K L]
   exact Fintype.card_eq_nat_card.trans (IsGalois.card_aut_eq_finrank K L)
 
@@ -178,16 +154,14 @@ theorem galoisGroupValueGroup_normKernelSubgroup_eq_bot :
   let := galoisGroupValueGroupMulDistribMulAction K L
   apply le_antisymm
   · intro x hx
-    rw [Subgroup.mem_bot]
     exact congrArg Multiplicative.ofAdd (by
-      change Multiplicative.toAdd (x : Multiplicative Int) = 0
       have hnorm :
           (Fintype.card (Gal(L / K)) : Int) *
-              Multiplicative.toAdd (x : Multiplicative Int) = 0 := by
+              Multiplicative.toAdd x = 0 := by
         rw [← galoisGroupValueGroup_tateNorm_toAdd K L]
         exact congrArg Multiplicative.toAdd hx
       exact (mul_eq_zero.mp hnorm).resolve_left (by
-        exact_mod_cast Fintype.card_ne_zero))
+        simp))
   · exact bot_le
 
 /-- Finiteness of value-group `H⁻¹`, derived from the vanishing of its
@@ -207,8 +181,7 @@ theorem galoisGroupValueGroupHerbrandHMinusOneFinite
     ⟨fun q =>
       HerbrandHMinusOne.inductionOn σ
         (motive := fun q => ∀ r, q = r) q fun x r =>
-          HerbrandHMinusOne.inductionOn σ
-            (motive := fun r => HerbrandHMinusOne.mk σ x = r) r fun y =>
+          HerbrandHMinusOne.inductionOn σ r fun y =>
               congrArg (fun z => HerbrandHMinusOne.mk σ z)
                 (Subsingleton.elim x y)⟩
   exact Finite.of_injective
@@ -233,8 +206,7 @@ theorem galoisGroupValueGroup_herbrandHMinusOne_card_eq_one
     ⟨fun q =>
       HerbrandHMinusOne.inductionOn σ
         (motive := fun q => ∀ r, q = r) q fun x r =>
-          HerbrandHMinusOne.inductionOn σ
-            (motive := fun r => HerbrandHMinusOne.mk σ x = r) r fun y =>
+          HerbrandHMinusOne.inductionOn σ r fun y =>
               congrArg (fun z => HerbrandHMinusOne.mk σ z)
                 (Subsingleton.elim x y)⟩
   exact Nat.card_unique

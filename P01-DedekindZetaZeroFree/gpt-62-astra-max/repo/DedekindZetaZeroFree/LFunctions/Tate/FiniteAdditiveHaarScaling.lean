@@ -34,13 +34,12 @@ theorem finite_map_mul (S : Finset (HeightOneSpectrum (𝓞 F)))
       (ENNReal.ofReal (∏ v : S, ‖g.val v‖))⁻¹ •
         Measure.pi (fun v : S => localNormalizedHaar F v.val) := by
   have hgv (v : S) : g.val v * (↑g⁻¹ : (v : S) → v.val.adicCompletion F) v = 1 := by
-    have h := congr_fun (Units.mul_inv g) v
-    simpa using h
+    exact (congr_fun (Units.mul_inv g) v)
   have hne (v : S) : g.val v ≠ 0 := fun h0 => by
     have := hgv v
     rw [h0, zero_mul] at this
     exact one_ne_zero this.symm
-  let c : (v : S) → (v.val.adicCompletion F)ˣ := fun v => Units.mk0 (g.val v) (hne v)
+  let c := fun v => Units.mk0 (g.val v) (hne v)
   haveI : ∀ v : S, SigmaFinite
       ((localNormalizedHaar F v.val).map (fun x => g.val v * x)) :=
     fun v => (Homeomorph.mulLeft₀ (g.val v) (hne v)).toMeasurableEquiv.sigmaFinite_map
@@ -59,8 +58,8 @@ theorem finite_map_mul (S : Finset (HeightOneSpectrum (𝓞 F)))
       exact norm_pos_iff.mpr (hne v)))]
   have hinv : (∏ v : S, (ENNReal.ofReal ‖g.val v‖)⁻¹) =
       (∏ v : S, ENNReal.ofReal ‖g.val v‖)⁻¹ := by
-    simpa using (ENNReal.prod_inv_distrib (s := Finset.univ)
-      (f := fun v : S => ENNReal.ofReal ‖g.val v‖)
+    exact (ENNReal.prod_inv_distrib
+
       (fun i _ j _ _ => Or.inl (ENNReal.ofReal_ne_zero_iff.mpr
         (norm_pos_iff.mpr (hne i))))).symm
   have hscalar : (∏ v : S, (ENNReal.ofReal ‖g.val v‖)⁻¹) =

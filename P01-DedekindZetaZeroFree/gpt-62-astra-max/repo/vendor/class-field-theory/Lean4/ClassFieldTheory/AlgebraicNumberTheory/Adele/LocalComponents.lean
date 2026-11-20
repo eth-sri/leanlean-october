@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -28,7 +26,6 @@ open scoped NumberField TensorProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 universe u v
 
@@ -50,10 +47,8 @@ theorem relativeAdeleFiniteComponent_basis_repr
         (w.adicCompletion K)
         (relativeExtensionBasis
           (K := K) (L := L))).repr
-        (relativeAdeleFiniteComponent
-          (K := K) (L := L) w z) i =
-      (relativeAdeleCoefficient
-        (K := K) (L := L) z i).2 w := by
+        (relativeAdeleFiniteComponent w z) i =
+      (relativeAdeleCoefficient z i).2 w := by
   classical
   rw [relativeAdeleFiniteComponent_eq_sum_tmul_coefficients]
   simp [relativeExtensionBasis, Finsupp.single_apply]
@@ -70,20 +65,18 @@ theorem relativeAdeleInfiniteComponent_basis_repr
         w.Completion
         (relativeExtensionBasis
           (K := K) (L := L))).repr
-        (relativeAdeleInfiniteComponent
-          (K := K) (L := L) w z) i =
-      (relativeAdeleCoefficient
-        (K := K) (L := L) z i).1 w := by
+        (relativeAdeleInfiniteComponent w z) i =
+      (relativeAdeleCoefficient z i).1 w := by
   classical
   rw [relativeAdeleInfiniteComponent_eq_sum_tmul_coefficients]
   simp [relativeExtensionBasis, Finsupp.single_apply]
   change
     (relativeAdeleCoefficient
-        (K := K) (L := L) z i).1 w *
+          z i).1 w *
         algebraMap K w.Completion (1 : K) =
       (relativeAdeleCoefficient
-        (K := K) (L := L) z i).1 w
-  rw [map_one, mul_one]
+          z i).1 w
+  simp [map_one]
 
 omit [NumberField L] in
 /-- Equality of every archimedean and finite tensor component implies
@@ -92,20 +85,16 @@ theorem relativeAdele_ext_of_components
     {x y : RelativeAdeleRing K L}
     (hinfinite :
       ∀ w : InfinitePlace K,
-        relativeAdeleInfiniteComponent
-            (K := K) (L := L) w x =
-          relativeAdeleInfiniteComponent
-            (K := K) (L := L) w y)
+        relativeAdeleInfiniteComponent w x =
+          relativeAdeleInfiniteComponent w y)
     (hfinite :
       ∀ w : HeightOneSpectrum (𝓞 K),
-        relativeAdeleFiniteComponent
-            (K := K) (L := L) w x =
-          relativeAdeleFiniteComponent
-            (K := K) (L := L) w y) :
+        relativeAdeleFiniteComponent w x =
+          relativeAdeleFiniteComponent w y) :
     x = y := by
   apply
     (relativeAdeleCoefficientLinearEquiv
-      (K := K) (L := L)).injective
+       ).injective
   funext i
   apply Prod.ext
   · funext w
@@ -115,10 +104,10 @@ theorem relativeAdele_ext_of_components
           (Algebra.TensorProduct.basis
             w.Completion
             (relativeExtensionBasis
-              (K := K) (L := L))).repr z i)
+               )).repr z i)
         (hinfinite w)
-    change (relativeAdeleCoefficient (K := K) (L := L) x i).1 w =
-      (relativeAdeleCoefficient (K := K) (L := L) y i).1 w
+    change (relativeAdeleCoefficient x i).1 w =
+      (relativeAdeleCoefficient y i).1 w
     simpa using h
   · apply DFunLike.coe_injective
     funext w
@@ -128,10 +117,10 @@ theorem relativeAdele_ext_of_components
           (Algebra.TensorProduct.basis
             (w.adicCompletion K)
             (relativeExtensionBasis
-              (K := K) (L := L))).repr z i)
+               )).repr z i)
         (hfinite w)
-    change (relativeAdeleCoefficient (K := K) (L := L) x i).2 w =
-      (relativeAdeleCoefficient (K := K) (L := L) y i).2 w
+    change (relativeAdeleCoefficient x i).2 w =
+      (relativeAdeleCoefficient y i).2 w
     simpa using h
 
 /-- The unrestricted family of every archimedean and finite local
@@ -158,31 +147,29 @@ def relativeIdeleLocalComponents :
     · funext w
       exact map_one
         (RelativeIdeleGroup.infiniteComponent
-          (K := K) (L := L) w)
+            w)
     · funext w
       exact map_one
         (RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L) w)
+            w)
   map_mul' x y := by
     apply Prod.ext
     · funext w
       exact map_mul
         (RelativeIdeleGroup.infiniteComponent
-          (K := K) (L := L) w) x y
+            w) x y
     · funext w
       exact map_mul
         (RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L) w) x y
+            w) x y
 
 omit [NumberField L] [FiniteDimensional K L] in
 @[simp]
 theorem relativeIdeleLocalComponents_infinite
     (z : RelativeIdeleGroup K L)
     (w : InfinitePlace K) :
-    (relativeIdeleLocalComponents
-      (K := K) (L := L) z).1 w =
-      RelativeIdeleGroup.infiniteComponent
-        (K := K) (L := L) w z :=
+    (relativeIdeleLocalComponents z).1 w =
+      RelativeIdeleGroup.infiniteComponent w z :=
   rfl
 
 omit [NumberField L] [FiniteDimensional K L] in
@@ -190,10 +177,8 @@ omit [NumberField L] [FiniteDimensional K L] in
 theorem relativeIdeleLocalComponents_finite
     (z : RelativeIdeleGroup K L)
     (w : HeightOneSpectrum (𝓞 K)) :
-    (relativeIdeleLocalComponents
-      (K := K) (L := L) z).2 w =
-      RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) w z :=
+    (relativeIdeleLocalComponents z).2 w =
+      RelativeIdeleGroup.finiteComponent w z :=
   rfl
 
 omit [NumberField L] in
@@ -206,10 +191,8 @@ theorem relativeIdeleLocalComponents_injective :
   apply Units.ext
   apply relativeAdele_ext_of_components
   · intro w
-    have h := congrArg (fun z => z.1 w) hxy
-    exact congrArg Units.val h
+    exact congrArg Units.val (congrArg (fun z => z.1 w) hxy)
   · intro w
-    have h := congrArg (fun z => z.2 w) hxy
-    exact congrArg Units.val h
+    exact congrArg Units.val (congrArg (fun z => z.2 w) hxy)
 
 end

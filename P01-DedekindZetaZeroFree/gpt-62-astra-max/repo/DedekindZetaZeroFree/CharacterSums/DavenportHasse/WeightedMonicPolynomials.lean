@@ -14,21 +14,25 @@ set_option linter.unusedSectionVars false
 
 variable {k : Type*} [Field k] [Fintype k]
 
-lemma sum_lt (d : ℕ) (c : Fin d → k) :
+section
+
+variable (d : ℕ) (c : Fin d → k)
+
+lemma sum_lt :
     (∑ i : Fin d, C (c i) * X ^ (i : ℕ)).degree < (d : WithBot ℕ) := by
   refine lt_of_le_of_lt (degree_sum_le _ _) ?_
   refine (Finset.sup_lt_iff (WithBot.bot_lt_coe d)).2 fun i _ => ?_
   exact lt_of_le_of_lt (degree_C_mul_X_pow_le _ _) (WithBot.coe_lt_coe.2 i.2)
 
-lemma moc_monic (d : ℕ) (c : Fin d → k) : (monicOfCoeffs d c).Monic :=
+lemma moc_monic : (monicOfCoeffs d c).Monic :=
   monic_X_pow_add (sum_lt d c)
 
-lemma moc_natDegree (d : ℕ) (c : Fin d → k) : (monicOfCoeffs d c).natDegree = d := by
+lemma moc_natDegree : (monicOfCoeffs d c).natDegree = d := by
   unfold monicOfCoeffs
   rw [natDegree_add_eq_left_of_degree_lt, natDegree_X_pow]
   rw [degree_X_pow]; exact sum_lt d c
 
-lemma moc_coeff (d : ℕ) (c : Fin d → k) (i : Fin d) :
+lemma moc_coeff (i : Fin d) :
     (monicOfCoeffs d c).coeff i = c i := by
   unfold monicOfCoeffs
   rw [coeff_add, coeff_X_pow, finsetSum_coeff, Fintype.sum_eq_single i]
@@ -36,6 +40,8 @@ lemma moc_coeff (d : ℕ) (c : Fin d → k) (i : Fin d) :
   · intro j hj
     simp only [coeff_C_mul_X_pow, ite_eq_right_iff]
     exact fun h => absurd (Fin.ext h.symm) hj
+
+end
 
 lemma moc_of_monic {P : k[X]} (hP : P.Monic) :
     monicOfCoeffs P.natDegree (fun i => P.coeff i) = P := by

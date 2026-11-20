@@ -11,10 +11,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.ComplexLines
 open MomentSources KPGlobalTorusFiniteStages KPGlobalResidualConstruction KPCplxPrincipalSeriesCharts
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1500000
 
@@ -39,7 +39,7 @@ theorem restrictedSlot_residue_compact_bound
         B*(orders.sup coreSeminorm) v := by
   obtain ⟨J,os₀,B₀,hB₀,hJ,hx⟩ := restrictedSlot_quotient_residue_l2 R N P C D HR HP M  dk s x w hw
   let U := EisensteinSmoothGerms.ScalarSource.atlasLevel F ζ hζ J
-  obtain ⟨W,hW,Cs,hCs,hsob⟩ := ResidualOutputSobolev.exists_original_compact_bound_raw
+  obtain ⟨W, Cs, hCs, hsob⟩ := ResidualOutputSobolev.exists_original_compact_bound_raw
     U HR HP (nativeFamily F ζ hζ HR HP) K hK
   choose os B hB hb using fun b => restrictedSlot_residue_word_l2 R N P C D HR HP M  dk s x w hw b
   let orders := W.biUnion os

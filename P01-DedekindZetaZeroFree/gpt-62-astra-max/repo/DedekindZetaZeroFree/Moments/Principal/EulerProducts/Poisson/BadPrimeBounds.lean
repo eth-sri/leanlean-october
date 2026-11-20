@@ -12,8 +12,8 @@ noncomputable section
 open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.EulerDomain
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 private def slack (p : Coordinates) : ℝ :=
   min p.1.re (min p.2.1.re (min p.2.2.re (min (6 * p.2.2.re + p.2.1.re - 1)
@@ -44,8 +44,7 @@ theorem exists_margin_of_compact (K : Set Coordinates) (hK : IsCompact K)
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
   refine ⟨slack x, hpos, ?_⟩
   intro p hp
-  have hle : slack x ≤ slack p := isMinOn_iff.mp hx p hp
-  obtain ⟨g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11⟩ := (le_slack_iff _ _).mp hle
+  obtain ⟨g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11⟩ := (le_slack_iff _ _).mp (isMinOn_iff.mp hx p hp)
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
 
 private lemma Q_pos' {A : SArithmeticData F} (p : LocalFiniteSums.ExteriorPrime A) :
@@ -84,8 +83,7 @@ private theorem normal_holomorphic {ι : Type*} (g : ι → Coordinates → ℂ)
   obtain ⟨r, hr, hsub⟩ := Metric.nhds_basis_closedBall.mem_iff.mp (hU.mem_nhds hx)
   obtain ⟨M, hMs, hMb⟩ := hM (closedBall x r) hsub (isCompact_closedBall x r)
   have hhalf : 0 < r / 2 := by positivity
-  have hinside {y : Coordinates} (hy : y ∈ Metric.ball x (r / 2)) : y ∈ closedBall x r := by
-    exact ball_subset_closedBall (ball_subset_ball (by linarith) hy)
+  have hinside {y : Coordinates} (hy : y ∈ Metric.ball x (r / 2)) : y ∈ closedBall x r := ball_subset_closedBall (ball_subset_ball (by linarith) hy)
   have hderiv : ∀ i y, y ∈ Metric.ball x (r / 2) → ‖fderiv ℂ (g i) y‖ ≤ (4 / r) * M i := by
     intro i y hy
     have hball : Metric.ball y (r / 2) ⊆ closedBall x r := by
@@ -97,11 +95,11 @@ private theorem normal_holomorphic {ι : Type*} (g : ι → Coordinates → ℂ)
       linarith
     have hnorm := Complex.norm_fderiv_le_div_of_mapsTo_ball
       ((hg i).differentiableOn : DifferentiableOn ℂ (g i) (Metric.ball y (r / 2)))
-      (R₂ := 2 * M i) (by
+       (by
         intro z hz
         apply mem_closedBall.mpr
         calc
-          dist (g i z) (g i y) ≤ ‖g i z‖ + ‖g i y‖ := by
+          _ ≤ ‖g i z‖ + ‖g i y‖ := by
             simpa only [dist_eq_norm_sub] using norm_sub_le (g i z) (g i y)
           _ ≤ 2 * M i := by linarith [hMb i z (hball hz), hMb i y (hinside hy)]) hhalf
     convert hnorm using 1 <;> field_simp <;> ring
@@ -140,12 +138,9 @@ private theorem sub_one_le_aux (u : D.Row) (pr : LocalFiniteSums.ExteriorPrime D
     ‖CorrectionFactors.localFactor D.context u pr p.1 p.2.1 p.2.2 - 1‖ ≤
       2 * (∑' i, BadPrimeShellSeries.weight ρ i) * q := by
   have hws := BadPrimeShellSeries.weight_summable hρ0 hρ1
-  have hts : Summable (tm D u pr p) :=
-    Summable.of_norm_bounded (hws.mul_left (2 / (1 - ρ)))
-      (fun i => norm_le_of_norm_one_sub_mul _ _ ρ _ hV hρ1 (h2 i))
-  have hb : Summable (BadPrimeShellSeries.baseline pr p.2.2) :=
+  have hb :=
     Summable.of_norm_bounded hws (BadPrimeShellSeries.baseline_norm_le pr p.2.2 ρ hρ0 hV)
-  have hV1 : ‖CorrectionFactors.V pr p.2.2‖ < 1 := lt_of_le_of_lt hV hρ1
+  have hV1 := lt_of_le_of_lt hV hρ1
   have hcancel := BadPrimeShellSeries.one_sub_V_mul_tsum_baseline pr p.2.2 hV1
   have hr : ∀ i : Fin 2 × ℕ × ℕ × ℕ,
       ‖tm D u pr p i - BadPrimeShellSeries.baseline pr p.2.2 i‖ ≤
@@ -173,22 +168,21 @@ private theorem sub_one_le_aux (u : D.Row) (pr : LocalFiniteSums.ExteriorPrime D
         simp [BadPrimeShellSeries.baseline]
       rw [hterm, hbase, sub_self, norm_zero]
       exact mul_nonneg hq (BadPrimeShellSeries.weight_nonneg hρ0 _)
-  have hrs := tsum_of_norm_bounded (hws.hasSum.mul_left q) hr
   have hid : CorrectionFactors.localFactor D.context u pr p.1 p.2.1 p.2.2 - 1 =
       (1 - CorrectionFactors.V pr p.2.2) *
         ∑' i, (tm D u pr p i - BadPrimeShellSeries.baseline pr p.2.2 i) := by
-    rw [hts.tsum_sub hb, mul_sub, hcancel, localFactor_eq D u pr hj] <;> rfl
+    rw [(Summable.of_norm_bounded (hws.mul_left (2 / (1 - ρ)))
+      (fun i => norm_le_of_norm_one_sub_mul _ _ ρ _ hV hρ1 (h2 i))).tsum_sub hb, mul_sub, hcancel, localFactor_eq D u pr hj] <;> rfl
   have hV2 : ‖1 - CorrectionFactors.V pr p.2.2‖ ≤ 2 := by
-    calc ‖1 - CorrectionFactors.V pr p.2.2‖
+    calc _
         ≤ ‖(1 : ℂ)‖ + ‖CorrectionFactors.V pr p.2.2‖ := norm_sub_le _ _
       _ ≤ 2 := by
         simp only [norm_one]
         linarith
   rw [hid, norm_mul]
-  calc ‖1 - CorrectionFactors.V pr p.2.2‖ *
-        ‖∑' i, (tm D u pr p i - BadPrimeShellSeries.baseline pr p.2.2 i)‖
+  calc _
       ≤ 2 * (q * ∑' i, BadPrimeShellSeries.weight ρ i) :=
-        mul_le_mul hV2 hrs (norm_nonneg _) (by norm_num)
+        mul_le_mul hV2 (tsum_of_norm_bounded (hws.hasSum.mul_left q) hr) (norm_nonneg _) (by norm_num)
     _ = 2 * (∑' i, BadPrimeShellSeries.weight ρ i) * q := by ring
 
 theorem localFactor_differentiableOn (u : D.Row)
@@ -227,10 +221,9 @@ theorem localFactor_sub_one_le (δ' : ℝ) (hδ' : 0 < δ') :
   intro u pr hj p hp
   have hQ : 0 ≤ LocalFiniteSums.Q pr ^ (-δ₀) :=
     Real.rpow_nonneg (Q_pos' pr).le _
-  have h := sub_one_le_aux D u pr hj p ρ _ hρ0.le hρ1 hQ
+  refine (sub_one_le_aux D u pr hj p ρ _ hρ0.le hρ1 hQ
     (hmaj u pr hj p hp (0, 0, 0, 0)).1
-    (fun i => (hmaj u pr hj p hp i).2.1) (fun i hi => (hmaj u pr hj p hp i).2.2 hi)
-  refine h.trans ?_
+    (fun i => (hmaj u pr hj p hp i).2.1) (fun i hi => (hmaj u pr hj p hp i).2.2 hi)).trans ?_
   nlinarith [mul_nonneg hS hQ]
 
 end

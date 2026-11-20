@@ -11,7 +11,7 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.CurrentBoxCoordinateHaar
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 variable (F : Type) [Field F] [NumberField F] [NumberField.IsTotallyComplex F]
-variable (Q : Finset (KPFinitePlace F))
+    (Q : Finset (KPFinitePlace F))
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
@@ -28,34 +28,28 @@ def coordinate (y : KPGlobalTorusFunctionData.Adeles F) : ∀ i, Root F Q i
   | .inl w => CurrentArchProductHaar.coordinate F w y.1
   | .inr q => y.2 q.val
 
-theorem product_integral (hD : localDifferentSupport F ⊆ (Q : Set _))
-    (f : ∀ i, Root F Q i → ℂ) :
+variable (hD : localDifferentSupport F ⊆ (Q : Set _)) (f : ∀ i, Root F Q i → ℂ)
+
+include hD in
+theorem product_integral :
     (∫ y : KPGlobalTorusFunctionData.Adeles F, ∏ i, f i (coordinate F Q y i)
       ∂(KPAdditiveHaar.adelicMeasure F).restrict (TraceBox.adelicBox F Q)) =
       ∏ i, ∫ x, f i x ∂rootMeasure F Q i := by
   simp only [Fintype.prod_sum_type]
-  change (∫ y : KPGlobalTorusFunctionData.Adeles F,
-    (∏ w, f (.inl w) (CurrentArchProductHaar.coordinate F w y.1)) *
-    (∏ q : Q, f (.inr q) (y.2 q.val)) ∂_) = _
-  have h := CurrentBoxProductHaar.box_product_integral F Q hD
+  refine (CurrentBoxProductHaar.box_product_integral F Q hD
     (fun x => ∏ w, f (.inl w) (CurrentArchProductHaar.coordinate F w x))
-    (fun x => ∏ q : Q, f (.inr q) (x q))
-  refine h.trans ?_
+    (fun x => ∏ q : Q, f (.inr q) (x q))).trans ?_
   rw [CurrentArchProductHaar.arch_product_integral]
-  have hp := integral_fintype_prod_eq_prod (fun q : Q => f (.inr q))
-    (μ := fun q : Q => localNormalizedHaar F q.val)
   exact congrArg (fun x => (∏ w, ∫ z, f (.inl w) z
-    ∂((2 : ENNReal) • KPCplxCharacterHaar.euclideanArea)) * x) hp
+    ∂((2 : ENNReal) • KPCplxCharacterHaar.euclideanArea)) * x) (integral_fintype_prod_eq_prod (fun q : Q => f (.inr q))
+    )
 
-theorem product_integrable (hD : localDifferentSupport F ⊆ (Q : Set _))
-    (f : ∀ i, Root F Q i → ℂ)
+include hD in
+theorem product_integrable
     (hf : ∀ i, Integrable (f i) (rootMeasure F Q i)) :
     Integrable (fun y : KPGlobalTorusFunctionData.Adeles F => ∏ i, f i (coordinate F Q y i))
       ((KPAdditiveHaar.adelicMeasure F).restrict (TraceBox.adelicBox F Q)) := by
   simp only [Fintype.prod_sum_type]
-  change Integrable (fun y : KPGlobalTorusFunctionData.Adeles F =>
-    (∏ w, f (.inl w) (CurrentArchProductHaar.coordinate F w y.1)) *
-    (∏ q : Q, f (.inr q) (y.2 q.val))) _
   exact CurrentBoxProductHaar.box_product_integrable F Q hD
     (fun x => ∏ w, f (.inl w) (CurrentArchProductHaar.coordinate F w x))
     (fun x => ∏ q : Q, f (.inr q) (x q))

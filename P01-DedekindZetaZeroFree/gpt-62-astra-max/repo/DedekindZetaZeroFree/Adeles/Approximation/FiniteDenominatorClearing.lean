@@ -19,7 +19,7 @@ theorem finiteAdele_exists_integral_denominator
           v.adicCompletionIntegers F := by
   classical
   let R := NumberField.RingOfIntegers F
-  have hfinite : {v : HeightOneSpectrum R | z v ∉ v.adicCompletionIntegers F}.Finite :=
+  have hfinite :=
     z.cofinite_mem_adicCompletionIntegers
   let T := hfinite.toFinset
   have hclear : ∀ s : Finset (HeightOneSpectrum R),
@@ -35,24 +35,20 @@ theorem finiteAdele_exists_integral_denominator
       refine ⟨b * d, mul_ne_zero (nonZeroDivisors.ne_zero hb) hd, ?_⟩
       intro w hw
       rcases Finset.mem_insert.mp hw with rfl | hw
-      · have hi := (w.adicCompletionIntegers F).toSubring.mul_mem
-          (w.coe_mem_adicCompletionIntegers (K := F) d) hzb
-        simpa only [Algebra.cast, map_mul, mul_comm, mul_left_comm, mul_assoc,
-          ValuationSubring.mem_toSubring] using hi
-      · have hi := (w.adicCompletionIntegers F).mul_mem _ _
-          (w.coe_mem_adicCompletionIntegers (K := F) b) (hds w hw)
-        simpa only [Algebra.cast, map_mul, mul_assoc] using hi
+      · simpa only [Algebra.cast, map_mul, mul_comm, mul_left_comm, mul_assoc,
+          ValuationSubring.mem_toSubring] using ((w.adicCompletionIntegers F).toSubring.mul_mem
+            (w.coe_mem_adicCompletionIntegers d) hzb)
+      · simpa only [Algebra.cast, map_mul, mul_assoc] using ((w.adicCompletionIntegers F).mul_mem _ _
+          (w.coe_mem_adicCompletionIntegers b) (hds w hw))
   obtain ⟨d, hd, hds⟩ := hclear T
   refine ⟨d, hd, ?_⟩
   intro v
-  change algebraMap R (v.adicCompletion F) d * z v ∈ v.adicCompletionIntegers F
   by_cases hv : v ∈ T
   · exact hds v hv
-  · have hz : z v ∈ v.adicCompletionIntegers F := by
-      by_contra hn
-      exact hv (hfinite.mem_toFinset.mpr hn)
-    exact (v.adicCompletionIntegers F).mul_mem _ _
-      (v.coe_mem_adicCompletionIntegers (K := F) d) hz
+  · exact (v.adicCompletionIntegers F).mul_mem _ _
+      (v.coe_mem_adicCompletionIntegers d) (by
+        by_contra hn
+        exact hv (hfinite.mem_toFinset.mpr hn))
 
 theorem finiteAdele_exists_integral_denominator_mem_range
     (F : Type*) [Field F] [NumberField F]

@@ -13,19 +13,23 @@ namespace DedekindZetaZeroFree.KPContActualCotangentPieceHilbertSum
 open KPContActualCotangentCountableShrinking KPContCotangentActualOverlap
 open KPContCotangentActualGenuineTwistIsotropy KPContCotangentOverlapRationalBranches
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (a : ShrunkChart F ζ hζ U R P H)
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    (a : ShrunkChart F ζ hζ U R P H)
 
-def actualAction (γ : Gamma a) (y : a.domain) : a.domain := a.action γ.val.1 y
+section
 
-theorem action_continuous (γ : Gamma a) : Continuous (actualAction a γ) :=
+variable (γ : Gamma a)
+
+def actualAction (y : a.domain) : a.domain := a.action γ.val.1 y
+
+theorem action_continuous : Continuous (actualAction a γ) :=
   ((KPCuspSiegel.continuous_action F (γ.val.1.val : KPCuspArithmetic.PGL2 F)).comp
     continuous_subtype_val).subtype_mk _
 
-def actualActionEquiv (γ : Gamma a) : a.domain ≃ᵐ a.domain where
+def actualActionEquiv : a.domain ≃ᵐ a.domain where
   toFun := actualAction a γ
   invFun := actualAction a γ⁻¹
   left_inv y := by
@@ -41,7 +45,7 @@ def actualActionEquiv (γ : Gamma a) : a.domain ≃ᵐ a.domain where
   measurable_toFun := (action_continuous a γ).measurable
   measurable_invFun := (action_continuous a γ⁻¹).measurable
 
-theorem action_preserving (γ : Gamma a) :
+theorem action_preserving :
     MeasurePreserving (actualActionEquiv a γ) a.liftedMeasure a.liftedMeasure := by
   let g : KPCuspArithmetic.PGL2 F := γ.val.1.val
   let μ := KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)
@@ -60,17 +64,18 @@ theorem action_preserving (γ : Gamma a) :
   have hc := measurePreserving_subtype_coe (μa := μ.restrict a.domain)
     a.domain_open.measurableSet
   rw [Measure.restrict_restrict a.domain_open.measurableSet, Set.inter_self] at hc
-  have hcomp := hp.comp hc
   have hmap : Measure.map (actualActionEquiv a γ)
-      (Measure.comap (Subtype.val : a.domain → _) (μ.restrict a.domain)) =
-      Measure.comap (Subtype.val : a.domain → _) (μ.restrict a.domain) := by
+      (Measure.comap Subtype.val (μ.restrict a.domain)) =
+      Measure.comap Subtype.val (μ.restrict a.domain) := by
     apply (MeasurableEmbedding.subtype_coe a.domain_open.measurableSet).map_injective
     rw [Measure.map_map measurable_subtype_coe (actualActionEquiv a γ).measurable]
-    exact hcomp.map_eq.trans hc.map_eq.symm
+    exact (hp.comp hc).map_eq.trans hc.map_eq.symm
   exact (show MeasurePreserving (actualActionEquiv a γ)
-    (Measure.comap (Subtype.val : a.domain → _) (μ.restrict a.domain))
-    (Measure.comap (Subtype.val : a.domain → _) (μ.restrict a.domain)) from
+    (Measure.comap Subtype.val (μ.restrict a.domain))
+    (Measure.comap Subtype.val (μ.restrict a.domain)) from
       ⟨(actualActionEquiv a γ).measurable, hmap⟩).smul_measure _
+
+end
 
 def coordinates (y : a.domain) : omega a :=
   ⟨labeledAInv (placeEquiv F ζ hζ) y.val, by
@@ -94,7 +99,7 @@ def actualTensor (γ : Gamma a) (y : a.domain) : E F ≃ₗᵢ[ℂ] E F :=
 theorem tensor_measurable (γ : Gamma a) :
     Measurable (fun p : a.domain × E F => actualTensor a γ p.1 p.2) := by
   have hc : Continuous (fun y : omega a => twistedOperator (isotropyArrow a γ) y.val) :=
-    ((smooth_operators (isotropyArrow a γ)).2.continuousOn.mono
+    ((smooth_operators (isotropyArrow a γ)).continuousOn.mono
       (KPContActualCotangentMeasurableFamilies.omega_subset_larger a)).restrict
   exact (((hc.comp (coordinates_continuous a)).comp continuous_fst).clm_apply
     continuous_snd).measurable
@@ -102,11 +107,7 @@ theorem tensor_measurable (γ : Gamma a) :
 private theorem same_labels {i : Fin (H.atlas U).componentCount}
     {b c : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e f : Arrow b c) (hγ : e.gamma = f.gamma) (hr : e.root = f.root)
-    (x : M F) (he : x ∈ e.domain) (hf : x ∈ f.domain) : T e x he = T f x hf := by
-  apply LinearIsometryEquiv.ext
-  intro v
-  change twistedOperator e x v = twistedOperator f x v
-  simp only [twistedOperator, Arrow.phase, Arrow.psi, Q, hγ, hr]
+    (x : M F) (he : x ∈ e.domain) (hf : x ∈ f.domain) : T e x he = T f x hf := by apply @DedekindZetaZeroFree.KPContCotangentActualGenuineTwistIsotropy.T_same_labels <;> assumption
 
 theorem tensor_one (y : a.domain) :
     actualTensor a 1 y = LinearIsometryEquiv.refl ℂ (E F) := by
@@ -119,7 +120,6 @@ theorem tensor_one (y : a.domain) :
 theorem coordinates_action (γ : Gamma a) (y : a.domain) :
     (coordinates a (actualActionEquiv a γ y)).val =
       (isotropyArrow a γ).psi (coordinates a y).val := by
-  change labeledAInv (placeEquiv F ζ hζ) (γ.val.1.val • y.val) = _
   have hi : labeledA (placeEquiv F ζ hζ) (coordinates a y).val = y.val := by
     funext k; simp [coordinates, labeledA, labeledAInv]
   change labeledAInv (placeEquiv F ζ hζ) (γ.val.1.val • y.val) =
@@ -136,13 +136,11 @@ theorem tensor_mul (γ δ : Gamma a) (y : a.domain) (v : E F) :
   have ht := KPContActualCotangentMeasurableFamilies.omega_subset_larger a
     (coordinates a (actualActionEquiv a δ y)).property
   rw [coordinates_action a δ y] at ht
-  have hc := T_comp (isotropyArrow a γ) (isotropyArrow a δ)
-    (coordinates a y).val hx ht
-  have hs := same_labels (isotropyArrow a (γ * δ))
-    (comp (isotropyArrow a γ) (isotropyArrow a δ)) rfl rfl
-    (coordinates a y).val hx ⟨hx, ht⟩
   unfold actualTensor
-  rw [hs, hc]
+  rw [(same_labels (isotropyArrow a (γ * δ))
+    (comp (isotropyArrow a γ) (isotropyArrow a δ)) rfl rfl
+    (coordinates a y).val hx ⟨hx, ht⟩), (T_comp (isotropyArrow a γ) (isotropyArrow a δ)
+    (coordinates a y).val hx ht)]
   simp only [LinearIsometryEquiv.trans_apply]
   change twistedOperator (isotropyArrow a γ) ((isotropyArrow a δ).psi (coordinates a y).val)
     (twistedOperator (isotropyArrow a δ) (coordinates a y).val v) =

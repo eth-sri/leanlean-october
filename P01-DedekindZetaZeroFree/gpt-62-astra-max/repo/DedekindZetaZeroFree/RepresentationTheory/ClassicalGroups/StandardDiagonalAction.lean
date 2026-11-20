@@ -38,7 +38,7 @@ variable {k : Type u} [CommRing k] {n : ℕ}
 theorem stdRep_diagGL_apply (t : Fin n → kˣ) (v : Fin n → k) (i : Fin n) :
     stdRep k n (diagGL t) v i = (t i : k) * v i := by
   rw [stdRep_apply_apply, diagGL_coe]
-  exact Matrix.mulVec_diagonal _ _ _
+  apply Matrix.mulVec_diagonal
 
 @[simp↓]
 theorem stdRep_diagGL_apply_basisFun (t : Fin n → kˣ) (i : Fin n) :

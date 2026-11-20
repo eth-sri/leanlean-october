@@ -8,13 +8,19 @@ noncomputable section
 open scoped NumberField Classical TensorProduct
 open NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.SourceReconstruction
-abbrev InducingData (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :=
+section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+
+abbrev InducingData :=
   ∀ q : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
     KPLocalExceptionalConstruction.CanonicalFiniteInducingData F ζ hζ q
-abbrev localPlus (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+abbrev localPlus
     (M : InducingData F ζ hζ) : KPHilbert.Place F → Type
   | Sum.inl _ => KPLiteralTensor.harmonicPlus
   | Sum.inr q => KPLocalPrincipalSeries.sectionSpace (M q).borel (M q).polarization .plus 0
+
+end
 instance localPlusAdd (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (M : InducingData F ζ hζ) (v : KPHilbert.Place F) : AddCommGroup (localPlus F ζ hζ M v) := by
   cases v <;> dsimp [localPlus] <;> infer_instance
@@ -30,8 +36,8 @@ open scoped NumberField Classical TensorProduct
 open NumberField
 namespace DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (M : FourierContinuation.SourceReconstruction.InducingData F ζ hζ)
-variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
+    (M : FourierContinuation.SourceReconstruction.InducingData F ζ hζ)
+    (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
  abbrev Cover (q : S) := KPLocalExceptionalConstruction.ActualCover F ζ hζ q.val
  abbrev Fiber (q : S) : Type := ↥(KPLocalStoneVonNeumann.InducedModule (M q.val).polarization)
  abbrev Source (q : S) := FourierContinuation.SourceReconstruction.localPlus F ζ hζ M (Sum.inr q.val)

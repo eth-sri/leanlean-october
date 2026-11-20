@@ -12,20 +12,19 @@ universe u v
 variable {J : Type u} (V : J → Type v)
 variable [∀ j, AddCommGroup (V j)] [∀ j, Module ℂ (V j)]
 variable (e : ∀ j, V j) (bad : Finset J)
-variable (L : RestrictedTensorSimple.Core V e bad →ₗ[ℂ] ℂ)
+    (L : RestrictedTensorSimple.Core V e bad →ₗ[ℂ] ℂ)
 
 def coreStageMultilinear (s : RestrictedTensorSimple.Level bad) : MultilinearMap ℂ (fun j : s.val => V j) ℂ :=
   (L.comp (RestrictedTensorSimple.stageInclusion V e bad s)).compMultilinearMap
     (PiTensorProduct.tprod ℂ)
 
-theorem core_factorization_one_scalar
-    (W : ∀ j, Submodule ℂ (V j →ₗ[ℂ] ℂ))
-    (hmem : ∀ (s : RestrictedTensorSimple.Level bad) (x : ∀ j : s.val, V j) (i : s.val),
-      (coreStageMultilinear V e bad L s).toLinearMap x i ∈ W i)
-    (hdim : ∀ j, Module.finrank ℂ (W j) = 1)
-    (ell : ∀ j, V j →ₗ[ℂ] ℂ) (hell : ∀ j, ell j ∈ W j)
-    (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
-    (x₀ : ∀ j : bad, V j) (hx₀ : ∀ j : bad, ell j (x₀ j) = 1) :
+variable (W : ∀ j, Submodule ℂ (V j →ₗ[ℂ] ℂ))
+    (hmem : ∀ (s : RestrictedTensorSimple.Level bad) (x : ∀ j : s.val, V j) (i : s.val), (coreStageMultilinear V e bad L s).toLinearMap x i ∈ W i)
+    (hdim : ∀ j, Module.finrank ℂ (W j) = 1) (ell : ∀ j, V j →ₗ[ℂ] ℂ) (hell : ∀ j, ell j ∈ W j)
+    (hnorm : ∀ j ∉ bad, ell j (e j) = 1) (x₀ : ∀ j : bad, V j) (hx₀ : ∀ j : bad, ell j (x₀ j) = 1)
+
+include hmem hdim hell hnorm hx₀ in
+theorem core_factorization_one_scalar :
     ∀ (s : RestrictedTensorSimple.Level bad) (x : ∀ j : s.val, V j),
       L (RestrictedTensorSimple.stageInclusion V e bad s (PiTensorProduct.tprod ℂ x)) =
         L (RestrictedTensorSimple.stageInclusion V e bad ⟨bad, le_rfl⟩
@@ -54,14 +53,8 @@ theorem core_factorization_one_scalar
   rw [htrans] at hf
   exact hf
 
+include hmem hdim hell hx₀ in
 theorem core_factorization_absorbed
-    (W : ∀ j, Submodule ℂ (V j →ₗ[ℂ] ℂ))
-    (hmem : ∀ (s : RestrictedTensorSimple.Level bad) (x : ∀ j : s.val, V j) (i : s.val),
-      (coreStageMultilinear V e bad L s).toLinearMap x i ∈ W i)
-    (hdim : ∀ j, Module.finrank ℂ (W j) = 1)
-    (ell : ∀ j, V j →ₗ[ℂ] ℂ) (hell : ∀ j, ell j ∈ W j)
-    (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
-    (x₀ : ∀ j : bad, V j) (hx₀ : ∀ j : bad, ell j (x₀ j) = 1)
     (slot : bad) :
     let c := L (RestrictedTensorSimple.stageInclusion V e bad ⟨bad, le_rfl⟩
       (PiTensorProduct.tprod ℂ x₀))
@@ -70,14 +63,8 @@ theorem core_factorization_absorbed
   apply absorb_global_coefficient V e bad ell hnorm slot _ L
   exact core_factorization_one_scalar V e bad L W hmem hdim ell hell hnorm x₀ hx₀
 
+include hmem hdim hell hnorm hx₀ in
 theorem core_reference_detected
-    (W : ∀ j, Submodule ℂ (V j →ₗ[ℂ] ℂ))
-    (hmem : ∀ (s : RestrictedTensorSimple.Level bad) (x : ∀ j : s.val, V j) (i : s.val),
-      (coreStageMultilinear V e bad L s).toLinearMap x i ∈ W i)
-    (hdim : ∀ j, Module.finrank ℂ (W j) = 1)
-    (ell : ∀ j, V j →ₗ[ℂ] ℂ) (hell : ∀ j, ell j ∈ W j)
-    (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
-    (x₀ : ∀ j : bad, V j) (hx₀ : ∀ j : bad, ell j (x₀ j) = 1)
     (hne : L ≠ 0) :
     L (RestrictedTensorSimple.stageInclusion V e bad ⟨bad, le_rfl⟩
       (PiTensorProduct.tprod ℂ x₀)) ≠ 0 := by

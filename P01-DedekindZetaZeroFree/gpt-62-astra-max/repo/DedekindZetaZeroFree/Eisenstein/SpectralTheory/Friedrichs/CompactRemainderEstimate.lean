@@ -19,10 +19,10 @@ namespace DedekindZetaZeroFree.KPContActualCompactRemainderEstimate
 open KPContActualSquareEndPartition KPContActualFormLocalRestrictionCompact
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 def errorSup {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H T) : ℝ :=
   sSup (Set.range (collarError F ζ hζ U R P H partition.χ₀ partition.χ))
@@ -34,8 +34,8 @@ def coefficient (ε : ℝ) {T : ℝ}
     errorSup F ζ hζ U R P H partition
 
 variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
-variable (hR : R.adelicHaar = μG)
-variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
+    (hR : R.adelicHaar = μG)
+    (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
 
 local notation "HU" => KPContSectorClosedLpSubspace.H F ζ hζ R U
 local notation "Q" => KPContActualFormIMSIdentity.Q_U F ζ hζ U R P H μG hμG hR realization
@@ -56,45 +56,14 @@ def Kε (ε : ℝ) {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H T)
     (multiplier.M_ρ.comp BU)
 
 structure Construction (ε : ℝ) where
-  positive_dimension : 0 < dF
-  eta_positive : 0 < min (ε / 2) (dF / 2)
-  eta_le_epsilon : min (ε / 2) (dF / 2) ≤ ε
-  a_positive : 0 < dF - min (ε / 2) (dF / 2)
   T : ℝ
-  above_end_starts : AboveEndStarts F ζ hζ U R P H T
 
-  exterior_bound : ∀ (c : KPContActualCuspRadialFormComparison.Cusp F ζ hζ U R P H)
-      (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H),
-    KPContActualSectorSmoothTestModules.scalarSupport f.val ⊆
-      KPContActualCuspRadialFormComparison.endSet F ζ hζ U R P H c T →
-    (dF - min (ε / 2) (dF / 2)) * ‖KPContActualSectorTestEmbeddings.iota f‖ ^ 2 ≤
-      KPContActualCuspRadialFormComparison.q_U F ζ hζ U R P H μG hμG hR realization
-        (KPContActualCuspRadialFormComparison.coreLift F ζ hζ U R P H
-          μG hμG hR realization f)
   partition : SquareEndPartition F ζ hζ U R P H T
-  ims : KPContActualFormIMSIdentity.Properties F ζ hζ U R P H
-    μG hμG hR realization partition
-  rho_smooth : SmoothScalar F ζ hζ U R P H (fun x => (partition.ρ.val x : ℂ))
-  rho_compact : HasCompactSupport (fun x => (partition.ρ.val x : ℂ))
   multiplier : MultiplierData F ζ hζ U R P H μG hμG hR realization
     (fun x => (partition.ρ.val x : ℂ))
 
-  multiplier_binding : multiplier.M_ρ = partition.rho_multiplier.op
-  error_sup_nonnegative : 0 ≤ errorSup F ζ hζ U R P H partition
-  error_le_sup : ∀ x, collarError F ζ hζ U R P H partition.χ₀ partition.χ x ≤
-    errorSup F ζ hζ U R P H partition
-  coefficient_nonnegative : 0 ≤ coefficient F ζ hζ U R P H ε partition
-
-  form_bound : ∀ v : Q,
-    (dF - min (ε / 2) (dF / 2)) * ‖jU v‖ ^ 2 ≤
-      qU v + coefficient F ζ hζ U R P H ε partition * ‖multiplier.M_ρ (jU v)‖ ^ 2
-
-  inverse_form_energy : ∀ u : HU, qU (bU u) = (inner ℂ (BU u) (u - BU u)).re
   remainder_compact : IsCompactOperator
     (Kε F ζ hζ U R P H μG hμG hR realization ε partition multiplier)
-  remainder_norm_sq : ∀ u : HU,
-    ‖Kε F ζ hζ U R P H μG hμG hR realization ε partition multiplier u‖ ^ 2 =
-      coefficient F ζ hζ U R P H ε partition * ‖multiplier.M_ρ (BU u)‖ ^ 2
   remainder_estimate : ∀ u : HU,
     (dF - ε) * ‖BU u‖ ^ 2 ≤ (inner ℂ (BU u) (u - BU u)).re +
       ‖Kε F ζ hζ U R P H μG hμG hR realization ε partition multiplier u‖ ^ 2
@@ -117,8 +86,8 @@ private theorem coord_eq_closure_of_embedding
       closedGradientCoordinate D w := by
     simp only [WithLp.coe_linearEquiv, WithLp.ofLp_snd, closedGradientCoordinate,
       ContinuousLinearMap.comp_apply, Submodule.subtypeL_apply, WithLp.sndL_apply]
-  have hy1' : (y : H) = closedGradientEmbedding D w := hy1.trans hA
-  have hy2' : D.closure y = closedGradientCoordinate D w := hy2.trans hB
+  have hy1' := hy1.trans hA
+  have hy2' := hy2.trans hB
   have hy : y = u := by
     apply Subtype.ext
     rw [hy1', hw]
@@ -150,7 +119,6 @@ private theorem q_coordinates_here
 
 private theorem lp_norm_sq_here {α : Type*} [MeasurableSpace α] {μ : Measure α}
     (w : Lp ℂ 2 μ) : ‖w‖ ^ 2 = ∫ x, ‖w x‖ ^ 2 ∂μ := by
-  have hi := L2.inner_def (𝕜 := ℂ) w w
   have h2 : ∫ x, inner ℂ (w x) (w x) ∂μ = ((∫ x, ‖w x‖ ^ 2 ∂μ : ℝ) : ℂ) := by
     have hcongr : ∫ x, inner ℂ (w x) (w x) ∂μ
         = ∫ x, ((‖w x‖ ^ 2 : ℝ) : ℂ) ∂μ := by
@@ -162,7 +130,7 @@ private theorem lp_norm_sq_here {α : Type*} [MeasurableSpace α] {μ : Measure 
     have hz : inner ℂ w w = ((‖w‖ ^ 2 : ℝ) : ℂ) := by
       rw [inner_self_eq_norm_sq_to_K]; norm_num
     rw [hz, Complex.ofReal_re]
-  rw [← h3, hi, h2, Complex.ofReal_re]
+  rw [← h3, (L2.inner_def w w), h2, Complex.ofReal_re]
 
 private theorem norm_sq_ofReal_mul (r : ℝ) (hr : 0 ≤ r) (z : ℂ) :
     ‖(r : ℂ) * z‖ ^ 2 = r ^ 2 * ‖z‖ ^ 2 := by
@@ -172,10 +140,9 @@ private theorem measurable_sectionNorm_here (s : KPContSectorLineL2Isometry.Bore
     Measurable (KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val) := by
   have hme : Measurable (fun x =>
       KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val x ^ 2) := by
-    have h := ENNReal.measurable_toReal.comp
-      (KPContSectorLineL2Isometry.squaredNorm_measurable F ζ hζ U R P H s.val s.property.1)
     simpa only [Function.comp_def, KPContSectorLineL2Isometry.squaredNorm,
-      ENNReal.toReal_ofReal (sq_nonneg _)] using h
+      ENNReal.toReal_ofReal (sq_nonneg _)] using (ENNReal.measurable_toReal.comp
+        (KPContSectorLineL2Isometry.squaredNorm_measurable F ζ hζ U R P H s.val s.property.1))
   have heq : KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val =
       fun x => Real.sqrt
         (KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val x ^ 2) := by
@@ -209,10 +176,7 @@ private theorem weighted_integral_eq_here {T : ℝ}
       (KPContSectorLineL2Isometry.representative_memLp F ζ hζ U R P H s).toLp
         (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ U R P H s.val).val := by
     rw [← hts]; rfl
-  have hcoe : (KPContSectorLineL2Isometry.representative_memLp F ζ hζ U R P H s).toLp
-        (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ U R P H s.val).val
-      =ᵐ[KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R U]
-        (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ U R P H s.val).val :=
+  have hcoe :=
     (KPContSectorLineL2Isometry.representative_memLp F ζ hζ U R P H s).coeFn_toLp
   have hstep1 : (∫ x, collarError F ζ hζ U R P H partition.χ₀ partition.χ
         (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x) *
@@ -233,22 +197,14 @@ private theorem weighted_integral_eq_here {T : ℝ}
   rw [MeasureTheory.integral_map]
   · apply integral_congr_ae
     filter_upwards with x
-    have hS : KPContSectorScalarLineAlgebra.S F ζ hζ U R P H
-        (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ U R P H s.val) = s.val :=
-      (KPContSectorScalarLineAlgebra.S F ζ hζ U R P H).apply_symm_apply s.val
     have hsn : KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val
         (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x) =
         ‖(KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ U R P H s.val).val x‖ := by
-      conv_lhs => rw [← hS]
+      conv_lhs => rw [← ((KPContSectorScalarLineAlgebra.S F ζ hζ U R P H).apply_symm_apply s.val)]
       exact KPContSectorSmoothFramesSupport.sectionNorm_pullback F ζ hζ U R P H _ x
     rw [hsn]
   · exact (KPContSectorQuotientRelationsComparison.q_continuous F ζ hζ U).aemeasurable
-  · have hEc : Continuous (collarError F ζ hζ U R P H partition.χ₀ partition.χ) :=
-      collarError_continuous_nonnegative F ζ hζ U R P H partition.χ₀ partition.χ |>.1
-    have hm : Measurable (fun y => collarError F ζ hζ U R P H partition.χ₀ partition.χ y *
-        KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val y ^ 2) :=
-      hEc.measurable.mul ((measurable_sectionNorm_here F ζ hζ U R P H s).pow_const 2)
-    exact hm.aestronglyMeasurable
+  · exact ((collarError_continuous_nonnegative F ζ hζ U R P H partition.χ₀ partition.χ |>.1).measurable.mul ((measurable_sectionNorm_here F ζ hζ U R P H s).pow_const 2)).aestronglyMeasurable
 
 theorem construction_nonempty (ε : ℝ) (hε : 0 < ε) :
     Nonempty (Construction F ζ hζ U R P H μG hμG hR realization ε) := by
@@ -627,26 +583,11 @@ theorem construction_nonempty (ε : ℝ) (hε : 0 < ε) :
       _ ≤ (inner ℂ (BU u) (u - BU u)).re +
           ‖Kε F ζ hζ U R P H μG hμG hR realization ε part mult u‖ ^ 2 := h1
   refine ⟨
-    { positive_dimension := hd
-      eta_positive := hηpos
-      eta_le_epsilon := hηle
-      a_positive := hapos
+    {
       T := T
-      above_end_starts := hTthr
-      exterior_bound := hextb
       partition := part
-      ims := ims
-      rho_smooth := hρsm
-      rho_compact := hρc
       multiplier := mult
-      multiplier_binding := hbind
-      error_sup_nonnegative := hsup
-      error_le_sup := hle
-      coefficient_nonnegative := hcoef
-      form_bound := hformbound
-      inverse_form_energy := hife
       remainder_compact := hcomp
-      remainder_norm_sq := hnsq
       remainder_estimate := hest }⟩
 
 end DedekindZetaZeroFree.KPContActualCompactRemainderEstimate

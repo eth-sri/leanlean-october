@@ -59,7 +59,6 @@ theorem finiteMass_eq_discriminant :
   let S := (finite_localDifferentSupport F).toFinset
   have hS : PoissonS.ContainsDifferent F S := by
     intro v hv
-    change v ∈ (finite_localDifferentSupport F).toFinset
     rw [Set.Finite.mem_toFinset]
     exact hv
   have hprod : finiteMass F = ENNReal.ofReal
@@ -168,8 +167,12 @@ theorem integerProbabilityMeasure_isProbabilityMeasure (v : HeightOneSpectrum (�
   rw [Set.image_univ, hr, Measure.restrict_apply_self]
   exact Measure.addHaarMeasure_self
 
- theorem localNormalizedHaar_eq_addHaar_of_not_mem
-    (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ localDifferentSupport F) :
+ section
+
+variable (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ localDifferentSupport F)
+
+include hv in
+theorem localNormalizedHaar_eq_addHaar_of_not_mem :
     localNormalizedHaar F v =
       Measure.addHaarMeasure (finiteCompletionIntegersPositiveCompacts F v) := by
   have hS : localDifferentSupport F ⊆
@@ -184,8 +187,8 @@ theorem integerProbabilityMeasure_isProbabilityMeasure (v : HeightOneSpectrum (�
     simp
   rw [localNormalizedHaar, hzero, ENNReal.ofReal_one, one_smul]
 
-theorem integerProbabilityMeasure_eq_local (v : HeightOneSpectrum (𝓞 F))
-    (hv : v ∉ localDifferentSupport F) :
+include hv in
+theorem integerProbabilityMeasure_eq_local :
     integerProbabilityMeasure F v =
       Measure.comap (fun x : v.adicCompletionIntegers F => (x : v.adicCompletion F))
         ((localNormalizedHaar F v).restrict
@@ -196,11 +199,17 @@ theorem integerProbabilityMeasure_eq_local (v : HeightOneSpectrum (𝓞 F))
       (finite_localDifferentSupport F).toFinset (by simp) v (by simpa using hv)
   simp [localHalfDifferentFactor, he]
 
-abbrev Chart (T : Finset (HeightOneSpectrum (𝓞 F))) :=
+end
+
+section
+
+variable (T : Finset (HeightOneSpectrum (𝓞 F)))
+
+abbrev Chart :=
   ((v : T) → v.val.adicCompletion F) ×
     ((v : {v : HeightOneSpectrum (𝓞 F) // v ∉ T}) → v.val.adicCompletionIntegers F)
 
-def chartMap (T : Finset (HeightOneSpectrum (𝓞 F)))
+def chartMap
     (x : Chart F T) : FiniteAdeleRing (𝓞 F) F :=
   ⟨fun v => if hv : v ∈ T then x.1 ⟨v, hv⟩ else (x.2 ⟨v, hv⟩ : v.adicCompletion F), by
     apply Filter.eventually_cofinite.mpr
@@ -213,7 +222,7 @@ def chartMap (T : Finset (HeightOneSpectrum (𝓞 F)))
     rw [dif_neg h']
     exact (x.2 ⟨v, h'⟩).property⟩
 
-theorem chartMap_range (T : Finset (HeightOneSpectrum (𝓞 F))) :
+theorem chartMap_range :
     Set.range (chartMap F T) =
       {a : FiniteAdeleRing (𝓞 F) F | ∀ v, v ∉ T → a v ∈ v.adicCompletionIntegers F} := by
   ext a
@@ -228,6 +237,8 @@ theorem chartMap_range (T : Finset (HeightOneSpectrum (𝓞 F))) :
     funext v
     simp only [chartMap]
     split <;> rfl
+
+end
 
 set_option maxHeartbeats 1000000 in
 set_option backward.isDefEq.respectTransparency false in
@@ -276,11 +287,8 @@ theorem chartMap_isOpenEmbedding (T : Finset (HeightOneSpectrum (𝓞 F))) :
         · exact continuous_pi fun v => RestrictedProduct.continuous_eval v.val
         · exact continuous_pi fun v =>
             (RestrictedProduct.continuous_eval v.val).subtype_mk _ }
-  have hT : Filter.cofinite ≤ Filter.principal ((↑T : Set (HeightOneSpectrum (𝓞 F)))ᶜ) :=
-    Filter.le_principal_iff.mpr T.finite_toSet.compl_mem_cofinite
-  have hi := RestrictedProduct.isOpenEmbedding_inclusion_principal
-    (KPAdelicTopology.completionIntegers_isOpen F) hT
-  exact hi.comp e.isOpenEmbedding
+  exact (RestrictedProduct.isOpenEmbedding_inclusion_principal
+    (KPAdelicTopology.completionIntegers_isOpen F) (Filter.le_principal_iff.mpr T.finite_toSet.compl_mem_cofinite)).comp e.isOpenEmbedding
 
 def chartMeasure (T : Finset (HeightOneSpectrum (𝓞 F))) : Measure (Chart F T) :=
   (Measure.pi (fun v : T => localNormalizedHaar F v.val)).prod
@@ -315,8 +323,11 @@ private theorem integerProbabilityMeasure_apply_local (v : HeightOneSpectrum (�
     exact x.property
   rw [hp, Measure.restrict_univ, he.comap_apply]
 
-private theorem chartMeasure_eq_reference (T : Finset (HeightOneSpectrum (𝓞 F)))
-    (hT : localDifferentSupport F ⊆ (T : Set (HeightOneSpectrum (𝓞 F)))) :
+variable (T : Finset (HeightOneSpectrum (𝓞 F)))
+    (hT : localDifferentSupport F ⊆ (T : Set (HeightOneSpectrum (𝓞 F))))
+
+include hT in
+private theorem chartMeasure_eq_reference :
     chartMeasure F T = KPAdelicHaarLocalCharts.chartMeasure F T := by
   letI : ∀ v : {v : HeightOneSpectrum (𝓞 F) // v ∉ T},
       IsProbabilityMeasure (integerProbabilityMeasure F v.val) :=
@@ -326,10 +337,8 @@ private theorem chartMeasure_eq_reference (T : Finset (HeightOneSpectrum (𝓞 F
         integerProbabilityMeasure F v.val) := by
     apply Measure.eq_infinitePi
     intro U s hs
-    have hh := KPAdelicHaarLocalCharts.tailMeasure_cylinder F T hT U s (fun v _ => hs v)
-    change KPAdelicHaarLocalCharts.tailMeasure F T (Set.pi (U : Set _) s) = _
-    rw [show Set.pi (U : Set _) s =
-      KPAdelicHaarLocalCharts.tailCylinder F T U s from rfl, hh]
+    rw [show Set.pi U s =
+      KPAdelicHaarLocalCharts.tailCylinder F T U s from rfl, (KPAdelicHaarLocalCharts.tailMeasure_cylinder F T hT U s (fun v _ => hs v))]
     apply Finset.prod_congr rfl
     intro v hv
     exact (integerProbabilityMeasure_apply_local F v.val
@@ -337,8 +346,8 @@ private theorem chartMeasure_eq_reference (T : Finset (HeightOneSpectrum (𝓞 F
   unfold chartMeasure KPAdelicHaarLocalCharts.chartMeasure KPAdelicHaarLocalCharts.headMeasure
   rw [ht]
 
-theorem finiteMeasure_chart (T : Finset (HeightOneSpectrum (𝓞 F)))
-    (hT : localDifferentSupport F ⊆ (T : Set (HeightOneSpectrum (𝓞 F)))) :
+include hT in
+theorem finiteMeasure_chart :
     (finiteMeasure F).restrict (Set.range (chartMap F T)) =
       Measure.map (chartMap F T) (chartMeasure F T) := by
   rw [finiteMeasure_eq_reference, chartMeasure_eq_reference F T hT]

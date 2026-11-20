@@ -14,8 +14,8 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
 local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 
 structure TensorSeed extends JointRealizedFlatSources R N where
@@ -164,11 +164,9 @@ theorem line_finrank_one {V : Type*} [AddCommGroup V] [Module ℂ V]
     (W : Submodule ℂ (V →ₗ[ℂ] ℂ)) (hr : Module.rank ℂ W ≤ 1)
     (l : V →ₗ[ℂ] ℂ) (hl : l ∈ W) (hne : l ≠ 0) : Module.finrank ℂ W = 1 := by
   letI : Module.Finite ℂ W := Module.rank_lt_aleph0_iff.mp (hr.trans_lt Cardinal.one_lt_aleph0)
-  have hle : Module.finrank ℂ W ≤ 1 := Module.finrank_le_of_rank_le
-    (by simpa using hr : Module.rank ℂ W ≤ (1 : ℕ))
-  letI : Nontrivial W := ⟨⟨⟨l, hl⟩, 0, by
-    intro h; exact hne (congrArg Subtype.val h)⟩⟩
-  exact le_antisymm hle (Module.finrank_pos (R := ℂ) (M := W))
+  letI : Nontrivial W := ⟨⟨⟨l, hl⟩, 0, fun h => hne (congrArg Subtype.val h)⟩⟩
+  exact le_antisymm (Module.finrank_le_of_rank_le
+    (by exact hr : Module.rank ℂ W ≤ (1 : ℕ))) (Module.finrank_pos)
 
 namespace TensorLocalLines
 variable {R N}
@@ -183,9 +181,8 @@ theorem exists_localEll (D : TensorLocalLines R N) (p : KPHilbert.Place F) :
     | inl w => exact False.elim (hp ((D.bad_exact _).mpr (Or.inl ⟨w, rfl⟩)))
     | inr q =>
       obtain ⟨l, hl, _, hreference⟩ := D.toTensorDetected.exists_detected_slice (Sum.inr q)
-      have hn := hreference hp
       let m := (l (D.references (Sum.inr q)))⁻¹ • l
-      have hm : m (D.references (Sum.inr q)) = 1 := by simp [m, hn]
+      have hm : m (D.references (Sum.inr q)) = 1 := by simp [m, (hreference hp)]
       refine ⟨m, (D.toTensorHC.sliceLine _).smul_mem _ hl, ?_, fun _ => hm⟩
       intro hz
       have he := congrArg (fun f : actualLocal R D.finiteData (Sum.inr q) →ₗ[ℂ] ℂ =>
@@ -221,7 +218,7 @@ theorem normalized_bad_tuple (D : TensorLocalLines R N) :
     by_contra hn
     apply D.localEll_ne p
     ext y
-    simpa only [not_not, LinearMap.zero_apply] using (not_exists.mp hn y)
+    simpa using (not_exists.mp hn y)
   choose y hy using hex
   refine ⟨fun p => (D.localEll p (y p))⁻¹ • y p, ?_⟩
   intro p
@@ -243,17 +240,15 @@ def factorization (D : TensorLocalLines R N) :
   let L := D.toTensorHC.literalPeriod 1
   let W := D.toTensorHC.sliceLine
   let b : RestrictedTensorSimple.Level D.bad := ⟨D.bad, le_rfl⟩
-  let c : ℂ := L (RestrictedTensorSimple.stageInclusion V D.references D.bad b
+  let c := L (RestrictedTensorSimple.stageInclusion V D.references D.bad b
     (PiTensorProduct.tprod ℂ x₀))
   let slot : D.bad := ⟨Sum.inr D.scalarSlot.val,
     (D.bad_exact _).mpr (Or.inr ⟨D.scalarSlot.val, rfl, D.scalarSlot.property⟩)⟩
   have hm := D.toTensorHC.slice_mem
-  have hc : c ≠ 0 := core_reference_detected V D.references D.bad L W hm
-    D.line_dimension D.localEll D.localEll_mem D.reference_value x₀ hx₀ D.literalPeriod_ne
   let ell := Function.update D.localEll slot.val (c • D.localEll slot.val)
-  have hnorm : ∀ p ∉ D.bad, ell p (D.references p) = 1 :=
+  have hnorm :=
     absorb_reference_value V D.references D.bad D.localEll D.reference_value slot c
-  have heq : L = productFunctional V D.references D.bad ell hnorm :=
+  have heq :=
     core_factorization_absorbed V D.references D.bad L W hm D.line_dimension
       D.localEll D.localEll_mem D.reference_value x₀ hx₀ slot
   refine {
@@ -279,7 +274,8 @@ def factorization (D : TensorLocalLines R N) :
     product_integrable := ?_
     product_exact := ?_
     spherical_reference := D.spherical_reference
-    detected_tensor := ⟨b, x₀, rfl, hc⟩
+    detected_tensor := ⟨b, x₀, rfl, (core_reference_detected V D.references D.bad L W hm
+      D.line_dimension D.localEll D.localEll_mem D.reference_value x₀ hx₀ D.literalPeriod_ne)⟩
     period_integrable := theta_period_integrable D.realization
     detected := D.detected }
   · intro s x

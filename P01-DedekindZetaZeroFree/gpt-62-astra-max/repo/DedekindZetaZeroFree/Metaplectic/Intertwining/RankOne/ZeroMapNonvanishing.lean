@@ -23,15 +23,17 @@ variable (F : Type) [Field F] [NumberField F]
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
   (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
 
+local notation "LocalCompletion" => LocalField F q
+
 private theorem evaluation_entire (ε : Sign) :
-    Differentiable ℂ (fun s => (evaluationUnit (LocalField F q) ε s : ℂ)) := by
-  have hr : Differentiable ℂ (r (LocalField F q)) := by unfold r; fun_prop
+    Differentiable ℂ (fun s => (evaluationUnit LocalCompletion ε s : ℂ)) := by
+  have hr : Differentiable ℂ (r LocalCompletion) := by unfold r; fun_prop
   cases ε with
   | plus => exact hr
   | minus => exact hr.inv (fun s => Complex.exp_ne_zero _)
 
 private theorem denominator_entire (ε : Sign) :
-    Differentiable ℂ (denominator (LocalField F q) ε) := by
+    Differentiable ℂ (denominator LocalCompletion ε) := by
   cases ε with
   | plus =>
     unfold denominator t r
@@ -45,12 +47,12 @@ private theorem denominator_entire (ε : Sign) :
 
 private theorem numerator_coordinate_entire
     (J : CompactOpenLevel (ActualCover F ζ hζ q)) (ε : Sign)
-    (p : LevelLaurentOperator (LocalField F q) S.borel P S.iwasawa J ε)
+    (p : LevelLaurentOperator LocalCompletion S.borel P S.iwasawa J ε)
     (φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J)
     (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q) :
     Differentiable ℂ (fun s =>
-      ((evaluate (LocalField F q) S.borel P S.iwasawa J ε p
-        (evaluationUnit (LocalField F q) ε s) φ).val.val k).val h) := by
+      ((evaluate LocalCompletion S.borel P S.iwasawa J ε p
+        (evaluationUnit LocalCompletion ε s) φ).val.val k).val h) := by
   classical
   simp only [evaluate, Finsupp.sum, LinearMap.smul_apply, Submodule.coe_smul,
     Submodule.coe_sum, LinearMap.sum_apply, Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
@@ -78,8 +80,6 @@ theorem both_actual_maps_nonzero_of_compact
         f g h).symm
     rw [hlinear] at he
     apply hnonzero .plus
-    change (actualCanonicalContinued F q ζ hζ S P μ hμ .plus 0 :
-      compactPicture S.borel P S.iwasawa .plus →ₗ[ℂ] compactPicture S.borel P S.iwasawa .minus) = 0
     apply LinearMap.ext
     intro φ
     have hv := congrArg (fun M => M (compactTrivialization S.borel P S.iwasawa .plus 0 φ)) he
@@ -87,20 +87,16 @@ theorem both_actual_maps_nonzero_of_compact
       (actualCanonicalContinued F q ζ hζ S P μ hμ .plus 0
         ((compactTrivialization S.borel P S.iwasawa .plus 0).symm
           (compactTrivialization S.borel P S.iwasawa .plus 0 φ))) = 0 at hv
-    have hφ := (compactTrivialization S.borel P S.iwasawa .plus 0).symm_apply_apply φ
-    have hv' := (congrArg (fun ψ : compactPicture S.borel P S.iwasawa .plus =>
-      compactTrivialization S.borel P S.iwasawa .minus 0
-        (actualCanonicalContinued F q ζ hζ S P μ hμ .plus 0 ψ)) hφ).symm.trans hv
     apply (compactTrivialization S.borel P S.iwasawa .minus 0).injective
     change _ = compactTrivialization S.borel P S.iwasawa .minus 0 0
     rw [LinearEquiv.map_zero]
-    exact hv'
+    exact (congrArg (fun ψ : compactPicture S.borel P S.iwasawa .plus =>
+      compactTrivialization S.borel P S.iwasawa .minus 0
+        (actualCanonicalContinued F q ζ hζ S P μ hμ .plus 0 ψ)) ((compactTrivialization S.borel P S.iwasawa .plus 0).symm_apply_apply φ)).symm.trans hv
   · intro hz
     have he := congrArg (fun M : (IMinus S.borel P).IntertwiningMap (IPlus S.borel P) => M.toLinearMap) hz
     change actualCanonicalReverseLinear F ζ hζ q S P μ hμ = 0 at he
     apply hnonzero .minus
-    change (actualCanonicalContinued F q ζ hζ S P μ hμ .minus 0 :
-      compactPicture S.borel P S.iwasawa .minus →ₗ[ℂ] compactPicture S.borel P S.iwasawa .plus) = 0
     apply LinearMap.ext
     intro φ
     have hv := congrArg (fun M => M (compactTrivialization S.borel P S.iwasawa .minus 0 φ)) he
@@ -108,14 +104,12 @@ theorem both_actual_maps_nonzero_of_compact
       (actualCanonicalContinued F q ζ hζ S P μ hμ .minus 0
         ((compactTrivialization S.borel P S.iwasawa .minus 0).symm
           (compactTrivialization S.borel P S.iwasawa .minus 0 φ))) = 0 at hv
-    have hφ := (compactTrivialization S.borel P S.iwasawa .minus 0).symm_apply_apply φ
-    have hv' := (congrArg (fun ψ : compactPicture S.borel P S.iwasawa .minus =>
-      compactTrivialization S.borel P S.iwasawa .plus 0
-        (actualCanonicalContinued F q ζ hζ S P μ hμ .minus 0 ψ)) hφ).symm.trans hv
     apply (compactTrivialization S.borel P S.iwasawa .plus 0).injective
     change _ = compactTrivialization S.borel P S.iwasawa .plus 0 0
     rw [LinearEquiv.map_zero]
-    exact hv'
+    exact (congrArg (fun ψ : compactPicture S.borel P S.iwasawa .minus =>
+      compactTrivialization S.borel P S.iwasawa .plus 0
+        (actualCanonicalContinued F q ζ hζ S P μ hμ .minus 0 ψ)) ((compactTrivialization S.borel P S.iwasawa .minus 0).symm_apply_apply φ)).symm.trans hv
 
 theorem zero_coordinate_of_holomorphic_combination
     (J : CompactOpenLevel (ActualCover F ζ hζ q))
@@ -126,16 +120,16 @@ theorem zero_coordinate_of_holomorphic_combination
     (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q)
     (C : ℂ)
     (hchamber : ∀ s : ℂ, convergenceHalfPlane ε s →
-      ∑ i, a i s * standardIntegralCoordinate (LocalField F q) S.borel P S.iwasawa μ ε s
+      ∑ i, a i s * standardIntegralCoordinate LocalCompletion S.borel P S.iwasawa μ ε s
         (φ i).val k h = C) :
     ((actualCanonicalContinued F q ζ hζ S P μ hμ ε 0
       (∑ i, a i 0 • (φ i).val)).val k).val h = C := by
   classical
   let p := actualCanonicalLevelNumerator F ζ hζ q S P J hJ μ hμ ε
   let f : ℂ → ℂ := fun s => ∑ i, a i s *
-    ((evaluate (LocalField F q) S.borel P S.iwasawa J ε p
-      (evaluationUnit (LocalField F q) ε s) (φ i)).val.val k).val h
-  let g : ℂ → ℂ := fun s => denominator (LocalField F q) ε s * C
+    ((evaluate LocalCompletion S.borel P S.iwasawa J ε p
+      (evaluationUnit LocalCompletion ε s) (φ i)).val.val k).val h
+  let g : ℂ → ℂ := fun s => denominator LocalCompletion ε s * C
   have hf : AnalyticOnNhd ℂ f Set.univ := by
     have hd : Differentiable ℂ f := Differentiable.fun_sum (fun i _ =>
       (ha i).mul (numerator_coordinate_entire F ζ hζ q S P J ε p (φ i) k h))
@@ -154,16 +148,16 @@ theorem zero_coordinate_of_holomorphic_combination
     filter_upwards [hopen.mem_nhds hz] with s hs
     dsimp [f, g]
     have hp (i : ι) :
-        ((evaluate (LocalField F q) S.borel P S.iwasawa J ε p
-          (evaluationUnit (LocalField F q) ε s) (φ i)).val.val k).val h =
-        denominator (LocalField F q) ε s *
-          standardIntegralCoordinate (LocalField F q) S.borel P S.iwasawa μ ε s (φ i).val k h :=
+        ((evaluate LocalCompletion S.borel P S.iwasawa J ε p
+          (evaluationUnit LocalCompletion ε s) (φ i)).val.val k).val h =
+        denominator LocalCompletion ε s *
+          standardIntegralCoordinate LocalCompletion S.borel P S.iwasawa μ ε s (φ i).val k h :=
       actualCanonicalLevelNumerator_spec F ζ hζ q S P J hJ μ hμ ε s hs (φ i) k h
     simp_rw [hp]
-    rw [show (∑ i, a i s * (denominator (LocalField F q) ε s *
-        standardIntegralCoordinate (LocalField F q) S.borel P S.iwasawa μ ε s (φ i).val k h)) =
-        denominator (LocalField F q) ε s * ∑ i, a i s *
-          standardIntegralCoordinate (LocalField F q) S.borel P S.iwasawa μ ε s (φ i).val k h by
+    rw [show (∑ i, a i s * (denominator LocalCompletion ε s *
+        standardIntegralCoordinate LocalCompletion S.borel P S.iwasawa μ ε s (φ i).val k h)) =
+        denominator LocalCompletion ε s * ∑ i, a i s *
+          standardIntegralCoordinate LocalCompletion S.borel P S.iwasawa μ ε s (φ i).val k h by
       rw [Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro i hi
@@ -172,14 +166,14 @@ theorem zero_coordinate_of_holomorphic_combination
     (Set.mem_univ z) he (Set.mem_univ (0 : ℂ))
   have hsum : ((actualCanonicalContinued F q ζ hζ S P μ hμ ε 0
       (∑ i, a i 0 • (φ i).val)).val k).val h =
-      (denominator (LocalField F q) ε 0)⁻¹ * f 0 := by
+      (denominator LocalCompletion ε 0)⁻¹ * f 0 := by
     simp only [map_sum, map_smul, Submodule.coe_sum, Submodule.coe_smul, Finset.sum_apply,
       Pi.smul_apply, smul_eq_mul]
     simp_rw [actualCanonicalContinued_eq_level F q ζ hζ S P μ hμ ε 0 J hJ]
-    change (∑ i, a i 0 * ((continuedLevel (LocalField F q) S.borel P S.iwasawa J ε p 0 (φ i)).val.val k).val h) = _
-    change (∑ i, a i 0 * ((denominator (LocalField F q) ε 0)⁻¹ *
-      ((evaluate (LocalField F q) S.borel P S.iwasawa J ε p
-        (evaluationUnit (LocalField F q) ε 0) (φ i)).val.val k).val h)) = _
+    change (∑ i, a i 0 * ((continuedLevel LocalCompletion S.borel P S.iwasawa J ε p 0 (φ i)).val.val k).val h) = _
+    change (∑ i, a i 0 * ((denominator LocalCompletion ε 0)⁻¹ *
+      ((evaluate LocalCompletion S.borel P S.iwasawa J ε p
+        (evaluationUnit LocalCompletion ε 0) (φ i)).val.val k).val h)) = _
     dsimp [f]
     rw [Finset.mul_sum]
     apply Finset.sum_congr rfl
@@ -187,7 +181,7 @@ theorem zero_coordinate_of_holomorphic_combination
     ring
   rw [hsum, hzero]
   dsimp [g]
-  rw [← mul_assoc, inv_mul_cancel₀ (denominator_ne_zero_at_zero (LocalField F q) ε), one_mul]
+  rw [← mul_assoc, inv_mul_cancel₀ (denominator_ne_zero_at_zero LocalCompletion ε), one_mul]
 
 theorem both_actual_maps_nonzero_of_holomorphic_tests
     (htest : ∀ ε : Sign,
@@ -198,18 +192,16 @@ theorem both_actual_maps_nonzero_of_holomorphic_tests
         (h : actualTorus F ζ hζ q) (C : ℂ),
         (∀ i, Differentiable ℂ (a i)) ∧ C ≠ 0 ∧
         ∀ s : ℂ, convergenceHalfPlane ε s →
-          ∑ i, a i s * standardIntegralCoordinate (LocalField F q) S.borel P S.iwasawa μ ε s
+          ∑ i, a i s * standardIntegralCoordinate LocalCompletion S.borel P S.iwasawa μ ε s
             (φ i).val k h = C) :
     actualCanonicalForwardMap F ζ hζ q S P μ hμ ≠ 0 ∧
       actualCanonicalReverseMap F ζ hζ q S P μ hμ ≠ 0 := by
   apply both_actual_maps_nonzero_of_compact F ζ hζ q S P μ hμ
   intro ε hz
   obtain ⟨J, hJ, n, φ, a, k, h, C, ha, hC, hch⟩ := htest ε
-  have he := zero_coordinate_of_holomorphic_combination F ζ hζ q S P μ hμ
-    J hJ ε φ a ha k h C hch
-  have hz' := congrArg (fun M =>
-    ((M (∑ i, a i 0 • (φ i).val) : compactPicture S.borel P S.iwasawa (targetSign ε)).val k).val h) hz
-  exact hC (he.symm.trans hz')
+  exact hC ((zero_coordinate_of_holomorphic_combination F ζ hζ q S P μ hμ
+    J hJ ε φ a ha k h C hch).symm.trans (congrArg (fun M =>
+    ((M (∑ i, a i 0 • (φ i).val) : compactPicture S.borel P S.iwasawa (targetSign ε)).val k).val h) hz))
 
 include hμ in
 
@@ -229,7 +221,7 @@ theorem chamber_coordinate_of_characteristic_combination
         (φ i) k h = (μ U).toReal * v.val h := by
   classical
   intro s hs
-  let b : ι → LocalField F q → ℂ := fun i x =>
+  let b := fun i x =>
     ((compactTrivialization S.borel P S.iwasawa (sourceSign ε) (sourceParameter ε s) (φ i)).val
       (kernelW (LocalField F q) S.borel ε * S.borel.upperRoot (Multiplicative.ofAdd x) * k)).val h
   have hint (i : ι) : Integrable (b i) μ :=
@@ -246,7 +238,7 @@ theorem chamber_coordinate_of_characteristic_combination
     · simp only [Set.indicator_of_notMem hxu] at hx ⊢
       exact hx
   calc
-    (∑ i, a i s * standardIntegralCoordinate (LocalField F q) S.borel P S.iwasawa μ ε s (φ i) k h) =
+    _ =
         ∑ i, ∫ x, a i s * b i x ∂μ := by
       apply Finset.sum_congr rfl
       intro i hi
@@ -260,11 +252,10 @@ theorem chamber_coordinate_of_characteristic_combination
 
 theorem exists_nonzero_inducing_coordinate :
     ∃ (v : InducedModule P) (h : actualTorus F ζ hζ q), v.val h ≠ 0 := by
-  have hfin : Module.Finite ℂ (InducedModule P) := tau_moduleFinite S.heisenberg P
-  letI := hfin
+  letI := (tau_moduleFinite S.heisenberg P)
   have hpos : 0 < Module.finrank ℂ (InducedModule P) := by
     rw [tau_finrank_eq_index S.heisenberg P]
-    exact Nat.pos_of_ne_zero (Subgroup.FiniteIndex.index_ne_zero (H := P.L.comap S.heisenberg.π))
+    exact Nat.pos_of_ne_zero (Subgroup.FiniteIndex.index_ne_zero)
   letI := Module.nontrivial_of_finrank_pos hpos
   obtain ⟨v, hv⟩ := exists_ne (0 : InducedModule P)
   have hh : ∃ h, v.val h ≠ 0 := by
@@ -319,12 +310,11 @@ variable (F : Type) [Field F] [NumberField F]
 private theorem small_subgroup : ∃ U : OpenAddSubgroup (LocalField F q),
     IsCompact (U : Set (LocalField F q)) ∧
     ∀ x ∈ U, (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) ∈ S.iwasawa.compact.toOpenSubgroup := by
-  let n : LocalField F q → ActualCover F ζ hζ q := fun x => (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q)
-  have hn : Continuous n := continuous_subtype_val.comp (S.borel.upperRoot_continuous.comp continuous_ofAdd)
-  let V : Set (LocalField F q) := n ⁻¹' (S.iwasawa.compact.toOpenSubgroup : Set (ActualCover F ζ hζ q)) ∩ ((valuation (LocalField F q)).integer : Set (LocalField F q))
+  let n := fun x => (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q)
+  let V := n ⁻¹' S.iwasawa.compact.toOpenSubgroup ∩ ((valuation (LocalField F q)).integer : Set (LocalField F q))
   have hV : V ∈ nhds 0 := by
     apply Filter.inter_mem
-    · apply hn.continuousAt.preimage_mem_nhds
+    · apply (continuous_subtype_val.comp (S.borel.upperRoot_continuous.comp continuous_ofAdd)).continuousAt.preimage_mem_nhds
       simpa [n] using S.iwasawa.compact.toOpenSubgroup.isOpen.mem_nhds S.iwasawa.compact.toOpenSubgroup.one_mem
     · exact (valuation (LocalField F q)).isOpen_integer.mem_nhds (by simp)
   obtain ⟨U, hU⟩ := NonarchimedeanAddGroup.is_nonarchimedean V hV
@@ -343,29 +333,33 @@ private theorem norm_right_compact (g : ActualCover F ζ hζ q)
           ((S.iwasawa.compactPart g : ActualCover F ζ hζ q) * k)⁻¹ := by
       have h1 := S.iwasawa.decomposition g
       have h2 := S.iwasawa.decomposition (g * k)
-      change g = (b : ActualCover F ζ hζ q) * _ at h1
-      change g * k = (b' : ActualCover F ζ hζ q) * _ at h2
+      change g = b * _ at h1
+      change g * k = b' * _ at h2
       calc
-        ((b'⁻¹ * b : S.borel.B) : ActualCover F ζ hζ q) =
+        _ =
             (b' : ActualCover F ζ hζ q)⁻¹ * g * (S.iwasawa.compactPart g : ActualCover F ζ hζ q)⁻¹ := by
-          have hb : (b : ActualCover F ζ hζ q) = g * (S.iwasawa.compactPart g : ActualCover F ζ hζ q)⁻¹ := (eq_mul_inv_iff_mul_eq.mpr h1.symm)
-          rw [Subgroup.coe_mul, Subgroup.coe_inv, hb, mul_assoc]
+          rw [Subgroup.coe_mul, Subgroup.coe_inv, ((eq_mul_inv_iff_mul_eq.mpr h1.symm)), mul_assoc]
         _ = (b' : ActualCover F ζ hζ q)⁻¹ * (g * k) *
             ((S.iwasawa.compactPart g : ActualCover F ζ hζ q) * k)⁻¹ := by simp [mul_inv_rev, mul_assoc]
         _ = _ := by
-          have hb : (b' : ActualCover F ζ hζ q)⁻¹ * (g * k) = (S.iwasawa.compactPart (g * k) : ActualCover F ζ hζ q) := (inv_mul_eq_iff_eq_mul.mpr h2)
+          have hb := (inv_mul_eq_iff_eq_mul.mpr h2)
           rw [hb]
     rw [he]
     exact S.iwasawa.compact.toOpenSubgroup.mul_mem (S.iwasawa.compactPart _).property
       (S.iwasawa.compact.toOpenSubgroup.inv_mem (S.iwasawa.compact.toOpenSubgroup.mul_mem (S.iwasawa.compactPart g).property k.property))
-  have he := S.iwasawa.intersection_norm (b'⁻¹ * b) hmem
   have hm : localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract b')) *
       localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract (b'⁻¹ * b))) =
       localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract b)) := by
     rw [← localAbs_mul, ← map_mul, ← map_mul, mul_inv_cancel_left]
-  simpa only [he, mul_one] using hm
+  simpa only [(S.iwasawa.intersection_norm (b'⁻¹ * b) hmem), mul_one] using hm
 
-private theorem deformation_value (P : Polarization S.heisenberg) (ε : Sign)
+alias ZeroMapNonvanishing.norm_right_compact := norm_right_compact
+
+section
+
+variable (P : Polarization S.heisenberg)
+
+private theorem deformation_value (ε : Sign)
     (f : sectionSpace S.borel P ε 0) (z : ℂ) (g : ActualCover F ζ hζ q) :
     (compactTrivialization S.borel P S.iwasawa ε z
       ((compactTrivialization S.borel P S.iwasawa ε 0).symm f)).val g =
@@ -380,7 +374,8 @@ private theorem deformation_value (P : Polarization S.heisenberg) (ε : Sign)
   simp only [inducingScalar, normPower, zero_mul, Complex.exp_zero, mul_one, smul_smul]
   rw [mul_comm]
 
-private theorem weyl_inverse (P : Polarization S.heisenberg) : S.borel.liftedW⁻¹ = S.borel.liftedW := by
+include P in
+private theorem weyl_inverse : S.borel.liftedW⁻¹ = S.borel.liftedW := by
   have hs : S.borel.liftedW ^ 2 = 1 := by
     rw [(S.openCell P).weyl_eq]
     simpa only [KPRankOneOpenCellKernel.signedWeyl,
@@ -388,7 +383,7 @@ private theorem weyl_inverse (P : Polarization S.heisenberg) : S.borel.liftedW�
       KPPGLLocalCover.signedW_sq F ζ hζ (Sum.inr q)
   exact inv_eq_of_mul_eq_one_left (by simpa [pow_two] using hs)
 
-private theorem section_common_level (P : Polarization S.heisenberg) (ε : Sign)
+private theorem section_common_level (ε : Sign)
     (f : sectionSpace S.borel P ε 0) :
     ∃ J : CompactOpenLevel (ActualCover F ζ hζ q),
       (J.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) ≤ S.iwasawa.compact.toOpenSubgroup ∧
@@ -402,14 +397,14 @@ private theorem section_common_level (P : Polarization S.heisenberg) (ε : Sign)
   intro j
   exact Subtype.ext (hU j j.property.1)
 
-private theorem test_section (P : Polarization S.heisenberg) (ε : Sign) (v : InducedModule P)
+private theorem test_section (ε : Sign) (v : InducedModule P)
     (U : OpenAddSubgroup (LocalField F q)) (hUc : IsCompact (U : Set (LocalField F q))) :
     ∃ f : sectionSpace S.borel P ε 0,
       ∀ x, f.val (S.borel.liftedW * (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q)) =
         if x ∈ U then v else 0 := by
     classical
   classical
-  let profile : LocalField F q → InducedModule P := fun x => if x ∈ U then v else 0
+  let profile := fun x => if x ∈ U then v else 0
   have hl : IsLocallyConstant profile := by
     rw [IsLocallyConstant.iff_eventually_eq]
     intro x
@@ -418,13 +413,13 @@ private theorem test_section (P : Polarization S.heisenberg) (ε : Sign) (v : In
       simp [profile, hx, show y ∈ U from hy]
     · filter_upwards [U.isClosed.isOpen_compl.mem_nhds hx] with y hy
       simp [profile, hx, show y ∉ U from hy]
-  have hc : HasCompactSupport profile := HasCompactSupport.intro hUc (by intro x hx; simp [profile, show x ∉ U from hx])
-  obtain ⟨f, hf, _⟩ := (KPRankOneOpenCellKernel.open_cell_correspondence F ζ hζ q S.borel P (S.openCell P) ε 0).2 profile hl hc
+  obtain ⟨f, hf, _⟩ := (KPRankOneOpenCellKernel.open_cell_correspondence F ζ hζ q S.borel P (S.openCell P) ε 0).2 profile hl (HasCompactSupport.intro hUc (by intro x hx; simp [profile, show x ∉ U from hx]))
   refine ⟨f, ?_⟩
   intro x
-  have he := hf.2 x
   simpa only [KPRankOneOpenCellKernel.openCoordinate, ← (S.openCell P).weyl_eq,
-    ← (S.openCell P).upper_eq, weyl_inverse F ζ hζ q S P] using he
+    ← (S.openCell P).upper_eq, weyl_inverse F ζ hζ q S P] using (hf.2 x)
+
+end
 
 variable (P : Polarization S.heisenberg)
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -470,7 +465,7 @@ private theorem bruhat_families (ε : Sign) (v : InducedModule P) :
   obtain ⟨f, hf⟩ := test_section F ζ hζ q S P (sourceSign ε) v U hUc
   obtain ⟨J, hJ, hφ⟩ := section_common_level F ζ hζ q S P (sourceSign ε) f
   let φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J := ⟨_, hφ⟩
-  let a : ℂ → ℂ := fun s => Complex.exp (-sourceParameter ε s *
+  let a := fun s => Complex.exp (-sourceParameter ε s *
     (Real.log (localAbs (LocalField F q)
       (S.borel.coordinate (S.borel.retract (S.iwasawa.borelPart S.borel.liftedW)))) : ℂ))
   refine ⟨J, hJ, 1, fun _ => φ, fun _ => a, 1, U, hUc, U.isOpen, ?_, ?_, ?_, ?_⟩
@@ -491,8 +486,7 @@ theorem actual_zero_maps_nonzero
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1) :
     actualCanonicalForwardMap F ζ hζ q S P μ hμ ≠ 0 ∧
-      actualCanonicalReverseMap F ζ hζ q S P μ hμ ≠ 0 := by
-  exact OpenCellNonzero.both_actual_maps_nonzero_of_bruhat_families
+      actualCanonicalReverseMap F ζ hζ q S P μ hμ ≠ 0 := OpenCellNonzero.both_actual_maps_nonzero_of_bruhat_families
     F ζ hζ q S P μ hμ
     (OpenCellNonzero.BruhatConstruction.bruhat_families F ζ hζ q S P μ)
 

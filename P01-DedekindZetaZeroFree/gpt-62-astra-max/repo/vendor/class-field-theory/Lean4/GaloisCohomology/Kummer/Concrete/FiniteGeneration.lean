@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -51,13 +48,7 @@ theorem nthRootsOfUnityInBase_of_primitiveRoots
     NthRootsOfUnityInBase (K := K) (L := L) n := by
   let : NeZero (n : ℕ) := ⟨n.ne_zero⟩
   intro u hu
-  let eta : rootsOfUnity (n : ℕ) L := ⟨u, hu⟩
-  let e : rootsOfUnity (n : ℕ) K ≃* rootsOfUnity (n : ℕ) L :=
-    rootsOfUnityEquivOfPrimitiveRoots (algebraMap K L).injective hmu
-  refine ⟨(e.symm eta : rootsOfUnity (n : ℕ) K).1, ?_⟩
-  apply Units.ext
-  exact rootsOfUnityEquivOfPrimitiveRoots_symm_apply
-    (algebraMap K L).injective hmu eta
+  exact Exists.intro (↑((rootsOfUnityEquivOfPrimitiveRoots (RingHom.injective (algebraMap K L)) hmu).symm ⟨u, hu⟩)) (Units.ext (rootsOfUnityEquivOfPrimitiveRoots_symm_apply (RingHom.injective (algebraMap K L)) hmu ⟨u, hu⟩))
 
 /-- Finite actual-field version of The Kummer generation theorem.
 
@@ -71,12 +62,12 @@ theorem finiteKummerRootSet_adjoin_eq_top
     IntermediateField.adjoin K (finiteKummerRootSet (K := K) (L := L) n) = ⊤ := by
   let D := chosenFiniteKummerRadicalDatum (K := K) (L := L) n
   let hbase : NthRootsOfUnityInBase (K := K) (L := L) n :=
-    nthRootsOfUnityInBase_of_primitiveRoots (K := K) (L := L) n hmu
+    nthRootsOfUnityInBase_of_primitiveRoots n hmu
   let hfixed : ∀ sigma : Gal(L/K), ∀ u : Lˣ,
       u ^ (n : ℕ) = 1 → sigma • u = u :=
-    nthRootsOfUnity_fixed (K := K) (L := L) n hbase
+    nthRootsOfUnity_fixed n hbase
   let E : IntermediateField K L :=
-    IntermediateField.adjoin K (finiteKummerRootSet (K := K) (L := L) n)
+    IntermediateField.adjoin K (finiteKummerRootSet (K := K) n)
   apply IsGalois.intermediateFieldEquivSubgroup.injective
   rw [map_top, eq_top_iff]
   intro sigma hsigma

@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Eisenstein.Continuation.CompactJets.LaplacianSmoothnessAndSupport
 
 public import DedekindZetaZeroFree.Analysis.Holomorphy.SpatialJets.PositiveHyperbolicLaplacian
 public import DedekindZetaZeroFree.Eisenstein.Continuation.ChamberJets.NormalSeries
@@ -19,18 +20,9 @@ open KPContSectorSmoothFramesSupport KPContCotangentActualOverlap
 
 section CoordinateConversion
 open KPContLocalNorm
-private theorem list_index {n : ℕ} (l : List (Fin n)) :
-    ∃ m, ∃ α : MultiIndex n m, l.Perm α.directions := by
-  classical
-  let m := ∑ i : Fin n, l.count i
-  let α : MultiIndex n m := ⟨fun i => ⟨l.count i, by
-    have := Finset.single_le_sum (fun j _ => Nat.zero_le (l.count j)) (Finset.mem_univ i)
-    dsimp [m]; omega⟩, by simp [m]⟩
-  refine ⟨m, α, List.perm_iff_count.mpr ?_⟩
-  intro i
-  rw [MultiIndex.directions, List.count_flatMap,
-    ← List.sum_toFinset _ (List.nodup_finRange n)]
-  simp [α, Function.comp_def, List.count_replicate]
+private alias list_index := DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly.ContourLift.SpatialCauchyDifferentiation.list_index
+
+alias LaplacianJets.list_index := list_index
 
 private theorem flat_word (n : ℕ) (w : List (Fin n)) (u : Space n → ℂ) :
     RightFrame.PullbackWords.directionalWord (fun i _ => EuclideanSpace.single i (1:ℝ)) w u =
@@ -38,6 +30,8 @@ private theorem flat_word (n : ℕ) (w : List (Fin n)) (u : Space n → ℂ) :
   induction w with
   | nil => rfl
   | cons i w ih => simp only [RightFrame.PullbackWords.directionalWord, coordinateDerivativeList, ih]
+
+alias LaplacianJets.flat_word := flat_word
 
 private theorem compact_coordinate_jets_transport
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
@@ -64,17 +58,19 @@ private theorem compact_coordinate_jets_transport
   intro z hz x
   rw [flat_word, WeakJets.Raw.coordinateDerivativeList_perm_on hperm (hg.1 z hz) (hCB x.property)]
   exact hjval z hz α x
+
+alias LaplacianJets.compact_coordinate_jets_transport := compact_coordinate_jets_transport
 end CoordinateConversion
 
 section SourceCalculus
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {C : KPGlobalTorusInducingPlan.ModelData F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable {U : KPMsRationalCompactCrossPairing.Level F ζ hζ}
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable {ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U}
+    {C : KPGlobalTorusInducingPlan.ModelData F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsRationalCompactCrossPairing.Level F ζ hζ}
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    {ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U}
 variable {f : ℂ → S} {T : ℝ}
 variable {buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H T}
@@ -194,12 +190,7 @@ private theorem labeled_smooth (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension 
   intro k
   exact ((contDiff_apply ℝ (ℂ × ℝ) (p.symm k)).comp (CotangentLogCoframe.A (d F)).contDiff)
 
-private theorem inverse_smooth (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F)) :
-    ContDiff ℝ (⊤ : ℕ∞) (labeledAInv p) := by
-  apply (CotangentLogCoframe.A (d F)).symm.contDiff.comp
-  apply contDiff_pi.mpr
-  intro k
-  exact contDiff_apply ℝ (ℂ × ℝ) (p k)
+private alias inverse_smooth := DedekindZetaZeroFree.KPContActualCompactSectionL2Jets.SmoothSupportedSections.labeledAInv_smooth
 
 private theorem inverse_pin (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F))
     (y : KPFiniteCuspAtlas.SymmetricSpace F) : labeledA p (labeledAInv p y) = y := by
@@ -265,45 +256,18 @@ private theorem component_point_holo (b : Bool) (O : Set ℂ) (hO : IsOpen O)
   have hK : IsCompact ({x} : Set (M F)) := isCompact_singleton
   letI : CompactSpace ({x} : Set (M F)) := isCompact_iff_compactSpace.mp hK
   obtain ⟨j,hj,he⟩ := component_holomorphy source b O hO hOΩ i {x} hK (Set.subset_univ _) 0 Fin.elim0
-  have hd := (ContinuousMap.evalCLM ℂ (⟨x,rfl⟩ : ({x} : Set (M F)))).differentiable.comp_differentiableOn hj
-  apply hd.congr
+  apply ((ContinuousMap.evalCLM ℂ (⟨x,rfl⟩ : ({x} : Set (M F)))).differentiable.comp_differentiableOn hj).congr
   intro z hz
   simpa [iteratedFDerivWithin_zero_apply, x, inverse_pin] using (he z hz ⟨x,rfl⟩).symm
 
-private theorem cd_congr (f g : M F → ℂ) (x : M F) (he : f =ᶠ[𝓝 x] g)
-    (i : Fin (d F)) (k : Fin 3) :
-    HyperbolicChart.coordinateDerivative (d F) i k f x =
-      HyperbolicChart.coordinateDerivative (d F) i k g x := by
-  simp only [HyperbolicChart.coordinateDerivative]
-  rw [he.fderiv_eq]
+private alias cd_congr := DedekindZetaZeroFree.KPContActualCompactSectionL2Jets.LaplacianSmoothnessAndSupport.cd_congr
 
-private theorem cd_eventuallyEq (f g : M F → ℂ) (x : M F) (he : f =ᶠ[𝓝 x] g)
-    (i : Fin (d F)) (k : Fin 3) :
-    (fun y => HyperbolicChart.coordinateDerivative (d F) i k f y) =ᶠ[𝓝 x]
-      (fun y => HyperbolicChart.coordinateDerivative (d F) i k g y) := by
-  filter_upwards [he.eventuallyEq_nhds] with y hy using cd_congr f g y hy i k
+private alias cd_eventuallyEq := DedekindZetaZeroFree.KPContActualCompactSectionL2Jets.LaplacianSmoothnessAndSupport.cd_eventuallyEq
 
-private theorem laplacian_congr (f g : M F → ℂ) (x : M F) (he : f =ᶠ[𝓝 x] g) :
-    HyperbolicChart.laplacian (d F) f x = HyperbolicChart.laplacian (d F) g x := by
-  unfold HyperbolicChart.laplacian
-  apply Finset.sum_congr rfl
-  intro i _
-  have h22 := cd_eventuallyEq f g x he i 2
-  have h00 := cd_eventuallyEq f g x he i 0
-  have h11 := cd_eventuallyEq f g x he i 1
-  rw [cd_congr _ _ x h22 i 2, cd_congr f g x he i 2,
-    cd_congr _ _ x h00 i 0, cd_congr _ _ x h11 i 1]
+private alias laplacian_congr := DedekindZetaZeroFree.KPContActualCompactSectionL2Jets.LaplacianSmoothnessAndSupport.laplacian_congr
 
 private theorem action_smooth (g : KPCuspArithmetic.PGL2 F) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun x : KPFiniteCuspAtlas.SymmetricSpace F => g • x) := by
-  obtain ⟨G, hG⟩ := Matrix.ProjGenLinGroup.mk_surjective g
-  rw [← hG]
-  have he : (fun x : KPFiniteCuspAtlas.SymmetricSpace F =>
-      (Matrix.ProjGenLinGroup.mk G : KPCuspArithmetic.PGL2 F) • x) = KPCuspSiegel.glAction F G := by
-    funext x; exact KPCuspSiegel.action_mk F G x
-  rw [he]
-  exact (KPArch.productAction_contDiff (KPCuspLogShape.dimension F)
-    (fun k => Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F k).embedding G)).of_le le_top
+    ContDiff ℝ (⊤ : ℕ∞) (fun x : KPFiniteCuspAtlas.SymmetricSpace F => g • x) := by apply @DedekindZetaZeroFree.KPContActualCutoffSmoothDescent.LocalCubicSheetLifts.action_smooth <;> assumption
 
 private theorem action_laplacian (g : KPCuspArithmetic.PGL2 F)
     (f : KPFiniteCuspAtlas.SymmetricSpace F → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
@@ -334,15 +298,14 @@ private theorem chart_laplacian
       (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting x) : ℂ) *
         KPContActualSphericalFlatStage.localLaplacian (KPCuspLogShape.dimension F)
           (w i).val (a.kind.representative • labeledA a.places x) := by
-  let c : ℂ := (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting x) : ℂ)
+  let c := (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting x) : ℂ)
   let f := fun y : KPFiniteCuspAtlas.SymmetricSpace F => (w i).val (a.kind.representative • y)
-  have hf : ContDiff ℝ (⊤ : ℕ∞) f := (hw i).comp (action_smooth a.kind.representative)
-  have hphase := a.splitting_locallyConstant.eventually_eq (⟨x,hx⟩ : a.omega)
+  have hf := (hw i).comp (action_smooth a.kind.representative)
   have hm := map_nhds_subtype_val (⟨x,hx⟩ : a.omega)
   rw [a.isOpen_omega.nhdsWithin_eq hx] at hm
   have hspl : ∀ᶠ y in 𝓝 x, a.splitting y = a.splitting x := by
     rw [← hm]
-    exact hphase
+    exact (a.splitting_locallyConstant.eventually_eq (⟨x,hx⟩ : a.omega))
   have he : a.coefficient w =ᶠ[𝓝 x] (fun y => c * f (labeledA a.places y)) := by
     filter_upwards [hspl] with y hy
     simp only [LiftedChart.coefficient, hy, c, f]
@@ -362,8 +325,6 @@ private theorem spectral_high (D : ℤ) (O : Set ℂ) (hO : IsOpen O) (s : ℂ) 
     iteratedDerivWithin j (KPContinuation.spectralCoordinate D) O s = 0 := by
   have hderiv1 : deriv (KPContinuation.spectralCoordinate D) = fun z => -4 * (D : ℂ) * (1 / 3 + 2 * z) := by
     funext z
-    change deriv (KPContinuation.spectralCoordinate D) z =
-      -4 * (D : ℂ) * (1 / 3 + 2 * z)
     rw [(KPContinuation.spectralCoordinate_hasDerivAt D z).deriv]
   have hderiv2 : deriv (fun z : ℂ => -4 * (D : ℂ) * (1 / 3 + 2 * z)) =
       fun _ => -8 * (D : ℂ) := by
@@ -452,11 +413,6 @@ theorem actual_source_laplacian_jets
     let hjet := KPContActualCompactSectionL2Jets.pointwiseJets
       (fun z => (source.descent.commutator z).val) O
     let lam := KPContinuation.spectralCoordinate ((Module.finrank ℚ F / 2 : ℕ) : ℤ)
-    (∀ k s, s ∈ O → ∀ i (y : KPFiniteCuspAtlas.SymmetricSpace F),
-      KPContActualSphericalFlatStage.localLaplacian (KPCuspLogShape.dimension F)
-        (cjet k s i).val y = lam s * (cjet k s i).val y + (hjet k s i).val y +
-          ∑ j ∈ Finset.Icc 1 (min k 2), (Nat.choose k j : ℂ) *
-            iteratedDerivWithin j lam O s * (cjet (k-j) s i).val y) ∧
     (∀ k s, s ∈ O →
       ∀ (i : Fin (H.atlas (KPContActualAllCuspSource.level F ζ hζ C R P H U)).componentCount)
         (a : KPContCotangentActualOverlap.LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
@@ -506,7 +462,6 @@ theorem actual_source_laplacian_jets
       ∑ j ∈ Finset.Icc 1 (min k 2), (Nat.choose k j : ℂ) *
         iteratedDerivWithin j lam O s * (cjet (k-j) s i).val y) + (hjet k s i).val y = _
     ring
-  refine ⟨component, ?_⟩
   intro k s hs i a x hx
   have hsm : KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ
       (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H (cjet k s) := by

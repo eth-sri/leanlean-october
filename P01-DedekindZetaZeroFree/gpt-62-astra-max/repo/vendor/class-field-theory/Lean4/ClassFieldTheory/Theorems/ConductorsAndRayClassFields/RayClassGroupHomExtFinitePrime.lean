@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -51,7 +47,7 @@ theorem rayClassGroup_hom_ext_finitePrime
   have hcomp : f.comp e.symm.toMonoidHom = g.comp e.symm.toMonoidHom := by
     apply GlobalClassFieldTheory.GlobalClassFields.rayClassGroup_hom_ext_finitePrime m'
     intro v hv
-    have hv' : v ∉ m.finitePart.support := hv
+    have hv' := hv
     change f (e.symm (QuotientGroup.mk' m'.congruenceSubgroup
         (QuotientGroup.mk' (IdeleGroup.principalSubgroup K)
           (IdeleGroup.finitePrimeIdele v)))) =
@@ -65,7 +61,7 @@ theorem rayClassGroup_hom_ext_finitePrime
   intro x
   have hx := DFunLike.congr_fun hcomp (e x)
   change f (e.symm (e x)) = g (e.symm (e x)) at hx
-  simpa only [MulEquiv.symm_apply_apply] using hx
+  simpa using hx
 
 end ClassFieldTheory
 

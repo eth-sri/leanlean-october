@@ -13,12 +13,10 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 private theorem delta_real_continuous : Continuous (fun t : E F ζ hζ =>
     (((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ))) := by
-  have hc := NNReal.continuous_coe.comp
-    (Units.continuous_val.comp (KPGlobalCenterRationalCharacter.nu_continuous F ζ hζ))
   have he : (fun t : E F ζ hζ => (((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ))) =
       (fun t : E F ζ hζ => (((KPGlobalCenterRationalCharacter.nu F ζ hζ t : ℝ≥0) : ℝ)) ^ (6 : ℕ)) := by
     funext t
@@ -26,9 +24,12 @@ private theorem delta_real_continuous : Continuous (fun t : E F ζ hζ =>
     · norm_num [KPGlobalTorusFunctionData.delta]
     · exact NNReal.coe_nonneg _
   rw [he]
-  exact hc.pow 6
+  exact (NNReal.continuous_coe.comp
+    (Units.continuous_val.comp (KPGlobalCenterRationalCharacter.nu_continuous F ζ hζ))).pow 6
 
-theorem normalized_weight_continuous (C : ModelData F ζ hζ) (s : ℂ) :
+variable (C : ModelData F ζ hζ) (s : ℂ)
+
+theorem normalized_weight_continuous :
     Continuous (fun b : KPGlobalTorusPeriodizationInverse.B F ζ hζ C =>
       ‖(((((twist F ζ hζ (productModel F ζ hζ C) s).character b)⁻¹ : ℂˣ) : ℂ) *
         (KPGlobalTorusFunctionData.deltaHalf F ζ hζ b.val)⁻¹)‖) := by
@@ -47,7 +48,7 @@ theorem normalized_weight_continuous (C : ModelData F ζ hζ) (s : ℂ) :
     (Continuous.inv (twist F ζ hζ (productModel F ζ hζ C) s).character.continuous)).mul
       (hh.inv₀ hn)).norm
 
-theorem compact_normalized_weight_bound (C : ModelData F ζ hζ) (s : ℂ)
+theorem compact_normalized_weight_bound
     (L : Set (KPGlobalTorusPeriodizationInverse.B F ζ hζ C)) (hL : IsCompact L) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ b ∈ L,
       ‖(((((twist F ζ hζ (productModel F ζ hζ C) s).character b)⁻¹ : ℂˣ) : ℂ) *

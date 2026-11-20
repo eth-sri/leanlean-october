@@ -65,22 +65,16 @@ theorem jointForm_injective_of_arch_exterior
   apply LinearMap.ker_eq_bot.mp
   apply eq_bot_iff.mpr
   intro e he
-  have hg := globalMap_injective_detected D W s hW x hx
   let f := Classical.choose (exists_fixed_injective D.toTensorActions W)
-  have hi := (Classical.choose_spec (exists_fixed_injective D.toTensorActions W)).2
   let E := (WildCurrentJointForm.jointForm D.toTensorActions W s hW x).ker
   let eE : E := ⟨e, he⟩
-  have hz := induced_image_zero_of_arch_exterior D W s hW x hx ht H q E le_rfl
-    (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] eE)
   let j := KPWildNormalizedCoefficientInsertion.fixedCoefficientMap F R.A.zeta12 R.A.primitive_zeta12 W
-    (depth (R := R) W) (depth_valid (R := R) W) (character W)
+    (depth W) (depth_valid W) (character W)
     (fiber D.toTensorActions W) (action D.toTensorActions W) (localData D.toTensorActions W) f
   have hgj : globalMap D.toTensorActions W s hW x (j e) = 0 := by
-    have hpin := subspace_pure_fixedCoefficient D W E f eE
-    have hzpin := jointImage_apply D W s hW x E (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] eE)
-    exact (congrArg (globalMap D.toTensorActions W s hW x) hpin).symm.trans (hzpin.symm.trans hz)
-  have hj : j e = 0 := hg (hgj.trans (map_zero _).symm)
-  exact hi (hj.trans (map_zero j).symm)
+    exact (congrArg (globalMap D.toTensorActions W s hW x) (subspace_pure_fixedCoefficient D W E f eE)).symm.trans ((jointImage_apply D W s hW x E (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] eE)).symm.trans (induced_image_zero_of_arch_exterior D W s hW x hx ht H q E le_rfl
+      (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] eE)))
+  exact ((Classical.choose_spec (exists_fixed_injective D.toTensorActions W)).2) (((globalMap_injective_detected D W s hW x hx) (hgj.trans (map_zero _).symm)).trans (map_zero j).symm)
 end DedekindZetaZeroFree.FourierContinuation.WildFiniteExteriorAssembly
 
 end

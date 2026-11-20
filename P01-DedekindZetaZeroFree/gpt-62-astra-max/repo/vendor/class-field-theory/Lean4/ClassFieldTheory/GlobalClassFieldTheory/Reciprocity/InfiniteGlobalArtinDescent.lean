@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -42,9 +39,7 @@ private theorem
     (a : IdeleGroup K) :
     InfiniteGalois.continuousMulEquivToLimit K Ω
         (infiniteGlobalArtinMonoidHom K Ω a) =
-      infiniteGlobalArtinToLimit K Ω a := by
-  exact
-    (InfiniteGalois.continuousMulEquivToLimit K Ω).apply_symm_apply _
+      infiniteGlobalArtinToLimit K Ω a := (InfiniteGalois.continuousMulEquivToLimit K Ω).apply_symm_apply _
 
 /-- The infinite global Artin homomorphism is trivial on every principal
 idele. -/
@@ -66,7 +61,7 @@ theorem infiniteGlobalArtinMonoidHom_principalIdele
   funext E
   exact
     globalArtinMonoidHom_principalIdele
-      (K := K) (L := E.unop) x
+        x
 
 /-- The infinite global Artin homomorphism descended through the subgroup of
 principal ideles. -/
@@ -77,11 +72,10 @@ noncomputable def infiniteGlobalIdeleClassArtinMonoidHom :
     (infiniteGlobalArtinMonoidHom K Ω).toMonoidHom
     (by
       intro a ha
-      change infiniteGlobalArtinMonoidHom K Ω a = 1
       rcases ha with ⟨x, rfl⟩
       exact
         infiniteGlobalArtinMonoidHom_principalIdele
-          (K := K) (Ω := Ω) x)
+            x)
 
 /-- Evaluation of the descended infinite global Artin homomorphism on an idele
 representative recovers the original infinite Artin homomorphism. -/
@@ -109,7 +103,7 @@ theorem infiniteGlobalIdeleClassArtinMonoidHom_mk
   funext a
   exact
     infiniteGlobalIdeleClassArtinMonoidHom_mk
-      (K := K) (Ω := Ω) a
+        a
 
 /-- The descended infinite global Artin homomorphism, retaining the ordinary
 quotient topology on the idele class group. -/
@@ -121,22 +115,6 @@ noncomputable def infiniteGlobalIdeleClassArtinContinuousMonoidHom :
   continuous_toFun :=
     infiniteGlobalIdeleClassArtinMonoidHom_continuous
       (K := K) (Ω := Ω)
-
-/-- The descended infinite global Artin homomorphism has dense image in the
-Krull topology. -/
-theorem infiniteGlobalIdeleClassArtinContinuousMonoidHom_denseRange :
-    DenseRange
-      (infiniteGlobalIdeleClassArtinContinuousMonoidHom
-        (K := K) (Ω := Ω)) := by
-  refine
-    (infiniteGlobalArtinMonoidHom_denseRange K Ω).mono ?_
-  rintro σ ⟨a, rfl⟩
-  refine
-    ⟨QuotientGroup.mk'
-      (IdeleGroup.principalSubgroup K) a, ?_⟩
-  exact
-    infiniteGlobalIdeleClassArtinMonoidHom_mk
-      (K := K) (Ω := Ω) a
 
 end Reciprocity
 end GlobalClassFieldTheory

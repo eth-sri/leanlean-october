@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -48,10 +44,6 @@ instance finiteDimensional (E : FiniteAbelianLocalExtension K) :
 instance isAbelianGalois (E : FiniteAbelianLocalExtension K) :
     IsAbelianGalois K E.1 :=
   E.2.2
-
-/-- The norm subgroup belonging to a packaged finite abelian extension. -/
-def normSubgroup (E : FiniteAbelianLocalExtension K) : Subgroup Kˣ :=
-  fieldNormSubgroup K E.1
 
 end FiniteAbelianLocalExtension
 

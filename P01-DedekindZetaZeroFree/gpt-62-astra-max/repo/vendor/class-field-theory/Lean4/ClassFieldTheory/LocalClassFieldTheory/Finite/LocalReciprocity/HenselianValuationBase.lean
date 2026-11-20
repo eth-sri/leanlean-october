@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -109,25 +105,25 @@ theorem intToProCInteger_mem_localBaseValuation_range (m : ℤ) :
   rw [localBaseValuation_range]
   exact ⟨m, rfl⟩
 
+variable (n : ℕ) (hn : 0 < n)
+
 /-- Reduction modulo `n` on the actual value group. -/
-def localValueGroupReduction (n : ℕ) (hn : 0 < n) :
+def localValueGroupReduction :
     (localBaseValuation K).range →+ ZMod n :=
   (zHatReduction n hn).toAddMonoidHom.comp
     (localBaseValuation K).range.subtype
 
 /-- States the theorem `localValueGroupReduction_surjective`. -/
-theorem localValueGroupReduction_surjective (n : ℕ) (hn : 0 < n) :
+theorem localValueGroupReduction_surjective :
     Function.Surjective (localValueGroupReduction K n hn) := by
   intro a
   obtain ⟨m, rfl⟩ := ZMod.intCast_surjective a
-  let z : (localBaseValuation K).range :=
-    ⟨Int.castRingHom ZHat m,
-      intToProCInteger_mem_localBaseValuation_range K m⟩
-  refine ⟨z, ?_⟩
+  refine ⟨(⟨Int.castRingHom ZHat m,
+    intToProCInteger_mem_localBaseValuation_range K m⟩), ?_⟩
   exact zHatReduction_int n hn m
 
 /-- The kernel of reduction on the value group is precisely `nZ`. -/
-theorem localValueGroupReduction_ker (n : ℕ) (hn : 0 < n) :
+theorem localValueGroupReduction_ker :
     (localValueGroupReduction K n hn).ker =
       nsmulWithin (localBaseValuation K).range n := by
   apply le_antisymm
@@ -146,10 +142,8 @@ theorem localValueGroupReduction_ker (n : ℕ) (hn : 0 < n) :
     have hdiv : (n : ℤ) ∣ m := by
       rwa [ZMod.intCast_zmod_eq_zero_iff_dvd] at hmod
     obtain ⟨k, hk⟩ := hdiv
-    let w : (localBaseValuation K).range :=
-      ⟨Int.castRingHom ZHat k,
-        intToProCInteger_mem_localBaseValuation_range K k⟩
-    refine ⟨w, ?_⟩
+    refine ⟨(⟨Int.castRingHom ZHat k,
+      intToProCInteger_mem_localBaseValuation_range K k⟩), ?_⟩
     apply Subtype.ext
     change n • Int.castRingHom ZHat k = (z : ZHat)
     rw [← map_nsmul]
@@ -161,20 +155,9 @@ theorem localValueGroupReduction_ker (n : ℕ) (hn : 0 < n) :
     rw [map_nsmul]
     simp [nsmul_eq_mul]
 
-/-- The cyclic quotient condition in the Henselian valuation condition, for the actual local value
-group. -/
-def localValueGroupQuotientEquivZMod (n : ℕ) (hn : 0 < n) :
-    ((localBaseValuation K).range ⧸
-        nsmulWithin (localBaseValuation K).range n) ≃+ ZMod n :=
-  (QuotientAddGroup.quotientAddEquivOfEq
-      (localValueGroupReduction_ker K n hn).symm).trans
-    (QuotientAddGroup.quotientKerEquivOfSurjective
-      (localValueGroupReduction K n hn)
-      (localValueGroupReduction_surjective K n hn))
-
 /-- The inclusion-and-reduction quotient map of the Henselian valuation condition is
 bijective for the actual local value group. -/
-theorem localCanonicalValueQuotientMap_bijective (n : ℕ) (hn : 0 < n) :
+theorem localCanonicalValueQuotientMap_bijective :
     Function.Bijective
       (canonicalValueQuotientMap (localBaseValuation K).range n hn) := by
   constructor

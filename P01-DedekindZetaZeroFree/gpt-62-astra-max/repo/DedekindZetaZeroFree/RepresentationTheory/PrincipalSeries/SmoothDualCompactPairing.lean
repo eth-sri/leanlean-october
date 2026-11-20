@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.RepresentationTheory.Jacquet.CyclicIrreducibleQuotients
 
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.CompactProbabilityMeasure
 public import DedekindZetaZeroFree.Metaplectic.Kubota.CubicPGL.CompactIwasawa
@@ -82,16 +83,7 @@ variable {G V : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
   [AddCommGroup V] [Module ℂ V]
 
 theorem smooth_orbit_locallyConstant (ρ : Representation ℂ G V) (v : V)
-    (hv : SmoothVector ρ v) : IsLocallyConstant (fun g => ρ g v) := by
-  obtain ⟨J, hJ⟩ := hv
-  rw [IsLocallyConstant.iff_exists_open]
-  intro g
-  refine ⟨(fun y => g⁻¹ * y) ⁻¹' (J : Set G),
-    J.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
-  · simpa using J.one_mem
-  · intro y hy
-    have heq : y = g * (g⁻¹ * y) := by simp
-    rw [heq, map_mul, Module.End.mul_apply, hJ _ hy]
+    (hv : SmoothVector ρ v) : IsLocallyConstant (fun g => ρ g v) := by apply @DedekindZetaZeroFree.KPCyclicQuotient.CyclicIrreducibleQuotients.orbit_locallyConstant <;> assumption
 
 end AlgebraicAveraging
 

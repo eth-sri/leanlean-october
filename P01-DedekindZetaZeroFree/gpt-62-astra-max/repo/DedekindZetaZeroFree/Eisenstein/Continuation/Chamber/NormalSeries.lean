@@ -13,13 +13,13 @@ namespace DedekindZetaZeroFree.KPContActualChamberNormalSeries
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable (f : ℂ → S)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (f : ℂ → S)
 
 def E (s : ℂ) (g : G F ζ hζ) : ℂ := ∑' q : Q F, term F ζ hζ U ι f q s g
 
@@ -93,11 +93,9 @@ private theorem term_holomorphic
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (q : Q F) (g : G F ζ hζ) :
     DifferentiableOn ℂ (fun s => term F ζ hζ U ι f q s g) KPContinuation.spectralDomain := by
-  let ev : S →ₗ[ℂ] ℂ :=
+  let ev :=
     (LinearMap.proj (lift F ζ hζ q * g)).comp
       (KPContActualSphericalFlatStage.L F ζ hζ U ι 0)
-  have hev : DifferentiableOn ℂ (fun s => ev (f s)) KPContinuation.spectralDomain :=
-    ((⟨ev, ev.continuous_of_finiteDimensional⟩ : S →L[ℂ] ℂ).differentiable.comp_differentiableOn hf)
   have heq : (fun s => term F ζ hζ U ι f q s g) = fun s =>
       Complex.exp (s * (KPContFlatSourceRecipe.alpha F ζ hζ (lift F ζ hζ q * g) : ℂ)) *
         ev (f s) := by
@@ -105,7 +103,7 @@ private theorem term_holomorphic
     simp only [term, ev, LinearMap.comp_apply, LinearMap.proj_apply,
       KPContFlatCommonLevelKernel.L_formula, zero_mul, Complex.exp_zero, one_mul]
   rw [heq]
-  exact (Differentiable.differentiableOn (by fun_prop)).mul hev
+  exact (Differentiable.differentiableOn (by fun_prop)).mul (((⟨ev, ev.continuous_of_finiteDimensional⟩ : S →L[ℂ] ℂ).differentiable.comp_differentiableOn hf))
 
 private theorem term_continuous (q : Q F) (s : ℂ) :
     Continuous (term F ζ hζ U ι f q s) := by
@@ -125,9 +123,8 @@ private theorem series_continuous
   obtain ⟨A, hA, hAg⟩ := exists_compact_mem_nhds g
   obtain ⟨b, hb, hbound⟩ := scalar_normal_majorant F ζ hζ U ι f hf
     {s} isCompact_singleton (by rintro z rfl; exact hs) A hA
-  have hc := continuousOn_tsum (fun q => (term_continuous F ζ hζ U ι f q s).continuousOn)
-    hb (fun q x hx => hbound q s rfl x hx)
-  exact hc.continuousAt hAg
+  exact (continuousOn_tsum (fun q => (term_continuous F ζ hζ U ι f q s).continuousOn)
+    hb (fun q x hx => hbound q s rfl x hx)).continuousAt hAg
 
 set_option maxHeartbeats 1200000 in
 private theorem parameter_normal_majorant
@@ -140,8 +137,7 @@ private theorem parameter_normal_majorant
   obtain ⟨r, hr, hrV⟩ := hK.exists_cthickening_subset_open KPChamberL2Defect.chamber_isOpen hKV
   obtain ⟨b, hb, hbound⟩ := scalar_normal_majorant F ζ hζ U ι f hf
     (Metric.cthickening r K) hK.cthickening hrV A hA
-  let d : ℝ≥0 := ⟨(k.factorial : ℝ) / r^k, div_nonneg (Nat.cast_nonneg _) (pow_nonneg hr.le _)⟩
-  refine ⟨fun q => d * b q, hb.mul_left _, ?_⟩
+  refine ⟨fun q => (⟨(k.factorial : ℝ) / r^k, div_nonneg (Nat.cast_nonneg _) (pow_nonneg hr.le _)⟩) * b q, hb.mul_left _, ?_⟩
   intro q s hs g hg
   have hball : Metric.closedBall s r ⊆ KPContinuation.spectralDomain := by
     intro z hz
@@ -187,7 +183,7 @@ private theorem spatial_normal_majorant
       ((B.coord i).continuous_of_finiteDimensional.comp_continuousOn (hf.continuousOn.mono hKΩ))
     exact ⟨max 0 C, le_max_left _ _, fun s hs => (hC s hs).trans (le_max_right _ _)⟩
   choose C hC hCb using hcoef
-  obtain ⟨n,a,j,_,heq⟩ := KPContinuation.ChamberFlatSource.actual_rightWord_jet_expansion_uniform F ζ hζ w
+  obtain ⟨n, a, j, heq⟩ := KPContinuation.ChamberFlatSource.actual_rightWord_jet_expansion_uniform F ζ hζ w
   let K₀ := (KPContFlatFullProductIwasawa.iwasawaData F ζ hζ).K
   have hK₀ : KPLiteralRaw.IwasawaCompact F ζ hζ K₀ :=
     ⟨(KPContFlatFullProductIwasawa.iwasawaData F ζ hζ).compact,
@@ -334,7 +330,6 @@ private theorem parameterJet_eq_tsum
     (k : ℕ) (s : ℂ) (hs : s ∈ V) (g : G F ζ hζ) :
     mixedJet F ζ hζ (E F ζ hζ U ι f) k [] s g =
       ∑' q : Q F, mixedJet F ζ hζ (term F ζ hζ U ι f q) k [] s g := by
-  change iteratedDerivWithin k (fun z => ∑' q : Q F, term F ζ hζ U ι f q z g) V s = _
   apply iteratedDerivWithin_tsum k KPChamberL2Defect.chamber_isOpen hs
   · intro z hz
     obtain ⟨b, hb, hbound⟩ := scalar_normal_majorant F ζ hζ U ι f hf
@@ -367,12 +362,10 @@ private theorem term_flow_deriv
     dsimp only [a]
     rw [(KPSmoothActualFlowData.flow_properties F b).2.1,
       (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1]
-  have hh := (KPContinuation.ChamberNormalTerm.actual_term_mixed_flow F ζ hζ U ι f hι hf q k w s hs).2 b (g*a t)
   have hh' : HasDerivAt (fun r => mixedJet F ζ hζ (term F ζ hζ U ι f q) k w s ((g*a t)*a r))
     (mixedJet F ζ hζ (term F ζ hζ U ι f q) k (b :: w) s (g*a t)) (t-t) := by
-    simpa only [sub_self] using hh
-  have hc := hh'.comp_sub_const t t
-  simpa only [Function.comp_def, sub_self, mul_assoc, ← hadd, add_sub_cancel] using hc
+    simpa using ((KPContinuation.ChamberNormalTerm.actual_term_mixed_flow F ζ hζ U ι f hι hf q k w s hs).2 b (g*a t))
+  simpa only [Function.comp_def, sub_self, mul_assoc, ← hadd, add_sub_cancel] using (hh'.comp_sub_const t t)
 
 private theorem flow_tsum_hasDeriv
     (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
@@ -382,12 +375,11 @@ private theorem flow_tsum_hasDeriv
       (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (KPSmoothActualFlowData.flow F b t)))
       (∑' q : Q F, mixedJet F ζ hζ (term F ζ hζ U ι f q) k (b :: w) s g) 0 := by
   let a := fun t : ℝ => g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (KPSmoothActualFlowData.flow F b t)
-  have ha : Continuous a := continuous_const.mul
-    ((KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1.comp
-      (KPSmoothActualFlowData.flow_properties F b).2.2)
   obtain ⟨c, hc, hbound⟩ := normal_majorant F ζ hζ U ι f hι hf k (b :: w)
     {s} isCompact_singleton (by rintro z rfl; exact hs)
-    (a '' Metric.closedBall 0 1) ((isCompact_closedBall (0 : ℝ) 1).image ha)
+    (a '' Metric.closedBall 0 1) ((isCompact_closedBall (0 : ℝ) 1).image (continuous_const.mul
+      ((KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1.comp
+        (KPSmoothActualFlowData.flow_properties F b).2.2)))
   have h0 : a 0 = g := by
     simp only [a, (KPSmoothActualFlowData.flow_properties F b).1,
       (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).1, mul_one]
@@ -466,7 +458,7 @@ theorem mixed_uniform (hι : Function.Injective ι)
   obtain ⟨b, hb, hbound⟩ :=
     normal_majorant F ζ hζ U ι f hι hf k w K hK hKV A hA
   have h := tendstoUniformlyOn_tsum
-    (f := fun q (p : ℂ × G F ζ hζ) =>
+    (f := fun q p =>
       mixedJet F ζ hζ (term F ζ hζ U ι f q) k w p.1 p.2)
     (u := fun q : Q F => (b q : ℝ)) hb (s := K ×ˢ A)
     (fun q p hp => hbound q p.1 hp.1 p.2 hp.2)
@@ -479,10 +471,7 @@ theorem mixedJet_continuous (hι : Function.Injective ι)
     (k : ℕ) (w : Word F) (s : ℂ) (hs : s ∈ V) :
     Continuous (mixedJet F ζ hζ (E F ζ hζ U ι f) k w s) := by
   letI : LocallyCompactSpace (G F ζ hζ) := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.1
-  have heq : mixedJet F ζ hζ (E F ζ hζ U ι f) k w s = fun g =>
-      ∑' q : Q F, mixedJet F ζ hζ (term F ζ hζ U ι f q) k w s g :=
-    funext (mixedJet_eq_tsum F ζ hζ U ι f hι hf k w s hs)
-  rw [heq]
+  rw [(funext (mixedJet_eq_tsum F ζ hζ U ι f hι hf k w s hs))]
   apply continuous_iff_continuousAt.mpr
   intro g
   obtain ⟨A, hA, hAg⟩ := exists_compact_mem_nhds g
@@ -501,7 +490,7 @@ theorem smooth (hι : Function.Injective ι)
   letI := C
   obtain ⟨L, D, hD, hbasis, _⟩ := hC
   letI := L
-  let q := fun (w : Word F) (a : KPSmoothActualFlowData.GInfinity F) =>
+  let q := fun w a =>
     mixedJet F ζ hζ (E F ζ hζ U ι f) 0 w s
       (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a)
   have hflow (b : KPSmoothActualFlowData.B F) (t : ℝ) :
@@ -541,12 +530,7 @@ theorem smooth (hι : Function.Injective ι)
         ((mixedJet_continuous F ζ hζ U ι f hι hf 0 w s hs).comp
           (continuous_const.mul (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1))
         (fun b => ih (b::w)) (hder w)
-  have htop : ContMDiff 𝓘(ℝ, KPSmoothActualFlowData.LieCoordinates F) 𝓘(ℝ, ℂ) (⊤ : ℕ∞) (q []) :=
-    contMDiff_infty.mpr (fun n => hq n [])
-  have he : ContMDiff 𝓘(ℝ, KPSmoothActualFlowData.LieCoordinates F)
-      𝓘(ℝ, KPSmoothActualFlowData.LieCoordinates F) (⊤ : ℕ∞) (KPSmoothActualFlowData.exponential F) :=
-    hD ▸ D.exponential_smooth
-  exact (htop.comp he).contDiff
+  exact ((contMDiff_infty.mpr (fun n => hq n [])).comp (hD ▸ D.exponential_smooth)).contDiff
 
 def compactMixedJet (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
@@ -578,18 +562,17 @@ private theorem complex_taylor_bound
     (t : ℂ) (ht : t ∈ Metric.closedBall s r) :
     ‖H t - H s - (t-s) * H₁ s‖ ≤ B * ‖t-s‖ * ‖t-s‖ := by
   have hs : s ∈ Metric.closedBall s r := Metric.mem_closedBall_self hr.le
-  have hseg : segment ℝ s t ⊆ Metric.closedBall s r := (convex_closedBall s r).segment_subset hs ht
+  have hseg := (convex_closedBall s r).segment_subset hs ht
   have hdiff (z : ℂ) (hz : z ∈ segment ℝ s t) : ‖H₁ z - H₁ s‖ ≤ B * ‖t-s‖ := by
     have hh := (convex_closedBall s r).norm_image_sub_le_of_norm_hasFDerivWithin_le
-      (f := H₁) (f' := fun z => ContinuousLinearMap.toSpanSingleton ℂ (H₂ z))
+
       (fun z hz => (hd₁ z hz).hasFDerivAt.hasFDerivWithinAt)
-      (fun z hz => by simpa only [ContinuousLinearMap.norm_toSpanSingleton] using hB z hz)
+      (fun z hz => by simpa using hB z hz)
       hs (hseg hz)
     exact hh.trans (mul_le_mul_of_nonneg_left (norm_sub_le_of_mem_segment hz)
       ((norm_nonneg (H₂ s)).trans (hB s hs)))
   have hh := (convex_segment s t).norm_image_sub_le_of_norm_hasFDerivWithin_le'
-    (f := H) (f' := fun z => ContinuousLinearMap.toSpanSingleton ℂ (H₁ z))
-    (φ := ContinuousLinearMap.toSpanSingleton ℂ (H₁ s))
+
     (fun z hz => (hd z (hseg hz)).hasFDerivAt.hasFDerivWithinAt)
     (fun z hz => by
       have he : ContinuousLinearMap.toSpanSingleton ℂ (H₁ z) - ContinuousLinearMap.toSpanSingleton ℂ (H₁ s) =
@@ -597,7 +580,7 @@ private theorem complex_taylor_bound
       rw [he, ContinuousLinearMap.norm_toSpanSingleton]
       exact hdiff z hz)
     (left_mem_segment ℝ s t) (right_mem_segment ℝ s t)
-  simpa only [ContinuousLinearMap.toSpanSingleton_apply, smul_eq_mul] using hh
+  simpa using hh
 
 theorem compactMixedJet_holomorphic (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
@@ -652,9 +635,7 @@ theorem compactMixedJet_holomorphic (hι : Function.Injective ι)
   Quotient.congr (Equiv.mulRight γ) (by
     intro a b
     simp only [QuotientGroup.rightRel_apply]
-    change b * a⁻¹ ∈ KPChamberBruhatTwoCells.rationalBorel F ↔
-      (b * γ) * (a * γ)⁻¹ ∈ KPChamberBruhatTwoCells.rationalBorel F
-    simp only [mul_inv_rev, mul_assoc, mul_inv_cancel_left])
+    simp)
 
 private theorem term_coset (s : ℂ) (g : G F ζ hζ)
     (γ : Matrix.ProjGenLinGroup (Fin 2) F) :
@@ -693,7 +674,6 @@ theorem covariance (hι : Function.Injective ι)
     apply tsum_congr
     intro q
     have he : e q = KPChamberBruhatTwoCells.rationalCoset F (Quotient.out q * γ) := by
-      change cosetRight F γ q = _
       conv_lhs => rw [← Quotient.out_eq q]
       rfl
     rw [he, term_coset F ζ hζ U ι f, map_mul, mul_assoc]
@@ -701,9 +681,7 @@ theorem covariance (hι : Function.Injective ι)
   · intro ε g
     have hc : ∀ x : G F ζ hζ,
         x * KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε =
-          KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * x := by
-      intro x
-      exact Subgroup.mem_center_iff.mp
+          KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * x := fun x => Subgroup.mem_center_iff.mp
         (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
           (show KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε ∈
             (KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ).range from ⟨ε, rfl⟩)) x
@@ -730,18 +708,20 @@ abbrev atlasLevel :=
   let _ := C; let _ := R; let _ := P; let _ := H
   EisensteinSmoothGerms.ScalarSource.atlasLevel F ζ hζ U
 
+local notation "cuspLevel" => atlasLevel F ζ hζ C R P H U
+
 def coveredRepresentative
     (x : KPContSectorCoveredQuotientVocabulary.CoveredSpherical F ζ hζ
-      (atlasLevel F ζ hζ C R P H U)) : G F ζ hζ :=
+      cuspLevel) : G F ζ hζ :=
   KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
     (KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ (Quotient.out x).1) *
       ((Quotient.out x).2 : G F ζ hζ)
 
 theorem coveredRepresentative_projection
     (x : KPContSectorCoveredQuotientVocabulary.CoveredSpherical F ζ hζ
-      (atlasLevel F ζ hζ C R P H U)) :
+      cuspLevel) :
     KPContSectorQuotientRelationsComparison.piTilde F ζ hζ
-      (atlasLevel F ζ hζ C R P H U)
+      cuspLevel
       (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
         (coveredRepresentative F ζ hζ C R P H U x)) = x := by
   unfold coveredRepresentative
@@ -749,11 +729,11 @@ theorem coveredRepresentative_projection
   rw [KPContSectorArchSphericalFibers.archBasepoint_iwasawaSection]
   exact Quotient.out_eq x
 
-def componentRepresentative (i : Fin (H.atlas (atlasLevel F ζ hζ C R P H U)).componentCount)
+def componentRepresentative (i : Fin (H.atlas cuspLevel).componentCount)
     (x : KPContSectorCoveredQuotientVocabulary.SymmetricSpace F) : G F ζ hζ :=
   KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
     (KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ x) *
-      ((H.atlas (atlasLevel F ζ hζ C R P H U)).representative i : G F ζ hζ)
+      ((H.atlas cuspLevel).representative i : G F ζ hζ)
 
 set_option maxHeartbeats 800000 in
 
@@ -786,8 +766,7 @@ theorem descent_series (hι : Function.Injective ι)
       intro a ha g
       obtain ⟨γ, rfl⟩ := ha
       let γ₀ := (KPGlobalResidualKernel.RawStageL2.Outgoing.ChamberQuotient.rationalEquiv F).symm γ
-      have hh := hr γ₀ g
-      simpa [γ₀, KPContFlatRationalCosetCovariance.matrixRationalHom] using hh
+      simpa [γ₀, KPContFlatRationalCosetCovariance.matrixRationalHom] using (hr γ₀ g)
     have hKU : ∀ a ∈ KPContSectorCoveredQuotientVocabulary.K_U F ζ hζ U₀, ∀ g,
         E F ζ hζ U ι f s (g * a) = E F ζ hζ U ι f s g := by
       intro a ha
@@ -797,16 +776,14 @@ theorem descent_series (hι : Function.Injective ι)
           · obtain ⟨k, hkmem, rfl⟩ := hx
             exact fun g => hk g ⟨k, hkmem⟩
           · obtain ⟨u, humem, rfl⟩ := hx
-            have huval : (u : G F ζ hζ) ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U := by
-              rw [EisensteinSmoothGerms.ScalarSource.level_matching F ζ hζ U]
-              exact ⟨u, humem, rfl⟩
-            exact fun g => hu g ⟨u, huval⟩
+            refine fun g => hu g ⟨u, ?_⟩
+            rw [EisensteinSmoothGerms.ScalarSource.level_matching F ζ hζ U]
+            exact ⟨u, humem, rfl⟩
       | one => intro g; simp
       | mul x y hx hy ihx ihy => intro g; rw [← mul_assoc, ihy, ihx]
       | inv x hx ih =>
           intro g
-          have hh := ih (g * x⁻¹)
-          simpa only [inv_mul_cancel_right] using hh.symm
+          simpa using (ih (g * x⁻¹)).symm
     let d : KPContSectorCoveredQuotientVocabulary.CoveredActual F ζ hζ U₀ → ℂ :=
       Quotient.lift (E F ζ hζ U ι f s) (by
         intro a b hab
@@ -834,11 +811,8 @@ theorem descent_series (hι : Function.Injective ι)
         v (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ U₀
           (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g))
     rw [← hp, KPContSectorCentralHaarInvariance.t_quotientMap, hv, hv]
-    have hcomm : g * KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε =
-        KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * g :=
-      Subgroup.mem_center_iff.mp
-        (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩) g
-    rw [hcomm, hc]
+    rw [(Subgroup.mem_center_iff.mp
+      (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩) g), hc]
   let e := fun s => if hs : s ∈ V then (hex s hs).choose else 0
   have he : ∀ s ∈ V, ∀ g, (e s).val
       (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ U₀
@@ -850,7 +824,7 @@ theorem descent_series (hι : Function.Injective ι)
   refine ⟨e, he, ?_, ?_⟩
   · intro s hs x
     calc
-      (e s).val x = (e s).val
+      _ = (e s).val
           (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ U₀
             (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
               (coveredRepresentative F ζ hζ C R P H U x))) :=

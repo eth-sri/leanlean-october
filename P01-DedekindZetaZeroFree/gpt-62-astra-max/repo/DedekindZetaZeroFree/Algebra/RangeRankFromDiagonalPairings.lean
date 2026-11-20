@@ -22,26 +22,26 @@ theorem rank_map_range_ge_two_of_diagonal_pairings
     rw [linearIndependent_fin2]
     refine ⟨?_, ?_⟩
     · intro h
-      have hz : g (f v₁) = 0 := by simpa using h
-      exact hc₁ (by rw [← h₁₁, hz, map_zero])
+      simp_all
     · intro a h
-      have h' : a • g (f v₁) = g (f v₀) := by simpa using h
+      have h' : a • g (f v₁) = g (f v₀) := by exact h
       have h1 : ell₀ (a • g (f v₁)) = ell₀ (g (f v₀)) := by rw [h']
       simp only [map_smul, h₀₁, h₀₀, smul_zero] at h1
       exact hc₀ h1.symm
-  haveI : Module.Finite K (Submodule.span K (Set.range ![g (f v₀), g (f v₁)])) :=
+  let span₀ := Submodule.span K (Set.range ![g (f v₀), g (f v₁)])
+  haveI : Module.Finite K (span₀) :=
     Module.Finite.span_of_finite K (Set.finite_range _)
-  have hrank : Module.rank K (Submodule.span K (Set.range ![g (f v₀), g (f v₁)])) =
+  have hrank : Module.rank K (span₀) =
       (2 : Cardinal) := by
     rw [← Module.finrank_eq_rank, finrank_span_eq_card hli]
     simp
-  have hle : Submodule.span K (Set.range ![g (f v₀), g (f v₁)]) ≤
+  have hle : span₀ ≤
       (LinearMap.range f).map g := by
     rw [Submodule.span_le]
     rintro x ⟨i, rfl⟩
     fin_cases i
-    · exact Submodule.mem_map_of_mem (LinearMap.mem_range_self f v₀)
-    · exact Submodule.mem_map_of_mem (LinearMap.mem_range_self f v₁)
+    · simp
+    · simp
   exact le_trans (le_of_eq hrank.symm) (Submodule.rank_mono hle)
 
 end

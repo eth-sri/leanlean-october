@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -76,22 +73,20 @@ theorem intrinsicExtensionSubgroup_iff_ambientFixedField
       φ τ.1 ∈ extensionSubgroup H.field J hJH := by
   dsimp only
   let F := abstractFixedField K (SeparableClosure K) H.field
-  let : Algebra F (SeparableClosure F) :=
+  let :=
     (separableClosure F (AlgebraicClosure F)).algebra
   intro e τ
   let E := abstractRelativeFixedField K (SeparableClosure K) hJH
-  let : FiniteDimensional F E :=
+  let :=
     abstractRelativeFixedField_finiteDimensional
       K (SeparableClosure K) H.field J hJH H.finite hJfinite
-  let : IsGalois F E :=
+  let :=
     abstractRelativeFixedField_isGalois
       K (SeparableClosure K) H.field J hJH hJnormal
-  let i : E →ₐ[F] SeparableClosure F :=
+  let i :=
     e.symm.toAlgHom.comp E.val
   let EI := finiteGaloisAbstractExtensionOfEmbedding F E i
-  let φ :
-      Gal(SeparableClosure F / F) ≃*
-        H.field.toSubgroup :=
+  let φ :=
     (AlgEquiv.autCongr e).trans
       (abstractSubgroupEquivGaloisGroup
         K (SeparableClosure K) H.field).symm
@@ -100,57 +95,38 @@ theorem intrinsicExtensionSubgroup_iff_ambientFixedField
       K (SeparableClosure K) H.field J hJH hJnormal
   let qF :=
     finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding F E i
-  have hcompat :
-      qH (QuotientGroup.mk (φ τ.1)) =
-        qF (QuotientGroup.mk τ) :=
+  have hcompat :=
     fixedFieldQuotientEquiv_mk_compatibility
       K H J hJH e τ
   constructor
   · intro hτ
-    have hF : (QuotientGroup.mk τ :
-        (intrinsicAbstractBase F).toSubgroup ⧸
-          extensionSubgroup
-            (intrinsicAbstractBase F) EI.field EI.below) = 1 := by
-      rw [QuotientGroup.eq_one_iff]
-      exact hτ
     have hHimage :
         qH (QuotientGroup.mk (φ τ.1)) = 1 := by
       calc
-        qH (QuotientGroup.mk (φ τ.1)) =
+        _ =
             qF (QuotientGroup.mk τ) :=
           hcompat
-        _ = qF 1 := congrArg qF hF
+        _ = qF 1 := congrArg qF (by
+          rw [QuotientGroup.eq_one_iff]
+          exact hτ)
         _ = 1 := map_one qF
-    have hHquotient :
-        (QuotientGroup.mk (φ τ.1) :
-          H.field.toSubgroup ⧸
-            extensionSubgroup H.field J hJH) = 1 := by
-      apply qH.injective
-      exact hHimage.trans (map_one qH).symm
-    exact (QuotientGroup.eq_one_iff (φ τ.1)).1 hHquotient
+    refine (QuotientGroup.eq_one_iff (φ τ.1)).1 ?_
+    apply qH.injective
+    exact hHimage.trans (map_one qH).symm
   · intro hφτ
-    have hHquotient :
-        (QuotientGroup.mk (φ τ.1) :
-          H.field.toSubgroup ⧸
-            extensionSubgroup H.field J hJH) = 1 := by
-      rw [QuotientGroup.eq_one_iff]
-      exact hφτ
     have hFimage :
         qF (QuotientGroup.mk τ) = 1 := by
       calc
-        qF (QuotientGroup.mk τ) =
+        _ =
             qH (QuotientGroup.mk (φ τ.1)) :=
           hcompat.symm
-        _ = qH 1 := congrArg qH hHquotient
+        _ = qH 1 := congrArg qH (by
+          rw [QuotientGroup.eq_one_iff]
+          exact hφτ)
         _ = 1 := map_one qH
-    have hFquotient :
-        (QuotientGroup.mk τ :
-          (intrinsicAbstractBase F).toSubgroup ⧸
-            extensionSubgroup
-              (intrinsicAbstractBase F) EI.field EI.below) = 1 := by
-      apply qF.injective
-      exact hFimage.trans (map_one qF).symm
-    exact (QuotientGroup.eq_one_iff τ).1 hFquotient
+    refine (QuotientGroup.eq_one_iff τ).1 ?_
+    apply qF.injective
+    exact hFimage.trans (map_one qF).symm
 
 /-- Membership in intrinsic extension inertia is equivalent, under the
 fixed-field base equivalence, to membership in the ambient extension inertia. -/
@@ -200,31 +176,27 @@ theorem intrinsicExtensionInertia_iff_ambientFixedField
         H.field J hJH := by
   dsimp only
   let F := abstractFixedField K (SeparableClosure K) H.field
-  let : Algebra F (SeparableClosure F) :=
+  let :=
     (separableClosure F (AlgebraicClosure F)).algebra
   intro e τ
   let E := abstractRelativeFixedField K (SeparableClosure K) hJH
-  let : FiniteDimensional K F :=
+  let :=
     abstractFixedField_finiteDimensional
       K (SeparableClosure K) H.field H.finite
-  let : NontriviallyNormedField F :=
+  let :=
     finiteExtensionSpectralNormedField K F
-  let : ValuativeRel F :=
+  let :=
     finiteExtensionSpectralValuativeRel K F
-  let : IsNonarchimedeanLocalField F :=
+  let :=
     finiteExtensionSpectralIsNonarchimedeanLocalField K F
-  let : FiniteDimensional F E :=
+  let :=
     abstractRelativeFixedField_finiteDimensional
       K (SeparableClosure K) H.field J hJH H.finite hJfinite
-  let : IsGalois F E :=
+  let :=
     abstractRelativeFixedField_isGalois
       K (SeparableClosure K) H.field J hJH hJnormal
-  let i : E →ₐ[F] SeparableClosure F :=
-    e.symm.toAlgHom.comp E.val
-  let EI := finiteGaloisAbstractExtensionOfEmbedding F E i
-  let φ :
-      Gal(SeparableClosure F / F) ≃*
-        H.field.toSubgroup :=
+  let EI := finiteGaloisAbstractExtensionOfEmbedding F E (e.symm.toAlgHom.comp E.val)
+  let φ :=
     (AlgEquiv.autCongr e).trans
       (abstractSubgroupEquivGaloisGroup
         K (SeparableClosure K) H.field).symm
@@ -237,28 +209,18 @@ theorem intrinsicExtensionInertia_iff_ambientFixedField
     ⟨τ.1, τ.2⟩
   let phiTauRH : RH.field.toSubgroup :=
     ⟨(φ τ.1).1, (φ τ.1).2⟩
-  have hRFker :
-      ((localResidueDatum F).normalizedDegree RF).toMonoidHom.ker =
-        (localResidueDatum F).fieldInertiaWithin RF.field :=
-    (localResidueDatum F).normalizedDegree_ker RF
-  have hRHker :
-      ((localResidueDatum K).normalizedDegree RH).toMonoidHom.ker =
-        (localResidueDatum K).fieldInertiaWithin RH.field :=
-    (localResidueDatum K).normalizedDegree_ker RH
   have hdegree :
       (localResidueDatum F).normalizedDegree RF tauRF =
         (localResidueDatum K).normalizedDegree RH phiTauRH := by
     simpa [RF, RH, φ, tauRF, phiTauRH] using
       intrinsicBase_normalizedDegree_eq_ambientFixedField K H e τ
-  have hinertia :
-      tauRF ∈ (localResidueDatum F).fieldInertiaWithin RF.field ↔
-        phiTauRH ∈ (localResidueDatum K).fieldInertiaWithin RH.field :=
+  have hinertia :=
     mem_subgroup_iff_of_map_eq_of_ker_eq
       ((localResidueDatum F).normalizedDegree RF).toMonoidHom
       ((localResidueDatum K).normalizedDegree RH).toMonoidHom
       ((localResidueDatum F).fieldInertiaWithin RF.field)
       ((localResidueDatum K).fieldInertiaWithin RH.field)
-      hRFker hRHker tauRF phiTauRH hdegree
+      ((localResidueDatum F).normalizedDegree_ker RF) ((localResidueDatum K).normalizedDegree_ker RH) tauRF phiTauRH hdegree
   change
     (τ ∈ extensionSubgroup
         (intrinsicAbstractBase F) EI.field EI.below ∧
@@ -289,45 +251,6 @@ abbrev intrinsicFixedFieldSeparableClosureEquiv
     _ _ _
     (separableClosure F (AlgebraicClosure F)).algebra
     F.val.toRingHom.toAlgebra
-
-/-- The intrinsic base subgroup modulo extension inertia for a finite
-fixed-field extension, using the chosen separable-closure equivalence. -/
-abbrev intrinsicFixedFieldFrobeniusQuotient
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (H : FiniteAbstractField
-      Gal(SeparableClosure K / K))
-    (J : ClosedSubgroup Gal(SeparableClosure K / K))
-    (hJH : J.toSubgroup ≤ H.field.toSubgroup)
-    [hJnormal : (extensionSubgroup H.field J hJH).Normal]
-    [hJfinite : Finite
-      (H.field.toSubgroup ⧸ extensionSubgroup H.field J hJH)]
-    (e : intrinsicFixedFieldSeparableClosureEquiv K H) :=
-  let F := abstractFixedField K (SeparableClosure K) H.field
-  letI : Algebra F (SeparableClosure F) :=
-    (separableClosure F (AlgebraicClosure F)).algebra
-  let E := abstractRelativeFixedField K (SeparableClosure K) hJH
-  letI : FiniteDimensional K F :=
-    abstractFixedField_finiteDimensional
-      K (SeparableClosure K) H.field H.finite
-  letI : NontriviallyNormedField F :=
-    finiteExtensionSpectralNormedField K F
-  letI : ValuativeRel F :=
-    finiteExtensionSpectralValuativeRel K F
-  letI : IsNonarchimedeanLocalField F :=
-    finiteExtensionSpectralIsNonarchimedeanLocalField K F
-  letI : FiniteDimensional F E :=
-    abstractRelativeFixedField_finiteDimensional
-      K (SeparableClosure K) H.field J hJH H.finite hJfinite
-  letI : IsGalois F E :=
-    abstractRelativeFixedField_isGalois
-      K (SeparableClosure K) H.field J hJH hJnormal
-  let i : E →ₐ[F] SeparableClosure F :=
-    e.symm.toAlgHom.comp E.val
-  let EI := finiteGaloisAbstractExtensionOfEmbedding F E i
-  (intrinsicAbstractBase F).toSubgroup ⧸
-    (localResidueDatum F).extensionInertiaWithin
-      (intrinsicAbstractBase F) EI.field EI.below
 
 end LocalClassFieldTheory
 

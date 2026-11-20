@@ -11,21 +11,27 @@ namespace DedekindZetaZeroFree.SupportedChartTopology
 noncomputable section
 variable {F : Type} [Field F] [NumberField F]
 
-theorem continuous_norm (A : SArithmeticData F) : Continuous A.norm := by
+section
+
+variable (A : SArithmeticData F)
+
+theorem continuous_norm : Continuous A.norm := by
   unfold SArithmeticData.norm
   fun_prop
 
-theorem isClosed_G1 (A : SArithmeticData F) : IsClosed (A.G1 : Set A.G) :=
+theorem isClosed_G1 : IsClosed (A.G1 : Set A.G) :=
   isClosed_eq (continuous_norm A) continuous_const
 
-theorem locallyCompact_G1 (A : SArithmeticData F) : LocallyCompactSpace A.G1 := by
+theorem locallyCompact_G1 : LocallyCompactSpace A.G1 := by
   have : LocallyCompactSpace A.G := by infer_instance
   exact (isClosed_G1 A).locallyCompactSpace
 
-theorem hausdorff_G1 (A : SArithmeticData F) : T2Space A.G1 := by infer_instance
+theorem hausdorff_G1 : T2Space A.G1 := by infer_instance
 
-theorem topologicalGroup_G1 (A : SArithmeticData F) : IsTopologicalGroup A.G1 := by
+theorem topologicalGroup_G1 : IsTopologicalGroup A.G1 := by
   infer_instance
+
+end
 
 theorem compact_exterior (S : Finset (HeightOneSpectrum (𝓞 F))) :
     CompactSpace ((v : {v : HeightOneSpectrum (𝓞 F) // v ∉ S}) →

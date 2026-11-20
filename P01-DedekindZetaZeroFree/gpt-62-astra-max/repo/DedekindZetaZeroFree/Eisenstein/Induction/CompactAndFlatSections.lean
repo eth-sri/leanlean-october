@@ -26,9 +26,6 @@ theorem compactExtension_eq_flat
   have hv : f.val s g = f.val s (t.val * k.val) := by
     rw [hg, coveredTorus_normalizes_upperRoot, mul_assoc]
     exact literal_unipotent_invariance F ζ hζ K f s _ _
-  change KPGlobalExceptionalParameter.realLogPower
-    (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) s *
-      f.val 0 (t.val * k.val) = _
   rw [hv]
   exact (f.property.2.1 s t k).symm
 

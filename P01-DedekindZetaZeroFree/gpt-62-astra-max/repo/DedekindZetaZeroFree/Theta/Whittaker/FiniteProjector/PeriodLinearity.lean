@@ -11,8 +11,8 @@ open scoped Classical NumberField
 namespace DedekindZetaZeroFree.FiniteWhittakerProjectors
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def PeriodIntegrable (dq : Measure (KPAdditiveQuotient F)) (f : Functions R)
     (g : Group R) : Prop :=

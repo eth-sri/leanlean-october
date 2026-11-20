@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -46,13 +42,13 @@ namespace SameUniformizer
 open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
-variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    {F : LocalField.{u, v} K} {π : F.valuationSubring}
 
 section LinearTerms
 
 variable {R : Type*} [CommRing R]
-variable {σ : Type w} [Fintype σ]
-variable {τ : Type w'} [Fintype τ]
+    {σ : Type w} [Fintype σ]
+    {τ : Type w'} [Fintype τ]
 
 namespace HasLinearTerm
 
@@ -64,12 +60,9 @@ theorem coeff_eq_linearForm
     (d : σ →₀ ℕ) (hd : d.degree < 2) :
     MvPowerSeries.coeff d H =
       MvPowerSeries.coeff d (linearForm L) := by
-  have hd' : (d.degree : ℕ∞) < (2 : ℕ∞) := by
+  have hd' : d.degree < (2 : ℕ∞) := by
     exact_mod_cast hd
-  have hzero :=
-    MvPowerSeries.coeff_of_lt_order (hd'.trans_le hH)
-  rw [map_sub, sub_eq_zero] at hzero
-  exact hzero
+  simpa [map_sub, sub_eq_zero] using MvPowerSeries.coeff_of_lt_order (hd'.trans_le hH)
 
 /-- The coefficient of `X_i` is the prescribed coefficient `L_i`. -/
 theorem coeff_single
@@ -101,29 +94,9 @@ theorem subst
     (hG : ∀ i, HasLinearTerm (G i) (M i)) :
     HasLinearTerm (MvPowerSeries.subst G H)
       (fun j => ∑ i, L i * M i j) := by
-  have hGsubst : MvPowerSeries.HasSubst G :=
+  have hGsubst :=
     MvPowerSeries.hasSubst_of_constantCoeff_zero
       (fun i => (hG i).constantCoeff_eq_zero)
-  have hGorder : ∀ i, (1 : ℕ∞) ≤ (G i).order :=
-    fun i =>
-      MvPowerSeries.one_le_order_iff_constCoeff_eq_zero.mpr
-        (hG i).constantCoeff_eq_zero
-  have hinf : (1 : ℕ∞) ≤ ⨅ i, (G i).order :=
-    le_iInf hGorder
-  have houter :
-      (2 : ℕ∞) ≤
-        (MvPowerSeries.subst G (H - linearForm L)).order := by
-    refine
-      (show
-        (2 : ℕ∞) ≤
-          (⨅ i, (G i).order) * (H - linearForm L).order by
-        calc
-          (2 : ℕ∞) = 1 * 2 := by norm_num
-          _ ≤ (⨅ i, (G i).order) *
-              (H - linearForm L).order :=
-            mul_le_mul hinf hH (by simp) (by simp)).trans
-        (MvPowerSeries.le_order_subst hGsubst
-          (H - linearForm L))
   have hsubstLinear :
       MvPowerSeries.subst G (linearForm L) =
         ∑ i, MvPowerSeries.C (L i) * G i := by
@@ -132,8 +105,7 @@ theorem subst
       ← MvPowerSeries.substAlgHom_apply hGsubst, map_sum]
     apply Finset.sum_congr rfl
     intro i _
-    rw [map_mul, MvPowerSeries.substAlgHom_X]
-    simp
+    simp_all [map_mul]
   have hlinearIdentity :
       MvPowerSeries.subst G (linearForm L) -
           linearForm (fun j => ∑ i, L i * M i j) =
@@ -144,21 +116,6 @@ theorem subst
     apply Finset.sum_congr rfl
     intro i _
     ring
-  have hlinear :
-      (2 : ℕ∞) ≤
-        (MvPowerSeries.subst G (linearForm L) -
-          linearForm (fun j => ∑ i, L i * M i j)).order := by
-    rw [hlinearIdentity]
-    apply MvPowerSeries.nat_le_order
-    intro d hd
-    rw [map_sum]
-    apply Finset.sum_eq_zero
-    intro i _
-    rw [MvPowerSeries.coeff_C_mul]
-    have hd' : (d.degree : ℕ∞) < (2 : ℕ∞) := by
-      exact_mod_cast hd
-    rw [MvPowerSeries.coeff_of_lt_order
-      (hd'.trans_le (hG i)), mul_zero]
   rw [HasLinearTerm]
   have hdecompose :
       MvPowerSeries.subst G H -
@@ -169,9 +126,32 @@ theorem subst
     rw [MvPowerSeries.subst_sub hGsubst]
     ring
   rw [hdecompose]
-  exact
-    (le_min houter hlinear).trans
+  refine
+    (le_min ?_ ?_).trans
       MvPowerSeries.min_order_le_add
+  · refine
+    (show
+      (2 : ℕ∞) ≤
+        (⨅ i, (G i).order) * (H - linearForm L).order by
+      calc
+        _ = 1 * 2 := by norm_num
+        _ ≤ (⨅ i, (G i).order) *
+            (H - linearForm L).order :=
+          mul_le_mul (le_iInf (fun i =>
+            MvPowerSeries.one_le_order_iff_constCoeff_eq_zero.mpr
+              (hG i).constantCoeff_eq_zero)) hH (by simp) (by simp)).trans
+      (MvPowerSeries.le_order_subst hGsubst
+        (H - linearForm L))
+  · rw [hlinearIdentity]
+    apply MvPowerSeries.nat_le_order
+    intro d hd
+    rw [map_sum]
+    apply Finset.sum_eq_zero
+    intro i _
+    rw [MvPowerSeries.coeff_C_mul]
+    have hd' : d.degree < (2 : ℕ∞) := by
+      exact_mod_cast hd
+    simp [MvPowerSeries.coeff_of_lt_order (hd'.trans_le (hG i))]
 
 end HasLinearTerm
 
@@ -199,7 +179,7 @@ end LinearTerms
 section SubstitutionClosure
 
 variable {σ : Type w}
-variable {τ : Type w'}
+    {τ : Type w'}
 
 /-- Multivariable substitution commutes with substituting a multivariable
 series into a one-variable power series. -/
@@ -211,11 +191,6 @@ theorem subst_powerSeries_subst
     (f : PowerSeries F.valuationSubring) :
     MvPowerSeries.subst G (PowerSeries.subst H f) =
       PowerSeries.subst (MvPowerSeries.subst G H) f := by
-  change
-    MvPowerSeries.subst G
-        (MvPowerSeries.subst (fun _ : Unit => H) f) =
-      MvPowerSeries.subst
-        (fun _ : Unit => MvPowerSeries.subst G H) f
   exact MvPowerSeries.subst_comp_subst_apply hH.const hG f
 
 /-- Substituting a family into `e(X_i)` gives `e` evaluated at the
@@ -226,9 +201,7 @@ theorem subst_inVariable
     (hG : MvPowerSeries.HasSubst G) (i : σ) :
     MvPowerSeries.subst G (inVariable e i) =
       PowerSeries.subst (G i) e.toPowerSeries := by
-  rw [inVariable]
-  rw [subst_powerSeries_subst (PowerSeries.HasSubst.X i) hG]
-  simp [MvPowerSeries.subst_X hG]
+  simp [MvPowerSeries.subst_X, hG, subst_powerSeries_subst, inVariable]
 
 namespace Intertwines
 
@@ -244,9 +217,8 @@ theorem subst
     (hGsubst : MvPowerSeries.HasSubst G)
     (hG : ∀ i, Intertwines ebar ehat (G i)) :
     Intertwines e ehat (MvPowerSeries.subst G H) := by
-  rw [Intertwines] at hH ⊢
   calc
-    PowerSeries.subst (MvPowerSeries.subst G H) e.toPowerSeries =
+    _ =
         MvPowerSeries.subst G
           (PowerSeries.subst H e.toPowerSeries) :=
       (subst_powerSeries_subst hHsubst hGsubst
@@ -279,23 +251,6 @@ theorem subst
       (MvPowerSeries.subst_comp_subst_apply
         hGsubst (inVariable_hasSubst ehat) H).symm
 
-/-- Reindexing variables preserves the intertwining equation. -/
-theorem reindex
-    [Fintype σ] [Fintype τ]
-    {e ebar : LubinTateSeries F π}
-    {H : MvPowerSeries σ F.valuationSubring}
-    (hH : Intertwines e ebar H)
-    (hHsubst : PowerSeries.HasSubst H)
-    (f : σ → τ) :
-    Intertwines e ebar
-      (MvPowerSeries.subst
-        (fun i => MvPowerSeries.X (f i)) H) := by
-  apply hH.subst hHsubst
-    (MvPowerSeries.hasSubst_of_constantCoeff_zero
-      (fun _ => by simp))
-  intro i
-  exact intertwines_X ebar (f i)
-
 /-- One-variable power-series composition is a special case of
 substitution by an intertwining family. -/
 theorem powerSeries_subst
@@ -307,8 +262,7 @@ theorem powerSeries_subst
     {G : MvPowerSeries τ F.valuationSubring}
     (hG : Intertwines ebar ehat G)
     (hGsubst : PowerSeries.HasSubst G) :
-    Intertwines e ehat (PowerSeries.subst G H) := by
-  exact hH.subst hHsubst hGsubst.const (fun _ => hG)
+    Intertwines e ehat (PowerSeries.subst G H) := hH.subst hHsubst hGsubst.const (fun _ => hG)
 
 end Intertwines
 
@@ -318,7 +272,6 @@ theorem intertwines_zero
     (e ebar : LubinTateSeries F π) :
     Intertwines e ebar
       (0 : MvPowerSeries σ F.valuationSubring) := by
-  rw [Intertwines]
   change
     MvPowerSeries.subst
         (0 : Unit →
@@ -338,9 +291,7 @@ section StandardFormalGroup
 variable (hπ :
   F.toCompleteDVF.valuation.IsUniformizer (π : K))
 
- abbrev standardSeries :
-    LubinTateSeries F π :=
-  standardLubinTateSeries hπ
+ abbrev standardSeries := @LubinTate.standardLubinTateSeries
 
 /-- The unique two-variable series with linear term `X + Y` commuting with
 the standard Lubin--Tate series. -/
@@ -364,21 +315,13 @@ theorem standardFormalGroupPowerSeries_intertwines :
   recursiveIntertwiner_intertwines hπ
     (standardSeries hπ) (standardSeries hπ) (fun _ => 1)
 
-/-- The standard formal-group series is the unique two-variable
-intertwiner with linear term `X + Y`. -/
-theorem existsUnique_standardFormalGroupPowerSeries :
-    ∃! H : MvPowerSeries (Fin 2) F.valuationSubring,
-      HasLinearTerm H (fun _ : Fin 2 => 1) ∧
-        Intertwines (standardSeries hπ) (standardSeries hπ) H :=
-  existsUnique_intertwiner hπ
-    (standardSeries hπ) (standardSeries hπ) (fun _ => 1)
+section
 
-private theorem standardFormalGroupPowerSeries_subst_hasLinearTerm
-    {τ : Type w} [Fintype τ]
-    {G₀ G₁ : MvPowerSeries τ F.valuationSubring}
-    {M₀ M₁ : τ → F.valuationSubring}
-    (hG₀ : HasLinearTerm G₀ M₀)
-    (hG₁ : HasLinearTerm G₁ M₁) :
+variable {τ : Type w} [Fintype τ] {G₀ G₁ : MvPowerSeries τ F.valuationSubring}
+    {M₀ M₁ : τ → F.valuationSubring} (hG₀ : HasLinearTerm G₀ M₀) (hG₁ : HasLinearTerm G₁ M₁)
+
+include hG₀ hG₁ in
+private theorem standardFormalGroupPowerSeries_subst_hasLinearTerm :
     HasLinearTerm
       (MvPowerSeries.subst ![G₀, G₁]
         (standardFormalGroupPowerSeries hπ))
@@ -393,12 +336,8 @@ private theorem standardFormalGroupPowerSeries_subst_hasLinearTerm
         · exact hG₁)
   simpa [Fin.sum_univ_two] using h
 
+include hG₀ hG₁ in
 private theorem standardFormalGroupPowerSeries_subst_intertwines
-    {τ : Type w} [Fintype τ]
-    {G₀ G₁ : MvPowerSeries τ F.valuationSubring}
-    {M₀ M₁ : τ → F.valuationSubring}
-    (hG₀ : HasLinearTerm G₀ M₀)
-    (hG₁ : HasLinearTerm G₁ M₁)
     (hI₀ : Intertwines (standardSeries hπ)
       (standardSeries hπ) G₀)
     (hI₁ : Intertwines (standardSeries hπ)
@@ -418,6 +357,8 @@ private theorem standardFormalGroupPowerSeries_subst_intertwines
   fin_cases i
   · exact hI₀
   · exact hI₁
+
+end
 
 /-- The left identity law, proved by uniqueness of the linear-term-one
 intertwiner. -/
@@ -464,50 +405,6 @@ theorem standardFormalGroupPowerSeries_subst_X_zero :
       hleft' hIleft hX
       (intertwines_X (standardSeries hπ) ())
 
-/-- The right identity law, proved by uniqueness. -/
-theorem standardFormalGroupPowerSeries_subst_zero_X :
-    MvPowerSeries.subst
-        ![0, (MvPowerSeries.X () :
-            PowerSeries F.valuationSubring)]
-        (standardFormalGroupPowerSeries hπ) =
-      (MvPowerSeries.X () :
-        PowerSeries F.valuationSubring) := by
-  have hX :
-      HasLinearTerm
-        (MvPowerSeries.X () :
-          PowerSeries F.valuationSubring)
-        (fun _ : Unit => 1) := by
-    simpa using
-      (hasLinearTerm_X (R := F.valuationSubring) ())
-  have hzero :
-      HasLinearTerm
-        (0 : PowerSeries F.valuationSubring)
-        (fun _ : Unit => 0) :=
-    hasLinearTerm_zero
-  have hright :=
-    standardFormalGroupPowerSeries_subst_hasLinearTerm
-      hπ hzero hX
-  have hright' :
-      HasLinearTerm
-        (MvPowerSeries.subst
-          ![0, (MvPowerSeries.X () :
-              PowerSeries F.valuationSubring)]
-          (standardFormalGroupPowerSeries hπ))
-        (fun _ : Unit => 1) := by
-    simpa using hright
-  have hIright :=
-    standardFormalGroupPowerSeries_subst_intertwines
-      hπ hzero hX
-        (intertwines_zero
-          (standardSeries hπ) (standardSeries hπ))
-        (intertwines_X (standardSeries hπ) ())
-  exact
-    eq_of_hasLinearTerm_of_intertwines hπ
-      (standardSeries hπ) (standardSeries hπ)
-      (fun _ : Unit => 1)
-      hright' hIright hX
-      (intertwines_X (standardSeries hπ) ())
-
 /-- Associativity of the standard formal-group series, proved by comparing
 the two three-variable intertwiners with linear term `X + Y + Z`. -/
 theorem standardFormalGroupPowerSeries_assoc :
@@ -539,102 +436,35 @@ theorem standardFormalGroupPowerSeries_assoc :
           MvPowerSeries (Fin 3) F.valuationSubring)
         (B i) := by
     simpa [B] using
-      (hasLinearTerm_X (R := F.valuationSubring) i)
+      (hasLinearTerm_X i)
   have hIX (i : Fin 3) :
       Intertwines (standardSeries hπ) (standardSeries hπ)
         (MvPowerSeries.X i :
           MvPowerSeries (Fin 3) F.valuationSubring) :=
     intertwines_X (standardSeries hπ) i
-  have hF₀₁ :
-      HasLinearTerm
-        (MvPowerSeries.subst
-          ![
-            (MvPowerSeries.X 0 :
-              MvPowerSeries (Fin 3) F.valuationSubring),
-            MvPowerSeries.X 1]
-          (standardFormalGroupPowerSeries hπ))
-        (fun j => B 0 j + B 1 j) :=
+  have hF₀₁ :=
     standardFormalGroupPowerSeries_subst_hasLinearTerm
       hπ (hX 0) (hX 1)
-  have hIF₀₁ :
-      Intertwines (standardSeries hπ) (standardSeries hπ)
-        (MvPowerSeries.subst
-          ![
-            (MvPowerSeries.X 0 :
-              MvPowerSeries (Fin 3) F.valuationSubring),
-            MvPowerSeries.X 1]
-          (standardFormalGroupPowerSeries hπ)) :=
-    standardFormalGroupPowerSeries_subst_intertwines
-      hπ (hX 0) (hX 1) (hIX 0) (hIX 1)
-  have hF₁₂ :
-      HasLinearTerm
-        (MvPowerSeries.subst
-          ![
-            (MvPowerSeries.X 1 :
-              MvPowerSeries (Fin 3) F.valuationSubring),
-            MvPowerSeries.X 2]
-          (standardFormalGroupPowerSeries hπ))
-        (fun j => B 1 j + B 2 j) :=
+  have hF₁₂ :=
     standardFormalGroupPowerSeries_subst_hasLinearTerm
       hπ (hX 1) (hX 2)
-  have hIF₁₂ :
-      Intertwines (standardSeries hπ) (standardSeries hπ)
-        (MvPowerSeries.subst
-          ![
-            (MvPowerSeries.X 1 :
-              MvPowerSeries (Fin 3) F.valuationSubring),
-            MvPowerSeries.X 2]
-          (standardFormalGroupPowerSeries hπ)) :=
-    standardFormalGroupPowerSeries_subst_intertwines
-      hπ (hX 1) (hX 2) (hIX 1) (hIX 2)
-  have hleft :=
-    standardFormalGroupPowerSeries_subst_hasLinearTerm
-      hπ hF₀₁ (hX 2)
-  have hright :=
-    standardFormalGroupPowerSeries_subst_hasLinearTerm
-      hπ (hX 0) hF₁₂
-  have hleft' :
-      HasLinearTerm
-        (MvPowerSeries.subst
-          ![
-            MvPowerSeries.subst
-              ![
-                (MvPowerSeries.X 0 :
-                  MvPowerSeries (Fin 3)
-                    F.valuationSubring),
-                MvPowerSeries.X 1]
-              (standardFormalGroupPowerSeries hπ),
-            MvPowerSeries.X 2]
-          (standardFormalGroupPowerSeries hπ))
-        (fun _ : Fin 3 => 1) := by
-    convert hleft using 1
-    funext j
-    fin_cases j <;> simp [B]
-  have hright' :
-      HasLinearTerm
-        (MvPowerSeries.subst
-          ![
-            (MvPowerSeries.X 0 :
-              MvPowerSeries (Fin 3) F.valuationSubring),
-            MvPowerSeries.subst
-              ![MvPowerSeries.X 1, MvPowerSeries.X 2]
-              (standardFormalGroupPowerSeries hπ)]
-          (standardFormalGroupPowerSeries hπ))
-        (fun _ : Fin 3 => 1) := by
-    convert hright using 1
-    funext j
-    fin_cases j <;> simp [B]
-  have hIleft :=
-    standardFormalGroupPowerSeries_subst_intertwines
-      hπ hF₀₁ (hX 2) hIF₀₁ (hIX 2)
-  have hIright :=
-    standardFormalGroupPowerSeries_subst_intertwines
-      hπ (hX 0) hF₁₂ (hIX 0) hIF₁₂
-  exact
+  refine
     eq_of_hasLinearTerm_of_intertwines hπ
       (standardSeries hπ) (standardSeries hπ)
       (fun _ : Fin 3 => 1)
-      hleft' hIleft hright' hIright
+      ?_ (standardFormalGroupPowerSeries_subst_intertwines
+        hπ hF₀₁ (hX 2) (standardFormalGroupPowerSeries_subst_intertwines
+          hπ (hX 0) (hX 1) (hIX 0) (hIX 1)) (hIX 2)) ?_ (standardFormalGroupPowerSeries_subst_intertwines
+        hπ (hX 0) hF₁₂ (hIX 0) (standardFormalGroupPowerSeries_subst_intertwines
+          hπ (hX 1) (hX 2) (hIX 1) (hIX 2)))
+  · convert (standardFormalGroupPowerSeries_subst_hasLinearTerm
+      hπ hF₀₁ (hX 2)) using 1
+    funext j
+    fin_cases j <;> simp [B]
+  · convert (standardFormalGroupPowerSeries_subst_hasLinearTerm
+      hπ (hX 0) hF₁₂) using 1
+    funext j
+    fin_cases j <;> simp [B]
 
 /-- Commutativity of the standard formal-group series, proved by
 uniqueness. -/
@@ -656,34 +486,23 @@ theorem standardFormalGroupPowerSeries_comm :
           MvPowerSeries (Fin 2) F.valuationSubring)
         (B i) := by
     simpa [B] using
-      (hasLinearTerm_X (R := F.valuationSubring) i)
-  have hswap :=
-    standardFormalGroupPowerSeries_subst_hasLinearTerm
-      hπ (hX 1) (hX 0)
-  have hswap' :
-      HasLinearTerm
-        (MvPowerSeries.subst
-          ![
-            (MvPowerSeries.X 1 :
-              MvPowerSeries (Fin 2) F.valuationSubring),
-            MvPowerSeries.X 0]
-          (standardFormalGroupPowerSeries hπ))
-        (fun _ : Fin 2 => 1) := by
-    convert hswap using 1
-    funext j
-    fin_cases j <;> simp [B]
+      (hasLinearTerm_X i)
   have hIswap :=
     standardFormalGroupPowerSeries_subst_intertwines
       hπ (hX 1) (hX 0)
         (intertwines_X (standardSeries hπ) 1)
         (intertwines_X (standardSeries hπ) 0)
-  exact
+  refine
     eq_of_hasLinearTerm_of_intertwines hπ
       (standardSeries hπ) (standardSeries hπ)
       (fun _ : Fin 2 => 1)
       (standardFormalGroupPowerSeries_hasLinearTerm hπ)
       (standardFormalGroupPowerSeries_intertwines hπ)
-      hswap' hIswap
+      ?_ hIswap
+  convert (standardFormalGroupPowerSeries_subst_hasLinearTerm
+    hπ (hX 1) (hX 0)) using 1
+  funext j
+  fin_cases j <;> simp [B]
 
 /-- The formal group law attached to the standard Lubin--Tate series. -/
 noncomputable def standardFormalGroup :
@@ -712,9 +531,7 @@ section StandardEndomorphisms
 variable (hπ :
   F.toCompleteDVF.valuation.IsUniformizer (π : K))
 
- abbrev standardSeries' :
-    LubinTateSeries F π :=
-  standardLubinTateSeries hπ
+ abbrev standardSeries' := @LubinTate.standardLubinTateSeries
 
 /-- The one-variable standard Lubin--Tate endomorphism with linear
 coefficient `a`. -/
@@ -743,51 +560,31 @@ theorem standardLubinTateEndomorphism_intertwines
     (standardSeries' hπ) (standardSeries' hπ)
     (fun _ : Unit => a)
 
-/-- `[a]` is the unique one-variable intertwiner with linear coefficient
-`a`. -/
-theorem existsUnique_standardLubinTateEndomorphism
-    (a : F.valuationSubring) :
-    ∃! f : PowerSeries F.valuationSubring,
-      HasLinearTerm f (fun _ : Unit => a) ∧
-        Intertwines (standardSeries' hπ) (standardSeries' hπ) f :=
-  existsUnique_intertwiner hπ
-    (standardSeries' hπ) (standardSeries' hπ)
-    (fun _ : Unit => a)
-
 /-- The coefficient of `X` in `[a]` is `a`. -/
 @[simp]
 theorem standardLubinTateEndomorphism_coeff_one
     (a : F.valuationSubring) :
     PowerSeries.coeff 1
-      (standardLubinTateEndomorphism hπ a) = a := by
-  exact
-    (standardLubinTateEndomorphism_hasLinearTerm
+      (standardLubinTateEndomorphism hπ a) = a := (standardLubinTateEndomorphism_hasLinearTerm
       hπ a).coeff_single ()
 
 /-- The scalar `1` acts by the identity series. -/
 theorem standardLubinTateEndomorphism_one :
     standardLubinTateEndomorphism hπ 1 =
       PowerSeries.X := by
-  have hX :
-      HasLinearTerm
-        (PowerSeries.X :
-          PowerSeries F.valuationSubring)
-        (fun _ : Unit => 1) := by
-    simpa [PowerSeries.X] using
-      (hasLinearTerm_X (R := F.valuationSubring) ())
-  exact
+  refine
     eq_of_hasLinearTerm_of_intertwines hπ
       (standardSeries' hπ) (standardSeries' hπ)
       (fun _ : Unit => 1)
       (standardLubinTateEndomorphism_hasLinearTerm hπ 1)
       (standardLubinTateEndomorphism_intertwines hπ 1)
-      hX (intertwines_X (standardSeries' hπ) ())
+      ?_ (intertwines_X (standardSeries' hπ) ())
+  simpa [PowerSeries.X] using
+  (hasLinearTerm_X ())
 
 /-- The scalar `0` acts by the zero series. -/
 theorem standardLubinTateEndomorphism_zero :
-    standardLubinTateEndomorphism hπ 0 = 0 := by
-  exact
-    eq_of_hasLinearTerm_of_intertwines hπ
+    standardLubinTateEndomorphism hπ 0 = 0 := eq_of_hasLinearTerm_of_intertwines hπ
       (standardSeries' hπ) (standardSeries' hπ)
       (fun _ : Unit => 0)
       (standardLubinTateEndomorphism_hasLinearTerm hπ 0)
@@ -810,15 +607,6 @@ theorem standardLubinTateEndomorphism_add
       hπ
       (standardLubinTateEndomorphism_hasLinearTerm hπ a)
       (standardLubinTateEndomorphism_hasLinearTerm hπ b)
-  have hright' :
-      HasLinearTerm
-        (MvPowerSeries.subst
-          ![
-            standardLubinTateEndomorphism hπ a,
-            standardLubinTateEndomorphism hπ b]
-          (standardFormalGroupPowerSeries hπ))
-        (fun _ : Unit => a + b) := by
-    simpa using hright
   have hIright :=
     standardFormalGroupPowerSeries_subst_intertwines
       hπ
@@ -826,13 +614,14 @@ theorem standardLubinTateEndomorphism_add
       (standardLubinTateEndomorphism_hasLinearTerm hπ b)
       (standardLubinTateEndomorphism_intertwines hπ a)
       (standardLubinTateEndomorphism_intertwines hπ b)
-  exact
+  refine
     eq_of_hasLinearTerm_of_intertwines hπ
       (standardSeries' hπ) (standardSeries' hπ)
       (fun _ : Unit => a + b)
       (standardLubinTateEndomorphism_hasLinearTerm hπ (a + b))
       (standardLubinTateEndomorphism_intertwines hπ (a + b))
-      hright' hIright
+      ?_ hIright
+  exact hright
 
 /-- Multiplication of scalars is composition of endomorphisms:
 `[ab](X) = [a]([b](X))`. -/
@@ -844,18 +633,9 @@ theorem standardLubinTateEndomorphism_mul
         (standardLubinTateEndomorphism hπ a) := by
   have hcomp :=
     (standardLubinTateEndomorphism_hasLinearTerm hπ a).subst
-      (G := fun _ : Unit =>
-        standardLubinTateEndomorphism hπ b)
-      (M := fun _ : Unit => fun _ : Unit => b)
+
       (fun _ =>
         standardLubinTateEndomorphism_hasLinearTerm hπ b)
-  have hcomp' :
-      HasLinearTerm
-        (PowerSeries.subst
-          (standardLubinTateEndomorphism hπ b)
-          (standardLubinTateEndomorphism hπ a))
-        (fun _ : Unit => a * b) := by
-    simpa [PowerSeries.subst_def] using hcomp
   have hIcomp :=
     (standardLubinTateEndomorphism_intertwines
       hπ a).powerSeries_subst
@@ -864,127 +644,14 @@ theorem standardLubinTateEndomorphism_mul
         (standardLubinTateEndomorphism_intertwines hπ b)
         (standardLubinTateEndomorphism_hasLinearTerm
           hπ b).hasSubst
-  exact
+  refine
     eq_of_hasLinearTerm_of_intertwines hπ
       (standardSeries' hπ) (standardSeries' hπ)
       (fun _ : Unit => a * b)
       (standardLubinTateEndomorphism_hasLinearTerm hπ (a * b))
       (standardLubinTateEndomorphism_intertwines hπ (a * b))
-      hcomp' hIcomp
-
-/-- The series `[a](X_i)` in a chosen variable. -/
-noncomputable def standardLubinTateEndomorphismInVariable
-    {σ : Type w} (a : F.valuationSubring) (i : σ) :
-    MvPowerSeries σ F.valuationSubring :=
-  PowerSeries.subst (MvPowerSeries.X i)
-    (standardLubinTateEndomorphism hπ a)
-
-/-- The linear term of `[a](X_i)` is `a X_i`. -/
-theorem standardLubinTateEndomorphismInVariable_hasLinearTerm
-    {σ : Type w} [Fintype σ]
-    (a : F.valuationSubring) (i : σ) :
-    HasLinearTerm
-      (standardLubinTateEndomorphismInVariable hπ a i)
-      (fun j => if j = i then a else 0) := by
-  have h :=
-    (standardLubinTateEndomorphism_hasLinearTerm hπ a).subst
-      (G := fun _ : Unit =>
-        (MvPowerSeries.X i :
-          MvPowerSeries σ F.valuationSubring))
-      (M := fun _ : Unit =>
-        fun j : σ => if j = i then 1 else 0)
-      (fun _ =>
-        hasLinearTerm_X (R := F.valuationSubring) i)
-  simpa [standardLubinTateEndomorphismInVariable,
-    PowerSeries.subst_def] using h
-
-/-- The reindexed series `[a](X_i)` remains an intertwiner. -/
-theorem standardLubinTateEndomorphismInVariable_intertwines
-    {σ : Type w} [Fintype σ]
-    (a : F.valuationSubring) (i : σ) :
-    Intertwines (standardSeries' hπ) (standardSeries' hπ)
-      (standardLubinTateEndomorphismInVariable hπ a i) := by
-  simpa [standardLubinTateEndomorphismInVariable,
-    PowerSeries.subst_def] using
-    (standardLubinTateEndomorphism_intertwines
-      hπ a).reindex
-        (standardLubinTateEndomorphism_hasLinearTerm
-          hπ a).hasSubst
-        (fun _ : Unit => i)
-
-/-- The full scalar endomorphism identity
-`[a](F(X,Y)) = F([a](X),[a](Y))`. -/
-theorem standardLubinTateEndomorphism_map_formalGroup
-    (a : F.valuationSubring) :
-    PowerSeries.subst
-        (standardFormalGroupPowerSeries hπ)
-        (standardLubinTateEndomorphism hπ a) =
-      MvPowerSeries.subst
-        ![
-          standardLubinTateEndomorphismInVariable hπ a
-            (0 : Fin 2),
-          standardLubinTateEndomorphismInVariable hπ a
-            (1 : Fin 2)]
-        (standardFormalGroupPowerSeries hπ) := by
-  have hleft :=
-    (standardLubinTateEndomorphism_hasLinearTerm hπ a).subst
-      (G := fun _ : Unit =>
-        standardFormalGroupPowerSeries hπ)
-      (M := fun _ : Unit =>
-        fun _ : Fin 2 => 1)
-      (fun _ =>
-        standardFormalGroupPowerSeries_hasLinearTerm hπ)
-  have hleft' :
-      HasLinearTerm
-        (PowerSeries.subst
-          (standardFormalGroupPowerSeries hπ)
-          (standardLubinTateEndomorphism hπ a))
-        (fun _ : Fin 2 => a) := by
-    simpa [PowerSeries.subst_def] using hleft
-  have hIleft :=
-    (standardLubinTateEndomorphism_intertwines
-      hπ a).powerSeries_subst
-        (standardLubinTateEndomorphism_hasLinearTerm
-          hπ a).hasSubst
-        (standardFormalGroupPowerSeries_intertwines hπ)
-        (standardFormalGroupPowerSeries_hasLinearTerm
-          hπ).hasSubst
-  have hright :=
-    standardFormalGroupPowerSeries_subst_hasLinearTerm
-      hπ
-      (standardLubinTateEndomorphismInVariable_hasLinearTerm
-        hπ a (0 : Fin 2))
-      (standardLubinTateEndomorphismInVariable_hasLinearTerm
-        hπ a (1 : Fin 2))
-  have hright' :
-      HasLinearTerm
-        (MvPowerSeries.subst
-          ![
-            standardLubinTateEndomorphismInVariable hπ a
-              (0 : Fin 2),
-            standardLubinTateEndomorphismInVariable hπ a
-              (1 : Fin 2)]
-          (standardFormalGroupPowerSeries hπ))
-        (fun _ : Fin 2 => a) := by
-    convert hright using 1
-    funext j
-    fin_cases j <;> simp
-  have hIright :=
-    standardFormalGroupPowerSeries_subst_intertwines
-      hπ
-      (standardLubinTateEndomorphismInVariable_hasLinearTerm
-        hπ a (0 : Fin 2))
-      (standardLubinTateEndomorphismInVariable_hasLinearTerm
-        hπ a (1 : Fin 2))
-      (standardLubinTateEndomorphismInVariable_intertwines
-        hπ a (0 : Fin 2))
-      (standardLubinTateEndomorphismInVariable_intertwines
-        hπ a (1 : Fin 2))
-  exact
-    eq_of_hasLinearTerm_of_intertwines hπ
-      (standardSeries' hπ) (standardSeries' hπ)
-      (fun _ : Fin 2 => a)
-      hleft' hIleft hright' hIright
+      ?_ hIcomp
+  simpa [PowerSeries.subst_def] using hcomp
 
 end StandardEndomorphisms
 

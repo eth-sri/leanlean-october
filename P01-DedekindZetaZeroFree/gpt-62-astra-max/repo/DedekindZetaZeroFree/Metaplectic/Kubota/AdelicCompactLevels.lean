@@ -23,23 +23,21 @@ set_option maxHeartbeats 800000
 set_option backward.isDefEq.respectTransparency false in
 private theorem local_secondCountable (v : KPHilbert.Place F) :
     SecondCountableTopology (KPLocalCover.CubicGL2Raw F ζ hζ v) := by
+  let Matrix₀ := Matrix (Fin 2) (Fin 2)
   cases v with
   | inl w =>
     letI : SecondCountableTopology w.Completion := by
       rcases w.isReal_or_isComplex with hv | hv
       · exact (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).toHomeomorph.isEmbedding.secondCountableTopology
       · exact (InfinitePlace.Completion.isometryEquivComplexOfIsComplex hv).toHomeomorph.isEmbedding.secondCountableTopology
-    letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) w.Completion) := by
+    letI : SecondCountableTopology (Matrix₀ w.Completion) := by
       change SecondCountableTopology (Fin 2 → Fin 2 → w.Completion)
       infer_instance
-    letI : SecondCountableTopology (KPHilbert.Completion F (Sum.inl w)) := by
-      change SecondCountableTopology w.Completion
+    let Completion₀ := KPHilbert.Completion F (Sum.inl w)
+    letI : SecondCountableTopology (Completion₀) := by
       infer_instance
     letI : SecondCountableTopology (KPLocalCover.LocalGL2 F (Sum.inl w)) := by
-      haveI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F (Sum.inl w))) := by
-        change SecondCountableTopology (Fin 2 → Fin 2 → KPHilbert.Completion F (Sum.inl w))
-        infer_instance
-      letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F (Sum.inl w)))ᵐᵒᵖ :=
+      letI : SecondCountableTopology (Matrix₀ (Completion₀))ᵐᵒᵖ :=
         MulOpposite.opHomeomorph.symm.secondCountableTopology
       exact Units.isEmbedding_embedProduct.secondCountableTopology
     letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
@@ -53,21 +51,15 @@ private theorem local_secondCountable (v : KPHilbert.Place F) :
         HeightOneSpectrum.denseRange_algebraMap F q⟩⟩
     letI : SecondCountableTopology (q.adicCompletion F) := inferInstance
     letI : SecondCountableTopology (KPHilbert.Completion F (Sum.inr q)) := by
-      change SecondCountableTopology (q.adicCompletion F)
       infer_instance
-    letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F (Sum.inr q))) := by
+    letI : SecondCountableTopology (Matrix₀ (KPHilbert.Completion F (Sum.inr q))) := by
       change SecondCountableTopology (Fin 2 → Fin 2 → KPHilbert.Completion F (Sum.inr q))
       infer_instance
-    letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F (Sum.inr q)))ᵐᵒᵖ :=
+    letI : SecondCountableTopology (Matrix₀ (KPHilbert.Completion F (Sum.inr q)))ᵐᵒᵖ :=
       MulOpposite.opHomeomorph.symm.secondCountableTopology
     letI : SecondCountableTopology (KPLocalCover.LocalGL2 F (Sum.inr q)) :=
       Units.isEmbedding_embedProduct.secondCountableTopology
     letI : SecondCountableTopology (KPLocalCube.LocalGL2 F q) := by
-      letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPLocalCube.LocalField F q)) := by
-        change SecondCountableTopology (Fin 2 → Fin 2 → q.adicCompletion F)
-        infer_instance
-      letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPLocalCube.LocalField F q))ᵐᵒᵖ :=
-        MulOpposite.opHomeomorph.symm.secondCountableTopology
       exact Units.isEmbedding_embedProduct.secondCountableTopology
     let m := depth F ζ hζ q
     have hm := depth_admissible F ζ hζ q
@@ -117,10 +109,7 @@ private theorem restricted_secondCountable : SecondCountableTopology (Restricted
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   letI : Countable (𝓞 F) := Function.Injective.countable RingOfIntegers.coe_injective
   letI : Countable (Ideal (𝓞 F)) := by
-    have h : Function.Surjective (fun s : Finset (𝓞 F) => Ideal.span (↑s : Set (𝓞 F))) := by
-      intro I
-      exact IsNoetherian.noetherian I
-    exact h.countable
+    exact Function.Surjective.countable fun I => IsNoetherian.noetherian I
   letI : Countable (HeightOneSpectrum (𝓞 F)) :=
     Function.Injective.countable (fun _ _ h => HeightOneSpectrum.ext h)
   letI : ∀ v : KPHilbert.Place F, SecondCountableTopology
@@ -137,7 +126,7 @@ private theorem restricted_secondCountable : SecondCountableTopology (Restricted
     RestrictedProduct.isEmbedding_coe_of_principal.secondCountableTopology
   letI : ∀ s : Finset (KPHilbert.Place F), SecondCountableTopology (U s) :=
     fun s => (hf s).toIsEmbedding.toHomeomorph.symm.secondCountableTopology
-  apply TopologicalSpace.secondCountableTopology_of_countable_cover (U := U) (fun s => (hf s).isOpen_range)
+  apply TopologicalSpace.secondCountableTopology_of_countable_cover (fun s => (hf s).isOpen_range)
   apply Set.eq_univ_of_forall
   intro a
   have ha : {v | a v ∉ compact F ζ hζ v}.Finite := a.2

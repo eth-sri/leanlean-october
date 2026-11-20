@@ -29,7 +29,11 @@ private theorem log_borel (D : KPGlobalTorusBorelTwistCompatibility.IwasawaData 
   exact Real.log_mul (NNReal.coe_ne_zero.mpr (Units.ne_zero _))
     (NNReal.coe_ne_zero.mpr (Units.ne_zero _))
 
- theorem discrepancy_borel (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+ section
+
+variable (K : Subgroup (G F ζ hζ))
+
+theorem discrepancy_borel (hK : IwasawaCompact F ζ hζ K)
     (t : KPGlobalTorusFunctionData.E F ζ hζ) (x : KPAdeles F) (g : G F ζ hζ) :
     discrepancy F ζ hζ K hK ((t.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) =
       discrepancy F ζ hζ K hK g := by
@@ -37,7 +41,7 @@ private theorem log_borel (D : KPGlobalTorusBorelTwistCompatibility.IwasawaData 
   rw [log_borel, log_borel]
   ring
 
-private theorem insertion_mem (K : Subgroup (G F ζ hζ))
+private theorem insertion_mem
     (h : ∀ (w : InfinitePlace F) (k : KPCplxCharacterHaar.ComplexSU2),
       KPGlobalResidualConstruction.complexCompactLift F ζ hζ w k ∈ K)
     (u : InfinitePlace F → KPCplxCharacterHaar.ComplexSU2) :
@@ -51,10 +55,24 @@ private theorem insertion_mem (K : Subgroup (G F ζ hζ))
   obtain ⟨w, hw, rfl⟩ := List.mem_map.mp hk
   exact h w (u w)
 
-private theorem discrepancy_eq_finiteComponent (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (g : G F ζ hζ) :
-    discrepancy F ζ hζ K hK g = discrepancy F ζ hζ K hK
-      (KPContFlatLogNormSmooth.finiteComponent F ζ hζ g) := by
+end
+
+ variable (K : Subgroup (G F ζ hζ))
+
+theorem discrepancy_locallyConstant
+    (hK : IwasawaCompact F ζ hζ K) :
+    IsLocallyConstant (discrepancy F ζ hζ K hK) := by
+  let c : G F ζ hζ → KPGlobalTorusFunctionData.finitePart F ζ hζ := fun g =>
+    ⟨KPContFlatLogNormSmooth.finiteComponent F ζ hζ g,
+      KPContFlatLogNormSmooth.finiteComponent_mem F ζ hζ g⟩
+  have hc : Continuous c := by
+    have hsplit := RepresentationTheory.ArchFiniteSplitting.splitting_maps_continuous F ζ hζ
+    exact (((hsplit.1.comp hsplit.2).inv).mul continuous_id).subtype_mk _
+  convert ((((KPGlobalResidualKernelSplit.RawStageL2.OutgoingSplit.ZeroProfileSteps.FiniteNormPartition.iwasawaNorm_finite_locallyConstant
+         ).comp (fun n : (ℝ≥0)ˣ => Real.log (n : ℝ))).comp₂
+    ((KPGlobalResidualKernelSplit.RawStageL2.OutgoingSplit.ZeroProfileSteps.FiniteNormPartition.iwasawaNorm_finite_locallyConstant
+         ).comp (fun n : (ℝ≥0)ˣ => Real.log (n : ℝ))) (· - ·)).comp_continuous hc) using 1
+  funext g
   let a := PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ g
   obtain ⟨y, x, u, hfac, hy⟩ :=
     KPContFlatArchProjectionNorm.archimedean_factorization F ζ hζ a
@@ -92,32 +110,11 @@ private theorem discrepancy_eq_finiteComponent (K : Subgroup (G F ζ hζ))
       KPGlobalTorusFunctionData.N F ζ hζ x * KPContFlatLogNormSmooth.finiteComponent F ζ hζ g) = _
   exact discrepancy_borel F ζ hζ K hK _ _ _
 
- theorem discrepancy_locallyConstant (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) :
-    IsLocallyConstant (discrepancy F ζ hζ K hK) := by
-  let c : G F ζ hζ → KPGlobalTorusFunctionData.finitePart F ζ hζ := fun g =>
-    ⟨KPContFlatLogNormSmooth.finiteComponent F ζ hζ g,
-      KPContFlatLogNormSmooth.finiteComponent_mem F ζ hζ g⟩
-  have hc : Continuous c := by
-    have hsplit := RepresentationTheory.ArchFiniteSplitting.splitting_maps_continuous F ζ hζ
-    exact (((hsplit.1.comp hsplit.2).inv).mul continuous_id).subtype_mk _
-  have hKlc :=
-    KPGlobalResidualKernelSplit.RawStageL2.OutgoingSplit.ZeroProfileSteps.FiniteNormPartition.iwasawaNorm_finite_locallyConstant
-      (F := F) (ζ := ζ) (hζ := hζ) (D := literalIwasawa F ζ hζ K hK)
-  have hDlc :=
-    KPGlobalResidualKernelSplit.RawStageL2.OutgoingSplit.ZeroProfileSteps.FiniteNormPartition.iwasawaNorm_finite_locallyConstant
-      (F := F) (ζ := ζ) (hζ := hζ) (D := KPContFlatFullProductIwasawa.iwasawaData F ζ hζ)
-  have h := ((hKlc.comp (fun n : (ℝ≥0)ˣ => Real.log ((n : ℝ≥0) : ℝ))).comp₂
-    (hDlc.comp (fun n : (ℝ≥0)ˣ => Real.log ((n : ℝ≥0) : ℝ))) (· - ·)).comp_continuous hc
-  convert h using 1
-  funext g
-  exact discrepancy_eq_finiteComponent F ζ hζ K hK g
-
- theorem discrepancy_range_finite (K : Subgroup (G F ζ hζ))
+ theorem discrepancy_range_finite
     (hK : IwasawaCompact F ζ hζ K) :
     (Set.range (discrepancy F ζ hζ K hK)).Finite := by
   let D := KPContFlatFullProductIwasawa.iwasawaData F ζ hζ
-  let : CompactSpace D.K := isCompact_iff_compactSpace.mp D.compact
+  let := isCompact_iff_compactSpace.mp D.compact
   have h := (discrepancy_locallyConstant F ζ hζ K hK).comp_continuous
     (continuous_subtype_val : Continuous (fun k : D.K => (k : G F ζ hζ)))
   apply h.range_finite.subset
@@ -149,8 +146,6 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   let C := (discrepancy_range_finite F ζ hζ K hK).toFinset
   refine ⟨C, ?_⟩
   intro s g
-  have hmem : discrepancy F ζ hζ K hK g ∈ C :=
-    (Set.Finite.mem_toFinset _).mpr (Set.mem_range_self g)
   rw [Finset.sum_eq_single (discrepancy F ζ hζ K hK g)]
   · rw [KPLiteralChamber.JointProfile.literal_flat_multiplier_formula F ζ hζ K hK]
     simp only [ite_true]
@@ -161,7 +156,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     ring
   · intro b hb hne
     simp [Ne.symm hne]
-  · exact fun h => (h hmem).elim
+  · exact fun h => (h ((Set.Finite.mem_toFinset _).mpr (Set.mem_range_self g))).elim
 
 end DedekindZetaZeroFree.KPLiteralExceptionalResidue.NormDiscrepancy
 

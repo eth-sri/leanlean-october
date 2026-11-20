@@ -14,8 +14,9 @@ namespace DedekindZetaZeroFree.PrimitiveRay
 
 variable {F : Type} [Field F] [NumberField F]
 
-theorem primitiveRay_exists (hc : NumberField.IsTotallyComplex F)
-    (Φ : IdeleClassGroup F →ₜ* ℂˣ)
+variable (hc : NumberField.IsTotallyComplex F) (Φ : IdeleClassGroup F →ₜ* ℂˣ)
+
+theorem primitiveRay_exists
     (ho : ∃ n : ℕ, 0 < n ∧ ∀ c : IdeleClassGroup F, Φ c ^ n = 1) :
     ∃ (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
       (ρ : ClassFieldTheory.RayClassGroup (RayClassBridge.narrowIdealModulus F m hm) →* ℂˣ)
@@ -47,8 +48,7 @@ theorem primitiveRay_exists (hc : NumberField.IsTotallyComplex F)
   simp only [hχ]
   exact hleast v
 
-theorem primitiveRay_support (hc : NumberField.IsTotallyComplex F)
-    (Φ : IdeleClassGroup F →ₜ* ℂˣ)
+theorem primitiveRay_support
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (χ : RayClassCharacter F m)
     (hprimitive : χ.IsPrimitive)
     (hχ : ∀ c : IdeleClassGroup F,
@@ -58,7 +58,6 @@ theorem primitiveRay_support (hc : NumberField.IsTotallyComplex F)
       t ∈ (v.adicCompletionIntegers F).units →
         Φ (IdeleGroup.finitePlaceIdeleClass v t) = 1) :
     ¬ m ≤ v.asIdeal := by
-  have hleast := (primitive_iff_local_isLeast hc m hm χ).mp hprimitive v
   have hzero : 0 ∈ {k : ℕ | ∀ t : (v.adicCompletion F)ˣ,
       t ∈ ClassFieldTheory.rayLocalHigherUnitGroup v k →
         RayClassBridge.ideleClassCharacter F hc m hm χ
@@ -67,7 +66,7 @@ theorem primitiveRay_support (hc : NumberField.IsTotallyComplex F)
     rw [ClassFieldTheory.rayLocalHigherUnitGroup_zero] at ht
     rw [hχ]
     exact hunram t ht
-  have he := Nat.eq_zero_of_le_zero (hleast.2 hzero)
+  have he := Nat.eq_zero_of_le_zero (((primitive_iff_local_isLeast hc m hm χ).mp hprimitive v).2 hzero)
   intro hdiv
   have hsupport : v ∈ (RayClassBridge.narrowIdealModulus F m hm).finitePart.support := by
     change v ∈ (↑(RayClassBridge.narrowIdealModulus F m hm).finitePart.support :

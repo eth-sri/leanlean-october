@@ -19,7 +19,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [MeasurableSpace X]
     |2 * χ * dχ * (star u * du).re| ≤
       (χ ^ 2 * ‖du‖ ^ 2) / 2 + 2 * dχ ^ 2 * ‖u‖ ^ 2 := by
   have hp : |(star u * du).re| ≤ ‖u‖ * ‖du‖ := by
-    exact (Complex.abs_re_le_norm _).trans_eq (by rw [norm_mul, norm_star])
+    exact (Complex.abs_re_le_norm _).trans_eq (by simp)
   have hm := mul_le_mul_of_nonneg_left hp (abs_nonneg (2 * χ * dχ))
   have hs := sq_nonneg (|χ| * ‖du‖ - 2 * |dχ| * ‖u‖)
   simp only [abs_mul, abs_of_pos (by norm_num : (0:ℝ) < 2)] at hm ⊢

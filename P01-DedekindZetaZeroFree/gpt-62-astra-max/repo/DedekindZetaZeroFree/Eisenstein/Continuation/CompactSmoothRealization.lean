@@ -12,8 +12,8 @@ open Filter
 namespace DedekindZetaZeroFree.EisensteinSmoothGerms
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 
 theorem cleared_covariance (C : ScalarContinuation R Q) (v : R.A.UnitQuotient)
     (G : IndividualSmoothGerm C v) (g h : Group R) (c : ℂ)
@@ -44,7 +44,7 @@ theorem cleared_covariance (C : ScalarContinuation R Q) (v : R.A.UnitQuotient)
     change G.cleared z g = z * C.E v z g at hg
     rw [hh, hg, he, mul_left_comm]
   exact (G.analytic h).eqOn_of_preconnected_of_frequently_eq
-    ((analyticOnNhd_const : AnalyticOnNhd ℂ (fun _ : ℂ => c) _).mul (G.analytic g))
+    (analyticOnNhd_const.mul (G.analytic g))
     (convex_ball (0 : ℂ) G.radius).isPreconnected
     (Metric.mem_ball_self G.radius_pos) heN.frequently hs
 
@@ -53,7 +53,7 @@ theorem cleared_level (C : ScalarContinuation R Q) (v : R.A.UnitQuotient)
     (g u : Group R)
     (hu : u ∈ KPGlobalTorusFunctionData.globalLevel F R.A.zeta12 R.A.primitive_zeta12 Q.level) :
     G.cleared s (g * u) = G.cleared s g := by
-  simpa only [one_mul] using cleared_covariance C v G g (g * u) 1 (by
+  simpa using cleared_covariance C v G g (g * u) 1 (by
     intro z _
     unfold KPLiteralRaw.eisenstein
     rw [one_mul]
@@ -67,9 +67,9 @@ theorem cleared_rational (C : ScalarContinuation R Q) (v : R.A.UnitQuotient)
     (a : Matrix.ProjGenLinGroup (Fin 2) F) (g : Group R) :
     G.cleared s (KPLiteralRaw.rationalLift F R.A.zeta12 R.A.primitive_zeta12 a * g) =
       G.cleared s g := by
-  simpa only [one_mul] using cleared_covariance C v G g _ 1 (by
+  simpa using cleared_covariance C v G g _ 1 (by
     intro z _
-    simpa only [one_mul] using literal_rational_invariant (Q.flat v) z a g) s hs
+    simpa using literal_rational_invariant (Q.flat v) z a g) s hs
 
 theorem cleared_genuine (C : ScalarContinuation R Q) (v : R.A.UnitQuotient)
     (G : IndividualSmoothGerm C v) (s : ℂ) (hs : s ∈ Metric.ball 0 G.radius)
@@ -85,8 +85,6 @@ theorem cleared_genuine (C : ScalarContinuation R Q) (v : R.A.UnitQuotient)
 def assemble (C : ScalarContinuation R Q) (G : ∀ v, IndividualSmoothGerm C v) :
     Realization R Q := by
   let ρ := Classical.choose (common_radius G)
-  have hρ := (Classical.choose_spec (common_radius G)).1
-  have hdom := (Classical.choose_spec (common_radius G)).2.1
   have hb := (Classical.choose_spec (common_radius G)).2.2
   have hsub (v : R.A.UnitQuotient) : Metric.ball (0 : ℂ) ρ ⊆ Metric.ball 0 (G v).radius :=
     Metric.ball_subset_ball (hb v)
@@ -95,8 +93,8 @@ def assemble (C : ScalarContinuation R Q) (G : ∀ v, IndividualSmoothGerm C v) 
     meromorphic := C.meromorphic
     chamber := C.chamber
     radius := ρ
-    radius_pos := hρ
-    disc_domain := hdom
+    radius_pos := ((Classical.choose_spec (common_radius G)).1)
+    disc_domain := ((Classical.choose_spec (common_radius G)).2.1)
     cleared := fun v => (G v).cleared
     clears := fun v s hs hn => (G v).clears s (hsub v hs) hn
     smooth := fun v s hs => (G v).smooth s (hsub v hs)

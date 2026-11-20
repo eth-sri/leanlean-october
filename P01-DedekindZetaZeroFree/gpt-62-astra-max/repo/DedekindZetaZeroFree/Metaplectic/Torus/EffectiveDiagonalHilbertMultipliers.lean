@@ -13,19 +13,21 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-def C (v : KPHilbert.Place F) (x y : (KPHilbert.Completion F v)ˣ) : ℂ :=
+section
+
+variable (v : KPHilbert.Place F) (x y : (KPHilbert.Completion F v)ˣ)
+
+def C : ℂ :=
   (KPLocalCover.genuineCharacter F ζ hζ (KPHilbert.B3 F ζ hζ v x y ^ 2) : ℂ)
 
-theorem C_conjugate (v : KPHilbert.Place F) (x y : (KPHilbert.Completion F v)ˣ) :
+theorem C_conjugate :
     C F ζ hζ v x y =
       star (KPLocalCover.coefficientEmbedding F ζ hζ
-        (KPLocalCover.threeToSix F (KPHilbert.B3 F ζ hζ v x y ^ 2)) : ℂ) := by
-  rfl
+        (KPLocalCover.threeToSix F (KPHilbert.B3 F ζ hζ v x y ^ 2)) : ℂ) := rfl
 
-theorem C_eq_B6_square (v : KPHilbert.Place F)
-    (x y : (KPHilbert.Completion F v)ˣ) :
+theorem C_eq_B6_square :
     C F ζ hζ v x y =
       (KPLocalCover.coefficientEmbedding F ζ hζ (KPHilbert.B6 F ζ hζ v x y ^ 2) : ℂ) := by
   let r := KPHilbert.B6 F ζ hζ v x y
@@ -50,19 +52,23 @@ theorem C_eq_B6_square (v : KPHilbert.Place F)
   rw [← Complex.inv_eq_conj (Complex.norm_eq_one_of_pow_eq_one hc (by decide)),
     hp, map_inv, Units.val_inv_eq_inv_val, inv_inv]
 
-private theorem B6_zpow_left (v : KPHilbert.Place F)
-    (a b : (KPHilbert.Completion F v)ˣ) (e : ℤ) :
-    KPHilbert.B6 F ζ hζ v (a ^ e) b = KPHilbert.B6 F ζ hζ v a b ^ e := by
-  let h := MonoidHom.mk' (fun a => KPHilbert.B6 F ζ hζ v a b)
-    (fun a c => (KPHilbert.B6_laws F ζ hζ v).1 a c b)
-  exact h.map_zpow a e
+end
 
-private theorem B6_zpow_right (v : KPHilbert.Place F)
-    (a b : (KPHilbert.Completion F v)ˣ) (e : ℤ) :
+section
+
+variable (v : KPHilbert.Place F) (a b : (KPHilbert.Completion F v)ˣ) (e : ℤ)
+
+private theorem B6_zpow_left :
+    KPHilbert.B6 F ζ hζ v (a ^ e) b = KPHilbert.B6 F ζ hζ v a b ^ e := by
+  exact (MonoidHom.mk' (fun a => KPHilbert.B6 F ζ hζ v a b)
+    (fun a c => (KPHilbert.B6_laws F ζ hζ v).1 a c b)).map_zpow a e
+
+private theorem B6_zpow_right :
     KPHilbert.B6 F ζ hζ v a (b ^ e) = KPHilbert.B6 F ζ hζ v a b ^ e := by
-  let h := MonoidHom.mk' (fun b => KPHilbert.B6 F ζ hζ v a b)
-    (fun b c => (KPHilbert.B6_laws F ζ hζ v).2.1 a b c)
-  exact h.map_zpow b e
+  exact (MonoidHom.mk' ((KPHilbert.B6 F ζ hζ v a))
+    (((KPHilbert.B6_laws F ζ hζ v).2.1 a))).map_zpow b e
+
+end
 
 section Tame
 
@@ -85,15 +91,12 @@ theorem C_valuation_units
       (KPLocalCover.coefficientEmbedding F ζ hζ
         (KPHilbert.residueSixCharacter F v ζ hζ hgood t) : ℂ) ^ (2 * e) := by
   obtain ⟨hl, hr, hs, _, _, hd⟩ := KPHilbert.B6_laws F ζ hζ (Sum.inr v)
-  have hu := (KPHilbert.B6_tame F v ζ hζ hgood π hπ u t).1
-  have ht := (KPHilbert.B6_tame F v ζ hζ hgood π hπ t u).1
-  have hut := (KPHilbert.B6_tame F v ζ hζ hgood π hπ u t).2
   have hup : KPHilbert.B6 F ζ hζ (Sum.inr v)
       (KPHilbert.integerUnitInclusion F v u) π =
       (KPHilbert.residueSixCharacter F v ζ hζ hgood u)⁻¹ := by
-    rw [hs, hu]
+    rw [hs, ((KPHilbert.B6_tame F v ζ hζ hgood π hπ u t).1)]
   rw [C_eq_B6_square, hl, hr, hr, B6_zpow_left, B6_zpow_left,
-    B6_zpow_right, B6_zpow_right, (hd π).1, ht, hup, hut]
+    B6_zpow_right, B6_zpow_right, (hd π).1, ((KPHilbert.B6_tame F v ζ hζ hgood π hπ t u).1), hup, ((KPHilbert.B6_tame F v ζ hζ hgood π hπ u t).2)]
   simp only [one_zpow, one_mul, mul_one, map_pow, map_mul, map_zpow, map_inv,
     Units.val_pow_eq_pow_val, Units.val_mul, Units.val_zpow_eq_zpow_val,
     Units.val_inv_eq_inv_val]

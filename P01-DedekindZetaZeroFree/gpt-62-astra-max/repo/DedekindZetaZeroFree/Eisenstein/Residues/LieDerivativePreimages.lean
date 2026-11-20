@@ -10,7 +10,7 @@ open NumberField Filter MeasureTheory
 namespace DedekindZetaZeroFree.RootDerivatives
 open KPLiteralRaw hiding G
 open KPGlobalResidualConstruction KPContActualSphericalRightFieldIdentification SharedSource
-open _root_.DedekindZetaZeroFree.RootDerivatives renaming chamber_germ_unique → chamber_germ_unique
+open _root_.DedekindZetaZeroFree.RootDerivatives (chamber_germ_unique)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1800000
@@ -26,7 +26,7 @@ theorem native_flat_residue (b : Fin (groupDimension F))
       Cv.numerator 0 = actualRight F ζ hζ b (Cf.numerator 0) := by
   let K := (KPContFlatSourceRecipe.D F ζ hζ).K
   have hK : IwasawaCompact F ζ hζ K := PrincipalOfKP.iwasawaCompactSubgroupMax_isIwasawa F ζ hζ
-  obtain ⟨v,u,hv0,hv,hu,haff⟩ := native_flat_affine F ζ hζ b f hflat
+  obtain ⟨v, u, hv0, hv, haff⟩ := native_flat_affine F ζ hζ b f hflat
   let Cv := Classical.choice (flatScalarResidue_nonempty F ζ hζ K hK v)
   let Cu := Classical.choice (flatScalarResidue_nonempty F ζ hζ K hK u)
   letI : T2Space (G F ζ hζ) := (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).1
@@ -36,7 +36,7 @@ theorem native_flat_residue (b : Fin (groupDimension F))
   obtain ⟨M,_⟩ := KPGlobalTorusFiniteStages.compatibleModelData_exists F ζ hζ L
   obtain ⟨μ,_,_,P,⟨H⟩⟩ := kp_ms_fixed_haar_disintegration F ζ hζ
     (Measure.haar : Measure (G F ζ hζ)) inferInstance
-  obtain ⟨q,A,N,r,hq,hq0,hAs,hAm,hAc,hr,hball,hNs,hNa,hclear⟩ :=
+  obtain ⟨q, A, N, r, hq, hq0, hAs, hAm, hAc, hr, hNs, hNa, hclear⟩ :=
     literal_allWord_numerator F ζ hζ M μ P H K hK f
   have hzero : (0 : ℂ) ∈ KPContinuation.spectralDomain := by norm_num [KPContinuation.spectralDomain]
   have hpin : N 0 = Cf.numerator 0 := by

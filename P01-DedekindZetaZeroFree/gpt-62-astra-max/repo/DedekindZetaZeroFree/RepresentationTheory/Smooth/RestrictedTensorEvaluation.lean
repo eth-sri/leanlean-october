@@ -14,17 +14,16 @@ set_option maxRecDepth 4000
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPAdelicCoverRestrictedProduct KPGlobalTorusFiniteStages KPLiteralChamber
 open KPGlobalResidualConstruction
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_right → sectionTuple_right
+open _root_.DedekindZetaZeroFree.KPLiteralChamber (sectionTuple_right)
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 
 private theorem matrix_section (w : InfinitePlace F) (M : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     complexMatrix A w (sectionTuple F ζ hζ (fun _ => M) (Sum.inl w)) = M := by
   unfold complexMatrix sectionTuple
-  change Matrix.GeneralLinearGroup.map _ (Matrix.GeneralLinearGroup.map _ M) = M
   apply Units.ext
   ext i j
   simp [Matrix.GeneralLinearGroup.map]
@@ -112,9 +111,7 @@ private theorem rawStageValue_chart_smooth (s : RestrictedTensorSimple.Level (ba
       let b : ℂ := rationalEvaluation A (comparison A P C
         (RestrictedTensorSimple.stageInclusion (Fiber A P C) (reference A P C) (bad A P C) s
           (PiTensorProduct.tprod ℂ (fun j => finiteValue A P C j.val (g j.val) (x j)))))
-      have hconst : ContDiffOn ℝ (⊤ : ℕ∞) (fun _ : ArchCoordinates F => b)
-          (archDomain F) := contDiffOn_const
-      apply (hprod.mul hconst).congr
+      apply (hprod.mul contDiffOn_const).congr
       intro z _
       have he := rawStageInsertion_arch_factorization A P C s x
         (g * sectionTuple F ζ hζ (fun w => rightMatrix (z w)))
@@ -125,13 +122,10 @@ private theorem rawStageValue_chart_smooth (s : RestrictedTensorSimple.Level (ba
           (PiTensorProduct.tprod ℂ _))) = _ * b
       unfold b
       rw [congrFun hf z]
-    have hsc : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : ArchCoordinates F => c *
-        rawStageValue A P C s (g * sectionTuple F ζ hζ (fun w => rightMatrix (z w)))
-          (PiTensorProduct.tprod ℂ x)) (archDomain F) := contDiffOn_const.mul hs
-    convert hsc using 1
+    convert (contDiffOn_const.mul hs) using 1
     funext z
     exact map_smul _ c _
-  | add x y hx hy => simpa only [map_add] using hx.add hy
+  | add x y hx hy => simpa using hx.add hy
 
 theorem quotientCoreEvaluator_chart_smooth
     (x : RestrictedTensorSimple.Core (Plus A P C) (plusReference A P C) (bad A P C))

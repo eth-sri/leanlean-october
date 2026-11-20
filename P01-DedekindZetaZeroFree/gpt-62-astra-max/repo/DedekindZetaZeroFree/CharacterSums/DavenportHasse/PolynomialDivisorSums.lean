@@ -31,7 +31,7 @@ theorem convolution_reindexed (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (n : ℕ
       rw [Finset.sum_mul]
       refine Finset.sum_congr rfl fun d hd => ?_
       rw [Finset.sum_mul, ← sum_Mon]
-      have hdm : d * (m / d) = m := Nat.mul_div_cancel' (Nat.dvd_of_mem_divisors hd)
+      have hdm := Nat.mul_div_cancel' (Nat.dvd_of_mem_divisors hd)
       simp only [hdm, ite_mul, zero_mul]
     _ = _ := divisors_reindex n (fun d j =>
       ∑ P ∈ Mon k d, if Irreducible P then

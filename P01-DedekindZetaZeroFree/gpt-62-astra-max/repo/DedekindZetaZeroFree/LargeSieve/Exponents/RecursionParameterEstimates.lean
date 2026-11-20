@@ -13,17 +13,29 @@ private lemma rpow_mul' {x : ℝ} (hx : 0 ≤ x) (y z : ℝ) :
     Real.rpow (Real.rpow x y) z = Real.rpow x (y * z) :=
   (Real.rpow_mul hx y z).symm
 
-private lemma mul_rpow' {x y z : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) :
+alias RecursionParameterEstimates.rpow_mul' := rpow_mul'
+
+section
+
+variable {x y z : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y)
+
+include hx hy in
+private lemma mul_rpow' :
     Real.rpow (x * y) z = Real.rpow x z * Real.rpow y z :=
   Real.mul_rpow hx hy
 
-private lemma div_rpow' {x y z : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) :
+include hx hy in
+private lemma div_rpow' :
     Real.rpow (x / y) z = Real.rpow x z / Real.rpow y z :=
   Real.div_rpow hx hy z
+
+end
 
 private lemma rpow_add' {x : ℝ} (hx : 0 < x) (y z : ℝ) :
     Real.rpow x y * Real.rpow x z = Real.rpow x (y + z) :=
   (Real.rpow_add hx y z).symm
+
+alias RecursionParameterEstimates.rpow_add' := rpow_add'
 
 private lemma rpow_le_rpow' {x y z : ℝ} (hx : 0 ≤ x) (hxy : x ≤ y) (hz : 0 ≤ z) :
     Real.rpow x z ≤ Real.rpow y z := Real.rpow_le_rpow hx hxy hz
@@ -37,11 +49,19 @@ private lemma one_le_rpow' {x z : ℝ} (hx : 1 ≤ x) (hz : 0 ≤ z) :
 private lemma rpow_pos' {x : ℝ} (hx : 0 < x) (y : ℝ) : 0 < Real.rpow x y :=
   Real.rpow_pos_of_pos hx y
 
-private lemma rpow_nonneg' {x : ℝ} (hx : 0 ≤ x) (y : ℝ) : 0 ≤ Real.rpow x y :=
+section
+
+variable {x : ℝ} (hx : 0 ≤ x) (y : ℝ)
+
+include hx in
+private lemma rpow_nonneg' : 0 ≤ Real.rpow x y :=
   Real.rpow_nonneg hx y
 
-private lemma rpow_neg' {x : ℝ} (hx : 0 ≤ x) (y : ℝ) :
+include hx in
+private lemma rpow_neg' :
     Real.rpow x (-y) = (Real.rpow x y)⁻¹ := Real.rpow_neg hx y
+
+end
 
 private lemma rpow_natCast' (x : ℝ) (n : ℕ) : Real.rpow x n = x ^ n :=
   Real.rpow_natCast x n
@@ -57,10 +77,8 @@ private lemma nat_le_of_one_le {r : ℕ} (hr : 1 ≤ r) : (0 : ℝ) < (r : ℝ) 
 private lemma rpow_H5_le {M N η : ℝ} {r : ℕ} (hM : 1 ≤ M) (hN : 1 ≤ N) (hη : 0 < η)
     (hr : 1 ≤ r) (hrη : 20 / η ≤ (r : ℝ)) :
     Real.rpow (Real.rpow N (1 / (r : ℝ))) 5 ≤ Real.rpow (M * N) (η / 4) := by
-  have hr0 : (0 : ℝ) < (r : ℝ) := nat_le_of_one_le hr
-  have hM0 : 0 < M := by linarith
+  have hr0 := nat_le_of_one_le hr
   have hN0 : 0 < N := by linarith
-  have hη4 : 0 ≤ η / 4 := by positivity
   have h20 : 20 ≤ (r : ℝ) * η := by
     rw [div_le_iff₀ hη] at hrη
     linarith
@@ -74,12 +92,10 @@ private lemma rpow_H5_le {M N η : ℝ} {r : ℕ} (hM : 1 ≤ M) (hN : 1 ≤ N) 
   calc Real.rpow N (5 / (r : ℝ))
       ≤ Real.rpow N (η / 4) := rpow_le_rpow_exp' hN h5
     _ ≤ Real.rpow (M * N) (η / 4) := by
-        rw [mul_rpow' (le_of_lt hM0) (le_of_lt hN0)]
-        have h1 : (1 : ℝ) ≤ Real.rpow M (η / 4) := one_le_rpow' hM hη4
-        have h2 : 0 ≤ Real.rpow N (η / 4) := rpow_nonneg' (le_of_lt hN0) _
-        calc Real.rpow N (η / 4) = 1 * Real.rpow N (η / 4) := (one_mul _).symm
+        rw [mul_rpow' (le_of_lt (by linarith)) (le_of_lt hN0)]
+        calc _ = 1 * Real.rpow N (η / 4) := (one_mul _).symm
           _ ≤ Real.rpow M (η / 4) * Real.rpow N (η / 4) :=
-              mul_le_mul_of_nonneg_right h1 h2
+              mul_le_mul_of_nonneg_right (one_le_rpow' hM (by positivity)) (rpow_nonneg' (le_of_lt hN0) _)
 
 theorem recursion_parameter_basic (α M N η : ℝ) (r : ℕ)
     (hα : 1 ≤ α) (hM : 1 ≤ M) (hN : 1 ≤ N) (hη : 0 < η)
@@ -111,15 +127,14 @@ private lemma far_aux (α M N η T δ K R : ℝ) (r : ℕ)
       K ≤ M * Real.rpow (M * n) (-δ) ∧
       M + n + Real.sqrt M * Real.rpow K (α - 1 / 2) + Real.sqrt (M / K) * n ≤
         2 * Real.rpow T (δ * (α + 1)) * R) := by
-  have hr0 : (0 : ℝ) < (r : ℝ) := nat_le_of_one_le hr
   have hM0 : 0 < M := by linarith
   have hN0 : 0 < N := by linarith
   have hT0 : 0 < T := by rw [hT]; nlinarith
   have hT1 : 1 ≤ T := by rw [hT]; nlinarith
   have hδ0 : 0 < δ := by rw [hδ]; positivity
   have hδnn : 0 ≤ δ := le_of_lt hδ0
-  have hTδ0 : 0 < Real.rpow T δ := rpow_pos' hT0 δ
-  have hTδ1 : 1 ≤ Real.rpow T δ := one_le_rpow' hT1 hδnn
+  have hTδ0 := rpow_pos' hT0 δ
+  have hTδ1 := one_le_rpow' hT1 hδnn
   have h2N : 2 * N ≤ M := by nlinarith [hfar, hTδ1]
   have hKpos : 0 < K := by rw [hK]; positivity
   refine ⟨hKpos, ?_, ?_⟩
@@ -127,8 +142,8 @@ private lemma far_aux (α M N η T δ K R : ℝ) (r : ℕ)
       rw [hK, div_mul_eq_mul_div, div_le_div_iff₀ hM0 (by norm_num)]
       nlinarith [hfar, hN0]
     linarith
+  let sqrt₀ := Real.sqrt (M / K)
   · intro n hn1 hnN
-    have hn0 : 0 ≤ n := by linarith
     have hn2 : n ^ 2 ≤ N ^ 2 := by nlinarith
     have hMnle : Real.rpow (M * n) δ ≤ Real.rpow T δ := by
       rw [hT]
@@ -140,17 +155,12 @@ private lemma far_aux (α M N η T δ K R : ℝ) (r : ℕ)
       calc n ^ 2 / M * Real.rpow (M * n) δ ≤ N ^ 2 / M * Real.rpow T δ :=
             mul_le_mul h1 hMnle (rpow_nonneg' (by positivity) δ) (by positivity)
         _ = K := hK.symm
-    · have hMnpos : 0 < Real.rpow (M * n) δ := rpow_pos' (by positivity) δ
-      have hMnpow : Real.rpow (M * n) (-δ) = (Real.rpow (M * n) δ)⁻¹ :=
-        rpow_neg' (by positivity) δ
-      have hpow2 : (2 * N * Real.rpow T δ) ^ 2 ≤ M ^ 2 :=
-        pow_le_pow_left₀ (by positivity) hfar 2
-      have hTsq : Real.rpow T (2 * δ) = (Real.rpow T δ) ^ 2 := by
+    · have hTsq : Real.rpow T (2 * δ) = (Real.rpow T δ) ^ 2 := by
         rw [show (2 : ℝ) * δ = δ * 2 by ring, ← rpow_mul' (le_of_lt hT0)]
         exact rpow_natCast' (Real.rpow T δ) 2
       have hkey : N ^ 2 * Real.rpow T (2 * δ) ≤ M ^ 2 := by
         rw [hTsq]
-        nlinarith [hpow2]
+        nlinarith [(pow_le_pow_left₀ (by positivity) hfar 2)]
       have hstep1 : N ^ 2 * Real.rpow T δ / M ≤ M / Real.rpow T δ := by
         rw [div_le_div_iff₀ hM0 hTδ0]
         have hadd : Real.rpow T δ * Real.rpow T δ = Real.rpow T (2 * δ) := by
@@ -158,15 +168,14 @@ private lemma far_aux (α M N η T δ K R : ℝ) (r : ℕ)
           rw [rpow_exp_congr (show δ + δ = 2 * δ by ring)]
         nlinarith [hkey, hadd]
       have hstep2 : M / Real.rpow T δ ≤ M * Real.rpow (M * n) (-δ) := by
-        rw [hMnpow, div_eq_mul_inv]
-        exact mul_le_mul_of_nonneg_left ((inv_le_inv₀ hTδ0 hMnpos).mpr hMnle) (by linarith)
+        rw [(rpow_neg' (by positivity) δ), div_eq_mul_inv]
+        exact mul_le_mul_of_nonneg_left ((inv_le_inv₀ hTδ0 (rpow_pos' (by positivity) δ)).mpr hMnle) (by linarith)
       calc K = N ^ 2 / M * Real.rpow T δ := hK
         _ = N ^ 2 * Real.rpow T δ / M := by ring
         _ ≤ M * Real.rpow (M * n) (-δ) := le_trans hstep1 hstep2
     · have hαhalf : 0 ≤ δ * (α - 1 / 2) := by
         apply mul_nonneg hδnn; linarith
       have hTe : 1 ≤ Real.rpow T (δ * (α - 1 / 2)) := one_le_rpow' hT1 hαhalf
-      have hTenn : 0 ≤ Real.rpow T (δ * (α - 1 / 2)) := le_trans zero_le_one hTe
       have ht1 : M + n ≤ Real.rpow T (δ * (α - 1 / 2)) * (M + N) := by
         calc M + n ≤ M + N := by linarith
           _ = 1 * (M + N) := by ring
@@ -199,9 +208,9 @@ private lemma far_aux (α M N η T δ K R : ℝ) (r : ℕ)
         rw [rpow_add' hM0 (1 / 2) (1 / 2 - α)]
         rw [rpow_exp_congr (show (1 : ℝ) / 2 + (1 / 2 - α) = 1 - α by ring)]
         try ring
-      have ht3 : Real.sqrt (M / K) * n ≤ Real.rpow T (δ * (α - 1 / 2)) * M := by
-        have hMn : 0 ≤ Real.sqrt (M / K) * n := by positivity
-        have hsq : (Real.sqrt (M / K) * n) ^ 2 ≤ M ^ 2 := by
+      have ht3 : sqrt₀ * n ≤ Real.rpow T (δ * (α - 1 / 2)) * M := by
+        have hMn : 0 ≤ sqrt₀ * n := by positivity
+        have hsq : (sqrt₀ * n) ^ 2 ≤ M ^ 2 := by
           rw [mul_pow, Real.sq_sqrt (by positivity)]
           rw [div_mul_eq_mul_div, div_le_iff₀ hKpos]
           rw [show M ^ 2 * K = M * N ^ 2 * Real.rpow T δ by
@@ -215,13 +224,13 @@ private lemma far_aux (α M N η T δ K R : ℝ) (r : ℕ)
           have h2 : M * N ^ 2 ≤ M * N ^ 2 * Real.rpow T δ :=
             le_mul_of_one_le_right hMN2 hTδ1
           linarith
-        have hKM : Real.sqrt (M / K) * n ≤ M :=
+        have hKM :=
           (pow_le_pow_iff_left₀ hMn (by linarith) (by norm_num : (2 : ℕ) ≠ 0)).mp hsq
-        calc Real.sqrt (M / K) * n ≤ M := hKM
+        calc sqrt₀ * n ≤ M := hKM
           _ = 1 * M := (one_mul M).symm
           _ ≤ Real.rpow T (δ * (α - 1 / 2)) * M :=
               mul_le_mul_of_nonneg_right hTe (by linarith)
-      have hsum : M + n + Real.sqrt M * Real.rpow K (α - 1 / 2) + Real.sqrt (M / K) * n ≤
+      have hsum : M + n + Real.sqrt M * Real.rpow K (α - 1 / 2) + sqrt₀ * n ≤
           Real.rpow T (δ * (α - 1 / 2)) *
             (2 * M + N + Real.rpow N (2 * α - 1) * Real.rpow M (1 - α)) := by
         have h4 : Real.rpow T (δ * (α - 1 / 2)) * (M + N) +
@@ -239,19 +248,17 @@ private lemma far_aux (α M N η T δ K R : ℝ) (r : ℕ)
       have hRnn : 0 ≤ R := by
         rw [hR]
         linarith
-      calc M + n + Real.sqrt M * Real.rpow K (α - 1 / 2) + Real.sqrt (M / K) * n
+      calc M + n + Real.sqrt M * Real.rpow K (α - 1 / 2) + sqrt₀ * n
           ≤ Real.rpow T (δ * (α - 1 / 2)) *
               (2 * M + N + Real.rpow N (2 * α - 1) * Real.rpow M (1 - α)) := hsum
         _ ≤ Real.rpow T (δ * (α - 1 / 2)) * (2 * R) :=
-              mul_le_mul_of_nonneg_left h2R hTenn
+              mul_le_mul_of_nonneg_left h2R (le_trans zero_le_one hTe)
         _ = 2 * Real.rpow T (δ * (α - 1 / 2)) * R := by ring
         _ ≤ 2 * Real.rpow T (δ * (α + 1)) * R := by
-            have hle : Real.rpow T (δ * (α - 1 / 2)) ≤ Real.rpow T (δ * (α + 1)) :=
-              rpow_le_rpow_exp' hT1 (by nlinarith [hδnn])
             calc 2 * Real.rpow T (δ * (α - 1 / 2)) * R
                 ≤ 2 * Real.rpow T (δ * (α + 1)) * R := by
                   apply mul_le_mul_of_nonneg_right _ hRnn
-                  exact mul_le_mul_of_nonneg_left hle (by norm_num)
+                  exact mul_le_mul_of_nonneg_left (rpow_le_rpow_exp' hT1 (by nlinarith [hδnn])) (by norm_num)
 
 theorem recursion_parameter_far (α M N η : ℝ) (r : ℕ)
     (hα : 1 ≤ α) (hM : 1 ≤ M) (hN : 1 ≤ N) (hη : 0 < η)

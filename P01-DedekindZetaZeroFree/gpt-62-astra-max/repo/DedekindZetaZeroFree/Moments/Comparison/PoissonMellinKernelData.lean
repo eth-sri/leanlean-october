@@ -25,20 +25,20 @@ structure ComparisonPoissonCoefficientData (F : Type) [Field F] [NumberField F]
   gammaTwo : ExteriorSquarefreeIdeal A.cS → ℂ
   theta : A.R → ℂ
 
-def comparisonPoissonFiniteCoefficient
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
+section
+
+variable (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
     (D : ComparisonPoissonCoefficientData F A)
+
+def comparisonPoissonFiniteCoefficient
     (c : ExteriorSquarefreeIdeal A.cS) (n s : A.Exterior) (h : A.R) : ℂ := by
   let a := D.generator c.val * D.generator n ^ 3
-  have ha : a ≠ 0 := mul_ne_zero (D.generates c.val).1 (pow_ne_zero _ (D.generates n).1)
   letI := D.finiteResidue (D.generator s) (D.generates s).1
-  letI := D.finiteResidue a ha
+  letI := D.finiteResidue a (mul_ne_zero (D.generates c.val).1 (pow_ne_zero _ (D.generates n).1))
   exact FiniteTransform.finiteCoefficient A.R.toSubring (D.generator s) a h
     (D.character (D.generator s)) (D.character a) D.additiveCharacter
 
-def comparisonEulerPoissonSummand
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (u : A.R)
+def comparisonEulerPoissonSummand (u : A.R)
     (ξ w z : ℂ) (c : ExteriorSquarefreeIdeal A.cS) (n s r : A.Exterior) : ℂ :=
   D.gammaTwo c * D.theta (D.generator c.val * D.generator n ^ 3) *
     comparisonPoissonFiniteCoefficient F A D c n s (u * D.generator r ^ 6) *
@@ -47,11 +47,11 @@ def comparisonEulerPoissonSummand
     comparisonRealPower (A.exteriorNorm s) (-w) *
     comparisonRealPower (A.exteriorNorm r) (-6 * z)
 
-def comparisonEulerPoissonSeries
-    (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (u : A.R) (ξ w z : ℂ) : ℂ :=
+def comparisonEulerPoissonSeries (u : A.R) (ξ w z : ℂ) : ℂ :=
   ∑' i : ExteriorSquarefreeIdeal A.cS × A.Exterior × A.Exterior × A.Exterior,
     comparisonEulerPoissonSummand F A D u ξ w z i.1 i.2.1 i.2.2.1 i.2.2.2
+
+end
 
 structure ComparisonMellinWeights where
   M : ℂ → ℂ

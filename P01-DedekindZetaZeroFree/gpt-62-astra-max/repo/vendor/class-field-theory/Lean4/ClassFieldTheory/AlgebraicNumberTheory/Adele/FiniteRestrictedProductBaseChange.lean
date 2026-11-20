@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -36,7 +32,6 @@ open scoped NumberField TensorProduct RestrictedProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 open AlgebraicNumberTheory.Valuations
 
@@ -67,11 +62,14 @@ noncomputable def piCongrLeftMulEquiv
       Equiv.piCongrLeft_apply_apply]
     rfl
 
+section
+
+variable (w : HeightOneSpectrum (𝓞 K))
+
 /-- At one finite place of `K`, the canonical local tensor decomposition followed by completion
 comparison identifies the tensor-unit group with the product of the concrete
 adic unit groups at all finite places of `L` above it. -/
-noncomputable def finitePlaceTensorUnitsEquivAboveAdic
-    (w : HeightOneSpectrum (𝓞 K)) :
+noncomputable def finitePlaceTensorUnitsEquivAboveAdic :
     (w.adicCompletion K ⊗[K] L)ˣ ≃*
       ∀ W : {W : HeightOneSpectrum (𝓞 L) //
           finitePlaceBelow (K := K) W = w},
@@ -95,7 +93,6 @@ noncomputable def finitePlaceTensorUnitsEquivAboveAdic
 extension of the given adic absolute value. -/
 @[simp]
 theorem finitePlaceTensorUnitsEquivAboveAdic_apply_extension
-    (w : HeightOneSpectrum (𝓞 K))
     (x : (w.adicCompletion K ⊗[K] L)ˣ)
     (u : AbsoluteValueExtension
       (HeightOneSpectrum.adicAbv K w) L) :
@@ -110,28 +107,27 @@ theorem finitePlaceTensorUnitsEquivAboveAdic_apply_extension
           (K := K) (L := L) w u x) := by
   let P :=
     fun W : {W : HeightOneSpectrum (𝓞 L) //
-        finitePlaceBelow (K := K) W = w} =>
+        finitePlaceBelow W = w} =>
       (W.1.adicCompletion L)ˣ
   let e := finitePlaceExtensionEquivAbove (K := K) (L := L) w
-  let f : ∀ a, P (e a) := fun a =>
+  let f := fun a =>
     Units.mapEquiv
         (finitePlaceExtensionAdicCompletionRingEquiv
-          (K := K) (L := L) w a).toMulEquiv
+            w a).toMulEquiv
       (finitePlaceLocalTensorDecompositionUnitsEquiv
-        (K := K) (L := L) w x a)
+          w x a)
   exact
     (Equiv.piCongrLeft_apply_apply P e f u).trans
       (congrArg
         (Units.mapEquiv
           (finitePlaceExtensionAdicCompletionRingEquiv
-            (K := K) (L := L) w u).toMulEquiv)
+              w u).toMulEquiv)
         (finitePlaceLocalTensorDecompositionUnitsEquiv_apply
-          (K := K) (L := L) w x u))
+            w x u))
 
 /-- On a diagonal extension-field unit, the finite local
 relative-to-ordinary comparison is the ordinary diagonal embedding. -/
 theorem finitePlaceTensorUnitsEquivAboveAdic_localFieldIdeleInclusion
-    (w : HeightOneSpectrum (𝓞 K))
     (W : {W : HeightOneSpectrum (𝓞 L) //
       finitePlaceBelow (K := K) W = w})
     (x : Lˣ) :
@@ -161,6 +157,8 @@ theorem finitePlaceTensorUnitsEquivAboveAdic_localFieldIdeleInclusion
   rw [finitePlaceLocalTensorDecompositionComponent_tmul]
   simp only [map_one, one_mul,
     finitePlaceExtensionAdicCompletionRingEquiv_toCompletion]
+
+end
 
 /-- Flatten products first over finite places of `K` and then over places
 above them into one product over all finite places of `L`. -/
@@ -240,15 +238,13 @@ theorem unitsMapEquiv_mem_units_iff
   constructor
   · rintro ⟨hval, hinv⟩
     constructor
-    · exact (h (x : R)).mp (by simpa using hval)
+    · exact (h (x : R)).mp (by exact hval)
     · apply (h ((x⁻¹ : Rˣ) : R)).mp
-      rw [← (Units.mapEquiv e).map_inv x] at hinv
       exact hinv
   · rintro ⟨hval, hinv⟩
     constructor
-    · simpa using (h (x : R)).mpr hval
-    · rw [← (Units.mapEquiv e).map_inv x]
-      exact (h ((x⁻¹ : Rˣ) : R)).mpr hinv
+    · exact (h (x : R)).mpr hval
+    · exact (h ((x⁻¹ : Rˣ) : R)).mpr hinv
 
 /-- The local tensor unit is integral in every relative-tensor factor
 exactly when its flattened concrete components are local integer units at
@@ -268,47 +264,43 @@ theorem relativeLocalTensorDecompositionIntegralUnitAt_iff_aboveAdic
   · intro hx W
     let u :=
       (finitePlaceExtensionEquivAbove
-        (K := K) (L := L) w).symm W
-    have hW :
-        finitePlaceExtensionEquivAbove
-            (K := K) (L := L) w u = W :=
-      (finitePlaceExtensionEquivAbove
-        (K := K) (L := L) w).apply_symm_apply W
-    rw [← hW]
+          w).symm W
+    rw [← ((finitePlaceExtensionEquivAbove
+      w).apply_symm_apply W)]
     rw [finitePlaceTensorUnitsEquivAboveAdic_apply_extension]
     exact
       (unitsMapEquiv_mem_units_iff
         (finitePlaceExtensionAdicCompletionRingEquiv
-          (K := K) (L := L) w u).toMulEquiv
+            w u).toMulEquiv
         (absoluteValueCompletionIntegers u.1
           (absoluteValueExtension_isNonarchimedean
             (HeightOneSpectrum.adicAbv K w)
             (HeightOneSpectrum.isNonarchimedean_adicAbv K w) u)).toSubmonoid
         ((finitePlaceExtensionCentre
-          (K := K) (L := L) w u).adicCompletionIntegers L).toSubmonoid
+            w u).adicCompletionIntegers L).toSubmonoid
         (finitePlaceExtensionAdicCompletionRingEquiv_mem_integers_iff
-          (K := K) (L := L) w u)
+            w u)
         (finitePlaceLocalTensorDecompositionUnitsComponent
-          (K := K) (L := L) w u x)).2 (hx u)
+            w u x)).2 (hx u)
   · intro hx u
     have h :=
       hx (finitePlaceExtensionEquivAbove
-        (K := K) (L := L) w u)
+          w u)
     rw [finitePlaceTensorUnitsEquivAboveAdic_apply_extension] at h
     exact
       (unitsMapEquiv_mem_units_iff
         (finitePlaceExtensionAdicCompletionRingEquiv
-          (K := K) (L := L) w u).toMulEquiv
+            w u).toMulEquiv
         (absoluteValueCompletionIntegers u.1
           (absoluteValueExtension_isNonarchimedean
             (HeightOneSpectrum.adicAbv K w)
             (HeightOneSpectrum.isNonarchimedean_adicAbv K w) u)).toSubmonoid
         ((finitePlaceExtensionCentre
-          (K := K) (L := L) w u).adicCompletionIntegers L).toSubmonoid
+            w u).adicCompletionIntegers L).toSubmonoid
         (finitePlaceExtensionAdicCompletionRingEquiv_mem_integers_iff
-          (K := K) (L := L) w u)
+            w u)
         (finitePlaceLocalTensorDecompositionUnitsComponent
-          (K := K) (L := L) w u x)).1 h
+            w u x)).1 h
 
 /-- Cofinite quantification over finite places of `L` is equivalent to
 cofinite quantification over finite places of `K`, uniformly over every
@@ -322,15 +314,8 @@ theorem eventually_finitePlace_iff_eventually_all_above
           P W.1 := by
   constructor
   · intro h
-    have hbad :
-        {W : HeightOneSpectrum (𝓞 L) | ¬ P W}.Finite :=
-      Filter.eventually_cofinite.mp h
-    have himage :
-        (finitePlaceBelow (K := K) ''
-          {W : HeightOneSpectrum (𝓞 L) | ¬ P W}).Finite :=
-      hbad.image _
     apply Filter.eventually_cofinite.mpr
-    apply himage.subset
+    apply ((Filter.eventually_cofinite.mp h).image _).subset
     intro w hw
     simp only [Set.mem_ofPred_eq] at hw
     rw [Set.mem_image]
@@ -340,7 +325,7 @@ theorem eventually_finitePlace_iff_eventually_all_above
   · intro h
     have hfibre (w : HeightOneSpectrum (𝓞 K)) :
         Finite {W : HeightOneSpectrum (𝓞 L) //
-          finitePlaceBelow (K := K) W = w} := by
+          finitePlaceBelow W = w} := by
       let : Fintype
           (AbsoluteValueExtension
             (HeightOneSpectrum.adicAbv K w) L) :=
@@ -352,7 +337,7 @@ theorem eventually_finitePlace_iff_eventually_all_above
           (AbsoluteValueExtension
             (HeightOneSpectrum.adicAbv K w) L)
           (finitePlaceExtensionEquivAbove
-            (K := K) (L := L) w)
+              w)
     have htendsto :
         Filter.Tendsto
           (finitePlaceBelow (K := K))
@@ -362,7 +347,7 @@ theorem eventually_finitePlace_iff_eventually_all_above
         fun w => by
           change
             {W : HeightOneSpectrum (𝓞 L) |
-              finitePlaceBelow (K := K) W = w}.Finite
+              finitePlaceBelow W = w}.Finite
           exact Set.finite_coe_iff.mp (hfibre w)
     filter_upwards [htendsto.eventually h] with W hW
     exact hW ⟨W, rfl⟩
@@ -431,19 +416,17 @@ theorem RelativeFiniteIdeleData.eventually_aboveAdicUnit
         finitePlaceTensorUnitsEquivAboveAdic
             (K := K) (L := L) w (a.finite w) W ∈
           (W.1.adicCompletionIntegers L).units := by
-  let z : RelativeIdeleGroup K L :=
+  let z :=
     relativeIdeleOfLocalData
-      (K := K) (L := L) a.toLocalData
+        a.toLocalData
   filter_upwards [
     (relativeIdeleLocalTensorDecompositionSupport
-      (K := K) (L := L) z).eventually_cofinite_notMem] with w hw
+        z).eventually_cofinite_notMem] with w hw
   apply
     (relativeLocalTensorDecompositionIntegralUnitAt_iff_aboveAdic
-      (K := K) (L := L) w (a.finite w)).mp
-  have hz :=
-    relativeIdele_finiteComponent_localTensorDecompositionIntegralUnit_of_notMem
-      (K := K) (L := L) z w hw
-  simpa [z, RelativeFiniteIdeleData.toLocalData] using hz
+        w (a.finite w)).mp
+  simpa [z, RelativeFiniteIdeleData.toLocalData] using (relativeIdele_finiteComponent_localTensorDecompositionIntegralUnit_of_notMem
+    z w hw)
 
 /-- Flatten a finite relative restricted family into an ordinary finite
 idele of `L`. -/
@@ -476,10 +459,13 @@ theorem relativeFiniteIdeleToFiniteIdele_apply
         (K := K) (L := L) a.finite W :=
   rfl
 
+section
+
+variable (y : FiniteIdeleGroup L)
+
 /-- Pull an ordinary finite idele back to the unrestricted family of
 finite tensor-unit factors. -/
-noncomputable def finiteIdeleRelativeTensorFamily
-    (y : FiniteIdeleGroup L) :
+noncomputable def finiteIdeleRelativeTensorFamily :
     ∀ w : HeightOneSpectrum (𝓞 K),
       (w.adicCompletion K ⊗[K] L)ˣ :=
   (relativeFiniteTensorPiMulEquiv
@@ -487,18 +473,13 @@ noncomputable def finiteIdeleRelativeTensorFamily
 
 /-- The pulled-back tensor family is basis-integral, together with its
 inverse, at almost every finite place of `K`. -/
-theorem finiteIdeleRelativeTensorFamily_eventually_basisIntegralUnit
-    (y : FiniteIdeleGroup L) :
+theorem finiteIdeleRelativeTensorFamily_eventually_basisIntegralUnit :
     ∀ᶠ w : HeightOneSpectrum (𝓞 K) in Filter.cofinite,
       RelativeBasisIntegralUnitAt
         (K := K) (L := L) w
         (finiteIdeleRelativeTensorFamily
           (K := K) (L := L) y w) := by
-  have habove :
-      ∀ᶠ w : HeightOneSpectrum (𝓞 K) in Filter.cofinite,
-        ∀ W : {W : HeightOneSpectrum (𝓞 L) //
-            finitePlaceBelow (K := K) W = w},
-          y W.1 ∈ (W.1.adicCompletionIntegers L).units :=
+  have habove :=
     (eventually_finitePlace_iff_eventually_all_above
       (K := K) (L := L)
       (fun W => y W ∈
@@ -510,17 +491,17 @@ theorem finiteIdeleRelativeTensorFamily_eventually_basisIntegralUnit
       (K := K) (L := L)).eventually_cofinite_notMem] with w hw hbad
   apply
     (relativeBasisIntegralUnitAt_iff_localTensorDecompositionIntegralUnit_of_notMem
-      (K := K) (L := L) w hbad).mpr
+        w hbad).mpr
   apply
     (relativeLocalTensorDecompositionIntegralUnitAt_iff_aboveAdic
-      (K := K) (L := L) w
+        w
       (finiteIdeleRelativeTensorFamily
-        (K := K) (L := L) y w)).mpr
+          y w)).mpr
   intro W
   have hcomponent :=
     congrFun
       ((finitePlaceTensorUnitsEquivAboveAdic
-        (K := K) (L := L) w).apply_symm_apply
+          w).apply_symm_apply
           (fun W => y W.1)) W
   rw [finiteIdeleRelativeTensorFamily,
     relativeFiniteTensorPiMulEquiv_symm_apply,
@@ -529,8 +510,7 @@ theorem finiteIdeleRelativeTensorFamily_eventually_basisIntegralUnit
 
 /-- Pull an ordinary finite idele back to finite relative restricted
 data. -/
-noncomputable def finiteIdeleToRelativeFiniteIdeleData
-    (y : FiniteIdeleGroup L) :
+noncomputable def finiteIdeleToRelativeFiniteIdeleData :
     RelativeFiniteIdeleData (K := K) (L := L) where
   finite :=
     finiteIdeleRelativeTensorFamily
@@ -545,6 +525,8 @@ noncomputable def finiteIdeleToRelativeFiniteIdeleData
       (K := K) (L := L) y).mono fun w hw =>
         relativeBasisIntegralAt_repr_mem
           (K := K) (L := L) w _ hw.2 i
+
+end
 
 /-- The finite relative restricted product is the ordinary finite idele
 group of the extension field. -/
@@ -561,24 +543,24 @@ noncomputable def relativeFiniteIdeleEquiv :
     apply RelativeFiniteIdeleData.ext
     change
       (relativeFiniteTensorPiMulEquiv
-        (K := K) (L := L)).symm
+         ).symm
           (relativeFiniteTensorPiMulEquiv
-            (K := K) (L := L) a.finite) =
+              a.finite) =
         a.finite
     exact
       (relativeFiniteTensorPiMulEquiv
-        (K := K) (L := L)).symm_apply_apply a.finite
+         ).symm_apply_apply a.finite
   right_inv y := by
     apply Subtype.ext
     change
       relativeFiniteTensorPiMulEquiv
-          (K := K) (L := L)
+
           ((relativeFiniteTensorPiMulEquiv
-            (K := K) (L := L)).symm (fun W => y W)) =
+             ).symm (fun W => y W)) =
         fun W => y W
     exact
       (relativeFiniteTensorPiMulEquiv
-        (K := K) (L := L)).apply_symm_apply (fun W => y W)
+         ).apply_symm_apply (fun W => y W)
 
 /-- The transported group structure on the finite relative restricted
 product. -/

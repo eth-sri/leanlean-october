@@ -16,27 +16,21 @@ private lemma rpow_two_inv_mul_self (ε : ℝ) (hε : ε ≠ 0) : ((2 : ℝ) ^ (
 private lemma threshold_bound (σ₀ ε : ℝ) (hσ₀ : 0 < σ₀) (hε : 0 < ε) (x : ℝ)
     (hx : (2 : ℝ) ^ (1 / ε) + (2 : ℝ) ^ (1 / σ₀) ≤ x) :
     1 + x ^ (-σ₀) ≤ x ^ ε ∧ (1 - x ^ (-σ₀))⁻¹ ≤ x ^ ε := by
-  have hεnn : (0 : ℝ) ≤ (2 : ℝ) ^ (1 / ε) := Real.rpow_nonneg (by norm_num) _
-  have hσnn : (0 : ℝ) ≤ (2 : ℝ) ^ (1 / σ₀) := Real.rpow_nonneg (by norm_num) _
-  have hxε : (2 : ℝ) ^ (1 / ε) ≤ x := (le_add_of_nonneg_right hσnn).trans hx
-  have hxσ : (2 : ℝ) ^ (1 / σ₀) ≤ x := (le_add_of_nonneg_left hεnn).trans hx
+  have hxσ := (le_add_of_nonneg_left (Real.rpow_nonneg (by norm_num) _)).trans hx
   have h2ε : (2 : ℝ) ≤ x ^ ε := by
-    have h := Real.rpow_le_rpow (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) _) hxε hε.le
+    have h := Real.rpow_le_rpow (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) _) ((le_add_of_nonneg_right (Real.rpow_nonneg (by norm_num) _)).trans hx) hε.le
     rwa [rpow_two_inv_mul_self ε hε.ne'] at h
   have h2σ : (2 : ℝ) ≤ x ^ σ₀ := by
     have h := Real.rpow_le_rpow (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) _) hxσ hσ₀.le
     rwa [rpow_two_inv_mul_self σ₀ hσ₀.ne'] at h
-  have hx1 : 1 < x := lt_of_lt_of_le
-    (Real.one_lt_rpow (by norm_num : (1 : ℝ) < 2) (one_div_pos.mpr hσ₀)) hxσ
-  have hxpos : 0 < x := lt_trans zero_lt_one hx1
   have hhalf : x ^ (-σ₀) ≤ 1 / 2 := by
-    rw [Real.rpow_neg hxpos.le σ₀]
-    calc (x ^ σ₀)⁻¹ ≤ (2 : ℝ)⁻¹ := inv_anti₀ (by norm_num) h2σ
+    rw [Real.rpow_neg (lt_trans zero_lt_one (lt_of_lt_of_le
+      (Real.one_lt_rpow (by norm_num : (1 : ℝ) < 2) (one_div_pos.mpr hσ₀)) hxσ)).le σ₀]
+    calc _ ≤ (2 : ℝ)⁻¹ := inv_anti₀ (by norm_num) h2σ
       _ = 1 / 2 := by norm_num
   constructor
   · linarith
-  · have hpos : 0 < 1 - x ^ (-σ₀) := by linarith
-    have h := inv_anti₀ (by norm_num : (0 : ℝ) < 1 / 2) (by linarith :
+  · have h := inv_anti₀ (by norm_num : (0 : ℝ) < 1 / 2) (by linarith :
       (1 : ℝ) / 2 ≤ 1 - x ^ (-σ₀))
     have h2 : ((1 : ℝ) / 2)⁻¹ = 2 := by norm_num
     linarith
@@ -55,27 +49,24 @@ private lemma support_norm_prod_le {F : Type} [Field F] [NumberField F]
     (𝔲 : Ideal (𝓞 F)) (h𝔲 : 𝔲 ≠ ⊥) :
     (∏ p ∈ idealPrimeSupport 𝔲, idealNorm p) ≤ idealNorm 𝔲 := by
   have hd : idealRadical 𝔲 ∣ 𝔲 := by
-    have H := Multiset.prod_dvd_prod_of_le (Multiset.dedup_le (normalizedFactors 𝔲))
     have Heq : (normalizedFactors 𝔲).prod = 𝔲 := by
       simpa only [associated_eq_eq] using prod_normalizedFactors h𝔲
     simpa only [idealRadical, idealPrimeSupport, Finset.prod_eq_multiset_prod,
-      Multiset.map_id', Multiset.toFinset_val, Heq] using H
-  have hnorm := Ideal.absNorm_dvd_absNorm_of_le (Ideal.le_of_dvd hd)
-  have hpos : 0 < Ideal.absNorm 𝔲 :=
-    Nat.pos_of_ne_zero (fun hz => h𝔲 (Ideal.absNorm_eq_zero_iff.mp hz))
+      Multiset.map_id', Multiset.toFinset_val, Heq] using (Multiset.prod_dvd_prod_of_le (Multiset.dedup_le (normalizedFactors 𝔲)))
   have H : idealNorm (idealRadical 𝔲) ≤ idealNorm 𝔲 := by
     unfold idealNorm
-    exact_mod_cast Nat.le_of_dvd hpos hnorm
+    exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (fun hz => h𝔲 (Ideal.absNorm_eq_zero_iff.mp hz))) (Ideal.absNorm_dvd_absNorm_of_le (Ideal.le_of_dvd hd))
   simpa only [idealNorm, idealRadical, map_prod, Nat.cast_prod] using H
+
+alias OmittedEulerProductBounds.support_norm_prod_le := support_norm_prod_le
 
 private lemma prod_norm_le_of_dvd {F : Type} [Field F] [NumberField F]
     (𝔲 : Ideal (𝓞 F)) (h𝔲 : 𝔲 ≠ ⊥) (T : Finset (Ideal (𝓞 F)))
     (hT : ∀ 𝔭 ∈ T, Prime 𝔭 ∧ 𝔭 ∣ 𝔲) :
     (∏ 𝔭 ∈ T, idealNorm 𝔭) ≤ idealNorm 𝔲 := by
-  have h𝔲0 : 𝔲 ≠ 0 := fun h => h𝔲 (by simpa using h)
-  have hsub : T ⊆ idealPrimeSupport 𝔲 := fun p hp =>
+  have hsub := fun p hp =>
     Multiset.mem_toFinset.mpr
-      ((UniqueFactorizationMonoid.mem_normalizedFactors_iff (α := Ideal (𝓞 F)) h𝔲0).mpr
+      ((UniqueFactorizationMonoid.mem_normalizedFactors_iff (fun h => h𝔲 (by exact h))).mpr
         ⟨(hT p hp).1, (hT p hp).2⟩)
   refine (Finset.prod_le_prod_of_subset_of_one_le₀ hsub ?_ ?_).trans (support_norm_prod_le 𝔲 h𝔲)
   · intro p hp
@@ -107,7 +98,7 @@ theorem omitted_prime_euler_subpolynomial
   let e : Finset (Ideal (𝓞 F)) := hefin.toFinset
   refine ⟨B ^ e.card, pow_pos (lt_of_lt_of_le zero_lt_one hB1) _, ?_⟩
   intro 𝔲 h𝔲 T hT
-  have hnorm : (∏ 𝔭 ∈ T, idealNorm 𝔭) ≤ idealNorm 𝔲 := prod_norm_le_of_dvd 𝔲 h𝔲 T hT
+  have hnorm := prod_norm_le_of_dvd 𝔲 h𝔲 T hT
   have hmem_e : ∀ 𝔭 : Ideal (𝓞 F), Prime 𝔭 → idealNorm 𝔭 ≤ Q → 𝔭 ∈ e := fun 𝔭 hp hle =>
     hefin.mem_toFinset.mpr ⟨⟨𝔭, by simpa using hp.ne_zero⟩, hle, rfl⟩
   have hloc1 : ∀ 𝔭 ∈ T, 1 + (idealNorm 𝔭) ^ (-σ₀) ≤

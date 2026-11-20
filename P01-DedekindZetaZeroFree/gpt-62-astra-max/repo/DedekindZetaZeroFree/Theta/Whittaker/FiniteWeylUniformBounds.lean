@@ -11,28 +11,9 @@ open MomentSources NumberField MeasureTheory
 open scoped Classical Topology
 open ThetaRawSheetEnvelope.WeightedWhittakerSheets
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-private theorem norm_annulus_isCompact {K : Type*} [NormedField K] [ProperSpace K]
-    (l u : ℝ) (hl : 0 < l) :
-    IsCompact {y : Kˣ | l ≤ ‖(y : K)‖ ∧ ‖(y : K)‖ ≤ u} := by
-  have hc2 : IsCompact (MulOpposite.opHomeomorph.symm ⁻¹' Metric.closedBall (0 : K) l⁻¹) :=
-    MulOpposite.opHomeomorph.symm.isCompact_preimage.mpr (isCompact_closedBall (0 : K) l⁻¹)
-  have hc := (isCompact_closedBall (0 : K) u).prod hc2
-  have hpre := Units.isClosedEmbedding_embedProduct.isCompact_preimage hc
-  have heq : (Units.embedProduct K) ⁻¹'
-      (Metric.closedBall (0 : K) u ×ˢ
-        (MulOpposite.opHomeomorph.symm ⁻¹' Metric.closedBall (0 : K) l⁻¹)) =
-      {y : Kˣ | l ≤ ‖(y : K)‖ ∧ ‖(y : K)‖ ≤ u} := by
-    ext y
-    simp only [Set.mem_preimage, Set.mem_prod, Metric.mem_closedBall, dist_zero_right,
-      Units.embedProduct, MulOpposite.unop_op]
-    change (‖(y : K)‖ ≤ u ∧ ‖(↑y⁻¹ : K)‖ ≤ l⁻¹) ↔ (l ≤ ‖(y : K)‖ ∧ ‖(y : K)‖ ≤ u)
-    rw [show ‖(↑y⁻¹ : K)‖ = ‖(y : K)‖⁻¹ by simp]
-    have hy : 0 < ‖(y : K)‖ := norm_pos_iff.mpr y.ne_zero
-    rw [inv_le_inv₀ hy hl]
-    exact and_comm
-  rwa [heq] at hpre
+private alias norm_annulus_isCompact := DedekindZetaZeroFree.KPFiniteLocal.NonarchimedeanWhittakerBounds.norm_annulus_isCompact
 
 theorem finite_weyl_bounds (R : PrincipalMellin.ActualRecipe S η)
     {N : TraceHaarTransport R} (C : JointDigitDescentSources R N) :

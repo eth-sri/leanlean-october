@@ -21,10 +21,10 @@ def chartDerivative (X : ArchCoordinates F) (f : Functions F ζ hζ) : Functions
 theorem smooth_chart_differentiable (f : Functions F ζ hζ) (hf : Smooth F ζ hζ f)
     (g : G F ζ hζ) :
     DifferentiableAt ℝ (fun x => f (g * archChart F ζ hζ x)) (archBase F) := by
-  have hb : archBase F ∈ archDomain F := by intro w; simp [archBase]
-  exact ((hf.2.1 g).contDiffAt
-    ((KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F).mem_nhds hb)).differentiableAt
+  refine ((hf.2.1 g).contDiffAt
+    ((KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F).mem_nhds ?_)).differentiableAt
       (by simp)
+  intro w; simp [archBase]
 
 def chartDerivativeLinear (X : ArchCoordinates F) :
     nativeSmoothSpace F ζ hζ →ₗ[ℂ] Functions F ζ hζ where
@@ -56,14 +56,14 @@ theorem chartDerivative_kFinite (K : Subgroup (G F ζ hζ))
   obtain ⟨S, hS, hfS, hstable⟩ := hk
   letI := hS
   let S' := S.comap (nativeSmoothSpace F ζ hζ).subtype
-  have hfin : FiniteDimensional ℂ S' :=
+  have hfin :=
     FiniteDimensional.of_injective
       ((nativeSmoothSpace F ζ hζ).subtype.restrict (fun _ hv => hv :
         ∀ v ∈ S', (nativeSmoothSpace F ζ hζ).subtype v ∈ S))
       (by intro v w h; apply Subtype.ext; apply Subtype.ext
           exact congrArg (fun z : S => z.val) h)
   letI := hfin
-  let T : Submodule ℂ (Functions F ζ hζ) :=
+  let T :=
     ⨆ i, S'.map (chartDerivativeLinear F ζ hζ (directionBasis F i))
   have hm (v : nativeSmoothSpace F ζ hζ) (hv : v ∈ S') (Y : ArchCoordinates F) :
       chartDerivative F ζ hζ Y v.val ∈ T := by
@@ -87,18 +87,17 @@ theorem chartDerivative_kFinite (K : Subgroup (G F ζ hζ))
     F ζ hζ k.val
   let u' : nativeSmoothSpace F ζ hζ := ⟨rightAction F ζ hζ k.val u.val,
     KPLiteralPeriod.NonzeroResidue.smooth_right_translate F ζ hζ u.val u.property k.val⟩
-  have hu' : u' ∈ S' := hstable k u.val hu
   have he : rightAction F ζ hζ k.val (chartDerivative F ζ hζ (directionBasis F i) u.val) =
       chartDerivative F ζ hζ (L (directionBasis F i)) u'.val := by
     funext g
     exact hL u.val (smooth_chart_differentiable F ζ hζ _ u.property) _ g
   change rightAction F ζ hζ k.val (chartDerivative F ζ hζ (directionBasis F i) u.val) ∈ T
   rw [he]
-  exact hm u' hu' _
+  exact hm u' (hstable k u.val hu) _
 
 variable {F ζ hζ}
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem upperLieDerivative_chartDerivative (w : NumberField.InfinitePlace F) (b : Bool)
     (f : MomentSources.Functions R) (hf : Smooth F R.A.zeta12 R.A.primitive_zeta12 f) :
@@ -106,9 +105,7 @@ theorem upperLieDerivative_chartDerivative (w : NumberField.InfinitePlace F) (b 
       chartDerivative F R.A.zeta12 R.A.primitive_zeta12
         (upperField w b (archBase F)) f := by
   funext g
-  have hb : archBase F ∈ archDomain F := by intro v; simp [archBase]
-  have h := upperLieDerivative_chart R w b f hf g (archBase F) hb
-  simpa only [chartDerivative, KPInterface.ResidueConstruction.Raw.archChart_base, mul_one] using h
+  simpa only [chartDerivative, KPInterface.ResidueConstruction.Raw.archChart_base, mul_one] using (upperLieDerivative_chart R w b f hf g (archBase F) (by intro v; simp [archBase]))
 
 theorem upperLieDerivative_kFinite (K : Subgroup (MomentSources.Group R))
     (w : NumberField.InfinitePlace F) (b : Bool) (f : MomentSources.Functions R)

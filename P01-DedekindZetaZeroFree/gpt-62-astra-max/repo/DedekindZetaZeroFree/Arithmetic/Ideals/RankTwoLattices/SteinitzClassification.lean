@@ -10,9 +10,12 @@ open scoped nonZeroDivisors
 
 namespace DedekindZetaZeroFree
 
+section
+
+variable (R : Type*) [CommRing R] [IsDedekindDomain R] (K : Type*) [Field K] [Algebra R K]
+    [IsFractionRing R K]
+
 theorem kp_cusp_class_eq_iff_scalar
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0) :
     ClassGroup.mk K (Units.mk0 I hI) = ClassGroup.mk K (Units.mk0 J hJ) ↔
       ∃ c : K, c ≠ 0 ∧ FractionalIdeal.spanSingleton R⁰ c * I = J := by
@@ -26,27 +29,18 @@ theorem kp_cusp_class_eq_iff_scalar
     refine ⟨x, ?_, ?_⟩
     · rintro rfl
       simp [X.ne_zero.symm] at hX
-    simpa only [hX, mul_comm] using! hx
+    simpa [hX, mul_comm] using! hx
   · rintro ⟨x, hx, eq_J⟩
     refine ⟨Units.mk0 _ (FractionalIdeal.spanSingleton_ne_zero_iff.mpr hx), ⟨x, rfl⟩, ?_⟩
-    simpa only [mul_comm] using! eq_J
+    simpa [mul_comm] using! eq_J
 
 private theorem scalar_mul_ideal
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (c : K) (I : FractionalIdeal R⁰ K) :
     (FractionalIdeal.spanSingleton R⁰ c * I : FractionalIdeal R⁰ K).val =
       Submodule.map (LinearMap.mulLeft R c) I.val := by
-  change ((FractionalIdeal.spanSingleton R⁰ c * I : FractionalIdeal R⁰ K) : Submodule R K) = _
-  rw [FractionalIdeal.coe_mul, FractionalIdeal.coe_spanSingleton]
-  ext x
-  simp only [Submodule.mem_span_singleton_mul, Submodule.mem_map,
-    LinearMap.mulLeft_apply]
-  rfl
+  ext <;> simp [Submodule.mem_span_singleton_mul]
 
  theorem coordinate_full
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0) :
     Submodule.IsLattice K (coordinateLattice R K I J) := by
   obtain ⟨a, ha, ha0⟩ := (I : Submodule R K).ne_bot_iff.mp
@@ -68,22 +62,16 @@ private theorem scalar_mul_ideal
   ext <;> simp [div_mul_cancel₀, ha0, hb0]
 
  def coordinate_full_lattice
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0) : FullLattice R K :=
   ⟨coordinateLattice R K I J, coordinate_full R K I J hI hJ⟩
 
 private theorem determinant_nonzero
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M : FullLattice R K) : determinantIdeal R K M ≠ 0 := by
   intro h
   apply kp_cusp_determinantSubmodule_ne_bot R K M
   exact (congrArg Subtype.val h).trans FractionalIdeal.coe_zero
 
 private theorem determinant_class_map
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M N : FullLattice R K) (g : (K × K) ≃ₗ[K] (K × K))
     (hg : Submodule.map (g.toLinearMap.restrictScalars R) M.val = N.val) :
     determinantClass R K M = determinantClass R K N := by
@@ -97,8 +85,6 @@ private theorem determinant_class_map
   exact (kp_cusp_determinantSubmodule_map R K M.val g).symm.trans (by rw [hg]; rfl)
 
 private theorem determinant_coordinate
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (D : FractionalIdeal R⁰ K) (hD : D ≠ 0) :
     determinantClass R K (coordinate_full_lattice R K 1 D one_ne_zero hD) =
       ClassGroup.mk K (Units.mk0 D hD) := by
@@ -107,11 +93,9 @@ private theorem determinant_coordinate
   apply Units.ext
   apply FractionalIdeal.coeToSubmodule_injective
   change determinantSubmodule R K (coordinateLattice R K 1 D) = D.val
-  simpa only [one_mul] using kp_cusp_determinantSubmodule_coordinateLattice R K 1 D
+  grind [kp_cusp_determinantSubmodule_coordinateLattice]
 
  noncomputable def coordinate_prod_equiv
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (I J : FractionalIdeal R⁰ K) :
     (I × J) ≃ₗ[R] coordinateLattice R K I J :=
   LinearEquiv.ofBijective
@@ -122,9 +106,9 @@ private theorem determinant_coordinate
       intro x y h
       have hh := congrArg Subtype.val h
       exact Prod.ext (Subtype.ext (congrArg Prod.fst hh))
-        (Subtype.ext (congrArg Prod.snd hh)), by
-      intro x
-      exact ⟨(⟨x.val.1, x.property.1⟩, ⟨x.val.2, x.property.2⟩), rfl⟩⟩
+        (Subtype.ext (congrArg Prod.snd hh)), fun x => ⟨(⟨x.val.1, x.property.1⟩, ⟨x.val.2, x.property.2⟩), rfl⟩⟩
+
+end
 
  noncomputable def ring_unit_ideal_equiv
     (R : Type*) [CommRing R] [IsDedekindDomain R]
@@ -144,9 +128,12 @@ private theorem determinant_coordinate
       obtain ⟨r, hr⟩ := (FractionalIdeal.mem_one_iff R⁰).mp x.property
       exact ⟨r, Subtype.ext hr⟩⟩
 
+section
+
+variable (R : Type*) [CommRing R] [IsDedekindDomain R] (K : Type*) [Field K] [Algebra R K]
+    [IsFractionRing R K]
+
 theorem kp_cusp_rank_two_normal_form
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M : FullLattice R K) :
     ∃ (D : FractionalIdeal R⁰ K) (hD : D ≠ 0)
       (g : (K × K) ≃ₗ[K] (K × K)),
@@ -155,25 +142,21 @@ theorem kp_cusp_rank_two_normal_form
       ClassGroup.mk K (Units.mk0 D hD) = determinantClass R K M := by
   obtain ⟨I, J, w, hI, hJ, hcoeff, hdet, hcoords, hproj, e, he⟩ :=
     kp_cusp_line_adapted_ideal_splitting R K M (1, 0) (by simp)
-  let D : FractionalIdeal R⁰ K := I * J
-  have hD : D ≠ 0 := mul_ne_zero hI hJ
+  let D := I * J
+  have hD := mul_ne_zero hI hJ
   let N := coordinate_full_lattice R K 1 D one_ne_zero hD
   letI : Submodule.IsLattice K M.val := M.property
   letI : Submodule.IsLattice K N.val := N.property
   obtain ⟨s⟩ := kp_cusp_ideal_steinitz_nonempty R K I J hI hJ
-  let f : M.val ≃ₗ[R] N.val :=
-    e.symm.trans (s.trans
-      ((LinearEquiv.prodCongr (ring_unit_ideal_equiv R K) (LinearEquiv.refl R D)).trans
-        (coordinate_prod_equiv R K 1 D)))
   obtain ⟨g, hg, _⟩ := kp_cusp_full_lattice_equiv_extension R K
-    (K × K) (K × K) M.val N.val f
+    (K × K) (K × K) M.val N.val (e.symm.trans (s.trans
+      ((LinearEquiv.prodCongr (ring_unit_ideal_equiv R K) (LinearEquiv.refl R D)).trans
+        (coordinate_prod_equiv R K 1 D))))
   refine ⟨D, hD, g, hg.2, ?_⟩
   exact (determinant_coordinate R K D hD).symm.trans
     (determinant_class_map R K M N g hg.2).symm
 
 theorem kp_cusp_latticeEquivalent_iff_determinantClass_eq
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M N : FullLattice R K) :
     latticeEquivalent R K M.val N.val ↔
       determinantClass R K M = determinantClass R K N := by
@@ -183,44 +166,30 @@ theorem kp_cusp_latticeEquivalent_iff_determinantClass_eq
   · intro h
     obtain ⟨D, hD, g, hg, hcD⟩ := kp_cusp_rank_two_normal_form R K M
     obtain ⟨E, hE, k, hk, hcE⟩ := kp_cusp_rank_two_normal_form R K N
-    have hDE := hcD.trans (h.trans hcE.symm)
     obtain ⟨e⟩ := (kp_cusp_fractional_ideal_equiv_iff R K D E hD hE).mpr
-      ((kp_cusp_class_eq_iff_scalar R K D E hD hE).mp hDE)
+      ((kp_cusp_class_eq_iff_scalar R K D E hD hE).mp (hcD.trans (h.trans hcE.symm)))
     let P := coordinate_full_lattice R K 1 D one_ne_zero hD
     let Q := coordinate_full_lattice R K 1 E one_ne_zero hE
     letI : Submodule.IsLattice K P.val := P.property
     letI : Submodule.IsLattice K Q.val := Q.property
-    let f : P.val ≃ₗ[R] Q.val := (coordinate_prod_equiv R K 1 D).symm.trans
-      ((LinearEquiv.prodCongr (LinearEquiv.refl R (1 : FractionalIdeal R⁰ K)) e).trans
-        (coordinate_prod_equiv R K 1 E))
     obtain ⟨l, hl, _⟩ := kp_cusp_full_lattice_equiv_extension R K
-      (K × K) (K × K) P.val Q.val f
-    have hMP : (latticeSetoid R K).r M P := ⟨g, hg⟩
-    have hPQ : (latticeSetoid R K).r P Q := ⟨l, hl.2⟩
-    have hNQ : (latticeSetoid R K).r N Q := ⟨k, hk⟩
+      (K × K) (K × K) P.val Q.val ((coordinate_prod_equiv R K 1 D).symm.trans
+        ((LinearEquiv.prodCongr (LinearEquiv.refl R (1 : FractionalIdeal R⁰ K)) e).trans
+          (coordinate_prod_equiv R K 1 E)))
     exact (latticeSetoid R K).iseqv.trans
-      ((latticeSetoid R K).iseqv.trans hMP hPQ)
-      ((latticeSetoid R K).iseqv.symm hNQ)
+      ((latticeSetoid R K).iseqv.trans (⟨g, hg⟩) (⟨l, hl.2⟩))
+      ((latticeSetoid R K).iseqv.symm (⟨k, hk⟩))
 
-noncomputable def latticeDeterminantClass
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K] :
+noncomputable def latticeDeterminantClass :
     Quotient (latticeSetoid R K) → ClassGroup R :=
-  Quotient.lift (determinantClass R K) (by
-    intro M N h
-    exact (kp_cusp_latticeEquivalent_iff_determinantClass_eq R K M N).mp h)
+  Quotient.lift (determinantClass R K) (fun M N h => (kp_cusp_latticeEquivalent_iff_determinantClass_eq R K M N).mp h)
 
 @[simp] theorem latticeDeterminantClass_mk
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M : FullLattice R K) :
     latticeDeterminantClass R K (Quotient.mk (latticeSetoid R K) M) =
-      determinantClass R K M := by
-  rfl
+      determinantClass R K M := rfl
 
-theorem kp_cusp_latticeDeterminantClass_bijective
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K] :
+theorem kp_cusp_latticeDeterminantClass_bijective :
     Function.Bijective (latticeDeterminantClass R K) := by
   constructor
   · intro x y h
@@ -233,16 +202,14 @@ theorem kp_cusp_latticeDeterminantClass_bijective
   · intro c
     refine ClassGroup.induction K (fun I => ?_) c
     refine ⟨Quotient.mk (latticeSetoid R K)
-      (coordinate_full_lattice R K 1 (I : FractionalIdeal R⁰ K) one_ne_zero I.ne_zero), ?_⟩
-    rw [latticeDeterminantClass_mk, determinant_coordinate]
-    congr 1
-    exact Units.ext rfl
+      (coordinate_full_lattice R K 1 I one_ne_zero I.ne_zero), ?_⟩
+    simp [latticeDeterminantClass_mk, determinant_coordinate]
+
+end
 
 theorem kp_cusp_numberField_lattice_quotient_finite
     (F : Type*) [Field F] [NumberField F] :
     Finite (Quotient (latticeSetoid (NumberField.RingOfIntegers F) F)) := by
-  letI : Fintype (ClassGroup (NumberField.RingOfIntegers F)) :=
-    NumberField.RingOfIntegers.instFintypeClassGroup F
   exact Finite.of_injective (latticeDeterminantClass (NumberField.RingOfIntegers F) F)
     (kp_cusp_latticeDeterminantClass_bijective _ _).1
 

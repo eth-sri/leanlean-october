@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -47,11 +45,14 @@ noncomputable def relativeFinitePlaceCompletionBaseMap
     (WithAbs.equiv
       (NumberField.HeightOneSpectrum.adicAbv K w)).toRingHom
 
+section
+
+variable (w : HeightOneSpectrum (𝓞 K))
+
 /-- These lemmas record the canonical map and equivalence interfaces for the finite-place model. -/
 
 @[simp]
 theorem relativeFinitePlaceCompletionBaseMap_apply
-    (w : HeightOneSpectrum (𝓞 K))
     (x : WithAbs
       (NumberField.HeightOneSpectrum.adicAbv K w)) :
     relativeFinitePlaceCompletionBaseMap w x =
@@ -62,7 +63,6 @@ theorem relativeFinitePlaceCompletionBaseMap_apply
 
 /-- The canonical finite-place map preserves norms. -/
 theorem relativeFinitePlaceCompletionBaseMap_norm
-    (w : HeightOneSpectrum (𝓞 K))
     (x : WithAbs
       (NumberField.HeightOneSpectrum.adicAbv K w)) :
     ‖relativeFinitePlaceCompletionBaseMap w x‖ = ‖x‖ := by
@@ -71,15 +71,13 @@ theorem relativeFinitePlaceCompletionBaseMap_norm
   rfl
 
 /-- The canonical finite-place map is an isometry. -/
-theorem relativeFinitePlaceCompletionBaseMap_isometry
-    (w : HeightOneSpectrum (𝓞 K)) :
+theorem relativeFinitePlaceCompletionBaseMap_isometry :
     Isometry (relativeFinitePlaceCompletionBaseMap w) :=
   AddMonoidHomClass.isometry_of_norm _
     (relativeFinitePlaceCompletionBaseMap_norm w)
 
 /-- Extension of the preceding dense map to the completion. -/
-noncomputable def relativeFinitePlaceCompletionRingHom
-    (w : HeightOneSpectrum (𝓞 K)) :
+noncomputable def relativeFinitePlaceCompletionRingHom :
     (NumberField.HeightOneSpectrum.adicAbv K w).Completion →+*
       w.adicCompletion K :=
   UniformSpace.Completion.extensionHom
@@ -90,7 +88,6 @@ noncomputable def relativeFinitePlaceCompletionRingHom
 
 @[simp]
 theorem relativeFinitePlaceCompletionRingHom_coe
-    (w : HeightOneSpectrum (𝓞 K))
     (x : WithAbs
       (NumberField.HeightOneSpectrum.adicAbv K w)) :
     relativeFinitePlaceCompletionRingHom w
@@ -102,28 +99,20 @@ theorem relativeFinitePlaceCompletionRingHom_coe
     (relativeFinitePlaceCompletionBaseMap_isometry w).continuous x
 
 /-- The canonical finite-place ring homomorphism is an isometry. -/
-theorem relativeFinitePlaceCompletionRingHom_isometry
-    (w : HeightOneSpectrum (𝓞 K)) :
+theorem relativeFinitePlaceCompletionRingHom_isometry :
     Isometry (relativeFinitePlaceCompletionRingHom w) :=
   (relativeFinitePlaceCompletionBaseMap_isometry w).completion_extension
 
 /-- The canonical finite-place ring homomorphism is surjective. -/
-theorem relativeFinitePlaceCompletionRingHom_surjective
-    (w : HeightOneSpectrum (𝓞 K)) :
+theorem relativeFinitePlaceCompletionRingHom_surjective :
     Function.Surjective
       (relativeFinitePlaceCompletionRingHom w) := by
   let f := relativeFinitePlaceCompletionRingHom w
-  have hrangeClosed : IsClosed (Set.range f) :=
-    (relativeFinitePlaceCompletionRingHom_isometry w).isClosedEmbedding.isClosed_range
-  have hdense :
-      DenseRange (algebraMap K (w.adicCompletion K)) :=
-    w.denseRange_algebraMap K
   have hrange :
       Set.range (algebraMap K (w.adicCompletion K)) ⊆
         Set.range f := by
     rintro _ ⟨x, rfl⟩
-    let x' : WithAbs
-        (NumberField.HeightOneSpectrum.adicAbv K w) :=
+    let x' :=
       (WithAbs.equiv
         (NumberField.HeightOneSpectrum.adicAbv K w)).symm x
     refine
@@ -136,13 +125,12 @@ theorem relativeFinitePlaceCompletionRingHom_surjective
   have hx :
       x ∈ closure
         (Set.range (algebraMap K (w.adicCompletion K))) := by
-    rw [hdense.closure_range]
+    rw [(w.denseRange_algebraMap K).closure_range]
     trivial
-  exact closure_minimal hrange hrangeClosed hx
+  exact closure_minimal hrange ((relativeFinitePlaceCompletionRingHom_isometry w).isClosedEmbedding.isClosed_range) hx
 
 /-- Canonical ring equivalence between the two models of `K_w`. -/
-noncomputable def relativeFinitePlaceCompletionRingEquiv
-    (w : HeightOneSpectrum (𝓞 K)) :
+noncomputable def relativeFinitePlaceCompletionRingEquiv :
     (NumberField.HeightOneSpectrum.adicAbv K w).Completion ≃+*
       w.adicCompletion K :=
   RingEquiv.ofBijective
@@ -151,8 +139,7 @@ noncomputable def relativeFinitePlaceCompletionRingEquiv
       relativeFinitePlaceCompletionRingHom_surjective w⟩
 
 /-- The same comparison as a `K`-algebra equivalence. -/
-noncomputable def relativeFinitePlaceCompletionAlgEquiv
-    (w : HeightOneSpectrum (𝓞 K)) :
+noncomputable def relativeFinitePlaceCompletionAlgEquiv :
     (NumberField.HeightOneSpectrum.adicAbv K w).Completion ≃ₐ[K]
       w.adicCompletion K where
   __ := relativeFinitePlaceCompletionRingEquiv w
@@ -167,6 +154,8 @@ noncomputable def relativeFinitePlaceCompletionAlgEquiv
         algebraMap K (w.adicCompletion K) x
     rw [relativeFinitePlaceCompletionRingHom_coe]
     rfl
+
+end
 
 /-- Base change in the first tensor factor, now without a universe
 restriction. -/
@@ -244,9 +233,9 @@ theorem basis_coord_isIntegral_of_integral_traces
     (hdiscne : Algebra.discr A b ≠ 0)
     (i : ι) :
     IsIntegral R (b.equivFun x i) := by
-  let M : Matrix ι ι A := Algebra.traceMatrix A b
-  let c : ι → A := b.equivFun x
-  let t : ι → A := fun j => Algebra.trace A B (x * b j)
+  let M := Algebra.traceMatrix A b
+  let c := b.equivFun x
+  let t := fun j => Algebra.trace A B (x * b j)
   have hM' : ∀ j k, IsIntegral R (M j k) := by
     intro j k
     exact hM j k
@@ -268,8 +257,7 @@ theorem basis_coord_isIntegral_of_integral_traces
       Matrix.smul_mulVec, Matrix.one_mulVec]
   have hcoord :
       Algebra.discr A b * c i = M.cramer t i := by
-    have hi := congrFun hcramerEq i
-    simpa [M, Algebra.discr_def, Pi.smul_apply] using hi
+    simpa [M, Algebra.discr_def, Pi.smul_apply] using (congrFun hcramerEq i)
   have hcEq :
       c i = (Algebra.discr A b)⁻¹ * M.cramer t i := by
     rw [← hcoord, ← mul_assoc, inv_mul_cancel₀ hdiscne, one_mul]
@@ -295,7 +283,7 @@ theorem trace_tensorProduct_basis_mul
       (Algebra.lmul A (A ⊗[K] L) (1 ⊗ₜ[K] (b i * b j))) =
     _
   rw [← Algebra.baseChange_lmul]
-  exact LinearMap.trace_baseChange (Algebra.lmul K L (b i * b j)) A
+  solve_by_elim [LinearMap.trace_baseChange]
 
 omit [NumberField L] in
 /-- Discriminants of tensor-product bases commute with scalar
@@ -322,8 +310,7 @@ theorem isIntegral_trace_tensor_of_components
     (hvK0 : vK.IsNontrivial)
     (x : vK.Completion ⊗[K] L)
     (hx : ∀ w : AbsoluteValueExtension vK L,
-      completionTensorDecomposition_left
-          (K := K) (L := L) vK hvK0 x w ∈
+      completionTensorDecomposition_left vK hvK0 x w ∈
         absoluteValueCompletionIntegers w.1
           (absoluteValueExtension_isNonarchimedean vK hvK w)) :
     IsIntegral (absoluteValueCompletionIntegers vK hvK)
@@ -331,28 +318,24 @@ theorem isIntegral_trace_tensor_of_components
         (vK.Completion ⊗[K] L) x) := by
   classical
   let : Fintype (AbsoluteValueExtension vK L) :=
-    completionTensorDecomposition_extensionFintype
-      (K := K) (L := L) vK hvK0
+    completionTensorDecomposition_extensionFintype vK hvK0
   let : ∀ w : AbsoluteValueExtension vK L,
       Algebra vK.Completion w.1.Completion :=
     fun w => AbsoluteValue.completionAlgebra vK w.1 w.2
   let : ∀ w : AbsoluteValueExtension vK L,
       Module.Finite vK.Completion w.1.Completion :=
-    fun w => completionModuleFinite vK hvK0 w
+    (completionModuleFinite vK hvK0)
   let : ∀ w : AbsoluteValueExtension vK L,
       Module.Free vK.Completion w.1.Completion :=
     fun w => Module.Free.of_divisionRing
       vK.Completion w.1.Completion
-  let y :
-      ∀ w : AbsoluteValueExtension vK L, w.1.Completion :=
+  let y :=
     completionTensorDecomposition_left
-      (K := K) (L := L) vK hvK0 x
+        vK hvK0 x
   have hy :
       ∀ w : AbsoluteValueExtension vK L,
-        IsIntegral (absoluteValueCompletionIntegers vK hvK) (y w) := by
-    intro w
-    exact isIntegral_over_baseCompletionIntegers_of_mem
-      (K := K) (L := L) vK hvK hvK0 w (hx w)
+        IsIntegral (absoluteValueCompletionIntegers vK hvK) (y w) := fun w => isIntegral_over_baseCompletionIntegers_of_mem
+        vK hvK hvK0 w (hx w)
   have hsum :
       IsIntegral (absoluteValueCompletionIntegers vK hvK)
         (∑ w : AbsoluteValueExtension vK L,
@@ -364,7 +347,7 @@ theorem isIntegral_trace_tensor_of_components
     (fun w : AbsoluteValueExtension vK L => w.1.Completion) y] at hsum
   rw [Algebra.trace_eq_of_algEquiv
     (completionTensorDecomposition_left
-      (K := K) (L := L) vK hvK0) x] at hsum
+        vK hvK0) x] at hsum
   exact hsum
 
 end

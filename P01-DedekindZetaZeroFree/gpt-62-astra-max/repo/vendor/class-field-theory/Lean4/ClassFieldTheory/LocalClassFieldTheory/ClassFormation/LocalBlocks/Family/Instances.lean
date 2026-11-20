@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -50,19 +47,20 @@ structure LocalPlaceDatum where
 
 variable {K L}
 
+section
+
+variable {ι : Type w} (d : ι → LocalPlaceDatum K L)
+
 /-- Product of the local blocks attached to a family of chosen places. -/
-abbrev LocalBlockFamily {ι : Type w}
-    (d : ι → LocalPlaceDatum K L) :=
+abbrev LocalBlockFamily :=
   ∀ i, LocalPlaceBlock
     (d i).base (d i).base_isNontrivial
     (d i).extension
 
-
 /-- Canonical componentwise decomposition-group action for a local-block
 family. -/
 @[reducible]
-noncomputable def localBlockFamilyLocalAction
-    {ι : Type w} (d : ι → LocalPlaceDatum K L) :
+noncomputable def localBlockFamilyLocalAction :
     ∀ i, MulDistribMulAction
       (absoluteValueDecompositionGroup K (d i).extension.1)
       (LocalizedCompletion
@@ -71,6 +69,8 @@ noncomputable def localBlockFamilyLocalAction
     decompositionGroupLocalUnitsAction
       (d i).base (d i).base_isNontrivial
       (d i).extension
+
+end
 
 /-- Canonical induced action on every local block in a family. -/
 @[reducible]

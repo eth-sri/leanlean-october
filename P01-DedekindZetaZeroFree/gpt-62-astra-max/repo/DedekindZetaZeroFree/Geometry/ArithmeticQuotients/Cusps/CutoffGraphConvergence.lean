@@ -9,9 +9,13 @@ open scoped Classical NumberField ContDiff
 open MeasureTheory Filter
 namespace DedekindZetaZeroFree.KPCuspCutoffGraphApproximation
 
-theorem coordinateDerivative_mul (d : ℕ) (i : Fin d) (k : Fin 3)
-    (f g : HyperbolicChart.Space d → ℂ)
-    (hf : Differentiable ℝ f) (hg : Differentiable ℝ g) (p : HyperbolicChart.Space d) :
+section
+
+variable (d : ℕ) (i : Fin d) (k : Fin 3) (f g : HyperbolicChart.Space d → ℂ) (hf : Differentiable ℝ f)
+    (hg : Differentiable ℝ g)
+
+include hf hg in
+theorem coordinateDerivative_mul (p : HyperbolicChart.Space d) :
     HyperbolicChart.coordinateDerivative d i k (fun q => f q * g q) p =
       f p * HyperbolicChart.coordinateDerivative d i k g p +
         g p * HyperbolicChart.coordinateDerivative d i k f p := by
@@ -19,9 +23,8 @@ theorem coordinateDerivative_mul (d : ℕ) (i : Fin d) (k : Fin 3)
     (fun A : HyperbolicChart.Space d →L[ℝ] ℂ => A (HyperbolicChart.coordinateVector d i k))
     ((hf p).hasFDerivAt.mul (hg p).hasFDerivAt).fderiv
 
-theorem coordinateDerivative_add (d : ℕ) (i : Fin d) (k : Fin 3)
-    (f g : HyperbolicChart.Space d → ℂ)
-    (hf : Differentiable ℝ f) (hg : Differentiable ℝ g) :
+include hf hg in
+theorem coordinateDerivative_add :
     HyperbolicChart.coordinateDerivative d i k (fun q => f q + g q) =
       fun q => HyperbolicChart.coordinateDerivative d i k f q +
         HyperbolicChart.coordinateDerivative d i k g q := by
@@ -33,14 +36,20 @@ theorem coordinateDerivative_add (d : ℕ) (i : Fin d) (k : Fin 3)
   rw [((hf p).hasFDerivAt.add (hg p).hasFDerivAt).fderiv]
   rfl
 
-theorem differentiable_coordinateDerivative (d : ℕ) (i : Fin d) (k : Fin 3)
+end
+
+section
+
+variable (d : ℕ) (i : Fin d) (k : Fin 3)
+
+theorem differentiable_coordinateDerivative
     (f : HyperbolicChart.Space d → ℂ) (hf : ContDiff ℝ ∞ f) :
     Differentiable ℝ (HyperbolicChart.coordinateDerivative d i k f) := by
   have : ContDiff ℝ ∞ (HyperbolicChart.coordinateDerivative d i k f) :=
     (hf.fderiv_right (by simp)).clm_apply contDiff_const
   exact this.differentiable (by simp)
 
-theorem coordinateDerivative_mul2 (d : ℕ) (i : Fin d) (k : Fin 3)
+theorem coordinateDerivative_mul2
     (f g : HyperbolicChart.Space d → ℂ)
     (hf : ContDiff ℝ ∞ f) (hg : ContDiff ℝ ∞ g) (p : HyperbolicChart.Space d) :
     HyperbolicChart.coordinateDerivative d i k
@@ -51,11 +60,11 @@ theorem coordinateDerivative_mul2 (d : ℕ) (i : Fin d) (k : Fin 3)
           (HyperbolicChart.coordinateDerivative d i k f) p +
       2 * HyperbolicChart.coordinateDerivative d i k f p *
         HyperbolicChart.coordinateDerivative d i k g p := by
-  have hfm : Differentiable ℝ f := hf.differentiable (by simp)
-  have hgm : Differentiable ℝ g := hg.differentiable (by simp)
-  have hdf : Differentiable ℝ (HyperbolicChart.coordinateDerivative d i k f) :=
+  have hfm := hf.differentiable (by simp)
+  have hgm := hg.differentiable (by simp)
+  have hdf :=
     differentiable_coordinateDerivative d i k f hf
-  have hdg : Differentiable ℝ (HyperbolicChart.coordinateDerivative d i k g) :=
+  have hdg :=
     differentiable_coordinateDerivative d i k g hg
   rw [show HyperbolicChart.coordinateDerivative d i k
         (HyperbolicChart.coordinateDerivative d i k (fun q => f q * g q)) p
@@ -74,17 +83,21 @@ theorem coordinateDerivative_mul2 (d : ℕ) (i : Fin d) (k : Fin 3)
     coordinateDerivative_mul d i k g (HyperbolicChart.coordinateDerivative d i k f) hgm hdf p]
   ring
 
+end
+
 def rawPairing (d : ℕ) (U W : HyperbolicChart.Cotangent d) : ℂ :=
   ∑ i, ∑ k, U i k * W i k
 
-theorem laplacian_mul (d : ℕ) (f g : HyperbolicChart.Space d → ℂ)
+section
+
+variable (d : ℕ) (f g : HyperbolicChart.Space d → ℂ)
+
+theorem laplacian_mul
     (hf : ContDiff ℝ ∞ f) (hg : ContDiff ℝ ∞ g) (p : HyperbolicChart.Space d) :
     HyperbolicChart.laplacian d (fun q => f q * g q) p =
       f p * HyperbolicChart.laplacian d g p + g p * HyperbolicChart.laplacian d f p -
       2 * rawPairing d (HyperbolicChart.differential d f p)
         (HyperbolicChart.differential d g p) := by
-  have hfm : Differentiable ℝ f := hf.differentiable (by simp)
-  have hgm : Differentiable ℝ g := hg.differentiable (by simp)
   simp only [HyperbolicChart.laplacian, HyperbolicChart.differential, rawPairing,
     Fin.sum_univ_three, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
     Matrix.vecHead, Matrix.vecTail, Matrix.empty_eq, Fin.zero_eta]
@@ -94,20 +107,20 @@ theorem laplacian_mul (d : ℕ) (f g : HyperbolicChart.Space d → ℂ)
   rw [← Finset.sum_sub_distrib]
   refine Finset.sum_congr rfl fun i _ => ?_
   rw [coordinateDerivative_mul2 d i 2 f g hf hg p,
-      coordinateDerivative_mul d i 2 f g hfm hgm p,
+      coordinateDerivative_mul d i 2 f g (hf.differentiable (by simp)) (hg.differentiable (by simp)) p,
       coordinateDerivative_mul2 d i 0 f g hf hg p,
       coordinateDerivative_mul2 d i 1 f g hf hg p]
-  have hexp : (↑(Real.exp (2 * p.ofLp (i, 2))) : ℂ) =
-      (↑(Real.exp (p.ofLp (i, 2))) : ℂ) ^ 2 := by
-    rw [show (2 : ℝ) * p.ofLp (i, 2) = p.ofLp (i, 2) + p.ofLp (i, 2) by ring, Real.exp_add]
+  let ofLp₀ := p.ofLp (i, 2)
+  have hexp : (↑(Real.exp (2 * ofLp₀)) : ℂ) =
+      (↑(Real.exp (ofLp₀)) : ℂ) ^ 2 := by
+    rw [show (2 : ℝ) * ofLp₀ = ofLp₀ + ofLp₀ by ring, Real.exp_add]
     push_cast; ring
   rw [hexp]
   simp only [Function.comp_apply, Fin.succ_zero_eq_one, Matrix.cons_val_one, Matrix.cons_val_zero,
     Matrix.head_cons]
   ring
 
-theorem cutoff_hyperbolic_laplacian_error_bound (d : ℕ)
-    (f g : HyperbolicChart.Space d → ℂ)
+theorem cutoff_hyperbolic_laplacian_error_bound
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hg : ContDiff ℝ (⊤ : ℕ∞) g)
     (p : HyperbolicChart.Space d) :
     ‖HyperbolicChart.laplacian d (fun q => f q * g q) p -
@@ -138,7 +151,7 @@ theorem cutoff_hyperbolic_laplacian_error_bound (d : ℕ)
         HyperbolicChart.differential d f p i k * HyperbolicChart.differential d g p i k‖ :=
         norm_sum_le _ _
       _ ≤ _ := Finset.sum_le_sum fun i hi => by
-        simpa only [norm_mul] using norm_sum_le Finset.univ
+        simpa using norm_sum_le Finset.univ
           (fun k : Fin 3 => HyperbolicChart.differential d f p i k * HyperbolicChart.differential d g p i k)
   calc
     _ ≤ ‖g p * HyperbolicChart.laplacian d f p‖ +
@@ -149,6 +162,8 @@ theorem cutoff_hyperbolic_laplacian_error_bound (d : ℕ)
         HyperbolicChart.differential d f p i k * HyperbolicChart.differential d g p i k‖ := by
       simp [norm_mul]
     _ ≤ _ := by nlinarith [hn.trans hcs]
+
+end
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
   (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)

@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -98,7 +96,6 @@ def residueFrobeniusToLimit :
       rw [show
         (inferInstance : TopologicalSpace (E.unop ≃ₐ[k] E.unop)) =
           krullTopology k E.unop by
-        change (⊥ : TopologicalSpace (E.unop ≃ₐ[k] E.unop)) = krullTopology k E.unop
         exact (@DiscreteTopology.eq_bot _ (krullTopology k E.unop) inferInstance).symm]
       exact hcontinuous E
 
@@ -124,10 +121,9 @@ theorem restrictNormalHom_residueAbsoluteFrobenius
     (z : ZHatMul) (E : FiniteGaloisIntermediateField k Omega) :
     AlgEquiv.restrictNormalHom E (residueAbsoluteFrobenius k Omega z) =
       finiteResidueFrobeniusIntermediate k Omega E z := by
-  have hcomponent := congrArg (fun q => q.val (op E))
+  exact congrArg (fun q => q.val (op E))
     ((InfiniteGalois.continuousMulEquivToLimit k Omega).apply_symm_apply
       (residueFrobeniusToLimit k Omega z))
-  exact hcomponent
 
 /-- The element `1 ∈ ℤ̂` gives the actual arithmetic Frobenius on every
 finite Galois residue subextension. -/
@@ -152,16 +148,13 @@ theorem restrictNormalHom_frobeniusAlgEquivOfAlgebraic
   intro x
   apply (algebraMap E Omega).injective
   calc
-    algebraMap E Omega
-        ((AlgEquiv.restrictNormalHom E
-          (FiniteField.frobeniusAlgEquivOfAlgebraic k Omega)) x) =
+    _ =
         FiniteField.frobeniusAlgEquivOfAlgebraic k Omega
           (algebraMap E Omega x) :=
       AlgEquiv.restrictNormal_commutes
         (FiniteField.frobeniusAlgEquivOfAlgebraic k Omega) E x
     _ = algebraMap E Omega
         (FiniteField.frobeniusAlgEquivOfAlgebraic k E x) := by
-      simp only [FiniteField.coe_frobeniusAlgEquivOfAlgebraic]
       exact (map_pow (algebraMap E Omega) x (Fintype.card k)).symm
 
 /-- The distinguished element `1 ∈ ℤ̂` acts on the whole algebraic Galois

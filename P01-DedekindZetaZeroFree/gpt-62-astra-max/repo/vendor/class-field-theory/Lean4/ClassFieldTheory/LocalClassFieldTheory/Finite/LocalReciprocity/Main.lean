@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -120,9 +115,7 @@ theorem localArtinMonoidHom_ker :
     rw [(abelianizationEquivNormQuotient K L).apply_symm_apply, map_one] at hx'
     exact (normClass_eq_one_iff_mem K L x).mp hx'
   · intro hx
-    have hq : normClass K L x = 1 :=
-      (normClass_eq_one_iff_mem K L x).2 hx
-    rw [hq, map_one]
+    rw [((normClass_eq_one_iff_mem K L x).2 hx), map_one]
 
 end
 end LocalClassFieldTheory

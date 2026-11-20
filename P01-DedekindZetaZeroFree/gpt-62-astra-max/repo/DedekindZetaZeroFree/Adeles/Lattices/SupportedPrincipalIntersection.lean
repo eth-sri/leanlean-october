@@ -22,8 +22,6 @@ theorem principal_mem_supported_iff (x : Fˣ) :
     IdeleGroup.principalIdele F x ∈ IdeleGroup.supportedAt (K := F)
       (A.Sf : Set (HeightOneSpectrum (𝓞 F))) ↔ x ∈ A.U := by
   rw [IdeleGroup.mem_supportedAt_iff]
-  change (∀ v : HeightOneSpectrum (𝓞 F), v ∉ A.Sf → _) ↔
-    ∀ v : HeightOneSpectrum (𝓞 F), v ∉ A.Sf → v.valuation F (x : F) = 1
   apply forall_congr'
   intro v
   apply forall_congr'
@@ -34,19 +32,13 @@ theorem principal_mem_supported_iff (x : Fˣ) :
     Algebra.algebraMap_self_apply, v.valuedAdicCompletion_eq_valuation']
 
 theorem principal_mem_H_iff (x : Fˣ) :
-    A.principalNormOne x ∈ A.H ↔ x ∈ A.U := by
-  exact A.principal_mem_supported_iff x
+    A.principalNormOne x ∈ A.H ↔ x ∈ A.U := A.principal_mem_supported_iff x
 
 def principalSupported : A.U →* A.H :=
   (A.principalNormOne.comp A.U.subtype).codRestrict _ fun u =>
     (A.principal_mem_H_iff u.val).2 u.prop
 
-theorem diagonal_norm_one (u : A.U) : A.norm (A.diagonal u.val) = 1 := by
-  have h := A.sCoordinatesRaw_norm (IdeleGroup.principalIdele F u.val)
-    ((A.principal_mem_supported_iff u.val).2 u.prop)
-  change A.norm (A.diagonal u.val) = _ at h
-  rw [IdeleGroup.absoluteNorm_principalIdele] at h
-  simpa only [Units.val_one, NNReal.coe_one, inv_one] using h
+alias diagonal_norm_one := norm_diagonal_unit
 
 def diagonalS : A.U →* A.G1 :=
   (A.diagonal.comp A.U.subtype).codRestrict _ fun u => A.diagonal_norm_one u
@@ -69,8 +61,6 @@ def L : Subgroup A.G1 := A.diagonalS.range
 theorem Gamma1_eq_sixthPower_image :
     A.Gamma1 = A.unitSixthPowers.map A.diagonalS := by
   ext g
-  change g.val ∈ (A.U.map (powMonoidHom 6)).map A.diagonal ↔
-    g ∈ A.unitSixthPowers.map A.diagonalS
   simp only [Subgroup.mem_map]
   constructor
   · rintro ⟨x, ⟨u, hu, hux⟩, hxg⟩
@@ -78,7 +68,6 @@ theorem Gamma1_eq_sixthPower_image :
     refine ⟨u' ^ 6, ?_, ?_⟩
     · exact ⟨u', rfl⟩
     · apply Subtype.ext
-      change A.diagonal (u ^ 6) = g.val
       exact (congrArg A.diagonal hux).trans hxg
   · rintro ⟨u, ⟨v, hv⟩, hug⟩
     refine ⟨u.val, ⟨v.val, v.prop, ?_⟩, ?_⟩
@@ -96,12 +85,10 @@ def principalIntersection : Subgroup A.H :=
 theorem principalIntersection_eq_range :
     A.principalIntersection = A.principalSupported.range := by
   ext a
-  change a.val.val ∈ (IdeleGroup.principalIdele F).range ↔
-    a ∈ A.principalSupported.range
   constructor
   · rintro ⟨x, hx⟩
     have hxH : A.principalNormOne x ∈ A.H := by
-      change IdeleGroup.principalIdele F x ∈ IdeleGroup.supportedAt (K := F) _
+      change IdeleGroup.principalIdele F x ∈ IdeleGroup.supportedAt _
       rw [hx]
       exact a.prop
     refine ⟨⟨x, (A.principal_mem_H_iff x).1 hxH⟩, ?_⟩
@@ -111,23 +98,21 @@ theorem principalIntersection_eq_range :
   · rintro ⟨u, rfl⟩
     exact ⟨u.val, rfl⟩
 
-theorem supportedChart_principal
-    (e : A.H ≃ₜ* (A.G1 × A.C))
-    (he : ∀ a : A.H, (e a).1.val = A.sCoordinatesRaw a.1.1 ∧
-      (e a).2 = A.exteriorCoordinates a) (u : A.U) :
+variable (e : A.H ≃ₜ* (A.G1 × A.C))
+    (he : ∀ a : A.H, (e a).1.val = A.sCoordinatesRaw a.1.1 ∧ (e a).2 = A.exteriorCoordinates a)
+
+include he in
+theorem supportedChart_principal (u : A.U) :
     e (A.principalSupported u) = A.unitGraph u := by
   apply Prod.ext
   · apply Subtype.ext
     exact (he (A.principalSupported u)).1
   · exact (he (A.principalSupported u)).2
 
-theorem principalIntersection_map_supportedChart
-    (e : A.H ≃ₜ* (A.G1 × A.C))
-    (he : ∀ a : A.H, (e a).1.val = A.sCoordinatesRaw a.1.1 ∧
-      (e a).2 = A.exteriorCoordinates a) :
+include he in
+theorem principalIntersection_map_supportedChart :
     A.principalIntersection.map e.toMonoidHom = A.Lambda := by
   rw [A.principalIntersection_eq_range]
-  change A.principalSupported.range.map e.toMonoidHom = A.unitGraph.range
   rw [MonoidHom.map_range]
   congr 1
   apply MonoidHom.ext

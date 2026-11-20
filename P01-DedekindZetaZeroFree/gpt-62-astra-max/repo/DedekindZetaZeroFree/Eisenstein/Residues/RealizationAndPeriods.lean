@@ -10,8 +10,8 @@ open scoped Classical Topology
 namespace DedekindZetaZeroFree.SharedSource
 open MomentSources EisensteinSmoothGerms
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 
 def realizationScalarContinuation (T : Realization R Q) : ScalarContinuation R Q :=
   ⟨T.E, T.meromorphic, T.chamber⟩

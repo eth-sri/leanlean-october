@@ -20,15 +20,6 @@ structure CorrectedWeilExtension (A : SArithmeticData F) (H : A.V → A.V → F�
   unramified : A.IdeleCharacterUnramifiedOutside G
   infinity : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
     A.ideleInfiniteComponent G w z = 1
-  stabilized : ∀ (v : {v // v ∈ A.Sf}) (a : (v.val.adicCompletion F)ˣ),
-    A.FiniteQuadraticStabilizes v.val a
-  normalizer_ne_zero : ∀ v : {v // v ∈ A.Sf}, A.finiteGamma v.val 1 ≠ 0
-  structural : A.WeilSStructuralLaws H σ A.complexWeilPhase
-    (fun v => A.finiteWeilPhase v.val)
-  local_recipe : ∀ (y : A.G), QuotientGroup.mk' A.sixthPowers y ∈ B →
-    (A.ideleSInverseProduct G y : ℂ) =
-      (σ (((A.H_S (A.diagonal CubicWeilCorrection.fourS) y : Fˣ) : F)))⁻¹ *
-        A.weilSCorrection A.complexWeilPhase (fun v => A.finiteWeilPhase v.val) y
   prime : ∀ (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F))
     (hIv : I.val = v.asIdeal) (p : A.R) (hp : A.Generates I p)
     (a : Fˣ) (ha : A.IsAllowed B a) (hap : (a : F) = (p : F))

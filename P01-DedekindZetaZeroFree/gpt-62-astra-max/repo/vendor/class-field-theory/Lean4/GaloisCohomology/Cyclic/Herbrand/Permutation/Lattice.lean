@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -80,24 +76,7 @@ theorem coordinatePermutation_inv
     (σ : Equiv.Perm ι) :
     coordinatePermutation σ⁻¹ =
       (coordinatePermutation σ).symm := by
-  rw [show σ⁻¹ = σ.symm from rfl]
-  ext x i
   rfl
-
-@[simp]
-theorem coordinatePermutation_single
-    [DecidableEq ι] (σ : Equiv.Perm ι) (i : ι) :
-    coordinatePermutation σ (Pi.single i (1 : ℝ)) =
-      Pi.single (σ i) 1 := by
-  ext j
-  by_cases h : j = σ i
-  · subst j
-    simp
-  · have h' : σ.symm j ≠ i := by
-      intro hij
-      apply h
-      simpa using congrArg σ hij
-    simp [coordinatePermutation_apply, h, h']
 
 section Approximation
 
@@ -108,48 +87,35 @@ fundamental parallelepiped of a chosen lattice basis. -/
 def latticeApproximation
     (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
     [IsZLattice ℝ L] (x : ι → ℝ) : L := by
-  let b : Basis ι ℤ L := IsZLattice.basis L
-  let bℝ : Basis ι ℝ (ι → ℝ) := b.ofZLatticeBasis ℝ L
+  let b := IsZLattice.basis L
+  let bℝ := b.ofZLatticeBasis ℝ L
   refine ⟨ZSpan.floor bℝ x, ?_⟩
-  let z : ι → ℝ := (ZSpan.floor bℝ x).1
-  change z ∈ L
+  let z := (ZSpan.floor bℝ x).1
   rw [← b.ofZLatticeBasis_span ℝ]
   exact (ZSpan.floor bℝ x).property
 
+variable (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L] [IsZLattice ℝ L]
+
 /-- A uniform approximation radius for the canonical lattice
 approximation. -/
-def latticeApproximationRadius
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L] : ℝ :=
+def latticeApproximationRadius : ℝ :=
   let b : Basis ι ℤ L := IsZLattice.basis L
   let bℝ : Basis ι ℝ (ι → ℝ) := b.ofZLatticeBasis ℝ L
   ∑ i, ‖bℝ i‖
 
-theorem latticeApproximationRadius_nonneg
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L] :
+theorem latticeApproximationRadius_nonneg :
     0 ≤ latticeApproximationRadius L := by
-  unfold latticeApproximationRadius
   exact Finset.sum_nonneg fun _ _ ↦ norm_nonneg _
 
-theorem norm_sub_latticeApproximation_le
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L] (x : ι → ℝ) :
+theorem norm_sub_latticeApproximation_le (x : ι → ℝ) :
     ‖x - (latticeApproximation L x : ι → ℝ)‖ ≤
       latticeApproximationRadius L := by
-  let b : Basis ι ℤ L := IsZLattice.basis L
-  let bℝ : Basis ι ℝ (ι → ℝ) := b.ofZLatticeBasis ℝ L
-  simpa only [latticeApproximation, latticeApproximationRadius,
-    ZSpan.fract] using ZSpan.norm_fract_le bℝ x
+  apply ZSpan.norm_fract_le
 
-theorem abs_latticeApproximation_sub_apply_le
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L] (x : ι → ℝ) (i : ι) :
+theorem abs_latticeApproximation_sub_apply_le (x : ι → ℝ) (i : ι) :
     |(latticeApproximation L x : ι → ℝ) i - x i| ≤
       latticeApproximationRadius L := by
-  have hcoord :
-      ‖(x - (latticeApproximation L x : ι → ℝ)) i‖ ≤
-        ‖x - (latticeApproximation L x : ι → ℝ)‖ :=
+  have hcoord :=
     norm_le_pi_norm (x - (latticeApproximation L x : ι → ℝ)) i
   rw [Pi.sub_apply, Real.norm_eq_abs, abs_sub_comm] at hcoord
   exact hcoord.trans (norm_sub_latticeApproximation_le L x)
@@ -176,7 +142,7 @@ theorem permutationRepresentation_one
   change coordinatePermutation (ρ 1) =
     LinearEquiv.refl ℝ (ι → ℝ)
   rw [map_one]
-  exact coordinatePermutation_refl
+  rfl
 
 omit [Fintype G] [Fintype ι] [DecidableEq ι] in
 theorem permutationRepresentation_mul
@@ -185,7 +151,7 @@ theorem permutationRepresentation_mul
       (permutationRepresentation ρ h).trans
         (permutationRepresentation ρ g) := by
   simp only [permutationRepresentation, map_mul]
-  exact coordinatePermutation_mul _ _
+  apply coordinatePermutation_mul
 
 /-- Restrict a permutation representation to an invariant lattice. -/
 def permutationLatticeEquiv
@@ -254,16 +220,6 @@ def permutationLatticeScale
   ((Fintype.card ι : ℝ) + 1) *
       latticeApproximationRadius L + 1
 
-omit [DecidableEq ι] in
-theorem permutationLatticeScale_pos
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L] :
-    0 < permutationLatticeScale L := by
-  have hB := latticeApproximationRadius_nonneg L
-  have hs : 0 ≤ (Fintype.card ι : ℝ) := by positivity
-  unfold permutationLatticeScale
-  nlinarith
-
 @[simp]
 theorem averagedLatticeVector_apply
     (ρ : G →* Equiv.Perm ι)
@@ -308,33 +264,29 @@ theorem averagingSummand_offDiagonal_bound
     abs_latticeApproximation_sub_apply_le L
       (t • Pi.single ((ρ g).symm i) (1 : ℝ))
       ((ρ g).symm j)
-  have hne : (ρ g).symm j ≠ (ρ g).symm i :=
+  have hne :=
     (ρ g).symm.injective.ne hji
   simpa [hne] using h
 
+section
+
+variable (ρ : G →* Equiv.Perm ι) (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L] [IsZLattice ℝ L]
+    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L → permutationRepresentation ρ g x ∈ L)
+
 theorem averagedLatticeVector_diagonal_bound
-    (ρ : G →* Equiv.Perm ι)
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L)
     (t : ℝ) (i : ι) :
     |(averagedLatticeVector ρ L hL t i : ι → ℝ) i -
         (Fintype.card G : ℝ) * t| ≤
       (Fintype.card G : ℝ) *
         latticeApproximationRadius L := by
-  rw [averagedLatticeVector_apply]
-  let a : G → ℝ := fun g ↦
+  simp
+  let a := fun g ↦
     (latticeApproximation L
       (t • Pi.single ((ρ g).symm i) (1 : ℝ)) :
         ι → ℝ) ((ρ g).symm i)
-  change |(∑ g : G, a g) -
-    (Fintype.card G : ℝ) * t| ≤
-      (Fintype.card G : ℝ) *
-        latticeApproximationRadius L
   have ha (g : G) :
       |a g - t| ≤ latticeApproximationRadius L := by
-    simpa only [a] using
+    simpa using
       averagingSummand_diagonal_bound ρ L t g i
   have heq :
       (∑ g : G, a g) -
@@ -344,7 +296,7 @@ theorem averagedLatticeVector_diagonal_bound
     simp
   rw [heq]
   calc
-    |∑ g : G, (a g - t)| ≤
+    _ ≤
         ∑ g : G, |a g - t| :=
       Finset.abs_sum_le_sum_abs _ _
     _ ≤ ∑ _g : G, latticeApproximationRadius L :=
@@ -353,30 +305,22 @@ theorem averagedLatticeVector_diagonal_bound
         latticeApproximationRadius L := by simp
 
 theorem averagedLatticeVector_offDiagonal_bound
-    (ρ : G →* Equiv.Perm ι)
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L)
     (t : ℝ) {i j : ι} (hji : j ≠ i) :
     |(averagedLatticeVector ρ L hL t i : ι → ℝ) j| ≤
       (Fintype.card G : ℝ) *
         latticeApproximationRadius L := by
-  rw [averagedLatticeVector_apply]
-  let a : G → ℝ := fun g ↦
+  simp
+  let a := fun g ↦
     (latticeApproximation L
       (t • Pi.single ((ρ g).symm i) (1 : ℝ)) :
         ι → ℝ) ((ρ g).symm j)
-  change |∑ g : G, a g| ≤
-    (Fintype.card G : ℝ) *
-      latticeApproximationRadius L
   have ha (g : G) :
       |a g| ≤ latticeApproximationRadius L := by
-    simpa only [a] using
+    simpa using
       averagingSummand_offDiagonal_bound
         ρ L t g hji
   calc
-    |∑ g : G, a g| ≤ ∑ g : G, |a g| :=
+    _ ≤ ∑ g : G, |a g| :=
       Finset.abs_sum_le_sum_abs _ _
     _ ≤ ∑ _g : G, latticeApproximationRadius L :=
       Finset.sum_le_sum fun g _ ↦ ha g
@@ -386,22 +330,12 @@ theorem averagedLatticeVector_offDiagonal_bound
 /-- The coordinate matrix whose columns are the averaged lattice
 vectors. -/
 def averagedLatticeMatrix
-    (ρ : G →* Equiv.Perm ι)
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L)
     (t : ℝ) : Matrix ι ι ℝ :=
   fun row column ↦
     (averagedLatticeVector ρ L hL t column :
       ι → ℝ) row
 
-theorem averagedLatticeMatrix_sum_col_lt_diag
-    (ρ : G →* Equiv.Perm ι)
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L) :
+theorem averagedLatticeMatrix_sum_col_lt_diag :
     ∀ k : ι,
       ∑ j ∈ Finset.univ.erase k,
           ‖averagedLatticeMatrix ρ L hL
@@ -409,7 +343,7 @@ theorem averagedLatticeMatrix_sum_col_lt_diag
         ‖averagedLatticeMatrix ρ L hL
             (permutationLatticeScale L) k k‖ := by
   intro k
-  let B : ℝ := latticeApproximationRadius L
+  let B := latticeApproximationRadius L
   let n : ℝ := Fintype.card G
   let s : ℝ := Fintype.card ι
   let t : ℝ := permutationLatticeScale L
@@ -466,32 +400,21 @@ theorem averagedLatticeMatrix_sum_col_lt_diag
         ‖averagedLatticeMatrix ρ L hL
           (permutationLatticeScale L) j k‖ =
         ∑ j ∈ Finset.univ.erase k,
-          ‖averagedLatticeMatrix ρ L hL t j k‖ := by rfl
+          ‖averagedLatticeMatrix ρ L hL t j k‖ := rfl
     _ ≤ s * E := hsum
     _ < n * t - E := hnumeric
     _ ≤ |averagedLatticeMatrix ρ L hL t k k| :=
       hdiagLower
     _ = ‖averagedLatticeMatrix ρ L hL
-        (permutationLatticeScale L) k k‖ := by
-      rfl
+        (permutationLatticeScale L) k k‖ := rfl
 
-theorem averagedLatticeMatrix_det_ne_zero
-    (ρ : G →* Equiv.Perm ι)
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L) :
+theorem averagedLatticeMatrix_det_ne_zero :
     (averagedLatticeMatrix ρ L hL
       (permutationLatticeScale L)).det ≠ 0 :=
   det_ne_zero_of_sum_col_lt_diag
     (averagedLatticeMatrix_sum_col_lt_diag ρ L hL)
 
-theorem averagedLatticeVector_linearIndependent
-    (ρ : G →* Equiv.Perm ι)
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L) :
+theorem averagedLatticeVector_linearIndependent :
     LinearIndependent ℝ
       (fun i ↦
         (averagedLatticeVector ρ L hL
@@ -507,11 +430,6 @@ theorem averagedLatticeVector_linearIndependent
   simpa only [averagedLatticeMatrix] using hcols
 
 theorem averagedLatticeVector_equivariant
-    (ρ : G →* Equiv.Perm ι)
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L)
     (t : ℝ) (g : G) (i : ι) :
     permutationLatticeEquiv ρ L hL g
         (averagedLatticeVector ρ L hL t i) =
@@ -522,11 +440,11 @@ theorem averagedLatticeVector_equivariant
   simp only [coe_permutationLatticeEquiv,
     permutationRepresentation, coordinatePermutation_apply,
     averagedLatticeVector_apply]
-  let F : G → ℝ := fun h ↦
+  let F := fun h ↦
       (latticeApproximation L
         (t • Pi.single ((ρ h).symm i) (1 : ℝ)) :
           ι → ℝ) ((ρ h).symm ((ρ g).symm j))
-  let H : G → ℝ := fun k ↦
+  let H := fun k ↦
       (latticeApproximation L
         (t • Pi.single ((ρ k).symm (ρ g i)) (1 : ℝ)) :
           ι → ℝ) ((ρ k).symm j)
@@ -543,38 +461,28 @@ theorem averagedLatticeVector_equivariant
       simp [map_mul]
     rw [hindex, hcoordinate]
   calc
-    ∑ h : G, F h = ∑ h : G, H (g * h) := by
-      exact Finset.sum_congr rfl fun h _ ↦ hterm h
-    _ = ∑ k : G, H k := by
-      exact Fintype.sum_bijective (g * ·)
+    _ = ∑ h : G, H (g * h) := Finset.sum_congr rfl fun h _ ↦ hterm h
+    _ = ∑ k : G, H k := Fintype.sum_bijective (g * ·)
         (Group.mulLeft_bijective g) (fun h ↦ H (g * h)) H
         fun _ ↦ rfl
 
 /-- The complete sublattice generated by the equivariantly averaged
 vectors. -/
-def permutationSublattice
-    (ρ : G →* Equiv.Perm ι)
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L) :
+def permutationSublattice :
     Submodule ℤ (ι → ℝ) :=
   Submodule.span ℤ
     (Set.range fun i ↦
       (averagedLatticeVector ρ L hL
         (permutationLatticeScale L) i : ι → ℝ))
 
-theorem permutationSublattice_le
-    (ρ : G →* Equiv.Perm ι)
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L) :
+theorem permutationSublattice_le :
     permutationSublattice ρ L hL ≤ L := by
   apply Submodule.span_le.mpr
   rintro _ ⟨i, rfl⟩
   exact (averagedLatticeVector ρ L hL
     (permutationLatticeScale L) i).property
+
+end
 
 instance permutationSublattice_discreteTopology
     (ρ : G →* Equiv.Perm ι)
@@ -601,18 +509,12 @@ theorem permutationSublattice_span_eq_top
     Submodule.span ℝ
         (permutationSublattice ρ L hL :
           Set (ι → ℝ)) = ⊤ := by
-  let w : ι → (ι → ℝ) := fun i ↦
+  let w := fun i ↦
     (averagedLatticeVector ρ L hL
       (permutationLatticeScale L) i : ι → ℝ)
-  have hw :
-      LinearIndependent ℝ w :=
-    averagedLatticeVector_linearIndependent ρ L hL
-  have hwspan :
-      Submodule.span ℝ (Set.range w) = ⊤ :=
-    hw.span_eq_top_of_card_eq_finrank'
-      (Module.finrank_fintype_fun_eq_card ℝ).symm
-  rw [eq_top_iff, ← hwspan]
-  apply Submodule.span_mono (R := ℝ)
+  rw [eq_top_iff, ← ((averagedLatticeVector_linearIndependent ρ L hL).span_eq_top_of_card_eq_finrank'
+    (Module.finrank_fintype_fun_eq_card ℝ).symm)]
+  apply Submodule.span_mono
   rintro _ ⟨i, rfl⟩
   exact Submodule.subset_span ⟨i, rfl⟩
 
@@ -625,82 +527,32 @@ instance permutationSublattice_isZLattice
     IsZLattice ℝ (permutationSublattice ρ L hL) where
   span_top := permutationSublattice_span_eq_top ρ L hL
 
+variable (ρ : G →* Equiv.Perm ι) (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L] [IsZLattice ℝ L]
+    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L → permutationRepresentation ρ g x ∈ L)
+
 /-- The distinguished basis of the permutation-stable sublattice. -/
-def permutationSublatticeBasis
-    (ρ : G →* Equiv.Perm ι)
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L) :
+def permutationSublatticeBasis :
     Basis ι ℤ (permutationSublattice ρ L hL) :=
   Basis.span
     ((averagedLatticeVector_linearIndependent ρ L hL).restrict_scalars' ℤ)
 
 @[simp]
 theorem permutationSublatticeBasis_apply_coe
-    (ρ : G →* Equiv.Perm ι)
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L)
     (i : ι) :
     ((permutationSublatticeBasis ρ L hL i :
         permutationSublattice ρ L hL) : ι → ℝ) =
       averagedLatticeVector ρ L hL
         (permutationLatticeScale L) i := by
-  let hli :=
-    (averagedLatticeVector_linearIndependent
-      ρ L hL).restrict_scalars' ℤ
-  change
-    ((Basis.span hli i :
-      permutationSublattice ρ L hL) : ι → ℝ) =
-        (averagedLatticeVector ρ L hL
-          (permutationLatticeScale L) i : ι → ℝ)
-  exact Basis.coe_span_apply hli i
+  apply Basis.coe_span_apply
 
 theorem permutationSublatticeBasis_permuted
-    (ρ : G →* Equiv.Perm ι)
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L)
     (g : G) (i : ι) :
     permutationRepresentation ρ g
         (permutationSublatticeBasis ρ L hL i :
           ι → ℝ) =
       (permutationSublatticeBasis ρ L hL (ρ g i) :
         ι → ℝ) := by
-  have h :=
-    congrArg (fun x : L ↦ (x : ι → ℝ))
-      (averagedLatticeVector_equivariant
-        ρ L hL (permutationLatticeScale L) g i)
-  simpa only [coe_permutationLatticeEquiv,
-    permutationSublatticeBasis_apply_coe] using h
-
-/-- An invariant complete lattice in a real
-permutation representation contains a complete sublattice with a basis
-permuted in exactly the prescribed way. -/
-theorem exists_complete_permutationSublattice
-    (ρ : G →* Equiv.Perm ι)
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L) :
-    ∃ L' : Submodule ℤ (ι → ℝ),
-      L' ≤ L ∧
-      DiscreteTopology L' ∧
-      Submodule.span ℝ (L' : Set (ι → ℝ)) = ⊤ ∧
-      ∃ b : Basis ι ℤ L',
-        ∀ (g : G) (i : ι),
-          permutationRepresentation ρ g
-              (b i : ι → ℝ) =
-            (b (ρ g i) : ι → ℝ) := by
-  refine ⟨permutationSublattice ρ L hL,
-    permutationSublattice_le ρ L hL,
-    inferInstance,
-    permutationSublattice_span_eq_top ρ L hL,
-    permutationSublatticeBasis ρ L hL, ?_⟩
-  exact permutationSublatticeBasis_permuted ρ L hL
+  simpa using congrArg (fun x : L ↦ (x : ι → ℝ)) (averagedLatticeVector_equivariant ρ L hL (permutationLatticeScale L) g i)
 
 end Averaging
 
@@ -708,137 +560,6 @@ section GeneralPermutationBasis
 
 variable [Fintype G] [Group G] [Fintype ι] [DecidableEq ι]
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-
-omit [Fintype G] in
-theorem basisEquivFunL_symm_coordinatePermutation
-    (b : Basis ι ℝ E)
-    (ρ : G →* Equiv.Perm ι)
-    (α : G →* (E ≃ₗ[ℝ] E))
-    (hb : ∀ (g : G) (i : ι),
-      α g (b i) = b (ρ g i))
-    (g : G) (x : ι → ℝ) :
-    b.equivFunL.symm
-        (coordinatePermutation (ρ g) x) =
-      α g (b.equivFunL.symm x) := by
-  have hmaps :
-      b.equivFunL.symm.toLinearMap.comp
-          (coordinatePermutation (ρ g)).toLinearMap =
-        (α g).toLinearMap.comp
-          b.equivFunL.symm.toLinearMap := by
-    apply (Pi.basisFun ℝ ι).ext
-    intro i
-    simp only [LinearMap.comp_apply, Pi.basisFun_apply]
-    have hsingle (j : ι) :
-        b.equivFunL.symm (Pi.single j 1) = b j := by
-      exact _root_.Basis.equivFun_symm_single b j
-    calc
-      b.equivFunL.symm
-          (coordinatePermutation (ρ g)
-            (Pi.single i 1)) =
-          b.equivFunL.symm
-            (Pi.single (ρ g i) 1) :=
-        congrArg b.equivFunL.symm
-          (coordinatePermutation_single (ρ g) i)
-      _ = b (ρ g i) := hsingle (ρ g i)
-      _ = α g (b i) := (hb g i).symm
-      _ = α g
-          (b.equivFunL.symm (Pi.single i 1)) := by
-        rw [hsingle i]
-  exact LinearMap.congr_fun hmaps x
-
-/-- Invariant formulation: if a finite group acts on a
-finite-dimensional real vector space by permuting a specified basis, every
-invariant complete lattice contains a complete sublattice with a basis
-permuted in the same way. -/
-theorem exists_complete_permutationSublattice_of_basis
-    (b : Basis ι ℝ E)
-    (ρ : G →* Equiv.Perm ι)
-    (α : G →* (E ≃ₗ[ℝ] E))
-    (hb : ∀ (g : G) (i : ι),
-      α g (b i) = b (ρ g i))
-    (L : Submodule ℤ E) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : E), x ∈ L →
-      α g x ∈ L) :
-    ∃ L' : Submodule ℤ E,
-      L' ≤ L ∧
-      DiscreteTopology L' ∧
-      Submodule.span ℝ (L' : Set E) = ⊤ ∧
-      ∃ b' : Basis ι ℤ L',
-        ∀ (g : G) (i : ι),
-          α g (b' i : E) =
-            (b' (ρ g i) : E) := by
-  let e : E ≃L[ℝ] (ι → ℝ) := b.equivFunL
-  let Lc : Submodule ℤ (ι → ℝ) :=
-    ZLattice.comap ℝ L e.symm.toLinearMap
-  let : DiscreteTopology Lc := by
-    dsimp only [Lc]
-    infer_instance
-  let : IsZLattice ℝ Lc := by
-    dsimp only [Lc]
-    infer_instance
-  have hLc :
-      ∀ (g : G) (x : ι → ℝ), x ∈ Lc →
-        permutationRepresentation ρ g x ∈ Lc := by
-    intro g x hx
-    change b.equivFunL.symm
-      (coordinatePermutation (ρ g) x) ∈ L
-    rw [basisEquivFunL_symm_coordinatePermutation
-      b ρ α hb]
-    apply hL g
-    exact hx
-  let Lc' : Submodule ℤ (ι → ℝ) :=
-    permutationSublattice ρ Lc hLc
-  let : DiscreteTopology Lc' := by
-    dsimp only [Lc']
-    infer_instance
-  let : IsZLattice ℝ Lc' := by
-    dsimp only [Lc']
-    infer_instance
-  let L' : Submodule ℤ E :=
-    ZLattice.comap ℝ Lc' e.toLinearMap
-  let : DiscreteTopology L' := by
-    dsimp only [L']
-    infer_instance
-  let : IsZLattice ℝ L' := by
-    dsimp only [L']
-    infer_instance
-  let bc : Basis ι ℤ Lc' :=
-    permutationSublatticeBasis ρ Lc hLc
-  let b' : Basis ι ℤ L' :=
-    bc.ofZLatticeComap ℝ Lc' e.toLinearEquiv
-  have hle : L' ≤ L := by
-    intro x hx
-    have hxc' : e x ∈ Lc' := hx
-    have hxc : e x ∈ Lc :=
-      permutationSublattice_le ρ Lc hLc hxc'
-    change e.symm (e x) ∈ L at hxc
-    simpa using hxc
-  refine ⟨L', hle, inferInstance,
-    IsZLattice.span_top, b', ?_⟩
-  intro g i
-  have hcoord :=
-    permutationSublatticeBasis_permuted
-      ρ Lc hLc g i
-  have hintertwine :=
-    basisEquivFunL_symm_coordinatePermutation
-      b ρ α hb g (bc i : ι → ℝ)
-  have hcoord' :
-      coordinatePermutation (ρ g) (bc i : ι → ℝ) =
-        (bc (ρ g i) : ι → ℝ) := by
-    simpa only [permutationRepresentation, bc] using hcoord
-  change
-    α g (e.symm (bc i : ι → ℝ)) =
-      e.symm (bc (ρ g i) : ι → ℝ)
-  calc
-    α g (e.symm (bc i : ι → ℝ)) =
-        b.equivFunL.symm
-          (coordinatePermutation (ρ g)
-            (bc i : ι → ℝ)) := hintertwine.symm
-    _ = b.equivFunL.symm
-        (bc (ρ g i) : ι → ℝ) :=
-      congrArg b.equivFunL.symm hcoord'
-    _ = e.symm (bc (ρ g i) : ι → ℝ) := rfl
 
 end GeneralPermutationBasis
 
@@ -856,24 +577,20 @@ theorem finite_quotient_of_complete_sublattice
     [DiscreteTopology L'] [IsZLattice ℝ L']
     (hL' : L' ≤ L) :
     Finite (L ⧸ L'.comap L.subtype) := by
-  let N : Submodule ℤ L := L'.comap L.subtype
-  let e : N ≃ₗ[ℤ] L' :=
-    Submodule.comapSubtypeEquivOfLe hL'
-  let : Module.Finite ℤ L :=
+  let N := L'.comap L.subtype
+  let :=
     ZLattice.module_finite ℝ L
-  have hrank : Module.finrank ℤ N =
-      Module.finrank ℤ L := by
-    calc
-      Module.finrank ℤ N =
-          Module.finrank ℤ L' :=
-        LinearEquiv.finrank_eq e
-      _ = Module.finrank ℝ E :=
-        ZLattice.rank ℝ L'
-      _ = Module.finrank ℤ L :=
-        (ZLattice.rank ℝ L).symm
-  exact
+  refine
     Submodule.finiteQuotientOfFreeOfRankEq
-      (L'.comap L.subtype) hrank
+      (L'.comap L.subtype) ?_
+  calc
+  Module.finrank ℤ N =
+      Module.finrank ℤ L' :=
+    LinearEquiv.finrank_eq (Submodule.comapSubtypeEquivOfLe hL')
+  _ = Module.finrank ℝ E :=
+    ZLattice.rank ℝ L'
+  _ = Module.finrank ℤ L :=
+    (ZLattice.rank ℝ L).symm
 
 end FiniteIndex
 

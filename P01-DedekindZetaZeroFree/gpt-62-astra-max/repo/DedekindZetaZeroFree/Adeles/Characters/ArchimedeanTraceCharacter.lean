@@ -18,12 +18,12 @@ noncomputable def archCompletionAlgebra {F : Type*} [Field F] [NumberField F]
   classical
   by_cases hv : v.IsReal
   · exact (InfinitePlace.Completion.ringEquivRealOfIsReal hv).symm.toRingHom.toAlgebra
-  · have hw : v.IsComplex := InfinitePlace.not_isReal_iff_isComplex.mp hv
-    exact (((InfinitePlace.Completion.ringEquivComplexOfIsComplex hw).symm.toRingHom).comp
+  · exact (((InfinitePlace.Completion.ringEquivComplexOfIsComplex (InfinitePlace.not_isReal_iff_isComplex.mp hv)).symm.toRingHom).comp
       Complex.ofRealHom).toAlgebra
 
-noncomputable def archTrace {F : Type*} [Field F] [NumberField F]
-    (v : InfinitePlace F) :
+variable {F : Type*} [Field F] [NumberField F] (v : InfinitePlace F)
+
+noncomputable def archTrace :
     letI : Algebra ℝ v.Completion := archCompletionAlgebra v
     v.Completion →ₗ[ℝ] ℝ := by
   classical
@@ -73,8 +73,7 @@ noncomputable def archTrace {F : Type*} [Field F] [NumberField F]
           (InfinitePlace.Completion.ringEquivComplexOfIsComplex
             (InfinitePlace.not_isReal_iff_isComplex.mp hv) z)
 
-theorem continuous_archTrace {F : Type*} [Field F] [NumberField F]
-    (v : InfinitePlace F) : Continuous (archTrace v : v.Completion → ℝ) := by
+theorem continuous_archTrace : Continuous (archTrace v : v.Completion → ℝ) := by
   classical
   by_cases hv : v.IsReal
   · simpa [archTrace, hv] using
@@ -84,34 +83,28 @@ theorem continuous_archTrace {F : Type*} [Field F] [NumberField F]
     exact continuous_const.mul (Complex.continuous_re.comp
       (InfinitePlace.Completion.isometry_extensionEmbedding v).continuous)
 
-noncomputable def archTraceCharacter {F : Type*} [Field F] [NumberField F]
-    (v : InfinitePlace F) : AddChar v.Completion Circle where
+noncomputable def archTraceCharacter : AddChar v.Completion Circle where
   toFun z := Circle.exp (2 * Real.pi * archTrace v z)
   map_zero_eq_one' := by simp
   map_add_eq_mul' := by
     intro x y
     rw [map_add, mul_add, Circle.exp_add]
 
-theorem continuous_archTraceCharacter {F : Type*} [Field F] [NumberField F]
-    (v : InfinitePlace F) : Continuous (archTraceCharacter v : v.Completion → Circle) := by
-  exact Circle.exp.continuous.comp (continuous_const.mul (continuous_archTrace v))
+theorem continuous_archTraceCharacter : Continuous (archTraceCharacter v : v.Completion → Circle) := Circle.exp.continuous.comp (continuous_const.mul (continuous_archTrace v))
 
-theorem archTrace_of_isReal {F : Type*} [Field F] [NumberField F]
-    (v : InfinitePlace F) (hv : v.IsReal) (z : v.Completion) :
+theorem archTrace_of_isReal (hv : v.IsReal) (z : v.Completion) :
     archTrace v z = InfinitePlace.Completion.ringEquivRealOfIsReal hv z := by
   classical
   simp [archTrace, hv]
 
-theorem archTrace_of_isComplex {F : Type*} [Field F] [NumberField F]
-    (v : InfinitePlace F) (hv : v.IsComplex) (z : v.Completion) :
+theorem archTrace_of_isComplex (hv : v.IsComplex) (z : v.Completion) :
     archTrace v z =
       2 * (InfinitePlace.Completion.ringEquivComplexOfIsComplex hv z).re := by
   classical
   simp [archTrace, InfinitePlace.not_isReal_iff_isComplex.mpr hv,
     Algebra.trace_complex_apply]
 
-theorem archTraceCharacter_of_isComplex {F : Type*} [Field F] [NumberField F]
-    (v : InfinitePlace F) (hv : v.IsComplex) (z : v.Completion) :
+theorem archTraceCharacter_of_isComplex (hv : v.IsComplex) (z : v.Completion) :
     archTraceCharacter v z = Circle.exp
       (2 * Real.pi * (2 * (InfinitePlace.Completion.ringEquivComplexOfIsComplex hv z).re)) := by
   change Circle.exp (2 * Real.pi * archTrace v z) = _

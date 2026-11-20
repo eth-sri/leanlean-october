@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -43,10 +41,11 @@ open Internal
 
 namespace Internal
 
+variable (F : CompleteDVF.{u, v} K)
+
 /-- Internal comparison from the type-level adic model to the raw
 instance-parametric carrier. -/
-noncomputable def adicPrincipalUnitsHomeomorphUnderlying
-    (F : CompleteDVF.{u, v} K) :
+noncomputable def adicPrincipalUnitsHomeomorphUnderlying :
     letI : TopologicalSpace F.valuationSubring :=
       (uniformizerPowerIdeal
         (chosenPrincipalUnitPadicUniformizer F) 1).adicTopology
@@ -58,17 +57,15 @@ noncomputable def adicPrincipalUnitsHomeomorphUnderlying
       (chosenPrincipalUnitPadicUniformizer F) 1).adicTopology
   exact (AdicPrincipalUnits.homeomorph F).trans
     (WithTopology.homeomorph
-      (α := Additive
-        ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1))
-      (topology := principalUnitAdicTopology F))
+
+      )
 
 /--
 The homeomorphism from the adic principal-unit model evaluates through its underlying additive
 equivalence.
 -/
 @[simp]
-theorem adicPrincipalUnitsHomeomorphUnderlying_apply
-    (F : CompleteDVF.{u, v} K) (x : AdicPrincipalUnits F) :
+theorem adicPrincipalUnitsHomeomorphUnderlying_apply (x : AdicPrincipalUnits F) :
     letI : TopologicalSpace F.valuationSubring :=
       (uniformizerPowerIdeal
         (chosenPrincipalUnitPadicUniformizer F) 1).adicTopology
@@ -78,8 +75,7 @@ theorem adicPrincipalUnitsHomeomorphUnderlying_apply
 
 /-- Internal comparison from the type-level prodiscrete model to the raw
 instance-parametric inverse-limit carrier. -/
-noncomputable def principalUnitProdiscreteLimitHomeomorphUnderlying
-    (F : CompleteDVF.{u, v} K) :
+noncomputable def principalUnitProdiscreteLimitHomeomorphUnderlying :
     letI : (n : ℕ) → TopologicalSpace (Internal.principalUnitQuotientCarrier F n) :=
       fun _ => ⊥
     PrincipalUnitProdiscreteLimit F ≃ₜ
@@ -88,16 +84,15 @@ noncomputable def principalUnitProdiscreteLimitHomeomorphUnderlying
     fun _ => ⊥
   exact (PrincipalUnitProdiscreteLimit.homeomorph F).trans
     (WithTopology.homeomorph
-      (α := Additive (Internal.principalUnitInverseLimitCarrier F))
-      (topology := principalUnitProdiscreteTopology F))
+
+      )
 
 /--
 The homeomorphism from the prodiscrete limit evaluates through its underlying additive
 equivalence.
 -/
 @[simp]
-theorem principalUnitProdiscreteLimitHomeomorphUnderlying_apply
-    (F : CompleteDVF.{u, v} K) (x : PrincipalUnitProdiscreteLimit F) :
+theorem principalUnitProdiscreteLimitHomeomorphUnderlying_apply (x : PrincipalUnitProdiscreteLimit F) :
     letI : (n : ℕ) → TopologicalSpace
         (Internal.principalUnitQuotientCarrier F n) := fun _ => ⊥
     principalUnitProdiscreteLimitHomeomorphUnderlying F x =
@@ -117,10 +112,8 @@ noncomputable def adicPrincipalUnitsHomeomorphProdiscreteLimit
       (chosenPrincipalUnitPadicUniformizer F) 1).adicTopology
   letI : (n : ℕ) → TopologicalSpace (Internal.principalUnitQuotientCarrier F n) :=
     fun _ => ⊥
-  let source := Internal.adicPrincipalUnitsHomeomorphUnderlying F
-  let target := Internal.principalUnitProdiscreteLimitHomeomorphUnderlying F
-  exact source.trans
-    ((Internal.principalUnitAddHomeomorphInverseLimitCarrier F).trans target.symm)
+  exact (Internal.adicPrincipalUnitsHomeomorphUnderlying F).trans
+    ((Internal.principalUnitAddHomeomorphInverseLimitCarrier F).trans (Internal.principalUnitProdiscreteLimitHomeomorphUnderlying F).symm)
 
 /--
 Establishes the identity `PrincipalUnitProdiscreteLimit.addEquiv F
@@ -134,24 +127,7 @@ theorem adicPrincipalUnitsHomeomorphProdiscreteLimit_to_addEquiv
         (adicPrincipalUnitsHomeomorphProdiscreteLimit F x) =
       principalUnitAddEquivInverseLimitCarrier F
         (AdicPrincipalUnits.addEquiv F x) := by
-  let : TopologicalSpace F.valuationSubring :=
-    (uniformizerPowerIdeal
-      (chosenPrincipalUnitPadicUniformizer F) 1).adicTopology
-  let : (n : ℕ) → TopologicalSpace
-      (Internal.principalUnitQuotientCarrier F n) := fun _ => ⊥
-  let source := Internal.adicPrincipalUnitsHomeomorphUnderlying F
-  let target := Internal.principalUnitProdiscreteLimitHomeomorphUnderlying F
-  calc
-    PrincipalUnitProdiscreteLimit.addEquiv F
-        (adicPrincipalUnitsHomeomorphProdiscreteLimit F x) =
-      target (adicPrincipalUnitsHomeomorphProdiscreteLimit F x) := by
-        rw [Internal.principalUnitProdiscreteLimitHomeomorphUnderlying_apply]
-    _ = principalUnitAddHomeomorphInverseLimitCarrier F (source x) := by
-      exact target.apply_symm_apply _
-    _ = principalUnitAddEquivInverseLimitCarrier F
-        (AdicPrincipalUnits.addEquiv F x) := by
-      rw [principalUnitAddHomeomorphInverseLimitCarrier_apply,
-        Internal.adicPrincipalUnitsHomeomorphUnderlying_apply]
+  rfl
 
 /-- The prodiscrete principal-unit limit is Hausdorff. -/
 noncomputable instance principalUnitProdiscreteLimitT2Space
@@ -172,10 +148,13 @@ noncomputable instance principalUnitProdiscreteLimitT2Space
     (Internal.principalUnitProdiscreteLimitHomeomorphUnderlying F).injective
     (Internal.principalUnitProdiscreteLimitHomeomorphUnderlying F).continuous
 
+section
+
+variable (F : CompleteDVF.{u, v} K)
+
 /-- Algebraic form of the canonical identification between adic principal
 units and their prodiscrete limit. -/
-noncomputable def adicPrincipalUnitsAddEquivProdiscreteLimit
-    (F : CompleteDVF.{u, v} K) :
+noncomputable def adicPrincipalUnitsAddEquivProdiscreteLimit :
     AdicPrincipalUnits F ≃+ PrincipalUnitProdiscreteLimit F :=
   (AdicPrincipalUnits.addEquiv F).trans
     ((principalUnitAddEquivInverseLimitCarrier F).trans
@@ -186,31 +165,23 @@ The defining evaluation formula for `adicPrincipalUnitsHomeomorphProdiscreteLimi
 `adicPrincipalUnitsHomeomorphProdiscreteLimit F x = adicPrincipalUnitsAddEquivProdiscreteLimit F
 x`.
 -/
-@[simp] theorem adicPrincipalUnitsHomeomorphProdiscreteLimit_apply
-    (F : CompleteDVF.{u, v} K) (x : AdicPrincipalUnits F) :
+@[simp] theorem adicPrincipalUnitsHomeomorphProdiscreteLimit_apply (x : AdicPrincipalUnits F) :
     adicPrincipalUnitsHomeomorphProdiscreteLimit F x =
       adicPrincipalUnitsAddEquivProdiscreteLimit F x :=
   (PrincipalUnitProdiscreteLimit.addEquiv F).injective (by
-    rw [adicPrincipalUnitsHomeomorphProdiscreteLimit_to_addEquiv]
-    change
-      principalUnitAddEquivInverseLimitCarrier F
-          (AdicPrincipalUnits.addEquiv F x) =
-        PrincipalUnitProdiscreteLimit.addEquiv F
-          ((PrincipalUnitProdiscreteLimit.addEquiv F).symm
-            (principalUnitAddEquivInverseLimitCarrier F
-              (AdicPrincipalUnits.addEquiv F x)))
-    exact ((PrincipalUnitProdiscreteLimit.addEquiv F).apply_symm_apply _).symm)
+    rfl)
 
 /-- Additive topological form of
 `adicPrincipalUnitsHomeomorphProdiscreteLimit`. -/
-noncomputable def adicPrincipalUnitsContinuousAddEquivProdiscreteLimit
-    (F : CompleteDVF.{u, v} K) :
+noncomputable def adicPrincipalUnitsContinuousAddEquivProdiscreteLimit :
     AdicPrincipalUnits F ≃ₜ+ PrincipalUnitProdiscreteLimit F :=
   ContinuousAddEquiv.mk'
     (adicPrincipalUnitsHomeomorphProdiscreteLimit F)
     (fun x y => by
-      simpa only [adicPrincipalUnitsHomeomorphProdiscreteLimit_apply] using
+      simpa using
         (adicPrincipalUnitsAddEquivProdiscreteLimit F).map_add x y)
+
+end
 
 /-- The topology on the type in `T2Space (AdicPrincipalUnits F)` is Hausdorff. -/
 noncomputable instance adicPrincipalUnitsT2Space

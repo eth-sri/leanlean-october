@@ -17,9 +17,9 @@ set_option backward.isDefEq.respectTransparency false
 open CorrectionFactors FrequencyCharacterMasks
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
-variable {C : A.GeneralArithmeticContext σ η hS}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {C : A.GeneralArithmeticContext σ η hS}
 
 def dirichletSeries (a : A.Exterior → ℂ) (s : ℂ) : ℂ :=
   ∑' I : A.Exterior, ExteriorIdealEuler.summand a s I
@@ -39,7 +39,6 @@ theorem correction_multipliable_initial (U : Frequency C)
       localFactor C U p ξ w z) := by
   apply multipliable_localFactor C U (ξ, w, z)
   apply Or.inl
-  change _ ∧ _ ∧ _
   exact ⟨by linarith, by linarith, by linarith⟩
 
  def primeEquiv (A : SArithmeticData F) :
@@ -60,16 +59,20 @@ private lemma normPower_eq (p : LocalFiniteSums.ExteriorPrime A) (s : ℂ) :
   rw [Complex.cpow_def_of_ne_zero hne]
   have hl : Complex.log (Ideal.absNorm p.val.asIdeal : ℂ) =
       (Real.log (Ideal.absNorm p.val.asIdeal : ℝ) : ℂ) := by
-    simpa only [Complex.ofReal_natCast] using (Complex.ofReal_log hn.le).symm
+    simpa using (Complex.ofReal_log hn.le).symm
   rw [hl]
-  change Complex.exp _ = Complex.exp (s * _)
   congr 1
   simp only [LocalFiniteSums.Q, SArithmeticData.exteriorNorm, idealNorm,
     LocalFiniteSums.primeIdeal]
   ring
 
-private lemma term_plus (U : Frequency C) (p : LocalFiniteSums.ExteriorPrime A)
-    (s : ℂ) :
+alias SeparatedHeckeFactors.normPower_eq := normPower_eq
+
+section
+
+variable (U : Frequency C) (p : LocalFiniteSums.ExteriorPrime A) (s : ℂ)
+
+private lemma term_plus :
     ExteriorIdealEuler.primeTerm (plusExteriorCoefficient U) s (primeEquiv A p) =
       W (σ := σ) p U.u s := by
   change plusExteriorCoefficient U (LocalFiniteSums.primeIdeal p) *
@@ -77,14 +80,15 @@ private lemma term_plus (U : Frequency C) (p : LocalFiniteSums.ExteriorPrime A)
   rw [normPower_eq]
   rfl
 
-private lemma term_minus (U : Frequency C) (p : LocalFiniteSums.ExteriorPrime A)
-    (s : ℂ) :
+private lemma term_minus :
     ExteriorIdealEuler.primeTerm (minusExteriorCoefficient U) s (primeEquiv A p) =
       CorrectionFactors.D (σ := σ) (η := η) p U.u s := by
   change minusExteriorCoefficient U (LocalFiniteSums.primeIdeal p) *
     (Ideal.absNorm p.val.asIdeal : ℂ) ^ (-s) = _
   rw [normPower_eq]
   rfl
+
+end
 
 private lemma term_zeta (p : LocalFiniteSums.ExteriorPrime A) (z : ℂ) :
     ExteriorIdealEuler.primeTerm (fun _ : A.Exterior => (1 : ℂ)) (6 * z)
@@ -94,6 +98,8 @@ private lemma term_zeta (p : LocalFiniteSums.ExteriorPrime A) (z : ℂ) :
   unfold V
   congr 1
   ring
+
+alias SeparatedHeckeFactors.term_zeta := term_zeta
 
 theorem initial_separated_euler (U : Frequency C)
     (D : ComparisonPoissonCoefficientData F A)
@@ -107,7 +113,7 @@ theorem initial_separated_euler (U : Frequency C)
   have hξ1 : 1 < ξ.re := by linarith
   have hw1 : 1 < w.re := by linarith
   have hz1 : 1 < (6 * z).re := by simp; linarith
-  have hm := ExteriorIdealEuler.exterior_ideal_euler _ hc.2.1 ξ hξ1
+  have hm := ExteriorIdealEuler.exterior_ideal_euler _ hc.2 ξ hξ1
   have hp := ExteriorIdealEuler.exterior_ideal_euler _ hc.1 w hw1
   have hzeta := ExteriorIdealEuler.exterior_ideal_euler _
     (ExteriorIdealEuler.constant_one_isCoefficient A.cS) (6 * z) hz1

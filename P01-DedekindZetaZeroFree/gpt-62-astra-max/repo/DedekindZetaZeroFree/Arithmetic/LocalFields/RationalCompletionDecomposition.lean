@@ -11,7 +11,7 @@ open MomentSources NumberField ValuativeRel IsDedekindDomain
 open scoped NumberField Classical Valued
 local notation "ℤᵐ⁰" => WithZero (Multiplicative ℤ)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem exterior_rational_completion_decomposition (R : PrincipalMellin.ActualRecipe S η)
     (p : ThetaBranch.ExteriorPrime R.A) (x : Fˣ) :

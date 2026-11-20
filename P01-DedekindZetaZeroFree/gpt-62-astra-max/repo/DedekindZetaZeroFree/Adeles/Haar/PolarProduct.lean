@@ -23,23 +23,29 @@ instance archBorelSpace (w : InfinitePlace F) : BorelSpace w.Completionˣ := ⟨
 instance finiteBorelSpace (A : SArithmeticData F) (v : A.Sf) :
     BorelSpace (ThetaFiniteCutoff.LocalUnits A v) := ⟨rfl⟩
 
-def polarUnit (A : SArithmeticData F) (w : InfinitePlace F)
+section
+
+variable (A : SArithmeticData F)
+
+def polarUnit (w : InfinitePlace F)
     (p : ThetaProfileHaarSheets.PositiveAxis × Circle) : w.Completionˣ :=
   ThetaProfileHaarSheets.sqrtUnit A w p.1 *
     Units.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex
       (A.complex_place w)).symm.toMonoidHom p.2.toUnits
 
-def archHaar (A : SArithmeticData F) (w : InfinitePlace F)
+def archHaar (w : InfinitePlace F)
     (ν : Measure Circle) : Measure w.Completionˣ :=
   Measure.map (polarUnit A w) (ThetaProfileHaarSheets.positiveHaar.prod ν)
 
-def productHaar (A : SArithmeticData F)
+def productHaar
     (μ : ∀ v : A.Sf, Measure (ThetaFiniteCutoff.LocalUnits A v))
     (ν : InfinitePlace F → Measure Circle) : Measure A.G :=
   @Measure.map _ A.G
     (Prod.instMeasurableSpace) (ThetaProfileHaarSheets.groupMeasurableSpace A)
     (fun p => p)
     ((Measure.pi (fun w => archHaar A w (ν w))).prod (Measure.pi μ))
+
+end
 
 abbrev PA := ThetaProfileHaarSheets.PositiveAxis
  instance instLocallyCompactSpacePolarHaarPositiveAxis : LocallyCompactSpace PA := isOpen_Ioi.locallyCompactSpace
@@ -102,7 +108,11 @@ abbrev PA := ThetaProfileHaarSheets.PositiveAxis
   map_mul' := complexPolar_mul
   continuous_toFun := complexPolar_continuous
   continuous_invFun := polarInverse_continuous
- def completionUnitsEquiv (A : SArithmeticData F) (w : InfinitePlace F) :
+ section
+
+variable (A : SArithmeticData F) (w : InfinitePlace F)
+
+def completionUnitsEquiv :
     ℂˣ ≃ₜ* w.Completionˣ where
   toMulEquiv := Units.mapEquiv
     (InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place w)).symm.toMulEquiv
@@ -110,21 +120,22 @@ abbrev PA := ThetaProfileHaarSheets.PositiveAxis
     (InfinitePlace.Completion.isometryEquivComplexOfIsComplex (A.complex_place w)).symm.continuous
   continuous_invFun := Units.continuous_map
     (InfinitePlace.Completion.isometryEquivComplexOfIsComplex (A.complex_place w)).continuous
-def polarEquiv (A : SArithmeticData F) (w : InfinitePlace F) :
+def polarEquiv :
     (PA × Circle) ≃ₜ* w.Completionˣ :=
   complexPolarEquiv.trans (completionUnitsEquiv A w)
-theorem polarEquiv_eq (A : SArithmeticData F) (w : InfinitePlace F)
+theorem polarEquiv_eq
     (p : PA × Circle) : polarEquiv A w p = polarUnit A w p := by
   apply Units.ext
   simp [polarEquiv, completionUnitsEquiv, complexPolarEquiv, complexPolar,
     polarUnit, ThetaProfileHaarSheets.sqrtUnit, Units.mapEquiv, Units.map,
     map_mul]
 
+end
+
 instance archHaar_isHaarMeasure (A : SArithmeticData F) (w : InfinitePlace F)
     (ν : Measure Circle) [ν.IsHaarMeasure] : (archHaar A w ν).IsHaarMeasure := by
-  have h : polarUnit A w = polarEquiv A w := funext (fun p => (polarEquiv_eq A w p).symm)
   unfold archHaar
-  rw [h]
+  rw [(funext (fun p => (polarEquiv_eq A w p).symm))]
   exact (polarEquiv A w).isHaarMeasure_map _
 
 theorem groupMeasurableSpace_eq_prod (A : SArithmeticData F) :
@@ -138,11 +149,10 @@ theorem groupMeasurableSpace_eq_prod (A : SArithmeticData F) :
   haveI hu : ∀ w : InfinitePlace F, SecondCountableTopology w.Completionˣ := fun w => by
     haveI := hc w
     exact (unitsHomeomorphNeZero (G₀ := w.Completion)).isInducing.secondCountableTopology
-  haveI hf : ∀ v : A.Sf, SecondCountableTopology (ThetaFiniteCutoff.LocalUnits A v) := fun v => by
-    exact (unitsHomeomorphNeZero (G₀ := v.val.adicCompletion F)).isInducing.secondCountableTopology
+  haveI hf : ∀ v : A.Sf, SecondCountableTopology (ThetaFiniteCutoff.LocalUnits A v) := fun v => (unitsHomeomorphNeZero (G₀ := v.val.adicCompletion F)).isInducing.secondCountableTopology
   letI : MeasurableSpace A.G := Prod.instMeasurableSpace
-  exact (Prod.borelSpace (α := (w : InfinitePlace F) → w.Completionˣ)
-    (β := (v : A.Sf) → ThetaFiniteCutoff.LocalUnits A v)).measurable_eq.symm
+  exact (Prod.borelSpace
+    ).measurable_eq.symm
 
 instance productHaar_isHaarMeasure (A : SArithmeticData F)
     (μ : ∀ v : A.Sf, Measure (ThetaFiniteCutoff.LocalUnits A v))
@@ -163,9 +173,8 @@ instance productHaar_isHaarMeasure (A : SArithmeticData F)
     (InfinitePlace.Completion.isometryEquivComplexOfIsComplex (A.complex_place w)).toHomeomorph.isOpenEmbedding.locallyCompactSpace
   haveI : ∀ w : InfinitePlace F, SigmaFinite (archHaar A w (ν w)) := fun w => inferInstance
   haveI : ∀ v : A.Sf, SigmaFinite (μ v) := fun v => inferInstance
-  have hm : (Prod.instMeasurableSpace : MeasurableSpace A.G) =
-      ThetaProfileHaarSheets.groupMeasurableSpace A := by
-    exact BorelSpace.measurable_eq
+  have hm : Prod.instMeasurableSpace =
+      ThetaProfileHaarSheets.groupMeasurableSpace A := BorelSpace.measurable_eq
   unfold productHaar
   rw [← hm, Measure.map_id']
   infer_instance

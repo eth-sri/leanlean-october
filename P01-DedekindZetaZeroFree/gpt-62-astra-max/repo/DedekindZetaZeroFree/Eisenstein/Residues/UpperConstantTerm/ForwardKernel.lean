@@ -11,19 +11,20 @@ open NumberField MeasureTheory Filter
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPLiteralRaw KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2400000
 
-theorem coreResidue_upper_slot_kernel (N : MomentSources.TraceHaarTransport R)
-    (t : RestrictedTensorSimple.Level (bad R.A P C))
-    (x : ∀ j : t.val, Plus R.A P C j.val) (q : KPFinitePlace F)
-    (hq : Sum.inr q ∈ t.val) (g : Raw R.A)
+variable (N : MomentSources.TraceHaarTransport R) (t : RestrictedTensorSimple.Level (bad R.A P C))
+    (x : ∀ j : t.val, Plus R.A P C j.val) (q : KPFinitePlace F) (hq : Sum.inr q ∈ t.val)
+
+include N in
+theorem coreResidue_upper_slot_kernel (g : Raw R.A)
     (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure]
     (hμ : μ ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
     (f : Plus R.A P C (Sum.inr q))
@@ -90,10 +91,8 @@ theorem coreResidue_upper_slot_kernel (N : MomentSources.TraceHaarTransport R)
     Finset.sum_const_zero] using heq
   exact hcenter.symm.trans hB0
 
-theorem coreResidue_upper_finite_kernel (N : MomentSources.TraceHaarTransport R)
-    (t : RestrictedTensorSimple.Level (bad R.A P C))
-    (x : ∀ j : t.val, Plus R.A P C j.val) (q : KPFinitePlace F)
-    (hq : Sum.inr q ∈ t.val)
+include N in
+theorem coreResidue_upper_finite_kernel
     (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure]
     (hμ : μ ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
     (f : Plus R.A P C (Sum.inr q))

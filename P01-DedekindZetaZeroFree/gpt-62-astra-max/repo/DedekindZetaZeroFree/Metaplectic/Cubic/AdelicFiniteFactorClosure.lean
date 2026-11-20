@@ -56,8 +56,8 @@ private theorem truncation_tendsto (x : RestrictedCover F ζ hζ) :
     Filter.Tendsto (truncation F ζ hζ x) Filter.atTop (𝓝 x) := by
   let R := fun v : KPHilbert.Place F => KPLocalCover.CubicGL2Raw F ζ hζ v
   let B := compact F ζ hζ
-  let S : Set (KPHilbert.Place F) := {i | x i ∈ B i}
-  have hS : Filter.cofinite ≤ Filter.principal S := Filter.le_principal_iff.mpr x.property
+  let S := {i | x i ∈ B i}
+  have hS := Filter.le_principal_iff.mpr x.property
   let xp : RestrictedProduct R (fun i => (B i : Set (R i))) (Filter.principal S) :=
     ⟨x, Filter.eventually_principal.mpr fun _ hi => hi⟩
   let tp (s : Finset (KPHilbert.Place F)) :
@@ -78,7 +78,6 @@ private theorem truncation_tendsto (x : RestrictedCover F ζ hζ) :
   have heq : RestrictedProduct.inclusion R (fun i => (B i : Set (R i))) hS ∘ tp =
       truncation F ζ hζ x := rfl
   have hx : RestrictedProduct.inclusion R (fun i => (B i : Set (R i))) hS xp = x := by ext; rfl
-  change Filter.Tendsto (truncation F ζ hζ x) Filter.atTop (𝓝 x)
   have hfinal := (RestrictedProduct.continuous_inclusion hS).tendsto xp |>.comp ht
   change Filter.Tendsto (RestrictedProduct.inclusion R (fun i => (B i : Set (R i))) hS ∘ tp) Filter.atTop
     (𝓝 (RestrictedProduct.inclusion R (fun i => (B i : Set (R i))) hS xp)) at hfinal
@@ -112,10 +111,8 @@ private theorem truncation_tendsto (x : RestrictedCover F ζ hζ) :
  theorem tupleFactor_le_finiteSubgroup : tupleFactor F ζ hζ ≤ finiteSubgroup F ζ hζ := by
   rintro _ ⟨x, hx, rfl⟩
   let f := (scalarQuotient F ζ hζ).comp (amalgamation F ζ hζ)
-  have hf : Continuous f :=
-    QuotientGroup.continuous_mk.comp QuotientGroup.continuous_mk
   apply (Subgroup.isClosed_topologicalClosure _).mem_of_tendsto
-    (hf.tendsto x |>.comp (truncation_tendsto F ζ hζ x))
+    ((QuotientGroup.continuous_mk.comp QuotientGroup.continuous_mk).tendsto x |>.comp (truncation_tendsto F ζ hζ x))
   apply Filter.Eventually.of_forall
   intro s
   apply Subgroup.le_topologicalClosure
@@ -138,7 +135,6 @@ private theorem truncation_tendsto (x : RestrictedCover F ζ hζ) :
     apply Subgroup.mul_mem _ _ ih
     cases a with
     | inl w =>
-      change f (localToRestricted F ζ hζ (Sum.inl w) (x (Sum.inl w))) ∈ _
       rw [hx w, map_one, map_one]
       exact Subgroup.one_mem _
     | inr q =>

@@ -12,15 +12,19 @@ namespace KPBelowThresholdResolvent
 def domain (d : ℝ) : Set ℂ :=
   (Complex.ofReal '' Set.Ici d)ᶜ
 
+section
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+
 def poleSet
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     (Δ : H →ₗ.[ℂ] H) (d : ℝ) : Set ℂ :=
   {z | ∃ μ : ℝ, μ < d ∧ KPBelowThreshold.eigenspace Δ μ ≠ ⊥ ∧ z = (μ : ℂ)}
 
-noncomputable def poleProjection
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+noncomputable def poleProjection [CompleteSpace H]
     (B : H →L[ℂ] H) (μ : ℝ) : H →L[ℂ] H :=
   KPIsolatedProjection.projection B ((1 + μ)⁻¹)
+
+end
 
 private theorem isOpen_domain (d : ℝ) : IsOpen (domain d) := by
   have he : Complex.ofReal '' Set.Ici d = {z : ℂ | z.im = 0 ∧ d ≤ z.re} := by
@@ -29,14 +33,16 @@ private theorem isOpen_domain (d : ℝ) : IsOpen (domain d) := by
     · rintro ⟨t, ht, rfl⟩
       simpa using ht
     · rintro ⟨hi, hr⟩
-      exact ⟨z.re, hr, Complex.ext (by simp) (by simpa using hi.symm)⟩
+      exact ⟨z.re, hr, Complex.ext (by simp) (by exact hi.symm)⟩
   rw [domain, he]
   exact ((isClosed_eq Complex.continuous_im continuous_const).inter
     (isClosed_le continuous_const Complex.continuous_re)).isOpen_compl
 
- theorem eigen_nonneg
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    (Δ : H →ₗ.[ℂ] H)
+ section
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] (Δ : H →ₗ.[ℂ] H)
+
+theorem eigen_nonneg
     (hpos : ∀ v : Δ.domain, 0 ≤ (inner ℂ (v : H) (Δ v)).re)
     (μ : ℝ) (he : KPBelowThreshold.eigenspace Δ μ ≠ ⊥) : 0 ≤ μ := by
   obtain ⟨x, hx, hx0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot he
@@ -51,9 +57,7 @@ private theorem isOpen_domain (d : ℝ) : IsOpen (domain d) := by
     simpa only [Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero, hinner] using hp
   nlinarith
 
-private theorem eigen_not_resolvent
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    (Δ : H →ₗ.[ℂ] H) (μ : ℝ)
+private theorem eigen_not_resolvent (μ : ℝ)
     (he : KPBelowThreshold.eigenspace Δ μ ≠ ⊥) :
     (μ : ℂ) ∉ KPResolventPencil.resolventSet Δ := by
   obtain ⟨x, hx, hx0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot he
@@ -64,6 +68,10 @@ private theorem eigen_not_resolvent
   have hz : Δ v - (μ : ℂ) • (v : H) = 0 := hv
   rw [hz, map_zero] at h
   exact hx0 h.symm
+
+end
+
+alias BelowThresholdMeromorphy.eigen_not_resolvent := eigen_not_resolvent
 
 private theorem nonresolvent_mem_poleSet
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
@@ -223,10 +231,9 @@ theorem kp_cont_below_threshold_resolvent
     have hrange : (poleProjection B μ).range = KPBelowThreshold.eigenspace Δ μ := by
       rw [heigen μ hμ]
       exact hPrange
-    have hfd : FiniteDimensional ℂ (poleProjection B μ).range := by
+    refine ⟨hμ, hPne, hPsa, hPP, hrange, by
       rw [hrange, heigen μ hμ]
-      exact hfB
-    refine ⟨hμ, hPne, hPsa, hPP, hrange, hfd, ?_, ?_, ?_⟩
+      exact hfB, ?_, ?_, ?_⟩
     · simpa only [hloc μ he, poleProjection] using htendsto
     · simpa only [hloc μ he, poleProjection] using hnonrem
     · obtain ⟨r, hr, hcorrect, hhol, hlaurent⟩ :=

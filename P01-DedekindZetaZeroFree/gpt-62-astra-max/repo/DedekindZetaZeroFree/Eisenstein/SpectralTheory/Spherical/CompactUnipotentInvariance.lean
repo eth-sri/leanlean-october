@@ -10,10 +10,10 @@ open scoped Classical NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry
 open KPContSectorCoveredQuotientVocabulary KPContSectorSmoothFramesSupport
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (V : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (V : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 theorem originalScalar_KU_fixed (Z : smoothSections F ζ hζ V R P H)
     (k : K_U F ζ hζ V) (x : KPSmoothActualFlowData.X F ζ hζ) :

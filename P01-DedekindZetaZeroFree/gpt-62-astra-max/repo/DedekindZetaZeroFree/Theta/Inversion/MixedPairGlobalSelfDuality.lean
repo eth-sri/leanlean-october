@@ -6,12 +6,16 @@ public import DedekindZetaZeroFree.Theta.Inversion.MixedPairConstantTermSelfDual
 
 namespace DedekindZetaZeroFree.Hecke
 
-theorem mixedThetaPair_global_selfDual (F : Type) [Field F] [NumberField F] :
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+theorem mixedThetaPair_global_selfDual :
     (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).g =
       (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).f := by
   funext t
   calc
-    (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).g t =
+    _ =
         (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).g
           (Real.exp (Real.log t)) := by
       simp only [DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair,
@@ -27,13 +31,12 @@ theorem mixedThetaPair_global_selfDual (F : Type) [Field F] [NumberField F] :
         DedekindZetaZeroFree.AbelianQuotient.Theta.mixedRadialTheta,
         DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaShape, Real.log_exp]
 
-theorem mixedThetaPair_global_g₀_eq_f₀ (F : Type) [Field F] [NumberField F] :
+theorem mixedThetaPair_global_g₀_eq_f₀ :
     (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).g₀ =
-      (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).f₀ := by
-  rfl
+      (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).f₀ := rfl
 
-theorem mixedThetaPair_global_ε_eq_one (F : Type) [Field F] [NumberField F] :
-    (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).ε = 1 := by
-  rfl
+end
+
+alias mixedThetaPair_global_ε_eq_one := mixedThetaPair_ε
 
 end DedekindZetaZeroFree.Hecke

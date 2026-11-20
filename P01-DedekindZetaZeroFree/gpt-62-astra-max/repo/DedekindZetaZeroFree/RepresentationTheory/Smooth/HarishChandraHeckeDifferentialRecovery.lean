@@ -12,10 +12,10 @@ open MomentSources NumberField KPGlobalResidualConstruction
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q Q' : AdmissibleFlatSources R} {T : Realization R Q}
-variable (D : SourceFactorization R Q T) (T' : Realization R Q')
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q Q' : AdmissibleFlatSources R} {T : Realization R Q}
+    (D : SourceFactorization R Q T) (T' : Realization R Q')
 
 theorem tensor_compact_word_recovery (s : RestrictedTensorSimple.Level D.bad)
     (x : ∀ p : s.val, actualLocal R D.finiteData p)
@@ -37,7 +37,7 @@ theorem selected_at_frozen_stage (s : RestrictedTensorSimple.Level D.bad)
     ∃ x : ∀ p : s.val, actualLocal R D.finiteData p,
       tensorFunction R D s x = T.theta v := by
   obtain ⟨t,x,ht,hx⟩ := D.selected_frozen_stage v
-  have hts : t = s := Subtype.ext (ht.trans hs.symm)
+  have hts := Subtype.ext (ht.trans hs.symm)
   subst t
   exact ⟨x, (congrArg D.coreMap hx).symm.trans (D.selected_eq v)⟩
 

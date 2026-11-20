@@ -14,12 +14,16 @@ namespace DedekindZetaZeroFree.KPContinuation.ChamberOutgoingSource
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 abbrev Adeles := KPGlobalTorusFunctionData.Adeles F
 
- def archSlot (u : InfinitePlace F → ℝ) (w : InfinitePlace F) : w.Completionˣ :=
+ section
+
+variable (u : InfinitePlace F → ℝ)
+
+def archSlot (w : InfinitePlace F) : w.Completionˣ :=
   Units.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex
     (KPHilbert.infinite_isComplex F ζ hζ w)).symm.toMonoidHom
     (Units.mk0 (Real.exp (u w) : ℂ) (by exact_mod_cast Real.exp_ne_zero (u w)))
 
-def archDiagonalIdele (u : InfinitePlace F → ℝ) : KPAdelicCoverRestrictedProduct.Ideles F where
+def archDiagonalIdele : KPAdelicCoverRestrictedProduct.Ideles F where
   val := (fun w => (archSlot F ζ hζ u w).val, 1)
   inv := (fun w => (archSlot F ζ hζ u w).inv, 1)
   val_inv := by
@@ -31,7 +35,7 @@ def archDiagonalIdele (u : InfinitePlace F → ℝ) : KPAdelicCoverRestrictedPro
     · funext w; exact (archSlot F ζ hζ u w).inv_val
     · exact one_mul _
 
-theorem archDiagonalIdele_neg (u : InfinitePlace F → ℝ) :
+theorem archDiagonalIdele_neg :
     archDiagonalIdele F ζ hζ (fun w => -u w) = (archDiagonalIdele F ζ hζ u)⁻¹ := by
   apply Units.ext
   apply Prod.ext
@@ -46,7 +50,7 @@ theorem archDiagonalIdele_neg (u : InfinitePlace F → ℝ) :
     rw [Real.exp_neg, Complex.ofReal_inv, map_inv₀]
   · rfl
 
-private theorem arch_norm (u : InfinitePlace F → ℝ) :
+private theorem arch_norm :
     ‖(archDiagonalIdele F ζ hζ u).val.1‖ = Real.exp (2 * ∑ w, u w) := by
   rw [InfiniteAdeleRing.norm_def]
   have hv : ∀ w : InfinitePlace F, ‖(archDiagonalIdele F ζ hζ u).val.1 w‖ = Real.exp (u w) := by
@@ -77,6 +81,8 @@ private theorem arch_norm (u : InfinitePlace F → ℝ) :
   rw [Finset.mul_sum]
   simp
 
+end
+
  def archMul (d : (InfiniteAdeleRing F)ˣ) (x : Adeles F) : Adeles F :=
   (d.val * x.1, x.2)
 
@@ -87,10 +93,11 @@ private theorem map_arch_mul (d : (InfiniteAdeleRing F)ˣ) :
   let μf := KPAdditiveHaar.finiteMeasure F
   letI : μa.IsAddHaarMeasure := KPAdditiveHaar.archMeasure_isAddHaarMeasure F
   letI : μf.IsAddHaarMeasure := KPAdditiveHaar.finiteMeasure_isAddHaarMeasure F
-  let cast : InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F → Adeles F := fun x => x
+  let FiniteAdeleRing₀ := IsDedekindDomain.FiniteAdeleRing (𝓞 F) F
+  let cast : InfiniteAdeleRing F × FiniteAdeleRing₀ → Adeles F := fun x => x
   have hc : Measurable cast := by
     have heq : (MeasurableSpace.prod inferInstance inferInstance :
-      MeasurableSpace (InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F)) =
+      MeasurableSpace (InfiniteAdeleRing F × FiniteAdeleRing₀)) =
       borel (Adeles F) := BorelSpace.measurable_eq
     change @Measurable _ _ (MeasurableSpace.prod inferInstance inferInstance) (borel _) _
     rw [heq]
@@ -102,12 +109,12 @@ private theorem map_arch_mul (d : (InfiniteAdeleRing F)ˣ) :
       Continuous (fun x : Adeles F => ((d.val * x.1, x.2) : Adeles F))).borel_measurable
     exact hh
   have hp : Measurable (Prod.map (fun x : InfiniteAdeleRing F => d.val * x)
-      (id : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F → _)) :=
+      (id : FiniteAdeleRing₀ → _)) :=
     (continuous_const.mul continuous_id).measurable.prodMap measurable_id
   have harch : Measure.map (fun x : InfiniteAdeleRing F => d.val * x) μa =
       (ENNReal.ofReal ‖d.val‖)⁻¹ • μa := TateSLocalMeasurability.archimedean_map_mul F d
   have hprod : Measure.map (Prod.map (fun x : InfiniteAdeleRing F => d.val * x)
-      (id : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F → _)) (μa.prod μf) =
+      (id : FiniteAdeleRing₀ → _)) (μa.prod μf) =
       (ENNReal.ofReal ‖d.val‖)⁻¹ • (μa.prod μf) := by
     rw [← Measure.map_prod_map (f := fun x : InfiniteAdeleRing F => d.val * x) (g := id) μa μf (continuous_const.mul continuous_id).measurable measurable_id,
       Measure.map_id, harch, Measure.prod_smul_left]
@@ -122,7 +129,7 @@ theorem integral_arch_mul (u : InfinitePlace F → ℝ) (h : Adeles F → ℂ)
     (hh : Measurable h) :
     (∫ x, h (x * ((archDiagonalIdele F ζ hζ u)⁻¹).val) ∂KPAdditiveHaar.adelicMeasure F) =
       (Real.exp (2 * ∑ w, u w) : ℂ) * ∫ x, h x ∂KPAdditiveHaar.adelicMeasure F := by
-  let d : (InfiniteAdeleRing F)ˣ := Units.map (RingHom.fst _ _).toMonoidHom
+  let d := Units.map (RingHom.fst _ _).toMonoidHom
     (archDiagonalIdele F ζ hζ (fun w => -u w))
   have hn : ‖d.val‖ = Real.exp (-(2 * ∑ w, u w)) := by
     change ‖(archDiagonalIdele F ζ hζ (fun w => -u w)).val.1‖ = _

@@ -18,16 +18,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -66,23 +56,19 @@ theorem infinitePlaceIdeleClass_mem_ideleClassNorm_range_of_mem_infiniteTensorNo
         (K := K) (L := L) v) :
     IdeleGroup.infinitePlaceIdeleClass v x ∈
       (_root_.ideleClassNorm K L).range := by
-  have hnorm :
-      IdeleGroup.infinitePlaceIdele v x ∈
-        ideleNormSubgroup (K := K) (L := L) :=
-    (infinitePlaceIdele_mem_ideleNormSubgroup_iff
-      (K := K) (L := L) v x).2 hx
-  obtain ⟨z, hz⟩ := hnorm
+  obtain ⟨z, hz⟩ := ((infinitePlaceIdele_mem_ideleNormSubgroup_iff
+    v x).2 hx)
   refine
     ⟨QuotientGroup.mk'
         (IdeleGroup.principalSubgroup L)
         (_root_.relativeIdeleBaseChangeMulEquiv
-          (K := K) (L := L) z), ?_⟩
+            z), ?_⟩
   change
     QuotientGroup.mk'
         (IdeleGroup.principalSubgroup K)
         (IdeleGroup.norm K L
           (_root_.relativeIdeleBaseChangeMulEquiv
-            (K := K) (L := L) z)) =
+              z)) =
       QuotientGroup.mk'
         (IdeleGroup.principalSubgroup K)
         (IdeleGroup.infinitePlaceIdele v x)
@@ -102,9 +88,9 @@ theorem chosenInfinitePlaceArtinMonoidHom_eq_one_iff_infiniteTensorNorm
         (K := K) (L := L) v := by
   change
     x ∈ (chosenInfinitePlaceArtinMonoidHom
-      (K := K) (L := L) v).ker ↔ _
+        v).ker ↔ _
   rw [chosenInfinitePlaceArtinMonoidHom_ker
-    (K := K) (L := L) v]
+      v]
 
 /-- An infinite-place element killed by the actual local Artin
 homomorphism is killed by the global norm-residue homomorphism after
@@ -120,62 +106,42 @@ theorem globalNormResidueMonoidHom_infinitePlaceIdeleClass_eq_one_of_localArtin_
   rw [globalNormResidueMonoidHom_eq_one_iff]
   exact
     infinitePlaceIdeleClass_mem_ideleClassNorm_range_of_mem_infiniteTensorNorm
-      (K := K) (L := L) v x
+        v x
       ((chosenInfinitePlaceArtinMonoidHom_eq_one_iff_infiniteTensorNorm
-        (K := K) (L := L) v x).1 hx)
+          v x).1 hx)
 
-/-- The infinite tensor norm subgroup lies in the kernel of the global
-norm-residue homomorphism restricted to the one-place idele class map. -/
-theorem infiniteTensorNormSubgroup_le_globalNormResidueKernel
-    (v : InfinitePlace K) :
-    infiniteTensorNormSubgroup
-        (K := K) (L := L) v ≤
-      ((globalNormResidueMonoidHom K L).comp
-        (IdeleGroup.infinitePlaceIdeleClass v)).ker := by
-  intro x hx
-  exact
-    globalNormResidueMonoidHom_infinitePlaceIdeleClass_eq_one_of_localArtin_eq_one
-      (K := K) (L := L) v x
-      ((chosenInfinitePlaceArtinMonoidHom_eq_one_iff_infiniteTensorNorm
-        (K := K) (L := L) v x).2 hx)
+section
 
+variable (v : InfinitePlace K) (hvReal : v.IsReal) (x : v.Completionˣ)
+    (hx : 0 < InfinitePlace.Completion.ringEquivRealOfIsReal hvReal (x : v.Completion))
+
+include hx in
 /-- A positive element at a real infinite place gives an actual
 idele-class norm. -/
-theorem infinitePlaceIdeleClass_mem_ideleClassNorm_range_of_real_pos
-    (v : InfinitePlace K)
-    (hvReal : v.IsReal)
-    (x : v.Completionˣ)
-    (hx :
-      0 <
-        InfinitePlace.Completion.ringEquivRealOfIsReal
-          hvReal (x : v.Completion)) :
+theorem infinitePlaceIdeleClass_mem_ideleClassNorm_range_of_real_pos :
     IdeleGroup.infinitePlaceIdeleClass v x ∈
       (_root_.ideleClassNorm K L).range := by
   apply
     infinitePlaceIdeleClass_mem_ideleClassNorm_range_of_mem_infiniteTensorNorm
-      (K := K) (L := L) v x
+        v x
   exact
     (chosenInfinitePlaceArtinMonoidHom_eq_one_iff_infiniteTensorNorm
-      (K := K) (L := L) v x).1
+        v x).1
       (chosenInfinitePlaceArtinMonoidHom_eq_one_of_real_pos
-        (K := K) (L := L) v hvReal x hx)
+          v hvReal x hx)
 
+include hx in
 /-- The global norm-residue symbol of a positive real one-place idele
 class is trivial. -/
-theorem globalNormResidueMonoidHom_infinitePlaceIdeleClass_eq_one_of_real_pos
-    (v : InfinitePlace K)
-    (hvReal : v.IsReal)
-    (x : v.Completionˣ)
-    (hx :
-      0 <
-        InfinitePlace.Completion.ringEquivRealOfIsReal
-          hvReal (x : v.Completion)) :
+theorem globalNormResidueMonoidHom_infinitePlaceIdeleClass_eq_one_of_real_pos :
     globalNormResidueMonoidHom K L
         (IdeleGroup.infinitePlaceIdeleClass v x) = 1 := by
   rw [globalNormResidueMonoidHom_eq_one_iff]
   exact
     infinitePlaceIdeleClass_mem_ideleClassNorm_range_of_real_pos
-      (K := K) (L := L) v hvReal x hx
+        v hvReal x hx
+
+end
 
 /-- At an actually unramified infinite place, both the restricted
 global norm-residue map and the chosen local Artin map are trivial,
@@ -197,12 +163,8 @@ theorem globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass_of_unramified
     unfold infinitePlaceArtinMonoidHomOfPlace
     rw [dite_eq_left hUnramified]
     rfl
-  have hglobal :
-      globalNormResidueMonoidHom K L
-          (IdeleGroup.infinitePlaceIdeleClass v x) = 1 :=
-    globalNormResidueMonoidHom_infinitePlaceIdeleClass_eq_one_of_localArtin_eq_one
-      (K := K) (L := L) v x hlocal
-  rw [MonoidHom.comp_apply, hglobal, hlocal]
+  rw [MonoidHom.comp_apply, (globalNormResidueMonoidHom_infinitePlaceIdeleClass_eq_one_of_localArtin_eq_one
+    v x hlocal), hlocal]
 
 /-- At a complex base place the chosen place upstairs is automatically
 unramified, so the archimedean local-global compatibility square is
@@ -216,89 +178,11 @@ theorem globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass_of_isComplex
         (K := K) (L := L) v := by
   apply
     globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass_of_unramified
-      (K := K) (L := L) v
+        v
   apply InfinitePlace.isUnramified_iff.mpr
   apply Or.inr
-  rw [chosenInfinitePlaceAbove_comap (L := L) v]
+  rw [chosenInfinitePlaceAbove_comap v]
   exact hvComplex
-
-/-- At an actually unramified infinite place, one-place idele-class
-norm membership is exactly local determinant-norm membership. -/
-theorem infinitePlaceIdeleClass_mem_ideleClassNorm_range_iff_of_unramified
-    (v : InfinitePlace K)
-    (hUnramified :
-      (chosenInfinitePlaceAbove (L := L) v).IsUnramified K)
-    (x : v.Completionˣ) :
-    IdeleGroup.infinitePlaceIdeleClass v x ∈
-        (_root_.ideleClassNorm K L).range ↔
-      x ∈ infiniteTensorNormSubgroup
-        (K := K) (L := L) v := by
-  rw [← globalNormResidueMonoidHom_eq_one_iff]
-  rw [←
-    chosenInfinitePlaceArtinMonoidHom_eq_one_iff_infiniteTensorNorm
-      (K := K) (L := L) v x]
-  have hcompat :
-      globalNormResidueMonoidHom K L
-          (IdeleGroup.infinitePlaceIdeleClass v x) =
-        chosenInfinitePlaceArtinMonoidHom
-          (K := K) (L := L) v x := by
-    simpa only [MonoidHom.comp_apply] using
-      DFunLike.congr_fun
-        (globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass_of_unramified
-          (K := K) (L := L) v hUnramified) x
-  rw [hcompat]
-
-omit [FiniteDimensional K L] in
-/-- At an actually ramified real place, negative one is not a local
-determinant norm.  This is the concrete real/complex norm obstruction:
-every norm from the complex completion is positive. -/
-theorem neg_one_not_mem_infiniteTensorNormSubgroup_of_ramified
-    (v : InfinitePlace K)
-    (hRamified :
-      (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
-    (-1 : v.Completionˣ) ∉
-      infiniteTensorNormSubgroup
-        (K := K) (L := L) v := by
-  let w := chosenInfinitePlaceAbove (L := L) v
-  have hw :
-      w.comap (algebraMap K L) = v :=
-    chosenInfinitePlaceAbove_comap (L := L) v
-  let chosenInfinitePlaceLiesOver : w.1.LiesOver v.1 :=
-    ⟨congrArg (fun q : InfinitePlace K => q.1) hw⟩
-  rw [infiniteTensorNormSubgroup_eq_localNormSubgroup
-    (K := K) (L := L) v w hw]
-  rintro ⟨z, hz⟩
-  have hvReal : v.IsReal := by
-    exact hw ▸ hRamified.isReal
-  have hwComplex : w.IsComplex :=
-    hRamified.isComplex
-  have hpos :=
-    infinitePlace_normUnits_real_complex_pos
-      (K := K) (K' := L) v w hw
-      hvReal hwComplex z
-  have hneg : (0 : ℝ) < -1 := by
-    rw [hz] at hpos
-    simpa only [
-      InfinitePlace.Completion.ringEquivRealOfIsReal_apply,
-      Units.coe_neg_one, map_neg, map_one] using hpos
-  norm_num at hneg
-
-omit [FiniteDimensional K L] in
-/-- The actual chosen local Artin symbol of negative one is nontrivial
-at a ramified real place. -/
-theorem chosenInfinitePlaceArtinMonoidHom_neg_one_ne_one_of_ramified
-    (v : InfinitePlace K)
-    (hRamified :
-      (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
-    chosenInfinitePlaceArtinMonoidHom
-        (K := K) (L := L) v
-        (-1 : v.Completionˣ) ≠ 1 := by
-  intro htrivial
-  exact
-    neg_one_not_mem_infiniteTensorNormSubgroup_of_ramified
-      (K := K) (L := L) v hRamified
-      ((chosenInfinitePlaceArtinMonoidHom_eq_one_iff_infiniteTensorNorm
-        (K := K) (L := L) v (-1 : v.Completionˣ)).1 htrivial)
 
 omit [NumberField K] in
 /-- Every unit at a real completion is positive either as given or
@@ -315,17 +199,13 @@ private theorem realCompletionUnit_pos_or_neg_one_mul_pos
           hvReal
           (((-1 : v.Completionˣ) * x : v.Completionˣ) :
             v.Completion) := by
-  let e :
-      v.Completion ≃+* ℝ :=
+  let e :=
     InfinitePlace.Completion.ringEquivRealOfIsReal hvReal
-  have hne :
-      e (x : v.Completion) ≠ 0 :=
-    (map_ne_zero e).2 (Units.ne_zero x)
-  rcases lt_or_gt_of_ne hne with hneg | hpos
+  rcases lt_or_gt_of_ne ((map_ne_zero e).2 (Units.ne_zero x)) with hneg | hpos
   · right
     change 0 < e ((-1 : v.Completion) * (x : v.Completion))
     rw [map_mul, map_neg, map_one]
-    simpa only [neg_one_mul] using neg_pos.mpr hneg
+    simpa using neg_pos.mpr hneg
   · exact Or.inl hpos
 
 /-- At a real place, the full archimedean local-global Artin square is
@@ -352,12 +232,12 @@ theorem globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass_eq_iff_neg_one
     intro x
     rcases
         realCompletionUnit_pos_or_neg_one_mul_pos
-          (K := K) v hvReal x with hx | hx
+           v hvReal x with hx | hx
     · rw [MonoidHom.comp_apply,
         globalNormResidueMonoidHom_infinitePlaceIdeleClass_eq_one_of_real_pos
-          (K := K) (L := L) v hvReal x hx,
+            v hvReal x hx,
         chosenInfinitePlaceArtinMonoidHom_eq_one_of_real_pos
-          (K := K) (L := L) v hvReal x hx]
+            v hvReal x hx]
     · have hglobal :
           globalNormResidueMonoidHom K L
               (IdeleGroup.infinitePlaceIdeleClass v
@@ -386,9 +266,9 @@ theorem globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass_eq_iff_neg_one
         eq_inv_of_mul_eq_one_right hglobal
       have hlocalX :
           chosenInfinitePlaceArtinMonoidHom
-              (K := K) (L := L) v x =
+                v x =
             (chosenInfinitePlaceArtinMonoidHom
-              (K := K) (L := L) v
+                v
               (-1 : v.Completionˣ))⁻¹ :=
         eq_inv_of_mul_eq_one_right hlocal
       rw [MonoidHom.comp_apply, hglobalX, hlocalX, hneg]
@@ -417,11 +297,11 @@ theorem
     rcases v.isReal_or_isComplex with hvReal | hvComplex
     · exact
         (globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass_eq_iff_neg_one
-          (K := K) (L := L) v hvReal).2
+            v hvReal).2
           (h hvReal)
     · exact
         globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass_of_isComplex
-          (K := K) (L := L) v hvComplex
+            v hvComplex
 
 /-- The global norm-residue homomorphism restricted to a single
 archimedean component is the actual local Artin homomorphism at that
@@ -445,11 +325,11 @@ theorem globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass
   · exact
       DFunLike.congr_fun
         (globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass_of_unramified
-          (K := K) (L := L) v hUnramified)
+            v hUnramified)
         (-1 : v.Completionˣ)
   · exact
       globalNormResidueMonoidHom_infinitePlaceIdeleClass_neg_one_of_ramified
-        (K := K) (L := L) v hUnramified
+          v hUnramified
 
 /-- One-place archimedean norm membership is exactly membership in the
 local determinant-norm subgroup.  This is the norm-kernel form of
@@ -465,12 +345,12 @@ theorem infinitePlaceIdeleClass_mem_ideleClassNorm_range_iff
   rw [← globalNormResidueMonoidHom_eq_one_iff]
   rw [←
     chosenInfinitePlaceArtinMonoidHom_eq_one_iff_infiniteTensorNorm
-      (K := K) (L := L) v x]
+        v x]
   have hcompat :
       globalNormResidueMonoidHom K L
           (IdeleGroup.infinitePlaceIdeleClass v x) =
         chosenInfinitePlaceArtinMonoidHom
-          (K := K) (L := L) v x := by
+            v x := by
     simpa only [MonoidHom.comp_apply] using
       DFunLike.congr_fun
         (globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass

@@ -66,34 +66,32 @@ theorem actual_scalar_numerator_coordinate (P : Polarization S.heisenberg)
   set T₂ : Set (LocalField F q) :=
     ⋃ n : ℕ, actualShell F q ((M₂ + n : ℕ) : ℤ) with hT₂def
   obtain ⟨hBc, hBm, hshellc, hdisj, hunion⟩ := actual_shell_compact_partition F q M
-  have hshellc' : ∀ m : ℤ, IsCompact (actualShell F q m) ∧ MeasurableSet (actualShell F q m) :=
+  have hshellc' :=
     hshellc
   have hTm : MeasurableSet T := by
     rw [hTdef]; exact MeasurableSet.iUnion fun n => (hshellc' _).2
   obtain ⟨hB₂c, hB₂m, hshellc₂, hdisj₂, hunion₂⟩ := actual_shell_compact_partition F q M₂
 
   obtain ⟨p_core, hp_core⟩ := actual_initial_cutoff_laurent F ζ hζ q S P μ ε
-    (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
-    (k : ActualCover F ζ hζ q) h B hBc hBm
+    φ
+    k h B hBc hBm
   have hshell : ∀ i : Fin 3, ∃ p : ℤ →₀ ℂ, ∀ s : ℂ,
       (∫ x in actualShell F q ((M + i.val : ℕ) : ℤ),
         actualStandardIntegrand F ζ hζ q S P ε s φ.val k h x ∂μ) =
-      p.sum (fun n c => (evaluationUnit (LocalField F q) ε s : ℂ) ^ n * c) := by
-    intro i
-    exact actual_initial_cutoff_laurent F ζ hζ q S P μ ε
-      (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
-      (k : ActualCover F ζ hζ q) h (actualShell F q ((M + i.val : ℕ) : ℤ))
+      p.sum (fun n c => (evaluationUnit (LocalField F q) ε s : ℂ) ^ n * c) := fun i => actual_initial_cutoff_laurent F ζ hζ q S P μ ε
+      φ
+      k h (actualShell F q ((M + i.val : ℕ) : ℤ))
       (hshellc' _).1 (hshellc' _).2
   choose p_i hp_i using hshell
-  let cc : ℂ := if ε = Sign.plus then (residueCardinality (LocalField F q) : ℂ)⁻¹
+  let cc := if ε = Sign.plus then (residueCardinality (LocalField F q) : ℂ)⁻¹
     else (residueCardinality (LocalField F q) : ℂ)
-  let Pcore : LaurentPolynomial ℂ := AddMonoidAlgebra.ofCoeff p_core
-  let Pi : Fin 3 → LaurentPolynomial ℂ := fun i => AddMonoidAlgebra.ofCoeff (p_i i)
-  let Ppoly : LaurentPolynomial ℂ :=
+  let Pcore := AddMonoidAlgebra.ofCoeff p_core
+  let Pi := fun i => AddMonoidAlgebra.ofCoeff (p_i i)
+  let Ppoly :=
     (1 - LaurentPolynomial.C cc * LaurentPolynomial.T 6) * Pcore + ∑ i : Fin 3, Pi i
   refine ⟨Ppoly.coeff, ?_⟩
   intro s hs
-  let u : ℂˣ := evaluationUnit (LocalField F q) ε s
+  let u := evaluationUnit (LocalField F q) ε s
   have hden : denominator (LocalField F q) ε s = 1 - cc * (u : ℂ) ^ 6 := by
     cases ε with
     | plus =>
@@ -103,34 +101,25 @@ theorem actual_scalar_numerator_coordinate (P : Polarization S.heisenberg)
         simp only [denominator, reduceCtorEq, if_false, cc, u, evaluationUnit, rUnit, r,
           if_false, if_true, Units.val_inv_eq_inv_val, Units.val_mk0, inv_pow]
   have hstd : standardIntegralCoordinate (LocalField F q) S.borel P S.iwasawa μ ε s
-        (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
-        (k : ActualCover F ζ hζ q) h =
-      ∫ x in (Set.univ : Set (LocalField F q)),
+        φ
+        k h =
+      ∫ x in Set.univ,
         actualStandardIntegrand F ζ hζ q S P ε s φ.val k h x ∂μ := by
     rw [MeasureTheory.setIntegral_univ]
     rfl
-  have hIntB : IntegrableOn (actualStandardIntegrand F ζ hζ q S P ε s φ.val k h) B μ :=
-    standardIntegral_integrableOn_compact (LocalField F q) S.borel P S.iwasawa μ ε s
-      (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
-      (k : ActualCover F ζ hζ q) h B hBc hBm
-  have hIntB₂ : IntegrableOn (actualStandardIntegrand F ζ hζ q S P ε s φ.val k h) B₂ μ :=
-    standardIntegral_integrableOn_compact (LocalField F q) S.borel P S.iwasawa μ ε s
-      (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
-      (k : ActualCover F ζ hζ q) h B₂ hB₂c hB₂m
-  have hIntT₂ : IntegrableOn (actualStandardIntegrand F ζ hζ q S P ε s φ.val k h) T₂ μ :=
-    hM₂ s hs φ k h
-  have hIntU : IntegrableOn (actualStandardIntegrand F ζ hζ q S P ε s φ.val k h)
-      (B₂ ∪ T₂) μ := hIntB₂.union hIntT₂
+  have hIntU := (standardIntegral_integrableOn_compact (LocalField F q) S.borel P S.iwasawa μ ε s
+        φ
+        k h B₂ hB₂c hB₂m).union (hM₂ s hs φ k h)
   have hunion₂' : B₂ ∪ T₂ = Set.univ := by rw [hB₂def, hT₂def]; exact hunion₂
   rw [hunion₂'] at hIntU
-  have hIntT : IntegrableOn (actualStandardIntegrand F ζ hζ q S P ε s φ.val k h) T μ :=
-    hIntU.mono_set (Set.subset_univ T)
   have hsplit : (∫ x in (Set.univ : Set (LocalField F q)),
         actualStandardIntegrand F ζ hζ q S P ε s φ.val k h x ∂μ) =
       (∫ x in B, actualStandardIntegrand F ζ hζ q S P ε s φ.val k h x ∂μ) +
       (∫ x in T, actualStandardIntegrand F ζ hζ q S P ε s φ.val k h x ∂μ) := by
     rw [← hunion]
-    exact setIntegral_union hdisj hTm hIntB hIntT
+    exact setIntegral_union hdisj hTm (standardIntegral_integrableOn_compact (LocalField F q) S.borel P S.iwasawa μ ε s
+      φ
+      k h B hBc hBm) (hIntU.mono_set (Set.subset_univ T))
   have hpc : (∫ x in B, actualStandardIntegrand F ζ hζ q S P ε s φ.val k h x ∂μ) =
       p_core.sum (fun n c => (u : ℂ) ^ n * c) := by
     simpa only [actualStandardIntegrand, u] using hp_core s

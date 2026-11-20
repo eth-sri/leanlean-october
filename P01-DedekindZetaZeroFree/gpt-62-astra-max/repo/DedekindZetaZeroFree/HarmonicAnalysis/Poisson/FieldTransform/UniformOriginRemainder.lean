@@ -28,9 +28,6 @@ theorem fieldTransform_origin_remainder_uniform_bound
   rw [EulerIter_fieldTransform_sub_originPolynomial_eq_mellinInv
     D r h hD hr hh hhc j δ x hδ hδ1 hx]
   obtain ⟨_, hInt⟩ := hbound h hh hhc hsupp
-  have hInt' : (∫ t : ℝ, ‖(-((↑(-δ)) + (t : ℂ) * Complex.I)) ^ j *
-      B D r h ((↑(-δ)) + (t : ℂ) * Complex.I)‖) ≤ C * Vendor.S b N h := by
-    simpa only [Complex.ofReal_neg] using hInt
   have hpi : (0 : ℝ) < 1 / (2 * Real.pi) := by positivity
   have hnorm : ∀ t : ℝ, ‖(x : ℂ) ^ (-((↑(-δ)) + (t : ℂ) * Complex.I)) •
       ((-((↑(-δ)) + (t : ℂ) * Complex.I)) ^ j *
@@ -64,7 +61,8 @@ theorem fieldTransform_origin_remainder_uniform_bound
           B D r h ((↑(-δ)) + (t : ℂ) * Complex.I)‖) := by rw [hIntEq]
     _ ≤ (1 / (2 * Real.pi)) * (x ^ δ * (C * Vendor.S b N h)) :=
         mul_le_mul_of_nonneg_left
-          (mul_le_mul_of_nonneg_left hInt' (Real.rpow_nonneg hx.le δ)) hpi.le
+          (mul_le_mul_of_nonneg_left (by
+            simpa using hInt) (Real.rpow_nonneg hx.le δ)) hpi.le
     _ = ((1 / (2 * Real.pi)) * C) * Vendor.S b N h * x ^ δ := by ring
 
 theorem originPolynomial_coeff_uniform_bound
@@ -78,32 +76,24 @@ theorem originPolynomial_coeff_uniform_bound
   obtain ⟨N, C, hC, hA⟩ := A_uniform_disk_bound D r b hD hr hb
   refine ⟨N, 2 ^ (r - 1) * C, by positivity, ?_⟩
   intro h hh hhc hsupp n hn
-  have hS : 0 ≤ Vendor.S b N h := Vendor.S_nonneg b hb N h hh
-  have hM : 0 ≤ C * Vendor.S b N h := mul_nonneg hC.le hS
+  have hM := mul_nonneg hC.le (Vendor.S_nonneg b hb N h hh)
   have hdisk : Metric.closedBall (0 : ℂ) (1 / 2 : ℝ) ⊆ {s : ℂ | -1 < s.re} := by
     intro s hs
     simp only [Metric.mem_closedBall, dist_zero_right, Set.mem_setOf_eq] at hs ⊢
     have := Complex.abs_re_le_norm s
     rw [abs_le] at this
     linarith [this.1]
-  have hbound : ∀ s ∈ Metric.closedBall (0 : ℂ) (1 / 2 : ℝ),
-      ‖A D r h s‖ ≤ C * Vendor.S b N h :=
-    fun s hs => hA h hh hhc hsupp s (by
-      simpa [Metric.mem_closedBall, dist_zero_right] using hs)
-  have hres := Vendor.originLogResiduePolynomial_coeff_norm_le {s : ℂ | -1 < s.re}
-    (isOpen_lt continuous_const Complex.continuous_re) (by simp) (A D r h)
-    (A_analyticOnNhd D r h hD hr hh hhc) r n hr hn (C * Vendor.S b N h) hM hdisk hbound
-  have hfac : (1 : ℝ) ≤ (n.factorial : ℝ) := by
-    exact_mod_cast Nat.succ_le_of_lt (Nat.factorial_pos n)
-  have h2 : (2 : ℝ) ^ (r - n - 1) ≤ (2 : ℝ) ^ (r - 1) :=
-    pow_le_pow_right₀ (by norm_num) (by omega)
-  calc ‖(originPolynomial D r h).coeff n‖
+  calc _
       = ‖(Vendor.originLogResiduePolynomial (A D r h) r).coeff n‖ := rfl
-    _ ≤ 2 ^ (r - n - 1) * (C * Vendor.S b N h) / (n.factorial : ℝ) := hres
+    _ ≤ 2 ^ (r - n - 1) * (C * Vendor.S b N h) / (n.factorial : ℝ) := (Vendor.originLogResiduePolynomial_coeff_norm_le {s : ℂ | -1 < s.re}
+      (isOpen_lt continuous_const Complex.continuous_re) (by simp) (A D r h)
+      (A_analyticOnNhd D r h hD hr hh hhc) r n hr hn (C * Vendor.S b N h) hM hdisk (fun s hs => hA h hh hhc hsupp s (by
+        simpa [Metric.mem_closedBall, dist_zero_right] using hs)))
     _ ≤ 2 ^ (r - n - 1) * (C * Vendor.S b N h) :=
-        div_le_self (by positivity) hfac
+        div_le_self (by positivity) (by
+          exact_mod_cast Nat.succ_le_of_lt (Nat.factorial_pos n))
     _ ≤ (2 : ℝ) ^ (r - 1) * (C * Vendor.S b N h) :=
-        mul_le_mul_of_nonneg_right h2 hM
+        mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) (by omega)) hM
     _ = (2 ^ (r - 1) * C) * Vendor.S b N h := by ring
 
 end DedekindZetaZeroFree.LargeSieve

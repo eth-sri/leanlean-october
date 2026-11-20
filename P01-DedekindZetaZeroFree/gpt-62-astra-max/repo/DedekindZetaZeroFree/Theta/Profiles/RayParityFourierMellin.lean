@@ -21,10 +21,7 @@ theorem fourier (δ : Finset (RayCoset.RealPlaces K)) :
   funext x
   exact fourier_gδ K δ x
 
-theorem mellinFactor_mul_reciprocalGamma (δ : Finset (RayCoset.RealPlaces K))
-    (s : ℂ) (hs : 1 < s.re) :
-    κδ K δ s * hδ K δ s = 1 :=
-  κδ_mul_hδ K δ s hs
+alias mellinFactor_mul_reciprocalGamma := DedekindZetaZeroFree.AbelianQuotient.RayParity.κδ_mul_hδ
 
 end DedekindZetaZeroFree.AbelianQuotient.RayParity.FourierMellin
 

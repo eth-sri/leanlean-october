@@ -8,21 +8,23 @@ noncomputable section
 
 namespace DedekindZetaZeroFree.FiniteCentralBorel
 
+section
+
+variable {V : Type*} [AddCommGroup V] [Module ℚ V]
+
 theorem finite_character_trivial
-    {V : Type*} [AddCommGroup V] [Module ℚ V]
     {C : Type*} [CommGroup C] [Finite C]
     (χ : Multiplicative V →* C) (x : V) :
     χ (Multiplicative.ofAdd x) = 1 := by
   letI := Fintype.ofFinite C
-  let m : ℕ := Fintype.card C
-  have hm : (m : ℚ) ≠ 0 := by
-    exact_mod_cast (Fintype.card_ne_zero : Fintype.card C ≠ 0)
+  let m := Fintype.card C
   have hx : m • ((m : ℚ)⁻¹ • x) = x := by
-    rw [← Nat.cast_smul_eq_nsmul ℚ, smul_smul, mul_inv_cancel₀ hm, one_smul]
+    rw [← Nat.cast_smul_eq_nsmul ℚ, smul_smul, mul_inv_cancel₀ (by
+      exact_mod_cast Fintype.card_ne_zero), one_smul]
   rw [← hx, ofAdd_nsmul, map_pow]
   exact pow_card_eq_one
 
-private lemma correction_trivial {V : Type*} [AddCommGroup V] [Module ℚ V]
+private lemma correction_trivial
     {G H : Type*} [Group G] [Group H] (π : G →* H) [Finite π.ker]
     (hc : π.ker ≤ Subgroup.center G)
     (f g : Multiplicative V →* G) (hfg : ∀ x, π (f x) = π (g x)) (x : Multiplicative V) :
@@ -34,7 +36,6 @@ private lemma correction_trivial {V : Type*} [AddCommGroup V] [Module ℚ V]
         apply Subtype.ext
         exact (Subgroup.mem_center_iff.mp (hc a.property) b.val).symm }
   have hker (y : Multiplicative V) : f y * (g y)⁻¹ ∈ π.ker := by
-    change π (f y * (g y)⁻¹) = 1
     simp [hfg y]
   let d : Multiplicative V →* π.ker :=
     { toFun := fun y => ⟨f y * (g y)⁻¹, hker y⟩
@@ -42,15 +43,13 @@ private lemma correction_trivial {V : Type*} [AddCommGroup V] [Module ℚ V]
       map_mul' := by
         intro a b
         apply Subtype.ext
-        change f (a * b) * (g (a * b))⁻¹ = (f a * (g a)⁻¹) * (f b * (g b)⁻¹)
-        have hcomm := Subgroup.mem_center_iff.mp (hc (hker b)) (g a)⁻¹
         simp only [map_mul, mul_inv_rev]
         calc
-          f a * f b * ((g b)⁻¹ * (g a)⁻¹) = f a * (f b * (g b)⁻¹) * (g a)⁻¹ := by group
-          _ = f a * (g a)⁻¹ * (f b * (g b)⁻¹) := by rw [mul_assoc, ← hcomm, ← mul_assoc] }
-  have hd := finite_character_trivial d (Multiplicative.toAdd x)
-  have hdone : f x * (g x)⁻¹ = 1 := congrArg Subtype.val hd
-  exact mul_inv_eq_one.mp hdone
+          _ = f a * (f b * (g b)⁻¹) * (g a)⁻¹ := by group
+          _ = f a * (g a)⁻¹ * (f b * (g b)⁻¹) := by rw [mul_assoc, ← (Subgroup.mem_center_iff.mp (hc (hker b)) (g a)⁻¹), ← mul_assoc]}
+  exact mul_inv_eq_one.mp (congrArg Subtype.val (finite_character_trivial d (Multiplicative.toAdd x)))
+
+end
 
 open KPRankOneInductionRaw
 open IsDedekindDomain NumberField
@@ -72,9 +71,9 @@ private lemma ordinary_borel_conjugates (b : upperBorel F v) (x : LocalField F v
     apply Units.ext
     apply Matrix.ext
     intro i j
-    change ((A : Matrix (Fin 2) (Fin 2) (LocalField F v)) * !![1, x; 0, 1]) i j =
+    change (A * !![1, x; 0, 1]) i j =
       (!![1, (borelRatio F v b : LocalField F v) * x; 0, 1] *
-        (A : Matrix (Fin 2) (Fin 2) (LocalField F v))) i j
+        A) i j
     fin_cases i <;> fin_cases j <;>
       simp [Matrix.mul_apply, Fin.sum_univ_two, hu]
     rw [borelRatio_eq F v b A hA hu]
@@ -99,9 +98,9 @@ theorem torusLift_conjugates_root
     t * n (Multiplicative.ofAdd x) * t⁻¹ =
       n (Multiplicative.ofAdd
         ((borelRatio F v ⟨π t, htB⟩ : LocalField F v) * x)) := by
-  let r : LocalField F v := (borelRatio F v ⟨π t, htB⟩ : LocalField F v)
-  let f : Multiplicative (LocalField F v) →* G := (MulAut.conj t).toMonoidHom.comp n
-  let g : Multiplicative (LocalField F v) →* G :=
+  let r := (borelRatio F v ⟨π t, htB⟩ : LocalField F v)
+  let f := (MulAut.conj t).toMonoidHom.comp n
+  let g :=
     n.comp (AddMonoidHom.toMultiplicative (AddMonoidHom.mulLeft r))
   have hfg (y : Multiplicative (LocalField F v)) : π (f y) = π (g y) := by
     change π (t * n y * t⁻¹) = π (n (Multiplicative.ofAdd (r * Multiplicative.toAdd y)))

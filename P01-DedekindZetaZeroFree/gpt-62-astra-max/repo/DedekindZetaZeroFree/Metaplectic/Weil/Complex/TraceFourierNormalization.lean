@@ -80,20 +80,12 @@ theorem integrable_F_schwartz_mu (β : ℂ) (f : SchwartzMap ℂ ℂ) :
     simp
   · have hsch : Integrable
         (fun y : ℂ => FourierTransform.fourier (⇑f) ((starRingEnd ℂ) (β * y)))
-        (volume : Measure ℂ) := by
+        volume := by
       have h := (SchwartzMap.compCLMOfAntilipschitz ℂ (freqMap β).hasTemperateGrowth
         (antilipschitzWith_freqMap hβ) (FourierTransform.fourier f)).integrable (μ := volume)
       simpa only [Function.comp_def, freqMap_apply, SchwartzMap.compCLMOfAntilipschitz_apply,
         SchwartzMap.fourier_coe] using h
-    have h2 : Integrable
-        (fun y : ℂ => (‖β‖ : ℂ) * FourierTransform.fourier (⇑f)
-          ((starRingEnd ℂ) (β * y))) (volume : Measure ℂ) :=
-      hsch.const_mul (‖β‖ : ℂ)
-    have h3 : Integrable
-        (fun y : ℂ => (‖β‖ : ℂ) * FourierTransform.fourier (⇑f)
-          ((starRingEnd ℂ) (β * y))) (mu β) :=
-      h2.smul_measure ENNReal.ofReal_ne_top
-    refine h3.congr ?_
+    refine ((hsch.const_mul (‖β‖ : ℂ)).smul_measure ENNReal.ofReal_ne_top).congr ?_
     filter_upwards with y
     exact (F_eq_fourier β hβ (⇑f) y).symm
 

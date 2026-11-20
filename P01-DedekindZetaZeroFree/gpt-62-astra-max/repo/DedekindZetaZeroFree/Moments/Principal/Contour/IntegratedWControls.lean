@@ -18,8 +18,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonK
 open scoped Classical Topology
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 private lemma dom_mem (ξ w z : ℂ) (hξ : Scales.rightLine ≤ ξ.re) (hw : 1 < w.re)
     (hz : z.re = 1 / 6 + Scales.contourOffset) :
@@ -46,16 +46,9 @@ set_option maxHeartbeats 4000000 in
 private lemma kern_w_diff (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ z : ℂ)
     (hξ : Scales.rightLine ≤ ξ.re) (hz : z.re = 1 / 6 + Scales.contourOffset) :
     DifferentiableOn ℂ (fun w => kern D u Z ξ w z) {w : ℂ | 1 < w.re} := by
-  have hk := kern_differentiableOn D u hu Z hZ
-  have hmaps : MapsTo (fun w : ℂ => ((ξ, w, z) : Coordinates)) {w : ℂ | 1 < w.re}
-      ((paddedBox₂ ∩ {p : Coordinates | Scales.rightLine - Scales.contourOffset / 2 < p.1.re} ∩
-        {p : Coordinates | 1 / 6 + Scales.contourOffset / 2 < p.2.2.re}) \ {p : Coordinates | p.2.1 = 1}) :=
-    fun w hw => dom_mem ξ w z hξ hw hz
-  have hf : DifferentiableOn ℂ (fun w : ℂ => ((ξ, w, z) : Coordinates)) {w : ℂ | 1 < w.re} :=
-    (differentiableOn_const ξ).prodMk (differentiableOn_id.prodMk (differentiableOn_const z))
   have key := DifferentiableOn.comp
-    (g := fun p : Coordinates => kern D u Z p.1 p.2.1 p.2.2)
-    (f := fun w : ℂ => ((ξ, w, z) : Coordinates)) (s := {w : ℂ | 1 < w.re}) hk hf hmaps
+
+      (kern_differentiableOn D u hu Z hZ) ((differentiableOn_const ξ).prodMk (differentiableOn_id.prodMk (differentiableOn_const z))) (fun w hw => dom_mem ξ w z hξ hw hz)
   exact key
 
 set_option maxHeartbeats 4000000 in
@@ -63,17 +56,10 @@ set_option maxHeartbeats 4000000 in
 private lemma kern_t_cont (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ w a : ℂ)
     (hξ : Scales.rightLine ≤ ξ.re) (hw : 1 < w.re) (ha : a.re = 1 / 6 + Scales.contourOffset) :
     Continuous (fun t : ℝ => kern D u Z ξ w (a + (t : ℂ) * I)) := by
-  have hk := kern_differentiableOn D u hu Z hZ
-  have hc : Continuous (fun t : ℝ => ((ξ, w, a + (t : ℂ) * I) : Coordinates)) :=
-    continuous_const.prodMk (continuous_const.prodMk
-      (continuous_const.add (Complex.continuous_ofReal.mul continuous_const)))
-  have hmem : ∀ t : ℝ, ((ξ, w, a + (t : ℂ) * I) : Coordinates) ∈
-      ((paddedBox₂ ∩ {p : Coordinates | Scales.rightLine - Scales.contourOffset / 2 < p.1.re} ∩
-        {p : Coordinates | 1 / 6 + Scales.contourOffset / 2 < p.2.2.re}) \ {p : Coordinates | p.2.1 = 1}) :=
-    fun t => dom_mem ξ w (a + (t : ℂ) * I) hξ hw (by rw [Complex.add_re, ha]; simp)
   have key := ContinuousOn.comp_continuous
-    (g := fun p : Coordinates => kern D u Z p.1 p.2.1 p.2.2)
-    (f := fun t : ℝ => ((ξ, w, a + (t : ℂ) * I) : Coordinates)) hk.continuousOn hc hmem
+
+     (kern_differentiableOn D u hu Z hZ).continuousOn (continuous_const.prodMk (continuous_const.prodMk
+      (continuous_const.add (Complex.continuous_ofReal.mul continuous_const)))) (fun t => dom_mem ξ w (a + (t : ℂ) * I) hξ hw (by rw [Complex.add_re, ha]; simp))
   exact key
 
 private lemma hgauss (c : ℝ) : Integrable (fun t : ℝ => Real.exp (-(c + t) ^ 2)) := by
@@ -83,8 +69,10 @@ private lemma hgauss (c : ℝ) : Integrable (fun t : ℝ => Real.exp (-(c + t) ^
   congr 1
   ring
 
-theorem Iz_w_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (ξ : ℂ)
-    (hξ : ξ.re ∈ Icc Scales.rightLine 4) :
+variable (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (ξ : ℂ) (hξ : ξ.re ∈ Icc Scales.rightLine 4)
+
+include hu hZ hξ in
+theorem Iz_w_holo :
     DifferentiableOn ℂ (fun w => Iz D u Z (1 / 6 + Scales.contourOffset) ξ w)
       (comparisonClosedStrip Scales.rightLine 4) := by
   have hZ0 : (0 : ℝ) < Z := by linarith
@@ -184,85 +172,70 @@ theorem Iz_w_holo (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (ξ : ℂ)
     exact (hUmem w).2 ⟨by linarith [hw'.1, hδp], by linarith [hw'.2]⟩
   exact hfull.mono hsub
 
-theorem Iz_w_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (ξ : ℂ)
-    (hξ : ξ.re ∈ Icc Scales.rightLine 4) :
+include hu hZ hξ in
+theorem Iz_w_decay :
     DecayOn (fun w => Iz D u Z (1 / 6 + Scales.contourOffset) ξ w) Scales.rightLine 4 := by
   intro B hB
-  have hZ0 : (0 : ℝ) < Z := by linarith
   have hx1 : Scales.rightLine = 1 + Scales.contourOffset := rfl
   have hδ : Scales.contourOffset = 1 / 10000000 := rfl
-  have hξ1 : Scales.rightLine ≤ ξ.re := hξ.1
   obtain ⟨Ck, hCk, hk⟩ := kernel_factor_bound D u hu Z hZ
-  have hv : (0 : ℝ) < 1 / 6 + Scales.contourOffset := by rw [hδ]; norm_num
-  obtain ⟨KM, hKM⟩ := D.M_vertical_decay (1 / 6 + Scales.contourOffset) (1 / 6 + Scales.contourOffset) hv le_rfl 0
+  obtain ⟨KM, hKM⟩ := D.M_vertical_decay (1 / 6 + Scales.contourOffset) (1 / 6 + Scales.contourOffset) (by rw [hδ]; norm_num) le_rfl 0
   have hMb : ∀ z : ℂ, z.re = 1 / 6 + Scales.contourOffset → ‖D.M z‖ ≤ KM := fun z hz => by
     have := hKM z (by rw [hz]) (by rw [hz])
     simpa using this
-  have hKM0 : 0 ≤ KM := le_trans (norm_nonneg _) (hMb ((1 / 6 + Scales.contourOffset : ℝ) : ℂ) (by simp))
   set I0 : ℝ := ∫ t : ℝ, Real.exp (-(ξ.im + t) ^ 2) with hI0def
-  have hI0 : 0 ≤ I0 := integral_nonneg fun t => (Real.exp_pos _).le
   set A : ℝ := ‖(2 * (Real.pi : ℂ))⁻¹‖ * Ck * KM * I0 with hA
   have hA0 : 0 ≤ A := by
     rw [hA]
     have := norm_nonneg ((2 * (Real.pi : ℂ))⁻¹)
-    exact mul_nonneg (mul_nonneg (mul_nonneg this hCk) hKM0) hI0
+    exact mul_nonneg (mul_nonneg (mul_nonneg this hCk) (le_trans (norm_nonneg _) (hMb ((1 / 6 + Scales.contourOffset : ℝ) : ℂ) (by simp)))) (integral_nonneg fun t => (Real.exp_pos _).le)
   obtain ⟨Cw, hCw⟩ := D.W1Hat_vertical_decay Scales.rightLine 4 (by rw [hx1, hδ]; norm_num) ⌈B⌉₊
   refine ⟨A * Cw, 0, fun x hx y _ => ?_⟩
   show ‖Iz D u Z (1 / 6 + Scales.contourOffset) ξ ((x : ℂ) + (y : ℂ) * I)‖ ≤ (A * Cw) * (1 + |y|) ^ (-B)
   have hwre : ((x : ℂ) + (y : ℂ) * I).re = x := by simp
   have hwim : ((x : ℂ) + (y : ℂ) * I).im = y := by simp
-  have hxa : Scales.rightLine - Scales.contourOffset / 2 ≤ ((x : ℂ) + (y : ℂ) * I).re := by
-    rw [hwre]; linarith [hx.1]
-  have hxb : ((x : ℂ) + (y : ℂ) * I).re ≤ 5 := by rw [hwre]; linarith [hx.2]
   have hxb4 : ((x : ℂ) + (y : ℂ) * I).re ≤ 4 := by rw [hwre]; exact hx.2
   have hxa' : Scales.rightLine ≤ ((x : ℂ) + (y : ℂ) * I).re := by rw [hwre]; exact hx.1
+  let W1Hat₀ := D.W1Hat ((x : ℂ) + (y : ℂ) * I)
   have hIz : ‖Iz D u Z (1 / 6 + Scales.contourOffset) ξ ((x : ℂ) + (y : ℂ) * I)‖ ≤
-      A * ‖D.W1Hat ((x : ℂ) + (y : ℂ) * I)‖ := by
+      A * ‖W1Hat₀‖ := by
     show ‖(2 * (Real.pi : ℂ))⁻¹ * ∫ t : ℝ,
       kern D u Z ξ ((x : ℂ) + (y : ℂ) * I) (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I)‖ ≤ _
     rw [norm_mul]
     have hpt : ∀ t : ℝ, ‖kern D u Z ξ ((x : ℂ) + (y : ℂ) * I)
         (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I)‖ ≤
-        (Ck * ‖D.W1Hat ((x : ℂ) + (y : ℂ) * I)‖ * KM) * Real.exp (-(ξ.im + t) ^ 2) := by
+        (Ck * ‖W1Hat₀‖ * KM) * Real.exp (-(ξ.im + t) ^ 2) := by
       intro t
       have hz : (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I).re = 1 / 6 + Scales.contourOffset := by simp
       have hzi : (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I).im = t := by simp
-      have h := hk ξ ((x : ℂ) + (y : ℂ) * I) _ hξ1 hξ.2 hxa hxb hz
+      have h := hk ξ ((x : ℂ) + (y : ℂ) * I) _ hξ.1 hξ.2 (by
+        rw [hwre]; linarith [hx.1]) (by rw [hwre]; linarith [hx.2]) hz
       rw [hzi] at h
-      have hM := hMb (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I) hz
-      have hE := Real.exp_pos (-(ξ.im + t) ^ 2)
-      have hCW : 0 ≤ Ck * ‖D.W1Hat ((x : ℂ) + (y : ℂ) * I)‖ :=
-        mul_nonneg hCk (norm_nonneg _)
       refine le_trans h ?_
-      apply mul_le_mul_of_nonneg_right _ hE.le
-      exact mul_le_mul_of_nonneg_left hM hCW
-    have hint : ‖∫ t : ℝ, kern D u Z ξ ((x : ℂ) + (y : ℂ) * I)
-        (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I)‖ ≤
-        ∫ t : ℝ, (Ck * ‖D.W1Hat ((x : ℂ) + (y : ℂ) * I)‖ * KM) * Real.exp (-(ξ.im + t) ^ 2) :=
+      apply mul_le_mul_of_nonneg_right _ (Real.exp_pos (-(ξ.im + t) ^ 2)).le
+      exact mul_le_mul_of_nonneg_left (hMb (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I) hz) (mul_nonneg hCk (norm_nonneg _))
+    have hint :=
       norm_integral_le_of_norm_le ((hgauss ξ.im).const_mul _) (Eventually.of_forall hpt)
     rw [integral_const_mul] at hint
-    calc ‖(2 * (Real.pi : ℂ))⁻¹‖ * ‖∫ t : ℝ, kern D u Z ξ ((x : ℂ) + (y : ℂ) * I)
-          (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I)‖
-        ≤ ‖(2 * (Real.pi : ℂ))⁻¹‖ * ((Ck * ‖D.W1Hat ((x : ℂ) + (y : ℂ) * I)‖ * KM) * I0) :=
+    calc _
+        ≤ ‖(2 * (Real.pi : ℂ))⁻¹‖ * ((Ck * ‖W1Hat₀‖ * KM) * I0) :=
           mul_le_mul_of_nonneg_left hint (norm_nonneg _)
-      _ = A * ‖D.W1Hat ((x : ℂ) + (y : ℂ) * I)‖ := by rw [hA]; ring
+      _ = A * ‖W1Hat₀‖ := by rw [hA]; ring
   have hs : 0 < (1 + |y|) ^ ⌈B⌉₊ := by positivity
-  have hW : ‖D.W1Hat ((x : ℂ) + (y : ℂ) * I)‖ ≤ Cw * ((1 + |y|) ^ ⌈B⌉₊)⁻¹ := by
+  have hW : ‖W1Hat₀‖ ≤ Cw * ((1 + |y|) ^ ⌈B⌉₊)⁻¹ := by
     have h := hCw _ hxa' hxb4
     rw [hwim] at h
     rw [← div_eq_mul_inv, le_div_iff₀ hs, mul_comm]
     exact h
-  have hCw0 : 0 ≤ Cw := le_trans (mul_nonneg (by positivity) (norm_nonneg _))
-    (hCw _ hxa' hxb4)
-  have hb : (1 : ℝ) ≤ 1 + |y| := by linarith [abs_nonneg y]
   have hpow : ((1 + |y|) ^ ⌈B⌉₊)⁻¹ ≤ (1 + |y|) ^ (-B) := by
     rw [← Real.rpow_natCast, ← Real.rpow_neg (by linarith [abs_nonneg y])]
-    exact Real.rpow_le_rpow_of_exponent_le hb (by linarith [Nat.le_ceil B])
-  calc ‖Iz D u Z (1 / 6 + Scales.contourOffset) ξ ((x : ℂ) + (y : ℂ) * I)‖
-      ≤ A * ‖D.W1Hat ((x : ℂ) + (y : ℂ) * I)‖ := hIz
+    exact Real.rpow_le_rpow_of_exponent_le (by linarith [abs_nonneg y]) (by linarith [Nat.le_ceil B])
+  calc _
+      ≤ A * ‖W1Hat₀‖ := hIz
     _ ≤ A * (Cw * ((1 + |y|) ^ ⌈B⌉₊)⁻¹) := mul_le_mul_of_nonneg_left hW hA0
     _ ≤ A * (Cw * (1 + |y|) ^ (-B)) :=
-        mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hpow hCw0) hA0
+        mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hpow (le_trans (mul_nonneg (by positivity) (norm_nonneg _))
+          (hCw _ hxa' hxb4))) hA0
     _ = (A * Cw) * (1 + |y|) ^ (-B) := by ring
 
 end

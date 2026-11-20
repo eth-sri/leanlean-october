@@ -16,8 +16,8 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-variable (S : ActualKPBinding F ζ hζ q)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
+    (S : ActualKPBinding F ζ hζ q)
 
 open KPJacquetBruhatCharts KPLocalSmoothRepresentation
 
@@ -37,7 +37,6 @@ private theorem M_clopen : IsClopen (M F q) := by
     rw [IsValuativeTopology.mem_nhds_iff]
     refine ⟨1, ?_⟩
     rintro y ⟨t,ht,rfl⟩
-    change valuation (K F q) (x + t) < 1
     exact (valuation (K F q)).map_add x t |>.trans_lt (max_lt hx ht)
   exact ⟨AddSubgroup.isClosed_of_isOpen
     (Valuation.ltAddSubgroup (valuation (K F q)) 1) hM, hM⟩
@@ -48,7 +47,6 @@ private theorem O_clopen : IsClopen (O F q) := by
     rw [IsValuativeTopology.mem_nhds_iff]
     refine ⟨1, ?_⟩
     rintro y ⟨t,ht,rfl⟩
-    change valuation (K F q) (x + t) ≤ 1
     exact (valuation (K F q)).map_add x t |>.trans (max_le hx ht.le)
   exact ⟨AddSubgroup.isClosed_of_isOpen
     ((valuation (K F q)).leAddSubgroup 1) hO, hO⟩
@@ -69,19 +67,6 @@ private theorem E0_open : IsOpen (E0 F ζ hζ q) := by
   exact ((charts_open_and_borel_closed F ζ hζ q _
     (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q)).1.isOpenMap_subtype_val)
       _ ((O_clopen F q).isOpen.preimage hc)
-private theorem E1_open : IsOpen (E1 F ζ hζ q) := by
-  let h := deltaHomeomorph F ζ hζ q (KPAdelicCoverRestrictedProduct.depth F ζ hζ q)
-    (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q)
-  have hc : Continuous (deltaCoordinate F ζ hζ q) := by
-    have he : Prod.snd ∘ h.symm = deltaCoordinate F ζ hζ q := rfl
-    rw [← he]
-    exact continuous_snd.comp h.symm.continuous
-  have he : E1 F ζ hζ q = Subtype.val ''
-      ((deltaCoordinate F ζ hζ q) ⁻¹' M F q) := by ext; simp [E1]
-  rw [he]
-  exact ((charts_open_and_borel_closed F ζ hζ q _
-    (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q)).2.1.isOpenMap_subtype_val)
-      _ ((M_clopen F q).isOpen.preimage hc)
 
 private theorem E_cover : E0 F ζ hζ q ∪ E1 F ζ hζ q = Set.univ := by
   apply Set.eq_univ_of_forall
@@ -98,13 +83,10 @@ private theorem E_cover : E0 F ζ hζ q ∪ E1 F ζ hζ q = Set.univ := by
         exact hs (by simp [h0, O])
       have hδ : x ∈ delta F ζ hζ q := ⟨A,hA,hd⟩
       refine Or.inr ⟨hδ, ?_⟩
-      have ho := overlap_coordinates F ζ hζ q x hx hδ
-      change valuation (K F q) (deltaCoordinate F ζ hζ q ⟨x,hδ⟩) < 1
-      rw [← inv_eq_iff_eq_inv.mpr ho.1]
+      rw [← inv_eq_iff_eq_inv.mpr (overlap_coordinates F ζ hζ q x hx hδ).1]
       exact (Valuation.val_le_one_or_val_inv_lt_one (valuation (K F q)) s).resolve_left hs
   · have hd : x ∈ delta F ζ hζ q := by
-      have hc := charts_cover F ζ hζ q
-      exact (show x ∈ omega F ζ hζ q ∪ delta F ζ hζ q by rw [hc]; trivial).resolve_left hx
+      exact (show x ∈ omega F ζ hζ q ∪ delta F ζ hζ q by rw [(charts_cover F ζ hζ q)]; trivial).resolve_left hx
     obtain ⟨A,hA,hd'⟩ := hd
     have hd : x ∈ delta F ζ hζ q := ⟨A,hA,hd'⟩
     have hc : A 1 0 = 0 := by
@@ -125,31 +107,40 @@ private theorem E_disjoint : Disjoint (E0 F ζ hζ q) (E1 F ζ hζ q) := by
       (omegaCoordinate F ζ hζ q ⟨x,hx⟩)⁻¹ := by rw [ho.1, inv_inv]
   rw [he, map_inv₀] at h1
   exact not_lt_of_ge (by simpa using (inv_le_inv₀ (show (0 : ValueGroupWithZero (K F q)) < 1 by simp) (zero_lt_iff.mpr hv)).mpr h0) h1
-private theorem E0_rep (x : G F ζ hζ q) (A : KPRankOneInduction.GL2 F q)
-    (ha : Matrix.ProjGenLinGroup.mk A = projection F ζ hζ q x) :
+section
+
+variable (x : G F ζ hζ q) (A : KPRankOneInduction.GL2 F q)
+    (ha : Matrix.ProjGenLinGroup.mk A = projection F ζ hζ q x)
+
+include ha in
+private theorem E0_rep :
     x ∈ E0 F ζ hζ q ↔ A 1 0 ≠ 0 ∧ valuation (K F q) (A 1 1 / A 1 0) ≤ 1 := by
   constructor
   · rintro ⟨hx,hv⟩
-    have hc : A 1 0 ≠ 0 := (mem_ordinaryOmega_iff F q A).mp (ha.symm ▸ hx)
-    exact ⟨hc, by simpa [omegaCoordinate_eq F ζ hζ q ⟨x,hx⟩ A ha] using hv⟩
+    exact ⟨((mem_ordinaryOmega_iff F q A).mp (ha.symm ▸ hx)), by simpa [omegaCoordinate_eq F ζ hζ q ⟨x,hx⟩ A ha] using hv⟩
   · rintro ⟨hc,hv⟩
     have hx : x ∈ omega F ζ hζ q := ⟨A,ha,hc⟩
     exact ⟨hx, by simpa [omegaCoordinate_eq F ζ hζ q ⟨x,hx⟩ A ha] using hv⟩
-private theorem E1_rep (x : G F ζ hζ q) (A : KPRankOneInduction.GL2 F q)
-    (ha : Matrix.ProjGenLinGroup.mk A = projection F ζ hζ q x) :
+include ha in
+private theorem E1_rep :
     x ∈ E1 F ζ hζ q ↔ A 1 1 ≠ 0 ∧ valuation (K F q) (A 1 0 / A 1 1) < 1 := by
   constructor
   · rintro ⟨hx,hv⟩
-    have hc : A 1 1 ≠ 0 := (mem_ordinaryDelta_iff F q A).mp (ha.symm ▸ hx)
-    exact ⟨hc, by simpa [deltaCoordinate_eq F ζ hζ q ⟨x,hx⟩ A ha] using hv⟩
+    exact ⟨((mem_ordinaryDelta_iff F q A).mp (ha.symm ▸ hx)), by simpa [deltaCoordinate_eq F ζ hζ q ⟨x,hx⟩ A ha] using hv⟩
   · rintro ⟨hc,hv⟩
     have hx : x ∈ delta F ζ hζ q := ⟨A,ha,hc⟩
     exact ⟨hx, by simpa [deltaCoordinate_eq F ζ hζ q ⟨x,hx⟩ A ha] using hv⟩
 
+end
+
 private theorem bottom_mul (B A : KPRankOneInduction.GL2 F q) (hb : B 1 0 = 0)
     (j : Fin 2) : (B * A : KPRankOneInduction.GL2 F q) 1 j = B 1 1 * A 1 j := by
   simp [Matrix.mul_apply, Fin.sum_univ_two, hb]
-private theorem E0_left (b : Borel F ζ hζ q) (x : G F ζ hζ q) :
+section
+
+variable (b : Borel F ζ hζ q) (x : G F ζ hζ q)
+
+private theorem E0_left :
     b.val * x ∈ E0 F ζ hζ q ↔ x ∈ E0 F ζ hζ q := by
   obtain ⟨B,hB,hb⟩ := b.property
   obtain ⟨A,hA⟩ := Matrix.ProjGenLinGroup.mk_surjective (projection F ζ hζ q x)
@@ -157,11 +148,9 @@ private theorem E0_left (b : Borel F ζ hζ q) (x : G F ζ hζ q) :
     rw [map_mul, map_mul, hB, hA]
   rw [E0_rep F ζ hζ q _ (B*A) hBA, E0_rep F ζ hζ q _ A hA,
     bottom_mul F q B A hb 0, bottom_mul F q B A hb 1]
-  have hn : B 1 1 ≠ 0 := by
-    intro hn
-    exact B.det_ne_zero (by simp [Matrix.det_fin_two, hb, hn])
+  have hn : B 1 1 ≠ 0 := fun hn => B.det_ne_zero (by simp [Matrix.det_fin_two, hb, hn])
   simp [hn, mul_div_mul_left]
-private theorem E1_left (b : Borel F ζ hζ q) (x : G F ζ hζ q) :
+private theorem E1_left :
     b.val * x ∈ E1 F ζ hζ q ↔ x ∈ E1 F ζ hζ q := by
   obtain ⟨B,hB,hb⟩ := b.property
   obtain ⟨A,hA⟩ := Matrix.ProjGenLinGroup.mk_surjective (projection F ζ hζ q x)
@@ -169,10 +158,10 @@ private theorem E1_left (b : Borel F ζ hζ q) (x : G F ζ hζ q) :
     rw [map_mul, map_mul, hB, hA]
   rw [E1_rep F ζ hζ q _ (B*A) hBA, E1_rep F ζ hζ q _ A hA,
     bottom_mul F q B A hb 0, bottom_mul F q B A hb 1]
-  have hn : B 1 1 ≠ 0 := by
-    intro hn
-    exact B.det_ne_zero (by simp [Matrix.det_fin_two, hb, hn])
+  have hn : B 1 1 ≠ 0 := fun hn => B.det_ne_zero (by simp [Matrix.det_fin_two, hb, hn])
   simp [hn, mul_div_mul_left]
+
+end
 
  def mu (s : K F q) : KPRankOneInduction.GL2 F q :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero !![0,1;-1,-s] (by simp [Matrix.det_fin_two])
@@ -242,14 +231,23 @@ private theorem delta_right_W_omega (x : G F ζ hζ q) (hx : x ∈ delta F ζ h�
 private theorem E_compl : (E0 F ζ hζ q)ᶜ = E1 F ζ hζ q := by
   ext x
   have hc : x ∈ E0 F ζ hζ q ∨ x ∈ E1 F ζ hζ q := by
-    have hc := E_cover F ζ hζ q
-    exact show x ∈ E0 F ζ hζ q ∪ E1 F ζ hζ q by rw [hc]; trivial
-  have hd := Set.disjoint_left.mp (E_disjoint F ζ hζ q)
-  exact ⟨fun h => hc.resolve_left h, fun h h0 => hd h0 h⟩
+    exact show x ∈ E0 F ζ hζ q ∪ E1 F ζ hζ q by rw [(E_cover F ζ hζ q)]; trivial
+  exact ⟨fun h => hc.resolve_left h, fun h h0 => (Set.disjoint_left.mp (E_disjoint F ζ hζ q)) h0 h⟩
 private theorem E0_clopen : IsClopen (E0 F ζ hζ q) := by
   refine ⟨?_, E0_open F ζ hζ q⟩
   rw [← isOpen_compl_iff, E_compl]
-  exact E1_open F ζ hζ q
+  let h := deltaHomeomorph F ζ hζ q (KPAdelicCoverRestrictedProduct.depth F ζ hζ q)
+    (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q)
+  have hc : Continuous (deltaCoordinate F ζ hζ q) := by
+    have he : Prod.snd ∘ h.symm = deltaCoordinate F ζ hζ q := rfl
+    rw [← he]
+    exact continuous_snd.comp h.symm.continuous
+  have he : E1 F ζ hζ q = Subtype.val ''
+      ((deltaCoordinate F ζ hζ q) ⁻¹' M F q) := by ext; simp [E1]
+  rw [he]
+  exact ((charts_open_and_borel_closed F ζ hζ q _
+    (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q)).2.1.isOpenMap_subtype_val)
+      _ ((M_clopen F q).isOpen.preimage hc)
 private theorem E1_clopen : IsClopen (E1 F ζ hζ q) := by
   rw [← E_compl]
   exact (E0_clopen F ζ hζ q).compl
@@ -268,8 +266,8 @@ theorem actual_translated_cell_clopen_partition :
       (∀ i, IsCompact {s : LocalField F q |
         openCoordinate F ζ hζ q s * (g i)⁻¹ ∈ E i}) := by
   classical
-  let g : Fin 2 → G F ζ hζ q := ![1, KPPGLLocalCover.W F ζ hζ (Sum.inr q)]
-  let E : Fin 2 → Set (G F ζ hζ q) := ![E0 F ζ hζ q, E1 F ζ hζ q]
+  let g := ![1, KPPGLLocalCover.W F ζ hζ (Sum.inr q)]
+  let E := ![E0 F ζ hζ q, E1 F ζ hζ q]
   refine ⟨2,g,E,?_,?_,?_,?_,?_,?_⟩
   · intro i
     fin_cases i
@@ -306,9 +304,8 @@ theorem actual_translated_cell_clopen_partition :
       refine ⟨⟨b.val, by rw [S.borel_eq]; exact b.property⟩,
         omegaCoordinate F ζ hζ q ⟨x * KPPGLLocalCover.W F ζ hζ (Sum.inr q),
           delta_right_W_omega F ζ hζ q x hΔ⟩, ?_⟩
-      have he := congrArg (fun a : G F ζ hζ q =>
-        a * (KPPGLLocalCover.W F ζ hζ (Sum.inr q))⁻¹) hb
-      simpa [g, mul_assoc] using he
+      simpa [g, mul_assoc] using (congrArg (fun a : G F ζ hζ q =>
+        a * (KPPGLLocalCover.W F ζ hζ (Sum.inr q))⁻¹) hb)
   · intro i
     fin_cases i
     · simpa [g,E] using (E0_pullback F ζ hζ q ▸ O_compact F q)

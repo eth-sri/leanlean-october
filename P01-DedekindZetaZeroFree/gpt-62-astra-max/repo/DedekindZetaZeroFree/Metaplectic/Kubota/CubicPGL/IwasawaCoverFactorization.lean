@@ -10,8 +10,8 @@ namespace DedekindZetaZeroFree.ActualFiniteBorel.IwasawaProof
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
 local instance : ValuativeRel (q.adicCompletion F) :=
   ClassFieldTheory.finitePlaceCompletionValuativeRel F q
 local instance : IsNonarchimedeanLocalField (q.adicCompletion F) :=
@@ -24,24 +24,23 @@ theorem covered_factor (g : KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q)) :
     ∃ b : KPLocalSmoothRepresentation.Borel F ζ hζ q,
       ∃ k : KPRankOneCartanGeometry.coveredK0 F ζ hζ q,
         g = b.val * k.val := by
+  let projection₀ := KPPGLLocalCover.projection F ζ hζ (Sum.inr q)
   obtain ⟨G, hG⟩ := QuotientGroup.mk_surjective
-    (KPPGLLocalCover.projection F ζ hζ (Sum.inr q) g)
+    (projection₀ g)
   obtain ⟨r, hr⟩ := triangularize F q G
   obtain ⟨k, hk⟩ := KPPGLLocalCover.projection_surjective F ζ hζ (Sum.inr q)
     (KPPGLLocalCover.baseQuotient F (Sum.inr q) (KPTameCompact.inclusion F q r⁻¹))
   have hkmem : k ∈ KPRankOneCartanGeometry.coveredK0 F ζ hζ q := by
-    change KPPGLLocalCover.projection F ζ hζ (Sum.inr q) k ∈ KPRankOneCartanGeometry.K0 F q
+    change projection₀ k ∈ KPRankOneCartanGeometry.K0 F q
     rw [hk]
     exact ⟨r⁻¹, rfl⟩
   have hb : g * k⁻¹ ∈ KPLocalSmoothRepresentation.Borel F ζ hζ q := by
-    change KPLocalSmoothRepresentation.projection F ζ hζ q (g * k⁻¹) ∈
-      KPRankOneInduction.upperBorel F q
     refine ⟨G * KPTameCompact.inclusion F q r, ?_, hr⟩
     change Matrix.ProjGenLinGroup.mk (G * KPTameCompact.inclusion F q r) =
       KPLocalSmoothRepresentation.ordinaryPGLMap F q
-        (KPPGLLocalCover.projection F ζ hζ (Sum.inr q) (g * k⁻¹))
-    rw [(KPPGLLocalCover.projection F ζ hζ (Sum.inr q)).map_mul,
-      (KPPGLLocalCover.projection F ζ hζ (Sum.inr q)).map_inv, ← hG, hk,
+        (projection₀ (g * k⁻¹))
+    rw [(projection₀).map_mul,
+      (projection₀).map_inv, ← hG, hk,
       map_inv, map_inv, inv_inv]
     rfl
   refine ⟨⟨g * k⁻¹, hb⟩, ⟨k, hkmem⟩, ?_⟩

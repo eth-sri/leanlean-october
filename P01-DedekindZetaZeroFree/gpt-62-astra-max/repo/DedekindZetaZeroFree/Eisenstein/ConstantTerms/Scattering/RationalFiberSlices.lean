@@ -11,9 +11,9 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPLocalExceptionalConstruction KPLocalPrincipalSeries
 open KPRankOneShellRepair KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F]
-variable (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (A : SArithmeticData F)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -115,8 +115,7 @@ theorem rawCoreInsertion_scattering_stage
     rawCoreInsertion A P C (RestrictedTensorSimple.stageInclusion _ _ _ s
       (PiTensorProduct.tprod ℂ x))
       (localToRestricted F ζ hζ (Sum.inr q) (finiteScatteringRaw A q y) * g) =
-      rationalScatteringSlice A P C s x g q hq y := by
-  exact (rawCoreInsertion_stage A P C s _ _
+      rationalScatteringSlice A P C s x g q hq y := (rawCoreInsertion_stage A P C s _ _
     (finiteScatteringRaw_tail A P C s g q hq hg y)).trans
       (rawStageInsertion_scattering A P C s x g q hq y)
 

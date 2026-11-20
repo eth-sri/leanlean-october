@@ -12,28 +12,28 @@ open scoped Classical
 open scoped ValuativeRel Topology
 open MeasureTheory ValuativeRel
 
-theorem character_norm_on_units
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
+section
+
+variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     (ξ : CubicUnitCharacters.Character K) (χ : Kˣ →ₜ* ℂˣ)
-    (hχ : ∀ u : (𝒪[K])ˣ,
-      χ (Units.map (𝒪[K]).subtype.toMonoidHom u) = (ξ u : ℂˣ))
+    (hχ : ∀ u : (𝒪[K])ˣ, χ (Units.map (𝒪[K]).subtype.toMonoidHom u) = (ξ u : ℂˣ))
+
+include hχ in
+theorem character_norm_on_units
     (u : (𝒪[K])ˣ) :
     ‖(χ (Units.map (𝒪[K]).subtype.toMonoidHom u) : ℂ)‖ = 1 := by
   rw [hχ]
   exact Complex.norm_eq_one_of_mem_rootsOfUnity (ξ u).property
 
+include hχ in
 theorem character_norm_uniformizer_unit
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (ξ : CubicUnitCharacters.Character K) (χ : Kˣ →ₜ* ℂˣ)
-    (hχ : ∀ u : (𝒪[K])ˣ,
-      χ (Units.map (𝒪[K]).subtype.toMonoidHom u) = (ξ u : ℂˣ))
     (π : Kˣ) (b : ℂˣ) (hb : χ π = b) (j : ℤ) (u : (𝒪[K])ˣ) :
     ‖(χ (π ^ j * Units.map (𝒪[K]).subtype.toMonoidHom u) : ℂ)‖ =
       ‖(b : ℂ)‖ ^ j := by
   rw [map_mul, map_zpow, hb, Units.val_mul, Units.val_zpow_eq_zpow_val,
     norm_mul, character_norm_on_units K ξ χ hχ u, mul_one, norm_zpow]
+
+end
 
 open scoped WithZeroTopology in
 
@@ -46,7 +46,7 @@ theorem normalizedAbs_continuousAt_ne_zero
           (ValuativeRel.valuation K y))) x := by
   have hv : ValuativeRel.valuation K x ≠ 0 :=
     (Valuation.ne_zero_iff (ValuativeRel.valuation K)).mpr hx
-  have he : ∀ᶠ y in 𝓝 x, ValuativeRel.valuation K y = ValuativeRel.valuation K x :=
+  have he :=
     (WithZeroTopology.tendsto_of_ne_zero hv).mp
       (IsValuativeTopology.continuous_valuation.continuousAt :
         ContinuousAt (ValuativeRel.valuation K) x)
@@ -61,9 +61,11 @@ theorem normalizedAbs_continuousAt_ne_zero
     exact hv this.symm
   simp only [if_neg hx, if_neg hy0, hy]
 
-theorem normalizedAbs_measurable
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K] :
+section
+
+variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+
+theorem normalizedAbs_measurable [MeasurableSpace K] [BorelSpace K] :
     Measurable (fun y : K => if y = 0 then (0 : ℝ) else
       (CubicUnitCharacters.residueCard K : ℝ) ^
         WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
@@ -75,25 +77,20 @@ theorem normalizedAbs_measurable
     exact (normalizedAbs_continuousAt_ne_zero K x (by simpa using hx)).continuousWithinAt
   · simp
 
-theorem multiplicative_density_measurable
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K] :
+theorem multiplicative_density_measurable [MeasurableSpace K] [BorelSpace K] :
     Measurable (fun y : K => ENNReal.ofReal ((if y = 0 then (0 : ℝ) else
       (CubicUnitCharacters.residueCard K : ℝ) ^
         WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-          (ValuativeRel.valuation K y)))⁻¹)) := by
-  exact (normalizedAbs_measurable K).inv.ennreal_ofReal
+          (ValuativeRel.valuation K y)))⁻¹)) := (normalizedAbs_measurable K).inv.ennreal_ofReal
 
 theorem character_norm_on_valuation_shell
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
     (ξ : CubicUnitCharacters.Character K) (χ : Kˣ →ₜ* ℂˣ)
     (hχ : ∀ u : (𝒪[K])ˣ,
       χ (Units.map (𝒪[K]).subtype.toMonoidHom u) = (ξ u : ℂˣ))
     (π : Kˣ) (b : ℂˣ) (hb : χ π = b) (j : ℤ) (x : Kˣ)
     (hx : valuation K (x : K) = valuation K ((π ^ j : Kˣ) : K)) :
     ‖(χ x : ℂ)‖ = ‖(b : ℂ)‖ ^ j := by
-  let y : Kˣ := x / π ^ j
+  let y := x / π ^ j
   have hy : valuation K (y : K) = 1 := by
     dsimp [y]
     rw [Units.val_div_eq_div_val, map_div₀, hx]
@@ -115,8 +112,6 @@ theorem character_norm_on_valuation_shell
   exact character_norm_uniformizer_unit K ξ χ hχ π b hb j u
 
 theorem integrand_continuousOn
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
     (χ : Kˣ →ₜ* ℂˣ) (s : ℂ) :
     let A : K → ℝ := fun x ↦ if x = 0 then 0 else
       (CubicUnitCharacters.residueCard K : ℝ) ^
@@ -126,68 +121,54 @@ theorem integrand_continuousOn
       (χ (Units.mk0 x hx) : ℂ) * (A (1 - x) : ℂ) ^ (-s))
       ({0, 1} : Set K)ᶜ := by
   dsimp only
-  let A : K → ℝ := fun x ↦ if x = 0 then 0 else
+  let A := fun x ↦ if x = 0 then 0 else
     (CubicUnitCharacters.residueCard K : ℝ) ^
       WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K x))
   intro x hx
   have ⟨hx0, hx1⟩ : x ≠ 0 ∧ x ≠ 1 := by
-    simpa only [Set.mem_compl_iff, Set.mem_insert_iff,
-      Set.mem_singleton_iff, not_or] using hx
+    simpa using hx
   have hχc : ContinuousOn (fun x : K ↦ if hx : x = 0 then (0 : ℂ) else
       (χ (Units.mk0 x hx) : ℂ)) ({0} : Set K)ᶜ := by
     have he : ({0} : Set K)ᶜ = {x : K | x ≠ 0} := by ext; simp
     rw [he, continuousOn_iff_continuous_restrict]
-    have hc : Continuous (fun x : {x : K // x ≠ 0} ↦
-        (χ ((unitsHomeomorphNeZero (G₀ := K)).symm x) : ℂ)) :=
-      Units.continuous_val.comp (χ.continuous.comp (unitsHomeomorphNeZero (G₀ := K)).symm.continuous)
-    apply hc.congr
+    apply (Units.continuous_val.comp (χ.continuous.comp (unitsHomeomorphNeZero).symm.continuous)).congr
     intro a
-    have ha : (a : K) ≠ 0 := a.property
-    change (χ ((unitsHomeomorphNeZero (G₀ := K)).symm a) : ℂ) =
+    change (χ ((unitsHomeomorphNeZero).symm a) : ℂ) =
       if h : (a : K) = 0 then 0 else (χ (Units.mk0 (a : K) h) : ℂ)
-    rw [dif_neg ha]
+    rw [dif_neg a.property]
     apply congrArg (fun t : Kˣ => ((χ t : ℂˣ) : ℂ))
     apply Units.ext
-    exact congrArg Subtype.val ((unitsHomeomorphNeZero (G₀ := K)).apply_symm_apply a)
-  have hAc : ContinuousAt A (1 - x) :=
-    normalizedAbs_continuousAt_ne_zero K (1 - x) (sub_ne_zero.mpr hx1.symm)
+    exact congrArg Subtype.val ((unitsHomeomorphNeZero).apply_symm_apply a)
   have hApos : 0 < A (1 - x) := by
     dsimp [A]
     rw [if_neg (sub_ne_zero.mpr hx1.symm)]
     apply zpow_pos
-    exact_mod_cast (Finite.one_lt_card (α := 𝓀[K])).trans_le' (by decide)
+    exact_mod_cast (Finite.one_lt_card).trans_le' (by decide)
   have hc : ContinuousWithinAt (fun y : K => (A (1-y) : ℂ) ^ (-s)) ({0, 1} : Set K)ᶜ x := by
     apply ((Complex.continuous_ofReal.continuousAt.comp
-      (hAc.comp (continuousAt_const.sub continuousAt_id))).cpow continuousAt_const ?_).continuousWithinAt
+      ((normalizedAbs_continuousAt_ne_zero K (1 - x) (sub_ne_zero.mpr hx1.symm)).comp (continuousAt_const.sub continuousAt_id))).cpow continuousAt_const ?_).continuousWithinAt
     exact Complex.ofReal_mem_slitPlane.mpr hApos
-  have hh := (hχc x (by simpa using hx0)).mono (show ({0, 1} : Set K)ᶜ ⊆ {0}ᶜ by
-    simp only [Set.subset_def, Set.mem_compl_iff, Set.mem_insert_iff,
-      Set.mem_singleton_iff]; tauto) |>.mul hc
   have heq : (fun y : K => (if hy : y = 0 then (0 : ℂ) else
       (χ (Units.mk0 y hy) : ℂ)) * (A (1-y) : ℂ)^(-s)) =
       (fun y : K => if hy : y = 0 then (0 : ℂ) else
         (χ (Units.mk0 y hy) : ℂ) * (A (1-y) : ℂ)^(-s)) := by
     funext y
     by_cases hy : y = 0 <;> simp [hy]
-  change ContinuousWithinAt (fun y : K => if hy : y = 0 then (0 : ℂ) else
-        (χ (Units.mk0 y hy) : ℂ) * (A (1-y) : ℂ)^(-s)) ({0, 1} : Set K)ᶜ x
   rw [← heq]
-  exact hh
+  exact (hχc x (by exact hx0)).mono (show ({0, 1} : Set K)ᶜ ⊆ {0}ᶜ by
+    simp only [Set.subset_def, Set.mem_compl_iff, Set.mem_insert_iff,
+      Set.mem_singleton_iff]; tauto) |>.mul hc
 
-theorem normalizedAbs_pos
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (x : K) (hx : x ≠ 0) :
+theorem normalizedAbs_pos (x : K) (hx : x ≠ 0) :
     0 < (if x = 0 then (0 : ℝ) else
       (CubicUnitCharacters.residueCard K : ℝ) ^
         WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
           (ValuativeRel.valuation K x))) := by
   rw [if_neg hx]
   apply zpow_pos
-  exact_mod_cast (Finite.one_lt_card (α := 𝓀[K])).trans_le' (by decide)
+  exact_mod_cast (Finite.one_lt_card).trans_le' (by decide)
 
-theorem integrand_measurable
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K]
+theorem integrand_measurable [MeasurableSpace K] [BorelSpace K]
     (χ : Kˣ →ₜ* ℂˣ) (s : ℂ) :
     let A : K → ℝ := fun x ↦ if x = 0 then 0 else
       (CubicUnitCharacters.residueCard K : ℝ) ^
@@ -197,9 +178,11 @@ theorem integrand_measurable
       (χ (Units.mk0 x hx) : ℂ) * (A (1 - x) : ℂ) ^ (-s)) := by
   letI : UniformSpace K := IsTopologicalAddGroup.rightUniformSpace K
   letI : IsUniformAddGroup K := isUniformAddGroup_of_addCommGroup
-  apply ContinuousOn.measurable_of_countable_compl (s := ({0, 1} : Set K)ᶜ)
+  apply ContinuousOn.measurable_of_countable_compl
   · exact integrand_continuousOn K χ s
   · simp
+
+end
 
 theorem integrableOn_shell_union_of_bounds
     {X : Type*} [MeasurableSpace X] (μ : Measure X)
@@ -219,7 +202,7 @@ theorem integrableOn_shell_union_of_bounds
   apply Summable.of_nonneg_of_le (fun j => integral_nonneg (fun x => norm_nonneg _))
     (fun j => ?_) hsum
   calc
-    (∫ x in shell j, ‖f x‖ ∂μ) ≤ ∫ _ in shell j, bound j ∂μ :=
+    _ ≤ ∫ _ in shell j, bound j ∂μ :=
       integral_mono_ae (hi j).norm (integrableOn_const (hfinite j))
         ((ae_restrict_mem (hm j)).mono (fun x hx => hdom j x hx))
     _ = μ.real (shell j) * bound j := by simp
@@ -247,14 +230,15 @@ theorem uniformizer_value_exponent
     have hle := le_uniformizer_iff.mpr hlt
     simpa using e.strictMono.monotone hle
 
-theorem character_norm_on_log_shell
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
+section
+
+variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     (ξ : CubicUnitCharacters.Character K) (χ : Kˣ →ₜ* ℂˣ)
-    (hχ : ∀ u : (𝒪[K])ˣ,
-      χ (Units.map (𝒪[K]).subtype.toMonoidHom u) = (ξ u : ℂˣ))
-    (π : Kˣ) (hπ : valuation K (π : K) = uniformizer K)
-    (b : ℂˣ) (hb : χ π = b) (x : Kˣ) (k : ℤ)
+    (hχ : ∀ u : (𝒪[K])ˣ, χ (Units.map (𝒪[K]).subtype.toMonoidHom u) = (ξ u : ℂˣ)) (π : Kˣ)
+    (hπ : valuation K (π : K) = uniformizer K) (b : ℂˣ) (hb : χ π = b)
+
+include hχ hπ hb in
+theorem character_norm_on_log_shell (x : Kˣ) (k : ℤ)
     (hx : WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
       (valuation K (x : K))) = k) :
     ‖(χ x : ℂ)‖ = ‖(b : ℂ)‖ ^ (-k) := by
@@ -270,14 +254,8 @@ theorem character_norm_on_log_shell
     WithZero.log_zpow, WithZero.log_exp]
   simp
 
-theorem character_norm_on_abs_shell
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (ξ : CubicUnitCharacters.Character K) (χ : Kˣ →ₜ* ℂˣ)
-    (hχ : ∀ u : (𝒪[K])ˣ,
-      χ (Units.map (𝒪[K]).subtype.toMonoidHom u) = (ξ u : ℂˣ))
-    (π : Kˣ) (hπ : valuation K (π : K) = uniformizer K)
-    (b : ℂˣ) (hb : χ π = b) (x : K) (hx0 : x ≠ 0) (k : ℤ)
+include hχ hπ hb in
+theorem character_norm_on_abs_shell (x : K) (hx0 : x ≠ 0) (k : ℤ)
     (hx : (if x = 0 then (0 : ℝ) else
       (CubicUnitCharacters.residueCard K : ℝ) ^
         WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
@@ -286,11 +264,15 @@ theorem character_norm_on_abs_shell
   apply character_norm_on_log_shell K ξ χ hχ π hπ b hb (Units.mk0 x hx0) k
   rw [if_neg hx0] at hx
   exact (zpow_right_strictMono₀ (show (1 : ℝ) < CubicUnitCharacters.residueCard K by
-    exact_mod_cast (Finite.one_lt_card (α := 𝓀[K])))).injective hx
+    exact_mod_cast (Finite.one_lt_card))).injective hx
 
-theorem normalized_shell_mass_bound
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K]
+end
+
+section
+
+variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+
+theorem normalized_shell_mass_bound [MeasurableSpace K] [BorelSpace K]
     (μ : Measure K) [μ.IsAddHaarMeasure] (k : ℤ) :
     let A : K → ℝ := fun x ↦ if x = 0 then 0 else
       (CubicUnitCharacters.residueCard K : ℝ) ^
@@ -325,9 +307,7 @@ theorem normalized_shell_mass_bound
           exact_mod_cast (Finite.one_lt_card (α := 𝓀[K]))
         exact (zpow_pos (lt_trans zero_lt_one hq) k).le
 
-theorem weighted_integrand_norm
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (χ : Kˣ →ₜ* ℂˣ)
+theorem weighted_integrand_norm (χ : Kˣ →ₜ* ℂˣ)
     (s : ℂ) (hs : 0 < s.re) (x : K) (hx : x ≠ 0) :
     let A : K → ℝ := fun y ↦ if y = 0 then 0 else
       (CubicUnitCharacters.residueCard K : ℝ) ^
@@ -338,7 +318,7 @@ theorem weighted_integrand_norm
     ‖(A x)⁻¹ • I x‖ =
       (A x)⁻¹ * ‖(χ (Units.mk0 x hx) : ℂ)‖ * (A (1-x)).rpow (-s.re) := by
   dsimp only
-  let A : K → ℝ := fun y ↦ if y = 0 then 0 else
+  let A := fun y ↦ if y = 0 then 0 else
       (CubicUnitCharacters.residueCard K : ℝ) ^
         WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
           (valuation K y))
@@ -348,18 +328,14 @@ theorem weighted_integrand_norm
     split_ifs
     · exact le_rfl
     · exact (zpow_pos (show (0 : ℝ) < CubicUnitCharacters.residueCard K by
-        exact_mod_cast (Finite.one_lt_card (α := 𝓀[K])).trans_le' (by decide)) _).le
-  change ‖(A x)⁻¹ • (if hy : x = 0 then 0 else
-    (χ (Units.mk0 x hy) : ℂ) * (A (1-x) : ℂ)^(-s))‖ = _
+        exact_mod_cast (Finite.one_lt_card).trans_le' (by decide)) _).le
   rw [dif_neg hx, norm_smul, Real.norm_eq_abs, abs_of_nonneg (inv_nonneg.mpr (hA x)),
     norm_mul, Complex.norm_cpow_eq_rpow_re_of_nonneg (hA (1-x))
       (show (-s).re ≠ 0 by simp; linarith)]
   simp only [Complex.neg_re]
   exact (mul_assoc _ _ _).symm
 
-theorem multiplicative_shell_mass_le
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K]
+theorem multiplicative_shell_mass_le [MeasurableSpace K] [BorelSpace K]
     (μ : Measure K) [μ.IsAddHaarMeasure] (k : ℤ) :
     let A : K → ℝ := fun x ↦ if x = 0 then 0 else
       (CubicUnitCharacters.residueCard K : ℝ) ^
@@ -369,14 +345,14 @@ theorem multiplicative_shell_mass_le
     ν {x | A x = (CubicUnitCharacters.residueCard K : ℝ) ^ k} ≤
       μ ((ValuativeRel.valuation K).integer : Set K) := by
   dsimp only
-  let A : K → ℝ := fun x ↦ if x = 0 then 0 else
+  let A := fun x ↦ if x = 0 then 0 else
     (CubicUnitCharacters.residueCard K : ℝ) ^
       WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
         (ValuativeRel.valuation K x))
-  let r : ℝ := (CubicUnitCharacters.residueCard K : ℝ) ^ k
+  let r := (CubicUnitCharacters.residueCard K : ℝ) ^ k
   have hr : 0 < r := by
     apply zpow_pos
-    exact_mod_cast (Finite.one_lt_card (α := 𝓀[K])).trans_le' (by decide)
+    exact_mod_cast (Finite.one_lt_card).trans_le' (by decide)
   have hA : Measurable A := normalizedAbs_measurable K
   have hs : MeasurableSet {x | A x = r} := hA (measurableSet_singleton r)
   change (μ.withDensity (fun x => ENNReal.ofReal ((A x)⁻¹))) {x | A x = r} ≤ _
@@ -393,20 +369,18 @@ theorem multiplicative_shell_mass_le
   rw [heq]
   have hm : μ {x | A x = r} ≤ ENNReal.ofReal r * μ ((ValuativeRel.valuation K).integer : Set K) := by
     calc
-      _ ≤ μ {x | A x ≤ r} := measure_mono (by intro x hx; exact hx.le)
+      _ ≤ μ {x | A x ≤ r} := measure_mono (fun x hx => hx.le)
       _ = _ := NonarchimedeanHaarScaling.closedBall_measure K μ k
   calc
     _ ≤ ENNReal.ofReal r⁻¹ * (ENNReal.ofReal r * μ ((ValuativeRel.valuation K).integer : Set K)) := by gcongr
     _ = _ := by
       rw [← mul_assoc, ENNReal.ofReal_inv_of_pos hr,
-        ENNReal.inv_mul_cancel (by exact (ENNReal.ofReal_pos.mpr hr).ne') ENNReal.ofReal_ne_top, one_mul]
+        ENNReal.inv_mul_cancel ((ENNReal.ofReal_pos.mpr hr).ne') ENNReal.ofReal_ne_top, one_mul]
 
-private theorem abs_lt_valuation
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] {x y : K} (hy : y ≠ 0) :
+private theorem abs_lt_valuation {x y : K} (hy : y ≠ 0) :
     KPCubicHaar.abs K x < KPCubicHaar.abs K y ↔ valuation K x < valuation K y := by
   have hq : (1 : ℝ) < CubicUnitCharacters.residueCard K := by
-    exact_mod_cast (Finite.one_lt_card (α := 𝓀[K]))
+    exact_mod_cast (Finite.one_lt_card)
   by_cases hx : x = 0
   · subst x
     apply iff_of_true
@@ -430,13 +404,13 @@ private theorem abs_lt_valuation
   conv_rhs => rw [← WithZero.exp_log hex, ← WithZero.exp_log hey]
   exact WithZero.exp_lt_exp.symm
 
-private theorem abs_eq_of_val_eq
-    (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] {x y : K}
+private theorem abs_eq_of_val_eq {x y : K}
     (h : valuation K x = valuation K y) : KPCubicHaar.abs K x = KPCubicHaar.abs K y := by
   have he : x = 0 ↔ y = 0 := by
     rw [← (Valuation.zero_iff (valuation K)), ← (Valuation.zero_iff (valuation K)), h]
   simp only [KPCubicHaar.abs, he, h]
+
+end
 
 private theorem shell_geometric_integrable
     {X : Type*} [MeasurableSpace X] (μ : Measure X)
@@ -453,8 +427,7 @@ private theorem shell_geometric_integrable
       (div_nonneg (pow_nonneg ht _) (hr j).le))
     (fun j => ?_) ((summable_geometric_of_lt_one ht ht1).mul_left M)
   calc
-    μ.real (S j) * (t ^ j / r j) ≤ (r j * M) * (t ^ j / r j) := by
-      exact mul_le_mul_of_nonneg_right (hmass j).2
+    _ ≤ (r j * M) * (t ^ j / r j) := mul_le_mul_of_nonneg_right (hmass j).2
         (div_nonneg (pow_nonneg ht _) (hr j).le)
     _ = M * t ^ j := by field_simp [(hr j).ne']
 

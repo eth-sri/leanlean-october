@@ -31,7 +31,7 @@ theorem heightFactor_eigenfunction (d : ℕ) (hd : 0 < d) (s : ℂ) (b : ℂ) :
     ∀ t : ℝ,
       radialLaplacian d (fun u => heightFactor d s u * b) t =
         KPContinuation.spectralCoordinate (d : ℤ) s * (heightFactor d s t * b) := by
-  let c : ℂ := (d : ℂ) * ((4 : ℂ) / 3 + 2 * s)
+  let c := (d : ℂ) * ((4 : ℂ) / 3 + 2 * s)
   have hfirst : deriv (fun u => heightFactor d s u * b) =
       fun t => c * (heightFactor d s t * b) := by
     funext t
@@ -43,7 +43,6 @@ theorem heightFactor_eigenfunction (d : ℕ) (hd : 0 < d) (s : ℂ) (b : ℂ) :
   intro t
   unfold radialLaplacian
   rw [hfirst, hsecond]
-  have hd' : (d : ℂ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hd)
   simp only [KPContinuation.spectralCoordinate, Int.cast_natCast]
   dsimp [c]
   field_simp

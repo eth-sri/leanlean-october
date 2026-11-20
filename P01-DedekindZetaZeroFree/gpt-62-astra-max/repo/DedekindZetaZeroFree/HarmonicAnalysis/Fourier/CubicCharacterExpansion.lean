@@ -12,8 +12,11 @@ namespace DedekindZetaZeroFree.KPCubicFamilyResolution
 open scoped ValuativeRel
 open ValuativeRel
 
- noncomputable def exponent (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] : Kˣ →* Multiplicative ℤ where
+ section
+
+variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+
+noncomputable def exponent : Kˣ →* Multiplicative ℤ where
   toFun x := Multiplicative.ofAdd (-WithZero.log
     (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K x)))
   map_one' := by simp
@@ -23,8 +26,7 @@ open ValuativeRel
     rw [WithZero.log_mul (by simp) (by simp)]
     simp [add_comm]
 
-private lemma exponent_eq_one_iff (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (x : Kˣ) :
+private lemma exponent_eq_one_iff (x : Kˣ) :
     exponent K x = 1 ↔ valuation K (x : K) = 1 := by
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
   change Multiplicative.ofAdd (-WithZero.log (e (valuation K (x : K)))) = 1 ↔ _
@@ -40,30 +42,12 @@ private lemma exponent_eq_one_iff (K : Type*) [Field K] [ValuativeRel K]
   · intro h
     simp [h]
 
+end
+
 private lemma exponent_uniformizer (K : Type*) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] (π : Kˣ)
     (hπ : valuation K (π : K) = uniformizer K) :
-    exponent K π = Multiplicative.ofAdd 1 := by
-  let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-  have he : e (uniformizer K) = WithZero.exp (-1) := by
-    apply le_antisymm
-    · have hlt : e (uniformizer K) < 1 := by
-        simpa using e.strictMono (uniformizer_lt_one (R := K))
-      have hlog : WithZero.log (e (uniformizer K)) < (0 : ℤ) :=
-        (WithZero.log_lt_iff_lt_exp (by simp [e, uniformizer_ne_zero])).mpr
-          (by simpa using hlt)
-      apply WithZero.le_exp_of_log_le
-      omega
-    · have hsmall : WithZero.exp (-1 : ℤ) < (1 : WithZero (Multiplicative ℤ)) := by
-        rw [← WithZero.exp_zero, WithZero.exp_lt_exp]
-        omega
-      have hlt : e.symm (WithZero.exp (-1 : ℤ)) < 1 := by
-        simpa using e.symm.strictMono hsmall
-      have hle := le_uniformizer_iff.mpr hlt
-      simpa using e.strictMono.monotone hle
-  change Multiplicative.ofAdd (-WithZero.log (e (valuation K (π : K)))) = _
-  rw [hπ, he, WithZero.log_exp]
-  rfl
+    exponent K π = Multiplicative.ofAdd 1 := by apply @DedekindZetaZeroFree.KPRamifiedBetaConductorSeries.CubicUnitCharacterExtension.valuationExponent_uniformizer <;> assumption
 
  noncomputable def coordinateMap (K : Type*) [Field K] [ValuativeRel K]
     (π : Kˣ) : Multiplicative ℤ × (𝒪[K])ˣ →* Kˣ where
@@ -131,7 +115,7 @@ private lemma cube_coordinate_iff (K : Type*) [Field K] [ValuativeRel K]
       (3 : ℤ) ∣ j ∧ u ∈ KPCubicUnitIndices.cubeUnits K := by
   let f := coordinateMap K π
   have hf := coordinateMap_bijective K π hπ
-  change f (Multiplicative.ofAdd j, u) ∈ (powMonoidHom (α := Kˣ) 3).range ↔ _
+  change f (Multiplicative.ofAdd j, u) ∈ (powMonoidHom 3).range ↔ _
   constructor
   · rintro ⟨y, hy⟩
     obtain ⟨p, rfl⟩ := hf.2 y
@@ -204,17 +188,12 @@ theorem cubic_family_resolution
     omega
   · intro v
     obtain ⟨⟨n, u⟩, rfl⟩ := hf.2 v
-    change (1 / 3 : ℂ) * (∑ᶠ ξ : CubicUnitCharacters.Character K,
-      ∑ᶠ ζ : CubicCharacters.Mu3,
-        (χ ξ ζ (π ^ n.toAdd * Units.map (𝒪[K]).subtype.toMonoidHom u) : ℂ)) = _
     dsimp only [coordinateMap, MonoidHom.coe_mk, OneHom.coe_mk]
     rw [hsum]
     by_cases h : (3 : ℤ) ∣ n.toAdd ∧ u ∈ KPCubicUnitIndices.cubeUnits K
-    · have hv := (cube_coordinate_iff K π hπ n.toAdd u).mpr h
-      rw [if_pos h, Set.indicator_of_mem hv]
+    · rw [if_pos h, Set.indicator_of_mem ((cube_coordinate_iff K π hπ n.toAdd u).mpr h)]
       rw [hone]
-    · have hv := mt (cube_coordinate_iff K π hπ n.toAdd u).mp h
-      rw [if_neg h, Set.indicator_of_notMem hv, mul_zero]
+    · rw [if_neg h, Set.indicator_of_notMem (mt (cube_coordinate_iff K π hπ n.toAdd u).mp h), mul_zero]
 
 end DedekindZetaZeroFree.KPCubicFamilyResolution
 
@@ -273,7 +252,7 @@ theorem integrate_cube_resolution
       ext v
       change v ∈ H ↔ a * ∑ i : I, ∑ j : J, (χ i j v : ℂ) ≠ 0
       rw [hresolution v]
-      change v ∈ H ↔ c * Set.indicator (H : Set Kˣ) (fun v => (ψ v : ℂ)) v ≠ 0
+      change v ∈ H ↔ c * Set.indicator H (fun v => (ψ v : ℂ)) v ≠ 0
       by_cases hv : v ∈ H
       · simp [Set.indicator_of_mem hv, hv, hc, Units.ne_zero]
       · simp [Set.indicator_of_notMem hv, hv]
@@ -289,7 +268,7 @@ theorem integrate_cube_resolution
     have hh := congrArg (fun z : ℂ => z * F v) (hresolution v)
     simpa [G, c, H, Finset.sum_mul, mul_assoc, Set.indicator_mul_left] using hh
   have hmap : Measure.map (fun y : Kˣ => y ^ 3) μ =
-      ENNReal.ofReal ((H.index : ℝ) / 3) • μ.restrict (H : Set Kˣ) :=
+      ENNReal.ofReal ((H.index : ℝ) / 3) • μ.restrict H :=
     KPCubicHaarTransport.cube_pushforward K κ hκ dx
   have hsub : (∫ y : Kˣ, G (y ^ 3) ∂μ) = c * ∫ v : Kˣ in (H : Set Kˣ), G v ∂μ := by
     have hmeas : AEStronglyMeasurable G (Measure.map (fun y : Kˣ => y ^ 3) μ) := by
@@ -335,13 +314,7 @@ noncomputable section
 open scoped ValuativeRel
 open ValuativeRel
 
-private lemma units_borel (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K] :
-    BorelSpace Kˣ := by
-  constructor
-  unfold Units.instMeasurableSpace
-  rw [‹BorelSpace K›.measurable_eq, ← borel_comap]
-  rw [← (Units.isEmbedding_val₀ (G₀ := K)).isInducing.eq_induced]
+private alias units_borel := DedekindZetaZeroFree.KPCubicHaarTransport.CubicPowerPushforward.units_borel
 
 private theorem cube_proper (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] :
@@ -357,8 +330,8 @@ private theorem cube_proper (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     convert (Polynomial.X ^ 3 : Polynomial K).isProperMap_eval (by simp) using 1
     funext x
     simp
-  have hprod : IsProperMap (fun p : K × Kᵐᵒᵖ => (p.1 ^ 3, p.2 ^ 3)) := hp.prodMap (by
-    simpa only [MulOpposite.op_pow] using
+  have hprod := hp.prodMap (by
+    simpa using
       (MulOpposite.opHomeomorph.isProperMap.comp hp).comp
         MulOpposite.opHomeomorph.symm.isProperMap)
   have hcomm : (fun p : K × Kᵐᵒᵖ => (p.1 ^ 3, p.2 ^ 3)) ∘ Units.embedProduct K =
@@ -485,17 +458,15 @@ variable {K : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
 
 lemma valuationExponent_mul (y z : Kˣ) :
     valuationExponent K (y * z) = valuationExponent K y + valuationExponent K z := by
-  have hy : ValuativeRel.valuation K ((y : K)) ≠ 0 :=
+  have hy :=
     (Valuation.ne_zero_iff (ValuativeRel.valuation K)).mpr (Units.ne_zero y)
-  have hz : ValuativeRel.valuation K ((z : K)) ≠ 0 :=
-    (Valuation.ne_zero_iff (ValuativeRel.valuation K)).mpr (Units.ne_zero z)
   have hiy : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
       (ValuativeRel.valuation K (y : K)) ≠ 0 := fun h =>
     hy ((IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K).injective
       (h.trans (map_zero (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K)).symm))
   have hiz : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
       (ValuativeRel.valuation K (z : K)) ≠ 0 := fun h =>
-    hz ((IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K).injective
+    ((Valuation.ne_zero_iff (ValuativeRel.valuation K)).mpr (Units.ne_zero z)) ((IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K).injective
       (h.trans (map_zero (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K)).symm))
   simp only [valuationExponent, Units.val_mul, map_mul,
     map_mul (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K)]
@@ -504,34 +475,7 @@ lemma valuationExponent_mul (y z : Kˣ) :
 
 lemma valueGroupWithZeroIsoInt_uniformizer :
     IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (ValuativeRel.uniformizer K) =
-      WithZero.exp (-1 : ℤ) := by
-  set iso := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K with hiso
-  have hu : ValuativeRel.uniformizer K ≠ 0 := ValuativeRel.uniformizer_ne_zero
-  have hne : iso (ValuativeRel.uniformizer K) ≠ 0 := fun h =>
-    hu (iso.injective (h.trans (map_zero iso).symm))
-  have hlt : iso (ValuativeRel.uniformizer K) < 1 := by
-    rw [← map_one iso]
-    exact (map_lt_map_iff iso).mpr ValuativeRel.uniformizer_lt_one
-  have hexp1 : WithZero.exp (-1 : ℤ) < (1 : ℤᵐ⁰) := by
-    rw [← WithZero.exp_zero]
-    exact WithZero.exp_lt_exp.mpr (by norm_num)
-  have h1 : WithZero.exp (-1 : ℤ) ≤ iso (ValuativeRel.uniformizer K) := by
-    have hsym : iso.symm (WithZero.exp (-1 : ℤ)) < (1 : ValuativeRel.ValueGroupWithZero K) := by
-      have h := (map_lt_map_iff iso.symm).mpr hexp1
-      rwa [map_one iso.symm] at h
-    have hthis : iso.symm (WithZero.exp (-1 : ℤ)) ≤ ValuativeRel.uniformizer K :=
-      ValuativeRel.le_uniformizer_iff.mpr hsym
-    have h := (map_le_map_iff iso).mpr hthis
-    rwa [OrderMonoidIso.apply_symm_apply] at h
-  have h2 : iso (ValuativeRel.uniformizer K) ≤ WithZero.exp (-1 : ℤ) := by
-    have hk : (iso (ValuativeRel.uniformizer K)).log < 0 := by
-      refine (WithZero.exp_lt_exp (a := (iso (ValuativeRel.uniformizer K)).log)
-        (b := 0)).mp ?_
-      rw [WithZero.exp_log hne, WithZero.exp_zero]
-      exact hlt
-    rw [← WithZero.exp_log hne]
-    exact WithZero.exp_le_exp.mpr (by omega)
-  exact le_antisymm h2 h1
+      WithZero.exp (-1 : ℤ) := by apply @DedekindZetaZeroFree.KPRamifiedBetaConductorSeries.uniformizer_value_exponent <;> assumption
 
 lemma valuationExponent_uniformizer (π : Kˣ)
     (hπ : ValuativeRel.valuation K (π : K) = ValuativeRel.uniformizer K) :
@@ -541,8 +485,8 @@ lemma valuationExponent_uniformizer (π : Kˣ)
 
 lemma valuationExponent_unit (u : (𝒪[K])ˣ) :
     valuationExponent K (Units.map (𝒪[K]).subtype.toMonoidHom u) = 0 := by
-  have hcoe : ((Units.map (𝒪[K]).subtype.toMonoidHom u : Kˣ) : K) = ((u : 𝒪[K]) : K) := rfl
-  have hv : ValuativeRel.valuation K ((u : 𝒪[K]) : K) = 1 :=
+  have hcoe : ((Units.map (𝒪[K]).subtype.toMonoidHom u : Kˣ) : K) = (u : K) := rfl
+  have hv : ValuativeRel.valuation K (u : K) = 1 :=
     (Valuation.Integers.isUnit_iff_valuation_eq_one
       (Valuation.integer.integers (ValuativeRel.valuation K))).mp u.isUnit
   rw [valuationExponent, hcoe, hv, map_one, WithZero.log_one, neg_zero]
@@ -655,7 +599,7 @@ theorem isOpen_unit_cubes [CharZero K] : IsOpen (KPCubicUnitIndices.cubeUnits K 
   letI : UniformSpace K := IsTopologicalAddGroup.rightUniformSpace K
   letI : IsUniformAddGroup K := isUniformAddGroup_of_addCommGroup
   haveI : T2Space K := inferInstance
-  haveI := KPCubicHaar.cubeUnits_finiteIndex (K := K)
+  haveI := KPCubicHaar.cubeUnits_finiteIndex
   apply Subgroup.isOpen_of_isClosed_of_finiteIndex
   have he : (KPCubicUnitIndices.cubeUnits K : Set (𝒪[K])ˣ) =
       (fun u : (𝒪[K])ˣ => u ^ 3) '' Set.univ := by
@@ -709,8 +653,7 @@ theorem card_unit_cubic_characters :
         obtain ⟨x, rfl⟩ := QuotientGroup.mk'_surjective H q
         rw [← map_pow]
         exact (QuotientGroup.eq_one_iff _).mpr ⟨x, rfl⟩))
-  have hc := CommGroup.card_monoidHom_of_hasEnoughRootsOfUnity ((𝒪[K])ˣ ⧸ H) ℂ
-  exact (Nat.card_congr (unitCubicDualEquiv K)).trans hc
+  exact (Nat.card_congr (unitCubicDualEquiv K)).trans (CommGroup.card_monoidHom_of_hasEnoughRootsOfUnity ((𝒪[K])ˣ ⧸ H) ℂ)
 open scoped Classical in
 
 theorem sum_unit_cubic_characters (u : (𝒪[K])ˣ) :
@@ -743,10 +686,7 @@ theorem sum_unit_cubic_characters (u : (𝒪[K])ˣ) :
     simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one]
     rw [← Nat.card_eq_fintype_card, card_unit_cubic_characters]
   · rw [if_neg hu]
-    have hq : (QuotientGroup.mk' H) u ≠ 1 := by
-      intro h
-      exact hu ((QuotientGroup.eq_one_iff u).mp h)
-    obtain ⟨f, hf⟩ := CommGroup.exists_apply_ne_one_of_hasEnoughRootsOfUnity Q ℂ hq
+    obtain ⟨f, hf⟩ := CommGroup.exists_apply_ne_one_of_hasEnoughRootsOfUnity Q ℂ (fun h => hu ((QuotientGroup.eq_one_iff u).mp h))
     let ξ₀ := (unitCubicDualEquiv K).symm f
     have hξ : ((ξ₀ u : ℂˣ) : ℂ) ≠ 1 := by
       intro hh
@@ -776,14 +716,13 @@ theorem sum_cubic_character_values_exact
       if (3 : ℤ) ∣ j ∧ u ∈ KPCubicUnitIndices.cubeUnits K then
         (((powMonoidHom (α := Kˣ) 3).range.index : ℂ) / 3) * ((z^j : ℂˣ) : ℂ)
       else 0 := by
-  haveI := KPCubicHaar.cubeUnits_finiteIndex (K := K)
+  haveI := KPCubicHaar.cubeUnits_finiteIndex
   haveI : Finite (CubicUnitCharacters.Character K) := Nat.finite_of_card_ne_zero (by
     rw [card_unit_cubic_characters]
     exact Subgroup.index_ne_zero_of_finite)
   rw [sum_cubic_character_values_uniformizer_unit, sum_unit_cubic_characters]
-  have hi := KPCubicHaarTransport.field_cube_index K
   have hi' : ((powMonoidHom (α := Kˣ) 3).range.index : ℂ) =
-      3 * ((KPCubicUnitIndices.cubeUnits K).index : ℂ) := by exact_mod_cast hi
+      3 * ((KPCubicUnitIndices.cubeUnits K).index : ℂ) := by exact_mod_cast (KPCubicHaarTransport.field_cube_index K)
   rw [hi']
   split_ifs <;> simp_all <;> ring
 
@@ -819,9 +758,9 @@ theorem integrable_character_beta
   letI := IsTopologicalAddGroup.rightUniformSpace K
   letI := isUniformAddGroup_of_addCommGroup (G := K)
   let A := KPCubicHaar.abs K
-  let I : K → ℂ := fun x => if hx : x = 0 then 0 else
+  let I := fun x => if hx : x = 0 then 0 else
     (χ (Units.mk0 x hx) : ℂ) * (A (1-x) : ℂ) ^ (-s)
-  have hi : Integrable I (dx.withDensity (fun x => ENNReal.ofReal ((A x)⁻¹))) :=
+  have hi :=
     KPRamifiedBetaConductorSeries.integrable_in_joint_strip K dx π hπ ξ χ hχ b hb s hs0 hs1 hbs hb1
   have he : MeasurableEmbedding (fun v : Kˣ => (v : K)) :=
     Units.isEmbedding_val₀.measurableEmbedding (by
@@ -865,10 +804,9 @@ theorem family_beta_integrable
   have hn : ‖(((ζ : ℂˣ) * z : ℂˣ) : ℂ)‖ = ‖(z : ℂ)‖ := by
     rw [Units.val_mul, norm_mul]
     have hpow : (((ζ : ℂˣ) : ℂ)) ^ 3 = 1 := by
-      simpa only [Units.val_pow_eq_pow_val, Units.val_one] using
+      simpa using
         congrArg Units.val ((mem_rootsOfUnity 3 _).mp ζ.property)
-    have hnorm : ‖((ζ : ℂˣ) : ℂ)‖ = 1 := by
-      exact Complex.norm_eq_one_of_pow_eq_one hpow (by norm_num)
+    have hnorm := Complex.norm_eq_one_of_pow_eq_one hpow (by norm_num)
     rw [hnorm, one_mul]
   apply integrable_character_beta K dx π hπ ξ (χ ξ ζ)
     (fun u => by simpa using hχ ξ ζ 0 u) ((ζ : ℂˣ) * z)
@@ -891,17 +829,11 @@ theorem kp_rankone_cubic_character_expansion
     (dx : Measure K) [dx.IsAddHaarMeasure]
     (π : Kˣ) (hπ : ValuativeRel.valuation K (π : K) = ValuativeRel.uniformizer K)
     (t z : ℂˣ) (hz : z ^ 3 = t) :
-    Finite (CubicUnitCharacters.Character K) ∧
     ∃ χ : CubicUnitCharacters.Character K → CubicCharacters.Mu3 → (Kˣ →ₜ* ℂˣ),
       (∀ (ξ : CubicUnitCharacters.Character K) (ζ : CubicCharacters.Mu3)
           (j : ℤ) (u : (𝒪[K])ˣ),
         χ ξ ζ (π ^ j * Units.map (𝒪[K]).subtype.toMonoidHom u) =
           ((ζ : ℂˣ) * z) ^ j * (ξ u : ℂˣ)) ∧
-      (∀ (F : Kˣ → ℂ), IsLocallyConstant F → HasCompactSupport F →
-        (∫ y : Kˣ, omega K t y * F (y ^ 3) ∂KPCubicHaar.multiplicativeHaar K dx) =
-          (1 / 3 : ℂ) * ∑ᶠ ξ : CubicUnitCharacters.Character K,
-            ∑ᶠ ζ : CubicCharacters.Mu3,
-              ∫ v : Kˣ, (χ ξ ζ v : ℂ) * F v ∂KPCubicHaar.multiplicativeHaar K dx) ∧
       (∀ (F : Kˣ → ℂ),
         Integrable (fun y : Kˣ => omega K t y * F (y ^ 3))
           (KPCubicHaar.multiplicativeHaar K dx) →
@@ -911,21 +843,7 @@ theorem kp_rankone_cubic_character_expansion
         (∫ y : Kˣ, omega K t y * F (y ^ 3) ∂KPCubicHaar.multiplicativeHaar K dx) =
           (1 / 3 : ℂ) * ∑ᶠ ξ : CubicUnitCharacters.Character K,
             ∑ᶠ ζ : CubicCharacters.Mu3,
-              ∫ v : Kˣ, (χ ξ ζ v : ℂ) * F v ∂KPCubicHaar.multiplicativeHaar K dx) ∧
-      (∀ (s : ℂ), 0 < s.re → s.re < 1 →
-        (CubicUnitCharacters.residueCard K : ℝ).rpow (-s.re) < ‖(z : ℂ)‖ →
-        ‖(z : ℂ)‖ < 1 →
-        Integrable (fun y : Kˣ => omega K t y * betaFunction K s (y ^ 3))
-          (KPCubicHaar.multiplicativeHaar K dx) ∧
-        (∀ (ξ : CubicUnitCharacters.Character K) (ζ : CubicCharacters.Mu3),
-          Integrable (fun v : Kˣ => (χ ξ ζ v : ℂ) * betaFunction K s v)
-            (KPCubicHaar.multiplicativeHaar K dx)) ∧
-        (∫ y : Kˣ, omega K t y * betaFunction K s (y ^ 3)
-            ∂KPCubicHaar.multiplicativeHaar K dx) =
-          (1 / 3 : ℂ) * ∑ᶠ ξ : CubicUnitCharacters.Character K,
-            ∑ᶠ ζ : CubicCharacters.Mu3,
-              ∫ v : Kˣ, (χ ξ ζ v : ℂ) * betaFunction K s v
-                ∂KPCubicHaar.multiplicativeHaar K dx) := by
+              ∫ v : Kˣ, (χ ξ ζ v : ℂ) * F v ∂KPCubicHaar.multiplicativeHaar K dx) := by
   classical
   haveI := KPCubicHaar.cubeUnits_finiteIndex (K := K)
   haveI : Finite (CubicUnitCharacters.Character K) := Nat.finite_of_card_ne_zero (by
@@ -953,19 +871,7 @@ theorem kp_rankone_cubic_character_expansion
     KPCubicFamilyResolution.integrate_cube_resolution K κ hκ dx
       (CubicUnitCharacters.Character K) CubicCharacters.Mu3 χ (χ 1 1)
       (omega K t) hdesc (1 / 3 : ℂ) hresolution F hF hχF
-  refine ⟨inferInstance, χ, hχ, ?_, habs, ?_⟩
-  · intro F hF hFc
-    obtain ⟨hpull, htwists⟩ := KPCubicFamilyResolution.compact_test_integrability
-      K dx (χ 1 1) (omega K t) hdesc F hF hFc
-    exact habs F hpull (fun ξ ζ => htwists (χ ξ ζ))
-  · intro s hs0 hs1 hz0 hz1
-    have htwists := family_beta_integrable K dx π hπ z χ hχ s hs0 hs1 hz0 hz1
-    have hpull : Integrable
-        (fun y : Kˣ => omega K t y * betaFunction K s (y ^ 3))
-        (KPCubicHaar.multiplicativeHaar K dx) := by
-      simpa only [hdesc] using KPCubicFamilyResolution.integrable_cube_pullback
-        K κ hκ dx (fun v : Kˣ => (χ 1 1 v : ℂ) * betaFunction K s v) (htwists 1 1)
-    exact ⟨hpull, htwists, habs (betaFunction K s) hpull htwists⟩
+  exact ⟨χ, hχ, habs⟩
 
 end DedekindZetaZeroFree
 

@@ -11,9 +11,11 @@ universe u v
 variable {J : Type u} [Fintype J] [DecidableEq J] {V : J → Type v}
 variable [∀ j, AddCommGroup (V j)] [∀ j, Module ℂ (V j)]
 
-theorem pure_tensor_ne_zero (x : ∀ j, V j) (hx : ∀ j, x j ≠ 0) :
+variable (x : ∀ j, V j)
+
+theorem pure_tensor_ne_zero (hx : ∀ j, x j ≠ 0) :
     PiTensorProduct.tprod ℂ x ≠ 0 := by
-  let ell : ∀ j, Module.Dual ℂ (V j) := fun j =>
+  let ell := fun j =>
     Classical.choose (Module.Projective.exists_dual_eq_one ℂ (hx j))
   have hell : ∀ j, ell j (x j) = 1 := fun j =>
     Classical.choose_spec (Module.Projective.exists_dual_eq_one ℂ (hx j))
@@ -25,16 +27,16 @@ theorem pure_tensor_ne_zero (x : ∀ j, V j) (hx : ∀ j, x j ≠ 0) :
   rw [hz, map_zero] at hfx
   exact zero_ne_one hfx
 
-theorem pure_tensor_coordinates_ne_zero (x : ∀ j, V j)
+theorem pure_tensor_coordinates_ne_zero
     (hx : PiTensorProduct.tprod ℂ x ≠ 0) (i : J) : x i ≠ 0 := by
   intro hz
   have he : (PiTensorProduct.tprod ℂ).toLinearMap x i (x i) =
       PiTensorProduct.tprod ℂ x := by
-    simp only [MultilinearMap.toLinearMap_apply, Function.update_eq_self]
+    simp
   rw [hz, map_zero] at he
   exact hx he.symm
 
-theorem pure_tensor_slot_injective (x : ∀ j, V j) (i : J)
+theorem pure_tensor_slot_injective (i : J)
     (hx : ∀ j, j ≠ i → x j ≠ 0) :
     Function.Injective ((PiTensorProduct.tprod ℂ).toLinearMap x i) := by
   intro a b hab
@@ -49,12 +51,12 @@ theorem pure_tensor_slot_injective (x : ∀ j, V j) (i : J)
     simpa using hzne
   · simpa only [Function.update_of_ne hj] using hx j hj
 
-theorem pure_tensor_update_cancel (x : ∀ j, V j)
+theorem pure_tensor_update_cancel
     (hx : PiTensorProduct.tprod ℂ x ≠ 0) (i : J) (z : V i)
     (he : PiTensorProduct.tprod ℂ (Function.update x i z) = PiTensorProduct.tprod ℂ x) :
     z = x i := by
   apply pure_tensor_slot_injective x i (fun j _ => pure_tensor_coordinates_ne_zero x hx j)
-  simpa only [MultilinearMap.toLinearMap_apply, Function.update_eq_self] using he
+  simpa using he
 
 end DedekindZetaZeroFree.FourierContinuation
 

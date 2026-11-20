@@ -19,7 +19,7 @@ theorem factor_through_surjection
   refine ⟨((LinearMap.ker q).liftQ A hle).comp
     (q.quotKerEquivOfSurjective hq).symm.toLinearMap, ?_⟩
   intro x
-  simp [LinearMap.comp_apply, LinearMap.quotKerEquivOfSurjective_symm_apply q hq x]
+  simp
 
 end DedekindZetaZeroFree.KPLiteralResidueDescent
 

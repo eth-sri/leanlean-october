@@ -8,14 +8,13 @@ noncomputable section
 open scoped Classical NumberField TensorProduct Topology
 open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
-open _root_.DedekindZetaZeroFree.RestrictedTensorSimple renaming inclusion_insert → inclusion_insert
 open KPLiteralRaw KPGlobalTorusFiniteStages KPLocalPrincipalSeries
 open KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -29,9 +28,12 @@ def cofactorSourceLevel (E : Finset (KPFinitePlace F)) (hE : C.exceptional ⊆ E
     · simp
     · exact Finset.inr_mem_disjSum.mpr (hE (Finset.inr_mem_disjSum.mp hp))⟩
 
-def cofactorSourceTuple (E : Finset (KPFinitePlace F)) (hE : C.exceptional ⊆ E)
-    (φ : ∀ q : E, compactPicture (C.canonical q.val).borel (C.polarization q.val)
-      (C.canonical q.val).iwasawa .plus) :
+section
+
+variable (E : Finset (KPFinitePlace F)) (hE : C.exceptional ⊆ E)
+    (φ : ∀ q : E, compactPicture (C.canonical q.val).borel (C.polarization q.val) (C.canonical q.val).iwasawa .plus)
+
+def cofactorSourceTuple :
     ∀ j : (cofactorSourceLevel R P C E hE).val, Plus R.A P C j.val :=
   fun j ↦ match j with
   | ⟨Sum.inl w, _⟩ => plusReference R.A P C (Sum.inl w)
@@ -39,27 +41,24 @@ def cofactorSourceTuple (E : Finset (KPFinitePlace F)) (hE : C.exceptional ⊆ E
     compactTrivialization (C.canonical q).borel (C.polarization q)
       (C.canonical q).iwasawa .plus 0 (φ ⟨q, Finset.inr_mem_disjSum.mp hq⟩)
 
-def cofactorSourceCore (E : Finset (KPFinitePlace F)) (hE : C.exceptional ⊆ E)
-    (φ : ∀ q : E, compactPicture (C.canonical q.val).borel (C.polarization q.val)
-      (C.canonical q.val).iwasawa .plus) :=
+def cofactorSourceCore :=
   RestrictedTensorSimple.stageInclusion (Plus R.A P C) (plusReference R.A P C) (bad R.A P C)
     (cofactorSourceLevel R P C E hE) (PiTensorProduct.tprod ℂ (cofactorSourceTuple R P C E hE φ))
 
-def cofactorExtendedTuple (E : Finset (KPFinitePlace F)) (hE : C.exceptional ⊆ E)
-    (φ : ∀ q : E, compactPicture (C.canonical q.val).borel (C.polarization q.val)
-      (C.canonical q.val).iwasawa .plus)
+def cofactorExtendedTuple
     (t : RestrictedTensorSimple.Level (bad R.A P C)) :
     ∀ j : t.val, Plus R.A P C j.val := fun j ↦
       if h : j.val ∈ (cofactorSourceLevel R P C E hE).val then
         cofactorSourceTuple R P C E hE φ ⟨j.val,h⟩ else plusReference R.A P C j.val
+
+end
 
 theorem coreFlatInsertion_raw (x : RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C)) (z : ℂ) (g : Raw R.A) :
     (coreFlatInsertion R P C x).val z
       (scalarQuotient F ζ hζ (amalgamation F ζ hζ g)) =
       Complex.exp (z * (ThetaExpansion.iwasawaLogHeight R
         (scalarQuotient F ζ hζ (amalgamation F ζ hζ g)) : ℂ)) *
-        rawCoreInsertion R.A P C x g := by
-  rfl
+        rawCoreInsertion R.A P C x g := rfl
 
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource
 

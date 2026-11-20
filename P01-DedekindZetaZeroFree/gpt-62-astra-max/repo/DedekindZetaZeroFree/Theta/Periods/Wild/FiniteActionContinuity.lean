@@ -21,8 +21,7 @@ set_option maxRecDepth 4096
 set_option synthInstance.maxHeartbeats 200000
 set_option backward.isDefEq.respectTransparency false
 
-theorem rawGlobal_continuous : Continuous (rawGlobal (R := R)) := by
-  exact QuotientGroup.continuous_mk.comp QuotientGroup.continuous_mk
+theorem rawGlobal_continuous : Continuous (rawGlobal (R := R)) := QuotientGroup.continuous_mk.comp QuotientGroup.continuous_mk
 
 theorem raw_tame_kernel (D : TensorDetected R N) (W : Finset (KPFinitePlace F))
     (s : RestrictedTensorSimple.Level D.bad) (hW : places W ⊆ s.val)
@@ -35,10 +34,8 @@ theorem raw_tame_kernel (D : TensorDetected R N) (W : Finset (KPFinitePlace F))
     (hz : WildCurrentJointPeriod.period D.toTensorActions W s hW x z = 0) :
     fourier R D.sources.dq (globalMap D.toTensorActions W s hW x z) (rawGlobal (R := R) a) = 0 := by
   let f := fun a : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12 ↦
-    fourier R D.sources.dq (globalMap D.toTensorActions W s hW x z) (rawGlobal (R := R) a)
-  have hf : Continuous f :=
-    (globalMap_fourier_continuous D.toTensorActions W s hW x z).comp rawGlobal_continuous
-  have hlim := hf.continuousAt.tendsto.comp
+    fourier R D.sources.dq (globalMap D.toTensorActions W s hW x z) (rawGlobal a)
+  have hlim := ((globalMap_fourier_continuous D.toTensorActions W s hW x z).comp rawGlobal_continuous).continuousAt.tendsto.comp
     (WildRestrictedTruncation.tendsto_truncate _ (compact F R.A.zeta12 R.A.primitive_zeta12) a)
   have he : (fun t : Finset (KPHilbert.Place F) ↦ f
       (WildRestrictedTruncation.truncate _ (compact F R.A.zeta12 R.A.primitive_zeta12) a t)) =
@@ -49,7 +46,7 @@ theorem raw_tame_kernel (D : TensorDetected R N) (W : Finset (KPFinitePlace F))
     rw [Finset.toList_toFinset] at hw
     rw [hw]
     change fourier R D.sources.dq (globalMap D.toTensorActions W s hW x z)
-      (rawGlobal (R := R) (WildRestrictedTruncation.word _
+      (rawGlobal (WildRestrictedTruncation.word _
         (compact F R.A.zeta12 R.A.primitive_zeta12) a t.toList)) = 0
     rw [← rawWord_eq]
     exact rawWord_kernel D W s hW x hx a ha t.toList z hz

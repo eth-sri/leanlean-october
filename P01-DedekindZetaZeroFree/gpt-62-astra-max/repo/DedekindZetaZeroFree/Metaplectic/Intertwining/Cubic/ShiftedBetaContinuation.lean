@@ -12,7 +12,7 @@ open scoped NumberField
 set_option autoImplicit false
 open scoped Classical
 variable (F : Type) [Field F] [NumberField F]
-variable (q : HeightOneSpectrum (𝓞 F))
+    (q : HeightOneSpectrum (𝓞 F))
 local instance : ValuativeRel (q.adicCompletion F) :=
   ClassFieldTheory.finitePlaceCompletionValuativeRel F q
 local instance : IsNonarchimedeanLocalField (q.adicCompletion F) :=
@@ -27,23 +27,29 @@ open scoped Classical
 
 private lemma regular_C {F : Type*} [Field F] (u c : F) : Regular u (RatFunc.C c) := by
   simp [Regular]
+
+alias ShiftedBetaContinuation.regular_C := regular_C
 private lemma regular_X {F : Type*} [Field F] (u : F) : Regular u (RatFunc.X : RatFunc F) := by
   simp [Regular]
+
+alias ShiftedBetaContinuation.regular_X := regular_X
 private lemma regular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r+s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+    (hr : Regular u r) (hs : Regular u s) : Regular u (r+s) := fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
+
+alias ShiftedBetaContinuation.regular_add := regular_add
 private lemma regular_mul {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
+
+alias ShiftedBetaContinuation.regular_mul := regular_mul
 private lemma regular_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
     (_hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : Regular u r⁻¹ := by
-  have hr0 : r ≠ 0 := by intro h; simp [h] at hv
   intro h
-  have hn := Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_inv_dvd hr0) h
   apply hv
-  simp [RatFunc.eval, hn]
+  simp [RatFunc.eval, (Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_inv_dvd (by intro h; simp [h] at hv)) h)]
+
+alias ShiftedBetaContinuation.regular_inv := regular_inv
 private lemma eval_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
     (hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) :
     RatFunc.eval (RingHom.id F) u r⁻¹ = (RatFunc.eval (RingHom.id F) u r)⁻¹ := by
@@ -52,52 +58,76 @@ private lemma eval_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
   rw [mul_inv_cancel₀ hr0, RatFunc.eval_one] at hm
   exact eq_inv_of_mul_eq_one_right hm.symm
 
+alias ShiftedBetaContinuation.eval_inv := eval_inv
+
  def Evaluates {F : Type*} [Field F] (u : F) (r : RatFunc F) (v : F) : Prop :=
   Regular u r ∧ RatFunc.eval (RingHom.id F) u r = v
 private lemma Evaluates.const {F : Type*} [Field F] (u v : F) : Evaluates u (RatFunc.C v) v :=
   ⟨regular_C u v, by simp⟩
+
+alias Evaluates.ShiftedBetaContinuation.const := Evaluates.const
 private lemma Evaluates.var {F : Type*} [Field F] (u : F) : Evaluates u RatFunc.X u :=
   ⟨regular_X u, by simp⟩
+
+alias Evaluates.ShiftedBetaContinuation.var := Evaluates.var
 private lemma Evaluates.add {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
     (hr : Evaluates u r a) (hs : Evaluates u s b) : Evaluates u (r+s) (a+b) := by
   refine ⟨regular_add hr.1 hs.1, ?_⟩
   rw [RatFunc.eval_add (RingHom.id F) u hr.1 hs.1, hr.2, hs.2]
+
+alias Evaluates.ShiftedBetaContinuation.add := Evaluates.add
 private lemma Evaluates.mul {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
     (hr : Evaluates u r a) (hs : Evaluates u s b) : Evaluates u (r*s) (a*b) := by
   refine ⟨regular_mul hr.1 hs.1, ?_⟩
   rw [RatFunc.eval_mul (RingHom.id F) u hr.1 hs.1, hr.2, hs.2]
+
+alias Evaluates.ShiftedBetaContinuation.mul := Evaluates.mul
 private lemma Evaluates.neg {F : Type*} [Field F] {u a : F} {r : RatFunc F}
     (hr : Evaluates u r a) : Evaluates u (-r) (-a) := by
-  simpa only [map_neg, map_one, neg_one_mul] using (Evaluates.const u (-1)).mul hr
+  simpa using (Evaluates.const u (-1)).mul hr
+
+alias Evaluates.ShiftedBetaContinuation.neg := Evaluates.neg
 private lemma Evaluates.sub {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
     (hr : Evaluates u r a) (hs : Evaluates u s b) : Evaluates u (r-s) (a-b) := by
   simpa only [sub_eq_add_neg] using hr.add hs.neg
+
+alias Evaluates.ShiftedBetaContinuation.sub := Evaluates.sub
 private lemma Evaluates.inv {F : Type*} [Field F] {u a : F} {r : RatFunc F}
     (hr : Evaluates u r a) (ha : a ≠ 0) : Evaluates u r⁻¹ a⁻¹ := by
-  have hv : RatFunc.eval (RingHom.id F) u r ≠ 0 := hr.2 ▸ ha
+  have hv := hr.2 ▸ ha
   exact ⟨regular_inv hr.1 hv, by rw [eval_inv hr.1 hv, hr.2]⟩
+
+alias Evaluates.ShiftedBetaContinuation.inv := Evaluates.inv
 private lemma Evaluates.div {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
     (hr : Evaluates u r a) (hs : Evaluates u s b) (hb : b ≠ 0) : Evaluates u (r/s) (a/b) := by
   simpa only [div_eq_mul_inv] using hr.mul (hs.inv hb)
+
+alias Evaluates.ShiftedBetaContinuation.div := Evaluates.div
 private lemma Evaluates.pow {F : Type*} [Field F] {u a : F} {r : RatFunc F}
     (hr : Evaluates u r a) (n : ℕ) : Evaluates u (r^n) (a^n) := by
   induction n with
-  | zero => simpa only [pow_zero, map_one] using Evaluates.const u 1
+  | zero => simpa using Evaluates.const u 1
   | succ n ih => simpa only [pow_succ] using ih.mul hr
+
+alias Evaluates.ShiftedBetaContinuation.pow := Evaluates.pow
 private lemma Evaluates.zpow {F : Type*} [Field F] {u a : F} {r : RatFunc F}
     (hr : Evaluates u r a) (ha : a ≠ 0) (n : ℤ) : Evaluates u (r^n) (a^n) := by
   cases n with
   | ofNat n => simpa using hr.pow n
-  | negSucc n => simpa only [zpow_negSucc] using (hr.pow (n+1)).inv (pow_ne_zero _ ha)
+  | negSucc n => simpa using (hr.pow (n+1)).inv (pow_ne_zero _ ha)
+
+alias Evaluates.ShiftedBetaContinuation.zpow := Evaluates.zpow
 private lemma Evaluates.sum {F I : Type*} [Field F] {u : F} (s : Finset I)
     {r : I → RatFunc F} {a : I → F} (h : ∀ i ∈ s, Evaluates u (r i) (a i)) :
     Evaluates u (∑ i ∈ s, r i) (∑ i ∈ s, a i) := by
   classical
   induction s using Finset.induction_on with
-  | empty => simpa only [Finset.sum_empty, map_zero] using Evaluates.const u 0
+  | empty => simpa using Evaluates.const u 0
   | @insert i s hi ih =>
     simp only [Finset.sum_insert hi]
     exact (h i (Finset.mem_insert_self i s)).add (ih (fun j hj => h j (Finset.mem_insert_of_mem hj)))
+
+alias Evaluates.ShiftedBetaContinuation.sum := Evaluates.sum
 
  def rationalR {E : Type*} [Field E] (a m b : E) (ram : Bool) (f : ℕ) : RatFunc E :=
   let A : RatFunc E := RatFunc.C a
@@ -114,25 +144,22 @@ private theorem rationalR_evaluates_one {E : Type*} [Field E] (a m b : E)
   have hB := Evaluates.const (1 : E) b
   have hM := Evaluates.const (1 : E) m
   have hQ := Evaluates.var (1 : E)
-  have h1 := Evaluates.const (1 : E) 1
   cases ram with
   | true =>
-    have he := ((hM.mul (hA.pow f)).mul (hQ.zpow one_ne_zero (1-(f : ℤ)))).div
-      (hQ.sub hA) (sub_ne_zero.mpr ha.symm)
-    convert he using 1 <;> simp only [rationalR, ite_true, one_zpow, mul_one]
+    convert (((hM.mul (hA.pow f)).mul (hQ.zpow one_ne_zero (1-(f : ℤ)))).div
+      (hQ.sub hA) (sub_ne_zero.mpr ha.symm)) using 1 <;> simp only [rationalR, ite_true, one_zpow, mul_one]
     ring
   | false =>
-    have he := ((hM.mul (hB.sub hA)).mul (hQ.sub (hA.mul hB))).div
-      (((h1.sub hB).mul (hB.sub hQ)).mul (hQ.sub hA))
-      (mul_ne_zero (mul_ne_zero (sub_ne_zero.mpr hb.symm) (sub_ne_zero.mpr hb)) (sub_ne_zero.mpr ha.symm))
     simp only [rationalR, Bool.false_eq_true, ite_false] at *
-    convert he using 1 <;> try simp only [map_one]
+    convert (((hM.mul (hB.sub hA)).mul (hQ.sub (hA.mul hB))).div
+      ((((Evaluates.const (1 : E) 1).sub hB).mul (hB.sub hQ)).mul (hQ.sub hA))
+      (mul_ne_zero (mul_ne_zero (sub_ne_zero.mpr hb.symm) (sub_ne_zero.mpr hb)) (sub_ne_zero.mpr ha.symm))) using 1 <;> try simp
     field_simp
 
+alias ShiftedBetaContinuation.rationalR_evaluates_one := rationalR_evaluates_one
+
 private lemma Evaluates.ne_zero {E : Type*} [Field E] {u a : E} {r : RatFunc E}
-    (hr : Evaluates u r a) (ha : a ≠ 0) : r ≠ 0 := by
-  intro h
-  exact ha (by simpa [h] using hr.2.symm)
+    (hr : Evaluates u r a) (ha : a ≠ 0) : r ≠ 0 := fun h => ha (by simpa [h] using hr.2.symm)
  def Twice (z Q : ℂ) (r : RatFunc (RatFunc ℂ)) (a : ℂ) : Prop :=
   ∃ v : RatFunc ℂ, Evaluates (RatFunc.C Q) r v ∧ Evaluates z v a
 private lemma Twice.const (z Q a : ℂ) : Twice z Q (RatFunc.C (RatFunc.C a)) a :=
@@ -175,7 +202,7 @@ private lemma Twice.sum {z Q : ℂ} {I : Type*} (s : Finset I)
     Twice z Q (∑ i ∈ s,r i) (∑ i ∈ s,a i) := by
   classical
   induction s using Finset.induction_on with
-  | empty => simpa only [Finset.sum_empty,map_zero] using Twice.const z Q 0
+  | empty => simpa using Twice.const z Q 0
   | @insert i s hi ih =>
     simp only [Finset.sum_insert hi]
     exact (h i (Finset.mem_insert_self i s)).add
@@ -200,8 +227,8 @@ private theorem characterR_one (m : ℂ) (ξ : CubicUnitCharacters.Character K) 
     Evaluates (1 : RatFunc ℂ) (characterR K m ξ ε)
       (RatFunc.C (m/(1-(CubicUnitCharacters.residueCard K : ℂ)⁻¹)) *
         KPRankoneCubicScalarSum.betaFactor K ξ (RatFunc.C ((ε : ℂˣ) : ℂ) * RatFunc.X)) := by
-  let a : ℂ := (CubicUnitCharacters.residueCard K : ℂ)⁻¹
-  let b : RatFunc ℂ := RatFunc.C ((ε : ℂˣ) : ℂ) * RatFunc.X
+  let a := (CubicUnitCharacters.residueCard K : ℂ)⁻¹
+  let b := RatFunc.C ((ε : ℂˣ) : ℂ) * RatFunc.X
   have ha : (RatFunc.C a : RatFunc ℂ) ≠ 1 := by
     intro h
     have hq : 2 ≤ CubicUnitCharacters.residueCard K := KPCubicUnitIndices.two_le_residueCard K
@@ -211,28 +238,24 @@ private theorem characterR_one (m : ℂ) (ξ : CubicUnitCharacters.Character K) 
       have hn : CubicUnitCharacters.residueCard K = 1 := by exact_mod_cast en
       omega
     apply ha0
-    exact RatFunc.C_injective (by simpa only [map_one] using h)
+    exact RatFunc.C_injective (by simpa using h)
   have hb0 : b ≠ 0 := mul_ne_zero (by simpa using Units.ne_zero (ε : ℂˣ)) RatFunc.X_ne_zero
   have hb : b ≠ 1 := by
     intro h
     have he := congrArg (RatFunc.eval (RingHom.id ℂ) 0) h
-    have hC : Regular (0 : ℂ) (RatFunc.C ((ε : ℂˣ) : ℂ)) := regular_C _ _
-    have hX : Regular (0 : ℂ) (RatFunc.X : RatFunc ℂ) := regular_X _
-    simp only [b,RatFunc.eval_mul (RingHom.id ℂ) 0 hC hX,RatFunc.eval_C,RatFunc.eval_X,
+    simp only [b,RatFunc.eval_mul (RingHom.id ℂ) 0 (regular_C _ _) (regular_X _),RatFunc.eval_C,RatFunc.eval_X,
       RingHom.id_apply,mul_zero,RatFunc.eval_one] at he
     exact zero_ne_one he
   by_cases hξ : ξ = 1
-  · have he := rationalR_evaluates_one (RatFunc.C a) (RatFunc.C m) b ha hb0 hb false
-      (CubicUnitCharacters.conductor K ξ)
-    convert he using 1
+  · convert (rationalR_evaluates_one (RatFunc.C a) (RatFunc.C m) b ha hb0 hb false
+      (CubicUnitCharacters.conductor K ξ)) using 1
     · simp only [characterR,hξ,ite_true,rationalR,ite_false]
       rfl
     · simp only [KPRankoneCubicScalarSum.betaFactor,hξ,ite_true,
         KPRankoneCubicScalarSum.unramifiedFactor, map_natCast,map_inv₀,map_div,map_sub,map_one]
       simp [a,b, map_div, map_sub, map_natCast, map_inv₀]
-  · have he := rationalR_evaluates_one (RatFunc.C a) (RatFunc.C m) b ha hb0 hb true
-      (CubicUnitCharacters.conductor K ξ)
-    convert he using 1
+  · convert (rationalR_evaluates_one (RatFunc.C a) (RatFunc.C m) b ha hb0 hb true
+      (CubicUnitCharacters.conductor K ξ)) using 1
     · simp only [characterR,hξ,ite_false,rationalR,ite_true]
       rfl
     · simp only [KPRankoneCubicScalarSum.betaFactor,hξ,ite_false,map_natCast,map_inv₀,
@@ -247,16 +270,14 @@ private theorem shiftedModel_one [Finite (CubicUnitCharacters.Character K)]
     Evaluates (1 : RatFunc ℂ) (shiftedModel K m j u) 0 := by
   letI : Fintype (CubicUnitCharacters.Character K) := Fintype.ofFinite _
   letI : Fintype CubicCharacters.Mu3 := Fintype.ofFinite _
-  have hsum := Evaluates.sum (u := (1 : RatFunc ℂ)) Finset.univ (fun (ξ : CubicUnitCharacters.Character K) _ =>
+  have hsum := Evaluates.sum Finset.univ (fun ξ _ =>
     Evaluates.sum Finset.univ (fun (ε : CubicCharacters.Mu3) _ =>
       (Evaluates.const (1 : RatFunc ℂ)
         ((RatFunc.C ((ε : ℂˣ) : ℂ) * RatFunc.X)^j * RatFunc.C ((ξ u : ℂˣ) : ℂ))).mul
         (characterR_one K m ξ ε)))
-  have hfac := (((Evaluates.var (1 : RatFunc ℂ)).zpow one_ne_zero (-j)).mul
-      ((Evaluates.const (1 : RatFunc ℂ) 1).sub (Evaluates.var (1 : RatFunc ℂ)))).div
-        (Evaluates.const (1 : RatFunc ℂ) 3) (by norm_num)
-  have he := hfac.mul hsum
-  simpa only [shiftedModel,finsum_eq_sum_of_fintype,sub_self,mul_zero,zero_mul,zero_div,one_zpow,map_one,map_ofNat] using he
+  simpa only [shiftedModel,finsum_eq_sum_of_fintype,sub_self,mul_zero,zero_mul,zero_div,one_zpow,map_one,map_ofNat] using (((((Evaluates.var (1 : RatFunc ℂ)).zpow one_ne_zero (-j)).mul
+    ((Evaluates.const (1 : RatFunc ℂ) 1).sub (Evaluates.var (1 : RatFunc ℂ)))).div
+      (Evaluates.const (1 : RatFunc ℂ) 3) (by norm_num)).mul hsum)
 
 private theorem characterR_twice (m z Q : ℂ) (hQ : Q ≠ 0)
     (ξ : CubicUnitCharacters.Character K) (ε : CubicCharacters.Mu3)
@@ -272,15 +293,12 @@ private theorem characterR_twice (m z Q : ℂ) (hQ : Q ≠ 0)
   have hC := Twice.const z Q (CubicUnitCharacters.residueCard K : ℂ)⁻¹
   have hB := Twice.parameter z Q ((ε : ℂˣ) : ℂ)
   have hX := Twice.var z Q
-  have h1 := Twice.const z Q 1
   by_cases hξ : ξ = 1
-  · have he := ((hM.mul (hB.sub hC)).mul (hX.sub (hC.mul hB))).div
-      (((h1.sub hB).mul (hB.sub hX)).mul (hX.sub hC))
-      (mul_ne_zero (mul_ne_zero hb hbQ) hA)
-    simpa only [characterR,hξ,ite_true,map_one] using he
-  · have he := ((hM.mul (hC.pow (CubicUnitCharacters.conductor K ξ))).mul
-      (hX.zpow hQ (1-(CubicUnitCharacters.conductor K ξ : ℤ)))).div (hX.sub hC) hA
-    simpa only [characterR,hξ,ite_false] using he
+  · simpa only [characterR,hξ,ite_true,map_one] using (((hM.mul (hB.sub hC)).mul (hX.sub (hC.mul hB))).div
+      ((((Twice.const z Q 1).sub hB).mul (hB.sub hX)).mul (hX.sub hC))
+      (mul_ne_zero (mul_ne_zero hb hbQ) hA))
+  · simpa only [characterR,hξ,ite_false] using (((hM.mul (hC.pow (CubicUnitCharacters.conductor K ξ))).mul
+      (hX.zpow hQ (1-(CubicUnitCharacters.conductor K ξ : ℤ)))).div (hX.sub hC) hA)
 private theorem shiftedModel_twice [Finite (CubicUnitCharacters.Character K)]
     (m z Q : ℂ) (hz : z ≠ 0) (hQ : Q ≠ 0) (j : ℤ) (u : (valuation K).integerˣ)
     (hA : Q-(CubicUnitCharacters.residueCard K : ℂ)⁻¹ ≠ 0)
@@ -300,16 +318,12 @@ private theorem shiftedModel_twice [Finite (CubicUnitCharacters.Character K)]
   have hc (ξ : CubicUnitCharacters.Character K) (ε : CubicCharacters.Mu3) :
       Twice z Q (RatFunc.C ((RatFunc.C ((ε : ℂˣ) : ℂ)*RatFunc.X)^j*RatFunc.C ((ξ u : ℂˣ) : ℂ)))
         ((((ε : ℂˣ) : ℂ)*z)^j*((ξ u : ℂˣ) : ℂ)) := by
-    have he := ((Evaluates.const z ((ε : ℂˣ) : ℂ)).mul (Evaluates.var z)).zpow
-      (mul_ne_zero (Units.ne_zero _) hz) j
-    exact ⟨_,Evaluates.const _ _,he.mul (Evaluates.const _ _)⟩
-  have hsum := Twice.sum Finset.univ (fun (ξ : CubicUnitCharacters.Character K) _ =>
+    exact ⟨_,Evaluates.const _ _,(((Evaluates.const z ((ε : ℂˣ) : ℂ)).mul (Evaluates.var z)).zpow
+      (mul_ne_zero (Units.ne_zero _) hz) j).mul (Evaluates.const _ _)⟩
+  simpa only [shiftedModel,finsum_eq_sum_of_fintype,map_one,map_ofNat] using ((((((Twice.var z Q).zpow hQ (-j)).mul
+    ((Twice.const z Q 1).sub (Twice.var z Q))).div (Twice.const z Q 3) (by norm_num)).mul (Twice.sum Finset.univ (fun ξ _ =>
     Twice.sum Finset.univ (fun (ε : CubicCharacters.Mu3) _ =>
-      (hc ξ ε).mul (characterR_twice K m z Q hQ ξ ε hA (hb ε) (hbQ ε))))
-  have hfac := (((Twice.var z Q).zpow hQ (-j)).mul
-      ((Twice.const z Q 1).sub (Twice.var z Q))).div (Twice.const z Q 3) (by norm_num)
-  have he := (hfac.mul hsum).eval
-  simpa only [shiftedModel,finsum_eq_sum_of_fintype,map_one,map_ofNat] using he
+      (hc ξ ε).mul (characterR_twice K m z Q hQ ξ ε hA (hb ε) (hbQ ε)))))).eval)
 
 end
 end ShiftedBetaAlgebra
@@ -322,16 +336,10 @@ private theorem absPower (ρ : ℂ) (x : Kˣ) :
       Complex.exp (-ρ * (Real.log (CubicUnitCharacters.residueCard K : ℝ) : ℂ)) ^
         (-KPCubicExpansion.valuationExponent K x) := by
   rw [KPJointRegulator.MellinBetaIntegrability.abs_eq_rpow_valuationExponent]
-  have hq : 0 < (CubicUnitCharacters.residueCard K : ℝ) := by
-    exact_mod_cast (show 0 < CubicUnitCharacters.residueCard K from by
-      have h : 2 ≤ CubicUnitCharacters.residueCard K := KPCubicUnitIndices.two_le_residueCard K
-      omega)
   rw [Real.log_zpow]
   push_cast
   rw [← Complex.exp_int_mul]
   congr 1
-  change _ = ((-KPCubicExpansion.valuationExponent K x : ℤ) : ℂ) *
-    (-ρ * Complex.log (CubicUnitCharacters.residueCard K : ℂ))
   simp only [Int.cast_neg]
   push_cast
   ring
@@ -506,13 +514,11 @@ variable [MeasurableSpace K] [BorelSpace K]
 private theorem units_measurableMul : MeasurableMul Kˣ := by
   have hv : Measurable (fun x : Kˣ => (x : K)) := MeasurableSpace.le_map_comap
   constructor <;> intro a
-  · change Measurable (fun x : Kˣ => a*x)
-    rw [measurable_iff_comap_le]
+  · rw [measurable_iff_comap_le]
     unfold Units.instMeasurableSpace
     rw [MeasurableSpace.comap_comp]
     exact (hv.const_mul (a : K)).comap_le
-  · change Measurable (fun x : Kˣ => x*a)
-    rw [measurable_iff_comap_le]
+  · rw [measurable_iff_comap_le]
     unfold Units.instMeasurableSpace
     rw [MeasurableSpace.comap_comp]
     exact (hv.mul_const (a : K)).comap_le
@@ -533,8 +539,7 @@ private theorem shifted_character_integral
     simp_rw [he]
     exact hi.const_mul d
   refine ⟨?_, ?_⟩
-  · have hr := ht.comp_mul_left (-c)⁻¹
-    simpa only [← mul_assoc,mul_inv_cancel,one_mul] using hr
+  · simpa using (ht.comp_mul_left (-c)⁻¹)
   · rw [← integral_mul_left_eq_self (fun v : Kˣ => (η v : ℂ)*shiftedTest K c ρ v) (-c)]
     simp_rw [he]
     rw [integral_const_mul]
@@ -542,21 +547,10 @@ end
 
 private theorem multiplicativeHaar_isHaar [MeasurableSpace K] [BorelSpace K]
     (dx : Measure K) [dx.IsAddHaarMeasure] :
-    (KPCubicHaar.multiplicativeHaar K dx).IsHaarMeasure := by
-  letI := IsTopologicalAddGroup.rightUniformSpace K
-  letI := isUniformAddGroup_of_addCommGroup (G := K)
-  have hn : (𝒪[K] : Set K) ∈ nhds (0 : K) := by
-    rw [IsValuativeTopology.mem_nhds_iff]
-    refine ⟨(1 : (ValueGroupWithZero K)ˣ), ?_⟩
-    intro x hx
-    exact le_of_lt (by simpa using hx)
-  have hp := Measure.measure_pos_of_mem_nhds dx hn
-  have hf : dx (𝒪[K] : Set K) ≠ ⊤ := (IsNonarchimedeanLocalField.isCompact_closedBall K 1).measure_ne_top
-  exact (kp_rankone_cubic_haar_power_measure K dx _ (ENNReal.toReal_pos hp.ne' hf)
-    (ENNReal.ofReal_toReal hf).symm).1
+    (KPCubicHaar.multiplicativeHaar K dx).IsHaarMeasure := by apply @DedekindZetaZeroFree.KPCubicHaarTransport.CubicPowerPushforward.haar_isHaar <;> assumption
 end ShiftedBetaPower
 
-theorem actual_shifted_beta_common_zero
+theorem actual_shifted_beta_expansion
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (dx : Measure (q.adicCompletion F)) [dx.IsAddHaarMeasure]
     (π : (q.adicCompletion F)ˣ)
@@ -567,46 +561,15 @@ theorem actual_shifted_beta_common_zero
     let R : CubicUnitCharacters.Character K → ℂ → ℂ → ℂ := fun ξ b Q =>
       if ξ = 1 then m * (b-A) * (Q-A*b) / ((1-b)*(b-Q)*(Q-A))
       else m * A ^ CubicUnitCharacters.conductor K ξ * Q ^ (1-(CubicUnitCharacters.conductor K ξ : ℤ)) / (Q-A)
-    let Rrat : CubicUnitCharacters.Character K → CubicCharacters.Mu3 → RatFunc (RatFunc ℂ) := fun ξ ε =>
-      let a : RatFunc (RatFunc ℂ) := RatFunc.C (RatFunc.C A)
-      let b : RatFunc (RatFunc ℂ) := RatFunc.C (RatFunc.C ((ε : ℂˣ) : ℂ) * RatFunc.X)
-      let Q : RatFunc (RatFunc ℂ) := RatFunc.X
-      if ξ = 1 then RatFunc.C (RatFunc.C m) * (b-a) * (Q-a*b) / ((1-b)*(b-Q)*(Q-a))
-      else RatFunc.C (RatFunc.C m) * a ^ CubicUnitCharacters.conductor K ξ * Q ^ (1-(CubicUnitCharacters.conductor K ξ : ℤ)) / (Q-a)
-    let betaRat : ℤ → (𝒪[K])ˣ → RatFunc (RatFunc ℂ) := fun j u =>
-      (RatFunc.X : RatFunc (RatFunc ℂ)) ^ (-j) * (1-RatFunc.X) / 3 *
-        ∑ᶠ ξ : CubicUnitCharacters.Character K, ∑ᶠ ε : CubicCharacters.Mu3,
-          RatFunc.C ((RatFunc.C ((ε : ℂˣ) : ℂ) * RatFunc.X)^j * RatFunc.C ((ξ u : ℂˣ) : ℂ)) * Rrat ξ ε
     ∃ θ : CubicUnitCharacters.Character K → ℂˣ → (Kˣ →ₜ* ℂˣ),
-      (∀ ξ b (j : ℤ) (u : (𝒪[K])ˣ),
-        θ ξ b (π ^ j * KPRankOneCubicProjection.unitInclusion K u) = b ^ j * (ξ u : ℂˣ)) ∧
-      (∀ (c : Kˣ) (t z : ℂˣ) (hz : z^3=t) (ρ : ℂ), KPJointRegulator.cone K t ρ →
+      ∀ (c : Kˣ) (t z : ℂˣ) (hz : z^3=t) (ρ : ℂ), KPJointRegulator.cone K t ρ →
         let Q := Complex.exp (-ρ * (Real.log (CubicUnitCharacters.residueCard K : ℝ) : ℂ))
-        Integrable (fun y : Kˣ => if (y : K)^3+(c : K)=0 then 0 else
-          KPCubicExpansion.omega K t y * Complex.exp (-ρ * (Real.log (KPCubicHaar.abs K ((y : K)^3+(c : K))) : ℂ)))
-          (KPCubicHaar.multiplicativeHaar K dx) ∧
         (∫ y : Kˣ, if (y : K)^3+(c : K)=0 then 0 else
           KPCubicExpansion.omega K t y * Complex.exp (-ρ * (Real.log (KPCubicHaar.abs K ((y : K)^3+(c : K))) : ℂ))
           ∂KPCubicHaar.multiplicativeHaar K dx) =
           Q ^ (-KPCubicExpansion.valuationExponent K c) * (1-Q) / 3 *
             ∑ᶠ ξ : CubicUnitCharacters.Character K, ∑ᶠ ε : CubicCharacters.Mu3,
-              (θ ξ ((ε : ℂˣ)*z) (-c) : ℂ) * R ξ (((ε : ℂˣ) : ℂ)*(z : ℂ)) Q) ∧
-      (∀ ξ ε, (Rrat ξ ε).denom.eval (1 : RatFunc ℂ) ≠ 0 ∧
-        RatFunc.eval (RingHom.id (RatFunc ℂ)) 1 (Rrat ξ ε) =
-          RatFunc.C (m/(1-A)) * KPRankoneCubicScalarSum.betaFactor K ξ
-            (RatFunc.C ((ε : ℂˣ) : ℂ) * RatFunc.X)) ∧
-      (∀ (j : ℤ) (u : (𝒪[K])ˣ),
-        (betaRat j u).denom.eval (1 : RatFunc ℂ) ≠ 0 ∧
-        RatFunc.eval (RingHom.id (RatFunc ℂ)) 1 (betaRat j u) = 0) ∧
-      (∀ (c : Kˣ) (j : ℤ) (u : (𝒪[K])ˣ),
-        -c = π ^ j * KPRankOneCubicProjection.unitInclusion K u →
-        ∀ (t z : ℂˣ), z^3=t → ∀ (ρ : ℂ), KPJointRegulator.cone K t ρ →
-        let Q := Complex.exp (-ρ * (Real.log (CubicUnitCharacters.residueCard K : ℝ) : ℂ))
-        (∫ y : Kˣ, if (y : K)^3+(c : K)=0 then 0 else
-          KPCubicExpansion.omega K t y * Complex.exp (-ρ * (Real.log (KPCubicHaar.abs K ((y : K)^3+(c : K))) : ℂ))
-          ∂KPCubicHaar.multiplicativeHaar K dx) =
-          RatFunc.eval (RingHom.id ℂ) (z : ℂ)
-            (RatFunc.eval (RingHom.id (RatFunc ℂ)) (RatFunc.C Q) (betaRat j u))) := by
+              (θ ξ ((ε : ℂˣ)*z) (-c) : ℂ) * R ξ (((ε : ℂˣ) : ℂ)*(z : ℂ)) Q := by
   dsimp only
   let K := q.adicCompletion F
   have hext (ξ : CubicUnitCharacters.Character K) (b : ℂˣ) :=
@@ -616,161 +579,73 @@ theorem actual_shifted_beta_common_zero
   haveI : Finite (CubicUnitCharacters.Character K) := Nat.finite_of_card_ne_zero (by
     rw [KPCubicExpansion.card_unit_cubic_characters]
     exact Subgroup.index_ne_zero_of_finite)
-  have hformula (c : Kˣ) (t z : ℂˣ) (hz : z^3=t) (ρ : ℂ) (hcone : KPJointRegulator.cone K t ρ) :
-      let Q := Complex.exp (-ρ*(Real.log (CubicUnitCharacters.residueCard K : ℝ) : ℂ))
-      (∫ y : Kˣ, if (y : K)^3+(c : K)=0 then 0 else
-        KPCubicExpansion.omega K t y*Complex.exp (-ρ*(Real.log (KPCubicHaar.abs K ((y : K)^3+(c : K))) : ℂ))
-        ∂KPCubicHaar.multiplicativeHaar K dx) =
-        Q^(-KPCubicExpansion.valuationExponent K c)*(1-Q)/3*
-          ∑ᶠ ξ : CubicUnitCharacters.Character K, ∑ᶠ ε : CubicCharacters.Mu3,
-            (θ ξ ((ε : ℂˣ)*z) (-c) : ℂ)*
-              (if ξ = 1 then (KPRankOneRamifiedBeta.m K dx : ℂ)*
-                (((ε : ℂˣ) : ℂ)*(z : ℂ)-(CubicUnitCharacters.residueCard K : ℂ)⁻¹)*
-                (Q-(CubicUnitCharacters.residueCard K : ℂ)⁻¹*(((ε : ℂˣ) : ℂ)*(z : ℂ)))/
-                ((1-((ε : ℂˣ) : ℂ)*(z : ℂ))*(((ε : ℂˣ) : ℂ)*(z : ℂ)-Q)*(Q-(CubicUnitCharacters.residueCard K : ℂ)⁻¹))
-               else (KPRankOneRamifiedBeta.m K dx : ℂ)*((CubicUnitCharacters.residueCard K : ℂ)⁻¹)^CubicUnitCharacters.conductor K ξ*
-                Q^(1-(CubicUnitCharacters.conductor K ξ : ℤ))/(Q-(CubicUnitCharacters.residueCard K : ℂ)⁻¹)) := by
-    have hp := hζ.pow (by norm_num : 0 < 12) (by norm_num : 12 = 4*3)
-    have hpK : IsPrimitiveRoot (algebraMap F K (ζ^4)) 3 :=
-      hp.map_of_injective (algebraMap F K).injective
-    have hv : valuation K (algebraMap F K (ζ^4)) = 1 := by
-      apply (pow_eq_one_iff_of_nonneg zero_le (by norm_num : (3:ℕ)≠0)).mp
-      rw [← map_pow,hpK.pow_eq_one,map_one]
-    let κ : 𝒪[K] := ⟨_,hv.le⟩
-    have hκ : IsPrimitiveRoot κ 3 := hpK.of_map_of_injective
-      (f := (𝒪[K]).subtype) Subtype.val_injective
-    letI := ShiftedBetaPower.multiplicativeHaar_isHaar K dx
-    obtain ⟨_,χ,hχ,_,habs,_⟩ := kp_rankone_cubic_character_expansion K κ hκ dx π hπ t z hz
-    have hχeq (ξ : CubicUnitCharacters.Character K) (ε : CubicCharacters.Mu3) :
-        χ ξ ε = θ ξ ((ε : ℂˣ)*z) := by
-      apply ContinuousMonoidHom.ext
-      intro y
-      obtain ⟨j,u,rfl⟩ := RegulatedResidue.uniformizer_unit_decomposition K π hπ y
-      rw [hχ]
-      exact (hθ ξ ((ε : ℂˣ)*z) j u).symm
-    let qsize : ℝ := CubicUnitCharacters.residueCard K
-    have hq : 1 < qsize := by
-      dsimp only [qsize]
-      exact_mod_cast (show 1 < CubicUnitCharacters.residueCard K from by
-        have h : 2 ≤ CubicUnitCharacters.residueCard K := KPCubicUnitIndices.two_le_residueCard K
-        omega)
-    obtain ⟨hzlo,hzhi⟩ := RegulatedResidue.cube_root_norm_bounds qsize (zero_lt_one.trans hq) t z ρ hz
-      hcone.2.2.1 hcone.2.2.2
-    have hbet (ξ : CubicUnitCharacters.Character K) (ε : CubicCharacters.Mu3) :=
-      ShiftedBetaPower.prescribed_beta_cone K dx π hπ ξ ((ε : ℂˣ)*z) (χ ξ ε) (hχ ξ ε) ρ
-        hcone.1 hcone.2.1 (by
-          rw [Units.val_mul,norm_mul,Complex.norm_eq_one_of_mem_rootsOfUnity ε.property,one_mul]
-          exact hzlo) (by
-          rw [Units.val_mul,norm_mul,Complex.norm_eq_one_of_mem_rootsOfUnity ε.property,one_mul]
-          exact hzhi)
-    have hshift (ξ : CubicUnitCharacters.Character K) (ε : CubicCharacters.Mu3) :=
-      ShiftedBetaPower.shifted_character_integral K (KPCubicHaar.multiplicativeHaar K dx) c ρ (χ ξ ε) (hbet ξ ε).1
-    have hi : Integrable (fun y : Kˣ => KPCubicExpansion.omega K t y *
-        ShiftedBetaPower.shiftedTest K c ρ (y^3)) (KPCubicHaar.multiplicativeHaar K dx) := by
-      have hi := KPActualFullKernelArithmetic.actual_shifted_beta_integrable F q dx c t ρ hcone
-      convert hi using 1
-      funext y
-      unfold ShiftedBetaPower.shiftedTest
-      simp only [Units.val_pow_eq_pow_val]
-      split_ifs <;> simp <;> rfl
-    have he := habs (ShiftedBetaPower.shiftedTest K c ρ) hi (fun ξ ε => (hshift ξ ε).1)
-    change (∫ y : Kˣ, KPCubicExpansion.omega K t y * ShiftedBetaPower.shiftedTest K c ρ (y^3)
-      ∂KPCubicHaar.multiplicativeHaar K dx) = _ at he
-    have eorig : (fun y : Kˣ => if (y : K)^3+(c : K)=0 then 0 else
-        KPCubicExpansion.omega K t y * Complex.exp (-ρ*(Real.log (KPCubicHaar.abs K ((y : K)^3+(c : K))) : ℂ))) =
-      (fun y => KPCubicExpansion.omega K t y * ShiftedBetaPower.shiftedTest K c ρ (y^3)) := by
-      funext y
-      unfold ShiftedBetaPower.shiftedTest
-      simp only [Units.val_pow_eq_pow_val]
-      split_ifs <;> simp
-    rw [eorig,he]
-    have es (ξ : CubicUnitCharacters.Character K) (ε : CubicCharacters.Mu3) := (hshift ξ ε).2
-    simp_rw [es,(hbet _ _).2, hχeq,ShiftedBetaPower.absPower K ρ c]
-    letI : Fintype (CubicUnitCharacters.Character K) := Fintype.ofFinite _
-    letI : Fintype CubicCharacters.Mu3 := Fintype.ofFinite _
-    simp only [finsum_eq_sum_of_fintype,Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro ξ hξ
-    apply Finset.sum_congr rfl
-    intro ε hε
-    simp only [Units.val_mul]
-    split_ifs <;> ring
-  refine ⟨θ, hθ, ?_, ?_, ?_, ?_⟩
-  · intro c t z hz ρ hcone
-    exact ⟨KPActualFullKernelArithmetic.actual_shifted_beta_integrable F q dx c t ρ hcone,
-      hformula c t z hz ρ hcone⟩
-  · intro ξ ε
-    exact ShiftedBetaAlgebra.characterR_one K (KPRankOneRamifiedBeta.m K dx : ℂ) ξ ε
-  · intro j u
-    exact ShiftedBetaAlgebra.shiftedModel_one K (KPRankOneRamifiedBeta.m K dx : ℂ) j u
-  · intro c j u hcu t z hz ρ hcone
-    let Q := Complex.exp (-ρ*(Real.log (CubicUnitCharacters.residueCard K : ℝ) : ℂ))
-    let qsize : ℝ := CubicUnitCharacters.residueCard K
-    have hq : 1 < qsize := by
-      dsimp only [qsize]
-      exact_mod_cast (show 1 < CubicUnitCharacters.residueCard K from by
-        have h : 2 ≤ CubicUnitCharacters.residueCard K := KPCubicUnitIndices.two_le_residueCard K
-        omega)
-    have hq0 := zero_lt_one.trans hq
-    obtain ⟨hzlo,hzhi⟩ := RegulatedResidue.cube_root_norm_bounds qsize hq0 t z ρ hz
-      hcone.2.2.1 hcone.2.2.2
-    have hQn : Q ≠ 0 := Complex.exp_ne_zero _
-    have hQnorm : ‖Q‖ = qsize.rpow (-ρ.re) := by
-      rw [Complex.norm_exp]
-      dsimp [Q]
-      simp only [Complex.mul_re,Complex.neg_re,Complex.ofReal_re,Complex.ofReal_im,mul_zero,sub_zero]
-      rw [Real.rpow_def_of_pos hq0,mul_comm]
-    have hQA : Q-(CubicUnitCharacters.residueCard K : ℂ)⁻¹ ≠ 0 := by
-      apply sub_ne_zero.mpr
-      intro e
-      have he := congrArg norm e
-      have hlt : qsize⁻¹ < qsize.rpow (-ρ.re) := by
-        rw [← Real.rpow_neg_one]
-        exact Real.rpow_lt_rpow_of_exponent_lt hq (by linarith [hcone.2.1])
-      rw [hQnorm,norm_inv] at he
-      have hnormq : ‖(CubicUnitCharacters.residueCard K : ℂ)‖ = qsize := by
-        change ‖(qsize : ℂ)‖ = qsize
-        rw [Complex.norm_real,Real.norm_eq_abs,abs_of_pos hq0]
-      rw [hnormq] at he
-      linarith
-    have hn (ε : CubicCharacters.Mu3) : ‖((ε : ℂˣ) : ℂ)*(z : ℂ)‖ = ‖(z : ℂ)‖ := by
-      rw [norm_mul,Complex.norm_eq_one_of_mem_rootsOfUnity ε.property,one_mul]
-    have hb (ε : CubicCharacters.Mu3) : 1-((ε : ℂˣ) : ℂ)*(z : ℂ) ≠ 0 := by
-      apply sub_ne_zero.mpr
-      intro e
-      have he := congrArg norm e
-      rw [norm_one,hn] at he
-      linarith
-    have hbQ (ε : CubicCharacters.Mu3) : ((ε : ℂˣ) : ℂ)*(z : ℂ)-Q ≠ 0 := by
-      apply sub_ne_zero.mpr
-      intro e
-      have he := congrArg norm e
-      rw [hn,hQnorm] at he
-      linarith
-    have ev := ShiftedBetaAlgebra.shiftedModel_twice K (KPRankOneRamifiedBeta.m K dx : ℂ)
-      (z : ℂ) Q z.ne_zero hQn j u hQA hb hbQ
-    change _ = RatFunc.eval (RingHom.id ℂ) (z : ℂ)
-      (RatFunc.eval (RingHom.id (RatFunc ℂ)) (RatFunc.C Q)
-        (ShiftedBetaAlgebra.shiftedModel K (KPRankOneRamifiedBeta.m K dx : ℂ) j u))
-    rw [ev,hformula c t z hz ρ hcone]
-    have hj : KPCubicExpansion.valuationExponent K c = j := by
-      have he := congrArg (KPCubicExpansion.valuationExponent K) hcu
-      rw [KPCubicExpansion.valuationExponent_mul,KPCubicExpansion.valuationExponent_zpow,
-        KPCubicExpansion.valuationExponent_uniformizer π hπ] at he
-      have hu0 : KPCubicExpansion.valuationExponent K (KPRankOneCubicProjection.unitInclusion K u) = 0 :=
-        KPCubicExpansion.valuationExponent_unit u
-      rw [hu0,mul_one,add_zero] at he
-      have hc0 : KPCubicExpansion.valuationExponent K (-c) = KPCubicExpansion.valuationExponent K c := by
-        simp [KPCubicExpansion.valuationExponent,Units.val_neg,Valuation.map_neg]
-      rw [hc0] at he
-      exact he
-    rw [hj]
-    congr 1
-    apply finsum_congr
-    intro ξ
-    apply finsum_congr
-    intro ε
-    rw [hcu,hθ,Units.val_mul,Units.val_zpow_eq_zpow_val,Units.val_mul]
+  refine ⟨θ, ?_⟩
+  intro c t z hz ρ hcone
+  have hp := hζ.pow (by norm_num : 0 < 12) (by norm_num : 12 = 4*3)
+  have hpK : IsPrimitiveRoot (algebraMap F K (ζ^4)) 3 :=
+    hp.map_of_injective (algebraMap F K).injective
+  have hv : valuation K (algebraMap F K (ζ^4)) = 1 := by
+    apply (pow_eq_one_iff_of_nonneg zero_le (by norm_num : (3:ℕ)≠0)).mp
+    rw [← map_pow,hpK.pow_eq_one,map_one]
+  let κ : 𝒪[K] := ⟨_,hv.le⟩
+  have hκ : IsPrimitiveRoot κ 3 := hpK.of_map_of_injective
+    (f := (𝒪[K]).subtype) Subtype.val_injective
+  letI := ShiftedBetaPower.multiplicativeHaar_isHaar K dx
+  obtain ⟨χ,hχ,habs⟩ := kp_rankone_cubic_character_expansion K κ hκ dx π hπ t z hz
+  have hχeq (ξ : CubicUnitCharacters.Character K) (ε : CubicCharacters.Mu3) :
+      χ ξ ε = θ ξ ((ε : ℂˣ)*z) := by
+    apply ContinuousMonoidHom.ext
+    intro y
+    obtain ⟨j,u,rfl⟩ := RegulatedResidue.uniformizer_unit_decomposition K π hπ y
+    rw [hχ]
+    exact (hθ ξ ((ε : ℂˣ)*z) j u).symm
+  let qsize : ℝ := CubicUnitCharacters.residueCard K
+  have hq : 1 < qsize := by
+    dsimp only [qsize]
+    exact_mod_cast (show 1 < CubicUnitCharacters.residueCard K from by
+      have h : 2 ≤ CubicUnitCharacters.residueCard K := KPCubicUnitIndices.two_le_residueCard K
+      omega)
+  obtain ⟨hzlo,hzhi⟩ := RegulatedResidue.cube_root_norm_bounds qsize (zero_lt_one.trans hq) t z ρ hz
+    hcone.2.2.1 hcone.2.2.2
+  have hbet (ξ : CubicUnitCharacters.Character K) (ε : CubicCharacters.Mu3) :=
+    ShiftedBetaPower.prescribed_beta_cone K dx π hπ ξ ((ε : ℂˣ)*z) (χ ξ ε) (hχ ξ ε) ρ
+      hcone.1 hcone.2.1 (by
+        rw [Units.val_mul,norm_mul,Complex.norm_eq_one_of_mem_rootsOfUnity ε.property,one_mul]
+        exact hzlo) (by
+        rw [Units.val_mul,norm_mul,Complex.norm_eq_one_of_mem_rootsOfUnity ε.property,one_mul]
+        exact hzhi)
+  have hshift (ξ : CubicUnitCharacters.Character K) (ε : CubicCharacters.Mu3) :=
+    ShiftedBetaPower.shifted_character_integral K (KPCubicHaar.multiplicativeHaar K dx) c ρ (χ ξ ε) (hbet ξ ε).1
+  have hi : Integrable (fun y : Kˣ => KPCubicExpansion.omega K t y *
+      ShiftedBetaPower.shiftedTest K c ρ (y^3)) (KPCubicHaar.multiplicativeHaar K dx) := by
+    have hi := KPActualFullKernelArithmetic.actual_shifted_beta_integrable F q dx c t ρ hcone
+    convert hi using 1
+    funext y
+    unfold ShiftedBetaPower.shiftedTest
+    simp only [Units.val_pow_eq_pow_val]
+    split_ifs <;> simp <;> rfl
+  have he := habs (ShiftedBetaPower.shiftedTest K c ρ) hi (fun ξ ε => (hshift ξ ε).1)
+  change (∫ y : Kˣ, KPCubicExpansion.omega K t y * ShiftedBetaPower.shiftedTest K c ρ (y^3)
+    ∂KPCubicHaar.multiplicativeHaar K dx) = _ at he
+  have eorig : (fun y : Kˣ => if (y : K)^3+(c : K)=0 then 0 else
+      KPCubicExpansion.omega K t y * Complex.exp (-ρ*(Real.log (KPCubicHaar.abs K ((y : K)^3+(c : K))) : ℂ))) =
+    (fun y => KPCubicExpansion.omega K t y * ShiftedBetaPower.shiftedTest K c ρ (y^3)) := by
+    funext y
+    unfold ShiftedBetaPower.shiftedTest
+    simp only [Units.val_pow_eq_pow_val]
+    split_ifs <;> simp
+  rw [eorig,he]
+  have es (ξ : CubicUnitCharacters.Character K) (ε : CubicCharacters.Mu3) := (hshift ξ ε).2
+  simp_rw [es,(hbet _ _).2, hχeq,ShiftedBetaPower.absPower K ρ c]
+  letI : Fintype (CubicUnitCharacters.Character K) := Fintype.ofFinite _
+  letI : Fintype CubicCharacters.Mu3 := Fintype.ofFinite _
+  simp only [finsum_eq_sum_of_fintype,Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro ξ hξ
+  apply Finset.sum_congr rfl
+  intro ε hε
+  simp only [Units.val_mul]
+  split_ifs <;> ring
 
 end DedekindZetaZeroFree
 

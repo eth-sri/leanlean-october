@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -43,7 +39,7 @@ theorem isDefectless_of_moduleFinite
     [IsScalarTower base.valuationSubring target.valuationSubring L] :
     IsDefectless base target := by
   classical
-  let : FaithfulSMul base.valuationSubring target.valuationSubring :=
+  let :=
     FaithfulSMul.of_field_isFractionRing
       base.valuationSubring target.valuationSubring K L
   have hprimes :=
@@ -51,11 +47,10 @@ theorem isDefectless_of_moduleFinite
   have hq : target.maximalIdeal ∈ base.maximalIdeal.primesOver target.valuationSubring := by
     rw [hprimes]
     exact Set.mem_singleton target.maximalIdeal
-  let : target.maximalIdeal.LiesOver base.maximalIdeal := hq.2
+  let := hq.2
   let : Subsingleton (base.maximalIdeal.primesOver target.valuationSubring) :=
     Set.Subsingleton.coe_sort (by
-      rw [hprimes]
-      exact Set.subsingleton_singleton)
+      simp [hprimes])
   have hsum :=
     Ideal.sum_ramification_inertia_eq_finrank base.maximalIdeal target.valuationSubring
   rw [Fintype.sum_subsingleton _ ⟨target.maximalIdeal, hq⟩] at hsum

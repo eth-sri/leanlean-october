@@ -13,10 +13,10 @@ namespace DedekindZetaZeroFree.KPFixedHaarLocalizersBodies
 
 open KPContActualFixedHaarCoreLocalizers KPContSectorSmoothFramesSupport KPContSectorLineL2Isometry
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 attribute [local instance 5000] KPContSectorLineL2Isometry.instNormedAddCommGroupL2Line
 attribute [local instance 5000] KPContSectorLineL2Isometry.instNormedSpaceL2Line
@@ -51,14 +51,18 @@ attribute [local instance 5000] instAddCommMonoidHKLocal
 
 open scoped InnerProductSpace Matrix
 open HyperbolicChart
- def scaleTFun (d : ℕ) (z : KPArch.Space d) (v : KPArch.Space d) :
+ section
+
+variable (d : ℕ) (z : KPArch.Space d)
+
+def scaleTFun (v : KPArch.Space d) :
     HyperbolicChart.Space d :=
   WithLp.toLp 2 (fun ik : Fin d × Fin 3 =>
     if ik.2 = 2 then (v ik.1).2
     else (KPArch.height (z ik.1))⁻¹ *
       (if ik.2 = 0 then (v ik.1).1.re else (v ik.1).1.im))
 
- def scaleTLin (d : ℕ) (z : KPArch.Space d) :
+ def scaleTLin :
     KPArch.Space d →ₗ[ℝ] HyperbolicChart.Space d where
   toFun := scaleTFun d z
   map_add' := by
@@ -82,54 +86,25 @@ open HyperbolicChart
       · simp [h2, h0, mul_comm, mul_left_comm, mul_assoc]
       · simp [h2, h0, mul_comm, mul_left_comm, mul_assoc]
 
- def scaleT (d : ℕ) (z : KPArch.Space d) :
+ def scaleT :
     KPArch.Space d →L[ℝ] HyperbolicChart.Space d :=
   (scaleTLin d z).toContinuousLinearMap
 
-private lemma scaleT_apply (d : ℕ) (z : KPArch.Space d) (v : KPArch.Space d) :
+private lemma scaleT_apply (v : KPArch.Space d) :
     scaleT d z v = scaleTFun d z v := rfl
 
-private lemma scaleT_norm_sq (d : ℕ) (z : KPArch.Space d) (v : KPArch.Space d) :
-    ‖scaleT d z v‖ ^ 2 = KPArch.metric d z v := by
-  rw [EuclideanSpace.real_norm_sq_eq, Fintype.sum_prod_type, KPArch.metric]
-  simp only [scaleT_apply, scaleTFun, PiLp.toLp_apply, Fin.sum_univ_three]
-  apply Finset.sum_congr rfl
-  intro i _
-  rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
-  norm_num
-  ring
+private lemma scaleT_norm_sq (v : KPArch.Space d) :
+    ‖scaleT d z v‖ ^ 2 = KPArch.metric d z v := by apply @DedekindZetaZeroFree.CoreChartLocalizers.CutoffConstruction.EllipticityAndCutoffs.scaleT_norm_sq <;> assumption
 
-private lemma gram_quadform {n d : ℕ}
-    (S : EuclideanSpace ℝ (Fin n) →L[ℝ] HyperbolicChart.Space d)
-    (ξ : EuclideanSpace ℝ (Fin n)) :
-    (∑ j, ∑ k, ((‖S (EuclideanSpace.single j 1 + EuclideanSpace.single k 1)‖ ^ 2 -
-        ‖S (EuclideanSpace.single j 1)‖ ^ 2 - ‖S (EuclideanSpace.single k 1)‖ ^ 2) / 2)
-        * ξ j * ξ k) = ‖S ξ‖ ^ 2 := by
-  have hinner : ∀ j k, ((‖S (EuclideanSpace.single j 1 + EuclideanSpace.single k 1)‖ ^ 2 -
-        ‖S (EuclideanSpace.single j 1)‖ ^ 2 - ‖S (EuclideanSpace.single k 1)‖ ^ 2) / 2)
-        = ⟪S (EuclideanSpace.single j 1), S (EuclideanSpace.single k 1)⟫_ℝ := by
-    intro j k
-    rw [map_add, norm_add_sq_real]
-    ring
-  simp only [hinner]
-  have hξ : ξ = ∑ j, ξ j • EuclideanSpace.single j 1 := by
-    conv_lhs => rw [← (EuclideanSpace.basisFun (Fin n) ℝ).sum_repr ξ]
-    simp only [EuclideanSpace.basisFun_apply, EuclideanSpace.basisFun_repr]
-  have hS : S ξ = ∑ j, ξ j • S (EuclideanSpace.single j 1) := by
-    conv_lhs => rw [hξ]
-    rw [map_sum]
-    simp only [map_smul]
-  rw [hS, ← real_inner_self_eq_norm_sq]
-  rw [sum_inner]
-  apply Finset.sum_congr rfl
-  intro j _
-  rw [inner_sum]
-  apply Finset.sum_congr rfl
-  intro k _
-  rw [real_inner_smul_left, real_inner_smul_right]
-  ring
+end
 
-private theorem metric_positive (C : Chart F ζ hζ U R P H) :
+private alias gram_quadform := DedekindZetaZeroFree.CoreChartLocalizers.CutoffConstruction.EllipticityAndCutoffs.gram_quadform
+
+section
+
+variable (C : Chart F ζ hζ U R P H)
+
+private theorem metric_positive :
     ∀ x ∈ C.extendedDomain, (C.metricMatrix F ζ hζ H.totallyComplex U x).PosDef := by
   let d := KPCuspLogShape.dimension F
   have hscale : ∀ z : KPArch.Space d, Function.Injective (scaleT d z) := by
@@ -148,14 +123,12 @@ private theorem metric_positive (C : Chart F ζ hζ U R P H) :
   have hinj : ∀ x ∈ C.extendedDomain, Function.Injective (fderiv ℝ C.coordinates x) := by
     obtain ⟨g, hg, hleft⟩ := C.smooth_inverse
     intro x hx
-    have hc := (C.smooth_coordinates.contDiffAt (C.open_extendedDomain.mem_nhds hx)).differentiableAt (by simp)
-    have hg' := (hg.contDiffAt (C.coordinates_open.mem_nhds ⟨x, hx, rfl⟩)).differentiableAt (by simp)
     have heq : (g ∘ C.coordinates) =ᶠ[𝓝 x] id := by
       filter_upwards [C.open_extendedDomain.mem_nhds hx] with y hy
       exact hleft y hy
     have hder : (fderiv ℝ g (C.coordinates x)).comp (fderiv ℝ C.coordinates x) =
         ContinuousLinearMap.id ℝ (KPCoreChartLocalizers.E C.n) := by
-      rw [← fderiv_comp x hg' hc, heq.fderiv_eq]
+      rw [← fderiv_comp x ((hg.contDiffAt (C.coordinates_open.mem_nhds ⟨x, hx, rfl⟩)).differentiableAt (by simp)) ((C.smooth_coordinates.contDiffAt (C.open_extendedDomain.mem_nhds hx)).differentiableAt (by simp)), heq.fderiv_eq]
       exact fderiv_id
     intro v w hvw
     have := congrArg (fun T : KPCoreChartLocalizers.E C.n →L[ℝ] KPCoreChartLocalizers.E C.n => T v) hder
@@ -166,7 +139,7 @@ private theorem metric_positive (C : Chart F ζ hζ U R P H) :
       congrArg (fun T : KPCoreChartLocalizers.E C.n →L[ℝ] KPCoreChartLocalizers.E C.n => T w) hder
     rw [hvw, hw] at hv
     exact hv.symm
-  let Sx : KPCoreChartLocalizers.E C.n → (KPCoreChartLocalizers.E C.n →L[ℝ] HyperbolicChart.Space d) :=
+  let Sx :=
     fun x => (scaleT d (C.coordinates x)).comp (fderiv ℝ C.coordinates x)
   have hmetric : ∀ x w, KPArch.metric d (C.coordinates x) (fderiv ℝ C.coordinates x w) = ‖Sx x w‖ ^ 2 := by
     intro x w
@@ -207,7 +180,7 @@ private theorem metric_positive (C : Chart F ζ hζ U R P H) :
       exact congrArg WithLp.ofLp hz
   exact hposdef
 
-theorem metric_upper_bound (C : Chart F ζ hζ U R P H) : ∃ B : ℝ,
+theorem metric_upper_bound : ∃ B : ℝ,
     ∀ x ∈ closure (Metric.ball (0 : KPCoreChartLocalizers.E C.n) C.radius),
     ∀ ξ : KPCoreChartLocalizers.E C.n,
       (∑ j, ∑ k, C.energyMatrix F ζ hζ H.totallyComplex U x j k * ξ j * ξ k) ≤ B * ‖ξ‖ ^ 2 := by
@@ -216,17 +189,15 @@ theorem metric_upper_bound (C : Chart F ζ hζ U R P H) : ∃ B : ℝ,
     intro j
     apply continuousOn_pi.mpr
     intro k
-    have hD := C.smooth_coordinates.continuousOn_fderiv_of_isOpen C.open_extendedDomain (by simp)
     have hf (v : KPCoreChartLocalizers.E C.n) : ContinuousOn (fun x => fderiv ℝ C.coordinates x v) C.extendedDomain :=
-      hD.clm_apply continuousOn_const
+      (C.smooth_coordinates.continuousOn_fderiv_of_isOpen C.open_extendedDomain (by simp)).clm_apply continuousOn_const
     have hm (v : KPCoreChartLocalizers.E C.n) : ContinuousOn
         (fun x => KPArch.metric (KPCuspLogShape.dimension F) (C.coordinates x) (fderiv ℝ C.coordinates x v)) C.extendedDomain := by
       unfold KPArch.metric KPArch.height
       apply continuousOn_finset_sum
       intro i hi
-      have hci := ((continuous_apply i).comp_continuousOn C.smooth_coordinates.continuousOn).snd
       have hfi := (continuous_apply i).comp_continuousOn (hf v)
-      convert ((hfi.fst.norm.div (Real.continuous_exp.comp_continuousOn hci) (fun x hx => Real.exp_ne_zero _)).pow 2).add (hfi.snd.pow 2) using 1 <;> funext x <;> simp [Function.comp_def, div_pow, div_eq_mul_inv, mul_comm, mul_pow, inv_pow]
+      convert ((hfi.fst.norm.div (Real.continuous_exp.comp_continuousOn (((continuous_apply i).comp_continuousOn C.smooth_coordinates.continuousOn).snd)) (fun x hx => Real.exp_ne_zero _)).pow 2).add (hfi.snd.pow 2) using 1 <;> funext x <;> simp [Function.comp_def, div_pow, div_eq_mul_inv, mul_comm, mul_pow, inv_pow]
     exact (((hm _).sub (hm _)).sub (hm _)).div_const 2
   have he : ContinuousOn (C.energyMatrix F ζ hζ H.totallyComplex U) C.extendedDomain := by
     intro x hx
@@ -239,17 +210,13 @@ theorem metric_upper_bound (C : Chart F ζ hζ U R P H) : ∃ B : ℝ,
   have hentry : ∀ j k : Fin C.n, ∃ B : ℝ, ∀ x ∈ K,
       |C.energyMatrix F ζ hζ H.totallyComplex U x j k| ≤ B := by
     intro j k
-    have hc' := (continuous_apply k).comp_continuousOn
-      ((continuous_apply j).comp_continuousOn (he.mono C.closed_ball_in_extension))
-    obtain ⟨B,hB0,hB⟩ := (hK.image_of_continuousOn hc'.abs).bddAbove.exists_ge 0
+    obtain ⟨B,hB0,hB⟩ := (hK.image_of_continuousOn ((continuous_apply k).comp_continuousOn
+      ((continuous_apply j).comp_continuousOn (he.mono C.closed_ball_in_extension))).abs).bddAbove.exists_ge 0
     exact ⟨B,fun x hx => hB _ ⟨x,hx,rfl⟩⟩
   choose B hB using hentry
   let B' := ∑ j : Fin C.n, ∑ k : Fin C.n, max (B j k) 0
-  have hB' : ∀ j k : Fin C.n, max (B j k) 0 ≤ B' := by
-    intro j k
-    exact (Finset.single_le_sum (fun i hi => le_max_right _ _) (Finset.mem_univ k)).trans
+  have hB' : ∀ j k : Fin C.n, max (B j k) 0 ≤ B' := fun j k => (Finset.single_le_sum (fun i hi => le_max_right _ _) (Finset.mem_univ k)).trans
       (Finset.single_le_sum (fun i hi => Finset.sum_nonneg (fun l hl => le_max_right _ _)) (Finset.mem_univ j))
-  have hB'0 : 0 ≤ B' := Finset.sum_nonneg fun j hj => Finset.sum_nonneg fun k hk => le_max_right _ _
   refine ⟨(C.n:ℝ)^2 * B',?_⟩
   intro x hx ξ
   calc
@@ -258,24 +225,26 @@ theorem metric_upper_bound (C : Chart F ζ hζ U R P H) : ∃ B : ℝ,
       intro j hj
       apply Finset.sum_le_sum
       intro k hk
-      have hentry : |C.energyMatrix F ζ hζ H.totallyComplex U x j k| ≤ B' :=
-        (hB j k x hx).trans ((le_max_left _ _).trans (hB' j k))
-      have hj' : |ξ j| ≤ ‖ξ‖ := PiLp.norm_apply_le ξ j
-      have hk' : |ξ k| ≤ ‖ξ‖ := PiLp.norm_apply_le ξ k
       calc
         _ ≤ |C.energyMatrix F ζ hζ H.totallyComplex U x j k| * |ξ j| * |ξ k| := by
           rw [← abs_mul,← abs_mul]; exact le_abs_self _
-        _ ≤ B' * ‖ξ‖ * ‖ξ‖ := mul_le_mul (mul_le_mul hentry hj' (abs_nonneg _) (by positivity)) hk'
+        _ ≤ B' * ‖ξ‖ * ‖ξ‖ := mul_le_mul (mul_le_mul ((hB j k x hx).trans ((le_max_left _ _).trans (hB' j k))) (PiLp.norm_apply_le ξ j) (abs_nonneg _) (by positivity)) (PiLp.norm_apply_le ξ k)
           (abs_nonneg _) (by positivity)
         _ = _ := by ring
     _ = _ := by simp [Finset.sum_const, Fintype.card_fin]; ring
+
+end
 
 theorem componentWeight_toReal_pos (i : Fin (H.atlas U).componentCount) :
     0 < ((H.disintegration U).componentWeight i).toReal :=
   ENNReal.toReal_pos (ne_of_gt ((H.disintegration U).positive_componentWeight i))
     (ne_of_lt ((H.disintegration U).finite_componentWeight i))
 
-theorem actualWeight_bounds (C : Chart F ζ hζ U R P H) :
+section
+
+variable (C : Chart F ζ hζ U R P H)
+
+theorem actualWeight_bounds :
     0 < ((H.disintegration U).componentWeight C.component).toReal * C.lower ∧
     ∀ x ∈ closure (Metric.ball (0 : KPCoreChartLocalizers.E C.n) C.radius),
       ((H.disintegration U).componentWeight C.component).toReal * C.lower ≤
@@ -288,8 +257,7 @@ theorem actualWeight_bounds (C : Chart F ζ hζ U R P H) :
   exact ⟨mul_le_mul_of_nonneg_left (C.finite_bounds x hx).1 hc.le,
     mul_le_mul_of_nonneg_left (C.finite_bounds x hx).2 hc.le⟩
 
-theorem smooth_cutoff_coefficient
-    (C : Chart F ζ hζ U R P H) (η : KPCoreChartLocalizers.E C.n → ℝ)
+theorem smooth_cutoff_coefficient (η : KPCoreChartLocalizers.E C.n → ℝ)
     (hη : ContDiff ℝ (⊤ : ℕ∞) η) (hηc : HasCompactSupport η)
     (hηs : tsupport η ⊆ Metric.ball 0 C.radius)
     (s : Sections F ζ hζ U R P H) (hs : IsSmoothSections F ζ hζ U R P H s) :
@@ -317,8 +285,7 @@ theorem smooth_cutoff_coefficient
     filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hx] with y hy
     simp [g, hy]
 
-theorem average_cutoff_section
-    (C : Chart F ζ hζ U R P H) (η : KPCoreChartLocalizers.E C.n → ℝ)
+theorem average_cutoff_section (η : KPCoreChartLocalizers.E C.n → ℝ)
     (hη : ∀ (g : C.G F ζ hζ H.totallyComplex U) x, η (C.orthogonal g x) = η x)
     (s : Sections F ζ hζ U R P H) {x : KPCoreChartLocalizers.E C.n}
     (hx : x ∈ Metric.ball 0 C.radius) :
@@ -333,22 +300,25 @@ theorem average_cutoff_section
           ((η y : ℂ) * (s C.component).val (C.coordinates y)) := by
     intro g y hy
     rw [hη, C.equivariance g y (C.closed_ball_in_extension (subset_closure hy))]
-    have hs := (s C.component).property.2 g.val (C.coordinates y)
-    rw [hs]
+    rw [((s C.component).property.2 g.val (C.coordinates y))]
     simp only [KPCoreChartLocalizers.Chart.rho, MonoidHom.comp_apply, Subgroup.subtype_apply]
     ring
   rw [C.average_eq_self F ζ hζ H.totallyComplex U _ heq hx]
-  let v : KPCuspGenuineMonodromy.scalarFiber F ζ hζ U :=
-    ⟨(η x : ℂ) * (s C.component).val (C.coordinates x),
-      (KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).smul_mem (η x : ℂ)
-        ((s C.component).property.1 (C.coordinates x))⟩
   exact congrArg Subtype.val
-    ((KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).orthogonalProjectionOnto_mem_subspace_eq_self v)
+    ((KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).orthogonalProjectionOnto_mem_subspace_eq_self (⟨(η x : ℂ) * (s C.component).val (C.coordinates x),
+      (KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).smul_mem (η x : ℂ)
+        ((s C.component).property.1 (C.coordinates x))⟩))
 
- def mulSections (φ : X_U F ζ hζ U → ℝ) (s : Sections F ζ hζ U R P H) :
+end
+
+ section
+
+variable (φ : X_U F ζ hζ U → ℝ) (s : Sections F ζ hζ U R P H)
+
+def mulSections :
     Sections F ζ hζ U R P H := fun i =>
   ⟨fun x => (φ ((H.atlas U).components ⟨i, Quotient.mk _ x⟩) : ℂ) * (s i).val x,
-    (by intro x; exact (KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).smul_mem _ ((s i).property.1 x)),
+    (fun x => (KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).smul_mem _ ((s i).property.1 x)),
     (by
       intro γ x
       have hq : (Quotient.mk _ ((γ : KPCuspArithmetic.PGL2 F) • x) :
@@ -360,7 +330,7 @@ theorem average_cutoff_section
       rw [hq, (s i).property.2 γ x]
       ring)⟩
 
- theorem mulSections_norm (φ : X_U F ζ hζ U → ℝ) (s : Sections F ζ hζ U R P H)
+ theorem mulSections_norm
     (b : X_U F ζ hζ U) :
     sectionNorm F ζ hζ U R P H (mulSections F ζ hζ U R P H φ s) b =
       |φ b| * sectionNorm F ζ hζ U R P H s b := by
@@ -368,6 +338,8 @@ theorem average_cutoff_section
   refine Quotient.inductionOn q fun x => ?_
   rw [sectionNorm_component, sectionNorm_component]
   exact (norm_mul _ _).trans (by rw [Complex.norm_real, Real.norm_eq_abs])
+
+end
 
  def mulBorel (φ : X_U F ζ hζ U → ℝ)
     (hφ : ∀ j, ContDiff ℝ (⊤ : ℕ∞) (fun z => φ
@@ -395,10 +367,7 @@ theorem average_cutoff_section
     exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top s.property.2
 
 private theorem sectionNorm_nonneg (s : Sections F ζ hζ U R P H)
-    (b : X_U F ζ hζ U) : 0 ≤ sectionNorm F ζ hζ U R P H s b := by
-  dsimp [sectionNorm]
-  refine Quotient.inductionOn ((H.atlas U).components.symm b).2 (fun x => ?_)
-  exact norm_nonneg _
+    (b : X_U F ζ hζ U) : 0 ≤ sectionNorm F ζ hζ U R P H s b := by apply @DedekindZetaZeroFree.RepresentationTheory.ActualSectorTestDensity.CompactTailSources.CompactTailTruncation.sectionNorm_nonneg' <;> assumption
 
 private theorem norm_difference_le (s t : Sections F ζ hζ U R P H) (b : X_U F ζ hζ U) :
     sectionNorm F ζ hζ U R P H (s - t) b ≤
@@ -406,6 +375,8 @@ private theorem norm_difference_le (s t : Sections F ζ hζ U R P H) (b : X_U F 
   dsimp [sectionNorm]
   refine Quotient.inductionOn ((H.atlas U).components.symm b).2 (fun x => ?_)
   exact norm_sub_le _ _
+
+alias OperatorReconstruction.norm_difference_le := norm_difference_le
 
 private theorem squaredNorm_zero_iff (s : Sections F ζ hζ U R P H) (b : X_U F ζ hζ U) :
     squaredNorm F ζ hζ U R P H s b = 0 ↔ sectionNorm F ζ hζ U R P H s b = 0 := by
@@ -416,18 +387,18 @@ private theorem squaredNorm_zero_iff (s : Sections F ζ hζ U R P H) (b : X_U F 
   · intro h
     simp [h]
 
+alias OperatorReconstruction.squaredNorm_zero_iff := squaredNorm_zero_iff
+
 private theorem zero_difference (s t : Sections F ζ hζ U R P H) (b : X_U F ζ hζ U)
     (hs : squaredNorm F ζ hζ U R P H s b = 0)
     (ht : squaredNorm F ζ hζ U R P H t b = 0) :
-    squaredNorm F ζ hζ U R P H (s - t) b = 0 := by
-  apply (squaredNorm_zero_iff F ζ hζ U R P H _ b).mpr
-  have h := norm_difference_le F ζ hζ U R P H s t b
-  rw [(squaredNorm_zero_iff F ζ hζ U R P H s b).mp hs,
-    (squaredNorm_zero_iff F ζ hζ U R P H t b).mp ht, zero_add] at h
-  exact le_antisymm h (sectionNorm_nonneg F ζ hζ U R P H _ b)
+    squaredNorm F ζ hζ U R P H (s - t) b = 0 := by apply @DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse.CompactWeakFormDomain.squaredNorm_sub_zero <;> assumption
 
-private theorem local_null_global
-    (K : Set (X_U F ζ hζ U)) (hK : MeasurableSet K)
+section
+
+variable (K : Set (X_U F ζ hζ U))
+
+private theorem local_null_global (hK : MeasurableSet K)
     (C : Chart F ζ hζ U R P H)
     (hchart : Measure.map (C.toBase F ζ hζ H.totallyComplex U)
       ((Fintype.card (C.G F ζ hζ H.totallyComplex U) : ℝ≥0∞)⁻¹ •
@@ -441,7 +412,6 @@ private theorem local_null_global
       b ∉ C.O F ζ hζ H.totallyComplex U → squaredNorm F ζ hζ U R P H s.val b = 0) :
     mkK F ζ hζ U R P H K s = 0 := by
   apply (Submodule.Quotient.mk_eq_zero _).mpr
-  change squaredNorm F ζ hζ U R P H s.val =ᵐ[(muU F ζ hζ U R P).restrict K] 0
   let ν := ((Fintype.card (C.G F ζ hζ H.totallyComplex U) : ℝ≥0∞)⁻¹ •
         (volume.restrict (Metric.ball 0 C.radius)).withDensity
           (fun x => ENNReal.ofReal (actualWeight F ζ hζ U R P H C x)))
@@ -453,30 +423,26 @@ private theorem local_null_global
     rw [squaredNorm, KPCoreChartLocalizers.Chart.toBase, ← (H.atlas U).components_formula,
       KPCuspSiegel.projection, sectionNorm_component, hx hmem]
     simp
-  have hm := squaredNorm_measurable F ζ hζ U R P H s.val s.property.1
-  have hb : AEMeasurable (C.toBase F ζ hζ H.totallyComplex U) ν :=
+  have hb :=
     ((continuousOn_iff_continuous_restrict.mpr
       (C.toBase_ball_continuous F ζ hζ H.totallyComplex U)).aemeasurable
       Metric.isOpen_ball.measurableSet).mono_ac hν
   have hon : ∀ᵐ b ∂(muU F ζ hζ U R P).restrict (C.O F ζ hζ H.totallyComplex U),
       b ∈ K → squaredNorm F ζ hζ U R P H s.val b = 0 := by
     rw [← hchart]
-    have hms : MeasurableSet {b | b ∈ K → squaredNorm F ζ hζ U R P H s.val b = 0} := by
-      have he : {b | b ∈ K → squaredNorm F ζ hζ U R P H s.val b = 0} =
-          Kᶜ ∪ {b | squaredNorm F ζ hζ U R P H s.val b = 0} := by
-        ext b; simp only [Set.mem_setOf_eq, Set.mem_union, Set.mem_compl_iff]; tauto
-      rw [he]
-      exact hK.compl.union (hm (measurableSet_singleton 0))
-    exact (ae_map_iff hb hms).mpr hcoord
+    refine (ae_map_iff hb ?_).mpr hcoord
+    have he : {b | b ∈ K → squaredNorm F ζ hζ U R P H s.val b = 0} =
+        Kᶜ ∪ {b | squaredNorm F ζ hζ U R P H s.val b = 0} := by
+      ext b; simp only [Set.mem_setOf_eq, Set.mem_union, Set.mem_compl_iff]; tauto
+    rw [he]
+    exact hK.compl.union ((squaredNorm_measurable F ζ hζ U R P H s.val s.property.1) (measurableSet_singleton 0))
   rw [ae_restrict_iff' (C.open_image F ζ hζ H.totallyComplex U).measurableSet] at hon
-  have hk := ae_restrict_mem (μ := muU F ζ hζ U R P) hK
-  filter_upwards [Filter.Eventually.filter_mono ae_restrict_le hon, hoff, hk] with b hb ho hbk
+  filter_upwards [Filter.Eventually.filter_mono ae_restrict_le hon, hoff, (ae_restrict_mem hK)] with b hb ho hbk
   by_cases hx : b ∈ C.O F ζ hζ H.totallyComplex U
   · exact hb hx hbk
   · exact ho hx
 
-theorem chart_reconstruction
-    (K : Set (X_U F ζ hζ U)) (hK : IsCompact K) (C : Chart F ζ hζ U R P H)
+theorem chart_reconstruction (hK : IsCompact K) (C : Chart F ζ hζ U R P H)
     (φ : X_U F ζ hζ U → ℝ)
     (hφ : ∀ j, ContDiff ℝ (⊤ : ℕ∞) (fun z => φ
       (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative j)
@@ -511,10 +477,8 @@ theorem chart_reconstruction
   apply sub_eq_zero.mp
   rw [← map_sub]
   apply local_null_global F ζ hζ U R P H K hK.measurableSet C hchart
-  · have hsub : Metric.ball (0 : KPCoreChartLocalizers.E C.n) C.radius ⊆
-        KPCoreChartLocalizers.cube C.n C.a := subset_closure.trans (C.closed_ball_in_cube.trans interior_subset)
-    have ha := C.average_congr_ae F ζ hζ H.totallyComplex U
-      ((hT u s hs).filter_mono (ae_mono (Measure.restrict_mono hsub le_rfl)))
+  · have ha := C.average_congr_ae F ζ hζ H.totallyComplex U
+      ((hT u s hs).filter_mono (ae_mono (Measure.restrict_mono (subset_closure.trans (C.closed_ball_in_cube.trans interior_subset)) le_rfl)))
     filter_upwards [hball,ha,ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx ha hxb hmem
     change (t.val C.component).val (C.coordinates x) -
       (φ ((H.atlas U).components ⟨C.component,Quotient.mk _ (C.coordinates x)⟩) : ℂ) *
@@ -527,8 +491,9 @@ theorem chart_reconstruction
     apply zero_difference F ζ hζ U R P H _ _ b (hb hout)
     change squaredNorm F ζ hζ U R P H (mulSections F ζ hζ U R P H φ s.val) b = 0
     rw [squaredNorm,mulSections_norm]
-    have hz : φ b = 0 := image_eq_zero_of_notMem_tsupport (fun h => hout (hφs h))
-    simp [hz]
+    simp [(image_eq_zero_of_notMem_tsupport (fun h => hout (hφs h)))]
+
+end
 
 theorem finite_reconstruction {n : ℕ}
     (K : Set (X_U F ζ hζ U)) (hK : IsCompact K)
@@ -564,15 +529,15 @@ theorem finite_reconstruction {n : ℕ}
     res_K F ζ hζ U R P H K hK.measurableSet = ∑ i, (Rmap i).comp (T i) := by
   apply ContinuousLinearMap.ext
   intro u
-  obtain ⟨s,hs⟩ := Quotient.exists_rep (sectorLineIsometry F ζ hζ U R P H u)
-  change mk F ζ hζ U R P H s = sectorLineIsometry F ζ hζ U R P H u at hs
+  let sectorLineIsometry₀ := sectorLineIsometry F ζ hζ U R P H u
+  obtain ⟨s,hs⟩ := Quotient.exists_rep (sectorLineIsometry₀)
+  change mk F ζ hζ U R P H s = sectorLineIsometry₀ at hs
   have hr : res_K F ζ hζ U R P H K hK.measurableSet u = mkK F ζ hζ U R P H K s := by
-    change lineRestriction F ζ hζ U R P H K hK.measurableSet (sectorLineIsometry F ζ hζ U R P H u) = _
+    change lineRestriction F ζ hζ U R P H K hK.measurableSet (sectorLineIsometry₀) = _
     rw [← hs,lineRestriction_mk]
   rw [hr,ContinuousLinearMap.sum_apply]
   simp only [ContinuousLinearMap.comp_apply]
-  have he : ∀ i, Rmap i (T i u) = mkK F ζ hζ U R P H K
-      (mulBorel F ζ hζ U R P H (φ i) (hφ i) (M i) (hM i) (hbound i) s) := fun i =>
+  have he := fun i =>
     chart_reconstruction F ζ hζ U R P H K hK (C i) (φ i) (hφ i) (hφs i)
       (η i) (hη i) (hηinv i) (M i) (hM i) (hbound i) (T i) (hT i)
       (Rmap i) (hR i) (hchart i) u s hs.symm

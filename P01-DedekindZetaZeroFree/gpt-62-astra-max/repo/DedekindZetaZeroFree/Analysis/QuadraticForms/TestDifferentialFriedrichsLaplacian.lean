@@ -13,49 +13,34 @@ variable {S T H V : Type*}
   [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
   [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
 
-theorem gradient_closable
-    (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
-    (j : T →ₗ[ℂ] V) (hj : Function.Injective j)
-    (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S)
-    (hcotangent : DenseRange j)
-    (hgreen : ∀ f : S, ∀ w : T,
-      inner ℂ (j (A f)) (j w) = inner ℂ (ι f) (ι (B w))) :
-    (KPTestOperator.descend ι hι j A).IsClosable := by
-  have ht : Dense ((KPTestOperator.descend j hj ι B).domain : Set V) := by
-    simpa only [KPTestOperator.descend_domain, KPTestOperator.testDomain,
-      LinearMap.coe_range, DenseRange] using hcotangent
-  exact (formalAdjoint_gradient_closable _ _ ht
-    (KPTestOperator.descend_formalAdjoint ι hι j hj A B hgreen)).2.1
+section
 
-def resolvent
-    (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
-    (j : T →ₗ[ℂ] V) (hj : Function.Injective j)
-    (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S)
-    (hcotangent : DenseRange j)
-    (hgreen : ∀ f : S, ∀ w : T,
-      inner ℂ (j (A f)) (j w) = inner ℂ (ι f) (ι (B w))) : H →L[ℂ] H :=
+variable (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι) (j : T →ₗ[ℂ] V) (hj : Function.Injective j)
+    (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S) (hcotangent : DenseRange j)
+    (hgreen : ∀ f : S, ∀ w : T, inner ℂ (j (A f)) (j w) = inner ℂ (ι f) (ι (B w)))
+
+include hj hcotangent hgreen in
+theorem gradient_closable :
+    (KPTestOperator.descend ι hι j A).IsClosable := by
+  exact (formalAdjoint_gradient_closable (KPTestOperator.descend ι hι j A) (KPTestOperator.descend j hj ι B) (id hcotangent) (KPTestOperator.descend_formalAdjoint ι hι j hj A B hgreen)).right.left
+
+def resolvent : H →L[ℂ] H :=
   closedGradientResolvent (KPTestOperator.descend ι hι j A)
     (gradient_closable ι hι j hj A B hcotangent hgreen)
 
-def laplacian
-    (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
-    (j : T →ₗ[ℂ] V) (hj : Function.Injective j)
-    (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S)
-    (hscalar : DenseRange ι) (hcotangent : DenseRange j)
-    (hgreen : ∀ f : S, ∀ w : T,
-      inner ℂ (j (A f)) (j w) = inner ℂ (ι f) (ι (B w))) : H →ₗ.[ℂ] H :=
+end
+
+variable (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι) (j : T →ₗ[ℂ] V) (hj : Function.Injective j)
+    (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S) (hscalar : DenseRange ι) (hcotangent : DenseRange j)
+    (hgreen : ∀ f : S, ∀ w : T, inner ℂ (j (A f)) (j w) = inner ℂ (ι f) (ι (B w)))
+
+def laplacian : H →ₗ.[ℂ] H :=
   closedGradientFriedrichsOperator (KPTestOperator.descend ι hι j A)
     (by simpa only [KPTestOperator.descend_domain, KPTestOperator.testDomain,
       LinearMap.coe_range, DenseRange] using hscalar)
     (gradient_closable ι hι j hj A B hcotangent hgreen)
 
-theorem hilbert_laplacian
-    (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
-    (j : T →ₗ[ℂ] V) (hj : Function.Injective j)
-    (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S)
-    (hscalar : DenseRange ι) (hcotangent : DenseRange j)
-    (hgreen : ∀ f : S, ∀ w : T,
-      inner ℂ (j (A f)) (j w) = inner ℂ (ι f) (ι (B w))) :
+theorem hilbert_laplacian :
     let D := KPTestOperator.descend ι hι j A
     let Δ := laplacian ι hι j hj A B hscalar hcotangent hgreen
     let R := resolvent ι hι j hj A B hcotangent hgreen
@@ -100,7 +85,7 @@ theorem hilbert_laplacian
   have hd : Dense (D.domain : Set H) := by
     simpa only [D, KPTestOperator.descend_domain, KPTestOperator.testDomain,
       LinearMap.coe_range, DenseRange] using hscalar
-  have hc : D.IsClosable := gradient_closable ι hι j hj A B hcotangent hgreen
+  have hc := gradient_closable ι hι j hj A B hcotangent hgreen
   letI : CompleteSpace (ClosedGradientSpace D) := closedGradientSpace_complete D hc
   have he := closedGradientEmbedding_properties D hd hc
   have hr := energyRieszResolvent_properties (closedGradientEmbedding D)
@@ -114,8 +99,7 @@ theorem hilbert_laplacian
     closedGradientForm_extends D, closedGradientForm_closure_characterization D hc,
     ho.1, ho.2.1, ho.2.2.1, ?_, ?_, hr.1, hr.2.2.2.2,
     hr.2.2.1, hr.2.2.2.1, ho.2.2.2.1, ho.2.2.2.2.1⟩
-  · change ClosedGradientVariationalAssociation D (closedGradientFriedrichsOperator D hd hc)
-    intro u h
+  · intro u h
     constructor
     · rintro ⟨hu, hvalue⟩
       have huForm := closedGradientFriedrichsOperator_domain_subset D hd hc hu

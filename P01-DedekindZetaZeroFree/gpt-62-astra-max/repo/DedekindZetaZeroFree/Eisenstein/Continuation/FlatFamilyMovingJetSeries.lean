@@ -10,13 +10,13 @@ open scoped Classical NumberField Topology ContDiff BigOperators NNReal
 open Filter
 namespace DedekindZetaZeroFree.SharedSource
 open KPGlobalResidualConstruction KPGlobalEisensteinData KPContActualSphericalRightFieldIdentification
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming literal_finite_word_chamber → literal_finite_word_chamber
-open _root_.DedekindZetaZeroFree.KPActualReflectionData.CanonicalStageCircle renaming powerSeries_finset_sum → powerSeries_finset_sum
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (literal_finite_word_chamber)
+open _root_.DedekindZetaZeroFree.KPActualReflectionData.CanonicalStageCircle (powerSeries_finset_sum)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 set_option maxHeartbeats 1800000
 set_option backward.isDefEq.respectTransparency false
 
@@ -81,7 +81,7 @@ theorem literal_moving_series
       (SmoothSeriesAlgebra.powerSeries_mono _ (ht i j) (hρr i j))
   let a : ℂ → KPLiteralRaw.Functions F ζ hζ := fun s g => ∑ i, ∑ j, B i j s * A i j s g
   let NN : ℂ → nativeSmoothSpace F ζ hζ := fun s => ∑ i, ∑ j, B i j s • N i j s
-  let bbb : ℕ → nativeSmoothSpace F ζ hζ := fun k => ∑ i, ∑ j, bb i j k
+  let bbb := fun k => ∑ i, ∑ j, bb i j k
   refine ⟨q, a, ρ, hq, hq0, ?_, ?_, hρ, ?_, ?_, NN, ?_, ?_, bbb, ?_⟩
   · intro g s hs
     apply MeromorphicAt.fun_sum

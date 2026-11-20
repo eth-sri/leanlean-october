@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -43,30 +41,27 @@ theorem infinitePlaceKummerRootCharacter_eq_neg_one_of_real_of_neg_neg
       ⟨(-1 : Kˣ), by simp [hn]⟩
     infinitePlaceKummerRootCharacter K n hnK hmu v a b = negOne := by
   let L := chosenSimpleKummerExtension K n hnK b
-  let : FiniteDimensional K L :=
+  let :=
     chosenSimpleKummerExtension_finiteDimensional K n hnK b
-  let : IsAbelianGalois K L :=
+  let :=
     chosenSimpleKummerExtension_isAbelianGalois K n hnK hmu b
-  let : NumberField L := NumberField.of_module_finite K L
-  let a_v : v.Completionˣ :=
-    Units.map (algebraMap K v.Completion).toMonoidHom a
-  let beta : Lˣ := chosenSimpleKummerRootUnit K n hnK b
+  let := NumberField.of_module_finite K L
+  let beta := chosenSimpleKummerRootUnit K n hnK b
   let sigma : Gal(L/K) :=
-    chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v a_v
+    chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v (Units.map (algebraMap K v.Completion).toMonoidHom a)
   let negOne : nthRootsSubgroup K (n : ℕ) :=
     ⟨(-1 : Kˣ), by simp [hn]⟩
   have hArtin :
       sigma = chosenInfinitePlaceArtinMonoidHom
-        (K := K) (L := L) v (-1 : v.Completionˣ) := by
-    exact chosenInfinitePlaceArtin_globalUnit_eq_neg_one_of_real_of_neg
+          v (-1 : v.Completionˣ) := chosenInfinitePlaceArtin_globalUnit_eq_neg_one_of_real_of_neg
       K v hv a ha
   have haction :
       chosenInfinitePlaceArtinMonoidHom
-          (K := K) (L := L) v (-1 : v.Completionˣ) (beta : L) =
+            v (-1 : v.Completionˣ) (beta : L) =
         -(beta : L) := by
     change
       chosenInfinitePlaceArtinMonoidHom
-          (K := K) (L := L) v (-1 : v.Completionˣ)
+            v (-1 : v.Completionˣ)
             ((chosenSimpleKummerRootUnit K n hnK b : Lˣ) : L) =
         -((chosenSimpleKummerRootUnit K n hnK b : Lˣ) : L)
     exact
@@ -88,12 +83,8 @@ theorem infinitePlaceKummerRootCharacter_eq_neg_one_of_real_of_neg_neg
           (chosenSimpleKummerRootCharacter K n hnK hmu b sigma)) =
       nthRootsSubgroupMap K L (n : ℕ) negOne
   calc
-    nthRootsSubgroupMap K L (n : ℕ)
-        ((nthRootsSubgroupEquivOfPrimitiveRoots K L n hmu).symm
-          (chosenSimpleKummerRootCharacter K n hnK hmu b sigma)) =
-        chosenSimpleKummerRootCharacter K n hnK hmu b sigma := by
-      exact
-        (nthRootsSubgroupEquivOfPrimitiveRoots K L n hmu).apply_symm_apply _
+    _ =
+        chosenSimpleKummerRootCharacter K n hnK hmu b sigma := (nthRootsSubgroupEquivOfPrimitiveRoots K L n hmu).apply_symm_apply _
     _ = nthRootsSubgroupMap K L (n : ℕ) negOne := by
       apply Subtype.ext
       rw [chosenSimpleKummerRootCharacter_apply]
@@ -113,7 +104,7 @@ theorem infinitePlaceKummerRootCharacter_localGlobal_of_real_of_neg_neg
   let negOne : nthRootsSubgroup K (n : ℕ) :=
     ⟨(-1 : Kˣ), by simp [hn]⟩
   calc
-    infinitePlaceKummerRootCharacter K n hnK hmu v a b = negOne :=
+    _ = negOne :=
       infinitePlaceKummerRootCharacter_eq_neg_one_of_real_of_neg_neg
         K n hnK hmu v a b hn hv ha hb
     _ = infinitePlaceHilbertSymbol K n v a b := by

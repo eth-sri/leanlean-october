@@ -75,7 +75,7 @@ noncomputable instance countable_unitCoordinateLattice :
       intro g
       obtain ⟨z, hz⟩ := g.prop
       refine ⟨z, Subtype.ext ?_⟩
-      simpa using hz)
+      exact hz)
 
 open Classical in
 
@@ -148,17 +148,16 @@ theorem measurePreserving_unitRadialAngularEquiv :
   have he := volume_preserving_piEquivPiSubtypeProd (fun _ : InfinitePlace K ↦ ℝ)
     (fun w ↦ w = w₀)
   rw [Measure.volume_eq_prod] at he
-  have hf := (volume_preserving_funUnique {w : InfinitePlace K // w = w₀} ℝ).prod
-    (MeasurePreserving.id (volume : Measure ({w : InfinitePlace K // w ≠ w₀} → ℝ)))
   have he' : MeasurePreserving e volume
-      ((volume : Measure ({w : InfinitePlace K // w = w₀} → ℝ)).prod
-        (volume : Measure ({w : InfinitePlace K // w ≠ w₀} → ℝ))) := by
+      (volume.prod
+        volume) := by
     convert he using 1 <;> congr 4 <;> exact Subsingleton.elim _ _
   have hdefault : (default : {w : InfinitePlace K // w = w₀}).val = w₀ :=
     (default : {w : InfinitePlace K // w = w₀}).prop
   simpa [unitRadialAngularEquiv, e, Function.comp_def,
     MeasurableEquiv.piEquivPiSubtypeProd, MeasurableEquiv.funUnique,
-    MeasurableEquiv.piUnique, Equiv.piEquivPiSubtypeProd, Prod.map, hdefault] using hf.comp he'
+    MeasurableEquiv.piUnique, Equiv.piEquivPiSubtypeProd, Prod.map, hdefault] using ((volume_preserving_funUnique {w : InfinitePlace K // w = w₀} ℝ).prod
+      (MeasurePreserving.id volume)).comp he'
 
 open Classical in
 theorem unitRadialAngularEquiv_image_radialSlab (s : Set ℝ) :
@@ -175,7 +174,6 @@ theorem unitRadialAngularEquiv_image_radialSlab (s : Set ℝ) :
       unitSlabCoordinates p.1 p.2 w ∈ Ico (0 : ℝ) 1) ↔ p.2 ∈ unitAngularParamSet K := by
     constructor
     · intro h
-      change ∀ w ∈ Set.univ, p.2 w ∈ Ico (0 : ℝ) 1
       intro w _
       simpa using h w w.prop
     · intro h w hw
@@ -195,12 +193,11 @@ theorem integrableOn_radialSlab_iff
         ((volume : Measure ℝ).prod
           (volume : Measure ({w : InfinitePlace K // w ≠ w₀} → ℝ))) := by
   let e := unitRadialAngularEquiv (K := K)
-  have he := measurePreserving_unitRadialAngularEquiv (K := K)
   have hpre : e.symm ⁻¹' (unitFundamentalParamSet K ∩ {y | y w₀ ∈ s}) =
       s ×ˢ unitAngularParamSet K := by
     rw [← MeasurableEquiv.image_eq_preimage_symm]
     exact unitRadialAngularEquiv_image_radialSlab s
-  have h := (he.symm e).integrableOn_comp_preimage e.symm.measurableEmbedding
+  have h := ((measurePreserving_unitRadialAngularEquiv).symm e).integrableOn_comp_preimage e.symm.measurableEmbedding
     (f := f) (s := unitFundamentalParamSet K ∩ {y | y w₀ ∈ s})
   rw [hpre] at h
   exact h.symm
@@ -214,12 +211,11 @@ theorem setIntegral_radialSlab_eq_radialAngular
     (∫ y in unitFundamentalParamSet K ∩ {y | y w₀ ∈ s}, f y) =
       ∫ a in s, ∫ u in unitAngularParamSet K, f (unitSlabCoordinates a u) := by
   let e := unitRadialAngularEquiv (K := K)
-  have he := measurePreserving_unitRadialAngularEquiv (K := K)
-  have hchange := he.setIntegral_image_emb e.measurableEmbedding
+  have hchange := (measurePreserving_unitRadialAngularEquiv).setIntegral_image_emb e.measurableEmbedding
     (fun p ↦ f (e.symm p)) (unitFundamentalParamSet K ∩ {y | y w₀ ∈ s})
   rw [unitRadialAngularEquiv_image_radialSlab] at hchange
   change (∫ p in s ×ˢ unitAngularParamSet K, f (e.symm p)
-    ∂(volume : Measure ℝ).prod (volume : Measure ({w : InfinitePlace K // w ≠ w₀} → ℝ))) =
+    ∂volume.prod volume) =
     (∫ y in unitFundamentalParamSet K ∩ {y | y w₀ ∈ s}, f (e.symm (e y))) at hchange
   simp only [MeasurableEquiv.symm_apply_apply] at hchange
   rw [← hchange]

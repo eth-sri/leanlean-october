@@ -11,8 +11,8 @@ open NumberField MeasureTheory Filter
 namespace DedekindZetaZeroFree.GaussianSmoothing
 open MomentSources ThetaProfileHaarSheets
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 
 lemma bessel_antitone {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) : KThird b ≤ KThird a := by
   rw [KThird_eq_integral _ (ha.trans_le hab), KThird_eq_integral _ ha]
@@ -27,13 +27,12 @@ lemma bessel_antitone {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) : KThird b ≤ KT
 lemma profile_scale_le (c a b t : ℝ) (hc : 0 < c) (ha : 0 < a)
     (hab : a ≤ b) (ht : 0 < t) :
     thirdBesselRadialProfile c (b*t) ≤ (b/a) * thirdBesselRadialProfile c (a*t) := by
-  have hk : KThird (c * Real.sqrt (b*t)) ≤ KThird (c * Real.sqrt (a*t)) := by
-    apply bessel_antitone (mul_pos hc (Real.sqrt_pos.mpr (mul_pos ha ht)))
-    gcongr
   unfold thirdBesselRadialProfile
   calc
     _ ≤ (b*t) * KThird (c * Real.sqrt (a*t)) :=
-      mul_le_mul_of_nonneg_left hk (mul_pos (ha.trans_le hab) ht).le
+      mul_le_mul_of_nonneg_left (by
+        apply bessel_antitone (mul_pos hc (Real.sqrt_pos.mpr (mul_pos ha ht)))
+        gcongr) (mul_pos (ha.trans_le hab) ht).le
     _ = _ := by field_simp
 
 lemma section_norm_sq (A : SArithmeticData F) (w v : InfinitePlace F)
@@ -91,28 +90,24 @@ def sheet (N : TraceHaarTransport R) (P : Packet R Q) (x : PositiveAxis) : ℝ :
 
 lemma global_radial_integrable (N : TraceHaarTransport R) (P : Packet R Q) :
     Integrable (radial P) N.groupHaar := by
-  have h := Complex.reCLM.integrable_comp ((global_mellin N P 0 (by norm_num)).1)
-  simpa using h
+  simpa using (Complex.reCLM.integrable_comp ((global_mellin N P 0 (by norm_num)).1))
 
 theorem sheet_integrable (N : TraceHaarTransport R) (P : Packet R Q) (x : PositiveAxis) :
     Integrable (fun z : R.A.G1 => radial P (normSection R.A P.v₀ x * z.val)) (probeHaar R) := by
   letI := N.groupHaar_isHaar
-  have hae := (integral_disintegration R.A P.v₀ N.groupHaar
-    (fun y => (radial P y : ℂ)) (Complex.ofRealCLM.integrable_comp (global_radial_integrable N P))).1
   have hker (a : PositiveAxis) :
     Integrable (fun y : Sheet R.A a => radial P y.val) (sheetHaar R.A P.v₀ N.groupHaar a) ↔
     Integrable (fun z : R.A.G1 => radial P (normSection R.A P.v₀ a * z.val)) (probeHaar R) := by
     rw [← kernelHaar_eq_probe N P.v₀]
     exact (sheetTranslation R.A P.v₀ a).toMeasurableEquiv.measurableEmbedding.integrable_map_iff
   let t : Set PositiveAxis := {y | y.val < x.val}
-  have ht : IsOpen t := isOpen_lt continuous_subtype_val continuous_const
   have hne : t.Nonempty := ⟨⟨x.val/2, half_pos x.property⟩, by dsimp [t]; linarith [x.property]⟩
   obtain ⟨a, ha, hint⟩ := Measure.exists_mem_of_measure_ne_zero_of_ae
-    (ht.measure_ne_zero positiveHaar hne) (ae_restrict_of_ae hae)
+    ((isOpen_lt continuous_subtype_val continuous_const).measure_ne_zero positiveHaar hne) (ae_restrict_of_ae ((integral_disintegration R.A P.v₀ N.groupHaar
+      (fun y => (radial P y : ℂ)) (Complex.ofRealCLM.integrable_comp (global_radial_integrable N P))).1))
   have hintR := Complex.reCLM.integrable_comp hint
   simp only [Complex.reCLM_apply, Complex.ofReal_re] at hintR
-  have hi := (hker a).mp hintR
-  refine (hi.const_mul (x.val/a.val)).mono'
+  refine (((hker a).mp hintR).const_mul (x.val/a.val)).mono'
     (((continuous_radial P).comp (sheetTranslation R.A P.v₀ x).continuous.subtype_val).aestronglyMeasurable) ?_
   filter_upwards with z
   rw [Real.norm_eq_abs, abs_of_nonneg (radial_nonneg P _)]
@@ -121,8 +116,6 @@ theorem sheet_integrable (N : TraceHaarTransport R) (P : Packet R Q) (x : Positi
 theorem sheet_pos (N : TraceHaarTransport R) (P : Packet R Q) (x : PositiveAxis) :
     0 < sheet N P x := by
   letI := probeHaar_isHaar R
-  have hc : Continuous (fun z : R.A.G1 => radial P (normSection R.A P.v₀ x * z.val)) :=
-    (continuous_radial P).comp (sheetTranslation R.A P.v₀ x).continuous.subtype_val
   have hpos : 0 < radial P (normSection R.A P.v₀ x * (1 : R.A.G1).val) := by
     rw [Subgroup.coe_one, mul_one]
     unfold radial
@@ -133,10 +126,10 @@ theorem sheet_pos (N : TraceHaarTransport R) (P : Packet R Q) (x : PositiveAxis)
     rw [if_pos hcut, one_mul]
     apply Finset.prod_pos
     intro w _
-    have ht : 0 < ‖((normSection R.A P.v₀ x).1 w : w.Completion)‖ ^ 2 :=
+    have ht :=
       sq_pos_of_pos (norm_pos_iff.mpr ((normSection R.A P.v₀ x).1 w).ne_zero)
     exact mul_pos ht (KThird_pos _ (mul_pos (P.scale_pos w) (Real.sqrt_pos.mpr ht)))
-  exact integral_pos_of_integrable_nonneg_nonzero hc (sheet_integrable N P x)
+  exact integral_pos_of_integrable_nonneg_nonzero ((continuous_radial P).comp (sheetTranslation R.A P.v₀ x).continuous.subtype_val) (sheet_integrable N P x)
     (fun z => radial_nonneg P _) hpos.ne'
 
 theorem positiveSheet_eq (N : TraceHaarTransport R) (P : Packet R Q) :
@@ -152,8 +145,7 @@ theorem positive_sheet_integrable (N : TraceHaarTransport R) (P : Packet R Q) (x
       let y := z.val * R.A.radialSection x.val x.property
       (if ∀ p : R.A.Sf, y.2 p ∈ P.cutoff p then 1 else 0) *
         ∏ w : InfinitePlace F, ‖(y.1 w : w.Completion)‖ ^ 2 *
-          KThird (P.scale w * Real.sqrt (‖(y.1 w : w.Completion)‖ ^ 2))) R.probe.domain.measure := by
-  exact (probeHaar_integrable _).mp
+          KThird (P.scale w * Real.sqrt (‖(y.1 w : w.Completion)‖ ^ 2))) R.probe.domain.measure := (probeHaar_integrable _).mp
     ((integrable_uniform_iff N P.v₀ x (radial P)).mp (sheet_integrable N P x))
 
 theorem continuous_sheet (N : TraceHaarTransport R) (P : Packet R Q) : Continuous (sheet N P) := by
@@ -196,14 +188,12 @@ theorem sheet_mellin (N : TraceHaarTransport R) (P : Packet R Q)
     simp_rw [show ∀ y : Sheet R.A x, R.A.norm y.val = x.val from fun y => y.property]
     rw [integral_mul_const]
     congr 1
-    rw [integral_complex_ofReal (f := fun y : Sheet R.A x => radial P y.val)]
+    rw [integral_complex_ofReal]
     congr 1
-    have ht := (sheetTranslation R.A P.v₀ x).toMeasurableEquiv.measurableEmbedding.integral_map
-      (μ := kernelHaar R.A P.v₀ N.groupHaar) (fun y : Sheet R.A x => radial P y.val)
-    change (∫ y : Sheet R.A x, radial P y.val ∂sheetHaar R.A P.v₀ N.groupHaar x) = _
     calc
       _ = ∫ z : R.A.G1, radial P (normSection R.A P.v₀ x * z.val)
-          ∂kernelHaar R.A P.v₀ N.groupHaar := ht
+          ∂kernelHaar R.A P.v₀ N.groupHaar := ((sheetTranslation R.A P.v₀ x).toMeasurableEquiv.measurableEmbedding.integral_map
+            (fun y : Sheet R.A x => radial P y.val))
       _ = P.positiveSheet x := by
         rw [kernelHaar_eq_probe N P.v₀, positiveSheet_eq N P]
         rfl
@@ -213,15 +203,14 @@ theorem sheet_mellin (N : TraceHaarTransport R) (P : Packet R Q)
 theorem C0_exact (N : TraceHaarTransport R) (P : Packet R Q) : P.C₀ = polarC0 N P := by
   have h := congrArg Complex.re ((sheet_mellin N P 0 (by norm_num)).2)
   simp only [Complex.cpow_zero, mul_one, zero_add] at h
-  rw [integral_complex_ofReal (f := P.positiveSheet), Complex.ofReal_re] at h
+  rw [integral_complex_ofReal, Complex.ofReal_re] at h
   have hg1 : Complex.Gamma (5/6) = (Real.Gamma (5/6) : ℂ) := by
     rw [← Complex.Gamma_ofReal]; congr 1; norm_num
   have hg2 : Complex.Gamma (7/6) = (Real.Gamma (7/6) : ℂ) := by
     rw [← Complex.Gamma_ofReal]; congr 1; norm_num
   rw [hg1, hg2, ← Complex.ofReal_mul, ← Complex.ofReal_pow, ← Complex.ofReal_mul,
     Complex.ofReal_re] at h
-  have hn : (Real.Gamma (5/6) * Real.Gamma (7/6))^Fintype.card (InfinitePlace F) ≠ 0 := by
-    exact (pow_pos (mul_pos (Real.Gamma_pos_of_pos (by norm_num))
+  have hn : (Real.Gamma (5/6) * Real.Gamma (7/6))^Fintype.card (InfinitePlace F) ≠ 0 := (pow_pos (mul_pos (Real.Gamma_pos_of_pos (by norm_num))
       (Real.Gamma_pos_of_pos (by norm_num))) _).ne'
   unfold Packet.C₀
   rw [h, mul_div_cancel_right₀ _ hn]

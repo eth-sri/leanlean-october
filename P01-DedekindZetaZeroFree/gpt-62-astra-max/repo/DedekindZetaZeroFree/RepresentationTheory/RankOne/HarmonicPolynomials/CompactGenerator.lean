@@ -49,12 +49,18 @@ private theorem L_smul (i : Fin 3) (c : ℂ) (p : Polynomial) :
   simp only [L, smul_eq_C_mul, pderiv_C_mul]
   ring
 
-def compactAxis (j : Fin 3) : Fin 3 := ![2, 0, 1] j
-def compactCoefficient (j : Fin 3) : ℂ :=
+section
+
+variable (j : Fin 3)
+
+def compactAxis : Fin 3 := ![2, 0, 1] j
+def compactCoefficient : ℂ :=
   ![(Real.sqrt 2 : ℂ), (Real.sqrt 2 : ℂ), -(Real.sqrt 2 : ℂ)] j
 
-def A (j : Fin 3) (p : Polynomial) : Polynomial :=
+def A (p : Polynomial) : Polynomial :=
   compactCoefficient j • L (compactAxis j) p
+
+end
 
 theorem A_casimir (p : Polynomial) :
     -(∑ j : Fin 3, A j (A j p)) = (2 : ℂ) • polynomialCasimir p := by

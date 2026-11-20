@@ -21,11 +21,12 @@ theorem rayCharacterIntegralPrimeReduction
         (J : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
           (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) →
         (H J : ℂ) = χ I := by
+  let FractionalIdeal₀ := FractionalIdeal (nonZeroDivisors (𝓞 K)) K
   classical
   let P : Ideal (𝓞 K) → Prop := fun I =>
     χ I ≠ 0 → ∀ J : ClassFieldTheory.NumberFieldFractionalIdealGroup K,
-      (J : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
-        (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) →
+      (J : FractionalIdeal₀) =
+        (I : FractionalIdeal₀) →
       (H J : ℂ) = χ I
   have hP : ∀ I, P I := by
     intro I
@@ -43,13 +44,13 @@ theorem rayCharacterIntegralPrimeReduction
       have hpne : χ p ≠ 0 := fun h => hne (by rw [h, zero_mul])
       have hane : χ a ≠ 0 := fun h => hne (by rw [h, mul_zero])
       have hp0 : p ≠ 0 := hp.ne_zero
-      have hprime_p : p.IsPrime := (Ideal.prime_iff_isPrime hp0).mp hp
+      have hprime_p := (Ideal.prime_iff_isPrime hp0).mp hp
       let v : IsDedekindDomain.HeightOneSpectrum (𝓞 K) := ⟨p, hprime_p, hp0⟩
       let A : ClassFieldTheory.NumberFieldFractionalIdealGroup K :=
-        Units.mk0 (a : FractionalIdeal (nonZeroDivisors (𝓞 K)) K)
+        Units.mk0 (a : FractionalIdeal₀)
           (FractionalIdeal.coeIdeal_ne_zero.mpr ha0)
-      have hAval : (A : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
-          (a : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) := by
+      have hAval : (A : FractionalIdeal₀) =
+          (a : FractionalIdeal₀) := by
         simp only [A, Units.val_mk0]
       have hJA : J = ClassFieldTheory.finitePrimeFractionalIdeal v * A := by
         apply Units.ext

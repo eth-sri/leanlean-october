@@ -9,17 +9,13 @@ open scoped Classical NumberField
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory RootDerivatives
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 structure NormalizedSphericalTensor (R : PrincipalMellin.ActualRecipe S η)
     {N : TraceHaarTransport R} (A : JointExteriorCoefficientSources R N) (D : SphericalTransportData R A) where
   scalar : ℂ
   scalar_nonzero : scalar ≠ 0
-  slot_mem : Sum.inr A.factorization.scalarSlot.val ∈ D.tensor.stage.val
   entries : ∀ p : D.tensor.stage.val, actualLocal R A.factorization.finiteData p
-  entries_exact : entries = Function.update D.tensor.entries
-    ⟨Sum.inr A.factorization.scalarSlot.val, slot_mem⟩
-    (scalar • D.tensor.entries ⟨Sum.inr A.factorization.scalarSlot.val, slot_mem⟩)
   realization_exact : tensorFunction R A.factorization D.tensor.stage entries = scalar • D.tensor.value
   realization_nonzero : tensorFunction R A.factorization D.tensor.stage entries ≠ 0
   period_nonzero : fourier R A.sources.dq (tensorFunction R A.factorization D.tensor.stage entries) 1 ≠ 0
@@ -51,7 +47,7 @@ theorem normalizedSphericalTensor_nonempty
     unfold MomentSources.fourier
     simp only [Pi.smul_apply, smul_eq_mul, mul_assoc]
     exact integral_const_mul _ _
-  refine ⟨⟨c, hc, hslot, x, rfl, hx, ?_, ?_, ?_⟩⟩
+  refine ⟨⟨c, hc, x, hx, ?_, ?_, ?_⟩⟩
   · rw [hx]
     exact smul_ne_zero hc D.tensor.nonzero
   · rw [hx, hper]

@@ -22,8 +22,6 @@ theorem principalRayCharacter_ne_zero
   let S := (narrowIdealModulus K m hm).finitePart.support
   let χ₀ := trivialRayCharacter K
   obtain ⟨Z, hZdiff, hZseries, hZzero⟩ := dedekindZeta_ne_zero K
-  have hzero : ∀ p ∈ S, χ p.asIdeal = 0 :=
-    rayCharacter_eq_zero_of_mem_modulus_support K m hm χ
   have hagree : ∀ p ∉ S, χ p.asIdeal = χ₀ p.asIdeal := by
     intro p hp
     have hcoprime : p.asIdeal ⊔ m = ⊤ := by
@@ -45,13 +43,12 @@ theorem principalRayCharacter_ne_zero
   refine ⟨fun s => Z s * finiteEulerCorrection K χ₀ S s,
     hZdiff.mul (finiteEulerCorrection_differentiable K χ₀ S).differentiableOn, ?_, ?_⟩
   · intro s hs
-    have hsum := (weightedIdealSummability K χ χ.map_mul' χ.map_top'
-      ((χ.eq_zero_iff' ⊥).mpr (Or.inl rfl)) (rayCharacter_norm_le_one K m hm χ) s hs).of_norm
-    have heq := rayCharacter_eulerCorrection K m ⊤ hm top_ne_bot χ χ₀ S hzero hagree s hs
+    have heq := rayCharacter_eulerCorrection K m ⊤ hm top_ne_bot χ χ₀ S (rayCharacter_eq_zero_of_mem_modulus_support K m hm χ) hagree s hs
     rw [htrivial s hs, ← hZseries s hs] at heq
     change HasSum _ (Z s * finiteEulerCorrection K χ₀ S s)
     rw [← heq]
-    exact hsum.hasSum
+    exact ((weightedIdealSummability K χ χ.map_mul' χ.map_top'
+      ((χ.eq_zero_iff' ⊥).mpr (Or.inl rfl)) (rayCharacter_norm_le_one K m hm χ) s hs).of_norm).hasSum
   · intro s hs hs1
     exact mul_ne_zero (hZzero s hs hs1)
       (finiteEulerCorrection_ne_zero K χ₀

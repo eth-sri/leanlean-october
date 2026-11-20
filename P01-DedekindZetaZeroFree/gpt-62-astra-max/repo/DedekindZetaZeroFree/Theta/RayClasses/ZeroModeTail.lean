@@ -30,12 +30,12 @@ private theorem kernel_cont (δ : Finset (RayCoset.RealPlaces K)) (t : ℝ) (ht 
    simpa [Function.comp_def, one_div] using continuousOn_univ.mp
     ((continuousOn_thetaParityShape K δ).comp
       (continuous_const.prodMk (continuous_id.prodMk continuous_const)).continuousOn
-      (fun h (_ : h ∈ Set.univ) => ht))
+      (fun h _ => ht))
  · unfold RayTheta.q
    simpa [Function.comp_def, one_div] using continuousOn_univ.mp
     ((continuousOn_thetaParityShape_neg K δ).comp
       (continuous_const.prodMk (continuous_id.prodMk continuous_const)).continuousOn
-      (fun h (_ : h ∈ Set.univ) => ht))
+      (fun h _ => ht))
 private theorem phase_norm (x z : euclidean.mixedSpace K) :
  ‖Complex.exp ((2 * Real.pi : ℝ) * Complex.I * (inner ℝ x z : ℂ))‖ = 1 := by
  rw [Complex.norm_exp]; simp
@@ -60,35 +60,29 @@ private theorem series_integrable
    exact RayCoset.measure_rayUnitHalfOpenDomain_lt_top K D.m D.modulus_ne_bot⟩
  obtain ⟨P,c,hP,hc,hbound⟩ := thetaParityShapeBounds K δ (closure S)
    (RayCoset.isCompact_closure_rayUnitHalfOpenDomain K D.m D.modulus_ne_bot)
- let G := fun l : L => P * Real.exp (- (c * t ^ (2 / (Module.finrank ℚ K : ℝ))) * ‖z + (l : euclidean.mixedSpace K)‖ ^ 2)
+ let G := fun l : L => P * Real.exp (- (c * t ^ (2 / (Module.finrank ℚ K : ℝ))) * ‖z + l‖ ^ 2)
  have hG : Summable G := (summable_shiftedGaussian L z (mul_pos hc (Real.rpow_pos_of_pos ht _))).mul_left P
  have hb : ∀ h ∈ S, ∀ l : L, ‖a l * RayParity.gδ K δ (RayParity.Q K
-      (RayTheta.q K t (if neg then -h else h)) (z + (l : euclidean.mixedSpace K)))‖ ≤ G l := by
+      (RayTheta.q K t (if neg then -h else h)) (z + l))‖ ≤ G l := by
    intro h hh l
    rw [norm_mul]
    apply (mul_le_mul_of_nonneg_right (ha l) (norm_nonneg _)).trans
    rw [one_mul]
-   have H := hbound t ht h (subset_closure hh) (z + (l : euclidean.mixedSpace K))
+   have H := hbound t ht h (subset_closure hh) (z + l)
    unfold RayTheta.q
    cases neg
    · simpa [RayTheta.q, one_div, G, neg_mul, mul_assoc] using H.1
    · simpa [RayTheta.q, one_div, G, neg_mul, mul_assoc] using H.2
- have hs : ∀ h ∈ S, Summable (fun l : L => a l * RayParity.gδ K δ (RayParity.Q K
-      (RayTheta.q K t (if neg then -h else h)) (z + (l : euclidean.mixedSpace K)))) :=
-   fun h hh => hG.of_norm_bounded (hb h hh)
- refine ⟨hs, ?_⟩
- let F := fun h => ∑' l : {l : L // z + (l : euclidean.mixedSpace K) ≠ 0},
+ refine ⟨(fun h hh => hG.of_norm_bounded (hb h hh)), ?_⟩
+ let F := fun h => ∑' l : {l : L // z + l ≠ 0},
    a l.val * RayParity.gδ K δ (RayParity.Q K
-      (RayTheta.q K t (if neg then -h else h)) (z + (l.val : euclidean.mixedSpace K)))
- have hm : Measurable F := Measurable.tsum (fun l =>
-   (continuous_const.mul (kernel_cont δ t ht _ neg)).measurable)
- have hGp : Summable (fun l : {l : L // z + (l : euclidean.mixedSpace K) ≠ 0} => G l.val) :=
+      (RayTheta.q K t (if neg then -h else h)) (z + l.val))
+ have hGp : Summable (fun l : {l : L // z + l ≠ 0} => G l.val) :=
    hG.comp_injective Subtype.val_injective
- have hnorm : ∀ h ∈ S, ‖F h‖ ≤ ∑' l : {l : L // z + (l : euclidean.mixedSpace K) ≠ 0}, G l.val := by
-   intro h hh
-   exact (norm_tsum_le_tsum_norm (hGp.of_norm_bounded (fun l => hb h hh l.val)).norm).trans
+ have hnorm : ∀ h ∈ S, ‖F h‖ ≤ ∑' l : {l : L // z + l ≠ 0}, G l.val := fun h hh => (norm_tsum_le_tsum_norm (hGp.of_norm_bounded (fun l => hb h hh l.val)).norm).trans
      ((hGp.of_norm_bounded (fun l => hb h hh l.val)).norm.tsum_le_tsum (fun l => hb h hh l.val) hGp)
- exact (integrable_const (μ := μ) _).mono' hm.aestronglyMeasurable
+ exact (integrable_const (μ := μ) _).mono' (Measurable.tsum (fun l =>
+   (continuous_const.mul (kernel_cont δ t ht _ neg)).measurable)).aestronglyMeasurable
    ((ae_restrict_mem (RayCoset.measurableSet_rayUnitHalfOpenDomain K D.m D.modulus_ne_bot)).mono hnorm)
 
 private theorem puncture_sum {ι : Type*} (x : ι → euclidean.mixedSpace K)
@@ -113,10 +107,14 @@ private theorem puncture_sum {ι : Type*} (x : ι → euclidean.mixedSpace K)
    symm
    apply tsum_subtype_eq_of_support_subset
    intro i _; exact fun hi => h ⟨i,hi⟩
+section
+
+variable (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
+    (L : Submodule ℤ (euclidean.mixedSpace K)) [DiscreteTopology L] [Countable L]
+    (z : euclidean.mixedSpace K) (a : L → ℂ) (ha : ∀ l, ‖a l‖ ≤ 1)
+
+include ha in
 private theorem puncture_integral
- (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
- (L : Submodule ℤ (euclidean.mixedSpace K)) [DiscreteTopology L] [Countable L]
- (z : euclidean.mixedSpace K) (a : L → ℂ) (ha : ∀ l, ‖a l‖ ≤ 1)
  (hz : ∀ l : L, z + (l : euclidean.mixedSpace K) = 0 → a l = 1)
  (neg : Bool) (t : ℝ) (ht : 0 < t) :
  (∫ h in RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot,
@@ -150,10 +148,8 @@ private theorem puncture_integral
  rw [integral_add hvint H.2, integral_const]
  congr 1
  simp only [Measure.real, Measure.restrict_apply_univ, RayCoset.rayUnitDomainVolume, smul_eq_mul, Complex.real_smul, S, v]
+include ha in
 private theorem averaged_tail
- (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
- (L : Submodule ℤ (euclidean.mixedSpace K)) [DiscreteTopology L] [Countable L]
- (z : euclidean.mixedSpace K) (a : L → ℂ) (ha : ∀ l, ‖a l‖ ≤ 1)
  (neg : Bool) (N : ℂ) :
  ∃ A B : ℝ, 0 < A ∧ 0 < B ∧ ∀ t : ℝ, 1 ≤ t →
  ‖N * ∫ h in RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot,
@@ -169,25 +165,24 @@ private theorem averaged_tail
  obtain ⟨P,c,hP,hc,hbound⟩ := thetaParityShapeBounds K δ (closure S)
    (RayCoset.isCompact_closure_rayUnitHalfOpenDomain K D.m D.modulus_ne_bot)
  obtain ⟨η,hη,hgap⟩ := thetaTranslateGap L z
- let p : ℝ := 2 / (Module.finrank ℚ K : ℝ)
- have hp : 0 < p := div_pos (by norm_num) (by exact_mod_cast Module.finrank_pos (R := ℚ) (M := K))
+ let p := 2 / (Module.finrank ℚ K : ℝ)
  let F := fun t h (l : {l : L // z + (l : euclidean.mixedSpace K) ≠ 0}) =>
    a l.val * RayParity.gδ K δ (RayParity.Q K (RayTheta.q K t (if neg then -h else h)) (z + (l.val : euclidean.mixedSpace K)))
  have hb : ∀ t : ℝ, 1 ≤ t → ∀ h ∈ S, ∀ l,
-   ‖F t h l‖ ≤ P * Real.exp (-c * t ^ p * ‖z + (l.val : euclidean.mixedSpace K)‖ ^ 2) := by
+   ‖F t h l‖ ≤ P * Real.exp (-c * t ^ p * ‖z + l.val‖ ^ 2) := by
    intro t ht h hh l
    dsimp only [F]
    rw [norm_mul]
    apply (mul_le_mul_of_nonneg_right (ha l.val) (norm_nonneg _)).trans
    rw [one_mul]
-   have H := hbound t (lt_of_lt_of_le zero_lt_one ht) h (subset_closure hh) (z + (l.val : euclidean.mixedSpace K))
+   have H := hbound t (lt_of_lt_of_le zero_lt_one ht) h (subset_closure hh) (z + l.val)
    unfold RayTheta.q
    cases neg
    · simpa [one_div,p] using H.1
    · simpa [one_div,p] using H.2
  obtain ⟨A,hA,H⟩ := thetaUniformGaussianTail
-   (fun l : {l : L // z + (l : euclidean.mixedSpace K) ≠ 0} => z + (l.val : euclidean.mixedSpace K))
-   S F P c p η hP hc hp hη (fun l => hgap l.val l.property)
+   (fun l : {l : L // z + l ≠ 0} => z + l.val)
+   S F P c p η hP hc (div_pos (by norm_num) (by exact_mod_cast Module.finrank_pos)) hη (fun l => hgap l.val l.property)
    (summable_shiftedGaussian_punctured L z (half_pos hc)) hb
  let B := c * η ^ 2 / 2
  have hB : 0 < B := by dsimp [B]; positivity
@@ -195,21 +190,22 @@ private theorem averaged_tail
  have hA' : 0 ≤ A' := by dsimp [A']; positivity
  refine ⟨A'+1,B,by linarith,hB,?_⟩
  intro t ht
- have hi : ‖∫ h, ∑' l, F t h l ∂μ‖ ≤ (A * Real.exp (-B * t ^ p)) * μ.real Set.univ :=
-   norm_integral_le_of_norm_le_const
-    ((ae_restrict_mem (RayCoset.measurableSet_rayUnitHalfOpenDomain K D.m D.modulus_ne_bot)).mono
-      (fun h hh => (H t ht h hh).2))
- change ‖N * ∫ h, ∑' l, F t h l ∂μ‖ ≤ _
  rw [norm_mul]
+ let exp₀ := Real.exp (-B * t ^ p)
  calc
-   _ ≤ ‖N‖ * ((A * Real.exp (-B * t ^ p)) * μ.real Set.univ) := mul_le_mul_of_nonneg_left hi (norm_nonneg _)
-   _ = A' * Real.exp (-B * t ^ p) := by dsimp [A']; ring
-   _ ≤ (A' + 1) * Real.exp (-B * t ^ p) := mul_le_mul_of_nonneg_right (by linarith) (Real.exp_nonneg _)
+   _ ≤ ‖N‖ * ((A * exp₀) * μ.real Set.univ) := mul_le_mul_of_nonneg_left (norm_integral_le_of_norm_le_const
+     ((ae_restrict_mem (RayCoset.measurableSet_rayUnitHalfOpenDomain K D.m D.modulus_ne_bot)).mono
+       (fun h hh => (H t ht h hh).2))) (norm_nonneg _)
+   _ = A' * exp₀ := by dsimp [A']; ring
+   _ ≤ (A' + 1) * exp₀ := mul_le_mul_of_nonneg_right (by linarith) (Real.exp_nonneg _)
+
+end
 
 variable (K : Type) [Field K] [NumberField K]
 
+variable (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
+
 theorem rayTheta_fδ_sub_f0δ
-    (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
     (t : ℝ) (ht : 0 < t) :
     RayTheta.fδ D δ t - RayTheta.f0δ D δ =
       (RayCoset.rayUnitTorsionCard K D.m : ℂ)⁻¹ *
@@ -238,7 +234,6 @@ theorem rayTheta_fδ_sub_f0δ
  split_ifs <;> ring
 
 theorem rayTheta_gδDual_sub_g0δ
-    (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
     (t : ℝ) (ht : 0 < t) :
     RayTheta.gδDual D δ t - RayTheta.g0δ D δ =
       ((RayCoset.rayUnitTorsionCard K D.m : ℂ) *
@@ -276,8 +271,7 @@ theorem rayTheta_gδDual_sub_g0δ
    change (∑' l : Subtype (fun l : L => (0 : euclidean.mixedSpace K) + (l : euclidean.mixedSpace K) ≠ 0), _) = _
    rw [eqp]
 
-theorem rayTheta_zeroModeTail
-    (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
+theorem rayTheta_zeroModeTail :
     ∃ A B : ℝ, 0 < A ∧ 0 < B ∧ ∀ t : ℝ, 1 ≤ t →
       ‖RayTheta.fδ D δ t - RayTheta.f0δ D δ‖ ≤
         A * Real.exp (-B * t ^ (2 / (Module.finrank ℚ K : ℝ))) ∧

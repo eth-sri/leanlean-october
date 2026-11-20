@@ -21,17 +21,25 @@ noncomputable def planarFourierKernel (c ρ : ℝ) (x : ℂ) : ℂ :=
       Real.rpow (ρ ^ 2 + ‖x‖ ^ 2) (-(4 / 3 : ℝ)) : ℝ) : ℂ) *
     Complex.exp (-Complex.I * (c : ℂ) * (x.re : ℂ))
 
-theorem characterHaar_eq_planarSelfDualHaar (c : ℝ) (hc : 0 < c)
+section
+
+variable (c : ℝ) (hc : 0 < c)
+
+include hc in
+theorem characterHaar_eq_planarSelfDualHaar
     (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) :
     characterHaar β = planarSelfDualHaar c := by
   simp [characterHaar, characterScale, planarSelfDualHaar, hβ,
     Complex.norm_real, abs_of_pos hc]
 
-theorem besselCoefficient_pos (c : ℝ) (hc : 0 < c) :
+include hc in
+theorem besselCoefficient_pos :
     0 < besselCoefficient c := by
   unfold besselCoefficient
   exact mul_pos (div_pos hc (Real.Gamma_pos_of_pos (by norm_num)))
     (Real.rpow_pos_of_pos (by linarith) _)
+
+end
 
 private theorem laplace_rpow (a : ℝ) (ha : 0 < a) :
     Real.rpow a (-(4 / 3 : ℝ)) =
@@ -46,8 +54,6 @@ private theorem laplace_rpow (a : ℝ) (ha : 0 < a) :
   simp only [Real.rpow_eq_pow]
   simp only [Real.rpow_eq_pow] at h
   rw [h, one_div, Real.inv_rpow ha.le, ← Real.rpow_neg ha.le]
-  have hg : Real.Gamma (4 / 3 : ℝ) ≠ 0 :=
-    (Real.Gamma_pos_of_pos (by norm_num : (0 : ℝ) < 4 / 3)).ne'
   field_simp
 
 private theorem oscillatory_gaussian (c t : ℝ) (ht : 0 < t) :
@@ -77,7 +83,12 @@ private theorem phase_norm (c : ℝ) (x : ℂ) :
   rw [Complex.norm_exp]
   simp
 
-private theorem gaussian_integrable (t : ℝ) (ht : 0 < t) :
+section
+
+variable (t : ℝ) (ht : 0 < t)
+
+include ht in
+private theorem gaussian_integrable :
     Integrable (fun x : ℂ => Real.exp (-t * ‖x‖ ^ 2)) := by
   have h := GaussianFourier.integrable_cexp_neg_mul_sq_norm_add
     (V := ℂ) (b := (t : ℂ)) (by simpa using ht) 0 (0 : ℂ)
@@ -87,38 +98,44 @@ private theorem gaussian_integrable (t : ℝ) (ht : 0 < t) :
   simp [← Complex.ofReal_pow, ← Complex.ofReal_mul, ← Complex.ofReal_neg,
     ← Complex.ofReal_exp]
 
-private theorem gaussian_integral (t : ℝ) (ht : 0 < t) :
+include ht in
+private theorem gaussian_integral :
     (∫ x : ℂ, Real.exp (-t * ‖x‖ ^ 2)) = Real.pi / t := by
   have h := GaussianFourier.integral_cexp_neg_mul_sq_norm
     (V := ℂ) (b := (t : ℂ)) (by simpa using ht)
   simp only [Complex.finrank_real_complex, Nat.cast_ofNat,
     show (2 : ℂ) / 2 = 1 by norm_num, Complex.cpow_one] at h
-  have h' : (Complex.ofReal (∫ x : ℂ, Real.exp (-t * ‖x‖ ^ 2))) = (Real.pi / t : ℝ) := by
-    rw [← integral_complex_ofReal]
-    convert h using 1
-    · congr 1; ext x
-      rw [Complex.ofReal_exp, Complex.ofReal_mul, Complex.ofReal_neg, Complex.ofReal_pow]
-    · simp
-  exact Complex.ofReal_injective h'
+  apply Complex.ofReal_injective
+  rw [← integral_complex_ofReal]
+  convert h using 1
+  · congr 1; ext x
+    rw [Complex.ofReal_exp, Complex.ofReal_mul, Complex.ofReal_neg, Complex.ofReal_pow]
+  · simp
+
+end
 
 noncomputable def laplaceGaussian (c ρ t : ℝ) (x : ℂ) : ℂ :=
   ((t ^ (1 / 3 : ℝ) * Real.exp (-(ρ ^ 2 * t)) : ℝ) : ℂ) *
     ((Real.exp (-t * ‖x‖ ^ 2) : ℂ) *
       Complex.exp (-Complex.I * (c : ℂ) * (x.re : ℂ)))
 
-private theorem laplaceGaussian_integrable (c ρ : ℝ) (hρ : 0 < ρ) :
+section
+
+variable (c ρ : ℝ) (hρ : 0 < ρ)
+
+include hρ in
+private theorem laplaceGaussian_integrable :
     Integrable (Function.uncurry (laplaceGaussian c ρ))
       ((volume.restrict (Set.Ioi (0 : ℝ))).prod (volume : Measure ℂ)) := by
   have hm : AEStronglyMeasurable (Function.uncurry (laplaceGaussian c ρ))
-      ((volume.restrict (Set.Ioi (0 : ℝ))).prod (volume : Measure ℂ)) := by
+      ((volume.restrict (Set.Ioi (0 : ℝ))).prod volume) := by
     apply Continuous.aestronglyMeasurable
     unfold laplaceGaussian Function.uncurry
     fun_prop (disch := norm_num)
   apply (integrable_prod_iff hm).2
   constructor
   · filter_upwards [self_mem_ae_restrict measurableSet_Ioi] with t ht
-    have h := (gaussian_integrable t ht).ofReal (𝕜 := ℂ)
-    have hp := h.mul_bdd (c := 1)
+    have hp := ((gaussian_integrable t ht).ofReal).mul_bdd
       (by fun_prop : AEStronglyMeasurable
         (fun x : ℂ => Complex.exp (-Complex.I * (c : ℂ) * (x.re : ℂ))))
       (Filter.Eventually.of_forall fun x => le_of_eq (phase_norm c x))
@@ -145,15 +162,13 @@ private theorem laplaceGaussian_integrable (c ρ : ℝ) (hρ : 0 < ρ) :
     rw [← hpow]
     ring
 
-private theorem laplaceGaussian_integral_t (c ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) :
+include hρ in
+private theorem laplaceGaussian_integral_t (x : ℂ) :
     (∫ t in Set.Ioi (0 : ℝ), laplaceGaussian c ρ t x) =
       (Real.Gamma (4 / 3 : ℝ) : ℂ) *
         (Real.rpow (ρ ^ 2 + ‖x‖ ^ 2) (-(4 / 3 : ℝ)) : ℂ) *
           Complex.exp (-Complex.I * (c : ℂ) * (x.re : ℂ)) := by
-  have ha : 0 < ρ ^ 2 + ‖x‖ ^ 2 := by positivity
-  have hg : Real.Gamma (4 / 3 : ℝ) ≠ 0 :=
-    (Real.Gamma_pos_of_pos (by norm_num : (0 : ℝ) < 4 / 3)).ne'
-  have hl := laplace_rpow (ρ ^ 2 + ‖x‖ ^ 2) ha
+  have hl := laplace_rpow (ρ ^ 2 + ‖x‖ ^ 2) (by positivity)
   simp only [Real.rpow_eq_pow] at hl ⊢
   have he : (∫ t in Set.Ioi (0 : ℝ),
       t ^ (1 / 3 : ℝ) * Real.exp (-((ρ ^ 2 + ‖x‖ ^ 2) * t))) =
@@ -174,6 +189,8 @@ private theorem laplaceGaussian_integral_t (c ρ : ℝ) (hρ : 0 < ρ) (x : ℂ)
       ring
     _ = _ := by rw [integral_complex_ofReal, he, Complex.ofReal_mul]
 
+end
+
 private theorem laplaceGaussian_integral_x (c ρ t : ℝ) (ht : 0 < t) :
     (∫ x : ℂ, laplaceGaussian c ρ t x) =
       ((Real.pi * (t ^ (-(2 / 3 : ℝ)) *
@@ -191,12 +208,17 @@ private theorem laplaceGaussian_integral_x (c ρ t : ℝ) (ht : 0 < t) :
   rw [sub_eq_add_neg, Real.exp_add, ← hpow]
   ring
 
-private theorem schlafli_scaled_integral (c ρ : ℝ) (hρ : 0 < ρ) :
+section
+
+variable (c ρ : ℝ) (hρ : 0 < ρ)
+
+include hρ in
+private theorem schlafli_scaled_integral :
     (∫ t in Set.Ioi (0 : ℝ),
       t ^ (-(2 / 3 : ℝ)) * Real.exp (-(ρ ^ 2 * t) - c ^ 2 / (4 * t))) =
       ρ ^ (-(2 / 3 : ℝ)) *
         ∫ u in Set.Ioi (0 : ℝ), schlafliKernel (-(2 / 3 : ℝ)) (c * ρ) u := by
-  have hp : 0 < ρ ^ 2 := sq_pos_of_pos hρ
+  have hp := sq_pos_of_pos hρ
   have h := integral_comp_mul_left_Ioi
     (schlafliKernel (-(2 / 3 : ℝ)) (c * ρ)) 0 hp
   simp only [mul_zero, smul_eq_mul] at h
@@ -222,11 +244,11 @@ private theorem schlafli_scaled_integral (c ρ : ℝ) (hρ : 0 < ρ) :
   have hpow : ρ ^ (-(4 / 3 : ℝ)) * ρ ^ (-(2 / 3 : ℝ)) = (ρ ^ 2)⁻¹ := by
     rw [← Real.rpow_add hρ]
     norm_num
-  have hn : ρ ^ (-(4 / 3 : ℝ)) ≠ 0 := (Real.rpow_pos_of_pos hρ _).ne'
-  apply mul_left_cancel₀ hn
+  apply mul_left_cancel₀ ((Real.rpow_pos_of_pos hρ _).ne')
   rw [h, ← mul_assoc, hpow]
 
-private theorem planar_laplace_transform (c ρ : ℝ) (hρ : 0 < ρ) :
+include hρ in
+private theorem planar_laplace_transform :
     (∫ x : ℂ, planarFourierKernel c ρ x) =
       ((ρ ^ (4 / 3 : ℝ) * (Real.Gamma (4 / 3 : ℝ))⁻¹ * Real.pi *
         ρ ^ (-(2 / 3 : ℝ)) *
@@ -243,7 +265,7 @@ private theorem planar_laplace_transform (c ρ : ℝ) (hρ : 0 < ρ) :
       rw [laplaceGaussian_integral_t c ρ hρ x]
       simp only [planarFourierKernel, Real.rpow_eq_pow, Complex.ofReal_mul,
         Complex.ofReal_inv]
-      have hg' : (Real.Gamma (4 / 3 : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hg
+      have hg' := Complex.ofReal_ne_zero.mpr hg
       field_simp
     _ = (ρ ^ (4 / 3 : ℝ) * (Real.Gamma (4 / 3 : ℝ))⁻¹ : ℝ) *
         ∫ t in Set.Ioi (0 : ℝ), ∫ x : ℂ, laplaceGaussian c ρ t x := by
@@ -261,6 +283,8 @@ private theorem planar_laplace_transform (c ρ : ℝ) (hρ : 0 < ρ) :
       push_cast
       ring
 
+end
+
 theorem planar_fourier_bessel (c ρ : ℝ) (hc : 0 < c) (hρ : 0 < ρ) :
     (∫ x : ℂ,
       ((Real.rpow ρ (4 / 3 : ℝ) *
@@ -268,7 +292,6 @@ theorem planar_fourier_bessel (c ρ : ℝ) (hc : 0 < c) (hρ : 0 < ρ) :
           Complex.exp (-Complex.I * (c : ℂ) * (x.re : ℂ))
         ∂planarSelfDualHaar c) =
       ((besselCoefficient c * ρ * besselKThird (c * ρ) : ℝ) : ℂ) := by
-  change (∫ x : ℂ, planarFourierKernel c ρ x ∂planarSelfDualHaar c) = _
   rw [planarSelfDualHaar, integral_smul_measure]
   change (ENNReal.ofReal (c / (2 * Real.pi))).toReal •
     (∫ x : ℂ, planarFourierKernel c ρ x) = _
@@ -287,23 +310,24 @@ theorem planar_fourier_bessel (c ρ : ℝ) (hc : 0 < c) (hρ : 0 < ρ) :
     calc
       _ = ρ ^ (1 : ℝ) * ρ ^ (-(1 / 3 : ℝ)) := by rw [Real.rpow_one]
       _ = _ := by rw [← Real.rpow_add hρ]; norm_num
+  let Gamma₀ := Real.Gamma (4 / 3 : ℝ)
   have hreal : c / (2 * Real.pi) *
-      (ρ ^ (4 / 3 : ℝ) * (Real.Gamma (4 / 3 : ℝ))⁻¹ * Real.pi *
+      (ρ ^ (4 / 3 : ℝ) * (Gamma₀)⁻¹ * Real.pi *
         ρ ^ (-(2 / 3 : ℝ))) =
-      c / Real.Gamma (4 / 3 : ℝ) * (c / 2) ^ (1 / 3 : ℝ) * ρ *
+      c / Gamma₀ * (c / 2) ^ (1 / 3 : ℝ) * ρ *
         (1 / 2 * (c * ρ / 2) ^ (-(1 / 3 : ℝ))) := by
     rw [hcp]
     calc
-      _ = c / (2 * Real.Gamma (4 / 3 : ℝ)) * ρ ^ (2 / 3 : ℝ) := by
-        rw [show ρ ^ (4 / 3 : ℝ) * (Real.Gamma (4 / 3 : ℝ))⁻¹ * Real.pi *
+      _ = c / (2 * Gamma₀) * ρ ^ (2 / 3 : ℝ) := by
+        rw [show ρ ^ (4 / 3 : ℝ) * (Gamma₀)⁻¹ * Real.pi *
           ρ ^ (-(2 / 3 : ℝ)) =
           (ρ ^ (4 / 3 : ℝ) * ρ ^ (-(2 / 3 : ℝ))) *
-            (Real.Gamma (4 / 3 : ℝ))⁻¹ * Real.pi by ring, hpow]
+            (Gamma₀)⁻¹ * Real.pi by ring, hpow]
         field_simp
       _ = _ := by
-        rw [show c / Real.Gamma (4 / 3 : ℝ) * (c / 2) ^ (1 / 3 : ℝ) * ρ *
+        rw [show c / Gamma₀ * (c / 2) ^ (1 / 3 : ℝ) * ρ *
             (1 / 2 * ((c / 2) ^ (-(1 / 3 : ℝ)) * ρ ^ (-(1 / 3 : ℝ)))) =
-            c / (2 * Real.Gamma (4 / 3 : ℝ)) *
+            c / (2 * Gamma₀) *
               ((c / 2) ^ (1 / 3 : ℝ) * (c / 2) ^ (-(1 / 3 : ℝ))) *
               (ρ * ρ ^ (-(1 / 3 : ℝ))) by ring, hcancel, hrho]
         ring
@@ -312,8 +336,10 @@ theorem planar_fourier_bessel (c ρ : ℝ) (hc : 0 < c) (hρ : 0 < ρ) :
   rw [← mul_assoc, hreal]
   ring
 
-theorem jacquet_spherical_diagonal_eq_bessel (c : ℝ) (hc : 0 < c)
-    (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) (y : ℂˣ) :
+variable (c : ℝ) (hc : 0 < c) (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) (y : ℂˣ)
+
+include hc hβ in
+theorem jacquet_spherical_diagonal_eq_bessel :
     jacquetFunctional β
         (pi positiveParameter (Matrix.ProjGenLinGroup.mk (diagonal y))
           (sphericalSection positiveParameter)) =
@@ -322,8 +348,8 @@ theorem jacquet_spherical_diagonal_eq_bessel (c : ℝ) (hc : 0 < c)
     characterHaar_eq_planarSelfDualHaar c hc β hβ]
   exact planar_fourier_bessel c ‖(y : ℂ)‖ hc (norm_pos_iff.mpr y.ne_zero)
 
-theorem jacquet_spherical_diagonal_positive (c : ℝ) (hc : 0 < c)
-    (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) (y : ℂˣ) :
+include hc hβ in
+theorem jacquet_spherical_diagonal_positive :
     (jacquetFunctional β
       (pi positiveParameter (Matrix.ProjGenLinGroup.mk (diagonal y))
         (sphericalSection positiveParameter))).im = 0 ∧
@@ -332,7 +358,7 @@ theorem jacquet_spherical_diagonal_positive (c : ℝ) (hc : 0 < c)
           (sphericalSection positiveParameter))).re := by
   rw [jacquet_spherical_diagonal_eq_bessel c hc β hβ y]
   simp only [Complex.ofReal_im, Complex.ofReal_re]
-  have hy : 0 < ‖(y : ℂ)‖ := norm_pos_iff.mpr y.ne_zero
+  have hy := norm_pos_iff.mpr y.ne_zero
   exact ⟨True.intro, mul_pos (mul_pos (besselCoefficient_pos c hc) hy)
     (besselKThird_pos (c * ‖(y : ℂ)‖) (mul_pos hc hy))⟩
 

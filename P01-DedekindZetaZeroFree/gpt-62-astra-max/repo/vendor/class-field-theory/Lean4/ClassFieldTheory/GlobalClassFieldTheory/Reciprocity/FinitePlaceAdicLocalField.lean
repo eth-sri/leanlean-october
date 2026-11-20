@@ -17,15 +17,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -45,29 +36,27 @@ namespace ClassFieldTheory
 
 universe u
 
+variable (F : Type u) [Field F] [NumberField F] (v : HeightOneSpectrum (𝓞 F))
+
 /-- The valuation relation induced by the canonical discrete valuation on
 the completion at a finite place. -/
 @[reducible]
-def finitePlaceCompletionValuativeRel
-    (F : Type u) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) :
+def finitePlaceCompletionValuativeRel :
     ValuativeRel (v.adicCompletion F) :=
   ValuativeRel.ofValuation
     (Valued.v : Valuation (v.adicCompletion F) (WithZero (Multiplicative ℤ)))
 
 /-- The canonical finite adic completion is a nonarchimedean local field for
 its distinguished valuation. -/
-theorem finitePlaceCompletionIsNonarchimedeanLocalField
-    (F : Type u) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (𝓞 F)) :
+theorem finitePlaceCompletionIsNonarchimedeanLocalField :
     @IsNonarchimedeanLocalField (v.adicCompletion F) inferInstance
       (finitePlaceCompletionValuativeRel F v) inferInstance := by
   let C := v.adicCompletion F
   let ν : Valuation C (WithZero (Multiplicative ℤ)) := Valued.v
   let _ : ν.IsNontrivial := inferInstance
-  let _ : ValuativeRel C := finitePlaceCompletionValuativeRel F v
-  let _ : ν.Compatible := Valuation.Compatible.ofValuation ν
-  let _ : ValuativeRel.IsNontrivial C :=
+  let _ := finitePlaceCompletionValuativeRel F v
+  let _ := Valuation.Compatible.ofValuation ν
+  let _ :=
     (ValuativeRel.isNontrivial_iff_isNontrivial ν).2 inferInstance
   let _ : IsValuativeTopology C :=
     LocalFieldTheory.isValuativeTopology_of_valued_ofValuation
@@ -84,7 +73,7 @@ section CompletionComparison
 open LocalClassFieldTheory
 
 variable (F : Type) [Field F] [NumberField F]
-variable (v : HeightOneSpectrum (𝓞 F))
+    (v : HeightOneSpectrum (𝓞 F))
 
 local instance finitePlaceCompletionComparisonSourceValuativeRel :
     ValuativeRel (HeightOneSpectrum.adicAbv F v).Completion :=
@@ -104,7 +93,7 @@ theorem finitePlaceCompletion_semilinearValuationCompatible :
   let C := (HeightOneSpectrum.adicAbv F v).Completion
   let C' := v.adicCompletion F
   let e := (relativeFinitePlaceCompletionAlgEquiv v).toRingEquiv
-  let _ : Algebra C C' := e.toRingHom.toAlgebra
+  let _ := e.toRingHom.toAlgebra
   change (ValuativeRel.valuation C).HasExtension (ValuativeRel.valuation C')
   constructor
   intro x y
@@ -123,11 +112,11 @@ end CompletionComparison
 
 namespace ClassFieldTheory
 
+variable (F : Type) [Field F] [NumberField F] (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
+
 /-- At each finite place, transport the local Hilbert pairing from the
 absolute-value completion to Mathlib's adic completion. -/
-def finitePlaceAdicHilbertPairingFamily
-    (F : Type) [Field F] [NumberField F]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) F).Nonempty) :
+def finitePlaceAdicHilbertPairingFamily :
     GlobalHilbertPairingFamily F n := by
   intro v
   let C := (HeightOneSpectrum.adicAbv F v).Completion
@@ -137,23 +126,20 @@ def finitePlaceAdicHilbertPairingFamily
     GlobalClassFieldTheory.Reciprocity.finitePlaceLocalArtinCompletionIsNonarchimedeanLocalField v
   letI : CharZero C :=
     charZero_of_injective_algebraMap (algebraMap F C).injective
-  have hnC : ((n : ℕ) : C) ≠ 0 := by
-    exact Nat.cast_ne_zero.mpr n.ne_zero
   have hmuC : (primitiveRoots (n : ℕ) C).Nonempty := by
     obtain ⟨ζ, hζ⟩ := hmu
     exact ⟨algebraMap F C ζ,
       (mem_primitiveRoots n.pos).2
         (((mem_primitiveRoots n.pos).1 hζ).map_of_injective
           (algebraMap F C).injective)⟩
-  exact hilbertPairingOfRingEquiv
+  refine hilbertPairingOfRingEquiv
     (relativeFinitePlaceCompletionAlgEquiv v).toRingEquiv n hmuC
-    (localHilbertPairing C n hnC hmuC)
+    (localHilbertPairing C n ?_ hmuC)
+  exact Nat.cast_ne_zero.mpr n.ne_zero
 
 /-- Every finite member of the transported family satisfies the local
 Steinberg, skew-symmetry, nondegeneracy, and Kummer norm-residue laws. -/
-theorem finitePlaceAdicHilbertPairingFamily_isLocallyHilbert
-    (F : Type) [Field F] [NumberField F]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) F).Nonempty) :
+theorem finitePlaceAdicHilbertPairingFamily_isLocallyHilbert :
     GlobalHilbertPairingFamily.IsLocallyHilbert F
       (finitePlaceAdicHilbertPairingFamily F n hmu) := by
   intro v

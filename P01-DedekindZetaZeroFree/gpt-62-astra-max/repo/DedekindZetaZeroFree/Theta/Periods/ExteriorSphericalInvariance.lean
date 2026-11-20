@@ -11,19 +11,17 @@ namespace DedekindZetaZeroFree.DigitMasks
 open MomentSources NumberField MeasureTheory Filter
 open scoped Classical Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem cleared_right_fixed {Q : AdmissibleFlatSources R} (T : Realization R Q)
     (v : R.A.UnitQuotient) (k : Group R)
     (hk : ∀ s g, (Q.flat v).val s (g * k) = (Q.flat v).val s g)
     (s : ℂ) (hs : s ∈ Metric.ball (0 : ℂ) T.radius) (g : Group R) :
     T.cleared v s (g * k) = T.cleared v s g := by
-  have hopen : IsOpen {z : ℂ | (1 : ℝ) / 3 < z.re} :=
-    isOpen_lt continuous_const Complex.continuous_re
   have h1 : (1 : ℂ) ∈ {z : ℂ | (1 : ℝ) / 3 < z.re} := by norm_num
   have hnear : (fun z => T.E v z (g * k)) =ᶠ[𝓝[≠] (1 : ℂ)] (fun z => T.E v z g) := by
-    filter_upwards [nhdsWithin_le_nhds (hopen.mem_nhds h1)] with z hz
+    filter_upwards [nhdsWithin_le_nhds ((isOpen_lt continuous_const Complex.continuous_re).mem_nhds h1)] with z hz
     rw [T.chamber v z hz (g * k), T.chamber v z hz g]
     unfold KPLiteralRaw.eisenstein
     apply tsum_congr
@@ -48,10 +46,9 @@ theorem cleared_right_fixed {Q : AdmissibleFlatSources R} (T : Realization R Q)
     rw [ha, hb, sub_eq_zero.mp he]
   have ha := T.analytic v (g * k)
   have hb := T.analytic v g
-  have he := ((ha 0 hz).continuousAt.eventuallyEq_nhds_iff_eventuallyEq_nhdsNE
-    (hb 0 hz).continuousAt).mp hcleared
   exact ha.eqOn_of_preconnected_of_eventuallyEq hb (convex_ball (0 : ℂ) T.radius).isPreconnected
-    hz he hs
+    hz (((ha 0 hz).continuousAt.eventuallyEq_nhds_iff_eventuallyEq_nhdsNE
+      (hb 0 hz).continuousAt).mp hcleared) hs
 
 theorem theta_exterior_spherical {Q : AdmissibleFlatSources R} (T : Realization R Q)
     (v : R.A.UnitQuotient) (p : KPFinitePlace F) (hp : p ∉ R.A.Sf)

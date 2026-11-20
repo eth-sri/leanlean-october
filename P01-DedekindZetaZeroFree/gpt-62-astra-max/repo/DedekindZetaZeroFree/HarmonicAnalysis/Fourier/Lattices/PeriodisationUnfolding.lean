@@ -22,23 +22,19 @@ theorem periodisation_fourierCoefficient_eq_fourier
       (∑' v : L, f (x + (v : V)))) =
       𝓕 (f : V → ℂ) (w : V) := by
   classical
-  letI : VAddInvariantMeasure L V (volume : Measure V) := ⟨fun v s hs => by
-    change volume ((fun x : V => (v : V) + x) ⁻¹' s) = volume s
-    exact measure_preimage_add volume (v : V) s⟩
-  have hc : Countable L := inferInstance
-  let F : L → V → ℂ := fun v x => 𝐞 (-inner ℝ x (w : V)) • f (x + (v : V))
+  letI : VAddInvariantMeasure L V volume := ⟨fun v s hs => by
+    exact measure_preimage_add volume (↑v) s⟩
+  let F := fun v x => 𝐞 (-inner ℝ x (w : V)) • f (x + (v : V))
   have hmeas (v : L) : AEStronglyMeasurable (F v) (volume.restrict D) := by
     apply Continuous.aestronglyMeasurable
     dsimp [F]
     fun_prop
   have hnorm : (∑' v : L, ∫⁻ x in D, ‖F v x‖ₑ) ≠ ⊤ := by
     simp only [F, Circle.enorm_smul]
-    have hh := hD.lintegral_eq_tsum'' (fun x : V => ‖f x‖ₑ)
-    simpa only [Submodule.vadd_def, vadd_eq_add, add_comm] using hh.symm.trans_ne f.integrable.2.ne
+    simpa only [Submodule.vadd_def, vadd_eq_add, add_comm] using (hD.lintegral_eq_tsum'' (fun x : V => ‖f x‖ₑ)).symm.trans_ne f.integrable.2.ne
   have hchar (v : L) (x : V) :
       𝐞 (-inner ℝ (x + (v : V)) (w : V)) = 𝐞 (-inner ℝ x (w : V)) := by
-    have hv := (LinearMap.BilinForm.mem_dualSubmodule (innerₗ V)).mp w.property (v : V) v.property
-    obtain ⟨n, hn⟩ := Submodule.mem_one.mp hv
+    obtain ⟨n, hn⟩ := Submodule.mem_one.mp ((LinearMap.BilinForm.mem_dualSubmodule (innerₗ V)).mp w.property (v : V) v.property)
     have hi : inner ℝ (v : V) (w : V) = (n : ℝ) := by
       change (n : ℝ) = inner ℝ (w : V) (v : V) at hn
       rw [real_inner_comm]

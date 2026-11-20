@@ -13,7 +13,11 @@ namespace DedekindZetaZeroFree.RayClassBridge
 
 variable (F : Type) [Field F] [NumberField F]
 
- theorem integral_orders_support_finite (I : Ideal (𝓞 F)) :
+ section
+
+variable (I : Ideal (𝓞 F))
+
+theorem integral_orders_support_finite :
     (Function.support (fun v : HeightOneSpectrum (𝓞 F) =>
       FractionalIdeal.count F v
         (I : FractionalIdeal (nonZeroDivisors (𝓞 F)) F))).Finite := by
@@ -22,29 +26,36 @@ variable (F : Type) [Field F] [NumberField F]
   rw [Filter.eventually_cofinite] at hf
   exact hf
 
-def integralIdealOrders (I : Ideal (𝓞 F)) :
+def integralIdealOrders :
     HeightOneSpectrum (𝓞 F) →₀ ℤ :=
   Finsupp.ofSupportFinite
     (fun v => FractionalIdeal.count F v
       (I : FractionalIdeal (nonZeroDivisors (𝓞 F)) F))
     (integral_orders_support_finite F I)
 
-def idealIdele (I : Ideal (𝓞 F)) (_hI : I ≠ ⊥) : IdeleGroup F :=
+def idealIdele (_hI : I ≠ ⊥) : IdeleGroup F :=
   ∏ v ∈ (integralIdealOrders F I).support,
     IdeleGroup.finitePrimeIdele v ^ (integralIdealOrders F I v)
 
-private theorem order_eq_count (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
-    (v : HeightOneSpectrum (𝓞 F)) :
-    integralIdealOrders F I v =
-      ((Associates.mk v.asIdeal).count (Associates.mk I).factors : ℤ) := by
-  exact FractionalIdeal.count_coe F v hI
+end
 
-private theorem support_le_ideal (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
-    (v : HeightOneSpectrum (𝓞 F)) (hv : v ∈ (integralIdealOrders F I).support) :
+section
+
+variable (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (v : HeightOneSpectrum (𝓞 F))
+
+include hI in
+private theorem order_eq_count :
+    integralIdealOrders F I v =
+      ((Associates.mk v.asIdeal).count (Associates.mk I).factors : ℤ) := FractionalIdeal.count_coe F v hI
+
+include hI in
+private theorem support_le_ideal (hv : v ∈ (integralIdealOrders F I).support) :
     I ≤ v.asIdeal := by
   have hn := Finsupp.mem_support_iff.mp hv
   rw [order_eq_count F I hI v, Int.natCast_ne_zero] at hn
   exact Ideal.dvd_iff_le.mp ((Associates.count_ne_zero_iff_dvd hI v.irreducible).mp hn)
+
+end
 
 private theorem support_not_dvd_modulus (𝔪 I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
     (hcop : I ⊔ 𝔪 = ⊤) (v : HeightOneSpectrum (𝓞 F))

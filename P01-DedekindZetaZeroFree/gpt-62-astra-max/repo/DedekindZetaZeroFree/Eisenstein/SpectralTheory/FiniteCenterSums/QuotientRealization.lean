@@ -13,15 +13,15 @@ namespace DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 open ResidualSphericalGeometry ResidualWeakEnergy KPGlobalResidualConstruction
 open KPMsClearedTruncationL2.NativeWordBridge
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (M : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable {n : ℕ} (U : Fin n → KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (m : Fin n → ℕ)
-variable (w : ∀ i, Fin (m i) → List (Fin (KPContActualSphericalRightFieldIdentification.groupDimension F)))
+    (M : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    {n : ℕ} (U : Fin n → KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (m : Fin n → ℕ)
+    (w : ∀ i, Fin (m i) → List (Fin (KPContActualSphericalRightFieldIdentification.groupDimension F)))
 variable (a : ∀ i, Fin (m i) → ℂ)
-variable (Z : ∀ i, Fin (m i) → KPContActualAllCuspSource.SmoothSections F ζ hζ M R P H (U i))
+    (Z : ∀ i, Fin (m i) → KPContActualAllCuspSource.SmoothSections F ζ hζ M R P H (U i))
  abbrev centerSumWordDerivative := KPSmoothActualFlowData.wordDerivative F ζ hζ
 
 def finiteCenterSum : KPSmoothActualFlowData.X F ζ hζ → ℂ :=
@@ -42,11 +42,7 @@ theorem finiteCenterSum_mem
   apply Submodule.sum_mem
   intro j hj
   apply Submodule.smul_mem
-  let f : KPMsClearedTruncationL2.smoothSpace F ζ hζ
-      (ActualSectionLift.nativeLevel F ζ hζ
-        (KPContActualAllCuspSource.level F ζ hζ M R P H (U i))) :=
-    ⟨originalScalar F ζ hζ _ R P H (Z i j), originalScalar_mem_smoothSpace F ζ hζ _ R P H (Z i j)⟩
-  exact word_mem_smoothAllWordL2 R f
+  exact word_mem_smoothAllWordL2 R (⟨originalScalar F ζ hζ _ R P H (Z i j), originalScalar_mem_smoothSpace F ζ hζ _ R P H (Z i j)⟩)
     (represented_native_eigencenter_all_derivatives F ζ hζ M R P H (U i)
       (Z i j) (z i j) (hz i j) eig (he i j)) _
 

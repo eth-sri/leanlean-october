@@ -28,11 +28,12 @@ def KInfinity : Subgroup (KPSmoothActualFlowData.GInfinity F) :=
 private lemma archBasepoint_eq_smul (g : KPSmoothActualFlowData.GInfinity F) :
     KPMsFixedHaarDisintegration.archBasepoint F g = complexPlaceHom F g • origin F := by
   funext i
-  show KPArch.action (g (KPCusp.complexPlace F i)).out (0, 0) =
-    (g (KPCusp.complexPlace F i)) • ((0, 0) : KPArch.H3)
-  conv_rhs => rw [← Quotient.out_eq (g (KPCusp.complexPlace F i))]
-  change KPArch.action (Quotient.out (g (KPCusp.complexPlace F i))) (0, 0) =
-    Matrix.ProjGenLinGroup.mk (Quotient.out (g (KPCusp.complexPlace F i))) •
+  let g₀ := g (KPCusp.complexPlace F i)
+  show KPArch.action (g₀).out (0, 0) =
+    (g₀) • ((0, 0) : KPArch.H3)
+  conv_rhs => rw [← Quotient.out_eq (g₀)]
+  change KPArch.action (Quotient.out (g₀)) (0, 0) =
+    Matrix.ProjGenLinGroup.mk (Quotient.out (g₀)) •
       ((0, 0) : KPArch.H3)
   rw [Matrix.ProjGenLinGroup.mk_smul KPArch.scalar_action]
   rfl
@@ -43,7 +44,11 @@ theorem mem_KInfinity_iff (g : KPSmoothActualFlowData.GInfinity F) :
   rw [KInfinity, Subgroup.mem_comap, MulAction.mem_stabilizer_iff,
     archBasepoint_eq_smul F g]
 
-def infinitePlaceEquiv (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
+section
+
+variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+
+def infinitePlaceEquiv :
     InfinitePlace F ≃ Fin (InfinitePlace.nrComplexPlaces F) where
   toFun w := Fintype.equivFin {v : InfinitePlace F // v.IsComplex}
     ⟨w, KPHilbert.infinite_isComplex F ζ hζ w⟩
@@ -52,29 +57,25 @@ def infinitePlaceEquiv (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
     ((Fintype.equivFin {v : InfinitePlace F // v.IsComplex}).symm_apply_apply
       ⟨w, KPHilbert.infinite_isComplex F ζ hζ w⟩)
   right_inv i := by
-    change Fintype.equivFin {v : InfinitePlace F // v.IsComplex}
-      ⟨KPCusp.complexPlace F i, _⟩ = i
     unfold KPCusp.complexPlace
     convert (Fintype.equivFin {v : InfinitePlace F // v.IsComplex}).apply_symm_apply i
 
-private lemma infinitePlaceEquiv_complexPlace (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+private lemma infinitePlaceEquiv_complexPlace
     (i : Fin (InfinitePlace.nrComplexPlaces F)) :
     infinitePlaceEquiv F ζ hζ (KPCusp.complexPlace F i) = i :=
   (infinitePlaceEquiv F ζ hζ).right_inv i
 
-private lemma complexPlace_infinitePlaceEquiv (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+private lemma complexPlace_infinitePlaceEquiv
     (w : InfinitePlace F) :
     KPCusp.complexPlace F (infinitePlaceEquiv F ζ hζ w) = w :=
   (infinitePlaceEquiv F ζ hζ).left_inv w
+
+end
 
 private lemma product_origin_stabilizer_compact :
     IsCompact (MulAction.stabilizer
       (KPArithmeticAction.ProjectiveGroup (KPCuspLogShape.dimension F))
       (origin F) : Set (KPArithmeticAction.ProjectiveGroup (KPCuspLogShape.dimension F))) := by
-  change IsCompact (MulAction.stabilizer
-      (KPArithmeticAction.ProjectiveGroup (KPCuspLogShape.dimension F))
-      (fun _ : Fin (KPCuspLogShape.dimension F) => ((0, 0) : KPArch.H3)) :
-        Set (KPArithmeticAction.ProjectiveGroup (KPCuspLogShape.dimension F)))
   exact KPArithmeticAction.product_origin_stabilizer_compact (KPCuspLogShape.dimension F)
 
 private lemma mem_product_origin_stabilizer_iff
@@ -109,10 +110,6 @@ private lemma mem_product_origin_stabilizer_iff
 
 theorem KInfinity_compact (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
     IsCompact (KInfinity F : Set (KPSmoothActualFlowData.GInfinity F)) := by
-  have hcont : Continuous (fun h : KPArithmeticAction.ProjectiveGroup
-      (KPCuspLogShape.dimension F) => fun w : InfinitePlace F =>
-        h (infinitePlaceEquiv F ζ hζ w)) :=
-    continuous_pi fun w => continuous_apply _
   have himage : (KInfinity F : Set (KPSmoothActualFlowData.GInfinity F)) =
       (fun h : KPArithmeticAction.ProjectiveGroup (KPCuspLogShape.dimension F) =>
         fun w : InfinitePlace F => h (infinitePlaceEquiv F ζ hζ w)) ''
@@ -134,26 +131,15 @@ theorem KInfinity_compact (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
     · rintro ⟨h, hh, rfl⟩
       rw [SetLike.mem_coe, mem_KInfinity_iff_stab]
       intro i
-      have hh' := (mem_product_origin_stabilizer_iff F h).mp hh
       change h (infinitePlaceEquiv F ζ hζ (KPCusp.complexPlace F i)) ∈
         MulAction.stabilizer (Matrix.ProjGenLinGroup (Fin 2) ℂ) ((0, 0) : KPArch.H3)
       rw [infinitePlaceEquiv_complexPlace F ζ hζ i]
-      exact hh' i
+      exact ((mem_product_origin_stabilizer_iff F h).mp hh) i
   rw [himage]
-  exact (product_origin_stabilizer_compact F).image hcont
+  exact (product_origin_stabilizer_compact F).image (continuous_pi fun w => continuous_apply _)
 
 theorem archBasepoint_continuous :
-    Continuous (KPMsFixedHaarDisintegration.archBasepoint F) := by
-  rw [show KPMsFixedHaarDisintegration.archBasepoint F =
-      (fun g => complexPlaceHom F g • origin F) from funext (archBasepoint_eq_smul F)]
-  change Continuous (fun g : KPSmoothActualFlowData.GInfinity F =>
-    fun i => g (KPCusp.complexPlace F i) • ((0,0) : KPArch.H3))
-  refine continuous_pi fun i => ?_
-  have hpair : Continuous (fun g : KPSmoothActualFlowData.GInfinity F =>
-      (g (KPCusp.complexPlace F i), ((0,0) : KPArch.H3))) :=
-    (continuous_apply (KPCusp.complexPlace F i)).prodMk continuous_const
-  simpa only [Function.comp_def] using
-    KPArithmeticAction.hyperbolicContinuousSMul.continuous_smul.comp hpair
+    Continuous (KPMsFixedHaarDisintegration.archBasepoint F) := by apply @DedekindZetaZeroFree.KPMsFixedHaar.SphericalProjection.archBasepoint_continuous <;> assumption
 
 theorem archBasepoint_eq_iff (a b : KPSmoothActualFlowData.GInfinity F) :
     KPMsFixedHaarDisintegration.archBasepoint F a =
@@ -167,24 +153,25 @@ theorem archBasepoint_eq_iff (a b : KPSmoothActualFlowData.GInfinity F) :
     show (complexPlaceHom F (a⁻¹ * b)) • origin F = origin F
     rw [map_mul, map_inv, mul_smul, ← h, inv_smul_smul]
   · rintro ⟨k, rfl⟩
-    have hk : complexPlaceHom F (k : KPSmoothActualFlowData.GInfinity F) • origin F =
+    have hk : complexPlaceHom F k • origin F =
         origin F := by
-      rw [← archBasepoint_eq_smul F (k : KPSmoothActualFlowData.GInfinity F)]
-      exact (mem_KInfinity_iff F (k : KPSmoothActualFlowData.GInfinity F)).mp k.2
+      rw [← archBasepoint_eq_smul F k]
+      exact (mem_KInfinity_iff F k).mp k.2
     rw [map_mul, mul_smul, hk]
 
-def sectionGL (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (x : KPFiniteCuspAtlas.SymmetricSpace F) :
+section
+
+variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (x : KPFiniteCuspAtlas.SymmetricSpace F)
+
+def sectionGL :
     InfinitePlace F → GL (Fin 2) ℂ := fun w =>
   KPArithmeticAction.hyperbolicGLSection (x (infinitePlaceEquiv F ζ hζ w))
 
-def sectionMatrix (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (x : KPFiniteCuspAtlas.SymmetricSpace F) :
+def sectionMatrix :
     InfinitePlace F → Matrix (Fin 2) (Fin 2) ℂ := fun w =>
   (sectionGL F ζ hζ x w : Matrix (Fin 2) (Fin 2) ℂ)
 
-theorem sectionMatrix_formula (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (x : KPFiniteCuspAtlas.SymmetricSpace F) (w : InfinitePlace F) :
+theorem sectionMatrix_formula (w : InfinitePlace F) :
     sectionMatrix F ζ hζ x w =
       !![(Real.exp (x (infinitePlaceEquiv F ζ hζ w)).2 : ℂ),
           (x (infinitePlaceEquiv F ζ hζ w)).1; 0, 1] := by
@@ -192,13 +179,11 @@ theorem sectionMatrix_formula (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     KPArch.height]
   rfl
 
-def iwasawaSection (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (x : KPFiniteCuspAtlas.SymmetricSpace F) :
+def iwasawaSection :
     KPSmoothActualFlowData.GInfinity F := fun w =>
   Matrix.ProjGenLinGroup.mk (sectionGL F ζ hζ x w)
 
-theorem archBasepoint_iwasawaSection (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (x : KPFiniteCuspAtlas.SymmetricSpace F) :
+theorem archBasepoint_iwasawaSection :
     KPMsFixedHaarDisintegration.archBasepoint F (iwasawaSection F ζ hζ x) = x := by
   funext i
   rw [archBasepoint_eq_smul]
@@ -210,6 +195,8 @@ theorem archBasepoint_iwasawaSection (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (x (infinitePlaceEquiv F ζ hζ (KPCusp.complexPlace F i)))) (0, 0) = x i
   rw [KPArithmeticAction.hyperbolicGLSection_action,
     infinitePlaceEquiv_complexPlace F ζ hζ i]
+
+end
 
 theorem section_continuous (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
     Continuous (iwasawaSection F ζ hζ) := by

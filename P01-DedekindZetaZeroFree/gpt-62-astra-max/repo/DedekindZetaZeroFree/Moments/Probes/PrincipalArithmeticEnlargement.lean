@@ -48,9 +48,7 @@ theorem exists_arithmetic_binding (A : SArithmeticData F) (σ : F →+* ℂ)
   let e : AddChar F ℂ := {
     toFun := fun x => (A.fieldTraceCharacter x : ℂ)
     map_zero_eq_one' := by simp
-    map_add_eq_mul' := by
-      intro x y
-      exact congrArg Circle.coeHom (A.fieldTraceCharacter.map_add_eq_mul x y) }
+    map_add_eq_mul' := fun x y => congrArg Circle.coeHom (A.fieldTraceCharacter.map_add_eq_mul x y)}
   let D0 : ComparisonPoissonCoefficientData F A := {
     generator := r
     generates := hr
@@ -61,9 +59,7 @@ theorem exists_arithmetic_binding (A : SArithmeticData F) (σ : F →+* ℂ)
     theta := fun m => if hm : m ≠ 0 then
       (A.correctionLS C.correction.Λ C.correction.G 1
         (A.diagonal (ThetaReflectionData.rowUnit A ⟨m, hm⟩)) : ℂ) else 0 }
-  let D : ComparisonPoissonCoefficientData F A :=
-    { D0 with gammaTwo := ThetaReflectionData.gammaTwoRecipe A D0 }
-  refine ⟨G, D, rfl, har, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨G, ({ D0 with gammaTwo := ThetaReflectionData.gammaTwoRecipe A D0}), rfl, har, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · exact Inputs.rowCharacter_apply A σ
   · intro m
     exact dif_pos m.property

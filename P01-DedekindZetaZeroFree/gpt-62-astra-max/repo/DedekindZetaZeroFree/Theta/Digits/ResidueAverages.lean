@@ -15,27 +15,31 @@ open scoped NumberField BigOperators Classical
 
 variable {F : Type} [Field F] [NumberField F]
 
-def RowPrimes (A : SArithmeticData F) (m : A.R) : Set (KPFinitePlace F) :=
+section
+
+variable (A : SArithmeticData F) (m : A.R)
+
+def RowPrimes : Set (KPFinitePlace F) :=
   {p | p ∉ A.Sf ∧ p.valuation F (m : F) < 1}
 
-theorem rowPrimes_finite (A : SArithmeticData F) (m : A.R) (hm : m ≠ 0) :
+theorem rowPrimes_finite (hm : m ≠ 0) :
     (RowPrimes A m).Finite := by
-  have hmF : (m : F) ≠ 0 := by
-    intro h
-    apply hm
-    exact Subtype.ext h
-
   refine (HeightOneSpectrum.Support.finite (𝓞 F) ((m : F)⁻¹)).subset ?_
   intro p hp
   change 1 < p.valuation F ((m : F)⁻¹)
   rw [map_inv₀]
-  exact (one_lt_inv₀ ((p.valuation F).pos_iff.mpr hmF)).2 hp.2
+  refine (one_lt_inv₀ ((p.valuation F).pos_iff.mpr ?_)).2 hp.2
+  intro h
+  apply hm
+  exact Subtype.ext h
 
-def rowPrimes (A : SArithmeticData F) (m : A.R) (hm : m ≠ 0) :
+def rowPrimes (hm : m ≠ 0) :
     Finset (KPFinitePlace F) := (rowPrimes_finite A m hm).toFinset
 
-def rowExponent (A : SArithmeticData F) (m : A.R) (p : KPFinitePlace F) : Fin 6 :=
+def rowExponent (p : KPFinitePlace F) : Fin 6 :=
   ⟨Int.toNat (-WithZero.log (p.valuation F (m : F))) % 6, Nat.mod_lt _ (by decide)⟩
+
+end
 
 abbrev Residue (p : KPFinitePlace F) := (𝓞 F) ⧸ p.asIdeal
 
@@ -59,8 +63,6 @@ theorem residue_SInteger_comparison (A : SArithmeticData F)
       IsUnit.submonoid (Residue p) := by
     rintro x ⟨r, hr, rfl⟩
     obtain ⟨n, rfl⟩ := hr
-    change IsUnit (Ideal.Quotient.mk p.asIdeal
-      (SIntegerLocalization.denominator A.Sf ^ n))
     rw [map_pow]
     apply IsUnit.pow
     apply isUnit_iff_ne_zero.mpr
@@ -68,19 +70,16 @@ theorem residue_SInteger_comparison (A : SArithmeticData F)
     exact hp ((SIntegerLocalization.denominator_mem_iff A.Sf p).mp
       (Ideal.Quotient.eq_zero_iff_mem.mp h))
 
-  let e := (IsLocalization.atUnits (Residue p)
+  exact ⟨((IsLocalization.atUnits (Residue p)
     (Algebra.algebraMapSubmonoid (Residue p) M)
-    (S := A.R ⧸ Ideal.map (algebraMap (𝓞 F) A.R) p.asIdeal) hM).toRingEquiv
-  exact ⟨e, fun r => rfl⟩
+     hM).toRingEquiv), fun r => rfl⟩
 
 structure ResidueLifts (P : Finset (KPFinitePlace F)) where
   lift : ∀ p : P, Residue p.val → 𝓞 F
   residue_lift : ∀ p v, Ideal.Quotient.mk p.val.asIdeal (lift p v) = v
 
 theorem residueLifts_nonempty (P : Finset (KPFinitePlace F)) :
-    Nonempty (ResidueLifts P) := by
-  classical
-  exact ⟨⟨fun p => Function.surjInv Ideal.Quotient.mk_surjective,
+    Nonempty (ResidueLifts P) := ⟨⟨fun p => Function.surjInv Ideal.Quotient.mk_surjective,
     fun p => Function.surjInv_eq Ideal.Quotient.mk_surjective⟩⟩
 
 def residueLifts (P : Finset (KPFinitePlace F)) : ResidueLifts P :=

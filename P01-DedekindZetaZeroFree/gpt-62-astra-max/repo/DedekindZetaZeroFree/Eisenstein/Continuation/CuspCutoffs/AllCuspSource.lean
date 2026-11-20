@@ -15,11 +15,11 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.KPContActualAllCuspSource
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 abbrev level := KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U
 abbrev Base := KPContActualCutoffSmoothDescent.Base F ζ hζ C R P H U
@@ -35,18 +35,24 @@ abbrev measure := KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R
 abbrev Tests := KPCuspCutoffGraph.scalarTests F ζ hζ H.totallyComplex
   (level F ζ hζ C R P H U) (H.atlas (level F ζ hζ C R P H U))
 
-def testSection (φ : Tests F ζ hζ C R P H U) : SmoothSections F ζ hζ C R P H U :=
+section
+
+variable (φ : Tests F ζ hζ C R P H U)
+
+def testSection : SmoothSections F ζ hζ C R P H U :=
   ⟨φ.val, φ.property.1⟩
 
-def testScalar (φ : Tests F ζ hζ C R P H U) : Covered F ζ hζ C R P H U → ℂ :=
+def testScalar : Covered F ζ hζ C R P H U → ℂ :=
   KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U
     (testSection F ζ hζ C R P H U φ)
 
-def testLaplacian (φ : Tests F ζ hζ C R P H U) : Covered F ζ hζ C R P H U → ℂ :=
+def testLaplacian : Covered F ζ hζ C R P H U → ℂ :=
   ((KPContSectorScalarLineAlgebra.S F ζ hζ (level F ζ hζ C R P H U) R P H).symm
     (KPCuspCutoffGraph.localLaplacianSection F ζ hζ H.totallyComplex
       (level F ζ hζ C R P H U) (H.atlas (level F ζ hζ C R P H U))
       ⟨φ.val, φ.property.1⟩)).val
+
+end
 
 def chartCoefficient (w : SmoothSections F ζ hζ C R P H U)
     (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
@@ -58,69 +64,54 @@ def chartCoefficient (w : SmoothSections F ζ hζ C R P H U)
       R P H).symm w).val i m
 
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable {T : ℝ}
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    {T : ℝ}
 variable (B : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (level F ζ hζ C R P H U) R P H T)
 
+local notation "cuspLevel" => level F ζ hζ C R P H U
+
 abbrev K := KPContActualCollarBuffer.collars F ζ hζ
-  (level F ζ hζ C R P H U) R P H B.τ T
+  cuspLevel R P H B.τ T
 
 structure Source (Ω : Set ℂ) (f : ℂ → S)
     (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T) where
   descent : KPContActualCutoffSmoothDescent.Descent F ζ hζ C R P H U ι B Ω f χ
-  compact_collars : IsCompact (K F ζ hζ C R P H U B)
-
-  support : ∀ s ∈ Ω, tsupport
-    (KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ (level F ζ hζ C R P H U)
-      R P H (descent.commutator s).val) ⊆ K F ζ hζ C R P H U B
-
   local_equation : ∀ s ∈ Ω,
-    ∀ (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
+    ∀ (i : Fin (H.atlas cuspLevel).componentCount)
       (z : KPFiniteCuspAtlas.SymmetricSpace F),
     KPContActualSphericalFlatStage.localLaplacian (KPCuspLogShape.dimension F)
       ((descent.cutoff s).val i).val z -
         KPContinuation.spectralCoordinate ((Module.finrank ℚ F / 2 : ℕ) : ℤ) s *
           ((descent.cutoff s).val i).val z = ((descent.commutator s).val i).val z
 
-  test_metric : ∀ (φ : Tests F ζ hζ C R P H U) i z,
-    (KPCuspCutoffGraph.localLaplacianSection F ζ hζ H.totallyComplex
-      (level F ζ hζ C R P H U) (H.atlas (level F ζ hζ C R P H U))
-      ⟨φ.val, φ.property.1⟩ i).val z =
-      KPContActualSphericalFlatStage.localLaplacian (KPCuspLogShape.dimension F)
-        (φ.val i).val z
   h : ℂ → Sector F ζ hζ C R P H U
   hilbert_holomorphic : DifferentiableOn ℂ h Ω
-  source_memLp : ∀ s ∈ Ω, MemLp
-    (KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (descent.commutator s))
-    2 (measure F ζ hζ C R P H U)
   source_ae : ∀ s ∈ Ω,
-    ((h s : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R (level F ζ hζ C R P H U)) :
+    ((h s : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R cuspLevel) :
       Covered F ζ hζ C R P H U → ℂ) =ᵐ[measure F ζ hζ C R P H U]
         KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (descent.commutator s)
 
   line_representative : ∀ s ∈ Ω,
     ∃ g : KPContSectorLineL2Isometry.BorelL2Scalars F ζ hζ
-        (level F ζ hζ C R P H U) R,
+        cuspLevel R,
       g.val.val = KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U
         (descent.commutator s) ∧
-      KPContSectorLineL2Isometry.scalarEmbedding F ζ hζ (level F ζ hζ C R P H U)
+      KPContSectorLineL2Isometry.scalarEmbedding F ζ hζ cuspLevel
         R P H g = h s ∧
-      KPContSectorScalarLineAlgebra.S F ζ hζ (level F ζ hζ C R P H U) R P H g.val =
+      KPContSectorScalarLineAlgebra.S F ζ hζ cuspLevel R P H g.val =
         (descent.commutator s).val
-  restrictions : KPContActualChartRestrictionDensity.RestrictionFamily F ζ hζ
-    (level F ζ hζ C R P H U) R P H
 
   local_holomorphy :
-    ∀ (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
+    ∀ (i : Fin (H.atlas cuspLevel).componentCount)
       (x : KPFiniteCuspAtlas.SymmetricSpace F)
       (O : KPContSectorPhaseComponentCharts.OrbifoldChart F ζ hζ
-        (level F ζ hζ C R P H U) R P H i x)
-      (m : KPContSectorPhaseComponentCharts.PhaseSheets F ζ hζ (level F ζ hζ C R P H U))
+        cuspLevel R P H i x)
+      (m : KPContSectorPhaseComponentCharts.PhaseSheets F ζ hζ cuspLevel)
       (A : KPContLocalNorm.LocalBall (KPCuspLogShape.dimension F * 3)),
     KPContLocalCubeEmbedding.closedCarrier A ⊆
       KPContActualChartRestrictionDensity.chartDomain F ζ hζ
-        (level F ζ hζ C R P H U) R P H i x O →
+        cuspLevel R P H i x O →
     KPCutoffSource.ChartSmoothHolomorphicOn A
       (fun s => chartCoefficient F ζ hζ C R P H U (descent.cutoff s) i m) Ω ∧
     KPCutoffSource.ChartSmoothHolomorphicOn A
@@ -128,49 +119,15 @@ structure Source (Ω : Set ℂ) (f : ℂ → S)
     KPCutoffSource.ChartSobolevHolomorphicOn A
       (fun s => chartCoefficient F ζ hζ C R P H U (descent.commutator s) i m) Ω
 
-  restriction_ae :
-    ∀ (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
-      (x : KPFiniteCuspAtlas.SymmetricSpace F)
-      (O : KPContSectorPhaseComponentCharts.OrbifoldChart F ζ hζ
-        (level F ζ hζ C R P H U) R P H i x)
-      (m : KPContSectorPhaseComponentCharts.PhaseSheets F ζ hζ (level F ζ hζ C R P H U))
-      (A : KPContLocalNorm.LocalBall (KPCuspLogShape.dimension F * 3))
-      (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆
-        KPContActualChartRestrictionDensity.chartDomain F ζ hζ
-          (level F ζ hζ C R P H U) R P H i x O),
-    ∀ s ∈ Ω, (fun p => restrictions.restriction i x O m A hA (h s) p) =ᵐ[volume.restrict A.carrier]
-      chartCoefficient F ζ hζ C R P H U (descent.commutator s) i m
-
-  distribution : ∀ s ∈ Ω, ∀ φ : Tests F ζ hζ C R P H U,
-    let c := KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (descent.cutoff s)
-    let hs := KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (descent.commutator s)
-    Integrable (fun x => c x * star (testLaplacian F ζ hζ C R P H U φ x))
-      (measure F ζ hζ C R P H U) ∧
-    Integrable (fun x => c x * star (testScalar F ζ hζ C R P H U φ x))
-      (measure F ζ hζ C R P H U) ∧
-    Integrable (fun x => hs x * star (testScalar F ζ hζ C R P H U φ x))
-      (measure F ζ hζ C R P H U) ∧
-    (∫ x, c x * star (testLaplacian F ζ hζ C R P H U φ x) ∂measure F ζ hζ C R P H U) -
-      KPContinuation.spectralCoordinate ((Module.finrank ℚ F / 2 : ℕ) : ℤ) s *
-        (∫ x, c x * star (testScalar F ζ hζ C R P H U φ x) ∂measure F ζ hζ C R P H U) =
-      ∫ x, hs x * star (testScalar F ζ hζ C R P H U φ x) ∂measure F ζ hζ C R P H U
-
-  pairing_holomorphy : ∀ φ : Tests F ζ hζ C R P H U,
-    DifferentiableOn ℂ (fun s => ∫ x,
-      KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (descent.cutoff s) x *
-        star (testLaplacian F ζ hζ C R P H U φ x) ∂measure F ζ hζ C R P H U) Ω ∧
-    DifferentiableOn ℂ (fun s => ∫ x,
-      KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (descent.cutoff s) x *
-        star (testScalar F ζ hζ C R P H U φ x) ∂measure F ζ hζ C R P H U) Ω ∧
-    DifferentiableOn ℂ (fun s => ∫ x,
-      KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (descent.commutator s) x *
-        star (testScalar F ζ hζ C R P H U φ x) ∂measure F ζ hζ C R P H U) Ω
-
 end DedekindZetaZeroFree.KPContActualAllCuspSource
 
 namespace DedekindZetaZeroFree
 
-private theorem allCusp_coordinate_reindex {n m : ℕ} (h : n = m)
+section
+
+variable {n m : ℕ} (h : n = m)
+
+private theorem allCusp_coordinate_reindex
     (p : KPContLocalNorm.Space (m * 3)) :
     (fun i : Fin m => CotangentLogCoframe.A n
       (WithLp.toLp 2 (fun ik : Fin n × Fin 3 =>
@@ -184,7 +141,7 @@ private theorem allCusp_coordinate_reindex {n m : ℕ} (h : n = m)
   · apply Complex.ext <;> simp [CotangentLogCoframe.A, finCongr]
   · simp [CotangentLogCoframe.A, finCongr]
 
-private theorem allCusp_chart_transport {n m : ℕ} (h : n = m)
+private theorem allCusp_chart_transport
     (A : KPContLocalNorm.LocalBall m) (g v : ℂ → KPContLocalNorm.Space m → ℂ)
     (g' v' : ℂ → KPContLocalNorm.Space n → ℂ) (Ω : Set ℂ)
     (hg : ∀ s x, g' s (cast (congrArg KPContLocalNorm.Space h.symm) x) = g s x)
@@ -203,7 +160,7 @@ private theorem allCusp_chart_transport {n m : ℕ} (h : n = m)
   have hvv : v' = v := funext (fun s => funext (hv s))
   simpa [hgg, hvv] using H
 
-private theorem allCusp_closedBall_transport {n m : ℕ} (h : n = m)
+private theorem allCusp_closedBall_transport
     (A : KPContLocalNorm.LocalBall m) (V : Set (KPContLocalNorm.Space m))
     (V' : Set (KPContLocalNorm.Space n))
     (hV : ∀ x, cast (congrArg KPContLocalNorm.Space h.symm) x ∈ V' ↔ x ∈ V)
@@ -214,6 +171,8 @@ private theorem allCusp_closedBall_transport {n m : ℕ} (h : n = m)
   subst m
   intro x hx
   exact (hV x).mpr (hA hx)
+
+end
 
 private theorem allCusp_sectionFields_injective
     {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
@@ -233,8 +192,7 @@ private theorem allCusp_sectionFields_injective
   funext z
   let p := (H.atlas U).components ⟨i, KPCuspSiegel.projection F
     (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H i) z⟩
-  have hp : p ∈ ⋃ n, (A.chart n).baseDomain := by rw [A.covers]; trivial
-  obtain ⟨n, y, hy⟩ := Set.mem_iUnion.mp hp
+  obtain ⟨n, y, hy⟩ := Set.mem_iUnion.mp (by rw [A.covers]; trivial)
   have he : (H.atlas U).components
       ⟨(A.chart n).component, KPCuspSiegel.projection F
         (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H (A.chart n).component) y.val⟩ =
@@ -290,7 +248,6 @@ theorem kp_cont_actual_all_cusp_source
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
     (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (hι : Function.Injective ι)
-    (_hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (Ω : Set ℂ) (hΩopen : IsOpen Ω) (hΩ : Ω ⊆ KPContinuation.spectralDomain)
     (f : ℂ → S) (hf : DifferentiableOn ℂ f Ω)
     (T : ℝ) (hT : (H.atlas (KPContActualAllCuspSource.level F ζ hζ C R P H U)).threshold < T)
@@ -300,32 +257,19 @@ theorem kp_cont_actual_all_cusp_source
       Nonempty (KPContActualAllCuspSource.Source F ζ hζ C R P H U ι B Ω f χ) := by
   obtain ⟨B⟩ := kp_cont_actual_collar_buffer F ζ hζ
     (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H _hR T hT
-  obtain ⟨D⟩ := kp_cont_actual_cutoff_smooth_descent F ζ hζ C R P H U _hR B ι hι
-    _hStage Ω hΩ f hf χ
-  have hloc := kp_cont_actual_cutoff_local_commutator F ζ hζ C R P H U _hR B ι hι
-    _hStage Ω hΩ f hf χ D
-  obtain ⟨HH⟩ := kp_cont_actual_commutator_hilbert_holomorphy F ζ hζ C R P H U _hR B ι hι
-    _hStage Ω hΩopen hΩ f hf χ D
-  obtain ⟨RF⟩ := (kp_cont_actual_chart_restriction_density F ζ hζ
-    (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H _hR).2
-  have hdist := kp_cont_actual_cutoff_distribution_equation F ζ hζ C R P H U _hR B ι hι
-    _hStage Ω hΩ hΩopen f hf χ D
+  obtain ⟨D⟩ := kp_cont_actual_cutoff_smooth_descent F ζ hζ C R P H U _hR B ι hι Ω hΩ f hf χ
+  have hloc := kp_cont_actual_cutoff_local_commutator F ζ hζ C R P H U _hR B ι hι Ω hΩ f hf χ D
+  obtain ⟨HH⟩ := kp_cont_actual_commutator_hilbert_holomorphy F ζ hζ C R P H U _hR B ι hι Ω hΩopen hΩ f hf χ D
   let h : ℂ → KPContActualAllCuspSource.Sector F ζ hζ C R P H U := fun s => HH.J_L (HH.g s)
   refine ⟨B, ⟨{ descent := D,
-                 compact_collars := B.compact_collars,
-                 support := D.support,
+
                  local_equation := ?_,
-                 test_metric := ?_,
                  h := h,
                  hilbert_holomorphic := HH.hilbert_holomorphic,
-                 source_memLp := ?_,
                  source_ae := ?_,
                  line_representative := ?_,
-                 restrictions := RF,
                  local_holomorphy := ?_,
-                 restriction_ae := ?_,
-                 distribution := ?_,
-                 pairing_holomorphy := ?_ }⟩⟩
+                  }⟩⟩
   · intro s hs i z
     have hh := congrArg (fun w : KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U =>
       (w.val i).val z) (hloc.equation s hs)
@@ -334,24 +278,6 @@ theorem kp_cont_actual_all_cusp_source
       KPContinuation.spectralCoordinate ((Module.finrank ℚ F / 2 : ℕ) : ℤ) s *
         ((D.cutoff s).val i).val z = ((D.commutator s).val i).val z at hh
     exact hh
-  · intro φ
-    have heq : KPCuspCutoffGraph.localLaplacianSection F ζ hζ H.totallyComplex
-        (KPContActualAllCuspSource.level F ζ hζ C R P H U)
-        (H.atlas (KPContActualAllCuspSource.level F ζ hζ C R P H U))
-        ⟨φ.val, φ.property.1⟩ =
-        (KPContActualCutoffLocalCommutator.Δloc F ζ hζ C R P H U
-          (KPContActualAllCuspSource.testSection F ζ hζ C R P H U φ)).val := by
-      apply allCusp_sectionFields_injective
-      intro a x
-      rw [KPContActualPartitionPairing.canonical_laplacian_chart,
-        KPContActualCutoffLocalCommutator.localLaplacian_chart]
-      rfl
-    intro i z
-    exact congrArg (fun w => (w i).val z) heq
-  · intro s hs
-    exact (MeasureTheory.Lp.memLp (HH.J_L (HH.g s) :
-      KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R
-        (KPContActualAllCuspSource.level F ζ hζ C R P H U))).ae_eq (HH.inclusion s hs)
   · intro s hs
     exact HH.inclusion s hs
   · intro s hs
@@ -402,10 +328,9 @@ theorem kp_cont_actual_all_cusp_source
     have hA' : Metric.closedBall A'.center A'.radius ⊆
         KPContActualCutoffChartJetHolomorphy.chartDomain F ζ hζ C R P H U q :=
       allCusp_closedBall_transport hn A _ _ hdom hA
-    have hj := kp_cont_actual_cutoff_chart_jet_holomorphy F ζ hζ C R P H U _hR B ι hι
-      _hStage Ω hΩ hΩopen f hf χ D i q A' hA'
+    have hj := kp_cont_actual_cutoff_chart_jet_holomorphy F ζ hζ C R P H U _hR B ι hι Ω hΩ hΩopen f hf χ D i q A' hA'
     have hsob := kp_cont_actual_commutator_chart_sobolev_holomorphy F ζ hζ C R P H U _hR B
-      ι hι _hStage Ω hΩ hΩopen f hf χ D i q A' hA'
+      ι hι Ω hΩ hΩopen f hf χ D i q A' hA'
     have hframe (w : KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U)
         (p : KPContLocalNorm.Space (KPCuspLogShape.dimension F * 3)) :
         KPContActualCutoffChartJetHolomorphy.framePullback F ζ hζ C R P H U q w
@@ -435,60 +360,6 @@ theorem kp_cont_actual_all_cusp_source
     · intro s p
       exact hframe (D.commutator s) p
     · exact ⟨hj.on_ball false, hj.on_ball true, hsob⟩
-  · intro i x O m A hA s hs
-    obtain ⟨b, _hb1, hb2, hb3, _hb4⟩ := HH.representative s hs
-    have hb : KPContSectorLineL2Isometry.scalarEmbedding F ζ hζ
-        (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H b = h s := by
-      show KPContSectorLineL2Isometry.scalarEmbedding F ζ hζ
-          (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H b = HH.J_L (HH.g s)
-      have hto := KPContSectorLineL2Isometry.sectorLineIsometry_toSector F ζ hζ
-        (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H b
-      have hsym := congrArg (KPContSectorLineL2Isometry.sectorLineIsometry F ζ hζ
-        (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H).symm hto
-      simp only [LinearIsometryEquiv.symm_apply_apply] at hsym
-      rw [show KPContSectorLineL2Isometry.scalarEmbedding F ζ hζ
-          (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H b =
-        KPContSectorLineL2Isometry.toSector F ζ hζ
-          (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H
-          (KPContSectorLineL2Isometry.borelS F ζ hζ
-            (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H b) from rfl, hsym, ← hb2]
-      simp
-    obtain ⟨_hmem, hae⟩ := RF.representative i x O m A hA (h s) b hb
-    filter_upwards [hae] with p hp
-    rw [hp]
-    have hS : KPContSectorScalarLineAlgebra.S F ζ hζ
-          (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H b.val =
-        KPContSectorScalarLineAlgebra.S F ζ hζ
-          (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H
-          ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ
-            (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H).symm
-              (D.commutator s)).val := by
-      rw [show KPContSectorScalarLineAlgebra.S F ζ hζ
-            (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H
-            ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ
-              (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H).symm
-                (D.commutator s)).val = (D.commutator s).val from by
-        rw [← KPContSectorSmoothFramesSupport.smoothS_apply F ζ hζ
-          (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H
-          ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ
-            (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H).symm
-              (D.commutator s))]
-        simp]
-      exact hb3
-    unfold KPContActualAllCuspSource.chartCoefficient
-    simp only [KPContActualChartRestrictionDensity.frameCoefficient]
-    rw [hS]
-  · intro s hs φ
-    refine ⟨?_, ?_, ?_, ?_⟩
-    · exact (hdist.pairings.cutoff_laplacian_tests φ).covered_integrable s hs
-    · exact (hdist.pairings.cutoff_tests φ).covered_integrable s hs
-    · exact (hdist.pairings.commutator_tests φ).covered_integrable s hs
-    · exact hdist.covered_equation s hs φ
-  · intro φ
-    refine ⟨?_, ?_, ?_⟩
-    · exact (hdist.pairings.cutoff_laplacian_tests φ).covered_holomorphic
-    · exact (hdist.pairings.cutoff_tests φ).covered_holomorphic
-    · exact (hdist.pairings.commutator_tests φ).covered_holomorphic
 
 end DedekindZetaZeroFree
 

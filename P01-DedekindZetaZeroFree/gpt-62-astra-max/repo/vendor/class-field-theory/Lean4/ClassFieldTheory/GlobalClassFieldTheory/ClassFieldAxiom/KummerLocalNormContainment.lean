@@ -15,13 +15,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -59,8 +52,12 @@ theorem galois_pow_eq_one_of_field_equiv_pi_zmod
   rw [map_pow, map_one]
   ext i
   apply Multiplicative.toAdd.injective
-  change (n : ℕ) • Multiplicative.toAdd (eG sigma i) = 0
   simp
+
+section
+
+variable {K L : Type} [Field K] [NumberField K] [Field L] [Algebra K L] [FiniteDimensional K L]
+    [IsGalois K L] (n : ℕ+)
 
 /-- Local `n`-th powers are norms from the chosen finite-place
 completion when every global Galois automorphism has exponent dividing
@@ -68,11 +65,6 @@ completion when every global Galois automorphism has exponent dividing
 simple-Kummer wrappers below. -/
 private theorem
     nthPowerSubgroup_le_chosenFinitePlaceLocalNormSubgroup_of_galois_pow_eq_one
-    {K L : Type}
-    [Field K] [NumberField K]
-    [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    (n : ℕ+)
     (hGlobal :
       ∀ sigma : L ≃ₐ[K] L,
         sigma ^ (n : ℕ) = 1)
@@ -120,7 +112,7 @@ private theorem
   let : vC.IsNontrivial :=
     (inferInstance :
       (NormedField.valuation
-        (K := vK.Completion)).IsNontrivial)
+        ).IsNontrivial)
   let : ValuativeRel vK.Completion :=
     ValuativeRel.ofValuation vC
   let : vC.Compatible :=
@@ -183,12 +175,7 @@ private theorem
 
 /-- Local `n`-th powers are norms from the chosen finite-place
 completion when the global Galois group has exponent dividing `n`. -/
-theorem nthPowerSubgroup_le_chosenFinitePlaceLocalNormSubgroup
-    {K L : Type}
-    [Field K] [NumberField K]
-    [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    (n : ℕ+) (r : ℕ)
+theorem nthPowerSubgroup_le_chosenFinitePlaceLocalNormSubgroup (r : ℕ)
     (eG :
       (L ≃ₐ[K] L) ≃*
         (Fin r → Multiplicative (ZMod (n : ℕ))))
@@ -197,11 +184,11 @@ theorem nthPowerSubgroup_le_chosenFinitePlaceLocalNormSubgroup
         (v.adicCompletion K)ˣ →*
           (v.adicCompletion K)ˣ).range ≤
       _root_.chosenFinitePlaceLocalNormSubgroup
-        (K := K) (L := L) v := by
-  exact
-    nthPowerSubgroup_le_chosenFinitePlaceLocalNormSubgroup_of_galois_pow_eq_one
-      (K := K) (L := L) n
+        (K := K) (L := L) v := nthPowerSubgroup_le_chosenFinitePlaceLocalNormSubgroup_of_galois_pow_eq_one
+        n
       (galois_pow_eq_one_of_field_equiv_pi_zmod n r eG) v
+
+end
 
 /-- For the actual simple Kummer extension `K(ⁿ√b)/K`, every local
 `n`-th power is a norm at every finite place.  The exponent input is
@@ -229,18 +216,17 @@ theorem chosenSimpleKummerNthPowerSubgroup_le_chosenFinitePlaceLocalNormSubgroup
         (K := K) (L := E) v := by
   let E :=
     KummerTheory.chosenSimpleKummerExtension K n hnK b
-  let : FiniteDimensional K E :=
+  let :=
     KummerTheory.chosenSimpleKummerExtension_finiteDimensional
       K n hnK b
-  let : IsAbelianGalois K E :=
+  let :=
     KummerTheory.chosenSimpleKummerExtension_isAbelianGalois
       K n hnK hmu b
   exact
     nthPowerSubgroup_le_chosenFinitePlaceLocalNormSubgroup_of_galois_pow_eq_one
-      (K := K) (L := E) n
+        n
       (KummerTheory.chosenSimpleKummerExtension_galois_pow_eq_one
         K n hnK hmu b) v
-
 
 end GlobalClassFieldTheory.ClassFieldAxiom
 

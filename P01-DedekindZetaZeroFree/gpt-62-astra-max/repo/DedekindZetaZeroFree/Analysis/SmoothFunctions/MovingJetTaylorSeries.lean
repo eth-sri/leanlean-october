@@ -11,10 +11,7 @@ noncomputable section
 open scoped Classical NumberField Topology ContDiff BigOperators
 namespace DedekindZetaZeroFree.SharedSource
 open KPGlobalResidualConstruction KPGlobalEisensteinData
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming smooth_zero → smooth_zero
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming smooth_add → smooth_add
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming smooth_smul → smooth_smul
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming finite_level_exists → finite_level_exists
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy (smooth_zero smooth_add smooth_smul finite_level_exists)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 set_option maxHeartbeats 1200000
 set_option backward.isDefEq.respectTransparency false
@@ -72,21 +69,15 @@ theorem movingJet_powerSeries_of_compact_taylor
     SmoothPowerSeriesOn (movingJetMap F ζ hζ) 0 ρ b N := by
   intro i r hr hrρ ε hε
   let K := Subtype.val '' i.compact
-  have hK : IsCompact K := i.isCompact.image continuous_subtype_val
-  have hKd : K ⊆ archDomain F := by rintro _ ⟨x, hx, rfl⟩; exact x.property
   let t := (r+ρ)/2
-  have ht0 : 0 < t := by dsimp [t]; linarith
   have hrt : r < t := by dsimp [t]; linarith
   have htρ : t < ρ := by dsimp [t]; linarith
   let B : ℝ := ∏ j : Fin i.operator.2.1, ‖i.operator.2.2 j‖
   have hB : 0 ≤ B := Finset.prod_nonneg (fun _ _ => norm_nonneg _)
   let δ := ε / (2 * (B+1))
-  have hδ : 0 < δ := by dsimp [δ]; positivity
-  obtain ⟨k, hk⟩ := ht i.operator.1 i.operator.2.1 K hK hKd t ht0 htρ δ hδ
+  obtain ⟨k, hk⟩ := ht i.operator.1 i.operator.2.1 K (i.isCompact.image continuous_subtype_val) (by rintro _ ⟨x, hx, rfl⟩; exact x.property) t (by dsimp [t]; linarith) htρ δ (by dsimp [δ]; positivity)
   refine ⟨k, ?_⟩
   intro M hM s hs
-  change ‖derivativeRestriction (movingJetMap F ζ hζ) i
-    ((∑ n ∈ Finset.range M, (s-0)^n • b n) - N s)‖ < ε
   apply lt_of_le_of_lt ((ContinuousMap.norm_le _ (by positivity : 0 ≤ ε/2)).mpr ?_)
     (half_lt_self hε)
   intro x
@@ -102,16 +93,15 @@ theorem movingJet_powerSeries_of_compact_taylor
   change ‖iteratedFDeriv ℝ i.operator.2.1 _ x.val.val i.operator.2.2‖ ≤ ε/2
   rw [he, iteratedFDeriv_neg]
   simp only [Pi.neg_apply, ContinuousMultilinearMap.neg_apply, norm_neg]
-  have hu := hk M hM s ((by simpa only [Metric.mem_closedBall, dist_eq_norm, sub_zero] using hs : ‖s‖ ≤ r).trans hrt.le)
-    x.val.val ⟨x.val, x.property, rfl⟩
   have hop := (iteratedFDeriv ℝ i.operator.2.1 u x.val.val).le_opNorm i.operator.2.2
-  have hh : ‖iteratedFDeriv ℝ i.operator.2.1 u x.val.val‖ < δ := hu
-  have hb : ‖iteratedFDeriv ℝ i.operator.2.1 u x.val.val‖ * B ≤ δ * B :=
+  have hh := (hk M hM s ((by simpa using hs : ‖s‖ ≤ r).trans hrt.le)
+    x.val.val ⟨x.val, x.property, rfl⟩)
+  have hb :=
     mul_le_mul_of_nonneg_right hh.le hB
   have hδε : δ * (2*(B+1)) = ε := by dsimp [δ]; field_simp
   exact hop.trans (by change _ ≤ ε/2; nlinarith)
 
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalChamberSpatialInsertion renaming basis_jet_norm_bound → basis_jet_norm_bound
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalChamberSpatialInsertion (basis_jet_norm_bound)
 
 theorem compact_taylor_of_movingJet_powerSeries
     (b : ℕ → nativeSmoothSpace F ζ hζ) (N : ℂ → nativeSmoothSpace F ζ hζ)

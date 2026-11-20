@@ -12,8 +12,8 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 
@@ -54,7 +54,7 @@ theorem rawCoreFiber_pure_formula (s : RestrictedTensorSimple.Level (bad A P C))
   have ha : (∏ w : s.val.toLeft, localValue A P C (Sum.inl w.val) (g (Sum.inl w.val))
       (x ⟨Sum.inl w.val, Finset.mem_toLeft.mp w.property⟩)) =
       archValues A P C (pureSections A P C s x) g := by
-    have hl : s.val.toLeft = Finset.univ := Finset.eq_univ_of_forall
+    have hl := Finset.eq_univ_of_forall
       (fun w => Finset.mem_toLeft.mpr (all_arch_mem A P C s w))
     have hp : (∏ w : s.val.toLeft, localValue A P C (Sum.inl w.val) (g (Sum.inl w.val))
         (x ⟨Sum.inl w.val, Finset.mem_toLeft.mp w.property⟩)) =
@@ -74,8 +74,7 @@ theorem rawCoreFiber_pure_formula (s : RestrictedTensorSimple.Level (bad A P C))
   congr 1
   by_cases hq : Sum.inr q ∈ s.val
   · simp [pureSections, hq, Finset.mem_toRight.mpr hq]
-  · have hn : q ∉ s.val.toRight := fun h => hq (Finset.mem_toRight.mp h)
-    simp only [dif_neg hn, pureSections, dif_neg hq]
+  · simp only [dif_neg (fun h => hq (Finset.mem_toRight.mp h)), pureSections, dif_neg hq]
     exact (hg (Sum.inr q) hq).symm
 
 theorem fiberEvaluation_finiteSupport (s : RestrictedTensorSimple.Level (bad A P C))
@@ -94,8 +93,7 @@ theorem fiberEvaluation_finiteSupport (s : RestrictedTensorSimple.Level (bad A P
   congr 1
   by_cases hq : Sum.inr q ∈ s.val
   · simp [pureSections, hq, Finset.mem_toRight.mpr hq]
-  · have hn : q ∉ s.val.toRight := fun h => hq (Finset.mem_toRight.mp h)
-    simp only [dif_neg hn, pureSections, dif_neg hq]
+  · simp only [dif_neg (fun h => hq (Finset.mem_toRight.mp h)), pureSections, dif_neg hq]
     exact hg (Sum.inr q) hq
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource
 

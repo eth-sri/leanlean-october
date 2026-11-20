@@ -8,7 +8,12 @@ namespace DedekindZetaZeroFree.Hecke
 
 open MeasureTheory
 
-theorem mellinSplitRemainder_f_integrable (P : WeakFEPair ℂ) (hk : P.k = 1)
+section
+
+variable (P : WeakFEPair ℂ) (hk : P.k = 1)
+
+include hk in
+theorem mellinSplitRemainder_f_integrable
     (s : ℂ) :
     IntegrableOn (fun t : ℝ => (t : ℂ) ^ (s - 1) * (P.f t - P.f₀))
       (Set.Ioi 1) volume := by
@@ -20,14 +25,16 @@ theorem mellinSplitRemainder_f_integrable (P : WeakFEPair ℂ) (hk : P.k = 1)
   simp [WeakFEPair.f_modif, Set.mem_Ioi.mp ht,
     Set.notMem_Ioo_of_ge (Set.mem_Ioi.mp ht).le, smul_eq_mul]
 
-theorem mellinSplitRemainder_g_integrable (P : WeakFEPair ℂ) (hk : P.k = 1)
+include hk in
+theorem mellinSplitRemainder_g_integrable
     (s : ℂ) :
     IntegrableOn (fun t : ℝ => (t : ℂ) ^ (-s) * (P.g t - P.g₀))
       (Set.Ioi 1) volume := by
   simpa only [WeakFEPair.symm_f, WeakFEPair.symm_f₀, sub_sub_cancel_left]
     using mellinSplitRemainder_f_integrable P.symm hk (1 - s)
 
-private lemma lower_eq (P : WeakFEPair ℂ) (hk : P.k = 1) (t : ℝ) (ht : 0 < t) :
+include hk in
+private lemma lower_eq (t : ℝ) (ht : 0 < t) :
     (Set.Ioo 0 1).indicator
         (fun x => P.f x - (P.ε * ↑(x ^ (-P.k))) • P.g₀) t =
       P.ε • ((t : ℂ) ^ (-1 : ℂ) •
@@ -42,18 +49,17 @@ private lemma lower_eq (P : WeakFEPair ℂ) (hk : P.k = 1) (t : ℝ) (ht : 0 < t
       Complex.cpow_one, smul_eq_mul, hfe]
     ring
   · have hi : t⁻¹ ≤ 1 := by
-      simpa only [one_div, inv_one] using (one_div_le_one_div_of_le zero_lt_one (le_of_not_gt hlt))
-    simp [Set.indicator_of_notMem (show t ∉ Set.Ioo 0 1 from fun h => hlt h.2),
-      Set.indicator_of_notMem (show t⁻¹ ∉ Set.Ioi 1 from not_lt.mpr hi)]
+      simpa using (one_div_le_one_div_of_le zero_lt_one (le_of_not_gt hlt))
+    simp_all
+
+end
 
 private lemma mellin_tail (f : ℝ → ℂ) (s : ℂ) :
     mellin ((Set.Ioi 1).indicator f) s =
       ∫ t : ℝ in Set.Ioi 1, (t : ℂ) ^ (s - 1) * f t := by
-  unfold mellin
   change (∫ t : ℝ in Set.Ioi 0, (t : ℂ) ^ (s - 1) * (Set.Ioi 1).indicator f t) = _
   simp_rw [← Set.indicator_mul_right (Set.Ioi 1) (fun t : ℝ => (t : ℂ) ^ (s - 1)) f]
-  rw [setIntegral_indicator measurableSet_Ioi,
-    Set.inter_eq_right.mpr (Set.Ioi_subset_Ioi (by norm_num : (0 : ℝ) ≤ 1))]
+  simp [setIntegral_indicator measurableSet_Ioi]
 
 theorem mellinSplitRemainder (P : WeakFEPair ℂ) (hk : P.k = 1) (s : ℂ) :
     P.Λ₀ s =
@@ -90,7 +96,6 @@ theorem mellinSplitRemainder (P : WeakFEPair ℂ) (hk : P.k = 1) (s : ℂ) :
       congrArg (fun z : ℂ => (t : ℂ) ^ (s - 1) • z) (lower_eq P hk t ht))
   rw [hsplit, hlower, mellin_cpow_smul, mellin_comp_inv, mellin_tail, mellin_tail]
   simp only [smul_eq_mul]
-  have hexp : -(s + (-1 : ℂ)) - 1 = -s := by ring
-  simp only [hexp]
+  simp
 
 end DedekindZetaZeroFree.Hecke

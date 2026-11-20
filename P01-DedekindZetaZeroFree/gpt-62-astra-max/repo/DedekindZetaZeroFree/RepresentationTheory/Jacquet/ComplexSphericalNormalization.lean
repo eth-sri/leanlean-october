@@ -55,39 +55,41 @@ def sphericalCoreSeed : KPGlobalResidualConstruction.complexCore :=
 theorem sphericalCoreSeed_SU2_fixed (k : ComplexSU2) :
     KPGlobalResidualConstruction.complexCoreSU2Action k sphericalCoreSeed = sphericalCoreSeed := by
   apply Subtype.ext
-  have h := vZero_spherical (4 * Real.pi) (by positivity) frequency frequency_coe
-    ⟨Matrix.ProjGenLinGroup.mk (complexSU2Embedding k), ⟨k, rfl⟩⟩
-  change KPCplxPrincipalSeriesCharts.pi negativeParameter (Matrix.ProjGenLinGroup.mk (complexSU2Embedding k))
-    (vZero (4 * Real.pi) frequency).val = (vZero (4 * Real.pi) frequency).val
-  exact congrArg (fun v : Theta frequency => v.val) h
+  exact congrArg (fun v : Theta frequency => v.val) (vZero_spherical (4 * Real.pi) (by positivity) frequency frequency_coe
+    ⟨Matrix.ProjGenLinGroup.mk (complexSU2Embedding k), ⟨k, rfl⟩⟩)
 
 theorem sphericalSeed_detected : whittakerValue frequency sphericalSeed 1 ≠ 0 := by
   rw [sphericalSeed_value]
   simp only [Units.val_one, norm_one, Complex.ofReal_one, mul_one, one_mul]
   exact Complex.ofReal_ne_zero.mpr (KThird_pos _ (by positivity)).ne'
 
-theorem completion_coordinate_norm (A : SArithmeticData F) (w : InfinitePlace F)
-    (z : w.Completion) : ‖coordinate A w z‖ = ‖z‖ := by
-  have hi := (InfinitePlace.Completion.isometryEquivComplexOfIsComplex
-    (KPHilbert.infinite_isComplex F A.zeta12 A.primitive_zeta12 w)).isometry
-  have hd := hi.dist_eq z 0
-  change dist (coordinate A w z) (coordinate A w 0) = dist z 0 at hd
-  simpa only [map_zero, dist_zero_right] using hd
+section
 
-theorem sphericalSeed_completion_value (A : SArithmeticData F) (w : InfinitePlace F)
+variable (A : SArithmeticData F) (w : InfinitePlace F)
+
+theorem completion_coordinate_norm
+    (z : w.Completion) : ‖coordinate A w z‖ = ‖z‖ := by
+  have hd := ((InfinitePlace.Completion.isometryEquivComplexOfIsComplex
+    (KPHilbert.infinite_isComplex F A.zeta12 A.primitive_zeta12 w)).isometry).dist_eq z 0
+  change dist (coordinate A w z) (coordinate A w 0) = dist z 0 at hd
+  simpa using hd
+
+theorem sphericalSeed_completion_value
     (z : w.Completionˣ) :
     KPCplxJacquetFunctional.thetaJacquetFunctional frequency
       (action A w (KPPGLLocalCover.A F A.zeta12 A.primitive_zeta12 (Sum.inl w) z)
         sphericalSeed) =
       (‖(z : w.Completion)‖ : ℂ) *
         (KThird (4 * Real.pi * Real.sqrt (‖(z : w.Completion)‖ ^ 2)) : ℂ) := by
-  let y : ℂˣ := Units.map (coordinate A w).toMonoidHom z
+  let y := Units.map (coordinate A w).toMonoidHom z
   have hu : Units.map (coordinate A w).symm.toRingHom.toMonoidHom y = z := by
     apply Units.ext
     exact (coordinate A w).symm_apply_apply _
   rw [← hu, complexJacquet_actualDiagonal, sphericalSeed_value]
   have hn : ‖(y : ℂ)‖ = ‖(z : w.Completion)‖ := completion_coordinate_norm A w _
   rw [hn, Real.sqrt_sq (norm_nonneg _), hu]
+
+end
 
 theorem sphericalCoreSeed_ne_zero : sphericalCoreSeed ≠ 0 := by
   intro hz
@@ -111,10 +113,12 @@ def coreInStandardImage : KPGlobalResidualConstruction.complexCore →ₗ[ℂ] T
 @[simp] theorem coreInStandardImage_spherical : coreInStandardImage sphericalCoreSeed =
     sphericalSeed := rfl
 
-theorem continuous_whittaker_sphericalCore_ne_zero (A : SArithmeticData F)
-    (w : InfinitePlace F) (ell : Theta frequency →L[ℂ] ℂ)
-    (hell : ell ∈ localWhittakerSpace _ (Theta frequency) (complexRootAction A w)
-      (complexRawPsi w).toAddChar.toMonoidHom) (hne : ell ≠ 0) :
+variable (A : SArithmeticData F) (w : InfinitePlace F) (ell : Theta frequency →L[ℂ] ℂ)
+    (hell : ell ∈ localWhittakerSpace _ (Theta frequency) (complexRootAction A w) (complexRawPsi w).toAddChar.toMonoidHom)
+    (hne : ell ≠ 0)
+
+include hell hne in
+theorem continuous_whittaker_sphericalCore_ne_zero :
     ell (coreInStandardImage sphericalCoreSeed) ≠ 0 := by
   obtain ⟨a, ha, he⟩ := complexWhittaker_scalar A w ell hell hne
   rw [coreInStandardImage_spherical, he, ContinuousLinearMap.smul_apply, smul_eq_mul]
@@ -133,10 +137,8 @@ theorem continuous_whittaker_sphericalCore_ne_zero (A : SArithmeticData F)
   rw [hv]
   exact sphericalSeed_detected
 
-theorem sphericalSeed_completion_normalization (A : SArithmeticData F)
-    (w : InfinitePlace F) (ell : Theta frequency →L[ℂ] ℂ)
-    (hell : ell ∈ localWhittakerSpace _ (Theta frequency) (complexRootAction A w)
-      (complexRawPsi w).toAddChar.toMonoidHom) (hne : ell ≠ 0) :
+include hell hne in
+theorem sphericalSeed_completion_normalization :
     ∃ t : ℂ, t ≠ 0 ∧ ∀ z : w.Completionˣ,
       t * ell (action A w (KPPGLLocalCover.A F A.zeta12 A.primitive_zeta12 (Sum.inl w) z)
         sphericalSeed) = (‖(z : w.Completion)‖ : ℂ) *

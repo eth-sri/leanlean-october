@@ -16,10 +16,10 @@ open LocalQuotientCharts.ExponentialHaarFrame
 open KPSmoothAutomorphicEvaluation.AmbientApproximation.OrbitSmoothing.Reconstruction.LocalSobolev.Scalar.CoordinateSource
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 set_option backward.isDefEq.respectTransparency false in
 
@@ -32,7 +32,7 @@ theorem group_chart_fields_basis (D : GroupChart F ζ hζ U R P H)
   obtain ⟨E, he, hi⟩ := D.inverse_smooth
   have hE : ContMDiffOn (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F))
       (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F)) (⊤ : ℕ∞) E E.source := by
-    apply ((contMDiff_const (c := D.groupCenter)).mul
+    apply ((contMDiff_const).mul
       (actualLieData F).exponential_smooth).contMDiffOn.congr
     intro a ha
     have hh := D.exponential.exponential_formula a (he ▸ ha)
@@ -47,9 +47,6 @@ theorem group_chart_fields_basis (D : GroupChart F ζ hζ U R P H)
       open_target := E.open_target
       contMDiffOn_toFun := hE
       contMDiffOn_invFun := hi }
-  have hxs : groupCoordinates F x ∈ E.source := by
-    rw [he]
-    exact D.closure_source ⟨x, subset_closure hx, rfl⟩
   let left (g : KPSmoothLocalQuotientCharts.ArchGroup F) :
       Diffeomorph (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F))
         (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F))
@@ -58,29 +55,30 @@ theorem group_chart_fields_basis (D : GroupChart F ζ hζ U R P H)
     { toEquiv := Equiv.mulLeft g
       contMDiff_toFun := contMDiff_const.mul contMDiff_id
       contMDiff_invFun := contMDiff_const.mul contMDiff_id }
-  let f : KPSmoothLocalQuotientCharts.Coordinates F → KPSmoothLocalQuotientCharts.Coordinates F :=
+  let f :=
     fun y => E.symm (E (groupCoordinates F x) * (actualLieData F).exponential y)
   have hd0 : IsLocalDiffeomorphAt (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F))
       (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F)) (⊤ : ℕ∞)
       (actualLieData F).exponential 0 :=
     ⟨(actualLieData F).exponentialChart, (actualLieData F).zero_mem_source,
       fun y hy => ((actualLieData F).chart_eq_exponential y hy).symm⟩
-  have hd1 := (left (E (groupCoordinates F x))).isLocalDiffeomorph
-    ((actualLieData F).exponential 0)
   have hd2 : IsLocalDiffeomorphAt (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F))
       (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F)) (⊤ : ℕ∞)
       E.symm (E (groupCoordinates F x) * (actualLieData F).exponential 0) := by
     rw [(actualLieData F).exponential_zero, mul_one]
-    exact ⟨Φ.symm, E.map_source hxs, fun y hy => rfl⟩
+    exact ⟨Φ.symm, E.map_source (by
+      rw [he]
+      exact D.closure_source ⟨x, subset_closure hx, rfl⟩), fun y hy => rfl⟩
   have hd : IsLocalDiffeomorphAt (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F))
       (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F)) (⊤ : ℕ∞) f 0 :=
-    (hd0.comp (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F)) _ hd1).comp
+    (hd0.comp (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F)) _ ((left (E (groupCoordinates F x))).isLocalDiffeomorph
+      ((actualLieData F).exponential 0))).comp
       (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F)) _ hd2
   let A := hd.mfderivToContinuousLinearEquiv (by simp)
   let b := ((actualLieData F).basis.map A.toLinearEquiv).reindex (lieEnumeration F).symm
   refine ⟨b.map (groupCoordinates F).symm.toLinearEquiv, ?_⟩
   intro i
-  have hd' : HasFDerivAt f (fderiv ℝ f 0) 0 :=
+  have hd' :=
     (hd.contMDiffAt.contDiffAt.differentiableAt (by simp)).hasFDerivAt
   have hr : HasDerivAt (fun t : ℝ => t • (actualLieData F).basis (lieEnumeration F i))
       ((actualLieData F).basis (lieEnumeration F i)) 0 := by

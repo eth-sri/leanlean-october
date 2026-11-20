@@ -8,15 +8,8 @@ noncomputable section
 set_option backward.isDefEq.respectTransparency false
 open scoped Classical NumberField Topology ENNReal NNReal BigOperators
 open MeasureTheory Filter
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.CutoffApproximation renaming cutoff_measurable → cutoff_measurable
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.CutoffApproximation renaming cutoff_bound → cutoff_bound
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.CutoffApproximation renaming modulus_gt_of_not_core → modulus_gt_of_not_core
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.CutoffApproximation renaming admissible_mono → admissible_mono
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes renaming continuous_core_integrable → continuous_core_integrable
 open scoped NumberField Topology BigOperators
 open MeasureTheory Filter
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.NormalCoefficient renaming bottomRowJet → bottomRowJet
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.NormalCoefficient renaming normalRadialJet_eq_bottomRowJet → normalRadialJet_eq_bottomRowJet
 namespace DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.WeakCutoffSources
 namespace WeakFlowCalculus
 open MeasureTheory.Measure Filter
@@ -28,11 +21,14 @@ end WeakFlowCalculus
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
 variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
-private theorem compact_weighted_flow_bound
-    {X : Type*} [TopologicalSpace X] [T2Space X] [MeasurableSpace X] [BorelSpace X]
+section
+
+variable {X : Type*}
+
+private theorem compact_weighted_flow_bound [TopologicalSpace X] [T2Space X] [MeasurableSpace X] [BorelSpace X]
     (μ : Measure X) [IsFiniteMeasureOnCompacts μ]
     (q : ℝ → X → X) (hq : Continuous (Function.uncurry q))
     (hz : ∀ x, q 0 x = x) (ha : ∀ s t x, q (s+t) x = q t (q s x))
@@ -105,8 +101,7 @@ private theorem compact_weighted_flow_bound
       rw [← ha, add_neg_cancel, hz]
     simp [hχx, hχt]
 
-private theorem weak_flow_integral_zero
-    {X : Type*} [MeasurableSpace X] (μ : Measure X)
+private theorem weak_flow_integral_zero [MeasurableSpace X] (μ : Measure X)
     (q : ℝ → X → X) (hq : ∀ t, MeasurePreserving (q t) μ μ)
     (hz : ∀ x, q 0 x = x)
     (f d : X → ℂ) (hf : Integrable f μ)
@@ -118,9 +113,7 @@ private theorem weak_flow_integral_zero
   have hmeas : ∀ t : ℝ, AEStronglyMeasurable
       (fun x => t⁻¹ • (f (q t x) - f x)) μ := by
     intro t
-    have hqi : Integrable (fun x => f (q t x)) μ :=
-      (hq t).integrable_comp_of_integrable hf
-    exact (hqi.sub hf).aestronglyMeasurable.const_smul (t⁻¹ : ℝ)
+    exact (((hq t).integrable_comp_of_integrable hf).sub hf).aestronglyMeasurable.const_smul (t⁻¹ : ℝ)
   have hlim : ∀ᵐ x ∂μ, Tendsto (fun t : ℝ => t⁻¹ • (f (q t x) - f x))
       (𝓝[>] 0) (𝓝 (d x)) := by
     filter_upwards [hderiv] with x hx
@@ -139,8 +132,7 @@ private theorem weak_flow_integral_zero
     rw [integral_smul, integral_sub hqi hf, ← hv, sub_self, smul_zero]
   exact tendsto_nhds_unique (ht.congr' (Eventually.of_forall heq)) tendsto_const_nhds
 
-private theorem weak_ibp_of_integrated_product_derivative
-    {X : Type*} [MeasurableSpace X] (μ : Measure X)
+private theorem weak_ibp_of_integrated_product_derivative [MeasurableSpace X] (μ : Measure X)
     (χ J dχ dJ : X → ℂ)
     (hf : Integrable (fun x => dχ x * J x + χ x * dJ x) μ)
     (hJ : Integrable (fun x => χ x * dJ x) μ)
@@ -155,8 +147,7 @@ private theorem weak_ibp_of_integrated_product_derivative
   rw [integral_add hχ hJ] at hzero
   exact eq_neg_of_add_eq_zero_right hzero
 
- theorem compact_flow_weak_ibp
-    {X : Type*} [TopologicalSpace X] [T2Space X] [MeasurableSpace X] [BorelSpace X]
+ theorem compact_flow_weak_ibp [TopologicalSpace X] [T2Space X] [MeasurableSpace X] [BorelSpace X]
     (μ : Measure X) [IsFiniteMeasureOnCompacts μ]
     (q : ℝ → X → X) (hq : Continuous (Function.uncurry q))
     (hμ : ∀ t, MeasurePreserving (q t) μ μ)
@@ -191,19 +182,16 @@ private theorem weak_ibp_of_integrated_product_derivative
     intro t
     exact (((hμ t).integrable_comp_of_integrable hf).sub hf).aestronglyMeasurable.const_smul
       (t⁻¹ : ℝ)
-  have hdint : Integrable d μ := by
-    apply hB.mono' hdmeas
-    filter_upwards [hlim] with x hx
-    apply le_of_tendsto (continuous_norm.continuousAt.tendsto.comp hx)
-    filter_upwards [self_mem_nhdsWithin,
-      nhdsWithin_le_nhds (Iio_mem_nhds (show (0 : ℝ) < 1 by norm_num))] with t ht ht1
-    exact hbound t ht ht1.le x
-  have hzint := weak_flow_integral_zero μ q hμ hz f d hf hderiv B hB hbf
-  exact weak_ibp_of_integrated_product_derivative μ χ J dχ dJ hdint
-    ((hχ.mul hdJ).integrable_of_hasCompactSupport hs.mul_right) hzint
+  refine weak_ibp_of_integrated_product_derivative μ χ J dχ dJ ?_
+    ((hχ.mul hdJ).integrable_of_hasCompactSupport hs.mul_right) (weak_flow_integral_zero μ q hμ hz f d hf hderiv B hB hbf)
+  apply hB.mono' hdmeas
+  filter_upwards [hlim] with x hx
+  apply le_of_tendsto (continuous_norm.continuousAt.tendsto.comp hx)
+  filter_upwards [self_mem_nhdsWithin,
+    nhdsWithin_le_nhds (Iio_mem_nhds (show (0 : ℝ) < 1 by norm_num))] with t ht ht1
+  exact hbound t ht ht1.le x
 
- theorem flow_ae_differentiable
-    {X : Type*} [TopologicalSpace X] [MeasurableSpace X] [BorelSpace X]
+ theorem flow_ae_differentiable [TopologicalSpace X] [MeasurableSpace X] [BorelSpace X]
     (μ : Measure X) [SFinite μ]
     (q : ℝ → X → X) (hq : Continuous (Function.uncurry q))
     (hμ : ∀ t, MeasurePreserving (q t) μ μ)
@@ -245,13 +233,19 @@ private theorem weak_ibp_of_integrated_product_derivative
   rw [hm.map_eq] at he
   exact he.mpr htrans
 
- def nativeFlow (w : NumberField.InfinitePlace F) (i : Fin 6)
+end
+
+ section
+
+variable (w : NumberField.InfinitePlace F) (i : Fin 6)
+
+def nativeFlow
     (t : ℝ) (x : X F ζ hζ) : X F ζ hζ :=
   KPSmoothActualFlowData.rightTranslate F ζ hζ
     (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
       (KPSmoothActualFlowData.flow F (w,i) t)) x
 
- theorem nativeFlow_zero (w : NumberField.InfinitePlace F) (i : Fin 6)
+ theorem nativeFlow_zero
     (x : X F ζ hζ) : nativeFlow w i 0 x = x := by
   unfold nativeFlow
   rw [(KPSmoothActualFlowData.flow_properties F (w,i)).1,
@@ -259,13 +253,15 @@ private theorem weak_ibp_of_integrated_product_derivative
   exact congrFun (KPSmoothQuotientTranslationFlow.rightTranslation_one
     (KPSmoothActualFlowData.rationalSubgroup F ζ hζ)) x
 
- theorem nativeFlow_add (w : NumberField.InfinitePlace F) (i : Fin 6)
+ theorem nativeFlow_add
     (s t : ℝ) (x : X F ζ hζ) : nativeFlow w i (s+t) x = nativeFlow w i t (nativeFlow w i s x) := by
   unfold nativeFlow
   rw [(KPSmoothActualFlowData.flow_properties F (w,i)).2.1,
     (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1]
   exact congrFun (KPSmoothQuotientTranslationFlow.rightTranslation_mul
     (KPSmoothActualFlowData.rationalSubgroup F ζ hζ) _ _) x
+
+end
 
 section ActualCutoffSupport
 variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)

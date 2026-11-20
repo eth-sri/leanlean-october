@@ -13,7 +13,7 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.TorusReference
 open KPGlobalTorusFiniteStages
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 
 theorem localReference_one (q : KPFinitePlace F) :
     (localReference F ζ hζ P C q).val 1 = 1 := by
@@ -28,12 +28,14 @@ theorem localUntwistedEvaluation_reference_one (q : KPFinitePlace F) :
   rw [localReference_one, map_one]
   simp [KPGlobalCenterRationalCharacter.localAbs]
 
-def finiteReference (T : Finset (KPFinitePlace F)) (hT : C.exceptional ⊆ T) :
+variable (T : Finset (KPFinitePlace F)) (hT : C.exceptional ⊆ T)
+
+def finiteReference :
     KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ (productModel F ζ hζ P) :=
   finiteTensorRealization F ζ hζ P C T hT
     (PiTensorProduct.tprod ℂ (fun q : T => localReference F ζ hζ P C q.val))
 
-theorem finiteReference_one (T : Finset (KPFinitePlace F)) (hT : C.exceptional ⊆ T) :
+theorem finiteReference_one :
     (finiteReference F ζ hζ P C T hT).val.val 1 = 1 := by
   have he := finiteTensorRealization_formula F ζ hζ P C T hT
     (fun q : T => localReference F ζ hζ P C q.val)
@@ -64,7 +66,7 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.TorusReference
 open KPGlobalTorusFiniteStages
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 
 theorem localReference_ne_zero (q : KPFinitePlace F) :
     localReference F ζ hζ P C q ≠ 0 := by

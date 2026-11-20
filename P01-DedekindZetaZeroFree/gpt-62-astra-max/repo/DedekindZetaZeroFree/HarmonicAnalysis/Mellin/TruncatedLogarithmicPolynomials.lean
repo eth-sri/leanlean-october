@@ -16,27 +16,31 @@ open scoped Classical
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-private lemma laplace_integrable (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
+section
+
+variable (k : ℕ) (s : ℂ) (hs : 0 < s.re)
+
+include hs in
+private lemma laplace_integrable :
     IntegrableOn (fun t : ℝ => (t : ℂ)^k * Complex.exp (-s * t)) (Ioi 0) := by
-  have hi : IntegrableOn (fun t : ℝ => Real.exp (-s.re * t) • t^k) (Ici 0) :=
-    integrableOn_exp_neg_smul_of_isBigO_exp
-      ((show Continuous (fun t : ℝ => t^k) by fun_prop).continuousOn.locallyIntegrableOn measurableSet_Ici)
-      (isLittleO_pow_exp_pos_mul_atTop k (half_pos hs)).isBigO (by linarith)
   have heq : (fun t : ℝ => ‖(t : ℂ)^k * Complex.exp (-s * t)‖) =ᶠ[ae (volume.restrict (Ioi 0))]
       (fun t : ℝ => Real.exp (-s.re * t) • t^k) := by
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
     simp [norm_mul, norm_pow, Complex.norm_exp, Complex.norm_real, abs_of_pos (mem_Ioi.mp ht), mul_comm]
-  exact (integrable_norm_iff (by fun_prop)).mp ((hi.mono_set Ioi_subset_Ici_self).congr heq.symm)
+  exact (integrable_norm_iff (by fun_prop)).mp (((integrableOn_exp_neg_smul_of_isBigO_exp
+    ((show Continuous (fun t : ℝ => t^k) by fun_prop).continuousOn.locallyIntegrableOn measurableSet_Ici)
+    (isLittleO_pow_exp_pos_mul_atTop k (half_pos hs)).isBigO (by linarith)).mono_set Ioi_subset_Ici_self).congr heq.symm)
 
-private lemma laplace_tendsto (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
+include hs in
+private lemma laplace_tendsto :
     Tendsto (fun t : ℝ => (t : ℂ)^k * Complex.exp (-s * t)) atTop (𝓝 0) := by
   rw [tendsto_zero_iff_norm_tendsto_zero]
-  have h := tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (k : ℝ) s.re hs
-  apply h.congr'
+  apply (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (k : ℝ) s.re hs).congr'
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with t ht
   simp [norm_mul, norm_pow, Complex.norm_exp, Complex.norm_real, abs_of_pos ht, Real.rpow_natCast]
 
-private lemma laplace_integral (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
+include hs in
+private lemma laplace_integral :
     (∫ t in Ioi (0 : ℝ), (t : ℂ)^k * Complex.exp (-s * t)) = (k.factorial : ℂ) / s^(k+1) := by
   have hs0 : s ≠ 0 := by intro h; simp [h] at hs
   induction k with
@@ -65,11 +69,17 @@ private lemma laplace_integral (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
     rw [h]
     field_simp
     <;> push_cast <;> ring
+
+end
 private lemma exp_neg_image : (fun t : ℝ => Real.exp (-t)) '' Ioi 0 = Ioo 0 1 := by
   rw [show (fun t : ℝ => Real.exp (-t)) = Real.exp ∘ Neg.neg from rfl, image_comp]
   rw [image_neg_Ioi, neg_zero, Real.image_exp_Iio, Real.exp_zero]
 
-private lemma exp_neg_subst (k : ℕ) (s : ℂ) (t : ℝ) :
+section
+
+variable (k : ℕ) (s : ℂ)
+
+private lemma exp_neg_subst (t : ℝ) :
     |-Real.exp (-t)| • ((Real.exp (-t) : ℂ)^(s-1) * (Real.log (Real.exp (-t)) : ℂ)^k) =
       (-1 : ℂ)^k * ((t : ℂ)^k * Complex.exp (-s*t)) := by
   rw [abs_neg, abs_of_pos (Real.exp_pos _), Real.log_exp, Complex.ofReal_neg, neg_pow,
@@ -85,7 +95,7 @@ private lemma exp_neg_subst (k : ℕ) (s : ℂ) (t : ℝ) :
     _ = (-1 : ℂ)^k * ((t : ℂ)^k * (Complex.exp ↑(-t) * Complex.exp (↑(-t) * (s-1)))) := by ring
     _ = _ := by rw [he]
 
-theorem logMonomial_integrableOn (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
+theorem logMonomial_integrableOn (hs : 0 < s.re) :
     IntegrableOn (fun x : ℝ => (x : ℂ) ^ (s - 1) * (Real.log x : ℂ) ^ k)
       (Set.Ioo 0 1) := by
   rw [← exp_neg_image]
@@ -95,7 +105,7 @@ theorem logMonomial_integrableOn (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
     (fun x hx y hy h => neg_injective (Real.exp_injective h)) _).mpr
   simpa only [mul_neg_one, exp_neg_subst, IntegrableOn] using (laplace_integrable k s hs).const_mul ((-1 : ℂ)^k)
 
-theorem integral_logMonomial (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
+theorem integral_logMonomial (hs : 0 < s.re) :
     (∫ x in Set.Ioo (0 : ℝ) 1, (x : ℂ) ^ (s - 1) * (Real.log x : ℂ) ^ k) =
       (-1 : ℂ) ^ k * (k.factorial : ℂ) / s ^ (k + 1) := by
   rw [← exp_neg_image, integral_image_eq_integral_abs_deriv_smul
@@ -105,30 +115,38 @@ theorem integral_logMonomial (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
   simp_rw [mul_neg_one, exp_neg_subst]
   rw [integral_const_mul, laplace_integral k s hs, mul_div_assoc]
 
-private lemma poly_integrable (P : Polynomial ℂ) (s : ℂ) (hs : 0 < s.re) :
-    IntegrableOn (fun x : ℝ => (x : ℂ)^(s-1)*P.eval (Real.log x : ℂ)) (Ioo 0 1) := by
-  simp_rw [Polynomial.eval_eq_sum, Polynomial.sum_def, Finset.mul_sum]
-  apply integrable_finsetSum
-  intro k hk
-  simpa only [mul_left_comm] using (logMonomial_integrableOn k s hs).const_mul (P.coeff k)
+end
 
-def truncatedLogPolynomial (P : Polynomial ℂ) (x : ℝ) : ℂ :=
+section
+
+variable (P : Polynomial ℂ)
+
+def truncatedLogPolynomial (x : ℝ) : ℂ :=
   if 0 < x ∧ x < 1 then P.eval (Real.log x : ℂ) else 0
 
-private lemma truncated_weight (P : Polynomial ℂ) (s : ℂ) :
+private lemma truncated_weight (s : ℂ) :
     (fun x : ℝ => (x : ℂ)^(s-1)*truncatedLogPolynomial P x) =
     (Ioo 0 1).indicator (fun x : ℝ => (x : ℂ)^(s-1)*P.eval (Real.log x : ℂ)) := by
   funext x
   simp only [truncatedLogPolynomial, Set.indicator, mem_Ioo]
   split_ifs <;> simp
 
-theorem truncatedLogPolynomial_mellinConvergent (P : Polynomial ℂ) (s : ℂ)
-    (hs : 0 < s.re) : MellinConvergent (truncatedLogPolynomial P) s := by
+end
+
+variable (P : Polynomial ℂ) (s : ℂ) (hs : 0 < s.re)
+
+include hs in
+theorem truncatedLogPolynomial_mellinConvergent : MellinConvergent (truncatedLogPolynomial P) s := by
   unfold MellinConvergent
   simp only [smul_eq_mul, truncated_weight]
-  exact ((integrable_indicator_iff measurableSet_Ioo).mpr (poly_integrable P s hs)).integrableOn
+  exact ((integrable_indicator_iff measurableSet_Ioo).mpr (by
+    simp_rw [Polynomial.eval_eq_sum, Polynomial.sum_def, Finset.mul_sum]
+    apply integrable_finsetSum
+    intro k hk
+    simpa only [mul_left_comm] using (logMonomial_integrableOn k s hs).const_mul (P.coeff k))).integrableOn
 
-theorem mellin_truncatedLogPolynomial (P : Polynomial ℂ) (s : ℂ) (hs : 0 < s.re) :
+include hs in
+theorem mellin_truncatedLogPolynomial :
     mellin (truncatedLogPolynomial P) s = logPrincipalPart P s := by
   unfold mellin
   simp only [smul_eq_mul, truncated_weight]

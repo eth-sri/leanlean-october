@@ -39,13 +39,10 @@ theorem integral_contDiffOn_of_locally_dominated_jets
       ((continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n + 1) => E) ℂ) (A (n + 1) u)) u := by
     let L := continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n + 1) => E) ℂ
     obtain ⟨s, b, hs, hsS, hb, h⟩ := hbound (n + 1) u hu
-    have hf'm : AEStronglyMeasurable (fun x =>
-        fderivWithin ℝ (iteratedFDerivWithin ℝ n (fun v => F v x) S) S u) μ := by
-      exact L.continuous.comp_aestronglyMeasurable (hmeas (n + 1) u hu)
     have hh := hasFDerivAt_integral_of_dominated_of_fderiv_le (𝕜 := ℝ)
       (F := fun v x => iteratedFDerivWithin ℝ n (fun w => F w x) S v)
       (F' := fun v x => fderivWithin ℝ (iteratedFDerivWithin ℝ n (fun w => F w x) S) S v)
-      hs (Filter.eventually_of_mem (hS.mem_nhds hu) (fun v hv => hmeas n v hv)) (hint n u hu) hf'm
+      hs (Filter.eventually_of_mem (hS.mem_nhds hu) (fun v hv => hmeas n v hv)) (hint n u hu) (L.continuous.comp_aestronglyMeasurable (hmeas (n + 1) u hu))
       (h.mono fun x hx v hv => by
         change ‖L (iteratedFDerivWithin ℝ (n + 1) (fun w => F w x) S v)‖ ≤ b x
         rw [L.norm_map]
@@ -89,20 +86,21 @@ theorem integral_contDiffOn_of_locally_dominated_jets
     exact hA.congr (heq n)
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-theorem functionsQ_chart_integral (C : ModelData F ζ hζ) (s : ℂ)
+variable (C : ModelData F ζ hζ) (s : ℂ)
+
+theorem functionsQ_chart_integral
     (r : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (f : InducedFunctions F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s))
     (g : G F ζ hζ) (z : GroupArch F) :
     ((functionsQ F ζ hζ C s f).val (groupArchChart F ζ hζ z * g)).val.val 1 =
       ∫ x, twistedIntegrand F ζ hζ C s r
         (f.val (groupArchChart F ζ hζ z * g)) 1 x
-        ∂KPGlobalTorusPeriodizationInverse.probabilityHaar F ζ hζ C := by
-  exact twistedQ_formula F ζ hζ C s r
+        ∂KPGlobalTorusPeriodizationInverse.probabilityHaar F ζ hζ C := twistedQ_formula F ζ hζ C s r
     (f.val (groupArchChart F ζ hζ z * g)) 1
 
-theorem functionsQ_right_level (C : ModelData F ζ hζ) (s : ℂ)
+theorem functionsQ_right_level
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (f : InducedFunctions F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s))
     (hf : f ∈ InducedLevel F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J)
@@ -112,7 +110,7 @@ theorem functionsQ_right_level (C : ModelData F ζ hζ) (s : ℂ)
   change twistedQ F ζ hζ C s (f.val (g * j.val)) = twistedQ F ζ hζ C s (f.val g)
   rw [hf.2 g j]
 
-theorem functionsQ_chart_contDiff_of_local_extension (C : ModelData F ζ hζ) (s : ℂ)
+theorem functionsQ_chart_contDiff_of_local_extension
     (f : InducedFunctions F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s))
     (r : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (g : G F ζ hζ)
@@ -142,8 +140,7 @@ theorem functionsQ_chart_contDiff_of_local_extension (C : ModelData F ζ hζ) (s
       simpa only [iteratedFDerivWithin_univ, Function.comp_def, id_eq] using
         ((hAj n).comp (continuous_const.prodMk continuous_id)).aestronglyMeasurable_of_compactSpace
     · intro n y _
-      obtain ⟨B, hB⟩ := ((isCompact_closedBall y 1).prod (isCompact_univ : IsCompact
-        (Set.univ : Set (KPGlobalTorusPeriodizationInverse.CompactIndex F ζ hζ C)))).exists_bound_of_continuousOn
+      obtain ⟨B, hB⟩ := ((isCompact_closedBall y 1).prod isCompact_univ).exists_bound_of_continuousOn
           (hAj n).continuousOn
       refine ⟨Metric.closedBall y 1, (fun _ => B), Metric.closedBall_mem_nhds _ zero_lt_one,
         Set.subset_univ _, integrable_const B, Filter.Eventually.of_forall ?_⟩
@@ -155,7 +152,7 @@ theorem functionsQ_chart_contDiff_of_local_extension (C : ModelData F ζ hζ) (s
   apply integral_congr_ae
   exact Filter.Eventually.of_forall (fun x => (hEq y hy.2 x).symm)
 
-theorem functionsQ_preserves_level (C : ModelData F ζ hζ) (s : ℂ)
+theorem functionsQ_preserves_level
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (f : InducedFunctions F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s))
     (hf : f ∈ InducedLevel F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J) :

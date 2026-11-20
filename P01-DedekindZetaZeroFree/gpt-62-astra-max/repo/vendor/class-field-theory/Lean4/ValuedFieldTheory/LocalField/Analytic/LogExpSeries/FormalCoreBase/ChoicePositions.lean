@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -57,9 +55,8 @@ theorem formalLogOnePlusProductArgumentBasicFactorLabel_eq_two_iff_of_basic
     rcases hm with hleft | hright | hmixed
     · simp [hleft] at h
     · simp [hright] at h
-    · simpa [formalLogOnePlusProductArgumentBasicFactorMixed] using hmixed
-  · intro h
-    simp [h, formalLogOnePlusProductArgumentBasicFactorMixed]
+    exact hmixed
+  · simp_all [formalLogOnePlusProductArgumentBasicFactorMixed]
 
 /-- The basic-factor sequence with mixed positions `M`, left positions `L`,
 and right factors in every remaining position below `q`. -/
@@ -78,43 +75,46 @@ noncomputable def formalLogOnePlusProductArgumentChoiceFromMixedLeft
       · exact hq
       · simp [hq] at hi)
 
+section
+
+variable {q : ℕ} {M L : Finset ℕ} {i : ℕ}
+
 /--
 Establishes the identity `formalLogOnePlusProductArgumentChoiceFromMixedLeft q M L i = if i ∈ M
 then formalLogOnePlusProductArgumentBasicFactorMixed else if i ∈ L then
 formalLogOnePlusProductArgumentBasicFactorLeft else
 formalLogOnePlusProductArgumentBasicFactorRight`.
 -/
-@[simp] theorem formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_mem
-    {q : ℕ} {M L : Finset ℕ} {i : ℕ} (hi : i ∈ Finset.range q) :
+@[simp] theorem formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_mem (hi : i ∈ Finset.range q) :
     formalLogOnePlusProductArgumentChoiceFromMixedLeft q M L i =
       if i ∈ M then formalLogOnePlusProductArgumentBasicFactorMixed
       else if i ∈ L then formalLogOnePlusProductArgumentBasicFactorLeft
       else formalLogOnePlusProductArgumentBasicFactorRight := by
-  have hlt : i < q := Finset.mem_range.mp hi
-  simp [formalLogOnePlusProductArgumentChoiceFromMixedLeft, hlt]
+  simp_all [formalLogOnePlusProductArgumentChoiceFromMixedLeft]
 
 /-- Establishes the identity `formalLogOnePlusProductArgumentChoiceFromMixedLeft q M L i = 0`. -/
-@[simp] theorem formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_not_mem
-    {q : ℕ} {M L : Finset ℕ} {i : ℕ} (hi : i ∉ Finset.range q) :
+@[simp] theorem formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_not_mem (hi : i ∉ Finset.range q) :
     formalLogOnePlusProductArgumentChoiceFromMixedLeft q M L i = 0 := by
-  have hle : q ≤ i := by simpa [Finset.mem_range] using hi
-  simp [formalLogOnePlusProductArgumentChoiceFromMixedLeft, hle]
+  simp_all [formalLogOnePlusProductArgumentChoiceFromMixedLeft]
+
+end
+
+section
+
+variable (q : ℕ) (l : ℕ →₀ (Fin 2 →₀ ℕ))
 
 /-- Positions below `q` at which `l` has the mixed-factor label. -/
-noncomputable def formalLogOnePlusProductArgumentMixedPositions
-    (q : ℕ) (l : ℕ →₀ (Fin 2 →₀ ℕ)) : Finset ℕ :=
+noncomputable def formalLogOnePlusProductArgumentMixedPositions : Finset ℕ :=
   (Finset.range q).filter fun i =>
     formalLogOnePlusProductArgumentBasicFactorLabel (l i) = (2 : Fin 3)
 
 /-- Positions below `q` at which `l` has the left-factor label. -/
-noncomputable def formalLogOnePlusProductArgumentLeftPositions
-    (q : ℕ) (l : ℕ →₀ (Fin 2 →₀ ℕ)) : Finset ℕ :=
+noncomputable def formalLogOnePlusProductArgumentLeftPositions : Finset ℕ :=
   (Finset.range q).filter fun i =>
     formalLogOnePlusProductArgumentBasicFactorLabel (l i) = (0 : Fin 3)
 
 /-- Positions below `q` at which `l` has the right-factor label. -/
-noncomputable def formalLogOnePlusProductArgumentRightPositions
-    (q : ℕ) (l : ℕ →₀ (Fin 2 →₀ ℕ)) : Finset ℕ :=
+noncomputable def formalLogOnePlusProductArgumentRightPositions : Finset ℕ :=
   (Finset.range q).filter fun i =>
     formalLogOnePlusProductArgumentBasicFactorLabel (l i) = (1 : Fin 3)
 
@@ -122,8 +122,7 @@ noncomputable def formalLogOnePlusProductArgumentRightPositions
 Establishes the identity `(formalLogOnePlusProductArgumentMixedPositions q l).card =
 formalLogOnePlusProductArgumentBasicFactorLabelCount q l 2`.
 -/
-theorem formalLogOnePlusProductArgumentMixedPositions_card
-    (q : ℕ) (l : ℕ →₀ (Fin 2 →₀ ℕ)) :
+theorem formalLogOnePlusProductArgumentMixedPositions_card :
     (formalLogOnePlusProductArgumentMixedPositions q l).card =
       formalLogOnePlusProductArgumentBasicFactorLabelCount q l 2 := by
   simp [formalLogOnePlusProductArgumentMixedPositions,
@@ -133,8 +132,7 @@ theorem formalLogOnePlusProductArgumentMixedPositions_card
 Establishes the identity `(formalLogOnePlusProductArgumentLeftPositions q l).card =
 formalLogOnePlusProductArgumentBasicFactorLabelCount q l 0`.
 -/
-theorem formalLogOnePlusProductArgumentLeftPositions_card
-    (q : ℕ) (l : ℕ →₀ (Fin 2 →₀ ℕ)) :
+theorem formalLogOnePlusProductArgumentLeftPositions_card :
     (formalLogOnePlusProductArgumentLeftPositions q l).card =
       formalLogOnePlusProductArgumentBasicFactorLabelCount q l 0 := by
   simp [formalLogOnePlusProductArgumentLeftPositions,
@@ -144,78 +142,67 @@ theorem formalLogOnePlusProductArgumentLeftPositions_card
 Establishes the identity `(formalLogOnePlusProductArgumentRightPositions q l).card =
 formalLogOnePlusProductArgumentBasicFactorLabelCount q l 1`.
 -/
-theorem formalLogOnePlusProductArgumentRightPositions_card
-    (q : ℕ) (l : ℕ →₀ (Fin 2 →₀ ℕ)) :
+theorem formalLogOnePlusProductArgumentRightPositions_card :
     (formalLogOnePlusProductArgumentRightPositions q l).card =
       formalLogOnePlusProductArgumentBasicFactorLabelCount q l 1 := by
   simp [formalLogOnePlusProductArgumentRightPositions,
     formalLogOnePlusProductArgumentBasicFactorLabelCount, Finset.sum_boole]
 
+end
+
+section
+
+variable {q : ℕ} {M L : Finset ℕ}
+
 /--
 Establishes the identity `formalLogOnePlusProductArgumentMixedPositions q
 (formalLogOnePlusProductArgumentChoiceFromMixedLeft q M L) = M`.
 -/
-theorem formalLogOnePlusProductArgumentMixedPositions_choiceFromMixedLeft
-    {q : ℕ} {M L : Finset ℕ} (hM : M ⊆ Finset.range q) :
+theorem formalLogOnePlusProductArgumentMixedPositions_choiceFromMixedLeft (hM : M ⊆ Finset.range q) :
     formalLogOnePlusProductArgumentMixedPositions q
         (formalLogOnePlusProductArgumentChoiceFromMixedLeft q M L) = M := by
   ext i
   constructor
   · intro hi
-    have hq : i ∈ Finset.range q := (Finset.mem_filter.mp hi).1
-    have hlabel :
-        formalLogOnePlusProductArgumentBasicFactorLabel
-            (formalLogOnePlusProductArgumentChoiceFromMixedLeft q M L i) =
-          (2 : Fin 3) :=
+    have hq := (Finset.mem_filter.mp hi).1
+    have hlabel :=
       (Finset.mem_filter.mp hi).2
     by_cases hMi : i ∈ M
     · exact hMi
     · by_cases hLi : i ∈ L
-      · simp [formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_mem hq,
-          hMi, hLi, formalLogOnePlusProductArgumentBasicFactorLeft] at hlabel
-      · simp [formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_mem hq,
-          hMi, hLi, formalLogOnePlusProductArgumentBasicFactorRight] at hlabel
+      · simp_all [formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_mem, hq, hMi, hLi, formalLogOnePlusProductArgumentBasicFactorLeft]
+      · simp_all [formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_mem, hq, hMi, hLi, formalLogOnePlusProductArgumentBasicFactorRight]
   · intro hMi
-    have hq : i ∈ Finset.range q := hM hMi
-    simp [formalLogOnePlusProductArgumentMixedPositions, hq, hMi,
+    simp [formalLogOnePlusProductArgumentMixedPositions, (hM hMi), hMi,
       formalLogOnePlusProductArgumentBasicFactorMixed]
 
 /--
 Establishes the identity `formalLogOnePlusProductArgumentLeftPositions q
 (formalLogOnePlusProductArgumentChoiceFromMixedLeft q M L) = L`.
 -/
-theorem formalLogOnePlusProductArgumentLeftPositions_choiceFromMixedLeft
-    {q : ℕ} {M L : Finset ℕ} (hL : L ⊆ Finset.range q \ M) :
+theorem formalLogOnePlusProductArgumentLeftPositions_choiceFromMixedLeft (hL : L ⊆ Finset.range q \ M) :
     formalLogOnePlusProductArgumentLeftPositions q
         (formalLogOnePlusProductArgumentChoiceFromMixedLeft q M L) = L := by
   ext i
   constructor
   · intro hi
-    have hq : i ∈ Finset.range q := (Finset.mem_filter.mp hi).1
-    have hlabel :
-        formalLogOnePlusProductArgumentBasicFactorLabel
-            (formalLogOnePlusProductArgumentChoiceFromMixedLeft q M L i) =
-          (0 : Fin 3) :=
+    have hq := (Finset.mem_filter.mp hi).1
+    have hlabel :=
       (Finset.mem_filter.mp hi).2
     by_cases hMi : i ∈ M
-    · simp [formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_mem hq,
-        hMi, formalLogOnePlusProductArgumentBasicFactorMixed] at hlabel
+    · simp_all [formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_mem, hq, hMi, formalLogOnePlusProductArgumentBasicFactorMixed]
     · by_cases hLi : i ∈ L
       · exact hLi
-      · simp [formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_mem hq,
-          hMi, hLi, formalLogOnePlusProductArgumentBasicFactorRight] at hlabel
+      · simp_all [formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_mem, hq, hMi, hLi, formalLogOnePlusProductArgumentBasicFactorRight]
   · intro hLi
-    have hq : i ∈ Finset.range q := (Finset.mem_sdiff.mp (hL hLi)).1
-    have hMi : i ∉ M := (Finset.mem_sdiff.mp (hL hLi)).2
-    simp [formalLogOnePlusProductArgumentLeftPositions, hq, hMi, hLi,
+    simp [formalLogOnePlusProductArgumentLeftPositions, ((Finset.mem_sdiff.mp (hL hLi)).1), ((Finset.mem_sdiff.mp (hL hLi)).2), hLi,
       formalLogOnePlusProductArgumentBasicFactorLeft]
 
 /--
 Establishes the identity `formalLogOnePlusProductArgumentRightPositions q
 (formalLogOnePlusProductArgumentChoiceFromMixedLeft q M L) = Finset.range q \ (M ∪ L)`.
 -/
-theorem formalLogOnePlusProductArgumentRightPositions_choiceFromMixedLeft
-    {q : ℕ} {M L : Finset ℕ} (hL : L ⊆ Finset.range q \ M) :
+theorem formalLogOnePlusProductArgumentRightPositions_choiceFromMixedLeft (hL : L ⊆ Finset.range q \ M) :
     formalLogOnePlusProductArgumentRightPositions q
         (formalLogOnePlusProductArgumentChoiceFromMixedLeft q M L) =
       Finset.range q \ (M ∪ L) := by
@@ -223,32 +210,19 @@ theorem formalLogOnePlusProductArgumentRightPositions_choiceFromMixedLeft
   constructor
   · intro hi
     rw [Finset.mem_sdiff]
-    have hq : i ∈ Finset.range q := (Finset.mem_filter.mp hi).1
-    have hlabel :
-        formalLogOnePlusProductArgumentBasicFactorLabel
-            (formalLogOnePlusProductArgumentChoiceFromMixedLeft q M L i) =
-          (1 : Fin 3) :=
+    have hq := (Finset.mem_filter.mp hi).1
+    have hlabel :=
       (Finset.mem_filter.mp hi).2
     refine ⟨hq, ?_⟩
     rw [Finset.mem_union]
     intro hML
     rcases hML with hMi | hLi
+    · simp_all [formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_mem, hq, hMi, formalLogOnePlusProductArgumentBasicFactorMixed]
     · simp [formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_mem hq,
-        hMi, formalLogOnePlusProductArgumentBasicFactorMixed] at hlabel
-    · have hMi : i ∉ M := (Finset.mem_sdiff.mp (hL hLi)).2
-      simp [formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_mem hq,
-        hMi, hLi, formalLogOnePlusProductArgumentBasicFactorLeft] at hlabel
-  · intro hi
-    rw [Finset.mem_sdiff] at hi
-    rcases hi with ⟨hq, hnot⟩
-    have hMi : i ∉ M := by
-      intro h
-      exact hnot (Finset.mem_union_left L h)
-    have hLi : i ∉ L := by
-      intro h
-      exact hnot (Finset.mem_union_right M h)
-    simp [formalLogOnePlusProductArgumentRightPositions, hq, hMi, hLi,
-      formalLogOnePlusProductArgumentBasicFactorRight]
+        ((Finset.mem_sdiff.mp (hL hLi)).2), hLi, formalLogOnePlusProductArgumentBasicFactorLeft] at hlabel
+  · simp_all [Finset.mem_sdiff, formalLogOnePlusProductArgumentRightPositions, formalLogOnePlusProductArgumentBasicFactorRight]
+
+end
 
 /--
 Establishes the identity `(formalLogOnePlusProductArgumentRightPositions q
@@ -274,10 +248,9 @@ theorem formalLogOnePlusProductArgumentRightPositions_choiceFromMixedLeft_card
     rcases Finset.mem_union.mp hi with hMi | hLi
     · exact hMsub hMi
     · exact hLrange hLi
-  rw [Finset.card_sdiff_of_subset hunionSub, Finset.card_range]
+  simp [Finset.card_sdiff_of_subset hunionSub]
   rw [Finset.card_union_of_disjoint hdisj, hMcard, hLcard]
   omega
-
 
 end MultiplicativeIntegerValuation
 end LocalFieldTheory.DiscreteValuationField

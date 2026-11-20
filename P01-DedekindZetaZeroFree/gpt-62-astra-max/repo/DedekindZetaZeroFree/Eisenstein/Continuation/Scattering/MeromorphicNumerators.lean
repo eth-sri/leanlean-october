@@ -10,10 +10,10 @@ open NumberField MeasureTheory Filter
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPLiteralRaw KPGlobalTorusFiniteStages ThetaExpansion TensorActionSource
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "V" => RestrictedTensorSimple.Core (Plus R.A P C)
@@ -24,8 +24,6 @@ set_option backward.isDefEq.respectTransparency false
 theorem coreFlatInsertion_entire (x : V) (g : G F ζ hζ) :
     AnalyticOnNhd ℂ (fun s => (coreFlatInsertion R P C x).val s g) Set.univ := by
   intro s hs
-  change AnalyticAt ℂ (fun z => Complex.exp (z * (iwasawaLogHeight R g : ℂ)) *
-    quotientCoreEvaluator R.A P C x g) s
   exact (analyticAt_id.mul analyticAt_const).cexp.mul analyticAt_const
 
 theorem core_scattering_weighted_continuation (x : V) (g : G F ζ hζ) :
@@ -42,7 +40,7 @@ theorem core_scattering_weighted_continuation (x : V) (g : G F ζ hζ) :
   let μ := KPWildKernelUpperBound.quotientHaar F
   obtain ⟨Q, A, T, r, hQ, hQ0, hA, hch, hr, hb, hT, hclear, hcenter⟩ :=
     core_period_continuation R P C x μ inferInstance g
-  let f : ℂ → ℂ := fun s => (coreFlatInsertion R P C x).val s g
+  let f := fun s => (coreFlatInsertion R P C x).val s g
   have hf : AnalyticOnNhd ℂ f KPContinuation.spectralDomain :=
     (coreFlatInsertion_entire R P C x g).mono (Set.subset_univ _)
   have hmass : μ.real Set.univ = 1 := by simp [μ, Measure.real]
@@ -59,7 +57,7 @@ theorem core_scattering_weighted_continuation (x : V) (g : G F ζ hζ) :
     change T s - s * (Q s * f s) = s * (A s - Q s * f s)
     rw [hclear s hs hs0]
     ring
-  · simpa only [zero_mul, sub_zero] using hcenter
+  · simpa using hcenter
 
 theorem core_scattering_continuation (x : V) (g : G F ζ hζ) :
     let μ := KPWildKernelUpperBound.quotientHaar F
@@ -74,14 +72,12 @@ theorem core_scattering_continuation (x : V) (g : G F ζ hζ) :
   obtain ⟨Q, A, T, t, hQ, hQ0, hA, hch, ht, htb, hT, hclear, hcenter⟩ :=
     core_scattering_weighted_continuation R P C x g
   have h0 : (0 : ℂ) ∈ KPContinuation.spectralDomain := by norm_num [KPContinuation.spectralDomain]
-  have hQne : ∀ᶠ z in 𝓝 (0 : ℂ), Q z ≠ 0 :=
-    (hQ 0 h0).continuousAt.eventually_ne (by rw [hQ0]; exact one_ne_zero)
-  obtain ⟨u, hu, hQu⟩ := Metric.mem_nhds_iff.mp hQne
+  obtain ⟨u, hu, hQu⟩ := Metric.mem_nhds_iff.mp ((hQ 0 h0).continuousAt.eventually_ne (by rw [hQ0]; exact one_ne_zero))
   let r := min t u
-  have hr : 0 < r := lt_min ht hu
+  have hr := lt_min ht hu
   have hb : Metric.ball (0 : ℂ) r ⊆ KPContinuation.spectralDomain :=
     (Metric.ball_subset_ball (min_le_left _ _)).trans htb
-  let B : ℂ → ℂ := fun z => T z / Q z
+  let B := fun z => T z / Q z
   have hB : AnalyticOnNhd ℂ B (Metric.ball (0 : ℂ) r) := by
     intro z hz
     exact (hT z (Metric.ball_subset_ball (min_le_left _ _) hz)).div (hQ z (hb hz))

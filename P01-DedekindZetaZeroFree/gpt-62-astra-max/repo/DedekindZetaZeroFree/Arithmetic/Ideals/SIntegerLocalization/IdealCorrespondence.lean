@@ -14,15 +14,13 @@ variable {F : Type} [Field F] [NumberField F]
 
 private theorem mem_of_mul_mem_of_sup_span_eq_top (I : Ideal (𝓞 F))
     (t x : 𝓞 F) (hc : I ⊔ Ideal.span {t} = ⊤) (hx : t * x ∈ I) : x ∈ I := by
-  have h1 : (1 : 𝓞 F) ∈ I ⊔ Ideal.span {t} := by rw [hc]; trivial
-  obtain ⟨a, ha, b, hb, hab⟩ := Submodule.mem_sup.mp h1
+  obtain ⟨a, ha, b, hb, hab⟩ := Submodule.mem_sup.mp (by rw [hc]; trivial)
   obtain ⟨c, rfl⟩ := Ideal.mem_span_singleton.mp hb
-  have hmem := I.add_mem (I.mul_mem_right x ha) (I.mul_mem_left c hx)
   have heq : a * x + c * (t * x) = x := by
     calc
-      a * x + c * (t * x) = (a + t * c) * x := by ring
+      _ = (a + t * c) * x := by ring
       _ = x := by rw [hab, one_mul]
-  exact heq ▸ hmem
+  exact heq ▸ (I.add_mem (I.mul_mem_right x ha) (I.mul_mem_left c hx))
 
 theorem under_map_exterior (S : Finset (HeightOneSpectrum (𝓞 F)))
     (I : Ideal (𝓞 F)) (hI : I ⊔ (∏ v ∈ S, v.asIdeal) = ⊤) :
@@ -37,21 +35,23 @@ theorem under_map_exterior (S : Finset (HeightOneSpectrum (𝓞 F)))
   rw [← Ideal.span_singleton_pow, span_denominator, ← pow_mul]
   exact Ideal.sup_pow_eq_top hI
 
-theorem under_ne_zero (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (J : Ideal ((S : Set (HeightOneSpectrum (𝓞 F))).integer F)) (hJ : J ≠ ⊥) :
+variable (S : Finset (HeightOneSpectrum (𝓞 F)))
+    (J : Ideal ((S : Set (HeightOneSpectrum (𝓞 F))).integer F)) (hJ : J ≠ ⊥)
+
+include hJ in
+theorem under_ne_zero :
     J.under (𝓞 F) ≠ ⊥ := by
   letI := isLocalization_away S
   intro h
   have hh := IsLocalization.map_under (Submonoid.powers (denominator S)) _ J
-  rw [h, Ideal.map_bot] at hh
-  exact hJ hh.symm
+  simp_all [h, Ideal.map_bot]
 
-theorem under_exterior (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (J : Ideal ((S : Set (HeightOneSpectrum (𝓞 F))).integer F)) (hJ : J ≠ ⊥) :
+include hJ in
+theorem under_exterior :
     J.under (𝓞 F) ⊔ (∏ v ∈ S, v.asIdeal) = ⊤ := by
   letI := isLocalization_away S
   let I := J.under (𝓞 F)
-  letI : Finite ((𝓞 F) ⧸ I) := Ring.HasFiniteQuotients.finiteQuotient (under_ne_zero S J hJ)
+  letI := Ring.HasFiniteQuotients.finiteQuotient (under_ne_zero S J hJ)
   have hs (x : 𝓞 F) (hx : denominator S * x ∈ I) : x ∈ I := by
     change algebraMap (𝓞 F) _ x ∈ J
     change algebraMap (𝓞 F) _ (denominator S * x) ∈ J at hx

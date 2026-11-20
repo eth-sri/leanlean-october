@@ -14,13 +14,13 @@ set_option maxHeartbeats 1000000
 open KPContFlatCuspIncomingEvaluation
 open KPMsResidualTailRestoration.SharpConstantTerm.FiberStability
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable (f : ℂ → S) (hι : Function.Injective ι)
-variable (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-variable (s : ℂ) (hs : s ∈ KPContActualChamberNormalSeries.V)
-variable (g : KPGlobalTorusFunctionData.G F ζ hζ)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (f : ℂ → S) (hι : Function.Injective ι)
+    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+    (s : ℂ) (hs : s ∈ KPContActualChamberNormalSeries.V)
+    (g : KPGlobalTorusFunctionData.G F ζ hζ)
 include hι hf hs in
 theorem actual_upper_orbit_rational (r:F) (x:KPGlobalTorusFunctionData.Adeles F) :
  KPContActualChamberNormalSeries.E F ζ hζ U ι f s (KPGlobalTorusFunctionData.N F ζ hζ (algebraMap F _ r + x) * g) =

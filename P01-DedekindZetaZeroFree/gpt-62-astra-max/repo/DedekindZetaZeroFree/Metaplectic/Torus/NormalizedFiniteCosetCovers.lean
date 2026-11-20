@@ -9,7 +9,7 @@ open scoped NumberField Classical NNReal Topology
 namespace DedekindZetaZeroFree.KPSpatialSmoothing
 open KPGlobalTorusFunctionData KPGlobalTorusFiniteStagesCofinality
 
-open _root_.DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility renaming finitePart_normal → finitePart_normal
+open _root_.DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility (finitePart_normal)
 private theorem normalized_shrink
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ) (J : FiniteLevel F ζ hζ) :
@@ -24,31 +24,30 @@ private theorem normalized_shrink
     { toFun := fun u => ⟨k.val⁻¹ * u.val * k.val,
         Subgroup.Normal.conj_mem inferInstance u.val u.property k.val⁻¹ |> (by simpa using ·)⟩
       map_one' := by apply Subtype.ext; simp
-      map_mul' := by intros; apply Subtype.ext; change _ = _; simp [mul_assoc] }
+      map_mul' := by intros; apply Subtype.ext; simp [mul_assoc]}
   let V : Subgroup (finitePart F ζ hζ) :=
     ⨅ k : D.K, J.toOpenSubgroup.toSubgroup.comap (conj k)
   have hV (u : finitePart F ζ hζ) : u ∈ V ↔ ∀ k : D.K, conj k u ∈ J.toOpenSubgroup := by
     simp [V]
-  have hn : ∀ᶠ u in nhds (1 : finitePart F ζ hζ), ∀ k : D.K, conj k u ∈ J.toOpenSubgroup := by
-    have ht : ∀ᶠ u in nhds (1 : finitePart F ζ hζ), ∀ k ∈ (Set.univ : Set D.K), conj k u ∈ J.toOpenSubgroup := by
+  let nhds₀ := nhds (1 : finitePart F ζ hζ)
+  have hn : ∀ᶠ u in nhds₀, ∀ k : D.K, conj k u ∈ J.toOpenSubgroup := by
+    have ht : ∀ᶠ u in nhds₀, ∀ k ∈ Set.univ, conj k u ∈ J.toOpenSubgroup := by
       apply isCompact_univ.eventually_forall_of_forall_eventually
       intro k _
       have hc : Continuous (fun p : finitePart F ζ hζ × D.K => conj p.2 p.1) := by
         apply Continuous.subtype_mk
-        change Continuous (fun p : finitePart F ζ hζ × D.K => p.2.val⁻¹ * p.1.val * p.2.val)
         fun_prop
       exact hc.continuousAt.eventually (J.toOpenSubgroup.isOpen.mem_nhds (by change conj k 1 ∈ J.toOpenSubgroup; rw [map_one]; exact J.toOpenSubgroup.one_mem))
     simpa using ht
   have hVo : IsOpen (V : Set (finitePart F ζ hζ)) := by
-    apply Subgroup.isOpen_of_mem_nhds (g := 1)
-    change ∀ᶠ u in nhds (1 : finitePart F ζ hζ), u ∈ V
+    apply Subgroup.isOpen_of_mem_nhds
+    change ∀ᶠ u in nhds₀, u ∈ V
     simpa only [hV] using hn
   have hVJ : V ≤ J.toOpenSubgroup.toSubgroup := by
     intro u hu
     simpa [conj] using (hV u).mp hu 1
-  let J0 : FiniteLevel F ζ hζ := ⟨⟨V, hVo⟩,
-    J.isCompact.of_isClosed_subset (V.isClosed_of_isOpen hVo) hVJ⟩
-  refine ⟨J0, Subgroup.map_mono hVJ, ?_⟩
+  refine ⟨(⟨⟨V, hVo⟩,
+    J.isCompact.of_isClosed_subset (V.isClosed_of_isOpen hVo) hVJ⟩), Subgroup.map_mono hVJ, ?_⟩
   intro k j
   obtain ⟨u, hu, he⟩ := j.property
   change u.val = j.val at he
@@ -63,8 +62,11 @@ private theorem normalized_shrink
       (k.val * l.val)⁻¹ * u.val * (k.val * l.val)
     group
   · rfl
+
+alias NormalizedFiniteCosetCovers.normalized_shrink := normalized_shrink
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+
 private theorem torus_cover
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (J : FiniteLevel F ζ hζ) :
     ∃ (n : ℕ) (r : Fin n → E F ζ hζ),
       ∀ t : E F ζ hζ, ∃ (i : Fin n) (h : (P0 F ζ hζ).H)
@@ -148,8 +150,6 @@ private theorem torus_cover
   group
 
 theorem actual_normalized_torus_finite_cover
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
     (J : FiniteLevel F ζ hζ) :
     ∃ (J0 : FiniteLevel F ζ hζ) (n : ℕ) (r : Fin n → E F ζ hζ),

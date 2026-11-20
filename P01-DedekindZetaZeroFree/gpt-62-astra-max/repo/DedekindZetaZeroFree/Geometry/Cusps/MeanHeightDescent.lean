@@ -20,6 +20,8 @@ private theorem central_comm
     (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
       ⟨ε, rfl⟩) c).symm
 
+alias MeanHeightDescent.central_comm := central_comm
+
 theorem actual_height_descent
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -109,12 +111,7 @@ theorem actual_height_descent
           KPCuspSiegel.OrbitQuotient F (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative i)))
           = ⟨a.1, y⟩ := A.components.injective h1
       exact (by cases h2; rfl : x = y)
-    have hEmap : KPFiniteCuspAtlas.endMap F (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative a.1))
-          ((A.cuspAtlas a.1).cusp a.2) ((A.cuspAtlas a.1).representative a.2) τ
-          (Quotient.mk _ (⟨z, hz⟩ : {p : KPCuspCharts.Coordinates F // τ < p.2}))
-        = KPFiniteCuspAtlas.endMap F (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative a.1))
-          ((A.cuspAtlas a.1).cusp a.2) ((A.cuspAtlas a.1).representative a.2) τ
-          (Quotient.mk _ (⟨z', hz'⟩ : {p : KPCuspCharts.Coordinates F // τ < p.2})) :=
+    have hEmap :=
       hcomp (e1.symm.trans (hL.trans e2))
     have hp : KPCuspSiegel.projection F (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative a.1))
           (KPCuspSiegel.action F ((A.cuspAtlas a.1).representative a.2) (KPCuspCharts.toArch F z))
@@ -278,7 +275,7 @@ theorem actual_height_descent
     change L a z' = L a z ∧ t a (L a z') = t a (L a z)
     constructor
     · let γ := KPCuspGenuineMonodromy.cuspInclusion F Γ (C.cusp a.2) σ g
-      have hγ : (↑γ : KPCuspArithmetic.PGL2 F) = σ * (g : KPCuspArithmetic.PGL2 F) * σ⁻¹ :=
+      have hγ :=
         KPCuspGenuineMonodromy.cuspInclusion_formula F Γ (C.cusp a.2) σ g
       have hact := (C.geometry a.2).actual_action g B hB hB10 z
       have h1 : σ • KPCuspCharts.toArch F z' = (↑γ : KPCuspArithmetic.PGL2 F) • (σ • KPCuspCharts.toArch F z) := by

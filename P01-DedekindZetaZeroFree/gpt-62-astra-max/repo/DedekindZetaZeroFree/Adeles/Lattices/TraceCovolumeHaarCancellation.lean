@@ -14,8 +14,11 @@ open NumberField IsDedekindDomain MeasureTheory
 local instance finiteLevelCovolume_measurableSpace (F : Type) [Field F] [NumberField F] :
     MeasurableSpace (FiniteAdeleRing (𝓞 F) F) := borel _
 
-private theorem finiteLevelFieldSubgroup_integralFiniteAdeles
-    (F : Type) [Field F] [NumberField F] :
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+private theorem finiteLevelFieldSubgroup_integralFiniteAdeles :
     finiteLevelFieldSubgroup (integralFiniteAdeles F) = integerFieldSubgroup F := by
   ext lam
   rw [finiteLevelFieldSubgroup, AddSubgroup.mem_comap, integerFieldSubgroup,
@@ -37,8 +40,7 @@ private theorem finiteLevelFieldSubgroup_integralFiniteAdeles
       exact IsDedekindDomain.HeightOneSpectrum.coe_algebraMap_mem (𝓞 F) F v a
     exact hv
 
-private theorem finiteLevelLattice_integralFiniteAdeles
-    (F : Type) [Field F] [NumberField F] :
+private theorem finiteLevelLattice_integralFiniteAdeles :
     finiteLevelLattice (integralFiniteAdeles F) = NumberField.mixedEmbedding.integerLattice F := by
   ext x
   rw [mem_finiteLevelLattice_iff, NumberField.mixedEmbedding.integerLattice, LinearMap.mem_range]
@@ -60,6 +62,8 @@ private theorem finiteLevelLattice_integralFiniteAdeles
       AddMonoidHom.mem_range]
     exact ⟨a, rfl⟩
 
+end
+
 set_option linter.style.haveILetI false in
 
 private lemma ZLattice.covolume_smul_ofReal {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -67,21 +71,17 @@ private lemma ZLattice.covolume_smul_ofReal {E : Type*} [NormedAddCommGroup E] [
     (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
     (μ : Measure E) [μ.IsAddHaarMeasure] {c : ℝ} (hc : 0 < c) :
     ZLattice.covolume L (ENNReal.ofReal c • μ) = c * ZLattice.covolume L μ := by
-  have hc0 : (ENNReal.ofReal c) ≠ 0 := ENNReal.ofReal_ne_zero_iff.mpr hc
-  have hctop : (ENNReal.ofReal c) ≠ ⊤ := ENNReal.ofReal_ne_top
   haveI : (ENNReal.ofReal c • μ).IsAddHaarMeasure :=
-    Measure.IsAddHaarMeasure.smul μ hc0 hctop
+    Measure.IsAddHaarMeasure.smul μ (ENNReal.ofReal_ne_zero_iff.mpr hc) ENNReal.ofReal_ne_top
   have hac : (ENNReal.ofReal c • μ).AbsolutelyContinuous μ := by
     refine Measure.AbsolutelyContinuous.mk ?_
     intro s _ hs
     rw [Measure.smul_apply, hs, smul_zero]
   let b := Module.Free.chooseBasis ℤ L
-  have hfd : IsAddFundamentalDomain L (ZSpan.fundamentalDomain (b.ofZLatticeBasis ℝ)) μ :=
+  have hfd :=
     ZLattice.isAddFundamentalDomain b μ
-  have hfd' : IsAddFundamentalDomain L (ZSpan.fundamentalDomain (b.ofZLatticeBasis ℝ))
-      (ENNReal.ofReal c • μ) := hfd.mono hac
   rw [ZLattice.covolume_eq_measure_fundamentalDomain L _ hfd,
-    ZLattice.covolume_eq_measure_fundamentalDomain L _ hfd',
+    ZLattice.covolume_eq_measure_fundamentalDomain L _ (hfd.mono hac),
     Measure.real_def, Measure.real_def, Measure.smul_apply]
   rw [smul_eq_mul, ENNReal.toReal_mul, ENNReal.toReal_ofReal hc.le]
 
@@ -112,8 +112,11 @@ lemma finiteLevelCovolume_index_mul_measure
   simpa only [AddSubgroup.index, ν, he.comap_apply μ, hHU,
     Set.image_univ, hrange] using hmass
 
-theorem integralFiniteLevel_trace_covolume
-    (F : Type) [Field F] [NumberField F] :
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+theorem integralFiniteLevel_trace_covolume :
     ZLattice.covolume (finiteLevelLattice (integralFiniteAdeles F))
       (ENNReal.ofReal (PoissonArch.haarScalar F) • volume) =
         Real.sqrt |(NumberField.discr F : ℝ)| := by
@@ -126,16 +129,24 @@ theorem integralFiniteLevel_trace_covolume
     rw [← mul_pow]; norm_num
   rw [← mul_assoc, h2, one_mul]
 
-private lemma integral_isCompact (F : Type) [Field F] [NumberField F] :
+private lemma integral_isCompact :
     IsCompact (integralFiniteAdeles F : Set (FiniteAdeleRing (𝓞 F) F)) := by
   convert KPAdelicTopology.integralAdeles_isCompact F using 1 <;> rfl
+
+end
+
+alias TraceCovolumeHaarCancellation.integral_isCompact := integral_isCompact
 private lemma integral_isOpen (F : Type) [Field F] [NumberField F] :
     IsOpen (integralFiniteAdeles F : Set (FiniteAdeleRing (𝓞 F) F)) := by
   convert KPAdelicTopology.integralAdeles_isOpen F using 1 <;> rfl
-private lemma scaled_topology (F : Type) [Field F] [NumberField F] (a : ℕ) (ha : 0 < a) :
+
+alias TraceCovolumeHaarCancellation.integral_isOpen := integral_isOpen
+variable (F : Type) [Field F] [NumberField F]
+
+private lemma scaled_topology (a : ℕ) (ha : 0 < a) :
     IsCompact (integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F) : Set (FiniteAdeleRing (𝓞 F) F)) ∧
     IsOpen (integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F) : Set (FiniteAdeleRing (𝓞 F) F)) := by
-  let u : (FiniteAdeleRing (𝓞 F) F)ˣ := Units.map (algebraMap F (FiniteAdeleRing (𝓞 F) F)).toMonoidHom
+  let u := Units.map (algebraMap F (FiniteAdeleRing (𝓞 F) F)).toMonoidHom
     (Units.mk0 (a : F) (by exact_mod_cast ha.ne'))
   let e := ContinuousAddEquiv.mulLeft u
   have he : ⇑e = ⇑(integerScaleHom (a : ℤ) : FiniteAdeleRing (𝓞 F) F →+ _) := by
@@ -147,7 +158,7 @@ private lemma scaled_topology (F : Type) [Field F] [NumberField F] (a : ℕ) (ha
   rw [hs]
   exact ⟨(integral_isCompact F).image e.continuous, e.toHomeomorph.isOpenMap _ (integral_isOpen F)⟩
 
-private lemma mixed_covolume_ratio (F : Type) [Field F] [NumberField F]
+private lemma mixed_covolume_ratio
     (L₁ L₂ : Submodule ℤ (mixedEmbedding.mixedSpace F))
     [DiscreteTopology L₁] [IsZLattice ℝ L₁] [DiscreteTopology L₂] [IsZLattice ℝ L₂]
     (h : L₁ ≤ L₂) :
@@ -163,31 +174,30 @@ private lemma mixed_covolume_ratio (F : Type) [Field F] [NumberField F]
     AddSubgroup.relIndex_comap, AddSubgroup.map_comap_eq_self_of_surjective e.surjective] at hr
   exact hr
 
-private lemma lattice_map (F : Type) [Field F] [NumberField F]
+private lemma lattice_map
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F)) :
     (finiteLevelLattice K).toAddSubgroup =
-      (finiteLevelFieldSubgroup K).map (mixedEmbedding F).toAddMonoidHom := by
-  rfl
-private lemma lattice_monotone (F : Type) [Field F] [NumberField F]
+      (finiteLevelFieldSubgroup K).map (mixedEmbedding F).toAddMonoidHom := rfl
+private lemma lattice_monotone
     {K H : AddSubgroup (FiniteAdeleRing (𝓞 F) F)} (h : H ≤ K) :
     finiteLevelLattice H ≤ finiteLevelLattice K := by
   intro x hx
   obtain ⟨y, hy, rfl⟩ := (mem_finiteLevelLattice_iff H x).mp hx
   exact (mem_finiteLevelLattice_iff K _).mpr ⟨y, h hy, rfl⟩
-private lemma lattice_relIndex (F : Type) [Field F] [NumberField F]
+private lemma lattice_relIndex
     (K H : AddSubgroup (FiniteAdeleRing (𝓞 F) F)) :
     (finiteLevelLattice H).toAddSubgroup.relIndex (finiteLevelLattice K).toAddSubgroup =
       (finiteLevelFieldSubgroup H).relIndex (finiteLevelFieldSubgroup K) := by
   rw [lattice_map, lattice_map]
   exact AddSubgroup.relIndex_map_map_of_injective _ _ (mixedEmbedding F).injective
 
-private lemma scaled_field (F : Type) [Field F] [NumberField F] (a : ℕ) (ha : 0 < a) :
+private lemma scaled_field (a : ℕ) (ha : 0 < a) :
     finiteLevelFieldSubgroup (integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F)) =
       integerScaledSubgroup (a : ℤ) (integerFieldSubgroup F) := by
   ext x
   exact FiniteLevelHelpers.scaled_integral_diagonal_iff a ha x
 
-private lemma relIndex_eq_quotient_card (F : Type) [Field F] [NumberField F]
+private lemma relIndex_eq_quotient_card
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
     (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F)))
@@ -196,18 +206,15 @@ private lemma relIndex_eq_quotient_card (F : Type) [Field F] [NumberField F]
     (finiteLevelFieldSubgroup (integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F))).relIndex
       (finiteLevelFieldSubgroup K) =
       (integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F)).relIndex K := by
-  let U := integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F)
-  have hFld : finiteLevelFieldSubgroup U = integerScaledSubgroup (a : ℤ) (integerFieldSubgroup F) :=
-    scaled_field F a ha
   have h := finiteLevel_quotient_comparison K hcompact hopen a ha hK
   dsimp only at h
   rcases h with ⟨hfin₁, hfin₂, ⟨e, he⟩⟩
   rw [AddSubgroup.relIndex, AddSubgroup.index_eq_card,
     AddSubgroup.relIndex, AddSubgroup.index_eq_card]
-  rw [hFld]
+  rw [(scaled_field F a ha)]
   exact Nat.card_congr e.toEquiv
 
-private lemma comparison_finite (F : Type) [Field F] [NumberField F]
+private lemma comparison_finite
     (μ : Measure (FiniteAdeleRing (𝓞 F) F)) [μ.IsAddHaarMeasure]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
@@ -218,17 +225,13 @@ private lemma comparison_finite (F : Type) [Field F] [NumberField F]
       μ.real (integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F) : Set _) =
       μ.real (K : Set _) := by
   let U := integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F)
-  have hfin := (finiteLevel_quotient_comparison K hcompact hopen a ha hK).2.1
-  letI : Finite (K ⧸ U.comap K.subtype) := hfin
-  have hu : MeasurableSet (U : Set (FiniteAdeleRing (𝓞 F) F)) :=
-    (scaled_topology F a ha).2.measurableSet
-  have hk : MeasurableSet (K : Set (FiniteAdeleRing (𝓞 F) F)) := hopen.measurableSet
-  have hm := finiteLevelCovolume_index_mul_measure μ K U hK hk hu
-  change ((U.relIndex K : ℕ) : ENNReal) * μ (U : Set _) = μ (K : Set _) at hm
+  letI : Finite (K ⧸ U.comap K.subtype) := ((finiteLevel_quotient_comparison K hcompact hopen a ha hK).2.1)
+  have hm := finiteLevelCovolume_index_mul_measure μ K U hK hopen.measurableSet ((scaled_topology F a ha).2.measurableSet)
+  change ((U.relIndex K : ℕ) : ENNReal) * μ U = μ K at hm
   simpa only [ENNReal.toReal_mul, ENNReal.toReal_natCast, Measure.real_def, U] using
     congrArg ENNReal.toReal hm
 
-private lemma comparison_arch (F : Type) [Field F] [NumberField F]
+private lemma comparison_arch
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
     (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F)))
@@ -250,7 +253,7 @@ private lemma comparison_arch (F : Type) [Field F] [NumberField F]
   rw [lattice_relIndex F K U, relIndex_eq_quotient_card F K hcompact hopen a ha hK] at hr
   exact (div_eq_iff (ZLattice.covolume_pos (finiteLevelLattice K) volume).ne').mp hr
 
-private lemma cancellation_volume (F : Type) [Field F] [NumberField F]
+private lemma cancellation_volume
     (μ : Measure (FiniteAdeleRing (𝓞 F) F)) [μ.IsAddHaarMeasure]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
@@ -259,21 +262,18 @@ private lemma cancellation_volume (F : Type) [Field F] [NumberField F]
       ZLattice.covolume (finiteLevelLattice (integralFiniteAdeles F)) volume *
         μ.real (integralFiniteAdeles F : Set _) := by
   obtain ⟨a, b, ha, hb, hK, _⟩ := finiteLevel_integer_bounds K hcompact hopen
-  have hO : integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F) ≤ integralFiniteAdeles F := by
+  let integerScaledSubgroup₀ := integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F)
+  have hO : integerScaledSubgroup₀ ≤ integralFiniteAdeles F := by
     rintro x ⟨y, hy, rfl⟩
     exact (integralFiniteAdeles F).zsmul_mem hy _
-  have hacK := comparison_arch F K hcompact hopen a ha hK
-  have hacO := comparison_arch F (integralFiniteAdeles F) (integral_isCompact F) (integral_isOpen F) a ha hO
-  have hmK := comparison_finite F μ K hcompact hopen a ha hK
-  have hmO := comparison_finite F μ (integralFiniteAdeles F) (integral_isCompact F) (integral_isOpen F) a ha hO
-  rw [← hmK, ← hmO]
+  rw [← (comparison_finite F μ K hcompact hopen a ha hK), ← (comparison_finite F μ (integralFiniteAdeles F) (integral_isCompact F) (integral_isOpen F) a ha hO)]
   calc
-    _ = (((integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F)).relIndex K : ℝ) *
+    _ = (((integerScaledSubgroup₀).relIndex K : ℝ) *
         ZLattice.covolume (finiteLevelLattice K) volume) *
-        μ.real (integerScaledSubgroup (a : ℤ) (integralFiniteAdeles F) : Set _) := by ring
-    _ = _ := by rw [← hacK, hacO]; ring
+        μ.real (integerScaledSubgroup₀ : Set _) := by ring
+    _ = _ := by rw [← (comparison_arch F K hcompact hopen a ha hK), (comparison_arch F (integralFiniteAdeles F) (integral_isCompact F) (integral_isOpen F) a ha hO)]; ring
 
-theorem finiteLevel_covolume_mul_finiteHaar (F : Type) [Field F] [NumberField F]
+theorem finiteLevel_covolume_mul_finiteHaar
     (μf : Measure (FiniteAdeleRing (𝓞 F) F)) [μf.IsAddHaarMeasure]
     (hnorm : μf (integralFiniteAdeles F : Set (FiniteAdeleRing (𝓞 F) F)) =
       ENNReal.ofReal (1 / Real.sqrt |(NumberField.discr F : ℝ)|))

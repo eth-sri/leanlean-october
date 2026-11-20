@@ -11,7 +11,7 @@ open NumberField
 namespace DedekindZetaZeroFree.HeightGeometry
 open ThetaExpansion MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem height_continuous (R : PrincipalMellin.ActualRecipe S η) : Continuous (iwasawaLogHeight R) :=
   logModulus_continuous F R.A.zeta12 R.A.primitive_zeta12 (fullProductIwasawaData R)

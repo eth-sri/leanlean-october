@@ -12,19 +12,21 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPAdelicCoverRestrictedProduct ThetaExpansion KPGlobalTorusFiniteStages
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
-def awayHeight (q : KPFinitePlace F) (g : Raw R.A) : ℝ :=
+variable (q : KPFinitePlace F)
+
+def awayHeight (g : Raw R.A) : ℝ :=
   ∑ᶠ (v) (_ : v ≠ Sum.inr q), rawLocalLog R P C g v
 
-theorem rawLocalLog_local_left (q : KPFinitePlace F)
+theorem rawLocalLog_local_left
     (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) (g : Raw R.A)
     (v : KPHilbert.Place F) (hv : v ≠ Sum.inr q) :
     rawLocalLog R P C (localToRestricted F ζ hζ (Sum.inr q) a * g) v =
@@ -35,7 +37,7 @@ theorem rawLocalLog_local_left (q : KPFinitePlace F)
       Pi.mulSingle_eq_of_ne hv, one_mul]
   cases v <;> dsimp only [rawLocalLog] <;> rw [he]
 
-theorem awayHeight_local_left (q : KPFinitePlace F)
+theorem awayHeight_local_left
     (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) (g : Raw R.A) :
     awayHeight R P C q (localToRestricted F ζ hζ (Sum.inr q) a * g) =
       awayHeight R P C q g := by
@@ -46,14 +48,14 @@ theorem awayHeight_local_left (q : KPFinitePlace F)
   intro hv
   exact rawLocalLog_local_left R P C q a g v hv
 
-theorem height_eq_local_add_away (q : KPFinitePlace F) (g : Raw R.A) :
+theorem height_eq_local_add_away (g : Raw R.A) :
     iwasawaLogHeight R (scalarQuotient F ζ hζ (amalgamation F ζ hζ g)) =
       rawLocalLog R P C g (Sum.inr q) + awayHeight R P C q g := by
   rw [(rawLocalLog_finite_and_height R P C g).2]
   exact (add_finsum_cond_ne (Sum.inr q)
     (rawLocalLog_finite_and_height R P C g).1).symm
 
-theorem spectralWeight_local_left (q : KPFinitePlace F)
+theorem spectralWeight_local_left
     (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) (g : Raw R.A) (s : ℂ) :
     Complex.exp (s * (iwasawaLogHeight R (scalarQuotient F ζ hζ
       (amalgamation F ζ hζ (localToRestricted F ζ hζ (Sum.inr q) a * g))) : ℂ)) =

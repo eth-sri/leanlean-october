@@ -10,8 +10,8 @@ open NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.CovariantAssembly
 open MomentSources NonDegenerate
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 200000
 
@@ -36,7 +36,7 @@ def add_finite (D : Generated R N) (h : ∀ q (a : KPLocalCover.CubicGL2Raw F R.
   toGenerated := D
   finite_intertwining := by
     intro q a s hq x g
-    let value : actualLocal R D.finiteData (Sum.inr q) :=
+    let value :=
       KPRankOneShellRepair.actualCanonicalImageRepresentation F R.A.zeta12 R.A.primitive_zeta12
         q (D.finiteData q).inducing (D.finiteData q).inducing.polarization
         (D.finiteData q).haar (D.finiteData q).haar_integer
@@ -45,7 +45,7 @@ def add_finite (D : Generated R N) (h : ∀ q (a : KPLocalCover.CubicGL2Raw F R.
     have hu := update_instances
       (@Subtype.instDecidableEq (KPHilbert.Place F) (fun j => j ∈ s.val)
         NonDegenerate.instDecidableEqPlace)
-      (inferInstance : DecidableEq s.val) x ⟨Sum.inr q,hq⟩ value
+      inferInstance x ⟨Sum.inr q,hq⟩ value
     exact (congrArg (fun y : ∀ j : s.val, actualLocal R D.finiteData j.val =>
       D.coreMap (RestrictedTensorSimple.stageInclusion _ D.references D.bad s
         (PiTensorProduct.tprod ℂ y)) g) hu).trans (h q a s hq x g)

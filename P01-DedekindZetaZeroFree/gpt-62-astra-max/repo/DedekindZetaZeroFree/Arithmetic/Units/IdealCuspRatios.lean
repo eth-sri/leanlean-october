@@ -18,6 +18,8 @@ private theorem ratioIdealModule_mem (F : Type*) [Field F] [NumberField F]
     (I : FractionalIdeal (nonZeroDivisors (NumberField.RingOfIntegers F)) F) (v : Fin 2 → F) :
     v ∈ ratioIdealModule F I ↔ (∃ r : NumberField.RingOfIntegers F, algebraMap _ F r = v 0) ∧ v 1 ∈ I := by
   simp [ratioIdealModule, FractionalIdeal.mem_one_iff]
+
+alias IdealCuspRatios.ratioIdealModule_mem := ratioIdealModule_mem
  def pairVec (F : Type*) [Field F] [NumberField F] :
     (F × F) ≃ₗ[NumberField.RingOfIntegers F] (Fin 2 → F) where
   toFun x := ![x.1,x.2]
@@ -52,6 +54,8 @@ private theorem ratioIdealModule_full (F : Type*) [Field F] [NumberField F]
   convert hh using 1
   ext i
   fin_cases i <;> simp [div_mul_cancel₀, hb0]
+
+alias IdealCuspRatios.ratioIdealModule_full := ratioIdealModule_full
 private theorem ideal_stabilizer_iff (F : Type*) [Field F] [NumberField F]
     (I : FractionalIdeal (nonZeroDivisors (NumberField.RingOfIntegers F)) F)
     (A : Matrix.GeneralLinearGroup (Fin 2) F) :
@@ -60,6 +64,7 @@ private theorem ideal_stabilizer_iff (F : Type*) [Field F] [NumberField F]
   rw [MulAction.mem_stabilizer_iff, Set.ext_iff]
   simp only [Set.mem_smul_set_iff_inv_smul_mem]
   constructor
+  let Matrix₀ := Matrix (Fin 2) (Fin 2) F
   · intro h v
     let V : Matrix (Fin 2) (Fin 1) F := fun i _ => v i
     have hh := h (A • V)
@@ -67,24 +72,24 @@ private theorem ideal_stabilizer_iff (F : Type*) [Field F] [NumberField F]
     change (∃ r : NumberField.RingOfIntegers F, algebraMap _ F r = v 0) ∧ v 1 ∈ I ↔ _ at hh
     rw [ratioIdealModule_mem, ratioIdealModule_mem]
     change ((∃ r : NumberField.RingOfIntegers F, algebraMap _ F r = v 0) ∧ v 1 ∈ I ↔
-      (∃ r : NumberField.RingOfIntegers F, algebraMap _ F r = ((A : Matrix (Fin 2) (Fin 2) F) * V) 0 0) ∧
-        ((A : Matrix (Fin 2) (Fin 2) F) * V) 1 0 ∈ I) at hh
-    have he : ∀ i : Fin 2, ((A : Matrix (Fin 2) (Fin 2) F) * V) i 0 =
-        ((A : Matrix (Fin 2) (Fin 2) F) *ᵥ v) i := by
+      (∃ r : NumberField.RingOfIntegers F, algebraMap _ F r = ((A : Matrix₀) * V) 0 0) ∧
+        ((A : Matrix₀) * V) 1 0 ∈ I) at hh
+    have he : ∀ i : Fin 2, ((A : Matrix₀) * V) i 0 =
+        ((A : Matrix₀) *ᵥ v) i := by
       intro i
-      change (∑ j : Fin 2, A i j * V j 0) = ∑ j : Fin 2, A i j * v j
       rfl
     rw [he 0, he 1] at hh
     exact hh
   · intro h V
     have hh := (h (fun i => (A⁻¹ • V) i 0)).symm
     rw [ratioIdealModule_mem, ratioIdealModule_mem] at hh
-    have he : (A : Matrix (Fin 2) (Fin 2) F) *ᵥ (fun i => (A⁻¹ • V) i 0) = fun i => V i 0 := by
-      have hx := congrArg (fun M : Matrix (Fin 2) (Fin 1) F => fun i => M i 0) (smul_inv_smul A V)
+    have he : A *ᵥ (fun i => (A⁻¹ • V) i 0) = fun i => V i 0 := by
       ext i
-      simpa [Matrix.GeneralLinearGroup.smul_def, Matrix.mul_apply, Matrix.mulVec, dotProduct] using congrFun hx i
+      simpa [Matrix.GeneralLinearGroup.smul_def, Matrix.mul_apply, Matrix.mulVec, dotProduct] using congrFun (congrArg (fun M : Matrix (Fin 2) (Fin 1) F => fun i => M i 0) (smul_inv_smul A V)) i
     rw [he] at hh
     exact hh.symm
+
+alias IdealCuspRatios.ideal_stabilizer_iff := ideal_stabilizer_iff
 private theorem ratioIdealAut_eq (F : Type*) [Field F] [NumberField F]
     (I : FractionalIdeal (nonZeroDivisors (NumberField.RingOfIntegers F)) F) :
     KPFiniteAdelicLatticeStabilizers.idealProjectiveAut F I = KPCuspArithmetic.projectiveAutomorphisms F (ratioIdealModule F I) := by
@@ -96,6 +101,8 @@ private theorem ratioIdealAut_eq (F : Type*) [Field F] [NumberField F]
   · apply (Subgroup.closure_le _).mpr
     rintro g ⟨A, hA, hp⟩
     exact ⟨A, (ideal_stabilizer_iff F I A).mpr hp, hA⟩
+
+alias IdealCuspRatios.ratioIdealAut_eq := ratioIdealAut_eq
 
 theorem ideal_cusp_ratio_commensurable
     (F : Type*) [Field F] [NumberField F]
@@ -138,8 +145,7 @@ theorem ideal_cusp_ratio_commensurable
     · rintro ⟨l, ⟨hl, hlq⟩, hg⟩
       refine ⟨a * l * a⁻¹, ⟨?_, ?_⟩, ?_⟩
       · exact Subgroup.mem_map.mpr ⟨l, hl, rfl⟩
-      · change (a * l * a⁻¹) • q = q
-        rw [mul_smul, mul_smul, hlq, smul_inv_smul]
+      · rw [mul_smul, mul_smul, hlq, smul_inv_smul]
       · simpa [τ, MulAut.conj_apply, mul_assoc] using hg
   have hΔ : ∀ g ∈ Δ,
       KPCuspArithmetic.PreservesUpToHomothety F (ratioIdealModule F I) g := by
@@ -153,13 +159,10 @@ theorem ideal_cusp_ratio_commensurable
       exact (ideal_stabilizer_iff F I A).mp hA w |>.mp hw
     · intro hv
       refine ⟨(A⁻¹ : Matrix.GeneralLinearGroup (Fin 2) F) *ᵥ v, ?_, ?_⟩
-      · have hi : (A⁻¹ : Matrix.GeneralLinearGroup (Fin 2) F) ∈
-            MulAction.stabilizer (KPFiniteAdelicLatticeStabilizers.RationalGL F)
-              (KPFiniteAdelicLatticeStabilizers.idealVectors F I) := inv_mem hA
-        exact ((ideal_stabilizer_iff F I A⁻¹).mp hi v).mp hv
+      · exact ((ideal_stabilizer_iff F I A⁻¹).mp (inv_mem hA) v).mp hv
       · change (A : Matrix (Fin 2) (Fin 2) F) *ᵥ ((A⁻¹ : Matrix.GeneralLinearGroup (Fin 2) F) *ᵥ v) = v
         rw [Matrix.mulVec_mulVec, ← Matrix.GeneralLinearGroup.coe_mul]
-        simp only [mul_inv_cancel, Matrix.GeneralLinearGroup.coe_one, Matrix.one_mulVec]
+        simp
   obtain ⟨hu, J, L, E, ι, r, hJ, hL, hLi, hdisc, hE, hEi,
       hι, hr, hex, hιf, hrf⟩ :=
     DedekindZetaZeroFree.kp_cusp_arithmetic_parabolic_stabilizers F
@@ -170,12 +173,8 @@ theorem ideal_cusp_ratio_commensurable
     intro g
     obtain ⟨A, hA, hAu⟩ := hu (e g) (e g).property
     apply Units.ext
-    have hf := hρ g A hA hAu
-    have hf' := hrf (e g) A hA hAu
-    have hA11 : A 1 1 ≠ 0 := by
-      intro hz
-      exact A.det_ne_zero (by simp [Matrix.det_fin_two, hz, hAu])
-    exact mul_right_cancel₀ hA11 (hf.symm.trans hf')
+    refine mul_right_cancel₀ ?_ ((hρ g A hA hAu).symm.trans (hrf (e g) A hA hAu))
+    exact fun hz => A.det_ne_zero (by simp [Matrix.det_fin_two, hz, hAu])
   have hrange : ρ.range = E := by
     ext u
     constructor
@@ -187,11 +186,7 @@ theorem ideal_cusp_ratio_commensurable
       refine ⟨e.symm g, ?_⟩
       rw [hagree, e.apply_symm_apply, hg]
   rw [hrange]
-  have hi : E.IsFiniteRelIndex (KPCuspArithmetic.rationalUnits F) :=
-    Subgroup.isFiniteRelIndex_iff_finiteIndex.mpr hEi
-  have hi' : (KPCuspArithmetic.rationalUnits F).IsFiniteRelIndex E := by
-    exact Subgroup.isFiniteRelIndex_of_le_left E hE
-  exact ⟨hi, hi'⟩
+  exact ⟨(Subgroup.isFiniteRelIndex_iff_finiteIndex.mpr hEi), Subgroup.isFiniteRelIndex_of_le_left E hE⟩
 
 end DedekindZetaZeroFree.FiniteAdelicParabolicExtension
 

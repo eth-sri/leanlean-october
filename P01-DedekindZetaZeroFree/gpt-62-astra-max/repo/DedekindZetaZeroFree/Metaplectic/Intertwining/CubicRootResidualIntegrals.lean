@@ -53,7 +53,6 @@ theorem exponent_dvd_of_unitCubeClasses
 theorem cubic_cutoffs_eq (n : ℤ) (hn : 3 ∣ n) (i : Fin 3) :
     n ≤ (i.val : ℤ) ↔ n ≤ 0 := by
   obtain ⟨k, rfl⟩ := hn
-  have hi := i.isLt
   omega
 
 theorem diagonal_root_residual_mem_integer_iff
@@ -76,11 +75,8 @@ theorem diagonal_root_residual_mem_integer_iff
     rw [← zpow_neg_one u, KPCubicExpansion.valuationExponent_zpow]
     ring
   simp only [div_eq_mul_inv, ← Units.val_inv_eq_inv_val, ← Units.val_mul]
-  change ((π ^ i.val * u⁻¹ : Kˣ) : K) ∈ (valuation K).integer ↔
-    ((u⁻¹ : Kˣ) : K) ∈ (valuation K).integer
   rw [unit_mem_integer_iff_exponent_nonneg, unit_mem_integer_iff_exponent_nonneg,
     hh, hz]
-  have hc := cubic_cutoffs_eq (KPCubicExpansion.valuationExponent K u) hu i
   omega
 
 section Arithmetic
@@ -115,21 +111,23 @@ theorem relative_diagonal_exponent_dvd
     KPCubicExpansion.valuationExponent_zpow,
     ← zpow_neg_one u, KPCubicExpansion.valuationExponent_zpow] at hd
   obtain ⟨n, hn⟩ := hd
-  have hv : KPCubicExpansion.valuationExponent (LocalField F q) u % 3 = 0 := by
-    omega
-  exact (Int.dvd_iff_emod_eq_zero).mpr hv
+  refine (Int.dvd_iff_emod_eq_zero).mpr ?_
+  omega
 end Arithmetic
 
 section Haar
 variable [MeasurableSpace K] [BorelSpace K]
   (μ : Measure K) [μ.IsAddHaarMeasure]
 
-theorem integral_integer_translate_of_support
-    (φ : K → ℂ) (hφ : Function.support φ ⊆ (valuation K).integer)
-    (a : K) (ha : a ∈ (valuation K).integer) :
+section
+
+variable (φ : K → ℂ) (hφ : Function.support φ ⊆ (valuation K).integer) (a : K)
+
+include hφ in
+theorem integral_integer_translate_of_support (ha : a ∈ (valuation K).integer) :
     (∫ x in (valuation K).integer, φ (x + a) ∂μ) =
       ∫ x in (valuation K).integer, φ x ∂μ := by
-  have ho : MeasurableSet ((valuation K).integer : Set K) :=
+  have ho :=
     (valuation K).isClosed_integer.measurableSet
   have hind : ((valuation K).integer : Set K).indicator φ = φ := by
     funext x
@@ -146,24 +144,21 @@ theorem integral_integer_translate_of_support
     · simp [Set.indicator_of_mem, hx]
     · have hf : φ (x + a) = 0 := by
         by_contra hf
-        have hs := hφ hf
-        have hd := (valuation K).integer.sub_mem hs ha
-        exact hx (by simpa using hd)
+        exact hx (by simpa using ((valuation K).integer.sub_mem (hφ hf) ha))
       simp [Set.indicator_of_notMem, hx, hf]
   rw [← integral_indicator ho, ← integral_indicator ho, htrans, hind]
   exact integral_add_right_eq_self φ a
 
-theorem integral_integer_translate_of_not_mem
-    (φ : K → ℂ) (hφ : Function.support φ ⊆ (valuation K).integer)
-    (a : K) (ha : a ∉ (valuation K).integer) :
+include hφ in
+theorem integral_integer_translate_of_not_mem (ha : a ∉ (valuation K).integer) :
     (∫ x in (valuation K).integer, φ (x + a) ∂μ) = 0 := by
   apply setIntegral_eq_zero_of_forall_eq_zero
   intro x hx
   by_contra hf
-  have hs := hφ hf
-  have hd := (valuation K).integer.sub_mem hs hx
   apply ha
-  simpa using hd
+  simpa using ((valuation K).integer.sub_mem (hφ hf) hx)
+
+end
 
 theorem diagonal_root_residual_integral_eq
     (π : Kˣ)

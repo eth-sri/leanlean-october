@@ -24,10 +24,10 @@ open KPContActualCotangentPieceAeTransport
 open KPContActualCotangentTransportChoiceAlgebra KPContCotangentActualOverlap
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 def indicatorFields (cover : CountableCover F ζ hζ U R P H)
     (v : Family (U := U) (H := H)) : SequenceFields cover := fun n =>
@@ -46,12 +46,18 @@ private lemma q_coordinates (C : ShrunkChart F ζ hζ U R P H) (y : C.domain) :
     simp [KPContCotangentActualOverlap.labeledA, KPContCotangentActualOverlap.labeledAInv]
   rw [h]
 
-private lemma coordinates_mem_coordinatePiece_iff (cover : CountableCover F ζ hζ U R P H)
+alias GluingExtractionIdentities.q_coordinates := q_coordinates
+
+section
+
+variable (cover : CountableCover F ζ hζ U R P H)
+
+private lemma coordinates_mem_coordinatePiece_iff
     (n : ℕ) (y : (cover.chart n).domain) :
     coordinates (cover.chart n) y ∈ coordinatePiece cover n ↔ y ∈ liftedPiece cover n := by
   rw [coordinatePiece, Set.mem_preimage, liftedPiece, Set.mem_preimage, q_coordinates]
 
-private lemma indicatorFields_apply_of_mem (cover : CountableCover F ζ hζ U R P H)
+private lemma indicatorFields_apply_of_mem
     (v : Family (U := U) (H := H)) (n : ℕ) (y : omega (cover.chart n))
     (hy : q (cover.chart n) y.val ∈ basePiece cover n) :
     indicatorFields cover v n y = coefficient v (cover.chart n) y := by
@@ -59,56 +65,28 @@ private lemma indicatorFields_apply_of_mem (cover : CountableCover F ζ hζ U R 
       (coefficient v (cover.chart n)) y = coefficient v (cover.chart n) y
   exact Set.indicator_of_mem (show y ∈ _ from hy) _
 
-private lemma e_eq_indicatorFields (cover : CountableCover F ζ hζ U R P H)
+private lemma e_eq_indicatorFields
     (v : Family (U := U) (H := H)) (n : ℕ) (y : (cover.chart n).domain) :
     e cover v n y = indicatorFields cover v n (coordinates (cover.chart n) y) := by
   by_cases h : y ∈ liftedPiece cover n
-  · have hy : q (cover.chart n) (coordinates (cover.chart n) y).val ∈ basePiece cover n :=
-      (coordinates_mem_coordinatePiece_iff cover n y).mpr h
-    rw [show e cover v n y = coefficient v (cover.chart n) (coordinates (cover.chart n) y) from by
+  · rw [show e cover v n y = coefficient v (cover.chart n) (coordinates (cover.chart n) y) from by
           unfold e localCoefficient
           exact Set.indicator_of_mem h _,
-      indicatorFields_apply_of_mem cover v n _ hy]
-  · have hy : coordinates (cover.chart n) y ∉ coordinatePiece cover n :=
-      fun hc => h ((coordinates_mem_coordinatePiece_iff cover n y).mp hc)
-    rw [show e cover v n y = 0 from by unfold e; exact Set.indicator_of_notMem h _,
+      indicatorFields_apply_of_mem cover v n _ ((coordinates_mem_coordinatePiece_iff cover n y).mpr h)]
+  · rw [show e cover v n y = 0 from by unfold e; exact Set.indicator_of_notMem h _,
       show indicatorFields cover v n (coordinates (cover.chart n) y) = 0 from by
         unfold indicatorFields
-        exact Set.indicator_of_notMem hy _]
+        exact Set.indicator_of_notMem (fun hc => h ((coordinates_mem_coordinatePiece_iff cover n y).mp hc)) _]
 
-private lemma continuous_labeledA_placeEquiv :
-    Continuous (labeledA (placeEquiv F ζ hζ)) := by
-  apply continuous_pi
-  intro k
-  exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
+end
 
-private lemma measurable_q (a : ShrunkChart F ζ hζ U R P H) : Measurable (q a) := by
-  have hcm : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
-      ((H.atlas U).representative a.component)) := by
-    have he : KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component) =
-        (H.atlas U).components ∘ Sigma.mk a.component := by
-      funext x; exact ((H.atlas U).components_formula a.component x).symm
-    rw [he]
-    exact ((H.atlas U).components.isOpenEmbedding.comp IsOpenEmbedding.sigmaMk).continuous
-  have hproj : Measurable (KPCuspSiegel.projection F
-      (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)) :=
-    measurable_quotient_mk''
-  have hcomp : q a = KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component)
-      ∘ KPCuspSiegel.projection F (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)
-      ∘ labeledA (placeEquiv F ζ hζ) := rfl
-  rw [hcomp]
-  exact hcm.measurable.comp (hproj.comp continuous_labeledA_placeEquiv.measurable)
+private alias continuous_labeledA_placeEquiv := DedekindZetaZeroFree.KPContActualCotangentExactMeasurableGluing.continuous_labeledA_placeEquiv
 
-private lemma labeledAInv_labeledA
-    (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F)) (x : M F) :
-    labeledAInv p (labeledA p x) = x := by
-  simp [labeledA, labeledAInv]
+private alias measurable_q := DedekindZetaZeroFree.KPContActualCotangentPieceAeTransport.AlmostEverywherePieceTransport.measurable_q
 
-private lemma labeledA_labeledAInv
-    (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F))
-    (z : KPCuspGenuineMonodromy.SymmetricSpace F) : labeledA p (labeledAInv p z) = z := by
-  funext k
-  simp [labeledA, labeledAInv]
+private alias labeledAInv_labeledA := DedekindZetaZeroFree.KPContCotangentActualOverlap.OverlapMetricAndPhase.labeledAInv_labeledA
+
+private alias labeledA_labeledAInv := DedekindZetaZeroFree.KPContActualCotangentPieceAeTransport.AlmostEverywherePieceTransport.labeledA_labeledAInv
 
  def pt (a : ShrunkChart F ζ hζ U R P H) (x : omega a) : a.domain :=
   ⟨labeledA (placeEquiv F ζ hζ) x.val, x.property⟩
@@ -118,10 +96,14 @@ private lemma coordinates_pt (a : ShrunkChart F ζ hζ U R P H) (x : omega a) :
   apply Subtype.ext
   exact labeledAInv_labeledA (placeEquiv F ζ hζ) x.val
 
+alias GluingExtractionIdentities.coordinates_pt := coordinates_pt
+
 private lemma pt_coordinates (a : ShrunkChart F ζ hζ U R P H) (y : a.domain) :
     pt a (coordinates a y) = y := by
   apply Subtype.ext
   exact labeledA_labeledAInv (placeEquiv F ζ hζ) y.val
+
+alias GluingExtractionIdentities.pt_coordinates := pt_coordinates
 
 private lemma coordinates_injective (a : ShrunkChart F ζ hζ U R P H) :
     Function.Injective (coordinates a) := by
@@ -144,6 +126,8 @@ private lemma ambientSequence_apply (cover : CountableCover F ζ hζ U R P H)
     ambientSequence cover f n x = f n ⟨x, hx⟩ := by
   rw [ambientSequence, dif_pos hx]
 
+alias GluingExtractionIdentities.ambientSequence_apply := ambientSequence_apply
+
 private lemma indicatorFields_equivariant (cover : CountableCover F ζ hζ U R P H)
     (v : Family (U := U) (H := H)) (n : ℕ) (γ : Gamma (cover.chart n))
     (y : M F) (hy : y ∈ omega (cover.chart n)) :
@@ -152,8 +136,6 @@ private lemma indicatorFields_equivariant (cover : CountableCover F ζ hζ U R P
       T (isotropyArrow (cover.chart n) γ) y
         (KPContActualCotangentTransportChoiceAlgebra.omega_subset_larger (cover.chart n) hy)
         (indicatorFields cover v n ⟨y, hy⟩) := by
-  have hc : (coordinates (cover.chart n) (pt (cover.chart n) ⟨y, hy⟩)).val = y :=
-    congrArg Subtype.val (coordinates_pt (cover.chart n) ⟨y, hy⟩)
   have hpt : actualActionEquiv (cover.chart n) γ (pt (cover.chart n) ⟨y, hy⟩) =
       pt (cover.chart n) ⟨(isotropyArrow (cover.chart n) γ).psi y,
         isotropy_mem (cover.chart n) γ y hy⟩ := by
@@ -167,7 +149,7 @@ private lemma indicatorFields_equivariant (cover : CountableCover F ζ hζ U R P
       T (isotropyArrow (cover.chart n) γ) y
         (KPContActualCotangentTransportChoiceAlgebra.omega_subset_larger (cover.chart n) hy) := by
     unfold actualTensor
-    exact T_congr (isotropyArrow (cover.chart n) γ) hc _ _
+    exact T_congr (isotropyArrow (cover.chart n) γ) (congrArg Subtype.val (coordinates_pt (cover.chart n) ⟨y, hy⟩)) _ _
   have hE := e_equivariant cover v n γ (pt (cover.chart n) ⟨y, hy⟩)
   rw [hpt] at hE
   rw [e_pt cover v n ⟨(isotropyArrow (cover.chart n) γ).psi y,
@@ -176,20 +158,15 @@ private lemma indicatorFields_equivariant (cover : CountableCover F ζ hζ U R P
 
 theorem indicatorFields_isPieceSequence (cover : CountableCover F ζ hζ U R P H)
     (v : Family (U := U) (H := H)) : IsPieceSequence cover (indicatorFields cover v) := by
-  have hbase := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
   refine ⟨?_, ?_, ?_⟩
   · intro n
-    have hset : MeasurableSet (Subtype.val ⁻¹'
-        (q (cover.chart n) ⁻¹' basePiece cover n) : Set (omega (cover.chart n))) :=
-      measurable_subtype_coe ((hbase.base_measurable n).preimage (measurable_q (cover.chart n)))
-    exact (v.property.1 (cover.chart n)).indicator hset
+    exact (v.property.1 (cover.chart n)).indicator (measurable_subtype_coe (((kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover).base_measurable n).preimage (measurable_q (cover.chart n))))
   · intro n y hy
     exact Set.indicator_of_notMem
       (show y ∉ {y : omega (cover.chart n) | q (cover.chart n) y.val ∈ basePiece cover n}
         from hy) _
   · intro n γ y hy
-    have hψy := isotropy_mem (cover.chart n) γ y hy
-    rw [ambientSequence_apply cover _ n _ hψy, ambientSequence_apply cover _ n _ hy]
+    rw [ambientSequence_apply cover _ n _ (isotropy_mem (cover.chart n) γ y hy), ambientSequence_apply cover _ n _ hy]
     exact indicatorFields_equivariant cover v n γ y hy
 
 def indicatorSequence (cover : CountableCover F ζ hζ U R P H)
@@ -209,11 +186,7 @@ private theorem indicatorSequence_represents_aux (cover : CountableCover F ζ h�
   rw [h1, Ext_component cover v n]
   exact (MemLp.coeFn_toLp (memLp_e cover v.val v.property n)).symm
 
-theorem indicatorSequence_represents (cover : CountableCover F ζ hζ U R P H)
-    (v : SquareFiniteFamily (U := U) (H := H)) :
-    RepresentsComponents cover (indicatorSequence cover v.val)
-      (Ext cover (toAeQuotient v)) :=
-  indicatorSequence_represents_aux cover v
+alias indicatorSequence_represents := indicatorSequence_represents_aux
 
 private lemma inverseTransport_some {a b : ShrunkChart F ζ hζ U R P H}
     (e : ActualBranch a b) (g : M F → E F) (x : M F) (hx : x ∈ e.arrow.domain) :
@@ -250,7 +223,7 @@ lemma indicator_gluing_pointwise_aux (cover : CountableCover F ζ hζ U R P H)
     (v : SquareFiniteFamily (U := U) (H := H))
     (a : ShrunkChart F ζ hζ U R P H) (x : omega a) :
     coefficient (G cover (indicatorSequence cover v.val)) a x = coefficient v.val a x := by
-  have hmem : x.val ∈ cell cover a (cellIndex cover a x).1 (cellIndex cover a x).2 :=
+  have hmem :=
     cellIndex_mem cover a x
   have key := inverseTransport_indicator_eq cover v a (cellIndex cover a x).1
     ((enumeration cover a (cellIndex cover a x).1).branch (cellIndex cover a x).2)
@@ -264,7 +237,7 @@ lemma indicator_gluing_pointwise_aux (cover : CountableCover F ζ hζ U R P H)
   rw [key]
 
 variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ))
-variable (hμG : μG.IsHaarMeasure) (hR : R.adelicHaar = μG)
+    (hμG : μG.IsHaarMeasure) (hR : R.adelicHaar = μG)
 
 def gluedFamily (cover : CountableCover F ζ hζ U R P H)
     (u : PieceHilbert cover) (f : PieceSequence cover)
@@ -294,25 +267,20 @@ private lemma e_G_eq_pieceCoefficient
     e cover (G cover f) n = pieceCoefficient cover f n := by
   funext y
   by_cases hy : y ∈ liftedPiece cover n
-  · have hB : q (cover.chart n) (coordinates (cover.chart n) y).val ∈ basePiece cover n :=
-      (coordinates_mem_coordinatePiece_iff cover n y).mpr hy
-    rw [show e cover (G cover f) n y
+  · rw [show e cover (G cover f) n y
         = coefficient (G cover f) (cover.chart n) (coordinates (cover.chart n) y) from by
       unfold e localCoefficient
       exact Set.indicator_of_mem hy _,
       (kp_cont_actual_cotangent_exact_measurable_gluing F ζ hζ μ hμ U R h P H cover).on_piece
-        f n (coordinates (cover.chart n) y) hB]
+        f n (coordinates (cover.chart n) y) ((coordinates_mem_coordinatePiece_iff cover n y).mpr hy)]
     rfl
   · rw [show e cover (G cover f) n y = 0 from by
       unfold e
       exact Set.indicator_of_notMem hy _]
-    have hB : q (cover.chart n) (coordinates (cover.chart n) y).val ∉ basePiece cover n :=
-      fun hc => hy ((coordinates_mem_coordinatePiece_iff cover n y).mp hc)
     simp only [pieceCoefficient]
-    exact (f.property.2.1 n (coordinates (cover.chart n) y) hB).symm
+    exact (f.property.2.1 n (coordinates (cover.chart n) y) (fun hc => hy ((coordinates_mem_coordinatePiece_iff cover n y).mp hc))).symm
 
-private lemma measurable_omega (a : ShrunkChart F ζ hζ U R P H) : MeasurableSet (omega a) :=
-  a.domain_open.measurableSet.preimage continuous_labeledA_placeEquiv.measurable
+private alias measurable_omega := DedekindZetaZeroFree.KPContActualCotangentPieceAeTransport.AlmostEverywherePieceTransport.measurable_omega
 
 private lemma measurable_coordinatePiece (cover : CountableCover F ζ hζ U R P H) (n : ℕ) :
     MeasurableSet (coordinatePiece cover n) :=
@@ -322,6 +290,8 @@ private lemma measurable_coordinatePiece (cover : CountableCover F ζ hζ U R P 
 private lemma continuous_pt (a : ShrunkChart F ζ hζ U R P H) : Continuous (pt a) :=
   Continuous.subtype_mk (continuous_labeledA_placeEquiv.comp continuous_subtype_val)
     fun x => x.property
+
+alias GluingExtractionIdentities.continuous_pt := continuous_pt
 
 private lemma measurableEmbedding_coordinates (a : ShrunkChart F ζ hζ U R P H) :
     MeasurableEmbedding (coordinates a) := by
@@ -333,20 +303,22 @@ private lemma measurableEmbedding_coordinates (a : ShrunkChart F ζ hζ U R P H)
 
 private lemma chartMeasure_eq_map (a : ShrunkChart F ζ hζ U R P H) :
     chartMeasure a = Measure.map (coordinates a) a.liftedMeasure := by
-  have hf : MeasurableEmbedding (Subtype.val : omega a → M F) :=
+  have hf :=
     MeasurableEmbedding.subtype_coe (measurable_omega a)
   have hν : KPContCotangentOverlapNullEquivalence.liftedMeasure a
-      = Measure.map (Subtype.val : omega a → M F)
+      = Measure.map Subtype.val
           (Measure.map (coordinates a) a.liftedMeasure) := by
     rw [KPContCotangentOverlapNullEquivalence.liftedMeasure,
       Measure.map_map hf.measurable (coordinates_continuous a).measurable]
     rfl
-  have hae : ∀ᵐ x ∂(Measure.map (Subtype.val : omega a → M F)
+  have hae : ∀ᵐ x ∂(Measure.map Subtype.val
       (Measure.map (coordinates a) a.liftedMeasure)), x ∈ omega a := by
     rw [ae_iff, hf.map_apply]
     simp
   rw [chartMeasure, hν, Measure.restrict_eq_self_of_ae_mem hae,
     hf.comap_map (Measure.map (coordinates a) a.liftedMeasure)]
+
+alias GluingExtractionIdentities.chartMeasure_eq_map := chartMeasure_eq_map
 
 private lemma chartMeasure_restrict (cover : CountableCover F ζ hζ U R P H) (n : ℕ) :
     (chartMeasure (cover.chart n)).restrict (coordinatePiece cover n)
@@ -363,26 +335,13 @@ private lemma piece_ae_eq_of_represents (cover : CountableCover F ζ hζ U R P H
     ∀ n : ℕ, f.val n =ᵐ[(chartMeasure (cover.chart n)).restrict (coordinatePiece cover n)]
       g.val n := by
   intro n
-  have h1 : pieceCoefficient cover f n =ᵐ[(cover.chart n).liftedMeasure]
-      pieceCoefficient cover g n := (hf n).trans (hg n).symm
-  have h2 : pieceCoefficient cover f n
-      =ᵐ[((cover.chart n).liftedMeasure).restrict (liftedPiece cover n)]
-      pieceCoefficient cover g n := ae_restrict_of_ae h1
   rw [chartMeasure_restrict cover n]
-  exact (measurableEmbedding_coordinates (cover.chart n)).ae_map_iff.mpr h2
+  exact (measurableEmbedding_coordinates (cover.chart n)).ae_map_iff.mpr (ae_restrict_of_ae ((hf n).trans (hg n).symm))
 
 structure Properties (cover : CountableCover F ζ hζ U R P H) : Prop where
   extraction_gluing : ∀ (u : PieceHilbert cover) (f : PieceSequence cover)
     (hf : RepresentsComponents cover f u),
     Ext cover (toAeQuotient (gluedFamily μG hμG hR cover u f hf)) = u
-  indicator_gluing_pointwise : ∀ (v : SquareFiniteFamily (U := U) (H := H))
-    (a : ShrunkChart F ζ hζ U R P H) (x : omega a),
-    coefficient (G cover (indicatorSequence cover v.val)) a x = coefficient v.val a x
-  indicator_gluing_family : ∀ v : SquareFiniteFamily (U := U) (H := H),
-    G cover (indicatorSequence cover v.val) = v.val
-  indicator_gluing_quotient : ∀ v : SquareFiniteFamily (U := U) (H := H),
-    toAeQuotient (gluedFamily μG hμG hR cover (Ext cover (toAeQuotient v))
-      (indicatorSequence cover v.val) (indicatorSequence_represents cover v)) = toAeQuotient v
   arbitrary_gluing_quotient : ∀ (v : SquareFiniteFamily (U := U) (H := H))
     (g : PieceSequence cover) (hg : RepresentsComponents cover g (Ext cover (toAeQuotient v))),
     toAeQuotient (gluedFamily μG hμG hR cover (Ext cover (toAeQuotient v)) g hg) = toAeQuotient v
@@ -403,7 +362,7 @@ theorem kp_cont_actual_cotangent_gluing_inverse_identities
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
     (cover : KPContActualCotangentCountableShrinking.CountableCover F ζ hζ U R P H) :
     KPContActualCotangentGluingInverseIdentities.Properties μG hμG hR cover := by
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨?_, ?_⟩
   · intro u f hf
     rw [KPContActualCotangentPieceExtraction.Ext_toAeQuotient]
     apply lp.ext
@@ -418,13 +377,6 @@ theorem kp_cont_actual_cotangent_gluing_inverse_identities
     exact hcoe.trans ((Filter.EventuallyEq.of_eq
       (KPContActualCotangentGluingInverseIdentities.e_G_eq_pieceCoefficient
         μG hμG hR cover f n)).trans (hf n))
-  · intro v a x
-    exact KPContActualCotangentGluingInverseIdentities.indicator_gluing_pointwise_aux cover v a x
-  · intro v
-    exact KPContActualCotangentGluingInverseIdentities.indicator_gluing_family_aux cover v
-  · intro v
-    exact KPContActualCotangentGluingInverseIdentities.indicator_gluing_quotient_aux
-      (μG := μG) (hμG := hμG) (hR := hR) cover v
   · intro v g hg
     have hpiece := KPContActualCotangentGluingInverseIdentities.piece_ae_eq_of_represents cover
       g (KPContActualCotangentGluingInverseIdentities.indicatorSequence cover v.val)

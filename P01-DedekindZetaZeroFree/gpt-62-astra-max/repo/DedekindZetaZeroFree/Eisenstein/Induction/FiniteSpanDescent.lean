@@ -10,8 +10,8 @@ open scoped Classical BigOperators
 namespace DedekindZetaZeroFree.SharedSource
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η}
 
 def flatSourcePresentation (Q : AdmissibleFlatSources R) :
     (R.A.UnitQuotient →₀ ℂ) →ₗ[ℂ] flatScalarStage Q :=
@@ -41,8 +41,7 @@ theorem flatSource_span_descent (Q : AdmissibleFlatSources R)
     intro c hc
     have hh : ∀ g, ∑ v ∈ c.support, c v * (Q.flat v).val 0 g = 0 := by
       intro g
-      have h := congrArg (fun x : flatScalarStage Q => x.val g) hc
-      simpa [flatSourcePresentation, Finsupp.linearCombination_apply, Finsupp.sum] using h
+      simpa [flatSourcePresentation, Finsupp.linearCombination_apply, Finsupp.sum] using (congrArg (fun x : flatScalarStage Q => x.val g) hc)
     simpa [B, Finsupp.linearCombination_apply, Finsupp.sum] using hrel c hh
   obtain ⟨L, hL⟩ := KPLiteralResidueDescent.factor_through_surjection
     (flatSourcePresentation Q) (flatSourcePresentation_surjective Q) B hker

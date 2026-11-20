@@ -13,11 +13,13 @@ namespace DedekindZetaZeroFree.LargeSieve
 
 namespace MiddleLogKernel
 
-def normalizedKernel (K : ℝ → ℂ) (χ : ℝ → ℝ) (h b x y : ℝ) : ℂ :=
+variable (K : ℝ → ℂ) (χ : ℝ → ℝ)
+
+def normalizedKernel (h b x y : ℝ) : ℂ :=
   ((χ x * χ y * h * Real.exp ((x + y) / 2) : ℝ) : ℂ) *
     K (b * h * Real.exp ((x + y) / 2))
 
-def fourierCoefficient (K : ℝ → ℂ) (χ : ℝ → ℝ) (h b t s : ℝ) : ℂ :=
+def fourierCoefficient (h b t s : ℝ) : ℂ :=
   ∫ p : ℝ × ℝ,
     normalizedKernel K χ h b p.1 p.2 *
       Complex.exp (-((2 * Real.pi * (t * p.1 + s * p.2) : ℝ) : ℂ) * Complex.I)
@@ -28,22 +30,26 @@ namespace MiddleLogKernel
 
 open Vendor.KernelSeparation
 
- def weightedCutoff (χ : ℝ → ℝ) (x : ℝ) : ℂ :=
+ section
+
+variable (χ : ℝ → ℝ)
+
+def weightedCutoff (x : ℝ) : ℂ :=
   (χ x : ℂ) * (Real.exp (x / 2) : ℂ)
-private lemma weightedCutoff_smooth (χ : ℝ → ℝ) (hχ : ContDiff ℝ ∞ χ) :
+private lemma weightedCutoff_smooth (hχ : ContDiff ℝ ∞ χ) :
     ContDiff ℝ ∞ (weightedCutoff χ) := by
   unfold weightedCutoff
-  have he : ContDiff ℝ ∞ (fun x : ℝ => Real.exp (x / 2)) :=
-    Real.contDiff_exp.comp (contDiff_id.div_const 2)
-  exact (Complex.ofRealCLM.contDiff.comp hχ).mul (Complex.ofRealCLM.contDiff.comp he)
-private lemma weightedCutoff_support (χ : ℝ → ℝ) (R : ℝ)
+  exact (Complex.ofRealCLM.contDiff.comp hχ).mul (Complex.ofRealCLM.contDiff.comp (Real.contDiff_exp.comp (contDiff_id.div_const 2)))
+private lemma weightedCutoff_support (R : ℝ)
     (hs : Function.support χ ⊆ Set.Icc (-R) R) :
     Function.support (weightedCutoff χ) ⊆ Set.Icc (-R) R := by
   intro x hx
   apply hs
   contrapose! hx
-  have hx0 : χ x = 0 := by simpa only [Function.mem_support, not_not] using hx
+  have hx0 : χ x = 0 := by simpa using hx
   simp [weightedCutoff, Function.mem_support, hx0]
+
+end
 private lemma normalized_eq (K : ℝ → ℂ) (χ : ℝ → ℝ) (h b x y : ℝ) :
     MiddleLogKernel.normalizedKernel K χ h b x y =
       (h : ℂ) * logLocalized (weightedCutoff χ) (weightedCutoff χ) K (b*h) (x,y) := by
@@ -110,10 +116,8 @@ private lemma fixed_box_fourier :
   obtain ⟨A₂, hA₂, hL⟩ := fourierL1_le_boxJet R hR
   refine ⟨max A₁ A₂, lt_of_lt_of_le hA₁ (le_max_left _ _), ?_⟩
   intro H hH hs
-  have hc : HasCompactSupport H :=
-    HasCompactSupport.of_support_subset_isCompact (isCompact_Icc.prod isCompact_Icc) hs
   have h0 : 0 ≤ boxJet R H := by
-    have hL0 := (compact_smooth_fourier H hH hc).2.2.1
+    have hL0 := (compact_smooth_fourier H hH (HasCompactSupport.of_support_subset_isCompact (isCompact_Icc.prod isCompact_Icc) hs)).2.2.1
     have hLH := hL H hH hs
     nlinarith
   constructor
@@ -122,7 +126,6 @@ private lemma fixed_box_fourier :
       (mul_le_mul_of_nonneg_right (le_max_left _ _) h0) (by positivity))
   · have hpi : 1 ≤ Real.pi ^ 2 := by nlinarith [Real.pi_gt_three]
     have hm : A₂ ≤ max A₁ A₂ * Real.pi ^ 2 := by
-      have hmax : 0 ≤ max A₁ A₂ := (lt_of_lt_of_le hA₁ (le_max_left _ _)).le
       nlinarith [le_max_right A₁ A₂]
     exact (hL H hH hs).trans (mul_le_mul_of_nonneg_right hm h0)
 
@@ -155,8 +158,10 @@ theorem bilinear_middle_log_kernel_envelope
           C * Real.pi ^ 2 * θ * b⁻¹ ^ 2 := by
   dsimp only
   let K := SquareSecondPass.reflectedTransform D r W
-  have hbounds := bilinear_middle_double_reflection_bounds D r W α β hD hr hW hsupp hα hαβ
-  choose E hEpos hE using fun j : ℕ => hbounds.2.2.2.1 j 2 (by norm_num)
+  choose E hEpos hsmall hlarge using fun j : ℕ => reflectedSquareTransform_euler_two_ended_bound
+    D r W α β hD hr hW hsupp hα hαβ j 2 2 (by norm_num)
+  have hE (j : ℕ) (x : ℝ) (hx : 0 < x) : ‖Vendor.EulerIter j K x‖ ≤ E j * Real.rpow x (-2) :=
+    (le_total x 1).elim (hsmall j x hx) (hlarge j x)
   let B := ∑ j ∈ Finset.range 5, E j
   have hBle : ∀ j ≤ 4, E j ≤ B := by
     intro j hj
@@ -187,7 +192,8 @@ theorem bilinear_middle_log_kernel_envelope
   have hi : h⁻¹ ≤ Real.sqrt 2 * θ := by
     simpa only [one_div] using (one_div_le hh (by positivity)).2 hl
   let H := logLocalized (weightedCutoff χ) (weightedCutoff χ) K (b*h)
-  obtain ⟨hH, hsH, hjet, hL1⟩ := hloc K B hbounds.2.2.1 hBpos.le hEB (b*h) (mul_pos hb0 hh)
+  obtain ⟨hH, hsH, hjet, hL1⟩ := hloc K B
+    (reflectedSquareTransform_contDiffOn D r W α β hD hr hW hsupp hα hαβ) hBpos.le hEB (b*h) (mul_pos hb0 hh)
   have hc : HasCompactSupport H :=
     HasCompactSupport.of_support_subset_isCompact (isCompact_Icc.prod isCompact_Icc) hsH
   have hint : Integrable H := hH.continuous.integrable_of_hasCompactSupport hc

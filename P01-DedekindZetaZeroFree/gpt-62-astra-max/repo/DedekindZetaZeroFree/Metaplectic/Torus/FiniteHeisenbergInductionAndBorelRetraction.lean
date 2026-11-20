@@ -19,14 +19,13 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
 
 theorem ordinaryIota_injective : Function.Injective (ordinaryIota F ζ hζ) := by
   intro x y h
-  have h' := KPLocalCover.coefficientEmbedding_injective F ζ hζ h
   apply Subtype.ext
-  exact congrArg (fun z : rootsOfUnity 6 F => (z : Fˣ)) h'
+  exact congrArg (fun z : rootsOfUnity 6 F => (z : Fˣ)) (KPLocalCover.coefficientEmbedding_injective F ζ hζ h)
 
 theorem raw_split_scalars (z : (LocalField F q)ˣ) :
     KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
@@ -64,7 +63,7 @@ theorem exists_rawFiniteInducingData :
     change ActualFiniteTorus.rawCenterValue F ζ hζ q
       (ActualFiniteTorus.centerInjection F ζ hζ q e) = ActualFiniteTorus.ordinaryIota F ζ hζ e
     apply Units.ext
-    have hv := (ActualFiniteTorus.prescribed_center_character F ζ hζ q).2.2.2.2.1 e 1
+    have hv := ActualFiniteTorus.center_character_word F ζ hζ q e 1
     simpa [normPower, localAbs_one] using hv
   refine ⟨{
     D := ActualFiniteTorus.D F q

@@ -18,14 +18,11 @@ theorem moving_evaluation_derivative [LocallyCompactSpace β]
     (γ : ℝ → β) (hγ : ContinuousAt γ 0) (d : ℂ)
     (hd : HasDerivAt (fun t=>f 0 (γ t)) d 0) :
     HasDerivAt (fun t=>f t (γ t)) (D (γ 0)+d) 0 := by
-  have ht := hf.tendsto_slope_zero
-  have hp := ht.prodMk (hγ.tendsto.mono_left nhdsWithin_le_nhds)
+  have hp := hf.tendsto_slope_zero.prodMk (hγ.tendsto.mono_left nhdsWithin_le_nhds)
   rw [← nhds_prod_eq] at hp
-  have he := (show Continuous (fun p : C(β,ℂ) × β => p.1 p.2) from continuous_eval).continuousAt.tendsto.comp
-    hp
-  have hs := he.add hd.tendsto_slope_zero
   rw [hasDerivAt_iff_tendsto_slope_zero]
-  convert hs using 1
+  convert (((show Continuous (fun p : C(β,ℂ) × β => p.1 p.2) from continuous_eval).continuousAt.tendsto.comp
+    hp).add hd.tendsto_slope_zero) using 1
   funext t
   simp only [Function.comp_def,zero_add,ContinuousMap.smul_apply,ContinuousMap.sub_apply]
   simp only [Complex.real_smul]

@@ -106,8 +106,8 @@ namespace DedekindZetaZeroFree.KPGlobalTorusFiniteStagesIdentification
 noncomputable section
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-variable (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
+    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
+    (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
 
 open KPGlobalTorusTensorFibers
 
@@ -150,12 +150,8 @@ theorem rawTensorRestriction_finite_expansion
       (∑ j : Fin n, c j • PiTensorProduct.tprod ℂ (f j)) a =
       ∑ j : Fin n, c j * rawTensorRestriction F ζ hζ P T C S
         (PiTensorProduct.tprod ℂ (f j)) a := by
-    change rawFiniteTensorFunctional F ζ hζ P T C S a.t
-      (∑ j : Fin n, c j • PiTensorProduct.tprod ℂ (f j)) =
-      ∑ j : Fin n, c j * rawFiniteTensorFunctional F ζ hζ P T C S a.t
-        (PiTensorProduct.tprod ℂ (f j))
     rw [map_sum]
-    simp only [map_smul, smul_eq_mul]
+    simp
   rw [hlin]
   simp only [hpure]
   simp only [Finset.prod_div_distrib]
@@ -184,8 +180,8 @@ namespace DedekindZetaZeroFree.KPGlobalTorusFiniteStagesIdentification
 noncomputable section
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-variable (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
+    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
+    (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
 
 open KPGlobalTorusTensorFibers
 
@@ -204,33 +200,26 @@ private theorem raw_images_commute (x y : RestrictedCover F ζ hζ)
     Commute (scalarQuotient F ζ hζ (amalgamation F ζ hζ x))
       (scalarQuotient F ζ hζ (amalgamation F ζ hζ y)) := by
   obtain ⟨e, _, _, he⟩ := scalar_quotient_commutes_with_amalgamation F ζ hζ
-  change _ * _ = _ * _
   apply e.injective
   simp only [map_mul, he]
-  have hr : restrictedPGLQuotient F ζ hζ x * restrictedPGLQuotient F ζ hζ y =
-      restrictedPGLQuotient F ζ hζ y * restrictedPGLQuotient F ζ hζ x := by
-    apply RestrictedProduct.ext
-    intro v
-    exact (hc v).eq
-  exact congrArg (QuotientGroup.mk' (pglM F ζ hζ)) hr
+  refine congrArg (QuotientGroup.mk' (pglM F ζ hζ)) ?_
+  apply RestrictedProduct.ext
+  intro v
+  exact (hc v).eq
 
 private theorem maximal_mem {G : Type*} [Group G] (H : Subgroup G)
     (hH : KPLocalPolarization.IsMaximalAbelian H) (g : G)
     (hc : ∀ h ∈ H, Commute g h) : g ∈ H := by
-  let A := Subgroup.closure ((H : Set G) ∪ {g})
-  have hA : H ≤ A := by intro h hh; exact Subgroup.subset_closure (Or.inl hh)
+  let A := Subgroup.closure (H ∪ {g})
   have hcomm : ((H : Set G) ∪ {g}).Pairwise Commute := by
     intro x hx y hy _
     rcases hx with hx | hx <;> rcases hy with hy | hy
     · exact hH.1 x hx y hy
-    · have : y = g := hy; subst y; exact (hc x hx).symm
-    · have : x = g := hx; subst x; exact hc y hy
-    · have : x = g := hx; have : y = g := hy; subst x; subst y; exact Commute.refl _
+    · have := hy; subst y; exact (hc x hx).symm
+    · have := hx; subst x; exact hc y hy
+    · have := hx; have := hy; subst x; subst y; exact Commute.refl _
   letI := Subgroup.closureCommGroupOfComm hcomm
-  have he : A = H := hH.2 A hA (by
-    intro x hx y hy
-    exact (congrArg Subtype.val (mul_comm (⟨x,hx⟩ : A) ⟨y,hy⟩)))
-  rw [← he]
+  rw [← (hH.2 A (fun h hh => Subgroup.subset_closure (Or.inl hh)) (fun x hx y hy => (congrArg Subtype.val (mul_comm (⟨x,hx⟩ : A) ⟨y,hy⟩))))]
   exact Subgroup.subset_closure (Or.inr rfl)
 
 theorem finite_raw_restored_covariance
@@ -249,6 +238,7 @@ theorem finite_raw_restored_covariance
         finiteRawNormFactor F ζ hζ P T C S (Function.update t q (b.val * t q)) =
       ((C.polarization q.val).ωL b : ℂ) *
         (v.val (R t).g * finiteRawNormFactor F ζ hζ P T C S t) := by
+  let localAbs₀ := KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q.val) ((C.canonical q.val).borel.coordinate b.val)
   classical
   let t' := Function.update t q (b.val * t q)
   let x : RestrictedCover F ζ hζ := (R t').raw * (R t).raw⁻¹
@@ -328,8 +318,7 @@ theorem finite_raw_restored_covariance
       simp
     simp [habs]
   have hchar' : (Q.character h : ℂ) = ((C.polarization q.val).ωL b : ℂ) /
-      (Real.rpow (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q.val)
-        ((C.canonical q.val).borel.coordinate b.val)) (1 / 6 : ℝ) : ℂ) := by
+      (Real.rpow (localAbs₀) (1 / 6 : ℝ) : ℂ) := by
     rw [← hchar, finprod_eq_single _ q.val]
     · simp only [a, Function.update_self]
       rw [C.evaluation_formula, C.reference_formula]
@@ -343,13 +332,11 @@ theorem finite_raw_restored_covariance
     rw [hg]
     exact v.property h (R t).g
   have hfactor : finiteRawNormFactor F ζ hζ P T C S t' =
-      (Real.rpow (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q.val)
-        ((C.canonical q.val).borel.coordinate b.val)) (1 / 6 : ℝ) : ℂ) *
+      (Real.rpow (localAbs₀) (1 / 6 : ℝ) : ℂ) *
       finiteRawNormFactor F ζ hζ P T C S t := by
     let d : S → ℂ := fun r => (Real.rpow (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr r.val)
         ((C.canonical r.val).borel.coordinate (t r))) (1 / 6 : ℝ) : ℂ)
-    let z : ℂ := (Real.rpow (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q.val)
-        ((C.canonical q.val).borel.coordinate b.val)) (1 / 6 : ℝ) : ℂ)
+    let z : ℂ := (Real.rpow (localAbs₀) (1 / 6 : ℝ) : ℂ)
     have hf : (fun r : S => (Real.rpow (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr r.val)
         ((C.canonical r.val).borel.coordinate (t' r))) (1 / 6 : ℝ) : ℂ)) =
         Function.update d q (z * d q) := by
@@ -365,8 +352,7 @@ theorem finite_raw_restored_covariance
       Finset.prod_eq_mul_prod_diff_singleton q d (by simp)
     rw [hp]
     ring
-  have hd : (Real.rpow (KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q.val)
-        ((C.canonical q.val).borel.coordinate b.val)) (1 / 6 : ℝ) : ℂ) ≠ 0 := by
+  have hd : (Real.rpow (localAbs₀) (1 / 6 : ℝ) : ℂ) ≠ 0 := by
     apply Complex.ofReal_ne_zero.mpr
     exact ne_of_gt (Real.rpow_pos_of_pos
       (by exact_mod_cast (KPGlobalCenterRationalCharacter.localAbs_pos F (Sum.inr q.val)
@@ -390,8 +376,8 @@ namespace DedekindZetaZeroFree.KPGlobalTorusFiniteStagesIdentification
 noncomputable section
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-variable (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
+    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
+    (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
 
 open KPGlobalTorusTensorFibers
 
@@ -421,8 +407,7 @@ theorem raw_smooth_level_joint_covariant_descent
   obtain ⟨S, hS, htail⟩ := smooth_level_reference_tail_factorization
     F ζ hζ P T C Q hQ J v hv
   obtain ⟨R, hR⟩ := finite_raw_representatives_exist F ζ hζ S
-  let G := fun t => v.val (R t).g * finiteRawNormFactor F ζ hζ P T C S t
-  refine ⟨S, hS, G, ?_, ?_⟩
+  refine ⟨S, hS, (fun t => v.val (R t).g * finiteRawNormFactor F ζ hζ P T C S t), ?_, ?_⟩
   · intro q b t
     exact finite_raw_restored_covariance F ζ hζ P T C Q hQ S R hR v q b t
   · intro a
@@ -455,15 +440,18 @@ namespace DedekindZetaZeroFree.KPGlobalTorusFiniteStagesIdentification
 noncomputable section
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-variable (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
+    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
+    (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
 
 open KPGlobalTorusTensorFibers
 
-theorem rawTensorRestriction_insert
-    (C : RawLocalScalarData F ζ hζ P T)
-    (S U : Finset (HeightOneSpectrum (𝓞 F)))
-    (hS : C.exceptional ⊆ S) (hSU : S ⊆ U) :
+section
+
+variable (C : RawLocalScalarData F ζ hζ P T) (S U : Finset (HeightOneSpectrum (𝓞 F)))
+    (hS : C.exceptional ⊆ S) (hSU : S ⊆ U)
+
+include hS in
+theorem rawTensorRestriction_insert :
     (rawTensorRestriction F ζ hζ P T C U).comp
       (RestrictedTensorSimple.insert
         (fun q => KPLocalStoneVonNeumann.InducedModule (C.polarization q))
@@ -487,10 +475,8 @@ theorem rawTensorRestriction_insert
   · simp only [dif_pos hqS, dif_pos (hSU hqS)]
   · by_cases hqU : q ∈ U <;> simp only [dif_neg hqS, hqU, ↓reduceDIte]
 
-theorem rawTensorRestriction_range_mono
-    (C : RawLocalScalarData F ζ hζ P T)
-    (S U : Finset (HeightOneSpectrum (𝓞 F)))
-    (hS : C.exceptional ⊆ S) (hSU : S ⊆ U) :
+include hS hSU in
+theorem rawTensorRestriction_range_mono :
     (rawTensorRestriction F ζ hζ P T C S).range ≤
       (rawTensorRestriction F ζ hζ P T C U).range := by
   rintro y ⟨x, rfl⟩
@@ -499,8 +485,13 @@ theorem rawTensorRestriction_range_mono
     C.reference S U hSU x, ?_⟩
   exact LinearMap.congr_fun (rawTensorRestriction_insert F ζ hζ P T C S U hS hSU) x
 
-theorem rawTensorRestriction_range_directed
-    (C : RawLocalScalarData F ζ hζ P T) :
+end
+
+section
+
+variable (C : RawLocalScalarData F ζ hζ P T)
+
+theorem rawTensorRestriction_range_directed :
     Directed (· ≤ ·) (fun S : RestrictedTensorSimple.Level C.exceptional =>
       (rawTensorRestriction F ζ hζ P T C S.val).range) := by
   intro S U
@@ -511,7 +502,6 @@ theorem rawTensorRestriction_range_directed
       U.property Finset.subset_union_right
 
 theorem mem_rawTensorRestriction_iSup_iff
-    (C : RawLocalScalarData F ζ hζ P T)
     (v : RawEvaluationPoint F ζ hζ → ℂ) :
     (v ∈ ⨆ S : RestrictedTensorSimple.Level C.exceptional,
       (rawTensorRestriction F ζ hζ P T C S.val).range) ↔
@@ -530,7 +520,6 @@ theorem mem_rawTensorRestriction_iSup_iff
     exact ⟨⟨S, hS⟩, x, hx⟩
 
 theorem raw_smooth_restriction_finite_tensor_of_levels
-    (C : RawLocalScalarData F ζ hζ P T)
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (hlevel : ∀ (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
       (v : KPGlobalTorusFunctionData.TorusFunctions F ζ hζ Q),
@@ -548,7 +537,7 @@ theorem raw_smooth_restriction_finite_tensor_of_levels
     { toFun := fun v a => v.val a.g
       map_add' := fun _ _ => rfl
       map_smul' := fun _ _ => rfl }
-  let W : Submodule ℂ (RawEvaluationPoint F ζ hζ → ℂ) :=
+  let W :=
     ⨆ S : RestrictedTensorSimple.Level C.exceptional,
       (rawTensorRestriction F ζ hζ P T C S.val).range
   have hle : KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ Q ≤ W.comap A := by
@@ -557,6 +546,8 @@ theorem raw_smooth_restriction_finite_tensor_of_levels
     exact hlevel J v hv
   apply (mem_rawTensorRestriction_iSup_iff F ζ hζ P T C _).mp
   exact hle f.property
+
+end
 
 theorem raw_smooth_restriction_finite_tensor
     (C : KPGlobalTorusTensorFibers.RawLocalScalarData F ζ hζ P T)

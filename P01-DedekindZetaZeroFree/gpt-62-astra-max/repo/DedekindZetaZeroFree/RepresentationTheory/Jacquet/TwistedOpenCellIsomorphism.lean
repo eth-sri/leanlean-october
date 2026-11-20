@@ -33,19 +33,23 @@ def rootToBorel : Multiplicative (KPRankOneInduction.LocalField F w) →*
   map_one' := by apply Subtype.ext; exact map_one (upperRoot F ζ hζ w)
   map_mul' := by intro x y; apply Subtype.ext; exact map_mul (upperRoot F ζ hζ w) x y
 
-abbrev ClosedCoinvariants
-    (ψ : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ) :=
+section
+
+variable (ψ : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ)
+
+abbrev ClosedCoinvariants :=
   RootCoinvariants
     (inducingRepresentation F ζ hζ w (coefficientRepresentation F ζ hζ w τ))
     (rootToBorel F ζ hζ w) ψ
 
-abbrev InducedCoinvariants
-    (ψ : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ) :=
+abbrev InducedCoinvariants :=
   TwistedCoinvariants F ζ hζ w
     (V := PrincipalSeries F ζ hζ w m
       (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w) τ)
     (inducedRepresentation F ζ hζ w m hm
       (coefficientRepresentation F ζ hζ w τ)) ψ
+
+end
 
 theorem closed_root_trivial
     (y : Multiplicative (KPRankOneInduction.LocalField F w)) (e : E) :
@@ -53,23 +57,24 @@ theorem closed_root_trivial
       (rootToBorel F ζ hζ w y) e = e := by
   letI : TopologicalSpace (FiniteCover F ζ hζ w) := ⊥
   letI : DiscreteTopology (FiniteCover F ζ hζ w) := ⟨rfl⟩
-  have hn : projection F ζ hζ w (upperRoot F ζ hζ w y) =
-      KPRankOneInduction.upperRootElement F w (Multiplicative.toAdd y) := rfl
-  have hd := KPRankOneInduction.deltaB_upperRoot F w (projection F ζ hζ w)
-    (Multiplicative.toAdd y) (rootToBorel F ζ hζ w y) hn
-  change (((dB F ζ hζ w (rootToBorel F ζ hζ w y) : ℝ≥0) : ℝ) : ℂ) •
+  let rootToBorel₀ := rootToBorel F ζ hζ w y
+  change (((dB F ζ hζ w (rootToBorel₀) : ℝ≥0) : ℝ) : ℂ) •
     τ (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w
-      (rootToBorel F ζ hζ w y)) e = e
+      (rootToBorel₀)) e = e
   rw [show KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w
-    (rootToBorel F ζ hζ w y) = 1 from
+    (rootToBorel₀) = 1 from
     KPLocalInductionJacquetReciprocity.borelRetraction_upperRoot F ζ hζ w y]
   unfold KPLocalSmoothRepresentation.dB KPRankOneInduction.dB
-  rw [KPRankOneInduction.halfModulus_eq, hd]
+  rw [KPRankOneInduction.halfModulus_eq, (KPRankOneInduction.deltaB_upperRoot F w (projection F ζ hζ w)
+    (Multiplicative.toAdd y) (rootToBorel₀) rfl)]
   simp
 
-theorem closed_relations_eq_top
-    (ψ : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ)
-    (hψne : ψ ≠ 1) :
+section
+
+variable (ψ : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ) (hψne : ψ ≠ 1)
+
+include hψne in
+theorem closed_relations_eq_top :
     rootRelationSpan
       (inducingRepresentation F ζ hζ w (coefficientRepresentation F ζ hζ w τ))
       (rootToBorel F ζ hζ w) ψ = ⊤ := by
@@ -83,7 +88,7 @@ theorem closed_relations_eq_top
     intro h
     apply hy
     apply Units.ext
-    simpa using (sub_eq_zero.mp h).symm
+    exact (sub_eq_zero.mp h).symm
   apply top_unique
   intro e _
   have hmem :
@@ -104,13 +109,14 @@ theorem closed_relations_eq_top
   rw [he] at hmem
   exact hmem
 
-theorem closed_coinvariants_subsingleton
-    (ψ : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ)
-    (hψne : ψ ≠ 1) :
+include hψne in
+theorem closed_coinvariants_subsingleton :
     Subsingleton (ClosedCoinvariants F ζ hζ w τ ψ) := by
   apply Submodule.Quotient.subsingleton_iff.mpr
   rw [rootTwistedRepresentation_ker]
   exact closed_relations_eq_top F ζ hζ w τ ψ hψne
+
+end
 
 local instance : ValuativeRel (KPRankOneInduction.LocalField F w) :=
   ClassFieldTheory.finitePlaceCompletionValuativeRel F w
@@ -126,8 +132,7 @@ include hm in
 
 theorem coefficient_smooth :
     letI := finiteCoverTopology F ζ hζ w m
-    SmoothRepresentation (coefficientRepresentation F ζ hζ w τ) := by
-  exact inflatedRepresentation_smooth F ζ hζ w m hm
+    SmoothRepresentation (coefficientRepresentation F ζ hζ w τ) := inflatedRepresentation_smooth F ζ hζ w m hm
     (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w) τ hm
     (KPLocalInductionJacquetReciprocity.borelRetraction_continuous F ζ hζ w m hm) hτ
 
@@ -135,8 +140,7 @@ omit hE in
 include hm in
  theorem coefficient_smooth_without_dimension :
     letI := finiteCoverTopology F ζ hζ w m
-    SmoothRepresentation (coefficientRepresentation F ζ hζ w τ) := by
-  exact inflatedRepresentation_smooth F ζ hζ w m hm
+    SmoothRepresentation (coefficientRepresentation F ζ hζ w τ) := inflatedRepresentation_smooth F ζ hζ w m hm
     (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w) τ hm
     (KPLocalInductionJacquetReciprocity.borelRetraction_continuous F ζ hζ w m hm) hτ
 
@@ -191,12 +195,6 @@ private theorem extension_on (b : Borel F ζ hζ w)
   have h := (KPJacquetBruhatCharts.omegaHomeomorph F ζ hζ w m hm).left_inv (b, x)
   unfold KPJacquetOpenCell.extensionFunction
   rw [dif_pos (KPJacquetBruhatCharts.omegaMap F ζ hζ w (b, x)).property]
-  change inducingRepresentation F ζ hζ w _
-    (KPJacquetBruhatCharts.omegaInverse F ζ hζ w
-      (KPJacquetBruhatCharts.omegaMap F ζ hζ w (b, x))).1
-    (KPJacquetStepFunction.value φ
-      (KPJacquetBruhatCharts.omegaInverse F ζ hζ w
-        (KPJacquetBruhatCharts.omegaMap F ζ hζ w (b, x))).2) = _
   change KPJacquetBruhatCharts.omegaInverse F ζ hζ w
     (KPJacquetBruhatCharts.omegaMap F ζ hζ w (b, x)) = (b, x) at h
   rw [h]
@@ -260,8 +258,7 @@ def openCellMap
     (hτ : letI := finiteCoverTopology F ζ hζ w m; SmoothRepresentation τ)
     (ψ : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ) :
     KPJacquetOpenTestFunction.TranslationCoinvariants (E := E) ψ →ₗ[ℂ]
-      InducedCoinvariants F ζ hζ w m hm τ ψ := by
-  exact Representation.Coinvariants.map _ _ {
+      InducedCoinvariants F ζ hζ w m hm τ ψ := Representation.Coinvariants.map _ _ {
     toLinearMap := (openIntertwiner F ζ hζ w m hm τ hτ).toLinearMap
     isIntertwining' y := by
       apply LinearMap.ext
@@ -283,8 +280,7 @@ theorem openCellMap_mk
       (upperRoot F ζ hζ w) ψ
       (KPJacquetOpenCell.ext_w F ζ hζ w m hm
         (coefficientRepresentation F ζ hζ w τ)
-        (coefficient_smooth F ζ hζ w m hm τ hτ) φ) := by
-  rfl
+        (coefficient_smooth F ζ hζ w m hm τ hτ) φ) := rfl
 
 omit hτ hE in
 private theorem smooth_restrict {G U : Type*} [Group G] [TopologicalSpace G]
@@ -331,9 +327,13 @@ omit hτ hE in
   Submodule.quotEquivOfEq _ _ (congrArg Representation.Coinvariants.ker
     (twist_eq F w ρ n ψ))
 
-theorem openCellMap_bijective
-    (ψ : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ)
-    (hψ : Continuous ψ) (hψne : ψ ≠ 1) :
+section
+
+variable (ψ : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ) (hψ : Continuous ψ)
+    (hψne : ψ ≠ 1)
+
+include hψ hψne in
+theorem openCellMap_bijective :
     Function.Bijective (openCellMap F ζ hζ w m hm τ hτ ψ) := by
   letI := finiteCoverTopology F ζ hζ w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
@@ -356,7 +356,8 @@ theorem openCellMap_bijective
         (coefficient_smooth_without_dimension F ζ hζ w m hm τ hτ)
         (rootToBorel F ζ hζ w (Multiplicative.ofAdd x)) φ = φ)
     rw [open_root_translation F ζ hζ w m hm τ hτ]
-  have hVs : KPCoinvariants.IsSmooth (V := Induced F ζ hζ w m ρB)
+  let Induced₀ := Induced F ζ hζ w m ρB
+  have hVs : KPCoinvariants.IsSmooth (V := Induced₀)
       ((inducedRepresentation F ζ hζ w m hm ρB).comp (upperRoot F ζ hζ w)) :=
     smooth_restrict F w _ hV (rootToBorel F ζ hζ w) hn
   have hWs : KPCoinvariants.IsSmooth
@@ -376,7 +377,7 @@ theorem openCellMap_bijective
     (KPJacquetOpenTestFunction.translationRepresentation
       (K := KPRankOneInduction.LocalField F w) (E := E))
     (MonoidHom.id _) ψ
-  let eV := twistEquiv F w (U := Induced F ζ hζ w m ρB) (inducedRepresentation F ζ hζ w m hm ρB)
+  let eV := twistEquiv F w (U := Induced₀) (inducedRepresentation F ζ hζ w m hm ρB)
     (upperRoot F ζ hζ w) ψ
   let eW := twistEquiv F w (inducingRepresentation F ζ hζ w ρB)
     (rootToBorel F ζ hζ w) ψ
@@ -386,7 +387,7 @@ theorem openCellMap_bijective
   have hmap : ∀ q, eV (openCellMap F ζ hζ w m hm τ hτ ψ q) =
       KPCoinvariants.map
         (V := KPJacquetOpenCell.TestFunctions F w (E := E))
-        (W := Induced F ζ hζ w m ρB) _ _ ψ
+        (W := Induced₀) _ _ ψ
         (openIntertwiner F ζ hζ w m hm τ hτ) (eU q) := by
     intro q
     obtain ⟨φ, rfl⟩ := rootCoinvariantsMk_surjective
@@ -404,7 +405,7 @@ theorem openCellMap_bijective
     rw [← hmap, ← hmap, hab]
   · intro q
     have hq : eV q ∈ LinearMap.ker (KPCoinvariants.map
-        (V := Induced F ζ hζ w m ρB) (W := E) _ _ ψ
+        (V := Induced₀) (W := E) _ _ ψ
         (closedIntertwiner F ζ hζ w m hm τ)) := by
       change _ = 0
       exact Subsingleton.elim _ _
@@ -414,17 +415,14 @@ theorem openCellMap_bijective
     rw [hmap, eU.apply_symm_apply]
     exact ha
 
-def openCellEquiv
-    (ψ : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ)
-    (hψ : Continuous ψ) (hψne : ψ ≠ 1) :
+def openCellEquiv :
     KPJacquetOpenTestFunction.TranslationCoinvariants (E := E) ψ ≃ₗ[ℂ]
       InducedCoinvariants F ζ hζ w m hm τ ψ :=
   LinearEquiv.ofBijective (openCellMap F ζ hζ w m hm τ hτ ψ)
     (openCellMap_bijective F ζ hζ w m hm τ hτ ψ hψ hψne)
 
-theorem nonempty_coefficient_equiv
-    (ψ : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ)
-    (hψ : Continuous ψ) (hψne : ψ ≠ 1) :
+include hψ hψne in
+theorem nonempty_coefficient_equiv :
     Nonempty (InducedCoinvariants F ζ hζ w m hm τ ψ ≃ₗ[ℂ] E) := by
   let e := (Module.finBasis ℂ E).equivFun
   letI : NormedAddCommGroup E := NormedAddCommGroup.induced E _ e e.injective
@@ -433,6 +431,8 @@ theorem nonempty_coefficient_equiv
   letI : BorelSpace (KPRankOneInduction.LocalField F w) := ⟨rfl⟩
   exact ⟨(openCellEquiv F ζ hζ w m hm τ hτ ψ hψ hψne).symm.trans
     (KPJacquetOpenTestFunction.coinvariantsEquiv ψ hψ Measure.addHaar)⟩
+
+end
 
 section Integral
 

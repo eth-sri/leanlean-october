@@ -41,18 +41,18 @@ open MvPolynomial
 
 namespace DedekindZetaZeroFree.RepresentationTheory.KPSmoothCoreCasimirEnergy.NoncompactAction.PolynomialDegreeBounds
 
-private lemma pderiv_totalDegree_le_sub_one {σ R : Type*} [Fintype σ] [CommRing R]
+variable {σ R : Type*} [Fintype σ]
+
+private lemma pderiv_totalDegree_le_sub_one [CommRing R]
     (p : MvPolynomial σ R) (i : σ) :
     (pderiv i p).totalDegree ≤ p.totalDegree - 1 := by
   classical
   rw [totalDegree]
   apply Finset.sup_le
   intro m hm
-  have hm' : (pderiv i p).coeff m ≠ 0 := Finsupp.mem_support_iff.mp hm
+  have hm' := Finsupp.mem_support_iff.mp hm
   rw [coeff_pderiv] at hm'
-  have hcoeff : p.coeff (m + Finsupp.single i 1) ≠ 0 := fun h => hm' (by rw [h, zero_mul])
-  have hmem : m + Finsupp.single i 1 ∈ p.support := Finsupp.mem_support_iff.mpr hcoeff
-  have hle := le_totalDegree hmem
+  have hle := le_totalDegree (Finsupp.mem_support_iff.mpr (fun h => hm' (by rw [h, zero_mul])))
   have hsum : (m + Finsupp.single i 1).sum (fun _ e => e) = m.sum (fun _ e => e) + 1 := by
     rw [Finsupp.sum_add_index']
     · simp
@@ -60,7 +60,7 @@ private lemma pderiv_totalDegree_le_sub_one {σ R : Type*} [Fintype σ] [CommRin
     · intro a b₁ b₂; simp [add_assoc]
   omega
 
-private lemma mul_pderiv_totalDegree_le {σ R : Type*} [Fintype σ] [CommRing R]
+private lemma mul_pderiv_totalDegree_le [CommRing R]
     (A p : MvPolynomial σ R) (i : σ) (hA : A.totalDegree ≤ 2) :
     (A * pderiv i p).totalDegree ≤ p.totalDegree + 1 := by
   classical
@@ -68,26 +68,24 @@ private lemma mul_pderiv_totalDegree_le {σ R : Type*} [Fintype σ] [CommRing R]
   · rw [totalDegree_eq_zero_iff_eq_C] at h0
     rw [h0, pderiv_C, mul_zero, totalDegree_zero]
     exact Nat.zero_le _
-  · have h1 : 1 ≤ p.totalDegree := Nat.pos_of_ne_zero h0
-    calc (A * pderiv i p).totalDegree
+  · calc _
         ≤ A.totalDegree + (pderiv i p).totalDegree := totalDegree_mul _ _
       _ ≤ 2 + (p.totalDegree - 1) := add_le_add hA (pderiv_totalDegree_le_sub_one p i)
       _ = p.totalDegree + 1 := by omega
 
-theorem polynomial_first_order_totalDegree_le
-    {σ R : Type*} [Fintype σ] [DecidableEq σ] [CommRing R]
+theorem polynomial_first_order_totalDegree_le [DecidableEq σ] [CommRing R]
     (A : σ → MvPolynomial σ R) (B p : MvPolynomial σ R) (n : ℕ)
     (hA : ∀ i, (A i).totalDegree ≤ 2) (hB : B.totalDegree ≤ 1)
     (hp : p.totalDegree ≤ n) :
     (B * p + ∑ i : σ, A i * MvPolynomial.pderiv i p).totalDegree ≤ n + 1 := by
   classical
   refine (totalDegree_add _ _).trans (max_le ?_ ?_)
-  · calc (B * p).totalDegree ≤ B.totalDegree + p.totalDegree := totalDegree_mul _ _
+  · calc _ ≤ B.totalDegree + p.totalDegree := totalDegree_mul _ _
       _ ≤ 1 + n := add_le_add hB hp
       _ = n + 1 := by omega
-  · refine totalDegree_finsetSum_le (s := Finset.univ) ?_
+  · refine totalDegree_finsetSum_le ?_
     intro i _
-    calc (A i * pderiv i p).totalDegree ≤ p.totalDegree + 1 := mul_pderiv_totalDegree_le _ _ _ (hA i)
+    calc _ ≤ p.totalDegree + 1 := mul_pderiv_totalDegree_le _ _ _ (hA i)
       _ ≤ n + 1 := by omega
 
 end DedekindZetaZeroFree.RepresentationTheory.KPSmoothCoreCasimirEnergy.NoncompactAction.PolynomialDegreeBounds
@@ -100,31 +98,7 @@ open scoped BigOperators Classical
 namespace DedekindZetaZeroFree.RepresentationTheory.KPSmoothCoreCasimirEnergy.HarmonicBandDerivatives
 open InfinitesimalAction KPCplxIntertwinerEigenvalues
 open ComplexFractionalInverse.FiniteFischerRaw
-private theorem compact_radius (k : KPCplxCharacterHaar.ComplexSU2) :
-    MvPolynomial.eval (compactSphereCoordinate k) radiusQuadratic = 1 := by
-  let m : Matrix (Fin 2) (Fin 2) ℂ := k
-  have hu : m * star m = 1 := Matrix.mem_unitaryGroup_iff.mp
-    (Matrix.specialUnitaryGroup_le_unitaryGroup k.property)
-  have hr := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => (A 1 1).re) hu
-  simp only [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-    Matrix.one_apply_eq] at hr
-  simp only [Complex.star_def, Complex.mul_conj', Complex.add_re,
-    ← Complex.ofReal_pow, Complex.ofReal_re, Complex.one_re] at hr
-  have hprod : (m 1 0 * star (m 1 1)).re ^ 2 +
-      (m 1 0 * star (m 1 1)).im ^ 2 = ‖m 1 0‖ ^ 2 * ‖m 1 1‖ ^ 2 := by
-    calc
-      _ = Complex.normSq (m 1 0 * star (m 1 1)) := by
-        simp only [Complex.normSq_apply, sq]
-      _ = _ := by rw [Complex.normSq_mul, Complex.normSq_eq_norm_sq,
-        Complex.normSq_eq_norm_sq, norm_star]
-  simp only [radiusQuadratic, Fin.sum_univ_three, map_add, map_pow, MvPolynomial.eval_X,
-    compactSphereCoordinate, Matrix.cons_val_zero,
-    Matrix.cons_val_one, Matrix.cons_val_two]
-  change ((2 * (m 1 0 * star (m 1 1)).re : ℝ) : ℂ)^2 +
-    ((2 * (m 1 0 * star (m 1 1)).im : ℝ) : ℂ)^2 +
-    ((‖m 1 0‖^2 - ‖m 1 1‖^2 : ℝ) : ℂ)^2 = 1
-  norm_cast
-  nlinarith [hprod, sq_nonneg (‖m 1 0‖^2 + ‖m 1 1‖^2 - 1)]
+private alias compact_radius := DedekindZetaZeroFree.KPCplxLoweringHarmonicDecomposition.HarmonicPropagationAndOrbitDifferentiation.compact_radius
 
 theorem polynomialCompactRestriction_homogeneous_band (p : MvPolynomial (Fin 3) ℂ)
     (d n : ℕ) (hp : p.IsHomogeneous d) (hd : d ≤ n) :
@@ -134,16 +108,15 @@ theorem polynomialCompactRestriction_homogeneous_band (p : MvPolynomial (Fin 3) 
   have hr : polynomialCompactRestriction p =
       ∑ k ∈ Finset.range (d / 2 + 1), polynomialCompactRestriction (h k) := by
     ext x
-    change MvPolynomial.eval (compactSphereCoordinate x) p = _
     rw [he]
     simp [compact_radius, polynomialCompactRestriction]
   rw [hr]
   apply Submodule.sum_mem
   intro k hk
-  have hk' : k ≤ d / 2 := by have := Finset.mem_range.mp hk; omega
   apply (Finset.le_sup (f := fun j => (harmonicPolynomials j).map
     polynomialCompactRestriction) (Finset.mem_range.mpr (show d - 2*k < n+1 by omega)))
-  exact Submodule.mem_map.mpr ⟨h k, hh k hk', rfl⟩
+  refine Submodule.mem_map.mpr ⟨h k, hh k ?_, rfl⟩
+  have := Finset.mem_range.mp hk; omega
 
 theorem polynomialCompactRestriction_degree_band (p : MvPolynomial (Fin 3) ℂ)
     (n : ℕ) (hp : p.totalDegree ≤ n) :
@@ -176,11 +149,9 @@ theorem harmonic_band_of_compact_image (s : ℝ) (I : Finset ℕ)
     intro j hj
     exact (hLift j hj).trans (Finset.le_sup (f := fun j =>
       (harmonicKType s j).map (compactRestriction s)) hj)
-  have hmem : compactRestriction s f ∈
-      (I.sup (harmonicKType s)).map (compactRestriction s) := by
+  obtain ⟨g, hg, hgf⟩ := Submodule.mem_map.mp (by
     rw [hm]
-    exact he hf
-  obtain ⟨g, hg, hgf⟩ := Submodule.mem_map.mp hmem
+    exact he hf)
   exact hInjective hgf ▸ hg
 
 open CompactDerivativeTransport MvPolynomial
@@ -206,29 +177,21 @@ private theorem rotation_homogeneous (i : Fin 3) (ℓ : ℕ)
     (polynomialRotation i p).IsHomogeneous ℓ := by
   cases ℓ with
   | zero =>
-    have he : p = C (p.coeff 0) :=
-      (MvPolynomial.totalDegree_eq_zero_iff_eq_C).mp
-        ((MvPolynomial.totalDegree_zero_iff_isHomogeneous (Fin 3)).mpr hp)
     unfold polynomialRotation
-    rw [he]
+    rw [((MvPolynomial.totalDegree_eq_zero_iff_eq_C).mp
+      ((MvPolynomial.totalDegree_zero_iff_isHomogeneous (Fin 3)).mpr hp))]
     simp only [pderiv_C, mul_zero, sub_zero]
     exact isHomogeneous_zero (Fin 3) ℂ 0
   | succ n =>
-    have ha := (isHomogeneous_X ℂ (i + 1)).mul (hp.pderiv (i := i + 2))
-    have hb := (isHomogeneous_X ℂ (i + 2)).mul (hp.pderiv (i := i + 1))
-    simpa only [polynomialRotation, Nat.add_sub_cancel, Nat.add_comm] using ha.sub hb
+    simpa only [polynomialRotation, Nat.add_sub_cancel, Nat.add_comm] using ((isHomogeneous_X ℂ (i + 1)).mul (hp.pderiv)).sub ((isHomogeneous_X ℂ (i + 2)).mul (hp.pderiv))
 
-private theorem rotation_harmonic (i : Fin 3) (ℓ : ℕ)
-    (p : MvPolynomial (Fin 3) ℂ) (hp : p ∈ harmonicPolynomials ℓ) :
-    polynomialRotation i p ∈ harmonicPolynomials ℓ := by
-  refine ⟨rotation_homogeneous i ℓ p hp.1, ?_⟩
-  change polynomialLaplacian (polynomialRotation i p) = 0
-  rw [lap_rotation, show polynomialLaplacian p = 0 from hp.2]
-  simp [polynomialRotation]
+section
 
-theorem compact_derivative_harmonic (s : ℝ) (j : Fin 3) (ℓ : ℕ)
-    (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s)
-    (hf : f ∈ harmonicKType s ℓ) :
+variable (s : ℝ) (j : Fin 3) (ℓ : ℕ) (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s)
+    (hf : f ∈ harmonicKType s ℓ)
+
+include hf in
+theorem compact_derivative_harmonic :
     localDerivative s (true, j) f ∈ harmonicKType s ℓ := by
   obtain ⟨p, hp, he⟩ := hf
   have hD : compactRestriction s (localDerivative s (true, j) f) =
@@ -238,15 +201,19 @@ theorem compact_derivative_harmonic (s : ℝ) (j : Fin 3) (ℓ : ℕ)
     obtain ⟨c, hc, hd⟩ := compact_trig_curve_exists j k
     exact ⟨c, hc, hd, hopf_derivative_of_matrix_tangent j k c hc hd⟩
   refine ⟨compactPolynomialDerivative j p, ?_, hD.symm⟩
-  exact (harmonicPolynomials ℓ).smul_mem _ (rotation_harmonic _ ℓ p hp)
+  exact (harmonicPolynomials ℓ).smul_mem _ (by
+    refine ⟨rotation_homogeneous _ ℓ p hp.1, ?_⟩
+    change polynomialLaplacian (polynomialRotation _ p) = 0
+    rw [lap_rotation, show polynomialLaplacian p = 0 from hp.2]
+    simp [polynomialRotation])
 
-theorem compact_derivative_harmonic_band (s : ℝ) (j : Fin 3) (ℓ : ℕ)
-    (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s)
-    (hf : f ∈ harmonicKType s ℓ) :
+include hf in
+theorem compact_derivative_harmonic_band :
     localDerivative s (true, j) f ∈
-      (Finset.range (ℓ + 2)).sup (harmonicKType s) := by
-  exact (Finset.le_sup (f := harmonicKType s) (Finset.mem_range.mpr (by omega : ℓ < ℓ + 2)))
+      (Finset.range (ℓ + 2)).sup (harmonicKType s) := (Finset.le_sup (f := harmonicKType s) (Finset.mem_range.mpr (by omega : ℓ < ℓ + 2)))
     (compact_derivative_harmonic s j ℓ f hf)
+
+end
 
 theorem derivative_harmonic_band (s : ℝ) (b : LocalBasis) (ℓ : ℕ)
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s)
@@ -260,10 +227,6 @@ theorem derivative_harmonic_band (s : ℝ) (b : LocalBasis) (ℓ : ℕ)
     obtain ⟨p, hp, hpf⟩ := Submodule.mem_map.mp hf
     obtain ⟨A, B, hA, hB, hD⟩ :=
       NoncompactAction.PolynomialDerivatives.noncompact_derivative_polynomial_coefficients s j
-    have hq : (B * p + ∑ i : Fin 3, A i * MvPolynomial.pderiv i p).totalDegree ≤
-        ℓ + 1 :=
-      NoncompactAction.PolynomialDegreeBounds.polynomial_first_order_totalDegree_le A B p ℓ hA hB
-        (show p.IsHomogeneous ℓ from hp.1).totalDegree_le
     apply harmonic_band_of_compact_image s _
       (harmonicKType_compact_identification s s 0).1
     · intro d _ u hu
@@ -276,7 +239,8 @@ theorem derivative_harmonic_band (s : ℝ) (b : LocalBasis) (ℓ : ℕ)
       rw [hg]
       exact Submodule.mem_map.mpr ⟨r, hr, rfl⟩
     · rw [hD p f hpf.symm]
-      convert polynomialCompactRestriction_degree_band _ (ℓ + 1) hq using 1
+      convert polynomialCompactRestriction_degree_band _ (ℓ + 1) (NoncompactAction.PolynomialDegreeBounds.polynomial_first_order_totalDegree_le A B p ℓ hA hB
+        (show p.IsHomogeneous ℓ from hp.1).totalDegree_le) using 1
 
 end DedekindZetaZeroFree.RepresentationTheory.KPSmoothCoreCasimirEnergy.HarmonicBandDerivatives
 

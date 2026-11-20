@@ -61,7 +61,12 @@ private lemma poleKernel_eq (c α t : ℝ) :
   push_cast
   ring
 
-private lemma integrable_im_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠ 0) :
+section
+
+variable (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠ 0)
+
+include h1 h2 in
+private lemma integrable_im_poleKernel :
     Integrable (fun t : ℝ => t/(δ2^2+t^2) - t/(δ1^2+t^2)) := by
   have hcont : Continuous fun t : ℝ => t/(δ2^2+t^2) - t/(δ1^2+t^2) := by
     refine Continuous.sub ?_ ?_
@@ -82,25 +87,21 @@ private lemma integrable_im_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ
     have := mul_le_mul (min_sq_one_mul_le δ1 t) (min_sq_one_mul_le δ2 t)
       (by positivity) (by positivity)
     nlinarith [this]
-  have hstep1 : |t*(δ1^2-δ2^2)| / ((δ1^2+t^2)*(δ2^2+t^2))
-      ≤ |t*(δ1^2-δ2^2)| / (min (δ1^2) 1 * min (δ2^2) 1 * (1+t^2)^2) :=
-    div_le_div_of_nonneg_left (abs_nonneg _) (by positivity) hden
-  have hstep2 : |t*(δ1^2-δ2^2)| / (min (δ1^2) 1 * min (δ2^2) 1 * (1+t^2)^2)
-      = (|δ1^2 - δ2^2| / (min (δ1^2) 1 * min (δ2^2) 1)) * (|t|/(1+t^2)) * (1 + t^2)⁻¹ := by
-    rw [abs_mul]
-    field_simp
   have hratio : |t|/(1+t^2) ≤ 1 := by
     rw [div_le_one (by positivity)]
     nlinarith [sq_nonneg t, abs_nonneg t, sq_abs t]
   rw [hid, Real.norm_eq_abs, abs_div, abs_of_pos hD]
   calc |t*(δ1^2-δ2^2)| / ((δ1^2+t^2)*(δ2^2+t^2))
-      ≤ |t*(δ1^2-δ2^2)| / (min (δ1^2) 1 * min (δ2^2) 1 * (1+t^2)^2) := hstep1
+      ≤ |t*(δ1^2-δ2^2)| / (min (δ1^2) 1 * min (δ2^2) 1 * (1+t^2)^2) := (div_le_div_of_nonneg_left (abs_nonneg _) (by positivity) hden)
     _ = (|δ1^2 - δ2^2| / (min (δ1^2) 1 * min (δ2^2) 1)) * (|t|/(1+t^2)) * (1 + t^2)⁻¹ :=
-        hstep2
+        (by
+          rw [abs_mul]
+          field_simp)
     _ ≤ (|δ1^2 - δ2^2| / (min (δ1^2) 1 * min (δ2^2) 1)) * 1 * (1 + t^2)⁻¹ := by gcongr
     _ = (|δ1^2 - δ2^2| / (min (δ1^2) 1 * min (δ2^2) 1)) * (1 + t^2)⁻¹ := by ring
 
-private lemma integrable_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠ 0) :
+include h1 h2 in
+private lemma integrable_poleKernel :
     Integrable (fun t : ℝ =>
         (1:ℂ)/((δ1:ℂ) + t*Complex.I) - (1:ℂ)/((δ2:ℂ) + t*Complex.I)) := by
   have hre : (fun t : ℝ => RCLike.re ((1:ℂ)/((δ1:ℂ) + t*Complex.I) - (1:ℂ)/((δ2:ℂ) + t*Complex.I)))
@@ -119,7 +120,8 @@ private lemma integrable_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 �
   rw [← Integrable.re_im_iff]
   exact ⟨hreint, himint⟩
 
-private lemma integral_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠ 0) :
+include h1 h2 in
+private lemma integral_poleKernel :
     ∫ t : ℝ, ((1:ℂ)/((δ1:ℂ) + t*Complex.I) - (1:ℂ)/((δ2:ℂ) + t*Complex.I))
       = ((π * (δ1/|δ1| - δ2/|δ2|) : ℝ) : ℂ) := by
   set K : ℝ → ℂ := fun t =>
@@ -136,14 +138,15 @@ private lemma integral_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠
     rw [him]
     set g : ℝ → ℝ := fun t => t/(δ2^2+t^2) - t/(δ1^2+t^2) with hgdef
     have hodd : ∀ t : ℝ, g (-t) = -g t := by intro t; simp only [hgdef]; ring
-    have h1 : ∫ t : ℝ, g (-t) = ∫ t : ℝ, g t := integral_neg_eq_self g volume
+    have h1 := integral_neg_eq_self g volume
     rw [funext hodd] at h1
-    have h2 : ∫ t : ℝ, -g t = -∫ t : ℝ, g t := integral_neg g
-    rw [h2] at h1
+    rw [(integral_neg g)] at h1
     linarith
   rw [← integral_re_add_im hK, hIre, hIim]
   simp
   ring
+
+end
 
 private lemma verticalIntegral_poleKernel (c α β : ℝ) (hα : c ≠ α) (hβ : c ≠ β) :
     verticalIntegral c (fun s : ℂ => (s - (α:ℂ))⁻¹ - (s - (β:ℂ))⁻¹)
@@ -353,8 +356,8 @@ theorem verticalIntegral_sub_eq_sum_residues
       apply Finset.sum_congr rfl
       intro j hj
       rw [abs_of_pos (hs j), abs_of_neg hbQ]
-      have hpne : b - p j ≠ 0 := ne_of_gt (hs j)
-      have hQne : b - Q ≠ 0 := ne_of_lt hbQ
+      have hpne := ne_of_gt (hs j)
+      have hQne := ne_of_lt hbQ
       field_simp
       norm_num
   have hVI (c : ℝ) (hc : c = a ∨ c = b) (hi : Complex.VerticalIntegrable f c) :

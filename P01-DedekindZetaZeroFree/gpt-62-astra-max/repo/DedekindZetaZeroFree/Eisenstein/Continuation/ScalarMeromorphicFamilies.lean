@@ -9,7 +9,7 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources EisensteinSmoothGerms Filter
 open scoped Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 def selectedContinuousBranch
     {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
@@ -42,7 +42,7 @@ theorem selectedContinuousBranch_meromorphic
   apply (D.normal g hz).meromorphicAt.congr
   filter_upwards [nhdsWithin_le_nhds (Metric.ball_mem_nhds z hr),
     self_mem_nhdsWithin] with s hs hn
-  have hsne : s ≠ z := by simpa using hn
+  have hsne : s ≠ z := by exact hn
   have hsp : s ∉ P.poles := fun h => hsne (hp s hs h)
   exact (congrFun (selectedContinuousBranch_regular D P hj s (hb hs) hsp) g).symm
 
@@ -59,13 +59,10 @@ def selectedContinuousNumerator
   refine if hs : s ∈ Metric.ball (0 : ℂ) r then ⟨selectedScalarNumerator D r s, ?_⟩ else 0
   by_cases h0 : s = 0
   · subst s; exact hres
-  · have hn : s ∉ P.poles := fun h => h0 (hp s hs h)
-    have hreg : ∀ z ∈ Metric.ball (0 : ℂ) r, z ≠ 0 →
-        ∀ g, AnalyticAt ℂ (fun t => D.E t g) z := by
-      intro z hz hz0
-      exact P.regular z (hb hz) (fun h => hz0 (hp z hz h))
+  · have hreg : ∀ z ∈ Metric.ball (0 : ℂ) r, z ≠ 0 →
+        ∀ g, AnalyticAt ℂ (fun t => D.E t g) z := fun z hz hz0 => P.regular z (hb hz) (fun h => hz0 (hp z hz h))
     rw [selectedScalarNumerator_clears D r hb hreg s hs h0]
-    exact continuous_const.smul (selected_regular_continuous hj s (hb hs) hn)
+    exact continuous_const.smul (selected_regular_continuous hj s (hb hs) (fun h => h0 (hp s hs h)))
 
 theorem selectedContinuousNumerator_eq
     {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
@@ -98,9 +95,8 @@ theorem selectedScalarSource_assemble
     meromorphic := fun v g => selectedContinuousBranch_meromorphic (D v) (P v) (hj v) g
     chamber := by
       intro v s hs g
-      have hΩ := KPContinuation.convergenceHalfPlane_subset_spectralDomain hs
       rw [show selectedContinuousBranch (D v) (P v) (hj v) s g = (D v).E s g from
-        congrFun (selectedContinuousBranch_regular (D v) (P v) (hj v) s hΩ
+        congrFun (selectedContinuousBranch_regular (D v) (P v) (hj v) s (KPContinuation.convergenceHalfPlane_subset_spectralDomain hs)
           ((P v).chamber_disjoint s hs)) g]
       exact (D v).chamber s hs g }
   refine ⟨C, ?_⟩
@@ -108,9 +104,7 @@ theorem selectedScalarSource_assemble
   intro v
   obtain ⟨r, hr, hb, hp⟩ := (P v).isolated 0 (by norm_num [KPContinuation.spectralDomain])
   have hreg : ∀ s ∈ Metric.ball (0 : ℂ) r, s ≠ 0 →
-      ∀ g, AnalyticAt ℂ (fun z => (D v).E z g) s := by
-    intro s hs hs0
-    exact (P v).regular s (hb hs) (fun h => hs0 (hp s hs h))
+      ∀ g, AnalyticAt ℂ (fun z => (D v).E z g) s := fun s hs hs0 => (P v).regular s (hb hs) (fun h => hs0 (hp s hs h))
   have hc := hres v r hr hb hp
   refine ⟨{
     radius := r
@@ -121,7 +115,6 @@ theorem selectedScalarSource_assemble
   · intro s hs hs0
     rw [selectedContinuousNumerator_eq (D v) (P v) (hj v) r hb hp hc s hs,
       selectedScalarNumerator_clears (D v) r hb hreg s hs hs0]
-    change s • (D v).E s = s • (selectedContinuousBranch (D v) (P v) (hj v) s : Functions R)
     rw [selectedContinuousBranch_regular (D v) (P v) (hj v) s (hb hs)
       (fun h => hs0 (hp s hs h))]
   · intro g s hs

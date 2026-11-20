@@ -33,21 +33,15 @@ theorem radial_tail_slice_regular
 
   have tests := kp_cont_actual_sector_smooth_test_modules F ζ hζ
     R.adelicHaar R.adelic_isHaar U R rfl P H realization
-  have hSupport : scalarSupport f.val =
-      tsupport (sectionNorm F ζ hζ U R P H (scalarSections f)) :=
+  have hSupport :=
     tests.scalar_support f
-  have hCompact : IsCompact
-      (tsupport (sectionNorm F ζ hζ U R P H (scalarSections f))) := by
-    rw [← hSupport]
-    exact f.property.2.2
-  have hContained :
-      tsupport (sectionNorm F ζ hζ U R P H (scalarSections f)) ⊆
-        Set.range (endChart F ζ hζ U R P H c T) := by
-    rw [← hSupport, hRange]
-    exact hsupp
   obtain ⟨a, b, ha, hab⟩ := compact_embedding_height_bounds T
     (endChart F ζ hζ U R P H c T) hEmb
-    (tsupport (sectionNorm F ζ hζ U R P H (scalarSections f))) hCompact hContained
+    (tsupport (sectionNorm F ζ hζ U R P H (scalarSections f))) (by
+      rw [← hSupport]
+      exact f.property.2.2) (by
+      rw [← hSupport, hRange]
+      exact hsupp)
 
   have hpoint : ∀ (t : ℝ) (ht : T < t),
       endChart F ζ hζ U R P H c T (Quotient.mk _ p, (⟨t, ht⟩ : Set.Ioi T)) =
@@ -69,18 +63,12 @@ theorem radial_tail_slice_regular
         (endChart F ζ hζ U R P H c T (Quotient.mk _ p, (⟨t, ht⟩ : Set.Ioi T))) ≠ 0
       rw [hpoint t ht, sectionNorm_component]
       exact norm_ne_zero_iff.mpr hne
-    have hz := hab _ hmem
-    simpa using hz
+    exact (hab _ hmem)
 
   have hraw : ContDiff ℝ (⊤ : ℕ∞)
       (fun t : ℝ => (coefficient F ζ hζ U R P H f c p t : ℂ)) := by
-    have hsm := cuspCoefficient_smooth F ζ hζ U R P H (scalarSections f)
-      (tests.scalar_smooth f) c.1 c.2
-    have hcomp : ContDiff ℝ (⊤ : ℕ∞)
-        (fun t : ℝ =>
-          (cuspCoefficient F ζ hζ U R P H (scalarSections f) c.1 c.2 (p, t) : ℂ)) :=
-      hsm.comp (contDiff_const.prodMk contDiff_id)
-    exact hcomp
+    exact (cuspCoefficient_smooth F ζ hζ U R P H (scalarSections f)
+      (tests.scalar_smooth f) c.1 c.2).comp (contDiff_const.prodMk contDiff_id)
 
   have hzero : ∀ t : ℝ, t < a →
       (if T < t then (coefficient F ζ hζ U R P H f c p t : ℂ) else 0) = 0 := by

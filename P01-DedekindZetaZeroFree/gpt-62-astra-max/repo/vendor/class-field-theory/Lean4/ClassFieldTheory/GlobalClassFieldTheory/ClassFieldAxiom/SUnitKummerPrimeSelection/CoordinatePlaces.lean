@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -37,123 +34,90 @@ section FinitePlaces
 variable {K : Type} [Field K]
     [NumberField K]
 
+section
+
+variable {Omega : Type} [Field Omega] [Algebra K Omega] [IsSepClosure K Omega]
+    (E : IntermediateField K Omega) [FiniteDimensional K E] [IsGalois K E] [IsMulCommutative Gal(E/K)]
+    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
+    (hn : (n : ℕ) = p ^ v) (r : ℕ) (eG : Gal(E/K) ≃* (Fin r → Multiplicative (ZMod (n : ℕ))))
+    (S : Finset (HeightOneSpectrum (𝓞 K)))
+
 /-- A completely decomposed coordinate place above the `i`-th chosen
 base prime. -/
 theorem exists_sUnitKummerCoordinatePlace
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : Fin
-      (sUnitKummerPrimeCount
-        (K := K) E n hmu r S)) :
+      (sUnitKummerPrimeCount E n hmu r S)) :
     let S' :=
-      enlargeByFiniteKummerRadicalSupport
-        (K := K) (L := E) n hmu S
+      enlargeByFiniteKummerRadicalSupport (L := E) n hmu S
     let N :=
-      fullSUnitKummerExtension
-        (K := K) (Omega := Omega) n S'
+      fullSUnitKummerExtension (Omega := Omega) n S'
     let hnK : ((n : ℕ) : K) ≠ 0 := by
       exact_mod_cast n.ne_zero
     letI : FiniteDimensional K N :=
-      fullSUnitKummerExtension_finiteDimensional
-        (K := K) (Omega := Omega) n hnK hmu S'
+      fullSUnitKummerExtension_finiteDimensional n hnK hmu S'
     let Ni :=
       enlargedSUnitKummerCyclicFixedField
         (K := K) (Omega := Omega) E n hmu
-        (galois_pow_eq_one_of_equiv_pi_zmod
-          (K := K) E n r eG) S
-        (sUnitKummerKernelGenerator
-          (K := K) (Omega := Omega) E n hmu
+        (galois_pow_eq_one_of_equiv_pi_zmod E n r eG) S
+        (sUnitKummerKernelGenerator E n hmu
           p v hp hv hn r eG S i)
     letI : NumberField Ni :=
       NumberField.of_module_finite K Ni
     letI : IsGalois Ni N :=
       enlargedSUnitKummerCyclicFixedField_isGalois
         (K := K) (Omega := Omega) E n hmu
-        (galois_pow_eq_one_of_equiv_pi_zmod
-          (K := K) E n r eG) S
-        (sUnitKummerKernelGenerator
-          (K := K) (Omega := Omega) E n hmu
+        (galois_pow_eq_one_of_equiv_pi_zmod E n r eG) S
+        (sUnitKummerKernelGenerator E n hmu
           p v hp hv hn r eG S i)
     ∃ q : HeightOneSpectrum (𝓞 Ni),
       _root_.finitePlaceBelow (K := K) q =
-          sUnitKummerChosenBasePlaces
-            (K := K) (Omega := Omega) E n hmu
+          sUnitKummerChosenBasePlaces E n hmu
             p v hp hv hn r eG S i ∧
-        _root_.finitePlaceDecompositionGroup
-            (K := Ni) (L := N) q =
+        _root_.finitePlaceDecompositionGroup (L := N) q =
           ⊤ := by
   dsimp only
   let S' :=
-    enlargeByFiniteKummerRadicalSupport
-      (K := K) (L := E) n hmu S
+    enlargeByFiniteKummerRadicalSupport (L := E) n hmu S
   let N :=
-    fullSUnitKummerExtension
-      (K := K) (Omega := Omega) n S'
-  have hnK : ((n : ℕ) : K) ≠ 0 := by
-    exact_mod_cast n.ne_zero
+    fullSUnitKummerExtension (Omega := Omega) n S'
   let : FiniteDimensional K N :=
     fullSUnitKummerExtension_finiteDimensional
-      (K := K) (Omega := Omega) n hnK hmu S'
+      (K := K) (Omega := Omega) n (by
+        exact_mod_cast n.ne_zero) hmu S'
   let Ni :=
     enlargedSUnitKummerCyclicFixedField
-      (K := K) (Omega := Omega) E n hmu
+        E n hmu
       (galois_pow_eq_one_of_equiv_pi_zmod
-        (K := K) E n r eG) S
+         E n r eG) S
       (sUnitKummerKernelGenerator
-        (K := K) (Omega := Omega) E n hmu
+          E n hmu
         p v hp hv hn r eG S i)
-  let : NumberField Ni :=
+  let :=
     NumberField.of_module_finite K Ni
-  let : IsGalois Ni N :=
+  let :=
     enlargedSUnitKummerCyclicFixedField_isGalois
-      (K := K) (Omega := Omega) E n hmu
+        E n hmu
       (galois_pow_eq_one_of_equiv_pi_zmod
-        (K := K) E n r eG) S
+         E n r eG) S
       (sUnitKummerKernelGenerator
-        (K := K) (Omega := Omega) E n hmu
+          E n hmu
         p v hp hv hn r eG S i)
   have h :=
     sUnitKummerChosenBasePlaces_mem_coordinateBasePlaceCandidates
-      (K := K) (Omega := Omega) E n hmu
+        E n hmu
       p v hp hv hn r eG S i
   change ∃ q : HeightOneSpectrum (𝓞 Ni),
-    _root_.finitePlaceBelow (K := K) q =
+    _root_.finitePlaceBelow q =
         sUnitKummerChosenBasePlaces
-          (K := K) (Omega := Omega) E n hmu
+            E n hmu
           p v hp hv hn r eG S i ∧
       _root_.finitePlaceDecompositionGroup
-          (K := Ni) (L := N) q =
+            q =
         ⊤ at h
   exact h
 
 /-- The selected coordinate place above the `i`-th chosen base prime. -/
 noncomputable def sUnitKummerCoordinatePlace
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :=
@@ -166,55 +130,34 @@ noncomputable def sUnitKummerCoordinatePlace
 base prime. -/
 @[simp]
 theorem sUnitKummerCoordinatePlace_below
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : Fin
-      (sUnitKummerPrimeCount
-        (K := K) E n hmu r S)) :
+      (sUnitKummerPrimeCount E n hmu r S)) :
     let S' :=
-      enlargeByFiniteKummerRadicalSupport
-        (K := K) (L := E) n hmu S
+      enlargeByFiniteKummerRadicalSupport (L := E) n hmu S
     let N :=
-      fullSUnitKummerExtension
-        (K := K) (Omega := Omega) n S'
+      fullSUnitKummerExtension (Omega := Omega) n S'
     let hnK : ((n : ℕ) : K) ≠ 0 := by
       exact_mod_cast n.ne_zero
     letI : FiniteDimensional K N :=
-      fullSUnitKummerExtension_finiteDimensional
-        (K := K) (Omega := Omega) n hnK hmu S'
+      fullSUnitKummerExtension_finiteDimensional n hnK hmu S'
     let Ni :=
       enlargedSUnitKummerCyclicFixedField
         (K := K) (Omega := Omega) E n hmu
-        (galois_pow_eq_one_of_equiv_pi_zmod
-          (K := K) E n r eG) S
-        (sUnitKummerKernelGenerator
-          (K := K) (Omega := Omega) E n hmu
+        (galois_pow_eq_one_of_equiv_pi_zmod E n r eG) S
+        (sUnitKummerKernelGenerator E n hmu
           p v hp hv hn r eG S i)
     letI : NumberField Ni :=
       NumberField.of_module_finite K Ni
     _root_.finitePlaceBelow (K := K)
-        (sUnitKummerCoordinatePlace
-          (K := K) (Omega := Omega) E n hmu
+        (sUnitKummerCoordinatePlace E n hmu
           p v hp hv hn r eG S i) =
-      sUnitKummerChosenBasePlaces
-        (K := K) (Omega := Omega) E n hmu
+      sUnitKummerChosenBasePlaces E n hmu
         p v hp hv hn r eG S i :=
   (Classical.choose_spec
-    (exists_sUnitKummerCoordinatePlace
-      (K := K) (Omega := Omega) E n hmu
+    (exists_sUnitKummerCoordinatePlace E n hmu
       p v hp hv hn r eG S i)).1
+
+end
 
 /-- The selected coordinate place is completely decomposed in the full
 Kummer extension over its coordinate fixed field. -/
@@ -235,46 +178,36 @@ theorem sUnitKummerCoordinatePlace_decompositionGroup
         (Fin r → Multiplicative (ZMod (n : ℕ))))
     (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : Fin
-      (sUnitKummerPrimeCount
-        (K := K) E n hmu r S)) :
+      (sUnitKummerPrimeCount E n hmu r S)) :
     let S' :=
-      enlargeByFiniteKummerRadicalSupport
-        (K := K) (L := E) n hmu S
+      enlargeByFiniteKummerRadicalSupport (L := E) n hmu S
     let N :=
-      fullSUnitKummerExtension
-        (K := K) (Omega := Omega) n S'
+      fullSUnitKummerExtension (Omega := Omega) n S'
     let hnK : ((n : ℕ) : K) ≠ 0 := by
       exact_mod_cast n.ne_zero
     letI : FiniteDimensional K N :=
-      fullSUnitKummerExtension_finiteDimensional
-        (K := K) (Omega := Omega) n hnK hmu S'
+      fullSUnitKummerExtension_finiteDimensional n hnK hmu S'
     let Ni :=
       enlargedSUnitKummerCyclicFixedField
         (K := K) (Omega := Omega) E n hmu
-        (galois_pow_eq_one_of_equiv_pi_zmod
-          (K := K) E n r eG) S
-        (sUnitKummerKernelGenerator
-          (K := K) (Omega := Omega) E n hmu
+        (galois_pow_eq_one_of_equiv_pi_zmod E n r eG) S
+        (sUnitKummerKernelGenerator E n hmu
           p v hp hv hn r eG S i)
     letI : NumberField Ni :=
       NumberField.of_module_finite K Ni
     letI : IsGalois Ni N :=
       enlargedSUnitKummerCyclicFixedField_isGalois
         (K := K) (Omega := Omega) E n hmu
-        (galois_pow_eq_one_of_equiv_pi_zmod
-          (K := K) E n r eG) S
-        (sUnitKummerKernelGenerator
-          (K := K) (Omega := Omega) E n hmu
+        (galois_pow_eq_one_of_equiv_pi_zmod E n r eG) S
+        (sUnitKummerKernelGenerator E n hmu
           p v hp hv hn r eG S i)
     _root_.finitePlaceDecompositionGroup
         (K := Ni) (L := N)
-        (sUnitKummerCoordinatePlace
-          (K := K) (Omega := Omega) E n hmu
+        (sUnitKummerCoordinatePlace E n hmu
           p v hp hv hn r eG S i) =
       ⊤ :=
   (Classical.choose_spec
-    (exists_sUnitKummerCoordinatePlace
-      (K := K) (Omega := Omega) E n hmu
+    (exists_sUnitKummerCoordinatePlace E n hmu
       p v hp hv hn r eG S i)).2
 
 /-- The `i`-th selected base prime is unramified in the full Kummer
@@ -295,26 +228,20 @@ theorem sUnitKummerChosenBasePlace_not_mem_ramified
         (Fin r → Multiplicative (ZMod (n : ℕ))))
     (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : Fin
-      (sUnitKummerPrimeCount
-        (K := K) E n hmu r S)) :
+      (sUnitKummerPrimeCount E n hmu r S)) :
     let S' :=
-      enlargeByFiniteKummerRadicalSupport
-        (K := K) (L := E) n hmu S
+      enlargeByFiniteKummerRadicalSupport (L := E) n hmu S
     let N :=
-      fullSUnitKummerExtension
-        (K := K) (Omega := Omega) n S'
+      fullSUnitKummerExtension (Omega := Omega) n S'
     let hnK : ((n : ℕ) : K) ≠ 0 := by
       exact_mod_cast n.ne_zero
     letI : FiniteDimensional K N :=
-      fullSUnitKummerExtension_finiteDimensional
-        (K := K) (Omega := Omega) n hnK hmu S'
+      fullSUnitKummerExtension_finiteDimensional n hnK hmu S'
     letI : IsGalois K N :=
-      fullSUnitKummerExtension_isGalois
-        (K := K) (Omega := Omega) n S'
+      fullSUnitKummerExtension_isGalois n S'
     letI : NumberField N :=
       NumberField.of_module_finite K N
-    sUnitKummerChosenBasePlaces
-        (K := K) (Omega := Omega) E n hmu
+    sUnitKummerChosenBasePlaces E n hmu
         p v hp hv hn r eG S i ∉
       _root_.ramifiedBaseFinitePlaces
         (K := K) (L := N) := by
@@ -322,7 +249,7 @@ theorem sUnitKummerChosenBasePlace_not_mem_ramified
   intro hram
   apply
     sUnitKummerChosenBasePlaces_not_mem_avoided
-      (K := K) (Omega := Omega) E n hmu
+        E n hmu
       p v hp hv hn r eG S i
   unfold sUnitKummerAvoidedBasePlaces
   dsimp only
@@ -347,62 +274,51 @@ theorem sUnitKummerChosenBasePlace_isUnramified
         (Fin r → Multiplicative (ZMod (n : ℕ))))
     (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : Fin
-      (sUnitKummerPrimeCount
-        (K := K) E n hmu r S)) :
+      (sUnitKummerPrimeCount E n hmu r S)) :
     let S' :=
-      enlargeByFiniteKummerRadicalSupport
-        (K := K) (L := E) n hmu S
+      enlargeByFiniteKummerRadicalSupport (L := E) n hmu S
     let N :=
-      fullSUnitKummerExtension
-        (K := K) (Omega := Omega) n S'
+      fullSUnitKummerExtension (Omega := Omega) n S'
     let hnK : ((n : ℕ) : K) ≠ 0 := by
       exact_mod_cast n.ne_zero
     letI : FiniteDimensional K N :=
-      fullSUnitKummerExtension_finiteDimensional
-        (K := K) (Omega := Omega) n hnK hmu S'
+      fullSUnitKummerExtension_finiteDimensional n hnK hmu S'
     letI : IsGalois K N :=
-      fullSUnitKummerExtension_isGalois
-        (K := K) (Omega := Omega) n S'
+      fullSUnitKummerExtension_isGalois n S'
     letI : NumberField N :=
       NumberField.of_module_finite K N
     _root_.ChosenFinitePlaceIsUnramified
       (K := K) (L := N)
-      (sUnitKummerChosenBasePlaces
-        (K := K) (Omega := Omega) E n hmu
+      (sUnitKummerChosenBasePlaces E n hmu
         p v hp hv hn r eG S i) := by
   dsimp only
   let S' :=
-    enlargeByFiniteKummerRadicalSupport
-      (K := K) (L := E) n hmu S
+    enlargeByFiniteKummerRadicalSupport (L := E) n hmu S
   let N :=
-    fullSUnitKummerExtension
-      (K := K) (Omega := Omega) n S'
+    fullSUnitKummerExtension (Omega := Omega) n S'
   have hnK : ((n : ℕ) : K) ≠ 0 := by
     exact_mod_cast n.ne_zero
   let : FiniteDimensional K N :=
-    fullSUnitKummerExtension_finiteDimensional
-      (K := K) (Omega := Omega) n hnK hmu S'
+    fullSUnitKummerExtension_finiteDimensional n hnK hmu S'
   let : IsGalois K N :=
-    fullSUnitKummerExtension_isGalois
-      (K := K) (Omega := Omega) n S'
-  let : NumberField N :=
+    fullSUnitKummerExtension_isGalois n S'
+  let :=
     NumberField.of_module_finite K N
   apply
     _root_.chosenFinitePlaceIsUnramified_of_isUnramifiedAt
   by_contra hram
   apply
     sUnitKummerChosenBasePlace_not_mem_ramified
-      (K := K) (Omega := Omega) E n hmu
+        E n hmu
       p v hp hv hn r eG S i
   rw [_root_.mem_ramifiedBaseFinitePlaces_iff]
   exact
     ⟨_,
       _root_.finitePlaceExtensionCentre_liesOver
-        (K := K)
-        (L := N)
+
         _
         (_root_.chosenFinitePlaceExtension
-          (L := N) _),
+           _),
       hram⟩
 
 end FinitePlaces

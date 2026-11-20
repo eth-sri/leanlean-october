@@ -13,10 +13,10 @@ set_option maxHeartbeats 2000000
 namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 open MomentSources TensorActionSource KPGlobalTorusFiniteStages
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 
 abbrev Raw := KPAdelicCoverRestrictedProduct.RestrictedCover F R.A.zeta12 R.A.primitive_zeta12
@@ -95,17 +95,22 @@ theorem exists_reference_stage (g : Raw R) :
     rw [← hk]
     exact reference_value_good_compact R N P C q hpI k
 
-def stageVector (s : RestrictedTensorSimple.Level (bad R P C)) (g : Raw R) :
+section
+
+variable (s : RestrictedTensorSimple.Level (bad R P C)) (g : Raw R)
+
+def stageVector :
     RestrictedTensorSimple.Stage (Plus R N P C) s.val →ₗ[ℂ] FiberCore R P C :=
   (RestrictedTensorSimple.stageInclusion (Fiber R P C) (reference R P C) (bad R P C) s).comp
     (PiTensorProduct.map (fun p : s.val => localValue R N P C p (g p)))
 
-@[simp] theorem stageVector_pure (s : RestrictedTensorSimple.Level (bad R P C))
-    (g : Raw R) (x : ∀ p : s.val, Plus R N P C p) :
+@[simp] theorem stageVector_pure (x : ∀ p : s.val, Plus R N P C p) :
     stageVector R N P C s g (PiTensorProduct.tprod ℂ x) =
       RestrictedTensorSimple.stageInclusion (Fiber R P C) (reference R P C) (bad R P C) s
         (PiTensorProduct.tprod ℂ (fun p : s.val => localValue R N P C p (g p) (x p))) := by
   simp [stageVector, PiTensorProduct.map_tprod]
+
+end
 
 theorem stageVector_transition (s t : RestrictedTensorSimple.Level (bad R P C))
     (hst : s ≤ t) (g : Raw R)
@@ -141,27 +146,34 @@ theorem stageVector_transition (s t : RestrictedTensorSimple.Level (bad R P C))
       (reference R P C) (bad R P C) t) (he.trans hi')).trans Module.DirectLimit.of_f
   | add x y hx hy => simp only [map_add, hx, hy]
 
- def expanded (s : RestrictedTensorSimple.Level (bad R P C)) (g : Raw R) :
+ section
+
+variable (s : RestrictedTensorSimple.Level (bad R P C)) (g : Raw R)
+
+def expanded :
     RestrictedTensorSimple.Level (bad R P C) :=
   ⟨s.val ∪ (exists_reference_stage R N P C g).choose.val,
     s.property.trans Finset.subset_union_left⟩
- theorem expanded_ge (s : RestrictedTensorSimple.Level (bad R P C)) (g : Raw R) :
+ theorem expanded_ge :
     s ≤ expanded R N P C s g := Finset.subset_union_left
-private theorem expanded_tail (s : RestrictedTensorSimple.Level (bad R P C)) (g : Raw R) :
+private theorem expanded_tail :
     ∀ p, p ∉ (expanded R N P C s g).val → localValue R N P C p (g p)
-      (plusReference R N P C p) = reference R P C p := by
-  intro p hp
-  exact (exists_reference_stage R N P C g).choose_spec p
+      (plusReference R N P C p) = reference R P C p := fun p hp => (exists_reference_stage R N P C g).choose_spec p
     (fun h => hp (Finset.mem_union_right _ h))
 
-def rawStageVector (s : RestrictedTensorSimple.Level (bad R P C)) (g : Raw R) :
+def rawStageVector :
     RestrictedTensorSimple.Stage (Plus R N P C) s.val →ₗ[ℂ] FiberCore R P C :=
   (stageVector R N P C (expanded R N P C s g) g).comp
     (RestrictedTensorSimple.transition (Plus R N P C) (plusReference R N P C)
       (bad R P C) s (expanded R N P C s g) (expanded_ge R N P C s g))
 
-theorem rawStageVector_enlarge (s t : RestrictedTensorSimple.Level (bad R P C))
-    (hst : s ≤ t) (g : Raw R)
+end
+
+section
+
+variable (s t : RestrictedTensorSimple.Level (bad R P C)) (hst : s ≤ t) (g : Raw R)
+
+theorem rawStageVector_enlarge
     (htail : ∀ p, p ∉ t.val → localValue R N P C p (g p)
       (plusReference R N P C p) = reference R P C p) :
     rawStageVector R N P C s g = (stageVector R N P C t g).comp
@@ -170,33 +182,32 @@ theorem rawStageVector_enlarge (s t : RestrictedTensorSimple.Level (bad R P C))
   let u : RestrictedTensorSimple.Level (bad R P C) :=
     ⟨(expanded R N P C s g).val ∪ t.val,
       (expanded R N P C s g).property.trans Finset.subset_union_left⟩
-  have hsu : expanded R N P C s g ≤ u := Finset.subset_union_left
-  have htu : t ≤ u := Finset.subset_union_right
   apply LinearMap.ext
   intro x
   change stageVector R N P C (expanded R N P C s g) g _ = stageVector R N P C t g _
-  rw [← stageVector_transition R N P C _ u hsu g
+  rw [← stageVector_transition R N P C _ u Finset.subset_union_left g
       (fun p _ hp => expanded_tail R N P C s g p hp),
-    ← stageVector_transition R N P C t u htu g (fun p _ hp => htail p hp)]
+    ← stageVector_transition R N P C t u Finset.subset_union_right g (fun p _ hp => htail p hp)]
   congr 1
   exact ((RestrictedTensorSimple.directedSystem (Plus R N P C)
     (plusReference R N P C) (bad R P C)).map_map _ _ x).trans
       ((RestrictedTensorSimple.directedSystem (Plus R N P C)
         (plusReference R N P C) (bad R P C)).map_map _ _ x).symm
 
-theorem rawStageVector_transition (s t : RestrictedTensorSimple.Level (bad R P C))
-    (hst : s ≤ t) (g : Raw R) (x : RestrictedTensorSimple.Stage (Plus R N P C) s.val) :
+theorem rawStageVector_transition (x : RestrictedTensorSimple.Stage (Plus R N P C) s.val) :
     rawStageVector R N P C t g
       (RestrictedTensorSimple.transition (Plus R N P C) (plusReference R N P C)
         (bad R P C) s t hst x) = rawStageVector R N P C s g x := by
   let u := expanded R N P C t g
-  have htu : t ≤ u := expanded_ge R N P C t g
+  have htu := expanded_ge R N P C t g
   rw [rawStageVector_enlarge R N P C t u htu g (expanded_tail R N P C t g),
     rawStageVector_enlarge R N P C s u (hst.trans htu) g (expanded_tail R N P C t g)]
   simp only [LinearMap.comp_apply]
   congr 1
   exact (RestrictedTensorSimple.directedSystem (Plus R N P C)
     (plusReference R N P C) (bad R P C)).map_map _ _ x
+
+end
 
 def rawCoreVector (g : Raw R) : PlusCore R N P C →ₗ[ℂ] FiberCore R P C :=
   Module.DirectLimit.lift ℂ (RestrictedTensorSimple.Level (bad R P C))
@@ -236,17 +247,14 @@ theorem rawCoreVector_congr (s : RestrictedTensorSimple.Level (bad R P C))
     rawCoreVector R N P C h (RestrictedTensorSimple.stageInclusion
       (Plus R N P C) (plusReference R N P C) (bad R P C) s x) := by
   let u := expanded R N P C s g
-  let y := RestrictedTensorSimple.transition (Plus R N P C) (plusReference R N P C)
-    (bad R P C) s u (expanded_ge R N P C s g) x
   have hins : RestrictedTensorSimple.stageInclusion (Plus R N P C) (plusReference R N P C)
-      (bad R P C) u y = RestrictedTensorSimple.stageInclusion (Plus R N P C)
+      (bad R P C) u (RestrictedTensorSimple.transition (Plus R N P C) (plusReference R N P C)
+        (bad R P C) s u (expanded_ge R N P C s g) x) = RestrictedTensorSimple.stageInclusion (Plus R N P C)
         (plusReference R N P C) (bad R P C) s x := Module.DirectLimit.of_f
   rw [← hins, rawCoreVector_stage R N P C u g (expanded_tail R N P C s g),
     rawCoreVector_stage R N P C u h (fun p hp =>
       (he p (plusReference R N P C p)).symm.trans (expanded_tail R N P C s g p hp))]
-  have hm : ∀ p, localValue R N P C p (g p) = localValue R N P C p (h p) :=
-    fun p => LinearMap.ext (he p)
-  simp only [stageVector, hm]
+  simp only [stageVector, (fun p => LinearMap.ext (he p))]
 
 end DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 

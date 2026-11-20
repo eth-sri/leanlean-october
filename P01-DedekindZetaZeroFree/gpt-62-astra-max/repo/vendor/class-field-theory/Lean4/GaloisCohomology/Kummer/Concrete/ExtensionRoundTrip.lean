@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -37,15 +34,15 @@ theorem kummerRootSet_finiteKummerRadicalSubgroup_le
     (E : IntermediateField K Omega) (n : ℕ+)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
     kummerRootSet (K := K) (Omega := Omega) n
-        (finiteKummerRadicalSubgroup (K := K) (L := E) n) ⊆ E := by
+        (finiteKummerRadicalSubgroup (L := E) n) ⊆ E := by
   intro beta hbeta
-  have hbeta_ne : beta ≠ 0 :=
+  have hbeta_ne :=
     kummerRootSet_ne_zero n
       (finiteKummerRadicalSubgroup (K := K) (L := E) n) hbeta
   obtain ⟨a, hbeta_pow⟩ := hbeta
   obtain ⟨gamma, hgamma_pow⟩ := a.property
-  let gammaOmega : Omegaˣ := Units.map E.val.toMonoidHom gamma
-  let betaUnit : Omegaˣ := Units.mk0 beta hbeta_ne
+  let gammaOmega := Units.map E.val.toMonoidHom gamma
+  let betaUnit := Units.mk0 beta hbeta_ne
   have hbetaUnit_pow : betaUnit ^ (n : ℕ) =
       Units.map (algebraMap K Omega).toMonoidHom a.1 := by
     apply Units.ext
@@ -57,9 +54,8 @@ theorem kummerRootSet_finiteKummerRadicalSubgroup_le
   have hratio_pow : (betaUnit / gammaOmega) ^ (n : ℕ) = 1 := by
     rw [div_pow, hbetaUnit_pow, hgammaOmega_pow]
     exact div_self' _
-  let hbase : NthRootsOfUnityInBase (K := K) (L := Omega) n :=
-    nthRootsOfUnityInBase_of_primitiveRoots
-      (K := K) (L := Omega) n hmu
+  let hbase :=
+    nthRootsOfUnityInBase_of_primitiveRoots (L := Omega) n hmu
   obtain ⟨zeta, hzeta⟩ := hbase (betaUnit / gammaOmega) hratio_pow
   have hbeta_eq : betaUnit =
       Units.map (algebraMap K Omega).toMonoidHom zeta * gammaOmega := by
@@ -76,8 +72,7 @@ theorem kummerRadicalExtension_finiteKummerRadicalSubgroup_le
     (E : IntermediateField K Omega) (n : ℕ+)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
     kummerRadicalExtension (K := K) (Omega := Omega) n
-        (finiteKummerRadicalSubgroup (K := K) (L := E) n) ≤ E := by
-  exact IntermediateField.adjoin_le_iff.mpr
+        (finiteKummerRadicalSubgroup (L := E) n) ≤ E := IntermediateField.adjoin_le_iff.mpr
     (kummerRootSet_finiteKummerRadicalSubgroup_le E n hmu)
 
 /-- The internal generation theorem for `E/K`, transported through
@@ -88,26 +83,22 @@ theorem le_kummerRadicalExtension_finiteKummerRadicalSubgroup
     (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (hexponent : ∀ sigma : Gal(E/K), sigma ^ (n : ℕ) = 1) :
     E ≤ kummerRadicalExtension (K := K) (Omega := Omega) n
-      (finiteKummerRadicalSubgroup (K := K) (L := E) n) := by
+      (finiteKummerRadicalSubgroup (L := E) n) := by
   let R : IntermediateField K Omega :=
-    kummerRadicalExtension (K := K) (Omega := Omega) n
+    kummerRadicalExtension n
       (finiteKummerRadicalSubgroup (K := K) (L := E) n)
-  have hgeneration :
-      IntermediateField.adjoin K
-        (finiteKummerRootSet (K := K) (L := E) n) = ⊤ :=
+  have hgeneration :=
     kummerRootSet_adjoin_eq_top
-      (K := K) (Ω := E) n hmu hexponent
+        n hmu hexponent
   have hroot_subset :
       finiteKummerRootSet (K := K) (L := E) n ⊆ R.comap E.val := by
     intro beta hbeta
-    change (beta : Omega) ∈ R
     apply IntermediateField.subset_adjoin K
-      (kummerRootSet (K := K) (Omega := Omega) n
-        (finiteKummerRadicalSubgroup (K := K) (L := E) n))
+      (kummerRootSet n
+        (finiteKummerRadicalSubgroup n))
     obtain ⟨hbeta_ne, a, hbeta_pow⟩ := hbeta
-    let betaUnit : Eˣ := Units.mk0 beta hbeta_ne
     have ha : a ∈ finiteKummerRadicalSubgroup (K := K) (L := E) n := by
-      refine ⟨betaUnit, ?_⟩
+      refine ⟨(Units.mk0 beta hbeta_ne), ?_⟩
       apply Units.ext
       exact hbeta_pow
     refine ⟨⟨a, ha⟩, ?_⟩
@@ -129,11 +120,10 @@ theorem kummerRadicalExtension_finiteKummerRadicalSubgroup_eq
     (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (hexponent : ∀ sigma : Gal(E/K), sigma ^ (n : ℕ) = 1) :
     kummerRadicalExtension (K := K) (Omega := Omega) n
-        (finiteKummerRadicalSubgroup (K := K) (L := E) n) = E := by
+        (finiteKummerRadicalSubgroup (L := E) n) = E := by
   apply le_antisymm
-  · exact kummerRadicalExtension_finiteKummerRadicalSubgroup_le E n hmu
-  · exact le_kummerRadicalExtension_finiteKummerRadicalSubgroup
-      E n hmu hexponent
+  · grind [kummerRadicalExtension_finiteKummerRadicalSubgroup_le]
+  · solve_by_elim [le_kummerRadicalExtension_finiteKummerRadicalSubgroup]
 
 end KummerTheory
 

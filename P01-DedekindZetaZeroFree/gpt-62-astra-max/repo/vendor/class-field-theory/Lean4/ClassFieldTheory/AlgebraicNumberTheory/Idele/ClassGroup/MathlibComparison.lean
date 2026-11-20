@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -39,10 +36,7 @@ diagonal idèle. -/
 theorem equivAdeleRingUnits_principalIdele (x : Kˣ) :
     equivAdeleRingUnits (principalIdele K x) =
       NumberField.IdeleGroup.unitEmbedding (𝓞 K) K x := by
-  change equivAdeleRingUnits
-    ((equivAdeleRingUnits (K := K)).symm
-      (NumberField.IdeleGroup.unitEmbedding (𝓞 K) K x)) = _
-  exact (equivAdeleRingUnits (K := K)).apply_symm_apply _
+  exact (equivAdeleRingUnits).apply_symm_apply _
 
 /-- The induced multiplicative equivalence of idèle class groups. -/
 def ideleClassGroupEquivMathlib :
@@ -50,22 +44,19 @@ def ideleClassGroupEquivMathlib :
   let e := equivAdeleRingUnits (K := K)
   let N := principalSubgroup K
   let M := NumberField.IdeleGroup.principalSubgroup (𝓞 K) K
-  have hforward : N ≤ M.comap e.toMonoidHom := by
-    rintro a ⟨x, rfl⟩
-    exact ⟨x, equivAdeleRingUnits_principalIdele K x⟩
   have hbackward : M ≤ N.comap e.symm.toMonoidHom := by
     rintro a ⟨x, rfl⟩
     refine ⟨x, ?_⟩
     apply e.injective
     rw [equivAdeleRingUnits_principalIdele K x]
     exact (e.apply_symm_apply _).symm
-  let f : IdeleClassGroup K →* NumberField.IdeleClassGroup (𝓞 K) K :=
-    QuotientGroup.map N M e.toMonoidHom hforward
-  let g : NumberField.IdeleClassGroup (𝓞 K) K →* IdeleClassGroup K :=
-    QuotientGroup.map M N e.symm.toMonoidHom hbackward
+  let f :=
+    QuotientGroup.map N M e.toMonoidHom (by
+      rintro a ⟨x, rfl⟩
+      exact ⟨x, equivAdeleRingUnits_principalIdele K x⟩)
   exact
     { toFun := f
-      invFun := g
+      invFun := (QuotientGroup.map M N e.symm.toMonoidHom hbackward)
       left_inv := by
         intro a
         refine QuotientGroup.induction_on a (fun x => ?_)
@@ -78,10 +69,11 @@ def ideleClassGroupEquivMathlib :
         rw [e.apply_symm_apply]
       map_mul' := f.map_mul }
 
+variable (v : HeightOneSpectrum (𝓞 K)) (x : (v.adicCompletion K)ˣ)
+
 /-- The algebraic idèle comparison carries a one-place idèle to Mathlib's
 one-place adele-unit idèle. -/
-theorem equivAdeleRingUnits_finitePlaceIdele
-    (v : HeightOneSpectrum (𝓞 K)) (x : (v.adicCompletion K)ˣ) :
+theorem equivAdeleRingUnits_finitePlaceIdele :
     equivAdeleRingUnits (finitePlaceIdele v x) =
       NumberField.IdeleGroup.ofAdicCompletion (𝓞 K) K v x := by
   classical
@@ -93,7 +85,7 @@ theorem equivAdeleRingUnits_finitePlaceIdele
     change ((finitePlaceIdele v x).2 w : w.adicCompletion K) =
       (RestrictedProduct.mulSingle
         (fun w : HeightOneSpectrum (𝓞 K) => w.adicCompletionIntegers K)
-        v (x : v.adicCompletion K)) w
+        v x) w
     by_cases hw : w = v
     · subst w
       rw [RestrictedProduct.mulSingle_eq_same]
@@ -103,13 +95,11 @@ theorem equivAdeleRingUnits_finitePlaceIdele
     · rw [RestrictedProduct.mulSingle_eq_of_ne
         (fun w : HeightOneSpectrum (𝓞 K) => w.adicCompletionIntegers K)
         (x : v.adicCompletion K) hw]
-      have h := finitePlaceIdele_finiteComponent_of_ne v w x hw
       exact congrArg (fun u : (w.adicCompletion K)ˣ =>
-        (u : w.adicCompletion K)) h
+        (u : w.adicCompletion K)) (finitePlaceIdele_finiteComponent_of_ne v w x hw)
 
 /-- The class-group comparison respects the one-place idèle-class maps. -/
-theorem ideleClassGroupEquivMathlib_finitePlaceIdeleClass
-    (v : HeightOneSpectrum (𝓞 K)) (x : (v.adicCompletion K)ˣ) :
+theorem ideleClassGroupEquivMathlib_finitePlaceIdeleClass :
     ideleClassGroupEquivMathlib K (finitePlaceIdeleClass v x) =
       NumberField.IdeleClassGroup.ofAdicCompletion (𝓞 K) K v x := by
   change QuotientGroup.mk'

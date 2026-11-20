@@ -44,12 +44,12 @@ private theorem exponent_zero_iff (v : HeightOneSpectrum (𝓞 F))
   constructor
   · intro h
     exact (Ideal.isMaximal_def.mp v.isMaximal).2 _ (show v.asIdeal < v.asIdeal ⊔ f from
-      lt_of_le_of_ne le_sup_left (by
-        intro he
-        exact h (he ▸ le_sup_right)))
+      lt_of_le_of_ne le_sup_left (fun he => h (he ▸ le_sup_right)))
   · intro h hle
-    have : v.asIdeal ⊔ f = v.asIdeal := sup_eq_left.mpr hle
+    have := sup_eq_left.mpr hle
     exact v.isPrime.ne_top (this.symm.trans h)
+
+alias ExteriorResidueCharacterInjectivity.exponent_zero_iff := exponent_zero_iff
 
 private theorem exponent_eq (A : SArithmeticData F) (sigma : FixedSResidue.FullLocalCharacters A)
     (f₁ f₂ : Ideal (𝓞 F)) (o₁ : RayClassCharacter F f₁) (o₂ : RayClassCharacter F f₂)
@@ -91,14 +91,12 @@ private theorem s_prime_eq (A : SArithmeticData F) (sigma : FixedSResidue.FullLo
     (o₁ : RayClassCharacter F f₁) (o₂ : RayClassCharacter F f₂)
     (h₁ : SPrimeCompatibility A f₁ o₁ sigma) (h₂ : SPrimeCompatibility A f₂ o₂ sigma)
     (v : {v // v ∈ A.Sf}) : o₁ v.val.asIdeal = o₂ v.val.asIdeal := by
-  have he := exponent_eq A sigma f₁ f₂ o₁ o₂ h₁ h₂ v
   have hc : v.val.asIdeal ⊔ f₁ = ⊤ ↔ v.val.asIdeal ⊔ f₂ = ⊤ := by
-    rw [← exponent_zero_iff v.val f₁ hf₁, ← exponent_zero_iff v.val f₂ hf₂, he]
+    rw [← exponent_zero_iff v.val f₁ hf₁, ← exponent_zero_iff v.val f₂ hf₂, (exponent_eq A sigma f₁ f₂ o₁ o₂ h₁ h₂ v)]
   by_cases hv : v.val.asIdeal ⊔ f₁ = ⊤
   · obtain ⟨pi, hpi⟩ := uniformizer_exists v.val
     rw [(h₁ v).2.2 hv pi hpi, (h₂ v).2.2 (hc.mp hv) pi hpi]
-  · have hv₂ : v.val.asIdeal ⊔ f₂ ≠ ⊤ := fun h => hv (hc.mpr h)
-    rw [(o₁.eq_zero_iff' _).mpr (Or.inr hv), (o₂.eq_zero_iff' _).mpr (Or.inr hv₂)]
+  · rw [(o₁.eq_zero_iff' _).mpr (Or.inr hv), (o₂.eq_zero_iff' _).mpr (Or.inr (fun h => hv (hc.mpr h)))]
 
  def charHom (f : Ideal (𝓞 F)) (o : RayClassCharacter F f) :
     Ideal (𝓞 F) →* ℂ where

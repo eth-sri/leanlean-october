@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Theta.Unfolding.ParityRayUnitOrbits
 
 public import DedekindZetaZeroFree.Theta.Profiles.RayClasses.AffineResiduePackets
 
@@ -17,8 +18,12 @@ def principalNormalizedLogVector (γ : Fˣ) : InfinitePlace F → ℝ :=
   fun v => Real.log (v (γ : F)) -
     Real.log |(Algebra.norm ℚ (γ : F) : ℝ)| / (Module.finrank ℚ F : ℝ)
 
-theorem principalNormalizedLogVector_mem
-    (hF : NumberField.IsTotallyComplex F) (γ : Fˣ) :
+section
+
+variable (hF : NumberField.IsTotallyComplex F)
+
+include hF in
+theorem principalNormalizedLogVector_mem (γ : Fˣ) :
     principalNormalizedLogVector γ ∈ RayCoset.logHyperplane F := by
   classical
   have hp := InfinitePlace.prod_eq_abs_norm (γ : F)
@@ -27,7 +32,7 @@ theorem principalNormalizedLogVector_mem
     (InfinitePlace.pos_iff.mpr (Units.ne_zero γ)).ne')] at hl
   simp only [Real.log_pow] at hl
   have hn : (Module.finrank ℚ F : ℝ) ≠ 0 := by
-    exact_mod_cast (Module.finrank_pos (R := ℚ) (M := F)).ne'
+    exact_mod_cast (Module.finrank_pos).ne'
   have hm : (∑ v : InfinitePlace F, (v.mult : ℝ)) = (Module.finrank ℚ F : ℝ) := by
     exact_mod_cast (InfinitePlace.sum_mult_eq (K := F))
   change RayCoset.weightedLogSum F (principalNormalizedLogVector γ) = 0
@@ -40,12 +45,11 @@ theorem principalNormalizedLogVector_mem
   field_simp
   ring
 
-def principalNormalizedLogShift (hF : NumberField.IsTotallyComplex F) (γ : Fˣ) :
+def principalNormalizedLogShift (γ : Fˣ) :
     RayCoset.logHyperplane F :=
   ⟨principalNormalizedLogVector γ, principalNormalizedLogVector_mem hF γ⟩
 
 theorem affineResidueScale_principal_mul
-    (hF : NumberField.IsTotallyComplex F)
     (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (γ : Fˣ)
     (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) =
       FractionalIdeal.spanSingleton (𝓞 F)⁰ (γ : F) *
@@ -73,13 +77,17 @@ theorem affineResidueScale_principal_mul
   rw [Real.log_exp]
   ring
 
+end
+
 private theorem Q_smul (q : InfinitePlace F → ℝ) (s : ℝ)
     (x : mixedEmbedding.euclidean.mixedSpace F) :
-    RayParity.Q F q (s • x) = s • RayParity.Q F q x := by
-  apply (Theta.traceToMixed F).injective
-  simp [RayParity.Q, map_smul, mul_smul_comm]
-private theorem norm_kernel (q : InfinitePlace F → ℝ)
-    (hq : ∀ v, q v ≠ 0) (s : ℝ) (x : F) :
+    RayParity.Q F q (s • x) = s • RayParity.Q F q x := by apply @DedekindZetaZeroFree.AbelianQuotient.RayCoset.ParityRayUnitOrbits.Q_smul <;> assumption
+section
+
+variable (q : InfinitePlace F → ℝ) (hq : ∀ v, q v ≠ 0) (s : ℝ) (x : F)
+
+include hq in
+private theorem norm_kernel :
     ‖RayParity.Q F q (s • Theta.traceEmbedding F x)‖ ^ 2 =
       ∑ v : InfinitePlace F, (v.mult : ℝ) * (q v * s * v x) ^ 2 := by
   rw [Q_smul, norm_smul, mul_pow, Real.norm_eq_abs, sq_abs,
@@ -88,8 +96,8 @@ private theorem norm_kernel (q : InfinitePlace F → ℝ)
   apply Finset.sum_congr rfl
   intro v _
   ring
-private theorem norm_dual (q : InfinitePlace F → ℝ)
-    (hq : ∀ v, q v ≠ 0) (s : ℝ) (x : F) :
+include hq in
+private theorem norm_dual :
     ‖RayParity.Q F q (s • Theta.traceConjugation F (Theta.traceEmbedding F x))‖ ^ 2 =
       ∑ v : InfinitePlace F, (v.mult : ℝ) * (q v * s * v x) ^ 2 := by
   rw [← map_smul, RayParity.Q_eq_traceRadialScale F q hq,
@@ -97,10 +105,10 @@ private theorem norm_dual (q : InfinitePlace F → ℝ)
     ← RayParity.Q_eq_traceRadialScale F q hq]
   exact norm_kernel q hq s x
 
+end
+
 private theorem q_nonzero (u : ℝ) (hu : 0 < u) (h : RayCoset.logHyperplane F) :
-    ∀ v, RayTheta.q F u h v ≠ 0 := by
-  intro v
-  exact (mul_pos (Real.rpow_pos_of_pos hu _) (Real.exp_pos _)).ne'
+    ∀ v, RayTheta.q F u h v ≠ 0 := fun v => (mul_pos (Real.rpow_pos_of_pos hu _) (Real.exp_pos _)).ne'
 
 private theorem empty_kernel_congr
     (a b : mixedEmbedding.euclidean.mixedSpace F) (hab : ‖a‖ ^ 2 = ‖b‖ ^ 2) :
@@ -108,13 +116,12 @@ private theorem empty_kernel_congr
   simp only [RayParity.gδ, Finset.prod_empty, one_mul, Theta.latticeGaussian,
     ← Complex.ofReal_pow, hab]
 
-theorem affineResidueKernel_principal_mul
-    (hF : NumberField.IsTotallyComplex F)
-    (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (γ : Fˣ)
-    (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) =
-      FractionalIdeal.spanSingleton (𝓞 F)⁰ (γ : F) *
-        (I : FractionalIdeal (𝓞 F)⁰ F))
-    (u : ℝ) (hu : 0 < u) (h : RayCoset.logHyperplane F) (x : F) :
+variable (hF : NumberField.IsTotallyComplex F) (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (γ : Fˣ)
+    (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) = FractionalIdeal.spanSingleton (𝓞 F)⁰ (γ : F) * (I : FractionalIdeal (𝓞 F)⁰ F))
+    (u : ℝ) (hu : 0 < u) (h : RayCoset.logHyperplane F)
+
+include hJ hu in
+theorem affineResidueKernel_principal_mul (x : F) :
     RayParity.gδ F ∅ (RayParity.Q F (RayTheta.q F u h)
       (affineResidueScale J • Theta.traceEmbedding F ((γ : F) * x))) =
     RayParity.gδ F ∅ (RayParity.Q F
@@ -125,23 +132,16 @@ theorem affineResidueKernel_principal_mul
     norm_kernel _ (q_nonzero u hu (h + principalNormalizedLogShift hF γ))]
   apply Finset.sum_congr rfl
   intro v _
-  have hs := affineResidueScale_principal_mul hF I J γ hJ v
   simp only [map_mul, RayTheta.q, Submodule.coe_add, Pi.add_apply, Real.exp_add]
   congr 2
   calc
-    u ^ (Module.finrank ℚ F : ℝ)⁻¹ * Real.exp (h.val v) *
-        affineResidueScale J * (v (γ : F) * v x) =
+    _ =
         u ^ (Module.finrank ℚ F : ℝ)⁻¹ * Real.exp (h.val v) *
           (affineResidueScale J * v (γ : F)) * v x := by ring
-    _ = _ := by rw [hs]; ring
+    _ = _ := by rw [(affineResidueScale_principal_mul hF I J γ hJ v)]; ring
 
-theorem affineResidueDualKernel_principal_mul
-    (hF : NumberField.IsTotallyComplex F)
-    (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (γ : Fˣ)
-    (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) =
-      FractionalIdeal.spanSingleton (𝓞 F)⁰ (γ : F) *
-        (I : FractionalIdeal (𝓞 F)⁰ F))
-    (u : ℝ) (hu : 0 < u) (h : RayCoset.logHyperplane F) (β : F) :
+include hJ hu in
+theorem affineResidueDualKernel_principal_mul (β : F) :
     RayParity.gδ F ∅ (RayParity.Q F (RayTheta.q F u (-h))
       ((affineResidueScale J)⁻¹ • Theta.traceConjugation F
         (Theta.traceEmbedding F (((γ⁻¹ : Fˣ) : F) * β)))) =
@@ -162,8 +162,7 @@ theorem affineResidueDualKernel_principal_mul
     neg_add, Real.exp_add]
   congr 2
   calc
-    u ^ (Module.finrank ℚ F : ℝ)⁻¹ * Real.exp (-h.val v) *
-        (affineResidueScale J)⁻¹ * ((v (γ : F))⁻¹ * v β) =
+    _ =
         u ^ (Module.finrank ℚ F : ℝ)⁻¹ * Real.exp (-h.val v) *
           ((v (γ : F))⁻¹ * (affineResidueScale J)⁻¹) * v β := by ring
     _ = _ := by rw [hs]; ring

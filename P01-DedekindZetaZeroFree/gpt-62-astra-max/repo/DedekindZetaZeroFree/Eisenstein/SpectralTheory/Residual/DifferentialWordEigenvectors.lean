@@ -13,7 +13,7 @@ open scoped Classical NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualWeakEnergy
 open KPContActualSphericalRightFieldIdentification KPGlobalResidualConstruction KPLiteralChamber
 open KPMsClearedTruncationL2.NativeWordBridge
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming word_smul → word_smul
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer (word_smul)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
  abbrev eigenvectorWordDerivative := KPSmoothActualFlowData.wordDerivative F ζ hζ
 

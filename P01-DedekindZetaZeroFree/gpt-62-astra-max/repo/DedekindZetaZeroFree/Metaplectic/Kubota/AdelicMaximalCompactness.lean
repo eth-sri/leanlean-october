@@ -11,7 +11,7 @@ open MomentSources NumberField
 open scoped Classical NumberField Topology
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 local instance rawTopology (R : PrincipalMellin.ActualRecipe S η) (v : KPHilbert.Place F) :
     TopologicalSpace (KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 v) :=
@@ -35,8 +35,6 @@ local instance rawTopology (R : PrincipalMellin.ActualRecipe S η) (v : KPHilber
 private theorem archSectionHom_continuous (R : PrincipalMellin.ActualRecipe S η)
     (w : InfinitePlace F) : Continuous (archSectionHom R w) := by
   letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
-  change @Continuous _ _ _ (TopologicalSpace.induced
-    (KPLocalChartTopology.complexCoordinates F R.A.zeta12 R.A.primitive_zeta12 w) _) _
   apply continuous_induced_rng.mpr
   have he := (InfinitePlace.Completion.isometryEquivComplexOfIsComplex
     (KPHilbert.infinite_isComplex F R.A.zeta12 R.A.primitive_zeta12 w)).symm.continuous
@@ -62,9 +60,6 @@ private theorem archSectionHom_continuous (R : PrincipalMellin.ActualRecipe S η
           ((↑(KPCplxCharacterHaar.complexSU2Embedding k)⁻¹ :
             Matrix (Fin 2) (Fin 2) ℂ) i j))
       simp_rw [hi]
-      change Continuous (fun k : KPCplxCharacterHaar.ComplexSU2 =>
-        (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-          (KPHilbert.infinite_isComplex F R.A.zeta12 R.A.primitive_zeta12 w)).symm (star (k.val j i)))
       have hij : Continuous (fun k : KPCplxCharacterHaar.ComplexSU2 => k.val j i) :=
         (continuous_apply i).comp ((continuous_apply j).comp continuous_subtype_val)
       exact he.comp hij.star

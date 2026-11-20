@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 namespace ClassFormation
@@ -46,22 +43,28 @@ def normToBase (A : Rep ℤ G) (K : ClosedSubgroup G)
       ambientFixedAddSubgroup A (baseField G) :=
   relativeNorm A (baseField G) K (le_baseField K)
 
+section
+
+variable (Z : AddSubgroup ZHat) (n : ℕ)
+
 /-- Multiplication by `n` on an additive subgroup. -/
-def nsmulOnAddSubgroup (Z : AddSubgroup ZHat) (n : ℕ) : Z →+ Z where
+def nsmulOnAddSubgroup : Z →+ Z where
   toFun z := ⟨n • z.1, Z.nsmul_mem z.2 n⟩
   map_zero' := by ext; simp
   map_add' x y := by ext; simp
 
 /-- The subgroup `nZ` inside a value group `Z`. -/
-def nsmulWithin (Z : AddSubgroup ZHat) (n : ℕ) : AddSubgroup Z :=
+def nsmulWithin : AddSubgroup Z :=
   (nsmulOnAddSubgroup Z n).range
 
 /-- The ambient subgroup `nZ ⊆ ℤ̂`. -/
-def nsmulImage (Z : AddSubgroup ZHat) (n : ℕ) : AddSubgroup ZHat :=
+def nsmulImage : AddSubgroup ZHat :=
   Z.map
     { toFun := fun z : ZHat => n • z
       map_zero' := nsmul_zero n
       map_add' := fun x y => nsmul_add x y n }
+
+end
 
 /-- An element belongs to the natural-multiple image exactly when it has a
 preimage in the subgroup. -/
@@ -77,11 +80,7 @@ theorem nsmulImage_top (n : ℕ) :
     nsmulImage (⊤ : AddSubgroup ZHat) n =
       (zHatMulNat n).toAddMonoidHom.range := by
   ext z
-  constructor
-  · rintro ⟨x, _hx, rfl⟩
-    exact ⟨x, rfl⟩
-  · rintro ⟨x, rfl⟩
-    exact ⟨x, AddSubgroup.mem_top x, rfl⟩
+  simp
 
 /-- Restriction of reduction modulo `n` along the inclusion `Z ≤ ℤ̂`. -/
 def valueGroupReduction (Z : AddSubgroup ZHat) (n : ℕ) (hn : 0 < n) :
@@ -145,21 +144,7 @@ theorem canonicalValueQuotientMap_top_bijective
   · intro a
     obtain ⟨z, hz⟩ :=
       zHatReduction_surjective n hn a
-    exact
-      ⟨QuotientAddGroup.mk'
-          (nsmulWithin (⊤ : AddSubgroup ZHat) n)
-          ⟨z, AddSubgroup.mem_top z⟩,
-        hz⟩
-
-/-- The quotient used by the norm has the positive degree carried by a
-finite abstract field. -/
-@[simp] theorem FiniteAbstractField.normToBase_index_eq_degree
-    {G : Type*} [Group G] [TopologicalSpace G]
-    (K : FiniteAbstractField G) :
-    (extensionSubgroup (baseField G) K.field
-      (le_baseField K.field)).index =
-      (K.toFiniteAbstractExtension.degree : ℕ) :=
-  K.toFiniteAbstractExtension.extensionSubgroup_index_eq_degree
+    exact Exists.intro ((QuotientAddGroup.mk' (nsmulWithin ⊤ n)) ⟨z, AddSubgroup.mem_top z⟩) hz
 
 /-- **the valuation-quotient axiom.** A henselian valuation of `A_k` with respect to `d`.
 
@@ -203,22 +188,24 @@ def cyclic_value_quotients (v : ValuationData D A)
   AddEquiv.ofBijective (v.canonicalQuotientMap n hn)
     (v.canonical_value_quotient_bijective n hn)
 
+section
+
+variable (v : ValuationData D A) (n : ℕ) (hn : 0 < n)
+
 /-- Canonical reduction of the value group modulo `n`. -/
-def valueModulo (v : ValuationData D A) (n : ℕ) (hn : 0 < n) :
+def valueModulo :
     v.valueGroup →+ ZMod n :=
   (v.cyclic_value_quotients n hn).toAddMonoidHom.comp
     (QuotientAddGroup.mk' (nsmulWithin v.valueGroup n))
 
 /-- Value modulo `n` is profinite-integer reduction of the underlying value. -/
 @[simp]
-theorem valueModulo_apply (v : ValuationData D A)
-    (n : ℕ) (hn : 0 < n) (z : v.valueGroup) :
+theorem valueModulo_apply (z : v.valueGroup) :
     v.valueModulo n hn z = zHatReduction n hn (z : ZHat) :=
   rfl
 
 /-- Reduction of the value group modulo a positive integer is surjective. -/
-theorem valueModulo_surjective (v : ValuationData D A)
-    (n : ℕ) (hn : 0 < n) :
+theorem valueModulo_surjective :
     Function.Surjective (v.valueModulo n hn) := by
   intro z
   obtain ⟨q, rfl⟩ := (v.cyclic_value_quotients n hn).surjective z
@@ -226,20 +213,25 @@ theorem valueModulo_surjective (v : ValuationData D A)
   intro a
   exact ⟨a, rfl⟩
 
+end
+
+section
+
+variable (v : ValuationData D A) (K : FiniteAbstractField G)
+
 /-- The norm composite `v ∘ N_{K|k}` before division by the residue degree. -/
-def normCompositeAt (v : ValuationData D A) (K : FiniteAbstractField G) :
+def normCompositeAt :
     ambientFixedAddSubgroup A K.field →+ ZHat :=
   v.toAddMonoidHom.comp (normToBase A K.field)
 
 /-- The norm-valuation composite has range equal to the residue-degree multiple image. -/
-theorem normCompositeAt_range (v : ValuationData D A) (K : FiniteAbstractField G) :
+theorem normCompositeAt_range :
     (v.normCompositeAt K).range =
       nsmulImage v.valueGroup (K.residueDegree D : ℕ) :=
   v.norm_range K
 
 /-- `v(N_{K|k}a)` regarded as an element of `f_K ℤ̂`. -/
-def normCompositeAtInResidueImage (v : ValuationData D A)
-    (K : FiniteAbstractField G) :
+def normCompositeAtInResidueImage :
     ambientFixedAddSubgroup A K.field →+
       (zHatMulNat (K.residueDegree D : ℕ)).toAddMonoidHom.range where
   toFun a := ⟨v.normCompositeAt K a, by
@@ -253,7 +245,7 @@ def normCompositeAtInResidueImage (v : ValuationData D A)
     exact map_add (v.normCompositeAt K) x y
 
 /-- Division by `f_K` before restricting the codomain back to `Z`. -/
-def dividedAt (v : ValuationData D A) (K : FiniteAbstractField G) :
+def dividedAt :
     ambientFixedAddSubgroup A K.field →+ ZHat :=
   (zHatDivide (K.residueDegree D : ℕ)
     (K.residueDegree D).property).toAddMonoidHom.comp
@@ -261,13 +253,13 @@ def dividedAt (v : ValuationData D A) (K : FiniteAbstractField G) :
 
 /-- The defining identity `f_K v_K = v ∘ N_{K|k}` before codomain
 restriction. -/
-theorem residueDegree_nsmul_dividedAt (v : ValuationData D A)
-    (K : FiniteAbstractField G)
+theorem residueDegree_nsmul_dividedAt
     (a : ambientFixedAddSubgroup A K.field) :
-    (K.residueDegree D : ℕ) • v.dividedAt K a = v.normCompositeAt K a := by
-  exact zHatMulNat_zHatDivide (K.residueDegree D : ℕ)
+    (K.residueDegree D : ℕ) • v.dividedAt K a = v.normCompositeAt K a := zHatMulNat_zHatDivide (K.residueDegree D : ℕ)
     (K.residueDegree D).property
     (v.normCompositeAtInResidueImage K a)
+
+end
 
 /-- The divided value lies in the original value group `Z`. -/
 theorem dividedAt_mem_valueGroup (v : ValuationData D A)
@@ -280,8 +272,6 @@ theorem dividedAt_mem_valueGroup (v : ValuationData D A)
   have hzSubtype : v.normCompositeAtInResidueImage K a =
       ⟨zHatMulNat (K.residueDegree D : ℕ) z, ⟨z, rfl⟩⟩ := by
     apply Subtype.ext
-    change v.normCompositeAt K a =
-      zHatMulNat (K.residueDegree D : ℕ) z
     exact hz.symm
   change zHatDivide (K.residueDegree D : ℕ)
       (K.residueDegree D).property
@@ -290,23 +280,24 @@ theorem dividedAt_mem_valueGroup (v : ValuationData D A)
   exact (zHatDivide_zHatMulNat (K.residueDegree D : ℕ)
     (K.residueDegree D).property z).symm ▸ hzZ
 
+variable (v : ValuationData D A) (K : FiniteAbstractField G)
+
 /-- The normalized valuation `v_K = (1/f_K) v ∘ N_{K|k}`, with the exact
 codomain `Z` from the valuation-quotient axiom. -/
-def valuationAt (v : ValuationData D A) (K : FiniteAbstractField G) :
+def valuationAt :
     ambientFixedAddSubgroup A K.field →+ v.valueGroup :=
   (v.dividedAt K).codRestrict v.valueGroup (fun a => v.dividedAt_mem_valueGroup K a)
 
 /-- The underlying profinite value of the positive valuation is the divided valuation. -/
 @[simp]
-theorem valuationAt_coe (v : ValuationData D A) (K : FiniteAbstractField G)
+theorem valuationAt_coe
     (a : ambientFixedAddSubgroup A K.field) :
     (v.valuationAt K a : ZHat) = v.dividedAt K a :=
   rfl
 
 /-- **normalized-valuation functoriality (surjectivity).** The normalized valuation over every
 finite abstract field maps onto `Z`. -/
-theorem normalizedValuation_surjective (v : ValuationData D A)
-    (K : FiniteAbstractField G) :
+theorem normalizedValuation_surjective :
     Function.Surjective (v.valuationAt K) := by
   intro z
   have hzImage : (K.residueDegree D : ℕ) • z.1 ∈

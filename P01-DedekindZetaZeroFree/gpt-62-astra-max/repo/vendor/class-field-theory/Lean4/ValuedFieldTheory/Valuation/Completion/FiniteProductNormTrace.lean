@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -50,29 +46,27 @@ theorem moduleFiniteOfPi
   intro x
   exact ⟨Pi.single i x, by simp⟩
 
+section
+
+variable {R S T : Type*} [CommRing R] [CommRing S] [CommRing T] [Algebra R S] [Algebra R T]
+
 /-- Multiplication on a binary product is the product of the two
 multiplication endomorphisms. -/
-theorem algebra_lmul_prod_eq_prodMap
-    {R S T : Type*} [CommRing R] [CommRing S] [CommRing T]
-    [Algebra R S] [Algebra R T] (x : S × T) :
+theorem algebra_lmul_prod_eq_prodMap (x : S × T) :
     Algebra.lmul R (S × T) x =
       (Algebra.lmul R S x.1).prodMap (Algebra.lmul R T x.2) := by
-  apply LinearMap.ext
-  intro y
-  rcases y with ⟨y, z⟩
   rfl
 
 /-- The algebra norm on a binary product is the product of the component
 norms. -/
 theorem algebra_norm_prod_apply
-    {R S T : Type*} [CommRing R] [CommRing S] [CommRing T]
-    [Algebra R S] [Algebra R T]
     [Module.Free R S] [Module.Finite R S]
     [Module.Free R T] [Module.Finite R T]
     (x : S × T) :
     Algebra.norm R x = Algebra.norm R x.1 * Algebra.norm R x.2 := by
-  rw [Algebra.norm_apply, algebra_lmul_prod_eq_prodMap,
-    LinearMap.det_prodMap, ← Algebra.norm_apply, ← Algebra.norm_apply]
+  simp [Algebra.norm_apply, algebra_lmul_prod_eq_prodMap, LinearMap.det_prodMap]
+
+end
 
 /-- Reindexing a dependent product is an algebra equivalence. -/
 noncomputable def piCongrLeftAlgEquiv
@@ -99,14 +93,12 @@ noncomputable def piOptionEquivProdAlgEquiv
   __ := RingEquiv.piOptionEquivProd
   commutes' _ := rfl
 
+variable {R : Type u} [CommRing R] {ι : Type v} [Fintype ι] (A : ι → Type w) [∀ i, CommRing (A i)]
+    [∀ i, Algebra R (A i)] [∀ i, Module.Free R (A i)] [∀ i, Module.Finite R (A i)] (x : ∀ i, A i)
+
 /-- The algebra norm of an element of a finite dependent product is the
 product of its component norms. -/
-theorem algebra_norm_pi_apply
-    {R : Type u} [CommRing R]
-    {ι : Type v} [Fintype ι]
-    (A : ι → Type w) [∀ i, CommRing (A i)] [∀ i, Algebra R (A i)]
-    [∀ i, Module.Free R (A i)] [∀ i, Module.Finite R (A i)]
-    (x : ∀ i, A i) :
+theorem algebra_norm_pi_apply :
     Algebra.norm R x = ∏ i, Algebra.norm R (x i) := by
   classical
   let P : ∀ (ι : Type v) [Fintype ι], Prop :=
@@ -117,9 +109,9 @@ theorem algebra_norm_pi_apply
         Algebra.norm R x = ∏ i, Algebra.norm R (x i)
   apply Fintype.induction_empty_option (P := P)
   · intro α β _ e h A _ _ _ _ x
-    let : Fintype α := Fintype.ofEquiv β e.symm
+    let := Fintype.ofEquiv β e.symm
     let E := piCongrLeftAlgEquiv (R := R) A e
-    let x' : ∀ i : α, A (e i) := fun i => x (e i)
+    let x' := fun i => x (e i)
     have hEx : E x' = x := by
       apply E.symm.injective
       rw [E.symm_apply_apply]
@@ -130,14 +122,13 @@ theorem algebra_norm_pi_apply
       _ = Algebra.norm R x' := Algebra.norm_eq_of_algEquiv E x'
       _ = ∏ i : α, Algebra.norm R (x' i) := h _ _
       _ = ∏ j : β, Algebra.norm R (x j) := by
-        exact Fintype.prod_equiv e _ _ (fun i => rfl)
+        solve_by_elim [Fintype.prod_equiv]
   · intro A _ _ _ _ x
     simp only [Fintype.prod_empty]
-    rw [Algebra.norm_apply]
     exact LinearMap.det_eq_one_of_subsingleton _
   · intro α _ h A _ _ _ _ x
     let E := piOptionEquivProdAlgEquiv (R := R) A
-    let y : A none × ((i : α) → A (some i)) := E x
+    let y := E x
     calc
       Algebra.norm R x = Algebra.norm R y :=
         (Algebra.norm_eq_of_algEquiv E x).symm
@@ -148,16 +139,11 @@ theorem algebra_norm_pi_apply
         rw [h]
         rfl
       _ = ∏ i : Option α, Algebra.norm R (x i) := by
-        rw [Fintype.prod_option]
+        simp
 
 /-- The algebra trace of an element of a finite dependent product is the
 sum of its component traces. -/
-theorem algebra_trace_pi_apply
-    {R : Type u} [CommRing R]
-    {ι : Type v} [Fintype ι]
-    (A : ι → Type w) [∀ i, CommRing (A i)] [∀ i, Algebra R (A i)]
-    [∀ i, Module.Free R (A i)] [∀ i, Module.Finite R (A i)]
-    (x : ∀ i, A i) :
+theorem algebra_trace_pi_apply :
     Algebra.trace R (∀ i, A i) x = ∑ i, Algebra.trace R (A i) (x i) := by
   classical
   let P : ∀ (ι : Type v) [Fintype ι], Prop :=
@@ -169,9 +155,9 @@ theorem algebra_trace_pi_apply
           ∑ i, Algebra.trace R (A i) (x i)
   apply Fintype.induction_empty_option (P := P)
   · intro α β _ e h A _ _ _ _ x
-    let : Fintype α := Fintype.ofEquiv β e.symm
+    let := Fintype.ofEquiv β e.symm
     let E := piCongrLeftAlgEquiv (R := R) A e
-    let x' : ∀ i : α, A (e i) := fun i => x (e i)
+    let x' := fun i => x (e i)
     have hEx : E x' = x := by
       apply E.symm.injective
       rw [E.symm_apply_apply]
@@ -190,12 +176,12 @@ theorem algebra_trace_pi_apply
     rw [Algebra.trace_apply]
     let b : Basis (Fin 0) R ((i : PEmpty) → A i) := Basis.empty _
     rw [LinearMap.trace_eq_matrix_trace R b]
-    simp [Matrix.trace]
+    simp
   · intro α _ h A _ _ _ _ x
     let E := piOptionEquivProdAlgEquiv (R := R) A
-    let y : A none × ((i : α) → A (some i)) := E x
+    let y := E x
     calc
-      Algebra.trace R (∀ i : Option α, A i) x =
+      _ =
           Algebra.trace R (A none × ((i : α) → A (some i))) y :=
         (Algebra.trace_eq_of_algEquiv E x).symm
       _ = Algebra.trace R (A none) y.1 +
@@ -206,7 +192,7 @@ theorem algebra_trace_pi_apply
         rw [h]
         rfl
       _ = ∑ i : Option α, Algebra.trace R (A i) (x i) := by
-        rw [Fintype.sum_option]
+        simp
 
 end Completion
 end ValuationTheory

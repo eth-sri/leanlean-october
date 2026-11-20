@@ -12,11 +12,11 @@ namespace DedekindZetaZeroFree.KPContCotangentActualGroupoidIdentities
 open KPContCotangentActualOverlap
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable {i : Fin (H.atlas U).componentCount}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {i : Fin (H.atlas U).componentCount}
 variable {a b c : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
   (U := U) (R := R) (P := P) (H := H) i}
 
@@ -29,27 +29,15 @@ private theorem right_inverse (places) (x : KPCuspGenuineMonodromy.SymmetricSpac
   funext k
   simp [labeledA, labeledAInv]
 
-private theorem coordinateMap_one (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) i) : coordinateMap a a 1 = id := by
-  funext x
-  simp [coordinateMap, left_inverse]
-
-private theorem coordinateMap_mul
-    (θ ψ : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i)) :
-    coordinateMap a c (θ * ψ) = coordinateMap b c θ ∘ coordinateMap a b ψ := by
-  funext x
-  simp only [Function.comp_apply, coordinateMap, right_inverse, Subgroup.coe_mul]
-  congr 1
-  rw [smul_smul]
-  congr 1
-  group
+private alias coordinateMap_one := DedekindZetaZeroFree.KPContCotangentActualOverlap.coordinateMap_one
 
 theorem identity_psi (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
     (U := U) (R := R) (P := P) (H := H) i) : (identity a).psi = id :=
   coordinateMap_one a
 
 theorem comp_psi (θ : Arrow b c) (ψ : Arrow a b) :
-    (comp θ ψ).psi = θ.psi ∘ ψ.psi := coordinateMap_mul θ.gamma ψ.gamma
+    (comp θ ψ).psi = θ.psi ∘ ψ.psi := by
+      apply @DedekindZetaZeroFree.KPContCotangentActualOverlap.coordinateMap_mul <;> assumption
 
 theorem identity_phase (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
     (U := U) (R := R) (P := P) (H := H) i) (x : M F) :

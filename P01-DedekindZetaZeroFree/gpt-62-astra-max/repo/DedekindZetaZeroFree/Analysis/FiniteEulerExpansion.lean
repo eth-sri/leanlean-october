@@ -16,9 +16,7 @@ private lemma finsupp_pow_single {P : Type u} (w : (P →₀ ℕ) → ℂ)
   induction n with
   | zero => simpa using hzero
   | succ n ih =>
-    have hstep : Finsupp.single p (n + 1) = Finsupp.single p n + Finsupp.single p 1 :=
-      Finsupp.single_add p n 1
-    rw [hstep, hadd, ih, pow_succ]
+    rw [(Finsupp.single_add p n 1), hadd, ih, pow_succ]
 
 noncomputable def supportedEraseEquiv {P : Type u} [DecidableEq P] (p : P)
     (S : Finset P) (hp : p ∉ S) :
@@ -56,9 +54,11 @@ private lemma supportedEraseEquiv_symm_apply {P : Type u} [DecidableEq P] (p : P
     (S : Finset P) (hp : p ∉ S) (x : ℕ × {d : P →₀ ℕ // d.support ⊆ S}) :
     ((supportedEraseEquiv p S hp).symm x).val = Finsupp.single p x.1 + x.2.val := rfl
 
-theorem finsupp_generator_norm_lt_one {P : Type u} (w : (P →₀ ℕ) → ℂ)
-    (hzero : w 0 = 1) (hadd : ∀ e d, w (e + d) = w e * w d)
-    (habs : Summable (fun e => ‖w e‖)) (p : P) :
+variable {P : Type u} (w : (P →₀ ℕ) → ℂ) (hzero : w 0 = 1) (hadd : ∀ e d, w (e + d) = w e * w d)
+    (habs : Summable (fun e => ‖w e‖))
+
+include hzero hadd habs in
+theorem finsupp_generator_norm_lt_one (p : P) :
     ‖w (Finsupp.single p 1)‖ < 1 := by
   classical
   have h1 : Summable (fun n : ℕ => w (Finsupp.single p n)) :=
@@ -69,9 +69,8 @@ theorem finsupp_generator_norm_lt_one {P : Type u} (w : (P →₀ ℕ) → ℂ)
   rw [hf] at h1
   exact summable_geometric_iff_norm_lt_one.mp h1
 
-theorem hasSum_finsupp_supported {P : Type u} (w : (P →₀ ℕ) → ℂ)
-    (hzero : w 0 = 1) (hadd : ∀ e d, w (e + d) = w e * w d)
-    (habs : Summable (fun e => ‖w e‖)) (S : Finset P) :
+include hzero hadd habs in
+theorem hasSum_finsupp_supported (S : Finset P) :
     HasSum (fun e : {e : P →₀ ℕ // e.support ⊆ S} => w e.val)
       (∏ p ∈ S, (1 - w (Finsupp.single p 1))⁻¹) := by
   classical
@@ -103,8 +102,7 @@ theorem hasSum_finsupp_supported {P : Type u} (w : (P →₀ ℕ) → ℂ)
         (1 - w (Finsupp.single p 1))⁻¹ := by
       have h := hasSum_geometric_of_norm_lt_one
         (finsupp_generator_norm_lt_one w hzero hadd habs p)
-      have hf : (fun n : ℕ => w (Finsupp.single p 1) ^ n)
-          = fun n => w (Finsupp.single p n) :=
+      have hf :=
         funext fun n => (finsupp_pow_single w hzero hadd p n).symm
       rwa [hf] at h
     have hsumm : Summable (fun x : ℕ × {d : P →₀ ℕ // d.support ⊆ S} =>
@@ -118,13 +116,9 @@ theorem hasSum_finsupp_supported {P : Type u} (w : (P →₀ ℕ) → ℂ)
           ‖w (Finsupp.single p x.1) * w x.2.val‖) := by
         simpa only [hfac] using h2
       exact h3.of_norm
-    have hmain : HasSum (fun x : ℕ × {d : P →₀ ℕ // d.support ⊆ S} =>
-        w (Finsupp.single p x.1) * w x.2.val)
-        ((1 - w (Finsupp.single p 1))⁻¹ * ∏ q ∈ S, (1 - w (Finsupp.single q 1))⁻¹) :=
-      HasSum.mul (f := fun n : ℕ => w (Finsupp.single p n))
-        (g := fun d : {d : P →₀ ℕ // d.support ⊆ S} => w d.val) hgeo ih hsumm
     exact (Equiv.hasSum_iff (supportedEraseEquiv p S hp).symm
-      (f := fun e : {e : P →₀ ℕ // e.support ⊆ insert p S} => w e.val)).mp
-      (hmain.congr_fun hfac)
+      ).mp
+      ((HasSum.mul
+        hgeo ih hsumm).congr_fun hfac)
 
 end DedekindZetaZeroFree.LargeSieve.IdealEuler

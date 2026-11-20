@@ -13,8 +13,8 @@ open DedekindZetaZeroFree NumberField
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 private theorem heightMax_nonneg (b ω : Ideal (𝓞 F) → ℂ) (N T : ℝ) :
     0 ≤ detectorHeightPrefixMaximum F b ω N T := by
@@ -25,6 +25,8 @@ private theorem heightMax_nonneg (b ω : Ideal (𝓞 F) → ℂ) (N T : ℝ) :
   apply Real.sSup_nonneg
   rintro v ⟨y, _, rfl⟩
   positivity
+
+alias RowFiniteness.heightMax_nonneg := heightMax_nonneg
 
 open DedekindZetaZeroFree.Quantitative.DetectorSieve in
 
@@ -53,7 +55,7 @@ theorem card_dyad (U M T δ : ℝ) (b : Ideal (𝓞 F) → ℂ) :
     · exact hdy u hc.2.1 hc.2.2
     · exact absurd rfl hu
   rw [hsum]
-  calc ((hfin.toFinset.card : ℕ) : ℝ) * δ = ∑ u ∈ hfin.toFinset, δ := by
+  calc _ = ∑ u ∈ hfin.toFinset, δ := by
         rw [Finset.sum_const, nsmul_eq_mul]
     _ ≤ ∑ u ∈ hfin.toFinset,
         (if FixedData.Row.u u ≠ 1 ∧ U ≤ D.q u ∧ D.q u < 2 * U then

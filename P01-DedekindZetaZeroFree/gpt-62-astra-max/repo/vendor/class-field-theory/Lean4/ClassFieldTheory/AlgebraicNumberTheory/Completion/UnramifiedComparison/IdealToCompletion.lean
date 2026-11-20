@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -179,9 +175,7 @@ noncomputable def chosenFinitePlaceCompletionIntegralUniformizer
         vF.Completion :=
     { ValueGroup := ValuativeRel.ValueGroupWithZero vF.Completion
       valuation := ValuativeRel.valuation vF.Completion }
-  have hπCompletionUniformizer :
-      completionDVF.valuation.IsUniformizer
-        (πCompletion : vF.Completion) :=
+  have hπCompletionUniformizer :=
     completionDVF.isUniformizer_of_mem_maximalIdeal_of_not_mem_maximalIdeal_sq
       hπCompletionMaximal hπCompletionNotDeep
   exact
@@ -230,10 +224,10 @@ theorem chosenFinitePlace_integral_uniformizer_not_mem_maximalIdeal_sq
   let w := chosenFinitePlaceExtension (L := L) v
   let W :=
     finitePlaceExtensionCentre
-      (K := K) (L := L) v w
-  let : W.asIdeal.LiesOver v.asIdeal :=
+        v w
+  let :=
     finitePlaceExtensionCentre_liesOver
-      (K := K) (L := L) v w
+        v w
   let E :=
     ChosenFinitePlaceLocalizedCompletion
       (K := K) (L := L) v
@@ -241,24 +235,17 @@ theorem chosenFinitePlace_integral_uniformizer_not_mem_maximalIdeal_sq
       𝒪[E] ≃+* W.adicCompletionIntegers L :=
     chosenFinitePlaceLocalizedIntegerRingEquiv
       (K := K) (L := L) v
-  let πTarget : 𝒪[E] :=
+  let πTarget :=
     algebraMap 𝒪[vK.Completion] 𝒪[E] πBase
-  change πTarget ∉
-    (IsLocalRing.maximalIdeal 𝒪[E]) ^ 2
   intro hπTargetDeep
-  have hπTargetConcrete :
-      eTarget πTarget ∈
-        (IsLocalRing.maximalIdeal
-          (W.adicCompletionIntegers L)) ^ 2 :=
-    (ValuationTheory.ringEquiv_mem_maximalIdeal_pow_iff
-      eTarget 2 πTarget).2 hπTargetDeep
+  let algebraMap₀ := algebraMap K L (π : K)
   have hπTargetField :
       (eTarget πTarget : W.adicCompletion L) =
         (algebraMap L (W.adicCompletion L)
-          (algebraMap K L (π : K))) := by
+          (algebraMap₀)) := by
     change
       finitePlaceExtensionAdicCompletionRingEquiv
-            (K := K) (L := L) v w
+              v w
             (localizedCompletionEquivCompletion
               vK (RayClass.adicAbv_isNontrivial v) w
               (algebraMap vK.Completion E
@@ -290,15 +277,13 @@ theorem chosenFinitePlace_integral_uniformizer_not_mem_maximalIdeal_sq
     change
       Valued.v
           (algebraMap L (W.adicCompletion L)
-            (algebraMap K L (π : K))) =
+            (algebraMap₀)) =
         WithZero.exp (-1 : ℤ)
     calc
-      Valued.v
-          (algebraMap L (W.adicCompletion L)
-            (algebraMap K L (π : K))) =
-          W.valuation L (algebraMap K L (π : K)) :=
+      _ =
+          W.valuation L (algebraMap₀) :=
         HeightOneSpectrum.valuedAdicCompletion_eq_valuation'
-          W (algebraMap K L (π : K))
+          W (algebraMap₀)
       _ =
           (v.valuation K (π : K)) ^
             v.asIdeal.ramificationIdx' W.asIdeal := by
@@ -310,16 +295,14 @@ theorem chosenFinitePlace_integral_uniformizer_not_mem_maximalIdeal_sq
       _ = WithZero.exp (-1 : ℤ) := by
         rw [hglobal, pow_one,
           HeightOneSpectrum.valuation_of_algebraMap, hπ]
-  have hπTargetUniformizer :
-      targetDVF.valuation.IsUniformizer
-        (eTarget πTarget : W.adicCompletion L) := by
-    rw [Valuation.IsUniformizer.iff,
-      Valuation.IsRankOneDiscrete.generator_eq_exp_neg_one_of_surjective
-        (W.valuedAdicCompletion_surjective L)]
-    exact hπTargetValuation
-  exact
+  refine
     (targetDVF.uniformizer_not_mem_maximalIdeal_sq
-      hπTargetUniformizer) hπTargetConcrete
+      ?_) ((ValuationTheory.ringEquiv_mem_maximalIdeal_pow_iff
+        eTarget 2 πTarget).2 hπTargetDeep)
+  rw [Valuation.IsUniformizer.iff,
+    Valuation.IsRankOneDiscrete.generator_eq_exp_neg_one_of_surjective
+      (W.valuedAdicCompletion_surjective L)]
+  exact hπTargetValuation
 
 /-- Ramification index one at the global centre prevents the image of the
 completed base maximal ideal from lying in the square of the target maximal
@@ -349,7 +332,7 @@ theorem chosenFinitePlace_maximalIdeal_map_not_le_sq_of_centre_ramificationIdx_e
   intro hdeep
   apply
     chosenFinitePlace_integral_uniformizer_not_mem_maximalIdeal_sq
-      (K := K) (L := L) v
+        v
       πData.integer πData.completionInteger
       πData.intValuation_eq_exp_neg_one
       πData.coe_completionInteger hglobal
@@ -357,9 +340,9 @@ theorem chosenFinitePlace_maximalIdeal_map_not_le_sq_of_centre_ramificationIdx_e
     hdeep
       (Ideal.mem_map_of_mem
         (algebraMap
-          𝒪[ChosenFinitePlaceBaseCompletion (K := K) v]
+          𝒪[ChosenFinitePlaceBaseCompletion v]
           𝒪[ChosenFinitePlaceLocalizedCompletion
-            (K := K) (L := L) v])
+              v])
         πData.completionInteger_mem_maximalIdeal)
 
 /-- Ramification index one at the global centre gives ramification index one
@@ -389,8 +372,7 @@ theorem chosenFinitePlace_maximalIdeal_ramificationIdx'_eq_one_of_centre_ramific
     (𝓂[vK.Completion] :
         Ideal 𝒪[vK.Completion]).ramificationIdx'
       (𝓂[E] : Ideal 𝒪[E]) = 1
-  let :
-      IsLocalHom (algebraMap vK.Completion E) :=
+  let :=
     IsLocalRing.instIsLocalHomRingHomOfNontrivial
       (algebraMap vK.Completion E)
   let :
@@ -403,7 +385,7 @@ theorem chosenFinitePlace_maximalIdeal_ramificationIdx'_eq_one_of_centre_ramific
         (algebraMap 𝒪[vK.Completion] 𝒪[E]))]
   exact
     chosenFinitePlace_maximalIdeal_map_not_le_sq_of_centre_ramificationIdx_eq_one
-      (K := K) (L := L) v hglobal
+        v hglobal
 
 omit [FiniteDimensional K L] in
 /-- Ideal-theoretic unramifiedness gives ramification index one at the actual
@@ -423,20 +405,21 @@ theorem finitePlaceExtensionCentre_ramificationIdx_eq_one_of_isUnramifiedAt
   let w := chosenFinitePlaceExtension (L := L) v
   let W :=
     finitePlaceExtensionCentre
-      (K := K) (L := L) v w
-  let : W.asIdeal.LiesOver v.asIdeal :=
+        v w
+  let :=
     finitePlaceExtensionCentre_liesOver
-      (K := K) (L := L) v w
+        v w
   rw [Ideal.ramificationIdx'_eq_ramificationIdx
     v.asIdeal W.asIdeal v.ne_bot]
-  let : Algebra.IsUnramifiedAt (𝓞 K) W.asIdeal := hunram
+  let := hunram
   exact Ideal.ramificationIdx_eq_one W.asIdeal (𝓞 K)
+
+variable (v : HeightOneSpectrum (𝓞 K))
 
 /-- Ramification index one at the actual global centre gives ramification
 index one for the maximal ideals of the corresponding completed valued-field
 extension. -/
 theorem chosenFinitePlace_maximalIdeal_ramificationIdx_eq_one_of_centre_ramificationIdx_eq_one
-    (v : HeightOneSpectrum (𝓞 K))
     (hglobal :
       v.asIdeal.ramificationIdx'
           (finitePlaceExtensionCentre
@@ -457,8 +440,7 @@ theorem chosenFinitePlace_maximalIdeal_ramificationIdx_eq_one_of_centre_ramifica
   change
     (𝓂[E] : Ideal 𝒪[E]).ramificationIdx
       𝒪[vK.Completion] = 1
-  have hbaseBot :
-      (𝓂[vK.Completion] : Ideal 𝒪[vK.Completion]) ≠ ⊥ :=
+  have hbaseBot :=
     Ring.ne_bot_of_isMaximal_of_not_isField
       (IsLocalRing.maximalIdeal.isMaximal
         𝒪[vK.Completion])
@@ -483,12 +465,11 @@ theorem chosenFinitePlace_maximalIdeal_ramificationIdx_eq_one_of_centre_ramifica
     (𝓂[E] : Ideal 𝒪[E]) hbaseBot]
   exact
     chosenFinitePlace_maximalIdeal_ramificationIdx'_eq_one_of_centre_ramificationIdx_eq_one
-      (K := K) (L := L) v hglobal
+        v hglobal
 
 /-- Ramification index one at the actual global centre implies
 unramifiedness of the corresponding completed valued-field extension. -/
 theorem chosenFinitePlaceIsUnramified_of_centre_ramificationIdx_eq_one
-    (v : HeightOneSpectrum (𝓞 K))
     (hglobal :
       v.asIdeal.ramificationIdx'
           (finitePlaceExtensionCentre
@@ -506,13 +487,12 @@ theorem chosenFinitePlaceIsUnramified_of_centre_ramificationIdx_eq_one
     { maximalIdeal_ramificationIdx_eq_one := ?_ }
   exact
     chosenFinitePlace_maximalIdeal_ramificationIdx_eq_one_of_centre_ramificationIdx_eq_one
-      (K := K) (L := L) v hglobal
+        v hglobal
 
 /-- Algebraic unramifiedness of the centre of the chosen extension
 implies unramifiedness of the corresponding completed valued-field
 extension. -/
 theorem chosenFinitePlaceIsUnramified_of_isUnramifiedAt
-    (v : HeightOneSpectrum (𝓞 K))
     (hunram :
       Algebra.IsUnramifiedAt (𝓞 K)
         (finitePlaceExtensionCentre
@@ -522,9 +502,9 @@ theorem chosenFinitePlaceIsUnramified_of_isUnramifiedAt
       (K := K) (L := L) v := by
   apply
     chosenFinitePlaceIsUnramified_of_centre_ramificationIdx_eq_one
-      (K := K) (L := L) v
+        v
   exact
     finitePlaceExtensionCentre_ramificationIdx_eq_one_of_isUnramifiedAt
-      (K := K) (L := L) v hunram
+        v hunram
 
 end

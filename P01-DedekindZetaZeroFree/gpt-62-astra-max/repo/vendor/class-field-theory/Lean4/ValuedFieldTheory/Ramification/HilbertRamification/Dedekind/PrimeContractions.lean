@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -39,20 +37,16 @@ variable (G : Type*) [Group G] [MulSemiringAction G L] [SMulCommClass G K L]
 keeps the corresponding `Algebra.IsIntegral.finite` conversion out of instance
 search, so the HRT number-field layer records the source explicitly. -/
 theorem ringOfIntegers_moduleFinite :
-    Module.Finite (𝓞 K) (𝓞 L) := by
-  exact
-    ⟨(isNoetherian_def.mp
-      (inferInstance : IsNoetherian (𝓞 K) (𝓞 L)) ⊤)⟩
+    Module.Finite (𝓞 K) (𝓞 L) := ⟨(isNoetherian_def.mp
+      inferInstance ⊤)⟩
 
 /-- The contraction of a maximal finite prime of a number-field ring of
 integers to a subfield ring of integers is nonzero. -/
 theorem ringOfIntegers_under_ne_bot
     {E F : Type*} [Field E] [Field F] [NumberField E] [NumberField F]
     [Algebra E F] (P : Ideal (𝓞 F)) [P.IsMaximal] :
-    P.under (𝓞 E) ≠ ⊥ := by
-  exact
-    Ring.ne_bot_of_isMaximal_of_not_isField
-      (M := P.under (𝓞 E)) inferInstance
+    P.under (𝓞 E) ≠ ⊥ := Ring.ne_bot_of_isMaximal_of_not_isField
+       inferInstance
       (RingOfIntegers.not_isField E)
 
 /-- prime-decomposition theory:
@@ -73,13 +67,6 @@ instance basePrime_liesOver
     (P : Ideal (𝓞 L)) :
     P.LiesOver (basePrime (K := K) P) where
   over := rfl
-
-/-- Prime-decomposition statement:
-for a finite prime `P` of `O_L`, its contraction to `O_K` is nonzero. -/
-theorem basePrime_ne_bot
-    (P : Ideal (𝓞 L)) [P.IsMaximal] :
-    basePrime (K := K) P ≠ ⊥ := by
-  exact ringOfIntegers_under_ne_bot (E := K) (F := L) P
 
 /-- The prime-decomposition tower identity:
 `P_Z = P ∩ O_{Z_P}` for the decomposition field. -/
@@ -108,16 +95,6 @@ instance decompositionFieldPrime_liesOver_basePrime
   Ideal.LiesOver.tower_bot P
     (decompositionFieldPrime (K := K) (L := L) G P)
     (basePrime (K := K) P)
-
-/-- The prime-decomposition tower identity:
-the contracted decomposition-field prime `P_Z` is nonzero for a finite prime
-`P` of `O_L`. -/
-theorem decompositionFieldPrime_ne_bot
-    (P : Ideal (𝓞 L)) [P.IsMaximal] :
-    decompositionFieldPrime (K := K) (L := L) G P ≠ ⊥ := by
-  exact
-    ringOfIntegers_under_ne_bot
-      (E := decompositionField (K := K) (L := L) G P) (F := L) P
 
 /-- A prime-decomposition consequence:
 `P_T = P ∩ O_{T_P}` for the inertia field. -/
@@ -183,16 +160,6 @@ instance inertiaFieldPrime_liesOver_basePrime
   Ideal.LiesOver.tower_bot P
     (inertiaFieldPrime (K := K) (L := L) G P)
     (basePrime (K := K) P)
-
-/-- A prime-decomposition consequence:
-the contracted inertia-field prime `P_T` is nonzero for a finite prime `P` of
-`O_L`. -/
-theorem inertiaFieldPrime_ne_bot
-    (P : Ideal (𝓞 L)) [P.IsMaximal] :
-    inertiaFieldPrime (K := K) (L := L) G P ≠ ⊥ := by
-  exact
-    ringOfIntegers_under_ne_bot
-      (E := inertiaField (K := K) (L := L) G P) (F := L) P
 
 end Dedekind
 end HilbertRamification

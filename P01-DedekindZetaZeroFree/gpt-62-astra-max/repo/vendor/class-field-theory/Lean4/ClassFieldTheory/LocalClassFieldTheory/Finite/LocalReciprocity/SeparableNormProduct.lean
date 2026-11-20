@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -53,8 +48,8 @@ theorem prod_embeddings_algebraMap_powerBasisGen_eq
     ∏ σ : E →ₐ[k] Ω, σ (algebraMap L E pb.gen) =
       ((@Finset.univ (L →ₐ[k] Ω) (PowerBasis.AlgHom.fintype pb)).prod
         (fun σ => σ pb.gen)) ^ Module.finrank L E := by
-  have : FiniteDimensional L E := FiniteDimensional.right k L E
-  have : Algebra.IsSeparable L E :=
+  have := FiniteDimensional.right k L E
+  have :=
     Algebra.isSeparable_tower_top_of_isSeparable k L E
   let : Fintype (L →ₐ[k] Ω) := PowerBasis.AlgHom.fintype pb
   rw [Fintype.prod_equiv algHomEquivSigma
@@ -62,15 +57,13 @@ theorem prod_embeddings_algebraMap_powerBasisGen_eq
     (fun σ => σ.1 pb.gen)]
   rw [← Finset.univ_sigma_univ, Finset.prod_sigma, ← Finset.prod_pow]
   · refine Finset.prod_congr rfl fun σ _ => ?_
-    let : Algebra L Ω := σ.toRingHom.toAlgebra
+    let := σ.toRingHom.toAlgebra
     simp_rw [Finset.prod_const]
     congr
     rw [Finset.card_univ, Fintype.card_eq_nat_card]
     exact AlgHom.natCard_of_splits L E Ω (fun x =>
       IsSepClosed.splits_codomain _ (Algebra.IsSeparable.isSeparable L x))
   · intro σ
-    change σ (algebraMap L E pb.gen) =
-      (σ.comp (IsScalarTower.toAlgHom k L E)) pb.gen
     exact (AlgHom.comp_apply σ (IsScalarTower.toAlgHom k L E) pb.gen).symm
 
 /-- Mapping the norm of an element of a finite separable extension into a
@@ -82,8 +75,7 @@ theorem algebraMap_norm_eq_prod_embeddings_of_isSepClosed
     (x : E) :
     algebraMap k Ω (Algebra.norm k x) = ∏ σ : E →ₐ[k] Ω, σ x := by
   have hx := Algebra.IsSeparable.isIntegral k x
-  let : Algebra.IsSeparable k
-      (IntermediateField.adjoin k ({x} : Set E)) :=
+  let :=
     Algebra.isSeparable_tower_bot_of_isSeparable k
       (IntermediateField.adjoin k ({x} : Set E)) E
   rw [Algebra.norm_eq_norm_adjoin k x, map_pow,

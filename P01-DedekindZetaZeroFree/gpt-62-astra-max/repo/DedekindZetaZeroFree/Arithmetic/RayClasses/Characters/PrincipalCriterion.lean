@@ -26,7 +26,7 @@ theorem rayCharacterPrincipalCriterion
     have key : ψ.toHomUnits = (1 : RayIdealClass K m hm →* ℂˣ) := by
       apply ClassFieldTheory.rayClassGroup_hom_ext_finitePrime K μ
       intro v hv
-      have hv' : v ∉ μ.finitePart.support := hv
+      have hv' := hv
       apply Units.ext
       rw [MonoidHom.coe_toHomUnits]
       show ψ (ClassFieldTheory.rayClassOfFinitePrime μ v hv) = 1
@@ -38,13 +38,10 @@ theorem rayCharacterPrincipalCriterion
           ((Ideal.mem_normalizedFactors_iff hm).mpr ⟨v.isPrime, hle⟩)
       have hcoprime : v.asIdeal ⊔ m = ⊤ := by
         by_contra hne
-        have heq := v.isMaximal.eq_of_le hne le_sup_left
-        exact hnot (heq ▸ le_sup_right)
-      have hval : χ v.asIdeal = 1 := hχ v.asIdeal v.ne_bot hcoprime
-      have hs := rayIdealClass_of_finitePrime K m hm v hv'
+        exact hnot ((v.isMaximal.eq_of_le hne le_sup_left) ▸ le_sup_right)
       have hd := h v.asIdeal
-      rw [hval, hs] at hd
-      simpa using hd.symm
+      rw [(hχ v.asIdeal v.ne_bot hcoprime), (rayIdealClass_of_finitePrime K m hm v hv')] at hd
+      exact hd.symm
     apply MonoidHom.ext
     intro c
     have h1 : ψ.toHomUnits c = 1 := by simp [key]

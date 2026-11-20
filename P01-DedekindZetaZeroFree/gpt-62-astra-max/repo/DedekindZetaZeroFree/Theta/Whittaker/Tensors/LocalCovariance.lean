@@ -12,13 +12,13 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages MomentSources HCGeneration KPGlobalResidualConstruction
 open KPContActualSphericalRightFieldIdentification
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 local notation "H" => actualImageData R P C μ hμ
 local notation "W" => actualLocal R H
 local notation "E" => bad R.A P C
@@ -39,9 +39,7 @@ theorem actual_finite_covariance (N : TraceHaarTransport R) : ∀ q (a : KPLocal
           (x ⟨Sum.inr q, hq⟩))))) g =
     (actualCoreResidue R P C μ hμ N) (RestrictedTensorSimple.stageInclusion _ (actualReference R P C μ hμ) (bad R.A P C) s (PiTensorProduct.tprod ℂ x))
       (g * KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
-        (KPAdelicCoverRestrictedProduct.localInjection F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) a)) := by
-  intro q a s hq v g
-  exact actualCoreResidue_update_finite R P C μ hμ N s q hq a v g
+        (KPAdelicCoverRestrictedProduct.localInjection F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) a)) := fun q a s hq v g => actualCoreResidue_update_finite R P C μ hμ N s q hq a v g
 theorem actual_complex_covariance (N : TraceHaarTransport R) : ∀ (w : InfinitePlace F) (k : KPCplxCharacterHaar.ComplexSU2)
     (s : RestrictedTensorSimple.Level (bad R.A P C)) (hw : Sum.inl w ∈ s.val)
     (x : ∀ p : s.val, actualLocal R (actualImageData R P C μ hμ) p) g,

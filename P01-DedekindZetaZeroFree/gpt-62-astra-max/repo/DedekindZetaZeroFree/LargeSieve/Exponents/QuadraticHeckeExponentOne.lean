@@ -8,11 +8,6 @@ open scoped NumberField Classical
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
-theorem hasSieveExponent_one
-    (F : Type) [Field F] [NumberField F]
-    (hF : NumberField.IsTotallyComplex F)
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) :
-    HasSieveExponent F c Q 1 :=
-  hasSieveExponent_one_of_band F hF c Q
+alias hasSieveExponent_one := hasSieveExponent_one_of_band
 
 end DedekindZetaZeroFree.LargeSieve.Sieve

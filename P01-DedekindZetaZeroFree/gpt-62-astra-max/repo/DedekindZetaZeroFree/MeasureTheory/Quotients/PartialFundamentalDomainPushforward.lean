@@ -11,10 +11,10 @@ open MeasureTheory
 
 namespace DedekindZetaZeroFree.KPActualComponentHaarSources.ProductDisintegration
 
-private theorem partial_domain_pushforward_compare
-    {Γ Y Z : Type*} [Group Γ] [MulAction Γ Y]
-    [MeasurableSpace Y] [MeasurableSpace Z] [Countable Γ]
+variable {Γ Y Z : Type*} [Group Γ] [MulAction Γ Y] [MeasurableSpace Y] [MeasurableSpace Z] [Countable Γ]
     [MeasurableConstSMul Γ Y] (μ : Measure Y) [SMulInvariantMeasure Γ Y μ]
+
+private theorem partial_domain_pushforward_compare
     (S D E : Set Y) (hS : MeasurableSet S)
     (hSinv : ∀ γ : Γ, (fun y => γ • y) ⁻¹' S = S)
     (hD : IsFundamentalDomain Γ D (μ.restrict S))
@@ -40,25 +40,18 @@ private theorem partial_domain_pushforward_compare
     simp only [Set.mem_preimage, hqi])
 
 theorem quotient_restrict_of_partial_domain
-    {Γ Y Z : Type*} [Group Γ] [MulAction Γ Y]
-    [MeasurableSpace Y] [MeasurableSpace Z] [Countable Γ]
-    [MeasurableConstSMul Γ Y]
-    (μ : Measure Y) [SMulInvariantMeasure Γ Y μ]
     (E : Set Y) (hEm : MeasurableSet E) (hE : IsFundamentalDomain Γ E μ)
     (q : Y → Z) (hq : Measurable q) (hqi : ∀ (γ : Γ) y, q (γ • y) = q y)
     (T : Set Z) (hT : MeasurableSet T)
     (D : Set Y) (hDm : MeasurableSet D) (hDsub : D ⊆ q ⁻¹' T)
     (hD : IsFundamentalDomain Γ D (μ.restrict (q ⁻¹' T))) :
     (Measure.map q (μ.restrict E)).restrict T = Measure.map q (μ.restrict D) := by
-  have hS : MeasurableSet (q ⁻¹' T) := hT.preimage hq
   have hSinv : ∀ γ : Γ, (fun y => γ • y) ⁻¹' (q ⁻¹' T) = q ⁻¹' T := by
     intro γ
     ext y
     simp only [Set.mem_preimage]
     rw [hqi γ y]
-  have hE' : IsFundamentalDomain Γ E (μ.restrict (q ⁻¹' T)) :=
-    hE.mono Measure.absolutelyContinuous_restrict
-  have hcmp := partial_domain_pushforward_compare μ (q ⁻¹' T) D E hS hSinv hD hE' q hq hqi
+  have hcmp := partial_domain_pushforward_compare μ (q ⁻¹' T) D E (hT.preimage hq) hSinv hD (hE.mono Measure.absolutelyContinuous_restrict) q hq hqi
   rw [Measure.restrict_restrict_of_subset hDsub] at hcmp
   rw [Measure.restrict_restrict hEm] at hcmp
   have hmap : (Measure.map q (μ.restrict E)).restrict T =
@@ -72,8 +65,7 @@ theorem quotient_restrict_of_partial_domain
     ext y
     simp only [Set.mem_inter_iff, Set.mem_preimage]
     tauto
-  rw [hmap]
-  exact hcmp.symm
+  simp_all [hmap]
 
 end DedekindZetaZeroFree.KPActualComponentHaarSources.ProductDisintegration
 

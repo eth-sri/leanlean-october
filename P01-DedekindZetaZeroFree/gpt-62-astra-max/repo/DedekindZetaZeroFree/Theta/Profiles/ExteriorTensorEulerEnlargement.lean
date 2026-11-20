@@ -11,15 +11,15 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerP
 open KPLocalPrincipalSeries KPLocalExceptionalConstruction KPLocalStoneVonNeumann
 open KPRankOneShellContinuation KPRankOneShellRepair ActualCofactor
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
-variable (E T : Finset (HeightOneSpectrum (𝓞 F))) (hE : C.exceptional ⊆ E) (hET : E ⊆ T)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
+    (E T : Finset (HeightOneSpectrum (𝓞 F))) (hE : C.exceptional ⊆ E) (hET : E ⊆ T)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 set_option synthInstance.maxHeartbeats 200000
-open _root_.DedekindZetaZeroFree.KPLocalTameIntertwiningBlock renaming compact_extension_value → compact_extension_value
-open _root_.DedekindZetaZeroFree.KPAdditiveHaar renaming localNormalizedHaar_eq_addHaar_of_not_mem → localNormalizedHaar_eq_addHaar_of_not_mem
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor renaming compact_forward_eq_integral → compact_forward_eq_integral
+open _root_.DedekindZetaZeroFree.KPLocalTameIntertwiningBlock (compact_extension_value)
+open _root_.DedekindZetaZeroFree.KPAdditiveHaar (localNormalizedHaar_eq_addHaar_of_not_mem)
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor (compact_forward_eq_integral)
 
 def enlargedProfiles
     (φ : ∀ q : E, compactPicture (C.canonical q.val).borel (C.polarization q.val)

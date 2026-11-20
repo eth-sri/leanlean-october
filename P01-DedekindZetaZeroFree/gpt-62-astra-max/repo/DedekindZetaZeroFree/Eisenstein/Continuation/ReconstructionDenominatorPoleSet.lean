@@ -18,10 +18,9 @@ theorem analytic_zeroSet_isolated {O : Set ℂ} (hO : IsOpen O)
     · exact (hqa (hz ha)).elim
     · exact hn
   intro z hz
-  have hlocal := eventually_codiscreteWithin_iff_forall_eventually_nhdsNE.mp hne z hz
   have hall : ∀ᶠ s in 𝓝 z, s ≠ z → s ∈ O → q s ≠ 0 := by
-    simpa only [Set.mem_compl_iff, Set.mem_singleton_iff] using
-      eventually_nhdsWithin_iff.mp hlocal
+    simpa using
+      eventually_nhdsWithin_iff.mp (eventually_codiscreteWithin_iff_forall_eventually_nhdsNE.mp hne z hz)
   obtain ⟨r, hr, hball⟩ := Metric.eventually_nhds_iff.mp hall
   obtain ⟨t, ht, htO⟩ := Metric.isOpen_iff.mp hO z hz
   refine ⟨min r t, lt_min hr ht,
@@ -35,9 +34,9 @@ end DedekindZetaZeroFree.ResidueContinuity.ScalarSourcePoleGeometry
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources EisensteinSmoothGerms ResidueContinuity.ScalarSourcePoleGeometry
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
-variable {B : JointRootAlignedSources R N} {v : R.A.UnitQuotient}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {B : JointRootAlignedSources R N} {v : R.A.UnitQuotient}
 
 theorem SelectedScalarBranch.germ_eq_of_weighted_chamber
     (D : SelectedScalarBranch R B v) (q : ℂ → ℂ) (A : ℂ → Functions R)
@@ -64,8 +63,7 @@ theorem SelectedScalarBranch.germ_eq_of_weighted_chamber
       KPContinuation.spectralDomain_isConnected.isPreconnected with hz | hn
     · exact (hq0 (hz (by norm_num [KPContinuation.spectralDomain]))).elim
     · exact hn
-  have hlocal := eventually_codiscreteWithin_iff_forall_eventually_nhdsNE.mp hne s hs
-  filter_upwards [he, hlocal,
+  filter_upwards [he, (eventually_codiscreteWithin_iff_forall_eventually_nhdsNE.mp hne s hs),
     nhdsWithin_le_nhds (KPContinuation.spectralDomain_isOpen.mem_nhds hs)] with z he hn hz
   rw [← he, mul_div_cancel_left₀ _ (hn hz)]
 
@@ -82,17 +80,13 @@ theorem selectedPoleSet_of_weighted_comparison
     (hreg : ∀ s ∈ KPContinuation.spectralDomain, s ∉ P →
       ∀ g, AnalyticAt ℂ (fun z => A z g) s) :
     Nonempty (SelectedPoleSet D) := by
-  let Z : Set ℂ := {s | s ∈ KPContinuation.spectralDomain ∧ q s = 0}
-  have hZi : IsolatedPoles KPContinuation.spectralDomain Z :=
-    analytic_zeroSet_isolated KPContinuation.spectralDomain_isOpen
-      KPContinuation.spectralDomain_isConnected.isPreconnected q hq
-      (by norm_num [KPContinuation.spectralDomain]) hq0
+  let Z := {s | s ∈ KPContinuation.spectralDomain ∧ q s = 0}
   apply selectedPoleSet_of_regular D (P ∪ Z)
-    (fun _ hs => hs.elim (fun hp => hP hp) (fun hz => hz.1)) (hi.union hZi)
+    (fun _ hs => hs.elim (fun hp => hP hp) (fun hz => hz.1)) (hi.union (analytic_zeroSet_isolated KPContinuation.spectralDomain_isOpen
+      KPContinuation.spectralDomain_isConnected.isPreconnected q hq
+      (by norm_num [KPContinuation.spectralDomain]) hq0))
   intro s hs hn g
-  have hnp : s ∉ P := fun hp => hn (Or.inl hp)
-  have hqne : q s ≠ 0 := fun hz => hn (Or.inr ⟨hs, hz⟩)
-  exact D.analyticAt_of_germ g hs ((hreg s hs hnp g).div (hq s hs) hqne)
+  exact D.analyticAt_of_germ g hs ((hreg s hs (fun hp => hn (Or.inl hp)) g).div (hq s hs) (fun hz => hn (Or.inr ⟨hs, hz⟩)))
     (D.germ_eq_of_weighted_chamber q A hq hq0 hA hch g hs)
 
 end DedekindZetaZeroFree.ThetaExpansion

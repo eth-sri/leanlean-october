@@ -41,7 +41,7 @@ theorem quadratic_exp_growth_isBigO_double_exp (a b : ℝ) (hab : a < b)
   refine ⟨c, hclt, D, Asymptotics.IsBigO.of_bound M ?_⟩
   filter_upwards [Filter.eventually_inf_principal.mpr (Filter.Eventually.of_forall
     (fun s : ℂ => fun hs : a < s.re ∧ s.re < b => hs))] with s hs
-  simpa only [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)] using
+  simpa using
     (hg s hs).trans (mul_le_mul_of_nonneg_left (Real.exp_le_exp.mpr
       (hpoly |s.im| (abs_nonneg _))) hM)
 
@@ -53,9 +53,7 @@ theorem norm_le_on_closed_strip_of_quadratic_exp_growth (a b C : ℝ)
         ‖f s‖ ≤ M * Real.exp (B * (1 + |s.im|) ^ 2))
     (hleft : ∀ s : ℂ, s.re = a → ‖f s‖ ≤ C)
     (hright : ∀ s : ℂ, s.re = b → ‖f s‖ ≤ C) :
-    ∀ s : ℂ, a ≤ s.re ∧ s.re ≤ b → ‖f s‖ ≤ C := by
-  intro s hs
-  exact PhragmenLindelof.vertical_strip hhol
+    ∀ s : ℂ, a ≤ s.re ∧ s.re ≤ b → ‖f s‖ ≤ C := fun s hs => PhragmenLindelof.vertical_strip hhol
     (quadratic_exp_growth_isBigO_double_exp a b hab f hgrowth)
     hleft hright hs.1 hs.2
 

@@ -10,45 +10,55 @@ open scoped Pointwise
 
 namespace DedekindZetaZeroFree.KPFiniteAdelicLatticeStabilizers
 
-abbrev Adeles (F : Type*) [Field F] [NumberField F] :=
+section
+
+variable (F : Type*) [Field F]
+
+abbrev Adeles [NumberField F] :=
   IsDedekindDomain.FiniteAdeleRing (NumberField.RingOfIntegers F) F
-abbrev RationalGL (F : Type*) [Field F] := Matrix.GeneralLinearGroup (Fin 2) F
-abbrev AdelicGL (F : Type*) [Field F] [NumberField F] :=
+abbrev RationalGL := Matrix.GeneralLinearGroup (Fin 2) F
+abbrev AdelicGL [NumberField F] :=
   Matrix.GeneralLinearGroup (Fin 2) (Adeles F)
-abbrev RationalPG (F : Type*) [Field F] := Matrix.ProjGenLinGroup (Fin 2) F
-abbrev AdelicPG (F : Type*) [Field F] [NumberField F] :=
+abbrev RationalPG := Matrix.ProjGenLinGroup (Fin 2) F
+
+end
+section
+
+variable (F : Type*) [Field F] [NumberField F]
+
+abbrev AdelicPG :=
   Matrix.ProjGenLinGroup (Fin 2) (Adeles F)
 
-noncomputable def projectiveTopology (F : Type*) [Field F] [NumberField F] :
+noncomputable def projectiveTopology :
     TopologicalSpace (AdelicPG F) := by
   unfold AdelicPG Matrix.ProjGenLinGroup
   infer_instance
 
-noncomputable def diagonalGL (F : Type*) [Field F] [NumberField F] :
+noncomputable def diagonalGL :
     RationalGL F →* AdelicGL F :=
   Matrix.GeneralLinearGroup.map (algebraMap F (Adeles F))
-noncomputable def diagonalPG (F : Type*) [Field F] [NumberField F] :
+noncomputable def diagonalPG :
     RationalPG F →* AdelicPG F :=
   Matrix.ProjGenLinGroup.map (algebraMap F (Adeles F))
 
-def integralVectors (F : Type*) [Field F] [NumberField F] :
+def integralVectors :
     Set (Matrix (Fin 2) (Fin 1) (Adeles F)) :=
   {x | ∀ i j v, x i j v ∈ v.adicCompletionIntegers F}
-noncomputable def integralGL (F : Type*) [Field F] [NumberField F] :
+noncomputable def integralGL :
     Subgroup (AdelicGL F) := MulAction.stabilizer (AdelicGL F) (integralVectors F)
-noncomputable def integralPG (F : Type*) [Field F] [NumberField F] :
+noncomputable def integralPG :
     Subgroup (AdelicPG F) := (integralGL F).map Matrix.ProjGenLinGroup.mk
 
-noncomputable def diagonalVector (F : Type*) [Field F] [NumberField F] (x : F × F) :
+noncomputable def diagonalVector (x : F × F) :
     Matrix (Fin 2) (Fin 1) (Adeles F) :=
   fun i _ => algebraMap F (Adeles F) (if i = 0 then x.1 else x.2)
 
-noncomputable def localVector (F : Type*) [Field F] [NumberField F]
+noncomputable def localVector
     (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)) (x : F × F) :
     Matrix (Fin 2) (Fin 1) (v.adicCompletion F) :=
   fun i _ => algebraMap F (v.adicCompletion F) (if i = 0 then x.1 else x.2)
 
-def localTranslatedLattice (F : Type*) [Field F] [NumberField F]
+def localTranslatedLattice
     (g : AdelicGL F)
     (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)) :
     Set (Matrix (Fin 2) (Fin 1) (v.adicCompletion F)) :=
@@ -56,6 +66,8 @@ def localTranslatedLattice (F : Type*) [Field F] [NumberField F]
     (show Matrix (Fin 2) (Fin 2) (v.adicCompletion F) from
       fun i j => (g.val i j) v) * x) ''
       {x | ∀ i j, x i j ∈ v.adicCompletionIntegers F}
+
+end
 
 open IsDedekindDomain NumberField
 
@@ -78,7 +90,6 @@ private theorem integral_action (a : AdelicGL F)
   intro i j v
   change ((a.val * x) i j) v ∈ v.adicCompletionIntegers F
   rw [Matrix.mul_apply, Fin.sum_univ_two]
-  change (a.val i 0 v * x 0 j v + a.val i 1 v * x 1 j v) ∈ v.adicCompletionIntegers F
   exact (v.adicCompletionIntegers F).toSubring.add_mem
     ((v.adicCompletionIntegers F).toSubring.mul_mem (ha i 0 v) (hx 0 j v))
     ((v.adicCompletionIntegers F).toSubring.mul_mem (ha i 1 v) (hx 1 j v))
@@ -122,9 +133,6 @@ private theorem integralRing_compact : IsCompact (integralRing F : Set (Adeles F
   rw [RestrictedProduct.range_structureMap] at h
   exact h
 
-private theorem integralRing_open : IsOpen (integralRing F : Set (Adeles F)) := by
-  exact RestrictedProduct.isOpen_forall_mem (fun _ => Valued.isOpen_valuationSubring _)
-
 theorem integralGL_compact_open : IsCompact (integralGL F : Set (AdelicGL F)) ∧
     IsOpen (integralGL F : Set (AdelicGL F)) := by
   letI : T2Space (Adeles F) := inferInstanceAs (T2Space (RestrictedProduct
@@ -132,14 +140,12 @@ theorem integralGL_compact_open : IsCompact (integralGL F : Set (AdelicGL F)) �
     (fun v => (v.adicCompletionIntegers F : Set _)) Filter.cofinite))
   rw [integralGL_eq]
   exact ⟨Submonoid.units_isCompact (integralRing_compact F).matrix,
-    Submonoid.isOpen_units (integralRing_open F).matrix⟩
+    Submonoid.isOpen_units ((RestrictedProduct.isOpen_forall_mem (fun _ => Valued.isOpen_valuationSubring _))).matrix⟩
 
 theorem integralPG_compact_open : (letI := projectiveTopology F
     IsCompact (integralPG F : Set (AdelicPG F)) ∧
     IsOpen (integralPG F : Set (AdelicPG F))) := by
   letI := projectiveTopology F
-  change IsCompact (Matrix.ProjGenLinGroup.mk '' (integralGL F : Set (AdelicGL F))) ∧
-    IsOpen (Matrix.ProjGenLinGroup.mk '' (integralGL F : Set (AdelicGL F)))
   exact ⟨(integralGL_compact_open F).1.image continuous_quot_mk,
     QuotientGroup.isOpenMap_coe _ (integralGL_compact_open F).2⟩
 
@@ -168,24 +174,28 @@ noncomputable def diagonalVectorLinear : (F × F) →ₗ[RingOfIntegers F]
     intro a x; ext i j; fin_cases i <;>
       simp [diagonalVector, Algebra.smul_def, IsScalarTower.algebraMap_apply (RingOfIntegers F) F (Adeles F)]
 
-noncomputable def adelicVectorLinear (g : AdelicGL F) :
+section
+
+variable (g : AdelicGL F)
+
+noncomputable def adelicVectorLinear :
     Matrix (Fin 2) (Fin 1) (Adeles F) →ₗ[RingOfIntegers F]
       Matrix (Fin 2) (Fin 1) (Adeles F) where
   toFun := fun x => g.val * x
   map_add' := Matrix.mul_add _
   map_smul' := by intro a x; exact Matrix.mul_smul _ _ _
 
-noncomputable def rationalIntersectionModule (g : AdelicGL F) :
+noncomputable def rationalIntersectionModule :
     Submodule (RingOfIntegers F) (F × F) :=
   (integralVectorModule F).comap ((adelicVectorLinear F g⁻¹).comp
       (diagonalVectorLinear F))
 
-theorem rationalIntersectionModule_mem (g : AdelicGL F) (x : F × F) :
+theorem rationalIntersectionModule_mem (x : F × F) :
     x ∈ rationalIntersectionModule F g ↔ diagonalVector F x ∈ g • integralVectors F := by
   change g⁻¹ • diagonalVector F x ∈ integralVectors F ↔ _
   exact Set.mem_smul_set_iff_inv_smul_mem.symm
 
-theorem localVector_mem_translated (g : AdelicGL F) (x : F × F)
+theorem localVector_mem_translated (x : F × F)
     (hx : x ∈ rationalIntersectionModule F g)
     (v : HeightOneSpectrum (RingOfIntegers F)) :
     localVector F v x ∈ localTranslatedLattice F g v := by
@@ -200,17 +210,23 @@ theorem localVector_mem_translated (g : AdelicGL F) (x : F × F)
   simp only [Matrix.mul_apply, Fin.sum_univ_two] at h ⊢
   exact h
 
-theorem localTranslatedLattice_compact (g : AdelicGL F)
-    (v : HeightOneSpectrum (RingOfIntegers F)) :
+end
+
+section
+
+variable (g : AdelicGL F) (v : HeightOneSpectrum (RingOfIntegers F))
+
+theorem localTranslatedLattice_compact :
     IsCompact (localTranslatedLattice F g v) := by
   letI : CompactSpace (v.adicCompletionIntegers F) :=
     Valued.integer.properSpace_iff_compactSpace_integer.mp inferInstance
-  letI : CompactSpace (Matrix (Fin 2) (Fin 1) (v.adicCompletionIntegers F)) :=
+  let Matrix₀ := Matrix (Fin 2) (Fin 1)
+  letI : CompactSpace (Matrix₀ (v.adicCompletionIntegers F)) :=
     inferInstanceAs (CompactSpace (Fin 2 → Fin 1 → v.adicCompletionIntegers F))
-  have hc : IsCompact {x : Matrix (Fin 2) (Fin 1) (v.adicCompletion F) |
+  have hc : IsCompact {x : Matrix₀ (v.adicCompletion F) |
       ∀ i j, x i j ∈ v.adicCompletionIntegers F} := by
     have hh := isCompact_range (show Continuous
-        (fun x : Matrix (Fin 2) (Fin 1) (v.adicCompletionIntegers F) =>
+        (fun x : Matrix₀ (v.adicCompletionIntegers F) =>
           Matrix.of (fun i j => (x i j : v.adicCompletion F))) from
         continuous_matrix fun i j => continuous_subtype_val.comp (continuous_apply j |>.comp (continuous_apply i)))
     convert hh using 1
@@ -221,18 +237,18 @@ theorem localTranslatedLattice_compact (g : AdelicGL F)
     · rintro ⟨y, rfl⟩; exact fun i j => (y i j).property
   exact hc.image (continuous_const.matrix_mul continuous_id)
 
-theorem localTranslatedLattice_closed (g : AdelicGL F)
-    (v : HeightOneSpectrum (RingOfIntegers F)) :
+theorem localTranslatedLattice_closed :
     IsClosed (localTranslatedLattice F g v) :=
   (localTranslatedLattice_compact F g v).isClosed
 
-theorem rationalIntersectionModule_local_closure_subset (g : AdelicGL F)
-    (v : HeightOneSpectrum (RingOfIntegers F)) :
+theorem rationalIntersectionModule_local_closure_subset :
     closure (localVector F v '' (rationalIntersectionModule F g : Set (F × F))) ⊆
       localTranslatedLattice F g v := by
   apply closure_minimal _ (localTranslatedLattice_closed F g v)
   rintro _ ⟨x, hx, rfl⟩
   exact localVector_mem_translated F g x hx v
+
+end
 
 theorem local_clear_denominator (v : HeightOneSpectrum (RingOfIntegers F))
     (a : v.adicCompletion F) :
@@ -257,7 +273,7 @@ theorem local_clear_denominator (v : HeightOneSpectrum (RingOfIntegers F))
     rw [← WithZero.exp_nsmul]; congr 1; simp
   rw [he]
   calc
-    WithZero.exp (-(n : ℤ)) * Valued.v a ≤ (Valued.v a)⁻¹ * Valued.v a :=
+    _ ≤ (Valued.v a)⁻¹ * Valued.v a :=
       mul_le_mul_of_nonneg_right hn.le zero_le
     _ = 1 := inv_mul_cancel₀ hval0
 
@@ -274,7 +290,7 @@ theorem adelic_clear_denominator (a : Adeles F) :
   intro v
   by_cases hv : v ∈ T
   · let w : T := ⟨v, hv⟩
-    rw [← Finset.mul_prod_erase (Finset.univ (α := T)) d (Finset.mem_univ w), map_mul, mul_assoc]
+    rw [← Finset.mul_prod_erase (Finset.univ) d (Finset.mem_univ w), map_mul, mul_assoc]
     rw [mul_left_comm]
     exact (v.adicCompletionIntegers F).toSubring.mul_mem
       (v.coe_mem_adicCompletionIntegers _) (hint w)
@@ -304,11 +320,15 @@ private theorem integral_rational (x : F) (h : ∀ v : HeightOneSpectrum (RingOf
   apply HeightOneSpectrum.mem_integers_of_valuation_le_one F x
   intro v
   have hv := h v
-  rw [congrFun (HeightOneSpectrum.algebraMap_adicCompletion (RingOfIntegers F) F (S := F) v) x] at hv
+  rw [congrFun (HeightOneSpectrum.algebraMap_adicCompletion (RingOfIntegers F) F v) x] at hv
   simpa [HeightOneSpectrum.mem_adicCompletionIntegers,
     HeightOneSpectrum.valuedAdicCompletion_eq_valuation'] using hv
 
-private theorem scaled_action_integral (g : AdelicGL F) (d : RingOfIntegers F)
+section
+
+variable (g : AdelicGL F)
+
+private theorem scaled_action_integral (d : RingOfIntegers F)
     (hd : ∀ i j v, algebraMap (RingOfIntegers F) (v.adicCompletion F) d * g.val i j v ∈ v.adicCompletionIntegers F)
     (x : Matrix (Fin 2) (Fin 1) (Adeles F)) (hx : x ∈ integralVectors F) :
     d • (g • x) ∈ integralVectors F := by
@@ -322,12 +342,12 @@ private theorem scaled_action_integral (g : AdelicGL F) (d : RingOfIntegers F)
     ((v.adicCompletionIntegers F).toSubring.mul_mem (hd i 0 v) (hx 0 j v))
     ((v.adicCompletionIntegers F).toSubring.mul_mem (hd i 1 v) (hx 1 j v))
 
-private theorem rationalIntersection_fg (g : AdelicGL F) : (rationalIntersectionModule F g).FG := by
+private theorem rationalIntersection_fg : (rationalIntersectionModule F g).FG := by
   obtain ⟨d, hd, hint⟩ := matrix_clear F g
+  let algebraMap₀ := algebraMap (RingOfIntegers F) F
   have hi (x : rationalIntersectionModule F g) : ∃ a b : RingOfIntegers F,
-      (algebraMap (RingOfIntegers F) F a, algebraMap (RingOfIntegers F) F b) = d • (x : F × F) := by
-    have hx := (rationalIntersectionModule_mem F g x).mp x.property
-    obtain ⟨y, hy, he⟩ := hx
+      (algebraMap₀ a, algebraMap₀ b) = d • (x : F × F) := by
+    obtain ⟨y, hy, he⟩ := ((rationalIntersectionModule_mem F g x).mp x.property)
     have hh := scaled_action_integral F g d hint y hy
     change g • y = diagonalVector F x at he
     rw [he] at hh
@@ -345,23 +365,23 @@ private theorem rationalIntersection_fg (g : AdelicGL F) : (rationalIntersection
       map_add' := by
         intro x y
         have hf (z : rationalIntersectionModule F g) := Classical.choose_spec (Classical.choose_spec (hi z))
-        have hh : (algebraMap (RingOfIntegers F) F (Classical.choose (hi (x+y))),
-            algebraMap (RingOfIntegers F) F (Classical.choose (Classical.choose_spec (hi (x+y))))) =
-            (algebraMap (RingOfIntegers F) F (Classical.choose (hi x)),
-            algebraMap (RingOfIntegers F) F (Classical.choose (Classical.choose_spec (hi x)))) +
-            (algebraMap (RingOfIntegers F) F (Classical.choose (hi y)),
-            algebraMap (RingOfIntegers F) F (Classical.choose (Classical.choose_spec (hi y)))) := by
+        have hh : (algebraMap₀ (Classical.choose (hi (x+y))),
+            algebraMap₀ (Classical.choose (Classical.choose_spec (hi (x+y))))) =
+            (algebraMap₀ (Classical.choose (hi x)),
+            algebraMap₀ (Classical.choose (Classical.choose_spec (hi x)))) +
+            (algebraMap₀ (Classical.choose (hi y)),
+            algebraMap₀ (Classical.choose (Classical.choose_spec (hi y)))) := by
           rw [hf, hf, hf, Submodule.coe_add, smul_add]
         apply Prod.ext <;> apply (IsFractionRing.injective (RingOfIntegers F) F)
-        · simpa using congrArg Prod.fst hh
-        · simpa using congrArg Prod.snd hh
+        · exact congrArg Prod.fst hh
+        · exact congrArg Prod.snd hh
       map_smul' := by
         intro a x
         have hf (z : rationalIntersectionModule F g) := Classical.choose_spec (Classical.choose_spec (hi z))
-        have hh : (algebraMap (RingOfIntegers F) F (Classical.choose (hi (a • x))),
-            algebraMap (RingOfIntegers F) F (Classical.choose (Classical.choose_spec (hi (a • x))))) =
-            a • (algebraMap (RingOfIntegers F) F (Classical.choose (hi x)),
-            algebraMap (RingOfIntegers F) F (Classical.choose (Classical.choose_spec (hi x)))) := by
+        have hh : (algebraMap₀ (Classical.choose (hi (a • x))),
+            algebraMap₀ (Classical.choose (Classical.choose_spec (hi (a • x))))) =
+            a • (algebraMap₀ (Classical.choose (hi x)),
+            algebraMap₀ (Classical.choose (Classical.choose_spec (hi x)))) := by
           rw [hf, hf, Submodule.coe_smul, smul_comm d a]
         apply Prod.ext <;> apply (IsFractionRing.injective (RingOfIntegers F) F)
         · simpa [Algebra.smul_def] using congrArg Prod.fst hh
@@ -372,13 +392,13 @@ private theorem rationalIntersection_fg (g : AdelicGL F) : (rationalIntersection
     have hh : d • (x : F × F) = d • (y : F × F) := by
       rw [← hf x, ← hf y]
       exact congrArg (fun p : RingOfIntegers F × RingOfIntegers F =>
-        (algebraMap (RingOfIntegers F) F p.1, algebraMap (RingOfIntegers F) F p.2)) h
+        (algebraMap₀ p.1, algebraMap₀ p.2)) h
     apply Subtype.ext
     exact smul_right_injective _ hd hh
   haveI := isNoetherian_of_injective f hfi
   exact (Module.Finite.iff_fg).mp inferInstance
 
-private theorem rationalIntersection_span (g : AdelicGL F) :
+private theorem rationalIntersection_span :
     Submodule.span F (rationalIntersectionModule F g : Set (F × F)) = ⊤ := by
   obtain ⟨d, hd, hint⟩ := matrix_clear F g⁻¹
   have hm (x : F × F) (hx : diagonalVector F x ∈ integralVectors F) : d • x ∈ rationalIntersectionModule F g := by
@@ -391,25 +411,23 @@ private theorem rationalIntersection_span (g : AdelicGL F) :
     exact hh
   have h1 := hm (1,0) (by intro i j v; change (algebraMap F (v.adicCompletion F) (if i = 0 then _ else _)) ∈ _; split_ifs <;> simp only [map_zero, map_one] <;> first | exact (v.adicCompletionIntegers F).one_mem | exact (v.adicCompletionIntegers F).zero_mem)
   have h2 := hm (0,1) (by intro i j v; change (algebraMap F (v.adicCompletion F) (if i = 0 then _ else _)) ∈ _; split_ifs <;> simp only [map_zero, map_one] <;> first | exact (v.adicCompletionIntegers F).one_mem | exact (v.adicCompletionIntegers F).zero_mem)
-  have hdF : algebraMap (RingOfIntegers F) F d ≠ 0 := (map_ne_zero_iff _ (IsFractionRing.injective (RingOfIntegers F) F)).mpr hd
   apply top_unique
   intro x _
   have hx := (Submodule.span F (rationalIntersectionModule F g : Set (F × F))).add_mem
     (Submodule.smul_mem _ (x.1 / algebraMap (RingOfIntegers F) F d) (Submodule.subset_span h1))
     (Submodule.smul_mem _ (x.2 / algebraMap (RingOfIntegers F) F d) (Submodule.subset_span h2))
-  simpa [Algebra.smul_def, div_mul_cancel₀ _ hdF] using hx
+  simpa [Algebra.smul_def, div_mul_cancel₀ _ ((map_ne_zero_iff _ (IsFractionRing.injective (RingOfIntegers F) F)).mpr hd)] using hx
+
+end
 
 private theorem integralVectors_open : IsOpen (integralVectors F) := by
-  have h : IsOpen {a : Adeles F | ∀ v, a v ∈ v.adicCompletionIntegers F} :=
-    RestrictedProduct.isOpen_forall_mem (fun _ => Valued.isOpen_valuationSubring _)
   have he : integralVectors F = (Set.pi Set.univ (fun _ : Fin 2 => Set.pi Set.univ (fun _ : Fin 1 => {a : Adeles F | ∀ v, a v ∈ v.adicCompletionIntegers F}))) := by
     ext x
-    change (∀ i j v, x i j v ∈ v.adicCompletionIntegers F) ↔ _
     constructor
     · intro hx i _ j _; exact hx i j
     · intro hx i j; exact hx i (Set.mem_univ _) j (Set.mem_univ _)
   rw [he]
-  exact isOpen_set_pi Set.finite_univ (fun _ _ => isOpen_set_pi Set.finite_univ (fun _ _ => h))
+  exact isOpen_set_pi Set.finite_univ (fun _ _ => isOpen_set_pi Set.finite_univ (fun _ _ => (RestrictedProduct.isOpen_forall_mem (fun _ => Valued.isOpen_valuationSubring _))))
 
 private theorem translated_open (g : AdelicGL F) : IsOpen (g • integralVectors F) := by
   have he : g • integralVectors F = (fun x : Matrix (Fin 2) (Fin 1) (Adeles F) => g⁻¹.val * x) ⁻¹' integralVectors F := by
@@ -419,9 +437,7 @@ private theorem translated_open (g : AdelicGL F) : IsOpen (g • integralVectors
   exact (integralVectors_open F).preimage (continuous_const.matrix_mul continuous_id)
 
 private theorem diagonalVector_dense : DenseRange (diagonalVector F) := by
-  have hd : DenseRange (fun x : Fin 2 → Fin 1 → F => fun i j => algebraMap F (Adeles F) (x i j)) :=
-    DenseRange.piMap fun _ => DenseRange.piMap fun _ => finiteAdele_dense F
-  apply hd.mono
+  apply (DenseRange.piMap fun _ => DenseRange.piMap fun _ => finiteAdele_dense F).mono
   rintro _ ⟨x, rfl⟩
   exact ⟨(x 0 0, x 1 0), by ext i j; fin_cases i <;> fin_cases j <;> simp [diagonalVector]⟩
 
@@ -463,8 +479,9 @@ private theorem local_closure (g : AdelicGL F) (v : HeightOneSpectrum (RingOfInt
 
 end CRT
 
-theorem bounded_crt_lattice_and_projective_compact
-    (F : Type*) [Field F] [NumberField F] :
+variable (F : Type*) [Field F] [NumberField F]
+
+theorem bounded_crt_lattice_and_projective_compact :
     (letI := projectiveTopology F
      IsCompact (integralPG F : Set (AdelicPG F)) ∧
        IsOpen (integralPG F : Set (AdelicPG F))) ∧
@@ -479,7 +496,7 @@ theorem bounded_crt_lattice_and_projective_compact
   · exact rationalIntersectionModule_mem F g
   · exact local_closure F g
 
-noncomputable def intersectionLattice (F : Type*) [Field F] [NumberField F]
+noncomputable def intersectionLattice
     (g : AdelicGL F) : FullLattice (NumberField.RingOfIntegers F) F :=
   Classical.choose ((bounded_crt_lattice_and_projective_compact F).2 g)
 

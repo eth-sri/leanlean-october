@@ -21,10 +21,14 @@ def complexWord : List ComplexGenerator → Module.End ℂ complexCore
   | [] => LinearMap.id
   | a :: w => (complexGenerator a).comp (complexWord w)
 
-def complexWordSpan (v : complexCore) : Submodule ℂ complexCore :=
+section
+
+variable (v : complexCore)
+
+def complexWordSpan : Submodule ℂ complexCore :=
   Submodule.span ℂ (Set.range (fun w => complexWord w v))
 
-theorem complexWordSpan_generator (v : complexCore) (a : ComplexGenerator)
+theorem complexWordSpan_generator (a : ComplexGenerator)
     (x : complexCore) (hx : x ∈ complexWordSpan v) :
     complexGenerator a x ∈ complexWordSpan v := by
   induction hx using Submodule.span_induction with
@@ -37,7 +41,7 @@ theorem complexWordSpan_generator (v : complexCore) (a : ComplexGenerator)
   | smul c x hx ih =>
     simpa using (complexWordSpan v).smul_mem c ih
 
-private theorem complexWordSpan_algebra (v : complexCore)
+private theorem complexWordSpan_algebra
     (a : NativeComplexHCSource.algebra NativeComplexHCOperators.operators)
     (x : complexCore) (hx : x ∈ complexWordSpan v) :
     a.val x ∈ complexWordSpan v := by
@@ -52,7 +56,7 @@ private theorem complexWordSpan_algebra (v : complexCore)
     exact (complexWordSpan v).add_mem (iha x hx) (ihb x hx)
   | mul a b ha hb iha ihb => exact iha _ (ihb x hx)
 
-theorem complexWordSpan_eq_top (v : complexCore) (hv : v ≠ 0) :
+theorem complexWordSpan_eq_top (hv : v ≠ 0) :
     complexWordSpan v = ⊤ := by
   letI := NativeComplexHCAlgebraic.native_operators_simple
   let W : Submodule (NativeComplexHCSource.algebra NativeComplexHCOperators.operators)
@@ -70,6 +74,8 @@ theorem complexWordSpan_eq_top (v : complexCore) (hv : v ≠ 0) :
   intro x
   exact show x ∈ W from ht ▸ Submodule.mem_top
 
+end
+
 theorem irreducible_orbit_span {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) (hρ : ρ.IsIrreducible) (v : V) (hv : v ≠ 0) :
     Submodule.span ℂ (Set.range (fun g : G => ρ g v)) = ⊤ := by
@@ -85,16 +91,12 @@ theorem irreducible_orbit_span {G V : Type*} [Group G] [AddCommGroup V] [Module 
       | zero => simp
       | add x y hx hy ihx ihy => simpa using Submodule.add_mem _ ihx ihy
       | smul c x hx ih => simpa using Submodule.smul_mem _ c ih }
-  have hvW : v ∈ W := Submodule.subset_span ⟨1, by simp⟩
-  have hW : W = ⊤ := (eq_bot_or_eq_top W).resolve_left (by
-    intro h
-    exact hv (show v ∈ (⊥ : Subrepresentation ρ) from h ▸ hvW))
-  exact congrArg Subrepresentation.toSubmodule hW
+  exact congrArg Subrepresentation.toSubmodule ((eq_bot_or_eq_top W).resolve_left (fun h => hv (show v ∈ (⊥ : Subrepresentation ρ) from h ▸ (Submodule.subset_span ⟨1, by simp⟩))))
 
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (M : ∀ q, LocalImageData R q)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (M : ∀ q, LocalImageData R q)
 
 theorem finite_orbit_span (q : KPFinitePlace F)
     (v : actualLocal R M (Sum.inr q)) (hv : v ≠ 0) :
@@ -105,7 +107,7 @@ theorem finite_orbit_span (q : KPFinitePlace F)
   apply irreducible_orbit_span _ _ v hv
   exact (KPRankOneShellRepair.ActualSourcePredicates.actual_images_irreducible_of_length
     F R.A.zeta12 R.A.primitive_zeta12 q (M q).inducing
-    (M q).inducing.polarization (M q).haar (M q).haar_integer).1.2
+    (M q).inducing.polarization (M q).haar (M q).haar_integer).2
 
 end DedekindZetaZeroFree.FourierContinuation.HCGeneration
 

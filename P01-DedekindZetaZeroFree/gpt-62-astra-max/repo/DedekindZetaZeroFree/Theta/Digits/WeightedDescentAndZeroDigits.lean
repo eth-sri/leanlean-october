@@ -16,7 +16,7 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources ThetaProfileHaarSheets ThetaSheetExactUnfolding
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 namespace QuotientDescent
 variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
@@ -48,8 +48,7 @@ theorem mask_frequency (m : ThetaReflectionData.Row R.A) (a : Fˣ)
     _ = _ := by
       apply Finset.prod_congr rfl
       intro p _
-      let hp := ((ThetaDigitAverage.rowPrimes_finite R.A m.val m.property).mem_toFinset.mp p.property).1
-      exact sextic_fourier_mask_inversion R ⟨p.val, hp⟩ (ThetaDigitAverage.rowExponent R.A m.val p.val)
+      exact sextic_fourier_mask_inversion R ⟨p.val, (((ThetaDigitAverage.rowPrimes_finite R.A m.val m.property).mem_toFinset.mp p.property).1)⟩ (ThetaDigitAverage.rowExponent R.A m.val p.val)
         (ThetaBranch.unitResidue p.val a)
 
 theorem theta_descent (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
@@ -78,19 +77,18 @@ theorem upper_descent (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient
   rw [← (digitReindex R m u').sum_comp]
   apply Finset.sum_congr rfl
   intro d _
-  rw [digitWeight_reindex, (selected_upper_digit_reindex R C v m u' b y d).2]
+  rw [digitWeight_reindex, (selected_upper_digit_reindex R C v m u' b y d)]
 
 theorem gamma_class (γ : R.A.Gamma) : QuotientGroup.mk' R.A.sixthPowers γ.val = 1 := by
   obtain ⟨q, ⟨u, hu, rfl⟩, hq⟩ := γ.property
   apply (QuotientGroup.eq_one_iff _).mpr
-  exact ⟨R.A.diagonal u, by simpa only [powMonoidHom_apply, map_pow] using hq⟩
+  exact ⟨R.A.diagonal u, by simpa using hq⟩
 
 theorem branch_gamma (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient) (γ : R.A.Gamma) :
     C.packet.branch v γ.val = 1 := by
   rw [C.packet.branch_global]
   obtain ⟨q, ⟨u, hu, rfl⟩, hq⟩ := γ.property
-  have ht : R.A.correctionLS R.probe.correction.Λ R.probe.correction.G R.probe.correction.η_id
-      (R.A.diagonal (u ^ 6)) = 1 :=
+  have ht :=
     R.probe.correction.theta_unit ⟨u ^ 6, R.A.U.pow_mem hu 6⟩
   have hp : R.A.H_S (R.A.diagonal (R.probe.unitReps.representative v).val) γ.val = 1 := by
     rw [← R.A.H_S6_on_representatives, gamma_class, map_one]
@@ -102,7 +100,6 @@ theorem branch_gamma (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
     congrArg (fun z : Circle => (z : ℂ)) ht'
   rw [hc, hp]
   rw [one_mul]
-  change R.σ (1 : F) = 1
   exact map_one R.σ
 
 theorem weighted_theta_descent (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
@@ -121,7 +118,7 @@ theorem weighted_upper_descent (C : JointMellinGaussianSources R N) (v : R.A.Uni
   simp only [map_mul, gamma_class, branch_gamma, one_mul, upper_descent]
   rw [one_mul (QuotientGroup.mk' R.A.sixthPowers y)]
 
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod renaming raw_rationalLift_mk → raw_rationalLift_mk
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod (raw_rationalLift_mk)
 
 theorem theta_weyl (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient) (g : Group R) :
     C.realization.theta v (KPRationalAdelicSplitting.pglW F R.A.zeta12 R.A.primitive_zeta12 * g) =
@@ -148,8 +145,7 @@ theorem quotientUpper_projection (C : JointMellinGaussianSources R N) (v : R.A.U
     quotientUpper R C.sources C.realization C.packet v m b l (sheetProjection R.A l y) =
       weightedUpper R C.sources C.realization C.packet v m b y.val := by
   unfold quotientUpper
-  have h := Quotient.exact (Quotient.out_eq (sheetProjection R.A l y))
-  obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp h)
+  obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp (Quotient.exact (Quotient.out_eq (sheetProjection R.A l y))))
   have hv := congrArg Subtype.val hγ
   change γ.val.val * y.val = (Quotient.out (sheetProjection R.A l y)).val at hv
   rw [← hv]
@@ -162,10 +158,9 @@ theorem upperAverage_zero_for_smoothing (C : JointMellinGaussianSources R N) (v 
         (sheetQuotientHaar R.A C.packet.v₀ C.transport.groupHaar l)) :
     upperAverage R C.transport C.sources C.realization C.packet v m b l = 0 := by
   letI := C.transport.groupHaar_isHaar
-  let t : R.A.G1 := ⟨DedekindZetaZeroFree.IdeleInsertion.infiniteInsertion R.A C.packet.v₀ (-1),
-    DedekindZetaZeroFree.IdeleInsertion.norm_insertion_one R C.packet.v₀ (-1) (by simp)⟩
   apply DedekindZetaZeroFree.IdeleInsertion.quotient_integral_zero_of_odd R.A C.packet.v₀
-    C.transport.groupHaar l t (quotientUpper R C.sources C.realization C.packet v m b l) hi
+    C.transport.groupHaar l (⟨DedekindZetaZeroFree.IdeleInsertion.infiniteInsertion R.A C.packet.v₀ (-1),
+      DedekindZetaZeroFree.IdeleInsertion.norm_insertion_one R C.packet.v₀ (-1) (by simp)⟩) (quotientUpper R C.sources C.realization C.packet v m b l) hi
   intro y y' hy'
   rw [quotientUpper_projection, quotientUpper_projection, hy']
   exact DedekindZetaZeroFree.IdeleInsertion.weightedUpper_neg_one R C.packet C.constantTerm v m b C.packet.v₀ y.val
@@ -173,8 +168,6 @@ theorem upperAverage_zero_for_smoothing (C : JointMellinGaussianSources R N) (v 
 def descent_of_jointMellinGaussianSources (C : JointMellinGaussianSources R N) :
     DigitsDescent R C.transport C.sources C.realization C.packet where
   mask_frequency := mask_frequency
-  theta_descent := theta_descent C
-  upper_descent := upper_descent C
   weighted_theta_descent := weighted_theta_descent C
   weighted_upper_descent := weighted_upper_descent C
   weyl := weyl C

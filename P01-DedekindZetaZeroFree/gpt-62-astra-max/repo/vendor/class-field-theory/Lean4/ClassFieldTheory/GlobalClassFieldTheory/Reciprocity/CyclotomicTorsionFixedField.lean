@@ -23,21 +23,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -94,8 +79,7 @@ multiplicatively. -/
 noncomputable def rationalCyclotomicTorsionFixedFieldGalEquivZHat :
     (rationalCyclotomicTorsionFixedField ≃ₐ[ℚ]
       rationalCyclotomicTorsionFixedField) ≃ₜ*
-        Multiplicative ZHat := by
-  exact rationalCyclotomicTorsionRestrictionEquiv.symm.trans <|
+        Multiplicative ZHat := rationalCyclotomicTorsionRestrictionEquiv.symm.trans <|
     torsionQuotientEquivOfZHatMulDecomposition
       (rationalCyclotomicField ≃ₐ[ℚ]
         rationalCyclotomicField)
@@ -104,33 +88,18 @@ noncomputable def rationalCyclotomicTorsionFixedFieldGalEquivZHat :
         zHatUnitsDecomposition)
       dense_torsion_cyclotomicFinitePart
 
-private theorem rationalCyclotomicTorsionRestrictionEquiv_apply_mk
-    (σ :
-      rationalCyclotomicField ≃ₐ[ℚ]
-        rationalCyclotomicField) :
-    rationalCyclotomicTorsionRestrictionEquiv
-        (QuotientGroup.mk σ) =
-      AlgEquiv.restrictNormalHom
-        rationalCyclotomicTorsionFixedField σ := by
-  exact
-    InfiniteGalois.normalAutEquivQuotient_apply
-      rationalCyclotomicTorsionClosure σ
+variable (σ : rationalCyclotomicField ≃ₐ[ℚ] rationalCyclotomicField)
 
-private theorem rationalCyclotomicTorsionRestrictionEquiv_symm_restrictNormal
-    (σ :
-      rationalCyclotomicField ≃ₐ[ℚ]
-        rationalCyclotomicField) :
+private theorem rationalCyclotomicTorsionRestrictionEquiv_symm_restrictNormal :
     rationalCyclotomicTorsionRestrictionEquiv.symm
         (AlgEquiv.restrictNormalHom
           rationalCyclotomicTorsionFixedField σ) =
       QuotientGroup.mk σ := by
   apply rationalCyclotomicTorsionRestrictionEquiv.symm_apply_eq.mpr
-  exact (rationalCyclotomicTorsionRestrictionEquiv_apply_mk σ).symm
+  exact ((InfiniteGalois.normalAutEquivQuotient_apply
+      rationalCyclotomicTorsionClosure σ)).symm
 
-private theorem rationalCyclotomicTorsionCoordinate_restrictNormal
-    (σ :
-      rationalCyclotomicField ≃ₐ[ℚ]
-        rationalCyclotomicField) :
+private theorem rationalCyclotomicTorsionCoordinate_restrictNormal :
     torsionQuotientEquivOfZHatMulDecomposition
         (rationalCyclotomicField ≃ₐ[ℚ]
           rationalCyclotomicField)
@@ -145,22 +114,14 @@ private theorem rationalCyclotomicTorsionCoordinate_restrictNormal
         (rationalCyclotomicCharacterContinuousMulEquiv σ)).1 := by
   rw [rationalCyclotomicTorsionRestrictionEquiv_symm_restrictNormal]
   exact
-    torsionQuotientEquivOfZHatMulDecomposition_mk
-      (rationalCyclotomicField ≃ₐ[ℚ] rationalCyclotomicField)
-      CyclotomicFinitePart
-      (rationalCyclotomicCharacterContinuousMulEquiv.trans
-        zHatUnitsDecomposition)
-      dense_torsion_cyclotomicFinitePart σ
+    (by apply torsionQuotientEquivOfZHatMulDecomposition_mk)
 
 /-- Restriction of an actual automorphism of the full rational
 cyclotomic field to the torsion fixed field is sent to the genuine
 torsion-free coordinate of its cyclotomic character. -/
 @[simp]
 theorem
-    rationalCyclotomicTorsionFixedFieldGalEquivZHat_restrictNormal
-    (σ :
-      rationalCyclotomicField ≃ₐ[ℚ]
-        rationalCyclotomicField) :
+    rationalCyclotomicTorsionFixedFieldGalEquivZHat_restrictNormal :
     rationalCyclotomicTorsionFixedFieldGalEquivZHat
         (AlgEquiv.restrictNormalHom
           rationalCyclotomicTorsionFixedField σ) =

@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -34,7 +30,6 @@ open scoped NumberField RestrictedProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable (K : Type*) [Field K] [NumberField K]
 
@@ -163,14 +158,12 @@ def equivAdeleRingUnits :
 
 @[simp]
 theorem equivAdeleRingUnits_fst (a : IdeleGroup K) :
-    (MulEquiv.prodUnits (equivAdeleRingUnits a)).1 = a.1 := by
-  rfl
+    (MulEquiv.prodUnits (equivAdeleRingUnits a)).1 = a.1 := rfl
 
 @[simp]
 theorem equivAdeleRingUnits_snd (a : IdeleGroup K) :
     (MulEquiv.prodUnits (equivAdeleRingUnits a)).2 =
-      finiteEquivFiniteAdeleUnits (K := K) a.2 := by
-  rfl
+      finiteEquivFiniteAdeleUnits a.2 := rfl
 
 end IdeleGroup
 

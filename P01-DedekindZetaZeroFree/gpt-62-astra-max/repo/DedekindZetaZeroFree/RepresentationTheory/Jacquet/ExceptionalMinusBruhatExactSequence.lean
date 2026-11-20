@@ -18,12 +18,16 @@ open PlusLengthSteps
 open scoped NNReal
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
-variable (S : RawFiniteInducingData F ζ hζ q)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
+    (S : RawFiniteInducingData F ζ hζ q)
 
-private theorem minus_smooth (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F q m) (P : Polarization S.heisenberg) :
+section
+
+variable (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m)
+
+include hm in
+private theorem minus_smooth (P : Polarization S.heisenberg) :
     let ρ := weylConjugate P S.borel.weyl
     letI := finiteCoverTopology F ζ hζ q m
     SmoothRepresentation ρ := by
@@ -36,8 +40,7 @@ private theorem minus_smooth (m : ℕ)
   exact (weyl_conjugate_properties S.heisenberg P S.borel.weyl
     S.borel.weylCenter S.borel.weylCenter_coe).2.1
 
-private theorem minus_scalar_weight (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F q m) (h : Torus F ζ hζ q) :
+private theorem minus_scalar_weight (h : Torus F ζ hζ q) :
     (Real.sqrt (KPJacquetOpenCell.d F ζ hζ q m hm h) : ℂ) =
       inducingScalar S.borel 0 (S.borel.torus h) := by
   simp only [inducingScalar, normPower, zero_mul, Complex.exp_zero, mul_one]
@@ -46,6 +49,8 @@ private theorem minus_scalar_weight (m : ℕ)
     (KPLocalInductionJacquetReciprocity.torusToBorel F ζ hζ q m hm h) : ℝ≥0) : ℝ) : ℂ)
   rw [KPRankOneInduction.halfModulus_eq]
   rfl
+
+end
 
 private theorem minus_weyl_twice (h : Torus F ζ hζ q) :
     S.borel.weyl (KPJacquetOpenCell.alpha F ζ hζ q h) = h := by
@@ -105,6 +110,7 @@ theorem independent_minus_jacquet_short_exact (P : Polarization S.heisenberg) : 
       tau P (S.borel.weyl h) v = inducingScalar S.borel 0 (S.borel.torus h) •
         tau P (S.borel.weyl (S.borel.retract (S.borel.torus h))) v
     rw [minus_scalar_weight F ζ hζ q S m hm, S.borel.retract_torus]
+  let ordinary_cell_short_exact₀ := KPJacquetOrdinaryCell.ordinary_cell_short_exact F ζ hζ q m hm (weylConjugate P S.borel.weyl) hs μ
   let i₀ : (KPJacquetOrdinaryCell.openWeight F ζ hζ q m hm (weylConjugate P S.borel.weyl)).IntertwiningMap
       (KPJacquetOrdinaryCell.torusAction F ζ hζ q m hm (weylConjugate P S.borel.weyl)) :=
     { toLinearMap := KPJacquetOrdinaryCell.openInjection F ζ hζ q m hm (weylConjugate P S.borel.weyl) hs μ
@@ -112,7 +118,7 @@ theorem independent_minus_jacquet_short_exact (P : Polarization S.heisenberg) : 
         intro h
         apply LinearMap.ext
         intro v
-        exact (KPJacquetOrdinaryCell.ordinary_cell_short_exact F ζ hζ q m hm (weylConjugate P S.borel.weyl) hs μ).2.2.2.1 h v }
+        exact (ordinary_cell_short_exact₀).2.2.2.1 h v}
   let p₀ : (KPJacquetOrdinaryCell.torusAction F ζ hζ q m hm (weylConjugate P S.borel.weyl)).IntertwiningMap
       (KPJacquetOrdinaryCell.closedWeight F ζ hζ q m hm (weylConjugate P S.borel.weyl)) :=
     { toLinearMap := KPJacquetOrdinaryCell.closedProjection F ζ hζ q m hm (weylConjugate P S.borel.weyl)
@@ -120,11 +126,11 @@ theorem independent_minus_jacquet_short_exact (P : Polarization S.heisenberg) : 
         intro h
         apply LinearMap.ext
         intro v
-        exact (KPJacquetOrdinaryCell.ordinary_cell_short_exact F ζ hζ q m hm (weylConjugate P S.borel.weyl) hs μ).2.2.2.2 h v }
+        exact (ordinary_cell_short_exact₀).2.2.2.2 h v}
   let i := E.symm.toIntertwiningMap.comp (i₀.comp O.symm.toIntertwiningMap)
   let p := C.toIntertwiningMap.comp (p₀.comp E.toIntertwiningMap)
   obtain ⟨hi, hex, hp, _, _⟩ :=
-    KPJacquetOrdinaryCell.ordinary_cell_short_exact F ζ hζ q m hm (weylConjugate P S.borel.weyl) hs μ
+    ordinary_cell_short_exact₀
   refine ⟨i, p, ?_, ?_, ?_⟩
   · exact E.symm.injective.comp (hi.comp O.symm.injective)
   · exact C.surjective.comp (hp.comp E.surjective)

@@ -16,14 +16,12 @@ set_option maxHeartbeats 1000000
 open KPGlobalTorusFiniteStages TorusFiniteCenterQuotient
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : CompatibleModelData F ζ hζ) (L : Level F ζ hζ C)
+    (C : CompatibleModelData F ζ hζ) (L : Level F ζ hζ C)
 
 local instance : Fintype (symplecticQuotient F ζ hζ C L) :=
   @Fintype.ofFinite _ (quotient_finite F ζ hζ C L)
 
-private theorem root_four (ε : rootsOfUnity 3 F) : ε ^ 4 = ε := by
-  have hp : ε ^ 3 = 1 := by apply Subtype.ext; exact ε.property
-  rw [pow_succ, hp, one_mul]
+private theorem root_four (ε : rootsOfUnity 3 F) : ε ^ 4 = ε := by apply @DedekindZetaZeroFree.KPGlobalCubicIdelePairing.CubicIdelePairing.roots_three_pow_four <;> assumption
 private theorem maximal_transfer
     (T : FinitePolarization.HeisenbergData (H F ζ hζ C L) (symplecticQuotient F ζ hζ C L))
     (hp : ∀ x y, T.pairing x y = ordinaryRoots F ζ hζ (stagePairing F ζ hζ C L x y ^ 4))
@@ -38,10 +36,14 @@ private theorem maximal_transfer
   exact ⟨fun x hx y hy => (he x y).mpr (hA.1 x hx y hy),
     fun N hN hi => hA.2 N hN (fun x hx y hy => (he x y).mp (hi x hx y hy))⟩
 
-private theorem projection_mk (x : stageDomain F ζ hζ C L) :
+section
+
+variable (x : stageDomain F ζ hζ C L)
+
+private theorem projection_mk :
     projection F ζ hζ C L (QuotientGroup.mk x) = domainProjection F ζ hζ C L x := rfl
 
-private theorem rational_factor (x : stageDomain F ζ hζ C L)
+private theorem rational_factor
     (hx : domainProjection F ζ hζ C L x ∈ rationalPolarization F ζ hζ C L) :
     ∃ (r : (R F ζ hζ).comap (stageDomain F ζ hζ C L).subtype)
       (k : phaseGroup F ζ hζ C L), x = r.val * phaseElement F ζ hζ C L k := by
@@ -56,20 +58,19 @@ private theorem rational_factor (x : stageDomain F ζ hζ C L)
   let r : (R F ζ hζ).comap (stageDomain F ζ hζ C L).subtype :=
     ⟨⟨t.val, by change pD F ζ hζ t.val ∈ annihilator F ζ hζ L.K; rw [ht']; exact a.property⟩, hr⟩
   have hk : pD F ζ hζ (r.val⁻¹ * x).val ∈ L.K := by
-    have hh : QuotientGroup.mk a = QuotientGroup.mk (⟨pD F ζ hζ x.val, x.property⟩ : annihilator F ζ hζ L.K) := he
-    have hh' := QuotientGroup.eq.mp hh
+    have hh' := QuotientGroup.eq.mp he
     change a.val⁻¹ * pD F ζ hζ x.val ∈ L.K at hh'
     simp only [Subgroup.coe_mul, Subgroup.coe_inv, map_mul, map_inv]
     change (pD F ζ hζ t.val)⁻¹ * pD F ζ hζ x.val ∈ L.K
     rwa [ht']
   exact ⟨r, ⟨(r.val⁻¹ * x).val, hk⟩, by apply Subtype.ext; simp [phaseElement, r]⟩
 
-private theorem product_mem (x : stageDomain F ζ hζ C L) :
+private theorem product_mem :
     domainProjection F ζ hζ C L x ∈ productPolarization F ζ hζ C L ↔ x.val ∈ B F ζ hζ C := by
   constructor
   · intro hx
     obtain ⟨m, hm, he⟩ := Subgroup.mem_map.mp hx
-    have hh : QuotientGroup.mk m = QuotientGroup.mk (⟨pD F ζ hζ x.val, x.property⟩ : annihilator F ζ hζ L.K) := he
+    have hh := he
     have hk' := QuotientGroup.eq.mp hh
     have hk : m.val⁻¹ * pD F ζ hζ x.val ∈ L.K := hk'
     change pD F ζ hζ x.val ∈ M F ζ hζ C
@@ -78,12 +79,18 @@ private theorem product_mem (x : stageDomain F ζ hζ C L) :
   · intro hx
     exact Subgroup.mem_map.mpr ⟨⟨pD F ζ hζ x.val, x.property⟩, hx, rfl⟩
 
- abbrev QR (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ) :=
+end
+
+ section
+
+variable (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
+
+abbrev QR :=
   Q.H.comap (stageDomain F ζ hζ C L).subtype
- abbrev qChar (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ) : QR F ζ hζ C L Q →* ℂˣ :=
+ abbrev qChar : QR F ζ hζ C L Q →* ℂˣ :=
   Q.character.toMonoidHom.comp ((stageDomain F ζ hζ C L).subtype.restrict (fun _ hx => hx))
 
-private theorem qchar_phase (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
+private theorem qchar_phase
     (hQ : Q = rationalModel F ζ hζ ∨ Q = productModel F ζ hζ C)
     (u : QR F ζ hζ C L Q) (k : phaseGroup F ζ hζ C L)
     (he : u.val = phaseElement F ζ hζ C L k) :
@@ -97,10 +104,16 @@ private theorem qchar_phase (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ
     change u.val.val = k.val
     exact congrArg Subtype.val he
 
- theorem q_project (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
+end
+
+ section
+
+variable (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (A : Subgroup (symplecticQuotient F ζ hζ C L))
-    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨
-      (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L))
+    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨ (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L))
+
+include hQ in
+theorem q_project
     (u : QR F ζ hζ C L Q) : domainProjection F ζ hζ C L u.val ∈ A := by
   rcases hQ with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
   · exact Subgroup.mem_map.mpr ⟨⟨pD F ζ hζ u.val.val, u.val.property⟩,
@@ -111,16 +124,16 @@ private theorem qchar_phase (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ
         exact hu, u.val.property⟩, rfl⟩
   · exact (product_mem F ζ hζ C L u.val).mpr u.property
 
-private theorem q_factor (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (A : Subgroup (symplecticQuotient F ζ hζ C L))
-    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨
-      (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L))
+include hQ in
+private theorem q_factor
     (x : stageDomain F ζ hζ C L) (hx : domainProjection F ζ hζ C L x ∈ A) :
     ∃ (u : QR F ζ hζ C L Q) (k : phaseGroup F ζ hζ C L),
       x = u.val * phaseElement F ζ hζ C L k := by
   rcases hQ with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
   · exact rational_factor F ζ hζ C L x hx
   · exact ⟨⟨x, (product_mem F ζ hζ C L x).mp hx⟩, 1, by simp [phaseElement]⟩
+
+end
 
 private theorem phase_kernel_char (x : stageDomain F ζ hζ C L)
     (hx : x ∈ phaseKernel F ζ hζ C L) :
@@ -129,16 +142,20 @@ private theorem phase_kernel_char (x : stageDomain F ζ hζ C L)
   obtain ⟨k, hk, he⟩ := hx
   exact ⟨k, he.symm, hk⟩
 
- def combined (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ) :
+ section
+
+variable (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
+
+def combined :
     QR F ζ hζ C L Q × phaseGroup F ζ hζ C L →* stageDomain F ζ hζ C L :=
   (QR F ζ hζ C L Q).subtype.noncommCoprod (phaseInclusion F ζ hζ C L)
     (fun u k => (phaseInclusion_central F ζ hζ C L k u.val).symm)
 
- def combinedChar (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ) :
+ def combinedChar :
     QR F ζ hζ C L Q × phaseGroup F ζ hζ C L →* ℂˣ :=
   (qChar F ζ hζ C L Q).noncommCoprod (phaseCharacter F ζ hζ C L) (fun _ _ => Commute.all _ _)
 
- theorem combined_kernel (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
+ theorem combined_kernel
     (hQ : Q = rationalModel F ζ hζ ∨ Q = productModel F ζ hζ C)
     (v : QR F ζ hζ C L Q × phaseGroup F ζ hζ C L)
     (hv : combined F ζ hζ C L Q v ∈ phaseKernel F ζ hζ C L) :
@@ -147,16 +164,19 @@ private theorem phase_kernel_char (x : stageDomain F ζ hζ C L)
   have hu : v.1.val = phaseElement F ζ hζ C L (k * v.2⁻¹) := by
     change v.1.val * phaseElement F ζ hζ C L v.2 = phaseElement F ζ hζ C L k at hk
     apply Subtype.ext
-    have hh := congrArg (fun x : stageDomain F ζ hζ C L => x * (phaseElement F ζ hζ C L v.2)⁻¹) hk
-    have hh' := congrArg Subtype.val hh
-    simpa [phaseElement, mul_assoc] using hh'
+    simpa [phaseElement, mul_assoc] using (congrArg Subtype.val (congrArg (fun x : stageDomain F ζ hζ C L => x * (phaseElement F ζ hζ C L v.2)⁻¹) hk))
   change qChar F ζ hζ C L Q v.1 * phaseCharacter F ζ hζ C L v.2 = 1
   rw [qchar_phase F ζ hζ C L Q hQ _ _ hu, map_mul, map_inv, hχ, one_mul, inv_mul_cancel]
 
- def combinedQuotient (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
+end
+
+ section
+
+variable (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (A : Subgroup (symplecticQuotient F ζ hζ C L))
-    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨
-      (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L)) :
+    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨ (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L))
+
+def combinedQuotient :
     QR F ζ hζ C L Q × phaseGroup F ζ hζ C L →* A.comap (projection F ζ hζ C L) :=
   (((QuotientGroup.mk' _).comp (combined F ζ hζ C L Q))).codRestrict _ (by
     intro v
@@ -169,22 +189,15 @@ private theorem phase_kernel_char (x : stageDomain F ζ hζ C L)
     rw [hk, mul_one]
     exact q_project F ζ hζ C L Q A hQ v.1)
 
- theorem combinedQuotient_surj (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (A : Subgroup (symplecticQuotient F ζ hζ C L))
-    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨
-      (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L)) :
+ theorem combinedQuotient_surj :
     Function.Surjective (combinedQuotient F ζ hζ C L Q A hQ) := by
   intro a
   obtain ⟨x, hx⟩ := QuotientGroup.mk_surjective a.val
-  have hxa : domainProjection F ζ hζ C L x ∈ A := by
-    rw [← projection_mk, hx]; exact a.property
-  obtain ⟨u, k, he⟩ := q_factor F ζ hζ C L Q A hQ x hxa
+  obtain ⟨u, k, he⟩ := q_factor F ζ hζ C L Q A hQ x (by
+    rw [← projection_mk, hx]; exact a.property)
   exact ⟨(u,k), Subtype.ext (by change QuotientGroup.mk (u.val * phaseElement F ζ hζ C L k) = a.val; rw [← he, hx])⟩
 
- def descendedChar (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (A : Subgroup (symplecticQuotient F ζ hζ C L))
-    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨
-      (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L)) :
+ def descendedChar :
     A.comap (projection F ζ hζ C L) →* ℂˣ :=
   (combinedQuotient F ζ hζ C L Q A hQ).liftOfSurjective
     (combinedQuotient_surj F ζ hζ C L Q A hQ) ⟨combinedChar F ζ hζ C L Q, by
@@ -193,19 +206,13 @@ private theorem phase_kernel_char (x : stageDomain F ζ hζ C L)
       apply (QuotientGroup.eq_one_iff _).mp
       exact congrArg Subtype.val (MonoidHom.mem_ker.mp hv)⟩
 
-private theorem descendedChar_formula (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (A : Subgroup (symplecticQuotient F ζ hζ C L))
-    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨
-      (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L))
+private theorem descendedChar_formula
     (v : QR F ζ hζ C L Q × phaseGroup F ζ hζ C L) :
     descendedChar F ζ hζ C L Q A hQ (combinedQuotient F ζ hζ C L Q A hQ v) =
       qChar F ζ hζ C L Q v.1 * phaseCharacter F ζ hζ C L v.2 :=
   MonoidHom.liftOfRightInverse_comp_apply _ _ _ _ _
 
-private theorem char_q (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (A : Subgroup (symplecticQuotient F ζ hζ C L))
-    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨
-      (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L))
+private theorem char_q
     (u : QR F ζ hζ C L Q) :
     descendedChar F ζ hζ C L Q A hQ
       ⟨QuotientGroup.mk u.val, q_project F ζ hζ C L Q A hQ u⟩ = qChar F ζ hζ C L Q u := by
@@ -218,10 +225,7 @@ private theorem char_q (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
   rw [he, map_one, mul_one] at hh
   exact hh
 
-private theorem char_phase (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (A : Subgroup (symplecticQuotient F ζ hζ C L))
-    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨
-      (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L))
+private theorem char_phase
     (k : phaseGroup F ζ hζ C L) (hk : projection F ζ hζ C L (QuotientGroup.mk (phaseElement F ζ hζ C L k)) ∈ A) :
     descendedChar F ζ hζ C L Q A hQ ⟨QuotientGroup.mk (phaseElement F ζ hζ C L k), hk⟩ = phaseCharacter F ζ hζ C L k := by
   have hh := descendedChar_formula F ζ hζ C L Q A hQ (1,k)
@@ -232,49 +236,54 @@ private theorem char_phase (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
   rw [he, map_one, one_mul] at hh
   exact hh
 
- theorem sections_congr (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (f : RestrictedSections F ζ hζ C L Q) (x y : stageDomain F ζ hζ C L)
+end
+
+ section
+
+variable (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ) (f : RestrictedSections F ζ hζ C L Q)
+
+theorem sections_congr (x y : stageDomain F ζ hζ C L)
     (hxy : (QuotientGroup.mk x : H F ζ hζ C L) = QuotientGroup.mk y) : f.val x = f.val y := by
-  have hk := QuotientGroup.eq.mp hxy
-  obtain ⟨k, he, hχ⟩ := phase_kernel_char F ζ hζ C L _ hk
+  obtain ⟨k, he, hχ⟩ := phase_kernel_char F ζ hζ C L _ (QuotientGroup.eq.mp hxy)
   have hy : y = x * phaseElement F ζ hζ C L k := by rw [← he]; simp
   rw [hy, f.property.2, hχ, Units.val_one, one_mul]
 
- def sectionLift (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (f : RestrictedSections F ζ hζ C L Q) : H F ζ hζ C L → ℂ :=
+ def sectionLift : H F ζ hζ C L → ℂ :=
   Quotient.lift f.val (by
     intro x y hxy
     apply sections_congr F ζ hζ C L Q f x y
     exact Quotient.sound hxy)
 
-private theorem sectionLift_mk (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (f : RestrictedSections F ζ hζ C L Q) (x : stageDomain F ζ hζ C L) :
+private theorem sectionLift_mk (x : stageDomain F ζ hζ C L) :
     sectionLift F ζ hζ C L Q f (QuotientGroup.mk x) = f.val x := rfl
 
- theorem sectionLift_covariance (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
+end
+
+ section
+
+variable (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (A : Subgroup (symplecticQuotient F ζ hζ C L))
-    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨
-      (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L))
+    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨ (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L))
+
+theorem sectionLift_covariance
     (f : RestrictedSections F ζ hζ C L Q) :
     sectionLift F ζ hζ C L Q f ∈ FinitePolarization.inducedSpace
       (A.comap (projection F ζ hζ C L)) (descendedChar F ζ hζ C L Q A hQ) := by
     intro a g
     obtain ⟨v, rfl⟩ := combinedQuotient_surj F ζ hζ C L Q A hQ a
     obtain ⟨x, rfl⟩ := QuotientGroup.mk_surjective g
-    change sectionLift F ζ hζ C L Q f (QuotientGroup.mk (v.1.val * phaseElement F ζ hζ C L v.2) * QuotientGroup.mk x) = _
+    let phaseElement₀ := phaseElement F ζ hζ C L v.2
+    change sectionLift F ζ hζ C L Q f (QuotientGroup.mk (v.1.val * phaseElement₀) * QuotientGroup.mk x) = _
     rw [← QuotientGroup.mk_mul, sectionLift_mk, descendedChar_formula, sectionLift_mk]
-    have he : (v.1.val * phaseElement F ζ hζ C L v.2) * x =
-        (v.1.val * x) * phaseElement F ζ hζ C L v.2 := by
-      have hc : phaseElement F ζ hζ C L v.2 * x = x * phaseElement F ζ hζ C L v.2 := (phaseInclusion_central F ζ hζ C L v.2 x).eq
+    have he : (v.1.val * phaseElement₀) * x =
+        (v.1.val * x) * phaseElement₀ := by
+      have hc : phaseElement₀ * x = x * phaseElement₀ := (phaseInclusion_central F ζ hζ C L v.2 x).eq
       rw [mul_assoc, hc, ← mul_assoc]
     rw [he, f.property.2, f.property.1, Units.val_mul]
     change (phaseCharacter F ζ hζ C L v.2 : ℂ) * ((qChar F ζ hζ C L Q v.1 : ℂ) * f.val x) = _
     ring
 
- def descentMap (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (A : Subgroup (symplecticQuotient F ζ hζ C L))
-    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨
-      (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L)) :
+ def descentMap :
     RestrictedSections F ζ hζ C L Q →ₗ[ℂ]
       FinitePolarization.inducedSpace (A.comap (projection F ζ hζ C L)) (descendedChar F ζ hζ C L Q A hQ) where
   toFun f := ⟨sectionLift F ζ hζ C L Q f, sectionLift_covariance F ζ hζ C L Q A hQ f⟩
@@ -289,10 +298,7 @@ private theorem sectionLift_mk (Q : KPGlobalTorusFunctionData.Polarization F ζ 
     obtain ⟨x,rfl⟩ := QuotientGroup.mk_surjective x
     rfl
 
- theorem descent_bijective (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (A : Subgroup (symplecticQuotient F ζ hζ C L))
-    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨
-      (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L)) :
+ theorem descent_bijective :
     Function.Bijective (descentMap F ζ hζ C L Q A hQ) := by
   constructor
   · intro f g he
@@ -324,26 +330,21 @@ private theorem sectionLift_mk (Q : KPGlobalTorusFunctionData.Polarization F ζ 
     obtain ⟨x,rfl⟩ := QuotientGroup.mk_surjective x
     rfl
 
- def descentEquiv (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (A : Subgroup (symplecticQuotient F ζ hζ C L))
-    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨
-      (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L)) :=
+ def descentEquiv :=
   LinearEquiv.ofBijective (descentMap F ζ hζ C L Q A hQ) (descent_bijective F ζ hζ C L Q A hQ)
 
-private theorem descended_central (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (A : Subgroup (symplecticQuotient F ζ hζ C L))
-    (hQ : (Q = rationalModel F ζ hζ ∧ A = rationalPolarization F ζ hζ C L) ∨
-      (Q = productModel F ζ hζ C ∧ A = productPolarization F ζ hζ C L))
+private theorem descended_central
     (a : A.comap (projection F ζ hζ C L)) (ha : a.val ∈ center F ζ hζ C L) :
     descendedChar F ζ hζ C L Q A hQ a = centerCharacter F ζ hζ C L ⟨a.val, ha⟩ := by
   obtain ⟨k, hk⟩ := phaseToCenter_surjective F ζ hζ C L ⟨a.val, ha⟩
-  have hv : QuotientGroup.mk (phaseElement F ζ hζ C L k) = a.val := congrArg Subtype.val hk
-  have hm : projection F ζ hζ C L (QuotientGroup.mk (phaseElement F ζ hζ C L k)) ∈ A := hv.symm ▸ a.property
-  have he : a = ⟨QuotientGroup.mk (phaseElement F ζ hζ C L k), hm⟩ := Subtype.ext hv.symm
+  have hv := congrArg Subtype.val hk
+  have hm := hv.symm ▸ a.property
   calc
-    _ = descendedChar F ζ hζ C L Q A hQ ⟨QuotientGroup.mk (phaseElement F ζ hζ C L k), hm⟩ := congrArg _ he
+    _ = descendedChar F ζ hζ C L Q A hQ ⟨QuotientGroup.mk (phaseElement F ζ hζ C L k), hm⟩ := congrArg _ (Subtype.ext hv.symm)
     _ = phaseCharacter F ζ hζ C L k := char_phase F ζ hζ C L Q A hQ k hm
     _ = _ := (centerCharacter_phase F ζ hζ C L k).symm.trans (congrArg _ hk)
+
+end
 
 private theorem descended_agree (a : H F ζ hζ C L)
     (ha : projection F ζ hζ C L a ∈ rationalPolarization F ζ hζ C L)
@@ -396,12 +397,8 @@ theorem actual_polarizations_descent
       maximal_N := maximal_transfer F ζ hζ C L TR hpairing _ (product_maximal_isotropic F ζ hζ C L)
       χL := descendedChar F ζ hζ C L (rationalModel F ζ hζ) (rationalPolarization F ζ hζ C L) (Or.inl ⟨rfl,rfl⟩)
       χN := descendedChar F ζ hζ C L (productModel F ζ hζ C) (productPolarization F ζ hζ C L) (Or.inr ⟨rfl,rfl⟩)
-      central_L := by
-        intro a ha
-        exact (descended_central F ζ hζ C L _ _ (Or.inl ⟨rfl,rfl⟩) a ha).trans (hω ⟨a.val,ha⟩).symm
-      central_N := by
-        intro a ha
-        exact (descended_central F ζ hζ C L _ _ (Or.inr ⟨rfl,rfl⟩) a ha).trans (hω ⟨a.val,ha⟩).symm
+      central_L := fun a ha => (descended_central F ζ hζ C L _ _ (Or.inl ⟨rfl,rfl⟩) a ha).trans (hω ⟨a.val,ha⟩).symm
+      central_N := fun a ha => (descended_central F ζ hζ C L _ _ (Or.inr ⟨rfl,rfl⟩) a ha).trans (hω ⟨a.val,ha⟩).symm
       agree_on_intersection := descended_agree F ζ hζ C L }
   refine ⟨P, rfl, rfl,
     descentEquiv F ζ hζ C L (rationalModel F ζ hζ) (rationalPolarization F ζ hζ C L) (Or.inl ⟨rfl,rfl⟩),

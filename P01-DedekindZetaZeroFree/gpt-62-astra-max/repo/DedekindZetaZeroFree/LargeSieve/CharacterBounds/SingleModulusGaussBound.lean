@@ -25,8 +25,7 @@ theorem detector_single_modulus_gauss_sieve
       ∑ d : Bˣ, ‖∑ t : T, c t * ψ (n t * (d : B))‖ ^ 2) := by
   classical
   let A : Bˣ → ℂ := fun d => ∑ t : T, c t * ψ (n t * (d : B))
-  let η : J → (Bˣ →* ℂˣ) := fun j => MulChar.equivToUnitHom (χ j)
-  have hη : Function.Injective η := MulChar.equivToUnitHom.injective.comp hχ
+  let η := fun j => MulChar.equivToUnitHom (χ j)
   have hB : 0 < (Fintype.card B : ℝ) := by exact_mod_cast Fintype.card_pos
   have hexpand (j : J) : (∑ t : T, c t * χ j (n t)) =
       (gaussSum (χ j)⁻¹ ψ)⁻¹ *
@@ -46,9 +45,7 @@ theorem detector_single_modulus_gauss_sieve
         ‖∑ d : Bˣ, star ((η j d : ℂˣ) : ℂ) * A d‖ ^ 2 := by
     rw [hexpand, norm_mul, mul_pow, norm_inv, inv_pow,
       (detector_gauss_residue B (χ j) ψ (hprimitive j) horthogonal).1]
-  have hbes := detector_finite_character_bessel Bˣ J η hη A
-  have hcard : (Fintype.card Bˣ : ℝ) ≤ (Fintype.card B : ℝ) := by
-    exact_mod_cast Fintype.card_le_of_injective Units.val Units.val_injective
+  have hbes := detector_finite_character_bessel Bˣ J η (MulChar.equivToUnitHom.injective.comp hχ) A
   have hnonneg : 0 ≤ ∑ d : Bˣ, ‖A d‖ ^ 2 :=
     Finset.sum_nonneg (fun _ _ => sq_nonneg _)
   constructor
@@ -59,8 +56,7 @@ theorem detector_single_modulus_gauss_sieve
           ((Fintype.card Bˣ : ℝ) * ∑ d : Bˣ, ‖A d‖ ^ 2) :=
         mul_le_mul_of_nonneg_left hbes (le_of_lt (inv_pos.mpr hB))
       _ = _ := by dsimp [A]; ring
-  · have hratio : (Fintype.card Bˣ : ℝ) / (Fintype.card B : ℝ) ≤ 1 :=
-      (div_le_one hB).mpr hcard
-    simpa [A] using mul_le_mul_of_nonneg_right hratio hnonneg
+  · simpa [A] using mul_le_mul_of_nonneg_right ((div_le_one hB).mpr (by
+      exact_mod_cast Fintype.card_le_of_injective Units.val Units.val_injective)) hnonneg
 
 end DedekindZetaZeroFree

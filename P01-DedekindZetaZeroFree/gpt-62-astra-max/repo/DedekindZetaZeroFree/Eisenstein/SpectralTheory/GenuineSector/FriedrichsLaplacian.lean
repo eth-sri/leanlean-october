@@ -22,19 +22,23 @@ open KPContActualCotangentMeasurableFamilies KPContCotangentOverlapRationalBranc
 open KPContCotangentActualOverlap
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-theorem placePair_descends (W Z : T_U F ζ hζ U R P H) (i : Fin (d F)) :
+section
+
+variable (W Z : T_U F ζ hζ U R P H) (i : Fin (d F))
+
+theorem placePair_descends :
     ∃! p : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ,
       Measurable p ∧ ∀ (a : ActualChart (U := U) (H := H)) (x : omega a),
         p (q a x.val) = ∑ k : Fin 3,
           inner ℂ (coefficient W.val a x (i, k)) (coefficient Z.val a x (i, k)) := by
   let v := KPContActualCotangentPlaceProjection.project i W.val
   let w := KPContActualCotangentPlaceProjection.project i Z.val
-  have heq : ∀ (a : ActualChart (U := U) (H := H)) (x : omega a),
+  have heq : ∀ (a : ActualChart) (x : omega a),
       inner ℂ (coefficient v a x) (coefficient w a x) = ∑ k : Fin 3,
         inner ℂ (coefficient W.val a x (i, k)) (coefficient Z.val a x (i, k)) := by
     intro a x
@@ -47,18 +51,19 @@ theorem placePair_descends (W Z : T_U F ζ hζ U R P H) (i : Fin (d F)) :
   apply huniq p'
   exact ⟨hp'.1, fun a x => (hp'.2 a x).trans (heq a x).symm⟩
 
-def placePair (W Z : T_U F ζ hζ U R P H) (i : Fin (d F)) :
+def placePair :
     KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ :=
   Classical.choose (placePair_descends W Z i)
+
+end
 
 private theorem exists_actual_lift (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
     ∃ (a : ActualChart (U := U) (H := H)) (y : omega a), q a y.val = x := by
   let C := KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H
   have hB := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H C
-  have hx : x ∈ ⋃ n, KPContActualCotangentBorelRefinement.basePiece C n := by
+  obtain ⟨n, hn⟩ := Set.mem_iUnion.mp (by
     rw [hB.covers]
-    exact Set.mem_univ x
-  obtain ⟨n, hn⟩ := Set.mem_iUnion.mp hx
+    exact Set.mem_univ x)
   obtain ⟨y, hy⟩ := Set.mem_range.mp (hB.base_subset n hn)
   refine ⟨C.chart n, KPContActualCotangentPieceHilbertSum.coordinates (C.chart n) y, ?_⟩
   have hi : labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) y.val) = y.val := by
@@ -98,8 +103,8 @@ private theorem placePair_eq_pair (W Z : T_U F ζ hζ U R P H) (i : Fin (d F)) :
 
 variable (F ζ hζ)
 variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
-variable (U R) (hR : R.adelicHaar = μG) (P H)
-variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
+    (U R) (hR : R.adelicHaar = μG) (P H)
+    (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
 
 def scalarInjective : Function.Injective
     (iota (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)) :=
@@ -119,11 +124,11 @@ def A_U : KPContSectorClosedLpSubspace.H F ζ hζ R U →ₗ.[ℂ]
 
 def scalarDense : DenseRange
     (iota (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)) :=
-  (kp_cont_actual_sector_test_density F ζ hζ μG hμG U R hR P H realization).2.2.1
+  (kp_cont_actual_sector_test_density F ζ hζ μG hμG U R hR P H realization).1
 
 def cotangentDense : DenseRange
     (j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)) :=
-  (kp_cont_actual_sector_test_density F ζ hζ μG hμG U R hR P H realization).2.2.2
+  (kp_cont_actual_sector_test_density F ζ hζ μG hμG U R hR P H realization).2
 
 def green : ∀ (f : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
     inner ℂ (j (D_U f)) (j W) = inner ℂ (iota f) (iota (δ_U W)) :=
@@ -166,27 +171,36 @@ abbrev formDomain := (A).closure.domain
 abbrev energy (u : formDomain F ζ hζ U R P H μG hμG hR realization) : ℝ :=
   closedGradientEnergy A u
 
-theorem test_mem_formDomain (f : S_U F ζ hζ U R P H) : iota f ∈ (A).closure.domain := by
+section
+
+variable (f : S_U F ζ hζ U R P H)
+
+theorem test_mem_formDomain : iota f ∈ (A).closure.domain := by
   apply (A).le_closure.1
   exact LinearMap.mem_range_self iota f
 
-def formTest (f : S_U F ζ hζ U R P H) : formDomain F ζ hζ U R P H μG hμG hR realization :=
+def formTest : formDomain F ζ hζ U R P H μG hμG hR realization :=
   ⟨iota f, test_mem_formDomain F ζ hζ U R P H μG hμG hR realization f⟩
+
+end
 
 theorem placePair_chart (W Z : T_U F ζ hζ U R P H) (i : Fin (d F))
     (a : ActualChart (U := U) (H := H)) (x : omega a) :
     placePair W Z i (q a x.val) = ∑ k : Fin 3,
-      inner ℂ (coefficient W.val a x (i, k)) (coefficient Z.val a x (i, k)) := by
-  exact (Classical.choose_spec (placePair_descends W Z i)).1.2 a x
+      inner ℂ (coefficient W.val a x (i, k)) (coefficient Z.val a x (i, k)) := (Classical.choose_spec (placePair_descends W Z i)).1.2 a x
 
-theorem gradient_placePair_integrable (f g : S_U F ζ hζ U R P H) (i : Fin (d F)) :
+section
+
+variable (f g : S_U F ζ hζ U R P H)
+
+theorem gradient_placePair_integrable (i : Fin (d F)) :
     Integrable (placePair (D_U f) (D_U g) i)
       (KPContActualSectorCotangentL2.muU F ζ hζ U R P) := by
   rw [placePair_eq_pair]
   exact KPContActualCotangentIntrinsicHilbertIntegral.integrable_pair
     ⟨_, project_squareFinite (D_U f) i⟩ ⟨_, project_squareFinite (D_U g) i⟩
 
-theorem closedForm_tests (f g : S_U F ζ hζ U R P H) :
+theorem closedForm_tests :
     closedGradientForm A
       (formTest F ζ hζ U R P H μG hμG hR realization f)
       (formTest F ζ hζ U R P H μG hμG hR realization g) =
@@ -210,8 +224,7 @@ theorem closedForm_tests (f g : S_U F ζ hζ U R P H) :
         (T := T_U F ζ hζ U R P H) iota
         (scalarInjective F ζ hζ U R P H μG hμG hR realization) j D_U g
   rw [hform]
-  have hinner := (kp_cont_actual_sector_cotangent_l2
-    F ζ hζ μG hμG U R hR P H realization).inner_integral
+  have hinner := KPContActualCotangentIntrinsicHilbertIntegral.inner_eq_integral (KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H)
     (j (D_U f)) (j (D_U g)) (cotangentSquareFamily (D_U f))
     (cotangentSquareFamily (D_U g)) rfl rfl
   rw [hinner]
@@ -227,20 +240,12 @@ theorem closedForm_tests (f g : S_U F ζ hζ U R P H) :
   intro i hi
   exact (placePair_chart F ζ hζ U R P H (D_U f) (D_U g) i a y).symm
 
+end
+
 structure Properties : Prop where
   gradient_dense : Dense ((A).domain : Set (KPContSectorClosedLpSubspace.H F ζ hζ R U))
   gradient_closable : (A).IsClosable
-  form_domain_dense : Dense ((A).closure.domain : Set (KPContSectorClosedLpSubspace.H F ζ hζ R U))
   form_hilbert : CompleteSpace (ClosedGradientSpace A)
-  form_closed : ∀ (u : ℕ → (A).closure.domain),
-    CauchySeq (fun n => WithLp.toLp 2
-      ((u n : KPContSectorClosedLpSubspace.H F ζ hζ R U), (A).closure (u n))) →
-      ∃ v : (A).closure.domain,
-        Filter.Tendsto (fun n => closedGradientEnergyNorm A (u n - v))
-          Filter.atTop (nhds 0)
-  form_nonnegative : ∀ u : (A).closure.domain,
-    0 ≤ closedGradientEnergy A u ∧
-      closedGradientForm A u u = (closedGradientEnergy A u : ℂ)
 
   form_core : ∀ u : (A).closure.domain, ∃ s : ℕ → S_U F ζ hζ U R P H,
     Filter.Tendsto (fun n => iota (s n)) Filter.atTop
@@ -254,27 +259,10 @@ structure Properties : Prop where
   laplacian_nonnegative : ∀ u : (Δ).domain,
     0 ≤ (inner ℂ (u : KPContSectorClosedLpSubspace.H F ζ hζ R U) ((Δ) u)).re
   genuine_inverse : KPResolventPencil.GenuineInverse Δ (-1) B
-  resolvent_selfadjoint : IsSelfAdjoint B
-  resolvent_contraction : ‖B‖ ≤ 1
-  resolvent_injective : Function.Injective B
-  resolvent_dense : DenseRange B
-  laplacian_domain : Set.range B = ((Δ).domain : Set (KPContSectorClosedLpSubspace.H F ζ hζ R U))
   variational : ClosedGradientVariationalAssociation A Δ
-  operator_domain_subset_form : (Δ).domain ≤ (A).closure.domain
   test_mem_laplacian : ∀ f : S_U F ζ hζ U R P H, iota f ∈ (Δ).domain
   test_laplacian : ∀ f : S_U F ζ hζ U R P H,
     (Δ) ⟨iota f, test_mem_laplacian f⟩ = iota (δ_U (D_U f))
-
-  test_laplacian_chart : ∀ (f : S_U F ζ hζ U R P H)
-      (a : ActualChart (U := U) (H := H)) (x : omega a),
-    (δ_U (D_U f)).val a x =
-      HyperbolicChart.laplacian (d F) (liftExtension a (f.val a)) x.val
-  test_form : ∀ f g : S_U F ζ hζ U R P H,
-    closedGradientForm A
-      (formTest F ζ hζ U R P H μG hμG hR realization f)
-      (formTest F ζ hζ U R P H μG hμG hR realization g) =
-      ∑ i : Fin (d F), ∫ x, placePair (D_U f) (D_U g) i x
-        ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P
 
 end DedekindZetaZeroFree.KPContActualSectorFriedrichsSynthesis
 
@@ -288,10 +276,10 @@ private theorem genuineInverse_of_sum
     KPResolventPencil.GenuineInverse L (-1) B := by
   refine ⟨fun f => (hl f).choose, ?_, ?_⟩
   · intro f
-    simpa only [neg_smul, one_smul, sub_neg_eq_add] using
+    simpa using
       (add_comm (L ⟨B f, _⟩) (B f)).trans (hl f).choose_spec
   · intro u
-    simpa only [neg_smul, one_smul, sub_neg_eq_add] using
+    simpa using
       (congrArg B (add_comm (L u) (u : E))).trans (hr u)
 
 set_option maxHeartbeats 2000000
@@ -344,30 +332,17 @@ theorem kp_cont_actual_sector_friedrichs_synthesis
   refine {
     gradient_dense := ha
     gradient_closable := hc
-    form_domain_dense := hfd
     form_hilbert := hcomplete
-    form_closed := closedGradientForm_closed A hc
-    form_nonnegative := hpos
     form_core := ?_
     laplacian_dense := hrange ▸ hbdense
     laplacian_closed := hclosed
     laplacian_selfadjoint := hself
     laplacian_nonnegative := hnonneg
     genuine_inverse := genuineInverse_of_sum Δ B hleft hright
-    resolvent_selfadjoint := hbself
-    resolvent_contraction := hbnorm
-    resolvent_injective := hbinj
-    resolvent_dense := hbdense
-    laplacian_domain := hrange
     variational := hvar
-    operator_domain_subset_form := ?_
     test_mem_laplacian := htestmem
     test_laplacian := ?_
-    test_laplacian_chart :=
-      (kp_cont_actual_sector_test_differential_descent
-        F ζ hζ μG hμG U R hR P H realization).laplacian_chart
-    test_form := KPContActualSectorFriedrichsSynthesis.closedForm_tests
-      F ζ hζ U R P H μG hμG hR realization }
+     }
   · intro u
     obtain ⟨s, h1, h2, h3⟩ := hcore u
     refine ⟨fun n => KPTestOperator.representative ι hι (s n), ?_, ?_, ?_⟩
@@ -379,7 +354,6 @@ theorem kp_cont_actual_sector_friedrichs_synthesis
       exact h2
     · change Filter.Tendsto (fun n => ‖A (s n)‖ ^ 2) _ _
       exact h3
-  · exact closedGradientFriedrichsOperator_domain_subset A ha hc
   · intro f
     have heq := (htest ⟨ι f, LinearMap.mem_range_self ι f⟩).choose_spec
     change Δ ⟨ι f, htestmem f⟩ = ι (δ (D f))

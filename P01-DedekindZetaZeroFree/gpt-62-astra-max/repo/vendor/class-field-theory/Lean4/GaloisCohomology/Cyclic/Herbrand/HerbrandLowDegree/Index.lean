@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -47,20 +45,9 @@ theorem herbrandH0_card_eq_mul_herbrandHMinusOne_card
     Nat.card (HerbrandH0 G A) =
       n * Nat.card
         (HerbrandHMinusOne G A σ) := by
-  rw [herbrandQuotient_eq_card_ratio] at hquotient
-  have hden :
-      ((Nat.card
-          (HerbrandHMinusOne G A σ) : ℚ) ≠ 0) :=
-    Nat.cast_ne_zero.mpr
-      (Finite.card_pos
-        (α := HerbrandHMinusOne G A σ)).ne'
-  have hrat :
-      (Nat.card (HerbrandH0 G A) : ℚ) =
-        (n : ℚ) *
-          Nat.card
-            (HerbrandHMinusOne G A σ) :=
-    (div_eq_iff hden).mp hquotient
-  exact_mod_cast hrat
+  exact_mod_cast ((div_eq_iff (Nat.cast_ne_zero.mpr
+    (Finite.card_pos
+      ).ne')).mp hquotient)
 
 /-- Cardinal-arithmetic step for low-degree Herbrand cohomology: a natural-valued Herbrand quotient
 is a lower bound for the degree-zero Tate quotient. -/
@@ -80,7 +67,7 @@ theorem le_herbrandH0_card_of_herbrandQuotient_eq_nat
           (HerbrandHMinusOne G A σ) :=
       Nat.mul_le_mul_left n
         (Finite.card_pos
-          (α := HerbrandHMinusOne G A σ))
+          )
 
 /-- If the degree-zero cardinality is also bounded above by the natural
 value of the Herbrand quotient, both low-degree cardinalities are forced:
@@ -111,22 +98,6 @@ theorem lowDegree_card_eq_of_herbrandQuotient_eq_nat_of_le
   have hcancel : n * b = n * 1 := by
     rw [← hmul, ha, mul_one]
   exact Nat.eq_of_mul_eq_mul_left hn hcancel
-
-/-- Subsingleton form of the negative-first conclusion. -/
-theorem herbrandHMinusOne_subsingleton_of_herbrandQuotient_eq_nat_of_le
-    (σ : G) (n : ℕ) (hn : 0 < n)
-    [Finite (HerbrandH0 G A)]
-    [Finite (HerbrandHMinusOne G A σ)]
-    (hquotient :
-      herbrandQuotient (G := G) (A := A) σ = n)
-    (hle : Nat.card (HerbrandH0 G A) ≤ n) :
-    Subsingleton (HerbrandHMinusOne G A σ) := by
-  have hcard :
-      Nat.card (HerbrandHMinusOne G A σ) = 1 := by
-    exact
-      (lowDegree_card_eq_of_herbrandQuotient_eq_nat_of_le
-        σ n hn hquotient hle).2
-  exact (Nat.card_eq_one_iff_unique.mp hcard).1
 
 end CyclicCohomology
 

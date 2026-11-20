@@ -32,10 +32,9 @@ private lemma radial_infinite (t : ℝ) (w : InfinitePlace F) :
 
 private lemma radial_finite (t : ℝ) (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
     GeneralLinearGroup.map (KPChamberHeight.finiteEval F v) (radialGL F ζ hζ t) = 1 := by
-  have H := KPAdelicCoverRestrictedProduct.restrictedProjection_eval F ζ hζ
-    (KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ (fun _ => (Real.exp t : ℂ))) (Sum.inr v)
   simpa [KPGlobalTorusFunctionData.archDiagonalTuple, KPAdelicCoverRestrictedProduct.matrixEval,
-    KPAdelicCoverRestrictedProduct.adeleEval, KPChamberHeight.finiteEval, radialGL] using H
+    KPAdelicCoverRestrictedProduct.adeleEval, KPChamberHeight.finiteEval, radialGL] using (KPAdelicCoverRestrictedProduct.restrictedProjection_eval F ζ hζ
+      (KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ (fun _ => (Real.exp t : ℂ))) (Sum.inr v))
 
 private lemma radial_local_lower {K : Type*} [NormedField K]
     (r : Fin 2 → K) (A : GL (Fin 2) K) (y : Kˣ)
@@ -60,7 +59,7 @@ private lemma radial_local_lower {K : Type*} [NormedField K]
     Real.sq_sqrt (mul_nonneg (norm_nonneg _) (Real.exp_pos t).le),
     Real.sq_sqrt (by positivity), Real.sq_sqrt (by positivity)]
   have hd : 0 < ‖(GeneralLinearGroup.det A : K)‖ := norm_pos_iff.mpr (Units.ne_zero _)
-  have he : 1 ≤ Real.exp t := Real.one_le_exp ht
+  have he := Real.one_le_exp ht
   rw [Real.exp_neg]
   field_simp
   have he2 : 1 ≤ Real.exp t ^ 2 := one_le_pow₀ he
@@ -102,8 +101,7 @@ private lemma row_radial_lower (r : Fin 2 → F) (hr : r ≠ 0) (A : KPChamberHe
     (fun w _ => infinite_lower F ζ hζ r A t ht w)
   rw [Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ] at H
   have hn : Fintype.card (InfinitePlace F) = KPCuspLogShape.dimension F := by
-    have he := KPContSectorArchSphericalFibers.infinitePlaceEquiv F ζ hζ
-    simpa only [Fintype.card_fin, KPCuspLogShape.dimension] using Fintype.card_congr he
+    simpa using Fintype.card_congr (KPContSectorArchSphericalFibers.infinitePlaceEquiv F ζ hζ)
   rw [← Real.exp_nat_mul, hn] at H
   have hE : (KPCuspLogShape.dimension F : ℝ) * -t = -(KPCuspLogShape.dimension F : ℝ) * t := by ring
   rw [hE] at H
@@ -117,8 +115,7 @@ private lemma row_radial_lower (r : Fin 2 → F) (hr : r ≠ 0) (A : KPChamberHe
 private lemma radial_projection (t : ℝ) :
     KPLiteralExceptionalResidue.coveredHeightProjection F ζ hζ
       (KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ (fun _ => (Real.exp t : ℂ))) =
-      ProjGenLinGroup.mk (radialGL F ζ hζ t) := by
-  rfl
+      ProjGenLinGroup.mk (radialGL F ζ hζ t) := rfl
 
  def radialSection (t : ℝ) : KPSmoothActualFlowData.GInfinity F := fun w =>
   ProjGenLinGroup.mk (KubotaRankTwo.d ℂ (Units.mk0 (Real.exp t : ℂ)

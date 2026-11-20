@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -42,13 +40,11 @@ def rationalCyclotomicField :
 unity of all positive orders. -/
 noncomputable instance rationalCyclotomicField_isCyclotomicExtension :
     IsCyclotomicExtension (Set.univ : Set ℕ) ℚ
-      rationalCyclotomicField := by
-  exact
-    IntermediateField.isCyclotomicExtension_adjoin_of_exists_isPrimitiveRoot
-      (Set.univ : Set ℕ) ℚ (SeparableClosure ℚ)
+      rationalCyclotomicField := IntermediateField.isCyclotomicExtension_adjoin_of_exists_isPrimitiveRoot
+      Set.univ ℚ (SeparableClosure ℚ)
       (fun n _hn hn0 =>
         IsCyclotomicExtension.exists_isPrimitiveRoot
-          (S := (Set.univ : Set ℕ))
+
           (SeparableClosure ℚ) (SeparableClosure ℚ)
           (Set.mem_univ n) hn0)
 
@@ -73,13 +69,11 @@ extension. -/
 noncomputable instance rationalCyclotomicLevel_isCyclotomicExtension
     (n : ℕ+) :
     IsCyclotomicExtension {(n : ℕ)} ℚ
-      (rationalCyclotomicLevel n) := by
-  exact
-    IntermediateField.isCyclotomicExtension_adjoin_of_exists_isPrimitiveRoot
+      (rationalCyclotomicLevel n) := IntermediateField.isCyclotomicExtension_adjoin_of_exists_isPrimitiveRoot
       {(n : ℕ)} ℚ rationalCyclotomicField
       (fun m _hm _hm0 =>
         IsCyclotomicExtension.exists_isPrimitiveRoot
-          (S := (Set.univ : Set ℕ))
+
           ℚ rationalCyclotomicField
           (Set.mem_univ m) _hm0)
 
@@ -109,22 +103,15 @@ theorem rationalCyclotomicLevel_mono
     ℚ rationalCyclotomicField (m : ℕ) (n : ℕ)
     (rationalCyclotomicLevel m)
     (rationalCyclotomicLevel n)
-    (h₁ := rationalCyclotomicLevel_isCyclotomicExtension m)
-    (h₂ := rationalCyclotomicLevel_isCyclotomicExtension n)
     h
 
 /-- The internal finite cyclotomic levels exhaust `ℚ(μ∞)`. -/
 theorem iSup_rationalCyclotomicLevel :
     (⨆ n : ℕ+, rationalCyclotomicLevel n) = ⊤ := by
-  have htop :
-      IntermediateField.adjoin ℚ
-          {ζ : rationalCyclotomicField |
-            ∃ n : ℕ, n ∈ (Set.univ : Set ℕ) ∧
-              n ≠ 0 ∧ ζ ^ n = 1} =
-        ⊤ :=
+  have htop :=
     IntermediateField.adjoin_eq_top_of_algebra ℚ _
       ((IsCyclotomicExtension.iff_adjoin_eq_top
-        (Set.univ : Set ℕ) ℚ rationalCyclotomicField).1
+        Set.univ ℚ rationalCyclotomicField).1
           inferInstance).2
   apply le_antisymm le_top
   rw [← htop, IntermediateField.adjoin_le_iff]
@@ -140,7 +127,6 @@ theorem iSup_rationalCyclotomicLevel :
         (by
           refine
             ⟨(npos : ℕ), by simp, npos.ne_zero, ?_⟩
-          change ζ ^ n = 1
           exact hpow))
 
 end KummerTheory

@@ -14,32 +14,40 @@ private theorem codifferential_smul_const (d : ℕ) (W : HyperbolicChart.Space d
     HyperbolicChart.codifferential d (fun y => c • W y) x =
       c * HyperbolicChart.codifferential d W x := by
   unfold HyperbolicChart.codifferential HyperbolicChart.coordinateDerivative
-  have hc (i : Fin d) (k : Fin 3) : DifferentiableAt ℝ (fun y => W y i k) x := by
-    exact (differentiableAt_pi.mp ((differentiableAt_pi.mp hW) i)) k
+  have hc (i : Fin d) (k : Fin 3) : DifferentiableAt ℝ (fun y => W y i k) x := (differentiableAt_pi.mp ((differentiableAt_pi.mp hW) i)) k
   simp only [Pi.smul_apply, smul_eq_mul]
-  change (∑ i : Fin d, (-(fderiv ℝ (fun y => c * W y i 0) x) (HyperbolicChart.coordinateVector d i 2) +
-      2 * (c * W x i 0) - (Real.exp (x (i, 2)) : ℂ) * (fderiv ℝ (fun y => c * W y i 1) x) (HyperbolicChart.coordinateVector d i 0) -
-      (Real.exp (x (i, 2)) : ℂ) * (fderiv ℝ (fun y => c * W y i 2) x) (HyperbolicChart.coordinateVector d i 1))) = _
   simp only [fderiv_const_mul (hc _ _) c, ContinuousLinearMap.smul_apply, smul_eq_mul]
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro i _
   ring
- def part (d : ℕ) (f : ℂ →L[ℝ] ℝ) (v : EuclideanSpace ℂ (Fin d × Fin 3)) :
+
+alias CodifferentialCovariance.codifferential_smul_const := codifferential_smul_const
+ section
+
+variable (d : ℕ) (f : ℂ →L[ℝ] ℝ)
+
+def part (v : EuclideanSpace ℂ (Fin d × Fin 3)) :
     EuclideanSpace ℝ (Fin d × Fin 3) := WithLp.toLp 2 (fun k => f (v k))
-private theorem part_contDiffAt (d : ℕ) (f : ℂ →L[ℝ] ℝ)
+private theorem part_contDiffAt
     (V : HyperbolicChart.Space d → EuclideanSpace ℂ (Fin d × Fin 3))
     (x : HyperbolicChart.Space d) (hV : ContDiffAt ℝ (⊤ : ℕ∞) V x) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun y => part d f (V y)) x := by
   apply (contDiffAt_piLp 2).mpr
   intro k
   exact f.contDiff.contDiffAt.comp x (((EuclideanSpace.proj (𝕜 := ℂ) k).restrictScalars ℝ).contDiff.contDiffAt.comp x hV)
+
+end
+
+alias CodifferentialCovariance.part_contDiffAt := part_contDiffAt
 private theorem scalar_fderiv_map (d : ℕ) (f : ℂ →L[ℝ] ℝ)
     (g : HyperbolicChart.Space d → ℂ) (x v : HyperbolicChart.Space d)
     (hg : DifferentiableAt ℝ g x) :
     fderiv ℝ (fun y => f (g y)) x v = f (fderiv ℝ g x v) := by
   rw [show (fun y => f (g y)) = f ∘ g from rfl, fderiv_comp x f.differentiableAt hg,
     f.fderiv, ContinuousLinearMap.comp_apply]
+
+alias CodifferentialCovariance.scalar_fderiv_map := scalar_fderiv_map
 private theorem part_codifferential (d : ℕ) (f : ℂ →L[ℝ] ℝ)
     (V : HyperbolicChart.Space d → EuclideanSpace ℂ (Fin d × Fin 3))
     (x : HyperbolicChart.Space d) (hV : ContDiffAt ℝ (⊤ : ℕ∞) V x) :
@@ -90,7 +98,13 @@ private theorem part_codifferential (d : ℕ) (f : ℂ →L[ℝ] ℝ)
   rw [hmul, hmul]
   rfl
 
-private theorem dual_push (d : ℕ) (ψ : HyperbolicChart.Space d → HyperbolicChart.Space d)
+alias CodifferentialCovariance.part_codifferential := part_codifferential
+
+section
+
+variable (d : ℕ) (ψ : HyperbolicChart.Space d → HyperbolicChart.Space d)
+
+private theorem dual_push
     (V W : EuclideanSpace ℂ (Fin d × Fin 3)) (y : HyperbolicChart.Space d)
     (hm : ∀ u v, HyperbolicChart.metric d (ψ y) (fderiv ℝ ψ y u) (fderiv ℝ ψ y v) =
       HyperbolicChart.metric d y u v)
@@ -121,17 +135,15 @@ private theorem dual_push (d : ℕ) (ψ : HyperbolicChart.Space d → Hyperbolic
     obtain ⟨v,rfl⟩ := q.surjective w
     change inner ℝ (Q v) (part d f W) = inner ℝ (Q v) (Q (part d f V))
     rw [hinner]
-    have hh := congrArg f (hp (CotangentLogCoframe.H d y v))
     have hmul (z : ℂ) (r : ℝ) : f (z * (r : ℂ)) = r * f z := by
       rw [show z * (r : ℂ) = r • z by simp [Complex.real_smul, mul_comm], map_smul]
       rfl
     simpa [PiLp.inner_apply, part, map_sum, hmul, CotangentLogCoframe.H,
-      Q, ContinuousLinearMap.comp_apply, mul_comm] using hh
+      Q, ContinuousLinearMap.comp_apply, mul_comm] using (congrArg f (hp (CotangentLogCoframe.H d y v)))
   rw [he]
   simp [Q, CotangentLogCoframe.H]
 
-theorem coframe_codifferential_isometry (d : ℕ)
-    (ψ : HyperbolicChart.Space d → HyperbolicChart.Space d)
+theorem coframe_codifferential_isometry
     (V W : HyperbolicChart.Space d → EuclideanSpace ℂ (Fin d × Fin 3))
     (x : HyperbolicChart.Space d) (hψ : ContDiffAt ℝ 2 ψ x)
     (hV : ContDiffAt ℝ (⊤ : ℕ∞) V x) (hW : ContDiffAt ℝ (⊤ : ℕ∞) W (ψ x))
@@ -145,22 +157,19 @@ theorem coframe_codifferential_isometry (d : ℕ)
   have hr (f : ℂ →L[ℝ] ℝ) :
       f (HyperbolicChart.codifferential d ((CotangentLogCoframe.j d).symm ∘ W) (ψ x)) =
         f (HyperbolicChart.codifferential d ((CotangentLogCoframe.j d).symm ∘ V) x) := by
-    let A : HyperbolicChart.Space d → HyperbolicChart.Space d :=
+    let A :=
       fun y => CotangentLogCoframe.H d y (part d f (V y))
-    let B : HyperbolicChart.Space d → HyperbolicChart.Space d :=
+    let B :=
       fun y => CotangentLogCoframe.H d y (part d f (W y))
-    have ha : ContDiffAt ℝ 1 A x :=
-      ((CotangentLogCoframe.contDiff_H d).contDiffAt.clm_apply
-        (part_contDiffAt d f V x hV)).of_le (by simp)
-    have hb : ContDiffAt ℝ 1 B (ψ x) :=
-      ((CotangentLogCoframe.contDiff_H d).contDiffAt.clm_apply
-        (part_contDiffAt d f W (ψ x) hW)).of_le (by simp)
-    have hpush : (B ∘ ψ) =ᶠ[nhds x] fun y => fderiv ℝ ψ y (A y) := by
-      filter_upwards [hm, hp] with y hy hpy
-      exact dual_push d ψ (V y) (W (ψ y)) y hy hpy f
     rw [part_codifferential d f W (ψ x) hW, part_codifferential d f V x hV]
-    exact HyperbolicChart.real_divergence_isometry d ψ A B x hψ ha hb hm hpush
+    refine HyperbolicChart.real_divergence_isometry d ψ A B x hψ (((CotangentLogCoframe.contDiff_H d).contDiffAt.clm_apply
+      (part_contDiffAt d f V x hV)).of_le (by simp)) (((CotangentLogCoframe.contDiff_H d).contDiffAt.clm_apply
+      (part_contDiffAt d f W (ψ x) hW)).of_le (by simp)) hm ?_
+    filter_upwards [hm, hp] with y hy hpy
+    exact dual_push d ψ (V y) (W (ψ y)) y hy hpy f
   exact Complex.ext (hr Complex.reCLM) (hr Complex.imCLM)
+
+end
 
 private theorem metric_polarization (d : ℕ) (x u v : HyperbolicChart.Space d) :
     HyperbolicChart.metric d x (u+v) (u+v) =

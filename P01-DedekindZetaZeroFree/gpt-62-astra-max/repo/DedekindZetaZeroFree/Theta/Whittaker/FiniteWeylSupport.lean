@@ -12,15 +12,14 @@ namespace DedekindZetaZeroFree.SheetRescaling
 open MomentSources NumberField MeasureTheory
 open scoped Classical Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {N : TraceHaarTransport R} (C : JointDigitDescentSources R N)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {N : TraceHaarTransport R} (C : JointDigitDescentSources R N)
 
 theorem finite_trace_value (q : KPFinitePlace F) (t : q.adicCompletion F) :
     adelicTraceQuotientCharacter F (QuotientAddGroup.mk
       (KPRationalAdelicSplitting.localAdele F (Sum.inr q) t)) =
-      localFiniteCharacter F q t := by
-  exact (adelicTraceQuotientCharacter_mk F _).trans
+      localFiniteCharacter F q t := (adelicTraceQuotientCharacter_mk F _).trans
     (adelicTraceCharacter_finite_single F q t)
 
 def finiteTrace (q : KPFinitePlace F) : ContinuousAddChar (q.adicCompletion F) where
@@ -81,7 +80,7 @@ theorem localWeyl_small_norm (v : R.A.UnitQuotient) (p : R.A.Sf) :
     R.A.primitive_zeta12 p.val (C.factorization.finiteData p.val).inducing
     (C.factorization.finiteData p.val).inducing.polarization
     (C.factorization.finiteData p.val).haar (C.factorization.finiteData p.val).haar_integer
-  let φ : CanonicalSmoothModule (actualLocal R C.factorization.finiteData (Sum.inr p.val)) :=
+  let φ :=
     ρ (KPPGLLocalCover.W F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val)) (x ⟨Sum.inr p.val, hp⟩)
   obtain ⟨B, hB, hb⟩ := KPInterface.ActualFiniteOutputSteps.actual_small_norm_decay_canonical
     R.A.zeta12 R.A.primitive_zeta12 p.val (C.factorization.finiteData p.val).inducing
@@ -89,7 +88,7 @@ theorem localWeyl_small_norm (v : R.A.UnitQuotient) (p : R.A.Sf) :
     (C.factorization.finiteData p.val).haar (C.factorization.finiteData p.val).haar_integer
     (finiteTrace p.val) (finiteEll R C p.val) (finiteEll_whittaker R C v s x hx p.val hp)
     φ (1 / 4) (by norm_num) (by norm_num)
-  have hd : 0 < ‖C.factorization.ell (Sum.inr p.val) (x ⟨Sum.inr p.val, hp⟩)‖ :=
+  have hd :=
     norm_pos_iff.mpr (selected_tensor_nonzero R C v s x hx ⟨Sum.inr p.val, hp⟩)
   refine ⟨B / ‖C.factorization.ell (Sum.inr p.val) (x ⟨Sum.inr p.val, hp⟩)‖,
     div_pos hB hd, ?_⟩
@@ -137,7 +136,7 @@ theorem finite_conjugacy (q : KPFinitePlace F) (z : (q.adicCompletion F)ˣ)
       finiteRoot R q ((z : q.adicCompletion F) * t) *
         KPPGLLocalCover.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) z := by
   have h := (KPCorrectedBruhatLifts.quotient_upper_diagonal F R.A.zeta12
-    R.A.primitive_zeta12 (Sum.inr q) ((z : q.adicCompletion F) * t) z).symm
+    R.A.primitive_zeta12 (Sum.inr q) (z * t) z).symm
   rw [mul_div_cancel_left₀ t z.ne_zero] at h
   exact h
 

@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -73,10 +70,10 @@ private theorem numberFieldTowerFiniteQuotientCoordinate_mem_primary
   calc
     (numberFieldTowerExtensionQuotientEquivGaloisGroup K L)
         (numberFieldTowerFiniteQuotientCoordinate
-          (K := K) (L := L) τ ^ (p.1 ^ m)) =
+            τ ^ (p.1 ^ m)) =
       (numberFieldTowerExtensionQuotientEquivGaloisGroup K L
         (numberFieldTowerFiniteQuotientCoordinate
-          (K := K) (L := L) τ)) ^ (p.1 ^ m) := map_pow _ _ _
+            τ)) ^ (p.1 ^ m) := map_pow _ _ _
     _ = σ' ^ (p.1 ^ m) :=
       congrArg (fun g => g ^ (p.1 ^ m)) hτσ
     _ = 1 := hm
@@ -104,13 +101,13 @@ representative on which the local and global Artin values agree. -/
           (K := K) (L := L) v z = σ.1 ∧
       globalNormResidueMonoidHom K L
           (IdeleGroup.finitePlaceIdeleClass v z) = σ.1 := by
-  let : Algebra K (SeparableClosure ℚ) :=
+  let :=
     numberFieldTowerSeparableClosureBaseAlgebra K L
-  let : Algebra L (SeparableClosure ℚ) :=
+  let :=
     numberFieldTowerSeparableClosureTopAlgebra L
-  let : IsScalarTower K L (SeparableClosure ℚ) :=
+  let :=
     numberFieldTowerSeparableClosureScalarTower K L
-  let : IsScalarTower ℚ K (SeparableClosure ℚ) :=
+  let :=
     numberFieldTowerSeparableClosureBaseScalarTower K L
   let := numberFieldTowerExtensionSubgroup_normal K L
   obtain
@@ -118,23 +115,12 @@ representative on which the local and global Artin values agree. -/
         _hfinite, _hbase, _hintersection, _hcontainment,
         n, hn, hdegree⟩ :=
     exists_finitePlacePrimaryCyclotomicAuxiliaryFixedField
-      (K := K) (L := L) v p σ hgenerate hprimary
-  have hprimaryQuotient :
-      numberFieldTowerFiniteQuotientCoordinate
-          (K := K) (L := L) τ ∈
-        CommGroup.primaryComponent
-          ((numberFieldTowerBaseSubgroup K L).toSubgroup ⧸
-            extensionSubgroup
-              (numberFieldTowerBaseSubgroup K L)
-              (numberFieldTowerTopSubgroup L)
-              (numberFieldTowerTopSubgroup_le_baseSubgroup K L))
-          p.1 :=
-    numberFieldTowerFiniteQuotientCoordinate_mem_primary
-      (K := K) (L := L) p τ σ.1 hτσ hprimary
+        v p σ hgenerate hprimary
   let data :=
     numberFieldTowerFinitePadicAuxiliaryLocalGlobalRepresentative
-      (K := K) (L := L) v p τ hτdegree hτdecomposition
-      n hn hdegree hprimaryQuotient
+        v p τ hτdegree hτdecomposition
+      n hn hdegree (numberFieldTowerFiniteQuotientCoordinate_mem_primary
+        p τ σ.1 hτσ hprimary)
   exact ⟨data.1, data.2.1.trans hτσ, data.2.2.trans hτσ⟩
 
 omit [NumberField L] in
@@ -150,9 +136,9 @@ theorem chosenFinitePlaceArtinMonoidHom_eq_one_iff_chosenLocalNorm
         (K := K) (L := L) v := by
   change
     x ∈ (chosenFinitePlaceArtinMonoidHom
-      (K := K) (L := L) v).ker ↔ _
+        v).ker ↔ _
   rw [chosenFinitePlaceArtinMonoidHom_ker
-    (K := K) (L := L) v]
+      v]
 
 /-- A finite-place element killed by the actual local Artin
 homomorphism is also killed by the global norm-residue homomorphism
@@ -168,9 +154,9 @@ theorem globalNormResidueMonoidHom_finitePlaceIdeleClass_eq_one_of_localArtin_eq
   rw [globalNormResidueMonoidHom_eq_one_iff]
   exact
     finitePlaceIdeleClass_mem_ideleClassNorm_range_of_mem_chosenLocalNorm
-      (K := K) (L := L) v x
+        v x
       ((chosenFinitePlaceArtinMonoidHom_eq_one_iff_chosenLocalNorm
-        (K := K) (L := L) v x).1 hx)
+          v x).1 hx)
 
 /-- The chosen local norm subgroup lies in the kernel of the global
 norm-residue homomorphism restricted to the one-place finite idele
@@ -180,81 +166,10 @@ theorem chosenFinitePlaceLocalNormSubgroup_le_globalNormResidueKernel
     chosenFinitePlaceLocalNormSubgroup
         (K := K) (L := L) v ≤
       ((globalNormResidueMonoidHom K L).comp
-        (IdeleGroup.finitePlaceIdeleClass v)).ker := by
-  intro x hx
-  exact
-    globalNormResidueMonoidHom_finitePlaceIdeleClass_eq_one_of_localArtin_eq_one
-      (K := K) (L := L) v x
+        (IdeleGroup.finitePlaceIdeleClass v)).ker := fun x hx => globalNormResidueMonoidHom_finitePlaceIdeleClass_eq_one_of_localArtin_eq_one
+        v x
       ((chosenFinitePlaceArtinMonoidHom_eq_one_iff_chosenLocalNorm
-        (K := K) (L := L) v x).2 hx)
-
-/-- The restriction of the global norm-residue homomorphism to one
-finite-place idele class depends only on the corresponding local Artin
-symbol.
-
-This is the exact quotient step used in the prime-primary reduction:
-the already proved inclusion of the local norm subgroup in the global
-norm kernel makes the value independent of the chosen local preimage. -/
-theorem globalNormResidue_finitePlaceIdeleClass_eq_of_localArtin_eq
-    (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K))
-    (x y : (v.adicCompletion K)ˣ)
-    (hxy :
-      chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) v x =
-        chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) v y) :
-    globalNormResidueMonoidHom K L
-        (IdeleGroup.finitePlaceIdeleClass v x) =
-      globalNormResidueMonoidHom K L
-        (IdeleGroup.finitePlaceIdeleClass v y) := by
-  let f :
-      (v.adicCompletion K)ˣ →* (L ≃ₐ[K] L) :=
-    (globalNormResidueMonoidHom K L).comp
-      (IdeleGroup.finitePlaceIdeleClass v)
-  let g :
-      (v.adicCompletion K)ˣ →* (L ≃ₐ[K] L) :=
-    chosenFinitePlaceArtinMonoidHom
-      (K := K) (L := L) v
-  have hlocal :
-      g (x * y⁻¹) = 1 := by
-    rw [map_mul, map_inv, hxy, mul_inv_cancel]
-  have hglobal :
-      f (x * y⁻¹) = 1 := by
-    exact
-      globalNormResidueMonoidHom_finitePlaceIdeleClass_eq_one_of_localArtin_eq_one
-        (K := K) (L := L) v (x * y⁻¹) hlocal
-  have hquotient :
-      f x * (f y)⁻¹ = 1 := by
-    simpa only [map_mul, map_inv] using hglobal
-  exact mul_inv_eq_one.mp hquotient
-
-/-- Finite-place local--global compatibility for a `p`-primary
-decomposition automorphism which generates the whole relative Galois
-group.  The auxiliary-field construction is isolated in an opaque
-representative lemma, so consumers only see this short quotient step. -/
-theorem
-    globalNormResidueMonoidHom_finitePlaceIdeleClass_eq_of_primary_generator
-    (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K))
-    (p : Nat.Primes)
-    (σ :
-      absoluteValueDecompositionGroup K
-        (chosenFinitePlaceExtension (L := L) v).1)
-    (hgenerate :
-      Subgroup.closure ({σ.1} : Set (Gal(L / K))) = ⊤)
-    (hprimary :
-      σ.1 ∈ CommGroup.primaryComponent (Gal(L / K)) p.1)
-    (x : (v.adicCompletion K)ˣ)
-    (hx :
-      chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) v x = σ.1) :
-    globalNormResidueMonoidHom K L
-        (IdeleGroup.finitePlaceIdeleClass v x) = σ.1 := by
-  obtain ⟨z, hlocal, hglobal⟩ :=
-    exists_finitePlacePrimary_localGlobalRepresentative
-      (K := K) (L := L) v p σ hgenerate hprimary
-  exact
-    (globalNormResidue_finitePlaceIdeleClass_eq_of_localArtin_eq
-      (K := K) (L := L) v x z (hx.trans hlocal.symm)).trans hglobal
+          v x).2 hx)
 
 /-- The global norm-residue symbol at one finite place, factored
 through the actual image of the chosen local Artin homomorphism.
@@ -271,8 +186,7 @@ noncomputable def finitePlaceGlobalNormResidueFactor
       (v.adicCompletion K)ˣ →* (L ≃ₐ[K] L) :=
     chosenFinitePlaceArtinMonoidHom
       (K := K) (L := L) v
-  let f :
-      (v.adicCompletion K)ˣ →* (L ≃ₐ[K] L) :=
+  let f :=
     (globalNormResidueMonoidHom K L).comp
       (IdeleGroup.finitePlaceIdeleClass v)
   have hker : g.rangeRestrict.ker ≤ f.ker := by
@@ -298,8 +212,7 @@ theorem finitePlaceGlobalNormResidueFactor_comp_rangeRestrict
       (v.adicCompletion K)ˣ →* (L ≃ₐ[K] L) :=
     chosenFinitePlaceArtinMonoidHom
       (K := K) (L := L) v
-  let f :
-      (v.adicCompletion K)ˣ →* (L ≃ₐ[K] L) :=
+  let f :=
     (globalNormResidueMonoidHom K L).comp
       (IdeleGroup.finitePlaceIdeleClass v)
   have hker : g.rangeRestrict.ker ≤ f.ker := by
@@ -312,7 +225,7 @@ theorem finitePlaceGlobalNormResidueFactor_comp_rangeRestrict
         g.rangeRestrict_surjective ⟨f, hker⟩).comp
         g.rangeRestrict =
       f
-  simpa only [MonoidHom.liftOfSurjective] using
+  simpa using
     g.rangeRestrict.liftOfRightInverse_comp
       (Function.surjInv g.rangeRestrict_surjective)
       (Function.rightInverse_surjInv
@@ -321,30 +234,7 @@ theorem finitePlaceGlobalNormResidueFactor_comp_rangeRestrict
 
 /-- Pointwise norm/restriction naturality, with the coercion from the
 homomorphism equality normalized once outside the descent construction. -/
- theorem artinFactorization_globalNormResidueMonoidHomOfEmbedding_norm_restriction_apply
-    (K K' L L' : Type)
-    [Field K] [NumberField K]
-    [Field K'] [NumberField K']
-    [Field L] [NumberField L]
-    [Field L'] [NumberField L']
-    [Algebra K K'] [Algebra K L] [Algebra K L']
-    [Algebra K' L'] [Algebra L L']
-    [IsScalarTower K K' L'] [IsScalarTower K L L']
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    [FiniteDimensional K' L'] [IsAbelianGalois K' L']
-    [FiniteDimensional K K'] [IsGalois K K']
-    (j : L' →ₐ[ℚ] SeparableClosure ℚ)
-    (c : IdeleClassGroup K') :
-    ((AlgEquiv.restrictNormalHom L).comp
-        (AlgEquiv.restrictScalarsHom K))
-          (globalNormResidueMonoidHomOfEmbedding K' L' j c) =
-      globalNormResidueMonoidHomOfEmbedding K L
-        (j.comp (IsScalarTower.toAlgHom ℚ L L'))
-        (_root_.ideleClassNorm K K' c) := by
-  exact
-    DFunLike.congr_fun
-      (globalNormResidueMonoidHomOfEmbedding_norm_restriction
-        (K := K) (L := L) (K' := K') (L' := L') j) c
+ alias artinFactorization_globalNormResidueMonoidHomOfEmbedding_norm_restriction_apply := finitePadicAuxiliary_globalNormResidueMonoidHomOfEmbedding_norm_restriction_apply
 
 /-- Norming one upper representative down a finite Galois base-change
 transports both its chosen local Artin value and its global norm-residue
@@ -377,12 +267,11 @@ fixed-field tower occurs in the declaration type. -/
           (IdeleGroup.finitePlaceIdeleClass v z) = σG := by
   let Wover :
       {W' : IsDedekindDomain.HeightOneSpectrum (𝓞 M) //
-        finitePlaceBelow (K := K) W' = v} :=
+        finitePlaceBelow W' = v} :=
     ⟨W, hWbelow⟩
-  let :
-      Algebra (v.adicCompletion K) (W.adicCompletion M) :=
+  let :=
     (finitePlaceAdicCompletionMap K M v Wover).toAlgebra
-  let z : (v.adicCompletion K)ˣ :=
+  let z :=
     LocalFieldTheory.normUnits
       (v.adicCompletion K) (W.adicCompletion M) y
   have hlocalNorm :
@@ -395,18 +284,18 @@ fixed-field tower occurs in the declaration type. -/
           (K := K) (L := L) (K' := M) (L' := L)
           v W hWbelow) y
     change
-      chosenFinitePlaceArtinMonoidHom (K := K) (L := L) v
+      chosenFinitePlaceArtinMonoidHom v
           (LocalFieldTheory.normUnits
             (v.adicCompletion K) (W.adicCompletion M) y) =
         σG
     calc
-      chosenFinitePlaceArtinMonoidHom (K := K) (L := L) v
+      chosenFinitePlaceArtinMonoidHom v
           (LocalFieldTheory.normUnits
             (v.adicCompletion K) (W.adicCompletion M) y) =
         ((AlgEquiv.restrictNormalHom L).comp
           (AlgEquiv.restrictScalarsHom K))
             (chosenFinitePlaceArtinMonoidHom
-              (K := M) (L := L) W y) := by
+                W y) := by
                 simpa only [MonoidHom.coe_comp, Function.comp_apply]
                   using hnat.symm
       _ = ((AlgEquiv.restrictNormalHom L).comp
@@ -415,7 +304,7 @@ fixed-field tower occurs in the declaration type. -/
           (((AlgEquiv.restrictNormalHom L).comp
             (AlgEquiv.restrictScalarsHom K)) : Gal(L / M) →* Gal(L / K)) hy
       _ = σG := hrestrict
-  let j : L →ₐ[ℚ] SeparableClosure ℚ :=
+  let j :=
     AlgebraicNumberTheory.numberFieldSeparableClosureEmbedding L
   have hjLower :
       j.comp (IsScalarTower.toAlgHom ℚ L L) =
@@ -427,16 +316,15 @@ fixed-field tower occurs in the declaration type. -/
       _root_.ideleClassNorm K M
           (IdeleGroup.finitePlaceIdeleClass W y) =
         IdeleGroup.finitePlaceIdeleClass v z := by
-    simpa only [Wover, z] using
+    simpa using
       (IdeleGroup.ideleClassNorm_finitePlaceIdeleClass_eq_normUnits
-        (K := K) (L := M) v Wover y)
+          v Wover y)
   have hglobalNorm :
       globalNormResidueMonoidHom K L
           (IdeleGroup.finitePlaceIdeleClass v z) =
         σG := by
     calc
-      globalNormResidueMonoidHom K L
-          (IdeleGroup.finitePlaceIdeleClass v z) =
+      _ =
           globalNormResidueMonoidHom K L
             (_root_.ideleClassNorm K M
               (IdeleGroup.finitePlaceIdeleClass W y)) :=
@@ -457,8 +345,7 @@ fixed-field tower occurs in the declaration type. -/
       _ = ((AlgEquiv.restrictNormalHom L).comp
           (AlgEquiv.restrictScalarsHom K))
           (globalNormResidueMonoidHom M L
-            (IdeleGroup.finitePlaceIdeleClass W y)) := by
-        exact congrArg
+            (IdeleGroup.finitePlaceIdeleClass W y)) := congrArg
           ((AlgEquiv.restrictNormalHom L).comp
             (AlgEquiv.restrictScalarsHom K))
           (DFunLike.congr_fun
@@ -505,10 +392,10 @@ cyclic-fixed-field construction. -/
           (IdeleGroup.finitePlaceIdeleClass v z) = σG := by
   obtain ⟨y, hy, hglobalM⟩ :=
     exists_finitePlacePrimary_localGlobalRepresentative
-      (K := M) (L := L) W p δM hgenerate hprimary
+        W p δM hgenerate hprimary
   exact
     exists_finitePlaceNormDescent_localGlobalRepresentative
-      (K := K) (L := L) v W hWbelow
+        v W hWbelow
       δM.1 σG hrestrict y hy hglobalM
 
 /-- Cyclic fixed-field descent turns a primary decomposition
@@ -527,28 +414,18 @@ field tower in the declaration type. -/
           (K := K) (L := L) v z = δ.1 ∧
       globalNormResidueMonoidHom K L
           (IdeleGroup.finitePlaceIdeleClass v z) = δ.1 := by
-  let σG : Gal(L / K) := δ.1
+  let σG := δ.1
   let M := automorphismCyclicFixedField σG
-  let : NumberField M := NumberField.of_module_finite K M
+  let := NumberField.of_module_finite K M
   let W := automorphismCyclicFixedPlace v σG
-  let σM : Gal(L / M) := automorphismOverCyclicFixedField σG
-  have hσMdecomposition :
-      σM ∈
-        absoluteValueDecompositionGroup M
-          (chosenFinitePlaceExtension (L := L) W).1 := by
-    exact
-      automorphismOverCyclicFixedField_mem_chosenFinitePlaceDecompositionGroup
-        (K := K) (L := L) v δ
-  let δM :
-      absoluteValueDecompositionGroup M
-        (chosenFinitePlaceExtension (L := L) W).1 :=
-    ⟨σM, hσMdecomposition⟩
+  let σM := automorphismOverCyclicFixedField σG
+  have hσMdecomposition := automorphismOverCyclicFixedField_mem_chosenFinitePlaceDecompositionGroup
+          v δ
   have hσMrestrict : σM.restrictScalars K = σG :=
     automorphismOverCyclicFixedField_restrictScalars σG
   have hσMprimary :
       σM ∈ CommGroup.primaryComponent (Gal(L / M)) p.1 := by
     obtain ⟨n, hn⟩ := hprimary
-    have hnG : σG ^ (p.1 ^ n) = 1 := hn
     refine ⟨n, ?_⟩
     apply AlgEquiv.restrictScalars_injective K
     change
@@ -558,26 +435,18 @@ field tower in the declaration type. -/
       map_pow,
       AlgEquiv.restrictScalarsHom_apply,
       hσMrestrict,
-      hnG,
+      hn,
       map_one
     ]
-  have hWbelow : finitePlaceBelow (K := K) W = v :=
-    finitePlaceBelow_automorphismCyclicFixedPlace
-      (K := K) (L := L) v σG
   have hrestrictσM :
       ((AlgEquiv.restrictNormalHom L).comp
           (AlgEquiv.restrictScalarsHom K)) σM =
         σG := by
-    simpa only [
-      MonoidHom.coe_comp,
-      Function.comp_apply,
-      AlgEquiv.restrictNormalHom_id,
-      MonoidHom.id_apply,
-      AlgEquiv.restrictScalarsHom_apply
-    ] using hσMrestrict
+    simpa using hσMrestrict
   exact
     exists_finitePlacePrimaryNormDescent_localGlobalRepresentative
-      (K := K) (L := L) v W hWbelow p δM
+      (K := K) (L := L) v W (finitePlaceBelow_automorphismCyclicFixedPlace
+        v σG) p (⟨σM, hσMdecomposition⟩)
       (automorphismOverCyclicFixedField_generates σG)
       hσMprimary σG hrestrictσM
 
@@ -676,50 +545,45 @@ theorem globalNormResidueMonoidHom_comp_finitePlaceIdeleClass_iff
     apply MonoidHom.ext
     intro σ
     obtain ⟨x, hx⟩ := σ.property
-    have hσ :
-        (chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) v).rangeRestrict x = σ :=
-      Subtype.ext hx
     calc
       finitePlaceGlobalNormResidueFactor
-            (K := K) (L := L) v σ =
+              v σ =
           finitePlaceGlobalNormResidueFactor
-            (K := K) (L := L) v
+              v
             ((chosenFinitePlaceArtinMonoidHom
-              (K := K) (L := L) v).rangeRestrict x) :=
+                v).rangeRestrict x) :=
         congrArg (finitePlaceGlobalNormResidueFactor
-          (K := K) (L := L) v) hσ.symm
+            v) (Subtype.ext hx).symm
       _ = globalNormResidueMonoidHom K L
             (IdeleGroup.finitePlaceIdeleClass v x) :=
         DFunLike.congr_fun
           (finitePlaceGlobalNormResidueFactor_comp_rangeRestrict
-            (K := K) (L := L) v) x
+              v) x
       _ = chosenFinitePlaceArtinMonoidHom
-            (K := K) (L := L) v x := DFunLike.congr_fun h x
+              v x := DFunLike.congr_fun h x
       _ = (chosenFinitePlaceArtinMonoidHom
-            (K := K) (L := L) v).range.subtype σ := hx
+              v).range.subtype σ := hx
   · intro h
     calc
-      (globalNormResidueMonoidHom K L).comp
-          (IdeleGroup.finitePlaceIdeleClass v) =
+      _ =
           (finitePlaceGlobalNormResidueFactor
-            (K := K) (L := L) v).comp
+              v).comp
               (chosenFinitePlaceArtinMonoidHom
-                (K := K) (L := L) v).rangeRestrict :=
+                  v).rangeRestrict :=
         (finitePlaceGlobalNormResidueFactor_comp_rangeRestrict
-          (K := K) (L := L) v).symm
+            v).symm
       _ =
           (chosenFinitePlaceArtinMonoidHom
-            (K := K) (L := L) v).range.subtype.comp
+              v).range.subtype.comp
               (chosenFinitePlaceArtinMonoidHom
-                (K := K) (L := L) v).rangeRestrict := by
+                  v).rangeRestrict := by
         rw [h]
       _ =
           chosenFinitePlaceArtinMonoidHom
-            (K := K) (L := L) v :=
+              v :=
         MonoidHom.subtype_comp_rangeRestrict
           (chosenFinitePlaceArtinMonoidHom
-            (K := K) (L := L) v)
+              v)
 
 /-- Equality of the induced decomposition-group map with the inclusion
 is characterized by equality on every primary component.  This is the
@@ -764,11 +628,11 @@ theorem finitePlaceGlobalNormResidueFactor_eq_subtype
           (K := K) (L := L) v).range.subtype := by
   apply
     (finitePlaceGlobalNormResidueFactor_eq_subtype_iff_primary
-      (K := K) (L := L) v).2
+        v).2
   intro p hp σ
   exact
     finitePlaceGlobalNormResidueFactor_eq_subtype_on_primary
-      (K := K) (L := L) v p hp σ
+        v p hp σ
 
 /-- The global norm-residue symbol restricted to a genuine one-place
 finite idele class is the actual chosen local Artin symbol. -/
@@ -780,10 +644,10 @@ theorem globalNormResidueMonoidHom_comp_finitePlaceIdeleClass
           (K := K) (L := L) v := by
   apply
     (globalNormResidueMonoidHom_comp_finitePlaceIdeleClass_iff
-      (K := K) (L := L) v).2
+        v).2
   exact
     finitePlaceGlobalNormResidueFactor_eq_subtype
-      (K := K) (L := L) v
+        v
 
 end Reciprocity
 end GlobalClassFieldTheory

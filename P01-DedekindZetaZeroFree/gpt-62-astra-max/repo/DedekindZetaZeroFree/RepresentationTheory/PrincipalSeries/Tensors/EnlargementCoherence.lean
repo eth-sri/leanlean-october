@@ -16,8 +16,8 @@ open FourierContinuation.CurrentNativeStage NativeScalarMixedTensorGeneration
 open KPLiteralScalarHCFiniteDecomposition
 open KPLiteralScalarHCFiniteOutside KPLiteralScalarHCFiniteProduct KPLiteralScalarHCCompactOrbit
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "M" => FourierContinuation.CurrentFiniteFamily.nativeInducingData A P C
 local notation "V" => FourierContinuation.LiteralSource.Plus A P C
 local notation "Raw" => RestrictedCover F A.zeta12 A.primitive_zeta12

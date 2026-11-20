@@ -13,10 +13,10 @@ open KPContActualSphericalRightFieldIdentification
 open LocalQuotientCharts.ExponentialHaarFrame
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 theorem original_chart_raw_haar_density (D : GroupChart F ζ hζ U R P H)
     (μ : Measure (KPSmoothLocalQuotientCharts.ArchGroup F)) (hμ : μ.IsHaarMeasure) :
@@ -31,19 +31,16 @@ theorem original_chart_raw_haar_density (D : GroupChart F ζ hζ U R P H)
   obtain ⟨E, he, hi⟩ := D.inverse_smooth
   have hE : ContMDiffOn (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F))
       (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F)) (⊤ : ℕ∞) E E.source := by
-    apply ((contMDiff_const (c := D.groupCenter)).mul
+    apply ((contMDiff_const).mul
       (actualLieData F).exponential_smooth).contMDiffOn.congr
     intro a ha
     have hh := D.exponential.exponential_formula a (he ▸ ha)
     rw [← he] at hh
     exact hh.trans (congrArg (D.groupCenter * ·)
       (congrFun (actualLieData_exponential F) a)).symm
-  have hC : ∀ g, chartAt (KPSmoothLocalQuotientCharts.Coordinates F) g =
-      (rawAffineChart F g).symm :=
-    (Classical.choose_spec (Classical.choose_spec (Classical.choose_spec
-      (raw_lie_exponential_data F)))).2.2
   obtain ⟨ρ, hρ, hp, hm⟩ := @raw_smooth_chart_haar_density F _ _
-    (actualLieChartedSpace F) (actualLieGroup F) hC μ hμ E hE hi
+    (actualLieChartedSpace F) (actualLieGroup F) ((Classical.choose_spec (Classical.choose_spec (Classical.choose_spec
+      (raw_lie_exponential_data F)))).2.2) μ hμ E hE hi
   exact ⟨ρ, he ▸ hρ, he ▸ hp, he ▸ hm⟩
 
 theorem group_coordinates_volume_preserving (F : Type) [Field F] [NumberField F] :
@@ -51,14 +48,11 @@ theorem group_coordinates_volume_preserving (F : Type) [Field F] [NumberField F]
   have hp := measurePreserving_piCongrLeft
     (fun _ : LieIndex F => (volume : Measure ℝ))
     (lieEnumeration F)
-  have he : MeasurePreserving (EuclideanSpace.equiv
-      (Fin (groupDimension F)) ℝ) volume volume := PiLp.volume_preserving_ofLp _
   have hp' : MeasurePreserving
       (ContinuousLinearEquiv.piCongrLeft ℝ
         (fun _ : LieIndex F => ℝ)
-        (lieEnumeration F)) volume volume := by
-    exact hp
-  exact hp'.comp he
+        (lieEnumeration F)) volume volume := hp
+  exact hp'.comp (PiLp.volume_preserving_ofLp _)
 
 theorem original_chart_image_measure_density (D : GroupChart F ζ hζ U R P H)
     (μ : Measure (KPSmoothLocalQuotientCharts.ArchGroup F)) (hμ : μ.IsHaarMeasure) :
@@ -71,13 +65,11 @@ theorem original_chart_image_measure_density (D : GroupChart F ζ hζ U R P H)
   obtain ⟨r, hr, hp, hm⟩ := original_chart_raw_haar_density D μ hμ
   let L := groupCoordinates F
   let e := D.exponential.chart
-  have hLT : Set.MapsTo L D.T.carrier e.source := by
-    intro x hx
-    exact D.closure_source ⟨x, subset_closure hx, rfl⟩
+  have hLT : Set.MapsTo L D.T.carrier e.source := fun x hx => D.closure_source ⟨x, subset_closure hx, rfl⟩
   refine ⟨r ∘ L, hr.continuousOn.comp L.continuous.continuousOn hLT,
     fun x hx => hp (L x) (hLT hx), ?_⟩
   intro S hS hST
-  have hLS : L '' S ⊆ e.source := Set.image_subset_iff.mpr (hLT.mono_left hST)
+  have hLS := Set.image_subset_iff.mpr (hLT.mono_left hST)
   have hLSm : MeasurableSet (L '' S) := L.toHomeomorph.measurableEmbedding.measurableSet_image.mpr hS
   have hpre : e.symm ⁻¹' (L '' S) ∩ e.target = e '' (L '' S) := by
     ext y

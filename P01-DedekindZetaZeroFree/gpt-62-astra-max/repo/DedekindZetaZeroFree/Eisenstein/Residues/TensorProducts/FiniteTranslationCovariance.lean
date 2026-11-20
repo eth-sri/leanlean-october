@@ -14,8 +14,8 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.FourierContinuation.TensorActionSource
 open MomentSources KPLiteralRaw
 variable {F : Type} [Field F] [NumberField F]
-variable {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {K : Subgroup (G F ζ hζ)}
+    {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
+    {K : Subgroup (G F ζ hζ)}
 
 theorem literal_cleared_finite_transfer {ι : Type*} [Fintype ι]
     (E N : Flat F ζ hζ K → ℂ → Functions F ζ hζ)
@@ -94,7 +94,7 @@ theorem literal_cleared_exponential_transfer
         (KPLiteralExceptionalResidue.chamberConvergence F ζ hζ K hK (v i) z hz g).mul_left
           (Complex.exp (z * (c i : ℂ))))]
       exact Finset.sum_congr rfl (fun i _ => tsum_mul_left)) g
-  simpa only [zero_mul, Complex.exp_zero, one_mul] using h
+  simpa using h
 
 theorem literal_finite_residue_covariance
     (hK : IwasawaCompact F ζ hζ K)
@@ -116,7 +116,7 @@ theorem literal_finite_residue_covariance
     F ζ hζ K hK f' n (fun _ => (1 : ℂ)) v (by
       intro g
       rw [hzero g]
-      simpa only [zero_mul, Complex.exp_zero] using hv 0 g)
+      simpa using hv 0 g)
   have hl := literal_cleared_finite_transfer E N hGerm hm f' v
     (fun _ _ => (1 : ℂ)) (fun _ => analyticOnNhd_const) 1 (by
       intro z hz g
@@ -126,9 +126,8 @@ theorem literal_finite_residue_covariance
       rw [Summable.tsum_finsetSum (fun i _ =>
         (KPLiteralExceptionalResidue.chamberConvergence F ζ hζ K hK (v i) z hz g).mul_left 1)]
       exact Finset.sum_congr rfl (fun i _ => tsum_mul_left)) g
-  have hr := literal_cleared_exponential_transfer hK E N hGerm hm f n v c _ hv g
   simp only [mul_one, one_mul] at hl
-  exact hl.trans hr.symm
+  exact hl.trans (literal_cleared_exponential_transfer hK E N hGerm hm f n v c _ hv g).symm
 
 end DedekindZetaZeroFree.FourierContinuation.TensorActionSource
 

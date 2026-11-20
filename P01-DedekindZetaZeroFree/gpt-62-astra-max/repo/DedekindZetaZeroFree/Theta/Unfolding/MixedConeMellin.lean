@@ -35,8 +35,7 @@ private theorem mixedCone_expMapBasis_image_univ :
   · rintro ⟨x, -, rfl⟩
     exact Set.mem_univ_pi.mpr fun w ↦ expMapBasis_pos x w
   · intro hq
-    have htarget : q ∈ expMapBasis.target := hq
-    exact ⟨expMapBasis.symm q, Set.mem_univ _, expMapBasis.right_inv htarget⟩
+    exact ⟨expMapBasis.symm q, Set.mem_univ _, expMapBasis.right_inv hq⟩
 
 private theorem mixedCone_pi_restrict :
     Measure.pi (fun _ : InfinitePlace K ↦ (volume : Measure ℝ).restrict (Set.Ioi 0)) =
@@ -55,18 +54,17 @@ theorem integral_mixedConeRadialKernel (x : K) (s : ℂ) :
     (mixedMellinGaussian K x s) using 1
   simp only [MeasureTheory.setIntegral_univ, mixedConeRadialKernel,
     mixedRadialJacobian, smul_eq_mul, Complex.real_smul,
-    mul_comm (b := (Module.finrank ℚ K : ℝ))]
+    mul_comm]
 
 theorem integrable_mixedConeRadialKernel {x : K} (hx : x ≠ 0)
     {s : ℂ} (hs : 0 < s.re) : Integrable (mixedConeRadialKernel K x s) := by
   have h := integrable_mixedMellinGaussian K x hx s hs
   rw [mixedCone_pi_restrict, ← mixedCone_expMapBasis_image_univ] at h
-  have h' := (integrableOn_expMapBasis_image_iff (K := K) MeasurableSet.univ
-    (mixedMellinGaussian K x s)).mp h
   change Integrable (fun y ↦ (mixedRadialJacobian K y : ℂ) *
     mixedMellinGaussian K x s (expMapBasis y))
   simpa only [integrableOn_univ, mixedConeRadialKernel, mixedRadialJacobian,
-    smul_eq_mul, Complex.real_smul, mul_comm (b := (Module.finrank ℚ K : ℝ))] using h'
+    smul_eq_mul, Complex.real_smul, mul_comm] using ((integrableOn_expMapBasis_image_iff MeasurableSet.univ
+      (mixedMellinGaussian K x s)).mp h)
 
 theorem integral_norm_mixedConeRadialKernel (x : K) (s : ℂ) :
     (∫ y : realSpace K, ‖mixedConeRadialKernel K x s y‖) =
@@ -90,7 +88,7 @@ theorem integral_norm_mixedConeRadialKernel (x : K) (s : ℂ) :
   rw [mixedConeRadialKernel, norm_mul, Complex.norm_real,
     Real.norm_of_nonneg hpos]
   simp only [smul_eq_mul, mixedRadialJacobian,
-    mul_comm (b := (Module.finrank ℚ K : ℝ))]
+    mul_comm]
 
 theorem mixedConeRadialKernel_add_unitCoordinateShift
     (x : K) (s : ℂ) (y : realSpace K) (z : unitShiftIndex K) :
@@ -104,8 +102,11 @@ theorem mixedConeRadialKernel_add_unitCoordinateShift
   rw [hrad, expMapBasis_add_unitCoordinateShift, mixedGaussian_mul_unit]
   rfl
 
-theorem hasSum_integral_norm_mixedConeRadialKernel_unitSlab
-    (J : (Ideal (𝓞 K))⁰) (a : idealSet K J)
+section
+
+variable (J : (Ideal (𝓞 K))⁰)
+
+theorem hasSum_integral_norm_mixedConeRadialKernel_unitSlab (a : idealSet K J)
     {s : ℂ} (hs : 0 < s.re) :
     HasSum (fun z : unitShiftIndex K ↦
       ∫ y in unitFundamentalParamSet K,
@@ -113,15 +114,13 @@ theorem hasSum_integral_norm_mixedConeRadialKernel_unitSlab
           (((fundamentalUnitForShift z : (𝓞 K)ˣ) : K) * idealSetElement K J a) s y‖)
       (∫ y : realSpace K, ‖mixedConeRadialKernel K (idealSetElement K J a) s y‖) := by
   classical
-  let f : realSpace K → ℝ := fun y ↦
+  let f := fun y ↦
     ‖mixedConeRadialKernel K (idealSetElement K J a) s y‖
-  have hf : Integrable f :=
-    (integrable_mixedConeRadialKernel K (idealSetElement_ne_zero K J a) hs).norm
-  have hp := hasSum_integral_iUnion (f := f)
+  have hp := hasSum_integral_iUnion
     (fun z : unitShiftIndex K ↦ measurableSet_unitFundamentalTranslate z)
     pairwise_disjoint_unitFundamentalTranslate (by
       rw [iUnion_unitFundamentalTranslate]
-      simpa only [integrableOn_univ] using hf)
+      simpa using ((integrable_mixedConeRadialKernel K (idealSetElement_ne_zero K J a) hs).norm))
   have hp' : HasSum (fun z : unitShiftIndex K ↦
       ∫ y in unitFundamentalTranslate z, f y) (∫ y, f y) := by
     simpa only [iUnion_unitFundamentalTranslate, setIntegral_univ] using hp
@@ -132,8 +131,7 @@ theorem hasSum_integral_norm_mixedConeRadialKernel_unitSlab
   exact congrArg norm (mixedConeRadialKernel_add_unitCoordinateShift K
     (idealSetElement K J a) s y z).symm
 
-theorem summable_prod_integral_norm_mixedConeRadialKernel_unitSlab
-    (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re) :
+theorem summable_prod_integral_norm_mixedConeRadialKernel_unitSlab {s : ℂ} (hs : 1 < s.re) :
     Summable (fun p : idealSet K J × unitShiftIndex K ↦
       ∫ y in unitFundamentalParamSet K,
         ‖mixedConeRadialKernel K
@@ -147,6 +145,8 @@ theorem summable_prod_integral_norm_mixedConeRadialKernel_unitSlab
   · refine (summable_integral_norm_mixedMellinGaussian_idealSet K J hs).congr fun a ↦ ?_
     rw [(hasSum_integral_norm_mixedConeRadialKernel_unitSlab K J a
       (lt_trans zero_lt_one hs)).tsum_eq, integral_norm_mixedConeRadialKernel]
+
+end
 
 theorem integral_mixedConeRadialKernel_eq_tsum_unitSlab
     {x : K} (hx : x ≠ 0) {s : ℂ} (hs : 0 < s.re) :
@@ -174,9 +174,11 @@ noncomputable def coneIdealElementShapeMap
           rw [FractionalIdeal.coe_mk0, FractionalIdeal.mem_coeIdeal]
           exact ⟨x, x.prop, rfl⟩)⟩
 
-theorem coneIdealElementShapeMap_bijective
-    (J : (Ideal (𝓞 K))⁰)
-    (q : InfinitePlace K → ℝ) (hq : ∀ w, q w ≠ 0) :
+section
+
+variable (J : (Ideal (𝓞 K))⁰) (q : InfinitePlace K → ℝ) (hq : ∀ w, q w ≠ 0)
+
+theorem coneIdealElementShapeMap_bijective :
     Function.Bijective (coneIdealElementShapeMap K J q hq) := by
   constructor
   · intro x y hxy
@@ -189,9 +191,7 @@ theorem coneIdealElementShapeMap_bijective
     apply mixedEmbedding_injective K
     simpa [traceEmbedding] using congrArg (traceToMixed K) htrace
   · intro v
-    have hv :
-        (traceRadialScale K q hq).symm (v : mixedEmbedding.euclidean.mixedSpace K) ∈
-          traceIdealLattice K (FractionalIdeal.mk0 K J) :=
+    have hv :=
       v.prop
     obtain ⟨x, hx, hxv⟩ :=
       exists_traceEmbedding_eq_of_mem_traceIdealLattice
@@ -199,12 +199,10 @@ theorem coneIdealElementShapeMap_bijective
     rw [FractionalIdeal.coe_mk0, FractionalIdeal.mem_coeIdeal] at hx
     obtain ⟨y, hy, hyx⟩ := hx
     refine ⟨⟨y, hy⟩, Subtype.ext ?_⟩
-    change traceRadialScale K q hq (traceEmbedding K ((y : 𝓞 K) : K)) = v
+    change traceRadialScale K q hq (traceEmbedding K (y : K)) = v
     simp_all
 
-noncomputable def coneIdealElementShapeEquiv
-    (J : (Ideal (𝓞 K))⁰)
-    (q : InfinitePlace K → ℝ) (hq : ∀ w, q w ≠ 0) :
+noncomputable def coneIdealElementShapeEquiv :
     ↥(J : Ideal (𝓞 K)) ≃
       shapeIdealLattice K (FractionalIdeal.mk0 K J) q hq :=
   Equiv.ofBijective (coneIdealElementShapeMap K J q hq)
@@ -212,15 +210,15 @@ noncomputable def coneIdealElementShapeEquiv
 
 @[simp]
 theorem coneIdealElementShapeEquiv_coe
-    (J : (Ideal (𝓞 K))⁰)
-    (q : InfinitePlace K → ℝ) (hq : ∀ w, q w ≠ 0)
     (x : ↥(J : Ideal (𝓞 K))) :
     ((coneIdealElementShapeEquiv K J q hq x :
         shapeIdealLattice K (FractionalIdeal.mk0 K J) q hq) :
       mixedEmbedding.euclidean.mixedSpace K) =
       traceRadialScale K q hq
         (traceEmbedding K (((x : 𝓞 K) : K))) :=
-  by rfl
+  rfl
+
+end
 
 open Classical in
 def coneNonzeroEquivSingletonCompl
@@ -272,11 +270,14 @@ private theorem coneRadialConstant_ne_zero :
     ((((2 : ℝ)⁻¹ ^ nrComplexPlaces K * (Module.finrank ℚ K : ℝ) *
       Units.regulator K) : ℝ) : ℂ) ≠ 0 := by
   apply Complex.ofReal_ne_zero.mpr
-  have hn : 0 < (Module.finrank ℚ K : ℝ) := by exact_mod_cast Module.finrank_pos
-  exact (mul_pos (mul_pos (by positivity) hn) (Units.regulator_pos K)).ne'
+  refine (mul_pos (mul_pos (by positivity) ?_) (Units.regulator_pos K)).ne'
+  exact_mod_cast Module.finrank_pos
 
-private theorem cone_tsum_radialKernel
-    (J : (Ideal (𝓞 K))⁰) (s : ℂ) (y : realSpace K) :
+section
+
+variable (J : (Ideal (𝓞 K))⁰)
+
+private theorem cone_tsum_radialKernel (s : ℂ) (y : realSpace K) :
     (∑' x : nonzeroIdealElement K J, mixedConeRadialKernel K (((x : 𝓞 K) : K)) s y) =
       (((2 : ℝ)⁻¹ ^ nrComplexPlaces K * (Module.finrank ℚ K : ℝ) *
         Units.regulator K : ℝ) : ℂ) *
@@ -291,8 +292,7 @@ private theorem cone_tsum_radialKernel
   intro x
   exact mixedRadialJacobian_mul_mixedMellinGaussian K y (((x : 𝓞 K) : K)) s
 
-private theorem cone_summable_integral_norm
-    (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re) :
+private theorem cone_summable_integral_norm {s : ℂ} (hs : 1 < s.re) :
     Summable (fun x : nonzeroIdealElement K J ↦ ∫ y in unitFundamentalParamSet K,
       ‖mixedConeRadialKernel K (((x : 𝓞 K) : K)) s y‖) := by
   rw [← (idealElementMulDecompositionEquiv K J).summable_iff]
@@ -302,27 +302,30 @@ private theorem cone_summable_integral_norm
   intro y _
   rw [idealElementMulDecompositionEquiv_coe]
 
+end
+
 private theorem cone_integrable_tsum {α ι : Type*} [MeasurableSpace α]
     {μ : Measure α} [Countable ι] {F : ι → α → ℂ}
     (hF_int : ∀ i, Integrable (F i) μ)
     (hF_sum : Summable fun i ↦ ∫ a, ‖F i a‖ ∂μ) :
     Integrable (fun a ↦ ∑' i, F i a) μ := by
-  let G : ι → α →₁[μ] ℂ := fun i ↦ (hF_int i).toL1 (F i)
+  let G := fun i ↦ (hF_int i).toL1 (F i)
   have hnorm (i : ι) : ‖G i‖ = ∫ a, ‖F i a‖ ∂μ := by
     rw [show G i = (hF_int i).toL1 (F i) by rfl,
       Integrable.norm_toL1, integral_norm_eq_lintegral_enorm
         (hF_int i).aestronglyMeasurable]
-    simp only [edist_zero_right]
-  have hG_norm : Summable fun i ↦ ‖G i‖ := hF_sum.congr fun i ↦ (hnorm i).symm
-  have hG_enorm : ∑' i, ‖G i‖ₑ ≠ ⊤ := tsum_enorm_ne_top_iff_summable_norm.mpr hG_norm
-  have hcoe : (⇑(∑' i, G i) : α → ℂ) =ᵐ[μ] fun a ↦ ∑' i, F i a := by
-    filter_upwards [Lp.coeFn_tsum hG_enorm,
-      ae_all_iff.mpr (fun i ↦ (hF_int i).coeFn_toL1)] with a hsum hterm
-    exact hsum.trans (tsum_congr fun i ↦ hterm i)
-  exact (L1.integrable_coeFn (∑' i, G i)).congr hcoe
+    simp
+  refine (L1.integrable_coeFn (∑' i, G i)).congr ?_
+  filter_upwards [Lp.coeFn_tsum (tsum_enorm_ne_top_iff_summable_norm.mpr (hF_sum.congr fun i ↦ (hnorm i).symm)),
+    ae_all_iff.mpr (fun i ↦ (hF_int i).coeFn_toL1)] with a hsum hterm
+  exact hsum.trans (tsum_congr fun i ↦ hterm i)
 
-theorem integrableOn_fractionalShapeIdealTheta_logMellin
-    (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re) :
+section
+
+variable (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re)
+
+include hs in
+theorem integrableOn_fractionalShapeIdealTheta_logMellin :
     IntegrableOn
       (fun y : realSpace K ↦
         Complex.exp ((Module.finrank ℚ K : ℂ) * s *
@@ -336,17 +339,15 @@ theorem integrableOn_fractionalShapeIdealTheta_logMellin
       (mixedConeRadialKernel K (((x : 𝓞 K) : K)) s) (unitFundamentalParamSet K) :=
     (integrable_mixedConeRadialKernel K (RingOfIntegers.coe_ne_zero_iff.mpr x.prop.2)
       (lt_trans zero_lt_one hs)).integrableOn
-  have ht := cone_integrable_tsum hi (cone_summable_integral_norm K J hs)
-  have hscaled := ht.const_mul (
+  apply IntegrableOn.congr_fun ((cone_integrable_tsum hi (cone_summable_integral_norm K J hs)).const_mul (
     ((((2 : ℝ)⁻¹ ^ nrComplexPlaces K * (Module.finrank ℚ K : ℝ) *
-      Units.regulator K) : ℝ) : ℂ)⁻¹)
-  apply IntegrableOn.congr_fun hscaled _ measurableSet_unitFundamentalParamSet
+      Units.regulator K) : ℝ) : ℂ)⁻¹)) _ measurableSet_unitFundamentalParamSet
   intro y _
   dsimp only
   rw [cone_tsum_radialKernel, ← mul_assoc, inv_mul_cancel₀ (coneRadialConstant_ne_zero K), one_mul]
 
-private theorem cone_integral_tsum_radialKernel
-    (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re) :
+include hs in
+private theorem cone_integral_tsum_radialKernel :
     (∫ y in unitFundamentalParamSet K,
       ∑' x : nonzeroIdealElement K J, mixedConeRadialKernel K (((x : 𝓞 K) : K)) s y) =
       ((1 / 2 : ℂ) ^ nrRealPlaces K * (1 / 4 : ℂ) ^ nrComplexPlaces K *
@@ -388,13 +389,15 @@ private theorem cone_integral_tsum_radialKernel
       (fun a : idealSet K J ↦ ∫ q : realSpace K,
         mixedMellinGaussian K (idealSetElement K J a) s q
         ∂Measure.pi (fun _ : InfinitePlace K ↦
-          (volume : Measure ℝ).restrict (Set.Ioi 0))) := by
+          volume.restrict (Set.Ioi 0))) := by
     funext a
     rw [← integral_mixedConeRadialKernel_eq_tsum_unitSlab K
       (idealSetElement_ne_zero K J a) (lt_trans zero_lt_one hs),
       integral_mixedConeRadialKernel]
   rw [hin]
   exact (hasSum_integral_mixedMellinGaussian_idealSet K J hs).tsum_eq
+
+end
 
 private theorem cone_normalizingCoefficient :
     ((((2 : ℝ)⁻¹ ^ nrComplexPlaces K * (Module.finrank ℚ K : ℝ) *

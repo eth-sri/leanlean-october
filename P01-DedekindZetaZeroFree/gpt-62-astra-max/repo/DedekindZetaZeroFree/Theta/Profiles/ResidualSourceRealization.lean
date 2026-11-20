@@ -9,7 +9,7 @@ open scoped Classical NumberField
 namespace DedekindZetaZeroFree.RootDerivatives
 open MomentSources NumberField ValuativeRel ThetaExpansion
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 def currentStage08 (R : PrincipalMellin.ActualRecipe S η) (hR : RootAligned R)
     {N : TraceHaarTransport R} (C : JointHaarFactorizedSources R N) : JointExteriorCoefficientSources R N := by
   have hW := exterior_whittaker_equivariance R C

@@ -51,9 +51,8 @@ theorem conductor_matrix_constraints {K : Type*} [Field K]
     simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, KPStandardLocalRootLifts.weylSwap]
   simp only [map_mul, Matrix.GeneralLinearGroup.det_scalar, Fintype.card_fin,
     detw, detn, detd, dets, one_mul, mul_one] at hd
-  have he : -(a * c ^ 2) = -(b * p₁ * p₂ * Matrix.GeneralLinearGroup.det k) := by
-    simpa [mul_assoc] using hd
-  exact neg_injective he
+  refine neg_injective ?_
+  simpa [mul_assoc] using hd
 
 private theorem conductor_matrix_valuation_label {K : Type*} [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
@@ -75,8 +74,8 @@ private theorem conductor_matrix_valuation_label {K : Type*} [Field K] [Valuativ
     intro hh
     simp [hh] at hk11
   obtain ⟨c, hv, h10, h11, hd⟩ := conductor_matrix_constraints b a p₁ p₂ k z v x hk0 h
-  let V : Kˣ := Units.mk0 v hv
-  let R : K := k 1 0 / k 1 1
+  let V := Units.mk0 v hv
+  let R := k 1 0 / k 1 1
   have hr : valuation K R ≤ 1 := by
     simpa [R, map_div₀, hk11] using hk10
   have hxlt : 1 < valuation K x := by
@@ -150,39 +149,36 @@ theorem conductor_congruence_matrix_label
           KubotaRankTwo.d (KPLocalCube.LocalField F q) (π ^ r) (π ^ s) * k.val *
             KPStandardLocalRootLifts.weylSwap (KPLocalCube.LocalField F q))) :
     ((r - s + i + 2 : ℤ) : ZMod 3) = 0 := by
-  have hdet : valuation (KPLocalCube.LocalField F q)
+  let valuation₀ := valuation (KPLocalCube.LocalField F q)
+  have hdet : valuation₀
       (Matrix.GeneralLinearGroup.det k.val : KPLocalCube.LocalField F q) = 1 := by
     obtain ⟨k₀, hk₀, he₀⟩ := k.property
-    have hd := (Valuation.integer.integers (valuation (KPLocalCube.LocalField F q))).valuation_unit
-      (Matrix.GeneralLinearGroup.det k₀)
     rw [← he₀]
-    change valuation (KPLocalCube.LocalField F q)
+    change valuation₀
       ((Matrix.GeneralLinearGroup.det ((Matrix.GeneralLinearGroup.map
         (KPLocalCube.LocalIntegers F q).subtype) k₀) : (KPLocalCube.LocalField F q)ˣ) :
           KPLocalCube.LocalField F q) = 1
     rw [Matrix.GeneralLinearGroup.map_det]
-    exact hd
-  have hk11 : valuation (KPLocalCube.LocalField F q) (k.val 1 1) = 1 := by
+    exact (Valuation.integer.integers (valuation₀)).valuation_unit
+      (Matrix.GeneralLinearGroup.det k₀)
+  have hk11 : valuation₀ (k.val 1 1) = 1 := by
     obtain ⟨k₀, hk₀, he₀⟩ := k.property
-    have hent := (KPLocalCube.mem_integerCongruence_iff F q m k₀).mp hk₀
-    have hdiag : k₀ 1 1 - 1 ∈ KPLocalCube.maximalIdeal F q ^ m := by simpa using hent 1 1
+    have hdiag : k₀ 1 1 - 1 ∈ KPLocalCube.maximalIdeal F q ^ m := by exact ((KPLocalCube.mem_integerCongruence_iff F q m k₀).mp hk₀) 1 1
     have hu : IsUnit (k₀ 1 1) := by
       apply IsLocalRing.isUnit_of_mem_nonunits_one_sub_self
       have hmem := Ideal.pow_le_self (Nat.ne_of_gt hm) hdiag
       change 1 - k₀ 1 1 ∈ KPLocalCube.maximalIdeal F q
       simpa only [neg_sub] using (KPLocalCube.maximalIdeal F q).neg_mem hmem
-    have hv := (Valuation.integer.integers (valuation (KPLocalCube.LocalField F q))).isUnit_iff_valuation_eq_one.mp hu
     rw [← he₀]
-    exact hv
-  have hk10 : valuation (KPLocalCube.LocalField F q) (k.val 1 0) ≤ 1 := by
+    exact (Valuation.integer.integers (valuation₀)).isUnit_iff_valuation_eq_one.mp hu
+  have hk10 : valuation₀ (k.val 1 0) ≤ 1 := by
     obtain ⟨k₀, hk₀, he₀⟩ := k.property
     rw [← he₀]
     exact (k₀ 1 0).property
-  have hl := conductor_matrix_valuation_label b (π ^ i) (π ^ r) (π ^ s) k.val
-    z v x hk11 hk10 hdet hx hb h
   have hp : KPCubicExpansion.valuationExponent (KPLocalCube.LocalField F q) π = 1 := by
     simp [KPCubicExpansion.valuationExponent, hπ, WithZero.log_exp]
-  simpa only [KPCubicExpansion.valuationExponent_zpow, ← zpow_natCast π i, hp, mul_one] using hl
+  simpa only [KPCubicExpansion.valuationExponent_zpow, ← zpow_natCast π i, hp, mul_one] using (conductor_matrix_valuation_label b (π ^ i) (π ^ r) (π ^ s) k.val
+    z v x hk11 hk10 hdet hx hb h)
 
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPTameJacquetBruhatTests.Raw
@@ -196,42 +192,16 @@ open KPTameJacquetBruhatTests.Raw
       (KPCubicExpansion.valuationExponent K y : ZMod 3) + (KPCubicExpansion.valuationExponent K z : ZMod 3)
     rw [KPCubicExpansion.valuationExponent_mul, Int.cast_add]
 
+variable (F : Type) [Field F] [NumberField F]
+
 private theorem conductor_borel_label
-    (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
     (hP : IsTamePolarization F ζ hζ q S P) (b : BL F ζ hζ q S P) :
     (KPCubicExpansion.valuationExponent (LocalField F q)
-      (S.borel.coordinate (retractL F ζ hζ q S P b)) : ZMod 3) = 0 := by
-  let K := LocalField F q
-  have hc : CubicCharacters.cubes Kˣ ≤ (conductorModVal K).ker := by
-    rintro y ⟨z, rfl⟩
-    change (KPCubicExpansion.valuationExponent K (z ^ 3) : ZMod 3) = 0
-    rw [← zpow_natCast z 3, KPCubicExpansion.valuationExponent_zpow, Int.cast_mul]
-    change (3 : ZMod 3) * _ = 0
-    rw [show (3 : ZMod 3) = 0 from rfl, zero_mul]
-  let φ := QuotientGroup.lift (CubicCharacters.cubes Kˣ) (conductorModVal K) hc
-  have hL : KPTameValuationCoordinates.unitCubeClasses K ≤ φ.ker := by
-    apply Subgroup.map_le_iff_le_comap.mpr
-    apply sup_le
-    · rintro y ⟨u, rfl⟩
-      change (KPCubicExpansion.valuationExponent K (KPRamifiedBeta.unitsInclusion K u) : ZMod 3) = 0
-      rw [show KPRamifiedBeta.unitsInclusion K u = Units.map (valuation K).integer.subtype.toMonoidHom u from rfl,
-        KPCubicExpansion.valuationExponent_unit]
-      rfl
-    · intro y hy
-      change φ (QuotientGroup.mk' (CubicCharacters.cubes Kˣ) y) = 1
-      exact hc hy
-  have hmem : QuotientGroup.mk' (CubicCharacters.cubes Kˣ)
-      (S.borel.coordinate (retractL F ζ hζ q S P b)) ∈ KPTameValuationCoordinates.unitCubeClasses K := by
-    change QuotientGroup.mk (S.borel.coordinate (retractL F ζ hζ q S P b)) ∈ _
-    rw [← S.cube_class, ← hP]
-    exact ⟨S.heisenberg.π (retractL F ζ hζ q S P b),
-      (retractL F ζ hζ q S P b).property, rfl⟩
-  exact hL hmem
+      (S.borel.coordinate (retractL F ζ hζ q S P b)) : ZMod 3) = 0 := by apply @DedekindZetaZeroFree.KPTameJacquetBruhatTests.BruhatGeometry.BruhatSupportUniformizerClasses.coord_vm <;> assumption
 
-private theorem conductor_one_valuation
-    (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
+private theorem conductor_one_valuation (q : HeightOneSpectrum (𝓞 F))
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
@@ -240,31 +210,29 @@ private theorem conductor_one_valuation
     IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) x) = WithZero.exp (1 : ℤ) := by
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-  have hxl : 1 < valuation (LocalField F q) x := lt_of_not_ge hx.2
-  have hx0 : valuation (LocalField F q) x ≠ 0 := ne_of_gt (zero_lt_one.trans hxl)
-  have hn : e (valuation (LocalField F q) x) ≠ 0 := by simpa [e] using hx0
+  let valuation₀ := valuation (LocalField F q)
+  have hxl : 1 < valuation₀ x := lt_of_not_ge hx.2
+  have hn : e (valuation₀ x) ≠ 0 := by simpa [e] using (ne_of_gt (zero_lt_one.trans hxl))
   obtain ⟨o, ho⟩ := hx.1
-  have hxu : e (valuation (LocalField F q) x) ≤ WithZero.exp (1 : ℤ) := by
+  have hxu : e (valuation₀ x) ≤ WithZero.exp (1 : ℤ) := by
     rw [ho]
     simp only [pow_one, Units.val_inv_eq_inv_val, map_mul, map_inv₀]
-    have hep : e (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ) := hπ
-    rw [hep]
+    rw [hπ]
     rw [← WithZero.exp_neg]
-    have ho : e (valuation (LocalField F q) o) ≤ 1 := by
-      have hh := e.toOrderIso.monotone (show valuation (LocalField F q) (o : LocalField F q) ≤ 1 from o.property)
-      change e (valuation (LocalField F q) o) ≤ e 1 at hh
-      simpa only [map_one] using hh
+    have ho : e (valuation₀ o) ≤ 1 := by
+      have hh := e.toOrderIso.monotone (show valuation₀ o ≤ 1 from o.property)
+      change e (valuation₀ o) ≤ e 1 at hh
+      simpa using hh
     simpa using mul_le_mul_left ho (WithZero.exp (1 : ℤ))
-  have hlogu : WithZero.log (e (valuation (LocalField F q) x)) ≤ 1 :=
+  have hlogu :=
     (WithZero.log_le_iff_le_exp hn).mpr hxu
-  have hlogl : 0 < WithZero.log (e (valuation (LocalField F q) x)) := by
+  have hlogl : 0 < WithZero.log (e (valuation₀ x)) := by
     apply (WithZero.lt_log_iff_exp_lt hn).mpr
-    simpa only [WithZero.exp_zero, map_one] using e.strictMono hxl
-  have hl : WithZero.log (e (valuation (LocalField F q) x)) = 1 := by omega
+    simpa using e.strictMono hxl
+  have hl : WithZero.log (e (valuation₀ x)) = 1 := by omega
   rw [← WithZero.exp_log hn, hl]
 
 theorem conductor_actual_factorization_label
-    (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
     (hP : IsTamePolarization F ζ hζ q S P)
@@ -282,14 +250,15 @@ theorem conductor_actual_factorization_label
         KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
           (KPLocalCover.sectionMap F ζ hζ (Sum.inr q) k.val) * KPPGLLocalCover.W F ζ hζ (Sum.inr q)) :
     ((r - s + (i.val : ℤ) + 2 : ℤ) : ZMod 3) = 0 := by
-  obtain ⟨t, ht⟩ := S.borel.borel_decomposition (inBorel F ζ hζ q S P b)
+  let inBorel₀ := inBorel F ζ hζ q S P b
+  obtain ⟨t, ht⟩ := S.borel.borel_decomposition (inBorel₀)
   have pb : S.borel.projection b.val = Matrix.ProjGenLinGroup.mk
       (KubotaRankTwo.d (LocalField F q) (S.borel.coordinate (retractL F ζ hζ q S P b)) 1 *
         KubotaRankTwo.n (LocalField F q) t.toAdd) := by
-    have he : (inBorel F ζ hζ q S P b).val =
-        (S.borel.torus (S.borel.retract (inBorel F ζ hζ q S P b)) : ActualCover F ζ hζ q) *
+    have he : (inBorel₀).val =
+        (S.borel.torus (S.borel.retract (inBorel₀)) : ActualCover F ζ hζ q) *
           (S.borel.upperRoot t : ActualCover F ζ hζ q) := congrArg Subtype.val ht
-    change S.borel.projection ((inBorel F ζ hζ q S P b).val) = _
+    change S.borel.projection ((inBorel₀).val) = _
     rw [he, map_mul, S.borel.torus_projection, S.borel.upperRoot_projection, map_mul]
     rfl
   have pw : S.borel.projection (KPPGLLocalCover.W F ζ hζ (Sum.inr q)) =
@@ -387,8 +356,7 @@ theorem offlabel_standard_zero
       (eta F ζ hζ q π i * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
         KPPGLLocalCover.N F ζ hζ (Sum.inr q) x)) = 0 by rw [hz, mul_zero]
   by_contra hn
-  have hsup := hf.2.1 (show _ ∈ Function.support f.val from hn)
-  obtain ⟨b, k, hk, hg⟩ := hsup
+  obtain ⟨b, k, hk, hg⟩ := (hf.2.1 (show _ ∈ Function.support f.val from hn))
   obtain ⟨k₀, rfl⟩ := hk
   apply hl
   apply conductor_actual_factorization_label F ζ hζ q S P hP π hπ m hm i f'.1 f'.2 b k₀ v x hx

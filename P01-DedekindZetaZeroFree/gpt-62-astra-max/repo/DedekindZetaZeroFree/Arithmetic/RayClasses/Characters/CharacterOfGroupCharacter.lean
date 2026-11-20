@@ -12,9 +12,10 @@ open IsDedekindDomain
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
-def rayCharacterOfGroupCharacter
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) (ψ : RayIdealClass K m hm →* ℂˣ) :
+variable (K : Type) [Field K] [NumberField K] (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
+    (ψ : RayIdealClass K m hm →* ℂˣ)
+
+def rayCharacterOfGroupCharacter :
     DedekindZetaZeroFree.RayClassCharacter K m where
   toFun I := match rayIdealClass K m hm I with
     | none => 0
@@ -32,27 +33,20 @@ def rayCharacterOfGroupCharacter
     simp
 
 @[simp] theorem rayCharacterOfGroupCharacter_apply
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) (ψ : RayIdealClass K m hm →* ℂˣ)
     (I : Ideal (𝓞 K)) :
     rayCharacterOfGroupCharacter K m hm ψ I =
       match rayIdealClass K m hm I with
       | none => 0
-      | some a => (ψ a : ℂ) := by
-  rfl
+      | some a => (ψ a : ℂ) := rfl
 
 theorem rayCharacterOfGroupCharacter_finitePrime
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) (ψ : RayIdealClass K m hm →* ℂˣ)
     (p : HeightOneSpectrum (𝓞 K))
     (hp : p ∉ (narrowIdealModulus K m hm).finitePart.support) :
     rayCharacterOfGroupCharacter K m hm ψ p.asIdeal =
       (ψ (ClassFieldTheory.rayClassOfFinitePrime (narrowIdealModulus K m hm) p hp) : ℂ) := by
   rw [rayCharacterOfGroupCharacter_apply, rayIdealClass_of_finitePrime K m hm p hp]
 
-theorem rayCharacterOfGroupCharacter_isPrincipal_iff
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) (ψ : RayIdealClass K m hm →* ℂˣ) :
+theorem rayCharacterOfGroupCharacter_isPrincipal_iff :
     (rayCharacterOfGroupCharacter K m hm ψ).IsPrincipal ↔ ψ = 1 := by
   rw [rayCharacterPrincipalCriterion K m hm
     (rayCharacterOfGroupCharacter K m hm ψ) ((Units.coeHom ℂ).comp ψ)

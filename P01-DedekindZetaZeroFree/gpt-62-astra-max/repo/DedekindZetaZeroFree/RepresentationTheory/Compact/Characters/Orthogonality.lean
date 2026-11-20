@@ -92,9 +92,7 @@ theorem character_orthonormal_self [IsAlgClosed 𝕜] (hunitary : IsUnitary π)
     (hirr : Representation.IsIrreducible π.toRepresentation) :
     ⟪characterLp π hπ, characterLp π hπ⟫_𝕜 = 1 := by
   classical
-  let : Representation.IsIrreducible π.toRepresentation := hirr
-  have hd : (Module.finrank 𝕜 V : 𝕜) ≠ 0 :=
-    Representation.IsIrreducible.natCast_finrank_ne_zero hirr
+  let := hirr
   set e := stdOrthonormalBasis 𝕜 V
 
   have hrow : ∀ i, ∑ k, ⟪matrixCoeffLp π hπ (e k) (e k), matrixCoeffLp π hπ (e i) (e i)⟫_𝕜 =
@@ -104,7 +102,7 @@ theorem character_orthonormal_self [IsAlgClosed 𝕜] (hunitary : IsUnitary π)
     rw [Finset.sum_eq_single i (fun k _ hk ↦ by simp [hk]) (by simp)]
     simp
   rw [inner_characterLp_eq_sum π hπ π hπ e e, Finset.sum_congr rfl fun i _ ↦ hrow i,
-    Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_inv_cancel₀ hd]
+    Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_inv_cancel₀ (Representation.IsIrreducible.natCast_finrank_ne_zero hirr)]
 
 omit [NormedSpace ℝ W] [SMulCommClass ℝ 𝕜 W] in
 
@@ -113,7 +111,7 @@ theorem character_orthonormal_distinct (ρ : ContRepresentation 𝕜 G W) (hρ :
     (hdistinct : ∀ f : ContIntertwiningMap ρ π, f.toContinuousLinearMap = 0) :
     ⟪characterLp π hπ, characterLp ρ hρ⟫_𝕜 = 0 := by
   rw [inner_characterLp_eq_sum π hπ ρ hρ (stdOrthonormalBasis 𝕜 V) (stdOrthonormalBasis 𝕜 W)]
-  simp [schur_orthogonality_distinct ρ hρ π hπ hunitary hdistinct]
+  simp_all [schur_orthogonality_distinct]
 
 end Orthogonality
 

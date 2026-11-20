@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllFrequencies.LargeZControls
 
 public import DedekindZetaZeroFree.LFunctions.Hecke.PoissonRows.FrequencyRightBounds
 public import DedekindZetaZeroFree.LFunctions.Hecke.PoissonRows.FrequencyConvexity
@@ -17,10 +18,10 @@ open DedekindZetaZeroFree.Quantitative.RawFixed DedekindZetaZeroFree.Quantitativ
 open scoped Classical Topology
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
-private theorem z₀_pos' : 0 < Scales.zLine := by unfold Scales.zLine; norm_num
+private alias z₀_pos' := DedekindZetaZeroFree.Quantitative.RowKernelGrowth.KernelGrowth.z₀_pos
 
 private theorem xg_pad_le (ξ : ℂ) (hξ : 1 + Scales.contourOffset / 2 ≤ ξ.re) :
     Scales.goodLine - EulerDomain.pad ≤ ξ.re := by
@@ -74,19 +75,14 @@ private theorem rawKernel_norm_eq_gen (u : Frequency D.recipe)
     Complex.neg_re]
   ring
 
-private theorem rawKernel_norm_eq (u : Frequency D.recipe) (hq : 0 < frequencyNorm D.recipe u)
-    (ξ : ℂ) (v y : ℝ) (p : ℝ × ℝ) (Z : ℝ) (hZ : 0 < Z) :
-    ‖rawKernel D u ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I) ((v : ℂ) + (p.1 : ℂ) * Complex.I) Z‖ =
-      Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * v + Scales.yExponent * (y - 1)) *
-        frequencyNorm D.recipe u ^ (-v) * WeightConvolution.weightModulus D ξ v y p *
-        ‖rawFactor D u ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I) ((v : ℂ) + (p.1 : ℂ) * Complex.I)‖ := by
-  have hwre : ((y : ℂ) + (p.2 : ℂ) * Complex.I).re = y := by simp
-  have hzre : ((v : ℂ) + (p.1 : ℂ) * Complex.I).re = v := by simp
-  rw [rawKernel_norm_eq_gen D u hq ξ _ _ Z hZ, hwre, hzre]
-  first | done | rfl
+private alias rawKernel_norm_eq := DedekindZetaZeroFree.Quantitative.RawLargeZControls31.LargeZControls.rawKernel_norm_eq
 
-theorem rawKernel_weight_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) :
+section
+
+variable (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z)
+
+include hu hZ in
+theorem rawKernel_weight_bound :
     ∃ (C k : ℝ), 0 ≤ C ∧ 0 ≤ k ∧ ∀ ξ : ℂ, 1 + Scales.contourOffset / 2 ≤ ξ.re → ξ.re ≤ 5 →
       ∀ s t : ℝ,
         ‖rawKernel D u ξ ((Scales.wLine : ℂ) + (t : ℂ) * I) ((Scales.zLine : ℂ) + (s : ℂ) * I) Z‖ ≤
@@ -189,8 +185,8 @@ theorem rawKernel_weight_bound (u : Frequency D.recipe) (hu : u ≠ principalFre
       _ = _ := by rw [hCc]; ring
   exact ⟨Cc, max A 0, hCc0, le_max_right _ _, fun ξ h1 h5 s t => hbd ξ h1 h5 (s, t)⟩
 
-private theorem rawKernel_diffAt_xi (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : 1 + Scales.contourOffset / 2 ≤ ξ.re) (w z : ℂ)
+include hu hZ in
+private theorem rawKernel_diffAt_xi (ξ : ℂ) (hξ : 1 + Scales.contourOffset / 2 ≤ ξ.re) (w z : ℂ)
     (hw : w.re = Scales.wLine) (hz : z.re = Scales.zLine) :
     DifferentiableAt ℂ (fun x : ℂ => rawKernel D u x w z Z) ξ := by
   have h := RawKernelRegularity31.rawKernel_differentiableAt D u hu Z hZ (ξ, w, z)
@@ -202,8 +198,8 @@ private theorem rawKernel_diffAt_xi (u : Frequency D.recipe) (hu : u ≠ princip
   have hc : DifferentiableAt ℂ (fun x : ℂ => ((x, w, z) : ℂ × ℂ × ℂ)) ξ := by fun_prop
   exact h.comp ξ hc
 
-private theorem rawKernel_continuous_heights (u : Frequency D.recipe)
-    (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ)
+include hu hZ in
+private theorem rawKernel_continuous_heights (ξ : ℂ)
     (hξ : 1 + Scales.contourOffset / 2 ≤ ξ.re) :
     Continuous (fun p : ℝ × ℝ => rawKernel D u ξ ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I)
       ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I) Z) := by
@@ -211,14 +207,14 @@ private theorem rawKernel_continuous_heights (u : Frequency D.recipe)
       (fun p : ℂ × ℂ × ℂ => rawKernel D u p.1 p.2.1 p.2.2 Z)
       (ξ, (Scales.wLine : ℂ) + (s : ℂ) * Complex.I, (Scales.zLine : ℂ) + (t : ℂ) * Complex.I) := by
     intro s t
-    have hw : ((Scales.wLine : ℂ) + (s : ℂ) * Complex.I).re = Scales.wLine := by simp
     have hz : ((Scales.zLine : ℂ) + (t : ℂ) * Complex.I).re = Scales.zLine := by simp
-    exact RawKernelRegularity31.rawKernel_differentiableAt D u hu Z hZ _
-      (RowAnalyticContinuation.mem_OmegaStar_of_re ξ _ _ (xg_pad_le ξ hξ) hw hz)
+    refine RawKernelRegularity31.rawKernel_differentiableAt D u hu Z hZ _
+      (RowAnalyticContinuation.mem_OmegaStar_of_re ξ _ _ (xg_pad_le ξ hξ) ?_ hz)
       (by
         show (1 / 6 : ℝ) < ((Scales.zLine : ℂ) + (t : ℂ) * Complex.I).re
         rw [hz]; unfold Scales.zLine; norm_num)
       (minus_ne D u ξ hξ)
+    simp
   have hcont : Continuous (fun q : ℝ × ℝ => ((ξ, (Scales.wLine : ℂ) + (q.2 : ℂ) * Complex.I,
       (Scales.zLine : ℂ) + (q.1 : ℂ) * Complex.I) : ℂ × ℂ × ℂ)) := by fun_prop
   refine continuous_iff_continuousAt.2 fun q => ?_
@@ -226,6 +222,8 @@ private theorem rawKernel_continuous_heights (u : Frequency D.recipe)
     (f := fun q : ℝ × ℝ => ((ξ, (Scales.wLine : ℂ) + (q.2 : ℂ) * Complex.I,
       (Scales.zLine : ℂ) + (q.1 : ℂ) * Complex.I) : ℂ × ℂ × ℂ)) (x := q)
     (hdiff q.2 q.1).continuousAt hcont.continuousAt
+
+end
 
 private def stripV : Set ℂ := {ξ : ℂ | 1 + Scales.contourOffset / 2 < ξ.re ∧ ξ.re < 5}
 
@@ -236,19 +234,20 @@ private theorem stripV_open : IsOpen stripV := by
   exact IsOpen.and (isOpen_lt continuous_const Complex.continuous_re)
     (isOpen_lt Complex.continuous_re continuous_const)
 
-theorem Iwz_differentiableOn_xi (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) :
+variable (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z)
+
+include hu hZ in
+theorem Iwz_differentiableOn_xi :
     DifferentiableOn ℂ (fun ξ : ℂ => Iwz D u ξ Scales.wLine Scales.zLine Z)
       (comparisonClosedStrip Scales.rightLine 4) := by
   have hdiff : ∀ ξ ∈ stripV, ∀ s t : ℝ, DifferentiableAt ℂ
       (fun x : ℂ => rawKernel D u x ((Scales.wLine : ℂ) + (s : ℂ) * Complex.I)
         ((Scales.zLine : ℂ) + (t : ℂ) * Complex.I) Z) ξ := by
     intro ξ hξ s t
-    have hw : ((Scales.wLine : ℂ) + (s : ℂ) * Complex.I).re = Scales.wLine := by simp
-    have hz : ((Scales.zLine : ℂ) + (t : ℂ) * Complex.I).re = Scales.zLine := by simp
-    exact rawKernel_diffAt_xi D u hu Z hZ ξ (mem_stripV.1 hξ).1.le _ _ hw hz
-  have hcont : ∀ ξ ∈ stripV, Continuous (fun p : ℝ × ℝ => rawKernel D u ξ
-      ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I) ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I) Z) :=
+    refine rawKernel_diffAt_xi D u hu Z hZ ξ (mem_stripV.1 hξ).1.le _ _ ?_ ?_
+    · simp
+    · simp
+  have hcont :=
     fun ξ hξ => rawKernel_continuous_heights D u hu Z hZ ξ (mem_stripV.1 hξ).1.le
   have hmaj : ∀ ξ₀ ∈ stripV, ∃ r : ℝ, 0 < r ∧ Metric.ball ξ₀ r ⊆ stripV ∧ ∃ C k : ℝ,
       0 ≤ C ∧ 0 ≤ k ∧ ∀ ξ ∈ Metric.ball ξ₀ r, ∀ p : ℝ × ℝ,
@@ -276,22 +275,21 @@ theorem Iwz_differentiableOn_xi (u : Frequency D.recipe) (hu : u ≠ principalFr
       fun ξ hξ p => ?_⟩
     have := mem_stripV.1 (hball hξ)
     exact hbd ξ this.1.le this.2.le p.1 p.2
-  have hI : DifferentiableOn ℂ (fun ξ : ℂ => comparisonVerticalIntegral Scales.wLine (fun w =>
-      comparisonVerticalIntegral Scales.zLine (fun z => rawKernel D u ξ w z Z))) stripV :=
+  have hI :=
     RowKernelHolomorphy.differentiableOn_nested_integral D stripV stripV_open
       (fun ξ w z => rawKernel D u ξ w z Z) Scales.wLine Scales.zLine z₀_pos' hdiff hcont hmaj
   have hsub : comparisonClosedStrip Scales.rightLine 4 ⊆ stripV := by
     intro ξ hξ
     have h1 : Scales.rightLine ≤ ξ.re := hξ.1
-    have h2 : ξ.re ≤ 4 := hξ.2
+    have h2 := hξ.2
     have h3 := x1_ge ξ h1
     have e1 : Scales.rightLine = 1 + Scales.contourOffset := rfl
     have e3 : Scales.contourOffset = 1 / 10000000 := rfl
     exact mem_stripV.2 ⟨by linarith, by linarith⟩
   exact hI.mono hsub
 
-theorem Iwz_decayOn_xi (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) :
+include hu hZ in
+theorem Iwz_decayOn_xi :
     LowRowXiControls.DecayOn (fun ξ : ℂ => Iwz D u ξ Scales.wLine Scales.zLine Z) Scales.rightLine 4 := by
   obtain ⟨Cc, k, hCc0, hk, hbd⟩ := rawKernel_weight_bound D u hu Z hZ
   intro B hB
@@ -303,15 +301,8 @@ theorem Iwz_decayOn_xi (u : Frequency D.recipe) (hu : u ≠ principalFrequency D
         ((2 * Real.pi)⁻¹) ^ 2 * (Cc * Cw * (1 + |ξ.im|) ^ (-B)) := by
     intro ξ h1 h4
     have h1' := x1_ge ξ h1
-    have hcont := rawKernel_continuous_heights D u hu Z hZ ξ h1'
-    have hbd' : ∀ p : ℝ × ℝ, ‖rawKernel D u ξ ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I)
-        ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I) Z‖ ≤
-        Cc * WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p *
-          (2 + |p.1| + |p.2| + |ξ.im|) ^ k :=
-      fun p => hbd ξ h1' (by linarith) p.1 p.2
-    have hle := (hCw ξ h1 h4 Scales.zLine Scales.wLine le_rfl le_rfl le_rfl le_rfl Cc hCc0
-      (fun w z => rawKernel D u ξ w z Z) hcont.aestronglyMeasurable hbd').2.2.2
-    exact hle
+    exact (hCw ξ h1 h4 Scales.zLine Scales.wLine le_rfl le_rfl le_rfl le_rfl Cc hCc0
+      (fun w z => rawKernel D u ξ w z Z) (rawKernel_continuous_heights D u hu Z hZ ξ h1').aestronglyMeasurable (fun p => hbd ξ h1' (by linarith) p.1 p.2)).2.2.2
   refine ⟨((2 * Real.pi)⁻¹) ^ 2 * (Cc * Cw), 0, ?_⟩
   intro x hx y _
   have hre : ((x : ℂ) + (y : ℂ) * Complex.I).re = x := by simp
@@ -322,8 +313,8 @@ theorem Iwz_decayOn_xi (u : Frequency D.recipe) (hu : u ≠ principalFrequency D
   refine h.trans (le_of_eq ?_)
   ring
 
-theorem triple_xi_shift (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) :
+include hu hZ in
+theorem triple_xi_shift :
     triple D u 4 Scales.wLine Scales.zLine Z = triple D u Scales.rightLine Scales.wLine Scales.zLine Z := by
   unfold triple
   exact LowRowXiControls.verticalIntegral_eq_of_decayOn (by norm_num [Scales.rightLine, Scales.contourOffset])

@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Analysis.Sobolev.Approximation.CompactInteriorH1Density
 
 public import DedekindZetaZeroFree.Analysis.Sobolev.WeakDerivatives.MultiIndexLeibnizRule
 
@@ -21,27 +22,18 @@ structure GlobalWeakSobolev (n k : ℕ) where
 open WeakJets.Raw Filter
 open scoped Topology
 
-private theorem list_smooth {n : ℕ} (l : List (Fin n)) {a : Space n → ℂ}
-    (ha : ContDiff ℝ (⊤ : ℕ∞) a) :
-    ContDiff ℝ (⊤ : ℕ∞) (coordinateDerivativeList l a) := by
-  induction l with
-  | nil => exact ha
-  | cons i l ih => exact (ih.fderiv_right (by simp)).clm_apply contDiff_const
+section
 
-private theorem list_support {n : ℕ} (l : List (Fin n)) (a : Space n → ℂ) :
-    tsupport (coordinateDerivativeList l a) ⊆ tsupport a := by
-  induction l with
-  | nil => exact Set.Subset.rfl
-  | cons i l ih => exact (tsupport_fderiv_apply_subset ℝ (EuclideanSpace.single i 1)).trans ih
+variable {n : ℕ} (l : List (Fin n))
 
-private theorem list_congr {n : ℕ} (l : List (Fin n)) {a b : Space n → ℂ}
+private theorem list_support (a : Space n → ℂ) :
+    tsupport (coordinateDerivativeList l a) ⊆ tsupport a := by apply @DedekindZetaZeroFree.WeakJets.Raw.list_tsupport_subset <;> assumption
+
+private theorem list_congr {a b : Space n → ℂ}
     {x : Space n} (hab : a =ᶠ[𝓝 x] b) :
-    coordinateDerivativeList l a =ᶠ[𝓝 x] coordinateDerivativeList l b := by
-  induction l with
-  | nil => exact hab
-  | cons i l ih =>
-    exact (ih.fderiv (𝕜 := ℝ)).mono fun _ h =>
-      congrArg (fun f : Space n →L[ℝ] ℂ => f (EuclideanSpace.single i 1)) h
+    coordinateDerivativeList l a =ᶠ[𝓝 x] coordinateDerivativeList l b := by apply @DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.CompactInteriorH1Density.coordinateDerivativeList_congr_nhds <;> assumption
+
+end
 
 private theorem jet_norm_le {n k : ℕ} {B : LocalBall n}
     (u : IntegerSobolev B k) (γ : Counts n) : ‖jet u γ‖ ≤ u.sobolevNorm := by
@@ -52,17 +44,24 @@ private theorem jet_norm_le {n k : ℕ} {B : LocalBall n}
   · simp only [norm_zero]
     exact Real.sqrt_nonneg _
 
- def extendedExpansion {n k : ℕ} {B : LocalBall n}
-    (u : IntegerSobolev B k) (l : List (Fin n)) (a : Space n → ℂ) (γ : Counts n) :
+alias CutoffZeroExtension.jet_norm_le := jet_norm_le
+
+ section
+
+variable {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k) (l : List (Fin n)) (a : Space n → ℂ)
+    (γ : Counts n)
+
+def extendedExpansion :
     Space n → ℂ := B.carrier.indicator (productExpansion u l a γ)
 
-private theorem expansion_zero_off {n k : ℕ} {B : LocalBall n}
-    (u : IntegerSobolev B k) (l : List (Fin n)) (a : Space n → ℂ) (γ : Counts n)
+private theorem expansion_zero_off
     {x : Space n} (hx : x ∉ tsupport a) : productExpansion u l a γ x = 0 := by
   induction l generalizing a γ with
   | nil => simp [productExpansion, image_eq_zero_of_notMem_tsupport hx]
   | cons i l ih =>
     simp only [productExpansion, ih _ _ hx, ih _ _ (fun h => hx (list_support [i] a h)), add_zero]
+
+end
 
 private theorem expansion_bound {n : ℕ} (B : LocalBall n) (l : List (Fin n))
     (a : Space n → ℂ) (ha : ContDiff ℝ (⊤ : ℕ∞) a) (hs : HasCompactSupport a) :
@@ -99,7 +98,8 @@ private theorem expansion_bound {n : ℕ} (B : LocalBall n) (l : List (Fin n))
     rw [hnz] at hn
     exact hn.trans (mul_le_mul_of_nonneg_left (jet_norm_le u γ) (le_max_of_le_right zero_le_one))
   | cons i l ih =>
-    obtain ⟨C, hC, HC⟩ := ih (coordinateDerivativeList [i] a) (list_smooth [i] ha)
+    obtain ⟨C, hC, HC⟩ := ih (coordinateDerivativeList [i] a) (by
+      apply @DedekindZetaZeroFree.WeakJets.Raw.list_smooth <;> assumption)
       (hs.of_isClosed_subset (isClosed_tsupport _) (list_support [i] a))
     obtain ⟨D, hD, HD⟩ := ih a ha hs
     refine ⟨C + D, add_pos hC hD, ?_⟩
@@ -150,8 +150,7 @@ private theorem localize_test {n : ℕ} (B : LocalBall n) (K : Set (Space n))
         exact Metric.closedBall_subset_ball (by change (r + B.radius) / 2 < B.radius; linarith)⟩
   refine ⟨ψ, ?_⟩
   intro x hx
-  have hη := η.eventuallyEq_one_of_mem_ball (hKr hx)
-  filter_upwards [hη] with y hy
+  filter_upwards [(η.eventuallyEq_one_of_mem_ball (hKr hx))] with y hy
   change (η y : ℂ) * φ y = φ y
   simp [hy]
 
@@ -200,8 +199,8 @@ theorem cutoff_global_weak_sobolev {n : ℕ} (B : LocalBall n) (k : ℕ)
         Real.sqrt (∑ α : MultiIndex n k, ‖g.derivatives α‖ ^ 2) ≤
           L * u.sobolevNorm := by
   classical
-  let a : Space n → ℂ := fun x => (χ x : ℂ)
-  have ha : ContDiff ℝ (⊤ : ℕ∞) a := Complex.ofRealCLM.contDiff.comp hχ
+  let a := fun x => (χ x : ℂ)
+  have ha := Complex.ofRealCLM.contDiff.comp hχ
   have hsa : tsupport a = tsupport χ := by
     unfold tsupport
     congr 1
@@ -211,7 +210,7 @@ theorem cutoff_global_weak_sobolev {n : ℕ} (B : LocalBall n) (k : ℕ)
     change IsCompact (tsupport a)
     rw [hsa]
     exact hs
-  have hba : tsupport a ⊆ B.carrier := hsa ▸ hsub
+  have hba := hsa ▸ hsub
   have hC : ∀ α : MultiIndex n k, ∃ C : ℝ, 0 < C ∧
       ∀ u : IntegerSobolev B k, ∃ h : MemLp (extendedExpansion u α.directions a 0) 2 volume,
         ‖h.toLp (extendedExpansion u α.directions a 0)‖ ≤ C * u.sobolevNorm := by
@@ -219,13 +218,12 @@ theorem cutoff_global_weak_sobolev {n : ℕ} (B : LocalBall n) (k : ℕ)
     obtain ⟨C, hC, HC⟩ := expansion_bound B α.directions a ha hca
     exact ⟨C, hC, fun u => HC k u 0⟩
   choose C hC HC using hC
-  let L : ℝ := 1 + ∑ α, C α
+  let L := 1 + ∑ α, C α
   have hsumC : 0 ≤ ∑ α, C α := Finset.sum_nonneg fun α _ => (hC α).le
   refine ⟨L, by dsimp [L]; linarith, ?_⟩
   intro u
-  have HU := fun α => HC α u
-  choose hm hnorm using HU
-  let d : MultiIndex n k → Lp ℂ 2 (volume : Measure (Space n)) :=
+  choose hm hnorm using (fun α => HC α u)
+  let d :=
     fun α => (hm α).toLp (extendedExpansion u α.directions a 0)
   have hd : ∀ α : MultiIndex n k,
       (fun x => d α x) =ᵐ[volume] extendedExpansion u α.directions a 0 :=
@@ -249,36 +247,28 @@ theorem cutoff_global_weak_sobolev {n : ℕ} (B : LocalBall n) (k : ℕ)
       exact hl.trans ((extended_weak_rule u α a ha hba φ).trans
         (congrArg (fun w => (-1 : ℂ) ^ α.degree * w) hr.symm))⟩
   refine ⟨g, ?_, ?_, ?_⟩
-  · change (fun x => d z x) =ᵐ[volume] _
-    have he : extendedExpansion u [] a 0 = B.carrier.indicator
-        (fun x => χ x • u.derivatives z x) := by
-      funext x
-      simp only [extendedExpansion, productExpansion, jet_zero]
-      by_cases hx : x ∈ B.carrier
-      · simp only [Set.indicator_of_mem hx]
-        rfl
-      · simp [hx]
-    exact hd0.trans (ae_of_all _ (congrFun he))
+  · refine hd0.trans (ae_of_all _ (congrFun ?_))
+    funext x
+    simp only [extendedExpansion, productExpansion, jet_zero]
+    by_cases hx : x ∈ B.carrier
+    · simp only [Set.indicator_of_mem hx]
+      rfl
+    · simp [hx]
   · intro α
     filter_upwards [hd α] with x hx hχx
-    change d α x = 0
     rw [hx]
-    have hax : x ∉ tsupport a := hsa ▸ hχx
     by_cases hxB : x ∈ B.carrier
     · simp only [extendedExpansion, Set.indicator_of_mem hxB]
-      exact expansion_zero_off u α.directions a 0 hax
+      exact expansion_zero_off u α.directions a 0 (hsa ▸ hχx)
     · simp [extendedExpansion, hxB]
-  · change Real.sqrt (∑ α, ‖d α‖ ^ 2) ≤ L * u.sobolevNorm
-    have hn : 0 ≤ u.sobolevNorm := Real.sqrt_nonneg _
-    have hsum : (∑ α, ‖d α‖) ≤ (∑ α, C α) * u.sobolevNorm := by
-      rw [Finset.sum_mul]
-      exact Finset.sum_le_sum fun α _ => hnorm α
-    calc
-      Real.sqrt (∑ α, ‖d α‖ ^ 2) ≤ ∑ α, ‖d α‖ :=
+  · calc
+      _ ≤ ∑ α, ‖d α‖ :=
         Real.sqrt_le_iff.mpr ⟨Finset.sum_nonneg (fun α _ => norm_nonneg _),
           Finset.sum_sq_le_sq_sum_of_nonneg (fun α _ => norm_nonneg _)⟩
-      _ ≤ (∑ α, C α) * u.sobolevNorm := hsum
-      _ ≤ L * u.sobolevNorm := mul_le_mul_of_nonneg_right (by dsimp [L]; linarith) hn
+      _ ≤ (∑ α, C α) * u.sobolevNorm := (by
+        rw [Finset.sum_mul]
+        exact Finset.sum_le_sum fun α _ => hnorm α)
+      _ ≤ L * u.sobolevNorm := mul_le_mul_of_nonneg_right (by dsimp [L]; linarith) (Real.sqrt_nonneg _)
 
 end DedekindZetaZeroFree.KPLocalCubeSobolevJets.Interior
 

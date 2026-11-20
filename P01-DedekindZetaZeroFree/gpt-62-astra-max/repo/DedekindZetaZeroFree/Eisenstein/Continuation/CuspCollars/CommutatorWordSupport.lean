@@ -11,7 +11,7 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1200000
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth
 open KPGlobalResidualConstruction KPLiteralChamber
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming rightCoordinates_nonzero → rightCoordinates_nonzero
+open _root_.DedekindZetaZeroFree.KPLiteralChamber (rightCoordinates_nonzero)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 local notation "G" => KPGlobalTorusFunctionData.G F ζ hζ
 abbrev MatrixProduct (F : Type) [Field F] [NumberField F] :=
@@ -25,7 +25,7 @@ def matrixPullback (f : G → ℂ) (g : G) (m : MatrixProduct F) : ℂ :=
   else 0
 
  theorem invertibleProducts_open : IsOpen (invertibleProducts (F := F)) := by
-  have he : invertibleProducts (F := F) = ⋂ w, {m : MatrixProduct F | (m w).det ≠ 0} := by
+  have he : invertibleProducts = ⋂ w, {m : MatrixProduct F | (m w).det ≠ 0} := by
     ext m; simp [invertibleProducts]
   rw [he]
   exact isOpen_iInter_of_finite (fun w => isOpen_ne.preimage (by fun_prop))
@@ -38,8 +38,8 @@ theorem matrixPullback_smooth (f : G → ℂ)
   intro a ha
   let A := fun w => Matrix.GeneralLinearGroup.mkOfDetNeZero (a w) (ha w)
   let M := fun (m : MatrixProduct F) w => ((A w)⁻¹).val * m w
-  let O := invertibleProducts (F := F) ∩ {m | ∀ w, M m w 1 1 ≠ 0}
-  let q := fun (m : MatrixProduct F) w => rightCoordinates (M m w)
+  let O := invertibleProducts ∩ {m | ∀ w, M m w 1 1 ≠ 0}
+  let q := fun m w => rightCoordinates (M m w)
   have hM (w) : ContDiff ℝ (⊤ : ℕ∞) (fun m : MatrixProduct F => M m w) := by
     apply contDiff_pi.mpr; intro i
     apply contDiff_pi.mpr; intro j
@@ -50,8 +50,7 @@ theorem matrixPullback_smooth (f : G → ℂ)
         ((ContinuousLinearMap.proj k : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).contDiff.comp
           (ContinuousLinearMap.proj w : MatrixProduct F →L[ℝ] Matrix (Fin 2) (Fin 2) ℂ).contDiff))
   have hentry (w) (i j : Fin 2) :
-      ContDiff ℝ (⊤ : ℕ∞) (fun m : MatrixProduct F => M m w i j) := by
-    exact (contDiff_pi.mp (contDiff_pi.mp (hM w) i)) j
+      ContDiff ℝ (⊤ : ℕ∞) (fun m : MatrixProduct F => M m w i j) := (contDiff_pi.mp (contDiff_pi.mp (hM w) i)) j
   have hO : IsOpen O := by
     apply invertibleProducts_open.inter
     have he : {m : MatrixProduct F | ∀ w, M m w 1 1 ≠ 0} =
@@ -59,10 +58,7 @@ theorem matrixPullback_smooth (f : G → ℂ)
     rw [he]
     exact isOpen_iInter_of_finite (fun w => isOpen_ne.preimage (hentry w 1 1).continuous)
   have hMa (w) : M a w = 1 := by
-    change ((A w)⁻¹).val * (A w).val = 1
     exact congrArg Units.val (inv_mul_cancel (A w))
-  have haO : a ∈ O := by
-    exact ⟨ha, fun w => by rw [hMa]; simp⟩
   have hq : ContDiffOn ℝ (⊤ : ℕ∞) q O := by
     apply contDiffOn_pi.mpr; intro w
     apply contDiffOn_pi.mpr; intro i
@@ -71,18 +67,16 @@ theorem matrixPullback_smooth (f : G → ℂ)
       simp only [Matrix.det_fin_two]
       exact ((hentry w 0 0).mul (hentry w 1 1)).sub ((hentry w 0 1).mul (hentry w 1 0))
     fin_cases i <;> simp [q, rightCoordinates]
-    · simpa only [div_eq_mul_inv] using! (hentry w 0 1).contDiffOn.mul ((hentry w 1 1).contDiffOn.inv hn)
-    · simpa only [div_eq_mul_inv] using! hd.contDiffOn.mul
+    · simpa using! (hentry w 0 1).contDiffOn.mul ((hentry w 1 1).contDiffOn.inv hn)
+    · simpa using! hd.contDiffOn.mul
         (((hentry w 1 1).pow 2).contDiffOn.inv (fun m hm => pow_ne_zero _ (hn m hm)))
-    · simpa only [div_eq_mul_inv] using! (hentry w 1 0).contDiffOn.mul ((hentry w 1 1).contDiffOn.inv hn)
+    · simpa using! (hentry w 1 0).contDiffOn.mul ((hentry w 1 1).contDiffOn.inv hn)
   have hqD : Set.MapsTo q O (archDomain F) := by
     intro m hm w
-    let B := Matrix.GeneralLinearGroup.mkOfDetNeZero (m w) (hm.1 w)
-    exact rightCoordinates_nonzero ((A w)⁻¹ * B) (hm.2 w)
-  let b : G := g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
+    exact rightCoordinates_nonzero ((A w)⁻¹ * (Matrix.GeneralLinearGroup.mkOfDetNeZero (m w) (hm.1 w))) (hm.2 w)
+  let b := g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
     (fun w => Matrix.ProjGenLinGroup.mk (A w))
-  have hs := (hf b).comp hq hqD
-  refine ⟨O, hO, haO, (hs.mono Set.inter_subset_right).congr ?_⟩
+  refine ⟨O, hO, ⟨ha, fun w => by rw [hMa]; simp⟩, (((hf b).comp hq hqD).mono Set.inter_subset_right).congr ?_⟩
   intro m hm
   change m ∈ invertibleProducts ∧ m ∈ O at hm
   change matrixPullback f g m = f (b * archChart F ζ hζ (q m))
@@ -98,7 +92,7 @@ theorem matrixPullback_smooth (f : G → ℂ)
     rightCoordinates_reconstruct ((A w)⁻¹ * B) (hm.2.2 w), ← map_mul]
   simp
 
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming native_flow_single → native_flow_single
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir (native_flow_single)
 
 def productRightDerivative (b : KPSmoothActualFlowData.B F)
     (f : MatrixProduct F → ℂ) (m : MatrixProduct F) : ℂ :=
@@ -110,7 +104,7 @@ def productRightDerivative (b : KPSmoothActualFlowData.B F)
     matrixPullback f g (fun w => (a w).val) =
       f (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
         (fun w => Matrix.ProjGenLinGroup.mk (a w))) := by
-  have ha : (fun w => (a w).val) ∈ invertibleProducts (F := F) :=
+  have ha : (fun w => (a w).val) ∈ invertibleProducts :=
     fun w => Matrix.GeneralLinearGroup.det_ne_zero (a w)
   rw [matrixPullback, dite_eq_left ha]
   congr 3
@@ -172,7 +166,7 @@ theorem matrixPullback_rightWord (w : List (KPSmoothActualFlowData.B F))
     rw [hmat]
     exact ih _
 
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming exp_path_hasDeriv → exp_path_hasDeriv
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir (exp_path_hasDeriv)
 
  def productField (b : KPSmoothActualFlowData.B F) : MatrixProduct F →L[ℝ] MatrixProduct F :=
   LinearMap.toContinuousLinearMap
@@ -197,15 +191,14 @@ open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChambe
 
  theorem productRightDerivative_eq_fderiv (b : KPSmoothActualFlowData.B F)
     (f : MatrixProduct F → ℂ) (m : MatrixProduct F) (hf : DifferentiableAt ℝ f m) :
-    productRightDerivative b f m = fderiv ℝ f m (productField b m) := by
-  exact (hf.hasFDerivAt.comp_hasDerivAt_of_eq 0 (product_path_hasDeriv b m)
+    productRightDerivative b f m = fderiv ℝ f m (productField b m) := (hf.hasFDerivAt.comp_hasDerivAt_of_eq 0 (product_path_hasDeriv b m)
     (by simp)).deriv
 
  theorem productRightDerivative_smooth (b : KPSmoothActualFlowData.B F)
     (f : MatrixProduct F → ℂ) {O : Set (MatrixProduct F)} (hO : IsOpen O)
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) f O) :
     ContDiffOn ℝ (⊤ : ℕ∞) (productRightDerivative b f) O := by
-  apply ((hf.fderiv_of_isOpen hO (m := (⊤ : ℕ∞)) (by simp)).clm_apply
+  apply ((hf.fderiv_of_isOpen hO (by simp)).clm_apply
     (productField b).contDiff.contDiffOn).congr
   intro m hm
   exact productRightDerivative_eq_fderiv b f m

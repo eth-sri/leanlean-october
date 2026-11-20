@@ -67,13 +67,11 @@ theorem row_archimedean_product (r : Fin 2 → RingOfIntegers F)
       (Ideal.span (Set.range r)).absNorm *
         Projectivization.mulHeight (Projectivization.mk F (fun i => (r i : F)) hr) := by
   classical
-  have hr' : r ≠ 0 := by intro h; apply hr; ext i; simp [h]
-  have hN := absNorm_mul_finprod_finitePlace_eq_one hr'
   rw [Projectivization.mulHeight_mk, NumberField.mulHeight_eq hr, ← mul_assoc,
     mul_comm ((Ideal.span (Set.range r)).absNorm : ℝ)]
   have hisup (v : InfinitePlace F) : (⨆ i, v (r i : F)) = max (v (r 0 : F)) (v (r 1 : F)) := row_isup F v.val _
   simp_rw [hisup]
-  rw [mul_assoc, hN, mul_one]
+  rw [mul_assoc, (absNorm_mul_finprod_finitePlace_eq_one (by intro h; apply hr; ext i; simp [h])), mul_one]
 
 theorem exists_unit_balanced_row :
     ∃ C : ℝ, 0 < C ∧ ∀ (r : Fin 2 → RingOfIntegers F)
@@ -90,7 +88,7 @@ theorem exists_unit_balanced_row :
   intro r hr
   have hp (v : InfinitePlace F) : 0 < max (v (r 0 : F)) (v (r 1 : F)) := by
     obtain ⟨i, hi⟩ := Function.ne_iff.mp hr
-    have hi' : 0 < v (r i : F) := (v.pos_iff).mpr hi
+    have hi' := (v.pos_iff).mpr hi
     have he : i = 0 ∨ i = 1 := by fin_cases i <;> simp
     rcases he with rfl | rfl
     · exact hi'.trans_le (le_max_left _ _)
@@ -100,8 +98,8 @@ theorem exists_unit_balanced_row :
   intro σ
   have hv := hu (InfinitePlace.mk σ)
   rw [row_archimedean_product F r hr] at hv
-  change ‖σ (u : RingOfIntegers F)‖ * max ‖σ (r 0 : F)‖ ‖σ (r 1 : F)‖ ≤ _ at hv
-  simpa [map_mul, norm_mul, ← mul_max_of_nonneg _ _ (norm_nonneg (σ (u : RingOfIntegers F))),
+  change ‖σ u‖ * max ‖σ (r 0 : F)‖ ‖σ (r 1 : F)‖ ≤ _ at hv
+  simpa [map_mul, norm_mul, ← mul_max_of_nonneg _ _ (norm_nonneg (σ u)),
     RingOfIntegers.coe_eq_algebraMap] using hv
 
 theorem integral_representative (ℓ : KPChamberHeight.Line F) :
@@ -111,12 +109,10 @@ theorem integral_representative (ℓ : KPChamberHeight.Line F) :
   obtain ⟨b, hb⟩ := IsLocalization.exist_integer_multiples_of_finite
     (nonZeroDivisors (RingOfIntegers F)) ℓ.rep
   choose r h using hb
-  have hb0 : (b : RingOfIntegers F) ≠ 0 := mem_nonZeroDivisors_iff_ne_zero.mp b.prop
-  have hbF : ((b : RingOfIntegers F) : F) ≠ 0 := by exact_mod_cast hb0
   have he : (fun i => (r i : F)) = ((b : RingOfIntegers F) : F) • ℓ.rep := by
     ext i; simpa [Algebra.smul_def, RingOfIntegers.coe_eq_algebraMap] using h i
   have hr : (fun i => (r i : F)) ≠ 0 := by
-    rw [he]; exact smul_ne_zero hbF ℓ.rep_nonzero
+    rw [he]; exact smul_ne_zero (by exact_mod_cast (mem_nonZeroDivisors_iff_ne_zero.mp b.prop)) ℓ.rep_nonzero
   refine ⟨r, hr, ?_⟩
   rw [← ℓ.mk_rep, Projectivization.mk_eq_mk_iff']
   exact ⟨((b : RingOfIntegers F) : F), he.symm⟩
@@ -131,9 +127,11 @@ private theorem span_mul_range (a : RingOfIntegers F) (r : Fin 2 → RingOfInteg
   · rintro ⟨_, ⟨i, rfl⟩, rfl⟩; exact ⟨i, rfl⟩
   · rintro ⟨i, rfl⟩; exact ⟨r i, ⟨i, rfl⟩, rfl⟩
 
-theorem ideal_representative
-    (J : ClassGroup (RingOfIntegers F) → (Ideal (RingOfIntegers F))⁰)
+variable (J : ClassGroup (RingOfIntegers F) → (Ideal (RingOfIntegers F))⁰)
     (hJ : ∀ j, ClassGroup.mk0 (J j) = j)
+
+include hJ in
+theorem ideal_representative
     (ℓ : KPChamberHeight.Line F) :
     ∃ (j : ClassGroup (RingOfIntegers F)) (r : Fin 2 → RingOfIntegers F)
       (hr : (fun i => (r i : F)) ≠ 0),
@@ -148,25 +146,22 @@ theorem ideal_representative
     have hi := Ideal.mem_span_range_self (f := r) (x := i)
     rw [h, Ideal.mem_bot] at hi
     simp [hi]
-  let I : (Ideal (RingOfIntegers F))⁰ :=
-    ⟨Ideal.span (Set.range r), mem_nonZeroDivisors_iff_ne_zero.mpr hI⟩
-  let j := ClassGroup.mk0 I
+  let j := ClassGroup.mk0 (⟨Ideal.span (Set.range r), mem_nonZeroDivisors_iff_ne_zero.mpr hI⟩)
   obtain ⟨x, y, hx, hy, hxy⟩ := ClassGroup.mk0_eq_mk0_iff.mp (hJ j).symm
   have hm (i : Fin 2) : x * r i ∈ Ideal.span {y} * (J j : Ideal (RingOfIntegers F)) := by
     rw [← hxy]
-    exact Ideal.mul_mem_mul (Ideal.mem_span_singleton_self x) (Ideal.mem_span_range_self (f := r))
+    exact Ideal.mul_mem_mul (Ideal.mem_span_singleton_self x) (Ideal.mem_span_range_self)
   have hd (i : Fin 2) : y ∣ x * r i := by
     apply Ideal.mem_span_singleton.mp
-    exact (Ideal.mul_le_left : Ideal.span {y} * (J j : Ideal (RingOfIntegers F)) ≤ _) (hm i)
+    exact Ideal.mul_le_left (hm i)
   choose s hs using hd
-  have he : (fun i => y * s i : Fin 2 → RingOfIntegers F) = (fun i => x * r i) := funext fun i => (hs i).symm
+  have he := funext fun i => (hs i).symm
   have hspan : Ideal.span (Set.range s) = (J j : Ideal (RingOfIntegers F)) := by
     have he' : Ideal.span {y} * Ideal.span (Set.range s) =
         Ideal.span {y} * (J j : Ideal (RingOfIntegers F)) := by
       rw [span_mul_range F, he, ← span_mul_range F]
       exact hxy
     exact mul_left_cancel₀ (by simpa [Ideal.span_singleton_eq_bot] using hy) he'
-  have hxF : (x : F) ≠ 0 := by exact_mod_cast hx
   have hyF : (y : F) ≠ 0 := by exact_mod_cast hy
   have heF : (fun i => (s i : F)) = ((x : F) / (y : F)) • (fun i => (r i : F)) := by
     ext i
@@ -174,15 +169,13 @@ theorem ideal_representative
     simp only [Pi.smul_apply, smul_eq_mul]
     field_simp
     simpa [mul_comm] using hh
-  have hs0 : (fun i => (s i : F)) ≠ 0 := by
-    rw [heF]; exact smul_ne_zero (div_ne_zero hxF hyF) hr
-  refine ⟨j, s, hs0, ?_, hspan⟩
+  refine ⟨j, s, by
+    rw [heF]; exact smul_ne_zero (div_ne_zero (by exact_mod_cast hx) hyF) hr, ?_, hspan⟩
   rw [← hℓ, Projectivization.mk_eq_mk_iff']
   exact ⟨(x : F) / (y : F), heF.symm⟩
 
-theorem exists_unit_balanced_pair
-    (J : ClassGroup (RingOfIntegers F) → (Ideal (RingOfIntegers F))⁰)
-    (hJ : ∀ j, ClassGroup.mk0 (J j) = j) :
+include hJ in
+theorem exists_unit_balanced_pair :
     ∃ C_F : ℝ, 0 < C_F ∧
       ∀ (B : ℝ), 1 ≤ B → ∀ ℓ : KPChamberHeight.Line F,
         Projectivization.mulHeight ℓ ≤ B →
@@ -196,20 +189,20 @@ theorem exists_unit_balanced_pair
               C_F * B ^ (1 / (Module.finrank ℚ F : ℝ)) := by
   classical
   obtain ⟨C, hC, hb⟩ := exists_unit_balanced_row F
-  let N : ℝ := 1 + ∑ j, ((J j : Ideal (RingOfIntegers F)).absNorm : ℝ)
+  let N := 1 + ∑ j, ((J j : Ideal (RingOfIntegers F)).absNorm : ℝ)
   have hN : 0 < N := by
     dsimp [N]
     positivity
-  let e : ℝ := 1 / (Module.finrank ℚ F : ℝ)
+  let e := 1 / (Module.finrank ℚ F : ℝ)
   have he : 0 ≤ e := by dsimp [e]; positivity
   refine ⟨C * N ^ e, mul_pos hC (Real.rpow_pos_of_pos hN _), ?_⟩
   intro B hB ℓ hH
   obtain ⟨j, r, hr, hℓ, hJr⟩ := ideal_representative F J hJ ℓ
   obtain ⟨u, hu⟩ := hb r hr
-  let s : Fin 2 → RingOfIntegers F := fun i => (u : RingOfIntegers F) * r i
+  let s := fun i => u * r i
   have huF : ((u : RingOfIntegers F) : F) ≠ 0 := by
     exact_mod_cast u.ne_zero
-  have hs : (fun i => (s i : F)) = ((u : RingOfIntegers F) : F) • (fun i => (r i : F)) := by
+  have hs : (fun i => (s i : F)) = (u : F) • (fun i => (r i : F)) := by
     ext i
     simp [s, Algebra.smul_def, RingOfIntegers.coe_eq_algebraMap]
   have hs0 : (fun i => (s i : F)) ≠ 0 := by
@@ -217,27 +210,24 @@ theorem exists_unit_balanced_pair
     exact smul_ne_zero huF hr
   refine ⟨j, s, hs0, ?_, ?_, ?_⟩
   · rw [← hℓ, Projectivization.mk_eq_mk_iff']
-    exact ⟨((u : RingOfIntegers F) : F), hs.symm⟩
-  · rw [show s = (fun i => (u : RingOfIntegers F) * r i) from rfl,
+    exact ⟨(u : F), hs.symm⟩
+  · rw [show s = (fun i => u * r i) from rfl,
       ← span_mul_range F, Ideal.span_singleton_eq_top.mpr u.isUnit, Ideal.top_mul, hJr]
   · intro σ
     have hNj : ((J j : Ideal (RingOfIntegers F)).absNorm : ℝ) ≤ N := by
       have hsum := Finset.single_le_sum
-        (fun k (_ : k ∈ (Finset.univ : Finset (ClassGroup (RingOfIntegers F)))) =>
+        (fun k _ =>
           (show 0 ≤ ((J k : Ideal (RingOfIntegers F)).absNorm : ℝ) by positivity))
         (Finset.mem_univ j)
       exact hsum.trans (by dsimp [N]; linarith)
-    have hH0 : 0 ≤ Projectivization.mulHeight ℓ :=
+    have hH0 :=
       (Projectivization.mulHeight_pos ℓ).le
     have hn0 : 0 ≤ ((J j : Ideal (RingOfIntegers F)).absNorm : ℝ) := by positivity
-    have hbound : ((J j : Ideal (RingOfIntegers F)).absNorm : ℝ) *
-        Projectivization.mulHeight ℓ ≤ N * B :=
+    have hbound :=
       mul_le_mul hNj hH hH0 hN.le
     have hv := hu σ
     rw [hJr, hℓ] at hv
     refine hv.trans ?_
-    change C * (((J j : Ideal (RingOfIntegers F)).absNorm : ℝ) *
-      Projectivization.mulHeight ℓ) ^ e ≤ (C * N ^ e) * B ^ e
     rw [mul_assoc, ← Real.mul_rpow hN.le (by linarith)]
     exact mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (mul_nonneg hn0 hH0) hbound he) hC.le

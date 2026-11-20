@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllowedRowCount
 
 public import DedekindZetaZeroFree.Moments.Principal.EulerProducts.Poisson.NormalConvergence
 
@@ -13,14 +14,11 @@ noncomputable section
 open DedekindZetaZeroFree NumberField
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 private theorem q_eq_exteriorNorm (u : D.Row) :
-    D.q u = D.recipe.A.exteriorNorm u.toFrequency.ideal := by
-  unfold FixedData.q
-  change (Nat.card (D.recipe.A.R ⧸ Ideal.span {u.toFrequency.u}) : ℝ) = _
-  rw [u.toFrequency.generates.2, D.recipe.A.exteriorResidue_card] <;> rfl
+    D.q u = D.recipe.A.exteriorNorm u.toFrequency.ideal := by apply @DedekindZetaZeroFree.Quantitative.ActualRowCount.q_eq <;> assumption
 
 private theorem subpower_core (δ' : ℝ) (ε : ℝ) (hε : 0 < ε)
     (hgood : ∃ C δ : ℝ, 0 < C ∧ 0 < δ ∧
@@ -57,8 +55,7 @@ private theorem subpower_core (δ' : ℝ) (ε : ℝ) (hε : 0 < ε)
       apply Subtype.ext
       apply IsDedekindDomain.HeightOneSpectrum.asIdeal_injective
       exact congrArg Subtype.val hpq
-    have hh := ((ideal_norm_rpow_summable F (1 + δg) (by linarith)).comp_injective he).mul_left Mg
-    convert hh using 1 <;> rfl
+    convert (((ideal_norm_rpow_summable F (1 + δg) (by linarith)).comp_injective he).mul_left Mg) using 1 <;> rfl
   have hn (a : ℂ) : ‖a‖ ≤ ‖a - 1‖ + 1 := by
     calc ‖a‖ = ‖(a - 1) + 1‖ := by rw [sub_add_cancel]
       _ ≤ ‖a - 1‖ + ‖(1 : ℂ)‖ := norm_add_le _ _
@@ -70,11 +67,9 @@ private theorem subpower_core (δ' : ℝ) (ε : ℝ) (hε : 0 < ε)
           1 + Bb * LocalFiniteSums.Q pr ^ (-δb) else 1) := by
     intro u p hp pr
     by_cases hj : (u.toFrequency.j pr).val = 0
-    · have hj' : ¬ ((u.toFrequency.j pr).val ≠ 0) := not_not.mpr hj
-      rw [if_neg hj', mul_one]
+    · rw [if_neg (not_not.mpr hj), mul_one]
       have h1 := hg u pr hj p hp
       rw [show (-1 - δg) = -(1 + δg) by ring] at h1
-      have h2 : ‖CorrectionFactors.localFactor D.context u.toFrequency pr p.1 p.2.1 p.2.2 - 1‖ ≤ g pr := h1
       have h3 := hn (CorrectionFactors.localFactor D.context u.toFrequency pr p.1 p.2.1 p.2.2)
       linarith [Real.add_one_le_exp (g pr)]
     · rw [if_pos hj]
@@ -100,9 +95,7 @@ private theorem subpower_core (δ' : ℝ) (ε : ℝ) (hε : 0 < ε)
       dsimp [b]
       nlinarith [Real.rpow_nonneg hp0 (-δb)]
     have hinj : Function.Injective
-        (fun pr : LocalFiniteSums.ExteriorPrime D.recipe.A => pr.val.asIdeal) := by
-      intro p q hpq
-      exact Subtype.ext (IsDedekindDomain.HeightOneSpectrum.asIdeal_injective hpq)
+        (fun pr : LocalFiniteSums.ExteriorPrime D.recipe.A => pr.val.asIdeal) := fun p q hpq => Subtype.ext (IsDedekindDomain.HeightOneSpectrum.asIdeal_injective hpq)
     have ht : (s.filter (fun pr => (u.toFrequency.j pr).val ≠ 0)).image (fun pr => pr.val.asIdeal) ⊆
         idealPrimeSupport u.toFrequency.ideal.val := by
       intro I hI
@@ -152,7 +145,7 @@ private theorem subpower_core (δ' : ℝ) (ε : ℝ) (hε : 0 < ε)
   intro u p hp hm
   apply le_of_tendsto' hm.hasProd.norm
   intro s
-  simpa only [norm_prod] using hfinite u p hp s
+  simpa using hfinite u p hp s
 
 theorem Hu_subpower (δ : ℝ) (hδ : 0 < δ) (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ u : D.Row, ∀ p ∈ OmegaStarMargin δ,
@@ -160,7 +153,7 @@ theorem Hu_subpower (δ : ℝ) (hδ : 0 < δ) (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C, hC, h⟩ := subpower_core D δ ε hε
     (EulerGoodPrime.localFactor_sub_one_le D δ hδ) (EulerBadPrime.localFactor_sub_one_le D δ hδ)
   refine ⟨C, hC, fun u p hp => ?_⟩
-  have hm : p ∈ HuDomain D u := (Hu_normal_convergence D u).1 (OmegaStarMargin_subset δ hδ hp)
+  have hm := (Hu_normal_convergence D u).1 (OmegaStarMargin_subset δ hδ hp)
   exact ⟨hm, h u p hp hm⟩
 
 theorem Hu_subpower_of_subset (T : Set Coordinates) (δ : ℝ) (hδ : 0 < δ)
@@ -170,13 +163,17 @@ theorem Hu_subpower_of_subset (T : Set Coordinates) (δ : ℝ) (hδ : 0 < δ)
   obtain ⟨C, hC, h⟩ := Hu_subpower D δ hδ ε hε
   exact ⟨C, hC, fun u p hp => h u p (hT hp)⟩
 
-theorem Hu_subpower_paddedBoxes (ε : ℝ) (hε : 0 < ε) :
+variable (ε : ℝ) (hε : 0 < ε)
+
+include hε in
+theorem Hu_subpower_paddedBoxes :
     ∃ C : ℝ, 0 < C ∧ ∀ u : D.Row, ∀ p ∈ paddedBoxes,
       p ∈ HuDomain D u ∧ ‖Hu D u p.1 p.2.1 p.2.2‖ ≤ C * D.q u ^ ε := by
   obtain ⟨δ, hδ, hsub⟩ := paddedBoxes_subset_OmegaStarMargin
   exact Hu_subpower_of_subset D paddedBoxes δ hδ hsub ε hε
 
-theorem Hu_subpower_boxes (ε : ℝ) (hε : 0 < ε) :
+include hε in
+theorem Hu_subpower_boxes :
     ∃ C : ℝ, 0 < C ∧ ∀ u : D.Row, ∀ p ∈ boxes,
       p ∈ HuDomain D u ∧ ‖Hu D u p.1 p.2.1 p.2.2‖ ≤ C * D.q u ^ ε := by
   obtain ⟨C, hC, h⟩ := Hu_subpower_paddedBoxes D ε hε

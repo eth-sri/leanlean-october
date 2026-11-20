@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.RepresentationTheory.Smooth.HarishChandraHeckeLieCovariance
 
 public import DedekindZetaZeroFree.Metaplectic.Kubota.ArchimedeanFlowBasis
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.LieDerivatives.MatrixFlows
@@ -11,38 +12,25 @@ open scoped Classical NumberField Topology BigOperators
 namespace DedekindZetaZeroFree.RootDerivatives
 open MomentSources KPGlobalResidualConstruction KPContActualSphericalRightFieldIdentification
 open KPActualReflectionData.NativeFlowJet
-open _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum renaming smooth_add → smooth_add
-open _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum renaming smooth_smul → smooth_smul
 open FlowBasis
 local notation "flow_directions_span" => FlowBasis.directions_span
 local notation "flow_coefficients" => FlowBasis.coefficients
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1800000
 local notation "ρ" => KPLiteralRaw.rightAction F R.A.zeta12 R.A.primitive_zeta12
 local notation "W" => actualRightWord F R.A.zeta12 R.A.primitive_zeta12
 local notation "d" => chartDerivative F R.A.zeta12 R.A.primitive_zeta12
 
-private theorem actualRightWord_eq_adelic (w : List (Fin (groupDimension F)))
-    (f : Functions R) : W w f =
-      AdelicRightLieWords.actualRightWord F R.A.zeta12 R.A.primitive_zeta12 w f := by
-  induction w with
-  | nil => rfl
-  | cons b w ih =>
-    simp only [KPContActualSphericalRightFieldIdentification.actualRightWord, AdelicRightLieWords.actualRightWord]
-    rw [ih]
-    rfl
+private alias actualRightWord_eq_adelic := DifferentialWordCyclicSpan.actualRightWord_eq_adelic
 
 theorem actualRight_flowDirection (b : Fin (groupDimension F)) (f : Functions R)
     (hf : KPLiteralRaw.Smooth F R.A.zeta12 R.A.primitive_zeta12 f) :
     actualRight F R.A.zeta12 R.A.primitive_zeta12 b f =
       d (flowDirection F (nativeBasis F b)) f := by
   ext g
-  have hd := smooth_chart_differentiable F R.A.zeta12 R.A.primitive_zeta12 f hf g
-  have hh := hd.hasFDerivAt.comp_hasDerivAt_of_eq 0
-    (flowChart_hasDeriv F (nativeBasis F b)) (flowChart_zero F _).symm
   have he : (fun t => f (g * nativeCurve F R.A.zeta12 R.A.primitive_zeta12 b t)) =ᶠ[𝓝 (0 : ℝ)]
       (fun t => f (g * archChart F R.A.zeta12 R.A.primitive_zeta12
         (flowChart F (nativeBasis F b) t))) := by
@@ -52,15 +40,14 @@ theorem actualRight_flowDirection (b : Fin (groupDimension F)) (f : Functions R)
   rw [actualRight_nativeCurve]
   change deriv _ 0 = _
   rw [he.deriv_eq]
-  exact hh.deriv
+  exact ((smooth_chart_differentiable F R.A.zeta12 R.A.primitive_zeta12 f hf g).hasFDerivAt.comp_hasDerivAt_of_eq 0
+    (flowChart_hasDeriv F (nativeBasis F b)) (flowChart_zero F _).symm).deriv
 
 theorem chartDerivative_native_sum (X : ArchCoordinates F) (f : Functions R)
     (hf : KPLiteralRaw.Smooth F R.A.zeta12 R.A.primitive_zeta12 f) :
     d X f = ∑ b : Fin (groupDimension F),
       (flow_coefficients F X (nativeBasis F b) : ℂ) •
         actualRight F R.A.zeta12 R.A.primitive_zeta12 b f := by
-  have he : (nativeBasis F) = ((lieEnumeration F).trans
-      (KPSmoothAutomorphicEvaluation.AmbientApproximation.OrbitSmoothing.Reconstruction.LocalSobolev.Scalar.CoordinateSource.actualBasisReindex F)) := rfl
   have hspan := flow_directions_span F X
   rw [← Equiv.sum_comp ((lieEnumeration F).trans
     (KPSmoothAutomorphicEvaluation.AmbientApproximation.OrbitSmoothing.Reconstruction.LocalSobolev.Scalar.CoordinateSource.actualBasisReindex F))] at hspan
@@ -80,44 +67,34 @@ theorem chartDerivative_translate (a : Group R) :
   obtain ⟨L,hL⟩ := KPActualReflectionData.AffineCompactConjugation.right_derivative_conjugation
     F R.A.zeta12 R.A.primitive_zeta12 a⁻¹
   refine ⟨L,fun f hf X => ?_⟩
-  have ht := KPLiteralPeriod.NonzeroResidue.smooth_right_translate
-    F R.A.zeta12 R.A.primitive_zeta12 f hf a
   ext g
   have h := hL (ρ a f)
-    (smooth_chart_differentiable F R.A.zeta12 R.A.primitive_zeta12 _ ht) X (g*a)
+    (smooth_chart_differentiable F R.A.zeta12 R.A.primitive_zeta12 _ (KPLiteralPeriod.NonzeroResidue.smooth_right_translate
+      F R.A.zeta12 R.A.primitive_zeta12 f hf a)) X (g*a)
   change (fderiv ℝ (fun x => f (((g*a)*a⁻¹*archChart F R.A.zeta12 R.A.primitive_zeta12 x)*a)) (archBase F)) X =
     (fderiv ℝ (fun x => f (((g*a)*archChart F R.A.zeta12 R.A.primitive_zeta12 x*a⁻¹)*a)) (archBase F)) (L X) at h
   change (fderiv ℝ (fun x => f ((g*archChart F R.A.zeta12 R.A.primitive_zeta12 x)*a)) (archBase F)) X =
     (fderiv ℝ (fun x => f ((g*a)*archChart F R.A.zeta12 R.A.primitive_zeta12 x)) (archBase F)) (L X)
   simpa only [mul_assoc, mul_inv_cancel, inv_mul_cancel, mul_one] using h
 
-theorem hcHeckeSpan_smooth {Q : AdmissibleFlatSources R} (T : Realization R Q)
-    {f : Functions R} (hf : f ∈ hcHeckeSpan T) :
-    KPLiteralRaw.Smooth F R.A.zeta12 R.A.primitive_zeta12 f := by
-  induction hf using Submodule.span_induction with
-  | mem f hf =>
-    obtain ⟨v,a,w,rfl⟩ := hf
-    simpa only [actualRightWord_eq_adelic R,
-      _root_.DedekindZetaZeroFree.MomentSources.Realization.theta] using
-      KPLiteralPeriod.NonzeroResidue.smooth_right_translate
-        F R.A.zeta12 R.A.primitive_zeta12 _
-        (SharedSource.actualRightWord_smooth _ (T.automorphic v).1 w) a
-  | zero => exact (wordRecovery R T).zero_mem.1
-  | add f g hf hg ihf ihg => exact smooth_add F R.A.zeta12 R.A.primitive_zeta12 f g ihf ihg
-  | smul c f hf ih => exact smooth_smul F R.A.zeta12 R.A.primitive_zeta12 c f ih
+variable {Q : AdmissibleFlatSources R} (T : Realization R Q)
 
-theorem hcHeckeSpan_translate {Q : AdmissibleFlatSources R} (T : Realization R Q)
+theorem hcHeckeSpan_smooth
+    {f : Functions R} (hf : f ∈ hcHeckeSpan T) :
+    KPLiteralRaw.Smooth F R.A.zeta12 R.A.primitive_zeta12 f := by apply @DedekindZetaZeroFree.FourierContinuation.HCGeneration.hcHeckeSpan_smooth <;> assumption
+
+theorem hcHeckeSpan_translate
     (a : Group R) {f : Functions R} (hf : f ∈ hcHeckeSpan T) : ρ a f ∈ hcHeckeSpan T := by
   induction hf using Submodule.span_induction with
   | mem f hf =>
     obtain ⟨v,b,w,rfl⟩ := hf
     rw [← Module.End.mul_apply, ← map_mul]
     exact Submodule.subset_span ⟨v,a*b,w,rfl⟩
-  | zero => simpa using (hcHeckeSpan T).zero_mem
-  | add f g hf hg ihf ihg => simpa only [map_add] using (hcHeckeSpan T).add_mem ihf ihg
-  | smul c f hf ih => simpa only [map_smul] using (hcHeckeSpan T).smul_mem c ih
+  | zero => exact (hcHeckeSpan T).zero_mem
+  | add f g hf hg ihf ihg => simpa using (hcHeckeSpan T).add_mem ihf ihg
+  | smul c f hf ih => simpa using (hcHeckeSpan T).smul_mem c ih
 
-theorem hcHeckeSpan_right {Q : AdmissibleFlatSources R} (T : Realization R Q)
+theorem hcHeckeSpan_right
     (b : Fin (groupDimension F)) {f : Functions R} (hf : f ∈ hcHeckeSpan T) :
     actualRight F R.A.zeta12 R.A.primitive_zeta12 b f ∈ hcHeckeSpan T := by
   induction hf using Submodule.span_induction with
@@ -138,11 +115,10 @@ theorem hcHeckeSpan_right {Q : AdmissibleFlatSources R} (T : Realization R Q)
     exact Submodule.subset_span ⟨v,a,c::w,by
       rw [← actualRightWord_eq_adelic R] <;> rfl⟩
   | zero =>
-    have hz := SharedSource.actualRightWord_smul (F := F) (ζ := R.A.zeta12)
-      (hζ := R.A.primitive_zeta12) (0 : ℂ) (0 : Functions R)
-      ((wordRecovery R T).zero_mem.1) [b]
     have he : actualRight F R.A.zeta12 R.A.primitive_zeta12 b (0 : Functions R) = 0 := by
-      simpa only [smul_zero, actualRightWord, zero_smul] using hz
+      simpa only [smul_zero, actualRightWord, zero_smul] using (SharedSource.actualRightWord_smul
+         (0 : ℂ) (0 : Functions R)
+        ((wordRecovery R T).zero_mem.1) [b])
     rw [he]
     exact (hcHeckeSpan T).zero_mem
   | add f g hf hg ihf ihg =>
@@ -157,7 +133,7 @@ theorem hcHeckeSpan_right {Q : AdmissibleFlatSources R} (T : Realization R Q)
     rw [he]
     exact (hcHeckeSpan T).smul_mem c ih
 
-theorem hcHeckeSpan_le_wordRecovery {Q : AdmissibleFlatSources R} (T : Realization R Q) :
+theorem hcHeckeSpan_le_wordRecovery :
     hcHeckeSpan T ≤ wordRecovery R T := by
   intro f hf
   refine ⟨hcHeckeSpan_smooth R T hf,fun w a => hcHeckeSpan_translate R T a ?_⟩
@@ -165,7 +141,7 @@ theorem hcHeckeSpan_le_wordRecovery {Q : AdmissibleFlatSources R} (T : Realizati
   | nil => exact hf
   | cons b w ih => exact hcHeckeSpan_right R T b ih
 
-theorem wordRecovery_translate {Q : AdmissibleFlatSources R} (T : Realization R Q)
+theorem wordRecovery_translate
     (a : Group R) {f : Functions R} (hf : f ∈ wordRecovery R T) :
     ρ a f ∈ wordRecovery R T := by
   apply hcHeckeSpan_le_wordRecovery R T

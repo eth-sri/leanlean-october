@@ -25,8 +25,7 @@ abbrev factorMinus (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
     Representation ℂ H (InducedModule P) :=
   (inducingAction A P .minus 0).comp A.torus
 
-theorem residue_cardinality_gt_one : 1 < residueCardinality K := by
-  exact Finite.one_lt_card
+theorem residue_cardinality_gt_one : 1 < residueCardinality K := Finite.one_lt_card
 
  def scalarSubrepresentationOrderIso
     {V : Type*} [AddCommGroup V] [Module ℂ V]
@@ -61,19 +60,15 @@ theorem exceptional_factors_simple
       (factorPlus A P).IsIrreducible ∧ (factorMinus A P).IsIrreducible := by
   have hirr := tau_irreducible T P
   letI : (tau P).IsIrreducible := hirr
-  have hn : Nontrivial (InducedModule P) := by
-    haveI : IsSimpleModule ℂ[H] (tau P).asModule := inferInstance
-    exact IsSimpleModule.nontrivial ℂ[H] (tau P).asModule
-  have hc : ∀ h : H, deltaHalf A (A.torus h) ≠ 0 := by
-    intro h
-    exact Complex.exp_ne_zero _
-  have hw := (weyl_conjugate_properties T P A.weyl A.weylCenter
-    A.weylCenter_coe).2.2.1
-  exact ⟨hn,
+  have hc : ∀ h : H, deltaHalf A (A.torus h) ≠ 0 := fun h => Complex.exp_ne_zero _
+  refine ⟨?_,
     (scalarSubrepresentationOrderIso (tau P) (factorPlus A P)
       (fun h => deltaHalf A (A.torus h)) hc (factor_action A P .plus)).isSimpleOrder_iff.mpr hirr,
     (scalarSubrepresentationOrderIso (weylConjugate P A.weyl) (factorMinus A P)
-      (fun h => deltaHalf A (A.torus h)) hc (factor_action A P .minus)).isSimpleOrder_iff.mpr hw⟩
+      (fun h => deltaHalf A (A.torus h)) hc (factor_action A P .minus)).isSimpleOrder_iff.mpr ((weyl_conjugate_properties T P A.weyl A.weylCenter
+        A.weylCenter_coe).2.2.1)⟩
+  haveI : IsSimpleModule ℂ[H] (tau P).asModule := inferInstance
+  exact IsSimpleModule.nontrivial ℂ[H] (tau P).asModule
 
 theorem exceptional_cube_weights
     (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T) (π : Kˣ)
@@ -85,13 +80,10 @@ theorem exceptional_cube_weights
       ((residueCardinality K : ℂ) ^ (-1 : ℤ)) • v) := by
   obtain ⟨hp, hd, hm⟩ := uniformizer_weights A π hπ
   have hq : 0 < (residueCardinality K : ℝ) := by
-    exact_mod_cast (lt_trans Nat.zero_lt_one (residue_cardinality_gt_one (K := K)))
-  have hw := (weyl_conjugate_properties T P A.weyl A.weylCenter
-    A.weylCenter_coe).2.2.2.1
+    exact_mod_cast (lt_trans Nat.zero_lt_one (residue_cardinality_gt_one))
   constructor
   · intro v
     rw [factor_action A P .plus]
-    change deltaHalf A (A.torus (A.cubeLift π : H)) • tau P (A.cubeLift π : H) v = _
     rw [tau_hasCentralCharacter T P]
     change deltaHalf A (A.torus (A.cubeLift π : H)) • ((T.ω (A.cubeLift π) : ℂ) • v) = _
     rw [hp, hd, smul_smul]
@@ -100,9 +92,8 @@ theorem exceptional_cube_weights
     norm_num
   · intro v
     rw [factor_action A P .minus]
-    change deltaHalf A (A.torus (A.cubeLift π : H)) •
-      weylConjugate P A.weyl (A.cubeLift π : H) v = _
-    rw [hw]
+    rw [((weyl_conjugate_properties T P A.weyl A.weylCenter
+      A.weylCenter_coe).2.2.2.1)]
     change deltaHalf A (A.torus (A.cubeLift π : H)) •
       ((T.ω (A.weylCenter (A.cubeLift π)) : ℂ) • v) = _
     rw [hm, hd, smul_smul]

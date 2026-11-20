@@ -13,7 +13,11 @@ set_option maxHeartbeats 8000000
 set_option synthInstance.maxHeartbeats 200000
 namespace DedekindZetaZeroFree.NativeScalarFiniteProductCovariantSlices
 variable {ι : Type} [Fintype ι] {V : ι → Type} [∀ i, AddCommGroup (V i)] [∀ i, Module ℂ (V i)]
- def contractionMultilinear [DecidableEq ι] (q : ι) (l : ∀ i, V i →ₗ[ℂ] ℂ) : MultilinearMap ℂ V (V q) :=
+ section
+
+variable [DecidableEq ι] (q : ι) (l : ∀ i, V i →ₗ[ℂ] ℂ)
+
+def contractionMultilinear : MultilinearMap ℂ V (V q) :=
   .mk' (fun x => (∏ i ∈ Finset.univ.erase q, l i (x i)) • x q)
     (by
     intro x i a b
@@ -47,7 +51,7 @@ variable {ι : Type} [Fintype ι] {V : ι → Type} [∀ i, AddCommGroup (V i)] 
         simp only [Function.update_of_ne (Finset.ne_of_mem_erase hj)]
       rw [hh (c • a), hh a]
       simp only [Function.update_self, smul_smul, mul_comm]
-    · have hm : i ∈ Finset.univ.erase q := Finset.mem_erase.mpr ⟨hi, Finset.mem_univ _⟩
+    · have hm := Finset.mem_erase.mpr ⟨hi, Finset.mem_univ _⟩
       have hh (z : V i) : (∏ j ∈ Finset.univ.erase q, l j (Function.update x i z j)) =
           l i z * ∏ j ∈ (Finset.univ.erase q).erase i, l j (x j) := by
         rw [← Finset.mul_prod_erase _ _ hm]
@@ -59,8 +63,8 @@ variable {ι : Type} [Fintype ι] {V : ι → Type} [∀ i, AddCommGroup (V i)] 
       rw [hh (c • a), hh a]
       simp only [Function.update_of_ne (Ne.symm hi), map_smul, smul_eq_mul, mul_assoc, mul_smul]
     )
- def contraction [DecidableEq ι] (q : ι) (l : ∀ i, V i →ₗ[ℂ] ℂ) := PiTensorProduct.lift (contractionMultilinear q l)
- theorem contraction_mapSingle [DecidableEq ι] (q : ι) (l : ∀ i, V i →ₗ[ℂ] ℂ) (A : V q →ₗ[ℂ] V q) (x : PiTensorProduct ℂ V) :
+ def contraction := PiTensorProduct.lift (contractionMultilinear q l)
+ theorem contraction_mapSingle (A : V q →ₗ[ℂ] V q) (x : PiTensorProduct ℂ V) :
   contraction q l (PiTensorProduct.map (Function.update (fun i => LinearMap.id : ∀ i, V i →ₗ[ℂ] V i) q A) x) = A (contraction q l x) := by
   induction x using PiTensorProduct.induction_on with
   | smul_tprod c x =>
@@ -75,32 +79,28 @@ variable {ι : Type} [Fintype ι] {V : ι → Type} [∀ i, AddCommGroup (V i)] 
     rw [map_smul]
   | add x y hx hy => simp only [map_add, hx, hy]
 
+end
+
 section Actual
 open scoped NumberField
 open NumberField
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Cover → Cover
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Fiber → Fiber
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Source → Source
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductCover → ProductCover
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductFiber → ProductFiber
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductFunctions → ProductFunctions
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming productCovariance → productCovariance
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductLocalFixedLevel renaming localFixedLevel → localFixedLevel
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductLocalFixedLevel renaming localSampling → localSampling
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductLocalFixedLevel renaming LocalCosets → LocalCosets
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductFixedLevel renaming productFixedLevel → productFixedLevel
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation (Cover Fiber Source ProductCover ProductFiber ProductFunctions productCovariance)
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductLocalFixedLevel (localFixedLevel localSampling LocalCosets)
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductFixedLevel (productFixedLevel)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (M : FourierContinuation.SourceReconstruction.InducingData F ζ hζ)
-variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
+    (M : FourierContinuation.SourceReconstruction.InducingData F ζ hζ)
+    (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
 
- def sliceFunction (q : S) (l : ∀ i : S, Fiber F ζ hζ M S i →ₗ[ℂ] ℂ)
-    (g : ProductCover F ζ hζ S) (f : ProductFunctions F ζ hζ M S) :
+ section
+
+variable (q : S) (l : ∀ i : S, Fiber F ζ hζ M S i →ₗ[ℂ] ℂ) (g : ProductCover F ζ hζ S)
+    (f : ProductFunctions F ζ hζ M S)
+
+def sliceFunction :
     Cover F ζ hζ S q → Fiber F ζ hζ M S q :=
   fun a => contraction q l (f (Function.update g q a))
 
  theorem sliceFunction_covariant
-    (q : S) (l : ∀ i : S, Fiber F ζ hζ M S i →ₗ[ℂ] ℂ)
-    (g : ProductCover F ζ hζ S) (f : ProductFunctions F ζ hζ M S)
     (hf : f ∈ productCovariance F ζ hζ M S)
     (b : (M q.val).borel.B) (a : Cover F ζ hζ S q) :
     sliceFunction F ζ hζ M S q l g f (b * a) =
@@ -129,18 +129,22 @@ variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
       rfl
   unfold sliceFunction
   rw [← hg, hf bs (Function.update g q a), hA]
-  exact contraction_mapSingle (V := Fiber F ζ hζ M S) q l
+  exact contraction_mapSingle q l
     (KPLocalPrincipalSeries.inducingAction (M q.val).borel
       (M q.val).polarization .plus 0 b) (f (Function.update g q a))
 
- theorem sliceFunction_fixed
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
-    (q : S) (l : ∀ i : S, Fiber F ζ hζ M S i →ₗ[ℂ] ℂ)
+end
+
+ section
+
+variable (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S) (l : ∀ i : S, Fiber F ζ hζ M S i →ₗ[ℂ] ℂ)
     (g : ProductCover F ζ hζ S) (f : productFixedLevel F ζ hζ M S U)
+
+theorem sliceFunction_fixed
     (j : Cover F ζ hζ S q) (hj : j ∈ U q) (a : Cover F ζ hζ S q) :
     sliceFunction F ζ hζ M S q l g f.val (a * j) =
       sliceFunction F ζ hζ M S q l g f.val a := by
-  let js : ProductCover F ζ hζ S := Function.update (fun i => 1) q j
+  let js := Function.update (fun i => 1) q j
   have hjs : ∀ i, js i ∈ U i := by
     intro i
     by_cases hi : i = q
@@ -156,13 +160,10 @@ variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
   unfold sliceFunction
   rw [← hg, f.property.2 js hjs]
 
- def covariantSlice
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
-    (q : S) (l : ∀ i : S, Fiber F ζ hζ M S i →ₗ[ℂ] ℂ)
-    (g : ProductCover F ζ hζ S) (f : productFixedLevel F ζ hζ M S U) :
+ def covariantSlice :
     localFixedLevel F ζ hζ M S U q := by
   let φ := sliceFunction F ζ hζ M S q l g f.val
-  have hφ : ∀ j ∈ U q, ∀ a, φ (a * j) = φ a :=
+  have hφ :=
     sliceFunction_fixed F ζ hζ M S U q l g f
   refine ⟨⟨φ, ?_⟩, hφ⟩
   refine ⟨sliceFunction_covariant F ζ hζ M S q l g f.val f.property.1, ?_⟩
@@ -171,13 +172,7 @@ variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
   funext a
   exact hφ j hj a
 
-private theorem covariantSlice_formula
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
-    (q : S) (l : ∀ i : S, Fiber F ζ hζ M S i →ₗ[ℂ] ℂ)
-    (g : ProductCover F ζ hζ S) (f : productFixedLevel F ζ hζ M S U)
-    (a : Cover F ζ hζ S q) :
-    (covariantSlice F ζ hζ M S U q l g f).val.val a =
-      contraction q l (f.val (Function.update g q a)) := rfl
+end
 
  theorem contractedColumn_mem_sampling_range
     (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
@@ -188,7 +183,7 @@ private theorem covariantSlice_formula
       (localSampling F ζ hζ M S U q).range := by
   refine LinearMap.mem_range.mpr ⟨covariantSlice F ζ hζ M S U q l g f, ?_⟩
   funext c
-  exact covariantSlice_formula F ζ hζ M S U q l g f _
+  exact rfl
 
 end Actual
 end DedekindZetaZeroFree.NativeScalarFiniteProductCovariantSlices

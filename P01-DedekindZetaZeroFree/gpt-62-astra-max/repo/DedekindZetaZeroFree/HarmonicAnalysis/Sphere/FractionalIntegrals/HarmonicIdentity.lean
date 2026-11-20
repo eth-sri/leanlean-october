@@ -57,45 +57,17 @@ theorem fractionalEigenvalue_product (ℓ : ℕ) :
     field_simp
     <;> ring
 
-private lemma sphere_ne_zero (x : Sphere) : (x : Ambient) ≠ 0 := by
-  have h : ‖(x : Ambient)‖ = 1 := by simpa [Metric.mem_sphere, dist_zero_right] using x.property
-  intro h0
-  simp [h0] at h
+private alias sphere_ne_zero := RotationCalculus.sphere_ne_zero
 
 private lemma smooth_diff (F : Sphere → ℂ) (hF : IsSphereSmooth F) (x : Sphere) :
-    DifferentiableAt ℝ (radialExtension F) (x : Ambient) := by
-  exact (hF.differentiableOn (by simp)).differentiableAt
-    (isOpen_ne.mem_nhds (sphere_ne_zero x))
+    DifferentiableAt ℝ (radialExtension F) (x : Ambient) := by apply @RotationCalculus.radial_diff_at <;> assumption
 
-private lemma harmonic_rotationVector_smooth (i : Fin 3) :
-    ContDiff ℝ (⊤ : ℕ∞) (rotationVector i) := by
-  unfold rotationVector
-  change ContDiff ℝ (⊤ : ℕ∞) (WithLp.toLp 2 ∘
-    (fun x : Ambient => fun j : Fin 3 => if j = i + 1 then -x (i + 2) else if j = i + 2 then x (i + 1) else 0))
-  apply PiLp.contDiff_toLp.comp
-  apply contDiff_pi.mpr
-  intro j
-  split_ifs
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i + 2)).contDiff.neg
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i + 1)).contDiff
-  · exact contDiff_const
+private alias harmonic_rotationVector_smooth := rotationVector_smooth
 
-private lemma normalize_smooth :
-    ContDiffOn ℝ (⊤ : ℕ∞) (fun x : Ambient => ‖x‖⁻¹ • x) {x | x ≠ 0} := by
-  exact ((contDiff_id.contDiffOn.norm ℝ (by intro x hx; exact hx)).inv
-    (by intro x hx; exact norm_ne_zero_iff.mpr hx)).smul contDiff_id.contDiffOn
+private alias normalize_smooth := RotationCalculus.normalize_smooth
 
 private lemma rotation_smooth (i : Fin 3) (F : Sphere → ℂ) (hF : IsSphereSmooth F) :
-    IsSphereSmooth (rotationDeriv i F) := by
-  have hd := hF.fderiv_of_isOpen isOpen_ne (m := (⊤ : ℕ∞)) (by simp)
-  have hg := hd.clm_apply (harmonic_rotationVector_smooth i).contDiffOn
-  have hn : Set.MapsTo (fun x : Ambient => ‖x‖⁻¹ • x) {x | x ≠ 0} {x | x ≠ 0} := by
-    intro x hx
-    exact smul_ne_zero (inv_ne_zero (norm_ne_zero_iff.mpr hx)) hx
-  apply (hg.comp normalize_smooth hn).congr
-  intro x hx
-  change x ≠ 0 at hx
-  simp only [Function.comp_apply, radialExtension, dif_pos hx, rotationDeriv]
+    IsSphereSmooth (rotationDeriv i F) := by apply @rotationDeriv_smooth <;> assumption
 
 private lemma radial_sum {ι : Type*} (I : Finset ι) (F : ι → Sphere → ℂ) :
     radialExtension (fun x => ∑ i ∈ I, F i x) = ∑ i ∈ I, radialExtension (F i) := by
@@ -105,16 +77,22 @@ private lemma radial_sum {ι : Type*} (I : Finset ι) (F : ι → Sphere → ℂ
   · simp [radialExtension, hx]
   · simp [radialExtension, hx]
 
-private lemma radial_mul (c : ℂ) (F : Sphere → ℂ) :
+section
+
+variable (c : ℂ) (F : Sphere → ℂ)
+
+private lemma radial_mul :
     radialExtension (fun x => c * F x) = c • radialExtension F := by
   funext x
   by_cases hx : x = 0 <;> simp [radialExtension, hx]
 
-private lemma mul_smooth (c : ℂ) (F : Sphere → ℂ) (hF : IsSphereSmooth F) :
+private lemma mul_smooth (hF : IsSphereSmooth F) :
     IsSphereSmooth (fun x => c * F x) := by
   unfold IsSphereSmooth
   rw [radial_mul]
   exact contDiffOn_const.smul hF
+
+end
 
 private lemma rotation_sum {ι : Type*} (I : Finset ι) (F : ι → Sphere → ℂ)
     (hF : ∀ i ∈ I, IsSphereSmooth (F i)) (j : Fin 3) :
@@ -122,7 +100,7 @@ private lemma rotation_sum {ι : Type*} (I : Finset ι) (F : ι → Sphere → �
   classical
   funext x
   simp only [rotationDeriv, radial_sum]
-  rw [fderiv_sum (by intro i hi; exact smooth_diff _ (hF i hi) x)]
+  rw [fderiv_sum (fun i hi => smooth_diff _ (hF i hi) x)]
   simp
 
 private lemma rotation_mul (c : ℂ) (F : Sphere → ℂ) (hF : IsSphereSmooth F) (j : Fin 3) :
@@ -139,7 +117,7 @@ private lemma lap_sum {ι : Type*} (I : Finset ι) (F : ι → Sphere → ℂ)
   funext x
   simp only [positiveLaplacian, rotation_sum I F hF]
   have hh (j : Fin 3) := rotation_sum I (fun k => rotationDeriv j (F k))
-    (by intro k hk; exact rotation_smooth _ _ (hF k hk)) j
+    (fun k hk => rotation_smooth _ _ (hF k hk)) j
   simp only [hh]
   rw [Finset.sum_comm]
   simp
@@ -151,6 +129,8 @@ private lemma lap_mul (c : ℂ) (F : Sphere → ℂ) (hF : IsSphereSmooth F) :
   simp only [rotation_mul c (rotationDeriv _ F) (rotation_smooth _ _ hF)]
   simp [Finset.mul_sum]
 
+alias HarmonicIdentity.lap_mul := lap_mul
+
 private lemma integral_sum {ι : Type*} (I : Finset ι) (F : ι → Sphere → ℂ)
     (hF : ∀ i ∈ I, IsSphereSmooth (F i)) (α : ℝ) (hα : 0 < α) :
     fractionalIntegral α (fun x => ∑ i ∈ I, F i x) = fun x => ∑ i ∈ I, fractionalIntegral α (F i) x := by
@@ -158,14 +138,14 @@ private lemma integral_sum {ι : Type*} (I : Finset ι) (F : ι → Sphere → �
   funext x
   simp only [fractionalIntegral, Finset.mul_sum]
   exact MeasureTheory.integral_finset_sum I
-    (by intro i hi; exact (fractionalIntegral_rotation α hα _ (hF i hi)).1 x)
+    (fun i hi => (fractionalIntegral_rotation α hα _ (hF i hi)).1 x)
 
 private lemma integral_mul (c : ℂ) (F : Sphere → ℂ) (α : ℝ) :
     fractionalIntegral α (fun x => c * F x) = fun x => c * fractionalIntegral α F x := by
   funext x
   simp only [fractionalIntegral]
   simp_rw [show ∀ y : Sphere, (fractionalKernel α x y : ℂ) * (c * F y) =
-    c • ((fractionalKernel α x y : ℂ) * F y) by intro y; simp [mul_left_comm]]
+    c • ((fractionalKernel α x y : ℂ) * F y) by simp [mul_left_comm]]
   rw [MeasureTheory.integral_smul]
   rfl
 
@@ -174,7 +154,7 @@ theorem fractional_polynomial_identity (p : MvPolynomial (Fin 3) ℂ) :
     (fun x => G x + (9 / 2 : ℂ) * positiveLaplacian G x) = polynomialSphere p := by
   classical
   obtain ⟨I, h, hh, he⟩ := finite_fischer_spanning p
-  have hp : polynomialSphere p = fun x => ∑ ℓ ∈ I, polynomialSphere (h ℓ) x := funext he
+  have hp := funext he
   have hf (ℓ : ℕ) := polynomialSphere_smooth (h ℓ)
   have hi : fractionalIntegral (1 / 3) (polynomialSphere p) =
       fun x => ∑ ℓ ∈ I, (fractionalEigenvalue (1 / 3) ℓ : ℂ) * polynomialSphere (h ℓ) x := by
@@ -186,14 +166,14 @@ theorem fractional_polynomial_identity (p : MvPolynomial (Fin 3) ℂ) :
   have hg : fractionalIntegral (2 / 3) (fractionalIntegral (1 / 3) (polynomialSphere p)) =
       fun x => ∑ ℓ ∈ I, ((fractionalEigenvalue (1 / 3) ℓ : ℂ) *
         (fractionalEigenvalue (2 / 3) ℓ : ℂ)) * polynomialSphere (h ℓ) x := by
-    rw [hi, integral_sum I _ (by intro ℓ hℓ; exact mul_smooth _ _ (hf ℓ)) _ (by norm_num)]
+    rw [hi, integral_sum I _ (by solve_by_elim [mul_smooth]) _ (by norm_num)]
     funext x
     apply Finset.sum_congr rfl
     intro ℓ hℓ
     rw [integral_mul, (fractionalIntegral_harmonic ℓ _ (hh ℓ hℓ)).1 _ (by norm_num) (by norm_num)]
     exact (mul_assoc _ _ _).symm
   dsimp only
-  rw [hg, lap_sum I _ (by intro ℓ hℓ; exact mul_smooth _ _ (hf ℓ))]
+  rw [hg, lap_sum I _ (by solve_by_elim [mul_smooth])]
   funext x
   rw [Finset.mul_sum, ← Finset.sum_add_distrib, hp]
   apply Finset.sum_congr rfl

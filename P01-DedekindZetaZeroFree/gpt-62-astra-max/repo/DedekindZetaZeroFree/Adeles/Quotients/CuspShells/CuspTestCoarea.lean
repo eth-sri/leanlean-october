@@ -18,16 +18,19 @@ open KPCompactStabilizerHaarSources KPActualComponentHaarSources
 attribute [local instance] KPCompactStabilizerHaarSources.groupMeasurableSpace
   KPCompactStabilizerHaarSources.groupBorelSpace
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
 local instance : MulAction (KPCuspArithmetic.PGL2 F) (KPArch.Space (KPCuspLogShape.dimension F)) :=
   KPCuspSiegel.instMulActionPGL2SpaceDimension F
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming actual_finiteOrbit_positive_finite → actual_finiteOrbit_positive_finite
+open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources (actual_finiteOrbit_positive_finite)
+
+section
+
+variable
+    (e : KPSmoothActualFlowData.GInfinity F ≃ₜ (KPArch.Space (KPCuspLogShape.dimension F) × K (KPCuspLogShape.dimension F)))
 
 private theorem point_continuous
-    (e : KPSmoothActualFlowData.GInfinity F ≃ₜ
-      (KPArch.Space (KPCuspLogShape.dimension F) × K (KPCuspLogShape.dimension F)))
     (j : NativeCusp F ζ hζ R P S V) :
     Continuous (fun w : KPCuspCharts.Coordinates F ×
       (K (KPCuspLogShape.dimension F) × KPFiniteCuspAtlas.FiniteCover F ζ hζ) =>
@@ -42,8 +45,6 @@ private theorem point_continuous
     (continuous_subtype_val.comp continuous_snd.snd)
 
 private theorem end_on_point
-    (e : KPSmoothActualFlowData.GInfinity F ≃ₜ
-      (KPArch.Space (KPCuspLogShape.dimension F) × K (KPCuspLogShape.dimension F)))
     (heBase : ∀ a, (e a).1 = KPMsFixedHaarDisintegration.archBasepoint F a)
     (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
     (p : KPCuspCharts.Cross F) (t : ℝ)
@@ -67,6 +68,8 @@ private theorem end_on_point
     rw [hu]
     group
 
+end
+
 theorem cusp_test_coefficient
     (j : NativeCusp F ζ hζ R P S V)
     (φ : FullOmega F ζ hζ (nativeDatum F ζ hζ) → ℝ≥0∞) (hφ : Measurable φ) :
@@ -74,7 +77,7 @@ theorem cusp_test_coefficient
       ENNReal.ofReal (2 * Y) *
         (∫⁻ x in cuspShell F ζ hζ R P S V j Y,
           φ (fullCoordinate F ζ hζ R P S V j Y x) ∂ R.quotientHaar) = a := by
-  obtain ⟨ν,e,c,hν,hνsf,hc,heBase,heFiber,hcoarea⟩ :=
+  obtain ⟨ν, e, c, hν, hνsf, heBase, heFiber, hcoarea⟩ :=
     KPMsNativeWeightedShapeSource.NativeCoarea.actual_full_cusp_coarea S V j
   letI := hν
   letI := hνsf

@@ -33,8 +33,9 @@ private theorem finiteBall_fractionalIdeal (v : HeightOneSpectrum (𝓞 F)) (m :
       apply (FractionalIdeal.mem_spanSingleton _).mpr
       exact ⟨⟨z, hz⟩, by simp [Algebra.smul_def, mul_comm]⟩
 
-theorem localScaledBallDual_compact_open_fractionalIdeals
-    (v : HeightOneSpectrum (𝓞 F)) (b : (v.adicCompletion F)ˣ) (m : ℤ) :
+variable (v : HeightOneSpectrum (𝓞 F)) (b : (v.adicCompletion F)ˣ) (m : ℤ)
+
+theorem localScaledBallDual_compact_open_fractionalIdeals :
     IsCompact (finiteCompletionBall F v m : Set (v.adicCompletion F)) ∧
     IsOpen (finiteCompletionBall F v m : Set (v.adicCompletion F)) ∧
     IsCompact (localScaledBallDual F v b m : Set (v.adicCompletion F)) ∧
@@ -50,16 +51,13 @@ theorem localScaledBallDual_compact_open_fractionalIdeals
     isCompact_finiteCompletionBall F v _, isOpen_finiteCompletionBall F v _,
     finiteBall_fractionalIdeal F v m, finiteBall_fractionalIdeal F v _⟩
 
-theorem localScaledBallDual_eventually_le_expanding_ball
-    (v : HeightOneSpectrum (𝓞 F)) (b : (v.adicCompletion F)ˣ) (m : ℤ) :
+theorem localScaledBallDual_eventually_le_expanding_ball :
     ∃ N : ℕ, ∀ n : ℕ, N ≤ n →
       finiteCompletionBall F v m ≤ finiteCompletionBall F v (-(n : ℤ)) ∧
       localScaledBallDual F v b m ≤ finiteCompletionBall F v (-(n : ℤ)) := by
   let k := -m - (localDifferentExponent F v : ℤ) - finiteCompletionUnitOrder F v b
   refine ⟨(max (-m) (-k)).toNat, ?_⟩
   intro n hn
-  have hbound := Int.self_le_toNat (max (-m) (-k))
-  have hn' : ((max (-m) (-k)).toNat : ℤ) ≤ (n : ℤ) := by exact_mod_cast hn
   rw [localScaledBallDual_eq_finiteCompletionBall]
   constructor <;> apply (finiteCompletionBall_le_iff F v _ _).mpr <;> dsimp [k] at * <;> omega
 

@@ -14,10 +14,10 @@ open NumberField MomentSources KPGlobalTorusFiniteStages FaithfulSource.Repaired
 open KPLocalPrincipalSeries KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 open LiteralSource.CofactorChamber KPAdelicCoverRestrictedProduct KPLocalExceptionalConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -35,13 +35,11 @@ theorem compact_split_tail (K : Set (FaithfulSource.RepairedInducing.Raw R)) (hK
   · exact Finset.subset_union_left.trans (Finset.subset_union_left.trans Finset.subset_union_left)
   · exact Finset.subset_union_right.trans (Finset.subset_union_left.trans Finset.subset_union_left)
   · intro a ha q hq
-    have hqC : q ∉ C.exceptional := by intro h; exact hq (by simp [Q,h])
-    have hqT : q ∉ T := by intro h; exact hq (by simp [Q,h])
-    have hqB : ¬ Bad F q := by intro h; exact hq (by simp [Q,h])
-    have hk := hT a ha q hqT
+    have hqB : ¬ Bad F q := fun h => hq (by simp [Q,h])
+    have hk := hT a ha q (fun h => hq (by simp [Q,h]))
     simp only [finiteCompact, dite_eq_right hqB, MonoidHom.mem_range] at hk
     obtain ⟨k,hk⟩ := hk
-    obtain ⟨ht,hc⟩ := C.actual_compact q hqC
+    obtain ⟨ht,hc⟩ := C.actual_compact q (fun h => hq (by simp [Q,h]))
     change _ ∈ ((C.canonical q).iwasawa.compact.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q))
     rw [hc]
     refine ⟨k, ?_⟩

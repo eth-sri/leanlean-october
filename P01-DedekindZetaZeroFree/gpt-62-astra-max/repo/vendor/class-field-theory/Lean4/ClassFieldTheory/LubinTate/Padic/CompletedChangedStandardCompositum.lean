@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -64,11 +60,9 @@ noncomputable instance
     FiniteDimensional ℚ_[p]
       (padicCompletedStandardLevelField p n) := by
   let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-  let : FiniteDimensional ℚ_[p]
-      (standardLubinTateLevelField hπ n) :=
+  let :=
     standardLubinTateLevelField_finiteDimensional hπ n
-  let e := padicStandardLevelEquivCompletedStandardLevelField p n
-  exact e.toLinearEquiv.finiteDimensional
+  exact (padicStandardLevelEquivCompletedStandardLevelField p n).toLinearEquiv.finiteDimensional
 
 noncomputable instance
     padicCompletedStandardLevelField_isAbelianGalois
@@ -76,9 +70,9 @@ noncomputable instance
     IsAbelianGalois ℚ_[p]
       (padicCompletedStandardLevelField p n) := by
   let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-  let : IsAbelianGalois ℚ_[p] (standardLubinTateLevelField hπ n) :=
+  let :=
     standardLubinTateLevelField_isAbelianGalois (padicLocalField p)
-      (π := padicIntEquivValuationSubring p (p : ℤ_[p])) hπ n
+       hπ n
   exact IsAbelianGalois.of_algHom
     (padicStandardLevelEquivCompletedStandardLevelField p n).symm.toAlgHom
 
@@ -91,11 +85,9 @@ noncomputable instance
   let hπ :=
     standardLubinTateChangedUniformizer_isUniformizer
       (padicMultiplicativeLubinTateSeries_isUniformizer p) u
-  let : FiniteDimensional ℚ_[p]
-      (standardLubinTateLevelField hπ n) :=
+  let :=
     standardLubinTateLevelField_finiteDimensional hπ n
-  let e := padicChangedUniformizerLevelEquivCompletedFixedField p u n
-  exact e.toLinearEquiv.finiteDimensional
+  exact (padicChangedUniformizerLevelEquivCompletedFixedField p u n).toLinearEquiv.finiteDimensional
 
 noncomputable instance
     padicCompletedChangedUniformizerFixedField_isAbelianGalois
@@ -165,11 +157,11 @@ noncomputable instance
     (padicCompletedChangedUniformizerFixedField p u n)
     (padicCompletedStandardChangedCompositum p u n)
 
+variable (p : ℕ) [Fact p.Prime] (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
+
 /-- The standard finite level embedded into the finite standard/changed
 compositum. -/
-noncomputable def padicStandardLevelToCompletedChangedCompositum
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+noncomputable def padicStandardLevelToCompletedChangedCompositum :
     standardLubinTateLevelField
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n
       →ₐ[ℚ_[p]]
@@ -186,9 +178,7 @@ noncomputable def padicStandardLevelToCompletedChangedCompositum
 /-- The changed fixed field included into the finite standard/changed
 compositum. -/
 noncomputable def
-    padicCompletedChangedFixedFieldToStandardChangedCompositum
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+    padicCompletedChangedFixedFieldToStandardChangedCompositum :
     padicCompletedChangedUniformizerFixedField p u n
       →ₐ[ℚ_[p]]
         padicCompletedStandardChangedCompositum p u n :=
@@ -197,9 +187,7 @@ noncomputable def
 /-- The inverse-unit Frobenius inverse carries the standard completed copy
 to itself. -/
 theorem
-    padicCompletedChangedUniformizerFrobenius_symm_map_standard_le
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+    padicCompletedChangedUniformizerFrobenius_symm_map_standard_le :
     (padicCompletedStandardLevelField p n).map
         (padicCompletedChangedUniformizerFrobeniusAlgEquiv
           p u n).symm.toAlgHom ≤
@@ -229,8 +217,6 @@ theorem
 defining Frobenius lift. -/
 theorem
     padicCompletedChangedUniformizerFrobenius_symm_fixed
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
     (x : padicCompletedChangedUniformizerFixedField p u n) :
     (padicCompletedChangedUniformizerFrobeniusAlgEquiv p u n).symm
       (x : padicCompletedLevelField p n) =
@@ -250,21 +236,12 @@ theorem
       (padicCompletedChangedUniformizerFrobeniusAlgEquiv p u n)
       (Subgroup.mem_zpowers
         (padicCompletedChangedUniformizerFrobeniusAlgEquiv p u n))
-  calc
-    (padicCompletedChangedUniformizerFrobeniusAlgEquiv p u n).symm
-        (x : padicCompletedLevelField p n) =
-      (padicCompletedChangedUniformizerFrobeniusAlgEquiv p u n).symm
-        (padicCompletedChangedUniformizerFrobeniusAlgEquiv p u n x) := by
-          rw [hxFixed]
-    _ = x :=
-      (padicCompletedChangedUniformizerFrobeniusAlgEquiv p u n).symm_apply_apply x
+  simpa [hxFixed] using (padicCompletedChangedUniformizerFrobeniusAlgEquiv p u n).symm_apply_apply x
 
 /-- The inverse defining Frobenius carries the changed fixed field to
 itself. -/
 theorem
-    padicCompletedChangedUniformizerFrobenius_symm_map_fixedField_le
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+    padicCompletedChangedUniformizerFrobenius_symm_map_fixedField_le :
     (padicCompletedChangedUniformizerFixedField p u n).map
         (padicCompletedChangedUniformizerFrobeniusAlgEquiv
           p u n).symm.toAlgHom ≤
@@ -274,18 +251,14 @@ theorem
   change
     (padicCompletedChangedUniformizerFrobeniusAlgEquiv p u n).symm x ∈
       padicCompletedChangedUniformizerFixedField p u n
-  have hfixed :=
-    padicCompletedChangedUniformizerFrobenius_symm_fixed p u n
-      ⟨x, hx⟩
-  rw [hfixed]
+  rw [(padicCompletedChangedUniformizerFrobenius_symm_fixed p u n
+    ⟨x, hx⟩)]
   exact hx
 
 /-- The inverse defining Frobenius preserves the finite standard/changed
 compositum. -/
 theorem
-    padicCompletedChangedUniformizerFrobenius_symm_map_compositum_le
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+    padicCompletedChangedUniformizerFrobenius_symm_map_compositum_le :
     (padicCompletedStandardChangedCompositum p u n).map
         (padicCompletedChangedUniformizerFrobeniusAlgEquiv
           p u n).symm.toAlgHom ≤
@@ -300,9 +273,7 @@ theorem
 
 /-- The inverse defining Frobenius restricted to the genuine finite
 standard/changed compositum. -/
-noncomputable def padicCompletedChangedUniformizerArtinCandidateAlgHom
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+noncomputable def padicCompletedChangedUniformizerArtinCandidateAlgHom :
     padicCompletedStandardChangedCompositum p u n
       →ₐ[ℚ_[p]]
         padicCompletedStandardChangedCompositum p u n :=
@@ -317,9 +288,7 @@ noncomputable def padicCompletedChangedUniformizerArtinCandidateAlgHom
       exact ⟨x, x.property, rfl⟩)
 
 /-- The finite Artin candidate is an automorphism. -/
-noncomputable def padicCompletedChangedUniformizerArtinCandidate
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+noncomputable def padicCompletedChangedUniformizerArtinCandidate :
     padicCompletedStandardChangedCompositum p u n
       ≃ₐ[ℚ_[p]]
         padicCompletedStandardChangedCompositum p u n := by
@@ -336,8 +305,6 @@ unit-parameter automorphism. -/
 @[simp]
 theorem
     padicCompletedChangedUniformizerArtinCandidate_standardLevel
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
     (x :
       standardLubinTateLevelField
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n) :
@@ -358,8 +325,6 @@ theorem
 @[simp]
 theorem
     padicCompletedChangedUniformizerArtinCandidate_fixedField
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
     (x : padicCompletedChangedUniformizerFixedField p u n) :
     padicCompletedChangedUniformizerArtinCandidate p u n
         (padicCompletedChangedFixedFieldToStandardChangedCompositum
@@ -373,9 +338,7 @@ theorem
 /-- The finite Artin candidate as an automorphism over the changed fixed
 field that it fixes pointwise. -/
 noncomputable def
-    padicCompletedChangedUniformizerRelativeArtinCandidate
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+    padicCompletedChangedUniformizerRelativeArtinCandidate :
     padicCompletedStandardChangedCompositum p u n
       ≃ₐ[padicCompletedChangedUniformizerFixedField p u n]
         padicCompletedStandardChangedCompositum p u n where
@@ -388,8 +351,6 @@ noncomputable def
 finite candidate. -/
 @[simp]
 theorem padicCompletedChangedUniformizerRelativeArtinCandidate_apply
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
     (x : padicCompletedStandardChangedCompositum p u n) :
     padicCompletedChangedUniformizerRelativeArtinCandidate p u n x =
       padicCompletedChangedUniformizerArtinCandidate p u n x :=

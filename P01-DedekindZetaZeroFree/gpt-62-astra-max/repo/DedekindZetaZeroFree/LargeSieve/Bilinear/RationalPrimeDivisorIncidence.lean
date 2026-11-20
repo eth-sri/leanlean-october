@@ -91,47 +91,34 @@ theorem rationalPrime_divisor_incidence {ι : Type*} (S : Finset ι)
   classical
   set T : Finset ι := S.filter (fun i => p i ∣ n) with hT
   have hTS : T ⊆ S := by rw [hT]; exact Finset.filter_subset _ _
-  have hprime : ∀ i ∈ T, (p i).Prime := fun i hi => (hp i (hTS hi)).1
-  have hlarge : ∀ i ∈ T, Z ^ (δ / d) < (p i : ℝ) := fun i hi => (hp i (hTS hi)).2
-  have hdvd : ∀ i ∈ T, p i ∣ n := fun i hi => (Finset.mem_filter.mp hi).2
-
+  have hprime := fun i hi => (hp i (hTS hi)).1
   have hprod_dvd : (∏ i ∈ T, p i) ∣ n := by
-    refine prod_dvd_of_pairwise_coprime T p n ?_ hdvd
+    refine prod_dvd_of_pairwise_coprime T p n ?_ (fun i hi => (Finset.mem_filter.mp hi).2)
     intro i hi j hj hij
-    have hpi := hprime i hi
-    have hpj := hprime j hj
-    have hne : p i ≠ p j := fun h => hij (hinj (hTS hi) (hTS hj) h)
-    exact (Nat.coprime_primes hpi hpj).mpr hne
+    exact (Nat.coprime_primes (hprime i hi) (hprime j hj)).mpr (fun h => hij (hinj (hTS hi) (hTS hj) h))
 
   have hZ1 : (1 : ℝ) < Z := by linarith
   have hZpos : (0 : ℝ) < Z := by linarith
-  have hdpos : (0 : ℝ) < d := by linarith
-  have hδdpos : 0 < δ / d := div_pos hδ hdpos
   set t : ℝ := Z ^ (δ / d) with ht
-  have ht1 : 1 < t := Real.one_lt_rpow hZ1 hδdpos
-  have htpos : 0 < t := lt_trans zero_lt_one ht1
   have hprod_ge : t ^ T.card ≤ ∏ i ∈ T, (p i : ℝ) := by
     have h : (∏ i ∈ T, t) ≤ ∏ i ∈ T, (p i : ℝ) :=
-      Finset.prod_le_prod₀ (fun i _ => htpos.le)
-        (fun i hi => le_of_lt (hlarge i hi))
+      Finset.prod_le_prod₀ (fun i _ => (lt_trans zero_lt_one (Real.one_lt_rpow hZ1 (div_pos hδ (by linarith)))).le)
+        (fun i hi => le_of_lt ((fun i hi => (hp i (hTS hi)).2) i hi))
     rwa [Finset.prod_const] at h
   have hprod_le : (∏ i ∈ T, (p i : ℝ)) ≤ Z := by
-    have hnat : (∏ i ∈ T, p i) ≤ n := Nat.le_of_dvd (by omega) hprod_dvd
-    have hreal : (∏ i ∈ T, (p i : ℝ)) ≤ (n : ℝ) := by exact_mod_cast hnat
+    have hreal : (∏ i ∈ T, (p i : ℝ)) ≤ (n : ℝ) := by exact_mod_cast (Nat.le_of_dvd (by omega) hprod_dvd)
     linarith
-  have hkey : t ^ T.card ≤ Z := le_trans hprod_ge hprod_le
   have hrw : t ^ T.card = Z ^ ((δ / d) * (T.card : ℝ)) := by
     rw [← Real.rpow_natCast]
     rw [← Real.rpow_mul hZpos.le]
   have hle : (δ / d) * (T.card : ℝ) ≤ 1 := by
-    have h := hkey
+    have h := (le_trans hprod_ge hprod_le)
     rw [hrw] at h
     have h' : Z ^ ((δ / d) * (T.card : ℝ)) ≤ Z ^ (1 : ℝ) := by simpa using h
     exact (Real.rpow_le_rpow_left_iff hZ1).mp h'
   show (T.card : ℝ) ≤ d / δ
-  have hcard_eq : (T.card : ℝ) = (δ / d) * (T.card : ℝ) * (d / δ) := by
-    field_simp
-  calc (T.card : ℝ) = (δ / d) * (T.card : ℝ) * (d / δ) := hcard_eq
+  calc _ = (δ / d) * (T.card : ℝ) * (d / δ) := (by
+    field_simp)
     _ ≤ 1 * (d / δ) := mul_le_mul_of_nonneg_right hle (by positivity)
     _ = d / δ := one_mul _
 

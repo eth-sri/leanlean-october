@@ -14,7 +14,7 @@ namespace DedekindZetaZeroFree.EisensteinReferenceSections.FiniteSourceTopology
 open KPAdelicCoverRestrictedProduct KPGlobalTorusFiniteStages
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 
  def finiteProjection : RestrictedCover F ζ hζ →* RestrictedCover F ζ hζ :=
   RestrictedProduct.mapAlongMonoidHom
@@ -37,8 +37,7 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
     intro w
     rfl⟩
 
- theorem finiteQuotient_continuous : Continuous (finiteQuotient F ζ hζ) := by
-  exact ((QuotientGroup.continuous_mk.comp QuotientGroup.continuous_mk).comp
+ theorem finiteQuotient_continuous : Continuous (finiteQuotient F ζ hζ) := ((QuotientGroup.continuous_mk.comp QuotientGroup.continuous_mk).comp
     (finiteProjection_continuous F ζ hζ)).subtype_mk _
 
  theorem finite_scalar_locallyConstant : IsLocallyConstant
@@ -46,15 +45,10 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
   rw [IsLocallyConstant.iff_eventually_eq]
   intro g
   let U := SourceLevels.level F ζ hζ P C
-  have hc : Continuous (fun y : KPGlobalTorusFunctionData.finitePart F ζ hζ => g⁻¹*y) :=
-    continuous_const.mul continuous_id
   have he : ∀ᶠ y in nhds g, g⁻¹*y ∈ U.toOpenSubgroup :=
-    hc.continuousAt.preimage_mem_nhds (by simpa using U.toOpenSubgroup.isOpen.mem_nhds U.toOpenSubgroup.one_mem)
+    (continuous_const.mul continuous_id).continuousAt.preimage_mem_nhds (by simpa using U.toOpenSubgroup.isOpen.mem_nhds U.toOpenSubgroup.one_mem)
   filter_upwards [he] with y hy
-  have hmem : (g⁻¹*y).val ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U :=
-    Subgroup.mem_map.mpr ⟨g⁻¹*y, hy, rfl⟩
-  have hf := SourceLevels.scalar_fixed F ζ hζ P C g.val (g⁻¹*y).val hmem
-  simpa using hf
+  simpa using (SourceLevels.scalar_fixed F ζ hζ P C g.val (g⁻¹*y).val (Subgroup.mem_map.mpr ⟨g⁻¹*y, hy, rfl⟩))
 
  theorem finite_scalar_continuous : Continuous
     (fun g : KPGlobalTorusFunctionData.finitePart F ζ hζ => RawSource.scalarValue F ζ hζ P C g.val) :=

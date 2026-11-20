@@ -15,7 +15,11 @@ noncomputable def weightedMeasure (n : ℕ)
     Measure (EuclideanSpace ℝ (Fin n)) :=
   (volume.restrict Ω).withDensity (fun x => ENNReal.ofReal (w x))
 
-def equivariantL2 (n r : ℕ) (Γ : Type*)
+section
+
+variable (n r : ℕ) (Γ : Type*)
+
+def equivariantL2
     (μ : Measure (EuclideanSpace ℝ (Fin n)))
     (act : Γ → EuclideanSpace ℝ (Fin n) → EuclideanSpace ℝ (Fin n))
     (R : Γ → EuclideanSpace ℝ (Fin n) →
@@ -23,7 +27,7 @@ def equivariantL2 (n r : ℕ) (Γ : Type*)
     Set (Lp (EuclideanSpace ℂ (Fin r)) 2 μ) :=
   {f | ∀ γ : Γ, ∀ᵐ x ∂μ, f (act γ x) = R γ x (f x)}
 
-noncomputable def average (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
+noncomputable def average [Group Γ] [Fintype Γ]
     (Ω : Set (EuclideanSpace ℝ (Fin n)))
     (act : Γ → EuclideanSpace ℝ (Fin n) → EuclideanSpace ℝ (Fin n))
     (R : Γ → EuclideanSpace ℝ (Fin n) →
@@ -32,6 +36,8 @@ noncomputable def average (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
     EuclideanSpace ℝ (Fin n) → EuclideanSpace ℂ (Fin r) :=
   Ω.indicator (fun x => (Fintype.card Γ : ℂ)⁻¹ •
     ∑ γ : Γ, (R γ x).symm (h (act γ x)))
+
+end
 
 structure Data (n r : ℕ) (Γ : Type*) [Group Γ] where
   chart : Set (EuclideanSpace ℝ (Fin n))
@@ -56,19 +62,17 @@ structure Data (n r : ℕ) (Γ : Type*) [Group Γ] where
     (fun p : EuclideanSpace ℝ (Fin n) × EuclideanSpace ℂ (Fin r) =>
       cocycle γ p.1 p.2) (chart ×ˢ Set.univ)
 
-private theorem inverse_action (n r : ℕ) (Γ : Type*) [Group Γ]
-    (D : Data n r Γ) (γ : Γ) (x : EuclideanSpace ℝ (Fin n))
-    (hx : x ∈ D.chart) : D.act γ⁻¹ (D.act γ x) = x := by
-  rw [← D.act_mul γ⁻¹ γ x hx, inv_mul_cancel, D.act_one x hx]
-
 private theorem inverse_cocycle (n r : ℕ) (Γ : Type*) [Group Γ]
     (D : Data n r Γ) (γ : Γ) (x : EuclideanSpace ℝ (Fin n))
     (hx : x ∈ D.chart) (v : EuclideanSpace ℂ (Fin r)) :
     (D.cocycle γ x).symm v = D.cocycle γ⁻¹ (D.act γ x) v := by
-  have hc := D.cocycle_mul γ⁻¹ γ x hx ((D.cocycle γ x).symm v)
-  simpa [D.cocycle_one x hx] using hc
+  simpa [D.cocycle_one x hx] using (D.cocycle_mul γ⁻¹ γ x hx ((D.cocycle γ x).symm v))
 
-private theorem shifted_inverse_cocycle (n r : ℕ) (Γ : Type*) [Group Γ]
+section
+
+variable (n r : ℕ) (Γ : Type*) [Group Γ]
+
+private theorem shifted_inverse_cocycle
     (D : Data n r Γ) (γ δ : Γ) (x : EuclideanSpace ℝ (Fin n))
     (hx : x ∈ D.chart) (v : EuclideanSpace ℂ (Fin r)) :
     (D.cocycle γ (D.act δ x)).symm v =
@@ -77,7 +81,7 @@ private theorem shifted_inverse_cocycle (n r : ℕ) (Γ : Type*) [Group Γ]
   rw [LinearIsometryEquiv.apply_symm_apply,
     ← D.cocycle_mul γ δ x hx, LinearIsometryEquiv.apply_symm_apply]
 
-private theorem average_equivariant (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
+private theorem average_equivariant [Fintype Γ]
     (D : Data n r Γ) (h : EuclideanSpace ℝ (Fin n) → EuclideanSpace ℂ (Fin r))
     (δ : Γ) (x : EuclideanSpace ℝ (Fin n)) (hx : x ∈ D.chart) :
     average n r Γ D.chart D.act D.cocycle h (D.act δ x) =
@@ -92,17 +96,22 @@ private theorem average_equivariant (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype
   rw [shifted_inverse_cocycle n r Γ D γ δ x hx, ← D.act_mul γ δ x hx]
   rfl
 
- theorem ae_chart (n r : ℕ) (Γ : Type*) [Group Γ] (D : Data n r Γ) :
+ theorem ae_chart (D : Data n r Γ) :
     ∀ᵐ x ∂weightedMeasure n D.chart D.weight, x ∈ D.chart :=
   (ae_restrict_mem D.open_chart.measurableSet).filter_mono
     (withDensity_absolutelyContinuous _ _).ae_le
 
- noncomputable def term (n r : ℕ) (Γ : Type*) [Group Γ] (D : Data n r Γ) (γ : Γ)
-    (h : EuclideanSpace ℝ (Fin n) → EuclideanSpace ℂ (Fin r)) :=
+end
+
+ section
+
+variable (n r : ℕ) (Γ : Type*) [Group Γ] (D : Data n r Γ) (γ : Γ)
+    (h : EuclideanSpace ℝ (Fin n) → EuclideanSpace ℂ (Fin r))
+
+noncomputable def term :=
   D.chart.indicator (fun x => (D.cocycle γ x).symm (h (D.act γ x)))
 
- theorem term_memLp (n r : ℕ) (Γ : Type*) [Group Γ] (D : Data n r Γ)
-    (γ : Γ) (h : EuclideanSpace ℝ (Fin n) → EuclideanSpace ℂ (Fin r))
+ theorem term_memLp
     (hh : MemLp h 2 (weightedMeasure n D.chart D.weight)) :
     MemLp (term n r Γ D γ h) 2 (weightedMeasure n D.chart D.weight) := by
   classical
@@ -120,9 +129,8 @@ private theorem average_equivariant (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype
   have hcomp := hh.comp_measurePreserving (D.invariant_measure γ)
   have ht : AEStronglyMeasurable (term n r Γ D γ h)
       (weightedMeasure n D.chart D.weight) := by
-    have hm := (hB.comp_aemeasurable
-      (aestronglyMeasurable_id.prodMk hcomp.aestronglyMeasurable).aemeasurable).aestronglyMeasurable
-    apply hm.congr
+    apply ((hB.comp_aemeasurable
+      (aestronglyMeasurable_id.prodMk hcomp.aestronglyMeasurable).aemeasurable).aestronglyMeasurable).congr
     filter_upwards [ae_chart n r Γ D] with x hx
     simp only [term, B, Function.comp_apply, id_eq, Set.indicator_of_mem hx,
       Set.indicator_of_mem (show (x, h (D.act γ x)) ∈ D.chart ×ˢ Set.univ from ⟨hx, Set.mem_univ _⟩)]
@@ -131,19 +139,24 @@ private theorem average_equivariant (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype
   filter_upwards [ae_chart n r Γ D] with x hx
   simp [term, Set.indicator_of_mem hx]
 
+end
+
  noncomputable def termLp (n r : ℕ) (Γ : Type*) [Group Γ]
     (D : Data n r Γ) (γ : Γ)
     (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight)) :=
   (term_memLp n r Γ D γ f (Lp.memLp f)).toLp (term n r Γ D γ f)
 
- theorem termLp_norm (n r : ℕ) (Γ : Type*) [Group Γ]
-    (D : Data n r Γ) (γ : Γ)
-    (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight)) :
+ section
+
+variable (n r : ℕ) (Γ : Type*) [Group Γ] (D : Data n r Γ) (γ : Γ)
+    (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight))
+
+theorem termLp_norm :
     ‖termLp n r Γ D γ f‖ = ‖f‖ := by
   rw [termLp, Lp.norm_toLp, Lp.norm_def]
   congr 1
   calc
-    eLpNorm (term n r Γ D γ f) 2 (weightedMeasure n D.chart D.weight) =
+    _ =
         eLpNorm (f ∘ D.act γ) 2 (weightedMeasure n D.chart D.weight) := by
       apply eLpNorm_congr_norm_ae (term_memLp n r Γ D γ f (Lp.memLp f)).aestronglyMeasurable
         ((Lp.memLp f).comp_measurePreserving (D.invariant_measure γ)).aestronglyMeasurable
@@ -152,13 +165,17 @@ private theorem average_equivariant (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype
     _ = _ := eLpNorm_comp_measurePreserving (Lp.memLp f).aestronglyMeasurable
       (D.invariant_measure γ)
 
- theorem termLp_coe (n r : ℕ) (Γ : Type*) [Group Γ]
-    (D : Data n r Γ) (γ : Γ)
-    (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight)) :
+ theorem termLp_coe :
     termLp n r Γ D γ f =ᵐ[weightedMeasure n D.chart D.weight]
       term n r Γ D γ f := MemLp.coeFn_toLp _
 
- noncomputable def termCLM (n r : ℕ) (Γ : Type*) [Group Γ]
+end
+
+ section
+
+variable (n r : ℕ) (Γ : Type*) [Group Γ]
+
+noncomputable def termCLM
     (D : Data n r Γ) (γ : Γ) :
     Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight) →L[ℂ]
       Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight) :=
@@ -190,15 +207,20 @@ private theorem average_equivariant (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype
         rw [hd, LinearIsometryEquiv.map_smul] }
     1 (fun f => by simp [termLp_norm])
 
- noncomputable def averageCLM (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
+ noncomputable def averageCLM [Fintype Γ]
     (D : Data n r Γ) :
     Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight) →L[ℂ]
       Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight) :=
   (Fintype.card Γ : ℂ)⁻¹ • ∑ γ : Γ, termCLM n r Γ D γ
 
-private theorem averageCLM_coe (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
-    (D : Data n r Γ)
-    (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight)) :
+end
+
+section
+
+variable (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ] (D : Data n r Γ)
+    (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight))
+
+private theorem averageCLM_coe :
     averageCLM n r Γ D f =ᵐ[weightedMeasure n D.chart D.weight]
       average n r Γ D.chart D.act D.cocycle f := by
   classical
@@ -213,15 +235,13 @@ private theorem averageCLM_coe (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
   simp only [ha, Pi.smul_apply, hb, Finset.sum_apply, hc, term, average,
     Set.indicator_of_mem hx]
 
-private theorem averageCLM_norm (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
-    (D : Data n r Γ)
-    (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight)) :
+private theorem averageCLM_norm :
     ‖averageCLM n r Γ D f‖ ≤ ‖f‖ := by
   classical
   simp only [averageCLM, ContinuousLinearMap.smul_apply, ContinuousLinearMap.sum_apply,
     norm_smul, norm_inv, Complex.norm_natCast]
   calc
-    (↑(Fintype.card Γ) : ℝ)⁻¹ * ‖∑ γ : Γ, termCLM n r Γ D γ f‖ ≤
+    _ ≤
         (↑(Fintype.card Γ) : ℝ)⁻¹ * ∑ γ : Γ, ‖termCLM n r Γ D γ f‖ :=
       mul_le_mul_of_nonneg_left (norm_sum_le _ _) (by positivity)
     _ = ‖f‖ := by
@@ -229,9 +249,7 @@ private theorem averageCLM_norm (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
       simp only [termLp_norm, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
       rw [← mul_assoc, inv_mul_cancel₀ (Nat.cast_ne_zero.mpr Fintype.card_ne_zero), one_mul]
 
-private theorem averageCLM_mem (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
-    (D : Data n r Γ)
-    (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight)) :
+private theorem averageCLM_mem :
     averageCLM n r Γ D f ∈ equivariantL2 n r Γ
       (weightedMeasure n D.chart D.weight) D.act D.cocycle := by
   intro γ
@@ -242,9 +260,7 @@ private theorem averageCLM_mem (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
   rw [ha, hb]
   exact average_equivariant n r Γ D f γ x hx
 
-private theorem averageCLM_fixed (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
-    (D : Data n r Γ)
-    (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight))
+private theorem averageCLM_fixed
     (hf : f ∈ equivariantL2 n r Γ (weightedMeasure n D.chart D.weight) D.act D.cocycle) :
     averageCLM n r Γ D f = f := by
   classical
@@ -260,23 +276,27 @@ private theorem averageCLM_fixed (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ
   rw [← Nat.cast_smul_eq_nsmul ℂ, smul_smul]
   simp [Fintype.card_ne_zero]
 
+end
+
 private theorem interior_finite (n r : ℕ) (Γ : Type*) [Group Γ] (D : Data n r Γ)
     {K : Set (EuclideanSpace ℝ (Fin n))} (hK : IsCompact K) (hKD : K ⊆ D.chart) :
     weightedMeasure n D.chart D.weight K < ⊤ := by
   rw [weightedMeasure, withDensity_apply _ hK.measurableSet,
     Measure.restrict_restrict hK.measurableSet, Set.inter_eq_left.mpr hKD]
-  have hi := (D.locally_integrable_weight.mono_set hKD).integrableOn_isCompact hK
-  apply lt_of_le_of_lt _ hi.hasFiniteIntegral
+  apply lt_of_le_of_lt _ ((D.locally_integrable_weight.mono_set hKD).integrableOn_isCompact hK).hasFiniteIntegral
   apply lintegral_mono
   intro x
   dsimp only
   rw [Real.enorm_eq_ofReal_abs]
   exact ENNReal.ofReal_le_ofReal (le_abs_self _)
 
-private theorem continuous_interior_approx (n r : ℕ) (Γ : Type*) [Group Γ]
-    (D : Data n r Γ)
-    (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight))
-    (ε : ℝ) (hε : 0 < ε) :
+section
+
+variable (n r : ℕ) (Γ : Type*) [Group Γ] (D : Data n r Γ)
+    (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight)) (ε : ℝ) (hε : 0 < ε)
+
+include hε in
+private theorem continuous_interior_approx :
     ∃ h : EuclideanSpace ℝ (Fin n) → EuclideanSpace ℂ (Fin r),
       Continuous h ∧ HasCompactSupport h ∧ tsupport h ⊆ D.chart ∧
       MemLp h 2 (weightedMeasure n D.chart D.weight) ∧
@@ -290,32 +310,28 @@ private theorem continuous_interior_approx (n r : ℕ) (Γ : Type*) [Group Γ]
     exact interior_finite n r Γ D (hK.image continuous_subtype_val)
       (Subtype.coe_image_subset _ _)⟩
   haveI : ν.Regular := inferInstance
-  have hmap : Measure.map (Subtype.val : D.chart → EuclideanSpace ℝ (Fin n)) ν = μ := by
+  have hmap : Measure.map Subtype.val ν = μ := by
     rw [hme.map_comap, Subtype.range_coe]
     exact Measure.restrict_eq_self_of_ae_mem
       ((ae_restrict_mem D.open_chart.measurableSet).filter_mono
         (withDensity_absolutelyContinuous _ _).ae_le)
   have hfsub : MemLp (fun x : D.chart => f x.1) 2 ν := by
-    have hh := (Lp.memLp f : MemLp (f : EuclideanSpace ℝ (Fin n) → _) 2 μ)
-    change MemLp (f : EuclideanSpace ℝ (Fin n) → _) 2 μ at hh
+    have hh := (Lp.memLp f : MemLp f 2 μ)
+    change MemLp f 2 μ at hh
     rw [← hmap] at hh
     exact (hme.memLp_map_measure_iff).mp hh
   obtain ⟨c, hccomp, hcerror, hccont, hcmem⟩ :=
     hfsub.exists_hasCompactSupport_eLpNorm_sub_le (by norm_num)
       (show (ENNReal.ofReal ε) ≠ 0 by positivity)
-  let h : EuclideanSpace ℝ (Fin n) → EuclideanSpace ℂ (Fin r) :=
+  let h :=
     Function.extend Subtype.val c 0
   have hext (x : D.chart) : h x.1 = c x := Subtype.val_injective.extend_apply c 0 x
-  have hcont : Continuous h := hccomp.continuous_extend_zero D.open_chart hccont
-  have hsupp : HasCompactSupport h := hccomp.extend_zero continuous_subtype_val
-  have hts : tsupport h ⊆ D.chart :=
-    (hccomp.tsupport_extend_zero_subset continuous_subtype_val).trans
-      (Subtype.coe_image_subset _ _)
   have hmem : MemLp h 2 μ := by
     rw [← hmap]
     apply hme.memLp_map_measure_iff.mpr
     exact hcmem.ae_eq (Filter.Eventually.of_forall fun x => (hext x).symm)
-  refine ⟨h, hcont, hsupp, hts, hmem, ?_⟩
+  refine ⟨h, (hccomp.continuous_extend_zero D.open_chart hccont), (hccomp.extend_zero continuous_subtype_val), ((hccomp.tsupport_extend_zero_subset continuous_subtype_val).trans
+    (Subtype.coe_image_subset _ _)), hmem, ?_⟩
   change eLpNorm (fun x => f x - h x) 2 μ ≤ ENNReal.ofReal ε
   have hm : AEStronglyMeasurable (fun x => f x - h x) μ :=
     ((Lp.memLp f).sub hmem).aestronglyMeasurable
@@ -326,10 +342,8 @@ private theorem continuous_interior_approx (n r : ℕ) (Γ : Type*) [Group Γ]
   funext x
   exact congrArg (fun v => f x.1 - v) (hext x)
 
-private theorem smooth_interior_approx (n r : ℕ) (Γ : Type*) [Group Γ]
-    (D : Data n r Γ)
-    (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight))
-    (ε : ℝ) (hε : 0 < ε) :
+include hε in
+private theorem smooth_interior_approx :
     ∃ (g : EuclideanSpace ℝ (Fin n) → EuclideanSpace ℂ (Fin r))
       (hg : MemLp g 2 (weightedMeasure n D.chart D.weight)),
       ContDiff ℝ ∞ g ∧ HasCompactSupport g ∧ tsupport g ⊆ D.chart ∧
@@ -337,10 +351,11 @@ private theorem smooth_interior_approx (n r : ℕ) (Γ : Type*) [Group Γ]
   obtain ⟨h, hcont, hcomp, hts, hmem, herr⟩ :=
     continuous_interior_approx n r Γ D f (ε / 2) (by positivity)
   let μ := weightedMeasure n D.chart D.weight
-  have hfin : μ (tsupport h) < ⊤ := interior_finite n r Γ D hcomp hts
+  have hfin := interior_finite n r Γ D hcomp hts
+  let ofReal₀ := ENNReal.ofReal (ε / 2)
   obtain ⟨N, hN, hb⟩ := ENNReal.exists_nat_pos_inv_mul_lt
     (ENNReal.rpow_ne_top_of_nonneg (show 0 ≤ (1 : ℝ) / (2 : ENNReal).toReal by positivity) hfin.ne)
-    (show ENNReal.ofReal (ε / 2) ≠ 0 by positivity)
+    (show ofReal₀ ≠ 0 by positivity)
   have hNr : (0 : ℝ) < N := Nat.cast_pos.mpr hN
   obtain ⟨g, hgd, hgapprox, hgsupp⟩ := hcont.exists_contDiff_approx ⊤
     (ε := fun _ => (N : ℝ)⁻¹) continuous_const (fun _ => by positivity)
@@ -355,7 +370,7 @@ private theorem smooth_interior_approx (n r : ℕ) (Γ : Type*) [Group Γ]
       (hgsupp.trans (subset_tsupport h))
     rw [← heq]
     exact memLp_indicator_iff_restrict isClosed_closure.measurableSet.nullMeasurableSet |>.mpr hr
-  have herrg : eLpNorm (h - g) 2 μ < ENNReal.ofReal (ε / 2) := by
+  have herrg : eLpNorm (h - g) 2 μ < ofReal₀ := by
     apply lt_of_le_of_lt (eLpNorm_sub_le_of_dist_bdd μ (by norm_num)
       isClosed_closure.measurableSet.nullMeasurableSet
       (show 0 ≤ (N : ℝ)⁻¹ by positivity)
@@ -371,18 +386,19 @@ private theorem smooth_interior_approx (n r : ℕ) (Γ : Type*) [Group Γ]
       simp
     rw [heq]
     calc
-      eLpNorm ((fun x => f x - h x) + (h - g)) 2 μ ≤
+      _ ≤
           eLpNorm (fun x => f x - h x) 2 μ + eLpNorm (h - g) 2 μ :=
         eLpNorm_add_le (by norm_num)
-      _ < ENNReal.ofReal (ε / 2) + ENNReal.ofReal (ε / 2) :=
+      _ < ofReal₀ + ofReal₀ :=
         ENNReal.add_lt_add_of_le_of_lt ((Lp.memLp f).sub hmem).eLpNorm_ne_top herr herrg
       _ = ENNReal.ofReal ε := by rw [← ENNReal.ofReal_add (by positivity) (by positivity), add_halves]
   refine ⟨g, hgm, hgd, hgcomp, hgts, ?_⟩
   rw [← dist_eq_norm, Lp.dist_def]
-  change (eLpNorm ((f : EuclideanSpace ℝ (Fin n) → _) -
-    (hgm.toLp g : EuclideanSpace ℝ (Fin n) → _)) 2 μ).toReal < ε
-  have heq : eLpNorm ((f : EuclideanSpace ℝ (Fin n) → _) -
-      (hgm.toLp g : EuclideanSpace ℝ (Fin n) → _)) 2 μ =
+  let EuclideanSpace₀ := EuclideanSpace ℝ (Fin n)
+  change (eLpNorm ((f : EuclideanSpace₀ → _) -
+    (hgm.toLp g : EuclideanSpace₀ → _)) 2 μ).toReal < ε
+  have heq : eLpNorm ((f : EuclideanSpace₀ → _) -
+      (hgm.toLp g : EuclideanSpace₀ → _)) 2 μ =
       eLpNorm (fun x => f x - g x) 2 μ := by
     apply eLpNorm_congr_ae
     filter_upwards [hgm.coeFn_toLp] with x hx
@@ -390,6 +406,8 @@ private theorem smooth_interior_approx (n r : ℕ) (Γ : Type*) [Group Γ]
   rw [heq]
   exact (ENNReal.toReal_lt_toReal (by finiteness) (by simp)).mpr herrall |>
     (fun h => by simpa [ENNReal.toReal_ofReal hε.le] using h)
+
+end
 
 private theorem average_congr_ae (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
     (D : Data n r Γ) (a b : EuclideanSpace ℝ (Fin n) → EuclideanSpace ℂ (Fin r))
@@ -409,9 +427,10 @@ private theorem average_congr_ae (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ
 
 end KPChartL2
 
-theorem kp_cont_chart_equivariant_l2_projection
-    (n r : ℕ) (hn : 1 ≤ n) (hr : 1 ≤ r)
-    (Γ : Type*) [Group Γ] [Fintype Γ] (D : KPChartL2.Data n r Γ) :
+variable (n r : ℕ) (hn : 1 ≤ n) (hr : 1 ≤ r) (Γ : Type*) [Group Γ] [Fintype Γ] (D : KPChartL2.Data n r Γ)
+
+include hn hr in
+theorem kp_cont_chart_equivariant_l2_projection :
     IsClosed (KPChartL2.equivariantL2 n r Γ
       (KPChartL2.weightedMeasure n D.chart D.weight) D.act D.cocycle) ∧
     ∃ P : Lp (EuclideanSpace ℂ (Fin r)) 2
@@ -442,9 +461,8 @@ theorem kp_cont_chart_equivariant_l2_projection
     · intro hf
       exact ⟨f, hfix f hf⟩
 
+include hn hr in
 theorem kp_cont_chart_equivariant_average_smooth
-    (n r : ℕ) (hn : 1 ≤ n) (hr : 1 ≤ r)
-    (Γ : Type*) [Group Γ] [Fintype Γ] (D : KPChartL2.Data n r Γ)
     (h : EuclideanSpace ℝ (Fin n) → EuclideanSpace ℂ (Fin r))
     (hsmooth : ContDiffOn ℝ ∞ h D.chart)
     (hcompact : HasCompactSupport h) (hsupport : tsupport h ⊆ D.chart) :
@@ -453,9 +471,9 @@ theorem kp_cont_chart_equivariant_average_smooth
       (∀ γ x, x ∈ D.chart → g (D.act γ x) = D.cocycle γ x (g x)) := by
   classical
   dsimp only
-  let K : Set (EuclideanSpace ℝ (Fin n)) :=
+  let K :=
     ⋃ γ : Γ, D.act γ⁻¹ '' tsupport h
-  have hKcompact : IsCompact K := isCompact_iUnion fun γ =>
+  have hKcompact := isCompact_iUnion fun γ =>
     hcompact.image_of_continuousOn ((D.smooth_action γ⁻¹).continuousOn.mono hsupport)
   have hKchart : K ⊆ D.chart := by
     intro x hx
@@ -472,7 +490,8 @@ theorem kp_cont_chart_equivariant_average_smooth
         apply hx
         apply Set.mem_iUnion.mpr
         exact ⟨γ, D.act γ x, subset_closure hnz,
-          KPChartL2.inverse_action n r Γ D γ x hxc⟩
+          (by
+            rw [← D.act_mul γ⁻¹ γ x hxc, inv_mul_cancel, D.act_one x hxc])⟩
       simp [hz]
     · simp [KPChartL2.average, Set.indicator_of_notMem hxc]
   have hts : tsupport (KPChartL2.average n r Γ D.chart D.act D.cocycle h) ⊆ K := by
@@ -485,18 +504,14 @@ theorem kp_cont_chart_equivariant_average_smooth
   have hterm : ∀ γ : Γ, ContDiffOn ℝ ∞
       (fun x => (D.cocycle γ x).symm (h (D.act γ x))) D.chart := by
     intro γ
-    have hp := (D.smooth_action γ).prodMk
-      (hsmooth.comp (D.smooth_action γ) (D.act_mem γ))
-    have hc := (D.smooth_cocycle γ⁻¹).comp hp (fun x hx =>
-      ⟨D.act_mem γ x hx, Set.mem_univ _⟩)
-    exact hc.congr (fun x hx => KPChartL2.inverse_cocycle n r Γ D γ x hx _)
-  have hs := (ContDiffOn.sum (fun γ (_ : γ ∈ Finset.univ) => hterm γ)).const_smul
-    (Fintype.card Γ : ℂ)⁻¹
-  exact hs.congr (fun x hx => Set.indicator_of_mem hx _)
+    exact ((D.smooth_cocycle γ⁻¹).comp ((D.smooth_action γ).prodMk
+      (hsmooth.comp (D.smooth_action γ) (D.act_mem γ))) (fun x hx =>
+      ⟨D.act_mem γ x hx, Set.mem_univ _⟩)).congr (fun x hx => KPChartL2.inverse_cocycle n r Γ D γ x hx _)
+  exact ((ContDiffOn.sum (fun γ _ => hterm γ)).const_smul
+    (Fintype.card Γ : ℂ)⁻¹).congr (fun x hx => Set.indicator_of_mem hx _)
 
+include hn hr in
 theorem kp_cont_chart_equivariant_l2_density
-    (n r : ℕ) (hn : 1 ≤ n) (hr : 1 ≤ r)
-    (Γ : Type*) [Group Γ] [Fintype Γ] (D : KPChartL2.Data n r Γ)
     (f : Lp (EuclideanSpace ℂ (Fin r)) 2
       (KPChartL2.weightedMeasure n D.chart D.weight))
     (hf : f ∈ KPChartL2.equivariantL2 n r Γ
@@ -512,11 +527,10 @@ theorem kp_cont_chart_equivariant_l2_density
   let g := KPChartL2.average n r Γ D.chart D.act D.cocycle h
   have havg := kp_cont_chart_equivariant_average_smooth n r hn hr Γ D
     h hsmooth.contDiffOn hcompact hsupport
-  have hrep : KPChartL2.averageCLM n r Γ D (hmem.toLp h) =ᵐ[
-      KPChartL2.weightedMeasure n D.chart D.weight] g :=
+  have hrep :=
     (KPChartL2.averageCLM_coe n r Γ D (hmem.toLp h)).trans
       (KPChartL2.average_congr_ae n r Γ D _ h hmem.coeFn_toLp)
-  have hg : MemLp g 2 (KPChartL2.weightedMeasure n D.chart D.weight) :=
+  have hg :=
     (Lp.memLp (KPChartL2.averageCLM n r Γ D (hmem.toLp h))).ae_eq hrep
   have heq : hg.toLp g = KPChartL2.averageCLM n r Γ D (hmem.toLp h) := by
     apply Lp.ext

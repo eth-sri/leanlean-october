@@ -23,14 +23,18 @@ variable (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-theorem localCosetIndicator_mem_localSchwartz
-    (v : HeightOneSpectrum (𝓞 F)) (U : AddSubgroup (v.adicCompletion F))
+section
+
+variable (v : HeightOneSpectrum (𝓞 F)) (U : AddSubgroup (v.adicCompletion F))
     (hUcompact : IsCompact (U : Set (v.adicCompletion F)))
     (hUopen : IsOpen (U : Set (v.adicCompletion F)))
+
+include hUcompact hUopen in
+theorem localCosetIndicator_mem_localSchwartz
     (b : v.adicCompletion F) :
     localCosetIndicator F v b U ∈ localSchwartz F v := by
-  let S : Set (v.adicCompletion F) := {x | x - b ∈ U}
-  have heq : S = (fun x : v.adicCompletion F => b + x) '' (U : Set _) := by
+  let S := {x | x - b ∈ U}
+  have heq : S = (fun x : v.adicCompletion F => b + x) '' U := by
     ext x
     constructor
     · intro h; exact ⟨x - b, h, by simp⟩
@@ -38,8 +42,7 @@ theorem localCosetIndicator_mem_localSchwartz
   have hc : IsCompact S := by
     rw [heq]
     exact hUcompact.image (by fun_prop)
-  have ho : IsOpen S := hUopen.preimage (by fun_prop)
-  have hcl : IsClopen S := ⟨hc.isClosed, ho⟩
+  have hcl : IsClopen S := ⟨hc.isClosed, (hUopen.preimage (by fun_prop))⟩
   refine ⟨?_, ?_⟩
   · exact (LocallyConstant.indicator (LocallyConstant.const _ (1 : ℂ)) hcl).isLocallyConstant
   · apply hc.of_isClosed_subset (isClosed_tsupport _)
@@ -48,10 +51,8 @@ theorem localCosetIndicator_mem_localSchwartz
     by_contra hn
     exact hx (by simp [localCosetIndicator, S] at hn ⊢; exact hn)
 
+include hUcompact hUopen in
 theorem localFourierIntegral_localCosetIndicator
-    (v : HeightOneSpectrum (𝓞 F)) (U : AddSubgroup (v.adicCompletion F))
-    (hUcompact : IsCompact (U : Set (v.adicCompletion F)))
-    (hUopen : IsOpen (U : Set (v.adicCompletion F)))
     (b y : v.adicCompletion F) :
     localFourierIntegral F v (localCosetIndicator F v b U) y =
       (((localNormalizedHaar F v (U : Set (v.adicCompletion F))).toReal : ℝ) : ℂ) *
@@ -97,6 +98,8 @@ theorem localFourierIntegral_localCosetIndicator
     simp [localCosetIndicator_apply, hy, mul_comm]
   · rw [if_neg (mt htrivial.mp hy)]
     simp [localCosetIndicator_apply, hy]
+
+end
 
 theorem localFourierIntegral_localCosetIndicator_ball
     (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) (b y : v.adicCompletion F) :

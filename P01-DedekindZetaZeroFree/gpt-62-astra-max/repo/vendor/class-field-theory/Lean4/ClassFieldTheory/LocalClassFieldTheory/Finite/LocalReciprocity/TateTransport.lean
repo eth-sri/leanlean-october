@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -53,28 +51,24 @@ section GroupEquiv
 variable {R Q P : Type} [CommRing R]
   [CommGroup Q] [CommGroup P] [Fintype Q] [Fintype P]
 
- theorem res_norm_eq (e : Q ≃* P) (A : Rep R P) :
+ section
+
+variable (e : Q ≃* P) (A : Rep R P)
+
+theorem res_norm_eq :
     let Ares : Rep R Q :=
       Rep.res e.toMonoidHom A
     ModuleCat.ofHom Ares.norm.hom.toLinearMap =
       ModuleCat.ofHom A.norm.hom.toLinearMap := by
-  let Ares : Rep R Q :=
-    Rep.res e.toMonoidHom A
-  apply congrArg ModuleCat.ofHom
-  change Representation.norm Ares.ρ = Representation.norm A.ρ
-  simp only [Representation.norm]
-  exact Fintype.sum_equiv e.toEquiv
-    (fun q : Q => Ares.ρ q)
-    (fun p : P => A.ρ p) (fun _ => rfl)
+  solve_by_elim [Rep.res, congrArg, Fintype.sum_equiv]
 
 /-- Reindexing along a group isomorphism preserves the cyclic `H⁰`
 short complex. -/
-def normHomCompSubResEquivIso
-    (e : Q ≃* P) (A : Rep R P) (g : Q) :
+def normHomCompSubResEquivIso (g : Q) :
     Rep.FiniteCyclicGroup.normHomCompSub
         (Rep.res e.toMonoidHom A) g ≅
       Rep.FiniteCyclicGroup.normHomCompSub A (e g) := by
-  let Ares : Rep R Q :=
+  let Ares :=
     Rep.res e.toMonoidHom A
   let i : ModuleCat.of R Ares.V ≅ ModuleCat.of R A.V := Iso.refl _
   refine ShortComplex.isoMk i i i ?_ ?_
@@ -83,17 +77,18 @@ def normHomCompSubResEquivIso
 
 /-- Reindexing along a group isomorphism preserves the cyclic `H⁻¹`
 short complex. -/
-def subCompNormHomResEquivIso
-    (e : Q ≃* P) (A : Rep R P) (g : Q) :
+def subCompNormHomResEquivIso (g : Q) :
     Rep.FiniteCyclicGroup.subCompNormHom
         (Rep.res e.toMonoidHom A) g ≅
       Rep.FiniteCyclicGroup.subCompNormHom A (e g) := by
-  let Ares : Rep R Q :=
+  let Ares :=
     Rep.res e.toMonoidHom A
   let i : ModuleCat.of R Ares.V ≅ ModuleCat.of R A.V := Iso.refl _
   refine ShortComplex.isoMk i i i ?_ ?_
   · rfl
   · simpa [Ares, i] using (res_norm_eq e A).symm
+
+end
 
 /-- Homology-level group-reindexing comparison in degree zero. -/
 def normHomCompSubHomologyResEquivIso
@@ -117,19 +112,21 @@ section RepresentationIso
 
 variable {R Q : Type} [CommRing R] [CommGroup Q] [Fintype Q]
 
+section
+
+variable {M N : Rep R Q} (e : M ≅ N) (g : Q)
+
 /-- Isomorphic representations have isomorphic cyclic `H⁰` short
 complexes. -/
-def normHomCompSubIsoOfRepIso
-    {M N : Rep R Q} (e : M ≅ N) (g : Q) :
+def normHomCompSubIsoOfRepIso :
     Rep.FiniteCyclicGroup.normHomCompSub M g ≅
       Rep.FiniteCyclicGroup.normHomCompSub N g := by
-  let i : ModuleCat.of R M.V ≅ ModuleCat.of R N.V :=
+  let i :=
     (forget₂ (Rep R Q) (ModuleCat R)).mapIso e
   refine ShortComplex.isoMk i i i ?_ ?_
-  · have h := congrArg
+  · simpa [i, Rep.norm] using (congrArg
       (fun f : M ⟶ N => ModuleCat.ofHom f.hom.toLinearMap)
-      (Rep.norm_comm e.hom)
-    simpa [i, Rep.norm] using h
+      (Rep.norm_comm e.hom))
   · have hrep :
         e.hom ≫ (Rep.applyAsHom N g - 𝟙 N) =
           (Rep.applyAsHom M g - 𝟙 M) ≫ e.hom := by
@@ -142,11 +139,10 @@ def normHomCompSubIsoOfRepIso
 
 /-- Isomorphic representations have isomorphic cyclic `H⁻¹` short
 complexes. -/
-def subCompNormHomIsoOfRepIso
-    {M N : Rep R Q} (e : M ≅ N) (g : Q) :
+def subCompNormHomIsoOfRepIso :
     Rep.FiniteCyclicGroup.subCompNormHom M g ≅
       Rep.FiniteCyclicGroup.subCompNormHom N g := by
-  let i : ModuleCat.of R M.V ≅ ModuleCat.of R N.V :=
+  let i :=
     (forget₂ (Rep R Q) (ModuleCat R)).mapIso e
   refine ShortComplex.isoMk i i i ?_ ?_
   · have hrep :
@@ -158,10 +154,11 @@ def subCompNormHomIsoOfRepIso
     change F.map e.hom ≫ F.map (Rep.applyAsHom N g - 𝟙 N) =
       F.map (Rep.applyAsHom M g - 𝟙 M) ≫ F.map e.hom
     rw [← F.map_comp, ← F.map_comp, hrep]
-  · have h := congrArg
+  · simpa [i, Rep.norm] using (congrArg
       (fun f : M ⟶ N => ModuleCat.ofHom f.hom.toLinearMap)
-      (Rep.norm_comm e.hom)
-    simpa [i, Rep.norm] using h
+      (Rep.norm_comm e.hom))
+
+end
 
 /-- Homology-level representation-isomorphism comparison in degree zero. -/
 def normHomCompSubHomologyIsoOfRepIso

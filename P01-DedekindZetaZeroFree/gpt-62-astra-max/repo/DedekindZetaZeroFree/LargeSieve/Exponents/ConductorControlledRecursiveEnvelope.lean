@@ -33,14 +33,11 @@ theorem recursiveEnvelope_of_core
     (α : ℝ) (hα : 1 ≤ α) (hα₂ : α ≤ 2)
     (hExponent : HasSieveExponent F c Q α) :
     DedekindZetaZeroFree.LargeSieve.HasRecursiveEnvelope (B1 F c Q) α := by
-  have hW : SieveWeight DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight := annularWeight_sieveWeight
   intro ε hε
   set η : ℝ := ε / 2 with hηdef
   have hηpos : 0 < η := by rw [hηdef]; linarith
-  have hηle : η ≤ ε := by rw [hηdef]; linarith
-
   obtain ⟨Cf, hCf0, hfar⟩ :=
-    recursion_far_region_core F hF c hc Q hCore DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight hW α hα hα₂
+    recursion_far_region_core F hF c hc Q hCore DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight annularWeight_sieveWeight α hα hα₂
       hExponent η hηpos
 
   obtain ⟨Cn, hCn0, hnear⟩ := recursion_near_region F c Q α hα hExponent η hηpos
@@ -65,15 +62,14 @@ theorem recursiveEnvelope_of_core
     have hCnn : 0 ≤ max Cf Cn + 1 := by linarith
     have hPR : P ≤ R := by
       rw [hPdef, hRdef]
-      exact Real.rpow_le_rpow_of_exponent_le hMN1 hηle
+      exact Real.rpow_le_rpow_of_exponent_le hMN1 (by rw [hηdef]; linarith)
     have hPXnn : 0 ≤ P * X := by
       refine mul_nonneg ?_ hXnn
       rw [hPdef]
       exact Real.rpow_nonneg (by linarith) _
     by_cases hcase : M ≤ 2 * N * (M * N) ^ δ
     ·
-      have h := hnear M N hM hN hcase
-      calc B1 F c Q M N ≤ Cn * P * X := h
+      calc _ ≤ Cn * P * X := (hnear M N hM hN hcase)
         _ = Cn * (P * X) := by ring
         _ ≤ (max Cf Cn + 1) * (P * X) := by
             refine mul_le_mul ?_ le_rfl hPXnn hCnn
@@ -83,8 +79,7 @@ theorem recursiveEnvelope_of_core
             mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hPR hXnn) hCnn
         _ = (max Cf Cn + 1) * R * X := by ring
     ·
-      have h := (hfar M N hM hN (le_of_lt (lt_of_not_ge hcase))).1
-      calc B1 F c Q M N ≤ Cf * P * X := h
+      calc B1 F c Q M N ≤ Cf * P * X := ((hfar M N hM hN (le_of_lt (lt_of_not_ge hcase))).1)
         _ = Cf * (P * X) := by ring
         _ ≤ (max Cf Cn + 1) * (P * X) := mul_le_mul hCfC le_rfl hPXnn hCnn
         _ ≤ (max Cf Cn + 1) * (R * X) :=

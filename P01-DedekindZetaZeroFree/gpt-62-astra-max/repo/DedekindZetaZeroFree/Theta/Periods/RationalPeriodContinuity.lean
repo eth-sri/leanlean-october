@@ -12,8 +12,8 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def thetaFiber {Q : AdmissibleFlatSources R} (T : Realization R Q)
     (v : R.A.UnitQuotient) (g : Group R) (q : KPAdditiveQuotient F) : ℂ :=
@@ -41,9 +41,8 @@ theorem thetaFiber_continuous {Q : AdmissibleFlatSources R} (T : Realization R Q
 theorem rationalCharacter_out (a : F) (q : KPAdditiveQuotient F) :
     (adelicRationalFrequencyQuotientCharacter F a q : ℂ) =
       (adelicTraceCharacter F (algebraMap F (KPAdeles F) a * Quotient.out q) : ℂ) := by
-  have h := adelicRationalFrequencyQuotientCharacter_mk F a (Quotient.out q)
-  simpa only [QuotientAddGroup.mk'_apply, Quotient.out_eq] using
-    congrArg (fun z : Circle => (z : ℂ)) h
+  simpa using
+    congrArg (fun z : Circle => (z : ℂ)) (adelicRationalFrequencyQuotientCharacter_mk F a (Quotient.out q))
 
 def rationalPeriod {Q : AdmissibleFlatSources R} (T : Realization R Q)
     (v : R.A.UnitQuotient) (a : F) (g : Group R) : ℂ :=
@@ -70,9 +69,9 @@ theorem thetaFiber_joint_continuous {Q : AdmissibleFlatSources R} (T : Realizati
   letI : IsTopologicalGroup (Group R) :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover
       F R.A.zeta12 R.A.primitive_zeta12).2.2.1
-  apply ((IsOpenQuotientMap.id (X := Group R)).prodMap
+  apply ((IsOpenQuotientMap.id).prodMap
     (QuotientAddGroup.isOpenQuotientMap_mk
-      (N := AdeleRing.principalSubgroup (𝓞 F) F))).continuous_comp_iff.mp
+      )).continuous_comp_iff.mp
   simpa only [Function.comp_def, Prod.map, id_eq, thetaFiber_mk, Pi.mul_apply,
     Realization.theta] using
     (T.smooth v 0 (Metric.mem_ball_self T.radius_pos)).1.comp
@@ -85,23 +84,17 @@ theorem rationalPeriod_continuous {Q : AdmissibleFlatSources R} (T : Realization
     (v : R.A.UnitQuotient) (a : F) : Continuous (rationalPeriod R T v a) := by
   letI : IsProbabilityMeasure Q.dq := ⟨Q.probability⟩
   letI : IsFiniteMeasureOnCompacts Q.dq := ⟨fun K _ => measure_lt_top Q.dq K⟩
-  have hc : Continuous (fun q : KPAdditiveQuotient F =>
-      (adelicRationalFrequencyQuotientCharacter F a q : ℂ)) :=
-    continuous_subtype_val.comp (continuous_adelicRationalFrequencyQuotientCharacter F a)
   apply continuousOn_univ.mp
-  apply continuousOn_integral_of_compact_support (k := Set.univ) isCompact_univ
+  apply continuousOn_integral_of_compact_support isCompact_univ
   · exact ((thetaFiber_joint_continuous R T v).mul
-      (hc.star.comp continuous_snd)).continuousOn
+      ((continuous_subtype_val.comp (continuous_adelicRationalFrequencyQuotientCharacter F a)).star.comp continuous_snd)).continuousOn
   · intro p x hp hx
     exact False.elim (hx (Set.mem_univ x))
 
 theorem orbitFrequencyValue_continuous {Q : AdmissibleFlatSources R} (T : Realization R Q)
     (v : R.A.UnitQuotient) (i : ThetaExpansion.SignedExpansion.OrbitIndex R) :
     Continuous (orbitFrequencyValue R Q T v i) := by
-  have he : orbitFrequencyValue R Q T v i =
-      rationalPeriod R T v (orbitFrequency R i : F) :=
-    funext (orbitFrequencyValue_eq_rationalPeriod R T v i)
-  rw [he]
+  rw [(funext (orbitFrequencyValue_eq_rationalPeriod R T v i))]
   exact rationalPeriod_continuous R T v (orbitFrequency R i : F)
 
 end DedekindZetaZeroFree.OrbitExpansion

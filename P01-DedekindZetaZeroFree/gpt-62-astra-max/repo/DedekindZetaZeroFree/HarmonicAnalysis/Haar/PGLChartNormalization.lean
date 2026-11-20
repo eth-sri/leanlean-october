@@ -20,18 +20,16 @@ theorem haar_chart_density_comparison
     ∃ c : ℝ, 0 < c ∧
       Measure.map h.symm (μ.restrict h.target) =
         (volume.withDensity (fun x => ENNReal.ofReal (c * w x))).restrict h.source := by
-  have hμν : μ = μ.haarScalarFactor ν • ν := Measure.isMulLeftInvariant_eq_smul μ ν
   have ha_pos : 0 < (μ.haarScalarFactor ν : ℝ) := by
     have := Measure.haarScalarFactor_pos_of_isHaarMeasure μ ν
     exact_mod_cast this
   refine ⟨(μ.haarScalarFactor ν : ℝ), ha_pos, ?_⟩
   have hsymm_ae : AEMeasurable (⇑h.symm) (ν.restrict h.target) :=
     h.continuousOn_invFun.aemeasurable h.open_target.measurableSet
-  have hsource_meas : MeasurableSet h.source := h.open_source.measurableSet
-  conv_lhs => rw [hμν]
+  conv_lhs => rw [(Measure.isMulLeftInvariant_eq_smul μ ν)]
   rw [Measure.restrict_smul, Measure.map_smul (μ.haarScalarFactor ν) hsymm_ae, hdensity]
   rw [← Measure.coe_nnreal_smul (μ.haarScalarFactor ν), ← withDensity_const,
-    ← restrict_withDensity hsource_meas,
+    ← restrict_withDensity h.open_source.measurableSet,
     ← withDensity_mul volume hw.ennreal_ofReal measurable_const]
   have hfun : ((fun x => ENNReal.ofReal (w x)) * fun x => ((μ.haarScalarFactor ν : ENNReal)))
       = (fun x => ENNReal.ofReal ((μ.haarScalarFactor ν : ℝ) * w x)) := by

@@ -21,24 +21,32 @@ open scoped TensorProduct
 private lemma regular_one (a : ℂ) : Regular a 1 := by simp [Regular]
  lemma regular_C (a c : ℂ) : Regular a (RatFunc.C c) := by simp [Regular]
 private lemma regular_X (a : ℂ) : Regular a RatFunc.X := by simp [Regular]
- lemma regular_add {a : ℂ} {f g : RatFunc ℂ} (hf : Regular a f) (hg : Regular a g) :
+ section
+
+variable {a : ℂ} {f g : RatFunc ℂ} (hf : Regular a f) (hg : Regular a g)
+
+include hf hg in
+lemma regular_add :
     Regular a (f + g) := by
   intro h
   have H := Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero (RingHom.id ℂ) a
-    (RatFunc.denom_add_dvd f g) (by simpa using h)
+    (RatFunc.denom_add_dvd f g) (by exact h)
   simp [Polynomial.eval₂_mul, Polynomial.eval₂_id, mul_ne_zero hf hg] at H
- lemma regular_mul {a : ℂ} {f g : RatFunc ℂ} (hf : Regular a f) (hg : Regular a g) :
+ include hf hg in
+lemma regular_mul :
     Regular a (f * g) := by
   intro h
   have H := Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero (RingHom.id ℂ) a
-    (RatFunc.denom_mul_dvd f g) (by simpa using h)
+    (RatFunc.denom_mul_dvd f g) (by exact h)
   simp [Polynomial.eval₂_mul, Polynomial.eval₂_id, mul_ne_zero hf hg] at H
+
+end
 private lemma regular_inv {a : ℂ} {f : RatFunc ℂ} (_hf : Regular a f)
     (hne : RatFunc.eval (RingHom.id ℂ) a f ≠ 0) : Regular a f⁻¹ := by
   have hf0 : f ≠ 0 := by intro h; simp [h] at hne
   intro h
   have H := Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero (RingHom.id ℂ) a
-    (RatFunc.denom_inv_dvd hf0) (by simpa using h)
+    (RatFunc.denom_inv_dvd hf0) (by exact h)
   apply hne
   simp [RatFunc.eval, H]
  lemma eval_mul' {a : ℂ} {f g : RatFunc ℂ} (hf : Regular a f) (hg : Regular a g) :
@@ -74,36 +82,48 @@ private lemma exists_eval_linear (a : ℂ) : ∃ E : RatFunc ℂ →ₗ[ℂ] ℂ
     ∀ f, Regular a f → E f = RatFunc.eval (RingHom.id ℂ) a f := by
   obtain ⟨E, hE⟩ := (regularEval a).exists_extend
   exact ⟨E, fun f hf => congrArg (fun L => L ⟨f, hf⟩) hE⟩
-private lemma regular_neg {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) : Regular a (-f) := by
+section
+
+variable {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f)
+
+include hf in
+private lemma regular_neg : Regular a (-f) := by
   simpa using regular_mul (regular_C a (-1)) hf
-private lemma eval_neg' {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) :
+include hf in
+private lemma eval_neg' :
     RatFunc.eval (RingHom.id ℂ) a (-f) = -RatFunc.eval (RingHom.id ℂ) a f := by
   have H := eval_mul' (regular_C a (-1)) hf
   rw [RatFunc.eval_C] at H
   simpa using H
-private lemma regular_pow {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) (n : ℕ) :
+include hf in
+private lemma regular_pow (n : ℕ) :
     Regular a (f ^ n) := by
   induction n with
-  | zero => simpa using regular_one a
+  | zero => exact regular_one a
   | succ n hn => simpa [pow_succ] using regular_mul hn hf
-private lemma eval_pow' {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) (n : ℕ) :
+include hf in
+private lemma eval_pow' (n : ℕ) :
     RatFunc.eval (RingHom.id ℂ) a (f ^ n) = RatFunc.eval (RingHom.id ℂ) a f ^ n := by
   induction n with
   | zero => simp
   | succ n hn => rw [pow_succ, eval_mul' (regular_pow hf n) hf, hn, pow_succ]
-private lemma regular_zpow {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f)
+include hf in
+private lemma regular_zpow
     (hne : RatFunc.eval (RingHom.id ℂ) a f ≠ 0) (n : ℤ) : Regular a (f ^ n) := by
   cases n with
-  | ofNat n => simpa using regular_pow hf n
+  | ofNat n => exact regular_pow hf n
   | negSucc n => simpa [zpow_negSucc, ← inv_pow] using regular_pow (regular_inv hf hne) (n + 1)
-private lemma eval_zpow' {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f)
+include hf in
+private lemma eval_zpow'
     (hne : RatFunc.eval (RingHom.id ℂ) a f ≠ 0) (n : ℤ) :
     RatFunc.eval (RingHom.id ℂ) a (f ^ n) = RatFunc.eval (RingHom.id ℂ) a f ^ n := by
   cases n with
-  | ofNat n => simpa using eval_pow' hf n
+  | ofNat n => exact eval_pow' hf n
   | negSucc n =>
       simpa [zpow_negSucc, ← inv_pow, eval_inv' hf hne] using
         (eval_pow' (regular_inv hf hne) (n + 1))
+
+end
 
 private lemma specialize_scalar {V W : Type*} [AddCommMonoid V] [Module ℂ V]
     [AddCommMonoid W] [Module ℂ W]
@@ -116,7 +136,7 @@ private lemma specialize_scalar {V W : Type*} [AddCommMonoid V] [Module ℂ V]
       (p.sum fun n M => RatFunc.eval (RingHom.id ℂ) z (a n) • M) =
       RatFunc.eval (RingHom.id ℂ) z c • LinearMap.id := by
   obtain ⟨E, hE⟩ := exists_eval_linear z
-  let L : RatFunc ℂ ⊗[ℂ] V →ₗ[ℂ] V :=
+  let L :=
     (TensorProduct.lid ℂ V).toLinearMap.comp (TensorProduct.map E LinearMap.id)
   have hL (f : RatFunc ℂ) (v : V) : L (f ⊗ₜ[ℂ] v) = E f • v := by simp [L]
   ext v
@@ -132,12 +152,15 @@ private lemma specialize_scalar {V W : Type*} [AddCommMonoid V] [Module ℂ V]
     Finset.smul_sum, smul_smul, mul_comm] using H
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
 
-private lemma denominator_regular_eval
-    (α s w : ℂ) (hroot : α * w = r (KPExceptionalRaw.LocalField F q) s)
-    (ε : Sign) :
+section
+
+variable (α s w : ℂ) (hroot : α * w = r (KPExceptionalRaw.LocalField F q) s) (ε : Sign)
+
+include hroot in
+private lemma denominator_regular_eval :
     Regular w (rationalDenominator (KPExceptionalRaw.LocalField F q) ε
       (RatFunc.C α * RatFunc.X)) ∧
     RatFunc.eval (RingHom.id ℂ) w
@@ -145,8 +168,8 @@ private lemma denominator_regular_eval
         (RatFunc.C α * RatFunc.X)) =
       denominator (KPExceptionalRaw.LocalField F q) ε s := by
   let K := KPExceptionalRaw.LocalField F q
-  let v : RatFunc ℂ := RatFunc.C α * RatFunc.X
-  have hv : Regular w v := regular_mul (regular_C w α) (regular_X w)
+  let v := RatFunc.C α * RatFunc.X
+  have hv := regular_mul (regular_C w α) (regular_X w)
   have he : RatFunc.eval (RingHom.id ℂ) w v = r K s := by
     rw [eval_mul' (regular_C w α) (regular_X w), RatFunc.eval_C, RatFunc.eval_X]
     exact hroot
@@ -154,8 +177,6 @@ private lemma denominator_regular_eval
     rw [he]
     exact Complex.exp_ne_zero _
   have hinv := regular_inv hv hx
-  have epow := eval_pow' hv 6
-  have einvpow := eval_pow' hinv 6
   cases ε <;> unfold rationalDenominator denominator
   · simp only [ite_true]
     have hr := regular_mul (regular_C w (residueCardinality K : ℂ)⁻¹)
@@ -163,7 +184,7 @@ private lemma denominator_regular_eval
     refine ⟨by simpa only [sub_eq_add_neg] using regular_add (regular_one _) (regular_neg hr), ?_⟩
     rw [sub_eq_add_neg, RatFunc.eval_add (RingHom.id ℂ) w
       (regular_one _) (regular_neg hr), eval_neg' hr,
-      eval_mul' (regular_C _ _) (regular_pow hv 6), epow, he]
+      eval_mul' (regular_C _ _) (regular_pow hv 6), (eval_pow' hv 6), he]
     simp only [RatFunc.eval_C, RatFunc.eval_one, RingHom.id_apply,
       t, sub_eq_add_neg]
     rfl
@@ -173,14 +194,13 @@ private lemma denominator_regular_eval
     refine ⟨by simpa only [sub_eq_add_neg] using regular_add (regular_one _) (regular_neg hr), ?_⟩
     rw [sub_eq_add_neg, RatFunc.eval_add (RingHom.id ℂ) w
       (regular_one _) (regular_neg hr), eval_neg' hr,
-      eval_mul' (regular_C _ _) (regular_pow hinv 6), einvpow,
+      eval_mul' (regular_C _ _) (regular_pow hinv 6), (eval_pow' hinv 6),
       eval_inv' hv hx, he]
     simp only [RatFunc.eval_C, RatFunc.eval_one, RingHom.id_apply, sub_eq_add_neg]
     rfl
 
-private lemma coefficient_regular_eval
-    (α s w : ℂ) (hroot : α * w = r (KPExceptionalRaw.LocalField F q) s)
-    (ε : Sign) (hd : denominator (KPExceptionalRaw.LocalField F q) ε s ≠ 0)
+include hroot in
+private lemma coefficient_regular_eval (hd : denominator (KPExceptionalRaw.LocalField F q) ε s ≠ 0)
     (n : ℤ) :
     Regular w
       ((rationalDenominator (KPExceptionalRaw.LocalField F q) ε
@@ -195,7 +215,7 @@ private lemma coefficient_regular_eval
       (denominator (KPExceptionalRaw.LocalField F q) ε s)⁻¹ *
         (evaluationUnit (KPExceptionalRaw.LocalField F q) ε s : ℂ) ^ n := by
   let K := KPExceptionalRaw.LocalField F q
-  let v : RatFunc ℂ := RatFunc.C α * RatFunc.X
+  let v := RatFunc.C α * RatFunc.X
   have hv : Regular w v := regular_mul (regular_C w α) (regular_X w)
   have he : RatFunc.eval (RingHom.id ℂ) w v = r K s := by
     rw [eval_mul' (regular_C w α) (regular_X w), RatFunc.eval_C, RatFunc.eval_X]
@@ -217,6 +237,8 @@ private lemma coefficient_regular_eval
   refine ⟨regular_mul (regular_inv hde.1 hdn) (regular_zpow hf hfn n), ?_⟩
   rw [eval_mul' (regular_inv hde.1 hdn) (regular_zpow hf hfn n),
     eval_inv' hde.1 hdn, eval_zpow' hf hfn n, hde.2, hfe]
+
+end
 
 set_option linter.unusedVariables false in
 set_option backward.isDefEq.respectTransparency false in
@@ -265,7 +287,7 @@ theorem actual_level_composition_specialize_regular
     dsimp only [LevelLaurentOperator, sourceSign, targetSign, id_eq] at pplus pminus
     dsimp only [rationalLevel, sourceSign, targetSign, id_eq] at h
     let K := KPExceptionalRaw.LocalField F q
-    let v : RatFunc ℂ := RatFunc.C α * RatFunc.X
+    let v := RatFunc.C α * RatFunc.X
     let a : ℤ → RatFunc ℂ := fun n => (rationalDenominator K .plus v)⁻¹ * v ^ n
     let b : ℤ → RatFunc ℂ := fun n => (rationalDenominator K .minus v)⁻¹ * v⁻¹ ^ n
     have ha (n : ℤ) : Regular w (a n) :=
@@ -286,9 +308,8 @@ theorem actual_level_composition_specialize_regular
           (coefficient_regular_eval F q α s w hroot .minus hdminus n).2
       apply LinearMap.ext
       intro x
-      have Hx := congrArg (fun M => M x) H
       simpa only [ea, eb, Finsupp.sum, LinearMap.comp_apply, LinearMap.smul_apply,
-        LinearMap.sum_apply, map_sum, map_smul, Finset.smul_sum, smul_smul] using Hx
+        LinearMap.sum_apply, map_sum, map_smul, Finset.smul_sum, smul_smul] using (congrArg (fun M => M x) H)
     · simp only [rationalStandard, Finsupp.sum, Finset.smul_sum,
         smul_smul, ite_true, ite_eq_right (show Sign.minus ≠ Sign.plus from by decide)] at h
       change _ = _ at h
@@ -300,7 +321,7 @@ theorem actual_level_composition_specialize_regular
     dsimp only [LevelLaurentOperator, sourceSign, targetSign, id_eq] at pplus pminus
     dsimp only [rationalLevel, sourceSign, targetSign, id_eq] at h
     let K := KPExceptionalRaw.LocalField F q
-    let v : RatFunc ℂ := RatFunc.C α * RatFunc.X
+    let v := RatFunc.C α * RatFunc.X
     let a : ℤ → RatFunc ℂ := fun n => (rationalDenominator K .plus v)⁻¹ * v ^ n
     let b : ℤ → RatFunc ℂ := fun n => (rationalDenominator K .minus v)⁻¹ * v⁻¹ ^ n
     have ha (n : ℤ) : Regular w (a n) :=
@@ -321,9 +342,8 @@ theorem actual_level_composition_specialize_regular
           (coefficient_regular_eval F q α s w hroot .minus hdminus n).2
       apply LinearMap.ext
       intro x
-      have Hx := congrArg (fun M => M x) H
       simpa only [ea, eb, Finsupp.sum, LinearMap.comp_apply, LinearMap.smul_apply,
-        LinearMap.sum_apply, map_sum, map_smul, Finset.smul_sum, smul_smul] using Hx
+        LinearMap.sum_apply, map_sum, map_smul, Finset.smul_sum, smul_smul] using (congrArg (fun M => M x) H)
     · simp only [rationalStandard, Finsupp.sum, Finset.smul_sum,
         smul_smul, ite_true, ite_eq_right (show Sign.minus ≠ Sign.plus from by decide)] at h
       change _ = _ at h

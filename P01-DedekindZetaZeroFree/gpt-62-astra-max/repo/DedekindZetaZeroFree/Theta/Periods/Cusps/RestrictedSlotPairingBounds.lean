@@ -14,10 +14,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.ComplexLines
 open MomentSources KPGlobalTorusFiniteStages KPGlobalResidualConstruction KPCplxPrincipalSeriesCharts
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1500000
 
@@ -47,18 +47,17 @@ theorem restrictedSlot_boundary_pair_bound
   obtain ⟨ot,Bt,hBt,ht⟩ := restrictedSlot_upper_compact_bound R N P C  s x w hw K hK
   let orders := os ∪ ot
   let mass := (nativeDisintegration F ζ hζ HR HP (nativeRecipe F ζ hζ HR HP) U).beta.real Set.univ
-  let coeff : ℝ := (Bs:ℝ)*(Bt:ℝ)*mass
-  have hmass : 0 ≤ mass := ENNReal.toReal_nonneg
-  have hc : 0 ≤ coeff := mul_nonneg (mul_nonneg Bs.coe_nonneg Bt.coe_nonneg) hmass
+  let coeff := (Bs:ℝ)*(Bt:ℝ)*mass
   refine ⟨orders,coeff+1,by positivity,?_⟩
   intro v
   have hps : (os.sup coreSeminorm) v ≤ (orders.sup coreSeminorm) v :=
     (Finset.sup_mono (f:=coreSeminorm) Finset.subset_union_left) v
   have hpt : (ot.sup coreSeminorm) v ≤ (orders.sup coreSeminorm) v :=
     (Finset.sup_mono (f:=coreSeminorm) Finset.subset_union_right) v
+  let restrictedSlotTensor₀ := restrictedSlotTensor R.A P C s x w hw v
   have hb := LiteralSource.finiteBoundaryPair_bound R HR HP U dk
-    (LiteralSource.quotientCoreEvaluator R.A P C (restrictedSlotTensor R.A P C s x w hw v))
-    (LiteralSource.coreResidue R P C (restrictedSlotTensor R.A P C s x w hw v))
+    (LiteralSource.quotientCoreEvaluator R.A P C (restrictedSlotTensor₀))
+    (LiteralSource.coreResidue R P C (restrictedSlotTensor₀))
     ((Bs:ℝ)*(orders.sup coreSeminorm) v) ((Bt:ℝ)*(orders.sup coreSeminorm) v)
     (mul_nonneg Bs.coe_nonneg (apply_nonneg _ _))
     (by
@@ -66,7 +65,7 @@ theorem restrictedSlot_boundary_pair_bound
       obtain ⟨a,ha,he⟩ := hlift j k
       have hh := hs v a ha
       change ‖LiteralSource.quotientCoreEvaluator R.A P C
-        (restrictedSlotTensor R.A P C s x w hw v)
+        (restrictedSlotTensor₀)
         (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
           (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ a))‖ ≤ _ at hh
       rw [he] at hh
@@ -78,8 +77,6 @@ theorem restrictedSlot_boundary_pair_bound
       rw [he] at hh
       exact hh.trans (mul_le_mul_of_nonneg_left hpt Bt.coe_nonneg))
   apply hb.trans
-  change (Bs:ℝ)*(orders.sup coreSeminorm) v * ((Bt:ℝ)*(orders.sup coreSeminorm) v) * mass ≤
-    (coeff+1)*((orders.sup coreSeminorm) v)^2
   dsimp only [coeff]
   nlinarith [sq_nonneg ((orders.sup coreSeminorm) v)]
 

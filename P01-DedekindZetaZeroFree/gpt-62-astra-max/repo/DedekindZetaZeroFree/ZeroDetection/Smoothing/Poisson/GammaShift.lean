@@ -13,8 +13,8 @@ open DedekindZetaZeroFree NumberField
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def smoothedSum (F : Type) [Field F] [NumberField F] (U β γ : ℝ)
     (ω : Detector.PrimitiveFrequencyCharacter F) : ℂ :=
@@ -123,8 +123,7 @@ theorem detector_shift :
     rw [norm_inv]
     exact inv_le_one_of_one_le₀ hπ
   rw [hS, norm_mul]
-  calc ‖(2 * (Real.pi : ℂ))⁻¹‖ * ‖∫ t : ℝ, DetectorMellin.mellinIntegrand F U (D.omega u) β γ
-        (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)‖
+  calc _
       ≤ 1 * ‖∫ t : ℝ, DetectorMellin.mellinIntegrand F U (D.omega u) β γ
         (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)‖ :=
         mul_le_mul_of_nonneg_right hinv (norm_nonneg _)

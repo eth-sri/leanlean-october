@@ -34,10 +34,10 @@ variable {𝕜 G : Type*} [RCLike 𝕜] [Group G] [TopologicalSpace G] [IsTopolo
 variable (𝕜 G) in
 
 theorem dense_representativeSubmodule : Dense (representativeSubmodule 𝕜 G : Set C(G, 𝕜)) := by
-  let : MeasurableSpace G := borel G
+  let := borel G
   have : BorelSpace G := ⟨rfl⟩
   intro f
-  rw [← closure_closure (s := (representativeSubmodule 𝕜 G : Set C(G, 𝕜)))]
+  rw [← closure_closure]
   refine Metric.mem_closure_iff.2 fun ε hε => ?_
   obtain ⟨k, hk, hle⟩ :=
     exists_isMollifier_norm_convolutionCLM_toLp_sub_le 𝕜 f (half_pos hε) Filter.univ_mem

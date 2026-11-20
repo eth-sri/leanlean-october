@@ -23,13 +23,13 @@ theorem gaussian_principal_prefactor (ε r : ℝ) (hε : 0 < ε) (hr : 0 < r) :
         ((Real.pi : ℂ) / bPlus) ^ (1 / 2 : ℂ) =
       ((Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * r ^ 2) : ℝ) : ℂ) := by
   dsimp
-  let b : ℂ := (ε : ℂ) - 2 * (Real.pi : ℂ) * Complex.I * (r : ℂ)
+  let b := (ε : ℂ) - 2 * (Real.pi : ℂ) * Complex.I * (r : ℂ)
   have hb : Complex.normSq b = ε ^ 2 + 4 * Real.pi ^ 2 * r ^ 2 := by
     simp [b, Complex.normSq_apply]
     ring
   have hbpos : 0 < Complex.normSq b := by
     rw [hb]
-    have : 0 < ε ^ 2 := sq_pos_of_pos hε
+    have := sq_pos_of_pos hε
     positivity
   have harg : ((Real.pi : ℂ) / b).arg ≠ Real.pi := by
     rw [Ne, Complex.arg_eq_pi_iff]
@@ -38,9 +38,6 @@ theorem gaussian_principal_prefactor (ε r : ℝ) (hε : 0 < ε) (hr : 0 < r) :
     exact fun h => (not_lt_of_ge hre.le) h.1
   have hc : (ε : ℂ) + 2 * (Real.pi : ℂ) * Complex.I * (r : ℂ) =
       (starRingEnd ℂ) b := by simp [b, map_ofNat]
-  change ((Real.pi : ℂ) / b) ^ (1 / 2 : ℂ) *
-    ((Real.pi : ℂ) / ((ε : ℂ) + 2 * (Real.pi : ℂ) * Complex.I * (r : ℂ))) ^
-      (1 / 2 : ℂ) = _
   rw [hc]
   have hd : (Real.pi : ℂ) / (starRingEnd ℂ) b =
       (starRingEnd ℂ) ((Real.pi : ℂ) / b) := by simp
@@ -64,7 +61,6 @@ private theorem real_gaussian_eval (b : ℂ) (hb : 0 < b.re) (v : ℝ) :
       Complex.exp (-b * (x : ℂ) ^ 2)) from by funext x; exact mul_comm _ _]
   rw [fourierIntegral_gaussian hb]
   congr 2
-  have hn : b ≠ 0 := fun h => by simp [h] at hb
   field_simp
   ring
 
@@ -80,13 +76,11 @@ private theorem rotated_integrand (β a ξ : ℂ) (ε : ℝ) (u : ℂ) (hu : ‖
   unfold psi
   rw [← Complex.exp_add, ← Complex.exp_add, norm_sq_unit_coordinates u hu]
   congr 1
-  have hquad := quadratic_re_unit_coordinates β a u hrotate s t
-  have hlin := linear_re_unit_coordinates β u ξ s t
   rw [mul_sub, Complex.sub_re]
   have hq : (β * (a * (u * ((s : ℂ) + (t : ℂ) * Complex.I)) ^ 2)).re =
-      ‖β * a‖ * (s ^ 2 - t ^ 2) := by simpa [mul_assoc] using hquad
+      ‖β * a‖ * (s ^ 2 - t ^ 2) := by simpa [mul_assoc] using (quadratic_re_unit_coordinates β a u hrotate s t)
   have hl : (β * (u * ((s : ℂ) + (t : ℂ) * Complex.I) * ξ)).re =
-      (β * u * ξ).re * s - (β * u * ξ).im * t := by simpa [mul_assoc] using hlin
+      (β * u * ξ).re * s - (β * u * ξ).im * t := by simpa [mul_assoc] using (linear_re_unit_coordinates β u ξ s t)
   rw [hq, hl]
   push_cast
   ring
@@ -104,11 +98,10 @@ theorem damped_gaussian_evaluation (β a ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 
         Complex.exp (-(Real.pi : ℂ) ^ 2 * (p : ℂ) ^ 2 / bMinus -
           (Real.pi : ℂ) ^ 2 * (q : ℂ) ^ 2 / bPlus) := by
   dsimp
-  let bm : ℂ := (ε : ℂ) - 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)
-  let bp : ℂ := (ε : ℂ) + 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)
-  have hm : 0 < bm.re := by simpa [bm] using hε
+  let bm := (ε : ℂ) - 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)
+  let bp := (ε : ℂ) + 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)
   have hp : 0 < bp.re := by simpa [bp] using hε
-  let f : ℂ → ℂ := fun x => Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) *
+  let f := fun x => Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) *
     psi β (a * x ^ 2 - x * ξ)
   have hrot : (∫ x : ℂ, f x) = ∫ x : ℂ, f (u * x) := by
     symm
@@ -126,7 +119,6 @@ theorem damped_gaussian_evaluation (β a ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 
     apply Complex.ext <;> simp
   unfold K mu
   rw [integral_smul_measure, ENNReal.toReal_ofReal (norm_nonneg β)]
-  change (‖β‖ : ℂ) * (∫ x : ℂ, f x) = _
   rw [hrot, hcoords]
   have hsplit : (fun x : ℝ × ℝ => f (u * ((x.1 : ℂ) + (x.2 : ℂ) * Complex.I))) =
       fun x : ℝ × ℝ =>
@@ -137,12 +129,12 @@ theorem damped_gaussian_evaluation (β a ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 
     funext x
     exact rotated_integrand β a ξ ε u hu hrotate x.1 x.2
   rw [hsplit, Measure.volume_eq_prod]
-  rw [integral_prod_mul (μ := (volume : Measure ℝ)) (ν := (volume : Measure ℝ))
+  rw [integral_prod_mul (μ := volume) (ν := volume)
     (f := fun s : ℝ => Complex.exp (-bm * (s : ℂ) ^ 2 +
       Complex.I * (2 * (Real.pi : ℂ) * (-((β * u * ξ).re : ℂ))) * (s : ℂ)))
     (g := fun t : ℝ => Complex.exp (-bp * (t : ℂ) ^ 2 +
       Complex.I * (2 * (Real.pi : ℂ) * ((β * u * ξ).im : ℂ)) * (t : ℂ)))]
-  have hgm := real_gaussian_eval bm hm (- (β * u * ξ).re)
+  have hgm := real_gaussian_eval bm (by simpa [bm] using hε) (- (β * u * ξ).re)
   simp only [Complex.ofReal_neg, neg_sq] at hgm
   rw [hgm, real_gaussian_eval bp hp (β * u * ξ).im]
   rw [mul_mul_mul_comm, ← Complex.exp_add]

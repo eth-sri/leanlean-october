@@ -41,6 +41,8 @@ private theorem intersection_meanHeight_upper_frame
       rw [← map_mul, div_mul_cancel₀ _ h11]
   simp only [KPCuspLogShape.meanHeight, hs, Finset.sum_add_distrib, add_div]
 
+alias ArithmeticHoroballIntersections.intersection_meanHeight_upper_frame := intersection_meanHeight_upper_frame
+
 private theorem intersection_highCusp_upper_frame
     (F : Type) [Field F] [NumberField F]
     (σ : KPCuspArithmetic.PGL2 F)
@@ -50,7 +52,7 @@ private theorem intersection_highCusp_upper_frame
         (T + (∑ i : Fin (KPCuspLogShape.dimension F),
           Real.log ‖(KPCusp.complexPlace F i).embedding (A 0 0 / A 1 1)‖) /
           KPCuspLogShape.dimension F) := by
-  let c : ℝ := (∑ i : Fin (KPCuspLogShape.dimension F),
+  let c := (∑ i : Fin (KPCuspLogShape.dimension F),
     Real.log ‖(KPCusp.complexPlace F i).embedding (A 0 0 / A 1 1)‖) /
       KPCuspLogShape.dimension F
   let u := Matrix.ProjGenLinGroup.mk A
@@ -63,17 +65,19 @@ private theorem intersection_highCusp_upper_frame
     refine ⟨u • w, ?_, ?_⟩
     · change T + c < KPCuspLogShape.meanHeight _ (u • w)
       rw [hh]
-      simpa only [add_comm] using add_lt_add_right hw c
+      simpa using add_lt_add_right hw c
     · exact (mul_smul σ u w).symm
   · rintro ⟨w, hw, rfl⟩
     refine ⟨u⁻¹ • w, ?_, ?_⟩
     · have he := hh (u⁻¹ • w)
-      rw [smul_inv_smul] at he
+      simp at he
       change T < KPCuspLogShape.meanHeight _ (u⁻¹ • w)
       change T + c < KPCuspLogShape.meanHeight _ w at hw
       linarith
     · change (σ * u) • (u⁻¹ • w) = σ • w
-      rw [mul_smul, smul_inv_smul]
+      simp [mul_smul]
+
+alias ArithmeticHoroballIntersections.intersection_highCusp_upper_frame := intersection_highCusp_upper_frame
 
 private theorem intersection_highCusp_same_cusp_shift
     (F : Type) [Field F] [NumberField F]
@@ -100,6 +104,8 @@ private theorem intersection_highCusp_same_cusp_shift
   have he : τ = σ * Matrix.ProjGenLinGroup.mk A := by rw [hA, mul_inv_cancel_left]
   rw [he]
   exact intersection_highCusp_upper_frame F σ A hc T
+
+alias ArithmeticHoroballIntersections.intersection_highCusp_same_cusp_shift := intersection_highCusp_same_cusp_shift
 
 theorem commensurable_uniform_high_cusp_intersection
     (F : Type) [Field F] [NumberField F]
@@ -164,7 +170,7 @@ theorem commensurable_uniform_high_cusp_intersection
     · rw [← he]
       change frame (j s) • w = (d s : KPCuspArithmetic.PGL2 F)⁻¹ •
         (((d s : KPCuspArithmetic.PGL2 F) * frame (j s)) • w)
-      rw [mul_smul, inv_smul_smul]
+      simp [mul_smul]
   refine ⟨t₁ + C, ?_⟩
   intro T hT a b γ z hz hγz
   let t : Γ ⧸ H := QuotientGroup.mk γ⁻¹

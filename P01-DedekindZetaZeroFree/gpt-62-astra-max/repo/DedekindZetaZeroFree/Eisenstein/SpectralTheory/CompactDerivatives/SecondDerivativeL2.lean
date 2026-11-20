@@ -15,7 +15,7 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualCompactSecondL2
 open KPMsClearedTruncationL2
 
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.CompactOrbitL2 renaming span_memLp → span_memLp
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.CompactOrbitL2 (span_memLp)
 
 private theorem compact_second_memLp
     {X K : Type*} [MeasurableSpace X] [Group K]
@@ -28,11 +28,11 @@ private theorem compact_second_memLp
     (hd : ∀ t x, DifferentiableAt ℝ (fun r => f (a (l r) (a (k t) x))) 0)
     (hdd : ∀ x, DifferentiableAt ℝ (fun t => deriv (fun r => f (a (l r) (a (k t) x))) 0) 0) :
     MemLp (fun x => deriv (fun t => deriv (fun r => f (a (l r) (a (k t) x))) 0) 0) 2 μ := by
-  let o : K → X → ℂ := fun b => f ∘ a b
+  let o := fun b => f ∘ a b
   let V := Submodule.span ℂ (Set.range o)
   have ho (b : K) : MemLp (o b) 2 μ := hf.comp_measurePreserving (ha b)
   have hfirst (t : ℝ) : (fun x => deriv (fun r => f (a (l r) (a (k t) x))) 0) ∈ V := by
-    let v : ℝ → X → ℂ := fun r x => f (a (l r) (a (k t) x))
+    let v := fun r x => f (a (l r) (a (k t) x))
     have hv (r : ℝ) : v r ∈ V := by
       have he : v r = o (k t * l r) := by funext x; exact congrArg f (hadd _ _ x)
       rw [he]
@@ -42,7 +42,7 @@ private theorem compact_second_memLp
         (𝓝 (fun x => deriv (fun r => v r x) 0)) := by
       apply tendsto_pi_nhds.mpr
       intro x
-      simpa only [zero_add, Complex.real_smul, Complex.ofReal_inv] using
+      simpa using
         (hd t x).hasDerivAt.tendsto_slope_zero
     exact V.closed_of_finiteDimensional.mem_of_tendsto ht
       (Filter.Eventually.of_forall fun r => V.smul_mem _ (V.sub_mem (hv r) (hv 0)))
@@ -53,25 +53,22 @@ private theorem compact_second_memLp
       (𝓝 (fun x => deriv (fun t => deriv (fun r => f (a (l r) (a (k t) x))) 0) 0)) := by
     apply tendsto_pi_nhds.mpr
     intro x
-    simpa only [zero_add, Complex.real_smul, Complex.ofReal_inv] using
+    simpa using
       (hdd x).hasDerivAt.tendsto_slope_zero
   exact V.closed_of_finiteDimensional.mem_of_tendsto ht
     (Filter.Eventually.of_forall fun t => V.smul_mem _ (V.sub_mem (hfirst t) (hfirst 0)))
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {U : Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {U : Level F ζ hζ}
 
  abbrev WD := KPSmoothActualFlowData.wordDerivative F ζ hζ
 
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes renaming direction_hasDerivAt → direction_hasDerivAt
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes (direction_hasDerivAt)
 
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes renaming compactDirection → compactDirection
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes renaming compactDirectionCurve → compactDirectionCurve
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes renaming compact_direction_curve_insertion → compact_direction_curve_insertion
-open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualCompactTensor renaming compact_directionJet → compact_directionJet
-open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualCompactTensor renaming compact_curve_zero → compact_curve_zero
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalWordRegularity renaming word_mem_smoothSpace → word_mem_smoothSpace
-open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualCompactHaar renaming quotient_compact_measurePreserving → quotient_compact_measurePreserving
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes (compactDirection compactDirectionCurve compact_direction_curve_insertion)
+open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualCompactTensor (compact_directionJet compact_curve_zero)
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalWordRegularity (word_mem_smoothSpace)
+open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualCompactHaar (quotient_compact_measurePreserving)
 
  def compactAction (k : KPMsGreenFlux.K F) : X F ζ hζ → X F ζ hζ :=
   KPSmoothActualFlowData.rightTranslate F ζ hζ (KPMsGreenFlux.compactInsertion F ζ hζ k)
@@ -87,8 +84,11 @@ private theorem compactAction_mul (k l : KPMsGreenFlux.K F) (x : X F ζ hζ) :
     exact congrArg (fun a => g*a)
       ((KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1 _ _).symm
 
-private theorem smooth_word_compact_hasDerivAt
-    (u : smoothSpace F ζ hζ U) (word : List (KPSmoothActualFlowData.B F))
+section
+
+variable (u : smoothSpace F ζ hζ U)
+
+private theorem smooth_word_compact_hasDerivAt (word : List (KPSmoothActualFlowData.B F))
     (w : NumberField.InfinitePlace F) (c : Fin 3) (x : X F ζ hζ) (t : ℝ) :
     HasDerivAt (fun r => WD word u.val (compactAction (compactDirectionCurve w c r) x))
       (![WD ((w,1)::word) u.val,
@@ -97,17 +97,15 @@ private theorem smooth_word_compact_hasDerivAt
         (compactAction (compactDirectionCurve w c t) x)) t := by
   let v : smoothSpace F ζ hζ U := ⟨WD word u.val,
     word_mem_smoothSpace u word⟩
-  have hv := KPMsSameContinuationGreen.SmoothDescent.smooth_pullback v.val v.property.1
   induction x using Quotient.inductionOn with
   | h g =>
     have hh := direction_hasDerivAt
-      (fun a => v.val (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ a)) hv
+      (fun a => v.val (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ a)) (KPMsSameContinuationGreen.SmoothDescent.smooth_pullback v.val v.property.1)
       g (compactDirection w c) t
     simp only [← compact_direction_curve_insertion, compact_directionJet] at hh
     fin_cases c <;> exact hh
 
-private theorem smooth_compact_second_differentiable
-    (u : smoothSpace F ζ hζ U) (w : NumberField.InfinitePlace F) (c : Fin 3)
+private theorem smooth_compact_second_differentiable (w : NumberField.InfinitePlace F) (c : Fin 3)
     (x : X F ζ hζ) :
     DifferentiableAt ℝ (fun t => deriv (fun r => u.val
       (compactAction (compactDirectionCurve w c r)
@@ -129,23 +127,10 @@ private theorem smooth_compact_second_differentiable
   · exact h2.sub h4
   · exact h3.add h5
 
-private theorem smooth_compact_curve_second_memLp
-    (u : smoothSpace F ζ hζ U) (hu : MemLp u.val 2 R.quotientHaar)
-    [FiniteDimensional ℂ (Submodule.span ℂ
-      (Set.range (fun k : KPMsGreenFlux.K F => u.val ∘ compactAction k)))]
-    (w : NumberField.InfinitePlace F) (c : Fin 3) :
-    MemLp (fun x => deriv (fun t => deriv (fun r => u.val
-      (compactAction (compactDirectionCurve w c r)
-        (compactAction (compactDirectionCurve w c t) x))) 0) 0) 2 R.quotientHaar := by
-  exact compact_second_memLp R.quotientHaar compactAction
-    (quotient_compact_measurePreserving R) compactAction_mul u.val hu
-    (compactDirectionCurve w c) (compactDirectionCurve w c)
-    (fun t x => (smooth_word_compact_hasDerivAt u [] w c
-      (compactAction (compactDirectionCurve w c t) x) 0).differentiableAt)
-    (smooth_compact_second_differentiable u w c)
+end
 
 open DedekindZetaZeroFree.FourierContinuation.ResidualCompactTensor (compactTensor_binding)
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.FullSixCoercivity renaming compactTensor → compactTensor
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.FullSixCoercivity (compactTensor)
 
 def compactForcing (u : X F ζ hζ → ℂ) : X F ζ hζ → ℂ :=
   fun x => (∑ w : NumberField.InfinitePlace F,
@@ -159,7 +144,12 @@ theorem smooth_compactForcing_memLp_of_finiteOrbit
   have ht (w : NumberField.InfinitePlace F) :
       MemLp (fun x => compactTensor (fun i j => WD [(w,i),(w,j)] u.val x)) 2 R.quotientHaar := by
     have hh := (memLp_finset_sum Finset.univ (fun c _ =>
-      smooth_compact_curve_second_memLp u hu w c)).neg
+      (compact_second_memLp R.quotientHaar compactAction
+    (quotient_compact_measurePreserving R) compactAction_mul u.val hu
+    (compactDirectionCurve w c) (compactDirectionCurve w c)
+    (fun t x => (smooth_word_compact_hasDerivAt u [] w c
+      (compactAction (compactDirectionCurve w c t) x) 0).differentiableAt)
+    (smooth_compact_second_differentiable u w c)))).neg
     have he : (fun x : X F ζ hζ => compactTensor (fun i j => WD [(w,i),(w,j)] u.val x)) =
         (fun x => -(∑ c : Fin 3, deriv (fun t => deriv (fun r => u.val
           (compactAction (compactDirectionCurve w c r)
@@ -171,8 +161,7 @@ theorem smooth_compactForcing_memLp_of_finiteOrbit
           KPSmoothLocalQuotientCharts.quotientMap F ζ hζ (x.out *
             KPMsGreenFlux.compactInsertion F ζ hζ (compactDirectionCurve w c t) *
             KPMsGreenFlux.compactInsertion F ζ hζ (compactDirectionCurve w c r)) := by
-        have hx : KPSmoothLocalQuotientCharts.quotientMap F ζ hζ x.out = x := Quotient.out_eq x
-        conv_lhs => rw [← hx]
+        conv_lhs => rw [← (Quotient.out_eq x)]
         rfl
       congr 1
       apply Finset.sum_congr rfl
@@ -183,13 +172,8 @@ theorem smooth_compactForcing_memLp_of_finiteOrbit
       funext r
       exact congrArg u.val (hq c t r).symm
     exact MemLp.ae_eq (Filter.Eventually.of_forall (fun x => (congrFun he x).symm)) hh
-  have hs : MemLp (fun x => ∑ w : NumberField.InfinitePlace F,
-      compactTensor (fun i j => WD [(w,i),(w,j)] u.val x)) 2 R.quotientHaar :=
-    memLp_finset_sum Finset.univ (fun w _ => ht w)
-  change MemLp (fun x : X F ζ hζ =>
-    (∑ w, compactTensor (fun i j => WD [(w,i),(w,j)] u.val x)) / (2 : ℂ)) 2 R.quotientHaar
   exact MemLp.ae_eq
-    (Filter.Eventually.of_forall (fun x => (div_eq_mul_inv _ _).symm)) (hs.mul_const (2 : ℂ)⁻¹)
+    (Filter.Eventually.of_forall (fun x => (div_eq_mul_inv _ _).symm)) ((memLp_finset_sum Finset.univ (fun w _ => ht w)).mul_const (2 : ℂ)⁻¹)
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualCompactSecondL2
 

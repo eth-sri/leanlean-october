@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -50,16 +45,6 @@ def ideleNormSubgroup :
     Subgroup (IdeleGroup K) :=
   (RelativeIdeleGroup.norm K L).range
 
-/-- The raw idele norm quotient.  Passing further to principal-idèle
-classes gives the class quotient used in the global reciprocity theorem. -/
-abbrev IdeleNormQuotient :=
-  IdeleGroup K ⧸ ideleNormSubgroup (K := K) (L := L)
-
-/-- The projection to the raw global norm quotient. -/
-def ideleNormClass :
-    IdeleGroup K →* IdeleNormQuotient (K := K) (L := L) :=
-  QuotientGroup.mk' (ideleNormSubgroup (K := K) (L := L))
-
 omit [NumberField L] [IsGalois K L] in
 /-- A relative idele supported at an archimedean place has norm equal
 to the one-place idele of its local determinant norm. -/
@@ -79,11 +64,11 @@ theorem norm_relativeInfinitePlaceIdele
       IdeleGroup.infiniteComponent w
           (RelativeIdeleGroup.norm K L
             (relativeInfinitePlaceIdele
-              (K := K) (L := L) v z)) =
+                v z)) =
         IdeleGroup.infiniteComponent w
           (infinitePlaceIdele v
             (infiniteTensorDetNorm
-              (K := K) (L := L) v z))
+                v z))
     by_cases hw : w = v
     · subst w
       rw [RelativeIdeleGroup.infiniteComponent_norm,
@@ -97,18 +82,18 @@ theorem norm_relativeInfinitePlaceIdele
         infinitePlaceIdele_infiniteComponent_of_ne
           v w
           (infiniteTensorDetNorm
-            (K := K) (L := L) v z) hw]
+              v z) hw]
   · apply RestrictedProduct.ext
     intro w
     change
       IdeleGroup.finiteComponent w
           (RelativeIdeleGroup.norm K L
             (relativeInfinitePlaceIdele
-              (K := K) (L := L) v z)) =
+                v z)) =
         IdeleGroup.finiteComponent w
           (infinitePlaceIdele v
             (infiniteTensorDetNorm
-              (K := K) (L := L) v z))
+                v z))
     rw [RelativeIdeleGroup.finiteComponent_norm,
       relativeInfinitePlaceIdele_finiteComponent,
       map_one,
@@ -131,7 +116,7 @@ theorem infinitePlaceIdele_mem_ideleNormSubgroup_iff
   · rintro ⟨a, ha⟩
     refine
       ⟨RelativeIdeleGroup.infiniteComponent
-          (K := K) (L := L) v a, ?_⟩
+            v a, ?_⟩
     have hcomponent :=
       congrArg (IdeleGroup.infiniteComponent v) ha
     rw [RelativeIdeleGroup.infiniteComponent_norm,
@@ -140,30 +125,9 @@ theorem infinitePlaceIdele_mem_ideleNormSubgroup_iff
   · rintro ⟨z, rfl⟩
     exact
       ⟨relativeInfinitePlaceIdele
-          (K := K) (L := L) v z,
+            v z,
         norm_relativeInfinitePlaceIdele
-          (K := K) (L := L) v z⟩
-
-omit [NumberField L] [IsGalois K L] in
-/-- Kernel-exact form of the archimedean one-place norm statement. -/
-theorem ideleNormClass_comp_infinitePlaceIdele_ker
-    (v : InfinitePlace K) :
-    ((ideleNormClass (K := K) (L := L)).comp
-        (infinitePlaceIdele v)).ker =
-      infiniteTensorNormSubgroup
-        (K := K) (L := L) v := by
-  ext x
-  change
-    QuotientGroup.mk'
-        (ideleNormSubgroup (K := K) (L := L))
-        (infinitePlaceIdele v x) = 1 ↔
-      x ∈ infiniteTensorNormSubgroup
-        (K := K) (L := L) v
-  exact
-    (QuotientGroup.eq_one_iff
-      (infinitePlaceIdele v x)).trans
-      (infinitePlaceIdele_mem_ideleNormSubgroup_iff
-        (K := K) (L := L) v x)
+            v z⟩
 
 omit [NumberField L] [IsGalois K L] in
 /-- A relative idele supported at `v` has norm equal to the one-place
@@ -182,10 +146,10 @@ theorem norm_relativeFinitePlaceIdele
       IdeleGroup.infiniteComponent w
           (RelativeIdeleGroup.norm K L
             (relativeFinitePlaceIdele
-              (K := K) (L := L) v z)) =
+                v z)) =
         IdeleGroup.infiniteComponent w
           (finitePlaceIdele v
-            (localTensorNorm (K := K) (L := L) v z))
+            (localTensorNorm v z))
     rw [RelativeIdeleGroup.infiniteComponent_norm,
       relativeFinitePlaceIdele_infiniteComponent,
       map_one, finitePlaceIdele_infiniteComponent]
@@ -195,10 +159,10 @@ theorem norm_relativeFinitePlaceIdele
       IdeleGroup.finiteComponent w
           (RelativeIdeleGroup.norm K L
             (relativeFinitePlaceIdele
-              (K := K) (L := L) v z)) =
+                v z)) =
         IdeleGroup.finiteComponent w
           (finitePlaceIdele v
-            (localTensorNorm (K := K) (L := L) v z))
+            (localTensorNorm v z))
     by_cases hw : w = v
     · subst w
       rw [RelativeIdeleGroup.finiteComponent_norm,
@@ -208,7 +172,7 @@ theorem norm_relativeFinitePlaceIdele
         relativeFinitePlaceIdele_finiteComponent_of_ne v w z hw,
         map_one,
         finitePlaceIdele_finiteComponent_of_ne v w
-          (localTensorNorm (K := K) (L := L) v z) hw]
+          (localTensorNorm v z) hw]
 
 omit [NumberField L] [IsGalois K L] in
 /-- Exact one-place intersection before quotienting by principal ideles:
@@ -225,7 +189,7 @@ theorem finitePlaceIdele_mem_ideleNormSubgroup_iff
   · rintro ⟨a, ha⟩
     refine
       ⟨RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L) v a, ?_⟩
+            v a, ?_⟩
     have hcomponent :=
       congrArg (IdeleGroup.finiteComponent v) ha
     rw [RelativeIdeleGroup.finiteComponent_norm,
@@ -234,9 +198,9 @@ theorem finitePlaceIdele_mem_ideleNormSubgroup_iff
   · rintro ⟨z, rfl⟩
     exact
       ⟨relativeFinitePlaceIdele
-          (K := K) (L := L) v z,
+            v z,
         norm_relativeFinitePlaceIdele
-          (K := K) (L := L) v z⟩
+            v z⟩
 
 omit [NumberField L] in
 /-- The finite-place tensor form with the actual chosen completion
@@ -249,10 +213,10 @@ theorem finitePlaceIdele_mem_ideleNormSubgroup_iff_chosenLocalNorm
       x ∈ chosenFinitePlaceLocalNormSubgroup
         (K := K) (L := L) v := by
   rw [finitePlaceIdele_mem_ideleNormSubgroup_iff
-    (K := K) (L := L)]
+     ]
   exact SetLike.ext_iff.mp
     (finitePlaceLocalTensorNorm_range_eq_chosenLocalNormSubgroup
-      (K := K) (L := L) v) x
+        v) x
 
 /-- A chosen local norm at one finite place gives an actual global
 idele-class norm.  The witness is the relative idele supported at that
@@ -265,67 +229,23 @@ theorem finitePlaceIdeleClass_mem_ideleClassNorm_range_of_mem_chosenLocalNorm
         (K := K) (L := L) v) :
     IdeleGroup.finitePlaceIdeleClass v x ∈
       (_root_.ideleClassNorm K L).range := by
-  have hnorm :
-      IdeleGroup.finitePlaceIdele v x ∈
-        ideleNormSubgroup (K := K) (L := L) :=
-    (finitePlaceIdele_mem_ideleNormSubgroup_iff_chosenLocalNorm
-      (K := K) (L := L) v x).2 hx
-  obtain ⟨z, hz⟩ := hnorm
+  obtain ⟨z, hz⟩ := ((finitePlaceIdele_mem_ideleNormSubgroup_iff_chosenLocalNorm
+    v x).2 hx)
   refine
     ⟨QuotientGroup.mk'
         (IdeleGroup.principalSubgroup L)
         (_root_.relativeIdeleBaseChangeMulEquiv
-          (K := K) (L := L) z), ?_⟩
+            z), ?_⟩
   change
     QuotientGroup.mk'
         (IdeleGroup.principalSubgroup K)
         (IdeleGroup.norm K L
           (_root_.relativeIdeleBaseChangeMulEquiv
-            (K := K) (L := L) z)) =
+              z)) =
       QuotientGroup.mk'
         (IdeleGroup.principalSubgroup K)
         (IdeleGroup.finitePlaceIdele v x)
   rw [IdeleGroup.norm_relativeIdeleBaseChangeMulEquiv, hz]
-
-omit [NumberField L] in
-/-- Kernel-exact form of the one-place norm statement. -/
-theorem ideleNormClass_comp_finitePlaceIdele_ker
-    (v : HeightOneSpectrum (𝓞 K)) :
-    ((ideleNormClass (K := K) (L := L)).comp
-        (finitePlaceIdele v)).ker =
-      chosenFinitePlaceLocalNormSubgroup
-        (K := K) (L := L) v := by
-  ext x
-  change
-    ideleNormClass (K := K) (L := L)
-        (finitePlaceIdele v x) = 1 ↔
-      x ∈ chosenFinitePlaceLocalNormSubgroup
-        (K := K) (L := L) v
-  change
-    QuotientGroup.mk'
-        (ideleNormSubgroup (K := K) (L := L))
-        (finitePlaceIdele v x) = 1 ↔
-      x ∈ chosenFinitePlaceLocalNormSubgroup
-        (K := K) (L := L) v
-  constructor
-  · intro hx
-    have hmem :
-        finitePlaceIdele v x ∈
-          ideleNormSubgroup (K := K) (L := L) :=
-      (QuotientGroup.eq_one_iff
-        (N := ideleNormSubgroup (K := K) (L := L))
-        (x := finitePlaceIdele v x)).mp hx
-    exact
-      (finitePlaceIdele_mem_ideleNormSubgroup_iff_chosenLocalNorm
-        (K := K) (L := L) v x).mp hmem
-  · intro hx
-    apply
-      (QuotientGroup.eq_one_iff
-        (N := ideleNormSubgroup (K := K) (L := L))
-        (x := finitePlaceIdele v x)).mpr
-    exact
-      (finitePlaceIdele_mem_ideleNormSubgroup_iff_chosenLocalNorm
-        (K := K) (L := L) v x).mpr hx
 
 end Reciprocity
 end GlobalClassFieldTheory

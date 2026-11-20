@@ -15,43 +15,50 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayCoset
 
 variable {K : Type} [Field K] [NumberField K]
 
-def orbitRepresentative (D : Data K) (x : X D) : Cx D := Quotient.out x
+section
 
-@[simp] theorem orbitMk_orbitRepresentative (D : Data K) (x : X D) :
+variable (D : Data K) (x : X D)
+
+def orbitRepresentative : Cx D := Quotient.out x
+
+@[simp] theorem orbitMk_orbitRepresentative :
     orbitMk D (orbitRepresentative D x) = x := Quotient.out_eq x
 
-theorem orbitParametrization_bijective (D : Data K) (ρ : X D → Cx D)
-    (hρ : ∀ x, orbitMk D (ρ x) = x) :
+end
+
+section
+
+variable (D : Data K) (ρ : X D → Cx D) (hρ : ∀ x, orbitMk D (ρ x) = x)
+
+include hρ in
+theorem orbitParametrization_bijective :
     Function.Bijective (fun p : X D × U K D.m => p.2 • ρ p.1) := by
   constructor
   · rintro ⟨x, u⟩ ⟨y, v⟩ h
     change u • ρ x = v • ρ y at h
     have horb (z : X D) (w : U K D.m) : orbitMk D (w • ρ z) = z := by
       calc
-        orbitMk D (w • ρ z) = orbitMk D (ρ z) := Quotient.sound ⟨w, rfl⟩
+        _ = orbitMk D (ρ z) := Quotient.sound ⟨w, rfl⟩
         _ = z := hρ z
     have hxy : x = y := by
       rw [← horb x u, ← horb y v, h]
     subst y
-    have hv : (u.val : 𝓞 K) = (v.val : 𝓞 K) :=
-      mul_right_cancel₀ ((mem_Cnonzero_iff D _).mp (ρ x).property).2
-        (congrArg Subtype.val h)
-    have huv : u = v := Subtype.ext (Units.val_injective hv)
+    have huv := Subtype.ext (Units.val_injective (mul_right_cancel₀ ((mem_Cnonzero_iff D _).mp (ρ x).property).2
+      (congrArg Subtype.val h)))
     subst v
     rfl
   · intro α
-    have h : orbitMk D α = orbitMk D (ρ (orbitMk D α)) := (hρ _).symm
-    obtain ⟨u, hu⟩ := Quotient.exact h
+    obtain ⟨u, hu⟩ := Quotient.exact ((hρ _).symm)
     exact ⟨(orbitMk D α, u), hu⟩
 
-def orbitProductEquiv (D : Data K) (ρ : X D → Cx D)
-    (hρ : ∀ x, orbitMk D (ρ x) = x) : X D × U K D.m ≃ Cx D :=
+def orbitProductEquiv : X D × U K D.m ≃ Cx D :=
   Equiv.ofBijective (fun p => p.2 • ρ p.1)
     (orbitParametrization_bijective D ρ hρ)
 
-@[simp] theorem orbitProductEquiv_apply (D : Data K) (ρ : X D → Cx D)
-    (hρ : ∀ x, orbitMk D (ρ x) = x) (x : X D) (u : U K D.m) :
+@[simp] theorem orbitProductEquiv_apply (x : X D) (u : U K D.m) :
     orbitProductEquiv D ρ hρ (x,u) = u • ρ x := rfl
+
+end
 
 def chosenOrbitProductEquiv (D : Data K) : X D × U K D.m ≃ Cx D :=
   orbitProductEquiv D (orbitRepresentative D) (orbitMk_orbitRepresentative D)
@@ -72,6 +79,8 @@ private theorem Q_smul (q : InfinitePlace K → ℝ) (r : ℝ)
   simp only [RayParity.Q, ContinuousLinearEquiv.apply_symm_apply, map_smul]
   ext v <;> simp [NumberField.mixedEmbedding.mixedSpaceOfRealSpace, mul_smul_comm]
 
+alias ParityRayUnitOrbits.Q_smul := Q_smul
+
 private theorem Q_realCoordinate (q : InfinitePlace K → ℝ)
     (x : NumberField.mixedEmbedding.euclidean.mixedSpace K) (v : RealPlaces K) :
     Theta.traceRealCoordinateCLM K v (RayParity.Q K q x) =
@@ -87,7 +96,11 @@ private theorem absEmbedding_real (m : Ideal (𝓞 K)) (u : U K m)
   rw [← InfinitePlace.norm_embedding_of_isReal v.property, Real.norm_eq_abs]
   exact abs_of_pos (u.property.2 (realEmbedding K v))
 
-private theorem norm_Q_normalized (D : Data K) (q : InfinitePlace K → ℝ)
+section
+
+variable (D : Data K)
+
+private theorem norm_Q_normalized (q : InfinitePlace K → ℝ)
     (hq : ∀ v, q v ≠ 0) (α : 𝓞 K) :
     ‖RayParity.Q K q (normalizedEmbedding D α)‖ ^ 2 =
       normalizationScale D ^ 2 *
@@ -96,7 +109,7 @@ private theorem norm_Q_normalized (D : Data K) (q : InfinitePlace K → ℝ)
     Real.norm_eq_abs, sq_abs, RayParity.Q_eq_traceRadialScale K q hq,
     Theta.norm_sq_traceRadialScale_traceEmbedding]
 
-theorem gδ_normalizedEmbedding_smul (D : Data K)
+theorem gδ_normalizedEmbedding_smul
     (δ : Finset (RealPlaces K)) (α : Cx D) (u : U K D.m)
     (q : InfinitePlace K → ℝ) (hq : ∀ v, 0 < q v) :
     RayParity.gδ K δ
@@ -129,10 +142,12 @@ theorem gδ_normalizedEmbedding_smul (D : Data K)
     ring
   · simp only [Theta.latticeGaussian, ← Complex.ofReal_pow, hn]
 
-theorem countable_Cx (D : Data K) : Countable (Cx D) := by
+theorem countable_Cx : Countable (Cx D) := by
   letI : Countable K := (Module.finBasis ℚ K).equivFun.injective.countable
   letI : Countable (𝓞 K) := RingOfIntegers.coe_injective.countable
   infer_instance
+
+end
 
 theorem countable_U (m : Ideal (𝓞 K)) : Countable (U K m) := by
   letI : Countable K := (Module.finBasis ℚ K).equivFun.injective.countable
@@ -142,9 +157,9 @@ theorem countable_U (m : Ideal (𝓞 K)) : Countable (U K m) := by
 
 theorem countable_rayUnitLogLattice (m : Ideal (𝓞 K)) :
     Countable (rayUnitLogLattice K m) := by
-  letI := countable_U (K := K) m
-  have hc : Countable (Multiplicative (rayUnitLogLattice K m)) :=
-    (rayUnitLogMap_surjective (K := K) m).countable
+  letI := countable_U m
+  have hc :=
+    (rayUnitLogMap_surjective m).countable
   exact Multiplicative.ofAdd.injective.countable
 
 end DedekindZetaZeroFree.AbelianQuotient.RayCoset

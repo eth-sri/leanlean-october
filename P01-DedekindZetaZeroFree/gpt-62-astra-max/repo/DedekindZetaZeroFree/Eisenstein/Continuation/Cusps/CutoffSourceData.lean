@@ -17,17 +17,23 @@ structure SmoothCuspCutoff (T : ℝ) where
   zero_below : ∀ t, t ≤ T → toFun t = 0
   one_above : ∀ t, T + 1 ≤ t → toFun t = 1
 
-def radialCutoff (d : ℕ) (χ : ℝ → ℝ) (s b : ℂ) (t : ℝ) : ℂ :=
+section
+
+variable (d : ℕ) (χ : ℝ → ℝ)
+
+def radialCutoff (s b : ℂ) (t : ℝ) : ℂ :=
   (χ t : ℂ) * KPIncomingCasimir.heightFactor d s t * b
 
-def radialCommutator (d : ℕ) (χ : ℝ → ℝ) (w : ℝ → ℂ) (t : ℝ) : ℂ :=
+def radialCommutator (w : ℝ → ℂ) (t : ℝ) : ℂ :=
   (-((d : ℂ)⁻¹) * ((deriv (deriv χ) t : ℝ) : ℂ) + 2 * ((deriv χ t : ℝ) : ℂ)) * w t -
     2 * (d : ℂ)⁻¹ * ((deriv χ t : ℝ) : ℂ) * deriv w t
 
-def incomingCommutatorMultiplier (d : ℕ) (χ : ℝ → ℝ)
+def incomingCommutatorMultiplier
     (s : ℂ) (t : ℝ) : ℂ :=
   -((d : ℂ)⁻¹) * ((deriv (deriv χ) t : ℝ) : ℂ) + 2 * ((deriv χ t : ℝ) : ℂ) -
     2 * ((4 : ℂ) / 3 + 2 * s) * ((deriv χ t : ℝ) : ℂ)
+
+end
 
 theorem radialCutoff_smooth (d : ℕ) {T : ℝ} (χ : SmoothCuspCutoff T) (s b : ℂ) :
     ContDiff ℝ (⊤ : ℕ∞) (radialCutoff d χ.toFun s b) := by
@@ -38,9 +44,7 @@ theorem radialCutoff_smooth (d : ℕ) {T : ℝ} (χ : SmoothCuspCutoff T) (s b :
       exact (Complex.ofRealCLM_apply t).symm
     rw [hcoe]
     exact Complex.ofRealCLM.contDiff
-  have hχ : ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ => (χ.toFun t : ℂ)) :=
-    hcast.comp χ.smooth
-  exact (hχ.mul (Complex.contDiff_exp.comp
+  exact ((hcast.comp χ.smooth).mul (Complex.contDiff_exp.comp
     ((contDiff_const.mul hcast) : ContDiff ℝ (⊤ : ℕ∞)
       (fun t : ℝ => ((d : ℂ) * ((4 : ℂ) / 3 + 2 * s)) * (t : ℂ))))).mul contDiff_const
 
@@ -55,8 +59,7 @@ private theorem wave_hasDerivAt (d : ℕ) (s b : ℂ) (t : ℝ) :
       ((d : ℂ) * ((4 : ℂ) / 3 + 2 * s))).cexp.mul_const b)
 
 private theorem cutoff_hasDerivAt {T : ℝ} (χ : SmoothCuspCutoff T) (t : ℝ) :
-    HasDerivAt (fun u : ℝ => (χ.toFun u : ℂ)) ((deriv χ.toFun t : ℝ) : ℂ) t := by
-  exact ((χ.smooth.differentiable (by simp)) t).hasDerivAt.ofReal_comp
+    HasDerivAt (fun u : ℝ => (χ.toFun u : ℂ)) ((deriv χ.toFun t : ℝ) : ℂ) t := ((χ.smooth.differentiable (by simp)) t).hasDerivAt.ofReal_comp
 
 theorem radialCutoff_equation (d : ℕ) (hd : 0 < d) {T : ℝ}
     (χ : SmoothCuspCutoff T) (s b : ℂ) (t : ℝ) :
@@ -118,9 +121,9 @@ theorem incoming_commutator_support (d : ℕ) {T : ℝ}
       exact χ.one_above u (le_of_lt hu)
   obtain ⟨c, hc⟩ := hconst
   have hfirst : deriv χ.toFun t = 0 := by
-    simpa only [deriv_const] using hc.deriv_eq
+    simpa using hc.deriv_eq
   have hsecond : deriv (deriv χ.toFun) t = 0 := by
-    simpa only [deriv_const', deriv_const] using hc.deriv.deriv_eq
+    simpa using hc.deriv.deriv_eq
   simp [incomingCommutatorMultiplier, hfirst, hsecond]
 
 section AllCusps
@@ -154,16 +157,15 @@ theorem cutoffSum_at_every_cusp {T : ℝ} (ends : A → Set X)
   rw [Finset.sum_eq_single a]
   · simp [hx, (χ a).one_above _ ht]
   · intro b _ hba
-    have hxb : x ∉ ends b := by
-      intro hb
-      exact Set.disjoint_left.mp (hdisjoint hba) hb hx
+    have hxb : x ∉ ends b := fun hb => Set.disjoint_left.mp (hdisjoint hba) hb hx
     simp [hxb]
   · simp
 
 end AllCusps
 
-def ChartSmoothHolomorphicOn {n : ℕ} (B : KPContLocalNorm.LocalBall n)
-    (g : ℂ → KPContLocalNorm.Space n → ℂ) (Ω : Set ℂ) : Prop :=
+variable {n : ℕ} (B : KPContLocalNorm.LocalBall n) (g : ℂ → KPContLocalNorm.Space n → ℂ) (Ω : Set ℂ)
+
+def ChartSmoothHolomorphicOn : Prop :=
   (∀ s ∈ Ω, ContDiffOn ℝ (⊤ : ℕ∞) (g s) B.carrier) ∧
   ∀ (K : Set (KPContLocalNorm.Space n)) (hcompact : IsCompact K), K ⊆ B.carrier →
     ∀ m : ℕ,
@@ -173,8 +175,7 @@ def ChartSmoothHolomorphicOn {n : ℕ} (B : KPContLocalNorm.LocalBall n)
         ∀ s ∈ Ω, ∀ α, ∀ x : K, j s α x =
           KPContLocalNorm.coordinateDerivative α (g s) x
 
-def ChartSobolevHolomorphicOn {n : ℕ} (B : KPContLocalNorm.LocalBall n)
-    (g : ℂ → KPContLocalNorm.Space n → ℂ) (Ω : Set ℂ) : Prop :=
+def ChartSobolevHolomorphicOn : Prop :=
   ∀ k : ℕ, ∃ v : ℂ → (KPContLocalNorm.MultiIndex n k → KPContLocalNorm.BallL2 B),
     DifferentiableOn ℂ v Ω ∧
     ∀ s ∈ Ω, ∀ α,

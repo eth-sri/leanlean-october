@@ -75,8 +75,7 @@ theorem raw_lower_caps_of_positive_north
   · rw [hsym t, hcap (-t) (by linarith) (by linarith)]
     congr 1
     ring
-  · have ht0' : 0 ≤ t := le_of_not_gt ht0
-    by_cases htend : t = 1
+  · by_cases htend : t = 1
     · subst t
       have hset : {y : rawSphere | (y : rawAmbient) 0 ≤ (1 : ℝ)} = univ := by
         ext y
@@ -85,17 +84,16 @@ theorem raw_lower_caps_of_positive_north
           calc
             _ ≤ ‖(y : rawAmbient)‖ := PiLp.norm_apply_le _ _
             _ = 1 := mem_sphere_zero_iff_norm.mp y.property
-        exact (abs_le.mp (by simpa [Real.norm_eq_abs] using h)).2
+        exact (abs_le.mp (by assumption)).2
       rw [hset, hmass]
       congr 1
       ring
-    · have htlt : t < 1 := lt_of_le_of_ne ht1 htend
-      have hc : {y : rawSphere | (y : rawAmbient) 0 ≤ t} =
+    · have hc : {y : rawSphere | (y : rawAmbient) 0 ≤ t} =
           {y : rawSphere | t < (y : rawAmbient) 0}ᶜ := by
         ext y
-        simp only [mem_setOf_eq, mem_compl_iff, not_lt]
+        simp
       rw [hc, measure_compl (by measurability) (measure_ne_top _ _), hmass,
-        open_north_cap_of_closed μ hcap t ht0' htlt,
+        open_north_cap_of_closed μ hcap t (le_of_not_gt ht0) (lt_of_le_of_ne ht1 htend),
         ← ENNReal.ofReal_sub (4 * Real.pi) (by positivity : 0 ≤ 2 * Real.pi * (1 - t))]
       congr 1
       ring
@@ -104,7 +102,7 @@ theorem raw_cap_distribution (t : ℝ) (ht : -1 ≤ t) (ht1 : t ≤ 1) :
     (volume : Measure rawAmbient).toSphere {y : rawSphere | (y : rawAmbient) 0 ≤ t} =
       ENNReal.ofReal (2 * Real.pi * (t + 1)) := by
   apply raw_lower_caps_of_positive_north
-    (volume : Measure rawAmbient).toSphere raw_mass ?_ ?_ t ht ht1
+    volume.toSphere raw_mass ?_ ?_ t ht ht1
   · intro s
     let g : rawAmbient ≃ₗᵢ[ℝ] rawAmbient := LinearIsometryEquiv.neg ℝ
     have hm : MeasurableSet {y : rawSphere | (y : rawAmbient) 0 ≤ s} := by measurability
@@ -165,9 +163,7 @@ theorem projection_of_raw_caps
         rintro ⟨hz, -, hz1⟩
         linarith
       simp [hpre, hinter]
-    · have ha0 : 0 ≤ a := le_of_lt (lt_of_not_ge ha)
-      have ha1' : a ≤ 1 := le_of_not_gt ha1
-      have hpre : (fun y : rawSphere => (1 - (y : rawAmbient) 0) / 2) ⁻¹' Ici a =
+    · have hpre : (fun y : rawSphere => (1 - (y : rawAmbient) 0) / 2) ⁻¹' Ici a =
           {y : rawSphere | (y : rawAmbient) 0 ≤ 1 - 2 * a} := by
         ext y
         simp only [mem_preimage, mem_Ici, mem_setOf_eq]
@@ -177,7 +173,7 @@ theorem projection_of_raw_caps
         simp only [mem_inter_iff, mem_Ici, mem_Icc]
         constructor
         · exact fun h => ⟨h.1, h.2.2⟩
-        · exact fun h => ⟨h.1, ha0.trans h.1, h.2⟩
+        · exact fun h => ⟨h.1, (le_of_lt (lt_of_not_ge ha)).trans h.1, h.2⟩
       rw [hpre, hinter, rawSphereArea, Measure.smul_apply, smul_eq_mul, hmass,
         hcap (1 - 2 * a) (by linarith) (by linarith), Real.volume_Icc]
       rw [show 2 * Real.pi * (1 - 2 * a + 1) = (4 * Real.pi) * (1 - a) by ring]

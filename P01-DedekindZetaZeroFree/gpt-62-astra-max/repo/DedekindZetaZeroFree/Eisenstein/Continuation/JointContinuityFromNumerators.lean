@@ -13,9 +13,9 @@ open MomentSources ThetaExpansion
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
-variable {B : JointRootAlignedSources R N} {v : R.A.UnitQuotient}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {B : JointRootAlignedSources R N} {v : R.A.UnitQuotient}
 
  theorem selected_joint_from_numerators
     (D : SelectedScalarBranch R B v) (P : SelectedPoleSet D)
@@ -45,21 +45,16 @@ variable {B : JointRootAlignedSources R N} {v : R.A.UnitQuotient}
   intro c hc
   obtain ⟨r, hr, hb, T, hTa, hTj, hTe⟩ := hlocal c hc.1
   obtain ⟨t, ht, htB⟩ := regular_ball D P c hc
-  have hne := eventually_codiscreteWithin_iff_forall_eventually_nhdsNE.mp hn c hc.1
-  obtain ⟨u, hu, huB⟩ := Metric.mem_nhdsWithin_iff.mp hne
+  obtain ⟨u, hu, huB⟩ := Metric.mem_nhdsWithin_iff.mp (eventually_codiscreteWithin_iff_forall_eventually_nhdsNE.mp hn c hc.1)
   let ρ := min r (min t u)
-  have hρ : 0 < ρ := lt_min hr (lt_min ht hu)
   have hρr : ρ ≤ r := min_le_left _ _
   have hρt : ρ ≤ t := (min_le_right _ _).trans (min_le_left _ _)
-  have hρu : ρ ≤ u := (min_le_right _ _).trans (min_le_right _ _)
   have hreg : Metric.ball c ρ ⊆ KPContinuation.spectralDomain \ P.poles :=
     (Metric.ball_subset_ball hρt).trans htB
-  have hqne : ∀ s ∈ Metric.ball c ρ \ {c}, Q s ≠ 0 := by
-    intro s hs
-    exact huB ⟨Metric.ball_subset_ball hρu hs.1,
+  have hqne : ∀ s ∈ Metric.ball c ρ \ {c}, Q s ≠ 0 := fun s hs => huB ⟨Metric.ball_subset_ball ((min_le_right _ _).trans (min_le_right _ _)) hs.1,
       hs.2⟩ (hreg hs.1).1
-  refine ⟨ρ, hρ, hreg, ?_⟩
-  let V : ℂ → Functions R := fun s g => T s g / ((s - c) * Q s)
+  refine ⟨ρ, (lt_min hr (lt_min ht hu)), hreg, ?_⟩
+  let V := fun s g => T s g / ((s - c) * Q s)
   have hVj : ContinuousOn (fun p : ℂ × Group R => V p.1 p.2)
       ((Metric.ball c ρ \ {c}) ×ˢ Set.univ) := by
     apply (hTj.mono (Set.prod_mono
@@ -72,26 +67,17 @@ variable {B : JointRootAlignedSources R N} {v : R.A.UnitQuotient}
         (hqne p.1 hp.1)
   apply hVj.congr
   intro p hp
-  have hz : p.1 ≠ c := fun he => hp.1.2 (Set.mem_singleton_iff.mpr he)
-  have hq := hqne p.1 hp.1
-  have hVa : AnalyticAt ℂ (fun z => V z p.2) p.1 :=
-    (hTa p.2 p.1 (Metric.ball_subset_ball hρr hp.1.1)).div
-      ((analyticAt_id.sub analyticAt_const).mul (hQ p.1 (hreg hp.1.1).1))
-      (mul_ne_zero (sub_ne_zero.mpr hz) hq)
-  have heD := D.germ_eq_of_weighted_chamber Q A hQ (by simp [hQ0]) hA hch p.2
-    (hreg hp.1.1).1
-  have heT : (fun z => A z p.2 / Q z) =ᶠ[𝓝[≠] p.1] (fun z => V z p.2) := by
-    have hnball : Metric.ball c r ∈ 𝓝 p.1 :=
-      Metric.isOpen_ball.mem_nhds (Metric.ball_subset_ball hρr hp.1.1)
-    have hnne : {z : ℂ | z ≠ c} ∈ 𝓝 p.1 := isOpen_ne.mem_nhds hz
-    filter_upwards [nhdsWithin_le_nhds (inter_mem hnball hnne)] with z hz
-    have he := congrFun (hTe z hz.1 hz.2) p.2
-    change T z p.2 = (z - c) * A z p.2 at he
-    dsimp [V]
-    rw [he, mul_div_mul_left _ _ (sub_ne_zero.mpr hz.2)]
-  have hDc := (P.regular p.1 (hreg hp.1.1).1 (hreg hp.1.1).2 p.2).continuousAt
-  exact ((hDc.eventuallyEq_nhds_iff_eventuallyEq_nhdsNE hVa.continuousAt).mp
-    (heD.trans heT)).eq_of_nhds
+  have hz := fun he => hp.1.2 (Set.mem_singleton_iff.mpr he)
+  refine ((((P.regular p.1 (hreg hp.1.1).1 (hreg hp.1.1).2 p.2).continuousAt).eventuallyEq_nhds_iff_eventuallyEq_nhdsNE ((hTa p.2 p.1 (Metric.ball_subset_ball hρr hp.1.1)).div
+    ((analyticAt_id.sub analyticAt_const).mul (hQ p.1 (hreg hp.1.1).1))
+    (mul_ne_zero (sub_ne_zero.mpr hz) (hqne p.1 hp.1))).continuousAt).mp
+    ((D.germ_eq_of_weighted_chamber Q A hQ (by simp [hQ0]) hA hch p.2
+      (hreg hp.1.1).1).trans ?_)).eq_of_nhds
+  filter_upwards [nhdsWithin_le_nhds (inter_mem (Metric.isOpen_ball.mem_nhds (Metric.ball_subset_ball hρr hp.1.1)) (isOpen_ne.mem_nhds hz))] with z hz
+  have he := congrFun (hTe z hz.1 hz.2) p.2
+  change T z p.2 = (z - c) * A z p.2 at he
+  dsimp [V]
+  rw [he, mul_div_mul_left _ _ (sub_ne_zero.mpr hz.2)]
 
  theorem selected_regular_joint
     (R : PrincipalMellin.ActualRecipe S η) {N : TraceHaarTransport R}
@@ -111,7 +97,7 @@ variable {B : JointRootAlignedSources R N} {v : R.A.UnitQuotient}
   obtain ⟨C, _⟩ := KPGlobalTorusFiniteStages.compatibleModelData_exists F ζ hζ L
   obtain ⟨Haar, _, _, T, ⟨H⟩⟩ :=
     kp_ms_fixed_haar_disintegration F ζ hζ
-      (Measure.haar : Measure (KPLiteralRaw.G F ζ hζ)) inferInstance
+      Measure.haar inferInstance
   obtain ⟨Q, A, hQ, hQ0, hA, hch, hlocal⟩ :=
     literal_joint_numerators F ζ hζ C Haar T H B.sources.K B.sources.iwasawa (B.sources.flat v)
   exact selected_joint_from_numerators D P Q A hQ hQ0 hA hch hlocal

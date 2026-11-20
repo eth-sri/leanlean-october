@@ -19,12 +19,6 @@ theorem isCompact_box
       KPCuspLogShape.hyperplane (KPCuspLogShape.dimension F)) × ℝ →
       KPArch.Space (KPCuspLogShape.dimension F) :=
     fun p i => (p.1.1 i, p.2 + (p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i)
-  have hf : Continuous f := by
-    apply continuous_pi
-    intro i
-    exact ((continuous_apply i).comp continuous_fst.fst).prodMk
-      (continuous_snd.add ((continuous_apply i).comp
-        (continuous_subtype_val.comp continuous_fst.snd)))
   have he : box F P B I = f '' ((P ×ˢ B) ×ˢ I) := by
     ext z
     constructor
@@ -33,7 +27,12 @@ theorem isCompact_box
     · rintro ⟨⟨⟨x, b⟩, t⟩, ⟨⟨hx, hb⟩, ht⟩, rfl⟩
       exact ⟨x, hx, b, hb, t, ht, rfl⟩
   rw [he]
-  exact ((hP.prod hB).prod hI).image hf
+  refine ((hP.prod hB).prod hI).image ?_
+  apply continuous_pi
+  intro i
+  exact ((continuous_apply i).comp continuous_fst.fst).prodMk
+    (continuous_snd.add ((continuous_apply i).comp
+      (continuous_subtype_val.comp continuous_fst.snd)))
 
 theorem continuous_arch_action (A : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     Continuous (KPArch.action A) := by
@@ -52,7 +51,7 @@ theorem continuous_arch_action (A : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
   · apply Continuous.div
     · unfold KPArch.height
       fun_prop
-    · exact (Complex.continuous_ofReal.comp hden)
+    · fun_prop
     · intro z
       exact_mod_cast ne_of_gt (KPArch.actionDenominator_pos A z)
   · apply Continuous.log hq
@@ -62,7 +61,6 @@ theorem continuous_arch_action (A : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
 
 theorem continuous_action (g : KPCuspArithmetic.PGL2 F) :
     Continuous (action F g) := by
-  change Continuous (glAction F (Classical.choose (Matrix.ProjGenLinGroup.mk_surjective g)))
   apply continuous_pi
   intro i
   exact (continuous_arch_action _).comp (continuous_apply i)

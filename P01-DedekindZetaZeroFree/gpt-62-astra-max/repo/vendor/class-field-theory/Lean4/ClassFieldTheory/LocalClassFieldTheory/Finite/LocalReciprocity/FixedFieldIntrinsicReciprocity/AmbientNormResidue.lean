@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -111,22 +108,17 @@ structure AmbientEmbeddedFixedFieldPresentation
 
 namespace AmbientEmbeddedFixedFieldPresentation
 
+variable {K F E : Type} [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+    [Field F] [ValuativeRel F] [TopologicalSpace F] [IsNonarchimedeanLocalField F] [Field E]
+    [Algebra K F] [Algebra F E] [Algebra K E] [IsScalarTower K F E] [FiniteDimensional K F]
+    [Algebra.IsSeparable K F]
+    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
+    [FiniteDimensional F E] [IsGalois F E] {j : E →ₐ[K] SeparableClosure K}
+    (P : AmbientEmbeddedFixedFieldPresentation K F E j)
+
 /-- The canonical quotient equivalence from an ambient finite fixed-field
 extension to the Galois group of its relative fixed field. -/
-noncomputable def fixedFieldQuotientEquiv
-    {K F E : Type}
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsGalois F E]
-    {j : E →ₐ[K] SeparableClosure K}
-    (P : AmbientEmbeddedFixedFieldPresentation K F E j) :
+noncomputable def fixedFieldQuotientEquiv :
     P.extension.extensionQuotient ≃*
       Gal(abstractRelativeFixedField K (SeparableClosure K)
         P.extension.below /
@@ -139,20 +131,7 @@ noncomputable def fixedFieldQuotientEquiv
 /-- The actual additive equivalence obtained by transporting abelianized
 relative fixed-field Galois elements through an ambient fixed-field
 presentation. -/
-noncomputable def abelianizedTransport
-    {K F E : Type}
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsGalois F E]
-    {j : E →ₐ[K] SeparableClosure K}
-    (P : AmbientEmbeddedFixedFieldPresentation K F E j) :
+noncomputable def abelianizedTransport :
     Additive
       (Abelianization
         Gal(abstractRelativeFixedField K (SeparableClosure K)
@@ -165,19 +144,6 @@ noncomputable def abelianizedTransport
 /-- Evaluate the ambient fixed-field norm-residue construction using this
 presentation's actual finite quotient and base-field realization. -/
 noncomputable def normResidueAbelianElement
-    {K F E : Type}
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsGalois F E]
-    {j : E →ₐ[K] SeparableClosure K}
-    (P : AmbientEmbeddedFixedFieldPresentation K F E j)
     (a : Fˣ) : Abelianization Gal(E / F) := by
   letI : (extensionSubgroup
       P.base.field P.extension.field P.extension.below).Normal :=
@@ -210,19 +176,6 @@ noncomputable def normResidueAbelianElement
 value.  It exposes only the actual finite quotient equivalences carried by
 the presentation. -/
 theorem normResidueAbelianElement_apply
-    {K F E : Type}
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsGalois F E]
-    {j : E →ₐ[K] SeparableClosure K}
-    (P : AmbientEmbeddedFixedFieldPresentation K F E j)
     (a : Fˣ) :
     letI : (extensionSubgroup
         P.base.field P.extension.field P.extension.below).Normal :=
@@ -255,22 +208,19 @@ theorem normResidueAbelianElement_apply
 
 end AmbientEmbeddedFixedFieldPresentation
 
+section
+
+variable (K F E : Type) [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+    [Field F] [ValuativeRel F] [TopologicalSpace F] [IsNonarchimedeanLocalField F] [Field E]
+    [Algebra K F] [Algebra F E] [Algebra K E] [IsScalarTower K F E] [FiniteDimensional K F]
+    [Algebra.IsSeparable K F]
+    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
+    [FiniteDimensional F E] [IsGalois F E] (j : E →ₐ[K] SeparableClosure K)
+    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
+
 /-- The canonical ambient fixed-field presentation of an embedded finite
 Galois local extension. -/
-noncomputable def ambientEmbeddedFixedFieldPresentation
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j) :
+noncomputable def ambientEmbeddedFixedFieldPresentation :
     AmbientEmbeddedFixedFieldPresentation K F E j := by
   let i :=
     j.comp (IsScalarTower.toAlgHom K F E)
@@ -292,19 +242,11 @@ noncomputable def ambientEmbeddedFixedFieldPresentation
     intro x hx
     rcases hx with ⟨y, rfl⟩
     exact ⟨algebraMap F E y, rfl⟩
-  letI _hTargetNormal :
-      (extensionSubgroup H₀ J₀ hJH).Normal :=
+  letI _hTargetNormal :=
     ambientEmbeddedExtensionSubgroup_normal K F E j e
-  letI _hTargetFinite : Finite
-      (H₀.toSubgroup ⧸ extensionSubgroup H₀ J₀ hJH) :=
+  letI _hTargetFinite :=
     ambientEmbeddedExtensionQuotient_finite K F E j e
-  letI _hHabsolute : Finite
-      ((baseField
-        Gal(SeparableClosure K / K)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField Gal(SeparableClosure K / K))
-        H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+  letI _hHabsolute := ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, _hHabsolute⟩
@@ -312,13 +254,6 @@ noncomputable def ambientEmbeddedFixedFieldPresentation
     ⟨J₀, hJH, _hTargetNormal, _hTargetFinite⟩
   let F₀ :=
     abstractFixedField K (SeparableClosure K) H₀
-  let hfixed :
-      F₀ = AlgHom.fieldRange i :=
-    InfiniteGalois.fixedField_fixingSubgroup
-      (AlgHom.fieldRange i)
-  let phiF : F ≃ₐ[K] F₀ :=
-    (i.equivFieldRange).trans
-      (IntermediateField.equivOfEq hfixed.symm)
   let qE :=
     ambientEmbeddedExtensionQuotientEquivGaloisGroup
       K F E j e
@@ -329,7 +264,9 @@ noncomputable def ambientEmbeddedFixedFieldPresentation
       baseEmbedding_eq := rfl
       base_field_eq := rfl
       extension_field_eq := rfl
-      baseEquiv := phiF
+      baseEquiv := ((i.equivFieldRange).trans
+        (IntermediateField.equivOfEq (InfiniteGalois.fixedField_fixingSubgroup
+          (AlgHom.fieldRange i)).symm))
       baseEquiv_apply := ?_
       quotientEquiv := T.extensionQuotientMulEquiv.trans qE
       quotientEquiv_mk_apply := ?_ }
@@ -349,21 +286,10 @@ noncomputable def ambientEmbeddedFixedFieldPresentation
 /-- The abelianized ambient fixed-field norm-residue value attached to a unit
 of the intrinsically presented base field. -/
 noncomputable def ambientEmbeddedNormResidueAbelianElement
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
     (a : Fˣ) : Abelianization Gal(E / F) :=
   (ambientEmbeddedFixedFieldPresentation K F E j e).normResidueAbelianElement a
+
+end
 
 /-- The ambient fixed-field norm-residue value in `Gal(E/F)`, obtained
 from its abelianized value using the canonical equivalence for an abelian extension. -/

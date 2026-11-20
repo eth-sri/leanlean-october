@@ -14,8 +14,8 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (v : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (v : HeightOneSpectrum (𝓞 F))
 
 private lemma tau_chart (K : Type*) [Field K] (M : Type*) [CommGroup M]
     (B : Kˣ → Kˣ → M)
@@ -157,14 +157,13 @@ theorem sigmaTwo_eq_one_on_Gamma (r : ℕ)
     · subst q; exact (hcharts h hh).1 i
     · subst q; exact (hcharts (g * h) (mul_mem hg hh)).1 i
   obtain ⟨t, ht⟩ := (hcharts g hg).2
-  have hdet : ∃ t : Kˣ, t ^ 3 = KubotaRankTwo.det K g := ⟨t, ht⟩
   dsimp only [KPLocalCover.sigmaTwo]
   rw [tau_chart K (rootsOfUnity 3 F) B hL hR hStein hC
-    (fun a => (hNeg a).2.2) g h hdiag hdet]
+    (fun a => (hNeg a).2.2) g h hdiag (⟨t, ht⟩)]
   have ht' : t ^ 3 = KubotaRankTwo.det K g := ht
   have he := (hC t (KubotaRankTwo.det K h)).1
   rw [ht'] at he
-  rw [he, one_pow, one_mul]
+  simp [he]
 
 theorem raw_section_splitting (r : ℕ)
     (hsigma : ∀ g ∈ KPLocalCube.Gamma F v r,
@@ -179,14 +178,14 @@ theorem raw_section_splitting (r : ℕ)
   let s : KPLocalCube.Gamma F v r →*
       KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v) := {
     toFun := fun g => KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g.val
-    map_one' := by rfl
+    map_one' := rfl
     map_mul' := by
       intro g h
       change (⟨g.val * h.val, (1 : rootsOfUnity 3 F)⟩ :
           KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) =
         ⟨g.val * h.val,
           1 * 1 * KPLocalCover.sigmaTwo F ζ hζ (Sum.inr v) g.val h.val⟩
-      rw [hsigma g g.property h h.property, one_mul, one_mul]
+      simp [hsigma]
   }
   refine ⟨s, (fun _ => rfl), ?_, ?_⟩
   · intro g h heq
@@ -223,9 +222,7 @@ theorem deep_raw_splitting :
   obtain ⟨_hcompact, _hopen, hcharts⟩ := hdeep r hr
   have hsigma : ∀ g ∈ KPLocalCube.Gamma F v r,
       ∀ h ∈ KPLocalCube.Gamma F v r,
-        KPLocalCover.sigmaTwo F ζ hζ (Sum.inr v) g h = 1 := by
-    intro g hg h hh
-    exact sigmaTwo_eq_one_on_Gamma F ζ hζ v r hcharts g h hg hh
+        KPLocalCover.sigmaTwo F ζ hζ (Sum.inr v) g h = 1 := fun g hg h hh => sigmaTwo_eq_one_on_Gamma F ζ hζ v r hcharts g h hg hh
   exact ⟨hcharts, hsigma, raw_section_splitting F ζ hζ v r hsigma⟩
 
 end

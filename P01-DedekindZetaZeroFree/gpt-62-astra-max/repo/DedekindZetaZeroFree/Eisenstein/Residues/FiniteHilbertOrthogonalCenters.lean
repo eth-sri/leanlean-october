@@ -11,32 +11,22 @@ open scoped Classical NumberField Topology ContDiff
 open MeasureTheory Filter
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming cutoff → cutoff
-open _root_.DedekindZetaZeroFree renaming canonicalRealization → canonicalRealization
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming lift_eq → lift_eq
+
 set_option maxHeartbeats 1600000
 set_option synthInstance.maxHeartbeats 120000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "level" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U
 local notation "G" => KPContSectorCoveredQuotientVocabulary.ActualCover F ζ hζ
 
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming word_smul → word_smul
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator renaming compact_word_holomorphy → compact_word_holomorphy
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator renaming singleton_combination → singleton_combination
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator renaming scalar_eq_lift → scalar_eq_lift
-open _root_.DedekindZetaZeroFree.KPContActualCommonDiskRightHolomorphy renaming continuous_of_pieces → continuous_of_pieces
 open scoped BigOperators
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming literal_finite_word_chamber → literal_finite_word_chamber
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.FiniteCompactAssembly renaming finite_compact_numerator → finite_compact_numerator
 
 theorem finite_owned_residue_hilbert_orthogonal_centers
     (K : Subgroup G) (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K)
@@ -59,8 +49,7 @@ theorem finite_owned_residue_hilbert_orthogonal_centers
         F ζ hζ C R P H (U i) (Z i j) → Z i j = 0) ∧
       ∀ g, A.cleared f 0 g = ∑ i, ∑ j, B i j 0 * actualRightWord F ζ hζ (w i j)
         (groupScalar F ζ hζ C R P H (U i) (Z i j)) g := by
-  obtain ⟨n, U, m, w, B, Z, z, hz, heig, horth, hnative, hcus, q, J, T, r, hq, hq0, hJ, hch,
-    hr, hb, hT, hclear, hcenter⟩ := finite_literal_global_hilbert_orthogonal_centers F ζ hζ C R P H K hK f
+  obtain ⟨n, U, m, w, B, Z, z, hz, heig, horth, hnative, hcus, q, J, T, r, hq, hq0, hJ, hch, hr, hT, hclear, hcenter⟩ := finite_literal_global_hilbert_orthogonal_centers F ζ hζ C R P H K hK f
   refine ⟨n, U, m, w, B, Z, z, hz, heig, horth, hnative, hcus, ?_⟩
   intro g
   obtain ⟨O, u, hO, hc, hOc, hu, hub, hE, hAc, han⟩ := A.germ.2 f

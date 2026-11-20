@@ -28,12 +28,10 @@ theorem localEulerPolynomial
   have hf := frobeniusQuotientOrder K L p W hw
   have hdet := inertiaCharacterDeterminant
     (Ideal.inertia (L ≃ₐ[K] L) W.asIdeal)
-    (ClassFieldTheory.arithmeticFrobeniusAt (K := K) W) x
+    (ClassFieldTheory.arithmeticFrobeniusAt W) x
   dsimp only at hdet
   rw [hf.1, hf.2] at hdet
-  have hpos : 0 < W.asIdeal.inertiaDeg (𝓞 K) :=
-    Ideal.inertiaDeg_pos W.asIdeal (𝓞 K)
-  rw [Nat.mul_div_cancel _ hpos] at hdet
+  rw [Nat.mul_div_cancel _ (Ideal.inertiaDeg_pos W.asIdeal (𝓞 K))] at hdet
   rw [show (∏ ρ : ComplexDual (L ≃ₐ[K] L), (1 - primeArtinValue ρ W * x)) =
       (1 - x ^ W.asIdeal.inertiaDeg (𝓞 K)) ^
         (IsDedekindDomain.primesOverFinset p.asIdeal (𝓞 L)).card from hdet]

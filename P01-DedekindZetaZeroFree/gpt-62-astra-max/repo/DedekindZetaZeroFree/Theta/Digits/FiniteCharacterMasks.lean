@@ -11,8 +11,8 @@ namespace DedekindZetaZeroFree.DigitMasks
 open MomentSources NumberField
 open scoped Classical BigOperators
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem character_order (p : ThetaBranch.ExteriorPrime R.A) :
     orderOf (ThetaBranch.residueCharacter R.A R.σ p) = 6 :=
@@ -35,10 +35,8 @@ theorem mask_mul_sixth {k : Type*} [Field k] [Fintype k]
     (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (hχ : orderOf χ = 6)
     (z : kˣ) (j : Fin 6) (d : k) :
     sexticFourierMask χ ψ j ((z : k) ^ 6 * d) = sexticFourierMask χ ψ j d := by
-  have hz : χ ((z ^ 6 : kˣ) : k) = 1 := by
-    have h := congrArg (fun c : MulChar k ℂ => c (z : k)) (pow_orderOf_eq_one χ)
-    simpa [hχ, MulChar.pow_apply_coe, MulChar.one_apply z.isUnit, map_pow] using h
-  exact mask_mul_kernel χ ψ (z ^ 6) hz j d
+  refine mask_mul_kernel χ ψ (z ^ 6) ?_ j d
+  simpa [hχ, MulChar.pow_apply_coe, MulChar.one_apply z.isUnit, map_pow] using (congrArg (fun c : MulChar k ℂ => c (z : k)) (pow_orderOf_eq_one χ))
 
 end DedekindZetaZeroFree.DigitMasks
 

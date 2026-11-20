@@ -17,52 +17,6 @@ open scoped Classical NumberField nonZeroDivisors Topology
 
 set_option backward.isDefEq.respectTransparency false
 
-private theorem sAnnihilator_arch_pairing (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (x y : InfiniteAdeleRing F) :
-    sLocalTraceCharacter F S ((x * y, 0) : SLocalProduct F S) =
-      Circle.exp (2 * Real.pi * KPArchTrace.infiniteTracePairing F x y) := by
-  have hp : KPArchTrace.infiniteTracePairing F x y =
-      ∑ w : InfinitePlace F, archTrace w (x w * y w) := by
-    unfold KPArchTrace.infiniteTracePairing KPArchTrace.infiniteToSpace
-    rw [PoissonArch.tracePairing]
-    simp only [ContinuousLinearEquiv.apply_symm_apply]
-    rw [InfiniteAdeleRing.ringEquiv_mixedSpace_apply F x,
-      InfiniteAdeleRing.ringEquiv_mixedSpace_apply F y]
-    rw [← Fintype.sum_subtype_add_sum_subtype (fun w : InfinitePlace F => w.IsReal)
-      (fun w => archTrace w (x w * y w))]
-    congr 1
-    · apply Finset.sum_congr rfl
-      intro v _
-      simp only [archTrace_of_isReal v.1 v.2, map_mul]
-      rfl
-    · rw [← Fintype.sum_equiv
-        (Equiv.subtypeEquivRight (fun v => (InfinitePlace.not_isReal_iff_isComplex).symm))
-        (fun v : {v : InfinitePlace F // v.IsComplex} => archTrace v.1 (x v.1 * y v.1))
-        (fun v : {v : InfinitePlace F // ¬ v.IsReal} => archTrace v.1 (x v.1 * y v.1))
-        (fun _ => rfl)]
-      rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro v _
-      simp only [archTrace_of_isComplex v.1 v.2, map_mul]
-      rfl
-  have hprod : ∀ (s : Finset (InfinitePlace F)) (f : InfinitePlace F → ℝ),
-      Circle.exp (∑ w ∈ s, f w) = ∏ w ∈ s, Circle.exp (f w) := by
-    intro s
-    induction s using Finset.induction with
-    | empty => intro f; simp
-    | insert a s ha ih =>
-        intro f
-        rw [Finset.sum_insert ha, Finset.prod_insert ha, Circle.exp_add, ih]
-  rw [hp, sLocalTraceCharacter_apply, Finset.mul_sum, hprod]
-  have hf : (∏ v : S, localFiniteCharacter F v.val ((0 : PoissonSFiniteDensity.Space F S) v)) = 1 := by
-    apply Finset.prod_eq_one
-    intro v _
-    exact (localFiniteCharacter F v.val).map_zero_eq_one
-  rw [hf, mul_one]
-  apply Finset.prod_congr rfl
-  intro v _
-  rfl
-
 private theorem sAnnihilator_arch_rational (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : PoissonS.ContainsDifferent F S)
     (y : SLocalProduct F S)
@@ -73,11 +27,10 @@ private theorem sAnnihilator_arch_rational (F : Type) [Field F] [NumberField F]
   have hb : ∀ v : S, ∃ k : ℤ, ∀ a ∈ PoissonSLocalBalls.ball F v.val k,
       localFiniteCharacter F v.val (y.2 v * a) = 1 := by
     intro v
-    have hl := (isLocallyConstant_localFiniteCharacter F v.val).comp_continuous
-      (continuous_const.mul continuous_id : Continuous (fun a : v.val.adicCompletion F => y.2 v * a))
     have hn : {a : v.val.adicCompletion F | localFiniteCharacter F v.val (y.2 v * a) = 1} ∈
         nhds (0 : v.val.adicCompletion F) :=
-      (hl.isOpen_fiber 1).mem_nhds (by simp)
+      (((isLocallyConstant_localFiniteCharacter F v.val).comp_continuous
+        (continuous_const.mul continuous_id : Continuous (fun a : v.val.adicCompletion F => y.2 v * a))).isOpen_fiber 1).mem_nhds (by simp)
     obtain ⟨k, hk⟩ := PoissonSLocalBalls.exists_ball_subset F v.val hn
     exact ⟨k, fun a ha => hk ha⟩
   choose k hk using hb
@@ -94,12 +47,51 @@ private theorem sAnnihilator_arch_rational (F : Type) [Field F] [NumberField F]
     intro x
     change sLocalTraceCharacter F S (y.1 * x, 0) = _
     rw [mul_comm]
-    exact sAnnihilator_arch_pairing F S x y.1
+    have hp : KPArchTrace.infiniteTracePairing F x y.1 =
+        ∑ w : InfinitePlace F, archTrace w (x w * y.1 w) := by
+      unfold KPArchTrace.infiniteTracePairing KPArchTrace.infiniteToSpace
+      rw [PoissonArch.tracePairing]
+      simp only [ContinuousLinearEquiv.apply_symm_apply]
+      rw [InfiniteAdeleRing.ringEquiv_mixedSpace_apply F x,
+        InfiniteAdeleRing.ringEquiv_mixedSpace_apply F y.1]
+      rw [← Fintype.sum_subtype_add_sum_subtype (fun w : InfinitePlace F => w.IsReal)
+        (fun w => archTrace w (x w * y.1 w))]
+      congr 1
+      · apply Finset.sum_congr rfl
+        intro v _
+        simp only [archTrace_of_isReal v.1 v.2, map_mul]
+        rfl
+      · rw [← Fintype.sum_equiv
+          (Equiv.subtypeEquivRight (fun v => (InfinitePlace.not_isReal_iff_isComplex).symm))
+          (fun v : {v : InfinitePlace F // v.IsComplex} => archTrace v.1 (x v.1 * y.1 v.1))
+          (fun v : {v : InfinitePlace F // ¬ v.IsReal} => archTrace v.1 (x v.1 * y.1 v.1))
+          (fun _ => rfl)]
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro v _
+        simp only [archTrace_of_isComplex v.1 v.2, map_mul]
+        rfl
+    have hprod : ∀ (s : Finset (InfinitePlace F)) (f : InfinitePlace F → ℝ),
+        Circle.exp (∑ w ∈ s, f w) = ∏ w ∈ s, Circle.exp (f w) := by
+      intro s
+      induction s using Finset.induction with
+      | empty => intro f; simp
+      | insert a s ha ih =>
+          intro f
+          rw [Finset.sum_insert ha, Finset.prod_insert ha, Circle.exp_add, ih]
+    rw [hp, sLocalTraceCharacter_apply, Finset.mul_sum, hprod]
+    have hf : (∏ v : S, localFiniteCharacter F v.val ((0 : PoissonSFiniteDensity.Space F S) v)) = 1 := by
+      apply Finset.prod_eq_one
+      intro v _
+      exact (localFiniteCharacter F v.val).map_zero_eq_one
+    rw [hf, mul_one]
+    apply Finset.prod_congr rfl
+    intro v _
+    rfl
   have hIχ : ∀ a : F, a ∈ I → χ (algebraMap F (InfiniteAdeleRing F) a) = 1 := by
     intro a ha
-    have haR := PoissonS.ScaleShift.ballFractionalIdeal_le_sIntegers F S k ha
-    let m : sIntegerRing F S := ⟨a, haR⟩
-    have hm : PoissonFinite.diagonal F S a ∈ PoissonS.finiteBall F S k :=
+    let m : sIntegerRing F S := ⟨a, (PoissonS.ScaleShift.ballFractionalIdeal_le_sIntegers F S k ha)⟩
+    have hm :=
       (PoissonS.ScaleShift.finiteBall_diagonal_mem F S k m).mpr ha
     have hf : sLocalTraceCharacter F S
         ((0, y.2 * (sIntegerDiagonal F S m).2) : SLocalProduct F S) = 1 := by
@@ -145,17 +137,19 @@ theorem sInteger_trace_annihilator (F : Type) [Field F] [NumberField F]
       sLocalTraceCharacter F S (y * sIntegerDiagonal F S m) = 1) ↔
       ∃ n : sIntegerRing F S, y = sIntegerDiagonal F S n := by
   classical
-  have hS' : localDifferentSupport F ⊆ (S : Set (HeightOneSpectrum (RingOfIntegers F))) :=
+  have hS' : localDifferentSupport F ⊆ S :=
     fun v hv => hS v ((Ideal.dvd_iff_le).mp hv)
   constructor
   · intro h
     obtain ⟨n, hn⟩ := sAnnihilator_arch_rational F S hS' y h
     let z := y - sIntegerDiagonal F S n
-    have hz : z.1 = 0 := by dsimp [z]; rw [hn, sub_self]
+    have hz : z.1 = 0 := by
+      change y.1 - (sIntegerDiagonal F S n).1 = 0
+      rw [hn, sub_self]
     have hdiag : ∀ m : sIntegerRing F S,
         sLocalTraceCharacter F S (z * sIntegerDiagonal F S m) = 1 := by
       intro m
-      dsimp [z]
+      dsimp only [z]
       rw [sub_mul, AddChar.map_sub_eq_div, h,
         sLocalTraceCharacter_sIntegerDiagonal_mul_eq_one F S hS' n m, div_self']
     have hf : ∀ a : PoissonSFiniteDensity.Space F S,

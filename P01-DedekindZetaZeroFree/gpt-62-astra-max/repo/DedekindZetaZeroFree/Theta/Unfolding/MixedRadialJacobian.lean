@@ -19,12 +19,16 @@ def mixedMellinGaussian (x : K) (s : ℂ) (q : InfinitePlace K → ℝ) : ℂ :=
       Complex.exp (-(Real.pi : ℂ) * (v.mult : ℂ) *
         (q v : ℂ) ^ 2 * (v x : ℂ) ^ 2)
 
-def mixedRadialJacobian (y : realSpace K) : ℝ :=
+section
+
+variable (y : realSpace K)
+
+def mixedRadialJacobian : ℝ :=
   Real.exp ((Module.finrank ℚ K : ℝ) * y Units.dirichletUnitTheorem.w₀) *
     (∏ v : {v : InfinitePlace K // IsComplex v}, expMapBasis y v.1)⁻¹ *
       (2 : ℝ)⁻¹ ^ nrComplexPlaces K * (Module.finrank ℚ K : ℝ) * regulator K
 
-private theorem radialJacobian_eq_prod (y : realSpace K) :
+private theorem radialJacobian_eq_prod :
     mixedRadialJacobian K y = (∏ v, expMapBasis y v) *
       ((2 : ℝ)⁻¹ ^ nrComplexPlaces K * (Module.finrank ℚ K : ℝ) * regulator K) := by
   have hp : Real.exp ((Module.finrank ℚ K : ℝ) * y dirichletUnitTheorem.w₀) =
@@ -41,13 +45,7 @@ private theorem radialJacobian_eq_prod (y : realSpace K) :
   field_simp
   <;> ring
 
-private theorem weighted_log_sum (y : realSpace K) :
-    ∑ v : InfinitePlace K, (v.mult : ℝ) * Real.log (expMapBasis y v) =
-      (Module.finrank ℚ K : ℝ) * y dirichletUnitTheorem.w₀ := by
-  have h := congrArg Real.log (prod_expMapBasis_pow y)
-  rw [Real.log_prod (fun v _ ↦ pow_ne_zero _ (expMapBasis_pos y v).ne'),
-    Real.log_pow, Real.log_exp] at h
-  simpa only [Real.log_pow] using h
+end
 
 theorem mixedRadialJacobian_mul_mixedMellinGaussian
     (y : realSpace K) (x : K) (s : ℂ) :
@@ -67,7 +65,7 @@ theorem mixedRadialJacobian_mul_mixedMellinGaussian
         (expMapBasis y v : ℂ) * (expMapBasis y v : ℂ) ^ ((v.mult : ℂ) * s - 1) =
         Complex.exp (((v.mult : ℂ) * (Real.log (expMapBasis y v) : ℂ)) * s) := by
       intro v
-      have hn : (expMapBasis y v : ℂ) ≠ 0 :=
+      have hn :=
         Complex.ofReal_ne_zero.mpr (expMapBasis_pos y v).ne'
       rw [Complex.cpow_sub _ _ hn, Complex.cpow_one, mul_div_cancel₀ _ hn,
         Complex.cpow_def_of_ne_zero hn, ← Complex.ofReal_log (expMapBasis_pos y v).le]
@@ -79,7 +77,11 @@ theorem mixedRadialJacobian_mul_mixedMellinGaussian
     have hs : (∑ v : InfinitePlace K,
         (v.mult : ℂ) * (Real.log (expMapBasis y v) : ℂ)) =
         (Module.finrank ℚ K : ℂ) * (y dirichletUnitTheorem.w₀ : ℂ) := by
-      exact_mod_cast weighted_log_sum K y
+      exact_mod_cast (by
+        have h := congrArg Real.log (prod_expMapBasis_pow y)
+        rw [Real.log_prod (fun v _ ↦ pow_ne_zero _ (expMapBasis_pos y v).ne'),
+          Real.log_pow, Real.log_exp] at h
+        simpa using h)
     rw [hs]
     congr 1
     ring

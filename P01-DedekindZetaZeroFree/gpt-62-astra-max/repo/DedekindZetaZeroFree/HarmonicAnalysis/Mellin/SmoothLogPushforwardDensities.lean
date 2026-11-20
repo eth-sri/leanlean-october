@@ -19,22 +19,23 @@ private lemma bddAbove_range_norm_schwartz (g : SchwartzMap ℝ ℂ) :
     rintro _ ⟨x, rfl⟩
     exact SchwartzMap.norm_le_seminorm ℝ g x⟩
 
- def schwartzIterDeriv (k : SchwartzMap ℝ ℂ) (m : ℕ) : SchwartzMap ℝ ℂ :=
+ variable (k : SchwartzMap ℝ ℂ)
+
+def schwartzIterDeriv (m : ℕ) : SchwartzMap ℝ ℂ :=
   ((fun g : SchwartzMap ℝ ℂ => SchwartzMap.derivCLM ℝ ℂ g)^[m]) k
 
-private lemma schwartzIterDeriv_zero (k : SchwartzMap ℝ ℂ) : schwartzIterDeriv k 0 = k := by
+private lemma schwartzIterDeriv_zero : schwartzIterDeriv k 0 = k := by
   simp [schwartzIterDeriv]
 
-private lemma schwartzIterDeriv_succ (k : SchwartzMap ℝ ℂ) (m : ℕ) :
+private lemma schwartzIterDeriv_succ (m : ℕ) :
     schwartzIterDeriv k (m + 1) = SchwartzMap.derivCLM ℝ ℂ (schwartzIterDeriv k m) := by
   simp [schwartzIterDeriv, Function.iterate_succ_apply']
 
-private lemma schwartzIterDeriv_succ_apply (k : SchwartzMap ℝ ℂ) (m : ℕ) (x : ℝ) :
+private lemma schwartzIterDeriv_succ_apply (m : ℕ) (x : ℝ) :
     schwartzIterDeriv k (m + 1) x = deriv (schwartzIterDeriv k m) x := by
   rw [schwartzIterDeriv_succ, SchwartzMap.derivCLM_apply]
 
-theorem schwartz_weighted_translates_smooth_integrable
-    (k : SchwartzMap ℝ ℂ) (μ : Measure ℝ) [IsFiniteMeasure μ]
+theorem schwartz_weighted_translates_smooth_integrable (μ : Measure ℝ) [IsFiniteMeasure μ]
     (w : ℝ → ℂ) (hw : Integrable w μ) :
     ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ => ∫ s : ℝ, w s * k (t - s) ∂μ) ∧
     Integrable (fun t : ℝ => ∫ s : ℝ, w s * k (t - s) ∂μ) := by
@@ -85,7 +86,7 @@ theorem schwartz_weighted_translates_smooth_integrable
         (g := fun x : ℝ => (schwartzIterDeriv k m : ℝ → ℂ) x)
         (ContinuousLinearMap.lsmul ℝ ℂ) hw hg
     have h := hprod.integral_prod_left
-    simpa only [ContinuousLinearMap.lsmul_apply, smul_eq_mul] using h
+    simpa using h
   have hDeriv : ∀ (m : ℕ) (x : ℝ),
       HasDerivAt (fun y : ℝ => ∫ s, w s * schwartzIterDeriv k m (y - s) ∂μ)
         (∫ s, w s * schwartzIterDeriv k (m + 1) (x - s) ∂μ) x := by
@@ -100,8 +101,7 @@ theorem schwartz_weighted_translates_smooth_integrable
       (by simp)
       (Filter.Eventually.of_forall fun y => hMeasK _ y)
       (hIntK _ x)
-      (by
-        exact (ContinuousLinearMap.toSpanSingletonCLE (𝕜 := ℝ) (E := ℂ)).continuous
+      ((ContinuousLinearMap.toSpanSingletonCLE).continuous
           |>.comp_aestronglyMeasurable (hMeasK (schwartzIterDeriv k (m + 1)) x))
       (Filter.Eventually.of_forall fun a => by
         intro y _
@@ -126,7 +126,7 @@ theorem schwartz_weighted_translates_smooth_integrable
           ContinuousLinearMap.toSpanSingleton_apply_one ℝ _)] at h
     exact h
   have hQ : ∀ n : ℕ, ∀ m : ℕ,
-      ContDiff ℝ (n : ℕ∞ω) (fun x : ℝ => ∫ s, w s * schwartzIterDeriv k m (x - s) ∂μ) := by
+      ContDiff ℝ n (fun x : ℝ => ∫ s, w s * schwartzIterDeriv k m (x - s) ∂μ) := by
     intro n
     induction n with
     | zero =>
@@ -134,12 +134,12 @@ theorem schwartz_weighted_translates_smooth_integrable
       simpa using hCont m
     | succ n ih =>
       intro m
-      rw [show ((n + 1 : ℕ) : ℕ∞ω) = ((n : ℕ∞ω) + 1) from by push_cast; rfl,
+      rw [show ((n + 1 : ℕ) : ℕ∞ω) = (n + 1) from by push_cast; rfl,
         contDiff_succ_iff_hasFDerivAt]
       refine ⟨fun x => ContinuousLinearMap.toSpanSingleton ℝ
         (∫ s, w s * schwartzIterDeriv k (m + 1) (x - s) ∂μ), ?_, ?_⟩
       · exact (ContinuousLinearEquiv.contDiff
-          (ContinuousLinearMap.toSpanSingletonCLE (𝕜 := ℝ) (E := ℂ))).comp (ih (m + 1))
+          (ContinuousLinearMap.toSpanSingletonCLE)).comp (ih (m + 1))
       · intro x
         exact hasDerivAt_iff_hasFDerivAt.2 (hDeriv m x)
   constructor
@@ -213,8 +213,7 @@ theorem schwartzTensor_log_pushforward_smooth_representative
   have hmix :=
     ProbeSheetLogDensityRegularity.schwartz_weighted_translates_smooth_integrable
       K μ w hw
-  have hKeq : (K : ℝ → ℂ) = k := funext hK
-  rw [hKeq] at hmix
+  rw [(funext hK)] at hmix
   apply smooth_representative_of_log_density_test_identity q hq
   refine ⟨(fun t => ∫ s : ℝ, w s * k (t - s) ∂μ), hmix.1, hmix.2, ?_⟩
   intro φ hφ hb
@@ -232,11 +231,10 @@ noncomputable section
 open scoped Classical NumberField
 open NumberField IsDedekindDomain MeasureTheory
 
+variable {F : Type} [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (𝓞 F)))
+    (ν : @Measure (SLocalProduct F S)ˣ (@Units.instMeasurableSpace (SLocalProduct F S) _ (borel _)))
+
 def IsLogMellinDensity
-    {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (ν : @Measure (SLocalProduct F S)ˣ
-      (@Units.instMeasurableSpace (SLocalProduct F S) _ (borel _)))
     (h : SLocalProduct F S → ℂ) (a b : ℝ) (p : ℝ → ℝ → ℂ) : Prop :=
   (∀ σ ∈ Set.Icc a b, ContDiff ℝ (⊤ : ℕ∞) (p σ)) ∧
   (∀ σ ∈ Set.Icc a b, Integrable (p σ)) ∧
@@ -248,10 +246,6 @@ def IsLogMellinDensity
     ∫ t : ℝ, p σ t * φ t)
 
 theorem schwartzTensor_smooth_log_disintegration
-    {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (ν : @Measure (SLocalProduct F S)ˣ
-      (@Units.instMeasurableSpace (SLocalProduct F S) _ (borel _)))
     (hν : @Measure.IsHaarMeasure (SLocalProduct F S)ˣ _ _
       (@Units.instMeasurableSpace (SLocalProduct F S) _ (borel _)) ν)
     (h : SLocalProduct F S → ℂ)
@@ -268,7 +262,7 @@ theorem schwartzTensor_smooth_log_disintegration
             ∫ t : ℝ, r t * φ t := by
     intro σ
     by_cases hσ : σ ∈ Set.Icc a b
-    · have hpos : 0 < σ := lt_of_lt_of_le ha hσ.1
+    · have hpos := lt_of_lt_of_le ha hσ.1
       obtain ⟨q, hq, htest⟩ :=
         schwartzTensor_integrable_log_pushforward_density S ν hν h hh σ hpos
       obtain ⟨r, hr, hrq⟩ :=

@@ -30,18 +30,16 @@ def IsSupportCutoff (φ : K → ℂ) (nmin : ℤ) : Prop :=
 private lemma exponent_nonneg_iff (y : Kˣ) :
     0 ≤ KPCubicExpansion.valuationExponent K y ↔ (y : K) ∈ 𝒪[K] := by
   let iso := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-  have hne : iso (valuation K (y : K)) ≠ 0 := by
-    exact (map_ne_zero_iff iso iso.injective).mpr ((Valuation.ne_zero_iff _).mpr y.ne_zero)
+  have hne : iso (valuation K (y : K)) ≠ 0 := (map_ne_zero_iff iso iso.injective).mpr ((Valuation.ne_zero_iff _).mpr y.ne_zero)
   rw [Valuation.mem_integer_iff]
-  rw [← map_le_map_iff iso, map_one]
+  simp [← map_le_map_iff iso]
   rw [← WithZero.exp_log hne, ← WithZero.exp_zero, WithZero.exp_le_exp]
   simp only [KPCubicExpansion.valuationExponent]
   dsimp [iso] at *
   omega
 private lemma exponent_inv (y : Kˣ) :
     KPCubicExpansion.valuationExponent K y⁻¹ = -KPCubicExpansion.valuationExponent K y := by
-  have h := KPCubicExpansion.valuationExponent_mul y y⁻¹
-  simpa [KPCubicExpansion.valuationExponent] using h
+  simpa [KPCubicExpansion.valuationExponent] using (KPCubicExpansion.valuationExponent_mul y y⁻¹)
 private lemma ball_units_iff (π y : Kˣ)
     (hπ : valuation K (π : K) = ValuativeRel.uniformizer K) (n : ℤ) :
     (y : K) ∈ integerBall K π n ↔ n ≤ KPCubicExpansion.valuationExponent K y := by
@@ -56,9 +54,7 @@ private lemma ball_units_iff (π y : Kˣ)
       rw [Units.val_mul, ht]
       convert t.property using 1
       rw [mul_comm _ (t : K), mul_assoc, ← Units.val_mul, mul_inv_cancel, Units.val_one, mul_one]
-    have h := (exponent_nonneg_iff K _).mpr hm
-    rw [hv] at h
-    omega
+    simpa [hv] using (exponent_nonneg_iff K _).mpr hm
   · intro hn
     have hm : ((y * (π^n)⁻¹ : Kˣ) : K) ∈ 𝒪[K] := by
       apply (exponent_nonneg_iff K _).mp
@@ -71,30 +67,28 @@ private lemma ball_units_iff (π y : Kˣ)
 private lemma exponent_value (y : Kˣ) :
     IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K (y : K)) =
       WithZero.exp (-KPCubicExpansion.valuationExponent K y) := by
-  have hn : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K (y : K)) ≠ 0 := by
-    exact (map_ne_zero_iff _ (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K).injective).mpr
-      ((Valuation.ne_zero_iff _).mpr y.ne_zero)
-  simp only [KPCubicExpansion.valuationExponent, neg_neg, WithZero.exp_log hn]
-private lemma exists_tail (φ : K → ℂ) (hlc : IsLocallyConstant φ) :
+  simp [KPCubicExpansion.valuationExponent]
+variable (φ : K → ℂ)
+
+private lemma exists_tail (hlc : IsLocallyConstant φ) :
     ∃ n : ℤ, IsTailCutoff K φ n := by
   obtain ⟨γ, hγ, hsub⟩ := (IsValuativeTopology.hasBasis_nhds_zero' K).mem_iff.mp (hlc.eventually_eq 0)
   let iso := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-  have hne : iso γ ≠ 0 := (map_ne_zero_iff iso iso.injective).mpr hγ
   refine ⟨-(iso γ).log + 1, ?_⟩
   intro y hy
   apply hsub
   change valuation K (y : K) < γ
   rw [← map_lt_map_iff iso]
-  rw [exponent_value K y, ← WithZero.exp_log hne, WithZero.exp_lt_exp]
+  rw [exponent_value K y, ← WithZero.exp_log ((map_ne_zero_iff iso iso.injective).mpr hγ), WithZero.exp_lt_exp]
   omega
 
-private lemma exists_lower (φ : K → ℂ) (hc : HasCompactSupport φ) :
+private lemma exists_lower (hc : HasCompactSupport φ) :
     ∃ n : ℤ, IsSupportCutoff K φ n := by
   let iso := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-  let U : ℤ → Set K := fun n => {x | valuation K x < iso.symm (WithZero.exp n)}
+  let U := fun n => {x | valuation K x < iso.symm (WithZero.exp n)}
   have hopen : ∀ n, IsOpen (U n) := by
     intro n
-    simpa only [ValuativeRel.restrict_lt_orderMonoidIso, U] using
+    simpa using
       (valuation K).isOpen_ball
         ((ValueGroupWithZero.orderMonoidIso (valuation K)) (iso.symm (WithZero.exp n)))
   have hcover : ∀ x ∈ tsupport φ, ∃ n, x ∈ U n := by
@@ -113,16 +107,14 @@ private lemma exists_lower (φ : K → ℂ) (hc : HasCompactSupport φ) :
   refine ⟨-N, ?_⟩
   intro y hy
   by_contra hn
-  have hmem : (y : K) ∈ tsupport φ := subset_closure hn
-  have hcov := hs hmem
-  obtain ⟨n, hn, hxy⟩ := Set.mem_iUnion₂.mp hcov
-  have hnN : n ≤ N := hN.2 n hn
+  obtain ⟨n, hn, hxy⟩ := Set.mem_iUnion₂.mp (hs (subset_closure hn))
+  have hnN := hN.2 n hn
   change valuation K (y : K) < iso.symm (WithZero.exp n) at hxy
   rw [← map_lt_map_iff iso, OrderMonoidIso.apply_symm_apply, exponent_value K y,
       WithZero.exp_lt_exp] at hxy
   omega
 
-theorem exists_cutoffs (φ : K → ℂ) (hφlc : IsLocallyConstant φ)
+theorem exists_cutoffs (hφlc : IsLocallyConstant φ)
     (hφcs : HasCompactSupport φ) (π : Kˣ)
     (hπ : valuation K (π : K) = ValuativeRel.uniformizer K) :
     ∃ nmin n₀ : ℤ, nmin ≤ n₀ ∧ IsSupportCutoff K φ nmin ∧

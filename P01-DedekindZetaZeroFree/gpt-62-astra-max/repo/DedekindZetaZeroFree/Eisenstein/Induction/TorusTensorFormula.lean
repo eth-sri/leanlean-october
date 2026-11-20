@@ -12,8 +12,8 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.FullTorusFormula
 open KPGlobalProductPolarizationCharacter KPAdelicCoverRestrictedProduct
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
 
 private theorem rawProduct_arch_only (x : rawB F ζ hζ P.localData)
     (hf : ∀ q, x.val (Sum.inr q) = 1) :
@@ -62,8 +62,7 @@ theorem lambdaB_arch_only
     (hf : ∀ q, x.val (Sum.inr q) = 1)
     (hx : scalarQuotient F ζ hζ (amalgamation F ζ hζ x.val) = b.val.val) :
     lambdaB F ζ hζ P.localData P.adjustment b =
-      ∏ w, KPGlobalCenterRationalCharacter.localValue F ζ hζ (Sum.inl w) (x.val (Sum.inl w)) := by
-  exact (lambdaB_raw_formula F ζ hζ P.localData P.adjustment b x hx).trans
+      ∏ w, KPGlobalCenterRationalCharacter.localValue F ζ hζ (Sum.inl w) (x.val (Sum.inl w)) := (lambdaB_raw_formula F ζ hζ P.localData P.adjustment b x hx).trans
     (rawProduct_arch_only F ζ hζ P x hf)
 
 private theorem norm_phase (ε : rootsOfUnity 3 F) :
@@ -80,8 +79,7 @@ private theorem productUnit_arch_only
     (hx : scalarQuotient F ζ hζ (amalgamation F ζ hζ x.val) = b.val.val) :
     (KPGlobalTorusFiniteStages.productUnitCharacter F ζ hζ P.localData P.adjustment b : ℂ) =
       ∏ w, (KPSourceConvention.ordinaryGenuineCharacter F ζ hζ (x.val (Sum.inl w)).epsilon : ℂ) := by
-  let g := b.val
-  let h w := (KPGlobalCenterRationalCharacterModulus.raw_torus_local_ratio F ζ hζ x.val g hx (Sum.inl w)).choose
+  let h w := (KPGlobalCenterRationalCharacterModulus.raw_torus_local_ratio F ζ hζ x.val b.val hx (Sum.inl w)).choose
   let p w : (ℝ≥0)ˣ := KPGlobalCenterRationalCharacter.sixthPower (Units.mk0
     (KPGlobalCenterRationalCharacter.localAbs F (Sum.inl w) ((h w).1.unit * (h w).2.unit⁻¹))
     (ne_of_gt (KPGlobalCenterRationalCharacter.localAbs_pos F (Sum.inl w) _)))
@@ -102,8 +100,8 @@ private theorem productUnit_arch_only
     rw [norm_prod]
     simp_rw [norm_phase]
     simp
-  have hp (u : (ℝ≥0)ˣ) : ‖(KPGlobalCenterRationalCharacter.positiveComplex u : ℂ)‖ = ((u : ℝ≥0) : ℝ) := by
-    change ‖(((u : ℝ≥0) : ℝ) : ℂ)‖ = _
+  have hp (u : (ℝ≥0)ˣ) : ‖(KPGlobalCenterRationalCharacter.positiveComplex u : ℂ)‖ = (u : ℝ) := by
+    change ‖((u : ℝ) : ℂ)‖ = _
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
   have hn := lambdaB_norm F ζ hζ P.localData P.adjustment b
   rw [hl, Units.val_mul, norm_mul, hnφ, one_mul, hp] at hn
@@ -113,53 +111,17 @@ private theorem productUnit_arch_only
   change ((lambdaB F ζ hζ P.localData P.adjustment b /
     KPGlobalCenterRationalCharacter.positiveComplex (KPGlobalCenterRationalCharacter.nu F ζ hζ b.val) : ℂˣ) : ℂ) = _
   rw [hl, ← heq]
-  change ((φ * KPGlobalCenterRationalCharacter.positiveComplex pAll /
-    KPGlobalCenterRationalCharacter.positiveComplex pAll : ℂˣ) : ℂ) = _
   rw [mul_div_cancel_right]
   exact map_prod (Units.coeHom ℂ) _ _
 
-theorem raw_diagonal (g : KPGlobalTorusFunctionData.E F ζ hζ)
-    (x : RestrictedCover F ζ hζ)
-    (hx : scalarQuotient F ζ hζ (amalgamation F ζ hζ x) = g.val) :
-    ∀ v, (x v).g 1 0 = 0 ∧ (x v).g 0 1 = 0 := by
-  obtain ⟨A, hA, h10, h01⟩ := g.property
-  have he : QuotientGroup.mk' (scalarSubgroup F) (restrictedProjection F ζ hζ x) =
-      QuotientGroup.mk' (scalarSubgroup F) A := by
-    change pglProjection F ζ hζ (scalarQuotient F ζ hζ (amalgamation F ζ hζ x)) = _
-    rw [hx, hA]
-  obtain ⟨s, ⟨u, hu⟩, hs⟩ := (QuotientGroup.mk'_eq_mk' (scalarSubgroup F)).mp he
-  have hm : restrictedProjection F ζ hζ x = A * (Matrix.GeneralLinearGroup.scalar (Fin 2) u)⁻¹ := by
-    rw [← hu] at hs
-    exact eq_mul_inv_of_mul_eq hs
-  have hd : (restrictedProjection F ζ hζ x) 1 0 = 0 ∧
-      (restrictedProjection F ζ hζ x) 0 1 = 0 := by
-    rw [hm]
-    simp [← map_inv, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, h10, h01]
-  intro v
-  have h := congrArg (adeleEval F v) hd.1
-  have h' := congrArg (adeleEval F v) hd.2
-  have hev := restrictedProjection_eval F ζ hζ x v
-  have hh := congrArg (fun M : KPLocalCover.LocalGL2 F v => M 1 0) hev
-  have hh' := congrArg (fun M : KPLocalCover.LocalGL2 F v => M 0 1) hev
-  exact ⟨hh.symm.trans (by simpa [matrixEval] using h),
-    hh'.symm.trans (by simpa [matrixEval] using h')⟩
+alias raw_diagonal := DedekindZetaZeroFree.KPGlobalTorusTensorFibers.FiniteTensorFunctionalsAndSmoothLevels.raw_diagonal
 
-theorem raw_image_torus (x : RestrictedCover F ζ hζ)
-    (hd : ∀ v, (x v).g 1 0 = 0 ∧ (x v).g 0 1 = 0) :
-    scalarQuotient F ζ hζ (amalgamation F ζ hζ x) ∈ KPGlobalTorusFunctionData.E F ζ hζ := by
-  refine ⟨restrictedProjection F ζ hζ x, rfl, ?_, ?_⟩
-  · apply Prod.ext
-    · funext w; exact (hd (Sum.inl w)).1
-    · apply RestrictedProduct.ext; intro q; exact (hd (Sum.inr q)).1
-  · apply Prod.ext
-    · funext w; exact (hd (Sum.inl w)).2
-    · apply RestrictedProduct.ext; intro q; exact (hd (Sum.inr q)).2
+alias raw_image_torus := DedekindZetaZeroFree.KPGlobalTorusTensorFibers.FiniteTensorFunctionalsAndSmoothLevels.raw_image_torus
 
 private theorem arch_mem_product (raw : RestrictedCover F ζ hζ)
     (e : KPGlobalTorusFunctionData.E F ζ hζ)
     (he : scalarQuotient F ζ hζ (amalgamation F ζ hζ raw) = e.val)
     (hf : ∀ q, raw (Sum.inr q) = 1) : e ∈ B F ζ hζ P.localData := by
-  change ∀ v, KPGlobalCubicIdelePairing.classComparison F (pD F ζ hζ e) v ∈ (P.localData.localData v).L
   intro v
   cases v with
   | inl w => rw [P.localData.complex_full]; trivial
@@ -217,17 +179,13 @@ theorem finiteTensorRealization_full_raw_formula
     change raw v = xi v * xf v
     cases v <;> simp [xi, xf]
   let b : B F ζ hζ P.localData := ⟨ei, arch_mem_product F ζ hζ P xi ei rfl (fun _ => rfl)⟩
-  let x : rawB F ζ hζ P.localData := ⟨xi, by
-    change scalarQuotient F ζ hζ (amalgamation F ζ hζ xi) ∈ (B F ζ hζ P.localData).map _
-    exact ⟨ei, b.property, rfl⟩⟩
-  have hχ := productUnit_arch_only F ζ hζ P b x (fun _ => rfl) rfl
   let u := KPGlobalTorusFiniteStages.finiteTensorRealization F ζ hζ P C S hS (PiTensorProduct.tprod ℂ f)
   have hu := u.val.property b ef
   change u.val.val (b.val * ef) =
     (KPGlobalTorusFiniteStages.productUnitCharacter F ζ hζ P.localData P.adjustment b : ℂ) * u.val.val ef at hu
   rw [hsplit]
-  change u.val.val (b.val * ef) = _
-  rw [hu, hχ]
+  rw [hu, (productUnit_arch_only F ζ hζ P b (⟨xi, by
+    exact ⟨ei, b.property, rfl⟩⟩) (fun _ => rfl) rfl)]
   rw [KPGlobalTorusFiniteStages.finiteTensorRealization_formula F ζ hζ P C S hS f xf t ef
     (fun _ => rfl) ht rfl]
   rfl

@@ -17,16 +17,16 @@ def O (x : ℝ) : ℂ := (x : ℂ) * E x
 
 theorem real_evenGaussian_integrable :
     Integrable (fun x : ℝ => Complex.exp (-((Real.pi * x ^ 2 : ℝ) : ℂ))) volume := by
-  simpa only [Complex.ofReal_mul, Complex.ofReal_pow, neg_mul] using
-    (integrable_cexp_neg_mul_sq (b := (Real.pi : ℂ))
-      (by simpa using Real.pi_pos))
+  simpa using
+    (integrable_cexp_neg_mul_sq
+      (by exact Real.pi_pos))
 
 theorem real_oddGaussian_integrable :
     Integrable (fun x : ℝ =>
       (x : ℂ) * Complex.exp (-((Real.pi * x ^ 2 : ℝ) : ℂ))) volume := by
-  simpa only [Complex.ofReal_mul, Complex.ofReal_pow, neg_mul] using
-    (integrable_mul_cexp_neg_mul_sq (b := (Real.pi : ℂ))
-      (by simpa using Real.pi_pos))
+  simpa using
+    (integrable_mul_cexp_neg_mul_sq
+      (by exact Real.pi_pos))
 
 theorem real_evenGaussian_fourier :
     FourierTransform.fourier
@@ -42,11 +42,10 @@ private theorem deriv_E (x : ℝ) : deriv E x = (-2 * (Real.pi : ℂ)) * O x := 
     convert (((hasDerivAt_id x).pow 2).const_mul Real.pi).neg using 1
     · rfl
     · simp
-  have hc := h.ofReal_comp.cexp
   have he : E = (fun y : ℝ => Complex.exp ↑(-(Real.pi * y ^ 2))) := by
     ext y
     simp [E]
-  rw [he, hc.deriv]
+  rw [he, h.ofReal_comp.cexp.deriv]
   simp only [E, O, Complex.ofReal_neg, Complex.ofReal_mul, Complex.ofReal_ofNat]
   ring
 

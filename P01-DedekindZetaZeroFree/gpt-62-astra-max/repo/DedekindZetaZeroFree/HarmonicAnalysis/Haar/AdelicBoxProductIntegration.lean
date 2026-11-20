@@ -7,9 +7,7 @@ public import DedekindZetaZeroFree.Eisenstein.Residues.Cofactors.BoxFiberIntegra
 noncomputable section
 open scoped Classical NumberField BigOperators
 open NumberField MeasureTheory
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.TraceBox renaming adelic_measure_box → adelic_measure_box
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.TraceBox renaming finite_measure_sigmaFinite → finite_measure_sigmaFinite
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.TraceBox renaming arch_measure_sigmaFinite → arch_measure_sigmaFinite
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.TraceBox (adelic_measure_box finite_measure_sigmaFinite arch_measure_sigmaFinite)
 local instance currentArchMeasurable (F : Type) [Field F] [NumberField F] : MeasurableSpace (InfiniteAdeleRing F) := borel _
 local instance currentArchBorel (F : Type) [Field F] [NumberField F] : BorelSpace (InfiniteAdeleRing F) := ⟨rfl⟩
 namespace DedekindZetaZeroFree.FourierContinuation.CurrentBoxProductHaar
@@ -30,8 +28,10 @@ theorem chart_integral (Q : Finset (KPFinitePlace F))
       KPAdditiveHaar.integerProbabilityMeasure F q.val)) f
   simpa only [KPAdditiveHaar.chartMeasure, Measure.real, measure_univ, ENNReal.toReal_one, one_smul] using h
 
-theorem box_product_integral (Q : Finset (KPFinitePlace F))
-    (hD : localDifferentSupport F ⊆ (Q : Set _))
+variable (Q : Finset (KPFinitePlace F)) (hD : localDifferentSupport F ⊆ (Q : Set _))
+
+include hD in
+theorem box_product_integral
     (f : InfiniteAdeleRing F → ℂ) (g : (∀ q : Q, q.val.adicCompletion F) → ℂ) :
     (∫ x : KPGlobalTorusFunctionData.Adeles F, f x.1 * g (fun q => x.2 q.val)
       ∂(KPAdditiveHaar.adelicMeasure F).restrict (TraceBox.adelicBox F Q)) =
@@ -39,15 +39,16 @@ theorem box_product_integral (Q : Finset (KPFinitePlace F))
       (∫ y, g y ∂Measure.pi (fun q : Q => localNormalizedHaar F q.val)) := by
   let := finite_measure_sigmaFinite F
   let := arch_measure_sigmaFinite F
-  let e : (InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F) ≃ₜ
+  let FiniteAdeleRing₀ := IsDedekindDomain.FiniteAdeleRing (𝓞 F) F
+  let e : (InfiniteAdeleRing F × FiniteAdeleRing₀) ≃ₜ
       KPGlobalTorusFunctionData.Adeles F := Homeomorph.refl _
   have he : @MeasurableEmbedding (InfiniteAdeleRing F ×
-      IsDedekindDomain.FiniteAdeleRing (𝓞 F) F) (KPGlobalTorusFunctionData.Adeles F)
+      FiniteAdeleRing₀) (KPGlobalTorusFunctionData.Adeles F)
       inferInstance inferInstance (fun a => a) := e.measurableEmbedding
   rw [adelic_measure_box F Q, he.integral_map]
-  change (∫ x : InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F,
+  change (∫ x : InfiniteAdeleRing F × FiniteAdeleRing₀,
     f x.1 * g (fun q => x.2 q.val) ∂_) = _
-  rw [integral_prod_mul f (fun a : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F => g (fun q => a q.val)),
+  rw [integral_prod_mul f (fun a : FiniteAdeleRing₀ => g (fun q => a q.val)),
     KPAdditiveHaar.finiteMeasure_chart F Q hD,
     (KPAdditiveHaar.chartMap_isOpenEmbedding F Q).measurableEmbedding.integral_map]
   have hc : (fun b : KPAdditiveHaar.Chart F Q =>
@@ -59,8 +60,8 @@ theorem box_product_integral (Q : Finset (KPFinitePlace F))
     rw [dite_eq_left q.property]
   rw [hc, chart_integral]
 
-theorem finite_head_integrable (Q : Finset (KPFinitePlace F))
-    (hD : localDifferentSupport F ⊆ (Q : Set _))
+include hD in
+theorem finite_head_integrable
     (g : (∀ q : Q, q.val.adicCompletion F) → ℂ)
     (hg : Integrable g (Measure.pi (fun q : Q => localNormalizedHaar F q.val))) :
     Integrable (fun a : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F => g (fun q => a q.val))
@@ -81,8 +82,8 @@ theorem finite_head_integrable (Q : Finset (KPFinitePlace F))
     fun q => KPAdditiveHaar.integerProbabilityMeasure_isProbabilityMeasure F q.val
   exact hg.comp_fst _
 
-theorem box_product_integrable (Q : Finset (KPFinitePlace F))
-    (hD : localDifferentSupport F ⊆ (Q : Set _))
+include hD in
+theorem box_product_integrable
     (f : InfiniteAdeleRing F → ℂ) (g : (∀ q : Q, q.val.adicCompletion F) → ℂ)
     (hf : Integrable f (KPAdditiveHaar.archMeasure F))
     (hg : Integrable g (Measure.pi (fun q : Q => localNormalizedHaar F q.val))) :

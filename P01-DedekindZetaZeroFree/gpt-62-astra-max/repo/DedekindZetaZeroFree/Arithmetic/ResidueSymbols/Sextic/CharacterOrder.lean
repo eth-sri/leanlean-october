@@ -10,7 +10,7 @@ noncomputable section
 namespace DedekindZetaZeroFree.LocalFiniteSumCompatibility
 open LocalFiniteSums
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
 
  instance primeMaximal (p : ExteriorPrime A) :
     (A.extendIdeal (primeIdeal p)).IsMaximal := by

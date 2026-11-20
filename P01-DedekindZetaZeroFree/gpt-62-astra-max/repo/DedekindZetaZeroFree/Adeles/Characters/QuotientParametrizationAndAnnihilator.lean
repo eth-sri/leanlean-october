@@ -31,15 +31,12 @@ def rationalTraceQuotientCharacter (t : F) :
 
 theorem rationalTraceQuotientCharacter_mk (t : F) (a : Adeles F) :
     rationalTraceQuotientCharacter F t (quotientMap F a) =
-      adelicTraceCharacter F (algebraMap F (Adeles F) t * a) := by
-  rfl
+      adelicTraceCharacter F (algebraMap F (Adeles F) t * a) := rfl
 
 theorem continuous_rationalTraceQuotientCharacter (t : F) :
     Continuous (rationalTraceQuotientCharacter F t :
       (Adeles F ⧸ principalSubgroup F) → Circle) := by
   apply (QuotientAddGroup.isQuotientMap_mk (principalSubgroup F)).continuous_iff.mpr
-  change Continuous (fun a : Adeles F =>
-    adelicTraceCharacter F (algebraMap F (Adeles F) t * a))
   exact (continuous_adelicTraceCharacter F).comp (continuous_const.mul continuous_id)
 
 end DedekindZetaZeroFree.KPAdelicQuotient
@@ -92,8 +89,7 @@ private theorem arch_pairing (x y : InfiniteAdeleRing F) :
     induction s using Finset.induction with
     | empty => intro f; simp
     | insert a s ha ih =>
-        intro f
-        rw [Finset.sum_insert ha, Finset.prod_insert ha, Circle.exp_add, ih]
+        simp_all
   rw [hp, adelicTraceCharacter_apply, Finset.mul_sum, hprod]
   have hf : (∏ᶠ v : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
       localFiniteCharacter F v ((0 : FiniteAdeles F) v)) = 1 := by
@@ -111,8 +107,6 @@ private theorem frequency_unique (s t : F)
   apply (adelicTraceCharacter_nondegenerate F _).mp
   intro a
   rw [sub_mul, (adelicTraceCharacter F).map_sub_eq_div]
-  change adelicTraceCharacter F (algebraMap F (Adeles F) s * a) /
-    adelicTraceCharacter F (algebraMap F (Adeles F) t * a) = 1
   rw [h, div_self']
 
 theorem character_parametrization (χ : AddChar (Adeles F) Circle)
@@ -144,24 +138,19 @@ theorem character_parametrization (χ : AddChar (Adeles F) Circle)
   obtain ⟨t, _, ht⟩ := KPArchTrace.infinite_character_parameter_mem_inverseDifferent
     F I hI chiArch hchiArch y hy hIχ
   have harch : ∀ x : InfiniteAdeleRing F, χ (x, 0) =
-      adelicTraceCharacter F (Mul.mul (α := Adeles F) (algebraMap F (Adeles F) t) (x, 0)) := by
+      adelicTraceCharacter F (Mul.mul (algebraMap F (Adeles F) t) (x, 0)) := by
     intro x
     have hh := hy x
     rw [← ht] at hh
     change χ (x, 0) = _ at hh
     rw [hh]
-    have hm : Mul.mul (α := Adeles F) (algebraMap F (Adeles F) t) (x, 0) =
+    have hm : Mul.mul (algebraMap F (Adeles F) t) (x, 0) =
         (x * algebraMap F (InfiniteAdeleRing F) t, 0) := by
       apply Prod.ext
-      · change algebraMap F (InfiniteAdeleRing F) t * x =
-          x * algebraMap F (InfiniteAdeleRing F) t
-        exact mul_comm _ _
-      · change algebraMap F (FiniteAdeles F) t * 0 = 0
-        exact mul_zero _
+      · apply mul_comm
+      · exact mul_zero _
     rw [hm, arch_pairing]
   let ψ := (adelicTraceCharacter F).mulShift (algebraMap F (Adeles F) t)
-  have hψ : Continuous ψ := (continuous_adelicTraceCharacter F).comp
-    (continuous_const.mul continuous_id)
   have hψF : ∀ r : F, ψ (algebraMap F (Adeles F) r) = 1 := by
     intro r
     change adelicTraceCharacter F (algebraMap F (Adeles F) t *
@@ -172,7 +161,8 @@ theorem character_parametrization (χ : AddChar (Adeles F) Circle)
         (fun b : FiniteAdeles F => ψ (0, b)) := by
       apply (finiteAdeles_diagonal_denseRange F).equalizer
         (hχ.comp (continuous_const.prodMk continuous_id))
-        (hψ.comp (continuous_const.prodMk continuous_id))
+        (((continuous_adelicTraceCharacter F).comp
+          (continuous_const.mul continuous_id)).comp (continuous_const.prodMk continuous_id))
       funext r
       have hc := hχF r
       have hp := hψF r
@@ -186,7 +176,7 @@ theorem character_parametrization (χ : AddChar (Adeles F) Circle)
         ψ (algebraMap F (InfiniteAdeleRing F) r, 0) at ha
       rw [ha] at hc
       exact mul_left_cancel (hc.trans hp.symm)
-    exact fun b => congrFun heq b
+    exact (congrFun heq)
   have hall : ∀ a : Adeles F, χ a = ψ a := by
     intro a
     have hd : a = (a.1, 0) + (0, a.2) := by apply Prod.ext <;> simp [Adeles, AdeleRing]

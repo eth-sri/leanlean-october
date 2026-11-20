@@ -13,18 +13,19 @@ open MeasureTheory Filter
 namespace DedekindZetaZeroFree.KPMsGreenFlux.IntrinsicAveraging
 open KPSmoothActualFlowData
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
-def wordIntegrand (j : Cusps A) (f : X F ζ hζ → ℂ) (word : List (B F))
+variable (j : Cusps A) (f : X F ζ hζ → ℂ)
+
+def wordIntegrand (word : List (B F))
     (q : KPCompactFourier.AdditiveQuotient F) (g : Cover F ζ hζ) : ℂ :=
   pullback (wordDerivative F ζ hζ word f)
     (cuspRepresentative A j * KPGlobalTorusFunctionData.N F ζ hζ
       (KPCompactFourier.representative F q) * (cuspRepresentative A j)⁻¹ * g)
 
-theorem wordIntegrand_flow_hasDerivAt
-    (j : Cusps A) (f : X F ζ hζ → ℂ) (hf : SmoothAutomorphic F ζ hζ f)
+theorem wordIntegrand_flow_hasDerivAt (hf : SmoothAutomorphic F ζ hζ f)
     (word : List (B F)) (b : B F) (g : Cover F ζ hζ) (q) (t : ℝ) :
     HasDerivAt (fun s : ℝ => wordIntegrand A j f word q
       (g * archimedeanInsertion F ζ hζ (flow F b s)))

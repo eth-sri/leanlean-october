@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -79,14 +75,17 @@ theorem mem_globalArtinFiniteSupport_iff
   unfold globalArtinFiniteSupport
   exact
     (finitePlaceArtinFactors_hasFiniteMulSupport
-      (K := K) (L := L) a).mem_toFinset
+        a).mem_toFinset
+
+section
+
+variable (a : IdeleGroup K)
 
 /-- The finite-support Artin approximation of an idele.  It is the
 product of the one-place ideles carrying all infinite components and the
 one-place ideles carrying exactly the finite components with nontrivial
 local Artin factor. -/
-noncomputable def artinFiniteSupportApproximation
-    (a : IdeleGroup K) :
+noncomputable def artinFiniteSupportApproximation :
     IdeleGroup K :=
   (∏ v : InfinitePlace K,
     infinitePlaceIdele v
@@ -100,7 +99,6 @@ noncomputable def artinFiniteSupportApproximation
 component. -/
 @[simp]
 theorem artinFiniteSupportApproximation_infiniteComponent
-    (a : IdeleGroup K)
     (w : InfinitePlace K) :
     IdeleGroup.infiniteComponent w
         (artinFiniteSupportApproximation
@@ -132,7 +130,6 @@ theorem artinFiniteSupportApproximation_infiniteComponent
 /-- At a finite place, the approximation is the original component
 exactly on the finite Artin support and is one elsewhere. -/
 theorem artinFiniteSupportApproximation_finiteComponent
-    (a : IdeleGroup K)
     (v : HeightOneSpectrum (𝓞 K)) :
     IdeleGroup.finiteComponent v
         (artinFiniteSupportApproximation
@@ -160,11 +157,11 @@ theorem artinFiniteSupportApproximation_finiteComponent
   change
     IdeleGroup.finiteIdeleOfFinset
         (globalArtinFiniteSupport
-          (K := K) (L := L) a)
+            a)
         (fun w =>
           IdeleGroup.finiteComponent w.1 a) v =
       if v ∈ globalArtinFiniteSupport
-          (K := K) (L := L) a then
+            a then
         IdeleGroup.finiteComponent v a
       else 1
   by_cases hv :
@@ -174,7 +171,7 @@ theorem artinFiniteSupportApproximation_finiteComponent
     exact
       IdeleGroup.finiteIdeleOfFinset_apply_mem
         (globalArtinFiniteSupport
-          (K := K) (L := L) a)
+            a)
         (fun w =>
           IdeleGroup.finiteComponent w.1 a)
         ⟨v, hv⟩
@@ -182,10 +179,12 @@ theorem artinFiniteSupportApproximation_finiteComponent
     exact
       IdeleGroup.finiteIdeleOfFinset_apply_notMem
         (globalArtinFiniteSupport
-          (K := K) (L := L) a)
+            a)
         (fun w =>
           IdeleGroup.finiteComponent w.1 a)
         v hv
+
+end
 
 /-- At a place in the Artin support, the finite-support approximation keeps
 the original finite component. -/
@@ -236,15 +235,15 @@ theorem
     change
       IdeleGroup.finiteComponent v
           (a * (artinFiniteSupportApproximation
-            (K := K) (L := L) a)⁻¹) ∈
+              a)⁻¹) ∈
         _root_.chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v
+            v
     by_cases hv :
         v ∈ globalArtinFiniteSupport
           (K := K) (L := L) a
     · rw [map_mul, map_inv,
         artinFiniteSupportApproximation_finiteComponent_of_mem
-          (K := K) (L := L) a v hv,
+            a v hv,
         mul_inv_cancel]
       exact Subgroup.one_mem _
     · have hArtin :
@@ -255,7 +254,7 @@ theorem
         by_contra hne
         exact hv
           ((mem_globalArtinFiniteSupport_iff
-            (K := K) (L := L) a v).2 hne)
+              a v).2 hne)
       have hLocalNorm :
           IdeleGroup.finiteComponent v a ∈
             _root_.chosenFinitePlaceLocalNormSubgroup
@@ -265,7 +264,7 @@ theorem
         exact MonoidHom.mem_ker.mpr hArtin
       simpa only [map_mul, map_inv,
         artinFiniteSupportApproximation_finiteComponent_of_notMem
-          (K := K) (L := L) a v hv,
+            a v hv,
         inv_one, mul_one] using hLocalNorm
   · rw [_root_.GlobalClassFieldTheory.ClassFieldAxiom.allInfinitePlaceLocalNormCondition]
     apply Subgroup.mem_iInf.mpr
@@ -273,7 +272,7 @@ theorem
     change
       IdeleGroup.infiniteComponent v
           (a * (artinFiniteSupportApproximation
-            (K := K) (L := L) a)⁻¹) ∈
+              a)⁻¹) ∈
         (Units.map
           (Algebra.norm v.Completion :
             (v.Completion ⊗[K] L) →* v.Completion)).range
@@ -303,7 +302,7 @@ theorem globalNormClassFromIdele_relativeIdeleNorm_eq_one
     ⟨QuotientGroup.mk'
         (IdeleGroup.principalSubgroup L)
         (relativeIdeleBaseChangeMulEquiv
-          (K := K) (L := L) z), ?_⟩
+            z), ?_⟩
   rw [_root_.ideleClassNorm_mk,
     IdeleGroup.norm_relativeIdeleBaseChangeMulEquiv]
 
@@ -326,15 +325,9 @@ theorem globalArtinMonoidHom_eq_artinFiniteSupportApproximation
     rw [← hz]
     exact
       globalArtinMonoidHom_relativeIdeleNorm_eq_one
-        (K := K) (L := L) z
-  have hmul :
-      globalArtinMonoidHom (K := K) (L := L) a *
-          (globalArtinMonoidHom (K := K) (L := L)
-            (artinFiniteSupportApproximation
-              (K := K) (L := L) a))⁻¹ =
-        1 := by
-    simpa only [map_mul, map_inv] using hquotient
-  exact mul_inv_eq_one.mp hmul
+          z
+  refine mul_inv_eq_one.mp ?_
+  simpa using hquotient
 
 /-- The norm class of an idele is already determined by its
 finite-support Artin approximation. -/
@@ -355,15 +348,9 @@ theorem globalNormClassFromIdele_eq_artinFiniteSupportApproximation
     rw [← hz]
     exact
       globalNormClassFromIdele_relativeIdeleNorm_eq_one
-        (K := K) (L := L) z
-  have hmul :
-      globalNormClassFromIdele K L a *
-          (globalNormClassFromIdele K L
-            (artinFiniteSupportApproximation
-              (K := K) (L := L) a))⁻¹ =
-        1 := by
-    simpa only [map_mul, map_inv] using hquotient
-  exact mul_inv_eq_one.mp hmul
+          z
+  refine mul_inv_eq_one.mp ?_
+  simpa using hquotient
 
 end Reciprocity
 end GlobalClassFieldTheory

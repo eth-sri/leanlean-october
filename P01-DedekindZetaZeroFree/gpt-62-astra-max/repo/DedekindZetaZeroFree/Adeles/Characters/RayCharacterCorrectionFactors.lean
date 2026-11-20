@@ -37,17 +37,19 @@ private lemma exterior_coprime (A : SArithmeticData F) (I : A.Exterior) :
     intro he
     apply I.property.1
     apply bot_unique
-    have hh : I.val ≤ p := le_trans le_sup_left hle
-    simpa only [he] using hh
+    simpa only [he] using (le_trans le_sup_left hle)
   let v : HeightOneSpectrum (𝓞 F) := ⟨p, hp.isPrime, hp0⟩
-  have hv : v ∈ A.Sf := A.modulus_support v (le_trans le_sup_right hle)
-  have hi := (A.exterior_iff ⟨I.val, I.property.1⟩).mp I.property.2 v hv
-  have : I.val ⊔ v.asIdeal ≤ p := sup_le (le_trans le_sup_left hle) le_rfl
-  rw [hi] at this
+  have := sup_le (le_trans le_sup_left hle) le_rfl
+  rw [((A.exterior_iff ⟨I.val, I.property.1⟩).mp I.property.2 v (A.modulus_support v (le_trans le_sup_right hle)))] at this
   exact hp.ne_top (top_unique this)
 
-private lemma representative_fractional (A : SArithmeticData F) (I : A.Exterior)
-    (x : NumberField.IdeleGroup (𝓞 F) F) (hx : A.RepresentsExteriorIdeal I x) :
+section
+
+variable (A : SArithmeticData F) (I : A.Exterior) (x : NumberField.IdeleGroup (𝓞 F) F)
+    (hx : A.RepresentsExteriorIdeal I x)
+
+include hx in
+private lemma representative_fractional :
     _root_.IdeleGroup.fractionalIdeal ((_root_.IdeleGroup.equivAdeleRingUnits).symm x) =
       RayClassBridge.integralUnit F I.val I.property.1 := by
   apply _root_.FractionalIdealGroup.ext_count
@@ -57,7 +59,7 @@ private lemma representative_fractional (A : SArithmeticData F) (I : A.Exterior)
       (((_root_.IdeleGroup.equivAdeleRingUnits).symm x).2))) : FractionalIdeal _ F) = _
   rw [FractionalIdealGroup.count_factorization]
   change (FiniteIdeleGroup.localOrder v (((_root_.IdeleGroup.equivAdeleRingUnits).symm x).2 v)).toAdd =
-    FractionalIdeal.count F v (I.val : FractionalIdeal _ F)
+    FractionalIdeal.count F v I.val
   rw [count_eq I.val I.property.1 v, FiniteIdeleGroup.localOrder_apply]
   change -WithZero.log (Valued.v (x.val.2 v)) = _
   by_cases hv : v ∈ A.Sf
@@ -78,8 +80,8 @@ private lemma representative_fractional (A : SArithmeticData F) (I : A.Exterior)
     change -WithZero.log (WithZero.exp (-(idealPrimeExponent v.asIdeal I.val : ℤ))) = _
     rw [WithZero.log_exp, neg_neg]
 
-private lemma representative_primeTo (A : SArithmeticData F) (I : A.Exterior)
-    (x : NumberField.IdeleGroup (𝓞 F) F) (hx : A.RepresentsExteriorIdeal I x) :
+include hx in
+private lemma representative_primeTo :
     (_root_.IdeleGroup.equivAdeleRingUnits).symm x ∈ RayClass.idelePrimeToModulusSubgroup
       (ClassFieldTheory.GlobalClassFieldComparison.rayClassModulusToOriginal F
         (RayClassBridge.narrowIdealModulus F A.modulus A.modulus_ne_zero)) := by
@@ -93,52 +95,14 @@ private lemma representative_primeTo (A : SArithmeticData F) (I : A.Exterior)
   · intro v hv
     have hv' : v ∈ A.Sf := by
       apply A.modulus_support
-      have hs := RayClassBridge.narrowIdealModulus_support F A.modulus A.modulus_ne_zero
-      exact (Set.ext_iff.mp hs v).mp hv
+      exact (Set.ext_iff.mp (RayClassBridge.narrowIdealModulus_support F A.modulus A.modulus_ne_zero) v).mp hv
     have h1 : ((_root_.IdeleGroup.equivAdeleRingUnits).symm x).2 v = 1 := by
       apply Units.ext
       exact hx.2.1 v hv'
     rw [h1]
     exact one_mem _
 
-private lemma representative_evaluation (A : SArithmeticData F) (η : RayClassCharacter F A.modulus)
-    (x : NumberField.IdeleGroup (𝓞 F) F) (I : A.Exterior)
-    (hx : A.RepresentsExteriorIdeal I x) :
-    (RayClassBridge.ideleClassCharacter F
-      (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12)
-      A.modulus A.modulus_ne_zero η
-      (QuotientGroup.mk ((_root_.IdeleGroup.equivAdeleRingUnits).symm x)) : ℂ) = η I.val := by
-  let m := RayClassBridge.narrowIdealModulus F A.modulus A.modulus_ne_zero
-  let m' := ClassFieldTheory.GlobalClassFieldComparison.rayClassModulusToOriginal F m
-  let a : RayClass.idelePrimeToModulusSubgroup m' :=
-    ⟨(_root_.IdeleGroup.equivAdeleRingUnits).symm x, representative_primeTo A I x hx⟩
-  have hc := exterior_coprime A I
-  have hm : RayClass.primeToIdealMap m' a =
-      RayClassBridge.integralPrimeTo F A.modulus A.modulus_ne_zero I.val I.property.1 hc := by
-    apply Subtype.ext
-    exact representative_fractional A I x hx
-  have he : ClassFieldTheory.GlobalClassFieldComparison.rayClassGroupEquivOriginal F m
-      (RayClassBridge.integralRayClass F A.modulus A.modulus_ne_zero I.val I.property.1 hc) =
-      RayClass.idealRayProjection m' a := by
-    rw [RayClass.idealRayProjection, MonoidHom.comp_apply, hm]
-    rfl
-  have hh : (ClassFieldTheory.GlobalClassFieldComparison.rayClassGroupEquivOriginalIdele F m).symm
-      (QuotientGroup.mk' m'.congruenceSubgroup (QuotientGroup.mk' (_root_.IdeleGroup.principalSubgroup F) a.val)) =
-      RayClassBridge.integralRayClass F A.modulus A.modulus_ne_zero I.val I.property.1 hc := by
-    apply (ClassFieldTheory.GlobalClassFieldComparison.rayClassGroupEquivOriginalIdele F m).injective
-    rw [MulEquiv.apply_symm_apply]
-    apply (RayClass.rayClassGroupEquivIdealRayClassGroup m').injective
-    rw [GlobalClassFieldTheory.GlobalClassFields.rayClassGroupEquivIdealRayClassGroup_mk_primeTo]
-    change _ = (RayClass.rayClassGroupEquivIdealRayClassGroup m')
-      ((RayClass.rayClassGroupEquivIdealRayClassGroup m').symm
-        (ClassFieldTheory.GlobalClassFieldComparison.rayClassGroupEquivOriginal F m _))
-    rw [MulEquiv.apply_symm_apply]
-    exact he.symm
-  change (RayClassBridge.rayCharacter F (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12) A.modulus A.modulus_ne_zero η
-    ((ClassFieldTheory.GlobalClassFieldComparison.rayClassGroupEquivOriginalIdele F m).symm
-      (QuotientGroup.mk' m'.congruenceSubgroup (QuotientGroup.mk' (_root_.IdeleGroup.principalSubgroup F) a.val))) : ℂ) = _
-  rw [hh]
-  exact RayClassBridge.rayCharacter_integral F _ A.modulus A.modulus_ne_zero η I.val I.property.1 hc
+end
 
 private lemma infinite_comparison (w : InfinitePlace F) (z : w.Completionˣ) :
     _root_.IdeleGroup.ideleClassGroupEquivMathlib F (_root_.IdeleGroup.infinitePlaceIdeleClass w z) =
@@ -179,8 +143,7 @@ theorem rayExtension (A : SArithmeticData F)
       map_one' := by apply Subtype.ext; exact congrArg (fun u : ℂˣ => (u : ℂ)) χ.map_one
       map_mul' := by intro x y; apply Subtype.ext; exact congrArg (fun u : ℂˣ => (u : ℂ)) (χ.map_mul x y) }
   have hcΦ : Continuous Φ := by
-    have hχ : Continuous χ := (RayClassBridge.ideleClassCharacter_continuous F hc A.modulus A.modulus_ne_zero η).comp e.continuous
-    exact (Units.continuous_val.comp hχ).subtype_mk _
+    exact (Units.continuous_val.comp ((RayClassBridge.ideleClassCharacter_continuous F hc A.modulus A.modulus_ne_zero η).comp e.continuous)).subtype_mk _
   refine ⟨Φ, hcΦ, ?_, ?_, ?_, ?_⟩
   · refine ⟨Nat.card (ClassFieldTheory.RayClassGroup (RayClassBridge.narrowIdealModulus F A.modulus A.modulus_ne_zero)),
       RayClassBridge.ideleClassCharacter_exponent_pos F A.modulus A.modulus_ne_zero, ?_⟩
@@ -196,13 +159,40 @@ theorem rayExtension (A : SArithmeticData F)
       change (_root_.IdeleGroup.ideleClassGroupEquivMathlib F) ((_root_.IdeleGroup.ideleClassGroupEquivMathlib F).symm _) = _
       rw [MulEquiv.apply_symm_apply, _root_.IdeleGroup.ideleClassGroupEquivMathlib_finitePlaceIdeleClass]
     rw [he]
-    have hm : ¬ A.modulus ≤ v.asIdeal := fun hm => hv (A.modulus_support v hm)
-    have hu' : u ∈ (v.adicCompletionIntegers F).units :=
-      HeightOneSpectrum.adicCompletionIntegers.mem_units_iff_valued_eq_one.mpr hu
     exact congrArg (fun u : ℂˣ => (u : ℂ))
-      (RayClassBridge.ideleClassCharacter_finitePlaceIdeleClass_unit_of_not_dvd F hc A.modulus A.modulus_ne_zero η v hm u hu')
+      (RayClassBridge.ideleClassCharacter_finitePlaceIdeleClass_unit_of_not_dvd F hc A.modulus A.modulus_ne_zero η v (fun hm => hv (A.modulus_support v hm)) u (HeightOneSpectrum.adicCompletionIntegers.mem_units_iff_valued_eq_one.mpr hu))
   · intro I x hx
-    exact representative_evaluation A η x I hx
+    let m := RayClassBridge.narrowIdealModulus F A.modulus A.modulus_ne_zero
+    let m' := ClassFieldTheory.GlobalClassFieldComparison.rayClassModulusToOriginal F m
+    let a : RayClass.idelePrimeToModulusSubgroup m' :=
+      ⟨(_root_.IdeleGroup.equivAdeleRingUnits).symm x, representative_primeTo A I x hx⟩
+    have hc := exterior_coprime A I
+    have hm : RayClass.primeToIdealMap m' a =
+        RayClassBridge.integralPrimeTo F A.modulus A.modulus_ne_zero I.val I.property.1 hc := by
+      apply Subtype.ext
+      exact representative_fractional A I x hx
+    have he : ClassFieldTheory.GlobalClassFieldComparison.rayClassGroupEquivOriginal F m
+        (RayClassBridge.integralRayClass F A.modulus A.modulus_ne_zero I.val I.property.1 hc) =
+        RayClass.idealRayProjection m' a := by
+      rw [RayClass.idealRayProjection, MonoidHom.comp_apply, hm]
+      rfl
+    have hh : (ClassFieldTheory.GlobalClassFieldComparison.rayClassGroupEquivOriginalIdele F m).symm
+        (QuotientGroup.mk' m'.congruenceSubgroup (QuotientGroup.mk' (_root_.IdeleGroup.principalSubgroup F) a.val)) =
+        RayClassBridge.integralRayClass F A.modulus A.modulus_ne_zero I.val I.property.1 hc := by
+      apply (ClassFieldTheory.GlobalClassFieldComparison.rayClassGroupEquivOriginalIdele F m).injective
+      rw [MulEquiv.apply_symm_apply]
+      apply (RayClass.rayClassGroupEquivIdealRayClassGroup m').injective
+      rw [GlobalClassFieldTheory.GlobalClassFields.rayClassGroupEquivIdealRayClassGroup_mk_primeTo]
+      change _ = (RayClass.rayClassGroupEquivIdealRayClassGroup m')
+        ((RayClass.rayClassGroupEquivIdealRayClassGroup m').symm
+          (ClassFieldTheory.GlobalClassFieldComparison.rayClassGroupEquivOriginal F m _))
+      rw [MulEquiv.apply_symm_apply]
+      exact he.symm
+    change (RayClassBridge.rayCharacter F (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12) A.modulus A.modulus_ne_zero η
+      ((ClassFieldTheory.GlobalClassFieldComparison.rayClassGroupEquivOriginalIdele F m).symm
+        (QuotientGroup.mk' m'.congruenceSubgroup (QuotientGroup.mk' (_root_.IdeleGroup.principalSubgroup F) a.val))) : ℂ) = _
+    rw [hh]
+    exact RayClassBridge.rayCharacter_integral F _ A.modulus A.modulus_ne_zero η I.val I.property.1 hc
   · intro w z
     apply Subtype.ext
     change (RayClassBridge.ideleClassCharacter F hc A.modulus A.modulus_ne_zero η
@@ -232,19 +222,22 @@ set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 
-def correctionTheta (A : SArithmeticData F)
-    (Λ G η_id : A.ArithmeticIdeleClasses →* Circle) :
+section
+
+variable (A : SArithmeticData F) (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
+
+def correctionTheta :
     A.ArithmeticIdeleClasses →* Circle :=
   Λ⁻¹ * G⁻¹ * η_id
 
-def correctionLS (A : SArithmeticData F)
-    (Λ G η_id : A.ArithmeticIdeleClasses →* Circle) (y : A.G) : Circle :=
+def correctionLS (y : A.G) : Circle :=
   A.ideleSInverseProduct (A.correctionTheta Λ G η_id) y
+
+end
 
 structure GaussCorrectionOutput (A : SArithmeticData F)
     (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)
     (hS : A.ContainsTraceBadPlaces) where
-
   H : A.V → A.V → Fˣ
   H_actual : ∀ x y : A.G,
     H (QuotientGroup.mk' A.sixthPowers x)
@@ -258,10 +251,8 @@ structure GaussCorrectionOutput (A : SArithmeticData F)
   G_continuous : Continuous G
   eta_continuous : Continuous η_id
   G_finiteOrder : A.IdeleCharacterHasFiniteOrder G
-  eta_finiteOrder : A.IdeleCharacterHasFiniteOrder η_id
   Λ_unramified : A.IdeleCharacterUnramifiedOutside Λ
   G_unramified : A.IdeleCharacterUnramifiedOutside G
-  eta_unramified : A.IdeleCharacterUnramifiedOutside η_id
 
   Λ_ideal : ∀ (I : A.Exterior) (x : NumberField.IdeleGroup (𝓞 F) F),
     A.RepresentsExteriorIdeal I x →
@@ -285,8 +276,6 @@ structure GaussCorrectionOutput (A : SArithmeticData F)
         (InfinitePlace.Completion.extensionEmbedding w (z : w.Completion)))⁻¹
   G_infinity : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
     A.ideleInfiniteComponent G w z = 1
-  eta_infinity : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
-    A.ideleInfiniteComponent η_id w z = 1
 
   gammaTwo_cube : ∀ (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F))
     (hIv : I.val = v.asIdeal) (p : A.R) (hp : A.Generates I p)
@@ -309,8 +298,6 @@ structure GaussCorrectionOutput (A : SArithmeticData F)
         A.ideleSInverseProduct (A.correctionTheta Λ G η_id) (A.diagonal a)
   theta_unit : ∀ ε : A.U,
     A.ideleSInverseProduct (A.correctionTheta Λ G η_id) (A.diagonal ε.val) = 1
-  theta_continuous : Continuous (A.correctionTheta Λ G η_id)
-  theta_unramified : A.IdeleCharacterUnramifiedOutside (A.correctionTheta Λ G η_id)
 
   finite_locallyConstant : ∀ v : {v // v ∈ A.Sf},
     ∀ z : (v.val.adicCompletion F)ˣ,
@@ -326,10 +313,6 @@ structure GaussCorrectionOutput (A : SArithmeticData F)
           DHCubic.angular (InfinitePlace.Completion.extensionEmbedding w (z : w.Completion)) ^ n ∧
         (A.ideleInfiniteComponent (A.correctionTheta Λ G η_id) w z : ℂ) =
           DHCubic.angular (InfinitePlace.Completion.extensionEmbedding w (z : w.Completion)) ^ (-n)
-  infinity_no_radial : ∀ (w : InfinitePlace F) (z u : w.Completionˣ) (r : ℝ),
-    0 < r → InfinitePlace.Completion.extensionEmbedding w (u : w.Completion) = (r : ℂ) →
-      A.ideleInfiniteComponent (A.correctionTheta Λ G η_id) w (z * u) =
-        A.ideleInfiniteComponent (A.correctionTheta Λ G η_id) w z
 
 theorem exists_gaussCorrectionOutput
     (A : SArithmeticData F) (hCl : Subsingleton (ClassGroup A.R))
@@ -370,15 +353,15 @@ theorem exists_gaussCorrectionOutput
     H := H, H_actual := hActual, B := B, B_complement := hB
     Λ := Λ, G := W.G, η_id := η_id
     Λ_continuous := hΛcont, G_continuous := W.continuous, eta_continuous := hηcont
-    G_finiteOrder := W.finiteOrder, eta_finiteOrder := hηorder
-    Λ_unramified := hΛunram, G_unramified := W.unramified, eta_unramified := hηunram
+    G_finiteOrder := W.finiteOrder,
+    Λ_unramified := hΛunram, G_unramified := W.unramified,
     Λ_ideal := hΛideal, eta_ideal := hηideal, G_prime := W.prime
-    Λ_infinity := hΛinf, G_infinity := W.infinity, eta_infinity := hηinf
+    Λ_infinity := hΛinf, G_infinity := W.infinity,
     gammaTwo_cube := hcube, gammaOne_gammaTwo := hdup
     theta_ideal_local := hθideal, theta_unit := hθunit
-    theta_continuous := hθcont, theta_unramified := hθunram
+
     finite_locallyConstant := hθfinite
-    infinity_angular := ?_, infinity_no_radial := ?_ }⟩
+    infinity_angular := ?_,}⟩
   · intro w
     obtain ⟨_, m, hm, hang⟩ := DHCubic.infinity_angular (DHCubic.E0 F A) F A
       (σ.comp (algebraMap (DHCubic.E0 F A) F)) w
@@ -391,15 +374,6 @@ theorem exists_gaussCorrectionOutput
       simp only [inv_inv, Circle.coe_inv]
       rw [hΛinf, hang _ hz, zpow_neg, neg_neg]
       simp
-  · intro w z u r hr hu
-    rw [hθinf, hθinf]
-    apply congrArg Inv.inv
-    apply Subtype.ext
-    change (A.ideleInfiniteComponent Λ w (z * u) : ℂ) =
-      (A.ideleInfiniteComponent Λ w z : ℂ)
-    rw [hΛinf, hΛinf]
-    simp only [Units.val_mul, map_mul, hu]
-    rw [mul_comm, DHCubic.infinity_no_radial _ _ _ _ _ r hr]
 
 theorem GaussCorrectionOutput.prime_theta
     {A : SArithmeticData F} {σ : F →+* ℂ}
@@ -420,8 +394,6 @@ theorem GaussCorrectionOutput.prime_theta
       (D.η_id (QuotientGroup.mk x) : ℂ) := by
     simp only [correctionTheta, MonoidHom.mul_apply, MonoidHom.inv_apply,
       Circle.coe_mul, Circle.coe_inv]
-    have hΛ := Circle.coe_ne_zero (D.Λ (QuotientGroup.mk x))
-    have hG := Circle.coe_ne_zero (D.G (QuotientGroup.mk x))
     field_simp
   calc
     _ = -((D.Λ (QuotientGroup.mk x) : ℂ) * (D.G (QuotientGroup.mk x) : ℂ) *
@@ -430,15 +402,17 @@ theorem GaussCorrectionOutput.prime_theta
 
 namespace CorrectionAssembly
 
-theorem correctionTheta_continuous (A : SArithmeticData F)
-    (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
+section
+
+variable (A : SArithmeticData F) (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
+
+theorem correctionTheta_continuous
     (hΛ : Continuous Λ) (hG : Continuous G) (hη : Continuous η_id) :
     Continuous (A.correctionTheta Λ G η_id) := by
   change Continuous (Λ⁻¹ * G⁻¹ * η_id)
   fun_prop
 
-theorem correctionTheta_unramified (A : SArithmeticData F)
-    (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
+theorem correctionTheta_unramified
     (hΛ : A.IdeleCharacterUnramifiedOutside Λ)
     (hG : A.IdeleCharacterUnramifiedOutside G)
     (hη : A.IdeleCharacterUnramifiedOutside η_id) :
@@ -450,8 +424,7 @@ theorem correctionTheta_unramified (A : SArithmeticData F)
   rw [hΛ v hv x hx, hG v hv x hx, hη v hv x hx]
   simp
 
-theorem correctionTheta_infinity (A : SArithmeticData F)
-    (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
+theorem correctionTheta_infinity
     (hG : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
       A.ideleInfiniteComponent G w z = 1)
     (hη : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
@@ -465,18 +438,16 @@ theorem correctionTheta_infinity (A : SArithmeticData F)
   rw [hG, hη]
   simp
 
-theorem correctionTheta_infinity_angular (A : SArithmeticData F)
-    (σ : F →+* ℂ) (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
-    (hΛ : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
-      (A.ideleInfiniteComponent Λ w z : ℂ) =
-        (DHCubic.infinityComponent (DHCubic.E0 F A) F
-          (σ.comp (algebraMap (DHCubic.E0 F A) F)) w
-          (InfinitePlace.Completion.extensionEmbedding w (z : w.Completion)))⁻¹)
-    (hG : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
-      A.ideleInfiniteComponent G w z = 1)
-    (hη : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
-      A.ideleInfiniteComponent η_id w z = 1)
-    (w : InfinitePlace F) :
+end
+
+variable (A : SArithmeticData F) (σ : F →+* ℂ) (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
+    (hΛ : ∀ (w : InfinitePlace F) (z : w.Completionˣ), (A.ideleInfiniteComponent Λ w z : ℂ) = (DHCubic.infinityComponent (DHCubic.E0 F A) F (σ.comp (algebraMap (DHCubic.E0 F A) F)) w (InfinitePlace.Completion.extensionEmbedding w (z : w.Completion)))⁻¹)
+    (hG : ∀ (w : InfinitePlace F) (z : w.Completionˣ), A.ideleInfiniteComponent G w z = 1)
+    (hη : ∀ (w : InfinitePlace F) (z : w.Completionˣ), A.ideleInfiniteComponent η_id w z = 1)
+    (w : InfinitePlace F)
+
+include hΛ hG hη in
+theorem correctionTheta_infinity_angular :
     ∃ n : ℤ, (n = 1 ∨ n = -1) ∧ ∀ z : w.Completionˣ,
       (((A.ideleInfiniteComponent (A.correctionTheta Λ G η_id) w z)⁻¹ : Circle) : ℂ) =
         DHCubic.angular (InfinitePlace.Completion.extensionEmbedding w (z : w.Completion)) ^ n ∧
@@ -487,25 +458,13 @@ theorem correctionTheta_infinity_angular (A : SArithmeticData F)
   refine ⟨-m, ?_, ?_⟩
   · rcases hm with rfl | rfl <;> simp
   · intro z
-    have hz : InfinitePlace.Completion.extensionEmbedding w (z : w.Completion) ≠ 0 :=
-      (map_ne_zero (InfinitePlace.Completion.extensionEmbedding w)).mpr (Units.ne_zero z)
     rw [correctionTheta_infinity A Λ G η_id hG hη]
     simp only [inv_inv, Circle.coe_inv]
-    rw [hΛ, hang _ hz, zpow_neg, neg_neg]
+    rw [hΛ, hang _ ((map_ne_zero (InfinitePlace.Completion.extensionEmbedding w)).mpr (Units.ne_zero z)), zpow_neg, neg_neg]
     simp
 
-theorem correctionTheta_infinity_no_radial (A : SArithmeticData F)
-    (σ : F →+* ℂ) (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
-    (hΛ : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
-      (A.ideleInfiniteComponent Λ w z : ℂ) =
-        (DHCubic.infinityComponent (DHCubic.E0 F A) F
-          (σ.comp (algebraMap (DHCubic.E0 F A) F)) w
-          (InfinitePlace.Completion.extensionEmbedding w (z : w.Completion)))⁻¹)
-    (hG : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
-      A.ideleInfiniteComponent G w z = 1)
-    (hη : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
-      A.ideleInfiniteComponent η_id w z = 1)
-    (w : InfinitePlace F) (z u : w.Completionˣ) (r : ℝ) (hr : 0 < r)
+include hΛ hG hη in
+theorem correctionTheta_infinity_no_radial (z u : w.Completionˣ) (r : ℝ) (hr : 0 < r)
     (hu : InfinitePlace.Completion.extensionEmbedding w (u : w.Completion) = (r : ℂ)) :
     A.ideleInfiniteComponent (A.correctionTheta Λ G η_id) w (z * u) =
       A.ideleInfiniteComponent (A.correctionTheta Λ G η_id) w z := by
@@ -513,8 +472,6 @@ theorem correctionTheta_infinity_no_radial (A : SArithmeticData F)
     correctionTheta_infinity A Λ G η_id hG hη]
   apply congrArg Inv.inv
   apply Subtype.ext
-  change (A.ideleInfiniteComponent Λ w (z * u) : ℂ) =
-    (A.ideleInfiniteComponent Λ w z : ℂ)
   rw [hΛ, hΛ]
   simp only [Units.val_mul, map_mul, hu]
   rw [mul_comm, DHCubic.infinity_no_radial _ _ _ _ _ r hr]

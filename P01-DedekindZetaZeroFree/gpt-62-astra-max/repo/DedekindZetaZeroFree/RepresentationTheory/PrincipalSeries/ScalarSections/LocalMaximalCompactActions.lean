@@ -13,10 +13,10 @@ open scoped Classical NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open NumberField IsDedekindDomain KPGlobalTorusFiniteStages KPLocalPrincipalSeries
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 
 local instance rawTopology (q : KPFinitePlace F) :
     TopologicalSpace (KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q)) :=
@@ -35,7 +35,7 @@ def finiteMaxOrbit (q : KPFinitePlace F) (f : Plus R.A P C (Sum.inr q)) :
 
 theorem finiteMaxOrbit_finite (q : KPFinitePlace F) (f : Plus R.A P C (Sum.inr q)) :
     Module.Finite ℂ (finiteMaxOrbit R P C q f) := by
-  let : CompactSpace (ThetaExpansion.iwasawaCompactFactor R (Sum.inr q)) :=
+  let :=
     isCompact_iff_compactSpace.mp (ThetaExpansion.iwasawa_compact_factor_is_compact R (Sum.inr q))
   apply Module.Finite.span_of_finite
   have h := KPLocalInducedCompactPairing.smooth_orbit_locallyConstant
@@ -62,9 +62,9 @@ theorem finiteMaxOrbit_stable (q : KPFinitePlace F) (f : Plus R.A P C (Sum.inr q
     exact Submodule.subset_span ⟨k * j, rfl⟩
   · simp
   · intro x y hx hy hix hiy
-    simpa only [map_add] using Submodule.add_mem _ hix hiy
+    simpa using Submodule.add_mem _ hix hiy
   · intro c x hx hix
-    simpa only [map_smul] using Submodule.smul_mem _ c hix
+    simpa using Submodule.smul_mem _ c hix
 
 theorem finiteMaxAction_value (q : KPFinitePlace F)
     (k : ThetaExpansion.iwasawaCompactFactor R (Sum.inr q))
@@ -111,8 +111,6 @@ theorem archMax_matrix (w : InfinitePlace F)
     compactSubgroup.comap (rawMatrix R.A w) from ?_) hg
   apply (Subgroup.closure_le _).mpr
   rintro g ⟨k, rfl⟩
-  change rawMatrix R.A w _ ∈
-    (Matrix.ProjGenLinGroup.mk.comp KPCplxCharacterHaar.complexSU2Embedding).range
   apply MonoidHom.mem_range.mpr
   refine ⟨k, ?_⟩
   change Matrix.ProjGenLinGroup.mk (KPCplxCharacterHaar.complexSU2Embedding k) =

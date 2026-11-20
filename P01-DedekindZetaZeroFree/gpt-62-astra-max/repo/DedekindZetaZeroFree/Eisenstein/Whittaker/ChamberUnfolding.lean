@@ -41,7 +41,7 @@ private theorem weighted_period (dx : Measure (A F)) (dq : Measure (Q F))
           (fun x => ENNReal.ofReal ‖w x‖) q) from rfl, htw]
     simpa only [ofReal_norm, HasFiniteIntegral] using hwint.hasFiniteIntegral
   have hi := (KPChamberAdditivePeriodization.integral_complexPeriod F dx dq hcompat
-    w hwmeas hfinite).2.2
+    w hwmeas hfinite)
   have hweq (q : Q F) : KPChamberAdditivePeriodization.complexPeriod F w q =
       KPChamberAdditivePeriodization.complexPeriod F h q * star (χ q : ℂ) := by
     have hmk : (QuotientAddGroup.mk (Quotient.out q : A F) : Q F) = q := Quotient.out_eq _
@@ -82,7 +82,7 @@ private theorem two_cells_weighted
       f (n (Multiplicative.ofAdd (Quotient.out q)) * g) (hsum q) * star (χ q : ℂ) ∂dq) =
     ∫ x : A F, f (r (KPChamberBruhatTwoCells.rationalWeyl F) *
       n (Multiplicative.ofAdd x) * g) * star (χ (QuotientAddGroup.mk x) : ℂ) ∂dx := by
-  let h : A F → ℂ := fun x => f (r (KPChamberBruhatTwoCells.rationalWeyl F) *
+  let h := fun x => f (r (KPChamberBruhatTwoCells.rationalWeyl F) *
     n (Multiplicative.ofAdd x) * g)
   have hp := weighted_period F dx dq hcompat h hmeas hint χ hχ
   have hformula (q : Q F) : KPGlobalEisensteinData.eisenstein
@@ -147,15 +147,13 @@ theorem literal_nontrivial_fourier_unfolding
       MonoidHom.coe_mk, OneHom.coe_mk, toAdd_ofAdd] using
       ActualBruhat.section_signed_weyl F ζ hζ z v
         (KPGlobalTorusFunctionData.N F ζ hζ x * g)
-  have hm := standard_measurable F ζ hζ K f z g
-  have hi := standard_integrable F ζ hζ K hK f z hz g
   have h := two_cells_weighted F r n (f.val z)
     (ActualBruhat.scalar_rational_borel_invariant F ζ hζ z v)
     (ActualBruhat.scalar_unipotent_invariant F ζ hζ z v)
     (ActualBruhat.compatible_unipotent F ζ hζ)
     (KPAdditiveHaar.adelicMeasure F) (KPWildKernelUpperBound.quotientHaar F)
     (KPContinuation.ChamberOutgoingSource.actual_quotientHaar_compatible F) g hsum
-    (heq.symm ▸ hm) (heq.symm ▸ hi) χ hχ hne
+    (heq.symm ▸ (standard_measurable F ζ hζ K f z g)) (heq.symm ▸ (standard_integrable F ζ hζ K hK f z hz g)) χ hχ hne
   calc
     _ = ∫ y : Q F, KPGlobalEisensteinData.eisenstein
         (fun c : KPChamberBruhatTwoCells.RationalQuotient F => r (Quotient.out c))

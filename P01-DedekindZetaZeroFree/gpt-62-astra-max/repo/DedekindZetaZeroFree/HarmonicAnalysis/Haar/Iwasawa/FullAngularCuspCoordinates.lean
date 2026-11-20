@@ -4,16 +4,9 @@ public import DedekindZetaZeroFree.RepresentationTheory.RankOne.Casimir.NormalPr
 
 @[expose] public section
 
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTransport → toRawTransport
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.ComponentFiber renaming spherical_fiber_formula → spherical_fiber_formula
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming archEquiv → archEquiv
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming placeEquiv → placeEquiv
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming basepoint_eq → basepoint_eq
 
-open _root_.DedekindZetaZeroFree.KPArithmeticAction renaming origin_fixed_row → origin_fixed_row
-open _root_.DedekindZetaZeroFree.KPArithmeticAction renaming normalized_representative → normalized_representative
-open _root_.DedekindZetaZeroFree.KPArithmeticAction renaming normalizedMatrixGL → normalizedMatrixGL
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.NormalCoefficient renaming su_origin → su_origin
+open _root_.DedekindZetaZeroFree.KPArithmeticAction (origin_fixed_row normalized_representative normalizedMatrixGL)
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.NormalCoefficient (su_origin)
 
 noncomputable section
 open scoped Classical ENNReal NNReal
@@ -43,8 +36,7 @@ private theorem normalized_origin_unitary (a : Matrix.GeneralLinearGroup (Fin 2)
     simpa only [add_comm] using
       (div_eq_zero_iff).mp hn |>.resolve_right (by exact_mod_cast hh)
   have hzc : a 1 0 * star (a 0 0) + a 1 1 * star (a 0 1) = 0 := by
-    have h := congrArg star hz
-    simpa only [star_add, star_mul, star_star, star_zero, mul_comm] using h
+    simpa only [star_add, star_mul, star_star, star_zero, mul_comm] using (congrArg star hz)
   apply Matrix.mem_unitaryGroup_iff.mpr
   ext i j
   fin_cases i <;> fin_cases j <;>
@@ -54,10 +46,8 @@ private theorem normalized_origin_unitary (a : Matrix.GeneralLinearGroup (Fin 2)
     simpa only [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq,
       ← Complex.ofReal_add, Complex.ofReal_inj, Complex.ofReal_one] using
       congrArg Complex.ofReal ht
-  · change a 0 0 * star (a 1 0) + a 0 1 * star (a 1 1) = 0
-    exact hz
-  · change a 1 0 * star (a 0 0) + a 1 1 * star (a 0 1) = 0
-    exact hzc
+  · exact hz
+  · exact hzc
   · change a 1 0 * star (a 1 0) + a 1 1 * star (a 1 1) = 1
     simpa only [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq,
       ← Complex.ofReal_add, Complex.ofReal_inj, Complex.ofReal_one] using

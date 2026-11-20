@@ -12,7 +12,7 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 def sourceB6 (v : KPHilbert.Place F) (x y : (KPHilbert.Completion F v)ˣ) :
     rootsOfUnity 6 F :=
@@ -25,17 +25,17 @@ def ordinaryGenuineCharacter : rootsOfUnity 3 F →* ℂˣ :=
     ordinaryGenuineCharacter F ζ hζ z =
       KPLocalCover.coefficientEmbedding F ζ hζ (KPLocalCover.threeToSix F z) := rfl
 
-def sourceC (v : KPHilbert.Place F) (x y : (KPHilbert.Completion F v)ˣ) : ℂ :=
+section
+
+variable (v : KPHilbert.Place F) (x y : (KPHilbert.Completion F v)ˣ)
+
+def sourceC : ℂ :=
   (ordinaryGenuineCharacter F ζ hζ (KPHilbert.B3 F ζ hζ v x y ^ 2) : ℂ)
 
-theorem sourceC_eq_sourceB6_square (v : KPHilbert.Place F)
-    (x y : (KPHilbert.Completion F v)ˣ) :
+theorem sourceC_eq_sourceB6_square :
     sourceC F ζ hζ v x y =
       (KPLocalCover.coefficientEmbedding F ζ hζ (sourceB6 F ζ hζ v x y ^ 2) : ℂ) := by
   let r := KPHilbert.B6 F ζ hζ v x y
-  have hr : r ^ 6 = 1 := by
-    apply Subtype.ext
-    exact r.property
   have hi : KPLocalCover.threeToSix F (KPHilbert.B3 F ζ hζ v x y ^ 2) = r ^ 4 := by
     apply Subtype.ext
     change ((r : Fˣ) ^ 2) ^ 2 = (r : Fˣ) ^ 4
@@ -43,24 +43,23 @@ theorem sourceC_eq_sourceB6_square (v : KPHilbert.Place F)
   have hp : r ^ 4 = (r ^ 2)⁻¹ := by
     apply (eq_inv_iff_mul_eq_one).2
     rw [← pow_add]
-    exact hr
+    exact (by
+      exact Subtype.ext r.property)
   unfold sourceC ordinaryGenuineCharacter
   simp only [MonoidHom.comp_apply, hi, hp, sourceB6, inv_pow]
   rfl
 
-theorem sourceC_eq_actualC_inv (v : KPHilbert.Place F)
-    (x y : (KPHilbert.Completion F v)ˣ) :
+theorem sourceC_eq_actualC_inv :
     sourceC F ζ hζ v x y = (KPEffectiveDiagonalMultiplier.C F ζ hζ v x y)⁻¹ := by
-  rw [sourceC_eq_sourceB6_square, KPEffectiveDiagonalMultiplier.C_eq_B6_square]
-  simp [sourceB6]
+  simp [sourceB6, sourceC_eq_sourceB6_square, KPEffectiveDiagonalMultiplier.C_eq_B6_square]
 
-theorem sourceC_eq_actualB6_neg_two (v : KPHilbert.Place F)
-    (x y : (KPHilbert.Completion F v)ˣ) :
+theorem sourceC_eq_actualB6_neg_two :
     sourceC F ζ hζ v x y =
       (KPLocalCover.coefficientEmbedding F ζ hζ (KPHilbert.B6 F ζ hζ v x y) : ℂ) ^
         (-2 : ℤ) := by
-  rw [sourceC_eq_sourceB6_square]
-  simp [sourceB6, zpow_neg, zpow_ofNat]
+  simp [sourceB6, zpow_neg, zpow_ofNat, sourceC_eq_sourceB6_square]
+
+end
 
 section Tame
 variable (v : HeightOneSpectrum (𝓞 F))
@@ -93,8 +92,7 @@ theorem prod_sourceC_arithmetic (A : SArithmeticData F) (x y : A.G) :
       (KPLocalCover.coefficientEmbedding F A.zeta12 A.primitive_zeta12 (A.H_S x y) : ℂ) ^
         (-2 : ℤ) := by
   simp only [sourceC_eq_actualB6_neg_two, ← Finset.prod_zpow]
-  have hp := KPHilbert.B6_S_product F A x y
-  have he := congrArg (KPLocalCover.coefficientEmbedding F A.zeta12 A.primitive_zeta12) hp
+  have he := congrArg (KPLocalCover.coefficientEmbedding F A.zeta12 A.primitive_zeta12) (KPHilbert.B6_S_product F A x y)
   rw [map_prod] at he
   have hc := congrArg Units.val he
   simp only [Units.coe_prod] at hc

@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -63,17 +58,13 @@ def abstractFixedFieldUnitsEquivGaloisFixed
         abstractFixedField k Ω H := by
       rw [IntermediateField.mem_fixedField_iff]
       intro σ hσ
-      have hfixed := a.2 ⟨σ, hσ⟩
       exact congrArg
-        (fun z : Additive Ωˣ => ((Additive.toMul z : Ωˣ) : Ω)) hfixed
+        (fun z : Additive Ωˣ => ((Additive.toMul z : Ωˣ) : Ω)) (a.2 ⟨σ, hσ⟩)
     let y₀ : abstractFixedField k Ω H :=
       ⟨((Additive.toMul a.1 : Ωˣ) : Ω), ha⟩
-    have hy₀ : y₀ ≠ 0 := by
-      intro h
-      have h' : ((Additive.toMul a.1 : Ωˣ) : Ω) = 0 :=
-        congrArg (abstractFixedField k Ω H).val h
-      exact (Additive.toMul a.1 : Ωˣ).ne_zero h'
-    exact Additive.ofMul (Units.mk0 y₀ hy₀)
+    refine Additive.ofMul (Units.mk0 y₀ ?_)
+    intro h
+    exact (Additive.toMul a.1 : Ωˣ).ne_zero (congrArg (abstractFixedField k Ω H).val h)
   left_inv x := by
     apply Additive.ext
     apply Units.ext
@@ -106,7 +97,6 @@ def abstractRelativeFixedFieldUnitsEquivGaloisFixed
     (hLK : L.toSubgroup ≤ K.toSubgroup) :
     Additive (abstractRelativeFixedField k Ω hLK)ˣ ≃+
       ambientFixedAddSubgroup (galoisAmbientUnitsRep k Ω) L := by
-  change Additive (abstractFixedField k Ω L)ˣ ≃+ _
   exact abstractFixedFieldUnitsEquivGaloisFixed k Ω L
 
 omit [IsGalois k Ω] in
@@ -149,8 +139,7 @@ theorem abstractRelativeUnitsEquiv_extensionUnitsEquiv
         (abstractExtensionFixedRepresentationUnitsEquiv
           k Ω K L hLK hnormal x) =
       extensionFixedRepresentationEquiv
-        (galoisAmbientUnitsRep k Ω) K L hLK hnormal x := by
-  exact (abstractRelativeFixedFieldUnitsEquivGaloisFixed
+        (galoisAmbientUnitsRep k Ω) K L hLK hnormal x := (abstractRelativeFixedFieldUnitsEquivGaloisFixed
     k Ω K L hLK).apply_symm_apply
       (extensionFixedRepresentationEquiv
         (galoisAmbientUnitsRep k Ω) K L hLK hnormal x)
@@ -170,9 +159,9 @@ theorem abstractExtensionQuotientEquivGaloisGroup_mk_apply_val
           (QuotientGroup.mk' (extensionSubgroup K L hLK) σ)) x :
         abstractRelativeFixedField k Ω hLK) : Ω) := by
   let := hnormal
-  let : (abstractRelativeFixedField k Ω hLK).fixingSubgroup.Normal :=
+  let :=
     abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
-  let H : ClosedSubgroup (Gal(Ω / abstractFixedField k Ω K)) :=
+  let H :=
     closedFixingSubgroup (abstractFixedField k Ω K) Ω
       (abstractRelativeFixedField k Ω hLK)
   let : H.toSubgroup.Normal :=
@@ -202,20 +191,15 @@ theorem abstractExtensionQuotientEquivGaloisGroup_mk_apply_val
     AlgEquiv.autCongr_apply]
   simp only [AlgEquiv.trans_apply, IntermediateField.equivOfEq_symm,
     IntermediateField.equivOfEq_apply]
-  change σ.1 (x : Ω) =
-    (((AlgEquiv.restrictNormalHom
-      (IntermediateField.fixedField H.toSubgroup)
-      (abstractSubgroupEquivGaloisGroup k Ω K σ))
-      ⟨(x : Ω), _⟩ : IntermediateField.fixedField H.toSubgroup) : Ω)
   rw [AlgEquiv.restrictNormalHom_apply]
   rfl
+
+variable (K L : ClosedSubgroup (Gal(Ω / k))) (hLK : L.toSubgroup ≤ K.toSubgroup)
+    (hnormal : (extensionSubgroup K L hLK).Normal)
 
 /-- The abstract coset action on an upper fixed-field unit is the ordinary
 action of the corresponding concrete relative Galois automorphism. -/
 theorem relativeCosetAction_abstractRelativeFixedFieldUnit_val
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
     (x : Additive (abstractRelativeFixedField k Ω hLK)ˣ)
     (q : K.toSubgroup ⧸ extensionSubgroup K L hLK) :
     letI := hnormal
@@ -231,22 +215,13 @@ theorem relativeCosetAction_abstractRelativeFixedFieldUnit_val
               k Ω K L hLK hnormal q) x) :
           (abstractRelativeFixedField k Ω hLK)ˣ) :
         abstractRelativeFixedField k Ω hLK) : Ω) := by
-  let := hnormal
   refine Quotient.inductionOn' q ?_
   intro σ
-  rw [relativeCosetAction_mk]
-  change σ.1 ((Additive.toMul x :
-      (abstractRelativeFixedField k Ω hLK)ˣ) : Ω) = _
-  exact abstractExtensionQuotientEquivGaloisGroup_mk_apply_val
-    k Ω K L hLK hnormal σ
-      (Additive.toMul x : (abstractRelativeFixedField k Ω hLK)ˣ)
+  apply abstractExtensionQuotientEquivGaloisGroup_mk_apply_val
 
 /-- The carrier comparison intertwines the descended quotient action with
 the actual relative Galois action. -/
 theorem abstractExtensionFixedRepresentationUnitsEquiv_action
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
     (q : K.toSubgroup ⧸ extensionSubgroup K L hLK)
     (x : (extensionFixedRepresentation (galoisAmbientUnitsRep k Ω)
       K L hLK hnormal).V) :
@@ -261,34 +236,26 @@ theorem abstractExtensionFixedRepresentationUnitsEquiv_action
           (abstractExtensionFixedRepresentationUnitsEquiv
             k Ω K L hLK hnormal x) := by
   let := hnormal
-  let eFixed := abstractRelativeFixedFieldUnitsEquivGaloisFixed
-    k Ω K L hLK
-  apply eFixed.injective
+  apply (abstractRelativeFixedFieldUnitsEquivGaloisFixed
+    k Ω K L hLK).injective
   rw [abstractRelativeUnitsEquiv_extensionUnitsEquiv]
   apply Subtype.ext
   apply Additive.ext
   apply Units.ext
-  have haction := extensionFixedRepresentation_action_coe
-    (galoisAmbientUnitsRep k Ω) K L hLK hnormal q x
   change
     ((Additive.toMul
       ((extensionFixedRepresentation (galoisAmbientUnitsRep k Ω)
         K L hLK hnormal).ρ q x).1 : Ωˣ) : Ω) = _
-  rw [haction]
+  rw [(extensionFixedRepresentation_action_coe
+    (galoisAmbientUnitsRep k Ω) K L hLK hnormal q x)]
   rw [← abstractRelativeUnitsEquiv_extensionUnitsEquiv
     k Ω K L hLK hnormal x]
-  exact relativeCosetAction_abstractRelativeFixedFieldUnit_val
-    k Ω K L hLK hnormal
-      (abstractExtensionFixedRepresentationUnitsEquiv
-        k Ω K L hLK hnormal x) q
+  apply relativeCosetAction_abstractRelativeFixedFieldUnit_val
 
 /-- Representation-level form of the fixed-field unit comparison.  The
 concrete unit representation is reindexed along the canonical isomorphism
 from the abstract class-formation quotient to the actual relative Galois group. -/
-def abstractExtensionFixedRepresentationIsoUnitsRes
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal) :
+def abstractExtensionFixedRepresentationIsoUnitsRes :
     letI := hnormal
     extensionFixedRepresentation (galoisAmbientUnitsRep k Ω)
         K L hLK hnormal ≅
@@ -298,9 +265,8 @@ def abstractExtensionFixedRepresentationIsoUnitsRes
         (Rep.ofAlgebraAutOnUnits (abstractFixedField k Ω K)
           (abstractRelativeFixedField k Ω hLK)) := by
   letI := hnormal
-  let e := abstractExtensionFixedRepresentationUnitsEquiv
-    k Ω K L hLK hnormal
-  refine Rep.mkIso (Representation.Equiv.mk e.toIntLinearEquiv ?_)
+  refine Rep.mkIso (Representation.Equiv.mk (abstractExtensionFixedRepresentationUnitsEquiv
+    k Ω K L hLK hnormal).toIntLinearEquiv ?_)
   intro q
   apply LinearMap.ext
   intro x

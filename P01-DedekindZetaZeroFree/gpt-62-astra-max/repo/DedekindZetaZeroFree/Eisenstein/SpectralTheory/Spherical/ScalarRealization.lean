@@ -13,12 +13,12 @@ set_option maxHeartbeats 1600000
 open scoped Classical NumberField Topology ContDiff
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry
 open KPContSectorCoveredQuotientVocabulary KPContSectorScalarLineAlgebra KPContSectorSmoothFramesSupport
-open _root_.DedekindZetaZeroFree.KPContActualSphericalRightFieldIdentification renaming exponential_base_smooth → exponential_base_smooth
+open _root_.DedekindZetaZeroFree.KPContActualSphericalRightFieldIdentification (exponential_base_smooth)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (V : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (V : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 def reindex (a : KPSmoothActualFlowData.LieCoordinates F) :
     KPSmoothLocalQuotientCharts.Coordinates F :=
   fun b => a (KPMsClearedTruncationL2.NativeWordBridge.basisEquiv F b)
@@ -116,17 +116,13 @@ theorem originalScalar_mem_smoothSpace (Z : smoothSections F ζ hζ V R P H) :
       F ζ hζ V R P H Z.val g u.val u.property
   · intro g ε
     rw [originalScalar_lift, originalScalar_lift]
-    have hc : g * KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε =
-        KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * g :=
-      Subgroup.mem_center_iff.mp
-        (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε,rfl⟩) g
-    rw [hc]
+    rw [(Subgroup.mem_center_iff.mp
+      (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε,rfl⟩) g)]
     exact KPGlobalResidualConstruction.ActualSectionLift.lift_genuine F ζ hζ V R P H Z.val ε g
 
-open _root_.DedekindZetaZeroFree.KPContSectorArchSphericalFibers renaming mem_KInfinity_iff_stab → mem_KInfinity_iff_stab
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabFullAngularHaar renaming compactSubgroup_eq_origin_stabilizer → compactSubgroup_eq_origin_stabilizer
+open _root_.DedekindZetaZeroFree.KPContSectorArchSphericalFibers (mem_KInfinity_iff_stab)
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabFullAngularHaar (compactSubgroup_eq_origin_stabilizer)
 open ResidualCompactTensor
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.FullSixCoercivity renaming compactTensor → compactTensor
 
 theorem originalScalar_compact (Z : smoothSections F ζ hζ V R P H)
     (g : KPSmoothActualFlowData.G F ζ hζ) (k : KPMsGreenFlux.K F) :

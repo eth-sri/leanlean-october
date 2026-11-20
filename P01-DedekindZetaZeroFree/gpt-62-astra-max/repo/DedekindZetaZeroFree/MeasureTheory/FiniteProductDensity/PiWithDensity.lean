@@ -11,8 +11,10 @@ open scoped ENNReal
 
 namespace DedekindZetaZeroFree.FiniteProductDensity
 
-theorem Measure.pi_withDensity {ι : Type*} [Fintype ι] {α : ι → Type*}
-    [∀ i, MeasurableSpace (α i)] (μ : ∀ i, Measure (α i)) [∀ i, SigmaFinite (μ i)]
+variable {ι : Type*} [Fintype ι] {α : ι → Type*} [∀ i, MeasurableSpace (α i)] (μ : ∀ i, Measure (α i))
+    [∀ i, SigmaFinite (μ i)]
+
+theorem Measure.pi_withDensity
     {f : ∀ i, α i → ℝ≥0∞} (hf : ∀ i, AEMeasurable (f i) (μ i))
     [∀ i, SigmaFinite ((μ i).withDensity (f i))] :
     Measure.pi (fun i => (μ i).withDensity (f i)) =
@@ -21,11 +23,10 @@ theorem Measure.pi_withDensity {ι : Type*} [Fintype ι] {α : ι → Type*}
   rw [withDensity_apply _ (MeasurableSet.pi Set.countable_univ fun i _ => hs i),
     Measure.restrict_pi_pi,
     lintegral_fintype_prod_eq_prod'
-      (fun i => (hf i).mono_measure (Measure.restrict_le_self (μ := μ i) (s := s i)))]
+      (fun i => (hf i).mono_measure (Measure.restrict_le_self))]
   exact Finset.prod_congr rfl fun i _ => (withDensity_apply (f i) (hs i)).symm
 
-theorem Measure.pi_withDensity_ofReal {ι : Type*} [Fintype ι] {α : ι → Type*}
-    [∀ i, MeasurableSpace (α i)] (μ : ∀ i, Measure (α i)) [∀ i, SigmaFinite (μ i)]
+theorem Measure.pi_withDensity_ofReal
     {g : ∀ i, α i → ℝ} (hg : ∀ i, AEMeasurable (g i) (μ i)) :
     Measure.pi (fun i => (μ i).withDensity (fun x => ENNReal.ofReal (g i x))) =
       (Measure.pi μ).withDensity (fun x => ∏ i, ENNReal.ofReal (g i (x i))) := by

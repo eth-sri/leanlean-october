@@ -12,9 +12,9 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (M : ∀ q, LocalImageData R q)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (M : ∀ q, LocalImageData R q)
 
 theorem traceHaar_eq_characterOne :
     ArchSelfDual.complexMeasure =
@@ -24,7 +24,6 @@ theorem traceHaar_eq_characterOne :
   simp only [Units.val_one, norm_one, smul_smul]
   congr 1
   rw [← ENNReal.ofReal_mul (by positivity)]
-  have hpi : Real.pi ≠ 0 := Real.pi_pos.ne'
   have h : 4 * Real.pi * (1 / (2 * Real.pi)) = (2 : ℝ) := by field_simp; ring
   rw [h]
   norm_num
@@ -55,8 +54,7 @@ instance arithmeticRootMeasureSigmaFinite (p : KPHilbert.Place F) :
     SigmaFinite (arithmeticRootMeasure R N p) := by
   cases p with
   | inl w =>
-    change SigmaFinite ArchSelfDual.complexMeasure
-    change SigmaFinite ((2 : ℝ≥0) • (volume : Measure ℂ))
+    change SigmaFinite ((2 : ℝ≥0) • volume)
     infer_instance
   | inr q =>
     letI := N.finiteHaar_add q

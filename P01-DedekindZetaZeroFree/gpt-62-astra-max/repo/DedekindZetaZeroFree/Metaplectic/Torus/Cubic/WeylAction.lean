@@ -9,7 +9,7 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.ActualFiniteBorel.Geometry
 noncomputable section
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (q : HeightOneSpectrum (𝓞 F))
 local notation "H" => ActualFiniteTorus.H F ζ hζ q
 local notation "W" => KPPGLLocalCover.signedW F ζ hζ (Sum.inr q)
 
@@ -57,9 +57,7 @@ theorem weyl_cube (y : (q.adicCompletion F)ˣ) :
       ActualFiniteTorus.cubeLift F ζ hζ q y⁻¹ := by
   apply Subtype.ext
   apply Subtype.ext
-  change W⁻¹ * ActualFiniteTorus.normalWord F ζ hζ q 1 (y ^ 3) * W =
-    ActualFiniteTorus.normalWord F ζ hζ q 1 (y⁻¹ ^ 3)
-  simpa using signedW_conjugates_normalWord F ζ hζ q 1 (y ^ 3)
+  exact signedW_conjugates_normalWord F ζ hζ q 1 (y ^ 3)
 
 end
 end DedekindZetaZeroFree.ActualFiniteBorel.Geometry

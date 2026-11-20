@@ -9,14 +9,17 @@ namespace DedekindZetaZeroFree.Quantitative.RowsSmall
 open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonKernel
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 noncomputable def smallDyadSum (Z : ℝ) : ℂ :=
   ∑ k ∈ Finset.range (⌊Real.logb 2 (Z ^ Scales.smallCutoffExponent)⌋₊ + 1),
     J D (dyadRows D ((2 : ℝ) ^ k) \ principalRows D) 4 4 2 Z
 
-private lemma count_bound (ε : ℝ) (hε : 0 < ε) (Z : ℝ) (hZ : 2 ≤ Z) :
+variable (ε : ℝ) (hε : 0 < ε)
+
+include hε in
+private lemma count_bound (Z : ℝ) (hZ : 2 ≤ Z) :
     ((⌊Real.logb 2 (Z ^ Scales.smallCutoffExponent)⌋₊ + 1 : ℕ) : ℝ) ≤
       (Scales.smallCutoffExponent / (Real.log 2 * (ε / 2)) + 1) * Z ^ (ε / 2) := by
   have hZ0 : (0:ℝ) < Z := by linarith
@@ -24,41 +27,38 @@ private lemma count_bound (ε : ℝ) (hε : 0 < ε) (Z : ℝ) (hZ : 2 ≤ Z) :
   have hs : (0:ℝ) < ε / 2 := by linarith
   have hκ : (0:ℝ) < Scales.smallCutoffExponent := by unfold Scales.smallCutoffExponent; norm_num
   have hl2 : (0:ℝ) < Real.log 2 := Real.log_pos (by norm_num)
-  have hlogZ : 0 ≤ Real.log Z := Real.log_nonneg hZ1
-  have hpow : (0:ℝ) < Z ^ Scales.smallCutoffExponent := Real.rpow_pos_of_pos hZ0 _
   have hL0 : 0 ≤ Real.logb 2 (Z ^ Scales.smallCutoffExponent) := by
     apply Real.logb_nonneg (by norm_num)
     exact Real.one_le_rpow hZ1 (by unfold Scales.smallCutoffExponent; norm_num)
-  have hfl : ((⌊Real.logb 2 (Z ^ Scales.smallCutoffExponent)⌋₊ : ℕ) : ℝ) ≤ Real.logb 2 (Z ^ Scales.smallCutoffExponent) :=
+  have hfl :=
     Nat.floor_le hL0
   have hLeq : Real.logb 2 (Z ^ Scales.smallCutoffExponent) = Scales.smallCutoffExponent * Real.log Z / Real.log 2 := by
     unfold Real.logb
     rw [Real.log_rpow hZ0]
-  have ht : Real.log Z ≤ Z ^ (ε / 2) / (ε / 2) := Real.log_le_rpow_div hZ0.le hs
-  have ht' : Real.log Z * (ε / 2) ≤ Z ^ (ε / 2) := by
-    rwa [le_div_iff₀ hs] at ht
-  have hcoef : 0 ≤ Scales.smallCutoffExponent / (Real.log 2 * (ε / 2)) :=
+  have ht := Real.log_le_rpow_div hZ0.le hs
+  have hcoef :=
     div_nonneg hκ.le (mul_nonneg hl2.le hs.le)
   have key : Scales.smallCutoffExponent * Real.log Z / Real.log 2
       = (Scales.smallCutoffExponent / (Real.log 2 * (ε / 2))) * (Real.log Z * (ε / 2)) := by
-    have hl2' : Real.log 2 ≠ 0 := hl2.ne'
-    have hε' : ε ≠ 0 := hε.ne'
+    have hε' := hε.ne'
     field_simp <;> ring
   have hLle : Real.logb 2 (Z ^ Scales.smallCutoffExponent)
       ≤ (Scales.smallCutoffExponent / (Real.log 2 * (ε / 2))) * Z ^ (ε / 2) := by
     rw [hLeq, key]
-    exact mul_le_mul_of_nonneg_left ht' hcoef
+    exact mul_le_mul_of_nonneg_left (by
+      rwa [le_div_iff₀ hs] at ht) hcoef
   push_cast
   calc ((⌊Real.logb 2 (Z ^ Scales.smallCutoffExponent)⌋₊ : ℕ) : ℝ) + 1
       ≤ (Scales.smallCutoffExponent / (Real.log 2 * (ε / 2))) * Z ^ (ε / 2) + 1 * 1 := by
         have : (1:ℝ) ≤ Z ^ (ε / 2) := Real.one_le_rpow hZ1 hs.le
         linarith
     _ ≤ (Scales.smallCutoffExponent / (Real.log 2 * (ε / 2))) * Z ^ (ε / 2) + Z ^ (ε / 2) := by
-        have : (1:ℝ) ≤ Z ^ (ε / 2) := Real.one_le_rpow hZ1 hs.le
+        have := Real.one_le_rpow hZ1 hs.le
         linarith
     _ = (Scales.smallCutoffExponent / (Real.log 2 * (ε / 2)) + 1) * Z ^ (ε / 2) := by ring
 
-theorem rows_small (ε : ℝ) (hε : 0 < ε) :
+include hε in
+theorem rows_small :
     ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z →
       ‖smallDyadSum D Z‖ ≤ C * Z ^ (Scales.mainExponent - 471999 / 10000000 + ε) := by
   obtain ⟨A0, hA0, hk0⟩ := LowNormRowBound.lowNorm_rows_small_k0 D (ε / 2) (by linarith)

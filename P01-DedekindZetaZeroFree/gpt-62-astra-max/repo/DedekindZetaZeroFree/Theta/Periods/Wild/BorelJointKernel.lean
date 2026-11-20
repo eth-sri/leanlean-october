@@ -9,8 +9,7 @@ open scoped NumberField Classical TensorProduct
 open NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.WildJointBorelKernel
 open KPKirillovFiniteTensor KPKirillovGenuineSectionCharts
-open _root_.DedekindZetaZeroFree.KPKirillovFiniteTensor renaming scalarSectionAddCommGroup → scalarSectionAddCommGroup
-open _root_.DedekindZetaZeroFree.KPKirillovFiniteTensor renaming tensorSectionAddCommGroup → tensorSectionAddCommGroup
+open _root_.DedekindZetaZeroFree.KPKirillovFiniteTensor (scalarSectionAddCommGroup tensorSectionAddCommGroup)
 attribute [local instance] scalarSectionAddCommGroup tensorSectionAddCommGroup
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
@@ -28,17 +27,18 @@ theorem evaluation_pure_sections (f : ∀ v, ScalarSections F ζ hζ W m ψ v)
     (e : JacquetTensor F ζ hζ W ψ V ρ) :
     tensorEvaluation F ζ hζ W m ψ V ρ (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] e) =
       (∏ v, sectionValue F ζ hζ v.val (m v) (ψ v) (f v) 1) • e := by
+  let map₀ := PiTensorProduct.map (localEvaluation F ζ hζ W m ψ V ρ)
   have hp (x : ∀ v, Jacquet F ζ hζ W ψ V ρ v) :
       tensorEvaluation F ζ hζ W m ψ V ρ
         (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] PiTensorProduct.tprod ℂ x) =
       (∏ v, sectionValue F ζ hζ v.val (m v) (ψ v) (f v) 1) • PiTensorProduct.tprod ℂ x := by
-    change PiTensorProduct.map (localEvaluation F ζ hζ W m ψ V ρ)
+    change map₀
       (tensorShuffle F ζ hζ W m ψ V ρ
         (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] PiTensorProduct.tprod ℂ x)) = _
     calc
-      _ = PiTensorProduct.map (localEvaluation F ζ hζ W m ψ V ρ)
+      _ = map₀
           (PiTensorProduct.tprod ℂ (fun v => f v ⊗ₜ[ℂ] x v)) :=
-        congrArg (PiTensorProduct.map (localEvaluation F ζ hζ W m ψ V ρ))
+        congrArg (map₀)
           (tensorShuffle_tmul F ζ hζ W m ψ V ρ f x)
       _ = PiTensorProduct.tprod ℂ (fun v =>
           sectionValue F ζ hζ v.val (m v) (ψ v) (f v) 1 • x v) :=
@@ -83,13 +83,12 @@ theorem full_borel_kernel_zero
     (e : JacquetTensor F ζ hζ W ψ V ρ) (he : l e = 0) :
     L (ambientAction F ζ hζ W V ρ a
       (tensorEmbedding F ζ hζ W m hm ψ V ρ D (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] e))) = 0 := by
-  have hp := LinearMap.congr_fun hL
-    (ambientAction F ζ hζ W V ρ a
-      (tensorEmbedding F ζ hζ W m hm ψ V ρ D (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] e)))
   calc
     _ = l (tensorQuotient F ζ hζ W ψ V ρ
         (ambientAction F ζ hζ W V ρ a
-          (tensorEmbedding F ζ hζ W m hm ψ V ρ D (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] e)))) := hp.symm
+          (tensorEmbedding F ζ hζ W m hm ψ V ρ D (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] e)))) := (LinearMap.congr_fun hL
+            (ambientAction F ζ hζ W V ρ a
+              (tensorEmbedding F ζ hζ W m hm ψ V ρ D (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] e)))).symm
     _ = l ((∏ v, sectionValue F ζ hζ v.val (m v) (ψ v)
         (rightAction F ζ hζ v.val (m v) (hm v) (ψ v) ℂ (a v) (f v)) 1) • e) :=
       congrArg l (translated_quotient F ζ hζ W m hm ψ V ρ D a f e)

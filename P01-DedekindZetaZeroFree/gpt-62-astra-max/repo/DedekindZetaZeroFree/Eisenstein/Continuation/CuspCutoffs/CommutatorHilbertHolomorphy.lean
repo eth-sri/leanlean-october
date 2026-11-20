@@ -15,62 +15,52 @@ open KPContSectorCoveredQuotientVocabulary KPContSectorFixedPushforwardSupport
 open KPContSectorSmoothFramesSupport KPContSectorScalarLineAlgebra
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable {T : ℝ}
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    {T : ℝ}
 variable (B : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (level F ζ hζ C R P H U) R P H T)
 
+local notation "cuspLevel" => level F ζ hζ C R P H U
+
 def compactDomain : KPContActualCompactSectorL2Map.CompactDomain F ζ hζ
-    (level F ζ hζ C R P H U) R where
+    cuspLevel R where
   compact := ⟨KPContActualCollarBuffer.coveredCollars F ζ hζ
-    (level F ζ hζ C R P H U) R P H B.τ T, B.compact_covered_collars⟩
+    cuspLevel R P H B.τ T, B.compact_covered_collars⟩
   measurable := by
     letI : BorelSpace (KPContSectorCoveredQuotientVocabulary.CoveredSpherical F ζ hζ
-      (level F ζ hζ C R P H U)) := ⟨rfl⟩
+      cuspLevel) := ⟨rfl⟩
     exact B.compact_covered_collars.isClosed.measurableSet
   finite_measure := B.finite_covered_measure
   central_invariant := by
     intro ε x
+    let level₀ := cuspLevel
     change x ∈ KPContActualCollarBuffer.coveredCollars F ζ hζ
-        (level F ζ hζ C R P H U) R P H B.τ T ↔
-      z F ζ hζ (level F ζ hζ C R P H U) ε x ∈
+        (level₀) R P H B.τ T ↔
+      z F ζ hζ (level₀) ε x ∈
         KPContActualCollarBuffer.coveredCollars F ζ hζ
-          (level F ζ hζ C R P H U) R P H B.τ T
+          (level₀) R P H B.τ T
     simp only [KPContActualCollarBuffer.coveredCollars, Set.mem_preimage]
     rw [KPContSectorCoveredQuotientVocabulary.q_z]
 
 abbrev ScalarSpace := KPContActualCompactSectorL2Map.E_L F ζ hζ
-  (level F ζ hζ C R P H U) R (compactDomain F ζ hζ C R P H U B)
+  cuspLevel R (compactDomain F ζ hζ C R P H U B)
 
 abbrev HilbertSpace := KPContSectorClosedLpSubspace.H F ζ hζ R
-  (level F ζ hζ C R P H U)
+  cuspLevel
 
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable (Ω : Set ℂ) (f : ℂ → S)
-variable (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-variable (D : Descent F ζ hζ C R P H U ι B Ω f χ)
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (Ω : Set ℂ) (f : ℂ → S)
+    (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
+    (D : Descent F ζ hζ C R P H U ι B Ω f χ)
 
 structure Conclusions where
   g : ℂ → ScalarSpace F ζ hζ C R P H U B
-  restriction : ∀ s ∈ Ω, ∀ x : (compactDomain F ζ hζ C R P H U B).compact,
-    (g s).val x = scalar F ζ hζ C R P H U (D.commutator s) x.val
-  off_domain : ∀ s ∉ Ω, g s = 0
-  scalar_holomorphic : DifferentiableOn ℂ g Ω
   J_L : ScalarSpace F ζ hζ C R P H U B →L[ℂ] HilbertSpace F ζ hζ C R P H U
-  extension_bound : ‖J_L‖ ≤ Real.sqrt
-    ((coveredMeasure F ζ hζ R (level F ζ hζ C R P H U)).real
-      (compactDomain F ζ hζ C R P H U B).compact)
-  zero_extension : ∀ v : ScalarSpace F ζ hζ C R P H U B,
-    (((J_L v : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R
-      (level F ζ hζ C R P H U)) : Covered F ζ hζ C R P H U → ℂ) =ᵐ[
-        coveredMeasure F ζ hζ R (level F ζ hζ C R P H U)]
-      KPContActualCompactSectorL2Map.zeroExtension F ζ hζ
-        (level F ζ hζ C R P H U) R (compactDomain F ζ hζ C R P H U B) v)
   hilbert_holomorphic : DifferentiableOn ℂ (fun s => J_L (g s)) Ω
   inclusion : ∀ s ∈ Ω,
     (((J_L (g s) : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R
@@ -114,7 +104,6 @@ theorem kp_cont_actual_commutator_hilbert_holomorphy
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
     (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (hι : Function.Injective ι)
-    (_hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (Ω : Set ℂ) (hΩopen : IsOpen Ω) (hΩ : Ω ⊆ KPContinuation.spectralDomain)
     (f : ℂ → S) (hf : DifferentiableOn ℂ f Ω)
     (χ : KPContActualCutoffSmoothDescent.Cusps F ζ hζ C R P H U →
@@ -187,7 +176,7 @@ theorem kp_cont_actual_commutator_hilbert_holomorphy
               simpa only [KPContCotangentActualOverlap.d, ← B.dimension_formula] using hd
             omega }
       have hj := kp_cont_actual_cutoff_chart_jet_holomorphy F ζ hζ C R P H U _hR B
-        ι hι _hStage Ω hΩ hΩopen f hf χ D (A.component j) (A.chart j) ball
+        ι hι Ω hΩ hΩopen f hf χ D (A.component j) (A.chart j) ball
         ((Metric.closedBall_subset_ball (by dsimp [ball]; linarith)).trans hball)
       obtain ⟨jet, hjet, hformula, _⟩ := hj.compact_jets true (A.piece j) (A.piece j).isCompact
         hcontained 0
@@ -223,12 +212,7 @@ theorem kp_cont_actual_commutator_hilbert_holomorphy
     (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U) R P H _hR L
   refine ⟨{
     g := g
-    restriction := hrestrict
-    off_domain := fun s hs => if_neg hs
-    scalar_holomorphic := hhol
     J_L := J
-    extension_bound := hbound
-    zero_extension := fun w => (hJ w).2.2.1
     hilbert_holomorphic := J.differentiable.comp_differentiableOn hhol
     inclusion := ?_
     representative := ?_ }⟩

@@ -11,9 +11,9 @@ namespace DedekindZetaZeroFree.FourierContinuation.ResidualUpperWordInterchange
 open KPMsGreenFlux KPMsGreenFlux.IntrinsicAveraging KPSmoothActualFlowData
 open KPContActualSphericalRightFieldIdentification KPMsClearedTruncationL2.NativeWordBridge
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {hF : InfinitePlace.nrRealPlaces F = 0}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 set_option backward.isDefEq.respectTransparency false
 
 theorem actualRight_eq (b : Fin (groupDimension F)) (f : Cover F ζ hζ → ℂ) :

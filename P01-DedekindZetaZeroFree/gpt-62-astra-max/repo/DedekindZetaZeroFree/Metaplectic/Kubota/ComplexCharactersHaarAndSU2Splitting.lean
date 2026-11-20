@@ -27,11 +27,11 @@ theorem character_classification (ψ : AddChar ℂ Circle)
   let ψr : AddChar ℝ Circle :=
     { toFun := fun t => ψ (t : ℂ)
       map_zero_eq_one' := by simp
-      map_add_eq_mul' := by intros; simp [ψ.map_add_eq_mul] }
+      map_add_eq_mul' := by simp [ψ.map_add_eq_mul]}
   let ψi : AddChar ℝ Circle :=
     { toFun := fun t => ψ ((t : ℂ) * Complex.I)
       map_zero_eq_one' := by simp
-      map_add_eq_mul' := by intros; simp [add_mul, ψ.map_add_eq_mul] }
+      map_add_eq_mul' := by simp [add_mul, ψ.map_add_eq_mul]}
   obtain ⟨a, ha, _⟩ := kp_real_continuous_character ψr (hψ.comp Complex.continuous_ofReal)
   obtain ⟨b, hb, _⟩ := kp_real_continuous_character ψi
     (hψ.comp (Complex.continuous_ofReal.mul continuous_const))
@@ -49,18 +49,21 @@ theorem character_classification (ψ : AddChar ℂ Circle)
     exact AddChar.ext _ _ (fun x => by simpa [hz, character] using hβ x)
   exact ⟨Units.mk0 β hβ0, hβ⟩
 
-noncomputable def characterScale (β : ℂˣ) : ℝ := ‖(β : ℂ)‖
+section
 
-noncomputable def characterRotation (β : ℂˣ) : Circle :=
+variable (β : ℂˣ)
+
+noncomputable def characterScale : ℝ := ‖(β : ℂ)‖
+
+noncomputable def characterRotation : Circle :=
   ⟨star (β : ℂ) / (characterScale β : ℂ), by
     apply mem_sphere_zero_iff_norm.mpr
     simp [characterScale, norm_div, norm_star, Complex.norm_real,
       abs_of_nonneg (norm_nonneg _), Units.ne_zero]⟩
 
-theorem characterScale_pos (β : ℂˣ) : 0 < characterScale β := by
-  exact norm_pos_iff.mpr β.ne_zero
+theorem characterScale_pos : 0 < characterScale β := norm_pos_iff.mpr β.ne_zero
 
-theorem character_rotated (β : ℂˣ) (x : ℂ) :
+theorem character_rotated (x : ℂ) :
     character (β : ℂ) ((characterRotation β : ℂ) * x) =
       Circle.exp (characterScale β * x.re) := by
   change Circle.exp ((β : ℂ) * (star (β : ℂ) / (characterScale β : ℂ) * x)).re = _
@@ -75,23 +78,24 @@ theorem character_rotated (β : ℂˣ) (x : ℂ) :
   rw [← mul_assoc, h]
   simp
 
-noncomputable def characterHaar (β : ℂˣ) : Measure ℂ :=
+noncomputable def characterHaar : Measure ℂ :=
   ENNReal.ofReal (characterScale β / (2 * Real.pi)) • euclideanArea
 
-theorem characterHaar_isAddHaarMeasure (β : ℂˣ) :
+theorem characterHaar_isAddHaarMeasure :
     (characterHaar β).IsAddHaarMeasure := by
-  unfold characterHaar euclideanArea
   exact Measure.IsAddHaarMeasure.smul volume
     (ne_of_gt (ENNReal.ofReal_pos.mpr (div_pos (characterScale_pos β)
       (mul_pos (by norm_num) Real.pi_pos)))) ENNReal.ofReal_ne_top
 
-theorem characterHaar_rotation (β : ℂˣ) :
+theorem characterHaar_rotation :
     Measure.map (fun x : ℂ => (characterRotation β : ℂ) * x) (characterHaar β) =
       characterHaar β := by
   unfold characterHaar euclideanArea
   rw [Measure.map_smul _ (by fun_prop)]
   congr 1
   exact (rotation (characterRotation β)).measurePreserving.map_eq
+
+end
 
 open scoped FourierTransform RealInnerProductSpace ComplexConjugate
 
@@ -117,9 +121,11 @@ noncomputable def weyl : ComplexGL2 :=
 
 abbrev ComplexSU2 := Matrix.specialUnitaryGroup (Fin 2) ℂ
 
+local notation "Mat₂ℂ" => Matrix (Fin 2) (Fin 2) ℂ
+
 noncomputable def complexSU2Embedding : ComplexSU2 →* ComplexGL2 where
   toFun k := Matrix.GeneralLinearGroup.mkOfDetNeZero
-    (k : Matrix (Fin 2) (Fin 2) ℂ) (by
+    (k : Mat₂ℂ) (by
       rw [(Matrix.mem_specialUnitaryGroup_iff.mp k.property).2]
       exact one_ne_zero)
   map_one' := by
@@ -130,21 +136,21 @@ noncomputable def complexSU2Embedding : ComplexSU2 →* ComplexGL2 where
     rfl
 
 theorem complexSU2_isCompact :
-    IsCompact (Set.range (fun k : ComplexSU2 => (k : Matrix (Fin 2) (Fin 2) ℂ))) := by
-  have hrange : Set.range (fun k : ComplexSU2 => (k : Matrix (Fin 2) (Fin 2) ℂ)) =
-      (ComplexSU2 : Set (Matrix (Fin 2) (Fin 2) ℂ)) := Subtype.range_coe
+    IsCompact (Set.range (fun k : ComplexSU2 => (k : Mat₂ℂ))) := by
+  have hrange : Set.range (fun k : ComplexSU2 => (k : Mat₂ℂ)) =
+      (ComplexSU2 : Set Mat₂ℂ) := Subtype.range_coe
   rw [hrange]
-  have hclosed : IsClosed (ComplexSU2 : Set (Matrix (Fin 2) (Fin 2) ℂ)) := by
-    have heq : (ComplexSU2 : Set (Matrix (Fin 2) (Fin 2) ℂ)) =
+  have hclosed : IsClosed (ComplexSU2 : Set Mat₂ℂ) := by
+    have heq : (ComplexSU2 : Set Mat₂ℂ) =
         {A | A * star A = 1} ∩ {A | A.det = 1} := by
       ext A
       simp [ComplexSU2, Matrix.mem_specialUnitaryGroup_iff, Matrix.mem_unitaryGroup_iff]
     rw [heq]
     exact (isClosed_eq (by fun_prop) continuous_const).inter
       (isClosed_eq (by fun_prop) continuous_const)
-  have hbound (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A ∈ ComplexSU2)
+  have hbound (A : Mat₂ℂ) (hA : A ∈ ComplexSU2)
       (i j : Fin 2) : ‖A i j‖ ≤ 1 := by
-    have hrow := congrArg (fun B : Matrix (Fin 2) (Fin 2) ℂ => (B i i).re)
+    have hrow := congrArg (fun B : Mat₂ℂ => (B i i).re)
       (Matrix.mem_unitaryGroup_iff.mp (Matrix.mem_specialUnitaryGroup_iff.mp hA).1)
     simp only [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
       Matrix.one_apply_eq] at hrow
@@ -158,7 +164,7 @@ theorem complexSU2_isCompact :
   apply (isCompact_pi_infinite (fun _ : Fin 2 =>
     isCompact_pi_infinite (fun _ : Fin 2 => isCompact_closedBall (0 : ℂ) 1))).of_isClosed_subset hclosed
   intro A hA i j
-  simpa [Metric.mem_closedBall, dist_zero_right] using hbound A hA i j
+  simpa using hbound A hA i j
 
 end DedekindZetaZeroFree.KPCplxCharacterHaar
 

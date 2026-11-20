@@ -62,13 +62,7 @@ theorem eventual_inverse_root_inner_haar_value
   let e : ℂ := ordinaryIota F ζ hζ
     (KPHilbert.B3 F ζ hζ (Sum.inr q) π (KPTameCompact.unitInclusion F q u) ^
       ((i.val : ℤ) + 1))
-  have hg : (fun v : LocalField F q =>
-      f.val (KPRankOneShellContinuation.kernelW (LocalField F q) S.borel .minus *
-        KPPGLLocalCover.N F ζ hζ (Sum.inr q) v *
-        (eta F ζ hζ q π i * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
-          KPPGLLocalCover.N F ζ hζ (Sum.inr q)
-            (-(KPTameCompact.unitInclusion F q u : LocalField F q) / π)))) =
-      A.indicator (fun _ => e) := funext (hM m hmM i f hf u)
+  have hg := funext (hM m hmM i f hf u)
   rw [hg]
   have hrootmeas : MeasurableSet (rootLevelSet F ζ hζ q m) :=
     (rootLevelSet_isOpen F ζ hζ q S P m hmpos).measurableSet

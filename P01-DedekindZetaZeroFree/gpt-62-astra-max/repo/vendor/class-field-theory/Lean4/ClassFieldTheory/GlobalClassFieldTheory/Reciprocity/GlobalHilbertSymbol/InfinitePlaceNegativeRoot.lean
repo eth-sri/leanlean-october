@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -51,12 +48,12 @@ theorem chosenInfinitePlaceArtin_neg_one_apply_kummerRoot_of_real_of_radical_neg
     chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v
         (-1 : v.Completionˣ) beta = -beta := by
   let L := chosenSimpleKummerExtension K n hnK b
-  let : FiniteDimensional K L :=
+  let :=
     chosenSimpleKummerExtension_finiteDimensional K n hnK b
-  let : IsAbelianGalois K L :=
+  let :=
     chosenSimpleKummerExtension_isAbelianGalois K n hnK hmu b
-  let : NumberField L := NumberField.of_module_finite K L
-  let beta : L := (chosenSimpleKummerRootUnit K n hnK b : Lˣ)
+  let := NumberField.of_module_finite K L
+  let beta := (chosenSimpleKummerRootUnit K n hnK b : Lˣ)
   have hbeta : beta ^ 2 = algebraMap K L (b : K) := by
     have hunit := congrArg Units.val
       (chosenSimpleKummerRootUnit_pow K n hnK b)
@@ -65,46 +62,38 @@ theorem chosenInfinitePlaceArtin_neg_one_apply_kummerRoot_of_real_of_radical_neg
   let w := chosenInfinitePlaceAbove (L := L) v
   have hw : w.comap (algebraMap K L) = v :=
     chosenInfinitePlaceAbove_comap (L := L) v
-  have hcomapReal : (w.comap (algebraMap K L)).IsReal := by
-    rw [hw]
-    exact hv
-  have hcomp :=
-    InfinitePlace.comap_embedding_of_isReal
-      (algebraMap K L) hcomapReal
   have hsq :
       (w.embedding beta) ^ 2 =
         (InfinitePlace.embedding_of_isReal hv (b : K) : ℂ) := by
     calc
-      (w.embedding beta) ^ 2 = w.embedding (beta ^ 2) := by rw [map_pow]
+      _ = w.embedding (beta ^ 2) := by rw [map_pow]
       _ = w.embedding (algebraMap K L (b : K)) := by rw [hbeta]
       _ = (w.comap (algebraMap K L)).embedding (b : K) := by
-        rw [hcomp]
+        rw [(InfinitePlace.comap_embedding_of_isReal
+          (algebraMap K L) (by
+            rw [hw]
+            exact hv))]
         rfl
       _ = v.embedding (b : K) := by rw [hw]
       _ = (InfinitePlace.embedding_of_isReal hv (b : K) : ℂ) := by
         rw [InfinitePlace.embedding_of_isReal_apply]
-  have hnonpos : (w.embedding beta) ^ 2 ≤ (0 : ℂ) := by
-    rw [hsq]
-    exact (Complex.real_le_real).2 hb.le
-  have hre : (w.embedding beta).re = 0 :=
-    Complex.sq_nonpos_iff.mp hnonpos
   have hstar : star (w.embedding beta) = -w.embedding beta := by
     apply Complex.ext
-    · simp [hre]
+    · simp [(Complex.sq_nonpos_iff.mp (by
+      rw [hsq]
+      exact (Complex.real_le_real).2 hb.le))]
     · simp
   have hRamified : w.IsRamified K := by
-    simpa only [L, w] using
+    simpa using
       chosenSimpleKummerExtension_chosenInfinitePlace_isRamified_of_real_of_radical_neg
         K n hnK hmu v b hn hv hb
-  have hConj :=
-    chosenInfinitePlaceArtinMonoidHom_neg_one_isConj_of_ramified
-      (K := K) (L := L) v hRamified
   apply w.embedding.injective
   calc
     w.embedding
-        (chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v
+        (chosenInfinitePlaceArtinMonoidHom v
           (-1 : v.Completionˣ) beta) =
-        star (w.embedding beta) := hConj.eq beta
+        star (w.embedding beta) := (chosenInfinitePlaceArtinMonoidHom_neg_one_isConj_of_ramified
+          v hRamified).eq beta
     _ = -w.embedding beta := hstar
     _ = w.embedding (-beta) := by rw [map_neg]
 

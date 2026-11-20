@@ -122,7 +122,7 @@ theorem adelicTraceCharacter_arch_finite (a : InfiniteAdeleRing F)
       (adelicTraceCharacter F ((0, b) : NumberField.AdeleRing (NumberField.RingOfIntegers F) F) : ℂ) := by
   have h (w : InfinitePlace F) : archTraceCharacter w (a w) =
       character (standardComplexParameter : ℂ) (archTraceCoordinates F ζ hζ a w) := by
-    simpa only [archTraceCoordinates_apply, Pi.single_eq_same] using
+    simpa using
       archTraceCharacter_eq_standard F ζ hζ w (a w)
   simp only [adelicTraceCharacter_apply]
   rw [show (∏ w : InfinitePlace F, archTraceCharacter w (a w)) =
@@ -141,18 +141,18 @@ theorem adelicTraceCharacter_arch_finite (a : InfiniteAdeleRing F)
     exact (archTraceCharacter w).map_zero_eq_one
   rw [hz, Circle.coe_one, one_mul]
 
-theorem integrable_archTraceCoordinates_iff (f : (InfinitePlace F → ℂ) → ℂ) :
+variable (f : (InfinitePlace F → ℂ) → ℂ)
+
+theorem integrable_archTraceCoordinates_iff :
     Integrable (fun a => f (archTraceCoordinates F ζ hζ a)) (KPAdditiveHaar.archMeasure F) ↔
       Integrable f (Measure.pi (fun _ : InfinitePlace F => characterHaar standardComplexParameter)) := by
-  have h := measurePreserving_archTraceCoordinates F ζ hζ
-  rw [← h.map_eq, (archTraceCoordinates F ζ hζ).measurableEmbedding.integrable_map_iff]
+  rw [← (measurePreserving_archTraceCoordinates F ζ hζ).map_eq, (archTraceCoordinates F ζ hζ).measurableEmbedding.integrable_map_iff]
   rfl
 
-theorem integral_archTraceCoordinates (f : (InfinitePlace F → ℂ) → ℂ) :
+theorem integral_archTraceCoordinates :
     (∫ a, f (archTraceCoordinates F ζ hζ a) ∂KPAdditiveHaar.archMeasure F) =
       ∫ x, f x ∂Measure.pi (fun _ : InfinitePlace F => characterHaar standardComplexParameter) := by
-  have h := measurePreserving_archTraceCoordinates F ζ hζ
-  rw [← h.map_eq, (archTraceCoordinates F ζ hζ).measurableEmbedding.integral_map]
+  rw [← (measurePreserving_archTraceCoordinates F ζ hζ).map_eq, (archTraceCoordinates F ζ hζ).measurableEmbedding.integral_map]
 
 end DedekindZetaZeroFree.TraceHaarTransport
 

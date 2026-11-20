@@ -19,40 +19,42 @@ variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
   (S : CanonicalFiniteInducingData F ζ hζ q)
 
+local notation "LocalCompletion" => LocalField F q
+
 private theorem actualShell_disjoint (m m' : ℤ) (h : m ≠ m') :
     Disjoint (actualShell F q m) (actualShell F q m') := by
-  have hQ : (1 : ℝ) < (residueCardinality (LocalField F q) : ℝ) := by
-    have hnat := KPJacquetExceptionalFactorSeparation.residue_cardinality_gt_one
-      (K := LocalField F q)
-    exact_mod_cast hnat
+  let residueCardinality₀ := residueCardinality LocalCompletion
+  have hQ : (1 : ℝ) < (residueCardinality₀ : ℝ) := by
+    exact_mod_cast (KPJacquetExceptionalFactorSeparation.residue_cardinality_gt_one
+      )
   rw [Set.disjoint_left]
   intro x hx hx'
   simp only [actualShell, Set.mem_setOf_eq] at hx hx'
   obtain ⟨hx1, hx2⟩ := hx
   obtain ⟨hx1', hx2'⟩ := hx'
   rcases lt_or_gt_of_ne h with hlt | hlt
-  · have hle : (residueCardinality (LocalField F q) : ℝ) ^ m ≤
-        (residueCardinality (LocalField F q) : ℝ) ^ (m' - 1) :=
+  · have hle : (residueCardinality₀ : ℝ) ^ m ≤
+        (residueCardinality₀ : ℝ) ^ (m' - 1) :=
       zpow_le_zpow_right₀ hQ.le (by omega)
     linarith
-  · have hle : (residueCardinality (LocalField F q) : ℝ) ^ (m - 1) ≥
-        (residueCardinality (LocalField F q) : ℝ) ^ m' :=
+  · have hle : (residueCardinality₀ : ℝ) ^ (m - 1) ≥
+        (residueCardinality₀ : ℝ) ^ m' :=
       zpow_le_zpow_right₀ hQ.le (by omega)
     linarith
 
 theorem actual_tail_geometric_sum (P : Polarization S.heisenberg)
     (J : CompactOpenLevel (ActualCover F ζ hζ q))
     (hJ : (J.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) ≤ S.iwasawa.compact.toOpenSubgroup)
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-    (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
+    (μ : Measure LocalCompletion) [μ.IsAddHaarMeasure]
+    (hμ : μ ((valuation LocalCompletion).integer : Set LocalCompletion) = 1)
+    (π : LocalCompletionˣ)
+    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt LocalCompletion
+      (valuation LocalCompletion (π : LocalCompletion)) = WithZero.exp (-1 : ℤ))
     (ε : Sign) :
     ∃ M : ℕ, ∀ (s : ℂ), convergenceHalfPlane ε s →
       ∀ (φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J)
         (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q),
-        denominator (LocalField F q) ε s *
+        denominator LocalCompletion ε s *
           (∫ x in (⋃ n : ℕ, actualShell F q ((M + n : ℕ) : ℤ)),
             actualStandardIntegrand F ζ hζ q S P ε s φ.val k h x ∂μ) =
           ∑ i : Fin 3, ∫ x in actualShell F q ((M + i.val : ℕ) : ℤ),
@@ -64,8 +66,8 @@ theorem actual_tail_geometric_sum (P : Polarization S.heisenberg)
   have hM₁M : M₁ ≤ M := by rw [hM]; exact le_max_left _ _
   have hM₂M : M₂ ≤ M := by rw [hM]; exact le_max_right _ _
   intro s hs φ k h
-  have habs : Measurable (KPCubicHaar.abs (LocalField F q)) :=
-    KPRamifiedBetaConductorSeries.normalizedAbs_measurable (LocalField F q)
+  have habs : Measurable (KPCubicHaar.abs LocalCompletion) :=
+    KPRamifiedBetaConductorSeries.normalizedAbs_measurable LocalCompletion
   have hmeas : ∀ n : ℕ, MeasurableSet (actualShell F q ((M + n : ℕ) : ℤ)) := fun n =>
     (measurableSet_lt measurable_const habs).inter (measurableSet_le habs measurable_const)
   have hdisj : Pairwise (Function.onFun Disjoint fun n : ℕ =>
@@ -94,7 +96,7 @@ theorem actual_tail_geometric_sum (P : Polarization S.heisenberg)
   have hsumA : Summable A := by rw [hA]; exact hsum.summable
   have hrec : ∀ n : ℕ, A (n + 3) = actualShellRatio F q ε s * A n := by
     intro n
-    have hmn : M₁ ≤ M + n := le_trans hM₁M (Nat.le_add_right M n)
+    have hmn := le_trans hM₁M (Nat.le_add_right M n)
     have hstep := hM₁ (M + n) hmn s φ k h
     have hidx : ((M + (n + 3) : ℕ) : ℤ) = ((M + n : ℕ) : ℤ) + 3 := by push_cast; ring
     simp only [hA]
@@ -115,13 +117,13 @@ theorem actual_tail_geometric_sum (P : Polarization S.heisenberg)
     have h1 := hsplit'
     rw [hA012] at h1
     exact h1.symm
-  have hden : denominator (LocalField F q) ε s = 1 - actualShellRatio F q ε s := by
+  have hden : denominator LocalCompletion ε s = 1 - actualShellRatio F q ε s := by
     simp only [denominator, actualShellRatio]
     by_cases hε : ε = Sign.plus <;> simp [hε]
   have hlin : (1 - actualShellRatio F q ε s) * (∑' i : ℕ, A i) = A 0 + A 1 + A 2 := by
     rw [sub_mul, one_mul, sub_eq_iff_eq_add]
     exact hrel
-  have hgoal : denominator (LocalField F q) ε s * (∑' i : ℕ, A i) = A 0 + A 1 + A 2 := by
+  have hgoal : denominator LocalCompletion ε s * (∑' i : ℕ, A i) = A 0 + A 1 + A 2 := by
     rw [hden, hlin]
   have hfin : (∑ i : Fin 3, A i.val) = A 0 + A 1 + A 2 := by
     simp [Fin.sum_univ_three]

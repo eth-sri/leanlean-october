@@ -14,10 +14,8 @@ variable (F : Type*) [Field F] [NumberField F]
 theorem isOpenMap_action (g : KPCuspArithmetic.PGL2 F) : IsOpenMap (action F g) := by
   apply IsOpenMap.of_inverse (continuous_action F g⁻¹)
   · intro z
-    change g • (g⁻¹ • z) = z
     exact smul_inv_smul g z
   · intro z
-    change g⁻¹ • (g • z) = z
     exact inv_smul_smul g z
 
 theorem isOpen_highCusp (σ : KPCuspArithmetic.PGL2 F) (T : ℝ) :
@@ -30,7 +28,7 @@ theorem isOpen_highCusp (σ : KPCuspArithmetic.PGL2 F) (T : ℝ) :
 theorem isOpenMap_projection (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) :
     IsOpenMap (projection F Γ) := by
   letI : ContinuousConstSMul Γ (KPArch.Space (KPCuspLogShape.dimension F)) :=
-    ⟨fun g => continuous_action F (g : KPCuspArithmetic.PGL2 F)⟩
+    ⟨fun g => continuous_action F g⟩
   exact MulAction.isOpenQuotientMap_quotientMk.isOpenMap
 
 theorem isOpen_projected_highCusps {n : ℕ}
@@ -55,8 +53,7 @@ theorem meanHeight_box_coordinate (hd : 0 < KPCuspLogShape.dimension F)
 theorem projection_action (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (γ : Γ)
     (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     projection F Γ (action F (γ : KPCuspArithmetic.PGL2 F) z) = projection F Γ z := by
-  apply Quotient.sound
-  exact MulAction.orbitRel_apply.mpr (MulAction.mem_orbit_iff.mpr ⟨γ, rfl⟩)
+  solve_by_elim [MulAction.orbitRel_apply.mpr, Quotient.sound]
 
 theorem isCompact_complement_of_cover {n : ℕ}
     (hd : 0 < KPCuspLogShape.dimension F)
@@ -72,7 +69,7 @@ theorem isCompact_complement_of_cover {n : ℕ}
     IsCompact ((Set.univ : Set (OrbitQuotient F Γ)) \
       (⋃ a : Fin n, projection F Γ '' highCusp F (σ a) T)) := by
   apply (isCompact_projected_truncated_boxes F Γ σ P B hP hB t₀ T).of_isClosed_subset
-  · have he : (Set.univ : Set (OrbitQuotient F Γ)) \
+  · have he : Set.univ \
         (⋃ a : Fin n, projection F Γ '' highCusp F (σ a) T) =
         (⋃ a : Fin n, projection F Γ '' highCusp F (σ a) T)ᶜ := by
       ext p

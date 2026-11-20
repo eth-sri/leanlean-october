@@ -14,9 +14,7 @@ namespace DedekindZetaZeroFree.TraceBaseChange
 
 variable (F : Type*) [Field F] [NumberField F]
 
-theorem integralProduct_dense :
-    DenseRange (DedekindZetaZeroFree.integralDiagonal F) := by
-  exact DedekindZetaZeroFree.integralCompletion_dense F
+alias integralProduct_dense := DedekindZetaZeroFree.integralCompletion_dense
 
 end DedekindZetaZeroFree.TraceBaseChange
 

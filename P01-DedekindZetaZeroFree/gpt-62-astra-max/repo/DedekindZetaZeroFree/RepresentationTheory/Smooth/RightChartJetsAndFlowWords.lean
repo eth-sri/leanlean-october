@@ -29,19 +29,27 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
       (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
         (KPSmoothActualFlowData.flow F b t))) 0
 
- def flowMatrix (b : KPSmoothActualFlowData.B F) (t : ℝ)
+ section
+
+variable (b : KPSmoothActualFlowData.B F)
+
+def flowMatrix (t : ℝ)
     (v : NumberField.InfinitePlace F) : Matrix.GeneralLinearGroup (Fin 2) ℂ :=
   KPSmoothActualFlowData.matrixExponential
     (KPSmoothActualFlowData.sl2Matrix (fun j => if (v,j) = b then t else 0))
- def theta (b : KPSmoothActualFlowData.B F) (t : ℝ) : ArchCoordinates F :=
+ def theta (t : ℝ) : ArchCoordinates F :=
   fun v => KPLiteralChamber.rightCoordinates (flowMatrix F b t v).val
-private theorem flowMatrix_zero (b : KPSmoothActualFlowData.B F) (v : NumberField.InfinitePlace F) :
+private theorem flowMatrix_zero (v : NumberField.InfinitePlace F) :
     flowMatrix F b 0 v = 1 := by
   apply Units.ext
   change (NormedSpace.exp _) = (1 : Matrix (Fin 2) (Fin 2) ℂ)
   rw [show KPSmoothActualFlowData.sl2Matrix (fun j => if (v,j) = b then (0 : ℝ) else 0) = 0 by
     ext i j; fin_cases i <;> fin_cases j <;> simp [KPSmoothActualFlowData.sl2Matrix]]
   exact NormedSpace.exp_zero
+
+end
+
+alias RightChartJetsAndFlowWords.flowMatrix_zero := flowMatrix_zero
  theorem theta_zero (b : KPSmoothActualFlowData.B F) : theta F b 0 = archBase F := by
   funext v i
   rw [theta, flowMatrix_zero]
@@ -66,6 +74,8 @@ private theorem flowEntry_smooth (b : KPSmoothActualFlowData.B F)
   have he : ContDiff ℝ (⊤ : ℕ∞) (NormedSpace.exp : Matrix (Fin 2) (Fin 2) ℂ → _) :=
     (show AnalyticOnNhd ℝ (NormedSpace.exp : Matrix (Fin 2) (Fin 2) ℂ → _) Set.univ from fun _ _ => NormedSpace.exp_analytic _).contDiff
   exact ev.toContinuousLinearMap.contDiff.comp (he.comp L.toContinuousLinearMap.contDiff)
+
+alias RightChartJetsAndFlowWords.flowEntry_smooth := flowEntry_smooth
  theorem theta_smooth (b : KPSmoothActualFlowData.B F) :
     ContDiffAt ℝ (⊤ : ℕ∞) (theta F b) 0 := by
   apply contDiffAt_pi.mpr; intro v
@@ -75,14 +85,11 @@ private theorem flowEntry_smooth (b : KPSmoothActualFlowData.B F)
   have hn : (flowMatrix F b 0 v).val 1 1 ≠ 0 := by rw [flowMatrix_zero]; simp
   fin_cases i <;> simp only [theta, KPLiteralChamber.rightCoordinates, Matrix.cons_val_zero,
     Matrix.cons_val_one, Matrix.cons_val_two]
-  · change ContDiffAt ℝ (⊤ : ℕ∞) (fun t => (flowMatrix F b t v).val 0 1 / (flowMatrix F b t v).val 1 1) 0
-    simpa only [div_eq_mul_inv] using! (hc 0 1).mul ((hc 1 1).inv hn)
-  · change ContDiffAt ℝ (⊤ : ℕ∞) (fun t => (flowMatrix F b t v).val.det / (flowMatrix F b t v).val 1 1 ^ 2) 0
-    simp only [Matrix.det_fin_two]
-    simpa only [div_eq_mul_inv] using! (((hc 0 0).mul (hc 1 1)).sub ((hc 0 1).mul (hc 1 0))).mul
+  · simpa using! (hc 0 1).mul ((hc 1 1).inv hn)
+  · simp only [Matrix.det_fin_two]
+    simpa using! (((hc 0 0).mul (hc 1 1)).sub ((hc 0 1).mul (hc 1 0))).mul
       (((hc 1 1).pow 2).inv (pow_ne_zero _ hn))
-  · change ContDiffAt ℝ (⊤ : ℕ∞) (fun t => (flowMatrix F b t v).val 1 0 / (flowMatrix F b t v).val 1 1) 0
-    simpa only [div_eq_mul_inv] using! (hc 1 0).mul ((hc 1 1).inv hn)
+  · simpa using! (hc 1 0).mul ((hc 1 1).inv hn)
  theorem theta_chart (b : KPSmoothActualFlowData.B F) :
     ∀ᶠ t in nhds (0 : ℝ), KPGlobalResidualConstruction.archChart F ζ hζ (theta F b t) =
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (KPSmoothActualFlowData.flow F b t) := by
@@ -90,9 +97,7 @@ private theorem flowEntry_smooth (b : KPSmoothActualFlowData.B F)
       (flowMatrix F b t v).val 1 1 ≠ 0 := by
     rw [Filter.eventually_all]
     intro v
-    have hc : ContinuousAt (fun t => (flowMatrix F b t v).val 1 1) 0 :=
-      (flowEntry_smooth F b v 1 1).continuous.continuousAt
-    exact hc.eventually_ne (by rw [flowMatrix_zero]; simp)
+    exact ((flowEntry_smooth F b v 1 1).continuous.continuousAt).eventually_ne (by rw [flowMatrix_zero]; simp)
   filter_upwards [hn] with t ht
   rw [KPLiteralChamber.right_insertion]
   congr 1
@@ -106,35 +111,46 @@ private theorem chartProduct_base_right (x : ArchCoordinates F) :
     chartProduct F (x,archBase F) = x := by
   funext q i
   fin_cases i <;> simp [chartProduct, archBase]
- def transport (b : KPSmoothActualFlowData.B F) (p : ArchCoordinates F × ℝ) : ArchCoordinates F :=
+
+alias RightChartJetsAndFlowWords.chartProduct_base_right := chartProduct_base_right
+ section
+
+variable (b : KPSmoothActualFlowData.B F)
+
+def transport (p : ArchCoordinates F × ℝ) : ArchCoordinates F :=
   chartProduct F (p.1, theta F b p.2)
- def field (b : KPSmoothActualFlowData.B F) (x : ArchCoordinates F) : ArchCoordinates F :=
+ def field (x : ArchCoordinates F) : ArchCoordinates F :=
   fderiv ℝ (transport F b) (x,0) (0,1)
-private theorem transport_zero (b : KPSmoothActualFlowData.B F) (x : ArchCoordinates F) :
+private theorem transport_zero (x : ArchCoordinates F) :
     transport F b (x,0) = x := by
   simp [transport, theta_zero, chartProduct_base_right]
+
+end
+
+alias RightChartJetsAndFlowWords.transport_zero := transport_zero
 private theorem transport_smooth (b : KPSmoothActualFlowData.B F)
     (V : Set (ArchCoordinates F)) (hVo : IsOpen V) (hb : archBase F ∈ V)
     (hμ : ContDiffOn ℝ (⊤ : ℕ∞) (chartProduct F) (V ×ˢ V)) (x : ArchCoordinates F) (hx : x ∈ V) :
     ContDiffAt ℝ (⊤ : ℕ∞) (transport F b) (x,0) := by
-  have hpair : ContDiffAt ℝ (⊤ : ℕ∞) (fun p : ArchCoordinates F × ℝ => (p.1,theta F b p.2)) (x,0) :=
-    contDiffAt_fst.prodMk ((theta_smooth F b).comp (x,0) contDiffAt_snd)
-  exact (hμ.contDiffAt ((hVo.prod hVo).mem_nhds ⟨hx, by simpa [theta_zero] using hb⟩)).comp (x,0) hpair
+  exact (hμ.contDiffAt ((hVo.prod hVo).mem_nhds ⟨hx, by simpa [theta_zero] using hb⟩)).comp (x,0) (contDiffAt_fst.prodMk ((theta_smooth F b).comp (x,0) contDiffAt_snd))
+
+alias RightChartJetsAndFlowWords.transport_smooth := transport_smooth
 private theorem field_smooth (b : KPSmoothActualFlowData.B F)
     (V : Set (ArchCoordinates F)) (hVo : IsOpen V) (hb : archBase F ∈ V)
     (hμ : ContDiffOn ℝ (⊤ : ℕ∞) (chartProduct F) (V ×ˢ V)) :
     ContDiffOn ℝ (⊤ : ℕ∞) (field F b) V := by
   intro x hx
-  have ht := transport_smooth F b V hVo hb hμ x hx
-  have hd := (ht.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).comp x
-    (contDiffAt_id.prodMk contDiffAt_const)
-  exact (hd.clm_apply contDiffAt_const).contDiffWithinAt
+  exact ((((transport_smooth F b V hVo hb hμ x hx).fderiv_right (by simp)).comp x
+    (contDiffAt_id.prodMk contDiffAt_const)).clm_apply contDiffAt_const).contDiffWithinAt
+
+alias RightChartJetsAndFlowWords.field_smooth := field_smooth
 private theorem transport_hasDeriv (b : KPSmoothActualFlowData.B F)
     (V : Set (ArchCoordinates F)) (hVo : IsOpen V) (hb : archBase F ∈ V)
     (hμ : ContDiffOn ℝ (⊤ : ℕ∞) (chartProduct F) (V ×ˢ V)) (x : ArchCoordinates F) (hx : x ∈ V) :
     HasDerivAt (fun t => transport F b (x,t)) (field F b x) 0 := by
-  have ht := (transport_smooth F b V hVo hb hμ x hx).differentiableAt (by simp)
-  exact ht.hasFDerivAt.comp_hasDerivAt 0 ((hasDerivAt_const 0 x).prodMk (hasDerivAt_id 0))
+  exact ((transport_smooth F b V hVo hb hμ x hx).differentiableAt (by simp)).hasFDerivAt.comp_hasDerivAt 0 ((hasDerivAt_const 0 x).prodMk (hasDerivAt_id 0))
+
+alias RightChartJetsAndFlowWords.transport_hasDeriv := transport_hasDeriv
 
  def coordWord {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {ι : Type*} (fields : ι → E → E) : List ι → (E → ℂ) → E → ℂ
   | [], u => u
@@ -146,6 +162,8 @@ private theorem coordWord_smooth {E : Type*} [NormedAddCommGroup E] [NormedSpace
   induction w with
   | nil => exact hu
   | cons b w ih => exact (ih.fderiv_of_isOpen hU (by simp)).clm_apply (hf b)
+
+alias RightChartJetsAndFlowWords.coordWord_smooth := coordWord_smooth
 
 private theorem scalar_word_in_chart
     (u : KPGlobalTorusFunctionData.G F ζ hζ → ℂ)
@@ -160,23 +178,17 @@ private theorem scalar_word_in_chart
     ∀ x ∈ V,
       word F ζ hζ w u (g * archChart F ζ hζ x) =
       coordWord (field F) w (fun y => u (g * archChart F ζ hζ y)) x := by
-  have hu : ContDiffOn ℝ (⊤ : ℕ∞) (fun y => u (g * archChart F ζ hζ y)) V :=
-    (huAll g).mono hVD
-  have hf := fun b => field_smooth F b V hVo hb hμ
   induction w with
   | nil => intro x hx; rfl
   | cons b w ih =>
     intro x hx
     let u₀ := fun y => u (g * archChart F ζ hζ y)
     let q := coordWord (field F) w u₀
-    have hq : ContDiffOn ℝ (⊤ : ℕ∞) q V := coordWord_smooth (field F) V hVo hf w u₀ hu
-    have hqt := ((hq.contDiffAt (hVo.mem_nhds hx)).differentiableAt (by simp)).hasFDerivAt
     have htr := transport_hasDeriv F b V hVo hb hμ x hx
     have htr0 := transport_zero F b x
     have hder : HasDerivAt (fun t => q (transport F b (x,t)))
         (fderiv ℝ q x (field F b x)) 0 := by
-      have hh := (show HasFDerivAt q (fderiv ℝ q x) (transport F b (x,0)) from htr0.symm ▸ hqt).comp_hasDerivAt 0 htr
-      simpa only [htr0, Function.comp_def] using! hh
+      simpa using! ((show HasFDerivAt q (fderiv ℝ q x) (transport F b (x,0)) from htr0.symm ▸ ((((coordWord_smooth (field F) V hVo (fun b => field_smooth F b V hVo hb hμ) w u₀ ((huAll g).mono hVD)).contDiffAt (hVo.mem_nhds hx)).differentiableAt (by simp)).hasFDerivAt)).comp_hasDerivAt 0 htr)
     have he : (fun t : ℝ =>
         word F ζ hζ w u ((g * archChart F ζ hζ x) *
             KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (KPSmoothActualFlowData.flow F b t)))
@@ -207,9 +219,6 @@ private theorem scalar_word_in_chart
   change ∀ y ∈ O, ∀ x ∈ O, archChart F ζ hζ (chartProduct F (y,x)) =
     archChart F ζ hζ y * archChart F ζ hζ x at hprod
   let q := coordWord (field F) w (fun y => u (g * archChart F ζ hζ y))
-  have hq : ContDiffOn ℝ (⊤ : ℕ∞) q O :=
-    coordWord_smooth (field F) O hOo (fun b => field_smooth F b O hOo hb hμ)
-      w _ ((hu g).mono hOD)
   have hθ := theta_smooth F b
   have hθO : ∀ᶠ t in nhds (0 : ℝ), theta F b t ∈ O :=
     hθ.continuousAt.eventually (by simpa [theta_zero] using hOo.mem_nhds hb)
@@ -220,10 +229,9 @@ private theorem scalar_word_in_chart
     filter_upwards [theta_chart F ζ hζ b, hθO] with t ht htO
     rw [← ht]
     exact scalar_word_in_chart F ζ hζ u hu O hOo hb hOD hμ hprod w g _ htO
-  have hd : DifferentiableAt ℝ (fun t => q (theta F b t)) 0 := by
-    exact (((hq.contDiffAt (by simpa [theta_zero] using hOo.mem_nhds hb)).comp 0 hθ).differentiableAt (by simp))
-  have hd' := hd.congr_of_eventuallyEq he
-  exact hd'.hasDerivAt
+  have hd := ((((coordWord_smooth (field F) O hOo (fun b => field_smooth F b O hOo hb hμ)
+      w _ ((hu g).mono hOD)).contDiffAt (by simpa [theta_zero] using hOo.mem_nhds hb)).comp 0 hθ).differentiableAt (by simp))
+  exact (hd.congr_of_eventuallyEq he).hasDerivAt
 
  theorem word_add (u v : KPGlobalTorusFunctionData.G F ζ hζ → ℂ)
     (hu : ∀ g, ContDiffOn ℝ (⊤ : ℕ∞)
@@ -286,7 +294,6 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   induction w generalizing g with
   | nil => exact hu g
   | cons b w ih =>
-    change deriv _ 0 = deriv _ 0
     apply Filter.EventuallyEq.deriv_eq
     filter_upwards [theta_chart F ζ hζ b] with t ht
     rw [← ht, mul_assoc, (ha (theta F b t)).eq.symm, ← mul_assoc]
@@ -310,7 +317,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   apply continuous_iff_continuousAt.mpr
   intro g
   let q := coordWord (field F) w (fun y => u (g * archChart F ζ hζ y))
-  have hq : ContDiffOn ℝ (⊤ : ℕ∞) q O :=
+  have hq :=
     coordWord_smooth (field F) O hOo (fun b => field_smooth F b O hOo hb hμ)
       w _ ((hu g).mono hOD)
   have hbchart : archChart F ζ hζ (archBase F) = 1 := by
@@ -328,11 +335,10 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     rw [hh]
     exact (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).1
   have hbase : q (archBase F) = word F ζ hζ w u g := by
-    have hh := scalar_word_in_chart F ζ hζ u hu O hOo hb hOD hμ hprod w g _ hb
-    simpa only [hbchart, mul_one, word, q] using hh.symm
+    simpa only [hbchart, mul_one, word, q] using (scalar_word_in_chart F ζ hζ u hu O hOo hb hOD hμ hprod w g _ hb).symm
   apply tendsto_def.mpr
   intro N hN
-  have hn : q ⁻¹' N ∈ nhds (archBase F) :=
+  have hn :=
     (hq.continuousOn.continuousAt (hOo.mem_nhds hb)).preimage_mem_nhds (hbase.symm ▸ hN)
   obtain ⟨W, hWN, hWo, hbW⟩ := mem_nhds_iff.mp (Filter.inter_mem hn (hOo.mem_nhds hb))
   have hWO : W ⊆ O := fun x hx => (hWN hx).2
@@ -353,8 +359,6 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   change word F ζ hζ w u y ∈ N
   rw [hy', rightWord_level F ζ hζ u a (fun x => hcomm U a ha x)
     (fun g => hlevel g ⟨a,ha⟩) w]
-  change word F ζ hζ w u
-    (g * archChart F ζ hζ x) ∈ N
   rw [scalar_word_in_chart F ζ hζ u hu O hOo hb hOD hμ hprod w g x (hWO hx)]
   exact (hWN hx).1
 
@@ -412,8 +416,7 @@ theorem scalar_smooth_native_right_chart
   obtain ⟨O, q, hO, hxO, hq, hqO, heq⟩ :=
     KPLiteralChamber.literal_right_to_left_chart_local_transition F ζ hζ g x₀ hx₀
   refine ⟨O, hO, hxO, ?_⟩
-  have hc := (hb (g * KPGlobalResidualConstruction.archChart F ζ hζ x₀)).comp hq hqO
-  apply (hc.congr (fun x hx => ?_)).mono Set.inter_subset_right
+  apply (((hb (g * KPGlobalResidualConstruction.archChart F ζ hζ x₀)).comp hq hqO).congr (fun x hx => ?_)).mono Set.inter_subset_right
   rw [KPGlobalTorusBorelTwistCompatibility.scalarSection_formula, heq x hx]
   rfl
 
@@ -436,8 +439,7 @@ variable (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
       v.val.val (g * u.val) = v.val.val g := by
   intro g u
   obtain ⟨j, hj, heq⟩ := u.property
-  have hh := v.property.1.2 ⟨j, hj⟩
-  have h := congrArg (fun f => f.val g) hh
+  have h := congrArg (fun f => f.val g) (v.property.1.2 ⟨j, hj⟩)
   change v.val.val (g * j.val) = v.val.val g at h
   change j.val = u.val at heq
   rwa [heq] at h

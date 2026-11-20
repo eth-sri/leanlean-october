@@ -15,8 +15,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonK
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 private def hh (t : ℝ) : ℝ := (1 + |t|) ^ (-2 : ℝ)
 
@@ -43,7 +43,7 @@ private lemma gaussShear_nonneg (p : ℝ × ℝ) : 0 ≤ gaussShear p :=
 private lemma gaussShear_integrable : Integrable gaussShear := by
   have hg : Integrable (fun x : ℝ => Real.exp (-(x) ^ 2)) := by
     simpa using integrable_exp_neg_mul_sq (b := 1) one_pos
-  have h1 : Integrable (fun p : ℝ × ℝ => hh p.1 * Real.exp (-(p.2) ^ 2)) :=
+  have h1 :=
     hh_integrable.mul_prod hg
   have h2 := (measurePreserving_prod_add_swap (volume : Measure ℝ)
     (volume : Measure ℝ)).integrable_comp_of_integrable h1
@@ -61,58 +61,45 @@ private lemma six_re (z : ℂ) : (6 * z).re = 6 * z.re := by simp [Complex.mul_r
 
 theorem Hu_differentiableOn (u : D.Row) :
     DifferentiableOn ℂ (fun p : Coordinates => Hu D u p.1 p.2.1 p.2.2) OmegaStar :=
-  (EulerDomain.Hu_normal_convergence D u).2.2.1
+  (EulerDomain.Hu_normal_convergence D u).2
 
-private lemma kernel_differentiableAt (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z)
+section
+
+variable (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z)
+
+include hu hZ in
+private lemma kernel_differentiableAt
     (p : Coordinates) (hξ : 1 < p.1.re) (hw : 0 < p.2.1.re) (hw1 : p.2.1 ≠ 1)
     (hz : 0 < p.2.2.re) (hz6 : 6 * p.2.2 ≠ 1) (hΩ : p ∈ OmegaStar) :
     DifferentiableAt ℂ
       (fun p : Coordinates => kernelWith D (rowContLocal D) u p.1 p.2.1 p.2.2 Z) p := by
   have hqc : ((D.q u : ℝ) : ℂ) = 1 := by rw [PrincipalResidueFormulas.q_principal D u hu]; simp
-  have hZc : (Z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hZ.ne'
   simp only [kernelWith, rowContLocal, hqc, Complex.one_cpow, mul_one]
-  have a1 : DifferentiableAt ℂ (fun p : Coordinates => p.1) p := differentiableAt_fst
   have a2 : DifferentiableAt ℂ (fun p : Coordinates => p.2.1) p :=
     differentiableAt_fst.comp p differentiableAt_snd
-  have a3 : DifferentiableAt ℂ (fun p : Coordinates => p.2.2) p :=
-    differentiableAt_snd.comp p differentiableAt_snd
   have hpow : DifferentiableAt ℂ (fun p : Coordinates => (Z : ℂ) ^ (((Scales.xExponent / 2 : ℝ) : ℂ) +
       p.1 - 1 + (Scales.smoothingExponent : ℂ) * p.2.2 + (Scales.yExponent : ℂ) * (p.2.1 - 1))) p := by
     have : (fun p : Coordinates => (Z : ℂ) ^ (((Scales.xExponent / 2 : ℝ) : ℂ) +
       p.1 - 1 + (Scales.smoothingExponent : ℂ) * p.2.2 + (Scales.yExponent : ℂ) * (p.2.1 - 1))) = fun p : Coordinates =>
         Complex.exp (Complex.log Z * (((Scales.xExponent / 2 : ℝ) : ℂ) +
       p.1 - 1 + (Scales.smoothingExponent : ℂ) * p.2.2 + (Scales.yExponent : ℂ) * (p.2.1 - 1))) :=
-      funext fun p => Complex.cpow_def_of_ne_zero hZc _
+      funext fun p => Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hZ.ne') _
     rw [this]
     fun_prop
-  have hexp : DifferentiableAt ℂ (fun p : Coordinates =>
-      Complex.exp ((p.1 + p.2.2 - 1) ^ 2)) p := by fun_prop
-  have hMopen : IsOpen {z : ℂ | 0 < z.re} := isOpen_lt continuous_const Complex.continuous_re
-  have hM : DifferentiableAt ℂ (fun p : Coordinates => D.M p.2.2) p :=
-    (D.M_differentiableOn.differentiableAt (hMopen.mem_nhds hz)).comp p a3
-  have hW : Differentiable ℂ D.W1Hat :=
-    ProbeSheet.MellinProof.realWeight_mellin_differentiable D.recipe.probe.W1
-  have hWw : DifferentiableAt ℂ (fun p : Coordinates => D.W1Hat p.2.1) p :=
-    (hW _).comp p a2
-  have hζ : DifferentiableAt ℂ (fun p : Coordinates => D.zetaSCont (6 * p.2.2)) p :=
+  have hζ :=
     (((PrincipalResidueFormulas.zetaSCont_analytic D) (6 * p.2.2)
       ⟨by simp only [Set.mem_setOf_eq]; rw [six_re]; linarith, hz6⟩).differentiableAt).comp p
       (by fun_prop : DifferentiableAt ℂ (fun p : Coordinates => 6 * p.2.2) p)
-  have hξ1 : p.1 ≠ 1 := fun h => by
-    rw [h] at hξ
-    simp at hξ
-  have hLp : DifferentiableAt ℂ (fun p : Coordinates => D.Lpsi u p.2.1) p :=
-    (((D.Lpsi_analyticOnNhd u) p.2.1 ⟨hw, hw1⟩).differentiableAt).comp p a2
-  have hLl : DifferentiableAt ℂ (fun p : Coordinates => D.Llam u p.1) p :=
-    (((D.Llam_analyticOnNhd u) p.1 ⟨by simp only [Set.mem_setOf_eq]; linarith, hξ1⟩).differentiableAt).comp p a1
-  have hHu : DifferentiableAt ℂ (fun p : Coordinates => Hu D u p.1 p.2.1 p.2.2) p :=
-    (Hu_differentiableOn D u).differentiableAt (EulerDomain.OmegaStar_isOpen.mem_nhds hΩ)
   simp only [div_eq_mul_inv]
-  exact (((hpow.fun_mul hexp).fun_mul hM).fun_mul hWw).fun_mul
-    (((hζ.fun_mul hLp).fun_mul hHu).fun_mul
-      (hLl.inv (RightHeckeBounds.Llam_ne_zero_of_one_lt D u _ hξ)))
+  refine (((hpow.fun_mul ?_).fun_mul ((D.M_differentiableOn.differentiableAt ((isOpen_lt continuous_const Complex.continuous_re).mem_nhds hz)).comp p (differentiableAt_snd.comp p differentiableAt_snd))).fun_mul (((ProbeSheet.MellinProof.realWeight_mellin_differentiable D.recipe.probe.W1) _).comp p a2)).fun_mul
+    (((hζ.fun_mul ((((D.Lpsi_analyticOnNhd u) p.2.1 ⟨hw, hw1⟩).differentiableAt).comp p a2)).fun_mul ((Hu_differentiableOn D u).differentiableAt (EulerDomain.OmegaStar_isOpen.mem_nhds hΩ))).fun_mul
+      (((((D.Llam_analyticOnNhd u) p.1 ⟨by simp only [Set.mem_setOf_eq]; linarith, (fun h => by
+        rw [h] at hξ
+        simp at hξ)⟩).differentiableAt).comp p differentiableAt_fst).inv (RightHeckeBounds.Llam_ne_zero_of_one_lt D u _ hξ)))
+  fun_prop
 
-private lemma kernel_differentiableOn_of (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z)
+include hu hZ in
+private lemma kernel_differentiableOn_of
     (U : Set Coordinates)
     (h : ∀ p ∈ U, 1 < p.1.re ∧ 0 < p.2.1.re ∧ p.2.1 ≠ 1 ∧ 0 < p.2.2.re ∧ 6 * p.2.2 ≠ 1 ∧
       p ∈ OmegaStar) :
@@ -122,7 +109,8 @@ private lemma kernel_differentiableOn_of (u : D.Row) (hu : u.u = 1) (Z : ℝ) (h
   obtain ⟨h1, h2, h3, h4, h5, h6⟩ := h p hp
   exact (kernel_differentiableAt D u hu Z hZ p h1 h2 h3 h4 h5 h6).differentiableWithinAt
 
-theorem kernel_analytic_paddedBox₂ (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) :
+include hu hZ in
+theorem kernel_analytic_paddedBox₂ :
     DifferentiableOn ℂ
       (fun p : Coordinates => kernelWith D (rowContLocal D) u p.1 p.2.1 p.2.2 Z)
       ((paddedBox₂ ∩ xiPrincipal ∩ zPrincipal) \ singW) := by
@@ -145,7 +133,12 @@ theorem kernel_analytic_paddedBox₂ (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 
     simp only [paddedBox₂, box, Set.mem_setOf_eq] at hb
     exact ⟨hxi, by linarith [hb.2.1], hzp, hs⟩
 
-theorem kernel_majorant_paddedBox₂ (u : D.Row) (hu : u.u = 1)
+end
+
+variable (u : D.Row) (hu : u.u = 1)
+
+include hu in
+theorem kernel_majorant_paddedBox₂
     (x₀ x₁ y₀ y₁ v₀ v₁ : ℝ)
     (hx : ∀ x ∈ Set.Icc x₀ x₁, Scales.rightLine - Scales.contourOffset / 2 ≤ x)
     (hy : ∀ y ∈ Set.Icc y₀ y₁, 9 / 10 - EulerDomain.pad ≤ y ∧ y ≠ 1)
@@ -158,7 +151,8 @@ theorem kernel_majorant_paddedBox₂ (u : D.Row) (hu : u.u = 1)
             Z ^ (Scales.kernelExponent x y v) * g t :=
   PrincipalBox2Majorant.kernel_majorant_paddedBox2 D u hu x₀ x₁ y₀ y₁ v₀ v₁ hx hy hv
 
-private lemma wResidue_majorant_aux (u : D.Row) (hu : u.u = 1) (v₀ : ℝ)
+include hu in
+private lemma wResidue_majorant_aux (v₀ : ℝ)
     (hv0 : 1 / 20 ≤ v₀) (hv1 : v₀ ≤ 1) (hv6 : 6 * v₀ ≠ 1) :
     ∃ g : ℝ × ℝ → ℝ, Integrable g ∧ (∀ p, 0 ≤ g p) ∧ ∀ Z : ℝ, 2 ≤ Z → ∀ t : ℝ × ℝ,
       ‖wResidueLocal D u ((Scales.rightLine : ℂ) + (t.1 : ℂ) * Complex.I)
@@ -224,7 +218,8 @@ private lemma wResidue_majorant_aux (u : D.Row) (hu : u.u = 1) (v₀ : ℝ)
   have bL : ‖D.Llam u ((Scales.rightLine : ℂ) + (t.1 : ℂ) * Complex.I)‖⁻¹ ≤ Cl := by
     have := hCl u ((Scales.rightLine : ℂ) + (t.1 : ℂ) * Complex.I) (by rw [hxre]; exact le_rfl)
     rwa [norm_inv] at this
-  have bZ : ‖D.zetaSCont (6 * ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I))‖ ≤
+  let zetaSCont₀ := D.zetaSCont (6 * ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I))
+  have bZ : ‖zetaSCont₀‖ ≤
       Cs * 6 ^ ⌈ks⌉₊ * (1 + |t.2|) ^ ⌈ks⌉₊ := by
     have h6re : (6 * ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I)).re = 6 * v₀ := by simp
     have h6im : (6 * ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I)).im = 6 * t.2 := by simp
@@ -246,31 +241,32 @@ private lemma wResidue_majorant_aux (u : D.Row) (hu : u.u = 1) (v₀ : ℝ)
       _ ≤ Cs * (6 ^ ⌈ks⌉₊ * (1 + |t.2|) ^ ⌈ks⌉₊) :=
         mul_le_mul_of_nonneg_left (h2.trans h3) hCs0.le
       _ = _ := by ring
-  have bM : (1 + |t.2|) ^ (⌈ks⌉₊ + 2) * ‖D.M ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I)‖ ≤ CM := by
+  let M₀ := D.M ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I)
+  have bM : (1 + |t.2|) ^ (⌈ks⌉₊ + 2) * ‖M₀‖ ≤ CM := by
     have := hCM ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I) (by rw [hzre]) (by rw [hzre])
     rwa [hzim] at this
-  have bMZ : ‖D.M ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I)‖ *
-      ‖D.zetaSCont (6 * ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I))‖ ≤
+  have bMZ : ‖M₀‖ *
+      ‖zetaSCont₀‖ ≤
       |Cs * 6 ^ ⌈ks⌉₊ * CM| * hh t.2 := by
     apply le_hh
     have hp : (0 : ℝ) < 1 + |t.2| := by positivity
-    have nM := norm_nonneg (D.M ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I))
-    calc (1 + |t.2|) ^ 2 * (‖D.M ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I)‖ *
-        ‖D.zetaSCont (6 * ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I))‖)
-        ≤ (1 + |t.2|) ^ 2 * (‖D.M ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I)‖ *
+    have nM := norm_nonneg (M₀)
+    calc (1 + |t.2|) ^ 2 * (‖M₀‖ *
+        ‖zetaSCont₀‖)
+        ≤ (1 + |t.2|) ^ 2 * (‖M₀‖ *
           (Cs * 6 ^ ⌈ks⌉₊ * (1 + |t.2|) ^ ⌈ks⌉₊)) := by
           apply mul_le_mul_of_nonneg_left _ (by positivity)
           exact mul_le_mul_of_nonneg_left bZ nM
       _ = (Cs * 6 ^ ⌈ks⌉₊) * ((1 + |t.2|) ^ (⌈ks⌉₊ + 2) *
-          ‖D.M ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I)‖) := by ring
+          ‖M₀‖) := by ring
       _ ≤ (Cs * 6 ^ ⌈ks⌉₊) * CM := mul_le_mul_of_nonneg_left bM hA0
   have bE : Real.exp ((Scales.rightLine + v₀ - 1) ^ 2) ≤ Real.exp 25 :=
     Real.exp_le_exp.mpr (by rw [hx]; nlinarith)
   have nH := norm_nonneg (Hu D u ((Scales.rightLine : ℂ) + (t.1 : ℂ) * Complex.I) 1
       ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I))
   have nL : 0 ≤ ‖D.Llam u ((Scales.rightLine : ℂ) + (t.1 : ℂ) * Complex.I)‖⁻¹ := by positivity
-  have nMZ : 0 ≤ ‖D.M ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I)‖ *
-      ‖D.zetaSCont (6 * ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I))‖ := by positivity
+  have nMZ : 0 ≤ ‖M₀‖ *
+      ‖zetaSCont₀‖ := by positivity
   have hG : 0 ≤ Real.exp (-(t.1 + t.2) ^ 2) := (Real.exp_pos _).le
   have hE0 : 0 ≤ Real.exp ((Scales.rightLine + v₀ - 1) ^ 2) := (Real.exp_pos _).le
   have hh0 := hh_pos t.2
@@ -279,8 +275,8 @@ private lemma wResidue_majorant_aux (u : D.Row) (hu : u.u = 1) (v₀ : ℝ)
   have hw0 := norm_nonneg (D.W1Hat 1)
   calc _ = Z ^ (Scales.kernelExponent Scales.rightLine 1 v₀) * (‖Spectral.RS D‖ * ‖D.W1Hat 1‖ *
         (Real.exp ((Scales.rightLine + v₀ - 1) ^ 2) * Real.exp (-(t.1 + t.2) ^ 2)) *
-        (‖D.M ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I)‖ *
-          ‖D.zetaSCont (6 * ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I))‖) *
+        (‖M₀‖ *
+          ‖zetaSCont₀‖) *
         ‖Hu D u ((Scales.rightLine : ℂ) + (t.1 : ℂ) * Complex.I) 1
           ((v₀ : ℂ) + (t.2 : ℂ) * Complex.I)‖ *
         ‖D.Llam u ((Scales.rightLine : ℂ) + (t.1 : ℂ) * Complex.I)‖⁻¹) := by
@@ -300,14 +296,16 @@ private lemma wResidue_majorant_aux (u : D.Row) (hu : u.u = 1) (v₀ : ℝ)
         simp only [gaussShear]
         ring
 
-theorem wResidue_majorant_z (u : D.Row) (hu : u.u = 1) :
+include hu in
+theorem wResidue_majorant_z :
     ∃ g : ℝ × ℝ → ℝ, Integrable g ∧ (∀ p, 0 ≤ g p) ∧ ∀ Z : ℝ, 2 ≤ Z → ∀ t : ℝ × ℝ,
       ‖wResidueLocal D u ((Scales.rightLine : ℂ) + (t.1 : ℂ) * Complex.I)
           (((1 / 20 : ℝ) : ℂ) + (t.2 : ℂ) * Complex.I) Z‖ ≤
         Z ^ (Scales.kernelExponent Scales.rightLine 1 (1 / 20)) * g t :=
   wResidue_majorant_aux D u hu (1 / 20) le_rfl (by norm_num) (by norm_num)
 
-theorem wResidue_majorant_w (u : D.Row) (hu : u.u = 1) :
+include hu in
+theorem wResidue_majorant_w :
     ∃ g : ℝ × ℝ → ℝ, Integrable g ∧ (∀ p, 0 ≤ g p) ∧ ∀ Z : ℝ, 2 ≤ Z → ∀ t : ℝ × ℝ,
       ‖wResidueLocal D u ((Scales.rightLine : ℂ) + (t.1 : ℂ) * Complex.I)
           (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t.2 : ℂ) * Complex.I) Z‖ ≤

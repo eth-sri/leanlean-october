@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -36,53 +33,34 @@ namespace Reciprocity
 local instance (p : Nat.Primes) : Fact p.1.Prime :=
   ⟨p.2⟩
 
+variable (a : IdeleGroup ℚ)
+    (h : ∀ (p : Nat.Primes) (k : ℕ), Units.map (PadicInt.toZModPow k).toMonoidHom (KummerTheory.rationalCyclotomicCharacterPrimeProduct (infiniteGlobalArtinMonoidHom ℚ KummerTheory.rationalCyclotomicField a) p) ^ 2 = 1)
+
+include h in
 /-- If all prime-power character reductions of the full cyclotomic
 global Artin symbol have square one, then the corresponding Artin symbol
 in the actual rational `ZHat`-extension has square one. -/
 theorem
-    rationalCyclotomicZHatGlobalArtin_sq_eq_one_of_character_reductions
-    (a : IdeleGroup ℚ)
-    (h :
-      ∀ (p : Nat.Primes) (k : ℕ),
-        Units.map (PadicInt.toZModPow k).toMonoidHom
-              (KummerTheory.rationalCyclotomicCharacterPrimeProduct
-                (infiniteGlobalArtinMonoidHom
-                  ℚ KummerTheory.rationalCyclotomicField a) p) ^ 2 =
-          1) :
+    rationalCyclotomicZHatGlobalArtin_sq_eq_one_of_character_reductions :
     rationalCyclotomicZHatGlobalArtin a ^ 2 = 1 := by
-  let σ :
-      KummerTheory.rationalCyclotomicField ≃ₐ[ℚ]
-        KummerTheory.rationalCyclotomicField :=
+  let σ :=
     infiniteGlobalArtinMonoidHom
       ℚ KummerTheory.rationalCyclotomicField a
-  have hσ : σ ^ 2 = 1 :=
-    rationalCyclotomicAutomorphism_sq_eq_one_of_character_reductions
-      σ h
   rw [rationalCyclotomicZHatGlobalArtin_eq_fullRestriction]
-  change (rationalCyclotomicFullRestrictionToZHat σ) ^ 2 = 1
-  rw [← map_pow, hσ, map_one]
+  rw [← map_pow, (rationalCyclotomicAutomorphism_sq_eq_one_of_character_reductions
+    σ h), map_one]
+include h in
 /-- Prime-power square-one identities force the rational cyclotomic
 idele value itself to be trivial.  Torsion-freeness of `ZHat` removes
 the residual order-two ambiguity. -/
 theorem
-    rationalCyclotomicZHatIdeleValue_eq_one_of_character_reductions
-    (a : IdeleGroup ℚ)
-    (h :
-      ∀ (p : Nat.Primes) (k : ℕ),
-        Units.map (PadicInt.toZModPow k).toMonoidHom
-              (KummerTheory.rationalCyclotomicCharacterPrimeProduct
-                (infiniteGlobalArtinMonoidHom
-                  ℚ KummerTheory.rationalCyclotomicField a) p) ^ 2 =
-          1) :
+    rationalCyclotomicZHatIdeleValue_eq_one_of_character_reductions :
     rationalCyclotomicZHatIdeleValue a = 1 := by
-  have hArtin :
-      rationalCyclotomicZHatGlobalArtin a ^ 2 = 1 :=
-    rationalCyclotomicZHatGlobalArtin_sq_eq_one_of_character_reductions
-      a h
   have hValue :
       rationalCyclotomicZHatIdeleValue a ^ 2 = 1 := by
     rw [rationalCyclotomicZHatIdeleValue_apply,
-      ← map_pow, hArtin, map_one]
+      ← map_pow, (rationalCyclotomicZHatGlobalArtin_sq_eq_one_of_character_reductions
+        a h), map_one]
   exact
     (pow_left_injective
       (M := Multiplicative ZHat)

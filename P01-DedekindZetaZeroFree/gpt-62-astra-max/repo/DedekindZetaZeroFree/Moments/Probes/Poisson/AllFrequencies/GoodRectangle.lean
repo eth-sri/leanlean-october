@@ -16,39 +16,45 @@ open DedekindZetaZeroFree.Quantitative.RawDetectorHeightPrefix31
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
-def rawCentral (u : Frequency D.recipe) (ρ U Z : ℝ) : ℂ :=
+section
+
+variable (u : Frequency D.recipe) (ρ U Z : ℝ)
+
+def rawCentral : ℂ :=
   (2 * (Real.pi : ℂ))⁻¹ *
     ∫ t in Set.Icc (-(U ^ ρ)) (U ^ ρ),
       Iwz D u ((Scales.goodLine : ℂ) + (t : ℂ) * Complex.I) Scales.wLine Scales.zLine Z
 
-def rawUpper (u : Frequency D.recipe) (ρ U Z : ℝ) : ℂ :=
+def rawUpper : ℂ :=
   (2 * (Real.pi : ℂ) * Complex.I)⁻¹ *
     ∫ σ in Scales.goodLine..Scales.rightLine,
       Iwz D u ((σ : ℂ) + ((1 * U ^ ρ : ℝ) : ℂ) * Complex.I) Scales.wLine Scales.zLine Z
 
-def rawLower (u : Frequency D.recipe) (ρ U Z : ℝ) : ℂ :=
+def rawLower : ℂ :=
   (2 * (Real.pi : ℂ) * Complex.I)⁻¹ *
     ∫ σ in Scales.rightLine..Scales.goodLine,
       Iwz D u ((σ : ℂ) + (((-1) * U ^ ρ : ℝ) : ℂ) * Complex.I) Scales.wLine Scales.zLine Z
 
-def rawRightTail (u : Frequency D.recipe) (ρ U Z : ℝ) : ℂ :=
+def rawRightTail : ℂ :=
   (2 * (Real.pi : ℂ))⁻¹ *
     ∫ t in {t : ℝ | U ^ ρ < |t|},
       Iwz D u ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I) Scales.wLine Scales.zLine Z
 
+end
+
 theorem rawGood_rectangle_decomp (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
     (hρ : HeightSpec D A ρ) :
-    ∃ U₀ : ℝ, 2 ≤ U₀ ∧ ∀ U : ℝ, U₀ ≤ U → ∀ u : Frequency D.recipe,
+    ∃ U₀ : ℝ, ∀ U : ℝ, U₀ ≤ U → ∀ u : Frequency D.recipe,
       u ≠ principalFrequency D.recipe → U ≤ frequencyNorm D.recipe u →
       frequencyNorm D.recipe u < 2 * U → u ∉ FixedData.rawExceptionalSet D ρ U →
       ∀ Z : ℝ, 0 < Z →
         triple D u Scales.rightLine Scales.wLine Scales.zLine Z =
           rawCentral D u ρ U Z + rawUpper D u ρ U Z + rawLower D u ρ U Z +
             rawRightTail D u ρ U Z := by
-  refine ⟨2, le_rfl, fun U hU u hu hU1 hU2 hexc Z hZ => ?_⟩
+  refine ⟨2, fun U hU u hu hU1 hU2 hexc Z hZ => ?_⟩
   have hT : (0 : ℝ) ≤ U ^ ρ := Real.rpow_nonneg (by linarith) _
   have hab : Scales.goodLine ≤ Scales.rightLine := by
     norm_num [Scales.goodLine, Scales.rightLine, Scales.contourOffset]
@@ -69,7 +75,7 @@ theorem rawGood_rectangle_decomp (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexi
       rw [abs_le]; constructor <;> linarith
     refine ⟨by linarith, by linarith, ?_⟩
     exact (RawKernelRegularity31.minus_ne_zero_of_not_exceptional D ρ U u hu hU1 hU2 hexc ξ
-      (by linarith) (by linarith) him').2
+      (by linarith) (by linarith) him')
   have hint := RawGoodNestedControls31.Iwz_integrable_right D A hA hconv U hU u hu hU1 hU2 Z hZ
   have key := RowRectangleDeformation.rect_decomp
     (fun ξ : ℂ => Iwz D u ξ Scales.wLine Scales.zLine Z) Scales.goodLine Scales.rightLine (U ^ ρ) hab hT hf hint
@@ -78,10 +84,7 @@ theorem rawGood_rectangle_decomp (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexi
 
 private abbrev KK : ℝ := ∫ t : ℝ, (1 + |t|) ^ (-(2 : ℝ))
 
-private theorem KK_int : Integrable (fun t : ℝ => (1 + |t|) ^ (-(2 : ℝ))) := by
-  have h := integrable_one_add_norm (E := ℝ) (μ := volume) (r := 2) (by norm_num)
-  simp only [Real.norm_eq_abs] at h
-  exact h
+private alias KK_int := DedekindZetaZeroFree.LargeSieve.UniformEulerDecay.uniform_integrable_one_add_abs_rpow_neg_two
 
 private theorem KK_nonneg : 0 ≤ KK :=
   integral_nonneg fun t => by positivity
@@ -104,7 +107,7 @@ private theorem final_mul {c C P V R W K : ℝ} (hc : 0 < c) (hC : 0 ≤ C) (hP 
     (hK : 0 ≤ K) (hW : 0 ≤ W) (hVR : V * R ≤ W) :
     c * (C * P * V * R * K) ≤ (C * (K + 1) * c) * P * W := by
   have h1 : 0 ≤ c * C * P * K := by positivity
-  have h2 : (c * C * P * K) * (V * R) ≤ (c * C * P * K) * W :=
+  have h2 :=
     mul_le_mul_of_nonneg_left hVR h1
   have h3 : 0 ≤ c * C * P * W := by positivity
   nlinarith [h2, h3]
@@ -112,25 +115,22 @@ private theorem final_mul {c C P V R W K : ℝ} (hc : 0 < c) (hC : 0 ≤ C) (hP 
 private theorem tail_int (f : ℝ → ℂ) {T M B2 : ℝ} (hT : 0 < T) (hM : 0 ≤ M) (hB2 : 0 ≤ B2)
     (hf : ∀ t : ℝ, T < |t| → ‖f t‖ ≤ M * (1 + |t|) ^ (-(2 + B2))) :
     ‖∫ t in {t : ℝ | T < |t|}, f t‖ ≤ M * T ^ (-B2) * KK := by
-  have hs : MeasurableSet {t : ℝ | T < |t|} :=
-    (isOpen_lt continuous_const continuous_abs).measurableSet
   have hint : Integrable (fun t : ℝ => M * T ^ (-B2) * (1 + |t|) ^ (-(2 : ℝ))) :=
     KK_int.const_mul _
   have hpt : ∀ t : ℝ, T < |t| → ‖f t‖ ≤ M * T ^ (-B2) * (1 + |t|) ^ (-(2 : ℝ)) := by
     intro t ht
-    have h1 := hf t ht
     have hpos : 0 < 1 + |t| := by positivity
     have h2 : (1 + |t|) ^ (-(2 + B2)) = (1 + |t|) ^ (-(2 : ℝ)) * (1 + |t|) ^ (-B2) := by
       rw [neg_add, Real.rpow_add hpos]
     have h3 : (1 + |t|) ^ (-B2) ≤ T ^ (-B2) := rpow_neg_le' hT (by linarith) hB2
-    calc ‖f t‖ ≤ M * (1 + |t|) ^ (-(2 + B2)) := h1
+    calc ‖f t‖ ≤ M * (1 + |t|) ^ (-(2 + B2)) := (hf t ht)
       _ = M * ((1 + |t|) ^ (-(2 : ℝ)) * (1 + |t|) ^ (-B2)) := by rw [h2]
       _ ≤ M * ((1 + |t|) ^ (-(2 : ℝ)) * T ^ (-B2)) := by gcongr
       _ = M * T ^ (-B2) * (1 + |t|) ^ (-(2 : ℝ)) := by ring
   calc ‖∫ t in {t : ℝ | T < |t|}, f t‖
       ≤ ∫ t in {t : ℝ | T < |t|}, M * T ^ (-B2) * (1 + |t|) ^ (-(2 : ℝ)) :=
         norm_integral_le_of_norm_le hint.restrict
-          (ae_restrict_of_forall_mem hs fun t ht => hpt t ht)
+          (ae_restrict_of_forall_mem ((isOpen_lt continuous_const continuous_abs).measurableSet) fun t ht => hpt t ht)
     _ ≤ ∫ t : ℝ, M * T ^ (-B2) * (1 + |t|) ^ (-(2 : ℝ)) :=
         setIntegral_le_integral hint
           (ae_of_all _ fun t => by show (0 : ℝ) ≤ _; positivity)
@@ -155,12 +155,9 @@ theorem rawGood_central_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityE
           C * Z ^ (Scales.kernelExponent Scales.goodLine Scales.wLine Scales.zLine) * U ^ ((1 / 25 : ℝ) + ε) := by
   obtain ⟨C, hC, U₀, hU₀, h⟩ :=
     RawGoodNestedControls31.Iwz_decay_rect D A ρ hA hconv hρ ε hε 2 (by norm_num)
-  have hab : Scales.goodLine ≤ Scales.rightLine := by
-    norm_num [Scales.goodLine, Scales.rightLine, Scales.contourOffset]
   refine ⟨C * (KK + 1) * (2 * Real.pi)⁻¹, by have := KK_nonneg; positivity, U₀, hU₀, ?_⟩
   intro U hU u hu hU1 hU2 hexc Z hZ
   have hUpos : 0 < U := by linarith
-  have hT : (0 : ℝ) ≤ U ^ ρ := Real.rpow_nonneg hUpos.le _
   have hf : ∀ t ∈ Set.Icc (-(U ^ ρ)) (U ^ ρ),
       ‖Iwz D u ((Scales.goodLine : ℂ) + (t : ℂ) * Complex.I) Scales.wLine Scales.zLine Z‖ ≤
         C * Z ^ (Scales.kernelExponent Scales.goodLine Scales.wLine Scales.zLine) * U ^ ((1 / 25 : ℝ) + ε) *
@@ -169,7 +166,8 @@ theorem rawGood_central_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityE
     have hre : ((Scales.goodLine : ℂ) + (t : ℂ) * Complex.I).re = Scales.goodLine := by simp
     have him : ((Scales.goodLine : ℂ) + (t : ℂ) * Complex.I).im = t := by simp
     have := h U hU u hu hU1 hU2 hexc ((Scales.goodLine : ℂ) + (t : ℂ) * Complex.I) Z hZ
-      hre.symm.le (hre.le.trans hab)
+      hre.symm.le (hre.le.trans (by
+        norm_num [Scales.goodLine, Scales.rightLine, Scales.contourOffset]))
       (by rw [him, abs_le]; constructor <;> linarith [ht.1, ht.2])
     rw [hre, him] at this
     exact this
@@ -189,20 +187,16 @@ theorem rawGood_central_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityE
           setIntegral_le_integral hint
             (ae_of_all _ fun t => by show (0 : ℝ) ≤ _; positivity)
       _ = _ := integral_const_mul _ _
-  have hK := KK_nonneg
   have hpi : 0 < (2 * Real.pi)⁻¹ := by positivity
-  have hP : 0 ≤ C * Z ^ (Scales.kernelExponent Scales.goodLine Scales.wLine Scales.zLine) * U ^ ((1 / 25 : ℝ) + ε) := by
-    positivity
   unfold rawCentral
   rw [norm_mul, norm_inv_two_pi]
-  have h1 := mul_le_mul_of_nonneg_left hbound hpi.le
   have h2 : 0 ≤ (2 * Real.pi)⁻¹ * (C * Z ^ (Scales.kernelExponent Scales.goodLine Scales.wLine Scales.zLine) *
       U ^ ((1 / 25 : ℝ) + ε)) := by positivity
-  nlinarith [h1, h2]
+  nlinarith [(mul_le_mul_of_nonneg_left hbound hpi.le), h2]
 
 theorem rawGood_horiz_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
     (hρ : HeightSpec D A ρ) (B : ℝ) (hB : 0 < B) :
-    ∃ C : ℝ, 0 < C ∧ ∃ U₀ : ℝ, 2 ≤ U₀ ∧ ∀ U : ℝ, U₀ ≤ U → ∀ u : Frequency D.recipe,
+    ∃ C : ℝ, 0 < C ∧ ∃ U₀ : ℝ, ∀ U : ℝ, U₀ ≤ U → ∀ u : Frequency D.recipe,
       u ≠ principalFrequency D.recipe → U ≤ frequencyNorm D.recipe u →
       frequencyNorm D.recipe u < 2 * U → u ∉ FixedData.rawExceptionalSet D ρ U →
       ∀ Z : ℝ, 1 ≤ Z →
@@ -214,8 +208,7 @@ theorem rawGood_horiz_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExp
       (by positivity)
   have hab : Scales.goodLine ≤ Scales.rightLine := by
     norm_num [Scales.goodLine, Scales.rightLine, Scales.contourOffset]
-  refine ⟨C * (|Scales.rightLine - Scales.goodLine| + 1) * (2 * Real.pi)⁻¹,
-    by positivity, U₀, hU₀, ?_⟩
+  refine ⟨C * (|Scales.rightLine - Scales.goodLine| + 1) * (2 * Real.pi)⁻¹, by positivity, U₀, ?_⟩
   intro U hU u hu hU1 hU2 hexc Z hZ
   have hUpos : 0 < U := by linarith
   have hT0 : 0 < U ^ ρ := Real.rpow_pos_of_pos hUpos _
@@ -290,7 +283,7 @@ theorem rawGood_horiz_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExp
 
 theorem rawGood_tail_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
     (hρ : HeightSpec D A ρ) (B : ℝ) (hB : 0 < B) :
-    ∃ C : ℝ, 0 < C ∧ ∃ U₀ : ℝ, 2 ≤ U₀ ∧ ∀ U : ℝ, U₀ ≤ U → ∀ u : Frequency D.recipe,
+    ∃ C : ℝ, 0 < C ∧ ∃ U₀ : ℝ, ∀ U : ℝ, U₀ ≤ U → ∀ u : Frequency D.recipe,
       u ≠ principalFrequency D.recipe → U ≤ frequencyNorm D.recipe u →
       frequencyNorm D.recipe u < 2 * U →
       ∀ Z : ℝ, 0 < Z →
@@ -300,7 +293,7 @@ theorem rawGood_tail_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExpo
   obtain ⟨C, hC, h⟩ :=
     RawGoodNestedControls31.Iwz_decay_right D A hA hconv 1 one_pos (2 + (B + 2) / ρ)
       (by positivity)
-  refine ⟨C * (KK + 1) * (2 * Real.pi)⁻¹, by have := KK_nonneg; positivity, 2, le_rfl, ?_⟩
+  refine ⟨C * (KK + 1) * (2 * Real.pi)⁻¹, by have := KK_nonneg; positivity, 2, ?_⟩
   intro U hU u hu hU1 hU2 Z hZ
   have hUpos : 0 < U := by linarith
   have hT0 : 0 < U ^ ρ := Real.rpow_pos_of_pos hUpos _

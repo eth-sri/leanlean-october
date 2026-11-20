@@ -21,7 +21,9 @@ def q (t : ℝ) (h : RayCoset.logHyperplane K) : InfinitePlace K → ℝ :=
 
 variable {K}
 
-def fδ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
+variable (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
+
+def fδ
     (t : ℝ) : ℂ :=
   if 0 < t then
     (RayCoset.rayUnitTorsionCard K D.m : ℂ)⁻¹ *
@@ -32,7 +34,7 @@ def fδ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
         ∂Theta.normalizedLogHaar K
   else 0
 
-def gδDual (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
+def gδDual
     (t : ℝ) : ℂ :=
   if 0 < t then
     ((RayCoset.rayUnitTorsionCard K D.m : ℂ) *
@@ -47,13 +49,13 @@ def gδDual (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
         ∂Theta.normalizedLogHaar K
   else 0
 
-def f0δ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) : ℂ :=
+def f0δ : ℂ :=
   if δ = ∅ ∧ (0 : euclidean.mixedSpace K) ∈ RayCoset.normalizedAffineCoset D then
     (RayCoset.rayUnitDomainVolume K D.m D.modulus_ne_bot : ℂ) /
       (RayCoset.rayUnitTorsionCard K D.m : ℂ)
   else 0
 
-def g0δ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) : ℂ :=
+def g0δ : ℂ :=
   if δ = ∅ then
     (RayCoset.rayUnitDomainVolume K D.m D.modulus_ne_bot : ℂ) /
       ((RayCoset.rayUnitTorsionCard K D.m : ℂ) *

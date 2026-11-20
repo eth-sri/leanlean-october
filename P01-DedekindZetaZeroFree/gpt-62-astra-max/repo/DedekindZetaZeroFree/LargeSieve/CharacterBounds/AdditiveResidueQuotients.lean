@@ -59,9 +59,8 @@ theorem additive_residue_row_sieve_of_scaled_trace_adapter
                 D * (X + V ^ 2) * ∑ m : ↥rows, ‖z m‖ ^ 2 := by
   by_cases hs : ∃ (B : Subgroup A.V), Nonempty (A.BalancedIdealSection B K_bal)
   · obtain ⟨B0, ⟨s0⟩⟩ := hs
-    have hbox := (A.detector_balanced_ideal_section B0 K_bal hK s0).1
     obtain ⟨D, hD, hb⟩ := probe_additive_row_box_sieve F A.zeta12 A.primitive_zeta12
-      A.Sf e he htrace (A.balancedDyadicBox K_bal) hbox
+      A.Sf e he htrace (A.balancedDyadicBox K_bal) ((A.detector_balanced_ideal_section B0 K_bal hK s0).1)
     refine ⟨D * C0 ^ 2, mul_nonneg hD (sq_nonneg _), ?_⟩
     intro B s X V hX hV Q inst q instq hinj hq hnorm
     obtain ⟨p, rho, hrho, hrnorm, psi, hp, hphase⟩ :=
@@ -74,17 +73,15 @@ theorem additive_residue_row_sieve_of_scaled_trace_adapter
       intro beta hbeta
       obtain ⟨jd, _, rfl⟩ := Finset.mem_image.mp hbeta
       exact hrnorm jd
-    have hCV : 1 ≤ C0 * V := by nlinarith [mul_le_mul_of_nonneg_right hC0 (by linarith : 0 ≤ V)]
-    have hd := (hb X (C0 * V) hX hCV p P hP).2 z
-    let f : ProbeSeparation.ReducedPair F A.Sf → ℝ := fun beta =>
+    let f := fun beta =>
       ‖∑ m, z m * ProbeAdditive.phase F A.Sf e
         (sLocalDiagonal F A.Sf (-((m.val : F) * ProbeSeparation.value F p beta)))‖ ^ 2
     have hreindex : (∑ jd, f (rho jd)) = ∑ beta : ↥P, f beta.val := by
       rw [Finset.sum_coe_sort]
       symm
       exact Finset.sum_image (fun i _ j _ hij => hrho hij)
-    have hh : (∑ jd, f (rho jd)) ≤ D * (X + (C0 * V) ^ 2) * ∑ m, ‖z m‖ ^ 2 :=
-      hreindex.le.trans hd
+    have hh :=
+      hreindex.le.trans ((hb X (C0 * V) hX (by nlinarith [mul_le_mul_of_nonneg_right hC0 (by linarith : 0 ≤ V)]) p P hP).2 z)
     have hh' : (∑ j, ∑ d : (A.R ⧸ q j)ˣ, ‖∑ m,
         z m * psi j (Ideal.Quotient.mk (q j) m.val * (d : A.R ⧸ q j))‖ ^ 2) ≤
         D * (X + (C0 * V) ^ 2) * ∑ m, ‖z m‖ ^ 2 := by
@@ -156,8 +153,12 @@ def HasFixedFullSLocalTuple (F : Type) [Field F] [NumberField F]
 
 namespace ExteriorDyadicTransport
 
-theorem local_twist_energy {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (B : Subgroup A.V) (K_bal : Set A.G)
+section
+
+variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F) (B : Subgroup A.V)
+    (K_bal : Set A.G)
+
+theorem local_twist_energy
     (s : A.BalancedIdealSection B K_bal)
     (sigma : FixedSResidue.FullLocalCharacters A)
     (hSigma : FixedSResidue.HasFiniteOrder A sigma)
@@ -169,8 +170,7 @@ theorem local_twist_energy {F : Type} [Field F] [NumberField F]
   intro a ha
   rw [norm_mul, FixedSResidue.localInverseProduct_norm A sigma hSigma, mul_one]
 
-theorem row_energy {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (B : Subgroup A.V) (K_bal : Set A.G)
+theorem row_energy
     (hK : IsCompact K_bal) (s : A.BalancedIdealSection B K_bal)
     (sigma : FixedSResidue.FullLocalCharacters A)
     (hSigma : FixedSResidue.HasFiniteOrder A sigma)
@@ -181,12 +181,10 @@ theorem row_energy {F : Type} [Field F] [NumberField F]
     (∑ m ∈ rows, ‖A.balancedTransportCoeff B K_bal s T
       (fun a => c a * FixedSResidue.localInverseProduct A sigma
         ⟨s.generator a, (s.generates a).1⟩) m‖ ^ 2) =
-      ∑ a ∈ T, ‖c a‖ ^ 2 := by
-  exact (A.balanced_ideal_section_energy B K_bal hK s X hX T hT _).2.trans
+      ∑ a ∈ T, ‖c a‖ ^ 2 := (A.balanced_ideal_section_energy B K_bal hK s X hX T hT _).2.trans
     (local_twist_energy A B K_bal s sigma hSigma T c)
 
-theorem row_sum {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (B : Subgroup A.V) (K_bal : Set A.G)
+theorem row_sum
     (hK : IsCompact K_bal) (s : A.BalancedIdealSection B K_bal)
     (X : ℝ) (hX : 1 ≤ X) (T : Finset A.Exterior)
     (hT : ∀ a ∈ T, a ∈ A.balancedDyadicIdeals X)
@@ -196,14 +194,10 @@ theorem row_sum {F : Type} [Field F] [NumberField F]
     (∑ m ∈ rows, A.balancedTransportCoeff B K_bal s T c m * f m) =
       ∑ a ∈ T, c a * f (s.generator a) := by
   dsimp only
-  let rows := (probe_additive_box_rows_finite F A.Sf X
-    (A.balancedDyadicBox K_bal) (A.detector_balanced_ideal_section B K_bal hK s).1).toFinset
-  have hsub : T.image s.generator ⊆ rows :=
-    (A.balanced_ideal_section_energy B K_bal hK s X hX T hT c).1
   calc
     _ = ∑ m ∈ T.image s.generator, A.balancedTransportCoeff B K_bal s T c m * f m := by
       symm
-      apply Finset.sum_subset hsub
+      apply Finset.sum_subset ((A.balanced_ideal_section_energy B K_bal hK s X hX T hT c).1)
       intro m hm hnot
       rw [A.balancedTransportCoeff_zero B K_bal s T c m hnot, zero_mul]
     _ = ∑ a ∈ T, A.balancedTransportCoeff B K_bal s T c (s.generator a) *
@@ -215,6 +209,8 @@ theorem row_sum {F : Type} [Field F] [NumberField F]
       apply Finset.sum_congr rfl
       intro a ha
       rw [A.balancedTransportCoeff_generator B K_bal s T c a ha]
+
+end
 
 theorem conductor_fiber_gauss_sieve
     {I Q T : Type*} [Fintype I] [Fintype Q] [Fintype T]
@@ -243,7 +239,6 @@ theorem conductor_fiber_gauss_sieve
 
 theorem conductor_scale_bound (C0 U : ℝ) (hU : 2 ≤ U) :
     (max 1 (C0 * U)) ^ 2 ≤ max (C0 ^ 2) (1 / 4) * U ^ 2 := by
-  have hUp : 0 ≤ U := le_trans (by norm_num) hU
   by_cases h : 1 ≤ C0 * U
   · rw [max_eq_right h, mul_pow]
     exact mul_le_mul_of_nonneg_right (le_max_left _ _) (sq_nonneg U)
@@ -299,7 +294,7 @@ theorem row_gauss_to_ideal_bound
         ∑ a ∈ T, ‖c a‖ ^ 2 := by
   let rows := (probe_additive_box_rows_finite F A.Sf X
     (A.balancedDyadicBox K_bal) (A.detector_balanced_ideal_section B K_bal hK s).1).toFinset
-  let ct : A.Exterior → ℂ := fun a => c a * FixedSResidue.localInverseProduct A sigma
+  let ct := fun a => c a * FixedSResidue.localInverseProduct A sigma
     ⟨s.generator a, (s.generates a).1⟩
   let z : ↥rows → ℂ := fun m => A.balancedTransportCoeff B K_bal s T ct m.val
   have hv : ∀ j (i : {i : I // g i = j}),
@@ -319,11 +314,10 @@ theorem row_gauss_to_ideal_bound
     exact row_energy A B K_bal hK s sigma hSigma X hX T hT c
   dsimp only
   intro hadd
-  have hg := conductor_fiber_gauss_sieve g (fun j => A.R ⧸ q j) chi hinj psi hp ho
-    (fun j m => Ideal.Quotient.mk (q j) m.val) z
-    (fun i => ∑ a ∈ T, c a * (omega i).character a.val) hv
   calc
-    _ ≤ _ := hg
+    _ ≤ _ := (conductor_fiber_gauss_sieve g (fun j => A.R ⧸ q j) chi hinj psi hp ho
+      (fun j m => Ideal.Quotient.mk (q j) m.val) z
+      (fun i => ∑ a ∈ T, c a * (omega i).character a.val) hv)
     _ ≤ D * (X + (max 1 (C0 * U)) ^ 2) * ∑ m : ↥rows, ‖z m‖ ^ 2 := hadd z
     _ = D * (X + (max 1 (C0 * U)) ^ 2) * ∑ a ∈ T, ‖c a‖ ^ 2 := by rw [henergy]
     _ ≤ _ := conductor_scale_energy_bound D C0 X U _ hD (by linarith) hU
@@ -355,11 +349,8 @@ theorem detector_exterior_dyadic_conductor_sieve
   refine ⟨D * max 1 (max (C0 ^ 2) (1 / 4)),
     mul_nonneg hD (le_trans (by norm_num) (le_max_left _ _)), ?_⟩
   intro s X U hX hU n omega hdist hlocal hconductor c hc
-  have hprincipal : FixedSInjectivity.ExteriorPrincipalization A := by
-    intro a
-    exact ⟨⟨s.generator a, (s.generates a).1⟩, (s.generates a).2⟩
   obtain ⟨r, g, q, hfinite, chi, hqinj, hqzero, hqnorm, hchi, hp, hbridge⟩ :=
-    ExteriorDyadic.primitive_residue_fibers F A hprincipal sigma hSigma
+    ExteriorDyadic.primitive_residue_fibers F A (fun a => ⟨⟨s.generator a, (s.generates a).1⟩, (s.generates a).2⟩) sigma hSigma
       (Fin n) omega hdist hlocal (C0 * U) hconductor
   letI : ∀ j, Fintype (A.R ⧸ q j) := hfinite
   obtain ⟨psi, ho, hadd⟩ := hadditive B s X (max 1 (C0 * U)) hX

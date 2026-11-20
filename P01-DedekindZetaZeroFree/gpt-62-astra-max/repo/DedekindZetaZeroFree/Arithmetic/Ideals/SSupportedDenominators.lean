@@ -22,9 +22,7 @@ private theorem denominator_prime_generator
   have hn : v.asIdeal ^ h ≠ 0 := pow_ne_zero _ v.prime.ne_zero
   have hp : (v.asIdeal ^ h).IsPrincipal := by
     apply (ClassGroup.mk0_eq_one_iff (mem_nonZeroDivisors_of_ne_zero hn)).mp
-    have hmem : v.asIdeal ∈ (Ideal (RingOfIntegers F))⁰ :=
-      mem_nonZeroDivisors_of_ne_zero v.prime.ne_zero
-    rw [← SubmonoidClass.mk_pow v.asIdeal hmem, map_pow]
+    rw [← SubmonoidClass.mk_pow v.asIdeal (mem_nonZeroDivisors_of_ne_zero v.prime.ne_zero), map_pow]
     exact pow_card_eq_one
   obtain ⟨d, hd⟩ := (Submodule.isPrincipal_iff _).mp hp
   refine ⟨d, ?_, hd.symm⟩
@@ -32,8 +30,11 @@ private theorem denominator_prime_generator
   simp [hz] at hd
   exact hn hd
 
+section
+
+variable {F : Type*} [Field F] [NumberField F]
+
 private theorem denominator_prime_order
-    {F : Type*} [Field F] [NumberField F]
     (v w : HeightOneSpectrum (RingOfIntegers F)) (h : ℕ) [DecidableEq (HeightOneSpectrum (RingOfIntegers F))] :
     multiplicity w.asIdeal (v.asIdeal ^ h) = if w = v then h else 0 := by
   classical
@@ -42,13 +43,11 @@ private theorem denominator_prime_order
     exact multiplicity_pow_self_of_prime v.prime h
   · apply multiplicity_eq_zero_of_not_dvd
     intro hd
-    have he : w.asIdeal = v.asIdeal := associated_iff_eq.mp
+    exact hw (HeightOneSpectrum.asIdeal_injective (associated_iff_eq.mp
       ((w.irreducible.dvd_irreducible_iff_associated v.irreducible).mp
-        (w.prime.dvd_of_dvd_pow hd))
-    exact hw (HeightOneSpectrum.asIdeal_injective he)
+        (w.prime.dvd_of_dvd_pow hd))))
 
 private theorem denominator_product_order
-    {F : Type*} [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (a : HeightOneSpectrum (RingOfIntegers F) → RingOfIntegers F)
     (ha : ∀ v, a v ≠ 0) (w : HeightOneSpectrum (RingOfIntegers F)) :
@@ -66,7 +65,6 @@ private theorem denominator_product_order
       (Ideal.span_singleton_eq_bot.mp hz)
 
 private theorem denominator_clears
-    {F : Type*} [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (d : RingOfIntegers F) (hd : d ≠ 0)
     (hp : ∀ v ∈ S, 0 < multiplicity v.asIdeal (Ideal.span ({d} : Set (RingOfIntegers F))))
@@ -88,7 +86,7 @@ private theorem denominator_clears
     have habs : (k v).natAbs ≤ t := (Nat.le_add_left _ _).trans hbt
     have hneg : -(k v) ≤ ((k v).natAbs : ℤ) := by
       simpa using (Int.le_natAbs (a := -(k v)))
-    exact hneg.trans (by exact_mod_cast habs)
+    exact hneg.trans (by omega)
   have hm : (1 : ℤ) ≤ multiplicity v.val.asIdeal (Ideal.span ({d} : Set (RingOfIntegers F))) :=
     by exact_mod_cast hp v.val v.property
   have ht : (0 : ℤ) ≤ t := Nat.cast_nonneg _
@@ -111,6 +109,8 @@ private theorem denominator_clears
     ← WithZero.exp_nsmul, ← WithZero.exp_add, ← WithZero.exp_zero, WithZero.exp_le_exp]
   simp only [nsmul_eq_mul]
   nlinarith
+
+end
 
 theorem sSupported_denominator
     (F : Type*) [Field F] [NumberField F]

@@ -12,18 +12,11 @@ open DedekindZetaZeroFree NumberField
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem frequency_ext (f g : CorrectionFactors.Frequency D.context) (hu : f.u = g.u)
-    (hI : f.ideal = g.ideal) : f = g := by
-  obtain ⟨u, I, a, b, c⟩ := f
-  obtain ⟨u', I', a', b', c'⟩ := g
-  have hu' : u = u' := hu
-  have hI' : I = I' := hI
-  subst hu'
-  subst hI'
-  rfl
+    (hI : f.ideal = g.ideal) : f = g := by apply @DedekindZetaZeroFree.Quantitative.FixedData.Row.FixedData.frequency_ext_of_u_ideal <;> assumption
 
 theorem ideal_eq_of_u_eq {r r' : D.Row} (h : r.u = r'.u) :
     r.toFrequency.ideal = r'.toFrequency.ideal := by
@@ -33,10 +26,7 @@ theorem ideal_eq_of_u_eq {r r' : D.Row} (h : r.u = r'.u) :
     ← r.toFrequency.generates.2, ← r'.toFrequency.generates.2]
   exact congrArg (fun x : D.recipe.A.R => Ideal.span {x}) h
 
-theorem row_u_injective : Function.Injective (FixedData.Row.u (D := D)) := by
-  intro r r' h
-  apply FixedData.Row.ext
-  exact frequency_ext D _ _ h (ideal_eq_of_u_eq D h)
+theorem row_u_injective : Function.Injective (FixedData.Row.u (D := D)) := by apply @DedekindZetaZeroFree.Quantitative.FixedData.Row.u_injective <;> assumption
 
 theorem q_eq (r : D.Row) : D.q r = D.recipe.A.exteriorNorm r.toFrequency.ideal := by
   unfold FixedData.q
@@ -85,7 +75,7 @@ theorem q_principalRow : D.q (principalRow D) = 1 := by
   simp [Ideal.absNorm_top]
 
 theorem exists_dyad (r : D.Row) : ∃ k : ℕ, r ∈ PoissonKernel.dyadRows D ((2 : ℝ) ^ k) := by
-  obtain ⟨n, h1, h2⟩ := exists_nat_pow_near (one_le_q D r) (one_lt_two : (1 : ℝ) < 2)
+  obtain ⟨n, h1, h2⟩ := exists_nat_pow_near (one_le_q D r) one_lt_two
   refine ⟨n, h1, ?_⟩
   rw [pow_succ] at h2
   linarith
@@ -167,7 +157,7 @@ theorem count_nonprincipal_lt : ∃ K : ℝ, 0 < K ∧ ∀ X : ℝ, 1 ≤ X →
   rw [Set.ncard_coe_finset] at hle
   have hle' : (Set.ncard {r : D.Row | r.u ≠ 1 ∧ D.q r < X} : ℝ) ≤ (T.card : ℝ) := by
     exact_mod_cast hle
-  have h6 : K * (2 : ℝ) ^ M ≤ K * (2 * X) := mul_le_mul_of_nonneg_left hM2.le hK.le
+  have h6 := mul_le_mul_of_nonneg_left hM2.le hK.le
   linarith
 
 theorem count_lt : ∃ C : ℝ, 0 < C ∧ ∀ X : ℝ, 1 ≤ X →
@@ -183,11 +173,9 @@ theorem count_lt : ∃ C : ℝ, 0 < C ∧ ∀ X : ℝ, 1 ≤ X →
     · exact Set.mem_insert_of_mem _ ⟨h, hr⟩
   have hfin' := hfin.insert (principalRow D)
   refine ⟨hfin'.subset hsub, ?_⟩
-  have h1 := Set.ncard_le_ncard hsub hfin'
-  have h2 := Set.ncard_insert_le (principalRow D) {r : D.Row | r.u ≠ 1 ∧ D.q r < X}
   have h3 : (Set.ncard {r : D.Row | D.q r < X} : ℝ) ≤
       (Set.ncard {r : D.Row | r.u ≠ 1 ∧ D.q r < X} : ℝ) + 1 := by
-    exact_mod_cast h1.trans h2
+    exact_mod_cast (Set.ncard_le_ncard hsub hfin').trans (Set.ncard_insert_le (principalRow D) {r : D.Row | r.u ≠ 1 ∧ D.q r < X})
   linarith
 
 theorem dyadRows_finite (U : ℝ) : (PoissonKernel.dyadRows D U).Finite := by

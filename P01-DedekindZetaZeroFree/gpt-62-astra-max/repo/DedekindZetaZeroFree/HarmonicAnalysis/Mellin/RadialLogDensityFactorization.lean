@@ -83,9 +83,7 @@ private theorem positive_log_substitution (f : ℝ → ℂ) :
       (Real.exp (t / 2) / 2) t := by
     simpa only [div_eq_mul_inv, one_mul, id_eq] using
       ((hasDerivAt_id t).div_const 2).exp
-  have hinj : Function.Injective (fun t : ℝ => Real.exp (t / 2)) := by
-    intro t u h
-    exact (div_left_inj' (by norm_num : (2 : ℝ) ≠ 0)).mp (Real.exp_injective h)
+  have hinj : Function.Injective (fun t : ℝ => Real.exp (t / 2)) := fun t u h => (div_left_inj' (by norm_num : (2 : ℝ) ≠ 0)).mp (Real.exp_injective h)
   rw [← hrange]
   constructor
   · simpa only [integrableOn_univ, abs_of_pos (by positivity : 0 < Real.exp (_ / 2) / 2)] using
@@ -110,14 +108,17 @@ private theorem log_values (σ t : ℝ) :
  def reflected (g : SchwartzMap ℝ ℂ) : SchwartzMap ℝ ℂ :=
   SchwartzMap.compCLMOfContinuousLinearEquiv ℂ (ContinuousLinearEquiv.neg ℝ) g
 
-private theorem positive_test (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ)
+variable (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ)
+
+include hσ in
+private theorem positive_test
     (φ : ℝ → ℂ) (hφ : Continuous φ) (hb : ∃ C : ℝ, ∀ t, ‖φ t‖ ≤ C) :
     IntegrableOn (fun x : ℝ => (g x * ((x ^ 2 : ℝ) : ℂ) ^ (σ : ℂ) / (x : ℂ)) *
       φ (Real.log (x ^ 2))) (Set.Ioi 0) ∧
     (∫ x : ℝ in Set.Ioi 0, (g x * ((x ^ 2 : ℝ) : ℂ) ^ (σ : ℂ) / (x : ℂ)) *
       φ (Real.log (x ^ 2))) =
       ∫ t : ℝ, (1 / 2 : ℂ) * oneKernel g σ t * φ t := by
-  let f : ℝ → ℂ := fun x => (g x * ((x ^ 2 : ℝ) : ℂ) ^ (σ : ℂ) / (x : ℂ)) *
+  let f := fun x => (g x * ((x ^ 2 : ℝ) : ℂ) ^ (σ : ℂ) / (x : ℂ)) *
     φ (Real.log (x ^ 2))
   have heq : (fun t => (Real.exp (t / 2) / 2) • f (Real.exp (t / 2))) =
       (fun t => (1 / 2 : ℂ) * oneKernel g σ t * φ t) := by
@@ -127,15 +128,13 @@ private theorem positive_test (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ
     push_cast
     field_simp
   obtain ⟨C, hC⟩ := hb
-  have hi : Integrable (fun t : ℝ => (1 / 2 : ℂ) * oneKernel g σ t * φ t) :=
-    ((oneKernel_integrable g σ hσ).const_mul _).mul_bdd hφ.aestronglyMeasurable
-      (Filter.Eventually.of_forall hC)
   have hs := positive_log_substitution f
   rw [heq] at hs
-  exact ⟨hs.1.mpr hi, hs.2⟩
+  exact ⟨hs.1.mpr (((oneKernel_integrable g σ hσ).const_mul _).mul_bdd hφ.aestronglyMeasurable
+    (Filter.Eventually.of_forall hC)), hs.2⟩
 
-theorem real_multiplicative_haar_log_test
-    (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ) :
+include hσ in
+theorem real_multiplicative_haar_log_test :
     Integrable (rawRealSignedLogKernel g σ) ∧
       ∀ φ : ℝ → ℂ, Continuous φ → (∃ C : ℝ, ∀ t, ‖φ t‖ ≤ C) →
         (∫ x : ℝ,
@@ -218,52 +217,50 @@ private lemma pol_meas (g : SchwartzMap ℂ ℂ) (σ : ℝ) (φ : ℝ → ℂ)
 private lemma circle_norm (r θ : ℝ) (hr : 0 < r) :
     ‖(r : ℂ) * Complex.exp ((θ : ℂ) * Complex.I)‖ = r := by
   simp [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hr]
-private lemma pol_bound (g : SchwartzMap ℂ ℂ) (σ : ℝ) (φ : ℝ → ℂ)
+section
+
+variable (g : SchwartzMap ℂ ℂ) (σ : ℝ)
+
+private lemma pol_bound (φ : ℝ → ℂ)
     (C : ℝ) (hC : ∀ t, ‖φ t‖ ≤ C) (m : ℕ) (p : ℝ × ℝ) (hp : 0 < p.1) :
     ‖pol g σ φ p‖ ≤ (SchwartzMap.seminorm ℝ m 0 g * C) * p.1 ^ (2 * σ - 1 - m) := by
-  have hn := circle_norm p.1 p.2 hp
   have hs := SchwartzMap.norm_pow_mul_le_seminorm ℝ g m
     ((p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I))
-  rw [hn] at hs
-  have hg : ‖g ((p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I))‖ ≤
-      SchwartzMap.seminorm ℝ m 0 g / p.1 ^ m := (le_div_iff₀ (pow_pos hp m)).mpr (by simpa [mul_comm] using hs)
-  have hC0 : 0 ≤ C := (norm_nonneg (φ 0)).trans (hC 0)
+  rw [(circle_norm p.1 p.2 hp)] at hs
   unfold pol
   rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_eq_abs,
     abs_of_pos (Real.rpow_pos_of_pos hp _)]
   calc
     _ ≤ (SchwartzMap.seminorm ℝ m 0 g / p.1 ^ m) * p.1 ^ (2 * σ - 1) * C :=
-      mul_le_mul (mul_le_mul_of_nonneg_right hg (Real.rpow_nonneg hp.le _)) (hC _) (norm_nonneg _) (by positivity)
+      mul_le_mul (mul_le_mul_of_nonneg_right ((le_div_iff₀ (pow_pos hp m)).mpr (by simpa [mul_comm] using hs)) (Real.rpow_nonneg hp.le _)) (hC _) (norm_nonneg _) (by positivity)
     _ = _ := by rw [Real.rpow_sub hp (2 * σ - 1) (m : ℝ), Real.rpow_natCast]; ring
-private lemma pol_int (g : SchwartzMap ℂ ℂ) (σ : ℝ) (hσ : 0 < σ)
+private lemma pol_int (hσ : 0 < σ)
     (φ : ℝ → ℂ) (hφ : Continuous φ) (C : ℝ) (hC : ∀ t, ‖φ t‖ ≤ C) :
     IntegrableOn (pol g σ φ) (Ioi 0 ×ˢ Ioo (-Real.pi) Real.pi) := by
   obtain ⟨m, hm⟩ := exists_nat_gt (2 * σ)
-  have hsmall : IntegrableOn (fun r : ℝ => r ^ (2 * σ - 1)) (Ioc 0 1) :=
-    (intervalIntegral.intervalIntegrable_rpow' (a := 0) (b := 1) (by linarith : -1 < 2 * σ - 1)).1
   have hlarge : IntegrableOn (fun r : ℝ => r ^ (2 * σ - 1 - m)) (Ioi 1) :=
     integrableOn_Ioi_rpow_of_lt (by linarith) (by norm_num)
-  have hθ : IntegrableOn (fun _ : ℝ => (1 : ℝ)) (Ioo (-Real.pi) Real.pi) := integrable_const _
-  have h₁ : IntegrableOn (pol g σ φ) (Ioc 0 1 ×ˢ Ioo (-Real.pi) Real.pi) := by
+  let Ioo₀ := Ioo (-Real.pi) Real.pi
+  have hθ : IntegrableOn (fun _ : ℝ => (1 : ℝ)) (Ioo₀) := integrable_const _
+  have h₁ : IntegrableOn (pol g σ φ) (Ioc 0 1 ×ˢ Ioo₀) := by
     rw [IntegrableOn, volume_eq_prod, ← Measure.prod_restrict]
-    apply ((hsmall.const_mul (SchwartzMap.seminorm ℝ 0 0 g * C)).mul_prod hθ).mono'
+    apply ((((intervalIntegral.intervalIntegrable_rpow' (a := 0) (b := 1) (by linarith : -1 < 2 * σ - 1)).1).const_mul (SchwartzMap.seminorm ℝ 0 0 g * C)).mul_prod hθ).mono'
     · rw [Measure.prod_restrict, ← volume_eq_prod]; exact (pol_meas g σ φ hφ).restrict
     · have ha := ae_restrict_mem (μ := (volume : Measure (ℝ × ℝ))) ((measurableSet_Ioc (a := (0 : ℝ)) (b := 1)).prod (measurableSet_Ioo (a := -Real.pi) (b := Real.pi)))
       rw [volume_eq_prod, ← Measure.prod_restrict] at ha
       filter_upwards [ha] with p hp
       have hp := hp.1
       simpa [mul_one] using pol_bound g σ φ C hC 0 p hp.1
-  have h₂ : IntegrableOn (pol g σ φ) (Ioi 1 ×ˢ Ioo (-Real.pi) Real.pi) := by
+  have h₂ : IntegrableOn (pol g σ φ) (Ioi 1 ×ˢ Ioo₀) := by
     rw [IntegrableOn, volume_eq_prod, ← Measure.prod_restrict]
     apply ((hlarge.const_mul (SchwartzMap.seminorm ℝ m 0 g * C)).mul_prod hθ).mono'
     · rw [Measure.prod_restrict, ← volume_eq_prod]; exact (pol_meas g σ φ hφ).restrict
-    · have ha := ae_restrict_mem (μ := (volume : Measure (ℝ × ℝ))) ((measurableSet_Ioi (a := (1 : ℝ))).prod (measurableSet_Ioo (a := -Real.pi) (b := Real.pi)))
+    · have ha := ae_restrict_mem (μ := volume) ((measurableSet_Ioi (a := (1 : ℝ))).prod (measurableSet_Ioo (a := -Real.pi) (b := Real.pi)))
       rw [volume_eq_prod, ← Measure.prod_restrict] at ha
       filter_upwards [ha] with p hp
-      have hp := hp.1
-      simpa [mul_one] using pol_bound g σ φ C hC m p (lt_trans (by norm_num) hp)
-  have heq : (Ioc (0 : ℝ) 1 ×ˢ Ioo (-Real.pi) Real.pi) ∪
-      (Ioi 1 ×ˢ Ioo (-Real.pi) Real.pi) = Ioi 0 ×ˢ Ioo (-Real.pi) Real.pi := by
+      simpa [mul_one] using pol_bound g σ φ C hC m p (lt_trans (by norm_num) hp.1)
+  have heq : (Ioc (0 : ℝ) 1 ×ˢ Ioo₀) ∪
+      (Ioi 1 ×ˢ Ioo₀) = Ioi 0 ×ˢ Ioo₀ := by
     ext p
     simp only [mem_union, mem_prod, mem_Ioc, mem_Ioi, mem_Ioo]
     constructor
@@ -276,6 +273,8 @@ private lemma pol_int (g : SchwartzMap ℂ ℂ) (σ : ℝ) (hσ : 0 < σ)
       · exact Or.inr ⟨lt_of_not_ge hp, h.2⟩
   rw [← heq]
   exact h₁.union h₂
+
+end
 private lemma circle_integral_shift (g : ℂ → ℂ) (r : ℝ) :
     (∫ θ : ℝ in Ioo (-Real.pi) Real.pi, g ((r : ℂ) * Complex.exp ((θ : ℂ) * Complex.I))) =
       ∫ θ : ℝ in Icc 0 (2 * Real.pi), g ((r : ℂ) * Complex.exp ((θ : ℂ) * Complex.I)) := by
@@ -283,7 +282,7 @@ private lemma circle_integral_shift (g : ℂ → ℂ) (r : ℝ) :
     intro θ
     apply congrArg g
     apply congrArg (fun z : ℂ => (r : ℂ) * z)
-    simpa only [Complex.ofReal_add, Complex.ofReal_mul, Complex.ofReal_ofNat] using
+    simpa using
       Complex.exp_mul_I_periodic (θ : ℂ)
   have hi := hp.intervalIntegral_add_eq (-Real.pi) 0
   simp only [zero_add, show -Real.pi + 2 * Real.pi = Real.pi by ring] at hi
@@ -355,9 +354,7 @@ private theorem radialLogIdentity
       (Real.exp (t / 2) / 2) t := by
     simpa only [div_eq_mul_inv, one_mul, id_eq] using
       ((hasDerivAt_id t).div_const 2).exp
-  have hinj : Function.Injective (fun t : ℝ => Real.exp (t / 2)) := by
-    intro t u h
-    exact (div_left_inj' (by norm_num : (2 : ℝ) ≠ 0)).mp (Real.exp_injective h)
+  have hinj : Function.Injective (fun t : ℝ => Real.exp (t / 2)) := fun t u h => (div_left_inj' (by norm_num : (2 : ℝ) ≠ 0)).mp (Real.exp_injective h)
   rw [← hrange]
   rw [integral_image_eq_integral_abs_deriv_smul MeasurableSet.univ
     (fun t _ => (hd t).hasDerivWithinAt) hinj.injOn]
@@ -479,7 +476,7 @@ theorem integrable_weight_pushforward_finite
       (∃ C : ℝ, ∀ t, ‖φ t‖ ≤ C) →
       (∫ x, a x * φ (L x) ∂ν) = ∫ s, w s * φ s ∂μ := by
   let b := ha.aestronglyMeasurable.mk a
-  have hb : Measurable b := ha.aestronglyMeasurable.measurable_mk
+  have hb := ha.aestronglyMeasurable.measurable_mk
   have hab : a =ᵐ[ν] b := ha.aestronglyMeasurable.ae_eq_mk
   have hbi : Integrable b ν := ha.congr hab
   let u : Fin 4 → X → ℝ := ![
@@ -558,18 +555,12 @@ theorem radial_kernel_test_continuous_bounded
       ∃ B : ℝ, ∀ s : ℝ, ‖∫ r : ℝ, k r * φ (r + s)‖ ≤ B := by
   obtain ⟨C, hC⟩ := hb
   have hmeas : ∀ s : ℝ, AEStronglyMeasurable
-      (fun r : ℝ => k r * φ (r + s)) volume := by
-    intro s
-    exact hk.aestronglyMeasurable.mul
+      (fun r : ℝ => k r * φ (r + s)) volume := fun s => hk.aestronglyMeasurable.mul
       (hφ.comp (continuous_id.add continuous_const)).aestronglyMeasurable
-  have hbound : ∀ s : ℝ, ∀ᵐ r : ℝ, ‖k r * φ (r + s)‖ ≤ ‖k r‖ * C := by
-    intro s
-    exact Filter.Eventually.of_forall fun r => by
+  have hbound : ∀ s : ℝ, ∀ᵐ r : ℝ, ‖k r * φ (r + s)‖ ≤ ‖k r‖ * C := fun s => Filter.Eventually.of_forall fun r => by
       rw [norm_mul]
       exact mul_le_mul_of_nonneg_left (hC _) (norm_nonneg _)
-  have hki : ∀ s : ℝ, Integrable (fun r : ℝ => k r * φ (r + s)) := by
-    intro s
-    exact hk.mul_bdd
+  have hki : ∀ s : ℝ, Integrable (fun r : ℝ => k r * φ (r + s)) := fun s => hk.mul_bdd
       (hφ.comp (continuous_id.add continuous_const)).aestronglyMeasurable
       (Filter.Eventually.of_forall fun r => hC _)
   constructor

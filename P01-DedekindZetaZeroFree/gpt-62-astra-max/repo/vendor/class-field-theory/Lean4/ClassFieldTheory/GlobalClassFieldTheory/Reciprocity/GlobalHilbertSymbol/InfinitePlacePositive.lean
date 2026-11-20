@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -39,19 +35,19 @@ open KummerTheory
 
 variable (K : Type) [Field K] [NumberField K]
 
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+    (v : InfinitePlace K) (a b : Kˣ) (hn : (n : ℕ) = 2) (hv : v.IsReal)
+    (hb : 0 < InfinitePlace.embedding_of_isReal hv (b : K))
+
+include hn hb in
 /-- In the quadratic real case, a positive radicand makes the infinite-place
 Kummer root character trivial. -/
-theorem infinitePlaceKummerRootCharacter_eq_one_of_real_of_radical_pos
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (v : InfinitePlace K) (a b : Kˣ)
-    (hn : (n : ℕ) = 2) (hv : v.IsReal)
-    (hb : 0 < InfinitePlace.embedding_of_isReal hv (b : K)) :
+theorem infinitePlaceKummerRootCharacter_eq_one_of_real_of_radical_pos :
     infinitePlaceKummerRootCharacter K n hnK hmu v a b = 1 := by
   let L := chosenSimpleKummerExtension K n hnK b
-  let : FiniteDimensional K L :=
+  let :=
     chosenSimpleKummerExtension_finiteDimensional K n hnK b
-  let : IsAbelianGalois K L :=
+  let :=
     chosenSimpleKummerExtension_isAbelianGalois K n hnK hmu b
   let : NumberField L := NumberField.of_module_finite K L
   let a_v : v.Completionˣ :=
@@ -77,33 +73,26 @@ theorem infinitePlaceKummerRootCharacter_eq_one_of_real_of_radical_pos
     exact haNorm
   have hArtin :
       chosenInfinitePlaceArtinMonoidHom
-          (K := K) (L := L) v a_v = 1 :=
+            v a_v = 1 :=
     MonoidHom.mem_ker.mp haKer
   change
     (nthRootsSubgroupEquivOfPrimitiveRoots K L n hmu).symm
         (chosenSimpleKummerRootCharacter K n hnK hmu b
           (chosenInfinitePlaceArtinMonoidHom
-            (K := K) (L := L) v a_v)) = 1
+              v a_v)) = 1
   rw [hArtin, map_one, map_one]
 
+include hn hb in
 /-- The explicit real Hilbert factor and the Kummer root character agree
 when the quadratic radicand is positive. -/
-theorem infinitePlaceKummerRootCharacter_localGlobal_of_real_of_radical_pos
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (v : InfinitePlace K) (a b : Kˣ)
-    (hn : (n : ℕ) = 2) (hv : v.IsReal)
-    (hb : 0 < InfinitePlace.embedding_of_isReal hv (b : K)) :
+theorem infinitePlaceKummerRootCharacter_localGlobal_of_real_of_radical_pos :
     infinitePlaceKummerRootCharacter K n hnK hmu v a b =
       infinitePlaceHilbertSymbol K n v a b := by
   rw [infinitePlaceKummerRootCharacter_eq_one_of_real_of_radical_pos
     K n hnK hmu v a b hn hv hb]
-  have hbNotNeg :
-      ¬InfinitePlace.embedding_of_isReal hv (b : K) < 0 :=
-    not_lt_of_ge hb.le
   symm
   apply Subtype.ext
-  simp [infinitePlaceHilbertSymbol, hn, hv, hbNotNeg]
+  simp [infinitePlaceHilbertSymbol, hn, hv, (not_lt_of_ge hb.le)]
 
 end Reciprocity
 end GlobalClassFieldTheory

@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -40,16 +38,17 @@ private theorem subgroup_map_toAddSubgroup_mulEquiv
     (S : Subgroup G) (e : G ≃* G₂) :
     (S.map e.toMonoidHom).toAddSubgroup =
       S.toAddSubgroup.map
-        (MulEquiv.toAdditive e).toAddMonoidHom := by
-  exact (MonoidHom.coe_toAdditive_map e.toMonoidHom S).symm
+        (MulEquiv.toAdditive e).toAddMonoidHom := (MonoidHom.coe_toAdditive_map e.toMonoidHom S).symm
+
+section
+
+variable (H : Subgroup (IdeleClassGroup K)) (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
+    [H.FiniteIndex]
 
 /-- The idèle-class transport attached to the selected base equivalence.
 Naming this endpoint once keeps the fixed-field instance tower out of
 downstream definitional-equality checks. -/
- noncomputable def closedFiniteIndexClassFieldIdeleClassEquiv
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+ noncomputable def closedFiniteIndexClassFieldIdeleClassEquiv :
     IdeleClassGroup K ≃*
       IdeleClassGroup
         (closedFiniteIndexClassFieldBase
@@ -60,10 +59,7 @@ downstream definitional-equality checks. -/
 
 /-- Additive form of the selected class-field norm-range computation, with
 the concrete idèle-class endpoint hidden behind one typed definition. -/
-private theorem closedFiniteIndexClassField_ideleClassNorm_range_toAddSubgroup
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+private theorem closedFiniteIndexClassField_ideleClassNorm_range_toAddSubgroup :
     (_root_.ideleClassNorm
       (closedFiniteIndexClassFieldBase
         (K := K) H hclosed)
@@ -83,6 +79,8 @@ private theorem closedFiniteIndexClassField_ideleClassNorm_range_toAddSubgroup
       (closedFiniteIndexClassFieldNormAmbient_normRange_le
         (K := K) H hclosed))
 
+end
+
 /-- The represented abstract norm subgroup as the same named actual norm
 range.  This wrapper uses the lightweight named-field API, avoiding the
 dependent `letI` tower in the raw fixed-field comparison theorem. -/
@@ -101,21 +99,19 @@ private theorem
           (K := K) H hclosed)
         (closedFiniteIndexClassField
           (K := K) H hclosed)).range.toAddSubgroup := by
-  simpa only [closedFiniteIndexClassFieldBaseSubgroup,
-    closedFiniteIndexClassFieldBase,
-    closedFiniteIndexClassField] using
+  simpa using
     (ordinaryIdeleClassNormSubgroup_eq_namedNormRange
       (closedFiniteIndexClassFieldReciprocityFiniteAbstractField
-        (K := K) H hclosed)
+         H hclosed)
       (closedFiniteIndexClassFieldSubextension
-        (K := K) H hclosed))
+         H hclosed))
+
+variable (H : Subgroup (IdeleClassGroup K)) (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
+    [H.FiniteIndex]
 
 /-- Over the canonical fixed-field base, the determinant-norm range of
 the selected class field is the transport of `H`. -/
-theorem closedFiniteIndexClassField_ideleClassNorm_range_over_base
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+theorem closedFiniteIndexClassField_ideleClassNorm_range_over_base :
     (_root_.ideleClassNorm
       (closedFiniteIndexClassFieldBase
         (K := K) H hclosed)
@@ -128,51 +124,39 @@ theorem closedFiniteIndexClassField_ideleClassNorm_range_over_base
   change
     (_root_.ideleClassNorm
       (closedFiniteIndexClassFieldBase
-        (K := K) H hclosed)
+         H hclosed)
       (closedFiniteIndexClassField
-        (K := K) H hclosed)).range =
+         H hclosed)).range =
       H.map
         (closedFiniteIndexClassFieldIdeleClassEquiv
-          (K := K) H hclosed).toMonoidHom
+           H hclosed).toMonoidHom
   apply
-    (Subgroup.toAddSubgroup :
-      Subgroup
-          (IdeleClassGroup
-            (closedFiniteIndexClassFieldBase
-              (K := K) H hclosed)) ≃o
-        AddSubgroup
-          (Additive
-            (IdeleClassGroup
-            (closedFiniteIndexClassFieldBase
-                (K := K) H hclosed)))).injective
+    Subgroup.toAddSubgroup.injective
   calc
     (_root_.ideleClassNorm
         (closedFiniteIndexClassFieldBase
-          (K := K) H hclosed)
+           H hclosed)
         (closedFiniteIndexClassField
-          (K := K) H hclosed)).range.toAddSubgroup =
+           H hclosed)).range.toAddSubgroup =
         H.toAddSubgroup.map
           (MulEquiv.toAdditive
             (closedFiniteIndexClassFieldIdeleClassEquiv
-              (K := K) H hclosed)).toAddMonoidHom :=
+               H hclosed)).toAddMonoidHom :=
       closedFiniteIndexClassField_ideleClassNorm_range_toAddSubgroup
-        (K := K) H hclosed
+         H hclosed
     _ =
         (H.map
           (closedFiniteIndexClassFieldIdeleClassEquiv
-            (K := K) H hclosed).toMonoidHom).toAddSubgroup :=
+             H hclosed).toMonoidHom).toAddSubgroup :=
       (subgroup_map_toAddSubgroup_mulEquiv H
         (closedFiniteIndexClassFieldIdeleClassEquiv
-          (K := K) H hclosed)).symm
+           H hclosed)).symm
 
 /-- The selected subextension is a literal preimage of the transported
 closed finite-index subgroup under the ordinary norm-subgroup
 correspondence. -/
 theorem
-    ordinaryIdeleClassNormSubgroup_closedFiniteIndexClassFieldSubextension
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+    ordinaryIdeleClassNormSubgroup_closedFiniteIndexClassFieldSubextension :
     ordinaryIdeleClassNormSubgroup
         (closedFiniteIndexClassFieldReciprocityFiniteAbstractField
           (K := K) H hclosed)
@@ -186,33 +170,33 @@ theorem
   change
     ordinaryIdeleClassNormSubgroup
         (closedFiniteIndexClassFieldReciprocityFiniteAbstractField
-          (K := K) H hclosed)
+           H hclosed)
         (closedFiniteIndexClassFieldSubextension
-          (K := K) H hclosed) =
+           H hclosed) =
       H.toAddSubgroup.map
         (MulEquiv.toAdditive
           (closedFiniteIndexClassFieldIdeleClassEquiv
-            (K := K) H hclosed)).toAddMonoidHom
+             H hclosed)).toAddMonoidHom
   calc
     ordinaryIdeleClassNormSubgroup
         (closedFiniteIndexClassFieldReciprocityFiniteAbstractField
-          (K := K) H hclosed)
+           H hclosed)
         (closedFiniteIndexClassFieldSubextension
-          (K := K) H hclosed) =
+           H hclosed) =
         (_root_.ideleClassNorm
           (closedFiniteIndexClassFieldBase
-            (K := K) H hclosed)
+             H hclosed)
           (closedFiniteIndexClassField
-            (K := K) H hclosed)).range.toAddSubgroup :=
+             H hclosed)).range.toAddSubgroup :=
       ordinaryIdeleClassNormSubgroup_closedFiniteIndexClassField_eq_range
-        (K := K) H hclosed
+         H hclosed
     _ =
         H.toAddSubgroup.map
           (MulEquiv.toAdditive
             (closedFiniteIndexClassFieldIdeleClassEquiv
-              (K := K) H hclosed)).toAddMonoidHom :=
+               H hclosed)).toAddMonoidHom :=
       closedFiniteIndexClassField_ideleClassNorm_range_toAddSubgroup
-        (K := K) H hclosed
+         H hclosed
 end GlobalClassFields
 end GlobalClassFieldTheory
 

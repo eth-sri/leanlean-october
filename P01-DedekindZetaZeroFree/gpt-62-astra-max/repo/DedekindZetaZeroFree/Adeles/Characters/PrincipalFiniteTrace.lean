@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.CodifferentTraceDuality
 
 public import DedekindZetaZeroFree.Adeles.Approximation.FiniteAdeleDensity
 public import DedekindZetaZeroFree.Moments.Probes.PrincipalProbeAndSeparatedMellinSeries
@@ -14,20 +15,9 @@ namespace DedekindZetaZeroFree.NormalizedProbe.PrincipalData
 theorem finiteSf_Sinteger_diagonal_denseRange {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) :
     DenseRange (fun r : A.R => fun v : ↥A.Sf =>
-      algebraMap F (v.val.adicCompletion F) (r : F)) := by
-  exact PoissonSFiniteDensity.diagonal_denseRange F A.Sf
+      algebraMap F (v.val.adicCompletion F) (r : F)) := PoissonSFiniteDensity.diagonal_denseRange F A.Sf
 
-private theorem archPhase_eq_trace {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (x : InfiniteAdeleRing F) :
-    ProbeAdditive.archPhase F x = ∏ w, (archTraceCharacter w (x w) : ℂ) := by
-  simp only [archTraceCharacter_of_isComplex _ (A.complex_place _), Circle.coe_exp,
-    InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply]
-  rw [ProbeAdditive.archPhase, ← Complex.exp_sum]
-  congr 1
-  simp only [Complex.ofReal_sum, Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
-  apply Finset.sum_congr rfl
-  intro w hw
-  ring
+private alias archPhase_eq_trace := DedekindZetaZeroFree.CodifferentResidueSieve.archPhase_eq_trace
 
 set_option backward.isDefEq.respectTransparency false in
 
@@ -48,7 +38,7 @@ theorem finiteTrace_eq_localTraceCharacter {F : Type} [Field F] [NumberField F]
     intro w hw
     exact continuous_subtype_val.comp
       ((ResidueTrace.continuous_localTraceCharacter w.val).comp (continuous_apply w))
-  have heq : f = g := (finiteSf_Sinteger_diagonal_denseRange A).equalizer hf hg (by
+  have heq := (finiteSf_Sinteger_diagonal_denseRange A).equalizer hf hg (by
     funext r
     have hp := P.traceCompatible r
     have hc := congrArg (fun z : Circle => (z : ℂ)) (A.eS_integer hS r)
@@ -70,9 +60,7 @@ theorem finiteTrace_eq_localTraceCharacter {F : Type} [Field F] [NumberField F]
       (algebraMap F w.Completion (r : F)) : ℂ)) *
       g (fun w => algebraMap F (w.val.adicCompletion F) (r : F)) = 1 at hc
     rw [← archPhase_eq_trace A] at hc
-    have hn : ProbeAdditive.archPhase F (sLocalDiagonal F A.Sf (r : F)).1 ≠ 0 :=
-      Complex.exp_ne_zero _
-    exact mul_left_cancel₀ hn (hp.trans hc.symm))
+    exact mul_left_cancel₀ (Complex.exp_ne_zero _) (hp.trans hc.symm))
   ext x
   let y : (w : ↥A.Sf) → w.val.adicCompletion F := Pi.single v x
   have h := congr_fun heq y

@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -34,19 +32,6 @@ namespace LocalField
 
 variable {K : Type u} [Field K]
 
-/-- A local-field package with its chosen valuation restricted to the actual
-multiplicative range. -/
-def mrangeRestrict (F : LocalField.{u, v} K) :
-    LocalField.{u, v} K := by
-  let G : CompleteDVF.{u, v} K :=
-    (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictCompleteDVF F.toCompleteDVF)
-  haveI : Finite G.residueField := by
-    simpa [G, CompleteDVF.mrangeRestrictCompleteDVF,
-      CompleteDVF.residueField, CompleteDVF.valuationSubring,
-      CompleteDVF.toDVF] using
-      (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_residueField_finite F.toCompleteDVF)
-  exact { toCompleteDVF := G }
-
 /-- The range-restricted topology attached to a local-field package is proper. -/
 theorem mrangeRestrict_properSpace
     (F : LocalField.{u, v} K) :
@@ -56,9 +41,7 @@ theorem mrangeRestrict_properSpace
       (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F.toCompleteDVF)
     letI : NontriviallyNormedField K :=
       (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_nontriviallyNormedField F.toCompleteDVF)
-    ProperSpace K := by
-  exact
-    (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_properSpace_of_residueField_finite F.toCompleteDVF)
+    ProperSpace K := (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_properSpace_of_residueField_finite F.toCompleteDVF)
 
 /-- The range-restricted topology attached to a local-field package is complete. -/
 theorem mrangeRestrict_completeSpace
@@ -69,10 +52,7 @@ theorem mrangeRestrict_completeSpace
       (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F.toCompleteDVF)
     letI : NontriviallyNormedField K :=
       (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_nontriviallyNormedField F.toCompleteDVF)
-    CompleteSpace K := by
-  exact
-    (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_completeSpace_of_residueField_finite F.toCompleteDVF)
-
+    CompleteSpace K := (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_completeSpace_of_residueField_finite F.toCompleteDVF)
 
 end LocalField
 end LocalFieldTheory.DiscreteValuationField

@@ -12,9 +12,7 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 8000000
 set_option synthInstance.maxHeartbeats 200000
 namespace DedekindZetaZeroFree.NativeScalarFiniteSamplingGeneration
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductCovariantSlices renaming contraction → contraction
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductCovariantSlices renaming contractionMultilinear → contractionMultilinear
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductCovariantSlices renaming contraction_mapSingle → contraction_mapSingle
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductCovariantSlices (contraction contractionMultilinear contraction_mapSingle)
 
 section Algebra
 variable {ι : Type} [Fintype ι] [DecidableEq ι] {V : ι → Type}
@@ -34,7 +32,7 @@ private theorem contraction_coordinate (q : ι) (p : ∀ i, κ i)
     simp only [map_smul, Finsupp.smul_apply, smul_eq_mul, Module.Basis.coord_apply]
     rw [Finset.prod_erase_mul _ _ (Finset.mem_univ q)]
   | add x y hx hy =>
-    simpa only [map_add, Finsupp.add_apply] using congrArg₂ (· + ·) hx hy
+    simpa using congrArg₂ (· + ·) hx hy
 
 include b in
 private theorem mapSingle_eq_of_contractions (q : ι) (A : V q →ₗ[ℂ] V q)
@@ -57,8 +55,7 @@ private theorem map_eq_of_mapSingle (A : ∀ i, V i →ₗ[ℂ] V i)
   have h (s : Finset ι) :
       PiTensorProduct.map (fun i => if i ∈ s then A i else LinearMap.id) x = x := by
     induction s using Finset.induction_on with
-    | empty => simp only [Finset.notMem_empty, ↓reduceIte, PiTensorProduct.map_id,
-        LinearMap.id_apply]
+    | empty => simp
     | @insert q s hq hs =>
       have he : (fun i => if i ∈ insert q s then A i else LinearMap.id) =
           fun i => (if i ∈ s then A i else LinearMap.id).comp
@@ -115,37 +112,17 @@ private theorem function_contraction_formula (q : ι)
     apply Finset.prod_congr rfl
     intro i hi
     rw [Function.update_of_ne (Finset.ne_of_mem_erase hi)]
-  | add x y hx hy => simpa only [map_add, Pi.add_apply] using congrArg₂ (· + ·) hx hy
+  | add x y hx hy => simpa using congrArg₂ (· + ·) hx hy
 end Functions
 
 section Actual
 open scoped NumberField
 open NumberField
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Cover → Cover
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Fiber → Fiber
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Source → Source
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductCover → ProductCover
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductFiber → ProductFiber
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductFunctions → ProductFunctions
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming tensorEvaluation → tensorEvaluation
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming evaluation → evaluation
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming productCovariance → productCovariance
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming tensorEvaluation_covariant → tensorEvaluation_covariant
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming tensorEvaluation_smooth → tensorEvaluation_smooth
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductLocalFixedLevel renaming LocalCosets → LocalCosets
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductLocalFixedLevel renaming localCosets_finite → localCosets_finite
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductLocalFixedLevel renaming localFixedLevel → localFixedLevel
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductLocalFixedLevel renaming localSampling → localSampling
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductLocalFixedLevel renaming localSampling_injective → localSampling_injective
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductLocalFixedLevel renaming tensorCosetSampling → tensorCosetSampling
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductLocalFixedLevel renaming tensorCosetSampling_formula → tensorCosetSampling_formula
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductLocalFixedLevel renaming tensorEvaluation_injective → tensorEvaluation_injective
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductFixedLevel renaming productFixedLevel → productFixedLevel
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductFixedLevel renaming compactCosetSampling → compactCosetSampling
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductFixedLevel renaming productSection_mem_finite_level → productSection_mem_finite_level
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductCovariantSlices renaming contractedColumn_mem_sampling_range → contractedColumn_mem_sampling_range
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteFixedTensorSection renaming fixedTensorSection → fixedTensorSection
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteFixedTensorSection renaming fixedTensorSection_mem_range_iff → fixedTensorSection_mem_range_iff
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation (Cover Fiber Source ProductCover ProductFiber ProductFunctions tensorEvaluation evaluation productCovariance tensorEvaluation_covariant tensorEvaluation_smooth)
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductLocalFixedLevel (LocalCosets localCosets_finite localFixedLevel localSampling localSampling_injective tensorCosetSampling tensorCosetSampling_formula tensorEvaluation_injective)
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductFixedLevel (productFixedLevel compactCosetSampling productSection_mem_finite_level)
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductCovariantSlices (contractedColumn_mem_sampling_range)
+open _root_.DedekindZetaZeroFree.NativeScalarFiniteFixedTensorSection (fixedTensorSection fixedTensorSection_mem_range_iff)
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
   (M : FourierContinuation.SourceReconstruction.InducingData F ζ hζ)
@@ -160,8 +137,11 @@ local instance (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S) :
     Fintype (LocalCosets F ζ hζ M S U q) :=
   @Fintype.ofFinite _ (localCosets_finite F ζ hζ M S U q)
 
+section
+
+variable (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
+
 private theorem tensorSampling_eq_functionTensor
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
     (x : PiTensorProduct ℂ (fun q => localFixedLevel F ζ hζ M S U q)) :
     tensorCosetSampling F ζ hζ M S U x =
       functionTensorEquiv (PiTensorProduct.map (fun q => localSampling F ζ hζ M S U q) x) := by
@@ -176,32 +156,32 @@ private theorem tensorSampling_eq_functionTensor
         (PiTensorProduct.tprod ℂ (fun q => (x q).val)) = _
     simp only [PiTensorProduct.map_tprod]
     rfl
-  | add x y hx hy => simpa only [map_add, Pi.add_apply] using congrArg₂ (· + ·) hx hy
+  | add x y hx hy => simpa using congrArg₂ (· + ·) hx hy
 
 private theorem compactSampling_mem_tensorSampling
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
     (f : productFixedLevel F ζ hζ M S U) :
     compactCosetSampling F ζ hζ M S U f ∈ (tensorCosetSampling F ζ hζ M S U).range := by
   let sample q := localSampling F ζ hζ M S U q
-  let retract q := LinearMap.leftInverse (K := ℂ) (sample q)
+  let retract q := LinearMap.leftInverse (sample q)
   have hleft q : (retract q).comp (sample q) = LinearMap.id :=
-    LinearMap.leftInverse_comp_of_inj (K := ℂ)
+    LinearMap.leftInverse_comp_of_inj
       (LinearMap.ker_eq_bot.mpr (localSampling_injective F ζ hζ M S U q))
   let A q := (sample q).comp (retract q)
-  have hfix q (v : LocalCosets F ζ hζ M S U q → Fiber F ζ hζ M S q)
+  let LocalCosets₀ := LocalCosets F ζ hζ M S U
+  have hfix q (v : LocalCosets₀ q → Fiber F ζ hζ M S q)
       (hv : v ∈ (sample q).range) : A q v = v := by
     obtain ⟨w, rfl⟩ := hv
     change sample q (((retract q).comp (sample q)) w) = _
     rw [hleft, LinearMap.id_apply]
   let b q := Module.Basis.ofVectorSpace ℂ (Fiber F ζ hζ M S q)
-  let B q := Pi.basis (fun _ : LocalCosets F ζ hζ M S U q => b q)
+  let B q := Pi.basis (fun _ : LocalCosets₀ q => b q)
   let φ := compactCosetSampling F ζ hζ M S U f
   let x := functionTensorEquiv.symm φ
   have hx : functionTensorEquiv x = φ := LinearEquiv.apply_symm_apply _ _
   have hsingle q : PiTensorProduct.map (Function.update
       (fun i => LinearMap.id : ∀ i : S,
-        (LocalCosets F ζ hζ M S U i → Fiber F ζ hζ M S i) →ₗ[ℂ]
-        (LocalCosets F ζ hζ M S U i → Fiber F ζ hζ M S i)) q (A q)) x = x := by
+        (LocalCosets₀ i → Fiber F ζ hζ M S i) →ₗ[ℂ]
+        (LocalCosets₀ i → Fiber F ζ hζ M S i)) q (A q)) x = x := by
     apply mapSingle_eq_of_contractions B q (A q) x
     intro p
     have hcoords : (fun i => (B i).coord (p i)) = fun i =>
@@ -211,14 +191,11 @@ private theorem compactSampling_mem_tensorSampling
       rfl
     rw [hcoords]
     apply hfix
-    have hc := contractedColumn_mem_sampling_range F ζ hζ M S U q
+    convert (contractedColumn_mem_sampling_range F ζ hζ M S U q
       (fun i => (b i).coord (p i).2)
-      (fun i => ((p i).1.out : Cover F ζ hζ S i)) f
-    convert hc using 1
+      (fun i => ((p i).1.out : Cover F ζ hζ S i)) f) using 1
     funext a
     rw [function_contraction_formula, hx]
-    change contraction q (fun i => (b i).coord (p i).2)
-      (f.val (fun i => ((Function.update (fun i => (p i).1) q a i).out : Cover F ζ hζ S i))) = _
     apply congrArg (contraction q (fun i => (b i).coord (p i).2))
     apply congrArg f.val
     funext i
@@ -226,18 +203,16 @@ private theorem compactSampling_mem_tensorSampling
     · subst i
       simp
     · simp [hi]
-  have hA : PiTensorProduct.map A x = x := map_eq_of_mapSingle A x hsingle
   refine ⟨PiTensorProduct.map retract x, ?_⟩
   rw [tensorSampling_eq_functionTensor]
   change functionTensorEquiv (((PiTensorProduct.map sample).comp (PiTensorProduct.map retract)) x) = φ
-  rw [← PiTensorProduct.map_comp, hA, hx]
+  rw [← PiTensorProduct.map_comp, (map_eq_of_mapSingle A x hsingle), hx]
 
-private theorem fixedTensorSection_surjective
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) :
-    Function.Surjective (fixedTensorSection F ζ hζ M S U) := by
-  intro f
-  exact (fixedTensorSection_mem_range_iff F ζ hζ M S U f).mpr
+private theorem fixedTensorSection_surjective :
+    Function.Surjective (fixedTensorSection F ζ hζ M S U) := fun f => (fixedTensorSection_mem_range_iff F ζ hζ M S U f).mpr
     (compactSampling_mem_tensorSampling F ζ hζ M S U f)
+
+end
 
 private theorem tensorEvaluation_surjective_sections
     (f : ProductFunctions F ζ hζ M S)

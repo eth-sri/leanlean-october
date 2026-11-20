@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -34,18 +32,22 @@ open ValuationTheory.DiscreteValuationField
 namespace WithZeroValuation
 
 variable {R : Type u}
-variable {Gamma : Type x} [LinearOrderedCommGroupWithZero Gamma]
+    {Gamma : Type x} [LinearOrderedCommGroupWithZero Gamma]
 
 section Field
 
 variable [Field R]
+
+section
+
+variable (v : _root_.Valuation R Gamma)
 
 /-- Restrict a valuation's codomain to its actual multiplicative range.
 
 This removes irrelevant ambient value-group elements.  It is the value-group
 normalization needed before finite-dimensional closedness can be used for an
 abstract chosen local-field valuation. -/
-def mrangeRestrict (v : _root_.Valuation R Gamma) :
+def mrangeRestrict :
     _root_.Valuation R (MonoidHom.mrange v.toMonoidWithZeroHom) where
   toFun r := ⟨v r, ⟨r, rfl⟩⟩
   map_one' := by
@@ -63,24 +65,19 @@ def mrangeRestrict (v : _root_.Valuation R Gamma) :
 
 /-- The defining evaluation formula for `mrangeRestrict` is `(mrangeRestrict v x : Gamma) = v x`. -/
 @[simp]
-theorem mrangeRestrict_apply (v : _root_.Valuation R Gamma) (x : R) :
+theorem mrangeRestrict_apply (x : R) :
     (mrangeRestrict v x : Gamma) = v x :=
   rfl
 
 /-- Passing to the actual multiplicative range does not change the valuation
 subring predicate. -/
-theorem mem_mrangeRestrict_valuationSubring_iff
-    (v : _root_.Valuation R Gamma) (x : R) :
+theorem mem_mrangeRestrict_valuationSubring_iff (x : R) :
     x ∈ (mrangeRestrict v).valuationSubring ↔ x ∈ v.valuationSubring := by
-  rw [_root_.Valuation.mem_valuationSubring_iff,
-    _root_.Valuation.mem_valuationSubring_iff]
-  rw [← Subtype.coe_le_coe]
   rfl
 
 /-- The valuation subring is unchanged after restricting the value group to
 the actual multiplicative range. -/
-noncomputable def valuationSubringEquivMrangeRestrict
-    (v : _root_.Valuation R Gamma) :
+noncomputable def valuationSubringEquivMrangeRestrict :
     v.valuationSubring ≃+* (mrangeRestrict v).valuationSubring where
   toFun x :=
     ⟨x, (mem_mrangeRestrict_valuationSubring_iff v x).2 x.2⟩
@@ -96,24 +93,23 @@ Establishes the identity `((valuationSubringEquivMrangeRestrict v x : (mrangeRes
 v).valuationSubring) : R) = x`.
 -/
 @[simp]
-theorem valuationSubringEquivMrangeRestrict_apply_coe
-    (v : _root_.Valuation R Gamma) (x : v.valuationSubring) :
+theorem valuationSubringEquivMrangeRestrict_apply_coe (x : v.valuationSubring) :
     ((valuationSubringEquivMrangeRestrict v x :
       (mrangeRestrict v).valuationSubring) : R) = x :=
   rfl
 
+end
+
 variable {K : Type u} [Field K]
+
+variable (v : _root_.Valuation K Gamma)
 
 /-- The valuation-subring equivalence induced by range restriction preserves
 the maximal ideal. -/
-theorem valuationSubringEquivMrangeRestrict_mem_maximalIdeal_iff
-    (v : _root_.Valuation K Gamma) (x : v.valuationSubring) :
+theorem valuationSubringEquivMrangeRestrict_mem_maximalIdeal_iff (x : v.valuationSubring) :
     valuationSubringEquivMrangeRestrict v x ∈
         IsLocalRing.maximalIdeal (mrangeRestrict v).valuationSubring ↔
       x ∈ IsLocalRing.maximalIdeal v.valuationSubring := by
-  rw [_root_.Valuation.mem_maximalIdeal_iff,
-    _root_.Valuation.mem_maximalIdeal_iff]
-  rw [← Subtype.coe_lt_coe]
   rfl
 
 /--
@@ -122,30 +118,16 @@ Establishes the identity `(IsLocalRing.maximalIdeal v.valuationSubring).map
 v).valuationSubring) = IsLocalRing.maximalIdeal (mrangeRestrict v).valuationSubring`.
 -/
 @[simp]
-theorem valuationSubringEquivMrangeRestrict_map_maximalIdeal
-    (v : _root_.Valuation K Gamma) :
+theorem valuationSubringEquivMrangeRestrict_map_maximalIdeal :
     (IsLocalRing.maximalIdeal v.valuationSubring).map
         (valuationSubringEquivMrangeRestrict v :
           v.valuationSubring →+* (mrangeRestrict v).valuationSubring) =
       IsLocalRing.maximalIdeal (mrangeRestrict v).valuationSubring := by
-  let e := valuationSubringEquivMrangeRestrict v
-  ext y
-  rw [Ideal.mem_map_iff_of_surjective
-    (e : v.valuationSubring →+* (mrangeRestrict v).valuationSubring)
-    e.surjective]
-  constructor
-  · rintro ⟨x, hx, rfl⟩
-    exact (valuationSubringEquivMrangeRestrict_mem_maximalIdeal_iff v x).2 hx
-  · intro hy
-    refine ⟨e.symm y, ?_, by simp [e]⟩
-    exact
-      (valuationSubringEquivMrangeRestrict_mem_maximalIdeal_iff v (e.symm y)).1
-        (by simpa [e] using hy)
+  apply IsLocalRing.map_ringEquiv_maximalIdeal
 
 /-- Restricting a valuation to its actual multiplicative range induces the
 same residue field. -/
-noncomputable def residueFieldEquivMrangeRestrict
-    (v : _root_.Valuation K Gamma) :
+noncomputable def residueFieldEquivMrangeRestrict :
     IsLocalRing.ResidueField v.valuationSubring ≃+*
       IsLocalRing.ResidueField (mrangeRestrict v).valuationSubring := by
   let e := valuationSubringEquivMrangeRestrict v

@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -34,29 +30,22 @@ open ClassFormation
 open scoped ValuativeRel
 open scoped IsMulCommutative
 
+variable (K F E : Type) [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+    [Field F] [ValuativeRel F] [TopologicalSpace F] [IsNonarchimedeanLocalField F] [Field E]
+    [Algebra K F] [Algebra F E] [Algebra K E] [IsScalarTower K F E] [FiniteDimensional K F]
+    [Algebra.IsSeparable K F]
+    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
+    [FiniteDimensional F E] [IsAbelianGalois F E] (j : E →ₐ[K] SeparableClosure K)
+    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
+
 /-- Every abelianized Galois element is simultaneously represented by the local
 Artin map and by the ambient embedded norm-residue construction. -/
 theorem
     exists_localArtin_ambientEmbedded_prime
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
     (z : Abelianization Gal(E / F)) :
     ∃ x : Fˣ,
       localArtinMonoidHom F E x = z ∧
-        ambientEmbeddedNormResidueAbelianElement K F E j e x = z := by
-  exact
-    ⟨ambientEmbeddedPrimeWitness K F E j e z,
+        ambientEmbeddedNormResidueAbelianElement K F E j e x = z := ⟨ambientEmbeddedPrimeWitness K F E j e z,
       ambientEmbeddedPrimeWitness_local K F E j e z,
       ambientEmbeddedPrimeWitness_ambient K F E j e z⟩
 
@@ -64,26 +53,13 @@ theorem
 class modulo norms from `E`. -/
 theorem
     ambientEmbeddedNormResidueAbelianElement_eq_of_normClass_eq
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
     (a x : Fˣ)
     (h : normClass F E a = normClass F E x) :
     ambientEmbeddedNormResidueAbelianElement K F E j e a =
       ambientEmbeddedNormResidueAbelianElement K F E j e x := by
   let i :=
     j.comp (IsScalarTower.toAlgHom K F E)
-  let : Algebra F (SeparableClosure K) :=
+  let :=
     i.toRingHom.toAlgebra
   let H₀ :=
     closedFixingSubgroup K (SeparableClosure K)
@@ -99,33 +75,20 @@ theorem
     intro y hy
     rcases hy with ⟨z, rfl⟩
     exact ⟨algebraMap F E z, rfl⟩
-  let hTargetNormal :
-      (extensionSubgroup H₀ J₀ hJH).Normal :=
+  let hTargetNormal :=
     ambientEmbeddedExtensionSubgroup_normal K F E j e
-  let hTargetFinite : Finite
-      (H₀.toSubgroup ⧸ extensionSubgroup H₀ J₀ hJH) :=
+  let hTargetFinite :=
     ambientEmbeddedExtensionQuotient_finite K F E j e
-  let hHabsolute : Finite
-      ((baseField
-        Gal(SeparableClosure K / K)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+  let hHabsolute := ambientEmbeddedAbsoluteQuotientFinite K F i
   let F₀ :=
     abstractFixedField K (SeparableClosure K) H₀
-  have hfixed :
-      F₀ = AlgHom.fieldRange i :=
-    InfiniteGalois.fixedField_fixingSubgroup
-      (AlgHom.fieldRange i)
-  let phiF : F ≃ₐ[K] F₀ :=
+  let phiF :=
     (i.equivFieldRange).trans
-      (IntermediateField.equivOfEq hfixed.symm)
+      (IntermediateField.equivOfEq (InfiniteGalois.fixedField_fixingSubgroup
+        (AlgHom.fieldRange i)).symm)
   let E₀ :=
     abstractRelativeFixedField K (SeparableClosure K) hJH
-  have hfixedE :
-      abstractFixedField K (SeparableClosure K) J₀ =
-        AlgHom.fieldRange j :=
+  have hfixedE :=
     InfiniteGalois.fixedField_fixingSubgroup
       (AlgHom.fieldRange j)
   let phiE : E ≃+* E₀ := by
@@ -156,19 +119,10 @@ theorem
           intro y
           rfl)
         a x h
+  let abstractFixedFieldNormResidueSymbol₀ := abstractFixedFieldNormResidueSymbol K (SeparableClosure K) (localResidueDatum K) (localHenselianValuation K) (separableClosureUnits_isClassFormation K) H₀ J₀ hJH
   have hambientSame :
-      abstractFixedFieldNormResidueSymbol
-          K (SeparableClosure K)
-          (localResidueDatum K)
-          (localHenselianValuation K)
-          (separableClosureUnits_isClassFormation K)
-          H₀ J₀ hJH (Additive.ofMul aF0) =
-        abstractFixedFieldNormResidueSymbol
-          K (SeparableClosure K)
-          (localResidueDatum K)
-          (localHenselianValuation K)
-          (separableClosureUnits_isClassFormation K)
-          H₀ J₀ hJH (Additive.ofMul xF0) :=
+      abstractFixedFieldNormResidueSymbol₀ (Additive.ofMul aF0) =
+        abstractFixedFieldNormResidueSymbol₀ (Additive.ofMul xF0) :=
     abstractFixedFieldNormResidueSymbol_eq_of_normClass_eq
       K (SeparableClosure K)
       (localResidueDatum K)
@@ -179,21 +133,11 @@ theorem
     qE.abelianizationCongr
         (q₀.abelianizationCongr.symm
           (Additive.toMul
-            (abstractFixedFieldNormResidueSymbol
-              K (SeparableClosure K)
-              (localResidueDatum K)
-              (localHenselianValuation K)
-              (separableClosureUnits_isClassFormation K)
-              H₀ J₀ hJH (Additive.ofMul aF0)))) =
+            (abstractFixedFieldNormResidueSymbol₀ (Additive.ofMul aF0)))) =
       qE.abelianizationCongr
         (q₀.abelianizationCongr.symm
           (Additive.toMul
-            (abstractFixedFieldNormResidueSymbol
-              K (SeparableClosure K)
-              (localResidueDatum K)
-              (localHenselianValuation K)
-              (separableClosureUnits_isClassFormation K)
-              H₀ J₀ hJH (Additive.ofMul xF0))))
+            (abstractFixedFieldNormResidueSymbol₀ (Additive.ofMul xF0))))
   rw [hambientSame]
 
 /-- For an embedded finite abelian local extension, the abelian local Artin
@@ -201,33 +145,16 @@ map agrees pointwise with the ambient norm-residue element transported through
 a separable-closure equivalence. -/
 theorem
     abelianLocalArtin_eq_ambientEmbeddedNormResidueSymbol_of_equiv
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
     (a : Fˣ) :
     abelianLocalArtinMonoidHom F E a =
       ambientEmbeddedNormResidueElement K F E j e a := by
   obtain ⟨x, hxLocal, hxAmbient⟩ :=
     exists_localArtin_ambientEmbedded_prime K F E j e
       (localArtinMonoidHom F E a)
-  let i :=
-    j.comp (IsScalarTower.toAlgHom K F E)
-  let : Algebra F (SeparableClosure K) :=
-    i.toRingHom.toAlgebra
-  let jF : E →ₐ[F] SeparableClosure K :=
-    { j with commutes' := fun y => rfl }
-  let jI : E →ₐ[F] SeparableClosure F :=
-    e.symm.toAlgHom.comp jF
+  let :=
+    (j.comp (IsScalarTower.toAlgHom K F E)).toRingHom.toAlgebra
+  let jI :=
+    e.symm.toAlgHom.comp ({ j with commutes' := fun y => rfl})
   have hnormClass :
       normClass F E a = normClass F E x := by
     apply
@@ -247,29 +174,23 @@ theorem
           (localResidueDatum F)
           (localHenselianValuation F)
           (separableClosureUnits_isClassFormation F) x
-    have ha :=
-      DFunLike.congr_fun
-        (localArtinMonoidHom_eq_of_embedding F E jI) a
-    have hx :=
-      DFunLike.congr_fun
-        (localArtinMonoidHom_eq_of_embedding F E jI) x
-    rw [← ha, ← hx]
+    rw [← (DFunLike.congr_fun
+      (localArtinMonoidHom_eq_of_embedding F E jI) a), ← (DFunLike.congr_fun
+      (localArtinMonoidHom_eq_of_embedding F E jI) x)]
     exact hxLocal.symm
-  have hxNormResidue :=
-    ambientEmbeddedNormResidueAbelianElement_eq_of_normClass_eq
-      K F E j e a x hnormClass
   change
-    (Abelianization.equivOfComm (H := Gal(E / F))).symm
+    (Abelianization.equivOfComm).symm
         (localArtinMonoidHom F E a) =
-      (Abelianization.equivOfComm (H := Gal(E / F))).symm
+      (Abelianization.equivOfComm).symm
         (ambientEmbeddedNormResidueAbelianElement K F E j e a)
-  apply congrArg (Abelianization.equivOfComm (H := Gal(E / F))).symm
+  apply congrArg (Abelianization.equivOfComm).symm
   calc
-    localArtinMonoidHom F E a =
+    _ =
         ambientEmbeddedNormResidueAbelianElement K F E j e x :=
       hxAmbient.symm
     _ = ambientEmbeddedNormResidueAbelianElement K F E j e a :=
-      hxNormResidue.symm
+      (ambientEmbeddedNormResidueAbelianElement_eq_of_normClass_eq
+        K F E j e a x hnormClass).symm
 
 end LocalClassFieldTheory
 

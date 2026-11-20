@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -39,12 +37,14 @@ local instance rationalFiniteLevelEndpointNumberField
     (K : IntermediateField ℚ (SeparableClosure ℚ))
     [FiniteDimensional ℚ K] : NumberField K :=
   NumberField.of_module_finite ℚ K
+section
+
+variable {K N : IntermediateField ℚ (SeparableClosure ℚ)} [FiniteDimensional ℚ K] [FiniteDimensional ℚ N]
+    (hKN : K ≤ N)
+
 /-- Rational relative-adele scalar extension agrees with unflattening
 the corresponding fixed-bottom tensor tower. -/
 theorem rationalRelativeAdeleEmbedding_unflatten
-    {K N : IntermediateField ℚ (SeparableClosure ℚ)}
-    [FiniteDimensional ℚ K] [FiniteDimensional ℚ N]
-    (hKN : K ≤ N)
     (a : RelativeAdeleRing ℚ K) :
     letI : Algebra K N :=
       (IntermediateField.inclusion hKN).toRingHom.toAlgebra
@@ -56,11 +56,11 @@ theorem rationalRelativeAdeleEmbedding_unflatten
         (RelativeIdeleGroup.adeleEmbedding (K := ℚ) (L := K) (M := N)
           (IntermediateField.inclusion hKN) a) =
       a ⊗ₜ[K] (1 : N) := by
-  let : Algebra K N :=
+  let :=
     (IntermediateField.inclusion hKN).toRingHom.toAlgebra
   let : IsScalarTower ℚ K N :=
     IsScalarTower.of_algebraMap_eq' (RingHom.ext_rat _ _)
-  let : FiniteDimensional K N :=
+  let :=
     FiniteDimensional.right ℚ K N
   have hflatten :
       towerRelativeAdeleFlatten ℚ K N
@@ -89,9 +89,6 @@ theorem rationalRelativeAdeleEmbedding_unflatten
 /-- Rational relative-idele scalar extension agrees with unflattening
 the corresponding fixed-bottom tensor tower. -/
 theorem rationalRelativeIdeleEmbedding_unflatten
-    {K N : IntermediateField ℚ (SeparableClosure ℚ)}
-    [FiniteDimensional ℚ K] [FiniteDimensional ℚ N]
-    (hKN : K ≤ N)
     (a : RelativeIdeleGroup ℚ K) :
     letI : Algebra K N :=
       (IntermediateField.inclusion hKN).toRingHom.toAlgebra
@@ -115,26 +112,23 @@ theorem rationalRelativeIdeleEmbedding_unflatten
           (relativeAdeleRingIntermediateAlgebra ℚ K)
           (smulCommClass_self K (RelativeAdeleRing ℚ K))).toRingHom a :
         TowerRelativeIdeleGroup ℚ K N) := by
-  let : Algebra K N :=
+  let :=
     (IntermediateField.inclusion hKN).toRingHom.toAlgebra
   let : IsScalarTower ℚ K N :=
     IsScalarTower.of_algebraMap_eq' (RingHom.ext_rat _ _)
-  let : FiniteDimensional K N :=
+  let :=
     FiniteDimensional.right ℚ K N
-  let : Algebra K (RelativeAdeleRing ℚ K) :=
+  let :=
     relativeAdeleRingIntermediateAlgebra ℚ K
   apply Units.ext
   exact
     rationalRelativeAdeleEmbedding_unflatten
-      hKN (a : RelativeAdeleRing ℚ K)
+      hKN a
 
 /-- Rational relative idele-class scalar extension agrees with the
 fixed-bottom tower base-change equivalence. -/
 theorem
     rationalRelativeIdeleClassEmbedding_towerBaseChange
-    {K N : IntermediateField ℚ (SeparableClosure ℚ)}
-    [FiniteDimensional ℚ K] [FiniteDimensional ℚ N]
-    (hKN : K ≤ N)
     (c : RelativeIdeleGroup.ClassGroup ℚ K) :
     letI : Algebra K N :=
       (IntermediateField.inclusion hKN).toRingHom.toAlgebra
@@ -149,11 +143,11 @@ theorem
       RelativeIdeleGroup.classInclusion K N
         (_root_.relativeIdeleClassBaseChangeMulEquiv
           (K := ℚ) (L := K) c) := by
-  let : Algebra K N :=
+  let :=
     (IntermediateField.inclusion hKN).toRingHom.toAlgebra
   let : IsScalarTower ℚ K N :=
     IsScalarTower.of_algebraMap_eq' (RingHom.ext_rat _ _)
-  let : FiniteDimensional K N :=
+  let :=
     FiniteDimensional.right ℚ K N
   refine QuotientGroup.induction_on c ?_
   intro a
@@ -162,13 +156,13 @@ theorem
         (RelativeIdeleGroup.principalSubgroup K N)
         (towerRelativeIdeleBaseChangeMulEquiv ℚ K N
           ((towerRelativeIdeleEquiv ℚ K N).symm
-            (RelativeIdeleGroup.ideleEmbedding (K := ℚ) (L := K) (M := N)
+            (RelativeIdeleGroup.ideleEmbedding
               (IntermediateField.inclusion hKN) a))) =
       QuotientGroup.mk'
         (RelativeIdeleGroup.principalSubgroup K N)
         (RelativeIdeleGroup.inclusion K N
           (relativeIdeleBaseChangeMulEquiv
-            (K := ℚ) (L := K) a))
+              a))
   apply congrArg
     (QuotientGroup.mk'
       (RelativeIdeleGroup.principalSubgroup K N))
@@ -179,18 +173,15 @@ theorem
 
 /-- Scalar extension between finite rational relative idele class groups
 is injective. -/
-theorem rationalRelativeIdeleClassEmbedding_injective
-    {K N : IntermediateField ℚ (SeparableClosure ℚ)}
-    [FiniteDimensional ℚ K] [FiniteDimensional ℚ N]
-    (hKN : K ≤ N) :
+theorem rationalRelativeIdeleClassEmbedding_injective :
     Function.Injective
       (RelativeIdeleGroup.classEmbedding (K := ℚ) (L := K) (M := N)
         (IntermediateField.inclusion hKN)) := by
-  let : Algebra K N :=
+  let :=
     (IntermediateField.inclusion hKN).toRingHom.toAlgebra
   let : IsScalarTower ℚ K N :=
     IsScalarTower.of_algebraMap_eq' (RingHom.ext_rat _ _)
-  let : FiniteDimensional K N :=
+  let :=
     FiniteDimensional.right ℚ K N
   intro a b hab
   have htransport :=
@@ -204,18 +195,18 @@ theorem rationalRelativeIdeleClassEmbedding_injective
       at htransport
   apply
     (_root_.relativeIdeleClassBaseChangeMulEquiv
-      (K := ℚ) (L := K)).injective
+       ).injective
   exact
     RelativeIdeleGroup.classInclusion_injective K N htransport
+
+end
 
 /-- Each finite-level relative idele class group embeds into the rational
 idele-class direct limit. -/
 theorem rationalRelativeIdeleClassToDirectLimit_injective
     (E : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)) :
     Function.Injective
-      (rationalRelativeIdeleClassToDirectLimit E) := by
-  exact
-    DirectLimit.mk_injective
+      (rationalRelativeIdeleClassToDirectLimit E) := DirectLimit.mk_injective
       (F := fun E :
         FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ) =>
           RelativeIdeleGroup.ClassGroup ℚ E)

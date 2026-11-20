@@ -11,13 +11,8 @@ open NumberField Filter
 namespace DedekindZetaZeroFree.RootDerivatives
 open KPLiteralRaw hiding G
 open KPGlobalResidualConstruction SharedSource KPContActualSphericalRightFieldIdentification
-open _root_.DedekindZetaZeroFree.RootDerivatives renaming induced_add → induced_add
-open _root_.DedekindZetaZeroFree.RootDerivatives renaming induced_smul → induced_smul
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming theta → theta
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming theta_zero → theta_zero
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming theta_smooth → theta_smooth
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.ActualProjectedFlatExpansion renaming kfinite_add → kfinite_add
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.ActualProjectedFlatExpansion renaming kfinite_smul → kfinite_smul
+open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets (theta theta_zero theta_smooth)
+open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.ActualProjectedFlatExpansion (kfinite_add kfinite_smul)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
@@ -48,17 +43,14 @@ def nativeAlpha (b : Fin (groupDimension F)) (g : G F ζ hζ) : ℝ :=
 theorem nativeAlpha_hasDeriv (b : Fin (groupDimension F)) (g : G F ζ hζ) :
     HasDerivAt (fun t => KPContFlatSourceRecipe.alpha F ζ hζ (g * nativeCurve F ζ hζ b t))
       (nativeAlpha F ζ hζ b g) 0 := by
-  have hb : archBase F ∈ archDomain F := by intro w; simp [archBase]
-  have hd := ((alpha_right_chart_smooth F ζ hζ g).contDiffAt
-    ((KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F).mem_nhds hb)).differentiableAt (by simp)
   have ht : HasDerivAt (theta F (nativeBasis F b)) (nativeDirection F b) 0 :=
     (theta_smooth F _).differentiableAt (by simp) |>.hasDerivAt
-  have hh := hd.hasFDerivAt.comp_hasDerivAt_of_eq 0 ht (theta_zero F _).symm
   have he : (fun t => KPContFlatSourceRecipe.alpha F ζ hζ (g * archChart F ζ hζ (theta F (nativeBasis F b) t)))
       =ᶠ[𝓝 (0 : ℝ)] (fun t => KPContFlatSourceRecipe.alpha F ζ hζ (g * nativeCurve F ζ hζ b t)) := by
     filter_upwards [nativeCurve_chart F ζ hζ b] with t ht
     rw [ht]
-  have h := hh.congr_of_eventuallyEq he.symm
+  have h := ((((alpha_right_chart_smooth F ζ hζ g).contDiffAt
+    ((KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F).mem_nhds (by intro w; simp [archBase]))).differentiableAt (by simp)).hasFDerivAt.comp_hasDerivAt_of_eq 0 ht (theta_zero F _).symm).congr_of_eventuallyEq he.symm
   change HasDerivAt _ (deriv _ 0) 0
   rw [h.deriv]
   exact h
@@ -68,8 +60,7 @@ theorem actualRight_scalarWeight (b : Fin (groupDimension F)) (s : ℂ)
     actualRight F ζ hζ b (scalarWeight F ζ hζ s f) g =
       Complex.exp (s * (KPContFlatSourceRecipe.alpha F ζ hζ g : ℂ)) *
         (actualRight F ζ hζ b f g + s * (nativeAlpha F ζ hζ b g : ℂ) * f g) := by
-  have ha := Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt 0 (nativeAlpha_hasDeriv F ζ hζ b g)
-  have h := ((ha.const_mul s).cexp).mul (nativeCurve_hasDeriv F ζ hζ b f hf g)
+  have h := (((Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt 0 (nativeAlpha_hasDeriv F ζ hζ b g)).const_mul s).cexp).mul (nativeCurve_hasDeriv F ζ hζ b f hf g)
   rw [actualRight_nativeCurve]
   change deriv (fun t => Complex.exp
     (s * (KPContFlatSourceRecipe.alpha F ζ hζ (g * nativeCurve F ζ hζ b t) : ℂ)) *
@@ -93,9 +84,6 @@ theorem nativeDisplacement_value (b : Fin (groupDimension F))
     Complex.exp_zero, one_mul]
   ring
 
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming theta → theta
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming theta_zero → theta_zero
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming theta_smooth → theta_smooth
 
 private theorem generic_weight_induced (s t : ℂ) (f : Functions F ζ hζ)
     (hf : Induced F ζ hζ t f) : Induced F ζ hζ (s+t) (scalarWeight F ζ hζ s f) := by
@@ -128,7 +116,6 @@ theorem native_flat_affine (b : Fin (groupDimension F))
     ∃ v u : Flat F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ).K,
       v.val 0 = actualRight F ζ hζ b (f.val 0) ∧
       (∀ s g, v.val s g = scalarWeight F ζ hζ s (v.val 0) g) ∧
-      (∀ s g, u.val s g = scalarWeight F ζ hζ s (u.val 0) g) ∧
       ∀ s g, actualRight F ζ hζ b (f.val s) g = v.val s g + s * u.val s g := by
   have hf := f.property.1 0
   obtain ⟨v,hv⟩ := scalar_reflatten F ζ hζ _ (actualRight_induced F ζ hζ b 0 _ hf)
@@ -148,9 +135,8 @@ theorem native_flat_affine (b : Fin (groupDimension F))
   obtain ⟨u,hu⟩ := scalar_reflatten F ζ hζ _ hD hk
   have hv0 : v.val 0 = actualRight F ζ hζ b (f.val 0) := by ext g; simp [hv, scalarWeight]
   have hu0 : u.val 0 = nativeDisplacement F ζ hζ b (f.val 0) := by ext g; simp [hu, scalarWeight]
-  refine ⟨v,u,hv0, ?_, ?_, ?_⟩
+  refine ⟨v, u, hv0, ?_, ?_⟩
   · intro s g; rw [hv,hv0]
-  · intro s g; rw [hu,hu0]
   · intro s g
     have he : f.val s = scalarWeight F ζ hζ s (f.val 0) := funext (hflat s)
     rw [he,actualRight_scalarWeight F ζ hζ b s _ hf.1 g,hv,hu]

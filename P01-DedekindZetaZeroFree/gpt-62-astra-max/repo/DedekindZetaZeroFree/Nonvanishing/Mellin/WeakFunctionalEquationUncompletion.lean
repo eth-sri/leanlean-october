@@ -20,15 +20,9 @@ theorem weakFE_uncompletion (P : WeakFEPair ℂ) (hk : P.k = 1)
     · intro x hx
       simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hx
       exact fun h => hx (sub_eq_zero.mp h).symm
-  have h1 : DifferentiableOn ℂ (fun s => q s * P.Λ₀ s) ({1}ᶜ : Set ℂ) :=
-    (hq.differentiableOn.mono (Set.subset_univ _)).mul
-      (P.differentiable_Λ₀.differentiableOn.mono (Set.subset_univ _))
-  have h2 : DifferentiableOn ℂ (fun s => u s * P.f₀) ({1}ᶜ : Set ℂ) :=
-    (hu.differentiableOn.mono (Set.subset_univ _)).mul_const _
-  have h3 : DifferentiableOn ℂ (fun s => q s * (P.ε / (1 - s)) * P.g₀) ({1}ᶜ : Set ℂ) :=
-    ((hq.differentiableOn.mono (Set.subset_univ _)).mul hd).mul_const _
   constructor
-  · exact (h1.sub h2).sub h3
+  · exact (((hq.differentiableOn.mono (Set.subset_univ _)).mul
+    (P.differentiable_Λ₀.differentiableOn.mono (Set.subset_univ _))).sub ((hu.differentiableOn.mono (Set.subset_univ _)).mul_const _)).sub (((hq.differentiableOn.mono (Set.subset_univ _)).mul hd).mul_const _)
   · intro s hs0 hs1
     dsimp only
     rw [WeakFEPair.Λ, hk]

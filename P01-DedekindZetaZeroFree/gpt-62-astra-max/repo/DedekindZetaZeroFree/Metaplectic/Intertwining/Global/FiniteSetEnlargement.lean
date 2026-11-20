@@ -25,26 +25,26 @@ def goodFactor (v : HeightOneSpectrum (𝓞 F)) (s : ℂ) : ℂ :=
 def enlargementFactor (S T : Finset (HeightOneSpectrum (𝓞 F))) (s : ℂ) : ℂ :=
   ∏ v ∈ T \ S, goodFactor F v s
 
-abbrev normalizer
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (S : Finset (HeightOneSpectrum (𝓞 F))) : ℂ → ℂ :=
+section
+
+variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (S : Finset (HeightOneSpectrum (𝓞 F)))
+
+abbrev normalizer : ℂ → ℂ :=
   GlobalZetaNormalizer.exceptionalNormalizer  F ζ hζ S
 
-def residueNormalizer
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (S : Finset (HeightOneSpectrum (𝓞 F))) : ℂ :=
+def residueNormalizer : ℂ :=
   (PositiveZetaResidue.exteriorResidue F S : ℂ) /
     (6 * GlobalZetaNormalizer.exteriorZeta  F ζ hζ S 2)
+
+end
 
 theorem residueNormalizer_pos
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (S : Finset (HeightOneSpectrum (𝓞 F))) :
-    (residueNormalizer F  ζ hζ S).im = 0 ∧
     0 < (residueNormalizer F  ζ hζ S).re := by
   obtain ⟨ε, hε, hd, hm, hg, heq, hzero, him, hre, hrest⟩ :=
     GlobalZetaNormalizer.positive_simple_exceptional_normalizer  F ζ hζ S
-  exact ⟨by simpa [residueNormalizer, hzero] using him,
-    by simpa [residueNormalizer, hzero] using hre⟩
+  exact by simpa [residueNormalizer, hzero] using hre
 
 section TensorFormulas
 

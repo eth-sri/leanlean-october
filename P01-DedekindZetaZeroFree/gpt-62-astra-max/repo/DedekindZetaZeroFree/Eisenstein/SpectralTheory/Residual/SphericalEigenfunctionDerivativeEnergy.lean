@@ -18,11 +18,11 @@ open ResidualSphericalGeometry ResidualWeakEnergy
 open KPGlobalResidualConstruction KPLiteralChamber
 open KPMsClearedTruncationL2.NativeWordBridge
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "level" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U
  abbrev sphericalEigenfunctionWordDerivative := KPSmoothActualFlowData.wordDerivative F ζ hζ
@@ -41,14 +41,12 @@ theorem spherical_native_eigen_all_derivatives
   let up := fun g => f.val (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)
   have hs : RawWordKFinite.NativeSmooth up := by
     intro a
-    have hh := ActualSectionLift.lift_arch_smooth F ζ hζ level R P H Z a
-    convert hh using 1
+    convert (ActualSectionLift.lift_arch_smooth F ζ hζ level R P H Z a) using 1
     funext x
     exact originalScalar_lift F ζ hζ level R P H Z _
   have hcompact (k : KPMsGreenFlux.K F) (g) :
       up (g * KPMsGreenFlux.compactInsertion F ζ hζ k) = up g :=
     originalScalar_compact F ζ hζ level R P H Z g k
-  have hn : ∀ g, KPMsGreenFlux.casimir F ζ hζ up g = eig * up g := he
   let A := H.atlas level
   let Y := Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * A.threshold)
   have hd : (2 * (KPCuspLogShape.dimension F : ℝ)) ≠ 0 := by
@@ -60,7 +58,7 @@ theorem spherical_native_eigen_all_derivatives
     change A.threshold ≤ Real.log (Real.exp _) / (2 * (KPCuspLogShape.dimension F : ℝ))
     rw [Real.log_exp, mul_div_cancel_left₀ _ hd]
   apply eigen_all_word_memLp A R P (H.disintegration level) Y hY f eig
-    (original_word_eigen f.val hs eig hn)
+    (original_word_eigen f.val hs eig he)
     h2
   intro w
   apply original_compact_orbit_finite

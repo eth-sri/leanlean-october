@@ -12,11 +12,11 @@ open MomentSources ThetaExpansion NumberField
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {N : TraceHaarTransport R} (A : JointExteriorCoefficientSources R N)
-variable (I : R.A.Sf → Type) [∀ q, Fintype (I q)]
-variable (c : ∀ q, I q → ℂ) (t : ∀ q, I q → q.val.adicCompletion F)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {N : TraceHaarTransport R} (A : JointExteriorCoefficientSources R N)
+    (I : R.A.Sf → Type) [∀ q, Fintype (I q)]
+    (c : ∀ q, I q → ℂ) (t : ∀ q, I q → q.val.adicCompletion F)
 
 theorem rootWord_fourier (l : List R.A.Sf) (v : R.A.UnitQuotient) (y : R.A.G) :
     fourier R A.sources.dq (rootProjectorWord R I c t l (A.realization.theta v)) (diagonal R y) =
@@ -34,18 +34,9 @@ theorem rootWord_fourier (l : List R.A.Sf) (v : R.A.UnitQuotient) (y : R.A.G) :
   induction l with
   | nil => simp [rootProjectorWord]
   | cons q l ih =>
-    have hint := rootTensorWord_integrable R A.factorization I c t s hS l x
     have hi : ∀ g, PeriodIntegrable R A.sources.dq
         (rootProjectorWord R I c t l (A.realization.theta v)) g := by
-      rw [← hx']; exact hint
-    have hr := (A.factorization.core_same_residue
-      (RestrictedTensorSimple.stageInclusion _ A.factorization.references A.factorization.bad s
-        (PiTensorProduct.tprod ℂ (rootTensorWord R A.factorization I c t s hS l x)))).2.2.1
-    have hr' : ∀ γ g, rootProjectorWord R I c t l (A.realization.theta v)
-        (KPLiteralRaw.rationalLift F R.A.zeta12 R.A.primitive_zeta12 γ * g) =
-          rootProjectorWord R I c t l (A.realization.theta v) g := by
-      rw [← hx', ← rootTensorWord_function]
-      exact hr
+      rw [← hx']; exact (rootTensorWord_integrable R A.factorization I c t s hS l x)
     change fourier R A.sources.dq
       (rightTranslateSum R Finset.univ (c q) (fun i => finiteRoot R q.val (t q i))
         (rootProjectorWord R I c t l (A.realization.theta v))) (diagonal R y) = _
@@ -59,7 +50,11 @@ theorem rootWord_fourier (l : List R.A.Sf) (v : R.A.UnitQuotient) (y : R.A.G) :
         (actualFiniteCharacter q.val).toAddChar ((y.2 q : q.val.adicCompletion F) * t q i) *
           fourier R A.sources.dq (rootProjectorWord R I c t l (A.realization.theta v)) (diagonal R y) := by
       unfold finiteRoot
-      rw [diagonal_upper_projector, fourier_upper R _ _ hr' _ _ (hi _) (hi _), trace_finite_diagonal]
+      rw [diagonal_upper_projector, fourier_upper R _ _ (by
+        rw [← hx', ← rootTensorWord_function]
+        exact ((A.factorization.core_same_residue
+          (RestrictedTensorSimple.stageInclusion _ A.factorization.references A.factorization.bad s
+            (PiTensorProduct.tprod ℂ (rootTensorWord R A.factorization I c t s hS l x)))).2.2.1)) _ _ (hi _) (hi _), trace_finite_diagonal]
     simp only [List.map_cons, List.prod_cons]
     simp_rw [htr, ih]
     simp only [← mul_assoc, Finset.sum_mul]
@@ -87,9 +82,8 @@ theorem cutoff_word_exists (A : FirstRootSphericalSeed R N) (B : FirstRootCutoff
           (Finset.univ : Finset R.A.Sf).toList (A.base.realization.theta v)) (diagonal R y) =
             firstRootRadialProfile R C y := by
   obtain ⟨C,he,hle,hsub,hmask⟩ := prepare_cutoffs A B
-  have hh := fun q => selected_cutoff_weights R A.base q (C.cutoff q) (C.congruence q)
-    (C.compact_congruence q) (C.open_congruence q) (C.congruence_exact q)
-  choose I inst c t ht using hh
+  choose I inst c t ht using (fun q => selected_cutoff_weights R A.base q (C.cutoff q) (C.congruence q)
+    (C.compact_congruence q) (C.open_congruence q) (C.congruence_exact q))
   letI := inst
   refine ⟨C,I,inst,c,t,he,hle,hsub,?_⟩
   intro v y
@@ -98,7 +92,7 @@ theorem cutoff_word_exists (A : FirstRootSphericalSeed R N) (B : FirstRootCutoff
   · rw [hw,mul_zero]
     exact (hmask v y).symm.trans (by rw [hw,mul_zero]) |>.symm
   · simp_rw [ht _ v y hw]
-    have hp : ((Finset.univ : Finset R.A.Sf).toList.map (fun q =>
+    have hp : (Finset.univ.toList.map (fun q =>
         if y.2 q ∈ C.cutoff q then (1 : ℂ) else 0)).prod =
           if ∀ q : R.A.Sf, y.2 q ∈ C.cutoff q then 1 else 0 := by
       rw [Finset.prod_map_toList]

@@ -23,13 +23,12 @@ theorem highest_intertwiner (n : ℕ) :
 
 theorem highest_positive_jacquet_ne_zero (n : ℕ) :
     jacquetFunctional standardComplexParameter (harmonicSection positiveParameter n) ≠ 0 := by
-  have h := highestImage_jacquet_ne_zero n
   have he : intertwinerToImage standardComplexParameter (harmonicSection positiveParameter n) =
       (eigenvalue standardComplexParameter n:ℂ) • highestImage standardComplexParameter n := by
     apply Subtype.ext
     exact highest_intertwiner n
   rw [← thetaJacquetFunctional_intertwiner, he, map_smul, smul_eq_mul]
-  exact mul_ne_zero (Complex.ofReal_ne_zero.mpr (eigenvalue_ne_zero _ _)) h
+  exact mul_ne_zero (Complex.ofReal_ne_zero.mpr (eigenvalue_ne_zero _ _)) (highestImage_jacquet_ne_zero n)
 
 theorem jacquet_compacts_separate (f : PrincipalSeries positiveParameter)
     (hf : ∀ k : ComplexSU2, jacquetIntegral standardComplexParameter
@@ -73,7 +72,7 @@ theorem jacquet_compacts_separate (f : PrincipalSeries positiveParameter)
     have hz := (hmem _).mp hh 1
     simp only [map_one, pi_one] at hz
     exact highest_positive_jacquet_ne_zero n hz
-  have hx : f ∈ U := (hmem f).mpr hf
+  have hx := (hmem f).mpr hf
   simpa only [hu, Submodule.mem_bot] using hx
 
 end DedekindZetaZeroFree.SheetRescaling.WeylTensorTransport

@@ -24,20 +24,22 @@ private theorem coset_param_bijective {G : Type*} [Group G] (H : Subgroup G) :
    subst k; rfl
  · intro g
    let q : G ⧸ H := g
-   have hg : q.out⁻¹ * g ∈ H := QuotientGroup.eq.mp (Quotient.out_eq' q)
+   have hg := QuotientGroup.eq.mp (Quotient.out_eq' q)
    exact ⟨(q, ⟨q.out⁻¹ * g,hg⟩), by simp⟩
 
-private theorem local_measure_card {G X : Type*} [Group G] [Countable G]
- [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
- (μ : Measure X) [SMulInvariantMeasure G X μ]
- (H : Subgroup G) [Fintype H] (D T : Set X)
+section
+
+variable {G X : Type*} [Group G] [Countable G] [MeasurableSpace X] [MulAction G X]
+    [MeasurableConstSMul G X] (μ : Measure X) [SMulInvariantMeasure G X μ] (H : Subgroup G) [Fintype H]
+
+private theorem local_measure_card (D T : Set X)
  (hD : MeasurableSet D) (hT : MeasurableSet T)
  (hFD : IsFundamentalDomain G D μ)
  (hinv : ∀ h : H, (h.val : G) • T = T)
  (hsep : ∀ g : G, ∀ x ∈ T, g • x ∈ T → g ∈ H) :
  μ T = (Fintype.card H : ℝ≥0∞) * μ ((⋃ g : G, g • T) ∩ D) := by
  letI : Countable (G ⧸ H) := Function.Surjective.countable Quotient.mk''_surjective
- let e : (G ⧸ H) × H ≃ G := Equiv.ofBijective _ (coset_param_bijective H)
+ let e := Equiv.ofBijective _ (coset_param_bijective H)
  have he (q : G ⧸ H) (h : H) : e (q,h) = q.out * h.val := rfl
  have hi : (⋃ g : G, g • T) = ⋃ q : G ⧸ H, q.out • T := by
    apply Set.Subset.antisymm
@@ -74,10 +76,7 @@ private theorem local_measure_card {G X : Type*} [Group G] [Countable G]
   _ = (Fintype.card H : ℝ≥0∞) * μ ((⋃ g : G, g • T) ∩ D) := by
     rw [hi, Set.iUnion_inter, measure_iUnion hd (fun q => (hT.const_smul q.out).inter hD)]
 
-private theorem local_quotient_card {G X : Type*} [Group G] [Countable G]
- [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
- (μ : Measure X) [SMulInvariantMeasure G X μ]
- (H : Subgroup G) [Fintype H] (D S : Set X)
+private theorem local_quotient_card (D S : Set X)
  (hD : MeasurableSet D) (hS : MeasurableSet S)
  (hFD : IsFundamentalDomain G D μ)
  (hinv : ∀ h : H, (h.val : G) • S = S)
@@ -97,7 +96,7 @@ private theorem local_quotient_card {G X : Type*} [Group G] [Countable G]
    · intro hx
      obtain ⟨g,y,hy,he⟩ := Set.mem_iUnion.mp hx
      refine ⟨y,hy,Quotient.sound ?_⟩
-     exact ⟨g⁻¹, by change g⁻¹ • x = y; simpa only [← he, inv_smul_smul]⟩
+     exact ⟨g⁻¹, by simpa only [← he, inv_smul_smul]⟩
  have hπS : MeasurableSet (π '' S) := by
    apply measurableSet_quotient.mpr
    rw [hpre]; exact .iUnion (fun g => hS.const_smul g)
@@ -140,23 +139,13 @@ private theorem local_quotient_card {G X : Type*} [Group G] [Countable G]
  rw [← mul_assoc, ENNReal.inv_mul_cancel (by exact_mod_cast Fintype.card_ne_zero)
    (by simp), one_mul]
 
-theorem finite_isotropy_quotient_measure {G X : Type*} [Group G] [Countable G]
- [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
- (μ : Measure X) [SMulInvariantMeasure G X μ]
- (H : Subgroup G) [Fintype H] (D S : Set X)
- (hD : MeasurableSet D) (hS : MeasurableSet S)
- (hFD : IsFundamentalDomain G D μ)
- (hinv : ∀ h : H, (h.val : G) • S = S)
- (hsep : ∀ g : G, ∀ x ∈ S, g • x ∈ S → g ∈ H) :
- Measure.map (Quotient.mk (MulAction.orbitRel G X))
-   ((Fintype.card H : ℝ≥0∞)⁻¹ • μ.restrict S) =
- (Measure.map (Quotient.mk (MulAction.orbitRel G X)) (μ.restrict D)).restrict
-   ((Quotient.mk (MulAction.orbitRel G X)) '' S) := by
-  exact local_quotient_card μ H D S hD hS hFD hinv hsep
+end
+
+alias finite_isotropy_quotient_measure := local_quotient_card
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
+    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+    (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
 theorem chart_quotient_measure (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (C : Chart F ζ hζ hF U A) :

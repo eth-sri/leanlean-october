@@ -9,9 +9,8 @@ noncomputable section
 open scoped NumberField Classical Topology ContDiff BigOperators
 namespace DedekindZetaZeroFree.EisensteinSmoothGerms.SmoothSource.ArchSeries
 open KPGlobalResidualConstruction
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.AnalyticScalarMultiplication renaming compactJet_series → compactJet_series
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.AnalyticScalarMultiplication renaming compactJet → compactJet
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction renaming chart_base → chart_base
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.AnalyticScalarMultiplication (compactJet_series compactJet)
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction (chart_base)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -35,10 +34,9 @@ theorem powerSeries_eval {a : ℕ → space F ζ hζ} {f : ℂ → space F ζ h�
   letI : CompactSpace i.compact := isCompact_iff_compactSpace.mp i.isCompact
   let p : i.compact := ⟨point F,Set.mem_singleton _⟩
   let L : C(i.compact,ℂ) →L[ℂ] ℂ := ContinuousMap.evalCLM ℂ p
-  have ht := L.comp_hasFPowerSeriesOnBall (compactJet_series (jets F ζ hζ) i hρ hf)
   have he (v : space F ζ hζ) : L (compactJet (jets F ζ hζ) i v) = v.val g :=
     jets_point F ζ hζ v g
-  convert ht using 1
+  convert (L.comp_hasFPowerSeriesOnBall (compactJet_series (jets F ζ hζ) i hρ hf)) using 1
   · funext s; exact (he (f s)).symm
   · funext n
     ext v

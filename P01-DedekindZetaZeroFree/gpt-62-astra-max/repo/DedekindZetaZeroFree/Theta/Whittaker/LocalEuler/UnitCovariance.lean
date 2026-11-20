@@ -10,8 +10,8 @@ open scoped NumberField Classical
 namespace DedekindZetaZeroFree.AllRowEuler.UnitCovariance
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 def residueCoefficient (σ : F →+* ℂ) (I : A.Exterior) (u : A.R) : ℂ :=
   A.sexticResiduePowerChar σ I 1 (Ideal.Quotient.mk (A.extendIdeal I) u)
@@ -35,10 +35,9 @@ theorem residueCoefficient_norm_of_isUnit (I : A.Exterior) (u : A.R)
   rw [residueCoefficient_eq]
   change ‖σ (MulChar.ofUnitHom (A.sexticResidueFamily I) _)‖ = 1
   rw [← hu.unit_spec, MulChar.ofUnitHom_coe]
-  have hp := A.sexticResidueFamily_normalized.1 I hu.unit
   have hp' : σ ((A.sexticResidueFamily I hu.unit : Fˣ) : F) ^ 6 = 1 := by
     rw [← map_pow]
-    simpa using congrArg (fun u : Fˣ => σ (u : F)) hp
+    simpa using congrArg (fun u : Fˣ => σ (u : F)) (A.sexticResidueFamily_normalized.1 I hu.unit)
   exact Complex.norm_eq_one_of_pow_eq_one hp' (by decide)
 
 end DedekindZetaZeroFree.AllRowEuler.UnitCovariance

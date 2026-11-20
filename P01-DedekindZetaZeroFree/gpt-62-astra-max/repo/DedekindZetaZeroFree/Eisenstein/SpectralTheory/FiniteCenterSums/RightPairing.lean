@@ -14,15 +14,15 @@ namespace DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 open ResidualSphericalGeometry ResidualWeakEnergy KPGlobalResidualConstruction
 open KPMsClearedTruncationL2.NativeWordBridge
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (M : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable {n : ℕ} (U : Fin n → KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (m : Fin n → ℕ)
-variable (w : ∀ i, Fin (m i) → List (Fin (KPContActualSphericalRightFieldIdentification.groupDimension F)))
+    (M : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    {n : ℕ} (U : Fin n → KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (m : Fin n → ℕ)
+    (w : ∀ i, Fin (m i) → List (Fin (KPContActualSphericalRightFieldIdentification.groupDimension F)))
 variable (a : ∀ i, Fin (m i) → ℂ)
-variable (Z : ∀ i, Fin (m i) → KPContActualAllCuspSource.SmoothSections F ζ hζ M R P H (U i))
+    (Z : ∀ i, Fin (m i) → KPContActualAllCuspSource.SmoothSections F ζ hζ M R P H (U i))
  abbrev rightCenterPairingWordDerivative := KPSmoothActualFlowData.wordDerivative F ζ hζ
 
 theorem finiteCenterSum_pairing_right
@@ -42,18 +42,13 @@ theorem finiteCenterSum_pairing_right
   let centers (ij : Σ i, Fin (m i)) : smoothAllWordL2 R :=
     ⟨originalScalar F ζ hζ (KPContActualAllCuspSource.level F ζ hζ M R P H (U ij.1))
         R P H (Z ij.1 ij.2), by
-      let c : KPMsClearedTruncationL2.smoothSpace F ζ hζ
-          (ActualSectionLift.nativeLevel F ζ hζ
-            (KPContActualAllCuspSource.level F ζ hζ M R P H (U ij.1))) :=
-        ⟨_, originalScalar_mem_smoothSpace F ζ hζ _ R P H (Z ij.1 ij.2)⟩
-      exact word_mem_smoothAllWordL2 R c
+      exact word_mem_smoothAllWordL2 R (⟨_, originalScalar_mem_smoothSpace F ζ hζ _ R P H (Z ij.1 ij.2)⟩)
         (represented_native_eigencenter_all_derivatives F ζ hζ M R P H (U ij.1)
           (Z ij.1 ij.2) (z ij.1 ij.2) (hz ij.1 ij.2) eig (he ij.1 ij.2)) []⟩
-  have hp := finite_word_pairing_right R Finset.univ
-    (fun ij : Σ i, Fin (m i) => a ij.1 ij.2) centers f
-    (fun ij => (w ij.1 ij.2).map (wordIndexEquiv F))
   simpa only [centers, Fintype.sum_sigma, finiteCenterSum, Finset.sum_apply, Pi.smul_apply,
-    smul_eq_mul, List.length_map] using hp
+    smul_eq_mul, List.length_map] using (finite_word_pairing_right R Finset.univ
+      (fun ij : Σ i, Fin (m i) => a ij.1 ij.2) centers f
+      (fun ij => (w ij.1 ij.2).map (wordIndexEquiv F)))
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 

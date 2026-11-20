@@ -18,8 +18,8 @@ open DedekindZetaZeroFree.Quantitative.RawFixed DedekindZetaZeroFree.Quantitativ
 open scoped Classical Topology
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
 theorem z₀_eq' : Scales.zLine = 2 / 5 := rfl
 
@@ -27,7 +27,12 @@ theorem y₀_eq' : Scales.wLine = 3 / 25 := rfl
 
 theorem pad_eq' : EulerDomain.pad = 1 / 1000000 := rfl
 
-theorem mem_margin_z (ξ w z : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ w.re ∧ w.re ≤ 4)
+section
+
+variable (ξ w z : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ w.re ∧ w.re ≤ 4)
+
+include hξ hw in
+theorem mem_margin_z
     (hz : 2 / 5 ≤ z.re ∧ z.re ≤ 2) :
     (ξ, w, z) ∈ EulerDomain.OmegaStarMargin (1 / 20) := by
   obtain ⟨hw1, hw2⟩ := hw
@@ -36,7 +41,8 @@ theorem mem_margin_z (ξ w z : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ w.r
   simp only [EulerDomain.OmegaStarMargin, Set.mem_setOf_eq]
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
 
-theorem mem_omega_strip (ξ w z : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ w.re ∧ w.re ≤ 4)
+include hξ hw in
+theorem mem_omega_strip
     (hz : Scales.zLine - EulerDomain.pad / 2 < z.re ∧ z.re < 3) :
     (ξ, w, z) ∈ EulerDomain.OmegaStar := by
   obtain ⟨hw1, hw2⟩ := hw
@@ -45,6 +51,8 @@ theorem mem_omega_strip (ξ w z : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ 
   rw [z₀_eq', pad_eq'] at hz1
   simp only [EulerDomain.OmegaStar, Set.mem_setOf_eq]
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
+
+end
 
 theorem rawKernel_differentiableOn_z (u : Frequency D.recipe)
     (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.re = 4)
@@ -58,15 +66,13 @@ theorem rawKernel_differentiableOn_z (u : Frequency D.recipe)
       simp [rawKernel, rawFactor, hm]
     rw [this]
     exact differentiableWithinAt_const 0
-  · have hmem := mem_omega_strip ξ w z hξ hw hz
-    have hz6 : 1 / 6 < (ξ, w, z).2.2.re := by
-      have h1 : Scales.zLine - EulerDomain.pad / 2 < z.re := hz.1
+  · have hz6 : 1 / 6 < (ξ, w, z).2.2.re := by
+      have h1 := hz.1
       rw [z₀_eq', pad_eq'] at h1
       show 1 / 6 < z.re
       linarith
-    have h := RawKernelRegularity31.rawKernel_differentiableAt D u hu Z hZ (ξ, w, z) hmem hz6 hm
     have hc : DifferentiableAt ℂ (fun z : ℂ => ((ξ, w, z) : ℂ × ℂ × ℂ)) z := by fun_prop
-    exact (h.comp z hc).differentiableWithinAt
+    exact ((RawKernelRegularity31.rawKernel_differentiableAt D u hu Z hZ (ξ, w, z) (mem_omega_strip ξ w z hξ hw hz) hz6 hm).comp z hc).differentiableWithinAt
 
 theorem norm_cpow_Z_le (Z : ℝ) (hZ : 0 < Z) (c : ℂ) (A : ℝ) (hA : |c.re| ≤ A) :
     ‖(Z : ℂ) ^ c‖ ≤ Real.exp (|Real.log Z| * A) := by
@@ -95,7 +101,7 @@ theorem kernel_norm_le_M (u : Frequency D.recipe) (hu : u ≠ principalFrequency
     ∃ K : ℝ, 0 ≤ K ∧ ∀ z : ℂ, 2 / 5 ≤ z.re → z.re ≤ 2 →
       ‖rawKernel D u ξ w z Z‖ ≤ K * ‖D.M z‖ := by
   obtain ⟨CL, hCL0, hCL⟩ := RawRightHecke31.recipe_L_right D (2 / 5) (by norm_num)
-  obtain ⟨CP, hCP0, hCP⟩ := RawEulerLocal31.correctionProduct_subpower D (1 / 20) (by norm_num)
+  obtain ⟨CP, hCP⟩ := RawEulerLocal31.correctionProduct_subpower D (1 / 20) (by norm_num)
     (1 / 2) (by norm_num)
   obtain ⟨X, hX0, hX⟩ : ∃ X : ℝ, 0 ≤ X ∧ ∀ z : ℂ, 2 / 5 ≤ z.re → z.re ≤ 2 →
       ‖AllRowEuler.InitialSeparation.correctionProduct D.context (rawFrequency D u) ξ w z‖ ≤ X :=
@@ -163,20 +169,21 @@ theorem M_decay_all (B : ℝ) (hB : 0 < B) :
   set t : ℝ := 1 + |y| with ht
   have ht1 : 1 ≤ t := by rw [ht]; linarith [abs_nonneg y]
   have ht0 : 0 < t := by linarith
-  have htn : 0 < t ^ n := pow_pos ht0 n
-  have h1 : ‖D.M ((x : ℂ) + (y : ℂ) * I)‖ ≤ |CM| * (t ^ n)⁻¹ := by
-    rw [← div_eq_mul_inv, le_div_iff₀ htn]
-    nlinarith [le_abs_self CM]
   have h2 : (t ^ n)⁻¹ ≤ t ^ (-B) := by
     rw [Real.rpow_neg ht0.le]
     apply inv_anti₀ (Real.rpow_pos_of_pos ht0 B)
     rw [← Real.rpow_natCast]
     exact Real.rpow_le_rpow_of_exponent_le ht1 hn
-  calc _ ≤ |CM| * (t ^ n)⁻¹ := h1
+  calc _ ≤ |CM| * (t ^ n)⁻¹ := (by
+    rw [← div_eq_mul_inv, le_div_iff₀ (pow_pos ht0 n)]
+    nlinarith [le_abs_self CM])
     _ ≤ |CM| * t ^ (-B) := mul_le_mul_of_nonneg_left h2 (abs_nonneg _)
 
-theorem kernel_decay_all (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ w.re ∧ w.re ≤ 4)
+variable (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ)
+    (hξ : ξ.re = 4) (hw : Scales.wLine ≤ w.re ∧ w.re ≤ 4)
+
+include hu hZ hξ hw in
+theorem kernel_decay_all
     (B : ℝ) (hB : 0 < B) :
     ∃ C : ℝ, ∀ x : ℝ, 2 / 5 ≤ x → x ≤ 2 → ∀ y : ℝ,
       ‖rawKernel D u ξ w ((x : ℂ) + (y : ℂ) * I) Z‖ ≤ C * (1 + |y|) ^ (-B) := by
@@ -184,25 +191,23 @@ theorem kernel_decay_all (u : Frequency D.recipe) (hu : u ≠ principalFrequency
   obtain ⟨CM, hCM⟩ := M_decay_all D B hB
   refine ⟨K * CM, fun x hx1 hx2 y => ?_⟩
   have hre : ((x : ℂ) + (y : ℂ) * I).re = x := by simp
-  have h1 := hK ((x : ℂ) + (y : ℂ) * I) (by rw [hre]; exact hx1) (by rw [hre]; exact hx2)
-  calc _ ≤ K * ‖D.M ((x : ℂ) + (y : ℂ) * I)‖ := h1
+  calc _ ≤ K * ‖D.M ((x : ℂ) + (y : ℂ) * I)‖ := (hK ((x : ℂ) + (y : ℂ) * I) (by rw [hre]; exact hx1) (by rw [hre]; exact hx2))
     _ ≤ K * (CM * (1 + |y|) ^ (-B)) := mul_le_mul_of_nonneg_left (hCM x hx1 hx2 y) hK0
     _ = _ := by ring
 
-theorem rawKernel_decayOn_z (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ w.re ∧ w.re ≤ 4) :
+include hu hZ hξ hw in
+theorem rawKernel_decayOn_z :
     LowRowXiControls.DecayOn (fun z : ℂ => rawKernel D u ξ w z Z) Scales.zLine 2 := by
   intro B hB
   obtain ⟨C, hC⟩ := kernel_decay_all D u hu Z hZ ξ w hξ hw B hB
   refine ⟨C, 0, fun x hx y _ => ?_⟩
-  have hx1 : 2 / 5 ≤ x := by
-    have := hx.1
-    rw [z₀_eq'] at this
-    exact this
-  exact hC x hx1 hx.2 y
+  refine hC x ?_ hx.2 y
+  have := hx.1
+  rw [z₀_eq'] at this
+  exact this
 
-theorem Iz_z_shift (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ w.re ∧ w.re ≤ 4) :
+include hu hZ hξ hw in
+theorem Iz_z_shift :
     Iz D u ξ w 2 Z = Iz D u ξ w Scales.zLine Z := by
   unfold Iz
   refine LowRowXiControls.verticalIntegral_eq_of_decayOn (by norm_num [Scales.zLine]) ?_

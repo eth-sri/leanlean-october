@@ -1,6 +1,6 @@
 module
 
-public import DedekindZetaZeroFree.Eisenstein.Continuation.Chamber.GraphHolomorphy
+public import DedekindZetaZeroFree.Eisenstein.Continuation.Chamber.DomainJetEquations
 
 @[expose] public section
 
@@ -13,11 +13,11 @@ namespace DedekindZetaZeroFree.KPContActualChamberDomainDefect
 abbrev V : Set ℂ := KPContActualChamberNormalSeries.V
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 abbrev level := KPContActualAllCuspSource.level F ζ hζ C R P H U
 abbrev Covered := KPContActualAllCuspSource.Covered F ζ hζ C R P H U
@@ -26,8 +26,8 @@ abbrev SmoothSections := KPContActualAllCuspSource.SmoothSections F ζ hζ C R P
 abbrev measure := KPContActualAllCuspSource.measure F ζ hζ C R P H U
 
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable (f : ℂ → S)
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (f : ℂ → S)
 
 def seriesScalar (s : ℂ) : Covered F ζ hζ C R P H U → ℂ :=
   KPChamberL2Defect.series (KPContActualChamberNormalSeries.lift F ζ hζ)
@@ -50,7 +50,7 @@ def sourceScalar (s : ℂ) : Covered F ζ hζ C R P H U → ℂ :=
   KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (source.descent.commutator s)
 
 variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
-variable (hR : R.adelicHaar = μG)
+    (hR : R.adelicHaar = μG)
 variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ
   (level F ζ hζ C R P H U) R P H)
 
@@ -65,9 +65,6 @@ local notation "lam" => KPContinuation.spectralCoordinate ((Module.finrank ℚ F
 
 structure DomainConclusions (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) where
-
-  normal : KPContActualChamberNormalSeries.ChamberConclusions F ζ hζ C R P H U ι f hι hf
-
   series : ℂ → SmoothSections F ζ hζ C R P H U
   series_formula : ∀ s ∈ V,
     KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U (series s) =
@@ -78,12 +75,6 @@ structure DomainConclusions (hι : Function.Injective ι)
       (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g) =
         KPContActualChamberNormalSeries.E F ζ hζ U ι f s g
 
-  series_casimir : ∀ s ∈ V,
-    ∀ (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
-      (z : KPFiniteCuspAtlas.SymmetricSpace F),
-    KPContActualSphericalFlatStage.localLaplacian (KPCuspLogShape.dimension F)
-      ((series s).val i).val z = lam s * ((series s).val i).val z
-
   u : ℕ → ℂ → (Δ).domain
   defect_memLp : ∀ k s, s ∈ V → MemLp
     (KPChamberL2Defect.scalarJet (defectScalar F ζ hζ C R P H U ι f B χ source) k s)
@@ -92,31 +83,8 @@ structure DomainConclusions (hι : Function.Injective ι)
   defect_ae : ∀ k s, s ∈ V →
     ((u k s : HU) : L2) =ᵐ[measure F ζ hζ C R P H U]
       KPChamberL2Defect.scalarJet (defectScalar F ζ hζ C R P H U ι f B χ source) k s
-  source_jet_memLp : ∀ k s, s ∈ V → MemLp
-    (KPChamberL2Defect.scalarJet (sourceScalar F ζ hζ C R P H U ι f B χ source) k s)
-    2 (measure F ζ hζ C R P H U)
 
-  source_jet_ae : ∀ k s, s ∈ V →
-    ((iteratedDerivWithin k source.h V s : HU) : L2) =ᵐ[measure F ζ hζ C R P H U]
-      KPChamberL2Defect.scalarJet (sourceScalar F ζ hζ C R P H U ι f B χ source) k s
   equation : ∀ s ∈ V, Δ (u 0 s) - lam s • (u 0 s : HU) = -source.h s
-
-  differentiated_equation : ∀ k s, s ∈ V →
-    Δ (u k s) - lam s • (u k s : HU) = -iteratedDerivWithin k source.h V s +
-      KPChamberL2Defect.spectralCorrection (Module.finrank ℚ F / 2)
-        (fun j z => (u j z : HU)) k s
-  derivative_identification : ∀ k s, s ∈ V →
-    iteratedDerivWithin k (fun z => (u 0 z : HU)) V s = (u k s : HU)
-
-  graph_holomorphic : ∀ k,
-    DifferentiableOn ℂ (fun s => ((u k s : HU), Δ (u k s))) V
-
-  graph_derivative_identification : ∀ k s, s ∈ V →
-    iteratedDerivWithin k (fun z => ((u 0 z : HU), Δ (u 0 z))) V s =
-      ((u k s : HU), Δ (u k s))
-  graph_locally_bounded : ∀ k, ∀ K : Set ℂ, IsCompact K → K ⊆ V →
-    ∃ M : ℝ, 0 ≤ M ∧ ∀ s ∈ K,
-      ‖(u k s : HU)‖ ≤ M ∧ KPChamberL2Defect.graphNorm Δ (u k s) ≤ M
 
 end DedekindZetaZeroFree.KPContActualChamberDomainDefect
 
@@ -188,7 +156,7 @@ private theorem domainDefect_leibniz
       exact ⟨hj.1, hj.2.trans (min_le_left _ _)⟩
     · intro j hj hn
       have hj2 : 2 < j := by simp only [Finset.mem_Icc] at hj hn; omega
-      simp [T, (KPContActualChamberCasimirJets.spectral_jets F s hs).2.2.2.2 j hj2]
+      simp [T, (KPContActualChamberCasimirJets.spectral_jets F s hs).2.2 j hj2]
   change (_ + _ • _) - _ = _
   have hsum' : (∑ j ∈ Finset.range k,
       ((Nat.choose k (j+1) : ℂ) * iteratedDerivWithin (j+1) (KPContActualChamberCasimirJets.lambda F) V s) • u (k-(j+1)) s) = _ := hsum
@@ -238,7 +206,7 @@ private theorem domainDefect_stage
       F ζ hζ C R P H U a ι s hs v b
   · intro a s hs v g b q
     exact ⟨(KPContFlatCuspCoefficientTransition.transport_formula F ζ hζ C R P H U a ι
-      s hs v g b).1,
+      s hs v g b),
       (KPContFlatCuspIncomingEvaluation.frequencies F ζ hζ C R P H U a).constantSystem.transition_formula
         g ((KPContFlatCuspIncomingEvaluation.b F ζ hζ C R P H U a ι s hs v).val b) q⟩
   · intro a s hs v p q
@@ -281,18 +249,15 @@ theorem kp_cont_actual_chamber_domain_defect
           ι f B χ source μG hμG hR realization hι hf) := by
   classical
   open KPContActualChamberDomainDefect in
-  have hStage := domainDefect_stage F ζ hζ C R P H U ι hι
   obtain ⟨B, ⟨source⟩⟩ := kp_cont_actual_all_cusp_source F ζ hζ C R P H U realization
-    ι hι hStage KPContinuation.spectralDomain KPContinuation.spectralDomain_isOpen
+    ι hι KPContinuation.spectralDomain KPContinuation.spectralDomain_isOpen
     (fun _ h => h) f hf T hT χ
   have htail := kp_cont_actual_chamber_three_l2_tails F ζ hζ C R P H U realization
     ι hι f hf B χ source
-  obtain ⟨r, hr, de, gh⟩ := kp_cont_actual_chamber_graph_holomorphy.{_, 0} F ζ hζ C R P H U
+  obtain ⟨r, _, de⟩ := kp_cont_actual_chamber_domain_equations.{_, 0} F ζ hζ C R P H U
     μG hμG hR realization ι hι f hf B χ source
   let v := KPContActualChamberThreeL2Tails.UJet F ζ hζ C R P H U ι f B χ source hι hf
   let h := KPContActualChamberThreeL2Tails.HJet F ζ hζ C R P H U ι f B χ source hι hf
-  let z := KPContActualChamberGraphHolomorphy.ZJet F ζ hζ C R P H U μG hμG hR realization
-    ι hι f hf B χ source de
   let Δ := KPContActualChamberDomainDefect.laplacian F ζ hζ C R P H U μG hμG hR realization
   let u : ℕ → ℂ → Δ.domain := fun k s =>
     if hs : s ∈ KPContActualChamberDomainDefect.V then ⟨v k s, de.mem_domain k s hs⟩ else 0
@@ -300,10 +265,6 @@ theorem kp_cont_actual_chamber_domain_defect
       (u k s : KPContActualChamberDomainDefect.Sector F ζ hζ C R P H U) = v k s := by
     intro k s hs
     simp [u, hs]
-  have hz : ∀ k s, s ∈ KPContActualChamberDomainDefect.V →
-      z k s = ((u k s : KPContActualChamberDomainDefect.Sector F ζ hζ C R P H U), Δ (u k s)) := by
-    intro k s hs
-    simp [z, KPContActualChamberGraphHolomorphy.ZJet, u, hs, v, Δ]
   have hV : KPContActualChamberDomainDefect.V ⊆ KPContinuation.spectralDomain := by
     intro s hs
     change (1 : ℝ)/3 < s.re at hs
@@ -314,36 +275,6 @@ theorem kp_cont_actual_chamber_domain_defect
     apply Subtype.ext
     apply MeasureTheory.Lp.ext
     exact (de.zero_representatives s hs).2.trans (source.source_ae s (hV hs)).symm
-  have he : ∀ s ∈ KPContActualChamberDomainDefect.V,
-      source.h s = KPContActualChamberCasimirJets.lambda F s • v 0 s - (z 0 s).2 := by
-    intro s hs
-    have hd := de.zero_equation s hs
-    change Δ ⟨v 0 s, de.mem_domain 0 s hs⟩ - KPContActualChamberCasimirJets.lambda F s • v 0 s = -h 0 s at hd
-    rw [hh0 s hs] at hd
-    have hz' := hz 0 s hs
-    have huv := hu 0 s hs
-    have hdu : u 0 s = ⟨v 0 s, de.mem_domain 0 s hs⟩ := by apply Subtype.ext; exact huv
-    rw [hdu] at hz'
-    rw [hz']
-    dsimp only
-    have hh := congrArg Neg.neg hd
-    simp only [neg_sub, neg_neg] at hh
-    exact hh.symm
-  have hhj : ∀ k s, s ∈ KPContActualChamberDomainDefect.V →
-      iteratedDerivWithin k source.h KPContActualChamberDomainDefect.V s = h k s := by
-    intro k s hs
-    have hj := domainDefect_leibniz F v z source.h (gh.value_holomorphic 0)
-      (gh.product_holomorphic 0) gh.value_derivatives gh.product_derivatives he k s hs
-    have hd := de.equation k s hs
-    have hz' : (z k s).2 = Δ ⟨v k s, de.mem_domain k s hs⟩ := by
-      simp [z, KPContActualChamberGraphHolomorphy.ZJet, hs, v, Δ]
-    change Δ ⟨v k s, de.mem_domain k s hs⟩ - KPContActualChamberCasimirJets.lambda F s • v k s =
-      -h k s + ∑ j ∈ Finset.Icc 1 (min k 2), ((Nat.choose k j : ℂ) * KPContActualChamberCasimirJets.lambdaJet F j s) • v (k-j) s at hd
-    rw [hj, hz']
-    have hh := congrArg Neg.neg hd
-    simp only [neg_sub, neg_add, neg_neg] at hh
-    rw [hh]
-    abel
   let series : ℂ → KPContActualChamberDomainDefect.SmoothSections F ζ hζ C R P H U := fun s =>
     if hs : s ∈ KPContActualChamberDomainDefect.V then
       ⟨KPContActualChamberCasimirJets.lineJet F ζ hζ C R P H U ι f hι hf 0 s,
@@ -374,22 +305,14 @@ theorem kp_cont_actual_chamber_domain_defect
     intro k s
     rfl
   refine ⟨B, source, ⟨{
-    normal := kp_cont_actual_chamber_normal_series F ζ hζ C R P H U ι hι f hf
     series := series
     series_formula := hseries
     series_lift := ?_
-    series_casimir := ?_
     u := u
     defect_memLp := ?_
     defect_ae := ?_
-    source_jet_memLp := ?_
-    source_jet_ae := ?_
     equation := ?_
-    differentiated_equation := ?_
-    derivative_identification := ?_
-    graph_holomorphic := ?_
-    graph_derivative_identification := ?_
-    graph_locally_bounded := ?_ }⟩⟩
+     }⟩⟩
   · intro s hs g
     unfold KPContActualCutoffSmoothDescent.lift
     rw [hseries s hs]
@@ -398,59 +321,17 @@ theorem kp_cont_actual_chamber_domain_defect
     unfold KPContActualChamberDomainDefect.seriesScalar
     rw [← heval s hs]
     exact he s hs g
-  · intro s hs i x
-    simpa only [series, dif_pos hs, KPContActualChamberCasimirJets.lambda, KPContActualChamberCasimirJets.d] using
-      KPGlobalResidualConstruction.ActualMeanZeroSection.actual_component_casimir
-        F ζ hζ C R P H U ι hι f hf s hs i x
   · intro k s hs
     rw [← hgscalar]
     exact (htail.covered_memLp k s hs).1
   · intro k s hs
     rw [hu k s hs, ← hgscalar]
     exact (htail.actual_ae k s hs).1
-  · intro k s hs
-    exact (htail.covered_memLp k s hs).2
-  · intro k s hs
-    rw [hhj k s hs]
-    exact (htail.actual_ae k s hs).2.1
   · intro s hs
     have hd := de.zero_equation s hs
     have hu' : u 0 s = ⟨v 0 s, de.mem_domain 0 s hs⟩ := by apply Subtype.ext; exact hu 0 s hs
     rw [hu', ← hh0 s hs]
     exact hd
-  · intro k s hs
-    have hu' : u k s = ⟨v k s, de.mem_domain k s hs⟩ := by apply Subtype.ext; exact hu k s hs
-    rw [hu', hhj k s hs]
-    have hc : KPChamberL2Defect.spectralCorrection (Module.finrank ℚ F / 2)
-        (fun j t => (u j t : KPContActualChamberDomainDefect.Sector F ζ hζ C R P H U)) k s =
-        KPChamberL2Defect.spectralCorrection (Module.finrank ℚ F / 2) v k s := by
-      unfold KPChamberL2Defect.spectralCorrection
-      apply Finset.sum_congr rfl
-      intro j hj
-      dsimp only
-      rw [hu (k-j) s hs]
-    rw [hc]
-    exact de.equation k s hs
-  · intro k s hs
-    have heq : Set.EqOn (fun t => (u 0 t : KPContActualChamberDomainDefect.Sector F ζ hζ C R P H U)) (v 0)
-        KPContActualChamberDomainDefect.V := fun t ht => hu 0 t ht
-    rw [(iteratedDerivWithin_congr heq) hs, gh.value_derivatives k s hs, hu k s hs]
-  · intro k
-    apply (gh.product_holomorphic k).congr
-    intro s hs
-    exact (hz k s hs).symm
-  · intro k s hs
-    have heq : Set.EqOn (fun t => ((u 0 t : KPContActualChamberDomainDefect.Sector F ζ hζ C R P H U), Δ (u 0 t))) (z 0)
-        KPContActualChamberDomainDefect.V := fun t ht => (hz 0 t ht).symm
-    rw [(iteratedDerivWithin_congr heq) hs, gh.product_derivatives k s hs]
-    exact hz k s hs
-  · intro k K hK hKV
-    obtain ⟨M, hM, hbound⟩ := de.uniform_bounds K hK hKV k
-    refine ⟨M, hM, ?_⟩
-    intro s hs
-    have hu' : u k s = ⟨v k s, de.mem_domain k s (hKV hs)⟩ := by apply Subtype.ext; exact hu k s (hKV hs)
-    rw [hu']
-    exact hbound s hs
 
 end DedekindZetaZeroFree
 

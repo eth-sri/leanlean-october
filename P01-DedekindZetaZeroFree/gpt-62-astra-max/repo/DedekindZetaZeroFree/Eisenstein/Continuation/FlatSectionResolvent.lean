@@ -11,7 +11,7 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.EisensteinSmoothGerms.ScalarSource
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem selected_scalar_continuation
     (R : PrincipalMellin.ActualRecipe S η) {N : TraceHaarTransport R}
@@ -33,7 +33,7 @@ theorem selected_scalar_continuation
   obtain ⟨C, _⟩ := KPGlobalTorusFiniteStages.compatibleModelData_exists F ζ hζ L
   obtain ⟨Haar, _, _, P, ⟨H⟩⟩ :=
     kp_ms_fixed_haar_disintegration F ζ hζ
-      (Measure.haar : Measure (KPLiteralRaw.G F ζ hζ)) inferInstance
+      Measure.haar inferInstance
   exact literal_scalar_continuation F ζ hζ C Haar P H
     B.sources.K B.sources.iwasawa (B.sources.flat v)
 

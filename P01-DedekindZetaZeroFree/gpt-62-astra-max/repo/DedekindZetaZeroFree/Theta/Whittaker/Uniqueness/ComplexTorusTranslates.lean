@@ -13,19 +13,23 @@ open KPGlobalResidualConstruction KPCplxPrincipalSeriesCharts KPCplxCharacterHaa
 open KPCplxActualImage KPCplxWhittakerUnique
 attribute [local instance] ContinuousLinearMap.addCommGroup
 
- def coreInImage (β : ℂˣ) : complexCore →ₗ[ℂ] Theta β :=
+ section
+
+variable (β : ℂˣ)
+
+def coreInImage : complexCore →ₗ[ℂ] Theta β :=
   complexCore.subtype.codRestrict (imageSubmodule β) (by
     intro h
     rw [imageSubmodule_eq_top]
     trivial)
 
- def coreRestriction (β : ℂˣ) : (Theta β →L[ℂ] ℂ) →ₗ[ℂ]
+ def coreRestriction : (Theta β →L[ℂ] ℂ) →ₗ[ℂ]
     (complexCore →ₗ[ℂ] ℂ) where
   toFun L := L.toLinearMap.comp (coreInImage β)
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
 
- theorem coreRestriction_injective (β : ℂˣ) :
+ theorem coreRestriction_injective :
     Function.Injective (coreRestriction β) := by
   intro L M he
   ext h
@@ -53,21 +57,25 @@ attribute [local instance] ContinuousLinearMap.addCommGroup
   rw [heval] at hL
   exact tendsto_nhds_unique hL hM
 
- def restrictedWhittakerSpace (β : ℂˣ) (ψ : AddChar ℂ Circle) :
+ def restrictedWhittakerSpace (ψ : AddChar ℂ Circle) :
     Submodule ℂ (complexCore →ₗ[ℂ] ℂ) :=
   (whittakerSpace β ψ).map (coreRestriction β)
 
- theorem restrictedWhittakerSpace_eq_span (β : ℂˣ) (ψ : AddChar ℂ Circle)
-    (hψ : Continuous ψ) (hne : ψ ≠ 1) :
+end
+
+ variable (β : ℂˣ) (ψ : AddChar ℂ Circle) (hψ : Continuous ψ) (hne : ψ ≠ 1)
+
+include hψ hne in
+theorem restrictedWhittakerSpace_eq_span :
     ∃ L : Theta β →L[ℂ] ℂ, L ≠ 0 ∧ L ∈ whittakerSpace β ψ ∧
       restrictedWhittakerSpace β ψ = Submodule.span ℂ {coreRestriction β L} := by
   obtain ⟨L, hL, hmem, -, hspan⟩ := transported_jacquet_generator β ψ hψ hne
   refine ⟨L, hL, hmem, ?_⟩
   rw [restrictedWhittakerSpace, hspan, Submodule.map_span]
-  simp only [Set.image_singleton]
+  simp
 
- theorem continuousWhittaker_comparison (β : ℂˣ) (ψ : AddChar ℂ Circle)
-    (hψ : Continuous ψ) (hne : ψ ≠ 1)
+ include hψ hne in
+theorem continuousWhittaker_comparison
     (L M : Theta β →L[ℂ] ℂ) (hL : L ∈ whittakerSpace β ψ)
     (hM : M ∈ whittakerSpace β ψ) (h : complexCore)
     (hh : coreRestriction β M h ≠ 0) :
@@ -76,13 +84,10 @@ attribute [local instance] ContinuousLinearMap.addCommGroup
     intro hz
     apply hh
     simp [hz, coreRestriction]
-  let : AddCommGroup (Theta β →L[ℂ] ℂ) :=
+  let :=
     @ContinuousLinearMap.addCommGroup ℂ _ ℂ _ (Theta β) _ _ ℂ _ _ _ _ (RingHom.id ℂ) _
-  have hd := (whittaker_dimension_one β ψ hψ hne).2
-  have hMn : (⟨M, hM⟩ : whittakerSpace β ψ) ≠ 0 := by
-    intro hz
-    exact hMne (congrArg Subtype.val hz)
-  obtain ⟨c, hc⟩ := exists_smul_eq_of_finrank_eq_one hd hMn
+  have hMn : (⟨M, hM⟩ : whittakerSpace β ψ) ≠ 0 := fun hz => hMne (congrArg Subtype.val hz)
+  obtain ⟨c, hc⟩ := exists_smul_eq_of_finrank_eq_one ((whittaker_dimension_one β ψ hψ hne).2) hMn
     (⟨L, hL⟩ : whittakerSpace β ψ)
   have he : L = c • M := (congrArg Subtype.val hc).symm
   have hcoef : coreRestriction β L h / coreRestriction β M h = c := by

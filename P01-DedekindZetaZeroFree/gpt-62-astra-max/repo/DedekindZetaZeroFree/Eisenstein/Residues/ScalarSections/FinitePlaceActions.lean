@@ -11,22 +11,26 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open NumberField KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct
 open TensorActionSource ThetaExpansion
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
-def localFiniteAction (q : KPFinitePlace F)
+section
+
+variable (q : KPFinitePlace F)
+
+def localFiniteAction
     (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) :
     Plus R.A P C (Sum.inr q) →ₗ[ℂ] Plus R.A P C (Sum.inr q) :=
   KPLocalPrincipalSeries.IPlus (C.canonical q).borel (C.polarization q)
     (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) a)
 
- theorem localFiniteAction_value (q : KPFinitePlace F)
+ theorem localFiniteAction_value
     (a g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
     (f : Plus R.A P C (Sum.inr q)) :
     localValue R.A P C (Sum.inr q) g (localFiniteAction R P C q a f) =
@@ -34,7 +38,7 @@ def localFiniteAction (q : KPFinitePlace F)
   change f.val (_ * _) = f.val (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (g*a))
   rw [map_mul]
 
- theorem transition_update_finite (q : KPFinitePlace F)
+ theorem transition_update_finite
     (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
     (s t : RestrictedTensorSimple.Level (bad R.A P C)) (hst : s ≤ t)
     (hq : Sum.inr q ∈ s.val) (x : ∀ j : s.val, Plus R.A P C j.val) :
@@ -48,18 +52,16 @@ def localFiniteAction (q : KPFinitePlace F)
   congr 1
   funext j
   by_cases hj : j.val = Sum.inr q
-  · have hjs : j.val ∈ s.val := hj ▸ hq
-    have hji : j = ⟨Sum.inr q, hst hq⟩ := Subtype.ext hj
+  · have hji : j = ⟨Sum.inr q, hst hq⟩ := Subtype.ext hj
     subst j
     simp [hq]
-  · have hji : j ≠ ⟨Sum.inr q, hst hq⟩ := fun h => hj (congrArg Subtype.val h)
-    rw [Function.update_of_ne hji]
+  · rw [Function.update_of_ne (fun h => hj (congrArg Subtype.val h))]
     split_ifs with hjs
     · rw [Function.update_of_ne (show (⟨j.val, hjs⟩ : s.val) ≠ ⟨Sum.inr q, hq⟩ from
         fun h => hj (congrArg Subtype.val h))]
     · rfl
 
- theorem rawStageValue_update_finite (q : KPFinitePlace F)
+ theorem rawStageValue_update_finite
     (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
     (s : RestrictedTensorSimple.Level (bad R.A P C)) (hq : Sum.inr q ∈ s.val)
     (x : ∀ j : s.val, Plus R.A P C j.val) (g : Raw R.A) :
@@ -87,6 +89,8 @@ def localFiniteAction (q : KPFinitePlace F)
   simp only [rawStageValue, LinearMap.comp_apply, PiTensorProduct.map_tprod]
   exact congrArg (fun z => rationalEvaluation R.A (comparison R.A P C
     (RestrictedTensorSimple.stageInclusion _ _ _ s (PiTensorProduct.tprod ℂ z)))) he
+
+end
 
 set_option maxHeartbeats 8000000 in
  theorem rawCoreInsertion_update_finite (q : KPFinitePlace F)

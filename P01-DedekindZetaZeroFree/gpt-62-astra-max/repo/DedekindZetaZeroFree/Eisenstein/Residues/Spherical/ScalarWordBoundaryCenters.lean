@@ -9,30 +9,26 @@ open scoped Classical NumberField Topology ContDiff
 open MeasureTheory Filter
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming cutoff → cutoff
-open _root_.DedekindZetaZeroFree renaming canonicalRealization → canonicalRealization
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming lift_eq → lift_eq
+
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {SS : SArithmeticData F} {η : RayClassCharacter F SS.modulus}
-variable (AR : PrincipalMellin.ActualRecipe SS η)
-variable (AP : KPGlobalTorusFiniteStages.CompatibleModelData F AR.A.zeta12 AR.A.primitive_zeta12)
-variable (AC : KPGlobalTorusFiniteStages.LocalFiberData F AR.A.zeta12 AR.A.primitive_zeta12 AP)
-variable (D : KPGlobalTorusInducingPlan.ModelData F AR.A.zeta12 AR.A.primitive_zeta12)
-variable (Haar : KPSmoothLocalQuotientCharts.HaarRecipe F AR.A.zeta12 AR.A.primitive_zeta12)
-variable (Transport : KPMsFixedHaarDisintegration.SphericalTransport F AR.A.zeta12 AR.A.primitive_zeta12)
+    {SS : SArithmeticData F} {η : RayClassCharacter F SS.modulus}
+    (AR : PrincipalMellin.ActualRecipe SS η)
+    (AP : KPGlobalTorusFiniteStages.CompatibleModelData F AR.A.zeta12 AR.A.primitive_zeta12)
+    (AC : KPGlobalTorusFiniteStages.LocalFiberData F AR.A.zeta12 AR.A.primitive_zeta12 AP)
+    (D : KPGlobalTorusInducingPlan.ModelData F AR.A.zeta12 AR.A.primitive_zeta12)
+    (Haar : KPSmoothLocalQuotientCharts.HaarRecipe F AR.A.zeta12 AR.A.primitive_zeta12)
+    (Transport : KPMsFixedHaarDisintegration.SphericalTransport F AR.A.zeta12 AR.A.primitive_zeta12)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F AR.A.zeta12 AR.A.primitive_zeta12 Haar Transport)
-variable (U : KPMsRationalCompactCrossPairing.Level F AR.A.zeta12 AR.A.primitive_zeta12)
+    (U : KPMsRationalCompactCrossPairing.Level F AR.A.zeta12 AR.A.primitive_zeta12)
 local notation "level" => KPContActualAllCuspSource.level F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U
 local notation "G" => KPContSectorCoveredQuotientVocabulary.ActualCover F AR.A.zeta12 AR.A.primitive_zeta12
 
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming scalar_analytic_of_right_holomorphic → scalar_analytic_of_right_holomorphic
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming word_smul → word_smul
-open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy renaming actualRightWord_compact_holomorphy → actualRightWord_compact_holomorphy
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming word_zero → word_zero
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer (scalar_analytic_of_right_holomorphic word_smul)
+open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy (actualRightWord_compact_holomorphy)
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (word_zero)
 theorem spherical_word_scalar_hilbert_boundary_producer
     (v : KPContActualSphericalFlatStage.Stage F AR.A.zeta12 AR.A.primitive_zeta12 U)
     (w : List (Fin (groupDimension F))) :
@@ -81,7 +77,7 @@ theorem spherical_word_scalar_hilbert_boundary_producer
           exact deriv_const _ _
       exact (congrFun hwz g).symm
     · intro g s hs
-      exact (analyticAt_const (v := (0 : ℂ))).meromorphicAt
+      exact (analyticAt_const).meromorphicAt
     · intro s hs hne
       ext g
       simp
@@ -102,9 +98,7 @@ theorem spherical_word_scalar_hilbert_boundary_producer
         rw [KPContSectorLineL2Isometry.scalarRepresentative_eq_symm]
         exact congrArg Subtype.val (LinearEquiv.map_zero
           (KPContSectorScalarLineAlgebra.S F AR.A.zeta12 AR.A.primitive_zeta12 level Haar Transport H).symm)
-      refine ⟨hs ▸ (MemLp.zero : MemLp
-        (0 : KPContActualAllCuspSource.Covered F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U → ℂ)
-        2 (KPContActualAllCuspSource.measure F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U)), ?_⟩
+      refine ⟨hs ▸ MemLp.zero, ?_⟩
       simp only [hs, MemLp.toLp_zero]
       rfl
     · simpa using (sourceLaplacian F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U).graph.zero_mem
@@ -112,11 +106,9 @@ theorem spherical_word_scalar_hilbert_boundary_producer
       simp [KPContFlatCuspIncomingEvaluation.sheetEvaluation, KPContFlatCommonLevelKernel.L_formula, KPContFlatCuspIncomingEvaluation.zeroProjection, KPContFlatCuspIncomingEvaluation.projectedScalar]
     · intro g
       have hz : groupScalar F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U (0 : Smooth) = 0 := by
-        have he := groupScalar_smul F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U (0 : ℂ) (0 : Smooth)
-        simpa using he
+        simpa using (groupScalar_smul F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U (0 : ℂ) (0 : Smooth))
       rw [hz]
-      have he := ResidualSphericalGeometry.casimir_smul F AR.A.zeta12 AR.A.primitive_zeta12 (0 : ℂ) (0 : G → ℂ) g
-      simpa using he
+      simpa using (ResidualSphericalGeometry.casimir_smul F AR.A.zeta12 AR.A.primitive_zeta12 (0 : ℂ) (0 : G → ℂ) g)
     · have hz : groupScalar F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U (0 : Smooth) = 0 := by
         have he := groupScalar_smul F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U (0 : ℂ) (0 : Smooth)
         simpa using he
@@ -173,18 +165,12 @@ theorem spherical_word_scalar_hilbert_boundary_producer
       change N s g = (s - c) * A s g at heq
       rw [heq]
       exact mul_div_cancel_left₀ (A s g) (sub_ne_zero.mpr hsne)
-    have hzero : (0 : ℂ) ∈ KPContinuation.spectralDomain := by
-      norm_num [KPContinuation.spectralDomain]
-    obtain ⟨r, hr, hb, N, hNj, hNa, he, hcent⟩ := hwordlocal 0 hzero
+    obtain ⟨r, hr, hb, N, hNj, hNa, he, hcent⟩ := hwordlocal 0 (by
+      norm_num [KPContinuation.spectralDomain])
     refine ⟨A, N, ?_, hm, r, hr, hb, ?_, hNa, hNj, ?_⟩
     · intro s hs g
-      have hz : groupScalar F AR.A.zeta12 AR.A.primitive_zeta12 D Haar Transport H U (Z s) =
-          fun h => ∑' c : KPChamberBruhatTwoCells.RationalQuotient F,
-            (KPContFlatSourceRecipe.flatR F AR.A.zeta12 AR.A.primitive_zeta12 s v.val).val
-              (KPLiteralRaw.rationalLift F AR.A.zeta12 AR.A.primitive_zeta12 (Quotient.out c) * h) :=
-        funext (hch s hs)
-      exact congrFun (congrArg (actualRightWord F AR.A.zeta12 AR.A.primitive_zeta12 w) hz) g
-    · simpa only [sub_zero] using he
+      exact congrFun (congrArg (actualRightWord F AR.A.zeta12 AR.A.primitive_zeta12 w) (funext (hch s hs))) g
+    · simpa using he
     · obtain ⟨Z0, z0, hz0, heig0, hboundary0, hnative0, hvalue0, hcus0⟩ := hcent
       exact ⟨Z0, z0, hz0, heig0, hboundary0 rfl, hnative0, hvalue0, hcus0⟩
 

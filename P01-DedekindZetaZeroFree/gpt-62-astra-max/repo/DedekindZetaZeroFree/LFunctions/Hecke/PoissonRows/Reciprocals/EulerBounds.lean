@@ -21,7 +21,7 @@ theorem euler_inverse_bound (F : Type) [Field F] [NumberField F] :
     rw [← Complex.exp_neg, Complex.norm_exp]
     apply Real.exp_le_exp.mpr
     rw [Complex.neg_re]
-    have h1 : |ℓ.re| ≤ ‖ℓ‖ := Complex.abs_re_le_norm ℓ
+    have h1 := Complex.abs_re_le_norm ℓ
     have h2 : -ℓ.re ≤ |ℓ.re| := neg_le_abs _
     linarith
   refine ⟨Real.exp E, Real.exp_pos E, ?_⟩

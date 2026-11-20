@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -78,7 +74,7 @@ noncomputable instance
       (ha
         ⟨σ⁻¹ * τ * σ,
           Subgroup.Normal.conj_mem'
-            (H := rationalCyclotomicTorsionClosure.toSubgroup)
+
             inferInstance τ.1 τ.2 σ⟩)
 
 /-- The torsion-fixed cyclotomic field is Galois over `ℚ`. -/

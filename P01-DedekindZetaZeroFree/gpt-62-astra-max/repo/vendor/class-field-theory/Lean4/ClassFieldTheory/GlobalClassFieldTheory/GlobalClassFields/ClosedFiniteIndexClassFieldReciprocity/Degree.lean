@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -47,17 +44,17 @@ theorem closedFiniteIndexClassField_finrank_eq_index
   calc
     Module.finrank K
         (closedFiniteIndexClassField
-          (K := K) H hclosed) =
+           H hclosed) =
         (_root_.ideleClassNorm K
           (closedFiniteIndexClassField
-            (K := K) H hclosed)).range.index :=
+             H hclosed)).range.index :=
       (ideleClassNorm_index_eq_finrank_abelian K
         (closedFiniteIndexClassField
-          (K := K) H hclosed)).symm
+           H hclosed)).symm
     _ = H.index :=
       congrArg Subgroup.index
         (closedFiniteIndexClassField_ideleClassNorm_range
-          (K := K) H hclosed)
+           H hclosed)
 
 end GlobalClassFields
 end GlobalClassFieldTheory

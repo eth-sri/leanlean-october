@@ -17,8 +17,8 @@ local instance : AddCommGroup complexCore := Submodule.addCommGroup complexCore
 local instance : Module ℂ complexCore := Submodule.module complexCore
 local instance : TopologicalSpace complexCore := instTopologicalSpaceSubtype
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 
  def compactHead (s : RestrictedTensorSimple.Level (LiteralSource.bad A P C))
     (K : Set (LiteralSource.Raw A)) (hK : IsCompact K) :=
@@ -38,8 +38,7 @@ def stageSmoothObservationLinear
 theorem stageSmoothObservationLinear_continuous
     (t : RestrictedTensorSimple.Level (LiteralSource.bad A P C))
     (y : ∀ j : t.val, LiteralSource.Plus A P C j.val) (w : InfinitePlace F)
-    (K : Set (LiteralSource.Raw A)) : Continuous (stageSmoothObservationLinear A P C t y w K) := by
-  exact ContinuousMap.continuous_of_continuous_uncurry _
+    (K : Set (LiteralSource.Raw A)) : Continuous (stageSmoothObservationLinear A P C t y w K) := ContinuousMap.continuous_of_continuous_uncurry _
     ((CanonicalStageSlot.negative_raw_joint A P C t y w).comp
       (continuous_fst.prodMk (continuous_subtype_val.comp continuous_snd)))
 

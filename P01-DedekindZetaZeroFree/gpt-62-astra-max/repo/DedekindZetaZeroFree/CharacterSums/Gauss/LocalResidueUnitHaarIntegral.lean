@@ -67,7 +67,6 @@ theorem actual_residue_unit_haar_integral
         (residueCardinality (LocalField F q) : ℂ) := by
   have hcont : Continuous
       (AddChar.toMonoidHomEquiv.symm ((Units.coeHom ℂ).comp ψ)) := by
-    change Continuous (fun x : LocalField F q => (ψ (Multiplicative.ofAdd x) : ℂ))
     exact Units.continuous_val.comp hψ
   simpa only [residueCardinality, Nat.card_eq_fintype_card] using
     KPTameGauss.additive_haar_shell_integral μ hμ π hπ κ

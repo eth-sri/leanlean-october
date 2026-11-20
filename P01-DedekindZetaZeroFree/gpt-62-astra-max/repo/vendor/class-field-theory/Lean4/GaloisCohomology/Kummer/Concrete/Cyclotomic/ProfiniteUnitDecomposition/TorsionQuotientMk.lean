@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -42,8 +40,7 @@ theorem torsionQuotientEquivOfZHatMulDecomposition_mk
     (g : G) :
     torsionQuotientEquivOfZHatMulDecomposition
         G T E hT (QuotientGroup.mk g) =
-      (E g).1 := by
-  rfl
+      (E g).1 := rfl
 
 end KummerTheory
 

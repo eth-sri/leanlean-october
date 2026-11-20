@@ -12,8 +12,8 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.CurrentBoundaryShapeTransport
 open KPMsActualAngularSource KPMsNativeOffsetMass KPMsNativeOffsetComparison
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 
 theorem frame_eq_crossTest
     (M : NativeMeasuredSource F ζ hζ R P) (V : Level F ζ hζ)

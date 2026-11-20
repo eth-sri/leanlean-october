@@ -31,17 +31,6 @@ def rawCoefficient : Sign → Representation ℂ (actualTorus F ζ hζ v) (Induc
 
 abbrev rawInduced (ε : Sign) := sectionSpace S.borel P ε 0
 
-private theorem coefficient_smooth_canonical (ε : Sign) :
-    SmoothRepresentation (rawCoefficient F ζ hζ v S P ε) := by
-  cases ε with
-  | plus => exact tau_smooth S.heisenberg P
-  | minus =>
-    intro b
-    obtain ⟨J, hJ⟩ := tau_smooth S.heisenberg P b
-    refine ⟨J.comap S.borel.weyl.toMulEquiv.toMonoidHom S.borel.weyl.continuous, ?_⟩
-    intro j hj
-    exact hJ (S.borel.weyl j) hj
-
 theorem coefficient_smooth_at_depth (m : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F v m) (ε : Sign) :
     letI := KPLocalSmoothRepresentation.finiteCoverTopology F ζ hζ v m
@@ -54,7 +43,14 @@ theorem coefficient_smooth_at_depth (m : ℕ)
     (TopologicalSpace.induced Subtype.val
       (KPLocalSmoothRepresentation.finiteCoverTopology F ζ hζ v m)) _ _ _
   rw [← ht]
-  exact coefficient_smooth_canonical F ζ hζ v S P ε
+  cases ε with
+  | plus => exact tau_smooth S.heisenberg P
+  | minus =>
+    intro b
+    obtain ⟨J, hJ⟩ := tau_smooth S.heisenberg P b
+    refine ⟨J.comap S.borel.weyl.toMulEquiv.toMonoidHom S.borel.weyl.continuous, ?_⟩
+    intro j hj
+    exact hJ (S.borel.weyl j) hj
 
 section Equivalence
 open KPLocalSmoothRepresentation
@@ -99,6 +95,8 @@ private theorem projection_binding (g : FiniteCover F ζ hζ v) :
  obtain ⟨g, rfl⟩ := QuotientGroup.mk'_surjective (KPPGLLocalCover.splitScalarSubgroup F ζ hζ (Sum.inr v)) g
  exact (S.openCell S.polarization).projection_eq g
 
+alias TameValuationBases.projection_binding := projection_binding
+
 private theorem modulus_binding (h : Torus F ζ hζ v) :
  (((dB F ζ hζ v (KPLocalInductionJacquetReciprocity.torusToBorel F ζ hζ v m hm h) : ℝ≥0) : ℝ) : ℂ) = deltaHalf S.borel (S.borel.torus h) := by
  have hp : Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d (KPRankOneInduction.LocalField F v) (S.borel.coordinate h) 1) = projection F ζ hζ v h.val := by
@@ -138,7 +136,6 @@ include hm in
     change (S.borel.upperRoot x : FiniteCover F ζ hζ v) = upperRoot F ζ hζ v x at hn
     rw [hn] at hv
     exact hv
-  let q := KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ v
   have hb : borelBridge F ζ hζ v S b =
       KPLocalInductionJacquetReciprocity.torusToBorel F ζ hζ v m hm (S.borel.retract b) *
         ⟨upperRoot F ζ hζ v x,
@@ -160,10 +157,6 @@ def equiv (ε : Sign) :
       (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ v)
       (rawCoefficient F ζ hζ v S P ε) ≃ₗ[ℂ] rawInduced F ζ hζ v S P ε := by
   let τ := rawCoefficient F ζ hζ v S P ε
-  have ht : KPRankOneOpenCellKernel.coverTopology F ζ hζ v =
-      finiteCoverTopology F ζ hζ v m :=
-    KPPGLLocalCover.finiteTopology_independent F ζ hζ v _ m
-      (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ v) hm
   let B := Borel F ζ hζ v
   let q := KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ v
   let σ := inflatedRepresentation F ζ hζ v q τ
@@ -205,8 +198,8 @@ def equiv (ε : Sign) :
         exact ⟨J, fun j hj => funext (hJ j hj)⟩
     rw [hsource]
     rw [show rightFixed (KPRankOneOpenCellKernel.coverTopology F ζ hζ v) =
-      rightFixed (finiteCoverTopology F ζ hζ v m) from congrArg rightFixed ht]
-    change rightFixed (finiteCoverTopology F ζ hζ v m) ↔ _
+      rightFixed (finiteCoverTopology F ζ hζ v m) from congrArg rightFixed (KPPGLLocalCover.finiteTopology_independent F ζ hζ v _ m
+        (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ v) hm)]
     letI := finiteCoverTopology F ζ hζ v m
     letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ v m hm).2.2.1
     change rightFixed (finiteCoverTopology F ζ hζ v m) ↔
@@ -232,8 +225,7 @@ theorem equiv_value (ε : Sign)
     (f : PrincipalSeries F ζ hζ v m
       (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ v)
       (rawCoefficient F ζ hζ v S P ε)) (g : ActualCover F ζ hζ v) :
-    (equiv F ζ hζ v S P m hm ε f).val g = f.val.val g := by
-  rfl
+    (equiv F ζ hζ v S P m hm ε f).val g = f.val.val g := rfl
 
 end Equivalence
 
@@ -276,22 +268,25 @@ def eta (π : (K F v)ˣ) (j : Fin 3) : actualTorus F ζ hζ v :=
     · simp [KubotaRankTwo.d]
     · simp [KubotaRankTwo.d]⟩
 
-def coefficient (S : CanonicalFiniteInducingData F ζ hζ v)
-    (P : Polarization S.heisenberg) : KPLocalPrincipalSeries.Sign →
+section
+
+variable (S : CanonicalFiniteInducingData F ζ hζ v) (P : Polarization S.heisenberg)
+
+def coefficient : KPLocalPrincipalSeries.Sign →
       Representation ℂ (actualTorus F ζ hζ v) (InducedModule P)
   | .plus => tau P
   | .minus => weylConjugate P S.borel.weyl
 
-abbrev induced (S : CanonicalFiniteInducingData F ζ hζ v)
-    (P : Polarization S.heisenberg) (ε : KPLocalPrincipalSeries.Sign) :=
+abbrev induced (ε : KPLocalPrincipalSeries.Sign) :=
   sectionSpace S.borel P ε 0
 
-abbrev Jacquet (S : CanonicalFiniteInducingData F ζ hζ v)
-    (P : Polarization S.heisenberg) (ε : KPLocalPrincipalSeries.Sign)
+abbrev Jacquet (ε : KPLocalPrincipalSeries.Sign)
     (ψ : Multiplicative (K F v) →* ℂˣ) :=
   KPCoinvariants.Coinvariants (V := induced F ζ hζ v S P ε)
     ((principalSeries S.borel P ε 0).comp
       (S.borel.B.subtype.comp S.borel.upperRoot)) ψ
+
+end
 
 def ConductorIntegers (π : (K F v)ˣ)
     (ψ : Multiplicative (K F v) →* ℂˣ) : Prop :=
@@ -319,6 +314,7 @@ private theorem tame_three_not_mem (ht : IsTame F v) :
 theorem exists_canonical_tame_polarization
     (S : CanonicalFiniteInducingData F ζ hζ v) (ht : IsTame F v) :
     ∃ P : Polarization S.heisenberg, IsCanonicalTamePolarization F ζ hζ v S P := by
+  let algebraMap₀ := algebraMap F (K F v)
   classical
   let L := (KPTameValuationCoordinates.unitCubeClasses (K F v)).comap
     S.cubeClassEquiv.toMonoidHom
@@ -332,25 +328,20 @@ theorem exists_canonical_tame_polarization
     intro h
     have h0 : (0 : WithZero (Multiplicative ℤ)) = WithZero.exp (-1 : ℤ) := by simpa [h] using hp'
     exact WithZero.exp_ne_zero h0.symm
-  let π : (K F v)ˣ := Units.mk0 p hpne
   obtain ⟨e, he, hj⟩ := KPTameValuationCoordinates.valuation_quotient_coordinates
-    (K F v) (algebraMap F (K F v) ζ)
-    (hζ.map_of_injective (algebraMap F (K F v)).injective)
-    (tame_three_not_mem F v ht) π hp'
-  have hmap : L.map S.cubeClassEquiv.toMonoidHom =
-      KPTameValuationCoordinates.unitCubeClasses (K F v) :=
-    Subgroup.map_comap_eq_self_of_surjective S.cubeClassEquiv.surjective _
+    (K F v) (algebraMap₀ ζ)
+    (hζ.map_of_injective (algebraMap₀).injective)
+    (tame_three_not_mem F v ht) (Units.mk0 p hpne) hp'
   let c := (QuotientGroup.congr L
-    (KPTameValuationCoordinates.unitCubeClasses (K F v)) S.cubeClassEquiv hmap).trans e
+    (KPTameValuationCoordinates.unitCubeClasses (K F v)) S.cubeClassEquiv (Subgroup.map_comap_eq_self_of_surjective S.cubeClassEquiv.surjective _)).trans e
   have hindex : L.index = 3 := by
     rw [Subgroup.index_eq_card, Nat.card_congr c.toEquiv]
-    change Nat.card (ZMod 3) = 3
     simp
   have hcard : Nat.card S.D = 9 := by
     rw [Nat.card_congr S.cubeClassEquiv.toEquiv]
     exact KPLocalTorus.card_cubeClasses_tame (K F v)
-      ((algebraMap F (K F v) ζ) ^ 4)
-      ((hζ.map_of_injective (algebraMap F (K F v)).injective).pow (by decide) (by decide))
+      ((algebraMap₀ ζ) ^ 4)
+      ((hζ.map_of_injective (algebraMap₀).injective).pow (by decide) (by decide))
       (tame_three_not_mem F v ht)
   have hLcard : Nat.card L = 3 := by
     have h := L.card_mul_index
@@ -367,12 +358,9 @@ theorem exists_canonical_tame_polarization
     have hk' : (g : S.D) ^ k = y := congrArg Subtype.val hk
     rw [← hn', ← hk']
     simp [map_zpow, MonoidHom.zpow_apply, S.heisenberg.alternating]
-  have hne : {M : Subgroup S.D | L ≤ M ∧
-      FinitePolarization.IsIsotropic S.heisenberg.pairing M}.Nonempty :=
-    ⟨L, le_rfl, hiso⟩
   obtain ⟨M, hM, hmax⟩ := Set.Finite.exists_maximal
     (Set.toFinite {M : Subgroup S.D | L ≤ M ∧
-      FinitePolarization.IsIsotropic S.heisenberg.pairing M}) hne
+      FinitePolarization.IsIsotropic S.heisenberg.pairing M}) (⟨L, le_rfl, hiso⟩)
   have hMmax : FinitePolarization.IsMaximalIsotropic S.heisenberg.pairing M :=
     ⟨hM.2, fun N hMN hN => le_antisymm (hmax ⟨hM.1.trans hMN, hN⟩ hMN) hMN⟩
   have hMi : M.index = 3 := by
@@ -420,21 +408,20 @@ theorem actual_valuation_quotient
     (K F v) (algebraMap F (K F v) ζ)
     (hζ.map_of_injective (algebraMap F (K F v)).injective)
     (tame_three_not_mem F v ht) π hπ
+  let unitCubeClasses₀ := KPTameValuationCoordinates.unitCubeClasses (K F v)
   have hmap : P.L.map S.cubeClassEquiv.toMonoidHom =
-      KPTameValuationCoordinates.unitCubeClasses (K F v) := by
+      unitCubeClasses₀ := by
     rw [hP, Subgroup.map_comap_eq_self_of_surjective S.cubeClassEquiv.surjective]
   let c := QuotientGroup.congr P.L
-    (KPTameValuationCoordinates.unitCubeClasses (K F v)) S.cubeClassEquiv hmap
+    (unitCubeClasses₀) S.cubeClassEquiv hmap
   refine ⟨c.trans e, ?_, ?_⟩
   · intro t
-    change e (c (QuotientGroup.mk' P.L (S.heisenberg.π t))) = _
-    change e ((QuotientGroup.mk' (KPTameValuationCoordinates.unitCubeClasses (K F v)))
+    change e ((QuotientGroup.mk' (unitCubeClasses₀))
       (S.cubeClassEquiv (S.heisenberg.π _))) = _
     rw [S.cube_class]
     exact he (S.borel.coordinate t)
   · intro j
-    change e (c (QuotientGroup.mk' P.L (S.heisenberg.π (eta F ζ hζ v π j)))) = _
-    change e ((QuotientGroup.mk' (KPTameValuationCoordinates.unitCubeClasses (K F v)))
+    change e ((QuotientGroup.mk' (unitCubeClasses₀))
       (S.cubeClassEquiv (S.heisenberg.π _))) = _
     rw [S.cube_class,
       S.coordinate_lift (eta F ζ hζ v π j) (π ^ (j.val : ℤ)) rfl]
@@ -459,28 +446,24 @@ def actualSectionEquiv (hm : KPLocalChartTopology.MatrixChartDepth F v m)
     (ε : KPLocalPrincipalSeries.Sign) :
     KPLocalSmoothRepresentation.PrincipalSeries F ζ hζ v m
       (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ v)
-      (coefficient F ζ hζ v S P ε) ≃ₗ[ℂ] induced F ζ hζ v S P ε := by
-  exact RawSectionBridge.equiv F ζ hζ v S P m hm ε
+      (coefficient F ζ hζ v S P ε) ≃ₗ[ℂ] induced F ζ hζ v S P ε := by apply @RawSectionBridge.equiv <;> assumption
 
 theorem actualSectionEquiv_value (ε : KPLocalPrincipalSeries.Sign)
     (f : KPLocalSmoothRepresentation.PrincipalSeries F ζ hζ v m
       (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ v)
       (coefficient F ζ hζ v S P ε)) (g : ActualCover F ζ hζ v) :
-    (actualSectionEquiv F ζ hζ v S P m hm ε f).val g = f.val.val g := by
-  exact RawSectionBridge.equiv_value F ζ hζ v S P m hm ε f g
+    (actualSectionEquiv F ζ hζ v S P m hm ε f).val g = f.val.val g := by apply @RawSectionBridge.equiv_value <;> assumption
 
 theorem coefficient_smooth (hm : KPLocalChartTopology.MatrixChartDepth F v m)
     (ε : KPLocalPrincipalSeries.Sign) :
     letI := KPLocalSmoothRepresentation.finiteCoverTopology F ζ hζ v m
-    SmoothRepresentation (coefficient F ζ hζ v S P ε) := by
-  exact RawSectionBridge.coefficient_smooth_at_depth F ζ hζ v S P m hm ε
+    SmoothRepresentation (coefficient F ζ hζ v S P ε) := by apply @RawSectionBridge.coefficient_smooth_at_depth <;> assumption
 
 def jacquetMk (ε : KPLocalPrincipalSeries.Sign)
     (ψ : Multiplicative (K F v) →* ℂˣ) :
-    induced F ζ hζ v S P ε →ₗ[ℂ] Jacquet F ζ hζ v S P ε ψ := by
-  exact Representation.Coinvariants.mk (k := ℂ) (G := Multiplicative (K F v))
-    (V := induced F ζ hζ v S P ε)
-    (KPCoinvariants.twistedRepresentation (V := induced F ζ hζ v S P ε)
+    induced F ζ hζ v S P ε →ₗ[ℂ] Jacquet F ζ hζ v S P ε ψ := Representation.Coinvariants.mk
+
+    (KPCoinvariants.twistedRepresentation
       ((principalSeries S.borel P ε 0).comp
         (S.borel.B.subtype.comp S.borel.upperRoot)) ψ)
 
@@ -531,17 +514,13 @@ theorem inducing_evaluation_coordinates
         e b j = b.val (eta F ζ hζ v π j) := by
   classical
   obtain ⟨e, he, hj⟩ := actual_valuation_quotient F ζ hζ v S P ht hP π hπ
-  let q : actualTorus F ζ hζ v →* Multiplicative (ZMod 3) :=
+  let q :=
     e.toMonoidHom.comp ((QuotientGroup.mk' P.L).comp S.heisenberg.π)
   let r (d : Multiplicative (ZMod 3)) : actualTorus F ζ hζ v :=
     eta F ζ hζ v π d.toAdd
   have hr (d : Multiplicative (ZMod 3)) : q (r d) = d := by
-    change e ((QuotientGroup.mk' P.L) (S.heisenberg.π
-      (eta F ζ hζ v π d.toAdd))) = d
     erw [hj]
-    change Multiplicative.ofAdd ((d.toAdd.val : ℕ) : ZMod 3) = d
     apply congrArg Multiplicative.ofAdd
-    change ((d.toAdd.val : ℕ) : ZMod 3) = d.toAdd
     exact ZMod.natCast_zmod_val d.toAdd
   let a (x : actualTorus F ζ hζ v) : P.L.comap S.heisenberg.π :=
     ⟨x * (r (q x))⁻¹, by
@@ -551,12 +530,9 @@ theorem inducing_evaluation_coordinates
       change q (x * (r (q x))⁻¹) = e 1
       erw [map_mul, map_inv, hr, mul_inv_cancel, map_one]⟩
   have hq (b : P.L.comap S.heisenberg.π) : q b = 1 := by
-    change e ((QuotientGroup.mk' P.L) (S.heisenberg.π b)) = 1
-    have hb : (QuotientGroup.mk' P.L) (S.heisenberg.π b) = 1 :=
-      (QuotientGroup.eq_one_iff (S.heisenberg.π b)).mpr b.property
-    exact (congrArg e hb).trans e.map_one
+    exact (congrArg e ((QuotientGroup.eq_one_iff (S.heisenberg.π b)).mpr b.property)).trans e.map_one
   have ha (b : P.L.comap S.heisenberg.π) (x : actualTorus F ζ hζ v) :
-      a ((b : actualTorus F ζ hζ v) * x) = b * a x := by
+      a (b * x) = b * a x := by
     apply Subtype.ext
     simp [a, map_mul, hq, mul_assoc]
   have har (d : Multiplicative (ZMod 3)) : a (r d) = 1 := by
@@ -638,6 +614,7 @@ theorem actual_whittaker_dual_bases
         ell j (openCellClass F ζ hζ v S P m hm ε ψ φ) =
           ∫ x, ((ψ (Multiplicative.ofAdd x) : ℂ)⁻¹) *
             (KPJacquetStepFunction.value φ x).val (eta F ζ hζ v π j) ∂μ) := by
+  let coefficient₀ := coefficient F ζ hζ v S P ε
   classical
   obtain ⟨c, hc⟩ := inducing_evaluation_coordinates F ζ hζ v S P ht hP π hπ
   letI : NormedAddCommGroup (InducedModule P) :=
@@ -648,20 +625,19 @@ theorem actual_whittaker_dual_bases
     (inferInstance : MetricSpace (InducedModule P)).toPseudoMetricSpace.toUniformSpace.toTopologicalSpace
   letI : AddCommGroup (KPLocalSmoothRepresentation.PrincipalSeries F ζ hζ v m
       (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ v)
-      (coefficient F ζ hζ v S P ε)) := Submodule.addCommGroup _
+      (coefficient₀)) := Submodule.addCommGroup _
   letI : Module ℂ (KPLocalSmoothRepresentation.PrincipalSeries F ζ hζ v m
       (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ v)
-      (coefficient F ζ hζ v S P ε)) := Submodule.module _
+      (coefficient₀)) := Submodule.module _
   let t := actualSectionEquiv F ζ hζ v S P m hm ε
   let ρ := rootTwistedRepresentation
     (KPJacquetClosedCellBump.inducedRepresentation F ζ hζ v m hm
       (KPJacquetTwistedCell.coefficientRepresentation F ζ hζ v
-        (coefficient F ζ hζ v S P ε)))
+        (coefficient₀)))
     (KPLocalSmoothRepresentation.upperRoot F ζ hζ v) ψ
-  let σ := KPCoinvariants.twistedRepresentation
+  have ht : ∀ x f, t (ρ x f) = (KPCoinvariants.twistedRepresentation
     ((principalSeries S.borel P ε 0).comp
-      (S.borel.B.subtype.comp S.borel.upperRoot)) ψ
-  have ht : ∀ x f, t (ρ x f) = σ x (t f) := by
+      (S.borel.B.subtype.comp S.borel.upperRoot)) ψ) x (t f) := by
     intro x f
     change t ((↑(ψ x)⁻¹ : ℂ) • _) = (ψ x : ℂ)⁻¹ • _
     rw [map_smul, Units.val_inv_eq_inv_val]
@@ -669,11 +645,9 @@ theorem actual_whittaker_dual_bases
     exact actualSectionEquiv_upperRoot F ζ hζ v S P m hm ε x f
   let q := coinvariantsEquivOfIntertwiner t ht
   let a := KPJacquetTwistedCell.coefficientEquiv F ζ hζ v m hm
-    (coefficient F ζ hζ v S P ε) (coefficient_smooth F ζ hζ v S P m hm ε)
+    (coefficient₀) (coefficient_smooth F ζ hζ v S P m hm ε)
     ψ hψ hψne μ
-  let e : Jacquet F ζ hζ v S P ε ψ ≃ₗ[ℂ] (Fin 3 → ℂ) :=
-    q.symm.trans (a.trans c)
-  let b := Module.Basis.ofEquivFun e
+  let b := Module.Basis.ofEquivFun (q.symm.trans (a.trans c))
   refine ⟨b, b.dualBasis, ?_, ?_⟩
   · intro i j
     simp [Module.Basis.dualBasis_apply, Finsupp.single_apply, eq_comm]
@@ -682,14 +656,14 @@ theorem actual_whittaker_dual_bases
     change c (a (q.symm (openCellClass F ζ hζ v S P m hm ε ψ φ))) j = _
     have hq : q.symm (openCellClass F ζ hζ v S P m hm ε ψ φ) =
         KPJacquetTwistedCell.openCellMap F ζ hζ v m hm
-          (coefficient F ζ hζ v S P ε) (coefficient_smooth F ζ hζ v S P m hm ε) ψ
+          (coefficient₀) (coefficient_smooth F ζ hζ v S P m hm ε) ψ
           (KPJacquetOpenTestFunction.coinvariantsMk ψ φ) := by
       apply q.injective
       rw [q.apply_symm_apply, KPJacquetTwistedCell.openCellMap_mk]
       rfl
     rw [hq]
     rw [KPJacquetTwistedCell.coefficientEquiv_openCell_mk]
-    let L : InducedModule P →ₗ[ℂ] ℂ :=
+    let L :=
       (LinearMap.proj j).comp c.toLinearMap
     have hL := (L.toContinuousLinearMap).integral_comp_comm
       (KPJacquetStepFunction.integrable_inverse_character_smul φ ψ hψ μ)
@@ -702,8 +676,6 @@ theorem actual_whittaker_dual_bases
     rw [← hL]
     apply MeasureTheory.integral_congr_ae
     filter_upwards [] with x
-    change L ((ψ (Multiplicative.ofAdd x) : ℂ)⁻¹ •
-      KPJacquetStepFunction.value φ x) = _
     rw [map_smul]
     change (ψ (Multiplicative.ofAdd x) : ℂ)⁻¹ *
       c (KPJacquetStepFunction.value φ x) j = _

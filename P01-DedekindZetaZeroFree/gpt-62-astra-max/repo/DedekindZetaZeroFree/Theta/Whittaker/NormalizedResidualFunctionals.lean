@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory ValuativeRel
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 abbrev exteriorImageAction (R : PrincipalMellin.ActualRecipe S η)
     {N : TraceHaarTransport R} (C : JointHaarFactorizedSources R N) (p : ThetaBranch.ExteriorPrime R.A) :=
@@ -52,8 +52,7 @@ theorem exterior_prime_not_mem_factorization_bad (R : PrincipalMellin.ActualReci
   intro hp
   rcases (C.factorization.bad_exact _).mp hp with ⟨w, hw⟩ | ⟨q, hq, hqS⟩
   · cases hw
-  · have he : p.val = q := Sum.inr.inj hq
-    exact p.property (he ▸ hqS)
+  · exact p.property ((Sum.inr.inj hq) ▸ hqS)
 
 theorem exterior_reference_value_eq_one (R : PrincipalMellin.ActualRecipe S η)
     {N : TraceHaarTransport R} (C : JointHaarFactorizedSources R N) (p : ThetaBranch.ExteriorPrime R.A) :
@@ -69,9 +68,7 @@ def ExteriorWhittakerEquivariance (R : PrincipalMellin.ActualRecipe S η)
     (ResidueTrace.localTraceCharacter p.val z : ℂ) * C.factorization.ell (Sum.inr p.val) b
 
 theorem exterior_whittaker_equivariance (R : PrincipalMellin.ActualRecipe S η)
-    {N : TraceHaarTransport R} (C : JointHaarFactorizedSources R N) : ExteriorWhittakerEquivariance R C := by
-  intro p z b
-  exact ExteriorWhittakerValues.StoredWhittaker.ell_finite_root R C.factorization p.val z b
+    {N : TraceHaarTransport R} (C : JointHaarFactorizedSources R N) : ExteriorWhittakerEquivariance R C := fun p z b => ExteriorWhittakerValues.StoredWhittaker.ell_finite_root R C.factorization p.val z b
 
 end DedekindZetaZeroFree.ThetaExpansion
 

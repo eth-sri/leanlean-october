@@ -16,8 +16,11 @@ local instance (A : SArithmeticData F) : MeasurableSpace A.G1 := borel _
 
 local instance (A : SArithmeticData F) : BorelSpace A.G1 := ⟨rfl⟩
 
-def originalRow (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A)
+section
+
+variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+
+def originalRow
     (W0 : SLocalProduct F A.Sf → ℂ) (X : ℝ)
     (s : A.Exterior) (a : A.R) (t : A.G1) : ℂ :=
   (Real.sqrt (A.exteriorNorm s * X) : ℂ)⁻¹ * ∑' m : A.R,
@@ -26,8 +29,7 @@ def originalRow (A : SArithmeticData F)
       W0 (sLocalDiagonal F A.Sf (m : F) *
         asLocalPoint A (((t : A.G) * radialSection A (A.exteriorNorm s * X))⁻¹))
 
-theorem forwardSummand_eq_lambda_mul_character (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (m : ThetaReflectionData.Row A)
+theorem forwardSummand_eq_lambda_mul_character (m : ThetaReflectionData.Row A)
     (Z : ℝ) (c : ExteriorSquarefreeIdeal A.cS) (n : A.Exterior) :
     ThetaReflectionData.forwardSummand A D m Z c n =
       ProbeJointAbsoluteMass.lambda A D c n Z *
@@ -35,6 +37,8 @@ theorem forwardSummand_eq_lambda_mul_character (A : SArithmeticData F)
   simp only [ThetaReflectionData.forwardSummand, ProbeJointAbsoluteMass.lambda,
     ProbeJointAbsoluteMass.modulusNorm]
   ring
+
+end
 
 private theorem original_tsum_expanded (A : SArithmeticData F)
     (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)
@@ -83,7 +87,7 @@ theorem principal_original_integrated_row_expansion (A : SArithmeticData F)
       ofReal_norm_eq_enorm] using he
   have hv : Summable (fun j => ∫ t in P.domain.domain, f j t ∂P.domain.measure) :=
     hs.of_norm_bounded (fun j => norm_integral_le_integral_norm _)
-  rw [(principal_expansion_valid A σ η hS P X Y Z hX hY hZ).2.2]
+  rw [(principal_expansion_valid A σ η hS P X Y Z hX hY hZ).2]
   change (∑' j, ∫ t in P.domain.domain, f j t ∂P.domain.measure) = _
   rw [hv.tsum_prod]
   simp only [← tsum_mul_left]

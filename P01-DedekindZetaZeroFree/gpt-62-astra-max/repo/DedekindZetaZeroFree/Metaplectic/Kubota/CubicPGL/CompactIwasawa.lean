@@ -13,8 +13,8 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
 
 local instance : ValuativeRel (q.adicCompletion F) :=
   ClassFieldTheory.finitePlaceCompletionValuativeRel F q
@@ -23,7 +23,9 @@ local instance : IsNonarchimedeanLocalField (q.adicCompletion F) :=
 
 abbrev fullCompact := KPRankOneCartanGeometry.coveredK0 F ζ hζ q
 
-def fullCompactLevel (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m) :
+variable (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m)
+
+def fullCompactLevel :
     letI := KPPGLLocalCover.finiteTopology F ζ hζ q m
     CompactOpenLevel (KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q)) := by
   letI := KPPGLLocalCover.finiteTopology F ζ hζ q m
@@ -33,8 +35,7 @@ def fullCompactLevel (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F q m
       isOpen' := (KPRankOneCartanGeometry.coveredK0_compact_open F ζ hζ q m hm).2 }
     isCompact := (KPRankOneCartanGeometry.coveredK0_compact_open F ζ hζ q m hm).1 }
 
-theorem actual_compact_iwasawa (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F q m) :
+theorem actual_compact_iwasawa :
     letI := KPPGLLocalCover.finiteTopology F ζ hζ q m
     letI : IsTopologicalGroup (KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q)) :=
       (KPPGLLocalCover.finite_topological_cover F ζ hζ q m hm).2.2.1
@@ -50,19 +51,20 @@ theorem actual_compact_iwasawa (m : ℕ)
             hb⟩) →
       ∃ I : IwasawaData A,
         I.compact = fullCompactLevel F ζ hζ q m hm := by
+  let CubicPGL2₀ := KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q)
   classical
   letI := KPPGLLocalCover.finiteTopology F ζ hζ q m
-  letI : IsTopologicalGroup (KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q)) :=
+  letI : IsTopologicalGroup (CubicPGL2₀) :=
     (KPPGLLocalCover.finite_topological_cover F ζ hζ q m hm).2.2.1
   intro D _ _ T A hB hratio
   let L := fullCompactLevel F ζ hζ q m hm
-  have hex (g : KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q)) :
+  have hex (g : CubicPGL2₀) :
       ∃ b : A.B, ∃ k : L.toOpenSubgroup, g = (b : _) * (k : _) := by
     obtain ⟨b, k, hg⟩ := IwasawaProof.covered_factor F ζ hζ q g
     refine ⟨⟨b.val, hB.symm ▸ b.property⟩, ⟨k.val, k.property⟩, hg⟩
-  let bp (g : KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q)) : A.B :=
+  let bp (g : CubicPGL2₀) : A.B :=
     if hg : g ∈ L.toOpenSubgroup then 1 else Classical.choose (hex g)
-  let kp (g : KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q)) : L.toOpenSubgroup :=
+  let kp (g : CubicPGL2₀) : L.toOpenSubgroup :=
     if hg : g ∈ L.toOpenSubgroup then ⟨g, hg⟩
     else Classical.choose (Classical.choose_spec (hex g))
   refine ⟨{
@@ -83,7 +85,7 @@ theorem actual_compact_iwasawa (m : ℕ)
   · intro k
     simp [kp, k.property]
   · intro b hb
-    have hbb : (b : KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q)) ∈
+    have hbb : (b : CubicPGL2₀) ∈
         KPLocalSmoothRepresentation.Borel F ζ hζ q := hB ▸ b.property
     rw [hratio b hbb]
     exact IwasawaProof.covered_intersection F ζ hζ q ⟨b.val, hbb⟩ hb

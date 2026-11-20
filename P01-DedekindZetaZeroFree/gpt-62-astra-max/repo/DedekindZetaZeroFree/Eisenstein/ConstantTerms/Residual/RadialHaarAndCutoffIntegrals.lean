@@ -24,12 +24,13 @@ theorem radial_log_integral (k : ℝ) (hk : 0 < k) (f : ℝ → ℂ) :
     dsimp only
     rw [ENNReal.toReal_ofReal (inv_nonneg.mpr (sq_nonneg r))]
     simp only [Complex.real_smul, Complex.ofReal_inv, Complex.ofReal_pow]
-    have hn : (r : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hr)
     field_simp
   rw [he, integral_comp_log_Ioi_zero (fun u => f (u / k))]
   simpa only [div_eq_mul_inv, mul_comm, abs_of_pos hk] using
     Measure.integral_comp_inv_mul_left f k
-theorem incoming_commutator_radial (d : ℕ) (hd : 0 < d) {T : ℝ}
+variable (d : ℕ)
+
+theorem incoming_commutator_radial (hd : 0 < d) {T : ℝ}
     (χ : SmoothCuspCutoff T) (s : ℂ) :
     (∫ r : ℝ in Set.Ioi 0, (r : ℂ) *
       incomingCommutatorMultiplier d χ.toFun s (Real.log r / (2*d))
@@ -39,18 +40,18 @@ theorem incoming_commutator_radial (d : ℕ) (hd : 0 < d) {T : ℝ}
     incoming_commutator_integral_full]
   simp [Complex.real_smul]
 
-theorem incoming_commutator_zero_below (d : ℕ) {T : ℝ} (χ : SmoothCuspCutoff T)
+theorem incoming_commutator_zero_below {T : ℝ} (χ : SmoothCuspCutoff T)
     (s : ℂ) (t : ℝ) (ht : t < T) :
     incomingCommutatorMultiplier d χ.toFun s t = 0 := by
   have he : χ.toFun =ᶠ[nhds t] (fun _ => (0:ℝ)) := by
     filter_upwards [Iio_mem_nhds ht] with x hx
     exact χ.zero_below x hx.le
-  have h1 : deriv χ.toFun t = 0 := by simpa only [deriv_const] using he.deriv_eq
+  have h1 : deriv χ.toFun t = 0 := by simpa using he.deriv_eq
   have h2 : deriv (deriv χ.toFun) t = 0 := by
-    simpa only [deriv_const',deriv_const] using he.deriv.deriv_eq
+    simpa using he.deriv.deriv_eq
   simp [incomingCommutatorMultiplier,h1,h2]
 
-theorem incoming_commutator_radial_above (d : ℕ) (hd : 0 < d) {T : ℝ}
+theorem incoming_commutator_radial_above (hd : 0 < d) {T : ℝ}
     (χ : SmoothCuspCutoff T) (s : ℂ) (τ : ℝ) (hτ : τ < T) :
     (∫ r : ℝ in Set.Ioi (Real.exp (2*d*τ)), (r : ℂ) *
       incomingCommutatorMultiplier d χ.toFun s (Real.log r / (2*d))
@@ -61,15 +62,13 @@ theorem incoming_commutator_radial_above (d : ℕ) (hd : 0 < d) {T : ℝ}
   apply setIntegral_eq_of_subset_of_forall_sdiff_eq_zero measurableSet_Ioi
     (Set.Ioi_subset_Ioi (Real.exp_pos _).le)
   intro r hr
-  have hle : r ≤ Real.exp (2*(d:ℝ)*τ) := le_of_not_gt hr.2
-  have hlog := Real.log_le_log hr.1 hle
+  have hlog := Real.log_le_log hr.1 (le_of_not_gt hr.2)
   rw [Real.log_exp] at hlog
   have hdiv : Real.log r / (2*(d:ℝ)) < T := by
-    have hlediv : Real.log r / (2*(d:ℝ)) ≤ τ := (div_le_iff₀ (by positivity)).mpr (by nlinarith)
-    exact lt_of_le_of_lt hlediv hτ
+    exact lt_of_le_of_lt ((div_le_iff₀ (by positivity)).mpr (by nlinarith)) hτ
   rw [incoming_commutator_zero_below d χ s _ hdiv,mul_zero]
 
-theorem incoming_outgoing_height_product (d : ℕ) (t : ℝ) :
+theorem incoming_outgoing_height_product (t : ℝ) :
     KPIncomingCasimir.heightFactor d 0 t *
       star (Complex.exp ((d:ℂ)*(2/3)*(t:ℂ))) = Complex.exp (2*(d:ℂ)*(t:ℂ)) := by
   unfold KPIncomingCasimir.heightFactor
@@ -83,7 +82,7 @@ theorem incoming_outgoing_height_product (d : ℕ) (t : ℝ) :
   congr 1
   push_cast
   ring
-theorem incoming_outgoing_radial_density (d : ℕ) (hd : 0 < d) (r : ℝ) (hr : 0 < r) :
+theorem incoming_outgoing_radial_density (hd : 0 < d) (r : ℝ) (hr : 0 < r) :
     KPIncomingCasimir.heightFactor d 0 (Real.log r / (2*d)) *
       star (Complex.exp ((d:ℂ)*(2/3)*((Real.log r / (2*d):ℝ):ℂ))) = (r:ℂ) := by
   rw [incoming_outgoing_height_product]

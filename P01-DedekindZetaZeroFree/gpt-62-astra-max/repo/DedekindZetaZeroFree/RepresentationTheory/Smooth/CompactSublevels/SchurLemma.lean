@@ -26,16 +26,16 @@ instance (ρ : Representation ℂ G V) : IsScalarTower ℂ (algebra ρ) V where
 instance (ρ : Representation ℂ G V) : SMulCommClass (algebra ρ) ℂ V where
   smul_comm a c v := a.val.map_smul c v
 
-theorem simple (ρ : Representation ℂ G V) [ρ.IsIrreducible] :
+variable (ρ : Representation ℂ G V)
+
+theorem simple [ρ.IsIrreducible] :
     IsSimpleOrder (Submodule (algebra ρ) V) := by
   haveI : Nontrivial V := IsSimpleModule.nontrivial (MonoidAlgebra ℂ G) ρ.asModule
   apply (isSimpleOrder_iff _).mpr
   refine ⟨(Submodule.nontrivial_iff _).mpr inferInstance, fun N => ?_⟩
   let S : Subrepresentation ρ :=
     { toSubmodule := N.restrictScalars ℂ
-      apply_mem_toSubmodule := by
-        intro g v hv
-        exact N.smul_mem ⟨ρ g, Algebra.subset_adjoin ⟨g, rfl⟩⟩ hv }
+      apply_mem_toSubmodule := fun g v hv => N.smul_mem ⟨ρ g, Algebra.subset_adjoin ⟨g, rfl⟩⟩ hv}
   rcases eq_bot_or_eq_top S with h | h
   · left
     ext v
@@ -48,7 +48,7 @@ theorem simple (ρ : Representation ℂ G V) [ρ.IsIrreducible] :
     rw [h]
     rfl
 
-def intertwiner (ρ : Representation ℂ G V) (T : Module.End (algebra ρ) V) :
+def intertwiner (T : Module.End (algebra ρ) V) :
     ρ.IntertwiningMap ρ where
   toLinearMap := T.restrictScalars ℂ
   isIntertwining' g := by
@@ -56,7 +56,7 @@ def intertwiner (ρ : Representation ℂ G V) (T : Module.End (algebra ρ) V) :
     intro v
     exact T.map_smul ⟨ρ g, Algebra.subset_adjoin ⟨g, rfl⟩⟩ v
 
-theorem scalar_commutant (ρ : Representation ℂ G V) [ρ.IsIrreducible]
+theorem scalar_commutant [ρ.IsIrreducible]
     (U : Subgroup G) [Module.Finite ℂ (fixedSubmodule ρ U)]
     (hne : fixedSubmodule ρ U ≠ ⊥) :
     ∀ T : Module.End (algebra ρ) V, ∃ c : ℂ, ∀ v, T v = c • v := by
@@ -66,8 +66,7 @@ theorem scalar_commutant (ρ : Representation ℂ G V) [ρ.IsIrreducible]
     (algebra ρ) V (fixedSubmodule ρ U) hne
   intro T v hv
   intro u
-  have ht := (intertwiner ρ T).isIntertwining' u.val
-  have hh := LinearMap.congr_fun ht v
+  have hh := LinearMap.congr_fun ((intertwiner ρ T).isIntertwining' u.val) v
   change T (ρ u.val v) = ρ u.val (T v) at hh
   rw [hv u] at hh
   exact hh.symm
@@ -97,10 +96,8 @@ theorem scalar_commutant_of_compact_sublevels
   obtain ⟨U, hU⟩ := hρ v
   let J : CompactOpenLevel G :=
     ⟨U ⊓ K.toOpenSubgroup, by
-      change IsCompact ((U : Set G) ∩ (K.toOpenSubgroup : Set G))
       exact K.isCompact.inter_left U.isClosed⟩
-  have hJK : J.toOpenSubgroup ≤ K.toOpenSubgroup := inf_le_right
-  letI := hfinite J hJK
+  letI := hfinite J inf_le_right
   apply scalar_commutant ρ J.toOpenSubgroup.toSubgroup
   apply (Submodule.ne_bot_iff _).mpr
   refine ⟨v, ?_, hv⟩

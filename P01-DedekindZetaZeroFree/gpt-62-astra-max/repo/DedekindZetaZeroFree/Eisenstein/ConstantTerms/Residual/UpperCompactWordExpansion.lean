@@ -12,14 +12,14 @@ open CurrentRepairedLocalBinding MomentSources KPGlobalTorusFiniteStages Faithfu
 open KPCplxPrincipalSeriesCharts KPCplxCharacterHaar KPGlobalResidualConstruction KPLiteralChamber
 open KPLiteralScalarArchUniformBands KPAdelicCoverRestrictedProduct TensorActionSource
 open KPContActualSphericalRightFieldIdentification CurrentComplexBoundary
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_insertion → sectionTuple_insertion
+open _root_.DedekindZetaZeroFree.KPLiteralChamber (sectionTuple_insertion)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2200000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "Core" => RestrictedTensorSimple.Core (LiteralSource.Plus R.A P C) (LiteralSource.plusReference R.A P C) (LiteralSource.bad R.A P C)
@@ -57,7 +57,7 @@ theorem upper_compact_word_expansion
     fun u i=>complexSU2Embedding (u i)
   have hembs : Continuous emb := continuous_pi (fun i=>hemb.comp (continuous_apply i))
   have hK : IsCompact (Set.range emb) := isCompact_range hembs
-  obtain ⟨A,hA,hKA,n,d,f,he⟩ := upper_finite_pure_near_compact R N P C  s
+  obtain ⟨A, hKA, n, d, f, he⟩ := upper_finite_pure_near_compact R N P C s
     (Set.range emb) hK r hrw v
   refine ⟨n,d,f,?_⟩
   intro w k

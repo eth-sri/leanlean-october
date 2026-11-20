@@ -21,18 +21,20 @@ local instance {F : Type} [Field F] [NumberField F]
  local instance instBorelSpaceHaarDisintegrationRealUnits : BorelSpace ℝˣ := ⟨by
   change MeasurableSpace.comap Units.val (borel ℝ) = borel ℝˣ
   rw [Units.isEmbedding_val₀.isInducing.eq_induced, borel_comap]⟩
-private theorem real_addHaar_map_mul (μ : Measure ℝ) [μ.IsAddHaarMeasure] (c : ℝ) (hc : c ≠ 0) :
+section
+
+variable (μ : Measure ℝ) [μ.IsAddHaarMeasure]
+
+private theorem real_addHaar_map_mul (c : ℝ) (hc : c ≠ 0) :
     μ.map (fun x => c*x) = (ENNReal.ofReal |c|)⁻¹ • μ := by
-  let L : ℝ →ₗ[ℝ] ℝ := LinearMap.mulLeft ℝ c
-  have hdet : L.det = c := by
-    exact LinearMap.det_mulLeft _
-  have hmap := Measure.map_linearMap_addHaar_eq_smul_addHaar μ
-    (f := L) (by rwa [hdet])
-  convert hmap using 1
+  let L := LinearMap.mulLeft ℝ c
+  have hdet : L.det = c := LinearMap.det_mulLeft _
+  convert (Measure.map_linearMap_addHaar_eq_smul_addHaar μ
+    (by rwa [hdet])) using 1
   · rfl
   · rw [hdet, abs_inv, ENNReal.ofReal_inv_of_pos (abs_pos.mpr hc)]
 
-private theorem realUnits_density_left (μ : Measure ℝ) [μ.IsAddHaarMeasure] :
+private theorem realUnits_density_left :
     (Measure.comap Units.val
       (μ.withDensity (fun x : ℝ => ENNReal.ofReal (|x|⁻¹)))).IsMulLeftInvariant := by
   let ev := (IsOpenUnits.isOpenEmbedding_unitsVal (M := ℝ)).measurableEmbedding
@@ -42,8 +44,6 @@ private theorem realUnits_density_left (μ : Measure ℝ) [μ.IsAddHaarMeasure] 
   intro g
   ext s hs
   rw [Measure.map_apply (by fun_prop) hs]
-  change (μ.withDensity D).comap Units.val ((fun x => g * x) ⁻¹' s) =
-    (μ.withDensity D).comap Units.val s
   rw [ev.comap_apply, ev.comap_apply]
   have hpre : Units.val '' ((fun x => g * x) ⁻¹' s) =
       (fun x : ℝ => (g : ℝ) * x) ⁻¹' (Units.val '' s) := by
@@ -53,25 +53,23 @@ private theorem realUnits_density_left (μ : Measure ℝ) [μ.IsAddHaarMeasure] 
     · rintro ⟨u, hu, he⟩
       refine ⟨g⁻¹ * u, ?_, ?_⟩
       · simpa using hu
-      · change ((g⁻¹ * u : ℝˣ) : ℝ) = x
-        simp only [Units.val_mul]
+      · simp only [Units.val_mul]
         rw [he]; simp
-  rw [hpre, withDensity_apply _ (by exact (ev.measurableSet_image.mpr hs).preimage (by fun_prop)),
+  rw [hpre, withDensity_apply _ ((ev.measurableSet_image.mpr hs).preimage (by fun_prop)),
     withDensity_apply _ (ev.measurableSet_image.mpr hs)]
-  have hscale := real_addHaar_map_mul μ (g : ℝ) g.ne_zero
   have hmul (x : ℝ) : D ((g : ℝ) * x) = (ENNReal.ofReal |(g : ℝ)|)⁻¹ * D x := by
     dsimp [D]
     rw [abs_mul, mul_inv, ENNReal.ofReal_mul (by positivity),
       ENNReal.ofReal_inv_of_pos (abs_pos.mpr g.ne_zero)]
   have hm := setLIntegral_map (μ := μ) (g := fun x : ℝ => (g : ℝ) * x)
     (s := Units.val '' s) (ev.measurableSet_image.mpr hs) hD (by fun_prop)
-  rw [hscale, Measure.restrict_smul, lintegral_smul_measure] at hm
+  rw [(real_addHaar_map_mul μ (g : ℝ) g.ne_zero), Measure.restrict_smul, lintegral_smul_measure] at hm
   simp only [ENNReal.smul_def, smul_eq_mul] at hm
   simp_rw [hmul] at hm
   rw [lintegral_const_mul _ hD] at hm
   exact (ENNReal.mul_right_inj (by simp) (by simp [abs_pos.mpr g.ne_zero])).mp hm.symm
 
-private theorem realUnits_density_isHaarMeasure (μ : Measure ℝ) [μ.IsAddHaarMeasure] :
+private theorem realUnits_density_isHaarMeasure :
     (Measure.comap Units.val
       (μ.withDensity (fun x : ℝ => ENNReal.ofReal (|x|⁻¹)))).IsHaarMeasure := by
   let ev := (IsOpenUnits.isOpenEmbedding_unitsVal (M := ℝ)).measurableEmbedding
@@ -89,48 +87,23 @@ private theorem realUnits_density_isHaarMeasure (μ : Measure ℝ) [μ.IsAddHaar
       rintro x ⟨u, hu, rfl⟩
       exact (ENNReal.ofReal_pos.mpr (inv_pos.mpr (abs_pos.mpr u.ne_zero))).ne'
     rw [heq]
-    have hpos : 0 < μ (Units.val '' interior K) :=
-      (IsOpenUnits.isOpenEmbedding_unitsVal.isOpenMap _ isOpen_interior).measure_pos μ
-        (hint.image _)
-    exact (hpos.trans_le (measure_mono (Set.image_mono interior_subset))).ne'
+    exact (((IsOpenUnits.isOpenEmbedding_unitsVal.isOpenMap _ isOpen_interior).measure_pos μ
+      (hint.image _)).trans_le (measure_mono (Set.image_mono interior_subset))).ne'
   · rw [ev.comap_apply, withDensity_apply _ ((hK.image Units.continuous_val).measurableSet)]
     have hc : ContinuousOn (fun x : ℝ => |x|⁻¹) (Units.val '' K) := by
       apply ContinuousOn.inv₀ (by fun_prop)
       rintro x ⟨u, hu, rfl⟩
       exact (abs_pos.mpr u.ne_zero).ne'
-    have hi := ContinuousOn.integrableOn_compact (μ := μ) (hK.image Units.continuous_val) hc
-    rw [← ofReal_integral_eq_lintegral_ofReal hi (Filter.Eventually.of_forall (fun x => by positivity))]
+    rw [← ofReal_integral_eq_lintegral_ofReal (ContinuousOn.integrableOn_compact (hK.image Units.continuous_val) hc) (Filter.Eventually.of_forall (fun x => by positivity))]
     exact ENNReal.ofReal_ne_top
 
-private theorem realUnits_density_integral (f : ℝ → ℂ) :
-    (∫ u : ℝˣ, f u.val ∂Measure.comap Units.val
-      (volume.withDensity (fun x : ℝ => ENNReal.ofReal (|x|⁻¹)))) =
-      ∫ x : ℝ, f x / ((|x| : ℝ) : ℂ) := by
-  let ev := (IsOpenUnits.isOpenEmbedding_unitsVal (M := ℝ)).measurableEmbedding
-  rw [← ev.integral_map, ev.map_comap]
-  have hrange : Set.range (Units.val : ℝˣ → ℝ) = {0}ᶜ := by
-    ext x
-    simp only [Set.mem_range, Set.mem_compl_iff, Set.mem_singleton_iff]
-    constructor
-    · rintro ⟨u, rfl⟩; exact u.ne_zero
-    · intro hx; exact ⟨Units.mk0 x hx, rfl⟩
-  rw [hrange]
-  have hz : (volume.withDensity (fun x : ℝ => ENNReal.ofReal (|x|⁻¹))) {0} = 0 :=
-    withDensity_absolutelyContinuous _ _ (measure_singleton 0)
-  rw [Measure.restrict_eq_self_of_ae_mem]
-  · rw [integral_withDensity_eq_integral_toReal_smul (by fun_prop)
-      (Filter.Eventually.of_forall fun x => ENNReal.ofReal_lt_top)]
-    simp only [Complex.real_smul, smul_eq_mul]
-    apply integral_congr_ae
-    filter_upwards with x
-    simp [ENNReal.toReal_ofReal (by positivity : 0 ≤ |x|⁻¹), div_eq_mul_inv, mul_comm]
-  · simpa only [ae_iff, Set.mem_compl_iff, not_not, Set.setOf_mem_eq] using hz
+end
 
 theorem realUnits_haar_integral_density (ν : Measure ℝˣ) [ν.IsHaarMeasure] :
     ∃ c : ℝ, 0 < c ∧ ∀ f : ℝ → ℂ,
       (∫ u : ℝˣ, f u.val ∂ν) = c • (∫ x : ℝ, f x / ((|x| : ℝ) : ℂ)) := by
   letI : SecondCountableTopology ℝˣ := Units.isEmbedding_val₀.secondCountableTopology
-  let μ : Measure ℝˣ := Measure.comap Units.val
+  let μ := Measure.comap Units.val
     (volume.withDensity (fun x : ℝ => ENNReal.ofReal (|x|⁻¹)))
   letI : μ.IsHaarMeasure := realUnits_density_isHaarMeasure volume
   refine ⟨(ν.haarScalarFactor μ : ℝ), ?_, ?_⟩
@@ -138,7 +111,25 @@ theorem realUnits_haar_integral_density (ν : Measure ℝˣ) [ν.IsHaarMeasure] 
   · intro f
     conv_lhs => rw [Measure.isMulLeftInvariant_eq_smul ν μ, integral_smul_nnreal_measure]
     congr 1
-    exact realUnits_density_integral f
+    let ev := (IsOpenUnits.isOpenEmbedding_unitsVal (M := ℝ)).measurableEmbedding
+    rw [← ev.integral_map, ev.map_comap]
+    have hrange : Set.range (Units.val : ℝˣ → ℝ) = {0}ᶜ := by
+      ext x
+      simp only [Set.mem_range, Set.mem_compl_iff, Set.mem_singleton_iff]
+      constructor
+      · rintro ⟨u, rfl⟩; exact u.ne_zero
+      · intro hx; exact ⟨Units.mk0 x hx, rfl⟩
+    rw [hrange]
+    have hz : (volume.withDensity (fun x : ℝ => ENNReal.ofReal (|x|⁻¹))) {0} = 0 :=
+      withDensity_absolutelyContinuous _ _ (measure_singleton 0)
+    rw [Measure.restrict_eq_self_of_ae_mem]
+    · rw [integral_withDensity_eq_integral_toReal_smul (by fun_prop)
+        (Filter.Eventually.of_forall fun x => ENNReal.ofReal_lt_top)]
+      simp only [Complex.real_smul, smul_eq_mul]
+      apply integral_congr_ae
+      filter_upwards with x
+      simp [ENNReal.toReal_ofReal (by positivity : 0 ≤ |x|⁻¹), div_eq_mul_inv, mul_comm]
+    · simpa only [ae_iff, Set.mem_compl_iff, not_not, Set.setOf_mem_eq] using hz
 
  local instance instBorelSpaceHaarDisintegrationComplexUnits : BorelSpace ℂˣ := ⟨by
   change MeasurableSpace.comap Units.val (borel ℂ) = borel ℂˣ
@@ -172,7 +163,7 @@ theorem complexUnits_haar_integral_density (ν : Measure ℂˣ) [ν.IsHaarMeasur
     ∃ c : ℝ, 0 < c ∧ ∀ f : ℂ → ℂ,
       (∫ u : ℂˣ, f u.val ∂ν) = c • (∫ z : ℂ, f z / ((‖z‖ ^ 2 : ℝ) : ℂ)) := by
   letI : SecondCountableTopology ℂˣ := Units.isEmbedding_val₀.secondCountableTopology
-  let μ : Measure ℂˣ := Measure.comap Units.val
+  let μ := Measure.comap Units.val
     (volume.withDensity (fun z : ℂ => ENNReal.ofReal ((Real.pi * ‖z‖ ^ 2)⁻¹)))
   letI : μ.IsHaarMeasure := ProbeSheetFourierMellinBounds.complexUnits_density_isHaarMeasure volume
   refine ⟨(ν.haarScalarFactor μ : ℝ) / Real.pi, ?_, ?_⟩
@@ -208,53 +199,49 @@ theorem complexUnits_haar_integral_density (ν : Measure ℂˣ) [ν.IsHaarMeasur
   continuous_toFun := (Homeomorph.prodAssoc M N P).continuous
   continuous_invFun := (Homeomorph.prodAssoc M N P).symm.continuous
 
-def rawCompletionIsolation {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F) :
+section
+
+variable {F : Type} [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (𝓞 F)))
+    (v : InfinitePlace F)
+
+def rawCompletionIsolation :
     (SLocalProduct F S)ˣ ≃ₜ* v.Completionˣ × RemainingCoordinates S v :=
   ((rawProdUnits _ _).trans
     (rawProdCongr ContinuousMulEquiv.piUnits ContinuousMulEquiv.piUnits)).trans
       ((rawProdCongr (rawSplitAt (fun w : InfinitePlace F => w.Completionˣ) v)
         (ContinuousMulEquiv.refl _)).trans (rawAssoc _ _ _))
-@[simp] theorem rawCompletionIsolation_fst {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+@[simp] theorem rawCompletionIsolation_fst
     (y : (SLocalProduct F S)ˣ) :
     ((rawCompletionIsolation S v y).1).val = y.val.1 v := rfl
-@[simp] theorem rawCompletionIsolation_remaining_arch {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+@[simp] theorem rawCompletionIsolation_remaining_arch
     (y : (SLocalProduct F S)ˣ) (w : {w : InfinitePlace F // w ≠ v}) :
     (((rawCompletionIsolation S v y).2).1 w).val = y.val.1 w := rfl
-@[simp] theorem rawCompletionIsolation_remaining_finite {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+@[simp] theorem rawCompletionIsolation_remaining_finite
     (y : (SLocalProduct F S)ˣ) (w : S) :
     (((rawCompletionIsolation S v y).2).2 w).val = y.val.2 w := rfl
 
-def remainingModulus {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+def remainingModulus
     (p : RemainingCoordinates S v) : ℝ :=
   (∏ w : {w : InfinitePlace F // w ≠ v}, ‖(p.1 w).val‖ ^ 2) *
     ∏ w : S, ‖(p.2 w).val‖
 
-theorem remainingModulus_pos {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+theorem remainingModulus_pos
     (p : RemainingCoordinates S v) : 0 < remainingModulus S v p := by
   apply mul_pos
   · exact Finset.prod_pos fun w _ => pow_pos (Units.norm_pos (p.1 w)) _
   · exact Finset.prod_pos fun w _ => Units.norm_pos (p.2 w)
 
-theorem remainingModulus_continuous {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F) :
+theorem remainingModulus_continuous :
     Continuous (remainingModulus S v) := by
   unfold remainingModulus
   fun_prop
 
-theorem remainingLogModulus_measurable {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F) :
+theorem remainingLogModulus_measurable :
     Measurable (fun p => Real.log (remainingModulus S v p)) := by
   letI : BorelSpace (RemainingCoordinates S v) := ⟨rfl⟩
   exact Real.measurable_log.comp (remainingModulus_continuous S v).measurable
 
-theorem rawCompletionIsolation_modulus {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+theorem rawCompletionIsolation_modulus
     (y : (SLocalProduct F S)ˣ) :
     ProbeWeight.modulus F S y = ‖y.val.1 v‖ ^ 2 *
       remainingModulus S v (rawCompletionIsolation S v y).2 := by
@@ -262,19 +249,19 @@ theorem rawCompletionIsolation_modulus {F : Type} [Field F] [NumberField F]
   simp only [rawCompletionIsolation_remaining_arch, rawCompletionIsolation_remaining_finite]
   rw [Fintype.prod_eq_mul_prod_compl v]
   have he : (∏ w ∈ ({v}ᶜ : Finset (InfinitePlace F)), ‖y.val.1 w‖ ^ 2) =
-      ∏ w : {w : InfinitePlace F // w ≠ v}, ‖y.val.1 w‖ ^ 2 := by
-    exact Finset.prod_subtype _ (by simp) _
+      ∏ w : {w : InfinitePlace F // w ≠ v}, ‖y.val.1 w‖ ^ 2 := Finset.prod_subtype _ (by simp) _
   rw [he]
   ring
 
-theorem rawCompletionIsolation_log_modulus {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
+theorem rawCompletionIsolation_log_modulus
     (y : (SLocalProduct F S)ˣ) :
     Real.log (ProbeWeight.modulus F S y) = Real.log (‖y.val.1 v‖ ^ 2) +
       Real.log (remainingModulus S v (rawCompletionIsolation S v y).2) := by
   rw [rawCompletionIsolation_modulus, Real.log_mul]
   · exact pow_ne_zero _ (Units.norm_pos (rawCompletionIsolation S v y).1).ne'
   · exact (remainingModulus_pos S v _).ne'
+
+end
 
 theorem isolate_integral_of_scaled_product
     {G X Y : Type*} [MeasurableSpace G] [MeasurableSpace X] [MeasurableSpace Y]
@@ -343,7 +330,11 @@ def complexCompletionUnitEquiv {F : Type} [Field F] [NumberField F]
 
 local instance {F : Type} [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) : MeasurableSpace (SLocalProduct F S) := borel _
-private lemma rawUnitsBorel {F : Type} [Field F] [NumberField F]
+section
+
+variable {F : Type} [Field F] [NumberField F]
+
+private lemma rawUnitsBorel
     (S : Finset (HeightOneSpectrum (𝓞 F))) :
     @BorelSpace (SLocalProduct F S)ˣ _
       (@Units.instMeasurableSpace (SLocalProduct F S) _ (borel _)) := by
@@ -359,7 +350,7 @@ private lemma rawUnitsBorel {F : Type} [Field F] [NumberField F]
     change MeasurableSpace.comap Units.val (borel (SLocalProduct F S)) = borel _
     rw [he.isInducing.eq_induced, borel_comap]⟩
 
-theorem rawCompletionIsolation_haar {F : Type} [Field F] [NumberField F]
+theorem rawCompletionIsolation_haar
     (S : Finset (HeightOneSpectrum (𝓞 F))) (v : InfinitePlace F)
     (ν : @Measure (SLocalProduct F S)ˣ
       (@Units.instMeasurableSpace (SLocalProduct F S) _ (borel _)))
@@ -389,14 +380,13 @@ theorem rawCompletionIsolation_haar {F : Type} [Field F] [NumberField F]
   letI := hν
   letI := hμ
   letI := hη
-  have hsfμ : SFinite μ := inferInstance
-  have hsfη : SFinite η := inferInstance
-  have hmulμ : MeasurableMul v.Completionˣ := inferInstance
   have hmulη : MeasurableMul (RemainingCoordinates S v) := inferInstance
   let e := rawCompletionIsolation S v
   let ν' := ν.map e
   letI : ν'.IsHaarMeasure := e.isHaarMeasure_map ν
   exact ⟨ν'.haarScalarFactor (μ.prod η), Measure.isMulLeftInvariant_eq_smul ν' (μ.prod η)⟩
+
+end
 
 def completionTensorFactor {F : Type} [Field F] [NumberField F]
     (gR : {v : InfinitePlace F // v.IsReal} → SchwartzMap ℝ ℂ)
@@ -404,22 +394,6 @@ def completionTensorFactor {F : Type} [Field F] [NumberField F]
     (v : InfinitePlace F) (x : v.Completion) : ℂ :=
   if hv : v.IsReal then gR ⟨v, hv⟩ (InfinitePlace.Completion.extensionEmbeddingOfIsReal hv x)
   else gC ⟨v, v.not_isReal_iff_isComplex.mp hv⟩ (InfinitePlace.Completion.extensionEmbedding v x)
-
-@[simp] theorem completionTensorFactor_real {F : Type} [Field F] [NumberField F]
-    (gR : {v : InfinitePlace F // v.IsReal} → SchwartzMap ℝ ℂ)
-    (gC : {v : InfinitePlace F // v.IsComplex} → SchwartzMap ℂ ℂ)
-    (v : InfinitePlace F) (hv : v.IsReal) (x : v.Completion) :
-    completionTensorFactor gR gC v x =
-      gR ⟨v, hv⟩ (InfinitePlace.Completion.extensionEmbeddingOfIsReal hv x) := by
-  simp [completionTensorFactor, hv]
-
-@[simp] theorem completionTensorFactor_complex {F : Type} [Field F] [NumberField F]
-    (gR : {v : InfinitePlace F // v.IsReal} → SchwartzMap ℝ ℂ)
-    (gC : {v : InfinitePlace F // v.IsComplex} → SchwartzMap ℂ ℂ)
-    (v : InfinitePlace F) (hv : v.IsComplex) (x : v.Completion) :
-    completionTensorFactor gR gC v x =
-      gC ⟨v, hv⟩ (InfinitePlace.Completion.extensionEmbedding v x) := by
-  simp [completionTensorFactor, v.not_isReal_iff_isComplex.mpr hv]
 
 set_option maxHeartbeats 1000000
 
@@ -455,9 +429,13 @@ attribute [local instance] fieldUnitsBorel
   else gC ⟨v, InfinitePlace.not_isReal_iff_isComplex.mp hv⟩
     (InfinitePlace.Completion.extensionEmbedding v x)
 
-private lemma archTest_prod {F : Type} [Field F] [NumberField F]
+section
+
+variable {F : Type} [Field F] [NumberField F]
     (gR : (v : {v : InfinitePlace F // v.IsReal}) → SchwartzMap ℝ ℂ)
     (gC : (v : {v : InfinitePlace F // v.IsComplex}) → SchwartzMap ℂ ℂ)
+
+private lemma archTest_prod
     (x : InfiniteAdeleRing F) :
     (∏ v, archTest gR gC v (x v)) =
       (∏ v, gR v ((InfiniteAdeleRing.ringEquiv_mixedSpace F x).1 v)) *
@@ -473,9 +451,7 @@ private lemma archTest_prod {F : Type} [Field F] [NumberField F]
     simp only [archTest, dif_neg v.prop]
     rfl
 
-private lemma archTest_integrable {F : Type} [Field F] [NumberField F]
-    (gR : (v : {v : InfinitePlace F // v.IsReal}) → SchwartzMap ℝ ℂ)
-    (gC : (v : {v : InfinitePlace F // v.IsComplex}) → SchwartzMap ℂ ℂ)
+private lemma archTest_integrable
     (v : InfinitePlace F) (μ : Measure v.Completionˣ) [μ.IsHaarMeasure]
     (σ : ℝ) (hσ : 0 < σ) :
     Integrable (fun x : v.Completionˣ => archTest gR gC v x.val *
@@ -484,13 +460,12 @@ private lemma archTest_integrable {F : Type} [Field F] [NumberField F]
   · let e := Units.mapContinuousMulEquiv (realC hv)
     letI : SecondCountableTopology ℝˣ := Units.isEmbedding_val₀.secondCountableTopology
     letI : (μ.map e).IsHaarMeasure := e.isHaarMeasure_map μ
-    have hi := ProbeSheetGlobalIntegrability.schwartz_realUnitsMellin_integrable
-      (gR ⟨v, hv⟩) (μ.map e) (σ : ℂ) hσ
     have hn (x : v.Completion) :
         ‖InfinitePlace.Completion.extensionEmbeddingOfIsReal hv x‖ = ‖x‖ :=
       (InfinitePlace.Completion.isometry_extensionEmbeddingOfIsReal hv).norm_map_of_map_zero
         (map_zero _) x
-    have hi' := e.toHomeomorph.measurableEmbedding.integrable_map_iff.mp hi
+    have hi' := e.toHomeomorph.measurableEmbedding.integrable_map_iff.mp (ProbeSheetGlobalIntegrability.schwartz_realUnitsMellin_integrable
+      (gR ⟨v, hv⟩) (μ.map e) (σ : ℂ) hσ)
     change Integrable (fun x : v.Completionˣ =>
       gR ⟨v, hv⟩ (InfinitePlace.Completion.extensionEmbeddingOfIsReal hv x.val) *
       ((‖InfinitePlace.Completion.extensionEmbeddingOfIsReal hv x.val‖ ^ 2 : ℝ) : ℂ) ^ (σ : ℂ)) μ at hi'
@@ -498,28 +473,22 @@ private lemma archTest_integrable {F : Type} [Field F] [NumberField F]
   · let e := Units.mapContinuousMulEquiv (complexC hv)
     letI : SecondCountableTopology ℂˣ := Units.isEmbedding_val₀.secondCountableTopology
     letI : (μ.map e).IsHaarMeasure := e.isHaarMeasure_map μ
-    have hi := ProbeSheetFourierMellinBounds.schwartz_complexUnitsMellin_integrable_of_isHaarMeasure
-      (gC ⟨v, hv⟩) (μ.map e) (σ : ℂ) hσ
     have hn (x : v.Completion) :
         ‖InfinitePlace.Completion.extensionEmbedding v x‖ = ‖x‖ :=
       (InfinitePlace.Completion.isometry_extensionEmbedding v).norm_map_of_map_zero
         (map_zero _) x
-    have hi' := e.toHomeomorph.measurableEmbedding.integrable_map_iff.mp hi
+    have hi' := e.toHomeomorph.measurableEmbedding.integrable_map_iff.mp (ProbeSheetFourierMellinBounds.schwartz_complexUnitsMellin_integrable_of_isHaarMeasure
+      (gC ⟨v, hv⟩) (μ.map e) (σ : ℂ) hσ)
     change Integrable (fun x : v.Completionˣ =>
       gC ⟨v, hv⟩ (InfinitePlace.Completion.extensionEmbedding v x.val) *
       ((‖InfinitePlace.Completion.extensionEmbedding v x.val‖ ^ 2 : ℝ) : ℂ) ^ (σ : ℂ)) μ at hi'
     simpa only [archTest, dif_neg (InfinitePlace.not_isReal_iff_isComplex.mpr hv), hn] using hi'
 
+end
+
 private lemma cpow_prod_nonneg {ι : Type*} (s : Finset ι) (b : ι → ℝ)
     (hb : ∀ i ∈ s, 0 ≤ b i) (z : ℂ) :
-    ((∏ i ∈ s, b i : ℝ) : ℂ) ^ z = ∏ i ∈ s, (b i : ℂ) ^ z := by
-  induction s using Finset.induction_on with
-  | empty => simp
-  | @insert i s hi ih =>
-    rw [Finset.prod_insert hi, Complex.ofReal_mul,
-      Complex.mul_cpow_ofReal_nonneg (hb i (by simp))
-        (Finset.prod_nonneg (fun j hj => hb j (by simp [hj]))),
-      ih (fun j hj => hb j (by simp [hj])), Finset.prod_insert hi]
+    ((∏ i ∈ s, b i : ℝ) : ℂ) ^ z = ∏ i ∈ s, (b i : ℂ) ^ z := by apply @DedekindZetaZeroFree.ProbeSheetGlobalIntegrability.LocalUnitsTensorIntegrability.cpow_prod <;> assumption
 
 private lemma cast_integrable {X : Type*} {m n : MeasurableSpace X}
     (h : m = n) (μ : @Measure X m) (f : X → ℂ)

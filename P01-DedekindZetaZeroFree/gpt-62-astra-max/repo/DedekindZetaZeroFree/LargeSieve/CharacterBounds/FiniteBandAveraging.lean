@@ -94,10 +94,9 @@ theorem finite_band_average
         fun a => f i ⟨a.val.val, a.val.property, not_not.mp a.property.2⟩
       have hf' : Function.Injective f' := by
         intro a b hab
-        have he := hinj i hab
         apply Subtype.ext
         apply Subtype.ext
-        exact congrArg (fun z : {a : α // a ∈ R ∧ rowGood i a} => z.val) he
+        exact congrArg (fun z : {a : α // a ∈ R ∧ rowGood i a} => z.val) (hinj i hab)
       have htr (a : {a : R // a ∈ Finset.univ ∧ ¬¬rowGood i a.val}) (b : S)
           (hb : ¬¬colGood i b.val) :
           A a.val.val b.val = (starRingEnd ℂ) (u i b.val) * H (f' a).val b.val := by
@@ -125,22 +124,16 @@ theorem finite_band_average
         Finset.sum_coe_sort S (fun b => if ¬colGood i b then ‖lam b‖ ^ 2 else 0)] at hh
       exact hh
     have hs := Finset.sum_le_sum (fun i (_ : i ∈ (Finset.univ : Finset (Fin L))) => hsingle i)
-    have hr := band_incidence L t R (fun i a => ¬rowGood i a)
-      (fun a => ‖∑ b ∈ S, lam b * A a b‖ ^ 2) (fun i a => inferInstance) (fun _ _ => sq_nonneg _) (by intro a ha; simpa using hbad_row a ha)
-    have hc := band_incidence L t S (fun i b => ¬colGood i b)
-      (fun b => ‖lam b‖ ^ 2) (fun i b => inferInstance) (fun _ _ => sq_nonneg _) (by intro b hb; simpa using hbad_col b hb)
-    have he : 0 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 := by positivity
-    have hb := hbound lam
     have hsum : (L : ℝ) * (∑ a ∈ R, ‖∑ b ∈ S, lam b * A a b‖ ^ 2) ≤
         2 * (L : ℝ) * B_T * (∑ b ∈ S, ‖lam b‖ ^ 2) +
         3 * t * B * (∑ b ∈ S, ‖lam b‖ ^ 2) := by
       simp only [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ,
         Fintype.card_fin, nsmul_eq_mul, ← Finset.mul_sum] at hs
-      have hr' := hr.trans (mul_le_mul_of_nonneg_left hb ht)
-      have hc' := mul_le_mul_of_nonneg_left hc (mul_nonneg (by norm_num : (0:ℝ) ≤ 2) hB)
       calc
         _ ≤ t * (B * (∑ b ∈ S, ‖lam b‖ ^ (2:ℕ))) + (L : ℝ) * (2 * B_T * (∑ b ∈ S, ‖lam b‖ ^ (2:ℕ))) + 2 * B * (t * (∑ b ∈ S, ‖lam b‖ ^ (2:ℕ))) :=
-          hs.trans (add_le_add (add_le_add hr' le_rfl) hc')
+          hs.trans (add_le_add (add_le_add ((band_incidence L t R (fun i a => ¬rowGood i a)
+            (fun a => ‖∑ b ∈ S, lam b * A a b‖ ^ 2) (fun i a => inferInstance) (fun _ _ => sq_nonneg _) (by intro a ha; exact hbad_row a ha)).trans (mul_le_mul_of_nonneg_left (hbound lam) ht)) le_rfl) (mul_le_mul_of_nonneg_left (band_incidence L t S (fun i b => ¬colGood i b)
+            (fun b => ‖lam b‖ ^ 2) (fun i b => inferInstance) (fun _ _ => sq_nonneg _) (by intro b hb; exact hbad_col b hb)) (mul_nonneg (by norm_num : (0:ℝ) ≤ 2) hB)))
         _ = _ := by ring
     apply (mul_le_mul_iff_right₀ hLpos).mp
     calc
@@ -149,8 +142,7 @@ theorem finite_band_average
       _ = _ := by field_simp <;> ring
   refine ⟨hresult, ?_⟩
   intro hleast hlarge
-  have hcoef : 0 ≤ 2 * B_T + 3 * (t / (L : ℝ)) * B := by positivity
-  have hb := hleast.2 ⟨hcoef, hresult⟩
+  have hb := hleast.2 ⟨by positivity, hresult⟩
   have hratio : 3 * (t / (L : ℝ)) ≤ (1 / 2 : ℝ) := by
     rw [show 3 * (t / (L : ℝ)) = (3 * t) / L by ring]
     exact (div_le_iff₀ hLpos).mpr (by linarith)

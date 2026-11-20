@@ -12,8 +12,8 @@ open Filter
 namespace DedekindZetaZeroFree.SharedSource
 open MomentSources EisensteinSmoothGerms
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 
 theorem flat_companion_relation (c : R.A.UnitQuotient →₀ ℂ)
     (hc : ∀ g, ∑ v ∈ c.support, c v * (Q.flat v).val 0 g = 0)
@@ -76,7 +76,7 @@ theorem scalar_residue_companion_relation {C : ScalarContinuation R Q}
     (H : ∀ v, ScalarGerm C v) (c : R.A.UnitQuotient →₀ ℂ)
     (hc : ∀ g, ∑ v ∈ c.support, c v * (Q.flat v).val 0 g = 0)
     (g : Group R) : ∑ v ∈ c.support, c v * (H v).cleared 0 g = 0 := by
-  let A : ℂ → ℂ := fun s => ∑ v ∈ c.support, c v * C.E v s g
+  let A := fun s => ∑ v ∈ c.support, c v * C.E v s g
   have he : A =ᶠ[𝓝[≠] (0 : ℂ)] (fun _ => 0) :=
     scalar_continuation_companion_relation c hc g 0
       (by norm_num [KPContinuation.spectralDomain])
@@ -103,7 +103,7 @@ theorem scalar_residue_companion_relation {C : ScalarContinuation R Q}
         ContinuousAt (fun s => ∑ v ∈ I, c v * (H v).cleared s g) 0 := by
       intro I
       induction I using Finset.induction_on with
-      | empty => simpa using (continuousAt_const : ContinuousAt (fun _ : ℂ => (0 : ℂ)) 0)
+      | empty => exact continuousAt_const
       | @insert v I hv ih =>
         simp only [Finset.sum_insert hv]
         exact (continuousAt_const.mul ((H v).analytic g 0
@@ -155,7 +155,7 @@ theorem finiteSourceResidue_range {C : ScalarContinuation R Q}
       simp [A, Finsupp.linearCombination_apply, Finsupp.sum]
     rw [he, finiteSourceResidue_combination]
     simp [B, Finsupp.linearCombination_apply, Finsupp.sum]
-  rw [← Finsupp.range_linearCombination (R := ℂ) (v := fun v => ((H v).cleared 0 : Functions R))]
+  rw [← Finsupp.range_linearCombination]
   change (finiteSourceResidue H).range = B.range
   ext f
   constructor

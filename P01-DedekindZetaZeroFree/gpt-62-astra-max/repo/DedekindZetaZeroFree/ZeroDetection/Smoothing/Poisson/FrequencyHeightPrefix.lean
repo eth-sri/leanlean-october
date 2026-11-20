@@ -1,7 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.ZeroDetection.Smoothing.Poisson.FrequencyGammaShift
-public import DedekindZetaZeroFree.ZeroDetection.Smoothing.Poisson.CharacterPrefix
+public import DedekindZetaZeroFree.ZeroDetection.Smoothing.Poisson.ExceptionalPrefix
 
 @[expose] public section
 
@@ -16,8 +16,8 @@ open scoped Classical
 open Filter Topology
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def RawConvexityExponent (A : ℝ) : Prop :=
   (∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧
@@ -54,16 +54,7 @@ def HeightSpec (A ρ : ℝ) : Prop :=
       |s.im| ≤ 4 * U ^ ρ →
       ‖DetectorHeight.smoothedSum F U (FixedData.primMinus D u).character s.re s.im‖ ≤ e
 
-private theorem smoothedSum_eq_shift (U β γ : ℝ)
-    (ω : Detector.PrimitiveFrequencyCharacter F) :
-    DetectorHeight.smoothedSum F U ω.character β γ = DetectorShift.smoothedSum F U β γ ω := by
-  unfold DetectorHeight.smoothedSum DetectorShift.smoothedSum
-  refine tsum_congr fun n => ?_
-  by_cases hn : n = ⊥
-  · subst hn
-    have h0 : ω.character ⊥ = 0 := (ω.character.eq_zero_iff' ⊥).mpr (Or.inl rfl)
-    simp [h0]
-  · simp [hn]
+private alias smoothedSum_eq_shift := DedekindZetaZeroFree.Quantitative.DetectorHeight.Height.smoothedSum_eq_shift
 
 private theorem pow_mono' (t A B : ℝ) (h : A ≤ B) : (2 + |t|) ^ A ≤ (2 + |t|) ^ B :=
   Real.rpow_le_rpow_of_exponent_le (by linarith [abs_nonneg t]) h
@@ -140,7 +131,7 @@ theorem height_exists :
   have hy1 : Scales.wLine ≤ 1 := by unfold Scales.wLine; norm_num
   have hp := hp0 Scales.wLine hy0 hy1
   obtain ⟨A₂, h2, hl⟩ := RawSharpConvexity31.minus_detector_line (D := D)
-  obtain ⟨A₃, h3, hs⟩ := RawSharpConvexity31.minus_primitive_strip (D := D)
+  obtain ⟨A₃, hs⟩ := RawSharpConvexity31.minus_primitive_strip (D := D)
   obtain ⟨A', hA', hsh⟩ := RawDetectorShift31.detector_shift (D := D)
   have hle1 : A₁ ≤ max (max A₁ A₂) (max A₃ A') := le_max_of_le_left (le_max_left _ _)
   have hle2 : A₂ ≤ max (max A₁ A₂) (max A₃ A') := le_max_of_le_left (le_max_right _ _)
@@ -170,7 +161,7 @@ theorem height_exists :
   exact ⟨_, ρ, hA, hconv, hρ⟩
 
 theorem detector_prefix (A ρ : ℝ) (hρ : HeightSpec D A ρ) :
-    ∃ c₁ : ℝ, 0 < c₁ ∧ ∃ U₀ : ℝ, 2 ≤ U₀ ∧ ∀ U : ℝ, U₀ ≤ U →
+    ∃ c₁ : ℝ, 0 < c₁ ∧ ∃ U₀ : ℝ, ∀ U : ℝ, U₀ ≤ U →
       ∀ u ∈ FixedData.rawExceptionalSet D ρ U, ∀ s : ℂ,
         DetectorDef.IsLZero (FixedData.primMinus D u) s → DetectorDef.σ₀ ≤ s.re → s.re ≤ 1 →
         |s.im| ≤ 4 * U ^ ρ →
@@ -181,12 +172,12 @@ theorem detector_prefix (A ρ : ℝ) (hρ : HeightSpec D A ρ) :
   obtain ⟨_, _, _, _, _, hspec⟩ := hρ
   obtain ⟨U₁, hU₁, hH⟩ := hspec (1 / 4) (by norm_num)
   obtain ⟨U₂, hU₂, hT⟩ := DetectorTail.smoothedTail_tendsto_zero (F := F) (1 / 10) (by norm_num)
-  refine ⟨1 / 12, by norm_num, max (max U₁ U₂) 10, le_trans (by norm_num) (le_max_right _ _), ?_⟩
+  refine ⟨1 / 12, by norm_num, max (max U₁ U₂) 10, ?_⟩
   intro U hU u hu s hs hσ hs1 hγ
   have hUa : U₁ ≤ U := le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) hU
   have hUb : U₂ ≤ U := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hU
   have hUc : 10 ≤ U := le_trans (le_max_right _ _) hU
-  exact DetectorPrefixCore.prefix_core U s.re s.im (FixedData.primMinus D u) hUc hσ
+  exact DetectorPrefix.prefix_core U s.re s.im (FixedData.primMinus D u) hUc hσ
     (hH U hUa u hu s hs hσ hs1 hγ) (hT U s.re s.im (FixedData.primMinus D u) hUb hσ hs1)
 
 end

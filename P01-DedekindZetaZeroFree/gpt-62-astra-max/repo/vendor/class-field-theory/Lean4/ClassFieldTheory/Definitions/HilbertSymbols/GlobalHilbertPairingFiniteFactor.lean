@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -40,10 +36,8 @@ def finiteFactor
     (v : HeightOneSpectrum (𝓞 F)) (a b : Fˣ) :
     rootsOfUnity (n : ℕ) F := by
   letI : NeZero (n : ℕ) := ⟨n.ne_zero⟩
-  let e : rootsOfUnity (n : ℕ) F ≃* rootsOfUnity (n : ℕ) (v.adicCompletion F) :=
-    rootsOfUnityEquivOfPrimitiveRoots
-      (algebraMap F (v.adicCompletion F)).injective hmu
-  exact e.symm
+  exact (rootsOfUnityEquivOfPrimitiveRoots
+    (algebraMap F (v.adicCompletion F)).injective hmu).symm
     (B v
       (powerClass (v.adicCompletion F) n
         (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a))

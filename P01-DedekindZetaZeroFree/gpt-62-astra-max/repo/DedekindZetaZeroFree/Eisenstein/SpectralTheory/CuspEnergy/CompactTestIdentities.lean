@@ -15,40 +15,35 @@ open Filter
 namespace DedekindZetaZeroFree.KPCompactGreen
 open KPMeanZeroWeightedEnergy
 
-private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  ext i <;> simp [arch, real]
-private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply ContDiff.prodMk
-  · exact Complex.equivRealProdCLM.symm.contDiff.comp
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
-       (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
- def heightCLM (d : ℕ) : HyperbolicChart.Space d →L[ℝ] ℝ :=
+private alias arch_real := GreenFlux.RadialGreenIdentity.arch_real
+private alias smooth_arch := GreenFlux.RadialGreenIdentity.smooth_arch
+ section
+
+variable (d : ℕ)
+
+def heightCLM : HyperbolicChart.Space d →L[ℝ] ℝ :=
   (d : ℝ)⁻¹ • ∑ i : Fin d, EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))
-private theorem height_eq (d : ℕ) (x : HyperbolicChart.Space d) :
+private theorem height_eq (x : HyperbolicChart.Space d) :
     KPCuspLogShape.meanHeight d (arch d x) = heightCLM d x := by
   simp [KPCuspLogShape.meanHeight, arch, heightCLM, Finset.sum_apply, div_eq_mul_inv, mul_comm]
-private theorem height_vector (d : ℕ) (i : Fin d) (k : Fin 3) :
+private theorem height_vector (i : Fin d) (k : Fin 3) :
     heightCLM d (HyperbolicChart.coordinateVector d i k) =
       if k = 2 then (d : ℝ)⁻¹ else 0 := by
   by_cases hk : k = 2
   · subst k
     simp [heightCLM, HyperbolicChart.coordinateVector, Finset.sum_apply]
   · simp [heightCLM, HyperbolicChart.coordinateVector, Finset.sum_apply, hk, Ne.symm hk]
-private theorem radial_derivative (d : ℕ) (η : ℝ → ℝ) (hη : Differentiable ℝ η)
+private theorem radial_derivative (η : ℝ → ℝ) (hη : Differentiable ℝ η)
     (x : HyperbolicChart.Space d) (i : Fin d) (k : Fin 3) :
     HyperbolicChart.coordinateDerivative d i k
       (fun q => (η (heightCLM d q) : ℂ)) x =
       ((deriv η (heightCLM d x) * (if k = 2 then (d : ℝ)⁻¹ else 0) : ℝ) : ℂ) := by
-  have hh := Complex.ofRealCLM.hasFDerivAt.comp x
-    ((hη (heightCLM d x)).hasDerivAt.comp_hasFDerivAt x (heightCLM d).hasFDerivAt)
   simpa [HyperbolicChart.coordinateDerivative, height_vector, ContinuousLinearMap.smul_apply,
     Function.comp_def, ← Complex.ofReal_mul]
     using congrArg (fun A : HyperbolicChart.Space d →L[ℝ] ℂ =>
-      A (HyperbolicChart.coordinateVector d i k)) hh.fderiv
-private theorem differential_mul_radial (d : ℕ) (η : ℝ → ℝ) (hη : Differentiable ℝ η)
+      A (HyperbolicChart.coordinateVector d i k)) (Complex.ofRealCLM.hasFDerivAt.comp x
+        ((hη (heightCLM d x)).hasDerivAt.comp_hasFDerivAt x (heightCLM d).hasFDerivAt)).fderiv
+private theorem differential_mul_radial (η : ℝ → ℝ) (hη : Differentiable ℝ η)
     (f : HyperbolicChart.Space d → ℂ) (x : HyperbolicChart.Space d)
     (hf : DifferentiableAt ℝ f x) (i : Fin d) (k : Fin 3) :
     HyperbolicChart.differential d (fun q => (η (heightCLM d q) : ℂ) * f q) x i k =
@@ -64,6 +59,8 @@ private theorem differential_mul_radial (d : ℕ) (η : ℝ → ℝ) (hη : Diff
       congrArg (fun A : HyperbolicChart.Space d →L[ℝ] ℂ =>
         A (HyperbolicChart.coordinateVector d i j)) (hr.hasFDerivAt.mul hf.hasFDerivAt).fderiv
   fin_cases k <;> simp [HyperbolicChart.differential, hm, radial_derivative d η hη] <;> ring
+
+end
 private theorem ims_scalar (a b : ℝ) (u z : ℂ) :
     ‖(a : ℂ) * u + (b : ℂ) * z‖ ^ 2 =
       (star (((a^2 : ℝ) : ℂ) * u + ((2*a*b : ℝ) : ℂ) * z) * u).re +
@@ -81,9 +78,9 @@ private theorem ims_upstairs (d : ℕ) (hd : 0 < d) (η : ℝ → ℝ)
       (HyperbolicChart.differential d (fun q => ((η (heightCLM d q)^2 : ℝ) : ℂ) * f q) x)
       (HyperbolicChart.differential d f x)).re +
     (d : ℝ)⁻¹ * (deriv η (heightCLM d x)^2 * ‖f x‖^2) := by
-  have hη2 : Differentiable ℝ (fun t => η t ^ 2) := hη.pow 2
   have hd2 (t : ℝ) : deriv (fun t => η t ^ 2) t = 2 * η t * deriv η t := by
     convert ((hη t).hasDerivAt.pow 2).deriv using 1 <;> simp [pow_succ, pow_zero, mul_assoc]
+  let η₀ := η (heightCLM d x)
   have hi (i : Fin d) :
       (∑ k, ‖HyperbolicChart.differential d
         (fun q => (η (heightCLM d q) : ℂ) * f q) x i k‖^2) =
@@ -92,42 +89,35 @@ private theorem ims_upstairs (d : ℕ) (hd : 0 < d) (η : ℝ → ℝ)
         HyperbolicChart.differential d f x i k).re) +
       (deriv η (heightCLM d x) * (d : ℝ)⁻¹)^2 * ‖f x‖^2 := by
     simp only [Fin.sum_univ_three, differential_mul_radial d η hη f x hf,
-      differential_mul_radial d (fun t => η t^2) hη2 f x hf, hd2]
+      differential_mul_radial d (fun t => η t^2) (hη.pow 2) f x hf, hd2]
     simp only [Fin.reduceEq, ↓reduceIte, add_zero]
-    have h0 := ims_scalar (η (heightCLM d x))
-      (deriv η (heightCLM d x) * (d : ℝ)⁻¹) (HyperbolicChart.differential d f x i 0) (f x)
-    have h1 := ims_scalar (η (heightCLM d x)) 0 (HyperbolicChart.differential d f x i 1) (f x)
-    have h2 := ims_scalar (η (heightCLM d x)) 0 (HyperbolicChart.differential d f x i 2) (f x)
+    have h1 := ims_scalar (η₀) 0 (HyperbolicChart.differential d f x i 1) (f x)
+    have h2 := ims_scalar (η₀) 0 (HyperbolicChart.differential d f x i 2) (f x)
     simp only [mul_zero, Complex.ofReal_zero, zero_mul, add_zero, zero_pow (by decide : 2 ≠ 0)] at h1 h2
     rw [h1, h2]
-    have he : 2 * η (heightCLM d x) * deriv η (heightCLM d x) * (d : ℝ)⁻¹ =
-        2 * η (heightCLM d x) * (deriv η (heightCLM d x) * (d : ℝ)⁻¹) := by ring
-    rw [he, h0]
+    have he : 2 * η₀ * deriv η (heightCLM d x) * (d : ℝ)⁻¹ =
+        2 * η₀ * (deriv η (heightCLM d x) * (d : ℝ)⁻¹) := by ring
+    rw [he, (ims_scalar (η₀)
+      (deriv η (heightCLM d x) * (d : ℝ)⁻¹) (HyperbolicChart.differential d f x i 0) (f x))]
     ring
   unfold HyperbolicChart.pairing
   simp only [Complex.re_sum]
   simp_rw [hi]
   rw [Finset.sum_add_distrib]
   simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-  have hd0 : (d : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hd)
   congr 1
   field_simp
-private theorem continuous_height (d : ℕ) : Continuous (KPCuspLogShape.meanHeight d) := by
-  unfold KPCuspLogShape.meanHeight
-  exact (continuous_finset_sum _ (fun i _ => (continuous_apply i).snd)).div_const _
+private alias continuous_height := GreenFlux.RadialGreenIdentity.continuous_height
 private theorem cutoff_zero (d : ℕ) (η : ℝ → ℝ) (f : HyperbolicChart.Space d → ℂ)
     (x : HyperbolicChart.Space d) (hx : heightCLM d x ∉ tsupport η) :
     HyperbolicChart.differential d (fun q => (η (heightCLM d q) : ℂ) * f q) x = 0 := by
   have hz : (fun q => (η (heightCLM d q) : ℂ) * f q) =ᶠ[nhds x] 0 := by
-    have hh := ((notMem_tsupport_iff_eventuallyEq.mp hx).comp_tendsto
-      (heightCLM d).continuous.continuousAt)
-    filter_upwards [hh] with q hq
+    filter_upwards [(((notMem_tsupport_iff_eventuallyEq.mp hx).comp_tendsto
+      (heightCLM d).continuous.continuousAt))] with q hq
     change η (heightCLM d q) = 0 at hq
     simp [hq]
   have hd := hz.fderiv_eq (𝕜 := ℝ)
-  have hd0 : fderiv ℝ (0 : HyperbolicChart.Space d → ℂ) x = 0 :=
-    congrFun fderiv_zero x
-  rw [hd0] at hd
+  rw [(congrFun fderiv_zero x)] at hd
   funext i k
   fin_cases k <;> simp [HyperbolicChart.differential, HyperbolicChart.coordinateDerivative, hd]
 
@@ -193,29 +183,9 @@ open scoped Classical ENNReal
 namespace DedekindZetaZeroFree.KPCompactGreen
 open KPMeanZeroWeightedEnergy
 
-private theorem arch_real_for_compactEnergy (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  funext i
-  apply Prod.ext
-  · apply Complex.ext <;> simp [arch, real]
-  · simp [arch, real]
-private theorem contDiff_arch_for_compactEnergy (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply ContDiff.prodMk
-  · have h0 := (EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff (n := (⊤ : ℕ∞))
-    have h1 := (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff (n := (⊤ : ℕ∞))
-    have hh := (Complex.ofRealCLM.contDiff.comp h0).add
-      ((Complex.ofRealCLM.contDiff.comp h1).mul contDiff_const (g := fun _ => Complex.I))
-    convert hh using 1
-    funext x
-    apply Complex.ext <;> simp [arch, PiLp.proj_apply]
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
-private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
-  unfold KPCuspLogShape.meanHeight
-  apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact (contDiff_snd.comp (contDiff_apply ℝ _ i))
+private alias arch_real_for_compactEnergy := arch_real
+private alias contDiff_arch_for_compactEnergy := smooth_arch
+private alias smooth_mean := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.smooth_mean
 private theorem mean_deriv (d : ℕ) (x : HyperbolicChart.Space d) :
     HasFDerivAt (fun q : HyperbolicChart.Space d => KPCuspLogShape.meanHeight d (arch d q))
       ((d : ℝ)⁻¹ • ∑ i : Fin d, EuclideanSpace.proj (𝕜 := ℝ) (i,(2 : Fin 3))) x := by
@@ -225,15 +195,19 @@ private theorem mean_deriv (d : ℕ) (x : HyperbolicChart.Space d) :
     intro j hj
     exact (EuclideanSpace.proj (𝕜 := ℝ) (j,(2 : Fin 3))).hasFDerivAt
   simpa [KPCuspLogShape.meanHeight, arch, div_eq_mul_inv, mul_comm] using hs.const_mul (d : ℝ)⁻¹
-private theorem cutoff_deriv (d : ℕ) (η : ℝ → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
+section
+
+variable (d : ℕ) (η : ℝ → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
+
+include hη in
+private theorem cutoff_deriv
     (x : HyperbolicChart.Space d) (i : Fin d) (k : Fin 3) :
     HyperbolicChart.coordinateDerivative d i k
       (fun q => (η (KPCuspLogShape.meanHeight d (arch d q)) : ℂ)) x =
         if k = 2 then (deriv η (KPCuspLogShape.meanHeight d (arch d x)) / d : ℝ) else 0 := by
-  have hh := Complex.ofRealCLM.hasFDerivAt.comp x
-    (((hη.differentiable (by simp)) _).hasDerivAt.comp_hasFDerivAt x (mean_deriv d x))
   have he := congrArg (fun A : HyperbolicChart.Space d →L[ℝ] ℂ =>
-    A (HyperbolicChart.coordinateVector d i k)) hh.fderiv
+    A (HyperbolicChart.coordinateVector d i k)) (Complex.ofRealCLM.hasFDerivAt.comp x
+      (((hη.differentiable (by simp)) _).hasDerivAt.comp_hasFDerivAt x (mean_deriv d x))).fderiv
   by_cases hk : k = 2
   · subst k
     simpa [HyperbolicChart.coordinateDerivative, HyperbolicChart.coordinateVector,
@@ -242,8 +216,8 @@ private theorem cutoff_deriv (d : ℕ) (η : ℝ → ℝ) (hη : ContDiff ℝ (�
   · simpa [HyperbolicChart.coordinateDerivative, HyperbolicChart.coordinateVector,
       PiLp.proj_apply, Function.comp_def, Finset.sum_apply, Finset.sum_ite,
       hk, Ne.symm hk] using he
-private theorem differential_mul_cutoff (d : ℕ) (η : ℝ → ℝ)
-    (hη : ContDiff ℝ (⊤ : ℕ∞) η) (f : HyperbolicChart.Space d → ℂ)
+include hη in
+private theorem differential_mul_cutoff (f : HyperbolicChart.Space d → ℂ)
     (x : HyperbolicChart.Space d) (hf : DifferentiableAt ℝ f x) (i : Fin d) (k : Fin 3) :
     HyperbolicChart.differential d (fun q => (η (KPCuspLogShape.meanHeight d (arch d q)) : ℂ) * f q) x i k =
       (η (KPCuspLogShape.meanHeight d (arch d x)) : ℂ) * HyperbolicChart.differential d f x i k +
@@ -267,9 +241,10 @@ private theorem differential_mul_cutoff (d : ℕ) (η : ℝ → ℝ)
   · simpa [HyperbolicChart.differential, mul_comm] using hm 2
   · simp [HyperbolicChart.differential, hm, mul_left_comm]
   · simp [HyperbolicChart.differential, hm, mul_left_comm]
+
+end
 private theorem norm_reverse (a b : ℂ) : ‖a‖ ^ 2 ≤ 2 * ‖a+b‖ ^ 2 + 2 * ‖b‖ ^ 2 := by
   have hh := parallelogram_law_with_norm ℂ (a+b) b
-  have hn := sq_nonneg ‖a+b+b‖
   have he : a + b - b = a := by ring
   rw [he] at hh
   nlinarith
@@ -373,8 +348,7 @@ theorem compact_green_specialization
       (∫ p, η p.2 ^ 2 * v.gradientSq p ∂chartMeasure G) ≤
         2 * q + 2 * (KPCuspLogShape.dimension F : ℝ)⁻¹ *
           (∫ p, deriv η p.2 ^ 2 * ‖v.scalar p‖ ^ 2 ∂chartMeasure G)) := by
-  have hi := KPCompactGreen.compact_radial_densities_integrable G v η hη
-  rcases hi with ⟨hgrad, herror, hpotential, hlap, hcutoff, hpair⟩
+  rcases (KPCompactGreen.compact_radial_densities_integrable G v η hη) with ⟨hgrad, herror, hpotential, hlap, hcutoff, hpair⟩
   refine ⟨⟨hgrad, herror, hpotential, hlap⟩, ?_⟩
   refine ⟨∫ p, KPCompactGreen.cutoffGradientSq v η p ∂chartMeasure G, ?_, ?_, ?_⟩
   · apply integral_nonneg
@@ -382,7 +356,7 @@ theorem compact_green_specialization
     unfold KPCompactGreen.cutoffGradientSq
     exact Finset.sum_nonneg (fun i _ => Finset.sum_nonneg (fun k _ => sq_nonneg _))
   · calc
-      (∫ p, KPCompactGreen.cutoffGradientSq v η p ∂chartMeasure G) =
+      _ =
           ∫ p, KPCompactGreen.weightedGreenDensity v η p +
             (KPCuspLogShape.dimension F : ℝ)⁻¹ *
               (deriv η p.2 ^ 2 * ‖v.scalar p‖ ^ 2) ∂chartMeasure G := by
@@ -441,9 +415,7 @@ theorem kernel_torus_haar_specialization
   letI : IsClosed (KPCuspCharts.translationLattice F
       (KPCuspGenuineMonodromy.kernelLattice S D ρ) : Set (KPCuspCharts.Horizontal F)) :=
     AddSubgroup.isClosed_of_discreteTopology
-  let K : TopologicalSpace.PositiveCompacts (KPCuspGenuineMonodromy.KernelTorus S D ρ) :=
-    ⟨⟨Set.univ, isCompact_univ⟩, by simp⟩
-  refine ⟨Measure.addHaarMeasure K, inferInstance, ⟨Measure.addHaarMeasure_self⟩, ?_⟩
+  refine ⟨Measure.addHaarMeasure (⟨⟨Set.univ, isCompact_univ⟩, by simp⟩), inferInstance, ⟨Measure.addHaarMeasure_self⟩, ?_⟩
   intro T v b t
   have hc : Continuous (v.torusSlice G H b t) := by
     apply (QuotientAddGroup.isQuotientMap_mk
@@ -451,9 +423,8 @@ theorem kernel_torus_haar_specialization
     have he : (v.torusSlice G H b t) ∘ QuotientAddGroup.mk =
         fun y => v.val (KPCuspCharts.toArch F ((y,b),t.val)) := by
       funext y
-      have h := H.realization_formula (H.realization.symm (v.horizontalSlice G b t)) y
       simpa only [Function.comp_apply, Representative.torusSlice, LinearEquiv.apply_symm_apply,
-        Representative.horizontalSlice, Representative.scalar] using h.symm
+        Representative.horizontalSlice, Representative.scalar] using (H.realization_formula (H.realization.symm (v.horizontalSlice G b t)) y).symm
     rw [he]
     apply v.smooth.continuousOn.comp_continuous
     · unfold KPCuspCharts.toArch
@@ -499,7 +470,6 @@ theorem actual_structural_inputs
     fiberMeasure := μ
     fiberHaar := hμ
     fiberProbability := hprob
-    slice_integrable := hslice
     compact_integrable := fun v η hη =>
       (compact_green_specialization (A.geometry a) v η hη).1
     cutoffEnergy := fun v η hη =>

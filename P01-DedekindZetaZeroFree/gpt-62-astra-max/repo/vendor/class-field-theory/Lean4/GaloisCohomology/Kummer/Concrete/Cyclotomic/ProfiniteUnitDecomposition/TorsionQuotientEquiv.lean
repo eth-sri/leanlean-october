@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -43,10 +41,10 @@ noncomputable def torsionQuotientEquivOfZHatMulDecomposition
     MonoidHom.fst _ _
   let freePart : G →* Multiplicative ZHat :=
     fstHom.comp E.toMonoidHom
+  let torsion₀ := CommGroup.torsion (Multiplicative ZHat × T)
   have hpreTorsion :
       E ⁻¹'
-          (CommGroup.torsion
-              (Multiplicative ZHat × T) :
+          (torsion₀ :
             Set (Multiplicative ZHat × T)) =
         (CommGroup.torsion G : Set G) := by
     ext x
@@ -56,28 +54,24 @@ noncomputable def torsionQuotientEquivOfZHatMulDecomposition
   have hpreClosure :
       E ⁻¹'
           closure
-            (CommGroup.torsion
-                (Multiplicative ZHat × T) :
+            (torsion₀ :
               Set (Multiplicative ZHat × T)) =
         closure (CommGroup.torsion G : Set G) := by
     calc
       E ⁻¹'
           closure
-            (CommGroup.torsion
-                (Multiplicative ZHat × T) :
+            (torsion₀ :
               Set (Multiplicative ZHat × T)) =
           closure
             (E ⁻¹'
-              (CommGroup.torsion
-                  (Multiplicative ZHat × T) :
+              (torsion₀ :
                 Set (Multiplicative ZHat × T))) :=
         E.toHomeomorph.preimage_closure _
       _ = closure (CommGroup.torsion G : Set G) := by
         rw [hpreTorsion]
   have hkerFst :
       fstHom.ker =
-        (CommGroup.torsion
-          (Multiplicative ZHat × T)).topologicalClosure := by
+        (torsion₀).topologicalClosure := by
     rw [ClassFormation.topologicalClosure_torsion_zHatMul_prod T hT]
     ext x
     rcases x with ⟨x, y⟩
@@ -99,9 +93,7 @@ noncomputable def torsionQuotientEquivOfZHatMulDecomposition
     change fstHom (E (E.symm (z, 1))) = z
     rw [E.apply_symm_apply]
     rfl
-  let e :
-      G ⧸ (CommGroup.torsion G).topologicalClosure ≃*
-        Multiplicative ZHat :=
+  let e :=
     (QuotientGroup.quotientMulEquivOfEq hker.symm).trans
       (QuotientGroup.quotientKerEquivOfSurjective
         freePart hsurj)

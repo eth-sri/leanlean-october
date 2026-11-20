@@ -11,8 +11,8 @@ namespace DedekindZetaZeroFree.RootDerivatives
 open MomentSources FourierContinuation.HCGeneration FourierContinuation.LiteralSource
 open KPContActualSphericalRightFieldIdentification
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
@@ -33,8 +33,8 @@ def SourceNativeLie {Q : AdmissibleFlatSources R} {T : Realization R Q}
   NativeLieComparison R D.finiteData D.references D.bad D.coreMap
 
 variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
 variable [∀ q, (μ q).IsAddHaarMeasure]
 variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 local notation "H" => actualImageData R P C μ hμ
@@ -45,16 +45,16 @@ local notation "e" => actualReference R P C μ hμ
 theorem actualCoreResidue_nativeLie (N : TraceHaarTransport R) :
     NativeLieComparison R H e E (actualCoreResidue R P C μ hμ N) := by
   intro s w hw b x
-  let i := (actualLieIndexEquiv (F := F)).symm (w,b)
+  let i := (actualLieIndexEquiv).symm (w,b)
   have hh := actualCoreResidue_stage_generator R P C μ hμ N s (.lie i) x
-  have hi : actualLieIndexEquiv (F := F) i = (w,b) := Equiv.apply_symm_apply _ _
+  have hi : actualLieIndexEquiv i = (w,b) := Equiv.apply_symm_apply _ _
   have hop := congrArg
     (fun a : KPSmoothActualFlowData.B F =>
       tensorSlot (V := fun j : s.val => W j.val)
         ⟨Sum.inl a.1,s.property (by simp [bad,KPGlobalResidualConstruction.ScalarAbsorption.fullBad])⟩
         (localOperation R (imageData R P C H) (Sum.inl a.1) [.inr a.2])) hi
   change actualStageGenerator R P C μ hμ s (.lie i) =
-    tensorSlot (V := fun j : s.val => W j.val) ⟨Sum.inl w,hw⟩
+    tensorSlot ⟨Sum.inl w,hw⟩
       (localOperation R (imageData R P C H) (Sum.inl w) [.inr b]) at hop
   rw [hop] at hh
   exact hh

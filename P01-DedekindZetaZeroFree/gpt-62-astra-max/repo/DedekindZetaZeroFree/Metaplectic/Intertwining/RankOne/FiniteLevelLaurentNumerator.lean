@@ -48,19 +48,20 @@ theorem actualLevelNumerator_spec :
     { toFun := fun M => (M φ).val.val k |>.val h
       map_add' := by intros; rfl
       map_smul' := by intros; rfl }
-  have hc := actualLevelNumerator_coordinate F ζ hζ q S P J hJ μ hμ π hπ ε φ k h
+  let evaluationUnit₀ := evaluationUnit (LocalField F q) ε s
   have he := congrArg (fun p : ℤ →₀ ℂ => p.sum
-    (fun n c => (evaluationUnit (LocalField F q) ε s : ℂ) ^ n * c)) hc
+    (fun n c => (evaluationUnit₀ : ℂ) ^ n * c)) (actualLevelNumerator_coordinate F ζ hζ q S P J hJ μ hμ π hπ ε φ k h)
   rw [Finsupp.sum_mapRange_index (by intros; simp)] at he
+  let actualLevelNumerator₀ := actualLevelNumerator F ζ hζ q S P J hJ μ hμ π hπ ε
   have hm : l (evaluate (LocalField F q) S.borel P S.iwasawa J ε
-      (actualLevelNumerator F ζ hζ q S P J hJ μ hμ π hπ ε)
-      (evaluationUnit (LocalField F q) ε s)) =
-      (actualLevelNumerator F ζ hζ q S P J hJ μ hμ π hπ ε).sum
-        (fun n M => (evaluationUnit (LocalField F q) ε s : ℂ) ^ n * l M) := by
+      (actualLevelNumerator₀)
+      (evaluationUnit₀)) =
+      (actualLevelNumerator₀).sum
+        (fun n M => (evaluationUnit₀ : ℂ) ^ n * l M) := by
     simp [evaluate, Finsupp.sum, map_sum, map_smul, smul_eq_mul]
   change l (evaluate (LocalField F q) S.borel P S.iwasawa J ε
-    (actualLevelNumerator F ζ hζ q S P J hJ μ hμ π hπ ε)
-    (evaluationUnit (LocalField F q) ε s)) = _
+    (actualLevelNumerator₀)
+    (evaluationUnit₀)) = _
   rw [hm]
   exact he.trans (Classical.choose_spec
     (actual_scalar_numerator_coordinate F ζ hζ q S P J hJ μ hμ π hπ ε φ k h) s hs).symm

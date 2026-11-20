@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Adeles.Units.SupportedIdeles.Norm
 
 public import DedekindZetaZeroFree.Adeles.Haar.FiniteRestrictedProductMeasure
 public import DedekindZetaZeroFree.Metaplectic.Torus.CubicHeisenbergInducingData
@@ -38,19 +39,16 @@ private theorem integral_preimage (a : FiniteIdeleGroup F)
   · rintro ⟨hx, ht⟩ v
     by_cases hv : v ∈ S
     · exact hx ⟨v, hv⟩
-    · have hu := (Submonoid.mem_units_iff _ _).mp (ha v hv)
-      exact (v.adicCompletionIntegers F).mul_mem _ _ hu.1 (ht v hv)
+    · exact (v.adicCompletionIntegers F).mul_mem _ _ ((Submonoid.mem_units_iff _ _).mp (ha v hv)).1 (ht v hv)
 
 private theorem local_preimage_mass (v : HeightOneSpectrum (𝓞 F))
     (a : (v.adicCompletion F)ˣ) :
     (localNormalizedHaar F v ((fun x => a.val * x) ⁻¹' v.adicCompletionIntegers F)).toReal =
       ‖a.val‖⁻¹ * FiniteHaarCharts.localMass F v := by
-  have hs : MeasurableSet (v.adicCompletionIntegers F : Set (v.adicCompletion F)) :=
-    (KPAdelicTopology.completionIntegers_isOpen F v).measurableSet
   have he := congrArg (fun μ : Measure (v.adicCompletion F) =>
     (μ (v.adicCompletionIntegers F)).toReal)
     (CompletionHaarModule.map_mul F v (localNormalizedHaar F v) a)
-  rw [Measure.map_apply (by fun_prop) hs, Measure.smul_apply, smul_eq_mul,
+  rw [Measure.map_apply (by fun_prop) ((KPAdelicTopology.completionIntegers_isOpen F v).measurableSet), Measure.smul_apply, smul_eq_mul,
     ENNReal.toReal_mul, ENNReal.toReal_inv, ENNReal.toReal_ofReal (norm_nonneg _)] at he
   exact he
 
@@ -98,31 +96,7 @@ private theorem finite_intrinsic_char (a : FiniteIdeleGroup F)
   rw [mul_assoc, inv_mul_cancel₀ hn, mul_one, one_mul] at hh'
   exact hh'
 
-private theorem finite_arithmetic_norm (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (a : FiniteIdeleGroup F) (ha : a ∈ FiniteIdeleGroup.supportedAt (S : Set _)) :
-    (∏ v : S, ‖(a v.val).val‖) = (((FiniteIdeleGroup.absoluteNorm a : ℝ≥0) : ℝ))⁻¹ := by
-  have hlocal (v : HeightOneSpectrum (𝓞 F)) (x : (v.adicCompletion F)ˣ) :
-      ‖x.val‖ = ((FiniteIdeleGroup.primeNorm v : ℝ≥0) : ℝ) ^
-        (-(FiniteIdeleGroup.localOrder v x).toAdd) := by
-    rw [FinitePlace.norm_def, WithZeroMulInt.toNNReal_neg_apply _ (by simp)]
-    simp [FiniteIdeleGroup.localOrder_apply, FiniteIdeleGroup.primeNorm]
-  have hs : (FiniteIdeleGroup.valuationVector a).toAdd.support ⊆ S := by
-    intro v hv
-    by_contra h
-    exact (Finsupp.mem_support_iff.mp hv)
-      ((FiniteIdeleGroup.localOrder_eq_zero_iff v (a v)).mpr (ha v h))
-  rw [FiniteIdeleGroup.absoluteNorm_apply, Finsupp.prod]
-  simp only [Units.coe_prod, Units.val_zpow_eq_zpow_val, NNReal.coe_prod, NNReal.coe_zpow]
-  simp_rw [hlocal, zpow_neg]
-  rw [← Finset.prod_subtype S (p := fun v => v ∈ S) (by simp)
-    (fun v => (((FiniteIdeleGroup.primeNorm v : ℝ≥0) : ℝ) ^
-      (FiniteIdeleGroup.localOrder v (a v)).toAdd)⁻¹)]
-  rw [Finset.prod_inv_distrib]
-  congr 1
-  symm
-  apply Finset.prod_subset hs
-  intro v hv hvs
-  simp [Finsupp.notMem_support_iff.mp hvs]
+private alias finite_arithmetic_norm := DedekindZetaZeroFree.SupportedChartNorm.finite_norm
 
 theorem finite_idele_intrinsicHaarChar (a : FiniteIdeleGroup F) :
     (addEquivAddHaarChar (ContinuousAddEquiv.mulLeft
@@ -140,16 +114,19 @@ theorem finite_idele_map_mul (a : FiniteIdeleGroup F)
   have hc : addEquivAddHaarChar (ContinuousAddEquiv.mulLeft
       (IdeleGroup.finiteEquivFiniteAdeleUnits a)) = (FiniteIdeleGroup.absoluteNorm a : ℝ≥0)⁻¹ := by
     apply NNReal.coe_injective
-    simpa using finite_idele_intrinsicHaarChar a
+    exact finite_idele_intrinsicHaarChar a
   rw [hc] at h
-  have hn : (FiniteIdeleGroup.absoluteNorm a : ℝ≥0) ≠ 0 := Units.ne_zero _
   have hh := congrArg (fun ν => (FiniteIdeleGroup.absoluteNorm a : ℝ≥0) • ν) h
-  rw [smul_smul, mul_inv_cancel₀ hn, one_smul] at hh
+  rw [smul_smul, mul_inv_cancel₀ (Units.ne_zero _), one_smul] at hh
   change Measure.map (fun x => (IdeleGroup.finiteEquivFiniteAdeleUnits a).val * x) μ =
     (FiniteIdeleGroup.absoluteNorm a : ℝ≥0) • μ at hh
-  simpa only [ENNReal.ofReal_coe_nnreal, ENNReal.smul_def] using hh
+  simpa using hh
 
-private theorem global_map_arithmetic (a : (KPGlobalTorusFunctionData.Adeles F)ˣ) :
+section
+
+variable (a : (KPGlobalTorusFunctionData.Adeles F)ˣ)
+
+private theorem global_map_arithmetic :
     Measure.map (fun x : KPGlobalTorusFunctionData.Adeles F => a.val * x)
       (KPAdditiveHaar.adelicMeasure F) =
       ((ENNReal.ofReal ‖a.val.1‖)⁻¹ * ENNReal.ofReal
@@ -158,18 +135,19 @@ private theorem global_map_arithmetic (a : (KPGlobalTorusFunctionData.Adeles F)�
       KPAdditiveHaar.adelicMeasure F := by
   let μa := KPAdditiveHaar.archMeasure F
   let μf := KPAdditiveHaar.finiteMeasure F
-  let : μa.IsAddHaarMeasure := KPAdditiveHaar.archMeasure_isAddHaarMeasure F
-  let : μf.IsAddHaarMeasure := KPAdditiveHaar.finiteMeasure_isAddHaarMeasure F
-  let d : (InfiniteAdeleRing F)ˣ := Units.map (RingHom.fst _ _).toMonoidHom a
+  let := KPAdditiveHaar.archMeasure_isAddHaarMeasure F
+  let := KPAdditiveHaar.finiteMeasure_isAddHaarMeasure F
+  let d := Units.map (RingHom.fst _ _).toMonoidHom a
   let b := ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm a).2
   have hb : (IdeleGroup.finiteEquivFiniteAdeleUnits b).val = a.val.2 := by
     exact congrArg (fun u : KPAdelicCoverRestrictedProduct.Ideles F => u.val.2)
       ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).apply_symm_apply a)
-  let cast : InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F →
+  let FiniteAdeleRing₀ := IsDedekindDomain.FiniteAdeleRing (𝓞 F) F
+  let cast : InfiniteAdeleRing F × FiniteAdeleRing₀ →
     KPGlobalTorusFunctionData.Adeles F := fun x => x
   have hc : Measurable cast := by
     have heq : (MeasurableSpace.prod inferInstance inferInstance :
-      MeasurableSpace (InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F)) =
+      MeasurableSpace (InfiniteAdeleRing F × FiniteAdeleRing₀)) =
       borel (KPGlobalTorusFunctionData.Adeles F) := BorelSpace.measurable_eq
     change @Measurable _ _ (MeasurableSpace.prod inferInstance inferInstance) (borel _) _
     rw [heq]
@@ -178,7 +156,7 @@ private theorem global_map_arithmetic (a : (KPGlobalTorusFunctionData.Adeles F)�
     (PoissonArch.infiniteAdeleToSpace F).toHomeomorph.isClosedEmbedding.sigmaCompactSpace
   have hm : Measurable (fun x : KPGlobalTorusFunctionData.Adeles F => a.val * x) := by fun_prop
   have hp : Measurable (Prod.map (fun x : InfiniteAdeleRing F => d.val * x)
-      (fun x : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F => a.val.2 * x)) :=
+      (fun x : FiniteAdeleRing₀ => a.val.2 * x)) :=
     (continuous_const.mul continuous_id).measurable.prodMap
       (continuous_const.mul continuous_id).measurable
   have harch : Measure.map (fun x : InfiniteAdeleRing F => d.val * x) μa =
@@ -187,7 +165,7 @@ private theorem global_map_arithmetic (a : (KPGlobalTorusFunctionData.Adeles F)�
       ENNReal.ofReal (((FiniteIdeleGroup.absoluteNorm b : ℝ≥0) : ℝ)) • μf := by
     simpa only [hb] using finite_idele_map_mul b μf
   have hprod : Measure.map (Prod.map (fun x : InfiniteAdeleRing F => d.val * x)
-      (fun x : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F => a.val.2 * x)) (μa.prod μf) =
+      (fun x : FiniteAdeleRing₀ => a.val.2 * x)) (μa.prod μf) =
       ((ENNReal.ofReal ‖d.val‖)⁻¹ *
         ENNReal.ofReal (((FiniteIdeleGroup.absoluteNorm b : ℝ≥0) : ℝ))) • (μa.prod μf) := by
     rw [← Measure.map_prod_map μa μf (by fun_prop) (by fun_prop),
@@ -197,11 +175,11 @@ private theorem global_map_arithmetic (a : (KPGlobalTorusFunctionData.Adeles F)�
   rw [Measure.map_map hm hc]
   have he : (fun x : KPGlobalTorusFunctionData.Adeles F => a.val * x) ∘ cast =
       cast ∘ Prod.map (fun x : InfiniteAdeleRing F => d.val * x)
-        (fun x : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F => a.val.2 * x) := rfl
+        (fun x : FiniteAdeleRing₀ => a.val.2 * x) := rfl
   rw [he, ← Measure.map_map hc hp, hprod, Measure.map_smul _ hc.aemeasurable]
   rfl
 
-private theorem global_ideleAbs (a : (KPGlobalTorusFunctionData.Adeles F)ˣ) :
+private theorem global_ideleAbs :
     (((KPGlobalTorusFunctionData.ideleAbs F a : ℝ≥0) : ℝ)) =
       ‖a.val.1‖ / (((FiniteIdeleGroup.absoluteNorm
         ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm a).2 : ℝ≥0) : ℝ)) := by
@@ -224,14 +202,14 @@ private theorem global_ideleAbs (a : (KPGlobalTorusFunctionData.Adeles F)ˣ) :
   rw [mul_inv_rev, inv_inv, harch]
   simp only [div_eq_mul_inv]
 
-theorem idele_intrinsicHaarChar_eq_ideleAbs (a : (KPGlobalTorusFunctionData.Adeles F)ˣ) :
+theorem idele_intrinsicHaarChar_eq_ideleAbs :
     (addEquivAddHaarChar (ContinuousAddEquiv.mulLeft a) : ℝ) =
       (((KPGlobalTorusFunctionData.ideleAbs F a : ℝ≥0) : ℝ)) := by
   let μ := KPAdditiveHaar.adelicMeasure F
   let := KPAdditiveHaar.adelicMeasure_isAddHaarMeasure F
   let m := addEquivAddHaarChar (ContinuousAddEquiv.mulLeft a)
   let b := ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm a).2
-  let q : ℝ := ((FiniteIdeleGroup.absoluteNorm b : ℝ≥0) : ℝ)
+  let q := ((FiniteIdeleGroup.absoluteNorm b : ℝ≥0) : ℝ)
   have hm := addEquivAddHaarChar_smul_map μ (ContinuousAddEquiv.mulLeft a)
   change m • Measure.map (fun x => a.val * x) μ = μ at hm
   rw [global_map_arithmetic a] at hm
@@ -263,12 +241,12 @@ theorem idele_intrinsicHaarChar_eq_ideleAbs (a : (KPGlobalTorusFunctionData.Adel
     simpa [NNReal.smul_def, RCLike.real_smul_eq_coe_mul, mul_assoc, μ, q, b] using hh
   have he' : (m : ℂ) = (‖a.val.1‖ : ℂ) / (q : ℂ) := by
     have hh' := congrArg (fun x : ℂ => x * ((‖a.val.1‖ : ℂ) / (q : ℂ))) he
-    have hn' : (‖a.val.1‖ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hn.ne'
-    have hq' : (q : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hq.ne'
-    field_simp [hn', hq'] at hh' ⊢
+    field_simp [(Complex.ofReal_ne_zero.mpr hn.ne'), (Complex.ofReal_ne_zero.mpr hq.ne')] at hh' ⊢
     exact hh'
   rw [global_ideleAbs a]
   exact_mod_cast he'
+
+end
 
 theorem idele_integral_mul_inv
     (μ : Measure (KPGlobalTorusFunctionData.Adeles F)) [μ.IsAddHaarMeasure]

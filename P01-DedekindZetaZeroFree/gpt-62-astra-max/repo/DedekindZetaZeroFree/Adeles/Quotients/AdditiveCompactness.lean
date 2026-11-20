@@ -27,27 +27,23 @@ theorem exists_compact_infinite_cover :
         (C ×ˢ (integralAdeles F : Set (FiniteAdeles F))) = Set.univ := by
   classical
   let b := mixedEmbedding.latticeBasis F
-  let e : InfiniteAdeleRing F ≃ₜ mixedEmbedding.mixedSpace F :=
+  let e :=
     (PoissonArch.infiniteAdeleToSpace F).toHomeomorph.trans
       (mixedEmbedding.euclidean.toMixed F).toHomeomorph
   have he (x : InfiniteAdeleRing F) :
       e x = InfiniteAdeleRing.ringEquiv_mixedSpace F x :=
     PoissonArch.infiniteAdeleToSpace_coordinates F x
-  let C : Set (InfiniteAdeleRing F) := e ⁻¹' (b.parallelepiped : Set _)
-  refine ⟨C, e.isCompact_preimage.mpr b.parallelepiped.isCompact, ?_⟩
+  refine ⟨(e ⁻¹' b.parallelepiped), e.isCompact_preimage.mpr b.parallelepiped.isCompact, ?_⟩
   apply Set.eq_univ_of_forall
   intro q
   obtain ⟨a, rfl⟩ := QuotientAddGroup.mk'_surjective (principalSubgroup F) q
   obtain ⟨r, hr⟩ := exists_integral_remainder F a.2
   let y := e (a.1 - algebraMap F (InfiniteAdeleRing F) r)
-  have hf : (ZSpan.floor b y : mixedEmbedding.mixedSpace F) ∈
-      mixedEmbedding.integerLattice F :=
-    (mixedEmbedding.mem_span_latticeBasis F).mp (ZSpan.floor b y).property
-  obtain ⟨s, hs⟩ := hf
+  obtain ⟨s, hs⟩ := ((mixedEmbedding.mem_span_latticeBasis F).mp (ZSpan.floor b y).property)
   let z : F := r + (s : F)
   refine ⟨a - algebraMap F (Adeles F) z, ⟨?_, ?_⟩, ?_⟩
   · change e (a.1 - algebraMap F (InfiniteAdeleRing F) z) ∈
-      (b.parallelepiped : Set _)
+      b.parallelepiped
     have hs' : mixedEmbedding F (s : F) = (ZSpan.floor b y : mixedEmbedding.mixedSpace F) := hs
     have hmap (x : InfiniteAdeleRing F) (t : F) :
         e (x - algebraMap F (InfiniteAdeleRing F) t) = e x - mixedEmbedding F t := by
@@ -61,17 +57,12 @@ theorem exists_compact_infinite_cover :
     rw [hfrac]
     exact ZSpan.fundamentalDomain_subset_parallelepiped b
       (ZSpan.fract_mem_fundamentalDomain b y)
-  · change a.2 - algebraMap F (FiniteAdeles F) z ∈ integralAdeles F
-    have hsfin : algebraMap F (FiniteAdeles F) (s : F) ∈ integralAdeles F := by
-      intro v
-      exact IsDedekindDomain.HeightOneSpectrum.coe_algebraMap_mem (RingOfIntegers F) F v s
-    dsimp [z]
+  · dsimp [z]
     rw [map_add, ← sub_sub]
-    exact (integralAdeles F).sub_mem hr hsfin
-  · change QuotientAddGroup.mk (a - algebraMap F (Adeles F) z) = QuotientAddGroup.mk a
-    apply QuotientAddGroup.eq_iff_sub_mem.mpr
-    have hz : algebraMap F (Adeles F) z ∈ principalSubgroup F := ⟨z, rfl⟩
-    simpa only [sub_sub_cancel_left] using (principalSubgroup F).neg_mem hz
+    refine (integralAdeles F).sub_mem hr ?_
+    exact fun v => IsDedekindDomain.HeightOneSpectrum.coe_algebraMap_mem (RingOfIntegers F) F v s
+  · apply QuotientAddGroup.eq_iff_sub_mem.mpr
+    simpa using (principalSubgroup F).neg_mem (⟨z, rfl⟩)
 
 instance quotient_compactSpace : CompactSpace (Adeles F ⧸ principalSubgroup F) := by
   obtain ⟨C, hC, hcover⟩ := exists_compact_infinite_cover F

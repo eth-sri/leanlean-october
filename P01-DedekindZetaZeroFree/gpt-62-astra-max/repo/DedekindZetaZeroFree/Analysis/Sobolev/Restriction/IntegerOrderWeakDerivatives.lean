@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Analysis.Sobolev.Embedding.CompactMixedDerivativeBound
 
 public import DedekindZetaZeroFree.Analysis.EllipticEquations.DivergenceForm.WeakSolutions
 
@@ -10,21 +11,22 @@ namespace DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates
 
 open MeasureTheory KPContLocalNorm Raw
 
-private theorem coordinateDerivativeList_tsupport_subset {n : ℕ} (l : List (Fin n))
-    (f : Space n → ℂ) : tsupport (coordinateDerivativeList l f) ⊆ tsupport f := by
-  induction l with
-  | nil => exact Set.Subset.rfl
-  | cons i l ih =>
-    exact (tsupport_fderiv_apply_subset ℝ (EuclideanSpace.single i 1)).trans ih
+private alias coordinateDerivativeList_tsupport_subset := DedekindZetaZeroFree.KPLocalCubeSobolevJets.CompactMixedDerivativeBound.mixed_support
 
- def restrictBallL2 {n : ℕ} {inner outer : LocalBall n}
-    (hsub : inner.carrier ⊆ outer.carrier) (f : BallL2 outer) : BallL2 inner :=
+ section
+
+variable {n : ℕ} {inner outer : LocalBall n} (hsub : inner.carrier ⊆ outer.carrier) (f : BallL2 outer)
+
+def restrictBallL2 : BallL2 inner :=
   ((Lp.memLp f).mono_measure (Measure.restrict_mono hsub le_rfl)).toLp f
 
-private theorem restrictBallL2_ae {n : ℕ} {inner outer : LocalBall n}
-    (hsub : inner.carrier ⊆ outer.carrier) (f : BallL2 outer) :
+private theorem restrictBallL2_ae :
     ∀ᵐ x ∂volume.restrict inner.carrier, restrictBallL2 hsub f x = f x :=
   MemLp.coeFn_toLp _
+
+end
+
+alias IntegerOrderWeakDerivatives.restrictBallL2_ae := restrictBallL2_ae
 
 private theorem integral_mul_test_restrict {n : ℕ} {inner outer : LocalBall n}
     (hsub : inner.carrier ⊆ outer.carrier) (f : Space n → ℂ)
@@ -33,21 +35,20 @@ private theorem integral_mul_test_restrict {n : ℕ} {inner outer : LocalBall n}
       ∫ x in inner.carrier, f x * coordinateDerivativeList l (fun y => φ y) x := by
   apply setIntegral_eq_of_subset_of_forall_sdiff_eq_zero Metric.isOpen_ball.measurableSet hsub
   intro x hx
-  have hnot : x ∉ tsupport (coordinateDerivativeList l (fun y => φ y)) := by
-    intro hx'
-    exact hx.2 (φ.tsupport_subset (coordinateDerivativeList_tsupport_subset l _ hx'))
+  have hnot : x ∉ tsupport (coordinateDerivativeList l (fun y => φ y)) := fun hx' => hx.2 (φ.tsupport_subset (coordinateDerivativeList_tsupport_subset l _ hx'))
   rw [image_eq_zero_of_notMem_tsupport hnot, mul_zero]
 
- theorem isWeakDerivative_restrict {n k : ℕ} {inner outer : LocalBall n}
-    (hsub : inner.carrier ⊆ outer.carrier) (α : MultiIndex n k)
+alias IntegerOrderWeakDerivatives.integral_mul_test_restrict := integral_mul_test_restrict
+
+ section
+
+variable {n k : ℕ} {inner outer : LocalBall n} (hsub : inner.carrier ⊆ outer.carrier)
+
+theorem isWeakDerivative_restrict (α : MultiIndex n k)
     (f g : BallL2 outer) (hfg : IsWeakDerivative outer α f g) :
     IsWeakDerivative inner α (restrictBallL2 hsub f) (restrictBallL2 hsub g) := by
   intro φ
-  let ψ : TestFunction outer.toOpens ℂ ⊤ :=
-    ⟨φ, φ.contDiff, φ.hasCompactSupport, φ.tsupport_subset.trans hsub⟩
-  have heq := hfg ψ
-  change (∫ x in inner.carrier, restrictBallL2 hsub f x * coordinateDerivative α (fun y => φ y) x) =
-    (-1 : ℂ) ^ α.degree * (∫ x in inner.carrier, restrictBallL2 hsub g x * φ x)
+  have heq := hfg (⟨φ, φ.contDiff, φ.hasCompactSupport, φ.tsupport_subset.trans hsub⟩)
   have hleft : (∫ x in inner.carrier, restrictBallL2 hsub f x * coordinateDerivative α (fun y => φ y) x) =
       ∫ x in inner.carrier, f x * coordinateDerivative α (fun y => φ y) x := by
     apply integral_congr_ae
@@ -68,11 +69,12 @@ private theorem integral_mul_test_restrict {n : ℕ} {inner outer : LocalBall n}
   rw [hzero] at heq
   exact heq
 
- def restrictSobolev {n k : ℕ} {inner outer : LocalBall n}
-    (hsub : inner.carrier ⊆ outer.carrier) (u : IntegerSobolev outer k) :
+ def restrictSobolev (u : IntegerSobolev outer k) :
     IntegerSobolev inner k where
   derivatives α := restrictBallL2 hsub (u.derivatives α)
   weak_derivatives α := isWeakDerivative_restrict hsub α _ _ (u.weak_derivatives α)
+
+end
 
 theorem restrict_integerSobolev {n k : ℕ} (inner outer : LocalBall n)
     (hsub : inner.carrier ⊆ outer.carrier) (u : IntegerSobolev outer k) :

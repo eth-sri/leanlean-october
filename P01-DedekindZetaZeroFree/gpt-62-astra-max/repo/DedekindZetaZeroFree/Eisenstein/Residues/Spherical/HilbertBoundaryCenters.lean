@@ -12,15 +12,15 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPContFlatCuspIncomingEvaluation KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (D : KPGlobalTorusInducingPlan.ModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (Haar : KPSmoothLocalQuotientCharts.HaarRecipe F R.A.zeta12 R.A.primitive_zeta12)
-variable (Transport : KPMsFixedHaarDisintegration.SphericalTransport F R.A.zeta12 R.A.primitive_zeta12)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (D : KPGlobalTorusInducingPlan.ModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (Haar : KPSmoothLocalQuotientCharts.HaarRecipe F R.A.zeta12 R.A.primitive_zeta12)
+    (Transport : KPMsFixedHaarDisintegration.SphericalTransport F R.A.zeta12 R.A.primitive_zeta12)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F R.A.zeta12 R.A.primitive_zeta12 Haar Transport)
-variable (U : KPMsRationalCompactCrossPairing.Level F R.A.zeta12 R.A.primitive_zeta12)
+    (U : KPMsRationalCompactCrossPairing.Level F R.A.zeta12 R.A.primitive_zeta12)
 local instance (K : Subgroup (KPLiteralRaw.G F R.A.zeta12 R.A.primitive_zeta12)) :
     MeasurableSpace K := borel K
 local instance (K : Subgroup (KPLiteralRaw.G F R.A.zeta12 R.A.primitive_zeta12)) :
@@ -35,10 +35,10 @@ open KPGlobalResidualConstruction.SourceCuspidalOrthogonality
 open KPContSectorCoveredQuotientVocabulary KPContSectorFixedPushforwardSupport
 open KPContActualCutoffSmoothDescent
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
-open _root_.DedekindZetaZeroFree renaming canonicalRealization → canonicalRealization
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming cutoff → cutoff
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming lift_eq → lift_eq
+open _root_.DedekindZetaZeroFree (canonicalRealization)
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer (cutoff)
+
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (lift_eq)
 open ResidualHilbertCenters
 def SphericalBoundaryProperty
     (v : KPContActualSphericalFlatStage.Stage F R.A.zeta12 R.A.primitive_zeta12 U)
@@ -124,14 +124,13 @@ theorem spherical_scalar_hilbert_boundary_centers
     unfold KPContActualChamberNormalSeries.term KPContActualSphericalFlatStage.L
       KPContFlatCommonLevelKernel.L
     simp [ι, lift_eq]
-  · have hStage := stageConclusions F R.A.zeta12 R.A.primitive_zeta12 D Haar Transport H U ι hι
-    have hHilb := kp_cont_actual_hilbert_simple_germs F R.A.zeta12 R.A.primitive_zeta12 D Haar Transport H U
-      Haar.adelicHaar Haar.adelic_isHaar rfl realization ι hι hStage
+  · have hHilb := kp_cont_actual_hilbert_simple_germs F R.A.zeta12 R.A.primitive_zeta12 D Haar Transport H U
+      Haar.adelicHaar Haar.adelic_isHaar rfl realization ι hι
       KPContinuation.spectralDomain KPContinuation.spectralDomain_isOpen Set.Subset.rfl
       (fun _ => 1) hf buffer χ source
     intro c hc
     obtain ⟨r, hr, hb, hi, w, hw, he, _⟩ := hHilb.simple_germs c hc
-    obtain ⟨N⟩ := hW.continuation.every_germ c hc r hr hb hi w hw he
+    obtain ⟨N⟩ := hW.every_germ c hc r hr hb hi w hw he
     refine ⟨r, hr, hb, numerator F R.A.zeta12 R.A.primitive_zeta12 D Haar Transport H U source.descent.cutoff c N.W,
       N.numerator_data, N.punctured_group, ?_, ?_⟩
     · refine ⟨w c, ?_, ?_, ?_⟩

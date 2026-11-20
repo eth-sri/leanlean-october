@@ -8,7 +8,7 @@ noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.Origin
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 private lemma norm_one_le {a : Ideal (𝓞 F)} (ha : a ≠ ⊥) : 1 ≤ norm a := by
   unfold norm
@@ -38,7 +38,7 @@ private lemma divisor_bin (X : ℝ) (hX : 1 ≤ 2 * X)
   | succ k =>
     have hlow : (2 : ℝ) ^ k < norm f := by
       apply lt_of_not_ge
-      exact Nat.find_min hex (by change k < j; omega)
+      exact Nat.find_min hex (by omega)
     have hup : norm f ≤ 2 * (2 : ℝ) ^ k := by
       simpa only [hj0, pow_succ, mul_comm] using hj
     refine ⟨(2 : ℝ) ^ k, Finset.mem_insert_of_mem ?_,
@@ -47,7 +47,9 @@ private lemma divisor_bin (X : ℝ) (hX : 1 ≤ 2 * X)
       exact ⟨k, Finset.mem_range.mpr (by omega), rfl⟩
     · split_ifs <;> assumption
 
-private lemma mobius_norm_bound (C : Context Q) (hn : 1 ≤ norm C.d)
+variable (C : Context Q)
+
+private lemma mobius_norm_bound (hn : 1 ≤ norm C.d)
     (e : Ideal (𝓞 F)) (he : e ∈ C.mobiusDivisors) :
     Real.sqrt (norm e) / norm C.d ≤ max 1 (norm c) := by
   have hc : c ≠ ⊥ := by simpa only [C.core] using C.D.bad_ne_bot
@@ -74,14 +76,14 @@ private lemma mobius_norm_bound (C : Context Q) (hn : 1 ≤ norm C.d)
   rw [div_le_iff₀ hnpos, Real.sqrt_le_left (by positivity)]
   exact hle
 
-def ShortGeometry (C : Context Q) (B : ℝ) : Prop :=
+def ShortGeometry (B : ℝ) : Prop :=
   ∀ e ∈ C.mobiusDivisors, ∀ p ∈ C.pairs,
     ∀ f ∈ idealDivisors (p.1 * p.2), norm f ≤ C.Z1 B e →
       ∃ f₁ f₂ : Ideal (𝓞 F), f = f₁ * f₂ ∧ f₁ ∣ p.1 ∧ f₂ ∣ p.2 ∧
         ∃ P ∈ rectangles C B,
           ErrorRectangles.InBin P.1 f₁ ∧ ErrorRectangles.InBin P.2 f₂
 
-theorem short_divisor_geometry (C : Context Q) (B : ℝ)
+theorem short_divisor_geometry (B : ℝ)
     (hM : 1 ≤ C.M) (hN : 1 ≤ C.N) (hδ : 0 < C.δ)
     (hB : 1 ≤ B) (hBK : B ≤ C.K) (hKM : C.K ≤ C.M)
     (hn : 1 ≤ norm C.d) (hnN : norm C.d ≤ 2 * C.N) :
@@ -89,7 +91,7 @@ theorem short_divisor_geometry (C : Context Q) (B : ℝ)
   intro e he p hp f hf hfZ
   obtain ⟨hcols, hpvalid⟩ := Finset.mem_filter.mp hp
   obtain ⟨hu, hv⟩ := Finset.mem_product.mp hcols
-  have hp0 : p.1 * p.2 ≠ ⊥ := mul_ne_zero hpvalid.hu0 hpvalid.hv0
+  have hp0 := mul_ne_zero hpvalid.hu0 hpvalid.hv0
   have hfdiv := (mem_idealDivisors hp0).mp hf
   obtain ⟨f₁, f₂, hf₁, hf₂, hff⟩ := exists_dvd_and_dvd_of_dvd_mul hfdiv
   have hf0 := ne_bot_of_mem_idealDivisors hf
@@ -125,8 +127,9 @@ theorem short_divisor_geometry (C : Context Q) (B : ℝ)
     exact mul_le_mul hP₁f hP₂f (by linarith) (by linarith [norm_one_le hf₁0])
   have hMpos : 0 < C.M := by linarith
   have hNpos : 0 < C.N := by linarith
-  have hspos : 0 < Real.sqrt (B * C.M) := Real.sqrt_pos.mpr (mul_pos (by linarith) hMpos)
-  let x := C.N / Real.sqrt (B * C.M) * Real.rpow (C.M * C.N) C.δ
+  let sqrt₀ := Real.sqrt (B * C.M)
+  have hspos : 0 < sqrt₀ := Real.sqrt_pos.mpr (mul_pos (by linarith) hMpos)
+  let x := C.N / sqrt₀ * Real.rpow (C.M * C.N) C.δ
   let q := max 1 (norm c)
   have hx : 0 ≤ x := mul_nonneg (div_nonneg hNpos.le hspos.le)
     (Real.rpow_nonneg (mul_nonneg hMpos.le hNpos.le) _)
@@ -137,8 +140,8 @@ theorem short_divisor_geometry (C : Context Q) (B : ℝ)
     rw [heq]
     exact mul_le_mul_of_nonneg_left (mobius_norm_bound C hn e he) hx
   have hslack : x * q ≤ (8 * max 1 (norm c)) *
-      (C.N / Real.sqrt (B * C.M)) * Real.rpow (C.M * C.N) C.δ := by
-    change x * q ≤ 8 * q * (C.N / Real.sqrt (B * C.M)) * Real.rpow (C.M * C.N) C.δ
+      (C.N / sqrt₀) * Real.rpow (C.M * C.N) C.δ := by
+    change x * q ≤ 8 * q * (C.N / sqrt₀) * Real.rpow (C.M * C.N) C.δ
     calc x * q ≤ 8 * (x * q) := by nlinarith [mul_nonneg hx hq]
          _ = _ := by dsimp [x]; ring
   exact (hprod.trans hfZ).trans (hZ.trans hslack)

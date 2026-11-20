@@ -12,9 +12,9 @@ namespace DedekindZetaZeroFree.FourierContinuation.DetectedDictionary
 open MomentSources TensorActionSource
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (M : ∀ q, LocalImageData R q)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (M : ∀ q, LocalImageData R q)
 
 theorem finite_preimage_nonzero (q : KPFinitePlace F) :
     ∃ f : plusLocal R M (Sum.inr q),

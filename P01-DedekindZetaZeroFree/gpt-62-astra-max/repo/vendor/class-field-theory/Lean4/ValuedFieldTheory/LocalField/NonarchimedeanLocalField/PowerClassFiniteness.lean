@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -48,14 +44,12 @@ theorem finite_nthPowerQuotient_of_natCast_ne_zero
     simp [hn]
   let : NeZero n := ⟨hn⟩
   let v := localIntegerValuation K
-  let F : LocalFieldTheory.DiscreteValuationField.LocalField K :=
+  let F :=
     LocalFieldTheory.DiscreteValuationField.LocalField.ofWithZeroValuation v
   rcases CharP.exists' K with hcharZero | ⟨p, hp, hcharP⟩
-  · let : CharZero K := hcharZero
-    let :
-        LocalFieldTheory.DiscreteValuationField.LocalField.MixedWithZeroValuationContext v :=
+  · let := hcharZero
+    let :=
       LocalFieldTheory.DiscreteValuationField.LocalField.mixedWithZeroValuationContext v
-    let d := Module.finrank ℚ_[F.residueCharacteristic] K
     obtain ⟨a, e⟩ :=
       LocalFieldTheory.DiscreteValuationField.LocalField.chosenMixed_firstPrincipalUnitStructure_ofWithZeroValuation
         v (localIntegerValuation_surjective K)
@@ -64,30 +58,23 @@ theorem finite_nthPowerQuotient_of_natCast_ne_zero
         F.toCompleteDVF 1
     let A :=
       ZMod (F.residueCharacteristic ^ a) ×
-        (Fin d → ℤ_[F.residueCharacteristic])
+        (Fin (Module.finrank ℚ_[F.residueCharacteristic] K) → ℤ_[F.residueCharacteristic])
     let : Finite (A ⧸ LocalFieldTheory.nsmulAddSubgroup A n) := by
       infer_instance
     let emul : U1 ≃* Multiplicative A := by
-      letI valuedK : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
+      letI valuedK := Valued.mk' v
       letI : TopologicalSpace K := valuedK.toTopologicalSpace
       exact e.symm.toMulEquiv
-    let : Finite (U1 ⧸ (powMonoidHom n : U1 →* U1).range) :=
+    let :=
       LocalFieldTheory.finite_nthPowerQuotient_of_mulEquiv U1 (Multiplicative A) n
         emul
     let hex := F.toCompleteDVF.exists_uniformizer
-    let π := Classical.choose hex
-    have hπ :
-        F.toCompleteDVF.valuation.IsUniformizer (π : K) :=
-      Classical.choose_spec hex
     exact
       LocalFieldTheory.DiscreteValuationField.finite_fieldUnits_nthPowerQuotient_of_finite_principalUnits
-        F.toCompleteDVF hπ n
-  · let : CharP K p := hcharP
-    have hpne : p ≠ 0 := hp.out.ne_zero
-    have hres : F.residueCharacteristic = p :=
-      F.residueCharacteristic_eq_of_charP p hpne
+        F.toCompleteDVF (Classical.choose_spec hex) n
+  · let := hcharP
     let : CharP K F.residueCharacteristic := by
-      rw [hres]
+      rw [(F.residueCharacteristic_eq_of_charP p hp.out.ne_zero)]
       infer_instance
     have hpn : ¬ F.residueCharacteristic ∣ n := by
       intro hdiv
@@ -95,10 +82,6 @@ theorem finite_nthPowerQuotient_of_natCast_ne_zero
       exact (CharP.cast_eq_zero_iff K F.residueCharacteristic n).2 hdiv
     let : Fact (Nat.Coprime n F.residueCharacteristic) :=
       ⟨(F.residueCharacteristic_prime.coprime_iff_not_dvd.mpr hpn).symm⟩
-    let valuedK : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-    let e :=
-      LocalFieldTheory.DiscreteValuationField.LocalField.chosenFirstPrincipalUnitStructure_equalCharacteristic
-        v
     let U1 :=
       LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup
         F.toCompleteDVF 1
@@ -106,19 +89,16 @@ theorem finite_nthPowerQuotient_of_natCast_ne_zero
     let : Finite (A ⧸ LocalFieldTheory.nsmulAddSubgroup A n) := by
       infer_instance
     let emul : U1 ≃* Multiplicative A := by
-      letI : TopologicalSpace K := valuedK.toTopologicalSpace
-      exact e.symm.toMulEquiv
-    let : Finite (U1 ⧸ (powMonoidHom n : U1 →* U1).range) :=
+      letI : TopologicalSpace K := (Valued.mk' v).toTopologicalSpace
+      exact (LocalFieldTheory.DiscreteValuationField.LocalField.chosenFirstPrincipalUnitStructure_equalCharacteristic
+        v).symm.toMulEquiv
+    let :=
       LocalFieldTheory.finite_nthPowerQuotient_of_mulEquiv U1 (Multiplicative A) n
         emul
     let hex := F.toCompleteDVF.exists_uniformizer
-    let π := Classical.choose hex
-    have hπ :
-        F.toCompleteDVF.valuation.IsUniformizer (π : K) :=
-      Classical.choose_spec hex
     exact
       LocalFieldTheory.DiscreteValuationField.finite_fieldUnits_nthPowerQuotient_of_finite_principalUnits
-        F.toCompleteDVF hπ n
+        F.toCompleteDVF (Classical.choose_spec hex) n
 
 end LocalFieldTheory
 

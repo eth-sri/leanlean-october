@@ -61,7 +61,7 @@ theorem normalizedExtension_unit_sheet_value
     have hc := S.cube_actual (1 : (LocalField F q)ˣ)
     simp only [one_pow, map_one] at hc
     exact hc.symm
-  have he' : (h.val : ActualCover F ζ hζ q) =
+  have he' : h.val =
       KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e *
         KPPGLLocalCover.A F ζ hζ (Sum.inr q) (KPTameCompact.unitInclusion F q u) *
           KPPGLLocalCover.A F ζ hζ (Sum.inr q) ((1 : (LocalField F q)ˣ) ^ 3) := by
@@ -69,13 +69,12 @@ theorem normalizedExtension_unit_sheet_value
   have hv := hnormalized h e u 1 he'
   simpa [normPower, localAbs_one] using hv
 
-theorem normalizedExtension_unit_sheet_chiH
-    (hnormalized : RawNormalizedExtension F ζ hζ q S P)
-    (ε : Sign) (h : HL F ζ hζ q S P) (e : rootsOfUnity 3 F)
-    (u : (KPTameCompact.O F q)ˣ)
-    (he : (h.val : ActualCover F ζ hζ q) =
-      KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e *
-        KPPGLLocalCover.A F ζ hζ (Sum.inr q) (KPTameCompact.unitInclusion F q u)) :
+variable (hnormalized : RawNormalizedExtension F ζ hζ q S P) (ε : Sign) (h : HL F ζ hζ q S P)
+    (e : rootsOfUnity 3 F) (u : (KPTameCompact.O F q)ˣ)
+    (he : (h.val : ActualCover F ζ hζ q) = KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e * KPPGLLocalCover.A F ζ hζ (Sum.inr q) (KPTameCompact.unitInclusion F q u))
+
+include hnormalized he in
+theorem normalizedExtension_unit_sheet_chiH :
     chiH F ζ hζ q S P hP ε h = (ordinaryIota F ζ hζ e : ℂ) := by
   let c : actualTorus F ζ hζ q := (S.openCell P).centralTorus e
   have hc : (c : ActualCover F ζ hζ q) =
@@ -118,13 +117,8 @@ theorem normalizedExtension_unit_sheet_chiH
     simp only [chiH, hv, hcoord, normPower, hu, Real.log_one, Complex.ofReal_zero,
       mul_zero, Complex.exp_zero, mul_one]
 
-theorem normalizedExtension_unit_sheet_chiH_norm
-    (hnormalized : RawNormalizedExtension F ζ hζ q S P)
-    (ε : Sign) (h : HL F ζ hζ q S P) (e : rootsOfUnity 3 F)
-    (u : (KPTameCompact.O F q)ˣ)
-    (he : (h.val : ActualCover F ζ hζ q) =
-      KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e *
-        KPPGLLocalCover.A F ζ hζ (Sum.inr q) (KPTameCompact.unitInclusion F q u)) :
+include hnormalized he in
+theorem normalizedExtension_unit_sheet_chiH_norm :
     ‖chiH F ζ hζ q S P hP ε h‖ = 1 := by
   rw [normalizedExtension_unit_sheet_chiH F ζ hζ q S P hP hnormalized ε h e u he]
   apply Complex.norm_eq_one_of_pow_eq_one (n := 3) _ (by decide)

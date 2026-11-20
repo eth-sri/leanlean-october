@@ -13,22 +13,20 @@ open DedekindZetaZeroFree.AbelianQuotient
 namespace DedekindZetaZeroFree.Hecke.Theta
 
 variable {F : Type} [Field F] [NumberField F]
-variable {m : Ideal (𝓞 F)} {hm : m ≠ ⊥}
+    {m : Ideal (𝓞 F)} {hm : m ≠ ⊥}
 
 theorem normalizedRayTheta_one_div
     (D : RayThetaRepresentatives F m hm) (ψ : RayIdealClass F m hm →* ℂ)
     (t : ℝ) (ht : 0 < t) :
     normalizedRayTheta D ψ t = (t : ℂ)⁻¹ * normalizedRayDualTheta D ψ t⁻¹ := by
   classical
-  have ha := conductorScale_pos (F := F) hm
   have heq (c : RayIdealClass F m hm) :
       RayTheta.fδ (D.coset c) ∅ (t / conductorScale F m) =
         (conductorScale F m : ℂ) * (t : ℂ)⁻¹ *
           RayTheta.gδDual (D.coset c) ∅ (conductorScale F m * t⁻¹) := by
-    have h := RayTheta.fδ_one_div (D.coset c) ∅
-      (conductorScale F m / t) (div_pos ha ht)
     have hid : 1 / (conductorScale F m / t) = t / conductorScale F m := by field_simp
-    simpa [hid, RayParity.εδ, div_eq_mul_inv] using h
+    simpa [hid, RayParity.εδ, div_eq_mul_inv] using (RayTheta.fδ_one_div (D.coset c) ∅
+      (conductorScale F m / t) (div_pos (conductorScale_pos hm) ht))
   unfold normalizedRayTheta normalizedRayDualTheta
   simp_rw [heq]
   simp only [Finset.mul_sum]

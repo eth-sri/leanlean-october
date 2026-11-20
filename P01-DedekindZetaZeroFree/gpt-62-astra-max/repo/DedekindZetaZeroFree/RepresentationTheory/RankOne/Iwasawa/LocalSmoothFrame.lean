@@ -30,7 +30,7 @@ private theorem section_smooth (F : Type) [Field F] [NumberField F] (ζ : F) (h�
       (KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ) := by
   letI := actualLieChartedSpace F
   let S := KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ
-  have hc : Continuous S := KPContSectorArchSphericalFibers.section_continuous F ζ hζ
+  have hc := KPContSectorArchSphericalFibers.section_continuous F ζ hζ
   intro x
   apply contMDiffAt_iff.mpr
   refine ⟨hc.continuousAt,?_⟩
@@ -103,8 +103,6 @@ private theorem section_smooth (F : Type) [Field F] [NumberField F] (ζ : F) (h�
       simpa only [hM, PGLComplex.affineChart_target, Set.mem_preimage] using hy
     filter_upwards [hn'] with y hy
     rw [← hM, PGLComplex.affineChart_symm_apply _ hy, PGLComplex.matrixRatios_mk, hme]
-  have hfinal := (LocalQuotientCharts.ExponentialHaarFrame.coordinateReindex F).symm.contDiff.comp_contDiffAt x
-    ((PGLComplex.productCoordinatesFlatten (NumberField.InfinitePlace F)).contDiff.comp_contDiffAt x hd)
   have hself {V : Type} [NormedAddCommGroup V] [NormedSpace ℝ V] :
       (𝓘(ℝ,V)).toPartialEquiv = PartialEquiv.refl V := by ext <;> rfl
   simp only [extChartAt, OpenPartialHomeomorph.extend, hself, PartialEquiv.trans_refl,
@@ -112,7 +110,8 @@ private theorem section_smooth (F : Type) [Field F] [NumberField F] (ζ : F) (h�
   change ContDiffWithinAt ℝ (⊤ : ℕ∞)
     (fun y => (LocalQuotientCharts.ExponentialHaarFrame.rawAffineChart F (S x)).symm
       (S y)) _ x
-  simpa only [hraw, Function.comp_def] using hfinal.contDiffWithinAt
+  simpa only [hraw, Function.comp_def] using ((LocalQuotientCharts.ExponentialHaarFrame.coordinateReindex F).symm.contDiff.comp_contDiffAt x
+    ((PGLComplex.productCoordinatesFlatten (NumberField.InfinitePlace F)).contDiff.comp_contDiffAt x hd)).contDiffWithinAt
 
 private theorem frame_words
     (c : KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ)
@@ -250,13 +249,11 @@ theorem local_iwasawa_frame
     PGLExponential.translated_exponential_frame (actualLieData F) g
   let r := LocalQuotientCharts.ExponentialHaarFrame.coordinateReindex F
   let e := KPSmoothAutomorphicEvaluation.AmbientApproximation.OrbitSmoothing.Reconstruction.LocalSobolev.Scalar.CoordinateSource.actualBasisReindex F
-  let O := r.symm ⁻¹' E.source
   let V := S ⁻¹' E.target
   let ℓ := fun x : X F => KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (E (r.symm x)) * c.val
   let ψ := fun z => r (E.symm (S z))
   let v := fun b y => deriv (fun t : ℝ => E.symm (E y *
     KPSmoothLocalQuotientCharts.matrixExp F (t • Pi.single b 1))) 0
-  let fields := fun b x => r (v (e.symm b) (r.symm x))
   have hEx (y) (hy : y ∈ E.source) : E y = g * KPSmoothLocalQuotientCharts.matrixExp F y := by
     simpa only [actualLieData_exponential] using hE y hy
   have hvg : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (v b) E.source := by
@@ -265,12 +262,10 @@ theorem local_iwasawa_frame
   have hvb (y) (hy : y ∈ E.source) : ∃ b : Module.Basis (LieIndex F) ℝ
       (KPSmoothLocalQuotientCharts.Coordinates F), ∀ i, b i = v i y := by
     simpa only [v, actualLieData_exponential, actualLieData_basis] using hbasis y hy
-  have hS : ContMDiff (𝓘(ℝ, KPContSectorCoveredQuotientVocabulary.SymmetricSpace F))
-      (𝓘(ℝ, KPSmoothLocalQuotientCharts.Coordinates F)) (⊤ : ℕ∞) S := section_smooth F ζ hζ
-  have hV : IsOpen V := E.open_target.preimage hS.continuous
+  have hS := section_smooth F ζ hζ
   have hEg : E 0 = g := by
     rw [hE 0 h0, (actualLieData F).exponential_zero, mul_one]
-  refine ⟨O,V,ℓ,ψ,fields,E.open_source.preimage r.symm.continuous,hV,?_,?_,?_,?_,?_,?_,?_,?_⟩
+  refine ⟨(r.symm ⁻¹' E.source),V,ℓ,ψ,(fun b x => r (v (e.symm b) (r.symm x))),E.open_source.preimage r.symm.continuous,(E.open_target.preimage hS.continuous),?_,?_,?_,?_,?_,?_,?_,?_⟩
   · change g ∈ E.target
     rw [← hEg]
     exact E.map_source h0

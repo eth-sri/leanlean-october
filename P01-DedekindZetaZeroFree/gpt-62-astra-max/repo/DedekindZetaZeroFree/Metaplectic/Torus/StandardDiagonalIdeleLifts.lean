@@ -10,19 +10,20 @@ namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension.CubeDiag
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-lemma restrictedProjection_eq_diagonal (y : Ideles F) (x : Raw F ζ hζ)
-    (hx : ∀ v, x v = KPStandardLocalRootLifts.A F ζ hζ v
-      (KPGlobalCubicIdelePairing.ideleEval F v y)) :
+variable (y : Ideles F) (x : Raw F ζ hζ)
+    (hx : ∀ v, x v = KPStandardLocalRootLifts.A F ζ hζ v (KPGlobalCubicIdelePairing.ideleEval F v y))
+
+include hx in
+lemma restrictedProjection_eq_diagonal :
     KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ x =
       KPGlobalCubicIdelePairing.diagonalHom F y := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   apply Prod.ext
   · funext w
-    have h := KPAdelicCoverRestrictedProduct.restrictedProjection_eval F ζ hζ x (Sum.inl w)
-    have hh := congrArg (fun A : KPLocalCover.LocalGL2 F (Sum.inl w) => A i j) h
+    have hh := congrArg (fun A : KPLocalCover.LocalGL2 F (Sum.inl w) => A i j) (KPAdelicCoverRestrictedProduct.restrictedProjection_eval F ζ hζ x (Sum.inl w))
     rw [hx (Sum.inl w)] at hh
     change ((KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ x) i j).1 w =
       (KubotaRankTwo.d (KPHilbert.Completion F (Sum.inl w))
@@ -32,8 +33,7 @@ lemma restrictedProjection_eq_diagonal (y : Ideles F) (x : Raw F ζ hζ)
     all_goals convert hh using 1 <;> rfl
   · apply RestrictedProduct.ext
     intro q
-    have h := KPAdelicCoverRestrictedProduct.restrictedProjection_eval F ζ hζ x (Sum.inr q)
-    have hh := congrArg (fun A : KPLocalCover.LocalGL2 F (Sum.inr q) => A i j) h
+    have hh := congrArg (fun A : KPLocalCover.LocalGL2 F (Sum.inr q) => A i j) (KPAdelicCoverRestrictedProduct.restrictedProjection_eval F ζ hζ x (Sum.inr q))
     rw [hx (Sum.inr q)] at hh
     change ((KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ x) i j).2 q =
       (KubotaRankTwo.d (KPHilbert.Completion F (Sum.inr q))
@@ -42,9 +42,8 @@ lemma restrictedProjection_eq_diagonal (y : Ideles F) (x : Raw F ζ hζ)
     all_goals simp [KubotaRankTwo.d] at hh
     all_goals convert hh using 1 <;> rfl
 
-theorem standard_diagonal_torus_ratio (y : Ideles F) (x : Raw F ζ hζ)
-    (hx : ∀ v, x v = KPStandardLocalRootLifts.A F ζ hζ v
-      (KPGlobalCubicIdelePairing.ideleEval F v y)) :
+include hx in
+theorem standard_diagonal_torus_ratio :
     ∃ t : E F ζ hζ,
       t.val = KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
         (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x) ∧
@@ -52,23 +51,20 @@ theorem standard_diagonal_torus_ratio (y : Ideles F) (x : Raw F ζ hζ)
   set A := KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ x with hAdef
   have hA : A = KPGlobalCubicIdelePairing.diagonalHom F y :=
     restrictedProjection_eq_diagonal F ζ hζ y x hx
-  have h10 : (A : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F)) 1 0 = 0 := by
+  let Matrix₀ := Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F)
+  have h10 : (A : Matrix₀) 1 0 = 0 := by
     rw [hA]; simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix]
-  have h01 : (A : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F)) 0 1 = 0 := by
+  have h01 : (A : Matrix₀) 0 1 = 0 := by
     rw [hA]; simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix]
-  have h00 : (A : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F)) 0 0 =
+  have h00 : (A : Matrix₀) 0 0 =
       (y : KPAdelicCoverRestrictedProduct.Adeles F) := by
     rw [hA]; simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix]
-  have h11 : (A : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F)) 1 1 = 1 := by
+  have h11 : (A : Matrix₀) 1 1 = 1 := by
     rw [hA]; simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix]
   set g := KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x) with hgdef
   have hmk : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A =
       KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ g := by
-    change QuotientGroup.mk' _ (KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ x) =
-      KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ
-        (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-          (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x))
     rfl
   have hmem : g ∈ E F ζ hζ := ⟨A, hmk, h10, h01⟩
   refine ⟨⟨g, hmem⟩, rfl, ?_⟩
@@ -79,7 +75,7 @@ theorem standard_diagonal_torus_ratio (y : Ideles F) (x : Raw F ζ hζ)
       ⟨KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ g, hmem⟩ A hmk h10 h01]
   have hu : ((KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit :
       KPAdelicCoverRestrictedProduct.Adeles F) =
-      (y : KPAdelicCoverRestrictedProduct.Adeles F) := by
+      y := by
     rw [IsUnit.unit_spec, h00]
   have hw : ((KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit :
       KPAdelicCoverRestrictedProduct.Adeles F) = 1 := by

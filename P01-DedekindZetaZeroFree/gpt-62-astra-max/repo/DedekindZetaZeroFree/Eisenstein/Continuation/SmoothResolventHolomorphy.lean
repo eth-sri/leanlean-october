@@ -78,19 +78,17 @@ theorem power_series_jet_holomorphy {n : ℕ} (B : LocalBall n)
       (by linarith) (ε / 2) (by positivity)
     refine ⟨N, fun M hM z hz => ?_⟩
     have hzρ : z ∈ Metric.ball z₀ ρ := Metric.closedBall_subset_ball (by linarith) hz
-    have hzO := hball hzρ
     apply lt_of_le_of_lt _ (show ε / 2 < ε by linarith)
     apply (pi_norm_le_iff_of_nonneg (by positivity)).2
     intro α
     apply (ContinuousMap.norm_le _ (by positivity)).2
     intro x
     have hb := hN M hM z hz α x
-    have he := KPContLocalHolomorphyUpgrade.CauchyAssembly.coordinate_derivative_taylor_remainder
-      B a ha.1 (u z) (ha.2.1 z hzρ) (z - z₀) M α (hKB x.property)
-    rw [he] at hb
+    rw [(KPContLocalHolomorphyUpgrade.CauchyAssembly.coordinate_derivative_taylor_remainder
+      B a ha.1 (u z) (ha.2.1 z hzρ) (z - z₀) M α (hKB x.property))] at hb
     simp only [Pi.sub_apply, Finset.sum_apply, Pi.smul_apply,
       ContinuousMap.sub_apply, ContinuousMap.sum_apply, ContinuousMap.smul_apply,
-      smul_eq_mul, hj z hzO]
+      smul_eq_mul, hj z (hball hzρ)]
     change ‖(∑ q ∈ Finset.range M, (z - z₀) ^ q * coordinateDerivative α (a q) x) -
       coordinateDerivative α (u z) x‖ ≤ ε / 2
     exact hb.le

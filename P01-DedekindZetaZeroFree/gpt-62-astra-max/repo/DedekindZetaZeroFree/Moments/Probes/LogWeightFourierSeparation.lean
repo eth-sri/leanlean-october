@@ -28,7 +28,7 @@ private theorem local_norm_fourierCoeffOn_le {a b M : ℝ} (hab : a < b) (f : �
     rw [norm_smul, fourier_apply, Circle.norm_coe, one_mul]
     exact hbound u (Set.Ioc_subset_Icc_self (by simpa only [Set.uIoc_of_le hab.le] using hu))
   calc
-    (1 / (b - a)) * ‖∫ u in a..b, fourier (-j) (u : AddCircle (b - a)) • f u‖
+    _
       ≤ (1 / (b - a)) * (M * |b - a|) := mul_le_mul_of_nonneg_left hh (by positivity)
     _ = M := by rw [abs_of_pos (sub_pos.mpr hab)]; field_simp [sub_pos.mpr hab |>.ne']
 
@@ -148,11 +148,11 @@ theorem hasSum_normalized_coefficients (f : ℝ → ℂ) (a L b0 b1 : ℝ)
   have hfzero : ∀ x, x < b0 ∨ b1 < x → f x = 0 := by
     intro x hx
     by_contra h
-    have hxs : x ∈ Function.support f := by simpa [Function.mem_support] using h
-    exact absurd (hsupport (subset_tsupport f hxs)) (by
+    refine absurd (hsupport (subset_tsupport f ?_)) (by
       rintro ⟨h1, h2⟩; rcases hx with h | h <;> linarith)
-  have hfa : f a = 0 := hfzero a (Or.inl ha)
-  have hfb : f (a + L) = 0 := hfzero (a + L) (Or.inr (by linarith))
+    simpa [Function.mem_support] using h
+  have hfa := hfzero a (Or.inl ha)
+  have hfb := hfzero (a + L) (Or.inr (by linarith))
   haveI : Fact (0 < L) := ⟨hL⟩
 
   let g : C(AddCircle L, ℂ) :=
@@ -171,7 +171,7 @@ theorem hasSum_normalized_coefficients (f : ℝ → ℂ) (a L b0 b1 : ℝ)
       · rw [intervalIntegral.integral_of_le (le_of_lt (lt_add_of_pos_right a hL))]
         refine setIntegral_congr_fun measurableSet_Ioc (fun x hx => ?_)
         rw [smul_eq_mul]
-        change fourier (-j) (x : AddCircle L) * AddCircle.liftIoc L a f (x : AddCircle L)
+        change fourier (-j) x * AddCircle.liftIoc L a f x
           = f x * Complex.exp (-2 * (Real.pi : ℂ) * Complex.I * (j : ℂ) * (x : ℂ) / (L : ℂ))
         rw [AddCircle.liftIoc_coe_apply hx, fourier_coe_apply, mul_comm]
         congr 1
@@ -182,19 +182,16 @@ theorem hasSum_normalized_coefficients (f : ℝ → ℂ) (a L b0 b1 : ℝ)
           f x * Complex.exp (-2 * (Real.pi : ℂ) * Complex.I * (j : ℂ) * (x : ℂ) / (L : ℂ)) := by
       rw [normalizedCoefficient, integral_Icc_eq_integral_Ioc]
     rw [h1, h2]
-  have hsumg : Summable (fourierCoeff g) := hsummable.congr fun j => (hcoeff j).symm
   intro u hu
-  have hpt := has_pointwise_sum_fourier_series_of_summable hsumg (u : AddCircle L)
-  have hgu : g (u : AddCircle L) = f u := by
+  have hpt := has_pointwise_sum_fourier_series_of_summable (hsummable.congr fun j => (hcoeff j).symm) u
+  have hgu : g u = f u := by
     rcases eq_or_lt_of_le hu.1 with h | h
     · rw [← h]
-      have hper : (a : AddCircle L) = ((a + L : ℝ) : AddCircle L) :=
-        (AddCircle.coe_add_period L a).symm
-      rw [hper]
+      rw [((AddCircle.coe_add_period L a).symm)]
       change AddCircle.liftIoc L a f ((a + L : ℝ) : AddCircle L) = f a
       rw [AddCircle.liftIoc_coe_apply
         (show (a + L) ∈ Set.Ioc a (a + L) from ⟨lt_add_of_pos_right a hL, le_rfl⟩), hfb, hfa]
-    · change AddCircle.liftIoc L a f (u : AddCircle L) = f u
+    · change AddCircle.liftIoc L a f u = f u
       rw [AddCircle.liftIoc_coe_apply (show u ∈ Set.Ioc a (a + L) from ⟨h, hu.2⟩)]
   rw [hgu] at hpt
   simpa only [hcoeff, smul_eq_mul, fourier_coe_apply] using hpt
@@ -226,15 +223,17 @@ def truncatedSeries (A : SArithmeticData F) (v0 v1 L : ℝ)
     (c : ℤ → SLocalProduct F A.Sf →ᵇ ℂ) (v : ℝ) (y : SLocalProduct F A.Sf) : ℂ :=
   if v ∈ Set.Icc v0 v1 then ∑' j : ℤ, c j y * mode L j v else 0
 
-def coefficient (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
-    (W1 : ProbeRealAnnularWeight) (a L : ℝ) (j : ℤ)
+section
+
+variable (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight)
+
+def coefficient (a L : ℝ) (j : ℤ)
     (y : SLocalProduct F A.Sf) : ℂ :=
   (L : ℂ)⁻¹ * ∫ u in Set.Icc a (a + L),
     row A W0 W1 (Real.exp u) y *
       Complex.exp (-2 * (Real.pi : ℂ) * Complex.I * (j : ℂ) * (u : ℂ) / (L : ℂ))
 
-def Separation (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
-    (W1 : ProbeRealAnnularWeight) (v0 v1 a L : ℝ)
+def Separation (v0 v1 a L : ℝ)
     (K : Set (SLocalProduct F A.Sf))
     (c : ℤ → SLocalProduct F A.Sf →ᵇ ℂ) : Prop :=
   0 < v0 ∧ v0 < v1 ∧ 0 < L ∧
@@ -262,6 +261,8 @@ def Separation (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
     row A W0 W1 (A.exteriorNorm I) y =
       truncatedSeries A v0 v1 L c (A.exteriorNorm I) y)
 
+end
+
 theorem norm_mode (L : ℝ) (j : ℤ) (v : ℝ) : ‖mode L j v‖ = 1 := by
   simp [mode, Complex.norm_exp, Complex.div_re, Complex.mul_re, Complex.mul_im]
 
@@ -275,15 +276,19 @@ theorem row_eq_zero_outside_range (A : SArithmeticData F) (W0 : SLocalProduct F 
     exact hv (Set.Ioo_subset_Icc_self (hsupport h))
   simp [row, hz]
 
-theorem summable_norm_modes (A : SArithmeticData F) (c : ℤ → SLocalProduct F A.Sf →ᵇ ℂ)
-    (hc : Summable (fun j => ‖c j‖)) (L v : ℝ) (y : SLocalProduct F A.Sf) :
+section
+
+variable (A : SArithmeticData F) (c : ℤ → SLocalProduct F A.Sf →ᵇ ℂ) (hc : Summable (fun j => ‖c j‖))
+
+include hc in
+theorem summable_norm_modes (L v : ℝ) (y : SLocalProduct F A.Sf) :
     Summable (fun j => ‖c j y * mode L j v‖) := by
   apply hc.of_nonneg_of_le (fun j => norm_nonneg _) (fun j => ?_)
   rw [norm_mul, norm_mode, mul_one]
   exact BoundedContinuousFunction.norm_coe_le_norm _ _
 
- theorem tendstoUniformlyOn_modes (A : SArithmeticData F) (c : ℤ → SLocalProduct F A.Sf →ᵇ ℂ)
-    (hc : Summable (fun j => ‖c j‖)) (L : ℝ) (s : Set (ℝ × SLocalProduct F A.Sf)) :
+ include hc in
+theorem tendstoUniformlyOn_modes (L : ℝ) (s : Set (ℝ × SLocalProduct F A.Sf)) :
     TendstoUniformlyOn
       (fun t : Finset ℤ => fun p : ℝ × SLocalProduct F A.Sf =>
         ∑ j ∈ t, c j p.2 * mode L j (Real.exp p.1))
@@ -294,8 +299,13 @@ theorem summable_norm_modes (A : SArithmeticData F) (c : ℤ → SLocalProduct F
   rw [norm_mul, norm_mode, mul_one]
   exact BoundedContinuousFunction.norm_coe_le_norm _ _
 
-theorem row_eq_truncatedSeries_of_hasSum (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
-    (W1 : ProbeRealAnnularWeight) (v0 v1 a L : ℝ)
+end
+
+section
+
+variable (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight)
+
+theorem row_eq_truncatedSeries_of_hasSum (v0 v1 a L : ℝ)
     (c : ℤ → SLocalProduct F A.Sf →ᵇ ℂ)
     (hsupport : tsupport W1 ⊆ Set.Ioo v0 v1)
     (hlog : ∀ v ∈ Set.Icc v0 v1, 0 < v → Real.log v ∈ Set.Icc a (a + L))
@@ -307,8 +317,7 @@ theorem row_eq_truncatedSeries_of_hasSum (A : SArithmeticData F) (W0 : SLocalPro
   · simpa [truncatedSeries, hmem] using (hsum v hv (hlog v hmem hv) y).tsum_eq.symm
   · simp [truncatedSeries, hmem, row_eq_zero_outside_range A W0 W1 hsupport hmem y]
 
-theorem tendstoUniformlyOn_row_of_hasSum (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
-    (W1 : ProbeRealAnnularWeight) (a L : ℝ)
+theorem tendstoUniformlyOn_row_of_hasSum (a L : ℝ)
     (c : ℤ → SLocalProduct F A.Sf →ᵇ ℂ)
     (hc : Summable (fun j => ‖c j‖))
     (hsum : ∀ v, 0 < v → Real.log v ∈ Set.Icc a (a + L) → ∀ y,
@@ -320,7 +329,9 @@ theorem tendstoUniformlyOn_row_of_hasSum (A : SArithmeticData F) (W0 : SLocalPro
       Filter.atTop (Set.Icc a (a + L) ×ˢ Set.univ) := by
   apply (tendstoUniformlyOn_modes A c hc L _).congr_right
   intro p hp
-  exact (hsum _ (Real.exp_pos _) (by simpa only [Real.log_exp] using hp.1) _).tsum_eq
+  exact (hsum _ (Real.exp_pos _) (by simpa using hp.1) _).tsum_eq
+
+end
 
 theorem continuous_ell_val_exp (A : SArithmeticData F) :
     Continuous (fun u : ℝ => (ProbeSheet.ell A (Real.exp u)).val) := by
@@ -357,13 +368,12 @@ theorem exists_positive_support_range (W1 : ProbeRealAnnularWeight) :
 theorem exists_log_period {v0 v1 : ℝ} (hv0 : 0 < v0) (hv1 : v0 < v1) :
     ∃ a L : ℝ, 0 < L ∧ a < Real.log v0 ∧ Real.log v1 < a + L ∧
       ∀ v ∈ Set.Icc v0 v1, Real.log v ∈ Set.Icc a (a + L) := by
-  have hlog : Real.log v0 < Real.log v1 := Real.log_lt_log hv0 hv1
+  have hlog := Real.log_lt_log hv0 hv1
   refine ⟨Real.log v0 - 1, Real.log v1 - Real.log v0 + 2, by linarith,
     by linarith, by linarith, ?_⟩
   intro v hv
-  have hvpos : 0 < v := hv0.trans_le hv.1
   have hleft := Real.log_le_log hv0 hv.1
-  have hright := Real.log_le_log hvpos hv.2
+  have hright := Real.log_le_log (hv0.trans_le hv.1) hv.2
   constructor <;> linarith
 
 theorem exists_compact_annulus (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
@@ -373,9 +383,7 @@ theorem exists_compact_annulus (A : SArithmeticData F) (W0 : SLocalProduct F A.S
       ∀ v ∈ Set.Icc v0 v1, ∀ x ∈ tsupport W0, (ProbeSheet.ell A v).val * x ∈ K := by
   let f : ℝ × SLocalProduct F A.Sf → SLocalProduct F A.Sf :=
     fun p => (ProbeSheet.ell A (Real.exp p.1)).val * p.2
-  have hf : Continuous f := ((continuous_ell_val_exp A).comp continuous_fst).mul continuous_snd
-  let T := Set.Icc (Real.log v0) (Real.log v1) ×ˢ tsupport W0
-  refine ⟨f '' T, (isCompact_Icc.prod hcompact).image hf, ?_, ?_⟩
+  refine ⟨f '' (Set.Icc (Real.log v0) (Real.log v1) ×ˢ tsupport W0), (isCompact_Icc.prod hcompact).image (((continuous_ell_val_exp A).comp continuous_fst).mul continuous_snd), ?_, ?_⟩
   · rintro y ⟨⟨u, x⟩, hx, rfl⟩
     exact (ProbeSheet.ell A (Real.exp u)).isUnit.mul (hannular hx.2)
   · intro v hv x hx
@@ -384,26 +392,26 @@ theorem exists_compact_annulus (A : SArithmeticData F) (W0 : SLocalProduct F A.S
     · exact ⟨Real.log_le_log hv0 hv.1, Real.log_le_log hvpos hv.2⟩
     · simp [f, Real.exp_log hvpos]
 
-theorem row_eq_zero_outside_annulus (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
-    (W1 : ProbeRealAnnularWeight) {v0 v1 : ℝ} (K : Set (SLocalProduct F A.Sf))
-    (hsupport : tsupport W1 ⊆ Set.Ioo v0 v1)
+section
+
+variable (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight)
+    {v0 v1 : ℝ} (K : Set (SLocalProduct F A.Sf)) (hsupport : tsupport W1 ⊆ Set.Ioo v0 v1)
+
+include hsupport in
+theorem row_eq_zero_outside_annulus
     (hK : ∀ v ∈ Set.Icc v0 v1, ∀ x ∈ tsupport W0, (ProbeSheet.ell A v).val * x ∈ K)
     {v : ℝ} {y : SLocalProduct F A.Sf} (hy : y ∉ K) : row A W0 W1 v y = 0 := by
   by_cases hv : W1 v = 0
   · simp [row, hv]
-  have hvinterval : v ∈ Set.Icc v0 v1 :=
-    Set.Ioo_subset_Icc_self (hsupport (subset_tsupport W1 hv))
   have hw : W0 (y * (ProbeSheet.ell A v)⁻¹.val) = 0 := by
     by_contra hw
-    have hx := hK v hvinterval _ (subset_tsupport W0 hw)
     apply hy
-    convert hx using 1
+    convert (hK v (Set.Ioo_subset_Icc_self (hsupport (subset_tsupport W1 hv))) _ (subset_tsupport W0 hw)) using 1
     simp [mul_left_comm, mul_assoc]
   simp [row, hw]
 
-theorem coefficient_tsupport_subset (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
-    (W1 : ProbeRealAnnularWeight) {v0 v1 : ℝ} (K : Set (SLocalProduct F A.Sf))
-    (hsupport : tsupport W1 ⊆ Set.Ioo v0 v1) (hclosed : IsClosed K)
+include hsupport in
+theorem coefficient_tsupport_subset (hclosed : IsClosed K)
     (hK : ∀ v ∈ Set.Icc v0 v1, ∀ x ∈ tsupport W0, (ProbeSheet.ell A v).val * x ∈ K)
     (a L : ℝ) (j : ℤ) : tsupport (coefficient A W0 W1 a L j) ⊆ K := by
   apply closure_minimal _ hclosed
@@ -413,6 +421,8 @@ theorem coefficient_tsupport_subset (A : SArithmeticData F) (W0 : SLocalProduct 
     simp only [coefficient, row_eq_zero_outside_annulus A W0 W1 K hsupport hK hyK, zero_mul,
       integral_zero, mul_zero]
   exact hy hz
+
+end
 
 theorem separation_of_coefficients (A : SArithmeticData F)
     (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight)
@@ -429,16 +439,13 @@ theorem separation_of_coefficients (A : SArithmeticData F)
     (hsum : ∀ v, 0 < v → Real.log v ∈ Set.Icc a (a + L) → ∀ y,
       HasSum (fun j : ℤ => c j y * mode L j v) (row A W0 W1 v y)) :
     Separation A W0 W1 v0 v1 a L K c := by
-  have hlog : ∀ v ∈ Set.Icc v0 v1, 0 < v → Real.log v ∈ Set.Icc a (a + L) := by
-    intro v hv hvpos
-    exact ⟨ha.le.trans (Real.log_le_log hv0 hv.1),
+  have hlog : ∀ v ∈ Set.Icc v0 v1, 0 < v → Real.log v ∈ Set.Icc a (a + L) := fun v hv hvpos => ⟨ha.le.trans (Real.log_le_log hv0 hv.1),
       (Real.log_le_log hvpos hv.2).trans hb.le⟩
   have hcut := row_eq_truncatedSeries_of_hasSum A W0 W1 v0 v1 a L c hsupport hlog hsum
   refine ⟨hv0, hv1, hL, ha, hb, hsupport, hcompact, hannular, hK, ?_, hcoeff,
     hc, hdecay, ?_, tendstoUniformlyOn_row_of_hasSum A W0 W1 a L c hc hsum, hcut, ?_⟩
   · intro j
-    have heq : ⇑(c j) = coefficient A W0 W1 a L j := funext (hcoeff j)
-    rw [heq]
+    rw [(funext (hcoeff j))]
     exact coefficient_tsupport_subset A W0 W1 K hsupport hcompact.isClosed hK a L j
   · intro v hv hvl y
     exact ⟨summable_norm_modes A c hc L v y, hsum v hv hvl y⟩
@@ -461,35 +468,7 @@ theorem summable_norm_coefficients_of_quadratic_bound (A : SArithmeticData F)
   apply (summable_quadratic_majorant.mul_left C).of_nonneg_of_le (fun j => norm_nonneg _) (fun j => ?_)
   simpa only [mul_one_div] using hbound j
 
-theorem continuous_weight (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
-    (hW0 : ProbeWeight.IsAnnularTensor F A.Sf W0) : Continuous W0 := by
-  obtain ⟨fr, fc, ff, hr, hc, hf, heq⟩ := hW0
-  have hm : Continuous (InfiniteAdeleRing.ringEquiv_mixedSpace F) := by
-    apply Continuous.prodMk
-    · apply continuous_pi
-      intro v
-      exact (InfinitePlace.Completion.isometry_extensionEmbeddingOfIsReal v.2).continuous.comp
-        (continuous_apply v.1)
-    · apply continuous_pi
-      intro v
-      exact (InfinitePlace.Completion.isometry_extensionEmbedding v.1).continuous.comp
-        (continuous_apply v.1)
-  have he : W0 = (fun x =>
-      (∏ v, fr v ((InfiniteAdeleRing.ringEquiv_mixedSpace F x.1).1 v)) *
-      (∏ v, fc v ((InfiniteAdeleRing.ringEquiv_mixedSpace F x.1).2 v)) *
-      ∏ v : ↥A.Sf, ff v (x.2 v)) := funext heq
-  rw [he]
-  apply Continuous.mul
-  · apply Continuous.mul
-    · apply continuous_finset_prod
-      intro v hv
-      exact (hr v).1.continuous.comp ((continuous_apply v).comp (continuous_fst.comp (hm.comp continuous_fst)))
-    · apply continuous_finset_prod
-      intro v hv
-      exact (hc v).1.continuous.comp ((continuous_apply v).comp (continuous_snd.comp (hm.comp continuous_fst)))
-  · apply continuous_finset_prod
-    intro v hv
-    exact (hf v).1.continuous.comp ((continuous_apply v).comp continuous_snd)
+alias continuous_weight := DedekindZetaZeroFree.ProbeSheetFourierMellinBounds.NormSheetContinuityAndDifferentiation.raw_annular_continuous
 
 theorem continuous_ell_inv_exp (A : SArithmeticData F) :
     Continuous (fun u : ℝ => ((ProbeSheet.ell A (Real.exp u))⁻¹).val) := by
@@ -511,18 +490,21 @@ local instance instMeasurableSpaceLogWeightSLocalProduct (A : SArithmeticData F)
 
 local instance instBorelSpaceLogWeightSLocalProduct (A : SArithmeticData F) : BorelSpace (SLocalProduct F A.Sf) := ⟨rfl⟩
 
-theorem continuous_row_exp (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
-    (W1 : ProbeRealAnnularWeight) (hW0 : Continuous W0) :
+variable (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight)
+    (hW0 : Continuous W0)
+
+include hW0 in
+theorem continuous_row_exp :
     Continuous (fun p : ℝ × SLocalProduct F A.Sf => row A W0 W1 (Real.exp p.1) p.2) := by
   have hexp : Continuous (fun p : ℝ × SLocalProduct F A.Sf => Real.exp p.1) :=
     Real.continuous_exp.comp continuous_fst
   exact ((Complex.continuous_ofReal.comp
-    (hexp.rpow_const (p := -(1 / 2 : ℝ)) (fun p => Or.inl (Real.exp_ne_zero _)))).mul
+    (hexp.rpow_const (fun p => Or.inl (Real.exp_ne_zero _)))).mul
     (Complex.continuous_ofReal.comp (W1.smooth.continuous.comp hexp))).mul
     (hW0.comp (continuous_snd.mul ((continuous_ell_inv_exp A).comp continuous_fst)))
 
-theorem continuous_coefficient_of_continuous (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
-    (W1 : ProbeRealAnnularWeight) (hW0 : Continuous W0) (a L : ℝ) (j : ℤ) :
+include hW0 in
+theorem continuous_coefficient_of_continuous (a L : ℝ) (j : ℤ) :
     Continuous (coefficient A W0 W1 a L j) := by
   change Continuous (fun y => (L : ℂ)⁻¹ * ∫ u in Set.Icc a (a + L),
     row A W0 W1 (Real.exp u) y *
@@ -548,9 +530,8 @@ theorem continuous_coefficient_of_continuous (A : SArithmeticData F) (W0 : SLoca
     simpa only [coefficient, hempty, Measure.restrict_empty, integral_zero_measure, mul_zero]
       using (continuous_const : Continuous (fun _ : SLocalProduct F A.Sf => (0 : ℂ)))
 
-theorem exists_bounded_coefficients_on_annulus (A : SArithmeticData F)
-    (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight)
-    (hW0 : Continuous W0) {v0 v1 : ℝ} (K : Set (SLocalProduct F A.Sf))
+include hW0 in
+theorem exists_bounded_coefficients_on_annulus {v0 v1 : ℝ} (K : Set (SLocalProduct F A.Sf))
     (hsupport : tsupport W1 ⊆ Set.Ioo v0 v1) (hcompact : IsCompact K)
     (hK : ∀ v ∈ Set.Icc v0 v1, ∀ x ∈ tsupport W0, (ProbeSheet.ell A v).val * x ∈ K)
     (a L : ℝ) :
@@ -564,9 +545,8 @@ theorem exists_bounded_coefficients_on_annulus (A : SArithmeticData F)
       hcompact.of_isClosed_subset (isClosed_tsupport _) (hs j)
     exact hcs.exists_bound_of_continuous (hc j)
   choose C hC using hb
-  let c : ℤ → SLocalProduct F A.Sf →ᵇ ℂ := fun j =>
-    BoundedContinuousFunction.ofNormedAddCommGroup _ (hc j) (C j) (hC j)
-  exact ⟨c, fun j y => rfl, hs⟩
+  exact ⟨(fun j =>
+    BoundedContinuousFunction.ofNormedAddCommGroup _ (hc j) (C j) (hC j)), fun j y => rfl, hs⟩
 
 end ProbeLogWeight
 
@@ -583,7 +563,7 @@ theorem probe_logweight_separation (F : Type) [Field F] [NumberField F]
     ProbeLogWeight.exists_compact_annulus A W0 hcompact hannular hv0 hv1
   obtain ⟨c, hcoeff, _⟩ := ProbeLogWeight.exists_bounded_coefficients_on_annulus
     A W0 W1 (ProbeLogWeight.continuous_weight A W0 hW0) K hs hKcompact hK a L
-  let f : SLocalProduct F A.Sf → ℝ → ℂ :=
+  let f :=
     fun y u => ProbeLogarithmicRowCoefficients.logRow A W0 W1 u y
   have hfrow (y : SLocalProduct F A.Sf) (u : ℝ) :
       f y u = ProbeLogWeight.row A W0 W1 (Real.exp u) y := rfl
@@ -594,7 +574,7 @@ theorem probe_logweight_separation (F : Type) [Field F] [NumberField F]
     have hv : Real.exp u ∈ Set.Icc v0 v1 := by
       by_contra hv
       exact hu (ProbeLogWeight.row_eq_zero_outside_range A W0 W1 hs hv y)
-    simpa only [Real.log_exp] using
+    simpa using
       (show Real.log (Real.exp u) ∈ Set.Icc (Real.log v0) (Real.log v1) from
         ⟨Real.log_le_log hv0 hv.1, Real.log_le_log (Real.exp_pos _) hv.2⟩)
   obtain ⟨hfsmooth, hfbound⟩ :=
@@ -608,7 +588,7 @@ theorem probe_logweight_separation (F : Type) [Field F] [NumberField F]
     intro y
     rw [hcf]
     exact hCb j y
-  have hc : Summable (fun j : ℤ => ‖c j‖) :=
+  have hc :=
     ProbeLogWeight.summable_norm_coefficients_of_quadratic_bound A c hC hdecay
   have hsum : ∀ v, 0 < v → Real.log v ∈ Set.Icc a (a + L) → ∀ y,
       HasSum (fun j : ℤ => c j y * ProbeLogWeight.mode L j v)
@@ -619,10 +599,9 @@ theorem probe_logweight_separation (F : Type) [Field F] [NumberField F]
       intro j
       rw [← hcf]
       exact BoundedContinuousFunction.norm_coe_le_norm _ _
-    have hh := ProbeLogarithmicRowCoefficients.hasSum_normalized_coefficients (f y) a L
+    simpa only [← hcf, ProbeLogWeight.mode, hfrow, Real.exp_log hv] using (ProbeLogarithmicRowCoefficients.hasSum_normalized_coefficients (f y) a L
       (Real.log v0) (Real.log v1) hL ha hb (hfsmooth y).continuous
-      (hfsupport y) hsc (Real.log v) hvl
-    simpa only [← hcf, ProbeLogWeight.mode, hfrow, Real.exp_log hv] using hh
+      (hfsupport y) hsc (Real.log v) hvl)
   exact ⟨v0, v1, a, L, K, c, ProbeLogWeight.separation_of_coefficients A W0 W1
     v0 v1 a L K c hv0 hv1 hL ha hb hs hKcompact hKannular hK hcoeff hc
     ⟨C, hC, hdecay⟩ hsum⟩

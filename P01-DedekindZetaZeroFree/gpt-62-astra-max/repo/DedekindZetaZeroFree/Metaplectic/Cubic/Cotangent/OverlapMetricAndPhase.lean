@@ -12,10 +12,10 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.KPContCotangentActualOverlap
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 abbrev d := Module.finrank ℚ F / 2
 abbrev M := HyperbolicChart.Space (d F)
@@ -47,13 +47,19 @@ def ChartKind.archDomain {i} (a : ChartKind F ζ hζ U R P H i) :
         p.1.2 ∈ (((H.atlas U).cuspAtlas i).geometry j).atlas.shapeLift k ∧
         ((H.atlas U).cuspAtlas i).threshold < p.2}
 
-def labeledA (places : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F))
+section
+
+variable (places : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F))
+
+def labeledA
     (x : M F) : KPCuspGenuineMonodromy.SymmetricSpace F :=
   fun k => CotangentLogCoframe.A (d F) x (places.symm k)
 
-def labeledAInv (places : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F))
+def labeledAInv
     (x : KPCuspGenuineMonodromy.SymmetricSpace F) : M F :=
   (CotangentLogCoframe.A (d F)).symm (fun k => x (places k))
+
+end
 
 structure LiftedChart (i : Fin (H.atlas U).componentCount) where
   kind : ChartKind F ζ hζ U R P H i
@@ -111,6 +117,8 @@ private theorem labeledAInv_labeledA
     labeledAInv p (labeledA p x) = x := by
   simp [labeledAInv, labeledA]
 
+alias OverlapMetricAndPhase.labeledAInv_labeledA := labeledAInv_labeledA
+
 private theorem labeledA_labeledAInv
     (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F))
     (x : KPCuspGenuineMonodromy.SymmetricSpace F) :
@@ -118,11 +126,15 @@ private theorem labeledA_labeledAInv
   funext k
   simp [labeledAInv, labeledA]
 
+alias OverlapMetricAndPhase.labeledA_labeledAInv := labeledA_labeledAInv
+
 private theorem continuous_labeledA
     (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F)) : Continuous (labeledA p) := by
   apply continuous_pi
   intro k
   exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
+
+alias OverlapMetricAndPhase.continuous_labeledA := continuous_labeledA
 
  theorem coordinateMap_one {i} (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
     (U := U) (R := R) (P := P) (H := H) i) : coordinateMap a a 1 = id := by
@@ -135,7 +147,6 @@ theorem LiftedChart.isOpen_omega {i} (a : LiftedChart (F := F) (ζ := ζ) (hζ :
   cases a.kind with
   | orbifold x O => exact O.isOpen
   | cusp j k =>
-    change IsOpen (KPCuspCharts.toArch F '' _)
     apply (KPCuspCharts.toArchHomeomorph F
       (KPArch.complex_places_of_primitive_twelfth_root F ζ hζ).2.2).isOpenMap
     exact (((H.atlas U).cuspAtlas i).geometry j).atlas.open_shapeLift k
@@ -179,10 +190,7 @@ def identity {i} (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
  theorem central_commute (ε : rootsOfUnity 3 F)
     (c : KPCuspGenuineMonodromy.FiniteCover F ζ hζ) :
     KPCuspGenuineMonodromy.central F ζ hζ ε * c =
-      c * KPCuspGenuineMonodromy.central F ζ hζ ε := by
-  apply Subtype.ext
-  exact (Subgroup.mem_center_iff.mp
-    (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩) c).symm
+      c * KPCuspGenuineMonodromy.central F ζ hζ ε := by apply @DedekindZetaZeroFree.KPMsActualCuspSource.central_comm <;> assumption
 
 def comp {i} {a b c : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
     (U := U) (R := R) (P := P) (H := H) i}
@@ -236,28 +244,33 @@ theorem actual_local_formula {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := 
     funext k
     simp [KPCuspSiegel.glAction, KPArch.productAction, Pσ, labeledA]
 
- def permCLM (n : ℕ) (σ : Equiv.Perm (Fin n)) :
+ section
+
+variable (n : ℕ) (σ : Equiv.Perm (Fin n))
+
+def permCLM :
     KPArch.Space n →L[ℝ] KPArch.Space n :=
   ContinuousLinearMap.pi (fun k => ContinuousLinearMap.proj (σ k))
 
-private theorem metric_perm (n : ℕ) (σ : Equiv.Perm (Fin n)) (x v : KPArch.Space n) :
-    KPArch.metric n (Pσ n σ x) (Pσ n σ v) = KPArch.metric n x v := by
-  exact Equiv.sum_comp σ (fun k =>
+private theorem metric_perm (x v : KPArch.Space n) :
+    KPArch.metric n (Pσ n σ x) (Pσ n σ v) = KPArch.metric n x v := Equiv.sum_comp σ (fun k =>
     (KPArch.height (x k))⁻¹ ^ 2 * ‖(v k).1‖ ^ 2 + (v k).2 ^ 2)
 
- def formula (n : ℕ) (g : Fin n → Matrix.GeneralLinearGroup (Fin 2) ℂ)
-    (σ : Equiv.Perm (Fin n)) (x : HyperbolicChart.Space n) :=
+end
+
+ section
+
+variable (n : ℕ) (g : Fin n → Matrix.GeneralLinearGroup (Fin 2) ℂ) (σ : Equiv.Perm (Fin n))
+
+def formula (x : HyperbolicChart.Space n) :=
   (CotangentLogCoframe.A n).symm (permCLM n σ (KPArch.productAction n g (CotangentLogCoframe.A n x)))
 
-private theorem formula_smooth (n : ℕ) (g : Fin n → Matrix.GeneralLinearGroup (Fin 2) ℂ)
-    (σ : Equiv.Perm (Fin n)) : ContDiff ℝ (⊤ : ℕ∞) (formula n g σ) := by
-  exact (CotangentLogCoframe.A n).symm.contDiff.comp
+private theorem formula_smooth : ContDiff ℝ (⊤ : ℕ∞) (formula n g σ) := (CotangentLogCoframe.A n).symm.contDiff.comp
     ((permCLM n σ).contDiff.comp (((KPArch.productAction_contDiff n g).of_le
       (show (⊤ : ℕ∞) ≤ (⊤ : ℕ∞ω) from le_top)).comp
       (CotangentLogCoframe.A n).contDiff))
 
-private theorem formula_quadratic (n : ℕ)
-    (g : Fin n → Matrix.GeneralLinearGroup (Fin 2) ℂ) (σ : Equiv.Perm (Fin n))
+private theorem formula_quadratic
     (x v : HyperbolicChart.Space n) :
     HyperbolicChart.metric n (formula n g σ x)
       (fderiv ℝ (formula n g σ) x v) (fderiv ℝ (formula n g σ) x v) =
@@ -276,6 +289,8 @@ private theorem formula_quadratic (n : ℕ)
   exact (KPArch.metric_invariant n g (CotangentLogCoframe.A n x)
     (CotangentLogCoframe.A n v)).trans (CotangentLogCoframe.metric_A n x v)
 
+end
+
 private theorem metric_polarization (n : ℕ) (x u w : HyperbolicChart.Space n) :
     HyperbolicChart.metric n x (u+w) (u+w) =
       HyperbolicChart.metric n x u u + 2 * HyperbolicChart.metric n x u w +
@@ -293,12 +308,9 @@ theorem smooth_metric {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
         HyperbolicChart.metric (d F) x u w := by
   obtain ⟨g, _, heq⟩ := actual_local_formula e
   change Set.EqOn e.psi (formula (d F) g (b.places.trans a.places.symm)) e.domain at heq
-  have hs := formula_smooth (d F) g (b.places.trans a.places.symm)
-  refine ⟨hs.contDiffOn.congr heq, ?_⟩
+  refine ⟨(formula_smooth (d F) g (b.places.trans a.places.symm)).contDiffOn.congr heq, ?_⟩
   intro x hx u w
-  have he := heq.eventuallyEq_of_mem (e.isOpen_domain.mem_nhds hx)
-  have hd := he.fderiv_eq (𝕜 := ℝ)
-  rw [heq hx, hd]
+  rw [heq hx, ((heq.eventuallyEq_of_mem (e.isOpen_domain.mem_nhds hx)).fderiv_eq)]
   have hq := formula_quadratic (d F) g (b.places.trans a.places.symm) x
   have hp := hq (u+w)
   rw [map_add, metric_polarization, metric_polarization, hq u, hq w] at hp
@@ -307,13 +319,11 @@ theorem smooth_metric {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
 private theorem phase_locallyConstant {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
     (U := U) (R := R) (P := P) (H := H) i} (e : Arrow a b) :
     IsLocallyConstant (fun x : e.domain => e.phase x.val) := by
-  have ha := a.splitting_locallyConstant.comp_continuous
-    (show Continuous (fun x : e.domain => (⟨x.val, e.source x.property⟩ : a.omega)) from
-      continuous_subtype_val.subtype_mk _)
-  have hb := b.splitting_locallyConstant.comp_continuous
+  exact (((b.splitting_locallyConstant.comp_continuous
     (show Continuous (fun x : e.domain => (⟨e.psi x.val, e.target x.property⟩ : b.omega)) from
-      ((continuous_coordinateMap a b e.gamma).comp continuous_subtype_val).subtype_mk _)
-  exact ((hb.mul (IsLocallyConstant.const e.root)).mul (ha.comp Inv.inv)).comp
+      ((continuous_coordinateMap a b e.gamma).comp continuous_subtype_val).subtype_mk _)).mul (IsLocallyConstant.const e.root)).mul ((a.splitting_locallyConstant.comp_continuous
+    (show Continuous (fun x : e.domain => (⟨x.val, e.source x.property⟩ : a.omega)) from
+      continuous_subtype_val.subtype_mk _)).comp Inv.inv)).comp
     (fun z => (KPCuspGenuineMonodromy.chi F ζ hζ z : ℂ))
 
 private theorem phase_smooth {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
@@ -321,12 +331,11 @@ private theorem phase_smooth {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := 
     ContDiffOn ℝ (⊤ : ℕ∞) e.phase e.domain := by
   rw [e.isOpen_domain.contDiffOn_iff]
   intro x hx
-  have h := (phase_locallyConstant e).eventually_eq (⟨x, hx⟩ : e.domain)
   have hm := map_nhds_subtype_val (⟨x, hx⟩ : e.domain)
   rw [e.isOpen_domain.nhdsWithin_eq hx] at hm
   have he : ∀ᶠ y in 𝓝 x, e.phase y = e.phase x := by
     rw [← hm]
-    exact h
+    exact ((phase_locallyConstant e).eventually_eq (⟨x, hx⟩ : e.domain))
   exact contDiffAt_const.congr_of_eventuallyEq he
 
 private theorem phase_norm {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
@@ -334,7 +343,7 @@ private theorem phase_norm {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := h�
     ‖e.phase x‖ = 1 := by
   exact (KPCuspGenuineMonodromy.unitary_chart_cocycle F ζ hζ U
     ((H.atlas U).representative i) ((H.atlas U).line i).rho
-    (fun _ => 1) (IsLocallyConstant.const 1)).1 _
+    (fun _ => 1) (IsLocallyConstant.const 1)) _
 
 set_option maxHeartbeats 1000000 in
 private theorem root_ambiguity {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
@@ -383,10 +392,9 @@ theorem unitary_phase {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
     simp only [Arrow.psi, coordinateMap, labeledA_labeledAInv, ← mul_smul]
     congr 1
     group
-  have ha := root_ambiguity e
+  simp only [LiftedChart.coefficient, ht, (s i).property.2 e.gamma, (root_ambiguity e
     ⟨(s i).val (a.kind.representative • labeledA a.places x),
-      (s i).property.1 _⟩
-  simp only [LiftedChart.coefficient, ht, (s i).property.2 e.gamma, ha, Arrow.phase,
+      (s i).property.1 _⟩), Arrow.phase,
     map_mul, map_inv, Units.val_mul, Units.val_inv_eq_inv_val]
   rw [mul_assoc, mul_assoc, ← mul_assoc
     (KPCuspGenuineMonodromy.chi F ζ hζ (a.splitting x) : ℂ)⁻¹,

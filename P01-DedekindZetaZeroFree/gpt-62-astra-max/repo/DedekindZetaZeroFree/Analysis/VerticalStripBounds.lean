@@ -15,11 +15,8 @@ theorem strip_bound_of_tail_bound {a b : ℝ} (f : ℂ → ℂ)
   obtain ⟨B, hB0, hB⟩ := htail
 
   have hK : IsCompact {s : ℂ | s.re ∈ Set.Icc a b ∧ |s.im| ≤ 1} := by
-    have h : IsCompact (Complex.equivRealProdCLM.toHomeomorph ⁻¹'
-        (Set.Icc a b ×ˢ Set.Icc (-1 : ℝ) 1)) :=
-      Complex.equivRealProdCLM.toHomeomorph.isCompact_preimage.mpr
-        (isCompact_Icc.prod isCompact_Icc)
-    convert h using 1
+    convert (Complex.equivRealProdCLM.toHomeomorph.isCompact_preimage.mpr
+      (isCompact_Icc.prod isCompact_Icc)) using 1
     ext s
     simp only [Set.mem_preimage, Set.mem_prod, Set.mem_Icc, Set.mem_setOf_eq,
       Complex.equivRealProdCLM_apply, abs_le]
@@ -28,12 +25,11 @@ theorem strip_bound_of_tail_bound {a b : ℝ} (f : ℂ → ℂ)
   refine ⟨max C B, hB0.trans (le_max_right _ _), fun σ t hσ => ?_⟩
   by_cases h1 : |t| ≤ 1
   ·
-    have hz : (σ : ℂ) + (t : ℂ) * Complex.I ∈ {s : ℂ | s.re ∈ Set.Icc a b ∧ |s.im| ≤ 1} := by
-      have hre : ((σ : ℂ) + (t : ℂ) * Complex.I).re = σ := by simp
-      have him : ((σ : ℂ) + (t : ℂ) * Complex.I).im = t := by simp
-      simp only [Set.mem_setOf_eq, hre, him]
-      exact ⟨hσ, h1⟩
-    exact (hC _ hz).trans (le_max_left _ _)
+    refine (hC _ ?_).trans (le_max_left _ _)
+    have hre : ((σ : ℂ) + (t : ℂ) * Complex.I).re = σ := by simp
+    have him : ((σ : ℂ) + (t : ℂ) * Complex.I).im = t := by simp
+    simp only [Set.mem_setOf_eq, hre, him]
+    exact ⟨hσ, h1⟩
   ·
     exact (hB σ t hσ (not_le.mp h1).le).trans (le_max_right _ _)
 

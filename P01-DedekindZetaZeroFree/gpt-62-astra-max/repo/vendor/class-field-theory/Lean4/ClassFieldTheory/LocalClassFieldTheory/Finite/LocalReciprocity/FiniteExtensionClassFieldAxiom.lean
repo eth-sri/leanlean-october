@@ -15,13 +15,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -98,7 +91,7 @@ theorem finiteExtensionUnits_tate_card_of_generator
   let : Valued L ℝ≥0 := NormedField.toValued
   let vL : Valuation L ℝ≥0 := Valued.v
   let : vL.IsNontrivial :=
-    (inferInstance : (NormedField.valuation (K := L)).IsNontrivial)
+    (inferInstance : (NormedField.valuation).IsNontrivial)
   let : ValuativeRel L := ValuativeRel.ofValuation vL
   let : vL.Compatible := Valuation.Compatible.ofValuation vL
   let : ValuativeRel.IsNontrivial L :=
@@ -140,8 +133,7 @@ theorem finiteExtensionUnits_tate_card_of_generator
         simpa [vL, NormedField.valuation_apply] using hyv
       exact_mod_cast hynormNN
     change spectralNorm K L (y : L) ≤ 1 at hynorm
-    have hcoeffNorm :
-        ∀ n : ℕ, ‖(minpoly K (y : L)).coeff n‖ ≤ 1 :=
+    have hcoeffNorm :=
       (spectralValue_le_one_iff
         (minpoly.monic (Algebra.IsIntegral.isIntegral (y : L)))).1
         (by simpa [spectralNorm] using hynorm)
@@ -168,9 +160,7 @@ theorem finiteExtensionUnits_tate_card_of_generator
           Polynomial.map_toSubring]
         exact minpoly.aeval K (y : L)
       rwa [Polynomial.aeval_map_algebraMap K (y : L) p] at hmaproot
-  let hIntegralClosure : IsIntegralClosure
-      (ValuativeRel.valuation L).valuationSubring
-      (ValuativeRel.valuation K).valuationSubring L :=
+  let hIntegralClosure :=
     DiscreteValuationField.Valuation.valuationSubring_isIntegralClosure_of_isIntegral
       (ValuativeRel.valuation K) (ValuativeRel.valuation L)
   let : IsIntegralClosure 𝒪[L] 𝒪[K] L := by
@@ -226,7 +216,7 @@ theorem finiteTowerUnits_tate_card_of_generator
   let : Valued K ℝ≥0 := NormedField.toValued
   let vK : Valuation K ℝ≥0 := Valued.v
   let : vK.IsNontrivial :=
-    (inferInstance : (NormedField.valuation (K := K)).IsNontrivial)
+    (inferInstance : (NormedField.valuation).IsNontrivial)
   let : ValuativeRel K := ValuativeRel.ofValuation vK
   let : vK.Compatible := Valuation.Compatible.ofValuation vK
   let : ValuativeRel.IsNontrivial K :=

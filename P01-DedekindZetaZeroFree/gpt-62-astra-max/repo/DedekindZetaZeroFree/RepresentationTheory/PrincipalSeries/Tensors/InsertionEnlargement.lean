@@ -12,7 +12,7 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.FourierContinuation.CurrentInsertionEnlargement
 open KPLiteralScalarHCFiniteProduct KPLiteralScalarHCFiniteInsertion
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (T U : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (hTU : T ⊆ U)
+    (T U : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (hTU : T ⊆ U)
 
 def extendCover : FiniteProductCover F ζ hζ T →* FiniteProductCover F ζ hζ U where
   toFun a q := if h : q.val ∈ T then a ⟨q.val, h⟩ else 1
@@ -32,8 +32,7 @@ theorem finiteProductInsertion_extend (a : FiniteProductCover F ζ hζ T) :
         Pi.mulSingle (⟨q.val, hTU q.property⟩ : U) b := by
       funext j
       by_cases hj : j.val = q.val
-      · have hmem : j.val ∈ T := hj.symm ▸ q.property
-        have heT : (⟨j.val, hmem⟩ : T) = q := Subtype.ext hj
+      · have hmem := hj.symm ▸ q.property
         have heU : j = (⟨q.val, hTU q.property⟩ : U) := Subtype.ext hj
         subst j
         simp [extendCover, q.property]

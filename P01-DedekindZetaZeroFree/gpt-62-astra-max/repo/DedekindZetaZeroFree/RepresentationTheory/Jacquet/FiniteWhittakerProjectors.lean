@@ -15,10 +15,12 @@ variable {k G V : Type*} [CommRing k] [Monoid G]
 variable (ρ : Representation ℂ G V) (n : Multiplicative k →* G)
   (a : kˣ → G) (e : AddChar k ℂ) (ell : V →ₗ[ℂ] ℂ)
 
-def translateSum {I : Type*} (s : Finset I) (c : I → ℂ) (t : I → k) : V →ₗ[ℂ] V :=
+variable {I : Type*} (s : Finset I) (c : I → ℂ) (t : I → k)
+
+def translateSum : V →ₗ[ℂ] V :=
   ∑ i ∈ s, c i • ρ (n (Multiplicative.ofAdd (t i)))
 
-theorem translateSum_apply {I : Type*} (s : Finset I) (c : I → ℂ) (t : I → k)
+theorem translateSum_apply
     (v : V) :
     translateSum ρ n s c t v =
       ∑ i ∈ s, c i • ρ (n (Multiplicative.ofAdd (t i))) v := by

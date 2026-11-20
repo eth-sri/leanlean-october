@@ -12,9 +12,9 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.FiniteWhittakerProjectors
 open NumberField MeasureTheory MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
 
 def tensorFunction (D : SourceFactorization R Q T)
     (s : RestrictedTensorSimple.Level D.bad) (x : ∀ p : s.val, actualLocal R D.finiteData p) :
@@ -25,8 +25,7 @@ theorem core_period_integrable (D : SourceFactorization R Q T)
     (x : RestrictedTensorSimple.Core (actualLocal R D.finiteData) D.references D.bad)
     (g : Group R) : Integrable (fun q => D.coreMap x
       (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g) *
-        star (adelicTraceQuotientCharacter F q : ℂ)) Q.dq := by
-  exact FourierContinuation.sameResidue_period_integrable T (D.core_same_residue x) g
+        star (adelicTraceQuotientCharacter F q : ℂ)) Q.dq := FourierContinuation.sameResidue_period_integrable T (D.core_same_residue x) g
 
 end DedekindZetaZeroFree.FiniteWhittakerProjectors
 
@@ -41,9 +40,9 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.RootDerivatives
 open NumberField MeasureTheory MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
 
 def tensorFunction (D : SourceFactorization R Q T)
     (s : RestrictedTensorSimple.Level D.bad) (x : ∀ p : s.val, actualLocal R D.finiteData p) :
@@ -58,19 +57,14 @@ theorem tensorFunction_update_smul (D : SourceFactorization R Q T)
   rw [(PiTensorProduct.tprod ℂ).map_update_smul, Function.update_eq_self,
     map_smul, map_smul]
 
-theorem core_period_integrable (D : SourceFactorization R Q T)
-    (x : RestrictedTensorSimple.Core (actualLocal R D.finiteData) D.references D.bad)
-    (g : Group R) : Integrable (fun q => D.coreMap x
-      (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g) *
-        star (adelicTraceQuotientCharacter F q : ℂ)) Q.dq := by
-  exact FourierContinuation.sameResidue_period_integrable T (D.core_same_residue x) g
+alias core_period_integrable := DedekindZetaZeroFree.FiniteWhittakerProjectors.core_period_integrable
 
 theorem tensorFunction_ne_zero (D : SourceFactorization R Q T)
     (s : RestrictedTensorSimple.Level D.bad)
     (x : ∀ p : s.val, actualLocal R D.finiteData p) (hx : ∀ p, x p ≠ 0) :
     _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction R D s x ≠ 0 := by
   classical
-  let φ : ∀ p : s.val, Module.Dual ℂ (actualLocal R D.finiteData p) := fun p =>
+  let φ := fun p =>
     Classical.choose (Module.Projective.exists_dual_eq_one ℂ (hx p))
   have hφ (p : s.val) : φ p (x p) = 1 :=
     Classical.choose_spec (Module.Projective.exists_dual_eq_one ℂ (hx p))
@@ -83,13 +77,8 @@ theorem tensorFunction_ne_zero (D : SourceFactorization R Q T)
     rw [he, map_zero] at hv
     exact zero_ne_one hv
   intro he
-  have hcore : RestrictedTensorSimple.stageInclusion _ D.references D.bad s
-      (PiTensorProduct.tprod ℂ x) = 0 :=
-    D.core_injective (he.trans (map_zero D.coreMap).symm)
-  have ht : PiTensorProduct.tprod ℂ x = 0 :=
-    RestrictedTensorSimple.stageInclusion_injective _ D.references D.bad href s
-      (hcore.trans (map_zero _).symm)
-  rw [ht, map_zero] at hL
+  rw [(RestrictedTensorSimple.stageInclusion_injective _ D.references D.bad href s
+    ((D.core_injective (he.trans (map_zero D.coreMap).symm)).trans (map_zero _).symm)), map_zero] at hL
   exact zero_ne_one hL
 
 theorem spherical_frozen_tensor (D : SourceFactorization R Q T) :
@@ -100,19 +89,14 @@ theorem spherical_frozen_tensor (D : SourceFactorization R Q T) :
         x ⟨Sum.inl w, hw⟩ = sphericalCoreSeed) ∧
       (∀ (q : R.A.Sf) (hq : Sum.inr q.val ∈ s.val),
         D.ell (Sum.inr q.val) (x ⟨Sum.inr q.val, hq⟩) = 1) ∧
-      (∀ g, Integrable (fun q => tensorFunction R D s x
-        (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g) *
-          star (adelicTraceQuotientCharacter F q : ℂ)) Q.dq) ∧
-      tensorFunction R D s x ∈ sameResidueModule T ∧
-      fourier R Q.dq (tensorFunction R D s x) 1 =
-        ∏ p : s.val, D.ell p (x p) ∧ tensorFunction R D s x ≠ 0 := by
+      tensorFunction R D s x ≠ 0 := by
   choose v V hv hVo hV1 hV using factorization_finite_unit_vector R D
   let s : RestrictedTensorSimple.Level D.bad := ⟨D.bad, le_rfl⟩
   let x : ∀ p : s.val, actualLocal R D.finiteData p := fun p =>
     match p.val with
     | Sum.inl _ => sphericalCoreSeed
     | Sum.inr q => if hq : q ∈ R.A.Sf then v ⟨q, hq⟩ else D.references (Sum.inr q)
-  refine ⟨s, x, rfl, ?_, ?_, ?_, D.core_same_residue _, D.product_exact s x, ?_⟩
+  refine ⟨s, x, rfl, ?_, ?_, ?_⟩
   · intro w hw
     rfl
   · intro q hq
@@ -120,8 +104,6 @@ theorem spherical_frozen_tensor (D : SourceFactorization R Q T) :
       (if h : q.val ∈ R.A.Sf then v ⟨q.val, h⟩ else D.references (Sum.inr q.val)) = 1
     rw [dif_pos q.property]
     exact hv q
-  · intro g
-    exact core_period_integrable R D _ g
   · apply tensorFunction_ne_zero R D s x
     intro p
     rcases p with ⟨p, hp⟩

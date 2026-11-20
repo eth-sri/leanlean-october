@@ -44,8 +44,7 @@ theorem actualCanonicalForwardMap_evaluation_surjective (g : ActualCover F ζ h�
   intro v
   obtain ⟨f, hf⟩ := actualCanonicalForwardMap_evaluation_one_surjective F ζ hζ q S P μ hμ v
   refine ⟨IPlus S.borel P g⁻¹ f, ?_⟩
-  have he := actualCanonicalForwardLinear_intertwines F ζ hζ q S P μ hμ g⁻¹ f
-  have he' := congrArg (fun z : sectionSpace S.borel P .minus 0 ↦ z.val g) he
+  have he' := congrArg (fun z : sectionSpace S.borel P .minus 0 ↦ z.val g) (actualCanonicalForwardLinear_intertwines F ζ hζ q S P μ hμ g⁻¹ f)
   change (actualCanonicalForwardMap F ζ hζ q S P μ hμ
     (IPlus S.borel P g⁻¹ f)).val g = _ at he'
   change (actualCanonicalForwardLinear F ζ hζ q S P μ hμ f).val 1 = v at hf

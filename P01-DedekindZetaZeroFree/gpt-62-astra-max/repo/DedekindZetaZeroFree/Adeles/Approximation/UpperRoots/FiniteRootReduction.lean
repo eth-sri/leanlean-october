@@ -11,11 +11,14 @@ open scoped Classical NumberField
 namespace DedekindZetaZeroFree.KPMsResidualTailRestoration.SharpConstantTerm.FiberStability
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-def finiteParameter (z : IsDedekindDomain.FiniteAdeleRing (NumberField.RingOfIntegers F) F) :
+section
+
+variable (z : IsDedekindDomain.FiniteAdeleRing (NumberField.RingOfIntegers F) F)
+
+def finiteParameter :
     KPMsClearedTruncationL2.Additive F := (0,z)
 
-theorem finite_root_mem
-    (z : IsDedekindDomain.FiniteAdeleRing (NumberField.RingOfIntegers F) F) :
+theorem finite_root_mem :
     KPGlobalTorusFunctionData.N F ζ hζ (finiteParameter F z) ∈
       KPFiniteCuspAtlas.FiniteCover F ζ hζ := by
   rw [MonoidHom.mem_ker]
@@ -25,14 +28,6 @@ theorem finite_root_mem
   rw [QuotientGroup.lift_mk']
   simp only [MonoidHom.comp_apply, KPAdelicCoverRestrictedProduct.projection_amalgamation]
   funext w
-  change Matrix.ProjGenLinGroup.mk
-    (KPAdelicCoverRestrictedProduct.matrixEval F (Sum.inl w)
-      (KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ
-        (KPGlobalTorusFunctionData.rootTuple F ζ hζ (finiteParameter F z)))) = 1
-  change Matrix.ProjGenLinGroup.mk
-    (KPLocalCover.projection F ζ hζ (Sum.inl w)
-      (KPStandardLocalRootLifts.N F ζ hζ (Sum.inl w)
-        (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inl w) (finiteParameter F z)))) = 1
   simp [finiteParameter, KPAdelicCoverRestrictedProduct.adeleEval,
     KPStandardLocalRootLifts.N, KPLocalCover.sectionMap, KPLocalCover.projection,
     KubotaRankTwo.n, RingHom.fst]
@@ -46,14 +41,14 @@ theorem finite_root_mem
       (!![1, 0; 0, 1] : Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F (Sum.inl w))) _ ∈ _
   exact he.symm ▸ Subgroup.one_mem _
 
-def finiteRoot
-    (z : IsDedekindDomain.FiniteAdeleRing (NumberField.RingOfIntegers F) F) :
+def finiteRoot :
     KPFiniteCuspAtlas.FiniteCover F ζ hζ :=
   ⟨KPGlobalTorusFunctionData.N F ζ hζ (finiteParameter F z), finite_root_mem F ζ hζ z⟩
 
+end
+
 @[simp] theorem finiteRoot_zero : finiteRoot F ζ hζ 0 = 1 := by
   apply Subtype.ext
-  change KPGlobalTorusFunctionData.N F ζ hζ 0 = 1
   change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
     (KPRationalAdelicSplitting.N F ζ hζ 0) = 1
   rw [KPRationalAdelicSplitting.N_zero, map_one]
@@ -61,24 +56,9 @@ def finiteRoot
 open KPAdelicCoverRestrictedProduct
 attribute [local instance] localTopology
 
-private theorem finiteRoot_integral_iff
-    (q : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))
-    (x : q.adicCompletion F) : x ∈ KPTameCompact.O F q ↔ x ∈ q.adicCompletionIntegers F := by
-  letI : ValuativeRel (q.adicCompletion F) := ClassFieldTheory.finitePlaceCompletionValuativeRel F q
-  change (ValuativeRel.valuation (q.adicCompletion F)) x ≤ 1 ↔ Valued.v x ≤ 1
-  rw [← Valuation.vle_one_iff]
-  letI : Valued.v.Compatible := Valuation.Compatible.ofValuation
-    (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ)))
-  exact Valuation.vle_one_iff Valued.v
+private alias finiteRoot_integral_iff := DedekindZetaZeroFree.KPRationalAdelicSplitting.integral_iff
 
-private theorem finiteRoot_good
-    (q : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))
-    (hq : ¬ Bad F q) (t : KPTameCompact.O F q) :
-    KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) t ∈ compact F ζ hζ (Sum.inr q) := by
-  simp only [compact, finiteCompact, dif_neg hq]
-  refine ⟨KPStandardLocalRootLifts.integralN F q t, ?_⟩
-  exact (KPStandardLocalRootLifts.N_eq_compact F ζ hζ q
-    (fun h3 => hq (Or.inr h3)) t).symm
+private alias finiteRoot_good := DedekindZetaZeroFree.KPRationalAdelicSplitting.AdelicRationalSplitting.good_N
 
  def finiteRootTupleHom :
     Multiplicative (IsDedekindDomain.FiniteAdeleRing (NumberField.RingOfIntegers F) F) →*
@@ -157,11 +137,7 @@ private theorem finiteRootTupleHom_continuous : Continuous (finiteRootTupleHom F
 
 theorem finiteRoot_continuous : Continuous (finiteRoot F ζ hζ) := by
   apply Continuous.subtype_mk
-  change Continuous (fun z => scalarQuotient F ζ hζ
-    (amalgamation F ζ hζ (finiteRootTupleHom F ζ hζ (Multiplicative.ofAdd z))))
-  have ha : Continuous (amalgamation F ζ hζ) := QuotientGroup.continuous_mk
-  have hs : Continuous (scalarQuotient F ζ hζ) := QuotientGroup.continuous_mk
-  exact hs.comp (ha.comp (finiteRootTupleHom_continuous F ζ hζ))
+  exact QuotientGroup.continuous_mk.comp (QuotientGroup.continuous_mk.comp (finiteRootTupleHom_continuous F ζ hζ))
 
 theorem canonical_finite_root_reduction
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
@@ -170,8 +146,7 @@ theorem canonical_finite_root_reduction
     ∃ b : F, c⁻¹ * σ *
       finiteRoot F ζ hζ (z - algebraMap F
         (IsDedekindDomain.FiniteAdeleRing (NumberField.RingOfIntegers F) F) b) *
-      σ⁻¹ * c ∈ U.toOpenSubgroup := by
-  exact finite_root_reduction U σ c (finiteRoot F ζ hζ)
+      σ⁻¹ * c ∈ U.toOpenSubgroup := finite_root_reduction U σ c (finiteRoot F ζ hζ)
     (finiteRoot_continuous F ζ hζ) (finiteRoot_zero F ζ hζ) z
 
 end DedekindZetaZeroFree.KPMsResidualTailRestoration.SharpConstantTerm.FiberStability

@@ -13,8 +13,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.Principa
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem consequences (Fn : ℝ → ℝ × ℝ → ℂ) (E : ℝ)
     (g : ℝ × ℝ → ℝ) (hg : Integrable g) (hg0 : ∀ p, 0 ≤ g p)
@@ -38,8 +38,7 @@ theorem consequences (Fn : ℝ → ℝ × ℝ → ℂ) (E : ℝ)
   refine (NormalizedFubiniMajorant.norm_double_le _ (hc Z hZ).aestronglyMeasurable g hg _ hZ0
     hb').trans ?_
   have : 0 ≤ ∫ p, g p := integral_nonneg hg0
-  have h2 : 0 ≤ ((2 * Real.pi)⁻¹) ^ 2 := by positivity
-  nlinarith [mul_nonneg (mul_nonneg h2 this) hZ0]
+  nlinarith [mul_nonneg (mul_nonneg (by positivity) this) hZ0]
 
 private def bodyR (u : D.Row) (ξ z : ℂ) (Z : ℝ) : ℂ :=
   (Z : ℂ) ^ ((Scales.xExponent / 2 : ℝ) + ξ - 1 + (Scales.smoothingExponent : ℂ) * z) *
@@ -56,10 +55,9 @@ private theorem wResidue_eq_bodyR (u : D.Row) (hu : u.u = 1) (ξ z : ℂ) (Z : �
 private theorem abstract_slice (H : ℂ → ℂ → ℂ → ℂ) (ξ z : ℂ)
     (hd : DifferentiableAt ℂ (fun p : ℂ × ℂ × ℂ => H p.1 p.2.1 p.2.2) (ξ, 1, z)) :
     ContinuousAt (fun p : ℂ × ℂ => H p.1 1 p.2) (ξ, z) := by
-  have hc : ContinuousAt (fun p : ℂ × ℂ => ((p.1, (1 : ℂ), p.2) : ℂ × ℂ × ℂ)) (ξ, z) := by
-    fun_prop
   exact ContinuousAt.comp (g := fun p : ℂ × ℂ × ℂ => H p.1 p.2.1 p.2.2)
-    (f := fun p : ℂ × ℂ => ((p.1, (1 : ℂ), p.2) : ℂ × ℂ × ℂ)) hd.continuousAt hc
+    (f := fun p : ℂ × ℂ => ((p.1, (1 : ℂ), p.2) : ℂ × ℂ × ℂ)) hd.continuousAt (by
+      fun_prop)
 
 private theorem abstract_comp {α : Type*} [TopologicalSpace α] (G : ℂ × ℂ → ℂ) (g : α → ℂ × ℂ)
     (a : α) (hG : ContinuousAt G (g a)) (hg : ContinuousAt g a) : ContinuousAt (fun t => G (g t)) a :=
@@ -97,7 +95,7 @@ private theorem bodyR_continuousAt (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 
   have hHc : ContinuousAt (fun p : ℂ × ℂ => EulerDomain.Hu D u p.1 1 p.2) (ξ, z) := by
     have hd : DifferentiableAt ℂ
         (fun p : ℂ × ℂ × ℂ => EulerDomain.Hu D u p.1 p.2.1 p.2.2) (ξ, 1, z) :=
-      (EulerDomain.Hu_normal_convergence D u).2.2.1.differentiableAt
+      (EulerDomain.Hu_normal_convergence D u).2.differentiableAt
         (EulerDomain.OmegaStar_isOpen.mem_nhds hmem)
     exact abstract_slice (EulerDomain.Hu D u) ξ z hd
   have hLne : D.Llam u ξ ≠ 0 := RightHeckeBounds.Llam_ne_zero_of_one_lt D u ξ hξ
@@ -197,7 +195,7 @@ theorem residue_integrability_z (u : D.Row) (hu : u.u = 1) :
   exact ⟨h1, h2, h3⟩
 
 theorem residue_integrability_w (u : D.Row) (hu : u.u = 1) :
-    ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z →
+    ∃ C : ℝ, ∀ Z : ℝ, 2 ≤ Z →
       Continuous (fun t : ℝ × ℝ =>
         wResidueLocal D u ((Scales.rightLine : ℂ) + (t.1 : ℂ) * Complex.I)
           (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t.2 : ℂ) * Complex.I) Z) ∧
@@ -216,7 +214,7 @@ theorem residue_integrability_w (u : D.Row) (hu : u.u = 1) :
     (fun Z t => wResidueLocal D u ((Scales.rightLine : ℂ) + (t.1 : ℂ) * Complex.I)
       (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t.2 : ℂ) * Complex.I) Z) _ g hg hg0
     (fun Z hZ => wResidue_continuous_w D u hu Z hZ) (fun Z hZ p => hb Z hZ p)
-  refine ⟨C, hC, fun Z hZ => ⟨wResidue_continuous_w D u hu Z hZ, ?_⟩⟩
+  refine ⟨C, fun Z hZ => ⟨wResidue_continuous_w D u hu Z hZ, ?_⟩⟩
   obtain ⟨h1, h2, h3⟩ := h Z hZ
   exact ⟨h1, h2, h3⟩
 

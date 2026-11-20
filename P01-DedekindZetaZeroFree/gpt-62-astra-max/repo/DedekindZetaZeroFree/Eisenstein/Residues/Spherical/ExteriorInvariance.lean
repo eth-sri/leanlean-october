@@ -11,8 +11,8 @@ open NumberField Filter MeasureTheory
 namespace DedekindZetaZeroFree.RootDerivatives
 open MomentSources KPLiteralRaw
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1800000
 
@@ -23,9 +23,7 @@ set_option maxHeartbeats 1800000
     (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q))
     (ha : a ∈ KPAdelicCoverRestrictedProduct.compact F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q)) :
     ∀ g, tensorFunction R D s x (g * finiteInjection R q a) = tensorFunction R D s x g := by
-  have hqS : q ∉ R.A.Sf := by
-    intro h
-    exact hq (s.property ((D.bad_exact _).mpr (Or.inr ⟨q,rfl,h⟩)))
+  have hqS : q ∉ R.A.Sf := fun h => hq (s.property ((D.bad_exact _).mpr (Or.inr ⟨q,rfl,h⟩)))
   let t : RestrictedTensorSimple.Level D.bad := ⟨insert (Sum.inr q) s.val,
     s.property.trans (Finset.subset_insert _ _)⟩
   have hst : s ≤ t := Finset.subset_insert _ _

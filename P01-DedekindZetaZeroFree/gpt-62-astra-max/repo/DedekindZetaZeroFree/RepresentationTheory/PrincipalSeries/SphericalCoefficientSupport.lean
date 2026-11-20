@@ -45,19 +45,10 @@ theorem fibreValue_eq_owned_lift
 private theorem insertion_commutes_finite
     (r : KPSmoothActualFlowData.GInfinity F)
     (a : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
-    Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ r) a.val := by
-  have ht : a.val ∈ ActualFiniteFactor.tupleFactor F ζ hζ := by
-    obtain ⟨b, hb, he⟩ := a.property
-    refine ⟨b, ?_, he⟩
-    intro w
-    exact (Subgroup.mem_iInf.mp hb) w
-  have ha : a.val ∈ ActualFiniteFactor.finiteSubgroup F ζ hζ := by
-    rw [ActualFiniteFactor.finiteSubgroup_eq_tupleFactor]
-    exact ht
-  exact ActualFiniteFactor.archInsertion_commutes F ζ hζ r ⟨a.val, ha⟩
+    Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ r) a.val := by apply @DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal.insertion_commutes_finite <;> assumption
 
 variable (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
-variable {m : ℕ} (k : Fin m → KPContSectorArchSphericalFibers.KInfinity F) (A : Fin m → ℂ)
+    {m : ℕ} (k : Fin m → KPContSectorArchSphericalFibers.KInfinity F) (A : Fin m → ℂ)
 
 theorem evalCoefficient_right_level
     (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)

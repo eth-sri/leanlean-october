@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Geometry.Cusps.AffineTorusBundles.FiniteOrbifoldAtlas
 
 public import DedekindZetaZeroFree.Geometry.Cusps.AffineTorusBundles.QuotientCoordinates
 
@@ -8,25 +9,7 @@ noncomputable section
 open scoped Classical Matrix
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPCuspChart
-private theorem split_upper_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
-    (hc : g 1 0 = 0) (u : ℂ) (hu : u ≠ 0) (ha : g 0 0 = u * g 1 1)
-    (z : KPArch.H3) :
-    KPArch.action g z = (u * z.1 + g 0 1 / g 1 1, z.2 + Real.log ‖u‖) := by
-  have hd : g 1 1 ≠ 0 := by
-    intro h
-    apply g.det_ne_zero
-    simp [Matrix.det_fin_two, hc, h]
-  have hdR : ‖g 1 1‖ ≠ 0 := norm_ne_zero_iff.mpr hd
-  have huR : ‖u‖ ≠ 0 := norm_ne_zero_iff.mpr hu
-  apply Prod.ext
-  · simp only [KPArch.action, KPArch.actionDenominator, hc, zero_mul, zero_add,
-      norm_zero, zero_pow (by norm_num : 2 ≠ 0), star_zero, mul_zero, add_zero]
-    have hn : (‖g 1 1‖ ^ 2 : ℝ) = (g 1 1 * star (g 1 1) : ℂ) := by
-      simpa [Complex.normSq_eq_norm_sq] using (Complex.mul_conj (g 1 1)).symm
-    rw [hn, ha]
-    have hds : star (g 1 1) ≠ 0 := star_ne_zero.mpr hd
-    field_simp
-  · exact KPCuspLogShape.upper_action_snd g hc u hu ha z
+private alias split_upper_action := FiniteOrbifoldAtlas.upper_action
 
 private theorem split_actual_affine_action (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -61,6 +44,8 @@ private theorem split_actual_affine_action (F : Type*) [Field F] [NumberField F]
     rw [NumberField.InfinitePlace.norm_embedding_eq]
     ring
 
+alias RadialQuotientDisintegration.split_actual_affine_action := split_actual_affine_action
+
 private theorem split_meanHeight (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (p : Coordinates F) :
     KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) (toArch F p) = p.2 := by
@@ -93,7 +78,7 @@ private theorem split_cross_action (F : Type*) [Field F] [NumberField F]
     (G : GeometryData F hF S D) (g : S) (p : Coordinates F) :
     (g : KPCuspArithmetic.PGL2 F) • toArch F p = toArch F (G.crossAction g p.1, p.2) := by
   obtain ⟨A, hA, hc⟩ := D.upper g g.property
-  change KPCuspSiegel.action F (g : KPCuspArithmetic.PGL2 F) _ = _
+  change KPCuspSiegel.action F g _ = _
   rw [split_actual_affine_action F hF S D g A hA hc p,
     G.crossAction_formula g A hA hc]
   rfl
@@ -103,19 +88,17 @@ theorem radial_orbit_relation_iff (F : Type*) [Field F] [NumberField F]
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (G : GeometryData F hF S D) (p q : Coordinates F) :
     totalRelation F S p q ↔ crossRelation F S p.1 q.1 ∧ p.2 = q.2 := by
-  change (∃ g : S, g • toArch F q = toArch F p) ↔
-    (∃ g : S, g • toArch F (q.1, 0) = toArch F (p.1, 0)) ∧ p.2 = q.2
   constructor
   · rintro ⟨g, hg⟩
     have he := split_toArch_injective F hF ((split_cross_action F hF S D G g q).symm.trans hg)
     refine ⟨⟨g, ?_⟩, (congrArg Prod.snd he).symm⟩
-    have hx : G.crossAction g q.1 = p.1 := congrArg Prod.fst he
+    have hx := congrArg Prod.fst he
     exact (split_cross_action F hF S D G g (q.1, 0)).trans
       (congrArg (toArch F) (Prod.ext hx rfl))
   · rintro ⟨⟨g, hg⟩, ht⟩
     have he := split_toArch_injective F hF ((split_cross_action F hF S D G g (q.1, 0)).symm.trans hg)
     refine ⟨g, ?_⟩
-    have hx : G.crossAction g q.1 = p.1 := congrArg Prod.fst he
+    have hx := congrArg Prod.fst he
     exact (split_cross_action F hF S D G g q).trans
       (congrArg (toArch F) (Prod.ext hx ht.symm))
 end DedekindZetaZeroFree.KPCuspChart
@@ -202,6 +185,8 @@ private theorem radial_sigmaFinite_comap {X Y : Type*} [MeasurableSpace X] [Meas
     exact lt_of_le_of_lt (measure_mono (Set.image_preimage_subset _ _)) (measure_spanningSets_lt_top ν n)
   · simp only [Set.sUnion_range, ← Set.preimage_iUnion, iUnion_spanningSets, Set.preimage_univ]
 
+alias RadialQuotientDisintegration.radial_sigmaFinite_comap := radial_sigmaFinite_comap
+
 theorem radial_high_coordinate_measure
     (F : Type*) [Field F] [NumberField F] (T : ℝ)
     (μ : Measure (Cross F)) (ν : Measure ℝ) [SFinite μ] [SigmaFinite ν] :
@@ -245,16 +230,15 @@ private theorem orbit_section_embedding {X H : Type*} [Group H] [Countable H]
     obtain ⟨g, hg⟩ := Quotient.exact h
     have hg1 : g = 1 := by
       by_contra hn
-      have hx : x.val ∈ g • s := ⟨y.val, y.property, hg⟩
       have hy : x.val ∈ (1 : H) • s := by simpa using x.property
-      exact Set.disjoint_left.mp (hd hn) hx hy
+      exact Set.disjoint_left.mp (hd hn) (⟨y.val, y.property, hg⟩) hy
     apply Subtype.ext
     simpa [hg1] using hg.symm
   · intro t ht
     apply measurableSet_quotient.mpr
     have he : Quotient.mk (MulAction.orbitRel H X) ⁻¹'
         ((fun x : s => Quotient.mk (MulAction.orbitRel H X) x.val) '' t) =
-        ⋃ g : H, g • ((Subtype.val : s → X) '' t) := by
+        ⋃ g : H, g • (Subtype.val '' t) := by
       ext x
       simp only [Set.mem_preimage, Set.mem_image, Set.mem_iUnion]
       constructor
@@ -274,11 +258,10 @@ private theorem orbit_ae_section {X H : Type*} [Group H] [Countable H]
       ∀ᵐ z ∂Measure.map (Quotient.mk (MulAction.orbitRel H X)) (μ.restrict s),
         Quotient.mk (MulAction.orbitRel H X) (k z) = z := by
   let s0 := fundamentalInterior H s
-  have hs0 : MeasurableSet s0 := hs.diff (MeasurableSet.iUnion fun g =>
-    MeasurableSet.iUnion fun _ : g ≠ 1 => hs.const_smul g)
   let q : X → Quotient (MulAction.orbitRel H X) := Quotient.mk _
   let q0 : s0 → Quotient (MulAction.orbitRel H X) := fun x => q x.val
-  have hq0 : MeasurableEmbedding q0 := orbit_section_embedding s0 hs0
+  have hq0 := orbit_section_embedding s0 (hs.diff (MeasurableSet.iUnion fun g =>
+    MeasurableSet.iUnion fun _ : g ≠ 1 => hs.const_smul g))
     (pairwise_disjoint_fundamentalInterior H s)
   obtain ⟨k, hk, hke⟩ := hq0.exists_measurable_extend measurable_subtype_coe (fun _ => inferInstance)
   refine ⟨k, hk, ?_⟩
@@ -307,15 +290,14 @@ private theorem split_crossRelation_eq (F : Type*) [Field F] [NumberField F]
   letI := homeomorphAction G.crossAction
   apply Setoid.ext
   intro p q
-  change (∃ g : S, g • toArch F (q,0) = toArch F (p,0)) ↔
-    (∃ g : S, G.crossAction g q = p)
   constructor
   · rintro ⟨g, hg⟩
-    have he := split_toArch_injective F hF ((split_cross_action F hF S D G g (q,0)).symm.trans hg)
-    exact ⟨g, congrArg Prod.fst he⟩
+    exact ⟨g, congrArg Prod.fst (split_toArch_injective F hF ((split_cross_action F hF S D G g (q,0)).symm.trans hg))⟩
   · rintro ⟨g, hg⟩
     exact ⟨g, (split_cross_action F hF S D G g (q,0)).trans
       (congrArg (toArch F) (Prod.ext hg rfl))⟩
+
+alias RadialQuotientDisintegration.split_crossRelation_eq := split_crossRelation_eq
 
 private theorem split_cross_ae_section (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -328,17 +310,15 @@ private theorem split_cross_ae_section (F : Type*) [Field F] [NumberField F]
     unfold Matrix
     infer_instance
   letI : Countable (Matrix.GeneralLinearGroup (Fin 2) F) :=
-    Function.Injective.countable (f := fun g => (g : Matrix (Fin 2) (Fin 2) F)) Units.val_injective
+    Function.Injective.countable Units.val_injective
   letI : Countable (KPCuspArithmetic.PGL2 F) := by
     unfold KPCuspArithmetic.PGL2 Matrix.ProjGenLinGroup
-    exact Function.Surjective.countable (Quotient.mk_surjective :
-      Function.Surjective (Quotient.mk (QuotientGroup.leftRel _)))
+    exact Function.Surjective.countable Quotient.mk_surjective
   letI := homeomorphAction G.crossAction
   letI : MeasurableConstSMul S (Cross F) := ⟨fun g => (G.crossAction g).continuous.measurable⟩
   rw [V.sectionMeasure_formula]
-  have he := split_crossRelation_eq F hF S D G
   unfold CrossQuotient
-  rw [he]
+  rw [(split_crossRelation_eq F hF S D G)]
   exact orbit_ae_section (volume.prod V.shapeMeasure) V.fundamentalDomain
     V.measurable_fundamentalDomain V.isFundamentalDomain
 
@@ -351,12 +331,8 @@ private theorem split_radial_aemeasurable (F : Type*) [Field F] [NumberField F]
   obtain ⟨k, hk, he⟩ := split_cross_ae_section F hF S D G V
   let ν := radialMeasure (KPCuspLogShape.dimension F)
   letI : SigmaFinite ν := by unfold ν radialMeasure; infer_instance
-  have hm : Measurable (fun p : CrossQuotient F S × ℝ =>
-      Quotient.mk (totalRelation F S) (k p.1, p.2)) :=
-    measurable_quotient_mk''.comp ((hk.comp measurable_fst).prodMk measurable_snd)
-  apply hm.aemeasurable.congr
-  have hep := (Measure.quasiMeasurePreserving_fst (μ := V.sectionMeasure) (ν := ν)).ae he
-  filter_upwards [hep] with p hp
+  apply (measurable_quotient_mk''.comp ((hk.comp measurable_fst).prodMk measurable_snd)).aemeasurable.congr
+  filter_upwards [((Measure.quasiMeasurePreserving_fst).ae he)] with p hp
   change Quotient.mk (totalRelation F S) (k p.1, p.2) = _
   rw [← radialOrbitHomeomorph_mk F hF S D G, hp]
 
@@ -372,15 +348,10 @@ private theorem split_high_aemeasurable (F : Type*) [Field F] [NumberField F]
   letI : SigmaFinite ν := by unfold ν radialMeasure; infer_instance
   letI := radial_sigmaFinite_comap (Subtype.val : Set.Ioi T → ℝ)
     (MeasurableEmbedding.subtype_coe isOpen_Ioi.measurableSet) ν
-  have hm : Measurable (fun p : CrossQuotient F S × Set.Ioi T =>
-      Quotient.mk (highRelation F S T)
-        ((radialHighProductHomeomorph F T) (k p.1, p.2))) :=
-    measurable_quotient_mk''.comp ((radialHighProductHomeomorph F T).continuous.measurable.comp
-      ((hk.comp measurable_fst).prodMk measurable_snd))
-  apply hm.aemeasurable.congr
-  have hep := (Measure.quasiMeasurePreserving_fst (μ := V.sectionMeasure)
-    (ν := ν.comap (Subtype.val : Set.Ioi T → ℝ))).ae he
-  filter_upwards [hep] with p hp
+  apply (measurable_quotient_mk''.comp ((radialHighProductHomeomorph F T).continuous.measurable.comp
+    ((hk.comp measurable_fst).prodMk measurable_snd))).aemeasurable.congr
+  filter_upwards [((Measure.quasiMeasurePreserving_fst
+    ).ae he)] with p hp
   change Quotient.mk (highRelation F S T) ⟨(k p.1, p.2.val), p.2.property⟩ = _
   rw [← highRadialOrbitHomeomorph_mk F hF S D G, hp]
 
@@ -398,21 +369,19 @@ private theorem split_radial_volume (F : Type*) [Field F] [NumberField F]
   letI : SigmaFinite ν := by unfold ν radialMeasure; infer_instance
   let μ := (volume.prod V.shapeMeasure).restrict V.fundamentalDomain
   have hp : V.sectionMeasure.prod ν =
-      Measure.map (Prod.map (Quotient.mk (crossRelation F S)) (id : ℝ → ℝ)) (μ.prod ν) := by
+      Measure.map (Prod.map (Quotient.mk (crossRelation F S)) id) (μ.prod ν) := by
     rw [V.sectionMeasure_formula]
     simpa [μ] using Measure.map_prod_map μ ν measurable_quotient_mk'' measurable_id
   have hm := split_radial_aemeasurable F hF S D G V
   change AEMeasurable _ (V.sectionMeasure.prod ν) at hm
-  change Measure.map _ (V.sectionMeasure.prod ν) = _
   rw [hp] at hm ⊢
   rw [hm.map_map_of_aemeasurable (measurable_quotient_mk''.prodMap measurable_id).aemeasurable]
   have hf : (radialOrbitHomeomorph F hF S D G) ∘
-      Prod.map (Quotient.mk (crossRelation F S)) (id : ℝ → ℝ) =
+      Prod.map (Quotient.mk (crossRelation F S)) id =
       Quotient.mk (totalRelation F S) := by
     funext p
     exact radialOrbitHomeomorph_mk F hF S D G p.1 p.2
   rw [hf]
-  change Measure.map _ (((volume.prod V.shapeMeasure).restrict V.fundamentalDomain).prod ν) = _
   rw [Measure.restrict_prod_eq_prod_univ]
   congr 2
   ext p
@@ -437,24 +406,21 @@ private theorem split_high_volume (F : Type*) [Field F] [NumberField F]
     (MeasurableEmbedding.subtype_coe isOpen_Ioi.measurableSet) ν
   let μ := (volume.prod V.shapeMeasure).restrict V.fundamentalDomain
   have hp : V.sectionMeasure.prod νT =
-      Measure.map (Prod.map (Quotient.mk (crossRelation F S)) (id : Set.Ioi T → Set.Ioi T))
+      Measure.map (Prod.map (Quotient.mk (crossRelation F S)) id)
         (μ.prod νT) := by
     rw [V.sectionMeasure_formula]
     simpa [μ] using Measure.map_prod_map μ νT measurable_quotient_mk'' measurable_id
   have hm := split_high_aemeasurable F hF S D G V T
   change AEMeasurable _ (V.sectionMeasure.prod νT) at hm
-  change Measure.map _ (V.sectionMeasure.prod νT) = _
   rw [hp] at hm ⊢
   rw [hm.map_map_of_aemeasurable (measurable_quotient_mk''.prodMap measurable_id).aemeasurable]
   have hf : (highRadialOrbitHomeomorph F hF S D G T) ∘
-      Prod.map (Quotient.mk (crossRelation F S)) (id : Set.Ioi T → Set.Ioi T) =
+      Prod.map (Quotient.mk (crossRelation F S)) id =
       (Quotient.mk (highRelation F S T)) ∘ (radialHighProductHomeomorph F T) := by
     funext p
     exact highRadialOrbitHomeomorph_mk F hF S D G T p.1 p.2
   rw [hf, ← Measure.map_map measurable_quotient_mk'' (radialHighProductHomeomorph F T).continuous.measurable,
     radial_high_coordinate_measure]
-  change Measure.map _ (Measure.comap _ (μ.prod ν)) = _
-  change Measure.map _ (Measure.comap _ (((volume.prod V.shapeMeasure).restrict V.fundamentalDomain).prod ν)) = _
   rw [Measure.restrict_prod_eq_prod_univ]
   congr 3
   ext p
@@ -473,7 +439,6 @@ theorem radial_quotient_disintegration
   exact ⟨{
     radialPresentation := radialOrbitHomeomorph F hF S D G
     radialPresentation_formula := radialOrbitHomeomorph_mk F hF S D G
-    quotientVolume_formula := split_radial_volume F hF S D G V
     highPresentation := highRadialOrbitHomeomorph F hF S D G
     highPresentation_formula := highRadialOrbitHomeomorph_mk F hF S D G
     highVolume_formula := split_high_volume F hF S D G V

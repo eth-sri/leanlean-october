@@ -13,26 +13,24 @@ namespace DedekindZetaZeroFree.KPLiteralScalarHCFiniteRoot
 open KPLiteralRaw KPAdelicCoverRestrictedProduct KPLiteralScalarHCFiniteInsertion
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-def finiteRootAdele (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (u : q.adicCompletion F) : KPGlobalTorusFunctionData.Adeles F :=
+section
+
+variable (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) (u : q.adicCompletion F)
+
+def finiteRootAdele : KPGlobalTorusFunctionData.Adeles F :=
   (0, RestrictedProduct.single (fun r : IsDedekindDomain.HeightOneSpectrum (𝓞 F) =>
     r.adicCompletionIntegers F) q u)
-theorem finiteRootAdele_eval (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (u : q.adicCompletion F) :
+theorem finiteRootAdele_eval :
     adeleEval F (Sum.inr q) (finiteRootAdele F q u) = u := by
-  change Pi.single q u q = u
   exact Pi.single_eq_same q u
-theorem finiteRootAdele_eval_other (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (u : q.adicCompletion F) (v : KPHilbert.Place F) (hv : v ≠ Sum.inr q) :
+theorem finiteRootAdele_eval_other (v : KPHilbert.Place F) (hv : v ≠ Sum.inr q) :
     adeleEval F v (finiteRootAdele F q u) = 0 := by
   cases v with
   | inl w => rfl
   | inr r =>
-    have hr : r ≠ q := by intro h; apply hv; exact congrArg Sum.inr h
-    change Pi.single q u r = 0
-    exact Pi.single_eq_of_ne hr u
-theorem finiteInsertion_root (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (u : q.adicCompletion F) :
+    refine Pi.single_eq_of_ne ?_ u
+    intro h; apply hv; exact congrArg Sum.inr h
+theorem finiteInsertion_root :
     (finiteInsertion F ζ hζ q (KPPGLLocalCover.N F ζ hζ (Sum.inr q) u)).val =
       KPGlobalTorusFunctionData.N F ζ hζ (finiteRootAdele F q u) := by
   rw [finiteInsertion_value]
@@ -53,24 +51,28 @@ theorem finiteInsertion_root (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
   · simp [localToRestricted, KPGlobalTorusFunctionData.rootTuple,
       finiteRootAdele_eval_other F q u v hv, RestrictedProduct.coe_mulSingle_apply, hv,
       KPStandardLocalRootLifts.N_zero]
-theorem canonical_root_eq (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (S : KPLocalExceptionalConstruction.CanonicalFiniteInducingData F ζ hζ q)
-    (u : q.adicCompletion F) :
+
+end
+section
+
+variable (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+    (S : KPLocalExceptionalConstruction.CanonicalFiniteInducingData F ζ hζ q) (u : q.adicCompletion F)
+
+theorem canonical_root_eq :
     (S.borel.upperRoot (Multiplicative.ofAdd u) : KPLocalExceptionalConstruction.ActualCover F ζ hζ q) =
       KPPGLLocalCover.N F ζ hζ (Sum.inr q) u :=
   (S.openCell S.polarization).upper_eq u
 
-theorem finiteInsertion_canonical_root
-    (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (S : KPLocalExceptionalConstruction.CanonicalFiniteInducingData F ζ hζ q)
-    (u : q.adicCompletion F) :
+theorem finiteInsertion_canonical_root :
     (finiteInsertion F ζ hζ q
       (S.borel.upperRoot (Multiplicative.ofAdd u))).val =
       KPGlobalTorusFunctionData.N F ζ hζ (finiteRootAdele F q u) := by
   rw [canonical_root_eq, finiteInsertion_root]
 
+end
+
 variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-variable (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)
+    (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)
 open KPLiteralScalarHCLocalCovariance
 open KPLiteralScalarHCCompactOrbit
 
@@ -112,7 +114,6 @@ theorem finiteInsertion_commute
       rw [finiteGroupInsertion_raw, finiteGroupInsertion_raw]
       have hc : Commute (localToRestricted F ζ hζ (Sum.inr q) a)
           (localToRestricted F ζ hζ (Sum.inr r) b) := by
-        change _ * _ = _ * _
         apply RestrictedProduct.ext
         intro v
         by_cases hvq : v = Sum.inr q
@@ -157,7 +158,7 @@ theorem finiteProductInsertion_mem_level (J : KPGlobalTorusFunctionData.FiniteLe
     exact hj q (Set.mem_univ q)
 
 variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-variable (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)
+    (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)
 open KPLiteralScalarHCCompactOrbit
 open KPLiteralScalarHCSliceCharts
 
@@ -177,7 +178,7 @@ namespace DedekindZetaZeroFree.KPLiteralScalarHCFiniteOutside
 open KPLiteralRaw KPAdelicCoverRestrictedProduct KPLiteralScalarHCFiniteInsertion
 open KPLiteralScalarHCFiniteProduct
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
+    (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
 
 def rawOutsideStage : Subgroup (RestrictedCover F ζ hζ) :=
   (⨅ w : InfinitePlace F, (RestrictedProduct.evalMonoidHom
@@ -214,7 +215,6 @@ theorem outsideStage_commute_local (b : outsideStage F ζ hζ T) (q : T)
       intro v
       by_cases hv : v = Sum.inr q.val
       · subst v
-        change r (Sum.inr q.val) * _ = _ * r (Sum.inr q.val)
         simp [hq]
       · simp [localToRestricted, RestrictedProduct.coe_mulSingle_apply, hv]
     exact (hc.map ((scalarQuotient F ζ hζ).comp (amalgamation F ζ hζ))).eq
@@ -236,7 +236,7 @@ open KPLiteralScalarHCLocalCovariance
 
 open KPLiteralScalarHCCompactOrbit KPCplxPrincipalSeriesCharts KPCplxCharacterHaar
 variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-variable (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)
+    (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)
 
 open KPLiteralScalarHCFiniteRoot
 

@@ -36,12 +36,9 @@ theorem rayCharacterDescent
               (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) →
             (f J : ℂ) = χ I) :=
     rayFractionalCharacterExtension K m hm χ
-  have hker : ClassFieldTheory.rayPrincipalIdealSubgroupInPrimeTo
-      (narrowIdealModulus K m hm) ≤ f.ker :=
-    rayFractionalCharacterKernel K m hm χ f hf
   let N := ClassFieldTheory.rayPrincipalIdealSubgroupInPrimeTo (narrowIdealModulus K m hm)
-  let lift : RayIdealClass K m hm →* ℂˣ := QuotientGroup.lift N f hker
-  let ψ : RayIdealClass K m hm →* ℂ := (Units.coeHom ℂ).comp lift
+  let lift := QuotientGroup.lift N f (rayFractionalCharacterKernel K m hm χ f hf)
+  let ψ := (Units.coeHom ℂ).comp lift
   have hψ : ∀ I : Ideal (𝓞 K), χ I =
       match rayIdealClass K m hm I with
       | none => 0
@@ -51,19 +48,18 @@ theorem rayCharacterDescent
     · rw [rayIdealClass_eq_none K m hm I h]
       exact (χ.eq_zero_iff' I).mpr h
     · obtain ⟨hI, hcn⟩ := not_or.mp h
-      have hI : I ≠ ⊥ := hI
-      have hcoprime : I ⊔ m = ⊤ := not_not.mp hcn
+      have hI := hI
+      have hcoprime := not_not.mp hcn
       rw [rayIdealClass_eq_some K m hm I hI hcoprime]
       have hJ : ((rayIdealClassRepresentative K m hm I hI hcoprime :
           ClassFieldTheory.NumberFieldFractionalIdealGroup K) :
             FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
-          (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) := by
+          I := by
         show ((rayIdealFractionalIdeal K I hI :
           ClassFieldTheory.NumberFieldFractionalIdealGroup K) :
             FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
-          (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K)
+          I
         rw [rayIdealFractionalIdeal_coe]
-      have hfI := hf I hI hcoprime (rayIdealClassRepresentative K m hm I hI hcoprime) hJ
       have hlift : lift (QuotientGroup.mk' N
           (rayIdealClassRepresentative K m hm I hI hcoprime)) =
           f (rayIdealClassRepresentative K m hm I hI hcoprime) := by
@@ -71,7 +67,7 @@ theorem rayCharacterDescent
         rw [← MonoidHom.comp_apply, QuotientGroup.lift_comp_mk']
       simp only [ψ, MonoidHom.comp_apply, Units.coeHom_apply]
       rw [hlift]
-      exact hfI.symm
+      exact (hf I hI hcoprime (rayIdealClassRepresentative K m hm I hI hcoprime) hJ).symm
   exact ⟨ψ, hψ, rayCharacterPrincipalCriterion K m hm χ ψ hψ⟩
 
 end DedekindZetaZeroFree.AbelianQuotient

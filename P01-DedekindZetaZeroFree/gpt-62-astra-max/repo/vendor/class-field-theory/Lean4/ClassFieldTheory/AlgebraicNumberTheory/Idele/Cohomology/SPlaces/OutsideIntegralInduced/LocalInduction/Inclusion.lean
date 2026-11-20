@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -103,14 +101,10 @@ noncomputable def inducedIntegerUnitsToLocalPlaceBlock :
                   LocalFieldTheory.IsNonarchimedeanLocalField.integerUnitsToFieldUnits
                     (LocalizedCompletion vK w) (f.1 g)
             rw [f.2 h g]
-            let : MulDistribMulAction
-                (Gal(LocalizedCompletion vK w / vK.Completion))
-                𝒪[LocalizedCompletion vK w]ˣ :=
+            let :=
               galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure
                 vK.Completion (LocalizedCompletion vK w)
-            let : MulDistribMulAction
-                (Gal(LocalizedCompletion vK w / vK.Completion))
-                (LocalizedCompletion vK w)ˣ :=
+            let :=
               galoisGroupFieldUnitsMulDistribMulAction
                 vK.Completion (LocalizedCompletion vK w)
             exact
@@ -155,18 +149,18 @@ theorem inducedIntegerUnitsToLocalPlaceBlock_injective :
       (inducedIntegerUnitsToLocalPlaceBlock
         (K := K) (L := L) vK hvK hvKna w) := by
   let := LocalInductionInternal.extensionCompletionAlgebra vK w
-  let : SMul K w.1.Completion :=
+  let :=
     LocalInductionInternal.extensionCompletionSMul vK w
   let := LocalInductionInternal.completionAlgebra vK w
-  let : Valued vK.Completion ℝ≥0 :=
+  let :=
     LocalInductionInternal.baseValued vK hvKna
-  let : ValuativeRel vK.Completion :=
+  let :=
     LocalInductionInternal.baseValuativeRel vK hvKna
-  let : Valued (LocalizedCompletion vK w) ℝ≥0 :=
+  let :=
     LocalInductionInternal.localizedValued vK w hvKna
-  let : ValuativeRel (LocalizedCompletion vK w) :=
+  let :=
     LocalInductionInternal.localizedValuativeRel vK w hvKna
-  let : Algebra 𝒪[vK.Completion] (LocalizedCompletion vK w) :=
+  let :=
     LocalInductionInternal.integerAlgebra vK w hvKna
   let := LocalInductionInternal.valuationHasExtension vK w hvKna
   let := LocalInductionInternal.isIntegralClosure
@@ -181,7 +175,6 @@ theorem inducedIntegerUnitsToLocalPlaceBlock_injective :
       (LocalizedCompletion vK w)
   exact congrArg
     (fun z : LocalPlaceBlock vK hvK w => z.1 g) h
-
 
 end IntegralInduction
 

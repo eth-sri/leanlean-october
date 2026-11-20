@@ -12,13 +12,17 @@ namespace DedekindZetaZeroFree
 open MeasureTheory
 open scoped FourierTransform
 
-private lemma reflected_norm (G : ℂ → ℂ) (c t : ℝ) :
+section
+
+variable (G : ℂ → ℂ)
+
+private lemma reflected_norm (c t : ℝ) :
     G (-(((-c : ℝ) : ℂ) + t * Complex.I)) = G ((c : ℂ) + (-t) * Complex.I) := by
   congr 1
   push_cast
   ring
 
-private lemma line_integrable (G : ℂ → ℂ)
+private lemma line_integrable
     (hG : DifferentiableOn ℂ G {s : ℂ | 1 < s.re})
     (hdecay : ∀ a b : ℝ, 1 < a → a ≤ b →
       ∃ C : ℝ, 0 ≤ C ∧ ∀ r ∈ Set.Icc a b, ∀ t : ℝ,
@@ -36,27 +40,7 @@ private lemma line_integrable (G : ℂ → ℂ)
   filter_upwards [] with t
   simpa [div_eq_mul_inv] using hbound c ⟨le_rfl, le_rfl⟩ (-t)
 
-private lemma inverse_bound (G : ℂ → ℂ) (c C : ℝ)
-    (hbound : ∀ t : ℝ, ‖G ((c : ℂ) + t * Complex.I)‖ ≤ C / (1 + t ^ 2))
-    (x : ℝ) (hx : 0 < x) :
-    ‖mellinInv (-c) (fun z : ℂ => G (-z)) x‖ ≤
-      (‖(1 / (2 * Real.pi) : ℝ)‖ * (C * ∫ t : ℝ, (1 + t ^ 2)⁻¹)) * x ^ c := by
-  have hnorm (t : ℝ) : ‖(x : ℂ) ^ (-(((-c : ℝ) : ℂ) + t * Complex.I))‖ = x ^ c := by
-    rw [Complex.norm_cpow_eq_rpow_re_of_pos hx]
-    simp
-  have hb : ‖∫ t : ℝ, (x : ℂ) ^ (-(((-c : ℝ) : ℂ) + t * Complex.I)) •
-      G (-(((-c : ℝ) : ℂ) + t * Complex.I))‖ ≤
-      ∫ t : ℝ, (x ^ c * C) * (1 + t ^ 2)⁻¹ := by
-    apply norm_integral_le_of_norm_le (integrable_inv_one_add_sq.const_mul (x ^ c * C))
-    filter_upwards [] with t
-    rw [norm_smul, hnorm, reflected_norm G c t]
-    have := mul_le_mul_of_nonneg_left (hbound (-t)) (Real.rpow_nonneg hx.le c)
-    simpa [div_eq_mul_inv, mul_assoc] using this
-  rw [mellinInv, norm_smul]
-  calc
-    _ ≤ ‖(1 / (2 * Real.pi) : ℝ)‖ * (∫ t : ℝ, (x ^ c * C) * (1 + t ^ 2)⁻¹) :=
-      mul_le_mul_of_nonneg_left hb (norm_nonneg _)
-    _ = _ := by rw [integral_const_mul]; ring
+end
 
 set_option maxHeartbeats 1000000 in
 
@@ -104,7 +88,22 @@ theorem mellin_right_shift_flat
     · exact mul_nonneg (norm_nonneg _) (mul_nonneg hC (integral_nonneg (fun t => by positivity)))
     · intro x hx _
       rw [(mellin_gaussian_contour_shift G g hG hdecay hinv c (by linarith) x hx).1]
-      exact inverse_bound G c C (hb c ⟨le_rfl, le_rfl⟩) x hx
+      have hnorm (t : ℝ) : ‖(x : ℂ) ^ (-(((-c : ℝ) : ℂ) + t * Complex.I))‖ = x ^ c := by
+        rw [Complex.norm_cpow_eq_rpow_re_of_pos hx]
+        simp
+      have hb : ‖∫ t : ℝ, (x : ℂ) ^ (-(((-c : ℝ) : ℂ) + t * Complex.I)) •
+          G (-(((-c : ℝ) : ℂ) + t * Complex.I))‖ ≤
+          ∫ t : ℝ, (x ^ c * C) * (1 + t ^ 2)⁻¹ := by
+        apply norm_integral_le_of_norm_le (integrable_inv_one_add_sq.const_mul (x ^ c * C))
+        filter_upwards [] with t
+        rw [norm_smul, hnorm, reflected_norm G c t]
+        have := mul_le_mul_of_nonneg_left ((hb c ⟨le_rfl, le_rfl⟩) (-t)) (Real.rpow_nonneg hx.le c)
+        simpa [div_eq_mul_inv, mul_assoc] using this
+      rw [mellinInv, norm_smul]
+      calc
+        _ ≤ ‖(1 / (2 * Real.pi) : ℝ)‖ * (∫ t : ℝ, (x ^ c * C) * (1 + t ^ 2)⁻¹) :=
+          mul_le_mul_of_nonneg_left hb (norm_nonneg _)
+        _ = _ := by rw [integral_const_mul]; ring
   refine ⟨hcont, hcont.locallyIntegrableOn measurableSet_Ioi, ?_, hquant⟩
   intro b
   obtain ⟨C, hC, hb⟩ := hquant (max 2 b + 1) (by have := le_max_left 2 b; linarith)

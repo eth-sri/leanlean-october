@@ -15,19 +15,16 @@ theorem quadraticExtension_signature
     NumberField.IsTotallyComplex E ∧
       NumberField.InfinitePlace.nrComplexPlaces E =
         2 * NumberField.InfinitePlace.nrComplexPlaces F := by
-  haveI hFc : NumberField.IsTotallyComplex F := hF
+  haveI hFc := hF
   haveI : NumberField.IsTotallyComplex E :=
     NumberField.isTotallyComplex_of_algebra F E
   refine ⟨inferInstance, ?_⟩
-  have hE := NumberField.IsTotallyComplex.finrank E
-  have hF' := NumberField.IsTotallyComplex.finrank F
-  have hmult : Module.finrank ℚ E =
-      Module.finrank ℚ F * Module.finrank F E :=
+  have hmult :=
     (Module.finrank_mul_finrank ℚ F E).symm
-  rw [hdeg, hF'] at hmult
+  rw [hdeg, (NumberField.IsTotallyComplex.finrank F)] at hmult
   have h2 : 2 * NumberField.InfinitePlace.nrComplexPlaces E =
       2 * (2 * NumberField.InfinitePlace.nrComplexPlaces F) := by
-    rw [← hE, hmult]
+    rw [← (NumberField.IsTotallyComplex.finrank E), hmult]
     ring
   exact Nat.mul_left_cancel (by norm_num) h2
 

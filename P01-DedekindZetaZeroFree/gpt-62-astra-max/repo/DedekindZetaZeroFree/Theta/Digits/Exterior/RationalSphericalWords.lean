@@ -12,20 +12,19 @@ namespace DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 open MomentSources NumberField IsDedekindDomain ThetaExpansion ValuativeRel
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
 
 theorem integral_of_order_nonneg (p : KPFinitePlace F) (x : Fˣ) (hx : 0 ≤ ThetaBranch.order p x) :
     algebraMap F (p.adicCompletion F) x.val ∈ KPTameCompact.O F p := by
   letI : (Valued.v : Valuation (p.adicCompletion F) (WithZero (Multiplicative ℤ))).Compatible :=
     Valuation.Compatible.ofValuation _
-  apply (ValuativeRel.isEquiv (Valued.v : Valuation (p.adicCompletion F) (WithZero (Multiplicative ℤ)))
+  apply (ValuativeRel.isEquiv Valued.v
     (valuation (p.adicCompletion F))).le_one_iff_le_one.mp
   change Valued.v ((x.val : F) : p.adicCompletion F) ≤ 1
   rw [HeightOneSpectrum.adicCompletion.valued_coe]
-  have hn := (Valuation.ne_zero_iff (p.valuation F)).mpr x.ne_zero
-  rw [← WithZero.exp_log hn, ← WithZero.exp_zero, WithZero.exp_le_exp]
+  rw [← WithZero.exp_log ((Valuation.ne_zero_iff (p.valuation F)).mpr x.ne_zero), ← WithZero.exp_zero, WithZero.exp_le_exp]
   unfold ThetaBranch.order at hx
   omega
 

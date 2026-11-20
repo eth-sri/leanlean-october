@@ -12,10 +12,10 @@ namespace DedekindZetaZeroFree.KPGroupChartFullTubeHaarL2
 open KPContActualSphericalRightFieldIdentification
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 theorem actual_original_chart_tube_domination
     (chart : GroupChart F ζ hζ U R P H)
@@ -35,7 +35,7 @@ theorem actual_original_chart_tube_domination
         ((volume.restrict A).prod
           (ν.restrict (U.toOpenSubgroup : Set (KPFiniteCuspAtlas.FiniteCover F ζ hζ)))) ≤
         ENNReal.ofReal C • R.quotientHaar := by
-  obtain ⟨μArch, ν, ρ, c, hμArch, hν, hprod, hmass, hmassT, hρ, hpos, hc, hb, hi⟩ :=
+  obtain ⟨μArch, ν, ρ, c, hμArch, hν, hprod, hmass, hmassT, hc, hb, hi⟩ :=
     exists_compatible_original_chart_density chart A hA hAT
   letI := actualLieChartedSpace F
   letI := actualLieGroup F

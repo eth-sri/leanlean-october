@@ -23,11 +23,10 @@ theorem principal_row_unitResidue_transport (A : SArithmeticData F) (p : ThetaBr
   let E := ArithGaussCRT.exteriorQuotientEquiv A I
   obtain ⟨n, d, hd⟩ := p.val.exists_primeCompl_mul_eq_of_integer (t : F)
     (t.property p.val p.property)
-  have hdv : p.val.valuation F (d : 𝓞 F) = 1 :=
-    p.val.valuation_eq_one_iff_notMem.mpr d.property
   change (t : F) * (d : 𝓞 F) = (n : F) at hd
-  have hnval : p.val.valuation F (n : F) = p.val.valuation F (t : F) := by
-    rw [← hd, map_mul, hdv, mul_one]
+  let valuation₀ := p.val.valuation F (t : F)
+  have hnval : p.val.valuation F (n : F) = valuation₀ := by
+    rw [← hd, map_mul, (p.val.valuation_eq_one_iff_notMem.mpr d.property), mul_one]
   have hdiv : (t : F) = (n : F) / (d : 𝓞 F) := by
     exact (eq_div_iff (by
       intro hz
@@ -40,7 +39,7 @@ theorem principal_row_unitResidue_transport (A : SArithmeticData F) (p : ThetaBr
     congr 1
     apply Subtype.ext
     exact hd
-  have hdq : Ideal.Quotient.mk I.val (d : 𝓞 F) ≠ 0 := by
+  have hdq : Ideal.Quotient.mk I.val d ≠ 0 := by
     exact fun h => d.property (Ideal.Quotient.eq_zero_iff_mem.mp h)
   letI : I.val.IsMaximal := p.val.isMaximal
   letI : Field (𝓞 F ⧸ I.val) := Ideal.Quotient.field I.val
@@ -51,39 +50,43 @@ theorem principal_row_unitResidue_transport (A : SArithmeticData F) (p : ThetaBr
     apply (div_eq_iff hdq).mpr
     apply E.injective
     simpa only [map_mul, E.apply_symm_apply] using heq.symm
-  by_cases hx : ThetaBranch.order p.val (ThetaReflectionData.rowUnit A ⟨t, ht⟩) = 0
+  let rowUnit₀ := ThetaReflectionData.rowUnit A ⟨t, ht⟩
+  by_cases hx : ThetaBranch.order p.val (rowUnit₀) = 0
   · have hn : n ∉ p.val.asIdeal := by
       apply p.val.valuation_eq_one_iff_notMem (K := F) |>.mp
       rw [hnval]
-      have hh : WithZero.log (p.val.valuation F (t : F)) = 0 := neg_eq_zero.mp hx
-      have hne : p.val.valuation F (t : F) ≠ 0 :=
+      have hh : WithZero.log (valuation₀) = 0 := neg_eq_zero.mp hx
+      have hne : valuation₀ ≠ 0 :=
         (Valuation.ne_zero_iff _).mpr (by exact_mod_cast ht)
       rw [← WithZero.exp_log hne, hh, WithZero.exp_zero]
     have hr : ThetaBranch.IsUnitResidue p.val
-        (ThetaReflectionData.rowUnit A ⟨t, ht⟩)
+        (rowUnit₀)
         (Ideal.Quotient.mk I.val n / Ideal.Quotient.mk I.val (d : 𝓞 F)) :=
       ⟨n, d, hn, d.property, hdiv, rfl⟩
-    have hu : ThetaBranch.unitResidue p.val (ThetaReflectionData.rowUnit A ⟨t, ht⟩) =
-        Ideal.Quotient.mk I.val n / Ideal.Quotient.mk I.val (d : 𝓞 F) :=
+    have hu : ThetaBranch.unitResidue p.val (rowUnit₀) =
+        Ideal.Quotient.mk I.val n / Ideal.Quotient.mk I.val d :=
       (ThetaBranch.existsUnique_unitResidue p.val
-      (ThetaReflectionData.rowUnit A ⟨t, ht⟩) hx).unique
+      (rowUnit₀) hx).unique
       (by simpa only [ThetaBranch.unitResidue, dif_pos hx] using
         (ThetaBranch.existsUnique_unitResidue p.val
-          (ThetaReflectionData.rowUnit A ⟨t, ht⟩) hx).exists.choose_spec) hr
+          (rowUnit₀) hx).exists.choose_spec) hr
     rw [hu]
     exact hred
   · have hn : n ∈ p.val.asIdeal := by
       by_contra hn
       apply hx
-      change -WithZero.log (p.val.valuation F (t : F)) = 0
+      change -WithZero.log (valuation₀) = 0
       rw [← hnval, p.val.valuation_eq_one_iff_notMem.mpr hn]
       simp
     rw [ThetaBranch.unitResidue, dif_neg hx, map_zero]
     have hnq : Ideal.Quotient.mk I.val n = 0 := Ideal.Quotient.eq_zero_iff_mem.mpr hn
     simpa only [hnq, zero_div, map_zero] using hred
 
-theorem principal_prime_residueCharacter_transport
-    (A : SArithmeticData F) (σ : F →+* ℂ) (p : ThetaBranch.ExteriorPrime A)
+section
+
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
+
+theorem principal_prime_residueCharacter_transport (p : ThetaBranch.ExteriorPrime A)
     (y : DHCubic.Residue F p.val) :
     ThetaBranch.residueCharacter A σ p y =
       A.sexticResiduePowerChar σ (ThetaBranch.primeIdeal A p) 1
@@ -106,7 +109,7 @@ theorem principal_prime_residueCharacter_transport
       exact not_isUnit_zero hh
     rw [MulChar.map_zero, map_zero, map_zero, MulChar.map_nonunit _ hnu]
   · let u := Units.map E.toMonoidHom (Units.mk0 y hy)
-    have hu : (u : A.R ⧸ A.extendIdeal I) = E y := rfl
+    have hu : u = E y := rfl
     obtain ⟨j, hj, hej, hred⟩ := A.sexticResidueFamily_normalized.2.1 I p.val rfl u
     obtain ⟨⟨k, hk, hek⟩, hrek⟩ := hχ y hy
     have hcard : Nat.card (A.R ⧸ A.extendIdeal I) = Fintype.card (DHCubic.Residue F p.val) := by
@@ -118,16 +121,14 @@ theorem principal_prime_residueCharacter_transport
       rw [hu, hcard, ← ArithGaussCRT.exteriorQuotientEquiv_mk A I, ← hek]
       change E (Ideal.Quotient.mk p.val.asIdeal (χ y)) = _
       rw [hrek, map_pow]
-    have hp := A.exterior_sextic_primitive I p.val.isPrime.ne_top
-    have hjk : j = k := hp.pow_inj hj hk (by
+    have hjk := (A.exterior_sextic_primitive I p.val.isPrime.ne_top).pow_inj hj hk (by
       simpa only [← map_pow, pow_mul, map_pow] using hred.trans hredk.symm)
     rw [← hu, MulChar.ofUnitHom_coe]
     change σ (algebraMap (𝓞 F) F (χ y)) = σ ((A.sexticResidueFamily I u : F))
     rw [hej, hek, hjk, map_pow]
     exact congrArg (fun z : F => σ (z ^ (2 * k))) A.primitive_zeta12.coe_toInteger
 
-theorem principal_prime_symbol_eq_sexticResiduePowerChar
-    (A : SArithmeticData F) (σ : F →+* ℂ) (p : ThetaBranch.ExteriorPrime A)
+theorem principal_prime_symbol_eq_sexticResiduePowerChar (p : ThetaBranch.ExteriorPrime A)
     (t : A.R) (ht : t ≠ 0) :
     ThetaBranch.symbol A σ p (ThetaReflectionData.rowUnit A ⟨t, ht⟩) =
       A.sexticResiduePowerChar σ (ThetaBranch.primeIdeal A p) 1
@@ -135,7 +136,7 @@ theorem principal_prime_symbol_eq_sexticResiduePowerChar
   rw [ThetaBranch.symbol, principal_prime_residueCharacter_transport,
     principal_row_unitResidue_transport]
 
-private theorem char_one (A : SArithmeticData F) (σ : F →+* ℂ)
+private theorem char_one
     (I : A.Exterior) (t : A.R) :
     A.sexticResiduePowerChar σ I 1 (Ideal.Quotient.mk (A.extendIdeal I) t) =
       σ (A.sexticResidue I t) := by
@@ -149,11 +150,17 @@ private theorem char_one (A : SArithmeticData F) (σ : F →+* ℂ)
     change 0 = σ (MulChar.ofUnitHom (A.sexticResidueFamily I) _)
     rw [MulChar.map_nonunit _ hx, map_zero]
 
- def primeEval (A : SArithmeticData F) (σ : F →+* ℂ) (t : A.R)
+end
+
+alias PrincipalExteriorCharacter.char_one := char_one
+
+ variable (A : SArithmeticData F) (σ : F →+* ℂ)
+
+def primeEval (t : A.R)
     (q : Ideal (𝓞 F)) : ℂ :=
   if h : q ≠ ⊥ ∧ q ⊔ A.cS = ⊤ then σ (A.sexticResidue ⟨q, h⟩ t) else 1
 
-private theorem residue_factor (A : SArithmeticData F) (σ : F →+* ℂ)
+private theorem residue_factor
     (I : A.Exterior) (t : A.R) :
     σ (A.sexticResidue I t) =
       ((normalizedFactors I.val).map (primeEval A σ t)).prod := by
@@ -167,7 +174,7 @@ private theorem residue_factor (A : SArithmeticData F) (σ : F →+* ℂ)
       exact (J.prop.1 hJ).elim
     | h₂ a ha =>
       intro J hJ
-      have ht : J.val = ⊤ := hJ.trans (Ideal.isUnit_iff.mp ha)
+      have ht := hJ.trans (Ideal.isUnit_iff.mp ha)
       rw [show A.sexticResidue J t = 1 from A.residueValue_top _ J ht t, map_one]
       rw [ht, ← Ideal.one_eq_top, normalizedFactors_one]
       simp
@@ -196,8 +203,7 @@ private theorem residue_factor (A : SArithmeticData F) (σ : F →+* ℂ)
       rfl
   exact hall I.val I rfl
 
-theorem exteriorSexticRowCharacter_eq_sexticResiduePowerChar
-    (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Exterior) (t : A.R) :
+theorem exteriorSexticRowCharacter_eq_sexticResiduePowerChar (I : A.Exterior) (t : A.R) :
     exteriorSexticRowCharacter A σ I t =
       A.sexticResiduePowerChar σ I 1 (Ideal.Quotient.mk (A.extendIdeal I) t) := by
   by_cases ht : t = 0
@@ -220,9 +226,8 @@ theorem exteriorSexticRowCharacter_eq_sexticResiduePowerChar
       apply Subtype.ext
       exact HeightOneSpectrum.asIdeal_injective he
     · intro q hq
-      have hf : q ∈ normalizedFactors I.val := Multiset.mem_toFinset.mp hq
-      have hqprime := (Ideal.mem_normalizedFactors_iff I.property.1).mp hf |>.1
-      let p : HeightOneSpectrum (𝓞 F) := ⟨q, hqprime, (prime_of_normalized_factor q hf).ne_zero⟩
+      have hf := Multiset.mem_toFinset.mp hq
+      let p : HeightOneSpectrum (𝓞 F) := ⟨q, ((Ideal.mem_normalizedFactors_iff I.property.1).mp hf |>.1), (prime_of_normalized_factor q hf).ne_zero⟩
       have hp : p ∈ ThetaBranch.support I.val := by
         simpa only [ThetaBranch.support, Finset.mem_preimage, idealPrimeSupport] using hq
       exact ⟨⟨p, hp⟩, Finset.mem_attach _ _, rfl⟩
@@ -234,7 +239,6 @@ theorem exteriorSexticRowCharacter_eq_sexticResiduePowerChar
       rfl
 
 theorem PrincipalData.character_eq_sexticResiduePowerChar
-    (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : PrincipalData A σ η hS) (I : A.Exterior) (a : A.R)
     (ha : A.Generates I a) (x : FiniteTransform.Residue A.R.toSubring a) :

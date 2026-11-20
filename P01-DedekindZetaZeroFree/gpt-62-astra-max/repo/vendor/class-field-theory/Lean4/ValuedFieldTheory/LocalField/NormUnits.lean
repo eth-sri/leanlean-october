@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 /-!
 # Field norms on unit groups
 
@@ -48,8 +46,7 @@ theorem normUnits_tower
     [Algebra K M] [Algebra M L] [Algebra K L]
     [IsScalarTower K M L] [Module.Free M L] (x : Lˣ) :
     normUnits K M (normUnits M L x) = normUnits K L x := by
-  apply Units.ext
-  exact Algebra.norm_norm
+  exact Units.ext Algebra.norm_norm
 
 end
 

@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -22,18 +20,20 @@ namespace ClassFieldTheory.HilbertPairing
 
 universe u
 
+section
+
+variable {K : Type u} [Field K] {n : ℕ+} (B : HilbertPairing K n)
+
 /-- The Steinberg relation for a pairing on power classes. -/
-def IsSteinberg
-    {K : Type u} [Field K] {n : ℕ+}
-    (B : HilbertPairing K n) : Prop :=
+def IsSteinberg : Prop :=
   ∀ (a : Kˣ) (ha : 1 - (a : K) ≠ 0),
     B.symbol a (Units.mk0 (1 - (a : K)) ha) = 1
 
 /-- Skew-symmetry of a pairing on power classes. -/
-def IsSkewSymmetric
-    {K : Type u} [Field K] {n : ℕ+}
-    (B : HilbertPairing K n) : Prop :=
+def IsSkewSymmetric : Prop :=
   ∀ a b : PowerClassGroup K n, B a b = (B b a)⁻¹
+
+end
 
 /-- Nondegeneracy in both variables of a pairing on power classes. -/
 def IsNondegenerate

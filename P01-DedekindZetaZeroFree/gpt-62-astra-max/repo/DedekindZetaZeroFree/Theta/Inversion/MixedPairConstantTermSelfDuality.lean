@@ -8,7 +8,9 @@ public import DedekindZetaZeroFree.Theta.Periods.AngularAverageClassInvariance
 
 namespace DedekindZetaZeroFree.Hecke
 
-theorem mixedThetaPair_selfdual (F : Type) [Field F] [NumberField F] :
+variable (F : Type) [Field F] [NumberField F]
+
+theorem mixedThetaPair_selfdual :
     ∀ t : ℝ, 0 < t →
       (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).f t =
         (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).g t := by
@@ -40,13 +42,13 @@ theorem mixedThetaPair_selfdual (F : Type) [Field F] [NumberField F] :
         (FractionalIdeal.mk0 F
           (DedekindZetaZeroFree.AbelianQuotient.Theta.inverseClassIdealRepresentative F C)) t)
 
-@[simp] theorem mixedThetaPair_k (F : Type) [Field F] [NumberField F] :
+@[simp] theorem mixedThetaPair_k :
     (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).k = 1 := rfl
 
-@[simp] theorem mixedThetaPair_ε (F : Type) [Field F] [NumberField F] :
+@[simp] theorem mixedThetaPair_ε :
     (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).ε = 1 := rfl
 
-@[simp] theorem mixedThetaPair_f₀_eq_g₀ (F : Type) [Field F] [NumberField F] :
+@[simp] theorem mixedThetaPair_f₀_eq_g₀ :
     (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).f₀ =
       (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).g₀ := rfl
 

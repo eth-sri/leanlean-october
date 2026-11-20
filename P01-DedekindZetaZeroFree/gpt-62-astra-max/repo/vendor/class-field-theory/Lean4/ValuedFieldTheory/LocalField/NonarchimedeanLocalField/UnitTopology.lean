@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -49,11 +47,9 @@ theorem mem_localBaseUnitSubgroup_iff_valuation_eq_one
   · intro hx
     let a : 𝒪[K]ˣ :=
       { val := ⟨(x : K), by
-          rw [Valuation.mem_integer_iff]
           exact hx.le⟩
         inv := ⟨(x⁻¹ : K), by
-          rw [Valuation.mem_integer_iff]
-          simp [hx]⟩
+          simp [Valuation.mem_integer_iff, hx]⟩
         val_inv := by ext; simp
         inv_val := by ext; simp }
     exact ⟨a, by ext; rfl⟩
@@ -66,15 +62,13 @@ theorem localBaseUnitSubgroup_isOpen
     IsOpen (localBaseUnitSubgroup K : Set Kˣ) := by
   have hsphere : IsOpen {x : K | ValuativeRel.valuation K x = 1} :=
     by
-      simpa only [Valuation.restrict_eq_one_iff] using
+      simpa using
         (ValuativeRel.valuation K).isOpen_sphere one_ne_zero
-  have hpre := hsphere.preimage (Units.continuous_val :
-    Continuous (fun x : Kˣ => (x : K)))
   rw [show (localBaseUnitSubgroup K : Set Kˣ) =
       {x : Kˣ | ValuativeRel.valuation K (x : K) = 1} by
     ext x
-    exact mem_localBaseUnitSubgroup_iff_valuation_eq_one K x]
-  exact hpre
+    apply mem_localBaseUnitSubgroup_iff_valuation_eq_one]
+  exact hsphere.preimage Units.continuous_val
 
 end LocalFieldTheory
 

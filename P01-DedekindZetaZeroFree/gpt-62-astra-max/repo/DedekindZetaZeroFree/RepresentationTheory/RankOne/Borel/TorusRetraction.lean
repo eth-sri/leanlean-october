@@ -13,40 +13,23 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 set_option maxHeartbeats 1800000
 set_option backward.isDefEq.respectTransparency false
 
-def upper (x : Adeles F) : KPAdelicCoverRestrictedProduct.AdelicGL2 F :=
+section
+
+variable (x : Adeles F)
+
+def upper : KPAdelicCoverRestrictedProduct.AdelicGL2 F :=
   Matrix.GeneralLinearGroup.transvection 0 1 (by decide) x
-theorem upper_entries (x : Adeles F) (i j : Fin 2) :
+theorem upper_entries (i j : Fin 2) :
     upper F x i j = (!![1, x; 0, 1]) i j := by
   fin_cases i <;> fin_cases j <;> simp [upper, Matrix.transvection]
 
-theorem projected_root (x : Adeles F) :
+theorem projected_root :
     KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ (N F ζ hζ x) =
-      QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) (upper F x) := by
-  change QuotientGroup.mk' _ (KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ
-    (rootTuple F ζ hζ x)) = _
-  congr 1
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  have he : ∀ v, KPAdelicCoverRestrictedProduct.adeleEval F v
-      ((KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ
-        (rootTuple F ζ hζ x)) i j) =
-      KPAdelicCoverRestrictedProduct.adeleEval F v (upper F x i j) := by
-    intro v
-    have h := congrArg (fun A : KPLocalCover.LocalGL2 F v => A i j)
-      (KPAdelicCoverRestrictedProduct.restrictedProjection_eval F ζ hζ (rootTuple F ζ hζ x) v)
-    change KPAdelicCoverRestrictedProduct.adeleEval F v
-      ((KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ (rootTuple F ζ hζ x)) i j) = _ at h
-    rw [h]
-    fin_cases i <;> fin_cases j <;>
-      simp [rootTuple, KPStandardLocalRootLifts.N, KPLocalCover.projection_apply,
-        KPLocalCover.sectionMap, KubotaRankTwo.n, upper_entries]
-  apply Prod.ext
-  · funext w; exact he (Sum.inl w)
-  · apply Subtype.ext; funext q; exact he (Sum.inr q)
+      QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) (upper F x) := by apply @DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility.projected_root <;> assumption
 
-theorem root_mem_borel (x : Adeles F) : N F ζ hζ x ∈ borel F ζ hζ := by
-  refine ⟨upper F x, (projected_root F ζ hζ x).symm, ?_⟩
-  simp [upper_entries]
+end
+
+alias root_mem_borel := DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.borel_root
 
 def torusInBorel : E F ζ hζ →* borel F ζ hζ :=
   Subgroup.inclusion (by
@@ -64,9 +47,8 @@ private theorem root_torus_zero (x : Adeles F) (hx : N F ζ hζ x ∈ E F ζ hζ
   have he : upper F x = A * Matrix.GeneralLinearGroup.scalar (Fin 2) u := by
     change Matrix.GeneralLinearGroup.scalar (Fin 2) u = A⁻¹ * upper F x at hu
     rw [hu]; group
-  have h := congrArg (fun B : KPAdelicCoverRestrictedProduct.AdelicGL2 F => B 0 1) he
   simpa [upper_entries, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar, h01] using h
+    Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar, h01] using (congrArg (fun B : KPAdelicCoverRestrictedProduct.AdelicGL2 F => B 0 1) he)
 
 private theorem correction_trivial {V : Type*} [AddCommGroup V] [Module ℚ V]
     {G₀ H : Type*} [Group G₀] [Group H] (π : G₀ →* H) [Finite π.ker]
@@ -86,12 +68,11 @@ private theorem correction_trivial {V : Type*} [AddCommGroup V] [Module ℚ V]
       map_mul' := by
         intro a b
         apply Subtype.ext
-        have hcomm := Subgroup.mem_center_iff.mp (hc (hk b)) (g a)⁻¹
         simp only [map_mul, mul_inv_rev]
         calc
-          f a * f b * ((g b)⁻¹ * (g a)⁻¹) = f a * (f b * (g b)⁻¹) * (g a)⁻¹ := by group
+          _ = f a * (f b * (g b)⁻¹) * (g a)⁻¹ := by group
           _ = f a * (g a)⁻¹ * (f b * (g b)⁻¹) := by
-            rw [mul_assoc, ← hcomm, ← mul_assoc] }
+            rw [mul_assoc, ← (Subgroup.mem_center_iff.mp (hc (hk b)) (g a)⁻¹), ← mul_assoc]}
   exact mul_inv_eq_one.mp (congrArg Subtype.val (FiniteCentralBorel.finite_character_trivial d x))
 
 theorem torus_conjugates_root (t : E F ζ hζ) (x : Adeles F) :
@@ -105,10 +86,8 @@ theorem torus_conjugates_root (t : E F ζ hζ) (x : Adeles F) :
   have hc : π.ker ≤ Subgroup.center (G F ζ hζ) := by
     rw [← KPAdelicCoverRestrictedProduct.pglCentralInjection_kernel F ζ hζ]
     exact KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
-  let f := (MulAut.conj t.val).toMonoidHom.comp (Nhom F ζ hζ)
-  let g := (Nhom F ζ hζ).comp
-    (AddMonoidHom.toMultiplicative (AddMonoidHom.mulLeft (p F ζ hζ t : Adeles F)))
-  apply correction_trivial π hc f g
+  apply correction_trivial π hc ((MulAut.conj t.val).toMonoidHom.comp (Nhom F ζ hζ)) ((Nhom F ζ hζ).comp
+    (AddMonoidHom.toMultiplicative (AddMonoidHom.mulLeft (p F ζ hζ t : Adeles F))))
   intro y
   change π (t.val * N F ζ hζ y.toAdd * t.val⁻¹) =
     π (N F ζ hζ ((p F ζ hζ t : Adeles F) * y.toAdd))
@@ -157,21 +136,26 @@ private theorem factor_unique (t u : E F ζ hζ) (x y : Adeles F)
     calc
       _ = t.val⁻¹ * (t.val * N F ζ hζ x) * (N F ζ hζ y)⁻¹ := by group
       _ = _ := by rw [h]; group
-  have hx : x - y = 0 := root_torus_zero F ζ hζ _
-    (he ▸ Subgroup.mul_mem _ (Subgroup.inv_mem _ t.property) u.property)
-  have hxy : x = y := sub_eq_zero.mp hx
+  have hxy := sub_eq_zero.mp (root_torus_zero F ζ hζ _
+    (he ▸ Subgroup.mul_mem _ (Subgroup.inv_mem _ t.property) u.property))
   rw [hxy] at h
   exact Subtype.ext (mul_right_cancel h)
 
-def factor (b : borel F ζ hζ) : E F ζ hζ × Adeles F :=
+section
+
+variable (b : borel F ζ hζ)
+
+def factor : E F ζ hζ × Adeles F :=
   ⟨(KPGlobalTorusBorelTwistCompatibility.actual_borel_factorization F ζ hζ b).choose,
     (KPGlobalTorusBorelTwistCompatibility.actual_borel_factorization F ζ hζ b).choose_spec.choose⟩
- theorem factor_spec (b : borel F ζ hζ) :
+ theorem factor_spec :
     b.val = (factor F ζ hζ b).1.val * N F ζ hζ (factor F ζ hζ b).2 :=
   (KPGlobalTorusBorelTwistCompatibility.actual_borel_factorization F ζ hζ b).choose_spec.choose_spec
-theorem factor_torus (b : borel F ζ hζ) (t : E F ζ hζ) (x : Adeles F)
+theorem factor_torus (t : E F ζ hζ) (x : Adeles F)
     (h : b.val = t.val * N F ζ hζ x) : (factor F ζ hζ b).1 = t :=
   factor_unique F ζ hζ _ _ _ _ ((factor_spec F ζ hζ b).symm.trans h)
+
+end
 
 def retraction : borel F ζ hζ →* E F ζ hζ where
   toFun b := (factor F ζ hζ b).1

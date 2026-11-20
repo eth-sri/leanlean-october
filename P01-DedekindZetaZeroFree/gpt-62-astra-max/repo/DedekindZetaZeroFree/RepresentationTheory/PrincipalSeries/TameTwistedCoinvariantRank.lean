@@ -17,9 +17,9 @@ set_option autoImplicit false
 set_option maxHeartbeats 2400000
 set_option synthInstance.maxHeartbeats 400000
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
-variable (S : RawFiniteInducingData F ζ hζ q)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
+    (S : RawFiniteInducingData F ζ hζ q)
 
 local instance ambientPlusAddCommGroup (P : Polarization S.heisenberg) :
     AddCommGroup (sectionSpace S.borel P .plus 0) := inferInstance
@@ -28,8 +28,8 @@ namespace StandardPlusAux
 open KPLocalSmoothRepresentation
 variable (P : Polarization S.heisenberg)
 
- abbrev depth := KPAdelicCoverRestrictedProduct.depth F ζ hζ q
- abbrev hm := KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q
+ abbrev depth := @DedekindZetaZeroFree.KPAdelicCoverRestrictedProduct.depth
+ abbrev hm := @DedekindZetaZeroFree.KPAdelicCoverRestrictedProduct.depth_admissible
  def bEq : S.borel.B ≃* Borel F ζ hζ q :=
   MulEquiv.subgroupCongr S.borel_eq
  def rawAction := (inducingAction S.borel P .plus 0).comp
@@ -75,15 +75,14 @@ private theorem raw_root (x : Multiplicative (LocalField F q)) :
   have hb : b = t * KPJacquetTwistedCell.rootToBorel F ζ hζ q x := Subtype.ext hx
   have hr : rawAction F ζ hζ q S P b = rawAction F ζ hζ q S P t := by
     rw [hb, map_mul, raw_root, mul_one]
-  have hd := KPLocalInductionJacquetReciprocity.dB_retraction F ζ hζ q
-    (depth F ζ hζ q) (hm F ζ hζ q) b
   change ((((dB F ζ hζ q b : ℝ≥0) : ℝ) : ℂ)) •
     ((invHalf F ζ hζ q t : ℂ) • rawAction F ζ hζ q S P t v) = _
   rw [smul_smul, hr]
   have hi : (invHalf F ζ hζ q t : ℂ) =
       ((((dB F ζ hζ q b : ℝ≥0) : ℝ) : ℂ)⁻¹) := by
     change ((((dB F ζ hζ q t : ℝ≥0) : ℝ) : ℂ)⁻¹) = _
-    rw [show dB F ζ hζ q t = dB F ζ hζ q b from hd]
+    rw [show dB F ζ hζ q t = dB F ζ hζ q b from (KPLocalInductionJacquetReciprocity.dB_retraction F ζ hζ q
+      (depth F ζ hζ q) (hm F ζ hζ q) b)]
   rw [hi, mul_inv_cancel₀ (Complex.ofReal_ne_zero.mpr
     (NNReal.coe_ne_zero.mpr (Units.ne_zero _))), one_smul]
 private theorem scalar_lc : IsLocallyConstant (fun b : S.borel.B =>
@@ -136,15 +135,12 @@ private theorem torus_smooth : SmoothRepresentation (torusAction F ζ hζ q S P)
     have hp : Continuous (projection F ζ hζ q) := by
       have ho : Continuous (ordinaryPGLMap F q) := by
         apply (QuotientGroup.isQuotientMap_mk (KPPGLLocalCover.scalarSubgroup F (Sum.inr q))).continuous_iff.mpr
-        change Continuous (Matrix.ProjGenLinGroup.mk (n := Fin 2) (R := LocalField F q))
         exact (QuotientGroup.isQuotientMap_mk _).continuous
       exact ho.comp (KPPGLLocalCover.finite_topological_cover F ζ hζ q
         (depth F ζ hζ q) (hm F ζ hζ q)).2.2.2.1.continuous
-    have hd := KPRankOneInduction.dB_locallyConstant F q (projection F ζ hζ q) hp
-    let D : OpenSubgroup (Borel F ζ hζ q) := ⟨(dB F ζ hζ q).ker, hd.isOpen_fiber 1⟩
     intro v
     obtain ⟨J, hJ⟩ := raw_smooth F ζ hζ q S P v
-    refine ⟨J ⊓ D, ?_⟩
+    refine ⟨J ⊓ (⟨(dB F ζ hζ q).ker, (KPRankOneInduction.dB_locallyConstant F q (projection F ζ hζ q) hp).isOpen_fiber 1⟩), ?_⟩
     intro b hb
     change (invHalf F ζ hζ q b : ℂ) • rawAction F ζ hζ q S P b v = v
     have hi : (invHalf F ζ hζ q b : ℂ) = 1 := by
@@ -188,14 +184,13 @@ private theorem toRaw_surjective : Function.Surjective (toRaw F ζ hζ q S P) :=
         rw [show normalizedSectionRepresentation _ _ _ b (f.val g) =
           rawAction F ζ hζ q S P b (f.val g) from norm_action F ζ hζ q S P _ _]
         exact f.property.1 ((bEq F ζ hζ q S).symm b) g⟩
-  have hf₀ : f₀ ∈ SmoothInd _ _ _ := by
-    apply (mem_smoothSubmodule _ _).mpr
-    obtain ⟨J, hJ⟩ := f.property.2
-    refine ⟨J, ?_⟩
-    intro a ha
-    apply Subtype.ext
-    exact hJ a ha
-  exact ⟨⟨f₀, hf₀⟩, rfl⟩
+  refine ⟨⟨f₀, ?_⟩, rfl⟩
+  apply (mem_smoothSubmodule _ _).mpr
+  obtain ⟨J, hJ⟩ := f.property.2
+  refine ⟨J, ?_⟩
+  intro a ha
+  apply Subtype.ext
+  exact hJ a ha
  def toRawIntertwiner :
     (KPJacquetClosedCellBump.inducedRepresentation F ζ hζ q
       (depth F ζ hζ q) (hm F ζ hζ q)
@@ -227,15 +222,14 @@ private theorem frequencyCharacter_continuous_nontrivial :
       KPKirillovProjectorGerms.frequencyCharacter F q 1 ≠ 1 := by
   refine ⟨?_, ?_⟩
   · exact continuous_circleToUnits.comp ((continuous_localFiniteCharacter F q).comp
-      (continuous_const.mul (continuous_toAdd (X := LocalField F q))))
+      (continuous_const.mul (continuous_toAdd)))
   · intro h
-    have hx : ∀ y : LocalField F q, localFiniteCharacter F q ((1 : LocalField F q) * y) = 1 := by
-      intro y
-      have hy := congrArg (fun χ : Multiplicative (LocalField F q) →* ℂˣ =>
-        χ (Multiplicative.ofAdd y)) h
-      simp only [MonoidHom.one_apply] at hy
-      exact circleToUnits_injective (by rw [map_one]; exact hy)
-    exact one_ne_zero ((localFiniteCharacter_nondegenerate F q 1).mp hx)
+    refine one_ne_zero ((localFiniteCharacter_nondegenerate F q 1).mp ?_)
+    intro y
+    have hy := congrArg (fun χ : Multiplicative (LocalField F q) →* ℂˣ =>
+      χ (Multiplicative.ofAdd y)) h
+    simp only [MonoidHom.one_apply] at hy
+    exact circleToUnits_injective (by rw [map_one]; exact hy)
 
 theorem standard_plus_coinvariant_rank_le_three
     (P : Polarization S.heisenberg)
@@ -259,47 +253,34 @@ theorem standard_plus_coinvariant_rank_le_three
     (KPKirillovProjectorGerms.frequencyCharacter F q 1) hψc hψne
   letI : AddCommGroup (StandardPlusAux.actualInd F ζ hζ q S P) :=
     StandardPlusAux.actualAdd F ζ hζ q S P
+  let inducedRepresentation₀ := KPJacquetClosedCellBump.inducedRepresentation F ζ hζ q (StandardPlusAux.depth F ζ hζ q) (StandardPlusAux.hm F ζ hζ q) (KPJacquetTwistedCell.coefficientRepresentation F ζ hζ q (StandardPlusAux.torusAction F ζ hζ q S P))
   have hY : Module.rank ℂ (RootCoinvariants
-      (KPJacquetClosedCellBump.inducedRepresentation F ζ hζ q
-        (StandardPlusAux.depth F ζ hζ q) (StandardPlusAux.hm F ζ hζ q)
-        (KPJacquetTwistedCell.coefficientRepresentation F ζ hζ q
-          (StandardPlusAux.torusAction F ζ hζ q S P)))
+      (inducedRepresentation₀)
       (KPLocalSmoothRepresentation.upperRoot F ζ hζ q)
       (KPKirillovProjectorGerms.frequencyCharacter F q 1)) =
       (3 : Cardinal) := by
     haveI : Module.Finite ℂ (RootCoinvariants
-      (KPJacquetClosedCellBump.inducedRepresentation F ζ hζ q
-        (StandardPlusAux.depth F ζ hζ q) (StandardPlusAux.hm F ζ hζ q)
-        (KPJacquetTwistedCell.coefficientRepresentation F ζ hζ q
-          (StandardPlusAux.torusAction F ζ hζ q S P)))
+      (inducedRepresentation₀)
       (KPLocalSmoothRepresentation.upperRoot F ζ hζ q)
       (KPKirillovProjectorGerms.frequencyCharacter F q 1)) := e.symm.finiteDimensional
     rw [← Module.finrank_eq_rank]
     rw [e.finrank_eq]
     obtain ⟨ξ, hξ⟩ := hroot
-    let ζ3 : LocalField F q := ξ ^ 4
+    let ζ3 := ξ ^ 4
     have hζ3 : IsPrimitiveRoot ζ3 3 := by
-      have h := hξ.pow_of_dvd (p := 4) (by norm_num) (by norm_num)
-      simpa [ζ3] using h
+      simpa [ζ3] using (hξ.pow_of_dvd (by norm_num) (by norm_num))
     have htame : (3 : (valuation (LocalField F q)).integer) ∉
         IsLocalRing.maximalIdeal ((valuation (LocalField F q)).integer) := by
       intro hmem
       apply ht
-      have h0 : (3 : IsLocalRing.ResidueField (valuation (LocalField F q)).integer) = 0 := by
-        change (Ideal.Quotient.mk (IsLocalRing.maximalIdeal
-          (valuation (LocalField F q)).integer)
-          (3 : (valuation (LocalField F q)).integer)) = 0
-        exact Ideal.Quotient.eq_zero_iff_mem.mpr hmem
-      exact CharP.ringChar_of_prime_eq_zero Nat.prime_three h0
+      apply CharP.ringChar_of_prime_eq_zero Nat.prime_three
+      exact Ideal.Quotient.eq_zero_iff_mem.mpr hmem
     rw [(finite_heisenberg_induction S.heisenberg P).2.2.2.2.2,
       Nat.card_congr S.cubeClassEquiv.toEquiv,
       KPLocalTorus.card_cubeClasses_tame (LocalField F q) ζ3 hζ3 htame]
     norm_num
   have hsurj : Function.Surjective (rootCoinvariantsMap
-      (KPJacquetClosedCellBump.inducedRepresentation F ζ hζ q
-        (StandardPlusAux.depth F ζ hζ q) (StandardPlusAux.hm F ζ hζ q)
-        (KPJacquetTwistedCell.coefficientRepresentation F ζ hζ q
-          (StandardPlusAux.torusAction F ζ hζ q S P)))
+      (inducedRepresentation₀)
       (IPlus S.borel P) (KPLocalSmoothRepresentation.upperRoot F ζ hζ q)
       (KPKirillovProjectorGerms.frequencyCharacter F q 1)
       (StandardPlusAux.toRawIntertwiner F ζ hζ q S P)) := by
@@ -315,10 +296,7 @@ theorem standard_plus_coinvariant_rank_le_three
         (KPLocalSmoothRepresentation.upperRoot F ζ hζ q)
         (KPKirillovProjectorGerms.frequencyCharacter F q 1)) := by rw [hr]
     _ ≤ Module.rank ℂ (RootCoinvariants
-        (KPJacquetClosedCellBump.inducedRepresentation F ζ hζ q
-          (StandardPlusAux.depth F ζ hζ q) (StandardPlusAux.hm F ζ hζ q)
-          (KPJacquetTwistedCell.coefficientRepresentation F ζ hζ q
-            (StandardPlusAux.torusAction F ζ hζ q S P)))
+        (inducedRepresentation₀)
         (KPLocalSmoothRepresentation.upperRoot F ζ hζ q)
         (KPKirillovProjectorGerms.frequencyCharacter F q 1)) :=
         LinearMap.rank_le_of_surjective _ hsurj

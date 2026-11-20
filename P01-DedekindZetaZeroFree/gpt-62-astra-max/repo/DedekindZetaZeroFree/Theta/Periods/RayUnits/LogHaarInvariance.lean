@@ -32,17 +32,17 @@ theorem rayUnitPeriodicLogHaarIntegral_translation
   let L := RayCoset.rayUnitLogLattice F m
   let D := RayCoset.rayUnitHalfOpenDomain F m hm
   let μ := Theta.normalizedLogHaar F
-  have hD : IsAddFundamentalDomain L D μ :=
+  have hD :=
     RayCoset.isAddFundamentalDomain_rayUnitHalfOpenDomain F m hm
   letI : VAddInvariantMeasure L (RayCoset.logHyperplane F) μ := ⟨fun g s hs =>
-    (measurePreserving_add_left μ (g : RayCoset.logHyperplane F)).measure_preimage
+    (measurePreserving_add_left μ g).measure_preimage
       hs.nullMeasurableSet⟩
   have hp : ∀ (g : L) h, f (g +ᵥ h) = f h := by
     intro g h
-    change f ((g : RayCoset.logHyperplane F) + h) = f h
+    change f (g + h) = f h
     rw [add_comm]
     exact hperiodic g h
-  let e : RayCoset.logHyperplane F ≃ᵐ RayCoset.logHyperplane F :=
+  let e :=
     MeasurableEquiv.addRight v
   have he : MeasurePreserving e μ μ :=
     ⟨e.measurable, by simpa [e] using map_add_right_eq_self μ v⟩
@@ -50,8 +50,6 @@ theorem rayUnitPeriodicLogHaarIntegral_translation
     apply hD.image_of_equiv e.toEquiv ?_ (Equiv.refl L) ?_
     · exact (measurePreserving_add_right μ (-v)).quasiMeasurePreserving
     · intro g h
-      change ((g : RayCoset.logHyperplane F) + h) + v =
-        (g : RayCoset.logHyperplane F) + (h + v)
       exact add_assoc _ _ _
   calc
     _ = ∫ h in e '' D, f h ∂μ :=

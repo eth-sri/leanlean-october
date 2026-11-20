@@ -31,7 +31,7 @@ private theorem borelDescends_of_continuous_surjective
     rw [measurable_iff_comap_le]
     have hmap : MeasurableSpace.map q ‹MeasurableSpace Ω› = ‹MeasurableSpace B› := by
       rw [Continuous.map_eq_borel hq hsurj]
-      exact (BorelSpace.measurable_eq (α := B)).symm
+      exact (BorelSpace.measurable_eq).symm
     rw [← hmap, ← MeasurableSpace.comap_le_iff_le_map,
       MeasurableSpace.comap_comp, hcomp]
     exact hf.comap_le
@@ -46,30 +46,26 @@ open KPContSectorPhaseComponentCharts KPContSectorCoveredQuotientVocabulary
 open KPContActualCotangentCountableShrinking
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
-private lemma projection_orbit {i : Fin (H.atlas U).componentCount}
-    {y z : SymmetricSpace F}
-    (h : KPCuspSiegel.projection F (Component F ζ hζ U R P H i) y =
-      KPCuspSiegel.projection F (Component F ζ hζ U R P H i) z) :
-    ∃ γ : Component F ζ hζ U R P H i, γ • z = y := by
-  have hrel : MulAction.orbitRel (Component F ζ hζ U R P H i) (SymmetricSpace F) y z :=
-    Quotient.exact h
-  exact MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp hrel)
+section
+
+variable (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
+    (O : OrbifoldChart F ζ hζ U R P H i x)
+
+local notation "LevelComponent" => Component F ζ hζ U R P H
 
 private lemma exists_stabilizer_smul_of_projection_eq
-    (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x)
     {y z : SymmetricSpace F} (hy : y ∈ O.neighborhood) (hz : z ∈ O.neighborhood)
-    (h : KPCuspSiegel.projection F (Component F ζ hζ U R P H i) y =
-      KPCuspSiegel.projection F (Component F ζ hζ U R P H i) z) :
-    ∃ σ : MulAction.stabilizer (Component F ζ hζ U R P H i) x,
+    (h : KPCuspSiegel.projection F (LevelComponent i) y =
+      KPCuspSiegel.projection F (LevelComponent i) z) :
+    ∃ σ : MulAction.stabilizer (LevelComponent i) x,
       (σ.val : KPCuspArithmetic.PGL2 F) • z = y := by
-  obtain ⟨γ, hγ⟩ := projection_orbit (F := F) (ζ := ζ) (hζ := hζ) (U := U)
-    (R := R) (P := P) (H := H) h
+  obtain ⟨γ, hγ⟩ := (by
+    exact MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp (Quotient.exact h)))
   have himg : y ∈ (fun w : SymmetricSpace F => complexProjectiveEmbedding F γ • w) ''
       O.neighborhood :=
     ⟨z, hz, by
@@ -86,37 +82,29 @@ private lemma exists_stabilizer_smul_of_projection_eq
   rw [← complexProjectiveEmbedding_smul F γ x]
   exact hfix
 
-def actualChartProjection (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) :
+def actualChartProjection :
     O.neighborhood → baseChartImage F ζ hζ U R P H i x O :=
   fun y => ⟨(H.atlas U).components
-    ⟨i, KPCuspSiegel.projection F (Component F ζ hζ U R P H i) y.val⟩,
-      ⟨KPCuspSiegel.projection F (Component F ζ hζ U R P H i) y.val,
+    ⟨i, KPCuspSiegel.projection F (LevelComponent i) y.val⟩,
+      ⟨KPCuspSiegel.projection F (LevelComponent i) y.val,
         ⟨y.val, y.property, rfl⟩, rfl⟩⟩
 
-def actualChartAction (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x)
-    (σ : MulAction.stabilizer (Component F ζ hζ U R P H i) x)
+def actualChartAction
+    (σ : MulAction.stabilizer (LevelComponent i) x)
     (y : O.neighborhood) : O.neighborhood :=
   (σ • ((1 : PhaseSheets F ζ hζ U), y)).2
 
 theorem actual_chart_borel_descent
-    (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x)
     {S : Type*} [MeasurableSpace S] (f : O.neighborhood → S) (hf : Measurable f)
     (hinv : ∀ σ y, f (actualChartAction F ζ hζ U R P H i x O σ y) = f y) :
     BorelDescends (actualChartProjection F ζ hζ U R P H i x O) f := by
   haveI : PolishSpace O.neighborhood := O.isOpen.polishSpace
   refine borelDescends_of_continuous_surjective (actualChartProjection F ζ hζ U R P H i x O)
     ?_ ?_ f hf ?_
-  · have hF0 : Continuous (fun y : O.neighborhood =>
-        (H.atlas U).components ⟨i,
-          KPCuspSiegel.projection F (Component F ζ hζ U R P H i) y.val⟩) :=
-      ((H.atlas U).components.continuous_toFun).comp
-        (continuous_sigmaMk.comp
-          (continuous_quotient_mk'.comp continuous_subtype_val))
-    exact Continuous.subtype_mk hF0 (fun y =>
-      ⟨KPCuspSiegel.projection F (Component F ζ hζ U R P H i) y.val,
+  · exact Continuous.subtype_mk (((H.atlas U).components.continuous_toFun).comp
+      (continuous_sigmaMk.comp
+        (continuous_quotient_mk'.comp continuous_subtype_val))) (fun y =>
+      ⟨KPCuspSiegel.projection F (LevelComponent i) y.val,
         ⟨y.val, y.property, rfl⟩, rfl⟩)
   · intro b
     obtain ⟨v, ⟨w, hw, hvw⟩, hv⟩ := b.property
@@ -126,32 +114,31 @@ theorem actual_chart_borel_descent
     rw [hvw]
     exact hv
   · intro y z hyz
-    have hproj : KPCuspSiegel.projection F (Component F ζ hζ U R P H i) y.val =
-        KPCuspSiegel.projection F (Component F ζ hζ U R P H i) z.val := by
+    have hproj : KPCuspSiegel.projection F (LevelComponent i) y.val =
+        KPCuspSiegel.projection F (LevelComponent i) z.val := by
       have h1 : (H.atlas U).components ⟨i,
-            KPCuspSiegel.projection F (Component F ζ hζ U R P H i) y.val⟩ =
+            KPCuspSiegel.projection F (LevelComponent i) y.val⟩ =
           (H.atlas U).components ⟨i,
-            KPCuspSiegel.projection F (Component F ζ hζ U R P H i) z.val⟩ := by
+            KPCuspSiegel.projection F (LevelComponent i) z.val⟩ := by
         have := congrArg (fun t : baseChartImage F ζ hζ U R P H i x O =>
           (t : KPFiniteCuspAtlas.rawXU F ζ hζ U)) hyz
         simpa only [actualChartProjection] using this
-      have h2 : Sigma.mk i (KPCuspSiegel.projection F (Component F ζ hζ U R P H i) y.val) =
-          Sigma.mk i (KPCuspSiegel.projection F (Component F ζ hζ U R P H i) z.val) :=
-        (H.atlas U).components.injective h1
-      injection h2 with _ hbb
+      injection ((H.atlas U).components.injective h1) with _ hbb
     obtain ⟨σ, hσ⟩ := exists_stabilizer_smul_of_projection_eq F ζ hζ U R P H i x O
       y.property z.property hproj
     have hact : actualChartAction F ζ hζ U R P H i x O σ z = y := by
       apply Subtype.ext
-      show ((σ • ((1 : PhaseSheets F ζ hζ U), z)).2 : SymmetricSpace F) = (y : SymmetricSpace F)
+      show ((σ • ((1 : PhaseSheets F ζ hζ U), z)).2 : SymmetricSpace F) = y
       have h2 : ((σ • ((1 : PhaseSheets F ζ hζ U), z)).2 : SymmetricSpace F) =
-          (σ.val : KPCuspArithmetic.PGL2 F) • (z : SymmetricSpace F) :=
+          σ.val • z :=
         congrArg Prod.snd (chartProduct_smul F ζ hζ U R P H i x O σ
           (1 : PhaseSheets F ζ hζ U) z)
       rw [h2]
       exact hσ
     rw [← hact]
     exact hinv σ z
+
+end
 
 theorem shrunk_chart_borel_descent
     (C : ShrunkChart F ζ hζ U R P H)
@@ -175,7 +162,6 @@ theorem shrunk_chart_borel_descent
     obtain ⟨y, hy⟩ := b.property
     exact ⟨y, Subtype.ext hy⟩
   · intro y z hyz
-    have hbase : C.toBase y = C.toBase z := Subtype.ext_iff.mp hyz
     have hproj : KPCuspSiegel.projection F (Component F ζ hζ U R P H C.component) y.val =
         KPCuspSiegel.projection F (Component F ζ hζ U R P H C.component) z.val := by
       have h1 : (H.atlas U).components ⟨C.component,
@@ -186,13 +172,8 @@ theorem shrunk_chart_borel_descent
             (KPCuspSiegel.projection F (Component F ζ hζ U R P H C.component) y.val)).symm,
           ← ((H.atlas U).components_formula C.component
             (KPCuspSiegel.projection F (Component F ζ hζ U R P H C.component) z.val)).symm]
-        exact hbase
-      have h2 : Sigma.mk C.component
-            (KPCuspSiegel.projection F (Component F ζ hζ U R P H C.component) y.val) =
-          Sigma.mk C.component
-            (KPCuspSiegel.projection F (Component F ζ hζ U R P H C.component) z.val) :=
-        (H.atlas U).components.injective h1
-      injection h2 with _ hbb
+        exact (Subtype.ext_iff.mp hyz)
+      injection ((H.atlas U).components.injective h1) with _ hbb
     obtain ⟨σ, hσ⟩ := exists_stabilizer_smul_of_projection_eq F ζ hζ U R P H C.component
       C.center C.larger (C.closure_subset (subset_closure y.property))
       (C.closure_subset (subset_closure z.property)) hproj

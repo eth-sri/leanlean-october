@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.RepresentationTheory.RankOne.ComplexRootGeneration
 
 public import DedekindZetaZeroFree.Theta.Periods.TranslatedStandardPeriodNonvanishing
 public import DedekindZetaZeroFree.Eisenstein.Residues.MetaplecticRealizations
@@ -14,19 +15,7 @@ open KPLiteralRaw
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-theorem raw_rationalLift_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
-    rationalLift F ζ hζ (Matrix.ProjGenLinGroup.mk m) =
-      KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-        (KPAdelicCoverRestrictedProduct.rationalHom F ζ hζ m) := by
-  let n := Quotient.out (Matrix.ProjGenLinGroup.mk m)
-  have hn : Matrix.ProjGenLinGroup.mk n = Matrix.ProjGenLinGroup.mk m := Quotient.out_eq' _
-  obtain ⟨z, hz⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hn
-  let φ := (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp
-    (KPAdelicCoverRestrictedProduct.rationalHom F ζ hζ)
-  have hs : φ (Matrix.GeneralLinearGroup.scalar (Fin 2) z) = 1 :=
-    KPRationalAdelicSplitting.rationalScalars_le_ker F ζ hζ ⟨z, rfl⟩
-  change φ n = φ m
-  rw [← hz, map_mul, hs, mul_one]
+alias raw_rationalLift_mk := literal_rationalLift_mk
 
 end DedekindZetaZeroFree.KPLiteralPeriod
 
@@ -48,8 +37,12 @@ private def rootChar : AddChar (KPAdeles F) (G F ζ hζ) where
   map_zero_eq_one' := (KPGlobalTorusFunctionData.Nhom F ζ hζ).map_one
   map_add_eq_mul' := KPGlobalTorusFunctionData.N_add F ζ hζ
 
-private theorem rational_root_invariance
-    (θ : Functions F ζ hζ) (hθ : Automorphic F ζ hζ θ) (t : F) (g : G F ζ hζ) :
+section
+
+variable (θ : Functions F ζ hζ) (hθ : Automorphic F ζ hζ θ)
+
+include hθ in
+private theorem rational_root_invariance (t : F) (g : G F ζ hζ) :
     θ (rootChar F ζ hζ (algebraMap F (KPAdeles F) t) * g) = θ g := by
   have hr := hθ.2.1 (Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n F t)) g
   rw [raw_rationalLift_mk] at hr
@@ -58,12 +51,14 @@ private theorem rational_root_invariance
   rw [KPRationalAdelicSplitting.N_rational]
   exact hr
 
-private theorem rational_diagonal_invariance
-    (θ : Functions F ζ hζ) (hθ : Automorphic F ζ hζ θ) (t : Fˣ) (g : G F ζ hζ) :
+include hθ in
+private theorem rational_diagonal_invariance (t : Fˣ) (g : G F ζ hζ) :
     θ (KPGlobalTorusFunctionData.rationalDiagonalLift F ζ hζ t * g) = θ g := by
   have hr := hθ.2.1 (Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d F t 1)) g
   rw [raw_rationalLift_mk] at hr
   exact hr
+
+end
 
 theorem haar_fourier_vanishing_forces_root_invariance
     (ψ : ContinuousAddChar (KPAdditiveQuotient F))

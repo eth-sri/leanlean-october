@@ -71,17 +71,12 @@ theorem openCell_arch_integral_separation (K : Subgroup (G F ζ hζ))
   let c := fun i => b i * literalArchProduct F ζ hζ K f (openCellFiniteArgument F ζ hζ t) (p i) *
     literalFiniteDeformation F ζ hζ K hK s (openCellFiniteArgument F ζ hζ t) *
     star (adelicTraceCharacter F ((0,t) : KPAdeles F) : ℂ)
-  let k := fun i (a : InfiniteAdeleRing F) => ∏ w,
+  let k := fun i a => ∏ w,
     openCellComplexAmplitude s (h i w) (g w) (archTraceCoordinates F ζ hζ a w)
   have hk (i) := openCellComplexProduct_integral F ζ hζ s hs (h i) g
   have hi : ∀ i, Integrable (fun a => c i * k i a) (KPAdditiveHaar.archMeasure F) :=
     fun i => (hk i).1.const_mul _
-  have hident : (fun a : InfiniteAdeleRing F =>
-      f.val s (KPRationalAdelicSplitting.pglW F ζ hζ *
-        KPGlobalTorusFunctionData.N F ζ hζ (a,t) * archMatrixInsertion F ζ hζ g) *
-      star (adelicTraceCharacter F ((a,t) : KPAdeles F) : ℂ)) =
-      (fun a => ∑ i, c i * k i a) := funext (fun a => he s a t g)
-  rw [hident]
+  rw [(funext (fun a => he s a t g))]
   refine ⟨integrable_finset_sum _ (fun i _ => hi i), ?_⟩
   rw [integral_finset_sum _ (fun i _ => hi i)]
   apply Finset.sum_congr rfl

@@ -31,17 +31,8 @@ abbrev action (v : W) := WildActualMirabolic.rho F ζ hζ v.val
 def localData : LocalEmbeddingData F ζ hζ W (depth (R := R) W) (depth_valid (R := R) W)
     (character W) (fiber D W) (action D W) where
   character_lc v := (KPWildCompactProjectorKirillov.ActualInput.standardCharacter_properties F v.val).1
-  character_ne v := (KPWildCompactProjectorKirillov.ActualInput.standardCharacter_properties F v.val).2.1
-  smooth_genuine v := ⟨WildActualMirabolic.image_smooth F ζ hζ v.val
-    (D.finiteData v.val).inducing (D.finiteData v.val).inducing.polarization
-    (D.finiteData v.val).haar (D.finiteData v.val).haar_integer _ (depth_valid (R := R) W v),
-    WildActualMirabolic.image_genuine F ζ hζ v.val
-    (D.finiteData v.val).inducing (D.finiteData v.val).inducing.polarization
-    (D.finiteData v.val).haar (D.finiteData v.val).haar_integer⟩
+  character_ne v := (KPWildCompactProjectorKirillov.ActualInput.standardCharacter_properties F v.val).2
   j v := WildActualMirabolic.embedding F ζ hζ v.val
-    (D.finiteData v.val).inducing (D.finiteData v.val).inducing.polarization
-    (D.finiteData v.val).haar (D.finiteData v.val).haar_integer _ (depth_valid (R := R) W v)
-  injective v := WildActualMirabolic.embedding_injective F ζ hζ v.val
     (D.finiteData v.val).inducing (D.finiteData v.val).inducing.polarization
     (D.finiteData v.val).haar (D.finiteData v.val).haar_integer _ (depth_valid (R := R) W v)
   equivariant v p x := WildActualMirabolic.embedding_equivariant F ζ hζ v.val
@@ -61,10 +52,10 @@ theorem exists_fixed_injective :
         (depth (R := R) W) (depth_valid (R := R) W) (character W) (fiber D W) (action D W)
         (localData D W) f) := by
   choose f hf using fun v : W => KPWildNormalizedCoefficientInsertion.exists_normalized_scalar_section
-    F ζ hζ v.val (depth (R := R) W v) (depth_valid (R := R) W v) (character W v)
+    F ζ hζ v.val (depth W v) (depth_valid W v) (character W v)
     ((localData D W).character_lc v)
   exact ⟨f,hf,KPWildNormalizedCoefficientInsertion.fixedCoefficientMap_injective F ζ hζ W
-    (depth (R := R) W) (depth_valid (R := R) W) (character W) (fiber D W) (action D W)
+    (depth W) (depth_valid W) (character W) (fiber D W) (action D W)
     (localData D W) f hf⟩
 end DedekindZetaZeroFree.FourierContinuation.WildCurrentTensor
 

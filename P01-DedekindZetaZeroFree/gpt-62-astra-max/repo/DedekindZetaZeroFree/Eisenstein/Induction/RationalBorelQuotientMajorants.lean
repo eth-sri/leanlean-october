@@ -1,4 +1,6 @@
 module
+public import DedekindZetaZeroFree.Eisenstein.ConstantTerms.TwoCellFormulaAndOutgoingProfiles
+public import DedekindZetaZeroFree.Eisenstein.Induction.FlatSectionContinuity
 
 public import DedekindZetaZeroFree.Eisenstein.Induction.Height.ChamberCosetBounds
 
@@ -11,40 +13,14 @@ open scoped Classical NumberField NNReal Topology
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {T : KPMsRationalCompactCrossPairing.ModelData F ζ hζ}
-variable {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ T D R P H)
+    {T : KPMsRationalCompactCrossPairing.ModelData F ζ hζ}
+    {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ T D R P H)
 
-private theorem normalized_mem
-    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-    (g : KPMsRationalCompactCrossPairing.G F ζ hζ) :
-    KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D
-      ((KPMsFixedHaarDisintegration.radialSection F ζ hζ
-        (H.disintegration (A.atlasLevel U)).radial.slot
-        ⟨((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D g : ℝ≥0) : ℝ),
-          NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr (Units.ne_zero _))⟩)⁻¹ * g) = 1 := by
-  let B := (H.disintegration (A.atlasLevel U)).radial
-  let r : KPMsFixedHaarDisintegration.Radius :=
-    ⟨((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D g : ℝ≥0) : ℝ),
-      NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr (Units.ne_zero _))⟩
-  let t := KPGlobalTorusFunctionData.torusArchChart F ζ hζ
-    (KPMsFixedHaarDisintegration.positiveSlots F B.slot r)
-  have hd : KPGlobalTorusFunctionData.delta F ζ hζ t =
-      KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D g := by
-    apply Units.ext
-    apply NNReal.eq
-    exact KPMsRationalCompactCrossPairing.compact_radialSection_delta B r
-  change KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D
-    ((t⁻¹).val * g) = 1
-  have hN : KPGlobalTorusFunctionData.N F ζ hζ 0 = 1 :=
-    (KPGlobalTorusFunctionData.Nhom F ζ hζ).map_one
-  have h := KPGlobalTorusBorelTwistCompatibility.iwasawaNorm_borel_mul
-    F ζ hζ D (t⁻¹) 0 g
-  rw [hN, mul_one] at h
-  rw [h, map_inv, hd, inv_mul_cancel]
+private alias normalized_mem := Actual.FlatSectionContinuity.normalized_mem
 
 theorem source_radial_norm (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
     (s : ℂ) (r : KPMsFixedHaarDisintegration.Radius)
@@ -97,19 +73,12 @@ open scoped Classical NumberField NNReal
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm
 open KPLiteralExceptionalResidue KPChamberHeight
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {T : KPMsRationalCompactCrossPairing.ModelData F ζ hζ}
-variable {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ T D R P H)
-
-private theorem torus_root_upper (t : KPGlobalTorusFunctionData.E F ζ hζ)
-    (x : KPAdeles F) :
-    ∃ B : KPChamberHeight.AdelGL F, B 1 0 = 0 ∧
-      Matrix.ProjGenLinGroup.mk B = coveredHeightProjection F ζ hζ
-        (t.val * KPGlobalTorusFunctionData.N F ζ hζ x) := by
-  exact covered_torus_root_upper F ζ hζ t x
+    {T : KPMsRationalCompactCrossPairing.ModelData F ζ hζ}
+    {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ T D R P H)
 
 theorem source_actual_height_decay (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
     (f : KPMsRationalCompactCrossPairing.Vplus F ζ hζ D)
@@ -119,34 +88,27 @@ theorem source_actual_height_decay (U : KPMsRationalCompactCrossPairing.Level F 
         (coveredHeightProjection F ζ hζ g)) ^ (-2 * (2 / 3 + s.re)) := by
   obtain ⟨B, hB, hb⟩ := source_iwasawa_norm_bound A U f
   obtain ⟨m, M, hm, hmM, hdist⟩ := actualBaseRowHeight_compact_upper_bounds F ζ hζ D.K D.compact
-  have hM : 0 < M := hm.trans_le hmM
-  let a : ℝ := 2 / 3 + s.re
-  have ha : 0 ≤ a := by dsimp [a]; linarith
-  have hq : -2 * a ≤ 0 := mul_nonpos_of_nonpos_of_nonneg (by norm_num) ha
+  have hM := hm.trans_le hmM
+  let a := 2 / 3 + s.re
   refine ⟨B * (M⁻¹) ^ (-2 * a), mul_nonneg hB (Real.rpow_nonneg (inv_nonneg.mpr hM.le) _), fun g => ?_⟩
   obtain ⟨t, x, k, hg⟩ := D.decomposition g
-  obtain ⟨C, hC, hproj⟩ := torus_root_upper t x
+  obtain ⟨C, hC, hproj⟩ := (covered_torus_root_upper F ζ hζ t x)
   have hd := (hdist C k hC).2
   rw [hproj, ← map_mul, ← hg] at hd
   let h := KPChamberHeight.height F (actualBaseRowLine F) (coveredHeightProjection F ζ hζ g)
   let ht := KPChamberHeight.height F (actualBaseRowLine F)
     (coveredHeightProjection F ζ hζ (t.val * KPGlobalTorusFunctionData.N F ζ hζ x))
   have hh : 0 < h := height_pos F _ _
-  have hht : 0 < ht := height_pos F _ _
-  have hlow : M⁻¹ * h ≤ ht := (inv_mul_le_iff₀ hM).mpr hd
-  have hpow : ht ^ (-2 * a) ≤ (M⁻¹ * h) ^ (-2 * a) :=
-    Real.rpow_le_rpow_of_nonpos (mul_pos (inv_pos.mpr hM) hh) hlow hq
   have hdelta : (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) ^ a = ht ^ (-2 * a) := by
     rw [← actualBaseRowHeight_torus_root_modulus F ζ hζ t x]
-    simpa only [Int.cast_neg, Int.cast_ofNat] using (Real.rpow_intCast_mul hht.le (-2) a).symm
+    simpa only [Int.cast_neg, Int.cast_ofNat] using (Real.rpow_intCast_mul (height_pos F _ _).le (-2) a).symm
   calc
-    ‖(A.sourceFlat s f).val g‖ ≤ B * (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) ^ a := by
+    _ ≤ B * (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) ^ a := by
       have hn := KPGlobalTorusBorelTwistCompatibility.iwasawaNorm_formula F ζ hζ D t x k
-      have he := hb s g
       rw [← hg] at hn
-      simpa only [hn, a] using he
+      simpa only [hn, a] using (hb s g)
     _ = B * ht ^ (-2 * a) := by rw [hdelta]
-    _ ≤ B * (M⁻¹ * h) ^ (-2 * a) := mul_le_mul_of_nonneg_left hpow hB
+    _ ≤ B * (M⁻¹ * h) ^ (-2 * a) := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_nonpos (mul_pos (inv_pos.mpr hM) hh) ((inv_mul_le_iff₀ hM).mpr hd) (mul_nonpos_of_nonpos_of_nonneg (by norm_num) (by dsimp [a]; linarith))) hB
     _ = (B * (M⁻¹) ^ (-2 * a)) * h ^ (-2 * a) := by
       rw [Real.mul_rpow (inv_nonneg.mpr hM.le) hh.le]; ring
 
@@ -164,8 +126,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
  def rationalEquiv : Matrix.ProjGenLinGroup (Fin 2) F ≃* KPRationalAdelicSplitting.RationalPGL2 F :=
   QuotientGroup.quotientMulEquivOfEq Matrix.GeneralLinearGroup.center_eq_range_scalar
 @[simp] private theorem rationalEquiv_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
-    rationalEquiv F (Matrix.ProjGenLinGroup.mk m) = KPRationalAdelicSplitting.rationalPGLQuotient F m := by
-  exact QuotientGroup.quotientMulEquivOfEq_mk _ m
+    rationalEquiv F (Matrix.ProjGenLinGroup.mk m) = KPRationalAdelicSplitting.rationalPGLQuotient F m := QuotientGroup.quotientMulEquivOfEq_mk _ m
 @[simp] private theorem rationalEquiv_lift (g : Matrix.ProjGenLinGroup (Fin 2) F) :
     KPRationalAdelicSplitting.rationalPGLHom F ζ hζ (rationalEquiv F g) = KPLiteralRaw.rationalLift F ζ hζ g := by
   induction g using Matrix.ProjGenLinGroup.induction_on with
@@ -174,11 +135,11 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     rfl
 
 variable {T : KPMsRationalCompactCrossPairing.ModelData F ζ hζ}
-variable {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ T D R P H)
+    {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ T D R P H)
 
  theorem literal_compact_majorants
     (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
@@ -193,10 +154,10 @@ variable (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ T D 
     ((KPLiteralExceptionalResidue.coveredHeightProjection F ζ hζ) '' C)
     (hC.image (KPLiteralExceptionalResidue.coveredHeightProjection_continuous F ζ hζ))
   obtain ⟨d, hd, hcompare⟩ := KPChamberHeight.height_one_compare F
-  let a : ℝ := 2 / 3 + s.re
+  let a := 2 / 3 + s.re
   have ha : 1 < a := by dsimp [a]; linarith
   let index := fun q => KPLiteralExceptionalResidue.chamberCosetIndex F q
-  have hinj : Function.Injective index :=
+  have hinj :=
     (KPLiteralExceptionalResidue.chamberCosetIndex_injective F).comp Function.injective_id
   refine ⟨fun q => (B * m ^ (-2 * a)) * KPHeightSeries.term Projectivization.mulHeight a (index q),
     ((KPHeightSeries.relativeHeight_summable_tail F a ha).1.comp_injective hinj).mul_left _, ?_⟩

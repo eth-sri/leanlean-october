@@ -17,8 +17,8 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
 
 abbrev LocalField := q.adicCompletion F
 abbrev Cover := KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr q)
@@ -36,8 +36,10 @@ def signedWeylRaw : RawCover F ζ hζ q :=
   KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) (-1) *
     KPStandardLocalRootLifts.W F ζ hζ (Sum.inr q)
 
+local notation "LocalCompletion" => LocalField F q
+
 theorem signedWeyl_matrix :
-    (signedWeylRaw F ζ hζ q).g = KubotaRankTwo.w (LocalField F q) := by
+    (signedWeylRaw F ζ hζ q).g = KubotaRankTwo.w LocalCompletion := by
   simp only [signedWeylRaw, KPLocalCover.mul_g, KPStandardLocalRootLifts.A,
     KPStandardLocalRootLifts.W, KPLocalCover.sectionMap_g]
   apply Matrix.GeneralLinearGroup.ext
@@ -47,25 +49,25 @@ theorem signedWeyl_matrix :
 
 theorem signedWeyl_eq_prescribed_signed :
     signedWeylRaw F ζ hζ q = KPStandardLocalRootLifts.signedW F ζ hζ (Sum.inr q) := by
-  have hm : KubotaRankTwo.d (LocalField F q) (-1) 1 *
-      KPStandardLocalRootLifts.weylSwap (LocalField F q) =
-      KubotaRankTwo.w (LocalField F q) := by
+  have hm : KubotaRankTwo.d LocalCompletion (-1) 1 *
+      KPStandardLocalRootLifts.weylSwap LocalCompletion =
+      KubotaRankTwo.w LocalCompletion := by
     apply Units.ext
     ext i j
     fin_cases i <;> fin_cases j <;>
       simp [KubotaRankTwo.d, KPStandardLocalRootLifts.weylSwap, KubotaRankTwo.w,
         Matrix.mul_apply]
   have hs : KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
-      (KubotaRankTwo.d (LocalField F q) (-1) 1)
-      (KPStandardLocalRootLifts.weylSwap (LocalField F q)) = 1 := by
+      (KubotaRankTwo.d LocalCompletion (-1) 1)
+      (KPStandardLocalRootLifts.weylSwap LocalCompletion) = 1 := by
     simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, hm,
       KubotaRankTwo.X_w, KubotaRankTwo.X_d, KubotaRankTwo.det_d]
-    have hX : KubotaRankTwo.X (LocalField F q)
-        (KPStandardLocalRootLifts.weylSwap (LocalField F q)) = 1 := by
+    have hX : KubotaRankTwo.X LocalCompletion
+        (KPStandardLocalRootLifts.weylSwap LocalCompletion) = 1 := by
       apply Units.ext
       simp [KubotaRankTwo.X, KubotaRankTwo.x, KPStandardLocalRootLifts.weylSwap]
-    have hd : KubotaRankTwo.det (LocalField F q)
-        (KPStandardLocalRootLifts.weylSwap (LocalField F q)) = -1 := by
+    have hd : KubotaRankTwo.det LocalCompletion
+        (KPStandardLocalRootLifts.weylSwap LocalCompletion) = -1 := by
       apply Units.ext
       simp [KubotaRankTwo.det, KPStandardLocalRootLifts.weylSwap, Matrix.det_fin_two]
     obtain ⟨hL, _, _, _, _, ha⟩ := KPHilbert.B3_laws F ζ hζ (Sum.inr q)
@@ -82,26 +84,32 @@ theorem signedWeyl_eq_prescribed_signed :
 def signedWeyl : Cover F ζ hζ q :=
   KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (signedWeylRaw F ζ hζ q)
 
-def nLift (s : LocalField F q) : Cover F ζ hζ q :=
+def nLift (s : LocalCompletion) : Cover F ζ hζ q :=
   KPPGLLocalCover.N F ζ hζ (Sum.inr q) s
 
-def hLift (v : (LocalField F q)ˣ) : Cover F ζ hζ q :=
+def hLift (v : LocalCompletionˣ) : Cover F ζ hζ q :=
   KPPGLLocalCover.A F ζ hζ (Sum.inr q) (v ^ 2)
 
-def bruhatLeft (v : (LocalField F q)ˣ) (s : LocalField F q) : RawCover F ζ hζ q :=
+section
+
+variable (v : (LocalField F q)ˣ) (s : LocalField F q)
+
+def bruhatLeft : RawCover F ζ hζ q :=
   (signedWeylRaw F ζ hζ q)⁻¹ *
     KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q)) *
     (signedWeylRaw F ζ hζ q)⁻¹ * KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) s
 
-def bruhatRight (v : (LocalField F q)ˣ) (s : LocalField F q) : RawCover F ζ hζ q :=
+def bruhatRight : RawCover F ζ hζ q :=
   KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inr q) v⁻¹ *
     (KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) (v ^ 2) *
       KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q) *
       (signedWeylRaw F ζ hζ q)⁻¹ *
       KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) (s + (v : LocalField F q)))
 
-def kappa (v : (LocalField F q)ˣ) (s : LocalField F q) : rootsOfUnity 3 F :=
+def kappa : rootsOfUnity 3 F :=
   (bruhatLeft F ζ hζ q v s).epsilon / (bruhatRight F ζ hζ q v s).epsilon
+
+end
 
 private theorem signed_bruhat_matrix_aux {L : Type*} [Field L] (v : Lˣ) (z : L) :
     (KubotaRankTwo.w L)⁻¹ * KubotaRankTwo.n L (-((v⁻¹ : Lˣ) : L)) *
@@ -120,7 +128,7 @@ private theorem signed_bruhat_matrix_aux {L : Type*} [Field L] (v : Lˣ) (z : L)
   let A : Matrix.GeneralLinearGroup (Fin 2) L :=
     (KubotaRankTwo.w L)⁻¹ * KubotaRankTwo.n L (-((v⁻¹ : Lˣ) : L)) *
       (KubotaRankTwo.w L)⁻¹ * KubotaRankTwo.n L z
-  let B : Matrix.GeneralLinearGroup (Fin 2) L :=
+  let B :=
     KubotaRankTwo.d L (v ^ 2) 1 * KubotaRankTwo.n L ((v⁻¹ : Lˣ) : L) *
       (KubotaRankTwo.w L)⁻¹ * KubotaRankTwo.n L (z + (v : L))
   change A = Matrix.GeneralLinearGroup.scalar (Fin 2) v⁻¹ * B
@@ -139,7 +147,11 @@ private theorem signed_bruhat_matrix_aux {L : Type*} [Field L] (v : Lˣ) (z : L)
     rw [← mul_assoc, ← map_mul, inv_mul_cancel, map_one, one_mul]
   rw [h, key]
 
-theorem raw_bruhat_identity (v : (LocalField F q)ˣ) (s : LocalField F q) :
+section
+
+variable (v : (LocalField F q)ˣ) (s : LocalField F q)
+
+theorem raw_bruhat_identity :
     bruhatLeft F ζ hζ q v s =
       KPLocalCover.centralInjection F ζ hζ (Sum.inr q) (kappa F ζ hζ q v s) *
         bruhatRight F ζ hζ q v s := by
@@ -166,10 +178,10 @@ theorem raw_bruhat_identity (v : (LocalField F q)ˣ) (s : LocalField F q) :
         bruhatRight F ζ hζ q v s).epsilon
   rw [KPLocalCover.CubicGL2Raw.mk.injEq]
   refine ⟨?_, ?_⟩
-  · simpa only [KPLocalCover.mul_g, KPLocalCover.centralInjection_g, one_mul] using hg
+  · simpa using hg
   · exact he
 
-theorem lifted_bruhat_identity (v : (LocalField F q)ˣ) (s : LocalField F q) :
+theorem lifted_bruhat_identity :
     (signedWeyl F ζ hζ q)⁻¹ *
       nLift F ζ hζ q (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q)) *
       (signedWeyl F ζ hζ q)⁻¹ * nLift F ζ hζ q s =
@@ -177,13 +189,14 @@ theorem lifted_bruhat_identity (v : (LocalField F q)ˣ) (s : LocalField F q) :
       hLift F ζ hζ q v *
       nLift F ζ hζ q ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q) *
       (signedWeyl F ζ hζ q)⁻¹ * nLift F ζ hζ q (s + (v : LocalField F q)) := by
+  let scalarHom₀ := KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inr q)
   have hz : (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
-      (KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inr q) v))⁻¹ = 1 := by
+      (scalarHom₀ v))⁻¹ = 1 := by
     have h1 : KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
-        (KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inr q) v) = 1 :=
+        (scalarHom₀ v) = 1 :=
       (QuotientGroup.eq_one_iff _).mpr
-        (show ∃ y, KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inr q) y =
-          KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inr q) v from ⟨v, rfl⟩)
+        (show ∃ y, scalarHom₀ y =
+          scalarHom₀ v from ⟨v, rfl⟩)
     rw [h1, inv_one]
   have h := congrArg (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q))
     (raw_bruhat_identity F ζ hζ q v s)
@@ -192,6 +205,8 @@ theorem lifted_bruhat_identity (v : (LocalField F q)ˣ) (s : LocalField F q) :
   rw [hz, one_mul] at h
   simpa only [signedWeyl, nLift, hLift, KPPGLLocalCover.centralInjection,
     KPPGLLocalCover.N, KPPGLLocalCover.A, MonoidHom.comp_apply, mul_assoc] using h
+
+end
 
 variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField F q)]
 variable {H D : Type*} [Group H] [TopologicalSpace H] [IsTopologicalGroup H]
@@ -215,27 +230,19 @@ structure Binding
     KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e
   central_coordinate : ∀ e, A.coordinate (centralTorus e) = 1
   eta : rootsOfUnity 3 F →* ℂˣ
-  eta_injective : Function.Injective eta
   genuine : ∀ (ε : Sign) e (V : InducedModule P),
     (borelAction A P ε) (A.torus (centralTorus e)) V = (eta e : ℂ) • V
 
 variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
-variable (P : Polarization T)
+    (P : Polarization T)
 
  def rawAliasOpenBruhatCellBinding (B : Binding F ζ hζ q A P) :
     KPRankOneBruhatKernelTransport.Binding F ζ hζ q A P where
   projection_eq := B.projection_eq
-  weyl_eq := B.weyl_eq
-  upper_eq := B.upper_eq
   rootTorus := B.rootTorus
-  torus_eq := B.torus_eq
   coordinate_eq := B.coordinate_eq
   centralTorus := B.centralTorus
   central_eq := B.central_eq
-  central_coordinate := B.central_coordinate
-  eta := B.eta
-  eta_injective := B.eta_injective
-  genuine := B.genuine
 
 def openCoordinate (s : LocalField F q) : Cover F ζ hζ q :=
   (signedWeyl F ζ hζ q)⁻¹ * nLift F ζ hζ q s
@@ -260,13 +267,10 @@ theorem open_cell_correspondence (B : Binding F ζ hζ q A P) (ε : Sign) (z : �
       obtain ⟨J, hJ⟩ := f.property.2
       rw [IsLocallyConstant.iff_eventually_eq]
       intro g
-      have hc : Continuous (fun y : Cover F ζ hζ q => g⁻¹ * y) :=
-        continuous_const.mul continuous_id
       have hmem : ∀ᶠ y : Cover F ζ hζ q in nhds g, g⁻¹ * y ∈ J :=
-        hc.continuousAt.preimage_mem_nhds (by simpa using J.isOpen.mem_nhds J.one_mem)
+        (continuous_const.mul continuous_id).continuousAt.preimage_mem_nhds (by simpa using J.isOpen.mem_nhds J.one_mem)
       filter_upwards [hmem] with y hy
-      have he := congrFun (hJ (g⁻¹ * y) hy) g
-      simpa [vectorRightTranslation] using he
+      simpa [vectorRightTranslation] using (congrFun (hJ (g⁻¹ * y) hy) g)
     apply hl.comp_continuous
     have hn : Continuous (nLift F ζ hζ q) := by
       have he : nLift F ζ hζ q = fun s =>
@@ -279,15 +283,14 @@ theorem open_cell_correspondence (B : Binding F ζ hζ q A P) (ε : Sign) (z : �
   · intro φ hφlc hφcs
     obtain ⟨f, hf⟩ : ∃ f : sectionSpace A P ε z,
         IsOpenCellSection F ζ hζ q A P ε z f ∧
-          ∀ s, f.val (openCoordinate F ζ hζ q s) = φ s := by
-      exact KPRankOneBruhatKernelTransport.open_cell_extension F ζ hζ q A P
+          ∀ s, f.val (openCoordinate F ζ hζ q s) = φ s := KPRankOneBruhatKernelTransport.open_cell_extension F ζ hζ q A P
         (rawAliasOpenBruhatCellBinding F ζ hζ q A P B) ε z φ hφlc hφcs
     refine ⟨f, hf, ?_⟩
     intro f' hf'
     apply Subtype.ext
     funext g
     by_cases hg : ∃ (b : A.B) (s : LocalField F q),
-        g = (b : Cover F ζ hζ q) * openCoordinate F ζ hζ q s
+        g = b * openCoordinate F ζ hζ q s
     · obtain ⟨b, s, rfl⟩ := hg
       rw [f'.property.1, f.property.1, hf'.2, hf.2]
     · rw [hf'.1.2 g hg, hf.1.2 g hg]

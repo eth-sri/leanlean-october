@@ -12,19 +12,19 @@ open scoped NumberField Classical
 
 variable {F : Type} [Field F] [NumberField F]
 
-private lemma norm_mulChar_unit {R : Type*} [CommRing R] [Fintype R]
-    (χ : MulChar R ℂ) (u : Rˣ) : ‖χ u‖ = 1 := by
-  change ‖((MulChar.equivToUnitHom χ) u : ℂ)‖ = 1
+section
+
+variable {R : Type*} [CommRing R] [Fintype R] (χ : MulChar R ℂ)
+
+private lemma norm_mulChar_unit (u : Rˣ) : ‖χ u‖ = 1 := by
   exact Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)
 
-private lemma norm_mulChar {R : Type*} [CommRing R] [Fintype R]
-    (χ : MulChar R ℂ) (x : R) : ‖χ x‖ ^ 2 = if IsUnit x then 1 else 0 := by
+private lemma norm_mulChar (x : R) : ‖χ x‖ ^ 2 = if IsUnit x then 1 else 0 := by
   split_ifs with hx
   · rw [← hx.unit_spec, norm_mulChar_unit]; norm_num
   · rw [χ.map_nonunit hx]; norm_num
 
-private lemma gauss_parseval {R : Type*} [CommRing R] [Fintype R]
-    (χ : MulChar R ℂ) (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive) :
+private lemma gauss_parseval (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive) :
     ∑ a : R, ‖gaussSum χ (ψ.mulShift a)‖ ^ 2 =
       (Fintype.card R : ℝ) * ∑ x : R, ‖χ x‖ ^ 2 := by
   apply Complex.ofReal_injective
@@ -54,23 +54,20 @@ private lemma gauss_parseval {R : Type*} [CommRing R] [Fintype R]
   simp only [Finset.mem_univ, if_true]
   ring
 
-theorem norm_gauss_le_sqrt_card {R : Type*} [CommRing R] [Fintype R]
-    (χ : MulChar R ℂ) (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive) :
+theorem norm_gauss_le_sqrt_card (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive) :
     ‖gaussSum χ ψ‖ ≤ Real.sqrt (Fintype.card R) := by
   classical
   have hshift (u : Rˣ) : ‖gaussSum χ (ψ.mulShift u)‖ = ‖gaussSum χ ψ‖ := by
-    have h := congrArg norm (gaussSum_mulShift χ ψ u)
-    simpa only [norm_mul, norm_mulChar_unit, one_mul] using h
+    simpa only [norm_mul, norm_mulChar_unit, one_mul] using (congrArg norm (gaussSum_mulShift χ ψ u))
   have hsub : (∑ u : Rˣ, ‖gaussSum χ (ψ.mulShift u)‖ ^ 2) ≤
       ∑ a : R, ‖gaussSum χ (ψ.mulShift a)‖ ^ 2 := by
     rw [← Finset.sum_image (f := fun a : R => ‖gaussSum χ (ψ.mulShift a)‖ ^ 2)
-      (g := fun u : Rˣ => (u : R)) (by intro a _ b _ h; exact Units.ext h)]
+      (g := fun u : Rˣ => (u : R)) (fun a _ b _ h => Units.ext h)]
     exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
       (by intros; positivity)
   have hmask : (∑ x : R, ‖χ x‖ ^ 2) = (Fintype.card Rˣ : ℝ) := by
     simp_rw [norm_mulChar]
-    have h := MulChar.sum_one_eq_card_units (R := R) (R' := ℝ)
-    rw [← h]
+    rw [← (MulChar.sum_one_eq_card_units)]
     apply Finset.sum_congr rfl
     intro x _
     split_ifs with hx
@@ -84,31 +81,28 @@ theorem norm_gauss_le_sqrt_card {R : Type*} [CommRing R] [Fintype R]
     nlinarith
   exact (Real.le_sqrt (norm_nonneg _) (by positivity)).mpr hs
 
+end
+
 theorem norm_idealGauss_le_one (A : SArithmeticData F) (ι : F →+* ℂ)
     (hS : A.ContainsTraceBadPlaces) (I : A.Exterior)
     (a : A.R) (ha : A.Generates I a) (j : ℤ) :
     ‖A.idealGauss ι hS I a ha j‖ ≤ 1 := by
   letI : Finite (A.R ⧸ A.extendIdeal I) := A.exteriorResidue_finite I
   letI : Fintype (A.R ⧸ A.extendIdeal I) := Fintype.ofFinite _
-  let ψ : AddChar (A.R ⧸ A.extendIdeal I) ℂ :=
+  let ψ :=
     Circle.coeHom.compAddChar (A.residueTraceCharacter hS I a ha)
   have hprim : (A.residueTraceCharacter hS I a ha).IsPrimitive := by
     intro x hx heq
     obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
-    have hxI : x ∉ A.extendIdeal I := by
-      intro hm
-      exact hx (Ideal.Quotient.eq_zero_iff_mem.mpr hm)
     obtain ⟨y, hy⟩ := ResidueTraceFactorProductFormula.principalResidue_separation
       ResidueTrace.baseEmbedding
       (fun v => (ResidueTrace.baseEmbedding_spec v).1)
-      (fun v => (ResidueTrace.baseEmbedding_spec v).2) A hS I a ha x hxI
+      (fun v => (ResidueTrace.baseEmbedding_spec v).2) A hS I a ha x (fun hm => hx (Ideal.Quotient.eq_zero_iff_mem.mpr hm))
     have h := congrArg (fun χ : AddChar (A.R ⧸ A.extendIdeal I) Circle =>
       χ (Ideal.Quotient.mk (A.extendIdeal I) y)) heq
     rw [AddChar.mulShift_apply, ← map_mul, A.residueTraceCharacter_apply] at h
     exact hy h
-  have hψ : ψ.IsPrimitive :=
-    hprim.compMulHom_of_isPrimitive Subtype.val_injective
-  have hg := norm_gauss_le_sqrt_card (A.sexticResiduePowerChar ι I j) ψ hψ
+  have hg := norm_gauss_le_sqrt_card (A.sexticResiduePowerChar ι I j) ψ (hprim.compMulHom_of_isPrimitive Subtype.val_injective)
   have hcard : (Fintype.card (A.R ⧸ A.extendIdeal I) : ℝ) = A.exteriorNorm I := by
     rw [← Nat.card_eq_fintype_card, A.exteriorResidue_card I]
     rfl
@@ -122,9 +116,10 @@ theorem norm_idealGauss_le_one (A : SArithmeticData F) (ι : F →+* ℂ)
   rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hs]
   exact (inv_mul_le_iff₀ hs).mpr (by simpa using hg)
 
-private lemma additiveCharacter_eq_fieldTrace (A : SArithmeticData F) (ι : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A ι η hS) (x : F) :
+variable (A : SArithmeticData F) (ι : F →+* ℂ) (η : RayClassCharacter F A.modulus)
+    (hS : A.ContainsTraceBadPlaces) (P : NormalizedProbe.PrincipalData A ι η hS)
+
+private lemma additiveCharacter_eq_fieldTrace (x : F) :
     P.coefficients.additiveCharacter x = (A.fieldTraceCharacter x : ℂ) := by
   rw [P.sameTrace]
   have harch (y : NumberField.InfiniteAdeleRing F) :
@@ -138,21 +133,18 @@ private lemma additiveCharacter_eq_fieldTrace (A : SArithmeticData F) (ι : F �
     intro w hw
     ring
   simp only [ProbeAdditive.phase, harch, finiteTrace_eq_localTraceCharacter A ι η hS P]
-  change _ = (A.eS (sLocalDiagonal F A.Sf x) : ℂ)
   change _ = Circle.coeHom ((∏ w, archTraceCharacter w ((sLocalDiagonal F A.Sf x).1 w)) *
     ∏ v : ↥A.Sf, ResidueTrace.localTraceCharacter v.val ((sLocalDiagonal F A.Sf x).2 v))
   rw [map_mul, map_prod, map_prod]
   rfl
 
-theorem gammaTwo_eq_idealGauss (A : SArithmeticData F) (ι : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A ι η hS)
+theorem gammaTwo_eq_idealGauss
     (c : ExteriorSquarefreeIdeal A.cS) :
     P.coefficients.gammaTwo c =
       A.idealGauss ι hS c.val (P.coefficients.generator c.val)
         (P.coefficients.generates c.val) 2 := by
   let a := P.coefficients.generator c.val
-  have ha : A.Generates c.val a := P.coefficients.generates c.val
+  have ha := P.coefficients.generates c.val
   letI := P.coefficients.finiteResidue a ha.1
   letI : Finite (A.R ⧸ A.extendIdeal c.val) := A.exteriorResidue_finite c.val
   letI : Fintype (A.R ⧸ A.extendIdeal c.val) := Fintype.ofFinite _
@@ -171,21 +163,18 @@ theorem gammaTwo_eq_idealGauss (A : SArithmeticData F) (ι : F →+* ℂ)
     rw [MulChar.pow_apply' _ (by decide : (2 : ℕ) ≠ 0)]
   · simp only [OneMemClass.coe_one, one_mul]
     rw [additiveCharacter_eq_fieldTrace A ι η hS P]
-    have hx := (FiniteTransform.canonicalLifts A.R.toSubring a).property x
     have he : e x = Ideal.Quotient.mk (A.extendIdeal c.val)
         ((FiniteTransform.canonicalLifts A.R.toSubring a).val x) := by
       calc
         e x = e (FiniteTransform.residueMap A.R.toSubring a
-            ((FiniteTransform.canonicalLifts A.R.toSubring a).val x)) := congrArg e hx.symm
+            ((FiniteTransform.canonicalLifts A.R.toSubring a).val x)) := congrArg e ((FiniteTransform.canonicalLifts A.R.toSubring a).property x).symm
         _ = _ := Ideal.quotientEquivAlgOfEq_mk A.R ha.2 _
     change (A.fieldTraceCharacter
         (((FiniteTransform.canonicalLifts A.R.toSubring a).val x : F) / (a : F)) : ℂ) =
       (A.residueTraceCharacter hS c.val a ha (e x) : ℂ)
     rw [he, A.residueTraceCharacter_apply]
 
-theorem norm_gammaTwo_le_one (A : SArithmeticData F) (ι : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (P : NormalizedProbe.PrincipalData A ι η hS)
+theorem norm_gammaTwo_le_one
     (c : ExteriorSquarefreeIdeal A.cS) :
     ‖P.coefficients.gammaTwo c‖ ≤ 1 := by
   rw [gammaTwo_eq_idealGauss A ι η hS P c]

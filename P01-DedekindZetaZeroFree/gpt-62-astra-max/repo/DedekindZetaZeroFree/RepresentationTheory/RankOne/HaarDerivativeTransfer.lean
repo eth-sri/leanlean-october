@@ -22,7 +22,7 @@ theorem compact_parameter_integral_hasDerivAt
       HasDerivAt (fun s => ∫ k, F s k ∂μ) (∫ k, F' t k ∂μ) t := by
   have hct (s : ℝ) : Continuous (F s) := hc.comp (continuous_const.prodMk continuous_id)
   have hc't (s : ℝ) : Continuous (F' s) := hc'.comp (continuous_const.prodMk continuous_id)
-  obtain ⟨C, hC⟩ := (isCompact_Icc.prod (isCompact_univ : IsCompact (univ : Set K))).exists_bound_of_continuousOn hc'.continuousOn
+  obtain ⟨C, hC⟩ := (isCompact_Icc.prod isCompact_univ).exists_bound_of_continuousOn hc'.continuousOn
   apply hasDerivAt_integral_of_dominated_loc_of_deriv_le
     (s := Icc (t - 1) (t + 1)) (bound := fun _ => C)
   · exact Icc_mem_nhds (by linarith) (by linarith)
@@ -59,13 +59,16 @@ private theorem polySym_smooth (n : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (polySym 
   | zero => exact contDiff_const
   | one => exact trace_smooth
   | more n h h' =>
-    change ContDiff ℝ (⊤ : ℕ∞) (fun g => Matrix.trace g * polySym (n+1) g - Matrix.det g * polySym n g)
     apply ContDiff.sub
     · exact trace_smooth.mul h'
     · exact det_smooth.mul h
-noncomputable def polyCharacter {d : ℕ} (ℓ : RawHarmonicType d) (g : Fin d → Matrix (Fin 2) (Fin 2) ℂ) : ℂ :=
+section
+
+variable {d : ℕ} (ℓ : RawHarmonicType d)
+
+noncomputable def polyCharacter (g : Fin d → Matrix (Fin 2) (Fin 2) ℂ) : ℂ :=
   ∏ j, polySym (2 * ℓ j) (g j) * star (Matrix.det (g j)) ^ ℓ j
-private theorem polyCharacter_eq {d : ℕ} (ℓ : RawHarmonicType d) (g : Fin d → RawU2) :
+private theorem polyCharacter_eq (g : Fin d → RawU2) :
     polyCharacter ℓ (fun j => (g j).val) = rawCharacter ℓ g := by
   apply Finset.prod_congr rfl
   intro j _
@@ -75,41 +78,40 @@ private theorem polyCharacter_eq {d : ℕ} (ℓ : RawHarmonicType d) (g : Fin d 
   have hid : star (Matrix.det (g j).val) = (Matrix.det (g j).val)⁻¹ := by
     exact eq_inv_of_mul_eq_one_left (Unitary.star_mul_self_of_mem hd)
   rw [hid, inv_pow, div_eq_mul_inv]
-private theorem polyCharacter_smooth {d : ℕ} (ℓ : RawHarmonicType d) : ContDiff ℝ (⊤ : ℕ∞) (polyCharacter ℓ) := by
+private theorem polyCharacter_smooth : ContDiff ℝ (⊤ : ℕ∞) (polyCharacter ℓ) := by
   apply contDiff_prod
   intro j _
   exact ((polySym_smooth _).comp (contDiff_apply ℝ _ j)).mul
-    ((((Complex.conjCLE : ℂ ≃L[ℝ] ℂ).contDiff).comp
+    (((Complex.conjCLE.contDiff).comp
       (det_smooth.comp (contDiff_apply ℝ _ j))).pow _)
-noncomputable def matrixLift {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ) (b : Fin d × Fin 3) (t : ℝ) :
+
+end
+section
+
+variable {d : ℕ} (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
+
+noncomputable def matrixLift (b : Fin d × Fin 3) (t : ℝ) :
     Fin d → Matrix (Fin 2) (Fin 2) ℂ :=
   fun j => if j = b.1 then NormedSpace.exp ((t : ℂ) • B b.1 b.2) else 1
-private theorem matrixLift_smooth {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ) (b : Fin d × Fin 3) :
+private theorem matrixLift_smooth (b : Fin d × Fin 3) :
     ContDiff ℝ (⊤ : ℕ∞) (matrixLift B b) := by
   apply contDiff_pi.mpr
   intro j
   by_cases hj : j = b.1
   · simp only [matrixLift, hj, if_true]
-    have he : ContDiff ℝ (⊤ : ℕ∞) (NormedSpace.exp : Matrix (Fin 2) (Fin 2) ℂ → Matrix (Fin 2) (Fin 2) ℂ) :=
-      contDiff_iff_contDiffAt.mpr (fun x => (NormedSpace.exp_analytic (𝕂 := ℝ) x).contDiffAt)
-    exact he.comp ((Complex.ofRealCLM.contDiff).smul contDiff_const)
+    exact (contDiff_iff_contDiffAt.mpr (fun x => (NormedSpace.exp_analytic x).contDiffAt)).comp ((Complex.ofRealCLM.contDiff).smul contDiff_const)
   · simp only [matrixLift, hj, if_false]
     exact contDiff_const
-private theorem matrixLift_eq {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
+private theorem matrixLift_eq
     (hskew : ∀ j a, star (B j a) = -B j a) (b : Fin d × Fin 3) (t : ℝ) :
     matrixLift B b t = fun j => (basisLift B hskew b t j).val := by
   funext j
   by_cases hj : j = b.1 <;> simp [matrixLift, basisLift, basisExp, hj]
-noncomputable def jetFunction {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
+noncomputable def jetFunction
     (ℓ : RawHarmonicType d) (b : Fin d × Fin 3)
     (g : Fin d → Matrix (Fin 2) (Fin 2) ℂ) (t s : ℝ) : ℂ :=
   star (polyCharacter ℓ (g * matrixLift B b t * matrixLift B b s))
-private theorem jetFunction_smooth {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
+private theorem jetFunction_smooth
     (ℓ : RawHarmonicType d) (b : Fin d × Fin 3) :
     ContDiff ℝ (⊤ : ℕ∞) (fun p : ((Fin d → Matrix (Fin 2) (Fin 2) ℂ) × ℝ) × ℝ =>
       jetFunction B ℓ b p.1.1 p.1.2 p.2) := by
@@ -120,19 +122,19 @@ private theorem jetFunction_smooth {d : ℕ}
   exact (((contDiff_apply ℝ _ j).comp (contDiff_fst.comp contDiff_fst)).mul
     (((contDiff_apply ℝ _ j).comp (matrixLift_smooth B b)).comp (contDiff_snd.comp contDiff_fst))).mul
     (((contDiff_apply ℝ _ j).comp (matrixLift_smooth B b)).comp contDiff_snd)
+
+end
 set_option maxHeartbeats 800000 in
 private theorem firstJet_smooth {d : ℕ}
     (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
     (ℓ : RawHarmonicType d) (b : Fin d × Fin 3) :
     ContDiff ℝ (⊤ : ℕ∞) (fun p : (Fin d → Matrix (Fin 2) (Fin 2) ℂ) × ℝ =>
-      deriv (jetFunction B ℓ b p.1 p.2) 0) := by
-  exact ((jetFunction_smooth B ℓ b).fderiv contDiff_const (by simp)).clm_apply contDiff_const
+      deriv (jetFunction B ℓ b p.1 p.2) 0) := ((jetFunction_smooth B ℓ b).fderiv contDiff_const (by simp)).clm_apply contDiff_const
 private theorem secondJet_smooth {d : ℕ}
     (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
     (ℓ : RawHarmonicType d) (b : Fin d × Fin 3) :
     ContDiff ℝ (⊤ : ℕ∞) (fun g : Fin d → Matrix (Fin 2) (Fin 2) ℂ =>
-      deriv (fun t : ℝ => deriv (jetFunction B ℓ b g t) 0) 0) := by
-  exact ((firstJet_smooth B ℓ b).fderiv contDiff_const (by simp)).clm_apply contDiff_const
+      deriv (fun t : ℝ => deriv (jetFunction B ℓ b g t) 0) 0) := ((firstJet_smooth B ℓ b).fderiv contDiff_const (by simp)).clm_apply contDiff_const
 set_option maxHeartbeats 800000 in
 
 theorem characterSecondDerivative_continuous {d : ℕ}
@@ -151,7 +153,7 @@ theorem characterSecondDerivative_continuous {d : ℕ}
         fun j => (basisLift B hskew b s j).val) =
         (fun j => (g * basisLift B hskew b t * basisLift B hskew b s) j |>.val) := by
       funext j
-      simp only [Pi.mul_apply, Submonoid.coe_mul]
+      simp
     rw [hh]
     exact congrArg star (polyCharacter_eq ℓ _)
   change Continuous (fun g : Fin d → RawU2 =>

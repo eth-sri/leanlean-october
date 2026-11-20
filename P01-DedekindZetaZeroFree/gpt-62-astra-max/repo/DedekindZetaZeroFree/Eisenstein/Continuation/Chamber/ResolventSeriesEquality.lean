@@ -2,7 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Eisenstein.Continuation.Chamber.FriedrichsDomainDefect
 public import DedekindZetaZeroFree.Eisenstein.Continuation.Chamber.HolomorphicResolventInverse
-public import DedekindZetaZeroFree.Eisenstein.Continuation.Resolvent.ClearedSmoothRepresentatives
+public import DedekindZetaZeroFree.Eisenstein.Continuation.Resolvent.CutoffAndClearedGerms
 
 @[expose] public section
 
@@ -13,11 +13,11 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.KPContActualChamberFormulaEquality
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 local notation "level" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 local notation "HU" => KPContActualAllCuspSource.Sector F ζ hζ C R P H U
@@ -49,101 +49,18 @@ structure FormulaConclusions
     (domain : KPContActualChamberDomainDefect.DomainConclusions F ζ hζ C R P H U
       ι f buffer χ source μG hμG hR realization hι hf)
     (W : ℂ → Smooth) where
-
-  chamber_regular : V ⊆ Ω \ (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω)
-
-  u_resolvent : ∀ s ∈ V,
-    (domain.u 0 s : HU) = -(KPResolventPencil.shiftedResolvent (KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ
-      level R P H μG hμG hR realization) (KPContinuation.spectralCoordinate ((Module.finrank ℚ F / 2 : ℕ) : ℤ) s)
-      (source.h s))
-  u_correction : ∀ s ∈ V, (domain.u 0 s : HU) = (KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR
-    realization ι buffer Ω f χ source) s
-
-  sections_equal : ∀ s ∈ V, (KPContActualCutoffPlusClearedGerm.E F ζ hζ C R P H U Ω
-    (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) W s =
-    domain.series s
-  covered_equal : ∀ s ∈ V,
-    scalar ((KPContActualCutoffPlusClearedGerm.E F ζ hζ C R P H U Ω (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C
-      R P H U μG hμG hR realization Ω) source.descent.cutoff) W s) = KPContActualChamberDomainDefect.seriesScalar F
-      ζ hζ C R P H U ι f s
-  charts_equal : ∀ s ∈ V, ∀ A : Charts,
-    Set.EqOn (coefficient ((KPContActualCutoffPlusClearedGerm.E F ζ hζ C R P H U Ω
-      (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) W
-      s).val A)
-      (coefficient (domain.series s).val A) A.ball.carrier
-
   group_equal : ∀ s ∈ V, ∀ g : KPContActualChamberNormalSeries.G F ζ hζ,
     groupScalar ((KPContActualCutoffPlusClearedGerm.E F ζ hζ C R P H U Ω (KPContActualHilbertSimpleGerms.Sigma F ζ
       hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) W s) g = KPContActualChamberNormalSeries.E F ζ
       hζ U ι f s g
 
-  chamber_smooth_holomorphic : KPContActualCutoffPlusClearedGerm.SmoothTaylorData
-    F ζ hζ C R P H U V ((KPContActualCutoffPlusClearedGerm.E F ζ hζ C R P H U Ω
-      (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) W)
-  series_smooth_holomorphic : KPContActualCutoffPlusClearedGerm.SmoothTaylorData
-    F ζ hζ C R P H U V domain.series
-  test_memLp : ∀ φ : Tests, MemLp (testScalar φ) 2 μ
-  testClass : Tests →ₗ[ℂ] HU
-  test_class_represents : ∀ φ : Tests,
-    Represents (KPContActualAllCuspSource.testSection F ζ hζ C R P H U φ).val (testClass φ)
-
-  covered_integrable : ∀ φ : Tests, ∀ s ∈ Ω \ (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR
-    realization Ω),
-    Integrable (coveredPair ((KPContActualCutoffPlusClearedGerm.E F ζ hζ C R P H U Ω
-      (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) W s)
-      (testScalar φ)) μ ∧
-    Integrable (coveredPair (source.descent.cutoff s) (testScalar φ)) μ
-  quotient_integrable : ∀ φ : Tests, ∀ s ∈ Ω \ (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR
-    realization Ω),
-    Integrable (quotientPair ((KPContActualCutoffPlusClearedGerm.E F ζ hζ C R P H U Ω
-      (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) W s)
-      (testScalar φ)) R.quotientHaar ∧
-    Integrable (quotientPair (source.descent.cutoff s) (testScalar φ)) R.quotientHaar
-
-  integral_identification : ∀ φ : Tests, ∀ s ∈ Ω \ (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR
-    realization Ω),
-    (∫ x, quotientPair ((KPContActualCutoffPlusClearedGerm.E F ζ hζ C R P H U Ω
-      (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) W s)
-      (testScalar φ) x ∂(R.quotientHaar)) =
-      (∫ x, coveredPair ((KPContActualCutoffPlusClearedGerm.E F ζ hζ C R P H U Ω
-        (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) W s)
-        (testScalar φ) x ∂μ) ∧
-    (∫ x, quotientPair (source.descent.cutoff s) (testScalar φ) x ∂(R.quotientHaar)) =
-      (∫ x, coveredPair (source.descent.cutoff s) (testScalar φ) x ∂μ)
-  covered_formula : ∀ φ : Tests, ∀ s ∈ Ω \ (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR
-    realization Ω),
-    (∫ x, coveredPair ((KPContActualCutoffPlusClearedGerm.E F ζ hζ C R P H U Ω
-      (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) W s)
-      (testScalar φ) x ∂μ) =
-      (∫ x, coveredPair (source.descent.cutoff s) (testScalar φ) x ∂μ) +
-        inner ℂ (testClass φ) ((KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω
-          f χ source) s)
-  quotient_formula : ∀ φ : Tests, ∀ s ∈ Ω \ (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR
-    realization Ω),
-    (∫ x, quotientPair ((KPContActualCutoffPlusClearedGerm.E F ζ hζ C R P H U Ω
-      (KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω) source.descent.cutoff) W s)
-      (testScalar φ) x ∂(R.quotientHaar)) =
-      (∫ x, quotientPair (source.descent.cutoff s) (testScalar φ) x ∂(R.quotientHaar)) +
-        inner ℂ (testClass φ) ((KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω
-          f χ source) s)
-
-  correction_pairing_meromorphic : ∀ φ : Tests,
-    MeromorphicOn (fun s => inner ℂ (testClass φ) ((KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR
-      realization ι buffer Ω f χ source) s)) Ω
-  covered_pairing_meromorphic : ∀ φ : Tests,
-    MeromorphicOn (fun s =>
-      (∫ x, coveredPair (source.descent.cutoff s) (testScalar φ) x ∂μ) +
-        inner ℂ (testClass φ) ((KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω
-          f χ source) s)) Ω
-  quotient_pairing_meromorphic : ∀ φ : Tests,
-    MeromorphicOn (fun s =>
-      (∫ x, quotientPair (source.descent.cutoff s) (testScalar φ) x ∂(R.quotientHaar)) +
-        inner ℂ (testClass φ) ((KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω
-          f χ source) s)) Ω
-
 open KPContLocalNorm KPContRightJets
 
-private theorem derivative_add {n : ℕ} (B : LocalBall n)
+section
+
+variable {n : ℕ} (B : LocalBall n)
+
+private theorem derivative_add
     {f g : Space n → ℂ} (hf : ContDiffOn ℝ (⊤ : ℕ∞) f B.carrier)
     (hg : ContDiffOn ℝ (⊤ : ℕ∞) g B.carrier) (l : List (Fin n)) :
     Set.EqOn (coordinateDerivativeList l (f + g))
@@ -152,8 +69,7 @@ private theorem derivative_add {n : ℕ} (B : LocalBall n)
   | nil => exact fun _ _ => rfl
   | cons i l ih =>
     intro x hx
-    have he : coordinateDerivativeList l (f + g) =ᶠ[𝓝 x]
-        coordinateDerivativeList l f + coordinateDerivativeList l g :=
+    have he :=
       Filter.eventuallyEq_of_mem (Metric.isOpen_ball.mem_nhds hx) ih
     change fderiv ℝ (coordinateDerivativeList l (f + g)) x (EuclideanSpace.single i 1) = _
     rw [he.fderiv_eq, fderiv_add]
@@ -163,7 +79,7 @@ private theorem derivative_add {n : ℕ} (B : LocalBall n)
     · exact ((KPContLocalHolomorphyUpgrade.CauchyAssembly.finite_coordinate_derivative_smooth B hg l).contDiffAt
         (Metric.isOpen_ball.mem_nhds hx)).differentiableAt (by simp)
 
-private theorem chart_add {n : ℕ} (B : LocalBall n) {O : Set ℂ} {f g : ℂ → Space n → ℂ}
+private theorem chart_add {O : Set ℂ} {f g : ℂ → Space n → ℂ}
     (hf : KPCutoffSource.ChartSmoothHolomorphicOn B f O)
     (hg : KPCutoffSource.ChartSmoothHolomorphicOn B g O) :
     KPCutoffSource.ChartSmoothHolomorphicOn B (fun s => f s + g s) O := by
@@ -178,7 +94,7 @@ private theorem chart_add {n : ℕ} (B : LocalBall n) {O : Set ℂ} {f g : ℂ �
   rw [hje s hs α x, hke s hs α x]
   exact (derivative_add B (hf.1 s hs) (hg.1 s hs) α.directions (hKB x.property)).symm
 
-private theorem series_add {n : ℕ} (B : LocalBall n) (c : ℂ) (ρ : ℝ)
+private theorem series_add (c : ℂ) (ρ : ℝ)
     {b d : ℕ → Space n → ℂ} {f g : ℂ → Space n → ℂ}
     (hb : SmoothPowerSeriesOn B c ρ b f) (hd : SmoothPowerSeriesOn B c ρ d g) :
     SmoothPowerSeriesOn B c ρ (fun j => b j + d j) (fun s => f s + g s) := by
@@ -188,7 +104,7 @@ private theorem series_add {n : ℕ} (B : LocalBall n) (c : ℂ) (ρ : ℝ)
   obtain ⟨M,hM⟩ := hd.2.2 K hK hKB m r hr hrρ (ε/2) (by positivity)
   refine ⟨max N M,?_⟩
   intro L hL s hs α x
-  have hsb : s ∈ Metric.ball c ρ := Metric.closedBall_subset_ball hrρ hs
+  have hsb := Metric.closedBall_subset_ball hrρ hs
   have he : (fun y => (∑ j ∈ Finset.range L, (s-c)^j * (b j + d j) y) - (f s + g s) y) =
       (fun y => (∑ j ∈ Finset.range L, (s-c)^j * b j y) - f s y) +
       (fun y => (∑ j ∈ Finset.range L, (s-c)^j * d j y) - g s y) := by
@@ -196,33 +112,31 @@ private theorem series_add {n : ℕ} (B : LocalBall n) (c : ℂ) (ρ : ℝ)
     simp only [Pi.add_apply, mul_add, Finset.sum_add_distrib]
     ring
   rw [he]
-  have hc1 : ContDiffOn ℝ (⊤ : ℕ∞) (fun y => (∑ j ∈ Finset.range L, (s-c)^j * b j y) - f s y) B.carrier :=
-    (ContDiffOn.sum fun j _ => contDiffOn_const.mul (hb.1 j)).sub (hb.2.1 s hsb)
-  have hc2 : ContDiffOn ℝ (⊤ : ℕ∞) (fun y => (∑ j ∈ Finset.range L, (s-c)^j * d j y) - g s y) B.carrier :=
-    (ContDiffOn.sum fun j _ => contDiffOn_const.mul (hd.1 j)).sub (hd.2.1 s hsb)
   simp only [coordinateDerivative]
-  rw [derivative_add B hc1 hc2 α.directions (hKB x.property)]
+  rw [derivative_add B ((ContDiffOn.sum fun j _ => contDiffOn_const.mul (hb.1 j)).sub (hb.2.1 s hsb)) ((ContDiffOn.sum fun j _ => contDiffOn_const.mul (hd.1 j)).sub (hd.2.1 s hsb)) α.directions (hKB x.property)]
   exact (norm_add_le _ _).trans_lt (by
     have h1 := hN L (le_trans (le_max_left _ _) hL) s hs α x
     have h2 := hM L (le_trans (le_max_right _ _) hL) s hs α x
     simp only [coordinateDerivative] at h1 h2
     linarith)
 
+end
+
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 set_option synthInstance.maxHeartbeats 200000
 variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
-variable (hR : R.adelicHaar = μG)
+    (hR : R.adelicHaar = μG)
 variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ
   (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H)
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U) (f : ℂ → S)
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U) (f : ℂ → S)
 variable {T : ℝ} (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H T)
 variable (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
-variable (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer KPContinuation.spectralDomain f χ)
-variable (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-variable (domain : KPContActualChamberDomainDefect.DomainConclusions F ζ hζ C R P H U ι f buffer χ source μG hμG hR realization hι hf)
+    (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer KPContinuation.spectralDomain f χ)
+    (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+    (domain : KPContActualChamberDomainDefect.DomainConclusions F ζ hζ C R P H U ι f buffer χ source μG hμG hR realization hι hf)
 local notation "v" => KPContActualHilbertSimpleGerms.v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source
 local notation "poles" => KPContActualHilbertSimpleGerms.Sigma F ζ hζ C R P H U μG hμG hR realization Ω
 
@@ -232,8 +146,7 @@ theorem actual_spectralCoordinate : KPContActualChamberInverse.a_U F =
   funext s
   unfold KPContActualChamberInverse.a_U KPContinuation.spectralCoordinate
   congr 1
-  have ht : NumberField.IsTotallyComplex F := NumberField.nrRealPlaces_eq_zero_iff.mp H.totallyComplex
-  have hfin := @NumberField.IsTotallyComplex.finrank F _ _ ht
+  have hfin := @NumberField.IsTotallyComplex.finrank F _ _ (NumberField.nrRealPlaces_eq_zero_iff.mp H.totallyComplex)
   have hnat : Module.finrank ℚ F / 2 = NumberField.InfinitePlace.nrComplexPlaces F := by rw [hfin]; omega
   rw [hnat, hfin]
   push_cast
@@ -241,13 +154,10 @@ theorem actual_spectralCoordinate : KPContActualChamberInverse.a_U F =
 
 include realization in
 theorem chamber_regular_actual : V ⊆ Ω \ poles := by
-  have hi := kp_cont_actual_chamber_inverse F ζ hζ μG hμG level R hR P H realization
-  have ht : NumberField.IsTotallyComplex F := NumberField.nrRealPlaces_eq_zero_iff.mp H.totallyComplex
-  have hfin := @NumberField.IsTotallyComplex.finrank F _ _ ht
   have hd : ((Module.finrank ℚ F / 2 : ℕ) : ℝ) = (Module.finrank ℚ F : ℝ) / 2 := by
-    rw [hfin, Nat.mul_div_right _ (by norm_num)]; push_cast; ring
+    rw [(@NumberField.IsTotallyComplex.finrank F _ _ (NumberField.nrRealPlaces_eq_zero_iff.mp H.totallyComplex)), Nat.mul_div_right _ (by norm_num)]; push_cast; ring
   intro s hs
-  have hr := (hi.chamber_regular s hs).1
+  have hr := ((kp_cont_actual_chamber_inverse F ζ hζ μG hμG level R hR P H realization).chamber_regular s hs).1
   unfold KPContActualChamberInverse.Sigma_U at hr
   rw [actual_spectralCoordinate F ζ hζ R P H] at hr
   simpa only [KPContActualHilbertSimpleGerms.Sigma, hd, Nat.cast_ofNat, Nat.cast_mul,
@@ -255,9 +165,8 @@ theorem chamber_regular_actual : V ⊆ Ω \ poles := by
 
 include realization buffer in
 theorem domain_class_correction : ∀ s ∈ V, (domain.u 0 s : HU) = v s := by
-  have hi := kp_cont_actual_chamber_inverse F ζ hζ μG hμG level R hR P H realization
   intro s hs
-  have hh := (hi.genuine_inverse s hs).choose_spec.2
+  have hh := ((kp_cont_actual_chamber_inverse F ζ hζ μG hμG level R hR P H realization).genuine_inverse s hs).choose_spec.2
   rw [actual_spectralCoordinate F ζ hζ R P H] at hh
   have ht := hh (domain.u 0 s)
   rw [domain.equation s hs, map_neg] at ht
@@ -283,15 +192,14 @@ theorem domain_defect_represents (s : ℂ) (hs : s ∈ V) :
   have hmem := domain.defect_memLp 0 s hs
   change MemLp (KPContActualChamberDomainDefect.defectScalar F ζ hζ C R P H U ι f buffer χ source s) 2 μ at hmem
   change ((domain.u 0 s : HU) : Lp ℂ 2 μ) =ᵐ[μ] KPContActualChamberDomainDefect.defectScalar F ζ hζ C R P H U ι f buffer χ source s at hae
-  have hf' : MemLp (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ level R P H
-      (domain.series s - source.descent.cutoff s).val).val 2 μ := hr ▸ hmem
+  have hf' := hr ▸ hmem
   refine ⟨hf', ?_⟩
   apply Lp.ext
   refine hf'.coeFn_toLp.trans ?_
   have ht : _ =ᵐ[μ] _ := Filter.Eventually.of_forall (congrFun hr)
   exact ht.trans hae.symm
 variable (W : ℂ → KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U)
-variable (hW : KPContActualClearedSmoothRepresentatives.Properties F ζ hζ C R P H U μG hμG hR realization ι buffer KPContinuation.spectralDomain f χ source W)
+    (hW : KPContActualCutoffPlusClearedGerm.Properties F ζ hζ C R P H U μG hμG hR ι KPContinuation.spectralDomain f χ realization buffer source W)
 
 include hW in
 theorem literal_sections_equal : ∀ s ∈ V,
@@ -299,7 +207,7 @@ theorem literal_sections_equal : ∀ s ∈ V,
   intro s hs
   have hr := chamber_regular_actual F ζ hζ C R P H U μG hμG hR realization hs
   apply Eq.symm
-  apply hW.continuation.off_pole_unique s hr
+  apply hW.off_pole_unique s hr
   rw [← domain_class_correction F ζ hζ C R P H U μG hμG hR realization ι f buffer χ source hι hf domain s hs]
   exact domain_defect_represents F ζ hζ C R P H U μG hμG hR realization ι f buffer χ source hι hf domain s hs
 
@@ -380,8 +288,7 @@ private theorem series_parameter_congr {n : ℕ} (B : LocalBall n)
   rw [← he (Metric.closedBall_subset_ball hrρ hs)]
   exact hN L hL s hs α x
 
-private theorem chamber_isOpen : IsOpen V := by
-  exact isOpen_lt continuous_const Complex.continuous_re
+private theorem chamber_isOpen : IsOpen V := isOpen_lt continuous_const Complex.continuous_re
 
 include hW in
 theorem formula_smoothTaylorData :
@@ -397,7 +304,7 @@ theorem formula_smoothTaylorData :
       rw [KPContSectorLineL2Isometry.scalarRepresentative_eq_symm]
       rfl
     simpa only [hcoef] using hh
-  have hholW := hW.continuation.correction_holomorphy
+  have hholW := hW.correction_holomorphy
   have he : ∀ s ∈ V, ∀ A : Charts,
       coefficient (KPContActualCutoffPlusClearedGerm.E F ζ hζ C R P H U Ω poles source.descent.cutoff W s).val A =
         coefficient (source.descent.cutoff s).val A + coefficient (W s).val A := by
@@ -490,7 +397,7 @@ private theorem formula_stage
       F ζ hζ C R P H U a ι s hs vv b
   · intro a s hs vv g b q
     exact ⟨(KPContFlatCuspCoefficientTransition.transport_formula F ζ hζ C R P H U a ι
-      s hs vv g b).1,
+      s hs vv g b),
       (KPContFlatCuspIncomingEvaluation.frequencies F ζ hζ C R P H U a).constantSystem.transition_formula
         g ((KPContFlatCuspIncomingEvaluation.b F ζ hζ C R P H U a ι s hs vv).val b) q⟩
   · intro a s hs vv p q
@@ -512,7 +419,7 @@ private theorem represented_pairing (Z Z' : Smooth) (u u' : HU)
       (∫ x, coveredPair Z' (scalar Z) x ∂μ) = inner ℂ u u' := by
   obtain ⟨hf,he⟩ := hZ
   obtain ⟨hg,he'⟩ := hZ'
-  have ha : ((u : Lp ℂ 2 μ) : _ → ℂ) =ᵐ[μ] scalar Z := by
+  have ha : (u : _ → ℂ) =ᵐ[μ] scalar Z := by
     rw [← he]
     exact hf.coeFn_toLp
   have hb : ((u' : Lp ℂ 2 μ) : _ → ℂ) =ᵐ[μ] scalar Z' := by
@@ -536,8 +443,7 @@ private theorem quotient_transfer (Z : Smooth) (ψ : KPContActualAllCuspSource.C
       (∫ x, quotientPair Z ψ x ∂(R.quotientHaar)) = ∫ x, coveredPair Z ψ x ∂μ := by
   have hp : AEMeasurable (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ level) R.quotientHaar :=
     (KPContSectorQuotientRelationsComparison.piTilde_continuous F ζ hζ level).aemeasurable
-  have hm : Integrable (coveredPair Z ψ)
-      (Measure.map (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ level) R.quotientHaar) := hint
+  have hm := hint
   exact ⟨(integrable_map_measure hm.aestronglyMeasurable hp).1 hm,
     (integral_map hp hm.aestronglyMeasurable).symm⟩
 
@@ -548,13 +454,12 @@ theorem covered_formula_actual (φ : Tests) (s : ℂ) (hs : s ∈ Ω \ poles) :
     (∫ x, coveredPair (KPContActualCutoffPlusClearedGerm.E F ζ hζ C R P H U Ω poles source.descent.cutoff W s) (testScalar φ) x ∂μ) =
       (∫ x, coveredPair (source.descent.cutoff s) (testScalar φ) x ∂μ) +
         inner ℂ (actualTestClass F ζ hζ C R P H U φ) (v s) := by
-  have hStage := formula_stage F ζ hζ C R P H U ι hι
   have hC := (kp_cont_actual_cutoff_test_pairing_holomorphy F ζ hζ C R P H U realization buffer
-    ι hι hStage Ω Set.Subset.rfl KPContinuation.spectralDomain_isOpen f hf χ source.descent).cutoff_tests φ
+    ι hι Ω Set.Subset.rfl KPContinuation.spectralDomain_isOpen f hf χ source.descent).cutoff_tests φ
   have hWpair := represented_pairing F ζ hζ C R P H U
     (KPContActualAllCuspSource.testSection F ζ hζ C R P H U φ) (W s)
     (actualTestClass F ζ hζ C R P H U φ) (v s)
-    (actual_test_class_represents F ζ hζ C R P H U φ) (hW.continuation.correction_represents s hs)
+    (actual_test_class_represents F ζ hζ C R P H U φ) (hW.correction_represents s hs)
   have he : coveredPair (KPContActualCutoffPlusClearedGerm.E F ζ hζ C R P H U Ω poles source.descent.cutoff W s) (testScalar φ) =
       coveredPair (source.descent.cutoff s) (testScalar φ) + coveredPair (W s) (testScalar φ) := by
     unfold KPContActualCutoffPlusClearedGerm.E
@@ -575,71 +480,25 @@ private theorem meromorphic_clm {E : Type*} [NormedAddCommGroup E] [NormedSpace 
   intro s hs
   obtain ⟨n,hn⟩ := hg s hs
   refine ⟨n, ?_⟩
-  have h : AnalyticAt ℂ (fun z : ℂ => L ((z-s)^n • g z)) s :=
-    AnalyticAt.comp (f := fun z : ℂ => (z-s)^n • g z) (L.analyticAt _) hn
-  simpa only [Function.comp_def, map_smul] using h
+  simpa only [Function.comp_def, map_smul] using (AnalyticAt.comp (L.analyticAt _) hn)
 
 include hW hι hf in
 theorem correction_pairing_meromorphic_actual (φ : Tests) :
     MeromorphicOn (fun s => inner ℂ (actualTestClass F ζ hζ C R P H U φ) (v s)) Ω := by
   have hh := kp_cont_actual_hilbert_simple_germs F ζ hζ C R P H U μG hμG hR realization
-    ι hι (formula_stage F ζ hζ C R P H U ι hι) Ω KPContinuation.spectralDomain_isOpen Set.Subset.rfl f hf buffer χ source
+    ι hι Ω KPContinuation.spectralDomain_isOpen Set.Subset.rfl f hf buffer χ source
   exact meromorphic_clm (InnerProductSpace.toDual ℂ HU (actualTestClass F ζ hζ C R P H U φ)) hh.hilbert_meromorphic
 
 include hW in
 theorem conclusions_same_domain : Nonempty (FormulaConclusions F ζ hζ C R P H U
     μG hμG hR realization ι f buffer χ source hι hf domain W) := by
-  let testClass := actualTestClass F ζ hζ C R P H U
-  have hr := chamber_regular_actual F ζ hζ C R P H U μG hμG hR realization
   have he := literal_sections_equal F ζ hζ C R P H U μG hμG hR realization ι f buffer χ source hι hf domain W hW
-  have hp := covered_formula_actual F ζ hζ C R P H U μG hμG hR realization ι f buffer χ source hι hf W hW
-  have hq (φ : Tests) (s : ℂ) (hs : s ∈ Ω \ poles) :=
-    quotient_transfer F ζ hζ C R P H U
-      (KPContActualCutoffPlusClearedGerm.E F ζ hζ C R P H U Ω poles source.descent.cutoff W s) (testScalar φ) (hp φ s hs).1
-  have hqc (φ : Tests) (s : ℂ) (hs : s ∈ Ω \ poles) :=
-    quotient_transfer F ζ hζ C R P H U (source.descent.cutoff s) (testScalar φ) (hp φ s hs).2.1
-  have hpair := kp_cont_actual_cutoff_test_pairing_holomorphy F ζ hζ C R P H U realization buffer
-    ι hι (formula_stage F ζ hζ C R P H U ι hι) Ω Set.Subset.rfl KPContinuation.spectralDomain_isOpen f hf χ source.descent
-  have hm := correction_pairing_meromorphic_actual F ζ hζ C R P H U μG hμG hR realization ι f buffer χ source hι hf W hW
   refine ⟨{
-    chamber_regular := hr
-    u_resolvent := domain_class_correction F ζ hζ C R P H U μG hμG hR realization ι f buffer χ source hι hf domain
-    u_correction := domain_class_correction F ζ hζ C R P H U μG hμG hR realization ι f buffer χ source hι hf domain
-    sections_equal := he
-    covered_equal := ?_
-    charts_equal := ?_
     group_equal := ?_
-    chamber_smooth_holomorphic := formula_smoothTaylorData F ζ hζ C R P H U μG hμG hR realization ι f buffer χ source W hW
-    series_smooth_holomorphic := literal_series_smoothTaylorData F ζ hζ C R P H U μG hμG hR realization ι f buffer χ source hι hf domain W hW
-    test_memLp := actual_test_memLp F ζ hζ C R P H U
-    testClass := testClass
-    test_class_represents := actual_test_class_represents F ζ hζ C R P H U
-    covered_integrable := fun φ s hs => ⟨(hp φ s hs).1,(hp φ s hs).2.1⟩
-    quotient_integrable := fun φ s hs => ⟨(hq φ s hs).1,(hqc φ s hs).1⟩
-    integral_identification := fun φ s hs => ⟨(hq φ s hs).2,(hqc φ s hs).2⟩
-    covered_formula := fun φ s hs => (hp φ s hs).2.2
-    quotient_formula := ?_
-    correction_pairing_meromorphic := hm
-    covered_pairing_meromorphic := ?_
-    quotient_pairing_meromorphic := ?_ }⟩
-  · intro s hs
-    rw [he s hs]
-    exact domain.series_formula s hs
-  · intro s hs A
-    rw [he s hs]
-    exact fun _ _ => rfl
+     }⟩
   · intro s hs g
     rw [he s hs]
     exact domain.series_lift s hs g
-  · intro φ s hs
-    rw [(hq φ s hs).2,(hqc φ s hs).2]
-    exact (hp φ s hs).2.2
-  · intro φ
-    have hc := ((hpair.cutoff_tests φ).covered_holomorphic.analyticOnNhd KPContinuation.spectralDomain_isOpen).meromorphicOn
-    exact hc.add (hm φ)
-  · intro φ
-    have hc := ((hpair.cutoff_tests φ).quotient_holomorphic.analyticOnNhd KPContinuation.spectralDomain_isOpen).meromorphicOn
-    exact hc.add (hm φ)
 
 end DedekindZetaZeroFree.KPContActualChamberFormulaEquality
 
@@ -669,16 +528,15 @@ theorem kp_cont_actual_chamber_formula_equality
         ∃ domain : KPContActualChamberDomainDefect.DomainConclusions F ζ hζ C R P H U
             ι f buffer χ source μG hμG hR realization hι hf,
           ∃ W : ℂ → KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U,
-            KPContActualClearedSmoothRepresentatives.Properties
-              F ζ hζ C R P H U μG hμG hR realization ι buffer
-                KPContinuation.spectralDomain f χ source W ∧
+            KPContActualCutoffPlusClearedGerm.Properties
+              F ζ hζ C R P H U μG hμG hR ι KPContinuation.spectralDomain f χ
+                realization buffer source W ∧
             Nonempty (KPContActualChamberFormulaEquality.FormulaConclusions
               F ζ hζ C R P H U μG hμG hR realization ι f buffer χ source hι hf domain W) := by
   obtain ⟨buffer,source,⟨domain⟩⟩ := kp_cont_actual_chamber_domain_defect
     F ζ hζ C μG hμG R hR P H U realization ι hι f hf T hT χ
-  have hStage := KPContActualChamberFormulaEquality.formula_stage F ζ _ C R P H U ι hι
-  obtain ⟨W,hW⟩ := kp_cont_actual_cleared_smooth_representatives F ζ _ C R P H U μG hμG hR realization
-    ι hι hStage KPContinuation.spectralDomain KPContinuation.spectralDomain_isOpen Set.Subset.rfl
+  obtain ⟨W,hW⟩ := kp_cont_actual_cutoff_plus_cleared_germ F ζ _ C R P H U μG hμG hR realization
+    ι hι KPContinuation.spectralDomain KPContinuation.spectralDomain_isOpen Set.Subset.rfl
     f hf buffer χ source
   refine ⟨buffer,source,domain,W,hW,?_⟩
   exact KPContActualChamberFormulaEquality.conclusions_same_domain

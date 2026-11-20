@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -51,7 +46,6 @@ theorem ideleClassIdentityComponent_isClosed :
 
 instance ideleClassIdentityComponent_normal :
     (ideleClassIdentityComponent K).Normal := by
-  change (Subgroup.connectedComponentOfOne (IdeleClassGroup K)).Normal
   exact
     QuotientGroup.Subgroup.Normal.connectedComponentOfOne
       (IdeleClassGroup K)
@@ -62,8 +56,7 @@ abbrev ideleClassComponentQuotient :=
 
 noncomputable instance ideleClassComponentQuotientT2Space :
     T2Space (ideleClassComponentQuotient K) := by
-  let : IsClosed
-      (ideleClassIdentityComponent K : Set (IdeleClassGroup K)) :=
+  let :=
     ideleClassIdentityComponent_isClosed K
   infer_instance
 
@@ -105,13 +98,8 @@ private theorem continuous_positiveRealNNRealUnit :
     Continuous positiveRealNNRealUnit := by
   apply Units.continuous_iff.mpr
   constructor
-  · change Continuous
-      (fun x : Set.Ioi (0 : ℝ) ↦ Real.toNNReal x.1)
-    exact continuous_real_toNNReal.comp continuous_subtype_val
-  · change Continuous
-      (fun x : Set.Ioi (0 : ℝ) ↦
-        (Real.toNNReal x.1)⁻¹)
-    exact
+  · exact continuous_real_toNNReal.comp continuous_subtype_val
+  · exact
       (continuous_real_toNNReal.comp continuous_subtype_val).inv₀
         (fun x ↦ (Real.toNNReal_pos.mpr x.2).ne')
 
@@ -141,19 +129,13 @@ theorem ideleClassPositiveArchimedeanSection_mem_identityComponent
   change
     ideleClassPositiveArchimedeanSection K r ∈
       connectedComponent (1 : IdeleClassGroup K)
-  let : ConnectedSpace ℝ≥0ˣ :=
+  let :=
     nnrealUnits_connectedSpace
-  have hr : r ∈ connectedComponent (1 : ℝ≥0ˣ) := by
-    rw [PreconnectedSpace.connectedComponent_eq_univ]
-    exact Set.mem_univ r
-  have himage :
-      ideleClassPositiveArchimedeanSectionContinuous K r ∈
-        connectedComponent
-          (ideleClassPositiveArchimedeanSectionContinuous K 1) :=
-    Continuous.mapsTo_connectedComponent
-      (ideleClassPositiveArchimedeanSectionContinuous K).continuous_toFun
-      (1 : ℝ≥0ˣ) hr
-  simpa using himage
+  simpa using (Continuous.mapsTo_connectedComponent
+    (ideleClassPositiveArchimedeanSectionContinuous K).continuous_toFun
+    (1 : ℝ≥0ˣ) (by
+      rw [PreconnectedSpace.connectedComponent_eq_univ]
+      exact Set.mem_univ r))
 
 @[simp]
 theorem ideleClassPositiveArchimedeanSection_absoluteNorm
@@ -165,10 +147,13 @@ theorem ideleClassPositiveArchimedeanSection_absoluteNorm
     IdeleClassGroup.absoluteNorm_mk,
     IdeleGroup.positiveArchimedeanSection_absoluteNorm]
 
+section
+
+variable (a : IdeleGroup K)
+
 /-- The norm-one factor of an idele-class representative after removing its
 positive archimedean norm component. -/
-noncomputable def ideleClassNormOneCorrection
-    (a : IdeleGroup K) :
+noncomputable def ideleClassNormOneCorrection :
     IdeleClassGroup.normOneSubgroup (K := K) :=
   let correction : IdeleGroup.normOneSubgroup (K := K) :=
     IdeleGroup.positiveArchimedeanNormOneCorrection K a
@@ -178,7 +163,7 @@ noncomputable def ideleClassNormOneCorrection
       (K := K) (correction : IdeleGroup K)).2 correction.property⟩
 
 @[simp]
-theorem coe_ideleClassNormOneCorrection (a : IdeleGroup K) :
+theorem coe_ideleClassNormOneCorrection :
     (ideleClassNormOneCorrection K a : IdeleClassGroup K) =
       QuotientGroup.mk' (IdeleGroup.principalSubgroup K)
         (IdeleGroup.positiveArchimedeanNormOneCorrection K a) :=
@@ -186,19 +171,20 @@ theorem coe_ideleClassNormOneCorrection (a : IdeleGroup K) :
 
 /-- Every idele class is the product of a norm-one class and the inverse of
 its positive archimedean norm section. -/
-theorem ideleClass_mk_eq_normOneCorrection_mul_positiveSection_inv
-    (a : IdeleGroup K) :
+theorem ideleClass_mk_eq_normOneCorrection_mul_positiveSection_inv :
     QuotientGroup.mk' (IdeleGroup.principalSubgroup K) a =
       (ideleClassNormOneCorrection K a : IdeleClassGroup K) *
         (ideleClassPositiveArchimedeanSection K
           (IdeleGroup.absoluteNorm a))⁻¹ := by
   rw [coe_ideleClassNormOneCorrection,
     ideleClassPositiveArchimedeanSection, MonoidHom.comp_apply]
-  simpa only [map_mul, map_inv] using
+  simpa using
     congrArg
       (QuotientGroup.mk' (IdeleGroup.principalSubgroup K))
       (IdeleGroup.eq_positiveArchimedeanNormOneCorrection_mul_section_inv
-        (K := K) a)
+         a)
+
+end
 
 /-- The norm-one idele classes map continuously onto the component quotient. -/
 noncomputable def ideleClassNormOneToComponentQuotient :
@@ -218,7 +204,7 @@ theorem ideleClassNormOneToComponentQuotient_surjective :
     QuotientGroup.mk'_surjective (ideleClassIdentityComponent K) z
   obtain ⟨a, rfl⟩ :=
     QuotientGroup.mk'_surjective (IdeleGroup.principalSubgroup K) c
-  let n : IdeleClassGroup.normOneSubgroup (K := K) :=
+  let n :=
     ideleClassNormOneCorrection K a
   refine ⟨n, ?_⟩
   have hsection :

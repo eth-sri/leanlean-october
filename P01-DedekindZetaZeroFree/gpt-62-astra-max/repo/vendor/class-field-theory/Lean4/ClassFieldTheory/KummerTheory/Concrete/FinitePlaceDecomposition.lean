@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -77,7 +72,7 @@ theorem
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) w.1
   let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   let := localizedCompletionGlobalAlgebra vK w
   let := localizedCompletionIsScalarTower vK w
@@ -85,29 +80,31 @@ theorem
   let E := LocalizedCompletion vK w
   let toE :=
     AbsoluteValue.toAlgebraicLocalization vK w.1 w.2
-  let aC : Cˣ :=
+  let aC :=
     Units.map (algebraMap K C).toMonoidHom a
   have hbeta_val :
       (beta : L) ^ (n : ℕ) =
         algebraMap K L (a : K) := by
-    simpa using congrArg Units.val hbeta
+    exact congrArg Units.val hbeta
   obtain ⟨yC, hyC⟩ :=
     (MonoidHom.mem_range
-      (G := Cˣ)).mp ha
+      ).mp ha
   rw [powMonoidHom_apply] at hyC
-  let betaE : Eˣ :=
+  let betaE :=
     Units.map toE.toMonoidHom beta
-  let yE : Eˣ :=
-    Units.map (algebraMap C E).toMonoidHom yC
+  let map₀ := Units.map (algebraMap C E).toMonoidHom
+  let yE :=
+    map₀ yC
+  let toE₀ := toE (beta : L)
   have hbetaE :
       betaE ^ (n : ℕ) =
-        Units.map (algebraMap C E).toMonoidHom aC := by
+        map₀ aC := by
     apply Units.ext
     change
-      toE (beta : L) ^ (n : ℕ) =
+      toE₀ ^ (n : ℕ) =
         algebraMap C E (algebraMap K C (a : K))
     calc
-      toE (beta : L) ^ (n : ℕ) =
+      toE₀ ^ (n : ℕ) =
           toE ((beta : L) ^ (n : ℕ)) := by
         exact
           (map_pow toE (beta : L) (n : ℕ)).symm
@@ -118,39 +115,25 @@ theorem
           vK w.1 w.2 (a : K)
   have hyE :
       yE ^ (n : ℕ) =
-        Units.map (algebraMap C E).toMonoidHom aC := by
+        map₀ aC := by
     calc
-      yE ^ (n : ℕ) =
-          Units.map (algebraMap C E).toMonoidHom
-            (yC ^ (n : ℕ)) := by
-        exact
-          (map_pow
-            (Units.map (algebraMap C E).toMonoidHom)
+      _ =
+          map₀
+            (yC ^ (n : ℕ)) := (map_pow
+            (map₀)
             yC (n : ℕ)).symm
-      _ = Units.map (algebraMap C E).toMonoidHom aC := by
+      _ = map₀ aC := by
         rw [hyC]
-  let q : Eˣ := betaE / yE
-  have hq : q ^ (n : ℕ) = 1 :=
-    KummerTheory.div_pow_eq_one_of_pow_eq_pow
-      (hbetaE.trans hyE.symm)
+  let q := betaE / yE
   obtain ⟨zeta, hzeta_mem⟩ := hmu
-  have hzeta :
-      IsPrimitiveRoot zeta (n : ℕ) :=
-    (mem_primitiveRoots n.pos).mp hzeta_mem
-  have hzetaE :
-      IsPrimitiveRoot
-        (algebraMap C E (algebraMap K C zeta))
-        (n : ℕ) :=
-    (hzeta.map_of_injective
-        (algebraMap K C).injective).map_of_injective
-      (algebraMap C E).injective
-  have hq_val :
-      (q : E) ^ (n : ℕ) = 1 := by
-    simpa using congrArg Units.val hq
   obtain ⟨i, _hi, hzetaq⟩ :=
-    hzetaE.eq_pow_of_pow_eq_one hq_val
+    ((((mem_primitiveRoots n.pos).mp hzeta_mem).map_of_injective
+        (algebraMap K C).injective).map_of_injective
+      (algebraMap C E).injective).eq_pow_of_pow_eq_one (by
+      exact congrArg Units.val (KummerTheory.div_pow_eq_one_of_pow_eq_pow
+        (hbetaE.trans hyE.symm)))
   have hbeta_base :
-      toE (beta : L) ∈
+      toE₀ ∈
         Set.range (algebraMap C E) := by
     refine
       ⟨(algebraMap K C zeta) ^ i * (yC : C), ?_⟩
@@ -163,7 +146,7 @@ theorem
       _ = (q : E) * (yE : E) := by
         rw [hzetaq]
         rfl
-      _ = toE (beta : L) := by
+      _ = toE₀ := by
         simpa [betaE] using
           congrArg Units.val
             (show q * yE = betaE by simp [q])
@@ -207,7 +190,7 @@ theorem
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) w.1
   let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   let := localizedCompletionGlobalAlgebra vK w
   let := localizedCompletionIsScalarTower vK w
@@ -215,52 +198,47 @@ theorem
   let E := LocalizedCompletion vK w
   let toE :=
     AbsoluteValue.toAlgebraicLocalization vK w.1 w.2
-  let e :
-      Cˣ ≃ₜ* (v.adicCompletion K)ˣ :=
+  let e :=
     finitePlaceCompletionUnitsContinuousMulEquiv v
-  let aC : Cˣ :=
+  let aC :=
     Units.map (algebraMap K C).toMonoidHom a
+  let map₀ := Units.map (algebraMap K (v.adicCompletion K)).toMonoidHom
   have he_base (u : Kˣ) :
       e (Units.map (algebraMap K C).toMonoidHom u) =
-        Units.map
-          (algebraMap K (v.adicCompletion K)).toMonoidHom u := by
+        map₀ u := by
     apply Units.ext
-    let x : WithAbs vK :=
-      (WithAbs.equiv vK).symm (u : K)
     change
-      finitePlaceCompletionRingHom v (x : C) =
+      finitePlaceCompletionRingHom v (((WithAbs.equiv vK).symm (u : K)) : C) =
         algebraMap K (v.adicCompletion K) (u : K)
     rw [finitePlaceCompletionRingHom_coe]
     rfl
   have hbeta_val :
       (beta : L) ^ (n : ℕ) =
         algebraMap K L (a : K) := by
-    simpa using congrArg Units.val hbeta
+    exact congrArg Units.val hbeta
   constructor
   · intro ha
     apply
       kummerRadicand_root_mem_decompositionFixedField_of_mem_nthPowerSubgroup
-        (K := K) (L := L) vK hvK w n hmu a beta hbeta
+          vK hvK w n hmu a beta hbeta
     obtain ⟨y, hy⟩ :=
       (MonoidHom.mem_range
-        (G := (v.adicCompletion K)ˣ)).mp ha
+        ).mp ha
     rw [powMonoidHom_apply] at hy
     apply
       (MonoidHom.mem_range
-        (G := Cˣ)).mpr
+        ).mpr
     refine ⟨e.symm y, ?_⟩
     rw [powMonoidHom_apply]
     apply e.injective
     calc
-      e ((e.symm y) ^ (n : ℕ)) =
+      _ =
           (e (e.symm y)) ^ (n : ℕ) :=
         map_pow e (e.symm y) (n : ℕ)
       _ = y ^ (n : ℕ) := by
         rw [e.apply_symm_apply]
       _ =
-          Units.map
-            (algebraMap K
-              (v.adicCompletion K)).toMonoidHom a := hy
+          map₀ a := hy
       _ = e aC := (he_base a).symm
   · intro hfixed
     have hcomap :
@@ -276,15 +254,14 @@ theorem
     obtain ⟨y, hy⟩ := hcomap
     have hy_ne : y ≠ 0 := by
       intro hy_zero
-      have hbeta_zero : (beta : L) = 0 := by
-        apply toE.injective
-        calc
-          toE (beta : L) =
-              algebraMap C E y := hy.symm
-          _ = 0 := by rw [hy_zero, map_zero]
-          _ = toE 0 := (map_zero toE).symm
-      exact beta.ne_zero hbeta_zero
-    let yC : Cˣ := Units.mk0 y hy_ne
+      apply beta.ne_zero
+      apply toE.injective
+      calc
+        _ =
+            algebraMap C E y := hy.symm
+        _ = 0 := by rw [hy_zero, map_zero]
+        _ = toE 0 := (map_zero toE).symm
+    let yC := Units.mk0 y hy_ne
     have hyC : yC ^ (n : ℕ) = aC := by
       apply Units.ext
       apply (algebraMap C E).injective
@@ -308,19 +285,15 @@ theorem
             vK w.1 w.2 (a : K)
     apply
       (MonoidHom.mem_range
-        (G := (v.adicCompletion K)ˣ)).mpr
+        ).mpr
     refine ⟨e yC, ?_⟩
     rw [powMonoidHom_apply]
     calc
-      (e yC) ^ (n : ℕ) =
-          e (yC ^ (n : ℕ)) := by
-        exact
-          (map_pow e yC (n : ℕ)).symm
+      _ =
+          e (yC ^ (n : ℕ)) := (map_pow e yC (n : ℕ)).symm
       _ = e aC := by rw [hyC]
       _ =
-          Units.map
-            (algebraMap K
-              (v.adicCompletion K)).toMonoidHom a :=
+          map₀ a :=
         he_base a
 
 end KummerTheory

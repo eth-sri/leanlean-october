@@ -11,8 +11,8 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.CoreChartLocalizers
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
+    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+    (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
 theorem quotient_hausdorff (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
     T2Space (X F ζ hζ U) := by

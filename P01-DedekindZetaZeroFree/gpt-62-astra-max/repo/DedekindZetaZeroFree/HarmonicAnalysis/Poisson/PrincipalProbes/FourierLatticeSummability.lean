@@ -22,7 +22,7 @@ private theorem annular_tensor (A : SArithmeticData F) (W : SLocalProduct F A.Sf
       ∀ x, W ((PoissonS.localProductToSpace F A.Sf).symm x) = PoissonS.tensorFunction F A.Sf f φ x := by
   obtain ⟨r, c, φ, hr, hc, hφ, hW⟩ := hw
   let E := mixedEmbedding.euclidean.toMixed F
-  let f : PoissonArch.Space F → ℂ := fun x => (∏ v, r v ((E x).1 v)) * ∏ v, c v ((E x).2 v)
+  let f := fun x => (∏ v, r v ((E x).1 v)) * ∏ v, c v ((E x).2 v)
   have hs : ContDiff ℝ (⊤ : ℕ∞) f := by
     apply ContDiff.mul
     · apply contDiff_prod
@@ -31,8 +31,7 @@ private theorem annular_tensor (A : SArithmeticData F) (W : SLocalProduct F A.Sf
     · apply contDiff_prod
       intro v hv
       exact (hc v).1.comp ((contDiff_apply ℝ ℂ v).comp (contDiff_snd.comp E.contDiff))
-  let K := E ⁻¹' ((Set.pi Set.univ fun v => tsupport (r v)) ×ˢ (Set.pi Set.univ fun v => tsupport (c v)))
-  have hK : IsCompact K := E.toHomeomorph.isCompact_preimage.mpr
+  have hK := E.toHomeomorph.isCompact_preimage.mpr
     ((isCompact_univ_pi fun v => (hr v).2.1).prod (isCompact_univ_pi fun v => (hc v).2.1))
   have ht : HasCompactSupport f := by
     apply HasCompactSupport.intro hK
@@ -46,7 +45,6 @@ private theorem annular_tensor (A : SArithmeticData F) (W : SLocalProduct F A.Sf
   refine ⟨ht.toSchwartzMap hs, φ, fun v => (hφ v).1, fun v => (hφ v).2.1, ?_⟩
   intro x
   rw [hW]
-  change _ = f x.1 * ∏ v, φ v (x.2 v)
   have he : InfiniteAdeleRing.ringEquiv_mixedSpace F ((PoissonS.localProductToSpace F A.Sf).symm x).1 = E x.1 := by
     rw [← PoissonArch.infiniteAdeleToSpace_coordinates]
     congr 1
@@ -54,7 +52,12 @@ private theorem annular_tensor (A : SArithmeticData F) (W : SLocalProduct F A.Sf
   rw [he]
   rfl
 
-private theorem trace_pair (A : SArithmeticData F) (u v : InfiniteAdeleRing F) :
+alias FourierLatticeSummability.annular_tensor := annular_tensor
+
+variable (A : SArithmeticData F)
+
+include A in
+private theorem trace_pair (u v : InfiniteAdeleRing F) :
     PoissonArch.tracePairing F (PoissonArch.infiniteAdeleToSpace F u) (PoissonArch.infiniteAdeleToSpace F v) =
       ∑ w : InfinitePlace F, 2 * (InfinitePlace.Completion.extensionEmbedding w (u w * v w)).re := by
   letI : IsEmpty {w : InfinitePlace F // w.IsReal} := ⟨fun w => (InfinitePlace.not_isReal_iff_isComplex.mpr (A.complex_place w)) w.property⟩
@@ -65,7 +68,7 @@ private theorem trace_pair (A : SArithmeticData F) (u v : InfiniteAdeleRing F) :
   intro w
   rfl
 
-private theorem fourier_transport (A : SArithmeticData F)
+private theorem fourier_transport
     (e : (v : A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (μ : (v : A.Sf) → Measure (v.val.adicCompletion F))
     (W : SLocalProduct F A.Sf → ℂ) (y : SLocalProduct F A.Sf) :
@@ -100,8 +103,7 @@ private theorem fourier_transport (A : SArithmeticData F)
   push_cast
   ring
 
-theorem raw_fourier_norm_summable
-    (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem raw_fourier_norm_summable (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : NormalizedProbe.PrincipalData A σ η hS)
     (N : Normalization A σ η hS P)
@@ -112,8 +114,8 @@ theorem raw_fourier_norm_summable
         (frequencyPoint A s a X t h)‖) := by
   letI : ∀ v, (N.localMeasure v).IsAddHaarMeasure := N.localHaar
   obtain ⟨f, φ, hl, hc, hW⟩ := annular_tensor A P.W0 P.annular
-  let d0 : A.G := (t : A.G) * NormalizedProbe.radialSection A (modulus A s * X)
-  let d : (SLocalProduct F A.Sf)ˣ :=
+  let d0 := (t : A.G) * NormalizedProbe.radialSection A (modulus A s * X)
+  let d :=
     ((MulEquiv.piUnits).symm.prodCongr (MulEquiv.piUnits).symm).trans
       (MulEquiv.prodUnits).symm d0
   have hd : d.val = NormalizedProbe.asLocalPoint A d0 := rfl
@@ -125,8 +127,7 @@ theorem raw_fourier_norm_summable
     (PoissonS.ScaleShift.traceConductor_nontrivial F A.Sf P.finiteTrace N.traceConductor)
     g ψ hψl hψc ((s : F) * (a : F)) hp
   let i : A.R → PoissonS.lattice F A.Sf ((s : F) * (a : F))⁻¹ := fun h =>
-    ⟨PoissonS.diagonalHom F A.Sf (((s : F) * (a : F))⁻¹ * (h : F)), by
-      exact AddSubgroup.mem_map.mpr ⟨(h : F), h.property, rfl⟩⟩
+    ⟨PoissonS.diagonalHom F A.Sf (((s : F) * (a : F))⁻¹ * (h : F)), AddSubgroup.mem_map.mpr ⟨(h : F), h.property, rfl⟩⟩
   have hi : Function.Injective i := by
     intro x y hxy
     have he := congrArg (fun z : PoissonS.lattice F A.Sf ((s : F) * (a : F))⁻¹ =>
@@ -134,10 +135,9 @@ theorem raw_fourier_norm_summable
     change mixedEmbedding F (((s : F) * (a : F))⁻¹ * (x : F)) =
       mixedEmbedding F (((s : F) * (a : F))⁻¹ * (y : F)) at he
     rw [InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp, InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp] at he
-    have he' := (algebraMap F (InfiniteAdeleRing F)).injective
-      ((InfiniteAdeleRing.ringEquiv_mixedSpace F).injective he)
     apply Subtype.ext
-    exact mul_left_cancel₀ (inv_ne_zero hp) he'
+    exact mul_left_cancel₀ (inv_ne_zero hp) ((algebraMap F (InfiniteAdeleRing F)).injective
+      ((InfiniteAdeleRing.ringEquiv_mixedSpace F).injective he))
   have hsum' := hsum.comp_injective hi
   have hscale (h : A.R) :
       PoissonS.fourierIntegral F A.Sf P.finiteTrace N.localMeasure (PoissonS.tensorFunction F A.Sf g ψ) (i h) =
@@ -179,7 +179,7 @@ theorem raw_fourier_norm_summable
         ((Units.map (RingHom.fst _ _).toMonoidHom) d)))) _
     · apply Finset.prod_pos
       intro v hv
-      let dv : (v.val.adicCompletion F)ˣ := Units.map
+      let dv := Units.map
         ((Pi.evalRingHom _ v).comp (RingHom.snd _ _)).toMonoidHom d
       exact norm_pos_iff.mpr (show (d.val.2 v) ≠ 0 from Units.ne_zero dv)
   simp only [Function.comp_def, hscale, norm_mul] at hsum'

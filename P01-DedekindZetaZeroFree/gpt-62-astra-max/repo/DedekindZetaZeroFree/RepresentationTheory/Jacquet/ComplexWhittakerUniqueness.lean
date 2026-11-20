@@ -8,7 +8,11 @@ namespace DedekindZetaZeroFree.KPCplxWhittakerUnique
 
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxActualImage MeasureTheory
 
-def whittakerSpace (β : ℂˣ) (ψ : AddChar ℂ Circle) :
+section
+
+variable (β : ℂˣ) (ψ : AddChar ℂ Circle)
+
+def whittakerSpace :
     Submodule ℂ (Theta β →L[ℂ] ℂ) where
   carrier := {L | ∀ (t : ℂ) (h : Theta β),
     L (imageAction β (Matrix.ProjGenLinGroup.mk (upperUnipotent t)) h) =
@@ -22,11 +26,13 @@ def whittakerSpace (β : ℂˣ) (ψ : AddChar ℂ Circle) :
     simp only [ContinuousLinearMap.smul_apply, smul_eq_mul, hL t h]
     ring
 
-@[simp] theorem mem_whittakerSpace (β : ℂˣ) (ψ : AddChar ℂ Circle)
+@[simp] theorem mem_whittakerSpace
     (L : Theta β →L[ℂ] ℂ) :
     L ∈ whittakerSpace β ψ ↔ ∀ (t : ℂ) (h : Theta β),
       L (imageAction β (Matrix.ProjGenLinGroup.mk (upperUnipotent t)) h) =
         (ψ t : ℂ) * L h := Iff.rfl
+
+end
 
 noncomputable def jacquetIntegrand (ψ : AddChar ℂ Circle)
     (f : PrincipalSeries positiveParameter) (x : ℂ) : ℂ :=
@@ -41,14 +47,12 @@ private theorem source_whittaker_spanning (γ : ℂˣ) (hne : character (γ : �
     (hL : KPCplxClosedCellJets.IsEigenDistribution positiveParameter (character (γ : ℂ)) L) :
     ∃ a : ℂ, L = a • KPCplxJacquetFunctional.jacquetFunctional γ := by
   obtain ⟨a, _, hs⟩ := KPCplxOpenCellDistributions.equivariant_functional_open_cell γ L hL
-  have he : KPCplxClosedCellJets.IsEigenDistribution positiveParameter (character (γ : ℂ))
-      (L - a • KPCplxJacquetFunctional.jacquetFunctional γ) := by
-    intro t f
-    simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply, smul_eq_mul,
-      hL t f, KPCplxJacquetFunctional.jacquetFunctional_covariance]
-    ring
-  exact ⟨a, sub_eq_zero.mp
-    (KPCplxClosedCellJets.closed_cell_no_nontrivial_eigen_distribution _ hne _ hs he)⟩
+  refine ⟨a, sub_eq_zero.mp
+    (KPCplxClosedCellJets.closed_cell_no_nontrivial_eigen_distribution _ hne _ hs ?_)⟩
+  intro t f
+  simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply, smul_eq_mul,
+    hL t f, KPCplxJacquetFunctional.jacquetFunctional_covariance]
+  ring
 
 private theorem jacquet_rescale (β γ : ℂˣ) (f : PrincipalSeries positiveParameter) :
     jacquetIntegral β (character (γ : ℂ)) f =
@@ -73,7 +77,7 @@ private theorem jacquet_rescale (β γ : ℂˣ) (f : PrincipalSeries positivePar
     (fun x : ℂ => f (weyl * upperUnipotent x) * (character (γ : ℂ) (-x) : ℂ)) by
       funext x; exact mul_comm _ _]
   push_cast
-  have hg : (characterScale γ : ℂ) ≠ 0 :=
+  have hg :=
     Complex.ofReal_ne_zero.mpr (characterScale_pos γ).ne'
   field_simp
 
@@ -91,7 +95,7 @@ theorem transported_jacquet_generator (β : ℂˣ) (ψ : AddChar ℂ Circle)
     exact congrArg (fun z : Circle => (z : ℂ)) (hγ x)
   subst ψ
   obtain ⟨e, he, _⟩ := standardIntertwiner_topological_image_isomorphism β
-  let c : ℂ := ((characterScale β / characterScale γ : ℝ) : ℂ)
+  let c := ((characterScale β / characterScale γ : ℝ) : ℂ)
   have hc : c ≠ 0 := Complex.ofReal_ne_zero.mpr (div_pos
     (characterScale_pos β) (characterScale_pos γ)).ne'
   let J := KPCplxJacquetFunctional.jacquetFunctional γ
@@ -149,13 +153,6 @@ theorem transported_jacquet_generator (β : ℂˣ) (ψ : AddChar ℂ Circle)
         subst L
         exact hmem)
 
-private theorem dimension_span_singleton {V : Type*} [AddCommGroup V] [Module ℂ V]
-    (v : V) (hv : v ≠ 0) :
-    Module.rank ℂ (Submodule.span ℂ {v}) = 1 ∧
-      Module.finrank ℂ (Submodule.span ℂ {v}) = 1 := by
-  have hf := finrank_span_singleton (K := ℂ) hv
-  exact ⟨Module.rank_eq_one_iff_finrank_eq_one.mpr hf, hf⟩
-
 theorem whittaker_dimension_one (β : ℂˣ) (ψ : AddChar ℂ Circle)
     (hψ : Continuous ψ) (hne : ψ ≠ 1) :
     Module.rank ℂ (whittakerSpace β ψ) = 1 ∧
@@ -164,6 +161,7 @@ theorem whittaker_dimension_one (β : ℂˣ) (ψ : AddChar ℂ Circle)
   letI : AddCommGroup (Theta β →L[ℂ] ℂ) :=
     @ContinuousLinearMap.addCommGroup ℂ _ ℂ _ (Theta β) _ _ ℂ _ _ _ _ (RingHom.id ℂ) _
   rw [hspan]
-  exact dimension_span_singleton L hL
+  have hf := finrank_span_singleton (K := ℂ) hL
+  exact ⟨Module.rank_eq_one_iff_finrank_eq_one.mpr hf, hf⟩
 
 end DedekindZetaZeroFree.KPCplxWhittakerUnique

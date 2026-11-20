@@ -15,18 +15,18 @@ set_option autoImplicit false
 open LocalFiniteSums
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 private theorem frequency_good_cofinite
     (C : A.GeneralArithmeticContext σ η hS) (U : Frequency C) :
     ∀ᶠ p : ExteriorPrime A in Filter.cofinite, (U.j p).val = 0 := by
   apply Filter.eventually_cofinite.mpr
-  have hinj : Function.Injective (fun p : ExteriorPrime A => p.val.asIdeal) :=
-    IsDedekindDomain.HeightOneSpectrum.asIdeal_injective.comp Subtype.val_injective
   simpa [Frequency.j, idealPrimeExponent, Multiset.count_eq_zero] using
     (UniqueFactorizationMonoid.normalizedFactors U.ideal.val).finite_toSet.preimage
-      hinj.injOn
+      (IsDedekindDomain.HeightOneSpectrum.asIdeal_injective.comp Subtype.val_injective).injOn
+
+alias NormalProductConvergence.frequency_good_cofinite := frequency_good_cofinite
 
 private theorem frequency_good_unit
     (C : A.GeneralArithmeticContext σ η hS) (U : Frequency C)
@@ -36,11 +36,7 @@ private theorem frequency_good_unit
   rw [hs.1, hp, pow_zero, one_mul]
   exact hs.2
 
-private theorem exterior_not_mem (p : ExteriorPrime A) : p.val ∉ A.Sf := by
-  intro hp
-  have he := (A.exterior_iff ⟨p.val.asIdeal, p.val.ne_bot⟩).mp p.property p.val hp
-  simp only [sup_idem] at he
-  exact p.val.isPrime.ne_top he
+private alias exterior_not_mem := DedekindZetaZeroFree.LocalFiniteSumCompatibility.exterior_notMem
 
 private theorem summable_correction_majorant (M : ℝ) :
     Summable (fun p : ExteriorPrime A =>
@@ -51,9 +47,10 @@ private theorem summable_correction_majorant (M : ℝ) :
     intro p q h
     apply Subtype.ext
     exact congrArg (fun r : {p : IsDedekindDomain.HeightOneSpectrum (𝓞 F) // p ∉ A.Sf} => r.val) h
-  have hs := (summable_exterior_prime_norm_rpow F A.Sf (1 + 1 / 4000) (by norm_num)).comp_injective hi
   simpa [Function.comp_def, i, Q, SArithmeticData.exteriorNorm, idealNorm, primeIdeal]
-    using hs.mul_left M
+    using ((summable_exterior_prime_norm_rpow F A.Sf (1 + 1 / 4000) (by norm_num)).comp_injective hi).mul_left M
+
+alias NormalProductConvergence.summable_correction_majorant := summable_correction_majorant
 
 theorem hasProdUniformlyOn_localFactor
     (C : A.GeneralArithmeticContext σ η hS) (U : Frequency C)
@@ -63,7 +60,7 @@ theorem hasProdUniformlyOn_localFactor
         localFactor C U p x.1 x.2.1 x.2.2)
       (fun x : Coordinates =>
         ∏' p : ExteriorPrime A, localFactor C U p x.1 x.2.1 x.2.2) K := by
-  obtain ⟨M, hM, hbound⟩ := good_correction_uniform_bound
+  obtain ⟨M, hbound⟩ := good_correction_uniform_bound
   have hb : ∀ᶠ p : ExteriorPrime A in Filter.cofinite, ∀ x ∈ K,
       ‖localFactor C U p x.1 x.2.1 x.2.2 - 1‖ ≤
         M * (Q p) ^ (-(1 + 1 / 4000 : ℝ)) := by
@@ -88,8 +85,7 @@ theorem multipliable_localFactor
     (C : A.GeneralArithmeticContext σ η hS) (U : Frequency C)
     (x : Coordinates) (hx : x ∈ Omega) :
     Multipliable (fun p : ExteriorPrime A =>
-      localFactor C U p x.1 x.2.1 x.2.2) := by
-  exact ((hasProdUniformlyOn_localFactor C U {x}
+      localFactor C U p x.1 x.2.1 x.2.2) := ((hasProdUniformlyOn_localFactor C U {x}
     isCompact_singleton (Set.singleton_subset_iff.mpr hx)).hasProd (Set.mem_singleton x)).multipliable
 
 end DedekindZetaZeroFree.CorrectionFactors

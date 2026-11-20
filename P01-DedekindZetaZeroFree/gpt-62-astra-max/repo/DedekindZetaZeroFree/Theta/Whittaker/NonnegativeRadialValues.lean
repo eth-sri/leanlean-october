@@ -15,28 +15,28 @@ set_option autoImplicit false
 set_option synthInstance.maxHeartbeats 400000
 set_option maxHeartbeats 2000000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (v : HeightOneSpectrum (𝓞 F))
+    (v : HeightOneSpectrum (𝓞 F))
 def radialValue (g₂ : ℂ) (e : ℤ) : ℂ :=
   if e < 0 then 0 else if e % 3 = 0 then QPower F v (-((e / 3 : ℤ) : ℝ))
   else if e % 3 = 1 then QPower F v (-((e / 3 : ℤ) : ℝ) - (1 / 2 : ℝ)) * g₂ else 0
 variable (inducingData : CanonicalFiniteInducingData F ζ hζ v)
-variable (P : Polarization inducingData.heisenberg)
-variable (μ : MeasureTheory.Measure (LocalField F v)) [μ.IsAddHaarMeasure]
-variable (hμ : μ ((valuation (LocalField F v)).integer : Set (LocalField F v)) = 1)
+    (P : Polarization inducingData.heisenberg)
+    (μ : MeasureTheory.Measure (LocalField F v)) [μ.IsAddHaarMeasure]
+    (hμ : μ ((valuation (LocalField F v)).integer : Set (LocalField F v)) = 1)
 variable [Fintype (IsLocalRing.ResidueField (valuation (LocalField F v)).integer)]
 variable (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
-variable (hgood : valuation (LocalField F v) (6 : LocalField F v) = 1)
-variable (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π)
-variable (ψ : AddChar (LocalField F v) ℂ)
-variable (hψcont : Continuous ψ) (hψunitary : ∀ x, ‖ψ x‖ = 1)
-variable (hcond : ConductorZero ψ π)
-variable (χκ : MulChar (IsLocalRing.ResidueField (valuation (LocalField F v)).integer) ℂ)
-variable (hactual : ∀ u, unitCharacter χκ u = arithmeticUnitCharacter F ζ hζ v hgood u)
+    (hgood : valuation (LocalField F v) (6 : LocalField F v) = 1)
+    (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π)
+    (ψ : AddChar (LocalField F v) ℂ)
+    (hψcont : Continuous ψ) (hψunitary : ∀ x, ‖ψ x‖ = 1)
+    (hcond : ConductorZero ψ π)
+    (χκ : MulChar (IsLocalRing.ResidueField (valuation (LocalField F v)).integer) ℂ)
+    (hactual : ∀ u, unitCharacter χκ u = arithmeticUnitCharacter F ζ hζ v hgood u)
 variable (ψbar : AddChar (IsLocalRing.ResidueField (valuation (LocalField F v)).integer) ℂ)
 variable (hbar : ∀ u : (valuation (LocalField F v)).integer,
   ψbar (IsLocalRing.residue _ u) = ψ ((π : LocalField F v)⁻¹ * (u : LocalField F v)))
 variable (φ : Image F ζ hζ v inducingData P μ hμ)
-variable (hφ : φ ∈ ImageFixed F ζ hζ v inducingData P μ hμ ht) (hne : φ ≠ 0)
+    (hφ : φ ∈ ImageFixed F ζ hζ v inducingData P μ hμ ht) (hne : φ ≠ 0)
 include ht hgood hπ hψcont hψunitary hcond hactual hbar hφ hne in
  theorem nonnegative_values
     (L : Image F ζ hζ v inducingData P μ hμ →ₗ[ℂ] ℂ)
@@ -73,7 +73,7 @@ include ht hgood hπ hψcont hψunitary hcond hactual hbar hφ hne in
   have hQ : 1 < (KPLocalPrincipalSeries.residueCardinality (LocalField F v) : ℝ) := by
     exact_mod_cast (Finite.one_lt_card (α := IsLocalRing.ResidueField
       (valuation (LocalField F v)).integer))
-  obtain ⟨hχ, ψ₀, hψ₀ne, _, hψ₀, _, hg, _⟩ :=
+  obtain ⟨hχ, ψ₀, hψ₀, hg⟩ :=
     arithmetic_unit_shell_integrals F ζ hζ v hgood μ hμ π hπ ψ
       hψcont hψunitary hcond χκ hactual
   have hψeq : ψ₀ = ψbar := by

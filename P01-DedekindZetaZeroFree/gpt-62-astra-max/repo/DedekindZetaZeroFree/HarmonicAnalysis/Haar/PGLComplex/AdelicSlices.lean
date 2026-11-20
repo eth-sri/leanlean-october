@@ -44,14 +44,20 @@ def levelSubgroup (U : FiniteLevel F ζ hζ) : Subgroup (ActualCover F ζ hζ) :
 
 abbrev centreMap := KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ
 
-def rightSubgroup (U : FiniteLevel F ζ hζ) (geometric : Bool) :
+section
+
+variable (U : FiniteLevel F ζ hζ) (geometric : Bool)
+
+def rightSubgroup :
     Subgroup (ActualCover F ζ hζ) :=
   if geometric then levelSubgroup F ζ hζ U ⊔ (centreMap F ζ hζ).range
   else levelSubgroup F ζ hζ U
 
-abbrev LevelSpace (U : FiniteLevel F ζ hζ) (geometric : Bool) :=
+abbrev LevelSpace :=
   DoubleCoset.Quotient (rationalSubgroup F ζ hζ : Set (ActualCover F ζ hζ))
     (rightSubgroup F ζ hζ U geometric : Set (ActualCover F ζ hζ))
+
+end
 
 instance (U : FiniteLevel F ζ hζ) (geometric : Bool) :
     TopologicalSpace (LevelSpace F ζ hζ U geometric) :=
@@ -77,7 +83,6 @@ def glArchProjection : KPAdelicCoverRestrictedProduct.AdelicGL2 F →* ArchGroup
 theorem scalars_le_arch_kernel : KPAdelicCoverRestrictedProduct.scalarSubgroup F ≤
     (glArchProjection F ζ hζ).ker := by
   rintro g ⟨u, rfl⟩
-  change glArchProjection F ζ hζ (Matrix.GeneralLinearGroup.scalar (Fin 2) u) = 1
   ext w
   change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map _
     (Matrix.GeneralLinearGroup.scalar (Fin 2) u)) = 1
@@ -99,21 +104,11 @@ def archimedeanInsertion (g : ArchGroup F) : ActualCover F ζ hζ :=
 
 theorem actual_product_splitting :
     ∃ e : (ArchGroup F × finiteSubgroup F ζ hζ) ≃ₜ* ActualCover F ζ hζ,
-      (∀ a h, e (a, h) = archimedeanInsertion F ζ hζ a * h) ∧
-      (∀ g, (e.symm g).1 = archProjection F ζ hζ g) ∧
-      (∀ a, archProjection F ζ hζ (archimedeanInsertion F ζ hζ a) = a) ∧
-      (archProjection F ζ hζ).ker = finiteSubgroup F ζ hζ ∧
-      (centreMap F ζ hζ).range ≤ finiteSubgroup F ζ hζ ∧
-      T2Space (ActualCover F ζ hζ) ∧ LocallyCompactSpace (ActualCover F ζ hζ) ∧
-      SecondCountableTopology (ActualCover F ζ hζ) ∧
-      T2Space (finiteSubgroup F ζ hζ) ∧ LocallyCompactSpace (finiteSubgroup F ζ hζ) := by
+      (∀ a h, e (a, h) = archimedeanInsertion F ζ hζ a * h) := by
   obtain ⟨e, he, hinv, hsplit, hker, hcentre, hfiniteLC⟩ :=
     AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ
   letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).1
-  refine ⟨e, he, hinv, hsplit, hker, hcentre, inferInstance, ?_, ?_,
-    inferInstance, hfiniteLC⟩
-  · exact (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.1
-  · exact ActualQuotient.actual_cover_secondCountable F ζ hζ
+  refine ⟨e, he⟩
 
 end DedekindZetaZeroFree.PGLComplex.AdelicSlices
 

@@ -8,8 +8,9 @@ open scoped NumberField
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
-private lemma exists_shift_totallyPositive
-    (K : Type) [Field K] [NumberField K] (d₀ : 𝓞 K) (N : ℕ) (hN : 0 < N) :
+variable (K : Type) [Field K] [NumberField K]
+
+private lemma exists_shift_totallyPositive (d₀ : 𝓞 K) (N : ℕ) (hN : 0 < N) :
     ∃ t : ℕ, d₀ + (t * N : 𝓞 K) ≠ 0 ∧
       ∀ φ : K →+* ℝ, 0 < φ ((d₀ + (t * N : 𝓞 K) : 𝓞 K) : K) := by
   classical
@@ -42,7 +43,7 @@ private lemma exists_shift_totallyPositive
     intro t ht φ
     have hTφ := hT φ
     have hcast : (T : ℝ) ≤ (t : ℝ) := by exact_mod_cast ht
-    have hNn : (0 : ℝ) ≤ (N : ℝ) := le_of_lt hNR
+    have hNn := le_of_lt hNR
     have hmul : (T : ℝ) * (N : ℝ) ≤ (t : ℝ) * (N : ℝ) :=
       mul_le_mul_of_nonneg_right hcast hNn
     have hcoeeq : ((d₀ + (t * N : 𝓞 K) : 𝓞 K) : K) = (d₀ : K) + (t : K) * (N : K) := by
@@ -67,35 +68,30 @@ private lemma exists_shift_totallyPositive
   · exact ⟨T, hzero, hTle T le_rfl⟩
 
 theorem positiveIdealCRT
-    (K : Type) [Field K] [NumberField K]
     (D m : Ideal (𝓞 K)) (hD : D ≠ ⊥) (hm : m ≠ ⊥)
     (hcop : D ⊔ m = ⊤) :
     ∃ d : 𝓞 K, d ≠ 0 ∧ d ∈ D ∧ d - 1 ∈ m ∧
       ∀ φ : K →+* ℝ, 0 < φ (d : K) := by
+  let absNorm₀ := Ideal.absNorm (D ⊓ m)
   classical
-  have hcop' : IsCoprime D m := Ideal.isCoprime_iff_sup_eq.mpr hcop
-  obtain ⟨d₀, hd₀D, j, hjm, hsum⟩ := hcop'.exists
-  have hd₀m : d₀ - 1 ∈ m := by
-    have heq : d₀ - 1 = -j := by rw [← hsum]; ring
-    rw [heq]; exact m.neg_mem hjm
-  have hDm : D ⊓ m ≠ ⊥ := Ideal.inf_ne_bot_of_ne_bot hD hm
-  have hNpos : 0 < Ideal.absNorm (D ⊓ m) :=
-    Nat.pos_of_ne_zero fun h => hDm (Ideal.absNorm_eq_zero_iff.mp h)
-  have hNmem : (Ideal.absNorm (D ⊓ m) : 𝓞 K) ∈ D ⊓ m := Ideal.absNorm_mem _
+  obtain ⟨d₀, hd₀D, j, hjm, hsum⟩ := (Ideal.isCoprime_iff_sup_eq.mpr hcop).exists
+  have hNmem : (absNorm₀ : 𝓞 K) ∈ D ⊓ m := Ideal.absNorm_mem _
   obtain ⟨t, htne, htpos⟩ :=
-    exists_shift_totallyPositive K d₀ (Ideal.absNorm (D ⊓ m)) hNpos
-  refine ⟨d₀ + (t * Ideal.absNorm (D ⊓ m) : 𝓞 K), htne, ?_, ?_, htpos⟩
+    exists_shift_totallyPositive K d₀ (absNorm₀) (Nat.pos_of_ne_zero fun h => (Ideal.inf_ne_bot_of_ne_bot hD hm) (Ideal.absNorm_eq_zero_iff.mp h))
+  refine ⟨d₀ + (t * absNorm₀ : 𝓞 K), htne, ?_, ?_, htpos⟩
   · apply D.add_mem hd₀D
-    have hmul : (t * Ideal.absNorm (D ⊓ m) : 𝓞 K) =
-        (Ideal.absNorm (D ⊓ m) : 𝓞 K) * (t : 𝓞 K) := by ring
+    have hmul : (t * absNorm₀ : 𝓞 K) =
+        (absNorm₀ : 𝓞 K) * t := by ring
     rw [hmul]
     exact D.mul_mem_right _ (Ideal.mem_inf.mp hNmem).1
-  · have heq : d₀ + (t * Ideal.absNorm (D ⊓ m) : 𝓞 K) - 1 =
-        (d₀ - 1) + (t * Ideal.absNorm (D ⊓ m) : 𝓞 K) := by ring
+  · have heq : d₀ + (t * absNorm₀ : 𝓞 K) - 1 =
+        (d₀ - 1) + (t * absNorm₀ : 𝓞 K) := by ring
     rw [heq]
-    apply m.add_mem hd₀m
-    have hmul : (t * Ideal.absNorm (D ⊓ m) : 𝓞 K) =
-        (Ideal.absNorm (D ⊓ m) : 𝓞 K) * (t : 𝓞 K) := by ring
+    apply m.add_mem (by
+      have heq : d₀ - 1 = -j := by rw [← hsum]; ring
+      rw [heq]; exact m.neg_mem hjm)
+    have hmul : (t * absNorm₀ : 𝓞 K) =
+        (absNorm₀ : 𝓞 K) * t := by ring
     rw [hmul]
     exact m.mul_mem_right _ (Ideal.mem_inf.mp hNmem).2
 

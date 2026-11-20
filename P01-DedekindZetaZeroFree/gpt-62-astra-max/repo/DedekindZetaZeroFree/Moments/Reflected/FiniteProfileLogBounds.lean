@@ -32,20 +32,16 @@ theorem finiteProfileFamily_of_uniform_log_bounds
     obtain ⟨K1, hK1, hb1⟩ := hbound B hB 1 (by norm_num)
     obtain ⟨K2, hK2, hb2⟩ := hbound B hB 2 (by norm_num)
     refine ⟨max (max K0 K1) K2 + 1, by
-      have h0 : (0 : ℝ) ≤ max (max K0 K1) K2 :=
+      have h0 :=
         le_trans hK0 (le_trans (le_max_left K0 K1) (le_max_left _ K2))
       linarith, ?_⟩
     intro i j hj x hx
-    have hmin : 0 ≤ min (Real.rpow x (1 / 8)) (Real.rpow x (-B)) :=
-      le_min (Real.rpow_nonneg hx.le _) (Real.rpow_nonneg hx.le _)
     have hle : ∀ K : ℝ, K ≤ max (max K0 K1) K2 →
         ‖iteratedDeriv j (logProfile (H i.val.1 i.val.2)) (Real.log x)‖ ≤
           K * min (Real.rpow x (1 / 8)) (Real.rpow x (-B)) →
         ‖iteratedDeriv j (logProfile (H i.val.1 i.val.2)) (Real.log x)‖ ≤
           (max (max K0 K1) K2 + 1) *
-            min (Real.rpow x (1 / 8)) (Real.rpow x (-B)) := by
-      intro K hK h
-      exact h.trans (mul_le_mul_of_nonneg_right (by linarith) hmin)
+            min (Real.rpow x (1 / 8)) (Real.rpow x (-B)) := fun K hK h => h.trans (mul_le_mul_of_nonneg_right (by linarith) (le_min (Real.rpow_nonneg hx.le _) (Real.rpow_nonneg hx.le _)))
     interval_cases j
     · exact hle K0 (le_trans (le_max_left K0 K1) (le_max_left _ K2)) (hb0 _ _ x hx)
     · exact hle K1 (le_trans (le_max_right K0 K1) (le_max_left _ K2)) (hb1 _ _ x hx)

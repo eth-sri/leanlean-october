@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -37,13 +34,11 @@ theorem addSubgroup_isOpen_of_isClosed_of_ne_bot
     IsOpen (H : Set ℤ_[p]) := by
   obtain ⟨⟨x, hxH⟩, hx⟩ :=
     AddSubgroup.ne_bot_iff_exists_ne_zero.mp hne
-  have hx0 : x ≠ 0 := fun h ↦ hx (Subtype.ext h)
   have hmul (a : ℤ_[p]) : x * a ∈ H := by
     refine PadicInt.denseRange_intCast.induction_on a ?_ ?_
-    · change IsClosed ((fun y : ℤ_[p] ↦ x * y) ⁻¹' (H : Set ℤ_[p]))
-      exact hclosed.preimage (continuous_const.mul continuous_id)
+    · exact hclosed.preimage (continuous_const.mul continuous_id)
     · intro z
-      simpa only [zsmul_eq_mul, mul_comm] using H.zsmul_mem hxH z
+      simpa [mul_comm] using H.zsmul_mem hxH z
   have hspan_le :
       (Ideal.span ({x} : Set ℤ_[p])).toAddSubgroup ≤ H := by
     intro y hy
@@ -58,7 +53,7 @@ theorem addSubgroup_isOpen_of_isClosed_of_ne_bot
         x ∈ (Ideal.span ({x} : Set ℤ_[p]) : Ideal ℤ_[p]) :=
       Ideal.subset_span (by simp)
     rw [hzero] at hxmem
-    exact hx0 (by simpa using hxmem)
+    exact (fun h ↦ hx (Subtype.ext h)) (by exact hxmem)
   obtain ⟨n, hn⟩ := PadicInt.ideal_eq_span_pow_p hspan_ne
   have hpow_open :
       IsOpen
@@ -102,25 +97,18 @@ theorem exists_positive_natCast_sub_mem_of_isOpen_addSubgroup
     (z : ℤ_[p]) :
     ∃ n : ℕ, 0 < n ∧ z - (n : ℤ_[p]) ∈ H := by
   have htranslate :
-      Function.Surjective (fun y : ℤ_[p] ↦ y + 1) := by
-    intro y
-    exact ⟨y - 1, sub_add_cancel y 1⟩
-  have hdense :
-      DenseRange (fun n : ℕ ↦ (n : ℤ_[p]) + 1) := by
-    exact
-      htranslate.denseRange.comp
+      Function.Surjective (fun y : ℤ_[p] ↦ y + 1) := fun y => ⟨y - 1, sub_add_cancel y 1⟩
+  have hdense := htranslate.denseRange.comp
         PadicInt.denseRange_natCast
         (continuous_id.add continuous_const)
-  let U : Set ℤ_[p] := {y | z - y ∈ H}
-  have hUopen : IsOpen U := by
-    exact hopen.preimage (continuous_const.sub continuous_id)
+  let U := {y | z - y ∈ H}
   have hUne : U.Nonempty := by
     refine ⟨z, ?_⟩
     change z - z ∈ H
     simpa only [sub_self] using H.zero_mem
-  obtain ⟨n, hn⟩ := hdense.exists_mem_open hUopen hUne
+  obtain ⟨n, hn⟩ := hdense.exists_mem_open (hopen.preimage (continuous_const.sub continuous_id)) hUne
   refine ⟨n + 1, Nat.zero_lt_succ n, ?_⟩
-  simpa only [U, Set.mem_ofPred_eq, Nat.cast_add, Nat.cast_one] using hn
+  simpa using hn
 
 /-- A positive integral degree is nontrivial in the multiplicative
 copy of the additive group of `ℤ_p`. -/
@@ -129,12 +117,6 @@ theorem multiplicative_positiveNatDegree_ne_one
     (n : ℕ) (hn : 0 < n) :
     (Multiplicative.ofAdd (1 : ℤ_[p])) ^ n ≠ 1 := by
   intro h
-  have h' := congrArg Multiplicative.toAdd h
-  change n • (1 : ℤ_[p]) = 0 at h'
-  have hn0 : (n : ℤ_[p]) = 0 := by
-    simpa only [nsmul_one] using h'
-  have : n = 0 := by
-    exact_mod_cast hn0
-  exact (Nat.ne_of_gt hn) this
+  simp_all
 
 end PadicInt

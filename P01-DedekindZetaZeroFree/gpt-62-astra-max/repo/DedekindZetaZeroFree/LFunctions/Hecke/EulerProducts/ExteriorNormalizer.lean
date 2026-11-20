@@ -29,7 +29,7 @@ private theorem global_inverse_euler (z : ℂ) (hz : 1 < z.re) :
     (ExteriorIdealEuler.constant_one_isCoefficient _) z hz
   have heq : (∑' I : ExteriorIdeal (⊤ : Ideal (𝓞 F)),
       ExteriorIdealEuler.summand (fun _ => (1 : ℂ)) z I) = GlobalZetaNormalizer.zeta  F ζ hζ z := by
-    rw [← (GlobalZetaNormalizer.actual_principal_continuation  F ζ hζ).2.2.2.2.2.2.2 z hz |>.tsum_eq]
+    rw [← (GlobalZetaNormalizer.actual_principal_continuation F ζ hζ).2.2.2.2.2 z hz |>.tsum_eq]
     simp only [ExteriorIdealEuler.summand,one_mul]
     apply tsum_subtype_eq_of_support_subset
       (f := fun I : Ideal (𝓞 F) => (Ideal.absNorm I : ℂ)^(-z))
@@ -68,13 +68,8 @@ private theorem exterior_inverse_euler
   have he := h.1.congr_cofinite₀ (s := E)
     (g := fun q => if q ∈ E then 1 else 1 - (Ideal.absNorm q.asIdeal : ℂ)^(-z))
     (fun q _ => local_euler_nonzero F z hz q) (fun q hq => by simp [hq])
-  have hd : PositiveZetaResidue.exteriorEulerFactor F E z ≠ 0 := by
-    exact Finset.prod_ne_zero_iff.mpr (fun q hq => local_euler_nonzero F z hz q)
-  have hone : (∏ q ∈ E, if q ∈ E then (1 : ℂ) else
-      1 - (Ideal.absNorm q.asIdeal : ℂ)^(-z)) = 1 :=
-    Finset.prod_eq_one (fun q hq => by simp [hq])
-  rw [hone] at he
-  refine ⟨?_,mul_ne_zero h.2 hd⟩
+  rw [(Finset.prod_eq_one (fun q hq => by simp [hq]))] at he
+  refine ⟨?_,mul_ne_zero h.2 (Finset.prod_ne_zero_iff.mpr (fun q hq => local_euler_nonzero F z hz q))⟩
   convert he using 1
   simp [GlobalZetaNormalizer.exteriorZeta,PositiveZetaResidue.exteriorEulerFactor,
     div_eq_mul_inv, mul_comm]
@@ -85,9 +80,7 @@ theorem exterior_goodFactor_hasProd
       KPGlobalFiniteSIntertwiner.goodFactor F q s)
       (KPGlobalFiniteSIntertwiner.normalizer F  ζ hζ E s) := by
   have h1 := exterior_inverse_euler F ζ hζ  E (1+6*s) (by simp only [Complex.add_re,Complex.mul_re]; norm_num; linarith)
-  have h2 := exterior_inverse_euler F ζ hζ  E (2+6*s) (by simp only [Complex.add_re,Complex.mul_re]; norm_num; linarith)
-  have hp := h2.1.div₀ h1.1 (inv_ne_zero h1.2)
-  convert hp using 1
+  convert ((exterior_inverse_euler F ζ hζ E (2+6*s) (by simp only [Complex.add_re,Complex.mul_re]; norm_num; linarith)).1.div₀ h1.1 (inv_ne_zero h1.2)) using 1
   · funext q
     by_cases hq : q ∈ E
     · simp [hq]

@@ -20,18 +20,18 @@ theorem continuous_covariance_of_ae {n : ℕ} (A : LocalBall n)
   have hU : IsOpen (A.carrier ∩ τ ⁻¹' A.carrier) := hball.inter (hball.preimage hτ)
   have hmaps : Set.MapsTo τ (A.carrier ∩ τ ⁻¹' A.carrier) A.carrier := fun _ hx => hx.2
 
-  have h1 : f =ᵐ[volume.restrict (A.carrier ∩ τ ⁻¹' A.carrier)] q :=
+  let restrict₀ := volume.restrict (A.carrier ∩ τ ⁻¹' A.carrier)
+  have h1 : f =ᵐ[restrict₀] q :=
     ae_restrict_of_ae_restrict_of_subset Set.inter_subset_left hrep
-  have hqmp : Measure.QuasiMeasurePreserving τ
-      (volume.restrict (A.carrier ∩ τ ⁻¹' A.carrier)) (volume.restrict A.carrier) :=
+  have hqmp :=
     hτμ.restrict hmaps
-  have h3 : f ∘ τ =ᵐ[volume.restrict (A.carrier ∩ τ ⁻¹' A.carrier)] q ∘ τ :=
+  have h3 : f ∘ τ =ᵐ[restrict₀] q ∘ τ :=
     hqmp.ae_eq_comp hrep
-  have h4 : (fun p => f (τ p)) =ᵐ[volume.restrict (A.carrier ∩ τ ⁻¹' A.carrier)]
+  have h4 : (fun p => f (τ p)) =ᵐ[restrict₀]
       (fun p => χ * f p) :=
     (h3.trans hcov).trans h1.mul_left.symm
 
-  have hcont1 : ContinuousOn (fun p => f (τ p)) (A.carrier ∩ τ ⁻¹' A.carrier) :=
+  have hcont1 :=
     hf.comp hτ.continuousOn hmaps
   have hcont2 : ContinuousOn (fun p => χ * f p) (A.carrier ∩ τ ⁻¹' A.carrier) :=
     continuousOn_const.mul (hf.mono Set.inter_subset_left)

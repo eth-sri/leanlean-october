@@ -18,19 +18,29 @@ variable (F : Type) [Field F] [NumberField F]
   (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
   (hP : IsTamePolarization F ζ hζ q S P)
 
-def diagonalTorus (π : (LocalField F q)ˣ) (f' : DiagonalValuations) :
+section
+
+variable (π : (LocalField F q)ˣ) (f' : DiagonalValuations)
+
+def diagonalTorus :
     actualTorus F ζ hζ q :=
   ⟨diagonalLift F ζ hζ q π f', by
     refine ⟨KubotaRankTwo.d (LocalField F q) (π ^ f'.1) (π ^ f'.2), rfl, ?_, ?_⟩
     all_goals simp [KubotaRankTwo.d]⟩
 
-theorem diagonalTorus_coordinate (π : (LocalField F q)ˣ) (f' : DiagonalValuations) :
+theorem diagonalTorus_coordinate :
     ActualFiniteTorus.coordinate F ζ hζ q (diagonalTorus F ζ hζ q π f') =
       π ^ (f'.1 - f'.2) := by
   rw [diagonal_coordinate F ζ hζ q (π ^ f'.1) (π ^ f'.2)
     (diagonalTorus F ζ hζ q π f') rfl, zpow_sub, div_eq_mul_inv]
 
-def conjugateUnitHL (a : actualTorus F ζ hζ q) (u : (KPTameCompact.O F q)ˣ) :
+end
+
+section
+
+variable (a : actualTorus F ζ hζ q) (u : (KPTameCompact.O F q)ˣ)
+
+def conjugateUnitHL :
     HL F ζ hζ q S P :=
   ⟨⟨ActualFiniteTorus.normalWord F ζ hζ q
       (KPHilbert.B3 F ζ hζ (Sum.inr q) (ActualFiniteTorus.coordinate F ζ hζ q a)
@@ -38,7 +48,7 @@ def conjugateUnitHL (a : actualTorus F ζ hζ q) (u : (KPTameCompact.O F q)ˣ) :
       (ActualFiniteTorus.actual_torus_normal_form F ζ hζ q).1 _ _⟩,
     unit_word_mem_HL F ζ hζ q S P hP _ u⟩
 
-def conjugateUnitBorel (a : actualTorus F ζ hζ q) (u : (KPTameCompact.O F q)ˣ) :
+def conjugateUnitBorel :
     BL F ζ hζ q S P :=
   ⟨S.borel.torus (conjugateUnitHL F ζ hζ q S P hP a u).val,
     ⟨S.borel.torus (conjugateUnitHL F ζ hζ q S P hP a u).val,
@@ -48,14 +58,14 @@ def conjugateUnitBorel (a : actualTorus F ζ hζ q) (u : (KPTameCompact.O F q)ˣ
         exact (conjugateUnitHL F ζ hζ q S P hP a u).property,
       rfl⟩⟩
 
-theorem conjugateUnitBorel_word (a : actualTorus F ζ hζ q) (u : (KPTameCompact.O F q)ˣ) :
+theorem conjugateUnitBorel_word :
     (conjugateUnitBorel F ζ hζ q S P hP a u : ActualCover F ζ hζ q) =
       (a : ActualCover F ζ hζ q) * KPPGLLocalCover.A F ζ hζ (Sum.inr q)
         (KPTameCompact.unitInclusion F q u) * (a : ActualCover F ζ hζ q)⁻¹ := by
   rw [torus_conjugate F ζ hζ q]
   exact S.torus_full _
 
-theorem conjugateUnitBorel_retract (a : actualTorus F ζ hζ q) (u : (KPTameCompact.O F q)ˣ) :
+theorem conjugateUnitBorel_retract :
     ((retractL F ζ hζ q S P (conjugateUnitBorel F ζ hζ q S P hP a u)).val :
       ActualCover F ζ hζ q) =
       KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q)
@@ -67,7 +77,7 @@ theorem conjugateUnitBorel_retract (a : actualTorus F ζ hζ q) (u : (KPTameComp
   simp only [retractL, hb, S.borel.retract_torus]
   rfl
 
-theorem inner_chart (a : actualTorus F ζ hζ q) (u : (KPTameCompact.O F q)ˣ) :
+theorem inner_chart :
     (a : ActualCover F ζ hζ q) * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
       KPPGLLocalCover.A F ζ hζ (Sum.inr q) (KPTameCompact.unitInclusion F q u)⁻¹ =
     (conjugateUnitBorel F ζ hζ q S P hP a u : ActualCover F ζ hζ q) *
@@ -75,6 +85,8 @@ theorem inner_chart (a : actualTorus F ζ hζ q) (u : (KPTameCompact.O F q)ˣ) :
   rw [mul_assoc, KPCorrectedBruhatLifts.quotient_weyl_diagonal, inv_inv,
     conjugateUnitBorel_word]
   group
+
+end
 
 theorem concrete_outer_chart (e : actualTorus F ζ hζ q) (u : (KPTameCompact.O F q)ˣ)
     (x : LocalField F q) :

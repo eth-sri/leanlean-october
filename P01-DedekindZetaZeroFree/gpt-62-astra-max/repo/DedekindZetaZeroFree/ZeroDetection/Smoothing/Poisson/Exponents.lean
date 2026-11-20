@@ -12,17 +12,13 @@ theorem log_rpow_le (k δ : ℝ) (hk : 0 < k) (hδ : 0 < δ) :
     ∃ C : ℝ, 0 < C ∧ ∀ U : ℝ, 1 ≤ U → Real.log U ^ k ≤ C * U ^ δ := by
   refine ⟨(k / δ) ^ k, by positivity, fun U hU => ?_⟩
   have hU0 : 0 ≤ U := by linarith
-  have hL : 0 ≤ Real.log U := Real.log_nonneg hU
   have hkd : 0 < δ / k := by positivity
-  have h1 : Real.log U ≤ U ^ (δ / k) / (δ / k) := Real.log_le_rpow_div hU0 hkd
-  have e1 : δ / k * k = δ := div_mul_cancel₀ δ hk.ne'
-  have e2 : k / δ = (δ / k)⁻¹ := (inv_div δ k).symm
-  calc Real.log U ^ k ≤ (U ^ (δ / k) / (δ / k)) ^ k := Real.rpow_le_rpow hL h1 hk.le
+  calc _ ≤ (U ^ (δ / k) / (δ / k)) ^ k := Real.rpow_le_rpow (Real.log_nonneg hU) (Real.log_le_rpow_div hU0 hkd) hk.le
     _ = (U ^ (δ / k)) ^ k / (δ / k) ^ k :=
         Real.div_rpow (Real.rpow_nonneg hU0 _) hkd.le k
-    _ = U ^ δ / (δ / k) ^ k := by rw [← Real.rpow_mul hU0, e1]
+    _ = U ^ δ / (δ / k) ^ k := by rw [← Real.rpow_mul hU0, (div_mul_cancel₀ δ hk.ne')]
     _ = (k / δ) ^ k * U ^ δ := by
-        rw [e2, Real.inv_rpow hkd.le]
+        rw [((inv_div δ k).symm), Real.inv_rpow hkd.le]
         ring
 
 theorem boundB (U M e : ℝ) (hU : 1 ≤ U) (hM1 : U ^ (9 / 5 : ℝ) / 2 ≤ M)
@@ -32,7 +28,7 @@ theorem boundB (U M e : ℝ) (hU : 1 ≤ U) (hM1 : U ^ (9 / 5 : ℝ) / 2 ≤ M)
   have hMpos : 0 < M := lt_of_lt_of_le (by positivity) hM1
   have he0 : e ≤ 0 := by rw [he]; norm_num
 
-  have h1 : M ^ e ≤ (U ^ (9 / 5 : ℝ) / 2) ^ e :=
+  have h1 :=
     Real.rpow_le_rpow_of_nonpos (by positivity) hM1 he0
   have h2 : (U ^ (9 / 5 : ℝ) / 2) ^ e = U ^ (9 / 5 * e) * 2 ^ (-e) := by
     rw [Real.div_rpow (Real.rpow_nonneg hU0.le _) (by norm_num), ← Real.rpow_mul hU0.le,
@@ -86,7 +82,7 @@ theorem boundC (U M : ℝ) (hU : 1 ≤ U) (hMpos : 0 < M) (hM2 : M ≤ 2 * U ^ (
     have := mul_le_mul_of_nonneg_right hM2 hU0.le
     linarith
   have h2 : (2 : ℝ) ^ (1 / 100000 : ℝ) ≤ 2 := by
-    calc (2 : ℝ) ^ (1 / 100000 : ℝ) ≤ (2 : ℝ) ^ (1 : ℝ) :=
+    calc _ ≤ (2 : ℝ) ^ (1 : ℝ) :=
           Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
       _ = 2 := Real.rpow_one 2
   have h3 : (21 / 8 + 1 : ℝ) * (1 / 100000) = (21 / 8 + 1) / 100000 := by ring
@@ -104,16 +100,15 @@ theorem boundD (U M Clog : ℝ) (hClog : 0 ≤ Clog) (hU : 8 ≤ U) (hL2 : 2 ≤
     (hM4 : 4 ≤ M) (hM2 : M ≤ 2 * U ^ (21 / 8 : ℝ)) :
     Real.log (2 * M) ^ Clog ≤ 6 ^ Clog * Real.log U ^ Clog := by
   have hU0 : 0 < U := by linarith
-  have hlog0 : 0 ≤ Real.log (2 * M) := Real.log_nonneg (by linarith)
   have h1 : Real.log (2 * M) ≤ 6 * Real.log U := by
     have h2 : 2 * M ≤ 4 * U ^ (21 / 8 : ℝ) := by linarith
-    have h3 : Real.log (2 * M) ≤ Real.log (4 * U ^ (21 / 8 : ℝ)) :=
+    have h3 :=
       Real.log_le_log (by linarith) h2
     have h4 : Real.log (4 * U ^ (21 / 8 : ℝ)) = Real.log 4 + 21 / 8 * Real.log U := by
       rw [Real.log_mul (by norm_num) (Real.rpow_pos_of_pos hU0 _).ne', Real.log_rpow hU0]
     have h5 : Real.log 4 ≤ 4 - 1 := Real.log_le_sub_one_of_pos (by norm_num)
     linarith
-  calc Real.log (2 * M) ^ Clog ≤ (6 * Real.log U) ^ Clog := Real.rpow_le_rpow hlog0 h1 hClog
+  calc _ ≤ (6 * Real.log U) ^ Clog := Real.rpow_le_rpow (Real.log_nonneg (by linarith)) h1 hClog
     _ = 6 ^ Clog * Real.log U ^ Clog := Real.mul_rpow (by norm_num) (by linarith)
 
 theorem detector_exponent_bookkeeping (c₁ Cs Ce Clog ρ : ℝ) (hc₁ : 0 < c₁) (hCs : 0 < Cs)

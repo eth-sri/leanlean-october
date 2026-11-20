@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -43,8 +39,8 @@ private theorem arithmeticFinitePlacePrimeArtin_restrict_tower_of_globalArtin
     AlgEquiv.restrictNormalHom E
         (arithmeticFinitePlacePrimeArtin (K := K) (L := L) v) =
       arithmeticFinitePlacePrimeArtin (K := K) (L := E) v := by
-  rw [arithmeticFinitePlacePrimeArtin_eq_inv (K := K) (L := L) v,
-    arithmeticFinitePlacePrimeArtin_eq_inv (K := K) (L := E) v, map_inv]
+  rw [arithmeticFinitePlacePrimeArtin_eq_inv v,
+    arithmeticFinitePlacePrimeArtin_eq_inv v, map_inv]
   simpa only [finitePlacePrimeArtin, MonoidHom.comp_apply] using
     congrArg Inv.inv
       (DFunLike.congr_fun
@@ -70,22 +66,18 @@ theorem arithmeticFrobeniusAt_restrict_tower
     (hunram : Algebra.IsUnramifiedAt (𝓞 K) wL.asIdeal) :
     AlgEquiv.restrictNormalHom E (arithmeticFrobeniusAt (K := K) wL) =
       arithmeticFrobeniusAt (K := K) wE := by
-  have : wL.asIdeal.LiesOver wE.asIdeal := hwL
-  have hwLv : wL.asIdeal.LiesOver v.asIdeal :=
-    Ideal.LiesOver.trans wL.asIdeal wE.asIdeal v.asIdeal
-  have hunramE : Algebra.IsUnramifiedAt (𝓞 K) wE.asIdeal :=
-    Algebra.IsUnramifiedAt.of_liesOver (𝓞 K) wE.asIdeal wL.asIdeal
+  have := hwL
   calc
-    AlgEquiv.restrictNormalHom E (arithmeticFrobeniusAt (K := K) wL) =
+    AlgEquiv.restrictNormalHom E (arithmeticFrobeniusAt wL) =
         AlgEquiv.restrictNormalHom E
-          (arithmeticFinitePlacePrimeArtin (K := K) (L := L) v) := by
+          (arithmeticFinitePlacePrimeArtin v) := by
             rw [GlobalClassFieldComparison.arithmeticPrimeArtin_eq_arithmeticFrobeniusAt
-              v wL hwLv hunram]
-    _ = arithmeticFinitePlacePrimeArtin (K := K) (L := E) v :=
+              v wL (Ideal.LiesOver.trans wL.asIdeal wE.asIdeal v.asIdeal) hunram]
+    _ = arithmeticFinitePlacePrimeArtin v :=
       arithmeticFinitePlacePrimeArtin_restrict_tower_of_globalArtin K E L v
-    _ = arithmeticFrobeniusAt (K := K) wE :=
+    _ = arithmeticFrobeniusAt wE :=
       GlobalClassFieldComparison.arithmeticPrimeArtin_eq_arithmeticFrobeniusAt
-        v wE hwE hunramE
+        v wE hwE (Algebra.IsUnramifiedAt.of_liesOver (𝓞 K) wE.asIdeal wL.asIdeal)
 
 end ClassFieldTheory
 

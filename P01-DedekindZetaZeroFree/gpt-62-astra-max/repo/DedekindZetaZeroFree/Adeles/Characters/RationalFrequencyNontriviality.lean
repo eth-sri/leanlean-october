@@ -21,8 +21,7 @@ def adelicRationalFrequencyCharacter (t : F) :
 
 theorem continuous_adelicRationalFrequencyCharacter (t : F) :
     Continuous (adelicRationalFrequencyCharacter F t :
-      AdeleRing (𝓞 F) F → Circle) := by
-  exact (continuous_adelicTraceCharacter F).comp (continuous_const.mul continuous_id)
+      AdeleRing (𝓞 F) F → Circle) := (continuous_adelicTraceCharacter F).comp (continuous_const.mul continuous_id)
 
 theorem adelicRationalFrequencyCharacter_diagonal (t a : F) :
     adelicRationalFrequencyCharacter F t
@@ -32,38 +31,39 @@ theorem adelicRationalFrequencyCharacter_diagonal (t a : F) :
   rw [← map_mul]
   exact adelicTraceCharacter_diagonal F (t * a)
 
-def adelicRationalFrequencyQuotientCharacter (t : F) :
-    AddChar (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) Circle := by
-  exact AddChar.toAddMonoidHomEquiv.symm
+section
+
+variable (t : F)
+
+def adelicRationalFrequencyQuotientCharacter :
+    AddChar (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) Circle := AddChar.toAddMonoidHomEquiv.symm
     (QuotientAddGroup.lift (AdeleRing.principalSubgroup (𝓞 F) F)
       (adelicRationalFrequencyCharacter F t).toAddMonoidHom (by
         rintro x ⟨a, rfl⟩
         exact adelicRationalFrequencyCharacter_diagonal F t a))
 
-theorem adelicRationalFrequencyQuotientCharacter_mk (t : F)
+theorem adelicRationalFrequencyQuotientCharacter_mk
     (x : AdeleRing (𝓞 F) F) :
     adelicRationalFrequencyQuotientCharacter F t
       (QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F) x) =
-        adelicTraceCharacter F (algebraMap F (AdeleRing (𝓞 F) F) t * x) := by
-  rfl
+        adelicTraceCharacter F (algebraMap F (AdeleRing (𝓞 F) F) t * x) := rfl
 
-theorem continuous_adelicRationalFrequencyQuotientCharacter (t : F) :
+theorem continuous_adelicRationalFrequencyQuotientCharacter :
     Continuous (adelicRationalFrequencyQuotientCharacter F t :
       (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) → Circle) := by
   apply (QuotientAddGroup.isQuotientMap_mk
     (AdeleRing.principalSubgroup (𝓞 F) F)).continuous_iff.mpr
   exact continuous_adelicRationalFrequencyCharacter F t
 
-theorem adelicRationalFrequencyQuotientCharacter_eq_one_iff (t : F) :
+theorem adelicRationalFrequencyQuotientCharacter_eq_one_iff :
     adelicRationalFrequencyQuotientCharacter F t = 1 ↔ t = 0 := by
   constructor
   · intro h
     have ht : algebraMap F (AdeleRing (𝓞 F) F) t = 0 := by
       apply (adelicTraceCharacter_nondegenerate F _).mp
       intro x
-      have he := congrArg (fun χ => χ
-        (QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F) x)) h
-      simpa only [adelicRationalFrequencyQuotientCharacter_mk, AddChar.one_apply] using he
+      simpa only [adelicRationalFrequencyQuotientCharacter_mk, AddChar.one_apply] using (congrArg (fun χ => χ
+        (QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F) x)) h)
     exact (map_eq_zero (algebraMap F (AdeleRing (𝓞 F) F))).mp ht
   · rintro rfl
     apply AddChar.ext
@@ -75,9 +75,10 @@ theorem adelicRationalFrequencyQuotientCharacter_eq_one_iff (t : F) :
       rw [adelicRationalFrequencyQuotientCharacter_mk]
       simp
 
-theorem adelicRationalFrequencyQuotientCharacter_ne_one_iff (t : F) :
-    adelicRationalFrequencyQuotientCharacter F t ≠ 1 ↔ t ≠ 0 := by
-  exact not_congr (adelicRationalFrequencyQuotientCharacter_eq_one_iff F t)
+theorem adelicRationalFrequencyQuotientCharacter_ne_one_iff :
+    adelicRationalFrequencyQuotientCharacter F t ≠ 1 ↔ t ≠ 0 := not_congr (adelicRationalFrequencyQuotientCharacter_eq_one_iff F t)
+
+end
 
 theorem adelicRationalFrequencyQuotientCharacter_one :
     adelicRationalFrequencyQuotientCharacter F 1 =

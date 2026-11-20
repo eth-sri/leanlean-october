@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -93,12 +88,7 @@ theorem classInclusion_ideleClassNorm_eq_prod_conjugates
         QuotientGroup.mk'
           (RelativeIdeleGroup.principalSubgroup K L)
           (σ • a)
-  rw [RelativeIdeleGroup.inclusion_norm_eq_prod_conjugates]
-  exact map_prod
-    (QuotientGroup.mk'
-      (RelativeIdeleGroup.principalSubgroup K L))
-    (fun σ : L ≃ₐ[K] L => σ • a)
-    Finset.univ
+  simp [RelativeIdeleGroup.inclusion_norm_eq_prod_conjugates]
 
 variable [Algebra L M] [IsScalarTower K L M] [IsGalois K M]
 
@@ -128,43 +118,7 @@ theorem classInclusion_ideleClassNorm_eq_prod_embeddings
         QuotientGroup.mk'
           (RelativeIdeleGroup.principalSubgroup K M)
           (RelativeIdeleGroup.ideleEmbedding f a)
-  rw [RelativeIdeleGroup.inclusion_norm_eq_prod_embeddings]
-  exact map_prod
-    (QuotientGroup.mk'
-      (RelativeIdeleGroup.principalSubgroup K M))
-    (fun f : L →ₐ[K] M =>
-      RelativeIdeleGroup.ideleEmbedding f a)
-    Finset.univ
-
-/-- Coset form of the embedded-subextension norm formula on relative
-idele classes. -/
-theorem classInclusion_ideleClassNorm_eq_prod_galoisCosets
-    (c : RelativeIdeleGroup.ClassGroup K L) :
-    RelativeIdeleGroup.classInclusion K M
-        (RelativeIdeleGroup.classNorm K L c) =
-      ∏ q :
-          (M ≃ₐ[K] M) ⧸
-            RelativeIdeleGroup.fixingSubextension
-              (K := K) (L := L) (M := M),
-        RelativeIdeleGroup.classEmbedding
-          (RelativeIdeleGroup.cosetEquivEmbedding q) c := by
-  calc
-    RelativeIdeleGroup.classInclusion K M
-        (RelativeIdeleGroup.classNorm K L c) =
-        ∏ f : L →ₐ[K] M,
-          RelativeIdeleGroup.classEmbedding f c :=
-      RelativeIdeleGroup.classInclusion_ideleClassNorm_eq_prod_embeddings c
-    _ =
-        ∏ q :
-            (M ≃ₐ[K] M) ⧸
-              RelativeIdeleGroup.fixingSubextension
-                (K := K) (L := L) (M := M),
-          RelativeIdeleGroup.classEmbedding
-            (RelativeIdeleGroup.cosetEquivEmbedding q) c := by
-      exact
-        ((RelativeIdeleGroup.cosetEquivEmbedding
-          (K := K) (L := L) (M := M)).prod_comp
-            (fun f ↦ RelativeIdeleGroup.classEmbedding f c)).symm
+  simp [RelativeIdeleGroup.inclusion_norm_eq_prod_embeddings]
 
 end RelativeIdeleGroup
 
@@ -191,7 +145,7 @@ theorem ordinaryIdeleClassNorm_relativeIdeleClassBaseChange
         (IdeleGroup.principalSubgroup K)
         (IdeleGroup.norm K L
           (relativeIdeleBaseChangeMulEquiv
-            (K := K) (L := L) a)) =
+              a)) =
       QuotientGroup.mk'
         (IdeleGroup.principalSubgroup K)
         (RelativeIdeleGroup.norm K L a)
@@ -208,17 +162,17 @@ theorem ordinaryIdeleClassNorm_range_eq_relative :
   · rintro ⟨d, rfl⟩
     refine
       ⟨(relativeIdeleClassBaseChangeMulEquiv
-          (K := K) (L := L)).symm d, ?_⟩
+           ).symm d, ?_⟩
     simpa using
       (ordinaryIdeleClassNorm_relativeIdeleClassBaseChange
-        (K := K) (L := L)
+
         ((relativeIdeleClassBaseChangeMulEquiv
-          (K := K) (L := L)).symm d)).symm
+           ).symm d)).symm
   · rintro ⟨d, rfl⟩
     exact
       ⟨relativeIdeleClassBaseChangeMulEquiv
-          (K := K) (L := L) d,
+            d,
         ordinaryIdeleClassNorm_relativeIdeleClassBaseChange
-          (K := K) (L := L) d⟩
+            d⟩
 
 end

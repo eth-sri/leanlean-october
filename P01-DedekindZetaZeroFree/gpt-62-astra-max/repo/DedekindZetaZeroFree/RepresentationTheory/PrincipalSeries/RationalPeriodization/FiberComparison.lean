@@ -14,10 +14,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInduci
 open MomentSources KPGlobalTorusFiniteStages
 open PrincipalOfKP.ResidueCoreBridge.CanonicalBinding
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 
 def integerHaar (q : KPFinitePlace F) : Measure (q.adicCompletion F) :=
   (ENNReal.ofReal (PoissonS.integerVolume F q))⁻¹ • N.finiteHaar q
@@ -31,7 +31,6 @@ instance integerHaar_add (q : KPFinitePlace F) : (integerHaar R N q).IsAddHaarMe
 theorem integerHaar_integer (q : KPFinitePlace F) :
     integerHaar R N q ((valuation (q.adicCompletion F)).integer : Set (q.adicCompletion F)) = 1 := by
   rw [integerHaar, Measure.smul_apply, FourierContinuation.integer_eq_normBall, N.finite_mass]
-  change (ENNReal.ofReal (PoissonS.integerVolume F q))⁻¹ * ENNReal.ofReal (PoissonS.integerVolume F q) = 1
   exact ENNReal.inv_mul_cancel (ENNReal.ofReal_ne_zero_iff.mpr (PoissonS.integerVolume_pos F q)) ENNReal.ofReal_ne_top
 
 def imageData (q : KPFinitePlace F) : LocalImageData R q where
@@ -84,7 +83,7 @@ def finiteCoreEquiv :
         (localReference F R.A.zeta12 R.A.primitive_zeta12 P C) C.exceptional
   rw [badSet_eq_fullBad]
   exact KPGlobalResidualConstruction.ScalarAbsorption.equivalence
-    (A := InfinitePlace F)
+
     (LocalFiber F R.A.zeta12 R.A.primitive_zeta12 P C)
     (localReference F R.A.zeta12 R.A.primitive_zeta12 P C) C.exceptional
     (fun q _ => localReference_ne_zero F R.A.zeta12 R.A.primitive_zeta12 P C q)

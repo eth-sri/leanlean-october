@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -29,7 +26,6 @@ open NumberField IsDedekindDomain
 
 noncomputable section
 
-
 variable {K : Type*} [Field K] [NumberField K]
 
 namespace RayClass
@@ -39,10 +35,13 @@ dividing the modulus. -/
 abbrev FiniteModulus (K : Type*) [Field K] [NumberField K] :=
   HeightOneSpectrum (𝓞 K) →₀ ℕ
 
+section
+
+variable (v : HeightOneSpectrum (𝓞 K)) (n : ℕ)
+
 /-- Reduction of local integral units modulo the `n`-th power of the maximal
 ideal. -/
-def localHigherUnitMap
-    (v : HeightOneSpectrum (𝓞 K)) (n : ℕ) :
+def localHigherUnitMap :
     (v.adicCompletionIntegers K).units →*
       ((v.adicCompletionIntegers K) ⧸
         (IsLocalRing.maximalIdeal
@@ -54,15 +53,13 @@ def localHigherUnitMap
     (v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType.toMonoidHom
 
 /-- The local higher unit group `U_v^(n)`. -/
-def localHigherUnitGroup
-    (v : HeightOneSpectrum (𝓞 K)) (n : ℕ) :
+def localHigherUnitGroup :
     Subgroup (v.adicCompletion K)ˣ :=
   Subgroup.map
     (v.adicCompletionIntegers K).units.subtype
     (localHigherUnitMap v n).ker
 
 theorem mem_localHigherUnitGroup_iff
-    (v : HeightOneSpectrum (𝓞 K)) (n : ℕ)
     (x : (v.adicCompletion K)ˣ) :
     x ∈ localHigherUnitGroup v n ↔
       ∃ y : (v.adicCompletionIntegers K).units,
@@ -74,6 +71,8 @@ theorem mem_localHigherUnitGroup_iff
     exact ⟨y, rfl, MonoidHom.mem_ker.mp hy⟩
   · rintro ⟨y, rfl, hy⟩
     exact ⟨y, MonoidHom.mem_ker.mpr hy, rfl⟩
+
+end
 
 /-- The zeroth higher unit group is the full group of local integral
 units. -/
@@ -89,12 +88,6 @@ theorem localHigherUnitGroup_zero
   · intro hx
     let y : (v.adicCompletionIntegers K).units := ⟨x, hx⟩
     refine ⟨y, rfl, ?_⟩
-    change Units.map
-      (Ideal.Quotient.mk
-        ((IsLocalRing.maximalIdeal
-          (v.adicCompletionIntegers K)) ^ 0)).toMonoidHom
-        ((v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType y) =
-      1
     let : Subsingleton
         ((v.adicCompletionIntegers K) ⧸
           (IsLocalRing.maximalIdeal
@@ -164,7 +157,7 @@ theorem mem_narrowInfiniteCongruenceSubgroup_iff
   change ContinuousMulEquiv.piUnits a ∈
       Subgroup.pi Set.univ (fun v => infinitePositiveSubgroup v) ↔ _
   rw [Subgroup.mem_pi]
-  simp only [Set.mem_univ, true_implies]
+  simp
 
 end RayClass
 

@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -37,7 +35,6 @@ open scoped NumberField TensorProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 universe u v
 
@@ -79,15 +76,14 @@ theorem relativeAdele_eq_sum_tmul_coefficients
     (z : RelativeAdeleRing K L) :
     z =
       ∑ i : RelativeAdeleBasisIndex (K := K) (L := L),
-        relativeAdeleCoefficient
-            (K := K) (L := L) z i ⊗ₜ[K]
-          relativeExtensionBasis (K := K) (L := L) i := by
+        relativeAdeleCoefficient z i ⊗ₜ[K]
+          relativeExtensionBasis i := by
   symm
   simpa [relativeAdeleCoefficient, relativeAdeleBasis,
     relativeExtensionBasis, Algebra.TensorProduct.basis_apply,
     Algebra.TensorProduct.algebraMap_apply,
     Algebra.TensorProduct.tmul_mul_tmul, Algebra.smul_def] using
-      (relativeAdeleBasis (K := K) (L := L)).sum_repr z
+      (relativeAdeleBasis).sum_repr z
 
 omit [NumberField L] in
 /-- Evaluation at a finite place is coefficientwise in the chosen
@@ -95,20 +91,15 @@ basis expansion. -/
 theorem relativeAdeleFiniteComponent_eq_sum_tmul_coefficients
     (z : RelativeAdeleRing K L)
     (w : HeightOneSpectrum (𝓞 K)) :
-    relativeAdeleFiniteComponent
-        (K := K) (L := L) w z =
+    relativeAdeleFiniteComponent w z =
       ∑ i : RelativeAdeleBasisIndex (K := K) (L := L),
-        (relativeAdeleCoefficient
-            (K := K) (L := L) z i).2 w ⊗ₜ[K]
-          relativeExtensionBasis (K := K) (L := L) i := by
-  have h :=
-    congrArg
+        (relativeAdeleCoefficient z i).2 w ⊗ₜ[K]
+          relativeExtensionBasis i := by
+  simpa using congrArg
       (relativeAdeleFiniteComponent
-        (K := K) (L := L) w)
+          w)
       (relativeAdele_eq_sum_tmul_coefficients
-        (K := K) (L := L) z)
-  simpa only [map_sum,
-    relativeAdeleFiniteComponent_tmul] using h
+          z)
 
 omit [NumberField L] in
 /-- Evaluation at an infinite place is coefficientwise in the chosen
@@ -116,20 +107,15 @@ basis expansion. -/
 theorem relativeAdeleInfiniteComponent_eq_sum_tmul_coefficients
     (z : RelativeAdeleRing K L)
     (w : InfinitePlace K) :
-    relativeAdeleInfiniteComponent
-        (K := K) (L := L) w z =
+    relativeAdeleInfiniteComponent w z =
       ∑ i : RelativeAdeleBasisIndex (K := K) (L := L),
-        (relativeAdeleCoefficient
-            (K := K) (L := L) z i).1 w ⊗ₜ[K]
-          relativeExtensionBasis (K := K) (L := L) i := by
-  have h :=
-    congrArg
+        (relativeAdeleCoefficient z i).1 w ⊗ₜ[K]
+          relativeExtensionBasis i := by
+  simpa using congrArg
       (relativeAdeleInfiniteComponent
-        (K := K) (L := L) w)
+          w)
       (relativeAdele_eq_sum_tmul_coefficients
-        (K := K) (L := L) z)
-  simpa only [map_sum,
-    relativeAdeleInfiniteComponent_tmul] using h
+          z)
 
 /-- The set of places at which a base adele is not in the local
 valuation ring is finite. -/
@@ -150,23 +136,9 @@ noncomputable def adeleNonIntegralPlaces
 theorem mem_adeleNonIntegralPlaces_iff
     (a : NumberField.AdeleRing (𝓞 K) K)
     (w : HeightOneSpectrum (𝓞 K)) :
-    w ∈ adeleNonIntegralPlaces (K := K) a ↔
-      a.2 w ∉ w.adicCompletionIntegers K := by
-  exact
-    Set.Finite.mem_toFinset
-      (finite_adeleNonIntegralPlaces (K := K) a)
-
-/-- Away from its exact exceptional finset, a base adele has integral
-finite component. -/
-theorem adele_component_mem_integers_of_notMem
-    (a : NumberField.AdeleRing (𝓞 K) K)
-    (w : HeightOneSpectrum (𝓞 K))
-    (hw : w ∉ adeleNonIntegralPlaces (K := K) a) :
-    a.2 w ∈ w.adicCompletionIntegers K := by
-  contrapose! hw
-  exact
-    (mem_adeleNonIntegralPlaces_iff
-      (K := K) a w).2 hw
+    w ∈ adeleNonIntegralPlaces a ↔
+      a.2 w ∉ w.adicCompletionIntegers K := Set.Finite.mem_toFinset
+      (finite_adeleNonIntegralPlaces a)
 
 /-- Exact union of all exceptional coefficient places of a relative
 adele. -/
@@ -185,11 +157,9 @@ omit [NumberField L] in
 theorem mem_relativeAdeleCoefficientSupport_iff
     (z : RelativeAdeleRing K L)
     (w : HeightOneSpectrum (𝓞 K)) :
-    w ∈ relativeAdeleCoefficientSupport
-        (K := K) (L := L) z ↔
+    w ∈ relativeAdeleCoefficientSupport z ↔
       ∃ i : RelativeAdeleBasisIndex (K := K) (L := L),
-        (relativeAdeleCoefficient
-            (K := K) (L := L) z i).2 w ∉
+        (relativeAdeleCoefficient z i).2 w ∉
           w.adicCompletionIntegers K := by
   classical
   simp [relativeAdeleCoefficientSupport]
@@ -214,16 +184,13 @@ omit [NumberField L] in
 theorem mem_relativeIdeleCoefficientSupport_iff
     (z : RelativeIdeleGroup K L)
     (w : HeightOneSpectrum (𝓞 K)) :
-    w ∈ relativeIdeleCoefficientSupport
-        (K := K) (L := L) z ↔
+    w ∈ relativeIdeleCoefficientSupport z ↔
       (∃ i : RelativeAdeleBasisIndex (K := K) (L := L),
         (relativeAdeleCoefficient
-            (K := K) (L := L)
             (z : RelativeAdeleRing K L) i).2 w ∉
           w.adicCompletionIntegers K) ∨
       (∃ i : RelativeAdeleBasisIndex (K := K) (L := L),
         (relativeAdeleCoefficient
-            (K := K) (L := L)
             ((z⁻¹ : RelativeIdeleGroup K L) :
               RelativeAdeleRing K L) i).2 w ∉
           w.adicCompletionIntegers K) := by
@@ -237,65 +204,17 @@ place. -/
 theorem relativeIdele_coefficients_integral_of_notMem
     (z : RelativeIdeleGroup K L)
     (w : HeightOneSpectrum (𝓞 K))
-    (hw : w ∉ relativeIdeleCoefficientSupport
-      (K := K) (L := L) z) :
+    (hw : w ∉ relativeIdeleCoefficientSupport z) :
     (∀ i : RelativeAdeleBasisIndex (K := K) (L := L),
       (relativeAdeleCoefficient
-          (K := K) (L := L)
           (z : RelativeAdeleRing K L) i).2 w ∈
         w.adicCompletionIntegers K) ∧
     (∀ i : RelativeAdeleBasisIndex (K := K) (L := L),
       (relativeAdeleCoefficient
-          (K := K) (L := L)
           ((z⁻¹ : RelativeIdeleGroup K L) :
             RelativeAdeleRing K L) i).2 w ∈
         w.adicCompletionIntegers K) := by
-  constructor
-  · intro i
-    by_contra hi
-    apply hw
-    exact
-      (mem_relativeIdeleCoefficientSupport_iff
-        (K := K) (L := L) z w).2
-        (Or.inl ⟨i, hi⟩)
-  · intro i
-    by_contra hi
-    apply hw
-    exact
-      (mem_relativeIdeleCoefficientSupport_iff
-        (K := K) (L := L) z w).2
-        (Or.inr ⟨i, hi⟩)
-
-omit [NumberField L] in
-/-- The exact support is the least finset outside which all
-coefficients of the idele and its inverse are integral. -/
-theorem relativeIdeleCoefficientSupport_minimal
-    (z : RelativeIdeleGroup K L)
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (hS :
-      ∀ w, w ∉ S →
-        (∀ i : RelativeAdeleBasisIndex (K := K) (L := L),
-          (relativeAdeleCoefficient
-              (K := K) (L := L)
-              (z : RelativeAdeleRing K L) i).2 w ∈
-            w.adicCompletionIntegers K) ∧
-        (∀ i : RelativeAdeleBasisIndex (K := K) (L := L),
-          (relativeAdeleCoefficient
-              (K := K) (L := L)
-              ((z⁻¹ : RelativeIdeleGroup K L) :
-                RelativeAdeleRing K L) i).2 w ∈
-            w.adicCompletionIntegers K)) :
-    relativeIdeleCoefficientSupport
-        (K := K) (L := L) z ⊆ S := by
-  intro w hw
-  by_contra hwS
-  obtain hbad | hbad :=
-    (mem_relativeIdeleCoefficientSupport_iff
-      (K := K) (L := L) z w).1 hw
-  · obtain ⟨i, hi⟩ := hbad
-    exact hi ((hS w hwS).1 i)
-  · obtain ⟨i, hi⟩ := hbad
-    exact hi ((hS w hwS).2 i)
+  simp_all
 
 omit [NumberField L] in
 /-- Basis-lattice integrality in the local tensor algebra: all
@@ -333,20 +252,14 @@ base-adele coefficients. -/
 theorem relativeIdele_finiteComponent_eq_sum_tmul_coefficients
     (z : RelativeIdeleGroup K L)
     (w : HeightOneSpectrum (𝓞 K)) :
-    ((RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) w z :
+    ((RelativeIdeleGroup.finiteComponent w z :
         (w.adicCompletion K ⊗[K] L)ˣ) :
         w.adicCompletion K ⊗[K] L) =
       ∑ i : RelativeAdeleBasisIndex (K := K) (L := L),
         (relativeAdeleCoefficient
-            (K := K) (L := L)
             (z : RelativeAdeleRing K L) i).2 w ⊗ₜ[K]
-          relativeExtensionBasis (K := K) (L := L) i := by
-  rw [RelativeIdeleGroup.finiteComponent_coe]
-  exact
-    relativeAdeleFiniteComponent_eq_sum_tmul_coefficients
-      (K := K) (L := L)
-      (z : RelativeAdeleRing K L) w
+          relativeExtensionBasis i := by
+  apply relativeAdeleFiniteComponent_eq_sum_tmul_coefficients
 
 omit [NumberField L] in
 /-- Outside the coefficient support, the actual finite component lies
@@ -354,27 +267,13 @@ in the local lattice spanned by the chosen extension basis. -/
 theorem relativeIdele_finiteComponent_basisIntegral_of_notMem
     (z : RelativeIdeleGroup K L)
     (w : HeightOneSpectrum (𝓞 K))
-    (hw : w ∉ relativeIdeleCoefficientSupport
-      (K := K) (L := L) z) :
+    (hw : w ∉ relativeIdeleCoefficientSupport z) :
     RelativeBasisIntegralAt
       (K := K) (L := L) w
-      ((RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L) w z :
+      ((RelativeIdeleGroup.finiteComponent w z :
           (w.adicCompletion K ⊗[K] L)ˣ) :
           w.adicCompletion K ⊗[K] L) := by
-  let c :
-      ∀ i : RelativeAdeleBasisIndex (K := K) (L := L),
-        w.adicCompletionIntegers K :=
-    fun i =>
-      ⟨(relativeAdeleCoefficient
-          (K := K) (L := L)
-          (z : RelativeAdeleRing K L) i).2 w,
-        (relativeIdele_coefficients_integral_of_notMem
-          (K := K) (L := L) z w hw).1 i⟩
-  refine ⟨c, ?_⟩
-  simpa only [c, Subtype.coe_mk] using
-    relativeIdele_finiteComponent_eq_sum_tmul_coefficients
-      (K := K) (L := L) z w
+  exact Exists.intro (fun i ↦ ⟨(relativeAdeleCoefficient (↑z) i).2 w, (relativeIdele_coefficients_integral_of_notMem z w hw).left i⟩) (relativeIdele_finiteComponent_eq_sum_tmul_coefficients z w)
 
 omit [NumberField L] in
 /-- Outside the same support, the actual finite component of the
@@ -382,12 +281,10 @@ inverse lies in the same local basis lattice. -/
 theorem relativeIdele_inverse_finiteComponent_basisIntegral_of_notMem
     (z : RelativeIdeleGroup K L)
     (w : HeightOneSpectrum (𝓞 K))
-    (hw : w ∉ relativeIdeleCoefficientSupport
-      (K := K) (L := L) z) :
+    (hw : w ∉ relativeIdeleCoefficientSupport z) :
     RelativeBasisIntegralAt
       (K := K) (L := L) w
-      ((RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L) w
+      ((RelativeIdeleGroup.finiteComponent w
           (z⁻¹ : RelativeIdeleGroup K L) :
           (w.adicCompletion K ⊗[K] L)ˣ) :
           w.adicCompletion K ⊗[K] L) := by
@@ -401,11 +298,7 @@ theorem relativeIdele_inverse_finiteComponent_basisIntegral_of_notMem
             RelativeAdeleRing K L) i).2 w,
         (relativeIdele_coefficients_integral_of_notMem
           (K := K) (L := L) z w hw).2 i⟩
-  refine ⟨c, ?_⟩
-  simpa only [c, Subtype.coe_mk] using
-    relativeIdele_finiteComponent_eq_sum_tmul_coefficients
-      (K := K) (L := L)
-      (z⁻¹ : RelativeIdeleGroup K L) w
+  solve_by_elim [relativeIdele_finiteComponent_eq_sum_tmul_coefficients]
 
 omit [NumberField L] in
 /-- Equivalently, the inverse of the actual local unit component lies
@@ -413,17 +306,13 @@ in the same basis lattice outside the coefficient support. -/
 theorem relativeIdele_finiteComponent_inv_basisIntegral_of_notMem
     (z : RelativeIdeleGroup K L)
     (w : HeightOneSpectrum (𝓞 K))
-    (hw : w ∉ relativeIdeleCoefficientSupport
-      (K := K) (L := L) z) :
+    (hw : w ∉ relativeIdeleCoefficientSupport z) :
     RelativeBasisIntegralAt
       (K := K) (L := L) w
-      ((((RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L) w z)⁻¹ :
+      ((((RelativeIdeleGroup.finiteComponent w z)⁻¹ :
           (w.adicCompletion K ⊗[K] L)ˣ) :
           w.adicCompletion K ⊗[K] L)) := by
-  simpa using
-    relativeIdele_inverse_finiteComponent_basisIntegral_of_notMem
-      (K := K) (L := L) z w hw
+  solve_by_elim [relativeIdele_inverse_finiteComponent_basisIntegral_of_notMem]
 
 omit [NumberField L] in
 /-- Thus the actual local unit component is basis-integral outside the
@@ -431,61 +320,11 @@ explicit coefficient support. -/
 theorem relativeIdele_finiteComponent_basisIntegralUnit_of_notMem
     (z : RelativeIdeleGroup K L)
     (w : HeightOneSpectrum (𝓞 K))
-    (hw : w ∉ relativeIdeleCoefficientSupport
-      (K := K) (L := L) z) :
+    (hw : w ∉ relativeIdeleCoefficientSupport z) :
     RelativeBasisIntegralUnitAt
       (K := K) (L := L) w
-      (RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) w z) :=
-  ⟨relativeIdele_finiteComponent_basisIntegral_of_notMem
-      (K := K) (L := L) z w hw,
-    relativeIdele_finiteComponent_inv_basisIntegral_of_notMem
-      (K := K) (L := L) z w hw⟩
-
-omit [NumberField L] in
-/-- A source-producing finite-support theorem: one explicit
-minimal finset simultaneously controls the local basis integrality of
-the relative idele and its inverse. -/
-theorem exists_relativeIdele_coefficientSupport
-    (z : RelativeIdeleGroup K L) :
-    ∃ S : Finset (HeightOneSpectrum (𝓞 K)),
-      (∀ w, w ∉ S →
-        (∀ i : RelativeAdeleBasisIndex (K := K) (L := L),
-          (relativeAdeleCoefficient
-              (K := K) (L := L)
-              (z : RelativeAdeleRing K L) i).2 w ∈
-            w.adicCompletionIntegers K) ∧
-        (∀ i : RelativeAdeleBasisIndex (K := K) (L := L),
-          (relativeAdeleCoefficient
-              (K := K) (L := L)
-              ((z⁻¹ : RelativeIdeleGroup K L) :
-                RelativeAdeleRing K L) i).2 w ∈
-            w.adicCompletionIntegers K)) ∧
-      (∀ w, w ∉ S →
-        RelativeBasisIntegralAt
-          (K := K) (L := L) w
-          ((RelativeIdeleGroup.finiteComponent
-              (K := K) (L := L) w z :
-              (w.adicCompletion K ⊗[K] L)ˣ) :
-              w.adicCompletion K ⊗[K] L) ∧
-        RelativeBasisIntegralAt
-          (K := K) (L := L) w
-          ((((RelativeIdeleGroup.finiteComponent
-              (K := K) (L := L) w z)⁻¹ :
-              (w.adicCompletion K ⊗[K] L)ˣ) :
-              w.adicCompletion K ⊗[K] L))) := by
-  refine
-    ⟨relativeIdeleCoefficientSupport
-        (K := K) (L := L) z, ?_, ?_⟩
-  · intro w hw
-    exact
-      relativeIdele_coefficients_integral_of_notMem
-        (K := K) (L := L) z w hw
-  · intro w hw
-    exact
-      ⟨relativeIdele_finiteComponent_basisIntegral_of_notMem
-          (K := K) (L := L) z w hw,
-        relativeIdele_finiteComponent_inv_basisIntegral_of_notMem
-          (K := K) (L := L) z w hw⟩
+      (RelativeIdeleGroup.finiteComponent w z) :=
+  ⟨relativeIdele_finiteComponent_basisIntegral_of_notMem z w hw,
+    relativeIdele_finiteComponent_inv_basisIntegral_of_notMem z w hw⟩
 
 end

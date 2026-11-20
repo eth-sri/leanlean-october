@@ -23,8 +23,7 @@ theorem summable_integral_norm_mixedMellinGaussian_idealSet
         ‖mixedMellinGaussian K (idealSetElement K J a) s q‖
         ∂Measure.pi (fun _v : InfinitePlace K ↦
           (volume : Measure ℝ).restrict (Set.Ioi 0))) := by
-  have hbase := (summable_idealSet_inverseNormPower K J (s := (s.re : ℂ)) hs).norm
-  refine (hbase.mul_left ((1 / 2 : ℝ) ^ nrRealPlaces K *
+  refine (((summable_idealSet_inverseNormPower K J hs).norm).mul_left ((1 / 2 : ℝ) ^ nrRealPlaces K *
     (1 / 4 : ℝ) ^ nrComplexPlaces K *
     ‖Complex.Gammaℝ (s.re : ℂ)‖ ^ nrRealPlaces K *
     ‖Complex.Gammaℂ (s.re : ℂ)‖ ^ nrComplexPlaces K)).congr fun a ↦ ?_

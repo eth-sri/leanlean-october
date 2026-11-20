@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 universe u v
@@ -53,8 +51,7 @@ noncomputable def quotientCard {E K : ClosedSubgroup G}
 /-- The finite quotient used in the descent construction has positive cardinality. -/
 theorem quotientCard_pos {E K : ClosedSubgroup G}
     (M : FiniteIntermediateField E K) : 0 < M.quotientCard := by
-  let : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K M.field M.below) := M.finite
+  let := M.finite
   exact Nat.card_pos
 
 /-- An initial finite stage and finitely many further stages have a common
@@ -72,10 +69,9 @@ theorem exists_common_compositum {E K : ClosedSubgroup G} {ι : Type v}
       exact ⟨M, le_rfl, by simp⟩
   | @insert i s hi ih =>
       rcases ih with ⟨P, hPM, hPF⟩
-      let Q := P.compositum (F i)
-      refine ⟨Q, (P.compositum_le_left (F i)).trans hPM, ?_⟩
+      refine ⟨(P.compositum (F i)), (P.compositum_le_left (F i)).trans hPM, ?_⟩
       intro j hj
-      rw [Finset.mem_insert] at hj
+      simp at hj
       rcases hj with hji | hj
       · simpa [hji] using P.compositum_le_right (F i)
       · exact (P.compositum_le_left (F i)).trans (hPF j hj)

@@ -15,19 +15,9 @@ open KPLiteralRaw
 open Set Filter Topology
 open scoped Matrix.Norms.Elementwise
 open KPSpatialSmoothing.ArchKernel hiding G
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixClass → matrixClass
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixDomain → matrixDomain
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixDomain_open → matrixDomain_open
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixClass_mul → matrixClass_mul
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrix_pullback_smooth → matrix_pullback_smooth
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming joint_spatial_jets_on → joint_spatial_jets_on
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift → localMatrixLift
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift_continuousAt → localMatrixLift_continuousAt
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift_reconstruct → localMatrixLift_reconstruct
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift_eventually → localMatrixLift_eventually
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel (matrixClass matrixDomain matrixDomain_open matrixClass_mul matrix_pullback_smooth joint_spatial_jets_on localMatrixLift localMatrixLift_continuousAt localMatrixLift_reconstruct localMatrixLift_eventually)
 set_option maxHeartbeats 400000
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming actualSmoothBridge → actualSmoothBridge
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming affineTarget_one → affineTarget_one
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel (actualSmoothBridge affineTarget_one)
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
@@ -59,15 +49,7 @@ theorem rightPolynomial_det (x : KPGlobalResidualConstruction.ArchCoordinates F)
     (w : InfinitePlace F) : (rightPolynomial F x w).det = x w 1 := by
   simp [rightPolynomial, Matrix.det_fin_two]
 
-theorem archDomain_open : IsOpen (KPGlobalResidualConstruction.archDomain F) := by
-  have he : KPGlobalResidualConstruction.archDomain F =
-      ⋂ w, {x : KPGlobalResidualConstruction.ArchCoordinates F | x w 1 ≠ 0} := by
-    ext x
-    simp [KPGlobalResidualConstruction.archDomain]
-  rw [he]
-  apply isOpen_iInter_of_finite
-  intro w
-  exact isOpen_ne_fun ((continuous_apply 1).comp (continuous_apply w)) continuous_const
+theorem archDomain_open : IsOpen (KPGlobalResidualConstruction.archDomain F) := by apply @DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel.gauss_domain_open <;> assumption
 
 omit [NumberField F] in
 theorem rightPolynomial_class (x : KPGlobalResidualConstruction.ArchCoordinates F)
@@ -82,7 +64,6 @@ theorem rightPolynomial_class (x : KPGlobalResidualConstruction.ArchCoordinates 
   congr 1
   apply Matrix.GeneralLinearGroup.ext
   intro i j
-  change rightPolynomial F x w i j = _
   rw [KPLiteralChamber.rightMatrix_val _ (hx w)]
   rfl
 
@@ -101,19 +82,9 @@ open KPLiteralRaw
 open Set Filter Topology
 open scoped Matrix.Norms.Elementwise
 open KPSpatialSmoothing.ArchKernel hiding G
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixClass → matrixClass
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixDomain → matrixDomain
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixDomain_open → matrixDomain_open
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrixClass_mul → matrixClass_mul
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming matrix_pullback_smooth → matrix_pullback_smooth
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming joint_spatial_jets_on → joint_spatial_jets_on
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift → localMatrixLift
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift_continuousAt → localMatrixLift_continuousAt
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift_reconstruct → localMatrixLift_reconstruct
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming localMatrixLift_eventually → localMatrixLift_eventually
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel (matrixClass matrixDomain matrixDomain_open matrixClass_mul matrix_pullback_smooth joint_spatial_jets_on localMatrixLift localMatrixLift_continuousAt localMatrixLift_reconstruct localMatrixLift_eventually)
 set_option maxHeartbeats 400000
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming actualSmoothBridge → actualSmoothBridge
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming affineTarget_one → affineTarget_one
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel (actualSmoothBridge affineTarget_one)
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
@@ -141,28 +112,20 @@ private theorem right_parameter_jets {P : Type*} [TopologicalSpace P]
     simp only [T, Matrix.mul_apply, Fin.sum_univ_two]
     fun_prop (disch := exact hc _ _)
   let W := matrixDomain F ×ˢ KPGlobalResidualConstruction.archDomain F
-  have hW : IsOpen W := (matrixDomain_open F).prod (archDomain_open F)
+  have hW := (matrixDomain_open F).prod (archDomain_open F)
   have hTW : MapsTo T W (matrixDomain F) := by
     intro p hp w
-    change (rightPolynomial F p.2 w * p.1 w).det ≠ 0
     rw [Matrix.det_mul, rightPolynomial_det]
     exact mul_ne_zero (hp.2 w) (hp.1 w)
-  have hs := (matrix_pullback_smooth F f hf).comp hT.contDiffOn hTW
-  have hj := joint_spatial_jets_on W hW (fun p => f (matrixClass F (T p))) hs n
   intro p hp
   let M := localMatrixLift F (b p.2)
   have hM := localMatrixLift_reconstruct F (b p.2) (b p.2)
     (show (b p.2)⁻¹ * b p.2 ∈ gaussTarget F by simpa using affineTarget_one F)
-  have hMc : ContinuousAt (fun q : KPGlobalResidualConstruction.ArchCoordinates F × P =>
-      M (b q.2)) p :=
+  have hMc :=
     (localMatrixLift_continuousAt F (b p.2)).comp_of_eq
       (hb.comp continuous_snd).continuousAt rfl
-  have hjet : ContinuousAt (fun q : Mat F × KPGlobalResidualConstruction.ArchCoordinates F =>
-      iteratedFDeriv ℝ n (fun x => f (matrixClass F (T (q.1, x)))) q.2)
-      (M (b p.2), p.1) :=
-    ((hj (M (b p.2), p.1) ⟨hM.1, hp.1⟩).contDiffAt
-      (hW.mem_nhds (show (M (b p.2), p.1) ∈ W from ⟨hM.1, hp.1⟩))).continuousAt
-  have hc := hjet.comp_of_eq (hMc.prodMk continuousAt_fst) rfl
+  have hc := ((((joint_spatial_jets_on W hW (fun p => f (matrixClass F (T p))) ((matrix_pullback_smooth F f hf).comp hT.contDiffOn hTW) n) (M (b p.2), p.1) ⟨hM.1, hp.1⟩).contDiffAt
+    (hW.mem_nhds (show (M (b p.2), p.1) ∈ W from ⟨hM.1, hp.1⟩))).continuousAt).comp_of_eq (hMc.prodMk continuousAt_fst) rfl
   have heM : ∀ᶠ q : KPGlobalResidualConstruction.ArchCoordinates F × P in 𝓝 p,
       M (b q.2) ∈ matrixDomain F ∧ matrixClass F (M (b q.2)) = b q.2 :=
     (hb.comp continuous_snd).continuousAt (localMatrixLift_eventually F (b p.2))

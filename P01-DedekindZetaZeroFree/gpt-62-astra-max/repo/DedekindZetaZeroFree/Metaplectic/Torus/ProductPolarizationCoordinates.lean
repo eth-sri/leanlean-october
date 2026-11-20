@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.ProductPolarization
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology localCoverTopology
 
 def restrictedM (P : CompatibleLocalData F ζ hζ) :
@@ -28,17 +28,23 @@ def pD : E F ζ hζ →* D F :=
   (QuotientGroup.mk' (CubicCharacters.cubes (KPGlobalCenterRationalCharacter.Ideles F))).comp
     (KPGlobalTorusFunctionData.p F ζ hζ)
 
-def B (P : CompatibleLocalData F ζ hζ) : Subgroup (E F ζ hζ) :=
+section
+
+variable (P : CompatibleLocalData F ζ hζ)
+
+def B : Subgroup (E F ζ hζ) :=
   (M F ζ hζ P).comap (pD F ζ hζ)
 
-def J (P : CompatibleLocalData F ζ hζ) : Subgroup (D F) :=
+def J : Subgroup (D F) :=
   KPGlobalPrincipalCubicLagrangian.A F ⊓ M F ζ hζ P
 
-def rawB (P : CompatibleLocalData F ζ hζ) :
+def rawB :
     Subgroup (KPGlobalCenterRationalCharacter.Raw F ζ hζ) :=
   ((B F ζ hζ P).map (E F ζ hζ).subtype).comap
     ((KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ))
+
+end
 
  theorem diagonal_formula (t : KPGlobalTorusFunctionData.ordinaryTorus F) :
     KPGlobalCubicIdelePairing.diagonalPGL F (KPGlobalTorusFunctionData.torusRatio F t) = t.val := by
@@ -71,9 +77,7 @@ def rawB (P : CompatibleLocalData F ζ hζ) :
   map_mul' x y := by apply Subtype.ext; exact Prod.ext rfl (map_mul _ _ _)
 
 private theorem torusPullbackBridge_injective :
-    Function.Injective (torusPullbackBridge F ζ hζ) := by
-  intro x y h
-  exact Subtype.ext (congrArg (fun t : KPGlobalCubicIdelePairing.E F ζ hζ => t.val.1) h)
+    Function.Injective (torusPullbackBridge F ζ hζ) := fun x y h => Subtype.ext (congrArg (fun t : KPGlobalCubicIdelePairing.E F ζ hζ => t.val.1) h)
 
 private theorem commute_iff_beta (x y : E F ζ hζ) :
     Commute x y ↔ KPGlobalCubicIdelePairing.beta3 F ζ hζ
@@ -85,15 +89,13 @@ private theorem commute_iff_beta (x y : E F ζ hζ) :
     exact h.mp (hc.map (torusPullbackBridge F ζ hζ))
   · intro hb
     apply torusPullbackBridge_injective F ζ hζ
-    simpa only [map_mul] using (h.mpr hb).eq
+    simpa using (h.mpr hb).eq
 
  def baseEval (v : KPHilbert.Place F) :
     KPAdelicCoverRestrictedProduct.AdelicPGL2 F →* KPPGLLocalCover.LocalPGL2 F v :=
   QuotientGroup.lift _ ((KPPGLLocalCover.baseQuotient F v).comp
     (KPAdelicCoverRestrictedProduct.matrixEval F v)) (by
       rintro a ⟨w, rfl⟩
-      change KPPGLLocalCover.baseQuotient F v
-        (KPAdelicCoverRestrictedProduct.matrixEval F v (Matrix.GeneralLinearGroup.scalar (Fin 2) w)) = 1
       apply (QuotientGroup.eq_one_iff _).mpr
       refine ⟨KPGlobalCubicIdelePairing.ideleEval F v w, ?_⟩
       apply Matrix.GeneralLinearGroup.ext
@@ -104,8 +106,6 @@ private theorem commute_iff_beta (x y : E F ζ hζ) :
  theorem eval_diagonal (v : KPHilbert.Place F) (y : KPGlobalCubicIdelePairing.Ideles F) :
     baseEval F v (KPGlobalCubicIdelePairing.diagonalPGL F y) =
       KPPGLLocalCover.baseQuotient F v (diagonalHom F v (KPGlobalCubicIdelePairing.ideleEval F v y)) := by
-  change KPPGLLocalCover.baseQuotient F v
-    (KPAdelicCoverRestrictedProduct.matrixEval F v (KPGlobalCubicIdelePairing.diagonalHom F y)) = _
   apply congrArg (KPPGLLocalCover.baseQuotient F v)
   apply Matrix.GeneralLinearGroup.ext
   intro i j
@@ -124,10 +124,11 @@ private theorem raw_local (P : CompatibleLocalData F ζ hζ)
     (diagonal_formula F ⟨_, b.property⟩).symm
   have he' : b.val = KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x.val) := he
+  let ideleEval₀ := KPGlobalCubicIdelePairing.ideleEval F v (KPGlobalTorusFunctionData.p F ζ hζ e)
   have hlocal : KPPGLLocalCover.projection F ζ hζ v
       (KPPGLLocalCover.coverQuotient F ζ hζ v (x.val v)) =
       KPPGLLocalCover.baseQuotient F v (diagonalHom F v
-        (KPGlobalCubicIdelePairing.ideleEval F v (KPGlobalTorusFunctionData.p F ζ hζ e))) := by
+        (ideleEval₀)) := by
     have h := congrArg (baseEval F v) hproj
     rw [he'] at h
     rw [eval_diagonal] at h
@@ -137,9 +138,9 @@ private theorem raw_local (P : CompatibleLocalData F ζ hζ)
     rw [KPAdelicCoverRestrictedProduct.restrictedProjection_eval] at h
     exact h
   let g : LocalE F ζ hζ v := ⟨KPPGLLocalCover.coverQuotient F ζ hζ v (x.val v),
-    ⟨KPGlobalCubicIdelePairing.ideleEval F v (KPGlobalTorusFunctionData.p F ζ hζ e), hlocal.symm⟩⟩
+    ⟨ideleEval₀, hlocal.symm⟩⟩
   have hratio : localRatio F ζ hζ v g =
-      KPGlobalCubicIdelePairing.ideleEval F v (KPGlobalTorusFunctionData.p F ζ hζ e) :=
+      ideleEval₀ :=
     (localRatioValue_eq F ζ hζ v hlocal.symm).symm
   refine ⟨⟨g, ?_⟩, rfl⟩
   change KPGlobalCubicIdelePairing.localClass F v (localRatio F ζ hζ v g) ∈ (P.localData v).L
@@ -159,13 +160,13 @@ private theorem diagonal_injective :
       KPGlobalCubicIdelePairing.diagonalHom F y' := by
     rw [hw]; exact hz
   have h11 := congrArg (fun g : KPAdelicCoverRestrictedProduct.AdelicGL2 F =>
-    (g : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F)) 1 1) key
+    g 1 1) key
   have h00 := congrArg (fun g : KPAdelicCoverRestrictedProduct.AdelicGL2 F =>
-    (g : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F)) 0 0) key
+    g 0 0) key
   simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix,
     Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.scalar, Matrix.mul_apply, Fin.sum_univ_two] at h11 h00
-  have hw1 : w = 1 := h11
+  have hw1 := h11
   subst hw1
   exact Units.ext (by simpa using h00)
 
@@ -198,7 +199,7 @@ private theorem pD_surjective : Function.Surjective (pD F ζ hζ) := by
             (KPGlobalCubicIdelePairing.localClass F v x) 1 = 1
           rw [← map_one (KPGlobalCubicIdelePairing.localClass F v),
             KPGlobalCubicIdelePairing.localPairing_representatives]
-          simpa only [one_pow] using ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.1 x 1).2
+          simpa using ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.1 x 1).2
       map_mul' y z := by
         induction x using QuotientGroup.induction_on with
         | H x =>
@@ -215,7 +216,7 @@ private theorem pD_surjective : Function.Surjective (pD F ζ hζ) := by
         (KPGlobalCubicIdelePairing.localClass F v y) = 1
       rw [← map_one (KPGlobalCubicIdelePairing.localClass F v),
         KPGlobalCubicIdelePairing.localPairing_representatives]
-      simpa only [one_pow] using ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.1 1 y).1
+      simpa using ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.1 1 y).1
   map_mul' x y := by
     apply MonoidHom.ext
     intro z
@@ -253,7 +254,9 @@ private theorem maximal_mem_of_annihilates {G : Type*} [CommGroup G]
   rw [← heq]
   exact Subgroup.mem_sup_right (Subgroup.mem_zpowers x)
 
-private theorem product_maximal_isotropic (P : CompatibleLocalData F ζ hζ) :
+variable (P : CompatibleLocalData F ζ hζ)
+
+private theorem product_maximal_isotropic :
     IsMaximalIsotropic F (KPGlobalCubicIdelePairing.beta3 F ζ hζ) (M F ζ hζ P) := by
   obtain ⟨e, he⟩ := KPGlobalCubicIdelePairing.restricted_cube_quotient F
   refine ⟨?_, ?_⟩
@@ -270,17 +273,15 @@ private theorem product_maximal_isotropic (P : CompatibleLocalData F ζ hζ) :
   · intro N hMN hN
     apply le_antisymm _ hMN
     intro x hx
-    change ∀ v, KPGlobalCubicIdelePairing.classComparison F x v ∈ (P.localData v).L
     intro v
     apply maximal_mem_of_annihilates F (localPairingHom F ζ hζ v) ?_
       (P.localData v).L (P.localData v).maximal
     · intro l hl
-      let t : KPGlobalCubicIdelePairing.RestrictedClasses F :=
+      let t :=
         RestrictedProduct.mulSingle (KPGlobalCubicIdelePairing.U F) v l
       obtain ⟨y, hy⟩ := e.surjective t
-      have hy' : KPGlobalCubicIdelePairing.classComparison F y = t := (he y).symm.trans hy
+      have hy' := (he y).symm.trans hy
       have hym : y ∈ M F ζ hζ P := by
-        change ∀ w, KPGlobalCubicIdelePairing.classComparison F y w ∈ (P.localData w).L
         intro w
         rw [hy']
         by_cases hw : w = v
@@ -302,7 +303,7 @@ private theorem product_maximal_isotropic (P : CompatibleLocalData F ζ hζ) :
       induction z using QuotientGroup.induction_on with
       | H z => exact ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.2 z).1
 
-theorem product_polarization (P : CompatibleLocalData F ζ hζ) :
+theorem product_polarization :
     KPLocalPolarization.IsMaximalAbelian (B F ζ hζ P) ∧
     ∀ (x : rawB F ζ hζ P) (v : KPHilbert.Place F),
       ∃ b : localPreimage F ζ hζ v (P.localData v).L,
@@ -327,7 +328,7 @@ theorem product_polarization (P : CompatibleLocalData F ζ hζ) :
   rw [← hNM]
   exact Subgroup.mem_map.mpr ⟨x, hx, rfl⟩
 
-theorem raw_coordinate_mem (P : CompatibleLocalData F ζ hζ)
+theorem raw_coordinate_mem
     (x : rawB F ζ hζ P) (v : KPHilbert.Place F) :
     ∃ b : localPreimage F ζ hζ v (P.localData v).L,
       b.val.val = KPPGLLocalCover.coverQuotient F ζ hζ v (x.val v) :=
@@ -345,7 +346,7 @@ namespace DedekindZetaZeroFree.ProductPolarization
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology localCoverTopology
 
 structure FiniteAdjustment (P : CompatibleLocalData F ζ hζ) where
@@ -355,21 +356,25 @@ structure FiniteAdjustment (P : CompatibleLocalData F ζ hζ) where
   complex_unchanged : ∀ w : InfinitePlace F, chi (Sum.inl w) = 1
   outside_unchanged : ∀ q, q ∉ S → chi (Sum.inr q) = 1
 
-def adjustedLocalValue (P : CompatibleLocalData F ζ hζ)
+section
+
+variable (P : CompatibleLocalData F ζ hζ)
+
+def adjustedLocalValue
     (T : FiniteAdjustment F ζ hζ P) (v : KPHilbert.Place F)
     (b : localPreimage F ζ hζ v (P.localData v).L) : ℂˣ :=
   (P.localData v).lambda b * T.chi v ⟨localProjection F ζ hζ v b.val, b.property⟩
 
-def rawCoordinate (P : CompatibleLocalData F ζ hζ)
+def rawCoordinate
     (x : rawB F ζ hζ P) (v : KPHilbert.Place F) :
     localPreimage F ζ hζ v (P.localData v).L :=
   Classical.choose (raw_coordinate_mem F ζ hζ P x v)
 
-def rawProduct (P : CompatibleLocalData F ζ hζ)
+def rawProduct
     (T : FiniteAdjustment F ζ hζ P) (x : rawB F ζ hζ P) : ℂˣ :=
   ∏ᶠ v, adjustedLocalValue F ζ hζ P T v (rawCoordinate F ζ hζ P x v)
 
-def rawProjection (P : CompatibleLocalData F ζ hζ) : rawB F ζ hζ P → B F ζ hζ P :=
+def rawProjection : rawB F ζ hζ P → B F ζ hζ P :=
   fun x =>
     let h := Subgroup.mem_map.mp x.property
     ⟨⟨KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
@@ -379,6 +384,8 @@ def rawProjection (P : CompatibleLocalData F ζ hζ) : rawB F ζ hζ P → B F �
         obtain ⟨b, hb, he⟩ := h
         convert hb using 1
         exact Subtype.ext he.symm⟩
+
+end
 
 set_option maxHeartbeats 500000
 
@@ -395,7 +402,11 @@ set_option maxHeartbeats 500000
     (KPAdelicCoverRestrictedProduct.compact F ζ hζ v : Set (KPLocalCover.CubicGL2Raw F ζ hζ v))) :=
   ⟨KPAdelicCoverRestrictedProduct.compact_open F ζ hζ⟩
 
- def flatten (P : CompatibleLocalData F ζ hζ) :
+ section
+
+variable (P : CompatibleLocalData F ζ hζ)
+
+def flatten :
     ((B F ζ hζ P).map (E F ζ hζ).subtype) ≃ₜ B F ζ hζ P where
   toFun x :=
     ⟨⟨x.val, by obtain ⟨b, hb, he⟩ := x.property; exact he ▸ b.property⟩,
@@ -415,7 +426,7 @@ set_option maxHeartbeats 500000
     apply Continuous.subtype_mk
     exact continuous_subtype_val.comp continuous_subtype_val
 
-private theorem projection_quotient (P : CompatibleLocalData F ζ hζ) :
+private theorem projection_quotient :
     Topology.IsQuotientMap (rawProjection F ζ hζ P) := by
   have hq : IsOpenQuotientMap
       ((KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ) ∘
@@ -424,7 +435,7 @@ private theorem projection_quotient (P : CompatibleLocalData F ζ hζ) :
   exact ((flatten F ζ hζ P).isQuotientMap.comp
     (hq.restrictPreimage ((B F ζ hζ P).map (E F ζ hζ).subtype : Set _)).isQuotientMap)
 
-private theorem coordinate_continuous (P : CompatibleLocalData F ζ hζ)
+private theorem coordinate_continuous
     (v : KPHilbert.Place F) : Continuous (fun x : rawB F ζ hζ P => rawCoordinate F ζ hζ P x v) := by
   apply Continuous.subtype_mk
   apply Continuous.subtype_mk
@@ -436,7 +447,7 @@ private theorem coordinate_continuous (P : CompatibleLocalData F ζ hζ)
   rw [he]
   exact QuotientGroup.continuous_mk.comp ((RestrictedProduct.continuous_eval v).comp continuous_subtype_val)
 
-private theorem matrix_ratio (P : CompatibleLocalData F ζ hζ) (x : rawB F ζ hζ P)
+private theorem matrix_ratio (x : rawB F ζ hζ P)
     (v : KPHilbert.Place F) :
     ∃ z : (KPHilbert.Completion F v)ˣ,
       diagonalHom F v (localRatio F ζ hζ v (rawCoordinate F ζ hζ P x v).val) *
@@ -449,26 +460,27 @@ private theorem matrix_ratio (P : CompatibleLocalData F ζ hζ) (x : rawB F ζ h
   rw [KPPGLLocalCover.baseQuotient, QuotientGroup.mk'_eq_mk'] at h
   obtain ⟨s, ⟨z, hz⟩, hs⟩ := h
   exact ⟨z, hz ▸ hs⟩
-private theorem ratio_raw_formula (P : CompatibleLocalData F ζ hζ) (x : rawB F ζ hζ P)
+private theorem ratio_raw_formula (x : rawB F ζ hζ P)
     (v : KPHilbert.Place F) :
     (localRatio F ζ hζ v (rawCoordinate F ζ hζ P x v).val : KPHilbert.Completion F v) =
       (x.val v).g 0 0 / (x.val v).g 1 1 := by
   obtain ⟨z, hz⟩ := matrix_ratio F ζ hζ P x v
   have h00 := congrArg (fun g : KPLocalCover.LocalGL2 F v =>
-    (g : Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 0 0) hz
+    g 0 0) hz
   have h11 := congrArg (fun g : KPLocalCover.LocalGL2 F v =>
-    (g : Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 1 1) hz
+    g 1 1) hz
+  let localRatio₀ := localRatio F ζ hζ v (rawCoordinate F ζ hζ P x v).val
   rw [Matrix.GeneralLinearGroup.coe_mul, show diagonalHom F v = diagonalHom F v from rfl,
-    show diagonalHom F v (localRatio F ζ hζ v (rawCoordinate F ζ hζ P x v).val) =
-      KubotaRankTwo.d (KPHilbert.Completion F v) (localRatio F ζ hζ v (rawCoordinate F ζ hζ P x v).val) 1 from rfl,
+    show diagonalHom F v (localRatio₀) =
+      KubotaRankTwo.d (KPHilbert.Completion F v) (localRatio₀) 1 from rfl,
     KubotaRankTwo.coe_d, Matrix.GeneralLinearGroup.coe_scalar] at h00 h11
   simp [Matrix.mul_apply, Matrix.scalar, KPLocalCover.projection] at h00 h11
-  change (localRatio F ζ hζ v (rawCoordinate F ζ hζ P x v).val : KPHilbert.Completion F v) * z = (x.val v).g 0 0 at h00
-  change (z : KPHilbert.Completion F v) = (x.val v).g 1 1 at h11
+  change (localRatio₀ : KPHilbert.Completion F v) * z = (x.val v).g 0 0 at h00
+  change z = (x.val v).g 1 1 at h11
   rw [← h00, ← h11]
   exact (mul_div_cancel_right₀ _ (Units.ne_zero z)).symm
 
-private theorem ratio_raw_continuous (P : CompatibleLocalData F ζ hζ)
+private theorem ratio_raw_continuous
     (v : KPHilbert.Place F) : Continuous
       (fun x : rawB F ζ hζ P => localRatio F ζ hζ v (rawCoordinate F ζ hζ P x v).val) := by
   letI : ContinuousInv₀ (KPHilbert.Completion F v) := by cases v <;> infer_instance
@@ -484,9 +496,7 @@ private theorem ratio_raw_continuous (P : CompatibleLocalData F ζ hζ)
     (continuous_apply_apply i j).comp (hv.comp
       (hp.comp ((RestrictedProduct.continuous_eval v).comp continuous_subtype_val)))
   apply Units.isEmbedding_val₀.continuous_iff.mpr
-  have he : (fun x : rawB F ζ hζ P =>
-      (localRatio F ζ hζ v (rawCoordinate F ζ hζ P x v).val : KPHilbert.Completion F v)) =
-      fun x => (x.val v).g 0 0 / (x.val v).g 1 1 :=
+  have he :=
     funext (fun x => ratio_raw_formula F ζ hζ P x v)
   change Continuous (fun x : rawB F ζ hζ P =>
       (localRatio F ζ hζ v (rawCoordinate F ζ hζ P x v).val : KPHilbert.Completion F v))
@@ -494,25 +504,27 @@ private theorem ratio_raw_continuous (P : CompatibleLocalData F ζ hζ)
   refine (hc 0 0).div (hc 1 1) fun x => ?_
   obtain ⟨z, hz⟩ := matrix_ratio F ζ hζ P x v
   have h11 := congrArg (fun g : KPLocalCover.LocalGL2 F v =>
-    (g : Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 1 1) hz
+    g 1 1) hz
   rw [Matrix.GeneralLinearGroup.coe_mul,
     show diagonalHom F v (localRatio F ζ hζ v (rawCoordinate F ζ hζ P x v).val) =
       KubotaRankTwo.d (KPHilbert.Completion F v) (localRatio F ζ hζ v (rawCoordinate F ζ hζ P x v).val) 1 from rfl,
     KubotaRankTwo.coe_d, Matrix.GeneralLinearGroup.coe_scalar] at h11
   simp [Matrix.mul_apply, Matrix.scalar, KPLocalCover.projection] at h11
-  change (z : KPHilbert.Completion F v) = (x.val v).g 1 1 at h11
+  change z = (x.val v).g 1 1 at h11
   rw [← h11]
   exact Units.ne_zero z
 
-private theorem adjusted_raw_continuous (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) (v : KPHilbert.Place F) : Continuous
+end
+
+variable (P : CompatibleLocalData F ζ hζ) (T : FiniteAdjustment F ζ hζ P)
+
+private theorem adjusted_raw_continuous (v : KPHilbert.Place F) : Continuous
       (fun x : rawB F ζ hζ P => adjustedLocalValue F ζ hζ P T v (rawCoordinate F ζ hζ P x v)) := by
   apply ((P.localData v).lambda.continuous.comp (coordinate_continuous F ζ hζ P v)).mul
   apply (T.chi v).continuous.comp
   apply Continuous.subtype_mk
   exact QuotientGroup.continuous_mk.comp (ratio_raw_continuous F ζ hζ P v)
-private theorem good_value_one (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) (q : HeightOneSpectrum (𝓞 F))
+private theorem good_value_one (q : HeightOneSpectrum (𝓞 F))
     (hq : IsUnramified F ζ hζ q (P.localData (Sum.inr q))) (hS : q ∉ T.S)
     (x : rawB F ζ hζ P) (hx : x.val (Sum.inr q) ∈ KPAdelicCoverRestrictedProduct.compact F ζ hζ (Sum.inr q)) :
     adjustedLocalValue F ζ hζ P T (Sum.inr q) (rawCoordinate F ζ hζ P x (Sum.inr q)) = 1 := by
@@ -525,43 +537,31 @@ private theorem good_value_one (P : CompatibleLocalData F ζ hζ)
   simp only [adjustedLocalValue, hq.2.2 _ hb, T.outside_unchanged q hS]
   simp
 
-private theorem adjusted_locallyFinite (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) : LocallyFinite (fun v =>
+private theorem adjusted_locallyFinite : LocallyFinite (fun v =>
       Function.mulSupport (fun x : rawB F ζ hζ P => adjustedLocalValue F ζ hζ P T v (rawCoordinate F ζ hζ P x v))) := by
-  have hb : {q | ¬ IsUnramified F ζ hζ q (P.localData (Sum.inr q))}.Finite :=
-    Filter.eventually_cofinite.mp P.unramified_almost_everywhere
   let exc : Set (KPHilbert.Place F) := Set.range Sum.inl ∪
     Sum.inr '' ({q | ¬ IsUnramified F ζ hζ q (P.localData (Sum.inr q))} ∪ (T.S : Set _))
-  have hexc : exc.Finite := (Set.finite_range Sum.inl).union
-    ((hb.union T.S.finite_toSet).image Sum.inr)
   intro x
   let U : Set (rawB F ζ hζ P) := {y | ∀ v,
     x.val v ∈ KPAdelicCoverRestrictedProduct.compact F ζ hζ v →
       y.val v ∈ KPAdelicCoverRestrictedProduct.compact F ζ hζ v}
-  have hU : IsOpen U := (RestrictedProduct.isOpen_forall_imp_mem
-    (KPAdelicCoverRestrictedProduct.compact_open F ζ hζ)).preimage continuous_subtype_val
-  refine ⟨U, hU.mem_nhds (fun _ h => h), ?_⟩
-  apply (hexc.union (Filter.eventually_cofinite.mp x.val.property)).subset
+  refine ⟨U, ((RestrictedProduct.isOpen_forall_imp_mem
+    (KPAdelicCoverRestrictedProduct.compact_open F ζ hζ)).preimage continuous_subtype_val).mem_nhds (fun _ h => h), ?_⟩
+  apply (((Set.finite_range Sum.inl).union
+    (((Filter.eventually_cofinite.mp P.unramified_almost_everywhere).union T.S.finite_toSet).image Sum.inr)).union (Filter.eventually_cofinite.mp x.val.property)).subset
   intro v hv
   by_contra hn
-  have hnexc : v ∉ exc := fun h => hn (Or.inl h)
-  have hx : x.val v ∈ KPAdelicCoverRestrictedProduct.compact F ζ hζ v :=
-    not_not.mp (fun h => hn (Or.inr h))
+  have hnexc := fun h => hn (Or.inl h)
   obtain ⟨y, hyv, hyU⟩ := hv
   change adjustedLocalValue F ζ hζ P T v (rawCoordinate F ζ hζ P y v) ≠ 1 at hyv
   cases v with
   | inl w => exact hnexc (Or.inl ⟨w, rfl⟩)
   | inr q =>
-    have hq : IsUnramified F ζ hζ q (P.localData (Sum.inr q)) :=
-      not_not.mp (fun h => hnexc (Or.inr ⟨q, Or.inl h, rfl⟩))
-    have hS : q ∉ T.S := fun h => hnexc (Or.inr ⟨q, Or.inr h, rfl⟩)
-    exact hyv (good_value_one F ζ hζ P T q hq hS y (hyU _ hx))
+    exact hyv (good_value_one F ζ hζ P T q (not_not.mp (fun h => hnexc (Or.inr ⟨q, Or.inl h, rfl⟩))) (fun h => hnexc (Or.inr ⟨q, Or.inr h, rfl⟩)) y (hyU _ (not_not.mp (fun h => hn (Or.inr h)))))
 
-theorem product_topology (P : CompatibleLocalData F ζ hζ)
-    (T : FiniteAdjustment F ζ hζ P) :
+theorem product_topology :
     Continuous (rawProduct F ζ hζ P T) ∧
-      Topology.IsQuotientMap (rawProjection F ζ hζ P) := by
-  exact ⟨continuous_finprod (adjusted_raw_continuous F ζ hζ P T)
+      Topology.IsQuotientMap (rawProjection F ζ hζ P) := ⟨continuous_finprod (adjusted_raw_continuous F ζ hζ P T)
       (adjusted_locallyFinite F ζ hζ P T), projection_quotient F ζ hζ P⟩
 
 end
@@ -576,7 +576,7 @@ namespace DedekindZetaZeroFree.ProductPolarization
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology localCoverTopology
 private theorem rawCoordinate_val (P : CompatibleLocalData F ζ hζ)
     (x : rawB F ζ hζ P) (v : KPHilbert.Place F) :
@@ -587,32 +587,32 @@ private theorem rawProduct_finiteSupport (P : CompatibleLocalData F ζ hζ)
     (T : FiniteAdjustment F ζ hζ P) (x : rawB F ζ hζ P) :
     Function.HasFiniteMulSupport
       (fun v => adjustedLocalValue F ζ hζ P T v (rawCoordinate F ζ hζ P x v)) := by
-  have hx : ∀ᶠ q in Filter.cofinite,
-      x.val (Sum.inr q) ∈ KPAdelicCoverRestrictedProduct.compact F ζ hζ (Sum.inr q) :=
-    Filter.eventually_cofinite.mpr
-      ((Filter.eventually_cofinite.mp x.val.property).preimage Sum.inr_injective.injOn)
   have hS : ∀ᶠ q in Filter.cofinite, q ∉ T.S := by
     apply Filter.eventually_cofinite.mpr
     simpa using T.S.finite_toSet
   have hg : ∀ᶠ q in Filter.cofinite,
       adjustedLocalValue F ζ hζ P T (Sum.inr q) (rawCoordinate F ζ hζ P x (Sum.inr q)) = 1 := by
-    filter_upwards [hx, P.unramified_almost_everywhere, hS] with q hq hu hS
+    filter_upwards [(Filter.eventually_cofinite.mpr
+      ((Filter.eventually_cofinite.mp x.val.property).preimage Sum.inr_injective.injOn)), P.unramified_almost_everywhere, hS] with q hq hu hS
     simp only [adjustedLocalValue, T.outside_unchanged q hS]
     change (P.localData (Sum.inr q)).lambda (rawCoordinate F ζ hζ P x (Sum.inr q)) * 1 = 1
     rw [mul_one]
     apply hu.2.2
     rw [rawCoordinate_val]
     exact Subgroup.mem_map.mpr ⟨x.val (Sum.inr q), hq, rfl⟩
-  have hf := Filter.eventually_cofinite.mp hg
-  apply Set.Finite.subset ((Set.finite_range (Sum.inl : InfinitePlace F → KPHilbert.Place F)).union
-    (hf.image (Sum.inr : HeightOneSpectrum (𝓞 F) → KPHilbert.Place F)))
+  apply Set.Finite.subset ((Set.finite_range Sum.inl).union
+    ((Filter.eventually_cofinite.mp hg).image Sum.inr))
   intro v hv
   cases v with
   | inl w => exact Or.inl ⟨w, rfl⟩
   | inr q => exact Or.inr ⟨q, hv, rfl⟩
-private theorem localMatrix_diagonal (v : KPHilbert.Place F)
-    (b : LocalE F ζ hζ v) (g : KPLocalCover.CubicGL2Raw F ζ hζ v)
-    (hg : KPPGLLocalCover.coverQuotient F ζ hζ v g = b.val) :
+section
+
+variable (v : KPHilbert.Place F) (b : LocalE F ζ hζ v) (g : KPLocalCover.CubicGL2Raw F ζ hζ v)
+    (hg : KPPGLLocalCover.coverQuotient F ζ hζ v g = b.val)
+
+include hg in
+private theorem localMatrix_diagonal :
     g.g 1 0 = 0 ∧ g.g 0 1 = 0 := by
   have h := localRatioValue_spec F ζ hζ v b
   rw [← hg, KPPGLLocalCover.projection_coverQuotient] at h
@@ -621,28 +621,23 @@ private theorem localMatrix_diagonal (v : KPHilbert.Place F)
       QuotientGroup.mk' (KPPGLLocalCover.scalarSubgroup F v) g.g at h
   rw [QuotientGroup.mk'_eq_mk'] at h
   obtain ⟨z, ⟨u, rfl⟩, hz⟩ := h
-  have h10 := congrArg (fun a : KPLocalCover.LocalGL2 F v => (a : Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 1 0) hz
-  have h01 := congrArg (fun a : KPLocalCover.LocalGL2 F v => (a : Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 0 1) hz
   constructor
-  · simpa [diagonalHom, Matrix.mul_apply, Fin.sum_univ_two, KPScalarSplitCentral.scalarMatrix] using h10.symm
-  · simpa [diagonalHom, Matrix.mul_apply, Fin.sum_univ_two, KPScalarSplitCentral.scalarMatrix] using h01.symm
-private theorem single_mem_E (v : KPHilbert.Place F)
-    (b : LocalE F ζ hζ v) (g : KPLocalCover.CubicGL2Raw F ζ hζ v)
-    (hg : KPPGLLocalCover.coverQuotient F ζ hζ v g = b.val) :
+  · simpa [diagonalHom, Matrix.mul_apply, Fin.sum_univ_two, KPScalarSplitCentral.scalarMatrix] using (congrArg (fun a : KPLocalCover.LocalGL2 F v => a 1 0) hz).symm
+  · simpa [diagonalHom, Matrix.mul_apply, Fin.sum_univ_two, KPScalarSplitCentral.scalarMatrix] using (congrArg (fun a : KPLocalCover.LocalGL2 F v => a 0 1) hz).symm
+include hg in
+private theorem single_mem_E :
     KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
       (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ v g) ∈ E F ζ hζ := by
   obtain ⟨h10,h01⟩ := localMatrix_diagonal F ζ hζ v b g hg
+  let projection₀ := KPAdelicCoverRestrictedProduct.projection F ζ hζ (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ v g)
   have hoff (i j : Fin 2) (hij : i ≠ j) :
-      KPAdelicCoverRestrictedProduct.projection F ζ hζ
-        (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ v g) i j = 0 := by
+      projection₀ i j = 0 := by
     have hgij : g.g i j = 0 := by fin_cases i <;> fin_cases j <;> simp_all
     apply Prod.ext
     · funext w
-      have he := KPAdelicCoverRestrictedProduct.projection_localInjection F ζ hζ v (Sum.inl w) g
       have hcoeff := congrArg (fun A : KPLocalCover.LocalGL2 F (Sum.inl w) =>
-        (A : Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F (Sum.inl w))) i j) he
-      change (KPAdelicCoverRestrictedProduct.projection F ζ hζ
-        (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ v g) i j).1 w =
+        A i j) (KPAdelicCoverRestrictedProduct.projection_localInjection F ζ hζ v (Sum.inl w) g)
+      change (projection₀ i j).1 w =
         (Pi.mulSingle v g (Sum.inl w)).g i j at hcoeff
       change _ = (0 : KPHilbert.Completion F (Sum.inl w))
       rw [hcoeff]
@@ -651,20 +646,19 @@ private theorem single_mem_E (v : KPHilbert.Place F)
       · simp [Pi.mulSingle_eq_of_ne (Ne.symm hv), hij]
     · apply Subtype.ext
       funext q
-      have he := KPAdelicCoverRestrictedProduct.projection_localInjection F ζ hζ v (Sum.inr q) g
       have hcoeff := congrArg (fun A : KPLocalCover.LocalGL2 F (Sum.inr q) =>
-        (A : Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F (Sum.inr q))) i j) he
-      change (KPAdelicCoverRestrictedProduct.projection F ζ hζ
-        (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ v g) i j).2 q =
+        A i j) (KPAdelicCoverRestrictedProduct.projection_localInjection F ζ hζ v (Sum.inr q) g)
+      change (projection₀ i j).2 q =
         (Pi.mulSingle v g (Sum.inr q)).g i j at hcoeff
       change _ = (0 : KPHilbert.Completion F (Sum.inr q))
       refine hcoeff.trans ?_
       by_cases hv : v = Sum.inr q
       · subst v; simpa using hgij
       · simp [Pi.mulSingle_eq_of_ne (Ne.symm hv), hij]
-  exact ⟨KPAdelicCoverRestrictedProduct.projection F ζ hζ
-    (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ v g), rfl,
+  exact ⟨projection₀, rfl,
     hoff 1 0 (by decide), hoff 0 1 (by decide)⟩
+
+end
 open scoped commutatorElement
 private theorem raw_commutator_single (x : KPGlobalCenterRationalCharacter.Raw F ζ hζ)
     (v : KPHilbert.Place F) (g : KPLocalCover.CubicGL2Raw F ζ hζ v) :
@@ -675,7 +669,11 @@ private theorem raw_commutator_single (x : KPGlobalCenterRationalCharacter.Raw F
   by_cases hv : v = w
   · subst w; simp
   · simp [Pi.mulSingle_eq_of_ne (Ne.symm hv)]
-private theorem raw_local_center (P : CompatibleLocalData F ζ hζ)
+section
+
+variable (P : CompatibleLocalData F ζ hζ)
+
+private theorem raw_local_center
     (z : KPGlobalCenterRationalCharacter.Z F ζ hζ)
     (x : rawB F ζ hζ P)
     (hx : KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
@@ -704,18 +702,14 @@ private theorem raw_local_center (P : CompatibleLocalData F ζ hζ)
   rw [map_one]
   rw [hg'.symm, rawCoordinate_val, ← map_commutatorElement]
   rw [hjformula]
-  have hh := raw_commutator_single F ζ hζ x.val v g
   have hmap := congrArg (fun y => KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-    (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ y)) hh
+    (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ y)) (raw_commutator_single F ζ hζ x.val v g)
   change ⁅KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
     (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x.val), t.val⁆ =
     KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
       (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ v ⁅x.val v, g⁆) at hmap
-  have hraw : KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-      (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ v ⁅x.val v, g⁆) = 1 :=
-    hmap.symm.trans hc
-  rw [← commutatorElement_inv, map_inv, map_inv, hraw, inv_one]
-private theorem B_raw_lift (P : CompatibleLocalData F ζ hζ) (b : B F ζ hζ P) :
+  rw [← commutatorElement_inv, map_inv, map_inv, (hmap.symm.trans hc), inv_one]
+private theorem B_raw_lift (b : B F ζ hζ P) :
     ∃ x : rawB F ζ hζ P, KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x.val) = b.val.val := by
   obtain ⟨y,hy⟩ := QuotientGroup.mk'_surjective
@@ -731,7 +725,7 @@ private theorem B_raw_lift (P : CompatibleLocalData F ζ hζ) (b : B F ζ hζ P)
       (B F ζ hζ P).map (E F ζ hζ).subtype
   rw [h]
   exact Subgroup.mem_map.mpr ⟨b.val, b.property, rfl⟩
-private theorem center_values (P : CompatibleLocalData F ζ hζ)
+private theorem center_values
     (T : FiniteAdjustment F ζ hζ P) (lam : B F ζ hζ P → ℂˣ)
     (hlam : ∀ (b : B F ζ hζ P) (x : rawB F ζ hζ P),
       KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
@@ -752,19 +746,20 @@ private theorem center_values (P : CompatibleLocalData F ζ hζ)
   intro v
   let c : localCenter F ζ hζ v :=
     ⟨(rawCoordinate F ζ hζ P x v).val, raw_local_center F ζ hζ P z x hxz v⟩
-  have hc : localProjection F ζ hζ v (rawCoordinate F ζ hζ P x v).val = 1 := c.property
+  have hc := c.property
   have he : (⟨localProjection F ζ hζ v (rawCoordinate F ζ hζ P x v).val,
       (rawCoordinate F ζ hζ P x v).property⟩ : (P.localData v).L) = 1 := Subtype.ext hc
   unfold adjustedLocalValue
   rw [he, map_one, mul_one, (P.localData v).extends_center _ c rfl]
   exact localOmega_raw_formula F ζ hζ v c (x.val v) (rawCoordinate_val F ζ hζ P x v).symm
+
+end
 private theorem ordinaryTorus_commute (x y : KPGlobalTorusFunctionData.ordinaryTorus F) :
     Commute x.val y.val := by
   obtain ⟨a,ha,h10,h01⟩ := x.property
   obtain ⟨b,hb,hb10,hb01⟩ := y.property
   rw [← ha, ← hb]
   apply Commute.map
-  change a * b = b * a
   apply Units.ext
   ext i j
   fin_cases i <;> fin_cases j <;>
@@ -779,9 +774,7 @@ private theorem cube_center (b : E F ζ hζ) : b ^ 3 ∈ KPGlobalCenterRationalC
       (ordinaryTorus_commute F ⟨_,b.property⟩ ⟨_,y.property⟩)
   rw [← KPAdelicCoverRestrictedProduct.pglCentralInjection_kernel] at hc
   obtain ⟨ε, hε⟩ := hc
-  have hcentral : ⁅b.val,y.val⁆ ∈ Subgroup.center (KPAdelicCoverRestrictedProduct.CubicPGL2Adelic F ζ hζ) :=
-    KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε,hε⟩
-  have hcomm : Commute b.val ⁅b.val,y.val⁆ := Subgroup.mem_center_iff.mp hcentral b.val
+  have hcomm : Commute b.val ⁅b.val,y.val⁆ := Subgroup.mem_center_iff.mp (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε,hε⟩) b.val
   have hpow : ⁅b.val,y.val⁆ ^ 3 = 1 := by
     rw [← hε, ← map_pow]
     have he : ε ^ 3 = 1 := by
@@ -847,9 +840,7 @@ theorem product_character_values (P : CompatibleLocalData F ζ hζ)
       ((KPGlobalCenterRationalCharacter.nu F ζ hζ b.val : ℝ≥0) : ℝ)) := by
   refine ⟨center_values F ζ hζ P T lam hlam, ?_⟩
   intro b
-  let z : KPGlobalCenterRationalCharacter.Z F ζ hζ :=
-    ⟨b.val ^ 3, cube_center F ζ hζ b.val⟩
-  have hc := center_values F ζ hζ P T lam hlam (b ^ 3) z rfl
+  have hc := center_values F ζ hζ P T lam hlam (b ^ 3) (⟨b.val ^ 3, cube_center F ζ hζ b.val⟩) rfl
   rw [lam_pow F ζ hζ P T lam hlam b] at hc
   have hn := congrArg (fun u : ℂˣ => ‖(u : ℂ)‖) hc
   rw [Units.val_pow_eq_pow_val, norm_pow,

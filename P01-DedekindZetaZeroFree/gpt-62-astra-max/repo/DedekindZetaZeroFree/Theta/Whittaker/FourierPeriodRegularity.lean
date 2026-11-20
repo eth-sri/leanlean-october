@@ -17,8 +17,8 @@ namespace DedekindZetaZeroFree.SheetRescaling
 open MomentSources KPGlobalResidualConstruction
 open CanonicalComplexSmoothAction.TranslatedGenerators.NativeApproximation
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 
 theorem theta_quotient_joint_continuous (T : Realization R Q) (v : R.A.UnitQuotient) :
     Continuous (fun p : KPAdditiveQuotient F × Group R => T.theta v
@@ -26,12 +26,12 @@ theorem theta_quotient_joint_continuous (T : Realization R Q) (v : R.A.UnitQuoti
   letI : IsTopologicalGroup (Group R) :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F R.A.zeta12 R.A.primitive_zeta12).2.2.1
   apply ((QuotientAddGroup.isOpenQuotientMap_mk
-    (N := AdeleRing.principalSubgroup (𝓞 F) F)).prodMap
-    (IsOpenQuotientMap.id (X := Group R))).continuous_comp_iff.mp
+    ).prodMap
+    (IsOpenQuotientMap.id)).continuous_comp_iff.mp
   have hc := (T.smooth v 0 (Metric.mem_ball_self T.radius_pos)).1.comp
     (((KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous
       F R.A.zeta12 R.A.primitive_zeta12).comp
-        (continuous_fst : Continuous (Prod.fst : KPAdeles F × Group R → KPAdeles F))).mul continuous_snd)
+        continuous_fst).mul continuous_snd)
   simpa only [Function.comp_def, Prod.map, id_eq, Realization.theta, Pi.mul_apply,
     CompactPeriodAnalyticity.CompactPeriod.cleared_integrand_mk T v 0 (Metric.mem_ball_self T.radius_pos)] using hc
 
@@ -93,10 +93,9 @@ theorem thetaQuotientChart_contDiffOn (T : Realization R Q) (v : R.A.UnitQuotien
   apply ActualNativeActionGeometry.compact_family_contDiffOn_of_joint_jets
     _ _ (ActualDifferentialData.archDomain_isOpen F)
   · intro q
-    have hs := KPLiteralPeriod.NonzeroResidue.smooth_right_translate
+    have h := (KPLiteralPeriod.NonzeroResidue.smooth_right_translate
       F R.A.zeta12 R.A.primitive_zeta12 (T.theta v)
-      (T.smooth v 0 (Metric.mem_ball_self T.radius_pos)) a
-    have h := hs.2.1 (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g)
+      (T.smooth v 0 (Metric.mem_ball_self T.radius_pos)) a).2.1 (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g)
     change ContDiffOn ℝ (⊤ : ℕ∞) (fun x => T.theta v
       ((KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g) *
         archChart F R.A.zeta12 R.A.primitive_zeta12 x * a)) (archDomain F) at h
@@ -119,12 +118,11 @@ def fourierExtraction (R : PrincipalMellin.ActualRecipe S η)
         simp only [ContinuousMap.smul_apply, smul_mul_assoc]
         exact integral_smul c _ }
     (dq.real Set.univ) (fun h => by
-      change ‖∫ q, h q * star (adelicTraceQuotientCharacter F q : ℂ) ∂dq‖ ≤ dq.real Set.univ * ‖h‖
       rw [mul_comm]
       apply norm_integral_le_of_norm_le_const
       apply Eventually.of_forall
       intro q
-      simpa only [norm_mul, norm_star, Circle.norm_coe, mul_one] using h.norm_coe_le_norm q)
+      simpa using h.norm_coe_le_norm q)
 
 theorem fourier_chart_contDiffOn (T : Realization R Q) (v : R.A.UnitQuotient)
     (g a : Group R) :
@@ -137,7 +135,7 @@ theorem fourier_continuous (T : Realization R Q) (v : R.A.UnitQuotient) :
     Continuous (fourier R Q.dq (T.theta v)) := by
   letI : IsProbabilityMeasure Q.dq := ⟨Q.probability⟩
   apply continuousOn_univ.mp
-  apply continuousOn_integral_of_compact_support (k := Set.univ) isCompact_univ
+  apply continuousOn_integral_of_compact_support isCompact_univ
   · exact (((theta_quotient_joint_continuous T v).comp continuous_swap).mul
       (((continuous_subtype_val.comp (continuous_adelicTraceQuotientCharacter F)).star).comp continuous_snd)).continuousOn
   · intro p x hp hx

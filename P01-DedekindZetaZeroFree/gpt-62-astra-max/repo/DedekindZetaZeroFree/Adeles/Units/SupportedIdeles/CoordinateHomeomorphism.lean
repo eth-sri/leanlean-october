@@ -17,31 +17,36 @@ variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
   ⟨fun v => if hv : v ∈ A.Sf then x.1.2 ⟨v, hv⟩ else x.2 ⟨v, hv⟩,
     by intro v hv; change v ∉ A.Sf at hv; dsimp; rw [dif_neg hv]; exact (x.2 ⟨v, hv⟩).property⟩
 
- theorem outside_cofinite : Filter.cofinite ≤ Filter.principal ((A.Sf : Set (HeightOneSpectrum (𝓞 F)))ᶜ) := by
-  exact Filter.le_principal_iff.mpr (A.Sf.eventually_cofinite_notMem)
+ theorem outside_cofinite : Filter.cofinite ≤ Filter.principal ((A.Sf : Set (HeightOneSpectrum (𝓞 F)))ᶜ) := Filter.le_principal_iff.mpr (A.Sf.eventually_cofinite_notMem)
 
-def assembly (x : A.G × (SupportedChartDefinitions.C A)) : IdeleGroup F :=
+section
+
+variable (x : A.G × (SupportedChartDefinitions.C A))
+
+def assembly : IdeleGroup F :=
   (ContinuousMulEquiv.piUnits.symm x.1.1,
     RestrictedProduct.inclusion _ _ (outside_cofinite A) (finiteAssembly A x))
 
-theorem assembly_apply (x : A.G × (SupportedChartDefinitions.C A)) (v : HeightOneSpectrum (𝓞 F)) :
+theorem assembly_apply (v : HeightOneSpectrum (𝓞 F)) :
     (assembly A x).2 v =
       (if hv : v ∈ A.Sf then x.1.2 ⟨v, hv⟩ else x.2 ⟨v, hv⟩ : (v.adicCompletion F)ˣ) := rfl
 
-theorem assembly_supported (x : A.G × (SupportedChartDefinitions.C A)) :
+theorem assembly_supported :
     assembly A x ∈ IdeleGroup.supportedAt (K := F) (A.Sf : Set _) := by
   intro v hv
   change (assembly A x).2 v ∈ _
   rw [assembly_apply, dif_neg (show v ∉ A.Sf from hv)]
   exact (x.2 ⟨v, hv⟩).property
 
-theorem coordinates_assembly (x : A.G × (SupportedChartDefinitions.C A)) : SupportedChartDefinitions.sCoordinatesRaw A (assembly A x) = x.1 := by
+theorem coordinates_assembly : SupportedChartDefinitions.sCoordinatesRaw A (assembly A x) = x.1 := by
   classical
   apply Prod.ext
   · exact ContinuousMulEquiv.piUnits.apply_symm_apply _
   · funext v
     change (assembly A x).2 v.val = x.1.2 v
     rw [assembly_apply, dif_pos v.property]
+
+end
 
 theorem continuous_assembly : Continuous (assembly A) := by
   apply Continuous.prodMk
@@ -65,14 +70,12 @@ def forward (a : (SupportedChartDefinitions.H A)) : A.G1 × (SupportedChartDefin
 
 def backward (x : A.G1 × (SupportedChartDefinitions.C A)) : (SupportedChartDefinitions.H A) :=
   ⟨⟨assembly A (x.1.val, x.2), by
-    change IdeleGroup.absoluteNorm (assembly A (x.1.val, x.2)) = 1
     apply Units.ext
     apply NNReal.eq
     have hn := SupportedChartNorm.supported_norm A (assembly A (x.1.val, x.2))
       (assembly_supported A _)
     rw [coordinates_assembly] at hn
-    have hx : A.norm x.1.val = 1 := x.1.property
-    rw [hx] at hn
+    rw [x.1.property] at hn
     exact inv_eq_one.mp hn.symm⟩, assembly_supported A _⟩
 
 theorem forward_backward (x : A.G1 × (SupportedChartDefinitions.C A)) : forward A (backward A x) = x := by

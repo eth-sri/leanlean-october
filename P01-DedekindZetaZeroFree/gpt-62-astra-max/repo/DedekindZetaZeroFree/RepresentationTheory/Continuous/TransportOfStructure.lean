@@ -50,10 +50,7 @@ omit [TopologicalSpace G] in
 @[simp]
 theorem coe_congr (e : V ≃L[𝕜] W) (π : ContRepresentation 𝕜 G V) :
     ⇑(congr e π) = fun g ↦ e.conjContinuousAlgEquiv (π g) := by
-  funext g
-  apply ContinuousLinearMap.ext
-  intro x
-  exact congr_apply e π g x
+  rfl
 
 theorem continuous_congr (e : V ≃L[𝕜] W) {π : ContRepresentation 𝕜 G V} (hπ : Continuous π) :
     Continuous (congr e π) :=

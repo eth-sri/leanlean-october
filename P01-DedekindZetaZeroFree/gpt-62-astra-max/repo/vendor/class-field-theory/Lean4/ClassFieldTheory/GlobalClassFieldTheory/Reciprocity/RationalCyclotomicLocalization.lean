@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -128,10 +124,13 @@ theorem rationalCyclotomicLocalizedCompletion_charZero
 
 attribute [local instance] rationalCyclotomicLocalizedCompletion_charZero
 
+section
+
+variable (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ))
+
 /-- The actual global-to-local embedding of the selected rational
 cyclotomic level, regarded as a rational algebra homomorphism. -/
-noncomputable def rationalCyclotomicGlobalToLocalizedAlgHom
-    (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ)) :
+noncomputable def rationalCyclotomicGlobalToLocalizedAlgHom :
     KummerTheory.rationalCyclotomicLevel m →ₐ[ℚ]
       rationalCyclotomicLocalizedCompletion m v :=
   (AbsoluteValue.toAlgebraicLocalization
@@ -143,7 +142,6 @@ noncomputable def rationalCyclotomicGlobalToLocalizedAlgHom
 global-to-local ring homomorphism as its underlying map. -/
 @[simp]
 theorem rationalCyclotomicGlobalToLocalizedAlgHom_apply
-    (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ))
     (x : KummerTheory.rationalCyclotomicLevel m) :
     rationalCyclotomicGlobalToLocalizedAlgHom m v x =
       AbsoluteValue.toAlgebraicLocalization
@@ -151,6 +149,8 @@ theorem rationalCyclotomicGlobalToLocalizedAlgHom_apply
         (rationalCyclotomicChosenFinitePlaceExtension m v).1
         (rationalCyclotomicChosenFinitePlaceExtension m v).2 x :=
   rfl
+
+end
 
 /-- The image of the selected global primitive root in the algebraic
 localization at `v`. -/
@@ -163,11 +163,12 @@ noncomputable def rationalCyclotomicLocalizedPrimitiveRoot
     (rationalCyclotomicChosenFinitePlaceExtension m v).2
     (rationalCyclotomicLevelPrimitiveRoot m)
 
+variable (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ))
+
 /-- The selected localized root is the actual global-to-local image of
 the selected global primitive root. -/
 @[simp]
-theorem rationalCyclotomicGlobalToLocalizedAlgHom_primitiveRoot
-    (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ)) :
+theorem rationalCyclotomicGlobalToLocalizedAlgHom_primitiveRoot :
     rationalCyclotomicGlobalToLocalizedAlgHom m v
         (rationalCyclotomicLevelPrimitiveRoot m) =
       rationalCyclotomicLocalizedPrimitiveRoot m v :=
@@ -175,12 +176,9 @@ theorem rationalCyclotomicGlobalToLocalizedAlgHom_primitiveRoot
 
 /-- The localized global root remains primitive because the canonical
 global-to-local homomorphism is injective. -/
-theorem rationalCyclotomicLocalizedPrimitiveRoot_isPrimitiveRoot
-    (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ)) :
+theorem rationalCyclotomicLocalizedPrimitiveRoot_isPrimitiveRoot :
     IsPrimitiveRoot
-      (rationalCyclotomicLocalizedPrimitiveRoot m v) (m : ℕ) := by
-  exact
-    (rationalCyclotomicLevelPrimitiveRoot_isPrimitiveRoot m).map_of_injective
+      (rationalCyclotomicLocalizedPrimitiveRoot m v) (m : ℕ) := (rationalCyclotomicLevelPrimitiveRoot_isPrimitiveRoot m).map_of_injective
       (rationalCyclotomicGlobalToLocalizedAlgHom m v).injective
 
 end RationalGlobalToLocalized
@@ -193,7 +191,6 @@ theorem rationalCyclotomicLevelPrimitiveRoot_adjoin_eq_top
         ({rationalCyclotomicLevelPrimitiveRoot m} :
           Set (KummerTheory.rationalCyclotomicLevel m)) =
       ⊤ := by
-  let : NeZero (m : ℕ) := ⟨m.ne_zero⟩
   exact
     IntermediateField.adjoin_eq_top_of_algebra
       ℚ
@@ -202,11 +199,12 @@ theorem rationalCyclotomicLevelPrimitiveRoot_adjoin_eq_top
       (IsCyclotomicExtension.adjoin_primitive_root_eq_top
         (rationalCyclotomicLevelPrimitiveRoot_isPrimitiveRoot m))
 
+variable (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ))
+
 /-- The localized primitive root generates the whole algebraic
 localization over the completed rational field. -/
 theorem
-    rationalCyclotomicLocalizedPrimitiveRoot_adjoin_eq_top
-    (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ)) :
+    rationalCyclotomicLocalizedPrimitiveRoot_adjoin_eq_top :
     IntermediateField.adjoin
         (rationalCyclotomicAdicAbsoluteValue v).Completion
         {rationalCyclotomicLocalizedPrimitiveRoot m v} =
@@ -217,14 +215,13 @@ theorem
     AbsoluteValue.extensionCompletionAlgebra
       (K := ℚ) w.1
   let : SMul ℚ w.1.Completion := hℚ.toSMul
-  let : Algebra vQ.Completion w.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra vQ w.1 w.2
-  let : Algebra ℚ (LocalizedCompletion vQ w) :=
+  let :=
     localizedCompletionGlobalAlgebra vQ w
-  let : SMul ℚ (LocalizedCompletion vQ w) :=
+  let :=
     (localizedCompletionGlobalAlgebra vQ w).toSMul
-  let : IsScalarTower ℚ vQ.Completion
-      (LocalizedCompletion vQ w) :=
+  let :=
     localizedCompletionIsScalarTower vQ w
   exact
     localizedCompletion_adjoin_image_eq_top_of_adjoin_eq_top
@@ -233,13 +230,10 @@ theorem
 
 /-- The localized primitive root generates the same top subalgebra as its
 intermediate-field closure.  This avoids reducing the two adjoin constructions. -/
-theorem rationalCyclotomicLocalizedPrimitiveRoot_algebraAdjoin_eq_top
-    (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ)) :
+theorem rationalCyclotomicLocalizedPrimitiveRoot_algebraAdjoin_eq_top :
     Algebra.adjoin (rationalCyclotomicAdicAbsoluteValue v).Completion
       ({rationalCyclotomicLocalizedPrimitiveRoot m v} :
-        Set (rationalCyclotomicLocalizedCompletion m v)) = ⊤ := by
-  exact
-    IntermediateField.adjoin_eq_top_iff.mp
+        Set (rationalCyclotomicLocalizedCompletion m v)) = ⊤ := IntermediateField.adjoin_eq_top_iff.mp
       (show
         IntermediateField.adjoin
             (rationalCyclotomicAdicAbsoluteValue v).Completion
@@ -251,16 +245,13 @@ theorem rationalCyclotomicLocalizedPrimitiveRoot_algebraAdjoin_eq_top
 
 /-- The algebraic localization of the actual `m`-th rational cyclotomic
 level is itself a cyclotomic extension of the completed rational field. -/
-theorem rationalCyclotomicLevel_localizedCompletion_isCyclotomicExtension
-    (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ)) :
+theorem rationalCyclotomicLevel_localizedCompletion_isCyclotomicExtension :
     IsCyclotomicExtension {(m : ℕ)}
       (rationalCyclotomicAdicAbsoluteValue v).Completion
       (rationalCyclotomicLocalizedCompletion m v) := by
   let : NeZero (m : ℕ) := ⟨m.ne_zero⟩
-  let ζv : rationalCyclotomicLocalizedCompletion m v :=
+  let ζv :=
     rationalCyclotomicLocalizedPrimitiveRoot m v
-  have hζv : IsPrimitiveRoot ζv (m : ℕ) :=
-    rationalCyclotomicLocalizedPrimitiveRoot_isPrimitiveRoot m v
   have hAdjoin :
       Algebra.adjoin (rationalCyclotomicAdicAbsoluteValue v).Completion
         ({ζv} : Set (rationalCyclotomicLocalizedCompletion m v)) = ⊤ := by
@@ -271,7 +262,7 @@ theorem rationalCyclotomicLevel_localizedCompletion_isCyclotomicExtension
       (rationalCyclotomicAdicAbsoluteValue v).Completion
       (Algebra.adjoin (rationalCyclotomicAdicAbsoluteValue v).Completion
         ({ζv} : Set (rationalCyclotomicLocalizedCompletion m v)))
-      (h := hζv.adjoin_isCyclotomicExtension
+      (h := (rationalCyclotomicLocalizedPrimitiveRoot_isPrimitiveRoot m v).adjoin_isCyclotomicExtension
         (rationalCyclotomicAdicAbsoluteValue v).Completion)
       ((Subalgebra.equivOfEq _ _ hAdjoin).trans Subalgebra.topEquiv)
 

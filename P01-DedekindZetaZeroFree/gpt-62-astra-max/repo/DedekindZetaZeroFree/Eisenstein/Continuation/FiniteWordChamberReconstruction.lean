@@ -9,7 +9,7 @@ noncomputable section
 open scoped Classical NumberField Topology BigOperators
 namespace DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber
 open KPLiteralRaw KPContActualSphericalRightFieldIdentification
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CanonicalStageRaising renaming literal_finite_word_reconstruction → literal_finite_word_reconstruction
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CanonicalStageRaising (literal_finite_word_reconstruction)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 
@@ -61,11 +61,9 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     simp only [tsum_zero]
     rw [word_zero]
     exact ⟨summable_zero, rfl⟩
-  · let ι : ℂ →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U :=
+  · let ι :=
       LinearMap.toSpanSingleton ℂ _ v
-    have hι : Function.Injective ι := by
-      intro a b hab
-      exact (smul_left_injective ℂ (m := v) hv) hab
+    have hι : Function.Injective ι := fun a b hab => (smul_left_injective ℂ hv) hab
     have hterm (c : KPChamberBruhatTwoCells.RationalQuotient F) :
         KPContActualChamberNormalSeries.term F ζ hζ U ι (fun _ => 1) c s =
           fun h => (KPContFlatSourceRecipe.flatR F ζ hζ s v.val).val
@@ -109,13 +107,11 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     literal_finite_word_reconstruction F ζ hζ K hK f
   refine ⟨n, U, m, v, w, Q, B, hQ, hQ0, hdisk, hB, hrec, ?_⟩
   intro s hs g
-  have hΩ : s ∈ KPContinuation.spectralDomain :=
-    KPContinuation.convergenceHalfPlane_subset_spectralDomain hs
   have hsum (i : Fin n) (j : Fin (m i)) :=
     spherical_word_chamber F ζ hζ (U i) (v i j) (w i j) s hs g
   unfold eisenstein
   rw [← tsum_mul_left]
-  simp_rw [hrec s hΩ]
+  simp_rw [hrec s (KPContinuation.convergenceHalfPlane_subset_spectralDomain hs)]
   rw [Summable.tsum_finsetSum (fun i _ =>
     summable_sum (fun j _ => (hsum i j).1.mul_left (B i j s)))]
   apply Finset.sum_congr rfl

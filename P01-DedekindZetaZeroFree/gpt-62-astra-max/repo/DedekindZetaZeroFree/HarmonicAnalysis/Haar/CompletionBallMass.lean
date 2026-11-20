@@ -19,16 +19,17 @@ local instance completionMeasurable (v : HeightOneSpectrum (RingOfIntegers F)) :
 local instance completionBorel (v : HeightOneSpectrum (RingOfIntegers F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-private theorem norm_lt_one_iff_le_inv_absNorm (F : Type*) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F)) (x : v.adicCompletion F) :
+section
+
+variable (F : Type*) [Field F] [NumberField F] (v : HeightOneSpectrum (RingOfIntegers F))
+
+private theorem norm_lt_one_iff_le_inv_absNorm (x : v.adicCompletion F) :
     ‖x‖ < 1 ↔ ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ (-1 : ℤ) := by
   have hq : (0 : ℝ) < (v.asIdeal.absNorm : ℝ) := by
     exact_mod_cast (Nat.zero_lt_one.trans (HeightOneSpectrum.one_lt_absNorm v))
   by_cases hx : x = 0
   · simp [hx, (zpow_pos hq (-1)).le]
-  · have hv : Valued.v x ≠ 0 :=
-      (Valuation.ne_zero_iff (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)).mpr hx
-    rw [FinitePlace.norm_def, WithZeroMulInt.toNNReal_neg_apply _ hv, NNReal.coe_zpow]
+  · rw [FinitePlace.norm_def, WithZeroMulInt.toNNReal_neg_apply _ ((Valuation.ne_zero_iff Valued.v).mpr hx), NNReal.coe_zpow]
     rw [← zpow_zero (v.asIdeal.absNorm : ℝ)]
     have hq1 : (1 : ℝ) < (v.asIdeal.absNorm : ℝ) := by
       exact_mod_cast HeightOneSpectrum.one_lt_absNorm v
@@ -37,25 +38,23 @@ private theorem norm_lt_one_iff_le_inv_absNorm (F : Type*) [Field F] [NumberFiel
     rw [zpow_lt_zpow_iff_right₀ hq1, zpow_le_zpow_iff_right₀ hq1]
     omega
 
-private theorem mem_maximalIdeal_iff_norm_lt_one (F : Type*) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F)) (x : v.adicCompletionIntegers F) :
+private theorem mem_maximalIdeal_iff_norm_lt_one (x : v.adicCompletionIntegers F) :
     x ∈ IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) ↔
       ‖(x : v.adicCompletion F)‖ < 1 := by
-  have h := Valuation.mem_maximalIdeal_iff (v.adicCompletion F)
-    (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰) (a := x)
-  exact h.trans Valued.toNormedField.norm_lt_one_iff.symm
+  exact (Valuation.mem_maximalIdeal_iff (v.adicCompletion F)
+    Valued.v).trans Valued.toNormedField.norm_lt_one_iff.symm
 
- noncomputable def residueEquiv (F : Type*) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F)) :
+ noncomputable def residueEquiv :
     (RingOfIntegers F ⧸ v.asIdeal) ≃+* IsLocalRing.ResidueField (v.adicCompletionIntegers F) :=
   GlobalClassFieldTheory.ClassFieldAxiom.ringOfIntegersQuotientEquivAdicResidueField v
 
-private theorem residue_card (F : Type*) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F)) :
+private theorem residue_card :
     Nat.card (IsLocalRing.ResidueField (v.adicCompletionIntegers F)) =
       v.asIdeal.absNorm := by
   rw [← Nat.card_congr (residueEquiv F v).toEquiv, Ideal.absNorm_apply]
   rfl
+
+end
 
 set_option maxHeartbeats 800000 in
 
@@ -155,6 +154,8 @@ private theorem smul_ball {K : Type*} [NormedField K] (d : Kˣ) :
     · change (d : K) * ((d : K)⁻¹ * x) = x
       rw [← mul_assoc, mul_inv_cancel₀ d.ne_zero, one_mul]
 
+alias CompletionBallMass.smul_ball := smul_ball
+
 private theorem mass_scale {K : Type*} [NormedField K] [IsUltrametricDist K]
     [MeasurableSpace K] [BorelSpace K] [LocallyCompactSpace K]
     (μ : Measure K) [μ.IsAddHaarMeasure] (d : Kˣ) :
@@ -168,28 +169,26 @@ private theorem mass_scale {K : Type*} [NormedField K] [IsUltrametricDist K]
     simpa only [Measure.domSMul_apply, Equiv.symm_apply_apply, ENNReal.smul_def, smul_eq_mul, smul_ball] using h
   exact congrArg ENNReal.toReal hm |>.trans (by simp [Measure.real, ENNReal.toReal_mul])
 
+alias CompletionBallMass.mass_scale := mass_scale
+
 private theorem unit_ball_finite (v : HeightOneSpectrum (RingOfIntegers F))
     (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure] :
-    μ {x : v.adicCompletion F | ‖x‖ ≤ 1} ≠ ⊤ := by
-  exact (show IsCompact {x : v.adicCompletion F | ‖x‖ ≤ 1} from by
+    μ {x : v.adicCompletion F | ‖x‖ ≤ 1} ≠ ⊤ := (show IsCompact {x : v.adicCompletion F | ‖x‖ ≤ 1} from by
     simpa only [Metric.closedBall, dist_zero_right] using
       isCompact_closedBall (0 : v.adicCompletion F) 1).measure_lt_top.ne
 
 private theorem exists_uniformizer_norm (v : HeightOneSpectrum (RingOfIntegers F)) :
     ∃ d : (v.adicCompletion F)ˣ,
       ‖(d : v.adicCompletion F)‖ = (v.asIdeal.absNorm : ℝ) ^ (-1 : ℤ) := by
-  have hq : 0 < (v.asIdeal.absNorm : ℝ) := by
-    exact_mod_cast (Nat.zero_lt_one.trans (HeightOneSpectrum.one_lt_absNorm v))
   obtain ⟨p, hp⟩ := v.valuation_exists_uniformizer F
   let π := FinitePlace.embedding v p
   have hnorm : ‖π‖ = (v.asIdeal.absNorm : ℝ) ^ (-1 : ℤ) := by
-    have hqn : (v.asIdeal.absNorm : ℝ≥0) ≠ 0 := HeightOneSpectrum.absNorm_ne_zero v
     have hπ : (WithZero.exp (-1 : ℤ)) ≠ (0 : ℤᵐ⁰) := by simp
-    rw [FinitePlace.norm_embedding', hp, WithZeroMulInt.toNNReal_neg_apply hqn hπ,
+    rw [FinitePlace.norm_embedding', hp, WithZeroMulInt.toNNReal_neg_apply (HeightOneSpectrum.absNorm_ne_zero v) hπ,
       NNReal.coe_zpow]
     rfl
-  have hπ : π ≠ 0 := norm_pos_iff.mp (hnorm ▸ zpow_pos hq (-1))
-  exact ⟨Units.mk0 π hπ, hnorm⟩
+  exact ⟨Units.mk0 π (norm_pos_iff.mp (hnorm ▸ zpow_pos (by
+    exact_mod_cast (Nat.zero_lt_one.trans (HeightOneSpectrum.one_lt_absNorm v))) (-1))), hnorm⟩
 
 private theorem uniformizer_character (v : HeightOneSpectrum (RingOfIntegers F))
     (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
@@ -219,12 +218,9 @@ private theorem character_eq_norm (v : HeightOneSpectrum (RingOfIntegers F))
     (c : (v.adicCompletion F)ˣ) :
     (distribHaarChar (v.adicCompletion F) c : ℝ) = ‖(c : v.adicCompletion F)‖ := by
   obtain ⟨d, hd⟩ := exists_uniformizer_norm F v
-  have hc := uniformizer_character F v μ d hd
   let k : ℤ := -(Valued.v (c : v.adicCompletion F)).log
   have hcnorm : ‖(c : v.adicCompletion F)‖ = (v.asIdeal.absNorm : ℝ) ^ (-k) := by
-    have hv : Valued.v (c : v.adicCompletion F) ≠ 0 :=
-      (Valuation.ne_zero_iff (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)).mpr c.ne_zero
-    rw [FinitePlace.norm_def, WithZeroMulInt.toNNReal_neg_apply _ hv, NNReal.coe_zpow]
+    rw [FinitePlace.norm_def, WithZeroMulInt.toNNReal_neg_apply _ ((Valuation.ne_zero_iff Valued.v).mpr c.ne_zero), NNReal.coe_zpow]
     simp only [k, neg_neg]
     rfl
   have hdk : ‖((d ^ k : (v.adicCompletion F)ˣ) : v.adicCompletion F)‖ =
@@ -236,10 +232,8 @@ private theorem character_eq_norm (v : HeightOneSpectrum (RingOfIntegers F))
     simpa only [Metric.closedBall, dist_zero_right] using
       (IsUltrametricDist.isOpen_closedBall (0 : v.adicCompletion F)
         (one_ne_zero : (1 : ℝ) ≠ 0))
-  have hmasspos : 0 < μ.real {x : v.adicCompletion F | ‖x‖ ≤ 1} :=
-    ENNReal.toReal_pos (hs.measure_ne_zero μ ⟨0, by simp⟩) (unit_ball_finite F v μ)
   have hpow := mass_scale μ (d ^ k)
-  rw [hdk, map_zpow, NNReal.coe_zpow, hc, ← zpow_mul] at hpow
+  rw [hdk, map_zpow, NNReal.coe_zpow, (uniformizer_character F v μ d hd), ← zpow_mul] at hpow
   have hscale := mass_scale μ c
   rw [hcnorm] at hscale
   have hchar : (distribHaarChar (v.adicCompletion F) c : ℝ) =
@@ -248,12 +242,14 @@ private theorem character_eq_norm (v : HeightOneSpectrum (RingOfIntegers F))
         μ.real {x : v.adicCompletion F | ‖x‖ ≤ 1} =
         (v.asIdeal.absNorm : ℝ) ^ ((-1 : ℤ) * k) *
         μ.real {x : v.adicCompletion F | ‖x‖ ≤ 1} := by
-      simpa only [neg_one_mul] using hscale.symm.trans hpow
-    exact mul_right_cancel₀ hmasspos.ne' heq
+      simpa using hscale.symm.trans hpow
+    exact mul_right_cancel₀ (ENNReal.toReal_pos (hs.measure_ne_zero μ ⟨0, by simp⟩) (unit_ball_finite F v μ)).ne' heq
   rw [hchar, hcnorm, neg_one_mul]
 
-theorem map_mul (v : HeightOneSpectrum (RingOfIntegers F))
-    (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
+variable (v : HeightOneSpectrum (RingOfIntegers F)) (μ : Measure (v.adicCompletion F))
+    [μ.IsAddHaarMeasure]
+
+theorem map_mul
     (c : (v.adicCompletion F)ˣ) :
     Measure.map (fun x : v.adicCompletion F => (c : v.adicCompletion F) * x) μ =
       (ENNReal.ofReal ‖(c : v.adicCompletion F)‖)⁻¹ • μ := by
@@ -273,8 +269,7 @@ theorem map_mul (v : HeightOneSpectrum (RingOfIntegers F))
   simp only [Measure.smul_apply, NNReal.smul_def, ENNReal.smul_def, smul_eq_mul,
     ENNReal.coe_inv (ne_of_gt distribHaarChar_pos), hchar]
 
-theorem closedBall_measure (v : HeightOneSpectrum (RingOfIntegers F))
-    (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure] (k : ℤ) :
+theorem closedBall_measure (k : ℤ) :
     μ.real {x : v.adicCompletion F | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ k} =
       (v.asIdeal.absNorm : ℝ) ^ k * μ.real {x : v.adicCompletion F | ‖x‖ ≤ 1} := by
   obtain ⟨d, hd⟩ := exists_uniformizer_norm F v

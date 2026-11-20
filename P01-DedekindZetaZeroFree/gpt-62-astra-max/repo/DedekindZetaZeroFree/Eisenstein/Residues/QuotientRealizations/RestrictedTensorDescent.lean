@@ -12,11 +12,11 @@ open NumberField
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.FourierContinuation.DetectedDictionary
 open MomentSources TensorActionSource
-open _root_.DedekindZetaZeroFree.KPLiteralResidueKernelTests renaming tensor_kernel_le_span → tensor_kernel_le_span
+open _root_.DedekindZetaZeroFree.KPLiteralResidueKernelTests (tensor_kernel_le_span)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (M : ∀ q, LocalImageData R q)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (M : ∀ q, LocalImageData R q)
 
 theorem sourceStage_kernel_test
     {V : Type*} [AddCommGroup V] [Module ℂ V]
@@ -25,9 +25,8 @@ theorem sourceStage_kernel_test
     (hlocal : ∀ (x : ∀ p : s, plusLocal R M p) (p : s),
       sourceQuotient R M p (x p) = 0 → L (PiTensorProduct.tprod ℂ x) = 0) :
     LinearMap.ker (sourceStageQuotient R M s) ≤ LinearMap.ker L := by
-  have hk := tensor_kernel_le_span (fun p : s => sourceQuotient R M p)
-    (fun p => sourceQuotient_surjective R M p)
-  apply hk.trans
+  apply (tensor_kernel_le_span (fun p : s => sourceQuotient R M p)
+    (fun p => sourceQuotient_surjective R M p)).trans
   apply Submodule.span_le.mpr
   rintro y ⟨x, ⟨p, hp⟩, rfl⟩
   exact hlocal x p hp
@@ -110,8 +109,7 @@ theorem sourceCore_descent
     sourceStage_descent R M s.val (L s) (hlocal s)
   choose B hB huniq using hd
   have hcompat := descendedStage_compatible R M e bad L hL B hB
-  let b : RestrictedTensorSimple.Core (actualLocal R M)
-      (fun p => sourceQuotient R M p (e p)) bad →ₗ[ℂ] V :=
+  let b :=
     Module.DirectLimit.lift ℂ (RestrictedTensorSimple.Level bad)
       (fun s => RestrictedTensorSimple.Stage (actualLocal R M) s.val)
       (RestrictedTensorSimple.transition (actualLocal R M)

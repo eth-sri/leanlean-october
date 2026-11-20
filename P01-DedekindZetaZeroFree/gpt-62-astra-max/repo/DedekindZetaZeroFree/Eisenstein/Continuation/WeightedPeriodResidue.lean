@@ -10,15 +10,14 @@ open scoped Classical NumberField Topology
 open NumberField MeasureTheory Filter
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPLiteralRaw KPGlobalTorusFiniteStages ThetaExpansion TensorActionSource
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.QuotientUpperOrbit renaming upper_fiber_eq → upper_fiber_eq
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.QuotientUpperOrbit renaming compact_additive_representatives → compact_additive_representatives
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.CompactPeriodDescent renaming extension_of_compact_period → extension_of_compact_period
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.FiniteCompactAssembly renaming extension_evaluates_native_pullback → extension_evaluates_native_pullback
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.QuotientUpperOrbit (upper_fiber_eq compact_additive_representatives)
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.CompactPeriodDescent (extension_of_compact_period)
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.FiniteCompactAssembly (extension_evaluates_native_pullback)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "V" => RestrictedTensorSimple.Core (Plus R.A P C)
@@ -46,7 +45,7 @@ theorem core_period_continuation (x : V)
   letI : μ.IsAddHaarMeasure := hμ
   letI : IsTopologicalGroup (G F ζ hζ) :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
-  let f : Flat F ζ hζ (fullProductCompact R) := asLiteralFlat (coreFlatInsertion R P C x)
+  let f := asLiteralFlat (coreFlatInsertion R P C x)
   obtain ⟨X, hX, hqX⟩ := compact_additive_representatives F
   letI : CompactSpace X := isCompact_iff_compactSpace.mp hX
   let q : C(X, KPAdditiveQuotient F) :=
@@ -117,8 +116,6 @@ theorem core_period_continuation (x : V)
     change LL (T s) = s * LL (J s)
     rw [hclear s hs hs0, map_smul, smul_eq_mul]
   · have hres : coreResidue R P C x = (AF).cleared f 0 := by
-      change (AF).residue (literalZeroProfileEquiv (full_product_compact_iwasawa R)
-        (coreFlatInsertion R P C x)) = _
       exact (AF).residue_flat _
     rw [hres]
     apply extension_evaluates_native_pullback q hq μ L hL ((T 0).comp jj)

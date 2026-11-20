@@ -12,13 +12,13 @@ open MomentSources ThetaExpansion NumberField
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2400000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {N : TraceHaarTransport R} (A : JointExteriorCoefficientSources R N)
-variable (I : R.A.Sf → Type) [∀ q, Fintype (I q)]
-variable (c : ∀ q, I q → ℂ) (t : ∀ q, I q → q.val.adicCompletion F)
-variable {Q' : AdmissibleFlatSources R} (T' : Realization R Q')
-variable (hdq : Q'.dq = A.sources.dq)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {N : TraceHaarTransport R} (A : JointExteriorCoefficientSources R N)
+    (I : R.A.Sf → Type) [∀ q, Fintype (I q)]
+    (c : ∀ q, I q → ℂ) (t : ∀ q, I q → q.val.adicCompletion F)
+    {Q' : AdmissibleFlatSources R} (T' : Realization R Q')
+    (hdq : Q'.dq = A.sources.dq)
 variable (hpin : ∀ v, T'.theta v = _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.rootProjectorWord R I c t
   (Finset.univ : Finset R.A.Sf).toList (A.realization.theta v))
 
@@ -28,7 +28,6 @@ theorem projected_factorization_native
     (hn : ∀ v, fourier R Q'.dq (T'.theta v) 1 ≠ 0)
     (hNative : SourceNativeLie R A.factorization) :
     ∃ D' : SourceFactorization R Q' T', SourceNativeLie R D' ∧
-      (∀ q, D'.finiteData q = A.factorization.finiteData q) ∧
       (∀ q, (D'.finiteData q).haar = (A.factorization.finiteData q).haar) ∧
       ExteriorCoefficients R Q' T' D' := by
   let D := A.factorization
@@ -59,7 +58,7 @@ theorem projected_factorization_native
     detected_tensor := by rw [hdq]; exact D.detected_tensor
     period_integrable := fun v g => FourierContinuation.theta_period_integrable T' v g
     detected := by obtain ⟨v,_⟩ := D.detected; exact ⟨v,hn v⟩ }
-  refine ⟨D',hNative,fun _ => rfl,fun _ => rfl,?_⟩
+  refine ⟨D', hNative, fun _ => rfl, ?_⟩
   exact ⟨A.exterior.rational_exact,A.exterior.crt_product,A.exterior.local_exact⟩
 end DedekindZetaZeroFree.RootDerivatives
 

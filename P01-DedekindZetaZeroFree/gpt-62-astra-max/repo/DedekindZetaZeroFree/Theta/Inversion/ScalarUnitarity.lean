@@ -14,10 +14,8 @@ theorem thetaInversionScalar_norm_eq_one (f : ℝ → ℂ) (w : ℂ)
   obtain ⟨t, ht, hft⟩ := hnonzero
   have ht0 : (t : ℂ) ≠ 0 := by exact_mod_cast (ne_of_gt ht)
   have h1 := hinversion t ht
-  have h2 := hinversion t⁻¹ (inv_pos.mpr ht)
-
   have h2' : f t⁻¹ = w * (t : ℂ) * (starRingEnd ℂ) (f t) := by
-    rw [h2]
+    rw [(hinversion t⁻¹ (inv_pos.mpr ht))]
     have hc : ((t⁻¹ : ℝ) : ℂ)⁻¹ = (t : ℂ) := by
       rw [Complex.ofReal_inv, inv_inv]
     rw [hc, inv_inv]
@@ -33,8 +31,8 @@ theorem thetaInversionScalar_norm_eq_one (f : ℝ → ℂ) (w : ℂ)
             field_simp
 
   have hw : w * (starRingEnd ℂ) w = 1 := by
-    have h5 : (w * (starRingEnd ℂ) w) * f t = 1 * f t := by rw [← h4, one_mul]
-    exact mul_right_cancel₀ hft h5
+    refine mul_right_cancel₀ hft ?_
+    rw [← h4, one_mul]
 
   have hnorm : ‖w‖ ^ 2 = 1 := by
     have h := congrArg (fun z : ℂ => ‖z‖) hw

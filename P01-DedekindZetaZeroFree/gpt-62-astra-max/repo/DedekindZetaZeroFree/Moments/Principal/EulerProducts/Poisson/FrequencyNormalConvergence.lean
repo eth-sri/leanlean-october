@@ -15,10 +15,14 @@ open DedekindZetaZeroFree.AllRowEuler.InitialSeparation
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
-theorem localCorrection_differentiableOn (U : RawFrequency D.recipe.A)
+section
+
+variable (U : RawFrequency D.recipe.A)
+
+theorem localCorrection_differentiableOn
     (pr : LocalFiniteSums.ExteriorPrime D.recipe.A) :
     DifferentiableOn ℂ
       (fun p : Coordinates => localCorrection D.context U pr p.1 p.2.1 p.2.2) OmegaStar := by
@@ -26,17 +30,14 @@ theorem localCorrection_differentiableOn (U : RawFrequency D.recipe.A)
   · exact RawEulerGood31.localCorrection_good_differentiableOn D U pr hj
   · exact RawEulerBad31.localCorrection_bad_differentiableOn D U pr hj
 
-theorem raw_good_cofinite (U : RawFrequency D.recipe.A) :
+theorem raw_good_cofinite :
     ∀ᶠ p : LocalFiniteSums.ExteriorPrime D.recipe.A in Filter.cofinite, (U.j p).val = 0 := by
   apply Filter.eventually_cofinite.mpr
-  have hinj : Function.Injective
-      (fun p : LocalFiniteSums.ExteriorPrime D.recipe.A => p.val.asIdeal) :=
-    IsDedekindDomain.HeightOneSpectrum.asIdeal_injective.comp Subtype.val_injective
   simpa [RawEulerGood31.j_val_eq, idealPrimeExponent, Multiset.count_eq_zero] using
     (UniqueFactorizationMonoid.normalizedFactors U.ideal.val).finite_toSet.preimage
-      hinj.injOn
+      (IsDedekindDomain.HeightOneSpectrum.asIdeal_injective.comp Subtype.val_injective).injOn
 
-private theorem hasProdUniformlyOn_star (U : RawFrequency D.recipe.A) (K : Set Coordinates)
+private theorem hasProdUniformlyOn_star (K : Set Coordinates)
     (hK : IsCompact K) (hKO : K ⊆ OmegaStar) :
     HasProdUniformlyOn
       (fun (pr : LocalFiniteSums.ExteriorPrime D.recipe.A) (p : Coordinates) =>
@@ -56,24 +57,18 @@ private theorem hasProdUniformlyOn_star (U : RawFrequency D.recipe.A) (K : Set C
     rwa [e] at h
   have hcts : ∀ pr : LocalFiniteSums.ExteriorPrime D.recipe.A,
       ContinuousOn (fun x : Coordinates =>
-        localCorrection D.context U pr x.1 x.2.1 x.2.2 - 1) K := by
-    intro pr
-    exact ((localCorrection_differentiableOn D U pr).continuousOn.mono hKO).sub
+        localCorrection D.context U pr x.1 x.2.1 x.2.2 - 1) K := fun pr => ((localCorrection_differentiableOn D U pr).continuousOn.mono hKO).sub
       continuousOn_const
-  simpa only [add_sub_cancel] using
-    (DedekindZetaZeroFree.Quantitative.EulerProductAux.summable_majorant (A := D.recipe.A) M (1 + δ)
+  simpa using
+    (DedekindZetaZeroFree.Quantitative.EulerProductAux.summable_majorant M (1 + δ)
       (by linarith)).hasProdUniformlyOn_one_add hK hb hcts
+
+end
 
 theorem correctionProduct_normal_convergence (U : RawFrequency D.recipe.A) :
     OmegaStar ⊆
       {p : Coordinates | Multipliable (fun pr : LocalFiniteSums.ExteriorPrime D.recipe.A =>
         localCorrection D.context U pr p.1 p.2.1 p.2.2)} ∧
-    HasProdLocallyUniformlyOn
-      (fun (pr : LocalFiniteSums.ExteriorPrime D.recipe.A) (p : Coordinates) =>
-        localCorrection D.context U pr p.1 p.2.1 p.2.2)
-      (fun p : Coordinates =>
-        ∏' pr : LocalFiniteSums.ExteriorPrime D.recipe.A,
-          localCorrection D.context U pr p.1 p.2.1 p.2.2) OmegaStar ∧
     DifferentiableOn ℂ
       (fun p : Coordinates =>
         ∏' pr : LocalFiniteSums.ExteriorPrime D.recipe.A,
@@ -86,7 +81,7 @@ theorem correctionProduct_normal_convergence (U : RawFrequency D.recipe.A) :
           localCorrection D.context U pr p.1 p.2.1 p.2.2) OmegaStar :=
     hasProdLocallyUniformlyOn_of_forall_compact OmegaStar_isOpen
       (fun K hKO hK => hasProdUniformlyOn_star D U K hK hKO)
-  refine ⟨fun p hp => ?_, hloc, ?_⟩
+  refine ⟨fun p hp => ?_, ?_⟩
   · exact ((hasProdUniformlyOn_star D U {p} isCompact_singleton
       (Set.singleton_subset_iff.mpr hp)).hasProd (Set.mem_singleton p)).multipliable
   · have htlu : TendstoLocallyUniformlyOn
@@ -104,7 +99,7 @@ theorem correctionProduct_normal_convergence (U : RawFrequency D.recipe.A) :
 theorem correctionProduct_differentiableOn (U : RawFrequency D.recipe.A) :
     DifferentiableOn ℂ
       (fun p : Coordinates => correctionProduct D.context U p.1 p.2.1 p.2.2) OmegaStar :=
-  (correctionProduct_normal_convergence D U).2.2
+  (correctionProduct_normal_convergence D U).2
 
 private theorem subpower_core (δ' : ℝ) (ε : ℝ) (hε : 0 < ε)
     (hgood : ∃ C δ : ℝ, 0 < C ∧ 0 < δ ∧
@@ -127,15 +122,12 @@ private theorem subpower_core (δ' : ℝ) (ε : ℝ) (hε : 0 < ε)
   obtain ⟨Bb, δb, hBb, hδb, hb⟩ := hbad'
   obtain ⟨K, hK, hsmall⟩ :=
     fixed_small_prime_subpower F D.recipe.A.cS Bb δb ε hBb.le hδb hε
-  have hQ : ∀ p : LocalFiniteSums.ExteriorPrime D.recipe.A, 0 < LocalFiniteSums.Q p :=
+  have hQ :=
     fun p => D.recipe.A.exteriorNorm_pos (LocalFiniteSums.primeIdeal p)
   let g : LocalFiniteSums.ExteriorPrime D.recipe.A → ℝ := fun p =>
     Mg * LocalFiniteSums.Q p ^ (-(1 + δg))
   have hg0 : ∀ p, 0 ≤ g p := fun p =>
     mul_nonneg hMg.le (Real.rpow_nonneg (hQ p).le _)
-  have hgs : Summable g :=
-    DedekindZetaZeroFree.Quantitative.EulerProductAux.summable_majorant (A := D.recipe.A) Mg (1 + δg)
-      (by linarith)
   have hn (a : ℂ) : ‖a‖ ≤ ‖a - 1‖ + 1 := by
     calc ‖a‖ = ‖(a - 1) + 1‖ := by rw [sub_add_cancel]
       _ ≤ ‖a - 1‖ + ‖(1 : ℂ)‖ := norm_add_le _ _
@@ -147,11 +139,9 @@ private theorem subpower_core (δ' : ℝ) (ε : ℝ) (hε : 0 < ε)
           1 + Bb * LocalFiniteSums.Q pr ^ (-δb) else 1) := by
     intro U p hp pr
     by_cases hj : (U.j pr).val = 0
-    · have hj' : ¬ ((U.j pr).val ≠ 0) := not_not.mpr hj
-      rw [if_neg hj', mul_one]
+    · rw [if_neg (not_not.mpr hj), mul_one]
       have h1 := hg U pr hj p hp
       rw [show (-1 - δg) = -(1 + δg) by ring] at h1
-      have h2 : ‖localCorrection D.context U pr p.1 p.2.1 p.2.2 - 1‖ ≤ g pr := h1
       have h3 := hn (localCorrection D.context U pr p.1 p.2.1 p.2.2)
       linarith [Real.add_one_le_exp (g pr)]
     · rw [if_pos hj]
@@ -176,9 +166,7 @@ private theorem subpower_core (δ' : ℝ) (ε : ℝ) (hε : 0 < ε)
       dsimp [b]
       nlinarith [Real.rpow_nonneg hp0 (-δb)]
     have hinj : Function.Injective
-        (fun pr : LocalFiniteSums.ExteriorPrime D.recipe.A => pr.val.asIdeal) := by
-      intro p q hpq
-      exact Subtype.ext (IsDedekindDomain.HeightOneSpectrum.asIdeal_injective hpq)
+        (fun pr : LocalFiniteSums.ExteriorPrime D.recipe.A => pr.val.asIdeal) := fun p q hpq => Subtype.ext (IsDedekindDomain.HeightOneSpectrum.asIdeal_injective hpq)
     have ht : (s.filter (fun pr => (U.j pr).val ≠ 0)).image (fun pr => pr.val.asIdeal) ⊆
         idealPrimeSupport U.ideal.val := by
       intro I hI
@@ -216,7 +204,8 @@ private theorem subpower_core (δ' : ℝ) (ε : ℝ) (hε : 0 < ε)
         rw [Finset.prod_mul_distrib, ← Real.exp_sum]
       _ ≤ Real.exp (∑' pr, g pr) * (K * D.recipe.A.exteriorNorm U.ideal ^ ε) := by
         apply mul_le_mul
-        · exact Real.exp_le_exp.mpr (hgs.sum_le_tsum s (fun pr _ => hg0 pr))
+        · exact Real.exp_le_exp.mpr ((DedekindZetaZeroFree.Quantitative.EulerProductAux.summable_majorant Mg (1 + δg)
+          (by linarith)).sum_le_tsum s (fun pr _ => hg0 pr))
         · exact hbad
         · refine Finset.prod_nonneg (fun pr _ => ?_)
           split_ifs
@@ -229,7 +218,7 @@ private theorem subpower_core (δ' : ℝ) (ε : ℝ) (hε : 0 < ε)
   intro U p hp hm
   apply le_of_tendsto' hm.hasProd.norm
   intro s
-  simpa only [norm_prod] using hfinite U p hp s
+  simpa using hfinite U p hp s
 
 theorem correctionProduct_subpower (δ : ℝ) (hδ : 0 < δ) (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (U : RawFrequency D.recipe.A), ∀ p ∈ OmegaStarMargin δ,
@@ -257,7 +246,10 @@ theorem correctionProduct_subpower_of_subset (T : Set Coordinates) (δ : ℝ) (h
   obtain ⟨C, hC, h⟩ := correctionProduct_subpower D δ hδ ε hε
   exact ⟨C, hC, fun U p hp => h U p (hT hp)⟩
 
-theorem correctionProduct_subpower_paddedBoxes (ε : ℝ) (hε : 0 < ε) :
+variable (ε : ℝ) (hε : 0 < ε)
+
+include hε in
+theorem correctionProduct_subpower_paddedBoxes :
     ∃ C : ℝ, 0 < C ∧ ∀ (U : RawFrequency D.recipe.A), ∀ p ∈ paddedBoxes,
       Multipliable (fun pr : LocalFiniteSums.ExteriorPrime D.recipe.A =>
         localCorrection D.context U pr p.1 p.2.1 p.2.2) ∧
@@ -267,7 +259,8 @@ theorem correctionProduct_subpower_paddedBoxes (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨δ, hδ, hsub⟩ := paddedBoxes_subset_OmegaStarMargin
   exact correctionProduct_subpower_of_subset D paddedBoxes δ hδ hsub ε hε
 
-theorem correctionProduct_subpower_boxes (ε : ℝ) (hε : 0 < ε) :
+include hε in
+theorem correctionProduct_subpower_boxes :
     ∃ C : ℝ, 0 < C ∧ ∀ (U : RawFrequency D.recipe.A), ∀ p ∈ boxes,
       Multipliable (fun pr : LocalFiniteSums.ExteriorPrime D.recipe.A =>
         localCorrection D.context U pr p.1 p.2.1 p.2.2) ∧

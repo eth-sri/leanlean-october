@@ -13,8 +13,8 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.FourierContinuation.TensorActionSource
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 
 def zeroFlat (Q : AdmissibleFlatSources R) :
     KPLiteralRaw.Flat F R.A.zeta12 R.A.primitive_zeta12 Q.K := by
@@ -26,7 +26,6 @@ def zeroFlat (Q : AdmissibleFlatSources R) :
   · intros; simp
   · refine ⟨⊥, inferInstance, Submodule.zero_mem _, ?_⟩
     intro k v hv
-    have hv0 : v = 0 := by simpa using hv
     subst v
     exact Submodule.zero_mem _
 
@@ -76,7 +75,7 @@ def zeroRealization (Q : AdmissibleFlatSources R) (T : Realization R Q) :
 def zeroTensorActions (D : TensorHC R N) : TensorActions R N := by
   letI : Infinite (KPFinitePlace F) := finitePlaces_infinite F
   letI : Infinite (KPHilbert.Place F) := Infinite.of_injective
-    (Sum.inr : KPFinitePlace F → KPHilbert.Place F) Sum.inr_injective
+    Sum.inr Sum.inr_injective
   letI : Subsingleton (RestrictedTensorSimple.Core (actualLocal R D.finiteData)
     (fun _ => 0) D.bad) := zeroReferenceCore_subsingleton _ _
   refine {

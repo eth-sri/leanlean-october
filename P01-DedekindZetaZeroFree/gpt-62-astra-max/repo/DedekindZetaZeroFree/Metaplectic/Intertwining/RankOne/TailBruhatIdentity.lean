@@ -26,15 +26,20 @@ theorem actualSignedWeyl_inv :
       KPPGLLocalCover.signedW_sq F ζ hζ (Sum.inr q)
   exact inv_eq_of_mul_eq_one_right (by simpa only [pow_two] using h)
 
-theorem actualKernelW_eq (P : Polarization S.heisenberg) (ε : Sign) :
+variable (P : Polarization S.heisenberg)
+
+include P in
+theorem actualKernelW_eq (ε : Sign) :
     kernelW (KPLocalExceptionalConstruction.LocalField F q) S.borel ε = (signedWeyl F ζ hζ q)⁻¹ := by
   cases ε <;> simp [kernelW, (S.openCell P).weyl_eq, actualSignedWeyl_inv]
 
-theorem actualLowerRoot_eq (P : Polarization S.heisenberg) (v : KPLocalExceptionalConstruction.LocalField F q) :
+include P in
+theorem actualLowerRoot_eq (v : KPLocalExceptionalConstruction.LocalField F q) :
     actualLowerRoot F ζ hζ q v = lowerRootCoordinate (KPLocalExceptionalConstruction.LocalField F q) S.borel v := by
   simp [actualLowerRoot, lowerRootCoordinate, (S.openCell P).weyl_eq, (S.openCell P).upper_eq]
 
-theorem actual_tail_bruhat (P : Polarization S.heisenberg) (ε : Sign)
+include P in
+theorem actual_tail_bruhat (ε : Sign)
     (v : (KPLocalExceptionalConstruction.LocalField F q)ˣ) :
     kernelW (KPLocalExceptionalConstruction.LocalField F q) S.borel ε *
       (S.borel.upperRoot (Multiplicative.ofAdd (-((v⁻¹ : (KPLocalExceptionalConstruction.LocalField F q)ˣ) : KPLocalExceptionalConstruction.LocalField F q))) :
@@ -43,8 +48,7 @@ theorem actual_tail_bruhat (P : Polarization S.heisenberg) (ε : Sign)
       hLift F ζ hζ q v * nLift F ζ hζ q ((v⁻¹ : (KPLocalExceptionalConstruction.LocalField F q)ˣ) : KPLocalExceptionalConstruction.LocalField F q) *
       actualLowerRoot F ζ hζ q (v : KPLocalExceptionalConstruction.LocalField F q) := by
   rw [actualKernelW_eq F ζ hζ q S P ε, (S.openCell P).upper_eq]
-  have hb := lifted_bruhat_identity F ζ hζ q v 0
-  have h := congrArg (fun a => a * signedWeyl F ζ hζ q) hb
+  have h := congrArg (fun a => a * signedWeyl F ζ hζ q) (lifted_bruhat_identity F ζ hζ q v 0)
   have hn : nLift F ζ hζ q 0 = 1 := by
     rw [← (S.openCell P).upper_eq]
     exact congrArg Subtype.val S.borel.upperRoot.map_one

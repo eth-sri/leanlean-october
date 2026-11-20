@@ -25,8 +25,7 @@ theorem functionProduct_finite (U V : Submodule ℂ (X → ℂ))
   infer_instance
 
 theorem mul_mem_functionProduct (U V : Submodule ℂ (X → ℂ))
-    {f g : X → ℂ} (hf : f ∈ U) (hg : g ∈ V) : f * g ∈ functionProduct U V := by
-  exact ⟨(⟨f, hf⟩ : U) ⊗ₜ[ℂ] (⟨g, hg⟩ : V), rfl⟩
+    {f g : X → ℂ} (hf : f ∈ U) (hg : g ∈ V) : f * g ∈ functionProduct U V := ⟨(⟨f, hf⟩ : U) ⊗ₜ[ℂ] (⟨g, hg⟩ : V), rfl⟩
 
 theorem finite_product_space {ι : Type*} (s : Finset ι)
     (U : ι → Submodule ℂ (X → ℂ)) (hU : ∀ i ∈ s, Module.Finite ℂ (U i)) :
@@ -37,7 +36,7 @@ theorem finite_product_space {ι : Type*} (s : Finset ι)
   | empty =>
     refine ⟨Submodule.span ℂ {1}, Module.Finite.of_fg (Submodule.fg_span (Set.finite_singleton _)), ?_⟩
     intro f hf
-    simpa using (Submodule.subset_span (by simp : (1 : X → ℂ) ∈ ({1} : Set (X → ℂ))))
+    exact (Submodule.subset_span (by simp : (1 : X → ℂ) ∈ ({1} : Set (X → ℂ))))
   | @insert i s hi ih =>
     obtain ⟨V, hV, hv⟩ := ih (fun j hj => hU j (Finset.mem_insert_of_mem hj))
     letI := hV

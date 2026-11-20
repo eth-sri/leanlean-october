@@ -10,10 +10,9 @@ theorem entire_division_at_zero (q : ℂ → ℂ) (hq : Differentiable ℂ q) (h
     ∃ u : ℂ → ℂ, Differentiable ℂ u ∧ ∀ s : ℂ, q s = s * u s := by
   refine ⟨dslope q 0, ?_, ?_⟩
   · rw [← differentiableOn_univ]
-    exact (Complex.differentiableOn_dslope (s := Set.univ) (c := 0) Filter.univ_mem).mpr
+    exact (Complex.differentiableOn_dslope Filter.univ_mem).mpr
       hq.differentiableOn
   · intro s
-    have h := sub_smul_dslope_of_zero hq0 s
-    simpa using h.symm
+    simpa using (sub_smul_dslope_of_zero hq0 s).symm
 
 end DedekindZetaZeroFree.AbelianQuotient

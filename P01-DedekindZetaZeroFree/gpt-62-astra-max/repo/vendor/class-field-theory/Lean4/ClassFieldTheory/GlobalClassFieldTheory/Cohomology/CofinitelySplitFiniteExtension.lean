@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -104,18 +99,11 @@ theorem finrank_eq_one_of_finite_nonSplittingPlaces
             primeOrderFixedField_card_aut
               (K := K) (L := M) hgt
         _ = p ^ 1 := by simp
-    have hinfinite :
-        Set.Infinite
-          {v : HeightOneSpectrum (𝓞 K') |
-            finitePlaceDecompositionGroup
-                (K := K') (L := M) v = ⊤} :=
+    have hinfinite :=
       cyclic_prime_power_infinite_fullDecompositionPlaces
         (K := K') (L := M)
         hp (by omega) hcard
-    have hfiniteRelative :
-        {v : HeightOneSpectrum (𝓞 K') |
-          ¬ FinitePlaceSplitsCompletely
-            (K := K') (L := M) v}.Finite :=
+    have hfiniteRelative :=
       finite_nonsplittingPlaces_over_intermediate
         (K := K) (M := K') (L := M) hfiniteM
     apply hinfinite
@@ -131,18 +119,6 @@ theorem finrank_eq_one_of_finite_nonSplittingPlaces
   have hpos : 0 < Module.finrank K L :=
     Module.finrank_pos
   omega
-
-/-- Algebra-equivalence form of the degree-one conclusion, expressing
-that `L` is the base field without identifying the two Lean types
-definitionally. -/
-noncomputable def algEquivBaseOfFiniteNonSplittingPlaces
-    (hfinite :
-      {v : HeightOneSpectrum (𝓞 K) |
-        ¬ FinitePlaceSplitsCompletelyInExtension
-          (K := K) (E := L) v}.Finite) :
-    L ≃ₐ[K] K :=
-  algEquivBaseOfFinrankEqOne K L
-    (finrank_eq_one_of_finite_nonSplittingPlaces K L hfinite)
 
 end Cohomology
 end GlobalClassFieldTheory

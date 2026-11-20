@@ -16,14 +16,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -40,7 +32,6 @@ open NumberField IsDedekindDomain
 open Topology
 
 noncomputable section
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -63,18 +54,9 @@ theorem localHigherUnitMap_eq_one_iff
       localIntegralValue v y - 1 ∈
           (IsLocalRing.maximalIdeal
             (v.adicCompletionIntegers K)) ^ n := by
-  let I :=
-    (IsLocalRing.maximalIdeal
-      (v.adicCompletionIntegers K)) ^ n
-  change
-    Units.map (Ideal.Quotient.mk I).toMonoidHom
-        ((v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType y) =
-      1 ↔ _
   rw [Units.ext_iff]
-  change Ideal.Quotient.mk I (localIntegralValue v y) =
-      Ideal.Quotient.mk I 1 ↔ _
   exact Ideal.Quotient.mk_eq_mk_iff_sub_mem
-    (I := I) (localIntegralValue v y)
+     (localIntegralValue v y)
       (1 : v.adicCompletionIntegers K)
 
 /-- Local higher-unit groups are contravariant in their depth. -/
@@ -97,29 +79,22 @@ theorem isOpen_localHigherUnitGroup
       ((localHigherUnitGroup v n :
         Subgroup (v.adicCompletion K)ˣ) :
           Set (v.adicCompletion K)ˣ) := by
-  let D : Subgroup (v.adicCompletion K)ˣ :=
+  let D :=
     (v.adicCompletionIntegers K).units
-  let I : Ideal (v.adicCompletionIntegers K) :=
+  let I :=
     (IsLocalRing.maximalIdeal
       (v.adicCompletionIntegers K)) ^ n
-  let toInteger : D → v.adicCompletionIntegers K :=
+  let toInteger :=
     fun y ↦ localIntegralValue v y
   have htoInteger : Continuous toInteger := by
     apply continuous_induced_rng.mpr
     exact Units.continuous_val.comp continuous_subtype_val
-  let W : Set D := {y | toInteger y - 1 ∈ I}
+  let W := {y | toInteger y - 1 ∈ I}
   have : CompactSpace (v.adicCompletionIntegers K) :=
     Valued.integer.properSpace_iff_compactSpace_integer.mp inferInstance
-  have hIOpen : IsOpen (I : Set (v.adicCompletionIntegers K)) := by
-    exact IsLocalRing.isOpen_maximalIdeal_pow
+  have hIOpen := IsLocalRing.isOpen_maximalIdeal_pow
       (v.adicCompletionIntegers K) n
-  have hWOpen : IsOpen W := by
-    exact hIOpen.preimage (htoInteger.sub continuous_const)
-  have hDOpen : IsOpen (D : Set (v.adicCompletion K)ˣ) := by
-    exact isOpen_finiteLocalUnits K v
-  have himageOpen :
-      IsOpen (Subtype.val '' W : Set (v.adicCompletion K)ˣ) :=
-    hDOpen.isOpenEmbedding_subtypeVal.isOpenMap W hWOpen
+  have hDOpen := isOpen_finiteLocalUnits K v
   have heq :
       (localHigherUnitGroup v n :
           Set (v.adicCompletion K)ˣ) =
@@ -132,12 +107,12 @@ theorem isOpen_localHigherUnitGroup
       refine ⟨y, ?_, rfl⟩
       exact (localHigherUnitMap_eq_one_iff v n y).1 hy
     · rintro ⟨y, hyW, rfl⟩
-      let y' : (v.adicCompletionIntegers K).units := y
+      let y' := y
       apply (mem_localHigherUnitGroup_iff v n y).2
       refine ⟨y', rfl, ?_⟩
       exact (localHigherUnitMap_eq_one_iff v n y').2 hyW
   rw [heq]
-  exact himageOpen
+  exact hDOpen.isOpenEmbedding_subtypeVal.isOpenMap W (hIOpen.preimage (htoInteger.sub continuous_const))
 
 /-- The local higher-unit group lies in the local integral-unit group. -/
 theorem localHigherUnitGroup_le_finiteLocalUnits
@@ -156,7 +131,7 @@ theorem isOpen_finiteCongruenceSubgroup (m : FiniteModulus K) :
         Subgroup (FiniteIdeleGroup K)) :
           Set (FiniteIdeleGroup K)) := by
   let T := m.support
-  let U : Set (FiniteIdeleGroup K) :=
+  let U :=
     (FiniteIdeleGroup.integralSubgroup (K := K) :
       Set (FiniteIdeleGroup K)) ∩
     ⋂ v ∈ T,
@@ -165,11 +140,9 @@ theorem isOpen_finiteCongruenceSubgroup (m : FiniteModulus K) :
           Set (v.adicCompletion K)ˣ)
   have hIntegralOpen :
       IsOpen
-        ((FiniteIdeleGroup.integralSubgroup (K := K) :
+        ((FiniteIdeleGroup.integralSubgroup :
           Subgroup (FiniteIdeleGroup K)) :
             Set (FiniteIdeleGroup K)) := by
-    change IsOpen {a : FiniteIdeleGroup K |
-      ∀ v, a v ∈ (v.adicCompletionIntegers K).units}
     exact RestrictedProduct.isOpen_forall_mem
       (fun v ↦ isOpen_finiteLocalUnits K v)
   have hUOpen : IsOpen U := by
@@ -197,8 +170,7 @@ theorem isOpen_finiteCongruenceSubgroup (m : FiniteModulus K) :
       apply (mem_finiteCongruenceSubgroup_iff m a).2
       intro v
       by_cases hv : v ∈ T
-      · have h₁ := Set.mem_iInter.mp haT v
-        exact Set.mem_iInter.mp h₁ hv
+      · exact Set.mem_iInter.mp (Set.mem_iInter.mp haT v) hv
       · have hmv : m v = 0 := by
           by_contra hne
           exact hv (Finsupp.mem_support_iff.mpr hne)
@@ -223,11 +195,7 @@ theorem isOpen_infinitePositiveSubgroup (v : InfinitePlace K) :
               hv (x : v.Completion)} by
         ext x
         simp only [Set.mem_ofPred_eq]
-        constructor
-        · intro h
-          exact h hv
-        · intro h hv'
-          simpa only [Subsingleton.elim hv' hv] using h]
+        simp_all]
     exact isOpen_Ioi.preimage
       ((InfinitePlace.Completion.isometry_extensionEmbeddingOfIsReal hv).continuous.comp
         Units.continuous_val)
@@ -235,31 +203,7 @@ theorem isOpen_infinitePositiveSubgroup (v : InfinitePlace K) :
         infinitePositiveSubgroup v = ⊤ := by
       ext x
       simp [mem_infinitePositiveSubgroup_iff, hv]
-    rw [htop]
-    exact isOpen_univ
-
-/-- The positivity subgroup in the product of all infinite local groups is
-open. -/
-theorem isOpen_infinitePositivePiSubgroup :
-    IsOpen
-      ((Subgroup.pi Set.univ (fun v : InfinitePlace K ↦
-          infinitePositiveSubgroup v) :
-        Subgroup ((v : InfinitePlace K) → v.Completionˣ)) :
-          Set ((v : InfinitePlace K) → v.Completionˣ)) := by
-  change IsOpen
-    (Set.univ.pi fun v : InfinitePlace K ↦
-      (infinitePositiveSubgroup v : Set v.Completionˣ))
-  exact isOpen_set_pi Set.finite_univ fun v _ ↦
-    isOpen_infinitePositiveSubgroup v
-
-/-- The narrow archimedean congruence subgroup is open. -/
-theorem isOpen_narrowInfiniteCongruenceSubgroup :
-    IsOpen
-      ((narrowInfiniteCongruenceSubgroup (K := K) :
-        Subgroup (InfiniteIdeleGroup K)) :
-          Set (InfiniteIdeleGroup K)) :=
-  isOpen_infinitePositivePiSubgroup.preimage
-    ContinuousMulEquiv.piUnits.continuous
+    simp [htop]
 
 /-- The archimedean congruence subgroup selected by a full modulus is open. -/
 theorem isOpen_infiniteCongruenceSubgroup (m : Modulus K) :
@@ -267,19 +211,16 @@ theorem isOpen_infiniteCongruenceSubgroup (m : Modulus K) :
       ((m.infiniteCongruenceSubgroup :
         Subgroup (InfiniteIdeleGroup K)) :
           Set (InfiniteIdeleGroup K)) := by
-  let U : Set (InfiniteIdeleGroup K) :=
+  let U :=
     ⋂ v ∈ m.infinitePart,
       (fun a : InfiniteIdeleGroup K ↦ ContinuousMulEquiv.piUnits a v.1) ⁻¹'
         (infinitePositiveSubgroup v.1 : Set v.1.Completionˣ)
   have hUOpen : IsOpen U := by
     apply isOpen_biInter_finset
     intro v hv
-    have hEval : Continuous
-        (fun a : InfiniteIdeleGroup K ↦ ContinuousMulEquiv.piUnits a v.1) :=
-      (continuous_apply v.1).comp ContinuousMulEquiv.piUnits.continuous
-    exact (isOpen_infinitePositiveSubgroup v.1).preimage hEval
+    exact (isOpen_infinitePositiveSubgroup v.1).preimage ((continuous_apply v.1).comp ContinuousMulEquiv.piUnits.continuous)
   have hU :
-      (m.infiniteCongruenceSubgroup : Set (InfiniteIdeleGroup K)) = U := by
+      m.infiniteCongruenceSubgroup = U := by
     ext a
     change a ∈ m.infiniteCongruenceSubgroup ↔ a ∈ U
     rw [Modulus.mem_infiniteCongruenceSubgroup_iff]
@@ -292,8 +233,7 @@ theorem isOpen_infiniteCongruenceSubgroup (m : Modulus K) :
       exact ha v hv
     · intro ha v hv
       exact Set.mem_iInter.mp (Set.mem_iInter.mp ha v) hv
-  rw [hU]
-  exact hUOpen
+  simp_all [hU]
 
 /-- The idele congruence subgroup `I_K^m` is open. -/
 theorem isOpen_ideleCongruenceSubgroup (m : Modulus K) :
@@ -314,26 +254,8 @@ theorem localHigherUnit_norm_sub_one_le
     ‖(x : v.adicCompletion K) - 1‖ ≤ ‖ϖ‖ ^ n := by
   obtain ⟨y, rfl, hy⟩ :=
     (mem_localHigherUnitGroup_iff v n x).1 hx
-  have hyIdeal :
-      localIntegralValue v y - 1 ∈
-        (IsLocalRing.maximalIdeal
-          (v.adicCompletionIntegers K)) ^ n :=
-    (localHigherUnitMap_eq_one_iff v n y).1 hy
-  have hIdealSet :=
-    Valuation.Integers.maximalIdeal_pow_eq_setOfPred_le_v_algebraMap_pow
-      (IsDedekindDomain.HeightOneSpectrum.adicCompletionIntegers.integers
-        K v) hϖ n
-  have hyVal :
-      (Valued.v : Valuation (v.adicCompletion K) ℤᵐ⁰)
-          (algebraMap (v.adicCompletionIntegers K)
-            (v.adicCompletion K) (localIntegralValue v y - 1)) ≤
-        (Valued.v : Valuation (v.adicCompletion K) ℤᵐ⁰)
-            (algebraMap (v.adicCompletionIntegers K)
-              (v.adicCompletion K) ϖ) ^ n := by
-    exact (Set.ext_iff.mp hIdealSet
-      (localIntegralValue v y - 1)).mp hyIdeal
   have hcoe :
-      (((y : (v.adicCompletionIntegers K).units) :
+      ((y :
           (v.adicCompletion K)ˣ) : v.adicCompletion K) =
         ((localIntegralValue v y :
           v.adicCompletionIntegers K) : v.adicCompletion K) :=
@@ -342,26 +264,10 @@ theorem localHigherUnit_norm_sub_one_le
   change
     ‖((localIntegralValue v y :
         v.adicCompletionIntegers K) : v.adicCompletion K) - 1‖ ≤
-      ‖((ϖ : v.adicCompletionIntegers K) :
+      ‖(ϖ :
         v.adicCompletion K)‖ ^ n
   rw [← norm_pow]
   apply Valued.toNormedField.norm_le_iff.mpr
-  have hyVal' :
-      @LE.le ℤᵐ⁰ WithZero.instPreorder.toLE
-        ((Valued.v : Valuation (v.adicCompletion K) ℤᵐ⁰)
-          (((localIntegralValue v y :
-            v.adicCompletionIntegers K) :
-              v.adicCompletion K) - 1))
-        ((Valued.v : Valuation (v.adicCompletion K) ℤᵐ⁰)
-          (((ϖ : v.adicCompletionIntegers K) :
-            v.adicCompletion K) ^ n)) := by
-    have hAlgebraMap :
-        ∀ z : v.adicCompletionIntegers K,
-          algebraMap (v.adicCompletionIntegers K)
-              (v.adicCompletion K) z =
-            (z : v.adicCompletion K) :=
-      fun _ ↦ rfl
-    simpa [hAlgebraMap] using hyVal
   have withZeroPreorder_le :
       ∀ a b : ℤᵐ⁰,
         @LE.le ℤᵐ⁰ WithZero.instPreorder.toLE a b →
@@ -369,7 +275,11 @@ theorem localHigherUnit_norm_sub_one_le
     intro a b hab
     cases a <;> cases b <;>
       simp_all
-  exact withZeroPreorder_le _ _ hyVal'
+  refine withZeroPreorder_le _ _ ?_
+  simpa [(fun _ ↦ rfl)] using ((Set.ext_iff.mp (Valuation.Integers.maximalIdeal_pow_eq_setOfPred_le_v_algebraMap_pow
+  (IsDedekindDomain.HeightOneSpectrum.adicCompletionIntegers.integers
+    K v) hϖ n)
+  (localIntegralValue v y - 1)).mp ((localHigherUnitMap_eq_one_iff v n y).1 hy))
 
 /-- An irreducible element of the valuation ring of a finite completion
 has norm strictly less than one. -/
@@ -378,7 +288,7 @@ theorem local_irreducible_norm_lt_one
     {ϖ : v.adicCompletionIntegers K} (hϖ : Irreducible ϖ) :
     ‖ϖ‖ < 1 := by
   change
-    ‖((ϖ : v.adicCompletionIntegers K) :
+    ‖(ϖ :
       v.adicCompletion K)‖ < 1
   apply Valued.toNormedField.norm_lt_one_iff.mpr
   simpa only using!
@@ -396,14 +306,12 @@ theorem exists_localHigherUnitGroup_subset
         Set (v.adicCompletion K)ˣ) ⊆ U := by
   have hU' :
       U ∈ Filter.comap
-        (Units.val : (v.adicCompletion K)ˣ →
-          v.adicCompletion K)
+        Units.val
         (𝓝 (1 : v.adicCompletion K)) := by
     have heq :
         𝓝 (1 : (v.adicCompletion K)ˣ) =
           Filter.comap
-            (Units.val : (v.adicCompletion K)ˣ →
-              v.adicCompletion K)
+            Units.val
             (𝓝 (1 : v.adicCompletion K)) := by
       simpa using
         Units.isEmbedding_val₀.nhds_eq_comap
@@ -415,17 +323,15 @@ theorem exists_localHigherUnitGroup_subset
   obtain ⟨ϖ, hϖ⟩ :=
     IsDiscreteValuationRing.exists_irreducible
       (v.adicCompletionIntegers K)
-  have hϖlt : ‖ϖ‖ < 1 :=
-    local_irreducible_norm_lt_one v hϖ
   obtain ⟨n, hn⟩ :
       ∃ n : ℕ, ‖ϖ‖ ^ n < ε :=
-    exists_pow_lt_of_lt_one hε hϖlt
+    exists_pow_lt_of_lt_one hε (local_irreducible_norm_lt_one v hϖ)
   refine ⟨n, ?_⟩
   intro x hx
   apply hVU
   apply hball
   change dist
-      (((x : (v.adicCompletion K)ˣ) :
+      ((x :
         v.adicCompletion K))
       1 < ε
   rw [dist_eq_norm]
@@ -547,12 +453,8 @@ theorem continuous_positiveRealUnit :
     Continuous positiveRealUnit := by
   apply Units.continuous_iff.mpr
   constructor
-  · change Continuous
-      (fun x : Set.Ioi (0 : ℝ) ↦ (x : ℝ))
-    exact continuous_subtype_val
-  · change Continuous
-      (fun x : Set.Ioi (0 : ℝ) ↦ ((x : ℝ)⁻¹))
-    exact continuous_subtype_val.inv₀
+  · fun_prop
+  · exact continuous_subtype_val.inv₀
       (fun x : Set.Ioi (0 : ℝ) ↦ x.2.ne')
 
 omit [NumberField K] in
@@ -565,7 +467,7 @@ theorem isConnected_infinitePositiveSubgroup
         Set v.Completionˣ) := by
   rw [isConnected_iff_connectedSpace]
   by_cases hv : v.IsReal
-  · let e : v.Completionˣ ≃ₜ* ℝˣ :=
+  · let e :=
       Units.mapContinuousMulEquiv
         (realCompletionContinuousMulEquiv v hv)
     let f : Set.Ioi (0 : ℝ) → infinitePositiveSubgroup v :=
@@ -600,15 +502,14 @@ theorem isConnected_infinitePositiveSubgroup
       simp [x, positiveRealUnit]
     · apply continuous_induced_rng.mpr
       exact e.symm.continuous.comp continuous_positiveRealUnit
-  · have hvc : v.IsComplex :=
+  · have hvc :=
       InfinitePlace.not_isReal_iff_isComplex.mp hv
-    let e : v.Completionˣ ≃ₜ* ℂˣ :=
+    let e :=
       Units.mapContinuousMulEquiv
         (complexCompletionContinuousMulEquiv v hvc)
     let f : ℂˣ → infinitePositiveSubgroup v :=
       fun x ↦
         ⟨e.symm x, by
-          apply (mem_infinitePositiveSubgroup_iff v _).2
           intro hv'
           exact (hv hv').elim⟩
     apply Function.Surjective.connectedSpace (f := f)
@@ -616,8 +517,7 @@ theorem isConnected_infinitePositiveSubgroup
       refine ⟨e z.1, ?_⟩
       apply Subtype.ext
       exact e.symm_apply_apply z.1
-    · apply continuous_induced_rng.mpr
-      exact e.symm.continuous
+    fun_prop
 
 omit [NumberField K] in
 /-- The narrow archimedean positivity subgroup is connected. -/
@@ -648,10 +548,7 @@ theorem isConnected_narrowInfiniteCongruenceSubgroup :
           (mem_narrowInfiniteCongruenceSubgroup_iff a.1).1 a.2 v⟩
     refine ⟨x, ?_⟩
     apply Subtype.ext
-    change ContinuousMulEquiv.piUnits.symm
-        (fun v ↦ (x v : v.Completionˣ)) = a.1
-    apply ContinuousMulEquiv.piUnits.injective
-    simp [x]
+    rfl
   · apply continuous_induced_rng.mpr
     apply ContinuousMulEquiv.piUnits.symm.continuous.comp
     exact continuous_pi fun v ↦
@@ -682,15 +579,13 @@ theorem infiniteSign_ker_eq_narrowInfiniteCongruenceSubgroup :
   ext a
   constructor
   · intro ha
-    have ha' : infiniteSign (K := K) a = 1 :=
-      MonoidHom.mem_ker.mp ha
     apply (mem_narrowInfiniteCongruenceSubgroup_iff a).2
     intro v
     apply (mem_infinitePositiveSubgroup_iff v
       (ContinuousMulEquiv.piUnits a v)).2
     intro hv
     have hsign :=
-      congrArg Units.val (congrFun ha' ⟨v, hv⟩)
+      congrArg Units.val (congrFun (MonoidHom.mem_ker.mp ha) ⟨v, hv⟩)
     change
       SignType.sign
           (InfinitePlace.Completion.extensionEmbeddingOfIsReal hv
@@ -716,8 +611,8 @@ theorem infiniteSign_ker_eq_narrowInfiniteCongruenceSubgroup :
 detected by the finitely many real signs). -/
 instance narrowInfiniteCongruenceSubgroupFiniteIndex :
     (narrowInfiniteCongruenceSubgroup (K := K)).FiniteIndex := by
-  rw [← infiniteSign_ker_eq_narrowInfiniteCongruenceSubgroup (K := K)]
-  exact Subgroup.finiteIndex_ker (infiniteSign (K := K))
+  rw [← infiniteSign_ker_eq_narrowInfiniteCongruenceSubgroup]
+  exact Subgroup.finiteIndex_ker (infiniteSign)
 
 /-- Every selected-real-place congruence subgroup has finite index, because
 it contains the narrow positivity subgroup. -/
@@ -737,9 +632,7 @@ finite ideles. -/
 theorem finiteCongruenceSubgroup_le_integralSubgroup
     (m : FiniteModulus K) :
     finiteCongruenceSubgroup m ≤
-      FiniteIdeleGroup.integralSubgroup (K := K) := by
-  intro a ha v
-  exact localHigherUnitGroup_le_finiteLocalUnits v (m v) (ha v)
+      FiniteIdeleGroup.integralSubgroup (K := K) := fun a ha v => localHigherUnitGroup_le_finiteLocalUnits v (m v) (ha v)
 
 /-- Within the compact group of everywhere-integral finite ideles, every
 finite congruence subgroup has finite index. -/
@@ -750,17 +643,13 @@ instance finiteCongruenceSubgroupFiniteRelIndex
   rw [Subgroup.isFiniteRelIndex_iff_finiteIndex]
   let U := FiniteIdeleGroup.integralSubgroup (K := K)
   let J := finiteCongruenceSubgroup m
-  have hJU : J ≤ U :=
-    finiteCongruenceSubgroup_le_integralSubgroup m
-  let J' : Subgroup U := J.subgroupOf U
+  let J' := J.subgroupOf U
   have : CompactSpace U :=
     isCompact_iff_compactSpace.mp
       (FiniteIdeleGroup.isCompact_integralSubgroup (K := K))
-  have hJOpen : IsOpen (J' : Set U) := by
-    exact Subgroup.subgroupOf_isOpen U J
-      (isOpen_finiteCongruenceSubgroup m)
-  have : Finite (U ⧸ J') :=
-    J'.quotient_finite_of_isOpen hJOpen
+  have :=
+    J'.quotient_finite_of_isOpen (Subgroup.subgroupOf_isOpen U J
+      (isOpen_finiteCongruenceSubgroup m))
   exact Subgroup.finiteIndex_of_finite_quotient
 
 /-- Finite congruence subgroups are contravariant in the finite modulus. -/
@@ -787,7 +676,6 @@ theorem Modulus.ideleCongruenceSubgroup_antitone
     {m n : Modulus K} (hmn : m ≤ n) :
     n.ideleCongruenceSubgroup ≤ m.ideleCongruenceSubgroup := by
   intro a ha
-  rw [Modulus.mem_ideleCongruenceSubgroup_iff] at ha ⊢
   exact ⟨Modulus.infiniteCongruenceSubgroup_antitone hmn ha.1,
     finiteCongruenceSubgroup_antitone hmn.1 ha.2⟩
 
@@ -795,7 +683,6 @@ theorem Modulus.ideleCongruenceSubgroup_antitone
 theorem Modulus.congruenceSubgroup_antitone
     {m n : Modulus K} (hmn : m ≤ n) :
     n.congruenceSubgroup ≤ m.congruenceSubgroup := by
-  unfold Modulus.congruenceSubgroup
   apply Subgroup.map_mono
   exact sup_le
     ((Modulus.ideleCongruenceSubgroup_antitone hmn).trans le_sup_left)
@@ -841,36 +728,30 @@ instance ideleCongruenceSubgroupFiniteRelIndex
     Subgroup.finiteIndex_iff]
   rw [← Subgroup.index_map_equiv
       ((m.ideleCongruenceSubgroup).subgroupOf
-        (IdeleGroup.integralAtFinitePlaces (K := K)))
-      (integralIdeleEquiv (K := K))]
+        (IdeleGroup.integralAtFinitePlaces))
+      (integralIdeleEquiv)]
   change
     (((m.ideleCongruenceSubgroup).subgroupOf
-      (IdeleGroup.integralAtFinitePlaces (K := K))).map
-        (integralIdeleEquiv (K := K)).toMonoidHom).index ≠ 0
+      (IdeleGroup.integralAtFinitePlaces)).map
+        (integralIdeleEquiv).toMonoidHom).index ≠ 0
   rw [map_ideleCongruenceSubgroup_subgroupOf_integral]
   let :
       ((finiteCongruenceSubgroup m.finitePart).subgroupOf
-        (FiniteIdeleGroup.integralSubgroup (K := K))).FiniteIndex :=
+        (FiniteIdeleGroup.integralSubgroup)).FiniteIndex :=
     Subgroup.IsFiniteRelIndex.to_finiteIndex_subgroupOf
   rw [Subgroup.index_prod]
   exact mul_ne_zero
-    (Subgroup.FiniteIndex.index_ne_zero :
-      m.infiniteCongruenceSubgroup.index ≠ 0)
-    (Subgroup.FiniteIndex.index_ne_zero :
-      ((finiteCongruenceSubgroup m.finitePart).subgroupOf
-        (FiniteIdeleGroup.integralSubgroup (K := K))).index ≠ 0)
+    Subgroup.FiniteIndex.index_ne_zero
+    Subgroup.FiniteIndex.index_ne_zero
 
 /-- The subgroup defining the ordinary ideal class group has finite index. -/
 instance ordinaryIdealClassSubgroupFiniteIndex :
     (IdeleGroup.integralAtFinitePlaces (K := K) ⊔
       IdeleGroup.principalSubgroup K).FiniteIndex := by
-  let : Finite
-      (IdeleGroup K ⧸
-        (IdeleGroup.integralAtFinitePlaces (K := K) ⊔
-          IdeleGroup.principalSubgroup K)) :=
+  let :=
     Finite.of_equiv (ClassGroup (𝓞 K))
     (IdeleGroup.quotientIntegralSupPrincipalEquiv
-      (K := K)).symm.toEquiv
+      ).symm.toEquiv
   exact Subgroup.finiteIndex_of_finite_quotient
 
 /-- The subgroup `I_K^m Kˣ` has finite index in the idele group. -/
@@ -913,14 +794,8 @@ theorem isOpen_congruenceSubgroup (m : Modulus K) :
       ((m.congruenceSubgroup :
         Subgroup (IdeleClassGroup K)) :
           Set (IdeleClassGroup K)) := by
-  let J := m.ideleCongruenceSubgroup
-  let P := IdeleGroup.principalSubgroup K
-  have hsupOpen : IsOpen ((J ⊔ P : Subgroup (IdeleGroup K)) :
-      Set (IdeleGroup K)) :=
-    Subgroup.isOpen_mono le_sup_left
-      (isOpen_ideleCongruenceSubgroup m)
-  rw [Modulus.congruenceSubgroup, Subgroup.coe_map]
-  exact QuotientGroup.isOpenMap_coe _ hsupOpen
+  exact QuotientGroup.isOpenMap_coe _ (Subgroup.isOpen_mono le_sup_left
+    (isOpen_ideleCongruenceSubgroup m))
 
 /-- Every ray congruence subgroup is closed. -/
 theorem isClosed_congruenceSubgroup (m : Modulus K) :
@@ -934,7 +809,7 @@ theorem isClosed_congruenceSubgroup (m : Modulus K) :
 /-- Every ray congruence subgroup has finite index. -/
 instance congruenceSubgroupFiniteIndex (m : Modulus K) :
     m.congruenceSubgroup.FiniteIndex := by
-  let : Finite (RayClassGroup m) :=
+  let :=
     Finite.of_equiv
     (IdeleGroup K ⧸
       (m.ideleCongruenceSubgroup ⊔
@@ -956,7 +831,7 @@ theorem narrowInfiniteCongruenceSubgroup_mapsTo_openSubgroup
     isConnected_iff_connectedSpace.mp
       isConnected_narrowInfiniteCongruenceSubgroup
   let f :
-      narrowInfiniteCongruenceSubgroup (K := K) →
+      narrowInfiniteCongruenceSubgroup →
         IdeleClassGroup K :=
     fun x ↦
       (((x.1, (1 : FiniteIdeleGroup K)) : IdeleGroup K) :
@@ -971,14 +846,10 @@ theorem narrowInfiniteCongruenceSubgroup_mapsTo_openSubgroup
           ((1 : InfiniteIdeleGroup K),
             (1 : FiniteIdeleGroup K))) = 1
     exact map_one _
-  have hinter :
-      (Set.range f ∩ (H : Set (IdeleClassGroup K))).Nonempty := by
-    refine ⟨1, ?_, H.one_mem⟩
-    exact ⟨1, hf_one⟩
-  have hsubset : Set.range f ⊆ (H : Set (IdeleClassGroup K)) :=
-    (isConnected_range hf).isPreconnected.subset_isClopen
-      ⟨H.isClosed_of_isOpen hH, hH⟩ hinter
-  exact hsubset ⟨⟨a, ha⟩, rfl⟩
+  exact ((isConnected_range hf).isPreconnected.subset_isClopen
+    ⟨H.isClosed_of_isOpen hH, hH⟩ (by
+      refine ⟨1, ?_, H.one_mem⟩
+      exact ⟨1, hf_one⟩)) ⟨⟨a, ha⟩, rfl⟩
 
 /-- Congruence subgroups are cofinal among the open subgroups of the idele
 class group. -/
@@ -986,16 +857,12 @@ theorem exists_congruenceSubgroup_le_of_isOpen
     (H : Subgroup (IdeleClassGroup K))
     (hH : IsOpen (H : Set (IdeleClassGroup K))) :
     ∃ m : Modulus K, m.congruenceSubgroup ≤ H := by
-  let P := IdeleGroup.principalSubgroup K
-  let q : IdeleGroup K →* IdeleClassGroup K :=
-    QuotientGroup.mk' P
-  let g : FiniteIdeleGroup K → IdeleClassGroup K :=
+  let q :=
+    QuotientGroup.mk' (IdeleGroup.principalSubgroup K)
+  let g :=
     fun b ↦ q ((1 : InfiniteIdeleGroup K), b)
-  let U : Set (FiniteIdeleGroup K) := g ⁻¹' (H : Set _)
-  have hq : Continuous q :=
-    QuotientGroup.continuous_mk
-  have hg : Continuous g := by
-    exact hq.comp (continuous_const.prodMk continuous_id)
+  let U := g ⁻¹' H
+  have hg : Continuous g := QuotientGroup.continuous_mk.comp (continuous_const.prodMk continuous_id)
   have hUopen : IsOpen U :=
     hH.preimage hg
   have hUone : (1 : FiniteIdeleGroup K) ∈ U := by
@@ -1009,7 +876,7 @@ theorem exists_congruenceSubgroup_le_of_isOpen
     exact H.one_mem
   obtain ⟨f, hf⟩ :=
     exists_finiteCongruenceSubgroup_subset hUopen hUone
-  let m : Modulus K := Modulus.narrowOfFinite f
+  let m := Modulus.narrowOfFinite f
   have hJ :
       m.ideleCongruenceSubgroup ≤ Subgroup.comap q H := by
     intro x hx
@@ -1021,9 +888,8 @@ theorem exists_congruenceSubgroup_le_of_isOpen
       simpa [m] using hx'.1
     have hfin :
         q ((1 : InfiniteIdeleGroup K), x.2) ∈ H := by
-      have hfinite : x.2 ∈ finiteCongruenceSubgroup f := by
-        simpa [m] using hx'.2
-      have := hf hfinite
+      have := hf (by
+        simpa [m] using hx'.2)
       change g x.2 ∈ H at this
       exact this
     have hmul := H.mul_mem hinf hfin
@@ -1067,43 +933,22 @@ theorem chosenModulusInside_spec
   Classical.choose_spec
     (exists_congruenceSubgroup_le_of_isOpen H hH)
 
+variable (H : Subgroup (IdeleClassGroup K)) (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
+    [H.FiniteIndex]
+
 /-- Closed finite-index subgroups are open, hence also contain a chosen ray
 congruence subgroup. -/
-noncomputable def modulusInsideClosedFiniteIndex
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+noncomputable def modulusInsideClosedFiniteIndex :
     Modulus K :=
   chosenModulusInside H
     (H.isOpen_of_isClosed_of_finiteIndex hclosed)
 
 /-- Specification of the modulus selected for a closed finite-index
 subgroup. -/
-theorem modulusInsideClosedFiniteIndex_spec
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+theorem modulusInsideClosedFiniteIndex_spec :
     (modulusInsideClosedFiniteIndex H hclosed).congruenceSubgroup ≤ H :=
   chosenModulusInside_spec H
     (H.isOpen_of_isClosed_of_finiteIndex hclosed)
-
-/-- A subgroup of the idele class group is closed of
-finite index exactly when it contains a ray congruence subgroup. -/
-theorem isClosed_and_finiteIndex_iff_exists_congruenceSubgroup_le
-    (H : Subgroup (IdeleClassGroup K)) :
-    (IsClosed (H : Set (IdeleClassGroup K)) ∧ H.FiniteIndex) ↔
-      ∃ m : Modulus K, m.congruenceSubgroup ≤ H := by
-  constructor
-  · rintro ⟨hHclosed, hHfinite⟩
-    let : H.FiniteIndex := hHfinite
-    exact exists_congruenceSubgroup_le_of_isOpen H
-      (H.isOpen_of_isClosed_of_finiteIndex hHclosed)
-  · rintro ⟨m, hm⟩
-    have hHopen : IsOpen (H : Set (IdeleClassGroup K)) :=
-      Subgroup.isOpen_mono hm (isOpen_congruenceSubgroup m)
-    have : H.FiniteIndex :=
-      Subgroup.finiteIndex_of_le hm
-    exact ⟨H.isClosed_of_isOpen hHopen, inferInstance⟩
 
 end RayClass
 

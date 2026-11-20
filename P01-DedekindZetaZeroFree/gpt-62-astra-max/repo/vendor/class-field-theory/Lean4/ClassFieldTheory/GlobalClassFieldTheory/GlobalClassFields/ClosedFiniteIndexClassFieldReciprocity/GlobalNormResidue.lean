@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -33,10 +30,7 @@ namespace GlobalClassFields
 open Reciprocity
 
 /-- Canonical class-group commutativity supplies normality for quotient evaluation. -/
-theorem closedFiniteIndexNormResidueClassGroupIsMulCommutative
-    (F : Type) [Field F] [NumberField F] :
-    IsMulCommutative (IdeleClassGroup F) :=
-  IsMulCommutative.of_comm (fun a b => mul_comm a b)
+alias closedFiniteIndexNormResidueClassGroupIsMulCommutative := GlobalClassFieldTheory.Reciprocity.realizedTowerIdeleClassIsMulCommutative
 
 attribute [local instance] closedFiniteIndexNormResidueClassGroupIsMulCommutative
 
@@ -79,73 +73,52 @@ theorem
           (closedFiniteIndexClassField
             (K := K) H hclosed) c) =
       QuotientGroup.mk' H c := by
-  have hNormResidue :
-      Additive.ofMul
-          (globalNormResidueMonoidHom K
-            (closedFiniteIndexClassField
-              (K := K) H hclosed) c) =
-        globalNormResidueEquiv K
-          (closedFiniteIndexClassField
-            (K := K) H hclosed)
-          (Additive.ofMul
-            (QuotientGroup.mk'
-              (_root_.ideleClassNorm K
-                (closedFiniteIndexClassField
-                  (K := K) H hclosed)).range c)) :=
+  have hNormResidue :=
     congrArg (fun σ => Additive.ofMul σ)
       (globalNormResidueMonoidHom_apply K
         (closedFiniteIndexClassField
-          (K := K) H hclosed) c)
+           H hclosed) c)
+  let globalNormResidueEquiv₀ := globalNormResidueEquiv K (closedFiniteIndexClassField H hclosed)
   calc
     _ = QuotientGroup.quotientMulEquivOfEq
           (closedFiniteIndexClassField_ideleClassNorm_range
-            (K := K) H hclosed)
+             H hclosed)
           (Additive.toMul
-            ((globalNormResidueEquiv K
-                (closedFiniteIndexClassField
-                  (K := K) H hclosed)).symm
+            ((globalNormResidueEquiv₀).symm
               (Additive.ofMul
                 (globalNormResidueMonoidHom K
                   (closedFiniteIndexClassField
-                    (K := K) H hclosed) c)))) :=
+                     H hclosed) c)))) :=
       closedFiniteIndexClassFieldGaloisEquivNormQuotient_apply
-        (K := K) H hclosed _
+         H hclosed _
     _ = QuotientGroup.quotientMulEquivOfEq
           (closedFiniteIndexClassField_ideleClassNorm_range
-            (K := K) H hclosed)
+             H hclosed)
           (Additive.toMul
-            ((globalNormResidueEquiv K
-                (closedFiniteIndexClassField
-                  (K := K) H hclosed)).symm
-              (globalNormResidueEquiv K
-                (closedFiniteIndexClassField
-                  (K := K) H hclosed)
+            ((globalNormResidueEquiv₀).symm
+              (globalNormResidueEquiv₀
                 (Additive.ofMul
                   (QuotientGroup.mk'
                     (_root_.ideleClassNorm K
                       (closedFiniteIndexClassField
-                        (K := K) H hclosed)).range c))))) :=
+                         H hclosed)).range c))))) :=
       congrArg
         (fun τ =>
           QuotientGroup.quotientMulEquivOfEq
               (closedFiniteIndexClassField_ideleClassNorm_range
-                (K := K) H hclosed)
+                 H hclosed)
             (Additive.toMul
-              ((globalNormResidueEquiv K
-                  (closedFiniteIndexClassField
-                    (K := K) H hclosed)).symm τ)))
+              ((globalNormResidueEquiv₀).symm τ)))
         hNormResidue
     _ = QuotientGroup.mk' H c :=
       quotientTransport_inverse_apply
       ((_root_.ideleClassNorm K
         (closedFiniteIndexClassField
-          (K := K) H hclosed)).range)
+           H hclosed)).range)
       H
-      (globalNormResidueEquiv K
-        (closedFiniteIndexClassField
-          (K := K) H hclosed))
+      (globalNormResidueEquiv₀)
       (closedFiniteIndexClassField_ideleClassNorm_range
-        (K := K) H hclosed)
+         H hclosed)
       c
 
 end GlobalClassFields

@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -44,7 +41,6 @@ def globalInfinitePlaceHilbertSymbol
     · by_cases ha : InfinitePlace.embedding_of_isReal hv (a : F) < 0
       · by_cases hb : InfinitePlace.embedding_of_isReal hv (b : F) < 0
         · refine ⟨(-1 : Fˣ), ?_⟩
-          change (-1 : Fˣ) ^ (n : ℕ) = 1
           rw [hn]
           simp
         · exact 1

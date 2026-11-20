@@ -12,30 +12,32 @@ namespace DedekindZetaZeroFree.Hecke
 
 open DedekindZetaZeroFree.AbelianQuotient.Theta
 
-theorem mixedThetaPair_tailExponent_pos (F : Type) [Field F] [NumberField F] :
-    0 < 2 / (Module.finrank ℚ F : ℝ) := by
-  exact div_pos (by norm_num) (Nat.cast_pos.mpr (Module.finrank_pos (R := ℚ) (M := F)))
+section
 
-private theorem centered_integral_tail (F : Type) [Field F] [NumberField F]
+variable (F : Type) [Field F] [NumberField F]
+
+theorem mixedThetaPair_tailExponent_pos :
+    0 < 2 / (Module.finrank ℚ F : ℝ) := div_pos (by norm_num) (Nat.cast_pos.mpr (Module.finrank_pos))
+
+private theorem centered_integral_tail
     (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (q : Angular F → Angular F)
     (hq : Continuous q) :
     ∃ A B : ℝ, 0 < A ∧ 0 < B ∧ ∀ t : ℝ, 1 ≤ t →
       ‖∫ u in angularCube F, (mixedRadialTheta F I t (q u) - 1)‖ ≤
         A * Real.exp (-B * t ^ (2 / (Module.finrank ℚ F : ℝ))) := by
   let box : Set (Angular F) := Set.univ.pi (fun _ ↦ Set.Icc (0 : ℝ) 1)
-  have hc : IsCompact box := isCompact_univ_pi (fun _ ↦ isCompact_Icc)
-  have hsub : angularCube F ⊆ box := by
-    intro u hu i hi
-    exact ⟨(hu i hi).1, (hu i hi).2.le⟩
+  have hsub : angularCube F ⊆ box := fun u hu i hi => ⟨(hu i hi).1, (hu i hi).2.le⟩
   have hv : volume (angularCube F) = 1 := by
     simp [angularCube, Real.volume_pi_Ico]
   obtain ⟨A, B, hA, hB, htail⟩ := mixedRadialTheta_uniform_exponential_tail F I
-    (q '' box) (hc.image hq)
+    (q '' box) ((isCompact_univ_pi (fun _ ↦ isCompact_Icc)).image hq)
   refine ⟨A, B, hA, hB, ?_⟩
   intro t ht
   have h := norm_setIntegral_le_of_norm_le_const (μ := volume) (by simp [hv])
     (fun u hu ↦ htail t ht (q u) (Set.mem_image_of_mem q (hsub hu)))
   simpa [Measure.real, hv] using h
+
+end
 
 private theorem decay_rate_mono (a b p t : ℝ) (hab : a ≤ b) (ht : 0 ≤ t) :
     Real.exp (-b * t ^ p) ≤ Real.exp (-a * t ^ p) := by
@@ -58,7 +60,7 @@ private theorem finite_sum_tail {ι : Type*} (s : Finset ι) (f : ι → ℝ →
       refine ⟨A + C, min B D, add_pos hA hC, lt_min hB hD, ?_⟩
       intro t ht
       rw [Finset.sum_insert hi]
-      have ht0 : 0 ≤ t := le_trans zero_le_one ht
+      have ht0 := le_trans zero_le_one ht
       calc
         ‖f i t + ∑ j ∈ s, f j t‖ ≤ ‖f i t‖ + ‖∑ j ∈ s, f j t‖ := norm_add_le _ _
         _ ≤ A * Real.exp (-B * t ^ p) + C * Real.exp (-D * t ^ p) :=
@@ -83,12 +85,13 @@ private theorem scaled_sum_tail {ι : Type*} [Fintype ι] (f : ι → ℝ → �
   have heq : c * ∑ i, f i t - c * (Fintype.card ι : ℂ) = c * ∑ i, (f i t - 1) := by
     simp [Finset.sum_sub_distrib, mul_sub]
   rw [heq, norm_mul]
+  let exp₀ := Real.exp (-B * t ^ p)
   calc
-    ‖c‖ * ‖∑ i, (f i t - 1)‖ ≤ ‖c‖ * (A * Real.exp (-B * t ^ p)) :=
+    _ ≤ ‖c‖ * (A * exp₀) :=
       mul_le_mul_of_nonneg_left (hb t ht) (norm_nonneg _)
-    _ ≤ (‖c‖ + 1) * (A * Real.exp (-B * t ^ p)) :=
+    _ ≤ (‖c‖ + 1) * (A * exp₀) :=
       mul_le_mul_of_nonneg_right (by linarith) (by positivity)
-    _ = ((‖c‖ + 1) * A) * Real.exp (-B * t ^ p) := (mul_assoc _ _ _).symm
+    _ = ((‖c‖ + 1) * A) * exp₀ := (mul_assoc _ _ _).symm
 
 theorem mixedThetaPair_exponential_tail (F : Type) [Field F] [NumberField F] :
     let P := DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F
@@ -128,21 +131,15 @@ theorem mixedThetaPair_exponential_tail (F : Type) [Field F] [NumberField F] :
     (2 / (Module.finrank ℚ F : ℝ)) (alpha F : ℂ) (fun C ↦ hg _)
   refine ⟨A + C, min B D, add_pos hA hC, lt_min hB hD, ?_⟩
   intro t ht
-  have ht0 : 0 ≤ t := le_trans zero_le_one ht
+  have ht0 := le_trans zero_le_one ht
   constructor
-  · change ‖(alpha F : ℂ) * ∑ C, mixedAngularAverage F
-        (FractionalIdeal.mk0 F (inverseClassIdealRepresentative F C)) t -
-        (alpha F : ℂ) * (Fintype.card (ClassGroup (𝓞 F)) : ℂ)‖ ≤ _
-    calc
+  · calc
       _ ≤ A * Real.exp (-B * t ^ (2 / (Module.finrank ℚ F : ℝ))) := hb t ht
       _ ≤ A * Real.exp (-(min B D) * t ^ (2 / (Module.finrank ℚ F : ℝ))) :=
         mul_le_mul_of_nonneg_left (decay_rate_mono _ _ _ _ (min_le_left _ _) ht0) hA.le
       _ ≤ (A + C) * Real.exp (-(min B D) * t ^ (2 / (Module.finrank ℚ F : ℝ))) :=
         mul_le_mul_of_nonneg_right (le_add_of_nonneg_right hC.le) (Real.exp_pos _).le
-  · change ‖(alpha F : ℂ) * ∑ C, mixedNegAngularAverage F
-        (traceDualIdealUnit F (FractionalIdeal.mk0 F (inverseClassIdealRepresentative F C))) t -
-        (alpha F : ℂ) * (Fintype.card (ClassGroup (𝓞 F)) : ℂ)‖ ≤ _
-    calc
+  · calc
       _ ≤ C * Real.exp (-D * t ^ (2 / (Module.finrank ℚ F : ℝ))) := hd t ht
       _ ≤ C * Real.exp (-(min B D) * t ^ (2 / (Module.finrank ℚ F : ℝ))) :=
         mul_le_mul_of_nonneg_left (decay_rate_mono _ _ _ _ (min_le_right _ _) ht0) hC.le

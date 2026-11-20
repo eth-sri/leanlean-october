@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -85,19 +81,8 @@ theorem chosenNormalBasisIntegerUnitsHerbrand_shortExact
     chosenNormalBasisPrincipalUnitSubgroupInclusion_range_eq_ker_quotient
       (L := L) V
   constructor
-  · intro ha
-    have ha' : a ∈ MonoidHom.ker
-        (chosenNormalBasisIntegerUnitsQuotientMap (L := L) V) := ha
-    rw [← hrange] at ha'
-    exact ha'
-  · rintro ⟨v, rfl⟩
-    have hv :
-        chosenNormalBasisPrincipalUnitSubgroupInclusion (L := L) V v ∈
-          MonoidHom.range
-            (chosenNormalBasisPrincipalUnitSubgroupInclusion (L := L) V) :=
-      ⟨v, rfl⟩
-    rw [hrange] at hv
-    exact hv
+  · simp
+  · simp
 
 /-- Integer-unit Herbrand calculation at one chosen normal-basis
 level.  The only low-degree cohomology input is the proved vanishing of
@@ -125,9 +110,9 @@ theorem integerUnits_herbrandQuotient_eq_one_of_chosenNormalBasis
   let := chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction K L n V hV
   let := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
   let := chosenNormalBasisIntegerUnitsQuotMulDistribMulAction K L n V hV
-  let : Finite (𝒪[L]ˣ ⧸ V) := hfinite
-  let : Subsingleton (HerbrandH0 (Gal(L / K)) V) := hH0
-  let : Subsingleton (HerbrandHMinusOne (Gal(L / K)) V g) := hHminusOne
+  let := hfinite
+  let := hH0
+  let := hHminusOne
   let hVdefined : HerbrandQuotientDefined (Gal(L / K)) V g :=
     ⟨inferInstance, inferInstance⟩
   let hQdefined : HerbrandQuotientDefined (Gal(L / K)) (𝒪[L]ˣ ⧸ V) g :=
@@ -144,19 +129,18 @@ theorem integerUnits_herbrandQuotient_eq_one_of_chosenNormalBasis
     hseq.1 hseq.2.1 hseq.2.2.1 hseq.2.2.2.1 hsurj
     g hg hVdefined hQdefined
   refine ⟨hU, ?_⟩
-  let : Finite (HerbrandH0 (Gal(L / K)) 𝒪[L]ˣ) := hU.1
-  let : Finite (HerbrandHMinusOne (Gal(L / K)) 𝒪[L]ˣ g) := hU.2
-  have hVone : herbrandQuotient (G := Gal(L / K)) (A := V) g = 1 := by
+  let := hU.1
+  let := hU.2
+  have hVone : herbrandQuotient (A := V) g = 1 := by
     exact herbrandQuotient_eq_one_of_card_eq
       (G := Gal(L / K)) (A := V) g
       (by simp only [Nat.card_unique])
   have hQone :
-      herbrandQuotient (G := Gal(L / K)) (A := 𝒪[L]ˣ ⧸ V) g = 1 := by
-    exact herbrandQuotient_eq_one_of_finite_module
-      (G := Gal(L / K)) (A := 𝒪[L]ˣ ⧸ V) g hg
-  have hmul : herbrandQuotient (G := Gal(L / K)) (A := 𝒪[L]ˣ) g =
-      herbrandQuotient (G := Gal(L / K)) (A := V) g *
-        herbrandQuotient (G := Gal(L / K)) (A := 𝒪[L]ˣ ⧸ V) g :=
+      herbrandQuotient (A := 𝒪[L]ˣ ⧸ V) g = 1 := by
+    exact herbrandQuotient_eq_one_of_finite_module g hg
+  have hmul : herbrandQuotient (A := 𝒪[L]ˣ) g =
+      herbrandQuotient (A := V) g *
+        herbrandQuotient (A := 𝒪[L]ˣ ⧸ V) g :=
     herbrandQuotient_multiplicative_of_shortExact
       (G := Gal(L / K)) (A := V) (B := 𝒪[L]ˣ) (C := 𝒪[L]ˣ ⧸ V)
       (chosenNormalBasisPrincipalUnitSubgroupInclusion (L := L) V)

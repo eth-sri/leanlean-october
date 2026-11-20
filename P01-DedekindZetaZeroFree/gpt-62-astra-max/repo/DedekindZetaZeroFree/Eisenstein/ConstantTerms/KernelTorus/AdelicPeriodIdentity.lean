@@ -14,17 +14,17 @@ set_option maxHeartbeats 1400000
 open KPContFlatCuspIncomingEvaluation
 open KPMsResidualTailRestoration.SharpConstantTerm.FiberStability
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
 variable (f : ℂ → S) (hι : Function.Injective ι)
-variable (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-variable (s : ℂ) (hs : s ∈ KPContActualChamberNormalSeries.V)
-variable (a : Cusps F ζ hζ C R P H U) (t : ℝ) (b : KPCuspCharts.Shape F)
+    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+    (s : ℂ) (hs : s ∈ KPContActualChamberNormalSeries.V)
+    (a : Cusps F ζ hζ C R P H U) (t : ℝ) (b : KPCuspCharts.Shape F)
 include hι hf hs in
 private theorem kernel_period_sheet_eq (ε : rootsOfUnity 3 F) :
  (∫ z : KernelTorus F ζ hζ C R P H U a,
@@ -100,14 +100,12 @@ private theorem kernel_period_sheet_eq (ε : rootsOfUnity 3 F) :
        iteratedDerivWithin_zero, cuspGroup,
        (KPContActualChamberNormalSeries.covariance F ζ hζ U ι f hι hf s hs).1] using hrep.symm
  rw [hGI,heq]
- have hm := actual_kernelTorus_probabilityHaar_transport F ζ hζ C R P H U a K hc ho hle ν
  letI := finiteLevelLattice_discrete K hc ho
  letI : DiscreteTopology (finiteLevelLattice K).toAddSubgroup := inferInstanceAs (DiscreteTopology (finiteLevelLattice K))
  letI : IsClosed ((finiteLevelLattice K).toAddSubgroup : Set (mixedEmbedding.mixedSpace F)) := AddSubgroup.isClosed_of_discrete
  letI : BorelSpace (mixedEmbedding.mixedSpace F ⧸ (finiteLevelLattice K).toAddSubgroup) := AddCosetSpace.borelSpace
  letI := KPContActualChamberOutgoingAdapter.kernelTorus_borelSpace F ζ hζ C R P H U a
- change (∫ z, φ z ∂KPContActualChamberOutgoingAdapter.fiberMeasure F ζ hζ C R P H U a) = ∫x, φ (p x) ∂ν
- rw [← hm]
+ rw [← (actual_kernelTorus_probabilityHaar_transport F ζ hζ C R P H U a K hc ho hle ν)]
  exact integral_map (mixedHorizontalQuotientMap_continuous F K L hle).measurable.aemeasurable hφ.measurable.aestronglyMeasurable
 
 theorem actual_projected_kernel_period_eq
@@ -137,8 +135,7 @@ theorem actual_projected_kernel_period_eq
             KPContFlatCuspIncomingEvaluation.localGroup F ζ hζ C R P H U a
               t 0 b ε)
         ∂KPWildKernelUpperBound.quotientHaar F) := by
-  have heq := funext (kernel_period_sheet_eq F ζ hζ C R P H U ι f hι hf s hs a t b)
-  rw [heq]
+  rw [(funext (kernel_period_sheet_eq F ζ hζ C R P H U ι f hι hf s hs a t b))]
 
 end DedekindZetaZeroFree.KPContinuation.ChamberOutgoingSource
 

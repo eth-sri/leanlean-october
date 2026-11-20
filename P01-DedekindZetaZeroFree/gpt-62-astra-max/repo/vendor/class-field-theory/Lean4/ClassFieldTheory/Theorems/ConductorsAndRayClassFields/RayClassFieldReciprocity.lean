@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -36,14 +33,10 @@ theorem rayClassField_reciprocity
     (m : RayClassModulus K) :
     Nonempty (RayClassFieldRealization K m) := by
   obtain ⟨R⟩ := rayClassSubgroup_existence K m ⊥
-  have hinj : Function.Injective R.artin :=
-    (MonoidHom.ker_eq_bot_iff R.artin).mp R.artin_ker
-  let e : RayClassGroup m ≃* (R.extension ≃ₐ[K] R.extension) :=
-    MulEquiv.ofBijective R.artin ⟨hinj, R.artin_surjective⟩
   refine ⟨{
     extension := R.extension
     unramifiedOutsideModulus := R.unramifiedOutsideModulus
-    artinEquiv := e
+    artinEquiv := (MulEquiv.ofBijective R.artin ⟨((MonoidHom.ker_eq_bot_iff R.artin).mp R.artin_ker), R.artin_surjective⟩)
     artin_frobenius := ?_ }⟩
   intro v hv w hlie
   exact R.artin_frobenius v hv w hlie

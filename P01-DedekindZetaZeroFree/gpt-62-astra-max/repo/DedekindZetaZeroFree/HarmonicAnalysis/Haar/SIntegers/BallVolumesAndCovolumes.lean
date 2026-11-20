@@ -15,16 +15,17 @@ namespace DedekindZetaZeroFree.PoissonS.BallMeasureBalance
 
 attribute [local instance] PoissonS.completionMeasurable PoissonS.completionBorel
 
-private theorem norm_lt_one_iff_le_inv_absNorm (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F)) (x : v.adicCompletion F) :
+section
+
+variable (F : Type) [Field F] [NumberField F] (v : HeightOneSpectrum (RingOfIntegers F))
+
+private theorem norm_lt_one_iff_le_inv_absNorm (x : v.adicCompletion F) :
     ‖x‖ < 1 ↔ ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ (-1 : ℤ) := by
   have hq : (0 : ℝ) < (v.asIdeal.absNorm : ℝ) := by
     exact_mod_cast (Nat.zero_lt_one.trans (HeightOneSpectrum.one_lt_absNorm v))
   by_cases hx : x = 0
   · simp [hx, (zpow_pos hq (-1)).le]
-  · have hv : Valued.v x ≠ 0 :=
-      (Valuation.ne_zero_iff (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)).mpr hx
-    rw [FinitePlace.norm_def, WithZeroMulInt.toNNReal_neg_apply _ hv, NNReal.coe_zpow]
+  · rw [FinitePlace.norm_def, WithZeroMulInt.toNNReal_neg_apply _ ((Valuation.ne_zero_iff Valued.v).mpr hx), NNReal.coe_zpow]
     rw [← zpow_zero (v.asIdeal.absNorm : ℝ)]
     have hq1 : (1 : ℝ) < (v.asIdeal.absNorm : ℝ) := by
       exact_mod_cast HeightOneSpectrum.one_lt_absNorm v
@@ -33,26 +34,24 @@ private theorem norm_lt_one_iff_le_inv_absNorm (F : Type) [Field F] [NumberField
     rw [zpow_lt_zpow_iff_right₀ hq1, zpow_le_zpow_iff_right₀ hq1]
     omega
 
-private theorem mem_maximalIdeal_iff_norm_lt_one (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F)) (x : v.adicCompletionIntegers F) :
+private theorem mem_maximalIdeal_iff_norm_lt_one (x : v.adicCompletionIntegers F) :
     x ∈ IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) ↔
       ‖(x : v.adicCompletion F)‖ < 1 := by
-  have h := Valuation.mem_maximalIdeal_iff (v.adicCompletion F)
-    (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰) (a := x)
-  exact h.trans Valued.toNormedField.norm_lt_one_iff.symm
+  exact (Valuation.mem_maximalIdeal_iff (v.adicCompletion F)
+    Valued.v).trans Valued.toNormedField.norm_lt_one_iff.symm
 
- noncomputable def residueEquiv (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F)) :
+ noncomputable def residueEquiv :
     (RingOfIntegers F ⧸ v.asIdeal) ≃+* IsLocalRing.ResidueField (v.adicCompletionIntegers F) :=
   (finitePlaceIdealResidueEquivCompletion v).trans
     (IsLocalRing.ResidueField.mapEquiv (finitePlaceCompletionIntegerRingEquiv v))
 
-private theorem residue_card (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F)) :
+private theorem residue_card :
     Nat.card (IsLocalRing.ResidueField (v.adicCompletionIntegers F)) =
       v.asIdeal.absNorm := by
   rw [← Nat.card_congr (residueEquiv F v).toEquiv, Ideal.absNorm_apply]
   rfl
+
+end
 
 set_option maxHeartbeats 800000 in
 
@@ -135,35 +134,9 @@ theorem local_ball_volume_one_step (F : Type) [Field F] [NumberField F]
   ext x
   exact (norm_lt_one_iff_le_inv_absNorm F v x).symm
 
-private theorem smul_ball {K : Type*} [NormedField K] (d : Kˣ) :
-    d • {x : K | ‖x‖ ≤ 1} = {x : K | ‖x‖ ≤ ‖(d : K)‖} := by
-  ext x
-  rw [Set.mem_smul_set]
-  constructor
-  · rintro ⟨y, hy, rfl⟩
-    change ‖(d : K) * y‖ ≤ ‖(d : K)‖
-    rw [norm_mul]
-    exact mul_le_of_le_one_right (norm_nonneg _) hy
-  · intro hx
-    refine ⟨(d : K)⁻¹ * x, ?_, ?_⟩
-    · change ‖(d : K)⁻¹ * x‖ ≤ 1
-      rw [norm_mul, norm_inv]
-      exact (inv_mul_le_iff₀ (norm_pos_iff.mpr d.ne_zero)).mpr (by simpa using hx)
-    · change (d : K) * ((d : K)⁻¹ * x) = x
-      rw [← mul_assoc, mul_inv_cancel₀ d.ne_zero, one_mul]
+private alias smul_ball := DedekindZetaZeroFree.CompletionHaarModule.CompletionBallMass.smul_ball
 
-private theorem mass_scale {K : Type*} [NormedField K] [IsUltrametricDist K]
-    [MeasurableSpace K] [BorelSpace K] [LocallyCompactSpace K]
-    (μ : Measure K) [μ.IsAddHaarMeasure] (d : Kˣ) :
-    μ.real {x | ‖x‖ ≤ ‖(d : K)‖} = (distribHaarChar K d : ℝ) * μ.real {x | ‖x‖ ≤ 1} := by
-  have hs : IsOpen {x : K | ‖x‖ ≤ 1} := by
-    simpa only [Metric.closedBall, dist_zero_right] using
-      (IsUltrametricDist.isOpen_closedBall (0 : K) (one_ne_zero : (1 : ℝ) ≠ 0))
-  have h := Measure.measure_isAddHaarMeasure_eq_smul_of_isOpen (DomMulAct.mk d • μ) μ hs
-  rw [addHaarScalarFactor_smul_eq_distribHaarChar μ d] at h
-  have hm : μ {x | ‖x‖ ≤ ‖(d : K)‖} = (distribHaarChar K d : ℝ≥0∞) * μ {x | ‖x‖ ≤ 1} := by
-    simpa only [Measure.domSMul_apply, Equiv.symm_apply_apply, ENNReal.smul_def, smul_eq_mul, smul_ball] using h
-  exact congrArg ENNReal.toReal hm |>.trans (by simp [Measure.real, ENNReal.toReal_mul])
+private alias mass_scale := DedekindZetaZeroFree.CompletionHaarModule.CompletionBallMass.mass_scale
 
 theorem local_ball_volume (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F))
@@ -234,58 +207,56 @@ namespace PoissonS
 
 attribute [local instance] completionMeasurable completionBorel
 
-def finiteBall (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : (v : S) → ℤ) :
+section
+
+variable (F : Type) [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+    (k : (v : S) → ℤ)
+
+def finiteBall :
     Set (PoissonFinite.Space F S) :=
   {x | ∀ v : S, ‖x v‖ ≤ (v.val.asIdeal.absNorm : ℝ) ^ (-k v)}
 
-def ballFractionalIdeal (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : (v : S) → ℤ) :
+def ballFractionalIdeal :
     FractionalIdeal (RingOfIntegers F)⁰ F :=
   ∏ v : S, (FractionalIdeal.coeIdeal v.val.asIdeal) ^ k v
 
-def ballArchLattice (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : (v : S) → ℤ) :
+def ballArchLattice :
     Submodule ℤ (PoissonArch.Space F) :=
   Submodule.map
     (((NumberField.mixedEmbedding.euclidean.toMixed F).symm.toLinearMap.restrictScalars ℤ).comp
       (NumberField.mixedEmbedding F).toIntAlgHom.toLinearMap)
     ((ballFractionalIdeal F S k : Submodule (RingOfIntegers F) F).restrictScalars ℤ)
 
-def finiteBallVolume (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : (v : S) → ℤ)
+def finiteBallVolume
     (μ : (v : S) → Measure (v.val.adicCompletion F)) : ℝ :=
   (Measure.pi μ).real (finiteBall F S k)
 
-def ballArchCovolume (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : (v : S) → ℤ) : ℝ :=
+def ballArchCovolume : ℝ :=
   ZLattice.covolume (ballArchLattice F S k) (PoissonArch.traceMeasure F)
 
-theorem ballFractionalIdeal_ne_zero (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : (v : S) → ℤ) :
+theorem ballFractionalIdeal_ne_zero :
     ballFractionalIdeal F S k ≠ 0 := by
   apply Finset.prod_ne_zero_iff.mpr
   intro v hv
   apply zpow_ne_zero
   exact FractionalIdeal.coeIdeal_ne_zero.mpr v.val.ne_bot
 
-theorem ballArchLattice_eq (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : (v : S) → ℤ) :
+theorem ballArchLattice_eq :
     ballArchLattice F S k = PoissonArch.idealLattice F
       (Units.mk0 (ballFractionalIdeal F S k) (ballFractionalIdeal_ne_zero F S k)) := by
   ext y
   rw [PoissonArch.mem_idealLattice]
-  change (∃ x : F, x ∈ ballFractionalIdeal F S k ∧ _ = y) ↔ _
   rfl
 
-theorem ballArchCovolume_eq (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : (v : S) → ℤ) :
+theorem ballArchCovolume_eq :
     ballArchCovolume F S k = Real.sqrt |(NumberField.discr F : ℝ)| *
       ∏ v : S, (v.val.asIdeal.absNorm : ℝ) ^ k v := by
   rw [ballArchCovolume, ballArchLattice_eq]
   rw [← PoissonArch.covolume, PoissonArch.covolume_eq_sqrt_discr_mul_absNorm]
   congr 1
   simp [ballFractionalIdeal, map_prod, map_zpow₀, FractionalIdeal.coeIdeal_absNorm]
+
+end
 
 theorem completion_secondCountable (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F)) : SecondCountableTopology (v.adicCompletion F) := by
@@ -295,37 +266,20 @@ theorem completion_secondCountable (F : Type) [Field F] [NumberField F]
   infer_instance
 attribute [local instance] completion_secondCountable
 
-theorem completion_sigmaFinite (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (μ : (v : S) → Measure (v.val.adicCompletion F))
-    [hμ : ∀ v, (μ v).IsAddHaarMeasure] (hnorm : LocalNormalization F S μ)
-    (v : S) : SigmaFinite (μ v) := by
-  letI : IsLocallyFiniteMeasure (μ v) :=
-    isLocallyFiniteMeasure_of_vaddInvariant (v.val.adicCompletion F)
-      (show IsOpen {x : v.val.adicCompletion F | ‖x‖ ≤ 1} from by
-        simpa [Metric.closedBall, dist_zero_right] using
-          IsUltrametricDist.isOpen_closedBall (0 : v.val.adicCompletion F) one_ne_zero)
-      ⟨0, by simp⟩ (by rw [hnorm v]; exact ENNReal.ofReal_ne_top)
-  infer_instance
+alias completion_sigmaFinite := localMeasure_sigmaFinite
 
 theorem integerVolume_pos (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F)) : 0 < integerVolume F v := by
-  have hqv : (0 : ℝ) < (v.asIdeal.absNorm : ℝ) := by
-    have := NumberField.RingOfIntegers.HeightOneSpectrum.one_lt_absNorm v
-    exact_mod_cast (lt_trans Nat.zero_lt_one this)
   unfold integerVolume
-  exact inv_pos.mpr (Real.sqrt_pos.mpr (zpow_pos hqv _))
+  refine inv_pos.mpr (Real.sqrt_pos.mpr (zpow_pos ?_ _))
+  have := NumberField.RingOfIntegers.HeightOneSpectrum.one_lt_absNorm v
+  exact_mod_cast (lt_trans Nat.zero_lt_one this)
 
-theorem local_ball_volume (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F))
-    (μv : Measure (v.adicCompletion F)) [μv.IsAddHaarMeasure]
-    (h1 : μv {x | ‖x‖ ≤ 1} = ENNReal.ofReal (integerVolume F v)) (k : ℤ) :
-    μv.real {x | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ (-k)}
-      = (v.asIdeal.absNorm : ℝ) ^ (-k) * integerVolume F v := by
-  exact BallMeasureBalance.local_ball_volume F v μv h1 k
+alias local_ball_volume := BallMeasureBalance.local_ball_volume
 
-theorem finiteBallVolume_eq_prod (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : (v : S) → ℤ)
+variable (F : Type) [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+
+theorem finiteBallVolume_eq_prod (k : (v : S) → ℤ)
     (μ : (v : S) → Measure (v.val.adicCompletion F))
     [hμ : ∀ v, (μ v).IsAddHaarMeasure] (hnorm : LocalNormalization F S μ) :
     finiteBallVolume F S k μ = ∏ v : S,
@@ -340,8 +294,7 @@ theorem finiteBallVolume_eq_prod (F : Type) [Field F] [NumberField F]
   rw [hset]
   simp [Measure.real, Measure.pi_pi, ENNReal.toReal_prod]
 
-theorem ball_measure_balance (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (hS : ContainsDifferent F S)
+theorem ball_measure_balance (hS : ContainsDifferent F S)
     (k : (v : S) → ℤ) (μ : (v : S) → Measure (v.val.adicCompletion F))
     [hμ : ∀ v, (μ v).IsAddHaarMeasure] (hnorm : LocalNormalization F S μ) :
     0 < finiteBallVolume F S k μ ∧

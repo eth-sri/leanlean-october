@@ -8,39 +8,29 @@ namespace DedekindZetaZeroFree.AbelianQuotient
 
 open scoped NumberField
 
-theorem weightedIdealSummability
-    (K : Type*) [Field K] [NumberField K]
-    (w : Ideal (𝓞 K) → ℂ)
-    (hmul : ∀ I J, w (I * J) = w I * w J)
-    (htop : w ⊤ = 1) (hbot : w ⊥ = 0)
-    (hnorm : ∀ I, ‖w I‖ ≤ 1)
-    (s : ℂ) (hs : 1 < s.re) :
+variable (K : Type*) [Field K] [NumberField K] (w : Ideal (𝓞 K) → ℂ)
+    (hmul : ∀ I J, w (I * J) = w I * w J) (htop : w ⊤ = 1) (hbot : w ⊥ = 0) (hnorm : ∀ I, ‖w I‖ ≤ 1)
+    (s : ℂ) (hs : 1 < s.re)
+
+include hmul htop hbot hnorm hs in
+theorem weightedIdealSummability :
     Summable (fun I : Ideal (𝓞 K) =>
       ‖w I * (Ideal.absNorm I : ℂ) ^ (-s)‖) := by
 
-  have hle : ∀ I : Ideal (𝓞 K),
-      ‖w I * (Ideal.absNorm I : ℂ) ^ (-s)‖ ≤
-        ‖DedekindZetaZeroFree.Odlyzko.idealInverseNormPower K s I‖ := by
-    intro I
-    by_cases hI : I = ⊥
-    · subst hI
-      simp [hbot, DedekindZetaZeroFree.Odlyzko.idealInverseNormPower]
-    · have hI0 : I ≠ 0 := hI
-      rw [DedekindZetaZeroFree.Odlyzko.idealInverseNormPower_of_ne_zero K s hI0, norm_mul]
-      calc ‖w I‖ * ‖(Ideal.absNorm I : ℂ) ^ (-s)‖
-          ≤ 1 * ‖(Ideal.absNorm I : ℂ) ^ (-s)‖ :=
-            mul_le_mul_of_nonneg_right (hnorm I) (norm_nonneg _)
-        _ = ‖(Ideal.absNorm I : ℂ) ^ (-s)‖ := one_mul _
-  exact Summable.of_nonneg_of_le (fun I => norm_nonneg _) hle
+  refine Summable.of_nonneg_of_le (fun I => norm_nonneg _) ?_
     (DedekindZetaZeroFree.Odlyzko.summable_norm_idealInverseNormPower K hs)
+  intro I
+  by_cases hI : I = ⊥
+  · subst hI
+    simp [hbot, DedekindZetaZeroFree.Odlyzko.idealInverseNormPower]
+  · rw [DedekindZetaZeroFree.Odlyzko.idealInverseNormPower_of_ne_zero K s hI, norm_mul]
+    calc _
+        ≤ 1 * ‖(Ideal.absNorm I : ℂ) ^ (-s)‖ :=
+          mul_le_mul_of_nonneg_right (hnorm I) (norm_nonneg _)
+      _ = ‖(Ideal.absNorm I : ℂ) ^ (-s)‖ := one_mul _
 
-theorem weightedIdealSummandHom_exists
-    (K : Type*) [Field K] [NumberField K]
-    (w : Ideal (𝓞 K) → ℂ)
-    (hmul : ∀ I J, w (I * J) = w I * w J)
-    (htop : w ⊤ = 1) (hbot : w ⊥ = 0)
-    (hnorm : ∀ I, ‖w I‖ ≤ 1)
-    (s : ℂ) (hs : 1 < s.re) :
+include hmul htop hbot hnorm hs in
+theorem weightedIdealSummandHom_exists :
     ∃ g : Ideal (𝓞 K) →*₀ ℂ,
       ∀ I, g I = w I * (Ideal.absNorm I : ℂ) ^ (-s) := by
 

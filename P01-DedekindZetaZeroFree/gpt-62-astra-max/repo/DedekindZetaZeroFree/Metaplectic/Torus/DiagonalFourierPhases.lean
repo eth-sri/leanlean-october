@@ -11,12 +11,10 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open scoped Classical NumberField
-open _root_.DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw renaming centralSingle → centralSingle
-open _root_.DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw renaming centralProduct_single → centralProduct_single
-open _root_.DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw renaming centralTupleMap_single → centralTupleMap_single
+open _root_.DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw (centralSingle centralProduct_single centralTupleMap_single)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem restrictedLift_centralTuple (e : KPAdelicCoverRestrictedProduct.CentralTuples F) :
     restrictedLift R (KPAdelicCoverRestrictedProduct.centralTupleMap F R.A.zeta12 R.A.primitive_zeta12 e) =
@@ -34,8 +32,6 @@ theorem restrictedLift_centralTuple (e : KPAdelicCoverRestrictedProduct.CentralT
     refine ⟨s / e, ?_, rfl⟩
     change KPAdelicCoverRestrictedProduct.centralProduct F (s / e) = 1
     rw [map_div]
-    change KPAdelicCoverRestrictedProduct.centralProduct F
-      (centralSingle F _ (KPAdelicCoverRestrictedProduct.centralProduct F e)) / _ = 1
     change KPAdelicCoverCertificatesRaw.centralProduct F
       (centralSingle F _ (KPAdelicCoverRestrictedProduct.centralProduct F e)) / _ = 1
     rw [centralProduct_single]
@@ -104,9 +100,7 @@ theorem sDiagonalTuple_mul (x y : R.A.G) :
       change Units.map (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr p)).toMonoidHom (localIdele R x) = _ at hx
       change Units.map (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr p)).toMonoidHom (localIdele R y) = _ at hy
       rw [hx, hy]
-    · rw [sDiagonalDefect_off R x y _ (by
-        intro q he
-        exact hp ((Sum.inr_injective he : p = q.val).symm ▸ q.property)),
+    · rw [sDiagonalDefect_off R x y _ (fun q he => hp ((Sum.inr_injective he : p = q.val).symm ▸ q.property)),
         DigitMasks.localIdele_exterior R x p hp, DigitMasks.localIdele_exterior R y p hp]
       have he := (KPHilbert.B6_laws F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p)).2.2.2.2.1 (1 : (p.adicCompletion F)ˣ) 1
       simp only [one_pow] at he
@@ -122,7 +116,6 @@ theorem sDiagonalDefect_scalar {N : TraceHaarTransport R} (C : JointUpperVanishi
     rw [map_prod]
     apply Finset.prod_congr rfl
     intro p _
-    change KPAdelicCoverCertificatesRaw.centralProduct F (centralSingle F _ _) = _
     exact centralProduct_single F _ _
   rw [hp, map_prod, Units.coe_prod]
   change (∏ p : R.A.Sf, KPSourceConvention.sourceC F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) (x.2 p) (y.2 p)) = _
@@ -142,8 +135,7 @@ theorem fourier_left_central {Q : AdmissibleFlatSources R} (T : Realization R Q)
       (KPAdelicCoverRestrictedProduct.pglCentralInjection F R.A.zeta12 R.A.primitive_zeta12 e * g) =
       (KPGlobalTorusFunctionData.iota F R.A.zeta12 R.A.primitive_zeta12 e : ℂ) * fourier R Q.dq (T.theta v) g := by
   have hc (a : Group R) : Commute a
-      (KPAdelicCoverRestrictedProduct.pglCentralInjection F R.A.zeta12 R.A.primitive_zeta12 e) := by
-    exact ((Subgroup.mem_center_iff.mp (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F R.A.zeta12 R.A.primitive_zeta12 ⟨e,rfl⟩)) a)
+      (KPAdelicCoverRestrictedProduct.pglCentralInjection F R.A.zeta12 R.A.primitive_zeta12 e) := ((Subgroup.mem_center_iff.mp (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F R.A.zeta12 R.A.primitive_zeta12 ⟨e,rfl⟩)) a)
   unfold MomentSources.fourier
   rw [← integral_const_mul]
   apply integral_congr_ae

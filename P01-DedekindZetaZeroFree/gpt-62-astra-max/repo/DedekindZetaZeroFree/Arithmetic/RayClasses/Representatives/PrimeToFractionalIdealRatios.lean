@@ -19,6 +19,7 @@ theorem exists_integralIdealUnit_ratio (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
       A ⊔ m = ⊤ ∧ B ⊔ m = ⊤ ∧
         (J : ClassFieldTheory.NumberFieldFractionalIdealGroup F) =
           integralIdealUnit A hA * (integralIdealUnit B hB)⁻¹ := by
+  let FractionalIdeal₀ := FractionalIdeal (nonZeroDivisors (𝓞 F)) F
   classical
   let e := ClassFieldTheory.NumberFieldFractionalIdealGroup.countVector
     (J : ClassFieldTheory.NumberFieldFractionalIdealGroup F)
@@ -27,7 +28,7 @@ theorem exists_integralIdealUnit_ratio (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     intro v hv
     have hv0 : FractionalIdeal.count F v
         ((J : ClassFieldTheory.NumberFieldFractionalIdealGroup F) :
-          FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ≠ 0 := by
+          FractionalIdeal₀) ≠ 0 := by
       simpa [s, e] using (Finsupp.mem_support_iff.mp hv)
     have hnot : ¬m ≤ v.asIdeal := by
       intro hle
@@ -49,9 +50,9 @@ theorem exists_integralIdealUnit_ratio (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
   · exact Ideal.prod_sup_eq_top (fun v hv => Ideal.pow_sup_eq_top (hcop v hv))
   · apply Units.ext
     change ((J : ClassFieldTheory.NumberFieldFractionalIdealGroup F) :
-        FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
-      (A : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) *
-        (B : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)⁻¹
+        FractionalIdeal₀) =
+      (A : FractionalIdeal₀) *
+        (B : FractionalIdeal₀)⁻¹
     have hj : ClassFieldTheory.NumberFieldFractionalIdealGroup.factorization
         (Multiplicative.ofAdd e) = (J : ClassFieldTheory.NumberFieldFractionalIdealGroup F) := by
       apply ClassFieldTheory.NumberFieldFractionalIdealGroup.ext_count
@@ -59,13 +60,13 @@ theorem exists_integralIdealUnit_ratio (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
       rw [ClassFieldTheory.NumberFieldFractionalIdealGroup.count_factorization]
       exact ClassFieldTheory.NumberFieldFractionalIdealGroup.countVector_apply _ v
     rw [← hj, ClassFieldTheory.NumberFieldFractionalIdealGroup.factorization_val]
-    change (∏ v ∈ s, (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ^ e v) = _
-    have ha : (A : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
-        ∏ v ∈ s, (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ^ (e v).toNat := by
+    change (∏ v ∈ s, (v.asIdeal : FractionalIdeal₀) ^ e v) = _
+    have ha : (A : FractionalIdeal₀) =
+        ∏ v ∈ s, (v.asIdeal : FractionalIdeal₀) ^ (e v).toNat := by
       exact (map_prod (FractionalIdeal.coeIdealHom (nonZeroDivisors (𝓞 F)) F) _ _).trans
         (Finset.prod_congr rfl (fun v _ => FractionalIdeal.coeIdeal_pow (nonZeroDivisors (𝓞 F)) F _ _))
-    have hb : (B : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
-        ∏ v ∈ s, (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ^ (-e v).toNat := by
+    have hb : (B : FractionalIdeal₀) =
+        ∏ v ∈ s, (v.asIdeal : FractionalIdeal₀) ^ (-e v).toNat := by
       exact (map_prod (FractionalIdeal.coeIdealHom (nonZeroDivisors (𝓞 F)) F) _ _).trans
         (Finset.prod_congr rfl (fun v _ => FractionalIdeal.coeIdeal_pow (nonZeroDivisors (𝓞 F)) F _ _))
     rw [ha, hb, ← Finset.prod_inv_distrib, ← Finset.prod_mul_distrib]

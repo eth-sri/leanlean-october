@@ -13,9 +13,9 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualFiniteAnchor
 open KPMsActualAngularSource KPMsNativeOffsetMass KPMsNativeOffsetComparison
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable (V : Level F ζ hζ)
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    (V : Level F ζ hζ)
 
 def anchorAverage (dk : Measure (KPMsGreenFlux.K F)) (φ : G F ζ hζ → ℂ)
     (ω : KPMsFixedHaarDisintegration.Omega

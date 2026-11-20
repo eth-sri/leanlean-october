@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 namespace ValuationTheory
@@ -41,45 +35,6 @@ namespace DiscreteValuationField
 namespace ValuedExtension
 
 open ValuationTheory.DiscreteValuationField.Valuation
-
-/-- If an element maps into the maximal ideal of a local target ring, then the
-original element is in the maximal ideal of the local source ring.  This is the
-automatic half of the center/maximal-ideal condition used in the Henselian
-finite-extension frontier. -/
-theorem mem_maximalIdeal_of_map_mem_maximalIdeal
-    {R : Type u} {S : Type w} [CommRing R] [CommRing S]
-    [IsLocalRing R] [IsLocalRing S] (f : R →+* S) {x : R}
-    (hx : f x ∈ IsLocalRing.maximalIdeal S) :
-    x ∈ IsLocalRing.maximalIdeal R := by
-  rw [IsLocalRing.mem_maximalIdeal, mem_nonunits_iff] at hx ⊢
-  intro hxunit
-  exact hx (hxunit.map f)
-
-/-- Integral valuation overrings have maximal center.
-
-For a valuation overring `R ≤ S`, if the inclusion is integral, then the center
-of `S` on `R` is the maximal ideal of `R`.  This is the usable form needed in
-the Henselian finite-extension frontier, where the remaining mathematical work
-is to prove integrality of the relevant extension valuation-ring inclusions. -/
-theorem idealOfLE_eq_maximalIdeal_of_isIntegral
-    {M : Type u} [Field M] (R S : ValuationSubring M) (hRS : R ≤ S)
-    (hIntegral : (R.inclusion S hRS).IsIntegral) :
-    ValuationSubring.idealOfLE R S hRS = IsLocalRing.maximalIdeal R := by
-  exact ((IsLocalRing.local_hom_TFAE (R.inclusion S hRS)).out 1 5).mp
-    (hIntegral.isLocalHom (by
-      intro x y hxy
-      apply Subtype.ext
-      calc
-        (x : M) = ((R.inclusion S hRS x : S) : M) := rfl
-        _ = ((R.inclusion S hRS y : S) : M) := congrArg Subtype.val hxy
-        _ = (y : M) := rfl))
-
-/-- Finite valuation overrings have maximal center. -/
-theorem idealOfLE_eq_maximalIdeal_of_finite
-    {M : Type u} [Field M] (R S : ValuationSubring M) (hRS : R ≤ S)
-    (hFinite : (R.inclusion S hRS).Finite) :
-    ValuationSubring.idealOfLE R S hRS = IsLocalRing.maximalIdeal R :=
-  idealOfLE_eq_maximalIdeal_of_isIntegral R S hRS hFinite.to_isIntegral
 
 variable {K : Type u} {L : Type w} [Field K] [Field L]
 variable [Algebra K L] [FiniteDimensional K L]
@@ -141,12 +96,10 @@ theorem integralClosureValuationSubringIntegerMapOfMemOrInv_injective
   intro a b hab
   apply Subtype.ext
   apply FaithfulSMul.algebraMap_injective K L
-  have hvalEq := congrArg
+  simpa using congrArg
     (fun x :
       integralClosureValuationSubringOfMemOrInv
-        (L := L) base.valuation hval => (x : L)) hab
-  change algebraMap K L (a : K) = algebraMap K L (b : K) at hvalEq
-  exact hvalEq
+         base.valuation hval => (x : L)) hab
 
 /- Numerical defect is a derived quotient; defectlessness itself is the
 canonical equality `degree = e * f` defined in `Extensions`.  Positivity
@@ -192,13 +145,13 @@ theorem idealOfLE_comap_integralClosureValuationSubringIntegerMap_eq_maximalIdea
       base.maximalIdeal := by
   let B :=
     integralClosureValuationSubringOfMemOrInv
-      (L := L) base.valuation hval
-  let hvL_le : B ≤ vL.valuationSubring :=
+       base.valuation hval
+  let hvL_le :=
     integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-      (L := L) base.valuation vL hval
-  let i : base.valuationSubring →+* B :=
+       base.valuation vL hval
+  let i :=
     integralClosureValuationSubringIntegerMapOfMemOrInv
-      (K := K) (L := L) base hval
+        base hval
   apply Ideal.ext
   intro a
   rw [Ideal.mem_comap]
@@ -207,15 +160,10 @@ theorem idealOfLE_comap_integralClosureValuationSubringIntegerMap_eq_maximalIdea
     a ∈ IsLocalRing.maximalIdeal base.valuation.valuationSubring
   rw [Valuation.mem_maximalIdeal_iff (v := vL)]
   rw [Valuation.mem_maximalIdeal_iff (v := base.valuation)]
-  change vL
-      ((B.inclusion vL.valuationSubring hvL_le (i a) :
-        vL.valuationSubring) : L) < 1 ↔
-    base.valuation (a : K) < 1
   have hcoe :
       ((B.inclusion vL.valuationSubring hvL_le (i a) :
         vL.valuationSubring) : L) =
-        algebraMap K L (a : K) := by
-    rfl
+        algebraMap K L (a : K) := rfl
   rw [hcoe]
   exact Valuation.HasExtension.val_map_lt_one_iff base.valuation vL (a : K)
 
@@ -251,39 +199,34 @@ theorem prime_eq_maximalIdeal_of_comap_integralClosureValuationSubringIntegerMap
           (L := L) base.valuation hval) := by
   let B :=
     integralClosureValuationSubringOfMemOrInv
-      (L := L) base.valuation hval
-  let i : base.valuationSubring →+* B :=
+       base.valuation hval
+  let i :=
     integralClosureValuationSubringIntegerMapOfMemOrInv
-      (K := K) (L := L) base hval
-  let : base.valuation.HasExtension B.valuation :=
+        base hval
+  let :=
     integralClosureValuationSubringOfMemOrInv_hasExtension
-      (L := L) base.valuation hval
-  let : IsFractionRing base.valuationSubring K :=
-    base_valuationSubring_isFractionRing (K := K) base
-  let : IsDiscreteValuationRing base.valuationSubring :=
+       base.valuation hval
+  let :=
+    base_valuationSubring_isFractionRing base
+  let :=
     base.valuationSubring_isDiscreteValuationRing
   let : IsDedekindDomain base.valuationSubring := inferInstance
-  let : Algebra base.valuationSubring B := RingHom.toAlgebra i
+  let := RingHom.toAlgebra i
   let : IsScalarTower base.valuationSubring B L :=
     IsScalarTower.of_algebraMap_eq (by
       intro a
       rfl)
-  let : IsIntegralClosure B base.valuationSubring L :=
+  let :=
     integralClosureValuationSubringOfMemOrInv_isIntegralClosure
-      (L := L) base.valuation hval
-  let : IsDedekindDomain B :=
+       base.valuation hval
+  let :=
     IsIntegralClosure.isDedekindDomain base.valuationSubring K L B
-  have hi : Function.Injective i :=
+  have hi :=
     integralClosureValuationSubringIntegerMapOfMemOrInv_injective
-      (K := K) (L := L) base hval
+        base hval
   have hP_ne_bot : P ≠ ⊥ := by
-    have hnot_le_bot : ¬ base.maximalIdeal ≤ ⊥ := by
-      intro hle
-      exact base.maximalIdeal_ne_bot (le_antisymm hle bot_le)
-    obtain ⟨a, ha_max, ha_not_bot⟩ := Set.not_subset.mp hnot_le_bot
-    have ha_ne_zero : a ≠ 0 := by
-      intro ha
-      exact ha_not_bot (by simp [ha])
+    obtain ⟨a, ha_max, ha_not_bot⟩ := Set.not_subset.mp (fun hle => base.maximalIdeal_ne_bot (le_antisymm hle bot_le))
+    have ha_ne_zero : a ≠ 0 := fun ha => ha_not_bot (by simp [ha])
     intro hPbot
     have ha_comap : a ∈ P.comap i := by
       simpa [B, i, hcomap] using ha_max
@@ -304,8 +247,7 @@ theorem ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_hasExtension
     [Module.Finite base.valuationSubring target.valuationSubring]
     [IsScalarTower base.valuationSubring target.valuationSubring L] :
     Ideal.ramificationIdx' base.maximalIdeal target.maximalIdeal *
-      target.maximalIdeal.inertiaDeg base.valuationSubring = Module.finrank K L := by
-  exact (isDefectless_of_moduleFinite base.toDVF target.toDVF).symm
+      target.maximalIdeal.inertiaDeg base.valuationSubring = Module.finrank K L := (isDefectless_of_moduleFinite base.toDVF target.toDVF).symm
 
 /-- If the target valuation ring is the integral closure of the base valuation
 ring in a finite separable field extension, then the local-Dedekind
@@ -318,391 +260,10 @@ theorem ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_isIntegralClosure
     [IsIntegralClosure target.valuationSubring base.valuationSubring L] :
     Ideal.ramificationIdx' base.maximalIdeal target.maximalIdeal *
       target.maximalIdeal.inertiaDeg base.valuationSubring = Module.finrank K L := by
-  let : Module.Finite base.valuationSubring target.valuationSubring :=
+  let :=
     moduleFinite_target_valuationSubring_of_isIntegralClosure
-      (K := K) (L := L) base target
-  exact ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_hasExtension
-    (K := K) (L := L) base target
-
-omit [FiniteDimensional K L] in
-/-- Local-inclusion form of the integral-closure frontier for the chosen
-target valuation ring.  Once the actual integral closure has the
-valuation-ring dichotomy, a local inclusion from the constructed
-integral-closure valuation subring into the target valuation ring identifies
-the target valuation ring with the actual integral closure. -/
-theorem target_valuationSubring_isIntegralClosure_of_integralClosure_mem_or_inv_of_local_inclusion
-    (base : CompleteDVF.{u, v} K) (target : CompleteDVF.{w, x} L)
-    [base.valuation.HasExtension target.valuation]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetLocal :
-      IsLocalHom
-        ((integralClosureValuationSubringOfMemOrInv
-            (L := L) base.valuation hval).inclusion
-          target.valuation.valuationSubring
-          (integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-            (L := L) base.valuation target.valuation hval))) :
-    IsIntegralClosure target.valuationSubring base.valuationSubring L := by
-  let B :=
-    integralClosureValuationSubringOfMemOrInv
-      (L := L) base.valuation hval
-  have htarget_le : B ≤ target.valuation.valuationSubring :=
-    integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-      (L := L) base.valuation target.valuation hval
-  have htarget_eq : target.valuation.valuationSubring = B := by
-    let : IsLocalHom (B.inclusion target.valuation.valuationSubring htarget_le) :=
-      htargetLocal
-    exact
-      valuationSubring_eq_of_le_of_inclusion_isLocalHom
-        B target.valuation.valuationSubring htarget_le
-  let : base.valuation.HasExtension B.valuation :=
-    integralClosureValuationSubringOfMemOrInv_hasExtension
-      (L := L) base.valuation hval
-  have hBIntegralClosure :
-      IsIntegralClosure B base.valuationSubring L :=
-    integralClosureValuationSubringOfMemOrInv_isIntegralClosure
-      (L := L) base.valuation hval
-  change IsIntegralClosure target.valuation.valuationSubring
-    base.valuationSubring L
-  rw [htarget_eq]
-  exact hBIntegralClosure
-
-omit [FiniteDimensional K L] in
-/-- Center-prime form of the same integral-closure bridge.  This is the form
-expected after the Henselian finite-extension argument proves that the center
-of the target valuation ring on the constructed integral-closure valuation
-ring is the maximal ideal. -/
-theorem
-target_valuationSubring_isIntegralClosure_of_integralClosure_mem_or_inv_of_center_eq_maximalIdeal
-    (base : CompleteDVF.{u, v} K) (target : CompleteDVF.{w, x} L)
-    [base.valuation.HasExtension target.valuation]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetCenter :
-      ValuationSubring.idealOfLE
-        (integralClosureValuationSubringOfMemOrInv
-          (L := L) base.valuation hval)
-        target.valuation.valuationSubring
-        (integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-          (L := L) base.valuation target.valuation hval) =
-          IsLocalRing.maximalIdeal
-            (integralClosureValuationSubringOfMemOrInv
-              (L := L) base.valuation hval)) :
-    IsIntegralClosure target.valuationSubring base.valuationSubring L := by
-  let B :=
-    integralClosureValuationSubringOfMemOrInv
-      (L := L) base.valuation hval
-  have htarget_le : B ≤ target.valuation.valuationSubring :=
-    integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-      (L := L) base.valuation target.valuation hval
-  have htarget_eq : target.valuation.valuationSubring = B :=
-    valuationSubring_eq_of_le_of_idealOfLE_eq_maximalIdeal
-      B target.valuation.valuationSubring htarget_le htargetCenter
-  let : base.valuation.HasExtension B.valuation :=
-    integralClosureValuationSubringOfMemOrInv_hasExtension
-      (L := L) base.valuation hval
-  have hBIntegralClosure :
-      IsIntegralClosure B base.valuationSubring L :=
-    integralClosureValuationSubringOfMemOrInv_isIntegralClosure
-      (L := L) base.valuation hval
-  change IsIntegralClosure target.valuation.valuationSubring
-    base.valuationSubring L
-  rw [htarget_eq]
-  exact hBIntegralClosure
-
-omit [FiniteDimensional K L] in
-/-- Integral-inclusion form of the target integral-closure bridge.  Once the
-actual integral closure has the valuation-ring dichotomy, integrality of the
-inclusion from that constructed valuation ring into the target valuation ring
-forces the target to be the actual integral closure. -/
-theorem
-target_valuationSubring_isIntegralClosure_of_integralClosure_mem_or_inv_of_integral_inclusion
-    (base : CompleteDVF.{u, v} K) (target : CompleteDVF.{w, x} L)
-    [base.valuation.HasExtension target.valuation]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetIntegral :
-      let B :=
-        integralClosureValuationSubringOfMemOrInv
-          (L := L) base.valuation hval
-      let htarget_le : B ≤ target.valuation.valuationSubring :=
-        integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-          (L := L) base.valuation target.valuation hval
-      (B.inclusion target.valuation.valuationSubring htarget_le).IsIntegral) :
-    IsIntegralClosure target.valuationSubring base.valuationSubring L := by
-  refine (
-target_valuationSubring_isIntegralClosure_of_integralClosure_mem_or_inv_of_center_eq_maximalIdeal
-    (K := K) (L := L) base target hval ?_)
-  let B :=
-    integralClosureValuationSubringOfMemOrInv
-      (L := L) base.valuation hval
-  let htarget_le : B ≤ target.valuation.valuationSubring :=
-    integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-      (L := L) base.valuation target.valuation hval
-  exact idealOfLE_eq_maximalIdeal_of_isIntegral B target.valuation.valuationSubring
-    htarget_le (by simpa [B, htarget_le] using htargetIntegral)
-
-omit [FiniteDimensional K L] in
-/-- Elementwise center form of the target integral-closure bridge. -/
-theorem target_valuationSubring_isIntegralClosure_of_integralClosure_mem_or_inv_of_center_mem_iff
-    (base : CompleteDVF.{u, v} K) (target : CompleteDVF.{w, x} L)
-    [base.valuation.HasExtension target.valuation]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetCenterMem :
-      let B :=
-        integralClosureValuationSubringOfMemOrInv
-          (L := L) base.valuation hval
-      let htarget_le : B ≤ target.valuation.valuationSubring :=
-        integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-          (L := L) base.valuation target.valuation hval
-      ∀ x : B,
-        B.inclusion target.valuation.valuationSubring htarget_le x ∈
-            IsLocalRing.maximalIdeal target.valuation.valuationSubring ↔
-          x ∈ IsLocalRing.maximalIdeal B) :
-    IsIntegralClosure target.valuationSubring base.valuationSubring L := by
-  refine (
-target_valuationSubring_isIntegralClosure_of_integralClosure_mem_or_inv_of_center_eq_maximalIdeal
-    (K := K) (L := L) base target hval ?_)
-  let B :=
-    integralClosureValuationSubringOfMemOrInv
-      (L := L) base.valuation hval
-  let htarget_le : B ≤ target.valuation.valuationSubring :=
-    integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-      (L := L) base.valuation target.valuation hval
-  exact
-    idealOfLE_eq_maximalIdeal_of_mem_maximalIdeal_iff
-      B target.valuation.valuationSubring htarget_le
-      (by simpa [B, htarget_le] using htargetCenterMem)
-
-/-- Module-finiteness of the target valuation ring from the Henselian
-frontier-shaped hypotheses: valuative dichotomy for the actual integral
-closure plus local inclusion into the target. -/
-theorem moduleFinite_target_valuationSubring_of_integralClosure_mem_or_inv_of_local_inclusion
-    (base : CompleteDVF.{u, v} K) (target : CompleteDVF.{w, x} L)
-    [base.valuation.HasExtension target.valuation]
-    [Algebra.IsSeparable K L]
-    [IsScalarTower base.valuationSubring target.valuationSubring L]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetLocal :
-      IsLocalHom
-        ((integralClosureValuationSubringOfMemOrInv
-            (L := L) base.valuation hval).inclusion
-          target.valuation.valuationSubring
-          (integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-            (L := L) base.valuation target.valuation hval))) :
-    Module.Finite base.valuationSubring target.valuationSubring := by
-  let : IsIntegralClosure target.valuationSubring base.valuationSubring L :=
-    target_valuationSubring_isIntegralClosure_of_integralClosure_mem_or_inv_of_local_inclusion
-      (K := K) (L := L) base target hval htargetLocal
-  exact moduleFinite_target_valuationSubring_of_isIntegralClosure
-    (K := K) (L := L) base target
-
-/-- Center-prime form of module-finiteness for the target valuation ring. -/
-theorem moduleFinite_target_valuationSubring_of_integralClosure_mem_or_inv_of_center_eq_maximalIdeal
-    (base : CompleteDVF.{u, v} K) (target : CompleteDVF.{w, x} L)
-    [base.valuation.HasExtension target.valuation]
-    [Algebra.IsSeparable K L]
-    [IsScalarTower base.valuationSubring target.valuationSubring L]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetCenter :
-      ValuationSubring.idealOfLE
-        (integralClosureValuationSubringOfMemOrInv
-          (L := L) base.valuation hval)
-        target.valuation.valuationSubring
-        (integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-          (L := L) base.valuation target.valuation hval) =
-          IsLocalRing.maximalIdeal
-            (integralClosureValuationSubringOfMemOrInv
-              (L := L) base.valuation hval)) :
-    Module.Finite base.valuationSubring target.valuationSubring := by
-  let : IsIntegralClosure target.valuationSubring base.valuationSubring L := (
-target_valuationSubring_isIntegralClosure_of_integralClosure_mem_or_inv_of_center_eq_maximalIdeal
-    (K := K) (L := L) base target hval htargetCenter)
-  exact moduleFinite_target_valuationSubring_of_isIntegralClosure
-    (K := K) (L := L) base target
-
-/-- Integral-inclusion form of module-finiteness for the target valuation
-ring. -/
-theorem moduleFinite_target_valuationSubring_of_integralClosure_mem_or_inv_of_integral_inclusion
-    (base : CompleteDVF.{u, v} K) (target : CompleteDVF.{w, x} L)
-    [base.valuation.HasExtension target.valuation]
-    [Algebra.IsSeparable K L]
-    [IsScalarTower base.valuationSubring target.valuationSubring L]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetIntegral :
-      let B :=
-        integralClosureValuationSubringOfMemOrInv
-          (L := L) base.valuation hval
-      let htarget_le : B ≤ target.valuation.valuationSubring :=
-        integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-          (L := L) base.valuation target.valuation hval
-      (B.inclusion target.valuation.valuationSubring htarget_le).IsIntegral) :
-    Module.Finite base.valuationSubring target.valuationSubring := by
-  let : IsIntegralClosure target.valuationSubring base.valuationSubring L :=
-    target_valuationSubring_isIntegralClosure_of_integralClosure_mem_or_inv_of_integral_inclusion
-      (K := K) (L := L) base target hval htargetIntegral
-  exact moduleFinite_target_valuationSubring_of_isIntegralClosure
-    (K := K) (L := L) base target
-
-/-- Elementwise center form of module-finiteness for the target valuation
-ring. -/
-theorem moduleFinite_target_valuationSubring_of_integralClosure_mem_or_inv_of_center_mem_iff
-    (base : CompleteDVF.{u, v} K) (target : CompleteDVF.{w, x} L)
-    [base.valuation.HasExtension target.valuation]
-    [Algebra.IsSeparable K L]
-    [IsScalarTower base.valuationSubring target.valuationSubring L]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetCenterMem :
-      let B :=
-        integralClosureValuationSubringOfMemOrInv
-          (L := L) base.valuation hval
-      let htarget_le : B ≤ target.valuation.valuationSubring :=
-        integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-          (L := L) base.valuation target.valuation hval
-      ∀ x : B,
-        B.inclusion target.valuation.valuationSubring htarget_le x ∈
-            IsLocalRing.maximalIdeal target.valuation.valuationSubring ↔
-          x ∈ IsLocalRing.maximalIdeal B) :
-    Module.Finite base.valuationSubring target.valuationSubring := by
-  let : IsIntegralClosure target.valuationSubring base.valuationSubring L :=
-    target_valuationSubring_isIntegralClosure_of_integralClosure_mem_or_inv_of_center_mem_iff
-      (K := K) (L := L) base target hval htargetCenterMem
-  exact moduleFinite_target_valuationSubring_of_isIntegralClosure
-    (K := K) (L := L) base target
-
-/-- Local-inclusion form of the local-Dedekind fundamental identity.  This is
-the degree bridge used after the Henselian proof supplies the valuative
-dichotomy and target local-overring condition. -/
-theorem
-ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_integralClosure_mem_or_inv_of_local_inclusion
-    (base : CompleteDVF.{u, v} K) (target : CompleteDVF.{w, x} L)
-    [base.valuation.HasExtension target.valuation]
-    [Algebra.IsSeparable K L]
-    [IsScalarTower base.valuationSubring target.valuationSubring L]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetLocal :
-      IsLocalHom
-        ((integralClosureValuationSubringOfMemOrInv
-            (L := L) base.valuation hval).inclusion
-          target.valuation.valuationSubring
-          (integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-            (L := L) base.valuation target.valuation hval))) :
-    Ideal.ramificationIdx' base.maximalIdeal target.maximalIdeal *
-      target.maximalIdeal.inertiaDeg base.valuationSubring = Module.finrank K L := by
-  let : IsIntegralClosure target.valuationSubring base.valuationSubring L :=
-    target_valuationSubring_isIntegralClosure_of_integralClosure_mem_or_inv_of_local_inclusion
-      (K := K) (L := L) base target hval htargetLocal
-  exact ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_isIntegralClosure
-    (K := K) (L := L) base target
-
-/-- Center-prime form of the local-Dedekind fundamental identity. -/
-theorem IntegralClosureMemOrInv.ideal_degree_eq_finrank_of_center_eq_maximalIdeal
-    (base : CompleteDVF.{u, v} K) (target : CompleteDVF.{w, x} L)
-    [base.valuation.HasExtension target.valuation]
-    [Algebra.IsSeparable K L]
-    [IsScalarTower base.valuationSubring target.valuationSubring L]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetCenter :
-      ValuationSubring.idealOfLE
-        (integralClosureValuationSubringOfMemOrInv
-          (L := L) base.valuation hval)
-        target.valuation.valuationSubring
-        (integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-          (L := L) base.valuation target.valuation hval) =
-          IsLocalRing.maximalIdeal
-            (integralClosureValuationSubringOfMemOrInv
-              (L := L) base.valuation hval)) :
-    Ideal.ramificationIdx' base.maximalIdeal target.maximalIdeal *
-      target.maximalIdeal.inertiaDeg base.valuationSubring = Module.finrank K L := by
-  let : IsIntegralClosure target.valuationSubring base.valuationSubring L := (
-target_valuationSubring_isIntegralClosure_of_integralClosure_mem_or_inv_of_center_eq_maximalIdeal
-    (K := K) (L := L) base target hval htargetCenter)
-  exact ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_isIntegralClosure
-    (K := K) (L := L) base target
-
-/-- Integral-inclusion form of the local-Dedekind fundamental identity. -/
-theorem
-ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_integralClosure_mem_or_inv_of_integral_inclusion
-    (base : CompleteDVF.{u, v} K) (target : CompleteDVF.{w, x} L)
-    [base.valuation.HasExtension target.valuation]
-    [Algebra.IsSeparable K L]
-    [IsScalarTower base.valuationSubring target.valuationSubring L]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetIntegral :
-      let B :=
-        integralClosureValuationSubringOfMemOrInv
-          (L := L) base.valuation hval
-      let htarget_le : B ≤ target.valuation.valuationSubring :=
-        integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-          (L := L) base.valuation target.valuation hval
-      (B.inclusion target.valuation.valuationSubring htarget_le).IsIntegral) :
-    Ideal.ramificationIdx' base.maximalIdeal target.maximalIdeal *
-      target.maximalIdeal.inertiaDeg base.valuationSubring = Module.finrank K L := by
-  let : IsIntegralClosure target.valuationSubring base.valuationSubring L :=
-    target_valuationSubring_isIntegralClosure_of_integralClosure_mem_or_inv_of_integral_inclusion
-      (K := K) (L := L) base target hval htargetIntegral
-  exact ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_isIntegralClosure
-    (K := K) (L := L) base target
-
-/-- Elementwise center form of the local-Dedekind fundamental identity. -/
-theorem
-ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_integralClosure_mem_or_inv_of_center_mem_iff
-    (base : CompleteDVF.{u, v} K) (target : CompleteDVF.{w, x} L)
-    [base.valuation.HasExtension target.valuation]
-    [Algebra.IsSeparable K L]
-    [IsScalarTower base.valuationSubring target.valuationSubring L]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetCenterMem :
-      let B :=
-        integralClosureValuationSubringOfMemOrInv
-          (L := L) base.valuation hval
-      let htarget_le : B ≤ target.valuation.valuationSubring :=
-        integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-          (L := L) base.valuation target.valuation hval
-      ∀ x : B,
-        B.inclusion target.valuation.valuationSubring htarget_le x ∈
-            IsLocalRing.maximalIdeal target.valuation.valuationSubring ↔
-          x ∈ IsLocalRing.maximalIdeal B) :
-    Ideal.ramificationIdx' base.maximalIdeal target.maximalIdeal *
-      target.maximalIdeal.inertiaDeg base.valuationSubring = Module.finrank K L := by
-  let : IsIntegralClosure target.valuationSubring base.valuationSubring L :=
-    target_valuationSubring_isIntegralClosure_of_integralClosure_mem_or_inv_of_center_mem_iff
-      (K := K) (L := L) base target hval htargetCenterMem
-  exact ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_isIntegralClosure
-    (K := K) (L := L) base target
+        base target
+  apply ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_hasExtension
 
 /-- A valued extension whose target is the integral closure is defectless. -/
 theorem isDefectless_of_isIntegralClosure
@@ -712,11 +273,8 @@ theorem isDefectless_of_isIntegralClosure
     [IsScalarTower base.valuationSubring target.valuationSubring L]
     [IsIntegralClosure target.valuationSubring base.valuationSubring L] :
     ValuedExtension.IsDefectless base.toDVF target.toDVF := by
-  change Module.finrank K L =
-    Ideal.ramificationIdx' base.maximalIdeal target.maximalIdeal *
-      target.maximalIdeal.inertiaDeg base.valuationSubring
   exact (ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_isIntegralClosure
-    (K := K) (L := L) base target).symm
+      base target).symm
 
 omit [FiniteDimensional K L] in
 /-- The target maximal ideal lies over the base maximal ideal for a valued
@@ -734,17 +292,14 @@ theorem residueDegree_eq_finrank_quotient
     (ValuedExtension.residueDegree base.toDVF target.toDVF) =
       Module.finrank
         (base.valuationSubring ⧸ base.maximalIdeal)
-        (target.valuationSubring ⧸ target.maximalIdeal) := by
-  exact Ideal.inertiaDeg_eq_of_isMaximal base.maximalIdeal target.maximalIdeal
+        (target.valuationSubring ⧸ target.maximalIdeal) := Ideal.inertiaDeg_eq_of_isMaximal base.maximalIdeal target.maximalIdeal
 
 omit [FiniteDimensional K L] in
 /-- The residue degree of a finite extension is strictly positive. -/
 theorem residueDegree_pos
     [Module.Finite base.valuationSubring target.valuationSubring] :
     0 < (ValuedExtension.residueDegree base.toDVF target.toDVF) := by
-  let : target.maximalIdeal.LiesOver base.maximalIdeal :=
-    (maximalIdeal_liesOver base target)
-  simpa [residueDegree, residueDegree] using
+  simpa [residueDegree] using
     (target.maximalIdeal.inertiaDeg_pos base.valuationSubring)
 
 omit [FiniteDimensional K L] in
@@ -761,19 +316,10 @@ theorem residueField_finiteDimensional_of_moduleFinite
   exact FiniteDimensional.of_finrank_pos h
 
 omit [FiniteDimensional K L] in
-/-- The residue degree of a finite extension is nonzero. -/
-theorem residueDegree_ne_zero
-    [Module.Finite base.valuationSubring target.valuationSubring] :
-    (ValuedExtension.residueDegree base.toDVF target.toDVF) ≠ 0 :=
-  Nat.ne_of_gt (residueDegree_pos base target)
-
-omit [FiniteDimensional K L] in
 /-- The ramification index of a finite extension is nonzero. -/
 theorem ramificationIndex_ne_zero
     [Module.IsTorsionFree base.valuationSubring target.valuationSubring] :
     (ValuedExtension.ramificationIndex base.toDVF target.toDVF) ≠ 0 := by
-  let : target.maximalIdeal.LiesOver base.maximalIdeal :=
-    (maximalIdeal_liesOver base target)
   simpa [ramificationIndex] using
     (Ideal.IsDedekindDomain.ramificationIdx'_ne_zero_of_liesOver
       target.maximalIdeal base.maximalIdeal_ne_bot)
@@ -788,10 +334,7 @@ theorem ramificationIndex_mul_residueDegree_eq_degree
     (ValuedExtension.ramificationIndex base.toDVF target.toDVF) *
         ValuedExtension.residueDegree base.toDVF target.toDVF =
       ValuedExtension.degree base.toDVF target.toDVF := by
-  simpa [ramificationIndex, residueDegree,
-    ramificationIndex, residueDegree, degree] using
-    (ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_hasExtension
-      (K := K) (L := L) base target)
+  apply ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_hasExtension
 
 /-- Integral-closure form of the local-Dedekind degree identity for a valued
 finite separable extension. -/
@@ -802,116 +345,7 @@ theorem ramificationIndex_mul_residueDegree_eq_degree_of_isIntegralClosure
     (ValuedExtension.ramificationIndex base.toDVF target.toDVF) *
         ValuedExtension.residueDegree base.toDVF target.toDVF =
       ValuedExtension.degree base.toDVF target.toDVF := by
-  simpa [ramificationIndex, residueDegree,
-    ramificationIndex, residueDegree, degree] using
-    (ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_isIntegralClosure
-      (K := K) (L := L) base target)
-
-/-- Local-inclusion form of the canonical Dedekind degree identity.  The
-remaining Henselian input is exactly the valuative dichotomy for the integral
-closure and the local-overring condition; this theorem performs the algebraic
-degree/e/f bridge. -/
-theorem
-ramificationIndex_mul_residueDegree_eq_degree_of_integralClosure_mem_or_inv_of_local_inclusion
-    [Algebra.IsSeparable K L]
-    [IsScalarTower base.valuationSubring target.valuationSubring L]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetLocal :
-      IsLocalHom
-        ((integralClosureValuationSubringOfMemOrInv
-            (L := L) base.valuation hval).inclusion
-          target.valuation.valuationSubring
-          (integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-            (L := L) base.valuation target.valuation hval))) :
-    (ValuedExtension.ramificationIndex base.toDVF target.toDVF) *
-        ValuedExtension.residueDegree base.toDVF target.toDVF =
-      ValuedExtension.degree base.toDVF target.toDVF := by
-  simpa [ramificationIndex, residueDegree,
-    ramificationIndex, residueDegree, degree] using (
-ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_integralClosure_mem_or_inv_of_local_inclusion
-    (K := K) (L := L) base target hval htargetLocal)
-
-/-- Center-prime form of the canonical Dedekind degree identity. -/
-theorem IntegralClosureMemOrInv.degree_eq_of_center_eq_maximalIdeal
-    [Algebra.IsSeparable K L]
-    [IsScalarTower base.valuationSubring target.valuationSubring L]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetCenter :
-      ValuationSubring.idealOfLE
-        (integralClosureValuationSubringOfMemOrInv
-          (L := L) base.valuation hval)
-        target.valuation.valuationSubring
-        (integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-          (L := L) base.valuation target.valuation hval) =
-          IsLocalRing.maximalIdeal
-            (integralClosureValuationSubringOfMemOrInv
-              (L := L) base.valuation hval)) :
-    (ValuedExtension.ramificationIndex base.toDVF target.toDVF) *
-        ValuedExtension.residueDegree base.toDVF target.toDVF =
-      ValuedExtension.degree base.toDVF target.toDVF := by
-  simpa [ramificationIndex, residueDegree,
-    ramificationIndex, residueDegree, degree] using
-    (IntegralClosureMemOrInv.ideal_degree_eq_finrank_of_center_eq_maximalIdeal
-      (K := K) (L := L) base target hval htargetCenter)
-
-/-- Integral-inclusion form of the canonical Dedekind degree identity. -/
-theorem
-ramificationIndex_mul_residueDegree_eq_degree_of_integralClosure_mem_or_inv_of_integral_inclusion
-    [Algebra.IsSeparable K L]
-    [IsScalarTower base.valuationSubring target.valuationSubring L]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetIntegral :
-      let B :=
-        integralClosureValuationSubringOfMemOrInv
-          (L := L) base.valuation hval
-      let htarget_le : B ≤ target.valuation.valuationSubring :=
-        integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-          (L := L) base.valuation target.valuation hval
-      (B.inclusion target.valuation.valuationSubring htarget_le).IsIntegral) :
-    (ValuedExtension.ramificationIndex base.toDVF target.toDVF) *
-        ValuedExtension.residueDegree base.toDVF target.toDVF =
-      ValuedExtension.degree base.toDVF target.toDVF := by
-  simpa [ramificationIndex, residueDegree,
-    ramificationIndex, residueDegree, degree] using (
-ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_integralClosure_mem_or_inv_of_integral_inclusion
-    (K := K) (L := L) base target hval htargetIntegral)
-
-/-- Elementwise center form of the canonical Dedekind degree identity. -/
-theorem
-ramificationIndex_mul_residueDegree_eq_degree_of_integralClosure_mem_or_inv_of_center_mem_iff
-    [Algebra.IsSeparable K L]
-    [IsScalarTower base.valuationSubring target.valuationSubring L]
-    (hval :
-      ∀ z : L,
-        z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-          z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring)
-    (htargetCenterMem :
-      let B :=
-        integralClosureValuationSubringOfMemOrInv
-          (L := L) base.valuation hval
-      let htarget_le : B ≤ target.valuation.valuationSubring :=
-        integralClosureValuationSubringOfMemOrInv_le_valuationSubring_of_hasExtension
-          (L := L) base.valuation target.valuation hval
-      ∀ x : B,
-        B.inclusion target.valuation.valuationSubring htarget_le x ∈
-            IsLocalRing.maximalIdeal target.valuation.valuationSubring ↔
-          x ∈ IsLocalRing.maximalIdeal B) :
-    (ValuedExtension.ramificationIndex base.toDVF target.toDVF) *
-        ValuedExtension.residueDegree base.toDVF target.toDVF =
-      ValuedExtension.degree base.toDVF target.toDVF := by
-  simpa [ramificationIndex, residueDegree,
-    ramificationIndex, residueDegree, degree] using
-    (ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_integralClosure_mem_or_inv_of_center_mem_iff
-      (K := K) (L := L) base target hval htargetCenterMem)
+  apply ideal_ramificationIdx_mul_inertiaDeg_eq_finrank_of_isIntegralClosure
 
 omit [FiniteDimensional K L] in
 /-- The local-Dedekind formula in raw mathlib notation. -/

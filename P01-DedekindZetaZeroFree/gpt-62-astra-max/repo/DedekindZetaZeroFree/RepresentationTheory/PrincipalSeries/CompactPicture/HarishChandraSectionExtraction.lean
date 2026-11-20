@@ -12,9 +12,7 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1200000
 namespace DedekindZetaZeroFree.KPLiteralScalarHCExtraction
 open KPLiteralRaw KPLiteralTensor KPLiteralScalarHCCompactOrbit
-open _root_.DedekindZetaZeroFree.ScalarRationalProductTransport renaming scalar → scalar
-open _root_.DedekindZetaZeroFree.ScalarRationalProductTransport renaming scalar_injective → scalar_injective
-open _root_.DedekindZetaZeroFree.ScalarRationalProductTransport renaming scalar_borelP_kFinite_iff → scalar_borelP_kFinite_iff
+open _root_.DedekindZetaZeroFree.ScalarRationalProductTransport (scalar scalar_injective scalar_borelP_kFinite_iff)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 local instance (P : KPGlobalTorusBorelTwistCompatibility.Polarization F ζ hζ) :
     TopologicalSpace (KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ P) :=
@@ -98,7 +96,7 @@ theorem productHCScalar_right_level
   obtain ⟨J, hJ⟩ := productHCSection_right_level F ζ hζ K hK C f
   exact ⟨J, fun g a ha => congrArg (fun u => u.val.val 1) (hJ g a ha)⟩
 
-open _root_.DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility renaming induced_smooth → induced_smooth
+open _root_.DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility (induced_smooth)
 
 theorem productHCScalar_left_chart
     (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)

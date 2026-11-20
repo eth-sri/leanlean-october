@@ -9,7 +9,6 @@ open scoped Classical NumberField Topology
 open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.NativeProjectedNumerator
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator renaming finite_literal_compact_numerator → finite_literal_compact_numerator
 
 set_option maxHeartbeats 1600000
 set_option synthInstance.maxHeartbeats 120000
@@ -39,7 +38,6 @@ variable {X Y : Type*} [TopologicalSpace X] [CompactSpace X]
         exact integral_const_mul z _ }
   refine l.mkContinuous (μ.real Set.univ * ‖h‖) ?_
   intro v
-  change ‖∫ x, h x * v (q x) ∂μ‖ ≤ (μ.real Set.univ * ‖h‖) * ‖v‖
   calc
     _ ≤ (‖h‖ * ‖v‖) * μ.real Set.univ := by
       apply norm_integral_le_of_norm_le_const

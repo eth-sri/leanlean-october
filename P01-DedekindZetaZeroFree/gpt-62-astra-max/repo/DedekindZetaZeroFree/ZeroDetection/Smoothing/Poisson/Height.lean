@@ -22,7 +22,7 @@ def smoothedSum (F : Type) [Field F] [NumberField F] (U : ℝ) {m : Ideal (𝓞 
       ((Real.exp (-(Ideal.absNorm n : ℝ) / U ^ DetectorDef.r) : ℝ) : ℂ)
 
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    (D : FixedData S η)
 
 def ConvexityExponent (A_F : ℝ) : Prop :=
   (∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧
@@ -52,7 +52,7 @@ theorem detector_height_numerics (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hρ : 0 < ρ)
     (h1 : ρ < 1 / 10000) (h2 : ρ < 1 / (1000 * (A_F + 1))) :
     -3 / 1250 + A_F * ρ + 1 / 10000 < 0 ∧
       79 / 125 + ρ + 1 / 16000 + 1 / 10000 < 317 /500 := by
-  have h2' : ρ * (1000 * (A_F + 1)) < 1 := (lt_div_iff₀ (by linarith)).mp h2
+  have h2' := (lt_div_iff₀ (by linarith)).mp h2
   have hAρ : A_F * ρ < 1 / 1000 := by nlinarith
   constructor
   · linarith
@@ -65,18 +65,15 @@ private theorem smoothedSum_eq_shift (U β γ : ℝ)
   refine tsum_congr fun n => ?_
   by_cases hn : n = ⊥
   · subst hn
-    have h0 : ω.character ⊥ = 0 := (ω.character.eq_zero_iff' ⊥).mpr (Or.inl rfl)
-    simp [h0]
+    simp [((ω.character.eq_zero_iff' ⊥).mpr (Or.inl rfl))]
   · simp [hn]
 
-private theorem height_of_bound (A_F A' : ℝ) (hA : 0 ≤ A_F) (hA' : 0 ≤ A')
-    (hsh : ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧
-      ∀ u : D.Row, u.toFrequency.u ≠ 1 → ∀ U : ℝ, 2 ≤ U → U ≤ D.q u → D.q u < 2 * U →
-        ∀ β γ : ℝ, σ₀ ≤ β → β ≤ 1 →
-          IsLZero (D.omega u) ((β : ℂ) + (γ : ℂ) * Complex.I) →
-          ‖DetectorShift.smoothedSum F U β γ (D.omega u)‖ ≤
-            C * U ^ (-(3 / 1250 : ℝ) + ε) * (2 + |γ|) ^ A') :
+alias Height.smoothedSum_eq_shift := smoothedSum_eq_shift
+
+theorem detector_height (A_F : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F) :
     ∃ ρ : ℝ, HeightSpec D A_F ρ := by
+  have hex := DetectorShift.detector_shift (D := D)
+  obtain ⟨A', hA', hsh⟩ := hex
   obtain ⟨ρ, hρdef⟩ : ∃ ρ : ℝ, ρ = 1 / (10000 * (A_F + A' + 2)) := ⟨_, rfl⟩
   have hK : 0 < A_F + A' + 2 := by linarith
   have hρpos : 0 < ρ := by
@@ -132,12 +129,6 @@ private theorem height_of_bound (A_F A' : ℝ) (hA : 0 ≤ A_F) (hA' : 0 ≤ A')
     _ = M * U ^ (-δ) := hEq
     _ ≤ e := (hN U hUN).le
 
-theorem detector_height (A_F : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F) :
-    ∃ ρ : ℝ, HeightSpec D A_F ρ := by
-  have hex := DetectorShift.detector_shift (D := D)
-  obtain ⟨A', hA', hsh⟩ := hex
-  exact height_of_bound D A_F A' hA hA' hsh
-
 theorem detector_height_exists :
     ∃ A_F ρ : ℝ, 0 ≤ A_F ∧ ConvexityExponent D A_F ∧ HeightSpec D A_F ρ := by
   have hex := DedekindZetaZeroFree.Quantitative.Convex.convexity (D := D)
@@ -148,17 +139,15 @@ theorem detector_height_exists :
     · intro ε hε
       obtain ⟨C, hC, h1, -⟩ := hconv ε hε (3 / 25 : ℝ) (by norm_num)
       refine ⟨C, hC, fun u hu U hU2 hUq hUq2 g hg hgs t => ?_⟩
-      have key := h1 u hu U hU2 hUq hUq2 g hg hgs (3 / 25 : ℝ) t le_rfl (by norm_num)
       have e : U ^ ((11 / 25 : ℝ) + ε) = U ^ ((1 - 3 / 25 : ℝ) / 2 + ε) := by norm_num
       rw [e]
-      exact key
+      exact h1 u hu U hU2 hUq hUq2 g hg hgs (3 / 25 : ℝ) t le_rfl (by norm_num)
     · intro ε hε
       obtain ⟨C, hC, -, h2⟩ := hconv ε hε (1 / 100 : ℝ) (by norm_num)
       refine ⟨C, hC, fun u hu U hU2 hUq hUq2 g hg hgs t => ?_⟩
-      have key := h2 u hu U hU2 hUq hUq2 g hg hgs (1 / 100 : ℝ) t (by norm_num) (by norm_num)
       have e : U ^ ((99 / 200 : ℝ) + ε) = U ^ ((1 - 1 / 100 : ℝ) / 2 + ε) := by norm_num
       rw [e]
-      exact key
+      exact h2 u hu U hU2 hUq hUq2 g hg hgs (1 / 100 : ℝ) t (by norm_num) (by norm_num)
   obtain ⟨ρ, hρ⟩ := detector_height D A_F hA0 hCE
   exact ⟨A_F, ρ, hA0, hCE, hρ⟩
 

@@ -17,10 +17,10 @@ open KPContSectorCoveredQuotientVocabulary KPContSectorSmoothFramesSupport
 open KPContSectorLineL2Isometry
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 abbrev Combination :=
   List (ℂ × List (Fin (KPContActualSphericalRightFieldIdentification.groupDimension F)))
@@ -58,8 +58,6 @@ structure CompactBaseCover
   isCompact : ∀ j, IsCompact (compact j)
   contained : ∀ j, compact j ⊆ (chart j).ball.carrier
   base : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)
-  base_compact : IsCompact base
-  base_eq : base = ⋃ j, basePoint F ζ hζ U R P H (chart j).component '' compact j
   projection_contained : baseProjection F ζ hζ U '' C ⊆ base
 
 structure CompactEstimate
@@ -117,16 +115,16 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1500000
 set_option synthInstance.maxHeartbeats 100000
 
-private lemma coord_smooth {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
-    (u : Space n → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (l : List (Fin n)) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l u) U := by
-  induction l with
-  | nil => exact hu
-  | cons i l ih =>
-    exact (ih.fderiv_of_isOpen hU (by simp)).clm_apply contDiffOn_const
+section
 
-private lemma coord_perm {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
-    (u : Space n → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
+variable {n : ℕ} {U : Set (Space n)} (hU : IsOpen U) (u : Space n → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
+
+include hU hu in
+private lemma coord_smooth (l : List (Fin n)) :
+    ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l u) U := by apply @DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates.coordinateDerivativeList_contDiffOn_open <;> assumption
+
+include hU hu in
+private lemma coord_perm
     {l r : List (Fin n)} (hp : l.Perm r) :
     Set.EqOn (coordinateDerivativeList l u) (coordinateDerivativeList r u) U := by
   induction hp with
@@ -138,9 +136,8 @@ private lemma coord_perm {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
     exact congrArg (fun f : Space n →L[ℝ] ℂ => f (EuclideanSpace.single i 1)) heq.fderiv_eq
   | swap i j l =>
     intro x hx
-    let f := coordinateDerivativeList l u
     have hf := coord_smooth hU u hu l
-    have hfd : ContDiffOn ℝ (⊤ : ℕ∞) (fderiv ℝ f) U := hf.fderiv_of_isOpen hU (by simp)
+    have hfd : ContDiffOn ℝ (⊤ : ℕ∞) (fderiv ℝ (coordinateDerivativeList l u)) U := hf.fderiv_of_isOpen hU (by simp)
     have hd := hfd.differentiableOn (by simp)
     have hfx := (hf.differentiableOn (by simp)).differentiableAt (hU.mem_nhds hx)
     have hdx := hd.differentiableAt (hU.mem_nhds hx)
@@ -154,6 +151,10 @@ private lemma coord_perm {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
     simpa using hsym.symm
   | trans h1 h2 ih1 ih2 => exact fun x hx => (ih1 hx).trans (ih2 hx)
 
+end
+
+alias RightDifferentialHolomorphy.coord_perm := coord_perm
+
 private lemma list_index {n k : ℕ} (l : List (Fin n)) (hl : l.length ≤ k) :
     ∃ α : MultiIndex n k, α.directions.Perm l := by
   classical
@@ -162,20 +163,22 @@ private lemma list_index {n k : ℕ} (l : List (Fin n)) (hl : l.length ≤ k) :
     | nil => simp
     | cons i l ih =>
       simp only [List.count_cons, beq_iff_eq]
-      simp [Finset.sum_add_distrib, ih (by simpa using Nat.le_of_succ_le hl)]
-  let α : MultiIndex n k := ⟨fun i => ⟨l.count i, Nat.lt_succ_of_le (List.count_le_length.trans hl)⟩,
-    by simpa using hsum.trans_le hl⟩
-  refine ⟨α, List.perm_iff_count.mpr ?_⟩
+      simp [Finset.sum_add_distrib, ih (by exact Nat.le_of_succ_le hl)]
+  refine ⟨(⟨fun i => ⟨l.count i, Nat.lt_succ_of_le (List.count_le_length.trans hl)⟩,
+    by exact hsum.trans_le hl⟩), List.perm_iff_count.mpr ?_⟩
   intro i
   simp only [MultiIndex.directions, List.count_flatMap, Function.comp_def, List.count_replicate]
-  change ((List.finRange n).map (fun j => if (j == i) = true then l.count j else 0)).sum = l.count i
   rw [← List.ofFn_eq_map, List.sum_ofFn]
   simp
+
+alias RightDifferentialHolomorphy.list_index := list_index
 private lemma vector_decomp {n : ℕ} (v : Space n) :
     v = ∑ i : Fin n, (v i) • EuclideanSpace.single i 1 := by
   apply PiLp.ext
   intro j
   simp [EuclideanSpace.single, Pi.single_apply]
+
+alias RightDifferentialHolomorphy.vector_decomp := vector_decomp
 
 private lemma pull_deriv {n m : ℕ} {U : Set (Space m)} {V : Set (Space n)}
     (hU : IsOpen U) (hV : IsOpen V) (π : Space m → Space n)
@@ -184,15 +187,14 @@ private lemma pull_deriv {n m : ℕ} {U : Set (Space m)} {V : Set (Space n)}
     (l : List (Fin n)) (g : Space m) (hg : g ∈ U) (v : Space m) :
     fderiv ℝ (fun x => coordinateDerivativeList l u (π x)) g v =
       ∑ i : Fin n, ((fderiv ℝ π g v) i : ℂ) * coordinateDerivativeList (i :: l) u (π g) := by
-  have hgV := himage ⟨g, hg, rfl⟩
-  have hdπ := (hπ.differentiableOn (by simp)).differentiableAt (hU.mem_nhds hg)
-  have hdu := ((coord_smooth hV u hu l).differentiableOn (by simp)).differentiableAt (hV.mem_nhds hgV)
   change fderiv ℝ (coordinateDerivativeList l u ∘ π) g v = _
-  rw [fderiv_comp g hdu hdπ]
+  rw [fderiv_comp g (((coord_smooth hV u hu l).differentiableOn (by simp)).differentiableAt (hV.mem_nhds (himage ⟨g, hg, rfl⟩))) ((hπ.differentiableOn (by simp)).differentiableAt (hU.mem_nhds hg))]
   change fderiv ℝ (coordinateDerivativeList l u) (π g) (fderiv ℝ π g v) = _
   conv_lhs => arg 2; rw [vector_decomp (fderiv ℝ π g v)]
   rw [map_sum]
   simp [coordinateDerivativeList]
+
+alias RightDifferentialHolomorphy.pull_deriv := pull_deriv
 
 private lemma word_expansion {n m b : ℕ} {U : Set (Space m)} {V : Set (Space n)}
     (hU : IsOpen U) (hV : IsOpen V) (π : Space m → Space n) (frame : Space m → ℂ)
@@ -223,11 +225,10 @@ private lemma word_expansion {n m b : ℕ} {U : Set (Space m)} {V : Set (Space n
       obtain ⟨hsm, hsl⟩ := hts s hs
       simp only [expand, List.mem_cons, List.mem_map] at ht
       rcases ht with rfl | ⟨j, hj, rfl⟩
-      · exact ⟨(hsm.fderiv_of_isOpen hU (by simp)).clm_apply (hfields i), by simpa using hsl.trans (Nat.le_succ _)⟩
-      · refine ⟨hsm.mul ?_, by simpa using Nat.succ_le_succ hsl⟩
-        have hdπ : ContDiffOn ℝ (⊤ : ℕ∞) (fderiv ℝ π) U := hπ.fderiv_of_isOpen hU (by simp)
+      · exact ⟨(hsm.fderiv_of_isOpen hU (by simp)).clm_apply (hfields i), by exact hsl.trans (Nat.le_succ _)⟩
+      · refine ⟨hsm.mul ?_, by exact Nat.succ_le_succ hsl⟩
         exact Complex.ofRealCLM.contDiff.comp_contDiffOn
-          (((EuclideanSpace.proj (𝕜 := ℝ) j).contDiff.comp_contDiffOn (hdπ.clm_apply (hfields i))))
+          (((EuclideanSpace.proj (𝕜 := ℝ) j).contDiff.comp_contDiffOn ((hπ.fderiv_of_isOpen hU (by simp)).clm_apply (hfields i))))
     · intro u hu g hg
       have hevent : KPContRightJets.rightWord fields w (KPContRightJets.scalarLift π frame u) =ᶠ[nhds g]
           (fun x => (ts.map (fun t => t.1 x * coordinateDerivativeList t.2 u (π x))).sum) :=
@@ -237,10 +238,9 @@ private lemma word_expansion {n m b : ℕ} {U : Set (Space m)} {V : Set (Space n
       have term_deriv (s : (Space m → ℂ) × List (Fin n)) (hs : s ∈ ts) :
           fderiv ℝ (fun x => s.1 x * coordinateDerivativeList s.2 u (π x)) g (fields i g) =
           ((expand s).map (fun t => t.1 g * coordinateDerivativeList t.2 u (π g))).sum := by
-        have hd1 := ((hts s hs).1.differentiableOn (by simp)).differentiableAt (hU.mem_nhds hg)
         have hdc := ((coord_smooth hV u hu s.2).comp hπ (fun x hx => himage ⟨x,hx,rfl⟩)).differentiableOn (by simp)
         dsimp only [Function.comp_def] at hdc
-        rw [fderiv_fun_mul hd1 (hdc.differentiableAt (hU.mem_nhds hg))]
+        rw [fderiv_fun_mul (((hts s hs).1.differentiableOn (by simp)).differentiableAt (hU.mem_nhds hg)) (hdc.differentiableAt (hU.mem_nhds hg))]
         simp only [add_apply, smul_apply, smul_eq_mul]
         rw [pull_deriv hU hV π hπ himage u hu s.2 g hg (fields i g)]
         simp only [expand, List.map_cons, List.sum_cons, List.map_map, Function.comp_def]
@@ -266,15 +266,16 @@ private lemma word_expansion {n m b : ℕ} {U : Set (Space m)} {V : Set (Space n
             | nil => exact contDiffOn_const
             | cons t ll ih =>
               exact (hall t (by simp)).add (ih (fun z hz => hall z (by simp [hz])))
-          have htail := list_smooth ss hterm
           have hhead := (hts s hs).1.mul ((coord_smooth hV u hu s.2).comp hπ (fun x hx => himage ⟨x,hx,rfl⟩))
           dsimp only [Function.comp_def] at hhead
           simp only [List.map_cons, List.sum_cons]
           rw [fderiv_fun_add (hhead.differentiableOn (by simp) |>.differentiableAt (hU.mem_nhds hg))
-            (htail.differentiableOn (by simp) |>.differentiableAt (hU.mem_nhds hg))]
+            ((list_smooth ss hterm).differentiableOn (by simp) |>.differentiableAt (hU.mem_nhds hg))]
           simp only [add_apply, List.flatMap_cons, List.map_append, List.sum_append]
           rw [term_deriv s hs, ih (fun t ht => hss t (by simp [ht]))]
       exact sum_deriv ts (fun _ h => h)
+
+alias RightDifferentialHolomorphy.word_expansion := word_expansion
 
 private lemma word_congr {m b : ℕ} {V : Set (Space m)} (hV : IsOpen V)
     (fields : Fin b → Space m → Space m) (w : List (Fin b))
@@ -288,6 +289,8 @@ private lemma word_congr {m b : ℕ} {V : Set (Space m)} (hV : IsOpen V)
         KPContRightJets.rightWord fields w g :=
       Filter.Eventually.mono (hV.mem_nhds hx) fun y hy => ih hy
     exact congrArg (fun d : Space m →L[ℝ] ℂ => d (fields i x)) he.fderiv_eq
+
+alias RightDifferentialHolomorphy.word_congr := word_congr
 
 private lemma word_smooth {m b : ℕ} {V : Set (Space m)} (hV : IsOpen V)
     (fields : Fin b → Space m → Space m)
@@ -303,16 +306,19 @@ private lemma jets_lower {n k l : ℕ} (hkl : k ≤ l)
     (h : ∀ α : MultiIndex n l, ∀ x ∈ K, ‖coordinateDerivative α u x‖ ≤ B) :
     ∀ α : MultiIndex n k, ∀ x ∈ K, ‖coordinateDerivative α u x‖ ≤ B := by
   intro α x hx
-  let β : MultiIndex n l := ⟨fun i => ⟨(α.val i).val,
-    lt_of_lt_of_le (α.val i).isLt (Nat.add_le_add_right hkl 1)⟩, le_trans α.property hkl⟩
-  exact h β x hx
+  exact h (⟨fun i => ⟨(α.val i).val,
+    lt_of_lt_of_le (α.val i).isLt (Nat.add_le_add_right hkl 1)⟩, le_trans α.property hkl⟩) x hx
 
-private lemma word_bound {n m b : ℕ} {V : Set (Space m)} {T : Set (Space n)}
-    (hV : IsOpen V) (hT : IsOpen T) (π : Space m → Space n) (frame : Space m → ℂ)
-    (fields : Fin b → Space m → Space m)
+section
+
+variable {n m b : ℕ} {V : Set (Space m)} {T : Set (Space n)} (hV : IsOpen V) (hT : IsOpen T)
+    (π : Space m → Space n) (frame : Space m → ℂ) (fields : Fin b → Space m → Space m)
     (hπ : ContDiffOn ℝ (⊤ : ℕ∞) π V) (hf : ContDiffOn ℝ (⊤ : ℕ∞) frame V)
-    (hfields : ∀ i, ContDiffOn ℝ (⊤ : ℕ∞) (fields i) V) (himage : Set.MapsTo π V T)
-    (K : Set (Space m)) (hK : IsCompact K) (hKV : K ⊆ V) (w : List (Fin b)) :
+    (hfields : ∀ i, ContDiffOn ℝ (⊤ : ℕ∞) (fields i) V) (himage : Set.MapsTo π V T) (K : Set (Space m))
+    (hK : IsCompact K) (hKV : K ⊆ V)
+
+include hV hT hπ hf hfields himage hK hKV in
+private lemma word_bound (w : List (Fin b)) :
     ∃ A : ℝ, 0 < A ∧ ∀ u : Space n → ℂ, ContDiffOn ℝ (⊤ : ℕ∞) u T →
       ∀ B : ℝ, 0 ≤ B →
       (∀ α : MultiIndex n w.length, ∀ x ∈ π '' K, ‖coordinateDerivative α u x‖ ≤ B) →
@@ -352,12 +358,8 @@ private lemma word_bound {n m b : ℕ} {V : Set (Space m)} {T : Set (Space n)}
   exact (aux ts (fun _ h => h)).trans (mul_le_mul_of_nonneg_right
     ((hM ⟨x,hx,rfl⟩).trans ((le_max_right 0 M).trans (le_add_of_nonneg_right zero_le_one))) hB)
 
-private lemma combination_bound {n m b : ℕ} {V : Set (Space m)} {T : Set (Space n)}
-    (hV : IsOpen V) (hT : IsOpen T) (π : Space m → Space n) (frame : Space m → ℂ)
-    (fields : Fin b → Space m → Space m)
-    (hπ : ContDiffOn ℝ (⊤ : ℕ∞) π V) (hf : ContDiffOn ℝ (⊤ : ℕ∞) frame V)
-    (hfields : ∀ i, ContDiffOn ℝ (⊤ : ℕ∞) (fields i) V) (himage : Set.MapsTo π V T)
-    (K : Set (Space m)) (hK : IsCompact K) (hKV : K ⊆ V)
+include hV hT hπ hf hfields himage hK hKV in
+private lemma combination_bound
     (D : List (ℂ × List (Fin b))) :
     ∃ A : ℝ, 0 < A ∧ ∀ u : Space n → ℂ, ContDiffOn ℝ (⊤ : ℕ∞) u T →
       ∀ B : ℝ, 0 ≤ B →
@@ -371,15 +373,15 @@ private lemma combination_bound {n m b : ℕ} {V : Set (Space m)} {T : Set (Spac
     obtain ⟨At,hAt,ht⟩ := ih
     refine ⟨‖t.1‖ * Aw + At, add_pos_of_nonneg_of_pos (mul_nonneg (norm_nonneg _) hAw.le) hAt, ?_⟩
     intro u hu B hB hj x hx
-    have hw' := hw u hu B hB (jets_lower (by simp [KPContRightJets.combinationOrder]) u _ B hj) x hx
-    have ht' := ht u hu B hB (jets_lower (by simp [KPContRightJets.combinationOrder]) u _ B hj) x hx
     simp only [KPContRightJets.rightCombination,List.map_cons,List.sum_cons]
     calc
       _ ≤ ‖t.1 * KPContRightJets.rightWord fields t.2 (KPContRightJets.scalarLift π frame u) x‖ +
           ‖KPContRightJets.rightCombination fields ts (KPContRightJets.scalarLift π frame u) x‖ := norm_add_le _ _
       _ ≤ ‖t.1‖ * (Aw * B) + At * B := by
-        rw [norm_mul]; exact add_le_add (mul_le_mul_of_nonneg_left hw' (norm_nonneg _)) ht'
+        rw [norm_mul]; exact add_le_add (mul_le_mul_of_nonneg_left (hw u hu B hB (jets_lower (by simp [KPContRightJets.combinationOrder]) u _ B hj) x hx) (norm_nonneg _)) (ht u hu B hB (jets_lower (by simp [KPContRightJets.combinationOrder]) u _ B hj) x hx)
       _ = _ := by ring
+
+end
 
  lemma level_projection (u : U.toOpenSubgroup)
     (g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) :
@@ -394,29 +396,14 @@ private lemma combination_bound {n m b : ℕ} {V : Set (Space m)} {T : Set (Spac
   congr 1
   apply DoubleCoset.eq.mpr
   refine ⟨1, (KPContSectorCoveredQuotientVocabulary.Gamma F ζ hζ).one_mem,
-    ((u.val : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ)⁻¹), ?_, by simp⟩
+    (u.val⁻¹), ?_, by simp⟩
   apply Subgroup.inv_mem
   exact Subgroup.subset_closure (Set.mem_union_right _ ⟨u.val,u.property,rfl⟩)
 
 private lemma insertion_commutes (a : KPSmoothActualFlowData.GInfinity F)
     (v : FiniteCover F ζ hζ) :
     Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a)
-      (v.val : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) := by
-  let e := (PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ).choose
-  let v' : PGLComplex.AdelicSlicesRaw.finiteSubgroup F ζ hζ :=
-    ⟨v.val, by
-      rw [KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_finiteSubgroup_eq F ζ hζ]
-      exact v.property⟩
-  have he := (PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ).choose_spec.1
-  have ha : e (a,1) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a := by
-    exact (he a 1).trans (mul_one _)
-  have hv : e (1,v') = v.val := by
-    have hh : e (1,v') = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ 1 * v.val := he 1 v'
-    rw [(KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).1, one_mul] at hh
-    exact hh
-  rw [← ha,← hv]
-  exact (show Commute (a, (1 : PGLComplex.AdelicSlicesRaw.finiteSubgroup F ζ hζ)) (1,v') from by
-    change (a,1) * (1,v') = (1,v') * (a,1); simp).map e.toMonoidHom
+      (v.val : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) := by apply @DedekindZetaZeroFree.KPMsActualCuspSource.insertion_commutes <;> assumption
 
 private lemma word_level (u : U.toOpenSubgroup)
     (f : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ → ℂ)
@@ -447,9 +434,6 @@ private lemma piece_combination
       (p.group.groupLift x * (v.val : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ)) =
     KPContRightJets.rightCombination p.group.fields D
       (KPContActualSmoothLineGluing.coefficient F ζ hζ U R P H u p.chart ∘ p.projection) x := by
-  have hs : ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun y => lift F ζ hζ U R P H u (p.group.groupLift y)) p.openSet :=
-    (hu.comp p.smooth_projection p.projection_inside).congr (fun y hy => p.scalar_formula u y hy)
   unfold rightCombination KPContRightJets.rightCombination
   congr 1
   apply List.map_congr_left
@@ -458,7 +442,7 @@ private lemma piece_combination
   rw [word_level F ζ hζ U v _ (fun g =>
     congrArg (fun z => (scalarRepresentative F ζ hζ U R P H u).val z)
       (level_projection F ζ hζ U v g))]
-  rw [p.local_word _ hs t.2 x hx]
+  rw [p.local_word _ ((hu.comp p.smooth_projection p.projection_inside).congr (fun y hy => p.scalar_formula u y hy)) t.2 x hx]
   exact word_congr p.isOpen p.group.fields t.2 (p.scalar_formula u) hx
 
 private lemma coefficient_smooth (u : smoothSections F ζ hζ U R P H)
@@ -516,15 +500,6 @@ private lemma piece_bound
   isCompact j := (p j).compact_projection
   contained j := by rintro _ ⟨x,hx,rfl⟩; exact (p j).projection_inside ((p j).compact_inside hx)
   base := ⋃ j, basePoint F ζ hζ U R P H (p j).chart.component '' ((p j).projection '' (p j).compact)
-  base_compact := isCompact_iUnion (fun j => (p j).compact_projection.image
-    (by
-      have he : basePoint F ζ hζ U R P H (p j).chart.component =
-          fun x => Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U)
-            (coordinates F x,(H.atlas U).representative (p j).chart.component) := by
-        funext x; exact (H.atlas U).components_formula _ _
-      rw [he]
-      exact continuous_quotient_mk'.comp ((coordinates F).continuous.prodMk continuous_const)))
-  base_eq := rfl
   projection_contained := by
     rintro _ ⟨g,hg,rfl⟩
     obtain ⟨j,x,hx,v,rfl⟩ := Set.mem_iUnion.mp (hp hg)
@@ -546,7 +521,7 @@ private lemma jet_bound {n : ℕ} (l : ℕ) (T : LocalBall n) (K : Set (Space n)
     ‖coordinateDerivative α u x‖ ≤ compactJetSeminorm l T K hK hKT u hu := by
   letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
   exact (ContinuousMap.norm_coe_le_norm (compactJet T K hKT u hu α) x).trans
-    (norm_le_pi_norm (compactJet (m := l) T K hKT u hu) α)
+    (norm_le_pi_norm (compactJet T K hKT u hu) α)
 
 private lemma estimate_of_pieces {n : ℕ}
     (p : Fin n → KPContActualRightCanonicalRefinement.Piece (F := F) (ζ := ζ) (hζ := hζ)
@@ -556,7 +531,7 @@ private lemma estimate_of_pieces {n : ℕ}
     Nonempty (CompactEstimate F ζ hζ U R P H C D) := by
   choose A hA hb using (fun j => piece_bound F ζ hζ U R P H (p j) D)
   let E := cover_of_pieces F ζ hζ U R P H p C hp
-  let B : ℝ := 1 + ∑ j, A j
+  let B := 1 + ∑ j, A j
   have hB : 0 < B := by
     have hh : 0 ≤ ∑ j, A j := Finset.sum_nonneg (fun j _ => (hA j).le)
     dsimp [B]; linarith
@@ -589,11 +564,15 @@ private lemma estimate_of_pieces {n : ℕ}
   · exact Finset.sum_nonneg (fun j _ => hqj j)
   · intro j α x hx
     exact (jet_bound _ _ _ (E.isCompact j) (E.contained j) _ (hu j) α ⟨x,hx⟩).trans
-      (Finset.single_le_sum (f := qj) (fun k _ => hqj k) (Finset.mem_univ j))
+      (Finset.single_le_sum (fun k _ => hqj k) (Finset.mem_univ j))
 
-private lemma word_sum_sub {m b : ℕ} (T : Set (Space m)) (hT : IsOpen T)
-    (fields : Fin b → Space m → Space m)
+section
+
+variable {m b : ℕ} (T : Set (Space m)) (hT : IsOpen T) (fields : Fin b → Space m → Space m)
     (hfields : ∀ i, ContDiffOn ℝ (⊤ : ℕ∞) (fields i) T)
+
+include hT hfields in
+private lemma word_sum_sub
     (w : List (Fin b)) (s : Finset ℕ) (c : ℕ → ℂ)
     (f : ℕ → Space m → ℂ) (v : Space m → ℂ)
     (hf : ∀ q ∈ s, ContDiffOn ℝ (⊤ : ℕ∞) (f q) T)
@@ -610,7 +589,7 @@ private lemma word_sum_sub {m b : ℕ} (T : Set (Space m)) (hT : IsOpen T)
         DifferentiableAt ℝ (KPContRightJets.rightWord fields w (f q)) g :=
       ((word_smooth hT fields hfields w _ (hf q hq)).differentiableOn
         (by simp)).differentiableAt hn
-    have hdv : DifferentiableAt ℝ (KPContRightJets.rightWord fields w v) g :=
+    have hdv :=
       ((word_smooth hT fields hfields w _ hv).differentiableOn
         (by simp)).differentiableAt hn
     have heq : KPContRightJets.rightWord fields w (fun x => (∑ q ∈ s, c q * f q x) - v x) =ᶠ[
@@ -627,9 +606,8 @@ private lemma word_sum_sub {m b : ℕ} (T : Set (Space m)) (hT : IsOpen T)
     rw [fderiv_const_mul (hd q hq)]
     rfl
 
-private lemma combination_sum_sub {m b : ℕ} (T : Set (Space m)) (hT : IsOpen T)
-    (fields : Fin b → Space m → Space m)
-    (hfields : ∀ i, ContDiffOn ℝ (⊤ : ℕ∞) (fields i) T)
+include hT hfields in
+private lemma combination_sum_sub
     (D : List (ℂ × List (Fin b))) (s : Finset ℕ) (c : ℕ → ℂ)
     (f : ℕ → Space m → ℂ) (v : Space m → ℂ)
     (hf : ∀ q ∈ s, ContDiffOn ℝ (⊤ : ℕ∞) (f q) T)
@@ -648,6 +626,8 @@ private lemma combination_sum_sub {m b : ℕ} (T : Set (Space m)) (hT : IsOpen T
     rw [Finset.mul_sum]
     simp only [mul_left_comm (t.1)]
     ring
+
+end
 
 private lemma piece_series
     (p : KPContActualRightCanonicalRefinement.Piece (F := F) (ζ := ζ) (hζ := hζ)
@@ -670,24 +650,20 @@ private lemma piece_series
   let u := KPContActualSmoothLineGluing.coefficient F ζ hζ U R P H (W s).val p.chart
   let tail := fun y => (∑ j ∈ Finset.range M, (s-c)^j * a j y) - u y
   have ha j : ContDiffOn ℝ (⊤ : ℕ∞) (a j) p.chart.ball.carrier := (hc p.chart).1 j
-  have hu : ContDiffOn ℝ (⊤ : ℕ∞) u p.chart.ball.carrier :=
+  have hu :=
     (hc p.chart).2.1 s (Metric.closedBall_subset_ball htr hs)
-  have htail : ContDiffOn ℝ (⊤ : ℕ∞) tail p.chart.ball.carrier :=
-    (ContDiffOn.sum (fun j _ => contDiffOn_const.mul (ha j))).sub hu
-  have hbnd := he tail htail (ε / (2*A)) hδ.le
+  have hbnd := he tail ((ContDiffOn.sum (fun j _ => contDiffOn_const.mul (ha j))).sub hu) (ε / (2*A)) hδ.le
     (fun α y hy => (hN M hM s hs α ⟨y,hy⟩).le) x hx
   have hap j : ContDiffOn ℝ (⊤ : ℕ∞) (a j ∘ p.projection) p.openSet :=
     (ha j).comp p.smooth_projection p.projection_inside
-  have hup : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ p.projection) p.openSet :=
-    hu.comp p.smooth_projection p.projection_inside
   have hformula : KPContRightJets.scalarLift p.projection (fun _ => 1) tail =
       fun y => (∑ j ∈ Finset.range M, (s-c)^j * (a j ∘ p.projection) y) -
         (u ∘ p.projection) y := by funext y; simp [KPContRightJets.scalarLift,tail]
   rw [hformula,combination_sum_sub p.openSet p.isOpen p.group.fields p.fields_smooth D
     (Finset.range M) (fun j => (s-c)^j) (fun j => a j ∘ p.projection) (u ∘ p.projection)
-    (fun j _ => hap j) hup x (p.compact_inside hx)] at hbnd
+    (fun j _ => hap j) (hu.comp p.smooth_projection p.projection_inside) x (p.compact_inside hx)] at hbnd
   have hbformula j : rightCombination F ζ hζ D (lift F ζ hζ U R P H (b j).val)
-      (p.group.groupLift x * (v.val : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ)) =
+      (p.group.groupLift x * v.val) =
       KPContRightJets.rightCombination p.group.fields D (a j ∘ p.projection) x :=
     piece_combination F ζ hζ U R P H p (b j).val (ha j) D x (p.compact_inside hx) v
   rw [piece_combination F ζ hζ U R P H p (W s).val hu D x (p.compact_inside hx) v]
@@ -742,19 +718,13 @@ private lemma piece_continuous
     intro g
     obtain ⟨x,hx,v,hg⟩ := g.property
     exact ⟨(⟨x,hx⟩,v),Subtype.ext hg.symm⟩
-  have hquot : IsQuotientMap φ := hφ.isClosedMap.isQuotientMap hφ hsurj
   apply continuousOn_iff_continuous_domRestrict.mpr
-  apply hquot.continuous_iff.mpr
+  apply (hφ.isClosedMap.isQuotientMap hφ hsurj).continuous_iff.mpr
   have hcoef : ContDiffOn ℝ (⊤ : ℕ∞)
       (KPContActualSmoothLineGluing.coefficient F ζ hζ U R P H u.val p.chart) p.chart.ball.carrier :=
     (coefficient_smooth F ζ hζ U R P H u p.chart).contDiffOn
-  have hc := combination_smooth p.openSet p.isOpen p.group.fields p.fields_smooth D
-    _ (hcoef.comp p.smooth_projection p.projection_inside)
-  have hcomp : Continuous (fun z : p.compact × U.toOpenSubgroup =>
-      KPContRightJets.rightCombination p.group.fields D
-        (KPContActualSmoothLineGluing.coefficient F ζ hζ U R P H u.val p.chart ∘ p.projection) z.1.val) :=
-    ((hc.continuousOn.mono p.compact_inside).domRestrict).comp continuous_fst
-  apply hcomp.congr
+  apply ((((combination_smooth p.openSet p.isOpen p.group.fields p.fields_smooth D
+    _ (hcoef.comp p.smooth_projection p.projection_inside)).continuousOn.mono p.compact_inside).domRestrict).comp continuous_fst).congr
   intro z
   exact (piece_combination F ζ hζ U R P H p u.val hcoef D z.1.val
     (p.compact_inside z.1.property) z.2).symm
@@ -802,14 +772,12 @@ theorem kp_cont_actual_common_disk_right_holomorphy
     (_coherent : CoherentSeries F ζ hζ U R P H W b c r) :
     ∀ (C : Set (KPSmoothLocalQuotientCharts.ActualCover F ζ hζ)) (hC : IsCompact C)
       (D : Combination F),
-      Nonempty (CompactEstimate F ζ hζ U R P H C D) ∧
       UniformRightSeries F ζ hζ U R P H C D W b c r ∧
       CompactRightHolomorphic F ζ hζ U R P H C hC D W b c r := by
   intro C hC D
   obtain ⟨n,p,hp⟩ := KPContActualRightCanonicalRefinement.compact_refinement _actual C hC
-  have hest := estimate_of_pieces F ζ hζ U R P H p C hp D
   have hseries := series_of_pieces F ζ hζ U R P H p C hp D W b c r _coherent
-  refine ⟨hest,hseries,?_⟩
+  refine ⟨hseries, ?_⟩
   letI : CompactSpace C := isCompact_iff_compactSpace.mp hC
   let f : ℂ → ContinuousMap C ℂ := fun s =>
     ⟨fun g => rightCombination F ζ hζ D (lift F ζ hζ U R P H (W s).val) g,

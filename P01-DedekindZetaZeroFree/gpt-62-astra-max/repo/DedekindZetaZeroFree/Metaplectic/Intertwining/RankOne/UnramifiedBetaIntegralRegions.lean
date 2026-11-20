@@ -141,7 +141,7 @@ theorem four_regions (μ : Measure Kˣ) (f : Kˣ → ℂ)
   have hi : Integrable f μ := by
     simpa only [cover, integrableOn_univ] using hall
   refine ⟨hi, ?_⟩
-  have dsnl : Disjoint (small K ∪ nearOne K) (large K) := dsl.union_left dnl
+  have dsnl := dsl.union_left dnl
   calc
     ∫ y : Kˣ, f y ∂μ = ∫ y in small K ∪ nearOne K ∪ large K ∪ residue K, f y ∂μ := by
       simp [cover]

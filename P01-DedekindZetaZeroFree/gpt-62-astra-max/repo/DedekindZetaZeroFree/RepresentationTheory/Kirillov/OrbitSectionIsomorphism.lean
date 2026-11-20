@@ -47,25 +47,12 @@ private theorem values_eq_of_chart_eq
   exact congrArg (fun v =>
     (((ψ F w (Multiplicative.ofAdd b) * iota F ζ hζ e : ℂˣ) : ℂ)) • v) heq
 
-private theorem spectralPatch_open (u : ℤ) (t₀ : (K F w)ˣ) :
-    IsOpen (spectralPatch F w u t₀) := by
-  unfold spectralPatch frequencyCoset
-  rw [localFiniteAnnihilator_finiteCompletionBall]
-  exact (isOpen_finiteCompletionBall_coset F w t₀ _).preimage Units.continuous_val
-
-private theorem spectralPatch_self (u : ℤ) (t₀ : (K F w)ˣ) :
-    t₀ ∈ spectralPatch F w u t₀ := by
-  change (t₀ : K F w) - t₀ ∈ localFiniteAnnihilator F w (finiteCompletionBall F w u)
-  simp
-
 private theorem exists_small_spectralPatch (t₀ : (K F w)ˣ)
     (W : Set (K F w)ˣ) (hW : IsOpen W) (htW : t₀ ∈ W) :
     ∃ u : ℤ, spectralPatch F w u t₀ ⊆ W ∧
       (0 : K F w) ∉ frequencyCoset F w u t₀ := by
-  have hopen : IsOpen ((Units.val : (K F w)ˣ → K F w) '' W) :=
-    IsOpenUnits.isOpenEmbedding_unitsVal.isOpenMap _ hW
-  obtain ⟨n, _, hn⟩ := (finiteCompletionBall_hasBasis_nhds F w (t₀ : K F w)).mem_iff.mp
-    (hopen.mem_nhds ⟨t₀, htW, rfl⟩)
+  obtain ⟨n, _, hn⟩ := (finiteCompletionBall_hasBasis_nhds F w t₀).mem_iff.mp
+    ((IsOpenUnits.isOpenEmbedding_unitsVal.isOpenMap _ hW).mem_nhds ⟨t₀, htW, rfl⟩)
   refine ⟨-n - (localDifferentExponent F w : ℤ), ?_, ?_⟩
   · intro t ht
     have hx := hn (show (t : K F w) - t₀ ∈ finiteCompletionBall F w n by
@@ -73,9 +60,8 @@ private theorem exists_small_spectralPatch (t₀ : (K F w)ˣ)
     obtain ⟨s, hs, heq⟩ := hx
     exact (Units.val_injective heq) ▸ hs
   · intro hz
-    have hx := hn (show (0 : K F w) - t₀ ∈ finiteCompletionBall F w n by
-      simpa [frequencyCoset, localFiniteAnnihilator_finiteCompletionBall] using hz)
-    obtain ⟨s, _, hs⟩ := hx
+    obtain ⟨s, _, hs⟩ := (hn (show (0 : K F w) - t₀ ∈ finiteCompletionBall F w n by
+      simpa [frequencyCoset, localFiniteAnnihilator_finiteCompletionBall] using hz))
     exact s.ne_zero hs
 
 include hm hρ in
@@ -161,37 +147,34 @@ private theorem finite_cutoff_mem {X E I : Type*} [AddCommGroup E] [Module ℂ E
   classical
   induction T using Finset.induction_on generalizing f with
   | empty =>
-    have hf : f = 0 := funext fun x => hs x (by simp)
-    rw [hf]
+    rw [(funext fun x => hs x (by simp))]
     exact M.zero_mem
   | @insert i T hi ih =>
-    have hfi : (D i).indicator f ∈ M := hloc i (by simp)
     let f' := f - (D i).indicator f
-    have hf' : f' ∈ M := by
-      apply ih f'
-      · intro j hj
-        exact hstab j (Finset.mem_insert_of_mem hj)
-      · intro j hj
-        have heq : (D j).indicator f' =
-            (D j).indicator f - (D i).indicator ((D j).indicator f) := by
-          funext x
-          by_cases hxi : x ∈ D i <;> by_cases hxj : x ∈ D j <;>
-            simp [f', hxi, hxj]
-        rw [heq]
-        exact M.sub_mem (hloc j (Finset.mem_insert_of_mem hj))
-          (hstab i (by simp) _ (hloc j (Finset.mem_insert_of_mem hj)))
-      · intro x hx
-        by_cases hxi : x ∈ D i
-        · simp [f', hxi]
-        · have hf := hs x (by
-            intro j hj
-            rcases Finset.mem_insert.mp hj with rfl | hj
-            · exact hxi
-            · exact hx j hj)
-          simp [f', hxi, hf]
     have heq : f = f' + (D i).indicator f := by dsimp [f']; abel
     rw [heq]
-    exact M.add_mem hf' hfi
+    refine M.add_mem ?_ (hloc i (by simp))
+    apply ih f'
+    · intro j hj
+      exact hstab j (Finset.mem_insert_of_mem hj)
+    · intro j hj
+      have heq : (D j).indicator f' =
+          (D j).indicator f - (D i).indicator ((D j).indicator f) := by
+        funext x
+        by_cases hxi : x ∈ D i <;> by_cases hxj : x ∈ D j <;>
+          simp [f', hxi, hxj]
+      rw [heq]
+      exact M.sub_mem (hloc j (Finset.mem_insert_of_mem hj))
+        (hstab i (by simp) _ (hloc j (Finset.mem_insert_of_mem hj)))
+    · intro x hx
+      by_cases hxi : x ∈ D i
+      · simp [f', hxi]
+      · have hf := hs x (by
+          intro j hj
+          rcases Finset.mem_insert.mp hj with rfl | hj
+          · exact hxi
+          · exact hx j hj)
+        simp [f', hxi, hf]
 
 private theorem projector_value (u : ℤ) (t₀ : (K F w)ˣ)
     (v : ordinaryKernel F ζ hζ w ρ) (p : P F ζ hζ w) :
@@ -251,7 +234,9 @@ private theorem patch_surjective (c : LocalChart F ζ hζ w m)
     let v' : ordinaryKernel F ζ hζ w ρ :=
       ⟨projector F ζ hζ w ρ m hm hρ u (x.val : K F w) v,
         projector_mem_ordinaryKernel F ζ hζ w ρ m hm hρ u x.val hzero v⟩
-    refine ⟨u, spectralPatch_self F w u x.val, v', ?_⟩
+    refine ⟨u, (by
+      change (x.val : K F w) - x.val ∈ localFiniteAnnihilator F w (finiteCompletionBall F w u)
+      simp), v', ?_⟩
     intro p
     change sectionValue F ζ hζ w m (ψ F w)
       (orbitSectionMap F ζ hζ w ρ m hm hρ hgen v') p = _
@@ -269,19 +254,22 @@ private theorem patch_surjective (c : LocalChart F ζ hζ w m)
   choose u hu v hv using hl
   obtain ⟨T, hT⟩ := c.ball.compact_domain.elim_finite_subcover
     (fun x : c.ball.domain => spectralPatch F w (u x) x.val)
-    (fun x => spectralPatch_open F w (u x) x.val)
-    (by intro x hx; exact Set.mem_iUnion.mpr ⟨⟨x, hx⟩, hu ⟨x, hx⟩⟩)
+    (fun x => (by
+      unfold spectralPatch frequencyCoset
+      rw [localFiniteAnnihilator_finiteCompletionBall]
+      exact (isOpen_finiteCompletionBall_coset F w x.val _).preimage Units.continuous_val))
+    (fun x hx => Set.mem_iUnion.mpr ⟨⟨x, hx⟩, hu ⟨x, hx⟩⟩)
   have hmem : sectionValue F ζ hζ w m (ψ F w) f.val ∈ M := by
     apply finite_cutoff_mem M
       (fun x : c.ball.domain => (slope F ζ hζ w) ⁻¹' spectralPatch F w (u x) x.val) T
     · intro x hx g hg
       obtain ⟨v₀, rfl⟩ := hg
-      refine ⟨⟨projector F ζ hζ w ρ m hm hρ (u x) (x.val : K F w) v₀.val,
+      refine ⟨⟨projector F ζ hζ w ρ m hm hρ (u x) x.val v₀.val,
         projector_preserves_ordinaryKernel F ζ hζ w ρ m hm hρ (u x) x.val v₀⟩, ?_⟩
       funext p
       change sectionValue F ζ hζ w m (ψ F w)
         (orbitSectionMap F ζ hζ w ρ m hm hρ hgen
-          ⟨projector F ζ hζ w ρ m hm hρ (u x) (x.val : K F w) v₀.val,
+          ⟨projector F ζ hζ w ρ m hm hρ (u x) x.val v₀.val,
             projector_preserves_ordinaryKernel F ζ hζ w ρ m hm hρ (u x) x.val v₀⟩) p = _
       rw [projector_value F ζ hζ w ρ m hm hρ hgen]
       by_cases hp : slope F ζ hζ w p ∈ spectralPatch F w (u x) x.val <;>
@@ -321,8 +309,7 @@ def orbitEquiv : (ordinaryKernel F ζ hζ w ρ) ≃ₗ[ℂ]
 
 @[simp] theorem orbitEquiv_apply (v : ordinaryKernel F ζ hζ w ρ) :
     orbitEquiv F ζ hζ w ρ m hm hρ hgen v =
-      orbitSectionMap F ζ hζ w ρ m hm hρ hgen v := by
-  rfl
+      orbitSectionMap F ζ hζ w ρ m hm hρ hgen v := rfl
 
 theorem orbitEquiv_symm_intertwines (p : P F ζ hζ w)
     (f : Sections F ζ hζ w m (ψ F w) (J F ζ hζ w ρ)) :

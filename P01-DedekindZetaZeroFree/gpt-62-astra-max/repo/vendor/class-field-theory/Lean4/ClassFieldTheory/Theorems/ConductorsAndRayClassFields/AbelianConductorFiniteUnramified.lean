@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -46,21 +41,16 @@ theorem IsAbelianConductor.finiteExponent_eq_zero_iff_unramified
           Algebra.IsUnramifiedAt (𝓞 K) W.asIdeal := by
   let H := GlobalClassFieldTheory.GlobalClassFields.ideleClassNormConductorialSubgroup
     (K := K) (L := L)
-  have heq : c =
-      ({ finitePart := H.fullConductor.finitePart
-         infinitePart := H.fullConductor.infinitePart } : RayClassModulus K) :=
-    hc.unique (normFullConductor_isAbelianConductor K L)
   have hsupport : c.finitePart.support =
       _root_.ramifiedBaseFinitePlaces (K := K) (L := L) := by
-    rw [heq]
-    change H.narrowFiniteConductor.support = _
+    rw [(hc.unique (normFullConductor_isAbelianConductor K L))]
     exact
       GlobalClassFieldTheory.GlobalClassFields.ideleClassNorm_narrowFiniteConductor_support_eq_ramifiedBaseFinitePlaces
-        (K := K) (L := L)
+
   calc
     c.finitePart v = 0 ↔ v ∉ c.finitePart.support :=
       (Finsupp.notMem_support_iff).symm
-    _ ↔ v ∉ _root_.ramifiedBaseFinitePlaces (K := K) (L := L) := by
+    _ ↔ v ∉ _root_.ramifiedBaseFinitePlaces := by
       rw [hsupport]
     _ ↔
         ∀ W : HeightOneSpectrum (𝓞 L),

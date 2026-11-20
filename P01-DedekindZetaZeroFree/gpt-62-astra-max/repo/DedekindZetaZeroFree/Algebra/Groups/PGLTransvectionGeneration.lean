@@ -20,15 +20,14 @@ theorem projective_transvection_induction (P : PGL(Fin 2, ℂ) → Prop)
     have hn : z≠0 := by intro h;rw [h,zero_pow (by decide)] at hz;exact r.ne_zero hz.symm
     refine ⟨Units.mk0 z hn,?_⟩
     apply Units.ext
-    simpa using hz
+    exact hz
   obtain ⟨a,ha⟩ := hs g
   induction a using QuotientGroup.induction_on with
   | H a =>
     rw [←ha]
-    change P (SpecialLinearGroup.toPGL a)
     apply SL2.transvection_induction (fun a=>P (SpecialLinearGroup.toPGL a)) ht
     intro a b h₁ h₂
-    simpa only [map_mul] using hm (SpecialLinearGroup.toPGL a) (SpecialLinearGroup.toPGL b) h₁ h₂
+    simpa using hm (SpecialLinearGroup.toPGL a) (SpecialLinearGroup.toPGL b) h₁ h₂
 end DedekindZetaZeroFree.FourierContinuation.CurrentOutputExtension
 
 end

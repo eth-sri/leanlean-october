@@ -19,8 +19,7 @@ private theorem character_one_of_factors (m : Ideal (𝓞 F)) (χ : RayClassChar
   induction I using UniqueFactorizationMonoid.induction_on_prime with
   | h₁ => exact (hI rfl).elim
   | h₂ I hu =>
-    have he : I = ⊤ := by simpa using (isUnit_iff_eq_one.mp hu)
-    rw [he, χ.map_top']
+    simp_all [χ.map_top']
   | h₃ I p hI0 hp ih =>
     let v : HeightOneSpectrum (𝓞 F) := ⟨p, Ideal.isPrime_of_prime hp, hp.ne_zero⟩
     rw [χ.map_mul', h v (dvd_mul_right p I), ih hI0 (fun w hw =>
@@ -32,7 +31,6 @@ theorem prime_witness (m : Ideal (𝓞 F)) (p : HeightOneSpectrum (𝓞 F))
       ∀ v ∈ T, v ≠ p → ¬ m ≤ v.asIdeal → a ∉ v.asIdeal := by
   classical
   let B := (insert p T).filter (fun v => ¬ m ≤ v.asIdeal)
-  have hpB : p ∈ B := by simp [B, hp]
   obtain ⟨b, hb, hb2⟩ := Ideal.exists_mem_pow_notMem_pow_succ p.asIdeal p.ne_bot
     p.isMaximal.ne_top 1
   simp only [pow_one] at hb
@@ -49,35 +47,30 @@ theorem prime_witness (m : Ideal (𝓞 F)) (p : HeightOneSpectrum (𝓞 F))
       cases j with
       | none => exact (hij rfl).elim
       | some v =>
-        have hv : ¬ m ≤ v.val.asIdeal := (Finset.mem_filter.mp v.property).2
-        have hc : m ⊔ v.val.asIdeal = ⊤ := by
-          rw [sup_comm]
-          exact v.val.isMaximal.out.2 _
-            (lt_of_le_of_ne le_sup_left (fun h => hv (h ▸ le_sup_right)))
-        exact (Ideal.isCoprime_iff_sup_eq.mpr hc).pow_right
+        refine (Ideal.isCoprime_iff_sup_eq.mpr ?_).pow_right
+        rw [sup_comm]
+        exact v.val.isMaximal.out.2 _
+          (lt_of_le_of_ne le_sup_left (fun h => ((Finset.mem_filter.mp v.property).2) (h ▸ le_sup_right)))
     | some v =>
       cases j with
       | none =>
-        have hv : ¬ m ≤ v.val.asIdeal := (Finset.mem_filter.mp v.property).2
-        have hc : v.val.asIdeal ⊔ m = ⊤ := v.val.isMaximal.out.2 _
-          (lt_of_le_of_ne le_sup_left (fun h => hv (h ▸ le_sup_right)))
-        exact (Ideal.isCoprime_iff_sup_eq.mpr hc).pow_left
+        exact (Ideal.isCoprime_iff_sup_eq.mpr (v.val.isMaximal.out.2 _
+          (lt_of_le_of_ne le_sup_left (fun h => ((Finset.mem_filter.mp v.property).2) (h ▸ le_sup_right))))).pow_left
       | some w =>
         apply HeightOneSpectrum.isCoprime_pow_of_ne
         intro he
         exact hij (congrArg some (Subtype.ext he))
   obtain ⟨a, ha⟩ := Ideal.exists_forall_sub_mem_ideal hpair x
-  have ham : a - 1 ∈ m := ha none
+  have ham := ha none
   have hap : a - b ∈ p.asIdeal ^ 2 := by
-    simpa [J, x] using ha (some ⟨p, hpB⟩)
+    simpa [J, x] using ha (some ⟨p, by simp [B, hp]⟩)
   have ha2 : a ∉ p.asIdeal ^ 2 := by
     intro h
     apply hb2
-    simpa only [sub_sub_cancel] using (p.asIdeal ^ 2).sub_mem h hap
-  have ha0 : a ≠ 0 := by intro h; exact ha2 (h ▸ Submodule.zero_mem _)
+    simpa using (p.asIdeal ^ 2).sub_mem h hap
+  have ha0 : a ≠ 0 := fun h => ha2 (h ▸ Submodule.zero_mem _)
   have ha1 : a ∈ p.asIdeal := by
-    have hh := p.asIdeal.add_mem (Ideal.pow_le_self (by norm_num : (2 : ℕ) ≠ 0) hap) hb
-    simpa only [sub_add_cancel] using hh
+    simpa using (p.asIdeal.add_mem (Ideal.pow_le_self (by norm_num : (2 : ℕ) ≠ 0) hap) hb)
   refine ⟨a, ha0, ham, ha1, ha2, ?_⟩
   intro v hv hne hm
   have hvB : v ∈ B := by simp [B, hv, hm]
@@ -87,19 +80,19 @@ theorem prime_witness (m : Ideal (𝓞 F)) (p : HeightOneSpectrum (𝓞 F))
     simpa only [sub_sub_cancel] using v.asIdeal.sub_mem hav hh
   exact v.isMaximal.ne_top ((Ideal.eq_top_iff_one _).mpr h1)
 
-theorem prime_values_one_of_cofinite [NumberField.IsTotallyComplex F]
-    (m : Ideal (𝓞 F)) (χ : RayClassCharacter F m)
+variable [NumberField.IsTotallyComplex F] (m : Ideal (𝓞 F)) (χ : RayClassCharacter F m)
     (h : ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite, χ v.asIdeal = 1)
+
+include h in
+theorem prime_values_one_of_cofinite
     (p : HeightOneSpectrum (𝓞 F)) (hp : p.asIdeal ⊔ m = ⊤) : χ p.asIdeal = 1 := by
   classical
   let T := (Filter.eventually_cofinite.mp h).toFinset
   have hpm : ¬ m ≤ p.asIdeal := by
     intro hh
-    have he : p.asIdeal ⊔ m = p.asIdeal := sup_eq_left.mpr hh
-    exact p.isMaximal.ne_top (he.symm.trans hp)
+    exact p.isMaximal.ne_top ((sup_eq_left.mpr hh).symm.trans hp)
   obtain ⟨a, ha, ham, hap, hap2, haT⟩ := prime_witness m p hpm T
-  have hpdiv : p.asIdeal ∣ Ideal.span {a} := Ideal.dvd_span_singleton.mpr hap
-  obtain ⟨I, hI⟩ := hpdiv
+  obtain ⟨I, hI⟩ := (Ideal.dvd_span_singleton.mpr hap)
   have hI0 : I ≠ ⊥ := by
     intro hh
     rw [hh, Ideal.mul_bot] at hI
@@ -112,18 +105,12 @@ theorem prime_values_one_of_cofinite [NumberField.IsTotallyComplex F]
     exact mul_dvd_mul_left p.asIdeal hh
   have hgood : ∀ v : HeightOneSpectrum (𝓞 F), v.asIdeal ∣ I → χ v.asIdeal = 1 := by
     intro v hv
-    have hdiv : v.asIdeal ∣ Ideal.span {a} := hI ▸ dvd_mul_of_dvd_right hv p.asIdeal
-    have hav : a ∈ v.asIdeal := Ideal.dvd_span_singleton.mp hdiv
-    have hne : v ≠ p := by intro hh; subst v; exact hpI hv
+    have hav := Ideal.dvd_span_singleton.mp (hI ▸ dvd_mul_of_dvd_right hv p.asIdeal)
     have hm : ¬ m ≤ v.asIdeal := by
       intro hh
-      have hsub : a - 1 ∈ v.asIdeal := hh ham
-      have h1 : (1 : 𝓞 F) ∈ v.asIdeal := by
-        simpa only [sub_sub_cancel] using v.asIdeal.sub_mem hav hsub
-      exact v.isMaximal.ne_top ((Ideal.eq_top_iff_one _).mpr h1)
-    have hvT : v ∉ T := fun hh => haT v hh hne hm hav
-    simpa [T] using hvT
-  have hχI := character_one_of_factors m χ I hI0 hgood
+      refine v.isMaximal.ne_top ((Ideal.eq_top_iff_one _).mpr ?_)
+      simpa using v.asIdeal.sub_mem hav (hh ham)
+    simpa [T] using (fun hh => haT v hh (by intro hh; subst v; exact hpI hv) hm hav)
   have hpos : ∀ φ : F →+* ℝ, 0 < φ (a : F) := by
     intro φ
     exfalso
@@ -132,12 +119,11 @@ theorem prime_values_one_of_cofinite [NumberField.IsTotallyComplex F]
     ext z
     simp [NumberField.ComplexEmbedding.conjugate]
   have he := χ.map_span' a ha ham hpos
-  rw [hI, χ.map_mul', hχI, mul_one] at he
+  rw [hI, χ.map_mul', (character_one_of_factors m χ I hI0 hgood), mul_one] at he
   exact he
 
-theorem principal_of_cofinite_prime_values [NumberField.IsTotallyComplex F]
-    (m : Ideal (𝓞 F)) (χ : RayClassCharacter F m)
-    (h : ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite, χ v.asIdeal = 1) :
+include h in
+theorem principal_of_cofinite_prime_values :
     χ.IsPrincipal := by
   intro I hI hcop
   apply character_one_of_factors m χ I hI
@@ -158,19 +144,22 @@ open IsDedekindDomain
 
 namespace DedekindZetaZeroFree.Detector
 
-noncomputable def frequencyGamma (F : Type) [Field F] [NumberField F]
-    (S : Set (HeightOneSpectrum (𝓞 F))) : Subgroup Fˣ :=
+section
+
+variable (F : Type) [Field F] [NumberField F] (S : Set (HeightOneSpectrum (𝓞 F)))
+
+noncomputable def frequencyGamma : Subgroup Fˣ :=
   (S.unit F).map (powMonoidHom 6)
 
-def frequencyEquivalent (F : Type) [Field F] [NumberField F]
-    (S : Set (HeightOneSpectrum (𝓞 F))) (x y : Fˣ) : Prop :=
+def frequencyEquivalent (x y : Fˣ) : Prop :=
   x / y ∈ frequencyGamma F S
 
-def sixthPowerFreeFrequency (F : Type) [Field F] [NumberField F]
-    (S : Set (HeightOneSpectrum (𝓞 F))) (u : Fˣ) : Prop :=
+def sixthPowerFreeFrequency (u : Fˣ) : Prop :=
   (u : F) ∈ S.integer F ∧
     ∀ v : HeightOneSpectrum (𝓞 F), v ∉ S →
       ∃ e : Fin 6, v.valuation F (u : F) = WithZero.exp (-(e.val : ℤ))
+
+end
 
 structure FrequencyRepresentatives (F : Type) [Field F] [NumberField F]
     (S : Set (HeightOneSpectrum (𝓞 F))) where
@@ -188,7 +177,6 @@ theorem frequency_representatives_power_injective
     u = v := by
   obtain ⟨x, hx⟩ := hPower
   have hxS : x ∈ S.unit F := by
-    change ∀ w : HeightOneSpectrum (𝓞 F), w ∉ S → w.valuation F (x : F) = 1
     intro w hw
     obtain ⟨a, ha⟩ := (U.power_free u.val u.property).2 w hw
     obtain ⟨b, hb⟩ := (U.power_free v.val v.property).2 w hw
@@ -200,20 +188,15 @@ theorem frequency_representatives_power_injective
       WithZero.log_exp, WithZero.log_exp, WithZero.log_pow] at hlog
     have hz : WithZero.log (w.valuation F (x : F)) = 0 := by
       simp only [nsmul_eq_mul] at hlog
-      have ha' := a.isLt
-      have hb' := b.isLt
       omega
-    have hn : w.valuation F (x : F) ≠ 0 := by
-      exact (map_ne_zero (w.valuation F)).mpr x.ne_zero
+    have hn := (map_ne_zero (w.valuation F)).mpr x.ne_zero
     rw [← WithZero.exp_log hn, hz, WithZero.exp_zero]
-  have huv : frequencyEquivalent F S u.val v.val := by
-    change u.val / v.val ∈ (S.unit F).map (powMonoidHom 6)
-    exact ⟨x, hxS, hx.symm⟩
   obtain ⟨w, hw, huniq⟩ := U.represents u.val (U.power_free u.val u.property)
   have hu : frequencyEquivalent F S u.val u.val := by
     change u.val / u.val ∈ frequencyGamma F S
     simp
-  exact (huniq u hu).trans (huniq v huv).symm
+  exact (huniq u hu).trans (huniq v (by
+    exact ⟨x, hxS, hx.symm⟩)).symm
 
 private theorem ratio_sixth (G : Type*) [CommGroup G] (u v x r s a b : G)
     (ha : x / (u * r ^ 6) = a ^ 6)
@@ -224,80 +207,37 @@ private theorem ratio_sixth (G : Type*) [CommGroup G] (u v x r s a b : G)
     simp only [div_mul_cancel] at ha'
     apply (eq_div_iff_mul_eq'').mpr
     calc
-      (a ^ 6 * r ^ 6) * u = a ^ 6 * (u * r ^ 6) := by ac_rfl
+      _ = a ^ 6 * (u * r ^ 6) := by ac_rfl
       _ = x := ha'.symm
   have hv : v = x / (b ^ 6 * s ^ 6) := by
     have hb' := congrArg (fun z : G => z * (v * s ^ 6)) hb
     simp only [div_mul_cancel] at hb'
     apply (eq_div_iff_mul_eq'').mpr
     calc
-      (b ^ 6 * s ^ 6) * v = b ^ 6 * (v * s ^ 6) := by ac_rfl
+      _ = b ^ 6 * (v * s ^ 6) := by ac_rfl
       _ = x := hb'.symm
-  rw [hu, hv]
-  simp only [mul_pow, div_pow]
-  simp [div_div_div_cancel_left]
+  simp_all [div_div_div_cancel_left, mul_pow, div_pow]
 private theorem unit_of_sixth {F : Type} [Field F] [NumberField F]
     (S : Set (HeightOneSpectrum (𝓞 F))) (y : Fˣ)
     (hy : y ^ 6 ∈ S.unit F) : y ∈ S.unit F := by
   intro w hw
   have h := hy w hw
   simp only [Units.val_pow_eq_pow_val, map_pow] at h
-  have hn : w.valuation F (y : F) ≠ 0 := (map_ne_zero (w.valuation F)).mpr y.ne_zero
   have hz := congrArg WithZero.log h
   rw [WithZero.log_pow] at hz
   simp only [WithZero.log_one, nsmul_eq_mul] at hz
   have hh : WithZero.log (w.valuation F (y : F)) = 0 := by omega
-  rw [← WithZero.exp_log hn, hh, WithZero.exp_zero]
-
-private theorem frequency_presentation_unique
-    (F : Type) [Field F] [NumberField F]
-    (S : Set (HeightOneSpectrum (𝓞 F)))
-    (U : FrequencyRepresentatives F S) (x : Fˣ)
-    (p q : U.carrier × {J : Ideal (S.integer F) // J ≠ ⊥})
-    (hp : ∃ r : S.integer F, r ≠ 0 ∧ Ideal.span {r} = p.2.val ∧
-        ∃ rF : Fˣ, (rF : F) = (r : F) ∧ frequencyEquivalent F S x (p.1.val * rF ^ 6))
-    (hq : ∃ r : S.integer F, r ≠ 0 ∧ Ideal.span {r} = q.2.val ∧
-        ∃ rF : Fˣ, (rF : F) = (r : F) ∧ frequencyEquivalent F S x (q.1.val * rF ^ 6)) : p = q := by
-  obtain ⟨r, hr, hrJ, rF, hrF, heqr⟩ := hp
-  obtain ⟨s, hs, hsJ, sF, hsF, heqs⟩ := hq
-  obtain ⟨a, haS, ha⟩ := heqr
-  obtain ⟨b, hbS, hb⟩ := heqs
-  change a ^ 6 = x / (p.1.val * rF ^ 6) at ha
-  change b ^ 6 = x / (q.1.val * sF ^ 6) at hb
-  have heq := ratio_sixth Fˣ p.1.val q.1.val x rF sF a b ha.symm hb.symm
-  have huv : p.1 = q.1 := frequency_representatives_power_injective F S U p.1 q.1
-    ⟨b * sF / (a * rF), heq⟩
-  have hy6 : (b * sF / (a * rF)) ^ 6 = 1 := by
-    rw [← heq, huv]
-    simp
-  have hyS := unit_of_sixth S (b * sF / (a * rF)) (hy6.symm ▸ (S.unit F).one_mem)
-  have hsr : sF / rF ∈ S.unit F := by
-    have hh : sF / rF = (b * sF / (a * rF)) * a / b := by
-      symm
-      calc
-        (b * sF / (a * rF)) * a / b = (sF / rF) * (a * a⁻¹) * (b * b⁻¹) := by
-          simp only [div_eq_mul_inv, mul_inv_rev]
-          ac_rfl
-        _ = sF / rF := by simp
-    rw [hh]
-    exact (S.unit F).div_mem ((S.unit F).mul_mem hyS haS) hbS
-  let t : (S.integer F)ˣ := Set.unitEquivUnitsInteger S F ⟨sF / rF, hsr⟩
-  have ht : (t : S.integer F) * r = s := by
-    apply Subtype.ext
-    change ((sF / rF : Fˣ) : F) * (r : F) = (s : F)
-    rw [Units.val_div_eq_div_val, ← hrF, ← hsF]
-    exact div_mul_cancel₀ _ rF.ne_zero
-  have hJ : p.2 = q.2 := by
-    apply Subtype.ext
-    rw [← hrJ, ← hsJ, ← ht]
-    exact (Ideal.span_singleton_mul_left_unit t.isUnit r).symm
-  exact Prod.ext huv hJ
+  rw [← WithZero.exp_log ((map_ne_zero (w.valuation F)).mpr y.ne_zero), hh, WithZero.exp_zero]
 
 noncomputable section
 variable {F : Type} [Field F] [NumberField F]
-variable (S : Set (HeightOneSpectrum (𝓞 F))) [IsPrincipalIdealRing (S.integer F)]
+    (S : Set (HeightOneSpectrum (𝓞 F))) [IsPrincipalIdealRing (S.integer F)]
 
- def frequencyExteriorPrime (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ S) : Ideal (S.integer F) where
+ section
+
+variable (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ S)
+
+def frequencyExteriorPrime : Ideal (S.integer F) where
   carrier := {a | v.valuation F (a : F) < 1}
   zero_mem' := by simp
   add_mem' := by
@@ -312,7 +252,8 @@ variable (S : Set (HeightOneSpectrum (𝓞 F))) [IsPrincipalIdealRing (S.integer
     rw [map_mul]
     exact lt_of_le_of_lt (mul_le_mul_of_nonneg_right (a.property v hv) zero_le) (by simpa using hb)
 
-private theorem frequency_exists_exterior_generator (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ S) :
+include hv in
+private theorem frequency_exists_exterior_generator :
     ∃ p : S.integer F, p ≠ 0 ∧
       v.valuation F (p : F) = WithZero.exp (-1 : ℤ) ∧
       ∀ w : HeightOneSpectrum (𝓞 F), w ∉ S → w ≠ v →
@@ -334,47 +275,40 @@ private theorem frequency_exists_exterior_generator (v : HeightOneSpectrum (𝓞
     exact hπP
   have hp0 : p ≠ 0 := by
     intro h
-    have : πR = 0 := zero_dvd_iff.mp (h ▸ hdvd)
+    have := zero_dvd_iff.mp (h ▸ hdvd)
     have hh := congrArg (fun a : S.integer F => v.valuation F (a : F)) this
     simp [hvπ] at hh
   have hval : v.valuation F (p : F) = WithZero.exp (-1 : ℤ) := by
-    have hlt : v.valuation F (p : F) < 1 := hpP
     obtain ⟨a, ha⟩ := hdvd
     have hh := congrArg (fun z : S.integer F => v.valuation F (z : F)) ha
     simp only [map_mul, Subalgebra.coe_mul] at hh
-    have ha1 := Set.integer_valuation_le_one S F a hv
     have hpne : v.valuation F (p : F) ≠ 0 :=
       (map_ne_zero (v.valuation F)).mpr (by exact_mod_cast hp0)
     have hle : WithZero.exp (-1 : ℤ) ≤ v.valuation F (p : F) := by
       rw [← hvπ, hh]
-      exact mul_le_of_le_one_right zero_le ha1
+      exact mul_le_of_le_one_right zero_le (Set.integer_valuation_le_one S F a hv)
     apply le_antisymm ?_ hle
     rw [← WithZero.exp_log hpne, WithZero.exp_le_exp]
-    have hz : WithZero.log (v.valuation F (p : F)) < 0 := by
-      exact (WithZero.log_lt_iff_lt_exp hpne).mpr (by simpa using hlt)
+    have hz := (WithZero.log_lt_iff_lt_exp hpne).mpr (by exact hpP)
     omega
   refine ⟨p, hp0, hval, ?_⟩
   intro w hw hwv
-  have hvw : ¬ v.asIdeal ≤ w.asIdeal := by
-    intro h
-    exact hwv (HeightOneSpectrum.ext (v.isMaximal.eq_of_le w.isPrime.ne_top h).symm)
+  have hvw : ¬ v.asIdeal ≤ w.asIdeal := fun h => hwv (HeightOneSpectrum.ext (v.isMaximal.eq_of_le w.isPrime.ne_top h).symm)
   obtain ⟨a, hav, haw⟩ := SetLike.not_le_iff_exists.mp hvw
   let aR : S.integer F := ⟨(a : F), fun z _ => z.valuation_le_one a⟩
-  have haP : aR ∈ P := by
-    change v.valuation F (a : F) < 1
-    exact (v.valuation_lt_one_iff_mem a).mpr hav
-  have hpa : p ∣ aR := by rw [← Ideal.mem_span_singleton, hP]; exact haP
+  have hpa : p ∣ aR := by rw [← Ideal.mem_span_singleton, hP]; exact (by
+    exact (v.valuation_lt_one_iff_mem a).mpr hav)
   obtain ⟨b, hb⟩ := hpa
   have ha1 : w.valuation F (aR : F) = 1 := by
     exact w.valuation_eq_one_iff_notMem.mpr haw
   have hh := congrArg (fun z : S.integer F => w.valuation F (z : F)) hb
   simp only [map_mul, Subalgebra.coe_mul, ha1] at hh
-  have hb1 := Set.integer_valuation_le_one S F b hw
-  have hp1 := Set.integer_valuation_le_one S F p hw
   have : 1 ≤ w.valuation F (p : F) := by
     rw [hh]
-    exact mul_le_of_le_one_right zero_le hb1
-  exact le_antisymm hp1 this
+    exact mul_le_of_le_one_right zero_le (Set.integer_valuation_le_one S F b hw)
+  exact le_antisymm (Set.integer_valuation_le_one S F p hw) this
+
+end
 
 set_option backward.isDefEq.respectTransparency false in
 set_option backward.isDefEq.respectTransparency.types false in
@@ -395,8 +329,8 @@ private theorem frequency_sixth_free_decomposition (x : S.integer F) (hx : x ≠
       have hpF : (p : F) ≠ 0 := by exact_mod_cast hp0
       have hvalne : v.valuation F (x : F) ≠ 0 := (map_ne_zero _).mpr hxF
       have hlog : WithZero.log (v.valuation F (x : F)) ≤ -6 := by
-        have hle : WithZero.log (v.valuation F (x : F)) ≤ 0 :=
-          (WithZero.log_le_iff_le_exp hvalne).mpr (by simpa using x.property v hv)
+        have hle :=
+          (WithZero.log_le_iff_le_exp hvalne).mpr (by exact x.property v hv)
         by_contra hh
         have hn : 0 ≤ -WithZero.log (v.valuation F (x : F)) ∧
             -WithZero.log (v.valuation F (x : F)) < 6 := by omega
@@ -428,17 +362,15 @@ private theorem frequency_sixth_free_decomposition (x : S.integer F) (hx : x ≠
         exact (div_mul_cancel₀ (x : F) (pow_ne_zero 6 hpF)).symm
       have hpnu : ¬ IsUnit (p ^ 6) := by
         intro hu
-        have hpu : IsUnit p := (isUnit_pow_iff (by omega)).mp hu
+        have hpu := (isUnit_pow_iff (by omega)).mp hu
         obtain ⟨pu, hpu⟩ := hpu
         have hone : v.valuation F (pu : F) = 1 := by
-          have ha := (pu.val).property v hv
-          have hb := (pu.inv).property v hv
           have heq : v.valuation F (pu : F) * v.valuation F (pu.inv : F) = 1 := by
             rw [← map_mul]
             change v.valuation F ((pu.val * pu.inv : S.integer F) : F) = 1
             rw [pu.val_inv]
             exact map_one _
-          exact eq_one_of_one_le_mul_left ha hb heq.ge
+          exact eq_one_of_one_le_mul_left ((pu.val).property v hv) ((pu.inv).property v hv) heq.ge
         rw [hpu, hpv] at hone
         simpa using hone
       obtain ⟨y, r, hy0, hr0, hqy, hy⟩ := ih q ⟨hq0, p ^ 6, hpnu, hxq⟩ hq0
@@ -454,11 +386,10 @@ private theorem frequency_presentation_exists
   let xR : S.integer F := ⟨(x : F), hx⟩
   have hxR : xR ≠ 0 := by
     intro h
-    have hh := congrArg (fun a : S.integer F => (a : F)) h
-    exact x.ne_zero (by simpa [xR] using hh)
+    exact x.ne_zero (by exact (congrArg (fun a : S.integer F => (a : F)) h))
   obtain ⟨y, r, hy0, hr0, hxy, hy⟩ := frequency_sixth_free_decomposition S xR hxR
-  let yF : Fˣ := Units.mk0 (y : F) (by exact_mod_cast hy0)
-  let rF : Fˣ := Units.mk0 (r : F) (by exact_mod_cast hr0)
+  let yF := Units.mk0 (y : F) (by exact_mod_cast hy0)
+  let rF := Units.mk0 (r : F) (by exact_mod_cast hr0)
   have hyF : sixthPowerFreeFrequency F S yF := by
     refine ⟨y.property, ?_⟩
     intro v hv
@@ -467,17 +398,15 @@ private theorem frequency_presentation_exists
   obtain ⟨a, haS, ha⟩ := hu
   have hxyF : x = yF * rF ^ 6 := by
     apply Units.ext
-    have hh := congrArg (fun a : S.integer F => (a : F)) hxy
-    simpa [xR, yF, rF] using hh
-  let J : Ideal (S.integer F) := Ideal.span {r}
+    simpa [xR, yF, rF] using (congrArg (fun a : S.integer F => (a : F)) hxy)
+  let J := Ideal.span {r}
   have hJ : J ≠ ⊥ := by
     intro hh
     have hr : r ∈ (⊥ : Ideal (S.integer F)) := by
       rw [← hh]
       exact Ideal.subset_span (by simp)
-    exact hr0 (by simpa using hr)
+    exact hr0 (by exact hr)
   refine ⟨⟨u, ⟨J, hJ⟩⟩, r, hr0, rfl, rF, by simp [rF], ?_⟩
-  change x / (u.val * rF ^ 6) ∈ (S.unit F).map (powMonoidHom 6)
   refine ⟨a, haS, ?_⟩
   rw [ha, hxyF]
   simp only [div_eq_mul_inv, mul_inv_rev]
@@ -499,15 +428,41 @@ theorem frequency_unique_presentation
       ∃ r : S.integer F, r ≠ 0 ∧ Ideal.span {r} = p.2.val ∧
         ∃ rF : Fˣ, (rF : F) = (r : F) ∧
           frequencyEquivalent F S x (p.1.val * rF ^ (6 : ℕ)) := by
-  have hexists : ∃ p : U.carrier × {J : Ideal (S.integer F) // J ≠ ⊥},
-      ∃ r : S.integer F, r ≠ 0 ∧ Ideal.span {r} = p.2.val ∧
-        ∃ rF : Fˣ, (rF : F) = (r : F) ∧
-          frequencyEquivalent F S x (p.1.val * rF ^ (6 : ℕ)) := by
-    exact frequency_presentation_exists S U x hx
-  obtain ⟨p, hp⟩ := hexists
+  obtain ⟨p, hp⟩ := (frequency_presentation_exists S U x hx)
   refine ⟨p, hp, ?_⟩
   intro q hq
-  exact frequency_presentation_unique F S U x q p hq hp
+  obtain ⟨r, hr, hrJ, rF, hrF, heqr⟩ := hq
+  obtain ⟨s, hs, hsJ, sF, hsF, heqs⟩ := hp
+  obtain ⟨a, haS, ha⟩ := heqr
+  obtain ⟨b, hbS, hb⟩ := heqs
+  change a ^ 6 = x / (q.1.val * rF ^ 6) at ha
+  change b ^ 6 = x / (p.1.val * sF ^ 6) at hb
+  have heq := ratio_sixth Fˣ q.1.val p.1.val x rF sF a b ha.symm hb.symm
+  have huv := frequency_representatives_power_injective F S U q.1 p.1
+    ⟨b * sF / (a * rF), heq⟩
+  have hy6 : (b * sF / (a * rF)) ^ 6 = 1 := by
+    rw [← heq, huv]
+    simp
+  have hsr : sF / rF ∈ S.unit F := by
+    have hh : sF / rF = (b * sF / (a * rF)) * a / b := by
+      symm
+      calc
+        _ = (sF / rF) * (a * a⁻¹) * (b * b⁻¹) := by
+          simp only [div_eq_mul_inv, mul_inv_rev]
+          ac_rfl
+        _ = sF / rF := by simp
+    rw [hh]
+    exact (S.unit F).div_mem ((S.unit F).mul_mem (unit_of_sixth S (b * sF / (a * rF)) (hy6.symm ▸ (S.unit F).one_mem)) haS) hbS
+  let t := Set.unitEquivUnitsInteger S F ⟨sF / rF, hsr⟩
+  have ht : t * r = s := by
+    apply Subtype.ext
+    change ((sF / rF : Fˣ) : F) * (r : F) = (s : F)
+    rw [Units.val_div_eq_div_val, ← hrF, ← hsF]
+    exact div_mul_cancel₀ _ rF.ne_zero
+  apply Prod.ext huv
+  apply Subtype.ext
+  rw [← hrJ, ← hsJ, ← ht]
+  exact (Ideal.span_singleton_mul_left_unit t.isUnit r).symm
 
 structure PrimitiveFrequencyCharacter (F : Type) [Field F] [NumberField F] where
   conductor : Ideal (𝓞 F)
@@ -515,11 +470,15 @@ structure PrimitiveFrequencyCharacter (F : Type) [Field F] [NumberField F] where
   character : RayClassCharacter F conductor
   primitive : character.IsPrimitive
 
-def samePrimitiveFrequencyCharacter (F : Type) [Field F] [NumberField F]
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+def samePrimitiveFrequencyCharacter
     (χ ψ : PrimitiveFrequencyCharacter F) : Prop :=
   ∀ n : Ideal (𝓞 F), χ.character n = ψ.character n
 
-def IsKummerFrequencyCharacter (F : Type) [Field F] [NumberField F]
+def IsKummerFrequencyCharacter
     (ζ12 : F) (ι : F →+* ℂ) (S : Set (HeightOneSpectrum (𝓞 F)))
     (u : Fˣ) (χ : PrimitiveFrequencyCharacter F) : Prop :=
   ∀ v : HeightOneSpectrum (𝓞 F), v ∉ S → v.valuation F (u : F) = 1 →
@@ -529,6 +488,8 @@ def IsKummerFrequencyCharacter (F : Type) [Field F] [NumberField F]
           (ζ12 ^ (2 : ℕ)) ^ j.val) < 1 ∧
         χ.character v.asIdeal = ι ((ζ12 ^ (2 : ℕ)) ^ j.val)
 
+end
+
 structure KummerFrequencyFamily (F : Type) [Field F] [NumberField F]
     (ζ12 : F) (ι : F →+* ℂ) (S : Set (HeightOneSpectrum (𝓞 F)))
     (U : FrequencyRepresentatives F S) where
@@ -536,8 +497,11 @@ structure KummerFrequencyFamily (F : Type) [Field F] [NumberField F]
   kummer : ∀ u : U.carrier,
     IsKummerFrequencyCharacter F ζ12 ι S u.val (numerator u)
 
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
 theorem kummer_frequency_family_exists
-    (F : Type) [Field F] [NumberField F]
     (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12) (ι : F →+* ℂ)
     (S : Set (HeightOneSpectrum (𝓞 F))) (hS : S.Finite)
     (hSix : ∀ v : HeightOneSpectrum (𝓞 F), ¬ (Ideal.absNorm v.asIdeal).Coprime 6 → v ∈ S)
@@ -559,8 +523,7 @@ theorem kummer_frequency_family_exists
       exact hv (hSix v h)
     have hn := PrimitiveRay.arithmeticSextic_primitiveRay_support ζ12 hζ12 ι u.val
       hc m hm χ hp hχ v h6 hu
-    have hcop : v.asIdeal ⊔ m = ⊤ := by
-      exact v.isMaximal.out.2 _
+    have hcop := v.isMaximal.out.2 _
         (lt_of_le_of_ne le_sup_left (fun h => hn (h ▸ le_sup_right)))
     refine ⟨hcop, ?_⟩
     obtain ⟨j, hj, he⟩ := PrimitiveRay.arithmeticSexticArtinCharacter_prime
@@ -573,11 +536,13 @@ theorem kummer_frequency_family_exists
     exact he
   exact ⟨⟨fun u => (hex u).choose, fun u => (hex u).choose_spec⟩⟩
 
-def IsPrimitiveFrequencyTwist (F : Type) [Field F] [NumberField F]
+def IsPrimitiveFrequencyTwist
     (η χ ψ : PrimitiveFrequencyCharacter F) : Prop :=
   ∀ n : Ideal (𝓞 F), n ≠ ⊥ →
     n ⊔ (η.conductor * χ.conductor * ψ.conductor) = ⊤ →
       ψ.character n = η.character n * (starRingEnd ℂ) (χ.character n)
+
+end
 
 structure TwistedFrequencyFamily (F : Type) [Field F] [NumberField F]
     (ζ12 : F) (ι : F →+* ℂ) (S : Set (HeightOneSpectrum (𝓞 F)))
@@ -615,7 +580,7 @@ theorem twisted_frequency_family_exists
       IsPrimitiveFrequencyTwist F η (K.numerator u) ψ := by
     intro u
     let χ := K.numerator u
-    let Φ : IdeleClassGroup F →ₜ* ℂˣ := lift η * (lift χ)⁻¹
+    let Φ := lift η * (lift χ)⁻¹
     have hpow : ∀ c : IdeleClassGroup F,
         Φ c ^ (exponent η * exponent χ) = 1 := by
       intro c
@@ -656,70 +621,57 @@ theorem twisted_frequency_family_exists
     rw [Units.val_mul, Units.val_inv_eq_inv_val, Complex.inv_eq_conj en, eη, eχ]
   exact ⟨⟨fun u => (hex u).choose, fun u => (hex u).choose_spec⟩⟩
 
-private theorem frequency_ratio_residue
-    {F : Type} [Field F] [NumberField F]
-    (ζ12 : F) (ι : F →+* ℂ) (S : Set (HeightOneSpectrum (𝓞 F)))
-    (u w : Fˣ) (χ ψ : PrimitiveFrequencyCharacter F)
-    (hχ : IsKummerFrequencyCharacter F ζ12 ι S u χ)
-    (hψ : IsKummerFrequencyCharacter F ζ12 ι S w ψ)
-    (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ S)
-    (hu : v.valuation F (u : F) = 1) (hw : v.valuation F (w : F) = 1)
-    (heq : χ.character v.asIdeal = ψ.character v.asIdeal) :
-    v.valuation F (((u / w : Fˣ) : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) - 1) < 1 := by
-  obtain ⟨_, i, hi, hci⟩ := hχ v hv hu
-  obtain ⟨_, j, hj, hcj⟩ := hψ v hv hw
-  have hij : (ζ12 ^ 2) ^ i.val = (ζ12 ^ 2) ^ j.val := by
-    apply ι.injective
-    exact hci.symm.trans (heq.trans hcj)
-  rw [← hij] at hj
-  have hd : v.valuation F ((u : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) -
-      (w : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6)) < 1 := by
-    convert (v.valuation F).map_sub_lt hi hj using 1
-    congr 1
-    ring
-  have hn : (w : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) ≠ 0 := pow_ne_zero _ w.ne_zero
-  have he : (((u / w : Fˣ) : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) - 1) =
-      ((u : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) -
-        (w : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6)) /
-          (w : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) := by
-    simp only [Units.val_div_eq_div_val, div_pow]
-    rw [sub_div, div_self hn]
-  rw [he, map_div₀, map_pow, hw, one_pow, div_one]
-  exact hd
+section
+
+variable {F : Type} [Field F] [NumberField F]
 
 private theorem frequency_injective_of_cofinite_prime_equality
-    {F : Type} [Field F] [NumberField F]
     (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12) (ι : F →+* ℂ)
     (S : Set (HeightOneSpectrum (𝓞 F))) (hS : S.Finite)
     (U : FrequencyRepresentatives F S) (K : KummerFrequencyFamily F ζ12 ι S U)
     (u w : U.carrier)
     (heq : ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite,
       (K.numerator u).character v.asIdeal = (K.numerator w).character v.asIdeal) : u = w := by
-  have hmu : (primitiveRoots 6 F).Nonempty :=
-    ⟨ζ12 ^ 2, (mem_primitiveRoots (by norm_num : 0 < 6)).mpr
-      (IsPrimitiveRoot.pow (by norm_num : 0 < 12) hζ12 (by norm_num : 12 = 2 * 6))⟩
   have hs : ∀ᶠ v in Filter.cofinite, v ∉ S := Filter.eventually_cofinite.mpr (by simpa using hS)
   have hr : ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite,
       v.valuation F (((u.val / w.val : Fˣ) : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) - 1) < 1 := by
     filter_upwards [hs, FrequencyDetection.valuation_unit_cofinite u.val,
       FrequencyDetection.valuation_unit_cofinite w.val, heq] with v hv hu hw he
-    exact frequency_ratio_residue ζ12 ι S u.val w.val (K.numerator u) (K.numerator w)
-      (K.kummer u) (K.kummer w) v hv hu hw he
-  obtain ⟨x, hx⟩ := FrequencyDetection.global_power_of_cofinite_residue (6 : ℕ+) hmu
+    obtain ⟨_, i, hi, hci⟩ := (K.kummer u) v hv hu
+    obtain ⟨_, j, hj, hcj⟩ := (K.kummer w) v hv hw
+    have hij : (ζ12 ^ 2) ^ i.val = (ζ12 ^ 2) ^ j.val := by
+      apply ι.injective
+      exact hci.symm.trans (he.trans hcj)
+    rw [← hij] at hj
+    have hd : v.valuation F ((u.val : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) -
+        (w.val : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6)) < 1 := by
+      convert (v.valuation F).map_sub_lt hi hj using 1
+      congr 1
+      ring
+    have he : (((u.val / w.val : Fˣ) : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) - 1) =
+        ((u.val : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) -
+          (w.val : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6)) /
+            (w.val : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) := by
+      simp only [Units.val_div_eq_div_val, div_pow]
+      rw [sub_div, div_self (pow_ne_zero _ w.val.ne_zero)]
+    rw [he, map_div₀, map_pow, hw, one_pow, div_one]
+    exact hd
+  obtain ⟨x, hx⟩ := FrequencyDetection.global_power_of_cofinite_residue (6 : ℕ+) (⟨ζ12 ^ 2, (mem_primitiveRoots (by norm_num : 0 < 6)).mpr
+    (IsPrimitiveRoot.pow (by norm_num : 0 < 12) hζ12 (by norm_num : 12 = 2 * 6))⟩)
     (u.val / w.val) hr
   exact frequency_representatives_power_injective F S U u w ⟨x, hx.symm⟩
 
-private theorem frequency_coprime_cofinite
-    {F : Type} [Field F] [NumberField F] (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
+private theorem frequency_coprime_cofinite (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
     ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite, v.asIdeal ⊔ m = ⊤ := by
   apply Filter.eventually_cofinite.mpr
   apply (Ideal.finite_factors hm).subset
   intro v hv
   simp only [Set.mem_setOf_eq] at hv ⊢
   apply Ideal.dvd_iff_le.mpr
-  have hvmax : v.asIdeal.IsMaximal := v.isMaximal
-  exact (hvmax.eq_of_le hv (show v.asIdeal ≤ v.asIdeal ⊔ m from le_sup_left)).symm ▸
+  exact (v.isMaximal.eq_of_le hv (show v.asIdeal ≤ v.asIdeal ⊔ m from le_sup_left)).symm ▸
     (show m ≤ v.asIdeal ⊔ m from le_sup_right)
+
+end
 
 theorem twisted_frequency_character_injective
     (F : Type) [Field F] [NumberField F]

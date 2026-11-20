@@ -9,14 +9,9 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources EisensteinSmoothGerms
 open scoped Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-theorem selected_scalar_branch_joint_continuous_on
-    (R : PrincipalMellin.ActualRecipe S η) {N : TraceHaarTransport R} (B : JointRootAlignedSources R N)
-    (v : R.A.UnitQuotient) (D : SelectedScalarBranch R B v) (P : SelectedPoleSet D) :
-    ContinuousOn (fun p : ℂ × Group R => D.E p.1 p.2)
-      ((KPContinuation.spectralDomain \ P.poles) ×ˢ Set.univ) := by
-  exact ResidueContinuity.ScalarSourceJointContinuity.selected_regular_joint R B v D P
+alias selected_scalar_branch_joint_continuous_on := DedekindZetaZeroFree.ResidueContinuity.ScalarSourceJointContinuity.selected_regular_joint
 
 theorem selected_regular_continuous
     {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}

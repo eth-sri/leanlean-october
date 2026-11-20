@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuatio
 noncomputable section
 open scoped Classical NumberField
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem target_primitive_inducer
     (R : PrincipalMellin.ActualRecipe S η) :
@@ -29,11 +29,7 @@ theorem target_primitive_inducer
     by_contra h
     obtain ⟨v, hv⟩ := (IsDedekindDomain.HeightOneSpectrum.ideal_ne_top_iff_exists
       (NumberField.RingOfIntegers.not_isField F) (I.val ⊔ R.A.modulus)).mp h
-    have hvSf : v ∈ R.A.Sf := R.A.modulus_support v (le_sup_right.trans hv)
-    have hI : I.val ⊔ v.asIdeal = ⊤ :=
-      (R.A.exterior_iff ⟨I.val, I.property.1⟩).mp I.property.2 v hvSf
-    have hIv : I.val ≤ v.asIdeal := le_sup_left.trans hv
-    exact v.isPrime.ne_top (top_le_iff.mp (hI ▸ sup_le hIv le_rfl))
+    exact v.isPrime.ne_top (top_le_iff.mp (((R.A.exterior_iff ⟨I.val, I.property.1⟩).mp I.property.2 v (R.A.modulus_support v (le_sup_right.trans hv))) ▸ sup_le (le_sup_left.trans hv) le_rfl))
   refine ⟨⟨⊤, top_ne_bot, χ, hχprim⟩, ?_, ?_, ?_⟩
   · intro v hv
     exact absurd (top_le_iff.mp hv) v.isMaximal.ne_top

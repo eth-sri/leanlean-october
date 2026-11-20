@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -32,7 +28,6 @@ open scoped NumberField TensorProduct RestrictedProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 open AlgebraicNumberTheory.Valuations
 
@@ -107,17 +102,15 @@ theorem infinitePlaceCompletionMap_self_apply
         (y : W.Completion)
     rw [NumberField.LiesOver.completionMap_coe
       (v := W) (w := W) y]
-    have hy :
-        algebraMap (WithAbs W.1) (WithAbs W.1) y = y := by
-      apply (WithAbs.equiv W.1).injective
-      change
-        algebraMap K K (WithAbs.equiv W.1 y) =
-          WithAbs.equiv W.1 y
-      rw [Algebra.algebraMap_self]
-      rfl
-    exact
+    refine
       congrArg
-        (fun z : WithAbs W.1 => (z : W.Completion)) hy
+        (fun z : WithAbs W.1 => (z : W.Completion)) ?_
+    apply (WithAbs.equiv W.1).injective
+    change
+      algebraMap K K (WithAbs.equiv W.1 y) =
+        WithAbs.equiv W.1 y
+    rw [Algebra.algebraMap_self]
+    rfl
 
 /-- Completion maps at infinite places compose in a tower of number
 fields. -/
@@ -191,9 +184,7 @@ def infinitePlaceAboveToExtension
     AbsoluteValueExtension w.1 L := by
   refine ⟨W.1.1, ?_⟩
   intro x
-  have h :=
-    congrArg (fun v : InfinitePlace K => v x) W.2
-  exact h
+  exact congrArg (fun v : InfinitePlace K => v x) W.2
 
 omit [NumberField K] [NumberField L] [FiniteDimensional K L] in
 /-- For a finite Galois extension, every extension of an infinite-place
@@ -210,19 +201,13 @@ theorem
   obtain ⟨W₀, hW₀⟩ :=
     InfinitePlace.comap_surjective
       (k := K) (K := L) w
-  let W₀' :
-      {W : InfinitePlace L //
-        infinitePlaceBelow (K := K) W = w} :=
-    ⟨W₀, hW₀⟩
-  let u₀ : AbsoluteValueExtension w.1 L :=
-    infinitePlaceAboveToExtension
-      (K := K) (L := L) w W₀'
   obtain ⟨σ, hσ⟩ :=
-    absoluteValueConjugacy w.1 w.isNontrivial u₀ u
-  let Wσ : InfinitePlace L :=
+    absoluteValueConjugacy w.1 w.isNontrivial (infinitePlaceAboveToExtension
+      w (⟨W₀, hW₀⟩)) u
+  let Wσ :=
     W₀.comap σ.toRingEquiv.toRingHom
   have hWσ :
-      infinitePlaceBelow (K := K) Wσ = w := by
+      infinitePlaceBelow Wσ = w := by
     apply InfinitePlace.ext
     intro x
     change W₀ (σ (algebraMap K L x)) = w x
@@ -242,31 +227,27 @@ noncomputable def infinitePlaceAboveEquivExtension
       AbsoluteValueExtension w.1 L := by
   apply Equiv.ofBijective
     (infinitePlaceAboveToExtension
-      (K := K) (L := L) w)
+        w)
   constructor
   · intro W W' h
-    have habs : W.1.1 = W'.1.1 :=
-      congrArg
-        (fun u : AbsoluteValueExtension w.1 L => u.1) h
     apply Subtype.ext
     apply Subtype.ext
-    exact habs
+    exact congrArg
+      (fun u : AbsoluteValueExtension w.1 L => u.1) h
   · intro u
     let M := finiteNormalClosure K L
-    let e : L →ₐ[K] M :=
+    let e :=
       finiteNormalClosureEmbedding K L
-    let : Algebra L M :=
+    let :=
       e.toRingHom.toAlgebra
-    let : IsScalarTower K L M :=
+    let :=
       IsScalarTower.of_algebraMap_eq'
         e.comp_algebraMap.symm
-    let : FiniteDimensional L M :=
+    let :=
       FiniteDimensional.right K L M
-    let hu : u.1.IsNontrivial :=
-      u.isNontrivial w.isNontrivial
     let uOverL : AbsoluteValueExtension u.1 M :=
       pullbackAbsoluteValueExtension
-        u.1 hu IsAlgClosed.lift
+        u.1 (u.isNontrivial w.isNontrivial) IsAlgClosed.lift
     let uM : AbsoluteValueExtension w.1 M :=
       { val := uOverL.1
         property := by
@@ -275,8 +256,8 @@ noncomputable def infinitePlaceAboveEquivExtension
             uOverL.2, u.2] }
     obtain ⟨WM, hWM⟩ :=
       infinitePlaceAboveToExtension_surjective_of_isGalois
-        (K := K) (L := M) w uM
-    let WL : InfinitePlace L :=
+          w uM
+    let WL :=
       WM.1.comap (algebraMap L M)
     have hWL :
         infinitePlaceBelow (K := K) WL = w := by
@@ -300,11 +281,14 @@ noncomputable def infinitePlaceAboveEquivExtension
     rw [hWMval]
     exact uOverL.2 x
 
+section
+
+variable (w : InfinitePlace K)
+
 /-- The absolute value underlying the extension corresponding to an
 infinite place above `w`. -/
 @[simp]
 theorem infinitePlaceAboveEquivExtension_apply_val
-    (w : InfinitePlace K)
     (W : {W : InfinitePlace L //
       infinitePlaceBelow (K := K) W = w}) :
     (infinitePlaceAboveEquivExtension
@@ -313,8 +297,7 @@ theorem infinitePlaceAboveEquivExtension_apply_val
 
 /-- Reindex the relative completion product by actual infinite
 places above `w`. -/
-noncomputable def infiniteCompletionProductReindexAbove
-    (w : InfinitePlace K) :
+noncomputable def infiniteCompletionProductReindexAbove :
     (∀ u : AbsoluteValueExtension w.1 L,
       u.1.Completionˣ) ≃*
       ∀ W : {W : InfinitePlace L //
@@ -325,13 +308,15 @@ noncomputable def infiniteCompletionProductReindexAbove
       (fun u : AbsoluteValueExtension w.1 L =>
         u.1.Completionˣ)
       (infinitePlaceAboveEquivExtension
-        (K := K) (L := L) w).symm
+          w).symm
   exact
     { e with
       map_mul' := by
         intro x y
         funext W
         rfl }
+
+end
 
 /-- Replace the absolute-value completion in every factor by mathlib's
 concrete infinite-place completion. -/
@@ -362,11 +347,11 @@ noncomputable def infinitePlaceTensorUnitsEquivAbove
       AbsoluteValue.completionAlgebra w.1 u.1 u.2
   exact
     (infinitePlaceLocalTensorUnitsEquiv
-      (K := K) (L := L) w).trans
+        w).trans
       ((localTensorUnitsEquivCompletionProduct
-        (K := K) (L := L) w.1 w.isNontrivial).trans
+          w.1 w.isNontrivial).trans
         (infiniteCompletionProductEquivAbove
-          (K := K) (L := L) w))
+            w))
 
 /-- Evaluation formula for the archimedean relative-to-ordinary
 comparison at a concrete infinite place above the base place. -/
@@ -401,8 +386,7 @@ theorem infinitePlaceLocalTensorUnitsEquiv_infiniteLocalIdeleInclusion_coe
           (K := K) (L := L) w x) :
       LocalClassFieldTheory.LocalTensorAlgebra (L := L) w.1) =
       infinitePlaceCompletionAlgEquiv w
-          (x : w.Completion) ⊗ₜ[K] (1 : L) := by
-  rfl
+          (x : w.Completion) ⊗ₜ[K] (1 : L) := rfl
 
 /-- On a diagonal extension-field unit, the infinite local
 relative-to-ordinary comparison is the ordinary diagonal embedding. -/
@@ -427,7 +411,7 @@ theorem infinitePlaceTensorUnitsEquivAbove_localFieldIdeleInclusion
           w.1 w.isNontrivial
           (1 ⊗ₜ[K] (x : L))
           (infinitePlaceAboveEquivExtension
-            (K := K) (L := L) w W)) =
+              w W)) =
       algebraMap L W.1.Completion (x : L)
   rw [completionTensorDecomposition_left_tmul_apply]
   simp only [map_one, one_mul]
@@ -501,15 +485,15 @@ theorem RelativeFiniteIdeleData.finite_mul
     (a * b).finite w = a.finite w * b.finite w := by
   change
     (relativeFiniteTensorPiMulEquiv
-      (K := K) (L := L)).symm
+       ).symm
         (relativeFiniteTensorPiMulEquiv
-            (K := K) (L := L) a.finite *
+              a.finite *
           relativeFiniteTensorPiMulEquiv
-            (K := K) (L := L) b.finite) w =
+              b.finite) w =
       a.finite w * b.finite w
   rw [← map_mul,
     (relativeFiniteTensorPiMulEquiv
-      (K := K) (L := L)).symm_apply_apply]
+       ).symm_apply_apply]
   rfl
 
 /-- Forget the infinite component of restricted local idele data. -/
@@ -531,9 +515,8 @@ theorem RelativeLocalIdeleData.toFiniteData_mul
   apply RelativeFiniteIdeleData.ext
   funext w
   rw [RelativeFiniteIdeleData.finite_mul]
-  change (a * b).finite w = a.finite w * b.finite w
   exact RelativeLocalIdeleData.finite_mul
-    (K := K) (L := L) a b w
+      a b w
 
 /-- Split restricted local idele data into its unrestricted infinite part
 and finite restricted part. -/
@@ -559,9 +542,9 @@ noncomputable def relativeLocalIdeleDataSplitMulEquiv :
     apply Prod.ext
     · funext w
       exact RelativeLocalIdeleData.infinite_mul
-        (K := K) (L := L) a b w
+          a b w
     · exact RelativeLocalIdeleData.toFiniteData_mul
-        (K := K) (L := L) a b
+          a b
 
 /-- Scalar extension identifies the actual relative
 idele group `I_K ⊗_K L` with the ordinary idele group `I_L`. -/

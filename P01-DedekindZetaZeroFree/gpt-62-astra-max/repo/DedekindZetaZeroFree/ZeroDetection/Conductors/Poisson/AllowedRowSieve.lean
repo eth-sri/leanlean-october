@@ -42,7 +42,7 @@ private theorem primitive_sieve_finset_transfer_of_property
     (∑ i ∈ J, ‖∑ I ∈ B, b I * (ω i).character I‖ ^ 2) ≤
       C * (N + X ^ (2 : ℕ)) * (N * X) ^ ε * ∑ I ∈ B, ‖b I‖ ^ 2 := by
   classical
-  let D : Finset (NonzeroIdeal F) := B.attach.image (fun I => (⟨I.val, (hB I.val I.property).1⟩ : NonzeroIdeal F))
+  let D := B.attach.image (fun I => (⟨I.val, (hB I.val I.property).1⟩ : NonzeroIdeal F))
   have hD (I : NonzeroIdeal F) : I ∈ D ↔ I.val ∈ B := by
     simp only [D, Finset.mem_image, Finset.mem_attach, true_and]
     constructor
@@ -119,12 +119,11 @@ private theorem frequency_denominator_full_local_tuples
     frequency_rows_finite_ramified_local_types F ζ12 hζ12 ι S hS hSix η hηS
   let index : {v // v ∈ A.Sf} → S := fun v => ⟨v.val, hAS ▸ v.property⟩
   let R := Set.univ.pi (fun v : {v // v ∈ A.Sf} => Q (index v))
-  have hR : R.Finite := Set.Finite.pi (fun v => (hfin (index v)).2)
+  have hR := Set.Finite.pi (fun v => (hfin (index v)).2)
   let tuple : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ →ₜ* ℂˣ) →
       FixedSResidue.FullLocalCharacters A :=
     fun δ => (fun _ => 1, fun v => (δ v).toMonoidHom)
-  let L := (tuple '' R) ∩ {σ | FixedSResidue.HasFiniteOrder A σ}
-  refine ⟨L, (hR.image tuple).inter_of_left _, fun σ hσ => hσ.2, ?_⟩
+  refine ⟨((tuple '' R) ∩ {σ | FixedSResidue.HasFiniteOrder A σ}), (hR.image tuple).inter_of_left _, fun σ hσ => hσ.2, ?_⟩
   intro U K T u
   choose δ hδmem hδlocal using fun v : {v // v ∈ A.Sf} =>
     (hlocal U K T u (index v)).2
@@ -211,16 +210,13 @@ private theorem unrestricted_balanced_section
     fieldUnit := a
     generates := hr
     fieldUnit_coe := ha
-    allowed := ?_
     balanced := hb}⟩⟩
-  intro I
-  trivial
 
 end Copied
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def dyadNonprincipal (U : ℝ) : Set D.Row :=
   {u | u.u ≠ 1 ∧ U ≤ D.q u ∧ D.q u < 2 * U}
@@ -242,7 +238,7 @@ theorem actual_conductor_sieve :
     primitive12_totallyComplex F D.recipe.A.zeta12 D.recipe.A.primitive_zeta12
   have hSix : ∀ v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F),
       ¬ (Ideal.absNorm v.asIdeal).Coprime 6 →
-        v ∈ (D.recipe.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))) := by
+        v ∈ D.recipe.A.Sf := by
     intro v hv
     by_contra h
     exact hv (ArithmeticContext.actual_outside_norm_coprime_six D.recipe.A v h)
@@ -260,8 +256,7 @@ theorem actual_conductor_sieve :
     intro v hv
     simp only [Set.mem_setOf_eq] at hv ⊢
     apply Ideal.dvd_iff_le.mpr
-    have hvmax : v.asIdeal.IsMaximal := v.isMaximal
-    exact (hvmax.eq_of_le hv (show v.asIdeal ≤ v.asIdeal ⊔ m from le_sup_left)).symm ▸
+    exact (v.isMaximal.eq_of_le hv (show v.asIdeal ≤ v.asIdeal ⊔ m from le_sup_left)).symm ▸
       (show m ≤ v.asIdeal ⊔ m from le_sup_right)
 
   let f : D.Row → PrincipalMellinComparison.Frequency D.recipe :=
@@ -274,23 +269,21 @@ theorem actual_conductor_sieve :
   obtain ⟨K0⟩ := Detector.kummer_frequency_family_exists F D.recipe.A.zeta12
     D.recipe.A.primitive_zeta12 D.recipe.σ _ D.recipe.A.Sf.finite_toSet hSix Vr
   let K : Detector.KummerFrequencyFamily F D.recipe.A.zeta12 D.recipe.σ
-      (D.recipe.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) Vr :=
+      D.recipe.A.Sf Vr :=
     { numerator := fun w =>
         if h : ∃ r : D.Row, e (f r) = w then (D.inducers h.choose).plus else K0.numerator w
       kummer := by
         intro w
         by_cases h : ∃ r : D.Row, e (f r) = w
-        · have hk := (D.inducers h.choose).kummer
-          have hw : w.val = Units.mk0 ((h.choose.u : D.recipe.A.R) : F)
+        · have hw : w.val = Units.mk0 ((h.choose.u : D.recipe.A.R) : F)
               (by exact_mod_cast h.choose.generates.1) := by
-            have hw0 : w.val = (e (f h.choose)).val := congrArg Subtype.val h.choose_spec.symm
-            rw [hw0, he]
+            rw [(congrArg Subtype.val h.choose_spec.symm), he]
             exact Units.ext rfl
           show Detector.IsKummerFrequencyCharacter F D.recipe.A.zeta12 D.recipe.σ _ w.val
             (if h : ∃ r : D.Row, e (f r) = w then (D.inducers h.choose).plus
               else K0.numerator w)
           rw [dif_pos h, hw]
-          exact hk
+          exact (D.inducers h.choose).kummer
         · show Detector.IsKummerFrequencyCharacter F D.recipe.A.zeta12 D.recipe.σ _ w.val
             (if h : ∃ r : D.Row, e (f r) = w then (D.inducers h.choose).plus
               else K0.numerator w)
@@ -316,11 +309,8 @@ theorem actual_conductor_sieve :
           (K.numerator (e (f r))).conductor_ne_zero) (T.denominator (e (f r))).conductor_ne_zero),
       cop (D.recipe.A.modulus * η0.conductor)
         (mul_ne_zero D.recipe.A.modulus_ne_zero η0.conductor_ne_zero)] with v h1 h2 h3
-    have twist1 := (D.inducers r).twist v.asIdeal v.ne_bot h1
-    have twist2 := T.induces (e (f r)) v.asIdeal v.ne_bot h2
-    have ht := htarget v.asIdeal v.ne_bot h3
-    rw [twist2, hKnum r, ht]
-    exact twist1
+    rw [(T.induces (e (f r)) v.asIdeal v.ne_bot h2), hKnum r, (htarget v.asIdeal v.ne_bot h3)]
+    exact (D.inducers r).twist v.asIdeal v.ne_bot h1
 
   obtain ⟨K_bal, hK, ⟨s⟩⟩ := unrestricted_balanced_section F D.recipe.A
   obtain ⟨L, hL, hOrder, hType⟩ :=
@@ -330,7 +320,7 @@ theorem actual_conductor_sieve :
     Detector.frequency_denominator_conductor_bound F D.recipe.A.zeta12 D.recipe.A.primitive_zeta12
       D.recipe.σ _ D.recipe.A.Sf.finite_toSet hSix η0 hη0S
   have hCcond : 0 < 2 * Cd := by positivity
-  have hDyadic : ∀ sigma ∈ L, Detector.HasExteriorDyadicConductorSieve F D.recipe.A sigma (2 * Cd) :=
+  have hDyadic :=
     fun sigma hsigma =>
       Detector.hasExteriorDyadicConductorSieve_of_balancedSection F D.recipe.A ⊤ K_bal hK s sigma
         (hOrder sigma hsigma) (2 * Cd) hCcond
@@ -341,9 +331,9 @@ theorem actual_conductor_sieve :
   have hcondJ : ∀ r ∈ J,
       (Ideal.absNorm (D.omega r).conductor : ℝ) ≤ (2 * Cd) * U := by
     intro r hr
-    have hq : D.q r < 2 * U := (hJ r hr).2.2
+    have hq := (hJ r hr).2.2
     have hsn : (Detector.frequencySNorm F
-        (D.recipe.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) Vr (e (f r)) : ℝ) =
+        D.recipe.A.Sf Vr (e (f r)) : ℝ) =
         D.q r := hSnorm (f r)
     rw [hω r]
     calc (Ideal.absNorm (T.denominator (e (f r))).conductor : ℝ)

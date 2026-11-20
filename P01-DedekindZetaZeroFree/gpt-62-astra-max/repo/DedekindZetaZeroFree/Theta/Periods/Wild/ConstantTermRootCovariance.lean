@@ -49,9 +49,8 @@ theorem globalMap_root (q : W) (t : q.val.adicCompletion F)
       globalMap D W s hW x z
         (g * KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
           (KPRationalAdelicSplitting.localAdele F (Sum.inr q.val) t)) := by
-  have hh := globalMap_finite D W s hW x q
-    (KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val) t) z g
-  simpa only [finite_root_injection (R := R)] using hh
+  simpa only [finite_root_injection] using (globalMap_finite D W s hW x q
+    (KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val) t) z g)
 
 theorem constant_integral_root (q : W) (t : q.val.adicCompletion F)
     (z : AmbientTensor F W (fiber D W))
@@ -63,8 +62,7 @@ theorem constant_integral_root (q : W) (t : q.val.adicCompletion F)
           (KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val) t)) z)) u ∂μ) =
     ∫ u, KPWildRawSourceConstruction.sourceFiber F R.A.zeta12 R.A.primitive_zeta12 b
       (globalMap D W s hW x z) u ∂μ := by
-  have he := funext (globalMap_root D W s hW x q t z)
-  rw [he]
+  rw [(funext (globalMap_root D W s hW x q t z))]
   exact KPWildActualConstantIntegral.integral_right_root_eq F R.A.zeta12 R.A.primitive_zeta12
     μ (globalMap D W s hW x z) (globalMap_rational D W s hW x z) b _
 end DedekindZetaZeroFree.FourierContinuation.WildCurrentGlobalMap

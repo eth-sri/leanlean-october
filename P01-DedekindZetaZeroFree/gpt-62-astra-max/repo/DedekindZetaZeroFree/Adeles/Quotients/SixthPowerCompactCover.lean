@@ -19,9 +19,8 @@ instance finiteIndex_Gamma1_subgroupOf_L :
   letI : ((powMonoidHom (α := A.Rˣ) 6).range).FiniteIndex :=
     Subgroup.finiteIndex_of_finite_quotient
   have hU : A.unitSixthPowers =
-      ((powMonoidHom (α := A.Rˣ) 6).range).comap A.unitEquiv.toMonoidHom := by
+      ((powMonoidHom 6).range).comap A.unitEquiv.toMonoidHom := by
     ext u
-    change (∃ v : A.U, v ^ 6 = u) ↔ ∃ v : A.Rˣ, v ^ 6 = A.unitEquiv u
     constructor
     · rintro ⟨v, rfl⟩
       exact ⟨A.unitEquiv v, (map_pow A.unitEquiv v 6).symm⟩
@@ -30,8 +29,6 @@ instance finiteIndex_Gamma1_subgroupOf_L :
       apply A.unitEquiv.injective
       simpa using hv
   letI : A.unitSixthPowers.FiniteIndex := hU ▸ inferInstance
-  have hm := Subgroup.FiniteIndex.map_of_surjective A.unitSixthPowers
-    A.diagonalS.rangeRestrict_surjective
   have hEq : A.Gamma1.subgroupOf A.L =
       A.unitSixthPowers.map A.diagonalS.rangeRestrict := by
     rw [A.Gamma1_eq_sixthPower_image]
@@ -42,7 +39,8 @@ instance finiteIndex_Gamma1_subgroupOf_L :
       exact ⟨u, hu, Subtype.ext hux⟩
     · rintro ⟨u, hu, hux⟩
       exact ⟨u, hu, congrArg Subtype.val hux⟩
-  exact hEq ▸ hm
+  exact hEq ▸ (Subgroup.FiniteIndex.map_of_surjective A.unitSixthPowers
+    A.diagonalS.rangeRestrict_surjective)
 
 theorem exists_compact_balanced_cover :
     ∃ K_bal : Set A.G1, IsCompact K_bal ∧
@@ -65,7 +63,7 @@ theorem exists_compact_balanced_cover :
   obtain ⟨l, hl⟩ := hcover y
   let q : Q := QuotientGroup.mk l
   have hq : (l : Q) = (r q : Q) := (Quotient.out_eq q).symm
-  have hd : l / r q ∈ H := QuotientGroup.eq_iff_div_mem.mp hq
+  have hd := QuotientGroup.eq_iff_div_mem.mp hq
   let γ : A.Gamma1 := ⟨(l / r q : A.L).val, hd⟩
   refine ⟨γ, Set.mem_iUnion.mpr ⟨q, l.val * y, hl, ?_⟩⟩
   dsimp [γ]

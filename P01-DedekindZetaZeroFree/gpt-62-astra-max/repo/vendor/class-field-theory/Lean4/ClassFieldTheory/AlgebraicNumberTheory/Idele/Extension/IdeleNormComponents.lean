@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -58,27 +53,22 @@ private theorem finiteComponent_norm_eq_prod_extensions
       (relativeIdeleBaseChangeMulEquiv
         (K := K) (L := L)).symm a
     let x :=
-      RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) v z
+      RelativeIdeleGroup.finiteComponent v z
     letI :=
-      completionTensorDecomposition_extensionFintype
-        (K := K) (L := L) vK hvK
+      completionTensorDecomposition_extensionFintype (L := L) vK hvK
     letI : ∀ w : AbsoluteValueExtension vK L,
         Algebra vK.Completion w.1.Completion :=
       fun w =>
         AbsoluteValue.completionAlgebra vK w.1 w.2
     letI : ∀ w : AbsoluteValueExtension vK L,
         Module.Finite vK.Completion w.1.Completion :=
-      fun w =>
-        completionModuleFinite vK hvK w
+      (completionModuleFinite vK hvK)
     Units.mapEquiv
-        (_root_.relativeFinitePlaceCompletionAlgEquiv
-          (K := K) v).symm.toMulEquiv
+        (_root_.relativeFinitePlaceCompletionAlgEquiv v).symm.toMulEquiv
         (finiteComponent v (norm K L a)) =
       ∏ w : AbsoluteValueExtension vK L,
         Units.map (Algebra.norm vK.Completion)
-          (_root_.finitePlaceLocalTensorDecompositionUnitsComponent
-            (K := K) (L := L) v w x) := by
+          (_root_.finitePlaceLocalTensorDecompositionUnitsComponent v w x) := by
   classical
   let vK := HeightOneSpectrum.adicAbv K v
   let hvK : vK.IsNontrivial :=
@@ -88,64 +78,53 @@ private theorem finiteComponent_norm_eq_prod_extensions
       (K := K) (L := L)
   let z := e.symm a
   let x :=
-    RelativeIdeleGroup.finiteComponent
-      (K := K) (L := L) v z
+    RelativeIdeleGroup.finiteComponent v z
   let :=
-    completionTensorDecomposition_extensionFintype
-      (K := K) (L := L) vK hvK
+    completionTensorDecomposition_extensionFintype (L := L) vK hvK
   let : ∀ w : AbsoluteValueExtension vK L,
       Algebra vK.Completion w.1.Completion :=
     fun w =>
       AbsoluteValue.completionAlgebra vK w.1 w.2
   let : ∀ w : AbsoluteValueExtension vK L,
       Module.Finite vK.Completion w.1.Completion :=
-    fun w =>
-      completionModuleFinite vK hvK w
+    (completionModuleFinite vK hvK)
   have hz : e z = a :=
     e.apply_symm_apply a
   change
     Units.mapEquiv
-        (_root_.relativeFinitePlaceCompletionAlgEquiv
-          (K := K) v).symm.toMulEquiv
+        (_root_.relativeFinitePlaceCompletionAlgEquiv v).symm.toMulEquiv
         (finiteComponent v (norm K L a)) =
       ∏ w : AbsoluteValueExtension vK L,
         Units.map (Algebra.norm vK.Completion)
-          (_root_.finitePlaceLocalTensorDecompositionUnitsComponent
-            (K := K) (L := L) v w x)
+          (_root_.finitePlaceLocalTensorDecompositionUnitsComponent v w x)
   rw [← hz, norm_relativeIdeleBaseChangeMulEquiv,
     RelativeIdeleGroup.finiteComponent_norm]
   apply Units.ext
   change
-    (_root_.relativeFinitePlaceCompletionAlgEquiv
-        (K := K) v).symm
+    (_root_.relativeFinitePlaceCompletionAlgEquiv v).symm
         (Algebra.norm (v.adicCompletion K)
           (x : v.adicCompletion K ⊗[K] L)) =
       (((∏ w : AbsoluteValueExtension vK L,
           Units.map (Algebra.norm vK.Completion)
-            (_root_.finitePlaceLocalTensorDecompositionUnitsComponent
-              (K := K) (L := L) v w x)) :
+            (_root_.finitePlaceLocalTensorDecompositionUnitsComponent v w x)) :
           vK.Completionˣ) : vK.Completion)
   let x' : (vK.Completion ⊗[K] L)ˣ :=
     Units.mapEquiv
-      (_root_.relativeFinitePlaceLocalTensorAlgEquiv
-        (K := K) (L := L) v).symm.toMulEquiv x
+      (_root_.relativeFinitePlaceLocalTensorAlgEquiv (L := L) v).symm.toMulEquiv x
   calc
-    (_root_.relativeFinitePlaceCompletionAlgEquiv
-        (K := K) v).symm
+    (_root_.relativeFinitePlaceCompletionAlgEquiv v).symm
         (Algebra.norm (v.adicCompletion K)
           (x : v.adicCompletion K ⊗[K] L)) =
         Algebra.norm vK.Completion
           (x' : vK.Completion ⊗[K] L) := by
       exact
         map_norm_tensorProduct_baseChange
-          (K := K) (L := L)
           (_root_.relativeFinitePlaceCompletionAlgEquiv
             (K := K) v).symm.toAlgHom
           (x : v.adicCompletion K ⊗[K] L)
     _ = ∏ w : AbsoluteValueExtension vK L,
         Algebra.norm vK.Completion
-          (completionTensorDecomposition_left
-            (K := K) (L := L) vK hvK
+          (completionTensorDecomposition_left vK hvK
             (x' : vK.Completion ⊗[K] L) w) := by
       exact
         RelativeIdeleGroup.localNorm_units_eq_prod
@@ -153,8 +132,7 @@ private theorem finiteComponent_norm_eq_prod_extensions
     _ =
         (((∏ w : AbsoluteValueExtension vK L,
             Units.map (Algebra.norm vK.Completion)
-              (_root_.finitePlaceLocalTensorDecompositionUnitsComponent
-                (K := K) (L := L) v w x)) :
+              (_root_.finitePlaceLocalTensorDecompositionUnitsComponent v w x)) :
             vK.Completionˣ) : vK.Completion) := by
       change _ = Units.coeHom vK.Completion _
       rw [map_prod]
@@ -174,130 +152,112 @@ private theorem finiteComponent_norm_eq_prod_completion
     let hvK : vK.IsNontrivial :=
       RayClass.adicAbv_isNontrivial v
     letI :=
-      completionTensorDecomposition_extensionFintype
-        (K := K) (L := L) vK hvK
+      completionTensorDecomposition_extensionFintype (L := L) vK hvK
     letI : ∀ w : AbsoluteValueExtension vK L,
         Algebra vK.Completion w.1.Completion :=
       fun w =>
         AbsoluteValue.completionAlgebra vK w.1 w.2
     letI : ∀ w : AbsoluteValueExtension vK L,
         Module.Finite vK.Completion w.1.Completion :=
-      fun w =>
-        completionModuleFinite vK hvK w
+      (completionModuleFinite vK hvK)
     Units.mapEquiv
-        (_root_.relativeFinitePlaceCompletionAlgEquiv
-          (K := K) v).symm.toMulEquiv
+        (_root_.relativeFinitePlaceCompletionAlgEquiv v).symm.toMulEquiv
         (finiteComponent v (norm K L a)) =
       ∏ w : AbsoluteValueExtension vK L,
         Units.map (Algebra.norm vK.Completion)
           (Units.mapEquiv
-            (finitePlaceExtensionAdicCompletionRingEquiv
-              (K := K) (L := L) v w).symm.toMulEquiv
+            (finitePlaceExtensionAdicCompletionRingEquiv v w).symm.toMulEquiv
             (finiteComponent
-              (finitePlaceExtensionEquivAbove
-                (K := K) (L := L) v w).1 a)) := by
+              (finitePlaceExtensionEquivAbove v w).1 a)) := by
   classical
   let vK := HeightOneSpectrum.adicAbv K v
-  let hvK : vK.IsNontrivial :=
+  let hvK :=
     RayClass.adicAbv_isNontrivial v
   let e :=
     relativeIdeleBaseChangeMulEquiv
       (K := K) (L := L)
   let z := e.symm a
   let x :=
-    RelativeIdeleGroup.finiteComponent
-      (K := K) (L := L) v z
+    RelativeIdeleGroup.finiteComponent v z
   let :=
-    completionTensorDecomposition_extensionFintype
-      (K := K) (L := L) vK hvK
+    completionTensorDecomposition_extensionFintype (L := L) vK hvK
   let : ∀ w : AbsoluteValueExtension vK L,
       Algebra vK.Completion w.1.Completion :=
     fun w =>
       AbsoluteValue.completionAlgebra vK w.1 w.2
   let : ∀ w : AbsoluteValueExtension vK L,
       Module.Finite vK.Completion w.1.Completion :=
-    fun w =>
-      completionModuleFinite vK hvK w
-  have hz : e z = a :=
+    (completionModuleFinite vK hvK)
+  have hz :=
     e.apply_symm_apply a
   change
     Units.mapEquiv
-        (_root_.relativeFinitePlaceCompletionAlgEquiv
-          (K := K) v).symm.toMulEquiv
+        (_root_.relativeFinitePlaceCompletionAlgEquiv v).symm.toMulEquiv
         (finiteComponent v (norm K L a)) =
       ∏ w : AbsoluteValueExtension vK L,
         Units.map (Algebra.norm vK.Completion)
           (Units.mapEquiv
-            (finitePlaceExtensionAdicCompletionRingEquiv
-              (K := K) (L := L) v w).symm.toMulEquiv
+            (finitePlaceExtensionAdicCompletionRingEquiv v w).symm.toMulEquiv
             (finiteComponent
-              (finitePlaceExtensionEquivAbove
-                (K := K) (L := L) v w).1 a))
+              (finitePlaceExtensionEquivAbove v w).1 a))
   calc
     Units.mapEquiv
-        (_root_.relativeFinitePlaceCompletionAlgEquiv
-          (K := K) v).symm.toMulEquiv
+        (_root_.relativeFinitePlaceCompletionAlgEquiv v).symm.toMulEquiv
         (finiteComponent v (norm K L a)) =
         ∏ w : AbsoluteValueExtension vK L,
           Units.map (Algebra.norm vK.Completion)
-            (_root_.finitePlaceLocalTensorDecompositionUnitsComponent
-              (K := K) (L := L) v w x) :=
+            (_root_.finitePlaceLocalTensorDecompositionUnitsComponent v w x) :=
       finiteComponent_norm_eq_prod_extensions
         (K := K) (L := L) v a
     _ = ∏ w : AbsoluteValueExtension vK L,
         Units.map (Algebra.norm vK.Completion)
           (Units.mapEquiv
-            (finitePlaceExtensionAdicCompletionRingEquiv
-              (K := K) (L := L) v w).symm.toMulEquiv
+            (finitePlaceExtensionAdicCompletionRingEquiv v w).symm.toMulEquiv
             (finiteComponent
-              (finitePlaceExtensionEquivAbove
-                (K := K) (L := L) v w).1 a)) := by
+              (finitePlaceExtensionEquivAbove v w).1 a)) := by
       apply Finset.prod_congr rfl
       intro w _
       apply congrArg (Units.map (Algebra.norm vK.Completion))
       let W :=
         finitePlaceExtensionEquivAbove
-          (K := K) (L := L) v w
+            v w
       have hcomponent :=
         congrArg (fun b : IdeleGroup L => finiteComponent W.1 b) hz
       change
         (relativeIdeleBaseChangeMulEquiv
-          (K := K) (L := L) z).2 W.1 =
+            z).2 W.1 =
           finiteComponent W.1 a at hcomponent
       rw [relativeIdeleBaseChangeMulEquiv_finite,
         _root_.relativeFiniteIdeleToFiniteIdele_apply,
         _root_.relativeFiniteTensorPiMulEquiv_apply] at hcomponent
       change
         _root_.finitePlaceTensorUnitsEquivAboveAdic
-            (K := K) (L := L)
-            (_root_.finitePlaceBelow (K := K) W.1)
+
+            (_root_.finitePlaceBelow W.1)
             (RelativeIdeleGroup.finiteComponent
-              (K := K) (L := L)
-              (_root_.finitePlaceBelow (K := K) W.1) z)
+
+              (_root_.finitePlaceBelow W.1) z)
             ⟨W.1, rfl⟩ =
           finiteComponent W.1 a at hcomponent
       have hcomponent' :
           _root_.finitePlaceTensorUnitsEquivAboveAdic
-              (K := K) (L := L) v x W =
+                v x W =
             finiteComponent W.1 a := by
-        let W₀ : HeightOneSpectrum (𝓞 L) := W.1
-        let P : HeightOneSpectrum (𝓞 K) → Prop := fun q =>
-          ∀ hq : _root_.finitePlaceBelow (K := K) W₀ = q,
+        let W₀ := W.1
+        let P := fun q =>
+          ∀ hq : _root_.finitePlaceBelow W₀ = q,
             _root_.finitePlaceTensorUnitsEquivAboveAdic
-                (K := K) (L := L) q
+                  q
                 (RelativeIdeleGroup.finiteComponent
-                  (K := K) (L := L) q z)
+                    q z)
                 ⟨W₀, hq⟩ =
               finiteComponent W₀ a
         have hP :
-            P (_root_.finitePlaceBelow (K := K) W₀) := by
+            P (_root_.finitePlaceBelow W₀) := by
           intro hq
-          simpa only [P, W₀] using hcomponent
-        have hW :
-            _root_.finitePlaceBelow (K := K) W₀ = v :=
-          W.2
-        have hPv : P v :=
-          hW ▸ hP
+          simpa using hcomponent
+        have hPv :=
+          W.2 ▸ hP
         simpa only [P, W₀, x] using hPv W.2
       dsimp only [W] at hcomponent'
       rw [
@@ -306,15 +266,15 @@ private theorem finiteComponent_norm_eq_prod_completion
       apply
         (Units.mapEquiv
           (finitePlaceExtensionAdicCompletionRingEquiv
-            (K := K) (L := L) v w).toMulEquiv).injective
+              v w).toMulEquiv).injective
       rw [hcomponent']
       exact
         ((Units.mapEquiv
           (finitePlaceExtensionAdicCompletionRingEquiv
-            (K := K) (L := L) v w).toMulEquiv).apply_symm_apply
+              v w).toMulEquiv).apply_symm_apply
           (finiteComponent
             (finitePlaceExtensionEquivAbove
-              (K := K) (L := L) v w).1 a)).symm
+                v w).1 a)).symm
 
 /-- The finite-place form of the ordinary idele norm, entirely in
 the concrete adic completions.  Thus the component at `v` is the product
@@ -327,72 +287,58 @@ private theorem finiteComponent_norm_eq_prod_exact_index
     let hvK : vK.IsNontrivial :=
       RayClass.adicAbv_isNontrivial v
     letI :=
-      completionTensorDecomposition_extensionFintype
-        (K := K) (L := L) vK hvK
+      completionTensorDecomposition_extensionFintype (L := L) vK hvK
     letI : ∀ w : AbsoluteValueExtension vK L,
         Algebra (v.adicCompletion K)
-          ((finitePlaceExtensionEquivAbove
-            (K := K) (L := L) v w).1.adicCompletion L) :=
+          ((finitePlaceExtensionEquivAbove v w).1.adicCompletion L) :=
       fun w =>
         (finitePlaceAdicCompletionMap K L v
-          (finitePlaceExtensionEquivAbove
-            (K := K) (L := L) v w)).toAlgebra
+          (finitePlaceExtensionEquivAbove v w)).toAlgebra
     finiteComponent v (norm K L a) =
       ∏ w : AbsoluteValueExtension vK L,
         LocalFieldTheory.normUnits
           (v.adicCompletion K)
-          ((finitePlaceExtensionEquivAbove
-            (K := K) (L := L) v w).1.adicCompletion L)
+          ((finitePlaceExtensionEquivAbove v w).1.adicCompletion L)
           (finiteComponent
-            (finitePlaceExtensionEquivAbove
-              (K := K) (L := L) v w).1 a) := by
+            (finitePlaceExtensionEquivAbove v w).1 a) := by
   classical
   let vK := HeightOneSpectrum.adicAbv K v
-  let hvK : vK.IsNontrivial :=
+  let hvK :=
     RayClass.adicAbv_isNontrivial v
   let eBase :=
     _root_.relativeFinitePlaceCompletionAlgEquiv
-      (K := K) v
+       v
   let :=
-    completionTensorDecomposition_extensionFintype
-      (K := K) (L := L) vK hvK
+    completionTensorDecomposition_extensionFintype (L := L) vK hvK
   let : ∀ w : AbsoluteValueExtension vK L,
       Algebra vK.Completion w.1.Completion :=
     fun w =>
       AbsoluteValue.completionAlgebra vK w.1 w.2
   let : ∀ w : AbsoluteValueExtension vK L,
       Module.Finite vK.Completion w.1.Completion :=
-    fun w =>
-      completionModuleFinite vK hvK w
-  let : ∀ w : AbsoluteValueExtension vK L,
-      Algebra (v.adicCompletion K)
-        ((finitePlaceExtensionEquivAbove
-          (K := K) (L := L) v w).1.adicCompletion L) :=
+    (completionModuleFinite vK hvK)
+  let :=
     fun w =>
       (finitePlaceAdicCompletionMap K L v
         (finitePlaceExtensionEquivAbove
-          (K := K) (L := L) v w)).toAlgebra
+            v w)).toAlgebra
   have hCompatible
       (w : AbsoluteValueExtension vK L) :
       RingHom.comp
           (algebraMap
             (v.adicCompletion K)
-            ((finitePlaceExtensionEquivAbove
-              (K := K) (L := L) v w).1.adicCompletion L))
+            ((finitePlaceExtensionEquivAbove v w).1.adicCompletion L))
           eBase.toRingEquiv =
         RingHom.comp
-          (finitePlaceExtensionAdicCompletionRingEquiv
-            (K := K) (L := L) v w).toRingHom
+          (finitePlaceExtensionAdicCompletionRingEquiv v w).toRingHom
           (algebraMap vK.Completion w.1.Completion) := by
     apply RingHom.ext
     intro x
     change
       finitePlaceAdicCompletionMap K L v
-          (finitePlaceExtensionEquivAbove
-            (K := K) (L := L) v w)
+          (finitePlaceExtensionEquivAbove v w)
           (eBase x) =
-        finitePlaceExtensionAdicCompletionRingEquiv
-          (K := K) (L := L) v w
+        finitePlaceExtensionAdicCompletionRingEquiv v w
           (algebraMap vK.Completion w.1.Completion x)
     rw [←
       finitePlaceExtensionAdicCompletionMap_eq_finitePlaceAdicCompletionMap
@@ -407,10 +353,10 @@ private theorem finiteComponent_norm_eq_prod_exact_index
         LocalFieldTheory.normUnits
           (v.adicCompletion K)
           ((finitePlaceExtensionEquivAbove
-            (K := K) (L := L) v w).1.adicCompletion L)
+              v w).1.adicCompletion L)
           (finiteComponent
             (finitePlaceExtensionEquivAbove
-              (K := K) (L := L) v w).1 a)
+                v w).1 a)
   calc
     finiteComponent v (norm K L a) =
         Units.mapEquiv eBase.toMulEquiv
@@ -422,49 +368,37 @@ private theorem finiteComponent_norm_eq_prod_exact_index
         (∏ w : AbsoluteValueExtension vK L,
           Units.map (Algebra.norm vK.Completion)
             (Units.mapEquiv
-              (finitePlaceExtensionAdicCompletionRingEquiv
-                (K := K) (L := L) v w).symm.toMulEquiv
+              (finitePlaceExtensionAdicCompletionRingEquiv v w).symm.toMulEquiv
               (finiteComponent
-                (finitePlaceExtensionEquivAbove
-                  (K := K) (L := L) v w).1 a))) := by
+                (finitePlaceExtensionEquivAbove v w).1 a))) := by
       exact congrArg (Units.mapEquiv eBase.toMulEquiv) hcompletion
     _ = ∏ w : AbsoluteValueExtension vK L,
         Units.mapEquiv eBase.toMulEquiv
           (Units.map (Algebra.norm vK.Completion)
             (Units.mapEquiv
-              (finitePlaceExtensionAdicCompletionRingEquiv
-                (K := K) (L := L) v w).symm.toMulEquiv
+              (finitePlaceExtensionAdicCompletionRingEquiv v w).symm.toMulEquiv
               (finiteComponent
-                (finitePlaceExtensionEquivAbove
-                  (K := K) (L := L) v w).1 a))) := by
+                (finitePlaceExtensionEquivAbove v w).1 a))) := by
       rw [map_prod]
     _ = ∏ w : AbsoluteValueExtension vK L,
         LocalFieldTheory.normUnits
           (v.adicCompletion K)
-          ((finitePlaceExtensionEquivAbove
-            (K := K) (L := L) v w).1.adicCompletion L)
+          ((finitePlaceExtensionEquivAbove v w).1.adicCompletion L)
           (finiteComponent
-            (finitePlaceExtensionEquivAbove
-              (K := K) (L := L) v w).1 a) := by
+            (finitePlaceExtensionEquivAbove v w).1 a) := by
       apply Finset.prod_congr rfl
       intro w _
-      let W : {W : HeightOneSpectrum (𝓞 L) //
-          _root_.finitePlaceBelow (K := K) W = v} :=
-        ⟨finitePlaceExtensionCentre (K := K) (L := L) v w,
+      let :=
+        (finitePlaceAdicCompletionMap K L v (⟨finitePlaceExtensionCentre v w,
           finitePlaceBelow_finitePlaceExtensionCentre
-            (K := K) (L := L) v w⟩
-      let : Algebra (v.adicCompletion K)
-          ((finitePlaceExtensionCentre
-            (K := K) (L := L) v w).adicCompletion L) :=
-        (finitePlaceAdicCompletionMap K L v W).toAlgebra
+              v w⟩)).toAlgebra
       let eExtension :=
         finitePlaceExtensionAdicCompletionRingEquiv
-          (K := K) (L := L) v w
+            v w
       let x : w.1.Completionˣ :=
         Units.mapEquiv eExtension.symm.toMulEquiv
           (finiteComponent
-            (finitePlaceExtensionEquivAbove
-              (K := K) (L := L) v w).1 a)
+            (finitePlaceExtensionEquivAbove v w).1 a)
       have hNorm :=
         LocalClassFieldTheory.normUnits_map_ringEquiv
           eBase.toRingEquiv eExtension (hCompatible w) x
@@ -472,12 +406,11 @@ private theorem finiteComponent_norm_eq_prod_exact_index
           Units.mapEquiv eExtension.toMulEquiv x =
             finiteComponent
               (finitePlaceExtensionEquivAbove
-                (K := K) (L := L) v w).1 a := by
+                  v w).1 a := by
         exact
           (Units.mapEquiv eExtension.toMulEquiv).apply_symm_apply
             (finiteComponent
-              (finitePlaceExtensionEquivAbove
-                (K := K) (L := L) v w).1 a)
+              (finitePlaceExtensionEquivAbove v w).1 a)
       rw [hx] at hNorm
       change
         Units.mapEquiv eBase.toMulEquiv
@@ -486,10 +419,10 @@ private theorem finiteComponent_norm_eq_prod_exact_index
           LocalFieldTheory.normUnits
             (v.adicCompletion K)
             ((finitePlaceExtensionEquivAbove
-              (K := K) (L := L) v w).1.adicCompletion L)
+                v w).1.adicCompletion L)
             (finiteComponent
               (finitePlaceExtensionEquivAbove
-                (K := K) (L := L) v w).1 a)
+                  v w).1 a)
       exact hNorm
 
 /-- The finite-place form of the ordinary idele norm. The
@@ -502,11 +435,9 @@ theorem finiteComponent_norm_eq_prod
     let hvK : vK.IsNontrivial :=
       RayClass.adicAbv_isNontrivial v
     letI :=
-      completionTensorDecomposition_extensionFintype
-        (K := K) (L := L) vK hvK
+      completionTensorDecomposition_extensionFintype (L := L) vK hvK
     let eAbove :=
-      finitePlaceExtensionEquivAbove
-        (K := K) (L := L) v
+      finitePlaceExtensionEquivAbove (L := L) v
     letI : Fintype {W : HeightOneSpectrum (𝓞 L) //
         _root_.finitePlaceBelow (K := K) W = v} :=
       Fintype.ofEquiv (AbsoluteValueExtension vK L) eAbove
@@ -524,19 +455,14 @@ theorem finiteComponent_norm_eq_prod
           (finiteComponent W.1 a) := by
   classical
   let vK := HeightOneSpectrum.adicAbv K v
-  let hvK : vK.IsNontrivial :=
-    RayClass.adicAbv_isNontrivial v
   let eAbove :=
-    finitePlaceExtensionEquivAbove
-      (K := K) (L := L) v
+    finitePlaceExtensionEquivAbove (L := L) v
   let :=
-    completionTensorDecomposition_extensionFintype
-      (K := K) (L := L) vK hvK
-  let : Fintype {W : HeightOneSpectrum (𝓞 L) //
-      _root_.finitePlaceBelow (K := K) W = v} :=
+    completionTensorDecomposition_extensionFintype (L := L) vK (RayClass.adicAbv_isNontrivial v)
+  let :=
     Fintype.ofEquiv (AbsoluteValueExtension vK L) eAbove
   let : ∀ W : {W : HeightOneSpectrum (𝓞 L) //
-      _root_.finitePlaceBelow (K := K) W = v},
+      _root_.finitePlaceBelow W = v},
       Algebra (v.adicCompletion K) (W.1.adicCompletion L) :=
     fun W =>
       (finitePlaceAdicCompletionMap
@@ -547,12 +473,12 @@ theorem finiteComponent_norm_eq_prod
   change
     finiteComponent v (norm K L a) =
       ∏ W : {W : HeightOneSpectrum (𝓞 L) //
-          _root_.finitePlaceBelow (K := K) W = v},
+          _root_.finitePlaceBelow W = v},
         LocalFieldTheory.normUnits
           (v.adicCompletion K) (W.1.adicCompletion L)
           (finiteComponent W.1 a)
   calc
-    finiteComponent v (norm K L a) =
+    _ =
         ∏ w : AbsoluteValueExtension vK L,
           LocalFieldTheory.normUnits
             (v.adicCompletion K)
@@ -562,54 +488,47 @@ theorem finiteComponent_norm_eq_prod
         simpa only [eAbove, finitePlaceExtensionEquivAbove_coe] using
           hexact
     _ = ∏ W : {W : HeightOneSpectrum (𝓞 L) //
-          _root_.finitePlaceBelow (K := K) W = v},
+          _root_.finitePlaceBelow W = v},
         LocalFieldTheory.normUnits
           (v.adicCompletion K) (W.1.adicCompletion L)
-          (finiteComponent W.1 a) := by
-      exact
-        Fintype.prod_equiv eAbove
+          (finiteComponent W.1 a) := Fintype.prod_equiv eAbove
           (fun w : AbsoluteValueExtension vK L =>
             LocalFieldTheory.normUnits
               (v.adicCompletion K)
               ((eAbove w).1.adicCompletion L)
               (finiteComponent (eAbove w).1 a))
           (fun W : {W : HeightOneSpectrum (𝓞 L) //
-              _root_.finitePlaceBelow (K := K) W = v} =>
+              _root_.finitePlaceBelow W = v} =>
             LocalFieldTheory.normUnits
               (v.adicCompletion K) (W.1.adicCompletion L)
               (finiteComponent W.1 a))
           (fun _ => rfl)
 
+variable (v : InfinitePlace K) (a : IdeleGroup L)
+
 /-- The absolute-value-extension-coordinate form underlying the public
 archimedean formula below. -/
-private theorem infiniteComponent_norm_eq_prod_extensions
-    (v : InfinitePlace K)
-    (a : IdeleGroup L) :
+private theorem infiniteComponent_norm_eq_prod_extensions :
     let vK := v.1
     let hvK : vK.IsNontrivial := v.isNontrivial
     let z :=
       (relativeIdeleBaseChangeMulEquiv
         (K := K) (L := L)).symm a
     let x :=
-      RelativeIdeleGroup.infiniteComponent
-        (K := K) (L := L) v z
+      RelativeIdeleGroup.infiniteComponent v z
     let x' :=
-      _root_.infinitePlaceLocalTensorUnitsEquiv
-        (K := K) (L := L) v x
+      _root_.infinitePlaceLocalTensorUnitsEquiv v x
     letI :=
-      completionTensorDecomposition_extensionFintype
-        (K := K) (L := L) vK hvK
+      completionTensorDecomposition_extensionFintype (L := L) vK hvK
     letI : ∀ w : AbsoluteValueExtension vK L,
         Algebra vK.Completion w.1.Completion :=
       fun w =>
         AbsoluteValue.completionAlgebra vK w.1 w.2
     letI : ∀ w : AbsoluteValueExtension vK L,
         Module.Finite vK.Completion w.1.Completion :=
-      fun w =>
-        completionModuleFinite vK hvK w
+      (completionModuleFinite vK hvK)
     Units.mapEquiv
-        (_root_.infinitePlaceCompletionAlgEquiv
-          (K := K) v).toMulEquiv
+        (_root_.infinitePlaceCompletionAlgEquiv v).toMulEquiv
         (infiniteComponent v (norm K L a)) =
       ∏ w : AbsoluteValueExtension vK L,
         Units.map (Algebra.norm vK.Completion)
@@ -623,28 +542,23 @@ private theorem infiniteComponent_norm_eq_prod_extensions
       (K := K) (L := L)
   let z := e.symm a
   let x :=
-    RelativeIdeleGroup.infiniteComponent
-      (K := K) (L := L) v z
+    RelativeIdeleGroup.infiniteComponent v z
   let x' :=
-    _root_.infinitePlaceLocalTensorUnitsEquiv
-      (K := K) (L := L) v x
+    _root_.infinitePlaceLocalTensorUnitsEquiv v x
   let :=
-    completionTensorDecomposition_extensionFintype
-      (K := K) (L := L) vK hvK
+    completionTensorDecomposition_extensionFintype (L := L) vK hvK
   let : ∀ w : AbsoluteValueExtension vK L,
       Algebra vK.Completion w.1.Completion :=
     fun w =>
       AbsoluteValue.completionAlgebra vK w.1 w.2
   let : ∀ w : AbsoluteValueExtension vK L,
       Module.Finite vK.Completion w.1.Completion :=
-    fun w =>
-      completionModuleFinite vK hvK w
+    (completionModuleFinite vK hvK)
   have hz : e z = a :=
     e.apply_symm_apply a
   change
     Units.mapEquiv
-        (_root_.infinitePlaceCompletionAlgEquiv
-          (K := K) v).toMulEquiv
+        (_root_.infinitePlaceCompletionAlgEquiv v).toMulEquiv
         (infiniteComponent v (norm K L a)) =
       ∏ w : AbsoluteValueExtension vK L,
         Units.map (Algebra.norm vK.Completion)
@@ -654,8 +568,7 @@ private theorem infiniteComponent_norm_eq_prod_extensions
     RelativeIdeleGroup.infiniteComponent_norm]
   apply Units.ext
   change
-    _root_.infinitePlaceCompletionAlgEquiv
-        (K := K) v
+    _root_.infinitePlaceCompletionAlgEquiv v
         (Algebra.norm v.Completion
           (x : v.Completion ⊗[K] L)) =
       (((∏ w : AbsoluteValueExtension vK L,
@@ -664,22 +577,19 @@ private theorem infiniteComponent_norm_eq_prod_extensions
               vK hvK x' w)) :
           vK.Completionˣ) : vK.Completion)
   calc
-    _root_.infinitePlaceCompletionAlgEquiv
-        (K := K) v
+    _root_.infinitePlaceCompletionAlgEquiv v
         (Algebra.norm v.Completion
           (x : v.Completion ⊗[K] L)) =
         Algebra.norm vK.Completion
           (x' : vK.Completion ⊗[K] L) := by
       exact
         map_norm_tensorProduct_baseChange
-          (K := K) (L := L)
           (_root_.infinitePlaceCompletionAlgEquiv
             (K := K) v).toAlgHom
           (x : v.Completion ⊗[K] L)
     _ = ∏ w : AbsoluteValueExtension vK L,
         Algebra.norm vK.Completion
-          (completionTensorDecomposition_left
-            (K := K) (L := L) vK hvK
+          (completionTensorDecomposition_left vK hvK
             (x' : vK.Completion ⊗[K] L) w) := by
       exact
         RelativeIdeleGroup.localNorm_units_eq_prod
@@ -698,25 +608,20 @@ private theorem infiniteComponent_norm_eq_prod_extensions
 
 /-- The completion-coordinate form underlying the public archimedean
 formula below, already reindexed by concrete infinite places. -/
-private theorem infiniteComponent_norm_eq_prod_completion
-    (v : InfinitePlace K)
-    (a : IdeleGroup L) :
+private theorem infiniteComponent_norm_eq_prod_completion :
     let vK := v.1
     let hvK : vK.IsNontrivial := v.isNontrivial
     let eAbove :=
-      _root_.infinitePlaceAboveEquivExtension
-        (K := K) (L := L) v
+      _root_.infinitePlaceAboveEquivExtension (L := L) v
     letI :=
-      completionTensorDecomposition_extensionFintype
-        (K := K) (L := L) vK hvK
+      completionTensorDecomposition_extensionFintype (L := L) vK hvK
     letI : ∀ w : AbsoluteValueExtension vK L,
         Algebra vK.Completion w.1.Completion :=
       fun w =>
         AbsoluteValue.completionAlgebra vK w.1 w.2
     letI : ∀ w : AbsoluteValueExtension vK L,
         Module.Finite vK.Completion w.1.Completion :=
-      fun w =>
-        completionModuleFinite vK hvK w
+      (completionModuleFinite vK hvK)
     letI : Fintype {W : InfinitePlace L //
         _root_.infinitePlaceBelow (K := K) W = v} :=
       Fintype.ofEquiv (AbsoluteValueExtension vK L) eAbove.symm
@@ -737,8 +642,7 @@ private theorem infiniteComponent_norm_eq_prod_completion
       fun W =>
         completionModuleFinite vK hvK (eAbove W)
     Units.mapEquiv
-        (_root_.infinitePlaceCompletionAlgEquiv
-          (K := K) v).toMulEquiv
+        (_root_.infinitePlaceCompletionAlgEquiv v).toMulEquiv
         (infiniteComponent v (norm K L a)) =
       ∏ W : {W : InfinitePlace L //
           _root_.infinitePlaceBelow (K := K) W = v},
@@ -754,50 +658,44 @@ private theorem infiniteComponent_norm_eq_prod_completion
       (K := K) (L := L)
   let z := e.symm a
   let x :=
-    RelativeIdeleGroup.infiniteComponent
-      (K := K) (L := L) v z
+    RelativeIdeleGroup.infiniteComponent v z
   let x' :=
-    _root_.infinitePlaceLocalTensorUnitsEquiv
-      (K := K) (L := L) v x
+    _root_.infinitePlaceLocalTensorUnitsEquiv v x
   let eAbove :=
-    _root_.infinitePlaceAboveEquivExtension
-      (K := K) (L := L) v
+    _root_.infinitePlaceAboveEquivExtension (L := L) v
   let :=
-    completionTensorDecomposition_extensionFintype
-      (K := K) (L := L) vK hvK
+    completionTensorDecomposition_extensionFintype (L := L) vK hvK
   let : ∀ w : AbsoluteValueExtension vK L,
       Algebra vK.Completion w.1.Completion :=
     fun w =>
       AbsoluteValue.completionAlgebra vK w.1 w.2
   let : ∀ w : AbsoluteValueExtension vK L,
       Module.Finite vK.Completion w.1.Completion :=
-    fun w =>
-      completionModuleFinite vK hvK w
+    (completionModuleFinite vK hvK)
   let : Fintype {W : InfinitePlace L //
-      _root_.infinitePlaceBelow (K := K) W = v} :=
+      _root_.infinitePlaceBelow W = v} :=
     Fintype.ofEquiv (AbsoluteValueExtension vK L) eAbove.symm
   let : ∀ W : {W : InfinitePlace L //
-      _root_.infinitePlaceBelow (K := K) W = v},
+      _root_.infinitePlaceBelow W = v},
       W.1.1.LiesOver vK :=
     fun W =>
       ⟨congrArg (fun q : InfinitePlace K => q.1) W.2⟩
   let : ∀ W : {W : InfinitePlace L //
-      _root_.infinitePlaceBelow (K := K) W = v},
+      _root_.infinitePlaceBelow W = v},
       Algebra vK.Completion W.1.1.Completion :=
     fun W =>
       AbsoluteValue.completionAlgebra vK W.1.1
         (eAbove W).2
   let : ∀ W : {W : InfinitePlace L //
-      _root_.infinitePlaceBelow (K := K) W = v},
+      _root_.infinitePlaceBelow W = v},
       Module.Finite vK.Completion W.1.1.Completion :=
     fun W =>
       completionModuleFinite vK hvK (eAbove W)
-  have hz : e z = a :=
+  have hz :=
     e.apply_symm_apply a
   change
     Units.mapEquiv
-        (_root_.infinitePlaceCompletionAlgEquiv
-          (K := K) v).toMulEquiv
+        (_root_.infinitePlaceCompletionAlgEquiv v).toMulEquiv
         (infiniteComponent v (norm K L a)) =
       ∏ W : {W : InfinitePlace L //
           _root_.infinitePlaceBelow (K := K) W = v},
@@ -807,8 +705,7 @@ private theorem infiniteComponent_norm_eq_prod_completion
             (infiniteComponent W.1 a))
   calc
     Units.mapEquiv
-        (_root_.infinitePlaceCompletionAlgEquiv
-          (K := K) v).toMulEquiv
+        (_root_.infinitePlaceCompletionAlgEquiv v).toMulEquiv
         (infiniteComponent v (norm K L a)) =
         ∏ w : AbsoluteValueExtension vK L,
           Units.map (Algebra.norm vK.Completion)
@@ -841,34 +738,30 @@ private theorem infiniteComponent_norm_eq_prod_completion
       change
         _root_.infinitePlaceTensorUnitsEquivAbove
             (K := K) (L := L)
-            (_root_.infinitePlaceBelow (K := K) W.1)
-            ((_root_.relativeIdeleToLocalData
-              (K := K) (L := L) z).infinite
-              (_root_.infinitePlaceBelow (K := K) W.1))
+            (_root_.infinitePlaceBelow W.1)
+            ((_root_.relativeIdeleToLocalData z).infinite
+              (_root_.infinitePlaceBelow W.1))
             ⟨W.1, rfl⟩ =
           infiniteComponent W.1 a at hcomponent
       simp only [_root_.relativeIdeleToLocalData] at hcomponent
       have hcomponentFixed :
-          _root_.infinitePlaceTensorUnitsEquivAbove
-              (K := K) (L := L) v x W =
+          _root_.infinitePlaceTensorUnitsEquivAbove v x W =
             infiniteComponent W.1 a := by
         let W₀ : InfinitePlace L := W.1
         let P : InfinitePlace K → Prop := fun q =>
           ∀ hq : _root_.infinitePlaceBelow (K := K) W₀ = q,
             _root_.infinitePlaceTensorUnitsEquivAbove
                 (K := K) (L := L) q
-                (RelativeIdeleGroup.infiniteComponent
-                  (K := K) (L := L) q z)
+                (RelativeIdeleGroup.infiniteComponent q z)
                 ⟨W₀, hq⟩ =
               infiniteComponent W₀ a
         have hP :
-            P (_root_.infinitePlaceBelow (K := K) W₀) := by
+            P (_root_.infinitePlaceBelow W₀) := by
           intro hq
           simpa only [P, W₀] using hcomponent
-        have hW :
-            _root_.infinitePlaceBelow (K := K) W₀ = v :=
+        have hW :=
           W.2
-        have hPv : P v :=
+        have hPv :=
           hW ▸ hP
         simpa only [P, W₀, x] using hPv W.2
       rw [_root_.infinitePlaceTensorUnitsEquivAbove_apply]
@@ -884,17 +777,13 @@ private theorem infiniteComponent_norm_eq_prod_completion
 /-- The archimedean form of the ordinary idele norm. The component
 at `v` is the product of the ordinary field norms of the actual idele
 components at the infinite places above `v`. -/
-theorem infiniteComponent_norm_eq_prod
-    (v : InfinitePlace K)
-    (a : IdeleGroup L) :
+theorem infiniteComponent_norm_eq_prod :
     let vK := v.1
     let hvK : vK.IsNontrivial := v.isNontrivial
     let eAbove :=
-      _root_.infinitePlaceAboveEquivExtension
-        (K := K) (L := L) v
+      _root_.infinitePlaceAboveEquivExtension (L := L) v
     letI :=
-      completionTensorDecomposition_extensionFintype
-        (K := K) (L := L) vK hvK
+      completionTensorDecomposition_extensionFintype (L := L) vK hvK
     letI : Fintype {W : InfinitePlace L //
         _root_.infinitePlaceBelow (K := K) W = v} :=
       Fintype.ofEquiv
@@ -914,14 +803,11 @@ theorem infiniteComponent_norm_eq_prod
   let vK := v.1
   let hvK : vK.IsNontrivial := v.isNontrivial
   let eBase :=
-    _root_.infinitePlaceCompletionAlgEquiv
-      (K := K) v
+    _root_.infinitePlaceCompletionAlgEquiv v
   let eAbove :=
-    _root_.infinitePlaceAboveEquivExtension
-      (K := K) (L := L) v
+    _root_.infinitePlaceAboveEquivExtension (L := L) v
   let :=
-    completionTensorDecomposition_extensionFintype
-      (K := K) (L := L) vK hvK
+    completionTensorDecomposition_extensionFintype (L := L) vK hvK
   let : Fintype {W : InfinitePlace L //
       _root_.infinitePlaceBelow (K := K) W = v} :=
     Fintype.ofEquiv (AbsoluteValueExtension vK L) eAbove.symm
@@ -931,21 +817,20 @@ theorem infiniteComponent_norm_eq_prod
       AbsoluteValue.completionAlgebra vK w.1 w.2
   let : ∀ w : AbsoluteValueExtension vK L,
       Module.Finite vK.Completion w.1.Completion :=
-    fun w =>
-      completionModuleFinite vK hvK w
+    (completionModuleFinite vK hvK)
   let : ∀ W : {W : InfinitePlace L //
       _root_.infinitePlaceBelow (K := K) W = v},
       W.1.1.LiesOver v.1 :=
     fun W =>
       ⟨congrArg (fun q : InfinitePlace K => q.1) W.2⟩
   let : ∀ W : {W : InfinitePlace L //
-      _root_.infinitePlaceBelow (K := K) W = v},
+      _root_.infinitePlaceBelow W = v},
       Algebra vK.Completion W.1.1.Completion :=
     fun W =>
       AbsoluteValue.completionAlgebra vK W.1.1
         (eAbove W).2
   let : ∀ W : {W : InfinitePlace L //
-      _root_.infinitePlaceBelow (K := K) W = v},
+      _root_.infinitePlaceBelow W = v},
       Module.Finite vK.Completion W.1.1.Completion :=
     fun W =>
       completionModuleFinite vK hvK (eAbove W)
@@ -1004,8 +889,7 @@ theorem infiniteComponent_norm_eq_prod
               (InfinitePlace.Completion.equiv W.1).toRingHom
               (algebraMap v.Completion W.1.Completion) := by
         have hComparison :=
-          _root_.infinitePlaceCompletionAlgEquiv_algebraMap
-            (K := K) (L := L) v W.1 W.2
+          _root_.infinitePlaceCompletionAlgEquiv_algebraMap v W.1 W.2
         dsimp only [eBase, infinitePlaceCompletionAlgEquiv] at hComparison ⊢
         exact hComparison
       have hCompatible :=

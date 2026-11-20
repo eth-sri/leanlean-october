@@ -12,9 +12,9 @@ namespace DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 open MomentSources NumberField IsDedekindDomain ThetaExpansion ValuativeRel
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
 
 theorem nonzero_value (p : ThetaBranch.ExteriorPrime R.A) (x V : Fˣ)
     (hV : ThetaBranch.order p.val V = 0) :

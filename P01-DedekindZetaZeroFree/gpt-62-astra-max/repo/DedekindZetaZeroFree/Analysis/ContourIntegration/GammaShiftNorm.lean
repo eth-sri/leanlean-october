@@ -21,7 +21,6 @@ private lemma line_continuous (a : ℝ) (ha : a ∈ Set.Icc (-(99 / 100 : ℝ)) 
   intro n hn
   have hr := congrArg Complex.re hn
   simp at hr
-  have hn0 : (0 : ℝ) ≤ n := Nat.cast_nonneg n
   rcases Nat.eq_zero_or_pos n with h | h
   · simp [h] at hr; linarith [ha.2]
   · have : (1 : ℝ) ≤ n := by exact_mod_cast h
@@ -33,7 +32,7 @@ private lemma uniform_bound :
   obtain ⟨M, hM, hbound⟩ := gamma_real_interval_bound (a := 1 / 100) (b := 3) (by norm_num)
   refine ⟨2 * M, by positivity, ?_⟩
   intro a ha t
-  let z : ℂ := (a : ℂ) + (t : ℂ) * Complex.I
+  let z := (a : ℂ) + (t : ℂ) * Complex.I
   have hzre : z.re = a := by simp [z]
   have hz : z ≠ 0 := by
     intro he
@@ -44,10 +43,9 @@ private lemma uniform_bound :
     rw [hzre, abs_of_neg (by linarith [ha.2])] at this
     linarith [ha.2]
   have he := gamma_norm_le_real (s := z + 1) (by simp [hzre]; linarith [ha.1])
-  have hb := hbound (a + 1) ⟨by linarith [ha.1], by linarith [ha.2]⟩
   simp only [Complex.add_re, Complex.one_re, hzre] at he
   rw [Complex.Gamma_add_one z hz, norm_mul] at he
-  have hh := he.trans hb
+  have hh := he.trans (hbound (a + 1) ⟨by linarith [ha.1], by linarith [ha.2]⟩)
   have := norm_nonneg (Complex.Gamma z)
   dsimp only [z] at *
   nlinarith
@@ -69,23 +67,18 @@ private lemma envelope (A : ℝ) :
   intro a ha t
   have ht : 0 < 1 + |t| := by positivity
   have hn : -(m : ℝ) ≤ 0 := neg_nonpos.mpr (Nat.cast_nonneg m)
-  have hBC : B ≤ B + C := by linarith
-  have hCC : C ≤ B + C := by linarith
   by_cases ht1 : |t| ≤ 1
-  · have hr : (2 : ℝ) ^ (-(m : ℝ)) ≤ (1 + |t|) ^ (-(m : ℝ)) :=
-      Real.rpow_le_rpow_of_nonpos ht (by linarith) hn
-    have hh : 1 ≤ 2 ^ (m : ℝ) * (1 + |t|) ^ (-(m : ℝ)) := by
+  · have hh : 1 ≤ 2 ^ (m : ℝ) * (1 + |t|) ^ (-(m : ℝ)) := by
       calc
         1 = 2 ^ (m : ℝ) * 2 ^ (-(m : ℝ)) := hcanc.symm
-        _ ≤ _ := mul_le_mul_of_nonneg_left hr hp.le
+        _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_nonpos ht (by linarith) hn) hp.le
     calc
       _ ≤ B := hBb a ha t
-      _ ≤ B + C := hBC
+      _ ≤ B + C := (by linarith)
       _ ≤ (B + C) * (2 ^ (m : ℝ) * (1 + |t|) ^ (-(m : ℝ))) :=
         le_mul_of_one_le_right (by positivity) hh
       _ = _ := by ring
-  · have hu : 0 < |t| := by linarith
-    have hr : (2 * |t|) ^ (-(m : ℝ)) ≤ (1 + |t|) ^ (-(m : ℝ)) :=
+  · have hr : (2 * |t|) ^ (-(m : ℝ)) ≤ (1 + |t|) ^ (-(m : ℝ)) :=
       Real.rpow_le_rpow_of_nonpos ht (by linarith) hn
     rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) (abs_nonneg t)] at hr
     have hh : |t| ^ (-(m : ℝ)) ≤ 2 ^ (m : ℝ) * (1 + |t|) ^ (-(m : ℝ)) := by
@@ -97,10 +90,13 @@ private lemma envelope (A : ℝ) :
       _ ≤ C * |t| ^ (-(m : ℝ)) := hCb a ha t (by linarith)
       _ ≤ C * (2 ^ (m : ℝ) * (1 + |t|) ^ (-(m : ℝ))) := mul_le_mul_of_nonneg_left hh hC.le
       _ ≤ (B + C) * (2 ^ (m : ℝ) * (1 + |t|) ^ (-(m : ℝ))) :=
-        mul_le_mul_of_nonneg_right hCC (by positivity)
+        mul_le_mul_of_nonneg_right (by linarith) (by positivity)
       _ = _ := by ring
 
-private lemma weighted_bound (A : ℝ) (hA : 0 ≤ A) (m : ℕ) (D a γ : ℝ)
+variable (A : ℝ) (hA : 0 ≤ A)
+
+include hA in
+private lemma weighted_bound (m : ℕ) (D a γ : ℝ)
     (hD : 0 < D)
     (he : ∀ t : ℝ, ‖Complex.Gamma ((a : ℂ) + (t : ℂ) * Complex.I)‖ ≤
       D * (1 + |t|) ^ (-(m : ℝ))) :
@@ -109,7 +105,7 @@ private lemma weighted_bound (A : ℝ) (hA : 0 ≤ A) (m : ℕ) (D a γ : ℝ)
   intro t
   have htri : 2 + |γ + t| ≤ (2 + |γ|) * (1 + |t|) := by
     have := abs_add_le γ t
-    have : 0 ≤ |γ| * |t| := mul_nonneg (abs_nonneg γ) (abs_nonneg t)
+    have := mul_nonneg (abs_nonneg γ) (abs_nonneg t)
     nlinarith [abs_nonneg t]
   have hp : (2 + |γ + t|) ^ A ≤ (2 + |γ|) ^ A * (1 + |t|) ^ A := by
     calc
@@ -121,7 +117,8 @@ private lemma weighted_bound (A : ℝ) (hA : 0 ≤ A) (m : ℕ) (D a γ : ℝ)
     _ = (D * (2 + |γ|) ^ A) * ((1 + |t|) ^ A * (1 + |t|) ^ (-(m : ℝ))) := by ring
     _ = _ := by rw [← Real.rpow_add (by positivity)]; congr 2
 
-theorem gamma_moment_shift (A : ℝ) (hA : 0 ≤ A) :
+include hA in
+theorem gamma_moment_shift :
     ∃ C_A : ℝ, 0 < C_A ∧
       ∀ a : ℝ, a ∈ Set.Icc (-(99 / 100 : ℝ)) (-(87 / 100 : ℝ)) → ∀ γ : ℝ,
         Integrable (fun t : ℝ =>
@@ -161,7 +158,7 @@ theorem gamma_moment_shift (A : ℝ) (hA : 0 ≤ A) :
 end GammaMoments
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem gamma_shift_norm (D : FixedData S η) :
     ∃ A_F : ℝ, 0 ≤ A_F ∧ ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧
@@ -191,9 +188,8 @@ theorem gamma_shift_norm (D : FixedData S η) :
   rw [hσ] at hβ
   have hU0 : 0 < U := by linarith
   set a : ℝ := DetectorDef.c - β with ha
-  have haI : a ∈ Set.Icc (-(99 / 100 : ℝ)) (-(87 / 100 : ℝ)) := by
-    rw [ha, hcv]; constructor <;> linarith
-  obtain ⟨hint, hle⟩ := hmom a haI γ
+  obtain ⟨hint, hle⟩ := hmom a (by
+    rw [ha, hcv]; constructor <;> linarith) γ
   set E : ℝ := DetectorDef.qExp * (1 - DetectorDef.c)
   have hpt : ∀ t : ℝ, ‖Complex.Gamma ((a : ℂ) + (t : ℂ) * Complex.I) *
       (g (((β : ℂ) + (γ : ℂ) * Complex.I) + ((a : ℂ) + (t : ℂ) * Complex.I)) *
@@ -233,14 +229,9 @@ theorem gamma_shift_norm (D : FixedData S η) :
           U ^ (DetectorDef.r * a) := by
           gcongr
       _ = _ := by ring
-  have hmeas : Integrable (fun t : ℝ =>
-      (Ci * Cc * U ^ (E + (1 - DetectorDef.c) / 2 + DetectorDef.r * a + ε)) *
-        (‖Complex.Gamma ((a : ℂ) + (t : ℂ) * Complex.I)‖ * (2 + |γ + t|) ^ A)) :=
-    hint.const_mul _
-  refine (norm_integral_le_of_norm_le hmeas (Filter.Eventually.of_forall hpt)).trans ?_
+  refine (norm_integral_le_of_norm_le (hint.const_mul _) (Filter.Eventually.of_forall hpt)).trans ?_
   rw [integral_const_mul]
-  have hK : 0 ≤ Ci * Cc * U ^ (E + (1 - DetectorDef.c) / 2 + DetectorDef.r * a + ε) := by
-    positivity
   calc _ ≤ (Ci * Cc * U ^ (E + (1 - DetectorDef.c) / 2 + DetectorDef.r * a + ε)) *
-        (CA * (2 + |γ|) ^ A) := mul_le_mul_of_nonneg_left hle hK
+        (CA * (2 + |γ|) ^ A) := mul_le_mul_of_nonneg_left hle (by
+          positivity)
     _ = _ := by ring

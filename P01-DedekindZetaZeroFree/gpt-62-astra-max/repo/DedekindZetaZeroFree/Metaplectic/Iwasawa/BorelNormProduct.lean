@@ -11,12 +11,12 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPLocalPrincipalSeries KPLocalExceptionalConstruction KPAdelicCoverRestrictedProduct
 open ThetaExpansion MomentSources
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
-open _root_.DedekindZetaZeroFree.KPLocalTameValuationWhittakerBasis.RawSectionBridge renaming localAbs_norm → localAbs_norm
+open _root_.DedekindZetaZeroFree.KPLocalTameValuationWhittakerBasis.RawSectionBridge (localAbs_norm)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -50,23 +50,19 @@ theorem raw_upperRatio_eval (raw : Raw R.A)
       (raw v).g 0 0 / (raw v).g 1 1 := by
   let A := restrictedProjection F ζ hζ raw
   have hentry (i j : Fin 2) : adeleEval F v (A i j) = (raw v).g i j := by
-    have h := restrictedProjection_eval F ζ hζ raw v
-    have he := congrArg (fun M : KPLocalCover.LocalGL2 F v => M i j) h
-    simpa only [A, matrixEval, Matrix.GeneralLinearGroup.map_apply, KPLocalCover.projection_apply] using he
+    simpa only [A, matrixEval, Matrix.GeneralLinearGroup.map_apply, KPLocalCover.projection_apply] using (congrArg (fun M : KPLocalCover.LocalGL2 F v => M i j) (restrictedProjection_eval F ζ hζ raw v))
   change ((Units.map (adeleEval F v).toMonoidHom)
     (KPGlobalTorusBorelNormTwistTransport.iwasawaUpperRatio F A hu) : KPHilbert.Completion F v) = _
   unfold KPGlobalTorusBorelNormTwistTransport.iwasawaUpperRatio
   rw [map_mul,map_inv,Units.val_mul,Units.val_inv_eq_inv_val]
   simp only [Units.coe_map,IsUnit.unit_spec]
-  change adeleEval F v (A 0 0) * (adeleEval F v (A 1 1))⁻¹ = _
   exact (congrArg₂ (fun a b : KPHilbert.Completion F v => a*b⁻¹)
     (hentry 0 0) (hentry 1 1)).trans (div_eq_mul_inv _ _).symm
 
  theorem raw_upper_eval (raw : Raw R.A)
     (hu : (restrictedProjection F ζ hζ raw) 1 0 = 0) (v : KPHilbert.Place F) :
     (raw v).g 1 0 = 0 := by
-  have h := restrictedProjection_eval F ζ hζ raw v
-  have he := congrArg (fun M : KPLocalCover.LocalGL2 F v => M 1 0) h
+  have he := congrArg (fun M : KPLocalCover.LocalGL2 F v => M 1 0) (restrictedProjection_eval F ζ hζ raw v)
   change adeleEval F v ((restrictedProjection F ζ hζ raw) 1 0) = (raw v).g 1 0 at he
   rw [hu,map_zero] at he
   exact he.symm
@@ -115,10 +111,8 @@ theorem raw_borel_norm_product (raw : Raw R.A)
       ∏ᶠ v, KPGlobalCenterRationalCharacterModulus.localAbsUnit F v
         (KPGlobalCubicIdelePairing.ideleEval F v u) := by
   dsimp only
-  let g := scalarQuotient F ζ hζ (amalgamation F ζ hζ raw)
-  let hu := raw_borel_upper R raw hb
-  let u := KPGlobalTorusBorelNormTwistTransport.iwasawaUpperRatio F (restrictedProjection F ζ hζ raw) hu
-  obtain ⟨t,x,ht⟩ := KPGlobalTorusBorelTwistCompatibility.actual_borel_factorization F ζ hζ ⟨g,hb⟩
+  let u := KPGlobalTorusBorelNormTwistTransport.iwasawaUpperRatio F (restrictedProjection F ζ hζ raw) (raw_borel_upper R raw hb)
+  obtain ⟨t,x,ht⟩ := KPGlobalTorusBorelTwistCompatibility.actual_borel_factorization F ζ hζ ⟨(scalarQuotient F ζ hζ (amalgamation F ζ hζ raw)),hb⟩
   have hr : u = KPGlobalTorusFunctionData.p F ζ hζ t := by
     apply KPGlobalTorusBorelNormTwistTransport.iwasawaUpperRatio_torus_root F ζ hζ t x
     rw [← ht]
@@ -127,9 +121,8 @@ theorem raw_borel_norm_product (raw : Raw R.A)
     (InfinitePlace.IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt (by norm_num) hζ) u
   refine ⟨hp.1,?_⟩
   rw [hp.2,hr]
-  have hn := KPGlobalTorusBorelTwistCompatibility.iwasawaNorm_formula F ζ hζ (fullProductIwasawaData R) t x
-    (1 : (fullProductIwasawaData R).K)
-  simpa only [Subgroup.coe_one,mul_one,← ht,KPGlobalTorusFunctionData.delta,MonoidHom.comp_apply] using hn
+  simpa only [Subgroup.coe_one,mul_one,← ht,KPGlobalTorusFunctionData.delta,MonoidHom.comp_apply] using (KPGlobalTorusBorelTwistCompatibility.iwasawaNorm_formula F ζ hζ (fullProductIwasawaData R) t x
+    (1 : (fullProductIwasawaData R).K))
 
 theorem height_raw_borel_finsum (raw : Raw R.A)
     (hb : scalarQuotient F ζ hζ (amalgamation F ζ hζ raw) ∈ KPGlobalTorusFunctionData.borel F ζ hζ) :
@@ -149,7 +142,6 @@ theorem height_raw_borel_finsum (raw : Raw R.A)
         (restrictedProjection F ζ hζ raw) (raw_borel_upper R raw hb)))
   change (((∏ᶠ v, f v : NNRealˣ) : NNReal) : ℝ) =
     ∏ᶠ v, (((f v : NNRealˣ) : NNReal) : ℝ) at hc
-  change Real.log (((∏ᶠ v, f v : NNRealˣ) : NNReal) : ℝ) = _
   rw [hc]
   apply Real.log_finprod
   intro v

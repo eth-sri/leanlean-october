@@ -12,11 +12,15 @@ set_option maxHeartbeats 1000000
 
 noncomputable section
 
- theorem cls_self (G : Type*) [CommGroup G] (n : ℕ) (g : G) :
+ section
+
+variable (G : Type*) [CommGroup G]
+
+theorem cls_self (n : ℕ) (g : G) :
     QuotientGroup.mk' (powMonoidHom (α := G) n).range (g ^ n) = 1 := by
   apply (QuotientGroup.eq_one_iff _).2
   exact ⟨g, rfl⟩
-private theorem cls_congr (G : Type*) [CommGroup G] (n m k l : ℕ) (h : n*m=l*k)
+private theorem cls_congr (n m k l : ℕ) (h : n*m=l*k)
     (a b : G) (hab : QuotientGroup.mk' (powMonoidHom (α := G) n).range a =
       QuotientGroup.mk' (powMonoidHom (α := G) n).range b) :
     QuotientGroup.mk' (powMonoidHom (α := G) k).range (a^m) =
@@ -24,22 +28,19 @@ private theorem cls_congr (G : Type*) [CommGroup G] (n m k l : ℕ) (h : n*m=l*k
   obtain ⟨z, hz, hab⟩ := (QuotientGroup.mk'_eq_mk' _).1 hab
   obtain ⟨t, rfl⟩ := hz
   rw [← hab, mul_pow, powMonoidHom_apply, ← pow_mul, h, pow_mul, map_mul, cls_self, mul_one]
- theorem cls_out (G : Type*) [CommGroup G] (n m k l : ℕ) (h : n*m=l*k) (a : G) :
+ theorem cls_out (n m k l : ℕ) (h : n*m=l*k) (a : G) :
     QuotientGroup.mk' (powMonoidHom (α := G) k).range
       ((Quotient.out (QuotientGroup.mk' (powMonoidHom (α := G) n).range a))^m) =
     QuotientGroup.mk' (powMonoidHom (α := G) k).range (a^m) := by
   apply cls_congr G n m k l h
   exact Quotient.out_eq _
- theorem cls_out_eq (G : Type*) [CommGroup G] (n : ℕ) (q : PowerQuotient G n) :
+ theorem cls_out_eq (n : ℕ) (q : PowerQuotient G n) :
     QuotientGroup.mk' (powMonoidHom (α := G) n).range (Quotient.out q) = q :=
   Quotient.out_eq q
 
- theorem cls_ann (G : Type*) [CommGroup G] (n : ℕ)
-    (q : PowerQuotient G n) : q ^ n = 1 := by
-  induction q using Quotient.inductionOn with
-  | h g =>
-    change (QuotientGroup.mk' (powMonoidHom (α := G) n).range g)^n = 1
-    rw [← map_pow]; exact cls_self G n g
+end
+
+ alias cls_ann := powerQuotient_pow_eq_one
 
  theorem crt_kernel (G : Type*) [CommGroup G] :
     (powMonoidHom (α := G) 6).range ≤
@@ -47,10 +48,8 @@ private theorem cls_congr (G : Type*) [CommGroup G] (n m k l : ℕ) (h : n*m=l*k
         (QuotientGroup.mk' (powMonoidHom (α := G) 3).range))).ker := by
   rintro x ⟨g, rfl⟩
   apply Prod.ext
-  · change QuotientGroup.mk' (powMonoidHom (α := G) 2).range (g^6) = 1
-    convert cls_self G 2 (g^3) using 1 <;> rw [← pow_mul] <;> norm_num
-  · change QuotientGroup.mk' (powMonoidHom (α := G) 3).range (g^6) = 1
-    convert cls_self G 3 (g^2) using 1 <;> rw [← pow_mul] <;> norm_num
+  · convert cls_self G 2 (g^3) using 1 <;> rw [← pow_mul] <;> norm_num
+  · convert cls_self G 3 (g^2) using 1 <;> rw [← pow_mul] <;> norm_num
 
 def sixthPowerCRT (G : Type*) [CommGroup G] :
     PowerQuotient G 6 ≃* PowerQuotient G 2 × PowerQuotient G 3 where
@@ -63,12 +62,12 @@ def sixthPowerCRT (G : Type*) [CommGroup G] :
     intro q
     induction q using Quotient.inductionOn with
     | h g =>
-      change QuotientGroup.mk' (powMonoidHom (α := G) 6).range
-        (Quotient.out (QuotientGroup.mk' (powMonoidHom (α := G) 2).range g)^3 *
-         Quotient.out (QuotientGroup.mk' (powMonoidHom (α := G) 3).range g)^4) = _
+      change QuotientGroup.mk' (powMonoidHom 6).range
+        (Quotient.out (QuotientGroup.mk' (powMonoidHom 2).range g)^3 *
+         Quotient.out (QuotientGroup.mk' (powMonoidHom 3).range g)^4) = _
       rw [map_mul, cls_out G 2 3 6 1 (by decide), cls_out G 3 4 6 2 (by decide)]
       calc
-        _ = QuotientGroup.mk' (powMonoidHom (α := G) 6).range (g * g^6) := by
+        _ = QuotientGroup.mk' (powMonoidHom 6).range (g * g^6) := by
           rw [← map_mul]; congr 1; group
         _ = _ := by rw [map_mul, cls_self, mul_one]; rfl
   right_inv := by
@@ -77,12 +76,12 @@ def sixthPowerCRT (G : Type*) [CommGroup G] :
     | h a =>
       induction b using Quotient.inductionOn with
       | h b =>
-        change (QuotientGroup.mk' (powMonoidHom (α := G) 2).range
-          (Quotient.out (QuotientGroup.mk' (powMonoidHom (α := G) 2).range a)^3 *
-           Quotient.out (QuotientGroup.mk' (powMonoidHom (α := G) 3).range b)^4),
-          QuotientGroup.mk' (powMonoidHom (α := G) 3).range
-          (Quotient.out (QuotientGroup.mk' (powMonoidHom (α := G) 2).range a)^3 *
-           Quotient.out (QuotientGroup.mk' (powMonoidHom (α := G) 3).range b)^4)) = _
+        change (QuotientGroup.mk' (powMonoidHom 2).range
+          (Quotient.out (QuotientGroup.mk' (powMonoidHom 2).range a)^3 *
+           Quotient.out (QuotientGroup.mk' (powMonoidHom 3).range b)^4),
+          QuotientGroup.mk' (powMonoidHom 3).range
+          (Quotient.out (QuotientGroup.mk' (powMonoidHom 2).range a)^3 *
+           Quotient.out (QuotientGroup.mk' (powMonoidHom 3).range b)^4)) = _
         apply Prod.ext
         · dsimp only [Prod.fst]
           rw [map_mul, map_pow, cls_out_eq]
@@ -93,9 +92,7 @@ def sixthPowerCRT (G : Type*) [CommGroup G] :
           rw [map_mul, cls_self G 3, one_mul, map_pow, cls_out_eq]
           rw [show (4 : ℕ) = 1+3 from rfl, pow_add, cls_ann, mul_one, pow_one]
           rfl
-  map_mul' := by
-    intro a b
-    exact map_mul (QuotientGroup.lift (powMonoidHom (α := G) 6).range
+  map_mul' := fun a b => map_mul (QuotientGroup.lift (powMonoidHom (α := G) 6).range
       ((QuotientGroup.mk' (powMonoidHom (α := G) 2).range).prod
         (QuotientGroup.mk' (powMonoidHom (α := G) 3).range)) (crt_kernel G)) a b
 
@@ -108,34 +105,40 @@ def sixthPowerCRT (G : Type*) [CommGroup G] :
     exact ⟨⟨y.1, rfl⟩, ⟨y.2, rfl⟩⟩
   · rintro ⟨⟨a, ha⟩, ⟨b, hb⟩⟩
     exact ⟨(a,b), Prod.ext ha hb⟩
- def piPairPowerEquiv {I J : Type*} (G : I → Type*) (H : J → Type*)
-    [∀ i, CommGroup (G i)] [∀ j, CommGroup (H j)] (n : ℕ) :
+ section
+
+variable {I J : Type*} (G : I → Type*) (H : J → Type*) [∀ i, CommGroup (G i)] [∀ j, CommGroup (H j)]
+    (n : ℕ)
+
+def piPairPowerEquiv :
     PowerQuotient (((i : I) → G i) × ((j : J) → H j)) n ≃*
       (((i : I) → PowerQuotient (G i) n) × ((j : J) → PowerQuotient (H j) n)) :=
   (QuotientGroup.quotientMulEquivOfEq (pair_power_range _ _ n)).trans
     ((QuotientGroup.prodMulEquiv _ _).trans
       ((QuotientGroup.mulEquivPiModRangePowMonoidHom G n).prodCongr
        (QuotientGroup.mulEquivPiModRangePowMonoidHom H n)))
- theorem piPairPowerEquiv_apply {I J : Type*} (G : I → Type*) (H : J → Type*)
-    [∀ i, CommGroup (G i)] [∀ j, CommGroup (H j)] (n : ℕ)
+ theorem piPairPowerEquiv_apply
     (g : ((i : I) → G i) × ((j : J) → H j)) :
     piPairPowerEquiv G H n (QuotientGroup.mk' (powMonoidHom (α := (((i : I) → G i) × ((j : J) → H j))) n).range g) =
       (fun i => QuotientGroup.mk' (powMonoidHom (α := G i) n).range (g.1 i),
-       fun j => QuotientGroup.mk' (powMonoidHom (α := H j) n).range (g.2 j)) := by
-  rfl
+       fun j => QuotientGroup.mk' (powMonoidHom (α := H j) n).range (g.2 j)) := rfl
+
+end
 namespace SArithmeticData
 
 variable {F : Type} [Field F] [NumberField F]
 
-abbrev LocalPowerClasses (A : SArithmeticData F) (n : ℕ) :=
+variable (A : SArithmeticData F)
+
+abbrev LocalPowerClasses (n : ℕ) :=
   ((w : NumberField.InfinitePlace F) → PowerQuotient w.Completionˣ n) ×
   ((v : {v // v ∈ A.Sf}) → PowerQuotient (v.val.adicCompletion F)ˣ n)
 
-abbrev V₂ (A : SArithmeticData F) := A.LocalPowerClasses 2
+abbrev V₂ := A.LocalPowerClasses 2
 
-abbrev V₃ (A : SArithmeticData F) := A.LocalPowerClasses 3
+abbrev V₃ := A.LocalPowerClasses 3
 
-def localPowerQuotientEquiv (A : SArithmeticData F) (n : ℕ) :
+def localPowerQuotientEquiv (n : ℕ) :
     PowerQuotient A.G n ≃* A.LocalPowerClasses n where
   toFun := QuotientGroup.lift (powMonoidHom (α := A.G) n).range
     { toFun := fun g =>
@@ -147,10 +150,8 @@ def localPowerQuotientEquiv (A : SArithmeticData F) (n : ℕ) :
     (by
       rintro g ⟨x, rfl⟩
       apply Prod.ext <;> funext i
-      · change QuotientGroup.mk' (powMonoidHom (α := i.Completionˣ) n).range ((x.1 i)^n) = 1
-        exact cls_self _ n _
-      · change QuotientGroup.mk' (powMonoidHom (α := (i.val.adicCompletion F)ˣ) n).range ((x.2 i)^n) = 1
-        exact cls_self _ n _)
+      · exact cls_self _ n _
+      · exact cls_self _ n _)
   invFun q := QuotientGroup.mk' (powMonoidHom (α := A.G) n).range
     ((fun w => Quotient.out (q.1 w)), (fun v => Quotient.out (q.2 v)))
   left_inv := by
@@ -160,21 +161,9 @@ def localPowerQuotientEquiv (A : SArithmeticData F) (n : ℕ) :
     induction q using Quotient.inductionOn with
     | h g =>
       rw [piPairPowerEquiv_apply]
-      change (fun w => QuotientGroup.mk' (powMonoidHom (α := w.Completionˣ) n).range
-          (Quotient.out (QuotientGroup.mk' (powMonoidHom (α := w.Completionˣ) n).range (g.1 w))),
-        fun v => QuotientGroup.mk' (powMonoidHom (α := (v.val.adicCompletion F)ˣ) n).range
-          (Quotient.out (QuotientGroup.mk' (powMonoidHom (α := (v.val.adicCompletion F)ˣ) n).range (g.2 v)))) = _
-      change (fun w => QuotientGroup.mk' (powMonoidHom (α := w.Completionˣ) n).range
-          (Quotient.out (QuotientGroup.mk' (powMonoidHom (α := w.Completionˣ) n).range (g.1 w))),
-        fun v => QuotientGroup.mk' (powMonoidHom (α := (v.val.adicCompletion F)ˣ) n).range
-          (Quotient.out (QuotientGroup.mk' (powMonoidHom (α := (v.val.adicCompletion F)ˣ) n).range (g.2 v)))) =
-        (fun w => QuotientGroup.mk' (powMonoidHom (α := w.Completionˣ) n).range (g.1 w),
-         fun v => QuotientGroup.mk' (powMonoidHom (α := (v.val.adicCompletion F)ˣ) n).range (g.2 v))
       apply Prod.ext <;> funext i <;> exact cls_out_eq _ n _
   right_inv := by
     intro q
-    change (fun w => QuotientGroup.mk' (powMonoidHom (α := w.Completionˣ) n).range (Quotient.out (q.1 w)),
-      fun v => QuotientGroup.mk' (powMonoidHom (α := (v.val.adicCompletion F)ˣ) n).range (Quotient.out (q.2 v))) = q
     apply Prod.ext <;> funext i <;> exact cls_out_eq _ n _
   map_mul' := by
     intro a b
@@ -182,31 +171,28 @@ def localPowerQuotientEquiv (A : SArithmeticData F) (n : ℕ) :
     | h a =>
       induction b using Quotient.inductionOn with
       | h b =>
-        change (fun w => QuotientGroup.mk' (powMonoidHom (α := w.Completionˣ) n).range ((a*b).1 w),
-          fun v => QuotientGroup.mk' (powMonoidHom (α := (v.val.adicCompletion F)ˣ) n).range ((a*b).2 v)) = _
         apply Prod.ext <;> funext i
-        · change QuotientGroup.mk' (powMonoidHom (α := i.Completionˣ) n).range ((a.1 i)*(b.1 i)) =
-            QuotientGroup.mk' (powMonoidHom (α := i.Completionˣ) n).range (a.1 i) *
-            QuotientGroup.mk' (powMonoidHom (α := i.Completionˣ) n).range (b.1 i)
+        · change QuotientGroup.mk' (powMonoidHom n).range ((a.1 i)*(b.1 i)) =
+            QuotientGroup.mk' (powMonoidHom n).range (a.1 i) *
+            QuotientGroup.mk' (powMonoidHom n).range (b.1 i)
           exact map_mul _ _ _
-        · change QuotientGroup.mk' (powMonoidHom (α := (i.val.adicCompletion F)ˣ) n).range ((a.2 i)*(b.2 i)) =
-            QuotientGroup.mk' (powMonoidHom (α := (i.val.adicCompletion F)ˣ) n).range (a.2 i) *
-            QuotientGroup.mk' (powMonoidHom (α := (i.val.adicCompletion F)ˣ) n).range (b.2 i)
+        · change QuotientGroup.mk' (powMonoidHom n).range ((a.2 i)*(b.2 i)) =
+            QuotientGroup.mk' (powMonoidHom n).range (a.2 i) *
+            QuotientGroup.mk' (powMonoidHom n).range (b.2 i)
           exact map_mul _ _ _
 
-def localSixthPowerCRT (A : SArithmeticData F) : A.V ≃* A.V₂ × A.V₃ :=
+def localSixthPowerCRT : A.V ≃* A.V₂ × A.V₃ :=
   (sixthPowerCRT A.G).trans
     ((A.localPowerQuotientEquiv 2).prodCongr (A.localPowerQuotientEquiv 3))
 
-theorem localSixthPowerCRT_apply (A : SArithmeticData F) (g : A.G) :
+theorem localSixthPowerCRT_apply (g : A.G) :
     A.localSixthPowerCRT (QuotientGroup.mk' A.sixthPowers g) =
       (((fun w => QuotientGroup.mk' (powMonoidHom (α := w.Completionˣ) 2).range (g.1 w)),
        (fun v => QuotientGroup.mk'
          (powMonoidHom (α := (v.val.adicCompletion F)ˣ) 2).range (g.2 v))),
        ((fun w => QuotientGroup.mk' (powMonoidHom (α := w.Completionˣ) 3).range (g.1 w)),
         (fun v => QuotientGroup.mk'
-          (powMonoidHom (α := (v.val.adicCompletion F)ˣ) 3).range (g.2 v)))) := by
-  rfl
+          (powMonoidHom (α := (v.val.adicCompletion F)ˣ) 3).range (g.2 v)))) := rfl
 
 end SArithmeticData
 end

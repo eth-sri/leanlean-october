@@ -12,14 +12,15 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-def FirstRootLift.packet {R : PrincipalMellin.ActualRecipe S η}
-    {N : TraceHaarTransport R} {A : FirstRootSphericalSeed R N} {B : FirstRootCutoffs R}
-    {J : FirstRootProjected R N A B} (L : FirstRootLift R N A B J) : Packet R L.base.sources where
-  seed := L.base.sources.flat
-  seed_spherical := L.base.sources.exterior_spherical
-  operations := fun v => FlatOperation.seed v
+section
+
+variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {A : FirstRootSphericalSeed R N} {B : FirstRootCutoffs R} {J : FirstRootProjected R N A B}
+    (L : FirstRootLift R N A B J)
+
+def FirstRootLift.packet : Packet R L.base.sources where
   v₀ := Classical.choice (inferInstance : Nonempty (InfinitePlace F))
   cutoff := J.cutoffs.cutoff
   cutoff_open := J.cutoffs.open_cutoff
@@ -30,17 +31,11 @@ def FirstRootLift.packet {R : PrincipalMellin.ActualRecipe S η}
   branch := firstRootBranch R
   branch_global := firstRootBranch_apply R
   branch_exact := J.cutoffs.branch_exact
-  cutoff_kernel := J.cutoffs.kernel
 
-theorem FirstRootLift.profile {R : PrincipalMellin.ActualRecipe S η}
-    {N : TraceHaarTransport R} {A : FirstRootSphericalSeed R N} {B : FirstRootCutoffs R}
-    {J : FirstRootProjected R N A B} (L : FirstRootLift R N A B J) (v : R.A.UnitQuotient) (y : R.A.G) :
+theorem FirstRootLift.profile (v : R.A.UnitQuotient) (y : R.A.G) :
     firstRootMultiplier R J.cutoffs y * firstRootRadialProfile R J.cutoffs y =
       L.packet.forwardProfile v y := by
   unfold firstRootMultiplier firstRootRadialProfile firstRootSphericalProduct Packet.forwardProfile
-  change (∏ w : InfinitePlace F, _) * ((if ∀ p : R.A.Sf, y.2 p ∈ J.cutoffs.cutoff p then 1 else 0) *
-    ∏ w : InfinitePlace F, _) =
-    (if ∀ p : R.A.Sf, y.2 p ∈ J.cutoffs.cutoff p then 1 else 0) * ∏ w : InfinitePlace F, _
   rw [mul_left_comm, ← Finset.prod_mul_distrib]
   congr 1
   apply Finset.prod_congr rfl
@@ -49,12 +44,11 @@ theorem FirstRootLift.profile {R : PrincipalMellin.ActualRecipe S η}
   push_cast
   ring
 
+end
+
 def FirstRootLift.toJointForwardIdentitySources {R : PrincipalMellin.ActualRecipe S η}
     {N : TraceHaarTransport R} {A : FirstRootSphericalSeed R N} {B : FirstRootCutoffs R}
     {J : FirstRootProjected R N A B} (L : FirstRootLift R N A B J)
-    (_hi : ∀ v g, Integrable (fun q => firstRootDerivatives R J.cutoffs (J.base.realization.theta v)
-      (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g) *
-        star (adelicTraceQuotientCharacter F q : ℂ)) J.base.sources.dq)
     (hd : ∀ v y, fourier R J.base.sources.dq
       (firstRootDerivatives R J.cutoffs (J.base.realization.theta v)) (diagonal R y) =
         firstRootMultiplier R J.cutoffs y *
@@ -71,15 +65,13 @@ def FirstRootLift.toJointForwardIdentitySources {R : PrincipalMellin.ActualRecip
       exact L.profile v y }
 
 theorem first_root_packet
-    (R : PrincipalMellin.ActualRecipe S η) (hR : RootAligned R) (N : TraceHaarTransport R)
-    (prior : Nonempty (JointExteriorCoefficientSources R N)) : Nonempty (JointForwardIdentitySources R N) := by
+    (R : PrincipalMellin.ActualRecipe S η) (hR : RootAligned R) (N : TraceHaarTransport R) : Nonempty (JointForwardIdentitySources R N) := by
   obtain ⟨A, hNative, ⟨D⟩⟩ := FourierContinuation.LiteralSource.current_native_transport_exists R hR N
   obtain ⟨B⟩ := first_root_cutoffs_exist R
   obtain ⟨Anew, hAnew⟩ := spherical_seed_exists_of_transport R N A D hNative
   obtain ⟨J, hJ⟩ := RootDerivatives.finite_projector_native R hR N Anew B hAnew
   obtain ⟨L⟩ := first_root_flat_lift_exists R hR N Anew B J hJ
-  obtain ⟨hi, hd⟩ := first_root_derivative_period R N Anew B J
-  exact ⟨L.toJointForwardIdentitySources hi hd⟩
+  exact ⟨L.toJointForwardIdentitySources (RootDerivatives.firstRootDerivatives_period R N Anew B J)⟩
 
 end DedekindZetaZeroFree.ThetaExpansion
 

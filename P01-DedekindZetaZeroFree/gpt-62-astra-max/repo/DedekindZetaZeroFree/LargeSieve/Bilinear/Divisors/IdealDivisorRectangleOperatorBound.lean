@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.LargeSieve.Bilinear.CoprimeForms.WeightedGramBound
 
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.QuadraticFormsAndSieveExponents
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.DivisorIncidenceRectangles
@@ -21,36 +22,7 @@ def idealDivisorRectangle (F : Type) [Field F] [NumberField F]
           (starRingEnd ℂ) ((Q.χ v) a)
       else 0‖
 
-private lemma rectangle_support_disjoint
-    {F : Type} [Field F] [NumberField F] {u v : Ideal (𝓞 F)} (hu : u ≠ ⊥) (hv : v ≠ ⊥) :
-    u ⊔ v = ⊤ ↔ Disjoint (UniqueFactorizationMonoid.normalizedFactors u).toFinset
-      (UniqueFactorizationMonoid.normalizedFactors v).toFinset := by
-  constructor
-  · intro h
-    have hprod : (UniqueFactorizationMonoid.normalizedFactors u ∩
-        UniqueFactorizationMonoid.normalizedFactors v).prod = 1 := by
-      have h1 := Ideal.sup_eq_prod_inf_factors hu hv
-      rw [h, ← Ideal.one_eq_top] at h1
-      exact h1.symm
-    rw [Finset.disjoint_left]
-    intro x hxu hxv
-    rw [Multiset.mem_toFinset] at hxu hxv
-    have hxmem : x ∈ UniqueFactorizationMonoid.normalizedFactors u ∩
-        UniqueFactorizationMonoid.normalizedFactors v := Multiset.mem_inter.mpr ⟨hxu, hxv⟩
-    have hdvd : x ∣ (UniqueFactorizationMonoid.normalizedFactors u ∩
-        UniqueFactorizationMonoid.normalizedFactors v).prod := Multiset.dvd_prod hxmem
-    rw [hprod] at hdvd
-    exact (UniqueFactorizationMonoid.prime_of_normalized_factor x hxu).not_isUnit
-      (isUnit_of_dvd_one hdvd)
-  · intro hd
-    rw [Ideal.sup_eq_prod_inf_factors hu hv]
-    have hinter : UniqueFactorizationMonoid.normalizedFactors u ∩
-        UniqueFactorizationMonoid.normalizedFactors v = 0 := by
-      rw [Multiset.eq_zero_iff_forall_notMem]
-      intro x hx
-      exact (Finset.disjoint_left.mp hd (Multiset.mem_toFinset.mpr (Multiset.mem_inter.mp hx).1))
-        (Multiset.mem_toFinset.mpr (Multiset.mem_inter.mp hx).2)
-    rw [hinter, Multiset.prod_zero, Ideal.one_eq_top]
+private alias rectangle_support_disjoint := DedekindZetaZeroFree.LargeSieve.Sieve.GcdTail.WeightedGramBound.sup_eq_top_iff_disjoint_normalizedFactors
 
 set_option maxHeartbeats 2000000 in
 

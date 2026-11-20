@@ -9,7 +9,7 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem FirstRootCutoffs.shrink {R : PrincipalMellin.ActualRecipe S η}
     (B : FirstRootCutoffs R) (V : ∀ p : R.A.Sf, Set (p.val.adicCompletion F)ˣ)
@@ -37,9 +37,6 @@ theorem FirstRootCutoffs.shrink {R : PrincipalMellin.ActualRecipe S η}
 structure FirstRootProjected (R : PrincipalMellin.ActualRecipe S η)
     (N : TraceHaarTransport R) (A : FirstRootSphericalSeed R N) (B : FirstRootCutoffs R) where
   cutoffs : FirstRootCutoffs R
-  exponent_exact : cutoffs.exponent = B.exponent
-  cutoff_le : ∀ p, cutoffs.cutoff p ≤ B.cutoff p
-  cutoff_neighborhood : ∀ p, (cutoffs.cutoff p : Set _) ⊆ A.neighborhood p
   base : JointExteriorCoefficientSources R N
   radial : ∀ v y, fourier R base.sources.dq (base.realization.theta v) (diagonal R y) =
     firstRootRadialProfile R cutoffs y

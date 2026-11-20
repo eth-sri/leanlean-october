@@ -52,7 +52,12 @@ lemma mem_dyadicRange_iff {X : ℝ} (hX : 1 ≤ X) (k : ℕ) :
     Nat.le_floor_iff (by linarith)]
   norm_cast
 
-theorem sum_dyadic_pos (a : ℝ) (ha : 0 < a) :
+section
+
+variable (a : ℝ) (ha : 0 < a)
+
+include ha in
+theorem sum_dyadic_pos :
     ∃ C : ℝ, 0 < C ∧ ∀ X : ℝ, 1 ≤ X →
       ∑ k ∈ Finset.range (Nat.log 2 ⌊X⌋₊ + 1), ((2 : ℝ) ^ k) ^ a ≤ C * X ^ a := by
   have hr : (1 : ℝ) < (2 : ℝ) ^ a := Real.one_lt_rpow (by norm_num) ha
@@ -75,7 +80,8 @@ theorem sum_dyadic_pos (a : ℝ) (ha : 0 < a) :
     _ = (2 : ℝ) ^ a * ((2 : ℝ) ^ a) ^ n := this
     _ ≤ (2 : ℝ) ^ a * X ^ a := by gcongr
 
-theorem sum_dyadic_pos_interval (a : ℝ) (ha : 0 < a) :
+include ha in
+theorem sum_dyadic_pos_interval :
     ∃ C : ℝ, 0 < C ∧ ∀ X Y : ℝ, 1 ≤ Y →
       ∑ k ∈ (Finset.range (Nat.log 2 ⌊Y⌋₊ + 1)).filter (fun k => X ≤ (2 : ℝ) ^ k),
         ((2 : ℝ) ^ k) ^ a ≤ C * Y ^ a := by
@@ -84,21 +90,26 @@ theorem sum_dyadic_pos_interval (a : ℝ) (ha : 0 < a) :
   exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
     (fun k _ _ => by positivity)
 
-theorem summable_tail_dyadic_neg (a : ℝ) (ha : a < 0) (X : ℝ) :
+end
+
+variable (a : ℝ) (ha : a < 0)
+
+include ha in
+theorem summable_tail_dyadic_neg (X : ℝ) :
     Summable (fun k : ℕ => if X ≤ (2 : ℝ) ^ k then ((2 : ℝ) ^ k) ^ a else 0) := by
   have hr0 : (0 : ℝ) < (2 : ℝ) ^ a := by positivity
-  have hr1 : (2 : ℝ) ^ a < 1 := Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) ha
   have hterm : ∀ k : ℕ, ((2 : ℝ) ^ k) ^ a = ((2 : ℝ) ^ a) ^ k := fun k => by
     rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num), mul_comm, Real.rpow_mul (by norm_num),
       Real.rpow_natCast]
   refine Summable.of_nonneg_of_le (fun k => ?_) (fun k => ?_)
-    (summable_geometric_of_lt_one hr0.le hr1)
+    (summable_geometric_of_lt_one hr0.le (Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) ha))
   · split_ifs <;> positivity
   · split_ifs
     · rw [hterm]
     · positivity
 
-theorem tsum_tail_dyadic_neg (a : ℝ) (ha : a < 0) :
+include ha in
+theorem tsum_tail_dyadic_neg :
     ∃ C : ℝ, 0 < C ∧ ∀ X : ℝ, 1 ≤ X →
       ∑' k : ℕ, (if X ≤ (2 : ℝ) ^ k then ((2 : ℝ) ^ k) ^ a else 0) ≤ C * X ^ a := by
   have hr0 : (0 : ℝ) < (2 : ℝ) ^ a := by positivity
@@ -135,17 +146,17 @@ theorem tsum_tail_dyadic_neg (a : ℝ) (ha : a < 0) :
         gcongr
     _ = _ := by ring
 
-theorem sum_dyadic_neg_interval (a : ℝ) (ha : a < 0) :
+include ha in
+theorem sum_dyadic_neg_interval :
     ∃ C : ℝ, 0 < C ∧ ∀ X Y : ℝ, 1 ≤ X →
       ∑ k ∈ (Finset.range (Nat.log 2 ⌊Y⌋₊ + 1)).filter (fun k => X ≤ (2 : ℝ) ^ k),
         ((2 : ℝ) ^ k) ^ a ≤ C * X ^ a := by
   obtain ⟨C, hC, h⟩ := tsum_tail_dyadic_neg a ha
   refine ⟨C, hC, fun X Y hX => le_trans ?_ (h X hX)⟩
-  have hs := summable_tail_dyadic_neg a ha X
   calc _ = ∑ k ∈ (Finset.range (Nat.log 2 ⌊Y⌋₊ + 1)),
         (if X ≤ (2 : ℝ) ^ k then ((2 : ℝ) ^ k) ^ a else 0) := by
         rw [Finset.sum_filter]
-    _ ≤ _ := hs.sum_le_tsum _ (fun k _ => by split_ifs <;> positivity)
+    _ ≤ _ := (summable_tail_dyadic_neg a ha X).sum_le_tsum _ (fun k _ => by split_ifs <;> positivity)
 
 end DyadicPowerSums
 end DedekindZetaZeroFree.Quantitative

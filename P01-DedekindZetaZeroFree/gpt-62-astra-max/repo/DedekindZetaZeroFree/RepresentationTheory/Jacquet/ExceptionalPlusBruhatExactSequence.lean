@@ -18,9 +18,9 @@ set_option maxHeartbeats 4000000
 set_option backward.isDefEq.respectTransparency false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (q : HeightOneSpectrum (𝓞 F))
-variable (S : RawFiniteInducingData F ζ hζ q)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F))
+    (S : RawFiniteInducingData F ζ hζ q)
 
 section ModelTransport
 open KPLocalSmoothRepresentation
@@ -104,7 +104,6 @@ private theorem retraction_binding (b : R.borel.B) :
     change (R.borel.upperRoot x : FiniteCover F ζ hζ w) = upperRoot F ζ hζ w x at hn
     rw [hn] at hv
     exact hv
-  let q := KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w
   have hb : borelBridge F ζ hζ w R b =
       KPLocalInductionJacquetReciprocity.torusToBorel F ζ hζ w m hm (R.borel.retract b) *
         ⟨upperRoot F ζ hζ w x,
@@ -129,16 +128,10 @@ theorem raw_principal_series_equiv_core (ε : Sign) :
       | .minus => weylConjugate P R.borel.weyl
     Nonempty ((principalSeries R.borel P ε 0).Equiv
       (KPLocalInductionJacquetReciprocity.inducedAction F ζ hζ w m hm τ)) := by
-  let τ : Representation ℂ (Torus F ζ hζ w) (InducedModule P) :=
+  let τ :=
     match ε with
     | .plus => tau P
     | .minus => weylConjugate P R.borel.weyl
-  change Nonempty ((principalSeries R.borel P ε 0).Equiv
-    (KPLocalInductionJacquetReciprocity.inducedAction F ζ hζ w m hm τ))
-  have ht : KPRankOneOpenCellKernel.coverTopology F ζ hζ w =
-      finiteCoverTopology F ζ hζ w m :=
-    KPPGLLocalCover.finiteTopology_independent F ζ hζ w _ m
-      (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ w) hm
   let B := Borel F ζ hζ w
   let q := KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w
   let σ := inflatedRepresentation F ζ hζ w q τ
@@ -180,8 +173,8 @@ theorem raw_principal_series_equiv_core (ε : Sign) :
         exact ⟨J, fun j hj => funext (hJ j hj)⟩
     rw [hsource]
     rw [show rightFixed (KPRankOneOpenCellKernel.coverTopology F ζ hζ w) =
-      rightFixed (finiteCoverTopology F ζ hζ w m) from congrArg rightFixed ht]
-    change rightFixed (finiteCoverTopology F ζ hζ w m) ↔ _
+      rightFixed (finiteCoverTopology F ζ hζ w m) from congrArg rightFixed (KPPGLLocalCover.finiteTopology_independent F ζ hζ w _ m
+        (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ w) hm)]
     letI := finiteCoverTopology F ζ hζ w m
     letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
     change rightFixed (finiteCoverTopology F ζ hζ w m) ↔
@@ -207,8 +200,7 @@ theorem raw_principal_series_equiv_core (ε : Sign) :
   rfl
 
  theorem root_binding (x : Multiplicative (LocalField F w)) :
-    root R.borel x = upperRoot F ζ hζ w x := by
-  exact (R.openCell R.polarization).upper_eq (Multiplicative.toAdd x)
+    root R.borel x = upperRoot F ζ hζ w x := (R.openCell R.polarization).upper_eq (Multiplicative.toAdd x)
 
 def raw_jacquet_equiv {V W : Type*} [AddCommGroup V] [Module ℂ V]
     [AddCommGroup W] [Module ℂ W]
@@ -217,7 +209,7 @@ def raw_jacquet_equiv {V W : Type*} [AddCommGroup V] [Module ℂ V]
     (jacquetRepresentation R.borel ρ).Equiv
       (KPLocalInductionJacquetReciprocity.jacquetAction F ζ hζ w σ) := by
   let ρN : Representation ℂ (Multiplicative (LocalField F w)) V := ρ.comp (root R.borel)
-  let σN : Representation ℂ (Multiplicative (LocalField F w)) W := rootTwistedRepresentation σ (upperRoot F ζ hζ w) 1
+  let σN := rootTwistedRepresentation σ (upperRoot F ζ hζ w) 1
   let fN : ρN.IntertwiningMap σN :=
     ⟨e.toLinearEquiv.toLinearMap, by
       intro x; ext v
@@ -259,8 +251,7 @@ def raw_jacquet_equiv {V W : Type*} [AddCommGroup V] [Module ℂ V]
 theorem raw_alpha_binding (h : actualTorus F ζ hζ w) :
     KPJacquetOpenCell.alpha F ζ hζ w h = R.borel.weyl h := by
   apply Subtype.ext
-  have hw : (KPPGLLocalCover.W F ζ hζ (Sum.inr w))⁻¹ =
-      KPPGLLocalCover.W F ζ hζ (Sum.inr w) :=
+  have hw :=
     inv_eq_of_mul_eq_one_left (by simpa [pow_two] using KPPGLLocalCover.W_sq F ζ hζ (Sum.inr w))
   have hc : Commute (KPPGLLocalCover.A F ζ hζ (Sum.inr w) (-1)) h.val := by
     have he : KPPGLLocalCover.A F ζ hζ (Sum.inr w) (-1) =
@@ -280,7 +271,7 @@ theorem raw_alpha_binding (h : actualTorus F ζ hζ w) :
   simp only [mul_assoc]
   rw [← mul_assoc (KPPGLLocalCover.A F ζ hζ (Sum.inr w) (-1))⁻¹ h.val,
     hc.inv_left.eq]
-  simp only [mul_assoc, inv_mul_cancel_left]
+  simp
 
 end ModelTransport
 
@@ -311,8 +302,7 @@ private theorem raw_smooth :
   let A := (KubotaRankTwo.w (KPRankOneInduction.LocalField F w))⁻¹ *
     (KPStandardLocalRootLifts.weylSwap (KPRankOneInduction.LocalField F w))⁻¹
   refine ⟨A, ?_, ?_, ?_⟩
-  · change Matrix.ProjGenLinGroup.mk A = projection F ζ hζ w _
-    simp only [map_mul, map_inv]
+  · simp only [map_mul, map_inv]
     rw [← projection_binding F ζ hζ w S S.borel.liftedW,
       S.borel.liftedW_projection]
     dsimp [A]
@@ -369,8 +359,7 @@ theorem weyl_comparison (h : Torus F ζ hζ w) :
         tau P (S.borel.weyl (S.borel.retract (S.borel.torus h))) (tau P k v)
   rw [scalar_weight F ζ hζ w m hm S, S.borel.retract_torus, map_smul]
   congr 1
-  have he := congrArg (fun t => tau P t v) (weyl_comparison F ζ hζ w S h)
-  simpa only [map_mul, Module.End.mul_apply] using he
+  simpa using (congrArg (fun t => tau P t v) (weyl_comparison F ζ hζ w S h))
 
  def closedWeightEquiv :
     (KPJacquetOrdinaryCell.closedWeight F ζ hζ w m hm (tau P)).Equiv
@@ -412,6 +401,7 @@ theorem independent_plus_jacquet_short_exact (P : Polarization S.heisenberg) : b
     (σ := KPLocalInductionJacquetReciprocity.inducedAction F ζ hζ q m hm (tau P)) e
   let O := openWeightEquiv F ζ hζ q m hm S P
   let C := closedWeightEquiv F ζ hζ q m hm S P
+  let ordinary_cell_short_exact₀ := KPJacquetOrdinaryCell.ordinary_cell_short_exact F ζ hζ q m hm (tau P) hs μ
   let i₀ : (KPJacquetOrdinaryCell.openWeight F ζ hζ q m hm (tau P)).IntertwiningMap
       (KPJacquetOrdinaryCell.torusAction F ζ hζ q m hm (tau P)) :=
     { toLinearMap := KPJacquetOrdinaryCell.openInjection F ζ hζ q m hm (tau P) hs μ
@@ -419,7 +409,7 @@ theorem independent_plus_jacquet_short_exact (P : Polarization S.heisenberg) : b
         intro h
         apply LinearMap.ext
         intro v
-        exact (KPJacquetOrdinaryCell.ordinary_cell_short_exact F ζ hζ q m hm (tau P) hs μ).2.2.2.1 h v }
+        exact (ordinary_cell_short_exact₀).2.2.2.1 h v}
   let p₀ : (KPJacquetOrdinaryCell.torusAction F ζ hζ q m hm (tau P)).IntertwiningMap
       (KPJacquetOrdinaryCell.closedWeight F ζ hζ q m hm (tau P)) :=
     { toLinearMap := KPJacquetOrdinaryCell.closedProjection F ζ hζ q m hm (tau P)
@@ -427,11 +417,11 @@ theorem independent_plus_jacquet_short_exact (P : Polarization S.heisenberg) : b
         intro h
         apply LinearMap.ext
         intro v
-        exact (KPJacquetOrdinaryCell.ordinary_cell_short_exact F ζ hζ q m hm (tau P) hs μ).2.2.2.2 h v }
+        exact (ordinary_cell_short_exact₀).2.2.2.2 h v}
   let i := E.symm.toIntertwiningMap.comp (i₀.comp O.symm.toIntertwiningMap)
   let p := C.toIntertwiningMap.comp (p₀.comp E.toIntertwiningMap)
   obtain ⟨hi, hex, hp, _, _⟩ :=
-    KPJacquetOrdinaryCell.ordinary_cell_short_exact F ζ hζ q m hm (tau P) hs μ
+    ordinary_cell_short_exact₀
   refine ⟨i, p, ?_, ?_, ?_⟩
   · exact E.symm.injective.comp (hi.comp O.symm.injective)
   · exact C.surjective.comp (hp.comp E.surjective)

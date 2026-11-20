@@ -21,15 +21,14 @@ theorem mellin_shell_series_eq_geometric_tail
       (↑(m * (1 - q⁻¹)) : ℂ) *
         (Complex.exp (-s * (Real.log q : ℂ))) ^ N /
         (1 - Complex.exp (-s * (Real.log q : ℂ))) := by
-  have hqpos : 0 < q := lt_trans zero_lt_one hq
-  let Q : ℂ := Complex.exp (-s * (Real.log q : ℂ))
+  let Q := Complex.exp (-s * (Real.log q : ℂ))
   have hQ : ‖Q‖ < 1 := by
     dsimp [Q]
     rw [Complex.norm_exp, Real.exp_lt_one_iff]
     simpa using neg_neg_of_pos (mul_pos hs (Real.log_pos hq))
   have hterm (n : ℤ) :
       ((q ^ (-n) : ℝ) : ℂ) * ((q ^ (-n) : ℝ) : ℂ) ^ (s - 1) = Q ^ n := by
-    have hxpos : 0 < q ^ (-n) := zpow_pos hqpos _
+    have hxpos : 0 < q ^ (-n) := zpow_pos (lt_trans zero_lt_one hq) _
     have hx : ((q ^ (-n) : ℝ) : ℂ) ≠ 0 := by
       exact_mod_cast ne_of_gt hxpos
     have hcombine : ((q ^ (-n) : ℝ) : ℂ) *
@@ -38,7 +37,7 @@ theorem mellin_shell_series_eq_geometric_tail
       calc
         _ = ((q ^ (-n) : ℝ) : ℂ) ^ (1 + (s - 1)) := by
           rw [Complex.cpow_add 1 (s - 1) hx, Complex.cpow_one]
-        _ = _ := by congr 1; ring
+        _ = _ := by ring
     rw [hcombine,
       Complex.cpow_def_of_ne_zero hx, ← Complex.ofReal_log hxpos.le,
       Real.log_zpow]
@@ -98,20 +97,18 @@ theorem q_shell_haar_mass
       apply norm_pos_iff.mp
       rw [hn]
       exact zpow_pos (by linarith) _
-    let d : (v.adicCompletion F)ˣ := Units.mk0 _ hp0
-    have hmap := DedekindZetaZeroFree.CompletionHaarModule.map_mul F v μ d
-    have heq := congrArg (fun ν : Measure (v.adicCompletion F) => ν {0}) hmap
+    let d := Units.mk0 _ hp0
+    have heq := congrArg (fun ν : Measure (v.adicCompletion F) => ν {0}) (DedekindZetaZeroFree.CompletionHaarModule.map_mul F v μ d)
     rw [Measure.map_apply (by fun_prop) (measurableSet_singleton 0)] at heq
-    have hpre : (fun x : v.adicCompletion F => (d : v.adicCompletion F) * x) ⁻¹' {0} = {0} := by
+    have hpre : (fun x : v.adicCompletion F => d * x) ⁻¹' {0} = {0} := by
       ext x; simp [d, hp0]
     rw [hpre, Measure.smul_apply, smul_eq_mul] at heq
-    have hfin : μ {0} ≠ ⊤ := isCompact_singleton.measure_lt_top.ne
     have hr := congrArg ENNReal.toReal heq
     simp only [ENNReal.toReal_mul, ENNReal.toReal_inv, ENNReal.toReal_ofReal (norm_nonneg _)] at hr
     change (μ {0}).toReal = ‖FinitePlace.embedding v p‖⁻¹ * (μ {0}).toReal at hr
     rw [hn, zpow_neg_one, inv_inv] at hr
     have hz : (μ {0}).toReal = 0 := by nlinarith
-    exact (ENNReal.toReal_eq_zero_iff _).mp hz |>.resolve_right hfin
+    exact (ENNReal.toReal_eq_zero_iff _).mp hz |>.resolve_right isCompact_singleton.measure_lt_top.ne
   · intro n
     borelize (v.adicCompletion F)
     have hq1 : (1 : ℝ) < (v.asIdeal.absNorm : ℝ) := by
@@ -122,9 +119,7 @@ theorem q_shell_haar_mass
         ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ (-n - 1) := by
       by_cases hx : x = 0
       · simp [hx, (zpow_pos hq _).le, zpow_pos hq]
-      · have hv : Valued.v x ≠ 0 :=
-          (Valuation.ne_zero_iff (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)).mpr hx
-        rw [FinitePlace.norm_def, WithZeroMulInt.toNNReal_neg_apply _ hv, NNReal.coe_zpow]
+      · rw [FinitePlace.norm_def, WithZeroMulInt.toNNReal_neg_apply _ ((Valuation.ne_zero_iff Valued.v).mpr hx), NNReal.coe_zpow]
         change (v.asIdeal.absNorm : ℝ) ^ (Valued.v x).log < _ ↔
           (v.asIdeal.absNorm : ℝ) ^ (Valued.v x).log ≤ _
         rw [zpow_lt_zpow_iff_right₀ hq1, zpow_le_zpow_iff_right₀ hq1]
@@ -135,19 +130,14 @@ theorem q_shell_haar_mass
       ext x
       simp only [Set.mem_setOf_eq, Set.mem_diff, ← hdiscrete x, not_lt]
       exact ⟨fun h => ⟨h.le, h.ge⟩, fun h => le_antisymm h.1 h.2⟩
-    have hfinite (k : ℤ) : μ {x : v.adicCompletion F | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ k} ≠ ⊤ := by
-      exact (show IsCompact {x : v.adicCompletion F | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ k} from by
+    have hfinite (k : ℤ) : μ {x : v.adicCompletion F | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ k} ≠ ⊤ := (show IsCompact {x : v.adicCompletion F | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ k} from by
         simpa only [Metric.closedBall, dist_zero_right] using
           isCompact_closedBall (0 : v.adicCompletion F) ((v.asIdeal.absNorm : ℝ) ^ k)).measure_lt_top.ne
     have hsubset : {x : v.adicCompletion F | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ (-n - 1)} ⊆
-        {x : v.adicCompletion F | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ (-n)} := by
-      intro x hx
-      exact (hdiscrete x).mpr hx |>.le
-    have hmeas : MeasurableSet {x : v.adicCompletion F | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ (-n - 1)} :=
-      (isClosed_le continuous_norm continuous_const).measurableSet
+        {x : v.adicCompletion F | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ (-n)} := fun x hx => (hdiscrete x).mpr hx |>.le
     have hsfin : μ {x : v.adicCompletion F | ‖x‖ = (v.asIdeal.absNorm : ℝ) ^ (-n)} ≠ ⊤ := by
       apply ne_top_of_le_ne_top (hfinite (-n))
-      exact measure_mono (by intro x hx; exact (show ‖x‖ = _ from hx).le)
+      exact measure_mono (fun x hx => (show ‖x‖ = _ from hx).le)
     have hO : (v.adicCompletionIntegers F : Set (v.adicCompletion F)) = {x | ‖x‖ ≤ 1} := by
       ext x
       exact ⟨fun hx => norm_le_one_of_mem_adicCompletionIntegers v hx,
@@ -155,7 +145,7 @@ theorem q_shell_haar_mass
     rw [← ENNReal.ofReal_toReal hsfin]
     congr 1
     change μ.real {x : v.adicCompletion F | ‖x‖ = (v.asIdeal.absNorm : ℝ) ^ (-n)} = _
-    rw [hset, measureReal_sdiff hsubset hmeas (hfinite (-n)),
+    rw [hset, measureReal_sdiff hsubset ((isClosed_le continuous_norm continuous_const).measurableSet) (hfinite (-n)),
       DedekindZetaZeroFree.CompletionHaarModule.closedBall_measure F v μ (-n),
       DedekindZetaZeroFree.CompletionHaarModule.closedBall_measure F v μ (-n - 1), hO,
       zpow_sub₀ hq.ne', zpow_one]
@@ -189,20 +179,17 @@ theorem q_ball_mellin_integrable
   classical
   let B := Metric.closedBall (0 : v.adicCompletion F)
     ((Ideal.absNorm v.asIdeal : ℝ) ^ (-N))
-  have hq : 0 < (Ideal.absNorm v.asIdeal : ℝ) := by
-    exact lt_trans zero_lt_one (by exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm v)
+  have hq : 0 < (Ideal.absNorm v.asIdeal : ℝ) := lt_trans zero_lt_one (by exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm v)
   have hBc : IsClopen B := IsUltrametricDist.isClopen_closedBall _ (zpow_pos hq _).ne'
-  have hlc : IsLocallyConstant (B.indicator (fun _ => (1 : ℂ))) := by
-    exact (LocallyConstant.charFn ℂ hBc).isLocallyConstant
-  have hcs : HasCompactSupport (B.indicator (fun _ => (1 : ℂ))) := by
-    rw [HasCompactSupport]
+  refine DedekindZetaZeroFree.KPRankOneMellin.AdditiveMellinIntegrability.additive_mellin_integrable
+    F v μ _ ?_ ?_ s hs
+  · exact (LocallyConstant.charFn ℂ hBc).isLocallyConstant
+  · rw [HasCompactSupport]
     apply (isCompact_closedBall (0 : v.adicCompletion F) _).of_isClosed_subset
     · exact isClosed_tsupport _
     · apply closure_minimal
       · exact Set.support_indicator_subset
       · exact hBc.isClosed
-  exact DedekindZetaZeroFree.KPRankOneMellin.AdditiveMellinIntegrability.additive_mellin_integrable
-    F v μ _ hlc hcs s hs
 
 end DedekindZetaZeroFree.KPRankOneMellin.FiniteShellExpansion
 
@@ -244,7 +231,7 @@ theorem q_ball_mellin_eq_shell_series
   have hB : MeasurableSet B := Metric.isClosed_closedBall.measurableSet
   have hA (k : ℕ) : MeasurableSet (A k) :=
     isClosed_eq continuous_norm continuous_const |>.measurableSet
-  have hsingle : μ ({0} : Set (v.adicCompletion F)) = 0 :=
+  have hsingle :=
     (q_shell_haar_mass F v μ).1
   have hnorm (x : v.adicCompletion F) (hx : x ≠ 0) : ∃ n : ℤ, ‖x‖ = q ^ n := by
     refine ⟨WithZero.log (Valued.v x), ?_⟩
@@ -369,17 +356,12 @@ theorem completion_addHaar_nullSingletonClass (μ : Measure (v.adicCompletion F)
   obtain ⟨x, hx0, hx1⟩ := NormedField.exists_norm_lt_one (v.adicCompletion F)
   have hi : Function.Injective (fun n : ℕ => x ^ n) := by
     intro a b hab
-    have hn : ‖x‖ ^ a = ‖x‖ ^ b := by simpa only [norm_pow] using congrArg norm hab
-    exact (pow_right_strictAnti₀ hx0 hx1).injective hn
-  have hK := (tendsto_pow_atTop_nhds_zero_of_norm_lt_one hx1).isCompact_insert_range
+    refine (pow_right_strictAnti₀ hx0 hx1).injective ?_
+    simpa using congrArg norm hab
   constructor
   intro a
   by_contra ha
-  have h0 : μ {0} ≠ 0 := by simpa only [Measure.addHaar_singleton] using ha
-  have ht : μ (insert 0 (Set.range fun n : ℕ => x ^ n)) = ⊤ :=
-    ((Set.infinite_range_of_injective hi).mono (Set.subset_insert _ _)).meas_eq_top
-      ⟨μ {0}, h0, fun a _ => (Measure.addHaar_singleton μ a).ge⟩
-  exact hK.measure_lt_top.ne ht
+  simp_all
 
 private theorem density_smul_eq (φ : v.adicCompletion F → ℂ) (s : ℂ)
     (x : v.adicCompletion F) (hx : x ≠ 0) :
@@ -391,31 +373,27 @@ private theorem density_smul_eq (φ : v.adicCompletion F → ℂ) (s : ℂ)
     Complex.ofReal_inv]
   ring
 
-theorem mellin_eq_additive_integral (μ : Measure (v.adicCompletion F)) [NullSingletonClass μ]
-    (φ : v.adicCompletion F → ℂ) (s : ℂ) :
+variable (μ : Measure (v.adicCompletion F)) [NullSingletonClass μ] (φ : v.adicCompletion F → ℂ) (s : ℂ)
+
+theorem mellin_eq_additive_integral :
     mellin F v μ φ s = ∫ x, φ x * (‖x‖ : ℂ) ^ (s - 1) ∂μ := by
   have hm : Measurable (fun x : v.adicCompletion F => ENNReal.ofReal ‖x‖⁻¹) := by
     fun_prop
-  have ht : ∀ᵐ x ∂μ.restrict {0}ᶜ, ENNReal.ofReal ‖x‖⁻¹ < ⊤ :=
-    Filter.Eventually.of_forall (fun _ => ENNReal.ofReal_lt_top)
   have hμ : μ.restrict {0}ᶜ = μ := by simp
   unfold mellin multiplicativeMeasure
-  rw [integral_withDensity_eq_integral_toReal_smul hm ht, hμ]
+  rw [integral_withDensity_eq_integral_toReal_smul hm (Filter.Eventually.of_forall (fun _ => ENNReal.ofReal_lt_top)), hμ]
   apply integral_congr_ae
   filter_upwards [show ∀ᵐ x ∂μ, x ≠ 0 from μ.ae_ne 0] with x hx
   exact density_smul_eq F v φ s x hx
 
-theorem mellin_integrable_iff_additive (μ : Measure (v.adicCompletion F)) [NullSingletonClass μ]
-    (φ : v.adicCompletion F → ℂ) (s : ℂ) :
+theorem mellin_integrable_iff_additive :
     Integrable (fun x => φ x * (‖x‖ : ℂ) ^ s) (multiplicativeMeasure F v μ) ↔
       Integrable (fun x => φ x * (‖x‖ : ℂ) ^ (s - 1)) μ := by
   have hm : Measurable (fun x : v.adicCompletion F => ENNReal.ofReal ‖x‖⁻¹) := by
     fun_prop
-  have ht : ∀ᵐ x ∂μ.restrict {0}ᶜ, ENNReal.ofReal ‖x‖⁻¹ < ⊤ :=
-    Filter.Eventually.of_forall (fun _ => ENNReal.ofReal_lt_top)
   have hμ : μ.restrict {0}ᶜ = μ := by simp
   unfold multiplicativeMeasure
-  rw [integrable_withDensity_iff_integrable_smul' hm ht, hμ]
+  rw [integrable_withDensity_iff_integrable_smul' hm (Filter.Eventually.of_forall (fun _ => ENNReal.ofReal_lt_top)), hμ]
   apply integrable_congr
   filter_upwards [show ∀ᵐ x ∂μ, x ≠ 0 from μ.ae_ne 0] with x hx
   exact density_smul_eq F v φ s x hx

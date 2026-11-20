@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -49,25 +46,17 @@ noncomputable def rationalIdeleClassEquivBaseFixed :
       ℚ (SeparableClosure ℚ)).symm.toLinearEquiv.finiteDimensional
   letI : NumberField B :=
     NumberField.of_module_finite ℚ B
-  let e : ℚ ≃ₐ[ℚ] B :=
-    (IntermediateField.botEquiv
-      ℚ (SeparableClosure ℚ)).symm
-  let hB :
-      RamificationTheory.closedFixingSubgroup
-          ℚ (SeparableClosure ℚ) B =
-        baseField
-          (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ) :=
-    LocalClassFieldTheory.closedFixingSubgroup_bot_eq_baseField
-      ℚ (SeparableClosure ℚ)
   exact
     (MulEquiv.toAdditive
-      (ideleClassCongr e)).trans
+      (ideleClassCongr ((IntermediateField.botEquiv
+        ℚ (SeparableClosure ℚ)).symm))).trans
         ((rationalIdeleClassEquivFixed B).trans
           (AddEquiv.addSubgroupCongr
             (congrArg
               (KummerTheory.ambientFixedAddSubgroup
                 rationalIdeleClassRepresentation)
-              hB)))
+              (LocalClassFieldTheory.closedFixingSubgroup_bot_eq_baseField
+                ℚ (SeparableClosure ℚ)))))
 
 /-- Scalar extension between finite rational intermediate fields becomes
 the literal inclusion between their fixed parts in the absolute
@@ -91,13 +80,13 @@ theorem rationalIdeleClassEquivFixed_extension_coe
     Additive.ofMul
         (rationalIntermediateIdeleClassToDirectLimit E
           (_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := E)
-            (RelativeIdeleGroup.classEmbedding (K := ℚ) (L := F) (M := E)
+
+            (RelativeIdeleGroup.classEmbedding
               (IntermediateField.inclusion hFE) c))) =
       Additive.ofMul
         (rationalIntermediateIdeleClassToDirectLimit F
           (_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := F) c))
+              c))
   exact congrArg Additive.ofMul
     (rationalIntermediateIdeleClassToDirectLimit_extension hFE c)
 
@@ -114,67 +103,44 @@ theorem rationalIdeleClassEquivBaseFixed_coe
           (RelativeIdeleGroup.classInclusion ℚ E c)) := by
   let B := (⊥ :
     IntermediateField ℚ (SeparableClosure ℚ))
-  let : FiniteDimensional ℚ B :=
+  let :=
     (IntermediateField.botEquiv
       ℚ (SeparableClosure ℚ)).symm.toLinearEquiv.finiteDimensional
-  let : NumberField B :=
+  let :=
     NumberField.of_module_finite ℚ B
-  let e : ℚ ≃ₐ[ℚ] B :=
+  let e :=
     (IntermediateField.botEquiv
       ℚ (SeparableClosure ℚ)).symm
   let hBE :
-      B ≤ (E : IntermediateField ℚ (SeparableClosure ℚ)) :=
+      B ≤ E :=
     bot_le
-  let cB : RelativeIdeleGroup.ClassGroup ℚ B :=
+  let cB :=
     RelativeIdeleGroup.classInclusion ℚ B c
   have hbaseChange :
       _root_.relativeIdeleClassBaseChangeMulEquiv
-          (K := ℚ) (L := B) cB =
+            cB =
         ideleClassCongr e c := by
     calc
       _root_.relativeIdeleClassBaseChangeMulEquiv
-          (K := ℚ) (L := B) cB =
+            cB =
           ideleClassExtension ℚ B c := by
-        simpa only [cB] using
+        simpa using
           (_root_.relativeIdeleClassBaseChangeMulEquiv_classInclusion
-            (K := ℚ) (L := B) c)
+              c)
       _ = ideleClassCongr e c :=
         DFunLike.congr_fun
           (rationalIdeleClassExtension_eq_ideleClassCongr e) c
   have hclassEmbedding :
-      RelativeIdeleGroup.classEmbedding (K := ℚ) (L := B) (M := E)
+      RelativeIdeleGroup.classEmbedding
           (IntermediateField.inclusion hBE) cB =
         RelativeIdeleGroup.classInclusion ℚ E c := by
-    simpa only [cB] using
+    simpa using
       (rationalRelativeIdeleClassEmbedding_classInclusion hBE c)
-  have h0 :
-      (rationalIdeleClassEquivBaseFixed (Additive.ofMul c)).1 =
-        (rationalIdeleClassEquivFixed B
-          (Additive.ofMul (ideleClassCongr e c))).1 := by
-    rfl
-  have h1 :
-      (rationalIdeleClassEquivFixed B
-          (Additive.ofMul (ideleClassCongr e c))).1 =
-        (rationalIdeleClassEquivFixed B
-          (Additive.ofMul
-            (_root_.relativeIdeleClassBaseChangeMulEquiv
-              (K := ℚ) (L := B) cB))).1 :=
+  have h1 :=
     congrArg
       (fun x : IdeleClassGroup B =>
         (rationalIdeleClassEquivFixed B (Additive.ofMul x)).1)
       hbaseChange.symm
-  have h2 :
-      (rationalIdeleClassEquivFixed B
-          (Additive.ofMul
-            (_root_.relativeIdeleClassBaseChangeMulEquiv
-              (K := ℚ) (L := B) cB))).1 =
-        (rationalIdeleClassEquivFixed E
-          (Additive.ofMul
-            (_root_.relativeIdeleClassBaseChangeMulEquiv
-              (K := ℚ) (L := E)
-              (RelativeIdeleGroup.classEmbedding (K := ℚ) (L := B) (M := E)
-                (IntermediateField.inclusion hBE) cB)))).1 :=
-    (rationalIdeleClassEquivFixed_extension_coe hBE cB).symm
   have h3 :
       (rationalIdeleClassEquivFixed E
           (Additive.ofMul
@@ -195,19 +161,11 @@ theorem rationalIdeleClassEquivBaseFixed_coe
               (RelativeIdeleGroup.classEmbedding (K := ℚ) (L := B) (M := E)
                 (IntermediateField.inclusion hBE) cB))) = _
     rw [hclassEmbedding]
-  have h4 :
-      Additive.ofMul
-          (rationalIntermediateIdeleClassToDirectLimit E
-            (_root_.relativeIdeleClassBaseChangeMulEquiv
-              (K := ℚ) (L := E)
-              (RelativeIdeleGroup.classInclusion ℚ E c))) =
-        Additive.ofMul
-          (rationalRelativeIdeleClassToDirectLimit E
-            (RelativeIdeleGroup.classInclusion ℚ E c)) :=
+  have h4 :=
     congrArg Additive.ofMul
       (rationalFiniteGaloisIdeleClassToDirectLimit_baseChange
         E (RelativeIdeleGroup.classInclusion ℚ E c))
-  exact Eq.trans h0 (Eq.trans h1 (Eq.trans h2 (Eq.trans h3 h4)))
+  exact Eq.trans rfl (Eq.trans h1 (Eq.trans ((rationalIdeleClassEquivFixed_extension_coe hBE cB).symm) (Eq.trans h3 h4)))
 
  noncomputable instance
     (K : ClosedSubgroup
@@ -222,9 +180,7 @@ theorem rationalIdeleClassEquivBaseFixed_coe
     NumberField
       (LocalClassFieldTheory.abstractFixedField
         ℚ (SeparableClosure ℚ) K) := by
-  let : FiniteDimensional ℚ
-      (LocalClassFieldTheory.abstractFixedField
-        ℚ (SeparableClosure ℚ) K) :=
+  let :=
     LocalClassFieldTheory.abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K hfinite
   exact
@@ -232,20 +188,16 @@ theorem rationalIdeleClassEquivBaseFixed_coe
       (LocalClassFieldTheory.abstractFixedField
         ℚ (SeparableClosure ℚ) K)
 
+section
+
+variable (K : ClosedSubgroup (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+    [hfinite : Finite ((baseField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸ extensionSubgroup (baseField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)) K (le_baseField K))]
+
 /-- The actual idele class group of the fixed field represented by a
 finite-index closed subgroup is the corresponding fixed part of the
 rational absolute idele-class representation.  This is the closed-subgroup
 endpoint of `rationalIdeleClassEquivFixed`. -/
-noncomputable def rationalAbstractFixedFieldIdeleClassEquivFixed
-    (K : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    [hfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))] :
+noncomputable def rationalAbstractFixedFieldIdeleClassEquivFixed :
     Additive
         (IdeleClassGroup
           (LocalClassFieldTheory.abstractFixedField
@@ -257,14 +209,6 @@ noncomputable def rationalAbstractFixedFieldIdeleClassEquivFixed
         ℚ (SeparableClosure ℚ) K) :=
     LocalClassFieldTheory.abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K hfinite
-  have hclosed :
-      RamificationTheory.closedFixingSubgroup
-          ℚ (SeparableClosure ℚ)
-          (LocalClassFieldTheory.abstractFixedField
-            ℚ (SeparableClosure ℚ) K) =
-        K :=
-    LocalClassFieldTheory.closedFixingSubgroup_abstractFixedField_eq
-      ℚ (SeparableClosure ℚ) K
   exact
     (rationalIdeleClassEquivFixed
       (LocalClassFieldTheory.abstractFixedField
@@ -273,22 +217,14 @@ noncomputable def rationalAbstractFixedFieldIdeleClassEquivFixed
         (congrArg
           (KummerTheory.ambientFixedAddSubgroup
             rationalIdeleClassRepresentation)
-          hclosed))
+          (LocalClassFieldTheory.closedFixingSubgroup_abstractFixedField_eq
+            ℚ (SeparableClosure ℚ) K)))
 
 /-- The closed-subgroup fixed-field endpoint has the same underlying
 direct-limit class as the intermediate-field comparison from which it is
 transported. -/
 @[simp]
 theorem rationalAbstractFixedFieldIdeleClassEquivFixed_coe
-    (K : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    [hfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
     (c : Additive
       (IdeleClassGroup
         (LocalClassFieldTheory.abstractFixedField
@@ -297,12 +233,12 @@ theorem rationalAbstractFixedFieldIdeleClassEquivFixed_coe
       (rationalIdeleClassEquivFixed
         (LocalClassFieldTheory.abstractFixedField
           ℚ (SeparableClosure ℚ) K) c).1 := by
-  let : FiniteDimensional ℚ
-      (LocalClassFieldTheory.abstractFixedField
-        ℚ (SeparableClosure ℚ) K) :=
+  let :=
     LocalClassFieldTheory.abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K hfinite
   rfl
+
+end
 
 /-- The relative abstract fixed-field idele class group, identified with
 the fixed part at the upper closed subgroup when finite dimensionality is
@@ -328,9 +264,6 @@ noncomputable def
     LocalClassFieldTheory.abstractRelativeFixedField
       ℚ (SeparableClosure ℚ) hLK
   letI : FiniteDimensional ℚ (E.restrictScalars ℚ) := by
-    change FiniteDimensional ℚ
-      (LocalClassFieldTheory.abstractFixedField
-        ℚ (SeparableClosure ℚ) L)
     change FiniteDimensional ℚ E
     infer_instance
   let hclosed :

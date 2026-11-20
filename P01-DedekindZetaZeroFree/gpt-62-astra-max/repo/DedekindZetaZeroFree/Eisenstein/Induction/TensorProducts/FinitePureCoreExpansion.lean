@@ -17,15 +17,14 @@ private theorem sourceCore_le_scalarSmooth_port
         (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) := by
   unfold KPMsRationalCompactCrossPairing.sourceCore KPGlobalEisensteinData.hcHeckeCore
   exact iSup_le fun _ => iSup_le fun _ => inf_le_left.trans inf_le_left
+
+alias FinitePureCoreExpansion.sourceCore_le_scalarSmooth_port := sourceCore_le_scalarSmooth_port
 private theorem source_common_level_port
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ)) :
     ∃ U : KPMsRationalCompactCrossPairing.Level F ζ hζ,
       t ∈ KPContFlatCommonLevelKernel.CommonLevel F ζ hζ U ∧
-      KPGlobalTorusFunctionData.globalLevel F ζ hζ U ≤ (KPContFlatSourceRecipe.D F ζ hζ).K ∧
-      ∀ s g (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U),
-        (KPContFlatSourceRecipe.flatR F ζ hζ s t).val (g * u.val) =
-          (KPContFlatSourceRecipe.flatR F ζ hζ s t).val g := by
+      KPGlobalTorusFunctionData.globalLevel F ζ hζ U ≤ (KPContFlatSourceRecipe.D F ζ hζ).K := by
   obtain ⟨V, hV⟩ := KPGlobalResidualKernel.ScatteringResidue.scalarSmooth_exists_right_level
     (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) t.val
     (sourceCore_le_scalarSmooth_port F ζ hζ t.property)
@@ -40,13 +39,12 @@ private theorem source_common_level_port
       (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U) :
       KPContFlatSourceRecipe.alpha F ζ hζ (g * u.val) = KPContFlatSourceRecipe.alpha F ζ hζ g :=
     KPContFlatFullProductIwasawa.alpha_mul_compact F ζ hζ g ⟨u.val, hK (hUK u.property)⟩
-  refine ⟨U, ?_, hUK.trans hK, ?_⟩
+  refine ⟨U, ?_, hUK.trans hK⟩
   · intro g u
     refine ⟨hV g ⟨u.val, hUV u.property⟩, ?_⟩
     rw [halpha g u, sub_self, Complex.ofReal_zero, zero_mul]
-  · intro s g u
-    rw [KPContFlatSourceRecipe.flatR_formula, KPContFlatSourceRecipe.flatR_formula,
-      halpha g u, hV g ⟨u.val, hUV u.property⟩]
+
+alias FinitePureCoreExpansion.source_common_level_port := source_common_level_port
 
 open ActualRaisingLocal.SphericalReseeding
 
@@ -64,7 +62,7 @@ theorem actual_source_finite_pure_core
         t.val.val (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
           (fun w => Matrix.ProjGenLinGroup.mk (a w)) * c.val) =
           ∑ j, (v j).val.val.val c.val * ∏ w, f j w (a w) := by
-  obtain ⟨U₀,htU,hUK,_⟩ := source_common_level_port F ζ hζ t
+  obtain ⟨U₀, htU, hUK⟩ := source_common_level_port F ζ hζ t
   obtain ⟨n,m,k,A,f,hf,he⟩ := actual_source_uniform_finite_evaluation_separation F ζ hζ t
   have hb := fun j : Fin n => actual_source_finite_evaluation_spherical_reseeding F ζ hζ t
     U₀ htU hUK m k (A j)

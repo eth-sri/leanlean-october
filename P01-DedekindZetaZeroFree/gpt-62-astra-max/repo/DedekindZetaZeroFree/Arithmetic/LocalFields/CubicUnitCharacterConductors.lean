@@ -11,17 +11,19 @@ namespace CubicUnitCharacters
 
 open scoped ValuativeRel
 
-noncomputable def unitFiltration (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
+variable (K : Type*) [Field K] [ValuativeRel K]
+
+noncomputable def unitFiltration [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] (n : ℕ) : Subgroup (𝒪[K])ˣ :=
   if n = 0 then ⊤ else
     (Units.map (Ideal.Quotient.mk (𝓂[K] ^ n)).toMonoidHom).ker
 
-abbrev Character (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K] :=
+abbrev Character [TopologicalSpace K] :=
   CubicCharacters.Character (𝒪[K])ˣ
 
-noncomputable def residueCard (K : Type*) [Field K] [ValuativeRel K] : ℕ := Nat.card 𝓀[K]
+noncomputable def residueCard : ℕ := Nat.card 𝓀[K]
 
-noncomputable def conductor (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
+noncomputable def conductor [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] (χ : Character K) : ℕ :=
   CubicCharacters.conductor (unitFiltration K) χ
 
@@ -82,21 +84,26 @@ private lemma filtration_basis : ∀ W ∈ 𝓝 (1 : (𝒪[K])ˣ),
     (fun j => (unitFiltration K j).isClosed_of_isOpen (filtration_open K j)) (by
       apply mem_nhdsSet_iff_forall.mpr
       intro x hx
-      have : x = 1 := Set.mem_singleton_iff.mp (hi hx)
+      have := Set.mem_singleton_iff.mp (hi hx)
       simpa [this] using hW)
 private lemma filtration_finite (j : ℕ) : (unitFiltration K j).FiniteIndex := by
   letI := (unitFiltration K j).quotient_finite_of_isOpen (filtration_open K j)
   exact Subgroup.finiteIndex_of_finite_quotient
-private lemma root_lift (ζ : K) (hζ : IsPrimitiveRoot ζ 3) :
+section
+
+variable (ζ : K) (hζ : IsPrimitiveRoot ζ 3)
+
+include hζ in
+private lemma root_lift :
     ∃ z : KPCubicUnitIndices.Integers K, IsPrimitiveRoot z 3 := by
   have hv : (ValuativeRel.valuation K) ζ = 1 := by
     have hp := congrArg (ValuativeRel.valuation K) hζ.pow_eq_one
     rw [map_pow, map_one] at hp
     exact (pow_eq_one_iff_of_nonneg zero_le (by decide : 3 ≠ 0)).mp hp
-  let z : KPCubicUnitIndices.Integers K := ⟨ζ, hv.le⟩
-  exact ⟨z, hζ.of_map_of_injective (f := (KPCubicUnitIndices.Integers K).subtype)
+  exact ⟨(⟨ζ, hv.le⟩), hζ.of_map_of_injective (f := (KPCubicUnitIndices.Integers K).subtype)
     Subtype.val_injective⟩
-private lemma local_counts (ζ : K) (hζ : IsPrimitiveRoot ζ 3) :
+include hζ in
+private lemma local_counts :
     ∃ r : ℕ, 2 ≤ residueCard K ∧
       Finite (Character K) ∧
       (∀ χ : Character K, ∃ j, unitFiltration K j ≤ χ.toMonoidHom.ker) ∧
@@ -135,6 +142,8 @@ private lemma local_counts (ζ : K) (hζ : IsPrimitiveRoot ζ 3) :
   · simpa only [he] using hi.2.1
   · simpa only [he, hq] using hi.2.2.1
   · simpa only [he, hq] using hi.2.2.2
+
+end
 private lemma sum_by_conductor {X : Type*} [Finite X] (c : X → ℕ) (N : ℕ)
     (hb : ∀ x, c x ≤ N) (t : ℝ) :
     (∑ᶠ x : X, t ^ c x) = ∑ j ∈ Finset.range (N + 1),
@@ -255,16 +264,13 @@ theorem unitFiltration_antitone : Antitone (unitFiltration K) := by
 theorem isOpen_unitFiltration (j : ℕ) : IsOpen (unitFiltration K j : Set (𝒪[K])ˣ) := by
   haveI : T2Space K := t2Space_of_isValuativeTopology K
   haveI : T2Space 𝒪[K] := inferInstance
-  have hopen : IsOpen (((𝓂[K] ^ j : Ideal 𝒪[K]) : Set 𝒪[K])) :=
-    IsLocalRing.isOpen_maximalIdeal_pow 𝒪[K] j
-  have hcont : Continuous fun x : 𝒪[K] => x - 1 := continuous_id.sub continuous_const
   have hset : (unitFiltration K j : Set (𝒪[K])ˣ) =
       Units.val ⁻¹' ((fun x : 𝒪[K] => x - 1) ⁻¹' ((𝓂[K] ^ j : Ideal 𝒪[K]) : Set 𝒪[K])) := by
     ext u
     rw [Set.mem_preimage, Set.mem_preimage]
     exact unitFiltration_mem_iff K j u
   rw [hset]
-  exact (hopen.preimage hcont).preimage Units.continuous_val
+  exact ((IsLocalRing.isOpen_maximalIdeal_pow 𝒪[K] j).preimage (continuous_id.sub continuous_const)).preimage Units.continuous_val
 
 end CubicUnitCharacters
 

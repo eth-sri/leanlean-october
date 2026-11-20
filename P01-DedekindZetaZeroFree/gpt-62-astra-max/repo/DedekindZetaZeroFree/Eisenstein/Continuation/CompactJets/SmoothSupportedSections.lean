@@ -18,16 +18,20 @@ open KPContCotangentActualOverlap KPContCotangentOverlapRationalBranches
 open KPContCotangentActualGenuineTwistIsotropy
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 section ScalarCalculus
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
 
-private theorem scalar_point_holomorphic (U : Set E) (O : Set ℂ) (f : ℂ → E → ℂ)
+section
+
+variable (U : Set E) (O : Set ℂ) (f : ℂ → E → ℂ)
+
+private theorem scalar_point_holomorphic
     (hh : ∀ (C : Set E) (hC : IsCompact C), C ⊆ U →
       ∀ (n : ℕ) (v : Fin n → E),
         letI : CompactSpace C := isCompact_iff_compactSpace.mp hC
@@ -37,12 +41,11 @@ private theorem scalar_point_holomorphic (U : Set E) (O : Set ℂ) (f : ℂ → 
   have hC : IsCompact ({x} : Set E) := isCompact_singleton
   letI : CompactSpace ({x} : Set E) := isCompact_iff_compactSpace.mp hC
   obtain ⟨j,hj,heq⟩ := hh {x} hC (Set.singleton_subset_iff.mpr hx) 0 (fun i => Fin.elim0 i)
-  have hdiff := (ContinuousMap.evalCLM ℂ (⟨x, Set.mem_singleton x⟩ : ({x} : Set E))).differentiable.comp_differentiableOn hj
-  apply hdiff.congr
+  apply ((ContinuousMap.evalCLM ℂ (⟨x, Set.mem_singleton x⟩ : ({x} : Set E))).differentiable.comp_differentiableOn hj).congr
   intro s hs
   simpa [iteratedFDerivWithin_zero_apply] using (heq s hs ⟨x, Set.mem_singleton x⟩).symm
 
-private theorem scalar_jet_joint (U : Set E) (O : Set ℂ) (f : ℂ → E → ℂ)
+private theorem scalar_jet_joint
     (hh : ∀ (C : Set E) (hC : IsCompact C), C ⊆ U →
       ∀ (n : ℕ) (v : Fin n → E),
         letI : CompactSpace C := isCompact_iff_compactSpace.mp hC
@@ -64,6 +67,8 @@ private theorem scalar_jet_joint (U : Set E) (O : Set ℂ) (f : ℂ → E → �
   apply hc.congr
   intro p
   exact heq p.val.1 p.property.1 ⟨p.val.2, p.property.2⟩
+
+end
 private theorem jet_constant_word (n : ℕ) (u : E → ℂ) (U : Set E) (hU : IsOpen U)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (x : E) (hx : x ∈ U) (v : Fin n → E) :
     iteratedFDerivWithin ℝ n u U x v =
@@ -74,7 +79,7 @@ private theorem jet_constant_word (n : ℕ) (u : E → ℂ) (U : Set E) (hU : Is
       RightFrame.PullbackWords.directionalWord, iteratedFDeriv_zero_apply]
   | succ n ih =>
     rw [((hu x hx).contDiffAt (hU.mem_nhds hx)).differentiableAt_iteratedFDeriv
-      (m := n) (WithTop.coe_lt_coe.mpr (ENat.natCast_lt_top n)) |>.iteratedFDeriv_succ_apply_left']
+       (WithTop.coe_lt_coe.mpr (ENat.natCast_lt_top n)) |>.iteratedFDeriv_succ_apply_left']
     have heq : (fun y => iteratedFDeriv ℝ n u y (Fin.tail v)) =ᶠ[𝓝 x]
         RightFrame.PullbackWords.constantDirectionWord (List.ofFn (Fin.tail v)) u :=
       eventually_of_mem (hU.mem_nhds hx) fun y hy => ih y hy _
@@ -144,7 +149,11 @@ theorem scalar_parameter_jet_smooth (U : Set E) (hU : IsOpen U) (O : Set ℂ) (h
 
 end ScalarCalculus
 
-def pointwiseJets (w : ℂ → Sections F ζ hζ U R P H) (O : Set ℂ)
+section
+
+variable (w : ℂ → Sections F ζ hζ U R P H) (O : Set ℂ)
+
+def pointwiseJets
     (k : ℕ) (s : ℂ) : Sections F ζ hζ U R P H := fun i =>
   ⟨fun x => iteratedDerivWithin k (fun z => (w z i).val x) O s, by
     constructor
@@ -162,23 +171,23 @@ def pointwiseJets (w : ℂ → Sections F ζ hζ U R P H) (O : Set ℂ)
       dsimp only
       rw [heq, iteratedDerivWithin_const_mul_field]⟩
 
-@[simp] theorem pointwiseJets_zero (w : ℂ → Sections F ζ hζ U R P H) (O : Set ℂ) (s : ℂ) :
+@[simp] theorem pointwiseJets_zero (s : ℂ) :
     pointwiseJets w O 0 s = w s := by
   funext i
   apply Subtype.ext
   simp [pointwiseJets]
 
-@[simp] theorem pointwiseJets_apply (w : ℂ → Sections F ζ hζ U R P H) (O : Set ℂ)
+@[simp] theorem pointwiseJets_apply
     (k : ℕ) (s : ℂ) (i) (x) :
     (pointwiseJets w O k s i).val x = iteratedDerivWithin k (fun z => (w z i).val x) O s := rfl
 
-theorem pointwiseJets_frame (w : ℂ → Sections F ζ hζ U R P H) (O : Set ℂ)
+theorem pointwiseJets_frame
     (k : ℕ) (s : ℂ) (a : ActualChart (U := U) (H := H)) (x : M F) :
     (isotropyChart a).coefficient (pointwiseJets w O k s) x =
       iteratedDerivWithin k (fun z => (isotropyChart a).coefficient (w z) x) O s := by
   simp only [LiftedChart.coefficient, pointwiseJets_apply, iteratedDerivWithin_const_mul_field]
 
-theorem pointwiseJets_support (w : ℂ → Sections F ζ hζ U R P H) (O : Set ℂ)
+theorem pointwiseJets_support
     (K : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hK : IsClosed K)
     (hsupport : ∀ s ∈ O, tsupport (sectionNorm F ζ hζ U R P H (w s)) ⊆ K)
     (k : ℕ) (s : ℂ) (hs : s ∈ O) :
@@ -198,9 +207,10 @@ theorem pointwiseJets_support (w : ℂ → Sections F ζ hζ U R P H) (O : Set �
     exact image_eq_zero_of_notMem_tsupport (fun h => hbK (hsupport z hz h))
   have hz := iteratedDerivWithin_congr (n := k) hzero hs
   simp only [iteratedDerivWithin_fun_const_zero] at hz
-  have hnorm : sectionNorm F ζ hζ U R P H (pointwiseJets w O k s) b = 0 := by
-    rw [← hbase, sectionNorm_component, pointwiseJets_apply, hz, norm_zero]
-  exact hb hnorm
+  refine hb ?_
+  rw [← hbase, sectionNorm_component, pointwiseJets_apply, hz, norm_zero]
+
+end
 private theorem labeledAInv_smooth (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F)) :
     ContDiff ℝ (⊤ : ℕ∞) (labeledAInv p) := by
   unfold labeledAInv
@@ -209,21 +219,12 @@ private theorem labeledAInv_smooth (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimens
   intro k
   exact contDiff_apply ℝ (ℂ × ℝ) (p k)
 
-private theorem action_smooth (g : KPCuspArithmetic.PGL2 F) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun x : KPCuspGenuineMonodromy.SymmetricSpace F => g • x) := by
-  obtain ⟨G, hG⟩ := Matrix.ProjGenLinGroup.mk_surjective g
-  rw [← hG]
-  have he : (fun x : KPCuspGenuineMonodromy.SymmetricSpace F =>
-      (Matrix.ProjGenLinGroup.mk G : KPCuspArithmetic.PGL2 F) • x) = KPCuspSiegel.glAction F G := by
-    funext x; exact KPCuspSiegel.action_mk F G x
-  rw [he]
-  exact (KPArch.productAction_contDiff (KPCuspLogShape.dimension F)
-    (fun k => Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F k).embedding G)).of_le le_top
+alias SmoothSupportedSections.labeledAInv_smooth := labeledAInv_smooth
 
-private theorem labeledA_labeledAInv' (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F))
-    (x : KPCuspGenuineMonodromy.SymmetricSpace F) : labeledA p (labeledAInv p x) = x := by
-  funext k
-  simp [labeledA, labeledAInv]
+private theorem action_smooth (g : KPCuspArithmetic.PGL2 F) :
+    ContDiff ℝ (⊤ : ℕ∞) (fun x : KPCuspGenuineMonodromy.SymmetricSpace F => g • x) := by apply @DedekindZetaZeroFree.KPContSectorSmoothFramesSupport.SmoothSectionsAndSupport.rationalAction_smooth <;> assumption
+
+private alias labeledA_labeledAInv' := DedekindZetaZeroFree.KPContCotangentActualOverlap.OverlapMetricAndPhase.labeledA_labeledAInv
 
 private theorem chart_smooth_to_domain (v : Sections F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H))
@@ -320,7 +321,6 @@ theorem parameter_jets_sections_source
       intro q
       exact (contDiff_apply ℝ (ℂ × ℝ) ((placeEquiv F ζ hζ).symm q)).comp
         (CotangentLogCoframe.A (d F)).contDiff
-    have hU : IsOpen (omega (charts j)) := (charts j).domain_open.preimage hA.continuous
     have hsp : ∀ z ∈ O, ContDiffOn ℝ (⊤ : ℕ∞)
         ((isotropyChart (charts j)).coefficient (w z)) (omega (charts j)) := by
       intro z hz
@@ -330,9 +330,8 @@ theorem parameter_jets_sections_source
         simp [LiftedChart.coefficient, isotropyChart, ChartKind.representative]
       rw [heq]
       exact ((_smooth z hz (charts j).component).comp hA).contDiffOn
-    have hh := scalar_parameter_jet_smooth (omega (charts j)) hU O _hO
-      (fun z => (isotropyChart (charts j)).coefficient (w z)) hsp (_holomorphic j) k s hs
-    exact hh.congr (fun x _ => pointwiseJets_frame w O k s (charts j) x)
+    exact (scalar_parameter_jet_smooth (omega (charts j)) ((charts j).domain_open.preimage hA.continuous) O _hO
+      (fun z => (isotropyChart (charts j)).coefficient (w z)) hsp (_holomorphic j) k s hs).congr (fun x _ => pointwiseJets_frame w O k s (charts j) x)
   · intro k s hs i x
     rfl
   · intro k s hs a

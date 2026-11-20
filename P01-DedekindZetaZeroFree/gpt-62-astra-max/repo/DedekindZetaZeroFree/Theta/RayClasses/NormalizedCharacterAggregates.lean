@@ -14,7 +14,7 @@ open DedekindZetaZeroFree.AbelianQuotient
 namespace DedekindZetaZeroFree.Hecke.Theta
 
 variable (F : Type) [Field F] [NumberField F]
-variable (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
 
 structure RayThetaRepresentatives where
   coset : RayIdealClass F m hm → RayCoset.Data F
@@ -25,12 +25,11 @@ def chooseRayThetaRepresentatives : RayThetaRepresentatives F m hm := by
   classical
   let a := fun c : RayIdealClass F m hm =>
     Classical.choose (exists_integral_inverse_rayIdealClass F m hm c)
-  have ha : ∀ c, a c ≠ ⊥ ∧ a c ⊔ m = ⊤ ∧
-      rayIdealClass F m hm (a c) = some (c⁻¹) :=
+  have ha :=
     fun c => Classical.choose_spec (exists_integral_inverse_rayIdealClass F m hm c)
   let b := fun c : RayIdealClass F m hm =>
     Classical.choose (exists_ray_congruence_basepoint F m (a c) (ha c).2.1)
-  have hb : ∀ c, b c ∈ a c ∧ b c - 1 ∈ m :=
+  have hb :=
     fun c => Classical.choose_spec
       (exists_ray_congruence_basepoint F m (a c) (ha c).2.1)
   exact
@@ -62,11 +61,17 @@ def chooseRayCharacterData (η : DedekindZetaZeroFree.RayClassCharacter F m) :
     descent := (Classical.choose_spec (rayCharacterDescent F m hm η)).1
     principal_iff := (Classical.choose_spec (rayCharacterDescent F m hm η)).2 }
 
-def conductorNorm (F : Type) [Field F] [NumberField F] (m : Ideal (𝓞 F)) : ℝ :=
+section
+
+variable (F : Type) [Field F] [NumberField F] (m : Ideal (𝓞 F))
+
+def conductorNorm : ℝ :=
   (|NumberField.discr F| : ℝ) * (Ideal.absNorm m : ℝ)
 
-def conductorScale (F : Type) [Field F] [NumberField F] (m : Ideal (𝓞 F)) : ℝ :=
+def conductorScale : ℝ :=
   Real.sqrt (conductorNorm F m)
+
+end
 
 theorem conductorNorm_pos (hm : m ≠ ⊥) : 0 < conductorNorm F m := by
   unfold conductorNorm
@@ -74,23 +79,21 @@ theorem conductorNorm_pos (hm : m ≠ ⊥) : 0 < conductorNorm F m := by
   · exact_mod_cast (abs_pos.mpr (NumberField.discr_ne_zero F))
   · exact_mod_cast (Nat.pos_of_ne_zero (mt Ideal.absNorm_eq_zero_iff.mp hm))
 
-theorem conductorScale_pos (hm : m ≠ ⊥) : 0 < conductorScale F m := by
-  exact Real.sqrt_pos.mpr (conductorNorm_pos hm)
+theorem conductorScale_pos (hm : m ≠ ⊥) : 0 < conductorScale F m := Real.sqrt_pos.mpr (conductorNorm_pos hm)
 
 theorem conductorScale_sq (hm : m ≠ ⊥) :
-    conductorScale F m ^ 2 = conductorNorm F m := by
-  exact Real.sq_sqrt (le_of_lt (conductorNorm_pos hm))
+    conductorScale F m ^ 2 = conductorNorm F m := Real.sq_sqrt (le_of_lt (conductorNorm_pos hm))
 
-def normalizedRayTheta (D : RayThetaRepresentatives F m hm)
-    (ψ : RayIdealClass F m hm →* ℂ) (t : ℝ) : ℂ := by
+variable (D : RayThetaRepresentatives F m hm) (ψ : RayIdealClass F m hm →* ℂ) (t : ℝ)
+
+def normalizedRayTheta : ℂ := by
   classical
   letI : Fintype (RayIdealClass F m hm) := Fintype.ofFinite _
   exact (4 : ℂ) ^ NumberField.InfinitePlace.nrComplexPlaces F *
     ∑ c : RayIdealClass F m hm,
       ψ c * RayTheta.fδ (D.coset c) ∅ (t / conductorScale F m)
 
-def normalizedRayDualTheta (D : RayThetaRepresentatives F m hm)
-    (ψ : RayIdealClass F m hm →* ℂ) (t : ℝ) : ℂ := by
+def normalizedRayDualTheta : ℂ := by
   classical
   letI : Fintype (RayIdealClass F m hm) := Fintype.ofFinite _
   exact (4 : ℂ) ^ NumberField.InfinitePlace.nrComplexPlaces F *
@@ -98,8 +101,7 @@ def normalizedRayDualTheta (D : RayThetaRepresentatives F m hm)
     ∑ c : RayIdealClass F m hm,
       ψ c * RayTheta.gδDual (D.coset c) ∅ (conductorScale F m * t)
 
-def normalizedRayConjugateTheta (D : RayThetaRepresentatives F m hm)
-    (ψ : RayIdealClass F m hm →* ℂ) (t : ℝ) : ℂ := by
+def normalizedRayConjugateTheta : ℂ := by
   classical
   letI : Fintype (RayIdealClass F m hm) := Fintype.ofFinite _
   exact (4 : ℂ) ^ NumberField.InfinitePlace.nrComplexPlaces F *

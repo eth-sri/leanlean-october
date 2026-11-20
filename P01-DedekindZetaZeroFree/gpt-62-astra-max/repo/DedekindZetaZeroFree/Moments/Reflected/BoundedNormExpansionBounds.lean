@@ -168,10 +168,7 @@ private theorem positiveRowWeight_nonneg {A : SArithmeticData F} (f : ExteriorSq
   · exact mul_nonneg hb (Real.rpow_nonneg (by positivity) _)
   · positivity
 
-private theorem unitQuotient_finite (A : SArithmeticData F) : Finite A.UnitQuotient := by
-  letI := SArithmeticData.sunitSixthPowerQuotient_finite F A
-  exact Finite.of_equiv (PowerQuotient A.Rˣ 6)
-    (LocalFieldTheory.nthPowerQuotientEquivOfMulEquiv A.U A.Rˣ 6 A.unitEquiv).symm.toEquiv
+private alias unitQuotient_finite := DedekindZetaZeroFree.RMTailCutoff.Reindex.unit_finite
 
 private theorem compactActive_finite (A : SArithmeticData F) (h : A.Exterior) :
     Finite {f : ExteriorSquarefreeIdeal A.cS //
@@ -314,10 +311,8 @@ open ThetaBranch RMSeparatedExpansion
 theorem scalar_parameter_absorption (M Cstar ε : ℝ)
     (hM : 1 < M) (hCstar : 0 < Cstar) (hε : 0 < ε) :
     ∃ θ b₁ b₂ b₃ b decayOrder K : ℝ,
-      0 < θ ∧ 0 < b₁ ∧ 0 < b₂ ∧ 0 < b₃ ∧ 0 < b ∧
+      0 < θ ∧ 0 < b₁ ∧ 0 < b₂ ∧ 0 < b ∧
       1 < decayOrder ∧ 0 < K ∧
-      θ + 2 * M * b₁ + (3 * M - 1 + θ) * b₂ + b₃ < ε ∧
-      2 * M * b + 4 * M - 2 - 2 * θ * (decayOrder - 1) < ε ∧
       ∀ (Z P D : ℝ), 2 ≤ Z → 1 ≤ P → 1 ≤ D →
         P * D ≤ Cstar * Real.rpow Z M →
         (let R₀ := RMTailCutoff.threshold Z P D θ
@@ -373,8 +368,7 @@ theorem scalar_parameter_absorption (M Cstar ε : ℝ)
   have hcLog : 0 < cLog := div_pos (Real.rpow_pos_of_pos (by positivity) _) ht
   have hK₁ : 0 < K₁ := by dsimp [K₁]; positivity
   have hK₂ : 0 < K₂ := by dsimp [K₂]; positivity
-  refine ⟨t, t, t, t₃, t, B, K₁ + K₂, ht, ht, ht, ht₃, ht, hB,
-    add_pos hK₁ hK₂, halloc, htail, ?_⟩
+  refine ⟨t, t, t, t₃, t, B, K₁ + K₂, ht, ht, ht, ht, hB, add_pos hK₁ hK₂, ?_⟩
   intro Z P D hZ hP hD hPD
   have hZ0 : 0 < Z := by linarith
   have hZ1 : 1 ≤ Z := by linarith
@@ -537,8 +531,7 @@ theorem compact_norm_range (M Cstar Z P D : ℝ)
     (hM : 1 < M) (hC : 0 < Cstar)
     (hZ : 1 ≤ Z) (hZ2 : Z ≤ 2) (hP : 1 ≤ P) (hD : 1 ≤ D)
     (hPD : P * D ≤ Cstar * Real.rpow Z M) :
-    P ≤ Cstar * Real.rpow 2 M ∧ D ≤ Cstar * Real.rpow 2 M ∧
-      RMTailCutoff.length Z P D ≤ 8 * (Cstar * Real.rpow 2 M) ^ 2 := by
+    P ≤ Cstar * Real.rpow 2 M ∧ D ≤ Cstar * Real.rpow 2 M := by
   have hP0 : 0 ≤ P := by linarith
   have hD0 : 0 ≤ D := by linarith
   have hZ0 : 0 ≤ Z := by linarith
@@ -547,114 +540,13 @@ theorem compact_norm_range (M Cstar Z P D : ℝ)
     hPD.trans (mul_le_mul_of_nonneg_left hp hC.le)
   have hPu := (le_mul_of_one_le_right hP0 hD).trans hr
   have hDu := (le_mul_of_one_le_left hD0 hP).trans hr
-  refine ⟨hPu, hDu, ?_⟩
-  unfold RMTailCutoff.length
-  calc
-    _ ≤ 8 * D ^ 2 * P := div_le_self (by positivity) hZ
-    _ = 8 * D * (P * D) := by ring
-    _ ≤ 8 * (Cstar * Real.rpow 2 M) * (Cstar * Real.rpow 2 M) := by
-      have hCpow : 0 ≤ Cstar * Real.rpow 2 M := hP0.trans hPu
-      gcongr
-    _ = _ := by ring
+  refine ⟨hPu, hDu⟩
 
-theorem idealSymbol_norm_le_one (A : SArithmeticData F) (σ : F →+* ℂ)
-    (I : A.Exterior) (x : Fˣ) : ‖ThetaPhaseSeparation.idealSymbol A σ I x‖ ≤ 1 := by
-  unfold ThetaPhaseSeparation.idealSymbol
-  rw [norm_prod]
-  apply Finset.prod_le_one₀
-  · intro p _; exact norm_nonneg _
-  · intro p _
-    unfold symbol
-    let q := supportPrime A I p
-    let χ := residueCharacter A σ q
-    let a := unitResidue q.val x
-    change ‖χ a‖ ≤ 1
-    by_cases ha : a = 0
-    · simp [ha, MulChar.map_zero]
-    · letI : Fintype (DHCubic.Residue F q.val) := Fintype.ofFinite _
-      have hn := Complex.norm_eq_one_of_mem_rootsOfUnity
-        (χ.apply_mem_rootsOfUnity (Units.mk0 a ha))
-      simpa using hn.le
+alias idealSymbol_norm_le_one := DedekindZetaZeroFree.RepresentationTheory.RMParameterAbsorption.idealSymbol_norm_le_one
 
-theorem separatedCoefficient_norm_bound
-    (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
-    (L : Fˣ →* ℂ) (hL : ∀ x, ‖L x‖ = 1)
-    (T : ThetaPhaseSeparation.Frozen A) (d c : A.Exterior) :
-    ‖ThetaPhaseSeparation.separatedCoefficient A G U σ ψ L T d c‖ ≤
-      betaIdeal (activeSupport A T) T.a.val /
-        (Real.sqrt (A.exteriorNorm c) * A.exteriorNorm T.n) := by
-  have hc : 0 < A.exteriorNorm c := lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ c.property.1)
-  have hn : 0 < A.exteriorNorm T.n := lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ T.n.property.1)
-  have hbeta : 0 ≤ betaIdeal (activeSupport A T) T.a.val := by
-    have h := factors_norm_le_betaIdeal A G U σ ψ hψ L hL T d c
-    exact (norm_nonneg _).trans h.1
-  have hf := factors_norm_le_betaIdeal A G U σ ψ hψ L hL T d c
-  have hs := idealSymbol_norm_le_one A σ d (G.generator c)
-  rw [separatedCoefficient_support A G U σ ψ L T d c]
-  split_ifs
-  · simp only [norm_div, norm_mul, norm_pow, Complex.norm_real,
-      Real.norm_eq_abs, abs_of_pos hn, abs_of_nonneg (Real.sqrt_nonneg _)]
-    apply div_le_div_of_nonneg_right _ (by positivity)
-    calc
-      _ ≤ betaIdeal (activeSupport A T) T.a.val * 1 * 1 * 1 ^ 3 := by
-        gcongr
-        · exact hf.1
-        · exact hf.2.1
-        · exact hf.2.2
-      _ = _ := by ring
-  · simp only [norm_zero]
-    positivity
+alias separatedCoefficient_norm_bound := DedekindZetaZeroFree.RepresentationTheory.RMParameterAbsorption.separatedCoefficient_norm_bound
 
-theorem summand_positiveRowWeight_bound
-    (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
-    (L : Fˣ →* ℂ) (hL : ∀ x, ‖L x‖ = 1)
-    (H : A.V → ℝ → ℂ) (K : ℝ) (hK : 0 < K)
-    (hH : ∀ v x, 0 < x → ‖H v x‖ ≤ K / x)
-    (T : ThetaPhaseSeparation.Frozen A) (d : A.Exterior)
-    (c : ExteriorSquarefreeIdeal A.cS) (Z : ℝ) (hZ : 0 < Z) :
-    ‖summand A G U σ ψ L H T d c Z‖ ≤
-      (K * (A.exteriorNorm d ^ 2 * A.exteriorNorm T.f ^ 2) / Z) *
-        positiveRowWeight (activeSupport A T) 1
-          (⟨T.a, T.a_supported⟩, c, T.n) := by
-  have ha : 0 < A.exteriorNorm T.a :=
-    lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ T.a.property.1)
-  have hc : 0 < A.exteriorNorm c.val :=
-    lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ c.val.property.1)
-  have hn : 0 < A.exteriorNorm T.n :=
-    lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ T.n.property.1)
-  have hd : 0 < A.exteriorNorm d :=
-    lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ d.property.1)
-  have hf : 0 < A.exteriorNorm T.f :=
-    lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ T.f.property.1)
-  have hx : 0 < ThetaPhaseSeparation.profileArgument A T d c.val Z := by
-    unfold ThetaPhaseSeparation.profileArgument; positivity
-  have hcoeff := separatedCoefficient_norm_bound A G U σ ψ hψ L hL T d c.val
-  have hb : 0 ≤ betaIdeal (activeSupport A T) T.a.val :=
-    (norm_nonneg _).trans (factors_norm_le_betaIdeal A G U σ ψ hψ L hL T d c.val).1
-  have hprofile := hH (termClass A G U T d c.val)
-    (ThetaPhaseSeparation.profileArgument A T d c.val Z) hx
-  unfold summand
-  rw [norm_mul]
-  calc
-    _ ≤ (betaIdeal (activeSupport A T) T.a.val /
-        (Real.sqrt (A.exteriorNorm c.val) * A.exteriorNorm T.n)) *
-        (K / ThetaPhaseSeparation.profileArgument A T d c.val Z) := by
-      exact mul_le_mul hcoeff hprofile (norm_nonneg _) (by positivity)
-    _ = _ := by
-      unfold positiveRowWeight ThetaPhaseSeparation.profileArgument rowNorm
-      change _ = (K * (A.exteriorNorm d ^ 2 * A.exteriorNorm T.f ^ 2) / Z) *
-        (betaIdeal (activeSupport A T) T.a.val *
-          (A.exteriorNorm T.a * A.exteriorNorm c.val * A.exteriorNorm T.n ^ 3) ^ (-1 : ℝ) /
-          (Real.sqrt (A.exteriorNorm c.val) * A.exteriorNorm T.n))
-      rw [Real.rpow_neg_one]
-      have hsc : 0 < Real.sqrt (A.exteriorNorm c.val) := Real.sqrt_pos.mpr hc
-      field_simp
+alias summand_positiveRowWeight_bound := DedekindZetaZeroFree.RepresentationTheory.RMParameterAbsorption.summand_positiveRowWeight_bound
 
 abbrev CompactMajorantIndex (A : SArithmeticData F) (h : A.Exterior) :=
   (f : {f : ExteriorSquarefreeIdeal A.cS //
@@ -670,63 +562,13 @@ def compactMajorantIndexMap (A : SArithmeticData F) (h : A.Exterior) :
     i.1.val.epsilon, ⟨i.1.val.a, i.1.val.a_supported⟩, i.2, i.1.val.n⟩
 
 theorem compactMajorantIndexMap_injective (A : SArithmeticData F) (h : A.Exterior) :
-    Function.Injective (compactMajorantIndexMap A h) := by
-  intro i j hij
-  have hf : i.1.val.f = j.1.val.f := by
-    have hh := congrArg (fun k : CompactMajorantIndex A h => k.1.val.val) hij
-    exact hh
-  have he : i.1.val.epsilon = j.1.val.epsilon := by
-    have hh := congrArg (fun k : CompactMajorantIndex A h => k.2.1) hij
-    exact hh
-  have ha : i.1.val.a = j.1.val.a := by
-    have hh := congrArg (fun k : CompactMajorantIndex A h => k.2.2.1.val) hij
-    exact hh
-  have hc : i.2 = j.2 := by
-    have hh := congrArg (fun k : CompactMajorantIndex A h => k.2.2.2.1) hij
-    exact hh
-  have hn : i.1.val.n = j.1.val.n := by
-    have hh := congrArg (fun k : CompactMajorantIndex A h => k.2.2.2.2) hij
-    exact hh
-  have hh : i.1.val.h = j.1.val.h := i.1.property.trans j.1.property.symm
-  have hT : i.1.val = j.1.val := by
-    generalize hi : i.1.val = Ti at hf he ha hn hh ⊢
-    generalize hj : j.1.val = Tj at hf he ha hn hh ⊢
-    cases Ti
-    cases Tj
-    simp_all
-  exact Prod.ext (Subtype.ext hT) hc
+    Function.Injective (compactMajorantIndexMap A h) := by apply @DedekindZetaZeroFree.RepresentationTheory.RMParameterAbsorption.compactMajorantIndexMap_injective <;> assumption
 
-theorem positiveRowWeight_nonneg {A : SArithmeticData F} (f : ExteriorSquarefreeIdeal A.cS)
-    (x : PositiveRowIndex f) : 0 ≤ positiveRowWeight f 1 x := by
-  have hb := betaIdealTerm_nonneg f 0 (by norm_num) x.1
-  simp only [betaIdealTerm, neg_zero] at hb
-  change 0 ≤ betaIdeal f x.1.val.val * (idealNorm x.1.val.val) ^ (0 : ℝ) at hb
-  simp only [Real.rpow_zero, mul_one] at hb
-  unfold positiveRowWeight
-  have ha := idealNorm_ge_one _ x.1.val.property.1
-  have hc := idealNorm_ge_one _ x.2.1.val.property.1
-  have hn := idealNorm_ge_one _ x.2.2.property.1
-  unfold rowNorm
-  apply div_nonneg
-  · exact mul_nonneg hb (Real.rpow_nonneg (by positivity) _)
-  · positivity
+alias positiveRowWeight_nonneg := DedekindZetaZeroFree.RepresentationTheory.RMParameterAbsorption.positiveRowWeight_nonneg
 
-private theorem unitQuotient_finite (A : SArithmeticData F) : Finite A.UnitQuotient := by
-  letI := SArithmeticData.sunitSixthPowerQuotient_finite F A
-  exact Finite.of_equiv (PowerQuotient A.Rˣ 6)
-    (LocalFieldTheory.nthPowerQuotientEquivOfMulEquiv A.U A.Rˣ 6 A.unitEquiv).symm.toEquiv
+private alias unitQuotient_finite := DedekindZetaZeroFree.RMTailCutoff.Reindex.unit_finite
 
-private theorem compactActive_finite (A : SArithmeticData F) (h : A.Exterior) :
-    Finite {f : ExteriorSquarefreeIdeal A.cS //
-      f.val.val ∈ activeSquarefreeDivisors h.val} := by
-  let e : {f : ExteriorSquarefreeIdeal A.cS // f.val.val ∈ activeSquarefreeDivisors h.val} →
-      {f : Ideal (𝓞 F) // f ∈ activeSquarefreeDivisors h.val} :=
-    fun f => ⟨f.val.val.val, f.property⟩
-  have he : Function.Injective e := by
-    intro f g hh
-    have hv : f.val.val.val = g.val.val.val := congrArg (fun k => k.val) hh
-    exact Subtype.ext (Subtype.ext (Subtype.ext hv))
-  exact Finite.of_injective e he
+private alias compactActive_finite := DedekindZetaZeroFree.RepresentationTheory.RMParameterAbsorption.compactActive_finite
 
 set_option maxHeartbeats 1200000 in
 
@@ -784,7 +626,7 @@ theorem compact_expansion_square_bound
     RepresentationTheory.RMParameterAbsorption.bounded_dyad_square_sum A
   refine ⟨Kcount * B ^ 2, by positivity, ?_⟩
   intro Z P D hZ hZ2 hP hD hPD u
-  obtain ⟨hPu, hDu, _⟩ := compact_norm_range M Cstar Z P D hM hCstar hZ hZ2 hP hD hPD
+  obtain ⟨hPu, hDu⟩ := compact_norm_range M Cstar Z P D hM hCstar hZ hZ2 hP hD hPD
   apply hcount P D hP hD
     (fun h d => expansion A G U σ ψ (L u) (H u) h.val d.val.val Z) B hB.le
   intro h d

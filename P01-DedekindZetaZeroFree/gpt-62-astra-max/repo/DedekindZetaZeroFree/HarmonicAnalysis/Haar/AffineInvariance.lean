@@ -15,8 +15,8 @@ theorem integral_affine (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (a : (LocalField F q)ˣ) (ha : localAbs (LocalField F q) a = 1)
     (t : LocalField F q) (f : LocalField F q → ℂ) :
     (∫ x, f ((a : LocalField F q) * x + t) ∂μ) = ∫ x, f x ∂μ := by
-  have hm : Measure.map (fun x : LocalField F q => (a : LocalField F q) * x) μ = μ := by
-    have HH := NonarchimedeanHaarScaling.map_mul (LocalField F q) μ (a : LocalField F q) a.ne_zero
+  have hm : Measure.map (fun x : LocalField F q => a * x) μ = μ := by
+    have HH := NonarchimedeanHaarScaling.map_mul (LocalField F q) μ a a.ne_zero
     rw [← actualAbs_units F q a, ha] at HH
     simpa using HH
   have he : MeasurableEmbedding (fun x : LocalField F q => (a : LocalField F q) * x) :=

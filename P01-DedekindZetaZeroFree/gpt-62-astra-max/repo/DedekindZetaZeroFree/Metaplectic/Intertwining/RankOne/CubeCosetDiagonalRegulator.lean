@@ -18,35 +18,37 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
 variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField F q)]
 variable {H D : Type} [Group H] [TopologicalSpace H] [IsTopologicalGroup H]
   [CommGroup D] [Finite D] [DecidableEq D]
 variable (T : LocalHeisenbergData H D)
 variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
-variable (P : Polarization T)
+    (P : Polarization T)
 
-def sourceTranslation (a b u v : (LocalField F q)ˣ) : LocalField F q :=
-  (a : LocalField F q) * (u : LocalField F q) ^ 3 +
-    (b : LocalField F q) * (v : LocalField F q) ^ 3
+local notation "LocalCompletion" => LocalField F q
 
-def reverseIncrement (b v : (LocalField F q)ˣ) : (LocalField F q)ˣ := b * v ^ 3
+def sourceTranslation (a b u v : LocalCompletionˣ) : LocalCompletion :=
+  (a : LocalCompletion) * (u : LocalCompletion) ^ 3 +
+    (b : LocalCompletion) * (v : LocalCompletion) ^ 3
+
+def reverseIncrement (b v : LocalCompletionˣ) : LocalCompletionˣ := b * v ^ 3
 
 def doubleKernel (B : Binding F ζ hζ q A P)
     (rep : D → H) (hrep : ∀ d, T.π (rep d) = d) (d : D)
-    (φ : LocalField F q → ℂ) (z lam : ℂ) (h : H)
-    (a b u v : (LocalField F q)ˣ) : ℂ :=
+    (φ : LocalCompletion → ℂ) (z lam : ℂ) (h : H)
+    (a b u v : LocalCompletionˣ) : ℂ :=
   let ξ := a * u ^ 3
   let η := reverseIncrement F q b v
   (B.eta (kappa F ζ hζ q η 0) : ℂ) *
-    (B.eta (kappa F ζ hζ q ξ (η : LocalField F q)) : ℂ) *
-    normPower (LocalField F q) (η ^ 2) (-z) *
-    normPower (LocalField F q) (ξ ^ 2) z *
+    (B.eta (kappa F ζ hζ q ξ (η : LocalCompletion)) : ℂ) *
+    normPower LocalCompletion (η ^ 2) (-z) *
+    normPower LocalCompletion (ξ ^ 2) z *
     ((centerTorus F ζ hζ q T A .minus (B.rootTorus η))
       ((centerTorus F ζ hζ q T A .plus (B.rootTorus ξ))
         ((centerCoordinates T rep hrep).symm
           (φ (sourceTranslation F q a b u v) • Pi.single d (1 : ℂ))))).val h *
-    normPower (LocalField F q) η lam
+    normPower LocalCompletion η lam
 
 end
 

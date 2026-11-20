@@ -21,21 +21,26 @@ local instance : IsTopologicalGroup RawGroup := inferInstanceAs
   (IsTopologicalGroup (Matrix.GeneralLinearGroup (Fin 2) ℂ ⧸
     Subgroup.center (Matrix.GeneralLinearGroup (Fin 2) ℂ)))
 
-def rawComplexCoordinates (x : RawCoordinates) : Fin 3 → ℂ :=
+section
+
+variable (x : RawCoordinates)
+
+def rawComplexCoordinates : Fin 3 → ℂ :=
   ![⟨x 0, x 1⟩, ⟨x 2, x 3⟩, ⟨x 4, x 5⟩]
 
-def rawMatrix (x : RawCoordinates) : Matrix (Fin 2) (Fin 2) ℂ :=
+def rawMatrix : Matrix (Fin 2) (Fin 2) ℂ :=
   !![1, rawComplexCoordinates x 1; rawComplexCoordinates x 2, 1 + rawComplexCoordinates x 0]
 
-def rawDelta (x : RawCoordinates) : ℂ :=
+def rawDelta : ℂ :=
   1 + rawComplexCoordinates x 0 - rawComplexCoordinates x 1 * rawComplexCoordinates x 2
 
-theorem rawMatrix_det (x : RawCoordinates) : (rawMatrix x).det = rawDelta x := by
+theorem rawMatrix_det : (rawMatrix x).det = rawDelta x := by
   simp [rawMatrix, rawDelta, Matrix.det_fin_two]
+
+end
 
 structure NormalizedChart (h : OpenPartialHomeomorph RawCoordinates RawGroup) : Prop where
   source : h.source = {x | rawDelta x ≠ 0}
-  target : h.target = {g | g.out.val 0 0 ≠ 0}
   displayed : ∀ (x : RawCoordinates) (hx : rawDelta x ≠ 0), h x =
     Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.mkOfDetNeZero (rawMatrix x)
       (by rwa [rawMatrix_det]))
@@ -68,7 +73,12 @@ local instance translationJacobianTopologicalGroup : IsTopologicalGroup RawGroup
   (IsTopologicalGroup (Matrix.GeneralLinearGroup (Fin 2) ℂ ⧸
     Subgroup.center (Matrix.GeneralLinearGroup (Fin 2) ℂ)))
 
-private theorem tj_rawMatrix_rawRatios (a : Matrix (Fin 2) (Fin 2) ℂ) (ha : a 0 0 ≠ 0) :
+section
+
+variable (a : Matrix (Fin 2) (Fin 2) ℂ) (ha : a 0 0 ≠ 0)
+
+include ha in
+private theorem tj_rawMatrix_rawRatios :
     rawMatrix (rawRatios a) = (a 0 0)⁻¹ • a := by
   have h0 : rawComplexCoordinates (rawRatios a) 0 = a 1 1 / a 0 0 - 1 := by
     apply Complex.ext <;> simp [rawComplexCoordinates, rawRatios]
@@ -80,10 +90,13 @@ private theorem tj_rawMatrix_rawRatios (a : Matrix (Fin 2) (Fin 2) ℂ) (ha : a 
   fin_cases i <;> fin_cases j <;>
     simp [rawMatrix, h0, h1, h2, Matrix.smul_apply, ha, div_eq_mul_inv, mul_comm]
 
-private theorem tj_rawDelta_rawRatios (a : Matrix (Fin 2) (Fin 2) ℂ) (ha : a 0 0 ≠ 0) :
+include ha in
+private theorem tj_rawDelta_rawRatios :
     rawDelta (rawRatios a) = a.det / (a 0 0) ^ 2 := by
   rw [← rawMatrix_det, tj_rawMatrix_rawRatios a ha, Matrix.det_smul]
   simp [Fintype.card_fin, div_eq_mul_inv, mul_comm]
+
+end
 
 private theorem tj_rawDelta_multiply (x y : RawCoordinates)
     (hxy : 1 + rawComplexCoordinates x 1 * rawComplexCoordinates y 2 ≠ 0) :
@@ -95,27 +108,25 @@ private theorem tj_rawDelta_multiply (x y : RawCoordinates)
   rw [rawMultiply, tj_rawDelta_rawRatios _ (h00 ▸ hxy), Matrix.det_mul,
     rawMatrix_det, rawMatrix_det, h00]
 
-private theorem tj_rawMultiply_mem_source
-    (h : OpenPartialHomeomorph RawCoordinates RawGroup) (hn : NormalizedChart h)
+section
+
+variable (h : OpenPartialHomeomorph RawCoordinates RawGroup) (hn : NormalizedChart h)
     (x y : RawCoordinates) (hx : x ∈ h.source) (hy : y ∈ h.source)
-    (hxy : 1 + rawComplexCoordinates x 1 * rawComplexCoordinates y 2 ≠ 0) :
+    (hxy : 1 + rawComplexCoordinates x 1 * rawComplexCoordinates y 2 ≠ 0)
+
+include hn hx hy hxy in
+private theorem tj_rawMultiply_mem_source :
     rawMultiply (x, y) ∈ h.source := by
   rw [hn.source] at hx hy ⊢
   change rawDelta (rawMultiply (x,y)) ≠ 0
   rw [tj_rawDelta_multiply x y hxy]
   exact div_ne_zero (mul_ne_zero hx hy) (pow_ne_zero 2 hxy)
 
-private theorem tj_rawMultiply_chart
-    (h : OpenPartialHomeomorph RawCoordinates RawGroup) (hn : NormalizedChart h)
-    (x y : RawCoordinates) (hx : x ∈ h.source) (hy : y ∈ h.source)
-    (hxy : 1 + rawComplexCoordinates x 1 * rawComplexCoordinates y 2 ≠ 0) :
+include hn hx hy hxy in
+private theorem tj_rawMultiply_chart :
     h (rawMultiply (x, y)) = h x * h y := by
-  have hx' : rawDelta x ≠ 0 := by simpa [hn.source] using hx
-  have hy' : rawDelta y ≠ 0 := by simpa [hn.source] using hy
-  have hm := tj_rawMultiply_mem_source h hn x y hx hy hxy
-  have hm' : rawDelta (rawMultiply (x, y)) ≠ 0 := by simpa [hn.source] using hm
   set_option backward.isDefEq.respectTransparency false in
-    simp only [hn.displayed _ hm', hn.displayed _ hx', hn.displayed _ hy']
+    simp only [hn.displayed _ (by simpa [hn.source] using (tj_rawMultiply_mem_source h hn x y hx hy hxy)), hn.displayed _ (by simpa [hn.source] using hx), hn.displayed _ (by simpa [hn.source] using hy)]
   rw [← map_mul Matrix.ProjGenLinGroup.mk]
   apply Matrix.ProjGenLinGroup.mk_eq_mk_iff.mpr
   have h00 : (rawMatrix x * rawMatrix y) 0 0 =
@@ -130,24 +141,16 @@ private theorem tj_rawMultiply_chart
   simp [Matrix.mul_diagonal, smul_eq_mul, hnz]
   field_simp
 
-private theorem tj_rawMultiply_inverse_chart
-    (h : OpenPartialHomeomorph RawCoordinates RawGroup) (hn : NormalizedChart h)
-    (x y : RawCoordinates) (hx : x ∈ h.source) (hy : y ∈ h.source)
-    (hxy : 1 + rawComplexCoordinates x 1 * rawComplexCoordinates y 2 ≠ 0) :
-    h.symm (h x * h y) = rawMultiply (x, y) := by
-  rw [← tj_rawMultiply_chart h hn x y hx hy hxy]
-  exact h.left_inv (tj_rawMultiply_mem_source h hn x y hx hy hxy)
-
-private theorem tj_zero_mem (h : OpenPartialHomeomorph RawCoordinates RawGroup)
-    (hn : NormalizedChart h) : (0 : RawCoordinates) ∈ h.source := by
-  simp [hn.source, rawDelta, rawComplexCoordinates, Complex.mk_eq_add_mul_I]
+end
 
 private theorem tj_multiply_zero (x : RawCoordinates) : rawMultiply (x, 0) = x := by
   ext i
   fin_cases i <;> simp [rawMultiply, rawRatios, rawMatrix, rawComplexCoordinates,
     Matrix.mul_apply, Fin.sum_univ_two, Complex.mk_eq_add_mul_I]
 
-private theorem tj_eventually_comp (h : OpenPartialHomeomorph RawCoordinates RawGroup)
+variable (h : OpenPartialHomeomorph RawCoordinates RawGroup)
+
+private theorem tj_eventually_comp
     (hn : NormalizedChart h) (g : RawGroup) (x z : RawCoordinates)
     (hx : x ∈ h.source) (hz : z ∈ h.source) (hgz : h z = g * h x) :
     (fun y => h.symm (g * h (rawMultiply (x, y)))) =ᶠ[𝓝 (0 : RawCoordinates)]
@@ -160,12 +163,13 @@ private theorem tj_eventually_comp (h : OpenPartialHomeomorph RawCoordinates Raw
       fun_prop
     exact hc.continuousAt.eventually_ne (by simp [rawComplexCoordinates,
       Complex.mk_eq_add_mul_I])
-  filter_upwards [he x, he z, h.open_source.mem_nhds (tj_zero_mem h hn)] with y hyx hyz hy
+  filter_upwards [he x, he z, h.open_source.mem_nhds (by
+    simp [hn.source, rawDelta, rawComplexCoordinates, Complex.mk_eq_add_mul_I])] with y hyx hyz hy
   rw [tj_rawMultiply_chart h hn x y hx hy hyx, ← mul_assoc, ← hgz]
-  exact tj_rawMultiply_inverse_chart h hn z y hz hy hyz
+  rw [← tj_rawMultiply_chart h hn z y hz hy hyz]
+  exact h.left_inv (tj_rawMultiply_mem_source h hn z y hz hy hyz)
 
 private theorem tj_translation_diff
-    (h : OpenPartialHomeomorph RawCoordinates RawGroup)
     [C : ChartedSpace RawCoordinates RawGroup]
     [LieGroup (𝓘(ℝ, RawCoordinates)) (↑(⊤ : ℕ∞) : ℕ∞ω) RawGroup]
     (hchart : ∀ g, C.chartAt g =
@@ -181,11 +185,9 @@ private theorem tj_translation_diff
       (mem_groupoid_of_pregroupoid.mp he).1
   have hx' : x ∈ e.source := by
     simpa [e, Homeomorph.mulLeft_symm, hchart, OpenPartialHomeomorph.trans_source, hx] using hgx
-  have hd := (hs.contDiffAt (e.open_source.mem_nhds hx')).differentiableAt (by simp)
-  simpa [e, Homeomorph.mulLeft_symm, hchart, Function.comp_def] using hd
+  simpa [e, Homeomorph.mulLeft_symm, hchart, Function.comp_def] using ((hs.contDiffAt (e.open_source.mem_nhds hx')).differentiableAt (by simp))
 
-theorem normalized_chart_translation_jacobian
-    (h : OpenPartialHomeomorph RawCoordinates RawGroup) (hn : NormalizedChart h)
+theorem normalized_chart_translation_jacobian (hn : NormalizedChart h)
     [C : ChartedSpace RawCoordinates RawGroup]
     [LieGroup (𝓘(ℝ, RawCoordinates)) (↑(⊤ : ℕ∞) : ℕ∞ω) RawGroup]
     (hchart : ∀ g, C.chartAt g =
@@ -200,7 +202,7 @@ theorem normalized_chart_translation_jacobian
         (1 / ‖rawDelta (h.symm (g * h x))‖ ^ 4) * |(J x).toLinearMap.det| =
           1 / ‖rawDelta x‖ ^ 4 := by
   classical
-  let T : RawCoordinates → RawCoordinates := fun y => h.symm (g * h y)
+  let T := fun y => h.symm (g * h y)
   refine ⟨fun x => fderiv ℝ T x, ?_⟩
   intro x hx hgx
   have hd : HasFDerivAt T (fderiv ℝ T x) x :=
@@ -208,31 +210,26 @@ theorem normalized_chart_translation_jacobian
   refine ⟨hd, ?_⟩
   let z := T x
   have hz : z ∈ h.source := h.symm.map_source hgx
-  have hgz : h z = g * h x := h.right_inv hgx
   have hcomp : HasFDerivAt (fun y => rawMultiply (z, y))
       ((fderiv ℝ T x).comp (F x)) 0 := by
     have hd' : HasFDerivAt T (fderiv ℝ T x) (rawMultiply (x, 0)) := by
       simpa only [tj_multiply_zero] using hd
     have H := hd'.comp 0 (hderiv x)
-    exact H.congr_of_eventuallyEq (tj_eventually_comp h hn g x z hx hz hgz).symm
-  have hmaps := hcomp.unique (hderiv z)
+    exact H.congr_of_eventuallyEq (tj_eventually_comp h hn g x z hx hz (h.right_inv hgx)).symm
   have heq : (fderiv ℝ T x).toLinearMap.det * ‖rawDelta x‖ ^ 4 =
       ‖rawDelta z‖ ^ 4 := by
-    have H := congrArg (fun A : RawCoordinates →L[ℝ] RawCoordinates =>
-      A.toLinearMap.det) hmaps
-    simpa only [ContinuousLinearMap.toLinearMap_comp, LinearMap.det_comp, hdet] using H
+    simpa only [ContinuousLinearMap.toLinearMap_comp, LinearMap.det_comp, hdet] using (congrArg (fun A : RawCoordinates →L[ℝ] RawCoordinates =>
+      A.toLinearMap.det) (hcomp.unique (hderiv z)))
   have hxpos : 0 < ‖rawDelta x‖ ^ 4 := pow_pos (norm_pos_iff.mpr
     (by simpa only [hn.source, mem_setOf_eq] using hx)) 4
   have hzpos : 0 < ‖rawDelta z‖ ^ 4 := pow_pos (norm_pos_iff.mpr
     (by simpa only [hn.source, mem_setOf_eq] using hz)) 4
   have hJpos : 0 < (fderiv ℝ T x).toLinearMap.det := by
     nlinarith
-  change (1 / ‖rawDelta z‖ ^ 4) * |(fderiv ℝ T x).toLinearMap.det| =
-    1 / ‖rawDelta x‖ ^ 4
   rw [abs_of_pos hJpos]
   rw [div_mul_eq_mul_div, one_mul]
   apply (div_eq_div_iff hzpos.ne' hxpos.ne').mpr
-  simpa only [one_mul] using heq
+  simpa using heq
 
 end DedekindZetaZeroFree.PGLComplex.AffineLie
 
@@ -280,12 +277,11 @@ private lemma preimage_inter_source {X Y : Type*} [TopologicalSpace X] [Measurab
     MeasurableSet (f ⁻¹' s ∩ U) := by
   classical
   let c : Y := Classical.choice inferInstance
-  have hm := hf.measurable_piecewise (g := fun _ => c) continuousOn_const hU
   have he : f ⁻¹' s ∩ U = (U.piecewise f (fun _ => c)) ⁻¹' s ∩ U := by
     ext x
     by_cases hx : x ∈ U <;> simp [hx]
   rw [he]
-  exact (hm hs).inter hU
+  exact ((hf.measurable_piecewise continuousOn_const hU) hs).inter hU
 
 theorem translated_chart_measures_compatible_of_jacobian
     {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
@@ -306,22 +302,18 @@ theorem translated_chart_measures_compatible_of_jacobian
         ({x | g⁻¹ * x ∈ h.target} ∩ {x | k⁻¹ * x ∈ h.target}) := by
   classical
   intro g k
-  let ρ : Measure (Fin n → ℝ) := volume.withDensity (fun x => ENNReal.ofReal (w x))
+  let ρ := volume.withDensity (fun x => ENNReal.ofReal (w x))
   let p (a : G) : (Fin n → ℝ) → G := fun x => a * h x
   have hc (a : G) : ContinuousOn (p a) h.source :=
     continuousOn_const.mul h.continuousOn
   have ha (a : G) : AEMeasurable (p a) (ρ.restrict h.source) :=
     (hc a).aemeasurable h.open_source.measurableSet
-  have hh : AEMeasurable h (ρ.restrict h.source) :=
-    h.continuousOn.aemeasurable h.open_source.measurableSet
   have hmmap (a : G) : Measure.map (a * ·) (Measure.map h (ρ.restrict h.source)) =
       Measure.map (p a) (ρ.restrict h.source) :=
     AEMeasurable.map_map_of_aemeasurable
-      (measurable_id.const_mul a).aemeasurable hh
-  change (Measure.map (g * ·) (Measure.map h (ρ.restrict h.source))).restrict _ =
-    (Measure.map (k * ·) (Measure.map h (ρ.restrict h.source))).restrict _
+      (measurable_id.const_mul a).aemeasurable (h.continuousOn.aemeasurable h.open_source.measurableSet)
   rw [hmmap g, hmmap k]
-  let O : Set G := {x | g⁻¹ * x ∈ h.target} ∩ {x | k⁻¹ * x ∈ h.target}
+  let O := {x | g⁻¹ * x ∈ h.target} ∩ {x | k⁻¹ * x ∈ h.target}
   have hO : MeasurableSet O :=
     (h.open_target.preimage (continuous_const.mul continuous_id)).measurableSet.inter
       (h.open_target.preimage (continuous_const.mul continuous_id)).measurableSet
@@ -330,8 +322,6 @@ theorem translated_chart_measures_compatible_of_jacobian
   let s := t ∩ O
   have hs : MeasurableSet s := ht.inter hO
   rw [Measure.restrict_apply ht, Measure.restrict_apply ht]
-  change Measure.map (p g) (ρ.restrict h.source) s =
-    Measure.map (p k) (ρ.restrict h.source) s
   rw [Measure.map_apply_of_aemeasurable (ha g) hs,
       Measure.map_apply_of_aemeasurable (ha k) hs,
       Measure.restrict_apply' h.open_source.measurableSet,
@@ -339,11 +329,8 @@ theorem translated_chart_measures_compatible_of_jacobian
   let D (a : G) := p a ⁻¹' s ∩ h.source
   have hD (a : G) : MeasurableSet (D a) :=
     preimage_inter_source (p a) h.source (hc a) h.open_source.measurableSet s hs
-  change ρ (D g) = ρ (D k)
-  change (volume.withDensity (fun x => ENNReal.ofReal (w x))) (D g) =
-    (volume.withDensity (fun x => ENNReal.ofReal (w x))) (D k)
   rw [withDensity_apply _ (hD g), withDensity_apply _ (hD k)]
-  let F : (Fin n → ℝ) → (Fin n → ℝ) := fun x => h.symm (k⁻¹ * (g * h x))
+  let F := fun x => h.symm (k⁻¹ * (g * h x))
   obtain ⟨J, hJ⟩ := hjac (k⁻¹ * g)
   have htarget (x : Fin n → ℝ) (hx : x ∈ D g) : k⁻¹ * (g * h x) ∈ h.target :=
     hx.1.2.2
@@ -359,9 +346,9 @@ theorem translated_chart_measures_compatible_of_jacobian
       exact hx.1
     · intro hy
       let x := h.symm (g⁻¹ * (k * h y))
-      have hxt : g⁻¹ * (k * h y) ∈ h.target := hy.1.2.1
-      have hxs : x ∈ h.source := h.map_target hxt
-      have hxh : h x = g⁻¹ * (k * h y) := h.right_inv hxt
+      have hxt := hy.1.2.1
+      have hxs := h.map_target hxt
+      have hxh := h.right_inv hxt
       have hx : x ∈ D g := by
         refine ⟨?_, hxs⟩
         change g * h x ∈ s
@@ -415,7 +402,7 @@ theorem glue_measures {X : Type*} [MeasurableSpace X]
     ∃ ν : Measure X, ∀ i, ν.restrict (s i) = (μ i).restrict (s i) := by
   classical
   let d := disjointed s
-  have hd : ∀ i, MeasurableSet (d i) := fun i => MeasurableSet.disjointed hs i
+  have hd := fun i => MeasurableSet.disjointed hs i
   have hdc : ⋃ i, d i = univ := by rw [iUnion_disjointed, hcover]
   refine ⟨Measure.sum (fun i => (μ i).restrict (d i)), fun j => ?_⟩
   rw [Measure.restrict_sum _ (hs j)]
@@ -425,9 +412,7 @@ theorem glue_measures {X : Type*} [MeasurableSpace X]
       apply Measure.sum_congr
       intro i
       rw [Measure.restrict_restrict (hs j), Measure.restrict_restrict (hd i)]
-      have hi : s j ∩ d i ⊆ s i ∩ s j := by
-        intro x hx
-        exact ⟨disjointed_subset s i hx.2, hx.1⟩
+      have hi : s j ∩ d i ⊆ s i ∩ s j := fun x hx => ⟨disjointed_subset s i hx.2, hx.1⟩
       have H := congrArg (fun ν : Measure X => ν.restrict (s j ∩ d i)) (hcompat i j)
       rw [Measure.restrict_restrict ((hs j).inter (hd i)),
         Measure.restrict_restrict ((hs j).inter (hd i)), inter_eq_left.mpr hi] at H
@@ -442,7 +427,7 @@ theorem glue_open_measures {X I : Type*} [MeasurableSpace X]
     (hcompat : ∀ i j, (μ i).restrict (s i ∩ s j) = (μ j).restrict (s i ∩ s j)) :
     ∃ ν : Measure X, ∀ i, ν.restrict (s i) = (μ i).restrict (s i) := by
   obtain ⟨f, hf⟩ := isLindelof_univ.indexed_countable_subcover s hs (by rw [hcover])
-  have hc : ⋃ j, s (f j) = univ := univ_subset_iff.mp hf
+  have hc := univ_subset_iff.mp hf
   obtain ⟨ν, hν⟩ := glue_measures (s ∘ f) (fun j => (hs (f j)).measurableSet) hc
     (μ ∘ f) (fun i j => hcompat (f i) (f j))
   simp only [Function.comp_apply] at hν
@@ -460,19 +445,25 @@ theorem rawDelta_continuous : Continuous rawDelta := by
     intro i
     fin_cases i <;> simp [rawComplexCoordinates, Complex.mk_eq_add_mul_I] <;> fun_prop
   exact continuous_const.add (hu 0) |>.sub ((hu 1).mul (hu 2))
-theorem rawDensity_positive (h : OpenPartialHomeomorph RawCoordinates RawGroup)
-    (hn : NormalizedChart h) (x : RawCoordinates) (hx : x ∈ h.source) :
+section
+
+variable (h : OpenPartialHomeomorph RawCoordinates RawGroup) (hn : NormalizedChart h)
+
+include hn in
+theorem rawDensity_positive (x : RawCoordinates) (hx : x ∈ h.source) :
     0 < 1 / ‖rawDelta x‖ ^ 4 := by
   have hd : rawDelta x ≠ 0 := by simpa only [hn.source, Set.mem_setOf_eq] using hx
   exact one_div_pos.mpr (pow_pos (norm_pos_iff.mpr hd) 4)
-theorem rawDensity_continuousOn (h : OpenPartialHomeomorph RawCoordinates RawGroup)
-    (hn : NormalizedChart h) : ContinuousOn (fun x : RawCoordinates =>
+include hn in
+theorem rawDensity_continuousOn : ContinuousOn (fun x : RawCoordinates =>
     1 / ‖rawDelta x‖ ^ 4) h.source := by
   apply continuousOn_const.div (rawDelta_continuous.norm.pow 4).continuousOn
   intro x hx
   apply pow_ne_zero
   apply norm_ne_zero_iff.mpr
   simpa only [hn.source, Set.mem_setOf_eq] using hx
+
+end
 
 theorem partial_homeomorph_local_map {X Y : Type*}
     [TopologicalSpace X] [TopologicalSpace Y]
@@ -494,7 +485,7 @@ theorem partial_homeomorph_local_map {X Y : Type*}
     exact h.continuousOn_invFun.aemeasurable h.open_target.measurableSet
   rw [hm, AEMeasurable.map_map_of_aemeasurable hi hf]
   calc
-    Measure.map (h.symm ∘ h) (μ.restrict h.source) =
+    _ =
         Measure.map id (μ.restrict h.source) := by
       apply Measure.map_congr
       filter_upwards [ae_restrict_mem h.open_source.measurableSet] with x hx
@@ -511,7 +502,7 @@ theorem translated_local_measure_extension
     ∃ ν : Measure G, ν.IsMulLeftInvariant ∧
       ∀ g : G, ν.restrict {x | g⁻¹ * x ∈ U} =
         (Measure.map (g * ·) μ).restrict {x | g⁻¹ * x ∈ U} := by
-  let s : G → Set G := fun g => {x | g⁻¹ * x ∈ U}
+  let s := fun g => {x | g⁻¹ * x ∈ U}
   have hs : ∀ g, IsOpen (s g) := fun g => hU.preimage (continuous_const.mul continuous_id)
   have hcover : ⋃ g, s g = univ := by
     apply univ_subset_iff.mp
@@ -562,9 +553,12 @@ theorem chart_measure_image {X Y : Type*}
     himage, Measure.restrict_apply hs, inter_eq_left.mpr hsub] at H
   exact H
 
+section
+
+variable {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [MeasurableSpace G]
+    [BorelSpace G]
+
 theorem invariant_measure_isHaar_of_local_data
-    {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    [MeasurableSpace G] [BorelSpace G]
     (ν : Measure G) [ν.IsMulLeftInvariant]
     (U : Set G) (hU : IsOpen U) (hne : U.Nonempty) (hfinite : ν U ≠ ⊤)
     (K : Set G) (hK : IsCompact K) (hpos : ν K ≠ 0) : ν.IsHaarMeasure := by
@@ -573,9 +567,7 @@ theorem invariant_measure_isHaar_of_local_data
   letI : ν.IsOpenPosMeasure := isOpenPosMeasure_of_mulLeftInvariant_of_compact K hK hpos
   exact ⟨⟩
 
-theorem invariant_measure_isHaar_of_chart_density
-    {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    [MeasurableSpace G] [BorelSpace G] {n : ℕ}
+theorem invariant_measure_isHaar_of_chart_density {n : ℕ}
     (ν : Measure G) [ν.IsMulLeftInvariant]
     (h : OpenPartialHomeomorph (Fin n → ℝ) G) (hne : h.source.Nonempty)
     (w : (Fin n → ℝ) → ℝ) (hw : ContinuousOn w h.source)
@@ -587,8 +579,8 @@ theorem invariant_measure_isHaar_of_chart_density
   obtain ⟨r, hr, hsub⟩ := Metric.isOpen_iff.mp h.open_source x hx
   let K := Metric.closedBall x (r / 2)
   let U := Metric.ball x (r / 2)
-  have hK : IsCompact K := isCompact_closedBall x (r / 2)
-  have hKU : K ⊆ h.source :=
+  have hK := isCompact_closedBall x (r / 2)
+  have hKU :=
     (Metric.closedBall_subset_ball (by linarith : r / 2 < r)).trans hsub
   have hUK : U ⊆ K := Metric.ball_subset_closedBall
   have hUs : U ⊆ h.source := hUK.trans hKU
@@ -621,9 +613,7 @@ theorem invariant_measure_isHaar_of_chart_density
   · rw [chart_measure_image h _ ν hd hK.measurableSet hKU]
     exact hKpos.ne'
 
-theorem normalized_chart_haar_of_compatible_translates
-    {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    [MeasurableSpace G] [BorelSpace G] [SecondCountableTopology G] {n : ℕ}
+theorem normalized_chart_haar_of_compatible_translates [SecondCountableTopology G] {n : ℕ}
     (h : OpenPartialHomeomorph (Fin n → ℝ) G) (hne : h.source.Nonempty)
     (w : (Fin n → ℝ) → ℝ) (hw : ContinuousOn w h.source)
     (hp : ∀ x ∈ h.source, 0 < w x) (hm : Measurable w)
@@ -639,11 +629,10 @@ theorem normalized_chart_haar_of_compatible_translates
         (volume.withDensity (fun x => ENNReal.ofReal (w x))).restrict h.source := by
   let μ := Measure.map h
       ((volume.withDensity (fun x => ENNReal.ofReal (w x))).restrict h.source)
-  have ht : h.target.Nonempty := by
-    obtain ⟨x, hx⟩ := hne
-    exact ⟨h x, h.map_source hx⟩
   obtain ⟨ν, hν, hlocal⟩ := translated_local_measure_extension
-    h.target h.open_target ht μ hcompat
+    h.target h.open_target (by
+      obtain ⟨x, hx⟩ := hne
+      exact ⟨h x, h.map_source hx⟩) μ hcompat
   letI := hν
   have hid : ν.restrict h.target = μ.restrict h.target := by
     simpa using hlocal 1
@@ -652,6 +641,8 @@ theorem normalized_chart_haar_of_compatible_translates
     rw [hid]
     exact partial_homeomorph_local_map h _
   exact ⟨ν, invariant_measure_isHaar_of_chart_density ν h hne w hw hp hm hd, hd⟩
+
+end
 
 section RawSmooth
 open scoped Matrix.Norms.Elementwise
@@ -688,7 +679,7 @@ theorem normalized_frame_haar
     (fun x => 1 / ‖rawDelta x‖ ^ 4) (rawDensity_continuousOn h hn)
     (rawDensity_positive h hn) hm
   set_option backward.isDefEq.respectTransparency false in
-    exact normalized_chart_translation_jacobian h hn (C := C) hchart F hderiv hdet
+    exact normalized_chart_translation_jacobian h hn hchart F hderiv hdet
 
 end DedekindZetaZeroFree.PGLComplex.AffineLie
 

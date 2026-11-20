@@ -29,17 +29,23 @@ local instance : CharZero (CFTSource F v) :=
 def cftSourceUnit (a : (v.adicCompletion F)ˣ) : (CFTSource F v)ˣ :=
   (Units.mapEquiv (relativeFinitePlaceCompletionAlgEquiv v).toRingEquiv.toMulEquiv).symm a
 
-def cftSourceRoots (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) F).Nonempty) :
+section
+
+variable (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
+
+def cftSourceRoots :
     (primitiveRoots (n : ℕ) (CFTSource F v)).Nonempty := by
   obtain ⟨z, hz⟩ := hmu
   exact ⟨algebraMap F (CFTSource F v) z, (mem_primitiveRoots n.pos).2
     (((mem_primitiveRoots n.pos).1 hz).map_of_injective
       (algebraMap F (CFTSource F v)).injective)⟩
 
-def cftSourceCoefficients (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) F).Nonempty) :
+def cftSourceCoefficients :
     rootsOfUnity (n : ℕ) (CFTSource F v) ≃* rootsOfUnity (n : ℕ) (v.adicCompletion F) :=
   rootsOfUnityEquivOfRingEquiv (relativeFinitePlaceCompletionAlgEquiv v).toRingEquiv n
     (cftSourceRoots F v n hmu)
+
+end
 
 theorem B3_localSameCFT (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (a b : (v.adicCompletion F)ˣ) :
@@ -47,13 +53,9 @@ theorem B3_localSameCFT (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
       finitePlaceAdicHilbertPairingFamily F 3 (rootsThree F ζ hζ) v
         (powerClass _ 3 b) (powerClass _ 3 a) := by
   rw [B3_canonical]
-  change (finiteRootsThree F ζ hζ v)
-    (NormalizedSymbolTransport.inverseTransport (finiteRootsThree F ζ hζ v)
-      (finitePlaceAdicHilbertPairingFamily F 3 (rootsThree F ζ hζ) v) _ _) = _
   erw [NormalizedSymbolTransport.map_inverseTransport]
-  have hs := (finitePlaceAdicHilbertPairingFamily_isLocallyHilbert
-    F 3 (rootsThree F ζ hζ) v).2.1
-  rw [hs]
+  rw [((finitePlaceAdicHilbertPairingFamily_isLocallyHilbert
+    F 3 (rootsThree F ζ hζ) v).2.1)]
   simp
   rfl
 

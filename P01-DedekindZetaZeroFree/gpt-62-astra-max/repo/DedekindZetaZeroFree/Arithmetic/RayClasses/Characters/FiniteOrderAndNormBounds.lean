@@ -8,10 +8,11 @@ open scoped NumberField
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
-theorem rayCharacterFiniteOrder
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
-    (χ : DedekindZetaZeroFree.RayClassCharacter K m) :
+variable (K : Type) [Field K] [NumberField K] (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
+    (χ : DedekindZetaZeroFree.RayClassCharacter K m)
+
+include hm in
+theorem rayCharacterFiniteOrder :
     ∃ n : ℕ, 0 < n ∧
       ∀ I : Ideal (𝓞 K), I ≠ ⊥ → I ⊔ m = ⊤ → χ I ^ n = 1 := by
   obtain ⟨ψ, hχ, -⟩ := rayCharacterDescent K m hm χ
@@ -25,20 +26,17 @@ theorem rayCharacterFiniteOrder
   rw [hχ I, hc]
   rw [← map_pow, pow_card_eq_one', map_one]
 
-theorem rayCharacter_norm_le_one
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
-    (χ : DedekindZetaZeroFree.RayClassCharacter K m) :
+include hm in
+theorem rayCharacter_norm_le_one :
     ∀ I : Ideal (𝓞 K), ‖χ I‖ ≤ 1 := by
   obtain ⟨ψ, hχ, -⟩ := rayCharacterDescent K m hm χ
   intro I
-  have hn : Nat.card (RayIdealClass K m hm) ≠ 0 := Nat.card_pos.ne'
   rw [hχ I]
   cases h : rayIdealClass K m hm I with
   | none => simp
   | some c =>
     have hpow : ψ c ^ Nat.card (RayIdealClass K m hm) = 1 := by
       rw [← map_pow, pow_card_eq_one', map_one]
-    rw [Complex.norm_eq_one_of_pow_eq_one hpow hn]
+    rw [Complex.norm_eq_one_of_pow_eq_one hpow Nat.card_pos.ne']
 
 end DedekindZetaZeroFree.AbelianQuotient

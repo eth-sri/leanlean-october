@@ -27,7 +27,7 @@ variable {X : Type*} [MeasurableSpace X]
     apply Submodule.span_le.mpr
     rintro _ ⟨i, rfl⟩
     exact ho i
-  exact fun f hf => hs hf
+  exact hs
 
 end DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.CompactOrbitL2
 

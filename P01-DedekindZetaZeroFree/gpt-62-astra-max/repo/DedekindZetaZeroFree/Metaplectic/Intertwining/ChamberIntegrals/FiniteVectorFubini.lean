@@ -40,7 +40,7 @@ private theorem finite_coordinate_multilinear_integral
         rw [L.map_sum_finset]
         apply Finset.sum_congr rfl
         intro r _
-        simpa only [smul_eq_mul] using
+        simpa using
           L.map_smul_univ (fun i => e i (y i) (r i)) (fun i => w i (r i))
   have hi (r : ∀ i, J i) : Integrable
       (fun x : ∀ i, X i => (∏ i, e i (f i (x i)) (r i)) * L (fun i => w i (r i)))
@@ -56,8 +56,7 @@ private theorem finite_coordinate_multilinear_integral
     apply Finset.sum_congr rfl
     intro r _
     rw [integral_mul_const]
-    have hp := integral_fintype_prod_eq_prod (fun i (x : X i) => e i (f i x) (r i)) (μ := μ)
-    rw [hp]
+    rw [(integral_fintype_prod_eq_prod (fun i x => e i (f i x) (r i)))]
     congr 1
     apply Finset.prod_congr rfl
     intro i _
@@ -65,12 +64,15 @@ private theorem finite_coordinate_multilinear_integral
 
 open KPLocalPrincipalSeries KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPRankOneShellRepair
 open KPRankOneShellContinuation
-open _root_.DedekindZetaZeroFree.KPLocalStoneVonNeumann renaming inducedCosetEquiv → inducedCosetEquiv
+open _root_.DedekindZetaZeroFree.KPLocalStoneVonNeumann (inducedCosetEquiv)
 
- theorem compact_forward_eq_integral
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
+ section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) (S : CanonicalFiniteInducingData F ζ hζ q)
+    (P : Polarization S.heisenberg)
+
+theorem compact_forward_eq_integral
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
     (φ : compactPicture S.borel P S.iwasawa .plus)
@@ -81,31 +83,27 @@ open _root_.DedekindZetaZeroFree.KPLocalStoneVonNeumann renaming inducedCosetEqu
         ((compactTrivialization S.borel P S.iwasawa .plus s φ).val
           (S.borel.liftedW⁻¹ * S.borel.upperRoot (Multiplicative.ofAdd x) * k)).val t ∂μ := by
   have h := actualCanonicalContinued_chamber F q ζ hζ S P μ hμ .plus s hs φ k t
+  let compactTrivialization₀ := compactTrivialization S.borel P S.iwasawa .minus (-s)
   have hr (v : compactPicture S.borel P S.iwasawa .minus) :
-      ((compactTrivialization S.borel P S.iwasawa .minus (-s) v).val k).val t = (v.val k).val t := by
-    have he := (compactTrivialization S.borel P S.iwasawa .minus (-s)).symm_apply_apply v
-    exact congrArg (fun v : compactPicture S.borel P S.iwasawa .minus => (v.val k).val t) he
+      ((compactTrivialization₀ v).val k).val t = (v.val k).val t := by
+    exact congrArg (fun v : compactPicture S.borel P S.iwasawa .minus => (v.val k).val t) ((compactTrivialization₀).symm_apply_apply v)
   simp only [transportToSections, LinearMap.comp_apply,
     LinearEquiv.coe_coe, LinearEquiv.symm_apply_apply] at h
-  change ((compactTrivialization S.borel P S.iwasawa .minus (-s)
+  change ((compactTrivialization₀
     (actualCanonicalContinued F q ζ hζ S P μ hμ .plus s φ)).val k).val t = _ at h
   rw [hr] at h
   exact h
 
- def actualFiberCoordinates
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg) :
+ def actualFiberCoordinates :
     InducedModule P ≃ₗ[ℂ] ((actualTorus F ζ hζ q ⧸ P.L.comap S.heisenberg.π) → ℂ) :=
   inducedCosetEquiv (P.L.comap S.heisenberg.π) P.ωL.toMonoidHom
 
  theorem actual_fiber_coordinates_apply
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
     (v : InducedModule P) (j : actualTorus F ζ hζ q ⧸ P.L.comap S.heisenberg.π) :
     actualFiberCoordinates F ζ hζ q S P v j = v.val
       (Function.surjInv (QuotientGroup.mk'_surjective (P.L.comap S.heisenberg.π)) j) := rfl
+
+end
 
 theorem rational_finite_chamber_integral
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

@@ -9,22 +9,21 @@ open scoped NumberField Classical Topology ContDiff BigOperators
 open Filter
 namespace DedekindZetaZeroFree.EisensteinSmoothGerms.SmoothSource.ArchSeries
 open KPGlobalResidualConstruction KPContActualSphericalRightFieldIdentification
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming literal_finite_word_chamber → literal_finite_word_chamber
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (literal_finite_word_chamber)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 include C R P H in
 theorem finite_germ (K : Subgroup (KPLiteralRaw.G F ζ hζ))
     (hK : KPLiteralRaw.IwasawaCompact F ζ hζ K) (f : KPLiteralRaw.Flat F ζ hζ K) :
     ∃ (Q : ℂ → ℂ) (S : ℂ → KPLiteralRaw.G F ζ hζ → ℂ)
       (T : ℂ → space F ζ hζ) (r : ℝ),
-      AnalyticOnNhd ℂ Q KPContinuation.spectralDomain ∧ Q 0 = 1 ∧
-      (∀ g, MeromorphicOn (fun s => S s g) KPContinuation.spectralDomain) ∧
+      AnalyticOnNhd ℂ Q KPContinuation.spectralDomain ∧ (∀ g, MeromorphicOn (fun s => S s g) KPContinuation.spectralDomain) ∧
       (∀ s, (1 : ℝ)/3 < s.re → ∀ g,
         S s g = Q s * KPLiteralRaw.eisenstein F ζ hζ K f s g) ∧
       0 < r ∧ Metric.ball (0 : ℂ) r ⊆ KPContinuation.spectralDomain ∧
@@ -47,8 +46,7 @@ theorem finite_germ (K : Subgroup (KPLiteralRaw.G F ζ hζ))
     intro j
     exact Metric.isOpen_ball.mem_nhds (Metric.mem_ball_self (hr i j))
   obtain ⟨ρ,hρ,hρsub⟩ := Metric.mem_nhds_iff.mp hall
-  refine ⟨Q,S,T,ρ,hQ,hQ0,?_,?_,hρ,(fun s hs => hb₀ (hρsub hs).1),
-    (fun s hs => hne₀ s (hρsub hs).1),?_,?_⟩
+  refine ⟨Q, S, T, ρ, hQ, ?_, ?_, hρ, (fun s hs => hb₀ (hρsub hs).1), (fun s hs => hne₀ s (hρsub hs).1), ?_, ?_⟩
   · intro g s hs
     apply MeromorphicAt.fun_sum
     intro i _

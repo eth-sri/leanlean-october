@@ -14,8 +14,8 @@ open MomentSources
 open KPLiteralRaw hiding G Functions
 open KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 set_option maxHeartbeats 1800000
 set_option backward.isDefEq.respectTransparency false
 
@@ -27,7 +27,11 @@ theorem finiteInjection_mem_finite (p : KPFinitePlace F)
   intro w
   simp [KPAdelicCoverRestrictedProduct.localToRestricted]
 
-theorem upperCurve_commute_finite (w : InfinitePlace F) (b : Bool) (t : ℝ)
+section
+
+variable (w : InfinitePlace F)
+
+theorem upperCurve_commute_finite (b : Bool) (t : ℝ)
     (p : KPFinitePlace F)
     (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p)) :
     Commute (upperCurve R w b t) (finiteInjection R p a) := by
@@ -35,7 +39,7 @@ theorem upperCurve_commute_finite (w : InfinitePlace F) (b : Bool) (t : ℝ)
   exact RepresentationTheory.ArchFiniteSplitting.insertion_commutes_finite F R.A.zeta12 R.A.primitive_zeta12 _
     ⟨_,finiteInjection_mem_finite R p a⟩
 
-theorem upperLieDerivative_finite_fixed (w : InfinitePlace F) (b : Bool) (f : Functions R)
+theorem upperLieDerivative_finite_fixed (b : Bool) (f : Functions R)
     (p : KPFinitePlace F)
     (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p))
     (hf : ∀ g, f (g * finiteInjection R p a) = f g) :
@@ -47,7 +51,7 @@ theorem upperLieDerivative_finite_fixed (w : InfinitePlace F) (b : Bool) (f : Fu
   change f ((g * finiteInjection R p a) * upperCurve R w b t) = f (g * upperCurve R w b t)
   rw [mul_assoc,(upperCurve_commute_finite R w b t p a).eq.symm,← mul_assoc,hf]
 
-theorem firstRoot_local_flat (w : InfinitePlace F) (e : ℤ)
+theorem firstRoot_local_flat (e : ℤ)
     (f : Flat F R.A.zeta12 R.A.primitive_zeta12
       (KPContFlatSourceRecipe.D F R.A.zeta12 R.A.primitive_zeta12).K)
     (Cf : FlatScalarResidue F R.A.zeta12 R.A.primitive_zeta12 f)
@@ -60,8 +64,7 @@ theorem firstRoot_local_flat (w : InfinitePlace F) (e : ℤ)
       (∀ s g, v.val s g = scalarWeight F R.A.zeta12 R.A.primitive_zeta12 s (v.val 0) g) ∧
       ExteriorFixed R (v.val 0) ∧
       Cv.numerator 0 = ThetaExpansion.firstRootLocalDerivative R w e (Cf.numerator 0) := by
-  have h := fun b => upper_flat_residue R w b f Cf hflat
-  choose v C hv0 hv hC using h
+  choose v C hv0 hv hC using (fun b => upper_flat_residue R w b f Cf hflat)
   let c : Bool → ℂ := fun b => (Complex.I * (4 * Real.pi : ℂ))⁻¹ *
     (if b then (if e = 1 then -Complex.I else Complex.I) else 1)
   let z := FiniteWhittakerProjectors.FlatFiniteSum.sum F R.A.zeta12 R.A.primitive_zeta12 Finset.univ c v
@@ -94,6 +97,8 @@ theorem firstRoot_local_flat (w : InfinitePlace F) (e : ℤ)
       Pi.smul_apply,Pi.add_apply,smul_eq_mul,Bool.false_eq_true,if_false,if_true,mul_one]
     ring
 
+end
+
 theorem firstRoot_word_flat (l : List (InfinitePlace F)) (e : InfinitePlace F → ℤ)
     (f : Flat F R.A.zeta12 R.A.primitive_zeta12
       (KPContFlatSourceRecipe.D F R.A.zeta12 R.A.primitive_zeta12).K)
@@ -120,9 +125,8 @@ theorem firstRoot_sources (Q₀ : AdmissibleFlatSources R) (T : Realization R Q�
     ∃ Q : AdmissibleFlatSources R, Q.dq = Q₀.dq ∧
       ∀ v, ∃ C : FlatScalarResidue F R.A.zeta12 R.A.primitive_zeta12 (Q.flat v),
         C.numerator 0 = ThetaExpansion.firstRootDerivatives R B (T.theta v) := by
-  have hcan := fun v => canonical_flat_residue F R.A.zeta12 R.A.primitive_zeta12 Q₀.iwasawa
-    (Q₀.flat v) (realizationScalarResidue T v)
-  choose f Cf hf hCf using hcan
+  choose f Cf hf hCf using (fun v => canonical_flat_residue F R.A.zeta12 R.A.primitive_zeta12 Q₀.iwasawa
+    (Q₀.flat v) (realizationScalarResidue T v))
   have hf0 (v) : (f v).val 0 = (Q₀.flat v).val 0 := by
     funext g
     simp [hf]
@@ -132,9 +136,8 @@ theorem firstRoot_sources (Q₀ : AdmissibleFlatSources R) (T : Realization R Q�
   have hext (v) : ExteriorFixed R ((f v).val 0) := by
     rw [hf0]
     exact Q₀.exterior_spherical v 0
-  have hword := fun v => firstRoot_word_flat R (Finset.univ : Finset (InfinitePlace F)).toList
-    B.exponent (f v) (Cf v) (hflat v) (hext v)
-  choose z Cz hz0 hz hextz hCz using hword
+  choose z Cz hz0 hz hextz hCz using (fun v => firstRoot_word_flat R Finset.univ.toList
+    B.exponent (f v) (Cf v) (hflat v) (hext v))
   letI := Q₀.finite_companions
   obtain ⟨V,hV⟩ := FiniteWhittakerProjectors.canonical_family_level R z hz
   let Q : AdmissibleFlatSources R := {

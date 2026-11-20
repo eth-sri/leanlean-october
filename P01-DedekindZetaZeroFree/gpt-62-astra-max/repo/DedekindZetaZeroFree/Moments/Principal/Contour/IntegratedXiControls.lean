@@ -15,19 +15,16 @@ open MeasureTheory
 open scoped Classical Topology
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 private lemma nested_norm_le (K : ℝ → ℝ → ℂ) (f : ℝ × ℝ → ℝ) (c : ℝ) (hc : 0 ≤ c)
     (hf : Integrable f) (hK : ∀ s t, ‖K s t‖ ≤ c * f (s, t)) :
     ‖(2 * (Real.pi : ℂ))⁻¹ * ∫ t : ℝ, (2 * (Real.pi : ℂ))⁻¹ * ∫ s : ℝ, K s t‖ ≤
       ‖(2 * (Real.pi : ℂ))⁻¹‖ * (‖(2 * (Real.pi : ℂ))⁻¹‖ * c) * ∫ p, f p := by
-  have hg : Integrable (fun t : ℝ => ∫ s : ℝ, f (s, t)) := hf.integral_prod_right
-  have hslice : ∀ᵐ t ∂(volume : Measure ℝ), Integrable (fun s : ℝ => f (s, t)) :=
-    hf.prod_left_ae
-  have hIz : ∀ᵐ t ∂(volume : Measure ℝ), ‖∫ s : ℝ, K s t‖ ≤ c * ∫ s : ℝ, f (s, t) := by
-    filter_upwards [hslice] with t ht
-    calc ‖∫ s : ℝ, K s t‖ ≤ ∫ s : ℝ, ‖K s t‖ := norm_integral_le_integral_norm _
+  have hIz : ∀ᵐ t ∂volume, ‖∫ s : ℝ, K s t‖ ≤ c * ∫ s : ℝ, f (s, t) := by
+    filter_upwards [hf.prod_left_ae] with t ht
+    calc _ ≤ ∫ s : ℝ, ‖K s t‖ := norm_integral_le_integral_norm _
       _ ≤ ∫ s : ℝ, c * f (s, t) :=
           integral_mono_of_nonneg (Eventually.of_forall fun s => norm_nonneg _)
             (ht.const_mul c) (Eventually.of_forall fun s => hK s t)
@@ -35,11 +32,11 @@ private lemma nested_norm_le (K : ℝ → ℝ → ℂ) (f : ℝ × ℝ → ℝ) 
   set a : ℝ := ‖(2 * (Real.pi : ℂ))⁻¹‖ with ha
   have h1 : ‖∫ t : ℝ, (2 * (Real.pi : ℂ))⁻¹ * ∫ s : ℝ, K s t‖ ≤
       ∫ t : ℝ, a * (c * ∫ s : ℝ, f (s, t)) := by
-    calc ‖∫ t : ℝ, (2 * (Real.pi : ℂ))⁻¹ * ∫ s : ℝ, K s t‖
+    calc _
         ≤ ∫ t : ℝ, ‖(2 * (Real.pi : ℂ))⁻¹ * ∫ s : ℝ, K s t‖ := norm_integral_le_integral_norm _
       _ ≤ ∫ t : ℝ, a * (c * ∫ s : ℝ, f (s, t)) := by
           refine integral_mono_of_nonneg (Eventually.of_forall fun t => norm_nonneg _)
-            ((hg.const_mul c).const_mul a) ?_
+            ((hf.integral_prod_right.const_mul c).const_mul a) ?_
           filter_upwards [hIz] with t ht
           rw [norm_mul]
           exact mul_le_mul_of_nonneg_left ht (norm_nonneg _)
@@ -183,17 +180,11 @@ theorem Iwz_xi_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
     C0 hC0 hint (fun s t => by
       have := hbd ((x : ℂ) + (y : ℂ) * Complex.I) hξ0 hξ1 s t
       simpa only [mul_assoc] using this)
-  have hnorm' : ‖Iwz D u Z Scales.rightLine (1 / 6 + Scales.contourOffset) ((x : ℂ) + (y : ℂ) * Complex.I)‖ ≤
-      ‖(2 * (Real.pi : ℂ))⁻¹‖ * (‖(2 * (Real.pi : ℂ))⁻¹‖ * C0) *
-        ∫ p : ℝ × ℝ, WeightConvolution.weightModulus D ((x : ℂ) + (y : ℂ) * Complex.I)
-          (1 / 6 + Scales.contourOffset) Scales.rightLine p * (2 + |p.1| + |p.2| + |((x : ℂ) + (y : ℂ) * Complex.I).im|) ^ k :=
-    hnorm
-  have hpos : 0 ≤ ‖(2 * (Real.pi : ℂ))⁻¹‖ * (‖(2 * (Real.pi : ℂ))⁻¹‖ * C0) := by positivity
   show ‖Iwz D u Z Scales.rightLine (1 / 6 + Scales.contourOffset) ((x : ℂ) + (y : ℂ) * Complex.I)‖ ≤ _
   calc ‖Iwz D u Z Scales.rightLine (1 / 6 + Scales.contourOffset) ((x : ℂ) + (y : ℂ) * Complex.I)‖
       ≤ ‖(2 * (Real.pi : ℂ))⁻¹‖ * (‖(2 * (Real.pi : ℂ))⁻¹‖ * C0) *
           (Cw * (1 + |((x : ℂ) + (y : ℂ) * Complex.I).im|) ^ (-B)) :=
-        hnorm'.trans (mul_le_mul_of_nonneg_left hwb hpos)
+        hnorm.trans (mul_le_mul_of_nonneg_left hwb (by positivity))
     _ = ‖(2 * (Real.pi : ℂ))⁻¹‖ * (‖(2 * (Real.pi : ℂ))⁻¹‖ * C0) * Cw * (1 + |y|) ^ (-B) := by
         rw [him]; ring
 

@@ -14,7 +14,7 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualFiniteTranslationEstimates
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 theorem archChart_commutes_finite (x : ArchCoordinates F)
     (a : KPGlobalTorusFunctionData.finitePart F ζ hζ) :

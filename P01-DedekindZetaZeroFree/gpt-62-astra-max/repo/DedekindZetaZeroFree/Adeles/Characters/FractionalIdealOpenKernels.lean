@@ -18,17 +18,20 @@ def idealExponent (F : Type) [Field F] [NumberField F]
     (k : T → ℤ) (v : HeightOneSpectrum (RingOfIntegers F)) : ℤ :=
   if h : v ∈ T then k ⟨v, h⟩ else 0
 
-def finiteIdealNeighborhood (F : Type) [Field F] [NumberField F]
-    (T : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (k : T → ℤ) : Set (KPAdelicTopology.FiniteAdeles F) :=
+section
+
+variable (F : Type) [Field F] [NumberField F] (T : Finset (HeightOneSpectrum (RingOfIntegers F)))
+    (k : T → ℤ)
+
+def finiteIdealNeighborhood : Set (KPAdelicTopology.FiniteAdeles F) :=
   {a | ∀ v : HeightOneSpectrum (RingOfIntegers F),
     Valued.v (a v) ≤ WithZero.exp (-idealExponent F T k v)}
 
-def diagonalIdealFiber (F : Type) [Field F] [NumberField F]
-    (T : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (k : T → ℤ) : Set F :=
+def diagonalIdealFiber : Set F :=
   {r | algebraMap F (KPAdelicTopology.FiniteAdeles F) r ∈
     finiteIdealNeighborhood F T k}
+
+end
 
 set_option backward.isDefEq.respectTransparency false
 set_option allowUnsafeReducibility true in
@@ -46,17 +49,18 @@ private lemma ball_open (v : HeightOneSpectrum (𝓞 F)) (k : ℤ) :
   ext x
   simp only [Set.mem_setOf_eq, Valuation.restrict_le_iff, ha]
 
-private lemma exponent_nonneg (T : Finset (HeightOneSpectrum (𝓞 F))) (k : T → ℕ) (v) :
-    0 ≤ idealExponent F T (fun w => k w) v := by
-  unfold idealExponent
-  split <;> positivity
+section
 
-private lemma bound_le_one (T : Finset (HeightOneSpectrum (𝓞 F))) (k : T → ℕ) (v) :
+variable (T : Finset (HeightOneSpectrum (𝓞 F))) (k : T → ℕ)
+
+private lemma bound_le_one (v) :
     WithZero.exp (-idealExponent F T (fun w => k w) v) ≤ 1 := by
   rw [← WithZero.exp_zero, WithZero.exp_le_exp]
-  exact neg_nonpos.mpr (exponent_nonneg F T k v)
+  exact neg_nonpos.mpr (by
+    unfold idealExponent
+    split <;> positivity)
 
-lemma finiteIdealNeighborhood_open_nat (T : Finset (HeightOneSpectrum (𝓞 F))) (k : T → ℕ) :
+lemma finiteIdealNeighborhood_open_nat :
     IsOpen (finiteIdealNeighborhood F T (fun w => k w)) := by
   let s : Set (KPAdelicTopology.FiniteAdeles F) :=
     {a | ∀ v : T, Valued.v (a v.val) ≤ WithZero.exp (-(k v : ℤ))}
@@ -72,7 +76,7 @@ lemma finiteIdealNeighborhood_open_nat (T : Finset (HeightOneSpectrum (𝓞 F)))
     · intro ha
       refine ⟨?_, ?_⟩
       · intro v
-        simpa [finiteIdealNeighborhood, idealExponent, v.prop] using ha v.val
+        simpa [idealExponent] using ha v.val
       · intro v
         exact (ha v).trans (bound_le_one F T k v)
     · rintro ⟨ha, hi⟩ v
@@ -81,6 +85,8 @@ lemma finiteIdealNeighborhood_open_nat (T : Finset (HeightOneSpectrum (𝓞 F)))
       · simpa [idealExponent, hv, HeightOneSpectrum.mem_adicCompletionIntegers] using hi v
   rw [he]
   exact hs.inter (KPAdelicTopology.integralAdeles_isOpen F)
+
+end
 
 lemma finiteIdealNeighborhood_basis_nat {U : Set (KPAdelicTopology.FiniteAdeles F)}
     (hU : U ∈ 𝓝 0) :
@@ -115,22 +121,20 @@ lemma finiteIdealNeighborhood_basis_nat {U : Set (KPAdelicTopology.FiniteAdeles 
   choose k hk using hh
   refine ⟨T, k, ?_⟩
   intro a ha
-  have hi : ∀ v, a v ∈ v.adicCompletionIntegers F := by
-    intro v
-    exact (ha v).trans (bound_le_one F T k v)
-  let x : (v : HeightOneSpectrum (𝓞 F)) → v.adicCompletionIntegers F := fun v => ⟨a v, hi v⟩
-  have hx : x ∈ Set.pi (↑T) t := by
-    intro v hv
-    apply hk ⟨v, hv⟩
-    simpa [x, idealExponent, Finset.mem_coe.mp hv] using ha v
+  let x : (v : HeightOneSpectrum (𝓞 F)) → v.adicCompletionIntegers F := fun v => ⟨a v, (fun v => (ha v).trans (bound_le_one F T k v)) v⟩
   have hsx : s x = a := by
     apply RestrictedProduct.ext
     intro i
     rfl
   rw [← hsx]
-  exact hts hx
+  refine hts ?_
+  intro v hv
+  apply hk ⟨v, hv⟩
+  simpa [x, idealExponent, Finset.mem_coe.mp hv] using ha v
 
- def fiberSubmodule (T : Finset (HeightOneSpectrum (𝓞 F))) (k : T → ℕ) :
+ variable (T : Finset (HeightOneSpectrum (𝓞 F))) (k : T → ℕ)
+
+def fiberSubmodule :
     Submodule (𝓞 F) F where
   carrier := diagonalIdealFiber F T (fun w => k w)
   zero_mem' := by
@@ -151,7 +155,7 @@ lemma finiteIdealNeighborhood_basis_nat {U : Set (KPAdelicTopology.FiniteAdeles 
       HeightOneSpectrum.valuedAdicCompletion_eq_valuation,
       HeightOneSpectrum.valuation_of_algebraMap] using v.intValuation_le_one r
 
-lemma diagonalIdealFiber_fractional_nat (T : Finset (HeightOneSpectrum (𝓞 F))) (k : T → ℕ) :
+lemma diagonalIdealFiber_fractional_nat :
     ∃ I : (FractionalIdeal (𝓞 F)⁰ F)ˣ,
       (I : Set F) = diagonalIdealFiber F T (fun w => k w) := by
   let M := fiberSubmodule F T k
@@ -164,10 +168,8 @@ lemma diagonalIdealFiber_fractional_nat (T : Finset (HeightOneSpectrum (𝓞 F))
     exact (ha v).trans (bound_le_one F T k v)
   let I : FractionalIdeal (𝓞 F)⁰ F := ⟨M, FractionalIdeal.isFractional_of_le_one M hM⟩
   have hI : I ≠ 0 := by
-    let J : Ideal (𝓞 F) := ∏ v : T, v.val.asIdeal ^ k v
-    have hJ : J ≠ ⊥ := by
-      exact Finset.prod_ne_zero_iff.mpr (fun v _ => pow_ne_zero _ v.val.ne_bot)
-    obtain ⟨a, ha, hane⟩ := (Submodule.ne_bot_iff J).mp hJ
+    let J := ∏ v : T, v.val.asIdeal ^ k v
+    obtain ⟨a, ha, hane⟩ := (Submodule.ne_bot_iff J).mp (Finset.prod_ne_zero_iff.mpr (fun v _ => pow_ne_zero _ v.val.ne_bot))
     have hIa : algebraMap (𝓞 F) F a ∈ I := by
       intro v
       change Valued.v (algebraMap F (v.adicCompletion F) (algebraMap (𝓞 F) F a)) ≤ _
@@ -181,7 +183,7 @@ lemma diagonalIdealFiber_fractional_nat (T : Finset (HeightOneSpectrum (𝓞 F))
       · simpa [idealExponent, hv] using v.intValuation_le_one a
     intro hz
     have hz' : algebraMap (𝓞 F) F a = 0 := by simpa [hz] using hIa
-    exact hane ((IsFractionRing.injective (𝓞 F) F).eq_iff.mp (by simpa using hz'))
+    exact hane ((IsFractionRing.injective (𝓞 F) F).eq_iff.mp (by exact hz'))
   exact ⟨Units.mk0 I hI, rfl⟩
 
 end KPAdelicCharacter
@@ -223,7 +225,6 @@ theorem kp_adelic_character_open_kernel (F : Type) [Field F] [NumberField F]
     | succ m hm =>
       intro v
       rw [succ_nsmul]
-      change Valued.v ((m • a) v + a v) ≤ _
       exact (Valued.v.map_add _ _).trans (max_le (hm v) (ha v))
   have he' := hk (hn n)
   have heq : ((0, n • a) : KPAdelicTopology.Adeles F) = n • ((0, a) : KPAdelicTopology.Adeles F) := by

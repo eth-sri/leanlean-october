@@ -25,15 +25,12 @@ theorem inertiaRestrictIntermediate
   haveI : Algebra.IsInvariant (𝓞 E) (𝓞 L) H := inferInstance
   apply Ideal.map_inertia_of_surjective (AlgEquiv.restrictNormalHom ↥E) H
     wE.asIdeal wL.asIdeal
-    (AlgEquiv.restrictNormalHom_surjective (F := K) (K₁ := ↥E) L)
+    (AlgEquiv.restrictNormalHom_surjective L)
   · intro g hg
-    change g.restrictNormal E = 1
     exact (AlgEquiv.restrictNormal_eq_one_iff E g).mpr
       ((mem_fixingSubgroup_iff (L ≃ₐ[K] L)).mp hg)
   · intro g x
     apply NumberField.RingOfIntegers.ext
-    change algebraMap E L ((g.restrictNormal E) (x : E)) =
-      g (algebraMap E L (x : E))
     exact AlgEquiv.restrictNormal_commutes g E (x : E)
 
 end DedekindZetaZeroFree.AbelianQuotient

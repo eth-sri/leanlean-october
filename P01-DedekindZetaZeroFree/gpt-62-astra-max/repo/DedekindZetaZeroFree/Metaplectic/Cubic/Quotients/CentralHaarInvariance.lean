@@ -144,22 +144,7 @@ private theorem exists_arch_mul_finite
     ∃ (a : KPSmoothActualFlowData.GInfinity F)
       (c : KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ),
       g = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a *
-        (c : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) := by
-  obtain ⟨e, he, _, _, hker, _, _⟩ :=
-    PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ
-  let p := e.symm g
-  have hp : (p.2 : PGLComplex.AdelicSlicesRaw.ActualCover F ζ hζ) ∈
-      (PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ).ker := by
-    rw [hker]
-    exact p.2.property
-  have hc : (p.2 : PGLComplex.AdelicSlicesRaw.ActualCover F ζ hζ) ∈
-      KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ :=
-    KPMsResidualTailRestoration.SharpConstantTerm.FiberStability.complex_kernel_mem
-      F ζ hζ (MonoidHom.mem_ker.mp hp)
-  refine ⟨p.1, ⟨p.2, hc⟩, ?_⟩
-  have hg := he p.1 p.2
-  rw [show e p = g from e.apply_symm_apply g] at hg
-  exact hg
+        (c : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) := by apply @DedekindZetaZeroFree.KPMsActualCuspSource.arch_finite_factorization <;> assumption
 
 theorem piTilde_t (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (ε : rootsOfUnity 3 F) :
@@ -172,12 +157,8 @@ theorem piTilde_t (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (t F ζ hζ ε (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g)) = _
   obtain ⟨a, c, rfl⟩ := exists_arch_mul_finite F ζ hζ g
   rw [t_quotientMap]
-  have hcentral : (c : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) *
-      KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε =
-      KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * c :=
-    Subgroup.mem_center_iff.mp
-      (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩) c
-  rw [mul_assoc, hcentral]
+  rw [mul_assoc, (Subgroup.mem_center_iff.mp
+    (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩) c)]
   change KPContSectorQuotientRelationsComparison.piTilde F ζ hζ U
     (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
       (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a *
@@ -198,15 +179,14 @@ theorem z_measurePreserving
     MeasurePreserving (KPContSectorCoveredQuotientVocabulary.z F ζ hζ U ε)
       (KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R U)
       (KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R U) := by
-  have hz : Measurable (KPContSectorCoveredQuotientVocabulary.z F ζ hζ U ε) :=
+  have hz :=
     (KPContSectorCoveredQuotientVocabulary.z F ζ hζ U ε).continuous.borel_measurable
-  have hp : Measurable (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ U) :=
+  have hp :=
     (KPContSectorQuotientRelationsComparison.piTilde_continuous F ζ hζ U).borel_measurable
-  have ht : Measurable (t F ζ hζ ε) := (t_measurePreserving F ζ hζ R ε).measurable
   refine ⟨hz, ?_⟩
   rw [KPContSectorFixedPushforwardSupport.coveredMeasure]
   rw [Measure.map_map hz hp, ← piTilde_t F ζ hζ U ε,
-    ← Measure.map_map hp ht, (t_measurePreserving F ζ hζ R ε).map_eq]
+    ← Measure.map_map hp ((t_measurePreserving F ζ hζ R ε).measurable), (t_measurePreserving F ζ hζ R ε).map_eq]
 
 end DedekindZetaZeroFree.KPContSectorCentralHaarInvariance
 

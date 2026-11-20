@@ -25,11 +25,7 @@ private theorem laplacian_add {F G : Sphere → ℂ}
 private theorem laplacian_mul (c : ℂ) {F : Sphere → ℂ}
     (hF : IsSphereSmooth F) :
     positiveLaplacian (fun x => c * F x) =
-      fun x => c * positiveLaplacian F x := by
-  funext x
-  simp only [positiveLaplacian, rotationDeriv_const_mul _ c hF,
-    rotationDeriv_const_mul _ c (rotationDeriv_smooth _ hF),
-    ← Finset.mul_sum, mul_neg]
+      fun x => c * positiveLaplacian F x := by apply @HarmonicIdentity.lap_mul <;> assumption
 
 noncomputable def inverseCore (F : Sphere → ℂ) : Sphere → ℂ :=
   let G := fractionalIntegral (2 / 3) (fractionalIntegral (1 / 3) F)
@@ -54,7 +50,7 @@ private theorem inverseCore_sub {F P : Sphere → ℂ}
       (fractionalIntegral (1 / 3) P) x)) =
       fun x => -(positiveLaplacian (fractionalIntegral (2 / 3)
         (fractionalIntegral (1 / 3) P)) x) := by
-    simpa only [neg_one_mul] using laplacian_mul (-1) (hs' P hP)
+    simpa using laplacian_mul (-1) (hs' P hP)
   rw [hn]
   funext x
   ring
@@ -64,10 +60,9 @@ private theorem inverseCore_bound {F : Sphere → ℂ} (hF : IsSphereSmooth F)
   have hT := fractionalIntegral_rotation (1 / 3) (by norm_num) F hF
   have hG := fractionalIntegral_rotation (2 / 3) (by norm_num)
     (fractionalIntegral (1 / 3) F) hT.2.1
-  have hsum := hG.2.1.add ((positiveLaplacian_smooth hG.2.1).const_mul (9 / 2 : ℂ))
   calc
     _ ≤ rotationSup 0 (inverseCore F) :=
-      rotationWord_norm_le_rotationSup hsum [] (by simp) x
+      rotationWord_norm_le_rotationSup (hG.2.1.add ((positiveLaplacian_smooth hG.2.1).const_mul (9 / 2 : ℂ))) [] (by simp) x
     _ ≤ (29 / 2 : ℝ) * rotationSup 2
         (fractionalIntegral (2 / 3) (fractionalIntegral (1 / 3) F)) :=
       (positiveLaplacian_rotation_bound _ hG.2.1).2.2 0
@@ -97,27 +92,25 @@ private theorem inverseCore_identity (F : Sphere → ℂ) (hF : IsSphereSmooth F
     rw [he]
     exact (norm_sub_le _ _).trans (add_le_add
       (inverseCore_bound hd x)
-      (rotationWord_norm_le_rotationSup hd [] (n := 0) (by simp) x))
-  have ht := ((hp 2).const_mul (29 / 2 : ℝ)).add (hp 0)
-  simpa only [mul_zero, add_zero] using ge_of_tendsto' ht hb
+      (rotationWord_norm_le_rotationSup hd [] (by simp) x))
+  simpa using ge_of_tendsto' (((hp 2).const_mul (29 / 2 : ℝ)).add (hp 0)) hb
 
-theorem fractionalInverse_leftIdentity (β : ℂˣ) (F : Sphere → ℂ)
-    (hF : IsSphereSmooth F) :
+section
+
+variable (β : ℂˣ) (F : Sphere → ℂ) (hF : IsSphereSmooth F)
+
+include hF in
+theorem fractionalInverse_leftIdentity :
     fractionalInverse β (fun x => (sphericalScalar β : ℂ) *
       fractionalIntegral (1 / 3) F x) = F := by
-  have hG := (fractionalIntegral_rotation (1 / 3) (by norm_num) F hF).2.1
-  have hH := (fractionalIntegral_rotation (2 / 3) (by norm_num)
-    (fractionalIntegral (1 / 3) F) hG).2.1
   have ha : (sphericalScalar β : ℂ) ≠ 0 := by
     exact_mod_cast (ne_of_gt (sphericalScalar_pos β))
   unfold fractionalInverse
   rw [fractionalIntegral_const_mul]
   dsimp only
-  rw [laplacian_mul _ hH]
+  rw [laplacian_mul _ ((fractionalIntegral_rotation (2 / 3) (by norm_num)
+    (fractionalIntegral (1 / 3) F) ((fractionalIntegral_rotation (1 / 3) (by norm_num) F hF).2.1)).2.1)]
   funext x
-  change (sphericalScalar β : ℂ)⁻¹ *
-    ((sphericalScalar β : ℂ) * _ + (9 / 2 : ℂ) *
-      ((sphericalScalar β : ℂ) * _)) = _
   rw [show (sphericalScalar β : ℂ) *
       fractionalIntegral (2 / 3) (fractionalIntegral (1 / 3) F) x +
       (9 / 2 : ℂ) * ((sphericalScalar β : ℂ) *
@@ -127,23 +120,19 @@ theorem fractionalInverse_leftIdentity (β : ℂˣ) (F : Sphere → ℂ)
     ring]
   rw [← mul_assoc, inv_mul_cancel₀ ha, one_mul, inverseCore_identity F hF]
 
-theorem fractionalInverse_rotation_bound (β : ℂˣ) (F : Sphere → ℂ)
-    (hF : IsSphereSmooth F) (n : ℕ) :
+include hF in
+theorem fractionalInverse_rotation_bound (n : ℕ) :
     rotationSup n (fractionalInverse β F) ≤
       ((29 / 2 : ℝ) / sphericalScalar β) * rotationSup (n + 2) F := by
   let G := fractionalIntegral (2 / 3) F
   have hG := (fractionalIntegral_rotation (2 / 3) (by norm_num) F hF).2
-  have hL := positiveLaplacian_smooth hG.1
-  have hsum := hG.1.add (hL.const_mul (9 / 2 : ℂ))
   have ha : ‖(sphericalScalar β : ℂ)⁻¹‖ = (sphericalScalar β)⁻¹ := by
     rw [norm_inv, Complex.norm_real, Real.norm_eq_abs,
       abs_of_pos (sphericalScalar_pos β)]
-  change rotationSup n (fun x => (sphericalScalar β : ℂ)⁻¹ *
-    (G x + (9 / 2 : ℂ) * positiveLaplacian G x)) ≤ _
   calc
     _ ≤ ‖(sphericalScalar β : ℂ)⁻¹‖ *
         rotationSup n (fun x => G x + (9 / 2 : ℂ) * positiveLaplacian G x) :=
-      rotationSup_const_mul_le n _ hsum
+      rotationSup_const_mul_le n _ (hG.1.add ((positiveLaplacian_smooth hG.1).const_mul (9 / 2 : ℂ)))
     _ ≤ (sphericalScalar β)⁻¹ * ((29 / 2 : ℝ) * rotationSup (n + 2) G) := by
       rw [ha]
       exact mul_le_mul_of_nonneg_left
@@ -152,6 +141,8 @@ theorem fractionalInverse_rotation_bound (β : ℂˣ) (F : Sphere → ℂ)
       mul_le_mul_of_nonneg_left
         (mul_le_mul_of_nonneg_left (hG.2.2 (n + 2)) (by norm_num)) (inv_nonneg.mpr (sphericalScalar_pos β).le)
     _ = _ := by ring
+
+end
 
 theorem standardIntertwiner_fractional_leftInverse (β : ℂˣ)
     (f : PrincipalSeries positiveParameter) :
@@ -171,9 +162,9 @@ theorem actual_chart_inverse_bound (β : ℂˣ) (n : ℕ) :
     (div_pos (by norm_num) (sphericalScalar_pos β)).le⟩
   have hK : K ≠ 0 := by
     apply ne_of_gt
-    change 0 < (29 / 2 : ℝ) / sphericalScalar β
     exact div_pos (by norm_num) (sphericalScalar_pos β)
-  refine ⟨Finset.range ((n + 2) + 1), C * K * D,
+  let range₀ := Finset.range ((n + 2) + 1)
+  refine ⟨range₀, C * K * D,
     mul_ne_zero (mul_ne_zero hC hK) hD, ?_⟩
   intro f
   have hB := fractionalInverse_rotation_bound β
@@ -181,18 +172,18 @@ theorem actual_chart_inverse_bound (β : ℂˣ) (n : ℕ) :
     (sphereProfile_spec _ _).1 n
   rw [standardIntertwiner_fractional_leftInverse] at hB
   calc
-    chartSeminorm positiveParameter n f ≤
+    _ ≤
         (C : ℝ) * rotationSup n (sphereProfile positiveParameter f) := hc f
     _ ≤ (C : ℝ) * ((K : ℝ) *
         rotationSup (n + 2) (sphereProfile negativeParameter (standardIntertwiner β f))) :=
       mul_le_mul_of_nonneg_left hB C.coe_nonneg
     _ ≤ (C : ℝ) * ((K : ℝ) *
-        (D • (Finset.range ((n + 2) + 1)).sup (chartSeminorm negativeParameter))
+        (D • (range₀).sup (chartSeminorm negativeParameter))
           (standardIntertwiner β f)) :=
       mul_le_mul_of_nonneg_left
         (mul_le_mul_of_nonneg_left (hd _) K.coe_nonneg) C.coe_nonneg
     _ = ((C * K * D) •
-        (Finset.range ((n + 2) + 1)).sup (chartSeminorm negativeParameter))
+        (range₀).sup (chartSeminorm negativeParameter))
           (standardIntertwiner β f) := by
       simp only [Seminorm.smul_apply, NNReal.smul_def, smul_eq_mul, NNReal.coe_mul]
       ring

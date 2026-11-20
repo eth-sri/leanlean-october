@@ -18,10 +18,8 @@ theorem integral_span_coprime (m : Ideal (𝓞 F)) (a : 𝓞 F)
     (hcong : a - 1 ∈ m) :
     Ideal.span {a} ⊔ m = ⊤ := by
   refine Ideal.eq_top_iff_one _ |>.mpr ?_
-  have h1 : a - (a - 1) ∈ Ideal.span {a} ⊔ m :=
-    sub_mem (Ideal.mem_sup_left (Ideal.subset_span (Set.mem_singleton a)))
-      (Ideal.mem_sup_right hcong)
-  simpa using h1
+  simpa using (sub_mem (Ideal.mem_sup_left (Ideal.subset_span (Set.mem_singleton a)))
+    (Ideal.mem_sup_right hcong))
 
 theorem idealClass_integral_principal (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (a : 𝓞 F) (ha : a ≠ 0) (hcong : a - 1 ∈ m)
@@ -42,20 +40,18 @@ theorem idealClass_integral_principal (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
   rw [QuotientGroup.mk'_apply, QuotientGroup.eq_one_iff]
   exact hmem
 
-theorem prime_not_mem_fullModulus_support (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (p : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (hcop : p.asIdeal ⊔ m = ⊤) :
+variable (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (p : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+    (hcop : p.asIdeal ⊔ m = ⊤)
+
+include hcop in
+theorem prime_not_mem_fullModulus_support :
     p ∉ (fullModulus m hm).finitePart.support := by
   intro hp
   rw [Finsupp.mem_support_iff, fullModulus_finitePart] at hp
   rw [Associates.count_ne_zero_iff_dvd hm p.irreducible] at hp
-  have hle : m ≤ p.asIdeal := Ideal.dvd_iff_le.mp hp
-  have hsup : p.asIdeal ⊔ m = p.asIdeal := sup_eq_left.mpr hle
-  exact p.isPrime.ne_top (hsup ▸ hcop)
+  exact p.isPrime.ne_top ((sup_eq_left.mpr (Ideal.dvd_iff_le.mp hp)) ▸ hcop)
 
-theorem idealClass_prime (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (p : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
-    (hcop : p.asIdeal ⊔ m = ⊤) :
+theorem idealClass_prime :
     idealClass m hm p.asIdeal p.ne_bot hcop =
       ClassFieldTheory.rayClassOfFinitePrime (fullModulus m hm) p
         (prime_not_mem_fullModulus_support m hm p hcop) := by

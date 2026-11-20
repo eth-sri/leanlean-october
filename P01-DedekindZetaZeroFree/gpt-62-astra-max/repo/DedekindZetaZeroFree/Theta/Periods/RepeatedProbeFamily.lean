@@ -8,8 +8,8 @@ noncomputable section
 namespace DedekindZetaZeroFree.FourierContinuation.DetectedDictionary
 open MomentSources NonDegenerate
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 
 def probeSources (D : PeriodSource R N) : AdmissibleFlatSources R :=
   { D.sources with

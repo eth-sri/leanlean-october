@@ -48,8 +48,7 @@ lemma continuous_rescaleCost (A : SArithmeticData F) (B u : ℝ) :
   apply continuous_finset_prod
   intro w hw
   have hc : Continuous (fun t => (‖((radial A t).1 w : w.Completion)‖ ^ 2) /
-      (‖((radial A u).1 w : w.Completion)‖ ^ 2)) := by
-    exact (show Continuous (fun t : ℝ => ‖((radial A t).1 w : w.Completion)‖ ^ 2) from
+      (‖((radial A u).1 w : w.Completion)‖ ^ 2)) := (show Continuous (fun t : ℝ => ‖((radial A t).1 w : w.Completion)‖ ^ 2) from
       (Units.continuous_val.comp
         ((continuous_apply w).comp (continuous_fst.comp (continuous_radial A)))).norm.pow 2).div_const _
   have hp (t : ℝ) : 0 < (‖((radial A t).1 w : w.Completion)‖ ^ 2) /

@@ -11,10 +11,10 @@ namespace DedekindZetaZeroFree.RootDerivatives
 open MomentSources ThetaExpansion FourierContinuation.HCGeneration CurrentFirstRoot
 open KPContActualSphericalRightFieldIdentification
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
-variable (D : SourceFactorization R Q T)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    (D : SourceFactorization R Q T)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 local notation "W" => actualLocal R D.finiteData
@@ -31,7 +31,7 @@ theorem native_upper_pure (hNative : SourceNativeLie R D)
   have hh := hNative s w (nativeArchSlot R D s w).property (upperBasis b)
     (PiTensorProduct.tprod ℂ x)
   rw [tensorSlot_tprod] at hh
-  have hi : (actualLieIndexEquiv (F := F)).symm (w,upperBasis b) = upperIndex w b := by
+  have hi : (actualLieIndexEquiv).symm (w,upperBasis b) = upperIndex w b := by
     rw [← upper_index w b, Equiv.symm_apply_apply]
   rw [hi] at hh
   rw [upperLieDerivative_actualRight]
@@ -53,7 +53,6 @@ theorem native_firstRoot_pure (hNative : SourceNativeLie R D)
     (PiTensorProduct.tprod ℂ).map_update_add,
     (PiTensorProduct.tprod ℂ).map_update_smul]
   simp only [map_add,map_smul]
-  change _ = firstRootLocalDerivative R w i (tensorFunction R D s x)
   have h0 := native_upper_pure R D hNative s w x false
   have h1 := native_upper_pure R D hNative s w x true
   unfold tensorFunction at h0 h1

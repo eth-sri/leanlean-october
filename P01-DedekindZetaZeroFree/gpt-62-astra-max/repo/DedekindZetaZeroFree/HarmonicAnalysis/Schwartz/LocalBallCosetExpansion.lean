@@ -13,7 +13,9 @@ namespace DedekindZetaZeroFree
 
 variable (F : Type) [Field F] [NumberField F]
 
-private theorem containing_ball (v : HeightOneSpectrum (𝓞 F))
+variable (v : HeightOneSpectrum (𝓞 F))
+
+private theorem containing_ball
     (f : v.adicCompletion F → ℂ) (hf : HasCompactSupport f) :
     ∃ r : ℤ, tsupport f ⊆ (finiteCompletionBall F v r : Set (v.adicCompletion F)) := by
   obtain ⟨k, hk⟩ := hf.elim_directed_cover
@@ -27,7 +29,7 @@ private theorem containing_ball (v : HeightOneSpectrum (𝓞 F))
       · exact (finiteCompletionBall_le_iff F v _ _).2 (by omega))
   exact ⟨_, hk⟩
 
-private theorem uniform_ball (v : HeightOneSpectrum (𝓞 F))
+private theorem uniform_ball
     (f : v.adicCompletion F → ℂ) (hf : IsLocallyConstant f)
     (r : ℤ) (hr : tsupport f ⊆ (finiteCompletionBall F v r : Set (v.adicCompletion F))) :
     ∃ n : ℤ, r ≤ n ∧ ∀ x u, u ∈ finiteCompletionBall F v n → f (x + u) = f x := by
@@ -42,10 +44,8 @@ private theorem uniform_ball (v : HeightOneSpectrum (𝓞 F))
   obtain ⟨T, hT⟩ := (isCompact_finiteCompletionBall F v r).elim_finite_subcover
     (fun b : B => {x : v.adicCompletion F | x - b ∈ finiteCompletionBall F v (d b)})
     (fun b => isOpen_finiteCompletionBall_coset F v b (d b))
-    (by
-      intro x hx
-      exact Set.mem_iUnion.mpr ⟨⟨x, hx⟩, by simp⟩)
-  let n : ℤ := max r ((T.sup (fun b => (d b).toNat) : ℕ) : ℤ)
+    (fun x hx => Set.mem_iUnion.mpr ⟨⟨x, hx⟩, by simp⟩)
+  let n := max r ((T.sup (fun b => (d b).toNat) : ℕ) : ℤ)
   have hrn : r ≤ n := le_max_left _ _
   have hdn : ∀ b ∈ T, d b ≤ n := by
     intro b hb
@@ -54,23 +54,19 @@ private theorem uniform_ball (v : HeightOneSpectrum (𝓞 F))
     omega
   refine ⟨n, hrn, ?_⟩
   intro x u hu
-  have hur : u ∈ B := (finiteCompletionBall_le_iff F v r n).2 hrn hu
   by_cases hx : x ∈ B
   · obtain ⟨b, hb⟩ := Set.mem_iUnion.mp (hT hx)
     obtain ⟨hb, hxb⟩ := Set.mem_iUnion.mp hb
-    have hud : u ∈ finiteCompletionBall F v (d b) :=
-      (finiteCompletionBall_le_iff F v (d b) n).2 (hdn b hb) hu
-    have hxub : x + u - b ∈ finiteCompletionBall F v (d b) := by
-      convert (finiteCompletionBall F v (d b)).add_mem hxb hud using 1 <;> abel
-    exact (hd b (x + u) hxub).trans (hd b x hxb).symm
+    refine (hd b (x + u) ?_).trans (hd b x hxb).symm
+    convert (finiteCompletionBall F v (d b)).add_mem hxb ((finiteCompletionBall_le_iff F v (d b) n).2 (hdn b hb) hu) using 1 <;> abel
   · have hxu : x + u ∉ B := by
       intro h
       apply hx
-      convert B.sub_mem h hur using 1 <;> abel
+      convert B.sub_mem h ((finiteCompletionBall_le_iff F v r n).2 hrn hu) using 1 <;> abel
     rw [image_eq_zero_of_notMem_tsupport (fun h => hxu (hr h)),
       image_eq_zero_of_notMem_tsupport (fun h => hx (hr h))]
 
-private theorem transversal (v : HeightOneSpectrum (𝓞 F)) (r n : ℤ) (hrn : r ≤ n) :
+private theorem transversal (r n : ℤ) (hrn : r ≤ n) :
     ∃ T : Finset (v.adicCompletion F),
       (↑T : Set (v.adicCompletion F)) ⊆ (finiteCompletionBall F v r : Set (v.adicCompletion F)) ∧
       (∀ t ∈ T, ∀ s ∈ T, t ≠ s → Disjoint
@@ -114,20 +110,17 @@ private theorem transversal (v : HeightOneSpectrum (𝓞 F)) (r n : ℤ) (hrn : 
       apply Set.mem_iUnion.mpr
       refine ⟨rep q, Set.mem_iUnion.mpr ⟨?_, ?_⟩⟩
       · exact Finset.mem_image.mpr ⟨q, Finset.mem_univ _, rfl⟩
-      · have heq : (QuotientAddGroup.mk a : Q) = QuotientAddGroup.mk q.out := (hrep q).symm
-        exact QuotientAddGroup.eq_iff_sub_mem.mp heq
+      · exact QuotientAddGroup.eq_iff_sub_mem.mp ((hrep q).symm)
     · intro x hx
       obtain ⟨t, ht⟩ := Set.mem_iUnion.mp hx
       obtain ⟨ht, hxt⟩ := Set.mem_iUnion.mp ht
       obtain ⟨q, rfl⟩ := hT t ht
-      have hU : U ≤ B := (finiteCompletionBall_le_iff F v r n).2 hrn
-      have h := B.add_mem (hU hxt) q.out.property
+      have h := B.add_mem (((finiteCompletionBall_le_iff F v r n).2 hrn) hxt) q.out.property
       change x - rep q + rep q ∈ B at h
       change x ∈ finiteCompletionBall F v r
       simpa only [sub_add_cancel] using h
 
-theorem localSchwartz_finite_ball_coset_expansion
-    (v : HeightOneSpectrum (𝓞 F)) (f : v.adicCompletion F → ℂ)
+theorem localSchwartz_finite_ball_coset_expansion (f : v.adicCompletion F → ℂ)
     (hf : f ∈ localSchwartz F v) :
     ∃ (r n : ℤ) (T : Finset (v.adicCompletion F)),
       r ≤ n ∧
@@ -164,7 +157,7 @@ theorem localSchwartz_finite_ball_coset_expansion
       have hxs : x - s ∉ finiteCompletionBall F v n :=
         fun h => (Set.disjoint_left.mp (hdisj t ht s hs hst.symm)) hxt h
       simp only [localCosetIndicator_apply, if_neg hxs, mul_zero]
-  · have hfzero : f x = 0 := image_eq_zero_of_notMem_tsupport (fun h => hx (hr h))
+  · have hfzero := image_eq_zero_of_notMem_tsupport (fun h => hx (hr h))
     rw [hfzero]
     symm
     apply Finset.sum_eq_zero
@@ -177,12 +170,11 @@ theorem localSchwartz_finite_ball_coset_expansion
       exact Set.mem_iUnion.mpr ⟨t, Set.mem_iUnion.mpr ⟨ht, h⟩⟩
     simp only [localCosetIndicator_apply, if_neg hxt, mul_zero]
 
-theorem localCosetIndicator_ball_mem_localSchwartz
-    (v : HeightOneSpectrum (𝓞 F)) (b : v.adicCompletion F) (n : ℤ) :
+theorem localCosetIndicator_ball_mem_localSchwartz (b : v.adicCompletion F) (n : ℤ) :
     localCosetIndicator F v b (finiteCompletionBall F v n) ∈ localSchwartz F v := by
-  let S : Set (v.adicCompletion F) :=
+  let S :=
     {x | x - b ∈ finiteCompletionBall F v n}
-  have hc : IsCompact S := isCompact_finiteCompletionBall_coset F v b n
+  have hc := isCompact_finiteCompletionBall_coset F v b n
   have hcl : IsClopen S := ⟨hc.isClosed, isOpen_finiteCompletionBall_coset F v b n⟩
   refine ⟨?_, ?_⟩
   · exact (LocallyConstant.indicator (LocallyConstant.const _ (1 : ℂ)) hcl).isLocallyConstant

@@ -14,8 +14,7 @@ namespace DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure
 open KPCompactStabilizerHaarSources
 attribute [local instance] KPCompactStabilizerHaarSources.groupMeasurableSpace
   KPCompactStabilizerHaarSources.groupBorelSpace
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming archEquiv → archEquiv
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming basepoint_eq → basepoint_eq
+open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources (archEquiv basepoint_eq)
 
 set_option backward.isDefEq.respectTransparency false in
 private theorem original_full_K (d : ℕ) (μ : Measure (G d)) [μ.IsHaarMeasure] :
@@ -27,9 +26,9 @@ private theorem original_full_K (d : ℕ) (μ : Measure (G d)) [μ.IsHaarMeasure
         (c : ℝ≥0∞) • ((KPArch.hyperbolicVolume d).prod (stabilizerHaar d)) := by
   obtain ⟨e, heOrbit, heFiber⟩ := product_iwasawa_homeomorph d
   obtain ⟨hfinite, hpositive, hinvariant⟩ := hyperbolic_volume_properties d
-  let ν : Measure (G d) :=
+  let ν :=
     Measure.map e.symm ((KPArch.hyperbolicVolume d).prod (stabilizerHaar d))
-  have : ν.IsHaarMeasure := compact_fiber_lift_isHaar d e heFiber
+  have := compact_fiber_lift_isHaar d e heFiber
     (KPArch.hyperbolicVolume d) hfinite hpositive hinvariant
     (stabilizerHaar d) inferInstance inferInstance
   refine ⟨e, Measure.haarScalarFactor μ ν,
@@ -43,7 +42,7 @@ private theorem original_full_K (d : ℕ) (μ : Measure (G d)) [μ.IsHaarMeasure
       congr 1
       dsimp [ν]
       rw [Measure.map_map e.measurable e.symm.measurable]
-      simp only [e.apply_symm_apply, Function.comp_def, Measure.map_id']
+      simp
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
@@ -63,7 +62,7 @@ private theorem original_recipe_full_K
   let : BorelSpace (KPSmoothActualFlowData.GInfinity F) := ⟨rfl⟩
   let := R.arch_isHaar
   let a := archEquiv F ζ hζ
-  let : (Measure.map a R.archHaar).IsHaarMeasure := a.isHaarMeasure_map R.archHaar
+  let := a.isHaarMeasure_map R.archHaar
   obtain ⟨e, c, hc, heOrbit, heFiber, he⟩ := original_full_K
     (KPCuspLogShape.dimension F) (Measure.map a R.archHaar)
   refine ⟨a.toHomeomorph.trans e, c, hc, ?_, ?_, ?_⟩
@@ -72,7 +71,7 @@ private theorem original_recipe_full_K
   · intro x k i
     have hf : a ((a.toHomeomorph.trans e).symm (x, k)) =
         KPArithmeticAction.productProjectiveSection (KPCuspLogShape.dimension F) x *
-          (k : G (KPCuspLogShape.dimension F)) := by
+          k := by
       change a (a.symm (e.symm (x, k))) = _
       rw [a.apply_symm_apply]
       exact heFiber x k
@@ -81,10 +80,7 @@ private theorem original_recipe_full_K
     rw [Measure.map_map e.measurable ha] at he
     exact he
 
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming rationalArch → rationalArch
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming subgroupEquiv → subgroupEquiv
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming rationalArch_equivariant → rationalArch_equivariant
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming basepoint_continuous → basepoint_continuous
+open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources (rationalArch subgroupEquiv rationalArch_equivariant basepoint_continuous)
 open KPActualComponentHaarSources
 
 set_option backward.isDefEq.respectTransparency false in
@@ -99,7 +95,7 @@ private theorem actual_atlas_group_domain
       (KPMsFixedHaarDisintegration.archBasepoint F ⁻¹'
         (A.cuspAtlas i).fundamentalDomain) R.archHaar := by
   obtain ⟨e,c,hc,heBase,heFiber,heMap⟩ := original_recipe_full_K R
-  let : IsFiniteMeasureOnCompacts (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)) :=
+  let :=
     (hyperbolic_volume_properties (KPCuspLogShape.dimension F)).1
   have hfst : Measure.map (KPMsFixedHaarDisintegration.archBasepoint F) R.archHaar =
       (c : ℝ≥0∞) • KPArch.hyperbolicVolume (KPCuspLogShape.dimension F) := by
@@ -108,19 +104,11 @@ private theorem actual_atlas_group_domain
     rw [hfun, ← Measure.map_map measurable_fst e.measurable, heMap,
       Measure.map_smul _ measurable_fst.aemeasurable, Measure.map_fst_prod]
     simp
-  have hb := (basepoint_continuous F ζ hζ).measurable
-  have hqmp : Measure.QuasiMeasurePreserving (KPMsFixedHaarDisintegration.archBasepoint F)
-      R.archHaar (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)) :=
-    ⟨hb, by rw [hfst]; exact Measure.smul_absolutelyContinuous⟩
-  exact (A.cuspAtlas i).isFundamentalDomain.preimage_of_equiv hqmp
+  exact (A.cuspAtlas i).isFundamentalDomain.preimage_of_equiv (⟨((basepoint_continuous F ζ hζ).measurable), by rw [hfst]; exact Measure.smul_absolutelyContinuous⟩)
     (subgroupEquiv F ζ hζ hF U A i).bijective
     (fun γ g => rationalArch_equivariant F ζ hζ γ g)
 
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tilingLift → tilingLift
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tiling_arch_m → tiling_arch_m
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tiling_finite_m → tiling_finite_m
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tilingLift_finite → tilingLift_finite
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tiling_preserve_base → tiling_preserve_base
+open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources (tilingLift tiling_arch_m tiling_finite_m tilingLift_finite tiling_preserve_base)
 
  theorem actual_rational_finite_fiber
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -169,8 +157,7 @@ open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tiling_pr
     ((Homeomorph.mulLeft d).measurableEmbedding) (B F ζ hζ hF U A i)
   rwa [hpre] at hm
 
-open _root_.DedekindZetaZeroFree.KPCompactStabilizerHaarSources renaming cocycle → cocycle
-open _root_.DedekindZetaZeroFree.KPCompactStabilizerHaarSources renaming cocycle_continuous → cocycle_continuous
+open _root_.DedekindZetaZeroFree.KPCompactStabilizerHaarSources (cocycle cocycle_continuous)
 
  theorem actual_rational_Iwasawa_fiber
     (e : KPSmoothActualFlowData.GInfinity F ≃ₜ
@@ -188,9 +175,9 @@ open _root_.DedekindZetaZeroFree.KPCompactStabilizerHaarSources renaming cocycle
         (stabilizerHaar (KPCuspLogShape.dimension F)) := by
   let a := archEquiv F ζ hζ
   let d := KPCuspLogShape.dimension F
-  let : BorelSpace (K d) := stabilizerBorelSpace d
+  let := stabilizerBorelSpace d
   have he : ∀ y k, a (e.symm (y,k)) = KPArithmeticAction.productProjectiveSection d y *
-      (k : G d) := by
+      k := by
     intro y k
     funext j
     exact heFiber y k j
@@ -212,7 +199,7 @@ open _root_.DedekindZetaZeroFree.KPCompactStabilizerHaarSources renaming cocycle
     change KPArithmeticAction.productProjectiveSection d (σ • x) *
       (((KPArithmeticAction.productProjectiveSection d
         (a (rationalArch F ζ hζ σ) • x))⁻¹ * a (rationalArch F ζ hζ σ) *
-          KPArithmeticAction.productProjectiveSection d x) * (k : G d)) = _
+          KPArithmeticAction.productProjectiveSection d x) * k) = _
     rw [haction]
     simp only [mul_assoc,mul_inv_cancel_left]
   · intro x
@@ -298,9 +285,6 @@ private theorem actual_component_pinned_domain
     (P : KPMsFixedHaar.SphericalTransport F ζ hζ)
     (i : Fin A.componentCount) :
     ∃ ν : Measure (KPFiniteCuspAtlas.FiniteCover F ζ hζ), ν.IsHaarMeasure ∧
-      Measure.map (m F ζ hζ) (R.archHaar.prod ν) = R.adelicHaar ∧
-      MeasurableSet (B F ζ hζ hF U A i) ∧
-      0 < ν (B F ζ hζ hF U A i) ∧ ν (B F ζ hζ hF U A i) < ⊤ ∧
       R.quotientHaar.restrict (P.projection U ⁻¹' C F ζ hζ hF U A i) =
         Measure.map (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ ∘ m F ζ hζ)
           ((R.archHaar.restrict (KPMsFixedHaarDisintegration.archBasepoint F ⁻¹'
@@ -320,7 +304,7 @@ private theorem actual_component_pinned_domain
   obtain ⟨hT,hSm,hSsub,hS⟩ :=
     ProductDisintegration.product_domain_partial_fundamental
       F ζ hζ hF U A R P i ν hproduct D hDm hD
-  refine ⟨ν,hν,hproduct,hBm,hBpositive,hBfinite,?_⟩
+  refine ⟨ν, hν, ?_⟩
   let := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.2
   let := ActualQuotient.actual_cover_secondCountable F ζ hζ
   let : Countable (KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ) := by
@@ -375,10 +359,12 @@ private theorem actual_component_pinned_domain
     rw [← hproduct, hem.restrict_map, hem.injective.preimage_image, Measure.prod_restrict]
   rw [hrestrict, Measure.map_map hq hem.measurable]
 
-private theorem actual_component_pinned_full_K
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (U : KPMsFixedHaar.Level F ζ hζ)
+section
+
+variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (U : KPMsFixedHaar.Level F ζ hζ)
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+
+private theorem actual_component_pinned_full_K
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaar.SphericalTransport F ζ hζ)
     (i : Fin A.componentCount) :
@@ -400,7 +386,7 @@ private theorem actual_component_pinned_full_K
               (A.cuspAtlas i).fundamentalDomain).prod
               (stabilizerHaar (KPCuspLogShape.dimension F))).prod
             (ν.restrict (B F ζ hζ hF U A i))) := by
-  obtain ⟨ν,hν,hproduct,hBm,hBpositive,hBfinite,hdis⟩ :=
+  obtain ⟨ν, hν, hdis⟩ :=
     actual_component_pinned_domain hF U A R P i
   obtain ⟨e,c,hc,heBase,heFiber,heMap⟩ := original_recipe_full_K R
   let := hν
@@ -468,9 +454,6 @@ private theorem actual_component_pinned_full_K
   rfl
 
 private theorem actual_component_fiber_projection
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (U : KPMsFixedHaar.Level F ζ hζ)
-    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (P : KPMsFixedHaar.SphericalTransport F ζ hζ) (i : Fin A.componentCount)
     (a : KPSmoothActualFlowData.GInfinity F)
     (b : KPFiniteCuspAtlas.FiniteCover F ζ hζ) (hb : b ∈ B F ζ hζ hF U A i) :
@@ -488,9 +471,6 @@ private theorem actual_component_fiber_projection
   exact ⟨1,ε,u,by simp,by simp⟩
 
 private theorem actual_component_test_average
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (U : KPMsFixedHaar.Level F ζ hζ)
-    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaar.SphericalTransport F ζ hζ)
     (i : Fin A.componentCount) :
@@ -543,8 +523,9 @@ private theorem actual_component_test_average
   refine ⟨ν,e,c,hν,hνsf,hc,heBase,heFiber,?_⟩
   intro φ hφ
   let T := K (KPCuspLogShape.dimension F) × KPFiniteCuspAtlas.FiniteCover F ζ hζ
+  let restrict₀ := ν.restrict (B F ζ hζ hF U A i)
   let μT := (stabilizerHaar (KPCuspLogShape.dimension F)).prod
-    (ν.restrict (B F ζ hζ hF U A i))
+    (restrict₀)
   let f : X (KPCuspLogShape.dimension F) × T → ℝ≥0∞ := fun p =>
     φ (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
       (m F ζ hζ (e.symm (p.1,p.2.1),p.2.2)))
@@ -579,11 +560,11 @@ private theorem actual_component_test_average
   let μX := (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)).restrict
     (A.cuspAtlas i).fundamentalDomain
   have hAssoc := measurePreserving_prodAssoc μX
-    (stabilizerHaar (KPCuspLogShape.dimension F)) (ν.restrict (B F ζ hζ hF U A i))
+    (stabilizerHaar (KPCuspLogShape.dimension F)) (restrict₀)
   have hh := hAssoc.lintegral_comp hfm
   change (∫⁻ p, f (MeasurableEquiv.prodAssoc p)
     ∂(μX.prod (stabilizerHaar (KPCuspLogShape.dimension F))).prod
-      (ν.restrict (B F ζ hζ hF U A i))) = _
+      (restrict₀)) = _
   rw [hh,lintegral_prod f hfm.aemeasurable]
   rw [KPFiniteCuspAtlas.quotientVolume]
   have hproj : Measurable (KPCuspSiegel.projection F (Gi F ζ hζ hF U A i)) :=
@@ -591,15 +572,17 @@ private theorem actual_component_test_average
   rw [lintegral_map hψ hproj]
   rfl
 
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming actual_finiteOrbit_positive_finite → actual_finiteOrbit_positive_finite
+end
 
-private theorem actual_component_localized_joint_tests
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (U : KPMsFixedHaar.Level F ζ hζ)
-    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaar.SphericalTransport F ζ hζ)
-    (i : Fin A.componentCount) :
+open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources (actual_finiteOrbit_positive_finite)
+
+section
+
+variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (U : KPMsFixedHaar.Level F ζ hζ)
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaar.SphericalTransport F ζ hζ) (i : Fin A.componentCount)
+
+private theorem actual_component_localized_joint_tests :
     ∃ (ν : Measure (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
       (e : KPSmoothActualFlowData.GInfinity F ≃ₜ
         (X (KPCuspLogShape.dimension F) × K (KPCuspLogShape.dimension F))) (c : ℝ≥0),
@@ -640,16 +623,14 @@ private theorem actual_component_localized_joint_tests
       exact (A.components_formula i x).symm
     rw [he]
     exact (A.components.continuous.comp continuous_sigmaMk).measurable
-  have hVpre := hV.preimage hcomp
   have hVP := hV.preimage (P.continuous U).measurable
   obtain ⟨ψ',hψ',hψ'fun,hψ'int⟩ := havg ((P.projection U ⁻¹' V).indicator φ)
     (hφ.indicator hVP)
-  have hBm : MeasurableSet (B F ζ hζ hF U A i) :=
+  have hBm :=
     (actual_finiteOrbit_positive_finite F ζ hζ U (A.representative i) ν).1
   have hbAE : ∀ᵐ p : K (KPCuspLogShape.dimension F) × KPFiniteCuspAtlas.FiniteCover F ζ hζ
       ∂(stabilizerHaar (KPCuspLogShape.dimension F)).prod (ν.restrict (B F ζ hζ hF U A i)),
-      p.2 ∈ B F ζ hζ hF U A i := by
-    exact Measure.quasiMeasurePreserving_snd.ae (ae_restrict_mem hBm)
+      p.2 ∈ B F ζ hζ hF U A i := Measure.quasiMeasurePreserving_snd.ae (ae_restrict_mem hBm)
   have heBase' : ∀ x k, KPMsFixedHaarDisintegration.archBasepoint F (e.symm (x,k)) = x := by
     intro x k
     rw [← heBase,e.apply_symm_apply]
@@ -683,15 +664,9 @@ private theorem actual_component_localized_joint_tests
           exact Set.indicator_of_notMem (by change P.projection U _ ∉ V; rwa [hh]) φ
         exact hh.trans lintegral_zero
   rw [← lintegral_indicator hVP]
-  rw [hψ'int,hψeq,lintegral_indicator hVpre]
+  rw [hψ'int,hψeq,lintegral_indicator (hV.preimage hcomp)]
 
- theorem actual_high_cusp_joint_coarea
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (U : KPMsFixedHaar.Level F ζ hζ)
-    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaar.SphericalTransport F ζ hζ)
-    (i : Fin A.componentCount) :
+ theorem actual_high_cusp_joint_coarea :
     ∃ (ν : Measure (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
       (e : KPSmoothActualFlowData.GInfinity F ≃ₜ
         (X (KPCuspLogShape.dimension F) × K (KPCuspLogShape.dimension F))) (c : ℝ≥0),
@@ -728,9 +703,6 @@ private theorem actual_component_localized_joint_tests
   have hcFun : comp = A.components ∘ Sigma.mk i := by
     funext x
     exact (A.components_formula i x).symm
-  have hcomp : Continuous comp := by
-    rw [hcFun]
-    exact A.components.continuous.comp continuous_sigmaMk
   have hcompOpen : IsOpenMap comp := by
     rw [hcFun]
     exact A.components.isOpenMap.comp isOpenMap_sigmaMk
@@ -739,29 +711,24 @@ private theorem actual_component_localized_joint_tests
     exact A.components.injective.comp (fun _ _ h => eq_of_heq (Sigma.mk.inj h).2)
   have hEm : MeasurableSet (comp '' E) :=
     (hcompOpen _ (KPFiniteAdelicCuspEnds.component_open_end F _ _ T)).measurableSet
-  have hEsub : P.projection U ⁻¹' (comp '' E) ⊆ P.projection U ⁻¹' C F ζ hζ hF U A i := by
-    rintro y ⟨x,hx,he⟩
-    exact ⟨x,he⟩
   have heRestrict : (R.quotientHaar.restrict (P.projection U ⁻¹' C F ζ hζ hF U A i)).restrict
       (P.projection U ⁻¹' (comp '' E)) = R.quotientHaar.restrict (P.projection U ⁻¹' (comp '' E)) := by
     rw [Measure.restrict_restrict (hEm.preimage (P.continuous U).measurable),
-      Set.inter_eq_left.mpr hEsub]
+      Set.inter_eq_left.mpr (by
+        rintro y ⟨x,hx,he⟩
+        exact ⟨x,he⟩)]
   have hh := hψloc (comp '' E) hEm
   rw [heRestrict,Set.preimage_image_eq E hcompInj] at hh
   rw [hh]
   congr 1
-  have heEnd := KPMsFixedHaar.RadialIntegrationSteps.end_coordinate_lintegral
-    A (⟨i,a⟩ : KPMsFixedHaar.CuspIndex A) T hT ψ hψ
-  rw [heEnd]
+  rw [(KPMsFixedHaar.RadialIntegrationSteps.end_coordinate_lintegral
+    A (⟨i,a⟩ : KPMsFixedHaar.CuspIndex A) T hT ψ hψ)]
   apply lintegral_congr
   intro p
   exact hψfun _
 
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof renaming framedFullAngular_upper_transition → framedFullAngular_upper_transition
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof renaming framedFullAngular → framedFullAngular
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof renaming framedNormOne → framedNormOne
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof renaming framedRadius → framedRadius
-open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof renaming rational_upper_literal_factorization → rational_upper_literal_factorization
+end
+
 
 section ActualLift
 open KPMsClearedTruncationL2
@@ -770,7 +737,6 @@ open KPMsResidualTailRestoration.SharpConstantTerm
 
 end ActualLift
 
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTransport → toRawTransport
 
 end DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure
 

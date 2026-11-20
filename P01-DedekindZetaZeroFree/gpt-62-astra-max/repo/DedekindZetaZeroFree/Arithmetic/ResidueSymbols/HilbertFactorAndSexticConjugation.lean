@@ -25,9 +25,9 @@ theorem inverse_four_hilbert_eq_star_residue (A : SArithmeticData F)
       apply hv
       apply A.above_six
       convert v.asIdeal.mul_mem_right 3 h using 1 <;> norm_num
-    convert (v.valuation_eq_one_iff_notMem (K := F)).mpr hnot using 1
+    convert (v.valuation_eq_one_iff_notMem).mpr hnot using 1
     rw [map_ofNat (algebraMap (𝓞 F) F)]
-  have hfour : CubicWeilCorrection.fourS (F := F) ∈ A.U := by
+  have hfour : CubicWeilCorrection.fourS ∈ A.U := by
     intro v hv
     change v.valuation F (4 : F) = 1
     rw [show (4 : F) = 2 ^ 2 by norm_num, map_pow, htwo v hv, one_pow]
@@ -39,13 +39,11 @@ theorem inverse_four_hilbert_eq_star_residue (A : SArithmeticData F)
   rw [heps] at hrec
   rw [hrec]
   apply Complex.inv_eq_conj
-  have hroot := (mem_rootsOfUnity 6 _).mp
-    (A.H_S (A.diagonal CubicWeilCorrection.fourS) (A.diagonal a)).property
   have hpow : (σ (((A.H_S (A.diagonal CubicWeilCorrection.fourS)
       (A.diagonal a) : Fˣ) : F))) ^ 6 = 1 := by
     rw [← map_pow]
-    have hf := congrArg (fun u : Fˣ => (u : F)) hroot
-    simpa using congrArg σ hf
+    simpa using congrArg σ (congrArg (fun u : Fˣ => (u : F)) ((mem_rootsOfUnity 6 _).mp
+      (A.H_S (A.diagonal CubicWeilCorrection.fourS) (A.diagonal a)).property))
   apply (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by decide : (6 : ℕ) ≠ 0)).mp
   rw [← Complex.norm_pow, hpow, norm_one]
 

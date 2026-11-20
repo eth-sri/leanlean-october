@@ -36,7 +36,7 @@ theorem integral_period_of_integrable
     rw [hnorm]
     simpa only [ofReal_norm_eq_enorm, HasFiniteIntegral] using hint.hasFiniteIntegral
   exact (KPChamberAdditivePeriodization.integral_complexPeriod
-    F dx dq hcompat h hmeas hfinite).2.2
+    F dx dq hcompat h hmeas hfinite)
 
 theorem constantTerm_two_cells
     {G : Type*} [Group G]
@@ -61,7 +61,7 @@ theorem constantTerm_two_cells
       fR (n (Multiplicative.ofAdd (Quotient.out q)) * g) (hsum q) ∂dq) =
       fR g + ∫ a : A F,
         fR (s (KPChamberBruhatTwoCells.rationalWeyl F) * n (Multiplicative.ofAdd a) * g) ∂dx := by
-  let h : A F → ℂ := fun a =>
+  let h := fun a =>
     fR (s (KPChamberBruhatTwoCells.rationalWeyl F) * n (Multiplicative.ofAdd a) * g)
   have hperiod := integral_period_of_integrable F dx dq hcompat h hmeas hint
   have hformula : ∀ q : Q F, KPGlobalEisensteinData.eisenstein
@@ -96,7 +96,7 @@ namespace DedekindZetaZeroFree.KPGlobalResidualKernel.RawStageL2.Outgoing
 namespace ActualBruhat
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 abbrev rational :=
   (KPGlobalResidualConstruction.ElementaryOutputs.rationalSplitting F ζ hζ).lift
@@ -106,18 +106,12 @@ theorem section_unipotent_invariant (s : ℂ)
     (a : KPGlobalTorusFunctionData.Adeles F)
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     v.val (KPGlobalTorusFunctionData.N F ζ hζ a * g) = v.val g := by
-  have h := v.property 1 a g
-  simpa [KPGlobalTorusFunctionData.deltaHalf] using h
+  simpa [KPGlobalTorusFunctionData.deltaHalf] using (v.property 1 a g)
 
 theorem rational_unipotent (t : F) :
     rational F ζ hζ (KPChamberBruhatTwoCells.rationalUnipotent F t) =
       KPGlobalTorusFunctionData.Nhom F ζ hζ
         (Multiplicative.ofAdd (algebraMap F (KPGlobalTorusFunctionData.Adeles F) t)) := by
-  change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-    (KPAdelicCoverRestrictedProduct.rationalSection F ζ hζ (KubotaRankTwo.n F t)) = _
-  change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ _ =
-    KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-      (KPRationalAdelicSplitting.N F ζ hζ _)
   exact congrArg (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ)
     (KPRationalAdelicSplitting.N_rational F ζ hζ t).symm
 
@@ -129,8 +123,6 @@ theorem unsigned_weyl :
     rational F ζ hζ (Matrix.ProjGenLinGroup.mk (KPStandardLocalRootLifts.weylSwap F)) =
       KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
         (KPCubicCoverConstruction.adelicW F ζ hζ) := by
-  change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-    (KPAdelicCoverRestrictedProduct.rationalSection F ζ hζ _) = _
   exact congrArg (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ)
     (KPRationalAdelicSplitting.W_rational F ζ hζ).symm
 
@@ -148,7 +140,7 @@ theorem section_rational_diagonal_invariant (s : ℂ)
       (KPGlobalTorusPeriodizationInverse.rationalLift F ζ hζ y) *
       KPGlobalTorusBorelTwistCompatibility.normCharacter F ζ hζ s
         (KPGlobalTorusFunctionData.s F ζ hζ y)) : ℂ) = 1
-    rw [(KPGlobalTorusPeriodizationInverse.rational_representative_character F ζ hζ y).1,
+    rw [(KPGlobalTorusPeriodizationInverse.rational_representative_character F ζ hζ y),
       KPGlobalTorusBorelTwistCompatibility.normCharacter_rational]
     simp
   rw [hchar] at h
@@ -176,7 +168,6 @@ theorem section_signed_weyl (s : ℂ)
         KPGlobalTorusFunctionData.rationalDiagonal, KPStandardLocalRootLifts.weylSwap,
         Matrix.mul_apply, Fin.sum_univ_two]
   rw [hmatrix, map_mul, unsigned_weyl, mul_assoc]
-  change v.val ((KPGlobalTorusFunctionData.s F ζ hζ (-1)).val * _) = _
   exact section_rational_diagonal_invariant F ζ hζ s v (-1) _
 
 theorem scalar_unipotent_invariant (s : ℂ)
@@ -209,6 +200,8 @@ private theorem upper_matrix_factorization
     simp [KPGlobalTorusFunctionData.rationalDiagonal, y,
       Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.mul_apply, Fin.sum_univ_two, hb] <;> field_simp <;> ring
+
+alias BruhatTwoCellIntegral.upper_matrix_factorization := upper_matrix_factorization
 
 theorem scalar_rational_borel_invariant (s : ℂ)
     (v : KPMsRationalCompactCrossPairing.Source F ζ hζ s) :

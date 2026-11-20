@@ -59,8 +59,9 @@ theorem ordinary_cell_quotient_exact
   letI : Module ℂ (Induced F ζ hζ w m τB) := inferInstance
   let K := KPRankOneInduction.LocalField F w
   let ρU := KPJacquetOpenTestFunction.translationRepresentation (K := K) (E := E)
+  let cellAction₀ := cellAction F ζ hζ w m hm τB
   let ρV : Representation ℂ (Multiplicative K) (Induced F ζ hζ w m τB) :=
-    (cellAction F ζ hζ w m hm τB).comp (upperRoot F ζ hζ w)
+    (cellAction₀).comp (upperRoot F ζ hζ w)
   let ρW : Representation ℂ (Multiplicative K) E := 1
   let ext := KPJacquetOpenCell.ext_w F ζ hζ w m hm τB hτB
   let ev := ev1 F ζ hζ w m τB
@@ -89,7 +90,7 @@ theorem ordinary_cell_quotient_exact
     exact hH.preimage continuous_ofAdd
   let ie' : Representation.IntertwiningMap
       (rootTwistedRepresentation ρU (MonoidHom.id (Multiplicative K)) 1)
-      (rootTwistedRepresentation (cellAction F ζ hζ w m hm τB) (upperRoot F ζ hζ w) 1) :=
+      (rootTwistedRepresentation (cellAction₀) (upperRoot F ζ hζ w) 1) :=
     ⟨ext, by intro x; apply LinearMap.ext; intro φ
              simpa [rootTwistedRepresentation, ρV] using hext x φ⟩
   let I := Representation.Coinvariants.map _ _ ie'
@@ -98,7 +99,7 @@ theorem ordinary_cell_quotient_exact
       _ _ ie' (KPJacquetOpenCell.ext_w_injective F ζ hζ w m hm τB hτB)
     intro v hv
     have htwV : KPCoinvariants.twistedRepresentation ρV 1 =
-        rootTwistedRepresentation (cellAction F ζ hζ w m hm τB) (upperRoot F ζ hζ w) 1 := by
+        rootTwistedRepresentation (cellAction₀) (upperRoot F ζ hζ w) 1 := by
       apply MonoidHom.ext
       intro x
       apply LinearMap.ext
@@ -136,8 +137,8 @@ theorem ordinary_cell_quotient_exact
       exact hh
     · intro a ha
       obtain ⟨f, rfl⟩ := rootCoinvariantsMk_surjective
-        (cellAction F ζ hζ w m hm τB) (upperRoot F ζ hζ w) 1 a
-      have hf : ev f = 0 := (hp f).symm.trans ha
+        (cellAction₀) (upperRoot F ζ hζ w) 1 a
+      have hf := (hp f).symm.trans ha
       have hr : f ∈ LinearMap.range ext := by
         rw [KPJacquetOpenCell.range_ext_w F ζ hζ w m hm τB hτB]
         exact hf
@@ -209,22 +210,20 @@ theorem open_injection_equivariant
     ∀ h e, i (σ h e) = ρJ h (i e) := by
   intro h e
   obtain ⟨φ, hφ⟩ := KPJacquetOpenTestFunction.characterIntegral_surjective
-    (K := KPRankOneInduction.LocalField F w) (V := E)
+
     (1 : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ)
     continuous_one μ e
   have hφ' : KPJacquetOpenTestFunction.ordinaryIntegral μ φ = e := by
-    simpa only [KPJacquetOpenTestFunction.ordinaryIntegral] using hφ
-  calc i (σ h e)
+    simpa using hφ
+  let openCellRepresentation₀ := KPJacquetOpenCell.openCellRepresentation F ζ hζ w m hm τB hτB (torusInBorel F ζ hζ w m hm h) φ
+  calc _
       = i (σ h (KPJacquetOpenTestFunction.ordinaryIntegral μ φ)) := by rw [hφ']
     _ = i (KPJacquetOpenTestFunction.ordinaryIntegral μ
-          (KPJacquetOpenCell.openCellRepresentation F ζ hζ w m hm τB hτB
-            (torusInBorel F ζ hζ w m hm h) φ)) := by rw [hint h φ]
+          (openCellRepresentation₀)) := by rw [hint h φ]
     _ = cellMk F ζ hζ w m hm τB
           (KPJacquetOpenCell.ext_w F ζ hζ w m hm τB hτB
-            (KPJacquetOpenCell.openCellRepresentation F ζ hζ w m hm τB hτB
-              (torusInBorel F ζ hζ w m hm h) φ)) :=
-          hi (KPJacquetOpenCell.openCellRepresentation F ζ hζ w m hm τB hτB
-              (torusInBorel F ζ hζ w m hm h) φ)
+            (openCellRepresentation₀)) :=
+          hi (openCellRepresentation₀)
     _ = cellMk F ζ hζ w m hm τB
           (cellAction F ζ hζ w m hm τB h.val
             (KPJacquetOpenCell.ext_w F ζ hζ w m hm τB hτB φ)) := by
@@ -271,7 +270,7 @@ local instance : BorelSpace (KPRankOneInduction.LocalField F w) := ⟨rfl⟩
 variable {E : Type*} [AddCommGroup E] [Module ℂ E]
   (τB : Representation ℂ (Borel F ζ hζ w) E)
 
- abbrev cellAction := inducedRepresentation F ζ hζ w m hm τB
+ abbrev cellAction := @DedekindZetaZeroFree.KPJacquetClosedCellBump.inducedRepresentation
  abbrev cellQuotient := OrdinaryCoinvariants F ζ hζ w
   (V := Induced F ζ hζ w m τB) (cellAction F ζ hζ w m hm τB)
  abbrev cellMk := rootCoinvariantsMk
@@ -294,10 +293,9 @@ theorem closed_projection_equivariant
         (cellAction F ζ hζ w m hm τB h.val f) =
       σ h (ev1 F ζ hζ w m τB f)) :
     ∀ h j, p (ρJ h j) = σ h (p j) := by
-  have hsurj : ∀ j, ∃ f, cellMk F ζ hζ w m hm τB f = j := fun j =>
-    rootCoinvariantsMk_surjective _ _ _ j
   intro h j
-  obtain ⟨f, hf⟩ := hsurj j
+  obtain ⟨f, hf⟩ := (fun j =>
+    rootCoinvariantsMk_surjective _ _ _ j) j
   rw [← hf, hρJ h f, hp, hev h f, hp f]
 
 end DedekindZetaZeroFree.KPJacquetOrdinaryCellExactness.ClosedProjection
@@ -342,8 +340,7 @@ include hm hτ in
 
 theorem coefficientAction_smooth :
     letI := finiteCoverTopology F ζ hζ w m
-    SmoothRepresentation (coefficientAction F ζ hζ w τ) := by
-  exact inflatedRepresentation_smooth F ζ hζ w m hm
+    SmoothRepresentation (coefficientAction F ζ hζ w τ) := inflatedRepresentation_smooth F ζ hζ w m hm
     (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w) τ hm
     (KPLocalInductionJacquetReciprocity.borelRetraction_continuous F ζ hζ w m hm) hτ
 
@@ -397,25 +394,27 @@ def closedWeight : Representation ℂ (Torus F ζ hζ w) E where
     principalAction F ζ hζ w m hm τ (upperRoot F ζ hζ w x)
       (KPJacquetOpenCell.ext_w F ζ hζ w m hm (coefficientAction F ζ hζ w τ)
         (coefficientAction_smooth F ζ hζ w m hm τ hτ) φ) := by
-  have hn : ∀ y, coefficientAction F ζ hζ w τ (rootInBorel F ζ hζ w y) = 1 := by
+  let coefficientAction₀ := coefficientAction F ζ hζ w τ
+  have hn : ∀ y, coefficientAction₀ (rootInBorel F ζ hζ w y) = 1 := by
     intro y
     change τ (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w
       (rootInBorel F ζ hζ w y)) = 1
     dsimp only [rootInBorel]
     rw [KPLocalInductionJacquetReciprocity.borelRetraction_upperRoot]
     exact τ.map_one
+  let coefficientAction_smooth₀ := coefficientAction_smooth F ζ hζ w m hm τ hτ
   have he : KPJacquetOpenTestFunction.translationRepresentation x φ =
-      KPJacquetOpenCell.openCellRepresentation F ζ hζ w m hm (coefficientAction F ζ hζ w τ)
-        (coefficientAction_smooth F ζ hζ w m hm τ hτ) (rootInBorel F ζ hζ w x) φ := by
+      KPJacquetOpenCell.openCellRepresentation F ζ hζ w m hm (coefficientAction₀)
+        (coefficientAction_smooth₀) (rootInBorel F ζ hζ w x) φ := by
     apply Subtype.ext
     apply LocallyConstant.ext
     intro y
     exact (KPJacquetOpenCell.upperRoot_action F ζ hζ w m hm
-      (coefficientAction F ζ hζ w τ) (coefficientAction_smooth F ζ hζ w m hm τ hτ)
+      (coefficientAction₀) (coefficientAction_smooth₀)
       hn (Multiplicative.toAdd x) y φ).symm
   rw [he]
-  exact KPJacquetOpenCell.ext_w_borel F ζ hζ w m hm (coefficientAction F ζ hζ w τ)
-    (coefficientAction_smooth F ζ hζ w m hm τ hτ) (rootInBorel F ζ hζ w x) φ
+  exact KPJacquetOpenCell.ext_w_borel F ζ hζ w m hm (coefficientAction₀)
+    (coefficientAction_smooth₀) (rootInBorel F ζ hζ w x) φ
 
 def openCoinvariantMap :
     KPJacquetOpenTestFunction.OrdinaryTranslationCoinvariants
@@ -446,12 +445,13 @@ def openInjection : E →ₗ[ℂ] Jacquet F ζ hζ w m hm τ :=
     (KPJacquetOpenTestFunction.coinvariantsEquiv 1 (by fun_prop) μ).symm.toLinearMap
 
 def closedProjection : Jacquet F ζ hζ w m hm τ →ₗ[ℂ] E := by
+  let coefficientAction₀ := coefficientAction F ζ hζ w τ
   let L : RootEquivariantMaps
-      (V := Induced F ζ hζ w m (coefficientAction F ζ hζ w τ))
+      (V := Induced F ζ hζ w m (coefficientAction₀))
       (principalAction F ζ hζ w m hm τ) (upperRoot F ζ hζ w) 1 E := by
-    refine ⟨ev1 F ζ hζ w m (coefficientAction F ζ hζ w τ), ?_⟩
+    refine ⟨ev1 F ζ hζ w m (coefficientAction₀), ?_⟩
     intro x f
-    change ev1 F ζ hζ w m (coefficientAction F ζ hζ w τ)
+    change ev1 F ζ hζ w m (coefficientAction₀)
       (principalAction F ζ hζ w m hm τ (upperRoot F ζ hζ w x) f) = (1 : ℂ) • _
     rw [one_smul]
     exact ev1_upperRoot F ζ hζ w m hm
@@ -459,7 +459,7 @@ def closedProjection : Jacquet F ζ hζ w m hm τ →ₗ[ℂ] E := by
       (fun x => KPLocalInductionJacquetReciprocity.borelRetraction_upperRoot F ζ hζ w x) x f
   with_reducible_and_instances
     exact rootCoinvariantsLift
-      (V := Induced F ζ hζ w m (coefficientAction F ζ hζ w τ)) (E := E)
+      (V := Induced F ζ hζ w m (coefficientAction₀)) (E := E)
       (principalAction F ζ hζ w m hm τ) (upperRoot F ζ hζ w) 1 L
 
 theorem openInjection_integral (φ : KPJacquetOpenCell.TestFunctions F w (E := E)) :
@@ -510,7 +510,8 @@ theorem openIntegral_torus (h : Torus F ζ hζ w)
       τ (KPJacquetOpenCell.alpha F ζ hζ w h)
         (KPJacquetOpenTestFunction.ordinaryIntegral μ φ) := by
   let a := KPJacquetOpenCell.r F ζ hζ w m hm h
-  let A : E →ₗ[ℂ] E := ((Real.sqrt (KPJacquetOpenCell.d F ζ hζ w m hm h))⁻¹ : ℂ) •
+  let d₀ := KPJacquetOpenCell.d F ζ hζ w m hm h
+  let A := ((Real.sqrt (d₀))⁻¹ : ℂ) •
     τ (KPJacquetOpenCell.alpha F ζ hζ w h)
   have he : KPJacquetOpenCell.openCellRepresentation F ζ hζ w m hm
       (coefficientAction F ζ hζ w τ) (coefficientAction_smooth F ζ hζ w m hm τ hτ)
@@ -525,20 +526,20 @@ theorem openIntegral_torus (h : Torus F ζ hζ w)
       (fun h => KPLocalInductionJacquetReciprocity.borelRetraction_torus F ζ hζ w m hm h)] at hh
     exact hh
   rw [he, KPJacquetOpenTestFunction.ordinaryIntegral_dilateWith, intrinsicAbs_eq_norm]
-  have hd : KPJacquetOpenCell.d F ζ hζ w m hm h = ‖(a : KPRankOneInduction.LocalField F w)‖ :=
+  have hd : d₀ = ‖(a : KPRankOneInduction.LocalField F w)‖ :=
     KPJacquetOpenCell.d_eq_abs_r F ζ hζ w m hm h
-  have hp : 0 < KPJacquetOpenCell.d F ζ hζ w m hm h := by
+  have hp : 0 < d₀ := by
     rw [hd]
     exact norm_pos_iff.mpr a.ne_zero
   change (‖(a : KPRankOneInduction.LocalField F w)‖ : ℂ) •
-    (((Real.sqrt (KPJacquetOpenCell.d F ζ hζ w m hm h))⁻¹ : ℂ) •
+    (((Real.sqrt (d₀))⁻¹ : ℂ) •
       τ (KPJacquetOpenCell.alpha F ζ hζ w h) (KPJacquetOpenTestFunction.ordinaryIntegral μ φ)) = _
   rw [← hd, smul_smul, ← Complex.ofReal_inv, ← Complex.ofReal_mul]
   congr 2
   calc
-    KPJacquetOpenCell.d F ζ hζ w m hm h * (Real.sqrt (KPJacquetOpenCell.d F ζ hζ w m hm h))⁻¹ =
-        (Real.sqrt (KPJacquetOpenCell.d F ζ hζ w m hm h)) ^ 2 *
-          (Real.sqrt (KPJacquetOpenCell.d F ζ hζ w m hm h))⁻¹ := by rw [Real.sq_sqrt hp.le]
+    _ =
+        (Real.sqrt (d₀)) ^ 2 *
+          (Real.sqrt (d₀))⁻¹ := by rw [Real.sq_sqrt hp.le]
     _ = _ := by rw [sq, mul_assoc, mul_inv_cancel₀ (Real.sqrt_pos.mpr hp).ne', mul_one]
 
 theorem ordinary_cell_short_exact :
@@ -550,7 +551,8 @@ theorem ordinary_cell_short_exact :
       torusAction F ζ hζ w m hm τ h (openInjection F ζ hζ w m hm τ hτ μ e)) ∧
     (∀ h j, closedProjection F ζ hζ w m hm τ (torusAction F ζ hζ w m hm τ h j) =
       closedWeight F ζ hζ w m hm τ h (closedProjection F ζ hζ w m hm τ j)) := by
-  have hn : ∀ x, coefficientAction F ζ hζ w τ (rootInBorel F ζ hζ w x) = 1 := by
+  let coefficientAction₀ := coefficientAction F ζ hζ w τ
+  have hn : ∀ x, coefficientAction₀ (rootInBorel F ζ hζ w x) = 1 := by
     intro x
     change τ (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w
       (rootInBorel F ζ hζ w x)) = 1
@@ -558,7 +560,7 @@ theorem ordinary_cell_short_exact :
     rw [KPLocalInductionJacquetReciprocity.borelRetraction_upperRoot]
     exact τ.map_one
   obtain ⟨hi, hex, hp⟩ := KPJacquetOrdinaryCellExactness.QuotientExactness.ordinary_cell_quotient_exact
-    F ζ hζ w m hm (coefficientAction F ζ hζ w τ)
+    F ζ hζ w m hm (coefficientAction₀)
     (coefficientAction_smooth F ζ hζ w m hm τ hτ) μ hn
     (openInjection F ζ hζ w m hm τ hτ μ) (closedProjection F ζ hζ w m hm τ)
     (openInjection_integral F ζ hζ w m hm τ hτ μ) (fun f => rfl)
@@ -569,13 +571,13 @@ theorem ordinary_cell_short_exact :
     rfl
   refine ⟨hi, hex, hp, ?_, ?_⟩
   · exact KPJacquetOrdinaryCellExactness.OpenInjection.open_injection_equivariant F ζ hζ w m hm
-      (coefficientAction F ζ hζ w τ) (coefficientAction_smooth F ζ hζ w m hm τ hτ) μ
+      (coefficientAction₀) (coefficientAction_smooth F ζ hζ w m hm τ hτ) μ
       (openWeight F ζ hζ w m hm τ) (torusAction F ζ hζ w m hm τ) hmk
       (openInjection F ζ hζ w m hm τ hτ μ)
       (openInjection_integral F ζ hζ w m hm τ hτ μ)
       (openIntegral_torus F ζ hζ w m hm τ hτ μ)
   · apply KPJacquetOrdinaryCellExactness.ClosedProjection.closed_projection_equivariant F ζ hζ w m hm
-      (coefficientAction F ζ hζ w τ)
+      (coefficientAction₀)
       (closedWeight F ζ hζ w m hm τ) (torusAction F ζ hζ w m hm τ) hmk
       (closedProjection F ζ hζ w m hm τ) (fun f => rfl)
     intro h f

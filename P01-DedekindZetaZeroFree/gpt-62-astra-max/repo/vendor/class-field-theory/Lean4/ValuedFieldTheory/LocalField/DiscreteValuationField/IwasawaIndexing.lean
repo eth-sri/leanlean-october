@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -55,9 +51,7 @@ theorem infinite_iwasawaIndex (p f : ℕ) (hp : 0 < p) (hf : 0 < f) :
     Infinite (IwasawaIndex p f) := by
   let j : ℕ ↪ IwasawaIndex p f :=
     { toFun := fun k => (iwasawaDegreeEmbedding p hp k, ⟨0, hf⟩)
-      inj' := by
-        intro a b h
-        exact (iwasawaDegreeEmbedding p hp).injective
+      inj' := fun a b h => (iwasawaDegreeEmbedding p hp).injective
           (congrArg (fun z : IwasawaIndex p f => z.1) h) }
   exact Infinite.of_injective j j.injective
 
@@ -69,11 +63,8 @@ noncomputable def chosenIwasawaIndexEquivNat (p f : ℕ) (hp : 0 < p) (hf : 0 < 
     unfold IwasawaDegree
     infer_instance
   letI : Countable (IwasawaIndex p f) := by
-    change Countable (IwasawaDegree p × Fin f)
     infer_instance
-  let d : Denumerable (IwasawaIndex p f) :=
-    Classical.choice (nonempty_denumerable (IwasawaIndex p f))
-  exact @Denumerable.eqv (IwasawaIndex p f) d
+  exact @Denumerable.eqv (IwasawaIndex p f) (Classical.choice (nonempty_denumerable (IwasawaIndex p f)))
 
 /-- Reindexing the Iwasawa product gives the canonical
 `ℤ_[p]^ℕ`, both algebraically and topologically. -/

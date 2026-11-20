@@ -83,8 +83,6 @@ noncomputable instance scalarSectionAdd (v : WildPlace F) :
     Submodule.addCommGroup _
   exact Submodule.addCommGroup _
 
-abbrev scalarTensor := PiTensorProduct ℂ (fun v : WildPlace F => ↥(scalarSection F ζ hζ v))
-
 end DedekindZetaZeroFree.KPWildActualScalarPeriodSource
 
 end
@@ -135,57 +133,61 @@ variable (W : Finset (HeightOneSpectrum (𝓞 F)))
   (ρ : ∀ v : W, Representation ℂ (G F ζ hζ v.val) (V v))
   (D : LocalEmbeddingData F ζ hζ W m hm ψ V ρ)
 
+section
+
+variable (f : ∀ v, ScalarSections F ζ hζ W m ψ v)
+
 theorem tensorEvaluation_normalized
-    (f : ∀ v, ScalarSections F ζ hζ W m ψ v)
     (hf : ∀ v, sectionValue F ζ hζ v.val (m v) (ψ v) (f v) 1 = 1)
     (e : JacquetTensor F ζ hζ W ψ V ρ) :
     tensorEvaluation F ζ hζ W m ψ V ρ
       (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] e) = e := by
+  let map₀ := PiTensorProduct.map (localEvaluation F ζ hζ W m ψ V ρ)
   induction e using PiTensorProduct.induction_on with
   | add e d he hd =>
     simp only [TensorProduct.tmul_add, map_add, he, hd]
   | smul_tprod c e =>
     simp only [TensorProduct.tmul_smul, map_smul]
     congr 1
-    change PiTensorProduct.map (localEvaluation F ζ hζ W m ψ V ρ)
+    change map₀
       (tensorShuffle F ζ hζ W m ψ V ρ
         (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] PiTensorProduct.tprod ℂ e)) = _
     calc
-      _ = PiTensorProduct.map (localEvaluation F ζ hζ W m ψ V ρ)
+      _ = map₀
           (PiTensorProduct.tprod ℂ (fun v => f v ⊗ₜ[ℂ] e v)) :=
-        congrArg (PiTensorProduct.map (localEvaluation F ζ hζ W m ψ V ρ))
+        congrArg (map₀)
           (tensorShuffle_tmul F ζ hζ W m ψ V ρ f e)
       _ = _ := by
         rw [PiTensorProduct.map_tprod]
         simp only [localEvaluation_tmul, hf, one_smul]
 
-def fixedCoefficientMap (f : ∀ v, ScalarSections F ζ hζ W m ψ v) :
+def fixedCoefficientMap :
     JacquetTensor F ζ hζ W ψ V ρ →ₗ[ℂ] AmbientTensor F W V :=
   (tensorEmbedding F ζ hζ W m hm ψ V ρ D).comp
     (TensorProduct.mk ℂ (SectionTensor F ζ hζ W m ψ)
       (JacquetTensor F ζ hζ W ψ V ρ) (PiTensorProduct.tprod ℂ f))
 
-theorem quotient_fixedCoefficientMap
-    (f : ∀ v, ScalarSections F ζ hζ W m ψ v)
-    (hf : ∀ v, sectionValue F ζ hζ v.val (m v) (ψ v) (f v) 1 = 1) :
+end
+
+variable (f : ∀ v, ScalarSections F ζ hζ W m ψ v)
+    (hf : ∀ v, sectionValue F ζ hζ v.val (m v) (ψ v) (f v) 1 = 1)
+
+include hf in
+theorem quotient_fixedCoefficientMap :
     (tensorQuotient F ζ hζ W ψ V ρ).comp
       (fixedCoefficientMap F ζ hζ W m hm ψ V ρ D f) = LinearMap.id := by
   apply LinearMap.ext
   intro e
-  change tensorQuotient F ζ hζ W ψ V ρ
-    (tensorEmbedding F ζ hζ W m hm ψ V ρ D
-      (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] e)) = e
   calc
     _ = tensorEvaluation F ζ hζ W m ψ V ρ
         (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] e) :=
       LinearMap.congr_fun (tensor_evaluation_square F ζ hζ W m hm ψ V ρ D) _
     _ = e := tensorEvaluation_normalized F ζ hζ W m ψ V ρ f hf e
 
-theorem fixedCoefficientMap_injective
-    (f : ∀ v, ScalarSections F ζ hζ W m ψ v)
-    (hf : ∀ v, sectionValue F ζ hζ v.val (m v) (ψ v) (f v) 1 = 1) :
+include hf in
+theorem fixedCoefficientMap_injective :
     Function.Injective (fixedCoefficientMap F ζ hζ W m hm ψ V ρ D f) := by
-  apply Function.LeftInverse.injective (g := tensorQuotient F ζ hζ W ψ V ρ)
+  apply Function.LeftInverse.injective
   intro e
   exact LinearMap.congr_fun
     (quotient_fixedCoefficientMap F ζ hζ W m hm ψ V ρ D f hf) e

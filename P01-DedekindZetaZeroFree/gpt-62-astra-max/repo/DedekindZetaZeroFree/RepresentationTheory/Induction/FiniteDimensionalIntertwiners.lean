@@ -8,12 +8,13 @@ namespace DedekindZetaZeroFree.CovariantSampling
 
 variable {G : Type*} [Group G]
 
+variable (C K J : Subgroup G) (chi : C →* ℂ) (n : ℕ) (r : Fin n → G)
+    (hcover : ∀ g : G, ∃ (i : Fin n) (c : C) (k : K) (j : J), g = c.val * r i * k.val * j.val)
+    (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J) {W : Type*} [AddCommGroup W]
+    [Module ℂ W]
+
+include hcover in
 theorem sampleMap_injective
-    (C K J : Subgroup G) (chi : C →* ℂ) (n : ℕ) (r : Fin n → G)
-    (hcover : ∀ g : G, ∃ (i : Fin n) (c : C) (k : K) (j : J),
-      g = c.val * r i * k.val * j.val)
-    (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
-    {W : Type*} [AddCommGroup W] [Module ℂ W]
     (tau : Representation ℂ K W) :
     Function.Injective (sampleMap C K J chi hnormalize tau n r) := by
   intro T U h
@@ -34,15 +35,10 @@ theorem sampleMap_injective
     chi c * (U w).val (r i * k.val)
   rw [← ht, ← hu, hs]
 
-theorem intertwiningMap_finiteDimensional
-    (C K J : Subgroup G) (chi : C →* ℂ) (n : ℕ) (r : Fin n → G)
-    (hcover : ∀ g : G, ∃ (i : Fin n) (c : C) (k : K) (j : J),
-      g = c.val * r i * k.val * j.val)
-    (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
-    {W : Type*} [AddCommGroup W] [Module ℂ W] [FiniteDimensional ℂ W]
+include hcover in
+theorem intertwiningMap_finiteDimensional [FiniteDimensional ℂ W]
     (tau : Representation ℂ K W) :
-    FiniteDimensional ℂ (tau.IntertwiningMap (rho_J C K J chi hnormalize)) := by
-  exact FiniteDimensional.of_injective
+    FiniteDimensional ℂ (tau.IntertwiningMap (rho_J C K J chi hnormalize)) := FiniteDimensional.of_injective
     (sampleMap C K J chi hnormalize tau n r)
     (sampleMap_injective C K J chi n r hcover hnormalize tau)
 

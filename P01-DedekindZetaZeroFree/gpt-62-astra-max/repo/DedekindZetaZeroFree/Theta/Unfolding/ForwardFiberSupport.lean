@@ -25,8 +25,8 @@ private alias unit_ord := ThetaBranch.unit_ord
 private alias reduction_pow := ThetaBranch.reduction_pow
 private alias char_order := ThetaBranch.char_order
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def forwardMask (m : ThetaReflectionData.Row R.A) (a : Fˣ) : ℂ :=
   ∏ p : ThetaDigitAverage.rowPrimes R.A m.val m.property,
@@ -125,7 +125,6 @@ lemma orbitSheet_forward_factor {N : TraceHaarTransport R} (C : JointUpperVanish
   rw [forward_digit_mask R C v m i y.val hi, hv, fourier_rational_finprod]
   unfold forwardSheetWord
   rw [R.probe.correction.H_actual]
-  change _ = _ * (_ * _ * (R.σ ((R.A.H_S (R.A.diagonal (i.2.val * Quotient.out i.1)) y.val : Fˣ) : F) ^ 2)⁻¹ * _)
   rw [mul_comm i.2.val, ← orbitFrequency]
   unfold forwardMask
   ring
@@ -145,25 +144,21 @@ lemma forwardSheetWord_nonallowed {Q : AdmissibleFlatSources R} (P : Packet R Q)
   let z := R.A.diagonal (γ.val * x) * y
   by_cases hc : ∀ p : R.A.Sf, z.2 p ∈ P.cutoff p
   · have hz := cutoff_class_one R P z hc
-    have hkγ := rational_gamma_class R γ
     have hp : ThetaReflectionData.rationalClass R.A x *
         QuotientGroup.mk' R.A.sixthPowers y = 1 := by
       dsimp only [z] at hz
-      rw [map_mul, map_mul R.A.diagonal, map_mul, hkγ] at hz
+      rw [map_mul, map_mul R.A.diagonal, map_mul, (rational_gamma_class R γ)] at hz
       change (1 : R.A.V) * ThetaReflectionData.rationalClass R.A x *
         QuotientGroup.mk' R.A.sixthPowers y = 1 at hz
       rwa [@one_mul R.A.V _ (ThetaReflectionData.rationalClass R.A x)] at hz
     have hy : QuotientGroup.mk' R.A.sixthPowers y ∉ R.probe.correction.B := by
       intro h
       apply hx
-      have he : ThetaReflectionData.rationalClass R.A x =
-          (QuotientGroup.mk' R.A.sixthPowers y)⁻¹ :=
-        @eq_inv_of_mul_eq_one_left R.A.V _ _ _ hp
-      rw [he]
+      rw [(@eq_inv_of_mul_eq_one_left R.A.V _ _ _ hp)]
       exact R.probe.correction.B.inv_mem h
     unfold forwardSheetWord
     rw [if_neg hy]
-    simp only [zero_mul]
+    simp
   · have hf : P.forwardProfile v z = 0 := by
       simp only [Packet.forwardProfile, if_neg hc, zero_mul]
     change _ * P.forwardProfile v z = 0
@@ -174,12 +169,9 @@ lemma orbitFrequency_integral_iff (ξ : ThetaReflectionData.Frequency R.A)
     (orbitFrequency R (ξ, γ) : F) ∈ R.A.R ↔ (Quotient.out ξ : Fˣ).val ∈ R.A.R := by
   constructor
   · intro h p hp
-    have hg := gamma_valuation R γ ⟨p, hp⟩
-    have hv := h p hp
-    simpa only [orbitFrequency, Units.val_mul, map_mul, hg, mul_one] using hv
+    simpa only [orbitFrequency, Units.val_mul, map_mul, (gamma_valuation R γ ⟨p, hp⟩), mul_one] using (h p hp)
   · intro h p hp
-    have hg := gamma_valuation R γ ⟨p, hp⟩
-    simpa only [orbitFrequency, Units.val_mul, map_mul, hg, mul_one] using h p hp
+    simpa only [orbitFrequency, Units.val_mul, map_mul, (gamma_valuation R γ ⟨p, hp⟩), mul_one] using h p hp
 
 lemma orbitIntegral_forward_factor {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
@@ -234,7 +226,7 @@ lemma groupedOrbitTerm_forward_allowed {N : TraceHaarTransport R} (C : JointUppe
         (C.packet.kernel t.val * (C.packet.positiveSheet (q R.A (Quotient.out ξ) *
           ⟨t.val / Z, div_pos t.property hZ⟩) : ℂ)) := by ring
   simp_rw [hm]
-  rw [integral_const_mul, (forward_sheet_smoothing R C (Quotient.out ξ) Z hZ).2]
+  rw [integral_const_mul, (forward_sheet_smoothing R C (Quotient.out ξ) Z hZ)]
 
 lemma groupedOrbitTerm_forward_nonintegral {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)

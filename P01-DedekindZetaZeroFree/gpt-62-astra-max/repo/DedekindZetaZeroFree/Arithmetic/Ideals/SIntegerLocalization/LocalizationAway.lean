@@ -18,7 +18,9 @@ private theorem exists_pow_mul_le_one (a b : ℤᵐ⁰) (ha : a < 1) (hb : b ≠
   exact ⟨n, (lt_of_lt_of_eq (mul_lt_mul_of_pos_right hn (zero_lt_iff.mpr hb))
     (inv_mul_cancel₀ hb)).le⟩
 
-theorem exists_denominator_power (S : Finset (HeightOneSpectrum (𝓞 F)))
+variable (S : Finset (HeightOneSpectrum (𝓞 F)))
+
+theorem exists_denominator_power
     (x : (S : Set (HeightOneSpectrum (𝓞 F))).integer F) :
     ∃ n : ℕ, ∃ a : 𝓞 F,
       algebraMap (𝓞 F) F a = (algebraMap (𝓞 F) F (denominator S)) ^ n * (x : F) := by
@@ -35,19 +37,15 @@ theorem exists_denominator_power (S : Finset (HeightOneSpectrum (𝓞 F)))
       v.valuation F ((algebraMap (𝓞 F) F (denominator S)) ^ N * (x : F)) ≤ 1 := by
     rw [map_mul, map_pow]
     by_cases hv : v ∈ S
-    · have hnN : n ⟨v, hv⟩ ≤ N := Finset.single_le_sum (fun _ _ => Nat.zero_le _) (Finset.mem_univ _)
-      have hp : (v.valuation F (algebraMap (𝓞 F) F (denominator S))) ^ N ≤
-          (v.valuation F (algebraMap (𝓞 F) F (denominator S))) ^ n ⟨v, hv⟩ :=
-        pow_le_pow_of_le_one (zero_le : 0 ≤ v.valuation F (algebraMap (𝓞 F) F (denominator S)))
-          (v.valuation_le_one (denominator S)) hnN
-      exact (mul_le_mul_of_nonneg_right hp
-        (zero_le : 0 ≤ v.valuation F (x : F))).trans (hn ⟨v, hv⟩)
-    · rw [valuation_denominator_eq_one S v hv, one_pow, one_mul]
+    · exact (mul_le_mul_of_nonneg_right (pow_le_pow_of_le_one zero_le
+        (v.valuation_le_one (denominator S)) (Finset.single_le_sum (fun _ _ => Nat.zero_le _) (Finset.mem_univ _)))
+        zero_le).trans (hn ⟨v, hv⟩)
+    · simp [valuation_denominator_eq_one S v hv]
       exact x.property v hv
   obtain ⟨a, ha⟩ := HeightOneSpectrum.mem_integers_of_valuation_le_one F _ hval
   exact ⟨N, a, ha⟩
 
-theorem isLocalization_away (S : Finset (HeightOneSpectrum (𝓞 F))) :
+theorem isLocalization_away :
     IsLocalization.Away (denominator S)
       ((S : Set (HeightOneSpectrum (𝓞 F))).integer F) := by
   change IsLocalization (Submonoid.powers (denominator S)) _
@@ -55,24 +53,21 @@ theorem isLocalization_away (S : Finset (HeightOneSpectrum (𝓞 F))) :
   constructor
   · intro y
     obtain ⟨n, hn⟩ := y.property
-    change IsUnit (algebraMap (𝓞 F) _ (y : 𝓞 F))
-    rw [← hn, map_pow]
+    simp [← hn]
     let t := denominator S
-    let ti : (S : Set (HeightOneSpectrum (𝓞 F))).integer F :=
-      ⟨(algebraMap (𝓞 F) F t)⁻¹, fun v hv => by
-        rw [map_inv₀, valuation_denominator_eq_one S v hv, inv_one]⟩
     have hunit : IsUnit (algebraMap (𝓞 F)
         ((S : Set (HeightOneSpectrum (𝓞 F))).integer F) t) := by
       apply isUnit_iff_exists_inv.mpr
-      exact ⟨ti, Subtype.ext (mul_inv_cancel₀
+      exact ⟨(⟨(algebraMap (𝓞 F) F t)⁻¹, fun v hv => by
+        rw [map_inv₀, valuation_denominator_eq_one S v hv, inv_one]⟩), Subtype.ext (mul_inv_cancel₀
         ((IsFractionRing.injective (𝓞 F) F).ne (denominator_ne_zero S)))⟩
-    simpa using hunit.pow n
+    exact hunit.pow n
   constructor
   · intro x
     obtain ⟨n, a, ha⟩ := exists_denominator_power S x
     refine ⟨(a, ⟨denominator S ^ n, ⟨n, rfl⟩⟩), ?_⟩
     apply Subtype.ext
-    simpa [map_pow, mul_comm] using ha.symm
+    simpa [mul_comm] using ha.symm
   · intro x y h
     refine ⟨1, ?_⟩
     simp only [Submonoid.coe_one, one_mul]

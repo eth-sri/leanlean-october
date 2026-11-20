@@ -9,9 +9,9 @@ namespace DedekindZetaZeroFree.SheetRescaling.WeylTensorTransport
 open MomentSources NumberField MeasureTheory
 open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {N : TraceHaarTransport R} (C : JointDigitDescentSources R N)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {N : TraceHaarTransport R} (C : JointDigitDescentSources R N)
 
 lemma class_eq_one_of_finite_eq_one (z : R.A.G) (hz : ∀ p : R.A.Sf, z.2 p = 1) :
     QuotientGroup.mk' R.A.sixthPowers z = 1 := by
@@ -27,8 +27,7 @@ lemma class_eq_one_of_finite_eq_one (z : R.A.G) (hz : ∀ p : R.A.Sf, z.2 p = 1)
 
 lemma uniform_class (u : ℝ) :
     QuotientGroup.mk' R.A.sixthPowers
-      (R.A.radialSection (Real.exp u) (Real.exp_pos u)) = 1 := by
-  exact class_eq_one_of_finite_eq_one R _ (fun p => by simp [SArithmeticData.radialSection])
+      (R.A.radialSection (Real.exp u) (Real.exp_pos u)) = 1 := class_eq_one_of_finite_eq_one R _ (fun p => by simp [SArithmeticData.radialSection])
 
 lemma uniform_branch (v : R.A.UnitQuotient) (u : ℝ) :
     C.packet.branch v (R.A.radialSection (Real.exp u) (Real.exp_pos u)) = 1 := by
@@ -36,8 +35,6 @@ lemma uniform_branch (v : R.A.UnitQuotient) (u : ℝ) :
     simpa [SArithmeticData.radialSection] using (C.packet.cutoff p).one_mem)]
   apply Finset.prod_eq_one
   intro w _
-  have hp : 0 < (Real.exp u) ^ (1 / (2 * (InfinitePlace.nrComplexPlaces F : ℝ))) :=
-    Real.rpow_pos_of_pos (Real.exp_pos u) _
   have he : InfinitePlace.Completion.extensionEmbedding w
       ((R.A.radialSection (Real.exp u) (Real.exp_pos u)).1 w : w.Completion) =
       (((Real.exp u) ^ (1 / (2 * (InfinitePlace.nrComplexPlaces F : ℝ)))) : ℝ) := by
@@ -75,12 +72,7 @@ lemma phase_radial (v : R.A.UnitQuotient) (κ : R.A.V) (z : R.A.G) (u : ℝ) :
     exact mul_one (QuotientGroup.mk' R.A.sixthPowers z)
   rw [hc, map_mul, uniform_branch, mul_one]
 
-lemma root_norm (h : rootsOfUnity 6 F) : ‖R.σ ((h : Fˣ) : F)‖ = 1 := by
-  apply Complex.norm_eq_one_of_pow_eq_one (n := 6) _ (by norm_num)
-  rw [← map_pow, ← Units.val_pow_eq_pow_val]
-  have hh : (h : Fˣ) ^ 6 = 1 := (mem_rootsOfUnity _ _).mp h.property
-  rw [hh]
-  simp
+alias root_norm := DedekindZetaZeroFree.DigitMasks.root_norm
 
 lemma branch_norm (v : R.A.UnitQuotient) (z : R.A.G) : ‖C.packet.branch v z‖ = 1 := by
   rw [C.packet.branch_global, norm_mul, Circle.norm_coe, root_norm, one_mul]

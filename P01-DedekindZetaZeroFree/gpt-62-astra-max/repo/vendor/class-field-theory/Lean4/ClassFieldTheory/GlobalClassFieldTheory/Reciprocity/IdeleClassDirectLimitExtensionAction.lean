@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -30,40 +28,6 @@ open ClassFormation
 open LocalClassFieldTheory
 open CyclicCohomology
 
-/-- The fixed-part comparison intertwines an automorphism of a finite
-rational intermediate field with any lift to the rational absolute
-Galois group. -/
-theorem rationalIdeleClassEquivFixed_action_coe
-    (E : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ E]
-    (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
-    (τ : E ≃ₐ[ℚ] E)
-    (hστ : ∀ x : E,
-      ((τ x : E) : SeparableClosure ℚ) =
-        σ (x : SeparableClosure ℚ))
-    (c : RelativeIdeleGroup.ClassGroup ℚ E) :
-    rationalIdeleClassRepresentation.ρ σ
-        (rationalIdeleClassEquivFixed E
-          (Additive.ofMul
-            (_root_.relativeIdeleClassBaseChangeMulEquiv
-              (K := ℚ) (L := E) c))).1 =
-      (rationalIdeleClassEquivFixed E
-        (Additive.ofMul
-          (_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := E) (τ • c)))).1 := by
-  change
-    Additive.ofMul
-        (σ • rationalIntermediateIdeleClassToDirectLimit E
-          (_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := E) c)) =
-      Additive.ofMul
-        (rationalIntermediateIdeleClassToDirectLimit E
-          (_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := E) (τ • c)))
-  exact congrArg Additive.ofMul
-    (rationalIntermediateIdeleClassToDirectLimit_conjugation
-      E σ τ hστ c)
-
 /-- The fixed-part idèle-class realization is natural under an
 equivalence between two finite rational intermediate fields induced by
 an automorphism of the rational separable closure. -/
@@ -81,41 +45,22 @@ theorem rationalIdeleClassEquivFixed_ambientAlgEquiv
           (Additive.ofMul c)).1 =
       (rationalIdeleClassEquivFixed F
         (Additive.ofMul (ideleClassCongr e c))).1 := by
-  change
-    Additive.ofMul
-        (σ • rationalIntermediateIdeleClassToDirectLimit E c) =
-      Additive.ofMul
-        (rationalIntermediateIdeleClassToDirectLimit F
-          (ideleClassCongr e c))
   exact congrArg Additive.ofMul
     (rationalIntermediateIdeleClassToDirectLimit_ambientAlgEquiv
       σ e hσe c)
 
-private theorem relativeIdeleClassBaseChangeAddEquiv_apply
-    (E : Type) [Field E] [NumberField E]
-    (c : Additive (RelativeIdeleGroup.ClassGroup ℚ E)) :
-    (MulEquiv.toAdditive
-      (_root_.relativeIdeleClassBaseChangeMulEquiv
-        (K := ℚ) (L := E))) c =
-      Additive.ofMul
-        (_root_.relativeIdeleClassBaseChangeMulEquiv
-          (K := ℚ) (L := E) (Additive.toMul c)) := by
-  rfl
+section
+
+variable (K L : ClosedSubgroup (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+    (hLK : L.toSubgroup ≤ K.toSubgroup)
+    [FiniteDimensional ℚ (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)]
+    [FiniteDimensional ℚ ((abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK).restrictScalars ℚ)]
+    [NumberField (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)]
 
 /-- The relative fixed-field comparison has the same underlying direct-limit
 class as the intermediate-field comparison from which it is transported. -/
 private theorem
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_coe
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [FiniteDimensional ℚ
-      (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)]
-    [FiniteDimensional ℚ
-      ((abstractRelativeFixedField
-        ℚ (SeparableClosure ℚ) hLK).restrictScalars ℚ)]
-    [NumberField
-      (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)]
     (c : Additive
       (IdeleClassGroup
         (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK))) :
@@ -123,21 +68,10 @@ private theorem
         K L hLK c).1 =
       (rationalIdeleClassEquivFixed
         ((abstractRelativeFixedField
-          ℚ (SeparableClosure ℚ) hLK).restrictScalars ℚ) c).1 := by
-  rfl
+          ℚ (SeparableClosure ℚ) hLK).restrictScalars ℚ) c).1 := rfl
 
 private theorem
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_baseChange_coe
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [FiniteDimensional ℚ
-      (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)]
-    [FiniteDimensional ℚ
-      ((abstractRelativeFixedField
-        ℚ (SeparableClosure ℚ) hLK).restrictScalars ℚ)]
-    [NumberField
-      (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)]
     (c : Additive
       (RelativeIdeleGroup.ClassGroup ℚ
         (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK))) :
@@ -158,15 +92,12 @@ private theorem
               ℚ (SeparableClosure ℚ) hLK)
             (Additive.toMul c)))).1 := by
   let E := abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK
-  let eFixed :=
-    rationalAbstractRelativeFixedFieldIdeleClassEquivFixedOfFiniteDimensional
-      K L hLK
   let eRelative :=
     MulEquiv.toAdditive
       (_root_.relativeIdeleClassBaseChangeMulEquiv
         (K := ℚ) (L := E))
   calc
-    (eFixed (eRelative c)).1 =
+    _ =
         (rationalIdeleClassEquivFixed
           (E.restrictScalars ℚ) (eRelative c)).1 :=
       rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_coe
@@ -175,25 +106,15 @@ private theorem
           (E.restrictScalars ℚ)
           (Additive.ofMul
             (_root_.relativeIdeleClassBaseChangeMulEquiv
-              (K := ℚ) (L := E) (Additive.toMul c)))).1 :=
+                (Additive.toMul c)))).1 :=
       congrArg
         (fun d =>
           (rationalIdeleClassEquivFixed
             (E.restrictScalars ℚ) d).1)
-        (relativeIdeleClassBaseChangeAddEquiv_apply E c)
+        (rfl)
 
 private theorem
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_action_baseChange_coe
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [FiniteDimensional ℚ
-      (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)]
-    [FiniteDimensional ℚ
-      ((abstractRelativeFixedField
-        ℚ (SeparableClosure ℚ) hLK).restrictScalars ℚ)]
-    [NumberField
-      (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK)]
     (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
     (τ₀ :
       abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK ≃ₐ[ℚ]
@@ -229,43 +150,23 @@ private theorem
       (_root_.relativeIdeleClassBaseChangeMulEquiv
         (K := ℚ) (L := E))
   let E₀ := E.restrictScalars ℚ
-  let τQ : E₀ ≃ₐ[ℚ] E₀ := τ₀
-  let cRelQ : RelativeIdeleGroup.ClassGroup ℚ E₀ :=
+  let τQ := τ₀
+  let cRelQ :=
     Additive.toMul c
-  let cQ : IdeleClassGroup E₀ :=
+  let cQ :=
     _root_.relativeIdeleClassBaseChangeMulEquiv
-      (K := ℚ) (L := E₀) cRelQ
-  let cτRelQ : RelativeIdeleGroup.ClassGroup ℚ E₀ :=
-    τQ • cRelQ
-  let cτQ : IdeleClassGroup E₀ :=
+        cRelQ
+  let cτQ :=
     _root_.relativeIdeleClassBaseChangeMulEquiv
-      (K := ℚ) (L := E₀) cτRelQ
-  have hστQ : ∀ y : E₀,
-      ((τQ y : E₀) : SeparableClosure ℚ) =
-        σ (y : SeparableClosure ℚ) := by
-    exact hστ
+        (τQ • cRelQ)
   have hAction :=
     rationalIdeleClassEquivFixed_ambientAlgEquiv
       (E := E₀) (F := E₀)
-      σ τQ hστQ cQ
-  have hLeft :
-      (eFixed (eRelative c)).1 =
-        (rationalIdeleClassEquivFixed
-          E₀ (Additive.ofMul cQ)).1 := by
-    exact
-      rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_baseChange_coe
+      σ τQ hστ cQ
+  have hLeft := rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_baseChange_coe
         K L hLK c
-  have hCongr :
-      ideleClassCongr τQ cQ = cτQ := by
-    exact
-      (_root_.relativeIdeleClassBaseChangeMulEquiv_smul_congr
+  have hCongr := (_root_.relativeIdeleClassBaseChangeMulEquiv_smul_congr
         τQ cRelQ).symm
-  have hcτRaw :
-      cτQ =
-        _root_.relativeIdeleClassBaseChangeMulEquiv
-          (K := ℚ) (L := E)
-          (τ₀ • Additive.toMul c) := by
-    rfl
   have hRight :
       (rationalIdeleClassEquivFixed
         E₀ (Additive.ofMul (ideleClassCongr τQ cQ))).1 =
@@ -285,13 +186,13 @@ private theorem
             E₀
             (Additive.ofMul
               (_root_.relativeIdeleClassBaseChangeMulEquiv
-                (K := ℚ) (L := E)
+
                 (τ₀ • Additive.toMul c)))).1 :=
         congrArg
           (fun d =>
             (rationalIdeleClassEquivFixed
               E₀ (Additive.ofMul d)).1)
-          hcτRaw
+          rfl
       _ = _ :=
         (rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_baseChange_coe
           K L hLK
@@ -310,6 +211,8 @@ private theorem
             (ideleClassCongr τQ cQ))).1 :=
       hAction
     _ = _ := hRight
+
+end
 
 private theorem
     rationalAbstractExtensionIdeleClassEquiv_action_fixed_mk
@@ -373,26 +276,21 @@ private theorem
   let F := abstractFixedField ℚ (SeparableClosure ℚ) K
   let E := abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK
   let := hnormal
-  let : FiniteDimensional ℚ F :=
+  let :=
     abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K hKfinite
-  let : FiniteDimensional F E :=
+  let :=
     abstractRelativeFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K L hLK hKfinite hfinite
   let : IsScalarTower ℚ F E :=
     IsScalarTower.of_algebraMap_eq' (RingHom.ext_rat _ _)
-  let : FiniteDimensional ℚ E :=
+  let :=
     FiniteDimensional.trans ℚ F E
-  let : NumberField F := NumberField.of_module_finite ℚ F
-  let : NumberField E := NumberField.of_module_finite ℚ E
+  let := NumberField.of_module_finite ℚ F
+  let := NumberField.of_module_finite ℚ E
   let : FiniteDimensional ℚ (E.restrictScalars ℚ) := by
-    change FiniteDimensional ℚ
-      (abstractFixedField ℚ (SeparableClosure ℚ) L)
     change FiniteDimensional ℚ E
     infer_instance
-  let M :=
-    extensionFixedRepresentation rationalIdeleClassRepresentation
-      K L hLK hnormal
   let eAmbient :=
     extensionFixedRepresentationEquiv
       rationalIdeleClassRepresentation K L hLK hnormal
@@ -405,15 +303,15 @@ private theorem
   let eQ :=
     abstractExtensionQuotientEquivGaloisGroup
       ℚ (SeparableClosure ℚ) K L hLK hnormal
-  let τ : E ≃ₐ[F] E :=
+  let τ :=
     eQ (QuotientGroup.mk' (extensionSubgroup K L hLK) σ)
-  let τ₀ : E ≃ₐ[ℚ] E := τ.restrictScalars ℚ
-  let c : Additive (RelativeIdeleGroup.ClassGroup ℚ E) :=
+  let τ₀ := τ.restrictScalars ℚ
+  let c :=
     eRelative.symm (eFixed.symm (eAmbient x))
   have hc :
       eFixed (eRelative c) = eAmbient x := by
     calc
-      eFixed (eRelative c) =
+      _ =
           eFixed (eFixed.symm (eAmbient x)) :=
         congrArg eFixed
           (eRelative.apply_symm_apply
@@ -422,7 +320,7 @@ private theorem
         eFixed.apply_symm_apply (eAmbient x)
   have hστ : ∀ y : E,
       ((τ₀ y : E) : SeparableClosure ℚ) =
-        σ.1 (y : SeparableClosure ℚ) := by
+        σ.1 y := by
     intro y
     change
       ((τ y : E) : SeparableClosure ℚ) =
@@ -432,9 +330,7 @@ private theorem
         ℚ (SeparableClosure ℚ) K L hLK hnormal σ y).symm
   apply Subtype.ext
   calc
-    (eAmbient
-        (M.ρ
-          (QuotientGroup.mk' (extensionSubgroup K L hLK) σ) x)).1 =
+    _ =
         relativeCosetAction rationalIdeleClassRepresentation
           K L hLK (eAmbient x)
           (QuotientGroup.mk'
@@ -463,9 +359,7 @@ private theorem
         (eFixed
           (eRelative
             (Additive.ofMul
-              (τ₀ • Additive.toMul c)))).1 := by
-      exact
-        rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_action_baseChange_coe
+              (τ₀ • Additive.toMul c)))).1 := rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_action_baseChange_coe
           K L hLK σ.1 τ₀ hστ c
 
 private theorem rationalTowerRelativeIdeleClassBaseChangeAddEquiv_smul
@@ -491,24 +385,6 @@ private theorem rationalTowerRelativeIdeleClassBaseChangeAddEquiv_smul
           ((τ.restrictScalars ℚ) • Additive.toMul c)) =
       Additive.ofMul
         (τ • Additive.toMul (eTower c)) := by
-  let eTower :
-      Additive (RelativeIdeleGroup.ClassGroup ℚ E) ≃+
-        Additive (RelativeIdeleGroup.ClassGroup F E) :=
-    (MulEquiv.toAdditive
-      (TowerRelativeIdeleGroup.classGroupEquiv
-        ℚ F E).symm).trans
-      (MulEquiv.toAdditive
-        (towerRelativeIdeleClassBaseChangeMulEquiv
-          ℚ F E))
-  apply Additive.toMul.injective
-  change
-    towerRelativeIdeleClassBaseChangeMulEquiv ℚ F E
-        ((TowerRelativeIdeleGroup.classGroupEquiv ℚ F E).symm
-          ((τ.restrictScalars ℚ) • Additive.toMul c)) =
-      τ •
-        towerRelativeIdeleClassBaseChangeMulEquiv ℚ F E
-          ((TowerRelativeIdeleGroup.classGroupEquiv ℚ F E).symm
-            (Additive.toMul c))
   exact
     towerRelativeIdeleClassBaseChangeMulEquiv_smul
       ℚ F E τ (Additive.toMul c)
@@ -522,24 +398,16 @@ private theorem addEquiv_trans_symm_trans_symm_trans_apply_eq
     (h : eV y = eB (eA z))
     (ht : eC z = w) :
     (((eV.trans eB.symm).trans eA.symm).trans eC) y = w := by
-  change eC (eA.symm (eB.symm (eV y))) = w
-  rw [h, eB.symm_apply_apply, eA.symm_apply_apply]
-  exact ht
+  simp_all
+
+alias IdeleClassDirectLimitExtensionAction.addEquiv_trans_symm_trans_symm_trans_apply_eq := addEquiv_trans_symm_trans_symm_trans_apply_eq
+
+variable (K L : ClosedSubgroup (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+    (hLK : L.toSubgroup ≤ K.toSubgroup) (hnormal : (extensionSubgroup K L hLK).Normal)
+    [hKfinite : Finite ((baseField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸ extensionSubgroup (baseField (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)) K (le_baseField K))]
+    [hfinite : Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
 
 private theorem rationalAbstractExtensionIdeleClassEquiv_action_mk
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (σ : K.toSubgroup)
     (x : (extensionFixedRepresentation rationalIdeleClassRepresentation
       K L hLK hnormal).V) :
@@ -580,39 +448,30 @@ private theorem rationalAbstractExtensionIdeleClassEquiv_action_mk
   let F := abstractFixedField ℚ (SeparableClosure ℚ) K
   let E := abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK
   let := hnormal
-  let : FiniteDimensional ℚ F :=
+  let :=
     abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K hKfinite
-  let : FiniteDimensional F E :=
+  let :=
     abstractRelativeFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K L hLK hKfinite hfinite
   let : IsScalarTower ℚ F E :=
     IsScalarTower.of_algebraMap_eq' (RingHom.ext_rat _ _)
-  let : FiniteDimensional ℚ E :=
+  let :=
     FiniteDimensional.trans ℚ F E
-  let : NumberField F := NumberField.of_module_finite ℚ F
-  let : NumberField E := NumberField.of_module_finite ℚ E
+  let := NumberField.of_module_finite ℚ F
+  let := NumberField.of_module_finite ℚ E
   let : FiniteDimensional ℚ (E.restrictScalars ℚ) := by
-    change FiniteDimensional ℚ
-      (abstractFixedField ℚ (SeparableClosure ℚ) L)
     change FiniteDimensional ℚ E
     infer_instance
-  let : IsGalois F E :=
+  let :=
     abstractRelativeFixedField_isGalois
       ℚ (SeparableClosure ℚ) K L hLK hnormal
-  let : MulDistribMulAction (E ≃ₐ[F] E)
-      (RelativeIdeleGroup.ClassGroup F E) :=
+  let :=
     RelativeIdeleGroup.Cohomology.ideleClassMulDistribMulAction F E
-  let M :=
-    extensionFixedRepresentation rationalIdeleClassRepresentation
-      K L hLK hnormal
   let eAmbient :=
     extensionFixedRepresentationEquiv
       rationalIdeleClassRepresentation K L hLK hnormal
-  let eFixed :
-      Additive (IdeleClassGroup E) ≃+
-        KummerTheory.ambientFixedAddSubgroup
-          rationalIdeleClassRepresentation L :=
+  let eFixed :=
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixedOfFiniteDimensional K L hLK
   let eRelative :
       Additive (RelativeIdeleGroup.ClassGroup ℚ E) ≃+
@@ -620,26 +479,23 @@ private theorem rationalAbstractExtensionIdeleClassEquiv_action_mk
     MulEquiv.toAdditive
       (_root_.relativeIdeleClassBaseChangeMulEquiv
         (K := ℚ) (L := E))
-  let eTower :
-      Additive (RelativeIdeleGroup.ClassGroup ℚ E) ≃+
-        Additive (RelativeIdeleGroup.ClassGroup F E) :=
+  let eTower :=
     (MulEquiv.toAdditive
       (TowerRelativeIdeleGroup.classGroupEquiv
         ℚ F E).symm).trans
       (MulEquiv.toAdditive
         (towerRelativeIdeleClassBaseChangeMulEquiv
           ℚ F E))
-  let eQ :=
-    abstractExtensionQuotientEquivGaloisGroup
-      ℚ (SeparableClosure ℚ) K L hLK hnormal
-  let τ : E ≃ₐ[F] E :=
-    eQ (QuotientGroup.mk' (extensionSubgroup K L hLK) σ)
-  let τ₀ : E ≃ₐ[ℚ] E := τ.restrictScalars ℚ
-  let c : Additive (RelativeIdeleGroup.ClassGroup ℚ E) :=
+  let τ :=
+    (abstractExtensionQuotientEquivGaloisGroup
+      ℚ (SeparableClosure ℚ) K L hLK hnormal) (QuotientGroup.mk' (extensionSubgroup K L hLK) σ)
+  let τ₀ := τ.restrictScalars ℚ
+  let c :=
     eRelative.symm (eFixed.symm (eAmbient x))
   change
     (((eAmbient.trans eFixed.symm).trans eRelative.symm).trans eTower)
-        (M.ρ
+        ((extensionFixedRepresentation rationalIdeleClassRepresentation
+          K L hLK hnormal).ρ
           (QuotientGroup.mk'
             (extensionSubgroup K L hLK) σ) x) =
       Additive.ofMul
@@ -661,19 +517,6 @@ private theorem rationalAbstractExtensionIdeleClassEquiv_action_mk
 representation becomes the ordinary Galois action on the relative idele
 class group of the two concrete fixed fields. -/
 theorem rationalAbstractExtensionIdeleClassEquiv_action
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (q : K.toSubgroup ⧸ extensionSubgroup K L hLK)
     (x : (extensionFixedRepresentation rationalIdeleClassRepresentation
       K L hLK hnormal).V) :
@@ -710,28 +553,25 @@ theorem rationalAbstractExtensionIdeleClassEquiv_action
   let F := abstractFixedField ℚ (SeparableClosure ℚ) K
   let E := abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK
   let := hnormal
-  let : FiniteDimensional ℚ F :=
+  let :=
     abstractFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K hKfinite
-  let : FiniteDimensional F E :=
+  let :=
     abstractRelativeFixedField_finiteDimensional
       ℚ (SeparableClosure ℚ) K L hLK hKfinite hfinite
   let : IsScalarTower ℚ F E :=
     IsScalarTower.of_algebraMap_eq' (RingHom.ext_rat _ _)
-  let : FiniteDimensional ℚ E :=
+  let :=
     FiniteDimensional.trans ℚ F E
-  let : NumberField F := NumberField.of_module_finite ℚ F
-  let : NumberField E := NumberField.of_module_finite ℚ E
+  let := NumberField.of_module_finite ℚ F
+  let := NumberField.of_module_finite ℚ E
   let : FiniteDimensional ℚ (E.restrictScalars ℚ) := by
-    change FiniteDimensional ℚ
-      (abstractFixedField ℚ (SeparableClosure ℚ) L)
     change FiniteDimensional ℚ E
     infer_instance
-  let : IsGalois F E :=
+  let :=
     abstractRelativeFixedField_isGalois
       ℚ (SeparableClosure ℚ) K L hLK hnormal
-  let : MulDistribMulAction (E ≃ₐ[F] E)
-      (RelativeIdeleGroup.ClassGroup F E) :=
+  let :=
     RelativeIdeleGroup.Cohomology.ideleClassMulDistribMulAction F E
   refine Quotient.inductionOn' q ?_
   intro σ

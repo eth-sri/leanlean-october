@@ -11,15 +11,17 @@ namespace DedekindZetaZeroFree.KPContLocalRegularity
 open MeasureTheory
 open KPContLocalNorm KPContLocalEnergy
 
-def SmoothNearClosedBall {n : ℕ} {outer : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients outer cρ Cρ κ Λ) : Prop :=
+section
+
+variable {n : ℕ} {outer : LocalBall n} {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ)
+
+def SmoothNearClosedBall : Prop :=
   ∃ U : Set (Space n), IsOpen U ∧
     Metric.closedBall outer.center outer.radius ⊆ U ∧
     ContDiffOn ℝ (⊤ : ℕ∞) D.density U ∧
     ∀ i j : Fin n, ContDiffOn ℝ (⊤ : ℕ∞) (fun x => D.matrix x i j) U
 
-def BoundedCoefficientDerivatives {n : ℕ} {outer : LocalBall n}
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ)
+def BoundedCoefficientDerivatives
     (k : ℕ) (L : ℝ) : Prop :=
   ∀ α : MultiIndex n k, ∀ x ∈ outer.carrier,
     ‖coordinateDerivative α (fun y => (D.density y : ℂ)) x‖ ≤ L ∧
@@ -27,13 +29,18 @@ def BoundedCoefficientDerivatives {n : ℕ} {outer : LocalBall n}
       ‖coordinateDerivative α
         (fun y => ((D.density y * D.matrix y i j : ℝ) : ℂ)) x‖ ≤ L
 
+end
+
 def functionSobolevNorm {n : ℕ} (B : LocalBall n) (r : ℕ)
     (h : Space n → ℂ) : ℝ :=
   Real.sqrt (∑ α : MultiIndex n r, (functionL2Norm B (coordinateDerivative α h)) ^ 2)
 
-def WeakIntegerEstimate {n : ℕ} (inner outer : LocalBall n)
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ)
-    (r : ℕ) (M C : ℝ) : Prop :=
+section
+
+variable {n : ℕ} (inner outer : LocalBall n) {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ) (r : ℕ)
+    (M C : ℝ)
+
+def WeakIntegerEstimate : Prop :=
   ∀ z : ℂ, ‖z‖ ≤ M →
     ∀ (u : IntegerSobolev outer 1) (h : IntegerSobolev outer r),
       WeakEquation D z u (value h) →
@@ -41,9 +48,7 @@ def WeakIntegerEstimate {n : ℕ} (inner outer : LocalBall n)
         Represents v (fun x => value u x) ∧
         v.sobolevNorm ≤ C * (‖value u‖ + h.sobolevNorm)
 
-def SmoothSourceIntegerEstimate {n : ℕ} (inner outer : LocalBall n)
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ)
-    (r : ℕ) (M C : ℝ) : Prop :=
+def SmoothSourceIntegerEstimate : Prop :=
   ∀ z : ℂ, ‖z‖ ≤ M →
     ∀ (u : IntegerSobolev outer 1) (h : Space n → ℂ)
       (U : Set (Space n)), IsOpen U →
@@ -55,9 +60,7 @@ def SmoothSourceIntegerEstimate {n : ℕ} (inner outer : LocalBall n)
           Represents v (fun x => value u x) ∧
           v.sobolevNorm ≤ C * (‖value u‖ + functionSobolevNorm outer r h)
 
-def SmoothIntegerEstimate {n : ℕ} (inner outer : LocalBall n)
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ)
-    (r : ℕ) (M C : ℝ) : Prop :=
+def SmoothIntegerEstimate : Prop :=
   ∀ z : ℂ, ‖z‖ ≤ M →
     ∀ (u h : Space n → ℂ) (U : Set (Space n)), IsOpen U →
       Metric.closedBall outer.center outer.radius ⊆ U →
@@ -67,6 +70,8 @@ def SmoothIntegerEstimate {n : ℕ} (inner outer : LocalBall n)
       ∃ v : IntegerSobolev inner (r + 2),
         RepresentsClassicalDerivatives v u ∧
         v.sobolevNorm ≤ C * (functionL2Norm outer u + functionSobolevNorm outer r h)
+
+end
 
 private theorem coordDerivList_contDiffOn {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
     (l : List (Fin n)) {f : Space n → ℂ} (hf : ContDiffOn ℝ (⊤ : ℕ∞) f U) :
@@ -82,20 +87,14 @@ theorem boundedCoefficientDerivatives_of_smoothNearClosedBall
     ∃ L : ℝ, 0 ≤ L ∧ BoundedCoefficientDerivatives D k L := by
   classical
   obtain ⟨U, hU, hsub, hρ, hA⟩ := hD
-  have hρC : ContDiffOn ℝ (⊤ : ℕ∞) (fun y => (D.density y : ℂ)) U :=
-    Complex.ofRealCLM.contDiff.comp_contDiffOn hρ
   have hAprod : ∀ i j : Fin n,
       ContDiffOn ℝ (⊤ : ℕ∞) (fun y => ((D.density y * D.matrix y i j : ℝ) : ℂ)) U := by
     intro i j
     convert Complex.ofRealCLM.contDiff.comp_contDiffOn (hρ.mul (hA i j)) using 1
     ext y
     simp
-  have hK : IsCompact (Metric.closedBall outer.center outer.radius) :=
-    isCompact_closedBall _ _
   have hbound : ∀ (f : Space n → ℂ), ContDiffOn ℝ (⊤ : ℕ∞) f U →
-      ∃ C : ℝ, ∀ x ∈ Metric.closedBall outer.center outer.radius, ‖f x‖ ≤ C := by
-    intro f hf
-    exact hK.exists_bound_of_continuousOn (hf.continuousOn.mono hsub)
+      ∃ C : ℝ, ∀ x ∈ Metric.closedBall outer.center outer.radius, ‖f x‖ ≤ C := fun f hf => (isCompact_closedBall _ _).exists_bound_of_continuousOn (hf.continuousOn.mono hsub)
   have hbd : ∀ α : MultiIndex n k, ∃ B : ℝ, 0 ≤ B ∧
       (∀ x ∈ Metric.closedBall outer.center outer.radius,
         ‖coordinateDerivative α (fun y => (D.density y : ℂ)) x‖ ≤ B) ∧
@@ -103,9 +102,7 @@ theorem boundedCoefficientDerivatives_of_smoothNearClosedBall
         ‖coordinateDerivative α
           (fun y => ((D.density y * D.matrix y q.1 q.2 : ℝ) : ℂ)) x‖ ≤ B) := by
     intro α
-    have hα : ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivative α (fun y => (D.density y : ℂ))) U :=
-      coordDerivList_contDiffOn hU α.directions hρC
-    obtain ⟨B0, hB0⟩ := hbound _ hα
+    obtain ⟨B0, hB0⟩ := hbound _ (coordDerivList_contDiffOn hU α.directions (Complex.ofRealCLM.contDiff.comp_contDiffOn hρ))
     have hq : ∀ q : Fin n × Fin n, ∃ C : ℝ,
         ∀ x ∈ Metric.closedBall outer.center outer.radius,
           ‖coordinateDerivative α
@@ -119,13 +116,12 @@ theorem boundedCoefficientDerivatives_of_smoothNearClosedBall
         Finset.sum_nonneg (fun q _ => le_max_right _ _)
       linarith
     · intro x hx
-      calc ‖coordinateDerivative α (fun y => (D.density y : ℂ)) x‖ ≤ B0 := hB0 x hx
+      calc _ ≤ B0 := hB0 x hx
         _ ≤ max B0 0 := le_max_left _ _
         _ ≤ max B0 0 + ∑ q : Fin n × Fin n, max (C q) 0 :=
             le_add_of_nonneg_right (Finset.sum_nonneg (fun q _ => le_max_right _ _))
     · intro q x hx
-      calc ‖coordinateDerivative α
-            (fun y => ((D.density y * D.matrix y q.1 q.2 : ℝ) : ℂ)) x‖ ≤ C q := hC q x hx
+      calc _ ≤ C q := hC q x hx
         _ ≤ max (C q) 0 := le_max_left _ _
         _ ≤ ∑ q : Fin n × Fin n, max (C q) 0 :=
             Finset.single_le_sum (fun q _ => le_max_right _ _) (Finset.mem_univ q)
@@ -134,15 +130,14 @@ theorem boundedCoefficientDerivatives_of_smoothNearClosedBall
   choose B hB0 hBd hBp using hbd
   refine ⟨∑ α : MultiIndex n k, B α, Finset.sum_nonneg (fun α _ => hB0 α), ?_⟩
   intro α x hx
-  have hx' : x ∈ Metric.closedBall outer.center outer.radius :=
+  have hx' :=
     Metric.ball_subset_closedBall hx
   refine ⟨?_, ?_⟩
-  · calc ‖coordinateDerivative α (fun y => (D.density y : ℂ)) x‖ ≤ B α := hBd α x hx'
+  · calc _ ≤ B α := hBd α x hx'
       _ ≤ ∑ α : MultiIndex n k, B α :=
           Finset.single_le_sum (fun α _ => hB0 α) (Finset.mem_univ α)
   · intro i j
-    calc ‖coordinateDerivative α
-          (fun y => ((D.density y * D.matrix y i j : ℝ) : ℂ)) x‖ ≤ B α := hBp α (i, j) x hx'
+    calc _ ≤ B α := hBp α (i, j) x hx'
       _ ≤ ∑ α : MultiIndex n k, B α :=
           Finset.single_le_sum (fun α _ => hB0 α) (Finset.mem_univ α)
 
@@ -180,12 +175,10 @@ theorem kp_cont_local_regularity_iterate (n r : ℕ) (hn : 0 < n)
   have hsub : inner.carrier ⊆ outer.carrier := by
     rw [LocalBall.carrier, LocalBall.carrier, hcenter, hir, hor]
     exact Metric.ball_subset_ball haR.le
-  have hw : KPContLocalRegularity.SobolevIteration.Raw.WeakIntegerEstimate
-      inner outer Dr r M C :=
+  have hw :=
     hweak inner outer hcenter hir hor Dr hD hbd
-  have hs := KPContLocalRegularity.SobolevIteration.smooth_estimates_of_weak_integer_estimate
-    Dr hcρ hsub hw
-  exact ⟨hw, hs⟩
+  exact ⟨hw, (KPContLocalRegularity.SobolevIteration.smooth_estimates_of_weak_integer_estimate
+    Dr hcρ hsub hw)⟩
 
 theorem kp_cont_local_regularity_iterate_fixed_coefficients (n : ℕ)
     (inner outer : LocalBall n) (hcenter : inner.center = outer.center)

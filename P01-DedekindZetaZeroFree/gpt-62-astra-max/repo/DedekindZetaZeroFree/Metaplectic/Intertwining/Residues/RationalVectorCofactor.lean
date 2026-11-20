@@ -22,12 +22,11 @@ private theorem finite_image_at_one_nonzero
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1) :
     ∃ f : sectionSpace S.borel P .plus 0,
       (actualCanonicalForwardMap F ζ hζ q S P μ hμ f).val 1 ≠ 0 := by
-  have hn := (actual_zero_maps_nonzero F ζ hζ q S P μ hμ).1
   have hex : ∃ (f : sectionSpace S.borel P .plus 0) (g : ActualCover F ζ hζ q),
       (actualCanonicalForwardMap F ζ hζ q S P μ hμ f).val g ≠ 0 := by
     by_contra he
     push Not at he
-    apply hn
+    apply ((actual_zero_maps_nonzero F ζ hζ q S P μ hμ).1)
     ext f g h
     exact congrArg (fun v => v.val h) (he f g)
   obtain ⟨f,g,hg⟩ := hex
@@ -38,11 +37,14 @@ private theorem finite_image_at_one_nonzero
   change (actualCanonicalForwardMap F ζ hζ q S P μ hμ f).val (1 * g) ≠ 0
   simpa only [one_mul] using hg
 
-private theorem finite_tensor_nonzero
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
     (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
     (E : Finset (IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)))
+
+private theorem finite_tensor_nonzero
     (y : ∀ q : E, KPGlobalTorusFiniteStages.LocalFiber F ζ hζ P₀ C₀ q.val)
     (hy : ∀ q, y q ≠ 0) : PiTensorProduct.tprod ℂ y ≠ 0 := by
   have hex (q : E) : ∃ t : actualTorus F ζ hζ q.val, (y q).val t ≠ 0 := by
@@ -65,10 +67,6 @@ private theorem finite_tensor_nonzero
   exact (Finset.prod_ne_zero_iff.mpr (fun q _ => ht q)) he
 
 private theorem actual_rational_image_nonzero
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-    (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
-    (E : Finset (IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)))
     (hE : C₀.exceptional ⊆ E)
     (y : ∀ q : E, KPGlobalTorusFiniteStages.LocalFiber F ζ hζ P₀ C₀ q.val)
     (hy : ∀ q, y q ≠ 0) :
@@ -76,11 +74,10 @@ private theorem actual_rational_image_nonzero
       ((PrincipalOfKP.ResidueCoreBridge.CanonicalBinding.productUnitaryToRational F ζ hζ P₀
         (KPGlobalTorusFiniteStages.finiteTensorRealization F ζ hζ P₀ C₀ E hE
           (PiTensorProduct.tprod ℂ y))).val.val t) ≠ 0 := by
-  have hn := finite_tensor_nonzero F ζ hζ P₀ C₀ E y hy
   have hp : KPGlobalTorusFiniteStages.finiteTensorRealization F ζ hζ P₀ C₀ E hE
       (PiTensorProduct.tprod ℂ y) ≠ 0 := by
     intro hz
-    apply hn
+    apply (finite_tensor_nonzero F ζ hζ P₀ C₀ E y hy)
     exact (KPGlobalTorusFiniteStages.finiteTensorRealization_injective F ζ hζ P₀ C₀ E hE)
       (hz.trans (map_zero _).symm)
   have hr : PrincipalOfKP.ResidueCoreBridge.CanonicalBinding.productUnitaryToRational F ζ hζ P₀
@@ -98,7 +95,13 @@ private theorem actual_rational_image_nonzero
   funext t
   exact he t
 
-theorem unit_mass (F : Type) [Field F] [NumberField F]
+end
+
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+theorem unit_mass
     (q : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)) :
     Measure.addHaarMeasure (finiteCompletionIntegersPositiveCompacts F q)
       ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1 := by
@@ -106,13 +109,11 @@ theorem unit_mass (F : Type) [Field F] [NumberField F]
     let : (Valued.v : Valuation (LocalField F q) (WithZero (Multiplicative ℤ))).Compatible :=
       Valuation.Compatible.ofValuation _
     ext x
-    change valuation (LocalField F q) x ≤ 1 ↔ Valued.v x ≤ 1
     exact (ValuativeRel.isEquiv (valuation (LocalField F q)) (Valued.v)).le_one_iff_le_one
   rw [he]
-  exact Measure.addHaarMeasure_self (K₀ := finiteCompletionIntegersPositiveCompacts F q)
+  exact Measure.addHaarMeasure_self
 
-private theorem actual_finite_output_rational_nonzero
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+private theorem actual_finite_output_rational_nonzero (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
     (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
     (E : Finset (IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)))
@@ -139,6 +140,8 @@ private theorem actual_finite_output_rational_nonzero
         (μ q) (unit_mass F q.val) (f q)).val 1)
     (fun q => smul_ne_zero (Complex.ofReal_ne_zero.mpr (localHalfDifferentFactor_pos F q.val).ne') (hf q))
   exact ⟨f,t,ht⟩
+
+end
 
 private theorem finite_laurent_multilinear_regular
     {ι : Type*} [Fintype ι] [DecidableEq ι]
@@ -175,11 +178,11 @@ private theorem finite_laurent_multilinear_regular
       (fun i _ => ((hd i).analyticAt 0).inv (hd0 i))).mul (hn 0 (Set.mem_univ 0))
 
 open KPRankOneShellContinuation
-open _root_.DedekindZetaZeroFree.KPRankOneShellContinuation renaming eval_diff → eval_diff
-open _root_.DedekindZetaZeroFree.KPRankOneShellContinuation renaming denom_diff → denom_diff
+open _root_.DedekindZetaZeroFree.KPRankOneShellContinuation (eval_diff denom_diff)
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 private theorem actual_local_vector_expansion
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (q : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -200,7 +203,6 @@ private theorem actual_local_vector_expansion
   simp [continuedLevel,evaluate,Finsupp.sum,p]
 
 def rationalStageEval
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
     (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
     (E : Finset (IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)))
@@ -215,7 +217,6 @@ def rationalStageEval
     (PiTensorProduct.tprod ℂ)
 
  theorem actual_rational_family_regular
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
     (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
     (E : Finset (IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)))
@@ -256,7 +257,6 @@ def rationalStageEval
     exact denominator_ne_zero_at_zero (LocalField F q.val) .plus
 
 private theorem compact_zero_at_one
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (q : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -267,13 +267,11 @@ private theorem compact_zero_at_one
     (actualCanonicalForwardMap F ζ hζ q S P μ hμ f).val 1 := by
   let v := actualCanonicalContinued F q ζ hζ S P μ hμ .plus 0
     ((compactTrivialization S.borel P S.iwasawa .plus 0).symm f)
-  have he := (compactTrivialization S.borel P S.iwasawa .minus 0).symm_apply_apply v
   change v.val 1 = (actualCanonicalForwardLinear F ζ hζ q S P μ hμ f).val 1
   rw [forwardIntegralLinear_eq_continuationWitness]
-  exact (congrArg (fun v : compactPicture S.borel P S.iwasawa .minus => v.val 1) he).symm
+  exact (congrArg (fun v : compactPicture S.borel P S.iwasawa .minus => v.val 1) ((compactTrivialization S.borel P S.iwasawa .minus 0).symm_apply_apply v)).symm
 
 theorem actual_rational_nonzero_cofactor
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
     (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
     (E : Finset (IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)))
@@ -308,11 +306,10 @@ theorem actual_rational_nonzero_cofactor
   let a : ℂ → ℂ := fun s => 2 * (Real.pi : ℂ) / ((1/3 : ℂ) + 2*s)
   have ha : MeromorphicOn a Set.univ := fun s _ =>
     analyticAt_const.meromorphicAt.div (by fun_prop)
-  have ha0 : AnalyticAt ℂ a 0 := analyticAt_const.div (by fun_prop) (by norm_num)
   have han : a 0 ≠ 0 := by
     dsimp [a]
     exact div_ne_zero (mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_pos.ne')) (by norm_num)
-  let b : ℂ → ℂ := fun s => c s * ∏ _w : NumberField.InfinitePlace F, a s
+  let b := fun s => c s * ∏ _w : NumberField.InfinitePlace F, a s
   refine ⟨φ,t,b,?_,?_,?_,fun _ => rfl⟩
   · intro s _
     have hp : MeromorphicAt (∏ _w : NumberField.InfinitePlace F, a) s :=
@@ -320,7 +317,7 @@ theorem actual_rational_nonzero_cofactor
     convert (hc.1 s (Set.mem_univ s)).mul hp using 1
     funext z
     simp [b,c]
-  · exact hc.2.mul (Finset.analyticAt_fun_prod Finset.univ (fun _ _ => ha0))
+  · exact hc.2.mul (Finset.analyticAt_fun_prod Finset.univ (fun _ _ => (analyticAt_const.div (by fun_prop) (by norm_num))))
   · exact mul_ne_zero hcn (Finset.prod_ne_zero_iff.mpr (fun _ _ => han))
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor

@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 /-!
 Bundles finite towers of Frobenius fixed fields together with the normality and finiteness data
@@ -123,8 +120,12 @@ namespace FrobeniusFixedFieldTower
 
 variable {D : DegreeData G} [IsTopologicalGroup G]
 
+section
+
+variable (T : FrobeniusFixedFieldTower D)
+
 /-- The lower fixed field, finite over the distinguished base. -/
-noncomputable def base (T : FrobeniusFixedFieldTower D) :
+noncomputable def base :
     FiniteAbstractField G := by
   letI : Finite
       ((baseField G).toSubgroup ⧸
@@ -139,7 +140,7 @@ noncomputable def base (T : FrobeniusFixedFieldTower D) :
     T.ambient.below T.baseFrobenius
 
 /-- The upper fixed field, finite over the distinguished base. -/
-noncomputable def field (T : FrobeniusFixedFieldTower D) :
+noncomputable def field :
     FiniteAbstractField G := by
   letI : Finite
       ((baseField G).toSubgroup ⧸
@@ -153,20 +154,15 @@ noncomputable def field (T : FrobeniusFixedFieldTower D) :
   exact D.frobeniusFixedAbstractField T.ambientBase T.ambient.field
     T.ambient.below T.fieldFrobenius
 
-/-- The fixed-field inclusion as a bundled Galois subextension. -/
-noncomputable def toGaloisSubextension (T : FrobeniusFixedFieldTower D) :
-    GaloisSubextension T.base.field where
-  field := T.field.field
-  below := T.field_le_base
-  normal := T.normal
-
 /-- The finite extension between the two bundled fixed fields. -/
-noncomputable def extension (T : FrobeniusFixedFieldTower D) :
+noncomputable def extension :
     FiniteAbstractFieldExtension G where
   field := T.field
   base := T.base
   below := T.field_le_base
   finiteQuotient := T.finiteQuotient
+
+end
 
 /-- A concrete lower-fixed-field element representing its Frobenius class. -/
 structure Representative (T : FrobeniusFixedFieldTower D) where
@@ -326,46 +322,52 @@ namespace FrobeniusPowerFixedFieldTower
 
 variable {D : DegreeData G} [IsTopologicalGroup G]
 
+section
+
+variable (P : FrobeniusPowerFixedFieldTower D)
+
 /-- Forget ambient finiteness while retaining its Galois structure. -/
-noncomputable def ambientGalois (P : FrobeniusPowerFixedFieldTower D) :
+noncomputable def ambientGalois :
     GaloisSubextension P.ambientBase.field :=
   P.ambient.toGaloisSubextension
 
 /-- The Frobenius element `φⁿ` defining the lower fixed field. -/
-def baseFrobenius (P : FrobeniusPowerFixedFieldTower D) :
+def baseFrobenius :
     D.FrobeniusElements P.ambientBase P.ambient.field P.ambient.below :=
   D.frobeniusPowerOfDegreeOne P.ambientBase P.ambient.field P.ambient.below
     P.frobenius P.exponent_one P.n P.n_pos
 
 /-- The Frobenius element `φⁿ²` defining the upper fixed field. -/
-def fieldFrobenius (P : FrobeniusPowerFixedFieldTower D) :
+def fieldFrobenius :
     D.FrobeniusElements P.ambientBase P.ambient.field P.ambient.below :=
   D.frobeniusPowerOfDegreeOne P.ambientBase P.ambient.field P.ambient.below
     P.frobenius P.exponent_one (P.n * P.n)
       (Nat.mul_pos P.n_pos P.n_pos)
 
 /-- The original Frobenius commutes with its `n`-th power. -/
-theorem frobenius_commute_base (P : FrobeniusPowerFixedFieldTower D) :
+theorem frobenius_commute_base :
     P.frobenius.1 * P.baseFrobenius.1 =
       P.baseFrobenius.1 * P.frobenius.1 := by
   simpa [baseFrobenius] using
     ((Commute.refl P.frobenius.1).pow_right P.n).eq
 
 /-- The original Frobenius commutes with its `n²`-th power. -/
-theorem frobenius_commute_field (P : FrobeniusPowerFixedFieldTower D) :
+theorem frobenius_commute_field :
     P.frobenius.1 * P.fieldFrobenius.1 =
       P.fieldFrobenius.1 * P.frobenius.1 := by
   simpa [fieldFrobenius] using
     ((Commute.refl P.frobenius.1).pow_right (P.n * P.n)).eq
 
 /-- Inclusion of the field fixed by `φⁿ²` into the field fixed by `φⁿ`. -/
-theorem field_le_base (P : FrobeniusPowerFixedFieldTower D) :
+theorem field_le_base :
     (D.frobeniusFixedField P.ambientBase P.ambient.field P.ambient.below
         P.fieldFrobenius).toSubgroup ≤
       (D.frobeniusFixedField P.ambientBase P.ambient.field P.ambient.below
         P.baseFrobenius).toSubgroup :=
   D.frobeniusPowerFixedField_le P.ambientBase P.ambient.field P.ambient.below
     P.frobenius P.exponent_one P.n P.n P.n_pos P.n_pos
+
+end
 
 /-- Relative finiteness in the fixed-field presentation used by the
 Frobenius action and norm lemmas.  The witness is projected from the power

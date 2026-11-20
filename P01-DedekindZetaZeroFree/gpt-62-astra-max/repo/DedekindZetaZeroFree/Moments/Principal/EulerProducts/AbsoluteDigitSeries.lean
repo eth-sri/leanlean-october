@@ -27,13 +27,14 @@ private theorem generator_quotient_norm
   rw [(D.generates I).2, A.exteriorResidue_card]
   rfl
 
+alias AbsoluteDigitSeries.generator_quotient_norm := generator_quotient_norm
+
 private theorem product_quotient_norm
     (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (c : ExteriorSquarefreeIdeal A.cS) (n : A.Exterior) :
     (FiniteTransform.exteriorNorm A.R.toSubring (D.generator c.val * D.generator n ^ 3) : ℝ) =
       A.exteriorNorm c.val * A.exteriorNorm n ^ 3 := by
-  let I := ExteriorIdealEuler.mul c.val (ExteriorIdealEuler.pow n 3)
-  have he : Ideal.span {D.generator c.val * D.generator n ^ 3} = A.extendIdeal I := by
+  have he : Ideal.span {D.generator c.val * D.generator n ^ 3} = A.extendIdeal (ExteriorIdealEuler.mul c.val (ExteriorIdealEuler.pow n 3)) := by
     rw [← Ideal.span_singleton_mul_span_singleton, ← Ideal.span_singleton_pow,
       (D.generates c.val).2, (D.generates n).2]
     change Ideal.map (algebraMap (𝓞 F) A.R) c.val.val *
@@ -46,6 +47,8 @@ private theorem product_quotient_norm
   simp only [map_mul, map_pow, Nat.cast_mul, Nat.cast_pow]
   rfl
 
+alias AbsoluteDigitSeries.product_quotient_norm := product_quotient_norm
+
 private theorem finiteCoefficient_bound
     (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)
@@ -55,9 +58,8 @@ private theorem finiteCoefficient_bound
     ‖comparisonPoissonFiniteCoefficient F A D c n s h‖ ≤
       A.exteriorNorm s * (A.exteriorNorm c.val * A.exteriorNorm n ^ 3) := by
   let a := D.generator c.val * D.generator n ^ 3
-  have ha : a ≠ 0 := mul_ne_zero (D.generates c.val).1 (pow_ne_zero _ (D.generates n).1)
   letI := D.finiteResidue (D.generator s) (D.generates s).1
-  letI := D.finiteResidue a ha
+  letI := D.finiteResidue a (mul_ne_zero (D.generates c.val).1 (pow_ne_zero _ (D.generates n).1))
   have hb := FiniteTransform.finiteCoefficient_norm_le A.R.toSubring
     (D.generator s) a h (D.character (D.generator s)) (D.character a)
     D.additiveCharacter (fun x => by rw [hD.additive_recipe]; exact Circle.norm_coe _)
@@ -66,11 +68,15 @@ private theorem finiteCoefficient_bound
   convert hb using 1
   rw [generator_quotient_norm A D s, product_quotient_norm A D c n]
 
+alias AbsoluteDigitSeries.finiteCoefficient_bound := finiteCoefficient_bound
+
 private theorem realPower_norm (q : ℝ) (hq : 0 < q) (s : ℂ) :
     ‖comparisonRealPower q s‖ = q ^ s.re := by
   rw [comparisonRealPower, Complex.norm_exp, Real.rpow_def_of_pos hq]
   simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
   rw [mul_comm]
+
+alias AbsoluteDigitSeries.realPower_norm := realPower_norm
 
  def fixedMajorant (A : SArithmeticData F) (ξ w z : ℂ) (i : ExteriorIndex A) : ℝ :=
   A.exteriorNorm i.1.val ^ (1 / 2 - ξ.re) *
@@ -97,12 +103,11 @@ private theorem summand_bound
     norm_num [Complex.sub_re, Complex.neg_re, Complex.div_re, Complex.normSq]
   have he2 : (-1 - 3 * ξ).re = -1 - 3 * ξ.re := by
     norm_num [Complex.sub_re, Complex.neg_re, Complex.mul_re]
-  have he3 : (-w).re = -w.re := Complex.neg_re w
   have he4 : (-6 * z).re = -6 * z.re := by
     norm_num [Complex.neg_re, Complex.mul_re]
   unfold comparisonEulerPoissonSummand
   simp only [norm_mul, ht, mul_one, realPower_norm _ (A.exteriorNorm_pos _),
-    he1, he2, he3, he4]
+    he1, he2, (Complex.neg_re w), he4]
   calc
     _ ≤ 1 * (A.exteriorNorm i.2.2.1 * (A.exteriorNorm i.1.val * A.exteriorNorm i.2.1 ^ 3)) *
         A.exteriorNorm i.1.val ^ (-1 / 2 - ξ.re) *
@@ -120,6 +125,8 @@ private theorem summand_bound
         show (A.exteriorNorm i.2.1) ^ (3 : ℝ) = (A.exteriorNorm i.2.1) ^ (3 : ℕ) from
           Real.rpow_natCast _ 3]
       ring
+
+alias AbsoluteDigitSeries.summand_bound := summand_bound
 
 private theorem fixedMajorant_summable
     (A : SArithmeticData F) (ξ w z : ℂ) (hξ : 4 < ξ.re) (hw : 4 < w.re) (hz : 2 < z.re) :
@@ -152,24 +159,22 @@ private theorem fixedMajorant_summable
     ext r
     congr 1
     ring
-  have hnonneg : ∀ (I : A.Exterior) (t : ℝ), 0 ≤ A.exteriorNorm I ^ t :=
+  have hnonneg :=
     fun I t => (Real.rpow_pos_of_pos (A.exteriorNorm_pos I) t).le
-  have Hsr := hs.mul_of_nonneg hr (fun s => hnonneg s _) (fun r => hnonneg r _)
-  have Hnsr := hn.mul_of_nonneg Hsr (fun n => hnonneg n _)
-    (fun i => mul_nonneg (hnonneg i.1 _) (hnonneg i.2 _))
-  exact hc.mul_of_nonneg Hnsr (fun c => hnonneg c.val _)
+  exact hc.mul_of_nonneg (hn.mul_of_nonneg (hs.mul_of_nonneg hr (fun s => hnonneg s _) (fun r => hnonneg r _)) (fun n => hnonneg n _)
+    (fun i => mul_nonneg (hnonneg i.1 _) (hnonneg i.2 _))) (fun c => hnonneg c.val _)
     (fun i => mul_nonneg (hnonneg i.1 _)
       (mul_nonneg (hnonneg i.2.1 _) (hnonneg i.2.2 _)))
 
 section FixedFrequency
 
 variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
-variable (hCl : Subsingleton (ClassGroup A.R)) (σ : F →+* ℂ)
-variable (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-variable (G : A.GaussCorrectionOutput σ η hS)
-variable (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS G)
-variable (Iu : A.Exterior) (u : A.R) (hu : A.Generates Iu u)
-variable (hu_allowed : A.IsAllowed G.B (WeightedFiniteCoefficient.fieldUnit A u hu.1))
+    (hCl : Subsingleton (ClassGroup A.R)) (σ : F →+* ℂ)
+    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
+    (G : A.GaussCorrectionOutput σ η hS)
+    (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS G)
+    (Iu : A.Exterior) (u : A.R) (hu : A.Generates Iu u)
+    (hu_allowed : A.IsAllowed G.B (WeightedFiniteCoefficient.fieldUnit A u hu.1))
 variable (hsixthfree : ∀ p : WeightedFiniteCoefficient.ExteriorPrime A,
   idealPrimeExponent p.val.asIdeal Iu.val ≤ 5)
 variable (ξ w z : ℂ) (hξ : 4 < ξ.re) (hw : 4 < w.re) (hz : 2 < z.re)
@@ -179,8 +184,7 @@ include hCl σ η hS G hD Iu hu hu_allowed hsixthfree hξ hw hz in
 theorem weightedSummand_summable :
     Summable (fun i : ExteriorIndex A =>
       ‖comparisonEulerPoissonSummand F A D u ξ w z
-        i.1 i.2.1 i.2.2.1 i.2.2.2‖) := by
-  exact (fixedMajorant_summable A ξ w z hξ hw hz).of_nonneg_of_le
+        i.1 i.2.1 i.2.2.1 i.2.2.2‖) := (fixedMajorant_summable A ξ w z hξ hw hz).of_nonneg_of_le
     (fun i => norm_nonneg _) (summand_bound A D σ η hS G hD u ξ w z)
 
 end FixedFrequency

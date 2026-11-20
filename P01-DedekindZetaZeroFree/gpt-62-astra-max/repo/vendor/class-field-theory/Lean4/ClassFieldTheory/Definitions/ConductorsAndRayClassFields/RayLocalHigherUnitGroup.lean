@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -29,11 +26,11 @@ namespace ClassFieldTheory
 
 universe u
 
+variable {K : Type u} [Field K] [NumberField K] (v : HeightOneSpectrum (𝓞 K)) (n : ℕ)
+
 /-- Reduction of a local integral unit modulo the `n`-th power of the maximal
 ideal. -/
-def rayLocalHigherUnitMap
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K)) (n : ℕ) :
+def rayLocalHigherUnitMap :
     (v.adicCompletionIntegers K).units →*
       ((v.adicCompletionIntegers K) ⧸
         (IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)) ^ n)ˣ :=
@@ -44,9 +41,7 @@ def rayLocalHigherUnitMap
     (v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType.toMonoidHom
 
 /-- The `n`-th higher-unit subgroup at a finite place. -/
-def rayLocalHigherUnitGroup
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K)) (n : ℕ) :
+def rayLocalHigherUnitGroup :
     Subgroup (v.adicCompletion K)ˣ :=
   Subgroup.map
     (v.adicCompletionIntegers K).units.subtype

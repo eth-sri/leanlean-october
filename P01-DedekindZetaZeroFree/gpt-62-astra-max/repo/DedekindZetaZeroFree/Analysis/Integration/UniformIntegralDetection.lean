@@ -20,7 +20,7 @@ theorem nonzero_integral_detected_by_uniform_approximation
     ∃ i, (∫ x, v i x * χ x ∂μ) ≠ 0 := by
   haveI : IsFiniteMeasure μ := ⟨lt_top_iff_ne_top.mpr hfinite⟩
   set I : ℂ := ∫ x, u x * χ x ∂μ with hI
-  have hIpos : 0 < ‖I‖ := norm_pos_iff.mpr hne
+  have hIpos := norm_pos_iff.mpr hne
   set ε : ℝ := ‖I‖ / (2 * μ.real Set.univ) with hεdef
   have hεpos : 0 < ε := by
     rw [hεdef]

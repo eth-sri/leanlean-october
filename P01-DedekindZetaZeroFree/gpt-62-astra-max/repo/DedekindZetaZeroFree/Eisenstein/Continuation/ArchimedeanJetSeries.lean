@@ -14,11 +14,9 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeChartProduct renaming domain_open → domain_open
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction renaming native_word_smooth → native_word_smooth
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction renaming actual_eq_word → actual_eq_word
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming word_add → word_add
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming word_smul → word_smul
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeChartProduct (domain_open)
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction (native_word_smooth actual_eq_word)
+open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets (word_add word_smul)
 
 def space : Submodule ℂ (KPLiteralRaw.G F ζ hζ → ℂ) where
   carrier := {f | ∀ g, ContDiffOn ℝ (⊤ : ℕ∞)

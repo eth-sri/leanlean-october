@@ -32,22 +32,20 @@ theorem adicCompletion_trace_eq_sum
   letI : ∀ W : FinitePlacesAbove K L w,
       Module.Finite (w.adicCompletion K) (W.val.adicCompletion L) :=
     fun W => finitePlaceAdicCompletionMap_moduleFinite K L w W
-  let eRing := finitePlaceTensorRingEquivAboveAdic (K := K) (L := L) w
   let e : AlgEquiv (w.adicCompletion K) (w.adicCompletion K ⊗[K] L)
       (∀ W : FinitePlacesAbove K L w, W.val.adicCompletion L) :=
-    AlgEquiv.ofRingEquiv (R := w.adicCompletion K) (f := eRing) fun a => by
+    AlgEquiv.ofRingEquiv (R := w.adicCompletion K) (f := (finitePlaceTensorRingEquivAboveAdic w)) fun a => by
       funext W
       rw [Algebra.TensorProduct.algebraMap_apply,
         finitePlaceTensorRingEquivAboveAdic_tmul, map_one, mul_one,
         Pi.algebraMap_apply, Algebra.algebraMap_self_apply]
       rw [RingHom.algebraMap_toAlgebra]
-  have h := ValuationTheory.Completion.baseChange_pi_trace_eq_sum
-    (K := K) (A := w.adicCompletion K) (L := L)
-    (fun W : FinitePlacesAbove K L w => W.val.adicCompletion L) e x
-  rw [h]
+  rw [(ValuationTheory.Completion.baseChange_pi_trace_eq_sum
+
+    (fun W : FinitePlacesAbove K L w => W.val.adicCompletion L) e x)]
   refine Finset.sum_congr rfl fun W _ => ?_
   rw [show e (1 ⊗ₜ[K] x) W = algebraMap L (W.val.adicCompletion L) x from
-    finitePlaceTensorRingEquivAboveAdic_tmul_one (K := K) (L := L) w W x]
+    finitePlaceTensorRingEquivAboveAdic_tmul_one w W x]
 
 end DedekindZetaZeroFree
 

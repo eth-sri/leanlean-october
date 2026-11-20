@@ -13,20 +13,19 @@ open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSerie
 open KPRankOneShellContinuation KPRankOneShellRepair KPTameJacquetTestDuality
 open KPTameTransposeKernelUnfolding KPTameValuationCoordinates
 open KPTameTransposeLowShellSupport
-open _root_.DedekindZetaZeroFree.KPTameTransposeLowShellSupport renaming eventual_actual_compact_normalizers → eventual_actual_compact_normalizers
-open _root_.DedekindZetaZeroFree.KPTameTransposeLowShellSupport renaming unitDilation_preservesLowShellHaar → unitDilation_preservesLowShellHaar
-open _root_.DedekindZetaZeroFree.KPTameTransposeLowShellSupport renaming unitDilation → unitDilation
+open _root_.DedekindZetaZeroFree.KPTameTransposeLowShellSupport (eventual_actual_compact_normalizers unitDilation_preservesLowShellHaar unitDilation)
 set_option autoImplicit false
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
- def offDiagonalReverseLinear
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P)
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-    (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1) :
+ section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (q : HeightOneSpectrum (𝓞 F)) (S : CanonicalFiniteInducingData F ζ hζ q)
+    (P : Polarization S.heisenberg) (hP : IsTamePolarization F ζ hζ q S P) (μ : Measure (LocalField F q))
+    [μ.IsAddHaarMeasure] (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
+
+def offDiagonalReverseLinear :
     scalarSections F ζ hζ q S P hP .minus →ₗ[ℂ]
       scalarSections F ζ hζ q S P hP .plus :=
   (scalarCoordinateEquiv F ζ hζ q S P hP .plus).toLinearMap.comp
@@ -34,38 +33,27 @@ set_option backward.isDefEq.respectTransparency false
       (scalarCoordinateEquiv F ζ hζ q S P hP .minus).symm.toLinearMap)
 
 private theorem offDiagonalReverseLinear_intertwines
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P)
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-    (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
     (t : ActualCover F ζ hζ q) (f : scalarSections F ζ hζ q S P hP .minus) :
     offDiagonalReverseLinear F ζ hζ q S P hP μ hμ
       (scalarAction F ζ hζ q S P hP .minus t f) =
     scalarAction F ζ hζ q S P hP .plus t
       (offDiagonalReverseLinear F ζ hζ q S P hP μ hμ f) := by
-  let v := (scalarCoordinateEquiv F ζ hζ q S P hP .minus).symm f
-  have he : (scalarCoordinateEquiv F ζ hζ q S P hP .minus).symm
+  let scalarCoordinateEquiv₀ := scalarCoordinateEquiv F ζ hζ q S P hP
+  let v := (scalarCoordinateEquiv₀ .minus).symm f
+  have he : (scalarCoordinateEquiv₀ .minus).symm
       (scalarAction F ζ hζ q S P hP .minus t f) = IMinus S.borel P t v := by
-    apply (scalarCoordinateEquiv F ζ hζ q S P hP .minus).injective
+    apply (scalarCoordinateEquiv₀ .minus).injective
     rw [LinearEquiv.apply_symm_apply]
     change _ = scalarAction F ζ hζ q S P hP .minus t
-      (scalarCoordinateEquiv F ζ hζ q S P hP .minus v)
+      (scalarCoordinateEquiv₀ .minus v)
     rw [LinearEquiv.apply_symm_apply]
-  change (scalarCoordinateEquiv F ζ hζ q S P hP .plus)
+  change (scalarCoordinateEquiv₀ .plus)
     (actualCanonicalReverseMap F ζ hζ q S P μ hμ _) = _
   erw [he]
-  exact congrArg (scalarCoordinateEquiv F ζ hζ q S P hP .plus)
+  exact congrArg (scalarCoordinateEquiv₀ .plus)
     (actualCanonicalReverseLinear_intertwines F ζ hζ q S P μ hμ t v)
 
 private theorem actual_lowShell_covariance
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P)
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-    (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
     (a e t : ActualCover F ζ hζ q) (m : ℕ)
     (hnormalW : ∀ k ∈ splitCongruenceSet F ζ hζ q m,
       (KPPGLLocalCover.W F ζ hζ (Sum.inr q))⁻¹ * k *
@@ -92,41 +80,39 @@ private theorem actual_lowShell_covariance
     chi F ζ hζ q S P hP .minus bminus * J =
       chi F ζ hζ q S P hP .plus bplus * J := by
   let R := offDiagonalReverseLinear F ζ hζ q S P hP μ hμ
-  let g : LocalField F q → ActualCover F ζ hζ q := fun x =>
+  let g := fun x =>
     e * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
       KPPGLLocalCover.N F ζ hζ (Sum.inr q) x
+  let chi₀ := chi F ζ hζ q S P hP
   have hfEigen : scalarAction F ζ hζ q S P hP .minus t f =
-      chi F ζ hζ q S P hP .minus bminus • f := by
+      chi₀ .minus bminus • f := by
     apply Subtype.ext
     funext x
     exact minusTest_unit_eigen_of_chart_normalization F ζ hζ q S P hP a t m
       hnormalW hnormalT bminus hbminus f hf x
   have hREigen : scalarAction F ζ hζ q S P hP .plus t (R f) =
-      chi F ζ hζ q S P hP .minus bminus • R f := by
+      chi₀ .minus bminus • R f := by
     rw [← offDiagonalReverseLinear_intertwines F ζ hζ q S P hP μ hμ]
     rw [hfEigen, map_smul]
   have hpoint : ∀ x ∈ lowShell F q,
-      chi F ζ hζ q S P hP .minus bminus * (R f).val (g (σ x)) =
-      chi F ζ hζ q S P hP .plus bplus * (R f).val (g x) := by
+      chi₀ .minus bminus * (R f).val (g (σ x)) =
+      chi₀ .plus bplus * (R f).val (g x) := by
     intro x hx
     have he := congrArg (fun v : scalarSections F ζ hζ q S P hP .plus =>
       v.val (g (σ x))) hREigen
     change (R f).val (g (σ x) * t) =
-      chi F ζ hζ q S P hP .minus bminus * (R f).val (g (σ x)) at he
+      chi₀ .minus bminus * (R f).val (g (σ x)) at he
     rw [hbplus x hx, (R f).property.1] at he
     exact he.symm
-  have hsubst : (∫ x in lowShell F q, (R f).val (g (σ x)) ∂μ) =
-      ∫ x in lowShell F q, (R f).val (g x) ∂μ :=
-    hσ.integral_comp hσemb (fun x => (R f).val (g x))
   dsimp only
-  change chi F ζ hζ q S P hP .minus bminus * (∫ x in lowShell F q, (R f).val (g x) ∂μ) =
-    chi F ζ hζ q S P hP .plus bplus * (∫ x in lowShell F q, (R f).val (g x) ∂μ)
   calc
-    _ = chi F ζ hζ q S P hP .minus bminus * (∫ x in lowShell F q, (R f).val (g (σ x)) ∂μ) := by rw [hsubst]
-    _ = ∫ x in lowShell F q, chi F ζ hζ q S P hP .minus bminus * (R f).val (g (σ x)) ∂μ := (integral_const_mul _ _).symm
-    _ = ∫ x in lowShell F q, chi F ζ hζ q S P hP .plus bplus * (R f).val (g x) ∂μ :=
+    _ = chi₀ .minus bminus * (∫ x in lowShell F q, (R f).val (g (σ x)) ∂μ) := by rw [(hσ.integral_comp hσemb (fun x => (R f).val (g x)))]
+    _ = ∫ x in lowShell F q, chi₀ .minus bminus * (R f).val (g (σ x)) ∂μ := (integral_const_mul _ _).symm
+    _ = ∫ x in lowShell F q, chi₀ .plus bplus * (R f).val (g x) ∂μ :=
       setIntegral_congr_fun (valuation (LocalField F q)).isOpen_integer.measurableSet hpoint
     _ = _ := integral_const_mul _ _
+
+end
 
 set_option backward.isDefEq.respectTransparency false in
 

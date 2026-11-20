@@ -22,16 +22,14 @@ theorem rayCharacter_span_eq_of_residue {m : Ideal (𝓞 F)} (hm : m ≠ ⊥)
   have hmem : (1 : 𝓞 F) ∈ Ideal.span {a} ⊔ m := by
     rw [ha_coprime]; exact Submodule.mem_top
   obtain ⟨c, d, hd, hcd⟩ := Ideal.mem_span_singleton_sup.mp hmem
-  have hc : a * c - 1 ∈ m := by
-    have h1 : a * c - 1 = -d := by linear_combination hcd
-    rw [h1]; exact neg_mem hd
-
   obtain ⟨u, hu_ne, hu_mem, hu_pos⟩ := exists_totallyPositive_residue F m hm c
 
   have hau : a * u - 1 ∈ m := by
     have h1 : a * u - 1 = a * (u - c) + (a * c - 1) := by ring
     rw [h1]
-    exact m.add_mem (m.mul_mem_left a hu_mem) hc
+    exact m.add_mem (m.mul_mem_left a hu_mem) (by
+      have h1 : a * c - 1 = -d := by linear_combination hcd
+      rw [h1]; exact neg_mem hd)
   have hbu : b * u - 1 ∈ m := by
     have h1 : b * u - 1 = (b - a) * u + (a * u - 1) := by ring
     rw [h1]

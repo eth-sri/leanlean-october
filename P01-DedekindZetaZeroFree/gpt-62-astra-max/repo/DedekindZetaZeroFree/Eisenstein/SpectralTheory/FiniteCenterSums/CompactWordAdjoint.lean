@@ -10,14 +10,13 @@ open MeasureTheory
 open scoped Classical BigOperators Topology
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualPrincipalSlices
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts CurrentComplexBoundary
-open _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts renaming evaluation_point_eval_continuous → evaluation_point_eval_continuous
+open _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts (evaluation_point_eval_continuous)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable {ι : Type} [Fintype ι] [DecidableEq ι]
 local instance : CompactSpace compactSubgroup := isCompact_iff_compactSpace.mp compactSubgroup_isCompact
 local instance : SecondCountableTopology compactSubgroup := by
   letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) ℂ) := by
-    change SecondCountableTopology (Fin 2 → Fin 2 → ℂ)
     infer_instance
   letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) ℂ)ᵐᵒᵖ :=
     MulOpposite.opHomeomorph.symm.secondCountableTopology

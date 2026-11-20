@@ -89,13 +89,17 @@ structure CompactPicture where
 instance : CoeFun CompactPicture (fun _ => ComplexProjectiveLine → ℂ) :=
   ⟨CompactPicture.toFun⟩
 
-noncomputable def sourceSeminorm (j : ℕ) (φ : CompactPicture) : ℝ :=
+section
+
+variable (j : ℕ) (φ : CompactPicture)
+
+noncomputable def sourceSeminorm : ℝ :=
   sSup ({0} ∪ {r : ℝ | ∃ q : ℕ, q ≤ j ∧ ∃ z : ℂ,
     z ∈ Metric.closedBall (0 : ℂ) 1 ∧
       (r = ‖iteratedFDeriv ℝ q (φ ∘ projectiveOpen) z‖ ∨
        r = ‖iteratedFDeriv ℝ q (φ ∘ projectiveInfinity) z‖)})
 
-lemma sourceSeminorm_bddAbove (j : ℕ) (φ : CompactPicture) :
+lemma sourceSeminorm_bddAbove :
     BddAbove ({0} ∪ {r : ℝ | ∃ q : ℕ, q ≤ j ∧ ∃ z : ℂ,
       z ∈ Metric.closedBall (0 : ℂ) 1 ∧
         (r = ‖iteratedFDeriv ℝ q (φ ∘ projectiveOpen) z‖ ∨
@@ -111,8 +115,7 @@ lemma sourceSeminorm_bddAbove (j : ℕ) (φ : CompactPicture) :
         (φ.infinity_smooth.continuous_iteratedFDeriv (by simp)).norm.continuousOn
   have hfin : BddAbove (⋃ q ∈ Finset.range (j + 1),
       ((fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveOpen) z‖) '' Metric.closedBall 0 1 ∪
-       (fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveInfinity) z‖) '' Metric.closedBall 0 1)) := by
-    exact (Finset.finite_toSet _).bddAbove_biUnion.mpr (fun q _ => hb q)
+       (fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveInfinity) z‖) '' Metric.closedBall 0 1)) := (Finset.finite_toSet _).bddAbove_biUnion.mpr (fun q _ => hb q)
   apply BddAbove.union bddAbove_singleton
   apply hfin.mono
   rintro r ⟨q, hq, z, hz, hr⟩
@@ -122,21 +125,29 @@ lemma sourceSeminorm_bddAbove (j : ℕ) (φ : CompactPicture) :
   · exact Or.inl ⟨z, hz, rfl⟩
   · exact Or.inr ⟨z, hz, rfl⟩
 
-lemma sourceSeminorm_nonneg (j : ℕ) (φ : CompactPicture) : 0 ≤ sourceSeminorm j φ := by
+lemma sourceSeminorm_nonneg : 0 ≤ sourceSeminorm j φ := by
   unfold sourceSeminorm
   exact le_csSup (sourceSeminorm_bddAbove j φ) (Or.inl (mem_singleton 0))
 
-lemma norm_iteratedFDeriv_open_le_sourceSeminorm (j q : ℕ) (hq : q ≤ j)
-    (φ : CompactPicture) (z : ℂ) (hz : z ∈ Metric.closedBall 0 1) :
+end
+
+section
+
+variable (j q : ℕ) (hq : q ≤ j) (φ : CompactPicture) (z : ℂ) (hz : z ∈ Metric.closedBall 0 1)
+
+include hq hz in
+lemma norm_iteratedFDeriv_open_le_sourceSeminorm :
     ‖iteratedFDeriv ℝ q (φ ∘ projectiveOpen) z‖ ≤ sourceSeminorm j φ := by
   unfold sourceSeminorm
   exact le_csSup (sourceSeminorm_bddAbove j φ) (Or.inr ⟨q, hq, z, hz, Or.inl rfl⟩)
 
-lemma norm_iteratedFDeriv_infinity_le_sourceSeminorm (j q : ℕ) (hq : q ≤ j)
-    (φ : CompactPicture) (z : ℂ) (hz : z ∈ Metric.closedBall 0 1) :
+include hq hz in
+lemma norm_iteratedFDeriv_infinity_le_sourceSeminorm :
     ‖iteratedFDeriv ℝ q (φ ∘ projectiveInfinity) z‖ ≤ sourceSeminorm j φ := by
   unfold sourceSeminorm
   exact le_csSup (sourceSeminorm_bddAbove j φ) (Or.inr ⟨q, hq, z, hz, Or.inr rfl⟩)
+
+end
 
 noncomputable def forwardSection (s : ℂ) (φ : CompactPicture) (g : ComplexGL2) : ℂ :=
   Complex.exp (((4 / 3 : ℂ) + 2 * s) * (Real.log (rowRatio g) : ℂ)) *
@@ -147,16 +158,6 @@ noncomputable def forwardSection (s : ℂ) (φ : CompactPicture) (g : ComplexGL2
   unfold rowRatio bottomRowNormSq weyl upperUnipotent
   simp [Matrix.GeneralLinearGroup.det, Matrix.GeneralLinearGroup.coe_mul,
     Matrix.mul_apply, Fin.sum_univ_two, Matrix.det_fin_two]
-
-structure CompactGroupChart (n : ℕ) where
-  domain : Set (Fin n → ℝ)
-  domain_open : IsOpen domain
-  closedSet : Set (Fin n → ℝ)
-  closedSet_compact : IsCompact closedSet
-  closedSet_subset : closedSet ⊆ domain
-  lift : (Fin n → ℝ) → ComplexSU2
-  lift_smooth : ContDiffOn ℝ ∞
-    (fun u => (lift u : Matrix (Fin 2) (Fin 2) ℂ)) domain
 
 structure ChartDifferentialOperator (n j : ℕ) (U : Set (Fin n → ℝ)) where
   coefficient : (q : Fin (j + 1)) → (Fin q.val → Fin n) → (Fin n → ℝ) → ℂ
@@ -176,7 +177,12 @@ noncomputable def planarEnvelope (p : ℝ) (x : ℂ) : ℝ :=
 noncomputable def planarHaar (h : ℝ) : Measure ℂ :=
   ENNReal.ofReal h • euclideanArea
 
-private lemma radial_rpow_integral (p : ℝ) (hp : 1 < p) :
+section
+
+variable (p : ℝ) (hp : 1 < p)
+
+include hp in
+private lemma radial_rpow_integral :
     ∫ r in Set.Ioi (0 : ℝ), r * (1 + r ^ 2) ^ (-p) = 1 / (2 * (p - 1)) := by
   have hp1 : (0 : ℝ) < p - 1 := by linarith
   have hne : (2 * (1 - p)) ≠ 0 := by linarith
@@ -226,72 +232,68 @@ private lemma radial_rpow_integral (p : ℝ) (hp : 1 < p) :
   field_simp
   ring
 
- lemma planarEnvelope_volume_integral (p : ℝ) (hp : 1 < p) :
+ include hp in
+lemma planarEnvelope_volume_integral :
     ∫ x : ℂ, planarEnvelope p x = π / (p - 1) := by
-  have hrad := radial_rpow_integral p hp
-  have h2pi : ∫ _ in Set.Ioo (-π) π, (1 : ℝ) = 2 * π := by
+  let Ioo₀ := Set.Ioo (-π) π
+  have h2pi : ∫ _ in Ioo₀, (1 : ℝ) = 2 * π := by
     rw [integral_const, measureReal_restrict_apply MeasurableSet.univ, Set.univ_inter,
-      Real.volume_real_Ioo_of_le (a := -π) (b := π) (by linarith [Real.pi_nonneg]),
+      Real.volume_real_Ioo_of_le (by linarith [Real.pi_nonneg]),
       sub_neg_eq_add, ← two_mul, smul_eq_mul, mul_one, mul_comm]
+  let Ioi₀ := Set.Ioi (0 : ℝ)
   calc
-    ∫ x : ℂ, planarEnvelope p x
+    _
         = ∫ x : ℂ, (1 + ‖x‖ ^ 2) ^ (-p) := rfl
-    _ = ∫ q in Set.Ioi (0 : ℝ) ×ˢ Set.Ioo (-π) π,
+    _ = ∫ q in Ioi₀ ×ˢ Ioo₀,
           q.1 • ((1 + ‖Complex.polarCoord.symm q‖ ^ 2) ^ (-p)) := by
-          rw [← Complex.integral_comp_polarCoord_symm (f := fun x : ℂ => (1 + ‖x‖ ^ 2) ^ (-p))]
+          rw [← Complex.integral_comp_polarCoord_symm]
           rfl
-    _ = ∫ q in Set.Ioi (0 : ℝ) ×ˢ Set.Ioo (-π) π,
+    _ = ∫ q in Ioi₀ ×ˢ Ioo₀,
           q.1 * ((1 + q.1 ^ 2) ^ (-p)) := by
           refine setIntegral_congr_fun (measurableSet_Ioi.prod measurableSet_Ioo) ?_
           intro q hq
-          have hq1 : (0 : ℝ) < q.1 := Set.mem_Ioi.mp hq.1
           simp only [Complex.norm_polarCoord_symm, smul_eq_mul]
-          rw [abs_of_pos hq1]
-    _ = (∫ r in Set.Ioi (0 : ℝ), r * (1 + r ^ 2) ^ (-p)) *
-          ∫ _ in Set.Ioo (-π) π, (1 : ℝ) := by
+          rw [abs_of_pos (Set.mem_Ioi.mp hq.1)]
+    _ = (∫ r in Ioi₀, r * (1 + r ^ 2) ^ (-p)) *
+          ∫ _ in Ioo₀, (1 : ℝ) := by
           rw [Measure.volume_eq_prod ℝ ℝ,
             ← setIntegral_prod_mul (fun r : ℝ => r * (1 + r ^ 2) ^ (-p))
-              (fun _ => (1 : ℝ)) (Set.Ioi (0 : ℝ)) (Set.Ioo (-π) π)]
+              (fun _ => (1 : ℝ)) (Ioi₀) (Ioo₀)]
           refine setIntegral_congr_fun (measurableSet_Ioi.prod measurableSet_Ioo) ?_
           intro q _
-          simp only [Pi.one_apply, mul_one]
+          simp
     _ = π / (p - 1) := by
-          rw [hrad, h2pi]
+          rw [(radial_rpow_integral p hp), h2pi]
           field_simp
 
-private lemma planarEnvelope_volume_integrable (p : ℝ) (hp : 1 < p) :
-    Integrable (planarEnvelope p) (volume : Measure ℂ) := by
-  by_contra h
-  have hval := planarEnvelope_volume_integral p hp
-  rw [integral_undef h] at hval
-  have hpos : (0 : ℝ) < π / (p - 1) := by positivity
-  linarith
+end
 
 theorem planarEnvelope_integrable (h p : ℝ) (hh : 0 < h) (hp : 1 < p) :
     Integrable (planarEnvelope p) (planarHaar h) := by
   rw [planarHaar, euclideanArea]
-  exact (integrable_smul_measure (c := ENNReal.ofReal h)
+  exact (integrable_smul_measure
     (ENNReal.ofReal_ne_zero_iff.mpr hh) ENNReal.ofReal_ne_top).mpr
-    (planarEnvelope_volume_integrable p hp)
+    (by
+      by_contra h
+      have hval := planarEnvelope_volume_integral p hp
+      rw [integral_undef h] at hval
+      have hpos : (0 : ℝ) < π / (p - 1) := by positivity
+      linarith)
 
 private lemma rowRatio_pos (g : ComplexGL2) : 0 < rowRatio g := by
-  have hdet : Matrix.det (g : Matrix (Fin 2) (Fin 2) ℂ) ≠ 0 :=
-    (Matrix.GeneralLinearGroup.det g).ne_zero
-  have hr : 0 < bottomRowNormSq g := by
-    unfold bottomRowNormSq
-    by_contra hn
-    have he : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 +
-        ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 = 0 :=
-      le_antisymm (le_of_not_gt hn) (by positivity)
-    have h0 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 = 0 := by
-      apply norm_eq_zero.mp
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖]
-    have h1 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 = 0 := by
-      apply norm_eq_zero.mp
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖]
-    apply hdet
-    simp [Matrix.det_fin_two, h0, h1]
-  exact div_pos (norm_pos_iff.mpr (Matrix.GeneralLinearGroup.det g).ne_zero) hr
+  refine div_pos (norm_pos_iff.mpr (Matrix.GeneralLinearGroup.det g).ne_zero) ?_
+  unfold bottomRowNormSq
+  by_contra hn
+  have h0 : g 1 0 = 0 := by
+    apply norm_eq_zero.mp
+    nlinarith [sq_nonneg ‖g 1 1‖]
+  have h1 : g 1 1 = 0 := by
+    apply norm_eq_zero.mp
+    nlinarith [sq_nonneg ‖g 1 0‖]
+  apply ((Matrix.GeneralLinearGroup.det g).ne_zero)
+  simp [Matrix.det_fin_two, h0, h1]
+
+alias ComplexParameterMajorants.rowRatio_pos := rowRatio_pos
 
  lemma forwardSection_real_formula (t : ℝ) (φ : CompactPicture) (g : ComplexGL2) :
     forwardSection (t : ℂ) φ g = sphericalFunction (positiveParameter + t) g * φ (bottomRowLine g) := by
@@ -323,6 +325,8 @@ private lemma bottomRowLine_wn (x : ℂ) :
   unfold bottomRowLine weyl upperUnipotent
   simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
 
+alias ComplexParameterMajorants.bottomRowLine_wn := bottomRowLine_wn
+
 private lemma bottomRowLine_lower (u : ℂ) :
     bottomRowLine (lowerUnipotent u) = projectiveInfinity u := by
   by_cases hu : u = 0
@@ -334,13 +338,14 @@ private lemma bottomRowLine_lower (u : ℂ) :
     simp [Matrix.cons_val_one, Matrix.cons_val_zero, Matrix.cons_val_fin_one, hu]
     exact (projective_chart_transition u hu).symm
 
+alias ComplexParameterMajorants.bottomRowLine_lower := bottomRowLine_lower
+
 theorem forwardSection_real_mem (t : ℝ) (φ : CompactPicture) :
     forwardSection (t : ℂ) φ ∈ principalSeriesSubmodule (positiveParameter + t) := by
   have hs := (sphericalSection (positiveParameter + t)).property
   change HasCovariance (positiveParameter + t) (sphericalFunction (positiveParameter + t)) ∧
     ContDiff ℝ ∞ (openCoordinate (sphericalFunction (positiveParameter + t))) ∧
     ContDiff ℝ ∞ (infinityCoordinate (sphericalFunction (positiveParameter + t))) at hs
-  change HasCovariance (positiveParameter + t) (forwardSection (t : ℂ) φ) ∧ _
   refine ⟨?_, ?_, ?_⟩
   · intro a d b g
     rw [forwardSection_real_formula, forwardSection_real_formula,

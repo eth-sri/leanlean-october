@@ -48,7 +48,7 @@ omit [MeasurableSpace G] [BorelSpace G] in
 
 theorem exists_mem_nhds_one_norm_sub_le (f : C(G, E)) {ε : ℝ} (hε : 0 < ε) :
     ∃ V ∈ 𝓝 (1 : G), ∀ z ∈ V, ∀ x : G, ‖f (z⁻¹ * x) - f x‖ ≤ ε := by
-  have htendsto : Tendsto (leftTranslateCM (E := E) (G := G) f) (𝓝 1) (𝓝 f) := by
+  have htendsto : Tendsto (leftTranslateCM f) (𝓝 1) (𝓝 f) := by
     simpa only [leftTranslateCM_one] using (leftTranslateCM f).continuous.tendsto 1
   refine ⟨leftTranslateCM f ⁻¹' Metric.closedBall f ε,
     htendsto (Metric.closedBall_mem_nhds f hε), fun z hz x => ?_⟩
@@ -60,7 +60,6 @@ theorem exists_mem_nhds_one_norm_sub_le (f : C(G, E)) {ε : ℝ} (hε : 0 < ε) 
     _ ≤ ε := hz'
 
 structure IsMollifier (U : Set G) (k : C(G, 𝕜)) : Prop where
-
   nonneg : ∀ g, 0 ≤ k g
 
   inv_apply : ∀ g, k g⁻¹ = k g
@@ -73,17 +72,23 @@ namespace IsMollifier
 
 variable {U U' : Set G} {k : C(G, 𝕜)}
 
-theorem mono (h : IsMollifier U k) (hUU' : U ⊆ U') : IsMollifier U' k :=
+variable (h : IsMollifier U k)
+
+include h in
+theorem mono (hUU' : U ⊆ U') : IsMollifier U' k :=
   { h with eq_zero_of_notMem := fun g hg => h.eq_zero_of_notMem g fun hg' => hg (hUU' hg') }
 
-theorem apply_eq_norm (h : IsMollifier U k) (g : G) : k g = (‖k g‖ : 𝕜) :=
+include h in
+theorem apply_eq_norm (g : G) : k g = (‖k g‖ : 𝕜) :=
   (RCLike.norm_of_nonneg' (h.nonneg g)).symm
 
-theorem inv_apply_eq_conj (h : IsMollifier U k) (g : G) : k g⁻¹ = (starRingEnd 𝕜) (k g) := by
+include h in
+theorem inv_apply_eq_conj (g : G) : k g⁻¹ = (starRingEnd 𝕜) (k g) := by
   rw [h.inv_apply]
   exact (RCLike.conj_eq_iff_im.2 (RCLike.nonneg_iff.1 (h.nonneg g)).2).symm
 
-theorem integral_norm_eq_one (h : IsMollifier U k) : ∫ g, ‖k g‖ ∂(haarProb G) = 1 := by
+include h in
+theorem integral_norm_eq_one : ∫ g, ‖k g‖ ∂(haarProb G) = 1 := by
   have hcast : ((∫ g, ‖k g‖ ∂(haarProb G) : ℝ) : 𝕜) = 1 := by
     rw [← integral_ofReal, ← h.integral_eq_one]
     exact integral_congr_ae (Eventually.of_forall fun g => (h.apply_eq_norm g).symm)
@@ -160,7 +165,7 @@ theorem IsMollifier.norm_convolutionCLM_toLp_sub_le {U : Set G} {k : C(G, 𝕜)}
       exact mul_le_mul_of_nonneg_left (hf z hz x) (norm_nonneg _)
     · simp [h.eq_zero_of_notMem z hz]
   rw [hval]
-  calc ‖∫ z, k z * (f (z⁻¹ * x) - f x) ∂(haarProb G)‖
+  calc _
       ≤ ∫ z, ‖k z‖ * ε ∂(haarProb G) :=
         norm_integral_le_of_norm_le ((integrable_continuousMap G k).norm.mul_const ε)
           (Eventually.of_forall hbound)

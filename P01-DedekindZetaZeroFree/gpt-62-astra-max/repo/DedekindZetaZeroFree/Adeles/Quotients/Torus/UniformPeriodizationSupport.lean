@@ -16,7 +16,7 @@ set_option maxHeartbeats 800000
 set_option maxRecDepth 2000
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 local instance fiberSupportSmoothTopology (P : Polarization F ζ hζ) :
     TopologicalSpace (Smooth F ζ hζ P) :=
@@ -42,8 +42,11 @@ theorem unitary_torus_level_finite (C : ModelData F ζ hζ)
   letI := KPGlobalTorusFiniteStages.stage_module_finite F ζ hζ C L _ (Or.inr rfl)
   exact Module.Finite.of_injective (Submodule.inclusion hL) (Submodule.inclusion_injective hL)
 
-theorem untwist_fiber_mem_unitary_level (C : ModelData F ζ hζ) (s : ℂ)
-    (U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+section
+
+variable (C : ModelData F ζ hζ) (s : ℂ) (U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+
+theorem untwist_fiber_mem_unitary_level
     (v : Smooth F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s))
     (hv : v.val ∈ KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ
       (twist F ζ hζ (productModel F ζ hζ C) s) U) :
@@ -53,9 +56,6 @@ theorem untwist_fiber_mem_unitary_level (C : ModelData F ζ hζ) (s : ℂ)
           (KPGlobalTorusFiniteStages.productModel F ζ hζ C) U := by
   let H := (KPGlobalTorusFunctionData.globalLevel F ζ hζ U).comap
     (KPGlobalTorusFunctionData.torus F ζ hζ).subtype
-  have hc : IsCompact (H : Set (E F ζ hζ)) :=
-    (actualTorus_isClosed F ζ hζ).isClosedEmbedding_subtypeVal.isCompact_preimage
-      (globalLevel_isCompact F ζ hζ U)
   let w := KPGlobalTorusPeriodizationInverse.untwistProduct F ζ hζ C
     ((normTwist F ζ hζ (productModel F ζ hζ C) s).symm v)
   constructor
@@ -76,7 +76,8 @@ theorem untwist_fiber_mem_unitary_level (C : ModelData F ζ hζ) (s : ℂ)
     rw [KPGlobalTorusPeriodizationInverse.untwistProduct_formula,
       KPGlobalTorusPeriodizationInverse.untwistProduct_formula,
       normTwist_inverse_formula, normTwist_inverse_formula]
-    have hδ := delta_compact_subgroup F ζ hζ H hc j
+    have hδ := delta_compact_subgroup F ζ hζ H ((actualTorus_isClosed F ζ hζ).isClosedEmbedding_subtypeVal.isCompact_preimage
+      (globalLevel_isCompact F ζ hζ U)) j
     have hν : KPGlobalCenterRationalCharacter.nu F ζ hζ j.val = 1 := by
       simp [KPGlobalCenterRationalCharacter.nu, hδ]
     have hnp : normPower F ζ hζ (-s) (t * j.val) = normPower F ζ hζ (-s) t := by
@@ -84,59 +85,52 @@ theorem untwist_fiber_mem_unitary_level (C : ModelData F ζ hζ) (s : ℂ)
     rw [hnp, map_mul, hν, mul_one]
     rw [KPGlobalTorusFunctionData.rightLevel_covariance _ _ _ ⟨v.val, hv.2⟩ t j.val j.property]
 
-theorem twisted_torus_level_finite (C : ModelData F ζ hζ) (s : ℂ)
-    (U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
+theorem twisted_torus_level_finite :
     Module.Finite ℂ (KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ
       (twist F ζ hζ (productModel F ζ hζ C) s) U) := by
+  let twist₀ := twist F ζ hζ (productModel F ζ hζ C) s
   let hle : KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ
-      (twist F ζ hζ (productModel F ζ hζ C) s) U ≤
-      Smooth F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) := le_iSup _ U
+      (twist₀) U ≤
+      Smooth F ζ hζ (twist₀) := le_iSup _ U
   let incl := Submodule.inclusion hle
   let A := (KPGlobalTorusPeriodizationInverse.untwistProduct F ζ hζ C).toLinearMap.comp
     (((normTwist F ζ hζ (productModel F ζ hζ C) s).symm.toLinearMap).comp incl)
-  have hA : ∀ v, (A v).val ∈ KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ
-      (KPGlobalTorusFiniteStages.productModel F ζ hζ C) U := by
-    intro v
-    exact untwist_fiber_mem_unitary_level F ζ hζ C s U (incl v) v.property
   let B : KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ
-      (twist F ζ hζ (productModel F ζ hζ C) s) U →ₗ[ℂ]
+      (twist₀) U →ₗ[ℂ]
       KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ
         (KPGlobalTorusFiniteStages.productModel F ζ hζ C) U :=
-    { toFun := fun v => ⟨(A v).val, hA v⟩
+    { toFun := fun v => ⟨(A v).val, (fun v => untwist_fiber_mem_unitary_level F ζ hζ C s U (incl v) v.property) v⟩
       map_add' := by
         intro v w
         apply Subtype.ext
-        change (A (v + w)).val = (A v).val + (A w).val
         exact congrArg (fun x : KPGlobalTorusPeriodizationInverse.ProductUnitary F ζ hζ C => x.val)
           (A.map_add v w)
       map_smul' := by
         intro c v
         apply Subtype.ext
-        change (A (c • v)).val = c • (A v).val
         exact congrArg (fun x : KPGlobalTorusPeriodizationInverse.ProductUnitary F ζ hζ C => x.val)
           (A.map_smul c v) }
   letI := unitary_torus_level_finite F ζ hζ C U
   apply Module.Finite.of_injective B
   intro v w h
-  have he : A v = A w := by
-    apply Subtype.ext
-    exact congrArg (fun x : KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ
-      (KPGlobalTorusFiniteStages.productModel F ζ hζ C) U => x.val) h
-  exact (Submodule.inclusion_injective hle)
+  refine (Submodule.inclusion_injective hle)
     ((normTwist F ζ hζ (productModel F ζ hζ C) s).symm.injective
-      ((KPGlobalTorusPeriodizationInverse.untwistProduct F ζ hζ C).injective he))
+      ((KPGlobalTorusPeriodizationInverse.untwistProduct F ζ hζ C).injective ?_))
+  apply Subtype.ext
+  exact congrArg (fun x : KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ
+    (KPGlobalTorusFiniteStages.productModel F ζ hζ C) U => x.val) h
 
-theorem finite_support_at_twisted_level (C : ModelData F ζ hζ) (s : ℂ)
-    (U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
+theorem finite_support_at_twisted_level :
     ∃ S : Finset (KPGlobalTorusPeriodizationInverse.PeriodizationIndex F ζ hζ C),
       ∀ v : KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ
           (twist F ζ hζ (productModel F ζ hζ C) s) U,
         ∀ a ∉ S, v.val.val ((TorusChartTransport.rationalRep F ζ hζ C).lift a).val = 0 := by
+  let twist₀ := twist F ζ hζ (productModel F ζ hζ C) s
   let V := KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ
-    (twist F ζ hζ (productModel F ζ hζ C) s) U
-  let hle : V ≤ Smooth F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) :=
+    (twist₀) U
+  let hle : V ≤ Smooth F ζ hζ (twist₀) :=
     le_iSup (KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ
-      (twist F ζ hζ (productModel F ζ hζ C) s)) U
+      (twist₀)) U
   let incl := Submodule.inclusion hle
   letI := twisted_torus_level_finite F ζ hζ C s U
   obtain ⟨n, b, hb⟩ := Module.Finite.exists_fin (R := ℂ) (M := V)
@@ -162,15 +156,16 @@ theorem finite_support_at_twisted_level (C : ModelData F ζ hζ) (s : ℂ)
   choose S hS using hex
   refine ⟨Finset.univ.biUnion S, ?_⟩
   intro v a ha
-  let ev : V →ₗ[ℂ] ℂ :=
+  let ev :=
     (KPGlobalTorusFunctionData.evaluation
-      (twist F ζ hζ (productModel F ζ hζ C) s).H
-      (twist F ζ hζ (productModel F ζ hζ C) s).character.toMonoidHom
+      (twist₀).H
+      (twist₀).character.toMonoidHom
       ((TorusChartTransport.rationalRep F ζ hζ C).lift a).val).comp V.subtype
-  have he : ev = 0 := (Submodule.linearMap_eq_zero_iff_of_span_eq_top ev hb).mpr (by
+  exact congrArg (fun L : V →ₗ[ℂ] ℂ => L v) ((Submodule.linearMap_eq_zero_iff_of_span_eq_top ev hb).mpr (by
     rintro ⟨_, ⟨i, rfl⟩⟩
-    exact hS i a (fun hai => ha (Finset.mem_biUnion.mpr ⟨i, Finset.mem_univ _, hai⟩)))
-  exact congrArg (fun L : V →ₗ[ℂ] ℂ => L v) he
+    exact hS i a (fun hai => ha (Finset.mem_biUnion.mpr ⟨i, Finset.mem_univ _, hai⟩))))
+
+end
 
 theorem exists_uniform_chart_support (C : ModelData F ζ hζ) (s : ℂ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) (g : G F ζ hζ) :

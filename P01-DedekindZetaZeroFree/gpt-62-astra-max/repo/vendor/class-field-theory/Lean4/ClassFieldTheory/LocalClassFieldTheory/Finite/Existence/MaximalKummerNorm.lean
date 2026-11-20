@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -39,48 +34,42 @@ variable (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K]
 variable {Omega : Type} [Field Omega] [Algebra K Omega] [IsSepClosure K Omega]
 
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+
 /-- The Galois group of the maximal exponent-`n` Kummer extension is
 canonically equivalent to the local power-class group. -/
-noncomputable def chosenMaximalKummerGaloisEquivPowerQuotient
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+noncomputable def chosenMaximalKummerGaloisEquivPowerQuotient :
     Gal(kummerRadicalExtension (K := K) (Omega := Omega) n
         (KummerTheory.maximalKummerSubgroup K n).1/K) ≃*
       Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
   let Delta := KummerTheory.maximalKummerSubgroup K n
   let E := kummerRadicalExtension (K := K) (Omega := Omega) n Delta.1
   let R := RestrictedRadicalQuotient n Delta
-  let M := nthRootsSubgroup E (n : ℕ)
   letI : Finite R :=
     KummerTheory.finite_maximalRestrictedRadicalQuotient K n hnK
-  have hRExponent : ∀ r : R, r ^ (n : ℕ) = 1 :=
-    restrictedRadicalQuotient_pow_eq_one n Delta
-  let dualR := Classical.choice (finiteNthRootsCharacterDuality
-    (G := R) (K := K) (L := E) n hmu hRExponent)
   exact
     (kummerRadicalExtensionRestrictedTransposeMulEquiv
-      (K := K) (Omega := Omega) n hnK hmu Delta).trans
-      (dualR.trans
+        n hnK hmu Delta).trans
+      ((Classical.choice (finiteNthRootsCharacterDuality
+        n hmu (restrictedRadicalQuotient_pow_eq_one n Delta))).trans
         (KummerTheory.maximalRestrictedRadicalQuotientEquiv K n).symm)
 
 /-- Local reciprocity and Kummer duality identify the norm quotient of the
 maximal Kummer extension with the local power-class group. -/
-noncomputable def maximalKummerNormQuotientEquivPowerQuotient
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+noncomputable def maximalKummerNormQuotientEquivPowerQuotient :
     let E := kummerRadicalExtension (K := K) (Omega := Omega) n
       (KummerTheory.maximalKummerSubgroup K n).1
     NormQuotient K E ≃* Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
   let Delta := KummerTheory.maximalKummerSubgroup K n
   let E := kummerRadicalExtension (K := K) (Omega := Omega) n Delta.1
   letI : IsGalois K E :=
-    kummerRadicalExtension_isGalois (K := K) (Omega := Omega) n Delta.1
+    kummerRadicalExtension_isGalois n Delta.1
   letI : FiniteDimensional K E :=
     KummerTheory.maximalKummerRadicalExtension_finiteDimensional
       (K := K) (Omega := Omega) n hnK hmu
   letI : IsMulCommutative Gal(E/K) :=
     kummerRadicalExtension_isMulCommutative
-      (K := K) (Omega := Omega) n hmu Delta.1
+        n hmu Delta.1
   letI : CommGroup Gal(E/K) :=
     CommGroup.mk (fun a b => IsMulCommutative.is_comm.comm a b)
   exact
@@ -89,22 +78,21 @@ noncomputable def maximalKummerNormQuotientEquivPowerQuotient
         (chosenMaximalKummerGaloisEquivPowerQuotient
           (K := K) (Omega := Omega) n hnK hmu))
 
+include hnK hmu in
 /-- Every `n`-th power is a norm from the maximal exponent-`n` Kummer
 extension. -/
-theorem powMonoidHom_range_le_maximalKummerNormSubgroup
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+theorem powMonoidHom_range_le_maximalKummerNormSubgroup :
     let E := kummerRadicalExtension (K := K) (Omega := Omega) n
       (KummerTheory.maximalKummerSubgroup K n).1
     (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range ≤ localNormSubgroup K E := by
   let Delta := KummerTheory.maximalKummerSubgroup K n
   let E := kummerRadicalExtension (K := K) (Omega := Omega) n Delta.1
-  let : IsGalois K E :=
+  let :=
     kummerRadicalExtension_isGalois (K := K) (Omega := Omega) n Delta.1
-  let : FiniteDimensional K E :=
+  let :=
     KummerTheory.maximalKummerRadicalExtension_finiteDimensional
       (K := K) (Omega := Omega) n hnK hmu
-  let : IsMulCommutative Gal(E/K) :=
+  let :=
     kummerRadicalExtension_isMulCommutative
       (K := K) (Omega := Omega) n hmu Delta.1
   let : CommGroup Gal(E/K) :=
@@ -125,11 +113,10 @@ theorem powMonoidHom_range_le_maximalKummerNormSubgroup
     powMonoidHom_apply, map_pow]
   exact habExponent (localArtinMonoidHom K E y)
 
+include hnK hmu in
 /-- If the base field contains the `n`-th roots of unity, the norm subgroup
 of the maximal exponent-`n` Kummer extension is exactly `Kˣⁿ`. -/
-theorem maximalKummerNormSubgroup_eq_powMonoidHom_range
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+theorem maximalKummerNormSubgroup_eq_powMonoidHom_range :
     let E := kummerRadicalExtension (K := K) (Omega := Omega) n
       (KummerTheory.maximalKummerSubgroup K n).1
     localNormSubgroup K E = (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
@@ -137,19 +124,19 @@ theorem maximalKummerNormSubgroup_eq_powMonoidHom_range
   let E := kummerRadicalExtension (K := K) (Omega := Omega) n Delta.1
   let P := (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range
   let N := localNormSubgroup K E
-  let : IsGalois K E :=
+  let :=
     kummerRadicalExtension_isGalois (K := K) (Omega := Omega) n Delta.1
-  let : FiniteDimensional K E :=
+  let :=
     KummerTheory.maximalKummerRadicalExtension_finiteDimensional
       (K := K) (Omega := Omega) n hnK hmu
-  let : Finite (Kˣ ⧸ P) :=
+  let :=
     LocalFieldTheory.finite_nthPowerQuotient_of_natCast_ne_zero
       K (n : ℕ) hnK
-  let : P.FiniteIndex := P.finiteIndex_of_finite_quotient
-  have hle : P ≤ N :=
+  let := P.finiteIndex_of_finite_quotient
+  have hle :=
     powMonoidHom_range_le_maximalKummerNormSubgroup
       (K := K) (Omega := Omega) n hnK hmu
-  let : Finite (NormQuotient K E) :=
+  let :=
     Finite.of_equiv (Kˣ ⧸ P)
       (maximalKummerNormQuotientEquivPowerQuotient
         (K := K) (Omega := Omega) n hnK hmu).symm.toEquiv
@@ -165,7 +152,7 @@ theorem maximalKummerNormSubgroup_eq_powMonoidHom_range
       intro hPN
       apply hnot
       exact hPN.symm.le
-    have hlt : P < N := lt_of_le_of_ne hle hne
+    have hlt := lt_of_le_of_ne hle hne
     have hindexLt : N.index < P.index := Subgroup.index_strictAnti hlt
     rw [hindex] at hindexLt
     exact (Nat.lt_irrefl _ hindexLt)

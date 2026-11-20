@@ -12,10 +12,10 @@ namespace DedekindZetaZeroFree.KPGroupChartFullTubeHaarL2
 open KPContActualSphericalRightFieldIdentification
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 theorem exists_compatible_original_chart_density
     (chart : GroupChart F ζ hζ U R P H)
@@ -31,8 +31,7 @@ theorem exists_compatible_original_chart_density
           (μArch.prod ν) = R.adelicHaar ∧
       0 < ν (U.toOpenSubgroup : Set (KPFiniteCuspAtlas.FiniteCover F ζ hζ)) ∧
       ν (U.toOpenSubgroup : Set (KPFiniteCuspAtlas.FiniteCover F ζ hζ)) < ⊤ ∧
-      ContinuousOn ρ chart.T.carrier ∧
-      (∀ x ∈ chart.T.carrier, 0 < ρ x) ∧ 0 < c ∧
+      0 < c ∧
       (∀ x ∈ A, c ≤ ρ x) ∧
       ∀ S : Set (KPContLocalNorm.Space (groupDimension F)), MeasurableSet S →
         S ⊆ chart.T.carrier →
@@ -55,7 +54,7 @@ theorem exists_compatible_original_chart_density
     U.toOpenSubgroup.isOpen.measure_pos ν ⟨1, U.toOpenSubgroup.one_mem⟩
   have hmassT : ν (U.toOpenSubgroup : Set (KPFiniteCuspAtlas.FiniteCover F ζ hζ)) < ⊤ :=
     U.isCompact.measure_lt_top
-  exact ⟨R.archHaar, ν, ρ, c, R.arch_isHaar, hν, hprod, hmass, hmassT, hρ, hp, hc, hb, hi⟩
+  exact ⟨R.archHaar, ν, ρ, c, R.arch_isHaar, hν, hprod, hmass, hmassT, hc, hb, hi⟩
 
 end DedekindZetaZeroFree.KPGroupChartFullTubeHaarL2
 

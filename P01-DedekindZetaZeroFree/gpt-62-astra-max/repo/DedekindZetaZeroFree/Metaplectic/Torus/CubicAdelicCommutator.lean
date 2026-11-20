@@ -11,7 +11,7 @@ open KubotaRankTwo
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 private theorem diag_eval (v : KPHilbert.Place F) (a : Ideles F) :
     KPAdelicCoverRestrictedProduct.matrixEval F v (diagonalHom F a) =
       KubotaRankTwo.d (KPHilbert.Completion F v) (ideleEval F v a) 1 := by
@@ -22,11 +22,7 @@ private theorem diag_eval (v : KPHilbert.Place F) (a : Ideles F) :
       Matrix.GeneralLinearGroup.map, ideleEval, KubotaRankTwo.coe_d]
 
 private theorem d_mul (K : Type*) [Field K] (a b : Kˣ) :
-    KubotaRankTwo.d K a 1 * KubotaRankTwo.d K b 1 = KubotaRankTwo.d K (a*b) 1 := by
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Fin.sum_univ_two]
+    KubotaRankTwo.d K a 1 * KubotaRankTwo.d K b 1 = KubotaRankTwo.d K (a*b) 1 := by apply DedekindZetaZeroFree.KPStandardLocalRootLifts.d_mul_matrix
 
 private theorem local_sigma (v : KPHilbert.Place F) (a b : (KPHilbert.Completion F v)ˣ) :
     KPLocalCover.sigmaTwo F ζ hζ v
@@ -35,10 +31,8 @@ private theorem local_sigma (v : KPHilbert.Place F) (a b : (KPHilbert.Completion
       KPHilbert.B3 F ζ hζ v a b ^ 2 := by
   have hone : ∀ c, KPHilbert.B3 F ζ hζ v 1 c = 1 := by
     intro c
-    have h := (KPHilbert.B3_laws F ζ hζ v).1 1 1 c
-    simpa using h.symm
-  simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau,
-    d_mul, hone]
+    simpa using ((KPHilbert.B3_laws F ζ hζ v).1 1 1 c).symm
+  simp_all [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, d_mul]
 
 private theorem local_twist (v : KPHilbert.Place F)
     (x y : KPLocalCover.CubicGL2Raw F ζ hζ v)
@@ -66,16 +60,15 @@ private theorem amalgamate_tuple (ε : KPAdelicCoverRestrictedProduct.CentralTup
     KPAdelicCoverRestrictedProduct.centralInjection F ζ hζ
       (KPAdelicCoverRestrictedProduct.centralProduct F ε) := by
   let v := KPAdelicCoverRestrictedProduct.distinguishedPlace F
-  let δ : KPAdelicCoverRestrictedProduct.CentralTuples F :=
+  let δ :=
     RestrictedProduct.mulSingle (fun _ => (⊥ : Subgroup (rootsOfUnity 3 F))) v
       (KPAdelicCoverRestrictedProduct.centralProduct F ε)
   have hδ : KPAdelicCoverRestrictedProduct.centralProduct F δ =
       KPAdelicCoverRestrictedProduct.centralProduct F ε := by
     change (∏ᶠ w, δ w) = _
     rw [finprod_eq_single _ v]
-    · exact RestrictedProduct.mulSingle_eq_same _ _ _
-    · intro w hw
-      exact RestrictedProduct.mulSingle_eq_of_ne _ _ hw
+    · apply RestrictedProduct.mulSingle_eq_same
+    · solve_by_elim [RestrictedProduct.mulSingle_eq_of_ne]
   have ht : KPAdelicCoverRestrictedProduct.centralTupleMap F ζ hζ δ =
       KPAdelicCoverRestrictedProduct.localToRestricted F ζ hζ v
         (KPLocalCover.centralInjection F ζ hζ v
@@ -95,10 +88,9 @@ private theorem amalgamate_tuple (ε : KPAdelicCoverRestrictedProduct.CentralTup
     (KPAdelicCoverRestrictedProduct.localToRestricted F ζ hζ v _)
   rw [← ht]
   apply div_eq_one.mp
-  rw [← map_div, ← map_div]
+  simp [← map_div]
   apply (QuotientGroup.eq_one_iff _).mpr
   refine ⟨ε / δ, ?_, rfl⟩
-  change KPAdelicCoverRestrictedProduct.centralProduct F (ε / δ) = 1
   simp [hδ]
 
 private theorem restricted_twist (a b : Ideles F)
@@ -118,12 +110,9 @@ private theorem restricted_twist (a b : Ideles F)
     ⟨fun v => f v ^ 4, by
       have h := (hf.compl_mem_cofinite)
       filter_upwards [h] with v hv
-      change f v ^ 4 = 1
-      have hv' : f v = 1 := by simpa [Function.mulSupport] using hv
-      simp [hv']⟩
+      simp_all⟩
   have he : KPAdelicCoverRestrictedProduct.centralProduct F ε =
       beta3 F ζ hζ (QuotientGroup.mk' _ a) (QuotientGroup.mk' _ b) ^ 4 := by
-    change (∏ᶠ v, f v ^ 4) = (∏ᶠ v, f v) ^ 4
     exact (finprod_pow hf 4).symm
   have ht : r * s = KPAdelicCoverRestrictedProduct.centralTupleMap F ζ hζ ε * (s * r) := by
     apply RestrictedProduct.ext
@@ -179,17 +168,13 @@ private theorem pgl_twist (a b : Ideles F)
   have hdv : y / v ∈ (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ).ker := by
     change KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ (y/v) = 1
     rw [map_div, hy, hv, div_self']
-  have hc := KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
-    ((KPAdelicCoverRestrictedProduct.pglCentralInjection_kernel F ζ hζ).symm ▸ hcu)
-  have hd := KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
-    ((KPAdelicCoverRestrictedProduct.pglCentralInjection_kernel F ζ hζ).symm ▸ hdv)
-  have hz := KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
-    ⟨beta3 F ζ hζ (QuotientGroup.mk' _ a) (QuotientGroup.mk' _ b) ^ 4, rfl⟩
   have h := congrArg (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ)
     (restricted_twist F ζ hζ a b r s hr hs)
   simp only [map_mul] at h
-  have ht := central_twist (x/u) (y/v) _ u v hc hd hz h
-  simpa only [div_mul_cancel] using ht
+  simpa using (central_twist (x/u) (y/v) _ u v (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
+    ((KPAdelicCoverRestrictedProduct.pglCentralInjection_kernel F ζ hζ).symm ▸ hcu)) (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
+    ((KPAdelicCoverRestrictedProduct.pglCentralInjection_kernel F ζ hζ).symm ▸ hdv)) (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
+    ⟨beta3 F ζ hζ (QuotientGroup.mk' _ a) (QuotientGroup.mk' _ b) ^ 4, rfl⟩) h)
 
 theorem cover_torus_commutator (x y : E F ζ hζ) :
     x * y * x⁻¹ * y⁻¹ = torusCentralInjection F ζ hζ

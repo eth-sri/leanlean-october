@@ -12,7 +12,7 @@ noncomputable section
 set_option autoImplicit false
 set_option maxHeartbeats 800000
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
  theorem compact_lift_of_open_surjective
     {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
@@ -28,8 +28,7 @@ variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
       intro y hy
       obtain ⟨x, rfl⟩ := hs y
       exact Set.mem_iUnion.mpr ⟨x, Set.mem_image_of_mem _ (mem_interior_iff_mem_nhds.mpr (hVn x))⟩)
-  let T := (⋃ x ∈ S, V x) ∩ p ⁻¹' K
-  refine ⟨T, (S.finite_toSet.isCompact_biUnion (fun x _ => hVc x)).inter_right
+  refine ⟨((⋃ x ∈ S, V x) ∩ p ⁻¹' K), (S.finite_toSet.isCompact_biUnion (fun x _ => hVc x)).inter_right
     (hK.isClosed.preimage hp), ?_⟩
   apply Set.Subset.antisymm
   · rintro y ⟨x, hx, rfl⟩

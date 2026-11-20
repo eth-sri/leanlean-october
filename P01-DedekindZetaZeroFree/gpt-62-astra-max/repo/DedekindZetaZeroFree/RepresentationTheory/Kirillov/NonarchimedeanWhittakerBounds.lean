@@ -14,15 +14,17 @@ open scoped Topology
 
 namespace DedekindZetaZeroFree.KPFiniteLocal
 
-def ordinaryDifferences {K G V : Type*} [Field K] [Group G]
-    [AddCommGroup V] [Module ℂ V]
-    (ρ : Representation ℂ G V) (n : AddChar K G) : Submodule ℂ V :=
+section
+
+variable {K G V : Type*} [Field K] [Group G] [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ G V)
+
+def ordinaryDifferences (n : AddChar K G) : Submodule ℂ V :=
   Submodule.span ℂ {z | ∃ (x : K) (φ : V), z = ρ (n x) φ - φ}
 
-def whittakerValue {K G V : Type*} [Field K] [Group G]
-    [AddCommGroup V] [Module ℂ V]
-    (ρ : Representation ℂ G V) (a : Kˣ → G)
+def whittakerValue (a : Kˣ → G)
     (ell : V →ₗ[ℂ] ℂ) (φ : V) (y : Kˣ) : ℂ := ell (ρ (a y) φ)
+
+end
 
 theorem character_trivial_near_zero {K : Type*} [NormedField K] [IsUltrametricDist K]
     (ψ : AddChar K Circle) (hc : Continuous ψ) :
@@ -42,11 +44,14 @@ theorem character_trivial_near_zero {K : Type*} [NormedField K] [IsUltrametricDi
   exact lt_of_le_of_lt (mul_le_of_le_one_left (norm_nonneg x)
     (IsUltrametricDist.norm_natCast_le_one K m)) hx
 
-theorem ordinaryDifferences_vanish_near_zero
-    {K G V : Type*} [NormedField K] [IsUltrametricDist K] [Group G]
-    [AddCommGroup V] [Module ℂ V]
+section
+
+variable {K G V : Type*} [NormedField K] [IsUltrametricDist K] [Group G] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) (n : AddChar K G) (a : Kˣ → G)
     (hconj : ∀ (y : Kˣ) (x : K), a y * n x = n ((y : K) * x) * a y)
+
+include hconj in
+theorem ordinaryDifferences_vanish_near_zero
     (ψ : AddChar K Circle) (hc : Continuous ψ) (ell : V →ₗ[ℂ] ℂ)
     (hWh : ∀ (x : K) (φ : V), ell (ρ (n x) φ) = (ψ x : ℂ) * ell φ)
     (z : V) (hz : z ∈ ordinaryDifferences ρ n) :
@@ -64,10 +69,10 @@ theorem ordinaryDifferences_vanish_near_zero
         nlinarith
       have hcxy : (ψ ((y : K) * x) : ℂ) = 1 := by simp [hchar _ hxy]
       unfold whittakerValue
-      rw [map_sub, map_sub]
+      simp
       have heq : ell (ρ (a y) (ρ (n x) φ)) = (ψ ((y : K) * x) : ℂ) * ell (ρ (a y) φ) := by
         rw [← Module.End.mul_apply, ← map_mul, hconj, map_mul, Module.End.mul_apply, hWh]
-      rw [heq, hcxy, one_mul, sub_self]
+      simp [heq, hcxy]
   | zero =>
       refine ⟨1, zero_lt_one, ?_⟩
       intros
@@ -85,13 +90,10 @@ theorem ordinaryDifferences_vanish_near_zero
       refine ⟨r, hr, ?_⟩
       intro y hy
       simp only [whittakerValue, map_smul]
-      rw [show ell (ρ (a y) z) = 0 from hzr y hy, smul_zero]
+      simp [show ell (ρ (a y) z) = 0 from hzr y hy]
 
+include hconj in
 theorem jacquet_eventual_recurrence
-    {K G V : Type*} [NormedField K] [IsUltrametricDist K] [Group G]
-    [AddCommGroup V] [Module ℂ V]
-    (ρ : Representation ℂ G V) (n : AddChar K G) (a : Kˣ → G)
-    (hconj : ∀ (y : Kˣ) (x : K), a y * n x = n ((y : K) * x) * a y)
     (p : Kˣ) (ha : ∀ y : Kˣ, a (y * p) = a y * a p)
     (α β : ℂ)
     (hJ : ∀ φ : V, ((ρ (a p) - α • LinearMap.id) *
@@ -122,35 +124,36 @@ theorem jacquet_eventual_recurrence
   unfold whittakerValue at *
   linear_combination hzero
 
-theorem distinct_root_recurrence_formula (u : ℕ → ℂ) (α β : ℂ)
-    (hne : α ≠ β)
+end
+
+section
+
+variable (u : ℕ → ℂ) (α β : ℂ) (hne : α ≠ β)
+
+include hne in
+theorem distinct_root_recurrence_formula
     (hrec : ∀ n : ℕ, u (n + 2) - (α + β) * u (n + 1) + α * β * u n = 0)
     (n : ℕ) :
     u n = ((u 1 - β * u 0) / (α - β)) * α ^ n +
       ((α * u 0 - u 1) / (α - β)) * β ^ n := by
-  have hnz : α - β ≠ 0 := sub_ne_zero.mpr hne
   induction n using Nat.twoStepInduction with
   | zero =>
-    simp only [pow_zero, mul_one]
-    field_simp
-    ring
+    grind
   | one =>
-    simp only [pow_one]
-    field_simp
-    ring
+    grind
   | more n ih0 ih1 =>
     have hh := hrec n
     rw [ih0, ih1] at hh
-    rw [pow_succ, pow_succ, pow_succ, pow_succ]
+    simp [pow_succ]
     linear_combination hh
 
-theorem distinct_root_recurrence_uniform_bound (u : ℕ → ℂ) (α β : ℂ)
-    (hne : α ≠ β) (hnorm : ‖β‖ ≤ ‖α‖)
+include hne in
+theorem distinct_root_recurrence_uniform_bound (hnorm : ‖β‖ ≤ ‖α‖)
     (hrec : ∀ n : ℕ, u (n + 2) - (α + β) * u (n + 1) + α * β * u n = 0)
     (H : ℝ) (hH : 0 ≤ H) (h0 : ‖u 0‖ ≤ H) (h1 : ‖u 1‖ ≤ H)
     (n : ℕ) :
     ‖u n‖ ≤ ((2 + ‖α‖ + ‖β‖) * H / ‖α - β‖) * ‖α‖ ^ n := by
-  have hd : 0 < ‖α - β‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hne)
+  have hd := norm_pos_iff.mpr (sub_ne_zero.mpr hne)
   have hA : ‖(u 1 - β * u 0) / (α - β)‖ ≤ (H + ‖β‖ * H) / ‖α - β‖ := by
     rw [norm_div]
     apply div_le_div_of_nonneg_right _ hd.le
@@ -171,27 +174,26 @@ theorem distinct_root_recurrence_uniform_bound (u : ℕ → ℂ) (α β : ℂ)
         ‖((α * u 0 - u 1) / (α - β)) * β ^ n‖ := norm_add_le _ _
     _ = ‖(u 1 - β * u 0) / (α - β)‖ * ‖α‖ ^ n +
         ‖(α * u 0 - u 1) / (α - β)‖ * ‖β‖ ^ n := by
-      rw [norm_mul, norm_mul, norm_pow, norm_pow]
+      simp
     _ ≤ ((H + ‖β‖ * H) / ‖α - β‖) * ‖α‖ ^ n +
         ((‖α‖ * H + H) / ‖α - β‖) * ‖α‖ ^ n := by
       gcongr
     _ = _ := by ring
 
-theorem whittakerValue_locallyConstant
-    {K G V : Type*} [Field K] [TopologicalSpace K] [Group G]
-    [TopologicalSpace G] [AddCommGroup V] [Module ℂ V]
-    (ρ : Representation ℂ G V)
-    (hsmooth : ∀ φ : V, IsLocallyConstant (fun g : G => ρ g φ))
-    (a : Kˣ → G) (ha : Continuous a) (ell : V →ₗ[ℂ] ℂ) (φ : V) :
-    IsLocallyConstant (whittakerValue ρ a ell φ) := by
-  exact ((hsmooth φ).comp ell).comp_continuous ha
+end
 
-theorem whittakerValue_compact_bound
-    {K G V : Type*} [Field K] [TopologicalSpace K] [Group G]
-    [TopologicalSpace G] [AddCommGroup V] [Module ℂ V]
-    (ρ : Representation ℂ G V)
-    (hsmooth : ∀ φ : V, IsLocallyConstant (fun g : G => ρ g φ))
+section
+
+variable {K G V : Type*} [Field K] [TopologicalSpace K] [Group G] [TopologicalSpace G] [AddCommGroup V]
+    [Module ℂ V] (ρ : Representation ℂ G V) (hsmooth : ∀ φ : V, IsLocallyConstant (fun g : G => ρ g φ))
     (a : Kˣ → G) (ha : Continuous a) (ell : V →ₗ[ℂ] ℂ) (φ : V)
+
+include hsmooth ha in
+theorem whittakerValue_locallyConstant :
+    IsLocallyConstant (whittakerValue ρ a ell φ) := ((hsmooth φ).comp ell).comp_continuous ha
+
+include hsmooth ha in
+theorem whittakerValue_compact_bound
     (S : Set Kˣ) (hS : IsCompact S) :
     ∃ H : ℝ, 0 < H ∧ ∀ y ∈ S, ‖whittakerValue ρ a ell φ y‖ ≤ H := by
   obtain ⟨H, hH⟩ := hS.bddAbove_image
@@ -199,6 +201,8 @@ theorem whittakerValue_compact_bound
   refine ⟨max H 1, lt_of_lt_of_le zero_lt_one (le_max_right _ _), ?_⟩
   intro y hy
   exact (hH (Set.mem_image_of_mem _ hy)).trans (le_max_left _ _)
+
+end
 
 theorem generic_fixed_vector_support
     {F : Type} [Field F] [NumberField F]
@@ -233,28 +237,24 @@ theorem generic_fixed_vector_support
   have hx : ‖t / (y : v.adicCompletion F)‖ < r := by
     rw [norm_div]
     exact (div_lt_iff₀ (norm_pos_iff.mpr y.ne_zero)).mpr
-      (by simpa only [mul_comm] using (div_lt_iff₀ hr).mp hyr)
+      (by simpa [mul_comm] using (div_lt_iff₀ hr).mp hyr)
   have hfix := hball (show dist (t / (y : v.adicCompletion F)) 0 < r by simpa using hx)
   have heq : whittakerValue ρ a ell φ y = (ψ t : ℂ) * whittakerValue ρ a ell φ y := by
     calc
       whittakerValue ρ a ell φ y = ell (ρ (a y) (ρ (n (t / (y : v.adicCompletion F))) φ)) := by rw [hfix]; rfl
-      _ = ell (ρ (a y * n (t / (y : v.adicCompletion F))) φ) := by simp [map_mul, Module.End.mul_apply]
+      _ = ell (ρ (a y * n (t / (y : v.adicCompletion F))) φ) := by simp
       _ = ell (ρ (n t * a y) φ) := by rw [hconj, mul_div_cancel₀ t y.ne_zero]
       _ = (ψ t : ℂ) * whittakerValue ρ a ell φ y := by simp [map_mul, Module.End.mul_apply, hWh, whittakerValue]
   have ht' : (ψ t : ℂ) ≠ 1 := by
     intro h
     apply ht
     exact Subtype.ext h
-  have hz : (1 - (ψ t : ℂ)) * whittakerValue ρ a ell φ y = 0 := by
-    linear_combination heq
-  exact (mul_eq_zero.mp hz).resolve_left (sub_ne_zero.mpr (Ne.symm ht'))
+  exact (mul_eq_zero.mp (by
+    linear_combination heq)).resolve_left (sub_ne_zero.mpr (Ne.symm ht'))
 
 private theorem norm_annulus_isCompact {K : Type*} [NormedField K] [ProperSpace K] (l u : ℝ) (hl : 0 < l) :
     IsCompact {y : Kˣ | l ≤ ‖(y : K)‖ ∧ ‖(y : K)‖ ≤ u} := by
-  have hc2 : IsCompact (MulOpposite.opHomeomorph.symm ⁻¹' Metric.closedBall (0 : K) l⁻¹) :=
-    MulOpposite.opHomeomorph.symm.isCompact_preimage.mpr (isCompact_closedBall (0 : K) l⁻¹)
-  have hc := (isCompact_closedBall (0 : K) u).prod hc2
-  have hpre := Units.isClosedEmbedding_embedProduct.isCompact_preimage hc
+  have hpre := Units.isClosedEmbedding_embedProduct.isCompact_preimage ((isCompact_closedBall (0 : K) u).prod (MulOpposite.opHomeomorph.symm.isCompact_preimage.mpr (isCompact_closedBall (0 : K) l⁻¹)))
   have heq : (Units.embedProduct K) ⁻¹'
       (Metric.closedBall (0 : K) u ×ˢ (MulOpposite.opHomeomorph.symm ⁻¹' Metric.closedBall (0 : K) l⁻¹)) =
       {y : Kˣ | l ≤ ‖(y : K)‖ ∧ ‖(y : K)‖ ≤ u} := by
@@ -263,10 +263,11 @@ private theorem norm_annulus_isCompact {K : Type*} [NormedField K] [ProperSpace 
       Units.embedProduct, MulOpposite.unop_op]
     change (‖(y : K)‖ ≤ u ∧ ‖(↑y⁻¹ : K)‖ ≤ l⁻¹) ↔ (l ≤ ‖(y : K)‖ ∧ ‖(y : K)‖ ≤ u)
     rw [show ‖(↑y⁻¹ : K)‖ = ‖(y : K)‖⁻¹ by simp]
-    have hy : 0 < ‖(y : K)‖ := norm_pos_iff.mpr y.ne_zero
-    rw [inv_le_inv₀ hy hl]
+    rw [inv_le_inv₀ (norm_pos_iff.mpr y.ne_zero) hl]
     exact and_comm
   rwa [heq] at hpre
+
+alias NonarchimedeanWhittakerBounds.norm_annulus_isCompact := norm_annulus_isCompact
 
 private theorem recurrence_decay {K : Type*} [NormedField K] (f : Kˣ → ℂ)
     (p : Kˣ) (α β : ℂ) (hp : ‖(p : K)‖ < 1)
@@ -376,18 +377,15 @@ private theorem jacquet_roots_bounds (Q : ℕ) (hQ : (1 : ℝ) < Q) (δ : ℝ) (
       ‖α‖ ≤ Real.rpow ((Q : ℝ)⁻¹ ^ 3) δ := by
   dsimp only
   have hQ0 : 0 < (Q : ℝ) := by linarith
-  let t : ℝ := (Q : ℝ)⁻¹
+  let t := (Q : ℝ)⁻¹
   have ht : 0 < t := inv_pos.mpr hQ0
   have ht1 : t < 1 := (inv_lt_one₀ hQ0).mpr hQ
   have ha : ‖(Q : ℂ)⁻¹‖ = t := by simp [norm_inv, t]
   have hb : ‖((Q : ℂ) ^ 2)⁻¹‖ = t ^ 2 := by simp [norm_inv, norm_pow, t, inv_pow]
   constructor
-  · intro he
-    have hn := congrArg norm he
-    rw [ha, hb] at hn
-    nlinarith
+  · grind
   constructor
-  · rw [ha, hb]; nlinarith
+  · nlinarith
   · rw [ha]
     change t ≤ (t ^ 3).rpow δ
     have hp : (t ^ 3 : ℝ) ^ δ = t ^ (3 * δ) := by
@@ -431,15 +429,13 @@ theorem generic_fixed_vector_small_norm
   have hp : ‖((π ^ 3 : (v.adicCompletion F)ˣ) : v.adicCompletion F)‖ < 1 := by
     rw [Units.val_pow_eq_pow_val, norm_pow, hπ]
     have hQ0 : 0 < (v.asIdeal.absNorm : ℝ) := by linarith
-    have hi : 0 < (v.asIdeal.absNorm : ℝ)⁻¹ := inv_pos.mpr hQ0
-    have hi1 : (v.asIdeal.absNorm : ℝ)⁻¹ < 1 := (inv_lt_one₀ hQ0).mpr hQ
-    exact pow_lt_one₀ hi.le hi1 (by decide : 3 ≠ 0)
+    exact pow_lt_one₀ (inv_pos.mpr hQ0).le ((inv_lt_one₀ hQ0).mpr hQ) (by decide : 3 ≠ 0)
   obtain ⟨r, hr, hrec⟩ := jacquet_eventual_recurrence ρ n a hconj (π ^ 3) haCube
     ((v.asIdeal.absNorm : ℂ)⁻¹) (((v.asIdeal.absNorm : ℂ) ^ 2)⁻¹)
     hJacquet ψ hψcont ell hWh φ
-  let l : ℝ := min (r / 2) 1 * ‖((π ^ 3 : (v.adicCompletion F)ˣ) : v.adicCompletion F)‖ ^ 2
+  let l := min (r / 2) 1 * ‖((π ^ 3 : (v.adicCompletion F)ˣ) : v.adicCompletion F)‖ ^ 2
   have hl : 0 < l := by
-    have hh : 0 < ‖((π ^ 3 : (v.adicCompletion F)ˣ) : v.adicCompletion F)‖ :=
+    have hh :=
       norm_pos_iff.mpr (π ^ 3).ne_zero
     dsimp [l]
     positivity
@@ -448,7 +444,7 @@ theorem generic_fixed_vector_small_norm
     (norm_annulus_isCompact l 1 hl)
   obtain ⟨C, hC, hdec⟩ := recurrence_decay (whittakerValue ρ a ell φ) (π ^ 3)
     ((v.asIdeal.absNorm : ℂ)⁻¹) (((v.asIdeal.absNorm : ℂ) ^ 2)⁻¹)
-    hp hne hnorm δ hδ (by simpa only [Units.val_pow_eq_pow_val, norm_pow, hπ] using hroot)
+    hp hne hnorm δ hδ (by simp_all [Units.val_pow_eq_pow_val])
     r hr hrec H hH (fun y hy hy1 => hbound y ⟨hy, hy1⟩)
   exact ⟨C, hC, fun y _ hy => hdec y hy⟩
 

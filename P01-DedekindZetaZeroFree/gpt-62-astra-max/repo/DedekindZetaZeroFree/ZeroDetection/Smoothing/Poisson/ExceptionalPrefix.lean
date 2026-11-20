@@ -13,8 +13,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.Detector
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 private theorem abel_nat (c : ℕ → ℂ) (w : ℕ → ℝ) (hw : ∀ i, w (i + 1) ≤ w i) (hw0 : ∀ i, 0 ≤ w i)
     (hw1 : w 0 ≤ 1) (m : ℕ) :
@@ -32,8 +32,7 @@ private theorem abel_nat (c : ℕ → ℂ) (w : ℕ → ℝ) (hw : ∀ i, w (i +
       ring
   obtain ⟨j, hj, hmax⟩ := Finset.exists_max_image (Finset.range (m + 1)) (fun j => ‖P j‖)
     ⟨0, by simp⟩
-  have hjm : j ≤ m := Nat.lt_succ_iff.mp (Finset.mem_range.mp hj)
-  refine ⟨j, hjm, ?_⟩
+  refine ⟨j, (Nat.lt_succ_iff.mp (Finset.mem_range.mp hj)), ?_⟩
   set M := ‖P j‖ with hM
   have hbound : ∀ i ∈ Finset.range (m + 1), ‖P i‖ ≤ M := fun i hi => hmax i hi
   rw [key m]
@@ -41,7 +40,7 @@ private theorem abel_nat (c : ℕ → ℂ) (w : ℕ → ℝ) (hw : ∀ i, w (i +
       ≤ ∑ i ∈ Finset.range m, M * (w i - w (i + 1)) + M * w m := by
     refine (norm_add_le _ _).trans (add_le_add ?_ ?_)
     · refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun i hi => ?_)
-      have hi' : i < m := Finset.mem_range.mp hi
+      have hi' := Finset.mem_range.mp hi
       have hnn : 0 ≤ w i - w (i + 1) := sub_nonneg.mpr (hw i)
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg hnn]
       exact mul_le_mul_of_nonneg_right (hbound (i + 1) (Finset.mem_range.mpr (by omega))) hnn
@@ -53,6 +52,8 @@ private theorem abel_nat (c : ℕ → ℂ) (w : ℕ → ℝ) (hw : ∀ i, w (i +
   have hM0 : 0 ≤ M := norm_nonneg _
   have h3 : M * w 0 ≤ M := by nlinarith [hw0 0]
   linarith
+
+alias ExceptionalPrefix.abel_nat := abel_nat
 
 def prefixSum (F : Type) [Field F] [NumberField F] (U : ℝ) {m : Ideal (𝓞 F)}
     (ω : RayClassCharacter F m) (γ N y : ℝ) : ℂ :=
@@ -109,6 +110,8 @@ private theorem abel_ideal {ι : Type*} (T : Finset ι) (nrm : ι → ℕ) (m : 
   rw [← e1, ← e2]
   exact hjb
 
+alias ExceptionalPrefix.abel_ideal := abel_ideal
+
 private theorem dyad (a0 R B : ℝ) (Qf : ℝ → ℝ → ℂ) (ha0 : 0 < a0) (hB0 : 0 ≤ B)
     (hadd : ∀ N y z, N ≤ y → y ≤ z → Qf N z = Qf N y + Qf y z)
     (hnil : ∀ N y, y ≤ N → Qf N y = 0)
@@ -131,17 +134,15 @@ private theorem dyad (a0 R B : ℝ) (Qf : ℝ → ℝ → ℂ) (ha0 : 0 < a0) (h
     · push_neg at h
       have h2k : (1 : ℝ) ≤ 2 ^ k := one_le_pow₀ (by norm_num)
       have hN : a0 ≤ a0 * 2 ^ k := by nlinarith
-      have hy2 : y ≤ 2 * (a0 * 2 ^ k) := by
-        rw [pow_succ] at hy
-        linarith
-      have hsplit := hadd a0 (a0 * 2 ^ k) y hN h.le
-      have e1 := ih (a0 * 2 ^ k) le_rfl (h.le.trans hyR)
-      have e2 := hB (a0 * 2 ^ k) y hN (h.le.trans hyR) h.le hy2 hyR
-      rw [hsplit]
-      calc ‖Qf a0 (a0 * 2 ^ k) + Qf (a0 * 2 ^ k) y‖
+      rw [(hadd a0 (a0 * 2 ^ k) y hN h.le)]
+      calc _
           ≤ ‖Qf a0 (a0 * 2 ^ k)‖ + ‖Qf (a0 * 2 ^ k) y‖ := norm_add_le _ _
-        _ ≤ k * B + B := add_le_add e1 e2
+        _ ≤ k * B + B := add_le_add (ih (a0 * 2 ^ k) le_rfl (h.le.trans hyR)) (hB (a0 * 2 ^ k) y hN (h.le.trans hyR) h.le (by
+          rw [pow_succ] at hy
+          linarith) hyR)
         _ = ((k + 1 : ℕ) : ℝ) * B := by push_cast; ring
+
+alias ExceptionalPrefix.dyad := dyad
 
 private def wt (Y e : ℝ) (k : ℕ) : ℝ := ((k : ℝ) + 1) ^ e * Real.exp (-((k : ℝ) + 1) / Y)
 
@@ -152,8 +153,6 @@ private theorem wt_props (Y e : ℝ) (hY : 0 < Y) (he : e ≤ 0) :
     unfold wt
     push_cast
     have hk : (0 : ℝ) < (k : ℝ) + 1 := by positivity
-    have h1 : ((k : ℝ) + 1 + 1) ^ e ≤ ((k : ℝ) + 1) ^ e :=
-      Real.rpow_le_rpow_of_nonpos hk (by linarith) he
     have hinv : 0 ≤ 1 / Y := by positivity
     have e1 : -((k : ℝ) + 1 + 1) / Y = -((k : ℝ) + 1 + 1) * (1 / Y) := by ring
     have e2 : -((k : ℝ) + 1) / Y = -((k : ℝ) + 1) * (1 / Y) := by ring
@@ -161,7 +160,7 @@ private theorem wt_props (Y e : ℝ) (hY : 0 < Y) (he : e ≤ 0) :
       apply Real.exp_le_exp.mpr
       rw [e1, e2]
       nlinarith
-    exact mul_le_mul h1 h2 (Real.exp_pos _).le (Real.rpow_nonneg hk.le _)
+    exact mul_le_mul (Real.rpow_le_rpow_of_nonpos hk (by linarith) he) h2 (Real.exp_pos _).le (Real.rpow_nonneg hk.le _)
   · intro k
     unfold wt
     have hk : (0 : ℝ) < (k : ℝ) + 1 := by positivity
@@ -196,19 +195,22 @@ private theorem term_bot (U β γ : ℝ) (hβ : 0 < β) {m : Ideal (𝓞 F)} (ω
   unfold term
   simp [Ideal.absNorm_bot, Complex.zero_cpow h]
 
-private theorem term_unit (U β γ : ℝ) (hU : 2 ≤ U) {m : Ideal (𝓞 F)}
-    (ω : RayClassCharacter F m) :
+section
+
+variable (U β γ : ℝ) (hU : 2 ≤ U) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m)
+
+include hU in
+private theorem term_unit :
     term U β γ ω 1 = ((Real.exp (-1 / U ^ DetectorDef.r) : ℝ) : ℂ) := by
-  have h1 : DetectorDef.a F U 1 = 1 := DetectorCoefficients.a_one F U hU
   have h2 : ω 1 = 1 := by
     rw [Ideal.one_eq_top]
     exact ω.map_top'
   unfold term
-  rw [h1, h2]
+  rw [(DetectorCoefficients.a_one F U hU), h2]
   simp
 
-private theorem term_mid_zero (U β γ : ℝ) (hU : 2 ≤ U) {m : Ideal (𝓞 F)}
-    (ω : RayClassCharacter F m) (n : Ideal (𝓞 F))
+include hU in
+private theorem term_mid_zero (n : Ideal (𝓞 F))
     (h1 : (1 : ℝ) < (Ideal.absNorm n : ℝ)) (h2 : (Ideal.absNorm n : ℝ) ≤ U ^ DetectorDef.qExp) :
     term U β γ ω n = 0 := by
   have := DetectorCoefficients.a_eq_zero F U hU n h1 h2
@@ -216,27 +218,19 @@ private theorem term_mid_zero (U β γ : ℝ) (hU : 2 ≤ U) {m : Ideal (𝓞 F)
   rw [this]
   simp
 
-private theorem exp_cube_le (t : ℝ) (ht : 0 ≤ t) : Real.exp (-t) * t ^ 3 ≤ 6 := by
-  have hfac : t ^ 3 / 6 ≤ Real.exp t := by
-    have := Real.pow_div_factorial_le_exp t ht 3
-    norm_num [Nat.factorial] at this
-    linarith
-  have hexpmul : Real.exp (-t) * Real.exp t = 1 := by
-    rw [← Real.exp_add]; simp
-  have hpos : 0 ≤ Real.exp (-t) := (Real.exp_pos _).le
-  have h6 : t ^ 3 ≤ 6 * Real.exp t := by linarith
-  calc Real.exp (-t) * t ^ 3 ≤ Real.exp (-t) * (6 * Real.exp t) :=
-        mul_le_mul_of_nonneg_left h6 hpos
-    _ = 6 * (Real.exp (-t) * Real.exp t) := by ring
-    _ = 6 := by rw [hexpmul]; ring
+end
+
+private alias exp_cube_le := DedekindZetaZeroFree.Quantitative.DetectorTail.SmoothingTail.exp_neg_mul_cube_le
+
+alias ExceptionalPrefix.exp_cube_le := exp_cube_le
+
+local notation "IntegerIdeal" => Ideal (𝓞 F)
 
 private theorem term_norm_le (U β γ : ℝ) (hU : 2 ≤ U) (hβ : DetectorDef.σ₀ ≤ β)
     (ω : Detector.PrimitiveFrequencyCharacter F) :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ n : Ideal (𝓞 F),
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ n : IntegerIdeal,
       ‖term U β γ ω.character n‖ ≤ C * (Ideal.absNorm n : ℝ) ^ (-3 : ℝ) := by
   obtain ⟨Ca, hCa, hA⟩ := DetectorCoefficients.abs_a_le F (1 / 10 : ℝ) (by norm_num)
-  have hU0 : (0 : ℝ) < U := by linarith
-  have hY : 0 < U ^ DetectorDef.r := Real.rpow_pos_of_pos hU0 _
   refine ⟨Ca * (6 * (U ^ DetectorDef.r) ^ 3), by positivity, ?_⟩
   intro n
   by_cases hn : n = ⊥
@@ -245,12 +239,9 @@ private theorem term_norm_le (U β γ : ℝ) (hU : 2 ≤ U) (hβ : DetectorDef.�
                            linarith)]
     simp only [norm_zero]
     simp [Ideal.absNorm_bot]
-  · have hne : Ideal.absNorm n ≠ 0 := fun h0 => hn (Ideal.absNorm_eq_zero_iff.mp h0)
-    have hNnat : 0 < Ideal.absNorm n := Nat.pos_of_ne_zero hne
+  · have hNnat := Nat.pos_of_ne_zero (fun h0 => hn (Ideal.absNorm_eq_zero_iff.mp h0))
     have hN1 : (1 : ℝ) ≤ (Ideal.absNorm n : ℝ) := by exact_mod_cast hNnat
     have hN0 : (0 : ℝ) < (Ideal.absNorm n : ℝ) := by linarith
-    have hω : ‖ω.character n‖ ≤ 1 :=
-      RayUnitary.ray_character_norm_le_one F _ ω.conductor_ne_zero ω.character n
     have hpow : ‖(Ideal.absNorm n : ℂ) ^ (-((β : ℂ) + (γ : ℂ) * Complex.I))‖
         = (Ideal.absNorm n : ℝ) ^ (-β) := by
       rw [Complex.norm_natCast_cpow_of_pos hNnat]
@@ -263,7 +254,7 @@ private theorem term_norm_le (U β γ : ℝ) (hU : 2 ≤ U) (hβ : DetectorDef.�
       have h2 : (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ) * (Ideal.absNorm n : ℝ) ^ (-β) ≤ 1 := by
         rw [← Real.rpow_add hN0]
         exact Real.rpow_le_one_of_one_le_of_nonpos hN1 (by linarith)
-      calc |DetectorDef.a F U n| * (Ideal.absNorm n : ℝ) ^ (-β)
+      calc _
           ≤ (Ca * (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ)) * (Ideal.absNorm n : ℝ) ^ (-β) :=
             mul_le_mul_of_nonneg_right h1 hpow_nn
         _ = Ca * ((Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ) * (Ideal.absNorm n : ℝ) ^ (-β)) := by ring
@@ -272,17 +263,16 @@ private theorem term_norm_le (U β γ : ℝ) (hU : 2 ≤ U) (hβ : DetectorDef.�
     have hexp : Real.exp (-(Ideal.absNorm n : ℝ) / U ^ DetectorDef.r) ≤
         6 * (U ^ DetectorDef.r) ^ 3 * ((Ideal.absNorm n : ℝ) ^ 3)⁻¹ := by
       rw [← div_eq_mul_inv, le_div_iff₀ (pow_pos hN0 3)]
-      have h := exp_cube_le ((Ideal.absNorm n : ℝ) / U ^ DetectorDef.r) (by positivity)
       have e : Real.exp (-(Ideal.absNorm n : ℝ) / U ^ DetectorDef.r) =
           Real.exp (-((Ideal.absNorm n : ℝ) / U ^ DetectorDef.r)) := by
         rw [neg_div]
       rw [e]
-      calc Real.exp (-((Ideal.absNorm n : ℝ) / U ^ DetectorDef.r)) * (Ideal.absNorm n : ℝ) ^ 3
+      calc _
           = (Real.exp (-((Ideal.absNorm n : ℝ) / U ^ DetectorDef.r)) *
               ((Ideal.absNorm n : ℝ) / U ^ DetectorDef.r) ^ 3) * (U ^ DetectorDef.r) ^ 3 := by
             field_simp
         _ ≤ 6 * (U ^ DetectorDef.r) ^ 3 :=
-            mul_le_mul_of_nonneg_right h (pow_nonneg hY.le 3)
+            mul_le_mul_of_nonneg_right (exp_cube_le ((Ideal.absNorm n : ℝ) / U ^ DetectorDef.r) (by positivity)) (pow_nonneg (Real.rpow_pos_of_pos (by linarith) _).le 3)
     have hm3 : (Ideal.absNorm n : ℝ) ^ (-3 : ℝ) = ((Ideal.absNorm n : ℝ) ^ 3)⁻¹ := by
       rw [Real.rpow_neg hN0.le]
       congr 1
@@ -292,26 +282,24 @@ private theorem term_norm_le (U β γ : ℝ) (hU : 2 ≤ U) (hβ : DetectorDef.�
       rw [Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]
     unfold term
     rw [norm_mul, norm_mul, norm_mul, hpow, hexpn, Complex.norm_real, Real.norm_eq_abs, hm3]
-    have hnn : 0 ≤ Real.exp (-(Ideal.absNorm n : ℝ) / U ^ DetectorDef.r) := (Real.exp_pos _).le
     have h3 : |DetectorDef.a F U n| * ‖ω.character n‖ * (Ideal.absNorm n : ℝ) ^ (-β) ≤ Ca := by
-      calc |DetectorDef.a F U n| * ‖ω.character n‖ * (Ideal.absNorm n : ℝ) ^ (-β)
+      calc _
           ≤ |DetectorDef.a F U n| * 1 * (Ideal.absNorm n : ℝ) ^ (-β) := by
             apply mul_le_mul_of_nonneg_right _ hpow_nn
-            exact mul_le_mul_of_nonneg_left hω (abs_nonneg _)
+            exact mul_le_mul_of_nonneg_left (RayUnitary.ray_character_norm_le_one F _ ω.conductor_ne_zero ω.character n) (abs_nonneg _)
         _ ≤ Ca := by rw [mul_one]; exact hab
-    calc |DetectorDef.a F U n| * ‖ω.character n‖ * (Ideal.absNorm n : ℝ) ^ (-β) *
-          Real.exp (-(Ideal.absNorm n : ℝ) / U ^ DetectorDef.r)
+    calc _
         ≤ Ca * (6 * (U ^ DetectorDef.r) ^ 3 * ((Ideal.absNorm n : ℝ) ^ 3)⁻¹) :=
-          mul_le_mul h3 hexp hnn hCa.le
+          mul_le_mul h3 hexp ((Real.exp_pos _).le) hCa.le
       _ = Ca * (6 * (U ^ DetectorDef.r) ^ 3) * ((Ideal.absNorm n : ℝ) ^ 3)⁻¹ := by ring
 
 private theorem summable_ind (U β γ : ℝ) (hU : 2 ≤ U) (hβ : DetectorDef.σ₀ ≤ β)
-    (ω : Detector.PrimitiveFrequencyCharacter F) (P : Ideal (𝓞 F) → Prop) [DecidablePred P] :
+    (ω : Detector.PrimitiveFrequencyCharacter F) (P : IntegerIdeal → Prop) [DecidablePred P] :
     Summable (fun n => if P n then term U β γ ω.character n else 0) := by
   obtain ⟨C, hC, hb⟩ := term_norm_le U β γ hU hβ ω
-  have hs : Summable (fun n : Ideal (𝓞 F) => (Ideal.absNorm n : ℝ) ^ (-3 : ℝ)) := by
+  have hs : Summable (fun n : IntegerIdeal => (Ideal.absNorm n : ℝ) ^ (-3 : ℝ)) := by
     have := Odlyzko.summable_ideal_absNorm_rpow F (σ := 3) (by norm_num)
-    simpa using this
+    exact this
   refine Summable.of_norm_bounded (hs.mul_left C) (fun n => ?_)
   by_cases h : P n
   · rw [if_pos h]; exact hb n
@@ -326,7 +314,7 @@ private def Q (F : Type) [Field F] [NumberField F] (U γ : ℝ) {m : Ideal (𝓞
         (Ideal.absNorm n : ℂ) ^ (-((DetectorDef.σ₀ : ℂ) + (γ : ℂ) * Complex.I))
     else 0
 
-private theorem prefixSum_eq_Q (U γ : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m)
+private theorem prefixSum_eq_Q (U γ : ℝ) {m : IntegerIdeal} (ω : RayClassCharacter F m)
     (N y : ℝ) (hy : y ≤ U ^ DetectorDef.r') :
     prefixSum F U ω γ N y = Q F U γ ω N y := by
   unfold prefixSum Q
@@ -339,11 +327,11 @@ private theorem prefixSum_eq_Q (U γ : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassC
   rw [if_neg]
   rintro ⟨_, h2⟩
   apply hnot
-  have : ((Ideal.absNorm n : ℕ) : ℝ) ≤ (⌈U ^ DetectorDef.r'⌉₊ : ℝ) :=
+  have :=
     h2.trans (hy.trans (Nat.le_ceil _))
   exact_mod_cast this
 
-private theorem Q_add (U γ : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m)
+private theorem Q_add (U γ : ℝ) {m : IntegerIdeal} (ω : RayClassCharacter F m)
     (N y z : ℝ) (hNy : N ≤ y) (hyz : y ≤ z) :
     Q F U γ ω N z = Q F U γ ω N y + Q F U γ ω y z := by
   unfold Q
@@ -351,14 +339,11 @@ private theorem Q_add (U γ : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassCharacter 
   apply Finset.sum_congr rfl
   intro n _
   by_cases h : (Ideal.absNorm n : ℝ) ≤ y
-  · have hz : (Ideal.absNorm n : ℝ) ≤ z := h.trans hyz
-    have h' : ¬ y < (Ideal.absNorm n : ℝ) := not_lt.mpr h
-    simp [h, hz, h']
-  · have hlt : y < (Ideal.absNorm n : ℝ) := not_le.mp h
-    have hNx : N < (Ideal.absNorm n : ℝ) := lt_of_le_of_lt hNy hlt
-    simp [h, hlt, hNx]
+  · simp [h, (h.trans hyz), (not_lt.mpr h)]
+  · have hlt := not_le.mp h
+    simp [h, hlt, (lt_of_le_of_lt hNy hlt)]
 
-private theorem Q_nil (U γ : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m)
+private theorem Q_nil (U γ : ℝ) {m : IntegerIdeal} (ω : RayClassCharacter F m)
     (N y : ℝ) (h : y ≤ N) : Q F U γ ω N y = 0 := by
   unfold Q
   apply Finset.sum_eq_zero
@@ -367,13 +352,12 @@ private theorem Q_nil (U γ : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassCharacter 
   rintro ⟨h1, h2⟩
   linarith
 
-private theorem term_eq (U β γ : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m)
-    (n : Ideal (𝓞 F)) (hN : 0 < Ideal.absNorm n) :
+private theorem term_eq (U β γ : ℝ) {m : IntegerIdeal} (ω : RayClassCharacter F m)
+    (n : IntegerIdeal) (hN : 0 < Ideal.absNorm n) :
     term U β γ ω n =
       (((DetectorDef.a F U n : ℝ) : ℂ) * ω n *
         (Ideal.absNorm n : ℂ) ^ (-((DetectorDef.σ₀ : ℂ) + (γ : ℂ) * Complex.I))) *
       ((wt (U ^ DetectorDef.r) (DetectorDef.σ₀ - β) (Ideal.absNorm n - 1) : ℝ) : ℂ) := by
-  have hNc : ((Ideal.absNorm n : ℕ) : ℂ) ≠ 0 := by exact_mod_cast hN.ne'
   have hcast : (((Ideal.absNorm n - 1 : ℕ) : ℝ) + 1) = (Ideal.absNorm n : ℝ) := by
     exact_mod_cast Nat.sub_add_cancel hN
   unfold term wt
@@ -381,7 +365,7 @@ private theorem term_eq (U β γ : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassChara
   have hsplit : (Ideal.absNorm n : ℂ) ^ (-((β : ℂ) + (γ : ℂ) * Complex.I)) =
       (Ideal.absNorm n : ℂ) ^ (-((DetectorDef.σ₀ : ℂ) + (γ : ℂ) * Complex.I)) *
         (Ideal.absNorm n : ℂ) ^ (((DetectorDef.σ₀ - β : ℝ)) : ℂ) := by
-    rw [← Complex.cpow_add _ _ hNc]
+    rw [← Complex.cpow_add _ _ (by exact_mod_cast hN.ne')]
     congr 1
     push_cast
     ring
@@ -391,7 +375,7 @@ private theorem term_eq (U β γ : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassChara
   rw [Complex.ofReal_mul, hc2, hsplit]
   ring
 
-private theorem core (U β γ : ℝ) (ω : Detector.PrimitiveFrequencyCharacter F)
+theorem prefix_core (U β γ : ℝ) (ω : Detector.PrimitiveFrequencyCharacter F)
     (hU : 10 ≤ U) (hβ : DetectorDef.σ₀ ≤ β)
     (hsm : ‖smoothedSum F U ω.character β γ‖ ≤ 1 / 4)
     (htail : ‖DetectorTail.smoothedTail F U β γ ω‖ < 1 / 10) :
@@ -458,7 +442,7 @@ private theorem core (U β γ : ℝ) (ω : Detector.PrimitiveFrequencyCharacter 
       intro n
       by_cases hn1 : n = 1
       · subst hn1
-        have h1 : ((Ideal.absNorm (1 : Ideal (𝓞 F)) : ℕ) : ℝ) = 1 := by simp
+        have h1 : ((Ideal.absNorm (1 : IntegerIdeal) : ℕ) : ℝ) = 1 := by simp
         have h2 : ¬ (U ^ DetectorDef.qExp < 1) := not_lt.mpr ha01
         simp [h1, hR1, h2]
       · by_cases hb : n = ⊥
@@ -480,15 +464,15 @@ private theorem core (U β γ : ℝ) (ω : Detector.PrimitiveFrequencyCharacter 
             by_cases hr : (Ideal.absNorm n : ℝ) ≤ U ^ DetectorDef.r'
             · rw [if_pos hr, if_neg hn1, if_pos ⟨hq', hr⟩, zero_add]
             · rw [if_neg hr, if_neg hn1, if_neg (fun h => hr h.2), zero_add]
-    have h1mem : (1 : Ideal (𝓞 F)) ∈ Tf F ⌈U ^ DetectorDef.r'⌉₊ := by
+    have h1mem : (1 : IntegerIdeal) ∈ Tf F ⌈U ^ DetectorDef.r'⌉₊ := by
       rw [mem_Tf]
       have h3 : (1 : ℝ) ≤ (⌈U ^ DetectorDef.r'⌉₊ : ℝ) := hR1.trans (Nat.le_ceil _)
-      have h1 : Ideal.absNorm (1 : Ideal (𝓞 F)) = 1 := by simp
+      have h1 : Ideal.absNorm (1 : IntegerIdeal) = 1 := by simp
       rw [h1]
       exact_mod_cast h3
     have hs1 : ∑ n ∈ Tf F ⌈U ^ DetectorDef.r'⌉₊, (if n = 1 then term U β γ ω.character n else 0)
         = term U β γ ω.character 1 := by
-      rw [Finset.sum_eq_single (1 : Ideal (𝓞 F))]
+      rw [Finset.sum_eq_single (1 : IntegerIdeal)]
       · rw [if_pos rfl]
       · intro n _ hn
         rw [if_neg hn]
@@ -650,7 +634,7 @@ private theorem core (U β γ : ℝ) (ω : Detector.PrimitiveFrequencyCharacter 
 
 theorem detector_prefix (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) :
-    ∃ c₁ : ℝ, 0 < c₁ ∧ ∃ U₀ : ℝ, 2 ≤ U₀ ∧ ∀ U : ℝ, U₀ ≤ U →
+    ∃ c₁ : ℝ, 0 < c₁ ∧ ∃ U₀ : ℝ, ∀ U : ℝ, U₀ ≤ U →
       ∀ u ∈ exceptionalSet D ρ U, ∀ s : ℂ, IsLZero (D.omega u) s → σ₀ ≤ s.re → s.re ≤ 1 →
         |s.im| ≤ 4 * U ^ ρ →
         ∃ N y : ℝ, U ^ DetectorDef.qExp / 2 < N ∧ N ≤ U ^ DetectorDef.r' ∧ N ≤ y ∧ y ≤ 2 * N ∧
@@ -658,12 +642,12 @@ theorem detector_prefix (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpone
   obtain ⟨_, _, _, _, _, hspec⟩ := hρ
   obtain ⟨U₁, hU₁, hH⟩ := hspec (1 / 4) (by norm_num)
   obtain ⟨U₂, hU₂, hT⟩ := DetectorTail.smoothedTail_tendsto_zero (F := F) (1 / 10) (by norm_num)
-  refine ⟨1 / 12, by norm_num, max (max U₁ U₂) 10, le_trans (by norm_num) (le_max_right _ _), ?_⟩
+  refine ⟨1 / 12, by norm_num, max (max U₁ U₂) 10, ?_⟩
   intro U hU u hu s hs hσ hs1 hγ
   have hUa : U₁ ≤ U := le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) hU
   have hUb : U₂ ≤ U := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hU
   have hUc : 10 ≤ U := le_trans (le_max_right _ _) hU
-  exact core U s.re s.im (D.omega u) hUc hσ (hH U hUa u hu s hs hσ hs1 hγ)
+  exact prefix_core U s.re s.im (D.omega u) hUc hσ (hH U hUa u hu s hs hσ hs1 hγ)
     (hT U s.re s.im (D.omega u) hUb hσ hs1)
 
 end

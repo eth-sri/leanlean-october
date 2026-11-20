@@ -13,21 +13,20 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonK
   DedekindZetaZeroFree.Quantitative.DetectorHeight DedekindZetaZeroFree.Quantitative.RowsExceptional
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def goodRows (ρ U : ℝ) : Set D.Row :=
   {u | u ∈ dyadRows D U ∧ u ∉ principalRows D ∧ u ∉ exceptionalSet D ρ U}
 
 theorem entireNumerator_of_ne_one (u : D.Row) (hu : u.u ≠ 1) :
     RowKernelGrowth.EntireNumerator D u := by
-  have hnp : ¬ (D.inducers u).plus.character.IsPrincipal :=
+  have hnp :=
     (RowNonprincipal.inducers_nonprincipal D u hu).1
   obtain ⟨G, hG, hGL⟩ := RowHeckeBridge.hecke_exists_entire D.recipe.A (D.inducers u).plus hnp
-  have hm := RowHeckeBridge.mask_differentiable D.recipe.A (D.inducers u).plus hnp
-    (RowHeckeBridge.deletionSet D u) (RowHeckeBridge.deletionSet_finite D u)
   refine ⟨fun s => Detector.finiteEulerDeletionMask F (RowHeckeBridge.deletionSet D u)
-    (fun v => (D.inducers u).plus.character v.asIdeal) s * G s, hm.mul hG, fun s hs => ?_⟩
+    (fun v => (D.inducers u).plus.character v.asIdeal) s * G s, (RowHeckeBridge.mask_differentiable D.recipe.A (D.inducers u).plus hnp
+      (RowHeckeBridge.deletionSet D u) (RowHeckeBridge.deletionSet_finite D u)).mul hG, fun s hs => ?_⟩
   beta_reduce
   rw [hGL s (by linarith)]
   exact (RowHeckeBridge.Lpsi_eq_mask_mul D u hnp s hs).symm
@@ -137,23 +136,24 @@ theorem exponent_sum :
   unfold Scales.kernelExponent Scales.goodLine Scales.wLine Scales.zLine Scales.xExponent Scales.smoothingExponent Scales.yExponent Scales.largeCutoffExponent Scales.mainExponent
   norm_num
 
-theorem mem_intermediateDyads {Z : ℝ} (hZ : 1 ≤ Z) {k : ℕ} (hk : k ∈ intermediateDyads Z) :
+section
+
+variable {Z : ℝ} (hZ : 1 ≤ Z)
+
+include hZ in
+theorem mem_intermediateDyads {k : ℕ} (hk : k ∈ intermediateDyads Z) :
     Z ^ Scales.smallCutoffExponent < (2 : ℝ) ^ k ∧ (2 : ℝ) ^ k ≤ Z ^ Scales.largeCutoffExponent := by
   unfold intermediateDyads at hk
   rw [Finset.mem_filter, Finset.mem_range] at hk
   refine ⟨hk.2, ?_⟩
-  have hpos : (0 : ℝ) < Z ^ Scales.largeCutoffExponent := Real.rpow_pos_of_pos (by linarith) _
-  have h1 : (1 : ℝ) ≤ Z ^ Scales.largeCutoffExponent :=
-    Real.one_le_rpow hZ (by unfold Scales.largeCutoffExponent; norm_num)
-  have hnn : 0 ≤ Real.logb 2 (Z ^ Scales.largeCutoffExponent) :=
-    Real.logb_nonneg (by norm_num) h1
   have hk' : (k : ℝ) ≤ Real.logb 2 (Z ^ Scales.largeCutoffExponent) := by
     have := Nat.lt_succ_iff.mp hk.1
-    exact (Nat.cast_le.mpr this).trans (Nat.floor_le hnn)
-  have := (Real.le_logb_iff_rpow_le (by norm_num : (1 : ℝ) < 2) hpos).mp hk'
+    exact (Nat.cast_le.mpr this).trans (Nat.floor_le (Real.logb_nonneg (by norm_num) (Real.one_le_rpow hZ (by unfold Scales.largeCutoffExponent; norm_num))))
+  have := (Real.le_logb_iff_rpow_le (by norm_num : (1 : ℝ) < 2) (Real.rpow_pos_of_pos (by linarith) _)).mp hk'
   simpa using this
 
-theorem card_intermediateDyads_le {Z : ℝ} (hZ : 1 ≤ Z) :
+include hZ in
+theorem card_intermediateDyads_le :
     ((intermediateDyads Z).card : ℝ) ≤ Real.log Z / Real.log 2 + 1 := by
   unfold intermediateDyads
   have h1 : (1 : ℝ) ≤ Z ^ Scales.largeCutoffExponent :=
@@ -178,9 +178,11 @@ theorem card_intermediateDyads_le {Z : ℝ} (hZ : 1 ≤ Z) :
   have : Scales.largeCutoffExponent ≤ 1 := by unfold Scales.largeCutoffExponent; norm_num
   nlinarith
 
+end
+
 theorem rows_good_central (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) (ε : ℝ) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∃ Z₀ : ℝ, 2 ≤ Z₀ ∧ ∀ Z : ℝ, Z₀ ≤ Z →
+    ∃ C : ℝ, 0 < C ∧ ∃ Z₀ : ℝ, ∀ Z : ℝ, Z₀ ≤ Z →
       ‖∑ k ∈ intermediateDyads Z,
           Jcentral D (goodRows D ρ ((2 : ℝ) ^ k)) Scales.goodLine Scales.wLine Scales.zLine
             (((2 : ℝ) ^ k) ^ ρ) Z‖ ≤
@@ -191,7 +193,7 @@ theorem rows_good_central (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpo
   have hκl0 : 0 < Scales.largeCutoffExponent := by unfold Scales.largeCutoffExponent; norm_num
   refine ⟨C * (2 / (ε * Real.log 2) + 1), by
     have : 0 < Real.log 2 := Real.log_pos (by norm_num)
-    positivity, max 2 (U₀ ^ 5), le_max_left _ _, fun Z hZ => ?_⟩
+    positivity, max 2 (U₀ ^ 5), fun Z hZ => ?_⟩
   have hZ2 : 2 ≤ Z := (le_max_left _ _).trans hZ
   have hZ1 : 1 ≤ Z := by linarith
   have hZpos : 0 < Z := by linarith

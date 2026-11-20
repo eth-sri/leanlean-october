@@ -10,8 +10,8 @@ noncomputable section
 namespace DedekindZetaZeroFree.LocalFiniteSumCompatibility
 open LocalFiniteSums
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 private theorem cast_character_mk {R : Type} [CommRing R]
     (I J : Ideal R) (h : I = J) (f : AddChar (R ⧸ I) Circle) (x : R) :
@@ -20,16 +20,11 @@ private theorem cast_character_mk {R : Type} [CommRing R]
   cases h
   rfl
 
-private theorem power_generates (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) :
-    A.Generates (powerIdeal p n) (generator C p ^ n) := by
-  refine ⟨pow_ne_zero _ (generator_generates C p).1, ?_⟩
-  rw [← Ideal.span_singleton_pow, (generator_generates C p).2]
-  exact (Ideal.map_pow _ _ _).symm
+private alias power_generates := DedekindZetaZeroFree.LocalFiniteSums.generator_power_generates
 
-theorem fieldTrace_eq_negative_localTrace
-    (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
-    (n : ℕ) (x : A.R) :
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (n : ℕ)
+
+theorem fieldTrace_eq_negative_localTrace (x : A.R) :
     A.fieldTraceCharacter ((x : F) / (generator C p : F) ^ n) =
       negativeTrace p (algebraMap F (LocalField p) (x : F) / uniformizer C p ^ n) := by
   have hv : p.val ∉ A.Sf := by
@@ -69,21 +64,18 @@ theorem fieldTrace_eq_negative_localTrace
       change w.valuation F ((x : F) / (generator C p : F) ^ n) ≤ 1
       rw [map_div₀, map_pow, hpval, one_pow, div_one]
       exact Set.integer_valuation_le_one _ _ x hw
-    have h := (hS w hw _).2 hr
-    simpa using h (1 : w.adicCompletionIntegers F)
+    simpa using ((hS w hw _).2 hr) (1 : w.adicCompletionIntegers F)
   let f := fun w : HeightOneSpectrum (𝓞 F) => ResidueTrace.localTraceCharacter w
     (algebraMap F (w.adicCompletion F) ((x : F) / (generator C p : F) ^ n))
   have hprod : (∏ᶠ w, f w) = f p.val * ∏ w ∈ A.Sf, f w := by
-    rw [finprod_eq_prod_of_mulSupport_subset f (s := insert p.val A.Sf)]
+    rw [finprod_eq_prod_of_mulSupport_subset f]
     · exact Finset.prod_insert hv
     · intro w hw
       by_contra hn
-      have hw' : w ∉ A.Sf := fun h => hn (Finset.mem_insert_of_mem h)
-      have hwp : w ≠ p.val := by
-        intro h
-        subst w
-        exact hn (Finset.mem_insert_self p.val A.Sf)
-      exact hw (hout w hw' hwp)
+      refine hw (hout w (fun h => hn (Finset.mem_insert_of_mem h)) ?_)
+      intro h
+      subst w
+      exact hn (Finset.mem_insert_self p.val A.Sf)
   have hglobal := ResidueTrace.diagonal_product_formula ((x : F) / (generator C p : F) ^ n)
   rw [hprod] at hglobal
   simp only [negativeTrace, AddChar.neg_apply', uniformizer, ← map_pow, ← map_div₀]
@@ -94,8 +86,7 @@ theorem fieldTrace_eq_negative_localTrace
   apply (eq_inv_iff_mul_eq_one).2
   convert hglobal using 1 <;> ac_rfl
 
-theorem quotientTrace_mk (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (x : A.R) :
+theorem quotientTrace_mk (x : A.R) :
     quotientTrace C p n (residueMap C p n x) =
       negativeTrace p (algebraMap F (LocalField p) (x : F) / uniformizer C p ^ n) := by
   rw [← fieldTrace_eq_negative_localTrace C p n x]
@@ -110,8 +101,7 @@ theorem quotientTrace_mk (C : A.GeneralArithmeticContext σ η hS)
     rfl
   · exact (power_generates C p n).2.symm
 
-theorem quotientTrace_primitive (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (x : Residue C p n) (hx : x ≠ 0) :
+theorem quotientTrace_primitive (x : Residue C p n) (hx : x ≠ 0) :
     ∃ y : Residue C p n, quotientTrace C p n (x * y) ≠ 1 := by
   obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
   have hxI : x ∉ A.extendIdeal (powerIdeal p n) := by

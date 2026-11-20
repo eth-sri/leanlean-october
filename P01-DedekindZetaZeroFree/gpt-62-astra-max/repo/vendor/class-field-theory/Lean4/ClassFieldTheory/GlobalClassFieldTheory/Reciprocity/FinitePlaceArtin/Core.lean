@@ -15,13 +15,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -60,13 +53,13 @@ theorem chosenFinitePlaceArtinMonoidHom_range
     NumberField.HeightOneSpectrum.adicAbv K v
   let w :=
     chosenFinitePlaceExtension (L := L) v
-  let hvK : vK.IsNontrivial :=
+  let hvK :=
     RayClass.adicAbv_isNontrivial v
   let hK :=
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) w.1
-  let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let := hK.toSMul
+  let :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   let :=
     LocalClassFieldTheory.localizedCompletionGlobalAlgebra vK w
@@ -98,7 +91,7 @@ theorem chosenFinitePlaceArtinMonoidHom_range
   let : vC.IsNontrivial :=
     (inferInstance :
       (NormedField.valuation
-        (K := vK.Completion)).IsNontrivial)
+        ).IsNontrivial)
   let : ValuativeRel vK.Completion :=
     ValuativeRel.ofValuation vC
   let : vC.Compatible :=
@@ -158,13 +151,13 @@ theorem chosenFinitePlaceArtinMonoidHom_ker
     NumberField.HeightOneSpectrum.adicAbv K v
   let w :=
     chosenFinitePlaceExtension (L := L) v
-  let hvK : vK.IsNontrivial :=
+  let hvK :=
     RayClass.adicAbv_isNontrivial v
   let hK :=
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) w.1
-  let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let := hK.toSMul
+  let :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   let :=
     LocalClassFieldTheory.localizedCompletionGlobalAlgebra vK w

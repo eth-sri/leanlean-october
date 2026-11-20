@@ -14,14 +14,18 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayCoset
 
 variable {K : Type} [Field K] [NumberField K]
 
-private theorem elementIdeal_mul (D : Data K) (α : Cx D) :
+section
+
+variable (D : Data K) (α : Cx D)
+
+private theorem elementIdeal_mul :
     elementIdeal D α * D.a = Ideal.span {α.val} := by
   apply FractionalIdeal.coeIdeal_injective (K := K)
   change ((elementIdeal D α * D.a : Ideal (𝓞 K)) : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) = _
   rw [FractionalIdeal.coeIdeal_mul, elementIdeal_fractionalImage]
   rw [mul_assoc, inv_mul_cancel₀ (FractionalIdeal.coeIdeal_ne_zero.mpr D.ideal_ne_bot), mul_one]
 
-theorem elementIdeal_ne_bot (D : Data K) (α : Cx D) :
+theorem elementIdeal_ne_bot :
     elementIdeal D α ≠ ⊥ := by
   intro h
   have he := elementIdeal_mul D α
@@ -29,7 +33,7 @@ theorem elementIdeal_ne_bot (D : Data K) (α : Cx D) :
   have hz : α.val = 0 := by simpa using he.symm
   exact (mem_Cnonzero_iff D α.val).mp α.property |>.2 hz
 
-theorem elementIdeal_coprime (D : Data K) (α : Cx D) :
+theorem elementIdeal_coprime :
     elementIdeal D α ⊔ D.m = ⊤ := by
   apply (Ideal.eq_top_iff_one _).mpr
   have hα : α.val ∈ elementIdeal D α := by
@@ -37,13 +41,11 @@ theorem elementIdeal_coprime (D : Data K) (α : Cx D) :
       rw [← elementIdeal_mul D α]
       exact Ideal.mul_le_left
     exact hle (Ideal.subset_span (Set.mem_singleton α.val))
-  have hm := ((mem_C_iff D α.val).mp ((mem_Cnonzero_iff D α.val).mp α.property).1).2
-  have h := (elementIdeal D α ⊔ D.m).sub_mem
+  simpa using ((elementIdeal D α ⊔ D.m).sub_mem
     (show α.val ∈ elementIdeal D α ⊔ D.m from Ideal.mem_sup_left hα)
-    (show α.val - 1 ∈ elementIdeal D α ⊔ D.m from Ideal.mem_sup_right hm)
-  simpa using h
+    (show α.val - 1 ∈ elementIdeal D α ⊔ D.m from Ideal.mem_sup_right (((mem_C_iff D α.val).mp ((mem_Cnonzero_iff D α.val).mp α.property).1).2)))
 
-theorem elementIdeal_absNorm (D : Data K) (α : Cx D) :
+theorem elementIdeal_absNorm :
     (Ideal.absNorm (elementIdeal D α) : ℝ) =
       |(Algebra.norm ℚ (α.val : K) : ℝ)| / (Ideal.absNorm D.a : ℝ) := by
   have ha : (Ideal.absNorm D.a : ℝ) ≠ 0 := by
@@ -55,28 +57,40 @@ theorem elementIdeal_absNorm (D : Data K) (α : Cx D) :
   push_cast
   rfl
 
-theorem elementIdeal_smul (D : Data K) (u : U K D.m) (α : Cx D) :
+end
+
+section
+
+variable (D : Data K)
+
+theorem elementIdeal_smul (u : U K D.m) (α : Cx D) :
     elementIdeal D (u • α) = elementIdeal D α := by
   unfold elementIdeal
   rw [smul_val, Ideal.span_singleton_mul_left_unit u.val.isUnit]
 
-def orbitIdeal (D : Data K) : X D → Ideal (𝓞 K) :=
+def orbitIdeal : X D → Ideal (𝓞 K) :=
   Quotient.lift (elementIdeal D) (by
     intro α β h
     obtain ⟨u, hu⟩ := h
     exact hu ▸ elementIdeal_smul D u β)
 
-@[simp] theorem orbitIdeal_orbitMk (D : Data K) (α : Cx D) :
+@[simp] theorem orbitIdeal_orbitMk (α : Cx D) :
     orbitIdeal D (orbitMk D α) = elementIdeal D α := rfl
 
-theorem orbitIdeal_absNorm (D : Data K) (x : X D) :
+theorem orbitIdeal_absNorm (x : X D) :
     (Ideal.absNorm (orbitIdeal D x) : ℝ) = normWeight D x := by
   induction x using Quotient.inductionOn with
   | h α => exact elementIdeal_absNorm D α
 
-theorem orbitIdeal_rayIdealClass (D : Data K)
-    (c : RayIdealClass K D.m D.modulus_ne_bot)
+end
+
+section
+
+variable (D : Data K) (c : RayIdealClass K D.m D.modulus_ne_bot)
     (hc : rayIdealClass K D.m D.modulus_ne_bot D.a = some (c⁻¹))
+
+include hc in
+theorem orbitIdeal_rayIdealClass
     (x : Xpos D) :
     rayIdealClass K D.m D.modulus_ne_bot (orbitIdeal D x.val) = some c := by
   obtain ⟨x, hx⟩ := x
@@ -95,11 +109,11 @@ theorem orbitIdeal_rayIdealClass (D : Data K)
     apply congrArg some
     exact (mul_inv_eq_iff_eq_mul.mp hmul.symm).trans (one_mul c)
 
-def positiveIdealMap (D : Data K)
-    (c : RayIdealClass K D.m D.modulus_ne_bot)
-    (hc : rayIdealClass K D.m D.modulus_ne_bot D.a = some (c⁻¹)) :
+def positiveIdealMap :
     Xpos D → {I : Ideal (𝓞 K) | rayIdealClass K D.m D.modulus_ne_bot I = some c} :=
   fun x => ⟨orbitIdeal D x.val, orbitIdeal_rayIdealClass D c hc x⟩
+
+end
 
 private theorem positiveIdealMap_surjective (D : Data K)
     (c : RayIdealClass K D.m D.modulus_ne_bot)
@@ -124,10 +138,11 @@ private theorem positiveIdealMap_surjective (D : Data K)
   change rayIdealFractionalIdeal K (I.val * D.a) hn ∈
     ClassFieldTheory.rayPrincipalIdealSubgroup (narrowIdealModulus K D.m D.modulus_ne_bot) at hp
   obtain ⟨x, hx, hxI⟩ := (ClassFieldTheory.mem_rayPrincipalIdealSubgroup_iff _ _).mp hp
+  let FractionalIdeal₀ := FractionalIdeal (nonZeroDivisors (𝓞 K)) K
   have he : FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 K)) (x : K) =
-      ((I.val * D.a : Ideal (𝓞 K)) : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) := by
+      ((I.val * D.a : Ideal (𝓞 K)) : FractionalIdeal₀) := by
     simpa [coe_toPrincipalIdeal] using congrArg Units.val hxI
-  have hxm : (x : K) ∈ ((I.val * D.a : Ideal (𝓞 K)) : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) := by
+  have hxm : (x : K) ∈ ((I.val * D.a : Ideal (𝓞 K)) : FractionalIdeal₀) := by
     rw [← he]
     exact FractionalIdeal.mem_spanSingleton_self _ _
   obtain ⟨α, hα, hαx⟩ := (FractionalIdeal.mem_coeIdeal _).mp hxm
@@ -147,10 +162,10 @@ private theorem positiveIdealMap_surjective (D : Data K)
   apply Subtype.ext
   change elementIdeal D a = I.val
   apply FractionalIdeal.coeIdeal_injective (K := K)
-  change (elementIdeal D a : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) = _
+  change (elementIdeal D a : FractionalIdeal₀) = _
   rw [elementIdeal_fractionalImage, FractionalIdeal.coeIdeal_span_singleton]
   change FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 K)) (α : K) *
-    (D.a : FractionalIdeal (nonZeroDivisors (𝓞 K)) K)⁻¹ = _
+    (D.a : FractionalIdeal₀)⁻¹ = _
   rw [hαx, he, FractionalIdeal.coeIdeal_mul, mul_assoc,
     mul_inv_cancel₀ (FractionalIdeal.coeIdeal_ne_zero.mpr D.ideal_ne_bot), mul_one]
 
@@ -159,7 +174,11 @@ abbrev RealSignVector (K : Type) [Field K] := RealPlaces K → Bool
 def representativeSignVector (α : 𝓞 K) : RealSignVector K :=
   fun v => decide (0 < realEmbedding K v (α : K))
 
-theorem representativeSignVector_smul (D : Data K) (u : U K D.m) (α : Cx D) :
+section
+
+variable (D : Data K)
+
+theorem representativeSignVector_smul (u : U K D.m) (α : Cx D) :
     representativeSignVector (u • α).val = representativeSignVector α.val := by
   funext v
   unfold representativeSignVector
@@ -169,18 +188,20 @@ theorem representativeSignVector_smul (D : Data K) (u : U K D.m) (α : Cx D) :
   rw [map_mul]
   exact propext (mul_pos_iff_of_pos_left (u.property.2 (realEmbedding K v)))
 
-def signVector (D : Data K) : X D → RealSignVector K :=
+def signVector : X D → RealSignVector K :=
   Quotient.lift (fun α : Cx D => representativeSignVector α.val) (by
     intro α β h
     obtain ⟨u, hu⟩ := h
     exact hu ▸ representativeSignVector_smul D u β)
 
-@[simp] theorem signVector_orbitMk (D : Data K) (α : Cx D) :
+@[simp] theorem signVector_orbitMk (α : Cx D) :
     signVector D (orbitMk D α) = representativeSignVector α.val := rfl
+
+end
 
 private theorem realEmbedding_exists (φ : K →+* ℝ) :
     ∃ v : RealPlaces K, realEmbedding K v = φ := by
-  let ψ : K →+* ℂ := Complex.ofRealHom.comp φ
+  let ψ := Complex.ofRealHom.comp φ
   have hp : NumberField.ComplexEmbedding.IsReal ψ := by
     ext x
     simp [ψ, NumberField.ComplexEmbedding.conjugate]
@@ -190,58 +211,55 @@ private theorem realEmbedding_exists (φ : K →+* ℝ) :
   apply Complex.ofReal_injective
   change ((NumberField.InfinitePlace.embedding_of_isReal v.property) x : ℂ) = _
   rw [NumberField.InfinitePlace.embedding_of_isReal_apply]
-  change NumberField.InfinitePlace.embedding (NumberField.InfinitePlace.mk ψ) x = _
   rw [NumberField.InfinitePlace.embedding_mk_eq_of_isReal hp]
   rfl
 
-private theorem associated_rayUnit (D : Data K) (α β : Cx D)
+section
+
+variable (D : Data K)
+
+private theorem associated_rayUnit (α β : Cx D)
     (hi : Ideal.span {α.val} = Ideal.span {β.val})
     (hs : representativeSignVector α.val = representativeSignVector β.val) :
     ∃ u : U K D.m, u • β = α := by
   obtain ⟨u, hu⟩ := Ideal.span_singleton_eq_span_singleton.mp hi.symm
-  have hαm := ((mem_C_iff D α.val).mp ((mem_Cnonzero_iff D α.val).mp α.property).1).2
-  have hβm := ((mem_C_iff D β.val).mp ((mem_Cnonzero_iff D β.val).mp β.property).1).2
   have hum : (u : 𝓞 K) - 1 ∈ D.m := by
-    have h := D.m.sub_mem hαm (D.m.mul_mem_left (u : 𝓞 K) hβm)
+    have h := D.m.sub_mem (((mem_C_iff D α.val).mp ((mem_Cnonzero_iff D α.val).mp α.property).1).2) (D.m.mul_mem_left u (((mem_C_iff D β.val).mp ((mem_Cnonzero_iff D β.val).mp β.property).1).2))
     rw [← hu] at h
     convert h using 1 <;> ring
   have hup : TotallyPositive K (u : 𝓞 K) := by
     intro φ
     obtain ⟨v, rfl⟩ := realEmbedding_exists φ
     have hv : (0 < realEmbedding K v (α.val : K)) ↔ (0 < realEmbedding K v (β.val : K)) := by
-      have h := congrFun hs v
-      simpa only [representativeSignVector, decide_eq_decide] using h
+      simpa only [representativeSignVector, decide_eq_decide] using (congrFun hs v)
     have hn : realEmbedding K v (β.val : K) ≠ 0 := by
       apply (map_ne_zero (realEmbedding K v)).mpr
       exact NumberField.RingOfIntegers.coe_ne_zero_iff.mpr ((mem_Cnonzero_iff D β.val).mp β.property).2
-    have he : realEmbedding K v (β.val : K) * realEmbedding K v ((u : 𝓞 K) : K) =
+    have he : realEmbedding K v (β.val : K) * realEmbedding K v (u : K) =
         realEmbedding K v (α.val : K) := by
       rw [← map_mul, ← map_mul, hu]
     rcases lt_or_gt_of_ne hn with hb | hb
-    · have ha := not_lt.mp (mt hv.mp (not_lt.mpr hb.le))
-      have hun : realEmbedding K v ((u : 𝓞 K) : K) ≠ 0 := by
+    · have hun : realEmbedding K v (u : K) ≠ 0 := by
         apply (map_ne_zero (realEmbedding K v)).mpr
         exact NumberField.RingOfIntegers.coe_ne_zero_iff.mpr u.ne_zero
       by_contra h
-      have hneg : realEmbedding K v ((u : 𝓞 K) : K) < 0 := lt_of_le_of_ne (not_lt.mp h) hun
-      have hpos := mul_pos_of_neg_of_neg hb hneg
+      have hpos := mul_pos_of_neg_of_neg hb (lt_of_le_of_ne (not_lt.mp h) hun)
       rw [he] at hpos
-      exact (not_lt.mpr ha) hpos
+      exact (not_lt.mpr (not_lt.mp (mt hv.mp (not_lt.mpr hb.le)))) hpos
     · have ha := hv.mpr hb
       nlinarith
   refine ⟨⟨u, hum, hup⟩, ?_⟩
   apply Subtype.ext
-  change (u : 𝓞 K) * β.val = α.val
+  change u * β.val = α.val
   rw [mul_comm, hu]
 
-theorem signVector_injective_on_fibre (D : Data K) (I : Ideal (𝓞 K)) :
+theorem signVector_injective_on_fibre (I : Ideal (𝓞 K)) :
     Function.Injective
       (fun x : {x : X D | orbitIdeal D x = I} => signVector D x.val) := by
   intro x y hs
   apply Subtype.ext
   obtain ⟨x, hx⟩ := x
   obtain ⟨y, hy⟩ := y
-  change x = y
   revert hx hy hs
   induction x using Quotient.inductionOn with
   | h α =>
@@ -255,38 +273,34 @@ theorem signVector_injective_on_fibre (D : Data K) (I : Ideal (𝓞 K)) :
       apply Quotient.sound
       exact ⟨u, hu⟩
 
-private theorem positive_signVector (D : Data K) (x : Xpos D) :
+private theorem positive_signVector (x : Xpos D) :
     signVector D x.val = fun _ => true := by
   obtain ⟨x, hx⟩ := x
   induction x using Quotient.inductionOn with
   | h α =>
-    have hp : TotallyPositive K α.val := hx
     funext v
-    change decide (0 < realEmbedding K v (α.val : K)) = true
-    exact decide_eq_true (hp (realEmbedding K v))
+    exact decide_eq_true (hx (realEmbedding K v))
 
-theorem positiveIdealMap_bijective (D : Data K)
-    (c : RayIdealClass K D.m D.modulus_ne_bot)
-    (hc : rayIdealClass K D.m D.modulus_ne_bot D.a = some (c⁻¹)) :
+end
+
+variable (D : Data K) (c : RayIdealClass K D.m D.modulus_ne_bot)
+    (hc : rayIdealClass K D.m D.modulus_ne_bot D.a = some (c⁻¹))
+
+theorem positiveIdealMap_bijective :
     Function.Bijective (positiveIdealMap D c hc) := by
   refine ⟨?_, positiveIdealMap_surjective D c hc⟩
   intro x y h
-  have hi : orbitIdeal D x.val = orbitIdeal D y.val := congrArg Subtype.val h
-  have hs : signVector D x.val = signVector D y.val :=
+  have hs :=
     (positive_signVector D x).trans (positive_signVector D y).symm
   have he := signVector_injective_on_fibre D (orbitIdeal D y.val)
-    (a₁ := ⟨x.val, hi⟩) (a₂ := ⟨y.val, rfl⟩) hs
+    (a₁ := ⟨x.val, (congrArg Subtype.val h)⟩) (a₂ := ⟨y.val, rfl⟩) hs
   exact Subtype.ext (congrArg (fun z : {z : X D | orbitIdeal D z = orbitIdeal D y.val} => z.val) he)
 
-def positiveIdealEquiv (D : Data K)
-    (c : RayIdealClass K D.m D.modulus_ne_bot)
-    (hc : rayIdealClass K D.m D.modulus_ne_bot D.a = some (c⁻¹)) :
+def positiveIdealEquiv :
     Xpos D ≃ {I : Ideal (𝓞 K) | rayIdealClass K D.m D.modulus_ne_bot I = some c} :=
   Equiv.ofBijective (positiveIdealMap D c hc) (positiveIdealMap_bijective D c hc)
 
-@[simp] theorem positiveIdealEquiv_apply_val (D : Data K)
-    (c : RayIdealClass K D.m D.modulus_ne_bot)
-    (hc : rayIdealClass K D.m D.modulus_ne_bot D.a = some (c⁻¹)) (x : Xpos D) :
+@[simp] theorem positiveIdealEquiv_apply_val (x : Xpos D) :
     (positiveIdealEquiv D c hc x).val = orbitIdeal D x.val := rfl
 
 end DedekindZetaZeroFree.AbelianQuotient.RayCoset

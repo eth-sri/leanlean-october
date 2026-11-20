@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -56,8 +53,10 @@ def Internal.principalUnitQuotientCarrierTransitionAdd
 
 namespace DiscretePrincipalUnitQuotient
 
+variable (F : CompleteDVF.{u, v} K) {m n : ℕ} (hmn : m ≤ n)
+
 /-- Reduction between two wrapped discrete quotient coordinates. -/
-def transition (F : CompleteDVF.{u, v} K) {m n : ℕ} (hmn : m ≤ n) :
+def transition :
     DiscretePrincipalUnitQuotient F n →+
       DiscretePrincipalUnitQuotient F m where
   toFun x := of F m
@@ -76,7 +75,6 @@ def transition (F : CompleteDVF.{u, v} K) {m n : ℕ} (hmn : m ≤ n) :
 
 /-- The wrapped transition has the original additive transition as its value. -/
 @[simp] theorem val_transition
-    (F : CompleteDVF.{u, v} K) {m n : ℕ} (hmn : m ≤ n)
     (x : DiscretePrincipalUnitQuotient F n) :
     (transition F hmn x).val =
       Internal.principalUnitQuotientCarrierTransitionAdd F hmn x.val :=

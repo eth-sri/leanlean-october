@@ -16,16 +16,11 @@ open KPMsClearedTruncationL2
 open KPSmoothActualFlowData (LieCoordinates exponential flow flow_properties archimedean_insertion_properties)
 
 open KPMsGreenFlux (rightDerivative compactInsertion)
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes renaming compactCoefficients → compactCoefficients
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes renaming compactDirection → compactDirection
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes renaming compactDirectionCurve → compactDirectionCurve
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes renaming directionJet → directionJet
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes renaming direction_hasDerivAt → direction_hasDerivAt
-open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes renaming compact_direction_curve_insertion → compact_direction_curve_insertion
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalWordRegularity renaming word_mem_smoothSpace → word_mem_smoothSpace
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.FullSixCoercivity renaming compactTensor → compactTensor
+open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes (compactCoefficients compactDirection compactDirectionCurve directionJet direction_hasDerivAt compact_direction_curve_insertion)
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalWordRegularity (word_mem_smoothSpace)
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.FullSixCoercivity (compactTensor)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : Level F ζ hζ}
+    {U : Level F ζ hζ}
 
  theorem compact_directionJet (v : G F ζ hζ → ℂ)
     (w : NumberField.InfinitePlace F) (c : Fin 3) (g : G F ζ hζ) :
@@ -50,8 +45,9 @@ variable {U : Level F ζ hζ}
     simp
   simp only [zero_smul, hz, (archimedean_insertion_properties F ζ hζ).1, mul_one]
 
-private theorem word_compact_hasDerivAt
-    (u : smoothSpace F ζ hζ U) (word : List (KPSmoothActualFlowData.B F))
+variable (u : smoothSpace F ζ hζ U)
+
+private theorem word_compact_hasDerivAt (word : List (KPSmoothActualFlowData.B F))
     (w : NumberField.InfinitePlace F) (c : Fin 3) (g : G F ζ hζ) (t : ℝ) :
     let v := word.foldr (fun b f => rightDerivative F ζ hζ b.1 b.2 f)
       (fun a => u.val (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ a))
@@ -61,8 +57,7 @@ private theorem word_compact_hasDerivAt
          fun a => rightDerivative F ζ hζ w 3 v a + rightDerivative F ζ hζ w 5 v a] c
         (g * compactInsertion F ζ hζ (compactDirectionCurve w c t))) t := by
   dsimp only
-  have hword := word_mem_smoothSpace u word
-  have hs := KPMsSameContinuationGreen.SmoothDescent.smooth_pullback _ hword.1
+  have hs := KPMsSameContinuationGreen.SmoothDescent.smooth_pullback _ (word_mem_smoothSpace u word).1
   have he : (fun a => KPSmoothActualFlowData.wordDerivative F ζ hζ word u.val
       (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ a)) =
       word.foldr (fun b f => rightDerivative F ζ hζ b.1 b.2 f)
@@ -73,8 +68,7 @@ private theorem word_compact_hasDerivAt
   simp only [← compact_direction_curve_insertion, compact_directionJet] at hd
   fin_cases c <;> exact hd
 
-private theorem compact_second_binding
-    (u : smoothSpace F ζ hζ U) (w : NumberField.InfinitePlace F) (c : Fin 3) (g : G F ζ hζ) :
+private theorem compact_second_binding (w : NumberField.InfinitePlace F) (c : Fin 3) (g : G F ζ hζ) :
     let v := fun a => u.val (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ a)
     deriv (fun t => deriv (fun r => v (g *
       compactInsertion F ζ hζ (compactDirectionCurve w c t) *
@@ -108,8 +102,7 @@ private theorem compact_second_binding
     dsimp at hd ⊢
     convert hd using 1 <;> try ring
 
-theorem compactTensor_binding
-    (u : smoothSpace F ζ hζ U) (w : NumberField.InfinitePlace F) (x : X F ζ hζ) :
+theorem compactTensor_binding (w : NumberField.InfinitePlace F) (x : X F ζ hζ) :
     compactTensor (fun i j => KPSmoothActualFlowData.wordDerivative F ζ hζ [(w,i),(w,j)] u.val x) =
       -∑ c : Fin 3, deriv (fun t => deriv (fun r => u.val
         (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ (x.out *

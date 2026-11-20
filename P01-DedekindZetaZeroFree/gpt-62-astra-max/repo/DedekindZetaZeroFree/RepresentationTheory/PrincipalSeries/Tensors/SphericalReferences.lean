@@ -14,8 +14,8 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 local instance currentDetectedSphericalPlaceDecidable : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 
 namespace TensorDetected
@@ -64,8 +64,7 @@ theorem reference_compact_fixed (D : TensorDetected R N) (q : KPFinitePlace F)
     funext g
     rw [D.finite_intertwining q k t i.property y g, htrans, D.selected_eq]
     exact theta_exterior_spherical D.realization v q hq k hk g
-  have htensor : PiTensorProduct.tprod ℂ (Function.update y i (a (y i))) =
-      PiTensorProduct.tprod ℂ y :=
+  have htensor :=
     RestrictedTensorSimple.stageInclusion_injective (actualLocal R D.finiteData)
       D.references D.bad D.reference_ne_zero t hcore
   have hnonzero : PiTensorProduct.tprod ℂ y ≠ 0 := by
@@ -75,8 +74,7 @@ theorem reference_compact_fixed (D : TensorDetected R N) (q : KPFinitePlace F)
       rw [← htrans, hz, map_zero, map_zero]
     rw [← D.selected_eq, he]
     simp [MomentSources.fourier]
-  have he := pure_tensor_update_cancel y hnonzero i (a (y i)) htensor
-  simpa only [hy] using he
+  simpa only [hy] using (pure_tensor_update_cancel y hnonzero i (a (y i)) htensor)
 
 def spherical (D : TensorDetected R N) : TensorSpherical R N where
   toTensorDetected := D

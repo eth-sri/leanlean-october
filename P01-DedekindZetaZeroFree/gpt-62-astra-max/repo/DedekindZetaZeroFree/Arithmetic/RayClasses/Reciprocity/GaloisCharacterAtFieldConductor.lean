@@ -13,21 +13,23 @@ open IsDedekindDomain
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
- def rayClassGroupCast
-    {K : Type} [Field K] [NumberField K]
-    {m₁ m₂ : ClassFieldTheory.RayClassModulus K} (h : m₁ = m₂) :
+ section
+
+variable {K : Type} [Field K] [NumberField K] {m₁ m₂ : ClassFieldTheory.RayClassModulus K} (h : m₁ = m₂)
+
+def rayClassGroupCast :
     ClassFieldTheory.RayClassGroup m₁ ≃* ClassFieldTheory.RayClassGroup m₂ := by
   cases h
   exact MulEquiv.refl _
 
 private theorem rayClassGroupCast_prime
-    {K : Type} [Field K] [NumberField K]
-    {m₁ m₂ : ClassFieldTheory.RayClassModulus K} (h : m₁ = m₂)
     (v : HeightOneSpectrum (𝓞 K)) (hv : v ∉ m₁.finitePart.support) :
     rayClassGroupCast h (ClassFieldTheory.rayClassOfFinitePrime m₁ v hv) =
       ClassFieldTheory.rayClassOfFinitePrime m₂ v (by rw [← h]; exact hv) := by
   cases h
   rfl
+
+end
 
 theorem faithfulConductorRayCharacter
     (K E : Type) [Field K] [NumberField K] [Field E] [NumberField E]
@@ -74,25 +76,20 @@ theorem faithfulConductorRayCharacter
         finiteRayModulusIdeal_count]
       exact hcount
     have hp' : p ∉ c.finitePart.support := by rw [← h]; exact hp
-    have hunram : Algebra.IsUnramifiedAt (𝓞 K) w.asIdeal :=
-      (normConductorIdeal_coprime K E p).mp hcop w hw
     have hprim : ClassFieldTheory.GlobalClassFieldComparison.normConductorArtin K E
         (ClassFieldTheory.rayClassOfFinitePrime c p hp') =
-        ClassFieldTheory.arithmeticFrobeniusAt (K := K) w := by
+        ClassFieldTheory.arithmeticFrobeniusAt w := by
       rw [ClassFieldTheory.GlobalClassFieldComparison.normConductorArtin_prime K E p hp']
       exact ClassFieldTheory.GlobalClassFieldComparison.arithmeticPrimeArtin_eq_arithmeticFrobeniusAt
-        (K := K) (L := E) p w hw hunram
-    have hcast : e (ClassFieldTheory.rayClassOfFinitePrime (narrowIdealModulus K m hm) p hp)
-        = ClassFieldTheory.rayClassOfFinitePrime c p hp' := rayClassGroupCast_prime h p hp
+          p w hw ((normConductorIdeal_coprime K E p).mp hcop w hw)
+    have hcast := rayClassGroupCast_prime h p hp
     rw [rayCharacterOfGroupCharacter_finitePrime K m hm ψ p hp]
     have hval : ψ (ClassFieldTheory.rayClassOfFinitePrime (narrowIdealModulus K m hm) p hp)
-        = σ (ClassFieldTheory.arithmeticFrobeniusAt (K := K) w) := by
+        = σ (ClassFieldTheory.arithmeticFrobeniusAt w) := by
       change σ ((ClassFieldTheory.GlobalClassFieldComparison.normConductorArtin K E)
         (e (ClassFieldTheory.rayClassOfFinitePrime (narrowIdealModulus K m hm) p hp)))
-        = σ (ClassFieldTheory.arithmeticFrobeniusAt (K := K) w)
+        = σ (ClassFieldTheory.arithmeticFrobeniusAt w)
       rw [hcast]
-      change σ (ClassFieldTheory.GlobalClassFieldComparison.normConductorArtin K E
-        (ClassFieldTheory.rayClassOfFinitePrime c p hp')) = _
       rw [hprim]
     rw [hval]
 

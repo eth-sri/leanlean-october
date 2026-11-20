@@ -9,8 +9,8 @@ open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.FiniteWhittakerProjectors
 open MomentSources ThetaExpansion
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 end DedekindZetaZeroFree.FiniteWhittakerProjectors
 
@@ -23,8 +23,8 @@ open scoped Classical NumberField Topology
 namespace DedekindZetaZeroFree.RootDerivatives
 open MomentSources ThetaExpansion
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem projected_realization  (hR : RootAligned R)
     {N : TraceHaarTransport R} (A : JointExteriorCoefficientSources R N)
@@ -35,8 +35,7 @@ theorem projected_realization  (hR : RootAligned R)
   obtain ⟨Q,hq,hB⟩ := projected_sources R A I c t l
   let P : JointRootAlignedSources R N := ⟨hR,N,rfl,Q⟩
   obtain ⟨C,⟨H⟩⟩ := selected_scalar_source_exists  R P
-  have hg := fun v => selected_source_smooth_germ_of_scalar_germ  R P C v (H v)
-  choose G hG using hg
+  choose G hG using (fun v => selected_source_smooth_germ_of_scalar_germ R P C v (H v))
   let T := EisensteinSmoothGerms.assemble C G
   refine ⟨Q,T,hq,?_⟩
   intro v

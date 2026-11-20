@@ -29,7 +29,7 @@ private theorem averaging_span_unit (γ : (𝓞 F)ˣ) :
   rw [← FractionalIdeal.spanSingleton_one]
   apply FractionalIdeal.spanSingleton_eq_spanSingleton.mpr
   refine ⟨γ⁻¹, ?_⟩
-  change algebraMap (𝓞 F) F (↑γ⁻¹ : 𝓞 F) * algebraMap (𝓞 F) F (γ : 𝓞 F) = 1
+  change algebraMap (𝓞 F) F (↑γ⁻¹ : 𝓞 F) * algebraMap (𝓞 F) F γ = 1
   rw [← map_mul, Units.inv_mul, map_one]
 
 private theorem averaging_ray_shift (hF : NumberField.IsTotallyComplex F)
@@ -38,8 +38,8 @@ private theorem averaging_ray_shift (hF : NumberField.IsTotallyComplex F)
       RayCoset.rayUnitLogEmbedding F m γ := by
   apply Subtype.ext
   funext v
-  change Real.log (v ((γ.toMul.val : 𝓞 F) : F)) -
-    Real.log |(Algebra.norm ℚ ((γ.toMul.val : 𝓞 F) : F) : ℝ)| /
+  change Real.log (v (γ.toMul.val : F)) -
+    Real.log |(Algebra.norm ℚ (γ.toMul.val : F) : ℝ)| /
       (Module.finrank ℚ F : ℝ) = _
   rw [RayCoset.abs_norm_unit, Real.log_one, zero_div, sub_zero]
   rfl
@@ -49,7 +49,7 @@ private theorem averaging_ray_lift (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)}) :
     (affineResidueUnitMul I γ.val x).val - x.val ∈
       ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F) := by
-  have hy : algebraMap (𝓞 F) F ((γ.val : 𝓞 F) - 1) ∈
+  have hy : algebraMap (𝓞 F) F (γ.val - 1) ∈
       (rayIdealFractionalIdeal F m hm : FractionalIdeal (𝓞 F)⁰ F) :=
     FractionalIdeal.mem_coeIdeal_of_mem _ γ.property.1
   have hz := FractionalIdeal.mul_mem_mul x.property hy
@@ -66,8 +66,11 @@ variable (hF : NumberField.IsTotallyComplex F)
     (u : ℝ) (hu : 0 < u)
 include hF hu
 
-theorem affineResidueTheta_unit_mul
-    (γ : (𝓞 F)ˣ) (h : RayCoset.logHyperplane F) :
+section
+
+variable (γ : (𝓞 F)ˣ) (h : RayCoset.logHyperplane F)
+
+theorem affineResidueTheta_unit_mul :
     affineResidueTheta m hm I (affineResidueUnitMul I γ x) u h =
       affineResidueTheta m hm I x u
         (h + principalNormalizedLogShift hF
@@ -77,8 +80,7 @@ theorem affineResidueTheta_unit_mul
       (Units.map (algebraMap (𝓞 F) F) γ)
       (by rw [averaging_span_unit, one_mul]) x u hu h
 
-theorem affineResidueDualTheta_unit_mul
-    (γ : (𝓞 F)ˣ) (h : RayCoset.logHyperplane F) :
+theorem affineResidueDualTheta_unit_mul :
     affineResidueDualTheta m hm I (affineResidueUnitMul I γ x) u h =
       affineResidueDualTheta m hm I x u
         (h + principalNormalizedLogShift hF
@@ -88,8 +90,11 @@ theorem affineResidueDualTheta_unit_mul
       (Units.map (algebraMap (𝓞 F) F) γ)
       (by rw [averaging_span_unit, one_mul]) x u hu h
 
-theorem affineResidueTheta_rayUnit_periodic
-    (v : RayCoset.rayUnitLogLattice F m) (h : RayCoset.logHyperplane F) :
+end
+
+variable (v : RayCoset.rayUnitLogLattice F m) (h : RayCoset.logHyperplane F)
+
+theorem affineResidueTheta_rayUnit_periodic :
     affineResidueTheta m hm I x u (h + (v : RayCoset.logHyperplane F)) =
       affineResidueTheta m hm I x u h := by
   obtain ⟨γ, hγ⟩ := v.property
@@ -99,8 +104,7 @@ theorem affineResidueTheta_rayUnit_periodic
     (affineResidueUnitMul I γ.toMul.val x) u hu x
     (averaging_ray_lift m hm I γ.toMul x) h
 
-theorem affineResidueDualTheta_rayUnit_periodic
-    (v : RayCoset.rayUnitLogLattice F m) (h : RayCoset.logHyperplane F) :
+theorem affineResidueDualTheta_rayUnit_periodic :
     affineResidueDualTheta m hm I x u (h + (v : RayCoset.logHyperplane F)) =
       affineResidueDualTheta m hm I x u h := by
   obtain ⟨γ, hγ⟩ := v.property
@@ -116,9 +120,8 @@ private theorem averaging_quotient_lifts
     (I J : FractionalIdeal (𝓞 F)⁰ F) (x y : I.coeToSubmodule)
     (hxy : fractionalIdealQuotientMk I J x = fractionalIdealQuotientMk I J y) :
     x.val - y.val ∈ J := by
-  have hz : fractionalIdealQuotientMk I J (x - y) = 0 := by
-    rw [map_sub, hxy, sub_self]
-  exact (fractionalIdealQuotientMk_eq_zero_iff I J (x - y)).mp hz
+  refine (fractionalIdealQuotientMk_eq_zero_iff I J (x - y)).mp ?_
+  rw [map_sub, hxy, sub_self]
 
 section Coprime
 variable (hF : NumberField.IsTotallyComplex F)
@@ -151,35 +154,37 @@ def coprimeIdealResidueDualAverage
       ((rayIdealFractionalIdeal F a ha * rayIdealFractionalIdeal F m hm) :
         FractionalIdeal (𝓞 F)⁰ F) q)) u
 
+local notation "FracIdeal" => FractionalIdeal (𝓞 F)⁰ F
+
 theorem coprimeIdealResidueAverage_mk (x : X) :
     coprimeIdealResidueAverage hF m a hm ha hcop u hu
-      (fractionalIdealQuotientMk (I : FractionalIdeal (𝓞 F)⁰ F)
-        ((I * M) : FractionalIdeal (𝓞 F)⁰ F) x) =
+      (fractionalIdealQuotientMk (I : FracIdeal)
+        ((I * M) : FracIdeal) x) =
       affineResidueAverage m hm I x u := by
   unfold coprimeIdealResidueAverage
   apply affineResidueAverage_congr m hm I _ u hu x
   apply averaging_quotient_lifts
   exact Classical.choose_spec (fractionalIdealQuotientMk_surjective
-    (I : FractionalIdeal (𝓞 F)⁰ F) ((I * M) : FractionalIdeal (𝓞 F)⁰ F)
-    (fractionalIdealQuotientMk (I : FractionalIdeal (𝓞 F)⁰ F)
-      ((I * M) : FractionalIdeal (𝓞 F)⁰ F) x))
+    I ((I * M) : FracIdeal)
+    (fractionalIdealQuotientMk I
+      ((I * M) : FracIdeal) x))
 
 theorem coprimeIdealResidueDualAverage_mk (x : X) :
     coprimeIdealResidueDualAverage hF m a hm ha hcop u hu
-      (fractionalIdealQuotientMk (I : FractionalIdeal (𝓞 F)⁰ F)
-        ((I * M) : FractionalIdeal (𝓞 F)⁰ F) x) =
+      (fractionalIdealQuotientMk (I : FracIdeal)
+        ((I * M) : FracIdeal) x) =
       affineResidueDualAverage m hm I x u := by
   unfold coprimeIdealResidueDualAverage
   apply affineResidueDualAverage_congr m hm I _ u hu x
   apply averaging_quotient_lifts
   exact Classical.choose_spec (fractionalIdealQuotientMk_surjective
-    (I : FractionalIdeal (𝓞 F)⁰ F) ((I * M) : FractionalIdeal (𝓞 F)⁰ F)
-    (fractionalIdealQuotientMk (I : FractionalIdeal (𝓞 F)⁰ F)
-      ((I * M) : FractionalIdeal (𝓞 F)⁰ F) x))
+    I ((I * M) : FracIdeal)
+    (fractionalIdealQuotientMk I
+      ((I * M) : FracIdeal) x))
 
 theorem coprimeIdealResidueAverage_eq_lifts (lift : R → X)
-    (hlift : ∀ q, fractionalIdealQuotientMk (I : FractionalIdeal (𝓞 F)⁰ F)
-      ((I * M) : FractionalIdeal (𝓞 F)⁰ F) (lift q) = q) :
+    (hlift : ∀ q, fractionalIdealQuotientMk (I : FracIdeal)
+      ((I * M) : FracIdeal) (lift q) = q) :
     coprimeIdealResidueAverage hF m a hm ha hcop u hu =
       fun q => affineResidueAverage m hm I (lift q) u := by
   funext q

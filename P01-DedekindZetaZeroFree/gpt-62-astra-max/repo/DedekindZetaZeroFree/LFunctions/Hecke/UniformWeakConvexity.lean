@@ -14,10 +14,7 @@ noncomputable section
 
 private theorem primitive_principal_modulus_top
     (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F))
-    (η : RayClassCharacter F 𝔪) (hprim : η.IsPrimitive) (hp : η.IsPrincipal) : 𝔪 = ⊤ := by
-  by_contra hm
-  obtain ⟨α, hα, _, _, hcop, hne⟩ := hprim ⊤ (lt_top_iff_ne_top.mpr hm)
-  exact hne (hp _ (Ideal.span_singleton_eq_bot.not.mpr hα) hcop)
+    (η : RayClassCharacter F 𝔪) (hprim : η.IsPrimitive) (hp : η.IsPrincipal) : 𝔪 = ⊤ := by apply @Hecke.primitivePrincipal_modulus_eq_top <;> assumption
 
 private theorem order_product_growth
     (δ : ℝ) (hδ : 0 < δ) (hδle : δ ≤ 1 / 10)
@@ -50,8 +47,12 @@ private theorem order_product_growth
       gcongr
       nlinarith [mul_le_mul_of_nonneg_left ht2 hB]
 
+section
+
+variable (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥)
+
+include hm in
 private theorem reciprocal_strip_bound
-    (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥)
     (δ : ℝ) (hδ : 0 < δ) :
     ∃ A B : ℝ, 0 ≤ A ∧ 0 ≤ B ∧
       ∀ s : ℂ, -δ ≤ s.re ∧ s.re ≤ 1 + δ →
@@ -59,7 +60,7 @@ private theorem reciprocal_strip_bound
   obtain ⟨G, hG, hGs⟩ := gammaC_inverse_strip_exp_bound (-δ) (1 + δ) (by linarith)
   let q := heckeConductorScale F 𝔪
   let r := NumberField.InfinitePlace.nrComplexPlaces F
-  have hq : 1 ≤ q := one_le_heckeConductorScale F 𝔪 hm
+  have hq := one_le_heckeConductorScale F 𝔪 hm
   refine ⟨q ^ (δ / 2) * G ^ r, r * Real.pi, by positivity, by positivity, ?_⟩
   intro s hs
   have hpow : ‖(q : ℂ) ^ (-s / 2)‖ ≤ q ^ (δ / 2) := by
@@ -79,8 +80,8 @@ private theorem reciprocal_strip_bound
       rw [show (r : ℝ) * (Real.pi * |s.im|) = (r * Real.pi) * |s.im| by ring]
       ring
 
+include hm in
 private theorem principal_prefactor_strip_bound
-    (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥)
     (δ : ℝ) (hδ : 0 < δ) :
     ∃ A B : ℝ, 0 ≤ A ∧ 0 ≤ B ∧
       ∀ s : ℂ, -δ ≤ s.re ∧ s.re ≤ 1 + δ →
@@ -92,7 +93,7 @@ private theorem principal_prefactor_strip_bound
   obtain ⟨J, hJ, hJs⟩ := gammaC_inverse_strip_exp_bound (1 - δ) (2 + δ) (by linarith)
   let q := heckeConductorScale F 𝔪
   let r := NumberField.InfinitePlace.nrComplexPlaces F - 1
-  have hq : 1 ≤ q := one_le_heckeConductorScale F 𝔪 hm
+  have hq := one_le_heckeConductorScale F 𝔪 hm
   refine ⟨q ^ (δ / 2) * (2 * Real.pi)⁻¹ * J * G ^ r,
     (r + 1) * Real.pi, by positivity, by positivity, ?_⟩
   intro s hs
@@ -101,29 +102,30 @@ private theorem principal_prefactor_strip_bound
     apply Real.rpow_le_rpow_of_exponent_le hq
     simp only [Complex.div_ofNat_re, Complex.neg_re]
     linarith [hs.1]
-  have hshift : ‖(Complex.Gammaℂ (s + 1))⁻¹‖ ≤ J * Real.exp (Real.pi * |s.im|) := by
-    simpa only [Complex.add_im, Complex.one_im, add_zero] using
-      hJs (s + 1) ⟨by simpa using (show 1 - δ ≤ s.re + 1 by linarith [hs.1]),
-        by simpa using (show s.re + 1 ≤ 2 + δ by linarith [hs.2])⟩
+  let exp₀ := Real.exp (Real.pi * |s.im|)
+  have hshift : ‖(Complex.Gammaℂ (s + 1))⁻¹‖ ≤ J * exp₀ := by
+    simpa using
+      hJs (s + 1) ⟨by exact (show 1 - δ ≤ s.re + 1 by linarith [hs.1]),
+        by exact (show s.re + 1 ≤ 2 + δ by linarith [hs.2])⟩
   have hnorm : ‖(((2 * Real.pi : ℝ) : ℂ))⁻¹‖ = (2 * Real.pi)⁻¹ := by
     rw [norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by positivity)]
   rw [norm_mul, norm_mul, norm_mul, norm_pow, hnorm]
   calc
-    _ ≤ q ^ (δ / 2) * (2 * Real.pi)⁻¹ * (J * Real.exp (Real.pi * |s.im|)) *
-        (G * Real.exp (Real.pi * |s.im|)) ^ r := by
+    _ ≤ q ^ (δ / 2) * (2 * Real.pi)⁻¹ * (J * exp₀) *
+        (G * exp₀) ^ r := by
       gcongr
       exact hGs s hs
     _ = _ := by
       rw [mul_pow, ← Real.exp_nat_mul]
-      have he : Real.exp (Real.pi * |s.im|) * Real.exp (r * (Real.pi * |s.im|)) =
+      have he : exp₀ * Real.exp (r * (Real.pi * |s.im|)) =
           Real.exp ((r + 1) * Real.pi * |s.im|) := by rw [← Real.exp_add]; congr 1; ring
       calc
         _ = (q ^ (δ / 2) * (2 * Real.pi)⁻¹ * J * G ^ r) *
-            (Real.exp (Real.pi * |s.im|) * Real.exp (r * (Real.pi * |s.im|))) := by ring
+            (exp₀ * Real.exp (r * (Real.pi * |s.im|))) := by ring
         _ = _ := by rw [he]
 
+include hm in
 private theorem nonprincipal_strip_growth
-    (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥)
     (η : RayClassCharacter F 𝔪) (D : NonprincipalRayHeckeData F 𝔪 η)
     (δ : ℝ) (hδ : 0 < δ) (hδle : δ ≤ 1 / 10) :
     ∃ M B : ℝ, 0 ≤ M ∧ 0 ≤ B ∧
@@ -134,8 +136,8 @@ private theorem nonprincipal_strip_growth
   exact order_product_growth δ hδ hδle D.Λ (heckeReciprocalCompletionFactor F 𝔪)
     A B hA hB (by convert D.order_bound 1 zero_lt_one using 1 <;> norm_num) hg
 
+include hm in
 private theorem principal_strip_growth
-    (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥)
     (η : RayClassCharacter F 𝔪) (D : PrincipalRayHeckeData F 𝔪 η)
     (δ : ℝ) (hδ : 0 < δ) (hδle : δ ≤ 1 / 10) :
     ∃ M B : ℝ, 0 ≤ M ∧ 0 ≤ B ∧
@@ -145,6 +147,8 @@ private theorem principal_strip_growth
   obtain ⟨A, B, hA, hB, hg⟩ := principal_prefactor_strip_bound F 𝔪 hm δ hδ
   exact order_product_growth δ hδ hδle D.E _ A B hA hB
     (by convert D.order_bound 1 zero_lt_one using 1 <;> norm_num) hg
+
+end
 
 private theorem norm_le_detector_strip
     (δ : ℝ) (hδ : 0 < δ) (hδle : δ ≤ 1 / 10)
@@ -159,22 +163,19 @@ private theorem norm_le_detector_strip
       ‖f s‖ ≤ (6 ^ k * H + J) * (2 + |s.im|) ^ k := by
   intro s hs hs4
   by_cases hsright : 1 + δ ≤ s.re
-  · have ht : 1 ≤ 2 + |s.im| := by linarith [abs_nonneg s.im]
-    have htk : 2 + |s.im| ≤ (2 + |s.im|) ^ k := by
-      simpa using (pow_le_pow_right₀ ht hk : (2 + |s.im|) ^ 1 ≤ (2 + |s.im|) ^ k)
+  · have htk : 2 + |s.im| ≤ (2 + |s.im|) ^ k := by
+      simpa using (pow_le_pow_right₀ (by linarith [abs_nonneg s.im]) hk : (2 + |s.im|) ^ 1 ≤ (2 + |s.im|) ^ k)
     calc
       ‖f s‖ ≤ J * (2 + |s.im|) := hr s hsright hs4
       _ ≤ J * (2 + |s.im|) ^ k := mul_le_mul_of_nonneg_left htk hJ
       _ ≤ (6 ^ k * H + J) * (2 + |s.im|) ^ k := by
-          apply mul_le_mul_of_nonneg_right _ (by positivity)
-          exact le_add_of_nonneg_left (by positivity)
-  · have hstrip : -δ ≤ s.re ∧ s.re ≤ 1 + δ := ⟨by linarith, (lt_of_not_ge hsright).le⟩
-    have hPL := norm_le_on_closed_strip_of_polynomial_boundary δ hδ hδle k H hH f
-      hf.diffContOnCl hgr hb s hstrip
-    exact hPL.trans (mul_le_mul_of_nonneg_right (le_add_of_nonneg_right hJ) (by positivity))
+          bound
+  · exact (norm_le_on_closed_strip_of_polynomial_boundary δ hδ hδle k H hH f
+      hf.diffContOnCl hgr hb s (⟨by linarith, (lt_of_not_ge hsright).le⟩)).trans (mul_le_mul_of_nonneg_right (le_add_of_nonneg_right hJ) (by positivity))
 
-private theorem coherent_data_bound
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
+variable (F : Type) [Field F] [NumberField F]
+
+private theorem coherent_data_bound (hF : NumberField.IsTotallyComplex F)
     (δ : ℝ) (hδ : 0 < δ) (hδle : δ ≤ 1 / 10) :
     ∃ C : ℝ, 0 < C ∧
       ∀ (𝔪 : Ideal (𝓞 F)), 𝔪 ≠ ⊥ → ∀ (η : RayClassCharacter F 𝔪),
@@ -193,12 +194,8 @@ private theorem coherent_data_bound
     exact mul_pos (by norm_num) (idealAbsoluteSum_converges F (1 + δ) (by linarith)).2.2.1
   refine ⟨6 ^ k * C + J, by positivity, ?_⟩
   intro 𝔪 hm η hprim s hs hs4
-  have hp0 : 0 ≤ (1 : ℝ) / 2 + δ := by linarith
   have hfactor : 1 ≤ (1 + (Ideal.absNorm 𝔪 : ℝ)) ^ ((1 : ℝ) / 2 + δ) :=
-    Real.one_le_rpow (by have := Nat.cast_nonneg (α := ℝ) (Ideal.absNorm 𝔪); linarith) hp0
-  have hcoeff : 6 ^ k * (C * (1 + (Ideal.absNorm 𝔪 : ℝ)) ^ ((1 : ℝ) / 2 + δ)) + J ≤
-      (6 ^ k * C + J) * (1 + (Ideal.absNorm 𝔪 : ℝ)) ^ ((1 : ℝ) / 2 + δ) := by
-    nlinarith [mul_le_mul_of_nonneg_left hfactor hJ.le]
+    Real.one_le_rpow (by linarith) (by linarith)
   constructor
   · intro hn D
     obtain ⟨hb, hr⟩ := hnp 𝔪 hm η hprim hn D
@@ -206,16 +203,16 @@ private theorem coherent_data_bound
       (C * (1 + (Ideal.absNorm 𝔪 : ℝ)) ^ ((1 : ℝ) / 2 + δ)) J (by positivity) hJ.le
       (nonprincipalHeckeEntireContinuation F 𝔪 η D)
       (nonprincipalHeckeEntireContinuation_differentiable F hF 𝔪 hm η D)
-      (nonprincipal_strip_growth F 𝔪 hm η D δ hδ hδle) (by simpa [k] using hb) ?_ s hs hs4
+      (nonprincipal_strip_growth F 𝔪 hm η D δ hδ hδle) (by exact hb) ?_ s hs hs4
     · rw [nonprincipalHeckeEntireContinuation_eq F hF 𝔪 hm η D s (by linarith)] at h
-      exact h.trans (mul_le_mul_of_nonneg_right hcoeff (by positivity))
+      exact h.trans (mul_le_mul_of_nonneg_right (by
+        nlinarith) (by positivity))
     · intro z hz hz4
-      have hb := hr z hz hz4
       have : idealAbsoluteSum F (1 + δ) ≤ J * (2 + |z.im|) := by
         dsimp [J]
         nlinarith [abs_nonneg z.im,
           (idealAbsoluteSum_converges F (1 + δ) (by linarith)).2.2.1]
-      exact hb.trans this
+      exact (hr z hz hz4).trans this
   · intro hprincipal D
     have htop := primitive_principal_modulus_top F 𝔪 η hprim hprincipal
     subst 𝔪
@@ -223,14 +220,13 @@ private theorem coherent_data_bound
     have h := norm_le_detector_strip δ hδ hδle k (by dsimp [k]; omega)
       C J hC.le hJ.le (principalHeckeEntireRegularization F ⊤ η D)
       (principalHeckeEntireRegularization_differentiable F hF ⊤ hm η D)
-      (principal_strip_growth F ⊤ hm η D δ hδ hδle) (by simpa [k] using hb)
-      (by simpa [J] using hr) s hs hs4
+      (principal_strip_growth F ⊤ hm η D δ hδ hδle) (by exact hb)
+      (by exact hr) s hs hs4
     rw [principalHeckeEntireRegularization_eq_bridge F hF ⊤ hm η D s (by linarith)] at h
     exact h.trans (mul_le_mul_of_nonneg_right
       (le_mul_of_one_le_right (by positivity) hfactor) (by positivity))
 
 theorem detector_convexity_bridge
-    (F : Type) [Field F] [NumberField F]
     (htc : NumberField.IsTotallyComplex F) (C₀ : ℝ) (hC₀ : 0 < C₀) :
     ∃ A_F : ℝ, 0 ≤ A_F ∧
       ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧
@@ -260,8 +256,7 @@ theorem detector_convexity_bridge
       (B * (1 + C₀) ^ ((1 : ℝ) / 2 + δ)) * U ^ ((1 : ℝ) / 2 + ε) := by
     calc
       _ ≤ B * ((1 + C₀) * U) ^ ((1 : ℝ) / 2 + δ) := by
-        apply mul_le_mul_of_nonneg_left _ hB.le
-        exact Real.rpow_le_rpow (by positivity) hbase (by linarith)
+        bound
       _ = (B * (1 + C₀) ^ ((1 : ℝ) / 2 + δ)) * U ^ ((1 : ℝ) / 2 + δ) := by
         rw [Real.mul_rpow (by positivity) hUp.le]; ring
       _ ≤ _ := by

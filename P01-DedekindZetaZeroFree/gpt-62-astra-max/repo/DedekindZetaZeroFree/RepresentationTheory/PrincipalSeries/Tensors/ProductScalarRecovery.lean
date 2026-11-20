@@ -13,8 +13,8 @@ namespace DedekindZetaZeroFree.FourierContinuation.CurrentNativeStage
 open LiteralSource NativeScalarMixedTensorGeneration KPAdelicCoverRestrictedProduct KPLiteralChamber
 open KPLiteralScalarHCCompactOrbit KPLiteralScalarHCFiniteDecomposition
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "M" => CurrentFiniteFamily.nativeInducingData A P C
 variable (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
 local instance (j : InfinitePlace F ⊕ T) : AddCommGroup (mixedSource F A.zeta12 A.primitive_zeta12 M T j) := by

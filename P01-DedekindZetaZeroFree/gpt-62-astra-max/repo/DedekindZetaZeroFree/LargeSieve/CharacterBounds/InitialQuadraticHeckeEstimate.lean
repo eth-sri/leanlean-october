@@ -23,14 +23,12 @@ theorem initialBound (F : Type) [Field F] [NumberField F]
     intro ε hε
     refine ⟨0, le_refl 0, ?_⟩
     intro M N hM hN
-    have hshellM : paperShell F ⊥ M = ∅ := paperShell_bot_eq_empty F M hM
-    have hshellN : paperShell F ⊥ N = ∅ := paperShell_bot_eq_empty F N hN
     have hQ1 : ∀ lam : Ideal (𝓞 F) → ℂ, Q1 F ⊥ Q M N lam = 0 := by
       intro lam
-      simp [Q1, hshellM]
+      simp [Q1, (paperShell_bot_eq_empty F M hM)]
     have henergy : ∀ lam : Ideal (𝓞 F) → ℂ, energy F ⊥ N lam = 0 := by
       intro lam
-      simp [energy, hshellN]
+      simp [energy, (paperShell_bot_eq_empty F N hN)]
     have hset : ({0} ∪ {x : ℝ | ∃ lam : Ideal (𝓞 F) → ℂ,
         energy F ⊥ N lam ≤ 1 ∧ x = Q1 F ⊥ Q M N lam}) = {0} := by
       ext x

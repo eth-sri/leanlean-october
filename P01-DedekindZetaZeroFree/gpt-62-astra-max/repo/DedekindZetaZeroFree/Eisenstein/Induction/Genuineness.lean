@@ -54,10 +54,9 @@ theorem eisenstein_genuine (K : Subgroup (G F ζ hζ))
   rw [← tsum_mul_left]
   apply tsum_congr
   intro c
-  have hcentral := Subgroup.mem_center_iff.mp
+  rw [← mul_assoc, (Subgroup.mem_center_iff.mp
     (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩)
-    (rationalLift F ζ hζ (Quotient.out c))
-  rw [← mul_assoc, hcentral, mul_assoc, hv]
+    (rationalLift F ζ hζ (Quotient.out c))), mul_assoc, hv]
 
 end DedekindZetaZeroFree.KPLiteralExceptionalResidue.ResidueAutomorphy
 

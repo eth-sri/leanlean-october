@@ -21,13 +21,17 @@ structure TwoDerivativeData {Y : Type*} [MeasurableSpace Y] (μ : Measure Y)
 variable {Y : Type*} [MeasurableSpace Y] {μ : Measure Y}
     {f : ℕ → ℝ → Y → ℂ}
 
-lemma TwoDerivativeData.integrable (h : TwoDerivativeData μ f) (j : ℕ)
+variable (h : TwoDerivativeData μ f)
+
+include h in
+lemma TwoDerivativeData.integrable (j : ℕ)
     (hj : j ≤ 2) (t : ℝ) : Integrable (f j t) μ := by
   obtain ⟨s, hs, B, hB, hb⟩ := h.local_bound t
   exact hB.mono' (h.measurable j hj t)
     (hb.mono fun y hy => hy t (mem_of_mem_nhds hs) j hj)
 
-lemma TwoDerivativeData.hasDerivAt_integral (h : TwoDerivativeData μ f)
+include h in
+lemma TwoDerivativeData.hasDerivAt_integral
     (j : ℕ) (hj : j < 2) (t : ℝ) :
     HasDerivAt (fun u => ∫ y, f j u y ∂μ) (∫ y, f (j + 1) t y ∂μ) t := by
   obtain ⟨s, hs, B, hB, hb⟩ := h.local_bound t
@@ -37,7 +41,8 @@ lemma TwoDerivativeData.hasDerivAt_integral (h : TwoDerivativeData μ f)
     (hb.mono fun y hy u hu => hy u hu (j + 1) (by omega)) hB
     (Eventually.of_forall fun y u _ => h.derivative j hj y u)).2
 
-lemma TwoDerivativeData.continuous_integral_two (h : TwoDerivativeData μ f) :
+include h in
+lemma TwoDerivativeData.continuous_integral_two :
     Continuous (fun t => ∫ y, f 2 t y ∂μ) := by
   apply continuous_iff_continuousAt.mpr
   intro t
@@ -47,15 +52,14 @@ lemma TwoDerivativeData.continuous_integral_two (h : TwoDerivativeData μ f) :
     (mem_of_superset hs fun u hu => hb.mono fun y hy => hy u hu 2 le_rfl) hB
   exact Eventually.of_forall fun y => (h.continuous_two y).continuousAt
 
-theorem TwoDerivativeData.integral_calculus (h : TwoDerivativeData μ f) :
+include h in
+theorem TwoDerivativeData.integral_calculus :
     ContDiff ℝ 2 (fun t => ∫ y, f 0 t y ∂μ) ∧
     ∀ j ≤ 2, ∀ t, iteratedDeriv j (fun u => ∫ y, f 0 u y ∂μ) t =
       ∫ y, f j t y ∂μ := by
-  have hd0 : deriv (fun u => ∫ y, f 0 u y ∂μ) =
-      (fun u => ∫ y, f 1 u y ∂μ) :=
+  have hd0 :=
     funext fun t => (h.hasDerivAt_integral 0 (by omega) t).deriv
-  have hd1 : deriv (fun u => ∫ y, f 1 u y ∂μ) =
-      (fun u => ∫ y, f 2 u y ∂μ) :=
+  have hd1 :=
     funext fun t => (h.hasDerivAt_integral 1 (by omega) t).deriv
   constructor
   · rw [show (2 : ℕ∞ω) = 1 + 1 from rfl, contDiff_succ_iff_deriv]

@@ -18,8 +18,8 @@ open NativeScalarMixedTensorGeneration FourierContinuation.CurrentTailFixation
 open FourierContinuation.CurrentReferenceFactorization FourierContinuation.CurrentReferenceProduct
 open FourierContinuation.CurrentInsertionEnlargement
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "M" => FourierContinuation.CurrentFiniteFamily.nativeInducingData A P C
 local instance (U : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
     (j : InfinitePlace F ⊕ U) : AddCommGroup (mixedSource F A.zeta12 A.primitive_zeta12 M U j) := by
@@ -67,11 +67,9 @@ theorem HC_tensor_reference_tail_formula
       allSlotEvaluation F A.zeta12 A.primitive_zeta12 M U xU m g =
         r q (g q) * allSlotEvaluation F A.zeta12 A.primitive_zeta12 M U xU m (Function.update g q 1) := by
     intro q hq g
-    have hn : q.val ∉ T := (Finset.mem_filter.mp hq).2
-    have he : q.val ∉ C.exceptional := fun h => hn (hT h)
-    have hh := allSlotEvaluation_fixed_reference A P C U q he xU
-      (fun k m a => HC_tensor_added_slot_fixed A P C K hK f T hT hbad htail U xU hxU q hn k m a) m g
-    simpa only [r] using hh
+    have hn := (Finset.mem_filter.mp hq).2
+    simpa using (allSlotEvaluation_fixed_reference A P C U q (fun h => hn (hT h)) xU
+      (fun k m a => HC_tensor_added_slot_fixed A P C K hK f T hT hbad htail U xU hxU q hn k m a) m g)
   have hformula := finite_update_factorization
     (fun g => allSlotEvaluation F A.zeta12 A.primitive_zeta12 M U xU m g) r s hs a
   have hreset : (fun q : U => if q ∈ s then 1 else a q) =

@@ -40,8 +40,7 @@ theorem outside_finite_pure (y : ∀ r : W, fiber D W r)
         (KPAdelicCoverRestrictedProduct.localInjection F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) a)) := by
   rw [globalMap_pure, globalMap_pure]
   rw [WildTameSlotTransport.stageTuple_update_outside D W s x ⟨Sum.inr q,hq⟩ ho]
-  have hh := D.finite_intertwining q a s hq (stageTuple D W s x y) g
-  simpa only [stageTuple, dif_neg ho] using hh
+  simpa only [stageTuple, dif_neg ho] using (D.finite_intertwining q a s hq (stageTuple D W s x y) g)
 
 include ho in
 theorem outside_finite (z : AmbientTensor F W (fiber D W))
@@ -55,7 +54,7 @@ theorem outside_finite (z : AmbientTensor F W (fiber D W))
     simp only [map_smul, Pi.smul_apply]
     exact congrArg (fun t : ℂ => c • t) (outside_finite_pure D W s hW x q hq ho a y g)
   | add z w hz hw =>
-    simpa only [map_add, Pi.add_apply] using congrArg₂ (fun a b : ℂ => a + b) hz hw
+    simpa using congrArg₂ (fun a b : ℂ => a + b) hz hw
 end DedekindZetaZeroFree.FourierContinuation.WildCurrentGlobalMap
 
 end

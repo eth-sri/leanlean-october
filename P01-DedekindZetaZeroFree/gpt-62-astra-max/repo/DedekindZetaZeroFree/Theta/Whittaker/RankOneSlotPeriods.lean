@@ -15,18 +15,17 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
-variable (D : SourceFactorization R Q T)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    (D : SourceFactorization R Q T)
 
 lemma core_period_integrable
     (x : RestrictedTensorSimple.Core (actualLocal R D.finiteData) D.references D.bad)
     (g : Group R) :
     Integrable (fun q => D.coreMap x
       (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g) *
-      star (adelicTraceQuotientCharacter F q : ℂ)) Q.dq := by
-  exact FourierContinuation.sameResidue_period_integrable T (D.core_same_residue x) g
+      star (adelicTraceQuotientCharacter F q : ℂ)) Q.dq := FourierContinuation.sameResidue_period_integrable T (D.core_same_residue x) g
 
 def corePeriod (g : Group R) :
     RestrictedTensorSimple.Core (actualLocal R D.finiteData) D.references D.bad →ₗ[ℂ] ℂ where
@@ -97,8 +96,7 @@ lemma slotPeriod_root (s : RestrictedTensorSimple.Level D.bad)
         (D.finiteData p).haar (D.finiteData p).haar_integer
         (KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) t) b) =
       (ResidueTrace.localTraceCharacter p t : ℂ) * slotPeriod R D s x p hp g b := by
-  let y := Function.update x ⟨Sum.inr p, hp⟩ b
-  let core := RestrictedTensorSimple.stageInclusion _ D.references D.bad s (PiTensorProduct.tprod ℂ y)
+  let core := RestrictedTensorSimple.stageInclusion _ D.references D.bad s (PiTensorProduct.tprod ℂ (Function.update x ⟨Sum.inr p, hp⟩ b))
   have ha := slotPeriod_finite_action R D s x p hp g
     (KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) t) b
   change slotPeriod R D s x p hp g
@@ -137,10 +135,9 @@ lemma normalized_form_of_rank_le_one {V : Type*} [AddCommGroup V] [Module ℂ V]
     rw [hb] at hh
     exact one_ne_zero hh
   letI : Nontrivial W := ⟨⟨l₀, 0, hl₀⟩⟩
-  have hdim : Module.finrank ℂ W = 1 := le_antisymm
-    (Module.finrank_le_of_rank_le (by simpa using hrank : Module.rank ℂ W ≤ (1 : ℕ)))
-    (Module.finrank_pos (R := ℂ) (M := W))
-  obtain ⟨c, hc⟩ := exists_smul_eq_of_finrank_eq_one hdim hl₀ (⟨M, hM⟩ : W)
+  obtain ⟨c, hc⟩ := exists_smul_eq_of_finrank_eq_one (le_antisymm
+    (Module.finrank_le_of_rank_le (by exact hrank : Module.rank ℂ W ≤ (1 : ℕ)))
+    (Module.finrank_pos)) hl₀ (⟨M, hM⟩ : W)
   have hc' : c • L = M := congrArg Subtype.val hc
   have hcv := LinearMap.congr_fun hc' b
   simp only [LinearMap.smul_apply, smul_eq_mul, hb, mul_one] at hcv

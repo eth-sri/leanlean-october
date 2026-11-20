@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -59,29 +55,21 @@ def baseFixingCosetToAlgHom :
     (fun σ => σ.1.toAlgHom.comp E.val)
     (by
       intro σ τ hστ
-      have hmem : σ⁻¹ * τ ∈
-          extensionSubgroup
-            (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
-            (closedFixingSubgroup K Ω E) (fixingSubgroupLeBase K Ω E) :=
+      have hmem :=
         QuotientGroup.leftRel_apply.mp hστ
       let η : (closedFixingSubgroup K Ω E).toSubgroup :=
         ⟨(σ⁻¹ * τ).1, hmem⟩
       have hτ : τ = σ * Subgroup.inclusion
           (fixingSubgroupLeBase K Ω E) η := by
         apply Subtype.ext
-        change τ.1 = σ.1 * η.1
         simp [η]
       apply AlgHom.ext
       intro x
-      have hηfix :=
-        (IntermediateField.mem_fixingSubgroup_iff E η.1).mp η.2
-      have hηx : η.1 (x : Ω) = (x : Ω) := hηfix x x.2
       have hτ' := congrArg Subtype.val hτ
       change τ.1 = σ.1 * η.1 at hτ'
-      change σ.1 (x : Ω) = τ.1 (x : Ω)
       calc
-        σ.1 (x : Ω) = σ.1 (η.1 (x : Ω)) :=
-          congrArg σ.1 hηx.symm
+        _ = σ.1 (η.1 (x : Ω)) :=
+          congrArg σ.1 (((IntermediateField.mem_fixingSubgroup_iff E η.1).mp η.2) x x.2).symm
         _ = (σ.1 * η.1) (x : Ω) := rfl
         _ = τ.1 (x : Ω) := by rw [hτ'])
 
@@ -99,12 +87,12 @@ theorem baseFixingCosetToAlgHom_mk
     [FiniteDimensional K E] [Algebra.IsSeparable K E] :
     Function.Surjective (baseFixingCosetToAlgHom K Ω E) := by
   intro f
-  let : Algebra.IsSeparable E Ω :=
+  let :=
     Algebra.isSeparable_tower_top_of_isSeparable K E Ω
   obtain ⟨φ, hφ⟩ :=
     (IsSepClosed.surjective_domRestrict_of_isSeparable
       (K := K) (L := E) (M := Ω) (E := Ω)) f
-  let σ : Ω ≃ₐ[K] Ω :=
+  let σ :=
     AlgEquiv.ofBijective φ
       (Normal.toIsAlgebraic.algHom_bijective₂
         φ (AlgHom.id K Ω)).1
@@ -113,13 +101,10 @@ theorem baseFixingCosetToAlgHom_mk
     change σ ∈ (⊥ : IntermediateField K Ω).fixingSubgroup
     rw [IntermediateField.fixingSubgroup_bot]
     exact Subgroup.mem_top σ
-  let σbase : (closedFixingSubgroup K Ω
-      (⊥ : IntermediateField K Ω)).toSubgroup := ⟨σ, hσ⟩
-  refine ⟨QuotientGroup.mk σbase, ?_⟩
+  refine ⟨QuotientGroup.mk (⟨σ, hσ⟩), ?_⟩
   apply AlgHom.ext
   intro x
   have hx := congrArg (fun ψ : E →ₐ[K] Ω => ψ x) hφ
-  change φ (x : Ω) = f x
   change φ (x : Ω) = f x at hx
   exact hx
 
@@ -252,23 +237,7 @@ theorem relativeNorm_intermediateFieldUnit_val_of_isSeparable (x : Eˣ) :
           (closedFixingSubgroup K Ω E) (fixingSubgroupLeBase K Ω E)
           (intermediateFieldUnitsEquivGaloisFixed K Ω E
             (Additive.ofMul x)) q) : Ωˣ) : Ω)) = _
-  calc
-    _ = ∏ σ : E →ₐ[K] Ω, σ (x : E) := by
-      exact Fintype.prod_equiv
-        (baseFixingCosetEquivAlgHom K Ω E)
-        (fun q : Q =>
-          ((Additive.toMul
-            (relativeCosetAction (galoisAmbientUnitsRep K Ω)
-              (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
-              (closedFixingSubgroup K Ω E) (fixingSubgroupLeBase K Ω E)
-              (intermediateFieldUnitsEquivGaloisFixed K Ω E
-                (Additive.ofMul x)) q) : Ωˣ) : Ω))
-        (fun σ : E →ₐ[K] Ω => σ (x : E))
-        (relativeCosetAction_intermediateFieldUnit_val_of_isSeparable
-          K Ω E x)
-    _ = algebraMap K Ω (Algebra.norm K (x : E)) :=
-      (algebraMap_norm_eq_prod_embeddings_of_isSepClosed
-        K Ω E (x : E)).symm
+  exact (Fintype.prod_equiv (baseFixingCosetEquivAlgHom K Ω E) (fun q : Q => ((Additive.toMul (relativeCosetAction (galoisAmbientUnitsRep K Ω) (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω)) (closedFixingSubgroup K Ω E) (fixingSubgroupLeBase K Ω E) (intermediateFieldUnitsEquivGaloisFixed K Ω E (Additive.ofMul x)) q) : Ωˣ) : Ω)) (fun σ : E →ₐ[K] Ω => σ (x : E)) (relativeCosetAction_intermediateFieldUnit_val_of_isSeparable K Ω E x)).trans ((algebraMap_norm_eq_prod_embeddings_of_isSepClosed K Ω E (x : E)).symm)
 
 /-- Equivariant form of the nonnormal finite-separable norm comparison. -/
 theorem relativeNorm_intermediateFieldUnit_of_isSeparable (x : Eˣ) :
@@ -282,7 +251,7 @@ theorem relativeNorm_intermediateFieldUnit_of_isSeparable (x : Eˣ) :
   apply Subtype.ext
   apply Additive.ext
   apply Units.ext
-  exact relativeNorm_intermediateFieldUnit_val_of_isSeparable K Ω E x
+  apply relativeNorm_intermediateFieldUnit_val_of_isSeparable
 
 end NormAsProduct
 

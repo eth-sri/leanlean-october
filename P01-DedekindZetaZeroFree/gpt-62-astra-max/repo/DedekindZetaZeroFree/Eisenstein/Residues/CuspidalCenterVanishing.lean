@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.CommonSphericalDisk.CuspidalCancellation
 
 open MeasureTheory Filter
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
 
 private theorem projection_center_zero {E : Type*} [NormedAddCommGroup E]
     [InnerProductSpace ℂ E] [CompleteSpace E]
@@ -20,15 +19,14 @@ private theorem projection_center_zero {E : Type*} [NormedAddCommGroup E]
     (hpair : inner ℂ z h = 0) : z = 0 := by
   have hQz : Q z = z := by
     rw [hz, map_smul]
-    have hp := congrArg (fun A : E →L[ℂ] E => A h) hQQ
-    simpa only [mul_apply_eq_comp] using congrArg (fun x : E => a • x) hp
+    simpa using congrArg (fun x : E => a • x) (congrArg (fun A : E →L[ℂ] E => A h) hQQ)
   have h' : inner ℂ z (Q h) = 0 := by
     have hsym : inner ℂ (Q z) h = inner ℂ z (Q h) := hQ.isSymmetric z h
     rw [hQz, hpair] at hsym
     exact hsym.symm
   apply (inner_self_eq_zero (𝕜 := ℂ)).mp
   calc
-    inner ℂ z z = inner ℂ z (a • Q h) := congrArg (inner ℂ z) hz
+    _ = inner ℂ z (a • Q h) := congrArg (inner ℂ z) hz
     _ = a * inner ℂ z (Q h) := inner_smul_right _ _ _
     _ = 0 := by rw [h', mul_zero]
 
@@ -40,30 +38,27 @@ private theorem projection_center_zero {E : Type*} [NormedAddCommGroup E]
     (he : ∀ s ∈ Metric.ball c r, s ≠ c → w s = (s - c) • v s)
     (he' : ∀ s ∈ Metric.ball c r', s ≠ c → w' s = (s - c) • v s) :
     w c = w' c := by
-  have hwc := hw.continuousOn.continuousAt (Metric.ball_mem_nhds c hr)
-  have hwc' := hw'.continuousOn.continuousAt (Metric.ball_mem_nhds c hr')
-  have heq : w =ᶠ[𝓝[≠] c] w' := by
-    filter_upwards [mem_nhdsWithin_of_mem_nhds (Metric.ball_mem_nhds c hr),
-      mem_nhdsWithin_of_mem_nhds (Metric.ball_mem_nhds c hr'),
-      self_mem_nhdsWithin] with s hs hs' hne
-    exact (he s hs (by simpa using hne)).trans (he' s hs' (by simpa using hne)).symm
-  exact ((hwc.eventuallyEq_nhds_iff_eventuallyEq_nhdsNE hwc').mp heq).eq_of_nhds
+  refine (((hw.continuousOn.continuousAt (Metric.ball_mem_nhds c hr)).eventuallyEq_nhds_iff_eventuallyEq_nhdsNE (hw'.continuousOn.continuousAt (Metric.ball_mem_nhds c hr'))).mp ?_).eq_of_nhds
+  filter_upwards [mem_nhdsWithin_of_mem_nhds (Metric.ball_mem_nhds c hr),
+    mem_nhdsWithin_of_mem_nhds (Metric.ball_mem_nhds c hr'),
+    self_mem_nhdsWithin] with s hs hs' hne
+  exact (he s hs (by exact hne)).trans (he' s hs' (by exact hne)).symm
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "level" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable (hι : Function.Injective ι) (f : ℂ → S)
-variable (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-variable {T : ℝ}
-variable (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H T)
-variable (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (hι : Function.Injective ι) (f : ℂ → S)
+    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+    {T : ℝ}
+    (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H T)
+    (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
 variable (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer
   KPContinuation.spectralDomain f χ)
 
@@ -95,7 +90,6 @@ theorem smooth_center_eq_zero
     R.adelicHaar R.adelic_isHaar rfl realization
   have hg := kp_cont_actual_hilbert_simple_germs F ζ hζ C R P H U
     R.adelicHaar R.adelic_isHaar rfl realization ι hι
-    (stageConclusions F ζ hζ C R P H U ι hι)
     KPContinuation.spectralDomain KPContinuation.spectralDomain_isOpen
     (fun _ hs => hs) f hf buffer χ source
   obtain ⟨r', hr', hb', hi', w', hw', he', hcenter', houtside'⟩ := hg.simple_germs c hc

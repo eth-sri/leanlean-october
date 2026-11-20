@@ -15,8 +15,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 
 theorem borel_lift_splitting (b : KPGlobalTorusFunctionData.borel F ζ hζ) :
     ∃ (t : KPGlobalTorusFunctionData.E F ζ hζ) (x : KPAdeles F),
-      b.val = t.val * KPGlobalTorusFunctionData.N F ζ hζ x := by
-  exact KPGlobalTorusBorelNormTwistTransport.actual_borel_factorization F ζ hζ b
+      b.val = t.val * KPGlobalTorusFunctionData.N F ζ hζ x := KPGlobalTorusBorelNormTwistTransport.actual_borel_factorization F ζ hζ b
 
 end DedekindZetaZeroFree.PrincipalOfKP
 

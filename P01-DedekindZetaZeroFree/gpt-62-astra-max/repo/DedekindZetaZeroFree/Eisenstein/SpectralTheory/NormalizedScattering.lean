@@ -9,16 +9,16 @@ public import DedekindZetaZeroFree.Eisenstein.Residues.Cofactors.GlobalExistence
 noncomputable section
 open scoped Classical NumberField BigOperators Topology TensorProduct
 open NumberField MeasureTheory Filter
-open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource.CofactorChamber renaming exterior_enlargement_tendsto → exterior_enlargement_tendsto
+open _root_.DedekindZetaZeroFree.FourierContinuation.LiteralSource.CofactorChamber (exterior_enlargement_tendsto)
 namespace DedekindZetaZeroFree.FourierContinuation.CurrentRepairedLocalBinding
 open MomentSources KPGlobalTorusFiniteStages FaithfulSource FaithfulSource.RepairedInducing
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 open LiteralSource.CofactorChamber KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -42,19 +42,17 @@ theorem current_normalized_scattering
   obtain ⟨E₁,h01,hC₁,htail⟩ := compact_split_tail R P C K hK E₀
   let E := E₁ ∪ (finite_localDifferentSupport F).toFinset
   have h1E : E₁ ⊆ E := Finset.subset_union_left
-  have h0E : E₀ ⊆ E := h01.trans h1E
-  have hsE : s.val.toRight ⊆ E := hs₀.trans h0E
-  have hCE : C.exceptional ⊆ E := hC₁.trans h1E
-  have hD : localDifferentSupport F ⊆ (E : Set _) := by
-    intro q hq
-    exact Finset.mem_union_right E₁ ((finite_localDifferentSupport F).mem_toFinset.mpr hq)
+  have h0E := h01.trans h1E
+  have hsE := hs₀.trans h0E
+  have hCE := hC₁.trans h1E
+  have hD : localDifferentSupport F ⊆ E := fun q hq => Finset.mem_union_right E₁ ((finite_localDifferentSupport F).mem_toFinset.mpr hq)
   refine ⟨E,hsE,hCE,?_⟩
   intro a ha z hz v
   have hzD : z ∈ KPContinuation.spectralDomain := by
     change -(1 : ℝ) / 6 < z.re
     linarith
   let e := fullLevel R P C E hCE
-  have hse : s ≤ e := sourceStage_le_fullLevel R P C s E hCE hsE
+  have hse := sourceStage_le_fullLevel R P C s E hCE hsE
   let ve := RestrictedTensorSimple.transition (Plus R N P C) (plusReference R N P C)
     (bad R P C) s e hse v
   let b := (parameterStage R N P C (fullCompact R P C) e a z ve).val.val 1
@@ -65,7 +63,6 @@ theorem current_normalized_scattering
           (scalarQuotient F ζ hζ (amalgamation F ζ hζ (chamberRaw F ζ hζ y * a)))
         ∂(KPAdditiveHaar.adelicMeasure F).restrict (TraceBox.adelicBox F Q)) =
         KPGlobalFiniteSIntertwiner.enlargementFactor F E Q z * b := by
-    have h0Q := h0E.trans hEQ
     have hCQ := hCE.trans hEQ
     let q := fullLevel R P C Q hCQ
     have heq : e ≤ q := by
@@ -93,9 +90,7 @@ theorem current_normalized_scattering
     have hv := congrArg (fun f : KPGlobalResidualConstruction.smoothRationalFiber F ζ hζ =>
       f.val.val 1) heuler
     simp only [Submodule.coe_smul,Pi.smul_apply,smul_eq_mul] at hv
-    have hn := full_exterior_product R N P C E Q hCE hCQ hD z
-    have hout := (hbox Q h0Q a ha z hzD v).2
-    refine hout.trans (hv.trans ?_)
+    refine ((hbox Q (h0E.trans hEQ) a ha z hzD v).2).trans (hv.trans ?_)
     apply congrArg (fun c : ℂ => c * b)
     calc
       _ = ∏ p ∈ (fullLevel R P C Q hCQ).val \ (fullLevel R P C E hCE).val,
@@ -105,15 +100,11 @@ theorem current_normalized_scattering
           simp [q,e]
         · intro p _
           rfl
-      _ = _ := hn
-  have hl := current_scattering_integral_exhaustion R N P C
-    (RestrictedTensorSimple.stageInclusion _ _ _ s v) a z hz
-  have hl₁ := hl.comp (tendsto_atTop_mono (fun T : Finset (KPFinitePlace F) =>
-    (Finset.subset_union_right : T ⊆ E ∪ T)) tendsto_id)
-  have he := (exterior_enlargement_tendsto R  E z hz).mul_const b
-  have he₁ := he.congr' (Filter.Eventually.of_forall (fun T =>
-    (hb (E ∪ T) Finset.subset_union_left).symm))
-  exact tendsto_nhds_unique hl₁ he₁
+      _ = _ := (full_exterior_product R N P C E Q hCE hCQ hD z)
+  exact tendsto_nhds_unique ((current_scattering_integral_exhaustion R N P C
+    (RestrictedTensorSimple.stageInclusion _ _ _ s v) a z hz).comp (tendsto_atTop_mono (fun T : Finset (KPFinitePlace F) =>
+    Finset.subset_union_right) tendsto_id)) (((exterior_enlargement_tendsto R E z hz).mul_const b).congr' (Filter.Eventually.of_forall (fun T =>
+    (hb (E ∪ T) Finset.subset_union_left).symm)))
 
 end DedekindZetaZeroFree.FourierContinuation.CurrentRepairedLocalBinding
 

@@ -11,13 +11,15 @@ namespace DedekindZetaZeroFree.RootDerivatives
 open KPLiteralRaw hiding G
 open KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 
- theorem chamber_value_majorant {K : Subgroup (MomentSources.Group R)}
-    (hK : IwasawaCompact F R.A.zeta12 R.A.primitive_zeta12 K)
+ variable {K : Subgroup (MomentSources.Group R)} (hK : IwasawaCompact F R.A.zeta12 R.A.primitive_zeta12 K)
+
+include hK in
+theorem chamber_value_majorant
     (f : Flat F R.A.zeta12 R.A.primitive_zeta12 K) (s : ℂ) (hs : (1/3 : ℝ) < s.re)
     (T : Set (MomentSources.Group R)) (hT : IsCompact T) :
     ∃ B : KPChamberBruhatTwoCells.RationalQuotient F → ℝ, Summable B ∧
@@ -31,8 +33,8 @@ set_option backward.isDefEq.respectTransparency false
   simpa only [KPLiteralChamber.rightJet, iteratedFDeriv_zero_apply,
     KPInterface.ResidueConstruction.Raw.archChart_base, mul_one] using h
 
-theorem upper_chamber_affine {K : Subgroup (MomentSources.Group R)}
-    (hK : IwasawaCompact F R.A.zeta12 R.A.primitive_zeta12 K)
+include hK in
+theorem upper_chamber_affine
     (f v u : Flat F R.A.zeta12 R.A.primitive_zeta12 K)
     (w : InfinitePlace F) (b : Bool)
     (hsource : ∀ s g, MomentSources.upperLieDerivative R w b (f.val s) g = v.val s g + s * u.val s g)

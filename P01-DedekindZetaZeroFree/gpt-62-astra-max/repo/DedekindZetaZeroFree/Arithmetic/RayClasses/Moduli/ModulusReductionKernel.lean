@@ -17,12 +17,11 @@ variable {F : Type*} [Field F] [NumberField F]
 
 private lemma rayPrimeToIdeals_antitone' {m n : ClassFieldTheory.RayClassModulus F}
     (hmn : m ≤ n) :
-    ClassFieldTheory.rayClassPrimeToIdeals n ≤ ClassFieldTheory.rayClassPrimeToIdeals m := by
-  intro I hI v hv
-  exact hI v (Finsupp.support_mono hmn.1 hv)
+    ClassFieldTheory.rayClassPrimeToIdeals n ≤ ClassFieldTheory.rayClassPrimeToIdeals m := by apply @ClassFieldTheory.rayPrimeToIdeals_antitone <;> assumption
 
-private lemma modulusReduction_mk'_apply (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (f : Ideal (𝓞 F)) (hf : f ≠ ⊥) (hmf : m ≤ f)
+variable (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (f : Ideal (𝓞 F)) (hf : f ≠ ⊥) (hmf : m ≤ f)
+
+private lemma modulusReduction_mk'_apply
     (J : ClassFieldTheory.rayClassPrimeToIdeals (fullModulus m hm)) :
     modulusReduction m hm f hf hmf
       (QuotientGroup.mk' (ClassFieldTheory.rayPrincipalIdealSubgroupInPrimeTo
@@ -36,8 +35,7 @@ private lemma modulusReduction_mk'_apply (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
   refine congrArg _ (Subtype.ext ?_)
   exact Subgroup.coe_inclusion _ J
 
-theorem modulusReduction_kernel (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (f : Ideal (𝓞 F)) (hf : f ≠ ⊥) (hmf : m ≤ f)
+theorem modulusReduction_kernel
     (c : ClassFieldTheory.RayClassGroup (fullModulus m hm))
     (hc : modulusReduction m hm f hf hmf c = 1) :
     ∃ (a b : 𝓞 F) (ha : a ≠ 0) (hb : b ≠ 0)
@@ -60,7 +58,7 @@ theorem modulusReduction_kernel (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
 
   have hkey2 : (J : ClassFieldTheory.NumberFieldFractionalIdealGroup F) ∈
       ClassFieldTheory.rayPrincipalIdealSubgroup (fullModulus f hf) := by
-    have hmem : (⟨(J : ClassFieldTheory.NumberFieldFractionalIdealGroup F),
+    have hmem : (⟨J,
         rayPrimeToIdeals_antitone' (fullModulus_le_of_le m hm f hf hmf) J.2⟩ :
         ClassFieldTheory.rayClassPrimeToIdeals (fullModulus f hf)) ∈
         ClassFieldTheory.rayPrincipalIdealSubgroupInPrimeTo (fullModulus f hf) := by
@@ -70,11 +68,9 @@ theorem modulusReduction_kernel (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
   rw [ClassFieldTheory.mem_rayPrincipalIdealSubgroup_iff] at hkey2
   obtain ⟨x, hx, hxJ⟩ := hkey2
 
-  have hprime : toPrincipalIdeal (𝓞 F) F x ∈
-      ClassFieldTheory.rayClassPrimeToIdeals (fullModulus m hm) := by
-    rw [hxJ]; exact J.2
   obtain ⟨a, b, ha, hb, hab, ha1, hb1, hposa, hposb, hcam, hcbm⟩ :=
-    exists_mixed_integral_generator m f hm hf hmf x hx hprime
+    exists_mixed_integral_generator m f hm hf hmf x hx (by
+      rw [hxJ]; exact J.2)
   refine ⟨a, b, ha, hb, hcam, hcbm, ha1, hb1, hposa, hposb, ?_⟩
   have hxa : Units.mk0 (a : F) (by exact_mod_cast ha) =
       x * Units.mk0 (b : F) (by exact_mod_cast hb) := by
@@ -83,7 +79,7 @@ theorem modulusReduction_kernel (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     exact hab
   have hunit : integralIdealUnit (Ideal.span {a})
         (mt Ideal.span_singleton_eq_bot.mp ha) =
-      (J : ClassFieldTheory.NumberFieldFractionalIdealGroup F) *
+      J *
         integralIdealUnit (Ideal.span {b}) (mt Ideal.span_singleton_eq_bot.mp hb) := by
     rw [← principal_integral_span a ha, hxa, map_mul, principal_integral_span b hb, hxJ]
   have hrep : idealClass m hm (Ideal.span {a})
@@ -95,7 +91,7 @@ theorem modulusReduction_kernel (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
         J * idealToPrimeTo m hm (Ideal.span {b})
           (mt Ideal.span_singleton_eq_bot.mp hb) hcbm := by
       apply Subtype.ext
-      simpa only [Subgroup.coe_mul, idealToPrimeTo_coe] using hunit
+      simpa using hunit
     rw [idealClass, idealClass, helem, map_mul, hJ]
   rw [hrep]
   group

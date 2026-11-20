@@ -22,11 +22,8 @@ theorem dense_bounded_extension
     ∃ L : V →L[𝕜] W, ‖L‖ ≤ C ∧ (∀ u, L (e u) = S u) ∧ J.comp L = T := by
   set L : V →L[𝕜] W := LinearMap.extendOfNorm (σ₁₂ := RingHom.id 𝕜) S e with hL
   refine ⟨L, ?_, ?_, ?_⟩
-  · rw [hL]
-    exact LinearMap.opNorm_extendOfNorm_le he hC hbound
-  · intro u
-    rw [hL]
-    exact LinearMap.extendOfNorm_eq he ⟨C, hbound⟩ u
+  · exact LinearMap.opNorm_extendOfNorm_le he hC hbound
+  · solve_by_elim [LinearMap.extendOfNorm_eq]
   · apply DFunLike.coe_injective
     refine DenseRange.equalizer he (J.comp L).continuous T.continuous ?_
     ext u

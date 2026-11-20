@@ -17,7 +17,7 @@ open KPCplxJacquetFunctional
 open KPLiteralRaw KPLiteralScalarHCCompactOrbit MomentSources
 open KPReferenceChange.StandardComplexImage.FamilyCorrect TraceHaarTransport FiniteFunctionSpaces
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 local instance : BorelSpace (InfiniteAdeleRing F) := ⟨rfl⟩
@@ -36,10 +36,7 @@ theorem adelic_arch_first_integral (f : KPAdeles F → ℂ)
   letI : SigmaCompactSpace (InfiniteAdeleRing F) :=
     (PoissonArch.infiniteAdeleToSpace F).toHomeomorph.isClosedEmbedding.sigmaCompactSpace
   letI : BorelSpace (KPAdeles F) := ⟨rfl⟩
-  have hm : @Measurable (InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F)
-      (KPAdeles F) Prod.instMeasurableSpace (inferInstance : MeasurableSpace (KPAdeles F))
-      (fun x => x) := by
-    exact (@Continuous.measurable _ _ _ Prod.instMeasurableSpace _ _
+  have hm := (@Continuous.measurable _ _ _ Prod.instMeasurableSpace _ _
       (inferInstance : MeasurableSpace (KPAdeles F)) _
       (fun x : InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F =>
         (x : KPAdeles F)) continuous_id)
@@ -62,7 +59,7 @@ theorem selected_chamber_jacquet_image
         ((spectralJacquetMap s).comp T.subtype).range := by
   obtain ⟨n,p,b,h,he⟩ := openCell_arch_integral_separation F R.A.zeta12
     R.A.primitive_zeta12 Q.K Q.iwasawa (Q.flat v)
-  let T : Submodule ℂ (PrincipalSeries positiveParameter) :=
+  let T :=
     Submodule.span ℂ (Set.range (fun i : Fin n => (h i w).val))
   have hT : FiniteDimensional ℂ T := FiniteDimensional.span_of_finite ℂ (Set.finite_range _)
   letI := hT
@@ -71,7 +68,7 @@ theorem selected_chamber_jacquet_image
   have hsc : s ∈ chamber := by change (-1 / 6 : ℝ) < s.re; linarith
   let G := fun g : ComplexGL2 => archMatrixInsertion F R.A.zeta12 R.A.primitive_zeta12
     (Function.update (fun _ => 1) w g)
-  let f := fun (t : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F) (g : ComplexGL2) =>
+  let f := fun t (g : ComplexGL2) =>
     ∫ a : InfiniteAdeleRing F, (Q.flat v).val s
       (KPRationalAdelicSplitting.pglW F R.A.zeta12 R.A.primitive_zeta12 *
         KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (a,t) * G g) *
@@ -82,8 +79,6 @@ theorem selected_chamber_jacquet_image
         KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 x * G g) *
       star (adelicTraceQuotientCharacter F (QuotientAddGroup.mk x) : ℂ))
     (selected_open_cell_fourier_integrable R Q v s hs (G g))
-  have hf : ∀ g, Integrable (fun t => f t g) (KPAdditiveHaar.finiteMeasure F) :=
-    fun g => (hh g).1
   have hmem : ∀ t, f t ∈ ((spectralJacquetMap s).comp T.subtype).range := by
     intro t
     let c := fun i => b i * literalArchProduct F R.A.zeta12 R.A.primitive_zeta12
@@ -114,9 +109,8 @@ theorem selected_chamber_jacquet_image
     rw [hprod]
     dsimp only [d,c,u]
     ring
-  let J : T →ₗ[ℂ] (ComplexGL2 → ℂ) := (spectralJacquetMap s).comp T.subtype
   have hr := integral_mem_finite_linear_image (V := T) (KPAdditiveHaar.finiteMeasure F)
-    J f (Filter.Eventually.of_forall hmem) hf
+    ((spectralJacquetMap s).comp T.subtype) f (Filter.Eventually.of_forall hmem) (fun g => (hh g).1)
   convert hr using 1
   funext g
   rw [selected_chamber_fourier_unfolding R Q v s hs (G g), (hh g).2]
@@ -135,15 +129,13 @@ theorem selected_residue_jacquet_image
   letI := hT
   let G := fun g : ComplexGL2 => archMatrixInsertion F R.A.zeta12 R.A.primitive_zeta12
     (Function.update (fun _ => 1) w g)
-  let J : ℂ → T →ₗ[ℂ] (ComplexGL2 → ℂ) := fun s => (spectralJacquetMap s).comp T.subtype
+  let J := fun s => (spectralJacquetMap s).comp T.subtype
   have hzero : (0 : ℂ) ∈ chamber := by norm_num [chamber]
   have hinj : Function.Injective (J 0) := by
     intro f h he
     apply Subtype.ext
     apply KPCplxJacquetFunctional.jacquetEvaluation_injective
     funext g
-    have hg := congrFun he g
-    change jacquetEvaluation f.val g = jacquetEvaluation h.val g
     change KPCplxJacquetFunctional.jacquetIntegral standardComplexParameter
       (KPCplxPrincipalSeriesCharts.pi positiveParameter (Matrix.ProjGenLinGroup.mk g) f.val) =
       KPCplxJacquetFunctional.jacquetIntegral standardComplexParameter
@@ -151,12 +143,11 @@ theorem selected_residue_jacquet_image
     simpa only [J, LinearMap.comp_apply, Submodule.subtype_apply,
       spectralJacquetMap_apply 0 hzero, spectralJacquet_zero,
       DedekindZetaZeroFree.TraceHaarTransport.standardComplexParameter,
-      DedekindZetaZeroFree.SheetRescaling.standardComplexParameter] using hg
+      DedekindZetaZeroFree.SheetRescaling.standardComplexParameter] using (congrFun he g)
   have hJa : ∀ f g, AnalyticOnNhd ℂ (fun s => J s f g) chamber := by
     intro f g s hs
     apply (spectralJacquet_analytic f.val g s hs).congr
-    have hO : IsOpen chamber := by
-      exact isOpen_lt continuous_const Complex.continuous_re
+    have hO : IsOpen chamber := isOpen_lt continuous_const Complex.continuous_re
     filter_upwards [hO.mem_nhds hs] with t ht
     exact (spectralJacquetMap_apply t ht f.val g).symm
   choose I hm hc hp using fun g => selected_fourier_continuation_exists T₀ v (G g)
@@ -189,11 +180,10 @@ theorem selected_residue_jacquet_image
   obtain ⟨f,hf⟩ := hmem
   refine ⟨f.val, ?_⟩
   intro g
-  have hg := congrFun hf g
   simpa only [J, H, Realization.theta, LinearMap.comp_apply, Submodule.subtype_apply,
     spectralJacquetMap_apply 0 hzero, spectralJacquet_zero,
     DedekindZetaZeroFree.TraceHaarTransport.standardComplexParameter,
-    DedekindZetaZeroFree.SheetRescaling.standardComplexParameter] using hg.symm
+    DedekindZetaZeroFree.SheetRescaling.standardComplexParameter] using (congrFun hf g).symm
 
 end DedekindZetaZeroFree.SheetRescaling
 
@@ -208,7 +198,7 @@ open NumberField MeasureTheory KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
 open KPLiteralRaw KPLiteralScalarHCCompactOrbit MomentSources
 open KPReferenceChange.StandardComplexImage.FamilyCorrect
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 local instance : BorelSpace (InfiniteAdeleRing F) := ⟨rfl⟩

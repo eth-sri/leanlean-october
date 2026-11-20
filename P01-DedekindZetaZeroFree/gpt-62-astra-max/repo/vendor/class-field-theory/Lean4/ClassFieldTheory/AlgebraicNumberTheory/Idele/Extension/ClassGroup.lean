@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -34,7 +31,6 @@ open NumberField
 
 noncomputable section
 
-
 variable
     (K L : Type*) [Field K] [NumberField K]
     [Field L] [NumberField L] [Algebra K L]
@@ -51,43 +47,40 @@ theorem exists_scalar_of_adeleInclusion_eq_fieldInclusion
     ∃ k : K,
       a = algebraMap K (NumberField.AdeleRing (𝓞 K) K) k ∧
       x = algebraMap K L k := by
+  let AdeleRing₀ := NumberField.AdeleRing (𝓞 K) K
   let η :=
     Algebra.linearMap K
-      (NumberField.AdeleRing (𝓞 K) K)
+      (AdeleRing₀)
   have hη : LinearMap.ker η = ⊥ :=
     LinearMap.ker_eq_bot.mpr
       (NumberField.AdeleRing.algebraMap_injective
         (R := 𝓞 K) (K := K))
-  let ε :
-      NumberField.AdeleRing (𝓞 K) K →ₗ[K] K :=
+  let ε :=
     η.leftInverse
   have hε :
-      ε (1 : NumberField.AdeleRing (𝓞 K) K) = 1 := by
+      ε (1 : AdeleRing₀) = 1 := by
     change ε (algebraMap K
-      (NumberField.AdeleRing (𝓞 K) K) 1) = 1
+      (AdeleRing₀) 1) = 1
     exact LinearMap.leftInverse_apply_of_inj hη 1
-  let q :
-      RelativeAdeleRing K L →ₗ[K] L :=
+  let q :=
     (TensorProduct.lid K L).toLinearMap.comp
       (TensorProduct.map ε LinearMap.id)
-  have hq := congrArg q h
   have hx : x = algebraMap K L (ε a) := by
     simpa [q, adeleInclusion, fieldInclusion, hε,
-      Algebra.smul_def] using hq.symm
+      Algebra.smul_def] using (congrArg q h).symm
   refine ⟨ε a, ?_, hx⟩
   apply
-    (Algebra.TensorProduct.includeLeft_injective
-      (R := K) (S := K)
-      (A := NumberField.AdeleRing (𝓞 K) K) (B := L)
+    (Algebra.TensorProduct.includeLeft_injective (S := K)
+      (A := AdeleRing₀) (B := L)
       (FaithfulSMul.algebraMap_injective K L))
   change adeleInclusion K L a =
     adeleInclusion K L
       (algebraMap K
-        (NumberField.AdeleRing (𝓞 K) K) (ε a))
+        (AdeleRing₀) (ε a))
   rw [h, hx]
   exact (Algebra.TensorProduct.tmul_one_eq_one_tmul
-    (A := NumberField.AdeleRing (𝓞 K) K)
-    (B := L) (ε a)).symm
+
+     (ε a)).symm
 
 /-- The subgroup of principal relative ideles. -/
 def principalSubgroup :
@@ -109,29 +102,21 @@ theorem comap_principalSubgroup :
   ext a
   constructor
   · rintro ⟨x, hx⟩
-    have htensor :
-        adeleInclusion K L
-            ((IdeleGroup.equivAdeleRingUnits (K := K) a :
-              (NumberField.AdeleRing (𝓞 K) K)ˣ) :
-              NumberField.AdeleRing (𝓞 K) K) =
-          fieldInclusion K L (x : L) := by
-      exact congrArg Units.val hx.symm
     obtain ⟨k, hkA, hkL⟩ :=
       exists_scalar_of_adeleInclusion_eq_fieldInclusion
-        K L _ _ htensor
+        K L _ _ (congrArg Units.val hx.symm)
     have hk : k ≠ 0 := by
       intro hk0
       have : (x : L) = 0 := by
         rw [hkL, hk0, map_zero]
       exact x.ne_zero this
-    let y : Kˣ := Units.mk0 k hk
-    refine ⟨y, ?_⟩
-    apply (IdeleGroup.equivAdeleRingUnits (K := K)).injective
+    refine ⟨(Units.mk0 k hk), ?_⟩
+    apply (IdeleGroup.equivAdeleRingUnits).injective
     apply Units.ext
     change
       algebraMap K
           (NumberField.AdeleRing (𝓞 K) K) k =
-        ((IdeleGroup.equivAdeleRingUnits (K := K) a :
+        ((IdeleGroup.equivAdeleRingUnits a :
           (NumberField.AdeleRing (𝓞 K) K)ˣ) :
           NumberField.AdeleRing (𝓞 K) K)
     exact hkA.symm
@@ -199,13 +184,8 @@ theorem classInclusion_injective :
     comap_principalSubgroup K L]
   ext z
   constructor
-  · rintro ⟨a, ha, rfl⟩
-    exact (QuotientGroup.eq_one_iff a).2 ha
-  · intro hz
-    have hz1 : z = 1 := Subgroup.mem_bot.mp hz
-    obtain ⟨a, rfl⟩ :=
-      QuotientGroup.mk_surjective z
-    exact ⟨a, (QuotientGroup.eq_one_iff a).1 hz1, rfl⟩
+  · simp
+  simp
 
 end RelativeIdeleGroup
 

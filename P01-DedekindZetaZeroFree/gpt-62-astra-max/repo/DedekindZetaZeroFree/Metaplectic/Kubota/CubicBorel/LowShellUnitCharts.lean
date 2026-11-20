@@ -19,8 +19,8 @@ theorem torus_conjugate (a : actualTorus F ζ hζ q) (v : (LocalField F q)ˣ) :
     KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q)
       (KPHilbert.B3 F ζ hζ (Sum.inr q) (ActualFiniteTorus.coordinate F ζ hζ q a) v) *
         KPPGLLocalCover.A F ζ hζ (Sum.inr q) v := by
-  let u : actualTorus F ζ hζ q := ActualFiniteTorus.torusLift F ζ hζ q v
-  have hu : ActualFiniteTorus.coordinate F ζ hζ q u = v :=
+  let u := ActualFiniteTorus.torusLift F ζ hζ q v
+  have hu :=
     ((ActualFiniteTorus.actual_torus_normal_form F ζ hζ q).2.2.2.2.2.2 1 v u (by
       simp [u, ActualFiniteTorus.torusLift, ActualFiniteTorus.normalWord])).1
   have hc := (ActualFiniteTorus.actual_cube_quotient_pairing F ζ hζ q).2.2.2.2.2.1 a u
@@ -52,15 +52,16 @@ theorem actual_weyl_word (h : actualTorus F ζ hζ q) :
     ((S.borel.weyl h : actualTorus F ζ hζ q) : ActualCover F ζ hζ q) =
       (KPPGLLocalCover.W F ζ hζ (Sum.inr q))⁻¹ * (h : ActualCover F ζ hζ q) *
         KPPGLLocalCover.W F ζ hζ (Sum.inr q) := by
+  let A₀ := KPPGLLocalCover.A F ζ hζ (Sum.inr q) (-1)
   have hn : ((S.borel.cubeLift (-1) : actualTorus F ζ hζ q) : ActualCover F ζ hζ q) =
-      KPPGLLocalCover.A F ζ hζ (Sum.inr q) (-1) := by
+      A₀ := by
     rw [S.cube_actual]
     congr 1
     apply Units.ext
     change (-1 : LocalField F q) ^ 3 = -1
     ring
   have hc : Commute (h : ActualCover F ζ hζ q)
-      (KPPGLLocalCover.A F ζ hζ (Sum.inr q) (-1)) := by
+      (A₀) := by
     have ht := Subgroup.mem_center_iff.mp (S.heisenberg.central
       (S.borel.cubeLift (-1)).property) h
     have ht' := congrArg (fun z : actualTorus F ζ hζ q => (z : ActualCover F ζ hζ q)) ht
@@ -71,16 +72,17 @@ theorem actual_weyl_word (h : actualTorus F ζ hζ q) :
     (S.openCell S.polarization).weyl_eq]
   simp only [KPRankOneOpenCellKernel.signedWeyl,
     KPRankOneOpenCellKernel.signedWeylRaw, map_mul]
-  change (KPPGLLocalCover.A F ζ hζ (Sum.inr q) (-1) *
-      KPPGLLocalCover.W F ζ hζ (Sum.inr q))⁻¹ * (h : ActualCover F ζ hζ q) *
-      (KPPGLLocalCover.A F ζ hζ (Sum.inr q) (-1) *
-        KPPGLLocalCover.W F ζ hζ (Sum.inr q)) = _
+  let W₀ := KPPGLLocalCover.W F ζ hζ (Sum.inr q)
+  change (A₀ *
+      W₀)⁻¹ * (h : ActualCover F ζ hζ q) *
+      (A₀ *
+        W₀) = _
   rw [mul_inv_rev]
   calc
-    _ = (KPPGLLocalCover.W F ζ hζ (Sum.inr q))⁻¹ *
-        ((KPPGLLocalCover.A F ζ hζ (Sum.inr q) (-1))⁻¹ *
-          ((h : ActualCover F ζ hζ q) * KPPGLLocalCover.A F ζ hζ (Sum.inr q) (-1))) *
-        KPPGLLocalCover.W F ζ hζ (Sum.inr q) := by group
+    _ = (W₀)⁻¹ *
+        ((A₀)⁻¹ *
+          ((h : ActualCover F ζ hζ q) * A₀)) *
+        W₀ := by group
     _ = _ := by rw [hc.eq, inv_mul_cancel_left]
 
 theorem coordinate_normal_word (h : actualTorus F ζ hζ q)
@@ -88,8 +90,8 @@ theorem coordinate_normal_word (h : actualTorus F ζ hζ q)
     (hh : (h : ActualCover F ζ hζ q) =
       KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e *
         KPPGLLocalCover.A F ζ hζ (Sum.inr q) v) : S.borel.coordinate h = v := by
-  let a : actualTorus F ζ hζ q := ActualFiniteTorus.torusLift F ζ hζ q v
-  have ha : (a : ActualCover F ζ hζ q) = KPPGLLocalCover.A F ζ hζ (Sum.inr q) v := by
+  let a := ActualFiniteTorus.torusLift F ζ hζ q v
+  have ha : a = KPPGLLocalCover.A F ζ hζ (Sum.inr q) v := by
     simp [a, ActualFiniteTorus.torusLift, ActualFiniteTorus.normalWord]
   have he : h = (S.central e : actualTorus F ζ hζ q) * a := by
     apply Subtype.ext
@@ -134,6 +136,7 @@ theorem normalized_chiH_word (P : KPLocalStoneVonNeumann.Polarization S.heisenbe
   have homega : (P.ωL h : ℂ) = (ordinaryIota F ζ hζ e : ℂ) := by
     have ho := hnorm h e u 1 (by simpa [hA1] using hh)
     simpa [KPLocalPrincipalSeries.normPower, KPLocalPrincipalSeries.localAbs_one] using ho
+  let W₀ := KPPGLLocalCover.W F ζ hζ (Sum.inr q)
   have hw : ((weylHL F ζ hζ q S P hP h).val : ActualCover F ζ hζ q) =
       KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e *
         KPPGLLocalCover.A F ζ hζ (Sum.inr q) (KPTameCompact.unitInclusion F q u⁻¹) := by
@@ -141,16 +144,16 @@ theorem normalized_chiH_word (P : KPLocalStoneVonNeumann.Polarization S.heisenbe
     rw [actual_weyl_word F ζ hζ q S, hh]
     have hz := Subgroup.mem_center_iff.mp
       (KPPGLLocalCover.centralInjection_range_le_center F ζ hζ (Sum.inr q) ⟨e, rfl⟩)
-      (KPPGLLocalCover.W F ζ hζ (Sum.inr q))⁻¹
+      (W₀)⁻¹
     rw [← mul_assoc, hz, mul_assoc, ← mul_assoc]
-    have hW : (KPPGLLocalCover.W F ζ hζ (Sum.inr q))⁻¹ =
-        KPPGLLocalCover.W F ζ hζ (Sum.inr q) :=
+    have hW : (W₀)⁻¹ =
+        W₀ :=
       inv_eq_of_mul_eq_one_right (by simpa [pow_two] using KPPGLLocalCover.W_sq F ζ hζ (Sum.inr q))
     rw [hW, mul_assoc (KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e),
       KPCorrectedBruhatLifts.quotient_weyl_diagonal, mul_assoc]
     rw [mul_assoc (KPPGLLocalCover.A F ζ hζ (Sum.inr q) _),
-      show KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
-        KPPGLLocalCover.W F ζ hζ (Sum.inr q) = 1 from
+      show W₀ *
+        W₀ = 1 from
         (by simpa [pow_two] using KPPGLLocalCover.W_sq F ζ hζ (Sum.inr q)), mul_one]
     congr 2
   have hminus : (P.ωL (weylHL F ζ hζ q S P hP h) : ℂ) =
@@ -199,9 +202,10 @@ theorem diagonal_coordinate (x y : (LocalField F q)ˣ)
     exact h00
   rw [((ActualFiniteTorus.actual_torus_normal_form F ζ hζ q).2.2.2.2.2.2 e v a he).1, hv]
 
-theorem unit_word_mem_HL
-    (P : KPLocalStoneVonNeumann.Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P) (e : rootsOfUnity 3 F)
+variable (P : KPLocalStoneVonNeumann.Polarization S.heisenberg) (hP : IsTamePolarization F ζ hζ q S P)
+
+include hP in
+theorem unit_word_mem_HL (e : rootsOfUnity 3 F)
     (u : (KPTameCompact.O F q)ˣ) :
     (⟨ActualFiniteTorus.normalWord F ζ hζ q e (KPTameCompact.unitInclusion F q u),
       (ActualFiniteTorus.actual_torus_normal_form F ζ hζ q).1 e _⟩ : actualTorus F ζ hζ q)
@@ -209,7 +213,7 @@ theorem unit_word_mem_HL
   let h : actualTorus F ζ hζ q := ⟨ActualFiniteTorus.normalWord F ζ hζ q e
     (KPTameCompact.unitInclusion F q u),
       (ActualFiniteTorus.actual_torus_normal_form F ζ hζ q).1 e _⟩
-  have hc : S.borel.coordinate h = KPTameCompact.unitInclusion F q u :=
+  have hc :=
     coordinate_normal_word F ζ hζ q S h e _ rfl
   change S.heisenberg.π h ∈ P.L
   have hu : S.cubeClassEquiv (S.heisenberg.π h) ∈
@@ -222,8 +226,6 @@ theorem unit_word_mem_HL
   exact S.cubeClassEquiv.injective he ▸ hd
 
 theorem literal_chi_ratio
-    (P : KPLocalStoneVonNeumann.Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P)
     (hnorm : ∀ (h : HL F ζ hζ q S P) (e : rootsOfUnity 3 F)
       (u : (KPTameCompact.O F q)ˣ) (y : (LocalField F q)ˣ),
       (h.val : ActualCover F ζ hζ q) =

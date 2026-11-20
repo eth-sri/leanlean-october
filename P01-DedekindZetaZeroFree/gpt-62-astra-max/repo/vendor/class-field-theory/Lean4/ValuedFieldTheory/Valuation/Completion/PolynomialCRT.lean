@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -46,18 +43,16 @@ noncomputable def quotientInfAlgEquivPiQuotient
     ext i
     rfl
 
+variable {F : Type u} [Field F] {ι : Type v} [Fintype ι] (f : ι → F[X])
+    (hf : ∀ i j, i ≠ j → IsCoprime (f i) (f j))
+
 /-- Chinese remainder equivalence for a finite family of pairwise coprime
 polynomials.  It is canonical: every polynomial class is sent to the family
 of the same class modulo each factor. -/
-noncomputable def adjoinRootProdEquivPi
-    {F : Type u} [Field F] {ι : Type v} [Fintype ι]
-    (f : ι → F[X])
-    (hf : ∀ i j, i ≠ j → IsCoprime (f i) (f j)) :
+noncomputable def adjoinRootProdEquivPi :
     AdjoinRoot (∏ i, f i) ≃ₐ[F] ∀ i, AdjoinRoot (f i) := by
-  let I : ι → Ideal F[X] := fun i => Ideal.span ({f i} : Set F[X])
-  have hI : Pairwise (IsCoprime on I) := by
-    intro i j hij
-    exact (Ideal.isCoprime_span_singleton_iff (f i) (f j)).2
+  let I := fun i => Ideal.span ({f i} : Set F[X])
+  have hI : Pairwise (IsCoprime on I) := fun i j hij => (Ideal.isCoprime_span_singleton_iff (f i) (f j)).2
       (hf i j hij)
   have hInf : Ideal.span ({∏ i, f i} : Set F[X]) = ⨅ i, I i := by
     symm
@@ -70,14 +65,9 @@ noncomputable def adjoinRootProdEquivPi
 representatives coordinatewise. -/
 @[simp]
 theorem adjoinRootProdEquivPi_mk
-    {F : Type u} [Field F] {ι : Type v} [Fintype ι]
-    (f : ι → F[X])
-    (hf : ∀ i j, i ≠ j → IsCoprime (f i) (f j))
     (g : F[X]) (i : ι) :
     adjoinRootProdEquivPi f hf (AdjoinRoot.mk (∏ i, f i) g) i =
       AdjoinRoot.mk (f i) g := by
-  change Ideal.Quotient.mk (Ideal.span ({f i} : Set F[X])) g =
-    Ideal.Quotient.mk (Ideal.span ({f i} : Set F[X])) g
   rfl
 
 end Completion

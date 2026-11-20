@@ -12,10 +12,10 @@ set_option maxHeartbeats 4000000
 namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 open MomentSources TensorActionSource KPGlobalTorusFiniteStages
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 
 theorem localValue_torus_factor
@@ -70,17 +70,18 @@ theorem deltaHalf_eq_nu_cube
   rw [hd, ← Real.rpow_natCast, ← Real.rpow_mul (by positivity)]
   norm_num
 
-theorem normHalf_product
-    (u : Raw R)
+section
+
+variable (u : Raw R)
     (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F R.A.zeta12 R.A.primitive_zeta12 q)
     (a d : InfinitePlace F → ℂˣ) (b : InfinitePlace F → ℂ)
     (e : KPGlobalTorusFunctionData.E F R.A.zeta12 R.A.primitive_zeta12)
-    (ht : ∀ q, (t q).val = KPPGLLocalCover.coverQuotient F R.A.zeta12
-      R.A.primitive_zeta12 (Sum.inr q) (u (Sum.inr q)))
-    (hp : ∀ w, complexMatrix R w (u (Sum.inl w)) =
-      KPCplxPrincipalSeriesCharts.upperTriangular (a w) (d w) (b w))
-    (he : KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
-      (KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12 u) = e.val)
+    (ht : ∀ q, (t q).val = KPPGLLocalCover.coverQuotient F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) (u (Sum.inr q)))
+    (hp : ∀ w, complexMatrix R w (u (Sum.inl w)) = KPCplxPrincipalSeriesCharts.upperTriangular (a w) (d w) (b w))
+    (he : KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12 (KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12 u) = e.val)
+
+include ht hp he in
+theorem normHalf_product
     (U : Finset (KPHilbert.Place F)) (hU : ∀ p, p ∉ U → localNorm R P C t a d p = 1) :
     (∏ p : U, (Real.rpow (localNorm R P C t a d p) (1/2 : ℝ) : ℂ)) =
       KPGlobalTorusFunctionData.deltaHalf F R.A.zeta12 R.A.primitive_zeta12 e := by
@@ -106,17 +107,8 @@ theorem normHalf_product
       ← Complex.ofReal_prod, ← hn]
   rw [hc, deltaHalf_eq_nu_cube R]
 
+include ht hp he in
 theorem rawRationalEvaluator_torus
-    (u : Raw R)
-    (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F R.A.zeta12 R.A.primitive_zeta12 q)
-    (a d : InfinitePlace F → ℂˣ) (b : InfinitePlace F → ℂ)
-    (e : KPGlobalTorusFunctionData.E F R.A.zeta12 R.A.primitive_zeta12)
-    (ht : ∀ q, (t q).val = KPPGLLocalCover.coverQuotient F R.A.zeta12
-      R.A.primitive_zeta12 (Sum.inr q) (u (Sum.inr q)))
-    (hp : ∀ w, complexMatrix R w (u (Sum.inl w)) =
-      KPCplxPrincipalSeriesCharts.upperTriangular (a w) (d w) (b w))
-    (he : KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
-      (KPAdelicCoverRestrictedProduct.amalgamation F R.A.zeta12 R.A.primitive_zeta12 u) = e.val)
     (g : Raw R) (x : PlusCore R N P C)
     (r : KPGlobalTorusFunctionData.E F R.A.zeta12 R.A.primitive_zeta12) :
     (comparisonSmooth R P C (rawCoreVector R N P C (u * g) x)).val.val r =
@@ -133,41 +125,24 @@ theorem rawRationalEvaluator_torus
     ⟨s.val ∪ G.val ∪ UG.val ∪ U0.val ∪ hn.toFinset,
       s.property.trans (Finset.subset_union_left.trans
         (Finset.subset_union_left.trans (Finset.subset_union_left.trans Finset.subset_union_left)))⟩
-  have hsU : s ≤ U := Finset.subset_union_left.trans
-    (Finset.subset_union_left.trans (Finset.subset_union_left.trans Finset.subset_union_left))
-  have hgU : ∀ p, p ∉ U.val → localValue R N P C p (g p) (plusReference R N P C p) = reference R P C p := by
-    intro p hp
-    exact hG p (fun h => hp (by simp [U, h]))
-  have hugU : ∀ p, p ∉ U.val → localValue R N P C p ((u * g) p) (plusReference R N P C p) = reference R P C p := by
-    intro p hp
-    exact hUG p (fun h => hp (by simp [U, h]))
-  have huU : ∀ p, p ∉ U.val → localValue R N P C p (u p) (plusReference R N P C p) = reference R P C p := by
-    intro p hp
-    exact hU0 p (fun h => hp (by simp [U, h]))
+  have hgU : ∀ p, p ∉ U.val → localValue R N P C p (g p) (plusReference R N P C p) = reference R P C p := fun p hp => hG p (fun h => hp (by simp [U, h]))
+  have hugU : ∀ p, p ∉ U.val → localValue R N P C p ((u * g) p) (plusReference R N P C p) = reference R P C p := fun p hp => hUG p (fun h => hp (by simp [U, h]))
+  have huU : ∀ p, p ∉ U.val → localValue R N P C p (u p) (plusReference R N P C p) = reference R P C p := fun p hp => hU0 p (fun h => hp (by simp [U, h]))
   have hnU : ∀ p, p ∉ U.val → localNorm R P C t a d p = 1 := by
     intro p hp
     by_contra h
     exact hp (Finset.mem_union_right _ (hn.mem_toFinset.mpr h))
   have hslot : ∀ p, p ∉ U.val → torusSlot R P C u t a d p (reference R P C p) = reference R P C p := by
     intro p hpU
-    have hpbad : p ∉ bad R P C := fun h => hpU (U.property h)
+    have hpbad := fun h => hpU (U.property h)
     have h := localValue_torus_factor R N P C u t a d b ht hp p (plusReference R N P C p) 1
     rw [mul_one, huU p hpU, localValue_reference_one R N P C p hpbad, hnU p hpU] at h
     norm_num at h
     exact h.symm
   let y := RestrictedTensorSimple.transition (Plus R N P C) (plusReference R N P C)
-    (bad R P C) s U hsU z
-  have hins : RestrictedTensorSimple.stageInclusion _ _ _ U y =
-      RestrictedTensorSimple.stageInclusion (Plus R N P C) (plusReference R N P C) (bad R P C) s z :=
-    Module.DirectLimit.of_f
-  change (comparisonSmooth R P C (rawCoreVector R N P C (u * g)
-    (RestrictedTensorSimple.stageInclusion _ _ _ s z))).val.val r = _
-  change (comparisonSmooth R P C (rawCoreVector R N P C (u * g)
-    (RestrictedTensorSimple.stageInclusion _ _ _ s z))).val.val r =
-    KPGlobalTorusFunctionData.deltaHalf F R.A.zeta12 R.A.primitive_zeta12 e *
-      (comparisonSmooth R P C (rawCoreVector R N P C g
-        (RestrictedTensorSimple.stageInclusion _ _ _ s z))).val.val (r * e)
-  rw [← hins]
+    (bad R P C) s U (Finset.subset_union_left.trans
+      (Finset.subset_union_left.trans (Finset.subset_union_left.trans Finset.subset_union_left))) z
+  rw [← Module.DirectLimit.of_f]
   change (comparisonSmooth R P C (rawCoreVector R N P C (u * g)
     (RestrictedTensorSimple.stageInclusion _ _ _ U y))).val.val r =
     KPGlobalTorusFunctionData.deltaHalf F R.A.zeta12 R.A.primitive_zeta12 e *
@@ -179,7 +154,6 @@ theorem rawRationalEvaluator_torus
   induction y using PiTensorProduct.induction_on with
   | smul_tprod c y =>
     simp only [map_smul]
-    change c * _ = _ * (c * _)
     rw [stageVector_pure, stageVector_pure]
     have hv : (fun p : U.val => localValue R N P C p ((u * g) p) (y p)) =
         (fun p : U.val => (Real.rpow (localNorm R P C t a d p) (1/2 : ℝ) : ℂ) •
@@ -195,6 +169,8 @@ theorem rawRationalEvaluator_torus
     simp only [map_add]
     change (_ : ℂ) + _ = _ * (_ + _)
     rw [hx, hy, mul_add]
+
+end
 
 theorem quotientRationalEvaluator_torus (x : PlusCore R N P C)
     (e : KPGlobalTorusFunctionData.E F R.A.zeta12 R.A.primitive_zeta12)

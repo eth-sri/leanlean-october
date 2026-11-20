@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -84,23 +82,22 @@ theorem nthRootsOfUnity_fixed
     (sigma : Gal(L/K)) (u : Lˣ) (hu : u ^ (n : ℕ) = 1) :
     sigma • u = u := by
   obtain ⟨zeta, rfl⟩ := hmu u hu
-  exact RadicalDatum.smul_algebraMap_unit (K := K) (L := L) sigma zeta
+  apply RadicalDatum.smul_algebraMap_unit
+
+variable [FiniteDimensional K L] [IsGalois K L] (n : ℕ+)
 
 /-- The root-choice-free Kummer character on the ambient-power quotient is
 surjective.  The preimage of a character is produced by Noether Hilbert 90,
 not supplied as a hypothesis. -/
-theorem finiteKummerQuotientCharacter_surjective
-    [FiniteDimensional K L] [IsGalois K L]
-    (n : ℕ+) (hmu : NthRootsOfUnityInBase (K := K) (L := L) n) :
+theorem finiteKummerQuotientCharacter_surjective (hmu : NthRootsOfUnityInBase (K := K) (L := L) n) :
     Function.Surjective
       ((chosenFiniteKummerRadicalDatum (K := K) (L := L) n).quotientKummerCharacterWithoutSection
-          (nthRootsOfUnity_fixed (K := K) (L := L) n hmu)) := by
+          (nthRootsOfUnity_fixed n hmu)) := by
   let D := chosenFiniteKummerRadicalDatum (K := K) (L := L) n
-  let hfixed : ∀ sigma : Gal(L/K), ∀ u : Lˣ,
-      u ^ (n : ℕ) = 1 → sigma • u = u :=
-    nthRootsOfUnity_fixed (K := K) (L := L) n hmu
+  let hfixed :=
+    nthRootsOfUnity_fixed n hmu
   intro chi
-  let f : Gal(L/K) → Lˣ := fun sigma => (chi sigma).1
+  let f := fun sigma => (chi sigma).1
   have hf : groupCohomology.IsMulCocycle₁ f := by
     intro sigma tau
     change (chi (sigma * tau)).1 = sigma • (chi tau).1 * (chi sigma).1
@@ -116,12 +113,11 @@ theorem finiteKummerQuotientCharacter_surjective
       sigma • (beta ^ (n : ℕ)) = beta ^ (n : ℕ) := by
     intro sigma
     calc
-      sigma • (beta ^ (n : ℕ)) = (sigma • beta) ^ (n : ℕ) := by
-        exact map_pow (MulDistribMulAction.toMonoidHom Lˣ sigma) beta (n : ℕ)
+      _ = (sigma • beta) ^ (n : ℕ) := map_pow (MulDistribMulAction.toMonoidHom Lˣ sigma) beta (n : ℕ)
       _ = (f sigma * beta) ^ (n : ℕ) := by rw [hbeta sigma]
       _ = (f sigma) ^ (n : ℕ) * beta ^ (n : ℕ) := mul_pow _ _ _
       _ = beta ^ (n : ℕ) := by
-        rw [show (f sigma) ^ (n : ℕ) = 1 from (chi sigma).2, one_mul]
+        simp [show (f sigma) ^ (n : ℕ) = 1 from (chi sigma).2]
   have hbeta_pow_range : ((beta ^ (n : ℕ) : Lˣ) : L) ∈
       Set.range (algebraMap K L) := by
     apply (IsGalois.mem_range_algebraMap_iff_fixed
@@ -134,7 +130,7 @@ theorem finiteKummerQuotientCharacter_surjective
     have : (((beta ^ (n : ℕ) : Lˣ) : L)) = 0 := by
       simpa [ha_zero] using ha.symm
     exact (beta ^ (n : ℕ)).ne_zero this
-  let aunit : Kˣ := Units.mk0 a ha_ne
+  let aunit := Units.mk0 a ha_ne
   have hbeta_pow : beta ^ (n : ℕ) =
       Units.map (algebraMap K L).toMonoidHom aunit := by
     apply Units.ext
@@ -152,9 +148,7 @@ theorem finiteKummerQuotientCharacter_surjective
 /-- The finite actual-field Kummer character isomorphism on
 `Delta / (Delta intersect Kˣ^n)`.  This is the character-isomorphism half of
 the finite Kummer character equivalence, not the full subgroup/extension correspondence. -/
-def finiteKummerCharacterEquiv
-    [FiniteDimensional K L] [IsGalois K L]
-    (n : ℕ+) (hmu : NthRootsOfUnityInBase (K := K) (L := L) n) :
+def finiteKummerCharacterEquiv (hmu : NthRootsOfUnityInBase (K := K) (L := L) n) :
     (chosenFiniteKummerRadicalDatum (K := K) (L := L) n).RadicalQuotient ≃*
       (Gal(L/K) →* nthRootsSubgroup L (n : ℕ)) :=
   MulEquiv.ofBijective

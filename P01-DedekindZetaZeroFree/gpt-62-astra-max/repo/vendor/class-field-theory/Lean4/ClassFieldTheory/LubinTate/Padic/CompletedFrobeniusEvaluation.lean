@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -69,10 +66,13 @@ open ValuationTheory.DiscreteValuationField
   have hadic : IsAdic target.maximalIdeal := rfl
   exact (hadic.isAdicComplete_iff.mp target.isAdicComplete).2
 
+section
+
+variable (p : ℕ) [Fact p.Prime]
+
 /-- Arithmetic Frobenius restricted to the valuation ring of the completed
 maximal-unramified p-adic field. -/
-noncomputable def padicCompletedUnramifiedFrobeniusIntegerEquiv
-    (p : ℕ) [Fact p.Prime] :
+noncomputable def padicCompletedUnramifiedFrobeniusIntegerEquiv :
     (padicCompletedUnramifiedCompleteDVF p).valuationSubring ≃+*
       (padicCompletedUnramifiedCompleteDVF p).valuationSubring where
   toFun x :=
@@ -81,7 +81,7 @@ noncomputable def padicCompletedUnramifiedFrobeniusIntegerEquiv
       change
         padicCompletedUnramifiedValuation p
             (padicCompletedUnramifiedFrobenius p
-              (x : padicCompletedUnramifiedField p)) ≤ 1
+              x) ≤ 1
       rw [padicCompletedUnramifiedFrobenius_valuation]
       exact x.property⟩
   invFun x :=
@@ -90,10 +90,10 @@ noncomputable def padicCompletedUnramifiedFrobeniusIntegerEquiv
       change
         padicCompletedUnramifiedValuation p
             ((padicCompletedUnramifiedFrobenius p).symm
-              (x : padicCompletedUnramifiedField p)) ≤ 1
+              x) ≤ 1
       rw [← padicCompletedUnramifiedFrobenius_valuation p
           ((padicCompletedUnramifiedFrobenius p).symm
-            (x : padicCompletedUnramifiedField p)),
+            x),
         (padicCompletedUnramifiedFrobenius p).apply_symm_apply]
       exact x.property⟩
   left_inv x := by
@@ -117,7 +117,6 @@ noncomputable def padicCompletedUnramifiedFrobeniusIntegerEquiv
 Frobenius on the completed-unramified fraction field. -/
 @[simp]
 theorem padicCompletedUnramifiedFrobeniusIntegerEquiv_coe
-    (p : ℕ) [Fact p.Prime]
     (x : (padicCompletedUnramifiedCompleteDVF p).valuationSubring) :
     ((padicCompletedUnramifiedFrobeniusIntegerEquiv p x :
         (padicCompletedUnramifiedCompleteDVF p).valuationSubring) :
@@ -130,7 +129,6 @@ theorem padicCompletedUnramifiedFrobeniusIntegerEquiv_coe
 inverse arithmetic Frobenius on the fraction field. -/
 @[simp]
 theorem padicCompletedUnramifiedFrobeniusIntegerEquiv_symm_coe
-    (p : ℕ) [Fact p.Prime]
     (x : (padicCompletedUnramifiedCompleteDVF p).valuationSubring) :
     (((padicCompletedUnramifiedFrobeniusIntegerEquiv p).symm x :
         (padicCompletedUnramifiedCompleteDVF p).valuationSubring) :
@@ -142,8 +140,7 @@ theorem padicCompletedUnramifiedFrobeniusIntegerEquiv_symm_coe
 /-- The inverse of a unit-indexed completed Frobenius lift acts on base
 scalars through inverse arithmetic Frobenius. -/
 @[simp]
-theorem padicCompletedUnitFrobeniusLiftEquiv_symm_algebraMap
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
+theorem padicCompletedUnitFrobeniusLiftEquiv_symm_algebraMap (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ)
     (b : padicCompletedUnramifiedField p) :
     (padicCompletedUnitFrobeniusLiftEquiv p n u).symm
@@ -153,18 +150,20 @@ theorem padicCompletedUnitFrobeniusLiftEquiv_symm_algebraMap
         (padicCompletedLevelField p n)
         ((padicCompletedUnramifiedFrobenius p).symm b) := by
   apply (padicCompletedUnitFrobeniusLiftEquiv p n u).injective
-  rw [(padicCompletedUnitFrobeniusLiftEquiv p n u).apply_symm_apply,
-    padicCompletedUnitFrobeniusLiftEquiv_algebraMap,
-    (padicCompletedUnramifiedFrobenius p).apply_symm_apply]
+  simp
 
+end
+
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ) (u : (padicLocalField p).valuationSubringˣ)
+    (x : padicCompletedLevelField p n)
+    (hx : x ∈ (padicCompletedLevelCompleteDVF p n).valuation.valuationSubring)
+
+include hx in
 /-- A unit-indexed completed Frobenius lift carries every element of the
 selected completed-level valuation ring back into that valuation ring. -/
-theorem padicCompletedUnitFrobeniusLiftEquiv_mem_valuationSubring
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
-    (x : padicCompletedLevelField p n)
-    (hx :
-      x ∈ (padicCompletedLevelCompleteDVF p n).valuation.valuationSubring) :
+theorem padicCompletedUnitFrobeniusLiftEquiv_mem_valuationSubring :
     padicCompletedUnitFrobeniusLiftEquiv p n u x ∈
       (padicCompletedLevelCompleteDVF p n).valuation.valuationSubring := by
   let base := padicCompletedUnramifiedCompleteDVF p
@@ -208,14 +207,10 @@ theorem padicCompletedUnitFrobeniusLiftEquiv_mem_valuationSubring
   rw [← hz]
   exact z.property
 
+include hx in
 /-- The inverse of a unit-indexed completed Frobenius lift also preserves
 the selected completed-level valuation ring. -/
-theorem padicCompletedUnitFrobeniusLiftEquiv_symm_mem_valuationSubring
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
-    (x : padicCompletedLevelField p n)
-    (hx :
-      x ∈ (padicCompletedLevelCompleteDVF p n).valuation.valuationSubring) :
+theorem padicCompletedUnitFrobeniusLiftEquiv_symm_mem_valuationSubring :
     (padicCompletedUnitFrobeniusLiftEquiv p n u).symm x ∈
       (padicCompletedLevelCompleteDVF p n).valuation.valuationSubring := by
   let base := padicCompletedUnramifiedCompleteDVF p
@@ -261,6 +256,8 @@ theorem padicCompletedUnitFrobeniusLiftEquiv_symm_mem_valuationSubring
   rw [← hz]
   exact z.property
 
+end
+
 /-- Membership in the selected completed-level valuation ring is invariant
 under every unit-indexed completed Frobenius lift. -/
 theorem padicCompletedUnitFrobeniusLiftEquiv_mem_valuationSubring_iff
@@ -271,19 +268,19 @@ theorem padicCompletedUnitFrobeniusLiftEquiv_mem_valuationSubring_iff
       padicCompletedUnitFrobeniusLiftEquiv p n u x ∈
         (padicCompletedLevelCompleteDVF p n).valuation.valuationSubring := by
   constructor
-  · exact padicCompletedUnitFrobeniusLiftEquiv_mem_valuationSubring p n u x
+  · apply padicCompletedUnitFrobeniusLiftEquiv_mem_valuationSubring
   · intro hx
-    have hback :=
-      padicCompletedUnitFrobeniusLiftEquiv_symm_mem_valuationSubring
-        p n u
-        (padicCompletedUnitFrobeniusLiftEquiv p n u x) hx
-    simpa using hback
+    simpa using (padicCompletedUnitFrobeniusLiftEquiv_symm_mem_valuationSubring
+      p n u
+      (padicCompletedUnitFrobeniusLiftEquiv p n u x) hx)
+
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ) (u : (padicLocalField p).valuationSubringˣ)
 
 /-- The actual valuation-ring automorphism induced by a unit-indexed
 completed Frobenius lift. -/
-noncomputable def padicCompletedUnitFrobeniusIntegerEquiv
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
+noncomputable def padicCompletedUnitFrobeniusIntegerEquiv :
     (padicCompletedLevelCompleteDVF p n).valuationSubring ≃+*
       (padicCompletedLevelCompleteDVF p n).valuationSubring :=
   higherPrincipalUnitGroup.valuationSubringRingEquivOfPreserves
@@ -296,8 +293,6 @@ noncomputable def padicCompletedUnitFrobeniusIntegerEquiv
 the ambient field automorphism. -/
 @[simp]
 theorem padicCompletedUnitFrobeniusIntegerEquiv_coe
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
     (x : (padicCompletedLevelCompleteDVF p n).valuationSubring) :
     ((padicCompletedUnitFrobeniusIntegerEquiv p n u x :
         (padicCompletedLevelCompleteDVF p n).valuationSubring) :
@@ -306,44 +301,15 @@ theorem padicCompletedUnitFrobeniusIntegerEquiv_coe
         (x : padicCompletedLevelField p n) :=
   rfl
 
-/-- Coercion of the inverse integral completed Frobenius restriction agrees
-with the inverse ambient field automorphism. -/
-@[simp]
-theorem padicCompletedUnitFrobeniusIntegerEquiv_symm_coe
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring) :
-    (((padicCompletedUnitFrobeniusIntegerEquiv p n u).symm x :
-        (padicCompletedLevelCompleteDVF p n).valuationSubring) :
-      padicCompletedLevelField p n) =
-      (padicCompletedUnitFrobeniusLiftEquiv p n u).symm
-        (x : padicCompletedLevelField p n) := by
-  apply (padicCompletedUnitFrobeniusLiftEquiv p n u).injective
-  rw [(padicCompletedUnitFrobeniusLiftEquiv p n u).apply_symm_apply]
-  simpa using
-    (padicCompletedUnitFrobeniusIntegerEquiv_coe
-      p n u
-      ((padicCompletedUnitFrobeniusIntegerEquiv p n u).symm x)).symm
-
 /-- The integral completed Frobenius restriction is continuous for the
 maximal-ideal adic topology. -/
-theorem padicCompletedUnitFrobeniusIntegerEquiv_continuous
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicCompletedUnitFrobeniusIntegerEquiv_continuous :
     Continuous (padicCompletedUnitFrobeniusIntegerEquiv p n u) := by
   let target := padicCompletedLevelCompleteDVF p n
-  let σ : padicCompletedLevelField p n ≃+*
-      padicCompletedLevelField p n :=
+  let σ :=
     padicCompletedUnitFrobeniusLiftEquiv p n u
-  let hpreserve :
-      ∀ x : padicCompletedLevelField p n,
-        x ∈ target.valuation.valuationSubring ↔
-          σ x ∈ target.valuation.valuationSubring :=
-    padicCompletedUnitFrobeniusLiftEquiv_mem_valuationSubring_iff p n u
-  let r : target.valuationSubring ≃+* target.valuationSubring :=
-    padicCompletedUnitFrobeniusIntegerEquiv p n u
-  apply continuous_of_continuousAt_zero r
-  rw [ContinuousAt, map_zero]
+  apply continuous_of_continuousAt_zero (padicCompletedUnitFrobeniusIntegerEquiv p n u)
+  simp [ContinuousAt]
   have hadic : IsAdic target.maximalIdeal := rfl
   apply (hadic.hasBasis_nhds_zero.tendsto_right_iff).2
   intro m _
@@ -352,13 +318,11 @@ theorem padicCompletedUnitFrobeniusIntegerEquiv_continuous
   intro x hx
   exact
     (higherPrincipalUnitGroup.valuationSubringRingEquivOfPreserves_mem_maximalIdeal_pow_iff
-        target σ hpreserve m x).2 hx
+        target σ (padicCompletedUnitFrobeniusLiftEquiv_mem_valuationSubring_iff p n u) m x).2 hx
 
 /-- The integral completed Frobenius restriction transports the canonical
 Witt coefficient map by Witt-vector Frobenius. -/
 theorem padicCompletedUnitFrobeniusIntegerEquiv_wittCoefficientHom
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
     (a : padicCompletedUnramifiedWittRing p) :
     padicCompletedUnitFrobeniusIntegerEquiv p n u
         (padicCompletedLevelWittCoefficientHom p n a) =
@@ -374,42 +338,24 @@ theorem padicCompletedUnitFrobeniusIntegerEquiv_wittCoefficientHom
             (WittVector.frobenius a) :
           (padicCompletedLevelCompleteDVF p n).valuationSubring) :
         padicCompletedLevelField p n))
-  rw [padicCompletedLevelWittCoefficientHom_apply,
-    padicCompletedUnitFrobeniusLiftEquiv_algebraMap,
-    padicCompletedUnramifiedFrobenius_algebraMap_witt,
-    padicCompletedLevelWittCoefficientHom_apply]
+  simp
 
-private theorem padicCompletedHasEval_map_continuous
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (r :
-      (padicCompletedLevelCompleteDVF p n).valuationSubring →+*
-        (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hr : Continuous r)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x) :
-    PowerSeries.HasEval (r x) :=
-  hx.map hr
+end
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ) (u : (padicLocalField p).valuationSubringˣ)
 
 /-- A convergent completed-level evaluation point remains convergent after
 applying the integral completed Frobenius restriction. -/
 theorem padicCompletedUnitFrobeniusIntegerEquiv_hasEval
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
     (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
     (hx : PowerSeries.HasEval x) :
     PowerSeries.HasEval
-      (padicCompletedUnitFrobeniusIntegerEquiv p n u x) := by
-  exact
-    padicCompletedHasEval_map_continuous p n
-      (padicCompletedUnitFrobeniusIntegerEquiv p n u).toRingHom
-      (padicCompletedUnitFrobeniusIntegerEquiv_continuous p n u) x hx
+      (padicCompletedUnitFrobeniusIntegerEquiv p n u x) := hx.map (padicCompletedUnitFrobeniusIntegerEquiv_continuous p n u)
 
 /-- Convergent completed-level evaluation is semilinear for every
 unit-indexed completed Frobenius lift: the point is acted on by the
 integral lift and coefficients by Witt Frobenius. -/
 theorem padicCompletedUnitFrobeniusIntegerEquiv_evaluation
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
     (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
     (hx : PowerSeries.HasEval x)
     (f : PowerSeries (padicCompletedUnramifiedWittRing p)) :
@@ -456,28 +402,17 @@ theorem padicCompletedUnitFrobeniusIntegerEquiv_evaluation
 /-- The integral completed Frobenius restriction sends the chosen
 primitive point to its actual completed standard unit translate. -/
 @[simp]
-theorem padicCompletedUnitFrobeniusIntegerEquiv_primitiveRoot
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicCompletedUnitFrobeniusIntegerEquiv_primitiveRoot :
     padicCompletedUnitFrobeniusIntegerEquiv p n u
         (padicCompletedPrimitiveRootInteger p n) =
       padicCompletedStandardPrimitivePointUnitAction p n u := by
-  apply Subtype.ext
-  change
-    padicCompletedUnitFrobeniusLiftEquiv p n u
-        (padicCompletedPrimitiveRoot p n) =
-      (((padicCompletedStandardPrimitivePointUnitAction p n u :
-          (padicCompletedLevelCompleteDVF p n).valuationSubring) :
-        padicCompletedLevelField p n))
-  exact padicCompletedUnitFrobeniusLiftEquiv_primitiveRoot p n u
+  solve_by_elim [padicCompletedUnitFrobeniusLiftEquiv_primitiveRoot, Subtype.ext]
 
 /-- The integral completed Frobenius restriction sends the genuine
 multiplicative primitive point to its actual multiplicative unit
 translate. -/
 theorem
-    padicCompletedUnitFrobeniusIntegerEquiv_multiplicativePrimitivePoint
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
+    padicCompletedUnitFrobeniusIntegerEquiv_multiplicativePrimitivePoint :
     padicCompletedUnitFrobeniusIntegerEquiv p n u
         (padicCompletedMultiplicativePrimitivePoint p n) =
       padicCompletedMultiplicativePrimitivePointUnitAction p u n := by
@@ -492,14 +427,13 @@ theorem
     simpa only [r, lambda] using
       padicCompletedUnitFrobeniusIntegerEquiv_primitiveRoot p n u
   calc
-    r (padicCompletedMultiplicativePrimitivePoint p n) =
+    _ =
         padicCompletedLevelPowerSeriesEval p n
           (r lambda)
           (padicCompletedUnitFrobeniusIntegerEquiv_hasEval
             p n u lambda hlambda)
           (PowerSeries.map WittVector.frobenius H) := by
-      simpa only [r, lambda, hlambda, H,
-        padicCompletedMultiplicativePrimitivePoint] using
+      simpa [padicCompletedMultiplicativePrimitivePoint] using
         (padicCompletedUnitFrobeniusIntegerEquiv_evaluation
           p n u lambda hlambda H)
     _ =
@@ -509,21 +443,9 @@ theorem
           H := by
       rw [padicCompletedStandardToMultiplicativeIntertwiner_frobenius]
       exact
-        padicCompletedLevelPowerSeriesEval_congr_point p n
-          (padicCompletedUnitFrobeniusIntegerEquiv_hasEval
-            p n u lambda hlambda)
-          (padicCompletedStandardPrimitivePointUnitAction_hasEval p n u)
-          hpoint H
+        (by apply padicCompletedLevelPowerSeriesEval_congr_point <;> assumption)
     _ = padicCompletedMultiplicativePrimitivePointUnitAction p u n := by
-      simpa only [lambda, hlambda, H,
-        padicCompletedStandardPrimitivePointUnitAction,
-        padicCompletedMultiplicativePrimitivePointUnitAction,
-        padicCompletedMultiplicativeUnitEndomorphism,
-        padicCompletedMultiplicativeScalarEndomorphismValue,
-        padicCompletedMultiplicativePrimitivePoint] using
-        (padicCompletedStandardToMultiplicativeIntertwiner_eval_endomorphism
-          p n lambda hlambda
-            (u : (padicLocalField p).valuationSubring))
+      apply padicCompletedStandardToMultiplicativeIntertwiner_eval_endomorphism
 
 end LubinTate
 

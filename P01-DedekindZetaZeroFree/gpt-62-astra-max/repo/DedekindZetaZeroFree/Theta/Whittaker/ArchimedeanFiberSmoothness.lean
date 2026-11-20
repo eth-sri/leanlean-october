@@ -12,8 +12,8 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory KPGlobalResidualConstruction KPLiteralChamber
 open scoped NumberField Classical Topology ContDiff
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem theta_left_chart_contDiffOn {Q : AdmissibleFlatSources R}
     (T : Realization R Q) (v : R.A.UnitQuotient) (g : Group R) :
@@ -46,7 +46,6 @@ theorem upperArch_eq_leftChart (x : mixedEmbedding.mixedSpace F) :
   intro p
   cases p with
   | inr p =>
-    change KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) 0 = 1
     exact KPStandardLocalRootLifts.N_zero F R.A.zeta12 R.A.primitive_zeta12 _
   | inl w =>
     change KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w)
@@ -62,10 +61,9 @@ theorem mixed_upper_coordinate (w : InfinitePlace F) (x : mixedEmbedding.mixedSp
       (KPHilbert.infinite_isComplex F R.A.zeta12 R.A.primitive_zeta12 w))
         ((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x w) =
       x.2 ⟨w, KPHilbert.infinite_isComplex F R.A.zeta12 R.A.primitive_zeta12 w⟩ := by
-  have h := congrArg (fun y : mixedEmbedding.mixedSpace F =>
+  exact congrArg (fun y : mixedEmbedding.mixedSpace F =>
     y.2 ⟨w, KPHilbert.infinite_isComplex F R.A.zeta12 R.A.primitive_zeta12 w⟩)
       ((InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply x)
-  exact h
 
 theorem thetaFiber_arch_lift_contDiff {Q : AdmissibleFlatSources R}
     (T : Realization R Q) (v : R.A.UnitQuotient) (g : Group R) :
@@ -81,12 +79,10 @@ theorem thetaFiber_arch_lift_contDiff {Q : AdmissibleFlatSources R}
     intro i
     dsimp only [c]
     split_ifs <;> fun_prop
-  have hcd : Set.MapsTo c Set.univ (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) := by
-    intro x _ w
-    simp [c]
-  have hs := (theta_left_chart_contDiffOn R T v g).comp hc.contDiffOn hcd
   apply contDiffOn_univ.mp
-  convert hs using 1
+  convert ((theta_left_chart_contDiffOn R T v g).comp hc.contDiffOn (by
+    intro x _ w
+    simp [c])) using 1
   funext x
   rw [smoothArchInclusion, thetaFiber_mk, upperArch_eq_leftChart]
   congr 2

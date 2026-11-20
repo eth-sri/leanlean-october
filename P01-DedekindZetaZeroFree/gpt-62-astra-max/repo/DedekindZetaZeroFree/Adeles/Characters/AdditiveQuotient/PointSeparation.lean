@@ -21,13 +21,12 @@ theorem additiveAdeleQuotient_characters_separate
   have hp : p x ≠ p y := by
     intro h
     apply hKxy
-    change p (x - y) = 0
     rw [map_sub, h, sub_self]
   obtain ⟨e⟩ := (finiteLevel_single_torus K hKc hKo).2.2.2
   obtain ⟨ψ, hψ, hψxy⟩ := unitAddTorus_characters_separate (e (p x)) (e (p y))
     (fun h => hp (e.injective h))
   let χ := ψ.compAddMonoidHom (e.toAddEquiv.toAddMonoidHom.comp p)
   refine ⟨χ, ?_, hψxy⟩
-  exact hψ.comp (e.continuous.comp (QuotientAddGroup.continuous_mk (N := finiteLevelImage K)))
+  exact hψ.comp (e.continuous.comp (QuotientAddGroup.continuous_mk))
 
 end DedekindZetaZeroFree.AdelicSeparation

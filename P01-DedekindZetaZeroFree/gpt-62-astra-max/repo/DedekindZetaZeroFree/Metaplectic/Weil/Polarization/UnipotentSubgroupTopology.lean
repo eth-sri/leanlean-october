@@ -10,13 +10,7 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.KPSpatialSmoothing
 open KPGlobalTorusFunctionData
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing renaming inBorel → inBorel
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing renaming cToBorel → cToBorel
-open _root_.DedekindZetaZeroFree.ActualBorelRetraction renaming projected_root → projected_root
-open _root_.DedekindZetaZeroFree.ActualBorelRetraction renaming upper_entries → upper_entries
-open _root_.DedekindZetaZeroFree.ActualBorelRetraction renaming upper → upper
-open _root_.DedekindZetaZeroFree.ActualBorelRetraction renaming factor_torus → factor_torus
-open _root_.DedekindZetaZeroFree.ActualBorelRetraction renaming factor → factor
+open _root_.DedekindZetaZeroFree.ActualBorelRetraction (projected_root upper_entries upper factor_torus factor)
 
 set_option maxHeartbeats 1800000
 set_option backward.isDefEq.respectTransparency false
@@ -101,41 +95,24 @@ private theorem root_continuous : Continuous (KPGlobalTorusFunctionData.N F ζ h
 
 private theorem upper_preimage_zero (A : AdelicMatrixGroup F)
     (h : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A ∈ ordinaryBorel F) :
-    A 1 0 = 0 := by
-  obtain ⟨B, hB, h10⟩ := h
-  obtain ⟨z, hz⟩ := QuotientGroup.eq.mp hB
-  have he : A = B * Matrix.GeneralLinearGroup.scalar (Fin 2) z := by
-    change Matrix.GeneralLinearGroup.scalar (Fin 2) z = B⁻¹ * A at hz
-    rw [hz]; group
-  rw [he]
-  simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.scalar, h10]
+    A 1 0 = 0 := by apply @DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.BorelModulusAndIwasawaContinuity.upper_preimage_zero <;> assumption
 
-private theorem borel_closed : IsClosed (borel F ζ hζ : Set (G F ζ hζ)) := by
-  have ho : IsClosed (ordinaryBorel F : Set (KPAdelicCoverRestrictedProduct.AdelicPGL2 F)) := by
-    rw [← (QuotientGroup.isQuotientMap_mk
-      (KPAdelicCoverRestrictedProduct.scalarSubgroup F)).isClosed_preimage]
-    have he : (QuotientGroup.mk (s := KPAdelicCoverRestrictedProduct.scalarSubgroup F)) ⁻¹'
-        (ordinaryBorel F : Set (KPAdelicCoverRestrictedProduct.AdelicPGL2 F)) =
-        {A : AdelicMatrixGroup F | A 1 0 = 0} := by
-      ext A
-      exact ⟨upper_preimage_zero F A, fun h => ⟨A, rfl, h⟩⟩
-    rw [he]
-    exact isClosed_eq (by fun_prop) continuous_const
-  exact ho.preimage
-    (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous
+private alias borel_closed := DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_isClosed_borel
 
- def matrixX (A : AdelicMatrixGroup F) (h : A 1 0 = 0) : Adeles F :=
+ section
+
+variable (A : AdelicMatrixGroup F) (h : A 1 0 = 0)
+
+def matrixX : Adeles F :=
   ↑((KPGlobalTorusMatrixCertificates.diagonal_units A h).1.unit⁻¹) * A 0 1
 
-private theorem matrixX_spec (A : AdelicMatrixGroup F) (h : A 1 0 = 0) :
+private theorem matrixX_spec :
     A 0 0 * matrixX F A h = A 0 1 := by
   let u := (KPGlobalTorusMatrixCertificates.diagonal_units A h).1.unit
-  have hu : (u : Adeles F) = A 0 0 := (KPGlobalTorusMatrixCertificates.diagonal_units A h).1.unit_spec
   change A 0 0 * (↑u⁻¹ * A 0 1) = _
-  rw [← hu, ← mul_assoc, Units.mul_inv, one_mul]
+  rw [← ((KPGlobalTorusMatrixCertificates.diagonal_units A h).1.unit_spec), ← mul_assoc, Units.mul_inv, one_mul]
 
-private theorem matrixX_formula (A : AdelicMatrixGroup F) (h : A 1 0 = 0) :
+private theorem matrixX_formula :
     matrixX F A h = A 1 1 * ((Matrix.GeneralLinearGroup.det A)⁻¹ : (Adeles F)ˣ).val * A 0 1 := by
   let u := (KPGlobalTorusMatrixCertificates.diagonal_units A h).1.unit
   let v := (KPGlobalTorusMatrixCertificates.diagonal_units A h).2.unit
@@ -147,6 +124,8 @@ private theorem matrixX_formula (A : AdelicMatrixGroup F) (h : A 1 0 = 0) :
   rw [← (KPGlobalTorusMatrixCertificates.diagonal_units A h).2.unit_spec]
   change _ = v.val * ((u * v)⁻¹).val * A 0 1
   simp [mul_inv_rev, ← mul_assoc]
+
+end
 
 private theorem matrixX_continuous :
     Continuous (fun A : {A : AdelicMatrixGroup F | A 1 0 = 0} => matrixX F A.val A.property) := by
@@ -168,7 +147,7 @@ private theorem matrixX_same (A B : AdelicMatrixGroup F) (hA : A 1 0 = 0) (hB : 
     rw [heB]
     simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar]
-    calc A 0 0 * ↑z * matrixX F A hA = (A 0 0 * matrixX F A hA) * ↑z := by ring
+    calc _ = (A 0 0 * matrixX F A hA) * ↑z := by ring
          _ = A 0 1 * ↑z := by rw [matrixX_spec]
   exact ((KPGlobalTorusMatrixCertificates.diagonal_units B hB).1.mul_left_cancel
     (hx.trans (matrixX_spec F B hB).symm))
@@ -200,11 +179,6 @@ private theorem ordinaryX_continuous : Continuous (ordinaryX F) := by
  def coveredX (b : borel F ζ hζ) : Adeles F :=
   ordinaryX F ⟨KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ b.val, b.property⟩
 
-private theorem coveredX_continuous : Continuous (coveredX F ζ hζ) :=
-  (ordinaryX_continuous F).comp
-    (((KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous.comp
-      continuous_subtype_val).subtype_mk _)
-
 private theorem retraction_formula (b : borel F ζ hζ) :
     (ActualBorelRetraction.retraction F ζ hζ b).val = b.val * N F ζ hζ (-coveredX F ζ hζ b) := by
   obtain ⟨A, hA, h10⟩ := b.property
@@ -233,21 +207,16 @@ private theorem retraction_continuous : Continuous (ActualBorelRetraction.retrac
   apply Continuous.subtype_mk
   change Continuous (fun b : borel F ζ hζ => (ActualBorelRetraction.retraction F ζ hζ b).val)
   simp_rw [retraction_formula]
-  exact continuous_subtype_val.mul ((root_continuous F ζ hζ).comp (coveredX_continuous F ζ hζ).neg)
+  exact continuous_subtype_val.mul ((root_continuous F ζ hζ).comp (((ordinaryX_continuous F).comp
+    (((KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous.comp
+      continuous_subtype_val).subtype_mk _))).neg)
 
 theorem actual_HN_closed_character_continuous
     (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
     IsClosed (actualC F ζ hζ : Set (G F ζ hζ)) ∧
       Continuous (actualChi F ζ hζ) := by
-  have hB := borel_closed F ζ hζ
   have hr := retraction_continuous F ζ hζ
-  have hin : IsClosed (inBorel F ζ hζ : Set (borel F ζ hζ)) :=
-    (P0 F ζ hζ).closed.preimage hr
-  have hC : IsClosed (actualC F ζ hζ : Set (G F ζ hζ)) := by
-    unfold actualC
-    rw [Subgroup.coe_map]
-    exact hB.isClosedEmbedding_subtypeVal.isClosed_iff_image_isClosed.mp hin
   have hh : Continuous (actualHCoordinate F ζ hζ) := by
     apply Continuous.subtype_mk
     exact hr.comp (Continuous.subtype_mk continuous_subtype_val _)
@@ -264,17 +233,15 @@ theorem actual_HN_closed_character_continuous
     rw [he]
     exact (NNReal.continuous_coe.comp (Units.continuous_val.comp
       (KPGlobalCenterRationalCharacter.nu_continuous F ζ hζ))).pow 6
-  have hhalf : Continuous (deltaHalf F ζ hζ) :=
-    Complex.continuous_ofReal.comp (Real.continuous_sqrt.comp hd)
   have hv : Continuous (fun c : actualC F ζ hζ =>
       (actualChi F ζ hζ c : ℂ)) := by
-    change Continuous (fun c : actualC F ζ hζ =>
-      deltaHalf F ζ hζ (actualHCoordinate F ζ hζ c).val *
-        ((P0 F ζ hζ).character (actualHCoordinate F ζ hζ c) : ℂ))
-    exact (hhalf.comp (continuous_subtype_val.comp hh)).mul
+    exact ((Complex.continuous_ofReal.comp (Real.continuous_sqrt.comp hd)).comp (continuous_subtype_val.comp hh)).mul
       (Units.continuous_val.comp ((P0 F ζ hζ).character.continuous.comp hh))
-  exact ⟨hC, Units.continuous_iff.mpr
+  refine ⟨?_, Units.continuous_iff.mpr
     ⟨hv, hv.inv₀ (fun c => Units.ne_zero (actualChi F ζ hζ c))⟩⟩
+  unfold actualC
+  rw [Subgroup.coe_map]
+  exact (borel_closed F ζ hζ).isClosedEmbedding_subtypeVal.isClosed_iff_image_isClosed.mp ((P0 F ζ hζ).closed.preimage hr)
 
 end DedekindZetaZeroFree.KPSpatialSmoothing
 

@@ -39,13 +39,12 @@ theorem finite_word_sum_zero_of_adjoint_pairings
       (∫ x, star ((f i).val x) * leftPairingWordDerivative (w i).reverse g.val x ∂ R.quotientHaar) = 0) :
     g.val = 0 := by
   apply original_zero_of_pairing_self_zero R g
-  have he := finite_word_pairing R s a f g w
   have hp : (∫ x, star (g.val x) * g.val x ∂ R.quotientHaar) =
       ∫ x, star (∑ i ∈ s, a i * leftPairingWordDerivative (w i) (f i).val x) * g.val x ∂ R.quotientHaar := by
     apply integral_congr_ae
     filter_upwards [] with x
     rw [hrep x]
-  apply hp.trans (he.trans ?_)
+  apply hp.trans ((finite_word_pairing R s a f g w).trans ?_)
   apply Finset.sum_eq_zero
   intro i hi
   rw [horth i hi, mul_zero]

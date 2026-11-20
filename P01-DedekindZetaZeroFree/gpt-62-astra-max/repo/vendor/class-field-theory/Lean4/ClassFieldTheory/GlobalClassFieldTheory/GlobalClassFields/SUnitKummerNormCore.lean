@@ -17,15 +17,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -76,13 +67,10 @@ theorem even_or_no_realInfinitePlace_of_primitiveRoots
     have hnLarge : 2 < (n : ℕ) := by
       omega
     obtain ⟨zeta, hzeta⟩ := hmu
-    have hzetaPrimitive :
-        IsPrimitiveRoot zeta (n : ℕ) :=
-      (mem_primitiveRoots n.pos).mp hzeta
     have hRealZero :
         InfinitePlace.nrRealPlaces K = 0 :=
       InfinitePlace.IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt
-        hnLarge hzetaPrimitive
+        hnLarge ((mem_primitiveRoots n.pos).mp hzeta)
     intro w hwReal
     have hRealPos :
         0 < InfinitePlace.nrRealPlaces K :=
@@ -107,35 +95,33 @@ support. -/
 theorem subset_sUnitKummerNormSupport
     (n : ℕ+)
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    S ⊆ sUnitKummerNormSupport (K := K) n S := by
-  intro v hv
-  exact Finset.mem_union_left _
+    S ⊆ sUnitKummerNormSupport (K := K) n S := fun v hv => Finset.mem_union_left _
     (Finset.mem_union_left _ hv)
+
+section
+
+variable (n : ℕ+) (S : Finset (HeightOneSpectrum (𝓞 K)))
 
 /-- Away from the chosen Kummer norm support, the exponent is a local
 unit.  This is the local input needed for the unramifiedness of the full
 `S`-unit Kummer extension. -/
 theorem valuation_natCast_eq_one_of_not_mem_sUnitKummerNormSupport
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     {w : HeightOneSpectrum (𝓞 K)}
     (hw : w ∉ sUnitKummerNormSupport (K := K) n S) :
     w.valuation K ((n : ℕ) : K) = 1 := by
-  let hnK : ((n : ℕ) : K) ≠ 0 := by
-    exact_mod_cast n.ne_zero
-  let nUnit : Kˣ := Units.mk0 ((n : ℕ) : K) hnK
+  let nUnit := Units.mk0 ((n : ℕ) : K) (by
+    exact_mod_cast n.ne_zero)
   have hwSupport :
-      w ∉ chosenUnitFiniteSupport (K := K) nUnit := by
+      w ∉ chosenUnitFiniteSupport nUnit := by
     intro hwSupport
     apply hw
     exact Finset.mem_union_right _ hwSupport
-  have hnUnitVal :
-      w.valuation K (nUnit : K) = 1 :=
+  have hnUnitVal :=
     (mem_SUnitGroup_iff
-      (K := K)
-      (chosenUnitFiniteSupport (K := K) nUnit) nUnit).mp
+
+      (chosenUnitFiniteSupport nUnit) nUnit).mp
         (mem_sUnitGroup_chosenUnitFiniteSupport
-          (K := K) nUnit)
+           nUnit)
         w hwSupport
   change w.valuation K ((n : ℕ) : K) = 1 at hnUnitVal
   exact hnUnitVal
@@ -143,27 +129,21 @@ theorem valuation_natCast_eq_one_of_not_mem_sUnitKummerNormSupport
 /-- Every finite place dividing the exponent belongs to the chosen
 Kummer norm support. -/
 theorem mem_sUnitKummerNormSupport_of_asIdeal_dvd_natCast
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     {w : HeightOneSpectrum (𝓞 K)}
     (hw : w.asIdeal ∣ Ideal.span {((n : ℕ) : 𝓞 K)}) :
     w ∈ sUnitKummerNormSupport (K := K) n S := by
   by_contra hwSupport
-  have hnValLt :
-      w.valuation K ((n : ℕ) : K) < 1 := by
-    simpa using
-      (IsDedekindDomain.HeightOneSpectrum.valuation_lt_one_iff_dvd
-        (K := K) w ((n : ℕ) : 𝓞 K)).2 hw
-  exact
-    (ne_of_lt hnValLt)
+  refine
+    (ne_of_lt ?_)
       (valuation_natCast_eq_one_of_not_mem_sUnitKummerNormSupport
-        (K := K) n S hwSupport)
+         n S hwSupport)
+  simpa using
+  (IsDedekindDomain.HeightOneSpectrum.valuation_lt_one_iff_dvd
+     w ((n : ℕ) : 𝓞 K)).2 hw
 
 /-- The chosen Kummer norm support is large enough to represent every
 idele class by an idele supported on it. -/
-theorem supportedAt_sUnitKummerNormSupport_sup_principalSubgroup_eq_top
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem supportedAt_sUnitKummerNormSupport_sup_principalSubgroup_eq_top :
     IdeleGroup.supportedAt
           (K := K)
           (sUnitKummerNormSupport (K := K) n S : Set _) ⊔
@@ -172,7 +152,7 @@ theorem supportedAt_sUnitKummerNormSupport_sup_principalSubgroup_eq_top
   apply top_unique
   rw [
     ← IdeleGroup.supportedAt_sup_principalSubgroup_eq_top
-      (K := K)]
+      ]
   apply sup_le_sup
   · apply IdeleGroup.supportedAt_mono
     intro v hv
@@ -180,13 +160,17 @@ theorem supportedAt_sUnitKummerNormSupport_sup_principalSubgroup_eq_top
       (Finset.mem_union_right _ hv)
   · exact le_rfl
 
+end
+
+section
+
+variable (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (S : Finset (HeightOneSpectrum (𝓞 K)))
+
+include hmu in
 /-- On the chosen Kummer norm support, the principal part of the
 local power subgroup consists exactly of powers of `S`-units. -/
 theorem
-    principalIdelePowerLocalUnitSubgroup_eq_sUnitNthPowers_on_kummerNormSupport
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+    principalIdelePowerLocalUnitSubgroup_eq_sUnitNthPowers_on_kummerNormSupport :
     let S' := sUnitKummerNormSupport (K := K) n S
     principalIdelePowerLocalUnitSubgroup (K := K) n S' ∅ =
       sUnitNthPowersInField (K := K) n S' := by
@@ -414,12 +398,10 @@ theorem
       sUnitNthPowersInField_le_principalIdelePowerLocalUnitSubgroup
         (K := K) n S' ∅
 
+include hmu in
 /-- The idele-class power quotient attached to the chosen Kummer norm
 support has cardinality `n` to the number of supported places. -/
-theorem card_ideleClassPowerLocalUnitQuotient_on_kummerNormSupport
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem card_ideleClassPowerLocalUnitQuotient_on_kummerNormSupport :
     let S' := sUnitKummerNormSupport (K := K) n S
     Nat.card
         (IdeleClassPowerLocalUnitQuotient
@@ -427,66 +409,61 @@ theorem card_ideleClassPowerLocalUnitQuotient_on_kummerNormSupport
       (n : ℕ) ^ totalPlaceCard (K := K) S' := by
   classical
   dsimp only
-  let S' := sUnitKummerNormSupport (K := K) n S
+  let S' := sUnitKummerNormSupport n S
   change
     Nat.card
         (IdeleClassPowerLocalUnitQuotient
-          (K := K) n S' ∅) =
-      (n : ℕ) ^ totalPlaceCard (K := K) S'
+           n S' ∅) =
+      (n : ℕ) ^ totalPlaceCard S'
   have hPrincipal :
       principalIdelePowerLocalUnitSubgroup
-          (K := K) n S' ∅ =
-        sUnitNthPowersInField (K := K) n S' := by
-    simpa only [S'] using
+           n S' ∅ =
+        sUnitNthPowersInField n S' := by
+    simpa using
       principalIdelePowerLocalUnitSubgroup_eq_sUnitNthPowers_on_kummerNormSupport
-        (K := K) n hmu S
+         n hmu S
   have hDen :
       sUnitPrincipalIdelePowerSubgroup
-          (K := K) n S' ∅ =
+           n S' ∅ =
         (powMonoidHom (n : ℕ) :
-          SUnitGroup (K := K) (S' ∪ ∅) →*
-            SUnitGroup (K := K) (S' ∪ ∅)).range := by
+          SUnitGroup (S' ∪ ∅) →*
+            SUnitGroup (S' ∪ ∅)).range := by
     unfold sUnitPrincipalIdelePowerSubgroup
     rw [Finset.union_empty]
     rw [hPrincipal, sUnitNthPowersInField]
     exact
       Subgroup.comap_map_eq_self_of_injective
-        (SUnitGroup (K := K) S').subtype_injective _
+        (SUnitGroup S').subtype_injective _
   have hDiv :
       ∀ w : HeightOneSpectrum (𝓞 K),
         w.asIdeal ∣
             Ideal.span {((n : ℕ) : 𝓞 K)} →
-          w ∈ S' := by
-    intro w hwDvd
-    exact
-      mem_sUnitKummerNormSupport_of_asIdeal_dvd_natCast
-        (K := K) n S hwDvd
+          w ∈ S' := fun w hwDvd => mem_sUnitKummerNormSupport_of_asIdeal_dvd_natCast
+         n S hwDvd
   have hLarge :
       IdeleGroup.supportedAt
-            (K := K) (S' : Set (HeightOneSpectrum (𝓞 K))) ⊔
+             S' ⊔
           IdeleGroup.principalSubgroup K =
         ⊤ := by
-    simpa only [S'] using
+    simpa using
       supportedAt_sUnitKummerNormSupport_sup_principalSubgroup_eq_top
-        (K := K) n S
+         n S
   have hProduct :=
     card_sUnitPrincipalQuotient_mul_card_ideleClassQuotient_eq_power_two_totalPlaceCard
-      (K := K) n hmu S' ∅ hDiv
+       n hmu S' ∅ hDiv
       (by
-        simpa only [Finset.coe_empty, Set.union_empty] using hLarge)
+        simpa using hLarge)
   rw [hDen,
     card_sUnit_nthPowerQuotient
-      (K := K) (S' ∪ ∅) n hmu] at hProduct
+       (S' ∪ ∅) n hmu] at hProduct
   simp only [Finset.union_empty] at hProduct
-  have hPower :
-      (n : ℕ) ^ (2 * totalPlaceCard (K := K) S') =
-        (n : ℕ) ^ totalPlaceCard (K := K) S' *
-          (n : ℕ) ^ totalPlaceCard (K := K) S' := by
-    rw [two_mul, pow_add]
-  exact
+  refine
     Nat.eq_of_mul_eq_mul_left
-      (pow_pos n.pos (totalPlaceCard (K := K) S'))
-      (hProduct.trans hPower)
+      (pow_pos n.pos (totalPlaceCard S'))
+      (hProduct.trans ?_)
+  rw [two_mul, pow_add]
+
+end
 
 /-- The power quotient on the chosen support has the same cardinality
 as the degree of the full `S`-unit Kummer extension. -/
@@ -511,7 +488,7 @@ theorem
       Module.finrank K E := by
   classical
   dsimp only
-  let S' := sUnitKummerNormSupport (K := K) n S
+  let S' := sUnitKummerNormSupport n S
   let E :=
     fullSUnitKummerExtension
       (K := K) (Omega := Omega) n S'
@@ -526,9 +503,9 @@ theorem
   calc
     Nat.card
           (IdeleClassPowerLocalUnitQuotient
-            (K := K) n S' ∅) =
-        (n : ℕ) ^ totalPlaceCard (K := K) S' := by
-      simpa only [S'] using
+             n S' ∅) =
+        (n : ℕ) ^ totalPlaceCard S' := by
+      simpa using
         card_ideleClassPowerLocalUnitQuotient_on_kummerNormSupport
           (K := K) n hmu S
     _ = Nat.card Gal(E/K) := by

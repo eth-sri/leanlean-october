@@ -51,21 +51,22 @@ theorem allTests_weak_derivative_mollification
       exact ha.le
     exact Metric.mem_cthickening_of_dist_le (a + b) b φ.rOut C (hF_supp hb)
       (by simpa [dist_eq_norm] using ha')
+  let fderiv₀ := fderiv ℝ (φ.normed volume)
   · intro x j
-    have hDρ_cont : Continuous (fderiv ℝ (φ.normed volume)) :=
+    have hDρ_cont : Continuous (fderiv₀) :=
       hρ_cd.continuous_fderiv (by simp)
     have hderiv : fderiv ℝ (convolution (φ.normed volume) F (ContinuousLinearMap.lsmul ℝ ℝ)
           volume) x =
-        (fderiv ℝ (φ.normed volume) ⋆[ContinuousLinearMap.precompL (E n)
+        (fderiv₀ ⋆[ContinuousLinearMap.precompL (E n)
           (ContinuousLinearMap.lsmul ℝ ℝ), volume] F) x :=
       (hρ_cs.hasFDerivAt_convolution_left _ (hρ_cd.of_le (by simp)) hF_li x).fderiv
     rw [hderiv]
     have hi : Integrable (fun t => ContinuousLinearMap.precompL (E n)
-        (ContinuousLinearMap.lsmul ℝ ℝ) (fderiv ℝ (φ.normed volume) t) (F (x - t))) volume :=
+        (ContinuousLinearMap.lsmul ℝ ℝ) (fderiv₀ t) (F (x - t))) volume :=
       (hρ_cs.fderiv ℝ).convolutionExists_left _ hDρ_cont hF_li x
-    have key : ((fderiv ℝ (φ.normed volume) ⋆[ContinuousLinearMap.precompL (E n)
+    have key : ((fderiv₀ ⋆[ContinuousLinearMap.precompL (E n)
           (ContinuousLinearMap.lsmul ℝ ℝ), volume] F) x) (coordinateDirection j) =
-        ((fun t => fderiv ℝ (φ.normed volume) t (coordinateDirection j))
+        ((fun t => fderiv₀ t (coordinateDirection j))
           ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume] F) x := by
       rw [convolution_def, convolution_def, ContinuousLinearMap.integral_apply hi]
       simp only [ContinuousLinearMap.precompL_apply]
@@ -74,14 +75,14 @@ theorem allTests_weak_derivative_mollification
       Complex.ofRealCLM.contDiff.comp (hρ_cd.comp (by fun_prop))
     have hcoord : ∀ y : E n,
         coordinatePartial j (fun y : E n => (φ.normed volume (x - y) : ℂ)) y =
-          -(((fderiv ℝ (φ.normed volume) (x - y) (coordinateDirection j)) : ℝ) : ℂ) := by
+          -(((fderiv₀ (x - y) (coordinateDirection j)) : ℝ) : ℂ) := by
       intro y
       have hd : Differentiable ℝ (φ.normed volume) := hρ_cd.differentiable (by simp)
       have h1 : HasFDerivAt (fun z : E n => φ.normed volume (x - z))
-          ((fderiv ℝ (φ.normed volume) (x - y)).comp (-ContinuousLinearMap.id ℝ (E n))) y :=
+          ((fderiv₀ (x - y)).comp (-ContinuousLinearMap.id ℝ (E n))) y :=
         (hd (x - y)).hasFDerivAt.comp y ((hasFDerivAt_id y).const_sub x)
       have h2 : HasFDerivAt (fun z : E n => (φ.normed volume (x - z) : ℂ))
-          (Complex.ofRealCLM.comp ((fderiv ℝ (φ.normed volume) (x - y)).comp
+          (Complex.ofRealCLM.comp ((fderiv₀ (x - y)).comp
             (-ContinuousLinearMap.id ℝ (E n)))) y :=
         Complex.ofRealCLM.hasFDerivAt.comp y h1
       rw [coordinatePartial, h2.fderiv]
@@ -89,19 +90,19 @@ theorem allTests_weak_derivative_mollification
     apply WithLp.ofLp_injective
     funext a
     show EuclideanSpace.proj a (∫ t,
-          (fderiv ℝ (φ.normed volume) (x - t) (coordinateDirection j)) • F t) =
+          (fderiv₀ (x - t) (coordinateDirection j)) • F t) =
         EuclideanSpace.proj a (∫ t, (φ.normed volume) (x - t) • G j t)
     have hi1 : Integrable (fun t =>
-        (fderiv ℝ (φ.normed volume) t (coordinateDirection j)) • F (x - t)) volume := by
+        (fderiv₀ t (coordinateDirection j)) • F (x - t)) volume := by
       simpa only [ContinuousLinearMap.apply_apply, ContinuousLinearMap.precompL_apply,
         ContinuousLinearMap.lsmul_apply] using
         ContinuousLinearMap.integrable_comp
           (ContinuousLinearMap.apply ℝ (V r) (coordinateDirection j)) hi
     have h1int : Integrable (fun t =>
-        (fderiv ℝ (φ.normed volume) (x - t) (coordinateDirection j)) • F t) volume :=
+        (fderiv₀ (x - t) (coordinateDirection j)) • F t) volume :=
       by simpa only [sub_sub_cancel] using
         (integrable_comp_sub_left (fun s =>
-          (fderiv ℝ (φ.normed volume) s (coordinateDirection j)) • F (x - s)) x).mpr hi1
+          (fderiv₀ s (coordinateDirection j)) • F (x - s)) x).mpr hi1
     have hi2 : Integrable (fun t => (φ.normed volume) t • G j (x - t)) volume :=
       hρ_cs.convolutionExists_left (ContinuousLinearMap.lsmul ℝ ℝ) hρ_cont
         ((hG j).locallyIntegrable (by norm_num)) x
@@ -111,9 +112,9 @@ theorem allTests_weak_derivative_mollification
     rw [← ContinuousLinearMap.integral_comp_comm (EuclideanSpace.proj a) h1int,
       ← ContinuousLinearMap.integral_comp_comm (EuclideanSpace.proj a) h2int]
     have hL : (fun t => EuclideanSpace.proj a
-          ((fderiv ℝ (φ.normed volume) (x - t) (coordinateDirection j)) • F t)) =
+          ((fderiv₀ (x - t) (coordinateDirection j)) • F t)) =
         fun t => (F t) a *
-          ((fderiv ℝ (φ.normed volume) (x - t) (coordinateDirection j)) : ℂ) := by
+          ((fderiv₀ (x - t) (coordinateDirection j)) : ℂ) := by
       funext t; simp [mul_comm]
     have hR : (fun t => EuclideanSpace.proj a ((φ.normed volume) (x - t) • G j t)) =
         fun t => (G j t) a * ((φ.normed volume) (x - t) : ℂ) := by
@@ -122,9 +123,9 @@ theorem allTests_weak_derivative_mollification
     have hw := hweak j (fun y : E n => (φ.normed volume (x - y) : ℂ)) hψ_cd a
     simp_rw [hcoord] at hw
     rw [show (∫ y, (F y) a *
-          (-(((fderiv ℝ (φ.normed volume) (x - y) (coordinateDirection j)) : ℝ) : ℂ))) =
+          (-(((fderiv₀ (x - y) (coordinateDirection j)) : ℝ) : ℂ))) =
         -(∫ y, (F y) a *
-          (((fderiv ℝ (φ.normed volume) (x - y) (coordinateDirection j)) : ℝ) : ℂ)) by
+          (((fderiv₀ (x - y) (coordinateDirection j)) : ℝ) : ℂ)) by
       simp_rw [mul_neg, integral_neg]] at hw
     exact neg_injective hw
 

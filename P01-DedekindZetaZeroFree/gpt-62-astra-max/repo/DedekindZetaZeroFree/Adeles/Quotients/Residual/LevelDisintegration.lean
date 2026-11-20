@@ -10,9 +10,9 @@ namespace DedekindZetaZeroFree.FourierContinuation.ResidualNativeLevel
 universe u v
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 theorem atlasLevel_eq (S : KPMsAngularSourceRecipe.OffsetSourceRecipe F ζ hζ R P H)
     (U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :

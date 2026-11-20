@@ -35,7 +35,7 @@ theorem relative_borel_retract_actual
       · simp [KubotaRankTwo.d]⟩
   let n := S.borel.upperRoot
     (Multiplicative.ofAdd (-(u⁻¹ : (LocalField F q)ˣ) : LocalField F q))
-  have hn : (n : ActualCover F ζ hζ q) =
+  have hn : n =
       KPPGLLocalCover.N F ζ hζ (Sum.inr q)
         (-(u⁻¹ : (LocalField F q)ˣ) : LocalField F q) :=
     (S.openCell P).upper_eq _
@@ -86,16 +86,18 @@ variable (F : Type) [Field F] [NumberField F]
   (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
   (hP : IsTamePolarization F ζ hζ q S P)
 
+local notation "LocalCompletion" => LocalField F q
+
 private theorem relative_borel_cubic_radial_value
     (hnormalized : RawNormalizedExtension F ζ hζ q S P)
-    (v : (KPTameCompact.O F q)ˣ) (y u : (LocalField F q)ˣ)
+    (v : (KPTameCompact.O F q)ˣ) (y u : LocalCompletionˣ)
     (hu : u = KPTameCompact.unitInclusion F q v * y^3)
     (b : BL F ζ hζ q S P)
     (hb : (b : ActualCover F ζ hζ q) =
       KPPGLLocalCover.N F ζ hζ (Sum.inr q)
-          (-(u⁻¹ : (LocalField F q)ˣ) : LocalField F q) *
+          (-(u⁻¹ : LocalCompletionˣ) : LocalCompletion) *
         KPPGLLocalCover.A F ζ hζ (Sum.inr q) (u⁻¹ ^ (2 : ℕ))) :
-    chi F ζ hζ q S P hP .minus b = normPower (LocalField F q) u (-(2/3 : ℂ)) := by
+    chi F ζ hζ q S P hP .minus b = normPower LocalCompletion u (-(2/3 : ℂ)) := by
   have hp : KPPGLLocalCover.A F ζ hζ (Sum.inr q)
       (KPTameCompact.unitInclusion F q (v^2)) *
       KPPGLLocalCover.A F ζ hζ (Sum.inr q) ((y^2)^3) =
@@ -124,19 +126,19 @@ private theorem relative_borel_cubic_radial_value
   have hc : S.borel.coordinate (retractL F ζ hζ q S P b).val = u⁻¹ ^ (2 : ℕ) := by
     exact S.coordinate_lift _ _ (relative_borel_retract_actual F ζ hζ q S P u b hb)
   rw [hc]
-  have hv : localAbs (LocalField F q) (KPTameCompact.unitInclusion F q v) = 1 := by
-    have hv' : valuation (LocalField F q) (KPTameCompact.unitInclusion F q v : LocalField F q) = 1 :=
-      (Valuation.integer.integers (valuation (LocalField F q))).valuation_unit v
+  have hv : localAbs LocalCompletion (KPTameCompact.unitInclusion F q v) = 1 := by
+    have hv' : valuation LocalCompletion (KPTameCompact.unitInclusion F q v : LocalCompletion) = 1 :=
+      (Valuation.integer.integers (valuation LocalCompletion)).valuation_unit v
     simp [localAbs, hv']
-  have hAbs : localAbs (LocalField F q) u = localAbs (LocalField F q) (y^3) := by
+  have hAbs : localAbs LocalCompletion u = localAbs LocalCompletion (y^3) := by
     rw [hu, localAbs_mul, hv, one_mul]
-  have hInv : localAbs (LocalField F q) u⁻¹ = (localAbs (LocalField F q) u)⁻¹ := by
+  have hInv : localAbs LocalCompletion u⁻¹ = (localAbs LocalCompletion u)⁻¹ := by
     apply eq_inv_of_mul_eq_one_left
     rw [← localAbs_mul, inv_mul_cancel, localAbs_one]
-  have hPow : localAbs (LocalField F q) ((y^2)^3) = localAbs (LocalField F q) (y^3) ^ 2 := by
+  have hPow : localAbs LocalCompletion ((y^2)^3) = localAbs LocalCompletion (y^3) ^ 2 := by
     rw [← pow_mul, show (2:ℕ)*3 = 3*2 by norm_num, pow_mul, pow_two, localAbs_mul, pow_two]
   simp only [normPower]
-  rw [hPow, show localAbs (LocalField F q) (u⁻¹^2) = (localAbs (LocalField F q) u)⁻¹^2 by
+  rw [hPow, show localAbs LocalCompletion (u⁻¹^2) = (localAbs LocalCompletion u)⁻¹^2 by
     rw [pow_two, localAbs_mul, hInv, pow_two]]
   rw [Real.log_pow, Real.log_pow, Real.log_inv, hAbs]
   rw [← Complex.exp_add]
@@ -147,39 +149,39 @@ private theorem relative_borel_cubic_radial_value
 theorem eventual_negative_cubic_shell_kernel_value
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (hnormalized : RawNormalizedExtension F ζ hζ q S P)
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) :
+    (π : LocalCompletionˣ)
+    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt LocalCompletion
+      (valuation LocalCompletion (π : LocalCompletion)) = WithZero.exp (-1 : ℤ)) :
     ∃ M : ℕ, ∀ m ≥ M, ∀ f : scalarSections F ζ hζ q S P hP .minus,
     IsMinusTest F ζ hζ q S P hP (diagonalLift F ζ hζ q π (0, 0)) m f →
-    ∀ k : ℕ, ∀ v : (KPTameCompact.O F q)ˣ, ∀ u : (LocalField F q)ˣ,
+    ∀ k : ℕ, ∀ v : (KPTameCompact.O F q)ˣ, ∀ u : LocalCompletionˣ,
     u = KPTameCompact.unitInclusion F q v * (π⁻¹ ^ k)^3 →
     ∀ b : BL F ζ hζ q S P,
     (b : ActualCover F ζ hζ q) =
       KPPGLLocalCover.N F ζ hζ (Sum.inr q)
-        (-(u⁻¹ : (LocalField F q)ˣ) : LocalField F q) *
+        (-(u⁻¹ : LocalCompletionˣ) : LocalCompletion) *
       KPPGLLocalCover.A F ζ hζ (Sum.inr q) (u⁻¹ ^ (2 : ℕ)) →
-    ∀ s : ℂ, ∀ x : LocalField F q,
+    ∀ s : ℂ, ∀ x : LocalCompletion,
     ((KPTameTransposeKernelUnfolding.deformedTest F ζ hζ q S P hP f s).val
-      (KPRankOneShellContinuation.kernelW (LocalField F q) S.borel .minus *
-        KPPGLLocalCover.N F ζ hζ (Sum.inr q) (u : LocalField F q) *
+      (KPRankOneShellContinuation.kernelW LocalCompletion S.borel .minus *
+        KPPGLLocalCover.N F ζ hζ (Sum.inr q) (u : LocalCompletion) *
         (eta F ζ hζ q π (0 : Fin 3) * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
           KPPGLLocalCover.N F ζ hζ (Sum.inr q) x))).val 1 =
-    normPower (LocalField F q) u (2*s-2/3) *
+    normPower LocalCompletion u (2*s-2/3) *
       (DiagonalLiftGeometry.diagonalAnchorTwist F ζ hζ q S π 0 s *
         (rootLevelSet F ζ hζ q m).indicator
-          (fun _ => (1 : ℂ)) (x + 1 / (u : LocalField F q))) := by
+          (fun _ => (1 : ℂ)) (x + 1 / (u : LocalCompletion))) := by
   obtain ⟨M, hM⟩ := DiagonalLiftGeometry.eventual_deformed_test_kernel_profile F ζ hζ q S P hP htame π hπ
   refine ⟨M, fun m hm f hf k v u hu b hb s x => ?_⟩
-  rw [hM m hm 0 f (by simpa only [Fin.val_zero, Int.ofNat_zero] using hf) u b hb s x,
+  rw [hM m hm 0 f (by simpa using hf) u b hb s x,
     relative_borel_cubic_radial_value F ζ hζ q S P hP hnormalized v (π⁻¹^k) u hu b hb]
   simp only [Fin.val_zero, pow_zero, Units.val_one, one_div]
-  have hi : localAbs (LocalField F q) u⁻¹ = (localAbs (LocalField F q) u)⁻¹ := by
+  have hi : localAbs LocalCompletion u⁻¹ = (localAbs LocalCompletion u)⁻¹ := by
     apply eq_inv_of_mul_eq_one_left
     rw [← localAbs_mul, inv_mul_cancel, localAbs_one]
-  have hnp : normPower (LocalField F q) u (-(2/3 : ℂ)) *
-      normPower (LocalField F q) (u⁻¹^2) (KPRankOneShellContinuation.sourceParameter .minus s) =
-      normPower (LocalField F q) u (2*s-2/3) := by
+  have hnp : normPower LocalCompletion u (-(2/3 : ℂ)) *
+      normPower LocalCompletion (u⁻¹^2) (KPRankOneShellContinuation.sourceParameter .minus s) =
+      normPower LocalCompletion u (2*s-2/3) := by
     simp only [normPower, KPRankOneShellContinuation.sourceParameter]
     rw [pow_two, localAbs_mul, hi, ← pow_two, Real.log_pow, Real.log_inv, ← Complex.exp_add]
     congr 1
@@ -201,7 +203,7 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPTameJacquetTestDuality KPTameTransposeLiteral KPTameTransposeKernelUnfolding
 open KPRankOneRootParameter KPRankOneShellContinuation
-open _root_.DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.RelativeBorelPhase renaming eventual_negative_cubic_shell_kernel_value → eventual_negative_cubic_shell_kernel_value
+open _root_.DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.RelativeBorelPhase (eventual_negative_cubic_shell_kernel_value)
 variable (F : Type) [Field F] [NumberField F]
  (q : HeightOneSpectrum (𝓞 F))
 
@@ -278,8 +280,9 @@ theorem eventual_negative_cubic_shell_outer_mass_value
    F ζ hζ q S P hP htame π hπ .minus
  refine ⟨max M D, fun m hm f hf k v u hu b hb s => ?_⟩
  obtain ⟨K, hK, hc, hn, hd, hr, ho, hz, hs, hchart⟩ := hD m ((le_max_right M D).trans hm)
+ let valuation₀ := valuation (LocalField F q)
  have hφ : Function.support ((rootLevelSet F ζ hζ q m).indicator (fun _ => (1 : ℂ))) ⊆
-     (valuation (LocalField F q)).integer := by
+     (valuation₀).integer := by
    intro x hx
    apply hs
    by_contra h
@@ -294,7 +297,7 @@ theorem eventual_negative_cubic_shell_outer_mass_value
      ← zpow_natCast _ k, KPCubicExpansion.valuationExponent_zpow,
      ← zpow_neg_one π, KPCubicExpansion.valuationExponent_zpow, hp]
    ring
- have hi : (u : LocalField F q)⁻¹ ∈ (valuation (LocalField F q)).integer := by
+ have hi : (u : LocalField F q)⁻¹ ∈ (valuation₀).integer := by
    rw [← Units.val_inv_eq_inv_val]
    rw [RootResidualGeometry.unit_mem_integer_iff_exponent_nonneg,
      ← zpow_neg_one u, KPCubicExpansion.valuationExponent_zpow, he]
@@ -308,14 +311,14 @@ theorem eventual_negative_cubic_shell_outer_mass_value
    exact negative_cubic_radial_weight F q π hπ k v s]
  rw [integral_const_mul, integral_const_mul]
  congr 2
- change (∫ x in (valuation (LocalField F q)).integer, _ ∂μ) = _
+ change (∫ x in (valuation₀).integer, _ ∂μ) = _
  rw [RootResidualGeometry.integral_integer_translate_of_support (LocalField F q) μ _ hφ _ (by simpa only [one_div] using hi)]
- rw [← integral_indicator (valuation (LocalField F q)).isClosed_integer.measurableSet]
- have hind : ((valuation (LocalField F q)).integer : Set (LocalField F q)).indicator
+ rw [← integral_indicator (valuation₀).isClosed_integer.measurableSet]
+ have hind : ((valuation₀).integer : Set (LocalField F q)).indicator
      ((rootLevelSet F ζ hζ q m).indicator (fun _ => (1 : ℂ))) =
      (rootLevelSet F ζ hζ q m).indicator (fun _ => (1 : ℂ)) := by
    funext x
-   by_cases hx : x ∈ (valuation (LocalField F q)).integer
+   by_cases hx : x ∈ (valuation₀).integer
    · simp [Set.indicator_of_mem hx]
    · have hx' : x ∉ rootLevelSet F ζ hζ q m := fun h => hx (hs h)
      simp [Set.indicator_of_notMem hx, Set.indicator_of_notMem hx']
@@ -340,9 +343,9 @@ open KPRankOneRootParameter KPTameJacquetTestDuality
 open KPTameTransposeKernelUnfolding KPTameValuationCoordinates KPRankOneShellContinuation
 open KPTameTransposeLiteral
 
-open _root_.DedekindZetaZeroFree.KPTameValuationCoordinates renaming unit_of_exponent_zero → unit_of_exponent_zero
-open _root_.DedekindZetaZeroFree.NonarchimedeanHaarScaling renaming char_abs → char_abs
-open _root_.DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.RelativeBorelPhase renaming eventual_negative_cubic_shell_outer_mass_value → eventual_negative_cubic_shell_outer_mass_value
+open _root_.DedekindZetaZeroFree.KPTameValuationCoordinates (unit_of_exponent_zero)
+open _root_.DedekindZetaZeroFree.NonarchimedeanHaarScaling (char_abs)
+open _root_.DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.RelativeBorelPhase (eventual_negative_cubic_shell_outer_mass_value)
 variable (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
 private theorem shell_units (π : (LocalField F q)ˣ)
  (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
@@ -352,10 +355,9 @@ private theorem shell_units (π : (LocalField F q)ˣ)
  (w : LocalField F q) = u ∧ w = KPTameCompact.unitInclusion F q v * (π⁻¹ ^ k)^3 := by
  change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
   (valuation (LocalField F q) u) = WithZero.exp (3*(k : ℤ)) at hu
- have hn : u ≠ 0 := by
-  intro h
-  simpa [h] using hu.symm
- let w := Units.mk0 u hn
+ let w := Units.mk0 u (by
+   intro h
+   simpa [h] using hu.symm)
  have hw : KPCubicExpansion.valuationExponent (LocalField F q) w = -(3*(k : ℤ)) := by
   simp only [KPCubicExpansion.valuationExponent, w, Units.val_mk0, hu, WithZero.log_exp]
  have hp : KPCubicExpansion.valuationExponent (LocalField F q) π = 1 := by
@@ -388,8 +390,7 @@ private theorem integer_units_set :
  · intro hx
    refine ⟨hx.le, ?_⟩
    rintro ⟨a, ha, he⟩
-   have hu : IsUnit a := (Valuation.Integers.isUnit_iff_valuation_eq_one (Valuation.integer.integers (valuation (LocalField F q)))).mpr (he ▸ hx)
-   exact (IsLocalRing.mem_maximalIdeal a).mp ha hu
+   exact (IsLocalRing.mem_maximalIdeal a).mp ha ((Valuation.Integers.isUnit_iff_valuation_eq_one (Valuation.integer.integers (valuation (LocalField F q)))).mpr (he ▸ hx))
 private theorem shell_smul (π : (LocalField F q)ˣ)
  (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
  (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) (k : ℕ) :
@@ -426,7 +427,6 @@ private theorem shell_mass (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
   simp only [KPCubicHaar.abs, Units.val_pow_eq_pow_val, Units.val_inv_eq_inv_val, map_pow, map_inv₀, hπ, ← WithZero.exp_neg, ← WithZero.exp_nsmul, WithZero.log_exp]
   rw [ite_eq_right (pow_ne_zero 3 (pow_ne_zero k (inv_ne_zero π.ne_zero)))]
   simp only [neg_neg, nsmul_eq_mul, mul_one, Nat.cast_ofNat]
-  change (residueCardinality (LocalField F q) : ℝ) ^ (3*(k : ℤ)) = _
   norm_cast
  rw [habs, integer_units_set F q]
  rfl
@@ -454,10 +454,8 @@ private theorem relative_exists (v : (KPTameCompact.O F q)ˣ) (y u : (LocalField
   exact S.cubeClassEquiv.injective he ▸ hd
  let b := S.borel.upperRoot (Multiplicative.ofAdd (-(u⁻¹ : (LocalField F q)ˣ) : LocalField F q)) * S.borel.torus a
  have hb : b ∈ (HL F ζ hζ q S P).comap S.borel.retract := by
-  change S.borel.retract b ∈ HL F ζ hζ q S P
   simpa [b, map_mul, S.borel.retract_upperRoot, S.borel.retract_torus] using ha
  refine ⟨⟨b.val, ⟨b, hb, rfl⟩⟩, ?_⟩
- change (b : ActualCover F ζ hζ q) = _
  simp only [b, Subgroup.coe_mul, (S.openCell P).upper_eq, S.torus_full]
  rfl
 
@@ -495,15 +493,14 @@ theorem eventual_baseChart_reverse_cube_shell_coefficient
   obtain ⟨M₃, hM₃⟩ := eventual_negative_cubic_shell_outer_mass_value F q ζ hζ S P hP μ htame hnormalized π hπ
   refine ⟨max M₁ (max M₂ M₃), fun m hm k s hs => ?_⟩
   obtain ⟨f, hf⟩ := hM₁ m ((le_max_left _ _).trans hm)
-  have hm₂ := (le_max_left M₂ M₃).trans ((le_max_right M₁ _).trans hm)
-  have hm₃ := (le_max_right M₂ M₃).trans ((le_max_right M₁ _).trans hm)
+  let residueCardinality₀ := residueCardinality (LocalField F q)
   have hinner : ∀ u ∈ expandingReverseCubeShell F q k,
     (∫ x in lowShell F q, chartDeformedScalar F ζ hζ q S P hP
       (diagonalLift F ζ hζ q π (0, 0)) m s
       (kernelW (LocalField F q) S.borel .minus * KPPGLLocalCover.N F ζ hζ (Sum.inr q) u *
         (eta F ζ hζ q π (0 : Fin 3) * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
           KPPGLLocalCover.N F ζ hζ (Sum.inr q) x)) ∂μ) =
-    ((residueCardinality (LocalField F q) : ℂ)⁻¹^(2*k) *
+    ((residueCardinality₀ : ℂ)⁻¹^(2*k) *
       (evaluationUnit (LocalField F q) .minus s : ℂ)^(6*k)) *
       (KPTameTransposeLiteralMassTransport.DiagonalLiftGeometry.diagonalAnchorTwist F ζ hζ q S π 0 s *
         (rootMass F ζ hζ q μ m : ℂ)) := by
@@ -511,32 +508,32 @@ theorem eventual_baseChart_reverse_cube_shell_coefficient
     obtain ⟨v, w, hw, he⟩ := shell_units F q π hπ k u hu
     obtain ⟨b, hb⟩ := relative_exists F q ζ hζ S P hP v (π⁻¹^k) w he
     rw [← hw]
-    simp_rw [← hM₂ m hm₂ _ f hf s]
-    exact hM₃ m hm₃ f hf k v w he b hb s
+    simp_rw [← hM₂ m ((le_max_left M₂ M₃).trans ((le_max_right M₁ _).trans hm)) _ f hf s]
+    exact hM₃ m ((le_max_right M₂ M₃).trans ((le_max_right M₁ _).trans hm)) f hf k v w he b hb s
   let := IsTopologicalAddGroup.rightUniformSpace (LocalField F q)
   have := isUniformAddGroup_of_addCommGroup (G := LocalField F q)
+  let valuation₀ := valuation (LocalField F q)
   have hmeas : MeasurableSet (expandingReverseCubeShell F q k) := by
     rw [shell_smul F q π hπ k, ← integer_units_set F q]
     apply MeasurableSet.const_smul
-    exact (valuation (LocalField F q)).isClosed_integer.measurableSet.diff
-      ((MeasurableEmbedding.subtype_coe (valuation (LocalField F q)).isClosed_integer.measurableSet).measurableSet_image.mpr
-        (show MeasurableSet (IsLocalRing.maximalIdeal (valuation (LocalField F q)).integer : Set (valuation (LocalField F q)).integer) from (IsNoetherianRing.isClosed_ideal _).measurableSet))
+    exact (valuation₀).isClosed_integer.measurableSet.diff
+      ((MeasurableEmbedding.subtype_coe (valuation₀).isClosed_integer.measurableSet).measurableSet_image.mpr
+        (show MeasurableSet (IsLocalRing.maximalIdeal (valuation₀).integer : Set (valuation₀).integer) from (IsNoetherianRing.isClosed_ideal _).measurableSet))
   rw [setIntegral_congr_fun hmeas hinner]
   simp only [integral_const, measureReal_restrict_apply_univ, Complex.real_smul]
   rw [shell_mass F q μ π hπ k]
   push_cast
-  have hq : (residueCardinality (LocalField F q) : ℂ) ≠ 0 := by
-    exact_mod_cast (Nat.card_pos (α := 𝓀[LocalField F q])).ne'
   rw [mul_pow, ← pow_mul]
-  have hc : (residueCardinality (LocalField F q) : ℂ)^(3*k) *
-    (residueCardinality (LocalField F q) : ℂ)⁻¹^(2*k) =
-    (residueCardinality (LocalField F q) : ℂ)^k := by
-    rw [show 3*k = k + 2*k by omega, pow_add, mul_assoc, ← mul_pow, mul_inv_cancel₀ hq, one_pow, mul_one]
+  have hc : (residueCardinality₀ : ℂ)^(3*k) *
+    (residueCardinality₀ : ℂ)⁻¹^(2*k) =
+    (residueCardinality₀ : ℂ)^k := by
+    rw [show 3*k = k + 2*k by omega, pow_add, mul_assoc, ← mul_pow, mul_inv_cancel₀ (by
+      exact_mod_cast (Nat.card_pos).ne'), one_pow, mul_one]
   calc
-    _ = ((residueCardinality (LocalField F q) : ℂ)^(3*k) *
-        (residueCardinality (LocalField F q) : ℂ)⁻¹^(2*k)) *
-      (μ.real (((valuation (LocalField F q)).integer : Set (LocalField F q)) \
-        ((valuation (LocalField F q)).integer.subtype '' (IsLocalRing.maximalIdeal (valuation (LocalField F q)).integer : Set (valuation (LocalField F q)).integer))) : ℂ) *
+    _ = ((residueCardinality₀ : ℂ)^(3*k) *
+        (residueCardinality₀ : ℂ)⁻¹^(2*k)) *
+      (μ.real (((valuation₀).integer : Set (LocalField F q)) \
+        ((valuation₀).integer.subtype '' (IsLocalRing.maximalIdeal (valuation₀).integer : Set (valuation₀).integer))) : ℂ) *
       (evaluationUnit (LocalField F q) .minus s : ℂ)^(6*k) *
       (KPTameTransposeLiteralMassTransport.DiagonalLiftGeometry.diagonalAnchorTwist F ζ hζ q S π 0 s *
         (rootMass F ζ hζ q μ m : ℂ)) := by ring

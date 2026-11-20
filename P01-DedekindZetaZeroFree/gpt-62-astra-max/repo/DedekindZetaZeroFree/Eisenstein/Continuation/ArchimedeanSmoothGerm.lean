@@ -12,9 +12,9 @@ open MomentSources ArchSeries
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
-variable {C : ScalarContinuation R Q} {v : R.A.UnitQuotient}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {C : ScalarContinuation R Q} {v : R.A.UnitQuotient}
 
 theorem constructed_arch_germ (H : ScalarGerm C v) :
     ∃ (f : ℂ → ArchSeries.space F R.A.zeta12 R.A.primitive_zeta12) (r : ℝ),
@@ -34,7 +34,7 @@ theorem constructed_arch_germ (H : ScalarGerm C v) :
     F R.A.zeta12 R.A.primitive_zeta12
   obtain ⟨I,_⟩ := KPGlobalTorusFiniteStages.compatibleModelData_exists
     F R.A.zeta12 R.A.primitive_zeta12 L₀
-  obtain ⟨d,E,T,t,hd,hd0,hE,hEc,ht,hb,hdne,hclear,hT⟩ :=
+  obtain ⟨d, E, T, t, hd, hE, hEc, ht, hb, hdne, hclear, hT⟩ :=
     ArchSeries.finite_germ F R.A.zeta12 R.A.primitive_zeta12 I D P L Q.K Q.iwasawa (Q.flat v)
   let r := min t H.radius
   have hr : 0 < r := lt_min ht H.radius_pos

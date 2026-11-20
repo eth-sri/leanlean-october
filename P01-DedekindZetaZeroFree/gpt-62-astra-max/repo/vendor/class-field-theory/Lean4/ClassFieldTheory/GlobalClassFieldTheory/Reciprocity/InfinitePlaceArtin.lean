@@ -16,14 +16,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -89,7 +81,7 @@ omit [NumberField K] [NumberField L] in
   simpa using
     NumberField.ComplexEmbedding.isConj_apply_apply
       (ramifiedInfinitePlaceConjugation_isConj
-        (K := K) w hRamified) x
+         w hRamified) x
 
 /-- The archimedean Artin homomorphism associated with a specified
 infinite place above the base place. -/
@@ -119,7 +111,7 @@ noncomputable def infinitePlaceArtinMonoidHomOfPlace
           · simp
           · simp [
               ramifiedInfinitePlaceConjugation_sq
-                (K := K) w hRamified] }
+                 w hRamified]}
     let completionUnitsEquivRealUnits :
         v.Completionˣ ≃* ℝˣ :=
       Units.mapEquiv
@@ -158,8 +150,7 @@ theorem chosenInfinitePlaceArtinMonoidHom_neg_one_isConj_of_ramified
       (chosenInfinitePlaceArtinMonoidHom
         (K := K) (L := L) v (-1 : v.Completionˣ)) := by
   let w := chosenInfinitePlaceAbove (L := L) v
-  have hw :
-      w.comap (algebraMap K L) = v :=
+  have hw :=
     chosenInfinitePlaceAbove_comap (L := L) v
   have hvReal : v.IsReal := by
     rw [← hw]
@@ -173,15 +164,12 @@ theorem chosenInfinitePlaceArtinMonoidHom_neg_one_isConj_of_ramified
         (-1 : ℤˣ) := by
     apply Units.ext
     simp [LocalClassFieldTheory.realUnitsSign]
-  have hConj :=
-    ramifiedInfinitePlaceConjugation_isConj
-      (K := K) w hRamified
   change
     NumberField.ComplexEmbedding.IsConj
       (InfinitePlace.embedding w)
       (chosenInfinitePlaceArtinMonoidHom
         (K := K) (L := L) v (-1 : v.Completionˣ))
-  have hUnramified : ¬ w.IsUnramified K := hRamified
+  have hUnramified := hRamified
   have hUnramified' :
       ¬ (chosenInfinitePlaceAbove (L := L) v).IsUnramified K := by
     simpa only [w] using hUnramified
@@ -209,11 +197,10 @@ theorem chosenInfinitePlaceArtinMonoidHom_neg_one_isConj_of_ramified
         1
       else
         ramifiedInfinitePlaceConjugation
-          (K := K)
-          (chosenInfinitePlaceAbove (L := L) v)
+
+          (chosenInfinitePlaceAbove v)
           hUnramified')
-  rw [ite_eq_right hsignNe]
-  simpa only [w] using hConj
+  grind [ramifiedInfinitePlaceConjugation_isConj]
 
 end Galois
 
@@ -295,7 +282,7 @@ theorem infinitePlaceArtinMonoidHomOfPlace_eq
       rw [← InfinitePlace.mk_embedding w',
         InfinitePlace.mem_stabilizer_mk_iff] at hsigmaMem'
       exact hsigmaMem'.resolve_left hsigmaNe
-    have hsigmaEq : sigma = sigma' :=
+    have hsigmaEq :=
       hsigmaAtW'.ext hsigma'
     apply MonoidHom.ext
     intro x
@@ -326,24 +313,16 @@ theorem infinitePlaceArtinMonoidHomOfPlace_restrict_tower
         (wL.comap (algebraMap E L)) hwE := by
   let wE := wL.comap (algebraMap E L)
   by_cases hLUnramified : wL.IsUnramified K
-  · have hEUnramified : wE.IsUnramified K :=
-      hLUnramified.comap E
-    simp [infinitePlaceArtinMonoidHomOfPlace,
-      hLUnramified, hEUnramified, wE]
-  · have hLRamified : wL.IsRamified K :=
+  · simp [infinitePlaceArtinMonoidHomOfPlace,
+      hLUnramified, (hLUnramified.comap E), wE]
+  · have hLRamified :=
       hLUnramified
-    have hvReal : v.IsReal := by
-      rw [← hwL]
-      exact hLRamified.isReal
     let sigmaL :=
       ramifiedInfinitePlaceConjugation
-        (K := K) wL hLRamified
-    let sigmaR : E ≃ₐ[K] E :=
+         wL hLRamified
+    let sigmaR :=
       AlgEquiv.restrictNormalHom E sigmaL
-    have hsigmaL :=
-      ramifiedInfinitePlaceConjugation_isConj
-        (K := K) wL hLRamified
-    let phi : E →+* ℂ :=
+    let phi :=
       (InfinitePlace.embedding wL).comp
         (algebraMap E L)
     have hphi :
@@ -360,9 +339,9 @@ theorem infinitePlaceArtinMonoidHomOfPlace_restrict_tower
       rw [show
         algebraMap E L (sigmaR x) =
           sigmaL (algebraMap E L x) by
-          dsimp [sigmaR]
           exact AlgEquiv.restrictNormal_commutes sigmaL E x]
-      exact (hsigmaL.eq (algebraMap E L x)).symm
+      exact ((ramifiedInfinitePlaceConjugation_isConj
+        wL hLRamified).eq (algebraMap E L x)).symm
     have hmk : InfinitePlace.mk phi = wE := by
       change
         InfinitePlace.mk
@@ -374,10 +353,7 @@ theorem infinitePlaceArtinMonoidHomOfPlace_restrict_tower
     by_cases hEUnramified : wE.IsUnramified K
     · have hEUnramified' :
           (wL.comap (algebraMap E L)).IsUnramified K := by
-        simpa only [wE] using hEUnramified
-      have hsigmaR : sigmaR = 1 :=
-        hphi.isUnramified_mk_iff.mp
-          (hmk.symm ▸ hEUnramified)
+        simpa using hEUnramified
       apply MonoidHom.ext
       intro x
       unfold infinitePlaceArtinMonoidHomOfPlace
@@ -386,22 +362,19 @@ theorem infinitePlaceArtinMonoidHomOfPlace_restrict_tower
       dsimp
       split_ifs with hsign
       · simp
-      · simpa [sigmaR, sigmaL] using hsigmaR
+      · simpa [sigmaR, sigmaL] using (hphi.isUnramified_mk_iff.mp
+        (hmk.symm ▸ hEUnramified))
     · have hEUnramified' :
           ¬ (wL.comap (algebraMap E L)).IsUnramified K := by
-        simpa only [wE] using hEUnramified
-      have hERamified : wE.IsRamified K :=
+        simpa using hEUnramified
+      have hERamified :=
         hEUnramified
       let sigmaE :=
         ramifiedInfinitePlaceConjugation
-          (K := K) wE hERamified
-      have hsigmaE :=
-        ramifiedInfinitePlaceConjugation_isConj
-          (K := K) wE hERamified
+           wE hERamified
       have hsigmaRNe : sigmaR ≠ 1 := by
         intro hsigmaR
-        have :
-            (InfinitePlace.mk phi).IsUnramified K :=
+        have :=
           hphi.isUnramified_mk_iff.mpr hsigmaR
         exact hEUnramified (hmk ▸ this)
       have hsigmaRMem :
@@ -416,8 +389,6 @@ theorem infinitePlaceArtinMonoidHomOfPlace_restrict_tower
         rw [← InfinitePlace.mk_embedding wE,
           InfinitePlace.mem_stabilizer_mk_iff] at hsigmaRMem
         exact hsigmaRMem.resolve_left hsigmaRNe
-      have hsigmaREq : sigmaR = sigmaE :=
-        hsigmaRAtWE.ext hsigmaE
       apply MonoidHom.ext
       intro x
       unfold infinitePlaceArtinMonoidHomOfPlace
@@ -426,16 +397,17 @@ theorem infinitePlaceArtinMonoidHomOfPlace_restrict_tower
       dsimp
       split_ifs with hsign
       · simp
-      · simpa [sigmaR, sigmaL, sigmaE] using hsigmaREq
+      · simpa [sigmaR, sigmaL, sigmaE] using (hsigmaRAtWE.ext (ramifiedInfinitePlaceConjugation_isConj
+        wE hERamified))
+
+section
+
+variable {K' : Type} [Field K'] [NumberField K'] [Algebra K K'] (v : InfinitePlace K)
+    (W : InfinitePlace K') (hW : W.comap (algebraMap K K') = v) (hvReal : v.IsReal)
 
 /-- The norm from a complex archimedean completion to a real completion
 is positive under the canonical real coordinate. -/
-theorem infinitePlace_normUnits_real_complex_pos
-    {K' : Type}
-    [Field K'] [NumberField K'] [Algebra K K']
-    (v : InfinitePlace K) (W : InfinitePlace K')
-    (hW : W.comap (algebraMap K K') = v)
-    (hvReal : v.IsReal) (hWComplex : W.IsComplex)
+theorem infinitePlace_normUnits_real_complex_pos (hWComplex : W.IsComplex)
     (x : W.Completionˣ) :
     letI : W.1.LiesOver v.1 :=
       ⟨congrArg (fun q : InfinitePlace K => q.1) hW⟩
@@ -447,51 +419,29 @@ theorem infinitePlace_normUnits_real_complex_pos
             v.Completion) := by
   let : W.1.LiesOver v.1 :=
     ⟨congrArg (fun q : InfinitePlace K => q.1) hW⟩
-  let eReal :
-      v.Completion ≃+* ℝ :=
+  let eReal :=
     InfinitePlace.Completion.ringEquivRealOfIsReal
       hvReal
-  let eComplex :
-      W.Completion ≃+* ℂ :=
+  let eComplex :=
     InfinitePlace.Completion.ringEquivComplexOfIsComplex
       hWComplex
-  let :
-      NumberField.ComplexEmbedding.LiesOver
-        (InfinitePlace.Completion.extensionEmbedding W)
-        (InfinitePlace.Completion.extensionEmbedding v) :=
+  let :=
     InfinitePlace.LiesOver.extensionEmbedding_liesOver_of_isReal
       W hvReal
-  have hCompatible :
-      RingHom.comp (algebraMap ℝ ℂ) eReal =
-        RingHom.comp eComplex
-          (algebraMap v.Completion W.Completion) := by
-    ext z
-    simp [eReal, eComplex]
-  have hNorm :=
-    LocalClassFieldTheory.normUnits_map_ringEquiv
-      eReal eComplex hCompatible x
-  have hNormVal := congrArg Units.val hNorm
   change
     0 <
       ((Units.mapEquiv eReal.toMulEquiv
         (LocalFieldTheory.normUnits
           v.Completion W.Completion x) : ℝˣ) : ℝ)
-  rw [hNormVal]
-  change
-    0 <
-      Algebra.norm ℝ
-        (eComplex (x : W.Completion))
-  rw [Algebra.norm_complex_apply, Complex.normSq_pos]
-  exact (map_ne_zero eComplex).2 (Units.ne_zero x)
+  rw [(congrArg Units.val (LocalClassFieldTheory.normUnits_map_ringEquiv
+    eReal eComplex (by
+      ext z
+      simp [eReal, eComplex]) x))]
+  simp [Algebra.norm_complex_apply, Complex.normSq_pos]
 
 /-- The norm between real archimedean completions agrees with the
 transported local unit under their canonical real coordinates. -/
-theorem infinitePlace_normUnits_real_real
-    {K' : Type}
-    [Field K'] [NumberField K'] [Algebra K K']
-    (v : InfinitePlace K) (W : InfinitePlace K')
-    (hW : W.comap (algebraMap K K') = v)
-    (hvReal : v.IsReal) (hWReal : W.IsReal)
+theorem infinitePlace_normUnits_real_real (hWReal : W.IsReal)
     (x : W.Completionˣ) :
     letI : W.1.LiesOver v.1 :=
       ⟨congrArg (fun q : InfinitePlace K => q.1) hW⟩
@@ -505,18 +455,13 @@ theorem infinitePlace_normUnits_real_real
           hWReal).toMulEquiv x := by
   let : W.1.LiesOver v.1 :=
     ⟨congrArg (fun q : InfinitePlace K => q.1) hW⟩
-  let eBase :
-      v.Completion ≃+* ℝ :=
+  let eBase :=
     InfinitePlace.Completion.ringEquivRealOfIsReal
       hvReal
-  let eExtension :
-      W.Completion ≃+* ℝ :=
+  let eExtension :=
     InfinitePlace.Completion.ringEquivRealOfIsReal
       hWReal
-  let :
-      NumberField.ComplexEmbedding.LiesOver
-        (InfinitePlace.Completion.extensionEmbedding W)
-        (InfinitePlace.Completion.extensionEmbedding v) :=
+  let :=
     InfinitePlace.LiesOver.extensionEmbedding_liesOver_of_isReal
       W hvReal
   have hCompatible :
@@ -530,10 +475,9 @@ theorem infinitePlace_normUnits_real_real
         InfinitePlace.Completion.extensionEmbeddingOfIsReal
           hWReal ((algebraMap v.Completion W.Completion) z)
     apply Complex.ofReal_injective
-    simpa only [
-      InfinitePlace.Completion.extensionEmbeddingOfIsReal_apply] using
+    simpa using
       (InfinitePlace.Completion.liesOver_extensionEmbedding_apply
-        W (v := v)).symm
+        W).symm
   simpa only [
     LocalFieldTheory.normUnits,
     Algebra.norm_self,
@@ -542,6 +486,8 @@ theorem infinitePlace_normUnits_real_real
   ] using
     LocalClassFieldTheory.normUnits_map_ringEquiv
       eBase eExtension hCompatible x
+
+end
 
 omit [NumberField L] in
 /-- The archimedean Artin map attached to specified places carries a
@@ -590,13 +536,13 @@ theorem infinitePlaceArtinMonoidHomOfPlace_norm_restriction
   · by_cases hLowerUnramified : w.IsUnramified K
     · have hLowerUnramified' :
           (w'.comap (algebraMap L L')).IsUnramified K := by
-        simpa only [w] using hLowerUnramified
+        simpa using hLowerUnramified
       unfold infinitePlaceArtinMonoidHomOfPlace
       rw [dite_eq_left hUpperUnramified, dite_eq_left hLowerUnramified']
       simp
     · have hLowerUnramified' :
           ¬ (w'.comap (algebraMap L L')).IsUnramified K := by
-        simpa only [w] using hLowerUnramified
+        simpa using hLowerUnramified
       have hLowerRamified : w.IsRamified K :=
         hLowerUnramified
       have hvReal : v.IsReal := by
@@ -605,8 +551,7 @@ theorem infinitePlaceArtinMonoidHomOfPlace_norm_restriction
       have hw'Complex : w'.IsComplex := by
         rw [← InfinitePlace.not_isReal_iff_isComplex]
         intro hw'Real
-        have hwReal : w.IsReal := by
-          exact hw'Real.comap (algebraMap L L')
+        have hwReal := hw'Real.comap (algebraMap L L')
         exact
           (InfinitePlace.not_isComplex_iff_isReal.mpr
             hwReal) hLowerRamified.isComplex
@@ -621,27 +566,16 @@ theorem infinitePlaceArtinMonoidHomOfPlace_norm_restriction
         · simpa only [hw'] using hWComplex
       apply MonoidHom.ext
       intro x
-      have hPositive :=
-        infinitePlace_normUnits_real_complex_pos
-          (K := K) v W hW hvReal hWComplex x
-      have hSign :
-          LocalClassFieldTheory.realUnitsSign
-              (Units.mapEquiv
-                (InfinitePlace.Completion.ringEquivRealOfIsReal
-                  hvReal).toMulEquiv
-                (LocalFieldTheory.normUnits
-                  v.Completion W.Completion x)) =
-            1 :=
-        MonoidHom.mem_ker.mp
-          ((LocalClassFieldTheory.mem_realUnitsSign_ker_iff _).2
-            hPositive)
       unfold infinitePlaceArtinMonoidHomOfPlace
       rw [dite_eq_left hUpperUnramified, dite_eq_right hLowerUnramified']
       simp only [MonoidHom.comp_apply]
       dsimp
       split_ifs with hsign
       · exact map_one _
-      · exact (hsign hSign).elim
+      · exact (hsign (MonoidHom.mem_ker.mp
+        ((LocalClassFieldTheory.mem_realUnitsSign_ker_iff _).2
+          (infinitePlace_normUnits_real_complex_pos
+            v W hW hvReal hWComplex x)))).elim
   · have hUpperRamified : w'.IsRamified K' :=
       hUpperUnramified
     have hWReal : W.IsReal := by
@@ -652,14 +586,11 @@ theorem infinitePlaceArtinMonoidHomOfPlace_norm_restriction
       exact hWReal.comap (algebraMap K K')
     let sigmaUpper :=
       ramifiedInfinitePlaceConjugation
-        (K := K') w' hUpperRamified
-    let sigmaRestricted : L ≃ₐ[K] L :=
+         w' hUpperRamified
+    let sigmaRestricted :=
       ((AlgEquiv.restrictNormalHom L).comp
         (AlgEquiv.restrictScalarsHom K)) sigmaUpper
-    have hSigmaUpper :=
-      ramifiedInfinitePlaceConjugation_isConj
-        (K := K') w' hUpperRamified
-    let phi : L →+* ℂ :=
+    let phi :=
       (InfinitePlace.embedding w').comp
         (algebraMap L L')
     have hphi :
@@ -684,7 +615,8 @@ theorem infinitePlaceArtinMonoidHomOfPlace_norm_restriction
               sigmaUpper (algebraMap L L' x)
           rw [AlgEquiv.restrictNormal_commutes]
           rfl]
-      exact (hSigmaUpper.eq (algebraMap L L' x)).symm
+      exact ((ramifiedInfinitePlaceConjugation_isConj
+        w' hUpperRamified).eq (algebraMap L L' x)).symm
     have hmk : InfinitePlace.mk phi = w := by
       change
         InfinitePlace.mk
@@ -705,14 +637,11 @@ theorem infinitePlaceArtinMonoidHomOfPlace_norm_restriction
               (LocalFieldTheory.normUnits
                 v.Completion W.Completion x)) := by
       rw [infinitePlace_normUnits_real_real
-        (K := K) v W hW hvReal hWReal x]
+         v W hW hvReal hWReal x]
     by_cases hLowerUnramified : w.IsUnramified K
     · have hLowerUnramified' :
           (w'.comap (algebraMap L L')).IsUnramified K := by
-        simpa only [w] using hLowerUnramified
-      have hSigmaRestricted : sigmaRestricted = 1 :=
-        hphi.isUnramified_mk_iff.mp
-          (hmk.symm ▸ hLowerUnramified)
+        simpa using hLowerUnramified
       apply MonoidHom.ext
       intro x
       unfold infinitePlaceArtinMonoidHomOfPlace
@@ -725,23 +654,20 @@ theorem infinitePlaceArtinMonoidHomOfPlace_norm_restriction
             (AlgEquiv.restrictScalarsHom K)) 1 =
             1
         exact map_one _
-      · simpa [sigmaRestricted, sigmaUpper] using hSigmaRestricted
+      · simpa [sigmaRestricted, sigmaUpper] using (hphi.isUnramified_mk_iff.mp
+        (hmk.symm ▸ hLowerUnramified))
     · have hLowerUnramified' :
           ¬ (w'.comap (algebraMap L L')).IsUnramified K := by
-        simpa only [w] using hLowerUnramified
+        simpa using hLowerUnramified
       have hLowerRamified : w.IsRamified K :=
         hLowerUnramified
       let sigmaLower :=
         ramifiedInfinitePlaceConjugation
-          (K := K) w hLowerRamified
-      have hSigmaLower :=
-        ramifiedInfinitePlaceConjugation_isConj
-          (K := K) w hLowerRamified
+           w hLowerRamified
       have hSigmaRestrictedNe :
           sigmaRestricted ≠ 1 := by
         intro hSigmaRestricted
-        have :
-            (InfinitePlace.mk phi).IsUnramified K :=
+        have :=
           hphi.isUnramified_mk_iff.mpr
             hSigmaRestricted
         exact hLowerUnramified (hmk ▸ this)
@@ -761,9 +687,6 @@ theorem infinitePlaceArtinMonoidHomOfPlace_norm_restriction
         exact
           hSigmaRestrictedMem.resolve_left
             hSigmaRestrictedNe
-      have hSigmaEq :
-          sigmaRestricted = sigmaLower :=
-        hSigmaRestrictedAtW.ext hSigmaLower
       apply MonoidHom.ext
       intro x
       unfold infinitePlaceArtinMonoidHomOfPlace
@@ -774,7 +697,8 @@ theorem infinitePlaceArtinMonoidHomOfPlace_norm_restriction
       · exact map_one _
       · exact (hsignLower ((hSign x).symm.trans hsignUpper)).elim
       · exact (hsignUpper ((hSign x).trans hsignLower)).elim
-      · simpa [sigmaRestricted, sigmaUpper, sigmaLower] using hSigmaEq
+      · simpa [sigmaRestricted, sigmaUpper, sigmaLower] using (hSigmaRestrictedAtW.ext (ramifiedInfinitePlaceConjugation_isConj
+        w hLowerRamified))
 
 omit [NumberField K] [NumberField L] in
 /-- Archimedean local factors commute with restriction in an abelian
@@ -795,8 +719,7 @@ theorem chosenInfinitePlaceArtinMonoidHom_restrict_tower
     chosenInfinitePlaceAbove
       (L := L) v
   let wE := wL.comap (algebraMap E L)
-  have hwL :
-      wL.comap (algebraMap K L) = v :=
+  have hwL :=
     chosenInfinitePlaceAbove_comap
       (L := L) v
   have hwE :
@@ -807,21 +730,21 @@ theorem chosenInfinitePlaceArtinMonoidHom_restrict_tower
   calc
     (AlgEquiv.restrictNormalHom E).comp
         (chosenInfinitePlaceArtinMonoidHom
-          (K := K) (L := L) v) =
+            v) =
       infinitePlaceArtinMonoidHomOfPlace
-        (K := K) (L := E) v wE hwE :=
+          v wE hwE :=
       infinitePlaceArtinMonoidHomOfPlace_restrict_tower
-        (K := K) (L := L) (E := E)
+
         v wL hwL hwE
     _ = chosenInfinitePlaceArtinMonoidHom
-        (K := K) (L := E) v :=
+          v :=
       infinitePlaceArtinMonoidHomOfPlace_eq
-        (K := K) (L := E) v wE
+          v wE
         (chosenInfinitePlaceAbove
-          (L := E) v)
+           v)
         hwE
         (chosenInfinitePlaceAbove_comap
-          (L := E) v)
+           v)
 
 omit [NumberField L] in
 /-- In an actual number-field diamond `K ⊂ K'`, `L ⊂ L'`, the
@@ -853,8 +776,7 @@ theorem chosenInfinitePlaceArtinMonoidHom_norm_restriction
   let w := w'.comap (algebraMap L L')
   have hW :
       W.comap (algebraMap K K') = v := rfl
-  have hw' :
-      w'.comap (algebraMap K' L') = W :=
+  have hw' :=
     chosenInfinitePlaceAbove_comap
       (L := L') W
   have hw :
@@ -869,26 +791,26 @@ theorem chosenInfinitePlaceArtinMonoidHom_norm_restriction
     ((AlgEquiv.restrictNormalHom L).comp
         (AlgEquiv.restrictScalarsHom K)).comp
         (chosenInfinitePlaceArtinMonoidHom
-          (K := K') (L := L') W) =
+            W) =
       (infinitePlaceArtinMonoidHomOfPlace
-        (K := K) (L := L) v w hw).comp
+          v w hw).comp
           (LocalFieldTheory.normUnits
             v.Completion W.Completion) :=
       infinitePlaceArtinMonoidHomOfPlace_norm_restriction
-        (K := K) (L := L) v W w' hW hw'
+          v W w' hW hw'
     _ =
       (chosenInfinitePlaceArtinMonoidHom
-        (K := K) (L := L) v).comp
+          v).comp
           (LocalFieldTheory.normUnits
             v.Completion W.Completion) := by
       rw [chosenInfinitePlaceArtinMonoidHom]
       rw [infinitePlaceArtinMonoidHomOfPlace_eq
-        (K := K) (L := L) v w
+          v w
         (chosenInfinitePlaceAbove
-          (L := L) v)
+           v)
         hw
         (chosenInfinitePlaceAbove_comap
-          (L := L) v)]
+           v)]
 
 end AbelianTower
 
@@ -967,31 +889,27 @@ theorem chosenInfinitePlaceArtinMonoidHom_eq_one_of_real_pos
           hvReal (x : v.Completion)) :
     chosenInfinitePlaceArtinMonoidHom
         (K := K) (L := L) v x = 1 := by
-  let e : v.Completion ≃+* ℝ :=
+  let e :=
     InfinitePlace.Completion.ringEquivRealOfIsReal
       hvReal
-  let eu : v.Completionˣ ≃* ℝˣ :=
+  let eu :=
     Units.mapEquiv e.toMulEquiv
-  have hx' : 0 < (eu x : ℝ) := by
-    simpa [eu, e] using hx
-  have hsign :
-      LocalClassFieldTheory.realUnitsSign (eu x) = 1 :=
-    MonoidHom.mem_ker.mp
-      ((LocalClassFieldTheory.mem_realUnitsSign_ker_iff
-        (eu x)).2 hx')
   have hsign' :
       LocalClassFieldTheory.realUnitsSign
           (Units.mapEquiv
             (InfinitePlace.Completion.ringEquivRealOfIsReal
               hvReal).toMulEquiv x) = 1 := by
-    simpa [eu, e] using hsign
+    simpa [eu, e] using (MonoidHom.mem_ker.mp
+      ((LocalClassFieldTheory.mem_realUnitsSign_ker_iff
+        (eu x)).2 (by
+          exact hx)))
   let w :=
     chosenInfinitePlaceAbove
       (L := L) v
   by_cases hUnramified : w.IsUnramified K
   · have hUnramified' :
         (chosenInfinitePlaceAbove (L := L) v).IsUnramified K := by
-      simpa only [w] using hUnramified
+      simpa using hUnramified
     unfold chosenInfinitePlaceArtinMonoidHom
     unfold infinitePlaceArtinMonoidHomOfPlace
     rw [dite_eq_left hUnramified']
@@ -1001,20 +919,7 @@ theorem chosenInfinitePlaceArtinMonoidHom_eq_one_of_real_pos
       simpa only [w] using hUnramified
     unfold chosenInfinitePlaceArtinMonoidHom
     unfold infinitePlaceArtinMonoidHomOfPlace
-    rw [dite_eq_right hUnramified']
-    simp only [MonoidHom.comp_apply]
-    change
-      (if
-          LocalClassFieldTheory.realUnitsSign
-              (Units.mapEquiv
-                (InfinitePlace.Completion.ringEquivRealOfIsReal
-                  hvReal).toMulEquiv x) =
-            1 then
-        1
-      else _) =
-        1
-    rw [hsign']
-    simp
+    simp_all
 
 /-- The kernel of the actual Artin homomorphism at an infinite place
 is exactly the determinant-norm image on the corresponding tensor
@@ -1039,8 +944,7 @@ theorem chosenInfinitePlaceArtinMonoidHom_ker
     infiniteTensorNormSubgroup_eq_localNormSubgroup
       (K := K) (L := L) v w hw]
   by_cases hUnramified : w.IsUnramified K
-  · have hDegree :
-        Module.finrank v.Completion w.Completion = 1 :=
+  · have hDegree :=
       InfinitePlace.IsUnramified.finrank_eq_one v hUnramified
     have hNormTop :
         localNormSubgroup
@@ -1073,7 +977,7 @@ theorem chosenInfinitePlaceArtinMonoidHom_ker
       exact hRamified.isReal
     let σ :=
       ramifiedInfinitePlaceConjugation
-        (K := K) w hRamified
+         w hRamified
     have hσ :=
       ramifiedInfinitePlaceConjugation_isConj
         (K := K) w hRamified
@@ -1092,7 +996,7 @@ theorem chosenInfinitePlaceArtinMonoidHom_ker
           rcases Int.units_eq_one_or y with rfl | rfl
           · simp
           · simp [hσsq] }
-    have hσne : σ ≠ 1 :=
+    have hσne :=
       (NumberField.ComplexEmbedding.isConj_ne_one_iff
         hσ).2
         (InfinitePlace.isComplex_iff.mp
@@ -1113,37 +1017,24 @@ theorem chosenInfinitePlaceArtinMonoidHom_ker
           simpa [signToGalois] using
             hxy
         · rfl
-    let eRealField :
-        v.Completion ≃+* ℝ :=
+    let eRealField :=
       InfinitePlace.Completion.ringEquivRealOfIsReal
         hvReal
-    let completionUnitsEquivRealUnits :
-        v.Completionˣ ≃* ℝˣ :=
+    let completionUnitsEquivRealUnits :=
       Units.mapEquiv eRealField.toMulEquiv
-    have hwComplex : w.IsComplex :=
-      hRamified.isComplex
-    let eComplexField :
-        w.Completion ≃+* ℂ :=
+    let eComplexField :=
       InfinitePlace.Completion.ringEquivComplexOfIsComplex
-        hwComplex
-    let eComplexUnits :
-        w.Completionˣ ≃* ℂˣ :=
+        hRamified.isComplex
+    let eComplexUnits :=
       Units.mapEquiv eComplexField.toMulEquiv
-    let :
-        NumberField.ComplexEmbedding.LiesOver
-          (InfinitePlace.Completion.extensionEmbedding w)
-          (InfinitePlace.Completion.extensionEmbedding v) :=
+    let :=
       InfinitePlace.LiesOver.extensionEmbedding_liesOver_of_isReal
         w hvReal
-    have hCompletionCompatible :
-        RingHom.comp (algebraMap ℝ ℂ) eRealField =
-          RingHom.comp eComplexField
-            (algebraMap v.Completion w.Completion) := by
-      ext x
-      simp [eRealField, eComplexField]
     have hCompletionCompatibleSymm :=
       LocalClassFieldTheory.ringEquiv_compat_symm
-        eRealField eComplexField hCompletionCompatible
+        eRealField eComplexField (by
+          ext x
+          simp [eRealField, eComplexField])
     have hRealComplexNormTransport :
         (localNormSubgroup ℝ ℂ).map
             completionUnitsEquivRealUnits.symm.toMonoidHom =
@@ -1168,11 +1059,9 @@ theorem chosenInfinitePlaceArtinMonoidHom_ker
           change
             (Units.mapEquiv eComplexField.toMulEquiv).symm
                 (eComplexUnits z) = z
-          change eComplexUnits.symm (eComplexUnits z) = z
           exact eComplexUnits.symm_apply_apply z
         calc
-          completionUnitsEquivRealUnits.symm
-              (normUnits ℝ ℂ (eComplexUnits z)) =
+          _ =
             normUnits v.Completion w.Completion
               (Units.mapEquiv eComplexField.symm.toMulEquiv
                 (eComplexUnits z)) := by
@@ -1194,10 +1083,7 @@ theorem chosenInfinitePlaceArtinMonoidHom_ker
         localNormSubgroup
           v.Completion w.Completion
     calc
-      MonoidHom.ker
-          (signToGalois.comp
-            (LocalClassFieldTheory.realUnitsSign.comp
-              completionUnitsEquivRealUnits.toMonoidHom)) =
+      _ =
           MonoidHom.ker
             (LocalClassFieldTheory.realUnitsSign.comp
               completionUnitsEquivRealUnits.toMonoidHom) :=
@@ -1247,13 +1133,13 @@ theorem infinitePlaceGlobalArtinMonoidHom_continuous :
               (K := K) (L := L) v
               (IdeleGroup.infiniteComponent v a) := by
     funext a
-    simp only [Finset.prod_apply, MonoidHom.comp_apply]
+    simp
   rw [hprod]
   apply continuous_finsetProd Finset.univ
   intro v _
   exact
     (chosenInfinitePlaceArtinMonoidHom_continuous
-      (K := K) (L := L) v).comp
+        v).comp
         (IdeleGroup.infiniteComponentContinuous v).continuous
 
 omit [NumberField L] in
@@ -1383,9 +1269,9 @@ theorem infinitePlaceGlobalArtinMonoidHom_norm_restriction
     ((AlgEquiv.restrictNormalHom L).comp
       (AlgEquiv.restrictScalarsHom K))
       (infinitePlaceGlobalArtinMonoidHom
-        (K := K') (L := L') a) =
+          a) =
       infinitePlaceGlobalArtinMonoidHom
-        (K := K) (L := L)
+
         (IdeleGroup.norm K K' a)
   rw [infinitePlaceGlobalArtinMonoidHom_norm_eq_prod]
   unfold infinitePlaceGlobalArtinMonoidHom
@@ -1396,7 +1282,7 @@ theorem infinitePlaceGlobalArtinMonoidHom_norm_restriction
   exact
     DFunLike.congr_fun
       (chosenInfinitePlaceArtinMonoidHom_norm_restriction
-        (K := K) (L := L) W)
+          W)
       (IdeleGroup.infiniteComponent W a)
 
 omit [NumberField L] in
@@ -1415,16 +1301,11 @@ theorem infinitePlaceGlobalArtinMonoidHom_finitePlaceIdele
   intro w _
   change
     chosenInfinitePlaceArtinMonoidHom
-      (K := K) (L := L) w
+        w
       (IdeleGroup.infiniteComponent w
         (finitePlaceIdele v x)) =
       1
-  have hcomponent :
-      IdeleGroup.infiniteComponent w
-          (finitePlaceIdele v x) =
-        (1 : w.Completionˣ) :=
-    finitePlaceIdele_infiniteComponent v w x
-  rw [hcomponent]
+  rw [(finitePlaceIdele_infiniteComponent v w x)]
   exact map_one _
 
 end Reciprocity

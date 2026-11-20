@@ -16,24 +16,30 @@ variable (F : Type) [Field F] [NumberField F]
   (P : KPLocalStoneVonNeumann.Polarization S.heisenberg)
 include S P
 
-theorem rootLevelSet_isOpen (m : ℕ) (hm : 0 < m) :
+section
+
+variable (m : ℕ) (hm : 0 < m)
+
+include hm in
+theorem rootLevelSet_isOpen :
     IsOpen (rootLevelSet F ζ hζ q m) := by
   rw [rootLevelSet_eq_congruence_ideal F q ζ hζ S P m hm]
-  have hi : IsOpen ((valuation (LocalField F q)).integer : Set (LocalField F q)) :=
-    Valuation.isOpen_integer (v := valuation (LocalField F q))
-  apply hi.isOpenMap_subtype_val
+  apply (Valuation.isOpen_integer).isOpenMap_subtype_val
   exact IsLocalRing.isOpen_maximalIdeal_pow (KPLocalCube.LocalIntegers F q) m
 
-theorem zero_mem_rootLevelSet (m : ℕ) (hm : 0 < m) :
+include hm in
+theorem zero_mem_rootLevelSet :
     (0 : LocalField F q) ∈ rootLevelSet F ζ hζ q m := by
   rw [rootLevelSet_eq_congruence_ideal F q ζ hζ S P m hm]
   exact ⟨0, Ideal.zero_mem _, by simp⟩
+
+end
 
 theorem rootMass_pos (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
     (m : ℕ) (hm : 0 < m) :
     0 < rootMass F ζ hζ q μ m := by
-  have hpos : 0 < μ (rootLevelSet F ζ hζ q m) :=
+  have hpos :=
     (rootLevelSet_isOpen F ζ hζ q S P m hm).measure_pos μ
       ⟨0, zero_mem_rootLevelSet F ζ hζ q S P m hm⟩
   have hfin : μ (rootLevelSet F ζ hζ q m) < ⊤ := by

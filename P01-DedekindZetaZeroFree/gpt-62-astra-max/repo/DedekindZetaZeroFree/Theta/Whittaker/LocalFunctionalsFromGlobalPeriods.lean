@@ -13,10 +13,10 @@ namespace DedekindZetaZeroFree.ExteriorWhittakerValues.StoredWhittaker
 open MomentSources NumberField MeasureTheory
 open scoped Classical Topology NumberField
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
-variable (D : SourceFactorization R Q T)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    (D : SourceFactorization R Q T)
 
 theorem finite_translate_period
     (s : RestrictedTensorSimple.Level D.bad)
@@ -42,7 +42,7 @@ theorem finite_translate_period
   apply integral_congr_ae
   filter_upwards [] with t
   rw [D.finite_intertwining q a s hq x]
-  simp only [mul_one]
+  simp
 
 theorem dependent_prod_update {I : Type*} [Fintype I] [DecidableEq I] {V : I → Type*}
     (f : ∀ i, V i → ℂ) (x : ∀ i, V i) (i : I) (b : V i) :
@@ -105,12 +105,8 @@ theorem fourier_left_root (μ : Measure (KPAdditiveQuotient F)) [μ.IsAddHaarMea
       change (χ b : ℂ) * (starRingEnd ℂ) (χ b : ℂ) = 1
       rw [← Circle.coe_inv_eq_conj, ← Circle.coe_mul, mul_inv_cancel, Circle.coe_one]
     calc
-      star (χ q : ℂ) = 1 * star (χ q : ℂ) := (one_mul _).symm
+      _ = 1 * star (χ q : ℂ) := (one_mul _).symm
       _ = _ := by rw [← hcancel]; ring
-  change (∫ q : KPAdditiveQuotient F, θ
-    (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) *
-      (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 a * g)) *
-      star (χ q : ℂ) ∂μ) = (χ b : ℂ) * ∫ q, f q * star (χ q : ℂ) ∂μ
   calc
     _ = ∫ q : KPAdditiveQuotient F, (χ b : ℂ) *
         (f (q + b) * star (χ (q + b) : ℂ)) ∂μ := by
@@ -121,7 +117,7 @@ theorem fourier_left_root (μ : Measure (KPAdditiveQuotient F)) [μ.IsAddHaarMea
     _ = _ := by
       rw [integral_const_mul]
       exact congrArg (fun z : ℂ => (χ b : ℂ) * z)
-        (integral_add_right_eq_self (μ := μ)
+        (integral_add_right_eq_self
           (fun q : KPAdditiveQuotient F => f q * star (χ q : ℂ)) b)
 
 theorem finite_root_injection (q : KPFinitePlace F) (t : q.adicCompletion F) :
@@ -129,8 +125,7 @@ theorem finite_root_injection (q : KPFinitePlace F) (t : q.adicCompletion F) :
       (KPAdelicCoverRestrictedProduct.localInjection F R.A.zeta12 R.A.primitive_zeta12
         (Sum.inr q) (KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) t)) =
       KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
-        (KPRationalAdelicSplitting.localAdele F (Sum.inr q) t) := by
-  exact (congrArg (KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12
+        (KPRationalAdelicSplitting.localAdele F (Sum.inr q) t) := (congrArg (KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12
     R.A.primitive_zeta12) (KPRationalAdelicSplitting.N_local F R.A.zeta12
       R.A.primitive_zeta12 (Sum.inr q) t)).symm
 
@@ -156,7 +151,7 @@ theorem ell_root_at_level (s : RestrictedTensorSimple.Level D.bad)
   have hf := fourier_left_root R Q.dq (D.coreMap core)
     (core_rational_root R D core)
     (KPRationalAdelicSplitting.localAdele F (Sum.inr q) t) 1
-    (by simpa only [mul_one] using D.product_integrable s y)
+    (by simpa using D.product_integrable s y)
   rw [mul_one, ← finite_root_injection R] at hf
   rw [finite_translate_period R D s y q hq,
     D.product_exact] at hf
@@ -183,8 +178,7 @@ theorem ell_root_at_level (s : RestrictedTensorSimple.Level D.bad)
   change _ * (∏ p ∈ Finset.univ.erase i, D.ell p (y p)) =
     _ * (_ * (∏ p ∈ Finset.univ.erase i, D.ell p (y p))) at hf
   rw [← mul_assoc] at hf
-  have hh := mul_right_cancel₀ hrest hf
-  simpa only [y, i, Function.update_self, KPPGLLocalCover.N] using hh
+  simpa only [y, i, Function.update_self, KPPGLLocalCover.N] using (mul_right_cancel₀ hrest hf)
 
 theorem exists_nonzero_value (p : KPHilbert.Place F) :
     ∃ b : actualLocal R D.finiteData p, D.ell p b ≠ 0 := by
@@ -192,7 +186,7 @@ theorem exists_nonzero_value (p : KPHilbert.Place F) :
   by_cases hp : p ∈ D.bad
   · obtain ⟨s, x, hs, hx⟩ := D.detected_tensor
     rw [D.product_exact] at hx
-    have hps : p ∈ s.val := hs.symm ▸ hp
+    have hps := hs.symm ▸ hp
     exact ⟨x ⟨p, hps⟩, (Finset.prod_ne_zero_iff.mp hx) ⟨p, hps⟩ (Finset.mem_univ _)⟩
   · exact ⟨D.references p, by rw [D.reference_value p hp]; exact one_ne_zero⟩
 
@@ -209,8 +203,7 @@ theorem ell_finite_root (q : KPFinitePlace F) (t : q.adicCompletion F)
   let s : RestrictedTensorSimple.Level D.bad :=
     ⟨insert (Sum.inr q) D.bad, Finset.subset_insert _ _⟩
   choose x hx using fun p : s.val => exists_nonzero_value R D p
-  have hq : Sum.inr q ∈ s.val := Finset.mem_insert_self _ _
-  have h := ell_root_at_level R D s x hx q hq t b
+  have h := ell_root_at_level R D s x hx q (Finset.mem_insert_self _ _) t b
   have htrace : adelicTraceQuotientCharacter F (QuotientAddGroup.mk
       (KPRationalAdelicSplitting.localAdele F (Sum.inr q) t)) =
       ResidueTrace.localTraceCharacter q t := by

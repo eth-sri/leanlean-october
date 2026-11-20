@@ -11,7 +11,7 @@ noncomputable section
 open DedekindZetaZeroFree NumberField
 open scoped Classical
 
-abbrev Coordinates : Type := CorrectionFactors.Coordinates
+abbrev Coordinates := @DedekindZetaZeroFree.CorrectionFactors.Coordinates
 
 def OmegaStar : Set Coordinates :=
   {p | 0 < p.1.re ∧ 0 < p.2.1.re ∧ 0 < p.2.2.re ∧
@@ -75,8 +75,8 @@ theorem boxes_subset_paddedBoxes : boxes ⊆ paddedBoxes := by
 section Hu
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def HuDomain (u : D.Row) : Set Coordinates :=
   {p | Multipliable (fun pr : LocalFiniteSums.ExteriorPrime D.recipe.A =>

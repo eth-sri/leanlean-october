@@ -13,16 +13,15 @@ noncomputable section
 open scoped NumberField TensorProduct Classical
 open IsDedekindDomain
 
-def lambda (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F)) : (v.adicCompletion F)ˣ →* ℂˣ :=
+variable (F : Type) [Field F] [NumberField F] (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
+    (v : HeightOneSpectrum (𝓞 F))
+
+def lambda : (v.adicCompletion F)ˣ →* ℂˣ :=
   (RMKummerConductor.kappa F h12 x).comp
     (GlobalClassFieldTheory.Reciprocity.arithmeticChosenFinitePlaceArtinMonoidHom
       F (RMKummerConductor.E F h12 x) v)
 
-def localToRay (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F)) :
+def localToRay :
     (v.adicCompletion F)ˣ →*
       ClassFieldTheory.RayClassGroup
         (M F (RMKummerConductor.m F h12 x)
@@ -34,17 +33,12 @@ def localToRay (F : Type) [Field F] [NumberField F]
       (ClassFieldTheory.GlobalClassFieldComparison.rayClassModulusToOriginal F m).congruenceSubgroup).comp
         (IdeleGroup.finitePlaceIdeleClass v))
 
-theorem lambda_continuous (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F)) :
-    Continuous (lambda F h12 x v : (v.adicCompletion F)ˣ → ℂˣ) := by
-  exact (RMKummerLocalNormRoot.kappa_continuous F h12 x).comp
+theorem lambda_continuous :
+    Continuous (lambda F h12 x v : (v.adicCompletion F)ˣ → ℂˣ) := (RMKummerLocalNormRoot.kappa_continuous F h12 x).comp
     (RMKummerLocalNormArtin.arithmeticLocalArtin_continuous F
       (RMKummerConductor.E F h12 x) v)
 
-theorem lambda_ker (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F)) :
+theorem lambda_ker :
     (lambda F h12 x v).ker =
       ClassFieldTheory.finitePlaceTensorNormSubgroup F (RMKummerConductor.E F h12 x) v := by
   rw [← RMKummerLocalNormArtin.arithmeticLocalArtin_ker F
@@ -56,23 +50,15 @@ theorem lambda_ker (F : Type) [Field F] [NumberField F]
   rw [← map_one (RMKummerConductor.kappa F h12 x)]
   exact (RMKummerLocalNormRoot.kappa_injective F h12 x).eq_iff
 
-theorem lambda_ker_eq_norm_range (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F)) :
+theorem lambda_ker_eq_norm_range :
     (lambda F h12 x v).ker =
       (Units.map (Algebra.norm (v.adicCompletion F)
-        (S := v.adicCompletion F ⊗[F] (RMKummerConductor.E F h12 x)))).range := by
-  exact lambda_ker F h12 x v
+        (S := v.adicCompletion F ⊗[F] (RMKummerConductor.E F h12 x)))).range := lambda_ker F h12 x v
 
-theorem lambda_pow_two (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F)) (t : (v.adicCompletion F)ˣ) :
-    lambda F h12 x v t ^ 2 = 1 := by
-  exact RMKummerLocalNormRoot.kappa_pow_two F h12 x _
+theorem lambda_pow_two (t : (v.adicCompletion F)ˣ) :
+    lambda F h12 x v t ^ 2 = 1 := RMKummerLocalNormRoot.kappa_pow_two F h12 x _
 
-theorem rho_localToRay (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F)) (t : (v.adicCompletion F)ˣ) :
+theorem rho_localToRay (t : (v.adicCompletion F)ˣ) :
     RMKummerConductor.rho F h12 x (localToRay F h12 x v t) =
       lambda F h12 x v t := by
   apply congrArg (RMKummerConductor.kappa F h12 x)

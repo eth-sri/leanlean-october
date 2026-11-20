@@ -10,28 +10,16 @@ open scoped Classical ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-private lemma gamma_ne_zero_im {s : ℂ} (hs : s.im ≠ 0) :
-    Complex.Gammaℂ s ≠ 0 := by
-  rw [Complex.Gammaℂ_def]
-  refine mul_ne_zero (mul_ne_zero two_ne_zero ?_) ?_
-  · exact Complex.cpow_ne_zero_iff.mpr
-      (Or.inl (mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)))
-  · intro h0
-    rw [Complex.Gamma_eq_zero_iff] at h0
-    obtain ⟨m, hm⟩ := h0
-    exact hs (by rw [hm]; simp)
+private alias gamma_ne_zero_im := Vendor.RegularizedGammaProduct.Gammaℂ_ne_zero_of_im_ne_zero
 
 private lemma gamma_ratio_shift (s : ℂ) (hs : s.im ≠ 0) :
     s.Gammaℂ / (1 - s).Gammaℂ =
       -((2 * Real.pi : ℂ) ^ 2 / s ^ 2) *
         ((s + 1).Gammaℂ / (-s).Gammaℂ) := by
   have hs0 : s ≠ 0 := by intro he; apply hs; rw [he]; simp
-  have hms : -s ≠ 0 := neg_ne_zero.mpr hs0
-  have hgam : s.Gammaℂ ≠ 0 := gamma_ne_zero_im hs
-  have hgamm : (-s).Gammaℂ ≠ 0 := gamma_ne_zero_im (by simpa using neg_ne_zero.mpr hs)
   rw [Complex.Gammaℂ_add_one hs0]
   have heq : 1 - s = -s + 1 := by ring
-  rw [heq, Complex.Gammaℂ_add_one hms]
+  rw [heq, Complex.Gammaℂ_add_one (neg_ne_zero.mpr hs0)]
   field_simp
 
 private lemma shifted_gamma_bound (u v : ℝ) (r : ℕ) (hu : -1 < u) (huv : u ≤ v) :
@@ -46,14 +34,13 @@ private lemma shifted_gamma_bound (u v : ℝ) (r : ℕ) (hu : -1 < u) (huv : u �
   rw [gamma_ratio_shift s hi, mul_pow, norm_mul]
   have hf : ‖(-((2 * Real.pi : ℂ) ^ 2 / s ^ 2)) ^ r‖ ≤ (2 * Real.pi) ^ (2 * r) := by
     rw [norm_pow, norm_neg, norm_div, norm_pow, norm_pow]
-    have hn : 1 ≤ ‖s‖ := ht.trans (Complex.abs_im_le_norm s)
     have hpi : ‖(2 * Real.pi : ℂ)‖ = 2 * Real.pi := by
       norm_cast
       rw [Real.norm_eq_abs, abs_of_pos (by positivity)]
     rw [hpi]
-    calc ((2 * Real.pi) ^ 2 / ‖s‖ ^ 2) ^ r ≤ ((2 * Real.pi) ^ 2) ^ r := by
+    calc _ ≤ ((2 * Real.pi) ^ 2) ^ r := by
            gcongr
-           exact div_le_self (by positivity) (one_le_pow₀ hn)
+           exact div_le_self (by positivity) (one_le_pow₀ (ht.trans (Complex.abs_im_le_norm s)))
       _ = (2 * Real.pi) ^ (2 * r) := by rw [pow_mul]
   have he : 1 - (s + 1) = -s := by ring
   have hg := hbound (s + 1) (by simp; linarith [hs.1]) (by simp; linarith [hs.2])
@@ -74,16 +61,7 @@ private lemma B_gamma_formula (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (s : ℂ)
 
 private lemma D_strip_bound (D u v : ℝ) (hD : 0 < D) :
     ∃ C : ℝ, 0 < C ∧ ∀ s : ℂ, s.re ∈ Set.Icc u v →
-      ‖(D : ℂ) ^ (s - 1 / 2)‖ ≤ C := by
-  have hc : ContinuousOn (fun σ : ℝ => D ^ (σ - 1 / 2)) (Set.Icc u v) :=
-    (Real.continuous_const_rpow hD.ne').comp (by fun_prop) |>.continuousOn
-  obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn hc
-  refine ⟨|M| + 1, by positivity, ?_⟩
-  intro s hs
-  rw [Complex.norm_cpow_eq_rpow_re_of_pos hD]
-  have hre : (s - 1 / 2).re = s.re - 1 / 2 := by simp
-  rw [hre]
-  exact (le_abs_self _).trans ((hM s.re hs).trans (by simpa [Real.norm_eq_abs] using (le_abs_self M).trans (by linarith : |M| ≤ |M| + 1)))
+      ‖(D : ℂ) ^ (s - 1 / 2)‖ ≤ C := by apply @SpectralMultiplier.kernel_power_bound <;> assumption
 
 theorem B_uniform_rapid_bound_negative_strip
     (D : ℝ) (r : ℕ) (b u v : ℝ) (k : ℕ)
@@ -100,7 +78,7 @@ theorem B_uniform_rapid_bound_negative_strip
     (1 - v) (1 - u) (by linarith) (k + m)
   refine ⟨N, CD * Cγ * CH, by positivity, ?_⟩
   intro h hh hc hp σ hσ t ht
-  let s : ℂ := (σ : ℂ) + (t : ℂ) * Complex.I
+  let s := (σ : ℂ) + (t : ℂ) * Complex.I
   have hre : s.re = σ := by simp [s]
   have him : s.im = t := by simp [s]
   have hi : s.im ≠ 0 := by rw [him]; intro he; rw [he, abs_zero] at ht; norm_num at ht
@@ -111,11 +89,8 @@ theorem B_uniform_rapid_bound_negative_strip
   rw [abs_neg, ← he] at hbH
   have hbγ := hγ s (by simpa [hre] using hσ) (by simpa [him] using ht)
   rw [him] at hbγ
-  change (1 + |t|) ^ k * ‖B D r h s‖ ≤ _
   rw [B_gamma_formula D r h s hr hi, norm_mul, norm_mul]
-  calc (1 + |t|) ^ k *
-        (‖(D : ℂ) ^ (s - 1 / 2)‖ * ‖(s.Gammaℂ / (1 - s).Gammaℂ) ^ r‖ *
-          ‖(1 - s).Gammaℂ * Vendor.originMellinQ h (1 - s)‖)
+  calc _
       ≤ (1 + |t|) ^ k * (CD * (Cγ * (1 + |t|) ^ m) *
           ‖(1 - s).Gammaℂ * Vendor.originMellinQ h (1 - s)‖) := by
         gcongr
@@ -146,13 +121,14 @@ private lemma gamma_continuous_pos {s : ℂ} (hs : 0 < s.re) :
       2 * (2 * (Real.pi : ℂ)) ^ (-z) * Complex.Gamma z := by
     funext z; rw [Complex.Gammaℂ_def]
   rw [heq]
-  have hb : (2 * (Real.pi : ℂ)) ≠ 0 := by
-    exact mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)
+  have hb := mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)
   exact (continuousAt_const.mul
     ((continuousAt_id.neg).const_cpow (Or.inl hb))).mul
       (Complex.differentiableAt_Gamma s hno).continuousAt
 
-private lemma B_negative_low_bound (D : ℝ) (r : ℕ) (b δ : ℝ)
+variable (D : ℝ) (r : ℕ) (b δ : ℝ)
+
+private lemma B_negative_low_bound
     (hD : 0 < D) (hr : 1 ≤ r) (hb : 0 < b) (hδ : 0 < δ) (hδ1 : δ < 1) :
     ∃ (N : ℕ) (C : ℝ), 0 < C ∧
       ∀ h : ℝ → ℂ, ContDiff ℝ ∞ h → HasCompactSupport h →
@@ -188,14 +164,12 @@ private lemma B_negative_low_bound (D : ℝ) (r : ℕ) (b δ : ℝ)
   obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn hcont.continuousOn
   refine ⟨N, max M 1 * CQ, mul_pos (lt_of_lt_of_le zero_lt_one (le_max_right _ _)) hCQ, ?_⟩
   intro h hh hc hp t ht
-  have hst : -1 < (s t).re := by simp [s]; linarith
   have hsQ : ‖Vendor.originMellinQ h (1 - s t)‖ ≤ CQ * Vendor.S b N h := by
     have he : 1 - s t = ((1 + δ : ℝ) : ℂ) + ((-t : ℝ) : ℂ) * Complex.I := by
       dsimp [s]; push_cast; ring
     apply hQ h hh hc hp (1 - s t) (by simp [s]) (by simp [s])
     simpa [he] using ht
-  have hsB := B_eq_A_div D r h hD hr hh hc (s t) hst (hsnz t)
-  change ‖B D r h (s t)‖ ≤ _
+  have hsB := B_eq_A_div D r h hD hr hh hc (s t) (by simp [s]; linarith) (hsnz t)
   rw [hsB]
   have heq : A D r h (s t) / (s t) ^ r = F t * Vendor.originMellinQ h (1 - s t) := by
     simp only [A, F]; ring
@@ -206,8 +180,7 @@ private lemma B_negative_low_bound (D : ℝ) (r : ℕ) (b δ : ℝ)
         exact (hM t (by simpa [abs_le] using ht)).trans (le_max_left _ _)
     _ = max M 1 * CQ * Vendor.S b N h := by ring
 
-theorem B_negative_line_uniform_integral_bound
-    (D : ℝ) (r : ℕ) (b δ : ℝ) (j : ℕ)
+theorem B_negative_line_uniform_integral_bound (j : ℕ)
     (hD : 0 < D) (hr : 1 ≤ r) (hb : 0 < b)
     (hδ : 0 < δ) (hδ1 : δ < 1) :
     ∃ (N : ℕ) (C : ℝ), 0 < C ∧

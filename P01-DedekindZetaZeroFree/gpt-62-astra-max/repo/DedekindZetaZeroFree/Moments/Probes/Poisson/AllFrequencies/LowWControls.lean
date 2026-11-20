@@ -18,8 +18,8 @@ open DedekindZetaZeroFree.Quantitative.RawFixed DedekindZetaZeroFree.Quantitativ
 open scoped Classical Topology
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
 theorem W1Hat_mul_plus_decay (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (B : ℝ) :
@@ -46,17 +46,12 @@ theorem W1Hat_mul_plus_decay (u : Frequency D.recipe) (hu : u ≠ principalFrequ
     apply Real.rpow_le_rpow_of_exponent_le (by linarith [abs_nonneg t]); linarith
   have hsplit : (1 + |t|) ^ A * ((1 + |t|) ^ (-(k : ℝ))) = (1 + |t|) ^ (A - k) := by
     rw [← Real.rpow_add hpos]; ring_nf
-  have hkk : ((1 + |t|) ^ k : ℝ) = (1 + |t|) ^ (k : ℝ) := (Real.rpow_natCast _ _).symm
-  have ha0 : 0 ≤ ‖D.W1Hat ((y : ℂ) + (t : ℂ) * I)‖ := norm_nonneg _
   have ha : ‖D.W1Hat ((y : ℂ) + (t : ℂ) * I)‖ ≤ |CW| * (1 + |t|) ^ (-(k : ℝ)) := by
-    rw [Real.rpow_neg hpos.le, ← hkk, ← div_eq_mul_inv, le_div_iff₀ (pow_pos hpos k)]
+    rw [Real.rpow_neg hpos.le, ← ((Real.rpow_natCast _ _).symm), ← div_eq_mul_inv, le_div_iff₀ (pow_pos hpos k)]
     nlinarith [le_abs_self CW]
-  have hLn : ‖(pkg D).plus u ((y : ℂ) + (t : ℂ) * I)‖ ≤ CL * (2 ^ A * (1 + |t|) ^ A) :=
-    hL'.trans (mul_le_mul_of_nonneg_left h2t hCL.le)
-  have hp1 : 0 ≤ (1 + |t|) ^ A := Real.rpow_nonneg hpos.le _
   calc ‖D.W1Hat ((y : ℂ) + (t : ℂ) * I)‖ * ‖(pkg D).plus u ((y : ℂ) + (t : ℂ) * I)‖
       ≤ (|CW| * (1 + |t|) ^ (-(k : ℝ))) * (CL * (2 ^ A * (1 + |t|) ^ A)) :=
-        mul_le_mul ha hLn (norm_nonneg _) (by positivity)
+        mul_le_mul ha (hL'.trans (mul_le_mul_of_nonneg_left h2t hCL.le)) (norm_nonneg _) (by positivity)
     _ = (CL * 2 ^ A * |CW|) * ((1 + |t|) ^ A * (1 + |t|) ^ (-(k : ℝ))) := by ring
     _ = (CL * 2 ^ A * |CW|) * (1 + |t|) ^ (A - k) := by rw [hsplit]
     _ ≤ (CL * 2 ^ A * |CW|) * (1 + |t|) ^ (-B) :=
@@ -70,30 +65,17 @@ private theorem comb_aux {X Q G1 G2 Mn W P L cp mi bX bG bM bWP bL bcp bmi : ℝ
     (hbM : 0 ≤ bM) (hbWP : 0 ≤ bWP) (hbL : 0 ≤ bL) (hbcp : 0 ≤ bcp) :
     X * Q * (G1 * G2 * Mn * W) * (L * P * cp * mi) ≤
       bX * Q * bG * bM * bWP * bL * bcp * bmi := by
-  have h1 : X * Q ≤ bX * Q := mul_le_mul_of_nonneg_right hX hQ
-  have h2 : G1 * G2 * Mn ≤ bG * bM := mul_le_mul hG hM hMn hbG
-  have p3 : 0 ≤ bX * Q * (bG * bM) := mul_nonneg (mul_nonneg hbX hQ) (mul_nonneg hbG hbM)
-  have h3 : X * Q * (G1 * G2 * Mn) ≤ bX * Q * (bG * bM) :=
-    mul_le_mul h1 h2 (mul_nonneg (mul_nonneg hG1 hG2) hMn) (mul_nonneg hbX hQ)
-  have h4 : X * Q * (G1 * G2 * Mn) * (W * P) ≤ bX * Q * (bG * bM) * bWP :=
-    mul_le_mul h3 hWP (mul_nonneg hW hP) p3
-  have p4 : 0 ≤ bX * Q * (bG * bM) * bWP := mul_nonneg p3 hbWP
-  have h5 : X * Q * (G1 * G2 * Mn) * (W * P) * L ≤ bX * Q * (bG * bM) * bWP * bL :=
-    mul_le_mul h4 hL hL0 p4
-  have p5 : 0 ≤ bX * Q * (bG * bM) * bWP * bL := mul_nonneg p4 hbL
-  have h6 : X * Q * (G1 * G2 * Mn) * (W * P) * L * cp ≤
-      bX * Q * (bG * bM) * bWP * bL * bcp := mul_le_mul h5 hcp hcp0 p5
-  have p6 : 0 ≤ bX * Q * (bG * bM) * bWP * bL * bcp := mul_nonneg p5 hbcp
-  have h7 : X * Q * (G1 * G2 * Mn) * (W * P) * L * cp * mi ≤
-      bX * Q * (bG * bM) * bWP * bL * bcp * bmi := mul_le_mul h6 hmi hmi0 p6
-  calc X * Q * (G1 * G2 * Mn * W) * (L * P * cp * mi)
+  have p3 := mul_nonneg (mul_nonneg hbX hQ) (mul_nonneg hbG hbM)
+  have p4 := mul_nonneg p3 hbWP
+  have p5 := mul_nonneg p4 hbL
+  calc _
       = X * Q * (G1 * G2 * Mn) * (W * P) * L * cp * mi := by ring
-    _ ≤ bX * Q * (bG * bM) * bWP * bL * bcp * bmi := h7
+    _ ≤ bX * Q * (bG * bM) * bWP * bL * bcp * bmi := (mul_le_mul (mul_le_mul (mul_le_mul (mul_le_mul (mul_le_mul (mul_le_mul_of_nonneg_right hX hQ) (mul_le_mul hG hM hMn hbG) (mul_nonneg (mul_nonneg hG1 hG2) hMn) (mul_nonneg hbX hQ)) hWP (mul_nonneg hW hP) p3) hL hL0 p4) hcp hcp0 p5) hmi hmi0 (mul_nonneg p5 hbcp))
     _ = bX * Q * bG * bM * bWP * bL * bcp * bmi := by ring
 
 theorem rawKernel_w_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) (B : ℝ) :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ y s t : ℝ, Scales.wLine - EulerDomain.pad / 2 ≤ y → y ≤ 4 + EulerDomain.pad / 2 →
+    ∃ C : ℝ, ∀ y s t : ℝ, Scales.wLine - EulerDomain.pad / 2 ≤ y → y ≤ 4 + EulerDomain.pad / 2 →
       ‖rawKernel D u ξ ((y : ℂ) + (t : ℂ) * I) ((Scales.zLine : ℂ) + (s : ℂ) * I) Z‖ ≤
         C * (1 + |s|) ^ (-(2 : ℝ)) * (1 + |t|) ^ (-B) := by
   have hq : 0 < frequencyNorm D.recipe u := RawKernelNorm.frequencyNorm_pos D u
@@ -116,15 +98,17 @@ theorem rawKernel_w_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequenc
     (b := 4 + EulerDomain.pad / 2)).exists_bound_of_continuousOn hcont.continuousOn
   have hmi : ‖(pkg D).minus u ξ‖⁻¹ ≤ C4 := by
     rw [← norm_inv]; exact (hminus u ξ hξ.ge).2.2
-  refine ⟨|CZ| * frequencyNorm D.recipe u ^ (-Scales.zLine) * Real.exp ((4 + Scales.zLine - 1) ^ 2) *
-    |CM| * CWL * C1 * |Hc| * C4, by positivity, ?_⟩
+  let exp₀ := Real.exp ((4 + Scales.zLine - 1) ^ 2)
+  refine ⟨|CZ| * frequencyNorm D.recipe u ^ (-Scales.zLine) * exp₀ *
+    |CM| * CWL * C1 * |Hc| * C4, ?_⟩
   intro y s t h1y h2y
   have hwre : (((y : ℂ) + (t : ℂ) * I)).re = y := by simp
   have hzre : (((Scales.zLine : ℂ) + (s : ℂ) * I)).re = Scales.zLine := by simp
+  let M₀ := D.M ((Scales.zLine : ℂ) + (s : ℂ) * I)
   have e : ‖rawKernel D u ξ ((y : ℂ) + (t : ℂ) * I) ((Scales.zLine : ℂ) + (s : ℂ) * I) Z‖ =
       Z ^ (Scales.kernelExponent ξ.re y Scales.zLine) * frequencyNorm D.recipe u ^ (-Scales.zLine) *
         (Real.exp ((ξ.re + Scales.zLine - 1) ^ 2) * Real.exp (-(ξ.im + s) ^ 2) *
-          ‖D.M ((Scales.zLine : ℂ) + (s : ℂ) * I)‖ * ‖D.W1Hat ((y : ℂ) + (t : ℂ) * I)‖) *
+          ‖M₀‖ * ‖D.W1Hat ((y : ℂ) + (t : ℂ) * I)‖) *
         (‖D.recipe.L (6 * ((Scales.zLine : ℂ) + (s : ℂ) * I))‖ *
           ‖(pkg D).plus u ((y : ℂ) + (t : ℂ) * I)‖ *
           ‖AllRowEuler.InitialSeparation.correctionProduct D.context (rawFrequency D u) ξ
@@ -139,19 +123,19 @@ theorem rawKernel_w_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequenc
     simp only [Real.norm_eq_abs] at h
     exact (le_abs_self _).trans (h.trans (le_abs_self _))
   have hGb : Real.exp ((ξ.re + Scales.zLine - 1) ^ 2) * Real.exp (-(ξ.im + s) ^ 2) ≤
-      Real.exp ((4 + Scales.zLine - 1) ^ 2) := by
+      exp₀ := by
     rw [hξ]
-    calc Real.exp ((4 + Scales.zLine - 1) ^ 2) * Real.exp (-(ξ.im + s) ^ 2)
-        ≤ Real.exp ((4 + Scales.zLine - 1) ^ 2) * 1 :=
+    calc exp₀ * Real.exp (-(ξ.im + s) ^ 2)
+        ≤ exp₀ * 1 :=
           mul_le_mul_of_nonneg_left (Real.exp_le_one_iff.mpr (neg_nonpos.mpr (sq_nonneg _)))
             (Real.exp_pos _).le
-      _ = Real.exp ((4 + Scales.zLine - 1) ^ 2) := mul_one _
+      _ = exp₀ := mul_one _
   have hpos : (0 : ℝ) < 1 + |s| := by positivity
-  have hMb : ‖D.M ((Scales.zLine : ℂ) + (s : ℂ) * I)‖ ≤ |CM| * (1 + |s|) ^ (-(2 : ℝ)) := by
+  have hMb : ‖M₀‖ ≤ |CM| * (1 + |s|) ^ (-(2 : ℝ)) := by
     have h := hCM ((Scales.zLine : ℂ) + (s : ℂ) * I) hzre.ge hzre.le
     have him : (((Scales.zLine : ℂ) + (s : ℂ) * I)).im = s := by simp
     rw [him] at h
-    have h' : (1 + |s|) ^ 2 * ‖D.M ((Scales.zLine : ℂ) + (s : ℂ) * I)‖ ≤ |CM| :=
+    have h' : (1 + |s|) ^ 2 * ‖M₀‖ ≤ |CM| :=
       h.trans (le_abs_self _)
     rw [Real.rpow_neg hpos.le, Real.rpow_two, ← div_eq_mul_inv, le_div_iff₀ (pow_pos hpos 2),
       mul_comm]
@@ -180,8 +164,10 @@ theorem rawKernel_w_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequenc
   refine le_trans hfin (le_of_eq ?_)
   ring
 
-private theorem kdiff (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) (w z : ℂ)
+variable (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z)
+
+include hu hZ in
+private theorem kdiff (ξ : ℂ) (hξ : ξ.re = 4) (w z : ℂ)
     (hw : Scales.wLine - EulerDomain.pad / 2 < w.re) (hz : z.re = Scales.zLine) :
     DifferentiableAt ℂ (fun p : ℂ × ℂ × ℂ => rawKernel D u p.1 p.2.1 p.2.2 Z) (ξ, w, z) := by
   have hw0 : (1 / 10 : ℝ) < w.re := by
@@ -195,23 +181,22 @@ private theorem kdiff (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.
       1 / 2 < ξ.re ∧ 2 < 3 * ξ.re ∧ 5 / 2 < 3 * ξ.re + w.re
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
   obtain ⟨C4, _, hminus⟩ := RawRightHecke31.minus_right D 4 (by norm_num)
-  have hne : (pkg D).minus u ξ ≠ 0 := (hminus u ξ hξ.ge).1
+  have hne := (hminus u ξ hξ.ge).1
   exact RawKernelRegularity31.rawKernel_differentiableAt D u hu Z hZ (ξ, w, z) hmemΩ
     (by show (1 : ℝ) / 6 < z.re; rw [hz]; unfold Scales.zLine; norm_num) hne
 
-theorem rawKernel_differentiableOn_w (u : Frequency D.recipe)
-    (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ z : ℂ) (hξ : ξ.re = 4)
+include hu hZ in
+theorem rawKernel_differentiableOn_w (ξ z : ℂ) (hξ : ξ.re = 4)
     (hz : z.re = Scales.zLine) :
     DifferentiableOn ℂ (fun w : ℂ => rawKernel D u ξ w z Z)
       {w : ℂ | Scales.wLine - EulerDomain.pad / 2 < w.re ∧ w.re < 4 + EulerDomain.pad / 2} := by
   intro w hw
   obtain ⟨hw1, hw2⟩ := hw
-  have hd := kdiff D u hu Z hZ ξ hξ w z hw1 hz
   have hf : DifferentiableAt ℂ (fun w : ℂ => ((ξ, w, z) : ℂ × ℂ × ℂ)) w := by fun_prop
-  exact (hd.comp w hf).differentiableWithinAt
+  exact ((kdiff D u hu Z hZ ξ hξ w z hw1 hz).comp w hf).differentiableWithinAt
 
-theorem Iz_differentiableOn_w (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) :
+include hu hZ in
+theorem Iz_differentiableOn_w (ξ : ℂ) (hξ : ξ.re = 4) :
     DifferentiableOn ℂ (fun w : ℂ => Iz D u ξ w Scales.zLine Z)
       (comparisonClosedStrip Scales.wLine 4) := by
   have hp : (0 : ℝ) < EulerDomain.pad := by unfold EulerDomain.pad; norm_num
@@ -249,7 +234,7 @@ theorem Iz_differentiableOn_w (u : Frequency D.recipe) (hu : u ≠ principalFreq
         rawKernel D u ξ w ((Scales.zLine : ℂ) + (s : ℂ) * I) Z := funext fun w => hG w s
     rw [hfun]
     exact h
-  obtain ⟨C, hC0, hCb⟩ := rawKernel_w_bound D u hu Z hZ ξ hξ 0
+  obtain ⟨C, hCb⟩ := rawKernel_w_bound D u hu Z hZ ξ hξ 0
   have hdom : ∀ w0 ∈ U, ∃ r > (0 : ℝ), Metric.ball w0 r ⊆ U ∧
       ∃ g : ℝ → ℝ, Integrable g volume ∧ ∀ w ∈ Metric.ball w0 r, ∀ s, ‖G w s‖ ≤ g s := by
     intro w0 hw0
@@ -297,12 +282,12 @@ theorem Iz_differentiableOn_w (u : Frequency D.recipe) (hu : u ≠ principalFreq
   · rw [hlo]; linarith
   · rw [hhi]; linarith
 
-theorem Iz_decayOn_w (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) :
+include hu hZ in
+theorem Iz_decayOn_w (ξ : ℂ) (hξ : ξ.re = 4) :
     LowRowXiControls.DecayOn (fun w : ℂ => Iz D u ξ w Scales.zLine Z) Scales.wLine 4 := by
   intro B hB
   have hp : (0 : ℝ) < EulerDomain.pad := by unfold EulerDomain.pad; norm_num
-  obtain ⟨C, hC0, hCb⟩ := rawKernel_w_bound D u hu Z hZ ξ hξ B
+  obtain ⟨C, hCb⟩ := rawKernel_w_bound D u hu Z hZ ξ hξ B
   refine ⟨‖(2 * (Real.pi : ℂ))⁻¹‖ * (C * ∫ s : ℝ, (1 + |s|) ^ (-(2 : ℝ))), 0, ?_⟩
   intro x hx y _
   obtain ⟨hx1, hx2⟩ := hx
@@ -328,8 +313,8 @@ theorem Iz_decayOn_w (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.r
     _ = ‖(2 * (Real.pi : ℂ))⁻¹‖ * (C * ∫ s : ℝ, (1 + |s|) ^ (-(2 : ℝ))) * (1 + |y|) ^ (-B) := by
         ring
 
-theorem Iwz_w_shift (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) :
+include hu hZ in
+theorem Iwz_w_shift (ξ : ℂ) (hξ : ξ.re = 4) :
     Iwz D u ξ 4 Scales.zLine Z = Iwz D u ξ Scales.wLine Scales.zLine Z := by
   unfold Iwz
   exact LowRowXiControls.verticalIntegral_eq_of_decayOn (by norm_num [Scales.wLine])

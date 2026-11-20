@@ -21,26 +21,7 @@ variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   [TopologicalSpace K] [IsNonarchimedeanLocalField K]
   [MeasurableSpace K] [BorelSpace K]
 
-private theorem shifted_cube_proper : IsProperMap (fun x : Kˣ => x^3) := by
- letI := IsTopologicalAddGroup.rightUniformSpace K
- haveI := isUniformAddGroup_of_addCommGroup (G := K)
- letI : (Valued.v (R := K)).RankOne :=
-  { hom' := IsRankLeOne.nonempty.some.emb (R := K).comp MonoidWithZeroHom.ValueGroup₀.embedding
-    strictMono' := IsRankLeOne.nonempty.some.strictMono.comp MonoidWithZeroHom.ValueGroup₀.embedding_strictMono }
- letI := Valued.toNontriviallyNormedField K (ValueGroupWithZero K)
- haveI : ProperSpace K := .of_nontriviallyNormedField_of_weaklyLocallyCompactSpace K
- have hp : IsProperMap (fun x : K => x^3) := by
-   convert (Polynomial.X ^ 3 : Polynomial K).isProperMap_eval (by simp) using 1
-   funext x
-   simp
- have hprod : IsProperMap (fun p : K × Kᵐᵒᵖ => (p.1^3, p.2^3)) := hp.prodMap (by
-   simpa only [MulOpposite.op_pow] using
-     (MulOpposite.opHomeomorph.isProperMap.comp hp).comp MulOpposite.opHomeomorph.symm.isProperMap)
- have hcomm : (fun p : K × Kᵐᵒᵖ => (p.1^3, p.2^3)) ∘ Units.embedProduct K =
-     Units.embedProduct K ∘ (fun x : Kˣ => x^3) := by funext x; ext <;> simp [Units.embedProduct]
- apply isProperMap_of_comp_of_inj (by fun_prop) Units.continuous_embedProduct
-   (by rw [← hcomm]; exact hprod.comp Units.isClosedEmbedding_embedProduct.isProperMap)
- exact Units.embedProduct_injective K
+private alias shifted_cube_proper := DedekindZetaZeroFree.KPCubicHaarTransport.CubicPowerPushforward.cube_proper
 
 private theorem integrable_comp_cube
     (dx : Measure K) [dx.IsAddHaarMeasure] (f : Kˣ → ℂ)
@@ -180,7 +161,7 @@ private theorem shifted_linear_integrable
 end Generic
 
 variable (F : Type) [Field F] [NumberField F]
-variable (q : HeightOneSpectrum (𝓞 F))
+    (q : HeightOneSpectrum (𝓞 F))
 local instance shiftedBetaValuativeRel : ValuativeRel (q.adicCompletion F) :=
   ClassFieldTheory.finitePlaceCompletionValuativeRel F q
 local instance shiftedBetaLocalField : IsNonarchimedeanLocalField (q.adicCompletion F) :=

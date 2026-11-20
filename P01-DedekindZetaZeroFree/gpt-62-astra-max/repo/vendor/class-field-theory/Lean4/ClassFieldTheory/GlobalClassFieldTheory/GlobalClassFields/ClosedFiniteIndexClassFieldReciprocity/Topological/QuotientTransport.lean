@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -29,11 +27,11 @@ namespace QuotientGroup
 
 variable {G : Type*} [Group G] [TopologicalSpace G]
 
+variable {N H : Subgroup G} [N.Normal] [H.Normal] (h : N = H)
+
 /-- Equal normal subgroups induce a continuous multiplicative equivalence
 between their quotient groups with their native quotient topologies. -/
-noncomputable def quotientContinuousMulEquivOfEq
-    {N H : Subgroup G} [N.Normal] [H.Normal]
-    (h : N = H) :
+noncomputable def quotientContinuousMulEquivOfEq :
     G ⧸ N ≃ₜ* G ⧸ H := by
   subst H
   exact ContinuousMulEquiv.refl _
@@ -41,9 +39,7 @@ noncomputable def quotientContinuousMulEquivOfEq
 /-- Forgetting topology from `quotientContinuousMulEquivOfEq` recovers the
 canonical multiplicative equivalence induced by the same equality. -/
 @[simp]
-theorem quotientContinuousMulEquivOfEq_apply
-    {N H : Subgroup G} [N.Normal] [H.Normal]
-    (h : N = H) (x : G ⧸ N) :
+theorem quotientContinuousMulEquivOfEq_apply (x : G ⧸ N) :
     quotientContinuousMulEquivOfEq h x =
       QuotientGroup.quotientMulEquivOfEq h x := by
   subst H
@@ -51,7 +47,7 @@ theorem quotientContinuousMulEquivOfEq_apply
   intro g
   exact
     (QuotientGroup.quotientMulEquivOfEq_mk
-      (G := G) (M := N) (N := N) rfl g).symm
+         rfl g).symm
 
 end QuotientGroup
 

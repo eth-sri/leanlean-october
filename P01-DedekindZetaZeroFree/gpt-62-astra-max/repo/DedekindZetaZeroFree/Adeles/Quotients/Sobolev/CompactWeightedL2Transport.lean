@@ -19,9 +19,13 @@ private lemma transport_restrict_density {n : ℕ} (Ω : Opens (E n))
   rw [KPChartL2.weightedMeasure, restrict_withDensity hC.measurableSet,
     Measure.restrict_restrict_of_subset hCΩ]
 
-private lemma transport_support_norm {n r : ℕ} (C : Set (E n))
-    (hC : MeasurableSet C) (μ : Measure (E n)) (f : E n → V r)
-    (hsupp : ∀ᵐ x ∂μ, x ∉ C → f x = 0) :
+section
+
+variable {n r : ℕ} (C : Set (E n)) (hC : MeasurableSet C) (μ : Measure (E n)) (f : E n → V r)
+    (hsupp : ∀ᵐ x ∂μ, x ∉ C → f x = 0)
+
+include hC hsupp in
+private lemma transport_support_norm :
     eLpNorm f 2 (μ.restrict C) = eLpNorm f 2 μ := by
   rw [← eLpNorm_indicator_eq_eLpNorm_restrict hC.nullMeasurableSet]
   apply eLpNorm_congr_ae
@@ -30,16 +34,16 @@ private lemma transport_support_norm {n r : ℕ} (C : Set (E n))
   · simp [h]
   · simp [h, hx h]
 
-private lemma transport_support_memLp {n r : ℕ} (C : Set (E n))
-    (hC : MeasurableSet C) (μ : Measure (E n)) (f : E n → V r)
-    (hsupp : ∀ᵐ x ∂μ, x ∉ C → f x = 0) (hf : MemLp f 2 (μ.restrict C)) :
+include hC hsupp in
+private lemma transport_support_memLp (hf : MemLp f 2 (μ.restrict C)) :
     MemLp f 2 μ := by
-  have heq : C.indicator f =ᵐ[μ] f := by
-    filter_upwards [hsupp] with x hx
-    by_cases h : x ∈ C
-    · simp [h]
-    · simp [h, hx h]
-  exact ((memLp_indicator_iff_restrict hC.nullMeasurableSet).mpr hf).ae_eq heq
+  refine ((memLp_indicator_iff_restrict hC.nullMeasurableSet).mpr hf).ae_eq ?_
+  filter_upwards [hsupp] with x hx
+  by_cases h : x ∈ C
+  · simp [h]
+  · simp [h, hx h]
+
+end
 
 private lemma transport_weighted_support {n r : ℕ} (Ω : Opens (E n))
     (C : Set (E n)) (w : E n → ℝ) (f : E n → V r)
@@ -56,10 +60,6 @@ private lemma transport_sqrt_factor (b : ℝ) (hb : 0 ≤ b) :
 private lemma transport_norm_bridge {n r : ℕ} (μ : Measure (E n))
     (f : E n → V r) (hf : MemLp f 2 μ) :
     eLpNorm f 2 μ = ENNReal.ofReal (l2Norm μ f hf) := by
-  have hint : Integrable (fun x => ‖f x‖ ^ (2 : ℕ)) μ :=
-    hf.integrable_norm_pow (by norm_num)
-  have hnn : 0 ≤ᵐ[μ] fun x => ‖f x‖ ^ (2 : ℕ) :=
-    Filter.Eventually.of_forall fun x => by positivity
   rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by norm_num) (by norm_num)
     hf.aestronglyMeasurable]
   norm_num only [ENNReal.toReal_ofNat]
@@ -70,9 +70,11 @@ private lemma transport_norm_bridge {n r : ℕ} (μ : Measure (E n))
     rw [← ofReal_norm, ENNReal.ofReal_rpow_of_nonneg (norm_nonneg _)
       (by norm_num : (0 : ℝ) ≤ 2)]
     norm_num
-  rw [heq, ← ofReal_integral_eq_lintegral_ofReal hint hnn]
+  rw [heq, ← ofReal_integral_eq_lintegral_ofReal (hf.integrable_norm_pow (by norm_num)) (Filter.Eventually.of_forall fun x => by positivity)]
   rw [ENNReal.ofReal_rpow_of_nonneg (by positivity) (by norm_num : (0 : ℝ) ≤ 1 / 2)]
   rw [l2Norm, Real.sqrt_eq_rpow]
+
+alias CompactWeightedL2Transport.transport_norm_bridge := transport_norm_bridge
 
 private lemma transport_real_bound {n r : ℕ} (μ ν : Measure (E n))
     (f : E n → V r) (hμ : MemLp f 2 μ) (hν : MemLp f 2 ν)
@@ -83,9 +85,11 @@ private lemma transport_real_bound {n r : ℕ} (μ ν : Measure (E n))
     ← ENNReal.ofReal_mul hb] at h
   exact (ENNReal.ofReal_le_ofReal_iff (by unfold l2Norm; positivity)).mp h
 
-theorem compact_weighted_l2_upper {n r : ℕ} (Ω : Opens (E n))
-    (C : Set (E n)) (hC : IsCompact C) (hCΩ : C ⊆ (Ω : Set (E n)))
-    (w : E n → ℝ) (Cw : ℝ) (hCw : 0 < Cw)
+variable {n r : ℕ} (Ω : Opens (E n)) (C : Set (E n)) (hC : IsCompact C) (hCΩ : C ⊆ (Ω : Set (E n)))
+    (w : E n → ℝ)
+
+include hC hCΩ in
+theorem compact_weighted_l2_upper (Cw : ℝ) (hCw : 0 < Cw)
     (hbound : ∀ x ∈ C, w x ≤ Cw)
     (f : E n → V r) (hsupp : ∀ᵐ x ∂volume, x ∉ C → f x = 0)
     (hf : MemLp f 2 volume) :
@@ -94,7 +98,7 @@ theorem compact_weighted_l2_upper {n r : ℕ} (Ω : Opens (E n))
         ENNReal.ofReal (Real.sqrt Cw) * eLpNorm f 2 volume ∧
       l2Norm (KPChartL2.weightedMeasure n (Ω : Set (E n)) w) f hfW ≤
         Real.sqrt Cw * l2Norm volume f hf := by
-  let μ := KPChartL2.weightedMeasure n (Ω : Set (E n)) w
+  let μ := KPChartL2.weightedMeasure n Ω w
   have hmeasure : μ.restrict C ≤ ENNReal.ofReal Cw • volume.restrict C := by
     rw [transport_restrict_density Ω C hC hCΩ w, ← withDensity_const]
     apply withDensity_mono
@@ -112,9 +116,8 @@ theorem compact_weighted_l2_upper {n r : ℕ} (Ω : Opens (E n))
   exact ⟨hfW, hnorm, transport_real_bound μ volume f hfW hf _
     (Real.sqrt_nonneg _) hnorm⟩
 
-theorem compact_weighted_l2_lower {n r : ℕ} (Ω : Opens (E n))
-    (C : Set (E n)) (hC : IsCompact C) (hCΩ : C ⊆ (Ω : Set (E n)))
-    (w : E n → ℝ) (hw : ContDiffOn ℝ ∞ w (Ω : Set (E n)))
+include hC hCΩ in
+theorem compact_weighted_l2_lower (hw : ContDiffOn ℝ ∞ w (Ω : Set (E n)))
     (cw : ℝ) (hcw : 0 < cw) (hbound : ∀ x ∈ C, cw ≤ w x)
     (f : E n → V r) (hsupp : ∀ᵐ x ∂volume, x ∉ C → f x = 0)
     (hfW : MemLp f 2 (KPChartL2.weightedMeasure n (Ω : Set (E n)) w)) :
@@ -123,20 +126,17 @@ theorem compact_weighted_l2_lower {n r : ℕ} (Ω : Opens (E n))
         eLpNorm f 2 (KPChartL2.weightedMeasure n (Ω : Set (E n)) w) ∧
       l2Norm volume f hf ≤ (Real.sqrt cw)⁻¹ *
         l2Norm (KPChartL2.weightedMeasure n (Ω : Set (E n)) w) f hfW := by
-  let μ := KPChartL2.weightedMeasure n (Ω : Set (E n)) w
-  have hd : AEMeasurable (fun x => ENNReal.ofReal (w x)) (volume.restrict C) :=
-    ((hw.continuousOn.mono hCΩ).aemeasurable hC.measurableSet).ennreal_ofReal
+  let μ := KPChartL2.weightedMeasure n Ω w
   have hn : ∀ᵐ x ∂volume.restrict C, ENNReal.ofReal (w x) ≠ 0 := by
     filter_upwards [ae_restrict_mem hC.measurableSet] with x hx
     exact ne_of_gt (ENNReal.ofReal_pos.mpr (hcw.trans_le (hbound x hx)))
-  have hi := withDensity_inv_same₀ hd hn
-    (Filter.Eventually.of_forall fun _ => ENNReal.ofReal_ne_top)
   have hmeasure : volume.restrict C ≤ (ENNReal.ofReal cw)⁻¹ • μ.restrict C := by
     rw [transport_restrict_density Ω C hC hCΩ w]
     calc
       volume.restrict C = ((volume.restrict C).withDensity
           (fun x => ENNReal.ofReal (w x))).withDensity
-          (fun x => (ENNReal.ofReal (w x))⁻¹) := hi.symm
+          (fun x => (ENNReal.ofReal (w x))⁻¹) := (withDensity_inv_same₀ (((hw.continuousOn.mono hCΩ).aemeasurable hC.measurableSet).ennreal_ofReal) hn
+            (Filter.Eventually.of_forall fun _ => ENNReal.ofReal_ne_top)).symm
       _ ≤ ((volume.restrict C).withDensity (fun x => ENNReal.ofReal (w x))).withDensity
           (fun _ => (ENNReal.ofReal cw)⁻¹) := by
         apply withDensity_mono
@@ -147,14 +147,13 @@ theorem compact_weighted_l2_lower {n r : ℕ} (Ω : Opens (E n))
   have hf := transport_support_memLp C hC.measurableSet volume f hsupp
     ((hfW.restrict C).of_measure_le_smul
       (ENNReal.inv_ne_top.mpr (ne_of_gt (ENNReal.ofReal_pos.mpr hcw))) hmeasure)
-  have hsW := transport_weighted_support Ω C w f hsupp
   have hfactor : ((ENNReal.ofReal cw)⁻¹) ^ ((2 : ENNReal).toReal⁻¹) =
       ENNReal.ofReal ((Real.sqrt cw)⁻¹) := by
     rw [ENNReal.inv_rpow, transport_sqrt_factor cw hcw.le,
       ENNReal.ofReal_inv_of_pos (Real.sqrt_pos.mpr hcw)]
   have hnorm : eLpNorm f 2 volume ≤ ENNReal.ofReal ((Real.sqrt cw)⁻¹) * eLpNorm f 2 μ := by
     rw [← transport_support_norm C hC.measurableSet volume f hsupp,
-      ← transport_support_norm C hC.measurableSet μ f hsW]
+      ← transport_support_norm C hC.measurableSet μ f (transport_weighted_support Ω C w f hsupp)]
     simpa only [one_div, ENNReal.toReal_inv, smul_eq_mul, hfactor] using
       (eLpNorm_le_of_measure_le_smul (p := 2) (f := f) hmeasure)
   exact ⟨hf, hnorm, transport_real_bound volume μ f hf hfW _ (by positivity) hnorm⟩

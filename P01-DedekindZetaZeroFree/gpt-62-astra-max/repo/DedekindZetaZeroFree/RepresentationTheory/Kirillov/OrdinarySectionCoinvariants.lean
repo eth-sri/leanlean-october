@@ -92,8 +92,11 @@ def ordinaryRelationSpan (E : Type*) [AddCommGroup E] [Module ℂ E] :
   Submodule.span ℂ (Set.range fun bf : K F w × Sections F ζ hζ w m ψ E =>
     rightAction F ζ hζ w m hm ψ E (n F ζ hζ w bf.1) bf.2 - bf.2)
 
-private theorem root_preserves_patch {E : Type*} [AddCommGroup E] [Module ℂ E]
- (c : LocalChart F ζ hζ w m) (b : K F w)
+section
+
+variable {E : Type*} [AddCommGroup E] [Module ℂ E] (c : LocalChart F ζ hζ w m)
+
+private theorem root_preserves_patch (b : K F w)
  (f : PatchSections F ζ hζ w m ψ c E) :
  rightAction F ζ hζ w m hm ψ E (n F ζ hζ w b) f.val ∈
  PatchSections F ζ hζ w m ψ c E := by
@@ -102,11 +105,12 @@ private theorem root_preserves_patch {E : Type*} [AddCommGroup E] [Module ℂ E]
  apply f.property
  simpa only [map_mul, show slope F ζ hζ w (n F ζ hζ w b) = 1 from
    MonoidHom.mem_ker.mp (n_mem_H F ζ hζ w b), mul_one] using hp
-private theorem chart_sub {E : Type*} [AddCommGroup E] [Module ℂ E]
- (c : LocalChart F ζ hζ w m) (f g : Sections F ζ hζ w m ψ E)
+private theorem chart_sub (f g : Sections F ζ hζ w m ψ E)
  (t : c.ball.domain) :
  chartValue F ζ hζ w m ψ c (f-g) t =
  chartValue F ζ hζ w m ψ c f t - chartValue F ζ hζ w m ψ c g t := rfl
+
+end
 include hm in
 private theorem patch_sub_eq (hψ : IsLocallyConstant ψ)
  {E : Type*} [AddCommGroup E] [Module ℂ E]
@@ -120,9 +124,8 @@ private theorem lc_factor (hψ : IsLocallyConstant ψ)
  (c : LocalChart F ζ hζ w m) (b : K F w) :
  IsLocallyConstant (fun t : c.ball.domain =>
  ((ψ (Multiplicative.ofAdd ((t.val : K F w) * b)) : ℂ) - 1)⁻¹) := by
- have hc : Continuous (fun t : c.ball.domain =>
-   Multiplicative.ofAdd ((t.val : K F w) * b)) := by fun_prop
- exact (hψ.comp_continuous hc).comp (fun x : ℂˣ => ((x : ℂ)-1)⁻¹)
+ refine (hψ.comp_continuous ?_).comp (fun x : ℂˣ => ((x : ℂ)-1)⁻¹)
+ fun_prop
 private theorem residual_zero {E : Type*} [AddCommGroup E] [Module ℂ E]
  (a : ℂ) (v : E) (h : a = 1 → v = 0) : v - (a-1) • ((a-1)⁻¹ • v) = 0 := by
  by_cases ha : a = 1
@@ -209,14 +212,13 @@ private theorem patch_mem (hψ : IsLocallyConstant ψ) (hψne : ψ ≠ 1)
  let U : K F w → Set c.ball.domain := fun b =>
    {t | (ψ (Multiplicative.ofAdd ((t.val : K F w) * b)) : ℂ) ≠ 1}
  have hU (b : K F w) : IsOpen (U b) := by
-   have hc : Continuous (fun t : c.ball.domain =>
-     Multiplicative.ofAdd ((t.val : K F w) * b)) := by fun_prop
-   exact (hψ.comp_continuous hc).comp (fun x : ℂˣ => (x : ℂ)) {1}ᶜ
+   refine (hψ.comp_continuous ?_).comp (fun x : ℂˣ => (x : ℂ)) {1}ᶜ
+   fun_prop
  have hcover : Set.univ ⊆ ⋃ b, U b := by
    intro t _
    rcases hx with ⟨x, hx⟩
-   refine Set.mem_iUnion.mpr ⟨x / (t.val : K F w), ?_⟩
-   change (ψ (Multiplicative.ofAdd ((t.val : K F w) * (x / (t.val : K F w)))) : ℂ) ≠ 1
+   refine Set.mem_iUnion.mpr ⟨x / t.val, ?_⟩
+   change (ψ (Multiplicative.ofAdd (t.val * (x / t.val))) : ℂ) ≠ 1
    simpa only [mul_div_cancel₀ _ t.val.ne_zero] using hx
  letI : CompactSpace c.ball.domain := isCompact_iff_compactSpace.mp c.ball.compact_domain
  obtain ⟨s, hs⟩ := isCompact_univ.elim_finite_subcover U hU hcover
@@ -243,7 +245,7 @@ theorem ordinaryRelationSpan_eq_top
     (E : Type*) [AddCommGroup E] [Module ℂ E] :
     ordinaryRelationSpan F ζ hζ w m hm ψ E = ⊤ := by
   ext f
-  simpa only [Submodule.mem_top, iff_true] using
+  simpa using
     section_mem_ordinaryRelationSpan F ζ hζ w m hm ψ hψ hψne f
 
 theorem ordinary_section_coinvariants_vanish
@@ -252,7 +254,6 @@ theorem ordinary_section_coinvariants_vanish
     Subsingleton (Representation.Coinvariants
       (ordinaryRootAction F ζ hζ w m hm ψ E)) := by
   apply Submodule.Quotient.subsingleton_iff.mpr
-  change Representation.Coinvariants.ker (ordinaryRootAction F ζ hζ w m hm ψ E) = ⊤
   rw [← ordinaryRelationSpan_eq_top F ζ hζ w m hm ψ hψ hψne E]
   unfold Representation.Coinvariants.ker ordinaryRelationSpan
   congr 1

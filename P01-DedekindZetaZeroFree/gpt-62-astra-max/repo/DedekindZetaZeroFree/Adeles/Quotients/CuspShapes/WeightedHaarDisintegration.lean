@@ -11,10 +11,9 @@ open scoped Classical NumberField ENNReal NNReal Topology
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPMsNativeWeightedShape.Source
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar renaming weighted_section_finite → weighted_section_finite
 
 end DedekindZetaZeroFree.KPMsNativeWeightedShape.Source
 namespace DedekindZetaZeroFree.KPMsNativeWeightedShapeSource
@@ -26,7 +25,6 @@ structure NativeAngularHaarData
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (S : NativeRecipe F ζ hζ R P) extends NativeMassFamily F ζ hζ R P S where
-
   shape : ∀ V : Level F ζ hζ,
     Omega F ζ hζ (nativeDatum F ζ hζ) (cofinalLevel F ζ hζ V) →
       KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V)
@@ -77,7 +75,7 @@ theorem actual_native_weighted_shape
     shape_on_source_frame := hframe
     shape_measure := ?_ }⟩
   intro V
-  obtain ⟨Y, _, hY⟩ := exists_offset_admissible F ζ hζ R P (nativeRecipe F ζ hζ R P) V
+  obtain ⟨Y, hY⟩ := exists_offset_admissible F ζ hζ R P (nativeRecipe F ζ hζ R P) V
   rw [finiteMarginal, M.from_source V Y hY,
     Measure.map_map (hshape V)
       (KPMsActualAngularShellSource.fullToLevel_measurable _ _)]

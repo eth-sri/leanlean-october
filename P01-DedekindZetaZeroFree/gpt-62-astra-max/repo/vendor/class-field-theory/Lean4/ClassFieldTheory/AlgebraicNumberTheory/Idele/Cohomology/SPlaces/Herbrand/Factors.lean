@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -27,7 +24,6 @@ open scoped NumberField BigOperators ValuativeRel Classical NNReal
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 open AlgebraicNumberTheory.Valuations
 open CyclicCohomology.ProfiniteCohomology.Herbrand
@@ -90,9 +86,6 @@ noncomputable def
         (localBlockFamilyAction
           (relativeUnrestrictedSPlaceDatum
             (K := K) (L := L) S)) := by
-  let d :=
-    relativeUnrestrictedSPlaceDatum
-      (K := K) (L := L) S
   letI sourceAction :=
     relativeUnrestrictedSPlaceFactorsActionProvider
       (K := K) (L := L) S
@@ -102,9 +95,9 @@ noncomputable def
   exact
     herbrandH0EquivariantMulEquiv
       (relativeUnrestrictedSPlaceFactorsEquivLocalBlockFamily
-        (K := K) (L := L) S)
+          S)
       (relativeUnrestrictedSPlaceFactorsEquivLocalBlockFamily_smul
-        (K := K) (L := L) S)
+          S)
 
 omit [NumberField L] in
 /-- The equivariant realization by local blocks identifies degree-minus-one
@@ -128,9 +121,6 @@ noncomputable def
         (localBlockFamilyAction
           (relativeUnrestrictedSPlaceDatum
             (K := K) (L := L) S)) σ := by
-  let d :=
-    relativeUnrestrictedSPlaceDatum
-      (K := K) (L := L) S
   letI sourceAction :=
     relativeUnrestrictedSPlaceFactorsActionProvider
       (K := K) (L := L) S
@@ -162,15 +152,7 @@ theorem relativeUnrestrictedSPlaceFactorsHerbrandH0Finite
   let d :=
     relativeUnrestrictedSPlaceDatum
       (K := K) (L := L) S
-  let sourceAction :=
-    relativeUnrestrictedSPlaceFactorsActionProvider
-      (K := K) (L := L) S
-  let targetAction :=
-    relativeUnrestrictedSPlaceLocalBlockFamilyActionProvider
-      (K := K) (L := L) S
-  let targetFinite : Finite
-      (HerbrandH0 (L ≃ₐ[K] L)
-        (LocalBlockFamily d)) :=
+  let targetFinite :=
     relativeUnrestrictedLocalBlockFamilyHerbrandH0Finite
       S σ hgen
   exact
@@ -198,15 +180,7 @@ theorem relativeUnrestrictedSPlaceFactorsHerbrandHMinusOneFinite
   let d :=
     relativeUnrestrictedSPlaceDatum
       (K := K) (L := L) S
-  let sourceAction :=
-    relativeUnrestrictedSPlaceFactorsActionProvider
-      (K := K) (L := L) S
-  let targetAction :=
-    relativeUnrestrictedSPlaceLocalBlockFamilyActionProvider
-      (K := K) (L := L) S
-  let targetFinite : Finite
-      (HerbrandHMinusOne (L ≃ₐ[K] L)
-        (LocalBlockFamily d) σ) :=
+  let targetFinite :=
     relativeUnrestrictedLocalBlockFamilyHerbrandHMinusOneFinite
       S σ hgen
   exact
@@ -250,24 +224,25 @@ theorem
   let targetAction :=
     relativeUnrestrictedSPlaceLocalBlockFamilyActionProvider
       (K := K) (L := L) S
+  let HerbrandH0₀ := HerbrandH0 (L ≃ₐ[K] L)
   let sourceFinite : Finite
-      (HerbrandH0 (L ≃ₐ[K] L)
+      (HerbrandH0₀
         (RelativeUnrestrictedSPlaceFactors
           (K := K) (L := L) S)) :=
     relativeUnrestrictedSPlaceFactorsHerbrandH0Finite
       S σ hgen
   let targetFinite : Finite
-      (HerbrandH0 (L ≃ₐ[K] L)
+      (HerbrandH0₀
         (LocalBlockFamily d)) :=
     relativeUnrestrictedLocalBlockFamilyHerbrandH0Finite
       S σ hgen
   calc
     Nat.card
-        (HerbrandH0 (L ≃ₐ[K] L)
+        (HerbrandH0₀
           (RelativeUnrestrictedSPlaceFactors
             (K := K) (L := L) S)) =
       Nat.card
-        (HerbrandH0 (L ≃ₐ[K] L)
+        (HerbrandH0₀
           (LocalBlockFamily d)) :=
       Nat.card_congr
         (relativeUnrestrictedSPlaceFactorsHerbrandH0EquivLocalBlockFamily
@@ -309,24 +284,25 @@ theorem
   let targetAction :=
     relativeUnrestrictedSPlaceLocalBlockFamilyActionProvider
       (K := K) (L := L) S
+  let HerbrandHMinusOne₀ := HerbrandHMinusOne (L ≃ₐ[K] L)
   let sourceFinite : Finite
-      (HerbrandHMinusOne (L ≃ₐ[K] L)
+      (HerbrandHMinusOne₀
         (RelativeUnrestrictedSPlaceFactors
           (K := K) (L := L) S) σ) :=
     relativeUnrestrictedSPlaceFactorsHerbrandHMinusOneFinite
       S σ hgen
   let targetFinite : Finite
-      (HerbrandHMinusOne (L ≃ₐ[K] L)
+      (HerbrandHMinusOne₀
         (LocalBlockFamily d) σ) :=
     relativeUnrestrictedLocalBlockFamilyHerbrandHMinusOneFinite
       S σ hgen
   calc
     Nat.card
-        (HerbrandHMinusOne (L ≃ₐ[K] L)
+        (HerbrandHMinusOne₀
           (RelativeUnrestrictedSPlaceFactors
             (K := K) (L := L) S) σ) =
       Nat.card
-        (HerbrandHMinusOne (L ≃ₐ[K] L)
+        (HerbrandHMinusOne₀
           (LocalBlockFamily d) σ) :=
       Nat.card_congr
         (relativeUnrestrictedSPlaceFactorsHerbrandHMinusOneEquivLocalBlockFamily
@@ -367,16 +343,10 @@ theorem relativeUnrestrictedSPlaceFactors_herbrandQuotient
   let :=
     relativeUnrestrictedSPlaceFactorsAction
       (K := K) (L := L) S
-  let : Finite
-      (HerbrandH0 (L ≃ₐ[K] L)
-        (RelativeUnrestrictedSPlaceFactors
-          (K := K) (L := L) S)) :=
+  let :=
     relativeUnrestrictedSPlaceFactorsHerbrandH0Finite
       S σ hgen
-  let : Finite
-      (HerbrandHMinusOne (L ≃ₐ[K] L)
-        (RelativeUnrestrictedSPlaceFactors
-          (K := K) (L := L) S) σ) :=
+  let :=
     relativeUnrestrictedSPlaceFactorsHerbrandHMinusOneFinite
       S σ hgen
   rw [herbrandQuotient_eq_card_ratio,
@@ -384,6 +354,6 @@ theorem relativeUnrestrictedSPlaceFactors_herbrandQuotient
       S σ hgen,
     relativeUnrestrictedSPlaceFactorsHerbrandHMinusOne_card_eq_one
       S σ hgen]
-  simp only [Nat.cast_prod, Nat.cast_one, div_one]
+  simp
 
 end

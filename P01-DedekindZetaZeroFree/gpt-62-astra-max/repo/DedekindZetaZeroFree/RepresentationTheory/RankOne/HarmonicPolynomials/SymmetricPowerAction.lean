@@ -18,40 +18,48 @@ abbrev Harmonic (ℓ : ℕ) := ↥(harmonicPolynomials ℓ)
 def Q (x : Fin 3 → ℂ) : Matrix (Fin 2) (Fin 2) ℂ :=
   !![x 2, x 0 - Complex.I * x 1; x 0 + Complex.I * x 1, -x 2]
 
-def sphereMatrix (g : ComplexSU2) : Matrix (Fin 3) (Fin 3) ℂ :=
-  let a := (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0
-  let b := (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1
+section
+
+variable (g : ComplexSU2)
+
+local notation "Mat₂ℂ" => Matrix (Fin 2) (Fin 2) ℂ
+
+def sphereMatrix : Matrix (Fin 3) (Fin 3) ℂ :=
+  let a := (g : Mat₂ℂ) 1 0
+  let b := (g : Mat₂ℂ) 1 1
   fun i j => (((!![
     b.re^2-b.im^2-a.re^2+a.im^2, 2*b.re*b.im-2*a.re*a.im, -2*a.re*b.re-2*a.im*b.im;
     -2*b.re*b.im-2*a.re*a.im, b.re^2-b.im^2+a.re^2-a.im^2, -2*a.im*b.re+2*a.re*b.im;
     2*a.re*b.re-2*a.im*b.im, 2*a.re*b.im+2*a.im*b.re, b.re^2+b.im^2-a.re^2-a.im^2]
       : Matrix (Fin 3) (Fin 3) ℝ) i j) : ℂ)
 
-def S (g : ComplexSU2) (x : Fin 3 → ℂ) : Fin 3 → ℂ := (sphereMatrix g).mulVec x
+def S (x : Fin 3 → ℂ) : Fin 3 → ℂ := (sphereMatrix g).mulVec x
 
-private theorem hopf_top00 (g : ComplexSU2) : (g : Matrix (Fin 2) (Fin 2) ℂ) 0 0 = star ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1) := by
-  have h := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 1 1) (Matrix.specialUnitaryGroup.star_eq_adjugate g)
+private theorem hopf_top00 : (g : Mat₂ℂ) 0 0 = star ((g : Mat₂ℂ) 1 1) := by
+  have h := congrArg (fun M : Mat₂ℂ => M 1 1) (Matrix.specialUnitaryGroup.star_eq_adjugate g)
   simp only [Matrix.adjugate_fin_two, Matrix.star_eq_conjTranspose, Matrix.conjTranspose_apply,
     Matrix.of_apply, Matrix.cons_val_one, Matrix.cons_val_zero, Matrix.head_cons] at h
   exact h.symm
-private theorem hopf_top01 (g : ComplexSU2) : (g : Matrix (Fin 2) (Fin 2) ℂ) 0 1 = -star ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 0) := by
-  have h := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 0 1) (Matrix.specialUnitaryGroup.star_eq_adjugate g)
+private theorem hopf_top01 : (g : Mat₂ℂ) 0 1 = -star ((g : Mat₂ℂ) 1 0) := by
+  have h := congrArg (fun M : Mat₂ℂ => M 0 1) (Matrix.specialUnitaryGroup.star_eq_adjugate g)
   simp only [Matrix.adjugate_fin_two, Matrix.star_eq_conjTranspose, Matrix.conjTranspose_apply,
     Matrix.of_apply, Matrix.cons_val_one, Matrix.cons_val_zero, Matrix.head_cons] at h
-  simpa only [neg_neg] using congrArg Neg.neg h.symm
+  simpa using congrArg Neg.neg h.symm
+
+end
 
 private theorem hopf_Q_injective : Function.Injective Q := by
   intro x y h
-  have h00 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 0 0) h
-  have h01 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 0 1) h
-  have h10 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 1 0) h
+  let Matrix₀ := Matrix (Fin 2) (Fin 2) ℂ
+  have h00 := congrArg (fun M : Matrix₀ => M 0 0) h
+  have h01 := congrArg (fun M : Matrix₀ => M 0 1) h
+  have h10 := congrArg (fun M : Matrix₀ => M 1 0) h
   simp [Q] at h00 h01 h10
   funext i
   fin_cases i
   · change x 0 = y 0
     linear_combination (h01 + h10) / 2
-  · change x 1 = y 1
-    linear_combination (norm := (ring_nf; simp [Complex.I_sq])) Complex.I * (h01 - h10) / 2
+  · linear_combination (norm := (ring_nf; simp)) Complex.I * (h01 - h10) / 2
   · exact h00
 
 set_option maxRecDepth 2000 in
@@ -75,7 +83,7 @@ set_option maxHeartbeats 800000 in
 theorem compactSphereCoordinate_mul (k g : ComplexSU2) :
     compactSphereCoordinate (k * g) = S g (compactSphereCoordinate k) := by
   have hmul : ((k * g : ComplexSU2) : Matrix (Fin 2) (Fin 2) ℂ) =
-      (k : Matrix (Fin 2) (Fin 2) ℂ) * (g : Matrix (Fin 2) (Fin 2) ℂ) := rfl
+      k * g := rfl
   funext i
   fin_cases i <;>
     simp [compactSphereCoordinate, S, sphereMatrix, hmul, Matrix.mul_apply,
@@ -87,22 +95,9 @@ theorem compactSphereCoordinate_mul (k g : ComplexSU2) :
       ← Complex.ofReal_pow] <;> ring
 
 theorem sphereMatrix_mul (g h : ComplexSU2) :
-    sphereMatrix (g * h) = sphereMatrix h * sphereMatrix g := by
-  apply Matrix.mulVec_injective
-  funext x
-  change S (g * h) x = (sphereMatrix h * sphereMatrix g).mulVec x
-  rw [← Matrix.mulVec_mulVec]
-  change S (g * h) x = S h (S g x)
-  apply hopf_Q_injective
-  rw [Q_S, Q_S, Q_S]
-  have hmul : ((g * h : ComplexSU2) : Matrix (Fin 2) (Fin 2) ℂ) =
-      (g : Matrix (Fin 2) (Fin 2) ℂ) * (h : Matrix (Fin 2) (Fin 2) ℂ) := rfl
-  rw [hmul, star_mul]
-  simp only [Matrix.mul_assoc]
+    sphereMatrix (g * h) = sphereMatrix h * sphereMatrix g := by apply @HomogeneousRaw.sphereMatrix_mul <;> assumption
 
-theorem sphereMatrix_one : sphereMatrix 1 = 1 := by
-  ext i j
-  fin_cases i <;> fin_cases j <;> norm_num [sphereMatrix]
+theorem sphereMatrix_one : sphereMatrix 1 = 1 := by apply @HomogeneousRaw.sphereMatrix_one <;> assumption
 
 def coefficientAction (g : ComplexSU2) : Polynomial →ₐ[ℂ] Polynomial :=
   MvPolynomial.aeval (fun i => ∑ j, MvPolynomial.C (sphereMatrix g i j) * MvPolynomial.X j)
@@ -115,24 +110,10 @@ theorem coefficientAction_eval (g : ComplexSU2) (p : Polynomial) (x : Fin 3 → 
   funext i
   simp [S, Matrix.mulVec, dotProduct]
 
-theorem coefficientAction_one (p : Polynomial) : coefficientAction 1 p = p := by
-  have h : coefficientAction 1 = AlgHom.id ℂ Polynomial := by
-    ext i
-    simp [coefficientAction, sphereMatrix_one, Matrix.one_apply]
-  exact congrArg (fun f : Polynomial →ₐ[ℂ] Polynomial => f p) h
+theorem coefficientAction_one (p : Polynomial) : coefficientAction 1 p = p := by apply @HomogeneousRaw.coefficientAction_one <;> assumption
 
 theorem coefficientAction_mul (g h : ComplexSU2) (p : Polynomial) :
-    coefficientAction (g * h) p = coefficientAction g (coefficientAction h p) := by
-  have hh : coefficientAction (g * h) = (coefficientAction g).comp (coefficientAction h) := by
-    apply MvPolynomial.algHom_ext
-    intro i
-    simp only [coefficientAction, AlgHom.comp_apply, MvPolynomial.aeval_X, map_sum,
-      map_mul, MvPolynomial.aeval_C, sphereMatrix_mul, Matrix.mul_apply]
-    simp only [Finset.mul_sum, Finset.sum_mul, ← mul_assoc, ← MvPolynomial.C_mul,
-      ← map_sum]
-    simp only [MvPolynomial.algebraMap_eq, map_sum, Finset.sum_mul, ← MvPolynomial.C_mul]
-    rw [Finset.sum_comm]
-  exact congrArg (fun f : Polynomial →ₐ[ℂ] Polynomial => f p) hh
+    coefficientAction (g * h) p = coefficientAction g (coefficientAction h p) := by apply @HomogeneousRaw.coefficientAction_mul <;> assumption
 
 private theorem pderiv_coefficientAction (g : ComplexSU2)
     (p : MvPolynomial (Fin 3) ℂ) (j : Fin 3) :
@@ -140,7 +121,7 @@ private theorem pderiv_coefficientAction (g : ComplexSU2)
       ∑ i, MvPolynomial.C (sphereMatrix g i j) * coefficientAction g (MvPolynomial.pderiv i p) := by
   classical
   induction p using MvPolynomial.induction_on with
-  | C c => simp [coefficientAction]
+  | C c => simp
   | add p q ihp ihq =>
       simp only [map_add, ihp, ihq, mul_add, Finset.sum_add_distrib]
   | mul_X p i ih =>
@@ -184,33 +165,13 @@ private theorem su2_row_norm (k : ComplexSU2) :
     ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0).re ^ 2 +
     ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0).im ^ 2 +
     ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1).re ^ 2 +
-    ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1).im ^ 2 = 1 := by
-  have hu := Matrix.mem_unitaryGroup_iff.mp (Matrix.specialUnitaryGroup_le_unitaryGroup k.property)
-  have h := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => (A 1 1).re) hu
-  simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-    Complex.mul_re, Complex.star_def, Complex.normSq_apply] at h
-  nlinarith
+    ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1).im ^ 2 = 1 := by apply @HomogeneousRaw.EquivariantFischer.bottom_norm <;> assumption
 
 private theorem sphereMatrix_orthogonal (g : ComplexSU2) (i k : Fin 3) :
-    ∑ j, sphereMatrix g i j * sphereMatrix g k j = if i = k then 1 else 0 := by
-  let a := (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0
-  let b := (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1
-  have h := su2_row_norm g
-  fin_cases i <;> fin_cases k <;>
-    simp [sphereMatrix, Fin.sum_univ_three, ← Complex.ofReal_mul,
-      ← Complex.ofReal_add]
-  all_goals norm_cast
-  all_goals first | (solve | ring) | (calc
-    _ = (a.re^2+a.im^2+b.re^2+b.im^2)^2 := by dsimp [a, b]; ring
-    _ = _ := by rw [h]; norm_num)
+    ∑ j, sphereMatrix g i j * sphereMatrix g k j = if i = k then 1 else 0 := by apply @HomogeneousRaw.EquivariantFischer.rows <;> assumption
 
 theorem coefficientAction_mem (ℓ : ℕ) (g : ComplexSU2) (p : Harmonic ℓ) :
-    coefficientAction g p ∈ harmonicPolynomials ℓ := by
-  refine ⟨coefficientAction_homogeneous g p ℓ p.property.1, ?_⟩
-  change polynomialLaplacian (coefficientAction g p) = 0
-  rw [polynomialLaplacian_coefficientAction g (sphereMatrix_orthogonal g)]
-  have hp : polynomialLaplacian p = 0 := p.property.2
-  rw [hp, map_zero]
+    coefficientAction g p ∈ harmonicPolynomials ℓ := by apply @HomogeneousRaw.coefficientAction_harmonic <;> assumption
 
 def harmonicRepresentation (ℓ : ℕ) : Representation ℂ ComplexSU2 (Harmonic ℓ) where
   toFun g :=
@@ -279,7 +240,7 @@ private theorem coefficientAction_coeff_continuous (p : Polynomial)
   classical
   induction p using MvPolynomial.induction_on generalizing d with
   | C c => simpa [coefficientAction] using
-      (continuous_const : Continuous (fun _ : ComplexSU2 => (MvPolynomial.C c).coeff d))
+      continuous_const
   | add p q hp hq =>
       simp only [map_add, MvPolynomial.coeff_add]
       exact (hp d).add (hq d)
@@ -309,15 +270,18 @@ theorem harmonicContRepresentation_continuous (ℓ : ℕ) :
     apply MvPolynomial.ext
     intro d
     exact congrFun h d
-  have he := LinearMap.isClosedEmbedding_of_injective (LinearMap.ker_eq_bot.mpr hinj)
-  apply he.isEmbedding.isInducing.continuous_iff.mpr
+  apply (LinearMap.isClosedEmbedding_of_injective (LinearMap.ker_eq_bot.mpr hinj)).isEmbedding.isInducing.continuous_iff.mpr
   apply continuous_pi
   intro d
   exact coefficientAction_coeff_continuous p d
 
-def triangle (n : ℕ) (f : ℤ → ℂ) :=
+section
+
+variable (n : ℕ) (f : ℤ → ℂ)
+
+def triangle :=
   ∑ a ∈ Finset.range (n + 1), ∑ b ∈ Finset.range (n - a + 1), f ((a : ℤ) - b)
-private theorem triangle_border (n : ℕ) (f : ℤ → ℂ) :
+private theorem triangle_border :
     triangle (n + 2) f = (∑ a ∈ Finset.range (n + 3), f a) +
       (∑ b ∈ Finset.range (n + 2), f (-(b : ℤ) - 1)) + triangle n f := by
   unfold triangle
@@ -345,7 +309,7 @@ private theorem triangle_border (n : ℕ) (f : ℤ → ℂ) :
   rw [Finset.sum_range_succ' (f := fun b : ℕ => f (-(b : ℤ))) (n := n + 2)]
   simp only [Nat.cast_add, Nat.cast_one, Nat.cast_zero, neg_zero, neg_add, sub_eq_add_neg]
   ring
-private theorem border_string (n : ℕ) (f : ℤ → ℂ) :
+private theorem border_string :
     (∑ a ∈ Finset.range (n + 1), f a) +
       (∑ b ∈ Finset.range n, f (-(b : ℤ) - 1)) =
       ∑ i ∈ Finset.range (2 * n + 1), f ((i : ℤ) - n) := by
@@ -363,13 +327,9 @@ private theorem border_string (n : ℕ) (f : ℤ → ℂ) :
   rw [hpos, hneg, add_comm]
   rw [show 2 * n + 1 = n + (n + 1) by omega]
   exact (Finset.sum_range_add (fun i : ℕ => f ((i : ℤ) - n)) n (n + 1)).symm
-private theorem triangle_low (f : ℤ → ℂ) :
-    triangle 0 f = ∑ i ∈ Finset.range 1, f ((i : ℤ) - 0) := by
-  simp [triangle]
-private theorem triangle_one (f : ℤ → ℂ) :
-    triangle 1 f = ∑ i ∈ Finset.range 3, f ((i : ℤ) - 1) := by
-  simp [triangle, Finset.sum_range_succ]
-  ring
+
+end
+
 private theorem raw_harmonic_eq (n : ℕ) :
     HomogeneousRaw.harmonicRepresentation n = harmonicRepresentation n := by
   ext g p : 2
@@ -391,9 +351,10 @@ private theorem raw_character_torus (n : ℕ) (z : Circle) :
   by_cases hn : n ≤ 1
   · interval_cases n
     · rw [← HomogeneousRaw.homogeneous_character_zero, hh, hs]
-      exact triangle_low _
+      simp [triangle]
     · rw [← HomogeneousRaw.homogeneous_character_one, hh, hs]
-      exact triangle_one _
+      simp [triangle, Finset.sum_range_succ]
+      ring
   · obtain ⟨m, rfl⟩ : ∃ m, n = m + 2 := ⟨n - 2, by omega⟩
     have hrec := HomogeneousRaw.homogeneous_character_recurrence m (TauCeti.SU2.torusHom z)
     rw [hh, hh, triangle_border] at hrec
@@ -414,7 +375,7 @@ theorem harmonic_equiv_symPower (ℓ : ℕ) :
   open TauCeti in
     let e := (harmonicCoordinates ℓ).toContinuousLinearEquiv
     let ρ := ContRepresentation.congr e (harmonicContRepresentation ℓ)
-    have hρ : Continuous ρ := ContRepresentation.continuous_congr e
+    have hρ := ContRepresentation.continuous_congr e
       (harmonicContRepresentation_continuous ℓ)
     let s := SU2.symPowerModel (2 * ℓ)
     have hs : Continuous s := SU2.continuous_symPowerModel _

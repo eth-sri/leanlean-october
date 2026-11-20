@@ -12,17 +12,10 @@ open LocalFiniteSums
 set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
- theorem prime_outside (p : ExteriorPrime A) : p.val ∉ A.Sf := by
-  intro hp
-  have hc : A.cS ≤ p.val.asIdeal := Ideal.IsPrime.prod_le p.val.isPrime |>.mpr ⟨p.val, hp, le_rfl⟩
-  apply p.val.isPrime.ne_top
-  apply top_le_iff.mp
-  calc
-    ⊤ = p.val.asIdeal ⊔ A.cS := p.property.symm
-    _ ≤ p.val.asIdeal := sup_le le_rfl hc
+ alias prime_outside := DedekindZetaZeroFree.CompatiblePrimeRawLocal.SIntegerConductor.exterior_notMem
 
  def boundIdeal (p : ExteriorPrime A) (n : ℕ) : Ideal A.R where
   carrier := {a | p.val.valuation F (a : F) ≤ WithZero.exp (-(n : ℤ))}
@@ -45,7 +38,6 @@ private theorem generates_valuation (p : ExteriorPrime A)
     rw [pow_dvd_iff_le_emultiplicity,
       UniqueFactorizationMonoid.emultiplicity_eq_count_normalizedFactors p.val.irreducible I.property.1]
     simp [n, exponent, idealPrimeExponent]
-  have hIn : I.val ≤ p.val.asIdeal ^ n := Ideal.dvd_iff_le.mp ((hdvd n).mpr le_rfl)
   have hnot : ¬ I.val ≤ p.val.asIdeal ^ (n + 1) := by
     rw [← Ideal.dvd_iff_le, hdvd]; omega
   have hmap : A.extendIdeal I ≤ boundIdeal p n := by
@@ -53,7 +45,7 @@ private theorem generates_valuation (p : ExteriorPrime A)
     intro a ha
     change p.val.valuation F (a : F) ≤ WithZero.exp (-(n : ℤ))
     rw [p.val.valuation_of_algebraMap]
-    exact (p.val.intValuation_le_pow_iff_mem a n).mpr (hIn ha)
+    exact (p.val.intValuation_le_pow_iff_mem a n).mpr ((Ideal.dvd_iff_le.mp ((hdvd n).mpr le_rfl)) ha)
   have hrv : p.val.valuation F (r : F) ≤ WithZero.exp (-(n : ℤ)) := by
     apply hmap
     rw [← hr.2]
@@ -61,10 +53,9 @@ private theorem generates_valuation (p : ExteriorPrime A)
   obtain ⟨a, ha, han⟩ : ∃ a : 𝓞 F, a ∈ I.val ∧ a ∉ p.val.asIdeal ^ (n + 1) := by
     contrapose! hnot
     exact hnot
-  have ham : algebraMap (𝓞 F) A.R a ∈ Ideal.span ({r} : Set A.R) := by
+  obtain ⟨y, hy⟩ := Ideal.mem_span_singleton.mp (by
     rw [hr.2]
-    exact Ideal.mem_map_of_mem _ ha
-  obtain ⟨y, hy⟩ := Ideal.mem_span_singleton.mp ham
+    exact Ideal.mem_map_of_mem _ ha)
   have hav : p.val.valuation F (a : F) ≤ p.val.valuation F (r : F) := by
     have hh := congrArg (fun t : A.R => (t : F)) hy
     change (a : F) = (r : F) * (y : F) at hh
@@ -84,6 +75,8 @@ private theorem generates_valuation (p : ExteriorPrime A)
     omega
   rw [← WithZero.exp_log hnz, hv]
 
+alias TracePhaseChineseRemainder.generates_valuation := generates_valuation
+
 private theorem fieldTrace_eq_exterior_product (hS : A.ContainsTraceBadPlaces)
     (P : Finset (ExteriorPrime A)) (x : F)
     (hx : ∀ v : HeightOneSpectrum (𝓞 F), v ∉ A.Sf →
@@ -98,19 +91,15 @@ private theorem fieldTrace_eq_exterior_product (hS : A.ContainsTraceBadPlaces)
     apply Finset.disjoint_left.mpr
     intro v hv hvS
     obtain ⟨p, hp, rfl⟩ := Finset.mem_image.mp hv
-    have hc : A.cS ≤ p.val.asIdeal := Ideal.IsPrime.prod_le p.val.isPrime |>.mpr ⟨p.val, hvS, le_rfl⟩
     apply p.val.isPrime.ne_top
-    exact ((sup_eq_left.mpr hc).symm.trans p.property)
+    exact ((sup_eq_left.mpr (Ideal.IsPrime.prod_le p.val.isPrime |>.mpr ⟨p.val, hvS, le_rfl⟩)).symm.trans p.property)
   have hprod : (∏ᶠ v, f v) = (∏ v ∈ Q, f v) * ∏ v ∈ A.Sf, f v := by
-    rw [finprod_eq_prod_of_mulSupport_subset f (s := Q ∪ A.Sf), Finset.prod_union hdisj]
+    rw [finprod_eq_prod_of_mulSupport_subset f, Finset.prod_union hdisj]
     intro v hv
     by_contra hn
-    have hvs : v ∉ A.Sf := fun h => hn (Finset.mem_union_right Q h)
-    have hvq : ∀ p ∈ P, p.val ≠ v := by
-      intro p hp he
-      exact hn (Finset.mem_union_left A.Sf (Finset.mem_image.mpr ⟨p, hp, he⟩))
-    have h := (hS v hvs _).2 (hx v hvs hvq)
-    exact hv (by simpa [f] using h (1 : v.adicCompletionIntegers F))
+    have hvs := fun h => hn (Finset.mem_union_right Q h)
+    have hvq : ∀ p ∈ P, p.val ≠ v := fun p hp he => hn (Finset.mem_union_left A.Sf (Finset.mem_image.mpr ⟨p, hp, he⟩))
+    exact hv (by simpa [f] using ((hS v hvs _).2 (hx v hvs hvq)) (1 : v.adicCompletionIntegers F))
   have hglobal := ResidueTrace.diagonal_product_formula x
   rw [hprod] at hglobal
   have hfield : A.fieldTraceCharacter x = (∏ v ∈ Q, f v)⁻¹ := by
@@ -120,7 +109,6 @@ private theorem fieldTrace_eq_exterior_product (hS : A.ContainsTraceBadPlaces)
     apply (eq_inv_iff_mul_eq_one).mpr
     convert hglobal using 1 <;> ac_rfl
   rw [hfield, ← Finset.prod_inv_distrib]
-  change (∏ v ∈ Q, (f v)⁻¹) = _
   rw [Finset.prod_image (fun p hp q hq he => Subtype.ext he)]
   apply Finset.prod_congr rfl
   intro p hp
@@ -141,7 +129,7 @@ private theorem phase_integral_outside_support (C : A.GeneralArithmeticContext �
     intro w hw
     exact (HeightOneSpectrum.isCoprime_of_ne v w (fun h => hv (h.symm ▸ hw))).sup_eq
   let p : ExteriorPrime A := ⟨v, hc⟩
-  have hp : p ∉ P := fun h => hvP p h rfl
+  have hp := fun h => hvP p h rfl
   have hs0 : exponent p Is = 0 := by
     by_contra hn
     exact hp (hSupportS p hn)
@@ -159,38 +147,36 @@ private theorem phase_integral_outside_support (C : A.GeneralArithmeticContext �
   rw [map_div₀, map_mul, hvs, hva, one_mul, div_one]
   exact n.property v hv
 
-private lemma uniformizer_ne_zero (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) : uniformizer C p ≠ 0 := by
-  rw [uniformizer]
-  exact (map_ne_zero (algebraMap F (LocalField p))).mpr
-    (by exact_mod_cast (generator_generates C p).1)
+private alias uniformizer_ne_zero := DedekindZetaZeroFree.CRTRawLocalPhaseAlgebra.uniformizer_ne_zero
 
-private lemma congruent_of_residueMap_eq_generator (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (n : ℕ) (x y : A.R)
+section
+
+variable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+
+private lemma congruent_of_residueMap_eq_generator (n : ℕ) (x y : A.R)
     (h : residueMap C p n x = residueMap C p n y) :
     CompatiblePrimeRawLocal.Congruent C p n (algebraMap F (LocalField p) (x : F))
       (algebraMap F (LocalField p) (y : F)) := by
-  have hmem : x - y ∈ Ideal.span ({generator C p ^ n} : Set A.R) :=
-    Ideal.Quotient.eq.mp h
-  obtain ⟨r, hr⟩ := Ideal.mem_span_singleton.mp hmem
+  obtain ⟨r, hr⟩ := Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp h)
   refine ⟨⟨algebraMap F (LocalField p) (r : F),
     CompatiblePrimeRawLocal.sInteger_local_integral p r⟩, ?_⟩
   simp only [Subtype.coe_mk]
   rw [← map_sub, ← Subalgebra.coe_sub, hr, Subalgebra.coe_mul, Subalgebra.coe_pow,
     map_mul, map_pow, uniformizer]
 
-private lemma negTrace_congr (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) {x y : LocalField p}
+include C in
+private lemma negTrace_congr {x y : LocalField p}
     (h : x - y ∈ p.val.adicCompletionIntegers F) :
     negativeTrace p x = negativeTrace p y := by
   have hxy : x = y + (x - y) := by ring
   rw [hxy, AddChar.map_add_eq_mul,
     CompatiblePrimeRawLocal.negativeTrace_integer C p ⟨x - y, h⟩, mul_one]
 
+end
+
 private lemma unit_val_inv_mem (p : ExteriorPrime A) (u : (LocalIntegers p)ˣ) :
     ((u.val : LocalField p))⁻¹ ∈ p.val.adicCompletionIntegers F := by
-  have hmul : (u.val : LocalField p) * ((u⁻¹).val : LocalField p) = 1 := by
-    exact congrArg (fun z : LocalIntegers p => (z : LocalField p)) (Units.mul_inv u)
+  have hmul : (u.val : LocalField p) * ((u⁻¹).val : LocalField p) = 1 := congrArg (fun z : LocalIntegers p => (z : LocalField p)) (Units.mul_inv u)
   rw [inv_eq_of_mul_eq_one_right hmul]
   exact ((u⁻¹).val).2
 
@@ -231,15 +217,13 @@ theorem phase_crt (C : A.GeneralArithmeticContext σ η hS)
   classical
   set d' : A.R := (FiniteTransform.canonicalLifts A.R.toSubring s).val d with hd'def
   set v' : A.R := (FiniteTransform.canonicalLifts A.R.toSubring a).val v with hv'def
-  let X : F := (((h : F) - (a : F) * (d' : F)) * (v' : F)) / ((s : F) * (a : F))
-  change (Circle.coeHom.compAddChar A.fieldTraceCharacter) X = _
+  let X := (((h : F) - (a : F) * (d' : F)) * (v' : F)) / ((s : F) * (a : F))
   have hx : ∀ w : HeightOneSpectrum (𝓞 F), w ∉ A.Sf → (∀ p ∈ P, p.val ≠ w) →
       algebraMap F (w.adicCompletion F) X ∈ w.adicCompletionIntegers F := by
     intro w hw hwP
-    have h := phase_integral_outside_support C Is Ia s a hs ha P hSupportS hSupportA
-      ((h - a * d') * v') w hw hwP
     dsimp only [X]
-    exact h
+    exact phase_integral_outside_support C Is Ia s a hs ha P hSupportS hSupportA
+      ((h - a * d') * v') w hw hwP
   have hfield := fieldTrace_eq_exterior_product hS P X hx
   change (Circle.coeHom (A.fieldTraceCharacter X)) = _
   rw [hfield, map_prod, ← Finset.prod_coe_sort]
@@ -285,22 +269,18 @@ theorem phase_crt (C : A.GeneralArithmeticContext σ η hS)
     simp only [map_div₀, map_mul, map_sub]
     rfl
   rw [hX]
-  have hEsd : Es d p = LocalFiniteSums.residueMap C p.val (exponent p.val Is) d' :=
-    (congrArg (fun z => Es z p)
-      ((FiniteTransform.canonicalLifts A.R.toSubring s).property d)).symm.trans (hEs d' p)
-  have hEav : Ea v p = LocalFiniteSums.residueMap C p.val (exponent p.val Ia) v' :=
-    (congrArg (fun z => Ea z p)
-      ((FiniteTransform.canonicalLifts A.R.toSubring a).property v)).symm.trans (hEa v' p)
   obtain ⟨e, he⟩ : ∃ e : LocalIntegers p.val,
-      Dp - D'' = π ^ exponent p.val Is * (e : LocalField p.val) :=
+      Dp - D'' = π ^ exponent p.val Is * e :=
     congruent_of_residueMap_eq_generator C p.val (exponent p.val Is)
       ((lifts C p.val (exponent p.val Is)).val (Es d p)) d'
-      (((lifts C p.val (exponent p.val Is)).property (Es d p)).trans hEsd)
+      (((lifts C p.val (exponent p.val Is)).property (Es d p)).trans ((congrArg (fun z => Es z p)
+        ((FiniteTransform.canonicalLifts A.R.toSubring s).property d)).symm.trans (hEs d' p)))
   obtain ⟨w, hw⟩ : ∃ w : LocalIntegers p.val,
-      Vp - V'' = π ^ exponent p.val Ia * (w : LocalField p.val) :=
+      Vp - V'' = π ^ exponent p.val Ia * w :=
     congruent_of_residueMap_eq_generator C p.val (exponent p.val Ia)
       ((lifts C p.val (exponent p.val Ia)).val (Ea v p)) v'
-      (((lifts C p.val (exponent p.val Ia)).property (Ea v p)).trans hEav)
+      (((lifts C p.val (exponent p.val Ia)).property (Ea v p)).trans ((congrArg (fun z => Ea z p)
+        ((FiniteTransform.canonicalLifts A.R.toSubring a).property v)).symm.trans (hEa v' p)))
   obtain ⟨c, hc'⟩ : ∃ c : A.R, h - a * d' = s * c := by
     have hres : FiniteTransform.residueMap A.R.toSubring s (h - a * d') = 0 := by
       rw [map_sub, map_mul,
@@ -321,36 +301,27 @@ theorem phase_crt (C : A.GeneralArithmeticContext σ η hS)
     rw [← sub_div]
     have hnum : (H - A' * D'') * V'' - (H - A' * Dp) * Vp
         = -S * (algebraMap F (LocalField p.val) (c : F)) * π ^ exponent p.val Ia *
-            (w : LocalField p.val) +
-          A' * π ^ exponent p.val Is * (e : LocalField p.val) * Vp := by
+            w +
+          A' * π ^ exponent p.val Is * e * Vp := by
       have h2 : H - A' * Dp =
           S * (algebraMap F (LocalField p.val) (c : F)) -
-            A' * (π ^ exponent p.val Is * (e : LocalField p.val)) := by
+            A' * (π ^ exponent p.val Is * e) := by
         have h4 : H - A' * Dp = (H - A' * D'') - A' * (Dp - D'') := by ring
         rw [h4, hHAD, he]
-      have h3 : V'' = Vp - π ^ exponent p.val Ia * (w : LocalField p.val) := by
+      have h3 : V'' = Vp - π ^ exponent p.val Ia * w := by
         rw [← hw]; ring
       rw [hHAD, h2, h3]
       ring
     rw [hnum, ← hA'mul, ← hSmul]
-    have haU0 : ((aU p).val : LocalField p.val) ≠ 0 := by
-      intro h0; exact (aU p).ne_zero (Subtype.coe_injective h0)
-    have hsU0 : ((sU p).val : LocalField p.val) ≠ 0 := by
-      intro h0; exact (sU p).ne_zero (Subtype.coe_injective h0)
-    field_simp [hπ, haU0, hsU0]
+    field_simp [hπ, fun h0 => (aU p).ne_zero (Subtype.coe_injective h0), (fun h0 => (sU p).ne_zero (Subtype.coe_injective h0))]
   have hdiff : (H - A' * D'') * V'' / (S * A') - (H - A' * Dp) * Vp / (S * A') ∈
       LocalIntegers p.val := by
     rw [hZ]
-    have hCmem : algebraMap F (LocalField p.val) (c : F) ∈ LocalIntegers p.val :=
-      CompatiblePrimeRawLocal.sInteger_local_integral p.val c
-    have hwmem : (w : LocalField p.val) ∈ LocalIntegers p.val := w.2
-    have hemem : (e : LocalField p.val) ∈ LocalIntegers p.val := e.2
-    have hVpmem : Vp ∈ LocalIntegers p.val := by
-      rw [hVpdef]
-      exact CompatiblePrimeRawLocal.sInteger_local_integral p.val
-        ((lifts C p.val (exponent p.val Ia)).val (Ea v p))
-    exact add_mem (mul_mem (neg_mem (mul_mem hCmem hwmem)) (unit_val_inv_mem p.val (aU p)))
-      (mul_mem (mul_mem hemem hVpmem) (unit_val_inv_mem p.val (sU p)))
+    refine add_mem (mul_mem (neg_mem (mul_mem (CompatiblePrimeRawLocal.sInteger_local_integral p.val c) w.2)) (unit_val_inv_mem p.val (aU p)))
+      (mul_mem (mul_mem e.2 ?_) (unit_val_inv_mem p.val (sU p)))
+    rw [hVpdef]
+    exact CompatiblePrimeRawLocal.sInteger_local_integral p.val
+      ((lifts C p.val (exponent p.val Ia)).val (Ea v p))
   rw [negTrace_congr C p.val hdiff]
   rfl
 

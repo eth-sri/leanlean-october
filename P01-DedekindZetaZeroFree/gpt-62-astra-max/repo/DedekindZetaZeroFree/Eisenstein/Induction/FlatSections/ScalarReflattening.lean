@@ -22,13 +22,9 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   intro x hx
   obtain ⟨O,q,hO,hxO,hq,hqD,he⟩ :=
     KPLiteralChamber.literal_right_to_left_chart_local_transition F ζ hζ g x hx
-  have hs : ContDiffOn ℝ (⊤ : ℕ∞) (fun z => KPContFlatFullProductIwasawa.alpha F ζ hζ
-      (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * (g * archChart F ζ hζ x)))
-      (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) :=
-    (KPContFlatLogNormSmooth.alpha_groupArchChart_mul_contDiffOn F ζ hζ
-      (g * archChart F ζ hζ x)).of_le (by simp)
   refine ⟨O,hO,hxO,?_⟩
-  exact ((hs.comp hq hqD).congr (fun y hy => congrArg
+  exact ((((KPContFlatLogNormSmooth.alpha_groupArchChart_mul_contDiffOn F ζ hζ
+    (g * archChart F ζ hζ x)).of_le (by simp)).comp hq hqD).congr (fun y hy => congrArg
     (KPContFlatSourceRecipe.alpha F ζ hζ) (he y hy))).mono Set.inter_subset_right
 
  theorem alpha_uniform_level :
@@ -42,16 +38,18 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   intro g u hu
   exact congrArg (fun n : NNRealˣ => Real.log (n.val : ℝ)) (hU g ⟨u,hu⟩)
 
- def scalarWeight (s : ℂ) (f : Functions F ζ hζ) : Functions F ζ hζ :=
+ section
+
+variable (s : ℂ) (f : Functions F ζ hζ)
+
+def scalarWeight : Functions F ζ hζ :=
    fun g => Complex.exp (s * (KPContFlatSourceRecipe.alpha F ζ hζ g : ℂ)) * f g
 
- theorem scalarWeight_smooth (s : ℂ) (f : Functions F ζ hζ) (hf : Smooth F ζ hζ f) :
+ theorem scalarWeight_smooth (hf : Smooth F ζ hζ f) :
     Smooth F ζ hζ (scalarWeight F ζ hζ s f) := by
   obtain ⟨U,hU⟩ := hf.2.2
   obtain ⟨V,hV⟩ := alpha_uniform_level F ζ hζ
-  let W : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ :=
-    ⟨U.toOpenSubgroup ⊓ V.toOpenSubgroup, U.isCompact.inter_right V.toOpenSubgroup.isClosed⟩
-  refine ⟨?_,?_,W,?_⟩
+  refine ⟨?_,?_,(⟨U.toOpenSubgroup ⊓ V.toOpenSubgroup, U.isCompact.inter_right V.toOpenSubgroup.isClosed⟩),?_⟩
   · exact (continuous_const.mul (Complex.continuous_ofReal.comp
       (KPContFlatLogNormSmooth.alpha_continuous F ζ hζ))).cexp.mul hf.1
   · intro g
@@ -59,11 +57,9 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
       (alpha_right_chart_smooth F ζ hζ g) (fun _ _ => Set.mem_univ _))).cexp).mul (hf.2.1 g)
   · intro g u hu
     obtain ⟨a,ha,he⟩ := hu
-    have huU : u ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U := ⟨a,ha.1,he⟩
-    have huV : u ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ V := ⟨a,ha.2,he⟩
-    simp only [scalarWeight, hV g u huV, hU g u huU]
+    simp only [scalarWeight, hV g u (⟨a,ha.2,he⟩), hU g u (⟨a,ha.1,he⟩)]
 
- theorem scalarWeight_kFinite (s : ℂ) (f : Functions F ζ hζ)
+ theorem scalarWeight_kFinite
     (hf : KFinite F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ).K f) :
     KFinite F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ).K (scalarWeight F ζ hζ s f) := by
   let L : Functions F ζ hζ →ₗ[ℂ] Functions F ζ hζ := {
@@ -80,6 +76,8 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   change Complex.exp _ * u (g*k.val) = Complex.exp _ * u (g*k.val)
   dsimp only [KPContFlatSourceRecipe.alpha]
   rw [KPContFlatFullProductIwasawa.alpha_mul_compact F ζ hζ g k]
+
+end
 
  theorem scalar_reflatten (f : Functions F ζ hζ) (hf : Induced F ζ hζ 0 f)
     (hk : KFinite F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ).K f) :

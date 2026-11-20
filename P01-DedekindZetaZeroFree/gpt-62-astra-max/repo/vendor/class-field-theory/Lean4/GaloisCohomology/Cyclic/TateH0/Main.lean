@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -35,9 +33,7 @@ def H0TateUnitsIsoNormQuotient (K L : Type)
     CategoryTheory.Iso (tateCohomology (Rep.ofAlgebraAutOnUnits K L) 0)
       (ModuleCat.of Int (Additive (NormQuotient K L))) := by
   letI := AlgEquiv.fintype K L
-  let eInv :
-      (unitsInvariantSubmodule K L ⧸ unitsTateH0NormSubmodule K L) ≃ₗ[Int]
-        (Additive Kˣ ⧸ (additiveNormSubgroup K L).toIntSubmodule) :=
+  let eInv :=
     Submodule.Quotient.equiv
       (unitsTateH0NormSubmodule K L)
       ((additiveNormSubgroup K L).toIntSubmodule)

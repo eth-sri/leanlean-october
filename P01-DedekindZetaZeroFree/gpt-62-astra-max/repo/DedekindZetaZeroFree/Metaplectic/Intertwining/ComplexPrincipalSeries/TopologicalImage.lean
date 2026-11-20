@@ -13,7 +13,7 @@ open scoped NumberField Classical
 namespace DedekindZetaZeroFree.KPReferenceChange.StandardComplexImage
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxActualImage
 variable {F : Type} [Field F] [NumberField F]
-variable (A : SArithmeticData F) (w : InfinitePlace F)
+    (A : SArithmeticData F) (w : InfinitePlace F)
 
 abbrev Cover := KPLocalCover.CubicGL2Raw F A.zeta12 A.primitive_zeta12 (Sum.inl w)
 abbrev Group := KPPGLLocalCover.CubicPGL2 F A.zeta12 A.primitive_zeta12 (Sum.inl w)
@@ -22,8 +22,7 @@ def coordinate : KPHilbert.Completion F (Sum.inl w) ≃+* ℂ :=
   InfinitePlace.Completion.ringEquivComplexOfIsComplex
     (KPHilbert.infinite_isComplex F A.zeta12 A.primitive_zeta12 w)
 
-def frequency : ℂˣ := Units.mk0 ((4 * Real.pi : ℝ) : ℂ) (by
-  exact Complex.ofReal_ne_zero.mpr (by positivity))
+def frequency : ℂˣ := Units.mk0 ((4 * Real.pi : ℝ) : ℂ) (Complex.ofReal_ne_zero.mpr (by positivity))
 
 @[simp] theorem frequency_coe : (frequency : ℂ) = ((4 * Real.pi : ℝ) : ℂ) := rfl
 
@@ -52,8 +51,6 @@ def rawCentralCharacter : Cover A w →* ℂˣ :=
     KPPGLLocalCover.splitScalarSubgroup F A.zeta12 A.primitive_zeta12 (Sum.inl w) ≤
       (rawCentralCharacter A w).ker := by
   rintro g ⟨z, rfl⟩
-  change KPSourceConvention.ordinaryGenuineCharacter F A.zeta12 A.primitive_zeta12
-    (KPScalarSplitCentral.scalarHom F A.zeta12 A.primitive_zeta12 (Sum.inl w) z).epsilon = 1
   change KPSourceConvention.ordinaryGenuineCharacter F A.zeta12 A.primitive_zeta12 1 = 1
   exact map_one _
 
@@ -137,12 +134,16 @@ def splitMatrix : ComplexGL2 →* Group A w where
     · rw [KPLocalChartTopology.complex_sigmaTwo_eq_one]
       simp
 
-@[simp] theorem centralCharacter_splitMatrix (g : ComplexGL2) :
+section
+
+variable (g : ComplexGL2)
+
+@[simp] theorem centralCharacter_splitMatrix :
     centralCharacter A w (splitMatrix A w g) = 1 := by
   change KPSourceConvention.ordinaryGenuineCharacter F A.zeta12 A.primitive_zeta12 1 = 1
   exact map_one _
 
-private theorem map_coordinate_inverse (g : ComplexGL2) :
+private theorem map_coordinate_inverse :
     Matrix.GeneralLinearGroup.map (coordinate A w).toRingHom
       (Matrix.GeneralLinearGroup.map (coordinate A w).symm.toRingHom g) = g := by
   apply Matrix.GeneralLinearGroup.ext
@@ -150,27 +151,25 @@ private theorem map_coordinate_inverse (g : ComplexGL2) :
   change coordinate A w ((coordinate A w).symm (g i j)) = g i j
   exact RingEquiv.apply_symm_apply _ _
 
-@[simp] theorem matrix_splitMatrix (g : ComplexGL2) :
+@[simp] theorem matrix_splitMatrix :
     matrix A w (splitMatrix A w g) = Matrix.ProjGenLinGroup.mk g := by
   change Matrix.ProjGenLinGroup.mk
     (Matrix.GeneralLinearGroup.map (coordinate A w).toRingHom
       (Matrix.GeneralLinearGroup.map (coordinate A w).symm.toRingHom g)) = _
   rw [map_coordinate_inverse]
 
-@[simp] theorem action_splitMatrix (g : ComplexGL2) (h : Theta frequency) :
+@[simp] theorem action_splitMatrix (h : Theta frequency) :
     action A w (splitMatrix A w g) h =
       imageAction frequency (Matrix.ProjGenLinGroup.mk g) h := by
   unfold action
   rw [centralCharacter_splitMatrix, matrix_splitMatrix, Units.val_one, one_smul]
 
+end
+
 theorem standard_upper (x : KPHilbert.Completion F (Sum.inl w)) :
     splitMatrix A w (upperUnipotent (coordinate A w x)) =
       KPPGLLocalCover.coverQuotient F A.zeta12 A.primitive_zeta12 (Sum.inl w)
         (KPStandardLocalRootLifts.N F A.zeta12 A.primitive_zeta12 (Sum.inl w) x) := by
-  change KPPGLLocalCover.coverQuotient F A.zeta12 A.primitive_zeta12 (Sum.inl w)
-    (KPLocalCover.sectionMap F A.zeta12 A.primitive_zeta12 (Sum.inl w)
-      (Matrix.GeneralLinearGroup.map (coordinate A w).symm.toRingHom
-        (upperUnipotent (coordinate A w x)))) = _
   apply congrArg (KPPGLLocalCover.coverQuotient F A.zeta12 A.primitive_zeta12 (Sum.inl w))
   apply congrArg (KPLocalCover.sectionMap F A.zeta12 A.primitive_zeta12 (Sum.inl w))
   apply Matrix.GeneralLinearGroup.ext
@@ -182,24 +181,11 @@ theorem standard_diagonal (y : (KPHilbert.Completion F (Sum.inl w))ˣ) :
     splitMatrix A w (diagonal (Units.map (coordinate A w).toMonoidHom y)) =
       KPPGLLocalCover.coverQuotient F A.zeta12 A.primitive_zeta12 (Sum.inl w)
         (KPStandardLocalRootLifts.A F A.zeta12 A.primitive_zeta12 (Sum.inl w) y) := by
-  change KPPGLLocalCover.coverQuotient F A.zeta12 A.primitive_zeta12 (Sum.inl w)
-    (KPLocalCover.sectionMap F A.zeta12 A.primitive_zeta12 (Sum.inl w)
-      (Matrix.GeneralLinearGroup.map (coordinate A w).symm.toRingHom
-        (diagonal (Units.map (coordinate A w).toMonoidHom y)))) = _
   apply congrArg (KPPGLLocalCover.coverQuotient F A.zeta12 A.primitive_zeta12 (Sum.inl w))
   apply congrArg (KPLocalCover.sectionMap F A.zeta12 A.primitive_zeta12 (Sum.inl w))
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [diagonal, KubotaRankTwo.d]
-
-def compactLift : ComplexSU2 →* Group A w := (splitMatrix A w).comp complexSU2Embedding
-
-@[simp] theorem compact_scalar_one (k : ComplexSU2) :
-    centralCharacter A w (compactLift A w k) = 1 := centralCharacter_splitMatrix A w _
-
-@[simp] theorem compact_matrix (k : ComplexSU2) :
-    matrix A w (compactLift A w k) = Matrix.ProjGenLinGroup.mk (complexSU2Embedding k) :=
-  matrix_splitMatrix A w _
 
 end DedekindZetaZeroFree.KPReferenceChange.StandardComplexImage
 

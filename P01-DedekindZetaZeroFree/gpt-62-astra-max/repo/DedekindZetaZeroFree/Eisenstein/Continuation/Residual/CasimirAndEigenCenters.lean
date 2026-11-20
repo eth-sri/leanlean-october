@@ -11,11 +11,9 @@ open scoped Classical NumberField Topology BigOperators
 open Filter
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualSphericalGeometry
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming native_second_word → native_second_word
-open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming nativeIndex → nativeIndex
-open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy renaming actualRightWord_compact_holomorphy → actualRightWord_compact_holomorphy
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming scalar_analytic_of_right_holomorphic → scalar_analytic_of_right_holomorphic
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming word_smul → word_smul
+open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir (native_second_word nativeIndex)
+open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy (actualRightWord_compact_holomorphy)
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer (scalar_analytic_of_right_holomorphic word_smul)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -53,10 +51,10 @@ theorem casimir_meromorphic {O : Set ℂ} {A : ℂ → G → ℂ}
     (analyticOnNhd_const.meromorphicOn.mul ((((hA _ g).add (hA _ g)).sub (hA _ g)).sub (hA _ g))))
 
 variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "level" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U
 
@@ -81,15 +79,13 @@ theorem actual_word_meromorphic (A : ℂ → G → ℂ)
       KPContinuation.spectralDomain := by
   intro c hc
   obtain ⟨r, hr, hb, N, hN, he⟩ := hlocal c hc
-  have han := actual_word_analytic F ζ hζ C R P H U Metric.isOpen_ball N hN w g
-  have hn := (han c (Metric.mem_ball_self hr)).meromorphicAt
+  have hn := ((actual_word_analytic F ζ hζ C R P H U Metric.isOpen_ball N hN w g) c (Metric.mem_ball_self hr)).meromorphicAt
   have hq : MeromorphicAt (fun s => actualRightWord F ζ hζ w (N s) g / (s-c)) c := hn.div ((analyticAt_id.sub analyticAt_const).meromorphicAt)
   apply hq.congr
   filter_upwards [nhdsWithin_le_nhds (Metric.isOpen_ball.mem_nhds (Metric.mem_ball_self hr)),
     self_mem_nhdsWithin] with s hs hne
   have hsne : s ≠ c := by simpa using hne
   rw [he s hs hsne, word_smul]
-  change (s-c) * actualRightWord F ζ hζ w (A s) g / (s-c) = _
   exact mul_div_cancel_left₀ _ (sub_ne_zero.mpr hsne)
 
 theorem spherical_numerator_casimir

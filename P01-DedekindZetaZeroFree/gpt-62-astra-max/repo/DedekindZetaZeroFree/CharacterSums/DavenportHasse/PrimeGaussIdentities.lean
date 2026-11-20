@@ -12,7 +12,11 @@ noncomputable section
 set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem bridge (A : SArithmeticData F) (σ : F →+* ℂ)
+section
+
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
+
+private theorem bridge
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
     (χ : MulChar (DHCubic.Residue F v) (𝓞 F))
     (hχ : DHCubic.IsNormalizedSextic F A v χ) :
@@ -21,21 +25,19 @@ private theorem bridge (A : SArithmeticData F) (σ : F →+* ℂ)
         ((((Ideal.quotientEquivAlgOfEq (𝓞 F) hIv.symm).toRingEquiv.trans
       (ArithGaussCRT.exteriorQuotientEquiv A I))) x) =
       σ (χ x) := by
-  let e : DHCubic.Residue F v ≃+* (A.R ⧸ A.extendIdeal I) :=
+  let e :=
     ((Ideal.quotientEquivAlgOfEq (𝓞 F) hIv.symm).toRingEquiv.trans
       (ArithGaussCRT.exteriorQuotientEquiv A I))
   letI : Nontrivial (A.R ⧸ A.extendIdeal I) := e.symm.toEquiv.nontrivial
   intro x
-  change A.sexticResiduePowerChar σ I 1 (e x) = σ (χ x)
   by_cases hx : x = 0
   · rw [hx, e.map_zero, MulChar.map_zero, MulChar.map_zero]
     exact (map_zero σ).symm
-  have hxu : IsUnit x := isUnit_iff_ne_zero.mpr hx
-  let u : (DHCubic.Residue F v)ˣ := hxu.unit
+  let u := (isUnit_iff_ne_zero.mpr hx).unit
   let eu := Units.map e.toMonoidHom u
   obtain ⟨i, hi, hci⟩ := (hχ x hx).1
   obtain ⟨j, hj, hcj, hrj⟩ := A.sexticResidueFamily_normalized.2.1 I v hIv eu
-  have he_x : (eu : A.R ⧸ A.extendIdeal I) = e x := by simp [eu, u]
+  have he_x : eu = e x := by simp [eu, u]
   have hiq : Ideal.Quotient.mk (A.extendIdeal I)
       (algebraMap (𝓞 F) A.R (A.primitive_zeta12.toInteger ^ (2 * i))) =
       (e x) ^ ((Nat.card (A.R ⧸ A.extendIdeal I) - 1) / 6) := by
@@ -46,19 +48,16 @@ private theorem bridge (A : SArithmeticData F) (σ : F →+* ℂ)
     rw [hc]
     simpa [e, ← hIv] using hh
   have hji : j = i := by
-    have hp := A.exterior_sextic_primitive I (hIv ▸ v.isPrime.ne_top)
-    apply hp.pow_inj hj hi
+    apply (A.exterior_sextic_primitive I (hIv ▸ v.isPrime.ne_top)).pow_inj hj hi
     have hh := hrj.trans (he_x ▸ hiq.symm)
     simpa only [map_pow, pow_mul] using hh
-  have hval : (A.sexticResidueFamily I eu : F) = (χ x : F) := by
-    rw [hcj, hci, hji]
-    rfl
   have hn : sexticExponent 1 = 1 := by decide
   rw [sexticResiduePowerChar, hn, pow_one, ← he_x, MulChar.ofUnitHom_coe]
-  change σ (A.sexticResidueFamily I eu) = σ (χ x)
-  exact congrArg σ hval
+  refine congrArg σ ?_
+  rw [hcj, hci, hji]
+  rfl
 
-private theorem gaussBridge (A : SArithmeticData F) (σ : F →+* ℂ)
+private theorem gaussBridge
     (hS : A.ContainsTraceBadPlaces) (I : A.Exterior)
     (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
     (p : A.R) (hp : A.Generates I p)
@@ -92,7 +91,7 @@ private theorem gaussBridge (A : SArithmeticData F) (σ : F →+* ℂ)
     rw [sexticResiduePowerChar, hn]
     by_cases hx : IsUnit x
     · let u := hx.unit
-      have hxu : (u : DHCubic.Residue F v) = x := hx.unit_spec
+      have hxu : u = x := hx.unit_spec
       have heu : (Units.map e.toMonoidHom u : A.R ⧸ A.extendIdeal I) = e x := by
         simp [hxu]
       rw [← heu, MulChar.pow_apply_coe, ← hxu, MulChar.pow_apply_coe]
@@ -111,6 +110,8 @@ private theorem gaussBridge (A : SArithmeticData F) (σ : F →+* ℂ)
   change A.sexticResiduePowerChar σ I j (e x) * _ = _
   rw [hpow]
   rfl
+
+end
 
 private theorem primeIdentities
     (A : SArithmeticData F) (hS : A.ContainsTraceBadPlaces) (σ : F →+* ℂ)
@@ -140,8 +141,9 @@ private theorem primeIdentities
     change Circle.coeHom ((A.residueTraceCharacter hS I p hp) (e (e.symm x))) = 1 at hh
     rw [e.apply_symm_apply] at hh
     exact hh
+  let ringHomComp₀ := χ.ringHomComp (σ.comp (algebraMap (𝓞 F) F))
   have hg (j : ℕ) (hj : j < 6) : A.idealGauss σ hS I p hp j =
-      FiniteGauss.normalizedGaussPower (χ.ringHomComp (σ.comp (algebraMap (𝓞 F) F))) ψ j :=
+      FiniteGauss.normalizedGaussPower (ringHomComp₀) ψ j :=
     gaussBridge A σ hS I v hIv p hp χ hχ j hj
   have hg1 := hg 1 (by decide)
   have hg2 := hg 2 (by decide)
@@ -159,12 +161,12 @@ private theorem primeIdentities
     rw [hcard]
     exact A.exterior_norm_mod_twelve v hv
   have hdup := FiniteGauss.normalizedGaussPower_sextic_duplication
-    (χ.ringHomComp (σ.comp (algebraMap (𝓞 F) F))) ψ hQ
+    (ringHomComp₀) ψ hQ
       (DHCubic.orderOf_normalizedSextic_complex F A v hv σ χ hχ) hψ
-  have hfour : (χ.ringHomComp (σ.comp (algebraMap (𝓞 F) F))) (4 : DHCubic.Residue F v) =
+  have hfour : (ringHomComp₀) (4 : DHCubic.Residue F v) =
       σ (A.sexticResidue I (4 : A.R)) := by
     have hb := bridge A σ I v hIv χ hχ (4 : DHCubic.Residue F v)
-    have he4 : e (4 : DHCubic.Residue F v) = 4 := map_ofNat e 4
+    have he4 := map_ofNat e 4
     change A.sexticResiduePowerChar σ I 1 (e 4) = _ at hb
     rw [he4] at hb
     change σ (χ 4) = _
@@ -182,17 +184,7 @@ private theorem primeIdentities
   rw [hfour] at hdup
   exact hdup
 
-theorem primeGaussIdentities
-    (A : SArithmeticData F) (hS : A.ContainsTraceBadPlaces) (σ : F →+* ℂ)
-    (B : Subgroup A.V) (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F))
-    (hIv : I.val = v.asIdeal) (p : A.R) (hp : A.Generates I p)
-    (a : Fˣ) (ha : A.IsAllowed B a) (hap : (a : F) = (p : F)) :
-    A.idealGauss σ hS I p hp 2 ^ 3 =
-      -DHCubic.lambda F A (σ.comp (algebraMap (DHCubic.E0 F A) F)) I.val ∧
-    A.idealGauss σ hS I p hp 1 * A.idealGauss σ hS I p hp 2 =
-      star (σ (A.sexticResidue I (4 : A.R))) * A.idealGauss σ hS I p hp 3 *
-        A.idealGauss σ hS I p hp 2 ^ 3 :=
-  primeIdentities A hS σ B I v hIv p hp a ha hap
+alias primeGaussIdentities := primeIdentities
 
 end
 end DedekindZetaZeroFree.SArithmeticData.GaussCorrection

@@ -11,7 +11,7 @@ open IsDedekindDomain
 namespace DedekindZetaZeroFree.RayClassBridge.RayFractional
 
 variable (F : Type) [Field F] [NumberField F]
-variable (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
+    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
 
 private lemma count_finset_prod_prime
     (s : Finset (HeightOneSpectrum (𝓞 F))) (n : HeightOneSpectrum (𝓞 F) → ℕ)
@@ -20,22 +20,23 @@ private lemma count_finset_prod_prime
       ((∏ w ∈ s, w.asIdeal ^ n w : Ideal (𝓞 F)) :
         FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
       if v ∈ s then (n v : ℤ) else 0 := by
+  let FractionalIdeal₀ := FractionalIdeal (nonZeroDivisors (𝓞 F)) F
   classical
   have hcoe :
       ((∏ w ∈ s, w.asIdeal ^ n w : Ideal (𝓞 F)) :
-        FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
-        ∏ w ∈ s, (w.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ^ n w := by
+        FractionalIdeal₀) =
+        ∏ w ∈ s, (w.asIdeal : FractionalIdeal₀) ^ n w := by
     rw [show ((∏ w ∈ s, w.asIdeal ^ n w : Ideal (𝓞 F)) :
-        FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
+        FractionalIdeal₀) =
         FractionalIdeal.coeIdealHom (nonZeroDivisors (𝓞 F)) F
           (∏ w ∈ s, w.asIdeal ^ n w) from rfl]
     rw [map_prod]
     exact Finset.prod_congr rfl fun w _ => map_pow _ _ _
   rw [hcoe]
   rw [show FractionalIdeal.count F v
-        (∏ w ∈ s, (w.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ^ n w) =
+        (∏ w ∈ s, (w.asIdeal : FractionalIdeal₀) ^ n w) =
       ∑ w ∈ s,
-        FractionalIdeal.count F v ((w.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ^ n w)
+        FractionalIdeal.count F v ((w.asIdeal : FractionalIdeal₀) ^ n w)
       from FractionalIdeal.count_prod F v s _
         (fun w _ => pow_ne_zero _
           (FractionalIdeal.coeIdeal_ne_zero.mpr w.ne_bot))]
@@ -46,7 +47,7 @@ private lemma count_finset_prod_prime
 private lemma sup_mul_coprime (I J : Ideal (𝓞 F))
     (hI : I ⊔ 𝔪 = ⊤) (hJ : J ⊔ 𝔪 = ⊤) : (I * J) ⊔ 𝔪 = ⊤ := by
   rw [eq_top_iff]
-  calc (⊤ : Ideal (𝓞 F)) = (I ⊔ 𝔪) * (J ⊔ 𝔪) := by rw [hI, hJ]; simp
+  calc _ = (I ⊔ 𝔪) * (J ⊔ 𝔪) := by rw [hI, hJ]; simp
     _ = (I * J ⊔ I * 𝔪) ⊔ (𝔪 * J ⊔ 𝔪 * 𝔪) := by
         rw [Ideal.sup_mul, Ideal.mul_sup, Ideal.mul_sup]
     _ ≤ I * J ⊔ 𝔪 := by
@@ -74,38 +75,35 @@ private lemma sup_finset_prod_coprime (s : Finset (HeightOneSpectrum (𝓞 F)))
         (sup_pow_coprime F 𝔪 _ _ (h a (Finset.mem_insert_self a s)))
         (ih fun v hv => h v (Finset.mem_insert_of_mem hv))
 
-private lemma coprime_of_mem_subgroup
-    (x : ClassFieldTheory.NumberFieldFractionalIdealGroup F)
+section
+
+variable (x : ClassFieldTheory.NumberFieldFractionalIdealGroup F)
     (hx : x ∈ ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus F 𝔪 h𝔪))
+
+include hx in
+private lemma coprime_of_mem_subgroup
     (v : HeightOneSpectrum (𝓞 F))
     (hv : FractionalIdeal.count F v
       (x : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ≠ 0) :
     v.asIdeal ⊔ 𝔪 = ⊤ := by
   classical
   have h𝔪0 : 𝔪 ≠ 0 := by rw [Ideal.zero_eq_bot]; exact h𝔪
-  have hnotmem : v ∉ (narrowIdealModulus F 𝔪 h𝔪).finitePart.support := fun hmem => hv (hx v hmem)
-  have hzero : (narrowIdealModulus F 𝔪 h𝔪).finitePart v = 0 :=
-    Finsupp.notMem_support_iff.mp hnotmem
+  have hzero :=
+    Finsupp.notMem_support_iff.mp (fun hmem => hv (hx v hmem))
   rw [narrowIdealModulus_finitePart] at hzero
-  have hcount : FractionalIdeal.count F v (𝔪 : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) = 0 :=
-    le_antisymm (Int.toNat_eq_zero.mp hzero)
-      (FractionalIdeal.count_coe_nonneg F v 𝔪)
   have hndvd : ¬ v.asIdeal ∣ 𝔪 := by
     rw [← Associates.count_ne_zero_iff_dvd h𝔪0 v.irreducible]
     intro h
     have hz : ((Associates.mk v.asIdeal).count (Associates.mk 𝔪).factors : ℤ) = 0 := by
       rw [← FractionalIdeal.count_coe F v h𝔪0]
-      exact hcount
+      exact (le_antisymm (Int.toNat_eq_zero.mp hzero)
+        (FractionalIdeal.count_coe_nonneg F v 𝔪))
     exact h (by exact_mod_cast hz)
-  have hnotle : ¬ 𝔪 ≤ v.asIdeal := fun h => hndvd (Ideal.dvd_iff_le.mpr h)
   by_contra hne
-  have hmax : v.asIdeal.IsMaximal := v.isPrime.isMaximal v.ne_bot
-  have heq : v.asIdeal = v.asIdeal ⊔ 𝔪 := hmax.eq_of_le hne le_sup_left
-  exact hnotle (heq.symm ▸ le_sup_right)
+  exact (fun h => hndvd (Ideal.dvd_iff_le.mpr h)) (((v.isPrime.isMaximal v.ne_bot).eq_of_le hne le_sup_left).symm ▸ le_sup_right)
 
-theorem exists_integralUnit_ratio
-    (x : ClassFieldTheory.NumberFieldFractionalIdealGroup F)
-    (hx : x ∈ ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus F 𝔪 h𝔪)) :
+include hx in
+theorem exists_integralUnit_ratio :
     ∃ (A B : Ideal (𝓞 F)) (hA : A ≠ ⊥) (hB : B ≠ ⊥)
       (hcA : A ⊔ 𝔪 = ⊤) (hcB : B ⊔ 𝔪 = ⊤),
       x = integralUnit F A hA * (integralUnit F B hB)⁻¹ := by
@@ -113,8 +111,8 @@ theorem exists_integralUnit_ratio
   let e := ClassFieldTheory.NumberFieldFractionalIdealGroup.countVector x
   let P : Finset (HeightOneSpectrum (𝓞 F)) := e.support.filter (fun v => 0 < e v)
   let N : Finset (HeightOneSpectrum (𝓞 F)) := e.support.filter (fun v => e v < 0)
-  let A : Ideal (𝓞 F) := ∏ v ∈ P, v.asIdeal ^ (e v).toNat
-  let B : Ideal (𝓞 F) := ∏ v ∈ N, v.asIdeal ^ (-(e v)).toNat
+  let A := ∏ v ∈ P, v.asIdeal ^ (e v).toNat
+  let B := ∏ v ∈ N, v.asIdeal ^ (-(e v)).toNat
   have hmemP : ∀ v, v ∈ P ↔ 0 < e v := by
     intro v
     rw [Finset.mem_filter, Finsupp.mem_support_iff]
@@ -124,15 +122,11 @@ theorem exists_integralUnit_ratio
     rw [Finset.mem_filter, Finsupp.mem_support_iff]
     exact ⟨fun h => h.2, fun h => ⟨ne_of_lt h, h⟩⟩
   have hcountA : ∀ v, FractionalIdeal.count F v
-      (A : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)
-      = if v ∈ P then ((e v).toNat : ℤ) else 0 := by
-    intro v
-    exact count_finset_prod_prime F P (fun w => (e w).toNat) v
+      A
+      = if v ∈ P then ((e v).toNat : ℤ) else 0 := fun v => count_finset_prod_prime F P (fun w => (e w).toNat) v
   have hcountB : ∀ v, FractionalIdeal.count F v
-      (B : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)
-      = if v ∈ N then ((-(e v)).toNat : ℤ) else 0 := by
-    intro v
-    exact count_finset_prod_prime F N (fun w => (-(e w)).toNat) v
+      B
+      = if v ∈ N then ((-(e v)).toNat : ℤ) else 0 := fun v => count_finset_prod_prime F N (fun w => (-(e w)).toNat) v
   have hA : A ≠ ⊥ := by
     by_cases hP : P = ∅
     · have hAeq : A = ⊤ := by
@@ -145,8 +139,8 @@ theorem exists_integralUnit_ratio
       intro hbot
       have hc := hcountA v
       rw [hbot, FractionalIdeal.coeIdeal_bot, FractionalIdeal.count_zero, if_pos hvP] at hc
-      have hpos : 0 < e v := (hmemP v).mp hvP
-      have hcast : ((e v).toNat : ℤ) = e v := Int.toNat_of_nonneg (le_of_lt hpos)
+      have hpos := (hmemP v).mp hvP
+      have hcast := Int.toNat_of_nonneg (le_of_lt hpos)
       exact (by rw [hcast]; omega : ((e v).toNat : ℤ) ≠ 0) hc.symm
   have hB : B ≠ ⊥ := by
     by_cases hN : N = ∅
@@ -160,8 +154,8 @@ theorem exists_integralUnit_ratio
       intro hbot
       have hc := hcountB v
       rw [hbot, FractionalIdeal.coeIdeal_bot, FractionalIdeal.count_zero, if_pos hvN] at hc
-      have hpos : 0 < -(e v) := neg_pos.mpr ((hmemN v).mp hvN)
-      have hcast : ((-(e v)).toNat : ℤ) = -(e v) := Int.toNat_of_nonneg (le_of_lt hpos)
+      have hpos := neg_pos.mpr ((hmemN v).mp hvN)
+      have hcast := Int.toNat_of_nonneg (le_of_lt hpos)
       exact (by rw [hcast]; omega : ((-(e v)).toNat : ℤ) ≠ 0) hc.symm
   have hcA : A ⊔ 𝔪 = ⊤ := by
     refine sup_finset_prod_coprime F 𝔪 P (fun v => (e v).toNat) fun v hvP => ?_
@@ -180,8 +174,8 @@ theorem exists_integralUnit_ratio
       ((integralUnit F A hA * (integralUnit F B hB)⁻¹ :
         ClassFieldTheory.NumberFieldFractionalIdealGroup F) :
         FractionalIdeal (nonZeroDivisors (𝓞 F)) F)
-      = FractionalIdeal.count F v (A : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)
-        - FractionalIdeal.count F v (B : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) := by
+      = FractionalIdeal.count F v A
+        - FractionalIdeal.count F v B := by
     rw [Units.val_mul, Units.val_inv_eq_inv_val, integralUnit_val, integralUnit_val,
       FractionalIdeal.count_mul, FractionalIdeal.count_inv]
     · ring
@@ -202,17 +196,17 @@ theorem exists_integralUnit_ratio
         if_neg (fun h => absurd ((hmemN v).mp h) (by omega))]
       ring
 
+end
+
 theorem exists_integralPrimeTo_ratio
     (x : ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus F 𝔪 h𝔪)) :
     ∃ (A B : Ideal (𝓞 F)) (hA : A ≠ ⊥) (hB : B ≠ ⊥)
       (hcA : A ⊔ 𝔪 = ⊤) (hcB : B ⊔ 𝔪 = ⊤),
       x = integralPrimeTo F 𝔪 h𝔪 A hA hcA * (integralPrimeTo F 𝔪 h𝔪 B hB hcB)⁻¹ := by
   obtain ⟨A, B, hA, hB, hcA, hcB, hx⟩ :=
-    exists_integralUnit_ratio F 𝔪 h𝔪 (x : ClassFieldTheory.NumberFieldFractionalIdealGroup F) x.2
+    exists_integralUnit_ratio F 𝔪 h𝔪 x x.2
   refine ⟨A, B, hA, hB, hcA, hcB, ?_⟩
   apply Subtype.ext
-  change (x : ClassFieldTheory.NumberFieldFractionalIdealGroup F) =
-    integralUnit F A hA * (integralUnit F B hB)⁻¹
   exact hx
 
 theorem monoidHom_ext_of_integralPrimeTo {M : Type*} [Group M]

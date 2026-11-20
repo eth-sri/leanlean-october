@@ -18,10 +18,14 @@ local instance localProductMeasurable
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :
     MeasurableSpace (SLocalProduct F S) := borel _
 
-def modulus (A : SArithmeticData F) (a : A.R) : ℝ :=
+section
+
+variable (A : SArithmeticData F)
+
+def modulus (a : A.R) : ℝ :=
   (FiniteTransform.exteriorNorm A.R.toSubring a : ℝ)
 
-def originalTerm (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+def originalTerm (D : ComparisonPoissonCoefficientData F A)
     (W0 : SLocalProduct F A.Sf → ℂ) (s a : A.R) (hs : s ≠ 0)
     (X : ℝ) (t : A.G1) (m : A.R) : ℂ := by
   letI := D.finiteResidue s hs
@@ -32,13 +36,13 @@ def originalTerm (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F
       NormalizedProbe.asLocalPoint A
         (((t : A.G) * NormalizedProbe.radialSection A (modulus A s * X))⁻¹))
 
-def frequencyPoint (A : SArithmeticData F) (s a : A.R)
+def frequencyPoint (s a : A.R)
     (X : ℝ) (t : A.G1) (h : A.R) : SLocalProduct F A.Sf :=
   NormalizedProbe.asLocalPoint A
       ((t : A.G) * NormalizedProbe.radialSection A (modulus A s * X)) *
     sLocalDiagonal F A.Sf ((h : F) / ((s : F) * (a : F)))
 
-def frequencyTerm (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+def frequencyTerm (D : ComparisonPoissonCoefficientData F A)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (μ : @Measure (SLocalProduct F A.Sf) (borel _))
     (W0 : SLocalProduct F A.Sf → ℂ) (s a : A.R) (hs : s ≠ 0) (ha : a ≠ 0)
@@ -48,6 +52,8 @@ def frequencyTerm (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData 
   exact FiniteTransform.finiteCoefficient A.R.toSubring s a h
       (D.character s) (D.character a) D.additiveCharacter *
     ProbeWeight.fourier F A.Sf e μ W0 (frequencyPoint A s a X t h)
+
+end
 
 structure Normalization (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)

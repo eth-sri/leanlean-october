@@ -10,12 +10,11 @@ noncomputable section
 open scoped Classical NumberField Topology ContDiff BigOperators
 namespace DedekindZetaZeroFree.SharedSource
 open MomentSources EisensteinSmoothGerms KPGlobalResidualConstruction KPGlobalEisensteinData
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CoherentTaylorCalculus renaming series_onBall → series_onBall
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CoherentTaylorCalculus renaming compactSeries → compactSeries
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CoherentTaylorCalculus (series_onBall compactSeries)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
-variable {C : ScalarContinuation R Q} {v : R.A.UnitQuotient}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {C : ScalarContinuation R Q} {v : R.A.UnitQuotient}
 set_option maxHeartbeats 1200000
 set_option backward.isDefEq.respectTransparency false
 
@@ -56,7 +55,6 @@ theorem moving_coefficients_eq_scalar (H : ScalarGerm C v)
     (ht : SmoothPowerSeriesOn (movingJetMap F R.A.zeta12 R.A.primitive_zeta12) 0 ρ b N)
     (n : ℕ) : (b n).val = H.coefficients n := by
   funext g
-  have hp := moving_series_scalar N b ρ hρ ht g
   have hsmall : HasFPowerSeriesOnBall (fun s => H.cleared s g)
       (cauchyPowerSeries (fun s => H.cleared s g) 0 (ρ / 2)) 0
       (ENNReal.ofReal (ρ / 2)) := by
@@ -69,16 +67,13 @@ theorem moving_coefficients_eq_scalar (H : ScalarGerm C v)
   have hg : (fun s => (N s).val g) =ᶠ[𝓝 (0 : ℂ)] (fun s => H.cleared s g) := by
     filter_upwards [Metric.ball_mem_nhds (0 : ℂ) hρ] with s hs
     exact congrFun (he s hs) g
-  have hsame := hp.hasFPowerSeriesAt.congr hg
-  have heq := hsame.eq_formalMultilinearSeries hsmall.hasFPowerSeriesAt
-  have hc := congrArg (fun p : FormalMultilinearSeries ℂ ℂ ℂ => p.coeff n) heq
   rw [H.coefficients_eq_circle (ρ/2) (half_pos hρ) ((half_lt_self hρ).trans_le hρH) n g]
   simpa only [FormalMultilinearSeries.coeff, ContinuousMultilinearMap.mkPiRing_apply,
-    Pi.one_apply, Finset.prod_const_one, one_smul] using hc
+    Pi.one_apply, Finset.prod_const_one, one_smul] using (congrArg (fun p : FormalMultilinearSeries ℂ ℂ ℂ => p.coeff n) (((moving_series_scalar N b ρ hρ ht g).hasFPowerSeriesAt.congr hg).eq_formalMultilinearSeries hsmall.hasFPowerSeriesAt))
 
 theorem scalarGerm_coefficients_smooth_constructed (H : ScalarGerm C v) (n : ℕ) :
     KPLiteralRaw.Smooth F R.A.zeta12 R.A.primitive_zeta12 (H.coefficients n) := by
-  obtain ⟨ρ, N, b, hρ, hρH, hb, he, ht⟩ := scalarGerm_coherent_moving_series H
+  obtain ⟨ρ, N, b, hρ, hρH, he, ht⟩ := scalarGerm_coherent_moving_series H
   rw [← moving_coefficients_eq_scalar H N b ρ hρ hρH he ht n]
   exact (b n).property
 
@@ -86,7 +81,7 @@ theorem scalarGerm_upgrade_canonical (H : ScalarGerm C v) :
     ∃ G : IndividualSmoothGerm C v,
       G.radius ≤ H.radius ∧ G.cleared = (fun s => (H.cleared s : Functions R)) ∧
       G.coefficients = H.coefficients := by
-  obtain ⟨ρ, N, b, hρ, hρH, hb, he, ht⟩ := scalarGerm_coherent_moving_series H
+  obtain ⟨ρ, N, b, hρ, hρH, he, ht⟩ := scalarGerm_coherent_moving_series H
   have hc := moving_coefficients_eq_scalar H N b ρ hρ hρH he ht
   let G : IndividualSmoothGerm C v := {
     radius := ρ

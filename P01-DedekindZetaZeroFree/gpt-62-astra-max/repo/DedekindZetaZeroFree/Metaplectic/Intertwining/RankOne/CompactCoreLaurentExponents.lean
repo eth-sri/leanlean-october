@@ -18,26 +18,28 @@ def initialExponent (g : ActualCover F ζ hζ q) : ℤ :=
   -WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
     (valuation (LocalField F q) (S.borel.coordinate (S.borel.retract (S.iwasawa.borelPart g)) : LocalField F q)))
 
-def initialCoefficient (P : Polarization S.heisenberg) (ε : Sign)
-    (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
-    (g : ActualCover F ζ hζ q) (h : actualTorus F ζ hζ q) : ℂ :=
+section
+
+variable (P : Polarization S.heisenberg) (ε : Sign)
+    (φ : compactPicture S.borel P S.iwasawa (sourceSign ε)) (g : ActualCover F ζ hζ q)
+    (h : actualTorus F ζ hζ q)
+
+def initialCoefficient : ℂ :=
   deltaHalf S.borel (S.iwasawa.borelPart g) *
     (borelAction S.borel P (sourceSign ε) (S.iwasawa.borelPart g)
       (φ.val (S.iwasawa.compactPart g))).val h
 
-theorem initialCoordinate_monomial (P : Polarization S.heisenberg) (ε : Sign)
-    (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
-    (g : ActualCover F ζ hζ q) (h : actualTorus F ζ hζ q) (s : ℂ) :
+theorem initialCoordinate_monomial (s : ℂ) :
     ((compactTrivialization S.borel P S.iwasawa (sourceSign ε) (sourceParameter ε s) φ).val g).val h =
       initialCoefficient F ζ hζ q S P ε φ g h *
         (evaluationUnit (LocalField F q) ε s : ℂ) ^ initialExponent F ζ hζ q S g := by
   let y := S.borel.coordinate (S.borel.retract (S.iwasawa.borelPart g))
-  let n : ℤ := WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-    (valuation (LocalField F q) (y : LocalField F q)))
+  let n := WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
+    (valuation (LocalField F q) y))
   have hp : normPower (LocalField F q) y (sourceParameter ε s) =
       (evaluationUnit (LocalField F q) ε s : ℂ) ^ (-n) := by
     have hq : 0 < (residueCardinality (LocalField F q) : ℝ) := by
-      exact_mod_cast (Nat.card_pos (α := IsLocalRing.ResidueField (valuation (LocalField F q)).integer))
+      exact_mod_cast (Nat.card_pos)
     have he : (evaluationUnit (LocalField F q) ε s : ℂ) = r (LocalField F q) (sourceParameter ε s) := by
       cases ε <;> simp [evaluationUnit, sourceParameter, rUnit, r, Complex.exp_neg]
     rw [he]
@@ -54,24 +56,24 @@ theorem initialCoordinate_monomial (P : Polarization S.heisenberg) (ε : Sign)
   dsimp [initialCoefficient, initialExponent, y, n]
   ring
 
+end
+
 theorem initialExponent_locallyConstant : IsLocallyConstant (initialExponent F ζ hζ q S) := by
   rw [IsLocallyConstant.iff_eventually_eq]
   intro g
-  have hc : Continuous (fun y : ActualCover F ζ hζ q => g⁻¹ * y) :=
-    continuous_const.mul continuous_id
   have hmem : ∀ᶠ y : ActualCover F ζ hζ q in nhds g,
       g⁻¹ * y ∈ S.iwasawa.compact.toOpenSubgroup :=
-    hc.continuousAt.preimage_mem_nhds (by
+    (continuous_const.mul continuous_id).continuousAt.preimage_mem_nhds (by
       simpa using S.iwasawa.compact.toOpenSubgroup.isOpen.mem_nhds
         S.iwasawa.compact.toOpenSubgroup.one_mem)
   filter_upwards [hmem] with y hy
-  let b : S.borel.B := (S.iwasawa.borelPart g)⁻¹ * S.iwasawa.borelPart y
+  let b := (S.iwasawa.borelPart g)⁻¹ * S.iwasawa.borelPart y
   have hb : (b : ActualCover F ζ hζ q) ∈ S.iwasawa.compact.toOpenSubgroup := by
-    have he : (b : ActualCover F ζ hζ q) =
+    have he : b =
         (S.iwasawa.compactPart g : ActualCover F ζ hζ q) * (g⁻¹ * y) *
           (S.iwasawa.compactPart y : ActualCover F ζ hζ q)⁻¹ := by
       calc
-        (b : ActualCover F ζ hζ q) =
+        _ =
             (S.iwasawa.compactPart g : ActualCover F ζ hζ q) *
               (((S.iwasawa.borelPart g : ActualCover F ζ hζ q) *
                 (S.iwasawa.compactPart g : ActualCover F ζ hζ q))⁻¹ *
@@ -93,17 +95,15 @@ theorem initialExponent_locallyConstant : IsLocallyConstant (initialExponent F �
         (S.borel.coordinate (S.borel.retract (S.iwasawa.borelPart g))) := by
     rw [he, map_mul, map_mul, localAbs_mul, hn, mul_one]
   have hq : (1 : ℝ) < residueCardinality (LocalField F q) := by
-    exact_mod_cast (Finite.one_lt_card (α := IsLocalRing.ResidueField (valuation (LocalField F q)).integer))
+    exact_mod_cast (Finite.one_lt_card)
   unfold localAbs at ha
-  have hn := (Real.rpow_right_inj (by linarith : (0 : ℝ) < residueCardinality (LocalField F q))
-    (ne_of_gt hq)).mp ha
   unfold initialExponent
   congr 1
-  exact_mod_cast hn
+  exact_mod_cast ((Real.rpow_right_inj (by linarith : (0 : ℝ) < residueCardinality (LocalField F q))
+    (ne_of_gt hq)).mp ha)
 
 theorem initialExponent_finite_on_compact (C : Set (ActualCover F ζ hζ q)) (hC : IsCompact C) :
-    (initialExponent F ζ hζ q S '' C).Finite := by
-  exact (hC.image (initialExponent_locallyConstant F ζ hζ q S).continuous).finite_of_discrete
+    (initialExponent F ζ hζ q S '' C).Finite := (hC.image (initialExponent_locallyConstant F ζ hζ q S).continuous).finite_of_discrete
 
 end DedekindZetaZeroFree.KPRankOneShellRepair
 

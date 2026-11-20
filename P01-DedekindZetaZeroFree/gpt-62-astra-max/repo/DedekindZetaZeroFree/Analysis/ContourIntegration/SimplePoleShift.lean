@@ -46,29 +46,27 @@ theorem verticalIntegral_sub_eq_residue
   have hstrip : ∀ z : ℂ, z ∈ comparisonClosedStrip a b ↔ z + (c : ℂ) * I ∈ comparisonClosedStrip a b := by
     intro z; simp [comparisonClosedStrip]
   have hgd : DifferentiableOn ℂ g (comparisonClosedStrip a b \ {(q : ℂ)}) := by
-    have hd : DifferentiableOn ℂ (fun z : ℂ => z + (c : ℂ) * I) (comparisonClosedStrip a b \ {(q : ℂ)}) :=
-      (differentiable_id.add_const _).differentiableOn
-    refine hf.comp hd ?_
+    refine hf.comp ((differentiable_id.add_const _).differentiableOn) ?_
     intro z hz
     refine ⟨(hstrip z).1 hz.1, ?_⟩
     intro h
     apply hz.2
-    have : z + (c : ℂ) * I = p := h
+    have := h
     rw [hpq] at this
     have := add_right_cancel this
-    simpa using this
+    exact this
   have hgres : Tendsto (fun z : ℂ => (z - (q : ℂ)) * g z) (𝓝[≠] (q : ℂ)) (𝓝 res) := by
     have ht : Tendsto (fun z : ℂ => z + (c : ℂ) * I) (𝓝[≠] (q : ℂ)) (𝓝[≠] p) := by
       rw [tendsto_nhdsWithin_iff]
       constructor
       · have : Tendsto (fun z : ℂ => z + (c : ℂ) * I) (𝓝 (q : ℂ)) (𝓝 p) := by
           rw [hpq]
-          exact Continuous.tendsto (f := fun z : ℂ => z + (c : ℂ) * I) (by fun_prop) (q : ℂ)
+          exact Continuous.tendsto (by fun_prop) (q : ℂ)
         exact this.mono_left nhdsWithin_le_nhds
       · filter_upwards [self_mem_nhdsWithin] with z hz h
         apply hz
         rw [hpq] at h
-        simpa using add_right_cancel h
+        exact add_right_cancel h
     refine (hres.comp ht).congr' ?_
     filter_upwards with z
     simp only [Function.comp, hg]
@@ -91,18 +89,17 @@ theorem verticalIntegral_sub_eq_residue
       refine this.congr ?_
       intro z hz
       simp only [hA]
-      rw [Function.update_of_ne (by simpa using hz.2)]
+      rw [Function.update_of_ne (by exact hz.2)]
     · exact continuousAt_update_same.mpr hgres
   have hF : ∀ z : ℂ, a ≤ z.re → z.re ≤ b → z ≠ (q : ℂ) → g z = A z / (z - (q : ℂ)) := by
     intro z _ _ hz
     simp only [hA]
     rw [Function.update_of_ne hz]
-    have : z - (q : ℂ) ≠ 0 := sub_ne_zero.mpr hz
+    have := sub_ne_zero.mpr hz
     field_simp
   have hbot' : Tendsto (fun T : ℝ => ∫ x : ℝ in a..b, g ((x : ℂ) + ((-T : ℝ) : ℂ) * I))
       atTop (𝓝 0) := by
-    have h := hbot.comp (tendsto_atTop_add_const_right atTop (-c) tendsto_id)
-    refine h.congr ?_
+    refine (hbot.comp (tendsto_atTop_add_const_right atTop (-c) tendsto_id)).congr ?_
     intro T
     apply intervalIntegral.integral_congr
     intro x _
@@ -112,8 +109,7 @@ theorem verticalIntegral_sub_eq_residue
     ring
   have htop' : Tendsto (fun T : ℝ => ∫ x : ℝ in a..b, g ((x : ℂ) + (T : ℂ) * I))
       atTop (𝓝 0) := by
-    have h := htop.comp (tendsto_atTop_add_const_right atTop c tendsto_id)
-    refine h.congr ?_
+    refine (htop.comp (tendsto_atTop_add_const_right atTop c tendsto_id)).congr ?_
     intro T
     apply intervalIntegral.integral_congr
     intro x _
@@ -159,14 +155,13 @@ theorem horizontal_tendsto_zero_of_decay (f : ℂ → ℂ) (a b C T0 ε : ℝ) (
   apply tendsto_zero_iff_norm_tendsto_zero.mpr
   apply squeeze_zero' (Eventually.of_forall (fun _ => norm_nonneg _)) _ hlim
   filter_upwards [eventually_ge_atTop (max T0 1)] with T hT
-  have hT1 : 1 ≤ T := le_trans (le_max_right _ _) hT
-  have hT0 : T0 ≤ T := le_trans (le_max_left _ _) hT
+  have hT1 := le_trans (le_max_right _ _) hT
+  have hT0 := le_trans (le_max_left _ _) hT
   have he : |ε * T| = T := by rw [abs_mul, hε, one_mul, abs_of_nonneg (by linarith)]
   apply intervalIntegral.norm_integral_le_of_norm_le_const
   intro x hx
-  have hx' : x ∈ Icc a b := by
-    rw [← uIcc_of_le hab]; exact uIoc_subset_uIcc hx
-  have hh := hbound x hx' (ε * T) (by rw [he]; exact hT0)
+  have hh := hbound x (by
+    rw [← uIcc_of_le hab]; exact uIoc_subset_uIcc hx) (ε * T) (by rw [he]; exact hT0)
   rw [he] at hh
   exact hh
 
@@ -187,7 +182,7 @@ theorem verticalIntegral_sub_eq_residue_of_decay
     (hbound : ∀ x ∈ Icc a b, ∀ y : ℝ, T0 ≤ |y| →
       ‖f ((x : ℂ) + (y : ℂ) * I)‖ ≤ C * (1 + |y|) ^ (-2 : ℝ)) :
     comparisonVerticalIntegral b f - comparisonVerticalIntegral a f = res := by
-  have hab : a ≤ b := (hap.trans hpb).le
+  have hab := (hap.trans hpb).le
   have hline : ∀ σ : ℝ, σ ∈ Icc a b → σ ≠ p.re →
       Integrable (fun t : ℝ => f ((σ : ℂ) + (t : ℂ) * I)) := by
     intro σ hσ hne

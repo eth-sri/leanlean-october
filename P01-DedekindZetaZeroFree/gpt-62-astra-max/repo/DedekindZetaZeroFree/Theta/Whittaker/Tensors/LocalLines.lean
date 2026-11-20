@@ -11,17 +11,17 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages MomentSources ThetaExpansion TensorActionSource
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 local notation "V" => RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C)
 
 variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 
 variable
     (hR : RootAligned R) (N : TraceHaarTransport R) (hC : C.exceptional = R.A.Sf)
@@ -51,8 +51,7 @@ def canonicalTensorLocalLines : TensorLocalLines R N where
   complex_rank := canonicalCovariantNative_complex_rank R P C μ hμ  hR N hC u hspherical hx
 
 theorem canonicalTensorLocalLines_trace (w:InfinitePlace F) :
-    (canonicalTensorLocalLines R P C μ hμ  hR N hC u hspherical hx).toTensorHC.sliceLine (Sum.inl w) ≤ ComplexLines.traceLine :=
-  canonicalCovariantNative_slice_le R P C μ hμ  hR N hC u hspherical hx w
+    (canonicalTensorLocalLines R P C μ hμ hR N hC u hspherical hx).toTensorHC.sliceLine (Sum.inl w) ≤ ComplexLines.traceLine := by apply @canonicalCovariantNative_slice_le <;> assumption
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource
 
 end

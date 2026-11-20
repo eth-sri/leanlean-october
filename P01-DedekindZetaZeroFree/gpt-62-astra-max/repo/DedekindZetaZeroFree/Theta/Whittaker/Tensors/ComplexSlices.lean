@@ -16,17 +16,17 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages MomentSources ThetaExpansion TensorActionSource
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 local notation "V" => RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C)
 
 variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 
 include μ hμ in
 def canonicalCovariantNative
@@ -58,15 +58,16 @@ def canonicalCovariantNative
     coefficient := fourier R Q.dq (T.theta 1) 1
     coefficient_ne := by rw [hD]; exact hx
     period_limit := fourier_residue_tendsto T 1 1 }
-  let y : ∀ j : t.val, MomentSources.actualLocal R (actualImageData R P C μ hμ) j.val :=
-    fun j => TensorActionSource.sourceQuotient R (actualImageData R P C μ hμ) j.val (u j)
-  have hy : TensorActionSource.sourceStageQuotient R (actualImageData R P C μ hμ)
+  let actualImageData₀ := actualImageData R P C μ hμ
+  let y : ∀ j : t.val, MomentSources.actualLocal R (actualImageData₀) j.val :=
+    fun j => TensorActionSource.sourceQuotient R (actualImageData₀) j.val (u j)
+  have hy : TensorActionSource.sourceStageQuotient R (actualImageData₀)
       t.val (PiTensorProduct.tprod ℂ u) = PiTensorProduct.tprod ℂ y :=
     PiTensorProduct.map_tprod _ u
   let B : NonDegenerate.Faithful R N := {
     toDictionary := {
       toPeriodSource := D
-      finiteData := actualImageData R P C μ hμ
+      finiteData := actualImageData₀
       references := actualReference R P C μ hμ
       bad := bad R.A P C
       bad_exact := by
@@ -82,7 +83,7 @@ def canonicalCovariantNative
       selected_frozen_stage := fun _ => ⟨t,y,rfl,rfl⟩ }
     core_injective := actualCoreResidue_injective R P C μ hμ N hC
     regular := actualCoreResidue_regular R P C μ hμ N }
-  have hn : HCGeneration.NativeSlotComparisons B :=
+  have hn :=
     actualCoreResidue_native_slots R P C μ hμ N
   let G := HCGeneration.faithfulGeneratedOfNativeSlots B hn
   let Df := CovariantAssembly.add_finite G (by
@@ -114,8 +115,6 @@ local notation "H" => actualImageData R P C μ hμ
 
 theorem canonicalCovariantNative_native :
     RootDerivatives.NativeLieComparison R (DC).finiteData (DC).references (DC).bad (DC).coreMap := by
-  change RootDerivatives.NativeLieComparison R (actualImageData R P C μ hμ)
-    (actualReference R P C μ hμ) (bad R.A P C) (actualCoreResidue R P C μ hμ N)
   exact RootDerivatives.actualCoreResidue_nativeLie R P C μ hμ N
 
 def canonicalComplexSlice (s : RestrictedTensorSimple.Level (bad R.A P C))

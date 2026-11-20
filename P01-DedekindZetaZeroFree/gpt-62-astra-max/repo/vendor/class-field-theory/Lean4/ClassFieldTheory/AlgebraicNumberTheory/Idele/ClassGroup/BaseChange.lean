@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -96,7 +92,7 @@ def pushoutTowerAdeleEquiv :
     Algebra.TensorProduct.rightAlgebra
   letI : Algebra.IsPushout K L M N :=
     Algebra.IsPushout.symm
-      (inferInstance : Algebra.IsPushout K M L N)
+      inferInstance
   let e₁ :=
     (Algebra.TensorProduct.commRight
       M N (RelativeAdeleRing K M)).symm
@@ -158,9 +154,7 @@ theorem pushoutTowerAdeleInclusion_tmul
             K L (RelativeAdeleRing K M)).symm
             ((a ⊗ₜ[K] (1 : M)) ⊗ₜ[K] x))) =
       (a ⊗ₜ[K] (1 : M)) ⊗ₜ[M] algebraMap L N x
-  simp only [Algebra.TensorProduct.commRight_symm_tmul,
-    Algebra.IsPushout.cancelBaseChangeAlg_symm_tmul,
-    Algebra.TensorProduct.commRight_tmul]
+  simp
 
 /-- Inclusion on unit groups induced by a pushout square of fields. -/
 def pushoutTowerIdeleInclusion :
@@ -186,7 +180,7 @@ theorem pushoutTowerIdeleInclusion_principalIdele
         ((1 : NumberField.AdeleRing (𝓞 K) K) ⊗ₜ[K] (x : L)) =
       (1 : RelativeAdeleRing K M) ⊗ₜ[M]
         algebraMap L N (x : L)
-  rw [pushoutTowerAdeleInclusion_tmul]
+  simp
   rfl
 
 omit [NumberField M] [NumberField L] [NumberField N]
@@ -205,15 +199,6 @@ theorem pushoutTowerIdeleNorm_inclusion
       NumberField.AdeleRing (𝓞 K) K →ₐ[K]
         RelativeAdeleRing K M :=
     Algebra.TensorProduct.includeLeft
-      (R := K) (S := K)
-      (A := NumberField.AdeleRing (𝓞 K) K) (B := M)
-  change
-    Algebra.norm (RelativeAdeleRing K M)
-        (pushoutTowerAdeleInclusion K M L N
-          (a : RelativeAdeleRing K L)) =
-      f (Algebra.norm
-        (NumberField.AdeleRing (𝓞 K) K)
-        (a : RelativeAdeleRing K L))
   calc
     _ = Algebra.norm (RelativeAdeleRing K M)
           (pushoutTowerAdeleEquiv K M L N
@@ -230,8 +215,7 @@ theorem pushoutTowerIdeleNorm_inclusion
     _ = f (Algebra.norm
           (NumberField.AdeleRing (𝓞 K) K)
           (a : RelativeAdeleRing K L)) :=
-      (map_norm_tensorProduct_baseChange
-        (K := K) (L := L) f
+      (map_norm_tensorProduct_baseChange f
         (a : RelativeAdeleRing K L)).symm
 
 /-- The pushout inclusion descended to relative idele class groups. -/
@@ -275,15 +259,6 @@ theorem pushoutTowerClassNorm_inclusion
         (RelativeIdeleGroup.classNorm K L c) := by
   refine QuotientGroup.induction_on c ?_
   intro a
-  change
-    QuotientGroup.mk'
-        (RelativeIdeleGroup.principalSubgroup K M)
-        (TowerRelativeIdeleGroup.norm K M N
-          (pushoutTowerIdeleInclusion K M L N a)) =
-      QuotientGroup.mk'
-        (RelativeIdeleGroup.principalSubgroup K M)
-        (RelativeIdeleGroup.inclusion K M
-          (RelativeIdeleGroup.norm K L a))
   exact congrArg
     (QuotientGroup.mk'
       (RelativeIdeleGroup.principalSubgroup K M))
@@ -334,7 +309,7 @@ theorem ideleClassNorm_classInclusion
       (QuotientGroup.mk'
         (IdeleGroup.principalSubgroup K) a) ^
           Module.finrank K M
-  rw [RelativeIdeleGroup.norm_inclusion, map_pow]
+  simp
 
 /-- Change the chosen intermediate field in the tower presentation of
 the relative idele class group of `N`, keeping the bottom field `K`
@@ -353,9 +328,7 @@ theorem towerCompositeClassNorm_changeIntermediate
     towerCompositeClassNorm K L N
         (changeIntermediateClassGroupEquiv K M L N c) =
       towerCompositeClassNorm K M N c := by
-  rw [towerCompositeClassNorm_eq_ideleClassNorm,
-    towerCompositeClassNorm_eq_ideleClassNorm]
-  simp [changeIntermediateClassGroupEquiv]
+  simp [changeIntermediateClassGroupEquiv, towerCompositeClassNorm_eq_ideleClassNorm]
 
 omit [NumberField M] [NumberField L] [Algebra.IsPushout K M L N] in
 /-- Every composite norm through `M` is, after changing the tower
@@ -412,7 +385,7 @@ theorem pushoutNormQuotientNormBack_comp_map
           (RelativeIdeleGroup.classInclusion K M c)) =
       (QuotientGroup.mk' (RelativeIdeleGroup.classNorm K L).range c) ^
         Module.finrank K M
-  rw [ideleClassNorm_classInclusion, map_pow]
+  simp [ideleClassNorm_classInclusion]
 
 omit [NumberField M] [NumberField L] in
 /-- If the `[M:K]`-power map on the original norm quotient is

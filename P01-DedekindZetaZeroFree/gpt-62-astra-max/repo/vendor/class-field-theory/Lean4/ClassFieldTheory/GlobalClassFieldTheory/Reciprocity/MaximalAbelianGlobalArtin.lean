@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -64,17 +60,11 @@ theorem maximalAbelianGlobalArtin_finiteProjection
         (maximalAbelianGlobalArtin K
           (QuotientGroup.mk' (IdeleGroup.principalSubgroup K) a)) =
       globalArtinMonoidHom (K := K) (L := E) a := by
-  let : NumberField E := NumberField.of_module_finite K E
+  let := NumberField.of_module_finite K E
   rw [maximalAbelianGlobalArtin_mk]
   exact
     restrictNormalHom_infiniteGlobalArtinMonoidHom
       K (maximalAbelianExtension K) a E
-
-/-- The maximal abelian global Artin homomorphism is surjective. -/
-theorem maximalAbelianGlobalArtin_surjective :
-    Function.Surjective (maximalAbelianGlobalArtin K) :=
-  infiniteGlobalIdeleClassArtinContinuousMonoidHom_surjective
-    K (maximalAbelianExtension K)
 
 end Reciprocity
 end GlobalClassFieldTheory

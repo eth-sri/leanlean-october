@@ -10,14 +10,18 @@ noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain Topology
 
-theorem localTwo_ne_zero (F : Type) [Field F] [NumberField F]
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+theorem localTwo_ne_zero
     (v : HeightOneSpectrum (𝓞 F)) : (2 : v.adicCompletion F) ≠ 0 := by
   intro h
   apply rmKummerTwo_ne_zero F
   apply (algebraMap F (v.adicCompletion F)).injective
-  simpa only [map_ofNat, map_zero] using h
+  simpa using h
 
-def localPrimitiveTwo (F : Type) [Field F] [NumberField F]
+def localPrimitiveTwo
     (h12 : (primitiveRoots 12 F).Nonempty) (v : HeightOneSpectrum (𝓞 F)) :
     (primitiveRoots 2 (v.adicCompletion F)).Nonempty := by
   obtain ⟨ζ, hζ⟩ := rmKummerPrimitiveTwo F h12
@@ -26,11 +30,13 @@ def localPrimitiveTwo (F : Type) [Field F] [NumberField F]
     (((mem_primitiveRoots (by decide)).1 hζ).map_of_injective
       (algebraMap F (v.adicCompletion F)).injective)
 
+end
+
 private theorem quadratic_eq (a b : ℂˣ) (ha : a ^ 2 = 1) (hb : b ^ 2 = 1)
     (h : a = 1 ↔ b = 1) : a = b := by
   apply Units.ext
-  have ha' : (a : ℂ) ^ 2 = 1 := by exact congrArg Units.val ha
-  have hb' : (b : ℂ) ^ 2 = 1 := by exact congrArg Units.val hb
+  have ha' : (a : ℂ) ^ 2 = 1 := congrArg Units.val ha
+  have hb' : (b : ℂ) ^ 2 = 1 := congrArg Units.val hb
   rcases sq_eq_one_iff.mp ha' with ha' | ha'
   · have ha1 : a = 1 := Units.ext ha'
     simpa [ha1, h.mp ha1]
@@ -45,7 +51,7 @@ private theorem continuous_of_open_ker {G H : Type*} [Group G] [Group H]
   apply IsLocallyConstant.continuous
   apply IsLocallyConstant.iff_isOpen_fiber_apply.mpr
   intro x
-  have heq : f ⁻¹' {f x} = (fun y => y * x⁻¹) ⁻¹' (f.ker : Set G) := by
+  have heq : f ⁻¹' {f x} = (fun y => y * x⁻¹) ⁻¹' f.ker := by
     ext y
     change f y = f x ↔ f (y * x⁻¹) = 1
     rw [map_mul, map_inv, mul_inv_eq_one]
@@ -57,10 +63,8 @@ private theorem dense_units (F : Type) [Field F] [NumberField F]
     DenseRange (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom) := by
   apply dense_iff_inter_open.mpr
   intro U hU hUne
-  have hval : IsOpenEmbedding (Units.val : (v.adicCompletion F)ˣ → v.adicCompletion F) :=
-    IsOpenUnits.isOpenEmbedding_unitsVal
   obtain ⟨a, ha⟩ := (v.denseRange_algebraMap F).exists_mem_open
-    (hval.isOpenMap U hU) (hUne.image _)
+    (IsOpenUnits.isOpenEmbedding_unitsVal.isOpenMap U hU) (hUne.image _)
   obtain ⟨u, hu, hau⟩ := ha
   have hane : a ≠ 0 := by
     intro h
@@ -97,8 +101,9 @@ private theorem global_trivial (F : Type) [Field F] [NumberField F]
   erw [← map_one e, e.injective.eq_iff, ← map_one d, d.injective.eq_iff]
   rfl
 open ClassFieldTheory
-private theorem global_local_trivial (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x a : Fˣ)
+variable (F : Type) [Field F] [NumberField F] (h12 : (primitiveRoots 12 F).Nonempty)
+
+private theorem global_local_trivial (x a : Fˣ)
     (v : HeightOneSpectrum (𝓞 F)) :
     letI : ValuativeRel (v.adicCompletion F) := finitePlaceCompletionValuativeRel F v
     letI : IsNonarchimedeanLocalField (v.adicCompletion F) :=
@@ -125,13 +130,11 @@ private theorem global_local_trivial (F : Type) [Field F] [NumberField F]
   rw [he]
   let d := rootsOfUnityEquivOfPrimitiveRoots (algebraMap F (v.adicCompletion F)).injective
     (rmKummerPrimitiveTwo F h12)
-  change d.symm (B v (powerClass _ 2 _) (powerClass _ 2 _)) = 1 ↔ _
   erw [← map_one d.symm, d.symm.injective.eq_iff]
   exact ((finitePlaceAdicHilbertPairingFamily_isLocallyHilbert F 2
     (rmKummerPrimitiveTwo F h12) v).2.2.2 _ _).trans
       (localHilbertSymbol_eq_one_iff_isKummerNorm _ 2 _ _ _ _).symm
-private theorem hilbert_complex_continuous (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
+private theorem hilbert_complex_continuous (x : Fˣ)
     (v : HeightOneSpectrum (𝓞 F)) :
     letI : ValuativeRel (v.adicCompletion F) := finitePlaceCompletionValuativeRel F v
     letI : IsNonarchimedeanLocalField (v.adicCompletion F) :=
@@ -164,9 +167,7 @@ private theorem hilbert_complex_continuous (F : Type) [Field F] [NumberField F]
     (localPrimitiveTwo F h12 v) b
   exact LocalClassFieldTheory.localNormSubgroup_isOpen K L
 
-theorem lambda_eq_inverse_localHilbertSymbol
-    (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
+theorem lambda_eq_inverse_localHilbertSymbol (x : Fˣ)
     (v : HeightOneSpectrum (𝓞 F)) (t : (v.adicCompletion F)ˣ) :
     letI : ValuativeRel (v.adicCompletion F) :=
       ClassFieldTheory.finitePlaceCompletionValuativeRel F v
@@ -181,16 +182,17 @@ theorem lambda_eq_inverse_localHilbertSymbol
   letI : IsNonarchimedeanLocalField (v.adicCompletion F) :=
     finitePlaceCompletionIsNonarchimedeanLocalField F v
   let f := RMKummerLocalNormCharacter.lambda F h12 x v
+  let map₀ := Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom
   let g := fun t => rmKummerQuadraticRootsComplexMap F h12 (v.adicCompletion F)
     (localHilbertSymbol (v.adicCompletion F) 2 (localTwo_ne_zero F v)
       (localPrimitiveTwo F h12 v) t
-      (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom x))
-  have hglobal (a : Fˣ) : f (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a) =
-      (g (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a))⁻¹ := by
+      (map₀ x))
+  have hglobal (a : Fˣ) : f (map₀ a) =
+      (g (map₀ a))⁻¹ := by
     let z := localHilbertSymbol (v.adicCompletion F) 2 (localTwo_ne_zero F v)
       (localPrimitiveTwo F h12 v)
-      (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a)
-      (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom x)
+      (map₀ a)
+      (map₀ x)
     apply quadratic_eq
     · exact RMKummerLocalNormCharacter.lambda_pow_two F h12 x v _
     · rw [inv_pow]
@@ -201,11 +203,9 @@ theorem lambda_eq_inverse_localHilbertSymbol
           (rmKummerQuadraticRootsComplexMap_injective F h12 (v.adicCompletion F)).eq_iff]
         rfl
       exact (global_trivial F h12 x a v).trans ((global_local_trivial F h12 x a v).trans he.symm)
-  have heq : (f : (v.adicCompletion F)ˣ → ℂˣ) = fun t => (g t)⁻¹ :=
-    (dense_units F v).equalizer
-      (RMKummerLocalNormCharacter.lambda_continuous F h12 x v)
-      (hilbert_complex_continuous F h12 x v).inv (funext hglobal)
-  exact congrFun heq t
+  exact congrFun ((dense_units F v).equalizer
+    (RMKummerLocalNormCharacter.lambda_continuous F h12 x v)
+    (hilbert_complex_continuous F h12 x v).inv (funext hglobal)) t
 
 end
 end DedekindZetaZeroFree.RMKummerLocalHilbertComparison

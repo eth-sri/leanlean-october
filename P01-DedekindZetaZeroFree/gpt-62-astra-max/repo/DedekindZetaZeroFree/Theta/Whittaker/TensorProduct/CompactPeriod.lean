@@ -9,9 +9,9 @@ namespace DedekindZetaZeroFree.SheetRescaling.WeylTensorTransport
 open MomentSources NumberField MeasureTheory
 open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η}
-variable {N : TraceHaarTransport R} {C : JointDigitDescentSources R N}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η}
+    {N : TraceHaarTransport R} {C : JointDigitDescentSources R N}
 
 lemma FrozenTensor.arch_mem {v : R.A.UnitQuotient} (X : FrozenTensor R C v)
     (w : InfinitePlace F) : Sum.inl w ∈ X.level.val := by

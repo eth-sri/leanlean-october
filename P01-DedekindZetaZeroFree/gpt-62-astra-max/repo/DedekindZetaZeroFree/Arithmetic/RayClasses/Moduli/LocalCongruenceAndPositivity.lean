@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Arithmetic.RayClasses.Moduli.IntegralPrincipalCongruence
 
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Moduli.FullModulusAndIntegralIdealUnits
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
@@ -30,21 +31,17 @@ private lemma maximalIdeal_pow_mem_iff_exp (v : IsDedekindDomain.HeightOneSpectr
   have hunif : Valuation.IsUniformizer (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰) ϖ :=
     Valuation.isUniformizer_of_maximalIdeal_eq_span
       (v := (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)) hspan
-  have hsurj : Function.Surjective (Valued.v : v.adicCompletion F → ℤᵐ⁰) :=
-    IsDedekindDomain.HeightOneSpectrum.valuedAdicCompletion_surjective F v
-  have hirr : Irreducible ϖ := (IsDiscreteValuationRing.irreducible_iff_uniformizer ϖ).mpr hspan
   have hval : Valued.v (ϖ : v.adicCompletion F) = WithZero.exp (-1 : ℤ) := by
     rw [Valuation.IsUniformizer.iff.mp hunif,
       Valuation.IsRankOneDiscrete.generator_eq_exp_neg_one_of_surjective
-        (v := (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)) hsurj, Units.val_mk0]
-  have hvint := IsDedekindDomain.HeightOneSpectrum.adicCompletionIntegers.integers F v
+        (v := Valued.v) (IsDedekindDomain.HeightOneSpectrum.valuedAdicCompletion_surjective F v), Units.val_mk0]
   rw [← SetLike.mem_coe,
     Valuation.Integers.maximalIdeal_pow_eq_setOfPred_le_v_algebraMap_pow
-      (v := (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)) hvint hirr n]
+       (IsDedekindDomain.HeightOneSpectrum.adicCompletionIntegers.integers F v) ((IsDiscreteValuationRing.irreducible_iff_uniformizer ϖ).mpr hspan) n]
   simp only [Set.mem_setOf_eq]
-  have hval' : (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)
+  have hval' : Valued.v
       (algebraMap O (v.adicCompletion F) ϖ) = WithZero.exp (-1 : ℤ) := by
-    simpa using hval
+    exact hval
   rw [hval']
   have hpow : (WithZero.exp (-1 : ℤ) : ℤᵐ⁰) ^ n = WithZero.exp (-(n : ℤ)) := by
     rw [← WithZero.exp_nsmul, nsmul_eq_mul]
@@ -56,23 +53,17 @@ private lemma valued_algebraMap_eq_intValuation (v : IsDedekindDomain.HeightOneS
     (a : 𝓞 F) :
     Valued.v (algebraMap (𝓞 F) (v.adicCompletionIntegers F) a : v.adicCompletion F) =
       v.intValuation a := by
-  have h1 : (algebraMap (𝓞 F) (v.adicCompletionIntegers F) a : v.adicCompletion F) =
-      (algebraMap (𝓞 F) F a : v.adicCompletion F) :=
-    IsDedekindDomain.HeightOneSpectrum.algebraMap_adicCompletionIntegers_apply (𝓞 F) F v a
-  rw [h1, IsDedekindDomain.HeightOneSpectrum.valuedAdicCompletion_eq_valuation' v
+  rw [(IsDedekindDomain.HeightOneSpectrum.algebraMap_adicCompletionIntegers_apply (𝓞 F) F v a), IsDedekindDomain.HeightOneSpectrum.valuedAdicCompletion_eq_valuation' v
       (algebraMap (𝓞 F) F a),
     IsDedekindDomain.HeightOneSpectrum.valuation_of_algebraMap v a]
 
-private lemma local_power_mem_iff
-    (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) (n : ℕ) (a : 𝓞 F) :
-    algebraMap (𝓞 F) (v.adicCompletionIntegers F) a ∈
-        (IsLocalRing.maximalIdeal (v.adicCompletionIntegers F)) ^ n ↔
-      a ∈ v.asIdeal ^ n := by
-  rw [maximalIdeal_pow_mem_iff_exp v n, valued_algebraMap_eq_intValuation]
-  exact v.intValuation_le_pow_iff_mem a n
+private alias local_power_mem_iff := IntegralPrincipalCongruence.loc_local_power_mem_iff
 
-theorem ray_congruent_sub_mem (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (x : Fˣ) (hx : ClassFieldTheory.IsRayCongruent (fullModulus m hm) x)
+variable (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (x : Fˣ)
+    (hx : ClassFieldTheory.IsRayCongruent (fullModulus m hm) x)
+
+include hx in
+theorem ray_congruent_sub_mem
     (a b : 𝓞 F) (hab : (a : F) = (x : F) * (b : F)) :
     a - b ∈ m := by
   rw [← Ideal.iInf_maxPowDividing_eq hm, Ideal.mem_iInf]
@@ -83,18 +74,16 @@ theorem ray_congruent_sub_mem (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
   by_cases hn : n = 0
   · rw [hn, pow_zero]
     simp
-  · have hn1 : 1 ≤ n := Nat.one_le_iff_ne_zero.mpr hn
-    have hfp : (fullModulus m hm).finitePart v = n := rfl
-    have hsupp : v ∈ (fullModulus m hm).finitePart.support := by
+  · have hfp : (fullModulus m hm).finitePart v = n := rfl
+    have hlocal := hx.1 v (by
       rw [Finsupp.mem_support_iff, hfp]
-      exact hn
-    have hlocal := hx.1 v hsupp
+      exact hn)
     rw [hfp] at hlocal
     obtain ⟨t, ht, hxeq⟩ :=
-      (ClassFieldTheory.mem_rayLocalHigherUnitGroup_iff_exists_one_add v n hn1
+      (ClassFieldTheory.mem_rayLocalHigherUnitGroup_iff_exists_one_add v n (Nat.one_le_iff_ne_zero.mpr hn)
         (ClassFieldTheory.finitePlaceUnitEmbedding v x)).mp hlocal
     rw [← local_power_mem_iff v n (a - b)]
-    have hxe : algebraMap F (v.adicCompletion F) (x : F) = 1 + (t : v.adicCompletion F) := by
+    have hxe : algebraMap F (v.adicCompletion F) (x : F) = 1 + t := by
       have h1 : algebraMap F (v.adicCompletion F) (x : F) =
           ((ClassFieldTheory.finitePlaceUnitEmbedding v x : (v.adicCompletion F)ˣ) :
             v.adicCompletion F) := by
@@ -103,12 +92,12 @@ theorem ray_congruent_sub_mem (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
       simp
     have hG : (algebraMap (𝓞 F) (v.adicCompletionIntegers F) (a - b) : v.adicCompletion F) =
         (algebraMap (𝓞 F) (v.adicCompletionIntegers F) b : v.adicCompletion F) *
-          (t : v.adicCompletion F) := by
+          t := by
       rw [IsDedekindDomain.HeightOneSpectrum.algebraMap_adicCompletionIntegers_apply,
         IsDedekindDomain.HeightOneSpectrum.algebraMap_adicCompletionIntegers_apply,
         map_sub (algebraMap (𝓞 F) F) a b]
       show algebraMap F (v.adicCompletion F) ((a : F) - (b : F)) =
-        algebraMap F (v.adicCompletion F) (b : F) * (t : v.adicCompletion F)
+        algebraMap F (v.adicCompletion F) (b : F) * t
       rw [hab, map_sub, map_mul, hxe]
       ring
     have hEq : algebraMap (𝓞 F) (v.adicCompletionIntegers F) (a - b) =
@@ -119,23 +108,22 @@ theorem ray_congruent_sub_mem (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     rw [hEq]
     exact Ideal.mul_mem_left _ _ ht
 
-theorem ray_congruent_pos (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (x : Fˣ) (hx : ClassFieldTheory.IsRayCongruent (fullModulus m hm) x) :
+include hx in
+theorem ray_congruent_pos :
     ∀ φ : F →+* ℝ, 0 < φ (x : F) := by
   intro φ
-  let ψ : F →+* ℂ := Complex.ofRealHom.comp φ
+  let ψ := Complex.ofRealHom.comp φ
   have hψ : ComplexEmbedding.IsReal ψ := by
     rw [ComplexEmbedding.isReal_iff]
     ext s
     simp [RingHom.star_apply, ψ, Complex.conj_ofReal]
-  let w : InfinitePlace F := InfinitePlace.mk ψ
+  let w := InfinitePlace.mk ψ
   have hw : w.IsReal := ⟨ψ, hψ, rfl⟩
   have hpos := hx.2 ⟨w, hw⟩ (Finset.mem_univ _)
   have hconv : InfinitePlace.embedding_of_isReal hw (x : F) = φ (x : F) := by
     apply Complex.ofReal_injective
     rw [InfinitePlace.embedding_of_isReal_apply]
-    have hwemb : w.embedding = ψ := InfinitePlace.embedding_mk_eq_of_isReal hψ
-    rw [hwemb]
+    rw [(InfinitePlace.embedding_mk_eq_of_isReal hψ)]
     rfl
   rwa [hconv] at hpos
 

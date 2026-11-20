@@ -10,15 +10,15 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η}
-variable {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η}
+    {Q : AdmissibleFlatSources R}
 
 section Core
 variable (T : Realization R Q) (M : ∀ q, LocalImageData R q)
-variable (e : ∀ p, actualLocal R M p) (bad : Finset (KPHilbert.Place F))
-variable (A : RestrictedTensorSimple.Core (actualLocal R M) e bad →ₗ[ℂ] Functions R)
-variable (hA : ∀ x, A x ∈ translateSpan T)
+    (e : ∀ p, actualLocal R M p) (bad : Finset (KPHilbert.Place F))
+    (A : RestrictedTensorSimple.Core (actualLocal R M) e bad →ₗ[ℂ] Functions R)
+    (hA : ∀ x, A x ∈ translateSpan T)
 
 def coreIntoSpan : RestrictedTensorSimple.Core (actualLocal R M) e bad →ₗ[ℂ] translateSpan T :=
   A.codRestrict (translateSpan T) hA

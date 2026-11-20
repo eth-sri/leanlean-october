@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.LargeSieve.Bilinear.NormalizedShellTranspose
 
 public import DedekindZetaZeroFree.LFunctions.Hecke.QuadraticFamilies.NormalizedReciprocity
 public import DedekindZetaZeroFree.Analysis.FiniteMatrixDualityAndPhases
@@ -15,49 +16,11 @@ noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundaryPrefix
 
-theorem matrix_form_eq {A B : Type*} [DecidableEq A] [DecidableEq B]
-    (R : Finset A) (S : Finset B) (K : B → A → ℂ) (lam : B → ℂ) :
-    (∑ a ∈ R, ‖∑ b ∈ S, lam b * K b a‖ ^ 2) =
-      ‖(Matrix.toEuclideanLin (fun (a : R) (b : S) => K b a)).toContinuousLinearMap
-        (WithLp.toLp 2 (fun b : S => lam b) : EuclideanSpace ℂ S)‖ ^ 2 := by
-  rw [EuclideanSpace.norm_sq_eq]
-  rw [Finset.sum_subtype (s := R) (p := fun a => a ∈ R) (fun _ => Iff.rfl)
-    (f := fun a => ‖∑ b ∈ S, lam b * K b a‖ ^ 2)]
-  apply Finset.sum_congr rfl
-  intro a _
-  congr 2
-  change (∑ b ∈ S, lam b * K b a) = ∑ b : S, K b a * lam b
-  rw [Finset.sum_subtype (s := S) (p := fun b => b ∈ S) (fun _ => Iff.rfl)
-    (f := fun b => lam b * K b a)]
-  exact Finset.sum_congr rfl (fun _ _ => mul_comm _ _)
+alias matrix_form_eq := DedekindZetaZeroFree.LargeSieve.Sieve.NormalizedShellTranspose.transpose_form_eq
 
-theorem matrix_energy_eq {B : Type*} [DecidableEq B]
-    (S : Finset B) (lam : B → ℂ) :
-    (∑ b ∈ S, ‖lam b‖ ^ 2) =
-      ‖(WithLp.toLp 2 (fun b : S => lam b) : EuclideanSpace ℂ S)‖ ^ 2 := by
-  rw [EuclideanSpace.norm_sq_eq]
-  rw [Finset.sum_subtype (s := S) (p := fun b => b ∈ S) (fun _ => Iff.rfl)
-    (f := fun b => ‖lam b‖ ^ 2)]
+alias matrix_energy_eq := DedekindZetaZeroFree.LargeSieve.Sieve.NormalizedShellTranspose.transpose_energy_eq
 
-theorem matrix_norm_bound {A B : Type*} [DecidableEq A] [DecidableEq B]
-    (R : Finset A) (S : Finset B) (K : B → A → ℂ) (D : ℝ) (hD : 0 ≤ D)
-    (h : ∀ lam : B → ℂ, ∑ a ∈ R, ‖∑ b ∈ S, lam b * K b a‖ ^ 2 ≤
-      D * ∑ b ∈ S, ‖lam b‖ ^ 2) :
-    ‖(Matrix.toEuclideanLin (fun (a : R) (b : S) => K b a)).toContinuousLinearMap‖ ^ 2 ≤ D := by
-  let T := (Matrix.toEuclideanLin (fun (a : R) (b : S) => K b a)).toContinuousLinearMap
-  have hT : ‖T‖ ≤ Real.sqrt D := by
-    apply ContinuousLinearMap.opNorm_le_bound _ (Real.sqrt_nonneg D)
-    intro v
-    let lam : B → ℂ := fun b => if hb : b ∈ S then v ⟨b, hb⟩ else 0
-    have hv : (WithLp.toLp 2 (fun b : S => lam b) : EuclideanSpace ℂ S) = v := by
-      ext b
-      simp [lam]
-    have hh := h lam
-    rw [matrix_form_eq, matrix_energy_eq, hv] at hh
-    apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) (norm_nonneg _))).mp
-    simpa [T, mul_pow, Real.sq_sqrt hD] using hh
-  have := pow_le_pow_left₀ (norm_nonneg T) hT 2
-  simpa [T, Real.sq_sqrt hD] using this
+alias matrix_norm_bound := DedekindZetaZeroFree.LargeSieve.Sieve.NormalizedShellTranspose.transpose_norm_bound
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundaryPrefix
 
@@ -173,7 +136,7 @@ theorem phase_transpose_bound
       ⟨D.index_dvd_conductor a ha hac, D.conductor_dvd_index_bad a ha hac⟩)).2.1
   let A : Matrix R S ℂ := fun a b => (Q.χ b) a
   let A' : Matrix S R ℂ := fun b a => (Q.χ a) b
-  have hn : ‖A'.toEuclideanLin.toContinuousLinearMap‖ ^ 2 ≤ L :=
+  have hn :=
     matrix_norm_bound S R (fun a b => (Q.χ a) b) L hL hrev
   have hp : ∀ g h : Q.G, ‖Q.C h g‖ ≤ 1 := by
     intro g h
@@ -189,7 +152,7 @@ theorem phase_transpose_bound
   have hh := hd.trans (mul_le_mul_of_nonneg_left hn (sq_nonneg _))
   intro z
   rw [matrix_form_eq, matrix_energy_eq]
-  let v : EuclideanSpace ℂ S := WithLp.toLp 2 (fun b : S => z b)
+  let v := WithLp.toLp 2 (fun b : S => z b)
   calc
     ‖A.toEuclideanLin.toContinuousLinearMap v‖ ^ 2 ≤
         (‖A.toEuclideanLin.toContinuousLinearMap‖ * ‖v‖) ^ 2 :=
@@ -211,52 +174,33 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundaryPrefix
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 
-theorem norm_row_le_card_mul (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (S : Finset (Ideal (𝓞 F))) (lam : Ideal (𝓞 F) → ℂ)
-    (hSsf : ∀ b ∈ S, Squarefree b ∧ b ⊔ c = ⊤) (a : Ideal (𝓞 F)) :
-    ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2 ≤ (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 := by
-  have h : ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ≤ ∑ b ∈ S, ‖lam b‖ := by
-    refine le_trans (norm_sum_le _ _) (Finset.sum_le_sum (fun b hb => ?_))
-    rw [norm_mul]
-    calc ‖lam b‖ * ‖(Q.χ b) a‖ ≤ ‖lam b‖ * 1 :=
-          mul_le_mul_of_nonneg_left (quadraticFamily_norm_le_one Q (hSsf b hb).1 (hSsf b hb).2 a)
-            (norm_nonneg _)
-      _ = ‖lam b‖ := by ring
-  calc ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2 ≤ (∑ b ∈ S, ‖lam b‖) ^ 2 :=
-        pow_le_pow_left₀ (norm_nonneg _) h 2
-    _ ≤ (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 := sq_sum_le_card_mul_sum_sq
+alias norm_row_le_card_mul := DedekindZetaZeroFree.LargeSieve.Sieve.EndpointExtension.norm_row_le_card_mul
 
-theorem sum_sq_le_card_mul_energy (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (R S : Finset (Ideal (𝓞 F))) (lam : Ideal (𝓞 F) → ℂ)
-    (hSsf : ∀ b ∈ S, Squarefree b ∧ b ⊔ c = ⊤) :
-    ∑ a ∈ R, ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2
-      ≤ (R.card : ℝ) * (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 := by
-  have hE0 : 0 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 := Finset.sum_nonneg (fun b _ => by positivity)
-  calc ∑ a ∈ R, ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2
-      ≤ ∑ _a ∈ R, (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 :=
-        Finset.sum_le_sum (fun a _ => norm_row_le_card_mul Q S lam hSsf a)
-    _ = (R.card : ℝ) * ((S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2) := by
-        rw [Finset.sum_const, nsmul_eq_mul]
-    _ = (R.card : ℝ) * (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 := by ring
+alias sum_sq_le_card_mul_energy := DedekindZetaZeroFree.LargeSieve.Sieve.EndpointExtension.sum_sq_le_card_mul_energy
 
-theorem core_sup_original (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) {a : Ideal (𝓞 F)} (ha : a ⊔ D.bad = ⊤) :
+section
+
+variable (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (D : NormalizedFamilyData Q)
+
+theorem core_sup_original {a : Ideal (𝓞 F)} (ha : a ⊔ D.bad = ⊤) :
     a ⊔ c = ⊤ := by
   apply top_unique
   rw [← ha]
   exact sup_le_sup_left (Ideal.le_of_dvd D.original_dvd_bad) a
 
-theorem core_shell_subset (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) (T : ℝ) :
+theorem core_shell_subset (T : ℝ) :
     paperShell F D.bad T ⊆ paperShell F c T := by
   intro a ha
   obtain ⟨hs, hc, hl, hu⟩ := (mem_paperShell F D.bad T a).mp ha
   exact (mem_paperShell F c T a).mpr ⟨hs, core_sup_original Q D hc, hl, hu⟩
 
-theorem reverse_shell_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) (T U : ℝ)
-    (R S : Finset (Ideal (𝓞 F)))
-    (hR : R ⊆ paperShell F D.bad T) (hS : S ⊆ paperShell F D.bad U) :
+end
+
+variable (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (D : NormalizedFamilyData Q) (T U : ℝ)
+    (R S : Finset (Ideal (𝓞 F))) (hR : R ⊆ paperShell F D.bad T) (hS : S ⊆ paperShell F D.bad U)
+
+include hR hS in
+theorem reverse_shell_bound :
     ∀ z : Ideal (𝓞 F) → ℂ,
       (∑ b ∈ S, ‖∑ a ∈ R, z a * (Q.χ a) b‖ ^ 2) ≤
         B1 F c Q U T * ∑ a ∈ R, ‖z a‖ ^ 2 := by
@@ -267,10 +211,8 @@ theorem reverse_shell_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
   intro z
   exact Q1_le_B1_mul_energy Q U T z
 
-theorem transposed_shell_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) (T U : ℝ)
-    (R S : Finset (Ideal (𝓞 F)))
-    (hR : R ⊆ paperShell F D.bad T) (hS : S ⊆ paperShell F D.bad U) :
+include hR hS in
+theorem transposed_shell_bound :
     ∀ z : Ideal (𝓞 F) → ℂ,
       (∑ a ∈ R, ‖∑ b ∈ S, z b * (Q.χ b) a‖ ^ 2) ≤
         (Nat.card Q.G : ℝ) ^ 2 * B1 F c Q U T * ∑ b ∈ S, ‖z b‖ ^ 2 := by
@@ -293,53 +235,41 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundaryPrefix
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 
-private theorem intersect_partition {A : Type*} [DecidableEq A]
-    (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ) (U : Finset A)
-    (hU : P.biUnion blocks = U) (hR : R ⊆ U) :
-    R = P.biUnion (fun i => R ∩ blocks i) := by
-  ext a
-  simp only [Finset.mem_biUnion, Finset.mem_inter]
-  constructor
-  · intro ha
-    have := hR ha
-    rw [← hU, Finset.mem_biUnion] at this
-    obtain ⟨i, hi, hai⟩ := this
-    exact ⟨i, hi, ha, hai⟩
-  · rintro ⟨i, hi, ha, _⟩; exact ha
+private alias intersect_partition := DedekindZetaZeroFree.LargeSieve.Sieve.NormalizedShellTranspose.transpose_partition
 
-private theorem intersect_disjoint {A : Type*} [DecidableEq A]
-    (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ)
-    (h : Set.PairwiseDisjoint (↑P : Set ℕ) blocks) :
-    Set.PairwiseDisjoint (↑P : Set ℕ) (fun i => R ∩ blocks i) := by
-  intro i hi j hj hij
-  exact (h hi hj hij).mono Finset.inter_subset_right Finset.inter_subset_right
+private alias intersect_disjoint := DedekindZetaZeroFree.LargeSieve.Sieve.NormalizedShellTranspose.transpose_partition_disjoint
 
-def prefixBlock (q : Ideal (𝓞 F)) (X : ℝ) (R : Finset (Ideal (𝓞 F)))
+section
+
+variable (q : Ideal (𝓞 F)) (X : ℝ) (R : Finset (Ideal (𝓞 F)))
+
+def prefixBlock
     (i : ℕ) : Finset (Ideal (𝓞 F)) := R ∩ clippedDyadicBlock F q X i
 
-private theorem prefixBlock_zero_card (q : Ideal (𝓞 F)) (X : ℝ)
-    (R : Finset (Ideal (𝓞 F))) : (prefixBlock q X R 0).card ≤ 1 := by
-  have h : prefixBlock q X R 0 ⊆ {⊤} := by
-    intro a ha
-    exact (Finset.mem_inter.mp (Finset.mem_inter.mp ha).2).1
-  simpa using Finset.card_le_card h
+private theorem prefixBlock_zero_card : (prefixBlock q X R 0).card ≤ 1 := by
+  have h : prefixBlock q X R 0 ⊆ {⊤} := fun a ha => (Finset.mem_inter.mp (Finset.mem_inter.mp ha).2).1
+  exact Finset.card_le_card h
 
-def blockMajorant (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) (X N : ℝ) (R S : Finset (Ideal (𝓞 F)))
+end
+
+section
+
+variable (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (D : NormalizedFamilyData Q) (X N : ℝ)
+    (R S : Finset (Ideal (𝓞 F)))
+
+def blockMajorant
     (i j : ℕ) : ℝ :=
   if i = 0 then ((prefixBlock D.bad (2 * N) S j).card : ℝ)
   else if j = 0 then ((prefixBlock D.bad X R i).card : ℝ)
   else (Nat.card Q.G : ℝ) ^ 2 * B1 F c Q ((2 : ℝ) ^ (j - 1)) ((2 : ℝ) ^ (i - 1))
 
-theorem blockMajorant_nonneg (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) (X N : ℝ) (R S : Finset (Ideal (𝓞 F)))
+theorem blockMajorant_nonneg
     (i j : ℕ) : 0 ≤ blockMajorant Q D X N R S i j := by
   unfold blockMajorant
   split_ifs <;> try positivity
   exact mul_nonneg (sq_nonneg _) (B1_nonneg Q _ _)
 
-theorem prefixBlock_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) (X N : ℝ) (R S : Finset (Ideal (𝓞 F)))
+theorem prefixBlock_bound
     (hR : R ⊆ idealAdmissibleFinset F D.bad X)
     (hS : S ⊆ idealAdmissibleFinset F D.bad (2 * N)) (i j : ℕ)
     (z : Ideal (𝓞 F) → ℂ) :
@@ -357,17 +287,15 @@ theorem prefixBlock_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
   by_cases hi : i = 0
   · subst i
     simp only [blockMajorant, if_pos rfl]
-    have h0 : ((prefixBlock D.bad X R 0).card : ℝ) ≤ 1 := by
-      exact_mod_cast prefixBlock_zero_card D.bad X R
-    exact hc.trans (mul_le_mul_of_nonneg_right
-      (mul_le_of_le_one_left (by positivity) h0) (by positivity))
+    refine hc.trans (mul_le_mul_of_nonneg_right
+      (mul_le_of_le_one_left (by positivity) ?_) (by positivity))
+    exact_mod_cast prefixBlock_zero_card D.bad X R
   by_cases hj : j = 0
   · subst j
     simp only [blockMajorant, if_neg hi, if_pos rfl]
-    have h0 : ((prefixBlock D.bad (2 * N) S 0).card : ℝ) ≤ 1 := by
-      exact_mod_cast prefixBlock_zero_card D.bad (2 * N) S
-    exact hc.trans (mul_le_mul_of_nonneg_right
-      (mul_le_of_le_one_right (by positivity) h0) (by positivity))
+    refine hc.trans (mul_le_mul_of_nonneg_right
+      (mul_le_of_le_one_right (by positivity) ?_) (by positivity))
+    exact_mod_cast prefixBlock_zero_card D.bad (2 * N) S
   obtain ⟨i', rfl⟩ := Nat.exists_eq_succ_of_ne_zero hi
   obtain ⟨j', rfl⟩ := Nat.exists_eq_succ_of_ne_zero hj
   simp only [blockMajorant, Nat.succ_ne_zero, if_false, Nat.add_sub_cancel]
@@ -377,25 +305,26 @@ theorem prefixBlock_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
   · intro b hb
     exact (Finset.mem_inter.mp (Finset.mem_inter.mp hb).2).1
 
+end
+
 theorem sum_prefixBlock_card (q : Ideal (𝓞 F)) (X : ℝ) (hX : 1 ≤ X)
     (R : Finset (Ideal (𝓞 F))) (hR : R ⊆ idealAdmissibleFinset F q X) :
     (∑ i ∈ Finset.range (Vendor.dyadicLength X + 1),
       ((prefixBlock q X R i).card : ℝ)) = (R.card : ℝ) := by
-  have hp := intersect_partition R (clippedDyadicBlock F q X)
-    (Finset.range (Vendor.dyadicLength X + 1)) _
-    (biUnion_clippedDyadicBlock F q X hX) hR
-  have hd := intersect_disjoint R (clippedDyadicBlock F q X)
+  have hc := Finset.card_biUnion (intersect_disjoint R (clippedDyadicBlock F q X)
     (Finset.range (Vendor.dyadicLength X + 1))
-    (pairwiseDisjoint_clippedDyadicBlock F q X hX)
-  have hc := Finset.card_biUnion hd
-  rw [← hp] at hc
+    (pairwiseDisjoint_clippedDyadicBlock F q X hX))
+  rw [← (intersect_partition R (clippedDyadicBlock F q X)
+    (Finset.range (Vendor.dyadicLength X + 1)) _
+    (biUnion_clippedDyadicBlock F q X hX) hR)] at hc
   exact_mod_cast hc.symm
 
-theorem sum_blockMajorant (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) (X N : ℝ) (hX : 1 ≤ X) (hN : 1 ≤ N)
-    (R S : Finset (Ideal (𝓞 F)))
-    (hR : R ⊆ idealAdmissibleFinset F D.bad X)
-    (hS : S ⊆ idealAdmissibleFinset F D.bad (2 * N)) :
+variable (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (D : NormalizedFamilyData Q) (X N : ℝ)
+    (hX : 1 ≤ X) (hN : 1 ≤ N) (R S : Finset (Ideal (𝓞 F))) (hR : R ⊆ idealAdmissibleFinset F D.bad X)
+    (hS : S ⊆ idealAdmissibleFinset F D.bad (2 * N))
+
+include hX hN hR hS in
+theorem sum_blockMajorant :
     (∑ i ∈ Finset.range (Vendor.dyadicLength X + 1),
       ∑ j ∈ Finset.range (Vendor.dyadicLength (2 * N) + 1),
         blockMajorant Q D X N R S i j) ≤
@@ -427,17 +356,10 @@ theorem sum_blockMajorant (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
   rw [hsum]
   have hr := sum_prefixBlock_card D.bad X hX R hR
   rw [Finset.sum_range_succ'] at hr
-  have hle : (∑ i ∈ Finset.range (Vendor.dyadicLength X),
-      ((prefixBlock D.bad X R (i + 1)).card : ℝ)) ≤ (R.card : ℝ) := by
-    have : 0 ≤ ((prefixBlock D.bad X R 0).card : ℝ) := by positivity
-    linarith
   linarith
 
-theorem assembled_prefix_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (D : NormalizedFamilyData Q) (X N : ℝ) (hX : 1 ≤ X) (hN : 1 ≤ N)
-    (R S : Finset (Ideal (𝓞 F)))
-    (hR : R ⊆ idealAdmissibleFinset F D.bad X)
-    (hS : S ⊆ idealAdmissibleFinset F D.bad (2 * N))
+include hX hN hR hS in
+theorem assembled_prefix_bound
     (z : Ideal (𝓞 F) → ℂ) :
     (∑ a ∈ R, ‖∑ b ∈ S, z b * (Q.χ b) a‖ ^ 2) ≤
       ((Vendor.dyadicLength (2 * N) + 1 : ℕ) : ℝ) *
@@ -493,9 +415,9 @@ theorem core_prefix_operator_bound
   have hH : 0 < H := by dsimp [H]; positivity
   refine ⟨H, hH, ?_⟩
   intro X N hX hN R S hR hS z
-  have hRc : (R.card : ℝ) ≤ C * X := hcount X hX R (fun a ha =>
+  have hRc := hcount X hX R (fun a ha =>
     ((mem_idealAdmissibleFinset F D.bad X a).mp (hR ha)).2.2)
-  have hSc : (S.card : ℝ) ≤ C * (2 * N) := hcount (2 * N) (by linarith) S (fun b hb =>
+  have hSc := hcount (2 * N) (by linarith) S (fun b hb =>
     ((mem_idealAdmissibleFinset F D.bad (2 * N) b).mp (hS hb)).2.2)
   let T : ℝ := ∑ i ∈ Finset.range (Vendor.dyadicLength X),
     ∑ j ∈ Finset.range (Vendor.dyadicLength (2 * N)),

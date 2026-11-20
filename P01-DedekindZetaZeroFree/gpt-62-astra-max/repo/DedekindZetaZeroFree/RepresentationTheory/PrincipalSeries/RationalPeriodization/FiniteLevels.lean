@@ -13,10 +13,10 @@ set_option maxHeartbeats 4000000
 namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 open MomentSources TensorActionSource KPGlobalTorusFiniteStages KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 
 theorem finitePlus_has_level (q : KPFinitePlace F) (f : Plus R N P C (Sum.inr q)) :
@@ -24,10 +24,8 @@ theorem finitePlus_has_level (q : KPFinitePlace F) (f : Plus R N P C (Sum.inr q)
       J.toOpenSubgroup.toSubgroup ≤ (C.canonical q).iwasawa.compact.toOpenSubgroup.toSubgroup ∧
       ∀ (k : J.toOpenSubgroup) g, f.val (g * k.val) = f.val g := by
   obtain ⟨U, hU⟩ := f.property.2
-  let J : CompactOpenLevel (KPLocalExceptionalConstruction.ActualCover F R.A.zeta12 R.A.primitive_zeta12 q) :=
-    ⟨(C.canonical q).iwasawa.compact.toOpenSubgroup ⊓ U,
-      (C.canonical q).iwasawa.compact.isCompact.inter_right U.isClosed⟩
-  exact ⟨J, inf_le_left, fun k g => congrFun (hU k.val k.property.2) g⟩
+  exact ⟨(⟨(C.canonical q).iwasawa.compact.toOpenSubgroup ⊓ U,
+    (C.canonical q).iwasawa.compact.isCompact.inter_right U.isClosed⟩), inf_le_left, fun k g => congrFun (hU k.val k.property.2) g⟩
 
 def extendedPlus (s : RestrictedTensorSimple.Level (bad R P C))
     (f : ∀ p : s.val, Plus R N P C p) (p : KPHilbert.Place F) : Plus R N P C p :=
@@ -41,10 +39,8 @@ def pureProductLevel (s : RestrictedTensorSimple.Level (bad R P C))
   cofinally_standard := by
     filter_upwards [s.val.toRight.eventually_cofinite_notMem,
       (bad_finite F).eventually_cofinite_notMem] with q hq hb
-    have hqs : Sum.inr q ∉ s.val := fun h => hq (Finset.mem_toRight.mpr h)
-    have hqc : q ∉ C.exceptional := finite_not_bad R P C q (fun h => hqs (s.property h))
-    rw [dif_neg hqs, (C.actual_compact q hqc).choose_spec]
-    change (KPLocalExceptionalConstruction.actualGoodCompactSplit F R.A.zeta12 R.A.primitive_zeta12 q _).range = _
+    have hqs := fun h => hq (Finset.mem_toRight.mpr h)
+    rw [dif_neg hqs, (C.actual_compact q (finite_not_bad R P C q (fun h => hqs (s.property h)))).choose_spec]
     change (KPLocalExceptionalConstruction.actualGoodCompactSplit F R.A.zeta12 R.A.primitive_zeta12 q _).range =
       (finiteCompact F R.A.zeta12 R.A.primitive_zeta12 q).map
         (KPPGLLocalCover.coverQuotient F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q))
@@ -61,7 +57,7 @@ theorem extendedPlus_right_level (s : RestrictedTensorSimple.Level (bad R P C))
   · simp only [extendedPlus, dif_pos h]
     exact (finitePlus_has_level R N P C q (f ⟨Sum.inr q, h⟩)).choose_spec.2
       ⟨k.val, by simpa only [pureProductLevel, dif_pos h] using k.property⟩ g
-  · have hqc : q ∉ C.exceptional := finite_not_bad R P C q (fun hp => h (s.property hp))
+  · have hqc := finite_not_bad R P C q (fun hp => h (s.property hp))
     have hk : k.val ∈ (C.canonical q).iwasawa.compact.toOpenSubgroup := by
       simpa only [pureProductLevel, dif_neg h] using k.property
     simp only [extendedPlus, dif_neg h, plusReference, dif_pos hqc]
@@ -78,16 +74,11 @@ theorem rawCoreVector_pure_congr (s : RestrictedTensorSimple.Level (bad R P C))
   obtain ⟨H, hH⟩ := exists_reference_stage R N P C h
   let t : RestrictedTensorSimple.Level (bad R P C) :=
     ⟨s.val ∪ G.val ∪ H.val, s.property.trans (Finset.subset_union_left.trans Finset.subset_union_left)⟩
-  have hst : s ≤ t := Finset.subset_union_left.trans Finset.subset_union_left
-  have htG : ∀ p, p ∉ t.val → localValue R N P C p (g p) (plusReference R N P C p) = reference R P C p :=
-    fun p hp => hG p (fun h => hp (by simp [t, h]))
-  have htH : ∀ p, p ∉ t.val → localValue R N P C p (h p) (plusReference R N P C p) = reference R P C p :=
-    fun p hp => hH p (fun h => hp (by simp [t, h]))
   have hins : RestrictedTensorSimple.stageInclusion _ _ _ t
-      (RestrictedTensorSimple.transition (Plus R N P C) (plusReference R N P C) (bad R P C) s t hst
+      (RestrictedTensorSimple.transition (Plus R N P C) (plusReference R N P C) (bad R P C) s t (Finset.subset_union_left.trans Finset.subset_union_left)
         (PiTensorProduct.tprod ℂ f)) =
       RestrictedTensorSimple.stageInclusion _ _ _ s (PiTensorProduct.tprod ℂ f) := Module.DirectLimit.of_f
-  rw [← hins, rawCoreVector_stage R N P C t g htG, rawCoreVector_stage R N P C t h htH]
+  rw [← hins, rawCoreVector_stage R N P C t g (fun p hp => hG p (fun h => hp (by simp [t, h]))), rawCoreVector_stage R N P C t h (fun p hp => hH p (fun h => hp (by simp [t, h])))]
   rw [RestrictedTensorSimple.transition, RestrictedTensorSimple.insert_pure,
     stageVector_pure, stageVector_pure]
   congr 2
@@ -182,17 +173,11 @@ theorem scalarSource_has_level (x : PlusCore R N P C) :
   | add x y hx hy =>
     obtain ⟨U, hU⟩ := hx
     obtain ⟨V, hV⟩ := hy
-    let W : KPGlobalTorusFunctionData.FiniteLevel F R.A.zeta12 R.A.primitive_zeta12 :=
-      ⟨U.toOpenSubgroup ⊓ V.toOpenSubgroup, U.isCompact.inter_right V.toOpenSubgroup.isClosed⟩
-    refine ⟨W, ?_⟩
+    refine ⟨(⟨U.toOpenSubgroup ⊓ V.toOpenSubgroup, U.isCompact.inter_right V.toOpenSubgroup.isClosed⟩), ?_⟩
     intro g u hu
     obtain ⟨v, hv, rfl⟩ := hu
-    have huU : v.val ∈ KPGlobalTorusFunctionData.globalLevel F R.A.zeta12 R.A.primitive_zeta12 U :=
-      Subgroup.mem_map.mpr ⟨v, hv.1, rfl⟩
-    have huV : v.val ∈ KPGlobalTorusFunctionData.globalLevel F R.A.zeta12 R.A.primitive_zeta12 V :=
-      Subgroup.mem_map.mpr ⟨v, hv.2, rfl⟩
     simp only [map_add, Pi.add_apply]
-    exact congrArg₂ (· + ·) (hU g v.val huU) (hV g v.val huV)
+    exact congrArg₂ (· + ·) (hU g v.val (Subgroup.mem_map.mpr ⟨v, hv.1, rfl⟩)) (hV g v.val (Subgroup.mem_map.mpr ⟨v, hv.2, rfl⟩))
 
 end DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
 

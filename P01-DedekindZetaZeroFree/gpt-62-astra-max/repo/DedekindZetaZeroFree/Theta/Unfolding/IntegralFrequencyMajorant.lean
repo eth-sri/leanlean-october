@@ -12,7 +12,7 @@ open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
 
  def rowUnit (A : SArithmeticData F) (r : ProbeOrbitNormSum.Nonzero A) : Fˣ :=
-  Units.mk0 (r.val : F) (by intro h; exact r.property (Subtype.ext h))
+  Units.mk0 (r.val : F) (fun h => r.property (Subtype.ext h))
 
  theorem unitEquiv_coe (A : SArithmeticData F) (u : A.U) :
     ((A.unitEquiv u : A.R) : F) = (u.val : F) := rfl
@@ -52,17 +52,15 @@ open MomentSources NumberField MeasureTheory ThetaProfileHaarSheets ThetaSheetEx
 open scoped NumberField Classical
 namespace IntegralFrequency
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 abbrev Support (m : ThetaReflectionData.Row R.A) :=
   {ξ : ThetaReflectionData.Frequency R.A // ((ThetaReflectionData.rowUnit R.A m ^ 2 * Quotient.out ξ : Fˣ) : F) ∈ R.A.R}
 
 def cleared (m : ThetaReflectionData.Row R.A) (ξ : Support R m) : ProbeOrbitNormSum.Nonzero R.A :=
   ⟨⟨((ThetaReflectionData.rowUnit R.A m ^ 2 * Quotient.out ξ.val : Fˣ) : F), ξ.property⟩,
-    by
-      intro hz
-      exact (ThetaReflectionData.rowUnit R.A m ^ 2 * Quotient.out ξ.val).ne_zero
+    fun hz => (ThetaReflectionData.rowUnit R.A m ^ 2 * Quotient.out ξ.val).ne_zero
         (congrArg (fun a : R.A.R => (a : F)) hz)⟩
 
 def orbit (m : ThetaReflectionData.Row R.A) (ξ : Support R m) : ProbeOrbitNormSum.Orbit R.A :=
@@ -107,8 +105,8 @@ lemma orbit_norm (m : ThetaReflectionData.Row R.A) (ξ : Support R m) :
 
 end IntegralFrequency
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def frequencyMajorant (m : ThetaReflectionData.Row R.A) (ξ : ThetaReflectionData.Frequency R.A) : ℝ :=
   if ((ThetaReflectionData.rowUnit R.A m ^ 2 * Quotient.out ξ : Fˣ) : F) ∈ R.A.R

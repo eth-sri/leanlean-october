@@ -20,10 +20,10 @@ open KPContSectorCoveredQuotientVocabulary KPContSectorPhaseComponentCharts
 open KPContSectorScalarLineAlgebra KPContSectorSmoothFramesSupport
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 def localFrameCoefficient {i : Fin (H.atlas U).componentCount} {x : SymmetricSpace F}
     {chart : OrbifoldChart F ζ hζ U R P H i x}
@@ -34,18 +34,15 @@ def localFrameCoefficient {i : Fin (H.atlas U).componentCount} {x : SymmetricSpa
     (Quotient.lift (fun ε => phaseTransport F ζ hζ U ε (w.coefficient (coordinates F p)))
       (by
         intro a b hab
-        have hmem : KPCuspGenuineMonodromy.central F ζ hζ (b⁻¹ * a) ∈ U.toOpenSubgroup := by
-          have h1 := QuotientGroup.leftRel_apply.mp hab
-          have hmem' : KPCuspGenuineMonodromy.central F ζ hζ (a⁻¹ * b) ∈ U.toOpenSubgroup := by
-            simpa [KPContSectorPhaseComponentCharts.centralLevel] using h1
-          have heq : KPCuspGenuineMonodromy.central F ζ hζ (b⁻¹ * a) =
-              (KPCuspGenuineMonodromy.central F ζ hζ (a⁻¹ * b))⁻¹ := by
-            simp only [map_inv, map_mul]
-            group
-          rw [heq]
-          exact U.toOpenSubgroup.inv_mem hmem'
-        exact phaseTransport_level_ambiguity F ζ hζ U a b hmem
-          (w.coefficient (coordinates F p))) m) : ℂ)
+        refine phaseTransport_level_ambiguity F ζ hζ U a b ?_
+          (w.coefficient (coordinates F p))
+        have heq : KPCuspGenuineMonodromy.central F ζ hζ (b⁻¹ * a) =
+            (KPCuspGenuineMonodromy.central F ζ hζ (a⁻¹ * b))⁻¹ := by
+          simp only [map_inv, map_mul]
+          group
+        rw [heq]
+        refine U.toOpenSubgroup.inv_mem ?_
+        simpa [KPContSectorPhaseComponentCharts.centralLevel] using (QuotientGroup.leftRel_apply.mp hab)) m) : ℂ)
 
 set_option maxHeartbeats 1000000 in
 
@@ -58,18 +55,7 @@ structure Promotion (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
   smooth : ∀ s ∈ Ω, ContDiffOn ℝ (⊤ : ℕ∞) (representative s) A.carrier
   represents : ∀ s ∈ Ω, representative s =ᵐ[volume.restrict A.carrier]
     (fun p => restriction F ζ hζ U R P H i x chart m A hA (u s) p)
-  unique : ∀ s ∈ Ω, ∀ f : Space (KPCuspLogShape.dimension F * 3) → ℂ,
-    ContDiffOn ℝ (⊤ : ℕ∞) f A.carrier →
-    (f =ᵐ[volume.restrict A.carrier]
-      (fun p => restriction F ζ hζ U R P H i x chart m A hA (u s) p)) →
-    Set.EqOn f (representative s) A.carrier
 
-  stabilizer : ∀ s ∈ Ω,
-    ∀ σ : MulAction.stabilizer (Component F ζ hζ U R P H i) x,
-    ∀ p ∈ A.carrier ∩ overlapCoordinate F ζ hζ U R P H i σ.val ⁻¹' A.carrier,
-      representative s (overlapCoordinate F ζ hζ U R P H i σ.val p) =
-        (KPCuspGenuineMonodromy.chi F ζ hζ (((H.atlas U).line i).rho σ.val) : ℂ) *
-          representative s p
   holomorphic : KPCutoffSource.ChartSmoothHolomorphicOn A representative Ω
 
   disks : ∀ (c : ℂ) (r : ℝ), 0 < r → Metric.closedBall c r ⊆ Ω →
@@ -155,7 +141,7 @@ theorem representative_family_core
       D.lowerDensity_pos D.lowerEllipticity_pos D.smooth_near_closed
       (a s) w g (h s) (hforcing_smooth.1 s hs) hg heq
     exact ⟨f, hf, by simpa only [hw] using hrep⟩
-  let f : ℂ → Space (KPCuspLogShape.dimension F * 3) → ℂ := fun s =>
+  let f := fun s =>
     if hs : s ∈ Ω then (hex s hs).choose else 0
   have hf : ∀ s ∈ Ω, ContDiffOn ℝ (⊤ : ℕ∞) (f s) A.carrier ∧
       (f s =ᵐ[volume.restrict A.carrier] (fun p => RA (u s) p)) := by
@@ -165,9 +151,8 @@ theorem representative_family_core
     D.lowerDensity_pos D.lowerEllipticity_pos D.smooth_near_closed Ω hΩ a ha.continuousOn
     (fun s => RA (u s)) (RA.continuous.comp_continuousOn hu.continuousOn)
     h hforcing_smooth hforcing_sobolev hweak f hf
-  have hhol := KPContLocalHolomorphyUpgrade.CauchyAssembly.holomorphy_of_jet_continuity
-    A RA Ω hΩ u hu f hf hjets
-  refine ⟨f, ?_, hhol.1, ?_⟩
+  refine ⟨f, ?_, (KPContLocalHolomorphyUpgrade.CauchyAssembly.holomorphy_of_jet_continuity
+    A RA Ω hΩ u hu f hf hjets).1, ?_⟩
   · intro s hs
     refine ⟨(hf s hs).1, (hf s hs).2, ?_⟩
     intro g hg hgae
@@ -233,11 +218,9 @@ theorem kp_cont_actual_local_solution_family
   obtain ⟨f, hf, hSCO, hcov⟩ := representative_family_core F ζ hζ U R P H μG hμG hR
     realization SF i x chart m A hA Ω hΩ a ha u hu forcing hforcing_smooth hforcing_sobolev
     hdom hsource
-  refine ⟨⟨f, ?_, ?_, ?_, ?_, ?_, ?_⟩⟩
+  refine ⟨⟨f, ?_, ?_, ?_, ?_⟩⟩
   · exact fun s hs => (hf s hs).1
   · exact fun s hs => (hf s hs).2.1
-  · exact fun s hs g hg hgae => (hf s hs).2.2 g hg hgae
-  · exact hcov
   · exact KPContSmoothPromotion.power_series_jet_holomorphy A Ω hΩ f hSCO
   · intro c r hr hclosed
     have hf' : ∀ s ∈ Ω, ContDiffOn ℝ (⊤ : ℕ∞) (f s) A.carrier ∧

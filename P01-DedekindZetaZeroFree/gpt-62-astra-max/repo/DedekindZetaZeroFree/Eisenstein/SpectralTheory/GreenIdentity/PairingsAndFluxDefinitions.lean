@@ -28,7 +28,11 @@ def rightDerivative (w : NumberField.InfinitePlace F) (j : Fin 6)
   deriv (fun t : ℝ => f (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
     (KPSmoothActualFlowData.flow F (w,j) t))) 0
 
-def casimir (f : Cover F ζ hζ → ℂ) (g : Cover F ζ hζ) : ℂ :=
+section
+
+variable (f : Cover F ζ hζ → ℂ)
+
+def casimir (g : Cover F ζ hζ) : ℂ :=
   ∑ w : NumberField.InfinitePlace F, -((1 : ℂ) / 4) *
     (rightDerivative F ζ hζ w 0 (rightDerivative F ζ hζ w 0 f) g -
      rightDerivative F ζ hζ w 1 (rightDerivative F ζ hζ w 1 f) g +
@@ -37,20 +41,22 @@ def casimir (f : Cover F ζ hζ → ℂ) (g : Cover F ζ hζ) : ℂ :=
           rightDerivative F ζ hζ w 3 (rightDerivative F ζ hζ w 5 f) g -
           rightDerivative F ζ hζ w 5 (rightDerivative F ζ hζ w 3 f) g))
 
-def Smooth (f : Cover F ζ hζ → ℂ) : Prop :=
+def Smooth : Prop :=
   Continuous f ∧ ∀ g, ContDiff ℝ (⊤ : ℕ∞)
     (fun a : KPSmoothActualFlowData.LieCoordinates F =>
       f (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
         (KPSmoothActualFlowData.exponential F a)))
 
-def KFinite (f : Cover F ζ hζ → ℂ) : Prop :=
+def KFinite : Prop :=
   Module.Finite ℂ (Submodule.span ℂ
     (Set.range (fun k : K F => fun g => f (g * compactInsertion F ζ hζ k))))
 
+end
+
 section Atlas
 variable {F ζ hζ} {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
 abbrev Cusps := KPMsFixedHaarDisintegration.CuspIndex A
 

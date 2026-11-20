@@ -23,13 +23,13 @@ theorem slot_eq_normalized
     rw [he, LinearMap.zero_apply] at hx
     exact zero_ne_one hx
   obtain ⟨c, hc⟩ := exists_smul_eq_of_finrank_eq_one hP
-    (x := (⟨ell, hell⟩ : P)) hne (⟨L, hL⟩ : P)
+     hne (⟨L, hL⟩ : P)
   have hc' : c • ell = L := congrArg Subtype.val hc
   have hc₀ : c = L x₀ := by
     have h := LinearMap.congr_fun hc' x₀
     simpa only [LinearMap.smul_apply, smul_eq_mul, hx₀, mul_one] using h
   calc
-    L y = c * ell y := by rw [← hc', LinearMap.smul_apply, smul_eq_mul]
+    L y = c * ell y := by simp [← hc']
     _ = L x₀ * ell y := by rw [hc₀]
 
 theorem replace_eq_product_of_slot_comparison
@@ -46,17 +46,11 @@ theorem replace_eq_product_of_slot_comparison
   induction S using Finset.induction_on with
   | empty => simp
   | @insert j S hj ih =>
-    have hnormS : ∀ i ∈ S, ell i (x i) = 1 :=
-      fun i hi => hnorm i (Finset.mem_insert_of_mem hi)
-    have hslotS : ∀ i ∈ S, ∀ z : ∀ k, V k, ∀ u : V i,
-        L (Function.update z i u) =
-          L (Function.update z i (x i)) * ell i u :=
-      fun i hi => hslot i (Finset.mem_insert_of_mem hi)
     have hbase : Function.update (S.piecewise y x) j (x j) = S.piecewise y x := by
       apply Function.update_eq_self_iff.mpr
       exact (Finset.piecewise_eq_of_notMem S y x hj).symm
     rw [Finset.piecewise_insert, hslot j (Finset.mem_insert_self j S), hbase,
-      ih hnormS hslotS, Finset.prod_insert hj]
+      ih (fun i hi => hnorm i (Finset.mem_insert_of_mem hi)) (fun i hi => hslot i (Finset.mem_insert_of_mem hi)), Finset.prod_insert hj]
     ring
 
 end DedekindZetaZeroFree.KPWildActualExteriorFactorization.FiniteComparison

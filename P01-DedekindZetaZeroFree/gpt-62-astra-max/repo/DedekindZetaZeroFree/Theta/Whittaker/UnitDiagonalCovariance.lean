@@ -13,9 +13,9 @@ open scoped NumberField Classical
 namespace DedekindZetaZeroFree.ExteriorWhittakerValues
 open NumberField IsDedekindDomain ValuativeRel
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η}
-variable {Q : MomentSources.AdmissibleFlatSources R} {T : MomentSources.Realization R Q}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η}
+    {Q : MomentSources.AdmissibleFlatSources R} {T : MomentSources.Realization R Q}
 
 theorem exterior_good_six (p : ThetaBranch.ExteriorPrime R.A) :
     valuation (p.val.adicCompletion F) (6 : p.val.adicCompletion F) = 1 :=
@@ -100,15 +100,14 @@ theorem exterior_unit_covariance (D : MomentSources.SourceFactorization R Q T)
     R.A.primitive_zeta12 p.val (D.finiteData p.val).inducing
     (D.finiteData p.val).inducing.polarization (D.finiteData p.val).haar
     (D.finiteData p.val).haar_integer
-  let a : ℂˣ := KPLocalCover.coefficientEmbedding F R.A.zeta12 R.A.primitive_zeta12
+  let a := KPLocalCover.coefficientEmbedding F R.A.zeta12 R.A.primitive_zeta12
     (KPHilbert.residueSixCharacter F p.val R.A.zeta12 R.A.primitive_zeta12
       (exterior_good_six p) u)
   have hc : KPSourceConvention.sourceC F R.A.zeta12 R.A.primitive_zeta12
       (Sum.inr p.val) (π ^ e) (KPHilbert.integerUnitInclusion F p.val u) =
         (a : ℂ) ^ (-2 * e) := by
-    have hh := KPSourceConvention.sourceC_valuation_units F R.A.zeta12
-      R.A.primitive_zeta12 p.val (exterior_good_six p) π hπ 1 u e 0
-    simpa [a, KPHilbert.integerUnitInclusion] using hh
+    simpa [a, KPHilbert.integerUnitInclusion] using (KPSourceConvention.sourceC_valuation_units F R.A.zeta12
+      R.A.primitive_zeta12 p.val (exterior_good_six p) π hπ 1 u e 0)
   apply representation_unit_covariance ρ (D.ell (Sum.inr p.val))
     (D.references (Sum.inr p.val))
     (KPPGLLocalCover.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) (π ^ e))

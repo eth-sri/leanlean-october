@@ -18,16 +18,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -63,18 +53,17 @@ theorem fractionalIdeal_finitePrimeIdele
       FractionalIdealGroup.prime v := by
   apply FractionalIdealGroup.ext_count
   intro w
+  let FractionalIdeal₀ := FractionalIdeal (nonZeroDivisors (𝓞 K)) K
   change
     FractionalIdeal.count K w
         ((FiniteIdeleGroup.fractionalIdeal
           (finitePrimeIdele v).2 :
             FractionalIdealGroup K) :
-          FractionalIdeal
-            (nonZeroDivisors (𝓞 K)) K) =
+          FractionalIdeal₀) =
       FractionalIdeal.count K w
         ((FractionalIdealGroup.prime v :
             FractionalIdealGroup K) :
-          FractionalIdeal
-            (nonZeroDivisors (𝓞 K)) K)
+          FractionalIdeal₀)
   rw [FiniteIdeleGroup.fractionalIdeal]
   change
     FractionalIdeal.count K w
@@ -82,12 +71,9 @@ theorem fractionalIdeal_finitePrimeIdele
           (FiniteIdeleGroup.valuationVector
             (finitePrimeIdele v).2) :
               FractionalIdealGroup K) :
-            FractionalIdeal
-              (nonZeroDivisors (𝓞 K)) K)) =
+            FractionalIdeal₀)) =
       FractionalIdeal.count K w
-        (v.asIdeal :
-          FractionalIdeal
-            (nonZeroDivisors (𝓞 K)) K)
+        v.asIdeal
   rw [FractionalIdealGroup.count_factorization,
     FiniteIdeleGroup.valuationVector_apply]
   by_cases hw : w = v
@@ -103,22 +89,8 @@ theorem fractionalIdeal_finitePrimeIdele
     change
       0 =
         FractionalIdeal.count K w
-          (v.asIdeal :
-            FractionalIdeal
-              (nonZeroDivisors (𝓞 K)) K)
+          v.asIdeal
     rw [FractionalIdeal.count_maximal_coprime K w (Ne.symm hw)]
-
-/-- The ordinary ideal class of the normalized one-place prime idele is the
-class of the corresponding prime ideal. -/
-@[simp]
-theorem idealClass_finitePrimeIdele
-    (v : HeightOneSpectrum (𝓞 K)) :
-    idealClass (finitePrimeIdele v) =
-      ClassGroup.mk K (FractionalIdealGroup.prime v) := by
-  change
-    ClassGroup.mk K (fractionalIdeal (finitePrimeIdele v)) =
-      ClassGroup.mk K (FractionalIdealGroup.prime v)
-  rw [fractionalIdeal_finitePrimeIdele]
 
 end IdeleGroup
 

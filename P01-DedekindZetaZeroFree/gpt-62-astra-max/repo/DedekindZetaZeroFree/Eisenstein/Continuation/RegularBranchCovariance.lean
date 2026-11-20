@@ -10,9 +10,9 @@ open Filter
 namespace DedekindZetaZeroFree.ResidueContinuity
 open MomentSources ThetaExpansion
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
-variable {v : R.A.UnitQuotient}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}
+    {v : R.A.UnitQuotient}
 
 theorem regular_ball (D : SelectedScalarBranch R B v) (P : SelectedPoleSet D)
     (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain \ P.poles) :

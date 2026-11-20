@@ -110,7 +110,7 @@ theorem coprimeIdealResidueAverage_sum_fiber :
   rw [coprimeIdealResidueCoefficient_eq_character hF m a hm ha hcop hmt η E q]
   congr 1
   obtain ⟨x, hx⟩ := fractionalIdealQuotientMk_surjective
-    (I : FractionalIdeal (𝓞 F)⁰ F)
+    I
     ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F) q.val
   have ht := rayTheta_fδ_eq_affineResidueAverage hF m a hm ha hcop hmt D q x hx u hu
   dsimp only at ht
@@ -144,7 +144,7 @@ theorem coprimeIdealResidueDualAverage_sum_fiber :
   rw [coprimeIdealResidueCoefficient_eq_character hF m a hm ha hcop hmt η E q]
   congr 1
   obtain ⟨x, hx⟩ := fractionalIdealQuotientMk_surjective
-    (I : FractionalIdeal (𝓞 F)⁰ F)
+    I
     ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F) q.val
   have ht := rayTheta_gδDual_eq_affineResidueDualAverage hF m a hm ha hcop hmt D q x hx u hu
   dsimp only at ht

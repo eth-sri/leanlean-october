@@ -11,14 +11,18 @@ open scoped Classical NumberField
 open NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPAdelicCoverRestrictedProduct
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_localAdele → eval_localAdele
+open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting (eval_localAdele)
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
-theorem finiteScatteringRaw_unsigned (q : KPFinitePlace F) (y : q.adicCompletion F) :
+section
+
+variable (q : KPFinitePlace F)
+
+theorem finiteScatteringRaw_unsigned (y : q.adicCompletion F) :
     finiteScatteringRaw A q (-y) * KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) (-1) =
       KPStandardLocalRootLifts.W F ζ hζ (Sum.inr q) *
         KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) y := by
@@ -32,13 +36,13 @@ theorem finiteScatteringRaw_unsigned (q : KPFinitePlace F) (y : q.adicCompletion
   rw [mul_inv_rev, hw, mul_assoc, hn]
   group
 
-def scatteringComplement (q : KPFinitePlace F) (u : KPAdeles F) (g : Raw A) : Raw A :=
+def scatteringComplement (u : KPAdeles F) (g : Raw A) : Raw A :=
   localToRestricted F ζ hζ (Sum.inr q)
     (KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) (-1) *
       (KPStandardLocalRootLifts.W F ζ hζ (Sum.inr q))⁻¹) *
     KPRationalAdelicSplitting.WTuple F ζ hζ * KPGlobalTorusFunctionData.rootTuple F ζ hζ u * g
 
-theorem scattering_raw_split (q : KPFinitePlace F) (u : KPAdeles F)
+theorem scattering_raw_split (u : KPAdeles F)
     (hu : adeleEval F (Sum.inr q) u = 0) (y : q.adicCompletion F) (g : Raw A) :
     KPRationalAdelicSplitting.WTuple F ζ hζ *
       KPGlobalTorusFunctionData.rootTuple F ζ hζ
@@ -77,12 +81,14 @@ theorem scattering_raw_split (q : KPFinitePlace F) (u : KPAdeles F)
         KPStandardLocalRootLifts.N F ζ hζ v (adeleEval F v u) * g v
     rw [map_add, eval_localAdele, Pi.single_eq_of_ne hv, add_zero]
 
+end
+
 section Spectral
 open KPGlobalTorusFiniteStages MomentSources
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 
 theorem coreFlatInsertion_original_slice
     (x : RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C))
@@ -165,7 +171,7 @@ theorem coreFlatInsertion_original_stage_integral
       funext (fun y => coreFlatInsertion_original_slice R P C _ q u hu y g z)
     rw [he, integral_neg_eq_self k (N.finiteHaar q), traceHaar_eq_smul_unit R N P C q μ hμ,
       integral_smul_measure,
-      (coreFlatInsertion_scattering_stage_integral R P C t x b q hq hg μ hμ z hz).2,
+      (coreFlatInsertion_scattering_stage_integral R P C t x b q hq hg μ hμ z hz),
       ENNReal.toReal_ofReal (PoissonS.integerVolume_pos F q).le]
     rfl
 

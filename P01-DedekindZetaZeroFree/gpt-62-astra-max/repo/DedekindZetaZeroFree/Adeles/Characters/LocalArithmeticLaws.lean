@@ -13,11 +13,14 @@ variable {F : Type} [Field F] [NumberField F]
 
 open Filter Topology
 
-private lemma pow_near_one {K : Type*} [NormedField K] [IsUltrametricDist K]
+section
+
+variable {K : Type*} [NormedField K] [IsUltrametricDist K]
+
+private lemma pow_near_one
     (x : K) (hx : ‖x - 1‖ < 1) (n : ℕ) : ‖x ^ n - 1‖ ≤ ‖x - 1‖ := by
   have hnorm : ‖x‖ ≤ 1 := by
-    have h := IsUltrametricDist.norm_add_le_max (x - 1) (1 : K)
-    simpa [max_eq_right hx.le] using h
+    simpa [max_eq_right hx.le] using (IsUltrametricDist.norm_add_le_max (x - 1) (1 : K))
   induction n with
   | zero => simp
   | succ n ih =>
@@ -27,7 +30,7 @@ private lemma pow_near_one {K : Type*} [NormedField K] [IsUltrametricDist K]
     rw [norm_mul]
     exact (mul_le_mul_of_nonneg_left hnorm (norm_nonneg _)).trans (by simpa using ih)
 
-private lemma local_circle_character {K : Type*} [NormedField K] [IsUltrametricDist K]
+private lemma local_circle_character
     (Φ : Kˣ →* Circle) (hc : Continuous Φ) : IsLocallyConstant Φ := by
   have harc : (1 : Circle) ∈ Circle.centeredArc (Real.pi / 2) := by
     rw [Circle.mem_centeredArc (by linarith [Real.pi_pos])]
@@ -55,22 +58,20 @@ private lemma local_circle_character {K : Type*} [NormedField K] [IsUltrametricD
   · exact isOpen_lt (by fun_prop) continuous_const
   · simpa using hδ
   · intro t ht
-    have h := hkill (t * z⁻¹) ht
-    simpa only [map_mul, map_inv, mul_inv_eq_one] using h
+    simpa only [map_mul, map_inv, mul_inv_eq_one] using (hkill (t * z⁻¹) ht)
+
+end
 
 private lemma continuous_ideleClassGroup_ofAdicCompletion (v : HeightOneSpectrum (𝓞 F)) :
     Continuous (NumberField.IdeleClassGroup.ofAdicCompletion (𝓞 F) F v) := by
   apply continuous_quot_mk.comp
   apply Continuous.units_map
-  change Continuous (fun z : v.adicCompletion F =>
-    ((1 : InfiniteAdeleRing F), FiniteAdeleRing.ofAdicCompletion F v z))
   apply Continuous.prodMk continuous_const
-  let a := fun w : HeightOneSpectrum (𝓞 F) => (w.adicCompletionIntegers F : Set (w.adicCompletion F))
   let f : v.adicCompletion F → RestrictedProduct (fun w : HeightOneSpectrum (𝓞 F) => w.adicCompletion F)
-      a (Filter.principal {v}ᶜ) := fun z => ⟨Pi.mulSingle v z, by
+      (fun w : HeightOneSpectrum (𝓞 F) => (w.adicCompletionIntegers F : Set (w.adicCompletion F))) (Filter.principal {v}ᶜ) := fun z => ⟨Pi.mulSingle v z, by
         rw [Filter.eventually_principal]
         intro w hw
-        rw [Pi.mulSingle_eq_of_ne (by simpa using hw)]
+        rw [Pi.mulSingle_eq_of_ne (by exact hw)]
         exact one_mem _⟩
   have hf : Continuous f := RestrictedProduct.continuous_rng_of_principal.mpr (by
     change Continuous (fun z : v.adicCompletion F => Pi.mulSingle v z)
@@ -78,6 +79,8 @@ private lemma continuous_ideleClassGroup_ofAdicCompletion (v : HeightOneSpectrum
   have hi : Filter.cofinite ≤ Filter.principal ({v}ᶜ : Set (HeightOneSpectrum (𝓞 F))) := by
     simp
   exact (RestrictedProduct.continuous_inclusion hi).comp hf
+
+alias LocalArithmeticLaws.continuous_ideleClassGroup_ofAdicCompletion := continuous_ideleClassGroup_ofAdicCompletion
 
 theorem localArithmeticLaws_finite (A : SArithmeticData F)
     (Φ : A.ArithmeticIdeleClasses →* Circle) (hcont : Continuous Φ)
@@ -108,12 +111,18 @@ private lemma pi_character_trivial {ι : Type*} {K : ι → Type*}
   rw [hones] at hm
   exact hm.unique hasProd_one
 
- def outsideUnitGroup (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) :
+ section
+
+variable (A : SArithmeticData F)
+
+local notation "FinitePlace" => HeightOneSpectrum (𝓞 F)
+
+def outsideUnitGroup (v : FinitePlace) :
     Subgroup (v.adicCompletion F)ˣ :=
   if v ∈ A.Sf then ⊥ else (v.adicCompletionIntegers F).units
 
- def outsideUnitsIdele (A : SArithmeticData F) :
-    ((v : HeightOneSpectrum (𝓞 F)) → outsideUnitGroup A v) →* _root_.IdeleGroup F where
+ def outsideUnitsIdele :
+    ((v : FinitePlace) → outsideUnitGroup A v) →* _root_.IdeleGroup F where
   toFun z := (1, ⟨fun v => (z v).val, Filter.Eventually.of_forall (fun v => by
     have hz := (z v).property
     dsimp [outsideUnitGroup] at hz
@@ -129,19 +138,15 @@ private lemma pi_character_trivial {ι : Type*} {K : ι → Type*}
     · simp
     · rfl
 
-private lemma outsideUnitsIdele_continuous (A : SArithmeticData F) :
+private lemma outsideUnitsIdele_continuous :
     Continuous (outsideUnitsIdele A) := by
   apply Continuous.prodMk continuous_const
-  let R := fun v : HeightOneSpectrum (𝓞 F) => (v.adicCompletion F)ˣ
-  let B := fun v : HeightOneSpectrum (𝓞 F) => ((v.adicCompletionIntegers F).units : Set (R v))
-  let f : ((v : HeightOneSpectrum (𝓞 F)) → outsideUnitGroup A v) → (v : HeightOneSpectrum (𝓞 F)) → B v :=
+  let f : ((v : FinitePlace) → outsideUnitGroup A v) → (v : FinitePlace) → (fun v : FinitePlace => ((v.adicCompletionIntegers F).units : Set ((fun v : FinitePlace => (v.adicCompletion F)ˣ) v))) v :=
     fun z v => ⟨(z v).val, by
       have hz := (z v).property
       dsimp [outsideUnitGroup] at hz
       split_ifs at hz with hv
-      · have he : (z v).val = 1 := hz
-        change (z v).val ∈ (v.adicCompletionIntegers F).units
-        rw [he]
+      · rw [hz]
         exact (v.adicCompletionIntegers F).units.one_mem
       · exact hz⟩
   have hf : Continuous f := by
@@ -150,13 +155,13 @@ private lemma outsideUnitsIdele_continuous (A : SArithmeticData F) :
     exact (continuous_subtype_val.comp (continuous_apply v)).subtype_mk _
   exact RestrictedProduct.isEmbedding_structureMap.continuous.comp hf
 
-theorem outside_units_trivial (A : SArithmeticData F)
+theorem outside_units_trivial
     (Φ : A.ArithmeticIdeleClasses →* Circle)
     (hcont : Continuous Φ) (hunram : A.IdeleCharacterUnramifiedOutside Φ)
     (x : NumberField.IdeleGroup (𝓞 F) F)
     (hinf : ∀ w : InfinitePlace F, x.val.1 w = 1)
-    (hS : ∀ v : HeightOneSpectrum (𝓞 F), v ∈ A.Sf → x.val.2 v = 1)
-    (hout : ∀ v : HeightOneSpectrum (𝓞 F), v ∉ A.Sf → Valued.v (x.val.2 v) = 1) :
+    (hS : ∀ v : FinitePlace, v ∈ A.Sf → x.val.2 v = 1)
+    (hout : ∀ v : FinitePlace, v ∉ A.Sf → Valued.v (x.val.2 v) = 1) :
     Φ (QuotientGroup.mk x) = 1 := by
   let e := _root_.IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F
   let χ := Φ.comp ((QuotientGroup.mk' (NumberField.IdeleGroup.principalSubgroup (𝓞 F) F)).comp
@@ -189,7 +194,7 @@ theorem outside_units_trivial (A : SArithmeticData F)
       rw [← HeightOneSpectrum.adicCompletionIntegers.mem_units_iff_valued_eq_one]
       simpa [outsideUnitGroup, hv] using z.property
   let y := e.symm x
-  let z : (v : HeightOneSpectrum (𝓞 F)) → outsideUnitGroup A v := fun v => ⟨y.2 v, by
+  let z : (v : FinitePlace) → outsideUnitGroup A v := fun v => ⟨y.2 v, by
     dsimp [outsideUnitGroup]
     split_ifs with hv
     · change y.2 v = 1
@@ -207,11 +212,11 @@ theorem outside_units_trivial (A : SArithmeticData F)
   change Φ (QuotientGroup.mk (e (outsideUnitsIdele A z))) = 1 at h
   rwa [he, ContinuousMulEquiv.apply_symm_apply] at h
 
- def sIdele (A : SArithmeticData F) (y : A.G) : NumberField.IdeleGroup (𝓞 F) F :=
+ def sIdele (y : A.G) : NumberField.IdeleGroup (𝓞 F) F :=
   (∏ w : InfinitePlace F, Units.map (NumberField.AdeleRing.ofCompletion (𝓞 F) F w) (y.1 w)) *
     ∏ v : {v // v ∈ A.Sf}, Units.map (NumberField.AdeleRing.ofAdicCompletion (𝓞 F) F v.val) (y.2 v)
 
-private lemma sIdele_infinite (A : SArithmeticData F) (y : A.G) (w : InfinitePlace F) :
+private lemma sIdele_infinite (y : A.G) (w : InfinitePlace F) :
     (sIdele A y).val.1 w = (y.1 w : w.Completion) := by
   classical
   have hval : (sIdele A y).val =
@@ -226,11 +231,10 @@ private lemma sIdele_infinite (A : SArithmeticData F) (y : A.G) (w : InfinitePla
     rfl
   have hf : (∏ i : {v // v ∈ A.Sf}, AdeleRing.ofAdicCompletion (𝓞 F) F i.val ↑(y.2 i)).1 = 1 := by
     erw [Prod.fst_prod]
-    change (∏ i : {v // v ∈ A.Sf}, (1 : InfiniteAdeleRing F)) = 1
     simp
   erw [Prod.fst_mul, hi, hf, mul_one, Finset.univ_prod_mulSingle]
 
-private lemma sIdele_finite (A : SArithmeticData F) (y : A.G) (v : HeightOneSpectrum (𝓞 F)) :
+private lemma sIdele_finite (y : A.G) (v : FinitePlace) :
     (sIdele A y).val.2 v = if h : v ∈ A.Sf then (y.2 ⟨v, h⟩ : v.adicCompletion F) else 1 := by
   classical
   have hval : (sIdele A y).val =
@@ -245,8 +249,8 @@ private lemma sIdele_finite (A : SArithmeticData F) (y : A.G) (v : HeightOneSpec
   erw [Prod.snd_mul, hi, one_mul]
   erw [Prod.snd_prod]
   change (∏ i : {v // v ∈ A.Sf}, FiniteAdeleRing.ofAdicCompletion F i.val (y.2 i : i.val.adicCompletion F)) v = _
-  change (RestrictedProduct.evalMonoidHom (R := fun v : HeightOneSpectrum (𝓞 F) => v.adicCompletion F)
-    (B := fun v : HeightOneSpectrum (𝓞 F) => v.adicCompletionIntegers F) v)
+  change (RestrictedProduct.evalMonoidHom (R := fun v : FinitePlace => v.adicCompletion F)
+    (B := fun v : FinitePlace => v.adicCompletionIntegers F) v)
     (∏ i : {v // v ∈ A.Sf}, FiniteAdeleRing.ofAdicCompletion F i.val (y.2 i : i.val.adicCompletion F)) = _
   erw [map_prod]
   by_cases hv : v ∈ A.Sf
@@ -268,13 +272,8 @@ private lemma sIdele_finite (A : SArithmeticData F) (y : A.G) (v : HeightOneSpec
     intro h
     exact hv (h.symm ▸ b.property)
 
-private lemma sIdele_value (A : SArithmeticData F)
-    (Φ : A.ArithmeticIdeleClasses →* Circle) (y : A.G) :
-    Φ (QuotientGroup.mk (sIdele A y)) = (A.ideleSInverseProduct Φ y)⁻¹ := by
-  simp [sIdele, ideleSInverseProduct, ideleInfiniteComponent, ideleFiniteComponent,
-    IdeleClassGroup.ofCompletion, IdeleClassGroup.ofAdicCompletion,
-    IdeleGroup.ofCompletion, IdeleGroup.ofAdicCompletion]
-  rw [mul_comm]
+end
+
  def infiniteProjection (w : InfinitePlace F) : AdeleRing (𝓞 F) F →* w.Completion where
   toFun x := x.1 w
   map_one' := rfl
@@ -297,9 +296,13 @@ private lemma finite_div (x z : NumberField.IdeleGroup (𝓞 F) F) (v : HeightOn
   rw [map_div, Units.val_div_eq_div_val]
   rfl
 
-theorem outside_valuation_one_value (A : SArithmeticData F)
-    (Φ : A.ArithmeticIdeleClasses →* Circle)
-    (hcont : Continuous Φ) (hunram : A.IdeleCharacterUnramifiedOutside Φ)
+section
+
+variable (A : SArithmeticData F) (Φ : A.ArithmeticIdeleClasses →* Circle) (hcont : Continuous Φ)
+    (hunram : A.IdeleCharacterUnramifiedOutside Φ)
+
+include hcont hunram in
+theorem outside_valuation_one_value
     (x : NumberField.IdeleGroup (𝓞 F) F)
     (hout : ∀ v : HeightOneSpectrum (𝓞 F), v ∉ A.Sf → Valued.v (x.val.2 v) = 1) :
     Φ (QuotientGroup.mk x) = (A.ideleSInverseProduct Φ (ClassCharacterSteps.sRestriction A x))⁻¹ := by
@@ -317,19 +320,20 @@ theorem outside_valuation_one_value (A : SArithmeticData F)
     · intro v hv
       rw [finite_div]
       rw [sIdele_finite, dif_neg hv, div_one, hout v hv]
-  have hv := sIdele_value A Φ y
   change Φ ((QuotientGroup.mk' (NumberField.IdeleGroup.principalSubgroup (𝓞 F) F)) (x / sIdele A y)) = 1 at hkill
   rw [map_div, map_div, div_eq_one] at hkill
-  exact hkill.trans hv
+  exact hkill.trans (by
+    simp [sIdele, ideleSInverseProduct, ideleInfiniteComponent, ideleFiniteComponent,
+      IdeleClassGroup.ofCompletion, IdeleClassGroup.ofAdicCompletion,
+      IdeleGroup.ofCompletion, IdeleGroup.ofAdicCompletion]
+    rw [mul_comm])
 
-theorem localArithmeticLaws_units (A : SArithmeticData F)
-    (Φ : A.ArithmeticIdeleClasses →* Circle)
-    (hcont : Continuous Φ) (hunram : A.IdeleCharacterUnramifiedOutside Φ)
+include hcont hunram in
+theorem localArithmeticLaws_units
     (ε : A.U) : A.ideleSInverseProduct Φ (A.diagonal ε.val) = 1 := by
   let x := NumberField.IdeleGroup.unitEmbedding (𝓞 F) F ε.val
   have hx : ∀ v : HeightOneSpectrum (𝓞 F), v ∉ A.Sf → Valued.v (x.val.2 v) = 1 := by
     intro v hv
-    change Valued.v (algebraMap F (v.adicCompletion F) (ε.val : F)) = 1
     change Valued.v ((WithVal.toVal (v.valuation F) (ε.val : F) : WithVal (v.valuation F)) : v.adicCompletion F) = 1
     rw [HeightOneSpectrum.valuedAdicCompletion_eq_valuation']
     exact Set.unit_valuation_eq_one (A.Sf : Set (HeightOneSpectrum (𝓞 F))) F ε hv
@@ -342,9 +346,8 @@ theorem localArithmeticLaws_units (A : SArithmeticData F)
   rw [hprincipal, map_one] at h
   exact inv_eq_one.mp h.symm
 
-theorem localArithmeticLaws_principal_of_valuation (A : SArithmeticData F)
-    (Φ : A.ArithmeticIdeleClasses →* Circle)
-    (hcont : Continuous Φ) (hunram : A.IdeleCharacterUnramifiedOutside Φ)
+include hcont hunram in
+theorem localArithmeticLaws_principal_of_valuation
     (I : A.Exterior) (x : NumberField.IdeleGroup (𝓞 F) F) (a : Fˣ)
     (hx : A.RepresentsExteriorIdeal I x)
     (ha : ∀ v : HeightOneSpectrum (𝓞 F), v ∉ A.Sf →
@@ -358,8 +361,7 @@ theorem localArithmeticLaws_principal_of_valuation (A : SArithmeticData F)
     change Valued.v (x.val.2 v) / Valued.v (algebraMap F (v.adicCompletion F) (a : F)) = 1
     rw [ha v hv]
     apply div_self
-    have hn : x.val.2 v ≠ 0 := (Units.map (finiteProjection v) x).ne_zero
-    exact (map_ne_zero _).mpr hn
+    exact (map_ne_zero _).mpr ((Units.map (finiteProjection v) x).ne_zero)
   have h := outside_valuation_one_value A Φ hcont hunram (x / p) hout
   have hs : ClassCharacterSteps.sRestriction A (x / p) = (A.diagonal a)⁻¹ := by
     rw [map_div]
@@ -386,7 +388,11 @@ theorem localArithmeticLaws_principal_of_valuation (A : SArithmeticData F)
     map_inv, inv_inv, Finset.prod_inv_distrib, mul_inv_rev] at h ⊢
   exact h.trans (mul_comm _ _)
 
- def generatorBoundIdeal (A : SArithmeticData F)
+end
+
+ variable (A : SArithmeticData F)
+
+def generatorBoundIdeal
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) (n : ℕ) : Ideal A.R where
   carrier := {a | v.valuation F (a : F) ≤ WithZero.exp (-(n : ℤ))}
   zero_mem' := by simp
@@ -400,7 +406,7 @@ theorem localArithmeticLaws_principal_of_valuation (A : SArithmeticData F)
     rw [map_mul]
     exact (mul_le_mul_of_nonneg_right (a.property v hv) zero_le).trans (by simpa using hb)
 
-private lemma generator_valuation (A : SArithmeticData F)
+private lemma generator_valuation
     (I : A.Exterior) (r : A.R) (hr : A.Generates I r) (a : Fˣ) (ha : (a : F) = (r : F))
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) :
     Valued.v (algebraMap F (v.adicCompletion F) (a : F)) =
@@ -411,7 +417,6 @@ private lemma generator_valuation (A : SArithmeticData F)
     rw [pow_dvd_iff_le_emultiplicity,
       UniqueFactorizationMonoid.emultiplicity_eq_count_normalizedFactors v.irreducible I.property.1]
     simp [n, idealPrimeExponent]
-  have hIn : I.val ≤ v.asIdeal ^ n := Ideal.dvd_iff_le.mp ((hdvd n).mpr le_rfl)
   have hnot : ¬ I.val ≤ v.asIdeal ^ (n + 1) := by
     rw [← Ideal.dvd_iff_le, hdvd]; omega
   have hmap : A.extendIdeal I ≤ generatorBoundIdeal A v hv n := by
@@ -419,7 +424,7 @@ private lemma generator_valuation (A : SArithmeticData F)
     intro b hb
     change v.valuation F (b : F) ≤ WithZero.exp (-(n : ℤ))
     rw [v.valuation_of_algebraMap]
-    exact (v.intValuation_le_pow_iff_mem b n).mpr (hIn hb)
+    exact (v.intValuation_le_pow_iff_mem b n).mpr ((Ideal.dvd_iff_le.mp ((hdvd n).mpr le_rfl)) hb)
   have hrv : v.valuation F (r : F) ≤ WithZero.exp (-(n : ℤ)) := by
     apply hmap
     rw [← hr.2]
@@ -427,10 +432,9 @@ private lemma generator_valuation (A : SArithmeticData F)
   obtain ⟨b, hb, hbn⟩ : ∃ b : 𝓞 F, b ∈ I.val ∧ b ∉ v.asIdeal ^ (n + 1) := by
     contrapose! hnot
     exact hnot
-  have hbm : algebraMap (𝓞 F) A.R b ∈ Ideal.span ({r} : Set A.R) := by
+  obtain ⟨y, hy⟩ := Ideal.mem_span_singleton.mp (by
     rw [hr.2]
-    exact Ideal.mem_map_of_mem _ hb
-  obtain ⟨y, hy⟩ := Ideal.mem_span_singleton.mp hbm
+    exact Ideal.mem_map_of_mem _ hb)
   have hbv : v.valuation F (b : F) ≤ v.valuation F (r : F) := by
     have hh := congrArg (fun t : A.R => (t : F)) hy
     change (b : F) = (r : F) * (y : F) at hh
@@ -452,7 +456,7 @@ private lemma generator_valuation (A : SArithmeticData F)
   change Valued.v ((WithVal.toVal (v.valuation F) (a : F) : WithVal (v.valuation F)) : v.adicCompletion F) = _
   rw [HeightOneSpectrum.valuedAdicCompletion_eq_valuation', ha, ← WithZero.exp_log hnz, he]
 
-theorem localArithmeticLaws (A : SArithmeticData F)
+theorem localArithmeticLaws
     (Φ : A.ArithmeticIdeleClasses →* Circle)
     (hcont : Continuous Φ) (hunram : A.IdeleCharacterUnramifiedOutside Φ) :
     (∀ (I : A.Exterior) (x : NumberField.IdeleGroup (𝓞 F) F)

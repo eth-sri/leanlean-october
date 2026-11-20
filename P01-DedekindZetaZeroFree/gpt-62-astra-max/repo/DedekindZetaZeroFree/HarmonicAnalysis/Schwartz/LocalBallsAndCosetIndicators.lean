@@ -15,7 +15,11 @@ namespace DedekindZetaZeroFree
 
 variable (F : Type) [Field F] [NumberField F]
 
-def finiteCompletionBall (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
+section
+
+variable (v : HeightOneSpectrum (𝓞 F))
+
+def finiteCompletionBall (n : ℤ) :
     AddSubgroup (v.adicCompletion F) where
   carrier := {x | Valued.v x ≤ WithZero.exp (-n)}
   zero_mem' := by simp
@@ -28,12 +32,12 @@ def finiteCompletionBall (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
     change Valued.v x ≤ WithZero.exp (-n) at hx
     simpa only [Valuation.map_neg] using hx
 
-@[simp] theorem mem_finiteCompletionBall (v : HeightOneSpectrum (𝓞 F))
+@[simp] theorem mem_finiteCompletionBall
     (n : ℤ) (x : v.adicCompletion F) :
     x ∈ finiteCompletionBall F v n ↔ Valued.v x ≤ WithZero.exp (-n) :=
   Iff.rfl
 
-def localFiniteAnnihilator (v : HeightOneSpectrum (𝓞 F))
+def localFiniteAnnihilator
     (U : AddSubgroup (v.adicCompletion F)) : AddSubgroup (v.adicCompletion F) where
   carrier := {y | ∀ u ∈ U, localFiniteCharacter F v (u * y) = 1}
   zero_mem' := by simp
@@ -44,13 +48,13 @@ def localFiniteAnnihilator (v : HeightOneSpectrum (𝓞 F))
     intro x hx u hu
     rw [mul_neg, AddChar.map_neg_eq_inv, hx u hu, inv_one]
 
-@[simp] theorem mem_localFiniteAnnihilator (v : HeightOneSpectrum (𝓞 F))
+@[simp] theorem mem_localFiniteAnnihilator
     (U : AddSubgroup (v.adicCompletion F)) (y : v.adicCompletion F) :
     y ∈ localFiniteAnnihilator F v U ↔
       ∀ u ∈ U, localFiniteCharacter F v (u * y) = 1 :=
   Iff.rfl
 
-def localSchwartz (v : HeightOneSpectrum (𝓞 F)) :
+def localSchwartz :
     Submodule ℂ (v.adicCompletion F → ℂ) where
   carrier := {f | IsLocallyConstant f ∧ HasCompactSupport f}
   zero_mem' := ⟨IsLocallyConstant.zero, HasCompactSupport.zero⟩
@@ -61,18 +65,20 @@ def localSchwartz (v : HeightOneSpectrum (𝓞 F)) :
     intro c f hf
     exact ⟨hf.1.comp (fun z => c • z), hf.2.smul_left (f := fun _ => c)⟩
 
-@[simp] theorem mem_localSchwartz (v : HeightOneSpectrum (𝓞 F))
+@[simp] theorem mem_localSchwartz
     (f : v.adicCompletion F → ℂ) :
     f ∈ localSchwartz F v ↔ IsLocallyConstant f ∧ HasCompactSupport f :=
   Iff.rfl
 
-def localCosetIndicator (v : HeightOneSpectrum (𝓞 F))
-    (b : v.adicCompletion F) (U : AddSubgroup (v.adicCompletion F)) :
+end
+
+variable (v : HeightOneSpectrum (𝓞 F)) (b : v.adicCompletion F) (U : AddSubgroup (v.adicCompletion F))
+
+def localCosetIndicator :
     v.adicCompletion F → ℂ :=
   {x | x - b ∈ U}.indicator (fun _ => (1 : ℂ))
 
-@[simp] theorem localCosetIndicator_apply (v : HeightOneSpectrum (𝓞 F))
-    (b : v.adicCompletion F) (U : AddSubgroup (v.adicCompletion F))
+@[simp] theorem localCosetIndicator_apply
     (x : v.adicCompletion F) :
     localCosetIndicator F v b U x = if x - b ∈ U then 1 else 0 := by
   simp [localCosetIndicator, Set.indicator]

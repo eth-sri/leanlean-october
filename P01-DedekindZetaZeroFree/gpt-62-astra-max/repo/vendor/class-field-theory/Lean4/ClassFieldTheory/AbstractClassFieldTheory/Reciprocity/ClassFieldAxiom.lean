@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 namespace ClassFormation
@@ -71,22 +69,26 @@ namespace SatisfiesClassFieldAxiom
 
 variable {A : Rep ℤ G}
 
+section
+
+variable (hcf : SatisfiesClassFieldAxiom A) (K : FiniteAbstractField G) (E : FiniteCyclicSubextension K)
+
+include hcf in
 /-- The degree-zero half of the class-field axiom for a bundled cyclic
 extension. -/
-theorem tateHZero_card
-    (hcf : SatisfiesClassFieldAxiom A)
-    (K : FiniteAbstractField G) (E : FiniteCyclicSubextension K) :
+theorem tateHZero_card :
     Nat.card (tateCohomology (E.fixedRepresentation A) 0) =
       (E.toFiniteAbstractExtension.degree : ℕ) :=
   (hcf K E).tateHZero_card
 
+include hcf in
 /-- The degree-minus-one half of the class-field axiom for a bundled cyclic
 extension. -/
-theorem tateHMinusOne_card
-    (hcf : SatisfiesClassFieldAxiom A)
-    (K : FiniteAbstractField G) (E : FiniteCyclicSubextension K) :
+theorem tateHMinusOne_card :
     Nat.card (tateCohomology (E.fixedRepresentation A) (-1)) = 1 :=
   (hcf K E).tateHMinusOne_card
+
+end
 
 /-- The order-one assertion in the class-field axiom gives actual vanishing of
 `H⁻¹(G(L/K), A_L)`. -/
@@ -95,10 +97,9 @@ theorem tateHMinusOne_isZero
     (K : FiniteAbstractField G) (E : FiniteCyclicSubextension K) :
     Limits.IsZero (tateCohomology (E.fixedRepresentation A) (-1)) := by
   let H := tateCohomology (E.fixedRepresentation A) (-1)
-  let : Finite H := (hcf K E).finiteTateHMinusOne
-  have hcard : Nat.card H = 1 := by
-    simpa [H] using hcf.tateHMinusOne_card K E
-  let : Subsingleton H := (Nat.card_eq_one_iff_unique.mp hcard).1
+  let := (hcf K E).finiteTateHMinusOne
+  let := (Nat.card_eq_one_iff_unique.mp (by
+    exact hcf.tateHMinusOne_card K E)).1
   exact ModuleCat.isZero_of_subsingleton H
 
 end SatisfiesClassFieldAxiom

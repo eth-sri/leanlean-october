@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -57,25 +54,19 @@ theorem finitePlaceFieldPrincipalUnits_map_eq_localHigherUnitGroup
         (_root_.finitePlaceCompletionUnitsContinuousMulEquiv v).toMonoidHom =
       RayClass.localHigherUnitGroup v n := by
   let vK := HeightOneSpectrum.adicAbv K v
-  let hvKna : IsNonarchimedean (vK : K → ℝ) :=
-    HeightOneSpectrum.isNonarchimedean_adicAbv K v
-  let : Valued vK.Completion ℝ≥0 :=
+  let :=
     _root_.GlobalClassFieldTheory.Reciprocity.finitePlaceArtinCompletionValued
-      vK hvKna
-  let : ValuativeRel vK.Completion :=
+      vK (HeightOneSpectrum.isNonarchimedean_adicAbv K v)
+  let :=
     _root_.GlobalClassFieldTheory.Reciprocity.finitePlaceLocalArtinCompletionValuativeRel v
-  let eField : vK.Completion ≃+* v.adicCompletion K :=
+  let eField :=
     _root_.finitePlaceCompletionRingEquiv v
-  let eIntegers :
-      𝒪[vK.Completion] ≃+* v.adicCompletionIntegers K :=
+  let eIntegers :=
     _root_.finitePlaceCompletionIntegerRingEquiv v
-  let eIntegralUnits :
-      𝒪[vK.Completion]ˣ ≃*
-        (v.adicCompletionIntegers K).units :=
+  let eIntegralUnits :=
     (Units.mapEquiv eIntegers.toMulEquiv).trans
       (v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType.symm
-  let e :
-      vK.Completionˣ ≃ₜ* (v.adicCompletion K)ˣ :=
+  let e :=
     _root_.finitePlaceCompletionUnitsContinuousMulEquiv v
   have heField (u : 𝒪[vK.Completion]ˣ) :
       (eIntegralUnits u : (v.adicCompletion K)ˣ) =
@@ -83,8 +74,8 @@ theorem finitePlaceFieldPrincipalUnits_map_eq_localHigherUnitGroup
           vK.Completion u) := by
     apply Units.ext
     change
-      eField ((u : 𝒪[vK.Completion]) : vK.Completion) =
-        eField ((u : 𝒪[vK.Completion]) : vK.Completion)
+      eField (u : vK.Completion) =
+        eField (u : vK.Completion)
     rfl
   have hePrincipal (u : 𝒪[vK.Completion]ˣ) :
       RayClass.localHigherUnitMap v n (eIntegralUnits u) = 1 ↔
@@ -93,17 +84,17 @@ theorem finitePlaceFieldPrincipalUnits_map_eq_localHigherUnitGroup
       LocalFieldTheory.mem_principalUnits_iff]
     have hvalue :
         RayClass.localIntegralValue v (eIntegralUnits u) =
-          eIntegers (u : 𝒪[vK.Completion]) := by
+          eIntegers u := by
       change
         ((v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType
             (eIntegralUnits u) :
           (v.adicCompletionIntegers K)ˣ).1 =
-            eIntegers (u : 𝒪[vK.Completion])
+            eIntegers u
       simp [eIntegralUnits]
     rw [hvalue, ← eIntegers.map_one, ← eIntegers.map_sub]
     exact
       ValuationTheory.ringEquiv_mem_maximalIdeal_pow_iff
-        eIntegers n ((u : 𝒪[vK.Completion]) - 1)
+        eIntegers n (u - 1)
   ext x
   constructor
   · rintro ⟨z, ⟨u, hu, rfl⟩, rfl⟩
@@ -112,7 +103,7 @@ theorem finitePlaceFieldPrincipalUnits_map_eq_localHigherUnitGroup
   · intro hx
     obtain ⟨y, hyx, hy⟩ :=
       (RayClass.mem_localHigherUnitGroup_iff v n x).1 hx
-    let u : 𝒪[vK.Completion]ˣ := eIntegralUnits.symm y
+    let u := eIntegralUnits.symm y
     have huy : eIntegralUnits u = y :=
       eIntegralUnits.apply_symm_apply y
     refine
@@ -122,61 +113,11 @@ theorem finitePlaceFieldPrincipalUnits_map_eq_localHigherUnitGroup
     · apply (hePrincipal u).1
       simpa only [huy] using hy
     · calc
-        e (LocalFieldTheory.IsNonarchimedeanLocalField.integerUnitsToFieldUnits
-              vK.Completion u) =
+        _ =
             (eIntegralUnits u : (v.adicCompletion K)ˣ) :=
           (heField u).symm
         _ = y := congrArg Subtype.val huy
         _ = x := hyx
-
-/-- A ray-class higher unit has valuation zero after transport to the
-absolute-value completion used by the finite-place Artin map.  This is the
-pointwise endpoint of
-`finitePlaceFieldPrincipalUnits_map_eq_localHigherUnitGroup`; consumers need
-not reopen the transported principal-unit subgroup. -/
-theorem finitePlaceCompletion_valuationMap_eq_zero_of_mem_localHigherUnitGroup
-    (v : HeightOneSpectrum (𝓞 K)) (n : ℕ)
-    (x : (v.adicCompletion K)ˣ)
-    (hx : x ∈ RayClass.localHigherUnitGroup v n) :
-    let vK := HeightOneSpectrum.adicAbv K v
-    letI : ValuativeRel vK.Completion :=
-      _root_.GlobalClassFieldTheory.Reciprocity.finitePlaceLocalArtinCompletionValuativeRel v
-    letI : IsNonarchimedeanLocalField vK.Completion :=
-      _root_.GlobalClassFieldTheory.Reciprocity.finitePlaceLocalArtinCompletionIsNonarchimedeanLocalField v
-    IsNonarchimedeanLocalField.valuationMap vK.Completion
-        (Additive.ofMul
-          ((_root_.finitePlaceCompletionUnitsContinuousMulEquiv v).symm x)) =
-      0 := by
-  let vK := HeightOneSpectrum.adicAbv K v
-  let : ValuativeRel vK.Completion :=
-    _root_.GlobalClassFieldTheory.Reciprocity.finitePlaceLocalArtinCompletionValuativeRel v
-  let : IsNonarchimedeanLocalField vK.Completion :=
-    _root_.GlobalClassFieldTheory.Reciprocity.finitePlaceLocalArtinCompletionIsNonarchimedeanLocalField v
-  have hxMap :
-      x ∈
-        (LocalFieldTheory.fieldPrincipalUnits vK.Completion n).map
-          (_root_.finitePlaceCompletionUnitsContinuousMulEquiv v).toMonoidHom := by
-    dsimp only [vK]
-    rw [finitePlaceFieldPrincipalUnits_map_eq_localHigherUnitGroup v n]
-    exact hx
-  have hxPrincipal :
-      (_root_.finitePlaceCompletionUnitsContinuousMulEquiv v).symm x ∈
-        LocalFieldTheory.fieldPrincipalUnits vK.Completion n :=
-    (Subgroup.mem_map_equiv
-      (f := (_root_.finitePlaceCompletionUnitsContinuousMulEquiv v).toMulEquiv)).mp
-        hxMap
-  change
-    (_root_.finitePlaceCompletionUnitsContinuousMulEquiv v).symm x ∈
-      (LocalFieldTheory.principalUnits vK.Completion n).map
-        (IsNonarchimedeanLocalField.integerUnitsToFieldUnits
-          vK.Completion) at hxPrincipal
-  rcases hxPrincipal with ⟨u, _hu, hu⟩
-  rw [← hu]
-  dsimp only
-  rw [IsNonarchimedeanLocalField.valuationMap_apply]
-  exact
-    IsNonarchimedeanLocalField.v_integerUnitsToFieldUnits
-      vK.Completion u
 
 variable
     {L : Type}
@@ -221,30 +162,27 @@ theorem
       LocalFieldTheory.fieldPrincipalUnits vK.Completion n ≤
         LocalFieldTheory.localNormSubgroup vK.Completion E := by
   let vK := HeightOneSpectrum.adicAbv K v
-  let hvK : vK.IsNontrivial :=
-    RayClass.adicAbv_isNontrivial v
-  let hvKna : IsNonarchimedean (vK : K → ℝ) :=
+  let hvKna :=
     HeightOneSpectrum.isNonarchimedean_adicAbv K v
   let w := _root_.chosenFinitePlaceExtension (L := L) v
   let hK :=
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) w.1
   let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   let :=
     LocalClassFieldTheory.localizedCompletionGlobalAlgebra vK w
   let :=
     LocalClassFieldTheory.localizedCompletionIsScalarTower vK w
   let E := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK w
-  let : FiniteDimensional vK.Completion E :=
-    AlgebraicNumberTheory.Valuations.localizedCompletionModuleFinite vK hvK w
-  let : Valued vK.Completion ℝ≥0 :=
+  let :=
+    AlgebraicNumberTheory.Valuations.localizedCompletionModuleFinite vK (RayClass.adicAbv_isNontrivial v) w
+  let :=
     _root_.finitePlaceCompletionValued vK hvKna
-  let : ValuativeRel vK.Completion :=
+  let :=
     _root_.finitePlaceCompletionValuativeRel vK hvKna
-  let e :
-      vK.Completionˣ ≃ₜ* (v.adicCompletion K)ˣ :=
+  let e :=
     _root_.finitePlaceCompletionUnitsContinuousMulEquiv v
   have hprincipal :
       (LocalFieldTheory.fieldPrincipalUnits vK.Completion n).map
@@ -252,7 +190,7 @@ theorem
         RayClass.localHigherUnitGroup v n := by
     simpa [vK, hvKna, e] using
       (finitePlaceFieldPrincipalUnits_map_eq_localHigherUnitGroup
-        (K := K) v n)
+         v n)
   rw [← hprincipal]
   change
     (LocalFieldTheory.fieldPrincipalUnits vK.Completion n).map
@@ -263,12 +201,7 @@ theorem
         LocalFieldTheory.localNormSubgroup vK.Completion E
   constructor
   · intro h x hx
-    have hex :
-        e x ∈
-          (LocalFieldTheory.localNormSubgroup
-            vK.Completion E).map e.toMonoidHom :=
-      h ⟨x, hx, rfl⟩
-    obtain ⟨y, hy, hyx⟩ := hex
+    obtain ⟨y, hy, hyx⟩ := (h ⟨x, hx, rfl⟩)
     exact (e.injective hyx) ▸ hy
   · rintro h _ ⟨x, hx, rfl⟩
     exact ⟨x, h hx, rfl⟩
@@ -284,9 +217,9 @@ completion and valuation instance tower confined to this definition body. -/
 noncomputable def ideleClassNormChosenFinitePlaceLocalConductorExponent
     (v : HeightOneSpectrum (𝓞 K)) : ℕ := by
   let vK := HeightOneSpectrum.adicAbv K v
-  let hvK : vK.IsNontrivial :=
+  let hvK :=
     RayClass.adicAbv_isNontrivial v
-  let hvKna : IsNonarchimedean (vK : K → ℝ) :=
+  let hvKna :=
     HeightOneSpectrum.isNonarchimedean_adicAbv K v
   let w := _root_.chosenFinitePlaceExtension (L := L) v
   letI hK :=
@@ -317,9 +250,7 @@ noncomputable def ideleClassNormChosenFinitePlaceLocalConductorExponent
     _root_.finitePlaceCompletionValued vK hvKna
   let vBase : Valuation vK.Completion ℝ≥0 := Valued.v
   letI : vBase.IsNontrivial :=
-    (inferInstance :
-      (NormedField.valuation
-        (K := vK.Completion)).IsNontrivial)
+    inferInstance
   letI : ValuativeRel vK.Completion :=
     _root_.finitePlaceCompletionValuativeRel vK hvKna
   letI : vBase.Compatible :=
@@ -349,7 +280,7 @@ theorem ideleClassNormLocalHigherUnitExponent_eq_localConductorExponent
   let vK := HeightOneSpectrum.adicAbv K v
   let hvK : vK.IsNontrivial :=
     RayClass.adicAbv_isNontrivial v
-  let hvKna : IsNonarchimedean (vK : K → ℝ) :=
+  let hvKna : IsNonarchimedean vK :=
     HeightOneSpectrum.isNonarchimedean_adicAbv K v
   let w := _root_.chosenFinitePlaceExtension (L := L) v
   let hK :=

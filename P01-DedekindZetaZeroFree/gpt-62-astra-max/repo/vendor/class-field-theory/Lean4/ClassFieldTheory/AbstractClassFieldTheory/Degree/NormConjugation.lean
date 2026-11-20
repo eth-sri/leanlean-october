@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 namespace ClassFormation
@@ -48,13 +45,16 @@ theorem conjugateClosedSubgroup_mono [ContinuousMul G]
   intro x hx
   change x ∈ conjugateClosedSubgroup L s at hx
   change x ∈ conjugateClosedSubgroup K s
-  rw [conjugateClosedSubgroup_mem] at hx ⊢
+  simp at hx ⊢
   exact hLK hx
+
+section
+
+variable [ContinuousMul G] (K : ClosedSubgroup G) (s : G)
 
 /-- Conjugation by `s⁻¹` identifies a field subgroup with the subgroup
 representing its right conjugate `K^s`. -/
-def conjugateSubgroupEquiv [ContinuousMul G]
-    (K : ClosedSubgroup G) (s : G) :
+def conjugateSubgroupEquiv :
     K.toSubgroup ≃* (conjugateClosedSubgroup K s).toSubgroup where
   toFun k := ⟨s⁻¹ * k.1 * s, by
     change s⁻¹ * k.1 * s ∈ conjugateClosedSubgroup K s
@@ -75,16 +75,19 @@ def conjugateSubgroupEquiv [ContinuousMul G]
 
 /-- Establishes the identity `(conjugateSubgroupEquiv K s k).1 = s⁻¹ * k.1 * s`. -/
 @[simp]
-theorem conjugateSubgroupEquiv_apply_coe [ContinuousMul G]
-    (K : ClosedSubgroup G) (s : G) (k : K.toSubgroup) :
+theorem conjugateSubgroupEquiv_apply_coe (k : K.toSubgroup) :
     (conjugateSubgroupEquiv K s k).1 = s⁻¹ * k.1 * s :=
   rfl
 
+end
+
+section
+
+variable [ContinuousMul G] (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup) (s : G)
+
 /-- Conjugation carries the subgroup for `L/K` exactly to the subgroup for
 `L^s/K^s`. -/
-theorem map_extensionSubgroup_conjugate [ContinuousMul G]
-    (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup) (s : G) :
+theorem map_extensionSubgroup_conjugate :
     (extensionSubgroup K L hLK).map
         (conjugateSubgroupEquiv K s).toMonoidHom =
       extensionSubgroup (conjugateClosedSubgroup K s)
@@ -94,19 +97,16 @@ theorem map_extensionSubgroup_conjugate [ContinuousMul G]
   constructor
   · rintro ⟨k, hk, rfl⟩
     change s⁻¹ * k.1 * s ∈ conjugateClosedSubgroup L s
-    rw [conjugateClosedSubgroup_mem]
+    simp
     simpa [mul_assoc] using hk
   · intro hx
     refine ⟨(conjugateSubgroupEquiv K s).symm x, ?_, ?_⟩
-    · change s * x.1 * s⁻¹ ∈ L.toSubgroup
-      exact (conjugateClosedSubgroup_mem L s x.1).mp hx
-    · exact (conjugateSubgroupEquiv K s).apply_symm_apply x
+    · exact (conjugateClosedSubgroup_mem L s x.1).mp hx
+    · apply MulEquiv.apply_symm_apply
 
 /-- Conjugation identifies the relative coset spaces even when the
 extension is not normal. -/
-noncomputable def relativeConjugateCosetEquiv [ContinuousMul G]
-    (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup) (s : G) :
+noncomputable def relativeConjugateCosetEquiv :
     (K.toSubgroup ⧸ extensionSubgroup K L hLK) ≃
       ((conjugateClosedSubgroup K s).toSubgroup ⧸
         extensionSubgroup (conjugateClosedSubgroup K s)
@@ -120,10 +120,7 @@ noncomputable def relativeConjugateCosetEquiv [ContinuousMul G]
     let Hs := extensionSubgroup (conjugateClosedSubgroup K s)
       (conjugateClosedSubgroup L s)
       (conjugateClosedSubgroup_mono hLK s)
-    have hmap : H.map e.toMonoidHom = Hs :=
-      map_extensionSubgroup_conjugate K L hLK s
-    change x⁻¹ * y ∈ H ↔ (e x)⁻¹ * e y ∈ Hs
-    rw [← hmap]
+    rw [← (map_extensionSubgroup_conjugate K L hLK s)]
     constructor
     · intro hxy
       refine ⟨x⁻¹ * y, hxy, ?_⟩
@@ -139,13 +136,13 @@ Establishes the identity `relativeConjugateCosetEquiv K L hLK s (QuotientGroup.m
 QuotientGroup.mk (conjugateSubgroupEquiv K s k)`.
 -/
 @[simp]
-theorem relativeConjugateCosetEquiv_mk [ContinuousMul G]
-    (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup) (s : G)
+theorem relativeConjugateCosetEquiv_mk
     (k : K.toSubgroup) :
     relativeConjugateCosetEquiv K L hLK s (QuotientGroup.mk k) =
       QuotientGroup.mk (conjugateSubgroupEquiv K s k) :=
   rfl
+
+end
 
 /-- A conjugate of a Galois extension is Galois. -/
 instance conjugateExtension_normal [ContinuousMul G]
@@ -179,24 +176,21 @@ noncomputable def finiteReciprocityNaturalityConjugation
     (conjugateSubgroupEquiv K s)
     (map_extensionSubgroup_conjugate K L hLK s)
 
+variable [ContinuousMul G] (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup) (s : G)
+
 /--
 Establishes the identity `finiteReciprocityNaturalityConjugation K L hLK s (QuotientGroup.mk k) =
 QuotientGroup.mk (conjugateSubgroupEquiv K s k)`.
 -/
 @[simp]
-theorem finiteReciprocityNaturalityConjugation_mk [ContinuousMul G]
-    (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup) (s : G)
+theorem finiteReciprocityNaturalityConjugation_mk
     [hLnormal : (extensionSubgroup K L hLK).Normal]
     (k : K.toSubgroup) :
     finiteReciprocityNaturalityConjugation K L hLK s (QuotientGroup.mk k) =
-      QuotientGroup.mk (conjugateSubgroupEquiv K s k) := by
-  exact QuotientGroup.congr_mk' _ _ _ _ k
+      QuotientGroup.mk (conjugateSubgroupEquiv K s k) := QuotientGroup.congr_mk' _ _ _ _ k
 
 /-- Conjugation preserves finiteness of the Galois quotient. -/
-theorem finite_conjugateExtension [ContinuousMul G]
-    (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup) (s : G)
+theorem finite_conjugateExtension
     [hLfinite : Finite
       (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
     Finite ((conjugateClosedSubgroup K s).toSubgroup ⧸
@@ -229,19 +223,7 @@ private theorem relativeCosetAction_conjugate
       A.ρ s⁻¹ (relativeCosetAction A K L hLK a q) := by
   refine Quotient.inductionOn' q ?_
   intro k
-  rw [relativeConjugateCosetEquiv_mk, relativeCosetAction_mk,
-    relativeCosetAction_mk, conjugateFixedElement_coe]
-  calc
-    A.ρ (s⁻¹ * k.1 * s) (A.ρ s⁻¹ a.1) =
-        A.ρ ((s⁻¹ * k.1 * s) * s⁻¹) a.1 := by
-      have hm := congrArg (fun φ => φ a.1)
-        (map_mul A.ρ (s⁻¹ * k.1 * s) s⁻¹)
-      exact hm.symm
-    _ = A.ρ (s⁻¹ * k.1) a.1 := by
-      congr 2
-      simp [mul_assoc]
-    _ = A.ρ s⁻¹ (A.ρ k.1 a.1) := by
-      exact congrArg (fun φ => φ a.1) (map_mul A.ρ s⁻¹ k.1)
+  simp [relativeConjugateCosetEquiv_mk]
 
 /-- Relative norms commute with the right conjugation used in the second
 diagram of norm--conjugation naturality:
@@ -267,10 +249,7 @@ theorem relativeNorm_conjugate_apply
   let := Fintype.ofFinite
     (K.toSubgroup ⧸ extensionSubgroup K L hLK)
   let e := relativeConjugateCosetEquiv K L hLK s
-  let conjugateFintype : Fintype
-      ((conjugateClosedSubgroup K s).toSubgroup ⧸
-        extensionSubgroup (conjugateClosedSubgroup K s)
-          (conjugateClosedSubgroup L s) hConj) :=
+  let conjugateFintype :=
     Fintype.ofEquiv (K.toSubgroup ⧸ extensionSubgroup K L hLK) e
   have hconjugateFintype : Fintype.ofFinite
       ((conjugateClosedSubgroup K s).toSubgroup ⧸
@@ -282,20 +261,14 @@ theorem relativeNorm_conjugate_apply
     conjugateFixedElement_coe]
   rw [hconjugateFintype]
   calc
-    ∑ q, relativeCosetAction A (conjugateClosedSubgroup K s)
-        (conjugateClosedSubgroup L s) hConj
-        (conjugateFixedElement A L s a) q =
+    _ =
       ∑ q, relativeCosetAction A (conjugateClosedSubgroup K s)
         (conjugateClosedSubgroup L s) hConj
-        (conjugateFixedElement A L s a) (e q) := by
-          exact (e.sum_comp fun q =>
-            relativeCosetAction A (conjugateClosedSubgroup K s)
+        (conjugateFixedElement A L s a) (e q) := (e.sum_comp (relativeCosetAction A (conjugateClosedSubgroup K s)
               (conjugateClosedSubgroup L s) hConj
-              (conjugateFixedElement A L s a) q).symm
+              (conjugateFixedElement A L s a))).symm
     _ = ∑ q, A.ρ s⁻¹ (relativeCosetAction A K L hLK a q) := by
-      apply Finset.sum_congr rfl
-      intro q _
-      exact relativeCosetAction_conjugate A K L hLK s a q
+      solve_by_elim [Finset.sum_congr, relativeCosetAction_conjugate]
     _ = A.ρ s⁻¹ (∑ q, relativeCosetAction A K L hLK a q) := by
       rw [map_sum]
 

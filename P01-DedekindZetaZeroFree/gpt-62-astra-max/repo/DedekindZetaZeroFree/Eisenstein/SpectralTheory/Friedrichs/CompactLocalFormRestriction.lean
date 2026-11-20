@@ -24,13 +24,13 @@ open KPContSectorCoveredQuotientVocabulary KPContSectorScalarLineAlgebra
 open KPContSectorFixedPushforwardSupport KPContSectorClosedLpSubspace
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
-variable (hR : R.adelicHaar = μG)
-variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
+    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
+    (hR : R.adelicHaar = μG)
+    (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
 
 local notation "Q" => KPContActualCuspRadialFormComparison.Q_U F ζ hζ U R P H μG hμG hR realization
 local notation "jU" => KPContActualCuspRadialFormComparison.j_U F ζ hζ U R P H μG hμG hR realization
@@ -40,34 +40,7 @@ local notation "ActualD" => KPContActualSectorFriedrichsSynthesis.A_U F ζ hζ U
 local notation "ActualV" => KPContActualSectorCotangentL2.V F ζ hζ U R P H
 local notation "BU" => KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR realization
 
-theorem actual_coreTest_dense :
-    DenseRange (KPContActualFormCutoffClosedProduct.graphTestLinear F ζ hζ U R P H μG hμG hR realization) := by
-  intro w
-  rw [mem_closure_iff_seq_limit]
-  have hprops := kp_cont_actual_sector_friedrichs_synthesis F ζ hζ μG hμG U R hR P H realization
-  have hmem : (WithLp.linearEquiv 2 ℂ (HU × ActualV)) (w : WithLp 2 (HU × ActualV)) ∈ (ActualD).closure.graph := w.property
-  obtain ⟨hv, hvv⟩ := (ActualD).closure.mem_graph_iff.mp hmem
-  rw [WithLp.coe_linearEquiv] at hvv
-  have hfd : closedGradientEmbedding ActualD w = (WithLp.ofLp (w : WithLp 2 (HU × ActualV))).1 := rfl
-  have hu : closedGradientEmbedding ActualD w ∈ (ActualD).closure.domain := by
-    rw [hfd, ← hvv.1]
-    exact hv.property
-  obtain ⟨s, hs1, hs2, -⟩ := hprops.form_core ⟨closedGradientEmbedding ActualD w, hu⟩
-  refine ⟨fun n => KPContActualFormCutoffClosedProduct.graphTestLinear F ζ hζ U R P H μG hμG hR realization (s n),
-    fun n => ⟨s n,rfl⟩, ?_⟩
-  rw [tendsto_subtype_rng]
-  have hw : (w : WithLp 2 (HU × ActualV)) =
-      WithLp.toLp 2 (closedGradientEmbedding ActualD w,
-        (ActualD).closure ⟨closedGradientEmbedding ActualD w, hu⟩) := by
-    apply WithLp.ofLp_injective
-    rw [WithLp.ofLp_toLp]
-    apply Prod.ext
-    · exact hfd.symm
-    · rw [← hvv.2]
-      congr 1
-      exact Subtype.ext (hvv.1.trans hfd.symm)
-  rw [hw]
-  exact ((WithLp.prod_continuous_toLp 2 HU ActualV).tendsto _).comp (hs1.prodMk_nhds hs2)
+alias actual_coreTest_dense := DedekindZetaZeroFree.KPContActualFormCutoffClosedProduct.ClosedGradientCutoffProduct.graphTestLinear_dense
 
 private theorem gradient_adjoint_lift
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
@@ -76,29 +49,21 @@ private theorem gradient_adjoint_lift
     ∃ b : H →L[ℂ] ClosedGradientSpace D,
       (closedGradientEmbedding D).comp b = closedGradientResolvent D hclosable ∧ ‖b‖ ≤ 1 := by
   letI : CompleteSpace (ClosedGradientSpace D) := closedGradientSpace_complete D hclosable
-  refine ⟨ContinuousLinearMap.adjoint (𝕜 := ℂ) (E := ClosedGradientSpace D) (F := H)
+  refine ⟨ContinuousLinearMap.adjoint
     (closedGradientEmbedding D), rfl, ?_⟩
   apply ContinuousLinearMap.opNorm_le_bound _ zero_le_one
   intro f
-  simpa only [one_mul] using closedGradientFriedrichsOperator_riesz_estimate D hdense hclosable f
+  simpa using closedGradientFriedrichsOperator_riesz_estimate D hdense hclosable f
 
 instance form_complete : CompleteSpace Q :=
   (kp_cont_actual_sector_test_friedrichs F ζ hζ μG hμG U R hR P H realization).friedrichs.form_hilbert
 
 theorem formLift_exists : ∃ b : HU →L[ℂ] Q, (jU).comp b = BU ∧ ‖b‖ ≤ 1 := by
-  have hdense :
-      Dense ((KPContActualSectorFriedrichsSynthesis.A_U F ζ hζ U R P H μG hμG hR
-        realization).domain : Set (KPContSectorClosedLpSubspace.H F ζ hζ R U)) :=
-    (kp_cont_actual_sector_test_friedrichs F ζ hζ μG hμG U R hR P H
-      realization).friedrichs.gradient_dense
-  have hclosable :
-      (KPContActualSectorFriedrichsSynthesis.A_U F ζ hζ U R P H μG hμG hR
-        realization).IsClosable :=
-    (kp_cont_actual_sector_test_friedrichs F ζ hζ μG hμG U R hR P H
-      realization).friedrichs.gradient_closable
   obtain ⟨b, hb1, hb2⟩ := gradient_adjoint_lift
     (KPContActualSectorFriedrichsSynthesis.A_U F ζ hζ U R P H μG hμG hR realization)
-    hdense hclosable
+    ((kp_cont_actual_sector_test_friedrichs F ζ hζ μG hμG U R hR P H
+      realization).friedrichs.gradient_dense) ((kp_cont_actual_sector_test_friedrichs F ζ hζ μG hμG U R hR P H
+      realization).friedrichs.gradient_closable)
   exact ⟨b, hb1, hb2⟩
 
 def b_U : HU →L[ℂ] Q :=
@@ -133,26 +98,7 @@ def ChartFactorization (A : Localizers F ζ hζ U R P H K hK) : Prop :=
       ∑ i : Fin A.count, (A.Rmap i).comp
         ((KPCubeGraphRellich.projection (A.chart i).n (A.chart i).a).comp (L i))
 
- theorem actual_jet_add (n : ℕ) (a : ℝ) (f g : KPCubeAverage.Space n → ℂ)
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hg : ContDiff ℝ (⊤ : ℕ∞) g) :
-    KPCubeGraphRellich.smoothJet n a (f + g) (hf.add hg) =
-      KPCubeGraphRellich.smoothJet n a f hf + KPCubeGraphRellich.smoothJet n a g hg := by
-  open KPCubeGraphRellich KPCubeAverage in
-    rw [smoothJet, smoothJet, smoothJet, WithLp.ext_iff]
-    simp only [WithLp.ofLp_toLp, WithLp.ofLp_add, Prod.mk_add_mk]
-    refine Prod.ext ?_ ?_
-    · rw [← MemLp.toLp_add (smooth_memLp n a f hf) (smooth_memLp n a g hg)]
-    · rw [← WithLp.toLp_add, WithLp.ext_iff, WithLp.ofLp_toLp]
-      funext j
-      simp only [Pi.add_apply]
-      rw [← MemLp.toLp_add (smooth_coordinate_memLp n a f hf j)
-        (smooth_coordinate_memLp n a g hg j)]
-      apply MemLp.toLp_congr
-      apply Filter.EventuallyEq.of_eq
-      funext x
-      simp only [coordinateDerivative, Pi.add_apply]
-      rw [fderiv_add (hf.differentiable (by simp) x) (hg.differentiable (by simp) x),
-        ContinuousLinearMap.add_apply]
+ alias actual_jet_add := DedekindZetaZeroFree.KPCubeGraphRellich.GraphRellichCompactness.smoothJet_add
 
  theorem actual_jet_smul (n : ℕ) (a : ℝ) (f : KPCubeAverage.Space n → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (c : ℂ) :
@@ -179,7 +125,11 @@ def ChartFactorization (A : Localizers F ζ hζ U R P H K hK) : Prop :=
   subst g
   rfl
 
- theorem actualLocalCoefficient_add (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count)
+ section
+
+variable (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count)
+
+theorem actualLocalCoefficient_add
     (f g : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H) :
     actualLocalCoefficient F ζ hζ U R P H K hK A i (f + g) =
       actualLocalCoefficient F ζ hζ U R P H K hK A i f +
@@ -188,13 +138,15 @@ def ChartFactorization (A : Localizers F ζ hζ U R P H K hK) : Prop :=
   simp only [actualLocalCoefficient, map_add, Pi.add_apply, Submodule.coe_add]
   exact mul_add _ _ _
 
- theorem actualLocalCoefficient_smul (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count)
+ theorem actualLocalCoefficient_smul
     (c : ℂ) (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H) :
     actualLocalCoefficient F ζ hζ U R P H K hK A i (c • f) =
       c • actualLocalCoefficient F ζ hζ U R P H K hK A i f := by
   funext x
   simp only [actualLocalCoefficient, map_smul, Pi.smul_apply, Submodule.coe_smul, smul_eq_mul]
   ring
+
+end
 
 def actualCoreJet (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count) :
     KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H →ₗ[ℂ]
@@ -224,18 +176,15 @@ private theorem actual_test_representative (f : KPContActualSectorSmoothTestModu
     ∃ s : BorelL2Sections F ζ hζ U R P H,
       sectorLineIsometry F ζ hζ U R P H (KPContActualSectorTestEmbeddings.iota f) = mk F ζ hζ U R P H s ∧
       s.val = KPContActualSectorSmoothTestModules.scalarSections f := by
-  have hprops := kp_cont_actual_sector_smooth_test_modules F ζ hζ μG hμG U R hR P H realization
-  have hcont := (kp_cont_actual_sector_test_friedrichs F ζ hζ μG hμG U R hR P H realization).embeddings.scalar_continuous f
-  let fB : BorelL2Scalars F ζ hζ U R := ⟨KPContActualSectorSmoothTestModules.scalarCovered f, hcont.measurable, KPContActualSectorTestEmbeddings.scalar_memLp f⟩
-  let s := borelS F ζ hζ U R P H fB
-  refine ⟨s, ?_, ?_⟩
+  let fB : BorelL2Scalars F ζ hζ U R := ⟨KPContActualSectorSmoothTestModules.scalarCovered f, ((kp_cont_actual_sector_test_friedrichs F ζ hζ μG hμG U R hR P H realization).embeddings.scalar_continuous f).measurable, KPContActualSectorTestEmbeddings.scalar_memLp f⟩
+  refine ⟨(borelS F ζ hζ U R P H fB), ?_, ?_⟩
   · have he : scalarEmbedding F ζ hζ U R P H fB = KPContActualSectorTestEmbeddings.iota f := by
       apply Subtype.ext
       rw [scalarEmbedding_coe]
       rfl
     rw [← he]
     exact sectorLineIsometry_toSector F ζ hζ U R P H fB
-  · exact hprops.covered_realization f
+  · exact (kp_cont_actual_sector_smooth_test_modules F ζ hζ μG hμG U R hR P H realization).covered_realization f
 
 private theorem actualCoreJet_projection_test (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count)
     (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H) :
@@ -244,11 +193,9 @@ private theorem actualCoreJet_projection_test (A : Localizers F ζ hζ U R P H K
       (actualLocalCoefficient_smooth F ζ hζ U R P H μG hμG hR realization K hK A i f)).toLp _ = A.T i (KPContActualSectorTestEmbeddings.iota f) := by
   obtain ⟨s,hs,hsval⟩ := actual_test_representative F ζ hζ U R P H μG hμG hR realization f
   apply Lp.ext
-  have ht := A.T_formula i (KPContActualSectorTestEmbeddings.iota f) s hs
-  have hg := (KPCubeAverage.smooth_memLp (A.chart i).n (A.chart i).a
-      (actualLocalCoefficient F ζ hζ U R P H K hK A i f)
-      (actualLocalCoefficient_smooth F ζ hζ U R P H μG hμG hR realization K hK A i f)).coeFn_toLp
-  filter_upwards [ht,hg] with x htx hgx
+  filter_upwards [(A.T_formula i (KPContActualSectorTestEmbeddings.iota f) s hs),((KPCubeAverage.smooth_memLp (A.chart i).n (A.chart i).a
+    (actualLocalCoefficient F ζ hζ U R P H K hK A i f)
+    (actualLocalCoefficient_smooth F ζ hζ U R P H μG hμG hR realization K hK A i f)).coeFn_toLp)] with x htx hgx
   rw [hgx, htx]
   rw [hsval]
   rfl
@@ -270,10 +217,6 @@ theorem actual_form_graph_lift (A : Localizers F ζ hζ U R P H K hK) :
       (KPCubeGraphRellich.projection (A.chart i).n (A.chart i).a)
       ((A.T i).comp (jU)) (by
         intro f
-        change (KPCubeAverage.smooth_memLp (A.chart i).n (A.chart i).a
-          (actualLocalCoefficient F ζ hζ U R P H K hK A i f)
-          (actualLocalCoefficient_smooth F ζ hζ U R P H μG hμG hR realization K hK A i f)).toLp _ =
-            A.T i (KPContActualSectorTestEmbeddings.iota f)
         exact actualCoreJet_projection_test F ζ hζ U R P H μG hμG hR realization K hK A i f)
     exact ⟨L,hL⟩
   choose L hL using hext
@@ -286,8 +229,7 @@ theorem restriction_factorization (A : Localizers F ζ hζ U R P H K hK) :
   simp_rw [hL]
   apply ContinuousLinearMap.ext
   intro u
-  have hrec := congrArg (fun T : HU →L[ℂ] H_K F ζ hζ U R P H K => T (jU u)) A.reconstruction
-  simpa [r_K, ContinuousLinearMap.sum_apply, ContinuousLinearMap.comp_apply] using hrec
+  simpa [r_K, ContinuousLinearMap.sum_apply, ContinuousLinearMap.comp_apply] using (congrArg (fun T : HU →L[ℂ] H_K F ζ hζ U R P H K => T (jU u)) A.reconstruction)
 
 theorem restriction_isCompactOperator :
     IsCompactOperator (r_K F ζ hζ U R P H μG hμG hR realization K hK) := by
@@ -298,12 +240,8 @@ theorem restriction_isCompactOperator :
   rw [hfactor]
   apply (compactOperator (RingHom.id ℂ) _ _).sum_mem
   intro i _
-  have hJ := KPCubeGraphRellich.projection_isCompactOperator
-    (A.chart i).n (A.chart i).positive_n (A.chart i).a (A.chart i).positive_a
-  have hJL : IsCompactOperator
-      ((KPCubeGraphRellich.projection (A.chart i).n (A.chart i).a).comp (L i)) :=
-    hJ.comp_clm (L i)
-  exact hJL.continuous_comp (A.Rmap i).continuous
+  exact ((KPCubeGraphRellich.projection_isCompactOperator
+    (A.chart i).n (A.chart i).positive_n (A.chart i).a (A.chart i).positive_a).comp_clm (L i)).continuous_comp (A.Rmap i).continuous
 
 def SmoothScalar (ρ : X_U F ζ hζ U → ℂ) : Prop :=
   Continuous ρ ∧ ∀ a : KPContActualSectorSmoothTestModules.ActualChart (U := U) (H := H),
@@ -312,7 +250,7 @@ def SmoothScalar (ρ : X_U F ζ hζ U → ℂ) : Prop :=
 
 section BoundedMultiplier
 variable (ρ : X_U F ζ hζ U → ℂ) (hρ : Continuous ρ) (B : ℝ) (hB : 0 ≤ B)
-variable (hbρ : ∀ x, ‖ρ x‖ ≤ B)
+    (hbρ : ∀ x, ‖ρ x‖ ≤ B)
  def weight (x : CoveredSpherical F ζ hζ U) : ℂ := ρ (q F ζ hζ U x)
 include hρ in
 private theorem weight_cont : Continuous (weight F ζ hζ U ρ) :=
@@ -320,9 +258,7 @@ private theorem weight_cont : Continuous (weight F ζ hζ U ρ) :=
 include hρ B hbρ in
  theorem mulMem (f : CoveredL2 F ζ hζ R U) :
     MemLp (fun x => weight F ζ hζ U ρ x * f x) 2 (coveredMeasure F ζ hζ R U) := by
-  have hm : AEStronglyMeasurable (weight F ζ hζ U ρ) (coveredMeasure F ζ hζ R U) :=
-    (weight_cont F ζ hζ U ρ hρ).measurable.aestronglyMeasurable
-  exact (memLp_top_of_bound hm B (Filter.Eventually.of_forall fun x => hbρ _)).mul (Lp.memLp f)
+  exact (memLp_top_of_bound ((weight_cont F ζ hζ U ρ hρ).measurable.aestronglyMeasurable) B (Filter.Eventually.of_forall fun x => hbρ _)).mul (Lp.memLp f)
  def mulLinear : CoveredL2 F ζ hζ R U →ₗ[ℂ] CoveredL2 F ζ hζ R U where
   toFun f := (mulMem F ζ hζ U R ρ hρ B hbρ f).toLp _
   map_add' f g := by
@@ -354,7 +290,7 @@ include hρ B hbρ in
          _ = _ := by
            change eLpNorm ((B : ℂ) • (fun x => f x)) 2 (coveredMeasure F ζ hζ R U) = _
            rw [eLpNorm_const_smul, ← ofReal_norm,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg hB]
-  have hr := ENNReal.toReal_mono (ENNReal.mul_ne_top (ENNReal.ofReal_ne_top (r := B)) (Lp.memLp f).eLpNorm_ne_top) hh
+  have hr := ENNReal.toReal_mono (ENNReal.mul_ne_top (ENNReal.ofReal_ne_top) (Lp.memLp f).eLpNorm_ne_top) hh
   rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal hB] at hr
   exact hr
 include hρ B hB hbρ in
@@ -368,9 +304,7 @@ include hρ B hB hbρ in
   rw [mem_H_iff]
   intro ε
   have ha := mulCLM_ae F ζ hζ U R ρ hρ B hB hbρ u.val
-  have haz := (KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε).quasiMeasurePreserving.ae ha
-  have hu := (mem_H_iff F ζ hζ R U u.val).mp u.property ε
-  filter_upwards [ha,haz,hu] with x h1 h2 h3
+  filter_upwards [ha,((KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε).quasiMeasurePreserving.ae ha),((mem_H_iff F ζ hζ R U u.val).mp u.property ε)] with x h1 h2 h3
   change mulCLM F ζ hζ U R ρ hρ B hB hbρ u.val (z F ζ hζ U ε x) =
     (chi F ζ hζ ε : ℂ) * mulCLM F ζ hζ U R ρ hρ B hB hbρ u.val x
   rw [h2,h1]
@@ -444,11 +378,10 @@ theorem restriction_mask_ae (K : Set (X_U F ζ hζ U)) (hK : MeasurableSet K)
     rw [← hs,lineRestriction_mk]
     rfl
   rw [hm]
-  have ha := (representative_memLp F ζ hζ U R P H (mask F ζ hζ U R P H K hK s)).coeFn_toLp
   have hb := (representative_memLp F ζ hζ U R P H s).coeFn_toLp
   rw [← sectorLineIsometry_symm_mk, hus] at hb
   rw [sectorLineIsometry_symm_mk]
-  filter_upwards [ha,hb] with x hax hbx
+  filter_upwards [((representative_memLp F ζ hζ U R P H (mask F ζ hζ U R P H K hK s)).coeFn_toLp),hb] with x hax hbx
   rw [hax]
   rw [congrFun (scalar_mask_formula F ζ hζ U R P H K hK s) x]
   by_cases hx : q F ζ hζ U x ∈ K
@@ -460,25 +393,11 @@ variable (ρ : X_U F ζ hζ U → ℂ)
 
 structure MultiplierData where
   M_ρ : HU →L[ℂ] HU
-  m_ρ_K : H_K F ζ hζ U R P H (tsupport ρ) →L[ℂ] HU
   global_formula : ∀ u : HU,
     ((M_ρ u).val : KPContSectorCoveredQuotientVocabulary.CoveredSpherical F ζ hζ U → ℂ)
       =ᵐ[KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R U]
         (fun x => ρ (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x) * u.val x)
-  localized_formula : ∀ v : H_K F ζ hζ U R P H (tsupport ρ),
-    ((m_ρ_K v).val : KPContSectorCoveredQuotientVocabulary.CoveredSpherical F ζ hζ U → ℂ)
-      =ᵐ[KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R U]
-        (fun x => ρ (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x) *
-          (((sectorLineIsometry F ζ hζ U R P H).symm
-            (zeroExtension F ζ hζ U R P H (tsupport ρ)
-              (isClosed_tsupport ρ).measurableSet v)).val x))
-  multiplication_factor : M_ρ = m_ρ_K.comp
-    (res_K F ζ hζ U R P H (tsupport ρ) (isClosed_tsupport ρ).measurableSet)
 
-  resolvent_factor : ∀ hρ : HasCompactSupport ρ,
-    M_ρ.comp BU = m_ρ_K.comp
-      ((r_K F ζ hζ U R P H μG hμG hR realization (tsupport ρ) hρ).comp
-        (b_U F ζ hζ U R P H μG hμG hR realization))
   localized_compact : IsCompactOperator (M_ρ.comp BU)
 
 theorem multiplierData_nonempty (hρ : SmoothScalar F ζ hζ U R P H ρ)
@@ -507,23 +426,6 @@ theorem multiplierData_nonempty (hρ : SmoothScalar F ζ hζ U R P H ρ)
     fun _ => rfl
   have hglob : ∀ u : HU, ((M u).val : CoveredSpherical F ζ hζ U → ℂ)
       =ᵐ[coveredMeasure F ζ hζ R U] (fun x => ρ (q F ζ hζ U x) * u.val x) := fun u => hM u
-  have hloc : ∀ v : H_K F ζ hζ U R P H (tsupport ρ),
-      ((m v).val : CoveredSpherical F ζ hζ U → ℂ)
-      =ᵐ[coveredMeasure F ζ hζ R U]
-        (fun x => ρ (q F ζ hζ U x) *
-          (((sectorLineIsometry F ζ hζ U R P H).symm
-            (zeroExtension F ζ hζ U R P H (tsupport ρ)
-              (isClosed_tsupport ρ).measurableSet v)).val x)) := by
-    intro v
-    have h := hM (ext v)
-    rw [hext_apply v] at h
-    change ((M (ext v)).val : CoveredSpherical F ζ hζ U → ℂ)
-      =ᵐ[coveredMeasure F ζ hζ R U]
-        (fun x => ρ (q F ζ hζ U x) *
-          (((sectorLineIsometry F ζ hζ U R P H).symm
-            (zeroExtension F ζ hζ U R P H (tsupport ρ)
-              (isClosed_tsupport ρ).measurableSet v)).val x))
-    exact h
   have hmul : M = m.comp
       (res_K F ζ hζ U R P H (tsupport ρ) (isClosed_tsupport ρ).measurableSet) := by
     apply ContinuousLinearMap.ext
@@ -556,7 +458,7 @@ theorem multiplierData_nonempty (hρ : SmoothScalar F ζ hζ U R P H ρ)
     rw [hresK]
     simp only [ContinuousLinearMap.comp_assoc,
       (b_U_properties F ζ hζ U R P H μG hμG hR realization).1]
-  refine ⟨⟨M, m, hglob, hloc, hmul, hres, ?_⟩⟩
+  refine ⟨⟨M, hglob, ?_⟩⟩
   rw [hres hcρ]
   exact ((restriction_isCompactOperator F ζ hζ U R P H μG hμG hR realization
     (tsupport ρ) hcρ).comp_clm (b_U F ζ hζ U R P H μG hμG hR realization)).continuous_comp

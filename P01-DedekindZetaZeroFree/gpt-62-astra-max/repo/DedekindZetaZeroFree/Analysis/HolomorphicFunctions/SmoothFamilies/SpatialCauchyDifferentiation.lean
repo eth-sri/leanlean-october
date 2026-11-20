@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Analysis.HolomorphicFunctions.SmoothFamilies.ScalarMultiplication
 
 public import DedekindZetaZeroFree.Analysis.HolomorphicFunctions.SmoothFamilies.CompactJetTopology
 
@@ -37,23 +38,13 @@ private lemma list_index {n : ℕ} (l : List (Fin n)) :
     ← List.sum_toFinset _ (List.nodup_finRange n)]
   simp [α, Function.comp_def, List.count_replicate]
 
+alias SpatialCauchyDifferentiation.list_index := list_index
+
 private lemma list_sub {n : ℕ} (B : LocalBall n) (u v : Space n → ℂ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier)
     (hv : ContDiffOn ℝ (⊤ : ℕ∞) v B.carrier) (l : List (Fin n)) :
     EqOn (coordinateDerivativeList l (fun y => u y - v y))
-      (fun y => coordinateDerivativeList l u y - coordinateDerivativeList l v y) B.carrier := by
-  induction l with
-  | nil => intro x hx; rfl
-  | cons i l ih =>
-    intro x hx
-    have he := (eventuallyEq_of_mem (Metric.isOpen_ball.mem_nhds hx) ih).fderiv_eq (𝕜 := ℝ)
-    have hd (w : Space n → ℂ) (hw : ContDiffOn ℝ (⊤ : ℕ∞) w B.carrier) :=
-      ((WeakJets.Raw.coordinateDerivativeList_smooth_on l hw).differentiableOn (by simp)).differentiableAt
-        (Metric.isOpen_ball.mem_nhds hx)
-    simp only [coordinateDerivativeList]
-    rw [he]
-    exact congrArg (fun L : Space n →L[ℝ] ℂ => L (EuclideanSpace.single i 1))
-      (fderiv_sub (hd u hu) (hd v hv))
+      (fun y => coordinateDerivativeList l u y - coordinateDerivativeList l v y) B.carrier := by apply @DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly.finite_coordinate_derivative_sub <;> assumption
 
 private lemma list_family_continuous {n : ℕ} (B : LocalBall n)
     (O : Set ℂ) (f : ℂ → Space n → ℂ)
@@ -80,20 +71,6 @@ private lemma list_family_continuous {n : ℕ} (B : LocalBall n)
   rw [WeakJets.Raw.coordinateDerivativeList_perm_on hp
     ((hf z z.property).sub (hf z₀ z₀.property)) (hKB x.property)]
   exact hb z z.property hz α x
-
-private lemma joint_list {n : ℕ} (B : LocalBall n) (O : Set ℂ)
-    (f : ℂ → Space n → ℂ)
-    (hf : ∀ z ∈ O, ContDiffOn ℝ (⊤ : ℕ∞) (f z) B.carrier)
-    (hj : Raw.JetContinuousOn B f O) (K : Set (Space n))
-    (hK : IsCompact K) (hKB : K ⊆ B.carrier) (l : List (Fin n))
-    (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hc : Metric.closedBall c ρ ⊆ O) :
-    Continuous (fun p : K × ℝ => coordinateDerivativeList l (f (circleMap c ρ p.2)) p.1) := by
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
-  have hz : ∀ t, circleMap c ρ t ∈ O := fun t =>
-    hc (Metric.sphere_subset_closedBall (circleMap_mem_sphere c hρ.le t))
-  have hh := (list_family_continuous B O f hf hj K hK hKB l).comp
-    ((continuous_circleMap c ρ).subtype_mk hz)
-  exact continuous_eval.comp ((hh.comp continuous_snd).prodMk continuous_fst)
 
 private lemma compact_integral_deriv {n : ℕ} (B : LocalBall n)
     (g : List (Fin n) → Space n → ℝ → ℂ)
@@ -180,7 +157,7 @@ theorem coefficient_smooth_and_derivatives {n : ℕ} (B : LocalBall n)
     intro he
     rw [he, norm_zero] at hh
     linarith
-  let k : ℝ → ℂ := fun t => (2 * Real.pi * Complex.I : ℂ)⁻¹ *
+  let k := fun t => (2 * Real.pi * Complex.I : ℂ)⁻¹ *
     deriv (circleMap c ρ) t * (circleMap c ρ t - c)⁻¹ ^ j * (circleMap c ρ t - c)⁻¹
   have hk : Continuous k := by
     dsimp [k]
@@ -192,20 +169,22 @@ theorem coefficient_smooth_and_derivatives {n : ℕ} (B : LocalBall n)
         exact (continuous_circleMap 0 ρ).mul continuous_const)
       · exact (((continuous_circleMap c ρ).sub continuous_const).inv₀ hn).pow j
     · exact ((continuous_circleMap c ρ).sub continuous_const).inv₀ hn
-  let g : List (Fin n) → Space n → ℝ → ℂ := fun l x t =>
+  let g := fun l x t =>
     k t * coordinateDerivativeList l (f (circleMap c ρ t)) x
-  let J : List (Fin n) → Space n → ℂ := fun l x => ∫ t in Icc 0 (2 * Real.pi), g l x t
+  let J := fun l x => ∫ t in Icc 0 (2 * Real.pi), g l x t
   have hs (l : List (Fin n)) (t : ℝ) : ContDiffOn ℝ (⊤ : ℕ∞) (fun x => g l x t) B.carrier :=
     contDiffOn_const.mul (WeakJets.Raw.coordinateDerivativeList_smooth_on l (hf _ (hz t)))
   have hd (l : List (Fin n)) (i : Fin n) (x : Space n) (t : ℝ) (hx : x ∈ B.carrier) :
       fderiv ℝ (fun y => g l y t) x (EuclideanSpace.single i 1) = g (i :: l) x t := by
-    have hh := ((WeakJets.Raw.coordinateDerivativeList_smooth_on l (hf _ (hz t))).differentiableOn
-      (by simp)).differentiableAt (Metric.isOpen_ball.mem_nhds hx)
-    have he := (hh.hasFDerivAt.const_smul (k t)).fderiv
-    exact congrArg (fun L : Space n →L[ℝ] ℂ => L (EuclideanSpace.single i 1)) he
+    exact congrArg (fun L : Space n →L[ℝ] ℂ => L (EuclideanSpace.single i 1)) (((((WeakJets.Raw.coordinateDerivativeList_smooth_on l (hf _ (hz t))).differentiableOn
+      (by simp)).differentiableAt (Metric.isOpen_ball.mem_nhds hx)).hasFDerivAt.const_smul (k t)).fderiv)
   have hj (K : Set (Space n)) (hK : IsCompact K) (hKB : K ⊆ B.carrier) (l : List (Fin n)) :
       Continuous (fun p : K × ℝ => g l p.1 p.2) :=
-    (hk.comp continuous_snd).mul (joint_list B O f hf hjets K hK hKB l c ρ hρ hclosed)
+    (hk.comp continuous_snd).mul (by
+      letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+      exact continuous_eval.comp ((((list_family_continuous B O f hf hjets K hK hKB l).comp
+        ((continuous_circleMap c ρ).subtype_mk (fun t =>
+          hclosed (Metric.sphere_subset_closedBall (circleMap_mem_sphere c hρ.le t))))).comp continuous_snd).prodMk continuous_fst))
   have hJd (l : List (Fin n)) (x : Space n) (hx : x ∈ B.carrier) :
       HasFDerivAt (J l) (assemble (fun i => J (i :: l) x)) x :=
     compact_integral_deriv B g hs hd hj l hx
@@ -214,7 +193,7 @@ theorem coefficient_smooth_and_derivatives {n : ℕ} (B : LocalBall n)
     | zero =>
       exact contDiffOn_zero.mpr (fun x hx => (hJd l x hx).differentiableAt.continuousAt.continuousWithinAt)
     | succ m ih =>
-      rw [show ((m + 1 : ℕ) : WithTop ℕ∞) = (m : WithTop ℕ∞) + 1 by simp,
+      rw [show ((m + 1 : ℕ) : WithTop ℕ∞) = m + 1 by simp,
         contDiffOn_succ_iff_fderiv_of_isOpen (show IsOpen B.carrier from Metric.isOpen_ball)]
       refine ⟨fun x hx => (hJd l x hx).differentiableAt.differentiableWithinAt, by simp, ?_⟩
       have hh : ContDiffOn ℝ m (fun x => assemble (fun i => J (i :: l) x)) B.carrier := by
@@ -227,9 +206,8 @@ theorem coefficient_smooth_and_derivatives {n : ℕ} (B : LocalBall n)
     | nil => intro x hx; rfl
     | cons i l ih =>
       intro x hx
-      have he := (eventuallyEq_of_mem (Metric.isOpen_ball.mem_nhds hx) ih).fderiv_eq (𝕜 := ℝ)
       simp only [coordinateDerivativeList]
-      rw [he, (hJd l x hx).fderiv]
+      rw [((eventuallyEq_of_mem (Metric.isOpen_ball.mem_nhds hx) ih).fderiv_eq), (hJd l x hx).fderiv]
       simp [assemble, EuclideanSpace.single_apply, Pi.single_apply]
   have hformula (l : List (Fin n)) (x : Space n) :
       (cauchyPowerSeries (fun z => coordinateDerivativeList l (f z) x) c ρ j) (fun _ => (1 : ℂ)) = J l x := by

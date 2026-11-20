@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -33,13 +31,15 @@ variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
+section
+
+variable (D : DegreeData G) (K : FiniteResidueAbstractField D) (L : GaloisSubextension K.field)
+    (hTot : L.IsTotallyRamified D) (q : L.extensionQuotient)
+
+include hTot in
 /-- Every automorphism of a totally ramified Galois extension has a
 Frobenius lift of exponent one. -/
-theorem exists_degreeOneFrobeniusLiftOfTotallyRamified
-    (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : GaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+theorem exists_degreeOneFrobeniusLiftOfTotallyRamified :
     ∃ σ : D.FrobeniusElements K L.field L.below,
       D.frobeniusExponent K L.field L.below σ = 1 ∧
       L.extensionQuotientMulEquiv.symm
@@ -69,35 +69,36 @@ theorem exists_degreeOneFrobeniusLiftOfTotallyRamified
     change D.degree s.1 * (D.degree l)⁻¹ = 1
     rw [← hlDegree]
     simp
+  let ofAdd₀ := Multiplicative.ofAdd (1 : ZHat)
   have htDegree : D.extensionNormalizedDegree K L.field L.below t =
-      (Multiplicative.ofAdd (1 : ZHat) : ZHatMul) ^ (1 : ℕ) := by
+      (ofAdd₀ : ZHatMul) ^ (1 : ℕ) := by
     change D.extensionNormalizedDegree K L.field L.below
         (QuotientGroup.mk i * φ.1) = _
     rw [map_mul, D.extensionNormalizedDegree_mk, hiDegree, one_mul]
     calc
       D.extensionNormalizedDegree K L.field L.below φ.1 =
-          (Multiplicative.ofAdd (1 : ZHat) : ZHatMul) ^
+          (ofAdd₀ : ZHatMul) ^
               D.frobeniusExponent K L.field L.below φ :=
         D.extensionNormalizedDegree_frobenius_eq_pow K L.field L.below φ
-      _ = (Multiplicative.ofAdd (1 : ZHat) : ZHatMul) ^ (1 : ℕ) := by
+      _ = (ofAdd₀ : ZHatMul) ^ (1 : ℕ) := by
         rw [D.frobeniusExponent_chosenDegreeOneFrobeniusElement]
   let σ : D.FrobeniusElements K L.field L.below :=
     ⟨t, 1, Nat.one_pos, htDegree⟩
   have hσExponent : D.frobeniusExponent K L.field L.below σ = 1 := by
     apply proCIntegerOne_pow_nat_injective
     calc
-      (Multiplicative.ofAdd (1 : ZHat) : ZHatMul) ^
+      (ofAdd₀ : ZHatMul) ^
             D.frobeniusExponent K L.field L.below σ =
           D.extensionNormalizedDegree K L.field L.below σ.1 :=
         (D.extensionNormalizedDegree_frobenius_eq_pow
           K L.field L.below σ).symm
-      _ = (Multiplicative.ofAdd (1 : ZHat) : ZHatMul) ^ (1 : ℕ) :=
+      _ = (ofAdd₀ : ZHatMul) ^ (1 : ℕ) :=
         htDegree
   refine ⟨σ, hσExponent, ?_⟩
   refine L.extensionQuotientMulEquiv.symm_apply_eq.mpr ?_
   change D.extensionRestriction K.field L.field L.below
       (QuotientGroup.mk i * φ.1) = qRaw
-  rw [map_mul, D.extensionRestriction_mk]
+  simp
   have hiRestriction :
       (QuotientGroup.mk i :
         K.field.toSubgroup ⧸ extensionSubgroup K.field L.field L.below) =
@@ -119,56 +120,39 @@ theorem exists_degreeOneFrobeniusLiftOfTotallyRamified
 /-- In a totally ramified finite Galois extension every finite automorphism
 has a degree-one Frobenius lift.  This is the element denoted
 `\tilde\sigma = \sigma\varphi_L`. -/
-noncomputable def chosenDegreeOneFrobeniusLiftOfTotallyRamified
-    (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : GaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+noncomputable def chosenDegreeOneFrobeniusLiftOfTotallyRamified :
     D.FrobeniusElements K L.field L.below :=
   Classical.choose
     (D.exists_degreeOneFrobeniusLiftOfTotallyRamified
       K L hTot q)
 /-- The chosen Frobenius lift for a totally ramified extension has exponent one. -/
 @[simp]
-theorem frobeniusExponent_chosenDegreeOneFrobeniusLiftOfTotallyRamified
-    (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : GaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+theorem frobeniusExponent_chosenDegreeOneFrobeniusLiftOfTotallyRamified :
     D.frobeniusExponent K L.field L.below
       (D.chosenDegreeOneFrobeniusLiftOfTotallyRamified
-        K L hTot q) = 1 := by
-  exact (Classical.choose_spec
+        K L hTot q) = 1 := (Classical.choose_spec
     (D.exists_degreeOneFrobeniusLiftOfTotallyRamified
       K L hTot q)).1
 /-- The chosen degree-one Frobenius lift restricts to the prescribed automorphism. -/
 @[simp]
-theorem frobeniusRestriction_chosenDegreeOneFrobeniusLiftOfTotallyRamified
-    (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : GaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+theorem frobeniusRestriction_chosenDegreeOneFrobeniusLiftOfTotallyRamified :
     L.extensionQuotientMulEquiv.symm
         (D.frobeniusRestriction K L.field L.below
           (D.chosenDegreeOneFrobeniusLiftOfTotallyRamified
-            K L hTot q)) = q := by
-  exact (Classical.choose_spec
+            K L hTot q)) = q := (Classical.choose_spec
     (D.exists_degreeOneFrobeniusLiftOfTotallyRamified
       K L hTot q)).2
 /-- Underlying quotient form of the Galois-bundle restriction theorem. -/
-theorem frobeniusRestriction_chosenDegreeOneFrobeniusLiftOfTotallyRamified_underlying
-    (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : GaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+theorem frobeniusRestriction_chosenDegreeOneFrobeniusLiftOfTotallyRamified_underlying :
     D.frobeniusRestriction K L.field L.below
         (D.chosenDegreeOneFrobeniusLiftOfTotallyRamified
           K L hTot q) =
       L.extensionQuotientMulEquiv q := by
-  apply L.extensionQuotientMulEquiv.symm.injective
   exact
     D.frobeniusRestriction_chosenDegreeOneFrobeniusLiftOfTotallyRamified
       K L hTot q
+
+end
 /-- The degree-one lift specialized to a bundled finite Galois extension.
 The conversion to the non-finite Galois boundary and the quotient comparison
 are performed once in this definition. -/
@@ -183,29 +167,23 @@ noncomputable def chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
     K L.toGaloisSubextension
       (L.isTotallyRamified_toGaloisSubextension D hTot)
       (L.toGaloisExtensionQuotientMulEquiv q)
+section
+
+variable (D : DegreeData G) (K : FiniteResidueAbstractField D) (L : FiniteGaloisSubextension K.field)
+    (hTot : L.IsTotallyRamified D) (q : L.extensionQuotient)
+
 /-- The finite totally ramified Frobenius lift has exponent one. -/
 @[simp]
-theorem frobeniusExponent_chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
-    (D : DegreeData G)
-    (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+theorem frobeniusExponent_chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified :
     D.frobeniusExponent K L.field L.below
       (D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
-        K L hTot q) = 1 := by
-  exact D.frobeniusExponent_chosenDegreeOneFrobeniusLiftOfTotallyRamified
+        K L hTot q) = 1 := D.frobeniusExponent_chosenDegreeOneFrobeniusLiftOfTotallyRamified
     K L.toGaloisSubextension
       (L.isTotallyRamified_toGaloisSubextension D hTot)
       (L.toGaloisExtensionQuotientMulEquiv q)
 /-- The finite totally ramified Frobenius lift restricts to the chosen automorphism. -/
 @[simp]
-theorem frobeniusRestriction_chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
-    (D : DegreeData G)
-    (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+theorem frobeniusRestriction_chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified :
     L.extensionQuotientMulEquiv.symm
         (D.frobeniusRestriction K L.field L.below
           (D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
@@ -225,20 +203,16 @@ theorem frobeniusRestriction_chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
       L.extensionQuotientMulEquiv q at h
   exact h
 /-- Underlying quotient form of the preceding finite-bundle theorem. -/
-theorem frobeniusRestriction_chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified_underlying
-    (D : DegreeData G)
-    (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hTot : L.IsTotallyRamified D)
-    (q : L.extensionQuotient) :
+theorem frobeniusRestriction_chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified_underlying :
     D.frobeniusRestriction K L.field L.below
         (D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
           K L hTot q) =
       L.extensionQuotientMulEquiv q := by
-  apply L.extensionQuotientMulEquiv.symm.injective
   exact
     D.frobeniusRestriction_chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
       K L hTot q
+
+end
 /-- The finite Galois extension `M / K` chosen.  It contains both
 `L` and the degree-one Frobenius fixed field `Σ`, and is contained in the
 maximal unramified extension of `L`. -/
@@ -250,14 +224,11 @@ noncomputable def abstractReciprocityTotallyRamifiedFiniteGaloisExtension
     (hTot : L.IsTotallyRamified D)
     (q : L.extensionQuotient) :
     FiniteGaloisSubextension K.field := by
-  let σ := D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
-    K L hTot q
   letI : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L.field L.below) :=
     L.finite
-  let SigmaI := D.frobeniusFixedIntermediateField K L.field L.below σ
-  let LI := D.fieldAsMaximalUnramifiedIntermediate K.field L.field L.below
-  let C := SigmaI.compositum LI
+  let C := (D.frobeniusFixedIntermediateField K L.field L.below (D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
+    K L hTot q)).compositum (D.fieldAsMaximalUnramifiedIntermediate K.field L.field L.below)
   letI : (extensionSubgroup K.field (D.maximalUnramifiedField L.field)
       (D.maximalUnramifiedField_le_of_le L.below)).Normal :=
     D.extensionSubgroup_maximalUnramifiedField_normal K.field L.field L.below
@@ -265,8 +236,7 @@ noncomputable def abstractReciprocityTotallyRamifiedFiniteGaloisExtension
   exact
     { field := M.field
       below := M.below
-      normal := by
-        exact FiniteIntermediateField.galoisRefinement_normal C
+      normal := FiniteIntermediateField.galoisRefinement_normal C
       finite := M.finite }
 /-- The auxiliary reciprocity extension lies below the given totally ramified extension. -/
 theorem abstractReciprocityTotallyRamifiedFiniteGaloisExtension_le_L
@@ -278,18 +248,14 @@ theorem abstractReciprocityTotallyRamifiedFiniteGaloisExtension_le_L
     (q : L.extensionQuotient) :
     (D.abstractReciprocityTotallyRamifiedFiniteGaloisExtension
       K L hTot q).field.toSubgroup ≤ L.field.toSubgroup := by
-  let σ := D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
-    K L hTot q
-  let : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L.field L.below) :=
+  let :=
     L.finite
-  let SigmaI := D.frobeniusFixedIntermediateField K L.field L.below σ
+  let SigmaI := D.frobeniusFixedIntermediateField K L.field L.below (D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
+    K L hTot q)
   let LI := D.fieldAsMaximalUnramifiedIntermediate K.field L.field L.below
   let C := SigmaI.compositum LI
-  let : (extensionSubgroup K.field (D.maximalUnramifiedField L.field)
-      (D.maximalUnramifiedField_le_of_le L.below)).Normal :=
+  let :=
     D.extensionSubgroup_maximalUnramifiedField_normal K.field L.field L.below
-  change (C.galoisRefinement).field.toSubgroup ≤ L.field.toSubgroup
   exact C.galoisRefinement_le_field.trans
     (FiniteIntermediateField.compositum_le_right SigmaI LI)
 /-- The auxiliary reciprocity extension is fixed by the selected automorphism. -/
@@ -305,18 +271,14 @@ theorem abstractReciprocityTotallyRamifiedFiniteGaloisExtension_le_sigma
       (D.frobeniusFixedField K L.field L.below
         (D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
           K L hTot q)).toSubgroup := by
-  let σ := D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
-    K L hTot q
-  let : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L.field L.below) :=
+  let :=
     L.finite
-  let SigmaI := D.frobeniusFixedIntermediateField K L.field L.below σ
+  let SigmaI := D.frobeniusFixedIntermediateField K L.field L.below (D.chosenDegreeOneFrobeniusLiftOfFiniteTotallyRamified
+    K L hTot q)
   let LI := D.fieldAsMaximalUnramifiedIntermediate K.field L.field L.below
   let C := SigmaI.compositum LI
-  let : (extensionSubgroup K.field (D.maximalUnramifiedField L.field)
-      (D.maximalUnramifiedField_le_of_le L.below)).Normal :=
+  let :=
     D.extensionSubgroup_maximalUnramifiedField_normal K.field L.field L.below
-  change (C.galoisRefinement).field.toSubgroup ≤ SigmaI.field.toSubgroup
   exact C.galoisRefinement_le_field.trans
     (FiniteIntermediateField.compositum_le_left SigmaI LI)
 
@@ -342,8 +304,6 @@ theorem maximalUnramifiedField_le_abstractReciprocityTotallyRamifiedFiniteGalois
   let : (extensionSubgroup K.field (D.maximalUnramifiedField L.field)
       (D.maximalUnramifiedField_le_of_le L.below)).Normal :=
     D.extensionSubgroup_maximalUnramifiedField_normal K.field L.field L.below
-  change (D.maximalUnramifiedField L.field).toSubgroup ≤
-    (C.galoisRefinement).field.toSubgroup
   exact (C.galoisRefinement).above
 
 end DegreeData

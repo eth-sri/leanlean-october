@@ -14,22 +14,12 @@ open KPCplxActualImage KPCplxWhittakerUnique
 open KPActualReflectionData.StandardLocalSource
 open KPReferenceChange.StandardComplexImage
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
-private theorem actualRightWord_eq_adelic (R : PrincipalMellin.ActualRecipe S η)
-    (w : List (Fin (KPContActualSphericalRightFieldIdentification.groupDimension F)))
-    (f : Functions R) :
-    KPContActualSphericalRightFieldIdentification.actualRightWord F R.A.zeta12 R.A.primitive_zeta12 w f =
-      AdelicRightLieWords.actualRightWord F R.A.zeta12 R.A.primitive_zeta12 w f := by
-  induction w with
-  | nil => rfl
-  | cons b w ih =>
-    simp only [KPContActualSphericalRightFieldIdentification.actualRightWord, AdelicRightLieWords.actualRightWord]
-    rw [ih]
-    rfl
+private alias actualRightWord_eq_adelic := DifferentialWordCyclicSpan.actualRightWord_eq_adelic
 
 theorem prepared_spherical_entries_ne_zero {Q : AdmissibleFlatSources R}
     {T : Realization R Q} (D : SourceFactorization R Q T)
@@ -67,9 +57,8 @@ theorem core_spherical_generated_of_realization {Q Q0 : AdmissibleFlatSources R}
       change _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction R D s (Function.update x ⟨Sum.inl w,hw⟩
         (KPGlobalResidualConstruction.NativeComplexHCOperators.operators i (x ⟨Sum.inl w,hw⟩)))=_ at hh
       rw [hh]
-      have hd := wordRecovery_word R T0 hm
-        [(FourierContinuation.HCGeneration.actualLieIndexEquiv (F:=F)).symm (w,i)]
-      simpa only [KPContActualSphericalRightFieldIdentification.actualRightWord,_root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction] using hd
+      simpa only [KPContActualSphericalRightFieldIdentification.actualRightWord,_root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.tensorFunction] using (wordRecovery_word R T0 hm
+        [(FourierContinuation.HCGeneration.actualLieIndexEquiv).symm (w,i)])
     · intro v
       exact ⟨K.stage,K.entries,K.stage_exact,(hT0 v).symm,
         prepared_spherical_entries_ne_zero D K⟩

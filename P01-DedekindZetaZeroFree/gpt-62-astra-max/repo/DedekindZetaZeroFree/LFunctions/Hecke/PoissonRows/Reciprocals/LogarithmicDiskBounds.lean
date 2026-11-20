@@ -95,7 +95,11 @@ theorem analytic_log_unique_ball {ℓ₁ ℓ₂ : ℂ → ℂ} {c : ℂ} {R : �
   rw [hc] at this
   linear_combination this
 
-private theorem bc_aux {ℓ : ℂ → ℂ} {c : ℂ} {R r : ℝ} (hr : 0 < r) (hrR : r < R)
+section
+
+variable {ℓ : ℂ → ℂ} {c : ℂ}
+
+private theorem bc_aux {R r : ℝ} (hr : 0 < r) (hrR : r < R)
     (hℓ : AnalyticOnNhd ℂ ℓ (Metric.ball c R)) {A : ℝ} (hA : 0 < A)
     (hRe : ∀ s ∈ Metric.ball c R, (ℓ s - ℓ c).re ≤ A) :
     ∀ s ∈ closedBall c r, ‖ℓ s - ℓ c‖ ≤ 2 * A * r / (R - r) := by
@@ -143,7 +147,7 @@ private theorem bc_aux {ℓ : ℂ → ℂ} {c : ℂ} {R r : ℝ} (hr : 0 < r) (h
   rw [hφc, dist_zero_right, dist_eq_norm] at hS
   have hsr : ‖s - c‖ ≤ r := by simpa [dist_eq_norm] using hs
   have ht : ‖φ s‖ ≤ r / R := by
-    calc ‖φ s‖ ≤ 1 / R * ‖s - c‖ := hS
+    calc _ ≤ 1 / R * ‖s - c‖ := hS
       _ ≤ 1 / R * r := by gcongr
       _ = r / R := by ring
   have heq : h s * (1 + φ s) = 2 * (A : ℂ) * φ s := by
@@ -151,7 +155,7 @@ private theorem bc_aux {ℓ : ℂ → ℂ} {c : ℂ} {R r : ℝ} (hr : 0 < r) (h
     simp only [hφ]
     field_simp
     ring
-  have htl : r / R < 1 := (div_lt_one hR).2 hrR
+  have htl := (div_lt_one hR).2 hrR
   have h1 : 1 - r / R ≤ ‖1 + φ s‖ := by
     have := norm_sub_norm_le (1 : ℂ) (-φ s)
     simp only [norm_neg, norm_one, sub_neg_eq_add] at this
@@ -177,13 +181,13 @@ private theorem bc_aux {ℓ : ℂ → ℂ} {c : ℂ} {R r : ℝ} (hr : 0 < r) (h
     exact this
   exact hfin'
 
-theorem borel_caratheodory {ℓ : ℂ → ℂ} {c : ℂ} {R r M : ℝ} (hr : 0 < r) (hrR : r < R)
+theorem borel_caratheodory {R r M : ℝ} (hr : 0 < r) (hrR : r < R)
     (hM0 : 0 ≤ M) (hℓ : AnalyticOnNhd ℂ ℓ (Metric.ball c R))
     (hM : ∀ s ∈ Metric.ball c R, (ℓ s).re ≤ M) :
     ∀ s ∈ closedBall c r,
       ‖ℓ s‖ ≤ 2 * r / (R - r) * M + (R + r) / (R - r) * ‖ℓ c‖ := by
   intro s hs
-  have hR : 0 < R := hr.trans hrR
+  have hR := hr.trans hrR
   have hRr : 0 < R - r := by linarith
   set A0 : ℝ := M + ‖ℓ c‖ with hA0
   have hA00 : 0 ≤ A0 := by positivity
@@ -210,6 +214,8 @@ theorem borel_caratheodory {ℓ : ℂ → ℂ} {c : ℂ} {R r M : ℝ} (hr : 0 <
     ring
   linarith
 
+end
+
 section EulerLog
 
 open DedekindZetaZeroFree.ExteriorIdealEuler DedekindZetaZeroFree.HeckeLogProof
@@ -221,36 +227,31 @@ private def primeEquiv (F : Type) [Field F] [NumberField F] :
   left_inv _ := rfl
   right_inv _ := rfl
 
-private theorem char_pow {F : Type} [Field F] [NumberField F] (ω : Detector.PrimitiveFrequencyCharacter F)
+section
+
+variable {F : Type} [Field F] [NumberField F] (ω : Detector.PrimitiveFrequencyCharacter F)
+
+private theorem char_pow
     (I : Ideal (𝓞 F)) (k : ℕ) : ω.character (I ^ k) = ω.character I ^ k := by
   induction k with
   | zero => simpa using ω.character.map_top'
   | succ k ih => rw [pow_succ, ω.character.map_mul', ih, pow_succ]
 
-private theorem inner_eq {F : Type} [Field F] [NumberField F] (ω : Detector.PrimitiveFrequencyCharacter F)
+private theorem inner_eq
     (s : ℂ) (hs : 1 < s.re) (P : {P : Ideal (𝓞 F) // P.IsPrime ∧ P ≠ ⊥}) :
     ∑' k : ℕ, ω.character (P.1 ^ (k + 1)) /
             (((k : ℂ) + 1) * (Ideal.absNorm P.1 : ℂ) ^ (((k : ℂ) + 1) * s)) =
       -Complex.log (1 - primeTerm (fun I : ExteriorIdeal (⊤ : Ideal (𝓞 F)) => ω.character I.val) s
         (primeEquiv F P)) := by
-  have ha := ray_isCoefficient ω.conductor ω.conductor_ne_zero ω.character
-  have hlt := norm_primeTerm_lt_one _ ha s hs (primeEquiv F P)
-  have hN : (Ideal.absNorm P.1 : ℂ) ≠ 0 := by
-    exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr P.2.2)
-  have h := (Complex.hasSum_taylorSeries_neg_log' hlt).tsum_eq
-  rw [← h]
+  rw [← ((Complex.hasSum_taylorSeries_neg_log' (norm_primeTerm_lt_one _ (ray_isCoefficient ω.conductor ω.conductor_ne_zero ω.character) s hs (primeEquiv F P))).tsum_eq)]
   refine tsum_congr fun k => ?_
   have e1 : primeTerm (fun I : ExteriorIdeal (⊤ : Ideal (𝓞 F)) => ω.character I.val) s
         (primeEquiv F P) = ω.character P.1 * (Ideal.absNorm P.1 : ℂ) ^ (-s) := rfl
   rw [e1, char_pow, mul_pow, ← Complex.cpow_nat_mul, Nat.cast_add, Nat.cast_one,
     mul_neg, Complex.cpow_neg]
-  have hk : ((k : ℂ) + 1) ≠ 0 := by exact_mod_cast Nat.succ_ne_zero k
-  have hpow : (Ideal.absNorm P.1 : ℂ) ^ (((k : ℂ) + 1) * s) ≠ 0 := by
-    rw [Ne, Complex.cpow_eq_zero_iff]; simp [hN]
   field_simp
 
-private theorem sum_eq_eulerLog {F : Type} [Field F] [NumberField F]
-    (ω : Detector.PrimitiveFrequencyCharacter F) (s : ℂ) (hs : 1 < s.re) :
+private theorem sum_eq_eulerLog (s : ℂ) (hs : 1 < s.re) :
     ∑' P : {P : Ideal (𝓞 F) // P.IsPrime ∧ P ≠ ⊥},
           ∑' k : ℕ, ω.character (P.1 ^ (k + 1)) /
             (((k : ℂ) + 1) * (Ideal.absNorm P.1 : ℂ) ^ (((k : ℂ) + 1) * s)) =
@@ -258,6 +259,8 @@ private theorem sum_eq_eulerLog {F : Type} [Field F] [NumberField F]
   unfold eulerLog
   rw [← (primeEquiv F).tsum_eq]
   exact tsum_congr fun P => inner_eq ω s hs P
+
+end
 
 theorem euler_log_facts (F : Type) [Field F] [NumberField F] :
     ∃ E : ℝ, 0 < E ∧ ∀ ω : Detector.PrimitiveFrequencyCharacter F,
@@ -297,7 +300,7 @@ theorem euler_log_facts (F : Type) [Field F] [NumberField F] :
       refine ⟨?_, by simp⟩
       intro h
       exact hI (by simp [hg, h])
-    rw [← tsum_subtype_eq_of_support_subset (f := g) hsupp]
+    rw [← tsum_subtype_eq_of_support_subset hsupp]
     refine tsum_congr fun I => ?_
     have := I.2.1
     simp [hg, summand, this]
@@ -310,8 +313,8 @@ theorem euler_log_facts (F : Type) [Field F] [NumberField F] :
 end EulerLog
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem convexity_upper_bound (ρ : ℝ) (hρ : 0 < ρ) :
     ∃ C K : ℝ, 0 < C ∧ 0 ≤ K ∧
@@ -321,75 +324,61 @@ theorem convexity_upper_bound (ρ : ℝ) (hρ : 0 < ρ) :
         ∀ s : ℂ, 4 / 5 ≤ s.re → s.re ≤ 4 → |s.im| ≤ 5 * U ^ ρ →
           ‖g s‖ ≤ C * U ^ K := by
   classical
-  have hF : NumberField.IsTotallyComplex F :=
+  have hF :=
     primitive12_totallyComplex F D.recipe.A.zeta12 D.recipe.A.primitive_zeta12
   obtain ⟨A_F, hA0, hconv⟩ := convex_normalized F hF
   obtain ⟨C1, hC1, hnorm⟩ := hconv (1 / 100) (by norm_num) (by norm_num)
   obtain ⟨Cc, hCc, hcb⟩ := ConvexBridge.conductor_bound' D
   obtain ⟨E, hE, hlog⟩ := euler_log_facts F
-  have hCtot : 0 < C1 * (2 * Cc) * 7 ^ A_F + Real.exp E :=
-    add_pos (mul_pos (mul_pos hC1 (mul_pos (by norm_num) hCc)) (by positivity)) (Real.exp_pos E)
-  refine ⟨C1 * (2 * Cc) * 7 ^ A_F + Real.exp E, 1 + ρ * A_F, hCtot,
+  refine ⟨C1 * (2 * Cc) * 7 ^ A_F + Real.exp E, 1 + ρ * A_F, (add_pos (mul_pos (mul_pos hC1 (mul_pos (by norm_num) hCc)) (by positivity)) (Real.exp_pos E)),
     by have := mul_nonneg hρ.le hA0; linarith, ?_⟩
   intro u hu U hU2 hUq hUq2 g hg hgs s hs1 hs2 hsim
   have hU0 : 0 < U := by linarith
   have hU1 : 1 ≤ U := by linarith
-  have hq1 : 1 ≤ D.q u := (by norm_num : (1:ℝ) ≤ 2).trans (hU2.trans hUq)
-  have hKU : 1 ≤ U ^ (1 + ρ * A_F) := Real.one_le_rpow hU1 (by have := mul_nonneg hρ.le hA0; linarith)
   have hKnn : 0 ≤ U ^ (1 + ρ * A_F) := Real.rpow_nonneg hU0.le _
   by_cases hσ : s.re ≤ 1 + 1 / 100
   ·
-    have hnpO : ¬ (D.omega u).character.IsPrincipal :=
+    have hnpO :=
       (RowNonprincipal.inducers_nonprincipal D u hu).2
     have hpos : 0 < s.re := by linarith
-    have hg_eq : g s = nonprincipalHeckeEntireContinuation F (D.omega u).conductor
-        (D.omega u).character (RowHeckeBridge.heckeOmega D u hnpO) s :=
+    have hg_eq :=
       (RowHeckeBridge.entire_eq_heckeOmega D u hnpO hg hgs s hpos).trans
         (nonprincipalHeckeEntireContinuation_eq F hF (D.omega u).conductor
           (D.omega u).conductor_ne_zero (D.omega u).character
           (RowHeckeBridge.heckeOmega D u hnpO) s hpos).symm
-    have hNb := hnorm (D.omega u).conductor (D.omega u).conductor_ne_zero
-      (D.omega u).character (D.omega u).primitive hnpO
-      (RowHeckeBridge.heckeOmega D u hnpO) s (by linarith) hσ
-    have hcb2 : 1 + (Ideal.absNorm (D.omega u).conductor : ℝ) ≤ Cc * D.q u := (hcb u hq1).2
     have hQ1 : 1 ≤ 1 + (Ideal.absNorm (D.omega u).conductor : ℝ) := by
       have : (0 : ℝ) ≤ (Ideal.absNorm (D.omega u).conductor : ℝ) := by positivity
       linarith
-    have he1 : (1 + 1 / 100 - s.re) / 2 ≤ 1 := by linarith
     have hQpow : (1 + (Ideal.absNorm (D.omega u).conductor : ℝ)) ^ ((1 + 1 / 100 - s.re) / 2)
         ≤ 2 * Cc * U := by
-      calc (1 + (Ideal.absNorm (D.omega u).conductor : ℝ)) ^ ((1 + 1 / 100 - s.re) / 2)
+      calc _
           ≤ (1 + (Ideal.absNorm (D.omega u).conductor : ℝ)) ^ (1 : ℝ) :=
-            Real.rpow_le_rpow_of_exponent_le hQ1 he1
+            Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)
         _ = 1 + (Ideal.absNorm (D.omega u).conductor : ℝ) := Real.rpow_one _
-        _ ≤ Cc * D.q u := hcb2
+        _ ≤ Cc * D.q u := ((hcb u ((by norm_num : (1:ℝ) ≤ 2).trans (hU2.trans hUq))).2)
         _ ≤ Cc * (2 * U) := mul_le_mul_of_nonneg_left hUq2.le hCc.le
         _ = 2 * Cc * U := by ring
     have hYpow : (2 + |s.im|) ^ A_F ≤ 7 ^ A_F * U ^ (ρ * A_F) := by
-      have h1 : 2 + |s.im| ≤ 7 * U ^ ρ := by
-        have := Real.one_le_rpow hU1 hρ.le
-        linarith
-      calc (2 + |s.im|) ^ A_F ≤ (7 * U ^ ρ) ^ A_F :=
-            Real.rpow_le_rpow (by positivity) h1 hA0
+      calc _ ≤ (7 * U ^ ρ) ^ A_F :=
+            Real.rpow_le_rpow (by positivity) (by
+              have := Real.one_le_rpow hU1 hρ.le
+              linarith) hA0
         _ = 7 ^ A_F * U ^ (ρ * A_F) := by
             rw [Real.mul_rpow (by norm_num) (Real.rpow_nonneg hU0.le _), ← Real.rpow_mul hU0.le]
-    have hY : (0 : ℝ) ≤ (2 + |s.im|) ^ A_F := by positivity
     have hfin : ‖g s‖ ≤ (C1 * (2 * Cc) * 7 ^ A_F) * U ^ (1 + ρ * A_F) := by
       rw [hg_eq]
-      refine le_trans hNb (le_trans
-        (mul_le_mul (mul_le_mul_of_nonneg_left hQpow hC1.le) hYpow hY
+      refine le_trans (hnorm (D.omega u).conductor (D.omega u).conductor_ne_zero
+        (D.omega u).character (D.omega u).primitive hnpO
+        (RowHeckeBridge.heckeOmega D u hnpO) s (by linarith) hσ) (le_trans
+        (mul_le_mul (mul_le_mul_of_nonneg_left hQpow hC1.le) hYpow (by positivity)
           (mul_nonneg hC1.le (mul_nonneg (mul_nonneg (by norm_num) hCc.le) hU0.le))) (le_of_eq ?_))
       rw [Real.rpow_add hU0, Real.rpow_one]
       ring
-    have hC0 : 0 ≤ C1 * (2 * Cc) * 7 ^ A_F := by
-      have := mul_pos hC1 (mul_pos (by norm_num : (0:ℝ) < 2) hCc)
-      positivity
-    calc ‖g s‖ ≤ (C1 * (2 * Cc) * 7 ^ A_F) * U ^ (1 + ρ * A_F) := hfin
+    calc _ ≤ (C1 * (2 * Cc) * 7 ^ A_F) * U ^ (1 + ρ * A_F) := hfin
       _ ≤ (C1 * (2 * Cc) * 7 ^ A_F + Real.exp E) * U ^ (1 + ρ * A_F) :=
           mul_le_mul_of_nonneg_right (by linarith [Real.exp_pos E]) hKnn
   ·
     have hs' : 1 < s.re := by linarith
-    have hexp := (hlog (D.omega u)).2.1 s hs'
     have hbd := (hlog (D.omega u)).2.2 s (by linarith)
     have key : ∀ z : ℂ, ‖z‖ ≤ E → ‖Complex.exp z‖ ≤ Real.exp E := fun z hz => by
       rw [Complex.norm_exp]
@@ -399,10 +388,10 @@ theorem convexity_upper_bound (ρ : ℝ) (hρ : 0 < ρ) :
       have := mul_pos (mul_pos hC1 (mul_pos (by norm_num : (0:ℝ) < 2) hCc)) h7
       linarith
     have h2 : ‖g s‖ ≤ Real.exp E := by
-      rw [hgs s hs', ← hexp]
+      rw [hgs s hs', ← ((hlog (D.omega u)).2.1 s hs')]
       exact key _ hbd
     calc ‖g s‖ ≤ Real.exp E := h2
-      _ ≤ Real.exp E * U ^ (1 + ρ * A_F) := le_mul_of_one_le_right (Real.exp_pos E).le hKU
+      _ ≤ Real.exp E * U ^ (1 + ρ * A_F) := le_mul_of_one_le_right (Real.exp_pos E).le (Real.one_le_rpow hU1 (by have := mul_nonneg hρ.le hA0; linarith))
       _ ≤ (C1 * (2 * Cc) * 7 ^ A_F + Real.exp E) * U ^ (1 + ρ * A_F) :=
           mul_le_mul_of_nonneg_right hleE hKnn
 

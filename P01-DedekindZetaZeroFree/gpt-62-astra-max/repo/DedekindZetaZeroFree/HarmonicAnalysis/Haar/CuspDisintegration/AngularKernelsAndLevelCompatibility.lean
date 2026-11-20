@@ -31,8 +31,8 @@ section AngularMarginal
 open MeasureTheory
 open scoped ENNReal
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0} {U : Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0} {U : Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
  theorem angular_measurable : Measurable (angularProjection A) := by
   apply Continuous.measurable
@@ -40,7 +40,11 @@ variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   intro j
   exact continuous_sigmaMk.comp (Geometry A j).atlas.continuous_projection
 
-private theorem kernel_angular_map (K : FiberKernel A) (ω : Omega A) :
+section
+
+variable (K : FiberKernel A) (ω : Omega A)
+
+private theorem kernel_angular_map :
     Measure.map (angularProjection A) (K.unipotent ω) = Measure.dirac ω := by
   rcases ω with ⟨j, b⟩
   induction b using QuotientAddGroup.induction_on with
@@ -67,19 +71,18 @@ private theorem kernel_angular_map (K : FiberKernel A) (ω : Omega A) :
     rw [hformula, Measure.map_map (angular_measurable A) hlift, hconstant,
       Measure.map_const, measure_univ, one_smul]
 
- theorem kernel_angular_lintegral (K : FiberKernel A) (ω : Omega A)
+ theorem kernel_angular_lintegral
     (f : Omega A → ℝ≥0∞) (hf : Measurable f) :
     (∫⁻ x, f (angularProjection A x) ∂K.unipotent ω) = f ω := by
   rw [← lintegral_map hf (angular_measurable A), kernel_angular_map A K ω,
     lintegral_dirac' _ hf]
 
+end
+
  theorem cross_section_inclusion_measurable (j : CuspIndex A) :
     Measurable (fun x => (⟨j,x⟩ : CrossSection A)) := by
   apply measurable_from_quotient.mpr
-  have hmk : Continuous (fun p : KPCuspCharts.Cross F =>
-      (⟨j, Quotient.mk _ p⟩ : CrossSection A)) :=
-    continuous_sigmaMk.comp continuous_quotient_mk'
-  exact hmk.measurable
+  exact (continuous_sigmaMk.comp continuous_quotient_mk').measurable
 
  def weighted_section_measure (w : Fin A.componentCount → ℝ≥0∞) :
     Measure (CrossSection A) :=
@@ -121,11 +124,15 @@ private theorem kernel_angular_map (K : FiberKernel A) (ω : Omega A) :
     _ = ∫⁻ ω, f ω ∂β := he.trans hid
     _ = β E := lintegral_indicator_one hE
 
- def weighted_angular_measure (w : Fin A.componentCount → ℝ≥0∞) :
+ section
+
+variable (w : Fin A.componentCount → ℝ≥0∞)
+
+def weighted_angular_measure :
     Measure (Omega A) :=
   Measure.map (angularProjection A) (weighted_section_measure A w)
 
-private theorem weighted_section_mass (w : Fin A.componentCount → ℝ≥0∞) :
+private theorem weighted_section_mass :
     weighted_section_measure A w Set.univ =
       ∑ j : CuspIndex A,
         (w j.1 / ENNReal.ofReal (2 * (KPCuspLogShape.dimension F : ℝ))) *
@@ -137,7 +144,7 @@ private theorem weighted_section_mass (w : Fin A.componentCount → ℝ≥0∞) 
   rw [Measure.map_apply (cross_section_inclusion_measurable A j) MeasurableSet.univ,
     Set.preimage_univ]
 
-private theorem weighted_angular_apply (w : Fin A.componentCount → ℝ≥0∞)
+private theorem weighted_angular_apply
     (E : Set (Omega A)) (hE : MeasurableSet E) :
     weighted_angular_measure A w E =
       ∑ j : CuspIndex A,
@@ -153,7 +160,7 @@ private theorem weighted_angular_apply (w : Fin A.componentCount → ℝ≥0∞)
     ((angular_measurable A) hE)]
   rfl
 
- theorem weighted_section_finite (w : Fin A.componentCount → ℝ≥0∞)
+ theorem weighted_section_finite
     (hw : ∀ i, w i < ⊤) : IsFiniteMeasure (weighted_section_measure A w) := by
   constructor
   rw [weighted_section_mass A w]
@@ -166,8 +173,20 @@ private theorem weighted_angular_apply (w : Fin A.componentCount → ℝ≥0∞)
     exact mul_pos (by norm_num) (Nat.cast_pos.mpr (KPCuspLogShape.dimension_pos F hF))
   · exact (Geometry A j).finite_sectionMeasure.measure_univ_lt_top
 
-private theorem weighted_section_positive (w : Fin A.componentCount → ℝ≥0∞)
-    (hw : ∀ i, 0 < w i) : weighted_section_measure A w Set.univ ≠ 0 := by
+end
+
+variable (w : Fin A.componentCount → ℝ≥0∞)
+
+private theorem weighted_angular_finite
+    (hw : ∀ i, w i < ⊤) : IsFiniteMeasure (weighted_angular_measure A w) := by
+  letI := weighted_section_finite A w hw
+  unfold weighted_angular_measure
+  infer_instance
+
+private theorem weighted_angular_positive
+    (hw : ∀ i, 0 < w i) : weighted_angular_measure A w Set.univ ≠ 0 := by
+  rw [weighted_angular_measure, Measure.map_apply (angular_measurable A) MeasurableSet.univ,
+    Set.preimage_univ]
   apply ne_of_gt
   rw [weighted_section_mass A w]
   apply Finset.sum_pos_iff.mpr
@@ -178,19 +197,7 @@ private theorem weighted_section_positive (w : Fin A.componentCount → ℝ≥0�
   · exact ENNReal.div_ne_zero.mpr ⟨ne_of_gt (hw i), ENNReal.ofReal_ne_top⟩
   · exact (Geometry A ⟨i,a⟩).positive_sectionMeasure
 
-private theorem weighted_angular_finite (w : Fin A.componentCount → ℝ≥0∞)
-    (hw : ∀ i, w i < ⊤) : IsFiniteMeasure (weighted_angular_measure A w) := by
-  letI := weighted_section_finite A w hw
-  unfold weighted_angular_measure
-  infer_instance
-
-private theorem weighted_angular_positive (w : Fin A.componentCount → ℝ≥0∞)
-    (hw : ∀ i, 0 < w i) : weighted_angular_measure A w Set.univ ≠ 0 := by
-  rw [weighted_angular_measure, Measure.map_apply (angular_measurable A) MeasurableSet.univ,
-    Set.preimage_univ]
-  exact weighted_section_positive A w hw
-
-private theorem weighted_angular_probability (w : Fin A.componentCount → ℝ≥0∞)
+private theorem weighted_angular_probability
     (hpos : ∀ i, 0 < w i) (hfin : ∀ i, w i < ⊤) :
     IsProbabilityMeasure (probability A (weighted_angular_measure A w)) := by
   constructor
@@ -228,17 +235,14 @@ private theorem lintegral_constant_orbit_multiplicity
       (∑' g : H, (g • t).indicator (fun _ => (1 : ℝ≥0∞)) x) = c)
     (f : X → ℝ≥0∞) (hinv : ∀ (g : H) (x : X), f (g • x) = f x) :
     (∫⁻ x in t, f x ∂ν) = c * ∫⁻ x in s, f x ∂ν := by
-  have hm : (Measure.sum fun g : H => ν.restrict (g • t ∩ s)) =
-      c • ν.restrict s :=
-    KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection.OrbitMultiplicity.sum_restrict_of_constant_multiplicity
-      ν s (fun g : H => g • t) (fun g => ht.const_smul g) c hcount
   calc
-    (∫⁻ x in t, f x ∂ν) = ∑' g : H, ∫⁻ x in g • t ∩ s, f x ∂ν := by
+    _ = ∑' g : H, ∫⁻ x in g • t ∩ s, f x ∂ν := by
       rw [hs.setLIntegral_eq_tsum']
       simp only [hinv]
     _ = ∫⁻ x, f x ∂(Measure.sum fun g : H => ν.restrict (g • t ∩ s)) := by
       rw [lintegral_sum_measure]
-    _ = c * ∫⁻ x in s, f x ∂ν := by rw [hm, lintegral_smul_measure, smul_eq_mul]
+    _ = c * ∫⁻ x in s, f x ∂ν := by rw [(KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection.OrbitMultiplicity.sum_restrict_of_constant_multiplicity
+      ν s (fun g : H => g • t) (fun g => ht.const_smul g) c hcount), lintegral_smul_measure, smul_eq_mul]
 
 private theorem rectangle_section_measure
     {F : Type} [Field F] [NumberField F]
@@ -312,7 +316,7 @@ private theorem horizontal_domain_map
     (μ : Measure (X ⧸ L)) [μ.IsAddLeftInvariant] [IsProbabilityMeasure μ]
     {A : Set X} (hA : IsAddFundamentalDomain L.op A ν) (hAfin : ν A ≠ ⊤) :
     Measure.map QuotientAddGroup.mk (ν.restrict A) = ν A • μ := by
-  let μ' : Measure (X ⧸ L) := ν A • μ
+  let μ' := ν A • μ
   letI : Measure.IsAddLeftInvariant μ' := inferInstanceAs (Measure.IsAddLeftInvariant (ν A • μ))
   letI : IsFiniteMeasure μ' := ⟨by simp [μ', hAfin.lt_top]⟩
   letI : HasAddFundamentalDomain L.op X ν := hA.hasAddFundamentalDomain ν
@@ -348,10 +352,6 @@ private theorem rectangle_torus_measure
   letI : Countable (KPCuspCharts.translationLattice F D.L) :=
     countable_of_Lindelof_of_discrete
   letI := G.haar_shapeMeasure
-  have hinj : Function.Injective (KPCuspCharts.embedding F) := by
-    intro a c hac
-    have h0 := congrFun hac ⟨0, G.positive_dimension⟩
-    exact (KPCusp.complexPlace F ⟨0, G.positive_dimension⟩).embedding.injective h0
   have htiling : ∀ y : KPCuspCharts.Horizontal F,
       ∃! l : (KPCuspCharts.translationLattice F D.L).op, l +ᵥ y ∈ A := by
     intro y
@@ -361,16 +361,12 @@ private theorem rectangle_torus_measure
     refine ⟨⟨AddOpposite.op l.val, l.property⟩, ha, ?_⟩
     intro k hk
     obtain ⟨c, hc, hec⟩ := k.property
-    have hkc : y + KPCuspCharts.embedding F c ∈ A := by
-      change y + k.val.unop ∈ A at hk
-      rwa [← hec] at hk
-    have he := hau ⟨c, hc⟩ hkc
     apply Subtype.ext
     apply AddOpposite.unop_injective
-    exact hec.symm.trans (congrArg (fun x : D.L => KPCuspCharts.embedding F x.val) he)
-  have hfd : IsAddFundamentalDomain (KPCuspCharts.translationLattice F D.L).op A volume :=
-    IsAddFundamentalDomain.mk' hAm.nullMeasurableSet htiling
-  have hm := horizontal_domain_map volume dn hfd hAb.measure_lt_top.ne
+    exact hec.symm.trans (congrArg (fun x : D.L => KPCuspCharts.embedding F x.val) (hau ⟨c, hc⟩ (by
+      change y + k.val.unop ∈ A at hk
+      rwa [← hec] at hk)))
+  have hm := horizontal_domain_map volume dn (IsAddFundamentalDomain.mk' hAm.nullMeasurableSet htiling) hAb.measure_lt_top.ne
   have hcomp : (q ∘ G.atlas.lift) ∘ Prod.map QuotientAddGroup.mk id =
       q ∘ Quotient.mk (KPCuspCharts.crossRelation F S) := by
     funext p
@@ -382,7 +378,7 @@ private theorem rectangle_torus_measure
       have hp : (Measure.map (QuotientAddGroup.mk : KPCuspCharts.Horizontal F → KPCuspCharts.Torus F D.L) (volume.restrict A)).prod
           (G.shapeMeasure.restrict B) = Measure.map (Prod.map QuotientAddGroup.mk id)
           ((volume.restrict A).prod (G.shapeMeasure.restrict B)) := by
-        simpa only [Measure.map_id] using Measure.map_prod_map (volume.restrict A)
+        simpa using Measure.map_prod_map (volume.restrict A)
           (G.shapeMeasure.restrict B) QuotientAddGroup.continuous_mk.measurable measurable_id
       rw [hp, Measure.map_map (hq.comp G.atlas.continuous_lift).measurable
         (QuotientAddGroup.continuous_mk.measurable.prodMap measurable_id), hcomp]
@@ -400,7 +396,6 @@ private theorem section_torus_representation
     (dn : Measure (KPCuspCharts.Torus F D.L)) (hdn : dn.IsAddHaarMeasure)
     (hprob : IsProbabilityMeasure dn) :
     ∃ B : Set (KPCuspCharts.Shape F), ∃ c : ℝ≥0∞,
-      MeasurableSet B ∧ Bornology.IsBounded B ∧ c < ⊤ ∧
       Measure.map q G.sectionMeasure =
         c • Measure.map (q ∘ G.atlas.lift) (dn.prod (G.shapeMeasure.restrict B)) := by
   obtain ⟨A, B, hAm, hAb, hBm, hBb, hA, hB⟩ :=
@@ -417,23 +412,23 @@ private theorem section_torus_representation
   rw [rectangle_torus_measure G q hq dn hdn hprob A B hAm hAb hA] at he
   change (volume A) • Measure.map (q ∘ G.atlas.lift) (dn.prod (G.shapeMeasure.restrict B)) =
     m • Measure.map q G.sectionMeasure at he
-  refine ⟨B, m⁻¹ * volume A, hBm, hBb, ?_, ?_⟩
-  · exact ENNReal.mul_lt_top (ENNReal.inv_ne_top.mpr hm0).lt_top hAb.measure_lt_top
+  refine ⟨B, m⁻¹ * volume A, ?_⟩
   · have he' := congrArg (fun μ : Measure Y => m⁻¹ • μ) he
     simpa only [smul_smul, ENNReal.inv_mul_cancel hm0 hmfin, one_smul] using he'.symm
 
 section LocalSection
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0} {U : Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0} {U : Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
-private theorem kernel_lintegral_measurable (K : FiberKernel A)
+variable (K : FiberKernel A)
+
+private theorem kernel_lintegral_measurable
     (f : CrossSection A → ℝ≥0∞) (hf : Measurable f) :
-    Measurable (fun ω => ∫⁻ x, f x ∂K.unipotent ω) := by
-  exact (Measure.measurable_lintegral hf).comp
+    Measurable (fun ω => ∫⁻ x, f x ∂K.unipotent ω) := (Measure.measurable_lintegral hf).comp
     (Measure.measurable_of_measurable_coe K.unipotent K.measurable_kernel)
 
-private theorem local_section_disintegration (K : FiberKernel A) (j : CuspIndex A)
+private theorem local_section_disintegration (j : CuspIndex A)
     (f : CrossSection A → ℝ≥0∞) (hf : Measurable f) :
     (∫⁻ x, f ⟨j,x⟩ ∂(Geometry A j).sectionMeasure) =
       ∫⁻ ω, ∫⁻ x, f x ∂K.unipotent ω
@@ -443,11 +438,12 @@ private theorem local_section_disintegration (K : FiberKernel A) (j : CuspIndex 
   letI := hdn
   letI := hprob
   letI := (Geometry A j).haar_shapeMeasure
-  letI : DiscreteTopology (KPCuspCharts.translationLattice F (Parabolic A j).L) :=
+  let translationLattice₀ := KPCuspCharts.translationLattice F (Parabolic A j).L
+  letI : DiscreteTopology (translationLattice₀) :=
     (Geometry A j).lattice.choose
-  letI : IsClosed (KPCuspCharts.translationLattice F (Parabolic A j).L :
+  letI : IsClosed (translationLattice₀ :
       Set (KPCuspCharts.Horizontal F)) := AddSubgroup.isClosed_of_discreteTopology
-  obtain ⟨B, c, hBm, hBb, hc, hrep⟩ := section_torus_representation (Geometry A j)
+  obtain ⟨B, c, hrep⟩ := section_torus_representation (Geometry A j)
     (fun x => (⟨j,x⟩ : CrossSection A)) continuous_sigmaMk
     (cross_section_inclusion_measurable A j) dn hdn hprob
   let lift := fun p : KPCuspCharts.Torus F (Parabolic A j).L × KPCuspCharts.Shape F =>
@@ -476,9 +472,9 @@ private theorem local_section_disintegration (K : FiberKernel A) (j : CuspIndex 
     letI := hν
     letI := hpν
     letI := (Geometry A j).compact_torus
-    letI : DiscreteTopology (KPCuspCharts.translationLattice F (Parabolic A j).L) :=
+    letI : DiscreteTopology (translationLattice₀) :=
       (Geometry A j).lattice.choose
-    letI : IsClosed (KPCuspCharts.translationLattice F (Parabolic A j).L :
+    letI : IsClosed (translationLattice₀ :
         Set (KPCuspCharts.Horizontal F)) := AddSubgroup.isClosed_of_discreteTopology
     have he : ν = dn := Measure.isAddHaarMeasure_eq_of_isProbabilityMeasure ν dn
     simpa only [he] using heν
@@ -512,7 +508,7 @@ private theorem local_section_disintegration (K : FiberKernel A) (j : CuspIndex 
   rw [hformula, lintegral_map hf hlb]
   simp only [lintegral_const, measure_univ, mul_one]
 
-private theorem weighted_section_disintegration (K : FiberKernel A)
+private theorem weighted_section_disintegration
     (w : Fin A.componentCount → ℝ≥0∞)
     (f : CrossSection A → ℝ≥0∞) (hf : Measurable f) :
     (∑ j : CuspIndex A,
@@ -537,8 +533,11 @@ end FiniteIsotropyMeasureComparison
 
 namespace PinnedRadialCharts
 
- theorem actual_coordinate_relation
-    {F : Type} [Field F] [NumberField F]
+ section
+
+variable {F : Type} [Field F] [NumberField F]
+
+theorem actual_coordinate_relation
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
     (G : KPCuspCharts.ChartOutput F hF S D) (p q : KPCuspCharts.Coordinates F) :
@@ -559,7 +558,6 @@ namespace PinnedRadialCharts
     exact ⟨g, (ha g q).trans (congrArg (KPCuspCharts.toArch F) hg)⟩
 
  def coordinate_shear
-    {F : Type} [Field F] [NumberField F]
     (a : ℝ → KPCuspCharts.Shape F) (ha : Continuous a) :
     KPCuspCharts.Coordinates F ≃ₜ KPCuspCharts.Coordinates F where
   toFun p := ((p.1.1, p.1.2 + a p.2), p.2)
@@ -571,11 +569,16 @@ namespace PinnedRadialCharts
   continuous_invFun := (continuous_fst.fst.prodMk
     (continuous_fst.snd.sub (ha.comp continuous_snd))).prodMk continuous_snd
 
- theorem coordinate_shear_relation
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+end
+
+ section
+
+variable {F : Type} [Field F] [NumberField F] {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
     (G : KPCuspCharts.ChartOutput F hF S D)
+
+include G in
+theorem coordinate_shear_relation
     (a : ℝ → KPCuspCharts.Shape F) (ha : Continuous a)
     (p q : KPCuspCharts.Coordinates F) :
     KPCuspCharts.totalRelation F S (coordinate_shear a ha p) (coordinate_shear a ha q) ↔
@@ -596,33 +599,19 @@ namespace PinnedRadialCharts
     rfl
   simp only [he, (coordinate_shear a ha).injective.eq_iff]
 
- def actual_shape_translation
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D) (b : KPCuspCharts.Shape F) :
+ def actual_shape_translation (b : KPCuspCharts.Shape F) :
     KPCuspCharts.CrossQuotient F S ≃ₜ KPCuspCharts.CrossQuotient F S :=
   Homeomorph.Quotient.congr
     (Homeomorph.prodCongr (Homeomorph.refl _) (Homeomorph.addRight b))
     (fun p q => by
-      change KPCuspCharts.totalRelation F S (p,0) (q,0) ↔
-        KPCuspCharts.totalRelation F S ((p.1,p.2+b),0) ((q.1,q.2+b),0)
       exact (coordinate_shear_relation G (fun _ => b) continuous_const (p,0) (q,0)).symm)
 
- theorem actual_shape_translation_formula
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D) (b : KPCuspCharts.Shape F)
+ theorem actual_shape_translation_formula (b : KPCuspCharts.Shape F)
     (p : KPCuspCharts.Cross F) :
     actual_shape_translation G b (Quotient.mk _ p) =
       Quotient.mk _ (p.1,p.2+b) := rfl
 
  def sheared_high_presentation
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D)
     (a : ℝ → KPCuspCharts.Shape F) (ha : Continuous a) (T : ℝ) :
     KPCuspCharts.CrossQuotient F S × Set.Ioi T ≃ₜ KPCuspCharts.HighQuotient F S T :=
   (G.highPresentation T).trans (Homeomorph.Quotient.congr
@@ -630,10 +619,6 @@ namespace PinnedRadialCharts
     (fun p q => (coordinate_shear_relation G a ha p.val q.val).symm))
 
 private theorem sheared_high_presentation_formula
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D)
     (a : ℝ → KPCuspCharts.Shape F) (ha : Continuous a) (T : ℝ)
     (p : KPCuspCharts.Cross F) (t : Set.Ioi T) :
     sheared_high_presentation G a ha T (Quotient.mk _ p, t) =
@@ -643,9 +628,13 @@ private theorem sheared_high_presentation_formula
   rw [G.highPresentation_formula]
   rfl
 
- theorem sectionShape_continuous
-    (F : Type) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+end
+
+ section
+
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+
+theorem sectionShape_continuous
     (w : NumberField.InfinitePlace F) : Continuous (sectionShape F hF w) := by
   apply Continuous.subtype_mk
   apply continuous_pi
@@ -662,9 +651,7 @@ private theorem sheared_high_presentation_formula
     funext r
     simp [hi]
 
- def radius_log_homeomorph
-    (F : Type) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) : Radius ≃ₜ ℝ where
+ def radius_log_homeomorph : Radius ≃ₜ ℝ where
   toFun r := logHeight (F := F) r.val
   invFun t := ⟨Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * t), Real.exp_pos _⟩
   left_inv r := by
@@ -679,6 +666,8 @@ private theorem sheared_high_presentation_formula
   continuous_toFun := (continuous_subtype_val.log (fun r => ne_of_gt r.property)).div_const _
   continuous_invFun := (Real.continuous_exp.comp
     (continuous_const.mul continuous_id)).subtype_mk _
+
+end
 
  def high_radius_log_homeomorph
     (F : Type) [Field F] [NumberField F]
@@ -711,12 +700,13 @@ private theorem sheared_high_presentation_formula
   continuous_invFun := (Real.continuous_exp.comp
     (continuous_const.mul continuous_subtype_val)).subtype_mk _
 
- def pinned_radial_presentation
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+ section
+
+variable {F : Type} [Field F] [NumberField F] {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    (w : NumberField.InfinitePlace F) (Y : ℝ) (hY : 0 < Y) :
+    (G : KPCuspCharts.ChartOutput F hF S D) (w : NumberField.InfinitePlace F) (Y : ℝ) (hY : 0 < Y)
+
+def pinned_radial_presentation :
     KPCuspCharts.CrossQuotient F S × Set.Ioi Y ≃ₜ
       KPCuspCharts.HighQuotient F S (logHeight (F := F) Y) :=
   (Homeomorph.prodCongr (Homeomorph.refl _) (high_radius_log_homeomorph F hF Y hY)).trans
@@ -726,11 +716,6 @@ private theorem sheared_high_presentation_formula
       (logHeight (F := F) Y))
 
 private theorem pinned_radial_presentation_formula
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D)
-    (w : NumberField.InfinitePlace F) (Y : ℝ) (hY : 0 < Y)
     (p : KPCuspCharts.Cross F) (r : Set.Ioi Y) :
     pinned_radial_presentation G w Y hY (Quotient.mk _ p, r) =
       Quotient.mk _ (⟨((p.1, p.2 + sectionShape F hF w
@@ -744,27 +729,29 @@ private theorem pinned_radial_presentation_formula
   apply Subtype.ext
   have he := (radius_log_homeomorph F hF).symm_apply_apply
     (⟨r.val, lt_trans hY r.property⟩ : Radius)
-  change (radius_log_homeomorph F hF).symm (logHeight (F := F) r.val) = _ at he
+  change (radius_log_homeomorph F hF).symm (logHeight r.val) = _ at he
   simp only [Function.comp_apply]
   rw [show (high_radius_log_homeomorph F hF Y hY r).val =
-    logHeight (F := F) r.val from rfl, he]
+    logHeight r.val from rfl, he]
+
+end
 
 section PinnedLocalEnd
 open Topology
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0} {U : Level F ζ hζ}
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0} {U : Level F ζ hζ}
+    (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
  def high_inclusion (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ T) :=
   ((Geometry A j).highPresentation A.threshold) ∘
     Prod.map id (Set.inclusion (show Set.Ioi T ⊆ Set.Ioi A.threshold from
       fun _ hx => lt_of_le_of_lt hT hx)) ∘ ((Geometry A j).highPresentation T).symm
-private theorem high_inclusion_open (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ T) :
-    IsOpenEmbedding (high_inclusion A j T hT) := by
-  apply (Geometry A j).highPresentation A.threshold |>.isOpenEmbedding.comp
-  apply IsOpenEmbedding.comp _ ((Geometry A j).highPresentation T).symm.isOpenEmbedding
-  exact IsOpenEmbedding.id.prodMap (.inclusion _ (isOpen_Ioi.preimage continuous_subtype_val))
-private theorem high_end_factor (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ T) :
+
+section
+
+variable (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ T)
+
+private theorem high_end_factor :
     KPFiniteCuspAtlas.endMap F
       (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative j.1))
       ((A.cuspAtlas j.1).cusp j.2) ((A.cuspAtlas j.1).representative j.2) T =
@@ -781,18 +768,24 @@ private theorem high_end_factor (j : CuspIndex A) (T : ℝ) (hT : A.threshold �
     dsimp only [Prod.map, id_eq]
     rw [(Geometry A j).highPresentation_formula, (Geometry A j).highPresentation_formula]
     rfl
-private theorem high_end_open (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ T) :
+include hT in
+private theorem high_end_open :
     IsOpenEmbedding (KPFiniteCuspAtlas.endMap F
       (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative j.1))
       ((A.cuspAtlas j.1).cusp j.2) ((A.cuspAtlas j.1).representative j.2) T) := by
   rw [high_end_factor A j T hT]
-  apply IsOpenEmbedding.comp _ (high_inclusion_open A j T hT)
+  apply IsOpenEmbedding.comp _ (by
+    apply (Geometry A j).highPresentation A.threshold |>.isOpenEmbedding.comp
+    apply IsOpenEmbedding.comp _ ((Geometry A j).highPresentation T).symm.isOpenEmbedding
+    exact IsOpenEmbedding.id.prodMap (.inclusion _ (isOpen_Ioi.preimage continuous_subtype_val)))
   refine ⟨?_, ?_⟩
   · have he := (A.cuspAtlas j.1).end_embedding j.2
     rw [A.common_threshold j.1] at he
     exact he
   · rw [KPFiniteCuspAtlas.endMap_range F (Geometry A j).positive_dimension]
     simpa only [A.common_threshold j.1] using (A.cuspAtlas j.1).open_ends j.2
+
+end
 
 private theorem sigma_open_embedding {ι : Type*} {σ : ι → Type*} {X : Type*}
     [∀ i, TopologicalSpace (σ i)] [TopologicalSpace X]
@@ -846,10 +839,9 @@ private theorem component_ends_disjoint (T : ℝ) (hT : A.threshold ≤ T) :
   have hil : l = i := congrArg Sigma.fst hs
   subst l
   have hab : a ≠ b := fun h => hne (congrArg (Sigma.mk i) h)
-  have hyz : z = y := by simpa only [Sigma.mk.inj_iff, heq_eq_eq, true_and] using hs
+  have hyz : z = y := by simpa using hs
   subst z
-  have hd := (A.cuspAtlas i).disjoint_ends hab
-  apply Set.disjoint_left.mp hd
+  apply Set.disjoint_left.mp ((A.cuspAtlas i).disjoint_ends hab)
   · exact endSet_mono A ⟨i,a⟩ (by rw [A.common_threshold i]; exact hT) hy
   · exact endSet_mono A ⟨i,b⟩ (by rw [A.common_threshold i]; exact hT) hz
 
@@ -876,21 +868,11 @@ private theorem actual_endMap_continuous (j : CuspIndex A) (T : ℝ) :
       ((A.cuspAtlas j.1).cusp j.2) ((A.cuspAtlas j.1).representative j.2)
       (logHeight (F := F) Y) ∘ pinned_radial_presentation (Geometry A j) w Y hY
 
-private theorem pinned_local_end_continuous (j : CuspIndex A)
-    (w : NumberField.InfinitePlace F) (Y : ℝ) (hY : 0 < Y) :
-    Continuous (pinned_local_end A j w Y hY) := by
-  have hc : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative j.1)) := by
-    have he : KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative j.1) =
-        fun x => A.components ⟨j.1,x⟩ := by
-      funext x
-      exact (A.components_formula j.1 x).symm
-    rw [he]
-    exact A.components.continuous.comp continuous_sigmaMk
-  exact hc.comp ((actual_endMap_continuous A j _).comp
-    (pinned_radial_presentation (Geometry A j) w Y hY).continuous)
+section
 
-private theorem pinned_local_end_range (j : CuspIndex A)
-    (w : NumberField.InfinitePlace F) (Y : ℝ) (hY : 0 < Y) :
+variable (j : CuspIndex A) (w : NumberField.InfinitePlace F) (Y : ℝ) (hY : 0 < Y)
+
+private theorem pinned_local_end_range :
     Set.range (pinned_local_end A j w Y hY) =
       KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative j.1) ''
         KPFiniteCuspAtlas.endSet F
@@ -901,8 +883,7 @@ private theorem pinned_local_end_range (j : CuspIndex A)
     (pinned_radial_presentation (Geometry A j) w Y hY).surjective.range_eq,
     Set.image_univ, KPFiniteCuspAtlas.endMap_range F (Geometry A j).positive_dimension]
 
-private theorem pinned_local_end_formula (j : CuspIndex A)
-    (w : NumberField.InfinitePlace F) (Y : ℝ) (hY : 0 < Y)
+private theorem pinned_local_end_formula
     (p : KPCuspCharts.Cross F) (r : Set.Ioi Y) :
     pinned_local_end A j w Y hY (Quotient.mk _ p,r) =
       KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative j.1)
@@ -914,6 +895,8 @@ private theorem pinned_local_end_formula (j : CuspIndex A)
   dsimp only [pinned_local_end, Function.comp_apply]
   rw [pinned_radial_presentation_formula]
   rfl
+
+end
 private theorem pinned_local_end_open (j : CuspIndex A)
     (w : NumberField.InfinitePlace F) (Y : ℝ) (hY : AdmissibleCutoff A Y) :
     IsOpenEmbedding (pinned_local_end A j w Y hY.1) :=
@@ -921,22 +904,30 @@ private theorem pinned_local_end_open (j : CuspIndex A)
     ((high_end_open A j _ hY.2).comp
       (pinned_radial_presentation (Geometry A j) w Y hY.1).isOpenEmbedding)
 
- def pinned_cusp_chart (w : NumberField.InfinitePlace F)
-    (Y : ℝ) (hY : 0 < Y) : CrossSection A × Set.Ioi Y → Spherical F ζ hζ U :=
+ section
+
+variable (w : NumberField.InfinitePlace F) (Y : ℝ)
+
+def pinned_cusp_chart (hY : 0 < Y) : CrossSection A × Set.Ioi Y → Spherical F ζ hζ U :=
   (fun x => pinned_local_end A x.1 w Y hY x.2) ∘ Homeomorph.sigmaProdDistrib
 
-private theorem pinned_cusp_chart_continuous (w : NumberField.InfinitePlace F)
-    (Y : ℝ) (hY : 0 < Y) : Continuous (pinned_cusp_chart A w Y hY) := by
+private theorem pinned_cusp_chart_continuous (hY : 0 < Y) : Continuous (pinned_cusp_chart A w Y hY) := by
   apply Continuous.comp _ Homeomorph.sigmaProdDistrib.continuous
   apply continuous_sigma
   intro j
-  exact pinned_local_end_continuous A j w Y hY
+  have hc : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative j.1)) := by
+    have he : KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative j.1) =
+        fun x => A.components ⟨j.1,x⟩ := by
+      funext x
+      exact (A.components_formula j.1 x).symm
+    rw [he]
+    exact A.components.continuous.comp continuous_sigmaMk
+  exact hc.comp ((actual_endMap_continuous A j _).comp
+    (pinned_radial_presentation (Geometry A j) w Y hY).continuous)
 
-private theorem pinned_cusp_chart_range (w : NumberField.InfinitePlace F)
-    (Y : ℝ) (hY : 0 < Y) :
+private theorem pinned_cusp_chart_range (hY : 0 < Y) :
     Set.range (pinned_cusp_chart A w Y hY) = cuspEnds A Y := by
   ext x
-  change (∃ p : CrossSection A × Set.Ioi Y, pinned_cusp_chart A w Y hY p = x) ↔ _
   simp only [cuspEnds, Set.mem_iUnion]
   constructor
   · rintro ⟨⟨⟨j,p⟩,r⟩, he⟩
@@ -948,8 +939,7 @@ private theorem pinned_cusp_chart_range (w : NumberField.InfinitePlace F)
     obtain ⟨⟨p,r⟩,he⟩ := hx
     exact ⟨(⟨j,p⟩,r), he⟩
 
-private theorem pinned_cusp_chart_open (w : NumberField.InfinitePlace F)
-    (Y : ℝ) (hY : AdmissibleCutoff A Y) :
+private theorem pinned_cusp_chart_open (hY : AdmissibleCutoff A Y) :
     IsOpenEmbedding (pinned_cusp_chart A w Y hY.1) := by
   apply IsOpenEmbedding.comp _ Homeomorph.sigmaProdDistrib.isOpenEmbedding
   apply sigma_open_embedding
@@ -958,13 +948,11 @@ private theorem pinned_cusp_chart_open (w : NumberField.InfinitePlace F)
   · simpa only [pinned_local_end_range] using
       component_ends_disjoint A (logHeight (F := F) Y) hY.2
 
-private theorem pinned_cusp_chart_embedding (w : NumberField.InfinitePlace F)
-    (Y : ℝ) (hY : AdmissibleCutoff A Y) :
+private theorem pinned_cusp_chart_embedding (hY : AdmissibleCutoff A Y) :
     IsEmbedding (pinned_cusp_chart A w Y hY.1) :=
   (pinned_cusp_chart_open A w Y hY).isEmbedding
 
- theorem pinned_cusp_chart_formula (w : NumberField.InfinitePlace F)
-    (Y : ℝ) (hY : 0 < Y) (j : CuspIndex A)
+ theorem pinned_cusp_chart_formula (hY : 0 < Y) (j : CuspIndex A)
     (p : KPCuspCharts.Cross F) (r : Set.Ioi Y) :
     pinned_cusp_chart A w Y hY (⟨j, Quotient.mk _ p⟩,r) =
       KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative j.1)
@@ -974,6 +962,8 @@ private theorem pinned_cusp_chart_embedding (w : NumberField.InfinitePlace F)
             ((p.1, p.2 + sectionShape F hF w ⟨r.val, lt_trans hY r.property⟩),
               logHeight (F := F) r.val))) :=
   pinned_local_end_formula A j w Y hY p r
+
+end
 
  def base_cutoff : ℝ :=
   Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) * A.threshold)
@@ -989,12 +979,11 @@ private theorem base_cutoff_le (Y : ℝ) (hY : AdmissibleCutoff A Y) :
   unfold base_cutoff
   rw [← Real.exp_log hY.1]
   apply Real.exp_le_exp.mpr
-  have hd : 0 < 2 * (KPCuspLogShape.dimension F : ℝ) :=
-    mul_pos (by norm_num) (Nat.cast_pos.mpr (KPCuspLogShape.dimension_pos F hF))
-  have ht := (le_div_iff₀ hd).mp hY.2
-  simpa only [mul_comm] using ht
+  simpa only [mul_comm] using ((le_div_iff₀ (mul_pos (by norm_num) (Nat.cast_pos.mpr (KPCuspLogShape.dimension_pos F hF)))).mp hY.2)
 
-private theorem pinned_cusp_chart_cutoff (w : NumberField.InfinitePlace F)
+variable (w : NumberField.InfinitePlace F)
+
+private theorem pinned_cusp_chart_cutoff
     (Y Z : ℝ) (hY : 0 < Y) (hZ : 0 < Z) (x : CrossSection A)
     (r : Set.Ioi Y) (hr : Z < r.val) :
     pinned_cusp_chart A w Y hY (x,r) =
@@ -1004,28 +993,27 @@ private theorem pinned_cusp_chart_cutoff (w : NumberField.InfinitePlace F)
   | h p =>
     rw [pinned_cusp_chart_formula, pinned_cusp_chart_formula]
 
- def pinned_modulus (w : NumberField.InfinitePlace F) :
+ def pinned_modulus :
     Spherical F ζ hζ U → ℝ :=
   Function.extend (pinned_cusp_chart A w (base_cutoff A) (base_cutoff_admissible A).1)
     (fun p => p.2.val) (fun _ => 0)
 
-private theorem pinned_modulus_measurable (w : NumberField.InfinitePlace F) :
+private theorem pinned_modulus_measurable :
     Measurable (pinned_modulus A w) := by
   apply (pinned_cusp_chart_open A w _ (base_cutoff_admissible A)).measurableEmbedding.measurable_extend
   · exact measurable_subtype_coe.comp measurable_snd
   · exact measurable_const
 
-private theorem pinned_modulus_base (w : NumberField.InfinitePlace F)
+private theorem pinned_modulus_base
     (x : CrossSection A) (r : Set.Ioi (base_cutoff A)) :
     pinned_modulus A w
-      (pinned_cusp_chart A w (base_cutoff A) (base_cutoff_admissible A).1 (x,r)) = r.val := by
-  exact (pinned_cusp_chart_embedding A w _ (base_cutoff_admissible A)).injective.extend_apply
+      (pinned_cusp_chart A w (base_cutoff A) (base_cutoff_admissible A).1 (x,r)) = r.val := (pinned_cusp_chart_embedding A w _ (base_cutoff_admissible A)).injective.extend_apply
     (fun p => p.2.val) (fun _ => 0) (x,r)
 
-private theorem pinned_cusp_chart_modulus (w : NumberField.InfinitePlace F)
+private theorem pinned_cusp_chart_modulus
     (Y : ℝ) (hY : AdmissibleCutoff A Y) (x : CrossSection A) (r : Set.Ioi Y) :
     pinned_modulus A w (pinned_cusp_chart A w Y hY.1 (x,r)) = r.val := by
-  have hr : base_cutoff A < r.val := lt_of_le_of_lt (base_cutoff_le A Y hY) r.property
+  have hr := lt_of_le_of_lt (base_cutoff_le A Y hY) r.property
   rw [pinned_cusp_chart_cutoff A w Y (base_cutoff A) hY.1
     (base_cutoff_admissible A).1 x r hr]
   exact pinned_modulus_base A w x ⟨r.val,hr⟩
@@ -1049,24 +1037,10 @@ private theorem smul_weight_unique
 end ComponentNormalization
 
 namespace ComponentFiber
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming basepoint_continuous → basepoint_continuous
+open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources (basepoint_continuous)
 open MeasureTheory Set
 open scoped ENNReal Pointwise
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-
-private theorem finite_orbit_spherical (U : Level F ζ hζ)
-    (g c : KPFiniteCuspAtlas.FiniteCover F ζ hζ)
-    (hc : c ∈ KPCuspGenuineMonodromy.finiteOrbit F ζ hζ U g)
-    (x : KPFiniteCuspAtlas.SymmetricSpace F) :
-    (Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U) (x,c) : Spherical F ζ hζ U) =
-      KPFiniteCuspAtlas.componentMap F ζ hζ U g (KPCuspSiegel.projection F _ x) := by
-  obtain ⟨ε,u,rfl⟩ := hc
-  change Quotient.mk _ (x,_) = Quotient.mk _ (x,g)
-  apply Eq.symm
-  apply Quotient.sound
-  refine ⟨1, ε, u, ?_, ?_⟩
-  · simp
-  · simp
 
  theorem spherical_fiber_formula (P : SphericalTransport F ζ hζ) (U : Level F ζ hζ)
     (g c : KPFiniteCuspAtlas.FiniteCover F ζ hζ)
@@ -1077,19 +1051,25 @@ private theorem finite_orbit_spherical (U : Level F ζ hζ)
       KPFiniteCuspAtlas.componentMap F ζ hζ U g
         (KPCuspSiegel.projection F _ (archBasepoint F a)) := by
   rw [P.formula]
-  exact finite_orbit_spherical F ζ hζ U g c hc _
+  obtain ⟨ε,u,rfl⟩ := hc
+  apply Eq.symm
+  apply Quotient.sound
+  refine ⟨1, ε, u, ?_, ?_⟩
+  · simp
+  · simp
+
+section
+
+variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
 private theorem spherical_restrict_pushforward
-    {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : SphericalTransport F ζ hζ) (U : Level F ζ hζ)
     (C : Set (Spherical F ζ hζ U)) (hC : MeasurableSet C) :
     (sphericalMeasure F ζ hζ R P U).restrict C =
-      Measure.map (P.projection U) (R.quotientHaar.restrict (P.projection U ⁻¹' C)) := by
-  exact Measure.restrict_map (P.continuous U).measurable hC
+      Measure.map (P.projection U) (R.quotientHaar.restrict (P.projection U ⁻¹' C)) := Measure.restrict_map (P.continuous U).measurable hC
 
 private theorem component_range_clopen
-    {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0} {U : Level F ζ hζ}
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (i : Fin A.componentCount) :
     IsClopen (Set.range (KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative i))) := by
@@ -1101,6 +1081,8 @@ private theorem component_range_clopen
   constructor
   · exact A.components.isClosedMap _ isClosed_range_sigmaMk
   · exact A.components.isOpenMap _ isOpen_range_sigmaMk
+
+end
 
 private theorem actual_component_weight
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
@@ -1129,7 +1111,7 @@ private theorem actual_component_weight
   letI : BorelSpace (KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) := inferInstance
   obtain ⟨ν,hν,hprod,D,hDm,hD,hB,hBp,hBf,hq⟩ :=
     KPActualComponentHaarSources.actual_component_product_disintegration F ζ hζ hF U A R P i
-  obtain ⟨c,hc,harch,hvol⟩ :=
+  obtain ⟨c, hc, hvol⟩ :=
     KPActualComponentHaarSources.arch_group_domain_quotient_volume F ζ hζ hF U A R i D hDm hD
   letI := hν
   letI := R.arch_isHaar
@@ -1247,8 +1229,7 @@ private theorem actual_component_matching
       (ε : rootsOfUnity 3 F) (u : U.toOpenSubgroup),
       A.representative i = KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ δ *
         KPCuspGenuineMonodromy.central F ζ hζ ε * c * u := by
-  let x : KPFiniteCuspAtlas.SymmetricSpace F := fun _ => (0,0)
-  obtain ⟨⟨i,z⟩, hz⟩ := A.components.surjective (Quotient.mk _ (x,c))
+  obtain ⟨⟨i,z⟩, hz⟩ := A.components.surjective (Quotient.mk _ ((fun _ => (0,0)),c))
   rw [A.components_formula] at hz
   induction z using Quotient.inductionOn with
   | h z =>
@@ -1278,10 +1259,10 @@ private theorem actual_component_conjugate
   let d := KPFiniteComponents.diagonal F
   have hd : ∀ x, φ (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ x) = d x := by
     intro x
-    exact congrArg (fun f => f x) (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2.2.1
+    exact congrArg (fun f => f x) (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2
   have hz : φ (KPCuspGenuineMonodromy.central F ζ hζ ε) = 1 := by
     apply MonoidHom.mem_ker.mp
-    rw [← (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.1]
+    rw [← (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).1]
     exact ⟨ε,rfl⟩
   have hp : φ g = d δ * φ c * φ u := by
     rw [hg, map_mul, map_mul, map_mul, hd, hz, mul_one]
@@ -1318,8 +1299,7 @@ private theorem conjugated_cusp_refinement
 
  theorem coordinate_transition_formula (hd : 0 < KPCuspLogShape.dimension F)
     (t : KPCuspArithmetic.PGL2 F) (p : KPCuspCharts.Coordinates F) :
-    KPCuspCharts.toArch F (coordinate_transition hd t p) = t • KPCuspCharts.toArch F p := by
-  exact (KPCuspCharts.toArchHomeomorph F hd).apply_symm_apply _
+    KPCuspCharts.toArch F (coordinate_transition hd t p) = t • KPCuspCharts.toArch F p := (KPCuspCharts.toArchHomeomorph F hd).apply_symm_apply _
 
  theorem actual_full_chart_commutes
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0} {V U : Level F ζ hζ}
@@ -1364,9 +1344,6 @@ end AllLevelGeometry
 
 namespace NormOneTransition
 open MeasureTheory
-open _root_.DedekindZetaZeroFree.KPCuspCharts renaming upper_action → upper_action
-open _root_.DedekindZetaZeroFree.KPCuspChart.SectionConstruction renaming horizontalLinear → horizontalLinear
-open _root_.DedekindZetaZeroFree.KPCuspChart.SectionConstruction renaming horizontal_det → horizontal_det
 variable {F : Type} [Field F] [NumberField F]
 
  def shift (u : Fˣ)
@@ -1384,15 +1361,14 @@ variable {F : Type} [Field F] [NumberField F]
  theorem crossCoordinate_continuous (u : Fˣ) (v : F)
     (hu : ∑ i : Fin (KPCuspLogShape.dimension F),
       Real.log ((KPCusp.complexPlace F i) (u : F)) = 0) :
-    Continuous (crossCoordinate u v hu) := by
-  exact (continuous_pi fun i => (continuous_const.mul
+    Continuous (crossCoordinate u v hu) := (continuous_pi fun i => (continuous_const.mul
     ((continuous_apply i).comp continuous_fst)).add continuous_const).prodMk
       (continuous_snd.add continuous_const)
 
 private theorem prod_cancel_right {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
     (μ ν : Measure X) (ρ : Measure Y) [SigmaFinite ρ] (hρ : ρ ≠ 0)
     (h : μ.prod ρ = ν.prod ρ) : μ = ν := by
-  obtain ⟨n,hn⟩ := (Measure.exists_measure_inter_spanningSets_pos (μ := ρ) Set.univ).mpr
+  obtain ⟨n,hn⟩ := (Measure.exists_measure_inter_spanningSets_pos Set.univ).mpr
     (Measure.measure_univ_pos.mpr hρ)
   simp only [Set.univ_inter] at hn
   apply Measure.ext
@@ -1404,7 +1380,7 @@ private theorem prod_cancel_right {X Y : Type*} [MeasurableSpace X] [MeasurableS
 private theorem prod_cancel_left {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
     (ρ : Measure X) (μ ν : Measure Y) [SigmaFinite ρ] [SFinite μ] [SFinite ν]
     (hρ : ρ ≠ 0) (h : ρ.prod μ = ρ.prod ν) : μ = ν := by
-  obtain ⟨n,hn⟩ := (Measure.exists_measure_inter_spanningSets_pos (μ := ρ) Set.univ).mpr
+  obtain ⟨n,hn⟩ := (Measure.exists_measure_inter_spanningSets_pos Set.univ).mpr
     (Measure.measure_univ_pos.mpr hρ)
   simp only [Set.univ_inter] at hn
   apply Measure.ext
@@ -1426,7 +1402,7 @@ private theorem prod_cancel_left {X Y : Type*} [MeasurableSpace X] [MeasurableSp
   have hr : ρ ≠ 0 := by
     have hf : Measurable (fun t : ℝ => ENNReal.ofReal
         (Real.exp (-2 * (KPCuspLogShape.dimension F : ℝ) * t))) := by fun_prop
-    have ha : (volume : Measure ℝ) ≪ ρ := withDensity_absolutelyContinuous' hf.aemeasurable
+    have ha : volume ≪ ρ := withDensity_absolutelyContinuous' hf.aemeasurable
       (Filter.Eventually.of_forall fun t => (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne')
     intro he
     rw [he] at ha
@@ -1439,7 +1415,7 @@ private theorem prod_cancel_left {X Y : Type*} [MeasurableSpace X] [MeasurableSp
     exact GS.archVolume_formula.trans GT.archVolume_formula.symm
   have hv : (volume : Measure (KPCuspCharts.Horizontal F)) ≠ 0 := by
     intro he
-    exact isOpen_univ.measure_ne_zero (μ := (volume : Measure (KPCuspCharts.Horizontal F)))
+    exact isOpen_univ.measure_ne_zero (μ := volume)
       Set.univ_nonempty (by rw [he]; simp)
   exact prod_cancel_left volume _ _ hv (prod_cancel_right _ _ ρ hr hh)
 
@@ -1502,8 +1478,7 @@ namespace IndexPort
     · intro ⟨q,h⟩ ⟨r,k⟩ he
       have hq : q = r := by
         have : (q.out * h.val : G ⧸ H) = (r.out * k.val : G ⧸ H) := congrArg QuotientGroup.mk he
-        simpa only [QuotientGroup.mk_mul_of_mem _ h.property,
-          QuotientGroup.mk_mul_of_mem _ k.property, Quotient.out_eq'] using this
+        simpa using this
       subst r
       have hh : h = k := Subtype.ext (mul_left_cancel he)
       subst k
@@ -1557,7 +1532,7 @@ private theorem level_finite_relindex
     {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     (V U : CompactOpenLevel G) :
     V.toOpenSubgroup.toSubgroup.IsFiniteRelIndex U.toOpenSubgroup.toSubgroup := by
-  let : CompactSpace U.toOpenSubgroup.toSubgroup :=
+  let :=
     isCompact_iff_compactSpace.mp U.isCompact
   let : Finite (U.toOpenSubgroup.toSubgroup ⧸
       V.toOpenSubgroup.toSubgroup.subgroupOf U.toOpenSubgroup.toSubgroup) :=
@@ -1606,8 +1581,7 @@ private theorem component_finite_relindex (V U : Level F ζ hζ)
     (KPCuspGenuineMonodromy.Component F ζ hζ V c).IsFiniteRelIndex
       (KPCuspGenuineMonodromy.Component F ζ hζ U c) := by
   let := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.2
-  have hi := level_finite_relindex V U
-  exact ((hi.map (KPCuspGenuineMonodromy.finiteBase F ζ hζ)).map
+  exact (((level_finite_relindex V U).map (KPCuspGenuineMonodromy.finiteBase F ζ hζ)).map
     (MulAut.conj (KPCuspGenuineMonodromy.finiteBase F ζ hζ c)).toMonoidHom).comap
       (KPFiniteComponents.diagonal F)
 
@@ -1621,10 +1595,10 @@ private theorem component_conjugate_eq (U : Level F ζ hζ)
   let φ := KPCuspGenuineMonodromy.finiteBase F ζ hζ
   let d := KPFiniteComponents.diagonal F
   have hd : φ (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ δ) = d δ :=
-    congrArg (fun f => f δ) (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2.2.1
+    congrArg (fun f => f δ) (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2
   have hz : φ (KPCuspGenuineMonodromy.central F ζ hζ ε) = 1 := by
     apply MonoidHom.mem_ker.mp
-    rw [← (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.1]
+    rw [← (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).1]
     exact ⟨ε,rfl⟩
   have hp : φ g = d δ * φ c * φ u := by
     rw [hg, map_mul, map_mul, map_mul, hd, hz, mul_one]
@@ -1642,8 +1616,7 @@ private theorem component_conjugate_eq (U : Level F ζ hζ)
 private theorem inf_finite_relindex {G : Type*} [Group G]
     {H K : Subgroup G} (L : Subgroup G) (h : H.IsFiniteRelIndex K) :
     (H ⊓ L).IsFiniteRelIndex (K ⊓ L) := by
-  have hi := (h.comap L.subtype).map L.subtype
-  simpa only [Subgroup.comap_subtype, Subgroup.subgroupOf_map_subtype] using hi
+  simpa using ((h.comap L.subtype).map L.subtype)
 
 omit [NumberField F] in
 private theorem conjugated_cusp_finite_relindex
@@ -1654,8 +1627,6 @@ private theorem conjugated_cusp_finite_relindex
     ((KPCuspArithmetic.conjugatedStabilizer F Γ q σ).map
       (MulAut.conj (τ⁻¹ * δ * σ)).toMonoidHom).IsFiniteRelIndex
         (KPCuspArithmetic.conjugatedStabilizer F Δ r τ) := by
-  have hi := (inf_finite_relindex (MulAction.stabilizer (KPCuspArithmetic.PGL2 F) r) h).map
-    (MulAut.conj τ⁻¹).toMonoidHom
   have he : (KPCuspArithmetic.conjugatedStabilizer F Γ q σ).map
       (MulAut.conj (τ⁻¹ * δ * σ)).toMonoidHom =
       ((Γ.map (MulAut.conj δ).toMonoidHom) ⊓
@@ -1670,7 +1641,8 @@ private theorem conjugated_cusp_finite_relindex
     simp only [MonoidHom.comp_apply, MulEquiv.coe_toMonoidHom, MulAut.conj_apply]
     group
   rw [he]
-  exact hi
+  exact (inf_finite_relindex (MulAction.stabilizer (KPCuspArithmetic.PGL2 F) r) h).map
+    (MulAut.conj τ⁻¹).toMonoidHom
 
 private theorem component_conjugate_finite_relindex (V U : Level F ζ hζ)
     {c g : KPFiniteCuspAtlas.FiniteCover F ζ hζ}
@@ -1771,12 +1743,10 @@ private theorem sum_coset_stabilizer_indices (G : Type*) [Group G]
     (∑ ω : Quotient (orbitRel K (G ⧸ H)),
       ((H.map (MulAut.conj ω.out.out).toMonoidHom).subgroupOf K).index) = H.index := by
   let : Fintype (Quotient (orbitRel K (G ⧸ H))) := Fintype.ofFinite _
-  have hi := sum_stabilizer_indices K (G ⧸ H)
   have he (ω : Quotient (orbitRel K (G ⧸ H))) :
       stabilizer K ω.out = (H.map (MulAut.conj ω.out.out).toMonoidHom).subgroupOf K := by
-    have hh := coset_stabilizer G H K ω.out.out
-    simpa only [Quotient.out_eq'] using hh
-  simpa only [he, Subgroup.index] using hi
+    simpa using (coset_stabilizer G H K ω.out.out)
+  simpa only [he, Subgroup.index] using (sum_stabilizer_indices K (G ⧸ H))
 
  def cuspOrbitPoint {G X : Type*} [Group G] [MulAction G X]
     (q : X) (a : G) : orbit G q := ⟨a⁻¹ • q, mem_orbit q a⁻¹⟩
@@ -1788,10 +1758,9 @@ private theorem sum_coset_stabilizer_indices (G : Type*) [Group G]
   rw [orbitRel_apply, mem_orbit_iff, orbitRel_apply, mem_subgroup_orbit_iff, mem_orbit_iff]
   constructor
   · rintro ⟨k,hk⟩
-    change (k.val * b : G ⧸ H) = (a : G ⧸ H) at hk
-    have hh := H.inv_mem (QuotientGroup.eq.mp hk)
+    change (k.val * b : G ⧸ H) = a at hk
     refine ⟨⟨a⁻¹ * k.val * b, ?_⟩, ?_⟩
-    · convert hh using 1; group
+    · convert (H.inv_mem (QuotientGroup.eq.mp hk)) using 1; group
     · change (a⁻¹ * k.val * b) • (b⁻¹ • q) = a⁻¹ • q
       rw [mul_smul, mul_smul, smul_inv_smul, k.property]
   · rintro ⟨h,hh⟩
@@ -1799,7 +1768,7 @@ private theorem sum_coset_stabilizer_indices (G : Type*) [Group G]
     have hk : (a * h.val * b⁻¹) • q = q := by
       rw [mul_smul, mul_smul, hh, smul_inv_smul]
     refine ⟨⟨a * h.val * b⁻¹, hk⟩, ?_⟩
-    change ((a * h.val * b⁻¹) * b : G ⧸ H) = (a : G ⧸ H)
+    change ((a * h.val * b⁻¹) * b : G ⧸ H) = a
     have he : (a * h.val * b⁻¹) * b = a * h.val := by group
     rw [he, QuotientGroup.mk_mul_of_mem _ h.property]
 
@@ -1873,16 +1842,13 @@ private theorem cusp_index_transport {G X : Type*} [Group G] [MulAction G X]
       (MulAut.conj (τ⁻¹ * a.val)).toMonoidHom =
       ((Γ.map (MulAut.conj a.val).toMonoidHom) ⊓ stabilizer G q).map
         (MulAut.conj τ⁻¹).toMonoidHom := by
-    have he : stabilizer G (a.val⁻¹ • q) =
-        (stabilizer G q).map (MulAut.conj a.val⁻¹).toMonoidHom :=
-      stabilizer_smul_eq_stabilizer_map_conj _ _
     have hi : (MulAut.conj a.val).toMonoidHom.comp
         (MulAut.conj a.val⁻¹).toMonoidHom = MonoidHom.id G := by
       ext x
       simp [MulAut.conj_apply, mul_assoc]
     have hh : (stabilizer G (a.val⁻¹ • q)).map
         (MulAut.conj a.val).toMonoidHom = stabilizer G q := by
-      rw [he, Subgroup.map_map, hi, Subgroup.map_id]
+      rw [(stabilizer_smul_eq_stabilizer_map_conj _ _), Subgroup.map_map, hi, Subgroup.map_id]
     rw [← hh, ← Subgroup.map_inf _ _ _ (MulAut.conj a.val).injective,
       Subgroup.map_map]
     congr 1
@@ -1937,9 +1903,8 @@ private theorem subgroupOf_fundamental
     {Γ Δ : Subgroup G} (h : Γ ≤ Δ) {μ : Measure X} {E : Set X}
     (hE : IsFundamentalDomain Γ E μ) :
     IsFundamentalDomain (Γ.subgroupOf Δ) E μ := by
-  have he := hE.preimage_of_equiv (MeasureTheory.MeasurePreserving.id μ).quasiMeasurePreserving
+  exact hE.preimage_of_equiv (MeasureTheory.MeasurePreserving.id μ).quasiMeasurePreserving
     (Subgroup.subgroupOfEquivOfLe h).symm.bijective (by intro g x; rfl)
-  exact he
 
 private theorem arithmetic_volume_index
     {Γ Δ : Subgroup (KPCuspArithmetic.PGL2 F)} (h : Γ ≤ Δ)
@@ -2142,11 +2107,10 @@ private theorem actual_weighted_component_pushforward
         (KPFiniteCuspAtlas.quotientVolume F
           (KPCuspGenuineMonodromy.Component F ζ hζ U (AU.representative k))
           (AU.cuspAtlas k).fundamentalDomain) := by
-  have hfine := component_map_measurable V (AV.representative i)
   have hcoarse := component_map_measurable U (AU.representative k)
   have hforget := (P.forget_continuous V U h).measurable
   rw [DV.component_measure i, Measure.map_smul _ hforget.aemeasurable,
-    Measure.map_map hforget hfine]
+    Measure.map_map hforget (component_map_measurable V (AV.representative i))]
   have he : P.forget V U h ∘ KPFiniteCuspAtlas.componentMap F ζ hζ V (AV.representative i) =
       KPFiniteCuspAtlas.componentMap F ζ hζ U (AU.representative k) ∘
         arithmetic_transition δ (AllLevelGeometry.actual_component_conjugate h δ ε u hc) := by
@@ -2246,9 +2210,7 @@ private theorem matched_component_restriction_sum
     matched_component_preimage P h AV AU m δ ε u hc k]
   have hd : Pairwise (fun i j : {i : Fin AV.componentCount // m i = k} => Disjoint
       (Set.range (KPFiniteCuspAtlas.componentMap F ζ hζ V (AV.representative i.val)))
-      (Set.range (KPFiniteCuspAtlas.componentMap F ζ hζ V (AV.representative j.val)))) := by
-    intro i j hij
-    exact component_range_disjoint AV (by intro he; exact hij (Subtype.ext he))
+      (Set.range (KPFiniteCuspAtlas.componentMap F ζ hζ V (AV.representative j.val)))) := fun i j hij => component_range_disjoint AV (fun he => hij (Subtype.ext he))
   rw [Measure.restrict_iUnion hd
     (fun i => (ComponentFiber.component_range_clopen AV i.val).isOpen.measurableSet),
     Measure.sum_fintype, Measure.map_finset_sum' hf.aemeasurable]
@@ -2415,13 +2377,10 @@ open scoped ENNReal
     Function.Bijective (labelToOrbit (Γ := Γ) (Δ := Δ) c q) := by
   constructor
   · intro a b hab
-    have hr := Quotient.exact hab
-    obtain ⟨g,hg⟩ := mem_orbit_iff.mp (orbitRel_apply.mp hr)
-    have he : (⟨g.val.val,g.property⟩ : Γ) • c b.val = c a.val :=
-      congrArg Subtype.val hg
+    obtain ⟨g,hg⟩ := mem_orbit_iff.mp (orbitRel_apply.mp (Quotient.exact hab))
     apply Subtype.ext
     by_contra hn
-    exact hin b.val a.val (Ne.symm hn) ⟨g.val.val,g.property⟩ he
+    exact hin b.val a.val (Ne.symm hn) ⟨g.val.val,g.property⟩ (congrArg Subtype.val hg)
   · intro x
     induction x using Quotient.inductionOn with
     | h x =>
@@ -2457,17 +2416,13 @@ private theorem degree_smul {G X : Type*} [Group G] [MulAction G X]
     {Γ Δ : Subgroup G} (h : Γ ≤ Δ) (g : Γ) (x : X) :
     (Γ ⊓ stabilizer G (g.val • x)).relIndex (Δ ⊓ stabilizer G (g.val • x)) =
       (Γ ⊓ stabilizer G x).relIndex (Δ ⊓ stabilizer G x) := by
-  have hΓ : Γ.map (MulAut.conj g.val).toMonoidHom = Γ :=
-    FiniteIndexContinuation.conj_member_eq Γ g.val g.property
-  have hΔ : Δ.map (MulAut.conj g.val).toMonoidHom = Δ :=
-    FiniteIndexContinuation.conj_member_eq Δ g.val (h g.property)
   have hΓs : Γ ⊓ stabilizer G (g.val • x) =
       (Γ ⊓ stabilizer G x).map (MulAut.conj g.val).toMonoidHom := by
-    rw [Subgroup.map_inf _ _ _ (MulAut.conj g.val).injective, hΓ,
+    rw [Subgroup.map_inf _ _ _ (MulAut.conj g.val).injective, (FiniteIndexContinuation.conj_member_eq Γ g.val g.property),
       stabilizer_smul_eq_stabilizer_map_conj]
   have hΔs : Δ ⊓ stabilizer G (g.val • x) =
       (Δ ⊓ stabilizer G x).map (MulAut.conj g.val).toMonoidHom := by
-    rw [Subgroup.map_inf _ _ _ (MulAut.conj g.val).injective, hΔ,
+    rw [Subgroup.map_inf _ _ _ (MulAut.conj g.val).injective, (FiniteIndexContinuation.conj_member_eq Δ g.val (h g.property)),
       stabilizer_smul_eq_stabilizer_map_conj]
   rw [hΓs,hΔs,
     Subgroup.relIndex_map_map_of_injective _ _ (MulAut.conj g.val).injective]
@@ -2502,7 +2457,6 @@ private theorem coset_orbit_formula {G X : Type*} [Group G] [MulAction G X]
     CuspIndexAccounting.cosetOrbitsEquivCuspOrbits (Γ.subgroupOf Δ) q ω =
       Quotient.mk'' (CuspIndexAccounting.cuspOrbitPoint q ω.out.out) := by
   conv_lhs => rw [← Quotient.out_eq ω]
-  change CuspIndexAccounting.cosetToCuspOrbit (Γ.subgroupOf Δ) q ω.out = _
   conv_lhs => rw [← Quotient.out_eq ω.out]
   rfl
 
@@ -2517,7 +2471,7 @@ private theorem labels_degree {G X : Type*} [Group G] [MulAction G X]
         (stabilizer Δ q)).index := by
   let ω := labelsEquivCosetOrbits h c hex hin q a
   have he : CuspIndexAccounting.cosetOrbitsEquivCuspOrbits (Γ.subgroupOf Δ) q ω =
-      labelToOrbit (Γ := Γ) (Δ := Δ) c q a := by
+      labelToOrbit c q a := by
     exact (CuspIndexAccounting.cosetOrbitsEquivCuspOrbits (Γ.subgroupOf Δ) q).apply_symm_apply _
   rw [coset_orbit_formula] at he
   obtain ⟨g,hg⟩ := mem_orbit_iff.mp (orbitRel_apply.mp (Quotient.exact he))
@@ -2592,9 +2546,7 @@ private theorem actual_shifted_cusp_index_sum
         (Δ ⊓ stabilizer (KPCuspArithmetic.PGL2 F) (δ • (AV.cuspAtlas i).cusp a.val))) =
           Γ.relIndex Δ := by
   let Γ₀ := KPCuspGenuineMonodromy.Component F ζ hζ V (AV.representative i)
-  let Γ := Γ₀.map (MulAut.conj δ).toMonoidHom
-  let Δ := KPCuspGenuineMonodromy.Component F ζ hζ U (AU.representative k)
-  letI : (Γ.subgroupOf Δ).FiniteIndex := Subgroup.isFiniteRelIndex_iff_finiteIndex.mp
+  letI : ((Γ₀.map (MulAut.conj δ).toMonoidHom).subgroupOf (KPCuspGenuineMonodromy.Component F ζ hζ U (AU.representative k))).FiniteIndex := Subgroup.isFiniteRelIndex_iff_finiteIndex.mp
     (FiniteIndexContinuation.component_conjugate_finite_relindex V U δ ε u hc)
   exact sum_labels_degree (AllLevelGeometry.actual_component_conjugate h δ ε u hc)
     (fun a => δ • (AV.cuspAtlas i).cusp a)
@@ -2671,7 +2623,6 @@ private theorem actual_pinned_cusp_index_sum
   let Γ₀ := KPCuspGenuineMonodromy.Component F ζ hζ V (AV.representative i)
   let Δ := KPCuspGenuineMonodromy.Component F ζ hζ U (AU.representative k)
   let q := (AU.cuspAtlas k).cusp a
-  let τ := (AU.cuspAtlas k).representative a
   calc
     _ = ∑ b : {b : Fin (AV.cuspAtlas i).cuspCount // δ • (AV.cuspAtlas i).cusp b ∈ orbit Δ q},
         ((Γ₀.map (MulAut.conj δ).toMonoidHom) ⊓ stabilizer (KPCuspArithmetic.PGL2 F)
@@ -2680,7 +2631,7 @@ private theorem actual_pinned_cusp_index_sum
       apply Finset.sum_congr rfl
       intro b _
       exact actual_transition_degree Γ₀ Δ ((AV.cuspAtlas i).cusp b.val) q δ
-        ((AV.cuspAtlas i).representative b.val) τ
+        ((AV.cuspAtlas i).representative b.val) ((AU.cuspAtlas k).representative a)
         (cuspCorrection Δ q (δ • (AV.cuspAtlas i).cusp b.val) b.property)
         (cuspCorrection_formula Δ q (δ • (AV.cuspAtlas i).cusp b.val) b.property)
     _ = _ := actual_shifted_cusp_index_sum h AV AU i k δ ε u hc q
@@ -2756,9 +2707,8 @@ private theorem coarseLabel_eq_iff {G X : Type*} [Group G] [MulAction G X]
     obtain ⟨g,hg⟩ := mem_orbit_iff.mp (coarseLabel_mem Δ c hex x)
     obtain ⟨v,hv⟩ := mem_orbit_iff.mp hx
     by_contra hn
-    have he : (v⁻¹ * g) • c (coarseLabel Δ c hex x) = c a := by
-      rw [mul_smul,hg,← hv,inv_smul_smul]
-    exact hin _ a hn (v⁻¹ * g) he
+    refine hin _ a hn (v⁻¹ * g) ?_
+    rw [mul_smul,hg,← hv,inv_smul_smul]
 
  def actualCuspLabel
     {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
@@ -2832,10 +2782,8 @@ private theorem coarseLabel_eq_iff {G X : Type*} [Group G] [MulAction G X]
   have hconj : (KPCuspGenuineMonodromy.Component F ζ hζ V (AV.representative j.1)).map
       (MulAut.conj (η.val⁻¹ * δ j.1)).toMonoidHom ≤ Δ := by
     rintro x ⟨v,hv,rfl⟩
-    have hm := AllLevelGeometry.actual_component_conjugate h (δ j.1) (ε j.1) (u j.1)
-      (hc j.1) ⟨v,hv,rfl⟩
-    have hn := Δ.mul_mem (Δ.mul_mem (Δ.inv_mem η.property) hm) η.property
-    convert hn using 1 <;> simp only [MulEquiv.coe_toMonoidHom,MulAut.conj_apply] <;> group
+    convert (Δ.mul_mem (Δ.mul_mem (Δ.inv_mem η.property) (AllLevelGeometry.actual_component_conjugate h (δ j.1) (ε j.1) (u j.1)
+      (hc j.1) ⟨v,hv,rfl⟩)) η.property) using 1 <;> simp only [MulEquiv.coe_toMonoidHom,MulAut.conj_apply] <;> group
   refine ⟨?_,?_,?_⟩
   · rw [mul_smul,mul_smul,(AV.cuspAtlas j.1).representative_formula,hq']
     change ((AU.cuspAtlas k.1).representative k.2)⁻¹ • (AU.cuspAtlas k.1).cusp k.2 = _
@@ -2868,8 +2816,7 @@ variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ
 
  theorem beta_eq_marginal
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (D : GeometricDisintegration A R P) :
-    weighted_angular_measure A D.componentWeight = D.beta := by
-  exact angular_marginal_of_disintegration A D.toFiberKernel D.componentWeight D.beta
+    weighted_angular_measure A D.componentWeight = D.beta := angular_marginal_of_disintegration A D.toFiberKernel D.componentWeight D.beta
     D.section_disintegration
 
 end AllLevelMeasureTransport

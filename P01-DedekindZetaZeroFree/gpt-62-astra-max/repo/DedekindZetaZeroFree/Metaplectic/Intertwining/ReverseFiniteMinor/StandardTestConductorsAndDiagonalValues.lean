@@ -17,7 +17,7 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellRepair KPTameJacquetTestDuality KPTameTransposeKernelUnfolding
 open KPTameTransposeLiteralCoefficients KPTameTransposeLiteral
-open _root_.DedekindZetaZeroFree.TameInverseRootValueAudit renaming eventual_actual_inverse_root_outer_gauss → eventual_actual_inverse_root_outer_gauss
+open _root_.DedekindZetaZeroFree.TameInverseRootValueAudit (eventual_actual_inverse_root_outer_gauss)
 set_option maxHeartbeats 1500000
 set_option backward.isDefEq.respectTransparency false
 
@@ -61,7 +61,7 @@ theorem eventual_actual_conductor_shell_integral
   simp only [neg_div] at hvalue
   rw [hvalue]
   have hQ : (residueCardinality (LocalField F q) : ℂ) ≠ 0 := by
-    exact_mod_cast (Nat.card_pos (α := Residue F q)).ne'
+    exact_mod_cast (Nat.card_pos).ne'
   have hexp : -(i.val : ℤ) - 2 = 1 + (-(i.val : ℤ) - 3) := by omega
   rw [hexp, zpow_add₀ hQ, zpow_one]
   ring
@@ -84,13 +84,9 @@ open KPRankOneShellContinuation KPRankOneShellRepair KPTameTransposeLiteral
 open KPTameTransposeBaseChart
 open KPTameTransposeLiteralMassTransport.DiagonalLiftGeometry
 
-open _root_.DedekindZetaZeroFree.TameQiConditionalObstruction renaming unitRegion → unitRegion
-open _root_.DedekindZetaZeroFree.TameQiConditionalObstruction renaming eventual_all_tests → eventual_all_tests
-open _root_.DedekindZetaZeroFree.TameQiConditionalObstruction renaming eventual_cleared_base_value → eventual_cleared_base_value
-open _root_.DedekindZetaZeroFree.TameQiConditionalObstruction renaming anchor_monomial → anchor_monomial
-open _root_.DedekindZetaZeroFree.ActualReverseMinorLowShell renaming actual_lowShell_continuation_of_numerator → actual_lowShell_continuation_of_numerator
-open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming testCompact → testCompact
-open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming testDeformation → testDeformation
+open _root_.DedekindZetaZeroFree.TameQiConditionalObstruction (unitRegion eventual_all_tests eventual_cleared_base_value anchor_monomial)
+open _root_.DedekindZetaZeroFree.ActualReverseMinorLowShell (actual_lowShell_continuation_of_numerator)
+open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral (testCompact testDeformation)
 
 set_option autoImplicit false
 set_option maxHeartbeats 1500000
@@ -101,8 +97,11 @@ variable (F : Type) [Field F] [NumberField F]
   (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
   (hP : IsTamePolarization F ζ hζ q S P)
 
+section
+
+variable (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
+
 private theorem eventual_diagonal_chamber_monomial
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (hnormalized : RawNormalizedExtension F ζ hζ q S P)
     (π : (LocalField F q)ˣ)
@@ -126,16 +125,10 @@ private theorem eventual_diagonal_chamber_monomial
   obtain ⟨d, hd⟩ := anchor_monomial F ζ hζ q S π
   refine ⟨max D (max A (max B T)), d, ?_⟩
   intro m hm i fᵢ hfᵢ s hs
-  have hmD : D ≤ m := (le_max_left _ _).trans hm
-  have hmA : A ≤ m := (le_max_left _ _).trans ((le_max_right _ _).trans hm)
-  have hmB : B ≤ m := (le_max_left _ _).trans
-    ((le_max_right _ _).trans ((le_max_right _ _).trans hm))
-  have hmT : T ≤ m := (le_max_right _ _).trans
-    ((le_max_right _ _).trans ((le_max_right _ _).trans hm))
-  obtain ⟨f, hf⟩ := hD m hmD
+  obtain ⟨f, hf⟩ := hD m ((le_max_left _ _).trans hm)
   have hf0 : IsMinusTest F ζ hζ q S P hP
-      (diagonalLift F ζ hζ q π (0, 0)) m (f 0) := by simpa using hf 0
-  let c : ℂ := (rootMass F ζ hζ q μ m : ℂ) * (μ.real (unitRegion F q) : ℂ)
+      (diagonalLift F ζ hζ q π (0, 0)) m (f 0) := by exact hf 0
+  let c := (rootMass F ζ hζ q μ m : ℂ) * (μ.real (unitRegion F q) : ℂ)
   have hbase : denominator (LocalField F q) .minus s *
       (∫ x in lowShell F q, ∫ u : LocalField F q,
         diagonalDoubleKernel F ζ hζ q S P hP π 0 (f 0) s x u ∂μ ∂μ) =
@@ -144,18 +137,16 @@ private theorem eventual_diagonal_chamber_monomial
         diagonalDoubleKernel F ζ hζ q S P hP π 0 (f 0) s x u ∂μ ∂μ) =
         baseChartChamberIntegral F ζ hζ q S P hP μ π m s := by
       unfold diagonalDoubleKernel baseChartChamberIntegral
-      simp_rw [hB m hmB _ (f 0) hf0 s]
-    rw [he, hA m hmA s hs, hd]
-  rw [hT m hmT i (f 0) fᵢ hf0 hfᵢ s hs]
+      simp_rw [hB m ((le_max_left _ _).trans
+        ((le_max_right _ _).trans ((le_max_right _ _).trans hm))) _ (f 0) hf0 s]
+    rw [he, hA m ((le_max_left _ _).trans ((le_max_right _ _).trans hm)) s hs, hd]
+  rw [hT m ((le_max_right _ _).trans
+    ((le_max_right _ _).trans ((le_max_right _ _).trans hm))) i (f 0) fᵢ hf0 hfᵢ s hs]
   simp only [Finsupp.sum_single_index, mul_zero]
-  change denominator (LocalField F q) .minus s *
-    ((evaluationUnit (LocalField F q) .minus s : ℂ) ^ (i.val : ℤ) * _) =
-    (evaluationUnit (LocalField F q) .minus s : ℂ) ^ (d + (i.val : ℤ)) * c
   rw [mul_left_comm, hbase, zpow_add₀ (Units.ne_zero _)]
   ring
 
 private theorem unit_region_complex_mass
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1) :
     (μ.real (unitRegion F q) : ℂ) =
       1 - (residueCardinality (LocalField F q) : ℂ)⁻¹ := by
@@ -163,8 +154,9 @@ private theorem unit_region_complex_mass
     (LocalField F q) μ hμ
   change μ.real (unitRegion F q) =
     1 - (residueCardinality (LocalField F q) : ℝ)⁻¹ at hm
-  simpa only [Complex.ofReal_sub, Complex.ofReal_one, Complex.ofReal_inv,
-    Complex.ofReal_natCast] using congrArg Complex.ofReal hm
+  simpa using congrArg Complex.ofReal hm
+
+end
 
 theorem eventual_actual_lowShell_diagonal_value
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
@@ -217,10 +209,9 @@ theorem eventual_actual_lowShell_diagonal_value
   simp only [p, Finsupp.sum_single_index]
   rw [unit_region_complex_mass F q μ hμ]
   have hQ : (residueCardinality (LocalField F q) : ℂ) ≠ 0 := by
-    exact_mod_cast (Nat.card_pos (α := 𝓀[LocalField F q])).ne'
+    exact_mod_cast (Nat.card_pos).ne'
   have hQ1 : (residueCardinality (LocalField F q) : ℂ) ≠ 1 := by
-    have H : 1 < residueCardinality (LocalField F q) := Finite.one_lt_card
-    exact_mod_cast H.ne'
+    exact_mod_cast Finite.one_lt_card.ne'
   have hden : denominator (LocalField F q) .minus 0 =
       1 - (residueCardinality (LocalField F q) : ℂ) := by
     simp [denominator, KPRankOneRootParameter.r]
@@ -243,9 +234,9 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellRepair KPTameJacquetTestDuality KPTameTransposeKernelUnfolding
 open KPTameTransposeLiteralCoefficients KPTameTransposeLiteral KPTameValuationCoordinates
-open _root_.DedekindZetaZeroFree.ActualReverseMinorConductor renaming eventual_actual_conductor_shell_integral → eventual_actual_conductor_shell_integral
-open _root_.DedekindZetaZeroFree.ActualReverseMinorLowShellDiagonal renaming eventual_actual_lowShell_diagonal_value → eventual_actual_lowShell_diagonal_value
-open _root_.DedekindZetaZeroFree.KPTameTransposeLiteral renaming transport_test → transport_test
+open _root_.DedekindZetaZeroFree.ActualReverseMinorConductor (eventual_actual_conductor_shell_integral)
+open _root_.DedekindZetaZeroFree.ActualReverseMinorLowShellDiagonal (eventual_actual_lowShell_diagonal_value)
+open _root_.DedekindZetaZeroFree.KPTameTransposeLiteral (transport_test)
 set_option autoImplicit false
 set_option maxHeartbeats 1500000
 set_option backward.isDefEq.respectTransparency false
@@ -257,8 +248,11 @@ variable (F : Type) [Field F] [NumberField F]
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
   (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
 
-def standardConductorIntegral (π : (LocalField F q)ˣ)
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ) (i : Fin 3)
+section
+
+variable (π : (LocalField F q)ˣ) (ψ : Multiplicative (LocalField F q) →* ℂˣ) (i : Fin 3)
+
+def standardConductorIntegral
     (f : scalarSections F ζ hζ q S P hP .minus) : ℂ :=
   ∫ x in conductorOneShell F q π,
     ((actualCanonicalReverseMap F ζ hζ q S P μ hμ
@@ -267,9 +261,7 @@ def standardConductorIntegral (π : (LocalField F q)ˣ)
         KPPGLLocalCover.N F ζ hζ (Sum.inr q) x)).val 1 *
       (ψ (Multiplicative.ofAdd (-x)) : ℂ) ∂μ
 
-private theorem standardConductorIntegral_smul
-    (π : (LocalField F q)ˣ) (ψ : Multiplicative (LocalField F q) →* ℂˣ)
-    (i : Fin 3) (c : ℂ) (f : scalarSections F ζ hζ q S P hP .minus) :
+private theorem standardConductorIntegral_smul (c : ℂ) (f : scalarSections F ζ hζ q S P hP .minus) :
     standardConductorIntegral F ζ hζ q S P hP μ hμ π ψ i (c • f) =
       c * standardConductorIntegral F ζ hζ q S P hP μ hμ π ψ i f := by
   simp only [standardConductorIntegral, map_smul]
@@ -277,13 +269,17 @@ private theorem standardConductorIntegral_smul
   simp_rw [mul_assoc]
   exact integral_const_mul c _
 
-theorem eventual_actual_standard_conductor_shell_value
-    (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (hnormalized : RawNormalizedExtension F ζ hζ q S P)
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
+end
+
+section
+
+variable (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
+    (hnormalized : RawNormalizedExtension F ζ hζ q S P) (π : (LocalField F q)ˣ)
+    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
     (ψ : Multiplicative (LocalField F q) →* ℂˣ) (hψ : Continuous ψ)
+
+include htame hnormalized hπ hψ in
+theorem eventual_actual_standard_conductor_shell_value
     [Fintype (Residue F q)]
     (κ : MulChar (Residue F q) ℂ) (hκ : HasPiFirstOrientation F ζ hζ q π κ)
     (ψbar : AddChar (Residue F q) ℂ) (hbar : HasConductorOneResidue F q π ψ ψbar) :
@@ -307,11 +303,9 @@ theorem eventual_actual_standard_conductor_shell_value
     dsimp [Q]
     exact_mod_cast (Nat.card_pos (α := Residue F q)).ne'
   have hc0 : c ≠ 0 := zpow_ne_zero _ hQ
-  have htf : IsMinusTest F ζ hζ q S P hP
-      (diagonalLift F ζ hζ q π (-1, (i.val : ℤ) + 1)) m (c⁻¹ • f) := by
+  have hv := hM m hm i (c⁻¹ • f) (by
     rw [heq]
-    exact transport_test F ζ hζ q S P hP h _ m f c hc hc0 hf
-  have hv := hM m hm i (c⁻¹ • f) htf
+    exact transport_test F ζ hζ q S P hP h _ m f c hc hc0 hf)
   change standardConductorIntegral F ζ hζ q S P hP μ hμ π ψ i (c⁻¹ • f) = _ at hv
   rw [standardConductorIntegral_smul] at hv
   calc
@@ -327,13 +321,8 @@ theorem eventual_actual_standard_conductor_shell_value
       rw [he, zpow_add₀ hQ]
       ring
 
+include htame hnormalized hπ hψ in
 private theorem eventual_actual_standard_conductor_diag_two
-    (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (hnormalized : RawNormalizedExtension F ζ hζ q S P)
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ) (hψ : Continuous ψ)
     [Fintype (Residue F q)]
     (κ : MulChar (Residue F q) ℂ) (hκ : HasPiFirstOrientation F ζ hζ q π κ)
     (ψbar : AddChar (Residue F q) ℂ) (hbar : HasConductorOneResidue F q π ψ ψbar) :
@@ -359,13 +348,8 @@ private theorem eventual_actual_standard_conductor_diag_two
   norm_num [transportExponent] at he ⊢
   convert he using 1
 
+include htame hnormalized hπ hψ in
 theorem eventual_actual_first_two_shells_diag_two
-    (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (hnormalized : RawNormalizedExtension F ζ hζ q S P)
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
-    (ψ : Multiplicative (LocalField F q) →* ℂˣ) (hψ : Continuous ψ)
     (hconductor : HasConductorIntegers F q ψ)
     [Fintype (Residue F q)]
     (κ : MulChar (Residue F q) ℂ) (hκ : HasPiFirstOrientation F ζ hζ q π κ)
@@ -392,7 +376,6 @@ theorem eventual_actual_first_two_shells_diag_two
       eta F ζ hζ q π 2 := by
     simp [diagonalLift, eta, KPPGLLocalCover.A, KPStandardLocalRootLifts.A]
   rw [hd] at ha
-  have hv := ha hf
   have hi : (∫ x in lowShell F q,
       jacquetIntegrand F ζ hζ q S P hP .plus ψ (eta F ζ hζ q π 2)
         ((scalarCoordinateEquiv F ζ hζ q S P hP .plus)
@@ -405,16 +388,16 @@ theorem eventual_actual_first_two_shells_diag_two
             KPPGLLocalCover.N F ζ hζ (Sum.inr q) x)).val 1 ∂μ) := by
     apply setIntegral_congr_fun (valuation (LocalField F q)).isOpen_integer.measurableSet
     intro x hx
-    have hneg : -x ∈ (valuation (LocalField F q)).integer :=
-      (valuation (LocalField F q)).integer.neg_mem hx
-    have hp := (hconductor 1).mpr ((valuation (LocalField F q)).integer.one_mem) ⟨-x, hneg⟩
+    have hp := (hconductor 1).mpr ((valuation (LocalField F q)).integer.one_mem) ⟨-x, ((valuation (LocalField F q)).integer.neg_mem hx)⟩
     simp only [mul_one] at hp
     simp only [jacquetIntegrand, hp, Units.val_one, mul_one]
     rfl
   dsimp only
-  rw [hi, hv, hB m ((le_max_right _ _).trans hm) f hf]
+  rw [hi, (ha hf), hB m ((le_max_right _ _).trans hm) f hf]
   simp only [div_eq_mul_inv]
   ring
+
+end
 
 include S P hμ in
 
@@ -425,20 +408,18 @@ theorem actual_first_two_shells_diag_two_value_ne_zero
         (residueCardinality (LocalField F q) : ℂ) ^ (-2 : ℤ)) ≠ 0 := by
   have hmass : (rootMass F ζ hζ q μ m : ℂ) ≠ 0 := by
     exact_mod_cast (KPTameTransposeUnitNumeratorSteps.rootMass_pos F ζ hζ q S P μ hμ m hm).ne'
-  have hQ : 0 < (residueCardinality (LocalField F q) : ℝ) := by
-    exact_mod_cast (Nat.card_pos (α := Residue F q))
+  let residueCardinality₀ := residueCardinality (LocalField F q)
+  have hQ : 0 < (residueCardinality₀ : ℝ) := by
+    exact_mod_cast (Nat.card_pos)
   apply mul_ne_zero (neg_ne_zero.mpr hmass)
-  have hpos : 0 < (residueCardinality (LocalField F q) : ℝ)⁻¹ +
-      (residueCardinality (LocalField F q) : ℝ) ^ (-2 : ℤ) :=
-    add_pos (inv_pos.mpr hQ) (zpow_pos hQ _)
-  have he : ((residueCardinality (LocalField F q) : ℂ)⁻¹ +
-      (residueCardinality (LocalField F q) : ℂ) ^ (-2 : ℤ)) =
-      ((residueCardinality (LocalField F q) : ℝ)⁻¹ +
-        (residueCardinality (LocalField F q) : ℝ) ^ (-2 : ℤ) : ℝ) := by
+  have he : ((residueCardinality₀ : ℂ)⁻¹ +
+      (residueCardinality₀ : ℂ) ^ (-2 : ℤ)) =
+      ((residueCardinality₀ : ℝ)⁻¹ +
+        (residueCardinality₀ : ℝ) ^ (-2 : ℤ) : ℝ) := by
     push_cast
     rfl
   rw [he]
-  exact_mod_cast hpos.ne'
+  exact_mod_cast (add_pos (inv_pos.mpr hQ) (zpow_pos hQ _)).ne'
 
 end DedekindZetaZeroFree.ActualReverseMinorStandardConductor
 

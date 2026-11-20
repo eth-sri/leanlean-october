@@ -21,19 +21,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -82,9 +69,6 @@ def sUnitLocalUnitPowerMap
       localPrincipal.codRestrict
         (v.1.adicCompletionIntegers K).units
         (fun x => by
-          have hvS : v.1 ∉ S := by
-            intro hvS
-            exact (Finset.disjoint_left.mp hST) hvS v.2
           rw [
             HeightOneSpectrum.adicCompletionIntegers.mem_units_iff_valued_eq_one]
           change
@@ -96,9 +80,10 @@ def sUnitLocalUnitPowerMap
               1
           rw [IdeleGroup.finiteComponent_principalIdele,
             HeightOneSpectrum.valuedAdicCompletion_eq_valuation']
-          exact
-            (mem_SUnitGroup_iff (K := K) S x).mp
-              x.2 v.1 hvS)
+          refine
+            (mem_SUnitGroup_iff S x).mp
+              x.2 v.1 ?_
+          exact fun hvS => (Finset.disjoint_left.mp hST) hvS v.2)
     (QuotientGroup.mk'
         (powMonoidHom (n : ℕ) :
           (v.1.adicCompletionIntegers K)ˣ →*
@@ -125,10 +110,10 @@ theorem mem_powMonoidHom_range_adicCompletionIntegers_iff
   · intro hx
     obtain ⟨y, hy⟩ :=
       (MonoidHom.mem_range
-        (G := (v.adicCompletionIntegers K)ˣ)).mp hx
+        ).mp hx
     apply
       (MonoidHom.mem_range
-        (G := (v.adicCompletion K)ˣ)).mpr
+        ).mpr
     refine ⟨Units.map
       (algebraMap (v.adicCompletionIntegers K)
         (v.adicCompletion K)).toMonoidHom y, ?_⟩
@@ -137,31 +122,22 @@ theorem mem_powMonoidHom_range_adicCompletionIntegers_iff
   · intro hx
     obtain ⟨y, hy⟩ :=
       (MonoidHom.mem_range
-        (G := (v.adicCompletion K)ˣ)).mp hx
+        ).mp hx
     rw [powMonoidHom_apply] at hy
-    have hxVal :
-        Valued.v
-            (((Units.map
-              (algebraMap (v.adicCompletionIntegers K)
-                (v.adicCompletion K)).toMonoidHom x :
-                  (v.adicCompletion K)ˣ) :
-                v.adicCompletion K)) =
-          1 :=
-      (HeightOneSpectrum.adicCompletionIntegers.isUnit_iff_valued_eq_one
-        (K := K) (v := v)).mp x.isUnit
     have hyValPow :
         Valued.v (((y ^ (n : ℕ) : (v.adicCompletion K)ˣ) :
           v.adicCompletion K)) = 1 := by
       rw [hy]
-      exact hxVal
+      exact ((HeightOneSpectrum.adicCompletionIntegers.isUnit_iff_valued_eq_one
+        ).mp x.isUnit)
     have hyValPow' :
-        Valued.v ((y : (v.adicCompletion K)ˣ) :
+        Valued.v (y :
             v.adicCompletion K) ^ (n : ℕ) = 1 := by
       rw [Units.val_pow_eq_pow_val] at hyValPow
       rw [map_pow] at hyValPow
       exact hyValPow
     have hyVal :
-        Valued.v ((y : (v.adicCompletion K)ˣ) :
+        Valued.v (y :
             v.adicCompletion K) = 1 :=
       (pow_left_injective
         (M := WithZero (Multiplicative ℤ))
@@ -183,17 +159,16 @@ theorem mem_powMonoidHom_range_adicCompletionIntegers_iff
               (v.adicCompletion K)).toMonoidHom z =
           y := by
       apply Units.ext
-      change ((z : v.adicCompletionIntegers K) :
-        v.adicCompletion K) = (y : v.adicCompletion K)
+      change (z :
+        v.adicCompletion K) = y
       rw [hz]
     apply
       (MonoidHom.mem_range
-        (G := (v.adicCompletionIntegers K)ˣ)).mpr
+        ).mpr
     refine ⟨z, ?_⟩
     rw [powMonoidHom_apply]
     apply Units.map_injective
-      (f := (algebraMap (v.adicCompletionIntegers K)
-        (v.adicCompletion K)).toMonoidHom)
+
       (FaithfulSMul.algebraMap_injective
         (v.adicCompletionIntegers K)
         (v.adicCompletion K))
@@ -213,16 +188,14 @@ theorem sUnitLocalUnitPowerMap_ker
     (v.1.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType
       ⟨IdeleGroup.finiteComponent v.1
           (IdeleGroup.principalIdele K (x : Kˣ)), by
-        have hvS : v.1 ∉ S := by
-          intro hvS
-          exact (Finset.disjoint_left.mp hST) hvS v.2
         rw [
           HeightOneSpectrum.adicCompletionIntegers.mem_units_iff_valued_eq_one]
         rw [IdeleGroup.finiteComponent_principalIdele,
           HeightOneSpectrum.valuedAdicCompletion_eq_valuation']
-        exact
-          (mem_SUnitGroup_iff (K := K) S x).mp
-            x.2 v.1 hvS⟩
+        refine
+          (mem_SUnitGroup_iff S x).mp
+            x.2 v.1 ?_
+        exact fun hvS => (Finset.disjoint_left.mp hST) hvS v.2⟩
   have localUnit_toField (v : T) :
       Units.map
           (algebraMap (v.1.adicCompletionIntegers K)
@@ -238,17 +211,14 @@ theorem sUnitLocalUnitPowerMap_ker
     have hv := congrFun hx v
     rw [Pi.one_apply] at hv
     change QuotientGroup.mk' _ (localUnit v) = 1 at hv
-    have hvInteger :=
-      (QuotientGroup.eq_one_iff (localUnit v)).mp hv
     have hvField :=
       (mem_powMonoidHom_range_adicCompletionIntegers_iff
-        v.1 n (localUnit v)).mp hvInteger
+        v.1 n (localUnit v)).mp ((QuotientGroup.eq_one_iff (localUnit v)).mp hv)
     rw [localUnit_toField v] at hvField
     exact hvField
   · intro hx
     funext v
     rw [Pi.one_apply]
-    change QuotientGroup.mk' _ (localUnit v) = 1
     apply (QuotientGroup.eq_one_iff (localUnit v)).mpr
     apply
       (mem_powMonoidHom_range_adicCompletionIntegers_iff

@@ -17,15 +17,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -72,24 +63,14 @@ theorem standardLubinTateChangedUniformizer_sub_mem_maximalIdeal_pow
       CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF (n + 1)) :
     standardLubinTateChangedUniformizer F π u - π ∈
       F.maximalIdeal ^ (n + 2) := by
-  have hu' :
-      (u : F.valuationSubring) - 1 ∈
-        F.maximalIdeal ^ (n + 1) :=
-    (CompleteDVF.higherPrincipalUnitGroup.mem_iff
-      F.toCompleteDVF (n + 1) u).1 hu
-  have hπmem : π ∈ F.maximalIdeal :=
-    F.toCompleteDVF.uniformizer_mem_maximalIdeal hπ
-  have hmul :
-      ((u : F.valuationSubring) - 1) * π ∈
-        (F.maximalIdeal ^ (n + 1)) * F.maximalIdeal :=
-    Ideal.mul_mem_mul hu' hπmem
   have heq :
       standardLubinTateChangedUniformizer F π u - π =
         ((u : F.valuationSubring) - 1) * π := by
     simp only [standardLubinTateChangedUniformizer]
     ring
   rw [heq]
-  simpa [pow_succ, Nat.add_assoc] using hmul
+  exact (Ideal.mul_mem_mul ((CompleteDVF.higherPrincipalUnitGroup.mem_iff
+    F.toCompleteDVF (n + 1) u).1 hu) (F.toCompleteDVF.uniformizer_mem_maximalIdeal hπ))
 
 /-- In the original standard level, the changed and original parameters
 remain congruent through target depth `d(n+2)`. -/
@@ -108,18 +89,10 @@ theorem
           Nat.card F.residueField ^ n) * (n + 2)) := by
   let base := F.toCompleteDVF
   let target := standardLubinTateLevelCompleteDVF hπ n
-  have hbase :
-      standardLubinTateChangedUniformizer F π u - π ∈
-        base.maximalIdeal ^ (n + 2) :=
-    standardLubinTateChangedUniformizer_sub_mem_maximalIdeal_pow
-      hπ u n hu
-  have hmapped :
-      integerMap base.toDVF target.toDVF
-          (standardLubinTateChangedUniformizer F π u - π) ∈
-        target.maximalIdeal ^
-          (ramificationIndex base.toDVF target.toDVF * (n + 2)) :=
+  have hmapped :=
     integerMap_mem_target_maximalIdeal_pow_mul_ramificationIndex
-      base target hbase
+      base target (standardLubinTateChangedUniformizer_sub_mem_maximalIdeal_pow
+        hπ u n hu)
   have he :
       ramificationIndex base.toDVF target.toDVF =
         (Nat.card F.residueField - 1) *
@@ -158,10 +131,6 @@ theorem standardLubinTateChangedPrimitivePolynomial_eval_mem_maximalIdeal_pow
     simpa [target, I] using
       standardLubinTateChangedUniformizer_map_sub_mem_levelMaximalIdeal_pow
         hπ u n hu
-  have hcongr :=
-    standardLubinTatePrimitivePolynomial_eval₂_sub_mem_of_parameter_sub_mem
-      F (standardLubinTateLevelCoefficientHom hπ n) I
-      hparameter n (standardLubinTatePrimitivePointInteger hπ n)
   have horiginal :
       Polynomial.eval₂
           (standardLubinTateLevelCoefficientHom hπ n)
@@ -170,7 +139,9 @@ theorem standardLubinTateChangedPrimitivePolynomial_eval_mem_maximalIdeal_pow
     simpa [Polynomial.aeval_def, standardLubinTateLevelCoefficientHom,
       integerMap] using
       standardLubinTatePrimitivePointInteger_aeval hπ n
-  simpa [I, horiginal] using hcongr
+  simpa [I, horiginal] using (standardLubinTatePrimitivePolynomial_eval₂_sub_mem_of_parameter_sub_mem
+    F (standardLubinTateLevelCoefficientHom hπ n) I
+    hparameter n (standardLubinTatePrimitivePointInteger hπ n))
 
 /-- Quantitative form of the changed-polynomial evaluation estimate. -/
 theorem standardLubinTateChangedPrimitivePolynomial_eval_addVal_ge
@@ -187,9 +158,7 @@ theorem standardLubinTateChangedPrimitivePolynomial_eval_addVal_ge
           (standardLubinTateLevelCoefficientHom hπ n)
           (standardLubinTatePrimitivePointInteger hπ n)
           (standardLubinTatePrimitivePolynomial F
-            (standardLubinTateChangedUniformizer F π u) n)) := by
-  exact
-    (IsDiscreteValuationRing.mem_maximalIdeal_pow_iff_addVal_ge
+            (standardLubinTateChangedUniformizer F π u) n)) := (IsDiscreteValuationRing.mem_maximalIdeal_pow_iff_addVal_ge
       (Polynomial.eval₂
         (standardLubinTateLevelCoefficientHom hπ n)
         (standardLubinTatePrimitivePointInteger hπ n)

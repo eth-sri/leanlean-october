@@ -18,8 +18,8 @@ local instance : AddCommGroup complexCore := Submodule.addCommGroup complexCore
 local instance : Module ℂ complexCore := Submodule.module complexCore
 local instance : TopologicalSpace complexCore := instTopologicalSpaceSubtype
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 
 def restrictedSlotTensor (s : RestrictedTensorSimple.Level (LiteralSource.bad A P C))
     (x : ∀ j : s.val, LiteralSource.Plus A P C j.val) (w : InfinitePlace F)
@@ -61,20 +61,9 @@ theorem restrictedSlotTensor_enlarge
     RestrictedTensorSimple.stageInclusion _ _ _ t
       (PiTensorProduct.tprod ℂ (Function.update (enlargedTuple A P C s t x) ⟨Sum.inl w,hst hw⟩ f))
   rw [← he]
-  have hi := RestrictedTensorSimple.insert_pure (LiteralSource.Plus A P C)
-    (plusReference A P C) s.val t.val hst (Function.update x ⟨Sum.inl w,hw⟩ f)
-  have hi' := congrArg (RestrictedTensorSimple.stageInclusion (LiteralSource.Plus A P C)
-    (plusReference A P C) (LiteralSource.bad A P C) t) hi
-  have hf : RestrictedTensorSimple.stageInclusion (LiteralSource.Plus A P C)
-      (plusReference A P C) (LiteralSource.bad A P C) t
-      (RestrictedTensorSimple.transition (LiteralSource.Plus A P C) (plusReference A P C)
-        (LiteralSource.bad A P C) s t hst
-        (PiTensorProduct.tprod ℂ (Function.update x ⟨Sum.inl w,hw⟩ f))) =
-      RestrictedTensorSimple.stageInclusion (LiteralSource.Plus A P C)
-        (plusReference A P C) (LiteralSource.bad A P C) s
-        (PiTensorProduct.tprod ℂ (Function.update x ⟨Sum.inl w,hw⟩ f)) :=
-    Module.DirectLimit.of_f
-  refine hf.symm.trans (hi'.trans ?_)
+  refine Module.DirectLimit.of_f.symm.trans ((congrArg (RestrictedTensorSimple.stageInclusion (LiteralSource.Plus A P C)
+    (plusReference A P C) (LiteralSource.bad A P C) t) (RestrictedTensorSimple.insert_pure (LiteralSource.Plus A P C)
+      (plusReference A P C) s.val t.val hst (Function.update x ⟨Sum.inl w,hw⟩ f))).trans ?_)
   congr 2
   funext j
   split_ifs <;> rfl

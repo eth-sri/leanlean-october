@@ -19,11 +19,9 @@ namespace DedekindZetaZeroFree.LargeSieve.NonprincipalPoisson
 private lemma cpow_strip_bound (Y : ℝ) (hY : 0 < Y) (c a b : ℝ) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ s : ℂ, s.re ∈ Set.Icc a b →
       ‖(Y : ℂ) ^ ((c : ℂ) * s)‖ ≤ B := by
-  have hd : Differentiable ℂ (fun s : ℂ => (Y : ℂ) ^ ((c : ℂ) * s)) :=
-    ((differentiable_id.const_mul (c : ℂ))).const_cpow
-      (Or.inl (Complex.ofReal_ne_zero.mpr hY.ne'))
   obtain ⟨B, hB⟩ := isCompact_Icc.exists_bound_of_continuousOn
-    ((hd.continuous.comp Complex.continuous_ofReal).norm.continuousOn)
+    (((((differentiable_id.const_mul (c : ℂ))).const_cpow
+      (Or.inl (Complex.ofReal_ne_zero.mpr hY.ne'))).continuous.comp Complex.continuous_ofReal).norm.continuousOn)
   refine ⟨max B 0, le_max_right _ _, fun s hs => ?_⟩
   have he : ‖(Y : ℂ) ^ ((c : ℂ) * s)‖ =
       ‖(Y : ℂ) ^ ((c : ℂ) * (s.re : ℂ))‖ := by
@@ -35,18 +33,11 @@ private lemma cpow_strip_bound (Y : ℝ) (hY : 0 < Y) (c a b : ℝ) :
   rw [Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _)] at hb
   exact hb.trans (le_max_left _ _)
 
-private lemma Gammaℂ_ne_zero_of_im_ne_zero {s : ℂ} (hs : s.im ≠ 0) :
-    Complex.Gammaℂ s ≠ 0 := by
-  rw [Complex.Gammaℂ_def]
-  refine mul_ne_zero (mul_ne_zero two_ne_zero ?_) ?_
-  · exact Complex.cpow_ne_zero_iff.mpr
-      (Or.inl (mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)))
-  · intro h0
-    rw [Complex.Gamma_eq_zero_iff] at h0
-    obtain ⟨m, hm⟩ := h0
-    exact hs (by rw [hm]; simp)
+private alias Gammaℂ_ne_zero_of_im_ne_zero := DedekindZetaZeroFree.LargeSieve.Vendor.RegularizedGammaProduct.Gammaℂ_ne_zero_of_im_ne_zero
 
-def mellinIntegrand {F : Type} [Field F] [NumberField F]
+variable {F : Type} [Field F] [NumberField F]
+
+def mellinIntegrand
     {m : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F m}
     (w : EntireHeckeWitness η) (h : ℝ → ℂ) (X : ℝ) (s : ℂ) : ℂ :=
   w.Λ s *
@@ -54,8 +45,7 @@ def mellinIntegrand {F : Type} [Field F] [NumberField F]
     ((Complex.Gammaℂ s)⁻¹) ^ (NumberField.InfinitePlace.nrComplexPlaces F - 1) *
     Vendor.originMellinQ h s * (X : ℂ) ^ s
 
-theorem mellinIntegrand_regularity
-    {F : Type} [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
+theorem mellinIntegrand_regularity (hF : NumberField.IsTotallyComplex F)
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (η : DedekindZetaZeroFree.RayClassCharacter F m) (w : EntireHeckeWitness η)
     (h : ℝ → ℂ) (hh : ContDiff ℝ ∞ h) (hcompact : HasCompactSupport h)
@@ -96,7 +86,7 @@ theorem mellinIntegrand_regularity
     obtain ⟨L, hboundL⟩ := w.growth (1 / 2) (by norm_num)
     let R : ℝ := 1 + |a| + |b|
     have hR : 1 ≤ R := by dsimp [R]; linarith [abs_nonneg a, abs_nonneg b]
-    have hR0 : 0 ≤ R := le_trans zero_le_one hR
+    have hR0 := le_trans zero_le_one hR
     refine ⟨max L 0 * B * G * H * E, R ^ (3 / 2 : ℝ) + A, by positivity,
       by positivity, ?_⟩
     intro σ t hσ ht
@@ -104,7 +94,7 @@ theorem mellinIntegrand_regularity
     have hsre : s.re = σ := by simp [s]
     have hsim : s.im = t := by simp [s]
     have hsmem : s.re ∈ Set.Icc a b := by rwa [hsre]
-    have hg0 : Complex.Gammaℂ s ≠ 0 := Gammaℂ_ne_zero_of_im_ne_zero (by
+    have hg0 := Gammaℂ_ne_zero_of_im_ne_zero (by
       rw [hsim]; intro h0; simp [h0] at ht; linarith)
     have hsource : ‖Vendor.originMellinQ h s‖ ≤ ‖(Complex.Gammaℂ s)⁻¹‖ * H := by
       have heq : Vendor.originMellinQ h s = (Complex.Gammaℂ s)⁻¹ *
@@ -189,28 +179,27 @@ private lemma reflection_powers (D q X : ℝ) (hD : 0 < D) (hq : 0 < q)
       ((D : ℂ) * (q : ℂ)) ^ (-(1 - s) / 2) * (X : ℂ) ^ (1 - s) =
     ((X : ℂ) / (Real.sqrt q : ℂ)) * (D : ℂ) ^ (s - 1 / 2) *
       ((X / q : ℝ) : ℂ) ^ (-s) := by
-  have hDq : (D : ℂ) * (q : ℂ) ≠ 0 :=
-    mul_ne_zero (Complex.ofReal_ne_zero.mpr hD.ne') (Complex.ofReal_ne_zero.mpr hq.ne')
-  have hqne : (q : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hq.ne'
-  have hXne : (X : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hX.ne'
   have hhalf : (q : ℂ) ^ (-(1 / 2 : ℂ)) = (Real.sqrt q : ℂ)⁻¹ := by
     rw [Complex.cpow_neg, Real.sqrt_eq_rpow, Complex.ofReal_cpow hq.le]
     norm_num
-  rw [← Complex.cpow_add _ _ hDq,
+  rw [← Complex.cpow_add _ _ (mul_ne_zero (Complex.ofReal_ne_zero.mpr hD.ne') (Complex.ofReal_ne_zero.mpr hq.ne')),
     show s / 2 + -(1 - s) / 2 = s - 1 / 2 by ring,
     Complex.mul_cpow_ofReal_nonneg hD.le hq.le,
     show (1 - s : ℂ) = 1 + -s by ring,
-    Complex.cpow_add _ _ hXne, Complex.cpow_one,
+    Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hX.ne'), Complex.cpow_one,
     show (s - 1 / 2 : ℂ) = s + -(1 / 2) by ring,
-    Complex.cpow_add _ _ hqne, hhalf, Complex.ofReal_div,
+    Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hq.ne'), hhalf, Complex.ofReal_div,
     Complex.div_cpow_ofReal_nonneg hX.le hq.le,
     Complex.cpow_neg (q : ℂ) s]
   simp only [div_inv_eq_mul, div_eq_mul_inv, inv_inv]
   ring
 
+variable {F : Type} [Field F] [NumberField F]
+
+local notation "IntegerIdeal" => Ideal (𝓞 F)
+
 private lemma reflected_integrand_eq
-    {F : Type} [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+    (m : IntegerIdeal) (hm : m ≠ ⊥)
     (η : DedekindZetaZeroFree.RayClassCharacter F m) (w : EntireHeckeWitness η)
     (h : ℝ → ℂ) (X : ℝ) (hX : 0 < X) (s : ℂ) (hs : 1 < s.re) :
     mellinIntegrand w h X (1 - s) =
@@ -219,29 +208,26 @@ private lemma reflected_integrand_eq
           (NumberField.InfinitePlace.nrComplexPlaces F) h s *
         ((X / (Ideal.absNorm m : ℝ) : ℝ) : ℂ) ^ (-s) *
         idealCoefficientLSeries (fun I => (starRingEnd ℂ) (η I)) s) := by
-  have hD : 0 < ((|NumberField.discr F| : ℤ) : ℝ) := by
-    exact_mod_cast abs_pos.mpr (NumberField.discr_ne_zero F)
-  have hq : 0 < (Ideal.absNorm m : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (by simpa [Ideal.absNorm_eq_zero_iff] using hm)
   have hL : w.Λdual s = heckeCompletionFactor F m s *
       idealCoefficientLSeries (fun I => (starRingEnd ℂ) (η I)) s := by
     rw [← (w.hasSum_dual s hs).tsum_eq, tsum_mul_left, idealCoefficientLSeries]
     congr 1
-    have hT := tsum_subtype ({I : Ideal (𝓞 F) | I ≠ ⊥})
-      (fun I => (starRingEnd ℂ) (η I) * (Ideal.absNorm I : ℂ) ^ (-s))
     calc
-      _ = ∑' I : Ideal (𝓞 F), ({I : Ideal (𝓞 F) | I ≠ ⊥}).indicator
+      _ = ∑' I : IntegerIdeal, ({I : IntegerIdeal | I ≠ ⊥}).indicator
           (fun J => (starRingEnd ℂ) (η J) * (Ideal.absNorm J : ℂ) ^ (-s)) I := by
         apply tsum_congr
         intro I
         by_cases hI : I = ⊥
         · simp [Set.indicator, hI, RayOperations.map_bot]
         · simp [Set.indicator, hI]
-      _ = _ := hT.symm
+      _ = _ := (tsum_subtype ({I : IntegerIdeal | I ≠ ⊥})
+        (fun I => (starRingEnd ℂ) (η I) * (Ideal.absNorm I : ℂ) ^ (-s))).symm
   rw [mellinIntegrand, w.functionalEquation,
     show (1 - (1 - s) : ℂ) = s by ring, hL, heckeCompletionFactor, B]
   have hp := reflection_powers ((|NumberField.discr F| : ℤ) : ℝ)
-    (Ideal.absNorm m : ℝ) X hD hq hX s
+    (Ideal.absNorm m : ℝ) X (by
+      exact_mod_cast abs_pos.mpr (NumberField.discr_ne_zero F)) (by
+      exact_mod_cast Nat.pos_of_ne_zero (by simpa [Ideal.absNorm_eq_zero_iff] using hm)) hX s
   simp only [Complex.ofReal_intCast, Complex.ofReal_natCast] at hp ⊢
   calc
     _ = w.W *
@@ -254,9 +240,8 @@ private lemma reflected_integrand_eq
         idealCoefficientLSeries (fun I => (starRingEnd ℂ) (η I)) s := by ring
     _ = _ := by rw [hp]; ring
 
-theorem mellinIntegrand_reflection_dual
-    {F : Type} [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+theorem mellinIntegrand_reflection_dual (hF : NumberField.IsTotallyComplex F)
+    (m : IntegerIdeal) (hm : m ≠ ⊥)
     (η : DedekindZetaZeroFree.RayClassCharacter F m) (w : EntireHeckeWitness η)
     (h : ℝ → ℂ) (hh : ContDiff ℝ ∞ h) (hcompact : HasCompactSupport h)
     (X : ℝ) (hX : 0 < X) (c : ℝ) (hc : 1 < c) :
@@ -264,22 +249,22 @@ theorem mellinIntegrand_reflection_dual
     let D : ℝ := ((|NumberField.discr F| : ℤ) : ℝ)
     let r : ℕ := NumberField.InfinitePlace.nrComplexPlaces F
     Complex.VerticalIntegrable (mellinIntegrand w h X) (1 - c) ∧
-      Summable (fun I : Ideal (𝓞 F) =>
+      Summable (fun I : IntegerIdeal =>
         ‖if I = ⊥ then 0 else (starRingEnd ℂ) (η I) *
           fieldTransform D r h (X * (Ideal.absNorm I : ℝ) / q)‖) ∧
-      Summable (fun I : Ideal (𝓞 F) =>
+      Summable (fun I : IntegerIdeal =>
         if I = ⊥ then 0 else (starRingEnd ℂ) (η I) *
           fieldTransform D r h (X * (Ideal.absNorm I : ℝ) / q)) ∧
       Vendor.verticalIntegral (1 - c) (mellinIntegrand w h X) =
         (w.W * (X : ℂ) / (Real.sqrt q : ℂ)) *
-          ∑' I : Ideal (𝓞 F),
+          ∑' I : IntegerIdeal,
             if I = ⊥ then 0 else (starRingEnd ℂ) (η I) *
               fieldTransform D r h (X * (Ideal.absNorm I : ℝ) / q) := by
   dsimp only
   let q : ℝ := Ideal.absNorm m
   let D : ℝ := ((|NumberField.discr F| : ℤ) : ℝ)
   let r : ℕ := NumberField.InfinitePlace.nrComplexPlaces F
-  let a : Ideal (𝓞 F) → ℂ := fun I => (starRingEnd ℂ) (η I)
+  let a : IntegerIdeal → ℂ := fun I => (starRingEnd ℂ) (η I)
   let G : ℂ → ℂ := fun s => B D r h s * ((X / q : ℝ) : ℂ) ^ (-s) *
     idealCoefficientLSeries a s
   let k : ℂ := w.W * (X : ℂ) / (Real.sqrt q : ℂ)
@@ -323,19 +308,19 @@ theorem mellinIntegrand_reflection_dual
     congr 1
     push_cast
     ring
-  let f : Ideal (𝓞 F) → ℂ := fun I => a I * fieldTransform D r h
+  let f : IntegerIdeal → ℂ := fun I => a I * fieldTransform D r h
     (X * (Ideal.absNorm I : ℝ) / q)
-  have hsumAll : Summable (fun I : Ideal (𝓞 F) => if I = ⊥ then 0 else f I) := by
-    have hs : Summable (({I : Ideal (𝓞 F) | I ≠ ⊥}).indicator f) :=
+  have hsumAll : Summable (fun I : IntegerIdeal => if I = ⊥ then 0 else f I) := by
+    have hs : Summable (({I : IntegerIdeal | I ≠ ⊥}).indicator f) :=
       summable_subtype_iff_indicator.mp hsum
     exact hs.congr fun I => by by_cases hI : I = ⊥ <;> simp [Set.indicator, hI]
-  have hnormAll : Summable (fun I : Ideal (𝓞 F) => ‖if I = ⊥ then 0 else f I‖) := by
-    have hs : Summable (({I : Ideal (𝓞 F) | I ≠ ⊥}).indicator (fun I => ‖f I‖)) :=
+  have hnormAll : Summable (fun I : IntegerIdeal => ‖if I = ⊥ then 0 else f I‖) := by
+    have hs : Summable (({I : IntegerIdeal | I ≠ ⊥}).indicator (fun I => ‖f I‖)) :=
       summable_subtype_iff_indicator.mp hnorm
     exact hs.congr fun I => by by_cases hI : I = ⊥ <;> simp [Set.indicator, hI]
-  have htsum : (∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥}, f I.val) =
-      ∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else f I := by
-    exact (tsum_subtype ({I : Ideal (𝓞 F) | I ≠ ⊥}) f).trans
+  have htsum : (∑' I : {I : IntegerIdeal // I ≠ ⊥}, f I.val) =
+      ∑' I : IntegerIdeal, if I = ⊥ then 0 else f I := by
+    exact (tsum_subtype ({I : IntegerIdeal | I ≠ ⊥}) f).trans
       (tsum_congr fun I => by by_cases hI : I = ⊥ <;> simp [Set.indicator, hI])
   refine ⟨hleft, hnormAll, hsumAll, ?_⟩
   rw [← Vendor.verticalIntegral_one_sub c]
@@ -368,8 +353,7 @@ theorem mellinIntegrand_source_line
     Complex.VerticalIntegrable (mellinIntegrand w h X) σ ∧
       (∑ᶠ I : Ideal (𝓞 F), idealMellinWeight η.toFun h X I) =
         Vendor.verticalIntegral σ (mellinIntegrand w h X) := by
-  have ha0 : η.toFun ⊥ = 0 := by
-    exact (η.eq_zero_iff' ⊥).mpr (Or.inl rfl)
+  have ha0 := (η.eq_zero_iff' ⊥).mpr (Or.inl rfl)
   have ha : ∀ I : Ideal (𝓞 F), ‖η.toFun I‖ ≤ 1 :=
     RayOperations.norm_le_one η
   have heq : ∀ s : ℂ, 1 < s.re → mellinIntegrand w h X s =
@@ -410,14 +394,11 @@ theorem mellinIntegrand_source_line
       apply tsum_subtype_eq_of_support_subset (s := {I : Ideal (𝓞 F) | I ≠ ⊥})
         (f := fun I : Ideal (𝓞 F) => η.toFun I * (Ideal.absNorm I : ℂ) ^ (-s))
       intro I hI
-      change I ≠ ⊥
       intro hbot
       subst I
       simpa [Function.mem_support, ha0] using hI
     have hΛ : w.Λ s = heckeCompletionFactor F m s * idealCoefficientLSeries η.toFun s := by
       rw [← (w.hasSum s hs).tsum_eq, tsum_mul_left, hL]
-    have hGQ := Vendor.Gammaℂ_mul_originMellinQ_eq_mellin h hh hcompact s
-      (show 0 < s.re by linarith)
     rw [mellinIntegrand, hΛ, heckeCompletionFactor]
     calc
       _ = (Vendor.originMellinQ h s * (X : ℂ) ^ s) *
@@ -431,12 +412,11 @@ theorem mellinIntegrand_source_line
         calc
           _ = (Complex.Gammaℂ s * Vendor.originMellinQ h s) * (X : ℂ) ^ s *
               idealCoefficientLSeries η.toFun s := by ring
-          _ = _ := by rw [hGQ]
+          _ = _ := by rw [(Vendor.Gammaℂ_mul_originMellinQ_eq_mellin h hh hcompact s
+            (show 0 < s.re by linarith))]
   have hline : ∀ t : ℝ, mellinIntegrand w h X ((σ : ℂ) + t * Complex.I) =
       mellin h ((σ : ℂ) + t * Complex.I) * (X : ℂ) ^ ((σ : ℂ) + t * Complex.I) *
-        idealCoefficientLSeries η.toFun ((σ : ℂ) + t * Complex.I) := by
-    intro t
-    exact heq _ (by simpa using hσ)
+        idealCoefficientLSeries η.toFun ((σ : ℂ) + t * Complex.I) := fun t => heq _ (by simpa using hσ)
   refine ⟨?_, ?_⟩
   · exact (idealMellin_verticalIntegrable η.toFun ha0 ha hh hcompact hX hσ).congr
       (Filter.Eventually.of_forall fun t => (hline t).symm)
@@ -493,7 +473,7 @@ theorem nonprincipalPoisson_of_witness
     NonprincipalPoisson.mellinIntegrand_regularity hF m hm η w h hh hcompact
       X hX (-1 / 2) 2
   have hshift := Vendor.integral_eq_of_subquadratic_strip_growth
-    (a := -1 / 2) (b := 2) (by norm_num)
+      (by norm_num)
     (NonprincipalPoisson.mellinIntegrand w h X)
     (fun s _ _ => hhol s) hleft hright hgrowth
   exact ⟨habs, hsum, hsource.trans (hshift.symm.trans hdual)⟩

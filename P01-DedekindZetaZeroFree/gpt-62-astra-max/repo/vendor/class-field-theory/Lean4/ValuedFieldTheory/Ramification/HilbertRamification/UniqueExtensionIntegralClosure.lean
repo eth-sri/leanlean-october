@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -42,8 +38,8 @@ open ValuationTheory.DiscreteValuationField.Valuation
 open scoped Polynomial
 
 variable {K : Type u} {L : Type w} [Field K] [Field L] [Algebra K L]
-variable {base : ValuationTheory.DiscreteValuationField.DVF.{u, v} K}
-variable {target : ValuationTheory.DiscreteValuationField.DVF.{w, x} L}
+    {base : ValuationTheory.DiscreteValuationField.DVF.{u, v} K}
+    {target : ValuationTheory.DiscreteValuationField.DVF.{w, x} L}
 variable [FiniteDimensional K L] [base.valuation.HasExtension target.valuation]
 variable [IsGalois K L]
 
@@ -52,12 +48,10 @@ ring.  Uniqueness of the valuation extension makes every factor integral. -/
 def integralOrbitPolynomial
     (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
       base target)
-    (a : target.valuationSubring) : Polynomial target.valuationSubring := by
-  classical
-  exact ∏ σ : Gal(L/K),
+    (a : target.valuationSubring) : Polynomial target.valuationSubring := ∏ σ : Gal(L/K),
     (Polynomial.X - Polynomial.C
       (valuationSubringAutOfUniqueExtension
-        (base := base) (target := target) huniq σ a))
+          huniq σ a))
 
 omit [IsGalois K L] in
 /-- States the theorem `integralOrbitPolynomial_monic`. -/
@@ -68,9 +62,7 @@ theorem integralOrbitPolynomial_monic
     (integralOrbitPolynomial
       (base := base) (target := target) huniq a).Monic := by
   classical
-  apply Polynomial.monic_prod_of_monic
-  intro σ _hσ
-  exact Polynomial.monic_X_sub_C _
+  solve_by_elim [Polynomial.monic_X_sub_C, Polynomial.monic_prod_of_monic]
 
 omit [IsGalois K L] in
 /-- The orbit polynomial is invariant under every Galois automorphism. -/
@@ -88,25 +80,25 @@ theorem integralOrbitPolynomial_map_valuationSubringAut
   change
     (∏ σ : Gal(L/K), (Polynomial.X - Polynomial.C
       (valuationSubringAutOfUniqueExtension
-        (base := base) (target := target) huniq σ a))).map
+          huniq σ a))).map
       (valuationSubringAutOfUniqueExtension
-        (base := base) (target := target) huniq ρ).toRingHom =
+          huniq ρ).toRingHom =
     ∏ σ : Gal(L/K), (Polynomial.X - Polynomial.C
       (valuationSubringAutOfUniqueExtension
-        (base := base) (target := target) huniq σ a))
+          huniq σ a))
   rw [Polynomial.map_prod]
   simp only [Polynomial.map_sub, Polynomial.map_X, Polynomial.map_C]
   refine Fintype.prod_equiv (Equiv.mulLeft ρ)
     (fun σ : Gal(L/K) =>
       Polynomial.X - Polynomial.C
         ((valuationSubringAutOfUniqueExtension
-          (base := base) (target := target) huniq ρ).toRingHom
+            huniq ρ).toRingHom
           (valuationSubringAutOfUniqueExtension
-            (base := base) (target := target) huniq σ a)))
+              huniq σ a)))
     (fun σ : Gal(L/K) =>
       Polynomial.X - Polynomial.C
         (valuationSubringAutOfUniqueExtension
-          (base := base) (target := target) huniq σ a)) ?_
+            huniq σ a)) ?_
   intro σ
   apply congrArg (fun z : target.valuationSubring =>
     Polynomial.X - Polynomial.C z)
@@ -114,88 +106,84 @@ theorem integralOrbitPolynomial_map_valuationSubringAut
     (congrFun
       (RingEquiv.coe_toRingHom
         (valuationSubringAutOfUniqueExtension
-          (base := base) (target := target) huniq ρ))
+            huniq ρ))
       (valuationSubringAutOfUniqueExtension
-        (base := base) (target := target) huniq σ a)).trans
+          huniq σ a)).trans
       (valuationSubringAutOfUniqueExtension_mul_apply
-        (base := base) (target := target) huniq ρ σ a).symm
+          huniq ρ σ a).symm
+
+section
+
+variable (huniq : HasUniqueValuationExtension.{u, v, w, x, x} base target)
 
 /-- Every coefficient of the integral orbit polynomial descends to the base
 valuation ring. -/
 theorem integralOrbitPolynomial_coeff_mem_range
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
     (a : target.valuationSubring) (n : ℕ) :
     (integralOrbitPolynomial
         (base := base) (target := target) huniq a).coeff n ∈
       Set.range (algebraMap base.valuationSubring target.valuationSubring) := by
-  let c : target.valuationSubring :=
+  let c :=
     (integralOrbitPolynomial
-      (base := base) (target := target) huniq a).coeff n
+        huniq a).coeff n
   have hfixed : ∀ σ : Gal(L/K), σ (c : L) = (c : L) := by
     intro σ
     have hmap := congrArg
       (fun p : Polynomial target.valuationSubring => p.coeff n)
       (integralOrbitPolynomial_map_valuationSubringAut
-        (base := base) (target := target) huniq a σ)
+          huniq a σ)
     simpa [c] using congrArg Subtype.val hmap
   obtain ⟨b, hb⟩ :=
     (IsGalois.mem_range_algebraMap_iff_fixed
-      (F := K) (E := L) (c : L)).2 hfixed
+        (c : L)).2 hfixed
   have hbmem : base.valuation b ≤ 1 := by
     apply (_root_.Valuation.HasExtension.val_map_le_one_iff
       (vR := base.valuation) (vA := target.valuation) b).1
     rw [hb]
     exact c.property
-  let b0 : base.valuationSubring := ⟨b, hbmem⟩
-  refine ⟨b0, ?_⟩
-  apply Subtype.ext
-  exact hb
+  exact Exists.intro ⟨b, hbmem⟩ (Subtype.ext hb)
 
+include huniq in
 /-- Every target integer is integral over the base valuation ring.  The proof
 uses its monic Galois-orbit polynomial and coefficient descent. -/
 theorem target_valuationSubring_element_isIntegral_of_uniqueExtension
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
     (a : target.valuationSubring) :
     IsIntegral base.valuationSubring a := by
   let p := integralOrbitPolynomial
-    (base := base) (target := target) huniq a
-  have hpmonic : p.Monic :=
-    integralOrbitPolynomial_monic
-      (base := base) (target := target) huniq a
+      huniq a
   have hplifts :
       p ∈ Polynomial.lifts
         (algebraMap base.valuationSubring target.valuationSubring) := by
     rw [Polynomial.lifts_iff_coeff_lifts]
     intro n
     exact integralOrbitPolynomial_coeff_mem_range
-      (base := base) (target := target) huniq a n
-  rcases Polynomial.lifts_and_natDegree_eq_and_monic hplifts hpmonic with
+        huniq a n
+  rcases Polynomial.lifts_and_natDegree_eq_and_monic hplifts (integralOrbitPolynomial_monic
+    huniq a) with
     ⟨q, hqmap, _hqdeg, hqmonic⟩
   refine ⟨q, hqmonic, ?_⟩
   rw [Polynomial.eval₂_eq_eval_map, hqmap]
   change
     (integralOrbitPolynomial
-      (base := base) (target := target) huniq a).eval a = 0
+        huniq a).eval a = 0
   classical
   change
     (∏ σ : Gal(L/K), (Polynomial.X - Polynomial.C
       (valuationSubringAutOfUniqueExtension
-        (base := base) (target := target) huniq σ a))).eval a = 0
+          huniq σ a))).eval a = 0
   rw [Polynomial.eval_prod]
   apply Finset.prod_eq_zero (Finset.mem_univ (1 : Gal(L/K)))
   simp
 
+include huniq in
 /-- The target valuation ring is integral over the base valuation ring under
 the standing unique-extension hypotheses of ramification-number theory. -/
-theorem target_valuationSubring_isIntegral_of_uniqueExtension
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target) :
-    Algebra.IsIntegral base.valuationSubring target.valuationSubring := by
-  exact ⟨fun a =>
+theorem target_valuationSubring_isIntegral_of_uniqueExtension :
+    Algebra.IsIntegral base.valuationSubring target.valuationSubring := ⟨fun a =>
     target_valuationSubring_element_isIntegral_of_uniqueExtension
-      (base := base) (target := target) huniq a⟩
+        huniq a⟩
+
+end
 
 /-- Under the standing hypotheses, the target valuation ring is the actual
 integral closure of the base valuation ring in `L`. -/
@@ -203,11 +191,10 @@ theorem target_valuationSubring_isIntegralClosure_of_uniqueExtension
     (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
       base target) :
     IsIntegralClosure target.valuationSubring base.valuationSubring L := by
-  let : Algebra.IsIntegral base.valuationSubring target.valuationSubring :=
+  let :=
     target_valuationSubring_isIntegral_of_uniqueExtension
-      (base := base) (target := target) huniq
-  exact valuationSubring_isIntegralClosure_of_isIntegral
-    (L := L) base.valuation target.valuation
+        huniq
+  apply valuationSubring_isIntegralClosure_of_isIntegral
 
 /-- The target valuation ring is finite over the base valuation ring.  This
 is the noncomplete replacement for the completeness-based finite-module input
@@ -216,13 +203,13 @@ theorem target_valuationSubring_moduleFinite_of_uniqueExtension
     (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
       base target) :
     Module.Finite base.valuationSubring target.valuationSubring := by
-  let : IsNoetherianRing base.valuationSubring :=
+  let :=
     base.valuationSubring_isNoetherianRing
-  let : IsIntegralClosure target.valuationSubring base.valuationSubring L :=
+  let :=
     target_valuationSubring_isIntegralClosure_of_uniqueExtension
-      (base := base) (target := target) huniq
+        huniq
   exact moduleFinite_valuationSubring_of_isIntegralClosure
-    (L := L) base.valuation target.valuation
+     base.valuation target.valuation
 
 end Higher
 end RamificationTheory.HilbertRamification

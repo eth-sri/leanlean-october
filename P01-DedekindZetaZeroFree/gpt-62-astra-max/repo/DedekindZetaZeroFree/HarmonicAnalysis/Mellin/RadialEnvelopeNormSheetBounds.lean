@@ -21,17 +21,21 @@ lemma raw_radial_envelope_nonneg (A : SArithmeticData F) (N : ℕ) (R : ℝ)
 namespace EnvelopeSheetPrivate
 open Set
 
-private lemma scalar_integrable (σ : ℝ) (N : ℕ) (hs : 0 < σ) (hN : σ < N) :
+section
+
+variable (σ : ℝ) (N : ℕ) (hs : 0 < σ) (hN : σ < N)
+
+include hs hN in
+private lemma scalar_integrable :
     IntegrableOn (fun r : ℝ => r ^ (2*σ-1) * (1+r^2)^(-(N:ℝ))) (Ioi 0) := by
   have hm : Measurable (fun r : ℝ => r ^ (2*σ-1) * (1+r^2)^(-(N:ℝ))) := by fun_prop
   have hn : IntegrableOn (fun r : ℝ => r ^ (2*σ-1) * (1+r^2)^(-(N:ℝ))) (Ioc 0 1) := by
     have hi : IntegrableOn (fun r : ℝ => r ^ (2*σ-1)) (Ioo 0 1) := by
       rw [intervalIntegral.integrableOn_Ioo_rpow_iff (by norm_num : (0:ℝ) < 1)]
       linarith
-    have hi' : IntegrableOn (fun r : ℝ => r ^ (2*σ-1)) (Ioc 0 1) := hi.congr_set_ae Ioo_ae_eq_Ioc.symm
-    apply hi'.mono' hm.aestronglyMeasurable.restrict
+    apply (hi.congr_set_ae Ioo_ae_eq_Ioc.symm).mono' hm.aestronglyMeasurable.restrict
     filter_upwards [ae_restrict_mem measurableSet_Ioc] with r hr
-    have hr0 : 0 < r := hr.1
+    have hr0 := hr.1
     rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
     calc
       _ ≤ r ^ (2*σ-1) * 1 := by
@@ -52,9 +56,10 @@ private lemma scalar_integrable (σ : ℝ) (N : ℕ) (hs : 0 < σ) (hN : σ < N)
         rw [← Real.rpow_natCast r 2, ← Real.rpow_mul hr0.le, ← Real.rpow_add hr0]
         congr 1
         ring
-  simpa only [Ioc_union_Ioi_eq_Ioi (by norm_num : (0:ℝ) ≤ 1)] using hn.union hf
+  simpa using hn.union hf
 
-private lemma complex_integrable (σ : ℝ) (N : ℕ) (hs : 0 < σ) (hN : σ < N) :
+include hs hN in
+private lemma complex_integrable :
     Integrable (fun z : ℂ => (1+‖z‖^2)^(-(N:ℝ)) * (‖z‖^2)^σ)
       (volume.withDensity (fun z : ℂ => ENNReal.ofReal ((Real.pi*‖z‖^2)⁻¹))) := by
   have hd : Measurable (fun z : ℂ => ENNReal.ofReal ((Real.pi*‖z‖^2)⁻¹)) := by fun_prop
@@ -62,8 +67,7 @@ private lemma complex_integrable (σ : ℝ) (N : ℕ) (hs : 0 < σ) (hN : σ < N
     (Filter.Eventually.of_forall (fun x => ENNReal.ofReal_lt_top))]
   have hi : Integrable (fun z : ℂ => ‖z‖ ^ (2*σ-2) * (1+‖z‖^2)^(-(N:ℝ))) volume := by
     apply (integrable_fun_norm_addHaar (E := ℂ) (f := fun r : ℝ => r ^ (2*σ-2) * (1+r^2)^(-(N:ℝ))) volume).mpr
-    have h := scalar_integrable σ N hs hN
-    apply h.congr_fun _ measurableSet_Ioi
+    apply (scalar_integrable σ N hs hN).congr_fun _ measurableSet_Ioi
     intro r hr
     simp only [Complex.finrank_real_complex, Nat.reduceSub, pow_one, smul_eq_mul]
     rw [← mul_assoc]
@@ -72,10 +76,10 @@ private lemma complex_integrable (σ : ℝ) (N : ℕ) (hs : 0 < σ) (hN : σ < N
     congr 2
     ring
   apply (hi.const_mul Real.pi⁻¹).congr
-  filter_upwards [(volume : Measure ℂ).ae_ne 0] with z hz
+  filter_upwards [volume.ae_ne 0] with z hz
   rw [ENNReal.toReal_ofReal (by positivity)]
   simp only [smul_eq_mul]
-  have hz0 : 0 < ‖z‖ := norm_pos_iff.mpr hz
+  have hz0 := norm_pos_iff.mpr hz
   have hp : (‖z‖^2)^σ / (‖z‖^2) = ‖z‖ ^ (2*σ-2) := by
     rw [← Real.rpow_natCast ‖z‖ 2, ← Real.rpow_mul hz0.le,
       ← Real.rpow_sub hz0]
@@ -86,52 +90,58 @@ private lemma complex_integrable (σ : ℝ) (N : ℕ) (hs : 0 < σ) (hN : σ < N
     _ = Real.pi⁻¹ * (((‖z‖^2)^σ / (‖z‖^2)) * (1+‖z‖^2)^(-(N:ℝ))) := by rw [hp]
     _ = _ := by ring
 
- def cutoff (v : HeightOneSpectrum (𝓞 F)) (R : ℝ) (z : v.adicCompletion F) : ℝ :=
+end
+
+ section
+
+variable (v : HeightOneSpectrum (𝓞 F)) (R : ℝ)
+
+def cutoff (z : v.adicCompletion F) : ℝ :=
   if ‖z‖ ≤ R then 1 else 0
-private lemma cutoff_lc (v : HeightOneSpectrum (𝓞 F)) (R : ℝ) (hR : 0 < R) :
+private lemma cutoff_lc (hR : 0 < R) :
     IsLocallyConstant (cutoff v R) := by
-  have hc := IsUltrametricDist.isClopen_closedBall (0 : v.adicCompletion F) hR.ne'
-  have hl := ((LocallyConstant.const (v.adicCompletion F) (1 : ℝ)).indicator hc).isLocallyConstant
-  convert hl using 1
+  convert (((LocallyConstant.const (v.adicCompletion F) (1 : ℝ)).indicator (IsUltrametricDist.isClopen_closedBall (0 : v.adicCompletion F) hR.ne')).isLocallyConstant) using 1
   funext z
-  change cutoff v R z = (Metric.closedBall (0 : v.adicCompletion F) R).indicator (fun _ => (1 : ℝ)) z
   simp [Set.indicator, Metric.mem_closedBall, dist_zero_right, cutoff]
+
+end
 set_option maxHeartbeats 800000 in
 private lemma cutoff_integrable (v : HeightOneSpectrum (𝓞 F)) (R σ : ℝ) (hR : 0 < R) (hσ : 0 < σ)
     (ν : Measure (v.adicCompletion F)ˣ) [ν.IsHaarMeasure] :
     Integrable (fun z : (v.adicCompletion F)ˣ => cutoff v R z.val * ‖z.val‖ ^ σ) ν := by
-  let g : v.adicCompletion F → ℂ := fun z => (cutoff v R z : ℂ)
-  have hl : IsLocallyConstant g := by
-    exact (cutoff_lc v R hR).comp Complex.ofReal
+  let g := fun z => (cutoff v R z : ℂ)
   have hc : HasCompactSupport g := by
     apply HasCompactSupport.intro (isCompact_closedBall (0 : v.adicCompletion F) R)
     intro z hz
     change (cutoff v R z : ℂ) = 0
     simp [cutoff, show ¬ ‖z‖ ≤ R from by simpa [Metric.mem_closedBall, dist_zero_right] using hz]
-  have hi := (DedekindZetaZeroFree.ProbeSheetGlobalIntegrability.finiteUnitsMellin_integrable F v g hl hc ν (σ : ℂ) (by simpa using hσ)).norm
-  convert hi using 1
+  convert ((DedekindZetaZeroFree.ProbeSheetGlobalIntegrability.finiteUnitsMellin_integrable F v g ((cutoff_lc v R hR).comp Complex.ofReal) hc ν (σ : ℂ) (by exact hσ)).norm) using 1
   funext z
   rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (norm_pos_iff.mpr z.ne_zero)]
   simp only [Complex.ofReal_re, g, Complex.norm_real, Real.norm_eq_abs]
   rw [abs_of_nonneg (by dsimp [cutoff]; split_ifs <;> norm_num)]
 
-private lemma complex_units_integrable (σ : ℝ) (N : ℕ) (hs : 0 < σ) (hN : σ < N)
+section
+
+variable (σ : ℝ) (N : ℕ) (hs : 0 < σ) (hN : σ < N)
+
+include hs hN in
+private lemma complex_units_integrable
     (ν : Measure ℂˣ) [ν.IsHaarMeasure] :
     Integrable (fun z : ℂˣ => (1+‖z.val‖^2)^(-(N:ℝ)) * (‖z.val‖^2)^σ) ν := by
   letI : BorelSpace ℂˣ := ⟨by
     change (borel ℂ).comap Units.val = borel _
     rw [← borel_comap, ← Units.isOpenEmbedding_val.isEmbedding.isInducing.eq_induced]⟩
   letI : SecondCountableTopology ℂˣ := Units.isEmbedding_embedProduct.secondCountableTopology
-  let μ₀ : Measure ℂˣ := Measure.comap Units.val
+  let μ₀ := Measure.comap Units.val
     (volume.withDensity (fun z : ℂ => ENNReal.ofReal ((Real.pi*‖z‖^2)⁻¹)))
   letI : μ₀.IsHaarMeasure := complexUnits_density_isHaarMeasure volume
-  have hi : Integrable (fun z : ℂˣ => (1+‖z.val‖^2)^(-(N:ℝ)) * (‖z.val‖^2)^σ) μ₀ :=
-    IsOpenUnits.isOpenEmbedding_unitsVal.measurableEmbedding.integrableOn_range_iff_comap.mp
-      (complex_integrable σ N hs hN).integrableOn
   rw [Measure.isMulLeftInvariant_eq_smul ν μ₀]
-  exact hi.smul_measure ENNReal.coe_ne_top
+  exact (IsOpenUnits.isOpenEmbedding_unitsVal.measurableEmbedding.integrableOn_range_iff_comap.mp
+    (complex_integrable σ N hs hN).integrableOn).smul_measure ENNReal.coe_ne_top
 
-private lemma weighted_bound (σ : ℝ) (N : ℕ) (hs : 0 < σ) (hN : σ < N) (r : ℝ) (hr : 0 ≤ r) :
+include hs hN in
+private lemma weighted_bound (r : ℝ) (hr : 0 ≤ r) :
     (1+r)^(-(N:ℝ)) * r^σ ≤ 1 := by
   by_cases hr1 : r ≤ 1
   · calc
@@ -145,6 +155,8 @@ private lemma weighted_bound (σ : ℝ) (N : ℕ) (hs : 0 < σ) (hN : σ < N) (r
         (Real.rpow_le_rpow_of_nonpos hr0 (by linarith) (neg_nonpos.mpr (Nat.cast_nonneg N))) (by positivity)
       _ = r^(-(N:ℝ)+σ) := (Real.rpow_add hr0 _ _).symm
       _ ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos (le_of_lt (lt_of_not_ge hr1)) (by linarith)
+
+end
 
 private lemma weighted_identity (A : SArithmeticData F) (N : ℕ) (R σ : ℝ)
     (y : (SLocalProduct F A.Sf)ˣ) :

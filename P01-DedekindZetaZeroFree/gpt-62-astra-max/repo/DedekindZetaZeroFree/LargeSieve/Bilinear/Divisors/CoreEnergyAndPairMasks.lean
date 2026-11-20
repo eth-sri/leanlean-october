@@ -9,7 +9,7 @@ noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.SupportedPairMask
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 private lemma offdiag_iff (u v : Ideal (𝓞 F)) :
     u*v ≠ ⊤ ↔ u ≠ ⊤ ∨ v ≠ ⊤ := by
@@ -20,22 +20,23 @@ private lemma offdiag_iff (u v : Ideal (𝓞 F)) :
     · rintro ⟨rfl,rfl⟩; simp
   simp only [ne_eq, h, not_and_or]
 
-private lemma column_spec (C : Context Q) {u : Ideal (𝓞 F)} (hu : u ∈ C.columns) :
+variable (C : Context Q)
+
+private lemma column_spec {u : Ideal (𝓞 F)} (hu : u ∈ C.columns) :
     Squarefree u ∧ u ≠ ⊥ ∧ u ⊔ c = ⊤ ∧ Squarefree (C.d*u) ∧
     (C.d*u) ⊔ c = ⊤ ∧ C.d ⊔ u = ⊤ := by
   obtain ⟨huA, huM, huG⟩ := Finset.mem_filter.mp hu
   obtain ⟨husf, huc, -⟩ := (Sieve.mem_idealAdmissibleFinset F c _ u).mp huA
   obtain ⟨hdusf, hduc, -⟩ := (Sieve.mem_paperShell F c C.N (C.d*u)).mp huM
   refine ⟨husf, husf.ne_zero, huc, hdusf, hduc, ?_⟩
-  have hrel := (squarefree_mul_iff.mp hdusf).1
-  exact Ideal.isUnit_iff.mp (hrel (Ideal.dvd_iff_le.mpr le_sup_left)
+  exact Ideal.isUnit_iff.mp (((squarefree_mul_iff.mp hdusf).1) (Ideal.dvd_iff_le.mpr le_sup_left)
     (Ideal.dvd_iff_le.mpr le_sup_right))
-private lemma valid_pair_of_columns (C : Context Q) {u v : Ideal (𝓞 F)}
+private lemma valid_pair_of_columns {u v : Ideal (𝓞 F)}
     (hu : u ∈ C.columns) (hv : v ∈ C.columns) (huv : u ⊔ v = ⊤)
     (hoff : u*v ≠ ⊤) : Context.ValidPair C (u,v) := by
   obtain ⟨husf, hu0, huc, hdusf, hduc, hdu⟩ := column_spec C hu
   obtain ⟨hvsf, hv0, hvc, hdvsf, hdvc, hdv⟩ := column_spec C hv
-  have hclass : Q.cls (C.d*u) = Q.cls (C.d*v) :=
+  have hclass :=
     (Finset.mem_filter.mp hu).2.2.trans (Finset.mem_filter.mp hv).2.2.symm
   have hc : Q.cls u = Q.cls v := by
     letI := Q.instGroup
@@ -45,7 +46,7 @@ private lemma valid_pair_of_columns (C : Context Q) {u v : Ideal (𝓞 F)}
   exact ((Ideal.isCoprime_iff_sup_eq.mpr hdu).mul_right
     (Ideal.isCoprime_iff_sup_eq.mpr hdv)).sup_eq
 
-theorem pair_mask_split (C : Context Q) (f g : Ideal (𝓞 F))
+theorem pair_mask_split (f g : Ideal (𝓞 F))
     (h : Ideal (𝓞 F) → Ideal (𝓞 F) → ℂ) :
     (∑ p ∈ C.pairs, if f ∣ p.1 ∧ g ∣ p.2 then h p.1 p.2 else 0) =
     (∑ u ∈ C.columns.filter (fun u => f ∣ u ∧ u ≠ ⊤),
@@ -83,19 +84,10 @@ noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.SupportedRows
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 def energy (C : Context Q) (f : Ideal (𝓞 F)) : ℝ :=
   ∑ u ∈ C.columns, if f ∣ u then (2:ℝ)^(UniqueFactorizationMonoid.normalizedFactors u).toFinset.card * ‖C.lam (C.d*u)‖^2 else 0
-private lemma column_spec_local (C : Context Q) {u : Ideal (𝓞 F)} (hu : u ∈ C.columns) :
-    Squarefree u ∧ u ≠ ⊥ ∧ u ⊔ c = ⊤ ∧ Squarefree (C.d*u) ∧
-    (C.d*u) ⊔ c = ⊤ ∧ C.d ⊔ u = ⊤ := by
-  obtain ⟨huA, huM, huG⟩ := Finset.mem_filter.mp hu
-  obtain ⟨husf, huc, -⟩ := (Sieve.mem_idealAdmissibleFinset F c _ u).mp huA
-  obtain ⟨hdusf, hduc, -⟩ := (Sieve.mem_paperShell F c C.N (C.d*u)).mp huM
-  refine ⟨husf, husf.ne_zero, huc, hdusf, hduc, ?_⟩
-  have hrel := (squarefree_mul_iff.mp hdusf).1
-  exact Ideal.isUnit_iff.mp (hrel (Ideal.dvd_iff_le.mpr le_sup_left)
-    (Ideal.dvd_iff_le.mpr le_sup_right))
+private alias column_spec_local := DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.SupportedPairMask.column_spec
 private lemma finite_coprime_sum_bound
     (R U V : Finset (Ideal (𝓞 F)))
     (hU : ∀ u ∈ U, u ≠ ⊥) (hV : ∀ v ∈ V, v ≠ ⊥)
@@ -110,35 +102,38 @@ private lemma finite_coprime_sum_bound
          (∑ v ∈ V, (2:ℝ)^(UniqueFactorizationMonoid.normalizedFactors v).toFinset.card * ‖y v‖^2)) := by
   have h := Sieve.DivisorSeparation.rectangle_operator_bound Q
     {⊤} {⊤} R U V hU hV A B hA hB
-    (by intro d hd z; have hd' : d = ⊤ := Finset.mem_singleton.mp hd; subst d; simpa using hUA z)
-    (by intro d hd z; have hd' : d = ⊤ := Finset.mem_singleton.mp hd; subst d; simpa using hVB z) x y
+    (by intro d hd z; have hd' := Finset.mem_singleton.mp hd; subst d; simpa using hUA z)
+    (by intro d hd z; have hd' := Finset.mem_singleton.mp hd; subst d; simpa using hVB z) x y
   simp only [Sieve.DivisorSeparation.idealDivisorRectangle, Finset.sum_singleton,
     Finset.card_singleton, Nat.cast_one, one_mul] at h
   have htop : ∀ u : Ideal (𝓞 F), (⊤ : Ideal (𝓞 F)) ∣ u := fun u =>
-    by simpa only [← Ideal.one_eq_top] using one_dvd u
+    by simpa using one_dvd u
   have hfilter : ∀ u : Ideal (𝓞 F), ({⊤} : Finset (Ideal (𝓞 F))).filter (fun d => d ∣ u) = {⊤} := by
     intro u; apply Finset.filter_eq_self.mpr
     intro d hd; rw [Finset.mem_singleton.mp hd]; exact htop u
   simp only [htop, and_true, hfilter, Finset.card_singleton,
     Nat.cast_one, mul_one, starRingEnd_apply] at h
   rw [mul_assoc (A*B)] at h
-  have hs := Real.le_sqrt_of_sq_le h
-  simpa only [Real.sqrt_mul (mul_nonneg hA hB)] using hs
+  simpa only [Real.sqrt_mul (mul_nonneg hA hB)] using (Real.le_sqrt_of_sq_le h)
+
+alias CoreEnergyAndPairMasks.finite_coprime_sum_bound := finite_coprime_sum_bound
+local notation "IntegerIdeal" => Ideal (𝓞 F)
+
 private lemma coprime_filtered_bound
-    (C : Context Q) (R V₁ V₂ : Finset (Ideal (𝓞 F)))
-    (f₁ f₂ : Ideal (𝓞 F))
+    (C : Context Q) (R V₁ V₂ : Finset IntegerIdeal)
+    (f₁ f₂ : IntegerIdeal)
     (hV₁ : V₁ ⊆ C.columns) (hV₂ : V₂ ⊆ C.columns)
     (hf₁ : ∀ u ∈ V₁, f₁ ∣ u) (hf₂ : ∀ u ∈ V₂, f₂ ∣ u)
     (U₁ U₂ : ℝ) (hU₁ : 0 ≤ U₁) (hU₂ : 0 ≤ U₂)
-    (hop₁ : ∀ z : Ideal (𝓞 F) → ℂ, (∑ a ∈ R, ‖∑ u ∈ V₁, z u * (Q.χ u) a‖^2) ≤ U₁ * ∑ u ∈ V₁, ‖z u‖^2)
-    (hop₂ : ∀ z : Ideal (𝓞 F) → ℂ, (∑ a ∈ R, ‖∑ u ∈ V₂, z u * (Q.χ u) a‖^2) ≤ U₂ * ∑ u ∈ V₂, ‖z u‖^2)
-    (x y : Ideal (𝓞 F) → ℂ)
+    (hop₁ : ∀ z : IntegerIdeal → ℂ, (∑ a ∈ R, ‖∑ u ∈ V₁, z u * (Q.χ u) a‖^2) ≤ U₁ * ∑ u ∈ V₁, ‖z u‖^2)
+    (hop₂ : ∀ z : IntegerIdeal → ℂ, (∑ a ∈ R, ‖∑ u ∈ V₂, z u * (Q.χ u) a‖^2) ≤ U₂ * ∑ u ∈ V₂, ‖z u‖^2)
+    (x y : IntegerIdeal → ℂ)
     (hx : ∀ u ∈ C.columns, ‖x u‖ ≤ ‖C.lam (C.d*u)‖) (hy : ∀ u ∈ C.columns, ‖y u‖ ≤ ‖C.lam (C.d*u)‖) :
     (∑ a ∈ R, ‖∑ u ∈ V₁, ∑ v ∈ V₂, if u ⊔ v = ⊤ then
       x u * star (y v) *
         (Q.χ u) a * star ((Q.χ v) a) else 0‖) ≤
       Real.sqrt (U₁*U₂) * Real.sqrt (energy C f₁ * energy C f₂) := by
-  have he : ∀ (V : Finset (Ideal (𝓞 F))) (f : Ideal (𝓞 F)) (z : Ideal (𝓞 F) → ℂ),
+  have he : ∀ (V : Finset IntegerIdeal) (f : IntegerIdeal) (z : IntegerIdeal → ℂ),
       V ⊆ C.columns → (∀ u ∈ V, f ∣ u) → (∀ u ∈ C.columns, ‖z u‖ ≤ ‖C.lam (C.d*u)‖) →
       (∑ u ∈ V, (2:ℝ)^(UniqueFactorizationMonoid.normalizedFactors u).toFinset.card *
         ‖z u‖^2) ≤ energy C f := by
@@ -164,17 +159,17 @@ private lemma coprime_filtered_bound
   · positivity
   · unfold energy; positivity
 
-def coreBlock (C : Context Q) (f₁ f₂ : Ideal (𝓞 F))
-    (x y : Ideal (𝓞 F) → ℂ) (r : Ideal (𝓞 F)) : ℂ :=
+def coreBlock (C : Context Q) (f₁ f₂ : IntegerIdeal)
+    (x y : IntegerIdeal → ℂ) (r : IntegerIdeal) : ℂ :=
   ∑ p ∈ C.pairs, if f₁ ∣ p.1 ∧ f₂ ∣ p.2 then
     x p.1 * star (y p.2) * (Q.χ p.1) r * star ((Q.χ p.2) r) else 0
 
 theorem core_divisible_pair_bound (D : Sieve.AllIndexNormalizedFamilyData Q) :
     ∃ A : ℝ, 0 < A ∧ ∀ C : Context Q, C.D = D → 1 ≤ C.N →
     ∀ B P₁ P₂ : ℝ, 1 ≤ B → 1 ≤ P₁ → 1 ≤ P₂ →
-    ∀ f₁ f₂ : Ideal (𝓞 F), f₁ ≠ ⊥ → f₂ ≠ ⊥ → P₁ ≤ norm f₁ → P₂ ≤ norm f₂ →
-    ∀ R : Finset (Ideal (𝓞 F)), R ⊆ Sieve.idealAdmissibleFinset F c (2*B) →
-    ∀ x y : Ideal (𝓞 F) → ℂ,
+    ∀ f₁ f₂ : IntegerIdeal, f₁ ≠ ⊥ → f₂ ≠ ⊥ → P₁ ≤ norm f₁ → P₂ ≤ norm f₂ →
+    ∀ R : Finset IntegerIdeal, R ⊆ Sieve.idealAdmissibleFinset F c (2*B) →
+    ∀ x y : IntegerIdeal → ℂ,
     (∀ u ∈ C.columns, ‖x u‖ ≤ ‖C.lam (C.d*u)‖) →
     (∀ u ∈ C.columns, ‖y u‖ ≤ ‖C.lam (C.d*u)‖) →
     (∑ r ∈ R, ‖coreBlock C f₁ f₂ x y r‖) ≤
@@ -183,8 +178,7 @@ theorem core_divisible_pair_bound (D : Sieve.AllIndexNormalizedFamilyData Q) :
         Real.sqrt (energy C f₁ * energy C f₂) := by
   by_cases hex : ∃ C : Context Q, C.D = D
   · obtain ⟨C₀,hC₀⟩ := hex
-    have core : D.bad = c := by rw [← hC₀]; exact C₀.core
-    obtain ⟨A,hA,hop⟩ := DivisiblePrefix.realized_divisible_column_U D core
+    obtain ⟨A,hA,hop⟩ := DivisiblePrefix.realized_divisible_column_U D (by rw [← hC₀]; exact C₀.core)
     refine ⟨2*A, by linarith, ?_⟩
     intro C hCD hN B P₁ P₂ hB hP₁ hP₂ f₁ f₂ hf₁ hf₂ hPf₁ hPf₂ R hR x y hx hy
     let V₁ := C.columns.filter (fun u => f₁ ∣ u ∧ u ≠ ⊤)
@@ -193,11 +187,10 @@ theorem core_divisible_pair_bound (D : Sieve.AllIndexNormalizedFamilyData Q) :
     let V₄ := C.columns.filter (fun u => f₂ ∣ u ∧ u ≠ ⊤)
     let U₁ := A * ErrorRectangles.U Q B (C.N/(norm C.d*P₁))
     let U₂ := A * ErrorRectangles.U Q B (C.N/(norm C.d*P₂))
-    have hU : ∀ P, 0 ≤ A * ErrorRectangles.U Q B (C.N/(norm C.d*P)) := by
-      intro P; exact mul_nonneg (by linarith) (Real.sSup_nonneg' ⟨0,Or.inl rfl,le_rfl⟩)
+    have hU : ∀ P, 0 ≤ A * ErrorRectangles.U Q B (C.N/(norm C.d*P)) := fun P => mul_nonneg (by linarith) (Real.sSup_nonneg' ⟨0,Or.inl rfl,le_rfl⟩)
     have hOp : ∀ P f, 1 ≤ P → f ≠ ⊥ → P ≤ norm f →
-        ∀ V : Finset (Ideal (𝓞 F)), V ⊆ C.columns → (∀ u ∈ V, f ∣ u) →
-        ∀ z : Ideal (𝓞 F) → ℂ,
+        ∀ V : Finset IntegerIdeal, V ⊆ C.columns → (∀ u ∈ V, f ∣ u) →
+        ∀ z : IntegerIdeal → ℂ,
         (∑ r ∈ R, ‖∑ u ∈ V, z u * (Q.χ u) r‖^2) ≤
           A * ErrorRectangles.U Q B (C.N/(norm C.d*P)) * ∑ u ∈ V, ‖z u‖^2 := by
       intro P f hP hf hPf V hV hfV z
@@ -205,9 +198,7 @@ theorem core_divisible_pair_bound (D : Sieve.AllIndexNormalizedFamilyData Q) :
       by_cases hne : V.Nonempty
       · obtain ⟨u,hu⟩ := hne
         obtain ⟨husf,hu0,huc,-⟩ := column_spec_local C (hV hu)
-        have hfsf := husf.squarefree_of_dvd (hfV u hu)
-        have hfc : f ⊔ c = ⊤ := eq_top_iff.mpr (huc ▸ sup_le_sup_right (Ideal.dvd_iff_le.mp (hfV u hu)) c)
-        have hh := hop C hCD hN B P hB hP f hf hfsf hfc hPf R V hR hV
+        have hh := hop C hCD hN B P hB hP f hf (husf.squarefree_of_dvd (hfV u hu)) (eq_top_iff.mpr (huc ▸ sup_le_sup_right (Ideal.dvd_iff_le.mp (hfV u hu)) c)) hPf R V hR hV
           (fun _ => 1) (fun _ => 1) z (by simp) (by simp)
         simp only [one_mul,mul_one] at hh
         have he : ∀ r, (∑ u ∈ V, if f ∣ u then z u * (Q.χ u) r else 0) = ∑ u ∈ V, z u * (Q.χ u) r := by

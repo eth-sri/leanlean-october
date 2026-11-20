@@ -10,8 +10,8 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.DigitMasks
 open MomentSources ThetaProfileHaarSheets ThetaSheetExactUnfolding
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def compactWeight {Q : AdmissibleFlatSources R} (P : Packet R Q)
     (v : R.A.UnitQuotient) (y : R.A.G) : ℂ :=
@@ -19,14 +19,10 @@ def compactWeight {Q : AdmissibleFlatSources R} (P : Packet R Q)
     (P.branch v y)⁻¹
 
 theorem compactWeight_measurable {Q : AdmissibleFlatSources R} (P : Packet R Q)
-    (v : R.A.UnitQuotient) : Measurable (compactWeight R P v) := by
-  exact thetaWeight_measurable R P v
+    (v : R.A.UnitQuotient) : Measurable (compactWeight R P v) := thetaWeight_measurable R P v
 
 theorem compactWeight_norm_le {Q : AdmissibleFlatSources R} (P : Packet R Q)
-    (v : R.A.UnitQuotient) (y : R.A.G) : ‖compactWeight R P v y‖ ≤ 1 := by
-  unfold compactWeight
-  rw [norm_mul, norm_inv, branch_norm R P, inv_one, mul_one]
-  split_ifs <;> simp
+    (v : R.A.UnitQuotient) (y : R.A.G) : ‖compactWeight R P v y‖ ≤ 1 := by apply @thetaWeight_norm_le_one <;> assumption
 
 theorem sheet_out_eq_of_descent (A : SArithmeticData F) (l : PositiveAxis)
     (f : A.G → ℂ)
@@ -37,11 +33,10 @@ theorem sheet_out_eq_of_descent (A : SArithmeticData F) (l : PositiveAxis)
   have hr : MulAction.orbitRel A.Gamma1 (Sheet A l)
       (Quotient.out (sheetProjection A l y)) y := Quotient.exact he
   obtain ⟨γ, hγ⟩ := hr
-  have hg : γ.val.val ∈ A.Gamma := γ.property
   have hv := congrArg Subtype.val hγ
   change γ.val.val * y.val = (Quotient.out (sheetProjection A l y)).val at hv
   rw [← hv]
-  exact hdesc ⟨γ.val.val, hg⟩ y.val
+  exact hdesc ⟨γ.val.val, γ.property⟩ y.val
 
 end DedekindZetaZeroFree.DigitMasks
 

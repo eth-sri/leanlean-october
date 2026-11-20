@@ -19,9 +19,9 @@ variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 variable (K : Subgroup (KPLiteralRaw.G F A.zeta12 A.primitive_zeta12)) (hK : IwasawaCompact F A.zeta12 A.primitive_zeta12 K)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
-variable (f : Flat F A.zeta12 A.primitive_zeta12 K)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (f : Flat F A.zeta12 A.primitive_zeta12 K)
 
 theorem productHCSection_standard_tail :
     ∃ T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)), C.exceptional ⊆ T ∧
@@ -53,7 +53,6 @@ open KPLiteralScalarHCSliceCharts
 
 open NativeScalarMixedTensorGeneration CurrentFiniteFamily
 
-open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Source → Source
 open scoped TensorProduct
 local instance (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (j : InfinitePlace F ⊕ T) :
     AddCommGroup (mixedSource F ζ hζ (nativeInducingData A P C) T j) := by

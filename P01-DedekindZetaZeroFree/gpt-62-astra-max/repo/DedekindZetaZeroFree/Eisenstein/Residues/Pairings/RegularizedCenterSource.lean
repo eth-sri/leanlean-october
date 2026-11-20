@@ -11,25 +11,24 @@ open MeasureTheory Filter
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CommonSphericalDisk.CuspidalCancellation renaming cleared_center_unique → cleared_center_unique
-open _root_.DedekindZetaZeroFree.KPBelowThresholdResolvent renaming eigen_nonneg → eigen_nonneg
+
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CommonSphericalDisk.CuspidalCancellation (cleared_center_unique)
 open KPGlobalResidualConstruction
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "level" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-variable (hι : Function.Injective ι) (f : ℂ → S)
-variable (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-variable {T : ℝ}
-variable (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H T)
-variable (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+    (hι : Function.Injective ι) (f : ℂ → S)
+    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+    {T : ℝ}
+    (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H T)
+    (χ : KPContActualAllCuspSource.Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
 variable (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer
   KPContinuation.spectralDomain f χ)
 
@@ -53,7 +52,6 @@ theorem actual_cleared_center_source_eigentest_pairing
     KPContActualHilbertSimpleGerms.actual_simple_germs_zero_eigentest_pairing
       F ζ hζ C R P H U R.adelicHaar R.adelic_isHaar rfl realization
       ι buffer KPContinuation.spectralDomain f χ source hι
-      (stageConclusions F ζ hζ C R P H U ι hι)
       KPContinuation.spectralDomain_isOpen (fun _ hs => hs) hf
       (by norm_num [KPContinuation.spectralDomain])
   have heq : w 0 = w' 0 := cleared_center_unique

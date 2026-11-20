@@ -15,9 +15,9 @@ open FourierContinuation.CurrentFixedSlices NativeScalarMixedTensorGeneration
 open KPLiteralScalarHCFiniteProduct
 open KPLiteralTensor.KernelAndHCRange.PointwiseKernel
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
-variable (U : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (U : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
 local notation "M" => FourierContinuation.CurrentFiniteFamily.nativeInducingData A P C
 local notation "Source" => mixedSource (ι := InfinitePlace F) F A.zeta12 A.primitive_zeta12 M U
 local notation "Eval" => allSlotEvaluation F A.zeta12 A.primitive_zeta12 M U
@@ -46,10 +46,9 @@ theorem allSlotEvaluation_fixed_reference
       (v.val (b * k.val)).val 1 = (v.val b).val 1 := by
     intro k b
     rw [hv, hv]
-    simpa only [Function.update_self, Function.update_idem] using
+    simpa using
       (hfix k m (Function.update a q b))
-  have he := canonical_fixed_section_factorization A P C q.val hq v hf
-  have hval := congrArg (fun w => (w.val (a q)).val 1) he
+  have hval := congrArg (fun w => (w.val (a q)).val 1) (canonical_fixed_section_factorization A P C q.val hq v hf)
   change (v.val (a q)).val 1 = (v.val 1).val 1 *
     ((FourierContinuation.LiteralSource.plusReference A P C (Sum.inr q.val)).val (a q)).val 1 at hval
   rw [hv, hv] at hval
@@ -80,8 +79,8 @@ theorem allSlotEvaluation_injective : Function.Injective (allSlotEvaluation (ι 
       intro a
       exact hv a
   · intro a
-    let m : InfinitePlace F → KPCplxCharacterHaar.ComplexGL2 := fun w => a (Sum.inl w)
-    let g : FiniteProductCover F A.zeta12 A.primitive_zeta12 U := fun q => a (Sum.inr q)
+    let m := fun w => a (Sum.inl w)
+    let g := fun q => a (Sum.inr q)
     have hl : (fun j => detector A P C U j (a j)) = slotEvaluation A P C U m g := by
       funext j
       cases j <;> rfl

@@ -25,7 +25,7 @@ namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuatio
 noncomputable section
 open scoped Classical NumberField
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.RightBound.ConductorEstimate
@@ -54,16 +54,12 @@ theorem deleted_exterior_continuation_eq
       l w = H.L w * Detector.finiteEulerDeletionMask F D
         (fun v => ν.character v.asIdeal) w := by
   classical
-  let T : Set ℂ := {s : ℂ | 0 < s.re}
+  let T := {s : ℂ | 0 < s.re}
   have hT : IsOpen T := isOpen_lt continuous_const Complex.continuous_re
-  have hLmero : MeromorphicOn H.L T := (H.L_holo.analyticOnNhd hT).meromorphicOn
   obtain ⟨hmaskdiff, -, hBs⟩ :=
-    Detector.deleted_primitive_L_continuation F ν D hD T H.L hLmero H.series
-  let g : ℂ → ℂ := fun s => H.L s *
+    Detector.deleted_primitive_L_continuation F ν D hD T H.L ((H.L_holo.analyticOnNhd hT).meromorphicOn) H.series
+  let g := fun s => H.L s *
     Detector.finiteEulerDeletionMask F D (fun v => ν.character v.asIdeal) s
-  have hg : AnalyticOnNhd ℂ g T :=
-    (H.L_holo.mul (hmaskdiff.differentiableOn.mono (Set.subset_univ T))).analyticOnNhd hT
-  have hl' : AnalyticOnNhd ℂ l T := hl.analyticOnNhd hT
   have heq : ∀ s : ℂ, 1 < s.re → l s = g s := by
     intro s hs
     have hdir : InitialSeparatedEuler.dirichletSeries c s =
@@ -81,17 +77,12 @@ theorem deleted_exterior_continuation_eq
             · simp [hex]
             · simp only [hex, if_false]
               exact (ν.character.eq_zero_iff' ⊥).mpr (Or.inl rfl)
-          · have hsup : I ⊔ A.cS ≠ ⊤ := fun h => hn ⟨hbot, h⟩
-            have hex : ∃ v ∈ D, I ≤ v.asIdeal := by
+          · have hex : ∃ v ∈ D, I ≤ v.asIdeal := by
               have hA : ¬ ∀ v : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
-                  v ∈ A.Sf → I ⊔ v.asIdeal = ⊤ := by
-                intro hall
-                exact hsup ((SArithmeticData.exterior_iff A ⟨I, hbot⟩).mpr hall)
+                  v ∈ A.Sf → I ⊔ v.asIdeal = ⊤ := fun hall => (fun h => hn ⟨hbot, h⟩) ((SArithmeticData.exterior_iff A ⟨I, hbot⟩).mpr hall)
               push Not at hA
               obtain ⟨v, hvS, hvv⟩ := hA
-              have heqv : v.asIdeal = I ⊔ v.asIdeal :=
-                v.isMaximal.eq_of_le hvv le_sup_right
-              exact ⟨v, hSD (by simpa using hvS), le_sup_left.trans heqv.symm.le⟩
+              exact ⟨v, hSD (by exact hvS), le_sup_left.trans (v.isMaximal.eq_of_le hvv le_sup_right).symm.le⟩
             simp only [Detector.deletedPrimitiveIdealCoefficient]
             simp [hex]
         rw [hc0, zero_mul]
@@ -110,15 +101,14 @@ theorem deleted_exterior_continuation_eq
       rw [hc I]
     rw [hseries s hs, hdir, (hBs s hs).tsum_eq]
   have hEqOn : Set.EqOn l g T :=
-    hl'.eqOn_of_preconnected_of_eventuallyEq hg (convex_halfSpace_re_gt 0).isPreconnected
+    (hl.analyticOnNhd hT).eqOn_of_preconnected_of_eventuallyEq ((H.L_holo.mul (hmaskdiff.differentiableOn.mono (Set.subset_univ T))).analyticOnNhd hT) (convex_halfSpace_re_gt 0).isPreconnected
       (z₀ := (2 : ℂ)) (by norm_num [T])
       (by
         filter_upwards [IsOpen.mem_nhds (isOpen_lt continuous_const Complex.continuous_re)
           (show (2 : ℂ) ∈ {s : ℂ | 1 < s.re} by norm_num)] with s hs
         exact heq s hs)
   intro w hw
-  have h := hEqOn (by simpa [T] using hw)
-  simpa [g] using h
+  simpa [g] using (hEqOn (by simpa [T] using hw))
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.RightBound.ConductorEstimate
@@ -131,15 +121,6 @@ namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuatio
 noncomputable section
 open scoped Classical NumberField
 open IsDedekindDomain UniqueFactorizationMonoid
-
-private theorem finite_principal_quotient
-    (F : Type) [Field F] [NumberField F]
-    (S : Set (HeightOneSpectrum (𝓞 F))) (hS : S.Finite)
-    (u : S.integer F) (hu : u ≠ 0) :
-    Finite ((S.integer F) ⧸ Ideal.span ({u} : Set (S.integer F))) := by
-  obtain ⟨Sf, hSf⟩ := hS.exists_finset_coe
-  subst hSf
-  exact (sProductModulus_eq_principalIdeal_index F Sf u hu).1
 
 theorem integral_kummer_conductor_cost
     (F : Type) [Field F] [NumberField F]
@@ -161,10 +142,8 @@ theorem integral_kummer_conductor_cost
     Detector.Conductor.NormFactorization.norm_le_exterior_prime_product F S hS b
   refine ⟨C, hC, ?_⟩
   intro u hu χ hχ
-  have horder := Detector.Conductor.global_kummer_sixth_power F ζ12 hζ12 σ S hS
-    (Units.mk0 (u : F) (by exact_mod_cast hu)) χ hχ
-  have hExp : ∀ v : HeightOneSpectrum (𝓞 F),
-      (normalizedFactors χ.conductor).count v.asIdeal ≤ b v := hb χ horder
+  have hExp := hb χ (Detector.Conductor.global_kummer_sixth_power F ζ12 hζ12 σ S hS
+        (Units.mk0 (u : F) (by exact_mod_cast hu)) χ hχ)
   have hFinite : {v : HeightOneSpectrum (𝓞 F) | χ.conductor ≤ v.asIdeal}.Finite := by
     simpa only [Ideal.dvd_iff_le] using (Ideal.finite_factors χ.conductor_ne_zero)
   let T := hFinite.toFinset.filter (fun v => v ∉ S)
@@ -177,10 +156,8 @@ theorem integral_kummer_conductor_cost
     obtain ⟨hIle, hvS⟩ := (hTmem v).mp hv
     refine lt_of_le_of_ne (u.property v hvS) ?_
     intro heq
-    have hcop := (hχ v hvS (by simpa using heq)).1
-    have htop : (⊤ : Ideal (𝓞 F)) ≤ v.asIdeal := by
-      rw [← hcop]; exact sup_le le_rfl hIle
-    exact v.isPrime.ne_top (top_unique htop)
+    refine v.isPrime.ne_top (top_unique ?_)
+    rw [← ((hχ v hvS (by exact heq)).1)]; exact sup_le le_rfl hIle
   have h1 : (Ideal.absNorm χ.conductor : ℝ) ≤
       C * (∏ v ∈ T, (Ideal.absNorm v.asIdeal : ℝ)) := by
     refine hnorm χ.conductor χ.conductor_ne_zero T ?_ ?_ ?_
@@ -193,25 +170,22 @@ theorem integral_kummer_conductor_cost
       simpa [hb6 v hcop] using hExp v
     · intro v hvS hle
       exact (hTmem v).mpr ⟨hle, hvS⟩
-  have h2 : (∏ v ∈ T, (Ideal.absNorm v.asIdeal : ℝ)) ≤
-      (Nat.card ((S.integer F) ⧸ (Ideal.span {u}).radical) : ℝ) :=
-    Detector.Conductor.RadicalQuotient.exterior_prime_product_le_radical_index
-      F S hS u hu T (fun v hv => ⟨((hTmem v).mp hv).2, hTval v hv⟩)
-  haveI : Finite ((S.integer F) ⧸ Ideal.span {u}) := finite_principal_quotient F S hS u hu
-  have h3nat : Nat.card ((S.integer F) ⧸ (Ideal.span {u}).radical) ≤
-      Nat.card ((S.integer F) ⧸ Ideal.span {u}) :=
-    Nat.card_le_card_of_surjective _
-      (Ideal.Quotient.factor_surjective (Ideal.le_radical (I := Ideal.span {u})))
+  haveI : Finite ((S.integer F) ⧸ Ideal.span {u}) := (by
+    obtain ⟨Sf, hSf⟩ := hS.exists_finset_coe
+    subst hSf
+    exact (sProductModulus_eq_principalIdeal_index F Sf u hu).1)
   have h3 : (Nat.card ((S.integer F) ⧸ (Ideal.span {u}).radical) : ℝ) ≤
       (Detector.frequencyNorm F S u : ℝ) := by
     have hfn : (Detector.frequencyNorm F S u : ℝ) =
         (Nat.card ((S.integer F) ⧸ Ideal.span ({u} : Set (S.integer F))) : ℝ) := rfl
     rw [hfn]
-    exact_mod_cast h3nat
-  calc (Ideal.absNorm χ.conductor : ℝ)
+    exact_mod_cast (Nat.card_le_card_of_surjective _
+      (Ideal.Quotient.factor_surjective (Ideal.le_radical)))
+  calc _
       ≤ C * (∏ v ∈ T, (Ideal.absNorm v.asIdeal : ℝ)) := h1
     _ ≤ C * (Nat.card ((S.integer F) ⧸ (Ideal.span {u}).radical) : ℝ) :=
-        mul_le_mul_of_nonneg_left h2 hC.le
+        mul_le_mul_of_nonneg_left (Detector.Conductor.RadicalQuotient.exterior_prime_product_le_radical_index
+          F S hS u hu T (fun v hv => ⟨((hTmem v).mp hv).2, hTval v hv⟩)) hC.le
     _ ≤ C * (Detector.frequencyNorm F S u : ℝ) := mul_le_mul_of_nonneg_left h3 hC.le
 
 end
@@ -258,9 +232,7 @@ theorem raw_plus_inducer_isKummer
 
   have hexterior : v.asIdeal ⊔ A.cS = ⊤ := by
     by_contra hn
-    have he : v.asIdeal = v.asIdeal ⊔ A.cS := v.isMaximal.eq_of_le hn le_sup_left
-    have hc : A.cS ≤ v.asIdeal := le_sup_right.trans_eq he.symm
-    obtain ⟨w, hw, hwv⟩ := v.isPrime.prod_le.mp hc
+    obtain ⟨w, hw, hwv⟩ := v.isPrime.prod_le.mp (le_sup_right.trans_eq (v.isMaximal.eq_of_le hn le_sup_left).symm)
     exact hv ((HeightOneSpectrum.ext (w.isMaximal.eq_of_le v.isPrime.ne_top hwv)) ▸ hw)
   let p : ExteriorPrime A := ⟨v, hexterior⟩
   have hIval : (primeIdeal p).val = v.asIdeal := rfl
@@ -271,7 +243,7 @@ theorem raw_plus_inducer_isKummer
     change v.valuation F (((algebraMap (𝓞 F) A.R) a : A.R) : F) < 1
     have hcoe : (((algebraMap (𝓞 F) A.R) a : A.R) : F) = algebraMap (𝓞 F) F a := rfl
     rw [hcoe]
-    exact (v.valuation_lt_one_iff_mem (K := F) a).mpr (hIval ▸ ha)
+    exact (v.valuation_lt_one_iff_mem a).mpr (hIval ▸ ha)
 
   have hexp : idealPrimeExponent v.asIdeal U.ideal.val = 0 := by
     have h1 := ArithmeticContext.actual_generator_valuation A U.ideal U.u U.generates
@@ -279,17 +251,14 @@ theorem raw_plus_inducer_isKummer
     simp only [Units.val_mk0] at h1
     have h2 : WithZero.exp (-(idealPrimeExponent v.asIdeal U.ideal.val : ℤ)) = 1 := by
       rw [← h1]; exact huval
-    have hle : -(idealPrimeExponent v.asIdeal U.ideal.val : ℤ) ≤ 0 :=
-      WithZero.exp_le_one_iff.mp h2.le
-    have hge : 0 ≤ -(idealPrimeExponent v.asIdeal U.ideal.val : ℤ) :=
+    have hge :=
       WithZero.one_le_exp_iff.mp h2.ge
     have hez : (idealPrimeExponent v.asIdeal U.ideal.val : ℤ) = 0 := by omega
     exact_mod_cast hez
   have hnot : ¬ U.ideal.val ≤ v.asIdeal := by
     intro hle
-    have hm := (Ideal.mem_normalizedFactors_iff U.ideal.property.1).mpr
-      ⟨v.isPrime, hle⟩
-    exact (Multiset.count_eq_zero.mp hexp) hm
+    exact (Multiset.count_eq_zero.mp hexp) ((Ideal.mem_normalizedFactors_iff U.ideal.property.1).mpr
+      ⟨v.isPrime, hle⟩)
 
   have hvD : v ∉ RawHeckeRows.rawDeletionSet U := by
     simp only [RawHeckeRows.rawDeletionSet, Set.mem_union, Set.mem_setOf_eq]
@@ -299,8 +268,7 @@ theorem raw_plus_inducer_isKummer
     unfold Detector.deletedPrimitiveIdealCoefficient
     rw [if_neg]
     rintro ⟨w, hw, hle⟩
-    have hwv : w = v := (HeightOneSpectrum.ext (v.isMaximal.eq_of_le w.isPrime.ne_top hle)).symm
-    rw [hwv] at hw
+    rw [((HeightOneSpectrum.ext (v.isMaximal.eq_of_le w.isPrime.ne_top hle)).symm)] at hw
     exact hvD hw
 
   have hchi : χ.character v.asIdeal = σ (A.sexticResidue (primeIdeal p) U.u) := by
@@ -315,13 +283,12 @@ theorem raw_plus_inducer_isKummer
     haveI := hmax
     rw [isUnit_iff_ne_zero]
     intro hz
-    have hmem : U.u ∈ A.extendIdeal (primeIdeal p) := Ideal.Quotient.eq_zero_iff_mem.mp hz
+    have hmem := Ideal.Quotient.eq_zero_iff_mem.mp hz
     have hlt : v.valuation F (U.u : F) < 1 := hmap_extend_le hmem
     rw [huval] at hlt
     exact lt_irrefl 1 hlt
-  let q : (A.R ⧸ A.extendIdeal (primeIdeal p))ˣ := hunit.unit
-  have hqval : (q : A.R ⧸ A.extendIdeal (primeIdeal p)) =
-      Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u := hunit.unit_spec
+  let q := hunit.unit
+  have hqval := hunit.unit_spec
   obtain ⟨j, hj, hjchar, hjred⟩ :=
     A.sexticResidueFamily_normalized.2.1 (primeIdeal p) v hIval q
 
@@ -335,10 +302,9 @@ theorem raw_plus_inducer_isKummer
   refine ⟨?_, ⟨⟨j, hj⟩, ?_, hchar⟩⟩
   ·
     by_contra hcop
-    have hz : χ.character v.asIdeal = 0 := (χ.character.eq_zero_iff' v.asIdeal).mpr (Or.inr hcop)
+    have hz := (χ.character.eq_zero_iff' v.asIdeal).mpr (Or.inr hcop)
     rw [hchar] at hz
-    have h0 : (A.zeta12 ^ 2) ^ j = 0 := σ.injective (by rw [hz, map_zero])
-    exact pow_ne_zero j (pow_ne_zero 2 (A.primitive_zeta12.ne_zero (by decide))) h0
+    exact pow_ne_zero j (pow_ne_zero 2 (A.primitive_zeta12.ne_zero (by decide))) (σ.injective (by rw [hz, map_zero]))
   ·
     have hcard : Nat.card (A.R ⧸ A.extendIdeal (primeIdeal p)) = Ideal.absNorm v.asIdeal := by
       rw [A.exteriorResidue_card (primeIdeal p), hIval]
@@ -347,11 +313,10 @@ theorem raw_plus_inducer_isKummer
         (U.u ^ ((Ideal.absNorm v.asIdeal - 1) / 6)) =
         Ideal.Quotient.mk (A.extendIdeal (primeIdeal p))
           (algebraMap (𝓞 F) A.R (A.primitive_zeta12.toInteger ^ (2 * j))) := by
-      calc Ideal.Quotient.mk (A.extendIdeal (primeIdeal p))
-            (U.u ^ ((Ideal.absNorm v.asIdeal - 1) / 6))
+      calc _
           = (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u) ^
               ((Ideal.absNorm v.asIdeal - 1) / 6) := by rw [map_pow]
-        _ = (q : A.R ⧸ A.extendIdeal (primeIdeal p)) ^
+        _ = q ^
               ((Ideal.absNorm v.asIdeal - 1) / 6) := by rw [← hqval]
         _ = _ := hjred.symm
     have hmem : U.u ^ ((Ideal.absNorm v.asIdeal - 1) / 6) -
@@ -385,7 +350,7 @@ namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuatio
 noncomputable section
 open scoped Classical NumberField
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem raw_plus_inducer_conductor_bound
     (R : PrincipalMellin.ActualRecipe S η)
@@ -402,7 +367,7 @@ theorem raw_plus_inducer_conductor_bound
     R.A.principalIdealRing_of_classGroup_subsingleton R.classKilled
   have hSix : ∀ v : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
       ¬ (Ideal.absNorm v.asIdeal).Coprime 6 →
-        v ∈ (R.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) := by
+        v ∈ R.A.Sf := by
     intro v hv
     by_contra hn
     exact hv (ArithmeticContext.actual_outside_norm_coprime_six R.A v hn)
@@ -410,12 +375,11 @@ theorem raw_plus_inducer_conductor_bound
     R.A.zeta12 R.A.primitive_zeta12 R.σ _ R.A.Sf.finite_toSet hSix
   refine ⟨1 + C, by positivity, ?_⟩
   intro u
-  have hK := RawInducerArithmetic.raw_plus_inducer_isKummer R.A R.σ (U u) (P u) (hP u)
-  have hbound := hcost (U u).u (U u).generates.1 (P u) hK
+  have hbound := hcost (U u).u (U u).generates.1 (P u) (RawInducerArithmetic.raw_plus_inducer_isKummer R.A R.σ (U u) (P u) (hP u))
   have hnorm := RawInducerArithmetic.actual_frequency_norm_dictionary R u
   rw [hU u, ← hnorm.1] at hbound
   calc
-    1 + (Ideal.absNorm (P u).conductor : ℝ) ≤
+    _ ≤
         frequencyNorm R u + C * frequencyNorm R u := add_le_add hnorm.2 hbound
     _ = (1 + C) * frequencyNorm R u := by ring
 
@@ -430,7 +394,7 @@ namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuatio
 noncomputable section
 open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.RightBound

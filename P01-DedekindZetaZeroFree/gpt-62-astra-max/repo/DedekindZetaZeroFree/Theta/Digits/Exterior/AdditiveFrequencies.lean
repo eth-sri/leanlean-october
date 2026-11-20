@@ -11,11 +11,10 @@ set_option backward.isDefEq.respectTransparency true
 namespace DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 open MomentSources NumberField IsDedekindDomain ThetaExpansion ValuativeRel
 open scoped NumberField Classical
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming reduction_mul → reduction_mul
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming reduction_one → reduction_one
+open _root_.DedekindZetaZeroFree.ThetaBranch (reduction_mul reduction_one)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 theorem additive_digit (p : ThetaBranch.ExteriorPrime R.A) (x V : Fˣ)
     (hV : ThetaBranch.order p.val V = 0) (he : 0 ≤ ThetaBranch.order p.val x + 2) :
@@ -34,11 +33,10 @@ theorem additive_digit (p : ThetaBranch.ExteriorPrime R.A) (x V : Fˣ)
     rw [show ThetaBranch.order p.val g = 1 from generator_order R p]
     ring
   have hi : p.val.valuation F a.val ≤ 1 := by
-    have hh := integral_of_order_nonneg p.val a (ha ▸ he)
     letI : (Valued.v : Valuation (p.val.adicCompletion F) (WithZero (Multiplicative ℤ))).Compatible :=
       Valuation.Compatible.ofValuation _
     have hv := ((ValuativeRel.isEquiv (valuation (p.val.adicCompletion F))
-      (Valued.v : Valuation (p.val.adicCompletion F) (WithZero (Multiplicative ℤ)))).le_one_iff_le_one).mp hh
+      Valued.v).le_one_iff_le_one).mp (integral_of_order_nonneg p.val a (ha ▸ he))
     change Valued.v ((a.val : F) : p.val.adicCompletion F) ≤ 1 at hv
     rwa [HeightOneSpectrum.adicCompletion.valued_coe] at hv
   have hp := DigitMasks.rational_local_phase R p a hi (1 : 𝓞 F)

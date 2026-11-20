@@ -1,4 +1,6 @@
 module
+public import DedekindZetaZeroFree.Moments.Reflected.DyadicSquareSum
+public import DedekindZetaZeroFree.Moments.Reflected.PowerfulSquarefreeTailBounds
 
 public import DedekindZetaZeroFree.Moments.Reflected.ActivePrimeSubpowerMass
 public import DedekindZetaZeroFree.Arithmetic.Units.SUnitPowerQuotientCoordinates
@@ -16,22 +18,13 @@ open ThetaBranch ThetaPhaseSeparation
 
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem unit_finite (A : SArithmeticData F) : Finite A.UnitQuotient := by
-  letI := SArithmeticData.sunitSixthPowerQuotient_finite F A
-  exact Finite.of_equiv (PowerQuotient A.Rˣ 6)
-    (LocalFieldTheory.nthPowerQuotientEquivOfMulEquiv A.U A.Rˣ 6 A.unitEquiv).symm.toEquiv
+private alias unit_finite := DedekindZetaZeroFree.RMTailCutoff.Reindex.unit_finite
 
  abbrev Active (A : SArithmeticData F) (h : A.Exterior) :=
   {f : ExteriorSquarefreeIdeal A.cS // f.val.val ∈ activeSquarefreeDivisors h.val}
 
 private theorem active_finite (A : SArithmeticData F) (h : A.Exterior) :
-    Finite (Active A h) := by
-  apply Finite.of_injective (fun f : Active A h =>
-    (⟨f.val.val.val, f.property⟩ : {f // f ∈ activeSquarefreeDivisors h.val}))
-  intro i j hij
-  have he : i.val.val.val = j.val.val.val := congrArg
-    (fun f : {f // f ∈ activeSquarefreeDivisors h.val} => f.val) hij
-  exact Subtype.ext (Subtype.ext (Subtype.ext he))
+    Finite (Active A h) := by apply @DedekindZetaZeroFree.RMTailCutoff.Reindex.active_finite <;> assumption
 
 private theorem beta_zero {A : SArithmeticData F} (f : ExteriorSquarefreeIdeal A.cS)
     (a : supportedExteriorIdeals f) : betaIdealTerm f 0 a = betaIdeal f a.val.val := by
@@ -60,8 +53,7 @@ private theorem norm_bounds {A : SArithmeticData F} (a c n : A.Exterior)
 
 private theorem dyad_count (R : ℝ) (hR : 1 ≤ R) :
     (Nat.log 2 ⌊R⌋₊ + 1 : ℝ) ≤ Real.log (2 * R) / Real.log 2 := by
-  have hRp : 0 < R := lt_of_lt_of_le zero_lt_one hR
-  have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hRp := lt_of_lt_of_le zero_lt_one hR
   have hfloor : ⌊R⌋₊ ≠ 0 := by
     have : 1 ≤ ⌊R⌋₊ := Nat.le_floor (by simpa only [Nat.cast_one] using hR)
     omega
@@ -72,7 +64,7 @@ private theorem dyad_count (R : ℝ) (hR : 1 ≤ R) :
       _ ≤ R := Nat.floor_le hRp.le
   have hl := Real.log_le_log (by positivity : 0 < (2 : ℝ) ^ Nat.log 2 ⌊R⌋₊) hp
   rw [Real.log_pow] at hl
-  rw [le_div_iff₀ hlog2, Real.log_mul (by norm_num : (2 : ℝ) ≠ 0) hRp.ne']
+  rw [le_div_iff₀ (Real.log_pos (by norm_num)), Real.log_mul (by norm_num : (2 : ℝ) ≠ 0) hRp.ne']
   nlinarith
 
 private theorem active_sum_le (A : SArithmeticData F) (h : A.Exterior)
@@ -81,7 +73,7 @@ private theorem active_sum_le (A : SArithmeticData F) (h : A.Exterior)
   letI := active_finite A h
   letI := Fintype.ofFinite (Active A h)
   rw [tsum_fintype]
-  apply le_trans (b := activeEulerSum h.val 0) _ hK
+  apply le_trans _ hK
   apply Finset.sum_le_sum_of_injOn (fun f : Active A h => f.val.val.val)
   · intro i _ j _ hij
     exact Subtype.ext (Subtype.ext (Subtype.ext hij))
@@ -210,14 +202,15 @@ theorem frozen_dyadic_weight_bound (A : SArithmeticData F)
   have hnbound := (hn (Set.univ : Set (NonzeroIdeal F))).2.2 R hR
   have hhb : 0 ≤ idealHarmonicSum (Set.univ : Set (NonzeroIdeal F)) R :=
     tsum_nonneg (fun _ => by unfold idealNorm; positivity)
-  have hlog : 0 ≤ Real.log (2 * R) := Real.log_nonneg (by linarith)
-  have hL : (L : ℝ) ≤ Real.log (2 * R) / Real.log 2 := by simpa [L] using dyad_count R hR
+  let log₀ := Real.log (2 * R)
+  have hlog : 0 ≤ log₀ := Real.log_nonneg (by linarith)
+  have hL : (L : ℝ) ≤ log₀ / Real.log 2 := by simpa [L] using dyad_count R hR
   change (∑ j ∈ t, _) ≤ _
   apply hsum.trans
   rw [hwt, hgt]
   calc
     _ ≤ (Ka * Real.rpow (idealNorm h.val) b) *
-        (Cu * (Real.log (2 * R) / Real.log 2) * (Kn * Real.log (2 * R))) := by
+        (Cu * (log₀ / Real.log 2) * (Kn * log₀)) := by
       apply mul_le_mul hfbound _ (mul_nonneg (by positivity) hhb)
         (mul_nonneg hKa.le (Real.rpow_nonneg (by unfold idealNorm; positivity) _))
       apply mul_le_mul _ hnbound hhb (by positivity)
@@ -249,50 +242,51 @@ def retainedIndex (A : SArithmeticData F) (h : A.Exterior) (R₀ : ℝ) :
     Set (RMSeparatedExpansion.Index A h) :=
   {i | branchNorm A i ≤ R₀}
 
-def retainedSummand (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
-    (h d : A.Exterior) (Z R₀ : ℝ) (i : RMSeparatedExpansion.Index A h) : ℂ :=
+section
+
+variable (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
+    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ) (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
+    (h d : A.Exterior) (Z R₀ : ℝ)
+
+def retainedSummand (i : RMSeparatedExpansion.Index A h) : ℂ :=
   if i ∈ retainedIndex A h R₀ then
     RMSeparatedExpansion.summand A G U σ ψ L H i.1.val d i.2 Z
   else 0
 
-def retained (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
-    (h d : A.Exterior) (Z R₀ : ℝ) : ℂ :=
+def retained : ℂ :=
   ∑ᶠ i : RMSeparatedExpansion.Index A h,
     retainedSummand A G U σ ψ L H h d Z R₀ i
+
+end
 
 def rowDyad (A : SArithmeticData F) (h : A.Exterior) (D : ℝ) :
     Set (ExteriorSquarefreeIdeal A.cS) :=
   {d | D ≤ A.exteriorNorm d.val ∧ A.exteriorNorm d.val < 2 * D ∧
     d.val.val ⊔ h.val = ⊤}
 
-def rowSquareMass (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
+section
+
+variable (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
+    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ) (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
+
+def rowSquareMass
     (h : A.Exterior) (Z D R₀ : ℝ) : ℝ :=
   ∑ᶠ d : rowDyad A h D,
     ‖retained A G U σ ψ L H h d.val.val Z R₀‖ ^ 2
 
-def totalSquareMass (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
+def totalSquareMass
     (Z P D R₀ : ℝ) : ℝ :=
   ∑ᶠ h : exteriorPowerfulDyad A.cS P,
     rowSquareMass A G U σ ψ L H h.val Z D R₀
 
+end
+
 private theorem frozen_ext (A : SArithmeticData F) (T S : Frozen A)
     (hh : T.h = S.h) (hf : T.f.val = S.f.val) (ha : T.a.val = S.a.val)
     (hn : T.n.val = S.n.val) (he : T.epsilon = S.epsilon) : T = S := by
-  have hf' : T.f = S.f := Subtype.ext hf
-  have ha' : T.a = S.a := Subtype.ext ha
-  have hn' : T.n = S.n := Subtype.ext hn
+  have hf' := Subtype.ext hf
+  have ha' := Subtype.ext ha
+  have hn' := Subtype.ext hn
   cases T
   cases S
   simp_all
@@ -345,32 +339,25 @@ theorem retainedIndex_finite (A : SArithmeticData F) (h : A.Exterior) (R₀ : �
       ((normBoundedIdeals_finite F R₀).prod
         ((normBoundedIdeals_finite F R₀).prod (Set.finite_univ))))
 
-theorem retainedSummand_finite_support (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
-    (h d : A.Exterior) (Z R₀ : ℝ) :
+section
+
+variable (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
+    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ) (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
+    (h d : A.Exterior) (Z R₀ : ℝ)
+
+theorem retainedSummand_finite_support :
     (Function.support (retainedSummand A G U σ ψ L H h d Z R₀)).Finite := by
   apply (retainedIndex_finite A h R₀).subset
   intro i hi
   by_contra hn
   exact hi (by simp [retainedSummand, hn])
 
-theorem retained_eq_tsum (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
-    (h d : A.Exterior) (Z R₀ : ℝ) :
+theorem retained_eq_tsum :
     retained A G U σ ψ L H h d Z R₀ =
       ∑' i : RMSeparatedExpansion.Index A h,
-        retainedSummand A G U σ ψ L H h d Z R₀ i := by
-  exact (tsum_eq_finsum (retainedSummand_finite_support A G U σ ψ L H h d Z R₀)).symm
+        retainedSummand A G U σ ψ L H h d Z R₀ i := (tsum_eq_finsum (retainedSummand_finite_support A G U σ ψ L H h d Z R₀)).symm
 
-theorem retained_eq_zero_of_cutoff_lt_one (A : SArithmeticData F)
-    (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
-    (h d : A.Exterior) (Z R₀ : ℝ) (hR₀ : R₀ < 1) :
+theorem retained_eq_zero_of_cutoff_lt_one (hR₀ : R₀ < 1) :
     retained A G U σ ψ L H h d Z R₀ = 0 := by
   have hzero : ∀ i : RMSeparatedExpansion.Index A h,
       retainedSummand A G U σ ψ L H h d Z R₀ i = 0 := by
@@ -386,34 +373,12 @@ theorem retained_eq_zero_of_cutoff_lt_one (A : SArithmeticData F)
     simp [retainedSummand, hi']
   simp [retained, hzero]
 
-theorem rowDyad_finite (A : SArithmeticData F) (h : A.Exterior) (D : ℝ) :
-    (rowDyad A h D).Finite := by
-  let f : ExteriorSquarefreeIdeal A.cS → NonzeroIdeal F :=
-    fun d => ⟨d.val.val, d.val.property.1⟩
-  apply Set.Finite.of_injOn (f := f) (t := normBoundedIdeals F (2 * D))
-  · intro d hd
-    exact hd.2.1.le
-  · intro d _ e _ hde
-    exact Subtype.ext (Subtype.ext (congrArg (fun i : NonzeroIdeal F => i.val) hde))
-  · exact normBoundedIdeals_finite F (2 * D)
+end
 
-theorem finiteMinkowski {I J : Type*} [Fintype I]
-    (s : Finset J) (a : J → I → ℂ) :
-    Real.sqrt (∑ i, ‖∑ j ∈ s, a j i‖ ^ 2) ≤
-      ∑ j ∈ s, Real.sqrt (∑ i, ‖a j i‖ ^ 2) := by
-  let v : J → EuclideanSpace ℂ I := fun j => WithLp.toLp 2 (a j)
-  have he : (WithLp.toLp 2 (fun i => ∑ j ∈ s, a j i) : EuclideanSpace ℂ I) =
-      ∑ j ∈ s, v j := by
-    ext i
-    simp [v]
-  calc
-    _ = ‖(WithLp.toLp 2 (fun i => ∑ j ∈ s, a j i) : EuclideanSpace ℂ I)‖ := by
-      simpa only [PiLp.toLp_apply] using
-        (EuclideanSpace.norm_eq (WithLp.toLp 2 (fun i => ∑ j ∈ s, a j i) :
-          EuclideanSpace ℂ I)).symm
-    _ = ‖∑ j ∈ s, v j‖ := congrArg norm he
-    _ ≤ ∑ j ∈ s, ‖v j‖ := norm_sum_le _ _
-    _ = _ := by simp only [v, EuclideanSpace.norm_eq, PiLp.toLp_apply]
+theorem rowDyad_finite (A : SArithmeticData F) (h : A.Exterior) (D : ℝ) :
+    (rowDyad A h D).Finite := by apply @DedekindZetaZeroFree.RepresentationTheory.RMParameterAbsorption.DyadicSquareSum.rowDyad_finite <;> assumption
+
+alias finiteMinkowski := DedekindZetaZeroFree.RMDyadicSieveAggregation.ProfiledDyadicBlock.finiteMinkowski
 
 theorem retained_eq_finite_sum (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
@@ -424,21 +389,23 @@ theorem retained_eq_finite_sum (A : SArithmeticData F) (G : AllowedRecipe A)
       ∑ i ∈ (retainedIndex_finite A h R).toFinset,
         RMSeparatedExpansion.summand A G U σ ψ L H i.1.val d i.2 Z := by
   rw [retained, finsum_eq_sum_of_support_subset
-    (s := (retainedIndex_finite A h R).toFinset)]
+    ]
   · apply Finset.sum_congr rfl
     intro i hi
     simp only [Set.Finite.mem_toFinset] at hi
     simp [retainedSummand, hi]
   · intro i hi
-    change i ∈ (retainedIndex_finite A h R).toFinset
     apply (retainedIndex_finite A h R).mem_toFinset.mpr
     by_contra hn
     exact hi (by simp [retainedSummand, hn])
 
-theorem retained_eq_regrouped {J : Type*} (A : SArithmeticData F)
-    (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
+section
+
+variable {J : Type*} (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
+    (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ) (L : Fˣ →* ℂ)
+    (H : A.V → ℝ → ℂ)
+
+theorem retained_eq_regrouped
     (h d : A.Exterior) (Z R : ℝ) (g : RMSeparatedExpansion.Index A h → J) :
     retained A G U σ ψ L H h d Z R =
       ∑ j ∈ ((retainedIndex_finite A h R).toFinset.image g),
@@ -448,10 +415,7 @@ theorem retained_eq_regrouped {J : Type*} (A : SArithmeticData F)
   exact (Finset.sum_fiberwise_of_maps_to
     (fun i hi => Finset.mem_image_of_mem g hi) _).symm
 
-theorem retained_l2_regrouped_triangle {J : Type*} (A : SArithmeticData F)
-    (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
+theorem retained_l2_regrouped_triangle
     (h : A.Exterior) (Z D R : ℝ) (g : RMSeparatedExpansion.Index A h → J) :
     Real.sqrt (rowSquareMass A G U σ ψ L H h Z D R) ≤
       ∑ j ∈ ((retainedIndex_finite A h R).toFinset.image g),
@@ -463,13 +427,13 @@ theorem retained_l2_regrouped_triangle {J : Type*} (A : SArithmeticData F)
     retained_eq_regrouped (g := g)]
   exact finiteMinkowski _ _
 
+end
+
 theorem column_log_dyad (A : SArithmeticData F)
     (c : ExteriorSquarefreeIdeal A.cS) :
     (2 : ℝ) ^ Nat.log 2 (Ideal.absNorm c.val.val) ≤ A.exteriorNorm c.val ∧
       A.exteriorNorm c.val < 2 * (2 : ℝ) ^ Nat.log 2 (Ideal.absNorm c.val.val) := by
-  have hc : Ideal.absNorm c.val.val ≠ 0 := by
-    intro hc0
-    exact c.val.property.1 (Ideal.absNorm_eq_zero_iff.mp hc0)
+  have hc : Ideal.absNorm c.val.val ≠ 0 := fun hc0 => c.val.property.1 (Ideal.absNorm_eq_zero_iff.mp hc0)
   change (2 : ℝ) ^ Nat.log 2 (Ideal.absNorm c.val.val) ≤ (Ideal.absNorm c.val.val : ℝ) ∧
     (Ideal.absNorm c.val.val : ℝ) < 2 * (2 : ℝ) ^ Nat.log 2 (Ideal.absNorm c.val.val)
   constructor
@@ -478,8 +442,13 @@ theorem column_log_dyad (A : SArithmeticData F)
     rw [pow_succ, mul_comm] at hb
     exact_mod_cast hb
 
-theorem retained_column_norm_le (A : SArithmeticData F) {h : A.Exterior}
-    (i : RMSeparatedExpansion.Index A h) (R : ℝ) (hi : i ∈ retainedIndex A h R) :
+section
+
+variable (A : SArithmeticData F) {h : A.Exterior} (i : RMSeparatedExpansion.Index A h) (R : ℝ)
+    (hi : i ∈ retainedIndex A h R)
+
+include hi in
+theorem retained_column_norm_le :
     A.exteriorNorm i.2.val ≤ R := by
   have ha := idealNorm_ge_one i.1.val.a.val i.1.val.a.property.1
   have hn := idealNorm_ge_one i.1.val.n.val i.1.val.n.property.1
@@ -494,10 +463,12 @@ theorem retained_column_norm_le (A : SArithmeticData F) {h : A.Exterior}
     _ ≤ idealNorm i.1.val.a.val * idealNorm i.2.val.val *
       idealNorm i.1.val.n.val ^ 3 := by gcongr
 
-theorem retained_column_dyad_le (A : SArithmeticData F) {h : A.Exterior}
-    (i : RMSeparatedExpansion.Index A h) (R : ℝ) (hi : i ∈ retainedIndex A h R) :
+include hi in
+theorem retained_column_dyad_le :
     (2 : ℝ) ^ Nat.log 2 (Ideal.absNorm i.2.val.val) ≤ R :=
   (column_log_dyad A i.2).1.trans (retained_column_norm_le A i R hi)
+
+end
 
 def frozenDyadKey (A : SArithmeticData F) (h : A.Exterior)
     (i : RMSeparatedExpansion.Index A h) : {T : Frozen A // T.h = h} × ℕ :=
@@ -508,31 +479,18 @@ def QuadraticFamilyCompatibility (A : SArithmeticData F) (G : AllowedRecipe A)
   ∀ d c : ExteriorSquarefreeIdeal A.cS,
     (𝓕.χ c.val.val) d.val.val = quadraticPairing A G σ d.val c.val
 
-theorem frozen_scalar_norm_bound (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
-    (L : Fˣ →* ℂ) (hL : ∀ x : Fˣ, ‖L x‖ = 1) (T : Frozen A) :
-    ‖omega A G U σ ψ L T / (A.exteriorNorm T.n : ℂ)‖ ≤
-      betaIdeal (RMSeparatedExpansion.activeSupport A T) T.a.val /
-        A.exteriorNorm T.n := by
-  have hn := idealNorm_ge_one T.n.val T.n.property.1
-  have hb := (RMSeparatedExpansion.factors_norm_le_betaIdeal
-    A G U σ ψ hψ L hL T T.n T.n).1
-  rw [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith)]
-  exact div_le_div_of_nonneg_right hb (by linarith)
+alias frozen_scalar_norm_bound := DedekindZetaZeroFree.RMDyadicSieveAggregation.frozen_scalar_norm_le
 
 theorem sieve_majorant_mono (D C R b : ℝ) (hD : 0 ≤ D)
     (hC : 0 ≤ C) (hCR : C ≤ R) (hb : 0 ≤ b) :
     (D * C) ^ (b / 2) * Real.sqrt (D + C) ≤
       (D * R) ^ (b / 2) * Real.sqrt (D + R) := by
-  have hR := hC.trans hCR
   apply mul_le_mul
   · exact Real.rpow_le_rpow (mul_nonneg hD hC)
       (mul_le_mul_of_nonneg_left hCR hD) (by positivity)
   · exact Real.sqrt_le_sqrt (by linarith)
   · exact Real.sqrt_nonneg _
-  · exact Real.rpow_nonneg (mul_nonneg hD hR) _
+  · exact Real.rpow_nonneg (mul_nonneg hD (hC.trans hCR)) _
 
 theorem retained_l2_bound
     (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
@@ -680,12 +638,9 @@ theorem retained_total_square_bound
     mul_pos (mul_pos hC (sq_pos_of_pos hK)) (Real.rpow_pos_of_pos (by norm_num) _), ?_⟩
   intro u Z P D θ hZ hP hD hθ hR
   let R := cutoff Z P D θ
-  have hRp : 0 < R := lt_of_lt_of_le zero_lt_one hR
-  have hPp : 0 < P := lt_of_lt_of_le zero_lt_one hP
-  have hDp : 0 < D := lt_of_lt_of_le zero_lt_one hD
+  have hPp := lt_of_lt_of_le zero_lt_one hP
   let M := K ^ 2 * (2 * P) ^ (2 * b₁) * Real.log (2 * R) ^ 4 *
     (D + R) * (D * R) ^ b₂
-  have hM : 0 ≤ M := by dsimp [M]; positivity
   have hrow (h : exteriorPowerfulDyad A.cS P) :
       rowSquareMass A G U σ ψ (L u) (H u) h.val Z D R ≤ M := by
     have hbound := hb u Z P D θ hZ hP hD hθ hR h.val h.property
@@ -704,21 +659,21 @@ theorem retained_total_square_bound
     have hmass : 0 ≤ rowSquareMass A G U σ ψ (L u) (H u) h.val Z D R :=
       finsum_nonneg (fun _ => sq_nonneg _)
     have hsq := (sq_le_sq₀ (Real.sqrt_nonneg _) (by positivity)).mpr hb'
-    rw [Real.sq_sqrt hmass, bound_square K P D R b₁ b₂ hPp hDp hRp] at hsq
+    rw [Real.sq_sqrt hmass, bound_square K P D R b₁ b₂ hPp (lt_of_lt_of_le zero_lt_one hD) (lt_of_lt_of_le zero_lt_one hR)] at hsq
     exact hsq
   letI := (exteriorPowerfulDyad_finite A.cS P).fintype
   have hcard : (Fintype.card (exteriorPowerfulDyad A.cS P) : ℝ) ≤ C * Real.sqrt P := by
-    simpa only [← Nat.card_eq_fintype_card, Nat.card_coe_set_eq] using
+    simpa using
       hc A.cS A.cS_ne_zero P hP
   calc
-    totalSquareMass A G U σ ψ (L u) (H u) Z P D R =
+    _ =
         ∑ h : exteriorPowerfulDyad A.cS P,
           rowSquareMass A G U σ ψ (L u) (H u) h.val Z D R :=
       finsum_eq_sum_of_fintype _
     _ ≤ ∑ _h : exteriorPowerfulDyad A.cS P, M := Finset.sum_le_sum (fun h _ => hrow h)
     _ = (Fintype.card (exteriorPowerfulDyad A.cS P) : ℝ) * M := by
       simp [nsmul_eq_mul]
-    _ ≤ (C * Real.sqrt P) * M := mul_le_mul_of_nonneg_right hcard hM
+    _ ≤ (C * Real.sqrt P) * M := mul_le_mul_of_nonneg_right hcard (by dsimp [M]; positivity)
     _ = C * K ^ 2 * Real.rpow 2 (2 * b₁) * Real.rpow P (1 / 2 + 2 * b₁) *
         Real.log (2 * R) ^ 4 * (D + R) * Real.rpow (D * R) b₂ := by
       dsimp [M]

@@ -13,7 +13,7 @@ local instance : AddCommGroup complexCore := Submodule.addCommGroup complexCore
 local instance : Module ℂ complexCore := Submodule.module complexCore
 local instance : TopologicalSpace complexCore := instTopologicalSpaceSubtype
 variable {α : Type*} [TopologicalSpace α]
-variable (E : complexCore →ₗ[ℂ] (α → ℂ)) (he : ∀v,Continuous (E v)) (hb : CompactBound E)
+    (E : complexCore →ₗ[ℂ] (α → ℂ)) (he : ∀v,Continuous (E v)) (hb : CompactBound E)
 
 theorem harmonic_compact_limit (K : Set α) (hK : IsCompact K)
     (v : PrincipalSeries negativeParameter) (a : ℕ → complexCore)

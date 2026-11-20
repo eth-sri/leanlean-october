@@ -11,13 +11,13 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ComplexLines
 open LiteralSource MomentSources HCGeneration TensorActionSource KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 local notation "H" => actualImageData R P C μ hμ
 local notation "W" => actualLocal R H
 local notation "E" => bad R.A P C
@@ -87,20 +87,18 @@ theorem actualStage_arch_background (N : TraceHaarTransport R)
       actualStagePeriod R P C μ hμ N s y
         (g*KPSmoothActualFlowData.archimedeanInsertion F R.A.zeta12 R.A.primitive_zeta12 a) =
         c*actualStagePeriod R P C μ hμ N s y g := by
-  let M : InfinitePlace F → Theta traceFrequency →L[ℂ] ℂ := fun w =>
+  let M := fun w =>
     Classical.choose (actualStage_detector R P C μ hμ N  s x hx w (hw w))
-  have hM : ∀w, M w ∈ whittakerSpace traceFrequency traceCharacter := fun w =>
-    (Classical.choose_spec (actualStage_detector R P C μ hμ N  s x hx w (hw w))).1
-  have hv : ∀w, M w (harmonicInclusion (x ⟨Sum.inl w,hw w⟩)) ≠ 0 := fun w =>
-    (Classical.choose_spec (actualStage_detector R P C μ hμ N  s x hx w (hw w))).2
   refine ⟨∏w, (M w (imageAction traceFrequency (a w) (harmonicInclusion (x ⟨Sum.inl w,hw w⟩)))/
       M w (harmonicInclusion (x ⟨Sum.inl w,hw w⟩))),?_⟩
   intro y hy g hg
   have hvy : ∀w, M w (harmonicInclusion (y ⟨Sum.inl w,hw w⟩)) ≠ 0 := by
     intro w
-    simpa only [hy] using hv w
+    simpa only [hy] using (fun w =>
+      (Classical.choose_spec (actualStage_detector R P C μ hμ N s x hx w (hw w))).2) w
   simpa only [archPartial_univ,hy] using
-    actualStage_arch_product R P C μ hμ N  s y hw M hM hvy a Finset.univ g hg
+    actualStage_arch_product R P C μ hμ N s y hw M (fun w =>
+      (Classical.choose_spec (actualStage_detector R P C μ hμ N s x hx w (hw w))).1) hvy a Finset.univ g hg
 
 end DedekindZetaZeroFree.FourierContinuation.ComplexLines
 

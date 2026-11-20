@@ -48,15 +48,11 @@ theorem is_spherical_vector_iff
   constructor
   · intro hφ
     refine ⟨spherical_vector_mem_level K A P I ε φ hφ, ?_⟩
-    have hh := hφ.1 0
-    have hv := compact_extension_value K A P I ε 0 φ 1
-    have hv' := congrArg (fun v : InducedModule P => v.val 1) hv
-    exact hv'.symm.trans hh
+    exact (congrArg (fun v : InducedModule P => v.val 1) (compact_extension_value K A P I ε 0 φ 1)).symm.trans (hφ.1 0)
   · rintro ⟨hlevel, hnorm⟩
     constructor
     · intro s
-      have hv := compact_extension_value K A P I ε s φ 1
-      exact (congrArg (fun v : InducedModule P => v.val 1) hv).trans hnorm
+      exact (congrArg (fun v : InducedModule P => v.val 1) (compact_extension_value K A P I ε s φ 1)).trans hnorm
     · intro s k
       exact (compact_level_identification A P I ε I.compact le_rfl s φ).mp hlevel k
 

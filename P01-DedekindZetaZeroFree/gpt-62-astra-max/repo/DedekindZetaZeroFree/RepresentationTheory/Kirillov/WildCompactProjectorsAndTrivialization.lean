@@ -48,18 +48,15 @@ def evaluationMap :
       rwa [he] at h
     · let S := closure ((Quotient.mk (QuotientGroup.rightRel (H F ζ hζ v))) ''
           Function.support (T f).val)
-      have hc : IsCompact S := (T f).property.2.1
-      have hcq : IsCompact (q '' S) := hc.image q.continuous
-      have hsub : Function.support (fun t => sectionValue F ζ hζ v m ψ f (lift t)) ⊆
-          q '' S := by
-        intro t ht
-        refine ⟨Quotient.mk (QuotientGroup.rightRel (H F ζ hζ v)) (lift t), ?_, ?_⟩
-        · apply subset_closure
-          refine ⟨lift t, ?_, rfl⟩
-          rw [Function.mem_support, compactLCEquiv_value]
-          exact ht
-        · exact (quotientHomeomorph_mk F ζ hζ v m hm (lift t)).trans (hslope t)
-      exact hcq.of_isClosed_subset isClosed_closure (closure_minimal hsub hcq.isClosed)
+      have hcq := ((T f).property.2.1).image q.continuous
+      refine hcq.of_isClosed_subset isClosed_closure (closure_minimal ?_ hcq.isClosed)
+      intro t ht
+      refine ⟨Quotient.mk (QuotientGroup.rightRel (H F ζ hζ v)) (lift t), ?_, ?_⟩
+      · apply subset_closure
+        refine ⟨lift t, ?_, rfl⟩
+        rw [Function.mem_support, compactLCEquiv_value]
+        exact ht
+      · exact (quotientHomeomorph_mk F ζ hζ v m hm (lift t)).trans (hslope t)
   · intro f g
     apply Subtype.ext
     rfl

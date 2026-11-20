@@ -12,22 +12,7 @@ open MeasureTheory Function
 namespace DedekindZetaZeroFree.KPActualComponentHaarSources.ProductDisintegration
 open KPMsFixedHaar
 
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tilingLift → tilingLift
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tilingArch → tilingArch
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tilingRational → tilingRational
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tilingLift_finite → tilingLift_finite
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tiling_arch_m → tiling_arch_m
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tiling_finite_m → tiling_finite_m
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tiling_preserve_base → tiling_preserve_base
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming actual_product_splitting → actual_product_splitting
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tiling_central_base → tiling_central_base
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tiling_orbit_base → tiling_orbit_base
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tilingRational_surjective → tilingRational_surjective
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tiling_overlap_primitive → tiling_overlap_primitive
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tilingArch_injective → tilingArch_injective
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tiling_projection_mem → tiling_projection_mem
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tiling_projection_cover → tiling_projection_cover
-open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tiling_quotient_invariant → tiling_quotient_invariant
+open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources (tilingLift tilingArch tilingRational tilingLift_finite tiling_arch_m tiling_finite_m tiling_preserve_base actual_product_splitting tiling_central_base tiling_orbit_base tilingRational_surjective tiling_overlap_primitive tilingArch_injective tiling_projection_mem tiling_projection_cover tiling_quotient_invariant)
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
@@ -56,7 +41,7 @@ private theorem finiteOrbit_measurable
   have hs : KPCuspGenuineMonodromy.finiteOrbit F ζ hζ U g =
       ⋃ ε : rootsOfUnity 3 F,
         (fun u => KPCuspGenuineMonodromy.central F ζ hζ ε * g * u) ''
-          (U.toOpenSubgroup : Set (KPFiniteCuspAtlas.FiniteCover F ζ hζ)) := by
+          U.toOpenSubgroup := by
     ext c
     simp only [KPCuspGenuineMonodromy.finiteOrbit, Set.mem_ofPred_eq,
       Set.mem_iUnion, Set.mem_image]
@@ -91,11 +76,8 @@ private theorem tiling_normalize_ae
   rw [tiling_arch_m,map_mul,tiling_arch_m] at hv
   have hbase := congrArg (KPCuspGenuineMonodromy.finiteProjection F ζ hζ) hc'
   rw [tiling_finite_m,map_mul,tilingLift_finite,tiling_finite_m] at hbase
-  have hcb : c ∈ B F ζ hζ hF U A i :=
-    tiling_preserve_base F ζ hζ U (A.representative i) b c δ' hb hbase
-  refine ⟨tilingRational F ζ hζ δ, ⟨(v,c), ⟨?_,hcb⟩,hc'⟩⟩
+  refine ⟨tilingRational F ζ hζ δ, ⟨(v,c), ⟨?_,(tiling_preserve_base F ζ hζ U (A.representative i) b c δ' hb hbase)⟩,hc'⟩⟩
   change tilingArch F ζ hζ δ = γ.val at he
-  change v ∈ D
   change v = tilingArch F ζ hζ δ * a at hv
   rw [hv,he]
   exact hγ
@@ -245,7 +227,7 @@ theorem product_domain_partial_fundamental
       group
     have hhf := congrArg (KPCuspGenuineMonodromy.finiteProjection F ζ hζ) hh
     rw [map_mul,tilingLift_finite,tiling_finite_m,tiling_finite_m] at hhf
-    have hδ : θ⁻¹ * δ ∈ Gi F ζ hζ hF U A i :=
+    have hδ :=
       tiling_overlap_primitive F ζ hζ U (A.representative i) b c _ hb hc hhf
     let α : Ga F ζ hζ hF U A i :=
       ⟨tilingArch F ζ hζ (θ⁻¹ * δ), ⟨θ⁻¹ * δ,hδ,rfl⟩⟩
@@ -256,10 +238,10 @@ theorem product_domain_partial_fundamental
         (tilingLift F ζ hζ (θ⁻¹ * δ)) * a ∈ D
       rw [hha]
       exact hv
-    have hα1 : α = 1 := hga.2 α ha hα
+    have hα1 := hga.2 α ha hα
     have harch : tilingArch F ζ hζ (θ⁻¹ * δ) = tilingArch F ζ hζ 1 := by
       simpa [α] using congrArg Subtype.val hα1
-    have hr : θ⁻¹ * δ = 1 := tilingArch_injective F ζ hζ harch
+    have hr := tilingArch_injective F ζ hζ harch
     have hδθ : δ = θ := by
       have hh' := congrArg (fun k => θ * k) hr
       simpa [mul_assoc] using hh'

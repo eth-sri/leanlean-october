@@ -11,14 +11,13 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField
 open scoped Classical NumberField Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem full_product_compact_geometry (R : PrincipalMellin.ActualRecipe S η) :
     IsCompact (fullProductCompact R : Set (Group R)) ∧
     ∀ g : Group R, ∃ (t : KPGlobalTorusFunctionData.E F R.A.zeta12 R.A.primitive_zeta12)
       (x : KPAdeles F) (k : fullProductCompact R),
-      g = (t.val * KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 x) * k.val := by
-  exact ⟨full_product_compact_is_compact R, covered_iwasawa_decomposition R⟩
+      g = (t.val * KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 x) * k.val := ⟨full_product_compact_is_compact R, covered_iwasawa_decomposition R⟩
 
 theorem full_product_compact_iwasawa (R : PrincipalMellin.ActualRecipe S η) :
     KPLiteralRaw.IwasawaCompact F R.A.zeta12 R.A.primitive_zeta12 (fullProductCompact R) :=

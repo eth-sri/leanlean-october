@@ -31,38 +31,36 @@ def angPoint (a : ℝ) : ℂ := Complex.exp ((a : ℂ) * Complex.I)
 private theorem continuous_angPoint : Continuous angPoint := by
   unfold angPoint; fun_prop
 
-private theorem continuous_flow (h : SchwartzMap ℂ ℂ) (x : ℝ) :
+section
+
+variable (h : SchwartzMap ℂ ℂ)
+
+private theorem continuous_flow (x : ℝ) :
     Continuous (fun a : ℝ => h (Real.exp (x / 2) • angPoint a)) :=
   h.continuous.comp
     ((continuous_const : Continuous (fun _ : ℝ => Real.exp (x / 2))).smul continuous_angPoint)
 
-private theorem hasDerivAt_flow (h : SchwartzMap ℂ ℂ) (y : ℂ) (t : ℝ) :
+private theorem hasDerivAt_flow (y : ℂ) (t : ℝ) :
     HasDerivAt (fun s : ℝ => h (Real.exp (s / 2) • y))
       (rawEulerOp h (Real.exp (t / 2) • y)) t := by
   have hz : HasDerivAt (fun s : ℝ => Real.exp (s / 2)) (Real.exp (t / 2) / 2) t := by
     have h1 : HasDerivAt (fun s : ℝ => s / 2) (1 / 2) t := by
-      simpa using (hasDerivAt_id t).div_const 2
+      exact (hasDerivAt_id t).div_const 2
     simpa only [div_eq_mul_inv, one_mul] using h1.exp
-  have hinner : HasDerivAt (fun s : ℝ => Real.exp (s / 2) • y)
-      ((Real.exp (t / 2) / 2) • y) t := hz.smul_const y
-  have houter : HasFDerivAt (fun z : ℂ => h z) (fderiv ℝ h (Real.exp (t / 2) • y))
-      (Real.exp (t / 2) • y) := h.hasFDerivAt _
-  have hcomp := houter.comp_hasDerivAt t hinner
   have hkey : fderiv ℝ h (Real.exp (t / 2) • y) ((Real.exp (t / 2) / 2) • y)
       = rawEulerOp h (Real.exp (t / 2) • y) := by
     have hsplit : (Real.exp (t / 2) / 2) • y = (1 / 2 : ℝ) • (Real.exp (t / 2) • y) := by
       rw [smul_smul]; congr 1; ring
     rw [hsplit, map_smul, rawEulerOp_apply]
-  simpa only [Function.comp_def, hkey] using hcomp
+  simpa only [Function.comp_def, hkey] using ((h.hasFDerivAt _).comp_hasDerivAt t (hz.smul_const y))
 
-private theorem hasDerivAt_circleAverage (h : SchwartzMap ℂ ℂ) (t : ℝ) :
+private theorem hasDerivAt_circleAverage (t : ℝ) :
     HasDerivAt (circleAverage h) (circleAverage (rawEulerOp h) t) t := by
   have hmain := hasDerivAt_integral_of_dominated_loc_of_deriv_le
     (μ := volume.restrict (Set.Icc 0 (2 * Real.pi)))
     (F := fun x a => h (Real.exp (x / 2) • angPoint a))
     (F' := fun x a => rawEulerOp h (Real.exp (x / 2) • angPoint a))
     (s := Metric.ball t 1) (x₀ := t)
-    (bound := fun _ => SchwartzMap.seminorm ℝ 0 0 (rawEulerOp h))
     (Metric.ball_mem_nhds t one_pos)
     (Filter.Eventually.of_forall fun x => (continuous_flow h x).aestronglyMeasurable)
     (Integrable.of_bound (continuous_flow h t).aestronglyMeasurable _
@@ -73,15 +71,9 @@ private theorem hasDerivAt_circleAverage (h : SchwartzMap ℂ ℂ) (t : ℝ) :
     (integrable_const _)
     (Filter.Eventually.of_forall fun a x _ => hasDerivAt_flow h (angPoint a) x)
   obtain ⟨-, hderiv⟩ := hmain
-  have hfun : (fun n : ℝ => ∫ a, h (Real.exp (n / 2) • angPoint a)
-      ∂(volume.restrict (Set.Icc 0 (2 * Real.pi)))) = circleAverage h := by
-    funext n
-    simp only [circleAverage, angPoint, Complex.real_smul]
-  have hder : (∫ a, rawEulerOp h (Real.exp (t / 2) • angPoint a)
-      ∂(volume.restrict (Set.Icc 0 (2 * Real.pi)))) = circleAverage (rawEulerOp h) t := by
-    simp only [circleAverage, angPoint, Complex.real_smul]
-  rw [hfun, hder] at hderiv
   exact hderiv
+
+end
 
 theorem circleAverage_contDiff_iteratedDeriv (g : SchwartzMap ℂ ℂ) :
     ContDiff ℝ (⊤ : ℕ∞) (circleAverage g) ∧
@@ -100,13 +92,11 @@ theorem circleAverage_contDiff_iteratedDeriv (g : SchwartzMap ℂ ℂ) :
       exact (hasDerivAt_circleAverage (rawEulerOp^[n] g) t).deriv
   have hdiff : ∀ h : SchwartzMap ℂ ℂ, Differentiable ℝ (circleAverage h) :=
     fun h _ => (hasDerivAt_circleAverage h _).differentiableAt
-  have hcont : ∀ h : SchwartzMap ℂ ℂ, Continuous (circleAverage h) :=
-    fun h => (hdiff h).continuous
   refine ⟨?_, fun n t => congr_fun (hiter n) t⟩
   rw [contDiff_infty]
   intro n
   rw [contDiff_nat_iff_iteratedDeriv]
-  exact ⟨fun m _ => by rw [hiter m]; exact hcont _,
+  exact ⟨fun m _ => by rw [hiter m]; exact (fun h => (hdiff h).continuous) _,
     fun m _ => by rw [hiter m]; exact hdiff _⟩
 
 end
@@ -119,15 +109,18 @@ namespace DedekindZetaZeroFree.ProbeSheetLogDensityRegularity.Angular
 noncomputable section
 open MeasureTheory
 
-private theorem circleAverage_integrable (h : SchwartzMap ℂ ℂ) (t : ℝ) :
+section
+
+variable (h : SchwartzMap ℂ ℂ)
+
+private theorem circleAverage_integrable (t : ℝ) :
     Integrable (fun θ : ℝ => h ((Real.exp (t / 2) : ℂ) *
       Complex.exp ((θ : ℂ) * Complex.I))) (volume.restrict (Set.Icc 0 (2 * Real.pi))) := by
-  apply Integrable.of_bound (C := SchwartzMap.seminorm ℝ 0 0 h)
-  · apply Continuous.aestronglyMeasurable
-    exact h.continuous.comp (by fun_prop)
+  apply Integrable.of_bound
+  · fun_prop
   · exact Filter.Eventually.of_forall fun θ => SchwartzMap.norm_le_seminorm ℝ h _
 
-private theorem circleAverage_linear (h : SchwartzMap ℂ ℂ) (σ t : ℝ) :
+private theorem circleAverage_linear (σ t : ℝ) :
     circleAverage ((σ : ℂ) • h + rawEulerOp h) t =
       (σ : ℂ) * circleAverage h t + circleAverage (rawEulerOp h) t := by
   simp only [circleAverage, Pi.add_apply,
@@ -135,7 +128,7 @@ private theorem circleAverage_linear (h : SchwartzMap ℂ ℂ) (σ t : ℝ) :
   rw [integral_add ((circleAverage_integrable h t).const_mul _) (circleAverage_integrable _ t),
     integral_const_mul]
 
-private theorem weighted_hasDerivAt (h : SchwartzMap ℂ ℂ) (σ t : ℝ) :
+private theorem weighted_hasDerivAt (σ t : ℝ) :
     HasDerivAt (weightedCircleAverage h σ)
       (weightedCircleAverage ((σ : ℂ) • h + rawEulerOp h) σ t) t := by
   have hc := circleAverage_contDiff_iteratedDeriv h
@@ -153,7 +146,7 @@ private theorem weighted_hasDerivAt (h : SchwartzMap ℂ ℂ) (σ t : ℝ) :
   · rw [weightedCircleAverage, circleAverage_linear]
     ring
 
-private theorem weighted_iterate (h : SchwartzMap ℂ ℂ) (σ : ℝ) (n : ℕ) :
+private theorem weighted_iterate (σ : ℝ) (n : ℕ) :
     iteratedDeriv n (weightedCircleAverage h σ) =
       weightedCircleAverage ((fun h : SchwartzMap ℂ ℂ => (σ : ℂ) • h + rawEulerOp h)^[n] h) σ := by
   induction n with
@@ -164,14 +157,14 @@ private theorem weighted_iterate (h : SchwartzMap ℂ ℂ) (σ : ℝ) (n : ℕ) 
     rw [Function.iterate_succ_apply']
     exact (weighted_hasDerivAt _ σ t).deriv
 
+end
+
 private theorem polynomial_exp_bound (k : ℕ) (b : ℝ) (hb : 0 < b) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ x : ℝ, 0 ≤ x → x ^ k * Real.exp (-b * x) ≤ C := by
   refine ⟨(k.factorial : ℝ) / b ^ k, by positivity, ?_⟩
   intro x hx
-  have hf : (0 : ℝ) < k.factorial := by exact_mod_cast k.factorial_pos
-  have he := Real.pow_div_factorial_le_exp (b * x) (mul_nonneg hb.le hx) k
   have he' : b ^ k * x ^ k ≤ Real.exp (b * x) * (k.factorial : ℝ) := by
-    simpa only [mul_pow] using (div_le_iff₀ hf).mp he
+    simpa only [mul_pow] using (div_le_iff₀ (by positivity)).mp (Real.pow_div_factorial_le_exp (b * x) (mul_nonneg hb.le hx) k)
   apply (le_div_iff₀ (pow_pos hb k)).mpr
   calc
     x ^ k * Real.exp (-b * x) * b ^ k =
@@ -192,11 +185,10 @@ private theorem weighted_norm_bound (h : SchwartzMap ℂ ℂ) (σ t : ℝ) (m : 
     have hn : ‖(Real.exp (t / 2) : ℂ) * Complex.exp ((θ : ℂ) * Complex.I)‖ =
         Real.exp (t / 2) := by
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
-      simp only [Complex.norm_exp_ofReal_mul_I, mul_one]
+      simp
     have hs := SchwartzMap.norm_pow_mul_le_seminorm ℝ h m
       ((Real.exp (t / 2) : ℂ) * Complex.exp ((θ : ℂ) * Complex.I))
     rw [hn, ← Real.exp_nat_mul] at hs
-    have ht := mul_le_mul_of_nonneg_left hs (Real.exp_pos (-((m : ℝ) * (t / 2)))).le
     have hc : Real.exp (-((m : ℝ) * (t / 2))) * Real.exp ((m : ℝ) * (t / 2)) = 1 := by
       rw [← Real.exp_add, neg_add_cancel, Real.exp_zero]
     calc
@@ -205,15 +197,14 @@ private theorem weighted_norm_bound (h : SchwartzMap ℂ ℂ) (σ t : ℝ) (m : 
             (Real.exp ((m : ℝ) * (t / 2)) *
               ‖h ((Real.exp (t / 2) : ℂ) * Complex.exp ((θ : ℂ) * Complex.I))‖) := by
         rw [← mul_assoc, hc, one_mul]
-      _ ≤ _ := by simpa only [mul_comm (Real.exp (-((m : ℝ) * (t / 2))))] using ht
+      _ ≤ _ := by simpa [mul_comm (Real.exp (-((m : ℝ) * (t / 2))))] using (mul_le_mul_of_nonneg_left hs (Real.exp_pos (-((m : ℝ) * (t / 2)))).le)
   have hi := norm_integral_le_of_norm_le_const
     (μ := volume.restrict (Set.Icc 0 (2 * Real.pi))) (Filter.Eventually.of_forall hp)
-  change ‖circleAverage h t‖ ≤ _ at hi
   rw [weightedCircleAverage, norm_mul, norm_div]
   simp only [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _),
     Complex.norm_ofNat]
   calc
-    Real.exp (σ * t) / 2 * ‖circleAverage h t‖ ≤
+    _ ≤
         Real.exp (σ * t) / 2 *
           (SchwartzMap.seminorm ℝ m 0 h * Real.exp (-((m : ℝ) * (t / 2))) *
             (volume.restrict (Set.Icc 0 (2 * Real.pi))).real Set.univ) :=
@@ -235,9 +226,8 @@ theorem weightedCircleAverage_iteratedDeriv_decay (g : SchwartzMap ℂ ℂ)
   rw [weighted_iterate]
   generalize (fun h : SchwartzMap ℂ ℂ => (σ : ℂ) • h + rawEulerOp h)^[n] g = h
   obtain ⟨m, hm⟩ := exists_nat_gt (2 * σ)
-  have hb : 0 < (m : ℝ) / 2 - σ := by linarith
   obtain ⟨C₁, hC₁, hp₁⟩ := polynomial_exp_bound k σ hσ
-  obtain ⟨C₂, hC₂, hp₂⟩ := polynomial_exp_bound k ((m : ℝ) / 2 - σ) hb
+  obtain ⟨C₂, hC₂, hp₂⟩ := polynomial_exp_bound k ((m : ℝ) / 2 - σ) (by linarith)
   let V := (volume.restrict (Set.Icc 0 (2 * Real.pi))).real Set.univ
   let A := SchwartzMap.seminorm ℝ 0 0 h * V / 2
   let B := SchwartzMap.seminorm ℝ m 0 h * V / 2
@@ -245,29 +235,25 @@ theorem weightedCircleAverage_iteratedDeriv_decay (g : SchwartzMap ℂ ℂ)
   have hB : 0 ≤ B := by dsimp [B, V]; positivity
   refine ⟨A * C₁ + B * C₂, fun t => ?_⟩
   by_cases ht : 0 ≤ t
-  · have he := weighted_norm_bound h σ t m
-    have hp := hp₂ t ht
-    rw [Real.norm_of_nonneg ht]
+  · rw [Real.norm_of_nonneg ht]
     calc
-      t ^ k * ‖weightedCircleAverage h σ t‖ ≤
+      _ ≤
           t ^ k * (B * Real.exp ((σ - (m : ℝ) / 2) * t)) :=
-        mul_le_mul_of_nonneg_left he (pow_nonneg ht k)
+        mul_le_mul_of_nonneg_left (weighted_norm_bound h σ t m) (pow_nonneg ht k)
       _ = B * (t ^ k * Real.exp (-((m : ℝ) / 2 - σ) * t)) := by
-        rw [show (σ - (m : ℝ) / 2) * t = -((m : ℝ) / 2 - σ) * t by ring]
         ring
-      _ ≤ B * C₂ := mul_le_mul_of_nonneg_left hp hB
+      _ ≤ B * C₂ := mul_le_mul_of_nonneg_left (hp₂ t ht) hB
       _ ≤ A * C₁ + B * C₂ := le_add_of_nonneg_left (mul_nonneg hA hC₁)
-  · have ht' : t ≤ 0 := le_of_not_ge ht
+  · have ht' := le_of_not_ge ht
     have he := weighted_norm_bound h σ t 0
     simp only [Nat.cast_zero, zero_div, sub_zero] at he
-    have hp := hp₁ (-t) (neg_nonneg.mpr ht')
     rw [Real.norm_of_nonpos ht']
     calc
-      (-t) ^ k * ‖weightedCircleAverage h σ t‖ ≤
+      _ ≤
           (-t) ^ k * (A * Real.exp (σ * t)) :=
         mul_le_mul_of_nonneg_left he (pow_nonneg (neg_nonneg.mpr ht') k)
-      _ = A * ((-t) ^ k * Real.exp (-σ * (-t))) := by rw [neg_mul_neg]; ring
-      _ ≤ A * C₁ := mul_le_mul_of_nonneg_left hp hA
+      _ = A * ((-t) ^ k * Real.exp (-σ * (-t))) := by ring
+      _ ≤ A * C₁ := mul_le_mul_of_nonneg_left (hp₁ (-t) (neg_nonneg.mpr ht')) hA
       _ ≤ A * C₁ + B * C₂ := le_add_of_nonneg_right (mul_nonneg hB hC₂)
 
 end
@@ -292,9 +278,7 @@ theorem complex_angular_log_kernel_isSchwartz (g : SchwartzMap ℂ ℂ)
   have hs : ContDiff ℝ (⊤ : ℕ∞) (Angular.weightedCircleAverage g σ) := by
     unfold Angular.weightedCircleAverage
     apply ContDiff.mul
-    · have he : ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ => Real.exp (σ * t)) := by
-        fun_prop
-      exact (Complex.ofRealCLM.contDiff.comp he).div_const (2 : ℂ)
+    · exact ContDiff.div_const (ContDiff.comp (ContinuousLinearMap.contDiff Complex.ofRealCLM) (ContDiff.exp (ContDiff.mul contDiff_const contDiff_id))) 2
     · exact (Angular.circleAverage_contDiff_iteratedDeriv g).1
   have hd : ∀ k n : ℕ, ∃ C : ℝ, ∀ t : ℝ,
       ‖t‖ ^ k * ‖iteratedFDeriv ℝ n (Angular.weightedCircleAverage g σ) t‖ ≤ C := by

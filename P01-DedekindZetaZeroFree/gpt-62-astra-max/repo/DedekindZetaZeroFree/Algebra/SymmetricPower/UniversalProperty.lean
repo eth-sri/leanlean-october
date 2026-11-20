@@ -32,7 +32,10 @@ variable [CommSemiring R] [AddCommMonoid M] [Module R M] [AddCommMonoid N] [Modu
 
 variable (f : MultilinearMap R (fun _ : ι ↦ M) N)
 
-theorem lift_rel (hf : ∀ e : Equiv.Perm ι, f.domDomCongr e = f) :
+variable (hf : ∀ e : Equiv.Perm ι, f.domDomCongr e = f)
+
+include hf in
+theorem lift_rel :
     addConGen (Rel R ι M) ≤ AddCon.ker (PiTensorProduct.lift f).toAddMonoidHom := by
   apply AddCon.addConGen_le.2
   intro x y h
@@ -42,26 +45,19 @@ theorem lift_rel (hf : ∀ e : Equiv.Perm ι, f.domDomCongr e = f) :
       simp only [LinearMap.toAddMonoidHom_coe, PiTensorProduct.lift.tprod]
       exact (congrFun (congrArg DFunLike.coe (hf e)) m).symm
 
-noncomputable def lift (hf : ∀ e : Equiv.Perm ι, f.domDomCongr e = f) : Sym[R] ι M →ₗ[R] N where
+noncomputable def lift : Sym[R] ι M →ₗ[R] N where
   toFun := (addConGen (Rel R ι M)).lift (PiTensorProduct.lift f).toAddMonoidHom (lift_rel f hf)
   map_add' := map_add _
   map_smul' r x := AddCon.induction_on x fun x => (PiTensorProduct.lift f).map_smul r x
 
 @[simp]
-theorem lift_mk (hf : ∀ e : Equiv.Perm ι, f.domDomCongr e = f) (x : ⨂[R] (_ : ι), M) :
+theorem lift_mk (x : ⨂[R] (_ : ι), M) :
     lift f hf (mk R ι M x) = PiTensorProduct.lift f x :=
   AddCon.lift_mk' (lift_rel f hf) x
 
 @[simp]
-theorem lift_tprod (hf : ∀ e : Equiv.Perm ι, f.domDomCongr e = f) (m : ι → M) :
+theorem lift_tprod (m : ι → M) :
     lift f hf (⨂ₛ[R] i, m i) = f m := by
-  rw [tprod, LinearMap.compMultilinearMap_apply, lift_mk, PiTensorProduct.lift.tprod]
-
-@[ext]
-theorem ext {g h : Sym[R] ι M →ₗ[R] N}
-    (hgh : ∀ m : ι → M, g (⨂ₛ[R] i, m i) = h (⨂ₛ[R] i, m i)) : g = h := by
-  refine LinearMap.ext_on (span_tprod_eq_top R ι M) ?_
-  rintro _ ⟨m, rfl⟩
-  exact hgh m
+  simp [tprod]
 
 end SymmetricPower

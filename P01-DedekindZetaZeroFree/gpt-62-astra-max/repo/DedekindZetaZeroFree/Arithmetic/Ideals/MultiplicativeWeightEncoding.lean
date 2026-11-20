@@ -84,7 +84,7 @@ theorem multiplicativeIdealEncoding
     · obtain ⟨I, hI⟩ := hmem
       rw [← hI, Odlyzko.extendByZero_apply (Odlyzko.idealPrimeCode K)
         (Odlyzko.idealPrimeCode_injective K)
-        (fun I : Odlyzko.NonzeroIdeal K => g (I : Ideal (𝓞 K))) I]
+        (fun I : Odlyzko.NonzeroIdeal K => g I) I]
       exact h_in_range I
     · rw [Odlyzko.extendByZero_eq_zero_of_not_mem_range _ _ hmem]
       by_contra hne

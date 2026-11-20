@@ -118,33 +118,16 @@ private lemma W_A (y : Kˣ) :
       change _ = KPLocalCover.sectionMap F ζ hζ v
         (KPScalarSplitCentral.scalarMatrix F v y) * _
       rw [KPLocalCover.sectionMap_mul, sigma_scalar_dw, map_one, one_mul, w_d F q y]
-    have he := congrArg (KPPGLLocalCover.coverQuotient F ζ hζ v) hr
     have hs : KPPGLLocalCover.coverQuotient F ζ hζ v
         (KPScalarSplitCentral.scalarHom F ζ hζ v y) = 1 :=
       (QuotientGroup.eq_one_iff _).mpr ⟨y, rfl⟩
-    simpa only [map_mul, hs, one_mul, KPPGLLocalCover.W, KPPGLLocalCover.A] using he
-private lemma cube_A_comm (c a : Kˣ) :
-    KPPGLLocalCover.A F ζ hζ v (c^3) * KPPGLLocalCover.A F ζ hζ v a =
-      KPPGLLocalCover.A F ζ hζ v a * KPPGLLocalCover.A F ζ hζ v (c^3) := by
-  rw [KPPGLLocalCover.A_mul, KPPGLLocalCover.A_mul,
-    ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.1 c a).1,
-    ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.1 a c).2]
-  simp [mul_comm]
+    simpa only [map_mul, hs, one_mul, KPPGLLocalCover.W, KPPGLLocalCover.A] using (congrArg (KPPGLLocalCover.coverQuotient F ζ hζ v) hr)
+
 private lemma cube_A_inv (S : CanonicalFiniteInducingData F ζ hζ q) (c : Kˣ) :
     (KPPGLLocalCover.A F ζ hζ v (c^3))⁻¹ = KPPGLLocalCover.A F ζ hζ v (c⁻¹^3) := by
   rw [← S.cube_actual c, ← S.cube_actual c⁻¹, map_inv]
   rfl
-private lemma cube_A_kernelW (S : CanonicalFiniteInducingData F ζ hζ q) (c : Kˣ) :
-    KPPGLLocalCover.A F ζ hζ v (c^3) * kernelW K S.borel .minus =
-      kernelW K S.borel .minus * KPPGLLocalCover.A F ζ hζ v (c⁻¹^3) := by
-  have he := congrArg (fun h : actualTorus F ζ hζ q => (S.borel.torus h : ActualCover F ζ hζ q))
-    (congrArg (fun z : S.heisenberg.C => (z : actualTorus F ζ hζ q)) (S.borel.weyl_cube c))
-  rw [S.borel.weylCenter_coe, S.borel.weyl_from_lift,
-    S.torus_full, S.torus_full, S.cube_actual, S.cube_actual] at he
-  change KPPGLLocalCover.A F ζ hζ v (c^3) * S.borel.liftedW =
-    S.borel.liftedW * KPPGLLocalCover.A F ζ hζ v (c⁻¹^3)
-  rw [← he]
-  group
+
 set_option maxHeartbeats 1200000 in
 private lemma word_identity (S : CanonicalFiniteInducingData F ζ hζ q)
     (a c : Kˣ) (u x : K) :
@@ -161,32 +144,45 @@ private lemma word_identity (S : CanonicalFiniteInducingData F ζ hζ q)
   let N := KPPGLLocalCover.N F ζ hζ v
   let b := KPPGLLocalCover.A F ζ hζ v a
   let W := KPPGLLocalCover.W F ζ hζ v
+  let cube_A_inv₀ := cube_A_inv F ζ hζ q S c
   have hkw : T * w = w * T⁻¹ := by
     dsimp only [T, w]
-    rw [cube_A_inv F ζ hζ q S c]
-    exact cube_A_kernelW F ζ hζ q S c
-  have hn : T⁻¹ * N u = N ((c⁻¹^3 : Kˣ) * u) * T⁻¹ := by
+    rw [cube_A_inv₀]
+    have he := congrArg (fun h : actualTorus F ζ hζ q => (S.borel.torus h : ActualCover F ζ hζ q))
+      (congrArg (fun z : S.heisenberg.C => (z : actualTorus F ζ hζ q)) (S.borel.weyl_cube c))
+    rw [S.borel.weylCenter_coe, S.borel.weyl_from_lift,
+      S.torus_full, S.torus_full, S.cube_actual, S.cube_actual] at he
+    change KPPGLLocalCover.A F ζ hζ v (c^3) * S.borel.liftedW =
+      S.borel.liftedW * KPPGLLocalCover.A F ζ hζ v (c⁻¹^3)
+    rw [← he]
+    group
+  let N₀ := N ((c⁻¹^3 : Kˣ) * u)
+  have hn : T⁻¹ * N u = N₀ * T⁻¹ := by
     dsimp only [T, N]
-    rw [cube_A_inv F ζ hζ q S c]
+    rw [cube_A_inv₀]
     exact A_N F ζ hζ q (c⁻¹^3) u
   have hb : T⁻¹ * b = b * T⁻¹ := by
     dsimp only [T, b]
-    rw [cube_A_inv F ζ hζ q S c]
-    exact cube_A_comm F ζ hζ q c⁻¹ a
+    rw [cube_A_inv₀]
+    let c := c⁻¹
+    rw [KPPGLLocalCover.A_mul, KPPGLLocalCover.A_mul,
+      ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.1 c a).1,
+      ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.1 a c).2]
+    simp [mul_comm]
   have hw : T⁻¹ * W = W * T := by
     have h := W_A F ζ hζ q (c^3)
     change W * T = KPPGLLocalCover.A F ζ hζ v ((c^3)⁻¹) * W at h
-    rw [← inv_pow, ← cube_A_inv F ζ hζ q S c] at h
+    rw [← inv_pow, ← cube_A_inv₀] at h
     exact h.symm
   have hn' : T * N x = N ((c^3 : Kˣ) * x) * T := A_N F ζ hζ q (c^3) x
   change T * (w * N u * (b * W * N x)) * T⁻¹ = w * N _ * (b * W * N _)
   calc
     T * (w * N u * (b * W * N x)) * T⁻¹ = (T * w) * N u * b * W * N x * T⁻¹ := by group
     _ = w * (T⁻¹ * N u) * b * W * N x * T⁻¹ := by rw [hkw]; group
-    _ = w * N ((c⁻¹^3 : Kˣ) * u) * (T⁻¹ * b) * W * N x * T⁻¹ := by rw [hn]; group
-    _ = w * N ((c⁻¹^3 : Kˣ) * u) * b * (T⁻¹ * W) * N x * T⁻¹ := by rw [hb]; group
-    _ = w * N ((c⁻¹^3 : Kˣ) * u) * b * W * (T * N x) * T⁻¹ := by rw [hw]; group
-    _ = w * N ((c⁻¹^3 : Kˣ) * u) * (b * W * N ((c^3 : Kˣ) * x)) := by rw [hn']; group
+    _ = w * N₀ * (T⁻¹ * b) * W * N x * T⁻¹ := by rw [hn]; group
+    _ = w * N₀ * b * (T⁻¹ * W) * N x * T⁻¹ := by rw [hb]; group
+    _ = w * N₀ * b * W * (T * N x) * T⁻¹ := by rw [hw]; group
+    _ = w * N₀ * (b * W * N ((c^3 : Kˣ) * x)) := by rw [hn']; group
 
 variable (S : CanonicalFiniteInducingData F ζ hζ q)
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -277,68 +273,48 @@ open KPTameJacquetTestDuality KPTameValuationCoordinates
 variable (F : Type) [Field F] [NumberField F]
   (q : HeightOneSpectrum (𝓞 F))
 
-private theorem valuation_norm_le (x y : LocalField F q) :
-    valuation (LocalField F q) x ≤ valuation (LocalField F q) y ↔ ‖x‖ ≤ ‖y‖ := by
-  rw [← Valuation.Compatible.vle_iff_le]
-  change Valued.v x ≤ Valued.v y ↔ _
-  exact (Valued.toNormedField.norm_le_iff).symm
-private theorem ball_norm (π : (LocalField F q)ˣ) (r : ℕ) (x : LocalField F q) :
-    x ∈ expandingBall F q π r ↔ ‖x‖ ≤ ‖(π : LocalField F q)‖⁻¹ ^ r := by
-  let a : LocalField F q := ((π ^ r : (LocalField F q)ˣ) : LocalField F q)⁻¹
-  have ha : a ≠ 0 := inv_ne_zero (π ^ r).ne_zero
-  have hn : ‖a‖ = ‖(π : LocalField F q)‖⁻¹ ^ r := by
-    simp [a, norm_inv, norm_pow, inv_pow]
-  have hm : ∀ y : LocalField F q, y ∈ (valuation (LocalField F q)).integer ↔ ‖y‖ ≤ 1 := by
-    intro y
-    rw [Valuation.mem_integer_iff, ← map_one (valuation (LocalField F q)), valuation_norm_le]
-    simp
-  change (∃ u : (valuation (LocalField F q)).integer, x = a * (u : LocalField F q)) ↔ _
-  rw [← hn]
-  constructor
-  · rintro ⟨u, rfl⟩
-    rw [norm_mul]
-    exact mul_le_of_le_one_right (norm_nonneg _) ((hm _).mp u.property)
-  · intro hx
-    refine ⟨⟨x / a, (hm _).mpr ?_⟩, (mul_div_cancel₀ x ha).symm⟩
-    rw [norm_div, div_le_one (norm_pos_iff.mpr ha)]
-    exact hx
+private alias valuation_norm_le := DedekindZetaZeroFree.KPTameJacquetBruhatTests.TameStableWhittakerIntegrals.valuation_norm_le
+local notation "LocalCompletion" => LocalField F q
+
+private theorem ball_norm (π : LocalCompletionˣ) (r : ℕ) (x : LocalCompletion) :
+    x ∈ expandingBall F q π r ↔ ‖x‖ ≤ ‖(π : LocalCompletion)‖⁻¹ ^ r := by apply @DedekindZetaZeroFree.KPTameJacquetBruhatTests.TameStableWhittakerIntegrals.expandingBall_norm <;> assumption
 
 theorem high_shell_translation_is_cubic_unit_multiple
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
+    (π : LocalCompletionˣ)
+    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt LocalCompletion
+      (valuation LocalCompletion (π : LocalCompletion)) = WithZero.exp (-1 : ℤ))
     (r : ℕ) (hr : 2 ≤ r)
-    (x : LocalField F q)
+    (x : LocalCompletion)
     (hx : x ∈ expandingBall F q π r \ expandingBall F q π (r - 1))
-    (t : LocalField F q) (ht : t ∈ expandingBall F q π 1) :
-    ∃ c : (LocalField F q)ˣ, localAbs (LocalField F q) c = 1 ∧
-      x + t = (c ^ 3 : (LocalField F q)ˣ) * x := by
-  have hv : valuation (LocalField F q) (π : LocalField F q) < 1 := by
-    apply (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).toOrderIso.lt_iff_lt.mp
-    change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) <
-      IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) 1
+    (t : LocalCompletion) (ht : t ∈ expandingBall F q π 1) :
+    ∃ c : LocalCompletionˣ, localAbs LocalCompletion c = 1 ∧
+      x + t = (c ^ 3 : LocalCompletionˣ) * x := by
+  have hv : valuation LocalCompletion (π : LocalCompletion) < 1 := by
+    apply (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt LocalCompletion).toOrderIso.lt_iff_lt.mp
+    change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt LocalCompletion
+      (valuation LocalCompletion (π : LocalCompletion)) <
+      IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt LocalCompletion 1
     rw [hπ, map_one]
     norm_num
-  have hp : 0 < ‖(π : LocalField F q)‖ := norm_pos_iff.mpr π.ne_zero
-  have hp1 : ‖(π : LocalField F q)‖ < 1 := by
+  have hp := norm_pos_iff.mpr π.ne_zero
+  have hp1 : ‖(π : LocalCompletion)‖ < 1 := by
     have h := not_le.mpr hv
-    rw [← map_one (valuation (LocalField F q)), valuation_norm_le] at h
+    rw [← map_one (valuation LocalCompletion), valuation_norm_le] at h
     simpa using not_le.mp h
-  have hb : 1 ≤ ‖(π : LocalField F q)‖⁻¹ := le_of_lt ((one_lt_inv₀ hp).mpr hp1)
+  have hb := le_of_lt ((one_lt_inv₀ hp).mpr hp1)
   have hxt : ‖t‖ < ‖x‖ := by
-    have hxn : ‖(π : LocalField F q)‖⁻¹ ^ (r - 1) < ‖x‖ :=
+    have hxn :=
       lt_of_not_ge (fun h => hx.2 ((ball_norm F q π (r-1) x).mpr h))
-    have htn : ‖t‖ ≤ ‖(π : LocalField F q)‖⁻¹ := by
+    have htn : ‖t‖ ≤ ‖(π : LocalCompletion)‖⁻¹ := by
       simpa using (ball_norm F q π 1 t).mp ht
     exact lt_of_le_of_lt (htn.trans (by
       simpa using pow_le_pow_right₀ hb (show 1 ≤ r - 1 by omega))) hxn
   have hx0 : x ≠ 0 := by
     intro h
     exact (not_lt_of_ge (norm_nonneg t)) (by simpa [h] using hxt)
-  have hy : valuation (LocalField F q) (t / x) < 1 := by
-    have hn : ‖t / x‖ < ‖(1 : LocalField F q)‖ := by
+  have hy : valuation LocalCompletion (t / x) < 1 := by
+    have hn : ‖t / x‖ < ‖(1 : LocalCompletion)‖ := by
       rw [norm_div, norm_one, div_lt_one (norm_pos_iff.mpr hx0)]
       exact hxt
     have h := not_le.mpr hn
@@ -346,11 +322,11 @@ theorem high_shell_translation_is_cubic_unit_multiple
     simpa using not_le.mp h
   let z : KPTameCompact.O F q := ⟨1 + t / x, by
     rw [Valuation.mem_integer_iff]
-    exact le_of_eq ((valuation (LocalField F q)).map_one_add_of_lt hy)⟩
-  have hz : valuation (LocalField F q) (z : LocalField F q) = 1 :=
-    (valuation (LocalField F q)).map_one_add_of_lt hy
+    exact le_of_eq ((valuation LocalCompletion).map_one_add_of_lt hy)⟩
+  have hz : valuation LocalCompletion (z : LocalCompletion) = 1 :=
+    (valuation LocalCompletion).map_one_add_of_lt hy
   letI : HenselianRing (KPTameCompact.O F q) (KPTameCompact.p F q) :=
-    (LocalFieldTheory.localCompleteDVF (LocalField F q)).henselianRing
+    (LocalFieldTheory.localCompleteDVF LocalCompletion).henselianRing
   let Q := Ideal.Quotient.mk (KPTameCompact.p F q)
   have heq : Q z = 1 := by
     have hm : z - 1 ∈ KPTameCompact.p F q := by
@@ -385,18 +361,18 @@ theorem high_shell_translation_is_cubic_unit_multiple
   have hw3 : w ^ 3 = z := by
     simpa only [Polynomial.IsRoot, P, Polynomial.eval_sub, Polynomial.eval_pow,
       Polynomial.eval_X, Polynomial.eval_C, sub_eq_zero] using hw
-  have hwf : (w : LocalField F q) ^ 3 = (z : LocalField F q) :=
-    congrArg (fun a : KPTameCompact.O F q => (a : LocalField F q)) hw3
-  have hwv : valuation (LocalField F q) (w : LocalField F q) = 1 := by
-    have h : valuation (LocalField F q) (w : LocalField F q) ^ 3 = 1 := by
+  have hwf : (w : LocalCompletion) ^ 3 = (z : LocalCompletion) :=
+    congrArg (fun a : KPTameCompact.O F q => (a : LocalCompletion)) hw3
+  have hwv : valuation LocalCompletion (w : LocalCompletion) = 1 := by
+    have h : valuation LocalCompletion (w : LocalCompletion) ^ 3 = 1 := by
       rw [← map_pow, hwf, hz]
-    exact (pow_eq_one_iff_of_nonneg (zero_le : 0 ≤ valuation (LocalField F q) (w : LocalField F q)) (by decide : (3 : ℕ) ≠ 0)).mp h
-  have hw0 : (w : LocalField F q) ≠ 0 := by
+    exact (pow_eq_one_iff_of_nonneg (zero_le : 0 ≤ valuation LocalCompletion (w : LocalCompletion)) (by decide : (3 : ℕ) ≠ 0)).mp h
+  have hw0 : (w : LocalCompletion) ≠ 0 := by
     intro h
     simpa [h] using hwv
-  refine ⟨Units.mk0 (w : LocalField F q) hw0, ?_, ?_⟩
+  refine ⟨Units.mk0 (w : LocalCompletion) hw0, ?_, ?_⟩
   · simp [localAbs, hwv]
-  · change x + t = (w : LocalField F q) ^ 3 * x
+  · change x + t = (w : LocalCompletion) ^ 3 * x
     rw [hwf]
     change x + t = (1 + t / x) * x
     field_simp
@@ -428,30 +404,7 @@ variable (F : Type) [Field F] [NumberField F]
   (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
   (ξ : (valuation (LocalField F q)).integer) (hξ : IsPrimitiveRoot ξ 3)
 
-theorem deformedTest_vector_value
-    (f : scalarSections F ζ hζ q S P hP .minus) (s : ℂ)
-    (g : ActualCover F ζ hζ q) :
-    (deformedTest F ζ hζ q S P hP coordinates f s).val g =
-      normPower (LocalField F q)
-        (S.borel.coordinate (S.borel.retract (S.iwasawa.borelPart g)))
-        (sourceParameter .minus s) •
-        ((coordinates .minus).symm f).val g := by
-  let f₀ := (coordinates .minus).symm f
-  have hc := f₀.property.1 (S.iwasawa.borelPart g)
-    (S.iwasawa.compactPart g : ActualCover F ζ hζ q)
-  rw [← S.iwasawa.decomposition g] at hc
-  change inducingAction S.borel P .minus (sourceParameter .minus s)
-    (S.iwasawa.borelPart g)
-    (f₀.val (S.iwasawa.compactPart g : ActualCover F ζ hζ q)) = _
-  rw [hc]
-  change (deltaHalf S.borel (S.iwasawa.borelPart g) *
-    normPower (LocalField F q) _ (sourceParameter .minus s)) •
-    ((borelAction S.borel P .minus (S.iwasawa.borelPart g)) _) =
-    _ • ((deltaHalf S.borel (S.iwasawa.borelPart g) *
-      normPower (LocalField F q) _ 0) • _)
-  simp only [normPower, zero_mul, Complex.exp_zero, mul_one, smul_smul]
-  congr 1
-  ring
+alias deformedTest_vector_value := CubicUnitConjugationOfBruhatTests.support_vector_value
 
 include hcoordinates in
 
@@ -495,43 +448,7 @@ theorem deformedTest_support_of_minusTest
   rw [deformedTest_scalar_support F ζ hζ q S P hP coordinates hcoordinates]
   exact hf.2.1
 
-theorem iwasawa_norm_right_compact
-    (g : ActualCover F ζ hζ q)
-    (k : S.iwasawa.compact.toOpenSubgroup) :
-    localAbs (LocalField F q)
-      (S.borel.coordinate (S.borel.retract (S.iwasawa.borelPart (g * k)))) =
-    localAbs (LocalField F q)
-      (S.borel.coordinate (S.borel.retract (S.iwasawa.borelPart g))) := by
-  let b : S.borel.B :=
-    (S.iwasawa.borelPart (g * k))⁻¹ * S.iwasawa.borelPart g
-  have he : (b : ActualCover F ζ hζ q) =
-      (S.iwasawa.compactPart (g * k) : ActualCover F ζ hζ q) *
-        (k : ActualCover F ζ hζ q)⁻¹ *
-        (S.iwasawa.compactPart g : ActualCover F ζ hζ q)⁻¹ := by
-    have h₁ := S.iwasawa.decomposition g
-    have h₂ := S.iwasawa.decomposition (g * k)
-    dsimp [b]
-    conv at h₂ => lhs; lhs; rw [h₁]
-    have hh := congrArg (fun z : ActualCover F ζ hζ q =>
-      (S.iwasawa.borelPart (g * k) : ActualCover F ζ hζ q)⁻¹ * z *
-        (k : ActualCover F ζ hζ q)⁻¹ *
-        (S.iwasawa.compactPart g : ActualCover F ζ hζ q)⁻¹) h₂
-    simpa only [mul_assoc, inv_mul_cancel_left, mul_inv_cancel_right,
-      mul_inv_cancel, mul_one] using hh
-  have hb : (b : ActualCover F ζ hζ q) ∈ S.iwasawa.compact.toOpenSubgroup := by
-    rw [he]
-    exact S.iwasawa.compact.toOpenSubgroup.mul_mem
-      (S.iwasawa.compact.toOpenSubgroup.mul_mem
-        (S.iwasawa.compactPart _).property
-        (S.iwasawa.compact.toOpenSubgroup.inv_mem k.property))
-      (S.iwasawa.compact.toOpenSubgroup.inv_mem (S.iwasawa.compactPart _).property)
-  have hn := S.iwasawa.intersection_norm b hb
-  have hprod : S.iwasawa.borelPart (g * k) * b = S.iwasawa.borelPart g := by
-    dsimp [b]
-    group
-  have ha := congrArg (fun c : S.borel.B =>
-    localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract c))) hprod
-  simpa only [map_mul, localAbs_mul, hn, mul_one] using ha
+alias iwasawa_norm_right_compact := DedekindZetaZeroFree.KPRankOneShellRepair.OpenCellNonzero.BruhatConstruction.ZeroMapNonvanishing.norm_right_compact
 
 theorem minusTest_bruhat_value
     (a : ActualCover F ζ hζ q) (m : ℕ)
@@ -549,9 +466,8 @@ theorem minusTest_bruhat_value
   change f.val ((a * w) * (w⁻¹ * k * w)) = f.val (a * w) at hfixed
   have he : (a * w) * (w⁻¹ * k * w) = a * k * w := by group
   rw [he, hf.2.2] at hfixed
-  change f.val ((b : ActualCover F ζ hζ q) * a * k * w) = _
-  rw [show (b : ActualCover F ζ hζ q) * a * k * w =
-      (b : ActualCover F ζ hζ q) * (a * k * w) by group,
+  rw [show b * a * k * w =
+      b * (a * k * w) by group,
     f.property.1, hfixed, mul_one]
 
 include hcoordinates in
@@ -573,39 +489,7 @@ theorem deformedTest_bruhat_scalar_value
   rw [deformedTest_scalar_value F ζ hζ q S P hP coordinates hcoordinates,
     minusTest_bruhat_value F ζ hζ q S P hP a m f hf b k hk]
 
-theorem iwasawa_norm_left_borel
-    (c : S.borel.B) (g : ActualCover F ζ hζ q) :
-    localAbs (LocalField F q)
-      (S.borel.coordinate (S.borel.retract (S.iwasawa.borelPart (c * g)))) =
-    localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract c)) *
-      localAbs (LocalField F q)
-        (S.borel.coordinate (S.borel.retract (S.iwasawa.borelPart g))) := by
-  let b : S.borel.B :=
-    (S.iwasawa.borelPart (c * g))⁻¹ * c * S.iwasawa.borelPart g
-  have he : (b : ActualCover F ζ hζ q) =
-      (S.iwasawa.compactPart (c * g) : ActualCover F ζ hζ q) *
-        (S.iwasawa.compactPart g : ActualCover F ζ hζ q)⁻¹ := by
-    have h₁ := S.iwasawa.decomposition g
-    have h₂ := S.iwasawa.decomposition (c * g)
-    dsimp [b]
-    conv at h₂ => lhs; rhs; rw [h₁]
-    have hh := congrArg (fun z : ActualCover F ζ hζ q =>
-      (S.iwasawa.borelPart (c * g) : ActualCover F ζ hζ q)⁻¹ * z *
-        (S.iwasawa.compactPart g : ActualCover F ζ hζ q)⁻¹) h₂
-    simpa only [mul_assoc, inv_mul_cancel_left, mul_inv_cancel_right,
-      mul_inv_cancel, mul_one] using hh
-  have hb : (b : ActualCover F ζ hζ q) ∈ S.iwasawa.compact.toOpenSubgroup := by
-    rw [he]
-    exact S.iwasawa.compact.toOpenSubgroup.mul_mem
-      (S.iwasawa.compactPart _).property
-      (S.iwasawa.compact.toOpenSubgroup.inv_mem (S.iwasawa.compactPart _).property)
-  have hn := S.iwasawa.intersection_norm b hb
-  have hprod : S.iwasawa.borelPart (c * g) * b = c * S.iwasawa.borelPart g := by
-    dsimp [b]
-    group
-  have ha := congrArg (fun d : S.borel.B =>
-    localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract d))) hprod
-  simpa only [map_mul, localAbs_mul, hn, mul_one] using ha
+alias iwasawa_norm_left_borel := CubicUnitConjugationOfBruhatTests.support_norm_left
 
 include hcoordinates in
 

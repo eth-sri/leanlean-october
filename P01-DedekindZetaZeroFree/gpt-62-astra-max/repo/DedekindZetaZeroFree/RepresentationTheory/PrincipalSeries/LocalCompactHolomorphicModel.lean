@@ -27,8 +27,7 @@ def localAbs (y : Kˣ) : ℝ :=
 private theorem residueCardinality_pos : 0 < (residueCardinality K : ℝ) := by
   exact_mod_cast Nat.card_pos
 
-theorem localAbs_pos (y : Kˣ) : 0 < localAbs K y := by
-  exact Real.rpow_pos_of_pos (residueCardinality_pos K) _
+theorem localAbs_pos (y : Kˣ) : 0 < localAbs K y := Real.rpow_pos_of_pos (residueCardinality_pos K) _
 
 theorem localAbs_mul (x y : Kˣ) : localAbs K (x * y) = localAbs K x * localAbs K y := by
   unfold localAbs
@@ -42,8 +41,7 @@ theorem localAbs_one : localAbs K 1 = 1 := by
 def normPower (y : Kˣ) (s : ℂ) : ℂ :=
   Complex.exp (s * (Real.log (localAbs K y) : ℂ))
 
-theorem normPower_entire (y : Kˣ) : Differentiable ℂ (normPower K y) := by
-  exact (differentiable_id.mul_const _).cexp
+theorem normPower_entire (y : Kˣ) : Differentiable ℂ (normPower K y) := (differentiable_id.mul_const _).cexp
 
  theorem normPower_one (s : ℂ) : normPower K 1 s = 1 := by
   simp [normPower, localAbs_one]
@@ -62,13 +60,11 @@ structure LocalBorelData (T : LocalHeisenbergData H D) where
   projection : G →* Matrix.ProjGenLinGroup (Fin 2) K
   torus : H →* B
   torus_injective : Function.Injective torus
-  torus_continuous : Continuous torus
   retract : B →* H
   retract_continuous : Continuous retract
   retract_torus : ∀ h : H, retract (torus h) = h
   upperRoot : Multiplicative K →* B
   upperRoot_continuous : Continuous upperRoot
-  upperRoot_injective : Function.Injective upperRoot
   upperRoot_projection : ∀ t : Multiplicative K,
     projection (upperRoot t : G) = Matrix.ProjGenLinGroup.mk
       (KubotaRankTwo.n K (Multiplicative.toAdd t))
@@ -255,8 +251,7 @@ def compactPicture (A : LocalBorelData (K := K) (G := G) T)
     (k' : G) = (b : G) * (k : G) →
     φ k' = inducingAction A P ε 0 b (φ k)) ∧
     SmoothVector (vectorRightTranslation (G := I.compact.toOpenSubgroup)) φ}
-  zero_mem' := by
-    exact ⟨by intro b k k' h; simp, ⟨⊤, by simp⟩⟩
+  zero_mem' := ⟨by intro b k k' h; simp, ⟨⊤, by simp⟩⟩
   add_mem' := by
     intro f g hf hg
     refine ⟨?_, ?_⟩
@@ -311,9 +306,7 @@ def compactLevel (A : LocalBorelData (K := K) (G := G) T)
   add_mem' := by
     intro f g hf hg j k k' h
     exact congrArg₂ (· + ·) (hf j k k' h) (hg j k k' h)
-  smul_mem' := by
-    intro c f hf j k k' h
-    exact congrArg (c • ·) (hf j k k' h)
+  smul_mem' := fun c f hf j k k' h => congrArg (c • ·) (hf j k k' h)
 
 theorem compact_level_identification (A : LocalBorelData (K := K) (G := G) T)
     (P : Polarization T) (I : IwasawaData A) (ε : Sign)
@@ -342,12 +335,8 @@ theorem compact_level_identification (A : LocalBorelData (K := K) (G := G) T)
     (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
     (ε : Sign) (h : H) (b : A.B) (v : InducedModule P) :
     Differentiable ℂ (fun s => coordinateEvaluation P h (inducingAction A P ε s b v)) := by
-  have hh := ((normPower_entire K (A.coordinate (A.retract b))).const_mul
+  exact ((normPower_entire K (A.coordinate (A.retract b))).const_mul
     (deltaHalf A b)).mul_const ((borelAction A P ε b v).val h)
-  change Differentiable ℂ (fun s =>
-    (deltaHalf A b * normPower K (A.coordinate (A.retract b)) s) *
-      (borelAction A P ε b v).val h)
-  exact hh
 
  def compactFiniteLaws (A : LocalBorelData (K := K) (G := G) T)
     (P : Polarization T) (I : IwasawaData A) (ε : Sign)
@@ -364,22 +353,18 @@ theorem compact_level_finite (A : LocalBorelData (K := K) (G := G) T)
     (J : CompactOpenLevel G)
     (hJ : (J.toOpenSubgroup : Subgroup G) ≤ I.compact.toOpenSubgroup) :
     Module.Finite ℂ (compactLevel A P I ε J) := by
+  let compactFixedSpace₀ := KPLocalPrincipalSeriesRaw.compactFixedSpace A.B I.compact.toOpenSubgroup J.toOpenSubgroup (inducingAction A P ε 0)
   let ev : compactLevel A P I ε J →ₗ[ℂ]
-      KPLocalPrincipalSeriesRaw.compactFixedSpace A.B I.compact.toOpenSubgroup
-        J.toOpenSubgroup (inducingAction A P ε 0) :=
+      compactFixedSpace₀ :=
     { toFun := fun φ => ⟨φ.val.val, φ.val.property, φ.property⟩
       map_add' := by intros; rfl
       map_smul' := by intros; rfl }
-  have hev : Function.Injective ev := by
-    intro φ ψ hh
-    change (⟨φ.val.val, φ.val.property, φ.property⟩ :
-      KPLocalPrincipalSeriesRaw.compactFixedSpace A.B I.compact.toOpenSubgroup
-        J.toOpenSubgroup (inducingAction A P ε 0)) =
-      ⟨ψ.val.val, ψ.val.property, ψ.property⟩ at hh
-    have he := congrArg (fun f : KPLocalPrincipalSeriesRaw.compactFixedSpace A.B
-      I.compact.toOpenSubgroup J.toOpenSubgroup (inducingAction A P ε 0) => f.val) hh
-    exact Subtype.ext (Subtype.ext he)
-  exact (compactFiniteLaws A P I ε J hJ 1).1 ev hev
+  refine (compactFiniteLaws A P I ε J hJ 1).1 ev ?_
+  intro φ ψ hh
+  change (⟨φ.val.val, φ.val.property, φ.property⟩ :
+    compactFixedSpace₀) =
+    ⟨ψ.val.val, ψ.val.property, ψ.property⟩ at hh
+  exact Subtype.ext (Subtype.ext (congrArg (fun f : compactFixedSpace₀ => f.val) hh))
 
 theorem compact_level_holomorphic (A : LocalBorelData (K := K) (G := G) T)
     (P : Polarization T) (I : IwasawaData A) (ε : Sign)
@@ -388,8 +373,7 @@ theorem compact_level_holomorphic (A : LocalBorelData (K := K) (G := G) T)
     (φ : compactLevel A P I ε J) (g x : G) (h : H) :
     Differentiable ℂ (fun s : ℂ =>
       (principalSeries A P ε s g
-        (compactTrivialization A P I ε s (φ : compactPicture A P I ε))).val x |>.val h) := by
-  exact (compactFiniteLaws A P I ε J hJ h).2
+        (compactTrivialization A P I ε s (φ : compactPicture A P I ε))).val x |>.val h) := (compactFiniteLaws A P I ε J hJ h).2
     ⟨φ.val.val, φ.val.property, φ.property⟩ g x
 
 end

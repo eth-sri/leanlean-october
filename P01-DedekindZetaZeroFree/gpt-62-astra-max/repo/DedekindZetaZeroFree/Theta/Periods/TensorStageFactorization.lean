@@ -22,10 +22,9 @@ theorem multilinear_factorization_of_normalized
       m (Function.update x i y) = m (Function.update x i (x₀ i)) * ell i y := by
     have hn : (⟨ell i, hell i⟩ : W i) ≠ 0 := by
       intro h
-      have hh := congrArg (fun f : W i => f.val (x₀ i)) h
-      exact one_ne_zero (by simpa only [hnorm, ZeroMemClass.coe_zero, LinearMap.zero_apply] using hh)
+      exact one_ne_zero (by simpa only [hnorm, ZeroMemClass.coe_zero, LinearMap.zero_apply] using (congrArg (fun f : W i => f.val (x₀ i)) h))
     obtain ⟨c, hc⟩ := exists_smul_eq_of_finrank_eq_one (hdim i)
-      (x := (⟨ell i, hell i⟩ : W i)) hn (⟨m.toLinearMap x i, hmem x i⟩ : W i)
+       hn (⟨m.toLinearMap x i, hmem x i⟩ : W i)
     have hc' : c • ell i = m.toLinearMap x i := congrArg Subtype.val hc
     have hce : c = m (Function.update x i (x₀ i)) := by
       simpa only [LinearMap.smul_apply, hnorm, smul_eq_mul, mul_one,

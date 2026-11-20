@@ -142,7 +142,6 @@ theorem spherical_integer_ball_integral
       ((compactTrivialization A P I .plus s φ).val
         (A.liftedW⁻¹ * (A.upperRoot (Multiplicative.ofAdd x) : G))).val 1 ∂μ) =
       (haarMass K μ : ℂ) := by
-  have hm := (valuation K).isOpen_integer.measurableSet
   have hv : Set.EqOn (fun x : K =>
       ((compactTrivialization A P I .plus s φ).val
         (A.liftedW⁻¹ * (A.upperRoot (Multiplicative.ofAdd x) : G))).val 1)
@@ -154,7 +153,7 @@ theorem spherical_integer_ball_integral
     change ((compactTrivialization A P I .plus s φ).val (1 * (k : G))).val 1 = _ at hf
     rw [one_mul] at hf
     exact hf.trans (hφ.1 s)
-  rw [setIntegral_congr_fun hm hv]
+  rw [setIntegral_congr_fun ((valuation K).isOpen_integer.measurableSet) hv]
   simp [haarMass, Measure.real]
 
 theorem compact_coordinate_deformation
@@ -183,7 +182,7 @@ theorem normPower_of_valuation_exponent
       WithZero.exp e) (s : ℂ) :
     normPower K y s = r K s ^ (-e) := by
   have hq : 0 < (residueCardinality K : ℝ) := by
-    exact_mod_cast (Nat.card_pos (α := 𝓀[K]))
+    exact_mod_cast (Nat.card_pos)
   simp only [normPower, localAbs, hy, WithZero.log_exp]
   rw [Real.log_rpow hq]
   unfold r
@@ -273,7 +272,7 @@ theorem spherical_scalar_of_cubic_shell_integrals
     ∀ s : ℂ, convergenceHalfPlane .plus s →
       standardIntegralCoordinate (LocalField F q) S.borel P S.iwasawa μ .plus s φ 1 1 = forwardFactor (LocalField F q) μ s := by
   intro s hs
-  let integrand : (LocalField F q) → ℂ := fun x => ((compactTrivialization S.borel P S.iwasawa .plus s φ).val
+  let integrand := fun x => ((compactTrivialization S.borel P S.iwasawa .plus s φ).val
     (S.borel.liftedW⁻¹ * (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q))).val 1
   have hi : Integrable integrand μ := by
     have hi := DedekindZetaZeroFree.KPRankOneActualShellCaller.integral_integrable_at_level
@@ -281,10 +280,9 @@ theorem spherical_scalar_of_cubic_shell_integrals
       ⟨φ, spherical_vector_mem_level (LocalField F q) S.borel P S.iwasawa .plus φ hφ⟩ (1 : ActualCover F ζ hζ q) (1 : actualTorus F ζ hζ q)
     simp only [sourceSign, id_eq, sourceParameter, if_pos rfl, kernelW, mul_one] at hi
     exact hi
-  have hr : ‖t (LocalField F q) s‖ < 1 := by
-    simpa using (convergence_iff_geometric (LocalField F q) .plus s).mp hs
   have he := integral_of_geometric_cubic_shells (LocalField F q) μ integrand (haarMass (LocalField F q) μ : ℂ)
-    (residueCardinality (LocalField F q) : ℂ)⁻¹ (t (LocalField F q) s) hr hi (hBall s hs) (fun n => by
+    (residueCardinality (LocalField F q) : ℂ)⁻¹ (t (LocalField F q) s) (by
+      exact (convergence_iff_geometric (LocalField F q) .plus s).mp hs) hi (hBall s hs) (fun n => by
       rw [hShell s hs n]
       split_ifs <;> ring)
   change (∫ x, _ ∂μ) = _

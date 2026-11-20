@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -53,11 +51,12 @@ noncomputable def standardLubinTatePrimitivePointIterateInteger
     (standardLubinTatePrimitivePointInteger hπ n)
     (standardLubinTatePolynomialIterate F π i)
 
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+
 /-- The zeroth iterate is the primitive point itself. -/
 @[simp]
 theorem standardLubinTatePrimitivePointIterateInteger_zero
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n : ℕ) :
     standardLubinTatePrimitivePointIterateInteger hπ n 0 =
       standardLubinTatePrimitivePointInteger hπ n := by
@@ -65,28 +64,17 @@ theorem standardLubinTatePrimitivePointIterateInteger_zero
 
 /-- One more iterate is evaluation of `y ↦ y ^ q + π y`. -/
 theorem standardLubinTatePrimitivePointIterateInteger_succ
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n i : ℕ) :
     standardLubinTatePrimitivePointIterateInteger hπ n (i + 1) =
       standardLubinTatePrimitivePointIterateInteger hπ n i ^
           Nat.card F.residueField +
         standardLubinTateLevelCoefficientHom hπ n π *
           standardLubinTatePrimitivePointIterateInteger hπ n i := by
-  rw [standardLubinTatePrimitivePointIterateInteger,
-    standardLubinTatePolynomialIterate_succ,
-    Polynomial.eval₂_comp,
-    standardLubinTatePolynomial_formula,
-    Polynomial.eval₂_add, Polynomial.eval₂_pow,
-    Polynomial.eval₂_X, Polynomial.eval₂_mul,
-    Polynomial.eval₂_C]
-  simp only [Polynomial.eval₂_X, standardLubinTatePrimitivePointIterateInteger]
+  simp [standardLubinTatePrimitivePointIterateInteger, standardLubinTatePolynomialIterate_succ, Polynomial.eval₂_comp, standardLubinTatePolynomial_formula, Polynomial.eval₂_add, Polynomial.eval₂_pow, Polynomial.eval₂_X, Polynomial.eval₂_mul]
 
 /-- Before the annihilating level, the evaluated iterates have exact
 normalized additive valuations `1, q, ..., q ^ n`. -/
 theorem standardLubinTatePrimitivePointIterateInteger_addVal
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n i : ℕ) (hi : i ≤ n) :
     IsDiscreteValuationRing.addVal
         (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
@@ -127,22 +115,16 @@ theorem standardLubinTatePrimitivePointIterateInteger_addVal
       have hqone : 1 < q := by
         exact Finite.one_lt_card
       have hqpos : 0 < q := Nat.zero_lt_one.trans hqone
-      have hpowle : q ^ (i + 1) ≤ q ^ n :=
-        Nat.pow_le_pow_right hqpos hi
-      have hqsub : 1 ≤ q - 1 := by
-        omega
       have hdegreele : q ^ n ≤ d := by
         calc
           q ^ n = 1 * q ^ n := by simp
           _ ≤ (q - 1) * q ^ n :=
-            Nat.mul_le_mul_right (q ^ n) hqsub
-      have htailpos : 0 < q ^ i := Nat.pow_pos hqpos
-      have hnatlt : q ^ (i + 1) < d + q ^ i :=
-        hpowle.trans_lt
-          (hdegreele.trans_lt (Nat.lt_add_of_pos_right htailpos))
+            Nat.mul_le_mul_right (q ^ n) (by
+              omega)
       have henatlt :
           (q ^ (i + 1) : ℕ∞) < (d + q ^ i : ℕ) := by
-        exact_mod_cast hnatlt
+        exact_mod_cast ((Nat.pow_le_pow_right hqpos hi).trans_lt
+          (hdegreele.trans_lt (Nat.lt_add_of_pos_right (Nat.pow_pos hqpos))))
       have hdistinct :
           IsDiscreteValuationRing.addVal target.valuationSubring
                 (y ^ q) ≠

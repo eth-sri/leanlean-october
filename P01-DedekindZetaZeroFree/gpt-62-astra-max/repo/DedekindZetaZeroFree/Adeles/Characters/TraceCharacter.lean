@@ -34,12 +34,10 @@ def adelicTraceCharacter : AddChar (AdeleRing (𝓞 F) F) Circle where
 theorem adelicTraceCharacter_apply (x : AdeleRing (𝓞 F) F) :
     adelicTraceCharacter F x =
       (∏ v : InfinitePlace F, archTraceCharacter v (x.1 v)) *
-        (∏ᶠ v : HeightOneSpectrum (𝓞 F), localFiniteCharacter F v (x.2 v)) := by
-  rfl
+        (∏ᶠ v : HeightOneSpectrum (𝓞 F), localFiniteCharacter F v (x.2 v)) := rfl
 
 theorem continuous_adelicTraceCharacter :
     Continuous (adelicTraceCharacter F : AdeleRing (𝓞 F) F → Circle) := by
-  change Continuous (fun x : InfiniteAdeleRing F × FiniteAdeleRing (𝓞 F) F => _)
   apply Continuous.mul
   · apply continuous_finset_prod
     intro v hv
@@ -83,8 +81,7 @@ theorem adelicTraceCharacter_finite_single (v : HeightOneSpectrum (𝓞 F))
     simp [RestrictedProduct.single_eq_of_ne _ _ hw]
 
 theorem adelicTraceCharacter_diagonal (t : F) :
-    adelicTraceCharacter F (algebraMap F (AdeleRing (𝓞 F) F) t) = 1 := by
-  exact traceCharacter_diagonal_product_formula F t
+    adelicTraceCharacter F (algebraMap F (AdeleRing (𝓞 F) F) t) = 1 := traceCharacter_diagonal_product_formula F t
 
 def adelicTraceQuotientCharacter :
     AddChar (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) Circle :=
@@ -93,21 +90,18 @@ def adelicTraceQuotientCharacter :
       (adelicTraceCharacter F).toAddMonoidHom (by
           intro x hx
           obtain ⟨t, rfl⟩ := hx
-          change adelicTraceCharacter F (algebraMap F (AdeleRing (𝓞 F) F) t) = 1
           exact adelicTraceCharacter_diagonal F t))
 
 theorem adelicTraceQuotientCharacter_mk (x : AdeleRing (𝓞 F) F) :
     adelicTraceQuotientCharacter F
       (QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F) x) =
-      adelicTraceCharacter F x := by
-  rfl
+      adelicTraceCharacter F x := rfl
 
 theorem continuous_adelicTraceQuotientCharacter :
     Continuous (adelicTraceQuotientCharacter F :
       (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) → Circle) := by
   apply (QuotientAddGroup.isQuotientMap_mk
     (AdeleRing.principalSubgroup (𝓞 F) F)).continuous_iff.mpr
-  change Continuous (adelicTraceCharacter F : AdeleRing (𝓞 F) F → Circle)
   exact continuous_adelicTraceCharacter F
 
 end DedekindZetaZeroFree

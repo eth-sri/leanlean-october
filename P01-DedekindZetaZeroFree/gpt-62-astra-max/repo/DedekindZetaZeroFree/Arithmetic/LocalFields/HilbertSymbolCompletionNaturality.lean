@@ -18,7 +18,7 @@ private theorem kummer_splits (K : Type) [Field K] (n : ℕ+)
     IsSplittingField K (chosenSimpleKummerExtension K n hn b)
       (X ^ (n : ℕ) - C (b : K)) := by
   let E := chosenSimpleKummerExtension K n hn b
-  let β : E := chosenSimpleKummerRootUnit K n hn b
+  let β := chosenSimpleKummerRootUnit K n hn b
   letI : FiniteDimensional K E := chosenSimpleKummerExtension_finiteDimensional K n hn b
   have hp : β ^ (n : ℕ) = algebraMap K E (b : K) :=
     congrArg Units.val (chosenSimpleKummerRootUnit_pow K n hn b)
@@ -28,13 +28,10 @@ private theorem kummer_splits (K : Type) [Field K] (n : ℕ+)
     exact X_pow_sub_C_splits_of_isPrimitiveRoot
       (((mem_primitiveRoots n.pos).1 hζ).map_of_injective (algebraMap K E).injective) hp
   · apply top_unique
-    have ht : Algebra.adjoin K {β} = ⊤ :=
-      (IntermediateField.adjoin_eq_top_iff).mp
-        (chosenSimpleKummerExtension_adjoin_root_eq_top K n hn b)
-    rw [← ht]
+    rw [← ((IntermediateField.adjoin_eq_top_iff).mp
+      (chosenSimpleKummerExtension_adjoin_root_eq_top K n hn b))]
     apply Algebra.adjoin_mono
     intro x hx
-    have hx' : x = β := Set.mem_singleton_iff.mp hx
     subst x
     apply Polynomial.mem_rootSet.mpr
     constructor
@@ -42,7 +39,11 @@ private theorem kummer_splits (K : Type) [Field K] (n : ℕ+)
     · simpa only [Polynomial.aeval_sub, map_pow, Polynomial.aeval_X,
         Polynomial.aeval_C, sub_eq_zero] using hp
 
-private theorem kummer_equiv (K K' : Type) [Field K] [Field K']
+section
+
+variable (K K' : Type) [Field K] [Field K']
+
+private theorem kummer_equiv
     (e : K ≃+* K') (n : ℕ+) (hn : (n : K) ≠ 0) (hn' : (n : K') ≠ 0)
     (hm : (primitiveRoots (n : ℕ) K).Nonempty)
     (hm' : (primitiveRoots (n : ℕ) K').Nonempty) (b : Kˣ) :
@@ -50,20 +51,17 @@ private theorem kummer_equiv (K K' : Type) [Field K] [Field K']
         chosenSimpleKummerExtension K' n hn' (Units.mapEquiv e.toMulEquiv b),
       ∀ x : K, eL (algebraMap K _ x) = algebraMap K' _ (e x) := by
   let E := chosenSimpleKummerExtension K n hn b
-  let b' : K'ˣ := Units.mapEquiv e.toMulEquiv b
+  let b' := Units.mapEquiv e.toMulEquiv b
   let E' := chosenSimpleKummerExtension K' n hn' b'
   letI : Algebra K E' := ((algebraMap K' E').comp e.toRingHom).toAlgebra
   letI : IsSplittingField K E (X ^ (n : ℕ) - C (b : K)) := kummer_splits K n hn hm b
-  let β' : E' := chosenSimpleKummerRootUnit K' n hn' b'
-  have hp' : β' ^ (n : ℕ) = algebraMap K E' (b : K) := by
-    exact congrArg Units.val (chosenSimpleKummerRootUnit_pow K' n hn' b')
   have hs : ((X ^ (n : ℕ) - C (b : K)).map (algebraMap K E')).Splits := by
     obtain ⟨ζ, hζ⟩ := hm
     simp only [Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
     exact X_pow_sub_C_splits_of_isPrimitiveRoot
-      (((mem_primitiveRoots n.pos).1 hζ).map_of_injective (algebraMap K E').injective) hp'
-  let f : E →ₐ[K] E' := IsSplittingField.lift E (X ^ (n : ℕ) - C (b : K)) hs
-  let β : E := chosenSimpleKummerRootUnit K n hn b
+      (((mem_primitiveRoots n.pos).1 hζ).map_of_injective (algebraMap K E').injective) (congrArg Units.val (chosenSimpleKummerRootUnit_pow K' n hn' b'))
+  let f := IsSplittingField.lift E (X ^ (n : ℕ) - C (b : K)) hs
+  let β := chosenSimpleKummerRootUnit K n hn b
   have hpow : (f β) ^ (n : ℕ) = algebraMap K' E' (b' : K') := by
     rw [← map_pow]
     have hp : β ^ (n : ℕ) = algebraMap K E (b : K) :=
@@ -85,7 +83,7 @@ private theorem kummer_equiv (K K' : Type) [Field K] [Field K']
     rw [← hgen]
     apply IntermediateField.adjoin_le_iff.mpr
     intro x hx
-    have hx' : x = f β := Set.mem_singleton_iff.mp hx
+    have hx' := Set.mem_singleton_iff.mp hx
     subst x
     exact ⟨β, rfl⟩
   have hsurj : Function.Surjective f := by
@@ -93,7 +91,7 @@ private theorem kummer_equiv (K K' : Type) [Field K] [Field K']
     have hy : y ∈ R := htop ▸ IntermediateField.mem_top
     exact hy
   exact ⟨RingEquiv.ofBijective f.toRingHom ⟨f.injective, hsurj⟩, fun x => f.commutes x⟩
-private theorem hilbert_natural (K K' : Type) [Field K] [Field K']
+private theorem hilbert_natural
     [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     [ValuativeRel K'] [TopologicalSpace K'] [IsNonarchimedeanLocalField K']
     (e : K ≃+* K') (he : LocalClassFieldTheory.SemilinearValuationCompatible K K' e)
@@ -107,16 +105,16 @@ private theorem hilbert_natural (K K' : Type) [Field K] [Field K']
           (ClassFieldTheory.powerClass K' n (Units.mapEquiv e.toMulEquiv a))
           (ClassFieldTheory.powerClass K' n (Units.mapEquiv e.toMulEquiv b)) := by
   let E := chosenSimpleKummerExtension K n hn b
-  let a' : K'ˣ := Units.mapEquiv e.toMulEquiv a
-  let b' : K'ˣ := Units.mapEquiv e.toMulEquiv b
+  let a' := Units.mapEquiv e.toMulEquiv a
+  let b' := Units.mapEquiv e.toMulEquiv b
   let E' := chosenSimpleKummerExtension K' n hn' b'
   letI : FiniteDimensional K E := chosenSimpleKummerExtension_finiteDimensional K n hn b
   letI : IsAbelianGalois K E := chosenSimpleKummerExtension_isAbelianGalois K n hn hm b
   letI : FiniteDimensional K' E' := chosenSimpleKummerExtension_finiteDimensional K' n hn' b'
   letI : IsAbelianGalois K' E' := chosenSimpleKummerExtension_isAbelianGalois K' n hn' hm' b'
   obtain ⟨eL, hc⟩ := kummer_equiv K K' e n hn hn' hm hm' b
-  let β : Eˣ := chosenSimpleKummerRootUnit K n hn b
-  let β' : E'ˣ := Units.mapEquiv eL.toMulEquiv β
+  let β := chosenSimpleKummerRootUnit K n hn b
+  let β' := Units.mapEquiv eL.toMulEquiv β
   have hp : β' ^ (n : ℕ) = Units.map (algebraMap K' E').toMonoidHom b' := by
     apply Units.ext
     change (eL (β : E)) ^ (n : ℕ) = algebraMap K' E' (e (b : K))
@@ -145,8 +143,10 @@ private theorem hilbert_natural (K K' : Type) [Field K] [Field K']
     K K' E E' e eL hc he a (β : E)]
   exact h2.symm
 
+end
+
 variable (F : Type) [Field F] [NumberField F]
-variable (v : HeightOneSpectrum (𝓞 F))
+    (v : HeightOneSpectrum (𝓞 F))
 local instance : ValuativeRel (v.adicCompletion F) :=
   ClassFieldTheory.finitePlaceCompletionValuativeRel F v
 local instance : IsNonarchimedeanLocalField (v.adicCompletion F) :=
@@ -176,7 +176,7 @@ theorem finite_family_eq_local (n : ℕ+)
       (mem_primitiveRoots n.pos).2
         (((mem_primitiveRoots n.pos).1 hζ).map_of_injective
           (algebraMap F C).injective)⟩
-  let e : C ≃+* v.adicCompletion F :=
+  let e :=
     (relativeFinitePlaceCompletionAlgEquiv v).toRingEquiv
   let eu := Units.mapEquiv e.toMulEquiv
   change ClassFieldTheory.hilbertPairingOfRingEquiv e n hmuC
@@ -186,10 +186,9 @@ theorem finite_family_eq_local (n : ℕ+)
   rw [ClassFieldTheory.hilbertPairingOfRingEquiv_apply,
     ClassFieldTheory.powerClassGroupEquivOfRingEquiv_symm_powerClass,
     ClassFieldTheory.powerClassGroupEquivOfRingEquiv_symm_powerClass]
-  have h := hilbert_natural C (v.adicCompletion F) e
+  simpa only [eu, MulEquiv.apply_symm_apply] using (hilbert_natural C (v.adicCompletion F) e
     (finitePlaceCompletion_semilinearValuationCompatible F v)
-    n hnC (Nat.cast_ne_zero.mpr n.ne_zero) hmuC hmuLocal (eu.symm a) (eu.symm b)
-  simpa only [eu, MulEquiv.apply_symm_apply] using h
+    n hnC (Nat.cast_ne_zero.mpr n.ne_zero) hmuC hmuLocal (eu.symm a) (eu.symm b))
 
 end
 end DedekindZetaZeroFree.RepresentationTheory.KPHilbertNormalization.LocalComparison

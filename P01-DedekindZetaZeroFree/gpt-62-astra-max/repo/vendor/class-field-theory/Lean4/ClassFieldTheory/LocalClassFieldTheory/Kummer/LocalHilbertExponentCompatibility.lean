@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -52,39 +48,35 @@ theorem localHilbertSymbol_exponentCompatibility
   rw [hdiv]
   let Em := KummerTheory.chosenSimpleKummerExtension K m hmK b
   let En := KummerTheory.chosenSimpleKummerExtension K n hnK b
-  let hEF : Em ≤ En :=
+  let hEF :=
     chosenSimpleKummerExtension_le_of_dvd K m n hmK hnK hmuM ⟨q, hq⟩ b
-  let : FiniteDimensional K Em :=
+  let :=
     KummerTheory.chosenSimpleKummerExtension_finiteDimensional K m hmK b
-  let : FiniteDimensional K En :=
+  let :=
     KummerTheory.chosenSimpleKummerExtension_finiteDimensional K n hnK b
-  let : IsAbelianGalois K Em :=
+  let :=
     KummerTheory.chosenSimpleKummerExtension_isAbelianGalois K m hmK hmuM b
-  let : IsAbelianGalois K En :=
+  let :=
     KummerTheory.chosenSimpleKummerExtension_isAbelianGalois K n hnK hmuN b
-  let βm : Emˣ := KummerTheory.chosenSimpleKummerRootUnit K m hmK b
-  let βn : Enˣ := KummerTheory.chosenSimpleKummerRootUnit K n hnK b
-  let βmN : Enˣ := Units.map (IntermediateField.inclusion hEF).toMonoidHom βm
-  let σm : Gal(Em/K) :=
+  let βm := KummerTheory.chosenSimpleKummerRootUnit K m hmK b
+  let βn := KummerTheory.chosenSimpleKummerRootUnit K n hnK b
+  let βmN := Units.map (IntermediateField.inclusion hEF).toMonoidHom βm
+  let σm :=
     chosenSimpleKummerNormResidueAutomorphism K m hmK hmuM b a
-  let σn : Gal(En/K) :=
+  let σn :=
     chosenSimpleKummerNormResidueAutomorphism K n hnK hmuN b a
   have hrestrict :
       intermediateFieldRestrictNormalHom Em En hEF σn = σm := by
-    change intermediateFieldRestrictNormalHom Em En hEF
-        (LocalClassFieldTheory.abelianLocalArtinMonoidHom K En a) =
-      LocalClassFieldTheory.abelianLocalArtinMonoidHom K Em a
     exact DFunLike.congr_fun
       (LocalClassFieldTheory.abelianLocalArtinMonoidHom_restrict K Em En hEF) a
+  let map₀ := Units.map (algebraMap K En).toMonoidHom
   have hβmN : βmN ^ (m : ℕ) =
-      Units.map (algebraMap K En).toMonoidHom b := by
-    change (Units.map (IntermediateField.inclusion hEF).toMonoidHom βm) ^
-        (m : ℕ) = _
+      map₀ b := by
     rw [← map_pow, KummerTheory.chosenSimpleKummerRootUnit_pow]
     apply Units.ext
     rfl
   have hβnq : (βn ^ q) ^ (m : ℕ) =
-      Units.map (algebraMap K En).toMonoidHom b := by
+      map₀ b := by
     rw [← pow_mul, hqm]
     exact KummerTheory.chosenSimpleKummerRootUnit_pow K n hnK b
   have hratio : (βmN / βn ^ q) ^ (m : ℕ) = 1 := by
@@ -93,15 +85,15 @@ theorem localHilbertSymbol_exponentCompatibility
     KummerTheory.nthRootsOfUnityInBase_of_primitiveRoots
       (K := K) (L := En) m hmuM (βmN / βn ^ q) hratio
   have hrootEq :
-      KummerTheory.rootQuotient (K := K) (L := En) βmN σn =
-        KummerTheory.rootQuotient (K := K) (L := En) (βn ^ q) σn := by
+      KummerTheory.rootQuotient βmN σn =
+        KummerTheory.rootQuotient (βn ^ q) σn := by
     apply div_eq_one.mp
     rw [KummerTheory.rootQuotient_changeRoot]
     rw [← hζ]
     exact KummerTheory.rootQuotient_algebraMap_unit ζ σn
   have hrootPow :
-      KummerTheory.rootQuotient (K := K) (L := En) (βn ^ q) σn =
-        (KummerTheory.rootQuotient (K := K) (L := En) βn σn) ^ q := by
+      KummerTheory.rootQuotient (βn ^ q) σn =
+        (KummerTheory.rootQuotient βn σn) ^ q := by
     apply Units.ext
     simp only [KummerTheory.rootQuotient, AlgEquiv.smul_units_def,
       Units.val_div_eq_div_val, Units.val_pow_eq_pow_val, Units.coe_map]
@@ -109,39 +101,38 @@ theorem localHilbertSymbol_exponentCompatibility
   have hmval :
       Units.map (algebraMap K Em).toMonoidHom
           (localHilbertSymbol K m hmK hmuM a b).1 =
-        KummerTheory.rootQuotient (K := K) (L := Em) βm σm := by
+        KummerTheory.rootQuotient βm σm := by
     have h := congrArg Subtype.val
       (localHilbertSymbol_map_eq_rootQuotient K m hmK hmuM a b)
     change Units.map (algebraMap K Em).toMonoidHom
         (localHilbertSymbol K m hmK hmuM a b).1 =
-      KummerTheory.rootQuotient (K := K) (L := Em) βm σm at h
+      KummerTheory.rootQuotient βm σm at h
     exact h
   have hnval :
-      Units.map (algebraMap K En).toMonoidHom
+      map₀
           (localHilbertSymbol K n hnK hmuN a b).1 =
-        KummerTheory.rootQuotient (K := K) (L := En) βn σn := by
+        KummerTheory.rootQuotient βn σn := by
     have h := congrArg Subtype.val
       (localHilbertSymbol_map_eq_rootQuotient K n hnK hmuN a b)
-    change Units.map (algebraMap K En).toMonoidHom
+    change map₀
         (localHilbertSymbol K n hnK hmuN a b).1 =
-      KummerTheory.rootQuotient (K := K) (L := En) βn σn at h
+      KummerTheory.rootQuotient βn σn at h
     exact h
   apply Units.map_injective (algebraMap K En).injective
   calc
-    Units.map (algebraMap K En).toMonoidHom
-        (localHilbertSymbol K m hmK hmuM a b).1 =
+    _ =
       Units.map (IntermediateField.inclusion hEF).toMonoidHom
-        (KummerTheory.rootQuotient (K := K) (L := Em) βm σm) := by
+        (KummerTheory.rootQuotient βm σm) := by
           rw [← hmval]
           apply Units.ext
           rfl
-    _ = KummerTheory.rootQuotient (K := K) (L := En) βmN σn := by
+    _ = KummerTheory.rootQuotient βmN σn := by
       rw [← hrestrict]
       exact (KummerTheory.rootQuotient_map_intermediateFieldInclusion
         Em En hEF βm σn).symm
-    _ = KummerTheory.rootQuotient (K := K) (L := En) (βn ^ q) σn := hrootEq
-    _ = (KummerTheory.rootQuotient (K := K) (L := En) βn σn) ^ q := hrootPow
-    _ = Units.map (algebraMap K En).toMonoidHom
+    _ = KummerTheory.rootQuotient (βn ^ q) σn := hrootEq
+    _ = (KummerTheory.rootQuotient βn σn) ^ q := hrootPow
+    _ = map₀
           ((localHilbertSymbol K n hnK hmuN a b).1 ^ q) := by
       rw [← hnval, ← map_pow]
 

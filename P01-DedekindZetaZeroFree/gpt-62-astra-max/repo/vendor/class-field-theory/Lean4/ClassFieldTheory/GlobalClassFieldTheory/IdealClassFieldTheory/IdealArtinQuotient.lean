@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -43,24 +41,21 @@ local instance idealArtinKernelNormal
     (N : Subgroup (IdeleClassGroup K))
     (hm : RayClass.Modulus.congruenceSubgroup m ≤ N) :
     (idealArtinKernel m N hm).Normal := by
-  change (idealArtinMap m N hm).ker.Normal
   infer_instance
+
+section
+
+variable (m : RayClass.Modulus K) (N : Subgroup (IdeleClassGroup K))
+    (hm : RayClass.Modulus.congruenceSubgroup m ≤ N)
 
 /-- The ideal class-field isomorphism
 `J_K^m / H_m ≃ C_K / N`. -/
-noncomputable def idealClassQuotientEquivNormQuotient
-    (m : RayClass.Modulus K)
-    (N : Subgroup (IdeleClassGroup K))
-    (hm : RayClass.Modulus.congruenceSubgroup m ≤ N) :
+noncomputable def idealClassQuotientEquivNormQuotient :
     RayClass.primeToModulusIdeals m ⧸
         idealArtinKernel m N hm ≃*
       IdeleClassGroup K ⧸ N := by
-  have hker :
-      idealArtinKernel m N hm =
-        (idealArtinMap m N hm).ker :=
-    rfl
   exact
-    (QuotientGroup.quotientMulEquivOfEq hker).trans
+    (QuotientGroup.quotientMulEquivOfEq rfl).trans
       (QuotientGroup.quotientKerEquivOfSurjective
         (idealArtinMap m N hm)
         (idealArtinMap_surjective m N hm))
@@ -69,27 +64,13 @@ noncomputable def idealClassQuotientEquivNormQuotient
 its ideal Artin image. -/
 @[simp]
 theorem idealClassQuotientEquivNormQuotient_mk
-    (m : RayClass.Modulus K)
-    (N : Subgroup (IdeleClassGroup K))
-    (hm : RayClass.Modulus.congruenceSubgroup m ≤ N)
     (a : RayClass.primeToModulusIdeals m) :
     idealClassQuotientEquivNormQuotient m N hm
         (QuotientGroup.mk' (idealArtinKernel m N hm) a) =
       idealArtinMap m N hm a :=
   rfl
 
-/-- The Artin kernel is exactly the equivalence relation defining the
-ideal class-field quotient. -/
-theorem idealClassQuotient_mk_eq_one_iff
-    (m : RayClass.Modulus K)
-    (N : Subgroup (IdeleClassGroup K))
-    (hm : RayClass.Modulus.congruenceSubgroup m ≤ N)
-    (a : RayClass.primeToModulusIdeals m) :
-    QuotientGroup.mk' (idealArtinKernel m N hm) a = 1 ↔
-      idealArtinMap m N hm a = 1 := by
-  exact
-    (QuotientGroup.eq_one_iff a).trans
-      (((idealArtin_exact m N hm).1 a).symm)
+end
 
 section ActualGaloisQuotient
 
@@ -97,16 +78,15 @@ variable
     {L : Type} [Field L] [NumberField L] [Algebra K L]
     [IsAbelianGalois K L]
 
+variable (m : RayClass.Modulus K)
+    (hm : RayClass.Modulus.congruenceSubgroup m ≤ (_root_.ideleClassNorm K L).range)
+
 /-- The ideal class-field isomorphism with the actual Galois group:
 `J_K^m / H_m ≃ Gal(L/K)`.
 
 Its first factor is the ideal/idèle norm-quotient comparison, and its
 second factor is the genuine global norm-residue equivalence. -/
-noncomputable def idealClassQuotientEquivGaloisGroup
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range) :
+noncomputable def idealClassQuotientEquivGaloisGroup :
     RayClass.primeToModulusIdeals m ⧸
         idealArtinKernel m
           ((_root_.ideleClassNorm K L).range) hm ≃*
@@ -120,10 +100,6 @@ noncomputable def idealClassQuotientEquivGaloisGroup
 isomorphism evaluates to the genuine Galois-valued ideal Artin map. -/
 @[simp]
 theorem idealClassQuotientEquivGaloisGroup_mk
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
     (a : RayClass.primeToModulusIdeals m) :
     idealClassQuotientEquivGaloisGroup
         (K := K) (L := L) m hm
@@ -132,26 +108,6 @@ theorem idealClassQuotientEquivGaloisGroup_mk
             ((_root_.ideleClassNorm K L).range) hm) a) =
       idealArtinGaloisMap (K := K) (L := L) m hm a :=
   rfl
-
-/-- An ideal class is trivial in the class-field quotient exactly when
-its actual Galois-valued Artin symbol is trivial. -/
-theorem idealClassQuotient_mk_eq_one_iff_galoisArtin_eq_one
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
-    (a : RayClass.primeToModulusIdeals m) :
-    QuotientGroup.mk'
-          (idealArtinKernel m
-            ((_root_.ideleClassNorm K L).range) hm) a =
-        1 ↔
-      idealArtinGaloisMap
-          (K := K) (L := L) m hm a =
-        1 := by
-  exact
-    (QuotientGroup.eq_one_iff a).trans
-      (((idealArtinGalois_exact
-        (K := K) (L := L) m hm).1 a).symm)
 
 end ActualGaloisQuotient
 

@@ -14,10 +14,10 @@ open KPMsNativeOffsetMass
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 700000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (D : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (D : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 theorem finiteRepresentative_one
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
@@ -38,20 +38,21 @@ theorem native_beta_integral (hU : cofinalLevel F ζ hζ U = U)
       (nativeFamily F ζ hζ R P) U ω.1 1).val
       ∂((nativeFamily F ζ hζ R P).disintegration
         (EisensteinSmoothGerms.ScalarSource.atlasLevel F ζ hζ U)).beta := by
+  let nativeFamily₀ := nativeFamily F ζ hζ R P
   have he : (nativeRecipe F ζ hζ R P).atlasLevel (cofinalLevel F ζ hζ U) =
       EisensteinSmoothGerms.ScalarSource.atlasLevel F ζ hζ U := by
     rw [hU]
-    exact ResidualNativeLevel.atlasLevel_eq F ζ hζ R P (nativeFamily F ζ hζ R P)
+    exact ResidualNativeLevel.atlasLevel_eq F ζ hζ R P (nativeFamily₀)
       (nativeRecipe F ζ hζ R P) U
   calc
     _ = ∫ω, φ (KPBoundedCuspFrames.actualFiniteRepresentative
-          ((nativeFamily F ζ hζ R P).atlas (EisensteinSmoothGerms.ScalarSource.atlasLevel F ζ hζ U)) ω.1).val
-          ∂((nativeFamily F ζ hζ R P).disintegration
+          ((nativeFamily₀).atlas (EisensteinSmoothGerms.ScalarSource.atlasLevel F ζ hζ U)) ω.1).val
+          ∂((nativeFamily₀).disintegration
             (EisensteinSmoothGerms.ScalarSource.atlasLevel F ζ hζ U)).beta :=
       congrArg (fun L : KPMsFixedHaarDisintegration.Level F ζ hζ =>
         ∫ω, φ (KPBoundedCuspFrames.actualFiniteRepresentative
-          ((nativeFamily F ζ hζ R P).atlas L) ω.1).val
-          ∂((nativeFamily F ζ hζ R P).disintegration L).beta) he
+          ((nativeFamily₀).atlas L) ω.1).val
+          ∂((nativeFamily₀).disintegration L).beta) he
     _ = _ := by
       apply integral_congr_ae
       filter_upwards with ω

@@ -19,6 +19,8 @@ private theorem denominator_pos (z : ℂ) : 0 < denominator z := by
   unfold denominator
   positivity
 
+alias ConeVolume.denominator_pos := denominator_pos
+
 noncomputable def sigmaVector (z : ℂ) : rawAmbient :=
   WithLp.toLp 2 ![2 * z.re / denominator z, -2 * z.im / denominator z,
     (1 - ‖z‖ ^ 2) / denominator z]
@@ -62,7 +64,6 @@ noncomputable def invChart (y : rawSphere) : ℂ :=
 theorem sigma_height (z : ℂ) : (1 + (sigma z : rawAmbient) 2) = 2 / denominator z := by
   change 1 + (1 - ‖z‖ ^ 2) / denominator z = _
   unfold denominator
-  have : (1 + ‖z‖ ^ 2) ≠ 0 := by positivity
   field_simp
   <;> ring
 theorem invChart_left (z : ℂ) : Complex.mk
@@ -77,13 +78,17 @@ theorem invChart_left (z : ℂ) : Complex.mk
     have : denominator z ≠ 0 := by unfold denominator; positivity
     field_simp
 
-theorem invChart_norm (y : rawSphere) (hy : (y : rawAmbient) 2 ≠ -1) :
+section
+
+variable (y : rawSphere) (hy : (y : rawAmbient) 2 ≠ -1)
+
+include hy in
+theorem invChart_norm :
     ‖invChart y‖ ^ 2 = (1 - (y : rawAmbient) 2) / (1 + (y : rawAmbient) 2) := by
   have hN : (y : rawAmbient) 0 ^ 2 + (y : rawAmbient) 1 ^ 2 +
       (y : rawAmbient) 2 ^ 2 = 1 := by
-    have h := mem_sphere_zero_iff_norm.mp y.property
     have h2 := EuclideanSpace.real_norm_sq_eq (y : rawAmbient)
-    rw [h] at h2
+    rw [(mem_sphere_zero_iff_norm.mp y.property)] at h2
     simpa [Fin.sum_univ_three] using h2.symm
   have hn := Complex.normSq_eq_norm_sq (invChart y)
   simp only [Complex.normSq_apply] at hn
@@ -92,14 +97,14 @@ theorem invChart_norm (y : rawSphere) (hy : (y : rawAmbient) 2 ≠ -1) :
   dsimp [invChart]
   field_simp
   nlinarith
-theorem invChart_denominator (y : rawSphere) (hy : (y : rawAmbient) 2 ≠ -1) :
+include hy in
+theorem invChart_denominator :
     denominator (invChart y) = 2 / (1 + (y : rawAmbient) 2) := by
   unfold denominator
   rw [invChart_norm y hy]
-  have hD : 1 + (y : rawAmbient) 2 ≠ 0 := by intro h; apply hy; linarith
-  field_simp
-  ring
-theorem invChart_right (y : rawSphere) (hy : (y : rawAmbient) 2 ≠ -1) : sigma (invChart y) = y := by
+  grind
+include hy in
+theorem invChart_right : sigma (invChart y) = y := by
   apply Subtype.ext
   apply PiLp.ext
   intro i
@@ -110,25 +115,22 @@ theorem invChart_right (y : rawSphere) (hy : (y : rawAmbient) 2 ≠ -1) : sigma 
   · rw [invChart_denominator y hy]
     change 2 * ((y : rawAmbient) 0 / (1 + (y : rawAmbient) 2)) /
       (2 / (1 + (y : rawAmbient) 2)) = _
-    have hD : 1 + (y : rawAmbient) 2 ≠ 0 := by intro h; apply hy; linarith
-    field_simp
-    rfl
+    grind
   · rw [invChart_denominator y hy]
     change -2 * (-(y : rawAmbient) 1 / (1 + (y : rawAmbient) 2)) /
       (2 / (1 + (y : rawAmbient) 2)) = _
-    have hD : 1 + (y : rawAmbient) 2 ≠ 0 := by intro h; apply hy; linarith
-    field_simp
-    rfl
+    grind
   · change (1 - ‖invChart y‖ ^ 2) / denominator (invChart y) = (y : rawAmbient) 2
     rw [invChart_denominator y hy, invChart_norm y hy]
     have hD : 1 + (y : rawAmbient) 2 ≠ 0 := by intro h; apply hy; linarith
     field_simp
     ring
 
+end
+
 theorem sigma_injective : Function.Injective sigma := by
   intro z w h
-  have he := congrArg invChart h
-  simpa only [invChart, invChart_left] using he
+  simpa [invChart, invChart_left] using (congrArg invChart h)
 
 noncomputable def cone (q : ℝ × ℂ) : rawAmbient := q.1 • sigmaVector q.2
 
@@ -140,36 +142,38 @@ theorem cone_injective : Set.InjOn cone (Ioo 0 1 ×ˢ (univ : Set ℂ)) := by
     sigmaVector_norm, mul_one] at heNorm
   have he' : sigmaVector z = sigmaVector w := by
     rw [heNorm] at he
-    have hh := congrArg (fun v : rawAmbient => r⁻¹ • v) he
-    simpa only [smul_smul, inv_mul_cancel₀ (show r ≠ 0 from hr.1.ne'), one_smul] using hh
+    simpa only [smul_smul, inv_mul_cancel₀ (show r ≠ 0 from hr.1.ne'), one_smul] using (congrArg (fun v : rawAmbient => r⁻¹ • v) he)
   exact Prod.ext heNorm (sigma_injective (Subtype.ext he'))
 
 theorem south_ray_null : (volume : Measure rawAmbient)
     {v : rawAmbient | v 0 = 0 ∧ v 1 = 0 ∧ v 2 ≤ 0} = 0 := by
   apply measure_mono_null (fun x hx => hx.1)
-  let l : rawAmbient →ₗ[ℝ] ℝ :=
+  let l :=
     (LinearMap.proj (0 : Fin 3)).comp (WithLp.linearEquiv 2 ℝ (Fin 3 → ℝ)).toLinearMap
-  have hker : l.ker ≠ ⊤ := by
-    intro h
-    have hv : WithLp.toLp 2 ![(1 : ℝ), 0, 0] ∈ l.ker := by rw [h]; trivial
-    change (1 : ℝ) = 0 at hv
-    norm_num at hv
-  exact Measure.addHaar_submodule volume l.ker hker
+  apply Measure.addHaar_submodule volume l.ker
+  intro h
+  have hv : WithLp.toLp 2 ![(1 : ℝ), 0, 0] ∈ l.ker := by rw [h]; trivial
+  change (1 : ℝ) = 0 at hv
+  norm_num at hv
 
 namespace CV
 
-noncomputable def D (v : rawAmbient) : ℝ := 1 + v 1 ^ 2 + v 2 ^ 2
-noncomputable def coneR (v : rawAmbient) : rawAmbient :=
+section
+
+variable (v : rawAmbient)
+
+noncomputable def D : ℝ := 1 + v 1 ^ 2 + v 2 ^ 2
+noncomputable def coneR : rawAmbient :=
   WithLp.toLp 2 ![2 * v 0 * v 1 / D v, -2 * v 0 * v 2 / D v,
     v 0 * (1-v 1 ^ 2-v 2 ^ 2) / D v]
-lemma D_pos (v : rawAmbient) : 0 < D v := by dsimp [D]; positivity
+lemma D_pos : 0 < D v := by dsimp [D]; positivity
 
-noncomputable def jac (v : rawAmbient) : Matrix (Fin 3) (Fin 3) ℝ :=
+noncomputable def jac : Matrix (Fin 3) (Fin 3) ℝ :=
   !![2*v 1 / D v, 2*v 0 / D v - 4*v 0*v 1^2/(D v)^2, -4*v 0*v 1*v 2/(D v)^2;
     -2*v 2 / D v, 4*v 0*v 1*v 2/(D v)^2, -2*v 0 / D v + 4*v 0*v 2^2/(D v)^2;
     (1-v 1^2-v 2^2)/D v, -4*v 0*v 1/(D v)^2, -4*v 0*v 2/(D v)^2]
 
-lemma jac_det (v : rawAmbient) : (jac v).det = -4*v 0^2/(D v)^2 := by
+lemma jac_det : (jac v).det = -4*v 0^2/(D v)^2 := by
   rw [Matrix.det_fin_three]
   simp [jac, D, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail]
   have hd := (D_pos v).ne'
@@ -177,7 +181,7 @@ lemma jac_det (v : rawAmbient) : (jac v).det = -4*v 0^2/(D v)^2 := by
   field_simp
   ring
 
-lemma cone_deriv (v : rawAmbient) :
+lemma cone_deriv :
     HasFDerivAt coneR ((jac v).toEuclideanLin.toContinuousLinearMap) v := by
   rw [← hasFDerivWithinAt_univ]
   apply (hasFDerivWithinAt_piLp 2).mpr
@@ -185,66 +189,69 @@ lemma cone_deriv (v : rawAmbient) :
   have h0 := PiLp.hasFDerivAt_apply (𝕜 := ℝ) 2 v (0 : Fin 3)
   have h1 := PiLp.hasFDerivAt_apply (𝕜 := ℝ) 2 v (1 : Fin 3)
   have h2 := PiLp.hasFDerivAt_apply (𝕜 := ℝ) 2 v (2 : Fin 3)
-  have hD := ((hasFDerivAt_const (1 : ℝ) v).add (h1.pow 2)).add (h2.pow 2)
-  have hI := (hasFDerivAt_inv (D_pos v).ne').comp v hD
+  have hI := (hasFDerivAt_inv (D_pos v).ne').comp v (((hasFDerivAt_const (1 : ℝ) v).add (h1.pow 2)).add (h2.pow 2))
   fin_cases i
-  · have h := (((h0.const_mul 2).mul h1).mul hI)
-    rw [hasFDerivWithinAt_univ]
+  · rw [hasFDerivWithinAt_univ]
     simp only [coneR, PiLp.toLp_apply, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail]
     simp_rw [div_eq_mul_inv]
-    apply h.congr_fderiv
+    apply ((((h0.const_mul 2).mul h1).mul hI)).congr_fderiv
     ext w
     simp [jac, Matrix.toEuclideanLin, Matrix.toLpLin_apply, PiLp.proj_apply, Matrix.mulVec, dotProduct,
       Fin.sum_univ_three, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail, D]
     ring
-  · have h := (((h0.const_mul (-2)).mul h2).mul hI)
-    rw [hasFDerivWithinAt_univ]
+  · rw [hasFDerivWithinAt_univ]
     simp only [coneR, PiLp.toLp_apply, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail]
     simp_rw [div_eq_mul_inv]
-    apply h.congr_fderiv
+    apply ((((h0.const_mul (-2)).mul h2).mul hI)).congr_fderiv
     ext w
     simp [jac, Matrix.toEuclideanLin, Matrix.toLpLin_apply, PiLp.proj_apply, Matrix.mulVec, dotProduct,
       Fin.sum_univ_three, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail, D]
     ring
-  · have h := ((h0.mul (((hasFDerivAt_const (1 : ℝ) v).sub (h1.pow 2)).sub (h2.pow 2))).mul hI)
-    rw [hasFDerivWithinAt_univ]
+  · rw [hasFDerivWithinAt_univ]
     simp only [coneR, PiLp.toLp_apply, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail]
     simp_rw [div_eq_mul_inv]
-    apply h.congr_fderiv
+    apply (((h0.mul (((hasFDerivAt_const (1 : ℝ) v).sub (h1.pow 2)).sub (h2.pow 2))).mul hI)).congr_fderiv
     ext w
     simp [jac, Matrix.toEuclideanLin, Matrix.toLpLin_apply, PiLp.proj_apply, Matrix.mulVec, dotProduct,
       Fin.sum_univ_three, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail, D]
     field_simp
     ring
-lemma abs_det (v : rawAmbient) : |((jac v).toEuclideanLin.toContinuousLinearMap).det| =
+lemma abs_det : |((jac v).toEuclideanLin.toContinuousLinearMap).det| =
     4 * v 0 ^ 2 / D v ^ 2 := by
   change |LinearMap.det ((jac v).toEuclideanLin)| = _
   rw [Matrix.toEuclideanLin_eq_toLin_orthonormal, LinearMap.det_toLin, jac_det]
   rw [show -4 * v 0 ^ 2 / D v ^ 2 = -(4 * v 0 ^ 2 / D v ^ 2) by ring,
     abs_neg, abs_of_nonneg (by positivity)]
 
+end
+
 noncomputable def coords : rawAmbient ≃ᵐ ℝ × ℂ :=
   split.trans (MeasurableEquiv.prodCongr (MeasurableEquiv.refl ℝ)
     ((MeasurableEquiv.toLp 2 (Fin 2 → ℝ)).symm.trans Complex.measurableEquivPi.symm))
-lemma coords_mp : MeasurePreserving coords volume (volume.prod euclideanArea) := by
-  exact split_preserving.trans ((MeasurePreserving.id volume).prod
+lemma coords_mp : MeasurePreserving coords volume (volume.prod euclideanArea) := split_preserving.trans ((MeasurePreserving.id volume).prod
     ((PiLp.volume_preserving_ofLp (Fin 2)).trans Complex.volume_preserving_equiv_pi.symm))
-lemma coords_symm (q : ℝ × ℂ) : coords.symm q = WithLp.toLp 2 ![q.1, q.2.re, q.2.im] := by
+section
+
+variable (q : ℝ × ℂ)
+
+lemma coords_symm : coords.symm q = WithLp.toLp 2 ![q.1, q.2.re, q.2.im] := by
   rw [coords, MeasurableEquiv.trans_symm, MeasurableEquiv.trans_apply, split_symm_apply]
   ext i
-  fin_cases i <;> rfl
-lemma coords_D (q : ℝ × ℂ) : D (coords.symm q) = denominator q.2 := by
+  rfl
+lemma coords_D : D (coords.symm q) = denominator q.2 := by
   rw [coords_symm]
   dsimp [D, denominator]
   rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
   ring
-lemma coords_cone (q : ℝ × ℂ) : coneR (coords.symm q) = cone q := by
+lemma coords_cone : coneR (coords.symm q) = cone q := by
   rw [coords_symm]
   ext i
   have hn := Complex.normSq_eq_norm_sq q.2
   simp only [Complex.normSq_apply] at hn
   fin_cases i <;> dsimp [coneR, cone, sigmaVector, D, denominator]
   all_goals rw [← hn]; field_simp; ring
+
+end
 lemma cone_image_ae (s : Set rawSphere) :
     cone '' (Ioo (0 : ℝ) 1 ×ˢ (sigma ⁻¹' s)) =ᵐ[volume]
       Ioo (0 : ℝ) 1 • (Subtype.val '' s) := by
@@ -258,16 +265,13 @@ lemma cone_image_ae (s : Set rawSphere) :
       intro he
       apply hv
       have hn := EuclideanSpace.real_norm_sq_eq (y : rawAmbient)
-      have hn1 := mem_sphere_zero_iff_norm.mp y.property
-      rw [hn1] at hn
+      rw [(mem_sphere_zero_iff_norm.mp y.property)] at hn
       simp [Fin.sum_univ_three, he] at hn
       have h0 : (y : rawAmbient) 0 = 0 := by nlinarith [sq_nonneg ((y : rawAmbient) 1)]
       have h1 : (y : rawAmbient) 1 = 0 := by nlinarith [sq_nonneg ((y : rawAmbient) 0)]
-      change t * (y : rawAmbient) 0 = 0 ∧ t * (y : rawAmbient) 1 = 0 ∧
-        t * (y : rawAmbient) 2 ≤ 0
       simp [h0, h1, he, ht.1.le]
     refine ⟨(t, invChart y), ⟨ht, ?_⟩, ?_⟩
-    · simpa only [mem_preimage, invChart_right y hys] using hy
+    · grind [invChart_right]
     · change t • (sigma (invChart y) : rawAmbient) = _
       rw [invChart_right y hys]
 
@@ -280,7 +284,7 @@ lemma coneR_image_ae (s : Set rawSphere) :
     constructor
     · rintro ⟨x, hx, rfl⟩
       refine ⟨coords x, hx, ?_⟩
-      rw [← coords_cone, coords.symm_apply_apply]
+      simp [← coords_cone]
     · rintro ⟨q, hq, rfl⟩
       refine ⟨coords.symm q, by simpa, coords_cone q⟩
   rw [he]
@@ -289,22 +293,19 @@ lemma coneR_image_ae (s : Set rawSphere) :
 lemma radial_integral : (∫⁻ t in Ioo (0 : ℝ) 1, ENNReal.ofReal (t ^ 2)) =
     ENNReal.ofReal (1 / 3 : ℝ) := by
   rw [← ofReal_integral_eq_lintegral_ofReal
-    ((Continuous.integrableOn_Icc (f := fun t : ℝ => t ^ 2) (by fun_prop)).mono_set Ioo_subset_Icc_self)]
+    ((Continuous.integrableOn_Icc (by fun_prop)).mono_set Ioo_subset_Icc_self)]
   · rw [← integral_Ioc_eq_integral_Ioo, ← intervalIntegral.integral_of_le zero_le_one, integral_pow]
     norm_num
-  · exact Filter.Eventually.of_forall (fun t => sq_nonneg t)
+  · exact Filter.Eventually.of_forall (sq_nonneg)
 
 lemma jac_integral (s : Set rawSphere) (hs : MeasurableSet s) :
     (∫⁻ v in coords ⁻¹' (Ioo (0 : ℝ) 1 ×ˢ (sigma ⁻¹' s)),
       ENNReal.ofReal (4 * v 0 ^ 2 / D v ^ 2)) =
     ENNReal.ofReal (4 / 3 : ℝ) *
       ∫⁻ z in sigma ⁻¹' s, ENNReal.ofReal (denominator z ^ (-2 : ℝ)) ∂euclideanArea := by
-  letI : SFinite euclideanArea := by change SFinite (volume : Measure ℂ); infer_instance
-  have hsm := sigma_continuous.measurable hs
+  letI : SFinite euclideanArea := by change SFinite volume; infer_instance
   have hm : Measurable (fun q : ℝ × ℂ => ENNReal.ofReal (4 * q.1 ^ 2 / denominator q.2 ^ 2)) := by
     dsimp [denominator]; fun_prop
-  have hp := coords_mp.setLIntegral_comp_preimage (s := Ioo (0 : ℝ) 1 ×ˢ (sigma ⁻¹' s))
-    (measurableSet_Ioo.prod hsm) hm
   have he : (fun v : rawAmbient => ENNReal.ofReal (4 * v 0 ^ 2 / D v ^ 2)) =
       (fun v => ENNReal.ofReal (4 * (coords v).1 ^ 2 / denominator (coords v).2 ^ 2)) := by
     ext v
@@ -314,7 +315,8 @@ lemma jac_integral (s : Set rawSphere) (hs : MeasurableSet s) :
     have ht0 := congrArg (fun w : rawAmbient => w 0) ht
     simp only [PiLp.toLp_apply, Matrix.cons_val_zero] at ht0
     rw [hd, ht0]
-  rw [he, hp, setLIntegral_prod _ hm.aemeasurable.restrict]
+  rw [he, (coords_mp.setLIntegral_comp_preimage
+    (measurableSet_Ioo.prod (sigma_continuous.measurable hs)) hm), setLIntegral_prod _ hm.aemeasurable.restrict]
   have hg : ∀ z : ℂ, denominator z ^ (-2 : ℝ) = (denominator z ^ 2)⁻¹ := by
     intro z
     rw [Real.rpow_neg (by dsimp [denominator]; positivity), Real.rpow_two]
@@ -335,17 +337,16 @@ theorem cone_volume_stereographic (s : Set rawSphere) (hs : MeasurableSet s) :
       ENNReal.ofReal (4 / 3 : ℝ) *
       ∫⁻ z in sigma ⁻¹' s, ENNReal.ofReal (denominator z ^ (-2 : ℝ)) ∂euclideanArea := by
   let S := CV.coords ⁻¹' (Ioo (0 : ℝ) 1 ×ˢ (sigma ⁻¹' s))
-  have hm : MeasurableSet S := CV.coords.measurable
-    (measurableSet_Ioo.prod (sigma_continuous.measurable hs))
   have hi : InjOn CV.coneR S := by
     intro x hx y hy he
     apply CV.coords.injective
     apply cone_injective
-      (show CV.coords x ∈ Ioo 0 1 ×ˢ (univ : Set ℂ) from ⟨hx.1, mem_univ _⟩)
-      (show CV.coords y ∈ Ioo 0 1 ×ˢ (univ : Set ℂ) from ⟨hy.1, mem_univ _⟩)
+      (show CV.coords x ∈ Ioo 0 1 ×ˢ univ from ⟨hx.1, mem_univ _⟩)
+      (show CV.coords y ∈ Ioo 0 1 ×ˢ univ from ⟨hy.1, mem_univ _⟩)
     simpa only [← CV.coords_cone, CV.coords.symm_apply_apply] using he
   rw [← measure_congr (CV.coneR_image_ae s), ← lintegral_abs_det_fderiv_eq_addHaar_image
-    volume hm (fun x hx => (CV.cone_deriv x).hasFDerivWithinAt) hi]
+    volume (CV.coords.measurable
+      (measurableSet_Ioo.prod (sigma_continuous.measurable hs))) (fun x hx => (CV.cone_deriv x).hasFDerivWithinAt) hi]
   simp_rw [CV.abs_det]
   exact CV.jac_integral s hs
 

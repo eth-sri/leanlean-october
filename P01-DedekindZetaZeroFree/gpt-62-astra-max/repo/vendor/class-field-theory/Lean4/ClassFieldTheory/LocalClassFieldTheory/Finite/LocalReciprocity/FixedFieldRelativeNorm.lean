@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -62,22 +57,18 @@ def abstractFixedFieldCosetToAlgHom
       (abstractRelativeFixedField k Ω hLK).val)
     (by
       intro σ τ hστ
-      have hmem : σ⁻¹ * τ ∈ extensionSubgroup K L hLK :=
+      have hmem :=
         QuotientGroup.leftRel_apply.mp hστ
       let η : L.toSubgroup := ⟨(σ⁻¹ * τ).1, hmem⟩
       have hτ : τ = σ * Subgroup.inclusion hLK η := by
         apply Subtype.ext
-        change τ.1 = σ.1 * η.1
         simp [η]
       apply AlgHom.ext
       intro x
-      have hηfix : η.1 (x : Ω) = (x : Ω) :=
-        (IntermediateField.mem_fixedField_iff L.toSubgroup
-          (x : Ω)).1 x.property η.1 η.2
-      change σ.1 (x : Ω) = τ.1 (x : Ω)
       calc
-        σ.1 (x : Ω) = σ.1 (η.1 (x : Ω)) :=
-          congrArg σ.1 hηfix.symm
+        _ = σ.1 (η.1 (x : Ω)) :=
+          congrArg σ.1 ((IntermediateField.mem_fixedField_iff L.toSubgroup
+            (x : Ω)).1 x.property η.1 η.2).symm
         _ = (σ.1 * η.1) (x : Ω) := rfl
         _ = τ.1 (x : Ω) := by
           have hτ' := congrArg Subtype.val hτ
@@ -104,12 +95,11 @@ theorem abstractFixedFieldCosetToAlgHom_mk
     Function.Surjective
       (abstractFixedFieldCosetToAlgHom k Ω K L hLK) := by
   intro f
-  let : Algebra.IsSeparable (abstractFixedField k Ω K)
-      (abstractRelativeFixedField k Ω hLK) :=
+  let :=
     Algebra.isSeparable_tower_bot_of_isSeparable
       (abstractFixedField k Ω K)
       (abstractRelativeFixedField k Ω hLK) Ω
-  let : Algebra.IsSeparable (abstractRelativeFixedField k Ω hLK) Ω :=
+  let :=
     Algebra.isSeparable_tower_top_of_isSeparable
       (abstractFixedField k Ω K)
       (abstractRelativeFixedField k Ω hLK) Ω
@@ -118,19 +108,16 @@ theorem abstractFixedFieldCosetToAlgHom_mk
       (K := abstractFixedField k Ω K)
       (L := abstractRelativeFixedField k Ω hLK)
       (M := Ω) (E := Ω)) f
-  let σReal : Gal(Ω / abstractFixedField k Ω K) :=
+  let σReal :=
     AlgEquiv.ofBijective φ
       (Normal.toIsAlgebraic.algHom_bijective₂
         φ (AlgHom.id (abstractFixedField k Ω K) Ω)).1
-  let σ : K.toSubgroup :=
-    (abstractSubgroupEquivGaloisGroup k Ω K).symm σReal
-  refine ⟨QuotientGroup.mk σ, ?_⟩
+  refine ⟨QuotientGroup.mk ((abstractSubgroupEquivGaloisGroup k Ω K).symm σReal), ?_⟩
   apply AlgHom.ext
   intro x
   have hx := congrArg
     (fun ψ : abstractRelativeFixedField k Ω hLK →ₐ[
       abstractFixedField k Ω K] Ω => ψ x) hφ
-  change σReal (x : Ω) = f x
   change φ (x : Ω) = f x at hx
   exact hx
 
@@ -160,7 +147,6 @@ omit [IsSepClosed Ω] in
     rw [← hy]
     simp [y]
   rw [InfiniteGalois.fixingSubgroup_fixedField L] at hfix
-  change (Quotient.out q).1⁻¹ * (Quotient.out r).1 ∈ L.toSubgroup
   exact hfix
 
 /-- Abstract relative left cosets are precisely the embeddings of the upper
@@ -215,12 +201,10 @@ theorem relativeNorm_abstractFixedFieldUnit_eq_normUnits
         (Additive.ofMul
           (normUnits (abstractFixedField k Ω K)
             (abstractRelativeFixedField k Ω hLK) x)) := by
-  let : FiniteDimensional (abstractFixedField k Ω K)
-      (abstractRelativeFixedField k Ω hLK) :=
+  let :=
     abstractRelativeFixedField_finiteDimensional
       k Ω K L hLK hKabsolute hfinite
-  let : Algebra.IsSeparable (abstractFixedField k Ω K)
-      (abstractRelativeFixedField k Ω hLK) :=
+  let :=
     Algebra.isSeparable_tower_bot_of_isSeparable
       (abstractFixedField k Ω K)
       (abstractRelativeFixedField k Ω hLK) Ω
@@ -260,8 +244,7 @@ theorem relativeNorm_abstractFixedFieldUnit_eq_normUnits
   calc
     _ = ∏ σ : abstractRelativeFixedField k Ω hLK →ₐ[
         abstractFixedField k Ω K] Ω,
-        σ (x : abstractRelativeFixedField k Ω hLK) := by
-      exact Fintype.prod_equiv
+        σ (x : abstractRelativeFixedField k Ω hLK) := Fintype.prod_equiv
         (abstractFixedFieldCosetEquivAlgHom k Ω K L hLK)
         (fun q : Q =>
           ((Additive.toMul
@@ -271,7 +254,7 @@ theorem relativeNorm_abstractFixedFieldUnit_eq_normUnits
                 k Ω K L hLK (Additive.ofMul x)) q) : Ωˣ) : Ω))
         (fun σ : abstractRelativeFixedField k Ω hLK →ₐ[
           abstractFixedField k Ω K] Ω =>
-            σ (x : abstractRelativeFixedField k Ω hLK))
+            σ x)
         (relativeCosetAction_abstractFixedFieldUnit_val
           k Ω K L hLK x)
     _ = algebraMap (abstractFixedField k Ω K) Ω

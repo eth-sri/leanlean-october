@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -32,7 +30,7 @@ private theorem ringEquiv_unit_div_neg_one
     {F : Type*} [Field F] (e : F ≃+* ℝ) (x : Fˣ) :
     e ((x / (-1 : Fˣ) : Fˣ) : F) = -e (x : F) := by
   calc
-    e ((x / (-1 : Fˣ) : Fˣ) : F) =
+    _ =
         e (x : F) / e (-1 : F) :=
       by
         rw [Units.val_div_eq_div_val]
@@ -60,29 +58,22 @@ theorem chosenInfinitePlaceArtin_globalUnit_eq_neg_one_of_real_of_neg
         (Units.map (algebraMap K v.Completion).toMonoidHom a) =
       chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v
         (-1 : v.Completionˣ) := by
-  let e : v.Completion ≃+* ℝ :=
+  let e :=
     InfinitePlace.Completion.ringEquivRealOfIsReal hv
-  let a_v : v.Completionˣ :=
+  let a_v :=
     Units.map (algebraMap K v.Completion).toMonoidHom a
-  let q : v.Completionˣ := a_v / (-1 : v.Completionˣ)
-  have haCoord :
-      e (a_v : v.Completion) =
-        InfinitePlace.embedding_of_isReal hv (a : K) :=
-    realInfinitePlace_globalUnit_realCoordinate K v hv a
+  let q := a_v / (-1 : v.Completionˣ)
   have hqCoord :
       e (q : v.Completion) =
         -InfinitePlace.embedding_of_isReal hv (a : K) := by
     rw [show e (q : v.Completion) = -e (a_v : v.Completion) by
       exact ringEquiv_unit_div_neg_one e a_v]
-    rw [haCoord]
-  have hqPos : 0 < e (q : v.Completion) := by
-    rw [hqCoord]
-    linarith
+    rw [(realInfinitePlace_globalUnit_realCoordinate K v hv a)]
   let artin := chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v
-  have hqArtin : artin q = 1 := by
-    exact chosenInfinitePlaceArtinMonoidHom_eq_one_of_real_pos
-      (K := K) (L := L) v hv q hqPos
-  change artin a_v = artin (-1 : v.Completionˣ)
+  have hqArtin : artin q = 1 := chosenInfinitePlaceArtinMonoidHom_eq_one_of_real_pos
+      (K := K) (L := L) v hv q (by
+        rw [hqCoord]
+        linarith)
   apply monoidHom_eq_of_div_apply_eq_one artin
   simpa only [q] using hqArtin
 

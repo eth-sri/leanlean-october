@@ -15,13 +15,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 open Filter
@@ -73,24 +66,21 @@ theorem formalLogOnePlusProductArgumentMixedLeftChoices_card
             Nat.choose (q - (a + b - q)) (q - b) := by
           apply Finset.sum_congr rfl
           intro M hM
-          rw [Finset.card_powersetCard]
-          have hsub : M ⊆ Finset.range q :=
-            (Finset.mem_powersetCard.mp hM).1
-          have hcard : M.card = a + b - q :=
-            (Finset.mem_powersetCard.mp hM).2
-          rw [Finset.card_sdiff_of_subset hsub, Finset.card_range, hcard]
+          simp_all [Finset.card_powersetCard, Finset.card_sdiff_of_subset, Finset.card_range]
     _ = Nat.choose q (a + b - q) *
           Nat.choose (q - (a + b - q)) (q - b) := by
-          rw [Finset.sum_const]
-          simp [Finset.card_powersetCard]
+          simp
+
+section
+
+variable {q : ℕ} {e : Fin 2 →₀ ℕ}
 
 /--
 Establishes the membership statement `(⟨formalLogOnePlusProductArgumentMixedPositions q l,
 formalLogOnePlusProductArgumentLeftPositions q l⟩ : Σ _ : Finset ℕ, Finset ℕ) ∈
 formalLogOnePlusProductArgumentMixedLeftChoices q (e (0 : Fin 2)) (e (1 : Fin 2))`.
 -/
-theorem formalLogOnePlusProductArgument_toMixedLeft_mem
-    {q : ℕ} {e : Fin 2 →₀ ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
+theorem formalLogOnePlusProductArgument_toMixedLeft_mem {l : ℕ →₀ (Fin 2 →₀ ℕ)}
     (hl :
       l ∈ formalLogOnePlusProductArgumentBasicFactorLabelCountChoices q e) :
     (⟨formalLogOnePlusProductArgumentMixedPositions q l,
@@ -114,13 +104,9 @@ theorem formalLogOnePlusProductArgument_toMixedLeft_mem
       constructor
       · exact (Finset.mem_filter.mp hi).1
       · intro hmix
-        have h0 :
-            formalLogOnePlusProductArgumentBasicFactorLabel (l i) =
-              (0 : Fin 3) :=
+        have h0 :=
           (Finset.mem_filter.mp hi).2
-        have h2 :
-            formalLogOnePlusProductArgumentBasicFactorLabel (l i) =
-              (2 : Fin 3) :=
+        have h2 :=
           (Finset.mem_filter.mp hmix).2
         omega
     · rw [formalLogOnePlusProductArgumentLeftPositions_card, hlabel0]
@@ -130,7 +116,6 @@ Establishes the membership statement `formalLogOnePlusProductArgumentChoiceFromM
 ∈ formalLogOnePlusProductArgumentBasicFactorLabelCountChoices q e`.
 -/
 theorem formalLogOnePlusProductArgument_fromMixedLeft_mem
-    {q : ℕ} {e : Fin 2 →₀ ℕ}
     {P : Σ _ : Finset ℕ, Finset ℕ}
     (hleft : e (0 : Fin 2) ≤ q) (hright : e (1 : Fin 2) ≤ q)
     (hsum : q ≤ e (0 : Fin 2) + e (1 : Fin 2))
@@ -165,9 +150,7 @@ theorem formalLogOnePlusProductArgument_fromMixedLeft_mem
       formalLogOnePlusProductArgumentLeftPositions_choiceFromMixedLeft hLsub,
       hLcard]
   · rw [← formalLogOnePlusProductArgumentRightPositions_card]
-    exact
-      formalLogOnePlusProductArgumentRightPositions_choiceFromMixedLeft_card
-        hMsub hMcard hLsub hLcard hleft hright hsum
+    grind [formalLogOnePlusProductArgumentRightPositions_choiceFromMixedLeft_card]
   · rw [← formalLogOnePlusProductArgumentMixedPositions_card,
       formalLogOnePlusProductArgumentMixedPositions_choiceFromMixedLeft hMsub,
       hMcard]
@@ -177,8 +160,7 @@ Establishes the identity `formalLogOnePlusProductArgumentChoiceFromMixedLeft q
 (formalLogOnePlusProductArgumentMixedPositions q l) (formalLogOnePlusProductArgumentLeftPositions
 q l) = l`.
 -/
-theorem formalLogOnePlusProductArgument_from_to_choice
-    {q : ℕ} {e : Fin 2 →₀ ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
+theorem formalLogOnePlusProductArgument_from_to_choice {l : ℕ →₀ (Fin 2 →₀ ℕ)}
     (hl :
       l ∈ formalLogOnePlusProductArgumentBasicFactorLabelCountChoices q e) :
     formalLogOnePlusProductArgumentChoiceFromMixedLeft q
@@ -190,17 +172,13 @@ theorem formalLogOnePlusProductArgument_from_to_choice
   rcases hprod with ⟨hsupp, hbasic⟩
   ext i a
   by_cases hi : i ∈ Finset.range q
-  · have hb := hbasic i hi
-    by_cases h2 :
+  · by_cases h2 :
         formalLogOnePlusProductArgumentBasicFactorLabel (l i) =
           (2 : Fin 3)
-    · have hmixed :
-          l i = formalLogOnePlusProductArgumentBasicFactorMixed :=
-        (formalLogOnePlusProductArgumentBasicFactorLabel_eq_two_iff_of_basic
-          hb).1 h2
-      simp [formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_mem hi,
+    · simp [formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_mem hi,
         formalLogOnePlusProductArgumentMixedPositions,
-        formalLogOnePlusProductArgumentLeftPositions, hi, hmixed,
+        formalLogOnePlusProductArgumentLeftPositions, hi, ((formalLogOnePlusProductArgumentBasicFactorLabel_eq_two_iff_of_basic
+          (hbasic i hi)).1 h2),
         formalLogOnePlusProductArgumentBasicFactorMixed]
     · by_cases h0 :
         formalLogOnePlusProductArgumentBasicFactorLabel (l i) =
@@ -219,9 +197,9 @@ theorem formalLogOnePlusProductArgument_from_to_choice
           generalize hlabel :
             formalLogOnePlusProductArgumentBasicFactorLabel (l i) = j
           fin_cases j
-          · exact False.elim (h0 hlabel)
+          · omega
           · rfl
-          · exact False.elim (h2 hlabel)
+          · omega
         have hright :
             l i = formalLogOnePlusProductArgumentBasicFactorRight := by
           simpa [formalLogOnePlusProductArgumentBasicFactorRight] using
@@ -230,10 +208,8 @@ theorem formalLogOnePlusProductArgument_from_to_choice
           formalLogOnePlusProductArgumentMixedPositions,
           formalLogOnePlusProductArgumentLeftPositions, hi, hright,
           formalLogOnePlusProductArgumentBasicFactorRight]
-  · have hli : l i = 0 := by
-      exact Finsupp.notMem_support_iff.mp (fun hsup => hi (hsupp hsup))
-    simp [formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_not_mem hi,
-      hli]
+  · have hli := Finsupp.notMem_support_iff.mp (fun hsup => hi (hsupp hsup))
+    simp_all
 
 /--
 Establishes the identity `(⟨formalLogOnePlusProductArgumentMixedPositions q
@@ -242,7 +218,6 @@ formalLogOnePlusProductArgumentLeftPositions q (formalLogOnePlusProductArgumentC
 q P.1 P.2)⟩ : Σ _ : Finset ℕ, Finset ℕ) = P`.
 -/
 theorem formalLogOnePlusProductArgument_to_from_pair
-    {q : ℕ} {e : Fin 2 →₀ ℕ}
     {P : Σ _ : Finset ℕ, Finset ℕ}
     (hP :
       P ∈ formalLogOnePlusProductArgumentMixedLeftChoices q
@@ -252,23 +227,21 @@ theorem formalLogOnePlusProductArgument_to_from_pair
       formalLogOnePlusProductArgumentLeftPositions q
         (formalLogOnePlusProductArgumentChoiceFromMixedLeft q P.1 P.2)⟩ :
       Σ _ : Finset ℕ, Finset ℕ) = P := by
-  rw [formalLogOnePlusProductArgumentMixedLeftChoices, Finset.mem_sigma] at hP
-  rcases P with ⟨M, L⟩
-  rcases hP with ⟨hMmem, hLmem⟩
-  rw [Finset.mem_powersetCard] at hMmem hLmem
-  rcases hMmem with ⟨hMsub, _hMcard⟩
-  rcases hLmem with ⟨hLsub, _hLcard⟩
-  simp [formalLogOnePlusProductArgumentMixedPositions_choiceFromMixedLeft hMsub,
-    formalLogOnePlusProductArgumentLeftPositions_choiceFromMixedLeft hLsub]
+  simp_all [formalLogOnePlusProductArgumentMixedLeftChoices, Finset.mem_sigma, Finset.mem_powersetCard, formalLogOnePlusProductArgumentMixedPositions_choiceFromMixedLeft, formalLogOnePlusProductArgumentLeftPositions_choiceFromMixedLeft]
 
+end
+
+section
+
+variable {q : ℕ} {e : Fin 2 →₀ ℕ} (hleft : e (0 : Fin 2) ≤ q) (hright : e (1 : Fin 2) ≤ q)
+    (hsum : q ≤ e (0 : Fin 2) + e (1 : Fin 2))
+
+include hleft hright hsum in
 /--
 Establishes the identity `(formalLogOnePlusProductArgumentBasicFactorLabelCountChoices q e).card =
 (formalLogOnePlusProductArgumentMixedLeftChoices q (e (0 : Fin 2)) (e (1 : Fin 2))).card`.
 -/
-theorem formalLogOnePlusProductArgumentBasicFactorLabelCountChoices_card_eq_mixedLeftChoices_card
-    {q : ℕ} {e : Fin 2 →₀ ℕ}
-    (hleft : e (0 : Fin 2) ≤ q) (hright : e (1 : Fin 2) ≤ q)
-    (hsum : q ≤ e (0 : Fin 2) + e (1 : Fin 2)) :
+theorem formalLogOnePlusProductArgumentBasicFactorLabelCountChoices_card_eq_mixedLeftChoices_card :
     (formalLogOnePlusProductArgumentBasicFactorLabelCountChoices q e).card =
       (formalLogOnePlusProductArgumentMixedLeftChoices q
         (e (0 : Fin 2)) (e (1 : Fin 2))).card := by
@@ -279,21 +252,14 @@ theorem formalLogOnePlusProductArgumentBasicFactorLabelCountChoices_card_eq_mixe
         Σ _ : Finset ℕ, Finset ℕ))
     (fun P _ => formalLogOnePlusProductArgumentChoiceFromMixedLeft q P.1 P.2)
     ?_ ?_ ?_ ?_
-  · intro l hl
-    exact formalLogOnePlusProductArgument_toMixedLeft_mem hl
-  · intro P hP
-    exact formalLogOnePlusProductArgument_fromMixedLeft_mem
-      hleft hright hsum hP
-  · intro l hl
-    exact formalLogOnePlusProductArgument_from_to_choice hl
-  · intro P hP
-    exact formalLogOnePlusProductArgument_to_from_pair hP
+  · grind [formalLogOnePlusProductArgument_toMixedLeft_mem]
+  · solve_by_elim [formalLogOnePlusProductArgument_fromMixedLeft_mem]
+  · grind [formalLogOnePlusProductArgument_from_to_choice]
+  · grind [formalLogOnePlusProductArgument_to_from_pair]
 
+include hleft hright hsum in
 /-- Under the coordinate bounds, every label-count choice is a valid basic-factor choice. -/
-theorem formalLogOnePlusProductArgumentBasicFactorLabelCountChoices_subset_choices
-    {q : ℕ} {e : Fin 2 →₀ ℕ}
-    (hleft : e (0 : Fin 2) ≤ q) (hright : e (1 : Fin 2) ≤ q)
-    (hsum : q ≤ e (0 : Fin 2) + e (1 : Fin 2)) :
+theorem formalLogOnePlusProductArgumentBasicFactorLabelCountChoices_subset_choices :
     formalLogOnePlusProductArgumentBasicFactorLabelCountChoices q e ⊆
       formalLogOnePlusProductArgumentBasicFactorChoices q e := by
   intro l hl
@@ -303,14 +269,11 @@ theorem formalLogOnePlusProductArgumentBasicFactorLabelCountChoices_subset_choic
   rw [mem_formalLogOnePlusProductArgumentBasicFactorProductChoices] at hprod
   rcases hprod with ⟨hsupp, hbasic⟩
   refine ⟨?_, hbasic⟩
-  rw [Finset.mem_finsuppAntidiag]
+  simp
   refine ⟨?_, hsupp⟩
   ext j
   fin_cases j
   · rw [Finsupp.finsetSum_apply]
-    have hcoord :=
-      formalLogOnePlusProductArgument_leftCoord_sum_eq_choiceCounts
-        (q := q) (l := l) hbasic
     have hleftCount :
         formalLogOnePlusProductArgumentLeftChoiceCount q l =
           q - e (1 : Fin 2) := by
@@ -325,13 +288,11 @@ theorem formalLogOnePlusProductArgumentBasicFactorLabelCountChoices_subset_choic
     have htarget :
         (∑ i ∈ Finset.range q, (l i) (0 : Fin 2)) =
           e (0 : Fin 2) := by
-      rw [hcoord, hleftCount, hmixedCount]
+      rw [(formalLogOnePlusProductArgument_leftCoord_sum_eq_choiceCounts
+        hbasic), hleftCount, hmixedCount]
       omega
     simpa using htarget
   · rw [Finsupp.finsetSum_apply]
-    have hcoord :=
-      formalLogOnePlusProductArgument_rightCoord_sum_eq_choiceCounts
-        (q := q) (l := l) hbasic
     have hrightCount :
         formalLogOnePlusProductArgumentRightChoiceCount q l =
           q - e (0 : Fin 2) := by
@@ -346,19 +307,18 @@ theorem formalLogOnePlusProductArgumentBasicFactorLabelCountChoices_subset_choic
     have htarget :
         (∑ i ∈ Finset.range q, (l i) (1 : Fin 2)) =
           e (1 : Fin 2) := by
-      rw [hcoord, hrightCount, hmixedCount]
+      rw [(formalLogOnePlusProductArgument_rightCoord_sum_eq_choiceCounts
+        hbasic), hrightCount, hmixedCount]
       omega
     simpa using htarget
 
+include hleft hright hsum in
 /--
 Establishes the identity `(formalLogOnePlusProductArgumentBasicFactorChoices q e).card =
 Nat.choose q (e (0 : Fin 2) + e (1 : Fin 2) - q) * Nat.choose (q - (e (0 : Fin 2) + e (1 : Fin 2)
 - q)) (q - e (1 : Fin 2))`.
 -/
-theorem formalLogOnePlusProductArgumentBasicFactorChoices_card_eq_choose_mul_choose
-    {q : ℕ} {e : Fin 2 →₀ ℕ}
-    (hleft : e (0 : Fin 2) ≤ q) (hright : e (1 : Fin 2) ≤ q)
-    (hsum : q ≤ e (0 : Fin 2) + e (1 : Fin 2)) :
+theorem formalLogOnePlusProductArgumentBasicFactorChoices_card_eq_choose_mul_choose :
     (formalLogOnePlusProductArgumentBasicFactorChoices q e).card =
       Nat.choose q (e (0 : Fin 2) + e (1 : Fin 2) - q) *
         Nat.choose
@@ -368,74 +328,34 @@ theorem formalLogOnePlusProductArgumentBasicFactorChoices_card_eq_choose_mul_cho
       formalLogOnePlusProductArgumentBasicFactorChoices q e =
         formalLogOnePlusProductArgumentBasicFactorLabelCountChoices q e := by
     apply Finset.Subset.antisymm
-    · exact
-        formalLogOnePlusProductArgumentBasicFactorChoices_subset_labelCountChoices
-          q e
-    · exact
-        formalLogOnePlusProductArgumentBasicFactorLabelCountChoices_subset_choices
-          hleft hright hsum
+    · apply formalLogOnePlusProductArgumentBasicFactorChoices_subset_labelCountChoices
+    · apply formalLogOnePlusProductArgumentBasicFactorLabelCountChoices_subset_choices <;> assumption
   rw [hEq]
   rw [formalLogOnePlusProductArgumentBasicFactorLabelCountChoices_card_eq_mixedLeftChoices_card
     hleft hright hsum]
   rw [formalLogOnePlusProductArgumentMixedLeftChoices_card]
 
-/-- Proves the bound `e (0 : Fin 2) ≤ q`. -/
-theorem formalLogOnePlusProductArgument_choiceCounts_left_coord_le_q
-    {q : ℕ} {e : Fin 2 →₀ ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
+end
+
+variable {q : ℕ} {e : Fin 2 →₀ ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
     (hl : l ∈ Finset.finsuppAntidiag (Finset.range q) e)
-    (hbasic : ∀ i ∈ Finset.range q,
-      formalLogOnePlusProductArgumentBasicFactor (l i)) :
+    (hbasic : ∀ i ∈ Finset.range q, formalLogOnePlusProductArgumentBasicFactor (l i))
+
+include hl hbasic in
+/-- Proves the bound `e (0 : Fin 2) ≤ q`. -/
+theorem formalLogOnePlusProductArgument_choiceCounts_left_coord_le_q :
     e (0 : Fin 2) ≤ q := by
   rcases formalLogOnePlusProductArgument_choiceCounts_system
       hl hbasic with ⟨hleft, _hright, htotal⟩
-  have hq :
-      q =
-        e (0 : Fin 2) +
-          formalLogOnePlusProductArgumentRightChoiceCount q l := by
-    calc
-      q =
-        formalLogOnePlusProductArgumentLeftChoiceCount q l +
-            formalLogOnePlusProductArgumentRightChoiceCount q l +
-          formalLogOnePlusProductArgumentMixedChoiceCount q l := htotal.symm
-      _ =
-        (formalLogOnePlusProductArgumentLeftChoiceCount q l +
-          formalLogOnePlusProductArgumentMixedChoiceCount q l) +
-            formalLogOnePlusProductArgumentRightChoiceCount q l := by
-        simp only [Nat.add_assoc, Nat.add_left_comm, Nat.add_comm]
-      _ =
-        e (0 : Fin 2) +
-          formalLogOnePlusProductArgumentRightChoiceCount q l := by
-        rw [hleft]
-  exact Nat.le.intro hq.symm
+  omega
 
+include hl hbasic in
 /-- Proves the bound `e (1 : Fin 2) ≤ q`. -/
-theorem formalLogOnePlusProductArgument_choiceCounts_right_coord_le_q
-    {q : ℕ} {e : Fin 2 →₀ ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hl : l ∈ Finset.finsuppAntidiag (Finset.range q) e)
-    (hbasic : ∀ i ∈ Finset.range q,
-      formalLogOnePlusProductArgumentBasicFactor (l i)) :
+theorem formalLogOnePlusProductArgument_choiceCounts_right_coord_le_q :
     e (1 : Fin 2) ≤ q := by
   rcases formalLogOnePlusProductArgument_choiceCounts_system
       hl hbasic with ⟨_hleft, hright, htotal⟩
-  have hq :
-      q =
-        e (1 : Fin 2) +
-          formalLogOnePlusProductArgumentLeftChoiceCount q l := by
-    calc
-      q =
-        formalLogOnePlusProductArgumentLeftChoiceCount q l +
-            formalLogOnePlusProductArgumentRightChoiceCount q l +
-          formalLogOnePlusProductArgumentMixedChoiceCount q l := htotal.symm
-      _ =
-        (formalLogOnePlusProductArgumentRightChoiceCount q l +
-          formalLogOnePlusProductArgumentMixedChoiceCount q l) +
-            formalLogOnePlusProductArgumentLeftChoiceCount q l := by
-        simp only [Nat.add_left_comm, Nat.add_comm]
-      _ =
-        e (1 : Fin 2) +
-          formalLogOnePlusProductArgumentLeftChoiceCount q l := by
-        rw [hright]
-  exact Nat.le.intro hq.symm
+  omega
 
 end MultiplicativeIntegerValuation
 end LocalFieldTheory.DiscreteValuationField

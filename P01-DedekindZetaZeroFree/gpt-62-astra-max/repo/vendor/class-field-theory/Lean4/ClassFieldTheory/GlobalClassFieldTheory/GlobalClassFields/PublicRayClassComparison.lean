@@ -29,27 +29,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -100,11 +79,13 @@ private theorem principalIdele_mem_infinitePositiveSubgroup_iff
   · intro h hv
     simpa only [hcoe] using h
 
+section
+
+variable (K : Type u) [Field K] [NumberField K] (m : RayClassModulus K)
+
 /-- A principal idèle satisfies the existing prime-to-modulus condition
 exactly when its generator satisfies the public ray congruence. -/
-theorem principalIdele_mem_primeTo_iff_isRayCongruent
-    (K : Type u) [Field K] [NumberField K]
-    (m : RayClassModulus K) (x : Kˣ) :
+theorem principalIdele_mem_primeTo_iff_isRayCongruent (x : Kˣ) :
     IdeleGroup.principalIdele K x ∈
         RayClass.idelePrimeToModulusSubgroup
           (rayClassModulusToOriginal K m) ↔
@@ -126,9 +107,6 @@ theorem principalIdele_mem_primeTo_iff_isRayCongruent
         ∀ v, v ∈ m.finitePart.support →
           finitePlaceUnitEmbedding v x ∈
             rayLocalHigherUnitGroup v (m.finitePart v) := by
-    change (∀ v, v ∈ m.finitePart.support →
-      (IdeleGroup.principalIdele K x).2 v ∈
-        RayClass.localHigherUnitGroup v (m.finitePart v)) ↔ _
     constructor
     · intro h v hv
       have h' := h v hv
@@ -140,63 +118,37 @@ theorem principalIdele_mem_primeTo_iff_isRayCongruent
       change (IdeleGroup.principalIdele K x).2 v ∈
         RayClass.localHigherUnitGroup v (m.finitePart v) at h'
       exact h'
-  change ((IdeleGroup.principalIdele K x).1 ∈
-      (rayClassModulusToOriginal K m).infiniteCongruenceSubgroup ∧
-      (IdeleGroup.principalIdele K x).2 ∈
-        RayClass.finitePrimeToModulusSubgroup
-          (rayClassModulusToOriginal K m)) ↔ _
   exact ⟨fun h => ⟨hfinite.mp h.2, hinfinite.mp h.1⟩,
     fun h => ⟨hinfinite.mpr h.2, hfinite.mpr h.1⟩⟩
 
-/-- At narrow modulus zero, the older idele-theoretic prime-to condition on
-a principal idele agrees with the public generator congruence. -/
-theorem principalIdele_mem_narrowPrimeTo_iff_isRayCongruent
-    (K : Type u) [Field K] [NumberField K] (x : Kˣ) :
-    IdeleGroup.principalIdele K x ∈
-        RayClass.idelePrimeToModulusSubgroup
-          (RayClass.Modulus.narrowOfFinite (0 : RayClass.FiniteModulus K)) ↔
-      IsRayCongruent (narrowRayClassModulus K) x := by
-  change IdeleGroup.principalIdele K x ∈
-      RayClass.idelePrimeToModulusSubgroup
-        (rayClassModulusToOriginal K (narrowRayClassModulus K)) ↔
-      IsRayCongruent (narrowRayClassModulus K) x
-  exact principalIdele_mem_primeTo_iff_isRayCongruent K
-    (narrowRayClassModulus K) x
-
 /-- The public ray-principal subgroup equals the existing ideal-theoretic
 ray-principal subgroup for every finite and infinite modulus. -/
-theorem rayPrincipalIdealSubgroup_eq
-    (K : Type u) [Field K] [NumberField K]
-    (m : RayClassModulus K) :
+theorem rayPrincipalIdealSubgroup_eq :
     rayPrincipalIdealSubgroupInPrimeTo m =
       RayClass.principalRayIdealSubgroup
         (rayClassModulusToOriginal K m) := by
   classical
   let m' := rayClassModulusToOriginal K m
   let P := rayClassPrimeToIdeals m
-  let T : Subgroup (NumberFieldFractionalIdealGroup K) :=
+  let T :=
     Subgroup.map P.subtype (RayClass.principalRayIdealSubgroup m')
   have hCarrier :
       {I : NumberFieldFractionalIdealGroup K |
         ∃ x : Kˣ,
           IsRayCongruent m x ∧
-            toPrincipalIdeal (𝓞 K) K x = I} = (T : Set _) := by
+            toPrincipalIdeal (𝓞 K) K x = I} = T := by
     ext I
     constructor
     · rintro ⟨x, hx, hIx⟩
-      have hi : IdeleGroup.principalIdele K x ∈
-          RayClass.idelePrimeToModulusSubgroup m' :=
+      have hi :=
         (principalIdele_mem_primeTo_iff_isRayCongruent K m x).2 hx
       have hI : I ∈ P := by
-        change I ∈ RayClass.primeToModulusIdeals m'
         rw [← hIx, ← IdeleGroup.fractionalIdeal_principalIdele]
         exact RayClass.fractionalIdeal_mem_primeToModulusIdeals
           m' (IdeleGroup.principalIdele K x) hi
       let J : P := ⟨I, hI⟩
-      have hJ : J ∈ RayClass.principalRayIdealSubgroup m' :=
-        (RayClass.mem_principalRayIdealSubgroup_iff m' J).2
-          ⟨x, hi, hIx⟩
-      exact ⟨J, hJ, rfl⟩
+      exact ⟨J, ((RayClass.mem_principalRayIdealSubgroup_iff m' J).2
+        ⟨x, hi, hIx⟩), rfl⟩
     · rintro ⟨J, hJ, hIJ⟩
       obtain ⟨x, hx, hEq⟩ :=
         (RayClass.mem_principalRayIdealSubgroup_iff m' J).1 hJ
@@ -214,46 +166,26 @@ theorem rayPrincipalIdealSubgroup_eq
   rw [hUnrestricted]
   constructor
   · rintro ⟨J, hJ, hIJ⟩
-    have hJI : J = I := Subtype.ext hIJ
-    exact hJI ▸ hJ
+    exact (Subtype.ext hIJ) ▸ hJ
   · intro hI
     exact ⟨I, hI, rfl⟩
 
-/-- The zero-finite-part narrow case of the general principal-ideal
-comparison. -/
-theorem narrowRayPrincipalIdealSubgroup_eq
-    (K : Type u) [Field K] [NumberField K] :
-    rayPrincipalIdealSubgroupInPrimeTo (narrowRayClassModulus K) =
-      RayClass.principalRayIdealSubgroup
-        (RayClass.Modulus.narrowOfFinite (0 : RayClass.FiniteModulus K)) := by
-  change rayPrincipalIdealSubgroupInPrimeTo (narrowRayClassModulus K) =
-    RayClass.principalRayIdealSubgroup
-      (rayClassModulusToOriginal K (narrowRayClassModulus K))
-  exact rayPrincipalIdealSubgroup_eq K (narrowRayClassModulus K)
-
 /-- The public ideal-theoretic ray class group is the existing ideal ray
 class group for the same modulus. -/
-noncomputable def rayClassGroupEquivOriginal
-    (K : Type u) [Field K] [NumberField K]
-    (m : RayClassModulus K) :
+noncomputable def rayClassGroupEquivOriginal :
     RayClassGroup m ≃*
       RayClass.IdealRayClassGroup (rayClassModulusToOriginal K m) := by
   let G := RayClass.primeToModulusIdeals (rayClassModulusToOriginal K m)
-  let M : Subgroup G := rayPrincipalIdealSubgroupInPrimeTo m
-  let N : Subgroup G :=
+  let M := rayPrincipalIdealSubgroupInPrimeTo m
+  let N :=
     RayClass.principalRayIdealSubgroup (rayClassModulusToOriginal K m)
-  have hMN : M = N := rayPrincipalIdealSubgroup_eq K m
   let hComm : IsMulCommutative G :=
     IsMulCommutative.of_comm (fun a b => Subtype.ext (mul_comm a.1 b.1))
-  have hM : M.Normal := @Subgroup.normal_of_isMulCommutative G _ hComm M
-  have hN : N.Normal := @Subgroup.normal_of_isMulCommutative G _ hComm N
-  exact @QuotientGroup.quotientMulEquivOfEq G _ M N hM hN hMN
+  exact @QuotientGroup.quotientMulEquivOfEq G _ M N (@Subgroup.normal_of_isMulCommutative G _ hComm M) (@Subgroup.normal_of_isMulCommutative G _ hComm N) (rayPrincipalIdealSubgroup_eq K m)
 
 /-- The comparison preserves the class of each prime away from the
 modulus. -/
 theorem rayClassGroupEquivOriginal_prime
-    (K : Type u) [Field K] [NumberField K]
-    (m : RayClassModulus K)
     (v : HeightOneSpectrum (𝓞 K))
     (hv : v ∉ m.finitePart.support) :
     rayClassGroupEquivOriginal K m (rayClassOfFinitePrime m v hv) =
@@ -262,31 +194,17 @@ theorem rayClassGroupEquivOriginal_prime
         (RayClass.primeToModulusIdeal
           (rayClassModulusToOriginal K m) v hv) := by
   let G := RayClass.primeToModulusIdeals (rayClassModulusToOriginal K m)
-  let M : Subgroup G := rayPrincipalIdealSubgroupInPrimeTo m
-  let N : Subgroup G :=
+  let M := rayPrincipalIdealSubgroupInPrimeTo m
+  let N :=
     RayClass.principalRayIdealSubgroup (rayClassModulusToOriginal K m)
-  have hMN : M = N := rayPrincipalIdealSubgroup_eq K m
   let hComm : IsMulCommutative G :=
     IsMulCommutative.of_comm (fun a b => Subtype.ext (mul_comm a.1 b.1))
-  have hM : M.Normal := @Subgroup.normal_of_isMulCommutative G _ hComm M
-  have hN : N.Normal := @Subgroup.normal_of_isMulCommutative G _ hComm N
-  change (@QuotientGroup.quotientMulEquivOfEq G _ M N hM hN hMN)
-      (QuotientGroup.mk' M
-        (⟨finitePrimeFractionalIdeal v, by
-          intro w hw
-          exact FractionalIdeal.count_maximal_coprime K w
-            (fun h => (h ▸ hv) hw)⟩ : G)) =
-      QuotientGroup.mk' N
-        (RayClass.primeToModulusIdeal
-          (rayClassModulusToOriginal K m) v hv)
   rfl
 
 /-- Compare the public ideal ray class group directly with the original
 idèle-class ray class group.  This is the composite of the ideal comparison
 above and the original idelic-to-ideal equivalence. -/
-noncomputable def rayClassGroupEquivOriginalIdele
-    (K : Type u) [Field K] [NumberField K]
-    (m : RayClassModulus K) :
+noncomputable def rayClassGroupEquivOriginalIdele :
     RayClassGroup m ≃*
       RayClass.RayClassGroup (rayClassModulusToOriginal K m) :=
   (rayClassGroupEquivOriginal K m).trans
@@ -296,8 +214,6 @@ noncomputable def rayClassGroupEquivOriginalIdele
 /-- A public prime ray class corresponds to the original normalized prime
 idèle class, with the same finite and infinite modulus. -/
 theorem rayClassGroupEquivOriginalIdele_prime
-    (K : Type u) [Field K] [NumberField K]
-    (m : RayClassModulus K)
     (v : HeightOneSpectrum (𝓞 K))
     (hv : v ∉ m.finitePart.support) :
     rayClassGroupEquivOriginalIdele K m (rayClassOfFinitePrime m v hv) =
@@ -306,7 +222,7 @@ theorem rayClassGroupEquivOriginalIdele_prime
         (QuotientGroup.mk' (IdeleGroup.principalSubgroup K)
           (IdeleGroup.finitePrimeIdele v)) := by
   let m' := rayClassModulusToOriginal K m
-  have hv' : v ∉ m'.finitePart.support := hv
+  have hv' := hv
   let a : RayClass.idelePrimeToModulusSubgroup m' :=
     ⟨IdeleGroup.finitePrimeIdele v,
       GlobalClassFieldTheory.GlobalClassFields.finitePrimeIdele_mem_idelePrimeToModulusSubgroup
@@ -314,54 +230,22 @@ theorem rayClassGroupEquivOriginalIdele_prime
   let e := RayClass.rayClassGroupEquivIdealRayClassGroup m'
   apply e.injective
   calc
-    e (rayClassGroupEquivOriginalIdele K m (rayClassOfFinitePrime m v hv)) =
+    _ =
         rayClassGroupEquivOriginal K m (rayClassOfFinitePrime m v hv) := by
-      change e (e.symm (rayClassGroupEquivOriginal K m
-        (rayClassOfFinitePrime m v hv))) = _
       exact e.apply_symm_apply _
     _ = QuotientGroup.mk'
           (RayClass.principalRayIdealSubgroup m')
           (RayClass.primeToModulusIdeal m' v hv) :=
       rayClassGroupEquivOriginal_prime K m v hv
     _ = RayClass.idealRayProjection m' a := by
-      change QuotientGroup.mk'
-          (RayClass.principalRayIdealSubgroup m')
-          (RayClass.primeToModulusIdeal m' v hv') =
-        RayClass.idealRayProjection m'
-          ⟨IdeleGroup.finitePrimeIdele v,
-            GlobalClassFieldTheory.GlobalClassFields.finitePrimeIdele_mem_idelePrimeToModulusSubgroup
-              m' v hv'⟩
       exact (GlobalClassFieldTheory.GlobalClassFields.idealRayProjection_finitePrimeIdele
         m' v hv').symm
     _ = e (QuotientGroup.mk'
           (RayClass.Modulus.congruenceSubgroup m')
-          (QuotientGroup.mk' (IdeleGroup.principalSubgroup K) (a : IdeleGroup K))) := by
-      exact (GlobalClassFieldTheory.GlobalClassFields.rayClassGroupEquivIdealRayClassGroup_mk_primeTo
+          (QuotientGroup.mk' (IdeleGroup.principalSubgroup K) a)) := (GlobalClassFieldTheory.GlobalClassFields.rayClassGroupEquivIdealRayClassGroup_mk_primeTo
         m' a).symm
 
-/-- The public ideal-theoretic narrow ray class group agrees with the
-existing narrow class group used by global class field theory. -/
-noncomputable def narrowRayClassGroupEquivNarrowClassGroup
-    (K : Type) [Field K] [NumberField K] :
-    RayClassGroup (narrowRayClassModulus K) ≃*
-      RayClass.NarrowClassGroup K := by
-  let m : RayClass.Modulus K := RayClass.Modulus.narrowOfFinite 0
-  let e₀ : RayClassGroup (narrowRayClassModulus K) ≃*
-      RayClass.IdealRayClassGroup m := by
-    exact rayClassGroupEquivOriginal K (narrowRayClassModulus K)
-  exact e₀.trans
-    ((RayClass.rayClassGroupEquivIdealRayClassGroup m).symm.trans
-      (RayClass.rayClassGroupNarrowZeroEquivNarrowClassGroup (K := K)))
-
-/-- The norm subgroup of the selected ray class field is the ray
-congruence subgroup. -/
-theorem rayClassField_normSubgroup
-    (K : Type) [Field K] [NumberField K]
-    (m : RayClass.Modulus K) :
-    (_root_.ideleClassNorm K
-      (GlobalClassFieldTheory.GlobalClassFields.rayClassField K m)).range =
-      RayClass.Modulus.congruenceSubgroup m :=
-  GlobalClassFieldTheory.GlobalClassFields.rayClassField_ideleClassNorm_range_over_original m
+end
 
 /-- Any finite abelian extension whose norm group contains the ray
 congruence subgroup is unramified outside that modulus. -/
@@ -419,56 +303,6 @@ theorem unramifiedOutsideModulus_of_definingModulus
       exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hram⟩
     exact hnot (hinfinite hvcond)
 
-/-- The selected ray class field is unramified away from the finite and real
-places selected by the public modulus. -/
-theorem rayClassField_unramifiedOutsideModulus
-    (K : Type) [Field K] [NumberField K]
-    (m : RayClassModulus K) :
-    IsUnramifiedOutsideModulus K
-      (GlobalClassFieldTheory.GlobalClassFields.rayClassField K
-        (rayClassModulusToOriginal K m)) m := by
-  let m' := rayClassModulusToOriginal K m
-  let E := GlobalClassFieldTheory.GlobalClassFields.rayClassField K m'
-  have hnorm : (_root_.ideleClassNorm K E).range = m'.congruenceSubgroup :=
-    GlobalClassFieldTheory.GlobalClassFields.rayClassField_ideleClassNorm_range_over_original m'
-  exact unramifiedOutsideModulus_of_definingModulus K E m (le_of_eq hnorm.symm)
-
-/-- Ray class reciprocity identifies the Galois group of the selected ray
-class field with the corresponding ray class group. -/
-theorem rayClassField_reciprocity
-    (K : Type) [Field K] [NumberField K]
-    (m : RayClass.Modulus K) :
-    Nonempty
-      ((GlobalClassFieldTheory.GlobalClassFields.rayClassField K m ≃ₐ[K]
-          GlobalClassFieldTheory.GlobalClassFields.rayClassField K m) ≃*
-        RayClass.RayClassGroup m) :=
-  ⟨GlobalClassFieldTheory.GlobalClassFields.rayClassFieldGaloisEquivRayClassGroup m⟩
-
-/-- The selected ray class field has degree equal to the order of its ray
-class group. -/
-theorem rayClassField_degree
-    (K : Type) [Field K] [NumberField K]
-    (m : RayClass.Modulus K) :
-    Module.finrank K
-        (GlobalClassFieldTheory.GlobalClassFields.rayClassField K m) =
-      Nat.card (RayClass.RayClassGroup m) :=
-  GlobalClassFieldTheory.GlobalClassFields.rayClassField_finrank_eq_rayClassGroup_card m
-
-/-- The full conductor is the least modulus whose ray class field contains
-the given finite abelian extension. -/
-theorem embedsInRayClassField_iff_conductor_le
-    {K : Type} [Field K] [NumberField K]
-    (L : Type) [Field L] [NumberField L]
-    [Algebra K L] [FiniteDimensional K L]
-    [IsAbelianGalois K L]
-    (m : RayClass.Modulus K) :
-    Nonempty
-        (L →ₐ[K]
-          GlobalClassFieldTheory.GlobalClassFields.rayClassField K m) ↔
-      (GlobalClassFieldTheory.GlobalClassFields.ideleClassNormConductorialSubgroup
-          (K := K) (L := L)).fullConductor ≤ m :=
-  GlobalClassFieldTheory.GlobalClassFields.nonempty_algHom_to_rayClassField_iff_fullConductor_le L m
-
 /-- Build the public Frobenius-normalized realization attached to a ray-class subgroup. -/
 theorem rayClassSubgroup_existence
     (K : Type) [Field K] [NumberField K]
@@ -476,17 +310,17 @@ theorem rayClassSubgroup_existence
     Nonempty (RayClassSubgroupRealization K m H) := by
   let m' := rayClassModulusToOriginal K m
   let e := rayClassGroupEquivOriginalIdele K m
-  let H' : Subgroup (RayClass.RayClassGroup m') := H.map e.toMonoidHom
+  let H' := H.map e.toMonoidHom
   let E :=
     GlobalClassFieldTheory.GlobalClassFields.rayClassSubgroupSubextension
-      (K := K) m' H'
-  let artin : RayClassGroup m →* (E ≃ₐ[K] E) :=
+       m' H'
+  let artin :=
     (GlobalClassFieldTheory.GlobalClassFields.rayClassSubgroupArtin
-      (K := K) m' H').comp e.toMonoidHom
-  let hram : IsUnramifiedOutsideModulus K E m :=
+       m' H').comp e.toMonoidHom
+  let hram :=
     unramifiedOutsideModulus_of_definingModulus K E m
       (GlobalClassFieldTheory.GlobalClassFields.rayClassSubgroupSubextension_norm_range
-        (K := K) m' H')
+         m' H')
   refine ⟨{
     extension := E
     unramifiedOutsideModulus := hram
@@ -497,11 +331,11 @@ theorem rayClassSubgroup_existence
   }⟩
   · exact
       (GlobalClassFieldTheory.GlobalClassFields.rayClassSubgroupArtin_surjective
-        (K := K) m' H').comp e.surjective
+         m' H').comp e.surjective
   · ext x
     change e x ∈
       (GlobalClassFieldTheory.GlobalClassFields.rayClassSubgroupArtin
-        (K := K) m' H').ker ↔ x ∈ H
+         m' H').ker ↔ x ∈ H
     rw [GlobalClassFieldTheory.GlobalClassFields.rayClassSubgroupArtin_ker]
     constructor
     · rintro ⟨y, hy, hxy⟩
@@ -510,23 +344,23 @@ theorem rayClassSubgroup_existence
       exact ⟨x, hx, rfl⟩
   · intro v hv w hw
     calc
-      artin (rayClassOfFinitePrime m v hv) =
+      _ =
           GlobalClassFieldTheory.GlobalClassFields.rayClassSubgroupArtin
-            (K := K) m' H'
+             m' H'
             (QuotientGroup.mk' m'.congruenceSubgroup
               (QuotientGroup.mk' (IdeleGroup.principalSubgroup K)
                 (IdeleGroup.finitePrimeIdele v))) := by
         change GlobalClassFieldTheory.GlobalClassFields.rayClassSubgroupArtin
-          (K := K) m' H'
+           m' H'
           (e (rayClassOfFinitePrime m v hv)) = _
         rw [rayClassGroupEquivOriginalIdele_prime K m v hv]
       _ = GlobalClassFieldTheory.GlobalClassFields.arithmeticFinitePlacePrimeArtin
-            (K := K) (L := E) v :=
+              v :=
         GlobalClassFieldTheory.GlobalClassFields.rayClassSubgroupArtin_finitePrimeIdele
-          (K := K) m' H' v
-      _ = arithmeticFrobeniusAt (K := K) w :=
+           m' H' v
+      _ = arithmeticFrobeniusAt w :=
         arithmeticPrimeArtin_eq_arithmeticFrobeniusAt
-          (K := K) (L := E) v w hw (hram.1 v hv w.asIdeal inferInstance hw)
+            v w hw (hram.1 v hv w.asIdeal inferInstance hw)
 
 end ClassFieldTheory.GlobalClassFieldComparison
 
@@ -548,88 +382,55 @@ theorem normFullConductor_isAbelianConductor
             (K := K) (L := L)).fullConductor.infinitePart } := by
   let H := GlobalClassFieldTheory.GlobalClassFields.ideleClassNormConductorialSubgroup
     (K := K) (L := L)
-  let c : RayClassModulus K :=
-    { finitePart := H.fullConductor.finitePart
-      infinitePart := H.fullConductor.infinitePart }
   intro m
   let m' := GlobalClassFieldComparison.rayClassModulusToOriginal K m
   have hnorm (R : RayClassFieldRealization K m) :
       (_root_.ideleClassNorm K R.extension).range = m'.congruenceSubgroup := by
     let E := R.extension
-    let r : RayClassGroup m ≃* (E ≃ₐ[K] E) := R.artinEquiv
-    let e : RayClass.RayClassGroup m' ≃* (E ≃ₐ[K] E) :=
-      (GlobalClassFieldComparison.rayClassGroupEquivOriginalIdele K m).symm.trans r
+    let e :=
+      (GlobalClassFieldComparison.rayClassGroupEquivOriginalIdele K m).symm.trans R.artinEquiv
     apply GlobalClassFieldTheory.GlobalClassFields.rayModulus_normSubgroup_eq_of_arithmeticPrimeArtinEquiv
       m' e
     intro v hv
-    have hvm : v ∉ m.finitePart.support := hv
+    have hvm := hv
     let w₀ := _root_.chosenFinitePlaceExtension (L := E) v
-    let w := _root_.finitePlaceExtensionCentre (K := K) (L := E) v w₀
-    have hw : w.asIdeal.LiesOver v.asIdeal :=
-      _root_.finitePlaceExtensionCentre_liesOver (K := K) (L := E) v w₀
-    have hunram : Algebra.IsUnramifiedAt (𝓞 K) w.asIdeal :=
-      (R.unramifiedOutsideModulus.1 v hvm) w.asIdeal inferInstance hw
+    let w := _root_.finitePlaceExtensionCentre v w₀
+    have hw :=
+      _root_.finitePlaceExtensionCentre_liesOver v w₀
     calc
-      e (QuotientGroup.mk' m'.congruenceSubgroup
-          (QuotientGroup.mk' (IdeleGroup.principalSubgroup K)
-            (IdeleGroup.finitePrimeIdele v))) =
+      _ =
           R.artinEquiv (rayClassOfFinitePrime m v hvm) := by
-        change R.artinEquiv
-          ((GlobalClassFieldComparison.rayClassGroupEquivOriginalIdele K m).symm
-            (QuotientGroup.mk' m'.congruenceSubgroup
-              (QuotientGroup.mk' (IdeleGroup.principalSubgroup K)
-                (IdeleGroup.finitePrimeIdele v)))) = _
         rw [← GlobalClassFieldComparison.rayClassGroupEquivOriginalIdele_prime K m v hvm]
         exact congrArg R.artinEquiv
           ((GlobalClassFieldComparison.rayClassGroupEquivOriginalIdele K m).symm_apply_apply _)
-      _ = arithmeticFrobeniusAt (K := K) w :=
+      _ = arithmeticFrobeniusAt w :=
         R.artin_frobenius v hvm w hw
       _ = GlobalClassFieldTheory.GlobalClassFields.arithmeticFinitePlacePrimeArtin
-            (K := K) (L := E) v :=
+              v :=
         (GlobalClassFieldComparison.arithmeticPrimeArtin_eq_arithmeticFrobeniusAt
-          (K := K) (L := E) v w hw hunram).symm
-  change EmbedsInRayClassField K L m ↔ c ≤ m
+            v w hw ((R.unramifiedOutsideModulus.1 v hvm) w.asIdeal inferInstance hw)).symm
   constructor
   · rintro ⟨R, ⟨f⟩⟩
-    have hR := hnorm R
-    have hnormLE :
-        (_root_.ideleClassNorm K R.extension).range ≤
-          (_root_.ideleClassNorm K L).range :=
-      GlobalClassFieldTheory.GlobalClassFields.ideleClassNorm_range_le_of_algHom
-        (K := K) L R.extension f
     have hdef : m'.congruenceSubgroup ≤
         (_root_.ideleClassNorm K L).range := by
-      rw [← hR]
-      exact hnormLE
+      rw [← (hnorm R)]
+      exact (GlobalClassFieldTheory.GlobalClassFields.ideleClassNorm_range_le_of_algHom
+        L R.extension f)
     have hc : H.fullConductor ≤ m' :=
       (H.isDefiningModulus_iff_fullConductor_le m').mp hdef
     exact hc
   · intro hc
     obtain ⟨S⟩ := GlobalClassFieldComparison.rayClassSubgroup_existence K m ⊥
-    have hinj : Function.Injective S.artin :=
-      (MonoidHom.ker_eq_bot_iff S.artin).mp S.artin_ker
-    let e : RayClassGroup m ≃* (S.extension ≃ₐ[K] S.extension) :=
-      MulEquiv.ofBijective S.artin ⟨hinj, S.artin_surjective⟩
     let R : RayClassFieldRealization K m :=
       { extension := S.extension
         unramifiedOutsideModulus := S.unramifiedOutsideModulus
-        artinEquiv := e
-        artin_frobenius := by
-          intro v hv w hlie
-          exact S.artin_frobenius v hv w hlie }
-    have hR := hnorm R
-    have hc' : H.fullConductor ≤ m' := hc
-    have hdef : m'.congruenceSubgroup ≤
-        (_root_.ideleClassNorm K L).range :=
-      (H.isDefiningModulus_iff_fullConductor_le m').mpr hc'
-    have hnormLE :
-        (_root_.ideleClassNorm K R.extension).range ≤
-          (_root_.ideleClassNorm K L).range := by
-      rw [hR]
-      exact hdef
-    exact ⟨R,
+        artinEquiv := (MulEquiv.ofBijective S.artin ⟨((MonoidHom.ker_eq_bot_iff S.artin).mp S.artin_ker), S.artin_surjective⟩)
+        artin_frobenius := fun v hv w hlie => S.artin_frobenius v hv w hlie}
+    refine ⟨R,
       GlobalClassFieldTheory.GlobalClassFields.finiteAbelianExtension_nonempty_algHom_of_normRange_le
-        (K := K) L R.extension hnormLE⟩
+         L R.extension ?_⟩
+    rw [(hnorm R)]
+    exact ((H.isDefiningModulus_iff_fullConductor_le m').mpr hc)
 
 end ClassFieldTheory
 

@@ -66,7 +66,12 @@ lemma idealInverseNormPower_of_ne_zero (s : ℂ) {I : Ideal (𝓞 K)}
   unfold idealInverseNormPower
   simp_all
 
-theorem summable_norm_idealInverseNormPower {s : ℂ} (hs : 1 < s.re) :
+section
+
+variable {s : ℂ} (hs : 1 < s.re)
+
+include hs in
+theorem summable_norm_idealInverseNormPower :
     Summable (fun I : Ideal (𝓞 K) ↦ ‖idealInverseNormPower K s I‖) := by
   apply (summable_ideal_absNorm_rpow K hs).congr
   intro I
@@ -80,9 +85,12 @@ theorem summable_norm_idealInverseNormPower {s : ℂ} (hs : 1 < s.re) :
     exact Nat.pos_of_ne_zero (by
       simpa [Ideal.absNorm_eq_zero_iff] using hI)
 
-theorem summable_idealInverseNormPower {s : ℂ} (hs : 1 < s.re) :
+include hs in
+theorem summable_idealInverseNormPower :
     Summable (idealInverseNormPower K s) :=
   (summable_norm_idealInverseNormPower K hs).of_norm
+
+end
 
 lemma hasSum_idealInverseNormPower_fiber (s : ℂ) (n : ℕ) :
     HasSum
@@ -91,10 +99,9 @@ lemma hasSum_idealInverseNormPower_fiber (s : ℂ) (n : ℕ) :
       (dedekindZetaSummand K s n) := by
   let : Fintype {I : Ideal (𝓞 K) // absNorm I = n} :=
     (Ideal.finite_setOfPred_absNorm_eq n).fintype
-  have hf := hasSum_fintype
+  convert (hasSum_fintype
     (fun I : {I : Ideal (𝓞 K) // absNorm I = n} ↦
-      idealInverseNormPower K s I)
-  convert hf using 1
+      idealInverseNormPower K s I)) using 1
   by_cases hn : n = 0
   · subst n
     rw [dedekindZetaSummand_zero]
@@ -127,13 +134,14 @@ private lemma summable_idealInverseNormPower_fiber (s : ℂ) (n : ℕ) :
     (Ideal.finite_setOfPred_absNorm_eq n).fintype
   exact Summable.of_finite
 
-theorem hasSum_idealInverseNormPower {s : ℂ} (hs : 1 < s.re) :
+variable {s : ℂ} (hs : 1 < s.re)
+
+include hs in
+theorem hasSum_idealInverseNormPower :
     HasSum (idealInverseNormPower K s) (NumberField.dedekindZeta K s) := by
   let e := Equiv.sigmaFiberEquiv (absNorm : Ideal (𝓞 K) → ℕ)
   apply e.hasSum_iff.mp
-  have hsum :
-      Summable (fun x : Σ n, {I : Ideal (𝓞 K) // absNorm I = n} ↦
-        idealInverseNormPower K s x.2) :=
+  have hsum :=
     (summable_idealInverseNormPower K hs).comp_injective e.injective
   have heq :
       (∑' x : Σ n, {I : Ideal (𝓞 K) // absNorm I = n},
@@ -155,7 +163,8 @@ theorem hasSum_idealInverseNormPower {s : ℂ} (hs : 1 < s.re) :
         (hasSum_dedekindZeta K hs).tsum_eq
   exact heq ▸ hsum.hasSum
 
-theorem hasSum_nonzeroIdeal_inverseNormPower {s : ℂ} (hs : 1 < s.re) :
+include hs in
+theorem hasSum_nonzeroIdeal_inverseNormPower :
     HasSum
       (fun I : NonzeroIdeal K ↦
         ((absNorm (I : Ideal (𝓞 K)) : ℂ) ^ (-s)))
@@ -165,7 +174,7 @@ theorem hasSum_nonzeroIdeal_inverseNormPower {s : ℂ} (hs : 1 < s.re) :
     ((absNorm (I : Ideal (𝓞 K)) : ℂ) ^ (-s))
   have hext :
       idealInverseNormPower K s =
-        Function.extend (Subtype.val : NonzeroIdeal K → Ideal (𝓞 K)) f 0 := by
+        Function.extend Subtype.val f 0 := by
     funext I
     by_cases hI : I = 0
     · subst I

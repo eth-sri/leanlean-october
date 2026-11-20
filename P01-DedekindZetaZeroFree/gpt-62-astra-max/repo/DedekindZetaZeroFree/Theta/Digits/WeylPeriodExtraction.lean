@@ -12,8 +12,8 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open scoped Classical NumberField
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
  theorem localIdele_one : localIdele R (1 : R.A.G) = 1 := by
   simp [MomentSources.localIdele, KPRationalAdelicSplitting.localIdele]
@@ -51,7 +51,7 @@ theorem reverse_digit_extracted {N : TraceHaarTransport R} (C : JointUpperVanish
         (QuotientGroup.mk' R.A.sixthPowers y⁻¹) : Fˣ) : F) ^ 2)⁻¹ *
       fourier R C.sources.dq (C.realization.theta v)
         (diagonal R (R.A.diagonal x / y) * KPRationalAdelicSplitting.pglW F R.A.zeta12 R.A.primitive_zeta12) := by
-  rw [(reverseTuple_period R C v x y m d).2, sReverseTuple_period, reverse_s_period, mul_assoc]
+  rw [(reverseTuple_period R C v x y m d), sReverseTuple_period, reverse_s_period, mul_assoc]
 
 end DedekindZetaZeroFree.OrbitExpansion
 

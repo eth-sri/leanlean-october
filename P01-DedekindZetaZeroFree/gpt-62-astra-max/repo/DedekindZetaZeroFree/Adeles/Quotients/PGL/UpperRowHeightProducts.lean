@@ -12,7 +12,6 @@ namespace DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm
 private theorem bottom_mul {K : Type*} [CommRing K]
     (B C : GL (Fin 2) K) (h10 : B 1 0 = 0) (j : Fin 2) :
     (B * C) 1 j = B 1 1 * C 1 j := by
-  change (B.val * C.val) 1 j = _
   simp [Matrix.mul_apply, Fin.sum_univ_two, h10]
 
 private theorem max_row_mul {K : Type*} [NormedField K]
@@ -42,8 +41,12 @@ private theorem euclidean_row_mul {K : Type*} [NormedField K]
 
 variable (F : Type) [Field F] [NumberField F]
 
-theorem finiteFactor_upper_mul (B C : KPChamberHeight.AdelGL F)
-    (h10 : B 1 0 = 0)
+section
+
+variable (B C : KPChamberHeight.AdelGL F) (h10 : B 1 0 = 0)
+
+include h10 in
+theorem finiteFactor_upper_mul
     (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)) :
     KPChamberHeight.finiteFactor F ![0, 1] (B * C) v =
       KPChamberHeight.finiteFactor F ![0, 1] B v *
@@ -56,8 +59,8 @@ theorem finiteFactor_upper_mul (B C : KPChamberHeight.AdelGL F)
   simpa [KPChamberHeight.finiteFactor, KPChamberHeight.rowAction,
     Fin.sum_univ_two, map_mul, Bv, Cv, h10] using max_row_mul Bv Cv hv
 
-theorem infiniteFactor_upper_mul (B C : KPChamberHeight.AdelGL F)
-    (h10 : B 1 0 = 0) (v : NumberField.InfinitePlace F) :
+include h10 in
+theorem infiniteFactor_upper_mul (v : NumberField.InfinitePlace F) :
     KPChamberHeight.infiniteFactor F ![0, 1] (B * C) v =
       KPChamberHeight.infiniteFactor F ![0, 1] B v *
         KPChamberHeight.infiniteFactor F ![0, 1] C v := by
@@ -83,8 +86,8 @@ theorem infiniteFactor_upper_mul (B C : KPChamberHeight.AdelGL F)
   rw [hv, norm_zero, zero_pow (by decide : 2 ≠ 0), zero_add,
     Real.sqrt_sq (norm_nonneg _), euclidean_row_mul Bv Cv hv, mul_pow]
 
-theorem rowHeight_upper_mul (B C : KPChamberHeight.AdelGL F)
-    (h10 : B 1 0 = 0) :
+include h10 in
+theorem rowHeight_upper_mul :
     KPChamberHeight.rowHeight F ![0, 1] (B * C) =
       KPChamberHeight.rowHeight F ![0, 1] B *
         KPChamberHeight.rowHeight F ![0, 1] C := by
@@ -101,6 +104,8 @@ theorem rowHeight_upper_mul (B C : KPChamberHeight.AdelGL F)
   rw [Finset.prod_mul_distrib, finprod_mul_distrib (hf B) (hf C)]
   ring
 
+end
+
 theorem rowHeight_upper_compact_bounds
     (S : Set (KPChamberHeight.AdelPGL F)) (hS : IsCompact S) :
     ∃ m M : ℝ, 0 < m ∧ m ≤ M ∧
@@ -114,15 +119,15 @@ theorem rowHeight_upper_compact_bounds
     intro h
     have := congrFun h 1
     simpa using this
-  let ℓ : KPChamberHeight.Line F := Projectivization.mk F ![0, 1] hr
+  let ℓ := Projectivization.mk F ![0, 1] hr
   obtain ⟨m, M, hm, hmM, hb⟩ := KPChamberHeight.compact_uniform_height F S hS
   let z := KPChamberHeight.height F ℓ 1
-  have hz : 0 < z := KPChamberHeight.height_pos F ℓ 1
+  have hz := KPChamberHeight.height_pos F ℓ 1
   refine ⟨m * z, M * z, mul_pos hm hz, mul_le_mul_of_nonneg_right hmM hz.le, ?_⟩
   intro B C h10 hC
   obtain ⟨hl, hu⟩ := hb ℓ (ProjGenLinGroup.mk C) hC
   rw [KPChamberHeight.height_mk F ![0, 1] hr C] at hl hu
-  have hB : 0 ≤ KPChamberHeight.rowHeight F ![0, 1] B :=
+  have hB :=
     (KPChamberHeight.rowHeight_pos F ![0, 1] hr B).le
   rw [rowHeight_upper_mul F B C h10]
   constructor

@@ -32,22 +32,26 @@ def mixedThetaCovolume (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) : ℝ :=
   (FractionalIdeal.absNorm (I : FractionalIdeal (𝓞 K)⁰ K) : ℝ) *
     Real.sqrt |(discr K : ℝ)|
 
-def mixedThetaShape (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
-    (t : ℝ) (u : Angular K) : InfinitePlace K → ℝ :=
+section
+
+variable (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ)
+
+def mixedThetaShape (u : Angular K) : InfinitePlace K → ℝ :=
   expMapBasis (angularLift K u +
     radialLift K ((Real.log t - Real.log (mixedThetaCovolume K I)) /
       (Module.finrank ℚ K : ℝ)))
 
-def mixedRadialTheta (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
-    (t : ℝ) (u : Angular K) : ℂ :=
+def mixedRadialTheta (u : Angular K) : ℂ :=
   fractionalShapeIdealTheta K I (mixedThetaShape K I t u)
     (fun v ↦ ne_of_gt (expMapBasis_pos _ v))
 
-def mixedAngularAverage (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) : ℂ :=
+def mixedAngularAverage : ℂ :=
   ∫ u in angularCube K, mixedRadialTheta K I t u
 
-def mixedNegAngularAverage (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) : ℂ :=
+def mixedNegAngularAverage : ℂ :=
   ∫ u in angularCube K, mixedRadialTheta K I t (-u)
+
+end
 
 def alpha : ℝ :=
   (2 : ℝ) ^ (nrRealPlaces K + nrComplexPlaces K) * regulator K /

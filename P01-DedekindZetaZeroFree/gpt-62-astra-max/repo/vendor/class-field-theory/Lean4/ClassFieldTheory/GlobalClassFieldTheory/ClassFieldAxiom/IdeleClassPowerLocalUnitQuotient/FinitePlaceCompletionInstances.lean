@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -62,7 +58,6 @@ noncomputable instance finitePlaceAdicCompletion_residueFinite
         (Valued.v :
           Valuation (v₀.adicCompletion K)
             (WithZero (Multiplicative ℤ))).valuationSubring) := by
-  change Finite (Valued.ResidueField (v₀.adicCompletion K))
   exact _root_.finite_adicCompletion_residueField K v₀
 
 end GlobalClassFieldTheory.ClassFieldAxiom

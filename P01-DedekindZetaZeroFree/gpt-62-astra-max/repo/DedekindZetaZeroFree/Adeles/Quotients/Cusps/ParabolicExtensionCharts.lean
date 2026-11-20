@@ -28,7 +28,6 @@ theorem chartOutput_of_extension
     ratio := D₀.ratio
     integralUnits := D₀.integralUnits
     unitIndex := D₀.unitIndex
-    injective := D₀.injective
     surjective := D₀.surjective
     exact := D₀.exact
     upper := D₀.upper
@@ -44,26 +43,19 @@ theorem chartOutput_of_extension
     lift_formula := G.atlas.lift_formula
     orbit_equivalence := G.atlas.orbit_equivalence
     chartCount := G.atlas.chartCount
-    positive_chartCount := G.atlas.positive_chartCount
     shapeLift := G.atlas.shapeLift
     open_shapeLift := G.atlas.open_shapeLift
-    nonempty_shapeLift := G.atlas.nonempty_shapeLift
-    small_shapeLift := G.atlas.small_shapeLift
     baseOpen := G.atlas.baseOpen
     open_baseOpen := G.atlas.open_baseOpen
-    baseOpen_formula := G.atlas.baseOpen_formula
     cover := G.atlas.cover
     baseChart := G.atlas.baseChart
     baseChart_formula := G.atlas.baseChart_formula
-    coarseChart := G.atlas.coarseChart
-    coarseChart_formula := G.atlas.coarseChart_formula
     transitions := G.atlas.transitions
   }
   let O : KPCuspCharts.ChartOutput F hF _ D := {
     positive_dimension := KPCuspCharts.positive_dimension F hF
     lattice := ⟨hdisc, hlattice⟩
     compact_torus := G.compact_torus
-    compact_base := G.compact_base
     finite_isotropy := G.finite_isotropy
     torusAction := G.torusAction
     torusAction_formula := G.torusAction_formula
@@ -73,15 +65,6 @@ theorem chartOutput_of_extension
     atlas := atlas
     actual_action := KPCuspCharts.actual_affine_action F hF _ D
     unipotent_action := KPCuspCharts.actual_unipotent_action F hF _ D
-    metric_invariant := by
-      intro g A _ _ p v
-      exact KPCuspCharts.affine_metric_invariant F hF D.E D.integralUnits
-        (D.ratio g) (A 0 1 / A 1 1) p v
-    smooth_transitions := by
-      intro g A _ _
-      exact KPCuspCharts.affine_contDiff F hF D.E D.integralUnits
-        (D.ratio g) (A 0 1 / A 1 1)
-    density_formula := KPCuspCharts.volumeDensity_toArch F
     shapeMeasure := V.shapeMeasure
     haar_shapeMeasure := V.haar_shapeMeasure
     archVolume_formula := V.archVolume_formula
@@ -95,7 +78,6 @@ theorem chartOutput_of_extension
     positive_sectionMeasure := V.positive_sectionMeasure
     radialPresentation := R.radialPresentation
     radialPresentation_formula := R.radialPresentation_formula
-    quotientVolume_formula := R.quotientVolume_formula
     highPresentation := R.highPresentation
     highPresentation_formula := R.highPresentation_formula
     highVolume_formula := R.highVolume_formula

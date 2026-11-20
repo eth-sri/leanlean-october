@@ -26,17 +26,19 @@ namespace DedekindZetaZeroFree.Odlyzko
 
 variable (K : Type*) [Field K] [NumberField K]
 
-noncomputable def primeIdealNorm (P : HeightOneSpectrum (𝓞 K)) : ℕ :=
+variable (P : HeightOneSpectrum (𝓞 K))
+
+noncomputable def primeIdealNorm : ℕ :=
   absNorm P.asIdeal
 
-lemma one_lt_primeIdealNorm (P : HeightOneSpectrum (𝓞 K)) :
+lemma one_lt_primeIdealNorm :
     1 < primeIdealNorm K P := by
   apply Nat.one_lt_iff_ne_zero_and_ne_one.mpr
   constructor
   · simpa [primeIdealNorm, Ideal.absNorm_eq_zero_iff] using P.ne_bot
   · simpa [primeIdealNorm, Ideal.absNorm_eq_one_iff] using P.isPrime.ne_top
 
-noncomputable def primeIdealFactor (P : HeightOneSpectrum (𝓞 K)) (s : ℂ) : ℂ :=
+noncomputable def primeIdealFactor (s : ℂ) : ℂ :=
   localFactor (primeIdealNorm K P) s
 
 end DedekindZetaZeroFree.Odlyzko

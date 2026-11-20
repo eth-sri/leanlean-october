@@ -20,7 +20,7 @@ theorem thetaUniformGaussianTail
         ‖∑' i, F t h i‖ ≤ A * Real.exp (-(c * η ^ 2 / 2) * t ^ p) := by
   set G : ι → ℝ := fun i => Real.exp (-(c / 2) * ‖x i‖ ^ 2) with hG
   have hGsum : Summable G := by simpa only [hG] using hsum
-  have hGnonneg : ∀ i, 0 ≤ G i := fun i => by rw [hG]; exact Real.exp_nonneg _
+  have hGnonneg : ∀ i, 0 ≤ G i := fun i => by exact Real.exp_nonneg _
   have hGtsum : 0 ≤ ∑' i, G i := tsum_nonneg hGnonneg
   have hc2 : 0 ≤ c / 2 := by positivity
   refine ⟨P * (1 + ∑' i, G i), mul_pos hP (by linarith), ?_⟩

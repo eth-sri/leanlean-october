@@ -11,8 +11,8 @@ open MomentSources MeasureTheory ThetaProfileHaarSheets ThetaSheetExactUnfolding
 open BranchCoordinateSeries
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def numericalReflectedTerm {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
@@ -26,7 +26,6 @@ def numericalReflectedTerm {N : TraceHaarTransport R} (C : JointUpperVanishingSo
 theorem numerical_frequency_dictionary {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
     (D : ThetaBranch.RowFactorization R.A R.probe.allowed m) (Z : ℝ) (hZ : 0 < Z) :
-    Summable (fun ξ => ‖numericalReflectedTerm R C v m D Z ξ‖) ∧
     (∑' ξ, numericalReflectedTerm R C v m D Z ξ) =
       RMSeparatedExpansion.expansion R.A R.probe.allowed R.probe.unitReps R.σ
         (Characters.psi R) (Characters.L R v) (C.realization.H C.packet v) D.h D.d Z := by
@@ -44,7 +43,7 @@ theorem numerical_frequency_dictionary {N : TraceHaarTransport R} (C : JointUppe
   have hsep := (branch_coordinate_series_eq_expansion R.A R.probe.allowed R.probe.unitReps R.σ
     (Characters.psi R) (Characters.primitive R) (Characters.L R v) (Characters.norm_one R v)
     hrec (C.realization.H C.packet v) m D Z hb)
-  exact ⟨hf, hfreq.symm.trans hsep⟩
+  exact hfreq.symm.trans hsep
 
 end DedekindZetaZeroFree.ThetaExpansion.SignedExpansion
 

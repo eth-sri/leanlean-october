@@ -52,16 +52,13 @@ theorem slot_compare (D : TensorDetected R N) (s : RestrictedTensorSimple.Level 
       coreStageMultilinear _ D.references D.bad (D.toTensorHC.literalPeriod 1) s
         (Function.update z p (x p)) * multiplier D s x p v := by
   let L := coreStageMultilinear _ D.references D.bad (D.toTensorHC.literalPeriod 1) s
-  let ell : actualLocal R D.finiteData p →ₗ[ℂ] ℂ := (L x)⁻¹ • L.toLinearMap x p
-  have hell : ell ∈ D.toTensorHC.sliceLine p.val :=
-    (D.toTensorHC.sliceLine p.val).smul_mem _ (D.toTensorHC.slice_mem s x p)
-  have hn : ell (x p) = 1 := by
-    simp only [ell, LinearMap.smul_apply, smul_eq_mul, MultilinearMap.toLinearMap_apply,
-      Function.update_eq_self]
-    exact inv_mul_cancel₀ hx
-  exact FiniteComparison.slot_eq_normalized (D.toTensorHC.sliceLine p.val)
+  let ell := (L x)⁻¹ • L.toLinearMap x p
+  refine FiniteComparison.slot_eq_normalized (D.toTensorHC.sliceLine p.val)
     (WildCurrentTameExterior.tame_line_finrank D p.val hp) ell (L.toLinearMap z p)
-    hell (D.toTensorHC.slice_mem s z p) (x p) hn v
+    ((D.toTensorHC.sliceLine p.val).smul_mem _ (D.toTensorHC.slice_mem s x p)) (D.toTensorHC.slice_mem s z p) (x p) ?_ v
+  simp only [ell, LinearMap.smul_apply, smul_eq_mul, MultilinearMap.toLinearMap_apply,
+    Function.update_eq_self]
+  exact inv_mul_cancel₀ hx
 
 end DedekindZetaZeroFree.FourierContinuation.WildTameSlotTransport
 

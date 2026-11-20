@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -104,11 +99,6 @@ theorem localSeparableValuationSubring_pullback (x : K) :
     algebraMap K (SeparableClosure K) x ∈
         localSeparableValuationSubring K ↔
       x ∈ (localCompleteDVF K).valuation.valuationSubring := by
-  change algebraMap (SeparableClosure K) (AlgebraicClosure K)
-      (algebraMap K (SeparableClosure K) x) ∈
-        localAbsoluteValuationSubring K ↔ _
-  rw [← IsScalarTower.algebraMap_apply K (SeparableClosure K)
-    (AlgebraicClosure K)]
   exact localAbsoluteValuationSubring_pullback K x
 
 /-- The valuation on the separable closure extends the base discrete valuation. -/
@@ -127,7 +117,7 @@ theorem localSeparableValuationSubring_eq_of_hasExtension
     [(localCompleteDVF K).valuation.HasExtension B.valuation] :
     localSeparableValuationSubring K = B := by
   ext z
-  let E : IntermediateField K (SeparableClosure K) :=
+  let E :=
     IntermediateField.adjoin K ({z} : Set (SeparableClosure K))
   let : FiniteDimensional K E :=
     IntermediateField.adjoin.finiteDimensional
@@ -136,26 +126,21 @@ theorem localSeparableValuationSubring_eq_of_hasExtension
   obtain ⟨target, hExt, _hIntegralClosure, _hFundamental⟩ :=
     ValuationTheory.DiscreteValuationField.ValuedExtension.exists_integralClosure_standard_fundamental_identity
       (K := K) (L := E) (localCompleteDVF K)
-  let : (localCompleteDVF K).valuation.HasExtension target.valuation := hExt
-  let : IsScalarTower (localCompleteDVF K).valuationSubring
-      target.valuationSubring E :=
+  let := hExt
+  let :=
     ValuationTheory.DiscreteValuationField.Valuation.valuationSubring_isScalarTower_of_hasExtension
       (localCompleteDVF K).valuation target.valuation
   let Ares := (localSeparableValuationSubring K).restrictIntermediateField E
   let Bres := B.restrictIntermediateField E
-  let : (localCompleteDVF K).valuation.HasExtension Ares.valuation :=
+  let :=
     RamificationTheory.ValuationSubring.restrictIntermediateField_hasExtension
       (localCompleteDVF K).valuation (localSeparableValuationSubring K) E
-  let : (localCompleteDVF K).valuation.HasExtension Bres.valuation :=
+  let :=
     RamificationTheory.ValuationSubring.restrictIntermediateField_hasExtension
       (localCompleteDVF K).valuation B E
-  have hA : target.valuation.valuationSubring = Ares :=
-    ValuationTheory.DiscreteValuationField.ValuedExtension.target_valuationSubring_eq_of_finite_separable
-      (localCompleteDVF K) target Ares
-  have hB : target.valuation.valuationSubring = Bres :=
-    ValuationTheory.DiscreteValuationField.ValuedExtension.target_valuationSubring_eq_of_finite_separable
-      (localCompleteDVF K) target Bres
-  have hAB : Ares = Bres := hA.symm.trans hB
+  have hAB := (ValuationTheory.DiscreteValuationField.ValuedExtension.target_valuationSubring_eq_of_finite_separable
+    (localCompleteDVF K) target Ares).symm.trans (ValuationTheory.DiscreteValuationField.ValuedExtension.target_valuationSubring_eq_of_finite_separable
+    (localCompleteDVF K) target Bres)
   let zE : E :=
     ⟨z, IntermediateField.subset_adjoin (F := K)
       (S := ({z} : Set (SeparableClosure K))) (by simp)⟩
@@ -168,10 +153,7 @@ theorem localSeparableDecompositionGroup_eq_top :
     decompositionGroup K (localSeparableValuationSubring K) = ⊤ := by
   apply top_unique
   intro sigma _hsigma
-  change sigma • localSeparableValuationSubring K =
-    localSeparableValuationSubring K
-  let : (localCompleteDVF K).valuation.HasExtension
-      (sigma • localSeparableValuationSubring K).valuation :=
+  let :=
     RamificationTheory.ValuationSubring.smul_hasExtension
       (localCompleteDVF K).valuation (localSeparableValuationSubring K) sigma
   exact (localSeparableValuationSubring_eq_of_hasExtension K
@@ -193,7 +175,7 @@ decomposition field is the original local valuation ring. -/
     simpa using
       (InfiniteGalois.fixedField_fixingSubgroup
         (⊥ : IntermediateField K (SeparableClosure K)))
-  let eKZ : K ≃ₐ[K] Z :=
+  let eKZ :=
     (IntermediateField.botEquiv K (SeparableClosure K)).symm.trans
       (IntermediateField.equivOfEq hZ.symm)
   have hto (x : (localCompleteDVF K).valuationSubring) :
@@ -252,8 +234,7 @@ theorem localBaseResidueEquivDecompositionResidue_algebraMap
       IsLocalRing.residue (localSeparableValuationSubring K)
         (⟨algebraMap K (SeparableClosure K) (x : K),
           (localSeparableValuationSubring_pullback K (x : K)).2
-            x.property⟩ : localSeparableValuationSubring K) := by
-  rfl
+            x.property⟩ : localSeparableValuationSubring K) := rfl
 
 /-- The residue field attached to the local decomposition datum is finite. -/
 noncomputable instance localDecompositionResidueFinite :
@@ -297,11 +278,9 @@ instance localSelectedResidueIsAlgClosed :
       (L := selectedResidueField B)
   let : Algebra.IsSeparable (selectedResidueField B)
       (selectedResidueField A) := inferInstance
-  have hsurjective : Function.Surjective barI :=
-    IsPurelyInseparable.surjective_algebraMap_of_isSeparable
-      (selectedResidueField B) (selectedResidueField A)
-  let e : selectedResidueField B ≃+* selectedResidueField A :=
-    RingEquiv.ofBijective barI ⟨barI.injective, hsurjective⟩
+  let e  :=
+    RingEquiv.ofBijective barI ⟨barI.injective, (IsPurelyInseparable.surjective_algebraMap_of_isSeparable
+      (selectedResidueField B) (selectedResidueField A))⟩
   let : IsAlgClosed (selectedResidueField A) :=
     valuationSubring_residueField_isAlgClosed A
   exact IsAlgClosed.of_ringEquiv (selectedResidueField A)

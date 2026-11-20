@@ -11,13 +11,13 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages MomentSources HCGeneration
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
-variable (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
-variable [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    (μ : ∀ q : KPFinitePlace F, Measure (q.adicCompletion F))
+    [hhaar : ∀ q, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q, μ q ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
 local notation "H" => actualImageData R P C μ hμ
 local notation "W" => actualLocal R H
 local notation "E" => bad R.A P C
@@ -42,8 +42,6 @@ theorem actualCoreResidue_stage_generator (N : TraceHaarTransport R)
   obtain ⟨u, rfl⟩ := TensorActionSource.sourceStageQuotient_surjective R H s.val x
   have hq := stageImageQuotient_generator R P C H s b u
   rw [actual_stageImageQuotient] at hq
-  change actualCoreResidue R P C μ hμ N (RestrictedTensorSimple.stageInclusion W e E s
-    (stageImageGenerator R P C H s b (TensorActionSource.sourceStageQuotient R H s.val u))) = _
   apply Eq.trans (congrArg (fun y : RestrictedTensorSimple.Stage W s.val =>
     actualCoreResidue R P C μ hμ N (RestrictedTensorSimple.stageInclusion W e E s y)) hq.symm)
   apply Eq.trans (actualCoreResidue_source_stage R P C μ hμ N s

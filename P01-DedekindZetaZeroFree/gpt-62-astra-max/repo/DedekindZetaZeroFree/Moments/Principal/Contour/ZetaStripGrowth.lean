@@ -9,15 +9,17 @@ namespace DedekindZetaZeroFree.Quantitative.PrincipalZetaStripGrowth
 open DedekindZetaZeroFree Filter Topology
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-private theorem strip_le_four (D : FixedData S η) (a ρ : ℝ) (ha : 0 < a) (ha4 : a ≤ 4)
+variable (D : FixedData S η)
+
+private theorem strip_le_four (a ρ : ℝ) (ha : 0 < a) (ha4 : a ≤ 4)
     (hρ : 0 < ρ) :
     ∃ B d : ℝ, 0 < B ∧ 0 ≤ d ∧ ∀ s : ℂ, a ≤ s.re → s.re ≤ 4 → ρ ≤ ‖s - 1‖ →
       ‖D.zetaSCont s‖ ≤ B * (2 + |s.im|) ^ d :=
   PrincipalNumerator.stripNumerator_bound_away_pole D.recipe a 4 ρ ha ha4 le_rfl hρ
 
-private theorem strip_poly (D : FixedData S η) (a b ρ : ℝ) (ha : 0 < a) (hab : a ≤ b)
+private theorem strip_poly (a b ρ : ℝ) (ha : 0 < a) (hab : a ≤ b)
     (hρ : 0 < ρ) :
     ∃ C k : ℝ, 0 < C ∧ 0 ≤ k ∧ ∀ s : ℂ, a ≤ s.re → s.re ≤ b → ρ ≤ ‖s - 1‖ →
       ‖D.zetaSCont s‖ ≤ C * (1 + |s.im|) ^ k := by
@@ -49,13 +51,13 @@ private theorem strip_poly (D : FixedData S η) (a b ρ : ℝ) (ha : 0 < a) (hab
     have h := hKb s (by linarith [not_le.mp ha4])
     simpa using h
 
-theorem zetaSCont_strip_polynomial_bound (D : FixedData S η) (a b r : ℝ)
+theorem zetaSCont_strip_polynomial_bound (a b r : ℝ)
     (ha : 0 < a) (hab : a ≤ b) (hr : 0 < r) :
     ∃ C k : ℝ, 0 < C ∧ 0 ≤ k ∧ ∀ s : ℂ, a ≤ s.re → s.re ≤ b → r ≤ ‖s - 1‖ →
       ‖D.zetaSCont s‖ ≤ C * (1 + |s.im|) ^ k :=
   strip_poly D a b r ha hab hr
 
-theorem zetaSCont_high_height_bound (D : FixedData S η) (a b : ℝ)
+theorem zetaSCont_high_height_bound (a b : ℝ)
     (ha : 0 < a) (hab : a ≤ b) :
     ∃ C k : ℝ, 0 < C ∧ 0 ≤ k ∧ ∀ s : ℂ, a ≤ s.re → s.re ≤ b → 1 ≤ |s.im| →
       ‖D.zetaSCont s‖ ≤ C * |s.im| ^ k := by
@@ -70,8 +72,7 @@ theorem zetaSCont_high_height_bound (D : FixedData S η) (a b : ℝ)
   have hle : (1 + |s.im|) ^ k ≤ (2 * |s.im|) ^ k :=
     Real.rpow_le_rpow (by linarith) (by linarith) hk
   rw [Real.mul_rpow (by norm_num) hx] at hle
-  have hC' := h s h1 h2 hsep
-  calc ‖D.zetaSCont s‖ ≤ C * (1 + |s.im|) ^ k := hC'
+  calc _ ≤ C * (1 + |s.im|) ^ k := (h s h1 h2 hsep)
     _ ≤ C * (2 ^ k * |s.im| ^ k) := mul_le_mul_of_nonneg_left hle hC.le
     _ = C * 2 ^ k * |s.im| ^ k := by ring
 

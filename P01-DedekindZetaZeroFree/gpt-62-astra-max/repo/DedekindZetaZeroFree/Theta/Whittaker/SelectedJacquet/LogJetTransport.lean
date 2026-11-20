@@ -11,7 +11,7 @@ open MomentSources NumberField MeasureTheory KPCplxRotatedRapidDecay
 open scoped Classical Topology
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 def selectedComplexWeyl (R : PrincipalMellin.ActualRecipe S η)
     {N : TraceHaarTransport R} (C : JointDigitDescentSources R N) (v : R.A.UnitQuotient)
@@ -32,10 +32,6 @@ theorem archJet_complex_transport (R : PrincipalMellin.ActualRecipe S η)
         (R.A.complex_place w)).symm.toMonoidHom
         (Units.map (InfinitePlace.Completion.extensionEmbedding w).toMonoidHom z) = z := by
     apply Units.ext
-    change (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-      (R.A.complex_place w)).symm
-      ((InfinitePlace.Completion.ringEquivComplexOfIsComplex (R.A.complex_place w))
-        (z : w.Completion)) = (z : w.Completion)
     exact RingEquiv.symm_apply_apply _ _
   have heq (t : ℝ) :
       ThetaExpansion.normalizedLocalWeylValue R C v (Sum.inl w)

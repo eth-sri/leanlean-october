@@ -57,79 +57,51 @@ private lemma cutoff_scale (v : HeightOneSpectrum (𝓞 F))
   simp [smul_eq_mul]
   ring
 
-theorem finiteWeilCutoff_stabilizes (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
-    A.FiniteQuadraticStabilizes v a :=
-  A.finiteQuadratic_stabilizes v a
+alias finiteWeilCutoff_stabilizes := finiteQuadratic_stabilizes
 
-private lemma normalizedRatio_eventually (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
+section
+
+variable (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
+
+private lemma normalizedRatio_eventually
     (μ : Measure (v.adicCompletion F))
     (hμ : A.finiteTraceHaar v = ENNReal.ofReal (PoissonS.integerVolume F v) • μ) :
     ∀ᶠ n : ℕ in atTop,
       exteriorRawQuadraticCutoff v μ a n / exteriorRawQuadraticCutoff v μ 1 n =
         A.finiteWeilPhase v a := by
-  have hc : (PoissonS.integerVolume F v : ℂ) ≠ 0 :=
-    Complex.ofReal_ne_zero.mpr (PoissonS.integerVolume_pos F v).ne'
-  have ha := A.finiteQuadraticCutoff_eventually_eq_gamma v a (A.finiteWeilCutoff_stabilizes v a)
-  have h1 := A.finiteQuadraticCutoff_eventually_eq_gamma v 1 (A.finiteWeilCutoff_stabilizes v 1)
-  filter_upwards [ha, h1] with n han h1n
+  filter_upwards [(A.finiteQuadraticCutoff_eventually_eq_gamma v a (A.finiteWeilCutoff_stabilizes v a)), (A.finiteQuadraticCutoff_eventually_eq_gamma v 1 (A.finiteWeilCutoff_stabilizes v 1))] with n han h1n
   change exteriorRawQuadraticCutoff v (A.finiteTraceHaar v) a n = _ at han
   change exteriorRawQuadraticCutoff v (A.finiteTraceHaar v) 1 n = _ at h1n
   rw [hμ, cutoff_scale, ENNReal.toReal_ofReal (PoissonS.integerVolume_pos F v).le] at han h1n
   unfold finiteWeilPhase
-  rw [← han, ← h1n, mul_div_mul_left _ _ hc]
+  rw [← han, ← h1n, mul_div_mul_left _ _ (Complex.ofReal_ne_zero.mpr (PoissonS.integerVolume_pos F v).ne')]
 
-def finiteWeilIndex (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) : Circle :=
+def finiteWeilIndex : Circle :=
   ⟨A.finiteWeilPhase v a, (mem_sphere_zero_iff_norm).2
     (A.finiteWeilPhase_norm v a)⟩
+
+end
 
 def infiniteWeilIndex (A : SArithmeticData F)
     (v : InfinitePlace F) (a : v.Completionˣ) : Circle :=
   ⟨A.complexWeilPhase v a, by simp [complexWeilPhase, complexGamma]⟩
 
-private lemma quadCoeff (A : SArithmeticData F) (σ : F →+* ℂ)
-    (v : HeightOneSpectrum (𝓞 F)) (a b : (v.adicCompletion F)ˣ) :
-    A.finiteQuadraticHilbertCoefficient v a b =
-      σ (((A.actualLocalSymbol v 2 (Or.inl rfl) a b : rootsOfUnity 2 F) : Fˣ) : F) := by
-  let r := A.actualLocalSymbol v 2 (Or.inl rfl) a b
-  have hr : (r : Fˣ) ∈ rootsOfUnity 2 F := r.property
-  have hs : ((r : Fˣ) : F)^2 = 1 := by
-    exact congrArg Units.val ((mem_rootsOfUnity 2 _).mp hr)
-  change (if r = 1 then (1 : ℂ) else -1) = σ ((r : Fˣ) : F)
-  rcases (sq_eq_one_iff).mp hs with h | h
-  · have he : r = 1 := rootsOfUnity.coe_injective h
-    rw [if_pos he, h, map_one]
-  · have he : r ≠ 1 := by
-      intro he
-      have : (1 : F) = -1 := by simpa [he] using h
-      exact (neg_ne_self.mpr (one_ne_zero : (1 : F) ≠ 0)) this.symm
-    rw [if_neg he, h, map_neg, map_one]
-private lemma oddOfNonDyadic (v : HeightOneSpectrum (𝓞 F))
-    (hv : (2 : 𝓞 F) ∉ v.asIdeal) : ringChar (OddLocalResidue v) ≠ 2 := by
-  let e : (𝓞 F ⧸ v.asIdeal) ≃+* OddLocalResidue v :=
-    (finitePlaceIdealResidueEquivCompletion v).trans
-      (IsLocalRing.ResidueField.mapEquiv (finitePlaceCompletionIntegerRingEquiv v))
-  intro hc
-  have hz : (2 : OddLocalResidue v) = 0 := by
-    haveI : CharP (OddLocalResidue v) 2 := ringChar.of_eq hc
-    exact CharP.cast_eq_zero _ 2
-  have hq : (2 : 𝓞 F ⧸ v.asIdeal) = 0 := e.injective (by simpa only [map_ofNat, map_zero] using hz)
-  exact hv ((Ideal.Quotient.eq_zero_iff_mem).mp hq)
+private alias quadCoeff := DyadicHilbertDefect.symbol_embed
+private alias oddOfNonDyadic := GlobalPhaseProductAndThetaSymmetries.globalGamma_odd
 
-theorem finiteWeilIndex_mul (A : SArithmeticData F) (σ : F →+* ℂ)
+variable (A : SArithmeticData F)
+
+theorem finiteWeilIndex_mul (σ : F →+* ℂ)
     (v : HeightOneSpectrum (𝓞 F)) (a b : (v.adicCompletion F)ˣ) :
     (A.finiteWeilIndex v a : ℂ) * (A.finiteWeilIndex v b : ℂ) =
       σ (((A.actualLocalSymbol v 2 (Or.inl rfl) a b : rootsOfUnity 2 F) : Fˣ) : F) *
         (A.finiteWeilIndex v (a * b) : ℂ) := by
-  change A.finiteWeilPhase v a * A.finiteWeilPhase v b = _ * A.finiteWeilPhase v (a*b)
   by_cases hv : (2 : 𝓞 F) ∈ v.asIdeal
   · exact A.finiteWeilPhase_mul_dyadic σ v hv a b
   · rw [← quadCoeff]
     exact A.finiteWeilPhase_odd_hilbert_defect v (oddOfNonDyadic v hv) a b
 
-theorem normalizedWeilIndex_product (A : SArithmeticData F) (a : Fˣ) :
+theorem normalizedWeilIndex_product (a : Fˣ) :
     (∏ w : InfinitePlace F,
       A.infiniteWeilIndex w
         (Units.map (algebraMap F w.Completion).toMonoidHom a)) *
@@ -162,7 +134,7 @@ theorem normalizedWeilIndex_product (A : SArithmeticData F) (a : Fˣ) :
     A.finiteWeilPhase v (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a)) = 1
   simpa [finiteWeilPhase, globalQuadraticWeilPhase, globalQuadraticGamma] using hp
 
-theorem finiteWeilIndex_exterior_unit (A : SArithmeticData F)
+theorem finiteWeilIndex_exterior_unit
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F))
     (hIv : I.val = v.asIdeal)
     (hgood : ¬ (ResidueTrace.rationalPrimeBelow v).val ∣ 6)
@@ -172,15 +144,13 @@ theorem finiteWeilIndex_exterior_unit (A : SArithmeticData F)
       (Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom u) = 1 := by
   obtain ⟨μ, hhaar, hvol, hμ⟩ := normalizedHaar A v
   letI := hhaar
-  have h := (normalizedRatio_eventually A v
+  obtain ⟨n, hn, h1⟩ := ((normalizedRatio_eventually A v
     (Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom u) μ hμ).and
-      (A.exterior_raw_quadratic_ratio_unit_eventually I v hIv hgood hzero μ hvol u)
-  obtain ⟨n, hn, h1⟩ := h.exists
+      (A.exterior_raw_quadratic_ratio_unit_eventually I v hIv hgood hzero μ hvol u)).exists
   apply Circle.ext
   exact hn.symm.trans h1
 
-theorem finiteWeilIndex_exterior_inv_generator
-    (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem finiteWeilIndex_exterior_inv_generator (σ : F →+* ℂ)
     (hS : A.ContainsTraceBadPlaces) (B : Subgroup A.V)
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
     (hgood : ¬ (ResidueTrace.rationalPrimeBelow v).val ∣ 6)
@@ -195,10 +165,9 @@ theorem finiteWeilIndex_exterior_inv_generator
   refine ⟨?_, he⟩
   obtain ⟨μ, hhaar, hvol, hμ⟩ := normalizedHaar A v
   letI := hhaar
-  have h := (normalizedRatio_eventually A v
+  obtain ⟨n, hn, h1⟩ := ((normalizedRatio_eventually A v
     ((Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a)⁻¹) μ hμ).and
-      (A.exterior_raw_quadratic_ratio_eq_gamma_three σ hS B I v hIv hgood hzero p hp a hap ha μ hvol)
-  obtain ⟨n, hn, h1⟩ := h.exists
+      (A.exterior_raw_quadratic_ratio_eq_gamma_three σ hS B I v hIv hgood hzero p hp a hap ha μ hvol)).exists
   exact (hn.symm.trans h1).trans he.symm
 
 end

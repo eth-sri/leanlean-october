@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -78,21 +76,21 @@ theorem frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup
   dsimp only
   let KR := K.toFiniteResidueAbstractField D
   let hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
+    exact hLnormal
   let hLfiniteKR : Finite
       (KR.field.toSubgroup ⧸ extensionSubgroup KR.field L hLK) := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLfinite
+    exact hLfinite
   let E := D.maximalUnramifiedField L
   let S := D.frobeniusFixedField KR L hLK σ
   let T := D.frobeniusFixedField KR L hLK τ
-  let hSK : S.toSubgroup ≤ K.field.toSubgroup :=
+  let hSK :=
     D.frobeniusFixedField_le KR L hLK σ
-  let hTK : T.toSubgroup ≤ K.field.toSubgroup :=
+  let hTK :=
     D.frobeniusFixedField_le KR L hLK τ
   let M := D.frobeniusFixedIntermediateField KR L hLK σ
   let N := D.frobeniusFixedIntermediateField KR L hLK τ
   let P := M.compositum N
-  let hPS : P.field.toSubgroup ≤ S.toSubgroup :=
+  let hPS :=
     M.compositum_le_left N
   let hPT : P.field.toSubgroup ≤ T.toSubgroup :=
     M.compositum_le_right N
@@ -186,30 +184,26 @@ theorem frobeniusPrime_actionDifference_mem_infiniteUnitAddSubgroup
   dsimp only
   let KR := K.toFiniteResidueAbstractField D
   let hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
+    exact hLnormal
   let hLfiniteKR : Finite
       (KR.field.toSubgroup ⧸ extensionSubgroup KR.field L hLK) := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLfinite
+    exact hLfinite
   let E := D.maximalUnramifiedField L
   let S := D.frobeniusFixedField KR L hLK σ
-  let hSK : S.toSubgroup ≤ K.field.toSubgroup :=
+  let hSK :=
     D.frobeniusFixedField_le KR L hLK σ
   let M := D.frobeniusFixedIntermediateField KR L hLK σ
-  let hEnormal : (extensionSubgroup K.field E
-      (D.maximalUnramifiedField_le_of_le hLK)).Normal :=
+  let hEnormal :=
     D.extensionSubgroup_maximalUnramifiedField_normal K.field L hLK
   let P := M.galoisRefinement
-  let hPS : P.field.toSubgroup ≤ S.toSubgroup :=
+  let hPS :=
     M.galoisRefinement_le_field
-  let hSabsolute : Finite ((baseField G).toSubgroup ⧸
-      extensionSubgroup (baseField G) S (le_baseField S)) :=
+  let hSabsolute :=
     D.frobeniusFixedField_absoluteFinite K L hLK σ
   let Sigma : FiniteAbstractField G := ⟨S, hSabsolute⟩
-  let hPfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field P.field P.below) := P.finite
-  let Pi : FiniteAbstractField G := P.toFiniteAbstractField K
-  let hPSfinite : Finite
-      (S.toSubgroup ⧸ extensionSubgroup S P.field hPS) :=
+  let hPfinite := P.finite
+  let Pi := P.toFiniteAbstractField K
+  let hPSfinite :=
     FiniteIntermediateField.finite_extension_of_le P.below hSK hPS
   let hPnormal : (extensionSubgroup K.field P.field P.below).Normal := by
     exact FiniteIntermediateField.galoisRefinement_normal M
@@ -232,31 +226,19 @@ theorem frobeniusPrime_actionDifference_mem_infiniteUnitAddSubgroup
     rw [hSI]
     exact P.above
   let πP := fixedFieldInclusion A S P.field hPS π
-  have hπP : v.IsPrimeElement Pi πP := by
-    exact v.prime_of_unramified EPS hPSunramified π hπ
-  let k : K.field.toSubgroup := Quotient.out q
+  have hπP := v.prime_of_unramified EPS hPSunramified π hπ
+  let k := Quotient.out q
   let πqP := normalExtensionAction A K.field P.field P.below hPnormal k πP
   have hπqP : v.IsPrimeElement Pi πqP := by
     change v.valuationAt Pi πP = v.oneValue at hπP
-    change v.valuationAt Pi πqP = v.oneValue
     calc
       v.valuationAt Pi πqP = v.valuationAt Pi πP := by
-        have hvaluation :=
-          v.valuationAt_normalExtensionAction EPK hPnormal k πP
-        change v.valuationAt Pi
-            (normalExtensionAction A K.field P.field P.below hPnormal k πP) =
-          v.valuationAt Pi πP at hvaluation
-        exact hvaluation
+        apply v.valuationAt_normalExtensionAction
       _ = v.oneValue := hπP
-  let uP : v.unitAddSubgroup Pi :=
-    ⟨πP - πqP,
-      v.sub_mem_unitAddSubgroup_of_prime Pi hπqP hπP⟩
   rw [v.mem_infiniteUnitAddSubgroup_iff]
-  refine ⟨P, uP, ?_⟩
-  have hkq : (QuotientGroup.mk k :
-      K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) = q :=
-    Quotient.out_eq' q
-  rw [← hkq, D.frobeniusQuotientAction_mk]
+  refine ⟨P, (⟨πP - πqP,
+    v.sub_mem_unitAddSubgroup_of_prime Pi hπqP hπP⟩), ?_⟩
+  rw [← (Quotient.out_eq' q), D.frobeniusQuotientAction_mk]
   apply Subtype.ext
   rfl
 

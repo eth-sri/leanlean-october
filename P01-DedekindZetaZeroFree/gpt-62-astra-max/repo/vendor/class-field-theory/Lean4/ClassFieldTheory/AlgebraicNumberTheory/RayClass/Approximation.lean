@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -28,19 +26,19 @@ open NumberField IsDedekindDomain
 
 noncomputable section
 
-
 variable {K : Type*} [Field K] [NumberField K]
 
 namespace IdeleGroup
 
+section
+
+variable (S : Finset (HeightOneSpectrum (𝓞 K)))
+
 /-- The full modulus whose finite part has exponent one exactly at the places
 of a finite set and whose infinite part is empty.  It lets the ray-class
 approximation space serve as an arbitrary finite-place approximation space. -/
-noncomputable def modulusOfFinset
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    RayClass.Modulus K := by
-  classical
-  exact RayClass.Modulus.ofFinite
+noncomputable def modulusOfFinset :
+    RayClass.Modulus K := RayClass.Modulus.ofFinite
     (Finsupp.onFinset S
       (fun v => if v ∈ S then 1 else 0)
       (by
@@ -49,27 +47,27 @@ noncomputable def modulusOfFinset
 
 @[simp]
 theorem modulusOfFinset_apply
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (v : HeightOneSpectrum (𝓞 K)) :
-    (modulusOfFinset S).finitePart v = if v ∈ S then 1 else 0 := by
-  classical
-  rfl
+    (modulusOfFinset S).finitePart v = if v ∈ S then 1 else 0 := rfl
 
 @[simp]
-theorem modulusOfFinset_support
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem modulusOfFinset_support :
     (modulusOfFinset S).finitePart.support = S := by
   classical
   ext v
   simp [modulusOfFinset, RayClass.Modulus.ofFinite]
 
+end
+
+section
+
+variable (m : RayClass.Modulus K) (a : IdeleGroup K)
+    (U : ∀ v : ↥m.finitePart.support, Subgroup (v.1.adicCompletion K)ˣ)
+
 /-- The product of the prescribed finite local cosets and harmless
 nonzero cosets at the infinite places.  The latter ensure that the global
 approximating element is nonzero. -/
-def openLocalCosetTarget
-    (m : RayClass.Modulus K) (a : IdeleGroup K)
-    (U : ∀ v : ↥m.finitePart.support,
-      Subgroup (v.1.adicCompletion K)ˣ) :
+def openLocalCosetTarget :
     ∀ i : RayClass.ApproximationPlace m,
       Set (RayClass.approximationCompletion m i)
   | Sum.inl v => RayClass.unitRatioSet (a.2 v.1) (U v)
@@ -79,9 +77,6 @@ def openLocalCosetTarget
 
 /-- Every coordinate of `openLocalCosetTarget` is open. -/
 theorem isOpen_openLocalCosetTarget
-    (m : RayClass.Modulus K) (a : IdeleGroup K)
-    (U : ∀ v : ↥m.finitePart.support,
-      Subgroup (v.1.adicCompletion K)ˣ)
     (hU : ∀ v, IsOpen (U v : Set (v.1.adicCompletion K)ˣ)) :
     ∀ i, IsOpen (openLocalCosetTarget m a U i)
   | Sum.inl v => by
@@ -92,6 +87,8 @@ theorem isOpen_openLocalCosetTarget
         (RayClass.unitRatioSet
           (ContinuousMulEquiv.piUnits a.1 w) ⊤)
       exact RayClass.isOpen_unitRatioSet _ _ isOpen_univ
+
+end
 
 /-- The given idele supplies a point in the product of the prescribed
 local cosets. -/
@@ -132,19 +129,14 @@ theorem exists_principal_quotient_mem_openLocalSubgroups
     ∃ x : Kˣ, ∀ v : ↥m.finitePart.support,
       a.2 v.1 *
           ((principalIdele K x).2 v.1)⁻¹ ∈ U v := by
-  let W : Set
-      ((i : RayClass.ApproximationPlace m) →
-        RayClass.approximationCompletion m i) :=
+  let W :=
     Set.univ.pi (openLocalCosetTarget m a U)
-  have hWOpen : IsOpen W := by
-    exact isOpen_set_pi Set.finite_univ fun i _hi =>
+  have hWOpen := isOpen_set_pi Set.finite_univ fun i _hi =>
       isOpen_openLocalCosetTarget m a U hU i
-  have hWNonempty : W.Nonempty :=
-    ⟨openLocalCosetTargetPoint m a,
-      openLocalCosetTargetPoint_mem m a U⟩
   obtain ⟨x, hx⟩ :=
     (RayClass.denseRange_approximationEmbedding m).exists_mem_open
-      hWOpen hWNonempty
+      hWOpen (⟨openLocalCosetTargetPoint m a,
+        openLocalCosetTargetPoint_mem m a U⟩)
   let w₀ : InfinitePlace K := Classical.choice inferInstance
   have hxw₀ :=
     hx (Sum.inr w₀) (Set.mem_univ (Sum.inr w₀))
@@ -158,7 +150,7 @@ theorem exists_principal_quotient_mem_openLocalSubgroups
     apply Units.ne_zero y₀
     rw [hy₀x, hxzero,
       NumberField.InfinitePlace.Completion.coe_zero]
-  let xu : Kˣ := Units.mk0 x hx0
+  let xu := Units.mk0 x hx0
   refine ⟨xu, ?_⟩
   intro v
   have hvx :=
@@ -189,22 +181,18 @@ theorem exists_principal_quotient_mem_openLocalSubgroups_finset
     ∃ x : Kˣ, ∀ v : ↥S,
       a.2 v.1 *
           ((principalIdele K x).2 v.1)⁻¹ ∈ U v := by
-  let m : RayClass.Modulus K := modulusOfFinset S
+  let m := modulusOfFinset S
   have hm : m.finitePart.support = S := by
     simp [m]
   let U' : ∀ v : ↥m.finitePart.support,
       Subgroup (v.1.adicCompletion K)ˣ :=
     fun v => U ⟨v.1, hm ▸ v.2⟩
-  have hU' :
-      ∀ v, IsOpen (U' v : Set (v.1.adicCompletion K)ˣ) :=
-    fun v => hU ⟨v.1, hm ▸ v.2⟩
   obtain ⟨x, hx⟩ :=
     exists_principal_quotient_mem_openLocalSubgroups
-      m a U' hU'
+      m a U' (fun v => hU ⟨v.1, hm ▸ v.2⟩)
   refine ⟨x, ?_⟩
   intro v
-  have hv : v.1 ∈ m.finitePart.support := hm.symm ▸ v.2
-  exact hx ⟨v.1, hv⟩
+  exact hx ⟨v.1, (hm.symm ▸ v.2)⟩
 
 /-- The product of prescribed open multiplicative cosets at every
 archimedean place and at the finite places in a modulus. -/
@@ -235,13 +223,8 @@ theorem isOpen_openAllLocalCosetTarget
     ∀ i, IsOpen
       (openAllLocalCosetTarget m a U V i)
   | Sum.inl v => by
-      change IsOpen
-        (RayClass.unitRatioSet (a.2 v.1) (U v))
       exact RayClass.isOpen_unitRatioSet _ _ (hU v)
   | Sum.inr w => by
-      change IsOpen
-        (RayClass.unitRatioSet
-          (IdeleGroup.infiniteComponent w a) (V w))
       exact RayClass.isOpen_unitRatioSet _ _ (hV w)
 
 /-- The given idele supplies a point in the simultaneous all-place
@@ -286,20 +269,15 @@ theorem exists_principal_quotient_mem_openAllLocalSubgroups
         IdeleGroup.infiniteComponent w a *
             (IdeleGroup.infiniteComponent w
               (principalIdele K x))⁻¹ ∈ V w) := by
-  let W : Set
-      ((i : RayClass.ApproximationPlace m) →
-        RayClass.approximationCompletion m i) :=
+  let W :=
     Set.univ.pi (openAllLocalCosetTarget m a U V)
-  have hWOpen : IsOpen W := by
-    exact isOpen_set_pi Set.finite_univ fun i _hi =>
+  have hWOpen := isOpen_set_pi Set.finite_univ fun i _hi =>
       isOpen_openAllLocalCosetTarget
         m a U V hU hV i
-  have hWNonempty : W.Nonempty :=
-    ⟨openLocalCosetTargetPoint m a,
-      openLocalCosetTargetPoint_mem_all m a U V⟩
   obtain ⟨x, hx⟩ :=
     (RayClass.denseRange_approximationEmbedding m).exists_mem_open
-      hWOpen hWNonempty
+      hWOpen (⟨openLocalCosetTargetPoint m a,
+        openLocalCosetTargetPoint_mem_all m a U V⟩)
   let w₀ : InfinitePlace K := Classical.choice inferInstance
   have hxw₀ :=
     hx (Sum.inr w₀) (Set.mem_univ (Sum.inr w₀))
@@ -314,7 +292,7 @@ theorem exists_principal_quotient_mem_openAllLocalSubgroups
     apply Units.ne_zero y₀
     rw [hy₀x, hxzero,
       NumberField.InfinitePlace.Completion.coe_zero]
-  let xu : Kˣ := Units.mk0 x hx0
+  let xu := Units.mk0 x hx0
   refine ⟨xu, ?_, ?_⟩
   · intro v
     have hvx :=
@@ -381,27 +359,25 @@ theorem exists_principal_quotient_mem_openAllLocalSubgroups_finset
         IdeleGroup.infiniteComponent w a *
             (IdeleGroup.infiniteComponent w
               (principalIdele K x))⁻¹ ∈ V w) := by
-  let m : RayClass.Modulus K := modulusOfFinset S
+  let m := modulusOfFinset S
   have hm : m.finitePart.support = S := by
     simp [m]
   let U' : ∀ v : ↥m.finitePart.support,
       Subgroup (v.1.adicCompletion K)ˣ :=
     fun v => U ⟨v.1, hm ▸ v.2⟩
-  have hU' :
-      ∀ v, IsOpen (U' v : Set (v.1.adicCompletion K)ˣ) :=
-    fun v => hU ⟨v.1, hm ▸ v.2⟩
   obtain ⟨x, hfinite, hinfinite⟩ :=
     exists_principal_quotient_mem_openAllLocalSubgroups
-      m a U' V hU' hV
+      m a U' V (fun v => hU ⟨v.1, hm ▸ v.2⟩) hV
   refine ⟨x, ?_, hinfinite⟩
   intro v
-  have hv : v.1 ∈ m.finitePart.support := hm.symm ▸ v.2
-  exact hfinite ⟨v.1, hv⟩
+  exact hfinite ⟨v.1, (hm.symm ▸ v.2)⟩
+
+section
+
+variable (S : Finset (HeightOneSpectrum (𝓞 K))) (a : ∀ v : ↥S, (v.1.adicCompletion K)ˣ)
 
 /-- A finite local family, extended by `1`, is a finite idele. -/
-def finiteIdeleOfFinset
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (a : ∀ v : ↥S, (v.1.adicCompletion K)ˣ) :
+def finiteIdeleOfFinset :
     FiniteIdeleGroup K := by
   let f : ∀ v : HeightOneSpectrum (𝓞 K),
       (v.adicCompletion K)ˣ :=
@@ -415,51 +391,41 @@ def finiteIdeleOfFinset
     ext v
     simp
   filter_upwards [haway] with v hv
-  change f v ∈ (v.adicCompletionIntegers K).units
   simp [f, hv]
 
 @[simp]
 theorem finiteIdeleOfFinset_apply_mem
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (a : ∀ v : ↥S, (v.1.adicCompletion K)ˣ)
     (v : ↥S) :
     finiteIdeleOfFinset S a v.1 = a v := by
   classical
-  change (if hv : v.1 ∈ S then a ⟨v.1, hv⟩ else 1) = a v
   exact dite_eq_left v.2
 
 @[simp]
 theorem finiteIdeleOfFinset_apply_notMem
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (a : ∀ v : ↥S, (v.1.adicCompletion K)ˣ)
     (v : HeightOneSpectrum (𝓞 K)) (hv : v ∉ S) :
     finiteIdeleOfFinset S a v = 1 := by
   classical
-  change (if hmem : v ∈ S then a ⟨v, hmem⟩ else 1) =
-    (1 : (v.adicCompletion K)ˣ)
   exact dite_eq_right hv
 
 /-- The idele whose prescribed finite components are `a` and whose other
 finite and all infinite components are `1`. -/
-def ideleOfFiniteLocalFamily
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (a : ∀ v : ↥S, (v.1.adicCompletion K)ˣ) :
+def ideleOfFiniteLocalFamily :
     IdeleGroup K :=
   (1, finiteIdeleOfFinset S a)
 
 @[simp]
 theorem ideleOfFiniteLocalFamily_finiteComponent
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (a : ∀ v : ↥S, (v.1.adicCompletion K)ˣ)
     (v : ↥S) :
     (ideleOfFiniteLocalFamily S a).2 v.1 = a v :=
   finiteIdeleOfFinset_apply_mem S a v
 
+end
+
+variable (S : Finset (HeightOneSpectrum (𝓞 K))) (U : ∀ v : ↥S, Subgroup (v.1.adicCompletion K)ˣ)
+
 /-- The diagonal map from `Kˣ` to a finite product of local multiplicative
 quotients. -/
-def principalLocalQuotientMap
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (U : ∀ v : ↥S, Subgroup (v.1.adicCompletion K)ˣ) :
+def principalLocalQuotientMap :
     Kˣ →* (∀ v : ↥S, (v.1.adicCompletion K)ˣ ⧸ U v) :=
   MonoidHom.pi fun v =>
     (QuotientGroup.mk' (U v)).comp
@@ -467,34 +433,10 @@ def principalLocalQuotientMap
 
 @[simp]
 theorem principalLocalQuotientMap_apply
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (U : ∀ v : ↥S, Subgroup (v.1.adicCompletion K)ˣ)
     (x : Kˣ) (v : ↥S) :
     principalLocalQuotientMap S U x v =
       QuotientGroup.mk' (U v) ((principalIdele K x).2 v.1) :=
   rfl
-
-/-- Multiplicative weak approximation is equivalently surjectivity of the
-diagonal map to every finite product of quotients by open local subgroups. -/
-theorem principalLocalQuotientMap_surjective
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (U : ∀ v : ↥S, Subgroup (v.1.adicCompletion K)ˣ)
-    (hU : ∀ v, IsOpen (U v : Set (v.1.adicCompletion K)ˣ)) :
-    Function.Surjective (principalLocalQuotientMap S U) := by
-  intro q
-  choose a ha using fun v : ↥S =>
-    QuotientGroup.mk_surjective (q v)
-  let α : IdeleGroup K :=
-    ideleOfFiniteLocalFamily S a
-  obtain ⟨x, hx⟩ :=
-    exists_principal_quotient_mem_openLocalSubgroups_finset
-      S α U hU
-  refine ⟨x, ?_⟩
-  funext v
-  rw [principalLocalQuotientMap_apply, ← ha v]
-  apply Eq.symm
-  apply (QuotientGroup.eq_iff_div_mem).2
-  simpa [α, div_eq_mul_inv] using hx v
 
 end IdeleGroup
 

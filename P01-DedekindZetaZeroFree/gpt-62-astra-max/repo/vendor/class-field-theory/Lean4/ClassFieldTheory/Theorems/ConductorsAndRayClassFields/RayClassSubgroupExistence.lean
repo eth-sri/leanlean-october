@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -34,11 +30,7 @@ noncomputable section
 namespace ClassFieldTheory
 
 /-- Every ray-class subgroup has a finite abelian class-field realization. -/
-theorem rayClassSubgroup_existence
-    (K : Type) [Field K] [NumberField K]
-    (m : RayClassModulus K) (H : Subgroup (RayClassGroup m)) :
-    Nonempty (RayClassSubgroupRealization K m H) := by
-  exact GlobalClassFieldComparison.rayClassSubgroup_existence K m H
+alias rayClassSubgroup_existence := GlobalClassFieldComparison.rayClassSubgroup_existence
 
 end ClassFieldTheory
 

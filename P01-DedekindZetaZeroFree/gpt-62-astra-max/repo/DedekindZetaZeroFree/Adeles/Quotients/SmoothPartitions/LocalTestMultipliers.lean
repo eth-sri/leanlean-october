@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Adeles.Quotients.HermitianPairings.LaplacianChartTransport
 
 public import DedekindZetaZeroFree.Adeles.Quotients.GreenIdentities.CotangentCutoffSupport
 public import DedekindZetaZeroFree.Adeles.Quotients.HermitianPairings.Defs
@@ -15,22 +16,19 @@ open KPContCotangentOverlapRationalBranches KPContActualCotangentPieceHilbertSum
 open KPContActualCotangentCountableShrinking KPContActualSectorFiniteSupportPartition
 open KPContCotangentActualOverlap KPContCotangentActualGenuineTwistIsotropy
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {C : KPGlobalTorusInducingPlan.ModelData F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable {U : KPMsRationalCompactCrossPairing.Level F ζ hζ}
-private theorem coefficient_eq (s : KPContSectorSmoothFramesSupport.Sections F ζ hζ
-    (level F ζ hζ C R P H U) R P H)
-    (a : ShrunkChart F ζ hζ (level F ζ hζ C R P H U) R P H) (x : omega a) :
-    sectionFields s a x = (s a.component).val (labeledA (placeEquiv F ζ hζ) x.val) := by
-  simp [sectionFields, LiftedChart.coefficient, isotropyChart, ChartKind.representative]
+    {C : KPGlobalTorusInducingPlan.ModelData F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsRationalCompactCrossPairing.Level F ζ hζ}
+private alias coefficient_eq := DedekindZetaZeroFree.KPContActualPartitionPairing.LaplacianChartTransport.coefficient_eq
 
-private theorem local_product {n : ℕ}
-    (a : Fin n → ShrunkChart F ζ hζ (level F ζ hζ C R P H U) R P H)
+variable {n : ℕ} (a : Fin n → ShrunkChart F ζ hζ (level F ζ hζ C R P H U) R P H)
     {K O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ (level F ζ hζ C R P H U))}
-    (Q : FinitePartition F ζ hζ (level F ζ hζ C R P H U) R P H a K O)
-    (φ : Tests F ζ hζ C R P H U) (i : Fin n) :
+    (Q : FinitePartition F ζ hζ (level F ζ hζ C R P H U) R P H a K O) (φ : Tests F ζ hζ C R P H U)
+    (i : Fin n)
+
+private theorem local_product :
     ∃ τ : localScalarTests (a i),
       (∀ x : omega (a i), τ.val x = (Q.multiplier i (q (a i) x.val) : ℂ) *
         sectionFields φ.val (a i) x) ∧
@@ -53,8 +51,7 @@ private theorem local_product {n : ℕ}
     funext x
     by_cases hx : x ∈ omega (a i)
     · simpa [liftExtension, hx] using (hf ⟨x,hx⟩).symm
-    · have hz := Q.lift_zero_outside i (labeledA (placeEquiv F ζ hζ) x) hx
-      simp [liftExtension, hx, g, hz]
+    · simp [liftExtension, hx, g, (Q.lift_zero_outside i (labeledA (placeEquiv F ζ hζ) x) hx)]
   have hts : tsupport g ⊆ labeledA (placeEquiv F ζ hζ) ⁻¹' tsupport (Q.lift i) := by
     apply closure_minimal _ ((isClosed_tsupport _).preimage
       KPContActualGlobalGreen.contDiff_labeledA.continuous)
@@ -63,8 +60,7 @@ private theorem local_product {n : ℕ}
     intro hz
     exact hx (by simp [g, hz])
   have hi : tsupport g ⊆ omega (a i) := hts.trans (fun _ hx => Q.lift_support_subset i hx)
-  have hcInv : Continuous (labeledAInv (placeEquiv F ζ hζ)) := by
-    exact (CotangentLogCoframe.A (d F)).symm.continuous.comp
+  have hcInv : Continuous (labeledAInv (placeEquiv F ζ hζ)) := (CotangentLogCoframe.A (d F)).symm.continuous.comp
       (continuous_pi fun k => continuous_apply _)
   have hinv (x : M F) : labeledAInv (placeEquiv F ζ hζ)
       (labeledA (placeEquiv F ζ hζ) x) = x := by
@@ -107,11 +103,7 @@ private theorem local_product {n : ℕ}
   · simpa only [he] using hcompact
   · simpa only [he] using hi
 
-theorem localize_test {n : ℕ}
-    (a : Fin n → ShrunkChart F ζ hζ (level F ζ hζ C R P H U) R P H)
-    {K O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ (level F ζ hζ C R P H U))}
-    (Q : FinitePartition F ζ hζ (level F ζ hζ C R P H U) R P H a K O)
-    (φ : Tests F ζ hζ C R P H U) (i : Fin n) :
+theorem localize_test :
     ∃ (ψ : Tests F ζ hζ C R P H U) (τ : localScalarTests (a i)),
       (∀ j z, (ψ.val j).val z =
         (Q.multiplier i (KPCuspCutoffGraph.basePoint F ζ hζ H.totallyComplex

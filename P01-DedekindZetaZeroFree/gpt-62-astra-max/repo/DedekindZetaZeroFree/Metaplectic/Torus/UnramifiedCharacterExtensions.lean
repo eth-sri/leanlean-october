@@ -11,7 +11,7 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.FrozenChoices
 open KPGlobalProductPolarizationCharacter
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-open _root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter renaming fromRawLocal → fromRawLocal
+open _root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter (fromRawLocal)
 
 theorem exists_initial :
     ∃ P : CompatibleLocalData F A.zeta12 A.primitive_zeta12,

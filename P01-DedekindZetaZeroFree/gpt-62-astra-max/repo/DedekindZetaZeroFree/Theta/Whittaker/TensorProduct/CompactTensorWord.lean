@@ -13,9 +13,9 @@ open MomentSources NumberField MeasureTheory KPAdelicCoverRestrictedProduct
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η}
-variable {N : TraceHaarTransport R} {C : JointDigitDescentSources R N}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η}
+    {N : TraceHaarTransport R} {C : JointDigitDescentSources R N}
 
 def mixedRaw (k : InfinitePlace F → KPCplxCharacterHaar.ComplexSU2)
     (a : ∀ q : KPFinitePlace F,
@@ -70,7 +70,7 @@ theorem FrozenTensor.mixed_word_exact {v : R.A.UnitQuotient} (X : FrozenTensor R
     C.factorization.references C.factorization.bad X.level (PiTensorProduct.tprod ℂ x))
   let L := fun p : X.level.val => mixedAction (C := C) k a p.val
   let A := fun p : X.level.val => scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
-    (localInjection F R.A.zeta12 R.A.primitive_zeta12 p.val (mixedRaw (R := R) k a p.val))
+    (localInjection F R.A.zeta12 R.A.primitive_zeta12 p.val (mixedRaw k a p.val))
   have ht (g : Group R) := independent_slot_word T L A
     (mixed_intertwining k a X.level) Finset.univ.toList.reverse
       (List.nodup_reverse.mpr (Finset.nodup_toList _)) X.component g
@@ -80,7 +80,6 @@ theorem FrozenTensor.mixed_word_exact {v : R.A.UnitQuotient} (X : FrozenTensor R
     funext g
     rw [ht]
     exact congrFun X.function_eq _
-  have hi := C.factorization.product_integrable X.level (fun p => L p (X.component p))
   rw [← C.factorization.product_exact X.level (fun p => L p (X.component p))]
   unfold MomentSources.fourier
   apply integral_congr_ae

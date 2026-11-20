@@ -16,11 +16,11 @@ local instance : AddCommGroup complexCore := Submodule.addCommGroup complexCore
 local instance : Module ℂ complexCore := Submodule.module complexCore
 local instance : TopologicalSpace complexCore := instTopologicalSpaceSubtype
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
-variable (s : RestrictedTensorSimple.Level (LiteralSource.bad A P C))
-variable (x : ∀ j : s.val, LiteralSource.Plus A P C j.val) (w : InfinitePlace F)
-variable (hw : Sum.inl w ∈ s.val)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (s : RestrictedTensorSimple.Level (LiteralSource.bad A P C))
+    (x : ∀ j : s.val, LiteralSource.Plus A P C j.val) (w : InfinitePlace F)
+    (hw : Sum.inl w ∈ s.val)
 
 def wholeRawSlot (g : LiteralSource.Raw A) : PrincipalSeries negativeParameter →L[ℂ] ℂ :=
   (ContinuousMap.evalCLM ℂ (⟨g, Set.mem_singleton g⟩ : ({g} : Set (LiteralSource.Raw A)))).comp
@@ -37,12 +37,11 @@ theorem wholeRawSlot_compact (K : Set (LiteralSource.Raw A)) (hK : IsCompact K)
     (g : K) (f : PrincipalSeries negativeParameter) :
     wholeRawSlot A P C s x w g.val f = rawSmoothObservation A P C s x w K hK f g := by
   let L := (ContinuousMap.evalCLM ℂ g).comp (rawSmoothObservation A P C s x w K hK)
-  have he : (wholeRawSlot A P C s x w g.val : PrincipalSeries negativeParameter → ℂ) = L := by
-    apply smoothInclusion_denseRange.equalizer (wholeRawSlot A P C s x w g.val).continuous L.continuous
-    funext v
-    exact (wholeRawSlot_core A P C s x w hw g.val v).trans
-      (rawSmoothObservation_core A P C s x w hw K hK v g).symm
-  exact congrFun he f
+  refine congrFun ?_ f
+  apply smoothInclusion_denseRange.equalizer (wholeRawSlot A P C s x w g.val).continuous L.continuous
+  funext v
+  exact (wholeRawSlot_core A P C s x w hw g.val v).trans
+    (rawSmoothObservation_core A P C s x w hw K hK v g).symm
 
 include hw in
 

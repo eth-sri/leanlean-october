@@ -12,7 +12,7 @@ open MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.ActualLocalProduct
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellContinuation KPRankOneShellRepair
-open _root_.DedekindZetaZeroFree.KPRankOneTranslatedMeromorphy renaming actual_coordinate_regular → actual_coordinate_regular
+open _root_.DedekindZetaZeroFree.KPRankOneTranslatedMeromorphy (actual_coordinate_regular)
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
@@ -30,25 +30,23 @@ theorem finite_coordinate_analytic
       (fun s => ((actualCanonicalContinued F q ζ hζ S P μ hμ .plus s φ).val k).val t)
       KPContinuation.spectralDomain := by
     intro s hs
-    have hc := actual_coordinate_regular F ζ hζ q S P μ hμ
-      (actualFamilyUniformizer F q) (actualFamilyUniformizer_spec F q) .plus φ k t
-    have hs' : convergenceHalfPlane .plus s := by
-      simpa [convergenceHalfPlane, KPContinuation.spectralDomain, neg_div] using hs
-    exact (hc.2 s (denominator_ne_zero_of_convergence (LocalField F q) .plus s hs')).differentiableWithinAt
+    refine ((actual_coordinate_regular F ζ hζ q S P μ hμ
+      (actualFamilyUniformizer F q) (actualFamilyUniformizer_spec F q) .plus φ k t).2 s (denominator_ne_zero_of_convergence (LocalField F q) .plus s ?_)).differentiableWithinAt
+    simpa [convergenceHalfPlane, KPContinuation.spectralDomain, neg_div] using hs
   exact hd.analyticOnNhd KPContinuation.spectralDomain_isOpen
 
 variable (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
-variable (S : ∀ q : E, CanonicalFiniteInducingData F ζ hζ q.val)
-variable (P : ∀ q : E, Polarization (S q).heisenberg)
-variable (μ : ∀ q : E, Measure (LocalField F q.val))
-variable [hHaar : ∀ q : E, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q : E, μ q ((valuation (LocalField F q.val)).integer : Set (LocalField F q.val)) = 1)
-variable (φ : ∀ q : E, compactPicture (S q).borel (P q) (S q).iwasawa .plus)
-variable (k : ∀ q : E, (S q).iwasawa.compact.toOpenSubgroup)
+    (S : ∀ q : E, CanonicalFiniteInducingData F ζ hζ q.val)
+    (P : ∀ q : E, Polarization (S q).heisenberg)
+    (μ : ∀ q : E, Measure (LocalField F q.val))
+    [hHaar : ∀ q : E, (μ q).IsAddHaarMeasure]
+    (hμ : ∀ q : E, μ q ((valuation (LocalField F q.val)).integer : Set (LocalField F q.val)) = 1)
+    (φ : ∀ q : E, compactPicture (S q).borel (P q) (S q).iwasawa .plus)
+    (k : ∀ q : E, (S q).iwasawa.compact.toOpenSubgroup)
 variable (t : ∀ q : E, actualTorus F ζ hζ q.val)
-variable (β : NumberField.InfinitePlace F → ℂˣ)
-variable (ψ : NumberField.InfinitePlace F → KPComplexIntertwinerParameterMajorant.CompactPicture)
-variable (g : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2)
+    (β : NumberField.InfinitePlace F → ℂˣ)
+    (ψ : NumberField.InfinitePlace F → KPComplexIntertwinerParameterMajorant.CompactPicture)
+    (g : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2)
 
 end DedekindZetaZeroFree.KPGlobalResidualKernel.ActualLocalProduct
 

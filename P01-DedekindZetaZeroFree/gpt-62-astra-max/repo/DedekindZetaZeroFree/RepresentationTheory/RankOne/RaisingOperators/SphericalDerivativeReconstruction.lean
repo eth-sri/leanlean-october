@@ -55,15 +55,7 @@ theorem actualRight_single_slot
   funext t
   rw [matrixExp_single_slot]
 
- theorem insertion_commutes_finite
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (a : KPSmoothActualFlowData.GInfinity F)
-    (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
-    Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) c.val := by
-  apply DedekindZetaZeroFree.RepresentationTheory.ArchFiniteSplitting.insertion_commutes_finite
-    F ζ hζ a ⟨c.val, ?_⟩
-  obtain ⟨x, hx, he⟩ := c.property
-  exact Subgroup.mem_map.mpr ⟨x, fun w => Subgroup.mem_iInf.mp hx w, he⟩
+ alias insertion_commutes_finite := DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal.insertion_commutes_finite
 
  theorem update_mul_single
     (F : Type) [Field F] [NumberField F] (w : NumberField.InfinitePlace F)
@@ -110,15 +102,13 @@ theorem actualRight_pure_tensor
       C * (f w (a w * KPSmoothActualFlowData.matrixExponential
         ((t : ℂ) • slotLieMatrix i j))) * ∏ v ∈ Finset.univ.erase w, f v (a v) := by
     let e := KPSmoothActualFlowData.matrixExponential ((t : ℂ) • slotLieMatrix i j)
-    have hc := insertion_commutes_finite F ζ hζ
-      (Function.update (fun _ => 1) w (Matrix.ProjGenLinGroup.mk e)) c
-    have hm := (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1
     have ha : (fun v => Matrix.ProjGenLinGroup.mk (a v)) *
         Function.update (fun _ => 1) w (Matrix.ProjGenLinGroup.mk e) =
         (fun v => Matrix.ProjGenLinGroup.mk ((Function.update a w (a w * e)) v)) := by
       funext v
       by_cases hv : v = w <;> simp [hv, map_mul]
-    rw [mul_assoc, hc.eq.symm, ← mul_assoc, ← hm, ha, hf]
+    rw [mul_assoc, (insertion_commutes_finite F ζ hζ
+      (Function.update (fun _ => 1) w (Matrix.ProjGenLinGroup.mk e)) c).eq.symm, ← mul_assoc, ← ((KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1), ha, hf]
     rw [← Finset.mul_prod_erase Finset.univ _ (Finset.mem_univ w)]
     simp only [Function.update_self]
     rw [mul_assoc]
@@ -251,73 +241,25 @@ private theorem flatR_pure_tensor_formula
   simp only [Finset.mul_sum]
   ring
 
-private theorem complex_spherical_twist (s : ℂ) (g : KPCplxCharacterHaar.ComplexGL2) :
-    Complex.exp (s * (KPContFlatLogNormSmooth.complexMatrixLogNorm g : ℂ)) *
-      KPCplxPrincipalSeriesCharts.sphericalSection KPCplxPrincipalSeriesCharts.positiveParameter g =
-        KPContHolomorphicKGeneration.complexSpherical s g := by
-  have hr : 0 < ‖((g : Matrix (Fin 2) (Fin 2) ℂ).det)‖ /
-      (‖g 1 0‖^2+‖g 1 1‖^2) := by
-    have hsq := KPContFlatLogNormSmooth.complexMatrixLogNorm_argument_pos g
-    have hn : 0 ≤ ‖((g : Matrix (Fin 2) (Fin 2) ℂ).det)‖ /
-        (‖g 1 0‖^2+‖g 1 1‖^2) := by positivity
-    nlinarith
-  rw [← KPContHolomorphicKGeneration.complexSpherical_zero]
-  unfold KPContFlatLogNormSmooth.complexMatrixLogNorm KPContHolomorphicKGeneration.complexSpherical
-  dsimp only [KPCplxPrincipalSeriesCharts.bottomRowNormSq]
-  rw [Real.log_pow, ← Complex.exp_add]
-  push_cast
-  congr 1
-  change s * (2 * (Real.log (‖((g : Matrix (Fin 2) (Fin 2) ℂ).det)‖ /
-    (‖g 1 0‖^2+‖g 1 1‖^2)) : ℂ)) + _ = _
-  have hdet : ((Matrix.GeneralLinearGroup.det g : ℂˣ) : ℂ) =
-      (g : Matrix (Fin 2) (Fin 2) ℂ).det := rfl
-  rw [hdet]
-  ring
+private alias complex_spherical_twist := SixRealLieWordExpansion.complex_spherical_twist
 
-private theorem spherical_word_matrix_smooth (w : KPContHolomorphicKGeneration.RealLieWord) (s : ℂ) :
-    ContDiffOn ℝ (⊤ : ℕ∞)
-      (KPCplxPrincipalSeriesCharts.matrixFunction (KPContHolomorphicKGeneration.complexSphericalWord w s))
-      {g | g.det ≠ 0} := by
-  obtain ⟨n,p,h,hh,he⟩ := ActualRaisingLocal.sphericalWord_polynomial_smooth_factors w
-  have hs : ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun g => s * (KPContFlatLogNormSmooth.complexMatrixLogNorm g : ℂ)) {g | g.det ≠ 0} := by
-    apply ContDiffOn.mul contDiffOn_const
-    exact Complex.ofRealCLM.contDiff.comp_contDiffOn
-      (KPContFlatLogNormSmooth.complexMatrixLogNorm_contDiffOn.of_le (by simp))
-  have hf := ((KPCplxPrincipalSeriesCharts.principalSeries_mem_iff _ _).mp
-    (KPCplxPrincipalSeriesCharts.sphericalSection KPCplxPrincipalSeriesCharts.positiveParameter).property).2
-  have hsum : ContDiffOn ℝ (⊤ : ℕ∞) (fun g => ∑ j, (p j).eval s * h j g) {g | g.det ≠ 0} := by
-    apply ContDiffOn.sum
-    intro j hj
-    exact contDiffOn_const.mul (hh j)
-  apply ((hs.cexp.mul hf).mul hsum).congr
-  intro g hg
-  let a := Matrix.GeneralLinearGroup.mkOfDetNeZero g hg
-  have hm (f : KPCplxCharacterHaar.ComplexGL2 → ℂ) :
-      KPCplxPrincipalSeriesCharts.matrixFunction f g = f a := by
-    simp only [KPCplxPrincipalSeriesCharts.matrixFunction]
-    rw [dite_eq_left (show g.det ≠ 0 from hg)]
-  rw [hm, he, ← complex_spherical_twist]
-  rw [hm (KPCplxPrincipalSeriesCharts.sphericalSection KPCplxPrincipalSeriesCharts.positiveParameter)]
-  rfl
+private alias spherical_word_matrix_smooth := SixRealLieWordExpansion.spherical_word_matrix_smooth
 
 set_option backward.isDefEq.respectTransparency false in
 open scoped Matrix.Norms.Operator in
 private theorem parameter_path_hasDeriv_components (g : KPCplxCharacterHaar.ComplexGL2)
     (M : Matrix (Fin 2) (Fin 2) ℂ) :
     ∀ i j, HasDerivAt (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) i j) (((g : Matrix (Fin 2) (Fin 2) ℂ) * M) i j) 0 := by
-  have h := hasDerivAt_exp_smul_const (𝕂 := ℝ) M (0 : ℝ)
+  have h := hasDerivAt_exp_smul_const M (0 : ℝ)
   have hmat := h.const_mul (g : Matrix (Fin 2) (Fin 2) ℂ)
   simp only [zero_smul, NormedSpace.exp_zero, one_mul] at hmat
   intro i j
-  have hi := (ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt 0 hmat
-  have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt 0 hi
   have he : (fun t : ℝ => (t : ℂ) • M) = fun t => t • M := by
     funext t; ext i j; simp [Complex.real_smul]
-  convert hj using 1
+  convert ((ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt 0 ((ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt 0 hmat)) using 1
   · funext t
-    change ((g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) i j =
-      ((g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp (t • M)) i j
+    change (g * NormedSpace.exp ((t : ℂ) • M)) i j =
+      (g * NormedSpace.exp (t • M)) i j
     rw [congrFun he t]
   · rfl
 
@@ -328,30 +270,23 @@ private theorem rightDerivative_smooth_fderiv (f : KPCplxCharacterHaar.ComplexGL
     deriv (fun t : ℝ => f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))) 0 =
       fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f) (g : Matrix (Fin 2) (Fin 2) ℂ)
         ((g : Matrix (Fin 2) (Fin 2) ℂ) * M) := by
-  have hmat : HasDerivAt (fun t : ℝ => (g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M))
-      ((g : Matrix (Fin 2) (Fin 2) ℂ) * M) 0 :=
-    hasDerivAt_pi.mpr (fun i => hasDerivAt_pi.mpr (parameter_path_hasDeriv_components g M i))
-  have hcont : Continuous (fun m : Matrix (Fin 2) (Fin 2) ℂ => m.det) := by fun_prop
-  have hh := (hf.differentiableOn (by simp)).differentiableAt
-    ((isOpen_ne.preimage hcont).mem_nhds (Matrix.GeneralLinearGroup.det_ne_zero g))
-  have hc := hh.hasFDerivAt.comp_hasDerivAt_of_eq 0 hmat (by simp)
   have heq : (fun t : ℝ => f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))) =
-      KPCplxPrincipalSeriesCharts.matrixFunction f ∘ (fun t : ℝ => (g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) := by
+      KPCplxPrincipalSeriesCharts.matrixFunction f ∘ (fun t : ℝ => g * NormedSpace.exp ((t : ℂ) • M)) := by
     funext t
-    have hu := Matrix.GeneralLinearGroup.det_ne_zero (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))
     have he : ((g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M)) : Matrix (Fin 2) (Fin 2) ℂ) =
-        (g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M) := by congr 1
+        g * NormedSpace.exp ((t : ℂ) • M) := by congr 1
     dsimp only [Function.comp_def]
     rw [← he]
     unfold KPCplxPrincipalSeriesCharts.matrixFunction
-    rw [dif_pos (show ((g : Matrix (Fin 2) (Fin 2) ℂ) *
+    rw [dif_pos (show (g *
       (KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M) : Matrix (Fin 2) (Fin 2) ℂ)).det ≠ 0 from by
-        simpa only [Units.val_mul] using hu)]
+        simpa using (Matrix.GeneralLinearGroup.det_ne_zero (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))))]
     apply congrArg f
     apply Units.ext
     rfl
   rw [heq]
-  exact hc.deriv
+  exact (((hf.differentiableOn (by simp)).differentiableAt
+    ((isOpen_ne.preimage (by fun_prop)).mem_nhds (Matrix.GeneralLinearGroup.det_ne_zero g))).hasFDerivAt.comp_hasDerivAt_of_eq 0 (hasDerivAt_pi.mpr (fun i => hasDerivAt_pi.mpr (parameter_path_hasDeriv_components g M i))) (by simp)).deriv
 
 open scoped Matrix.Norms.Elementwise in
 
@@ -402,23 +337,14 @@ theorem actualRightWord_flat_spherical_tensor
   rw [actualRightWord_pure_tensor F ζ hζ r c _ _ _ hf]
   simp_rw [nativeSlotWord_complex_spherical]
 
-theorem sourceCore_le_scalarSmooth
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
-    KPMsRationalCompactCrossPairing.sourceCore F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ) ≤
-      KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ
-        (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) := by
-  unfold KPMsRationalCompactCrossPairing.sourceCore KPGlobalEisensteinData.hcHeckeCore
-  exact iSup_le fun _ => iSup_le fun _ => inf_le_left.trans inf_le_left
+alias sourceCore_le_scalarSmooth := FinitePureCoreExpansion.sourceCore_le_scalarSmooth_port
 
 theorem source_common_level
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ)) :
     ∃ U : KPMsRationalCompactCrossPairing.Level F ζ hζ,
       t ∈ KPContFlatCommonLevelKernel.CommonLevel F ζ hζ U ∧
-      KPGlobalTorusFunctionData.globalLevel F ζ hζ U ≤ (KPContFlatSourceRecipe.D F ζ hζ).K ∧
-      ∀ s g (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U),
-        (KPContFlatSourceRecipe.flatR F ζ hζ s t).val (g * u.val) =
-          (KPContFlatSourceRecipe.flatR F ζ hζ s t).val g := by
+      KPGlobalTorusFunctionData.globalLevel F ζ hζ U ≤ (KPContFlatSourceRecipe.D F ζ hζ).K := by
   obtain ⟨V, hV⟩ := KPGlobalResidualKernel.ScatteringResidue.scalarSmooth_exists_right_level
     (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) t.val
     (sourceCore_le_scalarSmooth F ζ hζ t.property)
@@ -433,13 +359,10 @@ theorem source_common_level
       (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U) :
       KPContFlatSourceRecipe.alpha F ζ hζ (g * u.val) = KPContFlatSourceRecipe.alpha F ζ hζ g :=
     KPContFlatFullProductIwasawa.alpha_mul_compact F ζ hζ g ⟨u.val, hK (hUK u.property)⟩
-  refine ⟨U, ?_, hUK.trans hK, ?_⟩
+  refine ⟨U, ?_, hUK.trans hK⟩
   · intro g u
     refine ⟨hV g ⟨u.val, hUV u.property⟩, ?_⟩
     rw [halpha g u, sub_self, Complex.ofReal_zero, zero_mul]
-  · intro s g u
-    rw [KPContFlatSourceRecipe.flatR_formula, KPContFlatSourceRecipe.flatR_formula,
-      halpha g u, hV g ⟨u.val, hUV u.property⟩]
 
 theorem actual_source_flat_finite_pure_core
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -448,8 +371,6 @@ theorem actual_source_flat_finite_pure_core
       (n : ℕ) (v : Fin n → KPContActualSphericalFlatStage.Stage F ζ hζ U)
       (f : Fin n → NumberField.InfinitePlace F →
         KPCplxPrincipalSeriesCharts.PrincipalSeries KPCplxPrincipalSeriesCharts.positiveParameter),
-      KPGlobalTorusFunctionData.globalLevel F ζ hζ U ≤ (KPContFlatSourceRecipe.D F ζ hζ).K ∧
-      (∀ j w, KPContHolomorphicKGeneration.IsKFinite KPCplxPrincipalSeriesCharts.positiveParameter (f j w)) ∧
       ∀ (s : ℂ) (a : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2)
         (c : KPGlobalTorusFunctionData.finitePart F ζ hζ),
         (KPContFlatSourceRecipe.flatR F ζ hζ s t).val
@@ -458,7 +379,7 @@ theorem actual_source_flat_finite_pure_core
           ∑ j, (KPContFlatSourceRecipe.flatR F ζ hζ s (v j).val).val c.val *
             ∏ w, Complex.exp (s * (KPContFlatLogNormSmooth.complexMatrixLogNorm (a w) : ℂ)) * f j w (a w) := by
   obtain ⟨U,n,v,f,hU,hf,he⟩ := actual_source_finite_pure_core F ζ hζ t
-  refine ⟨U,n,v,f,hU,hf,?_⟩
+  refine ⟨U, n, v, f, ?_⟩
   intro s a c
   rw [KPContFlatSourceRecipe.flatR_formula, alpha_arch_finite_formula F ζ hζ, he,
     Finset.mul_sum]
@@ -491,7 +412,7 @@ private theorem source_finite_pure_with_spherical_formula
           (fun w => Matrix.ProjGenLinGroup.mk (a w)) * c.val) =
           (v j).val.val.val c.val * ∏ w, KPCplxPrincipalSeriesCharts.sphericalSection
             KPCplxPrincipalSeriesCharts.positiveParameter (a w) := by
-  obtain ⟨U₀,htU,hUK,_⟩ := source_common_level F ζ hζ t
+  obtain ⟨U₀, htU, hUK⟩ := source_common_level F ζ hζ t
   obtain ⟨n,m,k,A,f,hf,he⟩ := actual_source_uniform_finite_evaluation_separation F ζ hζ t
   have hb := fun j : Fin n => actual_source_finite_evaluation_spherical_reseeding F ζ hζ t
     U₀ htU hUK m k (A j)
@@ -539,8 +460,7 @@ private theorem harmonic_local_clears (ℓ : ℕ)
     (hf : f ∈ KPCplxIntertwinerEigenvalues.harmonicKType KPCplxPrincipalSeriesCharts.positiveParameter ℓ) :
     LocalClears f := by
   obtain ⟨n,W,q,b,hq,hq0,hb,he⟩ := ActualRaisingLocal.local_harmonic_cleared_word_reconstruction ℓ f hf
-  have hex := fun j : Fin n => complex_spherical_word_six_real_expansion (W j)
-  choose m r c hr using hex
+  choose m r c hr using (fun j : Fin n => complex_spherical_word_six_real_expansion (W j))
   let I := Σ j : Fin n, Fin (m j)
   let e := Fintype.equivFin I
   refine ⟨Fintype.card I, fun k => r (e.symm k).1 (e.symm k).2, q,
@@ -554,11 +474,10 @@ private theorem harmonic_local_clears (ℓ : ℕ)
     rw [Real.log_pow]; push_cast; rfl
   rw [hlog, show s*(2*(Real.log _ : ℂ)) = 2*s*(Real.log _ : ℂ) by ring, he]
   simp_rw [hr, Finset.mul_sum]
-  have hsum := Fintype.sum_sigma (fun k : I => b k.1 s*c k.1 k.2 *
-    KPContHolomorphicKGeneration.complexSphericalWord
-      ((r k.1 k.2).map (fun ij => slotLieMatrix ij.1 ij.2)) s g)
   simp_rw [← mul_assoc]
-  rw [← hsum]
+  rw [← (Fintype.sum_sigma (fun k : I => b k.1 s*c k.1 k.2 *
+    KPContHolomorphicKGeneration.complexSphericalWord
+      ((r k.1 k.2).map (fun ij => slotLieMatrix ij.1 ij.2)) s g))]
   exact (Equiv.sum_comp e.symm _).symm
 
 private theorem clears_zero : LocalClears (0 : KPCplxPrincipalSeriesCharts.PrincipalSeries KPCplxPrincipalSeriesCharts.positiveParameter) := by
@@ -606,7 +525,7 @@ private theorem kfinite_local_clears
   rw [← he]
   clear he
   induction I using Finset.induction_on with
-  | empty => simpa using clears_zero
+  | empty => exact clears_zero
   | @insert ℓ I hℓ ih =>
     rw [Finset.sum_insert hℓ]
     exact clears_add _ _ (harmonic_local_clears ℓ (a ℓ) (ha ℓ (Finset.mem_insert_self ℓ I)))
@@ -656,7 +575,7 @@ private theorem analytic_finite_prod {I : Type*} (l : Finset I) (f : I → ℂ �
     AnalyticOnNhd ℂ (fun s => ∏ i ∈ l, f i s) Set.univ := by
   classical
   induction l using Finset.induction_on with
-  | empty => simpa using (analyticOnNhd_const : AnalyticOnNhd ℂ (fun _ : ℂ => (1 : ℂ)) Set.univ)
+  | empty => exact analyticOnNhd_const
   | @insert i l hi ih =>
     simp only [Finset.prod_insert hi]
     exact (hf i (Finset.mem_insert_self i l)).mul

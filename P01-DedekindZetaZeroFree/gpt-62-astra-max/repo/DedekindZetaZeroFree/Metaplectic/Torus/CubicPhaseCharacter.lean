@@ -21,9 +21,11 @@ private theorem local_class_cube
   rw [← map_pow]
   exact (QuotientGroup.eq_one_iff _).mpr ⟨y, rfl⟩
 
+section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+
 private theorem adjustment_cube
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
     (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
     (v : KPHilbert.Place F) (x : (P.localData v).L) :
@@ -34,20 +36,16 @@ private theorem adjustment_cube
   rw [← map_pow, hx, map_one]
 
 private theorem local_normal
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (v : KPHilbert.Place F)
     (b : KPGlobalProductPolarizationCharacter.LocalE F ζ hζ v) :
     ∃ ε : rootsOfUnity 3 F, ∃ y : (KPHilbert.Completion F v)ˣ,
       b.val = KPPGLLocalCover.centralInjection F ζ hζ v ε * KPPGLLocalCover.A F ζ hζ v y := by
   obtain ⟨y, hy⟩ := b.property
   have ha : KPPGLLocalCover.projection F ζ hζ v (KPPGLLocalCover.A F ζ hζ v y) =
-      KPPGLLocalCover.baseQuotient F v (KPGlobalProductPolarizationCharacter.diagonalHom F v y) := by
-    rfl
+      KPPGLLocalCover.baseQuotient F v (KPGlobalProductPolarizationCharacter.diagonalHom F v y) := rfl
   have hk : b.val / KPPGLLocalCover.A F ζ hζ v y ∈
       (KPPGLLocalCover.projection F ζ hζ v).ker := by
     rw [MonoidHom.mem_ker, map_div, ha]
-    change KPPGLLocalCover.projection F ζ hζ v b.val /
-      KPPGLLocalCover.baseQuotient F v (KPGlobalProductPolarizationCharacter.diagonalHom F v y) = 1
     change KPPGLLocalCover.baseQuotient F v (KPGlobalProductPolarizationCharacter.diagonalHom F v y) =
       KPPGLLocalCover.projection F ζ hζ v b.val at hy
     rw [hy]
@@ -58,11 +56,10 @@ private theorem local_normal
   rw [hε, div_mul_cancel]
 
 private theorem local_A_cube
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (v : KPHilbert.Place F) (y : (KPHilbert.Completion F v)ˣ) :
     KPPGLLocalCover.A F ζ hζ v y ^ 3 = KPPGLLocalCover.A F ζ hζ v (y ^ 3) := by
   have hB := KPHilbert.B3_laws F ζ hζ v
-  have hyy : KPHilbert.B3 F ζ hζ v y y = 1 := (hB.2.2.2.2.2 y).1
+  have hyy := (hB.2.2.2.2.2 y).1
   have h2y : KPHilbert.B3 F ζ hζ v (y * y) y = 1 := by rw [hB.1, hyy, one_mul]
   change (KPPGLLocalCover.coverQuotient F ζ hζ v (KPStandardLocalRootLifts.A F ζ hζ v y)) ^ 3 = _
   rw [← map_pow]
@@ -74,7 +71,6 @@ private theorem local_A_cube
   rfl
 
 private theorem native_cube_positive
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
     (v : KPHilbert.Place F)
     (b : KPGlobalProductPolarizationCharacter.localPreimage F ζ hζ v (P.localData v).L) :
@@ -98,24 +94,22 @@ private theorem native_cube_positive
       change KPGlobalProductPolarizationCharacter.localProjection F ζ hζ v (b.val ^ 3) = 1
       rw [map_pow]; exact local_class_cube F v _⟩
   have hz := (P.localData v).extends_center (b ^ 3) z rfl
-  have hf := KPGlobalProductPolarizationCharacter.localOmega_raw_formula F ζ hζ v z
-    (KPStandardLocalRootLifts.A F ζ hζ v (y ^ 3)) hp.symm
   have hv := ProductPolarizationCharacterDescent.raw_value_on_cube_normal_word F ζ hζ v
     1 (y ^ 3) (by
-      change QuotientGroup.mk' _ (y ^ 3) = 1
       exact (QuotientGroup.eq_one_iff _).mpr ⟨y, rfl⟩)
     (KPStandardLocalRootLifts.A F ζ hζ v (y ^ 3)) (by rw [map_one, one_mul]; rfl)
-  rw [map_pow, hf, hv, map_one, one_mul] at hz
+  rw [map_pow, (KPGlobalProductPolarizationCharacter.localOmega_raw_formula F ζ hζ v z
+    (KPStandardLocalRootLifts.A F ζ hζ v (y ^ 3)) hp.symm), hv, map_one, one_mul] at hz
   exact ⟨_, hz⟩
+
+end
 
 def normUnit : ℂˣ →* (ℝ≥0)ˣ := Units.map nnnormHom.toMonoidHom
 
 private theorem normUnit_positive (u : (ℝ≥0)ˣ) :
     normUnit (KPGlobalCenterRationalCharacter.positiveComplex u) = u := by
   apply Units.ext
-  change ‖((KPGlobalCenterRationalCharacter.positiveComplex u : ℂˣ) : ℂ)‖₊ = (u : ℝ≥0)
   apply NNReal.coe_injective
-  change ‖(((u : ℝ≥0) : ℝ) : ℂ)‖ = ((u : ℝ≥0) : ℝ)
   exact Complex.norm_of_nonneg (NNReal.coe_nonneg _)
 
 private theorem normalized_cube (a : ℂˣ)
@@ -126,28 +120,14 @@ private theorem normalized_cube (a : ℂˣ)
   rw [map_pow, normUnit_positive] at hn
   rw [div_pow, ← map_pow, hu, hn, div_self']
 
-private theorem adjusted_normalized_cube
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-    (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
-    (v : KPHilbert.Place F)
-    (b : KPGlobalProductPolarizationCharacter.localPreimage F ζ hζ v (P.localData v).L) :
-    (KPGlobalProductPolarizationCharacter.adjustedLocalValue F ζ hζ P T v b /
-      KPGlobalCenterRationalCharacter.positiveComplex (normUnit
-        (KPGlobalProductPolarizationCharacter.adjustedLocalValue F ζ hζ P T v b))) ^ 3 = 1 := by
-  apply normalized_cube
-  obtain ⟨u, hu⟩ := native_cube_positive F ζ hζ P v b
-  refine ⟨u, ?_⟩
-  rw [KPGlobalProductPolarizationCharacter.adjustedLocalValue, mul_pow, adjustment_cube, mul_one]
-  exact hu
-
 def normalizedHom : ℂˣ →* ℂˣ where
   toFun a := a / KPGlobalCenterRationalCharacter.positiveComplex (normUnit a)
   map_one' := by simp
   map_mul' a b := by simp only [map_mul]; exact mul_div_mul_comm _ _ _ _
 
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+
 private theorem product_normalized_cube
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
     (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
     (b : KPGlobalProductPolarizationCharacter.B F ζ hζ P) :
@@ -166,12 +146,14 @@ private theorem product_normalized_cube
       (KPGlobalProductPolarizationCharacter.adjustedLocalValue F ζ hζ P T v
         (KPGlobalProductPolarizationCharacter.rawCoordinate F ζ hζ P x v)))) = fun _ => 1 := by
     funext v
-    exact adjusted_normalized_cube F ζ hζ P T v _
+    apply normalized_cube
+    obtain ⟨u, hu⟩ := native_cube_positive F ζ hζ P v _
+    refine ⟨u, ?_⟩
+    rw [KPGlobalProductPolarizationCharacter.adjustedLocalValue, mul_pow, adjustment_cube, mul_one]
+    exact hu
   rw [he, finprod_one]
 
 theorem phaseCharacter_cube
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (C : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
     (L : KPGlobalTorusFiniteStages.Level F ζ hζ C)
     (k : KPGlobalTorusFiniteStages.phaseGroup F ζ hζ C L) :

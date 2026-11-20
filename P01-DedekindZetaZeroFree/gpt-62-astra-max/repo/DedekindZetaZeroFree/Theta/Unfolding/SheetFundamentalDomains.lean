@@ -17,16 +17,9 @@ open ThetaProfileHaarSheets
 
 variable {F : Type} [Field F] [NumberField F]
 
- theorem norm_mul' (A : SArithmeticData F) (y z : A.G) :
-    A.norm (y * z) = A.norm y * A.norm z := by
-  simp only [SArithmeticData.norm, Prod.fst_mul, Prod.snd_mul, Pi.mul_apply,
-    Units.val_mul, norm_mul, mul_pow, Finset.prod_mul_distrib]
-  ring
+ alias norm_mul' := DedekindZetaZeroFree.NormSheetsCoordinates.norm_mul
 
- theorem norm_inv' (A : SArithmeticData F) (y : A.G) :
-    A.norm y⁻¹ = (A.norm y)⁻¹ := by
-  simp only [SArithmeticData.norm, Prod.fst_inv, Prod.snd_inv, Pi.inv_apply,
-    Units.val_inv_eq_inv_val, norm_inv, inv_pow, Finset.prod_inv_distrib, mul_inv]
+ alias norm_inv' := DedekindZetaZeroFree.NormSheetsCoordinates.norm_inv
 
  theorem norm_div' (A : SArithmeticData F) (y z : A.G) :
     A.norm (y / z) = A.norm y / A.norm z := by
@@ -60,8 +53,7 @@ theorem exists_sheetFundamentalDomain (A : SArithmeticData F)
     (v₀ : InfinitePlace F) (μG : Measure A.G) [μG.IsHaarMeasure]
     (x : PositiveAxis) :
     ∃ Ω : Set (Sheet A x),
-      MeasurableSet Ω ∧ IsCompact (closure Ω) ∧
-      (∀ y : Sheet A x, ∃! γ : A.Gamma1, γ • y ∈ Ω) ∧
+      IsCompact (closure Ω) ∧
       IsFundamentalDomain A.Gamma1 Ω (sheetHaar A v₀ μG x) := by
   obtain ⟨K, D, _, _, hD, hDc, _, htiling⟩ :=
     A.exists_multiplicative_quotient_balanced_tiling
@@ -85,14 +77,20 @@ theorem exists_sheetFundamentalDomain (A : SArithmeticData F)
       rw [← e.apply_symm_apply y, ← he]
       simpa only [Ω, e.symm_apply_apply] using (e.injective.mem_set_image (s := D) (a := δ.val * e.symm y))
     exact ⟨γ, (hm γ).mpr hγ, fun δ hδ => hu δ ((hm δ).mp hδ)⟩
-  exact ⟨Ω, hΩ, hΩc, ht, IsFundamentalDomain.mk' hΩ.nullMeasurableSet ht⟩
+  exact ⟨Ω, hΩc, IsFundamentalDomain.mk' hΩ.nullMeasurableSet ht⟩
 
-abbrev SheetQuotient (A : SArithmeticData F) (x : PositiveAxis) :=
+section
+
+variable (A : SArithmeticData F)
+
+abbrev SheetQuotient (x : PositiveAxis) :=
   Quotient (MulAction.orbitRel A.Gamma1 (Sheet A x))
 
-def sheetProjection (A : SArithmeticData F) (x : PositiveAxis) :
+def sheetProjection (x : PositiveAxis) :
     Sheet A x → SheetQuotient A x :=
   Quotient.mk (MulAction.orbitRel A.Gamma1 (Sheet A x))
+
+end
 
  instance sheetContinuousConstSMul (A : SArithmeticData F) (x : PositiveAxis) :
     ContinuousConstSMul A.Gamma1 (Sheet A x) where
@@ -112,12 +110,15 @@ def sheetProjection (A : SArithmeticData F) (x : PositiveAxis) :
   exact smulInvariantMeasure_map (kernelHaar A v₀ μG) (sheetTranslation A v₀ x)
     he (sheetTranslation A v₀ x).measurable
 
-theorem exists_unique_sheetQuotientHaar (A : SArithmeticData F)
-    (v₀ : InfinitePlace F) (μG : Measure A.G) [μG.IsHaarMeasure]
-    (x : PositiveAxis) :
+section
+
+variable (A : SArithmeticData F) (v₀ : InfinitePlace F) (μG : Measure A.G) [μG.IsHaarMeasure]
+    (x : PositiveAxis)
+
+theorem exists_unique_sheetQuotientHaar :
     ∃! ν : Measure (SheetQuotient A x),
       QuotientMeasureEqMeasurePreimage (sheetHaar A v₀ μG x) ν := by
-  obtain ⟨Ω, _, _, _, hΩ⟩ := exists_sheetFundamentalDomain A v₀ μG x
+  obtain ⟨Ω, _, hΩ⟩ := exists_sheetFundamentalDomain A v₀ μG x
   let ν := Measure.map (sheetProjection A x) ((sheetHaar A v₀ μG x).restrict Ω)
   have hv : QuotientMeasureEqMeasurePreimage (sheetHaar A v₀ μG x) ν :=
     hΩ.quotientMeasureEqMeasurePreimage_quotientMeasure
@@ -126,13 +127,11 @@ theorem exists_unique_sheetQuotientHaar (A : SArithmeticData F)
   letI := hv'
   exact hΩ.projection_respects_measure ν'
 
-def sheetQuotientHaar (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (μG : Measure A.G) [μG.IsHaarMeasure] (x : PositiveAxis) :
+def sheetQuotientHaar :
     Measure (SheetQuotient A x) :=
   Classical.choose (exists_unique_sheetQuotientHaar A v₀ μG x)
 
-theorem sheetQuotientHaar_eq (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (μG : Measure A.G) [μG.IsHaarMeasure] (x : PositiveAxis)
+theorem sheetQuotientHaar_eq
     (Ω : Set (Sheet A x))
     (hΩ : IsFundamentalDomain A.Gamma1 Ω (sheetHaar A v₀ μG x)) :
     sheetQuotientHaar A v₀ μG x =
@@ -142,18 +141,21 @@ theorem sheetQuotientHaar_eq (A : SArithmeticData F) (v₀ : InfinitePlace F)
     (Classical.choose_spec (exists_unique_sheetQuotientHaar A v₀ μG x)).1
   exact hΩ.projection_respects_measure (sheetQuotientHaar A v₀ μG x)
 
-theorem sheetProjection_measurePreserving (A : SArithmeticData F)
-    (v₀ : InfinitePlace F) (μG : Measure A.G) [μG.IsHaarMeasure]
-    (x : PositiveAxis) (Ω : Set (Sheet A x))
+theorem sheetProjection_measurePreserving (Ω : Set (Sheet A x))
     (hΩ : IsFundamentalDomain A.Gamma1 Ω (sheetHaar A v₀ μG x)) :
     MeasurePreserving (sheetProjection A x)
-      ((sheetHaar A v₀ μG x).restrict Ω) (sheetQuotientHaar A v₀ μG x) := by
-  exact ⟨measurable_quotient_mk' (s := MulAction.orbitRel A.Gamma1 (Sheet A x)), (sheetQuotientHaar_eq A v₀ μG x Ω hΩ).symm⟩
+      ((sheetHaar A v₀ μG x).restrict Ω) (sheetQuotientHaar A v₀ μG x) := ⟨measurable_quotient_mk' (s := MulAction.orbitRel A.Gamma1 (Sheet A x)), (sheetQuotientHaar_eq A v₀ μG x Ω hΩ).symm⟩
 
-def q (A : SArithmeticData F) (a : Fˣ) : PositiveAxis :=
+end
+
+section
+
+variable (A : SArithmeticData F) (a : Fˣ)
+
+def q : PositiveAxis :=
   ⟨A.norm (A.diagonal a), norm_positive A (A.diagonal a)⟩
 
-def sheetMul (A : SArithmeticData F) (a : Fˣ) (x : PositiveAxis) :
+def sheetMul (x : PositiveAxis) :
     Sheet A x ≃ₜ Sheet A (q A a * x) where
   toFun y := ⟨A.diagonal a * y.val, by
     change A.norm (A.diagonal a * y.val) = A.norm (A.diagonal a) * x.val
@@ -175,7 +177,7 @@ def sheetMul (A : SArithmeticData F) (a : Fˣ) (x : PositiveAxis) :
     apply Continuous.subtype_mk
     exact continuous_const.mul continuous_subtype_val
 
-def sheetDiv (A : SArithmeticData F) (a : Fˣ) (x : PositiveAxis) :
+def sheetDiv (x : PositiveAxis) :
     Sheet A x ≃ₜ Sheet A (q A a / x) where
   toFun y := ⟨A.diagonal a / y.val, by
     change A.norm (A.diagonal a / y.val) = A.norm (A.diagonal a) / x.val
@@ -197,11 +199,16 @@ def sheetDiv (A : SArithmeticData F) (a : Fˣ) (x : PositiveAxis) :
     apply Continuous.subtype_mk
     exact continuous_const.div' continuous_subtype_val
 
-theorem sheetDiv_val (A : SArithmeticData F) (a : Fˣ) (x : PositiveAxis)
+theorem sheetDiv_val (x : PositiveAxis)
     (y : Sheet A x) : (sheetDiv A a x y).val = A.diagonal a / y.val := rfl
 
-theorem sheetMul_measurePreserving (A : SArithmeticData F)
-    (v₀ : InfinitePlace F) (μG : Measure A.G) [μG.IsHaarMeasure]
+end
+
+section
+
+variable (A : SArithmeticData F) (v₀ : InfinitePlace F) (μG : Measure A.G) [μG.IsHaarMeasure]
+
+theorem sheetMul_measurePreserving
     (a : Fˣ) (x : PositiveAxis) :
     MeasurePreserving (sheetMul A a x)
       (sheetHaar A v₀ μG x) (sheetHaar A v₀ μG (q A a * x)) := by
@@ -227,8 +234,7 @@ theorem sheetMul_measurePreserving (A : SArithmeticData F)
     ← Measure.map_map e'.measurable (continuous_const_mul c).measurable,
     (measurePreserving_mul_left (kernelHaar A v₀ μG) c).map_eq]
 
-theorem sheetDiv_measurePreserving (A : SArithmeticData F)
-    (v₀ : InfinitePlace F) (μG : Measure A.G) [μG.IsHaarMeasure]
+theorem sheetDiv_measurePreserving
     (a : Fˣ) (x : PositiveAxis) :
     MeasurePreserving (sheetDiv A a x)
       (sheetHaar A v₀ μG x) (sheetHaar A v₀ μG (q A a / x)) := by
@@ -238,7 +244,6 @@ theorem sheetDiv_measurePreserving (A : SArithmeticData F)
       (A.diagonal a / normSection A v₀ x), by
     change A.norm _ = 1
     rw [norm_mul', norm_inv', norm_normSection, norm_div', norm_normSection]
-    change (A.norm (A.diagonal a) / x.val)⁻¹ * (A.norm (A.diagonal a) / x.val) = 1
     exact inv_mul_cancel₀ (div_ne_zero (ne_of_gt (norm_positive A (A.diagonal a)))
       (ne_of_gt x.property))⟩
   have he : (sheetDiv A a x) ∘ e = e' ∘ (fun z : A.G1 => c / z) := by
@@ -257,31 +262,30 @@ theorem sheetDiv_measurePreserving (A : SArithmeticData F)
   rw [Measure.map_map (sheetDiv A a x).measurable e.measurable, he,
     ← Measure.map_map e'.measurable hp.measurable, hp.map_eq]
 
-private theorem integral_sheet_unfold (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (μG : Measure A.G) [μG.IsHaarMeasure] (x : PositiveAxis)
+private theorem integral_sheet_unfold (x : PositiveAxis)
     (Ω : Set (Sheet A x))
     (hΩ : IsFundamentalDomain A.Gamma1 Ω (sheetHaar A v₀ μG x))
     (g : Sheet A x → ℂ) (hg : Integrable g (sheetHaar A v₀ μG x)) :
     Summable (fun γ : A.Gamma1 => ∫ y in Ω, g (γ • y) ∂sheetHaar A v₀ μG x) ∧
     (∑' γ : A.Gamma1, ∫ y in Ω, g (γ • y) ∂sheetHaar A v₀ μG x) =
       ∫ y, g y ∂sheetHaar A v₀ μG x := by
-  have hs : Integrable g (Measure.sum (fun γ : A.Gamma1 =>
-      (sheetHaar A v₀ μG x).restrict (γ • Ω))) := by
-    rw [hΩ.sum_restrict_of_ac (Measure.AbsolutelyContinuous.refl _)]
-    exact hg
   constructor
-  · have hsum := (hasSum_integral_measure hs).summable
-    apply hsum.congr
+  · apply ((hasSum_integral_measure (by
+      rw [hΩ.sum_restrict_of_ac (Measure.AbsolutelyContinuous.refl _)]
+      exact hg)).summable).congr
     intro γ
     exact (measurePreserving_smul γ (sheetHaar A v₀ μG x)).setIntegral_image_emb
       (measurableEmbedding_const_smul γ) g Ω
   · exact (hΩ.integral_eq_tsum'' g hg).symm
 
-theorem integral_mul_unfold (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (μG : Measure A.G) [μG.IsHaarMeasure] (a : Fˣ) (x : PositiveAxis)
-    (Ω : Set (Sheet A x))
-    (hΩ : IsFundamentalDomain A.Gamma1 Ω (sheetHaar A v₀ μG x))
+end
+
+variable (A : SArithmeticData F) (v₀ : InfinitePlace F) (μG : Measure A.G) [μG.IsHaarMeasure] (a : Fˣ)
+    (x : PositiveAxis) (Ω : Set (Sheet A x)) (hΩ : IsFundamentalDomain A.Gamma1 Ω (sheetHaar A v₀ μG x))
     (f : A.G → ℂ)
+
+include hΩ in
+theorem integral_mul_unfold
     (hf : Integrable (fun v : Sheet A (q A a * x) => f v.val)
       (sheetHaar A v₀ μG (q A a * x))) :
     Summable (fun γ : A.Gamma1 =>
@@ -289,11 +293,9 @@ theorem integral_mul_unfold (A : SArithmeticData F) (v₀ : InfinitePlace F)
     (∑' γ : A.Gamma1,
       ∫ y in Ω, f (γ.val.val * A.diagonal a * y.val) ∂sheetHaar A v₀ μG x) =
       ∫ v : Sheet A (q A a * x), f v.val ∂sheetHaar A v₀ μG (q A a * x) := by
-  let g : Sheet A x → ℂ := fun y => f (sheetMul A a x y).val
+  let g := fun y => f (sheetMul A a x y).val
   have hp := sheetMul_measurePreserving A v₀ μG a x
-  have hg : Integrable g (sheetHaar A v₀ μG x) := by
-    exact (hp.integrable_comp hf.aestronglyMeasurable).mpr hf
-  obtain ⟨hs, he⟩ := integral_sheet_unfold A v₀ μG x Ω hΩ g hg
+  obtain ⟨hs, he⟩ := integral_sheet_unfold A v₀ μG x Ω hΩ g ((hp.integrable_comp hf.aestronglyMeasurable).mpr hf)
   have heq (γ : A.Gamma1) (y : Sheet A x) :
       g (γ • y) = f (γ.val.val * A.diagonal a * y.val) := by
     dsimp [g]
@@ -303,11 +305,8 @@ theorem integral_mul_unfold (A : SArithmeticData F) (v₀ : InfinitePlace F)
   simp_rw [heq] at hs he
   exact ⟨hs, he.trans (hp.integral_comp (sheetMul A a x).measurableEmbedding (fun v => f v.val))⟩
 
-theorem integral_div_unfold (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (μG : Measure A.G) [μG.IsHaarMeasure] (a : Fˣ) (x : PositiveAxis)
-    (Ω : Set (Sheet A x))
-    (hΩ : IsFundamentalDomain A.Gamma1 Ω (sheetHaar A v₀ μG x))
-    (f : A.G → ℂ)
+include hΩ in
+theorem integral_div_unfold
     (hf : Integrable (fun v : Sheet A (q A a / x) => f v.val)
       (sheetHaar A v₀ μG (q A a / x))) :
     Summable (fun γ : A.Gamma1 =>
@@ -315,11 +314,9 @@ theorem integral_div_unfold (A : SArithmeticData F) (v₀ : InfinitePlace F)
     (∑' γ : A.Gamma1,
       ∫ y in Ω, f (γ.val.val * A.diagonal a / y.val) ∂sheetHaar A v₀ μG x) =
       ∫ v : Sheet A (q A a / x), f v.val ∂sheetHaar A v₀ μG (q A a / x) := by
-  let g : Sheet A x → ℂ := fun y => f (sheetDiv A a x y).val
+  let g := fun y => f (sheetDiv A a x y).val
   have hp := sheetDiv_measurePreserving A v₀ μG a x
-  have hg : Integrable g (sheetHaar A v₀ μG x) := by
-    exact (hp.integrable_comp hf.aestronglyMeasurable).mpr hf
-  obtain ⟨hs, he⟩ := integral_sheet_unfold A v₀ μG x Ω hΩ g hg
+  obtain ⟨hs, he⟩ := integral_sheet_unfold A v₀ μG x Ω hΩ g ((hp.integrable_comp hf.aestronglyMeasurable).mpr hf)
   have heq (γ : A.Gamma1) (y : Sheet A x) :
       g (γ⁻¹ • y) = f (γ.val.val * A.diagonal a / y.val) := by
     dsimp [g]

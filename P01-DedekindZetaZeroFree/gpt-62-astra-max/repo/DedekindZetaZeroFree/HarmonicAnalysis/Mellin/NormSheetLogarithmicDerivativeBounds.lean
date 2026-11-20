@@ -34,7 +34,6 @@ theorem sheet_log_derivative_bounds
   obtain ⟨M, R, hM, hR, hbound⟩ :=
     raw_fourier_log_derivative_envelope A e he hne μ hμ w k N W0 hW0 hcompact
   obtain ⟨C, hC, hsheet⟩ := raw_radial_envelope_sheet_bounds A dt hdt σ N R hσ hN hR
-  have hcontinuous := raw_fourier_log_derivative_continuous A e he μ hμ w k W0 hW0 hcompact
   refine ⟨M * C, mul_nonneg hM hC, ?_⟩
   intro T hT
   obtain ⟨hB, hBbound⟩ := hsheet T hT
@@ -50,8 +49,8 @@ theorem sheet_log_derivative_bounds
         (f := fun t : A.G1 => ((⟨T, hT⟩ : {T : ℝ // 0 < T}), t))
         (raw_sheet_continuous A) hparam
     exact Continuous.comp
-      (g := logDerivativeRaw A w k (ProbeWeight.fourier F A.Sf e μ W0))
-      (f := fun t : A.G1 => (sheetPointRaw A T t).val) hcontinuous hs
+
+       (raw_fourier_log_derivative_continuous A e he μ hμ w k W0 hW0 hcompact) hs
   have hmajorant := hB.const_mul M
   have hbound_ae : ∀ᵐ t ∂dt,
       ‖logDerivativeRaw A w k (ProbeWeight.fourier F A.Sf e μ W0)
@@ -61,8 +60,7 @@ theorem sheet_log_derivative_bounds
   have hint := hmajorant.mono' hmeas hbound_ae
   refine ⟨hint, ?_⟩
   calc
-    (∫ t, ‖logDerivativeRaw A w k (ProbeWeight.fourier F A.Sf e μ W0)
-        (sheetPointRaw A T t).val‖ ∂dt) ≤
+    _ ≤
         ∫ t, M * radialFiniteEnvelopeRaw A N R (sheetPointRaw A T t).val ∂dt :=
       integral_mono_ae hint.norm hmajorant hbound_ae
     _ = M * (∫ t, radialFiniteEnvelopeRaw A N R (sheetPointRaw A T t).val ∂dt) :=

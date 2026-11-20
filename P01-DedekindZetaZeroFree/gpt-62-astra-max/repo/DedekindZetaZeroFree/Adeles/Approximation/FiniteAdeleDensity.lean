@@ -32,12 +32,10 @@ theorem finiteAdeles_diagonal_denseRange (F : Type) [Field F] [NumberField F] :
       change a v ∈ v.adicCompletionIntegers F
       simpa only [Set.mem_compl_iff, Finset.mem_coe, s, hs.mem_toFinset,
         Set.mem_setOf_eq, not_not] using hv⟩
-  have ha' : a' ∈ inc ⁻¹' U := ha
-  have hopen : IsOpen (inc ⁻¹' U) := hU.preimage (RestrictedProduct.continuous_inclusion hsc)
   obtain ⟨V, hV, hVU⟩ :=
-    RestrictedProduct.isEmbedding_coe_of_principal.toIsInducing.isOpen_iff.mp hopen
+    RestrictedProduct.isEmbedding_coe_of_principal.toIsInducing.isOpen_iff.mp (hU.preimage (RestrictedProduct.continuous_inclusion hsc))
   have haV : a.1 ∈ V := by
-    have h : a' ∈ DFunLike.coe ⁻¹' V := by rw [hVU]; exact ha'
+    have h : a' ∈ DFunLike.coe ⁻¹' V := by rw [hVU]; exact ha
     exact h
   obtain ⟨t, u, hu, huV⟩ := isOpen_pi_iff.mp hV a.1 haV
   let S := s ∪ t
@@ -72,16 +70,14 @@ theorem finiteAdeles_diagonal_denseRange (F : Type) [Field F] [NumberField F] :
       algebraMap F (X v) (m : F) ∈ C v := by
     intro v hv
     by_cases hvS : v ∈ S
-    · have h := (hm ⟨v, hvS⟩ (Set.mem_univ _)).2
-      simpa [W, hv, PoissonSFiniteDensity.diagonal_apply] using h
+    · simpa [W, hv, PoissonSFiniteDensity.diagonal_apply] using ((hm ⟨v, hvS⟩ (Set.mem_univ _)).2)
     · exact (mem_sIntegerRing_iff F S (m : F)).mp m.property v hvS
   let d : RestrictedProduct X C (Filter.principal (↑s : Set _)ᶜ) :=
     ⟨fun v => algebraMap F (X v) (m : F), hmC⟩
   have hdV : d.1 ∈ V := by
     apply huV
     intro v hv
-    have hvS : v ∈ S := Finset.mem_union.mpr (Or.inr hv)
-    have h := (hm ⟨v, hvS⟩ (Set.mem_univ _)).1
+    have h := (hm ⟨v, (Finset.mem_union.mpr (Or.inr hv))⟩ (Set.mem_univ _)).1
     change algebraMap F (X v) (m : F) ∈ u v
     change algebraMap F (X v) (m : F) ∈ (if v ∈ t then u v else Set.univ) at h
     have hv' : v ∈ t := hv
@@ -98,12 +94,11 @@ theorem exists_integral_remainder (F : Type) [Field F] [NumberField F]
     (a : FiniteAdeles F) :
     ∃ r : F, a - algebraMap F (FiniteAdeles F) r ∈ integralAdeles F := by
   let U := {b : FiniteAdeles F | a - b ∈ integralAdeles F}
-  have hU : IsOpen U := (integralAdeles_isOpen F).preimage (continuous_const.sub continuous_id)
   have ha : a ∈ U := by
     change a - a ∈ integralAdeles F
     rw [sub_self]
     exact (integralAdeles F).zero_mem
-  obtain ⟨r, hr⟩ := (finiteAdeles_diagonal_denseRange F).exists_mem_open hU ⟨a, ha⟩
+  obtain ⟨r, hr⟩ := (finiteAdeles_diagonal_denseRange F).exists_mem_open ((integralAdeles_isOpen F).preimage (continuous_const.sub continuous_id)) ⟨a, ha⟩
   exact ⟨r, hr⟩
 
 end DedekindZetaZeroFree.KPAdelicTopology

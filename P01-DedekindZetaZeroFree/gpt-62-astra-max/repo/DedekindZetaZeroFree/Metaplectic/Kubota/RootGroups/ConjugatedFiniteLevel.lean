@@ -33,9 +33,7 @@ theorem small_conjugated_finite_root_level
       ∀ x : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F, x ∈ K → c⁻¹ *
         KPMsResidualTailRestoration.SharpConstantTerm.FiberStability.finiteRoot F ζ hζ x * c ∈ U.toOpenSubgroup := by
   let n := KPMsResidualTailRestoration.SharpConstantTerm.FiberStability.finiteRoot F ζ hζ
-  have hn : Continuous n :=
-    KPMsResidualTailRestoration.SharpConstantTerm.FiberStability.finiteRoot_continuous F ζ hζ
-  have hp : Continuous (fun x => c⁻¹ * n x * c) := (continuous_const.mul hn).mul continuous_const
+  have hp : Continuous (fun x => c⁻¹ * n x * c) := (continuous_const.mul (KPMsResidualTailRestoration.SharpConstantTerm.FiberStability.finiteRoot_continuous F ζ hζ)).mul continuous_const
   have hzero : c⁻¹ * n 0 * c = 1 := by
     simp [n, KPMsResidualTailRestoration.SharpConstantTerm.FiberStability.finiteRoot_zero]
   have hmem : (fun x => c⁻¹ * n x * c) ⁻¹' (U.toOpenSubgroup : Set _) ∈ 𝓝 0 := by

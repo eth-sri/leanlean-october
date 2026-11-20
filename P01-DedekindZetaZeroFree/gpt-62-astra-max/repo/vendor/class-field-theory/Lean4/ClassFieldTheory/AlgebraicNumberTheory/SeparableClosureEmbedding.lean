@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -44,10 +40,10 @@ theorem continuous_algEquiv_autCongr
   intro s hs
   rw [map_one, krullTopology_mem_nhds_one_iff] at hs
   obtain ⟨M, hMfinite, hMs⟩ := hs
-  let : FiniteDimensional F M := hMfinite
-  let N : IntermediateField F E :=
+  let := hMfinite
+  let N :=
     M.map e.symm.toAlgHom
-  let : FiniteDimensional F N :=
+  let :=
     (M.equivMap e.symm.toAlgHom).toLinearEquiv.finiteDimensional
   rw [krullTopology_mem_nhds_one_iff]
   refine ⟨N, inferInstance, ?_⟩
@@ -56,13 +52,11 @@ theorem continuous_algEquiv_autCongr
   apply (IntermediateField.mem_fixingSubgroup_iff M
     (AlgEquiv.autCongr e σ)).2
   intro x hx
-  have hxN : e.symm x ∈ N :=
-    ⟨x, hx, rfl⟩
   have hfix :=
     (IntermediateField.mem_fixingSubgroup_iff N σ).1 hσ
-      (e.symm x) hxN
+      (e.symm x) (⟨x, hx, rfl⟩)
   change e (σ (e.symm x)) = x
-  rw [hfix, e.apply_symm_apply]
+  simp [hfix]
 
 variable (K : Type u) (L : Type v) [Field K] [Field L] [Algebra K L]
   [Algebra.IsSeparable K L]

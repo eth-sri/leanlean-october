@@ -14,10 +14,10 @@ open MomentSources KPGlobalTorusFiniteStages FaithfulSource FaithfulSource.Repai
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 open LiteralSource.CofactorChamber KPAdelicCoverRestrictedProduct
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -38,11 +38,10 @@ theorem current_scattering_integral_exhaustion (x : PlusCore R N P C)
       (𝓝 (LiteralSource.coreScattering R P C (coreEquiv R N P C x) z
         (scalarQuotient F ζ hζ (amalgamation F ζ hζ a)))) := by
   simp_rw [chamber_right_spec]
-  have hi := LiteralSource.coreScattering_integrable R P C (coreEquiv R N P C x) z hz
-    (scalarQuotient F ζ hζ (amalgamation F ζ hζ a))
   have h := tendsto_setIntegral_of_monotone
     (FullSourceExhaustion.adelicBox_measurable F)
-    (FullSourceExhaustion.adelicBox_monotone F) hi.integrableOn
+    (FullSourceExhaustion.adelicBox_monotone F) (LiteralSource.coreScattering_integrable R P C (coreEquiv R N P C x) z hz
+      (scalarQuotient F ζ hζ (amalgamation F ζ hζ a))).integrableOn
   rw [FullSourceExhaustion.adelicBox_iUnion F, Measure.restrict_univ] at h
   exact h
 

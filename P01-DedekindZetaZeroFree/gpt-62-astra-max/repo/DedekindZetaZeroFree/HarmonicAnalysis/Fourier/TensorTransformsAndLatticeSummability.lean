@@ -29,21 +29,21 @@ private theorem lc_of_test {G : Type*} [AddGroup G] [TopologicalSpace G]
     apply hn
     funext x
     simpa using (not_exists.mp h x)
-  apply hc.isCompact.locallyCompactSpace_of_mem_nhds_of_addGroup (x := x)
-  have heq := hl.eventually_eq x
-  apply Filter.mem_of_superset heq
+  apply hc.isCompact.locallyCompactSpace_of_mem_nhds_of_addGroup
+  apply Filter.mem_of_superset (hl.eventually_eq x)
   intro y hy
   exact subset_tsupport φ (by change φ y ≠ 0; rw [hy]; exact hx)
 
-def tensorFunction (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+section
+
+variable (F : Type) [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+
+def tensorFunction
     (fArch : 𝓢(PoissonArch.Space F, ℂ))
     (φ : (v : S) → v.val.adicCompletion F → ℂ) : Space F S → ℂ :=
   fun x => fArch x.1 * ∏ v : S, φ v (x.2 v)
 
 theorem tensorFunction_integrable
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (μ : (v : S) → Measure (v.val.adicCompletion F))
     [hμ : ∀ v, (μ v).IsAddHaarMeasure]
     (fArch : 𝓢(PoissonArch.Space F, ℂ))
@@ -69,11 +69,10 @@ theorem tensorFunction_integrable
   letI : ∀ v : S, SigmaFinite (μ v) := fun v => inferInstance
   have harch : Integrable fArch (PoissonArch.traceMeasure F) := by
     exact fArch.integrable.smul_measure ENNReal.ofReal_ne_top
-  have hfin : Integrable (fun x : PoissonFinite.Space F S => ∏ v : S, φ v (x v))
-      (Measure.pi μ) :=
-    Integrable.fintype_prod_dep (fun v =>
-      (hlocal v).continuous.integrable_of_hasCompactSupport (hsupport v))
-  exact harch.mul_prod hfin
+  exact harch.mul_prod (Integrable.fintype_prod_dep (fun v =>
+    (hlocal v).continuous.integrable_of_hasCompactSupport (hsupport v)))
+
+end
 
 set_option backward.isDefEq.respectTransparency false in
 
@@ -145,18 +144,13 @@ private theorem unique_fourier (F : Type) [Field F] [NumberField F]
     IsLocallyConstant (fun y => ∫ x, φ x * (e default (-x*y) : ℂ) ∂μ default) ∧
     HasCompactSupport (fun y => ∫ x, φ x * (e default (-x*y) : ℂ) ∂μ default) := by
   let h : PoissonFinite.Space F S ≃ₜ (default : S).val.adicCompletion F := Homeomorph.piUnique _
-  let Φ : PoissonFinite.Space F S → ℂ := φ ∘ h
-  have hΦlocal : IsLocallyConstant Φ := hlocal.comp_continuous h.continuous
-  have hΦsupport : HasCompactSupport Φ := hsupport.comp_homeomorph h
+  let Φ := φ ∘ h
+  have hΦsupport := hsupport.comp_homeomorph h
   obtain ⟨U, hoU, hpU⟩ := PoissonFinite.BallExpansion.exists_open_phase_annihilator F S e he
     (tsupport Φ) hΦsupport.isCompact
-  have hf := PoissonFinite.fourierIntegral_isLocallyConstant_of_open_phase F S e μ Φ U hoU
-    (fun u hu x hx => hpU u hu x (subset_tsupport Φ hx))
-  obtain ⟨V, hoV, hpV⟩ := PoissonFinite.BallExpansion.exists_open_period_subgroup F S Φ hΦlocal hΦsupport
+  obtain ⟨V, hoV, hpV⟩ := PoissonFinite.BallExpansion.exists_open_period_subgroup F S Φ (hlocal.comp_continuous h.continuous) hΦsupport
   letI : ∀ v : S, SigmaCompactSpace (v.val.adicCompletion F) :=
     fun v => PoissonFinite.BallExpansion.finite_completion_sigmaCompact F v.val
-  have hg := PoissonFinite.fourierIntegral_hasCompactSupport_of_period F S e μ Φ V hpV
-    (PoissonFinite.BallExpansion.isCompact_phase_annihilator F S e he hne V hoV)
   have heq : (PoissonFinite.fourierIntegral F S e μ Φ) ∘ h.symm =
       (fun y => ∫ x, φ x * (e default (-x*y) : ℂ) ∂μ default) := by
     funext y
@@ -166,7 +160,11 @@ private theorem unique_fourier (F : Type) [Field F] [NumberField F]
       (MeasurableEquiv.piUnique _).measurableEmbedding
       (fun x => φ x * (e default (-x*y) : ℂ))
   rw [← heq]
-  exact ⟨hf.comp_continuous h.symm.continuous, hg.comp_homeomorph h.symm⟩
+  exact ⟨(PoissonFinite.fourierIntegral_isLocallyConstant_of_open_phase F S e μ Φ U hoU
+    (fun u hu x hx => hpU u hu x (subset_tsupport Φ hx))).comp_continuous h.symm.continuous, (PoissonFinite.fourierIntegral_hasCompactSupport_of_period F S e μ Φ V hpV
+    (PoissonFinite.BallExpansion.isCompact_phase_annihilator F S e he hne V hoV)).comp_homeomorph h.symm⟩
+
+alias TensorTransformsAndLatticeSummability.unique_fourier := unique_fourier
 private theorem local_fourier (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F))
     (e : AddChar (v.adicCompletion F) Circle)
@@ -180,30 +178,27 @@ private theorem local_fourier (F : Type) [Field F] [NumberField F]
   letI : Unique S := ⟨⟨⟨v, Finset.mem_singleton_self v⟩⟩,
     fun w => Subtype.ext (Finset.mem_singleton.mp w.property)⟩
   have hw (w : S) : w.val = v := Finset.mem_singleton.mp w.property
-  let e' : (w : S) → AddChar (w.val.adicCompletion F) Circle :=
+  let e' :=
     fun w => (hw w) ▸ e
-  let μ' : (w : S) → Measure (w.val.adicCompletion F) :=
+  let μ' :=
     fun w => (hw w) ▸ μ
-  let φ' : (default : S).val.adicCompletion F → ℂ := (hw default) ▸ φ
+  let φ' := (hw default) ▸ φ
   letI (w : S) : (μ' w).IsAddHaarMeasure := by
     rcases w with ⟨w, hwm⟩
-    have h : w = v := Finset.mem_singleton.mp hwm
+    have h := Finset.mem_singleton.mp hwm
     subst w
     exact inferInstance
   have he' (w : S) : Continuous (e' w) := by
     rcases w with ⟨w, hwm⟩
-    have h : w = v := Finset.mem_singleton.mp hwm
+    have h := Finset.mem_singleton.mp hwm
     subst w
     exact he
   have hne' (w : S) : ∃ x, e' w x ≠ 1 := by
     rcases w with ⟨w, hwm⟩
-    have h : w = v := Finset.mem_singleton.mp hwm
+    have h := Finset.mem_singleton.mp hwm
     subst w
     exact hne
-  have hl : IsLocallyConstant φ' := by dsimp [φ']; cases hw default; exact hlocal
-  have hs : HasCompactSupport φ' := by dsimp [φ']; cases hw default; exact hsupport
-  have h := unique_fourier F S e' μ' he' hne' φ' hl hs
-  have hv : (default : S).val = v := rfl
+  have h := unique_fourier F S e' μ' he' hne' φ' (by dsimp [φ']; cases hw default; exact hlocal) (by dsimp [φ']; cases hw default; exact hsupport)
   change IsLocallyConstant (fun y : v.adicCompletion F =>
     ∫ x, φ x * (e (-x*y) : ℂ) ∂μ) ∧
     HasCompactSupport (fun y : v.adicCompletion F =>
@@ -211,8 +206,13 @@ private theorem local_fourier (F : Type) [Field F] [NumberField F]
   at h
   exact h
 
+alias TensorTransformsAndLatticeSummability.local_fourier := local_fourier
+
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
 theorem fourierIntegral_tensor_bruhatSchwartz
-    (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (μ : (v : S) → Measure (v.val.adicCompletion F))
@@ -237,17 +237,21 @@ theorem fourierIntegral_tensor_bruhatSchwartz
   rw [fourierIntegral_tensorFunction F S e μ he fArch φ hlocal hsupport y]
   simp only [tensorFunction, hgArch, ψ]
 
-private theorem mk_injective (F : Type) [Field F] [NumberField F] :
+private theorem mk_injective :
     Function.Injective (PoissonArch.minkowskiEmbedding F) :=
   (NumberField.mixedEmbedding.euclidean.toMixed F).symm.injective.comp
     (NumberField.mixedEmbedding_injective (K := F))
+
+end
+
+alias TensorTransformsAndLatticeSummability.mk_injective := mk_injective
 private theorem coset_sum (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (f : 𝓢(PoissonArch.Space F, ℂ))
     (I : FractionalIdeal (RingOfIntegers F)⁰ F) (hI : I ≠ 0) (t a : F) (ha : a ≠ 0) :
     Summable (fun m : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F =>
       ‖f (PoissonArch.minkowskiEmbedding F (a * m)) * PoissonFinite.idealCosetIndicator F I t m‖) := by
-  let J : PoissonArch.NonzeroFractionalIdeal F :=
+  let J :=
     Units.mk0 (FractionalIdeal.spanSingleton (RingOfIntegers F)⁰ a * I)
       (mul_ne_zero (FractionalIdeal.spanSingleton_ne_zero_iff.mpr ha) hI)
   let P := {m : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F | (m : F) - t ∈ I}
@@ -259,14 +263,13 @@ private theorem coset_sum (F : Type) [Field F] [NumberField F]
     intro m n h
     apply Subtype.ext
     apply Subtype.ext
-    apply sub_left_injective (b := t)
+    apply sub_left_injective
     apply mul_left_cancel₀ ha
     exact mk_injective F (congrArg Subtype.val h)
   have hs := (PoissonArch.summable_norm_schwartz_translate (PoissonArch.idealLattice F J) f
     (PoissonArch.minkowskiEmbedding F (a*t))).comp_injective hinj
   have heq (m : P) : PoissonArch.minkowskiEmbedding F (a*t) + (idx m : PoissonArch.Space F) =
       PoissonArch.minkowskiEmbedding F (a * (m.val : F)) := by
-    change _ + PoissonArch.minkowskiEmbedding F (a * ((m.val : F)-t)) = _
     rw [← map_add]
     congr 1
     ring
@@ -280,26 +283,28 @@ private theorem coset_sum (F : Type) [Field F] [NumberField F]
   intro m
   by_cases hm : (m : F)-t ∈ I <;>
     simp [P, Set.indicator_apply, PoissonFinite.idealCosetIndicator, hm]
-private theorem field_sum (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (fArch : 𝓢(PoissonArch.Space F, ℂ))
-    (φ : (v : S) → v.val.adicCompletion F → ℂ)
-    (hlocal : ∀ v, IsLocallyConstant (φ v))
-    (hsupport : ∀ v, HasCompactSupport (φ v)) (a : F) (ha : a ≠ 0) :
+section
+
+variable (F : Type) [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
+    (fArch : 𝓢(PoissonArch.Space F, ℂ)) (φ : (v : S) → v.val.adicCompletion F → ℂ)
+    (hlocal : ∀ v, IsLocallyConstant (φ v)) (hsupport : ∀ v, HasCompactSupport (φ v)) (a : F)
+    (ha : a ≠ 0)
+
+include hlocal hsupport ha in
+private theorem field_sum :
     Summable (fun m : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F =>
       ‖tensorFunction F S fArch φ ((diagonalHom F S) (a*m))‖) := by
-  let φa : (v : S) → v.val.adicCompletion F → ℂ :=
+  let φa :=
     fun v x => φ v (FinitePlace.embedding v.val a * x)
   have hl (v : S) : IsLocallyConstant (φa v) :=
     (hlocal v).comp_continuous (continuous_const.mul continuous_id)
   have hs (v : S) : HasCompactSupport (φa v) :=
     (hsupport v).comp_homeomorph (Homeomorph.mulLeft₀ (FinitePlace.embedding v.val a)
-      ((FinitePlace.embedding v.val).injective.ne (by simpa using ha)))
+      ((FinitePlace.embedding v.val).injective.ne (by exact ha)))
   obtain ⟨I, n, t, c, hI, hcoset⟩ := PoissonFinite.product_exists_ideal_coset_decomposition F S φa hl hs
   have hsum : Summable (fun m : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F =>
       ∑ j, ‖c j‖ * ‖fArch (PoissonArch.minkowskiEmbedding F (a*m)) *
-        PoissonFinite.idealCosetIndicator F I (t j) m‖) := by
-    exact summable_sum (fun j _ => (coset_sum F S fArch I hI (t j) a ha).mul_left ‖c j‖)
+        PoissonFinite.idealCosetIndicator F I (t j) m‖) := summable_sum (fun j _ => (coset_sum F S fArch I hI (t j) a ha).mul_left ‖c j‖)
   apply hsum.of_nonneg_of_le (fun _ => norm_nonneg _)
   intro m
   have ht : tensorFunction F S fArch φ ((diagonalHom F S) (a*m)) =
@@ -308,35 +313,29 @@ private theorem field_sum (F : Type) [Field F] [NumberField F]
     change fArch (PoissonArch.minkowskiEmbedding F (a*m)) *
       (∏ v : S, φ v (FinitePlace.embedding v.val (a*m))) = _
     simp only [map_mul]
-    change fArch (PoissonArch.minkowskiEmbedding F (a*m)) *
-      (∏ v : S, φa v (FinitePlace.embedding v.val m)) = _
     rw [hcoset, Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro j _
     ring
   rw [ht]
-  exact (norm_sum_le _ _).trans_eq (by simp only [norm_mul])
+  exact (norm_sum_le _ _).trans_eq (by simp)
 
-theorem summable_norm_tensorFunction_lattice
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (fArch : 𝓢(PoissonArch.Space F, ℂ))
-    (φ : (v : S) → v.val.adicCompletion F → ℂ)
-    (hlocal : ∀ v, IsLocallyConstant (φ v))
-    (hsupport : ∀ v, HasCompactSupport (φ v)) (a : F) (ha : a ≠ 0) :
+include hlocal hsupport ha in
+theorem summable_norm_tensorFunction_lattice :
     Summable (fun m : lattice F S a => ‖tensorFunction F S fArch φ m‖) := by
   let R := (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F
   have hex (m : lattice F S a) : ∃ x : R, (diagonalHom F S) (a*x) = m.val := by
     obtain ⟨x, hx, hxm⟩ := AddSubgroup.mem_map.mp m.property
     exact ⟨⟨x, hx⟩, hxm⟩
-  let idx : lattice F S a → R := fun m => (hex m).choose
+  let idx := fun m => (hex m).choose
   have hi (m : lattice F S a) : (diagonalHom F S) (a*idx m) = m.val := (hex m).choose_spec
   have hinj : Function.Injective idx := by
     intro m n h
     apply Subtype.ext
     rw [← hi m, ← hi n, h]
-  have hs := (field_sum F S fArch φ hlocal hsupport a ha).comp_injective hinj
-  simpa only [Function.comp_def, hi] using hs
+  simpa only [Function.comp_def, hi] using ((field_sum F S fArch φ hlocal hsupport a ha).comp_injective hinj)
+
+end
 
 theorem summable_norm_fourierIntegral_tensorFunction_lattice
     (F : Type) [Field F] [NumberField F]
@@ -353,9 +352,8 @@ theorem summable_norm_fourierIntegral_tensorFunction_lattice
       ‖fourierIntegral F S e μ (tensorFunction F S fArch φ) h‖) := by
   obtain ⟨gArch, ψ, hψlocal, hψsupport, htransform⟩ :=
     fourierIntegral_tensor_bruhatSchwartz F S e μ he hne fArch φ hlocal hsupport
-  have hg := summable_norm_tensorFunction_lattice F S gArch ψ hψlocal hψsupport
-    a⁻¹ (inv_ne_zero ha)
-  simpa only [htransform] using hg
+  simpa only [htransform] using (summable_norm_tensorFunction_lattice F S gArch ψ hψlocal hψsupport
+    a⁻¹ (inv_ne_zero ha))
 
 end DedekindZetaZeroFree.PoissonS
 

@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -39,7 +34,6 @@ noncomputable section
 
 open IsDedekindDomain Module
 open scoped Classical NumberField nonZeroDivisors
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -76,22 +70,22 @@ noncomputable def reducedLog :
       simp
     · ext v
       change
-        (divisorCoordinate (K := K) S 1 v : ℝ) = 0
-      exact_mod_cast divisorCoordinate_one (K := K) S v
+        (divisorCoordinate S 1 v : ℝ) = 0
+      exact_mod_cast divisorCoordinate_one S v
   map_add' x y := by
     apply Prod.ext
     · ext w
       simp [Real.log_mul, mul_add]
     · ext v
       change
-        (divisorCoordinate (K := K) S
+        (divisorCoordinate S
           (Additive.toMul x * Additive.toMul y) v : ℝ) =
-          (divisorCoordinate (K := K) S
+          (divisorCoordinate S
             (Additive.toMul x) v : ℝ) +
-          (divisorCoordinate (K := K) S
+          (divisorCoordinate S
             (Additive.toMul y) v : ℝ)
       exact_mod_cast
-        divisorCoordinate_mul (K := K) S
+        divisorCoordinate_mul S
           (Additive.toMul x) (Additive.toMul y) v
 
 /-- The normalized finite absolute value is the norm of the prime
@@ -104,7 +98,7 @@ theorem adicAbv_eq_zpow_neg_divisorCoordinate
         (v : HeightOneSpectrum (𝓞 K)).asIdeal : ℝ) ^
           (-divisorCoordinate (K := K) S x v) := by
   rw [NumberField.HeightOneSpectrum.adicAbv_def,
-    valuation_eq_exp_neg_count (K := K)]
+    valuation_eq_exp_neg_count]
   rw [WithZeroMulInt.toNNReal_neg_apply]
   · norm_cast
   · simp
@@ -120,7 +114,7 @@ theorem log_adicAbv_eq_neg_divisorCoordinate_mul_log_absNorm
         Real.log
           (Ideal.absNorm
             (v : HeightOneSpectrum (𝓞 K)).asIdeal : ℝ) := by
-  rw [adicAbv_eq_zpow_neg_divisorCoordinate (K := K) S,
+  rw [adicAbv_eq_zpow_neg_divisorCoordinate S,
     Real.log_zpow]
   push_cast
   ring
@@ -149,22 +143,20 @@ theorem reducedLog_snd_fromNumberFieldUnits
         (fromNumberFieldUnits (K := K) S u))).2 = 0 := by
   ext v
   change
-    (divisorCoordinate (K := K) S
-      (fromNumberFieldUnits (K := K) S u) v : ℝ) = 0
+    (divisorCoordinate S
+      (fromNumberFieldUnits S u) v : ℝ) = 0
   norm_cast
   have hrange :
-      fromNumberFieldUnitsLinearMap (K := K) S
+      fromNumberFieldUnitsLinearMap S
           (Additive.ofMul u) ∈
         LinearMap.range
-          (fromNumberFieldUnitsLinearMap (K := K) S) :=
+          (fromNumberFieldUnitsLinearMap S) :=
     LinearMap.mem_range_self _ _
   rw [range_fromNumberFieldUnitsLinearMap_eq_ker_divisorLinearMap
-    (K := K) S] at hrange
-  have hzero :=
-    congrFun
-      (LinearMap.mem_ker.mp hrange) v
+     S] at hrange
   simpa [divisorLinearMap, divisor,
-    fromNumberFieldUnitsLinearMap] using hzero
+    fromNumberFieldUnitsLinearMap] using (congrFun
+      (LinearMap.mem_ker.mp hrange) v)
 
 /-- The reduced logarithm vanishes precisely on the roots of unity. -/
 theorem reducedLog_eq_zero_iff
@@ -176,47 +168,41 @@ theorem reducedLog_eq_zero_iff
   · intro hx
     have hxdiv :
         x ∈ LinearMap.ker
-          (divisorLinearMap (K := K) S) := by
+          (divisorLinearMap S) := by
       apply LinearMap.mem_ker.mpr
       ext v
-      have hv := congrFun (congrArg Prod.snd hx) v
       simpa [reducedLog, divisorLinearMap, divisor] using
         (show
-          (divisorCoordinate (K := K) S
-            (Additive.toMul x) v : ℝ) = 0 from hv)
+          (divisorCoordinate S
+            (Additive.toMul x) v : ℝ) = 0 from (congrFun (congrArg Prod.snd hx) v))
     rw [← range_fromNumberFieldUnitsLinearMap_eq_ker_divisorLinearMap
-      (K := K) S] at hxdiv
+       S] at hxdiv
     obtain ⟨u, hu⟩ := hxdiv
-    have hxu :
-        x =
-          fromNumberFieldUnitsLinearMap (K := K) S u :=
+    have hxu :=
       hu.symm
     have hlog :
         NumberField.Units.logEmbedding K u = 0 := by
       have hfst := congrArg Prod.fst hx
       rw [hxu] at hfst
       simpa [fromNumberFieldUnitsLinearMap] using hfst
-    have hutors :
-        Additive.toMul u ∈ NumberField.Units.torsion K := by
-      exact
-        NumberField.Units.dirichletUnitTheorem.logEmbedding_eq_zero_iff.mp
+    have hutors := NumberField.Units.dirichletUnitTheorem.logEmbedding_eq_zero_iff.mp
           hlog
     change
       Additive.toMul x ∈
-        CommGroup.torsion (SUnitGroup (K := K) S)
-    rw [torsion_eq_rootsOfUnity_range (K := K) S]
+        CommGroup.torsion (SUnitGroup S)
+    rw [torsion_eq_rootsOfUnity_range S]
     refine ⟨Additive.toMul u, hutors, ?_⟩
     exact (congrArg Additive.toMul hxu).symm
   · intro hx
     change
       Additive.toMul x ∈
-        CommGroup.torsion (SUnitGroup (K := K) S) at hx
-    rw [torsion_eq_rootsOfUnity_range (K := K) S] at hx
+        CommGroup.torsion (SUnitGroup S) at hx
+    rw [torsion_eq_rootsOfUnity_range S] at hx
     obtain ⟨u, hu, hux⟩ := hx
     have hxadd :
         x =
           Additive.ofMul
-            (fromNumberFieldUnits (K := K) S u) := by
+            (fromNumberFieldUnits S u) := by
       apply Additive.toMul.injective
       exact hux.symm
     rw [hxadd]
@@ -227,7 +213,7 @@ theorem reducedLog_eq_zero_iff
           hu)
     ·
       exact reducedLog_snd_fromNumberFieldUnits
-        (K := K) S u
+         S u
 
 /-- The kernel of the reduced logarithmic map is the additive torsion
 submodule. -/
@@ -237,7 +223,7 @@ theorem reducedLogLinearMap_ker :
         (Additive (SUnitGroup (K := K) S))).toIntSubmodule := by
   ext x
   rw [LinearMap.mem_ker]
-  exact reducedLog_eq_zero_iff (K := K) S x
+  exact reducedLog_eq_zero_iff S x
 
 /-- The reduced `S`-unit lattice. -/
 noncomputable def reducedLogLattice :
@@ -252,17 +238,14 @@ theorem norm_reducedLog_finite_lt_one_implies_zero
       ‖reducedLog (K := K) S x‖ < 1) :
     (reducedLog (K := K) S x).2 = 0 := by
   ext v
-  have hv :
-      ‖(reducedLog (K := K) S x).2 v‖ < 1 := by
-    exact
-      (norm_le_pi_norm _ v).trans_lt
+  have hv := (norm_le_pi_norm _ v).trans_lt
         ((norm_snd_le
-          (reducedLog (K := K) S x)).trans_lt hx)
+          (reducedLog S x)).trans_lt hx)
   change
-    (divisorCoordinate (K := K) S
+    (divisorCoordinate S
       (Additive.toMul x) v : ℝ) = 0
   change
-    |(divisorCoordinate (K := K) S
+    |(divisorCoordinate S
       (Additive.toMul x) v : ℝ)| < 1 at hv
   rw [← Int.cast_abs, ← Int.cast_one, Int.cast_lt] at hv
   exact_mod_cast Int.abs_lt_one_iff.mp hv
@@ -296,7 +279,7 @@ instance instDiscreteTopology_reducedLogLattice :
   ext z
   constructor
   · intro hz
-    have hzlt : ‖(z : ReducedLogSpace (K := K) S)‖ < δ := by
+    have hzlt : ‖(z : ReducedLogSpace S)‖ < δ := by
       simpa [Metric.mem_ball, dist_eq_norm] using hz
     obtain ⟨x, hx⟩ := z.property
     have hxlog :
@@ -362,7 +345,7 @@ instance instDiscreteTopology_reducedLogLattice :
     · exact hfin
   · intro hz
     have hz0 : z = 0 := by
-      simpa using hz
+      exact hz
     subst z
     simp [Metric.mem_ball, hδpos]
 
@@ -371,28 +354,27 @@ Dirichlet unit rank plus the number of finite places in `S`. -/
 theorem finrank_reducedLogLattice :
     Module.finrank ℤ (reducedLogLattice (K := K) S) =
       NumberField.Units.rank K + S.card := by
-  let f := reducedLogLinearMap (K := K) S
+  let f := reducedLogLinearMap S
   calc
-    Module.finrank ℤ (reducedLogLattice (K := K) S) =
+    Module.finrank ℤ (reducedLogLattice S) =
         Module.finrank ℤ
-          (Additive (SUnitGroup (K := K) S) ⧸
+          (Additive (SUnitGroup S) ⧸
             LinearMap.ker f) :=
       f.quotKerEquivRange.symm.finrank_eq
     _ = Module.finrank ℤ
-          (Additive (SUnitGroup (K := K) S) ⧸
+          (Additive (SUnitGroup S) ⧸
             (AddCommGroup.torsion
               (Additive
-                (SUnitGroup (K := K) S))).toIntSubmodule) := by
+                (SUnitGroup S))).toIntSubmodule) := by
       rw [show LinearMap.ker f =
         (AddCommGroup.torsion
           (Additive
-            (SUnitGroup (K := K) S))).toIntSubmodule from
-          reducedLogLinearMap_ker (K := K) S]
+            (SUnitGroup S))).toIntSubmodule from
+          reducedLogLinearMap_ker S]
     _ = Module.finrank ℤ
-          (Additive (SUnitGroup (K := K) S)) := by
-      exact finrank_quotient_torsion_eq
+          (Additive (SUnitGroup S)) := finrank_quotient_torsion_eq
     _ = NumberField.Units.rank K + S.card :=
-      finrank (K := K) S
+      finrank S
 
 /-- The reduced logarithmic space has dimension equal to the Dirichlet
 unit rank plus the number of finite places in `S`. -/
@@ -412,32 +394,32 @@ theorem reducedLogLattice_span_eq_top :
   let :
       DiscreteTopology
         (Submodule.span ℤ
-          (reducedLogLattice (K := K) S :
-            Set (ReducedLogSpace (K := K) S))) := by
+          (reducedLogLattice S :
+            Set (ReducedLogSpace S))) := by
     rw [Submodule.span_eq]
     infer_instance
   apply Submodule.eq_top_of_finrank_eq
   change
     Set.finrank ℝ
-      (reducedLogLattice (K := K) S :
-        Set (ReducedLogSpace (K := K) S)) =
-      Module.finrank ℝ (ReducedLogSpace (K := K) S)
+      (reducedLogLattice S :
+        Set (ReducedLogSpace S)) =
+      Module.finrank ℝ (ReducedLogSpace S)
   calc
     Set.finrank ℝ
-        (reducedLogLattice (K := K) S :
-          Set (ReducedLogSpace (K := K) S)) =
+        (reducedLogLattice S :
+          Set (ReducedLogSpace S)) =
         Set.finrank ℤ
-          (reducedLogLattice (K := K) S :
-            Set (ReducedLogSpace (K := K) S)) :=
+          (reducedLogLattice S :
+            Set (ReducedLogSpace S)) :=
       Real.finrank_eq_int_finrank_of_discrete inferInstance
     _ = Module.finrank ℤ
-          (reducedLogLattice (K := K) S) := by
+          (reducedLogLattice S) := by
       rw [Set.finrank, Submodule.span_eq]
     _ = NumberField.Units.rank K + S.card :=
-      finrank_reducedLogLattice (K := K) S
+      finrank_reducedLogLattice S
     _ = Module.finrank ℝ
-          (ReducedLogSpace (K := K) S) :=
-      (finrank_reducedLogSpace (K := K) S).symm
+          (ReducedLogSpace S) :=
+      (finrank_reducedLogSpace S).symm
 
 /-- The reduced logarithmic image of the `S`-units is a complete
 `ℤ`-lattice. -/
@@ -523,16 +505,6 @@ theorem fullLogAmbient_finite
             SUnitGroup (K := K) S) : Kˣ) : K)) :=
   rfl
 
-/-- An `S`-unit has normalized finite absolute value one outside `S`. -/
-theorem adicAbv_eq_one_of_not_mem
-    (x : SUnitGroup (K := K) S)
-    (v : HeightOneSpectrum (𝓞 K)) (hv : v ∉ S) :
-    NumberField.HeightOneSpectrum.adicAbv K v
-        (((x : Kˣ) : K)) = 1 := by
-  rw [NumberField.HeightOneSpectrum.adicAbv_def,
-    x.property v hv]
-  simp
-
 /-- For an `S`-unit the finite part of the global product formula is
 the product over the finite places in `S`. -/
 theorem finprod_finitePlace_eq_prod_adicAbv
@@ -550,7 +522,7 @@ theorem finprod_finitePlace_eq_prod_adicAbv
       NumberField.FinitePlace.norm_embedding,
       NumberField.HeightOneSpectrum.adicAbv_def]
   rw [finprod_eq_prod_of_mulSupport_subset
-    (s := S)]
+    ]
   · exact
       (Finset.prod_coe_sort
         (s := S)
@@ -573,19 +545,13 @@ theorem sum_log_absoluteValues_eq_zero
           (NumberField.HeightOneSpectrum.adicAbv K
             (v : HeightOneSpectrum (𝓞 K))
             (((x : Kˣ) : K))) = 0 := by
-  have hx0 : (((x : Kˣ) : K)) ≠ 0 :=
+  have hx0 :=
     Units.ne_zero (x : Kˣ)
   have hprod := NumberField.prod_abs_eq_one hx0
   rw [finprod_finitePlace_eq_prod_adicAbv
-    (K := K) S x] at hprod
+     S x] at hprod
   calc
-    (∑ w : NumberField.InfinitePlace K,
-        w.mult * Real.log (w (((x : Kˣ) : K)))) +
-      ∑ v : S,
-        Real.log
-          (NumberField.HeightOneSpectrum.adicAbv K
-            (v : HeightOneSpectrum (𝓞 K))
-            (((x : Kˣ) : K))) =
+    _ =
         Real.log
             (∏ w : NumberField.InfinitePlace K,
               w (((x : Kˣ) : K)) ^ w.mult) +
@@ -628,11 +594,11 @@ theorem fullLogAmbient_mem_logHyperplane
       LogHyperplane (K := K) S := by
   apply LinearMap.mem_ker.mpr
   change
-    ∑ p : LogPlace (K := K) S,
-      fullLogAmbient (K := K) S x p = 0
+    ∑ p : LogPlace S,
+      fullLogAmbient S x p = 0
   rw [Fintype.sum_sum_type]
   exact
-    sum_log_absoluteValues_eq_zero (K := K) S
+    sum_log_absoluteValues_eq_zero S
       (Additive.toMul x)
 
 /-- The normalized all-place logarithmic map with codomain restricted
@@ -725,17 +691,17 @@ theorem forgetDistinguishedLog_injective :
             NumberField.Units.dirichletUnitTheorem.w₀
       · subst w
         have hxsum :
-            (x : FullLogSpace (K := K) S)
+            (x : FullLogSpace S)
                 (Sum.inl
                   NumberField.Units.dirichletUnitTheorem.w₀) +
                 (∑ v :
                     {w : NumberField.InfinitePlace K //
                       w ≠
                         NumberField.Units.dirichletUnitTheorem.w₀},
-                  (x : FullLogSpace (K := K) S)
+                  (x : FullLogSpace S)
                     (Sum.inl v.1)) +
               ∑ v : S,
-                (x : FullLogSpace (K := K) S)
+                (x : FullLogSpace S)
                   (Sum.inr v) = 0 := by
           have hxker := LinearMap.mem_ker.mp x.property
           change
@@ -746,17 +712,17 @@ theorem forgetDistinguishedLog_injective :
               NumberField.Units.dirichletUnitTheorem.w₀] at hxker
           exact hxker
         have hysum :
-            (y : FullLogSpace (K := K) S)
+            (y : FullLogSpace S)
                 (Sum.inl
                   NumberField.Units.dirichletUnitTheorem.w₀) +
                 (∑ v :
                     {w : NumberField.InfinitePlace K //
                       w ≠
                         NumberField.Units.dirichletUnitTheorem.w₀},
-                  (y : FullLogSpace (K := K) S)
+                  (y : FullLogSpace S)
                     (Sum.inl v.1)) +
               ∑ v : S,
-                (y : FullLogSpace (K := K) S)
+                (y : FullLogSpace S)
                   (Sum.inr v) = 0 := by
           have hyker := LinearMap.mem_ker.mp y.property
           change
@@ -800,7 +766,7 @@ hyperplane. -/
 theorem forgetDistinguishedLog_surjective :
     Function.Surjective (forgetDistinguishedLog (K := K) S) := by
   intro z
-  let completed : FullLogSpace (K := K) S :=
+  let completed :=
     fun p =>
       match p with
       | Sum.inl w =>
@@ -813,16 +779,16 @@ theorem forgetDistinguishedLog_surjective :
                     NumberField.Units.dirichletUnitTheorem.w₀},
                 z.1 v) -
               ∑ v : S,
-                finiteLogWeight (K := K) S v * z.2 v
+                finiteLogWeight S v * z.2 v
           else
             z.1 ⟨w, hw⟩
       | Sum.inr v =>
-          finiteLogWeight (K := K) S v * z.2 v
+          finiteLogWeight S v * z.2 v
   have hcompleted :
-      completed ∈ LogHyperplane (K := K) S := by
+      completed ∈ LogHyperplane S := by
     apply LinearMap.mem_ker.mpr
     change
-      ∑ p : LogPlace (K := K) S, completed p = 0
+      ∑ p : LogPlace S, completed p = 0
     rw [Fintype.sum_sum_type,
       Fintype.sum_eq_add_sum_subtype_ne _
         NumberField.Units.dirichletUnitTheorem.w₀]
@@ -836,7 +802,7 @@ theorem forgetDistinguishedLog_surjective :
                   NumberField.Units.dirichletUnitTheorem.w₀},
               z.1 v) -
             ∑ v : S,
-              finiteLogWeight (K := K) S v * z.2 v := by
+              finiteLogWeight S v * z.2 v := by
       simp [completed]
     have hinf :
         (∑ v :
@@ -855,11 +821,10 @@ theorem forgetDistinguishedLog_surjective :
     have hfin :
         (∑ v : S, completed (Sum.inr v)) =
           ∑ v : S,
-            finiteLogWeight (K := K) S v * z.2 v := by
-      rfl
+            finiteLogWeight S v * z.2 v := rfl
     rw [hw0, hinf, hfin]
     ring
-  let y : LogHyperplane (K := K) S :=
+  let y : LogHyperplane S :=
     ⟨completed, hcompleted⟩
   refine ⟨y, ?_⟩
   apply Prod.ext
@@ -867,7 +832,7 @@ theorem forgetDistinguishedLog_surjective :
     simp [forgetDistinguishedLog, y, completed, w.property]
   · ext v
     simp [forgetDistinguishedLog, y, completed,
-      finiteLogWeight_ne_zero (K := K) S v]
+      finiteLogWeight_ne_zero S v]
 
 /-- Removing the distinguished infinite coordinate and rescaling the
 finite coordinates is a real linear equivalence. -/
@@ -890,12 +855,6 @@ theorem logHyperplaneEquivReduced_fullLog
   · ext w
     rfl
   · ext v
-    have hlog :
-        Real.log
-          (Ideal.absNorm
-            (v : HeightOneSpectrum (𝓞 K)).asIdeal : ℝ) ≠ 0 :=
-      neg_ne_zero.mp
-        (finiteLogWeight_ne_zero (K := K) S v)
     change
       Real.log
           (NumberField.HeightOneSpectrum.adicAbv K
@@ -906,9 +865,10 @@ theorem logHyperplaneEquivReduced_fullLog
         (divisorCoordinate (K := K) S
           (Additive.toMul x) v : ℝ)
     rw [log_adicAbv_eq_neg_divisorCoordinate_mul_log_absNorm
-      (K := K) S]
+       S]
     dsimp [finiteLogWeight]
-    field_simp [hlog]
+    field_simp [(neg_ne_zero.mp
+      (finiteLogWeight_ne_zero S v))]
 
 /-- The kernel of the normalized all-place logarithm is the group of
 roots of unity. -/
@@ -917,14 +877,14 @@ theorem fullLog_eq_zero_iff
     fullLog (K := K) S x = 0 ↔
       x ∈ AddCommGroup.torsion
         (Additive (SUnitGroup (K := K) S)) := by
-  rw [← reducedLog_eq_zero_iff (K := K) S]
+  rw [← reducedLog_eq_zero_iff S]
   constructor
   · intro hx
     have := congrArg
-      (logHyperplaneEquivReduced (K := K) S) hx
+      (logHyperplaneEquivReduced S) hx
     simpa [logHyperplaneEquivReduced_fullLog] using this
   · intro hx
-    apply (logHyperplaneEquivReduced (K := K) S).injective
+    apply (logHyperplaneEquivReduced S).injective
     rw [logHyperplaneEquivReduced_fullLog, hx, map_zero]
 
 /-- The coordinate equivalence as a continuous linear equivalence
@@ -952,22 +912,22 @@ theorem fullLogLattice_eq_range :
   constructor
   · intro hz
     change
-      logHyperplaneEquivReduced (K := K) S z ∈
-        reducedLogLattice (K := K) S at hz
+      logHyperplaneEquivReduced S z ∈
+        reducedLogLattice S at hz
     obtain ⟨x, hx⟩ := hz
     refine ⟨x, ?_⟩
-    apply (logHyperplaneEquivReduced (K := K) S).injective
+    apply (logHyperplaneEquivReduced S).injective
     change
-      logHyperplaneEquivReduced (K := K) S
-          (fullLog (K := K) S x) =
-        logHyperplaneEquivReduced (K := K) S z
+      logHyperplaneEquivReduced S
+          (fullLog S x) =
+        logHyperplaneEquivReduced S z
     rw [logHyperplaneEquivReduced_fullLog]
     exact hx
   · rintro ⟨x, rfl⟩
     change
-      logHyperplaneEquivReduced (K := K) S
-          (fullLog (K := K) S x) ∈
-        reducedLogLattice (K := K) S
+      logHyperplaneEquivReduced S
+          (fullLog S x) ∈
+        reducedLogLattice S
     rw [logHyperplaneEquivReduced_fullLog]
     exact LinearMap.mem_range_self _ x
 
@@ -977,9 +937,9 @@ instance instDiscreteTopology_fullLogLattice :
     change
       DiscreteTopology
         (ZLattice.comap ℝ
-          (reducedLogLattice (K := K) S)
+          (reducedLogLattice S)
           (logHyperplaneContinuousEquivReduced
-            (K := K) S).toLinearMap)
+             S).toLinearMap)
     infer_instance
 
 /-- The image of the normalized all-place logarithmic embedding is a
@@ -990,9 +950,9 @@ instance instIsZLattice_fullLogLattice :
     change
       IsZLattice ℝ
         (ZLattice.comap ℝ
-          (reducedLogLattice (K := K) S)
+          (reducedLogLattice S)
           (logHyperplaneContinuousEquivReduced
-            (K := K) S).toLinearMap)
+             S).toLinearMap)
     infer_instance
 
 end FullLogarithmicSpace
@@ -1053,8 +1013,7 @@ theorem finrank_freeQuotient :
   calc
     Module.finrank ℤ (FreeQuotient (K := K) S) =
         Module.finrank ℤ
-          (Additive (SUnitGroup (K := K) S)) := by
-      exact finrank_quotient_eq_of_le_torsion le_rfl
+          (Additive (SUnitGroup (K := K) S)) := finrank_quotient_eq_of_le_torsion le_rfl
     _ = NumberField.Units.rank K + S.card :=
       finrank (K := K) S
     _ = logRank (K := K) S := by
@@ -1076,7 +1035,7 @@ noncomputable def basisFreeQuotient :
       (FreeQuotient (K := K) S))
     (Fintype.equivOfCardEq <| by
       rw [← Module.finrank_eq_card_chooseBasisIndex,
-        finrank_freeQuotient (K := K) S,
+        finrank_freeQuotient S,
         Fintype.card_fin])
 
 /-- The ordinary roots of unity map linearly and bijectively onto the
@@ -1084,24 +1043,21 @@ torsion in the `S`-unit group. -/
 noncomputable def rootsOfUnityEquivTorsion :
     RootsOfUnityAdditive (K := K) ≃ₗ[ℤ]
       TorsionAdditive (K := K) S := by
-  let f :
-      RootsOfUnityAdditive (K := K) →ₗ[ℤ]
-        TorsionAdditive (K := K) S :=
-    ((fromNumberFieldUnitsLinearMap (K := K) S).domRestrict
-      (RootsOfUnityAdditive (K := K))).codRestrict
-        (TorsionAdditive (K := K) S) fun u => by
-          rw [torsionAdditive_eq (K := K) S]
+  let f :=
+    ((fromNumberFieldUnitsLinearMap S).domRestrict
+      (RootsOfUnityAdditive)).codRestrict
+        (TorsionAdditive S) fun u => by
+          rw [torsionAdditive_eq S]
           change
             Additive.toMul
-                (fromNumberFieldUnitsLinearMap (K := K) S
-                  (u :
-                    Additive (𝓞 K)ˣ)) ∈
+                (fromNumberFieldUnitsLinearMap S
+                  u) ∈
               CommGroup.torsion
-                (SUnitGroup (K := K) S)
-          rw [torsion_eq_rootsOfUnity_range (K := K) S]
+                (SUnitGroup S)
+          rw [torsion_eq_rootsOfUnity_range S]
           refine
             ⟨Additive.toMul
-                (u : Additive (𝓞 K)ˣ), ?_, rfl⟩
+                u, ?_, rfl⟩
           exact u.property
   apply LinearEquiv.ofBijective f
   constructor
@@ -1134,9 +1090,7 @@ noncomputable def rootsOfUnityEquivTorsion :
       hyadd
     rw [torsion_eq_rootsOfUnity_range (K := K) S] at hy
     obtain ⟨u, hu, huy⟩ := hy
-    let x : RootsOfUnityAdditive (K := K) :=
-      ⟨Additive.ofMul u, hu⟩
-    refine ⟨x, ?_⟩
+    refine ⟨(⟨Additive.ofMul u, hu⟩), ?_⟩
     apply Subtype.ext
     apply Additive.toMul.injective
     exact huy
@@ -1199,12 +1153,9 @@ noncomputable def multiplicativeRootsOfUnityEquiv :
     Multiplicative.ofAdd
       (⟨Additive.ofMul (u : (𝓞 K)ˣ), u.property⟩ :
         RootsOfUnityAdditive (K := K))
-  left_inv x := by
-    rfl
-  right_inv u := by
-    rfl
-  map_mul' x y := by
-    rfl
+  left_inv x := rfl
+  right_inv u := rfl
+  map_mul' x y := rfl
 
 /-- **`S`-unit theorem, group form.**
 

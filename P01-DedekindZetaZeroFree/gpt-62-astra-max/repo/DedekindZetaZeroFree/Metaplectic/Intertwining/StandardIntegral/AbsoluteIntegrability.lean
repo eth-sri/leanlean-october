@@ -28,25 +28,20 @@ theorem actual_standard_integrable
   letI := (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
   letI := KPAdditiveHaar.adelicMeasure_isAddHaarMeasure F
   let D := KPAdditiveFundamentalDomain.domain F
-  let K : Set (Adeles F) := closure (KPAdditiveFundamentalDomain.archParallelepiped F) ×ˢ
+  let K := closure (KPAdditiveFundamentalDomain.archParallelepiped F) ×ˢ
     (KPAdelicTopology.integralAdeles F : Set (IsDedekindDomain.FiniteAdeleRing (𝓞 F) F))
-  have hK : IsCompact K := KPAdditiveFundamentalDomain.compact_closed_cover F
-  have hDK : D ⊆ K := by
-    intro x hx
-    exact ⟨subset_closure hx.1, hx.2⟩
+  have hDK : D ⊆ K := fun x hx => ⟨subset_closure hx.1, hx.2⟩
   let A := (fun x : Adeles F => KPGlobalTorusFunctionData.N F ζ hζ x * g) '' K
-  have hN := KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous F ζ hζ
-  have hA : IsCompact A := hK.image (hN.mul continuous_const)
   obtain ⟨b, hb, hbound⟩ := KPContActualChamberNormalSeries.normal_majorant F ζ hζ U ι f
-    hι hf 0 [] {s} isCompact_singleton (by rintro z rfl; exact hs) A hA
-  let h : Adeles F → ℂ := fun x => KPContActualSphericalFlatStage.L F ζ hζ U ι s (f s)
+    hι hf 0 [] {s} isCompact_singleton (by rintro z rfl; exact hs) A ((KPAdditiveFundamentalDomain.compact_closed_cover F).image ((KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous F ζ hζ).mul continuous_const))
+  let h := fun x => KPContActualSphericalFlatStage.L F ζ hζ U ι s (f s)
     (ForwardWeyl F ζ hζ * KPGlobalTorusFunctionData.N F ζ hζ x * g)
-  have hh : Measurable h := standard_measurable F ζ hζ U ι s (f s) g
+  have hh := standard_measurable F ζ hζ U ι s (f s) g
   have hsum_bound : ∀ x ∈ D,
       (∑' t : F, ENNReal.ofReal ‖h (algebraMap F (Adeles F) t + x)‖) ≤
         ENNReal.ofReal (∑' q, (b q : ℝ)) := by
     intro x hx
-    let e : F → KPChamberBruhatTwoCells.RationalQuotient F :=
+    let e :=
       fun t => KPChamberBruhatTwoCells.cellIndex F (some t)
     have he : Function.Injective e :=
       (KPChamberBruhatTwoCells.cellIndex_bijective F).1.comp (Option.some_injective F)

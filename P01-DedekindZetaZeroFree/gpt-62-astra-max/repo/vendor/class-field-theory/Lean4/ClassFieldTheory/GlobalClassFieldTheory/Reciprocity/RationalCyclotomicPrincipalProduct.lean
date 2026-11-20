@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -73,10 +70,13 @@ noncomputable local instance
       (KummerTheory.rationalCyclotomicLevel m) :=
   rationalCyclotomicPrincipalPrimeLevelIsAbelianGalois m
 
+section
+
+variable (p : Nat.Primes) (k : ℕ) (x : ℚˣ)
+
 /-- The finite product of the genuine chosen local Artin characters of a
 rational principal idele is the reduction of its rational sign. -/
-theorem rationalCyclotomicPrincipalFinitePlaceProduct_eq_sign
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) :
+theorem rationalCyclotomicPrincipalFinitePlaceProduct_eq_sign :
     (∏ᶠ v : HeightOneSpectrum (𝓞 ℚ),
         IsCyclotomicExtension.Rat.galEquivZMod
           (p.1 ^ k)
@@ -94,9 +94,7 @@ theorem rationalCyclotomicPrincipalFinitePlaceProduct_eq_sign
             (IdeleGroup.finiteComponent v
               (IdeleGroup.principalIdele ℚ x)))) =
       Units.map (PadicInt.toZModPow k).toMonoidHom
-        (rationalSignPadicUnit x p) := by
-  exact
-    (rationalCyclotomicPrincipalFinitePlaceCharacter_prime_mul_factorizationProduct
+        (rationalSignPadicUnit x p) := (rationalCyclotomicPrincipalFinitePlaceCharacter_prime_mul_factorizationProduct
       p k x).symm.trans
       ((congrArg (fun u => u * _)
         (rationalCyclotomicPrincipalFinitePlaceCharacter_at_prime
@@ -108,8 +106,7 @@ theorem rationalCyclotomicPrincipalFinitePlaceProduct_eq_sign
 character of the finite part of a rational principal idele is exactly the
 reduced rational sign. -/
 theorem
-    rationalCyclotomicGlobalArtin_character_toZModPow_principalFinitePart_eq_sign
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) :
+    rationalCyclotomicGlobalArtin_character_toZModPow_principalFinitePart_eq_sign :
     Units.map (PadicInt.toZModPow k).toMonoidHom
         (KummerTheory.rationalCyclotomicCharacterPrimeProduct
           (infiniteGlobalArtinMonoidHom
@@ -117,29 +114,26 @@ theorem
             (rationalIdeleFinitePart
               (IdeleGroup.principalIdele ℚ x))) p) =
       Units.map (PadicInt.toZModPow k).toMonoidHom
-        (rationalSignPadicUnit x p) := by
-  exact
-    (rationalCyclotomicGlobalArtin_character_toZModPow_finitePart_eq_finprod
+        (rationalSignPadicUnit x p) := (rationalCyclotomicGlobalArtin_character_toZModPow_finitePart_eq_finprod
       (IdeleGroup.principalIdele ℚ x) p k).trans
       (rationalCyclotomicPrincipalFinitePlaceProduct_eq_sign p k x)
 
 /-- Every prime-power reduction of the finite principal cyclotomic
 character has square one. -/
 theorem
-    rationalCyclotomicGlobalArtin_character_toZModPow_principalFinitePart_sq
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) :
+    rationalCyclotomicGlobalArtin_character_toZModPow_principalFinitePart_sq :
     Units.map (PadicInt.toZModPow k).toMonoidHom
           (KummerTheory.rationalCyclotomicCharacterPrimeProduct
             (infiniteGlobalArtinMonoidHom
               ℚ KummerTheory.rationalCyclotomicField
               (rationalIdeleFinitePart
                 (IdeleGroup.principalIdele ℚ x))) p) ^ 2 =
-      1 := by
-  exact
-    (congrArg (fun u => u ^ 2)
+      1 := (congrArg (fun u => u ^ 2)
       (rationalCyclotomicGlobalArtin_character_toZModPow_principalFinitePart_eq_sign
         p k x)).trans
       (rationalSignPadicUnit_toZModPow_sq x p k)
+
+end
 
 /-- The finite part of every rational principal idele has trivial value
 in the actual rational cyclotomic `ZHat`-extension. -/
@@ -162,9 +156,7 @@ theorem rationalCyclotomicZHatIdeleValue_principalIdele_eq_one
     (x : ℚˣ) :
     rationalCyclotomicZHatIdeleValue
         (IdeleGroup.principalIdele ℚ x) =
-      1 := by
-  exact
-    (rationalCyclotomicZHatIdeleValue_principalIdele_eq_finitePart x).trans
+      1 := (rationalCyclotomicZHatIdeleValue_principalIdele_eq_finitePart x).trans
       (rationalCyclotomicZHatIdeleValue_principalFinitePart_eq_one x)
 
 /-- The normalized cyclotomic `ZHat`-valuation kills principal ideles over
@@ -176,9 +168,7 @@ theorem normalizedCyclotomicZHatIdeleValue_principalIdele_eq_zero
     normalizedCyclotomicZHatIdeleValue K
         (Additive.ofMul
           (IdeleGroup.principalIdele K x)) =
-      0 := by
-  exact
-    (normalizedCyclotomicZHatIdeleValue_principalIdele_eq_zero_iff_finitePart
+      0 := (normalizedCyclotomicZHatIdeleValue_principalIdele_eq_zero_iff_finitePart
       K x).2
       (rationalCyclotomicZHatIdeleValue_principalFinitePart_eq_one
         (Units.map (Algebra.norm ℚ) x))

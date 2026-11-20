@@ -17,38 +17,43 @@ noncomputable section
     (I : Ideal (𝓞 F)) : ℂ :=
   (DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight ((Ideal.absNorm I : ℝ) / X) : ℂ)
 
-private lemma thetaWeight_eq_zero_of_gt {F : Type*} [Field F] [NumberField F]
-    {X : ℝ} (hX : 0 < X) {I : Ideal (𝓞 F)}
+section
+
+variable {F : Type*} [Field F] [NumberField F]
+
+local notation "IntegerIdeal" => Ideal (𝓞 F)
+
+private lemma thetaWeight_eq_zero_of_gt
+    {X : ℝ} (hX : 0 < X) {I : IntegerIdeal}
     (hI : 5 / 2 * X < (Ideal.absNorm I : ℝ)) : thetaWeight F X I = 0 := by
   unfold thetaWeight
   rw [DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight_eq_zero_of_ge (by rw [le_div_iff₀ hX]; linarith)]
   simp
 
-private lemma thetaWeight_bot {F : Type*} [Field F] [NumberField F] (X : ℝ) :
-    thetaWeight F X (⊥ : Ideal (𝓞 F)) = 0 := by
+private lemma thetaWeight_bot (X : ℝ) :
+    thetaWeight F X (⊥ : IntegerIdeal) = 0 := by
   unfold thetaWeight
-  have hb : (Ideal.absNorm (⊥ : Ideal (𝓞 F)) : ℝ) = 0 := by
+  have hb : (Ideal.absNorm (⊥ : IntegerIdeal) : ℝ) = 0 := by
     simp [Ideal.absNorm_eq_zero_iff]
   rw [hb, zero_div, DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight_eq_zero_of_le (by norm_num : (0:ℝ) ≤ 1/2)]
   simp
 
-private lemma support_theta_subset {F : Type*} [Field F] [NumberField F]
-    (v : Ideal (𝓞 F) → ℂ) {X : ℝ} (hX : 0 < X) :
-    Function.support (fun I : Ideal (𝓞 F) =>
+private lemma support_theta_subset
+    (v : IntegerIdeal → ℂ) {X : ℝ} (hX : 0 < X) :
+    Function.support (fun I : IntegerIdeal =>
         if I = ⊥ then 0 else thetaWeight F X I * v I) ⊆
-      (↑(DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F (5 / 2 * X)) : Set (Ideal (𝓞 F))) := by
+      (↑(DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F (5 / 2 * X)) : Set IntegerIdeal) := by
   intro I hI
   rw [Finset.mem_coe, DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals]
   by_contra hcon
   push Not at hcon
-  have hz : thetaWeight F X I = 0 := thetaWeight_eq_zero_of_gt hX hcon
   simp only [Function.mem_support, ne_eq] at hI
-  exact hI (by by_cases h : I = ⊥ <;> simp [h, hz])
+  exact hI (by by_cases h : I = ⊥ <;> simp [h, (thetaWeight_eq_zero_of_gt hX hcon)])
 
-private lemma initialTheta_eq_finsum_all {F : Type*} [Field F] [NumberField F]
-    (v : Ideal (𝓞 F) → ℂ) {X : ℝ} (hX : 0 < X) :
+private lemma initialTheta_eq_finsum_all
+    (v : IntegerIdeal → ℂ) {X : ℝ} (hX : 0 < X) :
     initialTheta F v X =
-      ∑ᶠ I : Ideal (𝓞 F), if I = ⊥ then 0 else thetaWeight F X I * v I := by
+      ∑ᶠ I : IntegerIdeal, if I = ⊥ then 0 else thetaWeight F X I * v I := by
   rw [finsum_eq_finsetSum_of_support_subset _ (support_theta_subset v hX)]
   have : (∑ I ∈ DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F (5 / 2 * X),
         (if I = ⊥ then 0 else thetaWeight F X I * v I)) =
@@ -60,8 +65,8 @@ private lemma initialTheta_eq_finsum_all {F : Type*} [Field F] [NumberField F]
   rw [this]
   rfl
 
-private lemma thetaWeight_mul {F : Type*} [Field F] [NumberField F]
-    (X : ℝ) (d J : Ideal (𝓞 F)) :
+private lemma thetaWeight_mul
+    (X : ℝ) (d J : IntegerIdeal) :
     thetaWeight F X (d * J) = thetaWeight F (X / (Ideal.absNorm d : ℝ)) J := by
   unfold thetaWeight
   rw [Ideal.absNorm.map_mul]
@@ -70,20 +75,20 @@ private lemma thetaWeight_mul {F : Type*} [Field F] [NumberField F]
   rw [div_div_eq_mul_div]
   ring_nf
 
-private lemma multiples_eq_scaled {F : Type*} [Field F] [NumberField F]
-    (v : Ideal (𝓞 F) → ℂ) (hv : ∀ I J : Ideal (𝓞 F), v (I * J) = v I * v J)
-    {X : ℝ} (hX : 0 < X) (d : Ideal (𝓞 F)) (hd : d ≠ ⊥) :
-    (∑ᶠ I : Ideal (𝓞 F), if I ≠ ⊥ ∧ d ∣ I then thetaWeight F X I * v I else 0) =
-      v d * (∑ᶠ J : Ideal (𝓞 F), if J = ⊥ then 0 else
+private lemma multiples_eq_scaled
+    (v : IntegerIdeal → ℂ) (hv : ∀ I J : IntegerIdeal, v (I * J) = v I * v J)
+    {X : ℝ} (hX : 0 < X) (d : IntegerIdeal) (hd : d ≠ ⊥) :
+    (∑ᶠ I : IntegerIdeal, if I ≠ ⊥ ∧ d ∣ I then thetaWeight F X I * v I else 0) =
+      v d * (∑ᶠ J : IntegerIdeal, if J = ⊥ then 0 else
         thetaWeight F (X / (Ideal.absNorm d : ℝ)) J * v J) := by
-  have hmem : ∀ I : Ideal (𝓞 F),
-      (I ∈ Set.range (fun J : Ideal (𝓞 F) => d * J)) ↔ d ∣ I := by
+  have hmem : ∀ I : IntegerIdeal,
+      (I ∈ Set.range (fun J : IntegerIdeal => d * J)) ↔ d ∣ I := by
     intro I
     rw [Set.mem_range]
     exact ⟨fun ⟨J, hJ⟩ => ⟨J, hJ.symm⟩, fun ⟨J, hJ⟩ => ⟨J, hJ.symm⟩⟩
-  have hcongr : (∑ᶠ I : Ideal (𝓞 F),
+  have hcongr : (∑ᶠ I : IntegerIdeal,
         if I ≠ ⊥ ∧ d ∣ I then thetaWeight F X I * v I else 0) =
-      ∑ᶠ I ∈ Set.range (fun J : Ideal (𝓞 F) => d * J), thetaWeight F X I * v I := by
+      ∑ᶠ I ∈ Set.range (fun J : IntegerIdeal => d * J), thetaWeight F X I * v I := by
     rw [finsum_mem_def]
     refine finsum_congr fun I => ?_
     rw [Set.indicator_apply, hmem I]
@@ -92,10 +97,10 @@ private lemma multiples_eq_scaled {F : Type*} [Field F] [NumberField F]
       rw [thetaWeight_bot]
       simp
     · by_cases h : d ∣ I <;> simp [hI, h]
-  rw [hcongr, finsum_mem_range (f := fun I => thetaWeight F X I * v I)
-    (g := fun J : Ideal (𝓞 F) => d * J) (fun a b hab => mul_left_cancel₀ hd hab)]
-  have hstep : (∑ᶠ J : Ideal (𝓞 F), thetaWeight F X (d * J) * v (d * J)) =
-      ∑ᶠ J : Ideal (𝓞 F), v d * (if J = ⊥ then 0 else
+  rw [hcongr, finsum_mem_range
+     (fun a b hab => mul_left_cancel₀ hd hab)]
+  have hstep : (∑ᶠ J : IntegerIdeal, thetaWeight F X (d * J) * v (d * J)) =
+      ∑ᶠ J : IntegerIdeal, v d * (if J = ⊥ then 0 else
         thetaWeight F (X / (Ideal.absNorm d : ℝ)) J * v J) := by
     refine finsum_congr fun J => ?_
     rw [thetaWeight_mul, hv]
@@ -107,21 +112,21 @@ private lemma multiples_eq_scaled {F : Type*} [Field F] [NumberField F]
       ring
   rw [hstep, mul_finsum]
 
-private lemma one_le_absNorm_of_mem_idealDivisors {F : Type*} [Field F] [NumberField F]
-    {m d : Ideal (𝓞 F)} (hd : d ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors m) :
+private lemma one_le_absNorm_of_mem_idealDivisors
+    {m d : IntegerIdeal} (hd : d ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors m) :
     (1 : ℝ) ≤ (Ideal.absNorm d : ℝ) := by
-  have hne := DedekindZetaZeroFree.LargeSieve.ne_bot_of_mem_idealDivisors hd
-  have h0 : Ideal.absNorm d ≠ 0 := fun h => hne (Ideal.absNorm_eq_zero_iff.mp h)
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr h0
+  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun h => (DedekindZetaZeroFree.LargeSieve.ne_bot_of_mem_idealDivisors hd) (Ideal.absNorm_eq_zero_iff.mp h))
 
-private lemma moebius_norm_le_one {F : Type*} [Field F] [NumberField F]
-    (d : Ideal (𝓞 F)) : ‖(UniqueFactorizationMonoid.moebius d : ℂ)‖ ≤ 1 := by
+private lemma moebius_norm_le_one
+    (d : IntegerIdeal) : ‖(UniqueFactorizationMonoid.moebius d : ℂ)‖ ≤ 1 := by
   by_cases h : Squarefree d
   · rw [h.moebius_eq]
     push_cast
     simp
   · rw [UniqueFactorizationMonoid.moebius_of_not_squarefree h]
     simp
+
+end
 
 theorem initial_imprimitive_smooth_sum
     (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
@@ -138,7 +143,7 @@ theorem initial_imprimitive_smooth_sum
   intro m hm η hnp X hX
   obtain ⟨f, hf, hfm, η0, hprim0, hind, hiff⟩ :=
     DedekindZetaZeroFree.LargeSieve.initial_ray_primitive_descent F m hm η
-  have hnp0 : ¬ η0.IsPrincipal := fun h => hnp (hiff.mpr h)
+  have hnp0 := fun h => hnp (hiff.mpr h)
 
   have hid : initialTheta F η X =
       ∑ d ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors m, (UniqueFactorizationMonoid.moebius d : ℂ) *
@@ -184,15 +189,10 @@ theorem initial_imprimitive_smooth_sum
             (mul_nonneg (norm_nonneg _) (norm_nonneg _)) zero_le_one
       _ = A0 * (Ideal.absNorm f : ℝ) ^ ((1 : ℝ) / 2 + δ / 2) := by ring
   have hNfm : (Ideal.absNorm f : ℝ) ≤ (Ideal.absNorm m : ℝ) := by
-    have hm0 : Ideal.absNorm m ≠ 0 := fun h => hm (Ideal.absNorm_eq_zero_iff.mp h)
-    have hdvd : Ideal.absNorm f ∣ Ideal.absNorm m :=
-      Ideal.absNorm_dvd_absNorm_of_le (Ideal.dvd_iff_le.mp hfm)
-    exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero hm0) hdvd
+    exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (fun h => hm (Ideal.absNorm_eq_zero_iff.mp h))) (Ideal.absNorm_dvd_absNorm_of_le (Ideal.dvd_iff_le.mp hfm))
   have hm1 : (1 : ℝ) ≤ (Ideal.absNorm m : ℝ) := by
-    have hm0 : Ideal.absNorm m ≠ 0 := fun h => hm (Ideal.absNorm_eq_zero_iff.mp h)
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr hm0
-  have hm0' : (0 : ℝ) < (Ideal.absNorm m : ℝ) := lt_of_lt_of_le zero_lt_one hm1
-  calc ‖initialTheta F η X‖
+    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun h => hm (Ideal.absNorm_eq_zero_iff.mp h))
+  calc _
       = ‖∑ d ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors m, (UniqueFactorizationMonoid.moebius d : ℂ) *
           (η0 d * initialTheta F η0 (X / (Ideal.absNorm d : ℝ)))‖ := by rw [hid]
     _ ≤ ∑ d ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors m,
@@ -218,10 +218,9 @@ theorem initial_imprimitive_smooth_sum
         have h1 : (Ideal.absNorm m : ℝ) ^ (δ / 2) *
               (Ideal.absNorm m : ℝ) ^ (1 / 2 + δ / 2) =
             (Ideal.absNorm m : ℝ) ^ (1 / 2 + δ) := by
-          rw [← Real.rpow_add hm0']
+          rw [← Real.rpow_add (lt_of_lt_of_le zero_lt_one hm1)]
           rw [show δ / 2 + (1 / 2 + δ / 2) = 1 / 2 + δ by ring]
-        calc C * (Ideal.absNorm m : ℝ) ^ (δ / 2) *
-              (A0 * (Ideal.absNorm m : ℝ) ^ (1 / 2 + δ / 2))
+        calc _
             = A0 * C * ((Ideal.absNorm m : ℝ) ^ (δ / 2) *
                 (Ideal.absNorm m : ℝ) ^ (1 / 2 + δ / 2)) := by ring
           _ = A0 * C * (Ideal.absNorm m : ℝ) ^ (1 / 2 + δ) := by rw [h1]

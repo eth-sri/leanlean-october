@@ -11,10 +11,9 @@ namespace DedekindZetaZeroFree.KPChamberL2Defect
 open MeasureTheory
 open scoped ENNReal
 
-abbrev chamber : Set ℂ := KPEisensteinChamber.chamber
+abbrev chamber := @DedekindZetaZeroFree.KPEisensteinChamber.chamber
 
-theorem chamber_isOpen : IsOpen chamber := by
-  exact isOpen_lt continuous_const Complex.continuous_re
+theorem chamber_isOpen : IsOpen chamber := isOpen_lt continuous_const Complex.continuous_re
 
 section ScalarFormula
 variable {G Q X H A : Type*} [Group G] [Fintype A]
@@ -29,15 +28,21 @@ end ScalarFormula
 def scalarJet {X : Type*} (g : ℂ → X → ℂ) (k : ℕ) (s : ℂ) : X → ℂ :=
   fun x => iteratedDerivWithin k (fun z => g z x) chamber s
 
-def spectralCorrection {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
+section
+
+variable {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
+
+def spectralCorrection
     (d : ℕ) (u : ℕ → ℂ → H) (k : ℕ) (s : ℂ) : H :=
   ∑ j ∈ Finset.Icc 1 (min k 2),
     ((Nat.choose k j : ℂ) *
       iteratedDerivWithin j (KPContinuation.spectralCoordinate (d : ℤ)) chamber s) •
         u (k - j) s
 
-def graphNorm {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
+def graphNorm
     (Δ : H →ₗ.[ℂ] H) (u : Δ.domain) : ℝ := ‖(u : H)‖ + ‖Δ u‖
+
+end
 
 section CuspOutput
 variable {Y A W : Type*} [MeasurableSpace Y] [Fintype A]

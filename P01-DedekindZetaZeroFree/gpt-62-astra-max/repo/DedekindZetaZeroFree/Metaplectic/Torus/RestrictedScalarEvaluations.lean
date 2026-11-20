@@ -10,8 +10,8 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalTorusTensorFibers
 noncomputable section
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-variable (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
+    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
+    (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
 
 structure RawLocalScalarData extends RawLocalFiberData F ζ hζ P T where
   reference : ∀ q, KPLocalStoneVonNeumann.InducedModule (polarization q)
@@ -36,16 +36,14 @@ theorem restricted_local_evaluations_finite_support
     Function.HasFiniteMulSupport (fun q => C.evaluation q
       (if h : q ∈ S then f ⟨q, h⟩ else C.reference q) (t q)) := by
   classical
-  have hrfin := Filter.eventually_cofinite.mp raw.eventually
   have hr : ∀ᶠ q : HeightOneSpectrum (𝓞 F) in Filter.cofinite,
       raw (Sum.inr q) ∈ KPAdelicCoverRestrictedProduct.compact F ζ hζ (Sum.inr q) := by
     apply Filter.eventually_cofinite.mpr
-    exact hrfin.preimage_embedding ⟨Sum.inr, Sum.inr_injective⟩
-  have hb := (KPAdelicCoverRestrictedProduct.bad_finite F).eventually_cofinite_notMem
+    exact (Filter.eventually_cofinite.mp raw.eventually).preimage_embedding ⟨Sum.inr, Sum.inr_injective⟩
   have heval : ∀ᶠ q in Filter.cofinite, C.evaluation q
       (if h : q ∈ S then f ⟨q, h⟩ else C.reference q) (t q) = 1 := by
-    filter_upwards [hr, hb, S.eventually_cofinite_notMem] with q hraw hbad hq
-    have hqe : q ∉ C.exceptional := fun h => hq (hS h)
+    filter_upwards [hr, ((KPAdelicCoverRestrictedProduct.bad_finite F).eventually_cofinite_notMem), S.eventually_cofinite_notMem] with q hraw hbad hq
+    have hqe := fun h => hq (hS h)
     obtain ⟨htame, hcompact⟩ := C.actual_compact q hqe
     have hmem : (t q : KPLocalExceptionalConstruction.ActualCover F ζ hζ q) ∈
         (C.canonical q).iwasawa.compact.toOpenSubgroup := by

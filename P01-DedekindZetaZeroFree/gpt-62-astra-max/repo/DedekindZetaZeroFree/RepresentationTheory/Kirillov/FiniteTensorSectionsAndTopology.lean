@@ -86,25 +86,29 @@ variable (W : Finset (HeightOneSpectrum (RingOfIntegers F)))
   (V : W → Type*) [∀ v, AddCommGroup (V v)] [∀ v, Module ℂ (V v)]
   (ρ : ∀ v : W, Representation ℂ (G F ζ hζ v.val) (V v))
 
-abbrev Jacquet (v : W) := KPLocalSmoothRepresentation.TwistedCoinvariants
+section
+
+variable (v : W)
+
+abbrev Jacquet := KPLocalSmoothRepresentation.TwistedCoinvariants
   F ζ hζ v.val (ρ v) (ψ v)
 
-abbrev ScalarSections (v : W) := Sections F ζ hζ v.val (m v) (ψ v) ℂ
+abbrev ScalarSections := Sections F ζ hζ v.val (m v) (ψ v) ℂ
 
-def localEvaluation (v : W) :
+def localEvaluation :
     ScalarSections F ζ hζ W m ψ v ⊗[ℂ] Jacquet F ζ hζ W ψ V ρ v →ₗ[ℂ]
-      Jacquet F ζ hζ W ψ V ρ v := by
-  exact TensorProduct.lift
+      Jacquet F ζ hζ W ψ V ρ v := TensorProduct.lift
     { toFun := fun f => sectionValue F ζ hζ v.val (m v) (ψ v) f 1 •
-        (LinearMap.id : Jacquet F ζ hζ W ψ V ρ v →ₗ[ℂ] _)
+        LinearMap.id
       map_add' := by intros; ext; simp [sectionValue, add_smul]
       map_smul' := by intros; ext; simp [sectionValue, smul_smul] }
 
-@[simp]theorem localEvaluation_tmul (v : W)
+@[simp]theorem localEvaluation_tmul
     (f : ScalarSections F ζ hζ W m ψ v) (e : Jacquet F ζ hζ W ψ V ρ v) :
     localEvaluation F ζ hζ W m ψ V ρ v (f ⊗ₜ[ℂ] e) =
-      sectionValue F ζ hζ v.val (m v) (ψ v) f 1 • e := by
-  rfl
+      sectionValue F ζ hζ v.val (m v) (ψ v) f 1 • e := rfl
+
+end
 
 abbrev SectionTensor := ⨂[ℂ] v : W, ScalarSections F ζ hζ W m ψ v
 
@@ -139,12 +143,9 @@ variable (W : Finset (HeightOneSpectrum (RingOfIntegers F)))
 structure LocalEmbeddingData where
   character_lc : ∀ v, IsLocallyConstant (ψ v)
   character_ne : ∀ v, ψ v ≠ 1
-  smooth_genuine : ∀ v, KPLocalSmoothRepresentation.smoothGenuine
-    F ζ hζ v.val (m v) (ρ v)
 
   j : ∀ v, ScalarSections F ζ hζ W m ψ v ⊗[ℂ]
     Jacquet F ζ hζ W ψ V ρ v →ₗ[ℂ] V v
-  injective : ∀ v, Function.Injective (j v)
   equivariant : ∀ v (a : P F ζ hζ v.val) x,
     j v (TensorProduct.map (rightAction F ζ hζ v.val (m v) (hm v) (ψ v) ℂ a)
       LinearMap.id x) = ρ v a.val (j v x)
@@ -162,13 +163,19 @@ noncomputable instance tensorSectionAddCommGroup
 abbrev AmbientTensor := ⨂[ℂ] v : W, V v
 abbrev ProductAffine := ∀ v : W, P F ζ hζ v.val
 
-abbrev InducedTensor (E : Submodule ℂ (JacquetTensor F ζ hζ W ψ V ρ)) :=
+section
+
+variable (E : Submodule ℂ (JacquetTensor F ζ hζ W ψ V ρ))
+
+abbrev InducedTensor :=
   SectionTensor F ζ hζ W m ψ ⊗[ℂ] E
 
-def coefficientInclusion (E : Submodule ℂ (JacquetTensor F ζ hζ W ψ V ρ)) :
+def coefficientInclusion :
     InducedTensor F ζ hζ W m ψ V ρ E →ₗ[ℂ]
       SectionTensor F ζ hζ W m ψ ⊗[ℂ] JacquetTensor F ζ hζ W ψ V ρ :=
   TensorProduct.map LinearMap.id E.subtype
+
+end
 
 def tensorShuffle :
     (SectionTensor F ζ hζ W m ψ ⊗[ℂ] JacquetTensor F ζ hζ W ψ V ρ) ≃ₗ[ℂ]

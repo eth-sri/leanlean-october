@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -34,10 +29,11 @@ open LocalFieldTheory.DiscreteValuationField
 open LocalFieldTheory.DiscreteValuationField.Examples.Qp
 open SameUniformizer
 
+variable (p : ℕ) [Fact p.Prime]
+
 /-- The multiplicative Lubin--Tate series after extending its coefficients
 to the completed unramified Witt ring. -/
-noncomputable def padicCompletedMultiplicativeSeries
-    (p : ℕ) [Fact p.Prime] :
+noncomputable def padicCompletedMultiplicativeSeries :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
   PowerSeries.map
     (padicValuationSubringToCompletedUnramifiedWittRing p)
@@ -46,7 +42,6 @@ noncomputable def padicCompletedMultiplicativeSeries
 /-- The standard Lubin--Tate series for the changed uniformizer `u p`,
 after extending its coefficients to the completed unramified Witt ring. -/
 noncomputable def padicCompletedChangedStandardSeries
-    (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
   PowerSeries.map
@@ -57,19 +52,14 @@ noncomputable def padicCompletedChangedStandardSeries
 
 /-- The completed multiplicative Lubin--Tate series is the binomial series
 `(1 + X) ^ p - 1`. -/
-theorem padicCompletedMultiplicativeSeries_eq
-    (p : ℕ) [Fact p.Prime] :
+theorem padicCompletedMultiplicativeSeries_eq :
     padicCompletedMultiplicativeSeries p =
       (1 + PowerSeries.X) ^ p - 1 := by
-  rw [padicCompletedMultiplicativeSeries,
-    LubinTateSeries.padicMultiplicativeLubinTateSeries_toPowerSeries,
-    PowerSeries.binomialSeries_nat]
-  simp only [map_sub, map_pow, map_add, map_one, PowerSeries.map_X]
+  simp [padicCompletedMultiplicativeSeries]
 
 /-- The completed changed-standard series has linear coefficient `u p` and
 degree-`p` term `X ^ p`. -/
 theorem padicCompletedChangedStandardSeries_eq
-    (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) :
     padicCompletedChangedStandardSeries p u =
       PowerSeries.C
@@ -107,36 +97,27 @@ theorem padicCompletedChangedStandardSeries_eq
     ((congrArg PowerSeries.C hcoeff).trans
       (map_mul PowerSeries.C
         (padicValuationSubringToCompletedUnramifiedWittRing p u)
-        (p : padicCompletedUnramifiedWittRing p)))
+        p))
 
-theorem padicCompletedMultiplicativeSeries_constantCoeff
-    (p : ℕ) [Fact p.Prime] :
+theorem padicCompletedMultiplicativeSeries_constantCoeff :
     PowerSeries.constantCoeff
         (padicCompletedMultiplicativeSeries p) = 0 := by
-  rw [← PowerSeries.coeff_zero_eq_constantCoeff,
-    padicCompletedMultiplicativeSeries,
-    PowerSeries.coeff_map,
-    PowerSeries.coeff_zero_eq_constantCoeff_apply]
   exact
     (congrArg (padicValuationSubringToCompletedUnramifiedWittRing p)
       (padicMultiplicativeLubinTateSeries p).constantCoeff_eq_zero).trans
       (map_zero (padicValuationSubringToCompletedUnramifiedWittRing p))
 
 /-- The linear coefficient of the completed multiplicative series is `p`. -/
-theorem padicCompletedMultiplicativeSeries_coeff_one
-    (p : ℕ) [Fact p.Prime] :
+theorem padicCompletedMultiplicativeSeries_coeff_one :
     PowerSeries.coeff 1
         (padicCompletedMultiplicativeSeries p) =
       (p : padicCompletedUnramifiedWittRing p) := by
-  rw [padicCompletedMultiplicativeSeries,
-    PowerSeries.coeff_map]
   exact
     (congrArg (padicValuationSubringToCompletedUnramifiedWittRing p)
       (padicMultiplicativeLubinTateSeries p).coeff_one_eq_uniformizer).trans
       (padicValuationSubringToCompletedUnramifiedWittRing_uniformizer p)
 
 theorem padicCompletedChangedStandardSeries_constantCoeff
-    (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) :
     PowerSeries.constantCoeff
         (padicCompletedChangedStandardSeries p u) = 0 := by
@@ -147,41 +128,19 @@ theorem padicCompletedChangedStandardSeries_constantCoeff
     LubinTateSeries.constantCoeff_eq_zero,
     map_zero]
 
-/-- The completed multiplicative Lubin--Tate series admits formal
-substitution. -/
-theorem padicCompletedMultiplicativeSeries_hasSubst
-    (p : ℕ) [Fact p.Prime] :
-    PowerSeries.HasSubst (padicCompletedMultiplicativeSeries p) :=
-  PowerSeries.HasSubst.of_constantCoeff_zero'
-    (padicCompletedMultiplicativeSeries_constantCoeff p)
-
-/-- The completed changed standard Lubin--Tate series admits formal
-substitution. -/
-theorem padicCompletedChangedStandardSeries_hasSubst
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
-    PowerSeries.HasSubst (padicCompletedChangedStandardSeries p u) :=
-  PowerSeries.HasSubst.of_constantCoeff_zero'
-    (padicCompletedChangedStandardSeries_constantCoeff p u)
-
 /-- Reduction of the completed multiplicative series modulo `p` is `X ^ p`. -/
-theorem padicCompletedMultiplicativeSeries_map_constantCoeff
-    (p : ℕ) [Fact p.Prime] :
+theorem padicCompletedMultiplicativeSeries_map_constantCoeff :
     PowerSeries.map WittVector.constantCoeff
         (padicCompletedMultiplicativeSeries p) =
       (PowerSeries.X :
         PowerSeries (AlgebraicClosure (ZMod p))) ^ p := by
   let : CharP (PowerSeries (AlgebraicClosure (ZMod p))) p :=
     charP_of_injective_ringHom PowerSeries.C_injective p
-  rw [padicCompletedMultiplicativeSeries_eq]
-  simp only [map_sub, map_pow, map_add, map_one, PowerSeries.map_X]
-  rw [add_pow_char]
-  simp
+  simp [padicCompletedMultiplicativeSeries_eq, map_sub, map_pow, map_add, map_one, PowerSeries.map_X, add_pow_char]
 
 /-- Reduction of the completed changed-standard series modulo `p` is
 `X ^ p`. -/
 theorem padicCompletedChangedStandardSeries_map_constantCoeff
-    (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) :
     PowerSeries.map WittVector.constantCoeff
         (padicCompletedChangedStandardSeries p u) =
@@ -189,16 +148,11 @@ theorem padicCompletedChangedStandardSeries_map_constantCoeff
         PowerSeries (AlgebraicClosure (ZMod p))) ^ p := by
   let : CharP (PowerSeries (AlgebraicClosure (ZMod p))) p :=
     charP_of_injective_ringHom PowerSeries.C_injective p
-  rw [padicCompletedChangedStandardSeries_eq]
-  simp only [map_add, map_mul, map_pow, PowerSeries.map_C,
-    PowerSeries.map_X, map_natCast]
-  rw [CharP.cast_eq_zero (PowerSeries (AlgebraicClosure (ZMod p))) p]
-  simp
+  simp [padicCompletedChangedStandardSeries_eq]
 
 /-- Coefficientwise Witt-vector Frobenius preserves a zero constant
 coefficient. -/
 theorem padicChangedUniformizerFrobenius_constantCoeff_eq_zero
-    (p : ℕ) [Fact p.Prime]
     (H : PowerSeries (padicCompletedUnramifiedWittRing p))
     (hH : PowerSeries.constantCoeff H = 0) :
     PowerSeries.constantCoeff

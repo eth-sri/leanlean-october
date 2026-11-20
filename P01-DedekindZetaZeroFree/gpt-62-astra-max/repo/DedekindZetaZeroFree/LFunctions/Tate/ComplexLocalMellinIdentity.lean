@@ -20,7 +20,7 @@ theorem complexAnnular_normMellin_integrable (f : ℂ → ℂ) (hf : IsComplexAn
     intro x
     left
     exact ne_of_gt (lt_of_lt_of_le (sq_pos_of_pos ha) (le_max_right _ _))
-  have hi : Integrable (fun x => f x * (w x : ℂ)) (volume : Measure ℂ) :=
+  have hi : Integrable (fun x => f x * (w x : ℂ)) volume :=
     (hcont.continuous.mul (Complex.continuous_ofReal.comp hw)).integrable_of_hasCompactSupport
       (hcomp.mul_right)
   apply hi.congr
@@ -35,11 +35,21 @@ theorem complexAnnular_normMellin_integrable (f : ℂ → ℂ) (hf : IsComplexAn
     simp only [complexNormMellinIntegrand, if_neg hx0, w]
     rw [max_eq_left (sq_le_sq₀ ha.le (norm_nonneg x) |>.2 hax)]
 
-private theorem schwartz_normMellin_integrable (g : SchwartzMap ℂ ℂ)
-    (s : ℝ) (hs : 0 < s) (hs1 : s < 1) :
-    Integrable (complexNormMellinIntegrand g s) (volume : Measure ℂ) := by
-  have hmeas : AEStronglyMeasurable (complexNormMellinIntegrand g s)
+theorem complexTraceFourier_normMellin_integrable (f : ℂ → ℂ)
+    (hf : IsComplexAnnular f) (s : ℝ) (hs : 0 < s) (hs1 : s < 1) :
+    Integrable (complexNormMellinIntegrand (complexTraceFourier f) s)
       (volume : Measure ℂ) := by
+  let g := (2 : ℂ) •
+    (SchwartzMap.compCLMOfContinuousLinearEquiv ℂ ((Units.mk0 (2 : ℝ) (by norm_num)) • Complex.conjCLE) (FourierTransform.fourier (hf.2.1.toSchwartzMap hf.1)))
+  have hg : g = complexTraceFourier f := by
+    funext x
+    simp only [g, SchwartzMap.smul_apply,
+      SchwartzMap.compCLMOfContinuousLinearEquiv_apply, Function.comp_apply,
+      smul_eq_mul, SchwartzMap.fourier_coe, complexTraceFourier_eq_fourier]
+    congr 2
+  rw [← hg]
+  have hmeas : AEStronglyMeasurable (complexNormMellinIntegrand g s)
+      volume := by
     apply Measurable.aestronglyMeasurable
     exact Measurable.ite (measurableSet_singleton 0) measurable_const
       (g.continuous.measurable.mul (Complex.measurable_ofReal.comp
@@ -68,8 +78,8 @@ private theorem schwartz_normMellin_integrable (g : SchwartzMap ℂ ℂ)
         (Real.rpow_nonneg (norm_nonneg x) _)
 
   have hfar : IntegrableOn (complexNormMellinIntegrand g s)
-      (Metric.ball 0 1)ᶜ (volume : Measure ℂ) := by
-    apply (g.integrable (μ := (volume : Measure ℂ))).norm.restrict.mono' hmeas.restrict
+      (Metric.ball 0 1)ᶜ volume := by
+    apply (g.integrable).norm.restrict.mono' hmeas.restrict
     filter_upwards [self_mem_ae_restrict (measurableSet_ball.compl)] with x hx
     have hnx : 1 ≤ ‖x‖ := by simpa using hx
     have hx0 : x ≠ 0 := by intro h; norm_num [h] at hnx
@@ -77,39 +87,29 @@ private theorem schwartz_normMellin_integrable (g : SchwartzMap ℂ ℂ)
     have hpow : ‖x‖ ^ (2 * (s - 1)) ≤ 1 :=
       Real.rpow_le_one_of_one_le_of_nonpos hnx (by linarith)
     simpa using mul_le_mul_of_nonneg_left hpow (norm_nonneg (g x))
-  have hu := hnear.union hfar
-  simpa using hu
-
-theorem complexTraceFourier_normMellin_integrable (f : ℂ → ℂ)
-    (hf : IsComplexAnnular f) (s : ℝ) (hs : 0 < s) (hs1 : s < 1) :
-    Integrable (complexNormMellinIntegrand (complexTraceFourier f) s)
-      (volume : Measure ℂ) := by
-  let fS : SchwartzMap ℂ ℂ := hf.2.1.toSchwartzMap hf.1
-  let L : ℂ ≃L[ℝ] ℂ := (Units.mk0 (2 : ℝ) (by norm_num)) • Complex.conjCLE
-  let g : SchwartzMap ℂ ℂ := (2 : ℂ) •
-    (SchwartzMap.compCLMOfContinuousLinearEquiv ℂ L (FourierTransform.fourier fS))
-  have hg : (g : ℂ → ℂ) = complexTraceFourier f := by
-    funext x
-    simp only [g, SchwartzMap.smul_apply,
-      SchwartzMap.compCLMOfContinuousLinearEquiv_apply, Function.comp_apply,
-      smul_eq_mul, SchwartzMap.fourier_coe, complexTraceFourier_eq_fourier]
-    congr 2
-  rw [← hg]
-  exact schwartz_normMellin_integrable g s hs hs1
+  simpa using (hnear.union hfar)
 
 namespace ComplexTateLaplace
 open Set
-lemma laplace_integrable (a r : ℝ) (ha : 0 < a) (hr : 0 < r) :
+section
+
+variable (a r : ℝ) (ha : 0 < a) (hr : 0 < r)
+
+include ha hr in
+lemma laplace_integrable :
     IntegrableOn (fun t : ℝ => t ^ (a - 1) * Real.exp (-(r * t))) (Ioi 0) := by
-  simpa only [Real.rpow_one, neg_mul] using
+  simpa using
     (integrableOn_rpow_mul_exp_neg_mul_rpow (by linarith : -1 < a - 1)
       (by norm_num : 0 < (1 : ℝ)) hr)
 
-lemma laplace_weight (a r : ℝ) (ha : 0 < a) (hr : 0 < r) :
+include ha hr in
+lemma laplace_weight :
     (∫ t : ℝ in Ioi 0, t ^ (a - 1) * Real.exp (-(r * t))) =
       r ^ (-a) * Real.Gamma a := by
   rw [Real.integral_rpow_mul_exp_neg_mul_Ioi ha hr]
   simp [one_div, Real.inv_rpow hr.le, Real.rpow_neg hr.le]
+
+end
 
 lemma mellin_weight (a : ℝ) (x : ℂ) (hx : x ≠ 0) :
     (2 * Real.pi * ‖x‖ ^ 2) ^ (-a) =
@@ -135,32 +135,34 @@ lemma laplace_norm (g : ℂ → ℂ) (a : ℝ) (ha : 0 < a) (x : ℂ) (hx : x �
     Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg (sq_nonneg _) _)]
   ring
 
-lemma laplace_prod_integrable (g : ℂ → ℂ) (hg : AEStronglyMeasurable g volume)
-    (a : ℝ) (ha : 0 < a)
-    (hi : Integrable (complexNormMellinIntegrand g (1 - a)) volume) :
+section
+
+variable (g : ℂ → ℂ) (hg : AEStronglyMeasurable g volume) (a : ℝ) (ha : 0 < a)
+    (hi : Integrable (complexNormMellinIntegrand g (1 - a)) volume)
+
+include hg ha hi in
+lemma laplace_prod_integrable :
     Integrable (fun p : ℂ × ℝ =>
       g p.1 * ((p.2 ^ (a - 1) * Real.exp (-(2 * Real.pi * ‖p.1‖ ^ 2 * p.2)) : ℝ) : ℂ))
         (volume.prod (volume.restrict (Ioi 0))) := by
   apply (integrable_prod_iff ?_).mpr
   · refine ⟨?_, ?_⟩
-    · filter_upwards [(volume : Measure ℂ).ae_ne (0 : ℂ)] with x hx
+    · filter_upwards [volume.ae_ne (0 : ℂ)] with x hx
       exact ((laplace_integrable a (2 * Real.pi * ‖x‖ ^ 2) ha (by positivity)).ofReal).const_mul (g x)
     · apply (hi.norm.const_mul ((2 * Real.pi) ^ (-a) * Real.Gamma a)).congr
-      filter_upwards [(volume : Measure ℂ).ae_ne (0 : ℂ)] with x hx
+      filter_upwards [volume.ae_ne (0 : ℂ)] with x hx
       exact (laplace_norm g a ha x hx).symm
   · exact (hg.comp_fst).mul
       ((Complex.measurable_ofReal.comp
         ((measurable_snd.pow_const _).mul
           (Real.measurable_exp.comp (by fun_prop)))).aestronglyMeasurable)
 
-lemma laplace_mellin (g : ℂ → ℂ) (hg : AEStronglyMeasurable g volume)
-    (a : ℝ) (ha : 0 < a)
-    (hi : Integrable (complexNormMellinIntegrand g (1 - a)) volume) :
+include hg ha hi in
+lemma laplace_mellin :
     (∫ t : ℝ in Ioi 0, ((t ^ (a - 1) : ℝ) : ℂ) *
       (∫ x : ℂ, g x * (Real.exp (-(2 * Real.pi * ‖x‖ ^ 2 * t)) : ℂ))) =
       (((2 * Real.pi) ^ (-a) * Real.Gamma a : ℝ) : ℂ) *
         (∫ x : ℂ, complexNormMellinIntegrand g (1 - a) x) := by
-  have hswap := integral_integral_swap (f := fun (x : ℂ) (t : ℝ) => g x * ((t ^ (a - 1) * Real.exp (-(2 * Real.pi * ‖x‖ ^ 2 * t)) : ℝ) : ℂ)) (laplace_prod_integrable g hg a ha hi)
   have he (x : ℂ) (hx : x ≠ 0) :
       (∫ t : ℝ in Ioi 0, g x *
         ((t ^ (a - 1) * Real.exp (-(2 * Real.pi * ‖x‖ ^ 2 * t)) : ℝ) : ℂ)) =
@@ -183,12 +185,14 @@ lemma laplace_mellin (g : ℂ → ℂ) (hg : AEStronglyMeasurable g volume)
       simp only [Complex.ofReal_mul, ← integral_const_mul]
       congr 1; ext x; ring
     _ = ∫ x : ℂ, ∫ t : ℝ in Ioi 0, g x *
-        ((t ^ (a - 1) * Real.exp (-(2 * Real.pi * ‖x‖ ^ 2 * t)) : ℝ) : ℂ) := hswap.symm
+        ((t ^ (a - 1) * Real.exp (-(2 * Real.pi * ‖x‖ ^ 2 * t)) : ℝ) : ℂ) := (integral_integral_swap (laplace_prod_integrable g hg a ha hi)).symm
     _ = _ := by
       rw [← integral_const_mul]
       apply integral_congr_ae
-      filter_upwards [(volume : Measure ℂ).ae_ne (0 : ℂ)] with x hx
+      filter_upwards [volume.ae_ne (0 : ℂ)] with x hx
       exact he x hx
+
+end
 lemma reciprocal_pairing_mellin (f : ℂ → ℂ) (s : ℝ) (hs : 0 < s)
     (hi : Integrable (complexNormMellinIntegrand f (1 - s)) volume)
     (hm : AEStronglyMeasurable f volume) :
@@ -233,10 +237,6 @@ lemma gamma_ratio (s : ℝ) (hs : 0 < s) (hs1 : s < 1) :
       ← Complex.ofReal_cpow (by positivity : 0 ≤ 2 * Real.pi)]
   rw [show -(1 - s) = s - 1 by ring]
   push_cast
-  have h1 : (((2 * Real.pi) ^ (s - 1) : ℝ) : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.rpow_pos_of_pos (by positivity : 0 < 2 * Real.pi) _).ne'
-  have h2 : (Real.Gamma (1 - s) : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.Gamma_pos_of_pos (by linarith : 0 < 1 - s)).ne'
   field_simp
 
 end ComplexTateLaplace
@@ -246,28 +246,20 @@ theorem complexTraceFourier_normMellin (f : ℂ → ℂ) (hf : IsComplexAnnular 
     complexNormMellin (complexTraceFourier f) s =
       (Complex.Gammaℂ (s : ℂ) / Complex.Gammaℂ ((1 - s : ℝ) : ℂ)) *
         complexNormMellin f (1 - s) := by
-  have hfi : Integrable f volume :=
-    hf.1.continuous.integrable_of_hasCompactSupport hf.2.1
-  have hfm : AEStronglyMeasurable f volume := hf.1.continuous.aestronglyMeasurable
   have hgm : AEStronglyMeasurable (complexTraceFourier f) volume := by
-    have hc : Continuous (FourierTransform.fourier f) :=
-      VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
-        (innerSL ℝ).continuous₂ hfi
     have he : complexTraceFourier f = fun y : ℂ =>
         2 * FourierTransform.fourier f (2 * (starRingEnd ℂ) y) := by
       funext y; exact complexTraceFourier_eq_fourier f y
     rw [he]
-    exact (continuous_const.mul (hc.comp (by fun_prop))).aestronglyMeasurable
-  have hgi := complexTraceFourier_normMellin_integrable f hf s hs hs1
-  have hmi := complexAnnular_normMellin_integrable f hf s hs hs1
+    exact (continuous_const.mul ((VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
+      (innerSL ℝ).continuous₂ (hf.1.continuous.integrable_of_hasCompactSupport hf.2.1)).comp (by fun_prop))).aestronglyMeasurable
   have hL := ComplexTateLaplace.laplace_mellin (complexTraceFourier f) hgm
-    (1 - s) (by linarith) (by simpa using hgi)
-  have hR := ComplexTateLaplace.reciprocal_pairing_mellin f s hs hmi hfm
+    (1 - s) (by linarith) (by simpa using (complexTraceFourier_normMellin_integrable f hf s hs hs1))
   have hEq : (((2 * Real.pi) ^ (s - 1) * Real.Gamma (1 - s) : ℝ) : ℂ) *
       (∫ y : ℂ, complexNormMellinIntegrand (complexTraceFourier f) s y) =
       (((2 * Real.pi) ^ (-s) * Real.Gamma s : ℝ) : ℂ) *
         (∫ x : ℂ, complexNormMellinIntegrand f (1 - s) x) := by
-    rw [← hR]
+    rw [← (ComplexTateLaplace.reciprocal_pairing_mellin f s hs (complexAnnular_normMellin_integrable f hf s hs hs1) hf.1.continuous.aestronglyMeasurable)]
     rw [show -(1 - s) = s - 1 by ring,
       show 1 - (1 - s) = s by ring,
       show (1 - s) - 1 = -s by ring] at hL
@@ -301,10 +293,10 @@ theorem complexGamma_ratio_ne_zero (s : ℝ) (hs : 0 < s) (hs1 : s < 1) :
   apply div_ne_zero
   · exact mul_ne_zero
       (mul_ne_zero (by norm_num) (Complex.cpow_ne_zero_iff.mpr (Or.inl hpi)))
-      (Complex.Gamma_ne_zero_of_re_pos (by simpa using hs))
+      (Complex.Gamma_ne_zero_of_re_pos (by exact hs))
   · exact mul_ne_zero
       (mul_ne_zero (by norm_num) (Complex.cpow_ne_zero_iff.mpr (Or.inl hpi)))
-      (Complex.Gamma_ne_zero_of_re_pos (by simpa using sub_pos.mpr hs1))
+      (Complex.Gamma_ne_zero_of_re_pos (by exact sub_pos.mpr hs1))
 
 end
 end DedekindZetaZeroFree

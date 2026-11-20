@@ -34,7 +34,9 @@ theorem traceMeasure_map_toMixed :
     rfl
   · exact (NumberField.mixedEmbedding.euclidean.toMixed F).continuous.measurable.aemeasurable
 
-theorem euclidean_covolume_eq (I : NonzeroFractionalIdeal F) :
+variable (I : NonzeroFractionalIdeal F)
+
+theorem euclidean_covolume_eq :
     ZLattice.covolume (idealLattice F I) =
       (FractionalIdeal.absNorm (I : FractionalIdeal (RingOfIntegers F)⁰ F) : ℝ) *
         (2 : ℝ)⁻¹ ^ InfinitePlace.nrComplexPlaces F * Real.sqrt |(NumberField.discr F : ℝ)| := by
@@ -42,7 +44,7 @@ theorem euclidean_covolume_eq (I : NonzeroFractionalIdeal F) :
     (NumberField.mixedEmbedding.euclidean.volumePreserving_toMixed F)]
   exact NumberField.mixedEmbedding.covolume_idealLattice F I
 
-theorem covolume_eq_haarScalar_mul_euclidean (I : NonzeroFractionalIdeal F) :
+theorem covolume_eq_haarScalar_mul_euclidean :
     covolume F I = haarScalar F * ZLattice.covolume (idealLattice F I) := by
   let b := Module.Free.chooseBasis ℤ (idealLattice F I)
   rw [covolume, ZLattice.covolume_eq_measure_fundamentalDomain _ _
@@ -53,7 +55,7 @@ theorem covolume_eq_haarScalar_mul_euclidean (I : NonzeroFractionalIdeal F) :
     ENNReal.toReal_mul]
   rw [ENNReal.toReal_ofReal (by unfold haarScalar; positivity)]
 
-theorem covolume_eq_sqrt_discr_mul_absNorm (I : NonzeroFractionalIdeal F) :
+theorem covolume_eq_sqrt_discr_mul_absNorm :
     covolume F I = Real.sqrt |(NumberField.discr F : ℝ)| *
       (FractionalIdeal.absNorm (I : FractionalIdeal (RingOfIntegers F)⁰ F) : ℝ) := by
   rw [covolume_eq_haarScalar_mul_euclidean, euclidean_covolume_eq, haarScalar]

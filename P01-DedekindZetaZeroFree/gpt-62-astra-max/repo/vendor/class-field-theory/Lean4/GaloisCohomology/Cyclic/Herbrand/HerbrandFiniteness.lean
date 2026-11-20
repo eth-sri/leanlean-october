@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 namespace CyclicCohomology
@@ -61,10 +56,7 @@ private theorem finite_middle_of_exact
     Finite Y := by
   apply g.finite_iff_finite_ker_range.mpr
   constructor
-  · let : Finite (MonoidHom.range f) :=
-      Finite.of_surjective f.rangeRestrict f.rangeRestrict_surjective
-    rw [← hexact]
-    infer_instance
+  · simpa [hexact] using Finite.of_surjective f.rangeRestrict f.rangeRestrict_surjective
   · infer_instance
 
 private theorem finite_middle_of_moduleCat_exact
@@ -72,17 +64,16 @@ private theorem finite_middle_of_moduleCat_exact
     (hexact : Function.Exact f g)
     [Finite X] [Finite Z] :
     Finite Y := by
-  let fm : Multiplicative X →* Multiplicative Y :=
-    f.hom.toAddMonoidHom.toMultiplicative
-  let gm : Multiplicative Y →* Multiplicative Z :=
-    g.hom.toAddMonoidHom.toMultiplicative
   exact finite_middle_of_exact
     (X := Multiplicative X) (Y := Multiplicative Y)
-    (Z := Multiplicative Z) fm gm
+    (Z := Multiplicative Z) f.hom.toAddMonoidHom.toMultiplicative g.hom.toAddMonoidHom.toMultiplicative
     (mulExact_of_moduleCat_exact f g hexact).monoidHom_ker_eq.symm
 
- noncomputable def tateHOneIsoHerbrandHMinusOne
-    (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ) :
+ section
+
+variable (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ)
+
+noncomputable def tateHOneIsoHerbrandHMinusOne :
     tateCohomology (Rep.ofMulDistribMulAction G A) 1 ≅
       ModuleCat.of ℤ (Additive (HerbrandHMinusOne G A σ)) := by
   letI : IsCyclic G := ⟨⟨σ, hgen⟩⟩
@@ -95,8 +86,7 @@ private theorem finite_middle_of_moduleCat_exact
       (TateCohomology.isoFiniteCyclicNegOne M σ hgen).symm ≪≫
       tateHMinusOneIsoHerbrandHMinusOne σ hgen
 
- noncomputable def tateHMinusTwoIsoHerbrandH0
-    (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ) :
+ noncomputable def tateHMinusTwoIsoHerbrandH0 :
     tateCohomology (Rep.ofMulDistribMulAction G A) (-2) ≅
       ModuleCat.of ℤ (Additive (HerbrandH0 G A)) := by
   classical
@@ -110,25 +100,28 @@ private theorem finite_middle_of_moduleCat_exact
       (TateCohomology.isoFiniteCyclicZero M σ hgen).symm ≪≫
       tateH0IsoHerbrandH0
 
+end
+
+section
+
+variable (i : A →* B) (j : B →* C) (hi : ∀ (g : G) (a : A), i (g • a) = g • i a)
+    (hj : ∀ (g : G) (b : B), j (g • b) = g • j b) (hker : ∀ b : B, j b = 1 ↔ ∃ a : A, i a = b)
+    (hinj : Function.Injective i) (hsurj : ∀ c : C, ∃ b : B, j b = c) (σ : G)
+    (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ)
+
+include hi hj hker hinj hsurj hgen in
 /-- Herbrand-quotient multiplicativity, finiteness transfer from the first and third terms to
 the middle term. -/
 theorem herbrandQuotientDefined_middle_of_left_right
-    (i : A →* B) (j : B →* C)
-    (hi : ∀ (g : G) (a : A), i (g • a) = g • i a)
-    (hj : ∀ (g : G) (b : B), j (g • b) = g • j b)
-    (hker : ∀ b : B, j b = 1 ↔ ∃ a : A, i a = b)
-    (hinj : Function.Injective i)
-    (hsurj : ∀ c : C, ∃ b : B, j b = c)
-    (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ)
     (hA : HerbrandQuotientDefined G A σ)
     (hC : HerbrandQuotientDefined G C σ) :
     HerbrandQuotientDefined G B σ := by
-  let : Finite (HerbrandH0 G A) := hA.1
-  let : Finite (HerbrandHMinusOne G A σ) := hA.2
-  let : Finite (HerbrandH0 G C) := hC.1
-  let : Finite (HerbrandHMinusOne G C σ) := hC.2
+  let := hA.1
+  let := hA.2
+  let := hC.1
+  let := hC.2
   let S := equivariantShortComplex i j hi hj hker
-  have hS : S.ShortExact :=
+  have hS :=
     equivariantShortComplex_shortExact
       i j hi hj hker hinj hsurj
   let : Finite (tateCohomology S.X₁ (-1)) :=
@@ -139,170 +132,126 @@ theorem herbrandQuotientDefined_middle_of_left_right
     finite_source_of_moduleIso
       (tateHMinusOneIsoHerbrandHMinusOne
         (G := G) (A := C) σ hgen)
-  have hminusTate : Finite (tateCohomology S.X₂ (-1)) :=
+  have hminusTate :=
     finite_middle_of_moduleCat_exact
       ((tateCohomologyFunctor (-1)).map S.f)
       ((tateCohomologyFunctor (-1)).map S.g)
       ((ShortComplex.ShortExact.moduleCat_exact_iff_function_exact _).1
         ((TateCohomology.map_tateComplexFunctor_shortExact hS)
           |>.homology_exact₂ (-1)))
-  have hminus : Finite (HerbrandHMinusOne G B σ) := by
-    let :
-        Finite
-          (tateCohomology
-            (Rep.ofMulDistribMulAction G B) (-1)) := by
-      change Finite (tateCohomology S.X₂ (-1))
-      exact hminusTate
-    exact finite_target_of_moduleIso
-      (tateHMinusOneIsoHerbrandHMinusOne
-        (G := G) (A := B) σ hgen)
   let : Finite (tateCohomology S.X₁ 0) :=
     finite_source_of_moduleIso
       (tateH0IsoHerbrandH0 (G := G) (A := A))
   let : Finite (tateCohomology S.X₃ 0) :=
     finite_source_of_moduleIso
       (tateH0IsoHerbrandH0 (G := G) (A := C))
-  have hzeroTate : Finite (tateCohomology S.X₂ 0) :=
+  have hzeroTate :=
     finite_middle_of_moduleCat_exact
       ((tateCohomologyFunctor 0).map S.f)
       ((tateCohomologyFunctor 0).map S.g)
       ((ShortComplex.ShortExact.moduleCat_exact_iff_function_exact _).1
         ((TateCohomology.map_tateComplexFunctor_shortExact hS)
           |>.homology_exact₂ 0))
-  have hzero : Finite (HerbrandH0 G B) := by
-    let :
+  refine ⟨?_, ?_⟩
+  · let :
         Finite
           (tateCohomology
             (Rep.ofMulDistribMulAction G B) 0) := by
-      change Finite (tateCohomology S.X₂ 0)
       exact hzeroTate
-    exact finite_target_of_moduleIso
-      (tateH0IsoHerbrandH0 (G := G) (A := B))
-  exact ⟨hzero, hminus⟩
+    exact finite_target_of_moduleIso tateH0IsoHerbrandH0
+  · let :
+        Finite
+          (tateCohomology
+            (Rep.ofMulDistribMulAction G B) (-1)) := by
+      exact hminusTate
+    exact finite_target_of_moduleIso (tateHMinusOneIsoHerbrandHMinusOne σ hgen)
 
+include hi hj hker hinj hsurj hgen in
 /-- Herbrand-quotient multiplicativity, finiteness transfer from the first and middle terms to
 the third term. -/
 theorem herbrandQuotientDefined_right_of_left_middle
-    (i : A →* B) (j : B →* C)
-    (hi : ∀ (g : G) (a : A), i (g • a) = g • i a)
-    (hj : ∀ (g : G) (b : B), j (g • b) = g • j b)
-    (hker : ∀ b : B, j b = 1 ↔ ∃ a : A, i a = b)
-    (hinj : Function.Injective i)
-    (hsurj : ∀ c : C, ∃ b : B, j b = c)
-    (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ)
     (hA : HerbrandQuotientDefined G A σ)
     (hB : HerbrandQuotientDefined G B σ) :
     HerbrandQuotientDefined G C σ := by
-  let : Finite (HerbrandH0 G A) := hA.1
-  let : Finite (HerbrandHMinusOne G A σ) := hA.2
-  let : Finite (HerbrandH0 G B) := hB.1
-  let : Finite (HerbrandHMinusOne G B σ) := hB.2
+  let := hA.1
+  let := hA.2
+  let := hB.1
+  let := hB.2
   let S := equivariantShortComplex i j hi hj hker
-  have hS : S.ShortExact :=
+  have hS :=
     equivariantShortComplex_shortExact
       i j hi hj hker hinj hsurj
   let : Finite (tateCohomology S.X₂ (-1)) :=
     finite_source_of_moduleIso
       (tateHMinusOneIsoHerbrandHMinusOne
         (G := G) (A := B) σ hgen)
-  have hA0 : Finite (tateCohomology S.X₁ 0) :=
-    finite_source_of_moduleIso
-      (tateH0IsoHerbrandH0 (G := G) (A := A))
   let : Finite (tateCohomology S.X₁ ((-1) + 1)) := by
-    norm_num
-    exact hA0
-  have hminusTate : Finite (tateCohomology S.X₃ (-1)) :=
+    exact (finite_source_of_moduleIso
+      (tateH0IsoHerbrandH0))
+  have hminusTate :=
     finite_middle_of_moduleCat_exact
       ((tateCohomologyFunctor (-1)).map S.g)
       (TateCohomology.δ hS (-1))
       ((ShortComplex.ShortExact.moduleCat_exact_iff_function_exact _).1
         (TateCohomology.exact₃ hS (-1)))
-  have hminus : Finite (HerbrandHMinusOne G C σ) := by
-    let :
-        Finite
-          (tateCohomology
-            (Rep.ofMulDistribMulAction G C) (-1)) := by
-      change Finite (tateCohomology S.X₃ (-1))
-      exact hminusTate
-    exact finite_target_of_moduleIso
-      (tateHMinusOneIsoHerbrandHMinusOne
-        (G := G) (A := C) σ hgen)
   let : Finite (tateCohomology S.X₂ 0) :=
     finite_source_of_moduleIso
       (tateH0IsoHerbrandH0 (G := G) (A := B))
-  have hA1 : Finite (tateCohomology S.X₁ 1) :=
-    finite_source_of_moduleIso
-      (tateHOneIsoHerbrandHMinusOne
-        (G := G) (A := A) σ hgen)
   let : Finite (tateCohomology S.X₁ (0 + 1)) := by
-    norm_num
-    exact hA1
-  have hzeroTate : Finite (tateCohomology S.X₃ 0) :=
+    exact (finite_source_of_moduleIso
+      (tateHOneIsoHerbrandHMinusOne
+          σ hgen))
+  have hzeroTate :=
     finite_middle_of_moduleCat_exact
       ((tateCohomologyFunctor 0).map S.g)
       (TateCohomology.δ hS 0)
       ((ShortComplex.ShortExact.moduleCat_exact_iff_function_exact _).1
         (TateCohomology.exact₃ hS 0))
-  have hzero : Finite (HerbrandH0 G C) := by
-    let :
+  refine ⟨?_, ?_⟩
+  · let :
         Finite
           (tateCohomology
             (Rep.ofMulDistribMulAction G C) 0) := by
-      change Finite (tateCohomology S.X₃ 0)
       exact hzeroTate
+    exact finite_target_of_moduleIso tateH0IsoHerbrandH0
+  · let :
+        Finite
+          (tateCohomology
+            (Rep.ofMulDistribMulAction G C) (-1)) := by
+      exact hminusTate
     exact finite_target_of_moduleIso
-      (tateH0IsoHerbrandH0 (G := G) (A := C))
-  exact ⟨hzero, hminus⟩
+      (tateHMinusOneIsoHerbrandHMinusOne
+          σ hgen)
 
+include hi hj hker hinj hsurj hgen in
 /-- Herbrand-quotient multiplicativity, finiteness transfer from the middle and third terms to
 the first term. -/
 theorem herbrandQuotientDefined_left_of_middle_right
-    (i : A →* B) (j : B →* C)
-    (hi : ∀ (g : G) (a : A), i (g • a) = g • i a)
-    (hj : ∀ (g : G) (b : B), j (g • b) = g • j b)
-    (hker : ∀ b : B, j b = 1 ↔ ∃ a : A, i a = b)
-    (hinj : Function.Injective i)
-    (hsurj : ∀ c : C, ∃ b : B, j b = c)
-    (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ)
     (hB : HerbrandQuotientDefined G B σ)
     (hC : HerbrandQuotientDefined G C σ) :
     HerbrandQuotientDefined G A σ := by
-  let : Finite (HerbrandH0 G B) := hB.1
-  let : Finite (HerbrandHMinusOne G B σ) := hB.2
-  let : Finite (HerbrandH0 G C) := hC.1
-  let : Finite (HerbrandHMinusOne G C σ) := hC.2
+  let := hB.1
+  let := hB.2
+  let := hC.1
+  let := hC.2
   let S := equivariantShortComplex i j hi hj hker
-  have hS : S.ShortExact :=
+  have hS :=
     equivariantShortComplex_shortExact
       i j hi hj hker hinj hsurj
   let : Finite (tateCohomology S.X₃ (-2)) :=
     finite_source_of_moduleIso
       (tateHMinusTwoIsoHerbrandH0
         (G := G) (A := C) σ hgen)
-  have hBminus : Finite (tateCohomology S.X₂ (-1)) :=
-    finite_source_of_moduleIso
-      (tateHMinusOneIsoHerbrandHMinusOne
-        (G := G) (A := B) σ hgen)
   let : Finite ((tateCohomologyFunctor ((-2) + 1)).obj S.X₂) := by
-    norm_num
-    exact hBminus
-  have hminusTate :
-      Finite (tateCohomology S.X₁ ((-2) + 1)) :=
+    exact (finite_source_of_moduleIso
+      (tateHMinusOneIsoHerbrandHMinusOne
+          σ hgen))
+  have hminusTate :=
     finite_middle_of_moduleCat_exact
       (TateCohomology.δ hS (-2))
       ((tateCohomologyFunctor ((-2) + 1)).map S.f)
       ((ShortComplex.ShortExact.moduleCat_exact_iff_function_exact _).1
         (TateCohomology.exact₁ hS (-2)))
-  have hminus : Finite (HerbrandHMinusOne G A σ) := by
-    let :
-        Finite
-          (tateCohomology
-            (Rep.ofMulDistribMulAction G A) (-1)) := by
-      norm_num at hminusTate ⊢
-      exact hminusTate
-    exact finite_target_of_moduleIso
-      (tateHMinusOneIsoHerbrandHMinusOne
-        (G := G) (A := A) σ hgen)
   let : Finite (tateCohomology S.X₃ (-1)) :=
     finite_source_of_moduleIso
       (tateHMinusOneIsoHerbrandHMinusOne
@@ -310,149 +259,33 @@ theorem herbrandQuotientDefined_left_of_middle_right
   let : Finite (tateCohomology S.X₂ 0) :=
     finite_source_of_moduleIso
       (tateH0IsoHerbrandH0 (G := G) (A := B))
-  have hzeroTate : Finite (tateCohomology S.X₁ 0) :=
+  have hzeroTate :=
     finite_middle_of_moduleCat_exact
       (TateCohomology.δ hS (-1))
       ((tateCohomologyFunctor 0).map S.f)
       ((ShortComplex.ShortExact.moduleCat_exact_iff_function_exact _).1
         (TateCohomology.exact₁ hS (-1)))
-  have hzero : Finite (HerbrandH0 G A) := by
-    let :
+  refine ⟨?_, ?_⟩
+  · let :
         Finite
           (tateCohomology
             (Rep.ofMulDistribMulAction G A) 0) := by
-      change Finite (tateCohomology S.X₁ 0)
       exact hzeroTate
+    exact finite_target_of_moduleIso tateH0IsoHerbrandH0
+  · let :
+        Finite
+          (tateCohomology
+            (Rep.ofMulDistribMulAction G A) (-1)) := by
+      exact hminusTate
     exact finite_target_of_moduleIso
-      (tateH0IsoHerbrandH0 (G := G) (A := A))
-  exact ⟨hzero, hminus⟩
+      (tateHMinusOneIsoHerbrandHMinusOne
+          σ hgen)
 
-/-- Herbrand-quotient multiplicativity, the complete "any two imply the third" finiteness
-statement for a short exact sequence. -/
-theorem herbrandQuotientDefined_anyTwo
-    (i : A →* B) (j : B →* C)
-    (hi : ∀ (g : G) (a : A), i (g • a) = g • i a)
-    (hj : ∀ (g : G) (b : B), j (g • b) = g • j b)
-    (hker : ∀ b : B, j b = 1 ↔ ∃ a : A, i a = b)
-    (hinj : Function.Injective i)
-    (hsurj : ∀ c : C, ∃ b : B, j b = c)
-    (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ) :
-    (HerbrandQuotientDefined G A σ ∧ HerbrandQuotientDefined G B σ →
-        HerbrandQuotientDefined G C σ) ∧
-      (HerbrandQuotientDefined G A σ ∧ HerbrandQuotientDefined G C σ →
-        HerbrandQuotientDefined G B σ) ∧
-      (HerbrandQuotientDefined G B σ ∧ HerbrandQuotientDefined G C σ →
-        HerbrandQuotientDefined G A σ) := by
-  refine ⟨?_, ?_, ?_⟩
-  · rintro ⟨hA, hB⟩
-    exact herbrandQuotientDefined_right_of_left_middle
-      i j hi hj hker hinj hsurj σ hgen hA hB
-  · rintro ⟨hA, hC⟩
-    exact herbrandQuotientDefined_middle_of_left_right
-      i j hi hj hker hinj hsurj σ hgen hA hC
-  · rintro ⟨hB, hC⟩
-    exact herbrandQuotientDefined_left_of_middle_right
-      i j hi hj hker hinj hsurj σ hgen hB hC
+end
 
 /-- Herbrand-quotient multiplicativity, Herbrand-quotient multiplicativity once the three
 quotients are defined. -/
-theorem herbrandQuotient_multiplicative_of_shortExact
-    (i : A →* B) (j : B →* C)
-    (hi : ∀ (g : G) (a : A), i (g • a) = g • i a)
-    (hj : ∀ (g : G) (b : B), j (g • b) = g • j b)
-    (hker : ∀ b : B, j b = 1 ↔ ∃ a : A, i a = b)
-    (hinj : Function.Injective i)
-    (hsurj : ∀ c : C, ∃ b : B, j b = c)
-    (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ)
-    [Finite (HerbrandH0 G A)] [Finite (HerbrandHMinusOne G A σ)]
-    [Finite (HerbrandH0 G B)] [Finite (HerbrandHMinusOne G B σ)]
-    [Finite (HerbrandH0 G C)] [Finite (HerbrandHMinusOne G C σ)] :
-    herbrandQuotient (G := G) (A := B) σ =
-      herbrandQuotient (G := G) (A := A) σ *
-        herbrandQuotient (G := G) (A := C) σ :=
-  herbrandQuotient_exact_multiplicative
-    i j hi hj hker hinj hsurj σ hgen
-
-/-- Herbrand-quotient multiplicativity in its first two-defined form: if the quotients of `A`
-and `C` are defined, the quotient of `B` is defined and multiplicativity
-holds for that induced finiteness witness. -/
-theorem herbrandQuotient_multiplicative_of_left_right_defined
-    (i : A →* B) (j : B →* C)
-    (hi : ∀ (g : G) (a : A), i (g • a) = g • i a)
-    (hj : ∀ (g : G) (b : B), j (g • b) = g • j b)
-    (hker : ∀ b : B, j b = 1 ↔ ∃ a : A, i a = b)
-    (hinj : Function.Injective i)
-    (hsurj : ∀ c : C, ∃ b : B, j b = c)
-    (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ)
-    [Finite (HerbrandH0 G A)] [Finite (HerbrandHMinusOne G A σ)]
-    [Finite (HerbrandH0 G C)] [Finite (HerbrandHMinusOne G C σ)] :
-    ∃ hB : HerbrandQuotientDefined G B σ,
-      @herbrandQuotient G B _ _ _ _ σ hB.1 hB.2 =
-        herbrandQuotient (G := G) (A := A) σ *
-          herbrandQuotient (G := G) (A := C) σ := by
-  let hA : HerbrandQuotientDefined G A σ := ⟨inferInstance, inferInstance⟩
-  let hC : HerbrandQuotientDefined G C σ := ⟨inferInstance, inferInstance⟩
-  let hB := herbrandQuotientDefined_middle_of_left_right
-    i j hi hj hker hinj hsurj σ hgen hA hC
-  refine ⟨hB, ?_⟩
-  let : Finite (HerbrandH0 G B) := hB.1
-  let : Finite (HerbrandHMinusOne G B σ) := hB.2
-  exact herbrandQuotient_multiplicative_of_shortExact
-    i j hi hj hker hinj hsurj σ hgen
-
-/-- Herbrand-quotient multiplicativity in its second two-defined form: if the quotients of `A`
-and `B` are defined, the quotient of `C` is defined and multiplicativity
-holds for that induced finiteness witness. -/
-theorem herbrandQuotient_multiplicative_of_left_middle_defined
-    (i : A →* B) (j : B →* C)
-    (hi : ∀ (g : G) (a : A), i (g • a) = g • i a)
-    (hj : ∀ (g : G) (b : B), j (g • b) = g • j b)
-    (hker : ∀ b : B, j b = 1 ↔ ∃ a : A, i a = b)
-    (hinj : Function.Injective i)
-    (hsurj : ∀ c : C, ∃ b : B, j b = c)
-    (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ)
-    [Finite (HerbrandH0 G A)] [Finite (HerbrandHMinusOne G A σ)]
-    [Finite (HerbrandH0 G B)] [Finite (HerbrandHMinusOne G B σ)] :
-    ∃ hC : HerbrandQuotientDefined G C σ,
-      herbrandQuotient (G := G) (A := B) σ =
-        herbrandQuotient (G := G) (A := A) σ *
-          @herbrandQuotient G C _ _ _ _ σ hC.1 hC.2 := by
-  let hA : HerbrandQuotientDefined G A σ := ⟨inferInstance, inferInstance⟩
-  let hB : HerbrandQuotientDefined G B σ := ⟨inferInstance, inferInstance⟩
-  let hC := herbrandQuotientDefined_right_of_left_middle
-    i j hi hj hker hinj hsurj σ hgen hA hB
-  refine ⟨hC, ?_⟩
-  let : Finite (HerbrandH0 G C) := hC.1
-  let : Finite (HerbrandHMinusOne G C σ) := hC.2
-  exact herbrandQuotient_multiplicative_of_shortExact
-    i j hi hj hker hinj hsurj σ hgen
-
-/-- Herbrand-quotient multiplicativity in its third two-defined form: if the quotients of `B`
-and `C` are defined, the quotient of `A` is defined and multiplicativity
-holds for that induced finiteness witness. -/
-theorem herbrandQuotient_multiplicative_of_middle_right_defined
-    (i : A →* B) (j : B →* C)
-    (hi : ∀ (g : G) (a : A), i (g • a) = g • i a)
-    (hj : ∀ (g : G) (b : B), j (g • b) = g • j b)
-    (hker : ∀ b : B, j b = 1 ↔ ∃ a : A, i a = b)
-    (hinj : Function.Injective i)
-    (hsurj : ∀ c : C, ∃ b : B, j b = c)
-    (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ)
-    [Finite (HerbrandH0 G B)] [Finite (HerbrandHMinusOne G B σ)]
-    [Finite (HerbrandH0 G C)] [Finite (HerbrandHMinusOne G C σ)] :
-    ∃ hA : HerbrandQuotientDefined G A σ,
-      herbrandQuotient (G := G) (A := B) σ =
-        @herbrandQuotient G A _ _ _ _ σ hA.1 hA.2 *
-          herbrandQuotient (G := G) (A := C) σ := by
-  let hB : HerbrandQuotientDefined G B σ := ⟨inferInstance, inferInstance⟩
-  let hC : HerbrandQuotientDefined G C σ := ⟨inferInstance, inferInstance⟩
-  let hA := herbrandQuotientDefined_left_of_middle_right
-    i j hi hj hker hinj hsurj σ hgen hB hC
-  refine ⟨hA, ?_⟩
-  let : Finite (HerbrandH0 G A) := hA.1
-  let : Finite (HerbrandHMinusOne G A σ) := hA.2
-  exact herbrandQuotient_multiplicative_of_shortExact
-    i j hi hj hker hinj hsurj σ hgen
+alias herbrandQuotient_multiplicative_of_shortExact := herbrandQuotient_exact_multiplicative
 
 /-- Herbrand-quotient multiplicativity, the finite-module case. -/
 theorem herbrandQuotient_eq_one_of_finite_module

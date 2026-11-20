@@ -12,9 +12,7 @@ open scoped Classical NumberField Topology
 open NumberField MeasureTheory Filter
 namespace DedekindZetaZeroFree.RootDerivatives
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.ExactStageGeneration renaming compactConvolution_mem_typeStage → compactConvolution_mem_typeStage
-open _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum renaming smooth_add → smooth_add
-open _root_.DedekindZetaZeroFree.FiniteWhittakerProjectors.FlatFiniteSum renaming smooth_smul → smooth_smul
+open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.ExactStageGeneration (compactConvolution_mem_typeStage)
 open KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 set_option backward.isDefEq.respectTransparency false
@@ -57,8 +55,9 @@ local instance (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
       {u | ∃ (f : Flat F ζ hζ K) (C : FlatScalarResidue F ζ hζ f) (a : G F ζ hζ),
         u = rightAction F ζ hζ a (C.numerator 0)}
 
- theorem projected_span_in_range {K : Subgroup (G F ζ hζ)}
-    (hK : IwasawaCompact F ζ hζ K)
+ variable {K : Subgroup (G F ζ hζ)} (hK : IwasawaCompact F ζ hζ K)
+
+theorem projected_span_in_range
     (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (h : C(K,ℂ)) (hh : h ∈ TauCeti.representativeSubmodule ℂ K)
     (u : Functions F ζ hζ) (hu : u ∈ translatedFlatResidueSpan F ζ hζ K hK)
@@ -98,26 +97,21 @@ local instance (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
       exact integral_const_mul c _
     rw [he]; exact Submodule.smul_mem _ c ih
 
- theorem kfinite_mem_flat_range {K : Subgroup (G F ζ hζ)}
-    (hK : IwasawaCompact F ζ hζ K) (u : Functions F ζ hζ)
+ theorem kfinite_mem_flat_range (u : Functions F ζ hζ)
     (hu : u ∈ translatedFlatResidueSpan F ζ hζ K hK) (huc : Continuous u)
     (hk : KFinite F ζ hζ K u)
     (hreg : ∀ (f : Flat F ζ hζ K) (C : FlatScalarResidue F ζ hζ f), Continuous (C.numerator 0)) :
     u ∈ flatResidueRange F ζ hζ K hK := by
   obtain ⟨T,hT,huT,ht⟩ := hk
   letI := hT
-  let τ : KPGlobalEisensteinData.CompactTypeStage ((rightAction F ζ hζ).comp K.subtype) :=
-    ⟨T,inferInstance,ht⟩
   let W := T ⊓ flatResidueRange F ζ hζ K hK
   have hW : IsClosed (W : Set (Functions F ζ hζ)) :=
     KPLiteralTensor.KernelAndHCRange.CoreGeneration.finite_stage_intersection_closed T T _ le_rfl
-  have hcl : u ∈ closure (W : Set (Functions F ζ hζ)) := by
+  have hcl : u ∈ closure W := by
     apply mem_closure_iff.mpr
     intro O hO huO
     obtain ⟨I,v,hv,hsub⟩ := isOpen_pi_iff.mp hO u huO
-    have hballs : ∀ j : I, ∃ ε : ℝ, 0 < ε ∧ Metric.ball (u j.val) ε ⊆ v j.val := by
-      intro j
-      exact Metric.isOpen_iff.mp (hv j.val j.property).1 (u j.val) (hv j.val j.property).2
+    have hballs : ∀ j : I, ∃ ε : ℝ, 0 < ε ∧ Metric.ball (u j.val) ε ⊆ v j.val := fun j => Metric.isOpen_iff.mp (hv j.val j.property).1 (u j.val) (hv j.val j.property).2
     choose ε hε hball using hballs
     have hsmall : ∀ᶠ δ : ℝ in 𝓝[>] (0 : ℝ), 0 < δ ∧ ∀ j : I, δ < ε j := by
       apply Filter.Eventually.and self_mem_nhdsWithin
@@ -126,16 +120,15 @@ local instance (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
       exact nhdsWithin_le_nhds (Iio_mem_nhds (hε j))
     obtain ⟨δ,hδ,hδsmall⟩ := hsmall.exists
     obtain ⟨μ,hμ,hμp,h,hh,happrox⟩ := representative_convolution_uniform_approximation
-      F ζ hζ K hK.1 u huc (I : Set _) I.finite_toSet.isCompact δ hδ
+      F ζ hζ K hK.1 u huc I I.finite_toSet.isCompact δ hδ
     letI := hμ
     letI := hμp
-    let z := compactConvolution F ζ hζ K μ h u
-    refine ⟨z,hsub ?_,?_⟩
+    refine ⟨(compactConvolution F ζ hζ K μ h u),hsub ?_,?_⟩
     · intro j hj
       apply hball ⟨j,hj⟩
       rw [Metric.mem_ball,dist_eq_norm]
       exact (happrox j hj).trans (hδsmall ⟨j,hj⟩)
-    · exact ⟨compactConvolution_mem_typeStage F ζ hζ K hK.1 μ τ u huc huT h,
+    · exact ⟨compactConvolution_mem_typeStage F ζ hζ K hK.1 μ (⟨T,inferInstance,ht⟩) u huc huT h,
         projected_span_in_range F ζ hζ hK μ h hh u hu hreg⟩
   exact (hW.closure_eq ▸ hcl).2
 

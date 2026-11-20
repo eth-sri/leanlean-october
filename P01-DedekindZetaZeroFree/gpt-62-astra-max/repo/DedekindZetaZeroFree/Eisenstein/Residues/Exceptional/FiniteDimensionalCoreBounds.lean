@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.KPLiteralExceptionalResidue.CanonicalStageBounds
 open KPLiteralRaw
 set_option maxHeartbeats 800000
 set_option backward.isDefEq.respectTransparency false
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CanonicalParameterStage renaming literal_entire_coordinate_stage → literal_entire_coordinate_stage
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CanonicalParameterStage (literal_entire_coordinate_stage)
 
  def compactSup {K V : Type*} [Group K] [AddCommGroup V] [Module ℂ V]
     {ρ : Representation ℂ K V} (T U : KPGlobalEisensteinData.CompactTypeStage ρ) :
@@ -92,7 +92,7 @@ private theorem finite_image_compact_type {K Gfin V S : Type*}
   exact T.space.sum_mem fun i hi => T.space.smul_mem _ (hT i hi)
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
- abbrev D := KPContFlatFullProductIwasawa.iwasawaData F ζ hζ
+ abbrev D := @DedekindZetaZeroFree.KPContFlatFullProductIwasawa.iwasawaData
  abbrev Core := KPMsRationalCompactCrossPairing.Vplus F ζ hζ (D F ζ hζ)
  abbrev compactAction :=
   (KPGlobalTorusFunctionData.borelRightTranslation F ζ hζ

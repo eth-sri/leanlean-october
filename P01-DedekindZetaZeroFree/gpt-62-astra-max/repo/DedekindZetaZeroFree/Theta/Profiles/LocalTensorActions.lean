@@ -15,43 +15,46 @@ open DedekindZetaZeroFree.KPCplxIntertwinerEigenvalues
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-theorem pi_zero (s : ℝ) (g : KPCplxCharacterHaar.ComplexPGL2) :
+section
+
+variable (s : ℝ) (g : KPCplxCharacterHaar.ComplexPGL2)
+
+theorem pi_zero :
     KPCplxPrincipalSeriesCharts.pi s g
       (0 : KPCplxPrincipalSeriesCharts.PrincipalSeries s) = 0 := by
   induction g using Quotient.inductionOn with
   | _ g =>
-    change KPCplxPrincipalSeriesCharts.rightTranslate s g
-      (0 : KPCplxPrincipalSeriesCharts.PrincipalSeries s) = 0
     apply Subtype.ext
     rfl
 
-theorem pi_add (s : ℝ) (g : KPCplxCharacterHaar.ComplexPGL2)
+theorem pi_add
     (f h : KPCplxPrincipalSeriesCharts.PrincipalSeries s) :
     KPCplxPrincipalSeriesCharts.pi s g (f + h) =
       KPCplxPrincipalSeriesCharts.pi s g f +
         KPCplxPrincipalSeriesCharts.pi s g h := by
   induction g using Quotient.inductionOn with
   | _ g =>
-    change KPCplxPrincipalSeriesCharts.rightTranslate s g (f + h) =
-      KPCplxPrincipalSeriesCharts.rightTranslate s g f +
-        KPCplxPrincipalSeriesCharts.rightTranslate s g h
     apply Subtype.ext
     rfl
 
-theorem pi_smul (s : ℝ) (g : KPCplxCharacterHaar.ComplexPGL2)
+theorem pi_smul
     (c : ℂ) (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) :
     KPCplxPrincipalSeriesCharts.pi s g (c • f) =
       c • KPCplxPrincipalSeriesCharts.pi s g f := by
   induction g using Quotient.inductionOn with
   | _ g =>
-    change KPCplxPrincipalSeriesCharts.rightTranslate s g (c • f) =
-      c • KPCplxPrincipalSeriesCharts.rightTranslate s g f
     apply Subtype.ext
     rfl
 
-theorem complexCore_compact_mem (k : KPCplxCharacterHaar.ComplexSU2)
+end
+
+section
+
+variable (k : KPCplxCharacterHaar.ComplexSU2)
+
+theorem complexCore_compact_mem
     (x : KPCplxPrincipalSeriesCharts.PrincipalSeries
       KPCplxPrincipalSeriesCharts.negativeParameter)
     (hx : x ∈ complexCore) :
@@ -89,19 +92,19 @@ theorem complexCore_compact_mem (k : KPCplxCharacterHaar.ComplexSU2)
     rw [pi_add]
     exact Submodule.add_mem _ hy hz
 
-def complexCoreCompactAction (k : KPCplxCharacterHaar.ComplexSU2)
+def complexCoreCompactAction
     (x : complexCore) : complexCore :=
   ⟨KPCplxPrincipalSeriesCharts.pi KPCplxPrincipalSeriesCharts.negativeParameter
     (Matrix.ProjGenLinGroup.mk (KPCplxCharacterHaar.complexSU2Embedding k)) x.val,
     complexCore_compact_mem k x.val x.property⟩
 
-@[simp] theorem complexCoreCompactAction_coe (k : KPCplxCharacterHaar.ComplexSU2)
+@[simp] theorem complexCoreCompactAction_coe
     (x : complexCore) :
     (complexCoreCompactAction k x).val =
       KPCplxPrincipalSeriesCharts.pi KPCplxPrincipalSeriesCharts.negativeParameter
         (Matrix.ProjGenLinGroup.mk (KPCplxCharacterHaar.complexSU2Embedding k)) x.val := rfl
 
-def complexCoreCompactLinearMap (k : KPCplxCharacterHaar.ComplexSU2) :
+def complexCoreCompactLinearMap :
     complexCore →ₗ[ℂ] complexCore where
   toFun := fun x => complexCoreCompactAction k x
   map_add' := by
@@ -115,6 +118,8 @@ def complexCoreCompactLinearMap (k : KPCplxCharacterHaar.ComplexSU2) :
     simp only [complexCoreCompactAction_coe, SetLike.val_smul]
     rw [pi_smul]
     rfl
+
+end
 
 def complexCoreSU2Action : Representation ℂ KPCplxCharacterHaar.ComplexSU2 complexCore where
   toFun k := complexCoreCompactLinearMap k

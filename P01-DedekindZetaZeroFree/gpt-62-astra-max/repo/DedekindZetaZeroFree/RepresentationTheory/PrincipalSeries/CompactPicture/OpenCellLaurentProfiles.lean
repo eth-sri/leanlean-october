@@ -16,42 +16,43 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
 variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField F q)]
 variable {H₀ D : Type} [Group H₀] [TopologicalSpace H₀] [IsTopologicalGroup H₀]
   [CommGroup D] [Finite D] [DecidableEq D]
 variable (T : LocalHeisenbergData H₀ D)
 variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
-variable (P : Polarization T)
+    (P : Polarization T)
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
-private theorem norm_root (y : (LocalField F q)ˣ) (r : ℂˣ) :
-    normPower (LocalField F q) y (additiveParameter F q r) =
+local notation "LocalCompletion" => LocalField F q
+
+private theorem norm_root (y : LocalCompletionˣ) (r : ℂˣ) :
+    normPower LocalCompletion y (additiveParameter F q r) =
     (r : ℂ) ^ (-(WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt
-      (LocalField F q) (valuation (LocalField F q) (y : LocalField F q))) : ℤ)) := by
-  have hq : 0 < (residueCardinality (LocalField F q) : ℝ) := by exact_mod_cast Nat.card_pos (α := IsLocalRing.ResidueField (Valuation.integer (valuation (LocalField F q))))
-  have hq1 : 1 < residueCardinality (LocalField F q) := Finite.one_lt_card
-  have hlog : (Real.log (residueCardinality (LocalField F q) : ℝ) : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.log_pos (by exact_mod_cast hq1)).ne'
+      LocalCompletion (valuation LocalCompletion (y : LocalCompletion))) : ℤ)) := by
+  have hq : 0 < (residueCardinality LocalCompletion : ℝ) := by exact_mod_cast Nat.card_pos
+  have hlog : (Real.log (residueCardinality LocalCompletion : ℝ) : ℂ) ≠ 0 := by
+    exact_mod_cast (Real.log_pos (by exact_mod_cast Finite.one_lt_card)).ne'
   rw [normPower, localAbs, Real.log_rpow hq]
   unfold additiveParameter
   rw [Complex.ofReal_mul]
-  have he : -Complex.log (r : ℂ) / (Real.log (residueCardinality (LocalField F q) : ℝ) : ℂ) *
-      (↑((WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-        (valuation (LocalField F q) (y : LocalField F q))) : ℤ) : ℝ) *
-       (Real.log (residueCardinality (LocalField F q) : ℝ) : ℂ)) =
-      (-(WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-        (valuation (LocalField F q) (y : LocalField F q))) : ℤ) : ℂ) * Complex.log (r : ℂ) := by
+  have he : -Complex.log (r : ℂ) / (Real.log (residueCardinality LocalCompletion : ℝ) : ℂ) *
+      (↑((WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt LocalCompletion
+        (valuation LocalCompletion (y : LocalCompletion))) : ℤ) : ℝ) *
+       (Real.log (residueCardinality LocalCompletion : ℝ) : ℂ)) =
+      (-(WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt LocalCompletion
+        (valuation LocalCompletion (y : LocalCompletion))) : ℤ) : ℂ) * Complex.log (r : ℂ) := by
     simp only [Complex.ofReal_intCast, Int.cast_neg]
     field_simp [hlog]
   rw [he]
   simpa only [Int.cast_neg] using (Complex.exp_int_mul (Complex.log (r : ℂ))
-    (-(WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (y : LocalField F q))) : ℤ))).trans (by rw [Complex.exp_log r.ne_zero])
+    (-(WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt LocalCompletion
+      (valuation LocalCompletion (y : LocalCompletion))) : ℤ))).trans (by rw [Complex.exp_log r.ne_zero])
 
 private theorem pointwise_monomial
     (B : Binding F ζ hζ q A P) (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
-    (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
+    (φ : LocalCompletion → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
     (g : Cover F ζ hζ q) :
     ∃ n : ℤ, ∀ r : ℂˣ,
       (actualSection F ζ hζ q T A P B rep hrep d φ hφ hcφ r).val g =
@@ -60,10 +61,10 @@ private theorem pointwise_monomial
   let f (r : ℂˣ) := actualSection F ζ hζ q T A P B rep hrep d φ hφ hcφ r
   have hf (r : ℂˣ) := (Classical.choose_spec (center_pure_coordinate_section F ζ hζ q T A P B rep hrep d
     (additiveParameter F q r) φ hφ hcφ)).1
-  by_cases hg : ∃ (b : A.B) (x : LocalField F q), g = (b : Cover F ζ hζ q) * openCoordinate F ζ hζ q x
+  by_cases hg : ∃ (b : A.B) (x : LocalCompletion), g = b * openCoordinate F ζ hζ q x
   · obtain ⟨b,x,rfl⟩ := hg
-    let n : ℤ := -(WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt
-      (LocalField F q) (valuation (LocalField F q) (A.coordinate (A.retract b) : LocalField F q))) : ℤ)
+    let n := -(WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt
+      LocalCompletion (valuation LocalCompletion (A.coordinate (A.retract b) : LocalCompletion))) : ℤ)
     refine ⟨n, ?_⟩
     intro r
     have hx : (f r).val (openCoordinate F ζ hζ q x) = (f 1).val (openCoordinate F ζ hζ q x) :=
@@ -79,34 +80,32 @@ private theorem pointwise_monomial
     simp only [inducingScalar, norm_root, Units.val_one, one_zpow, mul_one]
     exact mul_comm _ _
   · refine ⟨0, fun r => ?_⟩
-    change (f r).val g = (r : ℂ)^0 • (f 1).val g
     have hr : (f r).val g = 0 := (hf r).2 g hg
     have h1 : (f 1).val g = 0 := (hf 1).2 g hg
     rw [hr,h1]; simp
 
 private theorem two_smul_injective {V : Type*} [AddCommGroup V] [Module ℂ V]
     {v : V} (hv : v ≠ 0) {m n : ℤ} (h : (2 : ℂ)^m • v = (2 : ℂ)^n • v) : m = n := by
-  have hs := smul_left_injective ℂ hv h
-  have hr : (2 : ℝ)^m = (2 : ℝ)^n := by
-    apply Complex.ofReal_injective
-    simpa only [Complex.ofReal_zpow, Complex.ofReal_ofNat] using hs
-  exact zpow_right_injective₀ (by norm_num : (0 : ℝ) < 2) (by norm_num : (2 : ℝ) ≠ 1) hr
+  refine zpow_right_injective₀ (by norm_num : (0 : ℝ) < 2) (by norm_num : (2 : ℝ) ≠ 1) ?_
+  apply Complex.ofReal_injective
+  simpa using (smul_left_injective ℂ hv h)
 
-private theorem lc_of_fixed {G V : Type*} [Group G] [TopologicalSpace G]
-    [IsTopologicalGroup G] [AddCommGroup V] [Module ℂ V]
+section
+
+variable {G V : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [AddCommGroup V]
+    [Module ℂ V]
+
+private theorem lc_of_fixed
     (f : G → V) (hf : SmoothVector vectorRightTranslation f) : IsLocallyConstant f := by
   obtain ⟨J,hJ⟩ := hf
   rw [IsLocallyConstant.iff_eventually_eq]
   intro g
-  have hc : Continuous (fun y : G => g⁻¹ * y) := continuous_const.mul continuous_id
   have hm : ∀ᶠ y in nhds g, g⁻¹ * y ∈ J :=
-    hc.continuousAt.preimage_mem_nhds (by simpa using J.isOpen.mem_nhds J.one_mem)
+    (continuous_const.mul continuous_id).continuousAt.preimage_mem_nhds (by simpa using J.isOpen.mem_nhds J.one_mem)
   filter_upwards [hm] with y hy
-  have he := congrFun (hJ (g⁻¹ * y) hy) g
-  simpa [vectorRightTranslation] using he
+  simpa [vectorRightTranslation] using (congrFun (hJ (g⁻¹ * y) hy) g)
 
-private theorem reconstruction {G V : Type*} [Group G] [TopologicalSpace G]
-    [IsTopologicalGroup G] [AddCommGroup V] [Module ℂ V]
+private theorem reconstruction
     (K : CompactOpenLevel G)
     (B : Subgroup G) (ρ : Representation ℂ B V)
     (family : ℂˣ → G → V)
@@ -142,7 +141,6 @@ private theorem reconstruction {G V : Type*} [Group G] [TopologicalSpace G]
   obtain ⟨W,hW⟩ := hsm two
   let L : CompactOpenLevel G :=
     ⟨K.toOpenSubgroup ⊓ U ⊓ W, (K.isCompact.inter_right U.isClosed).inter_right W.isClosed⟩
-  have hL : (L.toOpenSubgroup : Subgroup G) ≤ K.toOpenSubgroup := fun g hg => hg.1.1
   have fixed (r : ℂˣ) (j : L.toOpenSubgroup) (k k' : K.toOpenSubgroup)
       (he : (k' : G) = (k : G)*(j : G)) : family r k' = family r k ∧ n k' = n k := by
     have h1 : family 1 k' = family 1 k := by
@@ -158,14 +156,10 @@ private theorem reconstruction {G V : Type*} [Group G] [TopologicalSpace G]
   have hnlc : IsLocallyConstant n := by
     rw [IsLocallyConstant.iff_eventually_eq]
     intro k
-    have hl1 : IsLocallyConstant (fun k : K.toOpenSubgroup => family 1 k) := (lc_of_fixed (family 1) (hsm 1)).comp_continuous continuous_subtype_val
-    have hl2 : IsLocallyConstant (fun k : K.toOpenSubgroup => family two k) := (lc_of_fixed (family two) (hsm two)).comp_continuous continuous_subtype_val
-    have a := (IsLocallyConstant.iff_eventually_eq _).mp hl1 k
-    have b := (IsLocallyConstant.iff_eventually_eq _).mp hl2 k
-    filter_upwards [a,b] with k' h1 h2
+    filter_upwards [((IsLocallyConstant.iff_eventually_eq _).mp ((lc_of_fixed (family 1) (hsm 1)).comp_continuous continuous_subtype_val) k),((IsLocallyConstant.iff_eventually_eq _).mp ((lc_of_fixed (family two) (hsm two)).comp_continuous continuous_subtype_val) k)] with k' h1 h2
     exact ninv k k' h1 h2
   letI : CompactSpace K.toOpenSubgroup := isCompact_iff_compactSpace.mp K.isCompact
-  refine ⟨L,hL,n,hnlc.range_finite,(fun r k => hnmono k r),?_⟩
+  refine ⟨L,(fun g hg => hg.1.1),n,hnlc.range_finite,(fun r k => hnmono k r),?_⟩
   intro i
   dsimp only
   have ccov (b : B) (k k' : K.toOpenSubgroup) (he : (k' : G) = (b : G)*(k : G)) :
@@ -177,10 +171,8 @@ private theorem reconstruction {G V : Type*} [Group G] [TopologicalSpace G]
     · have hn : n k' = n k := by
         have hne : ρ b (family 1 k) ≠ 0 := by
           intro hh
-          have ht := congrArg (ρ b⁻¹) hh
           apply hz
-          simpa only [← Module.End.mul_apply, ← map_mul, inv_mul_cancel, map_one,
-            Module.End.one_apply, map_zero] using ht
+          simpa using (congrArg (ρ b⁻¹) hh)
         apply two_smul_injective hne
         have h2 := hcov two b k k' he
         rw [hnmono k' two, hnmono k two, h1, map_smul] at h2
@@ -192,11 +184,12 @@ private theorem reconstruction {G V : Type*} [Group G] [TopologicalSpace G]
       (if n k' = i then family 1 k' else 0) = (if n k = i then family 1 k else 0) := by
     rw [(fixed 1 j k k' he).1, (fixed 1 j k k' he).2]
   refine ⟨ccov, ?_, cfixed⟩
-  let LJ : OpenSubgroup K.toOpenSubgroup := L.toOpenSubgroup.comap K.toOpenSubgroup.toSubgroup.subtype continuous_subtype_val
-  refine ⟨LJ, ?_⟩
+  refine ⟨(L.toOpenSubgroup.comap K.toOpenSubgroup.toSubgroup.subtype continuous_subtype_val), ?_⟩
   intro j hj
   funext k
   exact cfixed ⟨j,hj⟩ k (k*j) rfl
+
+end
 
 theorem compact_profile_uniform_laurent
     (I : IwasawaData A) (B : Binding F ζ hζ q A P)

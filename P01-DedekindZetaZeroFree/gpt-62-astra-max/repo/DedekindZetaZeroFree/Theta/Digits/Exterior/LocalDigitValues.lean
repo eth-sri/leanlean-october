@@ -11,11 +11,11 @@ set_option backward.isDefEq.respectTransparency true
 namespace DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 open MomentSources NumberField IsDedekindDomain ThetaExpansion ValuativeRel
 open scoped NumberField Classical
-open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting renaming eval_localAdele → eval_localAdele
+open _root_.DedekindZetaZeroFree.KPRationalAdelicSplitting (eval_localAdele)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
 
 abbrev RowPrime (m : ThetaReflectionData.Row R.A) :=
   {p // p ∈ ThetaDigitAverage.rowPrimes R.A m.val m.property}
@@ -45,7 +45,7 @@ theorem parameter_at_row (m : ThetaReflectionData.Row R.A)
   simp only [digitParameter, map_sum, eval_localAdele]
   rw [Finset.sum_eq_single p]
   · rw [eval_localAdele]
-    simp only [Pi.single_eq_same]
+    simp
   · intro q _ hq
     apply Pi.single_eq_of_ne
     intro he
@@ -67,24 +67,19 @@ theorem factor_at_row (m : ThetaReflectionData.Row R.A) (x : Fˣ)
 theorem zero_localDigit (p : ThetaBranch.ExteriorPrime R.A) (x : Fˣ) (s : 𝓞 F)
     (hs : Ideal.Quotient.mk p.val.asIdeal s = 0) :
     localDigitValue R C p x s = ThetaBranch.sphericalFactor R.A R.probe.allowed R.σ (Characters.psi R) p x := by
-  have hm : s ∈ p.val.asIdeal := Ideal.Quotient.eq_zero_iff_mem.mp hs
-  have hv : p.val.valuation F (s : F) < 1 := (p.val.valuation_lt_one_iff_mem s).mpr hm
   let z := -algebraMap (𝓞 F) (p.val.adicCompletion F) s /
     algebraMap F (p.val.adicCompletion F)
       (R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p) : F)
   have hz : z ∈ p.val.adicCompletionIntegers F := by
-    change Valued.v z ≤ 1
     have he : z = algebraMap F (p.val.adicCompletion F)
       (-(s : F) / (R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p) : F)) := by
       simp [z, ← IsScalarTower.algebraMap_apply (𝓞 F) F (p.val.adicCompletion F)]
     rw [he]
-    change Valued.v (algebraMap F (p.val.adicCompletion F)
-      (-(s : F) / (R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p) : F))) ≤ 1
     change Valued.v ((-(s : F) / (R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p) : F) : F) : p.val.adicCompletion F) ≤ 1
     rw [HeightOneSpectrum.adicCompletion.valued_coe, map_div₀, Valuation.map_neg,
       DigitMasks.generator_valuation R p]
     apply (div_le_one₀ (by simp)).mpr
-    exact DigitMasks.valuation_le_exp_neg_one hv
+    exact DigitMasks.valuation_le_exp_neg_one ((p.val.valuation_lt_one_iff_mem s).mpr (Ideal.Quotient.eq_zero_iff_mem.mp hs))
   have hf := (C.factorization.spherical_reference p.val p.property).2
     (KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) z)
     (exterior_integral_root_mem_compact R p ⟨z,hz⟩)
@@ -92,8 +87,6 @@ theorem zero_localDigit (p : ThetaBranch.ExteriorPrime R.A) (x : Fˣ) (s : 𝓞 
     (KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) z)
     (C.factorization.references (Sum.inr p.val)) = C.factorization.references (Sum.inr p.val) at hf
   unfold localDigitValue
-  change C.factorization.ell (Sum.inr p.val) (exteriorImageAction R C.toJointHaarFactorizedSources p
-    (_ * _ * KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) z) _) = _
   simp only [map_mul, Module.End.mul_apply]
   rw [hf, weyl_fixed R C p, ← exterior_diagonal_eq_standard_lift]
   exact C.exterior.rational_exact p x
@@ -110,16 +103,13 @@ theorem nonzero_localDigit (p : ThetaBranch.ExteriorPrime R.A) (x : Fˣ) (s : �
         Characters.psi R p
           (ThetaBranch.unitResidue p.val (ThetaBranch.localUnit R.A R.probe.allowed p x) /
             Ideal.Quotient.mk p.val.asIdeal s) else 1) := by
-  have hm : s ∉ p.val.asIdeal := fun h => hs (Ideal.Quotient.eq_zero_iff_mem.mpr h)
-  have hsn : (s : F) ≠ 0 := by
-    exact_mod_cast (fun h => hm (h ▸ p.val.asIdeal.zero_mem) : s ≠ 0)
-  let V := Units.mk0 (s : F) hsn
-  have hv : ThetaBranch.order p.val V = 0 := by
-    simp [ThetaBranch.order, V, p.val.valuation_eq_one_iff_notMem.mpr hm]
-  have hr := reduction_integral p.val s hm
-  have hh := nonzero_value R C p x V hv
+  have hm := fun h => hs (Ideal.Quotient.eq_zero_iff_mem.mpr h)
+  let V := Units.mk0 (s : F) (by
+    exact_mod_cast (fun h => hm (h ▸ p.val.asIdeal.zero_mem) : s ≠ 0))
+  have hh := nonzero_value R C p x V (by
+    simp [ThetaBranch.order, V, p.val.valuation_eq_one_iff_notMem.mpr hm])
   unfold ThetaBranch.symbol at hh
-  rw [hr] at hh
+  rw [(reduction_integral p.val s hm)] at hh
   exact hh
 
 end DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits

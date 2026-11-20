@@ -10,7 +10,7 @@ open scoped NumberField Classical Topology
 open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.ExactStageGeneration
 open KPLiteralRaw
-open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.FiniteScalarEvaluation renaming finite_evaluation_reconstruction → finite_evaluation_reconstruction
+open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.FiniteScalarEvaluation (finite_evaluation_reconstruction)
 set_option maxHeartbeats 1600000
 set_option synthInstance.maxHeartbeats 200000
 set_option backward.isDefEq.respectTransparency false
@@ -29,11 +29,11 @@ local instance (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
     (h : C(K, ℂ)) :
     KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation.compactConvolution
       F ζ hζ K μ h u ∈ T.space := by
-  let : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  let := isCompact_iff_compactSpace.mp hK
   let := T.finiteDimensional
   obtain ⟨n, m, x, A, b, hb⟩ :=
     finite_evaluation_reconstruction T.space
-  let d : Fin n → ℂ := fun j => ∫ k : K,
+  let d := fun j => ∫ k : K,
     h k * (∑ i, A j i * u (x i * k.val)) ∂μ
   have hcoef (j : Fin n) : Integrable
       (fun k : K => h k * (∑ i, A j i * u (x i * k.val))) μ := by
@@ -50,8 +50,7 @@ local instance (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
       Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
     have hpoint (k : K) : u (g * k.val) =
         ∑ j, (∑ i, A j i * u (x i * k.val)) * (b j).val g := by
-      let t : T.space := ⟨rightAction F ζ hζ k.val u, T.invariant k u huT⟩
-      exact hb t g
+      exact hb (⟨rightAction F ζ hζ k.val u, T.invariant k u huT⟩) g
     simp_rw [hpoint, Finset.mul_sum]
     rw [integral_finsetSum]
     · apply Finset.sum_congr rfl

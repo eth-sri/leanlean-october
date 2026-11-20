@@ -16,13 +16,13 @@ noncomputable section
 set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
 variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField F q)]
 variable {H₀ D : Type} [Group H₀] [TopologicalSpace H₀] [IsTopologicalGroup H₀]
   [CommGroup D] [Finite D] [DecidableEq D]
 variable (T : LocalHeisenbergData H₀ D)
 variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
-variable (P : Polarization T)
+    (P : Polarization T)
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
 private theorem convolution_eval {V W : Type*} [AddCommMonoid V] [Module ℂ V]
@@ -47,14 +47,12 @@ private theorem convolution_eval {V W : Type*} [AddCommMonoid V] [Module ℂ V]
 
 private theorem root_parameter (r : ℂˣ) :
     KPRankOneRootParameter.r (LocalField F q) (additiveParameter F q r) = (r : ℂ) := by
-  have hq1 : 1 < residueCardinality (LocalField F q) := Finite.one_lt_card
-  have hlog : (Real.log (residueCardinality (LocalField F q) : ℝ) : ℂ) ≠ 0 := by
-    have hl : Real.log (residueCardinality (LocalField F q) : ℝ) ≠ 0 :=
-      (Real.log_pos (by exact_mod_cast hq1)).ne'
-    exact_mod_cast hl
+  let log₀ := Real.log (residueCardinality (LocalField F q) : ℝ)
+  have hlog : (log₀ : ℂ) ≠ 0 := by
+    exact_mod_cast ((Real.log_pos (by exact_mod_cast Finite.one_lt_card)).ne')
   unfold KPRankOneRootParameter.r additiveParameter
-  rw [show -(-Complex.log (r : ℂ) / (Real.log (residueCardinality (LocalField F q) : ℝ) : ℂ)) *
-      (Real.log (residueCardinality (LocalField F q) : ℝ) : ℂ) = Complex.log (r : ℂ) by
+  rw [show -(-Complex.log (r : ℂ) / (log₀ : ℂ)) *
+      (log₀ : ℂ) = Complex.log (r : ℂ) by
     field_simp]
   exact Complex.exp_log r.ne_zero
 

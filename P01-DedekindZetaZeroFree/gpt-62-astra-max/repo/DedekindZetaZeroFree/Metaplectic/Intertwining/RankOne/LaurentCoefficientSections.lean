@@ -44,7 +44,7 @@ theorem actual_scalar_coefficients_target_level
     funext h
     exact congrArg (fun p : ℤ →₀ ℂ => p n)
       (actual_scalar_numerator_right_level F ζ hζ q S P J hJ ε μ hμ π hπ φ j k k' hk h)
-  have hsmooth : SmoothVector (vectorRightTranslation (G := S.iwasawa.compact.toOpenSubgroup)) v := by
+  have hsmooth : SmoothVector (vectorRightTranslation) v := by
     refine ⟨J.toOpenSubgroup.comap S.iwasawa.compact.toOpenSubgroup.toSubgroup.subtype continuous_subtype_val, ?_⟩
     intro j hj
     funext k
@@ -64,8 +64,7 @@ theorem actual_scalar_coefficients_target_level
     rw [actual_compact_action_eval F ζ hζ q S P (targetSign ε) b hb]
     exact congrArg (fun p : ℤ →₀ ℂ => p n)
       (actual_scalar_coefficient_borel F ζ hζ q S P J hJ μ hμ π hπ ε φ b k k' hk h)
-  let ψ : compactPicture S.borel P S.iwasawa (targetSign ε) := ⟨v, hborel, hsmooth⟩
-  refine ⟨⟨ψ, ?_⟩, ?_⟩
+  refine ⟨⟨(⟨v, hborel, hsmooth⟩), ?_⟩, ?_⟩
   · exact hvJ
   · intro k h
     rfl

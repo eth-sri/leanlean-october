@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -41,33 +37,31 @@ theorem le_iSup_lift_finiteGalois
       IntermediateField.lift E.toIntermediateField := by
   intro x hx
   let xB : B := ⟨x, hx⟩
-  let E : FiniteGaloisIntermediateField R B :=
+  let E :=
     FiniteGaloisIntermediateField.adjoin R {xB}
-  have hxE : xB ∈ E.toIntermediateField :=
-    FiniteGaloisIntermediateField.subset_adjoin R {xB}
-      (Set.mem_singleton xB)
   exact
     (le_iSup
       (fun E : FiniteGaloisIntermediateField R B =>
         IntermediateField.lift E.toIntermediateField)
       E)
-      ((IntermediateField.mem_lift xB).2 hxE)
+      ((IntermediateField.mem_lift xB).2 (FiniteGaloisIntermediateField.subset_adjoin R {xB}
+        (Set.mem_singleton xB)))
+
+variable (A B : IntermediateField R U) [IsGalois R B]
 
 /-- A compositum with a Galois intermediate field is the supremum of the
 composita with its finite Galois intermediate layers. -/
-theorem sup_eq_iSup_finiteGaloisComposita
-    (A B : IntermediateField R U) [IsGalois R B] :
+theorem sup_eq_iSup_finiteGaloisComposita :
     A ⊔ B = ⨆ E : FiniteGaloisIntermediateField R B,
       A ⊔ IntermediateField.lift E.toIntermediateField := by
   apply le_antisymm
   · refine sup_le ?_ ?_
-    · let E0 : FiniteGaloisIntermediateField R B := ⊥
-      exact
+    · exact
         le_trans le_sup_left
           (le_iSup
             (fun E : FiniteGaloisIntermediateField R B =>
               A ⊔ IntermediateField.lift E.toIntermediateField)
-            E0)
+            (⊥))
     · exact
         (le_iSup_lift_finiteGalois B).trans
           (iSup_mono fun E =>
@@ -80,8 +74,7 @@ theorem sup_eq_iSup_finiteGaloisComposita
         ((IntermediateField.lift_le E.toIntermediateField).trans le_sup_right)
 
 /-- Base change commutes with the supremum of finite Galois composita. -/
-theorem extendScalars_sup_eq_iSup_finiteGaloisComposita
-    (A B : IntermediateField R U) [IsGalois R B] :
+theorem extendScalars_sup_eq_iSup_finiteGaloisComposita :
     IntermediateField.extendScalars (F := A) (E := A ⊔ B) le_sup_left =
       ⨆ E : FiniteGaloisIntermediateField R B,
         IntermediateField.extendScalars (F := A)
@@ -109,7 +102,6 @@ theorem extendScalars_sup_eq_iSup_finiteGaloisComposita
 /-- If every finite Galois layer of a compositum remains Galois after base
 change, then so does the full compositum. -/
 theorem isGalois_extendScalars_sup_of_forall_finiteGalois
-    (A B : IntermediateField R U) [IsGalois R B]
     (hG : ∀ E : FiniteGaloisIntermediateField R B,
       IsGalois A
         (IntermediateField.extendScalars (F := A)
@@ -125,12 +117,11 @@ theorem isGalois_extendScalars_sup_of_forall_finiteGalois
       IntermediateField.extendScalars (F := A)
         (E := A ⊔ IntermediateField.lift E.toIntermediateField)
         le_sup_left
-  let : ∀ E : FiniteGaloisIntermediateField R B,
-      IsGalois A (finiteLayer E) :=
+  let :=
     fun E => by
-      simpa only [finiteLayer] using hG E
+      simpa using hG E
   have hC : C = ⨆ E : FiniteGaloisIntermediateField R B, finiteLayer E := by
-    simpa only [C, finiteLayer] using
+    simpa using
       extendScalars_sup_eq_iSup_finiteGaloisComposita A B
   change IsGalois A C
   rw [hC]

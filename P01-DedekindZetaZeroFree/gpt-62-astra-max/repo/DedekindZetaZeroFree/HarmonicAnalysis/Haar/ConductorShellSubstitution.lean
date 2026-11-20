@@ -27,8 +27,8 @@ theorem conductor_shell_haar_substitution
   let K := LocalField F q
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
   have hπK : e (valuation K (π : K)) = WithZero.exp (-1 : ℤ) := hπ
-  let a : K := -(π : K)
-  have ha : a ≠ 0 := neg_ne_zero.mpr π.ne_zero
+  let a := -(π : K)
+  have ha := neg_ne_zero.mpr π.ne_zero
   have hunit : KPTameGauss.integerUnitShell K = {u | valuation K u = 1} := by
     ext u
     simp only [KPTameGauss.integerUnitShell, Set.mem_setOf_eq]
@@ -44,7 +44,7 @@ theorem conductor_shell_haar_substitution
     simp only [pow_one]
     constructor
     · rintro ⟨o, rfl⟩
-      simpa only [← mul_assoc, mul_inv_cancel₀ π.ne_zero, one_mul] using (show valuation K (o : K) ≤ 1 from o.property)
+      simpa using (show valuation K (o : K) ≤ 1 from o.property)
     · intro hx
       exact ⟨⟨(π : K) * x, hx⟩, by simp [← mul_assoc]⟩
   have hpre : (fun x : K => a * x) ⁻¹' KPTameGauss.integerUnitShell K =
@@ -100,7 +100,7 @@ theorem conductor_shell_haar_substitution
   rw [← H]
   have hq : 0 < (residueCardinality K : ℝ) := by
     dsimp [residueCardinality]
-    exact_mod_cast (Nat.card_pos (α := IsLocalRing.ResidueField (valuation K).integer))
+    exact_mod_cast (Nat.card_pos)
   rw [ENNReal.toReal_inv, ENNReal.toReal_ofReal (inv_nonneg.mpr hq.le), inv_inv]
   exact RCLike.real_smul_eq_coe_mul _ _
 

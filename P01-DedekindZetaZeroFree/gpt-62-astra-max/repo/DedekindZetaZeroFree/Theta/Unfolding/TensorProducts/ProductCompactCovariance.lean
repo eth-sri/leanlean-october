@@ -12,7 +12,7 @@ open KPGlobalResidualConstruction KPActualReflectionData.LiteralProductEvaluator
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable {F : Type} [Field F] [NumberField F]
-variable (A : SArithmeticData F)
+    (A : SArithmeticData F)
 
 def literalLocalCompact (w : NumberField.InfinitePlace F)
     (k : KPCplxCharacterHaar.ComplexSU2) :

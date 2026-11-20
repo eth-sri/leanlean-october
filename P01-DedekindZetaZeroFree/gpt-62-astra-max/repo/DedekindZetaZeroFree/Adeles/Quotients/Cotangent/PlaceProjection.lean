@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Adeles.Quotients.Cotangent.InverseTransportCovariance
 
 public import DedekindZetaZeroFree.Adeles.Quotients.Cotangent.MeasurableFamilies
 
@@ -14,10 +15,10 @@ open KPContActualCotangentCountableShrinking KPContCotangentActualOverlap
 open KPContCotangentActualGenuineTwistIsotropy KPContCotangentOverlapRationalBranches
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 section BlockCalculus
 
@@ -27,11 +28,14 @@ open KPContCotangentRealOrthogonalComplexification
 
 private theorem action_diff (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     ContDiff ℝ ∞ (KPArch.action g) := by
-  have h := (KPArch.productAction_contDiff 1 (fun _ => g)).of_le
-    (show (∞ : WithTop ℕ∞) ≤ ⊤ from le_top)
   exact (contDiff_apply ℝ KPArch.H3 (0 : Fin 1)).comp
-    (h.comp (show ContDiff ℝ ∞ (fun z : KPArch.H3 => (fun _ : Fin 1 => z)) by fun_prop))
-private theorem product_deriv (n : ℕ) (g : Fin n → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+    (((KPArch.productAction_contDiff 1 (fun _ => g)).of_le
+      (show (∞ : WithTop ℕ∞) ≤ ⊤ from le_top)).comp (show ContDiff ℝ ∞ (fun z : KPArch.H3 => (fun _ : Fin 1 => z)) by fun_prop))
+section
+
+variable (n : ℕ)
+
+private theorem product_deriv (g : Fin n → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (z v : KPArch.Space n) (i : Fin n) (hv : v i = 0) :
     (fderiv ℝ (KPArch.productAction n g) z v) i = 0 := by
   have ha (i : Fin n) : DifferentiableAt ℝ (KPArch.action (g i)) (z i) :=
@@ -49,23 +53,17 @@ private theorem product_deriv (n : ℕ) (g : Fin n → Matrix.GeneralLinearGroup
     exact (ContinuousLinearMap.proj i : KPArch.Space n →L[ℝ] KPArch.H3).hasFDerivAt.fderiv
   rw [hp]
   simp [ContinuousLinearMap.pi_apply, ContinuousLinearMap.comp_apply, hv]
-private theorem coframe_zero (n : ℕ) (p v : HyperbolicChart.Space n) (i : Fin n)
+private theorem coframe_zero (p v : HyperbolicChart.Space n) (i : Fin n)
     (hv : ∀ k, v (i,k) = 0) : ∀ k, CotangentLogCoframe.C n p v (i,k) = 0 := by
   intro k
   fin_cases k <;> simp [CotangentLogCoframe.C, hv]
-private theorem A_zero (n : ℕ) (v : HyperbolicChart.Space n) (i : Fin n)
-    (hv : ∀ k, v (i,k) = 0) : CotangentLogCoframe.A n v i = 0 := by
-  simp [CotangentLogCoframe.A_apply, hv]
+
+end
+
 private theorem Ainv_zero (n : ℕ) (v : KPArch.Space n) (i : Fin n)
     (hv : v i = 0) : ∀ k, (CotangentLogCoframe.A n).symm v (i,k) = 0 := by
   intro k
   fin_cases k <;> simp [CotangentLogCoframe.A, hv]
-private theorem H_basis_zero (n : ℕ) (p : HyperbolicChart.Space n) (i j : Fin n)
-    (hij : i ≠ j) (l : Fin 3) : ∀ k,
-      CotangentLogCoframe.H n p (EuclideanSpace.basisFun (Fin n × Fin 3) ℝ (j,l)) (i,k) = 0 := by
-  intro k
-  have hne : ∀ k : Fin 3, (i,k) ≠ (j,l) := fun k h => hij (congrArg Prod.fst h)
-  fin_cases k <;> simp [CotangentLogCoframe.H, CotangentLogCoframe.C, EuclideanSpace.basisFun_apply, hne, hij]
 
 private theorem formula_deriv_zero (n : ℕ) (g : Fin n → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (p v : HyperbolicChart.Space n) (i : Fin n) (hv : ∀ k, v (i,k) = 0) : ∀ k,
@@ -80,7 +78,7 @@ private theorem formula_deriv_zero (n : ℕ) (g : Fin n → Matrix.GeneralLinear
   simp only [ContinuousLinearMap.comp_apply, ContinuousLinearEquiv.coe_coe]
   apply Ainv_zero
   apply product_deriv
-  exact A_zero n v i hv
+  simp [CotangentLogCoframe.A_apply, hv]
 
 private theorem Q_block {c : Fin (H.atlas U).componentCount}
     {a b : LiftedChart (F:=F) (ζ:=ζ) (hζ:=hζ) (U:=U) (H:=H) c}
@@ -99,7 +97,9 @@ private theorem Q_block {c : Fin (H.atlas U).componentCount}
   apply coframe_zero
   rw [heq.fderiv_eq]
   apply formula_deriv_zero
-  exact H_basis_zero (d F) x i j hij l
+  intro k
+  have hne : ∀ k : Fin 3, (i,k) ≠ (j,l) := fun k h => hij (congrArg Prod.fst h)
+  fin_cases k <;> simp [CotangentLogCoframe.H, CotangentLogCoframe.C, EuclideanSpace.basisFun_apply, hne, hij]
 
  def mask (i : Fin (d F)) (v : E F) : E F :=
   WithLp.toLp 2 (fun jk => if jk.1 = i then v jk else 0)
@@ -109,7 +109,6 @@ private theorem Q_block {c : Fin (H.atlas U).componentCount}
     (i : Fin (d F)) (v : E F) : T e x hx (mask i v) = mask i (T e x hx v) := by
   ext jk
   obtain ⟨j,k⟩ := jk
-  change (e.phase x • operatorComplexification _ (Q e x) (mask i v)) (j,k) = _
   change e.phase x * (operatorComplexification _ (Q e x) (mask i v)) (j,k) =
     if j = i then e.phase x * (operatorComplexification _ (Q e x) v) (j,k) else 0
   rw [operatorComplexification_apply, operatorComplexification_apply]
@@ -132,11 +131,7 @@ private theorem Q_block {c : Fin (H.atlas U).componentCount}
         simp
       · simp [mask, hli]
     rw [Finset.sum_eq_zero (fun lm _ => hz lm), mul_zero]
-private theorem cast_places {i j : Fin (H.atlas U).componentCount} (h : i = j)
-    (s : LiftedChart (F:=F) (ζ:=ζ) (hζ:=hζ) (U:=U) (H:=H) i) :
-    (h ▸ s).places = s.places := by
-  cases h
-  rfl
+private alias cast_places := DedekindZetaZeroFree.KPContActualCotangentTransportChoiceAlgebra.InverseTransportCovariance.eqRec_places
  theorem target_places (a b : ShrunkChart F ζ hζ U R P H) (h : a.component = b.component) :
     (targetChart a b h).places = (isotropyChart a).places := by
   unfold targetChart
@@ -161,11 +156,9 @@ def project (i : Fin (d F)) :
         · simp only [hji, ite_false]
           exact measurable_const
       · intro a γ x hx
-        change mask i _ = T (isotropyArrow a γ) x (omega_subset_larger a hx) (mask i _)
         exact (congrArg (mask i) (W.property.2.1 a γ x hx)).trans
           (T_mask (isotropyArrow a γ) rfl x (omega_subset_larger a hx) i _).symm
       · intro a b e x hx
-        change mask i _ = T e.arrow x hx (mask i _)
         exact (congrArg (mask i) (W.property.2.2 a b e x hx)).trans
           (T_mask e.arrow (target_places a b e.component_eq) x hx i _).symm⟩
   map_add' := by
@@ -186,8 +179,7 @@ def project (i : Fin (d F)) :
 theorem coefficient_project (i : Fin (d F)) (W : Family (U := U) (H := H))
     (a : Chart (U := U) (H := H)) (x : omega a) (j : Fin (d F)) (k : Fin 3) :
     coefficient (project i W) a x (j, k) =
-      if j = i then coefficient W a x (j, k) else 0 := by
-  rfl
+      if j = i then coefficient W a x (j, k) else 0 := rfl
 
 end DedekindZetaZeroFree.KPContActualCotangentPlaceProjection
 

@@ -89,7 +89,7 @@ private theorem trace_dual_rational (I : NonzeroFractionalIdeal F) (y : Space F)
     apply (mem_span_basisOfFractionalIdeal (K := F)).mp
     exact Submodule.subset_span ⟨i, rfl⟩
   choose n hn using fun i => hy (b i) (hb i)
-  let z : F := ∑ i, (n i : ℚ) • b.traceDual i
+  let z := ∑ i, (n i : ℚ) • b.traceDual i
   refine ⟨z, (traceAdapter F).injective ?_⟩
   let B := (mixedEmbedding.fractionalIdealLatticeBasis F I).map
     (mixedEmbedding.euclidean.toMixed F).symm.toLinearEquiv
@@ -110,7 +110,6 @@ private theorem trace_integral_iff (q : ℚ) :
   constructor
   · rintro ⟨n, hn⟩
     refine ⟨n, ?_⟩
-    change (n : ℚ) = q
     change (n : ℝ) = (q : ℝ) at hn
     exact_mod_cast hn
   · rintro ⟨n, hn⟩

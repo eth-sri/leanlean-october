@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -104,51 +102,33 @@ theorem frobeniusPowerSum_mul_action_sub (D : DegreeData G) (A : Rep ℤ G)
   let τ₁ := D.frobeniusActionRemainder K L hLK φ σ₁
   let τ₃ := D.frobeniusActionRemainder K L hLK φ σ₃
   let τ₄ := D.frobeniusActionRemainder K L hLK φ σ₄
-  have h₁ :
-      D.frobeniusQuotientAction A K.field L hLK τ₁ p₁ =
-        D.frobeniusQuotientAction A K.field L hLK
-          (φ.1 ^ D.frobeniusExponent K L hLK σ₁) p₁ := by
-    exact D.frobeniusActionRemainder_apply_fixedField
-      A K L hLK φ σ₁ π₁
-  have h₃ :
-      D.frobeniusQuotientAction A K.field L hLK τ₃ p₃ =
-        D.frobeniusQuotientAction A K.field L hLK
-          (φ.1 ^ D.frobeniusExponent K L hLK σ₃) p₃ := by
-    exact D.frobeniusActionRemainder_apply_fixedField
-      A K L hLK φ σ₃ π₃
-  have h₄ :
-      D.frobeniusQuotientAction A K.field L hLK τ₄ p₄ =
-        D.frobeniusQuotientAction A K.field L hLK
-          (φ.1 ^ D.frobeniusExponent K L hLK σ₄) p₄ := by
-    exact D.frobeniusActionRemainder_apply_fixedField
-      A K L hLK φ σ₄ π₄
-  have hτ : τ₃ = τ₄ * τ₁ := by
-    exact D.frobeniusActionRemainder_mul K L hLK φ σ₁ σ₂
+  let frobeniusQuotientAction₀ := D.frobeniusQuotientAction A K.field L hLK φ.1
   change
-    D.frobeniusQuotientAction A K.field L hLK φ.1
+    frobeniusQuotientAction₀
           (s₄ + s₁ - s₃) - (s₄ + s₁ - s₃) =
       (D.frobeniusQuotientAction A K.field L hLK τ₄ p₄ - p₄) +
         (D.frobeniusQuotientAction A K.field L hLK τ₁ p₁ - p₁) +
         (p₃ -
           D.frobeniusQuotientAction A K.field L hLK (τ₄ * τ₁) p₃)
+  let frobeniusQuotientActionLinearMap₀ := D.frobeniusQuotientActionLinearMap A K.field L hLK φ.1
   have hmap :
-      D.frobeniusQuotientAction A K.field L hLK φ.1 (s₄ + s₁ - s₃) =
-        D.frobeniusQuotientAction A K.field L hLK φ.1 s₄ +
-          D.frobeniusQuotientAction A K.field L hLK φ.1 s₁ -
-          D.frobeniusQuotientAction A K.field L hLK φ.1 s₃ := by
+      frobeniusQuotientAction₀ (s₄ + s₁ - s₃) =
+        frobeniusQuotientAction₀ s₄ +
+          frobeniusQuotientAction₀ s₁ -
+          frobeniusQuotientAction₀ s₃ := by
     change
-      D.frobeniusQuotientActionLinearMap A K.field L hLK φ.1
+      frobeniusQuotientActionLinearMap₀
           (s₄ + s₁ - s₃) =
-        D.frobeniusQuotientActionLinearMap A K.field L hLK φ.1 s₄ +
-          D.frobeniusQuotientActionLinearMap A K.field L hLK φ.1 s₁ -
-          D.frobeniusQuotientActionLinearMap A K.field L hLK φ.1 s₃
+        frobeniusQuotientActionLinearMap₀ s₄ +
+          frobeniusQuotientActionLinearMap₀ s₁ -
+          frobeniusQuotientActionLinearMap₀ s₃
     rw [map_sub, map_add]
   rw [hmap]
   calc
     _ =
-        (D.frobeniusQuotientAction A K.field L hLK φ.1 s₄ - s₄) +
-          (D.frobeniusQuotientAction A K.field L hLK φ.1 s₁ - s₁) -
-          (D.frobeniusQuotientAction A K.field L hLK φ.1 s₃ - s₃) := by
+        (frobeniusQuotientAction₀ s₄ - s₄) +
+          (frobeniusQuotientAction₀ s₁ - s₁) -
+          (frobeniusQuotientAction₀ s₃ - s₃) := by
       abel
     _ =
         (D.frobeniusQuotientAction A K.field L hLK
@@ -157,7 +137,6 @@ theorem frobeniusPowerSum_mul_action_sub (D : DegreeData G) (A : Rep ℤ G)
             (φ.1 ^ D.frobeniusExponent K L hLK σ₁) p₁ - p₁) -
           (D.frobeniusQuotientAction A K.field L hLK
             (φ.1 ^ D.frobeniusExponent K L hLK σ₃) p₃ - p₃) := by
-      dsimp only [s₁, s₃, s₄]
       rw [D.frobeniusPowerSum_action_sub,
         D.frobeniusPowerSum_action_sub,
         D.frobeniusPowerSum_action_sub]
@@ -166,7 +145,10 @@ theorem frobeniusPowerSum_mul_action_sub (D : DegreeData G) (A : Rep ℤ G)
           (D.frobeniusQuotientAction A K.field L hLK τ₁ p₁ - p₁) +
           (p₃ -
             D.frobeniusQuotientAction A K.field L hLK (τ₄ * τ₁) p₃) := by
-      rw [← h₄, ← h₁, ← h₃, hτ]
+      rw [← (D.frobeniusActionRemainder_apply_fixedField
+        A K L hLK φ σ₄ π₄), ← (D.frobeniusActionRemainder_apply_fixedField
+        A K L hLK φ σ₁ π₁), ← (D.frobeniusActionRemainder_apply_fixedField
+        A K L hLK φ σ₃ π₃), (D.frobeniusActionRemainder_mul K L hLK φ σ₁ σ₂)]
       abel
 
 end DegreeData

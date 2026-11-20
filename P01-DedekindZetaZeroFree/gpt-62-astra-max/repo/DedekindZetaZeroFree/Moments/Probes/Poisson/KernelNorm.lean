@@ -15,8 +15,8 @@ open DedekindZetaZeroFree.PrincipalMellinComparison
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
 theorem norm_exp_sq (ξ z : ℂ) :
     ‖Complex.exp ((ξ + z - 1) ^ 2)‖ =
@@ -41,10 +41,12 @@ theorem weightModulus_eq (ξ : ℂ) (v y : ℝ) (p : ℝ × ℝ) :
   unfold WeightConvolution.weightModulus
   rw [norm_mul, norm_mul, norm_exp_sq_line]
 
-theorem frequencyNorm_pos (u : Frequency D.recipe) : 0 < frequencyNorm D.recipe u :=
+variable (u : Frequency D.recipe)
+
+theorem frequencyNorm_pos : 0 < frequencyNorm D.recipe u :=
   lt_of_lt_of_le one_pos (RawFrequencyCount.one_le_frequencyNorm D.recipe u)
 
-theorem norm_rawFactor (u : Frequency D.recipe) (ξ w z : ℂ) :
+theorem norm_rawFactor (ξ w z : ℂ) :
     ‖RawFixed.FixedData.rawFactor D u ξ w z‖ =
       ‖D.recipe.L (6 * z)‖ * ‖(RawFixed.FixedData.pkg D).plus u w‖ *
         ‖AllRowEuler.InitialSeparation.correctionProduct D.context
@@ -53,7 +55,7 @@ theorem norm_rawFactor (u : Frequency D.recipe) (ξ w z : ℂ) :
   unfold RawFixed.FixedData.rawFactor
   rw [norm_div, norm_mul, norm_mul, div_eq_mul_inv]
 
-theorem norm_rawKernel (u : Frequency D.recipe) (ξ : ℂ) (v y : ℝ) (p : ℝ × ℝ) (Z : ℝ)
+theorem norm_rawKernel (ξ : ℂ) (v y : ℝ) (p : ℝ × ℝ) (Z : ℝ)
     (hZ : 0 < Z) :
     ‖RawFixed.FixedData.rawKernel D u ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I)
         ((v : ℂ) + (p.1 : ℂ) * Complex.I) Z‖ =
@@ -61,15 +63,14 @@ theorem norm_rawKernel (u : Frequency D.recipe) (ξ : ℂ) (v y : ℝ) (p : ℝ 
         WeightConvolution.weightModulus D ξ v y p *
         ‖RawFixed.FixedData.rawFactor D u ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I)
           ((v : ℂ) + (p.1 : ℂ) * Complex.I)‖ := by
-  have hqc : (0 : ℝ) < frequencyNorm D.recipe u := frequencyNorm_pos D u
   unfold RawFixed.FixedData.rawKernel
   have hre : ∀ A B C X E R : ℂ, A * B * C * X * E * R = A * E * (B * C * X) * R := by
     intro A B C X E R; ring
   have hkey : ∀ A E X R : ℂ, ‖A * E * X * R‖ = ‖A‖ * ‖E‖ * ‖X‖ * ‖R‖ := by
-    intro A E X R; simp only [norm_mul]
+    intro A E X R; simp
   rw [hre, hkey]
   unfold WeightConvolution.weightModulus
-  rw [Complex.norm_cpow_eq_rpow_re_of_pos hZ, Complex.norm_cpow_eq_rpow_re_of_pos hqc]
+  rw [Complex.norm_cpow_eq_rpow_re_of_pos hZ, Complex.norm_cpow_eq_rpow_re_of_pos (frequencyNorm_pos D u)]
   simp only [Complex.add_re, Complex.sub_re, Complex.mul_re, Complex.ofReal_re,
     Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.add_im, Complex.sub_im,
     Complex.mul_im, Complex.one_re, Complex.one_im, Complex.neg_re, Complex.neg_im,

@@ -16,16 +16,17 @@ open KPLiteralRaw KPLiteralChamber
 open KPGlobalResidualKernel.RawStageL2.Outgoing
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-theorem standard_measurable (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (s : ℂ) (g : G F ζ hζ) :
+section
+
+variable (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K) (s : ℂ)
+
+theorem standard_measurable (g : G F ζ hζ) :
     Measurable (fun x : KPAdeles F => f.val s
-      (KPRationalAdelicSplitting.pglW F ζ hζ * KPGlobalTorusFunctionData.N F ζ hζ x * g)) := by
-  exact ((f.property.1 s).1.1.comp
+      (KPRationalAdelicSplitting.pglW F ζ hζ * KPGlobalTorusFunctionData.N F ζ hζ x * g)) := ((f.property.1 s).1.1.comp
     ((continuous_const.mul (KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous
       F ζ hζ)).mul continuous_const)).measurable
 
-private theorem open_cell_term (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (s : ℂ) (t : F) (x : KPAdeles F) (g : G F ζ hζ) :
+private theorem open_cell_term (t : F) (x : KPAdeles F) (g : G F ζ hζ) :
     f.val s (rationalLift F ζ hζ
       (Quotient.out (KPChamberBruhatTwoCells.cellIndex F (some t))) *
         (KPGlobalTorusFunctionData.N F ζ hζ x * g)) =
@@ -38,43 +39,43 @@ private theorem open_cell_term (K : Subgroup (G F ζ hζ))
   have h := KPChamberBruhatTwoCells.open_cell_translate F (ActualBruhat.rational F ζ hζ)
     (KPGlobalTorusFunctionData.Nhom F ζ hζ) (ActualBruhat.compatible_unipotent F ζ hζ)
     (f.val s) t x g
-  have hw := ActualBruhat.section_signed_weyl F ζ hζ s
-    (literalSource F ζ hζ K f s)
-    (KPGlobalTorusFunctionData.N F ζ hζ (algebraMap F (KPAdeles F) t + x) * g)
-  change f.val s (ActualBruhat.rational F ζ hζ
-    (KPChamberBruhatTwoCells.rationalWeyl F * KPChamberBruhatTwoCells.rationalUnipotent F t) *
-    (KPGlobalTorusFunctionData.N F ζ hζ x * g)) = _
   dsimp only [KPGlobalTorusFunctionData.Nhom, MonoidHom.coe_mk, OneHom.coe_mk] at h
   simp only [toAdd_ofAdd] at h
   rw [← mul_assoc, h]
-  simpa only [literalSource, KPRationalAdelicSplitting.pglW, mul_assoc] using hw
+  simpa only [literalSource, KPRationalAdelicSplitting.pglW, mul_assoc] using (ActualBruhat.section_signed_weyl F ζ hζ s
+    (literalSource F ζ hζ K f s)
+    (KPGlobalTorusFunctionData.N F ζ hζ (algebraMap F (KPAdeles F) t + x) * g))
 
-theorem standard_integrable (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K)
-    (s : ℂ) (hs : (1 : ℝ) / 3 < s.re) (g : G F ζ hζ) :
+end
+
+section
+
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) (s : ℂ)
+    (hs : (1 : ℝ) / 3 < s.re) (g : G F ζ hζ)
+
+include hK hs in
+theorem standard_integrable :
     Integrable (fun x : KPAdeles F => f.val s
       (KPRationalAdelicSplitting.pglW F ζ hζ * KPGlobalTorusFunctionData.N F ζ hζ x * g))
       (KPAdditiveHaar.adelicMeasure F) := by
   letI := KPAdditiveHaar.adelicMeasure_isAddHaarMeasure F
   let D := KPAdditiveFundamentalDomain.domain F
-  let C : Set (KPAdeles F) := closure (KPAdditiveFundamentalDomain.archParallelepiped F) ×ˢ
+  let C := closure (KPAdditiveFundamentalDomain.archParallelepiped F) ×ˢ
     (KPAdelicTopology.integralAdeles F : Set (IsDedekindDomain.FiniteAdeleRing (𝓞 F) F))
-  have hC : IsCompact C := KPAdditiveFundamentalDomain.compact_closed_cover F
   have hDC : D ⊆ C := fun x hx => ⟨subset_closure hx.1, hx.2⟩
   let A := (fun x : KPAdeles F => KPGlobalTorusFunctionData.N F ζ hζ x * g) '' C
-  have hA : IsCompact A := hC.image
-    ((KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous F ζ hζ).mul
-      continuous_const)
   obtain ⟨b, hb, hbound⟩ := chamber_scalar_compact_majorants F ζ hζ K hK f {s}
-    isCompact_singleton (by rintro z rfl; exact hs) A hA
-  let h : KPAdeles F → ℂ := fun x => f.val s
+    isCompact_singleton (by rintro z rfl; exact hs) A ((KPAdditiveFundamentalDomain.compact_closed_cover F).image
+      ((KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous F ζ hζ).mul
+        continuous_const))
+  let h := fun x => f.val s
     (KPRationalAdelicSplitting.pglW F ζ hζ * KPGlobalTorusFunctionData.N F ζ hζ x * g)
-  have hh : Measurable h := standard_measurable F ζ hζ K f s g
+  have hh := standard_measurable F ζ hζ K f s g
   have hsum_bound : ∀ x ∈ D,
       (∑' t : F, ENNReal.ofReal ‖h (algebraMap F (KPAdeles F) t + x)‖) ≤
         ENNReal.ofReal (∑' q, |b q|) := by
     intro x hx
-    let e : F → KPChamberBruhatTwoCells.RationalQuotient F :=
+    let e :=
       fun t => KPChamberBruhatTwoCells.cellIndex F (some t)
     have he : Function.Injective e :=
       (KPChamberBruhatTwoCells.cellIndex_bijective F).1.comp (Option.some_injective F)
@@ -116,9 +117,8 @@ theorem standard_integrable (K : Subgroup (G F ζ hζ))
   exact ⟨hh.aestronglyMeasurable,
     by simpa only [HasFiniteIntegral, ofReal_norm] using hfinite⟩
 
-private theorem literal_two_cells_probability (K : Subgroup (G F ζ hζ))
-    (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K)
-    (s : ℂ) (hs : (1 : ℝ) / 3 < s.re) (g : G F ζ hζ) :
+include hK hs in
+private theorem literal_two_cells_probability :
     (∫ q : KPAdditiveQuotient F,
       eisenstein F ζ hζ K f s
         (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out q) * g)
@@ -151,6 +151,8 @@ private theorem literal_two_cells_probability (K : Subgroup (G F ζ hζ))
     rw [KPLiteralExceptionalResidue.rationalLift_eq_constructed]
     rfl
   · rfl
+
+end
 
 theorem literal_two_cells (K : Subgroup (G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K) (μ : Measure (KPAdditiveQuotient F))

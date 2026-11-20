@@ -6,12 +6,14 @@ public import Mathlib
 
 namespace DedekindZetaZeroFree
 
-theorem kp_cubic_conductor_geometric_sum (q r : ℕ) (hq : 2 ≤ q) :
+variable (q r : ℕ) (hq : 2 ≤ q)
+
+include hq in
+theorem kp_cubic_conductor_geometric_sum :
     let t : ℝ := (q : ℝ)⁻¹
     1 + (∑ i ∈ Finset.range r, 2 * ((q : ℝ) - 1) * t ^ (i + 2)) +
       2 * t ^ (r + 1) = 1 + 2 * t := by
   dsimp
-  have hq0 : (q : ℝ) ≠ 0 := by exact_mod_cast (show q ≠ 0 by omega)
   induction r with
   | zero => simp
   | succ r ih =>
@@ -20,17 +22,17 @@ theorem kp_cubic_conductor_geometric_sum (q r : ℕ) (hq : 2 ≤ q) :
     field_simp at *
     nlinarith
 
-theorem kp_cubic_conductor_weighted_sum (q r : ℕ) (hq : 2 ≤ q) :
+include hq in
+theorem kp_cubic_conductor_weighted_sum :
     let t : ℝ := (q : ℝ)⁻¹
     (∑ i ∈ Finset.range r,
       (((q : ℝ) - 1) * (q : ℝ) ^ (2 * i) * t ^ (3 * i + 2) +
         ((q : ℝ) - 1) * (q : ℝ) ^ (2 * i + 1) * t ^ (3 * i + 3))) +
       2 * (q : ℝ) ^ (2 * r) * t ^ (3 * r + 1) = 2 / (q : ℝ) := by
   dsimp
-  have hq0 : (q : ℝ) ≠ 0 := by exact_mod_cast (show q ≠ 0 by omega)
   have hp (n k : ℕ) :
       (q : ℝ) ^ n * (q : ℝ)⁻¹ ^ (n + k) = (q : ℝ)⁻¹ ^ k := by
-    rw [pow_add, ← mul_assoc, ← mul_pow, mul_inv_cancel₀ hq0, one_pow, one_mul]
+    rw [pow_add, ← mul_assoc, ← mul_pow, mul_inv_cancel₀ (by exact_mod_cast (show q ≠ 0 by omega)), one_pow, one_mul]
   have hterm (i : ℕ) :
       ((q : ℝ) - 1) * (q : ℝ) ^ (2 * i) * (q : ℝ)⁻¹ ^ (3 * i + 2) +
         ((q : ℝ) - 1) * (q : ℝ) ^ (2 * i + 1) * (q : ℝ)⁻¹ ^ (3 * i + 3) =

@@ -1,4 +1,6 @@
 module
+public import DedekindZetaZeroFree.Adeles.Characters.TracePhaseUniqueness
+public import DedekindZetaZeroFree.Arithmetic.LocalFields.TraceCharacterConductors
 
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.ResiduePhases.ResidueTracePhases
 public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.AdditiveRowBoxesAndSchurBounds
@@ -13,27 +15,32 @@ open NumberField IsDedekindDomain
 
 variable {F : Type} [Field F] [NumberField F]
 
-def different (A : SArithmeticData F) : Ideal A.R :=
+section
+
+variable (A : SArithmeticData F)
+
+def different : Ideal A.R :=
   Ideal.map (algebraMap (𝓞 F) A.R) (differentIdeal ℤ (𝓞 F))
 
-def codifferent (A : SArithmeticData F) : Set F :=
+def codifferent : Set F :=
   {x | ∀ d : A.R, d ∈ different A → (d : F) * x ∈ A.R}
 
-def denominatorScale (A : SArithmeticData F) : ℝ :=
+def denominatorScale : ℝ :=
   max 1 (Nat.card (A.R ⧸ different A) : ℝ)
 
-def finiteTrace (A : SArithmeticData F) :
+def finiteTrace :
     (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle :=
   fun v => ResidueTrace.localTraceCharacter v.val
 
-def phase (A : SArithmeticData F) (x : F) : ℂ :=
+def phase (x : F) : ℂ :=
   ProbeAdditive.phase F A.Sf (finiteTrace A) (sLocalDiagonal F A.Sf x)
+
+end
 
 structure TraceDualData (A : SArithmeticData F) : Prop where
   continuous : ∀ v, Continuous (finiteTrace A v)
   compatible : ProbeAdditive.TraceCompatible F A.Sf (finiteTrace A)
   different_nonzero : different A ≠ ⊥
-  dual : ∀ x : F, (∀ m : A.R, phase A (x * (m : F)) = 1) ↔ x ∈ codifferent A
   residue : ∀ (δ : A.R), δ ≠ 0 → Ideal.span {δ} = different A →
     ∀ (q : Ideal A.R) [Fintype (A.R ⧸ q)] (a : A.R),
       a ≠ 0 → Ideal.span {a} = q →
@@ -41,72 +48,17 @@ structure TraceDualData (A : SArithmeticData F) : Prop where
         ∀ m : A.R, psi (Ideal.Quotient.mk q m) =
           phase A (-((m : F) / ((δ : F) * (a : F))))
 
-theorem localTraceCharacter_eq_localFiniteCharacter (v : HeightOneSpectrum (𝓞 F)) :
-    ResidueTrace.localTraceCharacter v = localFiniteCharacter F v := by
-  letI (p : Nat.Primes) : Fact p.1.Prime := ⟨p.2⟩
-  have hp : ResidueTrace.rationalPrimeBelow v = PlaceTraceAdapter.prime F v := by
-    apply Subtype.ext
-    change ringChar (𝓞 F ⧸ v.asIdeal) = _
-    apply CharP.ringChar_of_prime_eq_zero (PlaceTraceAdapter.prime F v).2
-    apply Ideal.Quotient.eq_zero_iff_mem.mpr
-    have h : ((PlaceTraceAdapter.prime F v).1 : 𝓞 ℚ) ∈
-        (PlaceTraceAdapter.rationalPlace F v).asIdeal := by
-      have hh := (Rat.HeightOneSpectrum.natGenerator_dvd_iff
-        (PlaceTraceAdapter.rationalPlace F v) (n := (PlaceTraceAdapter.prime F v).1)).mp
-        (dvd_refl _)
-      rw [Ideal.mem_map_iff_of_surjective _
-        (Rat.IsIntegralClosure.intEquiv (𝓞 ℚ)).surjective] at hh
-      obtain ⟨x, hx, he⟩ := hh
-      have he' : x = ((PlaceTraceAdapter.prime F v).1 : 𝓞 ℚ) :=
-        (Rat.IsIntegralClosure.intEquiv (𝓞 ℚ)).injective (by simpa using he)
-      exact he' ▸ hx
-    have h' : algebraMap (𝓞 ℚ) (𝓞 F)
-        ((PlaceTraceAdapter.prime F v).1 : 𝓞 ℚ) ∈ v.asIdeal := h
-    simpa using h'
-  have hgeneral (p : Nat.Primes) (m : ℚ_[p] →+* v.adicCompletion F)
-      (hmc : Continuous m)
-      (hmq : ∀ q : ℚ, m (q : ℚ_[p]) =
-        algebraMap F (v.adicCompletion F) (algebraMap ℚ F q))
-      (hp : p = PlaceTraceAdapter.prime F v) :
-      (letI := m.toAlgebra
-       (rationalPadicCharacter p).compAddMonoidHom
-        (Algebra.trace ℚ_[p] (v.adicCompletion F)).toAddMonoidHom) =
-          localFiniteCharacter F v := by
-    subst p
-    have hmap : m = PlaceTraceAdapter.padicMap F v := by
-      apply DFunLike.coe_injective
-      apply (Padic.denseRange_ratCast (PlaceTraceAdapter.prime F v)).equalizer hmc
-      · letI : Algebra ℚ ((PlaceTraceAdapter.rationalPlace F v).adicCompletion ℚ) :=
-          HeightOneSpectrum.instAlgebraAdicCompletion (𝓞 ℚ) ℚ _
-        exact (finitePlaceAdicCompletionMap_continuous ℚ F _ _).comp
-          (Rat.HeightOneSpectrum.adicCompletion.padicEquiv
-            (PlaceTraceAdapter.rationalPlace F v)).symm.continuous
-      · funext q
-        exact (hmq q).trans (by simp [PlaceTraceAdapter.padicMap, map_ratCast])
-    subst m
-    rfl
-  exact hgeneral _ _ (ResidueTrace.baseEmbedding_spec v).1
-    (ResidueTrace.baseEmbedding_spec v).2 hp
+alias localTraceCharacter_eq_localFiniteCharacter := DedekindZetaZeroFree.ArithmeticContext.TraceCharacterConductors.character_eq_adapter
 
 theorem localTraceCharacter_eq_one_of_integral (v : HeightOneSpectrum (𝓞 F))
     (x : v.adicCompletion F) (hx : x ∈ v.adicCompletionIntegers F) :
     ResidueTrace.localTraceCharacter v x = 1 := by
   rw [localTraceCharacter_eq_localFiniteCharacter]
-  change rationalPadicCharacter (PlaceTraceAdapter.prime F v)
-    (PlaceTraceAdapter.trace F v x) = 1
   exact (rationalPadicCharacter_eq_one_iff _ _).mpr
     (PlaceTraceAdapter.trace_mem_padicIntegers F v x hx)
 
 theorem archPhase_eq_trace (A : SArithmeticData F) (x : InfiniteAdeleRing F) :
-    ProbeAdditive.archPhase F x = ∏ w, (archTraceCharacter w (x w) : ℂ) := by
-  simp only [archTraceCharacter_of_isComplex _ (A.complex_place _), Circle.coe_exp,
-    InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply]
-  rw [ProbeAdditive.archPhase, ← Complex.exp_sum]
-  congr 1
-  simp only [Complex.ofReal_sum, Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
-  apply Finset.sum_congr rfl
-  intro w hw
-  ring
+    ProbeAdditive.archPhase F x = ∏ w, (archTraceCharacter w (x w) : ℂ) := by apply @DedekindZetaZeroFree.TateSLocalComparison.TracePhaseUniqueness.archPhase_eq_archTraceCharacter_product <;> assumption
 
 theorem phase_eq_fieldTraceCharacter (A : SArithmeticData F) (x : F) :
     phase A x = (A.fieldTraceCharacter x : ℂ) := by
@@ -131,21 +83,17 @@ theorem canonical_trace_compatible (A : SArithmeticData F) :
   have hprod := finprod_eq_prod_of_mulSupport_subset
     (fun v : HeightOneSpectrum (𝓞 F) =>
       ResidueTrace.localTraceCharacter v (algebraMap F (v.adicCompletion F) (r : F)))
-    (s := A.Sf) (by
+     (by
       intro v hv
       by_contra hn
       exact hv (hout v hn))
   have hglobal := ResidueTrace.diagonal_product_formula (r : F)
   rw [hprod] at hglobal
-  have heq := Finset.prod_coe_sort A.Sf (fun v : HeightOneSpectrum (𝓞 F) =>
-    ResidueTrace.localTraceCharacter v (algebraMap F (v.adicCompletion F) (r : F)))
   have hc : A.fieldTraceCharacter (r : F) = 1 := by
-    change (∏ w : InfinitePlace F, archTraceCharacter w (algebraMap F w.Completion (r : F))) *
-      (∏ v : A.Sf, ResidueTrace.localTraceCharacter v.1
-        (algebraMap F (v.1.adicCompletion F) (r : F))) = 1
     exact (congrArg (fun t : Circle =>
       (∏ w : InfinitePlace F, archTraceCharacter w (algebraMap F w.Completion (r : F))) * t)
-      heq).trans hglobal
+      (Finset.prod_coe_sort A.Sf (fun v : HeightOneSpectrum (𝓞 F) =>
+        ResidueTrace.localTraceCharacter v (algebraMap F (v.adicCompletion F) (r : F))))).trans hglobal
   rw [sIntegerDiagonal_apply]
   change phase A (r : F) = 1
   rw [phase_eq_fieldTraceCharacter, hc, Circle.coe_one]
@@ -172,12 +120,11 @@ theorem residue_of_trace_dual (A : SArithmeticData F)
         phase A (-((m : F) / ((δ : F) * (a : F)))) := by
   have hδF : (δ : F) ≠ 0 := by exact_mod_cast hδ
   have haF : (a : F) ≠ 0 := by exact_mod_cast ha
-  let c : F := -((δ : F) * (a : F))⁻¹
-  let e : AddChar A.R ℂ := Circle.coeHom.compAddChar
+  let c := -((δ : F) * (a : F))⁻¹
+  let e := Circle.coeHom.compAddChar
     (A.fieldTraceCharacter.compAddMonoidHom
       ((LinearMap.mulLeft F c).toAddMonoidHom.comp A.R.val.toAddMonoidHom))
-  have he (m : A.R) : e m = phase A (c * (m : F)) := by
-    exact (phase_eq_fieldTraceCharacter A _).symm
+  have he (m : A.R) : e m = phase A (c * (m : F)) := (phase_eq_fieldTraceCharacter A _).symm
   have hc (m : A.R) : c * (m : F) = -((m : F) / ((δ : F) * (a : F))) := by
     dsimp [c]
     ring
@@ -223,7 +170,6 @@ theorem residue_of_trace_dual (A : SArithmeticData F)
     apply Ideal.mem_span_singleton'.mpr
     refine ⟨t, ?_⟩
     apply Subtype.ext
-    change ((m : F) / (a : F)) * (a : F) = (m : F)
     exact div_mul_cancel₀ _ haF
   · intro m
     rw [hpsi, he, hc]
@@ -232,14 +178,13 @@ theorem codiff_global_test (A : SArithmeticData F) (x : F) :
     x ∈ codifferent A ↔ ∀ d : 𝓞 F, d ∈ differentIdeal ℤ (𝓞 F) → (d : F) * x ∈ A.R := by
   constructor
   · intro h d hd
-    have hm := Ideal.mem_map_of_mem (algebraMap (𝓞 F) A.R) hd
-    simpa only [Subalgebra.coe_algebraMap] using h _ hm
+    simpa using h _ (Ideal.mem_map_of_mem (algebraMap (𝓞 F) A.R) hd)
   · intro h d hd
     change d ∈ Ideal.map (algebraMap (𝓞 F) A.R) (differentIdeal ℤ (𝓞 F)) at hd
     induction hd using Submodule.span_induction with
     | mem d hd =>
       obtain ⟨t, ht, rfl⟩ := hd
-      simpa only [Subalgebra.coe_algebraMap] using h t ht
+      simpa using h t ht
     | zero => simp
     | add d e hd he ihd ihe =>
       simpa only [Subalgebra.coe_add, add_mul] using A.R.add_mem ihd ihe
@@ -259,7 +204,6 @@ theorem local_codiff_global_test (v : HeightOneSpectrum (𝓞 F)) (x : F) :
       y ∈ (1 : Submodule (LocalConductor.target F v).valuationSubring (v.adicCompletion F)) ↔
         y ∈ v.adicCompletionIntegers F := by
     rw [Submodule.mem_one]
-    change (∃ z : (LocalConductor.target F v).valuationSubring, (z : v.adicCompletion F) = y) ↔ _
     have hr := congrArg (fun s : Set (v.adicCompletion F) => y ∈ s)
       (LocalConductor.target_integerRing_eq F v)
     exact ⟨fun ⟨z,hz⟩ => hr.mp (hz ▸ z.property),
@@ -270,9 +214,8 @@ theorem local_codiff_global_test (v : HeightOneSpectrum (𝓞 F)) (x : F) :
   rw [hdiff]
   constructor
   · intro h d hd
-    have hh := h _ ⟨TraceBaseChange.integerMap F v d,
-      Ideal.mem_map_of_mem _ hd, rfl⟩
-    simpa only [ValuationSubring.algebraMap_apply, TraceBaseChange.integerMap_coe, map_mul, mul_comm] using hh
+    simpa only [ValuationSubring.algebraMap_apply, TraceBaseChange.integerMap_coe, map_mul, mul_comm] using (h _ ⟨TraceBaseChange.integerMap F v d,
+      Ideal.mem_map_of_mem _ hd, rfl⟩)
   · intro h y hy
     obtain ⟨d, hd, rfl⟩ := hy
     induction hd using Submodule.span_induction with
@@ -320,18 +263,17 @@ private theorem phase_outside_product (A : SArithmeticData F) (x : F) (m : A.R) 
   let f (v : HeightOneSpectrum (𝓞 F)) : Circle :=
     ResidueTrace.localTraceCharacter v (algebraMap F (v.adicCompletion F) (x * (m : F)))
   have hf (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf ∪ T) : f v = 1 := by
-    have hvs : v ∉ A.Sf := fun h => hv (Finset.mem_union.mpr (Or.inl h))
-    have hvt : v ∉ (HeightOneSpectrum.Support.finite (𝓞 F) x).toFinset := by
-      intro h
-      apply hv
-      exact Finset.mem_union.mpr (Or.inr (Finset.mem_sdiff.mpr ⟨h,hvs⟩))
+    have hvs := fun h => hv (Finset.mem_union.mpr (Or.inl h))
     apply localTraceCharacter_eq_one_of_integral
     rw [map_mul]
-    exact (v.adicCompletionIntegers F).toSubring.mul_mem
-      (integral_outside_support x v hvt)
+    refine (v.adicCompletionIntegers F).toSubring.mul_mem
+      (integral_outside_support x v ?_)
       ((mem_sIntegerRing_iff F A.Sf _).mp m.property v hvs)
+    intro h
+    apply hv
+    exact Finset.mem_union.mpr (Or.inr (Finset.mem_sdiff.mpr ⟨h,hvs⟩))
   have hprod := finprod_eq_prod_of_mulSupport_subset f
-    (s := A.Sf ∪ T) (by
+     (by
       intro v hv
       by_contra hn
       exact hv (hf v hn))
@@ -429,7 +371,7 @@ theorem canonical_trace_dual (A : SArithmeticData F) (x : F) :
 
 theorem canonical_trace_dual_data (A : SArithmeticData F) : TraceDualData A := by
   have hdual := canonical_trace_dual A
-  refine ⟨?_, canonical_trace_compatible A, ?_, hdual, ?_⟩
+  refine ⟨?_, canonical_trace_compatible A, ?_, ?_⟩
   · intro v
     exact ResidueTrace.continuous_localTraceCharacter v.val
   · intro hbot

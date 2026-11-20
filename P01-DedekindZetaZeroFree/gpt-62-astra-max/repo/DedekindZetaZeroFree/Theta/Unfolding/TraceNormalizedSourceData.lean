@@ -7,8 +7,8 @@ public import DedekindZetaZeroFree.Moments.Probes.SignedUnfoldingAndAngularCance
 noncomputable section
 namespace DedekindZetaZeroFree.MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
 structure JointRootAlignedSources where
   aligned : RootAligned R
   transport : TraceHaarTransport R
@@ -46,16 +46,9 @@ def JointSignedUnfoldingSources.certified (C : JointSignedUnfoldingSources R N) 
   transport := C.transport
   sources := C.sources
   realization := C.realization
-  factorization := C.factorization
-  localHaarTransport := C.localHaarTransport
-  exterior := C.exterior
   packet := C.packet
-  forward := C.forward
-  constantTerm := C.constantTerm
-  mellin := C.mellin
   descent := C.descent
   profiles := C.profiles
-  absolute := C.absolute
   upperZero := C.upperZero
   unfolding := C.unfolding
 end DedekindZetaZeroFree.MomentSources

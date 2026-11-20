@@ -12,10 +12,10 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1800000
 namespace DedekindZetaZeroFree.FiniteWhittakerProjectors
 open MomentSources
-open _root_.DedekindZetaZeroFree.SArithmeticData renaming localTraceCharacter_exists_ne_one → localTraceCharacter_exists_ne_one
+open _root_.DedekindZetaZeroFree.SArithmeticData (localTraceCharacter_exists_ne_one)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 def actualFiniteRoot (q : KPFinitePlace F) :
     Multiplicative (q.adicCompletion F) →*
@@ -34,7 +34,7 @@ def actualFiniteCharacter (q : KPFinitePlace F) : ContinuousAddChar (q.adicCompl
 
 theorem character_nontrivial (q : KPFinitePlace F) :
     ∃ t, (actualFiniteCharacter (F := F) q).toAddChar t ≠ 1 := by
-  obtain ⟨t, ht⟩ := localTraceCharacter_exists_ne_one (F := F) q
+  obtain ⟨t, ht⟩ := localTraceCharacter_exists_ne_one q
   exact ⟨t, fun h => ht (Circle.coe_injective (by simpa [actualFiniteCharacter] using h))⟩
 
 variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
@@ -55,10 +55,8 @@ theorem stabilizer_open (D : SourceFactorization R Q T)
   have hgn : ∀ᶠ h in nhds g, g⁻¹ * h ∈ J :=
     (J.isOpen.preimage (continuous_const.mul continuous_id)).mem_nhds (by simp)
   filter_upwards [hgn] with h hh
-  have he := hJ (g⁻¹ * h) hh
-  have hk := congrArg (actualFiniteAction R D q g) he
   have hk' : actualFiniteAction R D q h b = actualFiniteAction R D q g b := by
-    simpa only [← Module.End.mul_apply, ← map_mul, mul_inv_cancel_left] using hk
+    simpa using (congrArg (actualFiniteAction R D q g) (hJ (g⁻¹ * h) hh))
   exact hk'.trans hg
 
 end DedekindZetaZeroFree.FiniteWhittakerProjectors

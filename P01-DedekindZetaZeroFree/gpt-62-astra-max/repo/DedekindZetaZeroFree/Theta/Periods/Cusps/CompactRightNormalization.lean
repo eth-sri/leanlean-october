@@ -9,7 +9,7 @@ set_option backward.isDefEq.respectTransparency false
 open scoped Classical NumberField
 namespace DedekindZetaZeroFree.CurrentNativeBoundaryFrame
 open KPMsActualAngularSource KPMsNativeOffsetMass
-open _root_.DedekindZetaZeroFree.KPContFlatLogNormSmooth renaming compact_insertion → compact_insertion
+open _root_.DedekindZetaZeroFree.KPContFlatLogNormSmooth (compact_insertion)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
 theorem compact_mem (k : KPMsGreenFlux.K F) :

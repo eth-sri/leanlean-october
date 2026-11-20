@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -70,7 +66,6 @@ are equal. -/
 @[ext]
 theorem ext {e e' : LubinTateSeries F π}
     (h : e.toPowerSeries = e'.toPowerSeries) : e = e' := by
-  cases e
   cases e'
   cases h
   rfl

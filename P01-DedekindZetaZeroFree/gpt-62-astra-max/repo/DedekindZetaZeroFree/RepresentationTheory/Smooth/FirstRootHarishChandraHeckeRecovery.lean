@@ -12,7 +12,7 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical TensorProduct
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem first_root_hc_span_recovery (R : PrincipalMellin.ActualRecipe S η)
     (N : TraceHaarTransport R) (A : FirstRootSphericalSeed R N) (B : FirstRootCutoffs R)
@@ -31,14 +31,12 @@ theorem first_root_hc_span_recovery (R : PrincipalMellin.ActualRecipe S η)
       (∀ p : s.val, J.base.factorization.ell p (x p) ≠ 0) ∧
       (∀ p : s.val, x p ≠ 0) ∧
       fourier R J.base.sources.dq (RootDerivatives.tensorFunction R J.base.factorization s x) 1 ≠ 0) :
-    hcHeckeSpan J.base.realization ≤ hcHeckeSpan T ∧
-      (∀ v, T.theta v ≠ 0) ∧ Nontrivial (Functions R) := by
+    hcHeckeSpan J.base.realization ≤ hcHeckeSpan T := by
   have hn (v : R.A.UnitQuotient) : T.theta v ≠ 0 := by
     intro hz
     apply hperiod v
     rw [hz]
     simp [MomentSources.fourier]
-  refine ⟨?_, hn, inferInstance⟩
   apply RootDerivatives.frozen_hc_recovery_of_differential_stability R J.base.factorization T
     KPGlobalResidualConstruction.NativeComplexHCOperators.operators
   · intro v hv

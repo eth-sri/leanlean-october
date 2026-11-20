@@ -32,9 +32,8 @@ private theorem finiteBase_finiteRoot_principal (r : F) : KPCuspGenuineMonodromy
  intro i j
  apply Subtype.ext
  funext q
- have h := congrArg (fun M : KPLocalCover.LocalGL2 F (Sum.inr q) => M i j)
-   (KPRationalAdelicSplitting.projection_N F ζ hζ x (Sum.inr q))
- convert h using 1
+ convert (congrArg (fun M : KPLocalCover.LocalGL2 F (Sum.inr q) => M i j)
+   (KPRationalAdelicSplitting.projection_N F ζ hζ x (Sum.inr q))) using 1
  · rfl
  · fin_cases i <;> fin_cases j <;> rfl
 private theorem rationalUnipotent_fixes_infinity (r : F) : KPChamberBruhatTwoCells.rationalUnipotent F r • KPCuspArithmetic.infinity F = KPCuspArithmetic.infinity F := by
@@ -45,11 +44,11 @@ private theorem rationalUnipotent_fixes_infinity (r : F) : KPChamberBruhatTwoCel
  fin_cases i <;> simp [Matrix.mulVec, dotProduct, Fin.sum_univ_two]
 
 variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
 
 open KPContFlatCuspIncomingEvaluation
 
@@ -67,7 +66,7 @@ private theorem rational_parameter_mem_actual_parabolic (r:F)
  have hdiag (δ : KPCuspArithmetic.PGL2 F) :
      KPCuspGenuineMonodromy.finiteBase F ζ hζ (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ δ) =
        KPFiniteComponents.diagonal F δ :=
-   DFunLike.congr_fun (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2.2.1 δ
+   DFunLike.congr_fun (KPCuspGenuineMonodromy.finite_cover_exact F ζ hζ).2.2 δ
  have hc : finiteRepresentative F ζ hζ C R P H U a 1 =
    (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ σ)⁻¹ * g := by
    simp [finiteRepresentative, σ, g, map_inv]
@@ -119,11 +118,9 @@ theorem actual_cusp_finite_kernel_level :
     exact hroot₀ x (hle hx)
   · intro r hr
     obtain ⟨r₀, hr₀, he⟩ := hdivide r hr
-    have hL : r₀ ∈ (parabolic F ζ hζ C R P H U a).L :=
-      rational_parameter_mem_actual_parabolic F ζ hζ C R P H U a r₀
-        (hroot₀ _ hr₀)
     rw [← he]
-    exact triple_mem_kernelLattice _ _ _ ⟨r₀, hL⟩
+    exact triple_mem_kernelLattice _ _ _ ⟨r₀, (rational_parameter_mem_actual_parabolic F ζ hζ C R P H U a r₀
+      (hroot₀ _ hr₀))⟩
 
 end DedekindZetaZeroFree.KPContinuation.ChamberOutgoingSource
 

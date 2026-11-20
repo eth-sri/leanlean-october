@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -83,10 +81,12 @@ private theorem padicChangedUniformizerApproximation_succ
             (n + 2) (by omega)) :=
   rfl
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (u : (padicLocalField p).valuationSubringˣ)
+
 private theorem
     padicChangedUniformizerApproximation_coeff_succ_eq_of_lt
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
     (n q : ℕ) (hq : q < n + 2) :
     PowerSeries.coeff q
         (padicChangedUniformizerApproximation p u (n + 1)).series =
@@ -97,8 +97,6 @@ private theorem
   exact add_zero _
 
 private theorem padicChangedUniformizerApproximation_coeff_eq_of_le
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
     (q : ℕ) {a b : ℕ} (hab : a ≤ b)
     (hq : q < a + 2) :
     PowerSeries.coeff q
@@ -114,14 +112,11 @@ private theorem padicChangedUniformizerApproximation_coeff_eq_of_le
 
 private theorem
     padicChangedUniformizerApproximation_succ_defect_coeff
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
     (n : ℕ) :
     PowerSeries.coeff (n + 2)
         (padicChangedUniformizerDefect p u
           (padicChangedUniformizerApproximation p u (n + 1)).series) =
       0 := by
-  rw [padicChangedUniformizerApproximation_succ]
   exact
     padicChangedUniformizerCorrectionCoefficient_kills_defect
       p u
@@ -131,9 +126,7 @@ private theorem
 
 /-- The actual semilinear changed-uniformizer series over the completed
 unramified Witt ring. -/
-noncomputable def padicChangedUniformizerIntertwiner
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+noncomputable def padicChangedUniformizerIntertwiner :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
   PowerSeries.mk fun m =>
     PowerSeries.coeff m
@@ -141,8 +134,6 @@ noncomputable def padicChangedUniformizerIntertwiner
 
 @[simp]
 theorem padicChangedUniformizerIntertwiner_coeff
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
     (m : ℕ) :
     PowerSeries.coeff m
         (padicChangedUniformizerIntertwiner p u) =
@@ -150,70 +141,39 @@ theorem padicChangedUniformizerIntertwiner_coeff
         (padicChangedUniformizerApproximation p u m).series := by
   simp [padicChangedUniformizerIntertwiner]
 
-theorem padicChangedUniformizerIntertwiner_constantCoeff
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicChangedUniformizerIntertwiner_constantCoeff :
     PowerSeries.constantCoeff
         (padicChangedUniformizerIntertwiner p u) = 0 := by
-  rw [← PowerSeries.coeff_zero_eq_constantCoeff,
-    padicChangedUniformizerIntertwiner_coeff]
-  simpa only [PowerSeries.coeff_zero_eq_constantCoeff_apply] using
+  simp [← PowerSeries.coeff_zero_eq_constantCoeff]
+  simpa using
     (padicChangedUniformizerApproximation p u 0).constantCoeff_eq_zero
 
 @[simp]
-theorem padicChangedUniformizerIntertwiner_coeff_one
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicChangedUniformizerIntertwiner_coeff_one :
     PowerSeries.coeff 1
         (padicChangedUniformizerIntertwiner p u) =
       (padicChangedUniformizerLinearCoefficient p u :
         padicCompletedUnramifiedWittRing p) := by
-  rw [padicChangedUniformizerIntertwiner_coeff]
-  exact
-    (padicChangedUniformizerApproximation p u 1).coeff_one_eq
+  simp
+  grind [padicChangedUniformizerApproximation]
 
-theorem padicChangedUniformizerIntertwiner_hasSubst
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicChangedUniformizerIntertwiner_hasSubst :
     PowerSeries.HasSubst
       (padicChangedUniformizerIntertwiner p u) :=
   PowerSeries.HasSubst.of_constantCoeff_zero'
     (padicChangedUniformizerIntertwiner_constantCoeff p u)
 
-private theorem padicChangedUniformizerIntertwiner_coeff_eq_approximation
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
-    (q a : ℕ) (hq : q < a + 2) :
-    PowerSeries.coeff q
-        (padicChangedUniformizerIntertwiner p u) =
-      PowerSeries.coeff q
-        (padicChangedUniformizerApproximation p u a).series := by
-  rw [padicChangedUniformizerIntertwiner_coeff]
-  by_cases hqa : q ≤ a
-  · exact
-      (padicChangedUniformizerApproximation_coeff_eq_of_le
-        p u q (a := q) (b := a) hqa (by omega)).symm
-  · have haq : a + 1 = q := by omega
-    subst q
-    rw [padicChangedUniformizerApproximation_coeff_succ_eq_of_lt
-      p u a (a + 1) (by omega)]
+end
 
-private theorem padicChangedUniformizerDefect_coeff_zero
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+variable (p : ℕ) [Fact p.Prime] (u : (padicLocalField p).valuationSubringˣ)
+
+private theorem padicChangedUniformizerDefect_coeff_zero :
     PowerSeries.coeff 0
         (padicChangedUniformizerDefect p u
           (padicChangedUniformizerIntertwiner p u)) = 0 := by
   let H := padicChangedUniformizerIntertwiner p u
   have hH := padicChangedUniformizerIntertwiner_constantCoeff p u
-  have hM := padicCompletedMultiplicativeSeries_constantCoeff p
-  have hE := padicCompletedChangedStandardSeries_constantCoeff p u
-  have hΦ :
-      PowerSeries.constantCoeff
-          (PowerSeries.map WittVector.frobenius H) = 0 :=
-    padicChangedUniformizerFrobenius_constantCoeff_eq_zero p H hH
-  rw [PowerSeries.coeff_zero_eq_constantCoeff_apply,
-    padicChangedUniformizerDefect, map_sub]
+  simp [padicChangedUniformizerDefect]
   change
     MvPowerSeries.constantCoeff
         (PowerSeries.subst
@@ -222,27 +182,23 @@ private theorem padicChangedUniformizerDefect_coeff_zero
       MvPowerSeries.constantCoeff
         (PowerSeries.subst H
           (padicCompletedChangedStandardSeries p u)) = 0
-  rw [PowerSeries.constantCoeff_subst_eq_zero hM
-      (PowerSeries.map WittVector.frobenius H) hΦ,
+  rw [PowerSeries.constantCoeff_subst_eq_zero (padicCompletedMultiplicativeSeries_constantCoeff p)
+      (PowerSeries.map WittVector.frobenius H) (padicChangedUniformizerFrobenius_constantCoeff_eq_zero p H hH),
     PowerSeries.constantCoeff_subst_eq_zero hH
-      (padicCompletedChangedStandardSeries p u) hE,
+      (padicCompletedChangedStandardSeries p u) (padicCompletedChangedStandardSeries_constantCoeff p u),
     sub_zero]
 
-private theorem padicChangedUniformizerDefect_coeff_one
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+private theorem padicChangedUniformizerDefect_coeff_one :
     PowerSeries.coeff 1
         (padicChangedUniformizerDefect p u
           (padicChangedUniformizerIntertwiner p u)) = 0 := by
-  let ε : padicCompletedUnramifiedWittRing p :=
+  let ε :=
     (padicChangedUniformizerLinearCoefficient p u :
       padicCompletedUnramifiedWittRing p)
-  let V : (padicCompletedUnramifiedWittRing p)ˣ :=
+  let V :=
     padicValuationUnitToCompletedUnramifiedWittUnit p u
   let H := padicChangedUniformizerIntertwiner p u
   have hH := padicChangedUniformizerIntertwiner_constantCoeff p u
-  have hcoeff :=
-    padicChangedUniformizerIntertwiner_coeff_one p u
   have hlinear :=
     padicChangedUniformizerLinearCoefficient_frobenius p u
   have hcongr :
@@ -258,17 +214,15 @@ private theorem padicChangedUniformizerDefect_coeff_one
       simp
     · intro q hq
       interval_cases q
-      · rw [PowerSeries.coeff_zero_eq_constantCoeff_apply, hH,
-          PowerSeries.coeff_monomial]
-        simp
-      · simpa [H, ε] using hcoeff
-  let P : PowerSeries (padicCompletedUnramifiedWittRing p) :=
+      · simp [PowerSeries.coeff_zero_eq_constantCoeff_apply, hH, PowerSeries.coeff_monomial]
+      · simpa using (padicChangedUniformizerIntertwiner_coeff_one p u)
+  let P :=
     PowerSeries.monomial 1 ε
   have hPconstant : PowerSeries.constantCoeff P = 0 := by
     rw [← PowerSeries.coeff_zero_eq_constantCoeff,
       PowerSeries.coeff_monomial]
     simp
-  have hPsubst : PowerSeries.HasSubst P :=
+  have hPsubst :=
     PowerSeries.HasSubst.of_constantCoeff_zero' hPconstant
   have hΦP :
       PowerSeries.map WittVector.frobenius P =
@@ -289,7 +243,7 @@ private theorem padicChangedUniformizerDefect_coeff_one
       PowerSeries.coeff 1
           (PowerSeries.subst (padicCompletedMultiplicativeSeries p)
             (PowerSeries.map WittVector.frobenius P)) =
-        WittVector.frobenius ε * (p : padicCompletedUnramifiedWittRing p) := by
+        WittVector.frobenius ε * p := by
     rw [hΦP, padicChangedUniformizer_subst_monomial,
       PowerSeries.coeff_C_mul,
       padicCompletedMultiplicativeSeries_coeff_pow_self]
@@ -315,9 +269,8 @@ private theorem padicChangedUniformizerDefect_coeff_one
         PowerSeries.coeff 1 (P ^ p) =
       (V : padicCompletedUnramifiedWittRing p) * (p : padicCompletedUnramifiedWittRing p) * ε
     rw [PowerSeries.coeff_C_mul]
-    have hpOne : 1 ≠ p := (Fact.out : p.Prime).one_lt.ne
     have hpOneMul : 1 ≠ p * 1 := by
-      simpa only [mul_one] using hpOne
+      simpa using ((Fact.out : p.Prime).one_lt.ne)
     rw [show P = PowerSeries.monomial 1 ε from rfl,
       PowerSeries.coeff_monomial, ite_eq_left rfl,
       PowerSeries.monomial_pow, PowerSeries.coeff_monomial,
@@ -325,24 +278,18 @@ private theorem padicChangedUniformizerDefect_coeff_one
     ring
   rw [hcongr, padicChangedUniformizerDefect, map_sub,
     hright, hleft]
-  change WittVector.frobenius ε * (p : padicCompletedUnramifiedWittRing p) -
-      ((V : padicCompletedUnramifiedWittRing p) * (p : padicCompletedUnramifiedWittRing p)) * ε = 0
-  change WittVector.frobenius ε = ε * (V : padicCompletedUnramifiedWittRing p) at hlinear
+  change WittVector.frobenius ε = ε * V at hlinear
   rw [hlinear]
   ring
 
 private theorem padicChangedUniformizerDefect_coeff_succ_succ
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
     (n : ℕ) :
     PowerSeries.coeff (n + 2)
         (padicChangedUniformizerDefect p u
           (padicChangedUniformizerIntertwiner p u)) = 0 := by
-  let H := padicChangedUniformizerIntertwiner p u
   let A := padicChangedUniformizerApproximation p u (n + 1)
   calc
-    PowerSeries.coeff (n + 2)
-        (padicChangedUniformizerDefect p u H) =
+    _ =
         PowerSeries.coeff (n + 2)
           (padicChangedUniformizerDefect p u A.series) := by
       apply padicChangedUniformizerDefect_coeff_eq_of_coeff_eq_le
@@ -350,18 +297,21 @@ private theorem padicChangedUniformizerDefect_coeff_succ_succ
         (padicChangedUniformizerIntertwiner_constantCoeff p u)
         A.constantCoeff_eq_zero
       intro q hq
-      exact
-        padicChangedUniformizerIntertwiner_coeff_eq_approximation
-          p u q (n + 1) (by omega)
+      let a := (n + 1)
+      simp
+      by_cases hqa : q ≤ a
+      · grind [padicChangedUniformizerApproximation_coeff_eq_of_le]
+      · have haq : a + 1 = q := by omega
+        subst q
+        rw [padicChangedUniformizerApproximation_coeff_succ_eq_of_lt
+          p u a (a + 1) (by omega)]
     _ = 0 :=
       padicChangedUniformizerApproximation_succ_defect_coeff p u n
 
 /-- The completed changed standard series after the actual intertwiner is
 the Frobenius transform of the intertwiner after the multiplicative
 series. This is the first changed-uniformizer identity. -/
-theorem padicChangedUniformizerIntertwiner_functionalEquation
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicChangedUniformizerIntertwiner_functionalEquation :
     PowerSeries.subst
         (padicChangedUniformizerIntertwiner p u)
         (PowerSeries.map
@@ -386,7 +336,7 @@ theorem padicChangedUniformizerIntertwiner_functionalEquation
   rw [← sub_eq_zero]
   apply PowerSeries.ext
   intro m
-  rw [map_sub, map_zero]
+  simp
   have hrewrite :
       PowerSeries.coeff m
             (PowerSeries.subst
@@ -406,20 +356,17 @@ theorem padicChangedUniformizerIntertwiner_functionalEquation
   rw [hrewrite]
   cases m with
   | zero =>
-      rw [padicChangedUniformizerDefect_coeff_zero, neg_zero]
+      simp [padicChangedUniformizerDefect_coeff_zero]
   | succ m =>
       cases m with
       | zero =>
-          rw [padicChangedUniformizerDefect_coeff_one, neg_zero]
+          simp [padicChangedUniformizerDefect_coeff_one]
       | succ n =>
-          rw [show n + 1 + 1 = n + 2 by omega,
-            padicChangedUniformizerDefect_coeff_succ_succ, neg_zero]
+          simp [padicChangedUniformizerDefect_coeff_succ_succ]
 
 /-- A zero-constant-coefficient solution of the changed-uniformizer
 functional equation is determined by its linear coefficient. -/
 theorem padicChangedUniformizerIntertwiner_unique
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
     {H H' : PowerSeries (padicCompletedUnramifiedWittRing p)}
     (hHconstant : PowerSeries.constantCoeff H = 0)
     (hH'constant : PowerSeries.constantCoeff H' = 0)
@@ -449,9 +396,7 @@ theorem padicChangedUniformizerIntertwiner_unique
   induction m using Nat.strongRecOn with
   | ind m ih =>
       by_cases hm0 : m = 0
-      · subst m
-        simp only [PowerSeries.coeff_zero_eq_constantCoeff_apply,
-          hHconstant, hH'constant]
+      · simp_all
       by_cases hm1 : m = 1
       · subst m
         exact hlinear
@@ -476,7 +421,7 @@ theorem padicChangedUniformizerIntertwiner_unique
           change PowerSeries.coeff m H =
             PowerSeries.coeff m H' +
               PowerSeries.coeff m (PowerSeries.monomial m c)
-          rw [PowerSeries.coeff_monomial, ite_eq_left rfl]
+          simp
           dsimp only [c]
           ring
         · have hqLt : q < m := lt_of_le_of_ne hqm hq
@@ -499,7 +444,7 @@ theorem padicChangedUniformizerIntertwiner_unique
             exact
               padicChangedUniformizerDefect_coeff_eq_of_coeff_eq_le
                 p u hHconstant hAconstant m hcoeff
-          _ = 0 := by rw [hHdefect, map_zero]
+          _ = 0 := by simp [hHdefect]
       have hcHomogeneous :
           (p : padicCompletedUnramifiedWittRing p) ^ m *
                 WittVector.frobenius c -
@@ -611,7 +556,7 @@ theorem padicChangedUniformizerIntertwiner_unique
         simp
       have hcZero : c = 0 :=
         hunique.unique hcSolution hzeroSolution
-      exact sub_eq_zero.mp (by simpa only [c] using hcZero)
+      exact sub_eq_zero.mp (by assumption)
 
 end LubinTate
 

@@ -11,7 +11,11 @@ noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain
 
-private theorem prime_eq_lambda (F : Type) [Field F] [NumberField F]
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+private theorem prime_eq_lambda
     (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
     (v : HeightOneSpectrum (𝓞 F))
     (hc : v.asIdeal ⊔ RMKummerConductor.m F h12 x = ⊤)
@@ -40,36 +44,37 @@ private theorem prime_eq_lambda (F : Type) [Field F] [NumberField F]
     RMKummerPrincipalPrime.arithmeticFrobenius_eq_lambda_uniformizer
       F h12 x v hs w hQover π hπ]
 
-private theorem exists_uniformizer (F : Type) [Field F] [NumberField F]
+private theorem exists_uniformizer
     (v : HeightOneSpectrum (𝓞 F)) :
     ∃ π : (v.adicCompletion F)ˣ,
       HeightOneSpectrum.adicCompletion.valuation F v (π : v.adicCompletion F) =
         WithZero.exp (-1 : ℤ) := by
   obtain ⟨a, ha⟩ := HeightOneSpectrum.valuedAdicCompletion_surjective F v
     (WithZero.exp (-1 : ℤ))
-  have ha0 : a ≠ 0 := by
-    intro h
-    rw [h, map_zero] at ha
-    exact WithZero.exp_ne_zero ha.symm
-  exact ⟨Units.mk0 a ha0, ha⟩
+  refine ⟨Units.mk0 a ?_, ha⟩
+  intro h
+  rw [h, map_zero] at ha
+  exact WithZero.exp_ne_zero ha.symm
 
-theorem Xi_mul_sq (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x y : Fˣ)
+end
+
+variable (F : Type) [Field F] [NumberField F] (h12 : (primitiveRoots 12 F).Nonempty)
+
+theorem Xi_mul_sq (x y : Fˣ)
     (I : Ideal (𝓞 F)) :
     RMKummerConductor.Xi F h12 (x * y ^ 2) I =
       RMKummerConductor.Xi F h12 x I := by
   have hm := RMKummerSquareConductor.m_mul_sq F h12 x y
+  let Xi₀ := RMKummerConductor.Xi F h12 (x * y ^ 2)
   induction I using UniqueFactorizationMonoid.induction_on_prime with
   | h₁ =>
-      change RMKummerConductor.Xi F h12 (x * y ^ 2) ⊥ = RMKummerConductor.Xi F h12 x ⊥
-      rw [(RMKummerConductor.Xi F h12 (x * y ^ 2)).eq_zero_iff' _ |>.mpr (Or.inl rfl),
-        (RMKummerConductor.Xi F h12 x).eq_zero_iff' _ |>.mpr (Or.inl rfl)]
+      simp
   | h₂ J hJ =>
       rw [Ideal.isUnit_iff.mp hJ]
-      exact (RMKummerConductor.Xi F h12 (x * y ^ 2)).map_top'.trans
+      exact (Xi₀).map_top'.trans
         (RMKummerConductor.Xi F h12 x).map_top'.symm
   | h₃ J P hJ hP ih =>
-      rw [(RMKummerConductor.Xi F h12 (x * y ^ 2)).map_mul',
+      rw [(Xi₀).map_mul',
         (RMKummerConductor.Xi F h12 x).map_mul', ih]
       congr 1
       by_cases hc : P ⊔ RMKummerConductor.m F h12 x = ⊤
@@ -82,11 +87,10 @@ theorem Xi_mul_sq (F : Type) [Field F] [NumberField F]
           RMKummerLocalSquareLaws.lambda_mul_sq]
       · have hc' : P ⊔ RMKummerConductor.m F h12 (x * y ^ 2) ≠ ⊤ := by
           simpa only [hm] using hc
-        rw [(RMKummerConductor.Xi F h12 (x * y ^ 2)).eq_zero_iff' _ |>.mpr (Or.inr hc'),
+        rw [(Xi₀).eq_zero_iff' _ |>.mpr (Or.inr hc'),
           (RMKummerConductor.Xi F h12 x).eq_zero_iff' _ |>.mpr (Or.inr hc)]
 
-theorem Xi_cube (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
+theorem Xi_cube (x : Fˣ)
     (I : Ideal (𝓞 F)) :
     (RMKummerConductor.Xi F h12 x I) ^ 3 =
       RMKummerConductor.Xi F h12 x I := by
@@ -101,18 +105,13 @@ theorem Xi_cube (F : Type) [Field F] [NumberField F]
         (frozenIntegralRayClass F _ _ I h.1 h.2) : ℂ) ^ 2 = 1 :=
       congrArg (fun z : ℂˣ => (z : ℂ)) hs
     rw [show (3 : ℕ) = 2 + 1 from rfl, pow_succ, hs', one_mul]
-  · have hz : RMKummerConductor.Xi F h12 x I = 0 :=
-      (RMKummerConductor.Xi F h12 x).eq_zero_iff' I |>.mpr (by tauto)
-    simp [hz]
+  · simp [((RMKummerConductor.Xi F h12 x).eq_zero_iff' I |>.mpr (by tauto))]
 
-theorem Xi_one (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (I : Ideal (𝓞 F)) :
+theorem Xi_one (I : Ideal (𝓞 F)) :
     RMKummerConductor.Xi F h12 (1 : Fˣ) I =
       if I = ⊥ then (0 : ℂ) else 1 := by
-  have hm := RMKummerSquareConductor.m_one F h12
   by_cases hb : I = ⊥
-  · rw [if_pos hb]
-    exact (RMKummerConductor.Xi F h12 1).eq_zero_iff' I |>.mpr (Or.inl hb)
+  · simp_all
   · rw [if_neg hb]
     induction I using UniqueFactorizationMonoid.induction_on_prime with
     | h₁ => exact (hb rfl).elim
@@ -124,7 +123,7 @@ theorem Xi_one (F : Type) [Field F] [NumberField F]
         let v : HeightOneSpectrum (𝓞 F) := ⟨P, Ideal.isPrime_of_prime hP, hP.ne_zero⟩
         obtain ⟨π, hπ⟩ := exists_uniformizer F v
         have hc : v.asIdeal ⊔ RMKummerConductor.m F h12 1 = ⊤ := by
-          rw [hm, sup_top_eq]
+          rw [(RMKummerSquareConductor.m_one F h12), sup_top_eq]
         rw [prime_eq_lambda F h12 1 v hc π hπ,
           RMKummerLocalSquareLaws.lambda_one, Units.val_one]
 

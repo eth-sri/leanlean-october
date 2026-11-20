@@ -27,8 +27,6 @@ private lemma K_eq (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
 
 private lemma prefactor_le (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) (ε : ℝ) :
     ‖β‖ * Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2) ≤ 1 / (2 * ‖a‖) := by
-  have hbn : 0 < ‖β‖ := norm_pos_iff.mpr hβ
-  have han : 0 < ‖a‖ := norm_pos_iff.mpr ha
   have hr : 0 < ‖β * a‖ := by rw [norm_mul]; positivity
   have h2πr : 0 ≤ 2 * Real.pi * ‖β * a‖ := by positivity
   have hsq : (2 * Real.pi * ‖β * a‖) ^ 2 ≤ ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2 := by
@@ -42,21 +40,7 @@ private lemma prefactor_le (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) (ε : �
         div_le_div_of_nonneg_left hnum (by positivity) hs
     _ = 1 / (2 * ‖a‖) := by
         rw [norm_mul]
-        have hb0 : ‖β‖ ≠ 0 := ne_of_gt hbn
-        have hp0 : Real.pi ≠ 0 := Real.pi_ne_zero
-        have ha0 : ‖a‖ ≠ 0 := ne_of_gt han
         field_simp
-
-private lemma re_div_nonneg (s : ℝ) (hs : 0 ≤ s) (b : ℂ) (hb : 0 ≤ b.re) :
-    0 ≤ ((s : ℂ) / b).re := by
-  rw [div_eq_mul_inv, Complex.re_ofReal_mul, Complex.inv_re, ← mul_div_assoc]
-  exact div_nonneg (mul_nonneg hs hb) (Complex.normSq_nonneg b)
-
-private lemma re_div_nonpos (s : ℝ) (hs : s ≤ 0) (b : ℂ) (hb : 0 ≤ b.re) :
-    ((s : ℂ) / b).re ≤ 0 := by
-  rw [div_eq_mul_inv, Complex.re_ofReal_mul, Complex.inv_re, ← mul_div_assoc]
-  exact div_nonpos_of_nonpos_of_nonneg (mul_nonpos_of_nonpos_of_nonneg hs hb)
-    (Complex.normSq_nonneg b)
 
 private lemma EK_re_le_zero (β a u ξ : ℂ) (ε : ℝ) (hε : 0 < ε) :
     (EK β a u ξ ε).re ≤ 0 := by
@@ -73,7 +57,9 @@ private lemma EK_re_le_zero (β a u ξ : ℂ) (ε : ℝ) (hε : 0 < ε) :
       push_cast
       ring
     rw [hz]
-    exact re_div_nonpos _ (by nlinarith [Real.pi_pos, sq_nonneg (β * u * ξ).re]) _ hM
+    rw [div_eq_mul_inv, Complex.re_ofReal_mul, Complex.inv_re, ← mul_div_assoc]
+    exact div_nonpos_of_nonpos_of_nonneg (mul_nonpos_of_nonpos_of_nonneg (by nlinarith [Real.pi_pos, sq_nonneg (β * u * ξ).re]) hM)
+      (Complex.normSq_nonneg _)
   have h2 : 0 ≤ ((Real.pi : ℂ) ^ 2 * ((β * u * ξ).im : ℂ) ^ 2 /
       ((ε : ℂ) + 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ))).re := by
     have hz : (Real.pi : ℂ) ^ 2 * ((β * u * ξ).im : ℂ) ^ 2 =
@@ -81,7 +67,8 @@ private lemma EK_re_le_zero (β a u ξ : ℂ) (ε : ℝ) (hε : 0 < ε) :
       push_cast
       ring
     rw [hz]
-    exact re_div_nonneg _ (by positivity) _ hP
+    rw [div_eq_mul_inv, Complex.re_ofReal_mul, Complex.inv_re, ← mul_div_assoc]
+    exact div_nonneg (mul_nonneg (by positivity) hP) (Complex.normSq_nonneg _)
   simp only [EK, Complex.sub_re]
   linarith
 
@@ -90,26 +77,23 @@ theorem norm_K_le (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
     ‖K β ε a ξ‖ ≤ 1 / (2 * ‖a‖) := by
   obtain ⟨u, hu, hrot⟩ := exists_quadratic_unit β a hβ ha
   rw [K_eq β a u ξ hβ ha hu hrot ε hε, norm_mul, Complex.norm_exp]
-  have hPnn : 0 ≤ ‖β‖ * Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2) := by
+  let sqrt₀ := Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2)
+  have hPnn : 0 ≤ ‖β‖ * Real.pi / sqrt₀ := by
     positivity
   have hnorm : ‖PK β a ε‖ =
-      ‖β‖ * Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2) := by
-    show ‖((‖β‖ * Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2) : ℝ) : ℂ)‖ =
-        ‖β‖ * Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2)
+      ‖β‖ * Real.pi / sqrt₀ := by
+    show ‖((‖β‖ * Real.pi / sqrt₀ : ℝ) : ℂ)‖ =
+        ‖β‖ * Real.pi / sqrt₀
     exact (RCLike.norm_ofReal _).trans (abs_of_nonneg hPnn)
   rw [hnorm]
-  have hexp : Real.exp (EK β a u ξ ε).re ≤ 1 :=
-    Real.exp_le_one_iff.mpr (EK_re_le_zero β a u ξ ε hε)
-  calc ‖β‖ * Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2) *
-        Real.exp (EK β a u ξ ε).re
-      ≤ ‖β‖ * Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2) * 1 :=
-        mul_le_mul_of_nonneg_left hexp hPnn
-    _ = ‖β‖ * Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2) := mul_one _
+  calc _
+      ≤ ‖β‖ * Real.pi / sqrt₀ * 1 :=
+        mul_le_mul_of_nonneg_left (Real.exp_le_one_iff.mpr (EK_re_le_zero β a u ξ ε hε)) hPnn
+    _ = ‖β‖ * Real.pi / sqrt₀ := mul_one _
     _ ≤ 1 / (2 * ‖a‖) := prefactor_le β a hβ ha ε
 
 private lemma EK_continuous (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
     Continuous (EK β a u ξ) := by
-  have hr : 0 < ‖β * a‖ := norm_pos_iff.mpr (mul_ne_zero hβ ha)
   have hm (ε : ℝ) : ((ε : ℂ) - 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)) ≠ 0 := by
     intro h
     have hi := congrArg Complex.im h
@@ -127,9 +111,14 @@ private lemma EK_continuous (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
   unfold EK
   fun_prop
 
-private lemma PK_continuous (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
+section
+
+variable (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
+
+include hβ ha in
+private lemma PK_continuous :
     Continuous (PK β a) := by
-  have hr : 0 < ‖β * a‖ := norm_pos_iff.mpr (mul_ne_zero hβ ha)
+  have hr := norm_pos_iff.mpr (mul_ne_zero hβ ha)
   have hs (ε : ℝ) : Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2) ≠ 0 := by
     apply ne_of_gt
     apply Real.sqrt_pos.mpr
@@ -137,10 +126,9 @@ private lemma PK_continuous (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
   unfold PK
   fun_prop
 
-private lemma PK_zero (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
+include hβ ha in
+private lemma PK_zero :
     PK β a 0 = ((1 / (2 * ‖a‖) : ℝ) : ℂ) := by
-  have hb0 : ‖β‖ ≠ 0 := norm_ne_zero_iff.mpr hβ
-  have ha0 : ‖a‖ ≠ 0 := norm_ne_zero_iff.mpr ha
   have hs : 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2 = (2 * Real.pi * ‖β * a‖) ^ 2 := by ring
   simp only [PK, zero_pow (by decide : (2 : ℕ) ≠ 0), zero_add, hs,
     Real.sqrt_sq (by positivity : 0 ≤ 2 * Real.pi * ‖β * a‖)]
@@ -148,12 +136,11 @@ private lemma PK_zero (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
   rw [norm_mul]
   field_simp
 
+end
+
 private lemma EK_zero (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
     (hrot : β * a * u ^ 2 = (‖β * a‖ : ℂ)) :
     EK β a u ξ 0 = (((2 * Real.pi * (β * (-ξ ^ 2 / (4 * a))).re : ℝ) : ℂ) * Complex.I) := by
-  have hr : (‖β * a‖ : ℂ) ≠ 0 := by
-    exact_mod_cast (norm_ne_zero_iff.mpr (mul_ne_zero hβ ha))
-  have hp : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
   have hRe : (β * (-ξ ^ 2 / (4 * a))).re =
       -(((β * u * ξ).re ^ 2 - (β * u * ξ).im ^ 2) / ‖β * a‖) / 4 := by
     rw [frequency_square_difference β a u ξ hβ ha hrot]
@@ -169,7 +156,12 @@ private lemma EK_zero (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
   field_simp
   ring
 
-theorem tendsto_K (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) (ξ : ℂ) :
+section
+
+variable (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
+
+include hβ ha in
+theorem tendsto_K (ξ : ℂ) :
     Tendsto (fun ε : ℝ => K β ε a ξ)
       (nhdsWithin 0 (Set.Ioi 0))
       (nhds (((1 / (2 * ‖a‖) : ℝ) : ℂ) * psi β (-ξ ^ 2 / (4 * a)))) := by
@@ -184,15 +176,17 @@ theorem tendsto_K (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) (ξ : ℂ) :
   filter_upwards [self_mem_nhdsWithin] with ε hε
   exact (K_eq β a u ξ hβ ha hu hrot ε hε).symm
 
-theorem norm_schwartz_mul_K_le (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
+include hβ ha in
+theorem norm_schwartz_mul_K_le
     (ε : ℝ) (hε : 0 < ε) (f : SchwartzMap ℂ ℂ) (y z : ℂ) :
     ‖f z * K β ε a (y + z)‖ ≤ (1 / (2 * ‖a‖)) * ‖f z‖ := by
   rw [norm_mul, mul_comm (1 / (2 * ‖a‖))]
   exact mul_le_mul_of_nonneg_left (norm_K_le β a hβ ha ε hε (y + z)) (norm_nonneg _)
 
+end
+
 theorem integrable_schwartz_kernel_bound (β a : ℂ) (f : SchwartzMap ℂ ℂ) :
-    Integrable (fun z : ℂ => (1 / (2 * ‖a‖)) * ‖f z‖) (mu β) := by
-  exact (integrable_schwartz_mu β f).norm.const_mul _
+    Integrable (fun z : ℂ => (1 / (2 * ‖a‖)) * ‖f z‖) (mu β) := (integrable_schwartz_mu β f).norm.const_mul _
 
 theorem tendsto_integral_schwartz_mul_K (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
     (f : SchwartzMap ℂ ℂ) (y : ℂ) :

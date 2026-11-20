@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 namespace ClassFormation
@@ -31,9 +29,12 @@ variable {G : Type*} [Group G] [TopologicalSpace G]
 
 namespace FiniteIntermediateField
 
+section
+
+variable {E K : ClosedSubgroup G} (M N : FiniteIntermediateField E K)
+
 /-- The compositum of two finite intermediate fields of `E / K`. -/
-def compositum {E K : ClosedSubgroup G}
-    (M N : FiniteIntermediateField E K) :
+def compositum :
     FiniteIntermediateField E K where
   field := M.field ⊓ N.field
   above := fun x hx => ⟨M.above hx, N.above hx⟩
@@ -45,16 +46,16 @@ def compositum {E K : ClosedSubgroup G}
     exact M.compositumWith_finite_over_base N.field N.below
 
 /-- Proves the bound `(M.compositum N).field.toSubgroup ≤ M.field.toSubgroup`. -/
-theorem compositum_le_left {E K : ClosedSubgroup G}
-    (M N : FiniteIntermediateField E K) :
+theorem compositum_le_left :
     (M.compositum N).field.toSubgroup ≤ M.field.toSubgroup :=
   inf_le_left
 
 /-- Proves the bound `(M.compositum N).field.toSubgroup ≤ N.field.toSubgroup`. -/
-theorem compositum_le_right {E K : ClosedSubgroup G}
-    (M N : FiniteIntermediateField E K) :
+theorem compositum_le_right :
     (M.compositum N).field.toSubgroup ≤ N.field.toSubgroup :=
   inf_le_right
+
+end
 
 /-- A finite intermediate field over a finite abstract base field is itself
 finite over the global base field. -/
@@ -64,10 +65,8 @@ theorem absoluteFinite {E K : ClosedSubgroup G}
     (M : FiniteIntermediateField E K) :
     Finite ((baseField G).toSubgroup ⧸
       extensionSubgroup (baseField G) M.field (le_baseField M.field)) := by
-  let : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K M.field M.below) := M.finite
-  exact relativeTowerQuotientFinite (baseField G) K M.field M.below
-    (le_baseField K)
+  let := M.finite
+  grind [relativeTowerQuotientFinite]
 
 end FiniteIntermediateField
 

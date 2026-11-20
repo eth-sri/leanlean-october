@@ -30,8 +30,6 @@ private theorem eigenvalue_injective : Function.Injective eigenvalue := by
   intro m n he
   have hr := congrArg Complex.re he
   norm_num [eigenvalue, Complex.mul_re, Complex.mul_im] at hr
-  have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-  have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
   have heq : (m : ℝ) = n := by nlinarith
   exact_mod_cast heq
 
@@ -105,10 +103,14 @@ section FixedWords
 
 variable {A : Type*} [Ring A] [Algebra ℂ A]
 
-def compactWord (D : Fin 3 → A) (u : List (Fin 3)) : A :=
+section
+
+variable (D : Fin 3 → A)
+
+def compactWord (u : List (Fin 3)) : A :=
   u.foldr (fun j T => D j * T) 1
 
-private theorem compactWord_append (D : Fin 3 → A)
+private theorem compactWord_append
     (u v : List (Fin 3)) : compactWord D (u ++ v) = compactWord D u * compactWord D v := by
   induction u with
   | nil => simp [compactWord]
@@ -116,13 +118,13 @@ private theorem compactWord_append (D : Fin 3 → A)
       simp only [compactWord, List.cons_append, List.foldr_cons] at *
       rw [ih, mul_assoc]
 
- def wordSpan (D : Fin 3 → A) : Submodule ℂ (A) :=
+ def wordSpan : Submodule ℂ (A) :=
   Submodule.span ℂ (Set.range (compactWord D))
 
-private theorem wordSpan_word (D : Fin 3 → A) (u : List (Fin 3)) :
+private theorem wordSpan_word (u : List (Fin 3)) :
     compactWord D u ∈ wordSpan D := Submodule.subset_span ⟨u, rfl⟩
 
-private theorem wordSpan_mul (D : Fin 3 → A)
+private theorem wordSpan_mul
     {x y : A} (hx : x ∈ wordSpan D) (hy : y ∈ wordSpan D) :
     x * y ∈ wordSpan D := by
   induction hx using Submodule.span_induction with
@@ -148,12 +150,7 @@ private theorem wordSpan_mul (D : Fin 3 → A)
       rw [smul_mul_assoc]
       exact (wordSpan D).smul_mem c ih
 
-private theorem casimir_mem_wordSpan (D : Fin 3 → A) :
-    -(∑ j : Fin 3, D j * D j) ∈ wordSpan D := by
-  apply (wordSpan D).neg_mem
-  apply (wordSpan D).sum_mem
-  intro j hj
-  simpa [compactWord] using wordSpan_word D [j, j]
+end
 
 theorem polynomial_compact_words (D : Fin 3 → A) (p : Polynomial ℂ) :
     ∃ (n : ℕ) (u : Fin n → List (Fin 3)) (c : Fin n → ℂ),
@@ -161,11 +158,14 @@ theorem polynomial_compact_words (D : Fin 3 → A) (p : Polynomial ℂ) :
         ∑ j, c j • compactWord D (u j) := by
   classical
   let C := -(∑ j : Fin 3, D j * D j)
-  have hC : C ∈ wordSpan D := casimir_mem_wordSpan D
   have hpow (a : ℕ) : C ^ a ∈ wordSpan D := by
     induction a with
     | zero => simpa [compactWord] using wordSpan_word D []
-    | succ a ih => rw [pow_succ]; exact wordSpan_mul D ih hC
+    | succ a ih => rw [pow_succ]; exact wordSpan_mul D ih (by
+      apply (wordSpan D).neg_mem
+      apply (wordSpan D).sum_mem
+      intro j hj
+      simpa [compactWord] using wordSpan_word D [j, j])
   have hp : Polynomial.aeval C p ∈ wordSpan D := by
     induction p using Polynomial.induction_on' with
     | add p q hp hq =>
@@ -225,17 +225,18 @@ set_option backward.isDefEq.respectTransparency false
 private theorem entire_eq_of_real {f h : ℂ → ℂ}
     (hf : AnalyticOnNhd ℂ f Set.univ) (hh : AnalyticOnNhd ℂ h Set.univ)
     (he : ∀ t : ℝ, f t = h t) : f = h := by
-  have hc : (0 : ℂ) ∈ closure ({z | f z = h z} \ {0}) := by
-    apply mem_closure_of_tendsto
-      (Complex.continuous_ofReal.tendsto 0 |>.comp
-        (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)))
-    apply Filter.Eventually.of_forall
-    intro n
-    refine ⟨he _, ?_⟩
-    simp only [Set.mem_singleton_iff, Function.comp_apply, Complex.ofReal_eq_zero]
-    positivity
-  exact funext (fun z => hf.eqOn_of_preconnected_of_mem_closure hh
-    isPreconnected_univ (Set.mem_univ 0) hc (Set.mem_univ z))
+  refine funext (fun z => hf.eqOn_of_preconnected_of_mem_closure hh
+    isPreconnected_univ (Set.mem_univ 0) ?_ (Set.mem_univ z))
+  apply mem_closure_of_tendsto
+    (Complex.continuous_ofReal.tendsto 0 |>.comp
+      (tendsto_one_div_add_atTop_nhds_zero_nat))
+  apply Filter.Eventually.of_forall
+  intro n
+  refine ⟨he _, ?_⟩
+  simp only [Set.mem_singleton_iff, Function.comp_apply, Complex.ofReal_eq_zero]
+  positivity
+
+alias CompactProjectorWords.entire_eq_of_real := entire_eq_of_real
 
 private theorem ratio_pos (g : ComplexGL2) : 0 < sphericalRatio g := by
   have hm := bottomRowMass_eq (g : Mat)
@@ -252,6 +253,8 @@ private theorem ratio_pos (g : ComplexGL2) : 0 < sphericalRatio g := by
     exact Matrix.GeneralLinearGroup.det_ne_zero g (by rw [Matrix.det_fin_two, h10, h11]; ring)
   exact div_pos (norm_pos_iff.mpr (Units.ne_zero _)) hb
 
+alias CompactProjectorWords.ratio_pos := ratio_pos
+
 private theorem spherical_real (t : ℝ) (g : ComplexGL2) :
     complexSpherical t g = sphericalSection (positiveParameter + t) g := by
   change Complex.exp (_ * (Real.log (sphericalRatio g) : ℂ)) =
@@ -261,12 +264,14 @@ private theorem spherical_real (t : ℝ) (g : ComplexGL2) :
   push_cast
   ring
 
+alias CompactProjectorWords.spherical_real := spherical_real
+
 private theorem word_real (w : RealLieWord) (t : ℝ) (g : ComplexGL2) :
     complexSphericalWord w t g =
       rightWord (positiveParameter + t) w (sphericalSection (positiveParameter + t)) g := by
   have hw (f : PrincipalSeries (positiveParameter + t)) :
       (rightWord (positiveParameter + t) w f : ComplexGL2 → ℂ) =
-        w.foldr (fun X h => rightLieFunction X h) (f : ComplexGL2 → ℂ) := by
+        w.foldr (fun X h => rightLieFunction X h) f := by
     induction w with
     | nil => rfl
     | cons X w ih =>
@@ -276,6 +281,8 @@ private theorem word_real (w : RealLieWord) (t : ℝ) (g : ComplexGL2) :
   rw [show complexSpherical (t : ℂ) =
     (sphericalSection (positiveParameter + t) : ComplexGL2 → ℂ) from funext (spherical_real t)]
   exact congrFun (hw _).symm g
+
+alias CompactProjectorWords.word_real := word_real
 
 private theorem word_factor (w : RealLieWord) (s : ℂ) (g : ComplexGL2)
     (a d : ℂˣ) (b : ℂ) (k : ComplexSU2)
@@ -288,13 +295,14 @@ private theorem word_factor (w : RealLieWord) (s : ℂ) (g : ComplexGL2)
     rw [word_real, word_real, hg,
       (rightWord (positiveParameter + t) w (sphericalSection (positiveParameter + t))).property.1]
     rw [spherical_real, (sphericalSection (positiveParameter + t)).property.1]
-    have hs := RepresentationTheory.KPContHolomorphicKGenerationProve.RaisingCalculation.spherical_compact
-      (positiveParameter + t) k
-    rw [hs, mul_one]
-  have hs : AnalyticOnNhd ℂ (fun z => complexSpherical z g) Set.univ :=
+    rw [(RepresentationTheory.KPContHolomorphicKGenerationProve.RaisingCalculation.spherical_compact
+      (positiveParameter + t) k), mul_one]
+  have hs :=
     complexSphericalWord_holomorphic [] g
   exact congrFun (entire_eq_of_real (complexSphericalWord_holomorphic w g)
     (hs.mul (complexSphericalWord_holomorphic w (complexSU2Embedding k))) hr) s
+
+alias CompactProjectorWords.word_factor := word_factor
 
 private theorem band_polynomial (N : ℕ) (f : PrincipalSeries positiveParameter)
     (hf : f ∈ (Finset.range (N + 1)).sup (harmonicKType positiveParameter)) :
@@ -310,7 +318,6 @@ private theorem band_polynomial (N : ℕ) (f : PrincipalSeries positiveParameter
         p ∈ I.sup KPCplxHarmonicIntertwinerSpectrum.harmonicPolynomials ∧
         compactRestriction positiveParameter f = polynomialCompactRestriction p)
     · intro f hf
-      have he : f = 0 := by simpa using hf
       subst f
       exact ⟨0, Submodule.zero_mem _, by simp⟩
     · intro S hS T hT f hf
@@ -336,8 +343,7 @@ private theorem interpolation_mem_band (μ : Measure ComplexSU2) [μ.IsHaarMeasu
         ((Polynomial.aeval CompactInterpolation.pauliCasimir (CompactInterpolation.projectorPolynomial N ℓ)) p) k := by
   have hi (q : HarmonicVendor.Polynomial) : Integrable (fun t =>
       star (KPCplxHarmonicExtraction.su2HarmonicCharacter ℓ t) *
-      KPCplxHarmonicIntertwinerSpectrum.polynomialCompactRestriction q (k * t)) μ := by
-    exact KPCplxHarmonicExtraction.CompactPolynomial.polynomial_character_integrand_integrable
+      KPCplxHarmonicIntertwinerSpectrum.polynomialCompactRestriction q (k * t)) μ := KPCplxHarmonicExtraction.CompactPolynomial.polynomial_character_integrand_integrable
       μ inferInstance ℓ q k |>.congr (Filter.Eventually.of_forall (fun t => rfl))
   have hall : ∀ p ∈ (Finset.range (N + 1)).sup KPCplxHarmonicIntertwinerSpectrum.harmonicPolynomials,
       (2 * ℓ + 1 : ℂ) * (∫ t, star (KPCplxHarmonicExtraction.su2HarmonicCharacter ℓ t) *
@@ -350,7 +356,6 @@ private theorem interpolation_mem_band (μ : Measure ComplexSU2) [μ.IsHaarMeasu
       KPCplxHarmonicIntertwinerSpectrum.polynomialCompactRestriction
         ((Polynomial.aeval CompactInterpolation.pauliCasimir (CompactInterpolation.projectorPolynomial N ℓ)) p) k)
     · intro p hp
-      have he : p = 0 := by simpa using hp
       subst p
       simp
     · intro S hS T hT p hp
@@ -359,7 +364,7 @@ private theorem interpolation_mem_band (μ : Measure ComplexSU2) [μ.IsHaarMeasu
       rw [integral_add (hi x) (hi y), mul_add, hS x hx, hT y hy]
     · intro m hm p hp
       exact CompactInterpolation.character_eq_interpolation_harmonic μ N ℓ m
-        (by simpa only [Finset.mem_range] using Nat.le_of_lt_succ (Finset.mem_range.mp hm)) p hp k
+        (by simpa using Nat.le_of_lt_succ (Finset.mem_range.mp hm)) p hp k
   exact hall p hp
 
 private theorem compact_derivative_polynomial (r : ℝ) (j : Fin 3)
@@ -418,17 +423,13 @@ private theorem compact_prefix_profile
             (∑ j, (a j).eval (t : ℂ) • p j)) k := by
     intro t
     let f := rightWord (positiveParameter + t) w (sphericalSection (positiveParameter + t))
-    have hpf : KPCplxHarmonicIntertwinerSpectrum.compactRestriction (positiveParameter + t) f =
-        KPCplxHarmonicIntertwinerSpectrum.polynomialCompactRestriction (∑ j, (a j).eval (t : ℂ) • p j) := by
-      funext l
-      exact (word_real w t (complexSU2Embedding l)).symm.trans (he t l)
-    have ht := compact_word_polynomial (positiveParameter + t) u f _ hpf
     have hw : rightWord (positiveParameter + t) (u.map HarmonicVendor.compactMatrix ++ w)
         (sphericalSection (positiveParameter + t)) =
-        rightWord (positiveParameter + t) (u.map HarmonicVendor.compactMatrix) f := by
-      exact List.foldr_append
+        rightWord (positiveParameter + t) (u.map HarmonicVendor.compactMatrix) f := List.foldr_append
     rw [word_real, hw]
-    exact congrFun ht k
+    exact congrFun (compact_word_polynomial (positiveParameter + t) u f _ (by
+      funext l
+      exact (word_real w t (complexSU2Embedding l)).symm.trans (he t l))) k
   have hR : AnalyticOnNhd ℂ (fun z =>
       KPCplxHarmonicIntertwinerSpectrum.polynomialCompactRestriction
         ((CompactInterpolation.compactWord CompactInterpolation.compactGeneratorEnd u)
@@ -446,8 +447,7 @@ private theorem band_profile (w : RealLieWord) :
         KPCplxHarmonicIntertwinerSpectrum.polynomialCompactRestriction (∑ j, (a j).eval s • p j) k := by
   classical
   obtain ⟨N, n, h, a, hh, he⟩ := sphericalWord_polynomial_harmonic_band w
-  have hp := fun j => band_polynomial N (h j) (hh j)
-  choose p hband hrestrict using hp
+  choose p hband hrestrict using (fun j => band_polynomial N (h j) (hh j))
   refine ⟨N, n, p, a, hband, fun s k => ?_⟩
   rw [he]
   simp only [map_sum, map_smul, Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
@@ -482,8 +482,6 @@ theorem sphericalWord_character_projector_words
     RepresentationTheory.KPSmoothCoreCasimirEnergy.NoncompactAction.PolynomialDerivatives.noncompactNormalizedSU2_factor g
   let k₀ := RepresentationTheory.KPSmoothCoreCasimirEnergy.NoncompactAction.PolynomialDerivatives.noncompactNormalizedSU2 g
   let q := ∑ j, (a j).eval s • p j
-  have hq : q ∈ (Finset.range (N + 1)).sup KPCplxHarmonicIntertwinerSpectrum.harmonicPolynomials :=
-    Submodule.sum_mem _ (fun j hj => Submodule.smul_mem _ _ (hp j))
   have hright (k : KPCplxCharacterHaar.ComplexSU2) :
       KPContHolomorphicKGeneration.complexSphericalWord w s
         (g * KPCplxCharacterHaar.complexSU2Embedding k) =
@@ -514,7 +512,7 @@ theorem sphericalWord_character_projector_words
     simp_rw [mul_left_comm (star _) (KPContHolomorphicKGeneration.complexSpherical s g)]
     exact integral_const_mul _ _
   rw [hi, mul_left_comm (2 * ℓ + 1 : ℂ),
-    CompactOrbitProof.interpolation_mem_band μ N ℓ q hq k₀]
+    CompactOrbitProof.interpolation_mem_band μ N ℓ q (Submodule.sum_mem _ (fun j hj => Submodule.smul_mem _ _ (hp j))) k₀]
   have hh := hu CompactInterpolation.compactGeneratorEnd
   change (Polynomial.aeval CompactInterpolation.pauliCasimir
     (CompactInterpolation.projectorPolynomial N ℓ)) = _ at hh

@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -106,11 +104,6 @@ theorem frobeniusPowerSum_alternating_mem_infiniteUnitAddSubgroup
       (D.maximalUnramifiedField_le_of_le hLK) := by
   dsimp only
   let KR := K.toFiniteResidueAbstractField D
-  let hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
-  let hLfiniteKR : Finite
-      (KR.field.toSubgroup ⧸ extensionSubgroup KR.field L hLK) := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLfinite
   let σ₃ := σ₁ * σ₂
   let σ₄ := D.frobeniusActionConjugate KR L hLK φ σ₂
     (D.frobeniusExponent KR L hLK σ₁)
@@ -131,15 +124,11 @@ theorem frobeniusPowerSum_alternating_mem_infiniteUnitAddSubgroup
   let n₄ := D.frobeniusExponent KR L hLK σ₄
   let U := v.infiniteUnitAddSubgroup (D.maximalUnramifiedField L) K
     (D.maximalUnramifiedField_le_of_le hLK)
-  have h₄₃ : p₄ - p₃ ∈ U := by
-    exact D.frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup
+  have h₄₃ := D.frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup
       A v K L hLK σ₄ σ₃ π₄ π₃ hπ₄ hπ₃
-  have h₁₃ : p₁ - p₃ ∈ U := by
-    exact D.frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup
+  have h₁₃ := D.frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup
       A v K L hLK σ₁ σ₃ π₁ π₃ hπ₁ hπ₃
-  have h₃action : p₃ - D.frobeniusQuotientAction A KR.field L hLK
-      (φ.1 ^ n₄) p₃ ∈ U := by
-    exact D.frobeniusPrime_actionDifference_mem_infiniteUnitAddSubgroup
+  have h₃action := D.frobeniusPrime_actionDifference_mem_infiniteUnitAddSubgroup
       A v K L hLK σ₃ π₃ hπ₃ (φ.1 ^ n₄)
   have h₁shift : p₁ - D.frobeniusQuotientAction A KR.field L hLK
       (φ.1 ^ n₄) p₃ ∈ U := by
@@ -165,20 +154,13 @@ theorem frobeniusPowerSum_alternating_mem_infiniteUnitAddSubgroup
       D.frobeniusPowerSum_sub_universalNormDescent, hn₃,
       D.frobeniusPowerSum_add]
     abel
-  have hsum₄₃ : D.frobeniusPowerSum A KR.field L hLK φ.1 n₄
-      (p₄ - p₃) ∈ U :=
-    v.frobeniusPowerSum_mem_infiniteUnit_universalNormDescent
-      K L hLK φ.1 n₄ (p₄ - p₃) h₄₃
-  have hsum₁ : D.frobeniusPowerSum A KR.field L hLK φ.1 n₁
-      (p₁ - D.frobeniusQuotientAction A KR.field L hLK
-        (φ.1 ^ n₄) p₃) ∈ U :=
-    v.frobeniusPowerSum_mem_infiniteUnit_universalNormDescent
-      K L hLK φ.1 n₁ _ h₁shift
   rw [show D.frobeniusPowerSum A KR.field L hLK φ.1 n₄ p₄ +
       D.frobeniusPowerSum A KR.field L hLK φ.1 n₁ p₁ -
       D.frobeniusPowerSum A KR.field L hLK φ.1 n₃ p₃ = u from rfl,
     huEq]
-  exact U.add_mem hsum₄₃ hsum₁
+  exact U.add_mem (v.frobeniusPowerSum_mem_infiniteUnit_universalNormDescent
+    K L hLK φ.1 n₄ (p₄ - p₃) h₄₃) (v.frobeniusPowerSum_mem_infiniteUnit_universalNormDescent
+    K L hLK φ.1 n₁ _ h₁shift)
 
 /-- Each of the three correction coefficients in the group-ring
 identity is a finite-stage unit.  In the left-action translation the
@@ -251,11 +233,6 @@ theorem frobeniusCorrectionTerms_mem_infiniteUnitAddSubgroup
       (D.maximalUnramifiedField_le_of_le hLK) := by
   dsimp only
   let KR := K.toFiniteResidueAbstractField D
-  let hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
-  let hLfiniteKR : Finite
-      (KR.field.toSubgroup ⧸ extensionSubgroup KR.field L hLK) := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLfinite
   let σ₃ := σ₁ * σ₂
   let σ₄ := D.frobeniusActionConjugate KR L hLK φ σ₂
     (D.frobeniusExponent KR L hLK σ₁)
@@ -272,22 +249,11 @@ theorem frobeniusCorrectionTerms_mem_infiniteUnitAddSubgroup
     (D.maximalUnramifiedField L)
     (D.fieldInertia_le_frobeniusFixedField KR L hLK σ₄) π₄
   let τ₁ := D.frobeniusActionRemainder KR L hLK φ σ₁
-  have h₄₃ := D.frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup
-    A v K L hLK σ₄ σ₃ π₄ π₃ hπ₄ hπ₃
-  have h₁₃ := D.frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup
-    A v K L hLK σ₁ σ₃ π₁ π₃ hπ₁ hπ₃
-  have h₃action :=
-    D.frobeniusPrime_actionDifference_mem_infiniteUnitAddSubgroup
-      A v K L hLK σ₃ π₃ hπ₃ τ₁
   intro i
   fin_cases i
-  · change p₄ - p₃ ∈ _
-    exact h₄₃
-  · change p₁ - p₃ ∈ _
-    exact h₁₃
-  · change p₃ - D.frobeniusQuotientAction A KR.field L hLK τ₁ p₃ ∈ _
-    exact h₃action
-
+  · exact ((by apply D.frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup <;> assumption))
+  · exact ((by apply D.frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup <;> assumption))
+  · exact ((by apply D.frobeniusPrime_actionDifference_mem_infiniteUnitAddSubgroup <;> assumption))
 
 end DegreeData
 

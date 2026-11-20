@@ -13,17 +13,12 @@ namespace DedekindZetaZeroFree.EisensteinReferenceSections.SourceContinuity
 open KPAdelicCoverRestrictedProduct KPGlobalTorusFiniteStages
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 
  theorem principal_continuous (s : ℝ) (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) :
     Continuous (fun g : KPCplxCharacterHaar.ComplexGL2 => f g) := by
-  have hf := ((KPCplxPrincipalSeriesCharts.principalSeries_mem_iff s f).mp f.property).2.continuousOn
-  have hm : Continuous (fun g : KPCplxCharacterHaar.ComplexGL2 =>
-      (g : Matrix (Fin 2) (Fin 2) ℂ)) := Units.continuous_val
-  have hd : ∀ g : KPCplxCharacterHaar.ComplexGL2, (g : Matrix (Fin 2) (Fin 2) ℂ).det ≠ 0 := by
-    intro g
-    exact Matrix.GeneralLinearGroup.det_ne_zero g
-  have hc := hf.comp_continuous hm hd
+  have hd : ∀ g : KPCplxCharacterHaar.ComplexGL2, (g : Matrix (Fin 2) (Fin 2) ℂ).det ≠ 0 := fun g => Matrix.GeneralLinearGroup.det_ne_zero g
+  have hc := (((KPCplxPrincipalSeriesCharts.principalSeries_mem_iff s f).mp f.property).2.continuousOn).comp_continuous Units.continuous_val hd
   convert hc using 1
   funext g
   dsimp only [Function.comp_def, KPCplxPrincipalSeriesCharts.matrixFunction]
@@ -35,21 +30,19 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
   letI : DiscreteTopology (rootsOfUnity 3 F) := ⟨rfl⟩
   have hc : Continuous (KPLocalChartTopology.complexCoordinates F ζ hζ w) := continuous_induced_dom
   have hm : Continuous (LocalCovariance.complexMatrix F ζ hζ w) := by
-    have hg : Continuous (fun g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w) => g.g) :=
+    have hg :=
       continuous_fst.comp hc
     have he := (InfinitePlace.Completion.isometryEquivComplexOfIsComplex
       (KPHilbert.infinite_isComplex F ζ hζ w)).continuous
     apply Units.continuous_iff.mpr
     constructor
-    · have hv : Continuous (fun g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w) =>
-          (g.g : Matrix (Fin 2) (Fin 2) w.Completion)) := Units.continuous_val.comp hg
+    · have hv := Units.continuous_val.comp hg
       apply continuous_pi
       intro i
       apply continuous_pi
       intro j
       exact he.comp ((continuous_apply j).comp ((continuous_apply i).comp hv))
-    · have hv : Continuous (fun g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w) =>
-          g.g.inv) := Units.continuous_coe_inv.comp hg
+    · have hv := Units.continuous_coe_inv.comp hg
       apply continuous_pi
       intro i
       apply continuous_pi

@@ -9,15 +9,19 @@ namespace DedekindZetaZeroFree.CuspidalFiniteCosetForm
 variable {G V : Type*} [Group G] [TopologicalSpace G]
     [AddCommGroup V] [Module ℂ V]
 
-theorem finite_support_descended_noT2 [IsTopologicalGroup G]
-    (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
-    (U : CompactOpenLevel G) (hU : FixesFunctional ρ U ℓ)
+section
+
+variable [IsTopologicalGroup G] (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V) (U : CompactOpenLevel G)
+    (hU : FixesFunctional ρ U ℓ)
+
+include hU in
+theorem finite_support_descended_noT2
     (v : V) (hc : HasCompactSupport (coefficient ρ ℓ v)) :
     (Function.support (descendedCoefficient ρ ℓ U v)).Finite := by
   have hlc : IsLocallyConstant (cosetMk U) := by
     apply (IsLocallyConstant.iff_exists_open _).2
     intro g
-    refine ⟨(fun u : G => u * g) '' (U.toOpenSubgroup : Set G),
+    refine ⟨(fun u : G => u * g) '' U.toOpenSubgroup,
       isOpenMap_mul_right g _ U.toOpenSubgroup.isOpen, ⟨1, U.toOpenSubgroup.one_mem, by simp⟩, ?_⟩
     rintro x ⟨u, hu, rfl⟩
     exact Quotient.sound ⟨⟨u, hu⟩, rfl⟩
@@ -30,9 +34,8 @@ theorem finite_support_descended_noT2 [IsTopologicalGroup G]
   apply subset_closure
   exact hq
 
-private theorem pair_finite_noT2 [IsTopologicalGroup G]
-    (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
-    (U : CompactOpenLevel G) (hU : FixesFunctional ρ U ℓ)
+include hU in
+private theorem pair_finite_noT2
     (hc : ∀ v : V, HasCompactSupport (coefficient ρ ℓ v)) (v w : V) :
     (Function.support (fun q => descendedCoefficient ρ ℓ U v q *
       star (descendedCoefficient ρ ℓ U w q))).Finite := by
@@ -40,31 +43,19 @@ private theorem pair_finite_noT2 [IsTopologicalGroup G]
   intro q hq
   exact fun hz => hq (by simp [hz])
 
-private theorem form_add_left_noT2 [IsTopologicalGroup G]
-    (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
-    (U : CompactOpenLevel G) (hU : FixesFunctional ρ U ℓ)
+include hU in
+private theorem form_add_left_noT2
     (hc : ∀ v : V, HasCompactSupport (coefficient ρ ℓ v)) (v₁ v₂ w : V) :
     form ρ ℓ U (v₁ + v₂) w = form ρ ℓ U v₁ w + form ρ ℓ U v₂ w := by
   unfold form
   simp only [descendedCoefficient, coefficient, map_add, add_mul]
   exact finsum_add_distrib (pair_finite_noT2 ρ ℓ U hU hc v₁ w) (pair_finite_noT2 ρ ℓ U hU hc v₂ w)
 
-private theorem form_smul_left_noT2 (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
-    (U : CompactOpenLevel G) (a : ℂ) (v w : V) :
-    form ρ ℓ U (a • v) w = a * form ρ ℓ U v w := by
-  unfold form
-  simp only [descendedCoefficient, coefficient, map_smul, smul_eq_mul, mul_assoc]
-  exact (mul_finsum _ _).symm
+end
 
-private theorem form_hermitian_noT2 (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
-    (U : CompactOpenLevel G) (v w : V) :
-    form ρ ℓ U v w = star (form ρ ℓ U w v) := by
-  unfold form
-  change _ = (starAddEquiv : ℂ ≃+ ℂ) _
-  rw [AddEquiv.map_finsum]
-  apply finsum_congr
-  intro q
-  simp [mul_comm]
+private alias form_smul_left_noT2 := CuspidalUnitarization.form_smul_left
+
+private alias form_hermitian_noT2 := CuspidalUnitarization.form_hermitian
 
 def rightCosetEquiv_noT2 (U : CompactOpenLevel G) (g : G) : LeftCosets U ≃ LeftCosets U where
   toFun := Quotient.map (fun x => x * g) (by
@@ -82,48 +73,13 @@ def rightCosetEquiv_noT2 (U : CompactOpenLevel G) (g : G) : LeftCosets U ≃ Lef
   left_inv q := by induction q using Quotient.inductionOn; simp [mul_assoc]
   right_inv q := by induction q using Quotient.inductionOn; simp [mul_assoc]
 
-private theorem form_invariant_noT2 (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
-    (U : CompactOpenLevel G) (hU : FixesFunctional ρ U ℓ) (g : G) (v w : V) :
-    form ρ ℓ U (ρ g v) (ρ g w) = form ρ ℓ U v w := by
-  have he (v : V) (q : LeftCosets U) : descendedCoefficient ρ ℓ U (ρ g v) q =
-      descendedCoefficient ρ ℓ U v (rightCosetEquiv_noT2 U g q) := by
-    rw [descendedCoefficient_eq ρ ℓ U hU v _ (q.out * g)]
-    · simp [descendedCoefficient, coefficient, map_mul, Module.End.mul_apply]
-    · exact congrArg (rightCosetEquiv_noT2 U g) (Quotient.out_eq q)
-  unfold form
-  simp_rw [he]
-  exact finsum_comp_equiv (rightCosetEquiv_noT2 U g)
-    (f := fun q => descendedCoefficient ρ ℓ U v q * star (descendedCoefficient ρ ℓ U w q))
+private alias form_invariant_noT2 := CuspidalUnitarization.form_invariant
 
-private theorem coefficient_separates_noT2 (ρ : Representation ℂ G V) [ρ.IsIrreducible]
-    (ℓ : Module.Dual ℂ V) (hℓ : ℓ ≠ 0) (v : V) (hv : v ≠ 0) :
-    ∃ g : G, coefficient ρ ℓ v g ≠ 0 := by
-  let K : Subrepresentation ρ :=
-    { toSubmodule :=
-        { carrier := {v | ∀ g : G, coefficient ρ ℓ v g = 0}
-          zero_mem' := by simp [coefficient]
-          add_mem' := by intro x y hx hy g; simp [coefficient] at *; simp [hx g, hy g]
-          smul_mem' := by intro a x hx g; simp [coefficient] at *; simp [hx g] }
-      apply_mem_toSubmodule := by
-        intro g x hx h
-        simpa [coefficient, map_mul, Module.End.mul_apply] using hx (h * g) }
-  have hK : K = ⊥ := by
-    rcases eq_bot_or_eq_top K with h | h
-    · exact h
-    · exfalso
-      apply hℓ
-      ext x
-      have hx : x ∈ K := by rw [h]; trivial
-      simpa [coefficient] using hx 1
-  by_contra hn
-  have hx : v ∈ K := by
-    change ∀ g, coefficient ρ ℓ v g = 0
-    simpa using hn
-  rw [hK] at hx
-  exact hv hx
+private alias coefficient_separates_noT2 := CuspidalUnitarization.coefficient_separates
 
-private theorem diagonal_sum_noT2 [IsTopologicalGroup G]
-    (ρ : Representation ℂ G V) (ℓ : Module.Dual ℂ V)
+variable [IsTopologicalGroup G] (ρ : Representation ℂ G V)
+
+private theorem diagonal_sum_noT2 (ℓ : Module.Dual ℂ V)
     (U : CompactOpenLevel G) (hU : FixesFunctional ρ U ℓ)
     (v : V) (hc : HasCompactSupport (coefficient ρ ℓ v)) :
     form ρ ℓ U v v =
@@ -131,8 +87,7 @@ private theorem diagonal_sum_noT2 [IsTopologicalGroup G]
         Complex.normSq (descendedCoefficient ρ ℓ U v q)) : ℝ) := by
   classical
   unfold form
-  rw [finsum_eq_sum_of_support_subset _ (s :=
-    (finite_support_descended_noT2 ρ ℓ U hU v hc).toFinset)]
+  rw [finsum_eq_sum_of_support_subset _]
   · rw [Complex.ofReal_sum]
     apply Finset.sum_congr rfl
     intro q hq
@@ -141,8 +96,7 @@ private theorem diagonal_sum_noT2 [IsTopologicalGroup G]
     apply (finite_support_descended_noT2 ρ ℓ U hU v hc).mem_toFinset.mpr
     exact fun hz => hq (by simp [hz])
 
-theorem unitarization_noT2 [IsTopologicalGroup G]
-    (ρ : Representation ℂ G V) [ρ.IsIrreducible]
+theorem unitarization_noT2 [ρ.IsIrreducible]
     (hρ : SmoothRepresentation ρ)
     (ℓ : Module.Dual ℂ V) (hℓ : ℓ ≠ 0)
     (U : CompactOpenLevel G) (hU : FixesFunctional ρ U ℓ)
@@ -196,10 +150,8 @@ theorem unitarization_noT2 [IsTopologicalGroup G]
     rcases hρ w with ⟨J, hJ⟩
     refine ⟨J, fun j hj => ?_⟩
     ext v
-    change form ρ ℓ U (ρ j⁻¹ v) w = form ρ ℓ U v w
-    have hw := hJ j⁻¹ (J.inv_mem hj)
     calc
-      form ρ ℓ U (ρ j⁻¹ v) w = form ρ ℓ U (ρ j⁻¹ v) (ρ j⁻¹ w) := by rw [hw]
+      form ρ ℓ U (ρ j⁻¹ v) w = form ρ ℓ U (ρ j⁻¹ v) (ρ j⁻¹ w) := by rw [(hJ j⁻¹ (J.inv_mem hj))]
       _ = form ρ ℓ U v w := hinv j⁻¹ v w
 
 end DedekindZetaZeroFree.CuspidalFiniteCosetForm

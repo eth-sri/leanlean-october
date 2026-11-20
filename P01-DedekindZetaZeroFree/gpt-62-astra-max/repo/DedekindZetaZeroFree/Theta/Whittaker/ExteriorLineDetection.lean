@@ -52,7 +52,7 @@ theorem detected_initial_of_exterior_comparison
       stagePeriod V e bad L s (Function.update t j a) =
         stagePeriod V e bad L s (Function.update t j (base j)) * ell j a := by
     intro j hj t a
-    have hj' : (j : J) ∉ bad := (Finset.mem_filter.mp hj).2
+    have hj' := (Finset.mem_filter.mp hj).2
     simpa only [base, dif_neg hj'] using hslot s j hj' t a
   have hp := replace_eq_product_of_slot_comparison
     (stagePeriod V e bad L s) E base y (fun j => ell j) hn hc
@@ -62,8 +62,8 @@ theorem detected_initial_of_exterior_comparison
     · have hjE : j ∉ E := by simp [E, hj]
       rw [Finset.piecewise_eq_of_notMem _ _ _ hjE]
       simp only [base, dif_pos hj, x]
-    · have hjE : j ∈ E := by simp [E, hj]
-      exact Finset.piecewise_eq_of_mem _ _ _ hjE
+    · refine Finset.piecewise_eq_of_mem _ _ _ ?_
+      simp [E, hj]
   rw [hpiece] at hp
   have hb : stagePeriod V e bad L s base ≠ 0 := by
     intro hb

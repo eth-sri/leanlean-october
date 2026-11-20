@@ -13,8 +13,8 @@ open MomentSources NumberField MeasureTheory ThetaProfileHaarSheets ThetaSheetEx
 open ThetaExpansion.SignedExpansion
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 lemma groupedOrbitTerm_forward_generator {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (hx : AbsoluteExtraction R C) (m : ThetaReflectionData.Row R.A)
@@ -36,10 +36,9 @@ lemma groupedOrbitTerm_forward_generator {N : TraceHaarTransport R} (C : JointUp
       ⟨Quotient.out (forwardFrequency R j) / a, QuotientGroup.eq_iff_div_mem.mp he⟩
     have h : Quotient.out (forwardFrequency R j) = a * γ.val := by dsimp [γ]; simp
     rw [h]
-    have ha := forwardGenerator_integral R j.1 j.2
     intro p hp
     simp only [Units.val_mul, map_mul, gamma_valuation R γ ⟨p, hp⟩, mul_one]
-    exact ha p hp
+    exact (forwardGenerator_integral R j.1 j.2) p hp
   rw [groupedOrbitTerm_forward_allowed R C hx _ m _ Z hZ hi hg,
     forwardMask_eq_of_frequency_eq R m _ a he,
     forwardExterior_eq_of_frequency_eq R C _ a he,
@@ -87,10 +86,9 @@ theorem forward_orbit_evaluation {N : TraceHaarTransport R} (C : JointUpperVanis
         (ActualRowTransfer.dyadicRow R.A R.probe.coefficients u h d) Z) := by
   let m := ActualRowTransfer.dyadicRow R.A R.probe.coefficients u h d
   obtain ⟨D, _, _⟩ := SignedUnfoldingSub7.dyadic_row_factorization R u h d hh hd hc
-  have hv := dyadicRow_companion R u h d D
   have heval (j : ForwardIndex R) : groupedOrbitTerm R C (rowClass R u) m true Z hZ (forwardFrequency R j) =
       ThetaReflectionData.forwardSummand R.A R.probe.coefficients m Z j.1 j.2 := by
-    rw [← hv]
+    rw [← (dyadicRow_companion R u h d D)]
     exact groupedOrbitTerm_forward_generator R C hx m D Z hZ j
   have heq : (∑' ξ, groupedOrbitTerm R C (rowClass R u) m true Z hZ ξ) =
       ThetaReflectionData.forwardB R.A R.probe.coefficients m Z := by
@@ -98,12 +96,8 @@ theorem forward_orbit_evaluation {N : TraceHaarTransport R} (C : JointUpperVanis
       (fun ξ => groupedOrbitTerm_forward_support R C hx (rowClass R u) m Z hZ ξ)]
     simp_rw [heval]
     exact (MomentSources.forward_hasSum R m Z hZ).tsum_eq
-  have hg := groupedOrbitTerm_hasSum R C hx (rowClass R u) m true Z hZ
-  have hall := (hx (rowClass R u) m true Z hZ).2.2.1.of_norm.hasSum
-  have htotal : (∑' i, orbitTerm R C (rowClass R u) m true Z hZ i) =
-      ThetaReflectionData.forwardB R.A R.probe.coefficients m Z := hg.tsum_eq.symm.trans heq
-  rw [← htotal]
-  exact hall
+  rw [← ((groupedOrbitTerm_hasSum R C hx (rowClass R u) m true Z hZ).tsum_eq.symm.trans heq)]
+  exact (hx (rowClass R u) m true Z hZ).2.2.1.of_norm.hasSum
 
 end DedekindZetaZeroFree.OrbitExpansion
 

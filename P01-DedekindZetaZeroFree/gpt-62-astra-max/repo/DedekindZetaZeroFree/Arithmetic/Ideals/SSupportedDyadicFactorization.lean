@@ -14,14 +14,20 @@ noncomputable section
 
 variable {F : Type} [Field F] [NumberField F]
 
-abbrev badIdeal (Sf : Finset (HeightOneSpectrum (𝓞 F))) : Ideal (𝓞 F) :=
+section
+
+variable (Sf : Finset (HeightOneSpectrum (𝓞 F)))
+
+abbrev badIdeal : Ideal (𝓞 F) :=
   ∏ v ∈ Sf, v.asIdeal
 
-abbrev SupportedIdeal (Sf : Finset (HeightOneSpectrum (𝓞 F))) :=
+abbrev SupportedIdeal :=
   {h : NonzeroIdeal F // IdealSupportedOn h.val (badIdeal Sf)}
 
-abbrev Exterior (Sf : Finset (HeightOneSpectrum (𝓞 F))) :=
+abbrev Exterior :=
   ExteriorIdeal (badIdeal Sf)
+
+end
 
 def DyadicBand (k : ℕ) (x : ℝ) : Prop :=
   if k = 0 then x = 1 else (2 : ℝ) ^ (k - 1) < x ∧ x ≤ (2 : ℝ) ^ k
@@ -32,7 +38,6 @@ private theorem prod_factors (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
 private theorem coprime_of_disjoint (I J : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hJ : J ≠ ⊥)
     (hd : Disjoint (normalizedFactors I) (normalizedFactors J)) : I ⊔ J = ⊤ := by
   apply Ideal.isUnit_iff.mp
-  change IsUnit (gcd I J)
   apply gcd_isUnit_iff_isRelPrime.mpr
   apply (isRelPrime_iff_no_prime_factors hI).mpr
   intro p hpI hpJ hp
@@ -52,17 +57,14 @@ private theorem split_exists (J n : Ideal (𝓞 F)) (hJ : J ≠ ⊥) (hn : n ≠
   let u := (normalizedFactors n).filter (fun p => ¬ P p)
   have ht : t ⊆ normalizedFactors n := Multiset.filter_subset _ _
   have hu : u ⊆ normalizedFactors n := Multiset.filter_subset _ _
-  have ht0 := prod_ne_zero_of_subset_normalizedFactors ht
   have hu0 := prod_ne_zero_of_subset_normalizedFactors hu
-  have htf := normalizedFactors_prod_eq_self_of_subset ht
-  have huf := normalizedFactors_prod_eq_self_of_subset hu
-  refine ⟨t.prod, u.prod, ht0, hu0, ?_, ?_, ?_⟩
+  refine ⟨t.prod, u.prod, (prod_ne_zero_of_subset_normalizedFactors ht), hu0, ?_, ?_, ?_⟩
   · intro p hp
     change p ∈ (normalizedFactors t.prod).toFinset at hp
-    rw [htf, Multiset.mem_toFinset] at hp
+    rw [(normalizedFactors_prod_eq_self_of_subset ht), Multiset.mem_toFinset] at hp
     exact (Multiset.mem_filter.mp hp).2
   · apply coprime_of_disjoint _ _ hu0 hJ
-    rw [huf, Multiset.disjoint_left]
+    rw [(normalizedFactors_prod_eq_self_of_subset hu), Multiset.disjoint_left]
     intro p hp hpJ
     exact (Multiset.mem_filter.mp hp).2 (Multiset.mem_toFinset.mpr hpJ)
   · rw [← Multiset.prod_add, show t + u = normalizedFactors n from Multiset.filter_add_not P _,
@@ -92,7 +94,7 @@ private theorem dyadic_exists (x : ℝ) (hx : 1 ≤ x) : ∃ k : ℕ, DyadicBand
   have hk := Nat.find_spec he
   unfold DyadicBand
   split_ifs with h
-  · have : Nat.find he = 0 := h
+  · have := h
     simpa [this] using le_antisymm (by simpa [this] using hk) hx
   · refine ⟨?_, hk⟩
     exact lt_of_not_ge (Nat.find_min he (by omega : Nat.find he - 1 < Nat.find he))
@@ -123,7 +125,11 @@ private theorem dyadic_upper (x : ℝ) (hx : 1 ≤ x) (k : ℕ) (hk : DyadicBand
     rw [he, pow_succ]
     linarith [hk.1]
 
-private theorem bad_factors (Sf : Finset (HeightOneSpectrum (𝓞 F))) :
+section
+
+variable (Sf : Finset (HeightOneSpectrum (𝓞 F)))
+
+private theorem bad_factors :
     normalizedFactors (badIdeal Sf) = Sf.val.map HeightOneSpectrum.asIdeal := by
   change normalizedFactors (∏ v ∈ Sf, v.asIdeal) = _
   rw [Finset.prod_eq_multiset_prod]
@@ -131,7 +137,7 @@ private theorem bad_factors (Sf : Finset (HeightOneSpectrum (𝓞 F))) :
   intro p hp
   obtain ⟨v, hv, rfl⟩ := Multiset.mem_map.mp hp
   exact v.prime
-private theorem supported_exponent_injective (Sf : Finset (HeightOneSpectrum (𝓞 F))) :
+private theorem supported_exponent_injective :
     Function.Injective (fun h : SupportedIdeal Sf =>
       fun v : Sf => idealPrimeExponent v.val.asIdeal h.val.val) := by
   intro h g he
@@ -142,14 +148,19 @@ private theorem supported_exponent_injective (Sf : Finset (HeightOneSpectrum (�
     · rw [idealPrimeSupport, bad_factors, Multiset.mem_toFinset, Multiset.mem_map] at hp
       obtain ⟨v, hv, rfl⟩ := hp
       exact congrFun he ⟨v, hv⟩
-    · have hh : p ∉ normalizedFactors h.val.val := fun hh => hp (h.property (Multiset.mem_toFinset.mpr hh))
-      have hg : p ∉ normalizedFactors g.val.val := fun hg => hp (g.property (Multiset.mem_toFinset.mpr hg))
-      simp [Multiset.count_eq_zero_of_notMem hh, Multiset.count_eq_zero_of_notMem hg]
+    · simp [Multiset.count_eq_zero_of_notMem (fun hh => hp (h.property (Multiset.mem_toFinset.mpr hh))), Multiset.count_eq_zero_of_notMem (fun hg => hp (g.property (Multiset.mem_toFinset.mpr hg)))]
   apply Subtype.ext
   apply Subtype.ext
   simpa only [prod_normalizedFactors_eq h.val.property, prod_normalizedFactors_eq g.val.property,
     normalize_eq] using congrArg Multiset.prod factors_eq
-private theorem exponent_norm_bound (n p : Ideal (𝓞 F)) (hn : n ≠ ⊥) (hp : Prime p) :
+
+end
+section
+
+variable (n p : Ideal (𝓞 F)) (hn : n ≠ ⊥) (hp : Prime p)
+
+include hn hp in
+private theorem exponent_norm_bound :
     (2 : ℝ) ^ idealPrimeExponent p n ≤ idealNorm n := by
   have hd : p ^ idealPrimeExponent p n ∣ n := by
     have hle : Multiset.replicate ((normalizedFactors n).count p) p ≤ normalizedFactors n :=
@@ -157,23 +168,21 @@ private theorem exponent_norm_bound (n p : Ideal (𝓞 F)) (hn : n ≠ ⊥) (hp 
     have hprod := Multiset.prod_dvd_prod_of_le hle
     rw [Multiset.prod_replicate, prod_normalizedFactors_eq hn, normalize_eq] at hprod
     exact hprod
-  have hn0 : Ideal.absNorm n ≠ 0 := Ideal.absNorm_eq_zero_iff.not.mpr hn
   have hnorm : idealNorm (p ^ idealPrimeExponent p n) ≤ idealNorm n := by
     unfold idealNorm
-    exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero hn0) (map_dvd Ideal.absNorm hd)
-  have hp2 := idealNorm_prime_ge_two p hp
-  have hh : (2 : ℝ)^idealPrimeExponent p n ≤ idealNorm p ^ idealPrimeExponent p n :=
-    pow_le_pow_left₀ (by norm_num) hp2 _
-  apply hh.trans
+    exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn)) (map_dvd Ideal.absNorm hd)
+  apply (pow_le_pow_left₀ (by norm_num) (idealNorm_prime_ge_two p hp) _).trans
   simpa only [idealNorm, map_pow, Nat.cast_pow] using hnorm
 
-private theorem exponent_cutoff (n p : Ideal (𝓞 F)) (hn : n ≠ ⊥) (hp : Prime p)
+include hn hp in
+private theorem exponent_cutoff
     (X : ℝ) (hX : idealNorm n ≤ X) :
     (idealPrimeExponent p n : ℝ) ≤ Real.log X / Real.log 2 := by
-  have hb := exponent_norm_bound n p hn hp
   apply (le_div_iff₀ (Real.log_pos (by norm_num : (1 : ℝ) < 2))).mpr
-  simpa only [Real.log_pow] using
-    Real.log_le_log (by positivity : (0 : ℝ) < 2^idealPrimeExponent p n) (hb.trans hX)
+  simpa using
+    Real.log_le_log (by positivity : (0 : ℝ) < 2^idealPrimeExponent p n) ((exponent_norm_bound n p hn hp).trans hX)
+
+end
 private theorem label_card_nat (Sf : Finset (HeightOneSpectrum (𝓞 F)))
     (L : Finset (SupportedIdeal Sf × ℕ)) (m : ℕ)
     (hs : ∀ l ∈ L, ∀ v : Sf, idealPrimeExponent v.val.asIdeal l.1.val.val ≤ m)
@@ -190,20 +199,20 @@ private theorem label_card_nat (Sf : Finset (HeightOneSpectrum (𝓞 F)))
       funext v
       exact congrArg Fin.val (congrFun (congrArg Prod.fst hab) v)
     · exact congrArg Fin.val (congrArg Prod.snd hab)
-  have hc := Fintype.card_le_of_injective f hf
   simpa only [Fintype.card_coe, Fintype.card_prod, Fintype.card_fun, Fintype.card_fin,
-    pow_succ] using hc
+    pow_succ] using (Fintype.card_le_of_injective f hf)
 
 private theorem finite_norm_set (N : ℝ) :
     {n : NonzeroIdeal F | idealNorm n.val ≤ N}.Finite := by
-  have h := (Ideal.finite_setOfPred_absNorm_le (S := 𝓞 F) ⌊N⌋₊).preimage
+  apply ((Ideal.finite_setOfPred_absNorm_le ⌊N⌋₊).preimage
     (show Set.InjOn (fun n : NonzeroIdeal F => n.val) _ from
-      Subtype.val_injective.injOn)
-  apply h.subset
+      Subtype.val_injective.injOn)).subset
   intro n hn
   exact Nat.le_floor hn
 
-private theorem label_card_real (Sf : Finset (HeightOneSpectrum (𝓞 F)))
+variable (Sf : Finset (HeightOneSpectrum (𝓞 F)))
+
+private theorem label_card_real
     (L : Finset (SupportedIdeal Sf × ℕ)) (N : ℝ) (hN : 2 ≤ N)
     (hs : ∀ l ∈ L, idealNorm l.1.val.val ≤ N)
     (hk : ∀ l ∈ L, (2 : ℝ)^l.2 ≤ 2*N) :
@@ -232,19 +241,19 @@ private theorem label_card_real (Sf : Finset (HeightOneSpectrum (𝓞 F)))
     have hh : (m : ℝ) ≤ Real.log (2*N) / Real.log 2 :=
       Nat.floor_le (by rw [hr]; positivity)
     rw [hr, div_eq_mul_inv] at hh
-    have hp : 0 ≤ 1 / Real.log 2 := le_of_lt (one_div_pos.mpr h2)
+    have hp := le_of_lt (one_div_pos.mpr h2)
     have hmul : 0 ≤ (1 / Real.log 2) * Real.log N := mul_nonneg hp hlog
     simp only [Nat.cast_add, Nat.cast_one]
     dsimp [m] at *
     simp only [one_div] at *
     nlinarith
   calc
-    (L.card : ℝ) ≤ ((m+1 : ℕ) : ℝ)^(Sf.card+1) := by exact_mod_cast hc
+    _ ≤ ((m+1 : ℕ) : ℝ)^(Sf.card+1) := by exact_mod_cast hc
     _ ≤ ((2 + 1 / Real.log 2) * (1 + Real.log N))^(Sf.card+1) :=
       pow_le_pow_left₀ (by positivity) hm _
     _ = _ := by rw [mul_pow]
 
-theorem factor_unique (Sf : Finset (HeightOneSpectrum (𝓞 F)))
+theorem factor_unique
     (n : NonzeroIdeal F) :
     ∃! ha : SupportedIdeal Sf × Exterior Sf,
       n.val = ha.1.val.val * ha.2.val ∧
@@ -254,9 +263,8 @@ theorem factor_unique (Sf : Finset (HeightOneSpectrum (𝓞 F)))
     intro v hv
     exact v.ne_bot
   obtain ⟨h, a, hh, ha, hs, hc, he⟩ := split_exists (badIdeal Sf) n.val hJ n.property
-  let h' : SupportedIdeal Sf := ⟨⟨h, hh⟩, hs⟩
   let a' : Exterior Sf := ⟨a, ha, hc⟩
-  refine ⟨(h', a'), ⟨he, ?_⟩, ?_⟩
+  refine ⟨((⟨⟨h, hh⟩, hs⟩), a'), ⟨he, ?_⟩, ?_⟩
   · simp only [he, idealNorm, map_mul, Nat.cast_mul]
     rfl
   · intro b hb
@@ -271,15 +279,14 @@ theorem factor_unique (Sf : Finset (HeightOneSpectrum (𝓞 F)))
     · exact Subtype.ext (Subtype.ext eh)
     · exact Subtype.ext ea
 
-theorem mul_exterior_injective (Sf : Finset (HeightOneSpectrum (𝓞 F)))
+theorem mul_exterior_injective
     (h : SupportedIdeal Sf) :
     Function.Injective (fun a : Exterior Sf => h.val.val * a.val) := by
   intro a b hab
   apply Subtype.ext
   exact mul_left_cancel₀ h.val.property hab
 
-theorem finite_dyadic_partition
-    (Sf : Finset (HeightOneSpectrum (𝓞 F))) :
+theorem finite_dyadic_partition :
     ∃ D : ℝ, 0 < D ∧ ∀ N : ℝ, 2 ≤ N →
       ∃ (T : Finset (NonzeroIdeal F))
         (L : Finset (SupportedIdeal Sf × ℕ))

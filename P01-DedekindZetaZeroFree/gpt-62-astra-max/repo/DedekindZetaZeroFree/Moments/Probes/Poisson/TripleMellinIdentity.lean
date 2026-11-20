@@ -12,8 +12,8 @@ open DedekindZetaZeroFree NumberField MeasureTheory PoissonKernel
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def repRows : Set D.Row :=
   {u | ∃ h : u.toFrequency.u ≠ 0,
@@ -37,10 +37,7 @@ def repEquiv : repRows D ≃ D.Row where
   left_inv _ := rfl
   right_inv _ := rfl
 
-private theorem countable_row : Countable D.Row := by
-  letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
-  haveI : Countable D.recipe.A.R := by infer_instance
-  exact (ActualRowCount.row_u_injective D).countable
+private alias countable_row := DedekindZetaZeroFree.Quantitative.PoissonFrequencyDecomposition.FrequencyDecomposition.countable_row'
 
 def complementKernel (Z : ℝ) (t : ℝ × ℝ × ℝ) : ℂ :=
   ∑' i : ↥(PoissonFrequencyDecomposition.allowedIndices D)ᶜ,
@@ -65,7 +62,7 @@ theorem Iscale_eq_sum_rowIntegral (Z : ℝ) (hZ : 0 < Z) :
     D.Iscale Z = ∑' u : repRows D, rowIntegral D u.val Z +
       PoissonFrequencyDecomposition.omittedSum D Z := by
   letI := countable_row D
-  obtain ⟨hint0, hnorm0, h30, hsumrow0, hcn, _, hci, homit, hsplit0⟩ :=
+  obtain ⟨hint0, hnorm0, h30, hsumrow0, hcn, hci, homit, hsplit0⟩ :=
     PoissonFrequencyDecomposition.Iscale_eq_rows_add_omitted D Z hZ
   have hint : ∀ u : D.Row, Integrable (rowIntegrand D u Z) := fun u => hint0 u
   have hnorm : Summable (fun u : D.Row => ∫ t : ℝ × ℝ × ℝ, ‖rowIntegrand D u Z t‖) := hnorm0
@@ -155,8 +152,6 @@ private theorem dyad_unique {q : ℝ} {j k : ℕ} (hj1 : (2 : ℝ) ^ j ≤ q) (h
     linarith
 
 theorem nonprincipal_eq_sum_dyads (Z : ℝ) (hZ : 0 < Z) :
-    Summable (fun k : ℕ =>
-      J D ((dyadRows D ((2 : ℝ) ^ k) ∩ repRows D) \ principalRows D) 4 4 2 Z) ∧
     ∑' u : (repRows D \ principalRows D : Set D.Row), rowIntegral D u.val Z =
       ∑' k : ℕ, J D ((dyadRows D ((2 : ℝ) ^ k) ∩ repRows D) \ principalRows D) 4 4 2 Z := by
   obtain ⟨_, _, _, hsumrow, _, _, _, _, _⟩ := Iscale_eq_sum_rowIntegral D Z hZ
@@ -195,10 +190,7 @@ theorem nonprincipal_eq_sum_dyads (Z : ℝ) (hZ : 0 < Z) :
   have hfun : (fun k : ℕ => ∑' c : ↥(Tset D k), rowIntegral D c.val Z) =
       fun k : ℕ => J D ((dyadRows D ((2 : ℝ) ^ k) ∩ repRows D) \ principalRows D) 4 4 2 Z :=
     funext hfib
-  refine ⟨?_, ?_⟩
-  · rw [← hfun]
-    exact hg.sigma
-  · rw [← hrange, tsum_range (fun u => rowIntegral D u Z) hφinj, hg.tsum_sigma, ← hfun]
+  rw [← hrange, tsum_range (fun u => rowIntegral D u Z) hφinj, hg.tsum_sigma, ← hfun]
 
 end
 

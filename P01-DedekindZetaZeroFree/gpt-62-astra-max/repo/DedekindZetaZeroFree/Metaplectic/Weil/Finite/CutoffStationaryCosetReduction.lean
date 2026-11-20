@@ -22,14 +22,12 @@ variable (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-def localFiniteStationaryGaussSum
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
-    (b : (v.adicCompletion F)ˣ)
-    (hb : (b : v.adicCompletion F) = 2 * (a : v.adicCompletion F))
-    (m : ℤ)
-    (hq : ∀ h ∈ finiteCompletionBall F v m,
-      localFiniteCharacter F v ((a : v.adicCompletion F) * h ^ 2) = 1)
-    (hHL : finiteCompletionBall F v m ≤ localScaledBallDual F v b m) : ℂ :=
+variable (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) (b : (v.adicCompletion F)ˣ)
+    (hb : (b : v.adicCompletion F) = 2 * (a : v.adicCompletion F)) (m : ℤ)
+    (hq : ∀ h ∈ finiteCompletionBall F v m, localFiniteCharacter F v ((a : v.adicCompletion F) * h ^ 2) = 1)
+    (hHL : finiteCompletionBall F v m ≤ localScaledBallDual F v b m)
+
+def localFiniteStationaryGaussSum : ℂ :=
   let G := localScaledBallDualQuotient F v b m
   letI : Finite G := finite_localScaledBallDualQuotient F v b m hHL
   letI : Fintype G := Fintype.ofFinite G
@@ -38,13 +36,6 @@ def localFiniteStationaryGaussSum
     ∑ g : G, (localFinitePerfectQuadraticPhase F v a b hb m hq hHL g : ℂ)
 
 theorem weil_finite_cutoff_coset_reduction
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
-    (b : (v.adicCompletion F)ˣ)
-    (hb : (b : v.adicCompletion F) = 2 * (a : v.adicCompletion F))
-    (m : ℤ)
-    (hq : ∀ h ∈ finiteCompletionBall F v m,
-      localFiniteCharacter F v ((a : v.adicCompletion F) * h ^ 2) = 1)
-    (hHL : finiteCompletionBall F v m ≤ localScaledBallDual F v b m)
     (U : AddSubgroup (v.adicCompletion F))
     (hUc : IsCompact (U : Set (v.adicCompletion F)))
     (hUo : IsOpen (U : Set (v.adicCompletion F)))
@@ -92,14 +83,15 @@ theorem weil_finite_cutoff_coset_reduction
       simpa only [sub_add_cancel, SetLike.mem_coe] using this
   have hmeas (i : Q) : MeasurableSet (C i) :=
     (isOpen_finiteCompletionBall_coset F v (r i) m).measurableSet
+  let localQuadraticPhase_coset_integral₀ := localQuadraticPhase_coset_integral F v a m hq
   have hint (i : Q) : IntegrableOn f (C i) μ := by
     simpa only [zero_mul, sub_zero, f, C, H, μ] using
-      (localQuadraticPhase_coset_integral F v a m hq (r i) 0).1
+      (localQuadraticPhase_coset_integral₀ (r i) 0).1
   have heval (i : Q) : (∫ x in C i, f x ∂μ) =
       if (r i : v.adicCompletion F) ∈ L then
         ((μ (H : Set (v.adicCompletion F))).toReal : ℂ) * f (r i) else 0 := by
     simpa only [zero_mul, sub_zero, ← hb, ← mem_localScaledBallDual, f, C, H, L, μ] using
-      (localQuadraticPhase_coset_integral F v a m hq (r i) 0).2
+      (localQuadraticPhase_coset_integral₀ (r i) 0).2
   have hLmeas : MeasurableSet (L : Set (v.adicCompletion F)) :=
     (localScaledBallDual_compact_open_fractionalIdeals F v b m).2.2.2.1.measurableSet
   have hrestrict (i : Q) : (∫ x in C i, f x ∂μ) =
@@ -159,12 +151,12 @@ theorem weil_finite_cutoff_coset_reduction
   rw [heqL, hDunion, integral_iUnion_fintype
     (fun i => (isOpen_finiteCompletionBall_coset F v (t i) m).measurableSet)
     hDdis (fun i => by simpa only [zero_mul, sub_zero, f, C, D, H, μ] using
-      (localQuadraticPhase_coset_integral F v a m hq (t i) 0).1)]
+      (localQuadraticPhase_coset_integral₀ (t i) 0).1)]
   unfold localFiniteStationaryGaussSum
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro i _
-  have hevalD := (localQuadraticPhase_coset_integral F v a m hq (t i) 0).2
+  have hevalD := (localQuadraticPhase_coset_integral₀ (t i) 0).2
   have hi : (b : v.adicCompletion F) * (t i : v.adicCompletion F) ∈
       localFiniteAnnihilator F v H := (t i).property
   have hphase : localFinitePerfectQuadraticPhase F v a b hb m hq hHL i =
@@ -173,14 +165,7 @@ theorem weil_finite_cutoff_coset_reduction
   rw [hphase]
   simpa only [zero_mul, sub_zero, ← hb, if_pos hi, f, μ, H] using hevalD
 
-theorem localFiniteQuadraticCutoff_eventually_eq_stationaryGaussSum
-    (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
-    (b : (v.adicCompletion F)ˣ)
-    (hb : (b : v.adicCompletion F) = 2 * (a : v.adicCompletion F))
-    (m : ℤ)
-    (hq : ∀ h ∈ finiteCompletionBall F v m,
-      localFiniteCharacter F v ((a : v.adicCompletion F) * h ^ 2) = 1)
-    (hHL : finiteCompletionBall F v m ≤ localScaledBallDual F v b m) :
+theorem localFiniteQuadraticCutoff_eventually_eq_stationaryGaussSum :
     ∃ N : ℕ, ∀ n : ℕ, N ≤ n →
       (∫ x in (finiteCompletionBall F v (-(n : ℤ)) : Set (v.adicCompletion F)),
         (localFiniteCharacter F v ((a : v.adicCompletion F) * x ^ 2) : ℂ)

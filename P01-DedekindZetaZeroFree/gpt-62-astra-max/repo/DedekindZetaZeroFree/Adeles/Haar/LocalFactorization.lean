@@ -37,7 +37,9 @@ lemma Measure.pi_update_smul {ι : Type*} [Fintype ι] [DecidableEq ι]
     rw [Finset.prod_congr rfl (fun i _ => hstep i), Finset.prod_mul_distrib, h1]
   rw [Measure.smul_apply, Measure.pi_pi, hbox, smul_eq_mul]
 
-private lemma polarUnit_continuous (A : SArithmeticData F) (w : InfinitePlace F) :
+variable (A : SArithmeticData F)
+
+private lemma polarUnit_continuous (w : InfinitePlace F) :
     Continuous (ThetaPositiveSheetMellin.polarUnit A w) := by
   unfold ThetaPositiveSheetMellin.polarUnit ThetaProfileHaarSheets.sqrtUnit
   apply Continuous.mul
@@ -52,7 +54,7 @@ private lemma polarUnit_continuous (A : SArithmeticData F) (w : InfinitePlace F)
         Units.isEmbedding_val₀.continuous_iff.mpr
           (continuous_subtype_val.comp continuous_snd))
 
-lemma productHaar_update_smul (A : SArithmeticData F)
+lemma productHaar_update_smul
     (μ : ∀ v : A.Sf, Measure (ThetaFiniteCutoff.LocalUnits A v))
     (ν : InfinitePlace F → Measure Circle)
     [∀ v, (μ v).IsHaarMeasure] [∀ w, (ν w).IsHaarMeasure]
@@ -102,14 +104,13 @@ lemma productHaar_update_smul (A : SArithmeticData F)
       (fun w => ThetaPositiveSheetMellin.archHaar A w (ν w)) w₀
         (c • ThetaPositiveSheetMellin.archHaar A w₀ (ν w₀)) w) := by
     rw [← he]; infer_instance
-  have hm : (Prod.instMeasurableSpace : MeasurableSpace A.G) =
-      ThetaProfileHaarSheets.groupMeasurableSpace A :=
+  have hm :=
     (ThetaPositiveSheetMellin.groupMeasurableSpace_eq_prod A).symm
   unfold ThetaPositiveSheetMellin.productHaar
   rw [← hm, Measure.map_id', Measure.map_id', he, Measure.pi_update_smul,
     Measure.prod_smul_left]
 
-theorem exists_productHaar_localUnits_eq (A : SArithmeticData F)
+theorem exists_productHaar_localUnits_eq
     (M : Measure (SLocalProduct F A.Sf)ˣ) [M.IsHaarMeasure] :
     ∃ (μ : ∀ v : A.Sf, Measure (ThetaFiniteCutoff.LocalUnits A v))
       (ν : InfinitePlace F → Measure Circle),

@@ -39,30 +39,13 @@ def finiteSubgroup : Subgroup (actualCover F ζ hζ) :=
     ((KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ))
 
-abbrev FiniteLevel := CompactOpenLevel (finiteSubgroup F ζ hζ)
-
-def levelSubgroup (U : FiniteLevel F ζ hζ) : Subgroup (actualCover F ζ hζ) :=
-  U.toOpenSubgroup.toSubgroup.map (finiteSubgroup F ζ hζ).subtype
-
-abbrev centreMap := KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ
-
-def rightSubgroup (U : FiniteLevel F ζ hζ) (geometric : Bool) :
-    Subgroup (actualCover F ζ hζ) :=
-  if geometric then levelSubgroup F ζ hζ U ⊔ (centreMap F ζ hζ).range
-  else levelSubgroup F ζ hζ U
-
-abbrev actualLevelSpace (U : FiniteLevel F ζ hζ) (geometric : Bool) :=
-  DoubleQuotient (rationalSubgroup F ζ hζ) (rightSubgroup F ζ hζ U geometric)
-
 theorem actual_cover_lc_t2_group :
     T2Space (actualCover F ζ hζ) ∧ LocallyCompactSpace (actualCover F ζ hζ) ∧
-      IsTopologicalGroup (actualCover F ζ hζ) := by
-  exact ⟨(KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).1,
+      IsTopologicalGroup (actualCover F ζ hζ) := ⟨(KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).1,
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.1,
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1⟩
 
-theorem actual_cover_secondCountable : SecondCountableTopology (actualCover F ζ hζ) := by
-  exact ActualQuotientTopology.Cover.rawCover_secondCountable F ζ hζ
+theorem actual_cover_secondCountable : SecondCountableTopology (actualCover F ζ hζ) := ActualQuotientTopology.Cover.rawCover_secondCountable F ζ hζ
 
 abbrev ArchGroup := NumberField.InfinitePlace F → Matrix.ProjGenLinGroup (Fin 2) ℂ
 
@@ -111,22 +94,13 @@ def actionCorrespondence (Γ K : Subgroup G) : (Γ × K) × G → G × G :=
 theorem proper_actionCorrespondence [IsTopologicalGroup G] [T2Space G]
     [LocallyCompactSpace G] (Γ K : Subgroup G)
     (hΓ : IsClosed (Γ : Set G)) (dΓ : IsDiscrete (Γ : Set G))
-    (hK : IsCompact (K : Set G)) : IsProperMap (actionCorrespondence Γ K) := by
-  exact ActualQuotientTopology.Generic.proper_rawActionCorrespondence Γ K hΓ dΓ hK
+    (hK : IsCompact (K : Set G)) : IsProperMap (actionCorrespondence Γ K) := ActualQuotientTopology.Generic.proper_rawActionCorrespondence Γ K hΓ dΓ hK
 
 theorem lcsc_polish (Y : Type*) [TopologicalSpace Y] [T2Space Y]
-    [LocallyCompactSpace Y] [SecondCountableTopology Y] : PolishSpace Y := by
-  exact ActualQuotientTopology.Generic.locallyCompact_secondCountable_polish Y
+    [LocallyCompactSpace Y] [SecondCountableTopology Y] : PolishSpace Y := ActualQuotientTopology.Generic.locallyCompact_secondCountable_polish Y
 
 structure TopologyCertificate (Γ K : Subgroup G) : Prop where
-  proper : IsProperMap (actionCorrespondence Γ K)
-  locallyCompact : LocallyCompactSpace (DoubleQuotient Γ K)
   hausdorff : T2Space (DoubleQuotient Γ K)
-  secondCountable : SecondCountableTopology (DoubleQuotient Γ K)
-  polish : PolishSpace (DoubleQuotient Γ K)
-  continuous : Continuous (doubleQuotientMap Γ K)
-  openMap : IsOpenMap (doubleQuotientMap Γ K)
-  quotientMap : IsQuotientMap (doubleQuotientMap Γ K)
 
 theorem proper_doubleQuotient_certificate [IsTopologicalGroup G] [T2Space G]
     [LocallyCompactSpace G] [SecondCountableTopology G] (Γ K : Subgroup G)
@@ -136,7 +110,7 @@ theorem proper_doubleQuotient_certificate [IsTopologicalGroup G] [T2Space G]
   letI : LocallyCompactSpace (DoubleQuotient Γ K) := hlc
   letI : T2Space (DoubleQuotient Γ K) := ht2
   letI : SecondCountableTopology (DoubleQuotient Γ K) := hsc
-  exact ⟨hp, hlc, ht2, hsc, lcsc_polish (DoubleQuotient Γ K), hc, ho, hq⟩
+  exact ⟨ht2⟩
 end Generic
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -148,8 +122,7 @@ theorem actual_rational_closed_discrete :
   exact ⟨h.1, h.2.1⟩
 
 theorem actual_rational_arch_injective :
-    Function.Injective ((archProjection F ζ hζ).comp (rationalSubgroup F ζ hζ).subtype) := by
-  exact (ActualQuotientTopology.Arithmetic.rawRational_arithmetic_certificate F ζ hζ).2.2
+    Function.Injective ((archProjection F ζ hζ).comp (rationalSubgroup F ζ hζ).subtype) := (ActualQuotientTopology.Arithmetic.rawRational_arithmetic_certificate F ζ hζ).2.2
 
 end DedekindZetaZeroFree.ActualQuotient
 

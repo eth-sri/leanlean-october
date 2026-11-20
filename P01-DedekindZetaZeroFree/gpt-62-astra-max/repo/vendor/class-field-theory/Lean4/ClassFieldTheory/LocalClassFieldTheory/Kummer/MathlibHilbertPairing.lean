@@ -16,14 +16,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -50,11 +42,13 @@ noncomputable def localHilbertSymbol
   (KummerTheory.nthRootsSubgroupEquivRootsOfUnity K (n : ℕ))
     (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a b)
 
+section
+
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+
 /-- The descended local pairing, transported to Mathlib's
 `PowerClassGroup` and `rootsOfUnity`. -/
-noncomputable def localHilbertPairing
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+noncomputable def localHilbertPairing :
     HilbertPairing K n :=
   ((MonoidHom.compHom (M := PowerClassGroup K n)
       (N := KummerTheory.nthRootsSubgroup K (n : ℕ))
@@ -64,9 +58,7 @@ noncomputable def localHilbertPairing
 
 /-- The public pairing evaluates to the public Hilbert symbol on
 representatives. -/
-theorem localHilbertPairing_powerClass
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
+theorem localHilbertPairing_powerClass (a b : Kˣ) :
     localHilbertPairing K n hnK hmu (powerClass K n a) (powerClass K n b) =
       localHilbertSymbol K n hnK hmu a b := by
   let e := KummerTheory.nthRootsSubgroupEquivRootsOfUnity K (n : ℕ)
@@ -81,6 +73,8 @@ theorem localHilbertPairing_powerClass
     (LocalClassFieldTheory.Kummer.localHilbertPairing_apply
       K n hnK hmu a b)
 
+end
+
 /-- The local Hilbert symbol is multiplicative in its first variable. -/
 theorem localHilbertSymbol_mul_left
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
@@ -90,9 +84,8 @@ theorem localHilbertSymbol_mul_left
         localHilbertSymbol K n hnK hmu b c := by
   let e := KummerTheory.nthRootsSubgroupEquivRootsOfUnity K (n : ℕ)
   let h := LocalClassFieldTheory.Kummer.localHilbertSymbolHom K n hnK hmu c
-  change e (h (a * b)) = e (h a) * e (h b)
   calc
-    e (h (a * b)) = e (h a * h b) := congrArg e (map_mul h a b)
+    _ = e (h a * h b) := congrArg e (map_mul h a b)
     _ = e (h a) * e (h b) := map_mul e (h a) (h b)
 
 /-- The local Hilbert symbol is multiplicative in its second variable. -/
@@ -103,26 +96,29 @@ theorem localHilbertSymbol_mul_right
       localHilbertSymbol K n hnK hmu a b *
         localHilbertSymbol K n hnK hmu a c := by
   let e := KummerTheory.nthRootsSubgroupEquivRootsOfUnity K (n : ℕ)
+  let localHilbertSymbol₀ := LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a
   change
-    e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a (b * c)) =
-      e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a b) *
-        e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a c)
+    e (localHilbertSymbol₀ (b * c)) =
+      e (localHilbertSymbol₀ b) *
+        e (localHilbertSymbol₀ c)
   calc
-    e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a (b * c)) =
-        e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a b *
-          LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a c) :=
+    _ =
+        e (localHilbertSymbol₀ b *
+          localHilbertSymbol₀ c) :=
       congrArg e
         (LocalClassFieldTheory.Kummer.localHilbertSymbol_mul_right
           K n hnK hmu a b c)
-    _ = e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a b) *
-        e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a c) :=
+    _ = e (localHilbertSymbol₀ b) *
+        e (localHilbertSymbol₀ c) :=
       map_mul e _ _
+
+section
+
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
 
 /-- The local Hilbert symbol satisfies the Steinberg relation
 `(a, 1 - a) = 1`. -/
 theorem localHilbertSymbol_steinberg
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (a : Kˣ) (h_one_sub : 1 - (a : K) ≠ 0) :
     localHilbertSymbol K n hnK hmu a
         (Units.mk0 (1 - (a : K)) h_one_sub) = 1 := by
@@ -131,17 +127,14 @@ theorem localHilbertSymbol_steinberg
     e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a
       (Units.mk0 (1 - (a : K)) h_one_sub)) = 1
   calc
-    e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a
-        (Units.mk0 (1 - (a : K)) h_one_sub)) = e 1 :=
+    _ = e 1 :=
       congrArg e
         (LocalClassFieldTheory.Kummer.localHilbertSymbol_steinberg
           K n hnK hmu a h_one_sub)
     _ = 1 := map_one e
 
 /-- The local Hilbert symbol is skew-symmetric. -/
-theorem localHilbertSymbol_skew
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
+theorem localHilbertSymbol_skew (a b : Kˣ) :
     localHilbertSymbol K n hnK hmu a b =
       (localHilbertSymbol K n hnK hmu b a)⁻¹ := by
   let e := KummerTheory.nthRootsSubgroupEquivRootsOfUnity K (n : ℕ)
@@ -149,7 +142,7 @@ theorem localHilbertSymbol_skew
     e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a b) =
       (e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu b a))⁻¹
   calc
-    e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a b) =
+    _ =
         e ((LocalClassFieldTheory.Kummer.localHilbertSymbol
           K n hnK hmu b a)⁻¹) :=
       congrArg e
@@ -158,65 +151,7 @@ theorem localHilbertSymbol_skew
     _ = (e (LocalClassFieldTheory.Kummer.localHilbertSymbol
         K n hnK hmu b a))⁻¹ := map_inv e _
 
-/-- The common left kernel of the local Hilbert symbol is the subgroup of
-`n`-th powers. -/
-theorem localHilbertSymbol_left_kernel
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a : Kˣ) :
-    (∀ b : Kˣ, localHilbertSymbol K n hnK hmu a b = 1) ↔
-      a ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
-  let e := KummerTheory.nthRootsSubgroupEquivRootsOfUnity K (n : ℕ)
-  constructor
-  · intro h
-    apply (LocalClassFieldTheory.Kummer.localHilbertSymbol_left_kernel
-      K n hnK hmu a).1
-    intro b
-    apply e.injective
-    calc
-      e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a b) =
-          localHilbertSymbol K n hnK hmu a b := rfl
-      _ = 1 := h b
-      _ = e 1 := (map_one e).symm
-  · intro ha b
-    have hInternal :=
-      (LocalClassFieldTheory.Kummer.localHilbertSymbol_left_kernel
-        K n hnK hmu a).2 ha b
-    calc
-      localHilbertSymbol K n hnK hmu a b =
-          e (LocalClassFieldTheory.Kummer.localHilbertSymbol
-            K n hnK hmu a b) := rfl
-      _ = e 1 := congrArg e hInternal
-      _ = 1 := map_one e
-
-/-- The common right kernel of the local Hilbert symbol is the subgroup of
-`n`-th powers. -/
-theorem localHilbertSymbol_right_kernel
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (b : Kˣ) :
-    (∀ a : Kˣ, localHilbertSymbol K n hnK hmu a b = 1) ↔
-      b ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
-  let e := KummerTheory.nthRootsSubgroupEquivRootsOfUnity K (n : ℕ)
-  constructor
-  · intro h
-    apply (LocalClassFieldTheory.Kummer.localHilbertSymbol_right_kernel
-      K n hnK hmu b).1
-    intro a
-    apply e.injective
-    calc
-      e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a b) =
-          localHilbertSymbol K n hnK hmu a b := rfl
-      _ = 1 := h a
-      _ = e 1 := (map_one e).symm
-  · intro hb a
-    have hInternal :=
-      (LocalClassFieldTheory.Kummer.localHilbertSymbol_right_kernel
-        K n hnK hmu b).2 hb a
-    calc
-      localHilbertSymbol K n hnK hmu a b =
-          e (LocalClassFieldTheory.Kummer.localHilbertSymbol
-            K n hnK hmu a b) := rfl
-      _ = e 1 := congrArg e hInternal
-      _ = 1 := map_one e
+end
 
 /-- The local Hilbert pairing separates power classes in both variables. -/
 theorem localHilbertPairing_nondegenerate
@@ -238,7 +173,7 @@ theorem localHilbertPairing_nondegenerate
     intro b
     apply e.injective
     calc
-      e (B a b) = localHilbertPairing K n hnK hmu a b := rfl
+      _ = localHilbertPairing K n hnK hmu a b := rfl
       _ = 1 := ha b
       _ = e 1 := (map_one e).symm
   · intro b hb
@@ -246,15 +181,15 @@ theorem localHilbertPairing_nondegenerate
     intro a
     apply e.injective
     calc
-      e (B a b) = localHilbertPairing K n hnK hmu a b := rfl
+      _ = localHilbertPairing K n hnK hmu a b := rfl
       _ = 1 := hb a
       _ = e 1 := (map_one e).symm
 
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+
 /-- A local Hilbert symbol vanishes exactly when its second argument is a
 norm from the canonical, possibly reducible Kummer algebra of the first. -/
-theorem localHilbertSymbol_eq_one_iff_isKummerNorm
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
+theorem localHilbertSymbol_eq_one_iff_isKummerNorm (a b : Kˣ) :
     localHilbertSymbol K n hnK hmu a b = 1 ↔ IsKummerNorm K n a b := by
   let E := KummerTheory.chosenSimpleKummerExtension K n hnK a
   let e := KummerTheory.nthRootsSubgroupEquivRootsOfUnity K (n : ℕ)
@@ -267,10 +202,9 @@ theorem localHilbertSymbol_eq_one_iff_isKummerNorm
       K n hnK hmu a b = 1 ↔
       LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu b a = 1 := by
     rw [LocalClassFieldTheory.Kummer.localHilbertSymbol_skew K n hnK hmu a b]
-    simp only [inv_eq_one]
+    simp
   have hnorm : b ∈ LocalFieldTheory.localNormSubgroup K E ↔
       ∃ z : Eˣ, Algebra.norm K (z : E) = (b : K) := by
-    change (∃ z : Eˣ, LocalFieldTheory.normUnits K E z = b) ↔ _
     constructor
     · rintro ⟨z, hz⟩
       refine ⟨z, ?_⟩
@@ -280,7 +214,7 @@ theorem localHilbertSymbol_eq_one_iff_isKummerNorm
       apply Units.ext
       exact hz
   calc
-    localHilbertSymbol K n hnK hmu a b = 1 ↔
+    _ = 1 ↔
         LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a b = 1 :=
       hmap
     _ ↔ LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu b a = 1 :=
@@ -295,9 +229,7 @@ theorem localHilbertSymbol_eq_one_iff_isKummerNorm
 
 /-- The Mathlib-facing local Hilbert pairing obeys all local algebraic laws,
 including the canonical Kummer norm-residue criterion. -/
-theorem localHilbertPairing_isLocalHilbertPairing
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+theorem localHilbertPairing_isLocalHilbertPairing :
     HilbertPairing.IsLocalHilbertPairing
       (localHilbertPairing K n hnK hmu) := by
   refine ⟨?_, ?_, ?_, ?_⟩
@@ -356,7 +288,7 @@ theorem localHilbertPairing_artin_rootQuotient
       (algebraMap K (KummerTheory.chosenSimpleKummerExtension K n hnK a)).toMonoidHom
       (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu b a).1 =
       KummerTheory.rootQuotient
-        (K := K) (L := KummerTheory.chosenSimpleKummerExtension K n hnK a)
+
         (KummerTheory.chosenSimpleKummerRootUnit K n hnK a)
         (LocalClassFieldTheory.Kummer.chosenSimpleKummerNormResidueAutomorphism
           K n hnK hmu a b) at h
@@ -386,35 +318,26 @@ theorem localHilbertPairing_artin_rootQuotient_of_same_pow
         (LocalClassFieldTheory.Kummer.chosenSimpleKummerNormResidueAutomorphism
           K n hnK hmu a b) := by
   let E := KummerTheory.chosenSimpleKummerExtension K n hnK a
-  let beta : Eˣ := KummerTheory.chosenSimpleKummerRootUnit K n hnK a
-  let sigma : E ≃ₐ[K] E :=
+  let beta := KummerTheory.chosenSimpleKummerRootUnit K n hnK a
+  let sigma :=
     LocalClassFieldTheory.Kummer.chosenSimpleKummerNormResidueAutomorphism
       K n hnK hmu a b
-  have hbeta : beta ^ (n : ℕ) = Units.map (algebraMap K E).toMonoidHom a :=
-    KummerTheory.chosenSimpleKummerRootUnit_pow K n hnK a
   change u ^ (n : ℕ) = Units.map (algebraMap K E).toMonoidHom a at hu
-  have hpow : (u / beta) ^ (n : ℕ) = 1 :=
-    KummerTheory.div_pow_eq_one_of_pow_eq_pow (hu.trans hbeta.symm)
   obtain ⟨zeta, hzeta⟩ :=
     (KummerTheory.nthRootsOfUnityInBase_of_primitiveRoots
-      (K := K) (L := E) n hmu) (u / beta) hpow
-  have hquot : KummerTheory.rootQuotient (K := K) (L := E)
-      (u / beta) sigma = 1 := by
-    rw [← hzeta]
-    exact KummerTheory.rootQuotient_algebraMap_unit zeta sigma
-  have hroot : KummerTheory.rootQuotient (K := K) (L := E) u sigma =
-      KummerTheory.rootQuotient (K := K) (L := E) beta sigma :=
-    div_eq_one.mp
-      ((KummerTheory.rootQuotient_changeRoot (K := K) (L := E)
-        u beta sigma).trans hquot)
+        n hmu) (u / beta) (KummerTheory.div_pow_eq_one_of_pow_eq_pow (hu.trans (KummerTheory.chosenSimpleKummerRootUnit_pow K n hnK a).symm))
   have hchosen :
       Units.map (algebraMap K E).toMonoidHom
           (localHilbertPairing K n hnK hmu
             (powerClass K n b) (powerClass K n a)).1 =
-        KummerTheory.rootQuotient (K := K) (L := E) beta sigma := by
-    simpa only [E, beta, sigma] using
+        KummerTheory.rootQuotient beta sigma := by
+    simpa using
       (localHilbertPairing_artin_rootQuotient K n hnK hmu a b)
-  exact hchosen.trans hroot.symm
+  exact hchosen.trans (div_eq_one.mp
+    ((KummerTheory.rootQuotient_changeRoot
+      u beta sigma).trans (by
+        rw [← hzeta]
+        exact KummerTheory.rootQuotient_algebraMap_unit zeta sigma))).symm
 
 end ClassFieldTheory
 

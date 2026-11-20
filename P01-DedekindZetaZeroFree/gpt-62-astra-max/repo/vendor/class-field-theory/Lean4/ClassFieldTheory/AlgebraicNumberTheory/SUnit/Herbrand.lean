@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -43,11 +38,14 @@ variable
 
 section LogarithmicQuotient
 
+section
+
+variable (S : Finset (HeightOneSpectrum (𝓞 L)))
+
 /-- The additive Galois action restricted to the actual full
 logarithmic lattice. -/
 @[reducible]
 noncomputable def fullLogLatticeDistribMulAction
-    (S : Finset (HeightOneSpectrum (𝓞 L)))
     (hS : IsGaloisStableFinitePlaces K L S) :
     DistribMulAction (L ≃ₐ[K] L)
       (SUnitGroup.fullLogLattice (K := L) S) := by
@@ -59,19 +57,19 @@ noncomputable def fullLogLatticeDistribMulAction
   exact
     { smul := fun σ z =>
         ⟨σ • (z :
-            SUnitGroup.LogHyperplane (K := L) S),
+            SUnitGroup.LogHyperplane S),
           fullLogLattice_smul_mem K L hS
             σ z.1 z.2⟩
       one_smul := by
         intro z
         apply Subtype.ext
         exact one_smul (L ≃ₐ[K] L)
-          (z : SUnitGroup.LogHyperplane (K := L) S)
+          (z : SUnitGroup.LogHyperplane S)
       mul_smul := by
         intro σ τ z
         apply Subtype.ext
         exact mul_smul σ τ
-          (z : SUnitGroup.LogHyperplane (K := L) S)
+          (z : SUnitGroup.LogHyperplane S)
       smul_zero := by
         intro σ
         apply Subtype.ext
@@ -80,13 +78,12 @@ noncomputable def fullLogLatticeDistribMulAction
         intro σ z z'
         apply Subtype.ext
         exact DistribMulAction.smul_add σ
-          (z : SUnitGroup.LogHyperplane (K := L) S)
-          (z' : SUnitGroup.LogHyperplane (K := L) S) }
+          (z : SUnitGroup.LogHyperplane S)
+          (z' : SUnitGroup.LogHyperplane S)}
 
 /-- The full logarithm as a surjective multiplicative homomorphism
 from `S`-units onto the multiplicative logarithmic lattice. -/
-noncomputable def sUnitFullLogMulHom
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+noncomputable def sUnitFullLogMulHom :
     SUnitGroup (K := L) S →*
       Multiplicative
         (SUnitGroup.fullLogLattice (K := L) S) where
@@ -100,43 +97,41 @@ noncomputable def sUnitFullLogMulHom
     apply Multiplicative.toAdd.injective
     apply Subtype.ext
     exact map_zero
-      (SUnitGroup.fullLog (K := L) S)
+      (SUnitGroup.fullLog S)
   map_mul' x y := by
     apply Multiplicative.toAdd.injective
     apply Subtype.ext
     exact map_add
-      (SUnitGroup.fullLog (K := L) S)
+      (SUnitGroup.fullLog S)
       (Additive.ofMul x) (Additive.ofMul y)
 
 /-- The multiplicative full logarithm is onto its defining lattice. -/
-theorem sUnitFullLogMulHom_surjective
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+theorem sUnitFullLogMulHom_surjective :
     Function.Surjective
       (sUnitFullLogMulHom L S) := by
   intro z
   have hz :
       (Multiplicative.toAdd z :
-          SUnitGroup.fullLogLattice (K := L) S).1 ∈
+          SUnitGroup.fullLogLattice S).1 ∈
         LinearMap.range
-          (SUnitGroup.fullLog (K := L) S).toIntLinearMap := by
+          (SUnitGroup.fullLog S).toIntLinearMap := by
     rw [← SUnitGroup.fullLogLattice_eq_range]
     exact
       (Multiplicative.toAdd z :
-        SUnitGroup.fullLogLattice (K := L) S).2
+        SUnitGroup.fullLogLattice S).2
   obtain ⟨x, hx⟩ := hz
   refine ⟨Additive.toMul x, ?_⟩
   apply Multiplicative.toAdd.injective
   apply Subtype.ext
   change
-    SUnitGroup.fullLog (K := L) S x =
+    SUnitGroup.fullLog S x =
       (Multiplicative.toAdd z :
-        SUnitGroup.fullLogLattice (K := L) S).1
+        SUnitGroup.fullLogLattice S).1
   exact hx
 
 /-- The kernel of the multiplicative full logarithm is exactly the
 torsion subgroup of the `S`-unit group. -/
-theorem sUnitFullLogMulHom_ker
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+theorem sUnitFullLogMulHom_ker :
     (sUnitFullLogMulHom L S).ker =
       CommGroup.torsion
         (SUnitGroup (K := L) S) := by
@@ -145,33 +140,31 @@ theorem sUnitFullLogMulHom_ker
   constructor
   · intro hx
     have hxlog :
-        SUnitGroup.fullLog (K := L) S
+        SUnitGroup.fullLog S
             (Additive.ofMul x) = 0 := by
       have hx' :=
         congrArg
           (fun z :
               Multiplicative
                 (SUnitGroup.fullLogLattice
-                  (K := L) S) =>
+                   S) =>
             ((Multiplicative.toAdd z :
                 SUnitGroup.fullLogLattice
-                  (K := L) S) :
-              SUnitGroup.LogHyperplane (K := L) S))
+                   S) :
+              SUnitGroup.LogHyperplane S))
           hx
       exact hx'
-    have hxt :=
-      (SUnitGroup.fullLog_eq_zero_iff
-        (K := L) S (Additive.ofMul x)).mp hxlog
-    change IsOfFinOrder x
-    exact isOfFinAddOrder_ofMul_iff.mp hxt
+    exact isOfFinAddOrder_ofMul_iff.mp ((SUnitGroup.fullLog_eq_zero_iff
+      S (Additive.ofMul x)).mp hxlog)
   · intro hxt
     apply Multiplicative.toAdd.injective
     apply Subtype.ext
     apply
       (SUnitGroup.fullLog_eq_zero_iff
-        (K := L) S (Additive.ofMul x)).mpr
-    change IsOfFinAddOrder (Additive.ofMul x)
+         S (Additive.ofMul x)).mpr
     exact isOfFinAddOrder_ofMul_iff.mpr hxt
+
+end
 
 omit [NumberField K] in
 /-- The multiplicative full logarithm is equivariant for the actual
@@ -192,23 +185,6 @@ theorem sUnitFullLogMulHom_equivariant
       (x : SUnitGroup (K := L) S),
       sUnitFullLogMulHom L S (σ • x) =
         σ • sUnitFullLogMulHom L S x := by
-  let sUnitAction :=
-    sUnitMulDistribMulAction K L S hS
-  let additiveSUnitAction :=
-    additiveSUnitDistribMulAction K L S hS
-  let logPlaceAction :=
-    logPlaceMulAction K L S hS
-  let fullLogSpaceAction :=
-    fullLogSpaceDistribMulAction K L S hS
-  let logHyperplaneAction :=
-    logHyperplaneDistribMulAction K L S hS
-  let latticeAction :=
-    fullLogLatticeDistribMulAction K L S hS
-  let multiplicativeLatticeAction :
-      MulDistribMulAction (L ≃ₐ[K] L)
-        (Multiplicative
-          (SUnitGroup.fullLogLattice (K := L) S)) :=
-    multiplicativeDistribMulAction
   intro σ x
   apply Multiplicative.toAdd.injective
   apply Subtype.ext
@@ -273,18 +249,13 @@ theorem sUnitTorsion_fullLog_exact
   intro x
   constructor
   · intro hx
-    have hxt :
-        x ∈ CommGroup.torsion
-          (SUnitGroup (K := L) S) := by
-      rw [← sUnitFullLogMulHom_ker L S]
-      exact hx
-    exact ⟨⟨x, hxt⟩, rfl⟩
+    refine ⟨⟨x, ?_⟩, rfl⟩
+    rw [← sUnitFullLogMulHom_ker L S]
+    exact hx
   · rintro ⟨t, rfl⟩
     have ht :
-        ((t :
-            CommGroup.torsion
-              (SUnitGroup (K := L) S)) :
-          SUnitGroup (K := L) S) ∈
+        (t :
+          SUnitGroup S) ∈
             (sUnitFullLogMulHom L S).ker := by
       rw [sUnitFullLogMulHom_ker L S]
       exact t.2
@@ -307,17 +278,15 @@ theorem mem_fullLogHyperplaneDiagonalLattice_iff
     fullLogHyperplaneDiagonalBasis L S
   constructor
   · intro hz
-    have hzrepr :
-        ∀ i, b.repr z i ∈
-          Set.range (algebraMap ℤ ℝ) :=
+    have hzrepr :=
       (b.mem_span_iff_repr_mem ℤ _).mp hz
     have hzfirst :
         z.1 ∈
-          SUnitGroup.fullLogLattice (K := L) S := by
+          SUnitGroup.fullLogLattice S := by
       rw [←
         (Module.Free.chooseBasis ℤ
           (SUnitGroup.fullLogLattice
-            (K := L) S)).ofZLatticeBasis_span ℝ]
+             S)).ofZLatticeBasis_span ℝ]
       apply
         ((fullLogLatticeRealBasis L S).mem_span_iff_repr_mem
           ℤ _).mpr
@@ -341,24 +310,25 @@ theorem mem_fullLogHyperplaneDiagonalLattice_iff
           simpa only [fullLogLatticeRealBasis,
             (Module.Free.chooseBasis ℤ
               (SUnitGroup.fullLogLattice
-                (K := L) S)).ofZLatticeBasis_span ℝ] using
+                 S)).ofZLatticeBasis_span ℝ] using
             hzfirst
-        have hzcoord :=
-          ((fullLogLatticeRealBasis L S).mem_span_iff_repr_mem
-            ℤ _).mp hzspan j
         simpa only [b, fullLogHyperplaneDiagonalBasis,
-          Basis.prod_repr_inl] using hzcoord
+          Basis.prod_repr_inl] using (((fullLogLatticeRealBasis L S).mem_span_iff_repr_mem
+            ℤ _).mp hzspan j)
     | inr j =>
         refine ⟨n, ?_⟩
         simpa [b, fullLogHyperplaneDiagonalBasis,
           Basis.prod_repr_inr, Basis.singleton_repr,
           RingHom.id_apply] using hn
 
+section
+
+variable (S : Finset (HeightOneSpectrum (𝓞 L)))
+
 /-- The natural integral-linear map from the logarithmic lattice and
 one diagonal integer coordinate to the extended full logarithmic
 lattice. -/
-noncomputable def fullLogLatticeProdIntToExtended
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+noncomputable def fullLogLatticeProdIntToExtended :
     (SUnitGroup.fullLogLattice (K := L) S × ℤ) →ₗ[ℤ]
       extendedFullLogLattice L S := by
   let e :=
@@ -366,34 +336,26 @@ noncomputable def fullLogLatticeProdIntToExtended
   refine
     { toFun := fun z =>
         ⟨e.symm
-            (((z.1 :
-                SUnitGroup.fullLogLattice
-                  (K := L) S) :
-              SUnitGroup.LogHyperplane (K := L) S),
+            ((z.1 :
+              SUnitGroup.LogHyperplane S),
               (z.2 : ℝ)), ?_⟩
       map_add' := ?_
       map_smul' := ?_ }
   · change
       fullLogSpaceSplit L S
           (e.symm
-            (((z.1 :
-                SUnitGroup.fullLogLattice
-                  (K := L) S) :
-              SUnitGroup.LogHyperplane (K := L) S),
+            ((z.1 :
+              SUnitGroup.LogHyperplane S),
               (z.2 : ℝ))) ∈
         fullLogHyperplaneDiagonalLattice L S
     rw [show
       fullLogSpaceSplit L S
           (e.symm
-            (((z.1 :
-                SUnitGroup.fullLogLattice
-                  (K := L) S) :
-              SUnitGroup.LogHyperplane (K := L) S),
+            ((z.1 :
+              SUnitGroup.LogHyperplane S),
               (z.2 : ℝ))) =
-        (((z.1 :
-            SUnitGroup.fullLogLattice
-              (K := L) S) :
-          SUnitGroup.LogHyperplane (K := L) S),
+        ((z.1 :
+          SUnitGroup.LogHyperplane S),
           (z.2 : ℝ)) by
       exact e.apply_symm_apply _]
     exact
@@ -405,20 +367,16 @@ noncomputable def fullLogLatticeProdIntToExtended
       e.symm
           (((((x + y).1 :
               SUnitGroup.fullLogLattice
-                (K := L) S) :
-            SUnitGroup.LogHyperplane (K := L) S)),
+                 S) :
+            SUnitGroup.LogHyperplane S)),
             (((x + y).2 : ℤ) : ℝ)) =
         e.symm
-            ((((x.1 :
-                SUnitGroup.fullLogLattice
-                  (K := L) S) :
-              SUnitGroup.LogHyperplane (K := L) S),
+            (((x.1 :
+              SUnitGroup.LogHyperplane S),
               (x.2 : ℝ))) +
           e.symm
-            ((((y.1 :
-                SUnitGroup.fullLogLattice
-                  (K := L) S) :
-              SUnitGroup.LogHyperplane (K := L) S),
+            (((y.1 :
+              SUnitGroup.LogHyperplane S),
               (y.2 : ℝ)))
     rw [← e.symm.map_add]
     congr 1
@@ -429,23 +387,20 @@ noncomputable def fullLogLatticeProdIntToExtended
       e.symm
           (((((n • x).1 :
               SUnitGroup.fullLogLattice
-                (K := L) S) :
-            SUnitGroup.LogHyperplane (K := L) S)),
+                 S) :
+            SUnitGroup.LogHyperplane S)),
             ((((n • x).2 : ℤ) : ℝ))) =
         n •
           e.symm
-            ((((x.1 :
-                SUnitGroup.fullLogLattice
-                  (K := L) S) :
-              SUnitGroup.LogHyperplane (K := L) S),
+            (((x.1 :
+              SUnitGroup.LogHyperplane S),
               (x.2 : ℝ)))
     rw [← map_zsmul]
     congr 1
     ext <;> simp
 
 /-- The preceding map is bijective. -/
-theorem fullLogLatticeProdIntToExtended_bijective
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+theorem fullLogLatticeProdIntToExtended_bijective :
     Function.Bijective
       (fullLogLatticeProdIntToExtended L S) := by
   let e :=
@@ -455,84 +410,60 @@ theorem fullLogLatticeProdIntToExtended_bijective
     have hxy' :=
       congrArg
         (fun z : extendedFullLogLattice L S =>
-          e (z :
-            SUnitGroup.FullLogSpace (K := L) S))
+          e z)
         hxy
     have hpairs :
-        (((x.1 :
-              SUnitGroup.fullLogLattice
-                (K := L) S) :
-            SUnitGroup.LogHyperplane (K := L) S),
+        ((x.1 :
+            SUnitGroup.LogHyperplane S),
             (x.2 : ℝ)) =
-          (((y.1 :
-              SUnitGroup.fullLogLattice
-                (K := L) S) :
-            SUnitGroup.LogHyperplane (K := L) S),
+          ((y.1 :
+            SUnitGroup.LogHyperplane S),
             (y.2 : ℝ)) := by
       change
         e (e.symm
-            (((x.1 :
-                SUnitGroup.fullLogLattice
-                  (K := L) S) :
-              SUnitGroup.LogHyperplane (K := L) S),
+            ((x.1 :
+              SUnitGroup.LogHyperplane S),
               (x.2 : ℝ))) =
           e (e.symm
-            (((y.1 :
-                SUnitGroup.fullLogLattice
-                  (K := L) S) :
-              SUnitGroup.LogHyperplane (K := L) S),
+            ((y.1 :
+              SUnitGroup.LogHyperplane S),
               (y.2 : ℝ))) at hxy'
-      simpa only [e, LinearEquiv.apply_symm_apply] using hxy'
+      simpa using hxy'
     apply Prod.ext
     · apply Subtype.ext
       exact congrArg Prod.fst hpairs
-    · have hs :
-          (x.2 : ℝ) = (y.2 : ℝ) :=
-        congrArg Prod.snd hpairs
-      exact Int.cast_injective hs
+    · exact Int.cast_injective (congrArg Prod.snd hpairs)
   · intro y
-    have hy :
-        fullLogSpaceSplit L S
-            (y :
-              SUnitGroup.FullLogSpace (K := L) S) ∈
-          fullLogHyperplaneDiagonalLattice L S :=
-      y.2
     obtain ⟨hyfirst, n, hn⟩ :=
       (mem_fullLogHyperplaneDiagonalLattice_iff
-        L S _).mp hy
+        L S _).mp y.2
     let x :
-        SUnitGroup.fullLogLattice (K := L) S × ℤ :=
+        SUnitGroup.fullLogLattice S × ℤ :=
       (⟨(fullLogSpaceSplit L S
           (y :
-            SUnitGroup.FullLogSpace (K := L) S)).1,
+            SUnitGroup.FullLogSpace S)).1,
         hyfirst⟩, n)
     refine ⟨x, ?_⟩
     apply Subtype.ext
     apply e.injective
     change
       e (e.symm
-          (((x.1 :
-              SUnitGroup.fullLogLattice
-                (K := L) S) :
-            SUnitGroup.LogHyperplane (K := L) S),
+          ((x.1 :
+            SUnitGroup.LogHyperplane S),
             (x.2 : ℝ))) =
-        e (y :
-          SUnitGroup.FullLogSpace (K := L) S)
+        e y
     rw [e.apply_symm_apply]
     change
       ((fullLogSpaceSplit L S
-          (y :
-            SUnitGroup.FullLogSpace (K := L) S)).1,
+          y).1,
         (n : ℝ)) =
       fullLogSpaceSplit L S
-        (y :
-          SUnitGroup.FullLogSpace (K := L) S)
+        y
     exact Prod.ext rfl hn
 
 /-- Integral-linear decomposition of the extended lattice into the
 logarithmic lattice and one integer diagonal direction. -/
-noncomputable def extendedFullLogLatticeEquivProdInt
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+noncomputable def extendedFullLogLatticeEquivProdInt :
     extendedFullLogLattice L S ≃ₗ[ℤ]
       (SUnitGroup.fullLogLattice (K := L) S × ℤ) :=
   (LinearEquiv.ofBijective
@@ -543,7 +474,6 @@ noncomputable def extendedFullLogLatticeEquivProdInt
 the invariant integer diagonal. -/
 @[reducible]
 noncomputable def fullLogLatticeProdIntDistribMulAction
-    (S : Finset (HeightOneSpectrum (𝓞 L)))
     (hS : IsGaloisStableFinitePlaces K L S) :
     DistribMulAction (L ≃ₐ[K] L)
       (SUnitGroup.fullLogLattice (K := L) S × ℤ) := by
@@ -571,6 +501,8 @@ noncomputable def fullLogLatticeProdIntDistribMulAction
         apply Prod.ext
         · exact DistribMulAction.smul_add σ z.1 z'.1
         · rfl }
+
+end
 
 omit [NumberField K] in
 /-- The map from logarithmic-plus-diagonal coordinates into the
@@ -606,9 +538,7 @@ theorem fullLogLatticeProdIntToExtended_equivariant
   dsimp only
   let ρ :=
     logPlacePermutationHom K L S hS
-  let indexAction :
-      MulAction (L ≃ₐ[K] L)
-        (SUnitGroup.LogPlace (K := L) S) :=
+  let indexAction :=
     permutationMulAction ρ
   let sUnitAction :=
     sUnitMulDistribMulAction K L S hS
@@ -772,33 +702,11 @@ theorem extendedFullLogLatticeEquivProdInt_equivariant
   dsimp only
   let ρ :=
     logPlacePermutationHom K L S hS
-  let indexAction :
-      MulAction (L ≃ₐ[K] L)
-        (SUnitGroup.LogPlace (K := L) S) :=
-    permutationMulAction ρ
-  let sUnitAction :=
-    sUnitMulDistribMulAction K L S hS
-  let additiveSUnitAction :=
-    additiveSUnitDistribMulAction K L S hS
-  let logPlaceAction :=
-    logPlaceMulAction K L S hS
-  let fullLogSpaceAction :=
-    fullLogSpaceDistribMulAction K L S hS
-  let logHyperplaneAction :=
-    logHyperplaneDistribMulAction K L S hS
-  let fullLogLatticeAction :=
-    fullLogLatticeDistribMulAction K L S hS
-  let extendedAction :
-      DistribMulAction (L ≃ₐ[K] L)
-        (extendedFullLogLattice L S) :=
+  let extendedAction :=
     completePermutationLatticeDistribMulAction
       ρ (extendedFullLogLattice L S)
       (extendedFullLogLattice_permutation_stable
         K L hS)
-  let productAction :
-      DistribMulAction (L ≃ₐ[K] L)
-        (SUnitGroup.fullLogLattice (K := L) S × ℤ) :=
-    fullLogLatticeProdIntDistribMulAction K L S hS
   intro σ x
   let e :=
     extendedFullLogLatticeEquivProdInt L S
@@ -808,7 +716,7 @@ theorem extendedFullLogLatticeEquivProdInt_equivariant
       K L hS σ (e x)
   change
     e.symm
-        (productAction.toMulAction.toSemigroupAction.toSMul.smul
+        ((fullLogLatticeProdIntDistribMulAction K L S hS).toMulAction.toSemigroupAction.toSMul.smul
           σ (e x)) =
       extendedAction.toMulAction.toSemigroupAction.toSMul.smul
         σ (e.symm (e x)) at hmap
@@ -898,50 +806,18 @@ theorem extendedFullLogLatticeMulEquivProdInt_equivariant
   dsimp only
   let ρ :=
     logPlacePermutationHom K L S hS
-  let indexAction :
-      MulAction (L ≃ₐ[K] L)
-        (SUnitGroup.LogPlace (K := L) S) :=
-    permutationMulAction ρ
-  let sUnitAction :=
-    sUnitMulDistribMulAction K L S hS
-  let additiveSUnitAction :=
-    additiveSUnitDistribMulAction K L S hS
-  let logPlaceAction :=
-    logPlaceMulAction K L S hS
-  let fullLogSpaceAction :=
-    fullLogSpaceDistribMulAction K L S hS
-  let logHyperplaneAction :=
-    logHyperplaneDistribMulAction K L S hS
-  let fullLogLatticeAction :=
-    fullLogLatticeDistribMulAction K L S hS
-  let extendedAction :
-      DistribMulAction (L ≃ₐ[K] L)
-        (extendedFullLogLattice L S) :=
+  let extendedAction :=
     completePermutationLatticeDistribMulAction
       ρ (extendedFullLogLattice L S)
       (extendedFullLogLattice_permutation_stable
         K L hS)
-  let extendedMultiplicativeAction :
-      MulDistribMulAction (L ≃ₐ[K] L)
-        (Multiplicative
-          (extendedFullLogLattice L S)) :=
-    multiplicativeDistribMulAction
-  let productAction :
-      DistribMulAction (L ≃ₐ[K] L)
-        (SUnitGroup.fullLogLattice (K := L) S × ℤ) :=
-    fullLogLatticeProdIntDistribMulAction K L S hS
-  let productMultiplicativeAction :
-      MulDistribMulAction (L ≃ₐ[K] L)
-        (Multiplicative
-          (SUnitGroup.fullLogLattice (K := L) S × ℤ)) :=
-    multiplicativeDistribMulAction
   intro σ x
   apply Multiplicative.toAdd.injective
   change
     extendedFullLogLatticeEquivProdInt L S
         (extendedAction.toMulAction.toSemigroupAction.toSMul.smul
           σ (Multiplicative.toAdd x)) =
-      productAction.toMulAction.toSemigroupAction.toSMul.smul
+      (fullLogLatticeProdIntDistribMulAction K L S hS).toMulAction.toSemigroupAction.toSMul.smul
         σ
         (extendedFullLogLatticeEquivProdInt L S
           (Multiplicative.toAdd x))
@@ -978,22 +854,6 @@ theorem fullLogLatticeProdIntIncl_equivariant
           (SUnitGroup.fullLogLattice (K := L) S)),
       fullLogLatticeProdIntIncl L S (σ • z) =
         σ • fullLogLatticeProdIntIncl L S z := by
-  let latticeAction :=
-    fullLogLatticeDistribMulAction K L S hS
-  let latticeMultiplicativeAction :
-      MulDistribMulAction (L ≃ₐ[K] L)
-        (Multiplicative
-          (SUnitGroup.fullLogLattice (K := L) S)) :=
-    multiplicativeDistribMulAction
-  let productAction :
-      DistribMulAction (L ≃ₐ[K] L)
-        (SUnitGroup.fullLogLattice (K := L) S × ℤ) :=
-    fullLogLatticeProdIntDistribMulAction K L S hS
-  let productMultiplicativeAction :
-      MulDistribMulAction (L ≃ₐ[K] L)
-        (Multiplicative
-          (SUnitGroup.fullLogLattice (K := L) S × ℤ)) :=
-    multiplicativeDistribMulAction
   intro σ z
   rfl
 
@@ -1026,28 +886,16 @@ theorem fullLogLatticeProdIntProj_equivariant
           (SUnitGroup.fullLogLattice (K := L) S × ℤ)),
       fullLogLatticeProdIntProj L S (σ • z) =
         σ • fullLogLatticeProdIntProj L S z := by
-  let latticeAction :=
-    fullLogLatticeDistribMulAction K L S hS
-  let productAction :
-      DistribMulAction (L ≃ₐ[K] L)
-        (SUnitGroup.fullLogLattice (K := L) S × ℤ) :=
-    fullLogLatticeProdIntDistribMulAction K L S hS
-  let productMultiplicativeAction :
-      MulDistribMulAction (L ≃ₐ[K] L)
-        (Multiplicative
-          (SUnitGroup.fullLogLattice (K := L) S × ℤ)) :=
-    multiplicativeDistribMulAction
-  let integerAction :
-      MulDistribMulAction (L ≃ₐ[K] L)
-        (Multiplicative ℤ) :=
-    trivialIntMulDistribMulAction (L ≃ₐ[K] L)
   intro σ z
   rfl
 
+section
+
+variable (S : Finset (HeightOneSpectrum (𝓞 L)))
+
 /-- Exactness of the first-factor inclusion followed by the diagonal
 projection. -/
-theorem fullLogLatticeProdInt_exact
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+theorem fullLogLatticeProdInt_exact :
     ∀ z :
         Multiplicative
           (SUnitGroup.fullLogLattice (K := L) S × ℤ),
@@ -1070,8 +918,7 @@ theorem fullLogLatticeProdInt_exact
     rfl
 
 /-- The first-factor inclusion is injective. -/
-theorem fullLogLatticeProdIntIncl_injective
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+theorem fullLogLatticeProdIntIncl_injective :
     Function.Injective
       (fullLogLatticeProdIntIncl L S) := by
   intro x y hxy
@@ -1080,18 +927,16 @@ theorem fullLogLatticeProdIntIncl_injective
     congrArg
       (fun z :
           Multiplicative
-            (SUnitGroup.fullLogLattice (K := L) S × ℤ) =>
+            (SUnitGroup.fullLogLattice S × ℤ) =>
         (Multiplicative.toAdd z).1) hxy
 
 /-- The diagonal projection is surjective. -/
-theorem fullLogLatticeProdIntProj_surjective
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+theorem fullLogLatticeProdIntProj_surjective :
     Function.Surjective
-      (fullLogLatticeProdIntProj L S) := by
-  intro z
-  exact
-    ⟨Multiplicative.ofAdd
+      (fullLogLatticeProdIntProj L S) := fun z => ⟨Multiplicative.ofAdd
         (0, Multiplicative.toAdd z), rfl⟩
+
+end
 
 /-- For the genuine sum-zero logarithmic lattice, adjoining
 the invariant diagonal multiplies the Herbrand quotient by `|G|`. -/
@@ -1609,8 +1454,6 @@ theorem finitePlace_stabilizer_eq_idealStabilizer
       finitePlaceMulAction K L
     MulAction.stabilizer (L ≃ₐ[K] L) P =
       MulAction.stabilizer (L ≃ₐ[K] L) P.asIdeal := by
-  let finitePlaceAction :=
-    finitePlaceMulAction K L
   ext σ
   simp only [MulAction.mem_stabilizer_iff]
   change
@@ -1656,19 +1499,9 @@ theorem finitePlace_stabilizer_card_eq_localDegree
     Nat.card
         (MulAction.stabilizer (L ≃ₐ[K] L) P) =
       finiteLogPlaceLocalDegree K L P := by
-  let finitePlaceAction :=
-    finitePlaceMulAction K L
   rw [finitePlace_stabilizer_eq_idealStabilizer K L P]
   unfold finiteLogPlaceLocalDegree
   let p := P.asIdeal.under (𝓞 K)
-  have hp : p ≠ ⊥ :=
-    Ideal.under_ne_bot (𝓞 K) P.ne_bot
-  let quotientFinite : Finite ((𝓞 K) ⧸ p) :=
-    Ring.HasFiniteQuotients.finiteQuotient hp
-  let residueFinite : Finite p.ResidueField :=
-    inferInstance
-  let residuePerfect : PerfectField p.ResidueField :=
-    inferInstance
   exact
     Ideal.card_stabilizer_eq p P.asIdeal
 
@@ -1716,12 +1549,13 @@ noncomputable def logPlaceLocalDegree
   | Sum.inr v =>
       finiteLogPlaceLocalDegree K L v
 
+section
+
+variable [IsGalois K L] {S : Finset (HeightOneSpectrum (𝓞 L))} (hS : IsGaloisStableFinitePlaces K L S)
+
 /-- For every actual logarithmic place, the order of its Galois
 stabilizer is its local degree. -/
 theorem logPlace_stabilizer_card_eq_localDegree
-    [IsGalois K L]
-    {S : Finset (HeightOneSpectrum (𝓞 L))}
-    (hS : IsGaloisStableFinitePlaces K L S)
     (q : SUnitGroup.LogPlace (K := L) S) :
     letI _logPlaceAction :=
       logPlaceMulAction K L S hS
@@ -1767,10 +1601,7 @@ theorem logPlace_stabilizer_card_eq_localDegree
 
 /-- The canonical representative of every logarithmic-place orbit has
 stabilizer order equal to its local degree. -/
-theorem permutationOrbitStabilizer_card_eq_logPlaceLocalDegree
-    [IsGalois K L]
-    {S : Finset (HeightOneSpectrum (𝓞 L))}
-    (hS : IsGaloisStableFinitePlaces K L S) :
+theorem permutationOrbitStabilizer_card_eq_logPlaceLocalDegree :
     let ρ :=
       logPlacePermutationHom K L S hS
     letI _indexAction :
@@ -1788,6 +1619,8 @@ theorem permutationOrbitStabilizer_card_eq_logPlaceLocalDegree
   exact
     logPlace_stabilizer_card_eq_localDegree
       K L hS ω.out
+
+end
 
 /-- The Herbrand quotient in local-degree form:
 `h(G, L^S) = |G|⁻¹ ∏_{p ∈ S} [L_P : K_p]`, with the
@@ -1842,24 +1675,21 @@ theorem sUnit_herbrandQuotient_eq_localDegreeProduct_div_card
   dsimp only
   let ρ :=
     logPlacePermutationHom K L S hS
-  let indexAction :
-      MulAction (L ≃ₐ[K] L)
-        (SUnitGroup.LogPlace (K := L) S) :=
+  let indexAction :=
     permutationMulAction ρ
   let sUnitAction :
       MulDistribMulAction (L ≃ₐ[K] L)
         (SUnitGroup (K := L) S) :=
     sUnitMulDistribMulAction K L S hS
+  let Quotient₀ := MulAction.orbitRel.Quotient (L ≃ₐ[K] L)
   let orbitFintype :
       Fintype
-        (MulAction.orbitRel.Quotient
-          (L ≃ₐ[K] L)
+        (Quotient₀
           (SUnitGroup.LogPlace (K := L) S)) :=
     Fintype.ofFinite _
   let stabilizerFintype :
       ∀ ω :
-          MulAction.orbitRel.Quotient
-            (L ≃ₐ[K] L)
+          Quotient₀
             (SUnitGroup.LogPlace (K := L) S),
         Fintype (permutationOrbitStabilizer ω) :=
     fun _ => Fintype.ofFinite _
@@ -1873,8 +1703,7 @@ theorem sUnit_herbrandQuotient_eq_localDegreeProduct_div_card
           (SUnitGroup (K := L) S)
           _ _ _ _ σ hSUnit.1 hSUnit.2 =
         (∏ ω :
-            MulAction.orbitRel.Quotient
-              (L ≃ₐ[K] L)
+            Quotient₀
               (SUnitGroup.LogPlace (K := L) S),
           (Fintype.card
             (permutationOrbitStabilizer ω) : ℚ)) /
@@ -1882,8 +1711,7 @@ theorem sUnit_herbrandQuotient_eq_localDegreeProduct_div_card
       hSUnitValue
     _ =
         (∏ ω :
-            MulAction.orbitRel.Quotient
-              (L ≃ₐ[K] L)
+            Quotient₀
               (SUnitGroup.LogPlace (K := L) S),
           (logPlaceLocalDegree K L S ω.out : ℚ)) /
           (Fintype.card (L ≃ₐ[K] L) : ℚ) := by

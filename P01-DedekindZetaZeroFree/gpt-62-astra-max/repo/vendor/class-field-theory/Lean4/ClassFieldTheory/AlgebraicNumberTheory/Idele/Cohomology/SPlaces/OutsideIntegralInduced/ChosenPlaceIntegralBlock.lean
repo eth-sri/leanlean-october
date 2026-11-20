@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -76,7 +72,7 @@ theorem
       (K := K) (L := L) w₀
   apply
     chosenFinitePlaceIntegralInducedBlockToLocalPlaceBlock_injective
-      (K := K) (L := L) w₀
+        w₀
   calc
     chosenFinitePlaceIntegralInducedBlockToLocalPlaceBlock
           (K := K) (L := L) w₀

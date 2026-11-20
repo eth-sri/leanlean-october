@@ -17,7 +17,7 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
 
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 namespace ErrorRectangles
 
@@ -46,12 +46,12 @@ theorem U_le_of_exponent
   intro B X hB hX
   have hp : 0 ≤ A * Real.rpow (B * max 1 X) η *
       min (B + Real.rpow (max 1 X) α) (max 1 X + Real.rpow B α) := by
-    have ha : 0 ≤ A := by linarith
     have hb : 0 ≤ B := by linarith
     have hx : 0 ≤ max 1 X := le_trans (by norm_num) (le_max_left _ _)
-    exact mul_nonneg (mul_nonneg ha (Real.rpow_nonneg (mul_nonneg hb hx) _))
+    refine mul_nonneg (mul_nonneg ?_ (Real.rpow_nonneg (mul_nonneg hb hx) _))
       (le_min (add_nonneg hb (Real.rpow_nonneg hx _))
         (add_nonneg hx (Real.rpow_nonneg hb _)))
+    linarith
   apply csSup_le
   · exact ⟨0, Or.inl rfl⟩
   intro z hz
@@ -91,15 +91,17 @@ def largeScore (C : Context Q) (B : ℝ) (P : ℝ × ℝ) : ℝ :=
 def finiteSup (S : Finset (ℝ × ℝ)) (f : ℝ × ℝ → ℝ) : ℝ :=
   sSup ({0} ∪ {x : ℝ | ∃ P ∈ S, x = f P})
 
-def directRectangles (C : Context Q) (B : ℝ) : Finset (ℝ × ℝ) :=
+variable (C : Context Q)
+
+def directRectangles (B : ℝ) : Finset (ℝ × ℝ) :=
   (rectangles C).filter (fun P =>
     lowerConstant c * Real.sqrt (C.M / B) * Real.rpow (C.M * C.N) C.δ /
       norm C.d ≤ P.1 * P.2)
 
-def directEnvelope (C : Context Q) (B : ℝ) : ℝ :=
+def directEnvelope (B : ℝ) : ℝ :=
   finiteSup (directRectangles C B) (largeScore C B)
 
-theorem rectangle_endpoints (C : Context Q) (P : ℝ × ℝ)
+theorem rectangle_endpoints (P : ℝ × ℝ)
     (hP : P ∈ rectangles C) :
     1 ≤ P.1 ∧ 1 ≤ P.2 ∧ P.1 ≤ 2 * C.N / norm C.d ∧
       P.2 ≤ 2 * C.N / norm C.d := by

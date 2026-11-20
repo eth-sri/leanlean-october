@@ -11,10 +11,10 @@ open scoped Classical NumberField Topology ContDiff
 open MeasureTheory Filter
 namespace DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
-open _root_.DedekindZetaZeroFree renaming canonicalRealization → canonicalRealization
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
-open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy renaming actualRightWord_compact_holomorphy → actualRightWord_compact_holomorphy
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming lift_eq → lift_eq
+open _root_.DedekindZetaZeroFree (canonicalRealization)
+
+open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy (actualRightWord_compact_holomorphy)
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (lift_eq)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 
@@ -37,10 +37,10 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     exact deriv_const_mul_field c
 
 variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "level" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F ζ hζ C R P H U
 local notation "G" => KPContSectorCoveredQuotientVocabulary.ActualCover F ζ hζ
@@ -114,14 +114,13 @@ local notation "G" => KPContSectorCoveredQuotientVocabulary.ActualCover F ζ hζ
     unfold KPContActualChamberNormalSeries.term KPContActualSphericalFlatStage.L
       KPContFlatCommonLevelKernel.L
     simp [ι, lift_eq]
-  · have hStage := stageConclusions F ζ hζ C R P H U ι hι
-    have hHilb := kp_cont_actual_hilbert_simple_germs F ζ hζ C R P H U
-      R.adelicHaar R.adelic_isHaar rfl realization ι hι hStage
+  · have hHilb := kp_cont_actual_hilbert_simple_germs F ζ hζ C R P H U
+      R.adelicHaar R.adelic_isHaar rfl realization ι hι
       KPContinuation.spectralDomain KPContinuation.spectralDomain_isOpen Set.Subset.rfl
       (fun _ => 1) hf buffer χ source
     intro c hc
     obtain ⟨r, hr, hb, hi, w, hw, he, _⟩ := hHilb.simple_germs c hc
-    obtain ⟨N⟩ := hW.continuation.every_germ c hc r hr hb hi w hw he
+    obtain ⟨N⟩ := hW.every_germ c hc r hr hb hi w hw he
     exact ⟨r, hr, hb, numerator F ζ hζ C R P H U source.descent.cutoff c N.W,
       N.numerator_data, N.punctured_group⟩
 
@@ -215,18 +214,12 @@ local notation "G" => KPContSectorCoveredQuotientVocabulary.ActualCover F ζ hζ
       change N s g = (s - c) * A s g at heq
       rw [heq]
       exact mul_div_cancel_left₀ (A s g) (sub_ne_zero.mpr hsne)
-    have hzero : (0 : ℂ) ∈ KPContinuation.spectralDomain := by
-      norm_num [KPContinuation.spectralDomain]
-    obtain ⟨r, hr, hb, N, hNj, hNa, he⟩ := hwordlocal 0 hzero
+    obtain ⟨r, hr, hb, N, hNj, hNa, he⟩ := hwordlocal 0 (by
+      norm_num [KPContinuation.spectralDomain])
     refine ⟨A, N, ?_, hm, r, hr, hb, ?_, hNa, hNj⟩
     · intro s hs g
-      have hz : groupScalar F ζ hζ C R P H U (Z s) =
-          fun h => ∑' c : KPChamberBruhatTwoCells.RationalQuotient F,
-            (KPContFlatSourceRecipe.flatR F ζ hζ s v.val).val
-              (KPLiteralRaw.rationalLift F ζ hζ (Quotient.out c) * h) :=
-        funext (hch s hs)
-      exact congrFun (congrArg (actualRightWord F ζ hζ w) hz) g
-    · simpa only [sub_zero] using he
+      exact congrFun (congrArg (actualRightWord F ζ hζ w) (funext (hch s hs))) g
+    · simpa using he
 
 end DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer
 

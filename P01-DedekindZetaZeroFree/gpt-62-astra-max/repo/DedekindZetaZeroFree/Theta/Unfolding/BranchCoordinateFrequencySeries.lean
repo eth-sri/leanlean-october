@@ -15,30 +15,33 @@ abbrev BranchCoordinateIndex (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) :=
   (b : Branch A G m D) × Coordinates A G m D b
 
-def branchCoordinateSummand (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ) (m : ThetaReflectionData.Row A)
-    (D : RowFactorization A G m) (Z : ℝ) (i : BranchCoordinateIndex A G m D) : ℂ :=
+section
+
+variable (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
+    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ) (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ)
+    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) (Z : ℝ)
+
+def branchCoordinateSummand (i : BranchCoordinateIndex A G m D) : ℂ :=
   exactCoefficient A G U σ ψ m D i.1 i.2 *
     (L (coordinateRepresentative A G U m D i.1 i.2))⁻¹ *
     H (ThetaReflectionData.frequencyClass A (coordinateFrequency A G U m D i.1 i.2))
       (Z * ThetaReflectionData.frequencyNorm A (coordinateFrequency A G U m D i.1 i.2))
 
-def branchCoordinateSeries (A : SArithmeticData F) (G : AllowedRecipe A)
-    (U : UnitRepresentatives A) (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (L : Fˣ →* ℂ) (H : A.V → ℝ → ℂ) (m : ThetaReflectionData.Row A)
-    (D : RowFactorization A G m) (Z : ℝ) : ℂ :=
+def branchCoordinateSeries : ℂ :=
   ∑' i : BranchCoordinateIndex A G m D, branchCoordinateSummand A G U σ ψ L H m D Z i
 
-def branchCoordinateIndexMap (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) :
+end
+
+section
+
+variable (A : SArithmeticData F) (G : AllowedRecipe A) (m : ThetaReflectionData.Row A)
+    (D : RowFactorization A G m)
+
+def branchCoordinateIndexMap :
     BranchCoordinateIndex A G m D → RMSeparatedExpansion.Index A D.h :=
   fun i => (⟨freeze A G m D i.1 i.2, rfl⟩, ⟨i.2.c, i.2.c_squarefree⟩)
 
-theorem branchCoordinateIndexMap_injective (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) :
+theorem branchCoordinateIndexMap_injective :
     Function.Injective (branchCoordinateIndexMap A G m D) := by
   intro i j hij
   have hf : i.1.f = j.1.f := congrArg (fun k => k.1.val.f) hij
@@ -54,6 +57,8 @@ theorem branchCoordinateIndexMap_injective (A : SArithmeticData F) (G : AllowedR
   subst v'
   rfl
 
+end
+
 theorem branchCoordinateSummand_norm_summable_of_separated
     (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
     (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
@@ -64,33 +69,19 @@ theorem branchCoordinateSummand_norm_summable_of_separated
       ‖RMSeparatedExpansion.summand A G U σ ψ L H i.1.val D.d i.2 Z‖)) :
     Summable (fun i : BranchCoordinateIndex A G m D =>
       ‖branchCoordinateSummand A G U σ ψ L H m D Z i‖) := by
-  have hs' := hs.comp_injective (branchCoordinateIndexMap_injective A G m D)
-  apply hs'.congr
+  apply (hs.comp_injective (branchCoordinateIndexMap_injective A G m D)).congr
   intro i
   exact congrArg norm (RMSeparatedExpansion.coordinate_summand_exact_squarefree
     A G U σ ψ hψ L hL hrec H m D i.1 i.2 Z).symm
 
-private theorem order_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
-    order p (x * y) = order p x + order p y := by
-  have hx : p.valuation F (x : F) ≠ 0 := (map_ne_zero (p.valuation F)).mpr x.ne_zero
-  have hy : p.valuation F (y : F) ≠ 0 := (map_ne_zero (p.valuation F)).mpr y.ne_zero
-  simp only [order, Units.val_mul, map_mul, WithZero.log_mul hx hy]
-  omega
-private theorem order_U (A : SArithmeticData F) (u : A.U)
-    (p : HeightOneSpectrum (𝓞 F)) (hp : p ∉ A.Sf) : order p u.val = 0 := by
-  simp only [order, u.property p hp, WithZero.log_one, neg_zero]
-private theorem exp_zero (p : HeightOneSpectrum (𝓞 F)) (I J : Ideal (𝓞 F))
-    (hp : p ∈ support I) (hIJ : I ⊔ J = ⊤) : idealPrimeExponent p.asIdeal J = 0 := by
-  apply Multiset.count_eq_zero.mpr
-  intro hj
-  have hi : p.asIdeal ∈ normalizedFactors I := by
-    have hh : p.asIdeal ∈ (normalizedFactors I).toFinset := Finset.mem_preimage.mp hp
-    exact Multiset.mem_toFinset.mp hh
-  have hI : I ≤ p.asIdeal := Ideal.dvd_iff_le.mp (dvd_of_mem_normalizedFactors hi)
-  have hJ : J ≤ p.asIdeal := Ideal.dvd_iff_le.mp (dvd_of_mem_normalizedFactors hj)
-  have : (⊤ : Ideal (𝓞 F)) ≤ p.asIdeal := by rw [← hIJ]; exact sup_le hI hJ
-  exact p.isPrime.ne_top (top_le_iff.mp this)
-private theorem rowIndex_eq_of_mem (A : SArithmeticData F) (G : AllowedRecipe A)
+private alias order_mul := DedekindZetaZeroFree.ThetaBranch.ord_mul
+private alias order_U := DedekindZetaZeroFree.ThetaPhaseSeparation.order_U
+private alias exp_zero := DedekindZetaZeroFree.ThetaPhaseSeparation.exp_zero
+section
+
+variable (A : SArithmeticData F) (G : AllowedRecipe A)
+
+private theorem rowIndex_eq_of_mem
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (p : HeightOneSpectrum (𝓞 F)) (hp : p ∈ support D.h.val) :
     rowIndex A m p = ⟨idealPrimeExponent p.asIdeal D.h.val % 6, Nat.mod_lt _ (by decide)⟩ := by
@@ -105,8 +96,7 @@ private theorem rowIndex_eq_of_mem (A : SArithmeticData F) (G : AllowedRecipe A)
   simp only [rowIndex, hv]
   omega
 
-theorem branch_coordinate_series_eq_expansion
-    (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
+theorem branch_coordinate_series_eq_expansion (U : UnitRepresentatives A)
     (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (hψ : ∀ p, (ψ p).IsPrimitive) (L : Fˣ →* ℂ) (hL : ∀ x, ‖L x‖ = 1)
     (hrec : SquarefreeGeneratorReciprocity A G σ) (H : A.V → ℝ → ℂ)
@@ -118,7 +108,7 @@ theorem branch_coordinate_series_eq_expansion
   let Φ := branchCoordinateIndexMap A G m D
   let f : RMSeparatedExpansion.Index A D.h → ℂ :=
     fun j => RMSeparatedExpansion.summand A G U σ ψ L H j.1.val D.d j.2 Z
-  let g : BranchCoordinateIndex A G m D → ℂ := fun i => f (Φ i)
+  let g := fun i => f (Φ i)
   have hterm : ∀ i, g i = branchCoordinateSummand A G U σ ψ L H m D Z i := fun i =>
     (RMSeparatedExpansion.coordinate_summand_exact_squarefree A G U σ ψ hψ L hL hrec H m D i.1 i.2 Z).symm
   have hsupp : Function.support f ⊆ Set.range (fun x : Function.support g => Φ x.val) := by
@@ -139,17 +129,15 @@ theorem branch_coordinate_series_eq_expansion
           sup_le_sup_left (Ideal.mul_le_right : T.h.val * T.n.val ≤ T.n.val) D.d.val
         rw [hm1] at hle
         exact le_antisymm le_top hle)
-      have hcd : IsCoprime cc.val D.d.val := Ideal.isCoprime_iff_sup_eq.mpr (by rw [sup_comm]; exact hm3)
-      have hcf : IsCoprime cc.val T.f.val := Ideal.isCoprime_iff_sup_eq.mpr hm2
-      have hnf : IsCoprime T.n.val T.f.val := Ideal.isCoprime_iff_sup_eq.mpr T.n_f_coprime
-      exact Ideal.isCoprime_iff_sup_eq.mp ((hcd.mul_right hcf).mul_left (hnd.mul_right hnf))
+      have hcf := Ideal.isCoprime_iff_sup_eq.mpr hm2
+      have hnf := Ideal.isCoprime_iff_sup_eq.mpr T.n_f_coprime
+      exact Ideal.isCoprime_iff_sup_eq.mp (((Ideal.isCoprime_iff_sup_eq.mpr (by rw [sup_comm]; exact hm3)).mul_right hcf).mul_left (hnd.mul_right hnf))
     have hdiv : T.f.val ∣ idealRadical D.h.val := by
       rw [← congrArg (fun h : A.Exterior => idealRadical h.val) hT]
       exact T.f_divides_radical
     have hmand : ∀ p ∈ support D.h.val, rowIndex A m p ≠ 0 → p ∈ support T.f.val := by
       intro p hp hr
-      have hp' : p ∈ support T.h.val := by rw [congrArg (fun h : A.Exterior => support h.val) hT]; exact hp
-      refine T.mandatory p hp' ?_
+      refine T.mandatory p (by rw [congrArg (fun h : A.Exterior => support h.val) hT]; exact hp) ?_
       intro hz
       apply hr
       have h1 : idealPrimeExponent p.asIdeal D.h.val = idealPrimeExponent p.asIdeal T.h.val := by rw [hT]
@@ -162,7 +150,6 @@ theorem branch_coordinate_series_eq_expansion
     have hΦj : Φ ⟨b₀, v₀⟩ = (⟨T, hT⟩, c) := by
       refine Prod.ext ?_ ?_
       · apply Subtype.ext
-        change freeze A G m D b₀ v₀ = T
         have ht : D.h = T.h := hT.symm
         cases T
         dsimp [freeze, b₀, v₀] at *
@@ -172,12 +159,12 @@ theorem branch_coordinate_series_eq_expansion
     refine ⟨⟨⟨b₀, v₀⟩, ?_⟩, hΦj⟩
     change f (Φ ⟨b₀, v₀⟩) ≠ 0
     simpa only [Function.mem_support, hΦj] using hj
-  have hmain : (∑' j : RMSeparatedExpansion.Index A D.h, f j) = ∑' i : BranchCoordinateIndex A G m D, g i :=
-    tsum_eq_tsum_of_ne_zero_bij (f := f) (g := g) (fun x : Function.support g => Φ x.val)
-      (fun x y hxy => Subtype.ext (branchCoordinateIndexMap_injective A G m D hxy)) hsupp (fun _ => rfl)
   change (∑' i, branchCoordinateSummand A G U σ ψ L H m D Z i) = ∑' j, f j
   rw [← tsum_congr hterm]
-  exact hmain.symm
+  exact (tsum_eq_tsum_of_ne_zero_bij (f := f) (g := g) (fun x : Function.support g => Φ x.val)
+    (fun x y hxy => Subtype.ext (branchCoordinateIndexMap_injective A G m D hxy)) hsupp (fun _ => rfl)).symm
+
+end
 
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
@@ -241,10 +228,8 @@ theorem branchFrequency_hasSum_iff_coordinates
     dsimp at hb
     subst b'
     dsimp [e] at hv
-    have hf : f (b, coordinateFrequency A G U m D b v) ≠ 0 := by rw [hfg ⟨b, v⟩]; exact hi
-    have h := (coordinates_unique A G U m D b (coordinateFrequency A G U m D b v)).mp
-      (hsupp (b, coordinateFrequency A G U m D b v) hf)
-    have he : v = v' := h.unique rfl hv.symm
+    have he := ((coordinates_unique A G U m D b (coordinateFrequency A G U m D b v)).mp
+      (hsupp (b, coordinateFrequency A G U m D b v) (by rw [hfg ⟨b, v⟩]; exact hi))).unique rfl hv.symm
     subst v'
     rfl
   · intro i hi
@@ -279,7 +264,7 @@ theorem branchCoordinateSeries_eq_frequencySeries (R : PrincipalMellin.ActualRec
   let A := R.A
   let G := R.probe.allowed
   let U := R.probe.unitReps
-  let K : ThetaReflectionData.Frequency A → ℂ := fun ν =>
+  let K := fun ν =>
     (sourceFrequencyCharacter R ψ L hsource v ν)⁻¹ * H (ThetaReflectionData.frequencyClass A ν) (Z * ThetaReflectionData.frequencyNorm A ν)
   let f := fun i : Branch A G m D × ThetaReflectionData.Frequency A => branchFrequencyCoefficient A G R.σ ψ m D i.1 i.2 * K i.2
   let g := fun i : BranchCoordinateIndex A G m D => exactCoefficient A G U R.σ ψ m D i.1 i.2 * K (coordinateFrequency A G U m D i.1 i.2)
@@ -287,23 +272,21 @@ theorem branchCoordinateSeries_eq_frequencySeries (R : PrincipalMellin.ActualRec
     dsimp [g, K, branchCoordinateSummand, coordinateFrequency]
     rw [sourceFrequencyCharacter_mk]
     exact (mul_assoc _ _ _).symm
-  have hgs : Summable g := hs.of_norm.congr (fun i => (hg i).symm)
-  have hfs : Summable f := ((branchFrequency_hasSum_iff_coordinates id rfl A G U R.σ ψ hψ m D K _).mpr hgs.hasSum).summable
-  have heq : (∑' i, g i) = ∑' i, f i := ((branchFrequency_hasSum_iff_coordinates id rfl A G U R.σ ψ hψ m D K _).mpr hgs.hasSum).tsum_eq.symm
+  have hgs := hs.of_norm.congr (fun i => (hg i).symm)
+  have hfs := ((branchFrequency_hasSum_iff_coordinates id rfl A G U R.σ ψ hψ m D K _).mpr hgs.hasSum).summable
   letI := branches_finite A G m D
   letI : Fintype (Branch A G m D) := Fintype.ofFinite _
   have hsum (ν : ThetaReflectionData.Frequency A) : (∑' b : Branch A G m D, f (b, ν)) = exteriorFrequencyCoefficient A G R.σ ψ m D ν * K ν := by
     rw [tsum_fintype]
     dsimp [f]
     rw [← Finset.sum_mul, sum_branches_frequency]
-  have hex : Summable (fun ν => exteriorFrequencyCoefficient A G R.σ ψ m D ν * K ν) := hfs.prod_symm.prod.congr hsum
-  refine ⟨hex.norm.congr (fun ν => ?_), ?_⟩
+  refine ⟨(hfs.prod_symm.prod.congr hsum).norm.congr (fun ν => ?_), ?_⟩
   · dsimp [K]
     rw [mul_assoc]
   · change (∑' i, branchCoordinateSummand A G U R.σ ψ (L v) H m D Z i) = _
-    rw [← tsum_congr hg, heq]
+    rw [← tsum_congr hg, (((branchFrequency_hasSum_iff_coordinates id rfl A G U R.σ ψ hψ m D K _).mpr hgs.hasSum).tsum_eq.symm)]
     calc
-      (∑' i, f i) = ∑' i : ThetaReflectionData.Frequency A × Branch A G m D, f i.swap :=
+      _ = ∑' i : ThetaReflectionData.Frequency A × Branch A G m D, f i.swap :=
         (Equiv.prodComm (ThetaReflectionData.Frequency A) (Branch A G m D)).tsum_eq f |>.symm
       _ = ∑' ν, ∑' b, f (b, ν) := hfs.prod_symm.tsum_prod
       _ = ∑' ν, exteriorFrequencyCoefficient A G R.σ ψ m D ν * K ν := tsum_congr hsum

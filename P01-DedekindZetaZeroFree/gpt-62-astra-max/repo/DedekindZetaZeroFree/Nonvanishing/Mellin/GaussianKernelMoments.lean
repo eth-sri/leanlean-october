@@ -8,7 +8,7 @@ public import DedekindZetaZeroFree.Theta.Profiles.GaussianSmoothing
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem mellin_gaussian (R : PrincipalMellin.ActualRecipe S η)
     (N : TraceHaarTransport R) (prior : Nonempty (JointResidualConstantTermSources R N)) : Nonempty (JointMellinGaussianSources R N) := by

@@ -10,13 +10,13 @@ open scoped NumberField Classical
 
 namespace DedekindZetaZeroFree.LargeSieve.ReflectedTails
 
-def dualCutoffSummand (F : Type*) [Field F] [NumberField F]
-    (k : ℝ → ℂ) (T L : ℝ) (d b : Ideal (𝓞 F)) : ℂ :=
+variable (F : Type*) [Field F] [NumberField F] (k : ℝ → ℂ) (T L : ℝ)
+
+def dualCutoffSummand (d b : Ideal (𝓞 F)) : ℂ :=
   if b ≠ ⊥ ∧ L < (Ideal.absNorm b : ℝ)
   then k (T * (Ideal.absNorm b : ℝ) / (Ideal.absNorm d : ℝ)) else 0
 
-def dualCutoffTail (F : Type*) [Field F] [NumberField F]
-    (k : ℝ → ℂ) (T L : ℝ) (D : Finset (Ideal (𝓞 F)))
+def dualCutoffTail (D : Finset (Ideal (𝓞 F)))
     (a : Ideal (𝓞 F) → ℂ) : ℂ :=
   ∑ d ∈ D, a d * (T / (Ideal.absNorm d : ℝ) : ℂ) *
     ∑' b : Ideal (𝓞 F), dualCutoffSummand F k T L d b

@@ -11,7 +11,7 @@ open Filter
 namespace DedekindZetaZeroFree.FourierContinuation.CurrentOutputExtension
 open KPGlobalResidualConstruction KPCplxPrincipalSeriesCharts ComplexLines
 variable {α : Type*} [TopologicalSpace α]
-variable (E : complexCore →ₗ[ℂ] (α → ℂ)) (he : ∀v,Continuous (E v)) (hb : CompactBound E)
+    (E : complexCore →ₗ[ℂ] (α → ℂ)) (he : ∀v,Continuous (E v)) (hb : CompactBound E)
 
 include he in
 theorem diagonal_derivative (γ : ℝ → α) (hγ : Continuous γ)
@@ -44,10 +44,9 @@ theorem diagonal_derivative (γ : ℝ → α) (hγ : Continuous γ)
   have hce : ∀ᶠ t in 𝓝 (0:ℝ), (c t).val=t := by
     filter_upwards [Ioo_mem_nhds (show (-1:ℝ)<0 by norm_num) (show (0:ℝ)<1 by norm_num)] with t ht
     simp only [c,min_eq_right ht.2.le,max_eq_right ht.1.le]
-  have hdf : HasDerivAt (fun t=>L (v 0) (c t)) d 0 := hd.congr_of_eventuallyEq (by
+  have H := moving_evaluation_derivative (fun t=>L (v t)) (L D) hf c hc.continuousAt d (hd.congr_of_eventuallyEq (by
     filter_upwards [hce] with t ht
-    rw [hL,ht])
-  have H := moving_evaluation_derivative (fun t=>L (v t)) (L D) hf c hc.continuousAt d hdf
+    rw [hL,ht]))
   rw [hL,hc0] at H
   exact H.congr_of_eventuallyEq (by
     filter_upwards [hce] with t ht

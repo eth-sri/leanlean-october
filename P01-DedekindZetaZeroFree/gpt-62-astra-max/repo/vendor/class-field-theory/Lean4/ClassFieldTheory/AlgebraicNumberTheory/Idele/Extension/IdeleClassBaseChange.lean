@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -54,14 +50,14 @@ theorem relativeIdelePrincipalSubgroup_map_baseChange :
     exact
       ⟨x,
         (relativeIdeleBaseChangeMulEquiv_principalIdele
-          (K := K) (L := L) x).symm⟩
+            x).symm⟩
   · rintro ⟨x, rfl⟩
     refine
       ⟨RelativeIdeleGroup.principalIdele K L x,
         ⟨x, rfl⟩, ?_⟩
     exact
       relativeIdeleBaseChangeMulEquiv_principalIdele
-        (K := K) (L := L) x
+          x
 
 /-- Scalar extension identifies the relative presentation of the idele
 class group with the ordinary idele class group of the extension field. -/
@@ -101,17 +97,5 @@ theorem relativeIdeleClassBaseChangeMulEquiv_classInclusion
   refine QuotientGroup.induction_on c ?_
   intro a
   rfl
-
-/-- Homomorphism form of the compatibility between relative class
-inclusion and ordinary idele-class extension. -/
-theorem relativeIdeleClassBaseChange_comp_classInclusion :
-    (relativeIdeleClassBaseChangeMulEquiv
-        (K := K) (L := L)).toMonoidHom.comp
-      (RelativeIdeleGroup.classInclusion K L) =
-        ideleClassExtension K L := by
-  ext c
-  exact
-    relativeIdeleClassBaseChangeMulEquiv_classInclusion
-      (K := K) (L := L) c
 
 end

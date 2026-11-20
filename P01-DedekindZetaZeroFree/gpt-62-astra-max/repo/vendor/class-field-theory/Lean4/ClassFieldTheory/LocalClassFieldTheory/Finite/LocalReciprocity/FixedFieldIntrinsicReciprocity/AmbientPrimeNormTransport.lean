@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -32,18 +29,16 @@ open LocalFieldTheory RamificationTheory CyclicCohomology KummerTheory
 open ClassFormation
 open scoped ValuativeRel
 
+section
+
+variable (L M : Type) [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
+    [Field M] [ValuativeRel M] [TopologicalSpace M] [IsNonarchimedeanLocalField M] (phi : L ≃+* M)
+    (hmem : ∀ x : L, x ∈ (ValuativeRel.valuation L).valuationSubring ↔ phi x ∈ (ValuativeRel.valuation M).valuationSubring)
+
+include hmem in
 /-- A valuation-subring-preserving ring equivalence carries some unit of
 valuation one to a unit of valuation one. -/
-theorem exists_valuationOne_unit_of_ringEquiv
-    (L M : Type)
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Field M] [ValuativeRel M] [TopologicalSpace M]
-    [IsNonarchimedeanLocalField M]
-    (phi : L ≃+* M)
-    (hmem : ∀ x : L,
-      x ∈ (ValuativeRel.valuation L).valuationSubring ↔
-        phi x ∈ (ValuativeRel.valuation M).valuationSubring) :
+theorem exists_valuationOne_unit_of_ringEquiv :
     ∃ p : Lˣ,
       IsNonarchimedeanLocalField.valuationMap L
           (Additive.ofMul p) = 1 ∧
@@ -69,56 +64,39 @@ theorem exists_valuationOne_unit_of_ringEquiv
     map_add' := fun x y => by
       ext
       simp }
-  let piOL : 𝒪[L] :=
+  let piOL :=
     chosenIntegerRingUniformizer L
-  have hpiOL : Irreducible piOL :=
+  have hpiOL :=
     chosenIntegerRingUniformizer_irreducible L
-  let piOM : 𝒪[M] := r piOL
-  have hpiOM : Irreducible piOM :=
-    (MulEquiv.irreducible_iff r.toMulEquiv).2 hpiOL
-  let uL : Lˣ :=
+  let piOM := r piOL
+  let uL :=
     integerRingUniformizerFieldUnit L
-  let uM : Mˣ :=
+  let uM :=
     Units.mapEquiv phi.toMulEquiv uL
-  let pL : Lˣ := uL⁻¹
-  let pM : Mˣ :=
+  let pL := uL⁻¹
+  let pM :=
     Units.mapEquiv phi.toMulEquiv pL
-  have huL :
-      (uL : L) = ((piOL : 𝒪[L]) : L) := rfl
-  have huM :
-      (uM : M) = ((piOM : 𝒪[M]) : M) := rfl
   have hpM : pM = uM⁻¹ := by
     simp [pM, pL, uM]
-  have hpLvalue :
-      IsNonarchimedeanLocalField.valuationMap L
-        (Additive.ofMul pL) = 1 := by
-    exact
-      v_integerRingIrreducibleFieldUnit_inv
-        L piOL hpiOL uL huL
+  have hpLvalue := v_integerRingIrreducibleFieldUnit_inv
+        L piOL hpiOL uL rfl
   have hpMvalue :
       IsNonarchimedeanLocalField.valuationMap M
         (Additive.ofMul pM) = 1 := by
     rw [hpM]
     exact
       v_integerRingIrreducibleFieldUnit_inv
-        M piOM hpiOM uM huM
+        M piOM ((MulEquiv.irreducible_iff r.toMulEquiv).2 hpiOL) uM rfl
   exact ⟨pL, hpLvalue, hpMvalue⟩
 
 /-- A chosen valuation-one unit whose image under a valuation-compatible
 ring equivalence also has valuation one. -/
-noncomputable def chosenValuationOneUnitOfRingEquiv
-    (L M : Type)
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Field M] [ValuativeRel M] [TopologicalSpace M]
-    [IsNonarchimedeanLocalField M]
-    (phi : L ≃+* M)
-    (hmem : ∀ x : L,
-      x ∈ (ValuativeRel.valuation L).valuationSubring ↔
-        phi x ∈ (ValuativeRel.valuation M).valuationSubring) :
+noncomputable def chosenValuationOneUnitOfRingEquiv :
     Lˣ :=
   Classical.choose
     (exists_valuationOne_unit_of_ringEquiv L M phi hmem)
+
+end
 
 /-- The chosen transported unit has valuation one in its source field. -/
 theorem chosenValuationOneUnitOfRingEquiv_source
@@ -184,31 +162,23 @@ theorem valuationSubring_mem_iff_of_separableClosureRingEquiv
     (x : L) :
     x ∈ (ValuativeRel.valuation L).valuationSubring ↔
       phi x ∈ (ValuativeRel.valuation M).valuationSubring := by
-  have hsourceRing :
-      (localSeparableValuationSubring F).comap jL.toRingHom =
-        (ValuativeRel.valuation L).valuationSubring :=
-    localSeparableValuationSubring_comap_embedding F L jL
-  have htargetRing :
-      (localSeparableValuationSubring K).comap jM.toRingHom =
-        (ValuativeRel.valuation M).valuationSubring :=
-    localSeparableValuationSubring_comap_embedding K M jM
-  rw [← hsourceRing, ← htargetRing]
+  rw [← (localSeparableValuationSubring_comap_embedding F L jL), ← (localSeparableValuationSubring_comap_embedding K M jM)]
   change
     jL x ∈ localSeparableValuationSubring F ↔
       jM (phi x) ∈ localSeparableValuationSubring K
   rw [hphi x, hpsi]
   rfl
 
+section
+
+variable (F E F₀ E₀ : Type) [Field F] [Field E] [Field F₀] [Field E₀] [Algebra F E] [Algebra F₀ E₀]
+    (phiF : F ≃+* F₀) (phiE : E ≃+* E₀)
+    (hcomm : RingHom.comp (algebraMap F₀ E₀) phiF.toRingHom = RingHom.comp phiE.toRingHom (algebraMap F E))
+
+include hcomm in
 /-- Field norms on units commute with compatible ring equivalences of the
 base and extension fields. -/
 theorem normUnits_mapEquiv
-    (F E F₀ E₀ : Type)
-    [Field F] [Field E] [Field F₀] [Field E₀]
-    [Algebra F E] [Algebra F₀ E₀]
-    (phiF : F ≃+* F₀) (phiE : E ≃+* E₀)
-    (hcomm :
-      RingHom.comp (algebraMap F₀ E₀) phiF.toRingHom =
-        RingHom.comp phiE.toRingHom (algebraMap F E))
     (y : Eˣ) :
     normUnits F₀ E₀ (Units.mapEquiv phiE.toMulEquiv y) =
       Units.mapEquiv phiF.toMulEquiv (normUnits F E y) := by
@@ -216,22 +186,14 @@ theorem normUnits_mapEquiv
   change
     Algebra.norm F₀ (phiE (y : E)) =
       phiF (Algebra.norm F (y : E))
-  have hnorm :=
-    Algebra.norm_eq_of_equiv_equiv
-      phiF phiE hcomm (y : E)
   apply phiF.symm.injective
   rw [phiF.symm_apply_apply]
-  exact hnorm.symm
+  exact (Algebra.norm_eq_of_equiv_equiv
+    phiF phiE hcomm (y : E)).symm
 
+include hcomm in
 /-- Compatible ring equivalences preserve equality of unit norm classes. -/
 theorem normClass_mapEquiv
-    (F E F₀ E₀ : Type)
-    [Field F] [Field E] [Field F₀] [Field E₀]
-    [Algebra F E] [Algebra F₀ E₀]
-    (phiF : F ≃+* F₀) (phiE : E ≃+* E₀)
-    (hcomm :
-      RingHom.comp (algebraMap F₀ E₀) phiF.toRingHom =
-        RingHom.comp phiE.toRingHom (algebraMap F E))
     (a x : Fˣ)
     (h : normClass F E a = normClass F E x) :
     normClass F₀ E₀ (Units.mapEquiv phiF.toMulEquiv a) =
@@ -240,10 +202,10 @@ theorem normClass_mapEquiv
   rw [normClass_eq_iff_exists_norm_div] at h ⊢
   rcases h with ⟨y, hy⟩
   refine ⟨Units.mapEquiv phiE.toMulEquiv y, ?_⟩
-  have hnorm :=
-    normUnits_mapEquiv F E F₀ E₀ phiF phiE hcomm y
   rw [← map_div, hy]
-  exact hnorm.symm
+  exact (normUnits_mapEquiv F E F₀ E₀ phiF phiE hcomm y).symm
+
+end
 
 /-- A unit of valuation one in an abstract fixed field determines a prime
 element for the ambient local henselian valuation datum. -/
@@ -273,10 +235,6 @@ theorem
               (Additive.ofMul p)) := by
   dsimp only
   intro p hp
-  change (localHenselianValuation K).valuationAt H
-      (abstractFixedFieldUnitsEquivGaloisFixed K (SeparableClosure K) H.field
-        (Additive.ofMul p)) =
-    (localHenselianValuation K).oneValue
   apply Subtype.ext
   change
     ((((localHenselianValuation K).valuationAt H
@@ -313,45 +271,31 @@ theorem
     abstractFixedField F (SeparableClosure F) S
   let S' :=
     closedFixingSubgroup F (SeparableClosure F) L
-  let hS'B : S'.toSubgroup ≤
-      (intrinsicAbstractBase F).toSubgroup :=
+  let hS'B :=
     fixingSubgroupLeBase F (SeparableClosure F) L
-  have hS'S : S' = S := by
-    exact closedFixingSubgroup_abstractFixedField_eq
-      F (SeparableClosure F) S
-  let pi' : ambientFixedAddSubgroup
-      (intrinsicAbsoluteUnits F) S' :=
+  let pi' :=
     intermediateFieldUnitsEquivGaloisFixed
       F (SeparableClosure F) L (Additive.ofMul p)
-  let pi : ambientFixedAddSubgroup
-      (intrinsicAbsoluteUnits F) S :=
+  let pi :=
     abstractFixedFieldUnitsEquivGaloisFixed
       F (SeparableClosure F) S (Additive.ofMul p)
-  let _hS'Finite : Finite
-      ((intrinsicAbstractBase F).toSubgroup ⧸
-        extensionSubgroup
-          (intrinsicAbstractBase F) S' hS'B) :=
-    inferInstance
-  have hpiCoe : pi'.1 = pi.1 := by
-    rfl
   have htransportCoe :=
     relativeNorm_coe_eq_of_closedSubgroup_eq
       (intrinsicAbsoluteUnits F)
       (intrinsicAbstractBase F) (intrinsicAbstractBase F)
-      S' S hS'B hSB rfl hS'S pi' pi hpiCoe
+      S' S hS'B hSB rfl (closedFixingSubgroup_abstractFixedField_eq
+        F (SeparableClosure F) S) pi' pi rfl
+  let relativeNorm₀ := relativeNorm (intrinsicAbsoluteUnits F) (intrinsicAbstractBase F)
   have htransport :
-      relativeNorm (intrinsicAbsoluteUnits F)
-          (intrinsicAbstractBase F) S' hS'B pi' =
-        relativeNorm (intrinsicAbsoluteUnits F)
-          (intrinsicAbstractBase F) S hSB pi := by
+      relativeNorm₀ S' hS'B pi' =
+        relativeNorm₀ S hSB pi := by
     apply Subtype.ext
     exact htransportCoe
   have hnorm :=
     relativeNorm_intermediateFieldUnit_of_isSeparable
       F (SeparableClosure F) L p
   change
-    relativeNorm (intrinsicAbsoluteUnits F)
-        (intrinsicAbstractBase F) S' hS'B pi' =
+    relativeNorm₀ S' hS'B pi' =
       baseUnitsEquivGaloisAmbientFixed F (SeparableClosure F)
         (Additive.ofMul (normUnits F L p)) at hnorm
   exact htransport.symm.trans hnorm
@@ -478,12 +422,7 @@ theorem
                 J hJH sigma))) := by
   dsimp only
   intro p x hprime hnorm
-  let hHabsolute : Finite
-      ((baseField
-        Gal(SeparableClosure K / K)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField Gal(SeparableClosure K / K))
-          H.field (le_baseField H.field)) :=
+  let hHabsolute :=
     H.finite
   let S :=
     (localResidueDatum K).frobeniusFixedField
@@ -637,21 +576,6 @@ theorem
   dsimp only
   intro _hLHNorm _hLHVal _hLHLocal _hF₀LHFinite
     phiF phi hcomm hmem hprime
-  let S :=
-    (localResidueDatum K).frobeniusFixedField
-      (H.toFiniteResidueAbstractField (localResidueDatum K))
-      J hJH sigma
-  let hSH :=
-    (localResidueDatum K).frobeniusFixedField_le
-      (H.toFiniteResidueAbstractField (localResidueDatum K))
-      J hJH sigma
-  let hSabsolute :=
-    (localResidueDatum K).frobeniusFixedField_absoluteFinite
-      H J hJH sigma
-  let LH :=
-    abstractRelativeFixedField K (SeparableClosure K) hSH
-  let F₀ :=
-    abstractFixedField K (SeparableClosure K) H.field
   let pF :=
     chosenValuationOneUnitOfRingEquiv L
       (abstractRelativeFixedField K (SeparableClosure K)
@@ -668,35 +592,17 @@ theorem
         J hJH sigma,
       (localResidueDatum K).frobeniusFixedField_absoluteFinite
         H J hJH sigma⟩
-  let piH :=
-    abstractRelativeFixedFieldUnitsEquivGaloisFixed
-      K (SeparableClosure K) H.field SigmaH.field
-        ((localResidueDatum K).frobeniusFixedField_le
-          (H.toFiniteResidueAbstractField (localResidueDatum K))
-          J hJH sigma)
-        (Additive.ofMul pH)
   let xPrime0 :=
     Units.mapEquiv phiF.toMulEquiv (normUnits F L pF)
-  have hphiNorm :
-      normUnits
-          (abstractFixedField K (SeparableClosure K) H.field)
-          (abstractRelativeFixedField K (SeparableClosure K)
-            ((localResidueDatum K).frobeniusFixedField_le
-              (H.toFiniteResidueAbstractField (localResidueDatum K))
-              J hJH sigma))
-          pH =
-        xPrime0 := by
-    exact
-      normUnits_mapEquiv F L
+  apply abstractFixedFieldNormResidueSymbol_eq_of_primeNorm
+      K H J hJH sigma pH xPrime0 hprime
+  exact normUnits_mapEquiv F L
         (abstractFixedField K (SeparableClosure K) H.field)
         (abstractRelativeFixedField K (SeparableClosure K)
           ((localResidueDatum K).frobeniusFixedField_le
             (H.toFiniteResidueAbstractField (localResidueDatum K))
             J hJH sigma))
         phiF phi hcomm pF
-  exact
-    abstractFixedFieldNormResidueSymbol_eq_of_primeNorm
-      K H J hJH sigma pH xPrime0 hprime hphiNorm
 
 end LocalClassFieldTheory
 

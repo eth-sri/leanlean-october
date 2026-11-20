@@ -14,14 +14,14 @@ namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInduci
 open MomentSources KPGlobalTorusFiniteStages KPLocalPrincipalSeries KPLocalExceptionalConstruction
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 open ThetaExpansion KPAdelicCoverRestrictedProduct
-open _root_.DedekindZetaZeroFree.ThetaExpansion renaming height_compact → height_compact
-open _root_.DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility renaming borel_root → borel_root
-open _root_.DedekindZetaZeroFree.KPLocalTameValuationWhittakerBasis.RawSectionBridge renaming localAbs_norm → localAbs_norm
+open _root_.DedekindZetaZeroFree.ThetaExpansion (height_compact)
+open _root_.DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility (borel_root)
+open _root_.DedekindZetaZeroFree.KPLocalTameValuationWhittakerBasis.RawSectionBridge (localAbs_norm)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 
 private theorem projected_raw (raw : Raw R) :
     pglProjection F R.A.zeta12 R.A.primitive_zeta12
@@ -50,37 +50,37 @@ private theorem projected_raw (raw : Raw R) :
     hB10, mul_zero, add_zero, Fin.isValue, Fin.reduceEq, ↓reduceIte] at h
   exact (IsUnit.mul_left_eq_zero ⟨s, rfl⟩).mp h
 
- theorem raw_upper_eval (raw : Raw R)
-    (hu : (restrictedProjection F R.A.zeta12 R.A.primitive_zeta12 raw) 1 0 = 0)
-    (v : KPHilbert.Place F) : (raw v).g 1 0 = 0 := by
-  have h := restrictedProjection_eval F R.A.zeta12 R.A.primitive_zeta12 raw v
-  have he := congrArg (fun M : KPLocalCover.LocalGL2 F v => M 1 0) h
+ section
+
+variable (raw : Raw R) (hu : (restrictedProjection F R.A.zeta12 R.A.primitive_zeta12 raw) 1 0 = 0)
+    (v : KPHilbert.Place F)
+
+include hu in
+theorem raw_upper_eval : (raw v).g 1 0 = 0 := by
+  have he := congrArg (fun M : KPLocalCover.LocalGL2 F v => M 1 0) (restrictedProjection_eval F R.A.zeta12 R.A.primitive_zeta12 raw v)
   change adeleEval F v ((restrictedProjection F R.A.zeta12 R.A.primitive_zeta12 raw) 1 0) =
     (raw v).g 1 0 at he
   rw [hu, map_zero] at he
   exact he.symm
 
- theorem upperRatio_eval (raw : Raw R)
-    (hu : (restrictedProjection F R.A.zeta12 R.A.primitive_zeta12 raw) 1 0 = 0)
-    (v : KPHilbert.Place F) :
+ theorem upperRatio_eval :
     (KPGlobalCubicIdelePairing.ideleEval F v
       (KPGlobalTorusBorelTwistCompatibility.iwasawaUpperRatio F
         (restrictedProjection F R.A.zeta12 R.A.primitive_zeta12 raw) hu) :
         KPHilbert.Completion F v) = (raw v).g 0 0 / (raw v).g 1 1 := by
   let A := restrictedProjection F R.A.zeta12 R.A.primitive_zeta12 raw
   have hentry (i j : Fin 2) : adeleEval F v (A i j) = (raw v).g i j := by
-    have h := restrictedProjection_eval F R.A.zeta12 R.A.primitive_zeta12 raw v
-    have he := congrArg (fun M : KPLocalCover.LocalGL2 F v => M i j) h
     simpa only [A, matrixEval, Matrix.GeneralLinearGroup.map_apply,
-      KPLocalCover.projection_apply] using he
+      KPLocalCover.projection_apply] using (congrArg (fun M : KPLocalCover.LocalGL2 F v => M i j) (restrictedProjection_eval F R.A.zeta12 R.A.primitive_zeta12 raw v))
   change ((Units.map (adeleEval F v).toMonoidHom)
     (KPGlobalTorusBorelTwistCompatibility.iwasawaUpperRatio F A hu) : KPHilbert.Completion F v) = _
   unfold KPGlobalTorusBorelTwistCompatibility.iwasawaUpperRatio
   rw [map_mul, map_inv, Units.val_mul, Units.val_inv_eq_inv_val]
   simp only [Units.coe_map, IsUnit.unit_spec]
-  change adeleEval F v (A 0 0) * (adeleEval F v (A 1 1))⁻¹ = _
   exact (congrArg₂ (fun a b : KPHilbert.Completion F v => a*b⁻¹)
     (hentry 0 0) (hentry 1 1)).trans (div_eq_mul_inv _ _).symm
+
+end
 
  theorem canonical_coordinate_upperRatio (q : KPFinitePlace F) (raw : Raw R)
     (hu : (restrictedProjection F R.A.zeta12 R.A.primitive_zeta12 raw) 1 0 = 0)
@@ -141,9 +141,8 @@ private theorem projected_raw (raw : Raw R) :
   dsimp only
   let g := scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
     (amalgamation F R.A.zeta12 R.A.primitive_zeta12 raw)
-  let hu := raw_borel_upper R raw hb
   let u := KPGlobalTorusBorelTwistCompatibility.iwasawaUpperRatio F
-    (restrictedProjection F R.A.zeta12 R.A.primitive_zeta12 raw) hu
+    (restrictedProjection F R.A.zeta12 R.A.primitive_zeta12 raw) (raw_borel_upper R raw hb)
   obtain ⟨t, x, ht⟩ := KPGlobalTorusBorelTwistCompatibility.actual_borel_factorization
     F R.A.zeta12 R.A.primitive_zeta12 ⟨g, hb⟩
   have hr : u = KPGlobalTorusFunctionData.p F R.A.zeta12 R.A.primitive_zeta12 t := by
@@ -155,12 +154,9 @@ private theorem projected_raw (raw : Raw R) :
     (InfinitePlace.IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt (by norm_num) R.A.primitive_zeta12) u
   refine ⟨hp.1, ?_⟩
   rw [hp.2, hr]
-  change KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F R.A.zeta12 R.A.primitive_zeta12
-    (fullProductIwasawaData R) g = _
-  have hnorm := KPGlobalTorusBorelTwistCompatibility.iwasawaNorm_formula
-    F R.A.zeta12 R.A.primitive_zeta12 (fullProductIwasawaData R) t x (1 : fullProductCompact R)
   simpa only [Subgroup.coe_one, mul_one, KPGlobalTorusFunctionData.delta,
-    MonoidHom.comp_apply, ← ht] using hnorm
+    MonoidHom.comp_apply, ← ht] using (KPGlobalTorusBorelTwistCompatibility.iwasawaNorm_formula
+      F R.A.zeta12 R.A.primitive_zeta12 (fullProductIwasawaData R) t x (1 : fullProductCompact R))
 
  theorem upper_arch_abs_eq_rowRatio_sq (raw : Raw R)
     (hu : (restrictedProjection F R.A.zeta12 R.A.primitive_zeta12 raw) 1 0 = 0)
@@ -183,7 +179,6 @@ private theorem projected_raw (raw : Raw R) :
     (KPGlobalTorusBorelTwistCompatibility.iwasawaUpperRatio F
       (restrictedProjection F R.A.zeta12 R.A.primitive_zeta12 raw) hu) : w.Completion)‖ ^ 2 = _
   rw [upperRatio_eval R, ← hn, map_div₀]
-  change ‖g 0 0 / g 1 1‖ ^ 2 = (KPComplexIntertwinerParameterMajorant.rowRatio g)^2
   congr 1
   unfold KPComplexIntertwinerParameterMajorant.rowRatio KPCplxPrincipalSeriesCharts.bottomRowNormSq
   change ‖g 0 0 / g 1 1‖ = ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ / (‖g 1 0‖^2 + ‖g 1 1‖^2)
@@ -225,21 +220,19 @@ theorem raw_borel_height_local_logs (raw : Raw R)
   let a v := KPGlobalCenterRationalCharacterModulus.localAbsUnit F v
     (KPGlobalCubicIdelePairing.ideleEval F v u)
   let f v := Real.log ((a v : ℝ≥0) : ℝ)
-  have ha : Function.HasFiniteMulSupport a := (raw_borel_norm_product R raw hb).1
+  have ha := (raw_borel_norm_product R raw hb).1
   have hf : Function.HasFiniteSupport f := by
     apply ha.subset
     intro v hv
     contrapose! hv
-    have h : a v = 1 := by simpa only [Function.mem_mulSupport, not_not] using hv
+    have h : a v = 1 := by simpa using hv
     simp [f, h]
   unfold iwasawaLogHeight
   rw [(raw_borel_norm_product R raw hb).2]
   have hc := MonoidHom.map_finprod
     (NNReal.toRealHom.toMonoidHom.comp (Units.coeHom ℝ≥0)) ha
   change (((∏ᶠ v, a v : (ℝ≥0)ˣ) : ℝ≥0) : ℝ) = ∏ᶠ v, ((a v : ℝ≥0) : ℝ) at hc
-  change Real.log (((∏ᶠ v, a v : (ℝ≥0)ˣ) : ℝ≥0) : ℝ) = _
   rw [hc, Real.log_finprod (fun v => by exact_mod_cast (pos_iff_ne_zero.mpr (Units.ne_zero (a v))))]
-  change (∑ᶠ v, f v) = _
   rw [finsum_places_split f hf]
   congr 1
   · apply Finset.sum_congr rfl
@@ -252,7 +245,11 @@ theorem raw_borel_height_local_logs (raw : Raw R)
     dsimp only [f, a, u]
     rw [raw_upper_forwardAbs R P C q (fullCompact R P C q) raw hu]
 
- def complexMatrixHom (w : InfinitePlace F) :
+ section
+
+variable (w : InfinitePlace F)
+
+def complexMatrixHom :
     KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (.inl w) →*
       KPCplxCharacterHaar.ComplexGL2 :=
   (Matrix.GeneralLinearGroup.map
@@ -260,7 +257,7 @@ theorem raw_borel_height_local_logs (raw : Raw R)
       (KPHilbert.infinite_isComplex F R.A.zeta12 R.A.primitive_zeta12 w)).toRingHom).comp
     (KPLocalCover.projection F R.A.zeta12 R.A.primitive_zeta12 (.inl w))
 
-private theorem arch_compact_matrix_mem_su2 (w : InfinitePlace F)
+private theorem arch_compact_matrix_mem_su2
     (k : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (.inl w))
     (hk : k ∈ complexSU2Compact R w) :
     complexMatrixHom R w k ∈ KPCplxCharacterHaar.complexSU2Embedding.range := by
@@ -280,7 +277,7 @@ private theorem arch_compact_matrix_mem_su2 (w : InfinitePlace F)
     exact (RingEquiv.apply_symm_apply _ _).symm
   exact hle hk
 
- theorem rowRatio_mul_compact (w : InfinitePlace F)
+ theorem rowRatio_mul_compact
     (g k : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (.inl w))
     (hk : k ∈ complexSU2Compact R w) :
     KPComplexIntertwinerParameterMajorant.rowRatio (complexMatrix R w (g*k)) =
@@ -289,6 +286,8 @@ private theorem arch_compact_matrix_mem_su2 (w : InfinitePlace F)
   change KPComplexIntertwinerParameterMajorant.rowRatio (complexMatrixHom R w (g*k)) = _
   rw [map_mul, ← hu]
   exact RepresentationTheory.KPComplexStandardIntertwinerGermProve.rowRatio_mul_su2 _ u
+
+end
 
  theorem finite_compact_mem_full (q : KPFinitePlace F)
     (k : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (.inr q))
@@ -331,13 +330,10 @@ theorem height_raw_local_logs (raw : Raw R) :
       KPGlobalTorusFunctionData.borel F R.A.zeta12 R.A.primitive_zeta12 := by
     dsimp only [b]
     rw [map_mul, map_inv, map_mul, map_inv, hr, hg, mul_assoc, mul_inv_cancel, mul_one]
-    have ht : t.val ∈ KPGlobalTorusFunctionData.borel F R.A.zeta12 R.A.primitive_zeta12 := by
-      obtain ⟨A, hA, h10, h01⟩ := t.property
+    refine Subgroup.mul_mem _ ?_ ?_
+    · obtain ⟨A, hA, h10, h01⟩ := t.property
       exact ⟨A, hA, h10⟩
-    have hx : KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 x ∈
-        KPGlobalTorusFunctionData.borel F R.A.zeta12 R.A.primitive_zeta12 := by
-      exact borel_root F R.A.zeta12 R.A.primitive_zeta12 x
-    exact Subgroup.mul_mem _ ht hx
+    · exact borel_root F R.A.zeta12 R.A.primitive_zeta12 x
   rw [he, map_mul, map_mul, hr, height_compact R _ k]
   refine (raw_borel_height_local_logs R P C b hb).trans ?_
   congr 1

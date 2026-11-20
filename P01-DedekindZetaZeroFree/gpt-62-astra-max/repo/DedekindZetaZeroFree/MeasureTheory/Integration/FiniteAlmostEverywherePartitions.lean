@@ -18,8 +18,7 @@ theorem integral_finite_ae_partition {α I : Type*} [MeasurableSpace α] [Fintyp
   classical
   have hUC : (⋃ i, C i) =ᵐ[μ] Q := by
     filter_upwards [hcover] with x hx using propext hx.symm
-  have hunion := integral_iUnion_fintype (μ := μ) (s := C) (f := g) hC hdisj
-    (fun i => IntegrableOn.mono_set (f := g) hg (hsub i))
-  rw [← hunion, setIntegral_congr_set hUC]
+  rw [← (integral_iUnion_fintype hC hdisj
+    (fun i => IntegrableOn.mono_set hg (hsub i))), setIntegral_congr_set hUC]
 
 end DedekindZetaZeroFree.KPCubeAverageError

@@ -10,7 +10,7 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.SheetRescaling
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem uniform_section_add (A : SArithmeticData F) (s t : ℝ) :
     A.radialSection (Real.exp (s + t)) (Real.exp_pos _) =
@@ -47,7 +47,7 @@ theorem uniform_section_class (A : SArithmeticData F) (t : ℝ) (y : A.G) :
 theorem uniform_section_branch (R : PrincipalMellin.ActualRecipe S η)
     {Q : AdmissibleFlatSources R} (P : Packet R Q) (v : R.A.UnitQuotient) (t : ℝ) :
     P.branch v (R.A.radialSection (Real.exp t) (Real.exp_pos t)) = 1 := by
-  rw [P.branch_exact v _ (by intro p; exact (P.cutoff p).one_mem)]
+  rw [P.branch_exact v _ (fun p => (P.cutoff p).one_mem)]
   apply Finset.prod_eq_one
   intro w _
   have hpos := Real.rpow_pos_of_pos (Real.exp_pos t)
@@ -102,15 +102,14 @@ theorem finiteClass_measurable (R : PrincipalMellin.ActualRecipe S η) (f : R.A.
     obtain ⟨y, rfl⟩ := QuotientGroup.mk'_surjective R.A.sixthPowers q
     apply measurableSet_quotient.mpr
     have he : (Quotient.mk'' ⁻¹' {QuotientGroup.mk' R.A.sixthPowers y} : Set R.A.G) =
-        (fun z => z / y) ⁻¹' (R.A.sixthPowers : Set R.A.G) := by
+        (fun z => z / y) ⁻¹' R.A.sixthPowers := by
       ext z
       simp only [Set.mem_preimage, Set.mem_singleton_iff]
       exact QuotientGroup.eq_iff_div_mem
     rw [he]
     exact hpow.preimage (continuous_id.div' continuous_const).measurable
   letI := R.A.V_finite
-  have h : Measurable f := measurable_of_finite _
-  exact h.comp measurable_quotient_mk''
+  exact (measurable_of_finite _).comp measurable_quotient_mk''
 
 theorem sheetPhase_measurable (R : PrincipalMellin.ActualRecipe S η) (κ : R.A.V) :
     Measurable (sheetPhase R κ) := by

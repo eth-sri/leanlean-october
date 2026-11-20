@@ -19,26 +19,14 @@ open KPContCotangentOverlapRationalBranches
 open KPContCotangentActualOverlap
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-theorem continuous_labeledA_actual :
-    Continuous (labeledA (placeEquiv F ζ hζ) : M F → KPCuspGenuineMonodromy.SymmetricSpace F) := by
-  apply continuous_pi
-  intro k
-  have h : (fun x : M F => labeledA (placeEquiv F ζ hζ) x k)
-      = fun x => ((((x ((placeEquiv F ζ hζ).symm k, 0)) : ℂ) + Complex.I *
-          ((x ((placeEquiv F ζ hζ).symm k, 1)) : ℂ), x ((placeEquiv F ζ hζ).symm k, 2)) :
-            ℂ × ℝ) := by
-    funext x
-    simp only [labeledA, CotangentLogCoframe.A_apply]
-  rw [h]
-  fun_prop
+alias continuous_labeledA_actual := DedekindZetaZeroFree.KPContActualCotangentChartZeroExtension.continuous_labeledA_placeEquiv
 
-theorem isOpen_omega_actual (a : ShrunkChart F ζ hζ U R P H) : IsOpen (omega a) :=
-  a.domain_open.preimage continuous_labeledA_actual
+alias isOpen_omega_actual := DedekindZetaZeroFree.KPContCotangentOverlapRationalBranches.omega_open
 
 theorem interior_liftExtension_contDiff {W : Type*} [NormedAddCommGroup W] [NormedSpace ℝ W]
     (a : ShrunkChart F ζ hζ U R P H) (f : omega a → W)
@@ -55,11 +43,11 @@ theorem interior_liftExtension_contDiff {W : Type*} [NormedAddCommGroup W] [Norm
   rw [contDiff_iff_contDiffAt]
   intro x
   by_cases hx : x ∈ omega a
-  · have h1 : ContDiffAt ℝ ∞ g x := hg.contDiffAt ((isOpen_omega_actual a).mem_nhds hx)
+  · have h1 := hg.contDiffAt ((isOpen_omega_actual a).mem_nhds hx)
     apply h1.congr_of_eventuallyEq
     filter_upwards [(isOpen_omega_actual a).mem_nhds hx] with y hy
     simp only [hy, if_true]
-  · have hx' : x ∉ tsupport (liftExtension a f) := fun h => hx (hs h)
+  · have hx' := fun h => hx (hs h)
     have hzero : ∀ y ∈ (tsupport (liftExtension a f))ᶜ, liftExtension a f y = 0 := by
       intro y hy
       by_contra h

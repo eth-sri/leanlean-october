@@ -10,16 +10,20 @@ open NumberField IsDedekindDomain ValuativeRel
 namespace DedekindZetaZeroFree.EisensteinReferenceSections.LocalSeed
 open KPGlobalTorusFiniteStages KPLocalPrincipalSeries
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+    (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
 set_option backward.isDefEq.respectTransparency false
 
-def spherical (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ C.exceptional) :
+section
+
+variable (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ C.exceptional)
+
+def spherical :
     sectionSpace (C.canonical q).borel (C.polarization q) .plus 0 :=
   (KPLocalGoodSphericalImage.normalized_plus_spherical_vector
     (C.canonical q).borel (C.polarization q) (C.canonical q).iwasawa
     (C.unramified q hq)).choose
 
-theorem spherical_fixed (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ C.exceptional) :
+theorem spherical_fixed :
     spherical F ζ hζ P C q hq ∈ fixedSubmodule
       (IPlus (C.canonical q).borel (C.polarization q))
       (C.canonical q).iwasawa.compact.toOpenSubgroup :=
@@ -27,15 +31,17 @@ theorem spherical_fixed (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ C.exception
     (C.canonical q).borel (C.polarization q) (C.canonical q).iwasawa
     (C.unramified q hq)).choose_spec.1.1
 
-theorem spherical_one_one (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ C.exceptional) :
+theorem spherical_one_one :
     ((spherical F ζ hζ P C q hq).val 1).val 1 = 1 :=
   (KPLocalGoodSphericalImage.normalized_plus_spherical_vector
     (C.canonical q).borel (C.polarization q) (C.canonical q).iwasawa
     (C.unramified q hq)).choose_spec.1.2
 
+end
+
 theorem spherical_one (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ C.exceptional) :
     (spherical F ζ hζ P C q hq).val 1 = localReference F ζ hζ P C q := by
-  apply (referenceGoodSpherical F ζ hζ P C q hq).2.2
+  apply (referenceGoodSpherical F ζ hζ P C q hq).2
   · intro j
     let b := (C.canonical q).borel.torus j.val
     have hb : (b : KPLocalExceptionalConstruction.ActualCover F ζ hζ q) ∈
@@ -109,10 +115,6 @@ def finite (q : HeightOneSpectrum (𝓞 F)) :
   · rw [finite, dif_neg hq]
     exact (exists_section_one F ζ hζ P C q (localReference F ζ hζ P C q)).choose_spec
 
-@[simp] theorem finite_one_one (q : HeightOneSpectrum (𝓞 F)) :
-    ((finite F ζ hζ P C q).val 1).val 1 = 1 := by
-  rw [finite_one, TorusReference.localReference_one]
-
 theorem finite_right_fixed (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ C.exceptional)
     (k : (C.canonical q).iwasawa.compact.toOpenSubgroup)
     (g : KPLocalExceptionalConstruction.ActualCover F ζ hζ q) :
@@ -126,10 +128,8 @@ theorem finite_has_level (q : HeightOneSpectrum (𝓞 F)) :
       ∀ (k : J.toOpenSubgroup) g,
         (finite F ζ hζ P C q).val (g * k.val) = (finite F ζ hζ P C q).val g := by
   obtain ⟨U, hU⟩ := (finite F ζ hζ P C q).property.2
-  let J : CompactOpenLevel (KPLocalExceptionalConstruction.ActualCover F ζ hζ q) :=
-    ⟨(C.canonical q).iwasawa.compact.toOpenSubgroup ⊓ U,
-      (C.canonical q).iwasawa.compact.isCompact.inter_right U.isClosed⟩
-  exact ⟨J, inf_le_left, fun k g => congrFun (hU k.val k.property.2) g⟩
+  exact ⟨(⟨(C.canonical q).iwasawa.compact.toOpenSubgroup ⊓ U,
+    (C.canonical q).iwasawa.compact.isCompact.inter_right U.isClosed⟩), inf_le_left, fun k g => congrFun (hU k.val k.property.2) g⟩
 
 end DedekindZetaZeroFree.EisensteinReferenceSections.LocalSeed
 

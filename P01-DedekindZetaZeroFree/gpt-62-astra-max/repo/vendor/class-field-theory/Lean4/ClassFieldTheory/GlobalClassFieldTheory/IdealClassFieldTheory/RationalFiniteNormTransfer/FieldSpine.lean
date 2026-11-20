@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -72,39 +69,6 @@ local instance
       (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK) :=
   inferInstance
 
-theorem absoluteFinite
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
-    Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          L (le_baseField L)) := by
-  let : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K)) := hKfinite
-  let : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK) := hfinite
-  exact FiniteGaloisSubextension.finite_extension_trans
-    hLK (le_baseField K)
-
-
 /-- The finite-dimensional structure on a rational abstract fixed field. -/
 theorem fixedFiniteDimensional
     (K : ClosedSubgroup
@@ -121,12 +85,14 @@ theorem fixedFiniteDimensional
   abstractFixedField_finiteDimensional
     ℚ (SeparableClosure ℚ) K hKfinite
 
+section
+
+variable (K L : ClosedSubgroup (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+    (hLK : L.toSubgroup ≤ K.toSubgroup)
+
 /-- The relative finite-dimensional structure on the fixed-field extension
 attached to an inclusion of closed subgroups. -/
 theorem relativeFiniteDimensional
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
     [hKfinite : Finite
       ((baseField
         (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
@@ -143,10 +109,7 @@ theorem relativeFiniteDimensional
     ℚ (SeparableClosure ℚ) K L hLK hKfinite hfinite
 
 /-- The canonical scalar tower on a rational relative fixed field. -/
-theorem relativeScalarTower
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup) :
+theorem relativeScalarTower :
     IsScalarTower ℚ
       (abstractFixedField ℚ (SeparableClosure ℚ) K)
       (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK) :=
@@ -154,9 +117,6 @@ theorem relativeScalarTower
 
 /-- Absolute finite-dimensionality of a rational relative fixed field. -/
 theorem relativeAbsoluteFiniteDimensional
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
     [hKfinite : Finite
       ((baseField
         (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
@@ -170,47 +130,18 @@ theorem relativeAbsoluteFiniteDimensional
       (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK) := by
   let F := abstractFixedField ℚ (SeparableClosure ℚ) K
   let E := abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK
-  let : FiniteDimensional ℚ F := fixedFiniteDimensional K
-  let : FiniteDimensional F E := relativeFiniteDimensional K L hLK
-  let : IsScalarTower ℚ F E := relativeScalarTower K L hLK
+  let := fixedFiniteDimensional K
+  let := relativeFiniteDimensional K L hLK
+  let := relativeScalarTower K L hLK
   exact FiniteDimensional.trans ℚ F E
 
+end
+
 /-- The number-field structure on a rational abstract fixed field. -/
-theorem fixedNumberField
-    (K : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))] :
-    NumberField (abstractFixedField ℚ (SeparableClosure ℚ) K) := by
-  let F := abstractFixedField ℚ (SeparableClosure ℚ) K
-  let : FiniteDimensional ℚ F := fixedFiniteDimensional K
-  exact NumberField.of_module_finite ℚ F
+alias fixedNumberField := GlobalClassFieldTheory.Reciprocity.rationalNormQuotientAbstractFixedFieldNumberField
 
 /-- The number-field structure on a rational relative fixed field. -/
-theorem relativeNumberField
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
-    NumberField
-      (abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK) := by
-  let E := abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK
-  let : FiniteDimensional ℚ E :=
-    relativeAbsoluteFiniteDimensional K L hLK
-  exact NumberField.of_module_finite ℚ E
+alias relativeNumberField := GlobalClassFieldTheory.Reciprocity.rationalNormQuotientAbstractRelativeFixedFieldNumberField
 
 /-- The Galois structure on a normal rational relative fixed field. -/
 theorem relativeIsGalois
@@ -297,7 +228,6 @@ noncomputable abbrev rationalFiniteNormTransferQuotientTarget
       K L hLK hnormal
   Additive (IdeleClassGroup F ⧸ (_root_.ideleClassNorm F E).range)
 
-
 namespace RationalFiniteNormTransferInternal
 
 /-- The canonical additive zero on the named finite-norm transfer target.
@@ -344,44 +274,7 @@ fixed-field quotient. -/
     (Zero (Additive
       (IdeleClassGroup F ⧸ (_root_.ideleClassNorm F E).range)))
 
-
 end RationalFiniteNormTransferInternal
-
-/-- The ordinary idele-class type of the upper fixed field in a rational
-finite-norm transfer. -/
-noncomputable abbrev rationalFiniteNormTransferExtensionIdeleClass
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)] : Type :=
-  let F := abstractFixedField ℚ (SeparableClosure ℚ) K
-  let E := abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK
-  letI : FiniteDimensional ℚ F :=
-    RationalFiniteNormTransferInternal.fixedFiniteDimensional K
-  letI : FiniteDimensional F E :=
-    RationalFiniteNormTransferInternal.relativeFiniteDimensional
-      K L hLK
-  letI : IsScalarTower ℚ F E :=
-    RationalFiniteNormTransferInternal.relativeScalarTower
-      K L hLK
-  letI : FiniteDimensional ℚ E :=
-    RationalFiniteNormTransferInternal.relativeAbsoluteFiniteDimensional
-      K L hLK
-  letI : NumberField F :=
-    RationalFiniteNormTransferInternal.fixedNumberField K
-  letI : NumberField E :=
-    RationalFiniteNormTransferInternal.relativeNumberField
-      K L hLK
-  IdeleClassGroup E
-
 
 end RationalIdeleExtension
 

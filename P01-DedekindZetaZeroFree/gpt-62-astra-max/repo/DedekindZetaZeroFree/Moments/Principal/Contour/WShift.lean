@@ -12,8 +12,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonK
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def rowCont (u : D.Row) (ξ w z : ℂ) : ℂ :=
   D.zetaSCont (6 * z) * D.Lpsi u w * EulerDomain.Hu D u ξ w z / D.Llam u ξ
@@ -78,12 +78,11 @@ open MeasureTheory in
 theorem lvl3 (F : ℝ → ℝ → ℝ → ℂ) (m : ℝ × ℝ × ℝ → ℝ) (hm : Integrable m)
     (h : ∀ a b d, ‖F a b d‖ ≤ m (a, b, d)) :
     ‖∫ a : ℝ, ∫ b : ℝ, ∫ d : ℝ, F a b d‖ ≤ ∫ p, m p := by
-  have hm' : Integrable m ((volume : Measure ℝ).prod ((volume : Measure ℝ).prod
-      (volume : Measure ℝ))) := hm
-  refine lvl2' (volume : Measure ℝ) ((volume : Measure ℝ).prod (volume : Measure ℝ))
+  have hm' := hm
+  refine lvl2' volume (volume.prod volume)
     (fun a => ∫ b : ℝ, ∫ d : ℝ, F a b d) m hm' ?_
   filter_upwards [hm'.prod_right_ae] with a ha
-  exact lvl2 (volume : Measure ℝ) (volume : Measure ℝ) (F a) (fun q => m (a, q)) ha
+  exact lvl2 volume volume (F a) (fun q => m (a, q)) ha
     (fun b d => h a b d)
 
 open MeasureTheory in
@@ -122,7 +121,7 @@ theorem JCont_shift_initial (Z : ℝ) (hZ : 2 ≤ Z) :
     JCont D (principalRows D) 4 4 2 Z =
       JCont D (principalRows D) Scales.rightLine Scales.rightLine (1 / 6 + Scales.contourOffset) Z := by
   classical
-  have hu : (ActualRowCount.principalRow D).u = 1 := ActualRowCount.principalRow_u D
+  have hu := ActualRowCount.principalRow_u D
   have h4 : (4 : ℝ) ∈ Set.Icc Scales.rightLine 4 := ⟨by rw [Scales.rightLine_eq]; norm_num, le_rfl⟩
   rw [JCont_eq D, JCont_eq D]
   have e1 : comparisonVerticalIntegral 4
@@ -151,8 +150,7 @@ theorem sec3 (F : ℝ → ℝ → ℝ → ℂ)
     (∀ᵐ a : ℝ, ∫ b : ℝ, ∫ d : ℝ, F a b d = ∫ q : ℝ × ℝ, F a q.1 q.2) ∧
     (∀ᵐ a : ℝ, ∫ d : ℝ, ∫ b : ℝ, F a b d = ∫ q : ℝ × ℝ, F a q.1 q.2) ∧
     (∀ᵐ a : ℝ, Integrable (fun d : ℝ => ∫ b : ℝ, F a b d)) := by
-  have hF' : Integrable (fun p : ℝ × (ℝ × ℝ) => F p.1 p.2.1 p.2.2)
-      ((volume : Measure ℝ).prod ((volume : Measure ℝ).prod (volume : Measure ℝ))) := hF
+  have hF' := hF
   refine ⟨hF'.integral_prod_left, ?_, ?_, ?_⟩
   · filter_upwards [hF'.prod_right_ae] with a ha
     exact (integral_prod (fun q : ℝ × ℝ => F a q.1 q.2) ha).symm
@@ -210,13 +208,11 @@ theorem wsKP_integrable (Z y : ℝ) (hZ : 2 ≤ Z) (hy1 : 9 / 10 - EulerDomain.p
     Scales.rightLine Scales.rightLine y y (1 / 6 + Scales.contourOffset) (1 / 6 + Scales.contourOffset)
     (fun x hx => by linarith [hx.1])
     (fun y' hy' => by
-      have h' : y' = y := le_antisymm hy'.2 hy'.1
-      rw [h']
+      rw [(le_antisymm hy'.2 hy'.1)]
       exact ⟨hy1, hy2⟩)
     (fun v hv => by linarith [hv.1])
   have hcont : Continuous
       (fun p : ℝ × ℝ × ℝ => wsKP D (ActualRowCount.principalRow D) Z y p.1 p.2.1 p.2.2) := by
-    have han := PrincipalKernelMajorants.kernel_analytic_paddedBox₂ D _ hu Z (by linarith)
     have hmap : Continuous (fun p : ℝ × ℝ × ℝ =>
         (((Scales.rightLine : ℂ) + (p.1 : ℂ) * Complex.I), ((y : ℂ) + (p.2.1 : ℂ) * Complex.I),
           (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (p.2.2 : ℂ) * Complex.I))) := by fun_prop
@@ -238,7 +234,7 @@ theorem wsKP_integrable (Z y : ℝ) (hZ : 2 ≤ Z) (hy1 : 9 / 10 - EulerDomain.p
         apply hy2
         have := congrArg Complex.re h
         rw [e2] at this
-        simpa using this
+        exact this
       simp only [Set.mem_diff, Set.mem_inter_iff, EulerDomain.paddedBox₂, EulerDomain.box,
         Set.mem_setOf_eq, PrincipalKernelMajorants.xiPrincipal, PrincipalKernelMajorants.zPrincipal,
         PrincipalKernelMajorants.singW]
@@ -250,59 +246,62 @@ theorem wsKP_integrable (Z y : ℝ) (hZ : 2 ≤ Z) (hy1 : 9 / 10 - EulerDomain.p
       · linarith [e3, hδ]
       · exact hne
     have hcomp : ContinuousOn (G ∘ f) Set.univ :=
-      (han.continuousOn : ContinuousOn G _).comp hmap.continuousOn hmaps
+      ((PrincipalKernelMajorants.kernel_analytic_paddedBox₂ D _ hu Z (by linarith)).continuousOn : ContinuousOn G _).comp hmap.continuousOn hmaps
     exact continuousOn_univ.mp hcomp
   refine MeasureTheory.Integrable.mono'
     (hgi.const_mul (Z ^ Scales.kernelExponent Scales.rightLine y (1 / 6 + Scales.contourOffset))) hcont.aestronglyMeasurable
     (Filter.Eventually.of_forall fun p => ?_)
   exact hg Scales.rightLine ⟨le_rfl, le_rfl⟩ y ⟨le_rfl, le_rfl⟩ _ ⟨le_rfl, le_rfl⟩ Z hZ p
 
-theorem JCont_w_shift (Z : ℝ) (hZ : 2 ≤ Z) :
+section
+
+variable (Z : ℝ) (hZ : 2 ≤ Z)
+
+include hZ in
+theorem JCont_w_shift :
     JCont D (principalRows D) Scales.rightLine Scales.rightLine (1 / 6 + Scales.contourOffset) Z =
       Jwres D Z + Rw D Z := by
+  let wsKP₀ := wsKP D (ActualRowCount.principalRow D) Z
   classical
-  have hx1 : Scales.rightLine = 10000001 / 10000000 := Scales.rightLine_eq
-  have hPi := wsKP_integrable D Z Scales.rightLine hZ
-    (by rw [hx1]; unfold EulerDomain.pad; norm_num) (by rw [hx1]; norm_num)
-  have hQi := wsKP_integrable D Z (9 / 10) hZ
-    (by unfold EulerDomain.pad; norm_num) (by norm_num)
-  obtain ⟨hVP, hP1, hP2, hP3⟩ := sec3 (wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine) hPi
-  obtain ⟨hVQ, hQ1, hQ2, hQ3⟩ := sec3 (wsKP D (ActualRowCount.principalRow D) Z (9 / 10)) hQi
+  have hx1 := Scales.rightLine_eq
+  obtain ⟨hVP, hP1, hP2, hP3⟩ := sec3 (wsKP₀ Scales.rightLine) (wsKP_integrable D Z Scales.rightLine hZ
+    (by rw [hx1]; unfold EulerDomain.pad; norm_num) (by rw [hx1]; norm_num))
+  obtain ⟨hVQ, hQ1, hQ2, hQ3⟩ := sec3 (wsKP₀ (9 / 10)) (wsKP_integrable D Z (9 / 10) hZ
+    (by unfold EulerDomain.pad; norm_num) (by norm_num))
   unfold Rw
   rw [JCont_eq_wsKP D Z Scales.rightLine, JCont_eq_wsKP D Z (9 / 10), Jwres_eq_wsKR]
   set c : ℂ := (2 * (Real.pi : ℂ))⁻¹ with hc
-  have e1 : ∫ a : ℝ, ∫ b : ℝ, ∫ d : ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a b d =
-      ∫ a : ℝ, ∫ q : ℝ × ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a q.1 q.2 :=
-    MeasureTheory.integral_congr_ae hP1
-  have e2 : ∫ a : ℝ, ∫ b : ℝ, ∫ d : ℝ, wsKP D (ActualRowCount.principalRow D) Z (9 / 10) a b d =
-      ∫ a : ℝ, ∫ q : ℝ × ℝ, wsKP D (ActualRowCount.principalRow D) Z (9 / 10) a q.1 q.2 :=
+  have e2 :=
     MeasureTheory.integral_congr_ae hQ1
   have e3 : ∫ a : ℝ, ∫ d : ℝ, wsKR D (ActualRowCount.principalRow D) Z a d =
-      ∫ a : ℝ, (c * (∫ q : ℝ × ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a q.1 q.2) -
-        c * (∫ q : ℝ × ℝ, wsKP D (ActualRowCount.principalRow D) Z (9 / 10) a q.1 q.2)) := by
+      ∫ a : ℝ, (c * (∫ q : ℝ × ℝ, wsKP₀ Scales.rightLine a q.1 q.2) -
+        c * (∫ q : ℝ × ℝ, wsKP₀ (9 / 10) a q.1 q.2)) := by
     refine MeasureTheory.integral_congr_ae ?_
     filter_upwards [hP2, hP3, hQ2, hQ3] with a ha2 ha3 hb2 hb3
     have hd : ∀ d : ℝ, wsKR D (ActualRowCount.principalRow D) Z a d =
-        c * (∫ b : ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a b d) - c * (∫ b : ℝ, wsKP D (ActualRowCount.principalRow D) Z (9 / 10) a b d) :=
+        c * (∫ b : ℝ, wsKP₀ Scales.rightLine a b d) - c * (∫ b : ℝ, wsKP₀ (9 / 10) a b d) :=
       fun d => wsKR_eq D Z hZ a d
     calc ∫ d : ℝ, wsKR D (ActualRowCount.principalRow D) Z a d
-        = ∫ d : ℝ, (c * (∫ b : ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a b d) - c * (∫ b : ℝ, wsKP D (ActualRowCount.principalRow D) Z (9 / 10) a b d)) := by
+        = ∫ d : ℝ, (c * (∫ b : ℝ, wsKP₀ Scales.rightLine a b d) - c * (∫ b : ℝ, wsKP₀ (9 / 10) a b d)) := by
           simp only [hd]
-      _ = c * (∫ d : ℝ, ∫ b : ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a b d) - c * (∫ d : ℝ, ∫ b : ℝ, wsKP D (ActualRowCount.principalRow D) Z (9 / 10) a b d) := by
+      _ = c * (∫ d : ℝ, ∫ b : ℝ, wsKP₀ Scales.rightLine a b d) - c * (∫ d : ℝ, ∫ b : ℝ, wsKP₀ (9 / 10) a b d) := by
           rw [MeasureTheory.integral_sub (ha3.const_mul c) (hb3.const_mul c),
             MeasureTheory.integral_const_mul, MeasureTheory.integral_const_mul]
       _ = _ := by rw [ha2, hb2]
-  have e4 : ∫ a : ℝ, (c * (∫ q : ℝ × ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a q.1 q.2) -
-        c * (∫ q : ℝ × ℝ, wsKP D (ActualRowCount.principalRow D) Z (9 / 10) a q.1 q.2)) =
-      c * (∫ a : ℝ, ∫ q : ℝ × ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a q.1 q.2) -
-      c * (∫ a : ℝ, ∫ q : ℝ × ℝ, wsKP D (ActualRowCount.principalRow D) Z (9 / 10) a q.1 q.2) := by
+  have e4 : ∫ a : ℝ, (c * (∫ q : ℝ × ℝ, wsKP₀ Scales.rightLine a q.1 q.2) -
+        c * (∫ q : ℝ × ℝ, wsKP₀ (9 / 10) a q.1 q.2)) =
+      c * (∫ a : ℝ, ∫ q : ℝ × ℝ, wsKP₀ Scales.rightLine a q.1 q.2) -
+      c * (∫ a : ℝ, ∫ q : ℝ × ℝ, wsKP₀ (9 / 10) a q.1 q.2) := by
     rw [MeasureTheory.integral_sub (hVP.const_mul c) (hVQ.const_mul c),
       MeasureTheory.integral_const_mul, MeasureTheory.integral_const_mul]
-  rw [e1, e2, e3, e4]
+  rw [(MeasureTheory.integral_congr_ae hP1), e2, e3, e4]
   ring
 
-theorem Jpr_eq (Z : ℝ) (hZ : 2 ≤ Z) : Jpr D Z = Jwres D Z + Rw D Z := by
+include hZ in
+theorem Jpr_eq : Jpr D Z = Jwres D Z + Rw D Z := by
   rw [Jpr_eq_JCont, JCont_shift_initial D Z hZ, JCont_w_shift D Z hZ]
+
+end
 
 theorem Rw_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z →
@@ -324,9 +323,6 @@ theorem Rw_bound :
   set K : ℝ := ‖((2 * (Real.pi : ℂ))⁻¹)‖ ^ 3 * ∫ p, g p with hK
   have hK0 : 0 ≤ K := mul_nonneg (pow_nonneg (norm_nonneg _) _) hI
   refine ⟨K + 1, by linarith, fun Z hZ => ?_⟩
-  have hZ0 : 0 ≤ Z ^ (Scales.mainExponent - 37749867 / 1000000000) :=
-    Real.rpow_nonneg (by linarith) _
-  have hE := E_remainder
   have hRw : Rw D Z = ((2 * (Real.pi : ℂ))⁻¹) ^ 3 * ∫ a : ℝ, ∫ b : ℝ, ∫ d : ℝ,
       kernelWith D (PrincipalKernelDefinitions.rowContLocal D) (ActualRowCount.principalRow D)
         ((Scales.rightLine : ℂ) + (a : ℂ) * Complex.I)
@@ -344,20 +340,16 @@ theorem Rw_bound :
     (hgi.const_mul _)
     (fun a b d => hg Scales.rightLine ⟨le_rfl, le_rfl⟩ (9 / 10) ⟨le_rfl, le_rfl⟩ _ ⟨le_rfl, le_rfl⟩
       Z hZ (a, b, d))
-  rw [hE] at hbd
+  rw [E_remainder] at hbd
   rw [hRw, norm_mul, norm_pow]
-  calc ‖((2 * (Real.pi : ℂ))⁻¹)‖ ^ 3 * ‖∫ a : ℝ, ∫ b : ℝ, ∫ d : ℝ,
-        kernelWith D (PrincipalKernelDefinitions.rowContLocal D) (ActualRowCount.principalRow D)
-        ((Scales.rightLine : ℂ) + (a : ℂ) * Complex.I)
-        (((9 / 10 : ℝ) : ℂ) + (b : ℂ) * Complex.I)
-        (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (d : ℂ) * Complex.I) Z‖
+  calc _
       ≤ ‖((2 * (Real.pi : ℂ))⁻¹)‖ ^ 3 *
           ∫ p, Z ^ (Scales.mainExponent - 37749867 / 1000000000) * g p :=
         mul_le_mul_of_nonneg_left hbd (pow_nonneg (norm_nonneg _) _)
     _ = K * Z ^ (Scales.mainExponent - 37749867 / 1000000000) := by
         rw [MeasureTheory.integral_const_mul, hK]; ring
     _ ≤ (K + 1) * Z ^ (Scales.mainExponent - 37749867 / 1000000000) :=
-        mul_le_mul_of_nonneg_right (by linarith) hZ0
+        mul_le_mul_of_nonneg_right (by linarith) (Real.rpow_nonneg (by linarith) _)
 
 end
 

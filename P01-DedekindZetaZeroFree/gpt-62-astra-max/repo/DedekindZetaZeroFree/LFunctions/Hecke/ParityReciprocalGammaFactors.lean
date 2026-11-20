@@ -12,33 +12,32 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayParity
 
 variable (K : Type) [Field K] [NumberField K]
 
-private lemma differentiable_prod_Gammaℝ (δ : Finset (RayCoset.RealPlaces K)) :
-    Differentiable ℂ (fun s : ℂ =>
-      ∏ v : RayCoset.RealPlaces K, (Complex.Gammaℝ (s + if v ∈ δ then (1 : ℂ) else 0))⁻¹) := by
-  have h := Differentiable.finsetProd (𝕜 := ℂ) (u := Finset.univ)
-    (f := fun v : RayCoset.RealPlaces K =>
-      fun s : ℂ => (Complex.Gammaℝ (s + if v ∈ δ then (1 : ℂ) else 0))⁻¹)
-    (fun v _ => Complex.differentiable_Gammaℝ_inv.comp (differentiable_id.add_const _))
-  have hfun : (∏ v : RayCoset.RealPlaces K,
-        fun s : ℂ => (Complex.Gammaℝ (s + if v ∈ δ then (1 : ℂ) else 0))⁻¹)
-      = (fun s : ℂ =>
-        ∏ v : RayCoset.RealPlaces K,
-          (Complex.Gammaℝ (s + if v ∈ δ then (1 : ℂ) else 0))⁻¹) := by
-    funext s
-    rw [Finset.prod_apply]
-  rwa [hfun] at h
+section
 
-theorem differentiable_hδ (δ : Finset (RayCoset.RealPlaces K)) :
+variable (δ : Finset (RayCoset.RealPlaces K))
+
+theorem differentiable_hδ :
     Differentiable ℂ (hδ K δ) := by
   unfold hδ
   refine Differentiable.mul (Differentiable.mul (differentiable_const _) ?_) ?_
-  · exact differentiable_prod_Gammaℝ K δ
+  · have h := Differentiable.finsetProd (𝕜 := ℂ) (u := Finset.univ)
+      (f := fun v : RayCoset.RealPlaces K =>
+        fun s : ℂ => (Complex.Gammaℝ (s + if v ∈ δ then (1 : ℂ) else 0))⁻¹)
+      (fun v _ => Complex.differentiable_Gammaℝ_inv.comp (differentiable_id.add_const _))
+    have hfun : (∏ v : RayCoset.RealPlaces K,
+          fun s : ℂ => (Complex.Gammaℝ (s + if v ∈ δ then (1 : ℂ) else 0))⁻¹)
+        = (fun s : ℂ =>
+          ∏ v : RayCoset.RealPlaces K,
+            (Complex.Gammaℝ (s + if v ∈ δ then (1 : ℂ) else 0))⁻¹) := by
+      funext s
+      rw [Finset.prod_apply]
+    rwa [hfun] at h
   · exact (Complex.differentiable_Gammaℂ_inv.pow _)
 
-theorem κδ_mul_hδ (δ : Finset (RayCoset.RealPlaces K))
+theorem κδ_mul_hδ
     (s : ℂ) (hs : 1 < s.re) :
     κδ K δ s * hδ K δ s = 1 := by
-  have hs0 : 0 < s.re := lt_trans zero_lt_one hs
+  have hs0 := lt_trans zero_lt_one hs
   have hGℂ : Complex.Gammaℂ s ≠ 0 := by
     rw [Complex.Gammaℂ_def]
     exact mul_ne_zero
@@ -91,6 +90,8 @@ theorem κδ_mul_hδ (δ : Finset (RayCoset.RealPlaces K))
           inv_mul_cancel₀ (pow_ne_zero _ (by norm_num : (4 : ℂ) ≠ 0))]
         ring
 
+end
+
 theorem hδ_empty_zero : hδ K ∅ 0 = 0 := by
   have hsum := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank (K := K)
   have hrank : 0 < Module.finrank ℚ K := Module.finrank_pos
@@ -109,10 +110,9 @@ theorem hδ_empty_zero : hδ K ∅ 0 = 0 := by
     rw [show (∏ _v : RayCoset.RealPlaces K, (0 : ℂ)) = 1 by
       rw [Finset.prod_const, Finset.card_univ, hcard, pow_zero]]
     rw [h1, pow_zero, one_mul, zero_pow h2, mul_zero]
-  · have hcard : Fintype.card (RayCoset.RealPlaces K) ≠ 0 := h1
-    have hprod : (∏ _v : RayCoset.RealPlaces K, (0 : ℂ)) = 0 := by
+  · have hprod : (∏ _v : RayCoset.RealPlaces K, (0 : ℂ)) = 0 := by
       rw [Finset.prod_const, Finset.card_univ]
-      exact zero_pow hcard
+      exact zero_pow h1
     rw [hprod]
     ring
 

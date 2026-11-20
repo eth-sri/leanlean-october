@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspEnds.CoframeNormNaturality
 
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.WeakSections.FlatTestsAndGraphCauchyBounds
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.WeakSections.CompactMultiplierWeakH1
@@ -21,8 +22,8 @@ open KPContLocalNorm KPContSectorSmoothFramesSupport
 open KPContActualCotangentCountableShrinking KPContCotangentActualGenuineTwistIsotropy
 open KPContSectorPhaseComponentCharts KPContActualSectorFormWeakLocalization KPCompactInteriorH1
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ} {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ} {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ} {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ} {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 attribute [local instance 2000] KPContSectorQuotientRelationsComparison.instMeasurableSpaceRawXU
 private theorem measurable_extension {V : Type*} [Zero V] [MeasurableSpace V]
     (a : ActualChart (U:=U) (H:=H)) (f : omega a → V) (hf : Measurable f) :
@@ -31,7 +32,7 @@ private theorem measurable_extension {V : Type*} [Zero V] [MeasurableSpace V]
   have hg : Measurable (liftExtension a f) := by
     unfold liftExtension
     exact Measurable.dite hf measurable_const (KPContActualGlobalGreen.isOpen_omega_actual a).measurableSet
-  exact hg.comp (baseReindex (F:=F)).symm.continuous.measurable
+  exact hg.comp (baseReindex).symm.continuous.measurable
 
 private theorem weakChartData_weakFirst
     (s : BorelL2Sections F ζ hζ U R P H) (W : Family (U:=U) (H:=H))
@@ -61,22 +62,17 @@ private theorem weakChartData_weakFirst
       fun_prop
     exact (hc.comp continuous_subtype_val).measurable
   · intro j
-    have hm := measurable_extension a (coefficient W a) (W.property.1 a)
     unfold covariantCoordinate
     dsimp only
-    rcases (coefficientIndex (F:=F)).symm j with ⟨i,k⟩
+    rcases (coefficientIndex).symm j with ⟨i,k⟩
     have hcoef (k : Fin 3) : Measurable (fun x => (liftExtension a (coefficient W a)
-        ((baseReindex (F:=F)).symm x)) (i,k)) :=
-      (continuous_apply (i,k)).measurable.comp ((PiLp.continuous_ofLp 2 _).measurable.comp hm)
-    have he : Measurable (fun x : Space (3*d F) => (Real.exp (-((baseReindex (F:=F)).symm x) (i,2)) : ℂ)) := by
+        ((baseReindex).symm x)) (i,k)) :=
+      (continuous_apply (i,k)).measurable.comp ((PiLp.continuous_ofLp 2 _).measurable.comp (measurable_extension a (coefficient W a) (W.property.1 a)))
+    have he : Measurable (fun x : Space (3*d F) => (Real.exp (-((baseReindex).symm x) (i,2)) : ℂ)) := by
       fun_prop
     fin_cases k
-    · change Measurable ((fun x => (Real.exp (-((baseReindex (F:=F)).symm x) (i,2)) : ℂ)) *
-        (fun x => liftExtension a (coefficient W a) ((baseReindex (F:=F)).symm x) (i,1)))
-      exact he.mul (hcoef 1)
-    · change Measurable ((fun x => (Real.exp (-((baseReindex (F:=F)).symm x) (i,2)) : ℂ)) *
-        (fun x => liftExtension a (coefficient W a) ((baseReindex (F:=F)).symm x) (i,2)))
-      exact he.mul (hcoef 2)
+    · exact he.mul (hcoef 1)
+    · exact he.mul (hcoef 2)
     · exact hcoef 0
   · intro B hB
     have hball : InteriorBall a B := ⟨by
@@ -87,16 +83,15 @@ private theorem weakChartData_weakFirst
     refine ⟨h,?_,?_⟩
     · simpa only [KPContLocalEnergy.value,KPContLocalEnergy.zeroIndex,zeroIndex,map_one,Units.val_one,one_mul] using hzero
     · intro j
-      have hh := hfirst (KPContLocalEnergy.firstIndex j) j (by simp [KPContLocalEnergy.firstIndex])
-      simpa only [KPContLocalEnergy.gradient,map_one,Units.val_one,one_mul] using hh
+      simpa only [KPContLocalEnergy.gradient,map_one,Units.val_one,one_mul] using (hfirst (KPContLocalEnergy.firstIndex j) j (by simp [KPContLocalEnergy.firstIndex]))
 end DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse
 
 namespace DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse
 open KPContLocalNorm KPCompactInteriorH1
 open KPContActualSectorChartEquivariantInputs KPContActualCotangentChartRestriction
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ} {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ} {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ} {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ} {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
  def actualInverseMetric (a : KPContActualSectorSmoothTestModules.ActualChart (U:=U) (H:=H)) :
     InverseMetric (chartOpens (scalarData a)) where
   Q x := Matrix.diagonal (fun j =>
@@ -136,15 +131,10 @@ private theorem actualZeroConnection_compatible (a : KPContActualSectorSmoothTes
   simp only [smoothCovariantDerivative,actualZeroConnection,zero_apply,
     smul_zero,Finset.sum_const_zero,add_zero]
   let L := (scalarCocycle a γ 0).symm.toContinuousLinearEquiv.toContinuousLinearMap.restrictScalars ℝ
-  have hu' : DifferentiableAt ℝ u (action a γ x) :=
-    hu.differentiableOn (by simp) (action a γ x)
-      ((scalarData a).act_mem γ x hx) |>.differentiableAt
-        ((scalarData a).open_chart.mem_nhds ((scalarData a).act_mem γ x hx))
-  have ha : DifferentiableAt ℝ (action a γ) x :=
-    (scalarData a).smooth_action γ |>.differentiableOn (by simp) x hx
-      |>.differentiableAt ((scalarData a).open_chart.mem_nhds hx)
-  have hf := L.hasFDerivAt.comp x (hu'.hasFDerivAt.comp x ha.hasFDerivAt)
-  have hfe := hf.fderiv
+  have hfe := (L.hasFDerivAt.comp x ((hu.differentiableOn (by simp) (action a γ x)
+    ((scalarData a).act_mem γ x hx) |>.differentiableAt
+      ((scalarData a).open_chart.mem_nhds ((scalarData a).act_mem γ x hx))).hasFDerivAt.comp x ((scalarData a).smooth_action γ |>.differentiableOn (by simp) x hx
+    |>.differentiableAt ((scalarData a).open_chart.mem_nhds hx)).hasFDerivAt)).fderiv
   change fderiv ℝ (fun y => L (u (action a γ y))) x = _ at hfe
   rw [show (fun y => ((scalarData a).cocycle γ y).symm (u ((scalarData a).act γ y))) =
       (fun y => L (u (action a γ y))) from rfl, hfe]
@@ -179,7 +169,7 @@ private theorem actualInverseMetric_decode
       ‖liftExtension a (coefficient W a) ((baseReindex (F:=F)).symm x)‖^2 := by
   rw [actualInverseMetric_quadratic]
   simp_rw [vec_norm]
-  rw [← Equiv.sum_comp (coefficientIndex (F:=F)), Fintype.sum_prod_type,
+  rw [← Equiv.sum_comp (coefficientIndex), Fintype.sum_prod_type,
     EuclideanSpace.norm_sq_eq,Fintype.sum_prod_type]
   apply Finset.sum_congr rfl
   intro i _
@@ -195,31 +185,18 @@ private theorem actualInverseMetric_decode
   ring
 
 open KPContSectorLineL2Isometry KPContCotangentActualOverlap KPContCotangentActualGenuineTwistIsotropy
-private theorem sum_real_basis {I : Type*} [Fintype I] [DecidableEq I]
-    (b : OrthonormalBasis I ℝ (EuclideanSpace ℝ I)) (L : EuclideanSpace ℝ I →L[ℝ] ℝ) :
-    ∑ i, (L (b i)) ^ 2 = ‖(InnerProductSpace.toDual ℝ (EuclideanSpace ℝ I)).symm L‖ ^ 2 := by
-  simpa only [InnerProductSpace.toDual_symm_apply] using
-    b.sum_sq_inner_left ((InnerProductSpace.toDual ℝ (EuclideanSpace ℝ I)).symm L)
-private theorem sum_complex_basis {I : Type*} [Fintype I] [DecidableEq I]
-    (b c : OrthonormalBasis I ℝ (EuclideanSpace ℝ I)) (L : EuclideanSpace ℝ I →L[ℝ] ℂ) :
-    ∑ i, ‖L (b i)‖ ^ 2 = ∑ i, ‖L (c i)‖ ^ 2 := by
-  have hRe := (sum_real_basis b (Complex.reCLM.comp L)).trans
-    (sum_real_basis c (Complex.reCLM.comp L)).symm
-  have hIm := (sum_real_basis b (Complex.imCLM.comp L)).trans
-    (sum_real_basis c (Complex.imCLM.comp L)).symm
-  simp only [ContinuousLinearMap.comp_apply, Complex.reCLM_apply, Complex.imCLM_apply] at hRe hIm
-  simp only [Complex.sq_norm, Complex.normSq_apply, Finset.sum_add_distrib]
-  simpa only [pow_two] using congrArg₂ (· + ·) hRe hIm
+private alias sum_real_basis := DedekindZetaZeroFree.KPContCuspCoframeNaturality.CoframeNormNaturality.sum_real_basis
+private alias sum_complex_basis := DedekindZetaZeroFree.KPContCuspCoframeNaturality.CoframeNormNaturality.sum_complex_basis
 private theorem sum_vector_basis {I : Type*} [Fintype I] [DecidableEq I]
     (b c : OrthonormalBasis I ℝ (EuclideanSpace ℝ I)) (L : EuclideanSpace ℝ I →L[ℝ] V 1) :
     ∑ i, ‖L (b i)‖ ^ 2 = ∑ i, ‖L (c i)‖ ^ 2 := by
   have hc := sum_complex_basis b c
     (scalarReindex.symm.toContinuousLinearEquiv.toContinuousLinearMap.restrictScalars ℝ |>.comp L)
   change (∑ i, ‖scalarReindex.symm (L (b i))‖^2) = (∑ i, ‖scalarReindex.symm (L (c i))‖^2) at hc
-  simpa only [LinearIsometryEquiv.norm_map] using hc
+  simpa using hc
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ} {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ} {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ} {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ} {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 private theorem flat_frame_basis (x : Space (3*d F)) (i : Fin (d F)) (k : Fin 3) :
     baseReindex (CotangentLogCoframe.H (d F) ((baseReindex (F:=F)).symm x)
@@ -229,7 +206,7 @@ private theorem flat_frame_basis (x : Space (3*d F)) (i : Fin (d F)) (k : Fin 3)
         Real.exp (((baseReindex (F:=F)).symm x) (i,2)) • coordinateDirection ((coefficientIndex (F:=F)) (i,1))] k := by
   apply PiLp.ext
   intro j
-  rcases (coefficientIndex (F:=F)).surjective j with ⟨⟨l,m⟩,rfl⟩
+  rcases (coefficientIndex).surjective j with ⟨⟨l,m⟩,rfl⟩
   fin_cases k <;> fin_cases m <;> simp [baseReindex,CotangentLogCoframe.H,CotangentLogCoframe.C,
     coordinateDirection,EuclideanSpace.basisFun_apply,PiLp.single_apply,eq_comm]
   all_goals split_ifs <;> simp_all
@@ -241,7 +218,7 @@ private theorem actualInverseMetric_frame
       ∑ k : Fin (d F) × Fin 3,
         ‖L (baseReindex (CotangentLogCoframe.H (d F) ((baseReindex (F:=F)).symm x)
           (EuclideanSpace.basisFun _ ℝ k)))‖^2 := by
-  rw [actualInverseMetric_quadratic,← Equiv.sum_comp (coefficientIndex (F:=F)),
+  rw [actualInverseMetric_quadratic,← Equiv.sum_comp (coefficientIndex),
     Fintype.sum_prod_type,Fintype.sum_prod_type]
   apply Finset.sum_congr rfl
   intro i _
@@ -259,14 +236,13 @@ private theorem actualInverseMetric_invariant
     (a : KPContActualSectorSmoothTestModules.ActualChart (U:=U) (H:=H)) :
     (actualInverseMetric a).IsInvariant (scalarData a) := by
   intro γ x hx T
-  let p := (baseReindex (F:=F)).symm x
+  let p := (baseReindex).symm x
   let ψ := isotropyArrow a γ
   have hp : p ∈ ψ.domain := by
-    change p ∈ (isotropyChart a).omega
     exact a.closure_subset (subset_closure hx)
   let q := KPContCotangentActualGenuineTwistIsotropy.q ψ p hp
-  let L : KPContCotangentActualGenuineTwistIsotropy.V F →L[ℝ] V 1 :=
-    T.comp ((baseReindex (F:=F)).toContinuousLinearEquiv.toContinuousLinearMap.comp
+  let L :=
+    T.comp ((baseReindex).toContinuousLinearEquiv.toContinuousLinearMap.comp
       (CotangentLogCoframe.H (d F) (ψ.psi p)).toContinuousLinearMap)
   have he : ∀ v, fderiv ℝ ψ.psi p (CotangentLogCoframe.H (d F) p v) =
       CotangentLogCoframe.H (d F) (ψ.psi p) (q v) := by
@@ -274,32 +250,28 @@ private theorem actualInverseMetric_invariant
     apply (CotangentLogCoframe.C (d F) (ψ.psi p)).injective
     simp only [CotangentLogCoframe.H,ContinuousLinearEquiv.apply_symm_apply]
     rfl
-  have hsum := sum_vector_basis ((EuclideanSpace.basisFun (Fin (d F) × Fin 3) ℝ).map q)
-    (EuclideanSpace.basisFun (Fin (d F) × Fin 3) ℝ) L
   have ha : fderiv ℝ (action a γ) x =
-      (baseReindex (F:=F)).toContinuousLinearEquiv.toContinuousLinearMap.comp
-        ((fderiv ℝ ψ.psi p).comp (baseReindex (F:=F)).symm.toContinuousLinearEquiv.toContinuousLinearMap) := by
-    have hd := (smooth_metric ψ).1.differentiableOn (by simp) p hp
-    have hdo : IsOpen ψ.domain := ψ.isOpen_domain
-    have hh := ((baseReindex (F:=F)).hasFDerivAt (x := ψ.psi p)).comp x
-      ((hd.differentiableAt (hdo.mem_nhds hp)).hasFDerivAt.comp x
-        ((baseReindex (F:=F)).symm.hasFDerivAt (x := x)))
-    exact hh.fderiv
+      (baseReindex).toContinuousLinearEquiv.toContinuousLinearMap.comp
+        ((fderiv ℝ ψ.psi p).comp (baseReindex).symm.toContinuousLinearEquiv.toContinuousLinearMap) := by
+    exact (((baseReindex).hasFDerivAt).comp x
+      ((((smooth_metric ψ).1.differentiableOn (by simp) p hp).differentiableAt (ψ.isOpen_domain.mem_nhds hp)).hasFDerivAt.comp x
+        ((baseReindex).symm.hasFDerivAt))).fderiv
   rw [show (fun j => T (fderiv ℝ ((scalarData a).act γ) x (coordinateDirection j))) =
       (fun j => (T.comp (fderiv ℝ (action a γ) x)) (coordinateDirection j)) from rfl,
     actualInverseMetric_frame,actualInverseMetric_frame]
-  convert hsum using 1
+  convert (sum_vector_basis ((EuclideanSpace.basisFun (Fin (d F) × Fin 3) ℝ).map q)
+    (EuclideanSpace.basisFun (Fin (d F) × Fin 3) ℝ) L) using 1
   · apply Finset.sum_congr rfl
     intro k _
     simp only [ContinuousLinearMap.comp_apply,ha,OrthonormalBasis.map_apply,L]
-    change ‖T (baseReindex (fderiv ℝ ψ.psi p ((baseReindex (F:=F)).symm
+    change ‖T (baseReindex (fderiv ℝ ψ.psi p ((baseReindex).symm
       (baseReindex (CotangentLogCoframe.H (d F) p (EuclideanSpace.basisFun _ ℝ k))))))‖^2 = _
     rw [LinearIsometryEquiv.symm_apply_apply,he]
     rfl
   · apply Finset.sum_congr rfl
     intro k _
     change ‖T (baseReindex (CotangentLogCoframe.H (d F)
-      ((baseReindex (F:=F)).symm (baseReindex (ψ.psi p))) (EuclideanSpace.basisFun _ ℝ k)))‖^2 = _
+      ((baseReindex).symm (baseReindex (ψ.psi p))) (EuclideanSpace.basisFun _ ℝ k)))‖^2 = _
     rw [LinearIsometryEquiv.symm_apply_apply]
     rfl
 
@@ -312,24 +284,23 @@ private theorem actualFiniteHw
     FiniteHw (chart a) (weight a) (actualInverseMetric a) (actualZeroConnection a)
       (fun x => vec (scalarCoordinate s a x))
       (fun j x => vec (covariantCoordinate r.val a x j)) := by
-  have hscalar : MemLp (scalarCoordinate s a) 2 (KPContActualSectorChartEquivariantInputs.measure a) :=
+  have hscalar :=
     MemLp.ae_eq (KPContActualSectorBallRestriction.scalarProducer_spec a u s hs)
       (Lp.memLp (KPContActualSectorBallRestriction.scalarProducer a u))
-  have hsc : Continuous (vec : ℂ → V 1) := by
+  have hsc : Continuous vec := by
     unfold vec
     fun_prop
   refine ⟨hscalar.congr_norm (hsc.comp_aestronglyMeasurable hscalar.aestronglyMeasurable)
     (Filter.Eventually.of_forall fun x => (vec_norm _).symm), ?_⟩
   let G := fun x : Space (3*d F) =>
-    ‖liftExtension a (coefficient r.val a) ((baseReindex (F:=F)).symm x)‖^2
-  have hG : Measurable G := by
-    exact (measurable_extension a (coefficient r.val a) (r.val.property.1 a)).norm.pow_const 2
+    ‖liftExtension a (coefficient r.val a) ((baseReindex).symm x)‖^2
+  have hG := (measurable_extension a (coefficient r.val a) (r.val.property.1 a)).norm.pow_const 2
   have hc := KPContActualCotangentCountableShrinking.every_shrunkChart_properties F ζ hζ U R P H a
   let emb := fun y : a.domain => fromActual (ζ:=ζ) (hζ:=hζ) y.val
   have hem : Measurable emb := by
     apply Continuous.measurable
     unfold emb fromActual labeledAInv
-    exact (baseReindex (F:=F)).continuous.comp ((CotangentLogCoframe.A (d F)).symm.continuous.comp
+    exact (baseReindex).continuous.comp ((CotangentLogCoframe.A (d F)).symm.continuous.comp
       (continuous_pi fun k => (continuous_apply _).comp continuous_subtype_val))
   have hmap : Measure.map emb a.liftedMeasure = KPContActualSectorChartEquivariantInputs.measure a :=
     lifted_measure_transport (a:=a)
@@ -341,15 +312,12 @@ private theorem actualFiniteHw
     convert hi using 1
     funext y
     have hy := (KPContActualCotangentPieceHilbertSum.coordinates a y).property
-    change ‖liftExtension a (coefficient r.val a) ((baseReindex (F:=F)).symm (emb y))‖^2 =
+    change ‖liftExtension a (coefficient r.val a) ((baseReindex).symm (emb y))‖^2 =
       ‖localCoefficient a r.val y‖^2
     have hy' : labeledAInv (placeEquiv F ζ hζ) y.val ∈ KPContCotangentOverlapRationalBranches.omega a := hy
     simp only [emb, fromActual,LinearIsometryEquiv.symm_apply_apply,liftExtension,
       localCoefficient,KPContActualCotangentPieceHilbertSum.coordinates]
     rw [dif_pos hy']
-  have hw : AEMeasurable (fun x => ENNReal.ofReal (weight a x)) (volume.restrict (chart a)) :=
-    ENNReal.measurable_ofReal.comp_aemeasurable
-      ((scalarData a).smooth_weight.continuousOn.aemeasurable (scalarData a).open_chart.measurableSet)
   have hweighted := (integrable_withDensity_iff (show Measurable (fun x => ENNReal.ofReal (weight a x)) from by
       unfold weight KPArch.volumeDensity KPArch.height toActual labeledA
       fun_prop) (Filter.Eventually.of_forall fun x => ENNReal.ofReal_lt_top)).mp hGi
@@ -373,17 +341,9 @@ open KPContActualSectorSmoothTestModules KPContActualSectorTestEmbeddings KPCont
 open KPContActualSectorFormWeakLocalization KPContActualCotangentPieceHilbertSum
 open KPContCotangentOverlapRationalBranches KPContCotangentActualOverlap KPContCotangentActualGenuineTwistIsotropy
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ} {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ} {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-private theorem fields_apply (s : Sections F ζ hζ U R P H)
-    (a : ActualChart (U:=U) (H:=H)) (x : omega a) :
-    sectionFields s a x = (s a.component).val (labeledA (placeEquiv F ζ hζ) x.val) := by
-  have hcoe : (isotropyChart a).coefficient s x.val =
-      (KPCuspGenuineMonodromy.chi F ζ hζ ((isotropyChart a).splitting x.val) : ℂ) *
-        (s a.component).val
-          ((isotropyChart a).kind.representative • labeledA (isotropyChart a).places x.val) := rfl
-  rw [sectionFields, hcoe]
-  simp [isotropyChart, KPContCotangentActualOverlap.ChartKind.representative]
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ} {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ} {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+private alias fields_apply := DedekindZetaZeroFree.KPContFriedrichsWeakGradientCoordinates.WeakGradientCoordinates.sectionFields_apply
 private theorem norm_toBase (s : Sections F ζ hζ U R P H)
     (a : ActualChart (U:=U) (H:=H)) (y : a.domain) :
     sectionNorm F ζ hζ U R P H s (a.toBase y) = ‖(s a.component).val y.val‖ := by
@@ -403,8 +363,7 @@ private theorem chart_fields_eq_imp_mk_eq
     let a := cover.chart n
     have hcoef : (fun y : a.domain => (s.val a.component).val y.val) =ᵐ[a.liftedMeasure]
         (fun y => (t.val a.component).val y.val) := by
-      have he := hfields a
-      filter_upwards [he] with y hy
+      filter_upwards [(hfields a)] with y hy
       have hi : labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) y.val) = y.val := by
         funext k
         simp [labeledA, labeledAInv]
@@ -418,7 +377,7 @@ private theorem chart_fields_eq_imp_mk_eq
     rw [← (cover.properties n).exact_pushforward]
     apply (ae_map_iff (cover.properties n).measurable.aemeasurable ?_).mpr hnorm
     exact measurableSet_eq_fun (squaredNorm_measurable F ζ hζ U R P H (s.val-t.val)
-      (fun i => by simpa using (s.property.1 i).sub (t.property.1 i))) measurable_const
+      (fun i => by exact (s.property.1 i).sub (t.property.1 i))) measurable_const
   have he := (ae_restrict_iUnion_iff (fun n => (cover.chart n).baseDomain)
     (fun x => squaredNorm F ζ hζ U R P H (s.val-t.val) x = 0)).mpr hchart
   rwa [cover.covers, Measure.restrict_univ] at he
@@ -441,10 +400,9 @@ private theorem chart_fields_ae_of_mk_eq
   rw [norm_toBase] at hy
   have hval : (s.val a.component).val y.val = (t.val a.component).val y.val := by
     simp only [ENNReal.ofReal_eq_zero, sq_nonpos_iff] at hy
-    have hh : (s.val a.component).val y.val - (t.val a.component).val y.val = 0 := by
+    exact sub_eq_zero.mp (by
       apply norm_eq_zero.mp
-      simpa using hy
-    exact sub_eq_zero.mp hh
+      exact hy)
   have hi : labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) y.val) = y.val := by
     funext k
     simp [labeledA,labeledAInv]
@@ -459,8 +417,7 @@ private theorem actualProduct_unique (η : CompactMultiplier (U:=U) (H:=H))
   rw [ht,ht']
   apply chart_fields_eq_imp_mk_eq
   intro a
-  have hss := chart_fields_ae_of_mk_eq s s' (hs.symm.trans hs') a
-  filter_upwards [he a, he' a, hss] with y h1 h2 h3
+  filter_upwards [he a, he' a, (chart_fields_ae_of_mk_eq s s' (hs.symm.trans hs') a)] with y h1 h2 h3
   rw [h1,h2,h3]
 
 private theorem compact_multiplier_of_converse
@@ -494,21 +451,20 @@ open KPContActualSectorTestDifferentialDescent
 open KPContActualSectorFormWeakLocalization
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 variable (F ζ hζ) (U R P H)
 variable (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
-variable (hR : R.adelicHaar = μG)
-variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
+    (hR : R.adelicHaar = μG)
+    (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
 
 local notation "A" => KPContActualSectorFriedrichsSynthesis.A_U F ζ hζ U R P H μG hμG hR realization
 local notation "Q" => KPContActualSectorFriedrichsSynthesis.formDomain F ζ hζ U R P H μG hμG hR realization
 
 structure Properties : Prop where
-
   compact_converse : ∀ (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)
       (K : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)),
     IsCompact K → SupportedAE (H := H) u K → ActualWeakH1Loc (H := H) u →
@@ -532,9 +488,11 @@ structure Properties : Prop where
 theorem form_weak_local_of_formDomain (u : Q) :
     ActualWeakH1Loc (H := H) (u : KPContSectorClosedLpSubspace.H F ζ hζ R U) ∧
     IsActualWeakGradient (H := H) (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)
-      ((A).closure u) :=
-  let P' := kp_cont_actual_sector_form_weak_localization F ζ hζ μG hμG U R hR P H realization
-  ⟨P'.weak_local u, P'.closed_gradient u⟩
+      ((A).closure u) := by
+    have h := KPContActualSectorFormWeakLocalization.closedGradient_isActualWeak F ζ hζ U R P H μG hμG hR realization u
+    refine ⟨?_, h⟩
+    obtain ⟨s,r,hs,_,hw⟩ := h
+    exact ⟨s,r.val,hs,hw⟩
 
 end DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse
 
@@ -560,10 +518,10 @@ open KPContActualSectorFormWeakLocalization KPContActualSectorCompactWeakFormCon
 open KPContActualCotangentMeasurableFamilies
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 end DedekindZetaZeroFree
 
@@ -577,23 +535,16 @@ private theorem invariant_window {n r : ℕ} {Γ : Type*} [Group Γ] [Fintype Γ
       ∀ γ, ∀ x ∈ (O : Set (E n)), D.act γ x ∈ O := by
   obtain ⟨W,hWo,hKW,hWsub,hWcompact⟩ :=
     exists_open_between_and_isCompact_closure hK D.open_chart hKD
-  let V : Set (E n) := ⋂ γ : Γ, D.chart ∩ D.act γ ⁻¹' W
-  have hVo : IsOpen V := isOpen_iInter_of_finite (fun γ =>
-    (D.smooth_action γ).continuousOn.isOpen_inter_preimage D.open_chart hWo)
-  have hKV : K ⊆ V := by
-    intro x hx
-    exact Set.mem_iInter.mpr fun γ => ⟨hKD hx, hKW (hKin γ x hx)⟩
+  let V := ⋂ γ : Γ, D.chart ∩ D.act γ ⁻¹' W
   have hVW : V ⊆ W := by
     intro x hx
     have hh := Set.mem_iInter.mp hx (1 : Γ)
     have h := hh.2
     change D.act 1 x ∈ W at h
     simpa only [D.act_one x hh.1] using h
-  have hVclose : IsCompact (closure V) := hWcompact.of_isClosed_subset isClosed_closure (closure_mono hVW)
-  have hVchart : closure V ⊆ D.chart := (closure_mono hVW).trans hWsub
-  refine ⟨⟨V,hVo⟩,hKV,hVclose,hVchart,?_⟩
+  refine ⟨⟨V,(isOpen_iInter_of_finite (fun γ =>
+    (D.smooth_action γ).continuousOn.isOpen_inter_preimage D.open_chart hWo))⟩,(fun x hx => Set.mem_iInter.mpr fun γ => ⟨hKD hx, hKW (hKin γ x hx)⟩),(hWcompact.of_isClosed_subset isClosed_closure (closure_mono hVW)),((closure_mono hVW).trans hWsub),?_⟩
   intro γ x hx
-  change D.act γ x ∈ V
   refine Set.mem_iInter.mpr fun δ => ⟨D.act_mem γ x (Set.mem_iInter.mp hx 1).1, ?_⟩
   change D.act δ (D.act γ x) ∈ W
   rw [← D.act_mul δ γ x (Set.mem_iInter.mp hx 1).1]
@@ -609,10 +560,10 @@ open KPContActualSectorChartEquivariantInputs KPContLocalNorm KPCompactInteriorH
 open KPContActualSectorFormWeakLocalization KPContSectorPhaseComponentCharts
 open KPContActualSectorTestDifferentialDescent KPContActualCotangentChartRestriction KPContActualCotangentMeasurableFamilies KPContCotangentActualGenuineTwistIsotropy
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 end DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse
 
 namespace DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse
@@ -623,10 +574,10 @@ open KPContActualCotangentPieceHilbertSum KPContActualSectorFiniteSupportPartiti
 open KPContCotangentActualOverlap KPContActualSectorTestDifferentialDescent
 open scoped BigOperators
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 private theorem partition_products_reconstruct {n : ℕ}
     (C : Fin n → ActualChart (U:=U) (H:=H))
     (K O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
@@ -651,19 +602,15 @@ private theorem partition_products_reconstruct {n : ℕ}
   have hp := every_shrunkChart_properties F ζ hζ U R P H a
   have hz : ∀ᵐ y ∂a.liftedMeasure, a.toBase y ∉ K →
       sectionFields s.val a (coordinates a y) = 0 := by
-    have hh : ∀ᵐ y ∂a.liftedMeasure, a.toBase y ∉ K →
-        squaredNorm F ζ hζ U R P H s.val (a.toBase y) = 0 :=
-      ae_of_ae_map hp.measurable.aemeasurable (by
-        rw [hp.exact_pushforward]
-        exact hzero.filter_mono (ae_mono Measure.restrict_le_self))
-    filter_upwards [hh] with y hy hnot
+    filter_upwards [(ae_of_ae_map hp.measurable.aemeasurable (by
+      rw [hp.exact_pushforward]
+      exact hzero.filter_mono (ae_mono Measure.restrict_le_self)))] with y hy hnot
     have hn := hy hnot
     simp only [squaredNorm,norm_toBase,ENNReal.ofReal_eq_zero,sq_nonpos_iff] at hn
-    have he := norm_eq_zero.mp hn
     have hi : labeledA (placeEquiv F ζ hζ)
         (labeledAInv (placeEquiv F ζ hζ) y.val) = y.val := by
       funext k; simp [labeledA,labeledAInv]
-    simpa [fields_apply,coordinates,hi] using he
+    simpa [fields_apply,coordinates,hi] using (norm_eq_zero.mp hn)
   have he : ∀ i, ∀ᵐ y ∂a.liftedMeasure,
       sectionFields (ti i).val a (coordinates a y) =
         ((η i).val.val (a.toBase y) : ℂ) * sectionFields s.val a (coordinates a y) := by
@@ -674,8 +621,7 @@ private theorem partition_products_reconstruct {n : ℕ}
     have hi : labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) y.val) = y.val := by
       funext k; simp [labeledA,labeledAInv]
     simpa only [cutoffLift,coordinates,q,hi,ShrunkChart.toBase] using hy
-  have heall := (ae_all_iff).mpr he
-  filter_upwards [heall,hz] with y hy hz
+  filter_upwards [((ae_all_iff).mpr he),hz] with y hy hz
   have hsum : sectionFields (∑ i, ti i).val a (coordinates a y) =
       ∑ i, sectionFields (ti i).val a (coordinates a y) := by
     simp [fields_apply, Submodule.coe_sum, Finset.sum_apply]
@@ -694,10 +640,10 @@ open KPContActualSectorSmoothTestModules KPContActualSectorFormWeakLocalization
 open KPContActualSectorTestDifferentialDescent KPContCotangentOverlapRationalBranches
 open KPContCotangentActualOverlap KPContActualSectorFiniteSupportPartition
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
  def partitionMultiplier {n : ℕ}
     (C : Fin n → ActualChart (U:=U) (H:=H))
     (K O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
@@ -706,10 +652,8 @@ variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
   ⟨⟨Q.multiplier i, by
     intro a
     refine ⟨fun x => Q.multiplier i (q a x), ?_, fun _ => rfl⟩
-    have hh := Q.smooth i ((H.atlas U).representative a.component)
-    have hl : ContDiff ℝ (⊤ : ℕ∞) (labeledA (placeEquiv F ζ hζ)) := by
-      exact KPContActualGlobalGreen.contDiff_labeledA
-    exact (hh.comp hl).contDiffOn⟩, Q.compact_support i⟩
+    refine ((Q.smooth i ((H.atlas U).representative a.component)).comp ?_).contDiffOn
+    exact KPContActualGlobalGreen.contDiff_labeledA⟩, Q.compact_support i⟩
 end DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse
 
 namespace DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse
@@ -719,9 +663,7 @@ private theorem compact_invariant_saturation {n r : ℕ} {Γ : Type*} [Group Γ]
     (hLD : L ⊆ D.chart) :
     ∃ K : Set (E n), IsCompact K ∧ L ⊆ K ∧ K ⊆ D.chart ∧
       ∀ γ, ∀ x ∈ K, D.act γ x ∈ K := by
-  let K : Set (E n) := ⋃ γ : Γ, D.act γ '' L
-  have hK : IsCompact K := isCompact_iUnion (fun γ =>
-    hL.image_of_continuousOn ((D.smooth_action γ).continuousOn.mono hLD))
+  let K := ⋃ γ : Γ, D.act γ '' L
   have hLK : L ⊆ K := by
     intro x hx
     apply Set.mem_iUnion.mpr
@@ -731,7 +673,8 @@ private theorem compact_invariant_saturation {n r : ℕ} {Γ : Type*} [Group Γ]
     intro x hx
     obtain ⟨γ,y,hy,rfl⟩ := Set.mem_iUnion.mp hx
     exact D.act_mem γ y (hLD hy)
-  refine ⟨K,hK,hLK,hKD,?_⟩
+  refine ⟨K,(isCompact_iUnion (fun γ =>
+    hL.image_of_continuousOn ((D.smooth_action γ).continuousOn.mono hLD))),hLK,hKD,?_⟩
   intro δ x hx
   obtain ⟨γ,y,hy,rfl⟩ := Set.mem_iUnion.mp hx
   apply Set.mem_iUnion.mpr
@@ -744,10 +687,10 @@ open KPContActualSectorTestDifferentialDescent KPContCotangentOverlapRationalBra
 open KPContCotangentActualOverlap KPContActualSectorFiniteSupportPartition
 open KPContActualSectorChartEquivariantInputs KPContLocalNorm KPCompactInteriorH1
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 private theorem partition_flat_window {n : ℕ}
     (C : Fin n → ActualChart (U:=U) (H:=H))
     (K O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
@@ -761,35 +704,30 @@ private theorem partition_flat_window {n : ℕ}
         ∀ γ, ∀ x ∈ (N : Set (KPCompactInteriorH1.E (3*d F))), action (C i) γ x ∈ N := by
   let L₀ : Set (KPCompactInteriorH1.E (3*d F)) :=
     fromActual (ζ:=ζ) (hζ:=hζ) '' tsupport (Q.lift i)
-  have hfrom : Continuous (fromActual (F:=F) (ζ:=ζ) (hζ:=hζ)) := by
-    unfold fromActual labeledAInv
-    fun_prop
-  have hcompact : IsCompact L₀ := (Q.lift_compact_support i).image hfrom
   have hLchart : L₀ ⊆ chart (C i) := by
     rintro x ⟨y,hy,rfl⟩
-    change toActual (fromActual (ζ:=ζ) (hζ:=hζ) y) ∈ (C i).domain
+    change toActual (fromActual y) ∈ (C i).domain
     have hh : toActual (ζ:=ζ) (hζ:=hζ) (fromActual (ζ:=ζ) (hζ:=hζ) y) = y := by
       simp only [toActual,fromActual,LinearIsometryEquiv.symm_apply_apply]
       funext k; simp [labeledA,labeledAInv]
     rw [hh]
     exact Q.lift_support_subset i hy
-  obtain ⟨L,hL,hL₀L,hLD,hLi⟩ := compact_invariant_saturation (scalarData (C i)) L₀ hcompact hLchart
+  obtain ⟨L,hL,hL₀L,hLD,hLi⟩ := compact_invariant_saturation (scalarData (C i)) L₀ ((Q.lift_compact_support i).image (by
+    unfold fromActual labeledAInv
+    fun_prop)) hLchart
   obtain ⟨N,hLN,hNc,hND,hNi⟩ := invariant_window (scalarData (C i)) L hL hLD hLi
   refine ⟨L,hL,hLD,hLi,?_,N,hLN,hNc,hND,hNi⟩
   intro x hx hxL
-  have hxL₀ : x ∉ L₀ := fun hh => hxL (hL₀L hh)
   have ht : toActual (ζ:=ζ) (hζ:=hζ) x ∉ tsupport (Q.lift i) := by
     intro hh
-    apply hxL₀
-    refine ⟨toActual (ζ:=ζ) (hζ:=hζ) x,hh,?_⟩
+    apply (fun hh => hxL (hL₀L hh))
+    refine ⟨toActual x,hh,?_⟩
     simp only [fromActual,toActual]
     have hh : labeledAInv (placeEquiv F ζ hζ) (labeledA (placeEquiv F ζ hζ) (baseReindex.symm x)) =
         baseReindex.symm x := by
       apply PiLp.ext; intro k; simp [labeledA,labeledAInv]
     rw [hh,LinearIsometryEquiv.apply_symm_apply]
-  have hz := image_eq_zero_of_notMem_tsupport ht
-  have hr := Q.lift_restriction i ⟨toActual (ζ:=ζ) (hζ:=hζ) x,hx⟩
-  exact hr.symm.trans hz
+  exact (Q.lift_restriction i ⟨toActual x,hx⟩).symm.trans (image_eq_zero_of_notMem_tsupport ht)
 end DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse
 
 namespace DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse
@@ -799,10 +737,10 @@ open KPContCotangentActualOverlap KPContSectorLineL2Isometry
 open KPContActualCotangentPieceHilbertSum KPContActualSectorChartEquivariantInputs
 open KPContLocalNorm KPContCotangentActualGenuineTwistIsotropy
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 attribute [local instance 2000] KPContSectorQuotientRelationsComparison.instMeasurableSpaceRawXU
 private theorem chart_scalar_fromActual (s : BorelL2Sections F ζ hζ U R P H)
     (a : ActualChart (U:=U) (H:=H)) (y : a.domain) :
@@ -863,16 +801,16 @@ open KPContCotangentActualOverlap KPContSectorLineL2Isometry
 open KPContActualCotangentPieceHilbertSum KPContActualSectorChartEquivariantInputs
 open KPContLocalNorm KPContCotangentActualGenuineTwistIsotropy KPCompactInteriorH1
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 private theorem scalarCoordinate_equivariant (s : BorelL2Sections F ζ hζ U R P H)
     (a : ActualChart (U:=U) (H:=H)) (γ : Gamma a) (x : Space (3*d F)) (hx : x ∈ chart a) :
     scalarReindex (scalarCoordinate s a (action a γ x)) =
       scalarCocycle a γ x (scalarReindex (scalarCoordinate s a x)) := by
   have hp : baseReindex.symm x ∈ omega a := hx
-  have ha : (isotropyArrow a γ).psi (baseReindex.symm x) ∈ omega a := KPContActualCotangentMeasurableFamilies.isotropy_mem a γ _ hp
+  have ha := KPContActualCotangentMeasurableFamilies.isotropy_mem a γ _ hp
   have he := (unitary_phase (isotropyArrow a γ)).2.2.2 s.val (baseReindex.symm x)
     (KPContActualCotangentMeasurableFamilies.omega_subset_larger a hp)
   have hphase : (isotropyArrow a γ).phase (baseReindex.symm x) =
@@ -892,10 +830,10 @@ open KPContActualCotangentPieceHilbertSum KPContActualSectorChartEquivariantInpu
 open KPContLocalNorm KPCompactInteriorH1 KPContActualCotangentMeasurableFamilies
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 private theorem partition_localized_weak_data {n : ℕ}
     (C : Fin n → ActualChart (U:=U) (H:=H))
     (K O : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
@@ -923,12 +861,10 @@ private theorem partition_localized_weak_data {n : ℕ}
   obtain ⟨t,r,ht,hw⟩ := actualWeakH1Loc_compactSupport_squareFinite v B hB hsupp hv
   obtain ⟨L,hL,hLD,hLi,hzero,N,hLN,hNc,hND,hNi⟩ := partition_flat_window C K O Q i
   obtain ⟨s,W,hs,hW⟩ := hu
-  have he := scalarCoordinate_of_product (partitionMultiplier C K O Q i) (Q.continuous i).measurable u v hprod s t hs ht (C i)
-  have he' := he.filter_mono (weightedMeasure_mutually_absolutelyContinuous
-    (chartOpens (scalarData (C i))) (weight (C i)) (scalarData (C i)).smooth_weight
-    (scalarData (C i)).positive_weight).2.ae_le
   have hz : ∀ᵐ x ∂volume.restrict (chart (C i)), x ∉ L → scalarCoordinate t (C i) x = 0 := by
-    filter_upwards [he',ae_restrict_mem (scalarData (C i)).open_chart.measurableSet] with x hx hxD hxL
+    filter_upwards [((scalarCoordinate_of_product (partitionMultiplier C K O Q i) (Q.continuous i).measurable u v hprod s t hs ht (C i)).filter_mono (weightedMeasure_mutually_absolutelyContinuous
+      (chartOpens (scalarData (C i))) (weight (C i)) (scalarData (C i)).smooth_weight
+      (scalarData (C i)).positive_weight).2.ae_le),ae_restrict_mem (scalarData (C i)).open_chart.measurableSet] with x hx hxD hxL
     rw [hx]
     change (Q.multiplier i _ : ℂ) * _ = 0
     rw [hzero x hxD hxL]
@@ -948,22 +884,11 @@ open KPContActualSectorChartEquivariantInputs KPContActualSectorCoordinateNullEq
 open KPContActualSectorBallRestriction KPContActualCotangentCountableShrinking
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-private theorem lp_norm_sq {X : Type*} [MeasurableSpace X] (μ : Measure X)
-    (f : X → ℂ) (hf : MemLp f 2 μ) :
-    ‖hf.toLp f‖^2 = (∫⁻ x, ENNReal.ofReal (‖f x‖^2) ∂μ).toReal := by
-  rw [Lp.norm_toLp, ← ENNReal.toReal_pow]
-  congr 1
-  have h := eLpNorm_nnreal_pow_eq_lintegral (p := (2 : NNReal))
-    (by norm_num) hf.aestronglyMeasurable
-  norm_num at h
-  rw [h]
-  apply lintegral_congr
-  intro x
-  rw [ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm, enorm_eq_nnnorm]
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+private alias lp_norm_sq := DedekindZetaZeroFree.KPContActualSectorBallRestriction.ScalarRestrictionOperator.scalarToLp_norm_sq
 
 private theorem scalarProducer_norm_of_supported (a : ActualChart (U:=U) (H:=H))
     (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)
@@ -972,7 +897,6 @@ private theorem scalarProducer_norm_of_supported (a : ActualChart (U:=U) (H:=H))
   have he : scalarProducer a u = (scalar_memLp a s).toLp (scalar s a) := by
     apply Lp.ext
     exact (scalarProducer_spec a u s hs).trans (scalar_memLp a s).coeFn_toLp.symm
-  have hm := squaredNorm_measurable F ζ hζ U R P H s.val s.property.1
   have hi : (∫⁻ x, ENNReal.ofReal (‖scalar s a x‖^2) ∂measure a) =
       normIntegral F ζ hζ U R P H s.val := by
     change (∫⁻ x, ENNReal.ofReal (‖scalar s a x‖^2) ∂KPChartL2.weightedMeasure (3*KPContCotangentActualOverlap.d F) (chart a) (weight a)) = _
@@ -984,9 +908,8 @@ private theorem scalarProducer_norm_of_supported (a : ActualChart (U:=U) (H:=H))
       intro y
       rw [ActualScalarTransport.scalar_pull, squaredNorm,
         ActualScalarTransport.coefficient_norm]
-    change (∫⁻ y, ENNReal.ofReal (‖scalar s a (ActualScalarTransport.emb a y)‖^2) ∂a.liftedMeasure) = _
     simp_rw [hp]
-    rw [← lintegral_map' hm.aemeasurable (every_shrunkChart_properties F ζ hζ U R P H a).measurable.aemeasurable,
+    rw [← lintegral_map' (squaredNorm_measurable F ζ hζ U R P H s.val s.property.1).aemeasurable (every_shrunkChart_properties F ζ hζ U R P H a).measurable.aemeasurable,
       (every_shrunkChart_properties F ζ hζ U R P H a).exact_pushforward]
     rw [← lintegral_indicator (every_shrunkChart_properties F ζ hζ U R P H a).base_open.measurableSet]
     apply lintegral_congr_ae
@@ -1006,9 +929,9 @@ private theorem squaredNorm_sub_zero (s t : Sections F ζ hζ U R P H)
     squaredNorm F ζ hζ U R P H (s-t) x = 0 := by
   change ENNReal.ofReal (sectionNorm F ζ hζ U R P H s x ^ 2) = 0 at hs
   change ENNReal.ofReal (sectionNorm F ζ hζ U R P H t x ^ 2) = 0 at ht
-  have hs0 : sectionNorm F ζ hζ U R P H s x = 0 :=
+  have hs0 :=
     sq_eq_zero_iff.mp (le_antisymm (ENNReal.ofReal_eq_zero.mp hs) (sq_nonneg _))
-  have ht0 : sectionNorm F ζ hζ U R P H t x = 0 :=
+  have ht0 :=
     sq_eq_zero_iff.mp (le_antisymm (ENNReal.ofReal_eq_zero.mp ht) (sq_nonneg _))
   simp only [sectionNorm] at hs0 ht0
   unfold squaredNorm sectionNorm
@@ -1017,9 +940,9 @@ private theorem squaredNorm_sub_zero (s t : Sections F ζ hζ U R P H)
   induction y using Quotient.inductionOn with
   | h y =>
     simp only [componentNorm, Quotient.lift_mk] at hs0 ht0 ⊢
-    have hs' := norm_eq_zero.mp hs0
-    have ht' := norm_eq_zero.mp ht0
-    simp [hs', ht']
+    simp [(norm_eq_zero.mp hs0), (norm_eq_zero.mp ht0)]
+
+alias CompactWeakFormDomain.squaredNorm_sub_zero := squaredNorm_sub_zero
 
 private theorem supportedAE_sub (a : ActualChart (U:=U) (H:=H))
     (u v : KPContSectorClosedLpSubspace.H F ζ hζ R U)
@@ -1056,17 +979,12 @@ private theorem scalarZeroExtension_supportedAE
   let g := scalarZeroExtension a f
   have ps := kp_cont_actual_sector_smooth_test_modules F ζ hζ R.adelicHaar R.adelic_isHaar
     U R rfl P H realization
-  have hspec := (Classical.choose_spec (scalar_gluing g)).1
-  have hcont : Continuous (scalarCovered g).val :=
-    (continuous_iff F ζ hζ U R P H (scalarSections g)).mp
-      (fun i => (hspec.1 i).continuous)
   let b : BorelL2Scalars F ζ hζ U R :=
-    ⟨scalarCovered g, hcont.measurable, scalar_memLp g⟩
-  have hb := sectorLineIsometry_representative F ζ hζ U R P H (iota g) b (by rfl)
+    ⟨scalarCovered g, ((continuous_iff F ζ hζ U R P H (scalarSections g)).mp
+      (fun i => (((Classical.choose_spec (scalar_gluing g)).1).1 i).continuous)).measurable, scalar_memLp g⟩
   have hval : (borelS F ζ hζ U R P H b).val = scalarSections g := by
-    change KPContSectorScalarLineAlgebra.S F ζ hζ U R P H (scalarCovered g) = _
     exact ps.covered_realization g
-  refine ⟨borelS F ζ hζ U R P H b, hb, Filter.Eventually.of_forall fun x hx => ?_⟩
+  refine ⟨borelS F ζ hζ U R P H b, (sectorLineIsometry_representative F ζ hζ U R P H (iota g) b (rfl)), Filter.Eventually.of_forall fun x hx => ?_⟩
   rw [hval, squaredNorm]
   have hs : tsupport (sectionNorm F ζ hζ U R P H (scalarSections g)) ⊆ a.baseDomain := by
     rw [← ps.scalar_support, ps.scalar_extension_support]
@@ -1081,8 +999,7 @@ private theorem scalarZeroExtension_tendsto_of_scalarProducer
     (hu : SupportedAE (H:=H) u a.baseDomain)
     (hlim : Filter.Tendsto (fun n => scalarProducer a (iota (scalarZeroExtension a (f n))))
       Filter.atTop (nhds (scalarProducer a u))) :
-    Filter.Tendsto (fun n => iota (scalarZeroExtension a (f n))) Filter.atTop (nhds u) := by
-  exact scalarProducer_tendsto_of_supported a _ u
+    Filter.Tendsto (fun n => iota (scalarZeroExtension a (f n))) Filter.atTop (nhds u) := scalarProducer_tendsto_of_supported a _ u
     (fun n => scalarZeroExtension_supportedAE a (f n) realization) hu hlim
 
 private theorem scalarProducer_zeroExtension_ae
@@ -1093,20 +1010,15 @@ private theorem scalarProducer_zeroExtension_ae
   let g := scalarZeroExtension a f
   have ps := kp_cont_actual_sector_smooth_test_modules F ζ hζ R.adelicHaar R.adelic_isHaar
     U R rfl P H realization
-  have hspec := (Classical.choose_spec (scalar_gluing g)).1
-  have hcont : Continuous (scalarCovered g).val :=
-    (continuous_iff F ζ hζ U R P H (scalarSections g)).mp
-      (fun i => (hspec.1 i).continuous)
   let b : BorelL2Scalars F ζ hζ U R :=
-    ⟨scalarCovered g, hcont.measurable, scalar_memLp g⟩
-  have hb := sectorLineIsometry_representative F ζ hζ U R P H (iota g) b (by rfl)
+    ⟨scalarCovered g, ((continuous_iff F ζ hζ U R P H (scalarSections g)).mp
+      (fun i => (((Classical.choose_spec (scalar_gluing g)).1).1 i).continuous)).measurable, scalar_memLp g⟩
+  have hb := sectorLineIsometry_representative F ζ hζ U R P H (iota g) b (rfl)
   have hval : (borelS F ζ hζ U R P H b).val = scalarSections g := by
-    change KPContSectorScalarLineAlgebra.S F ζ hζ U R P H (scalarCovered g) = _
     exact ps.covered_realization g
-  have hfields : sectionFields (scalarSections g) = g.val := ps.scalar_represented g
   have h := scalarProducer_spec a (iota g) (borelS F ζ hζ U R P H b) hb
   have hg : g.val a = f.val := ps.scalar_restriction_extension a f
-  simpa only [scalar, hval, hfields, hg] using h
+  simpa only [scalar, hval, (ps.scalar_represented g), hg] using h
 
 private theorem scalarZeroExtension_tendsto_of_chartL2
     (a : ActualChart (U:=U) (H:=H)) (f : ℕ → localScalarTests a)
@@ -1125,7 +1037,7 @@ private theorem scalarZeroExtension_tendsto_of_chartL2
     apply Lp.ext
     exact (scalarProducer_spec a u s hs).trans (scalar_memLp a s).coeFn_toLp.symm
   have hf : ∀ n, scalarProducer a (iota (scalarZeroExtension a (f n))) =
-      (hmem n).toLp (fun x => liftExtension a (f n).val ((baseReindex (F:=F)).symm x)) := by
+      (hmem n).toLp (fun x => liftExtension a (f n).val ((baseReindex).symm x)) := by
     intro n
     apply Lp.ext
     exact (scalarProducer_zeroExtension_ae a (f n) realization).trans (hmem n).coeFn_toLp.symm
@@ -1140,10 +1052,10 @@ open KPContCotangentActualOverlap KPContSectorLineL2Isometry KPContActualSectorF
 open KPContActualSectorChartEquivariantInputs KPContLocalNorm KPCompactInteriorH1
 open KPContActualCotangentMeasurableFamilies KPContCotangentActualGenuineTwistIsotropy
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 private theorem actual_chart_approximation
     (a : ActualChart (U:=U) (H:=H))
     (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)
@@ -1195,10 +1107,10 @@ namespace DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse
 open KPContActualSectorSmoothTestModules KPContActualSectorFormWeakLocalization
 open KPContActualSectorTestEmbeddings KPContActualSectorTestDifferentialDescent
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 private theorem actual_form_mem_outputs
     (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
     (hR : R.adelicHaar = μG)
@@ -1211,7 +1123,7 @@ private theorem actual_form_mem_outputs
       Filter.Tendsto (fun n => iota (φ n)) Filter.atTop (nhds u) ∧
       Filter.Tendsto (fun n => j (D_U (φ n))) Filter.atTop
         (nhds ((KPContActualSectorFriedrichsSynthesis.A_U F ζ hζ U R P H μG hμG hR realization).closure ⟨u,hu⟩)) := by
-  have hw := (kp_cont_actual_sector_form_weak_localization F ζ hζ μG hμG U R hR P H realization).closed_gradient ⟨u,hu⟩
+  have hw := KPContActualSectorFormWeakLocalization.closedGradient_isActualWeak F ζ hζ U R P H μG hμG hR realization ⟨u,hu⟩
   obtain ⟨φ,hφ,hD,hE⟩ := (kp_cont_actual_sector_friedrichs_synthesis F ζ hζ μG hμG U R hR P H realization).form_core ⟨u,hu⟩
   exact ⟨hw,φ,hφ,hD⟩
 end DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse
@@ -1223,10 +1135,10 @@ open KPContSectorLineL2Isometry KPContSectorSmoothFramesSupport
 open KPContActualCotangentPieceHilbertSum KPContCotangentActualOverlap
 open KPContCotangentOverlapRationalBranches KPContCotangentActualGenuineTwistIsotropy
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 attribute [local instance 2000] KPContSectorQuotientRelationsComparison.instMeasurableSpaceRawXU
 
 private theorem product_supportedAE_9669
@@ -1247,7 +1159,7 @@ private theorem product_supportedAE_9669
       filter_upwards [hprod a] with y hy hnot
       have hi : labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) y.val) = y.val := by
         funext k; simp [labeledA,labeledAInv]
-      have hz : η.val.val (a.toBase y) = 0 :=
+      have hz :=
         image_eq_zero_of_notMem_tsupport (fun hx => hnot (hB hx))
       have hfields : (t.val a.component).val y.val = 0 := by
         change η.val.val (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component) (KPCuspSiegel.projection F _ y.val)) = 0 at hz
@@ -1259,8 +1171,7 @@ private theorem product_supportedAE_9669
       simp
     rw [← (cover.properties n).exact_pushforward]
     apply (ae_map_iff (cover.properties n).measurable.aemeasurable ?_).mpr hlocal
-    have hm := squaredNorm_measurable F ζ hζ U R P H t.val t.property.1
-    convert hBm.union (measurableSet_eq_fun hm measurable_const) using 1
+    convert hBm.union (measurableSet_eq_fun (squaredNorm_measurable F ζ hζ U R P H t.val t.property.1) measurable_const) using 1
     ext x
     simp only [Set.mem_union,Set.mem_setOf_eq]
     tauto
@@ -1278,7 +1189,7 @@ private theorem form_mem_of_limit_cauchy_9669
     (hC : CauchySeq (fun n => j (D_U (φ n)))) :
     u ∈ (KPContActualSectorFriedrichsSynthesis.A_U F ζ hζ U R P H μG hμG hR realization).closure.domain := by
   let A := KPContActualSectorFriedrichsSynthesis.A_U F ζ hζ U R P H μG hμG hR realization
-  have hclosable : A.IsClosable :=
+  have hclosable :=
     (kp_cont_actual_sector_friedrichs_synthesis F ζ hζ μG hμG U R hR P H realization).gradient_closable
   let s : ℕ → A.domain := fun n => ⟨iota (φ n), LinearMap.mem_range_self iota (φ n)⟩
   have hC' : CauchySeq (fun n => A (s n)) := by
@@ -1293,10 +1204,10 @@ open KPContCotangentActualOverlap KPCompactInteriorH1 KPContLocalNorm
 open KPContActualSectorChartEquivariantInputs KPContActualSectorFiniteSupportPartition
 open KPContActualSectorTestEmbeddings KPContActualSectorTestDifferentialDescent
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 private theorem finite_partition_form_mem_9669
     (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
     (hR : R.adelicHaar = μG)
@@ -1310,9 +1221,8 @@ private theorem finite_partition_form_mem_9669
     (hv : ∀ i, IsActualProduct (partitionMultiplier C K O Q i) u (v i))
     (hmem : ∀ i, v i ∈ (KPContActualSectorFriedrichsSynthesis.A_U F ζ hζ U R P H μG hμG hR realization).closure.domain) :
     u ∈ (KPContActualSectorFriedrichsSynthesis.A_U F ζ hζ U R P H μG hμG hR realization).closure.domain := by
-  have heq : ∑ i, v i = u := partition_products_reconstruct C K O Q
-    (partitionMultiplier C K O Q) (fun _ => rfl) u v hv hsupp
-  rw [← heq]
+  rw [← (partition_products_reconstruct C K O Q
+    (partitionMultiplier C K O Q) (fun _ => rfl) u v hv hsupp)]
   exact Submodule.sum_mem _ (fun i _ => hmem i)
 end DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse
 
@@ -1322,23 +1232,22 @@ open KPContSectorLineL2Isometry KPCompactInteriorH1 KPContLocalNorm
 open KPContCotangentActualOverlap KPContActualSectorChartEquivariantInputs
 open KPContActualSectorTestDifferentialDescent
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 open KPContActualSectorBallRestriction KPContActualSectorCoordinateNullEquivalence
 private theorem norm_toLp_l2_9669 {X Y : Type*} [MeasurableSpace X]
     [NormedAddCommGroup Y] (μ : Measure X) (f : X → Y) (hf : MemLp f 2 μ) :
     ‖hf.toLp f‖ = Real.sqrt (∫ x, ‖f x‖ ^ (2 : ℕ) ∂μ) := by
-  have h := lpNorm_eq_integral_norm_rpow_toReal (μ:=μ) (f:=f)
-    (p:=2) (by norm_num) (by norm_num) hf.aestronglyMeasurable
-  rw [Lp.norm_toLp,toReal_eLpNorm,h]
+  rw [Lp.norm_toLp,toReal_eLpNorm,(lpNorm_eq_integral_norm_rpow_toReal
+    (by norm_num) (by norm_num) hf.aestronglyMeasurable)]
   norm_num only [ENNReal.toReal_ofNat]
   rw [← Real.sqrt_eq_rpow]
   congr 1
   apply integral_congr_ae
-  exact Filter.Eventually.of_forall (fun x => by simp only [Real.rpow_ofNat])
+  exact Filter.Eventually.of_forall (fun x => by simp)
 
 private theorem scalar_limit_of_Hw_errors_9669
     (a : ActualChart (U:=U) (H:=H))
@@ -1356,7 +1265,7 @@ private theorem scalar_limit_of_Hw_errors_9669
     ∃ hmem : ∀ n, MemLp (fun x => liftExtension a (τ n).val (baseReindex.symm x)) 2 (measure a),
       Filter.Tendsto (fun n => (hmem n).toLp (fun x => liftExtension a (τ n).val (baseReindex.symm x)))
         Filter.atTop (nhds ((scalar_memLp a s).toLp (scalar s a))) := by
-  let e : ℕ → Space (3*d F) → ℂ := fun n x => scalar s a x - liftExtension a (τ n).val (baseReindex.symm x)
+  let e := fun n x => scalar s a x - liftExtension a (τ n).val (baseReindex.symm x)
   have he : ∀ n x, e n x = scalarReindex.symm (scalarReindex (scalarCoordinate s a x) - h n x) := by
     intro n x
     rw [map_sub,LinearIsometryEquiv.symm_apply_apply]
@@ -1364,9 +1273,8 @@ private theorem scalar_limit_of_Hw_errors_9669
     exact congrArg (fun z => scalar s a x - z) (hext n x)
   have heLp : ∀ n, MemLp (e n) 2 (measure a) := by
     intro n
-    have hh := (herr n).1.continuousLinearMap_comp
-      scalarReindex.symm.toContinuousLinearEquiv.toContinuousLinearMap
-    exact hh.ae_eq (Filter.Eventually.of_forall (fun x => (he n x).symm))
+    exact ((herr n).1.continuousLinearMap_comp
+      scalarReindex.symm.toContinuousLinearEquiv.toContinuousLinearMap).ae_eq (Filter.Eventually.of_forall (fun x => (he n x).symm))
   have hmem : ∀ n, MemLp (fun x => liftExtension a (τ n).val (baseReindex.symm x)) 2 (measure a) := by
     intro n
     convert (scalar_memLp a s).sub (heLp n) using 1
@@ -1401,10 +1309,10 @@ open KPContCotangentActualOverlap KPContActualSectorChartEquivariantInputs
 open KPContActualSectorTestDifferentialDescent KPContActualSectorTestEmbeddings
 open KPContActualCotangentMeasurableFamilies
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 private theorem actual_Hw_nonneg_9669 (a : ActualChart (U:=U) (H:=H))
     (f : Space (3*d F) → V 1) (g : Fin (3*d F) → Space (3*d F) → V 1)
@@ -1433,8 +1341,7 @@ private theorem chart_form_mem_from_Hw_sequence_9669
     (hC : CauchySeq (fun n => j (D_U (scalarZeroExtension a (τ n))))) :
     u ∈ (KPContActualSectorFriedrichsSynthesis.A_U F ζ hζ U R P H μG hμG hR realization).closure.domain := by
   obtain ⟨hmem,hlim⟩ := scalar_limit_of_Hw_errors_9669 a s r τ h hext herr hsmall
-  have hscalar := scalarZeroExtension_tendsto_of_chartL2 a τ u s hs realization hsupp hmem hlim
-  exact form_mem_of_limit_cauchy_9669 μG hμG hR realization (fun n => scalarZeroExtension a (τ n)) u hscalar hC
+  exact form_mem_of_limit_cauchy_9669 μG hμG hR realization (fun n => scalarZeroExtension a (τ n)) u (scalarZeroExtension_tendsto_of_chartL2 a τ u s hs realization hsupp hmem hlim) hC
 end DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse
 
 namespace DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse
@@ -1444,10 +1351,10 @@ open KPContCotangentActualOverlap KPContActualSectorChartEquivariantInputs
 open KPContActualSectorTestDifferentialDescent KPContActualSectorTestEmbeddings
 open KPContActualCotangentMeasurableFamilies
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 private theorem actual_chart_Hw_sequence_9669
     (a : ActualChart (U:=U) (H:=H))
@@ -1488,10 +1395,10 @@ open KPContCotangentActualOverlap KPContActualSectorChartEquivariantInputs
 open KPContActualSectorTestDifferentialDescent KPContActualSectorTestEmbeddings
 open KPContActualCotangentMeasurableFamilies KPContActualSectorFiniteSupportPartition
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 private theorem compact_form_mem_from_local_9669
     (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
     (hR : R.adelicHaar = μG)
@@ -1515,11 +1422,10 @@ private theorem compact_form_mem_from_local_9669
     u ∈ (KPContActualSectorFriedrichsSynthesis.A_U F ζ hζ U R P H μG hμG hR realization).closure.domain := by
   obtain ⟨n,C,hn,hcover,⟨Q⟩⟩ := kp_cont_actual_sector_finite_support_partition
     F ζ hζ U R P H K Set.univ hK isOpen_univ (Set.subset_univ _)
-  have hdata := fun i => partition_localized_weak_data C K Set.univ Q i u hw
-  choose v s r L N hprod hs hweak hL hLN hNc hND hLi hNi hz hfirst hfin using hdata
+  choose v s r L N hprod hs hweak hL hLN hNc hND hLi hNi hz hfirst hfin using (fun i => partition_localized_weak_data C K Set.univ Q i u hw)
   apply finite_partition_form_mem_9669 μG hμG hR realization C K Set.univ Q u hsupp v hprod
   intro i
-  have hvSupport : SupportedAE (H:=H) (v i) (C i).baseDomain :=
+  have hvSupport :=
     product_supportedAE_9669 (partitionMultiplier C K Set.univ Q i) u (v i) (hprod i)
       (C i).baseDomain (fun x hx => (Q.support_subset i hx).1)
       (KPContActualCotangentCountableShrinking.every_shrunkChart_properties F ζ hζ U R P H (C i)).base_open.measurableSet
@@ -1538,16 +1444,16 @@ open KPContActualCotangentMeasurableFamilies KPContActualCotangentPieceHilbertSu
 open KPContActualSectorChartEquivariantInputs KPContActualCotangentChartRestriction
 open KPContCotangentActualGenuineTwistIsotropy KPContLocalNorm KPCompactInteriorH1
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 private theorem port_lp_integral {X : Type*} [MeasurableSpace X] (μ : Measure X)
     (f : X → ℂ) (hf : MemLp f 2 μ) :
     (∫ x, ‖f x‖^2 ∂μ) = ‖hf.toLp f‖^2 := by
   have h := L2.inner_def (𝕜:=ℂ) (hf.toLp f) (hf.toLp f)
   have hc : inner ℂ (hf.toLp f) (hf.toLp f) = ((‖hf.toLp f‖^2 : ℝ) : ℂ) := by
-    convert (inner_self_eq_norm_sq_to_K (𝕜:=ℂ) (hf.toLp f)) using 1 <;> norm_cast
+    convert (inner_self_eq_norm_sq_to_K (hf.toLp f)) using 1 <;> norm_cast
   rw [hc] at h
   have he : (∫ x, inner ℂ (hf.toLp f x) (hf.toLp f x) ∂μ) =
       ((∫ x, ‖f x‖^2 ∂μ : ℝ) : ℂ) := by
@@ -1558,8 +1464,7 @@ private theorem port_lp_integral {X : Type*} [MeasurableSpace X] (μ : Measure X
         simp [hx, inner_self_eq_norm_sq_to_K]
       _ = _ := integral_ofReal
   rw [he] at h
-  have hh := congrArg Complex.re h
-  simpa only [Complex.ofReal_re] using hh.symm
+  simpa only [Complex.ofReal_re] using (congrArg Complex.re h).symm
 private theorem scalarZeroExtension_cauchy_of_chartH1
     (a : ActualChart (U:=U) (H:=H)) (f : ℕ → localScalarTests a)
     (L : Set (Space (3*d F))) (hL : IsCompact L) (hLD : L ⊆ chart a)
@@ -1570,7 +1475,7 @@ private theorem scalarZeroExtension_cauchy_of_chartH1
     (hc : CauchySeq (fun n => (hm n).toLp (fun x => liftExtension a (f n).val (baseReindex.symm x))))
     (hcd : ∀ j, CauchySeq (fun n => (hdm n j).toLp (coordinatePartial j (fun x => liftExtension a (f n).val (baseReindex.symm x))))) :
     CauchySeq (fun n => j (D_U (scalarZeroExtension a (f n)))) := by
-  let g : ℕ → Space (3*d F) → ℂ := fun n x => liftExtension a (f n).val (baseReindex.symm x)
+  let g := fun n x => liftExtension a (f n).val (baseReindex.symm x)
   obtain ⟨C,hC,hbound⟩ := scalarZeroExtension_firstJet_bound a L hL hLD
   have hflat (m n : ℕ) : (fun x => liftExtension a (f m-f n).val (baseReindex.symm x)) = g m - g n := by
     funext x
@@ -1585,12 +1490,6 @@ private theorem scalarZeroExtension_cauchy_of_chartH1
     unfold coordinatePartial
     rw [fderiv_sub ((hsm m).differentiable (by simp) x) ((hsm n).differentiable (by simp) x)]
     rfl
-  have hi (m n : ℕ) : Integrable (fun x => ‖(g m-g n) x‖^2 + ∑ k, ‖coordinatePartial k (g m-g n) x‖^2) (measure a) := by
-    apply ((hm m).sub (hm n)).integrable_norm_pow (by norm_num) |>.add
-    apply integrable_finsetSum
-    intro k _
-    rw [hpartial]
-    exact ((hdm m k).sub (hdm n k)).integrable_norm_pow (by norm_num)
   have he (m n : ℕ) : (∫ x in L, (‖(g m-g n) x‖^2 + ∑ k, ‖coordinatePartial k (g m-g n) x‖^2) ∂measure a) =
       ‖(hm m).toLp (g m)-(hm n).toLp (g n)‖^2 + ∑ k, ‖(hdm m k).toLp (coordinatePartial k (g m))-(hdm n k).toLp (coordinatePartial k (g n))‖^2 := by
     rw [setIntegral_eq_integral_of_forall_compl_eq_zero (fun x hx => ?_)]
@@ -1608,13 +1507,12 @@ private theorem scalarZeroExtension_cauchy_of_chartH1
       · intro k _
         rw [hpartial]
         exact ((hdm m k).sub (hdm n k)).integrable_norm_pow (by norm_num)
-    · have hz : (g m-g n) x = 0 := image_eq_zero_of_notMem_tsupport (fun ht => hx (hsubsupp m n ht))
-      have hd : ∀ k, coordinatePartial k (g m-g n) x = 0 := by
+    · have hd : ∀ k, coordinatePartial k (g m-g n) x = 0 := by
         intro k
         apply image_eq_zero_of_notMem_tsupport
         intro ht
         exact hx (hsubsupp m n (tsupport_fderiv_apply_subset ℝ (coordinateDirection k) ht))
-      simp [hz, hd]
+      simp [(image_eq_zero_of_notMem_tsupport (fun ht => hx (hsubsupp m n ht))), hd]
   have hb (m n : ℕ) : ‖j (D_U (scalarZeroExtension a (f m)))-j (D_U (scalarZeroExtension a (f n)))‖^2 ≤
       C * (‖(hm m).toLp (g m)-(hm n).toLp (g n)‖^2 + ∑ k, ‖(hdm m k).toLp (coordinatePartial k (g m))-(hdm n k).toLp (coordinatePartial k (g n))‖^2) := by
     have h := hbound (f m-f n) (by rw [hflat]; exact hsubsupp m n)
@@ -1627,13 +1525,11 @@ private theorem scalarZeroExtension_cauchy_of_chartH1
   simp only [dist_eq_norm] at hc
   have hdlim : ∀ k, Filter.Tendsto (fun p : ℕ × ℕ => ‖(hdm p.1 k).toLp (coordinatePartial k (g p.1))-(hdm p.2 k).toLp (coordinatePartial k (g p.2))‖^2) Filter.atTop (nhds 0) := by
     intro k
-    have ht := cauchySeq_iff_tendsto_dist_atTop_0.mp (hcd k)
-    simpa only [dist_eq_norm, zero_pow (by norm_num : 2 ≠ 0)] using ht.pow 2
+    simpa only [dist_eq_norm, zero_pow (by norm_num : 2 ≠ 0)] using (cauchySeq_iff_tendsto_dist_atTop_0.mp (hcd k)).pow 2
   have hlim := (hc.pow 2).add (tendsto_finsetSum Finset.univ (fun k _ => hdlim k)) |>.const_mul C
   simp only [zero_pow (by norm_num : 2 ≠ 0), Finset.sum_const_zero, add_zero, mul_zero] at hlim
-  have hs := squeeze_zero (fun p : ℕ × ℕ => sq_nonneg ‖j (D_U (scalarZeroExtension a (f p.1)))-j (D_U (scalarZeroExtension a (f p.2)))‖) (fun p => hb p.1 p.2) hlim
   rw [cauchySeq_iff_tendsto_dist_atTop_0]
-  have ht := Real.continuous_sqrt.continuousAt.tendsto.comp hs
+  have ht := Real.continuous_sqrt.continuousAt.tendsto.comp (squeeze_zero (fun p : ℕ × ℕ => sq_nonneg ‖j (D_U (scalarZeroExtension a (f p.1)))-j (D_U (scalarZeroExtension a (f p.2)))‖) (fun p => hb p.1 p.2) hlim)
   rw [Real.sqrt_zero] at ht
   convert ht using 1
   funext p
@@ -1648,10 +1544,10 @@ open KPContCotangentActualOverlap KPContActualSectorChartEquivariantInputs
 open KPContActualSectorTestDifferentialDescent KPContActualSectorTestEmbeddings
 open KPContActualCotangentMeasurableFamilies
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 private theorem compact_actual_derivatives_memLp
     (a : ActualChart (U:=U) (H:=H)) (C : Set (Space (3*d F)))
@@ -1678,7 +1574,7 @@ private theorem compact_actual_derivatives_memLp
   intro j
   have hh := ht.2 j
   change MemLp (fun x => g j x + (0 : V 1 →L[ℂ] V 1) (f x)) 2 (measure a) at hh
-  simpa only [zero_apply,add_zero] using hh
+  simpa using hh
 
 set_option maxHeartbeats 1600000 in
 private theorem chart_weighted_derivative_cauchy_from_Hw
@@ -1814,8 +1710,7 @@ private theorem chart_weighted_derivative_cauchy_from_Hw
   have hdEq (n : ℕ) (j : Fin (3*d F)) :
       coordinatePartial j (fun x => liftExtension a (τ n).val (baseReindex.symm x)) =
       fun x => scalarReindex.symm (dh n j x) := by
-    have he : (fun x => liftExtension a (τ n).val (baseReindex.symm x)) =
-        fun x => scalarReindex.symm (h n x) := funext (hext n)
+    have he := funext (hext n)
     rw [he]
     funext x
     unfold coordinatePartial dh
@@ -1837,8 +1732,7 @@ private theorem chart_weighted_derivative_cauchy_from_Hw
     rw [hx,hy,hz,hdEq]
     rfl
   have hc := hlim.cauchySeq
-  have heq : (fun n => (hdm n j).toLp _) =
-      (T.compLpL 2 (measure a)) ∘ (fun n => (hm n j).toLp (dh n j)) := funext he
+  have heq := funext he
   rw [heq]
   exact hc
 end DedekindZetaZeroFree.KPContActualSectorCompactWeakFormConverse
@@ -1880,11 +1774,11 @@ theorem kp_cont_actual_sector_compact_weak_form_converse
               (KPContActualSectorChartEquivariantInputs.baseReindex.symm x)) := by
           intro n
           simp_rw [hext]
-          exact (((EuclideanSpace.proj (𝕜 := ℂ) (0 : Fin 1)).restrictScalars ℝ).contDiff).comp (hsm n)
+          exact (((EuclideanSpace.proj (0 : Fin 1)).restrictScalars ℝ).contDiff).comp (hsm n)
         have hsub' : ∀ n, tsupport (fun x =>
             KPContActualSectorTestDifferentialDescent.liftExtension a (τ n).val
               (KPContActualSectorChartEquivariantInputs.baseReindex.symm x)) ⊆
-              closure (N : Set (KPContLocalNorm.Space (3 * KPContCotangentActualOverlap.d F))) := by
+              closure N := by
           intro n
           simp_rw [hext]
           exact (tsupport_comp_subset (g := fun z : KPCompactInteriorH1.V 1 => z 0)

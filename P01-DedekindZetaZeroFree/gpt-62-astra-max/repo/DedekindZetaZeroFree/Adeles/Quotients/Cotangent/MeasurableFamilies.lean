@@ -17,10 +17,10 @@ open KPContActualCotangentCountableShrinking KPContCotangentActualOverlap
 open KPContCotangentActualGenuineTwistIsotropy KPContCotangentOverlapRationalBranches
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 abbrev Coefficients (F : Type) [Field F] [NumberField F] :=
   EuclideanSpace ℂ (Fin (d F) × Fin 3)
@@ -35,9 +35,7 @@ abbrev ChartFields (F : Type) [Field F] [NumberField F] (ζ : F)
   ∀ a : ShrunkChart F ζ hζ U R P H, omega a → Coefficients F
 
 theorem omega_subset_larger (a : Chart (U := U) (H := H)) :
-    omega a ⊆ (isotropyChart a).omega := by
-  intro x hx
-  exact a.closure_subset (subset_closure hx)
+    omega a ⊆ (isotropyChart a).omega := fun x hx => a.closure_subset (subset_closure hx)
 
 theorem isotropy_mem (a : Chart (U := U) (H := H)) (γ : Gamma a)
     (x : M F) (hx : x ∈ omega a) : (isotropyArrow a γ).psi x ∈ omega a := by
@@ -132,19 +130,15 @@ theorem pairing_descends (v w : Family (U := U) (H := H)) :
 def pair (v w : Family (U := U) (H := H)) : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ :=
   Classical.choose (pairing_descends v w)
 
-theorem measurable_normSquare (v : Family (U := U) (H := H)) : Measurable (normSquare v) := by
-  exact (Classical.choose_spec (normSquare_descends v)).1.1
+theorem measurable_normSquare (v : Family (U := U) (H := H)) : Measurable (normSquare v) := (Classical.choose_spec (normSquare_descends v)).1.1
 
 theorem normSquare_chart (v : Family (U := U) (H := H)) (a : Chart (U := U) (H := H)) (x : omega a) :
-    normSquare v (q a x.val) = ‖coefficient v a x‖₊ ^ 2 := by
-  exact (Classical.choose_spec (normSquare_descends v)).1.2 a x
+    normSquare v (q a x.val) = ‖coefficient v a x‖₊ ^ 2 := (Classical.choose_spec (normSquare_descends v)).1.2 a x
 
-theorem measurable_pair (v w : Family (U := U) (H := H)) : Measurable (pair v w) := by
-  exact (Classical.choose_spec (pairing_descends v w)).1.1
+theorem measurable_pair (v w : Family (U := U) (H := H)) : Measurable (pair v w) := (Classical.choose_spec (pairing_descends v w)).1.1
 
 theorem pair_chart (v w : Family (U := U) (H := H)) (a : Chart (U := U) (H := H)) (x : omega a) :
-    pair v w (q a x.val) = inner ℂ (coefficient v a x) (coefficient w a x) := by
-  exact (Classical.choose_spec (pairing_descends v w)).1.2 a x
+    pair v w (q a x.val) = inner ℂ (coefficient v a x) (coefficient w a x) := (Classical.choose_spec (pairing_descends v w)).1.2 a x
 
 abbrev baseMeasure := KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U
 
@@ -155,8 +149,7 @@ def chartMeasure (a : Chart (U := U) (H := H)) : Measure (omega a) :=
 private theorem exists_lift (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
     ∃ (a : Chart (U := U) (H := H)) (y : omega a), q a y.val = x := by
   let cover := Classical.choice (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
-  have hx : x ∈ ⋃ n, (cover.chart n).baseDomain := by rw [cover.covers]; trivial
-  obtain ⟨n, hn⟩ := Set.mem_iUnion.mp hx
+  obtain ⟨n, hn⟩ := Set.mem_iUnion.mp (by rw [cover.covers]; trivial)
   obtain ⟨z, hz⟩ := hn
   let y : omega (cover.chart n) := ⟨labeledAInv (placeEquiv F ζ hζ) z.val, by
     change labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) z.val) ∈ (cover.chart n).domain
@@ -164,12 +157,13 @@ private theorem exists_lift (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
       funext k; simp [labeledA, labeledAInv]
     rw [he]; exact z.property⟩
   refine ⟨cover.chart n, y, ?_⟩
-  change q (cover.chart n) y.val = x
   convert hz using 1
   unfold KPContCotangentOverlapRationalBranches.q ShrunkChart.toBase
   congr 2
   funext k
   simp [y, labeledA, labeledAInv]
+
+alias MeasurableFamilies.exists_lift := exists_lift
 
  theorem normSquare_zero_point (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
     normSquare (0 : Family (U := U) (H := H)) x = 0 := by
@@ -184,9 +178,9 @@ private theorem normSquare_eq_zero_iff (v : Family (U := U) (H := H))
   constructor
   · intro hv a y hy
     rw [← hy, normSquare_chart] at hv
-    simpa only [pow_eq_zero_iff (by decide : 2 ≠ 0), nnnorm_eq_zero] using hv
+    simpa using hv
   · intro hv
-    obtain ⟨a, y, hy⟩ := exists_lift (H := H) x
+    obtain ⟨a, y, hy⟩ := exists_lift x
     rw [← hy, normSquare_chart, hv a y hy]
     simp
 
@@ -196,9 +190,8 @@ private theorem normSquare_eq_zero_iff (v : Family (U := U) (H := H))
   apply (normSquare_eq_zero_iff _ _).mpr
   intro a y hy
   have h1 := (normSquare_eq_zero_iff v x).mp hv a y hy
-  have h2 := (normSquare_eq_zero_iff w x).mp hw a y hy
   change coefficient v a y + coefficient w a y = 0
-  rw [h1, h2, add_zero]
+  rw [h1, ((normSquare_eq_zero_iff w x).mp hw a y hy), add_zero]
 
  theorem normSquare_smul_zero (c : ℂ) (v : Family (U := U) (H := H))
     (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) (hv : normSquare v x = 0) :
@@ -295,15 +288,13 @@ abbrev CotangentAeQuotient :=
   Quotient (Submodule.quotientRel (R := ℂ)
     (M := SquareFiniteFamily (U := U) (H := H)) (nullSubmodule (U := U) (H := H)))
 
-instance quotientAddCommGroup : AddCommGroup (CotangentAeQuotient (U := U) (H := H)) := by
-  exact @Submodule.Quotient.addCommGroup ℂ (SquareFiniteFamily (U := U) (H := H))
-    _ (Submodule.addCommGroup (squareFiniteSubmodule (U := U) (H := H)))
-    (Submodule.module (squareFiniteSubmodule (U := U) (H := H))) nullSubmodule
+instance quotientAddCommGroup : AddCommGroup (CotangentAeQuotient (U := U) (H := H)) := @Submodule.Quotient.addCommGroup ℂ (SquareFiniteFamily)
+    _ (Submodule.addCommGroup (squareFiniteSubmodule))
+    (Submodule.module (squareFiniteSubmodule)) nullSubmodule
 
-instance quotientModule : Module ℂ (CotangentAeQuotient (U := U) (H := H)) := by
-  exact @Submodule.Quotient.module ℂ (SquareFiniteFamily (U := U) (H := H))
-    _ (Submodule.addCommGroup (squareFiniteSubmodule (U := U) (H := H)))
-    (Submodule.module (squareFiniteSubmodule (U := U) (H := H))) nullSubmodule
+instance quotientModule : Module ℂ (CotangentAeQuotient (U := U) (H := H)) := @Submodule.Quotient.module ℂ (SquareFiniteFamily)
+    _ (Submodule.addCommGroup (squareFiniteSubmodule))
+    (Submodule.module (squareFiniteSubmodule)) nullSubmodule
 
 def toAeQuotient : SquareFiniteFamily (U := U) (H := H) →ₗ[ℂ] CotangentAeQuotient (U := U) (H := H) where
   toFun := Quotient.mk''
@@ -311,17 +302,13 @@ def toAeQuotient : SquareFiniteFamily (U := U) (H := H) →ₗ[ℂ] CotangentAeQ
   map_smul' := by intro c v; rfl
 
 theorem toAeQuotient_surjective :
-    Function.Surjective (toAeQuotient (U := U) (H := H)) := by
-  intro q
-  exact Quotient.inductionOn q (fun v => ⟨v, rfl⟩)
+    Function.Surjective (toAeQuotient (U := U) (H := H)) := fun q => Quotient.inductionOn q (fun v => ⟨v, rfl⟩)
 
 theorem toAeQuotient_add (v w : SquareFiniteFamily (U := U) (H := H)) :
-    toAeQuotient (v + w) = toAeQuotient v + toAeQuotient w := by
-  exact map_add toAeQuotient v w
+    toAeQuotient (v + w) = toAeQuotient v + toAeQuotient w := map_add toAeQuotient v w
 
 theorem toAeQuotient_smul (c : ℂ) (v : SquareFiniteFamily (U := U) (H := H)) :
-    toAeQuotient (c • v) = c • toAeQuotient v := by
-  exact map_smul toAeQuotient c v
+    toAeQuotient (c • v) = c • toAeQuotient v := map_smul toAeQuotient c v
 
 theorem toAeQuotient_eq_iff (v w : SquareFiniteFamily (U := U) (H := H)) :
     toAeQuotient v = toAeQuotient w ↔ AeEquivalent v.val w.val := by
@@ -333,19 +320,17 @@ theorem toAeQuotient_eq_iff (v w : SquareFiniteFamily (U := U) (H := H)) :
 theorem aeEquivalent_iff_all_charts (v w : Family (U := U) (H := H)) :
     AeEquivalent v w ↔ ∀ a : Chart (U := U) (H := H),
       ∀ᵐ x ∂chartMeasure a, coefficient v a x = coefficient w a x := by
-  have hzero (a : Chart (U := U) (H := H)) (x : omega a) :
+  have hzero (a : Chart) (x : omega a) :
       normSquare (v - w) (q a x.val) = 0 ↔ coefficient v a x = coefficient w a x := by
     rw [normSquare_chart]
     simp only [pow_eq_zero_iff (by decide : 2 ≠ 0), nnnorm_eq_zero]
-    change coefficient v a x - coefficient w a x = 0 ↔ _
     exact sub_eq_zero
   have hmeas : MeasurableSet {x | normSquare (v - w) x = 0} :=
     measurableSet_eq_fun (measurable_normSquare (v - w)) measurable_const
   constructor
   · intro h a
-    have ha := (KPContActualCotangentMeasurableMeasure.ae_chart_iff a
-      (fun x => normSquare (v - w) x = 0) hmeas).mpr (ae_restrict_of_ae h)
-    exact ha.mono fun x hx => (hzero a x).mp hx
+    exact ((KPContActualCotangentMeasurableMeasure.ae_chart_iff a
+      (fun x => normSquare (v - w) x = 0) hmeas).mpr (ae_restrict_of_ae h)).mono fun x hx => (hzero a x).mp hx
   · intro h
     let cover := Classical.choice
       (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2

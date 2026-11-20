@@ -16,9 +16,9 @@ set_option autoImplicit false
 open LocalFiniteSums CorrectionFactors FrequencyCharacterMasks
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
-variable {C : A.GeneralArithmeticContext σ η hS}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {C : A.GeneralArithmeticContext σ η hS}
 
 inductive Row where
   | principal
@@ -26,52 +26,53 @@ inductive Row where
   | minus
   deriving DecidableEq
 
-def primitive (U : Frequency C) (P : PrimitiveInducers U) :
+section
+
+variable (U : Frequency C)
+
+def primitive (P : PrimitiveInducers U) :
     Row → Detector.PrimitiveFrequencyCharacter F
   | .principal => Detector.FrequencyPrincipal.principalPrimitive (F := F)
   | .plus => P.plus
   | .minus => P.minus
 
-def deletionSet (U : Frequency C) : Row → Set (HeightOneSpectrum (𝓞 F))
+def deletionSet : Row → Set (HeightOneSpectrum (𝓞 F))
   | .principal => (A.Sf : Set (HeightOneSpectrum (𝓞 F)))
   | .plus => frequencyMask U
   | .minus => frequencyMask U
 
-def coefficient (U : Frequency C) : Row → Ideal (𝓞 F) → ℂ
+def coefficient : Row → Ideal (𝓞 F) → ℂ
   | .principal => principalCoefficient A
   | .plus => plusCoefficient U
   | .minus => minusCoefficient U
 
-def incompleteL (U : Frequency C) (i : Row) (s : ℂ) : ℂ :=
+def incompleteL (i : Row) (s : ℂ) : ℂ :=
   ∑' I : Ideal (𝓞 F), coefficient U i I * (Ideal.absNorm I : ℂ) ^ (-s)
+
+end
 
 def poleIndicator (ν : Detector.PrimitiveFrequencyCharacter F) : ℕ :=
   if ν.character.IsPrincipal then 1 else 0
 
-def deletionProduct (U : Frequency C) (P : PrimitiveInducers U)
-    (i : Row) (s : ℂ) : ℂ :=
+section
+
+variable (U : Frequency C) (P : PrimitiveInducers U) (i : Row)
+
+def deletionProduct (s : ℂ) : ℂ :=
   Detector.finiteEulerDeletionMask F (deletionSet U i)
     (fun p => (primitive U P i).character p.asIdeal) s
 
-def quotientRepresentative (U : Frequency C) (P : PrimitiveInducers U)
-    (i : Row) (J : ℂ → ℂ) (s : ℂ) : ℂ :=
+def quotientRepresentative (J : ℂ → ℂ) (s : ℂ) : ℂ :=
   J s * deletionProduct U P i s / (s - 1) ^ poleIndicator (primitive U P i)
+
+end
 
 structure RowContinuation (U : Frequency C) (P : PrimitiveInducers U) (i : Row) where
   J : ℂ → ℂ
   J_holomorphic : AnalyticOnNhd ℂ J {s : ℂ | 0 < s.re}
-  J_not_identically_zero : ∃ s : ℂ, 0 < s.re ∧ J s ≠ 0
-  deletion_finite : (deletionSet U i).Finite
   B_holomorphic : AnalyticOnNhd ℂ (deletionProduct U P i) {s : ℂ | 0 < s.re}
-  B_nowhere_zero : ∀ s : ℂ, 0 < s.re → deletionProduct U P i s ≠ 0
-  series : ∀ s : ℂ, 1 < s.re →
-    HasSum (fun I : Ideal (𝓞 F) =>
-      coefficient U i I * (Ideal.absNorm I : ℂ) ^ (-s))
-      (quotientRepresentative U P i J s)
   regular_equality : ∀ s : ℂ, 1 < s.re →
     incompleteL U i s = quotientRepresentative U P i J s
-  meromorphic_germs : MeromorphicOn (quotientRepresentative U P i J)
-    {s : ℂ | 0 < s.re}
 
 private lemma positive_open : IsOpen {s : ℂ | 0 < s.re} :=
   isOpen_lt continuous_const Complex.continuous_re
@@ -79,23 +80,19 @@ private lemma positive_open : IsOpen {s : ℂ | 0 < s.re} :=
 private lemma primitive_series_ne_zero (ν : Detector.PrimitiveFrequencyCharacter F)
     (s : ℂ) (hs : 1 < s.re) :
     (∑' I : Ideal (𝓞 F), ν.character I * (Ideal.absNorm I : ℂ) ^ (-s)) ≠ 0 := by
-  have hcoeff := ExteriorIdealEuler.zeroMaskedRay_isCoefficient
-    (cS := (⊤ : Ideal (𝓞 F))) ν.conductor ν.conductor_ne_zero ν.character ⊤
-  have hn := (ExteriorIdealEuler.exterior_ideal_euler _ hcoeff s hs).2.2.1
   have hsupp : Function.support (fun I : Ideal (𝓞 F) =>
       ν.character I * (Ideal.absNorm I : ℂ) ^ (-s)) ⊆
       {I : Ideal (𝓞 F) | I ≠ ⊥ ∧ I ⊔ ⊤ = ⊤} := by
     intro I hI
     refine ⟨?_, by simp⟩
     intro hzero
-    have hz : ν.character I = 0 := (ν.character.eq_zero_iff' I).mpr (Or.inl hzero)
-    exact hI (by simp [hz])
-  have he := tsum_subtype_eq_of_support_subset hsupp
-  rw [← he]
+    exact hI (by simp [((ν.character.eq_zero_iff' I).mpr (Or.inl hzero))])
+  rw [← (tsum_subtype_eq_of_support_subset hsupp)]
   change (∑' I : ExteriorIdeal (⊤ : Ideal (𝓞 F)),
     ν.character I.val * (Ideal.absNorm I.val : ℂ) ^ (-s)) ≠ 0
   simpa only [ExteriorIdealEuler.summand, ExteriorIdealEuler.zeroMaskedRayCoefficient,
-    sup_top_eq, if_true] using hn
+    sup_top_eq, if_true] using ((ExteriorIdealEuler.exterior_ideal_euler _ (ExteriorIdealEuler.zeroMaskedRay_isCoefficient
+      ν.conductor ν.conductor_ne_zero ν.character ⊤) s hs).2.2.1)
 
 private lemma primitive_regularizer
     (hF : NumberField.IsTotallyComplex F) (ν : Detector.PrimitiveFrequencyCharacter F) :
@@ -115,10 +112,9 @@ private lemma primitive_regularizer
         (by rw [← (H.series 2 h2).tsum_eq]; exact primitive_series_ne_zero ν 2 h2)
     refine ⟨H.R, H.R_holo.analyticOnNhd positive_open, ⟨2, by norm_num, hR⟩, ?_⟩
     intro s hs
-    have hs0 : 0 < s.re := lt_trans (by norm_num) hs
     have hs1 : s ≠ 1 := by intro he; subst s; norm_num at hs
     have he : H.R s / (s - 1) ^ poleIndicator ν = H.L s := by
-      rw [poleIndicator, if_pos hp, pow_one, H.regularized s hs0 hs1]
+      rw [poleIndicator, if_pos hp, pow_one, H.regularized s (lt_trans (by norm_num) hs) hs1]
       exact mul_div_cancel_left₀ _ (sub_ne_zero.mpr hs1)
     rw [he]
     exact H.series s hs
@@ -147,7 +143,7 @@ private lemma row_coefficient_eq (U : Frequency C) (P : PrimitiveInducers U) (i 
       (primitive U P i) (deletionSet U i) := by
   funext I
   cases i
-  · exact (principal_mask_exactly_S A).2.1 I
+  · exact (principal_mask_exactly_S A) I
   · exact P.plus_mask I
   · exact P.minus_mask I
 
@@ -179,27 +175,9 @@ theorem masked_hecke_meromorphic
   refine ⟨{
     J := J
     J_holomorphic := hJ
-    J_not_identically_zero := hJne
-    deletion_finite := hD
     B_holomorphic := hB
-    B_nowhere_zero := ?_
-    series := hregular
     regular_equality := fun s hs => (hregular s hs).tsum_eq
-    meromorphic_germs := ?_
   }⟩
-  · intro s hs
-    letI := hD.fintype
-    change Detector.finiteEulerDeletionMask F (deletionSet U i)
-      (fun p => ν.character p.asIdeal) s ≠ 0
-    rw [Detector.finiteEulerDeletionMask, finprod_eq_prod_of_fintype]
-    apply Finset.prod_ne_zero_iff.mpr
-    intro p _
-    exact (Detector.finite_euler_local_factor_nonzero F s.re hs p.val
-      (ν.character p.val.asIdeal) s
-      (RayUnitary.ray_character_norm_le_one F ν.conductor ν.conductor_ne_zero
-        ν.character p.val.asIdeal) le_rfl).2.2
-  · exact (hJ.meromorphicOn.mul hB.meromorphicOn).div
-      ((analyticOnNhd_id.sub analyticOnNhd_const).pow (poleIndicator ν)).meromorphicOn
 
 end DedekindZetaZeroFree.MaskedHeckeMeromorphic
 

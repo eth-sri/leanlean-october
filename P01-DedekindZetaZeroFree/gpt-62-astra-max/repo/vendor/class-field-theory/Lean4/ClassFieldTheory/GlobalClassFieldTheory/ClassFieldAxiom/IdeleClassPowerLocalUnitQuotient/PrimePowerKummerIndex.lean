@@ -17,15 +17,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -77,9 +68,14 @@ theorem card_sUnitPrincipalQuotient_mul_card_ideleClassQuotient_eq_power_two_tot
         (2 * totalPlaceCard (K := K) S) := by
   rw [
     card_sUnitPrincipalQuotient_mul_card_ideleClassQuotient
-      (K := K) n S T hLarge,
+       n S T hLarge,
     card_supportedIdeleQuotient_eq_power_two_totalPlaceCard
-      (K := K) n hmu S T hS]
+       n hmu S T hS]
+
+section
+
+variable {Omega : Type} [Field Omega] [Algebra K Omega] [IsSepClosure K Omega]
+    (E : IntermediateField K Omega) [FiniteDimensional K E] [IsGalois K E]
 
 /-- The class-quotient calculation for the Kummer-selected prime set.
 The localization equality identifies the left term of the exact sequence
@@ -88,10 +84,6 @@ all support and divisibility hypotheses are derived from the prescribed
 seed `S`. -/
 theorem
     card_ideleClassPowerLocalUnitQuotient_eq_finrank_sUnitKummerPrimeSet
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
     [IsMulCommutative Gal(E/K)]
     (n : ℕ+)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
@@ -226,7 +218,7 @@ theorem
         (IsDedekindDomain.HeightOneSpectrum.valuation_lt_one_iff_dvd
           (K := K) w ((n : ℕ) : 𝓞 K)).2 hwDvd
     have hwSupport :
-        w ∈ chosenUnitFiniteSupport (K := K) nUnit := by
+        w ∈ chosenUnitFiniteSupport nUnit := by
       by_contra hwNotSupport
       have hnUnitVal :
           w.valuation K (nUnit : K) = 1 :=
@@ -295,19 +287,19 @@ theorem
       (K := K) n hmu S' T hDiv hLarge
   rw [hLeft] at hProduct
   have hr2 :
-      r ≤ 2 * totalPlaceCard (K := K) S' := by
+      r ≤ 2 * totalPlaceCard S' := by
     omega
   have hPow :
       (n : ℕ) ^
-          (2 * totalPlaceCard (K := K) S') =
+          (2 * totalPlaceCard S') =
         (n : ℕ) ^
-            (2 * totalPlaceCard (K := K) S' - r) *
+            (2 * totalPlaceCard S' - r) *
           (n : ℕ) ^ r := by
     rw [← pow_add, Nat.sub_add_cancel hr2]
   have hClassCard :
       Nat.card
           (IdeleClassPowerLocalUnitQuotient
-            (K := K) n S' T) =
+             n S' T) =
         (n : ℕ) ^ r := by
     exact
       Nat.eq_of_mul_eq_mul_left
@@ -333,10 +325,6 @@ form is useful when the extension is already constructed inside a fixed
 separable closure. -/
 theorem
     ideleClassNorm_index_eq_finrank_primePowerKummer_intermediateField
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
     (n : ℕ+)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
@@ -486,6 +474,8 @@ theorem
       (K := K) (L := E) sigma hsigma
   exact le_antisymm hUpper hLower
 
+end
+
 /-- The norm subgroup has index `[E : K]` for an arbitrary prime-power
 Kummer extension.  The proof realizes `E` as its field range in a fixed
 separable closure, applies the intermediate-field calculation there,
@@ -506,45 +496,38 @@ theorem ideleClassNorm_index_eq_finrank_primePowerKummer
     (RelativeIdeleGroup.Cohomology.ideleClassNorm K E).range.index =
       Module.finrank K E := by
   classical
-  let : NumberField E :=
+  let :=
     NumberField.of_module_finite K E
   let i : E →ₐ[K] SeparableClosure K :=
     IsSepClosed.lift
-  let R : IntermediateField K (SeparableClosure K) :=
+  let R :=
     AlgHom.fieldRange i
-  let e : E ≃ₐ[K] R :=
+  let e :=
     AlgHom.equivFieldRange i
-  let _ : FiniteDimensional K R :=
+  let _ :=
     e.toLinearEquiv.finiteDimensional
-  let _ : IsGalois K R :=
+  let _ :=
     IsGalois.of_algEquiv e
-  let _ : NumberField R :=
+  let _ :=
     NumberField.of_module_finite K R
   let _ : (RelativeIdeleGroup.principalSubgroup K R).Normal :=
     ⟨fun n hn g => by
       have hconj : g * n * g⁻¹ = n := by
         rw [mul_comm g n, mul_assoc, mul_inv_cancel, mul_one]
       rwa [hconj]⟩
-  let _ : Group (RelativeIdeleGroup.ClassGroup K R) :=
+  let _ :=
     QuotientGroup.Quotient.group
       (RelativeIdeleGroup.principalSubgroup K R)
-  let eG' :
-      Gal(R/K) ≃*
-        (Fin 1 → Multiplicative (ZMod (n : ℕ))) :=
-    (AlgEquiv.autCongr e).symm.trans eG
-  have hR :=
-    ideleClassNorm_index_eq_finrank_primePowerKummer_intermediateField
-      (K := K) (Omega := SeparableClosure K) R n hmu
-      p v hp hv hn eG'
   calc
-    (RelativeIdeleGroup.Cohomology.ideleClassNorm K E).range.index =
+    _ =
         (RelativeIdeleGroup.Cohomology.ideleClassNorm K R).range.index :=
       (ideleClassNorm_index_algEquiv
-        (K := K) e).symm
-    _ = Module.finrank K R := hR
+         e).symm
+    _ = Module.finrank K R := (ideleClassNorm_index_eq_finrank_primePowerKummer_intermediateField
+        R n hmu
+      p v hp hv hn ((AlgEquiv.autCongr e).symm.trans eG))
     _ = Module.finrank K E :=
       e.toLinearEquiv.finrank_eq.symm
-
 
 end GlobalClassFieldTheory.ClassFieldAxiom
 

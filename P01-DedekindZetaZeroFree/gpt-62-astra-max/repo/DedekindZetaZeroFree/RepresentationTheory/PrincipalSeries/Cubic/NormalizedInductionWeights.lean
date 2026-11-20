@@ -8,8 +8,7 @@ namespace DedekindZetaZeroFree.KPLocalPrincipalSeriesNormWeights
 
 theorem exp_mul_log_real {r : ℝ} (hr : 0 < r) (a : ℝ) :
     Complex.exp ((a : ℂ) * (Real.log r : ℂ)) = (r ^ a : ℝ) := by
-  simp only [← Complex.ofReal_mul, ← Complex.ofReal_exp,
-    Real.rpow_def_of_pos hr, mul_comm]
+  simp [Complex.ofReal_mul, Complex.ofReal_exp, Real.rpow_def_of_pos, hr, mul_comm]
 
 theorem absolute_pow {U : Type*} [Monoid U] (R : U → ℝ)
     (h1 : R 1 = 1) (hm : ∀ x y, R (x * y) = R x * R y)

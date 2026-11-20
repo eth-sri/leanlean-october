@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -128,24 +124,18 @@ def towerRelativeAdeleRingEquiv :
       RelativeAdeleRing K L := by
   letI : Algebra L (TowerRelativeAdeleRing K M L) :=
     Algebra.TensorProduct.rightAlgebra
-  let e₁ :=
-    (Algebra.TensorProduct.commRight
-      M L (RelativeAdeleRing K M)).symm
   let e₂ :=
     Algebra.TensorProduct.congr
       (AlgEquiv.refl : L ≃ₐ[M] L)
       (Algebra.TensorProduct.commRight K M
         (NumberField.AdeleRing (𝓞 K) K)).symm
-  let e₃ :=
-    Algebra.TensorProduct.cancelBaseChange
-      K M L L (NumberField.AdeleRing (𝓞 K) K)
-  let e₄ :=
-    Algebra.TensorProduct.commRight
-      K L (NumberField.AdeleRing (𝓞 K) K)
   exact
-    e₁.toRingEquiv.trans
+    ((Algebra.TensorProduct.commRight
+      M L (RelativeAdeleRing K M)).symm).toRingEquiv.trans
       (e₂.toRingEquiv.trans
-        (e₃.toRingEquiv.trans e₄.toRingEquiv))
+        ((Algebra.TensorProduct.cancelBaseChange
+          K M L L (NumberField.AdeleRing (𝓞 K) K)).toRingEquiv.trans (Algebra.TensorProduct.commRight
+          K L (NumberField.AdeleRing (𝓞 K) K)).toRingEquiv))
 
 /-- Flatten the iterated scalar extension
 `(𝔸_K ⊗[K] M) ⊗[M] L` to `𝔸_K ⊗[K] L`. -/
@@ -219,9 +209,8 @@ def topFieldToTower :
           algebraMap K
             (TowerRelativeAdeleRing K M L) k
       rw [← Algebra.TensorProduct.tmul_one_eq_one_tmul
-        (R := M)
-        (A := RelativeAdeleRing K M)
-        (B := L)]
+
+        ]
       change
         ((1 : NumberField.AdeleRing (𝓞 K) K) ⊗ₜ[K]
             algebraMap K M k) ⊗ₜ[M] (1 : L) =
@@ -229,9 +218,8 @@ def topFieldToTower :
               (NumberField.AdeleRing (𝓞 K) K) k) ⊗ₜ[K]
                 (1 : M)) ⊗ₜ[M] (1 : L)
       rw [← Algebra.TensorProduct.tmul_one_eq_one_tmul
-        (R := K)
-        (A := NumberField.AdeleRing (𝓞 K) K)
-        (B := M)]
+
+        ]
       }
 
 omit [NumberField M] [NumberField L]
@@ -261,11 +249,7 @@ theorem towerRelativeAdeleUnflatten_tmul
     towerRelativeAdeleUnflatten K M L (a ⊗ₜ[K] x) =
       bottomAdeleToTower K M L a *
         topFieldToTower K M L x := by
-  simp [towerRelativeAdeleUnflatten,
-    towerRelativeAdeleRingEquiv,
-    bottomAdeleToTower_apply,
-    topFieldToTower_apply,
-    Algebra.TensorProduct.tmul_mul_tmul]
+  simp [towerRelativeAdeleUnflatten, towerRelativeAdeleRingEquiv, bottomAdeleToTower_apply]
 
 /-- The flattening equivalence as an equivalence over the bottom adele
 ring.  This is the form needed for invariance of determinant norms. -/
@@ -350,13 +334,7 @@ theorem principalSubgroup_map_towerRelativeIdeleEquiv :
     (principalSubgroup K M L).map
         (towerRelativeIdeleEquiv K M L) =
       RelativeIdeleGroup.principalSubgroup K L := by
-  rw [principalSubgroup,
-    RelativeIdeleGroup.principalSubgroup,
-    MonoidHom.map_range]
-  congr 1
-  ext x
-  exact congrArg Units.val
-    (towerRelativeIdeleEquiv_principalIdele K M L x)
+  ext <;> simp [principalSubgroup, RelativeIdeleGroup.principalSubgroup, MonoidHom.map_range]
 
 /-- Canonical equivalence between the tower and one-step presentations
 of the relative idele class group of `L`. -/
@@ -397,7 +375,7 @@ theorem norm_transitive_flatten
       RelativeIdeleGroup.norm K L
         (towerRelativeIdeleEquiv K M L a) := by
   apply
-    (IdeleGroup.equivAdeleRingUnits (K := K)).injective
+    (IdeleGroup.equivAdeleRingUnits).injective
   apply Units.ext
   change
     Algebra.norm (NumberField.AdeleRing (𝓞 K) K)
@@ -423,7 +401,7 @@ theorem norm_fieldInclusion
     (x : L) :
     Algebra.norm (RelativeAdeleRing K M)
         (Algebra.TensorProduct.includeRight
-          (R := M) (A := RelativeAdeleRing K M) (B := L) x) =
+          (R := M) (A := RelativeAdeleRing K M) x) =
       algebraMap M (RelativeAdeleRing K M)
         (Algebra.norm M x) := by
   classical
@@ -448,8 +426,7 @@ theorem norm_principalIdele
     norm K M L (principalIdele K M L x) =
       RelativeIdeleGroup.principalIdele K M
         (Units.map (Algebra.norm M) x) := by
-  apply Units.ext
-  exact norm_fieldInclusion K M L (x : L)
+  exact Units.ext (norm_fieldInclusion K M L ↑x)
 
 /-- The tower norm descended to actual idele class groups. -/
 def classNorm :
@@ -529,8 +506,7 @@ theorem towerCompositeClassNorm_range_eq :
     refine
       ⟨(TowerRelativeIdeleGroup.classGroupEquiv K M L).symm d,
         ?_⟩
-    rw [towerCompositeClassNorm_eq_ideleClassNorm,
-      MulEquiv.apply_symm_apply]
+    simp [towerCompositeClassNorm_eq_ideleClassNorm]
 
 /-- The corresponding concrete quotient `C_K / N_{L/K} C_L`, before
 identifying the tower presentation of `C_L` with the one-step
@@ -631,10 +607,7 @@ theorem intermediateToCompositeNormQuotient_range_eq_ker :
       QuotientGroup.mk'
           (RelativeIdeleGroup.classNorm K M).range c = 1
       at hc
-    have hcRange :
-        c ∈ (RelativeIdeleGroup.classNorm K M).range :=
-      (QuotientGroup.eq_one_iff c).1 hc
-    obtain ⟨d, rfl⟩ := hcRange
+    obtain ⟨d, rfl⟩ := ((QuotientGroup.eq_one_iff c).1 hc)
     refine
       ⟨QuotientGroup.mk'
           (TowerRelativeIdeleGroup.classNorm K M L).range d,
@@ -671,29 +644,16 @@ theorem towerCompositeClassNormQuotient_card_le_mul
   let A := IntermediateClassNormQuotient K M L
   let B := TowerCompositeClassNormQuotient K M L
   let C := RelativeIdeleGroup.ClassNormQuotient K M
-  let f : A →* B :=
+  let f :=
     intermediateToCompositeNormQuotient K M L
-  let g : B →* C :=
+  let g :=
     compositeToBaseNormQuotient K M L
-  let : Fintype A := Fintype.ofFinite A
-  let : Fintype C := Fintype.ofFinite C
-  let : Fintype B :=
+  let := Fintype.ofFinite A
+  let := Fintype.ofFinite C
+  let :=
     Group.fintypeOfKerEqRange f g
       (intermediateToCompositeNormQuotient_range_eq_ker
         K M L).symm
-  have hg :
-      Function.Surjective g :=
-    compositeToBaseNormQuotient_surjective K M L
-  have hquot :
-      Nat.card (B ⧸ g.ker) = Nat.card C :=
-    Nat.card_congr
-      (QuotientGroup.quotientKerEquivOfSurjective
-        g hg).toEquiv
-  have hrange :
-      Nat.card f.range ≤ Nat.card A :=
-    Nat.card_le_card_of_surjective
-      f.rangeRestrict
-      f.rangeRestrict_surjective
   calc
     Nat.card B =
         Nat.card (B ⧸ g.ker) *
@@ -701,11 +661,15 @@ theorem towerCompositeClassNormQuotient_card_le_mul
       Subgroup.card_eq_card_quotient_mul_card_subgroup
         g.ker
     _ = Nat.card C * Nat.card f.range := by
-      rw [hquot,
+      rw [(Nat.card_congr
+        (QuotientGroup.quotientKerEquivOfSurjective
+          g (compositeToBaseNormQuotient_surjective K M L)).toEquiv),
         ← intermediateToCompositeNormQuotient_range_eq_ker
           K M L]
     _ ≤ Nat.card C * Nat.card A :=
-      Nat.mul_le_mul_left (Nat.card C) hrange
+      Nat.mul_le_mul_left (Nat.card C) (Nat.card_le_card_of_surjective
+        f.rangeRestrict
+        f.rangeRestrict_surjective)
     _ = Nat.card A * Nat.card C := Nat.mul_comm _ _
 
 omit [NumberField M] in
@@ -721,7 +685,7 @@ theorem ideleClassNormQuotient_card_le_mul
       Nat.card (IntermediateClassNormQuotient K M L) *
         Nat.card (RelativeIdeleGroup.ClassNormQuotient K M) := by
   calc
-    Nat.card (RelativeIdeleGroup.ClassNormQuotient K L) =
+    _ =
         Nat.card (TowerCompositeClassNormQuotient K M L) :=
       Nat.card_congr
         (towerCompositeClassNormQuotientEquiv K M L).symm.toEquiv

@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -40,10 +36,12 @@ open scoped IsMulCommutative
 
 universe u v w
 
+section
+
+variable {K : Type u} {K' : Type v} {L : Type w} [Field K] [Field K'] [Field L] [Algebra K L]
+    [Algebra K' L]
+
 private theorem algEquiv_commutes_algebraMap_of_base_equiv
-    {K : Type u} {K' : Type v} {L : Type w}
-    [Field K] [Field K'] [Field L]
-    [Algebra K L] [Algebra K' L]
     (e : K ≃+* K')
     (h : ∀ x : K,
       algebraMap K L x =
@@ -56,13 +54,13 @@ private theorem algEquiv_commutes_algebraMap_of_base_equiv
       algebraMap K L (e.symm x) =
         algebraMap K' L x := by
     calc
-      algebraMap K L (e.symm x) =
+      _ =
           algebraMap K' L (e (e.symm x)) :=
         h (e.symm x)
       _ = algebraMap K' L x :=
         congrArg (algebraMap K' L) (e.apply_symm_apply x)
   calc
-    f (algebraMap K' L x) =
+    _ =
         f (algebraMap K L (e.symm x)) :=
       congrArg f hbase.symm
     _ = algebraMap K L (e.symm x) :=
@@ -75,9 +73,6 @@ equivalence. The Galois part is supplied separately, typically by Mathlib's
 `IsGalois.of_equiv_equiv`; this theorem transports commutativity of the actual
 automorphism group. -/
 theorem IsAbelianGalois.of_base_equiv
-    {K : Type u} {K' : Type v} {L : Type w}
-    [Field K] [Field K'] [Field L]
-    [Algebra K L] [Algebra K' L]
     [IsGalois K L] [IsAbelianGalois K' L]
     (e : K ≃+* K')
     (h : ∀ x : K,
@@ -86,15 +81,17 @@ theorem IsAbelianGalois.of_base_equiv
     IsAbelianGalois K L := by
   refine
     { is_comm.comm := fun σ τ => ?_ }
-  let σ' : L ≃ₐ[K'] L :=
+  let σ' :=
     AlgEquiv.ofRingEquiv (f := σ.toRingEquiv)
       (algEquiv_commutes_algebraMap_of_base_equiv e h σ)
-  let τ' : L ≃ₐ[K'] L :=
+  let τ' :=
     AlgEquiv.ofRingEquiv (f := τ.toRingEquiv)
       (algEquiv_commutes_algebraMap_of_base_equiv e h τ)
   apply AlgEquiv.ext
   intro x
   exact DFunLike.congr_fun (mul_comm σ' τ') x
+
+end
 
 variable
     {k Ω : Type}
@@ -126,16 +123,16 @@ noncomputable instance
       (abstractRelativeFixedField k Ω L.below) := by
   let F := abstractFixedField k Ω K
   let E := abstractRelativeFixedField k Ω L.below
-  let : IsGalois F E :=
+  let :=
     abstractRelativeFixedField_isGalois
       k Ω K L.field L.below L.normal
-  let e : L.extensionQuotient ≃* Gal(E / F) :=
+  let e :=
     L.extensionQuotientMulEquiv.trans
       (abstractExtensionQuotientEquivGaloisGroup
         k Ω K L.field L.below L.normal)
   refine { is_comm.comm := fun σ τ ↦ ?_ }
   exact e.symm.injective (by
-    simpa only [map_mul] using
+    simpa using
       mul_comm (e.symm σ) (e.symm τ))
 
 end GlobalClassFields

@@ -12,7 +12,7 @@ namespace DedekindZetaZeroFree.FourierContinuation.ResidualPrincipalSlices
 open KPCplxCharacterHaar KPAdelicCoverRestrictedProduct KPLiteralChamber
 open KPContActualSphericalRightFieldIdentification KPMsClearedTruncationL2.NativeWordBridge
 open KPSmoothActualFlowData
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_insertion → sectionTuple_insertion
+open _root_.DedekindZetaZeroFree.KPLiteralChamber (sectionTuple_insertion)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

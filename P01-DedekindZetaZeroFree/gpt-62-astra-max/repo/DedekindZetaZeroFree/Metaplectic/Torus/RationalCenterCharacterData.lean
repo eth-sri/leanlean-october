@@ -11,22 +11,28 @@ namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 abbrev E := KPGlobalTorusFunctionData.E F ζ hζ
 abbrev Z := KPGlobalTorusFunctionData.Z F ζ hζ
 abbrev Ideles := KPGlobalTorusFunctionData.Ideles F
 abbrev Raw := KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ
 
-def localAbs (v : KPHilbert.Place F) (y : (KPHilbert.Completion F v)ˣ) : ℝ≥0 := by
+section
+
+variable (v : KPHilbert.Place F) (y : (KPHilbert.Completion F v)ˣ)
+
+def localAbs : ℝ≥0 := by
   cases v with
   | inl w => exact ‖(y : w.Completion)‖₊ ^ 2
   | inr q => exact ‖(y : q.adicCompletion F)‖₊
 
-theorem localAbs_pos (v : KPHilbert.Place F) (y : (KPHilbert.Completion F v)ˣ) :
+theorem localAbs_pos :
     0 < localAbs F v y := by
   cases v with
   | inl w => exact pow_pos (by exact_mod_cast norm_pos_iff.mpr (Units.ne_zero y)) 2
   | inr q => exact_mod_cast norm_pos_iff.mpr (Units.ne_zero y)
+
+end
 
 def positiveComplex : (ℝ≥0)ˣ →* ℂˣ :=
   Units.map (Complex.ofRealHom.toMonoidHom.comp NNReal.toRealHom.toMonoidHom)

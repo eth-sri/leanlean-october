@@ -13,21 +13,23 @@ open KPLocalPrincipalSeries KPLocalExceptionalConstruction KPAdelicCoverRestrict
 open ThetaExpansion MomentSources
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
-private theorem canonical_projection (q : KPFinitePlace F) (g : ActualCover F ζ hζ q) :
+variable (q : KPFinitePlace F)
+
+private theorem canonical_projection (g : ActualCover F ζ hζ q) :
     (C.canonical q).borel.projection g = KPLocalSmoothRepresentation.projection F ζ hζ q g := by
   induction g using QuotientGroup.induction_on with
   | H g => exact ((C.canonical q).openCell (C.polarization q)).projection_eq g
 
-theorem finite_borel_ratio (q : KPFinitePlace F) (b : (C.canonical q).borel.B)
+theorem finite_borel_ratio (b : (C.canonical q).borel.B)
     (hb : b.val ∈ KPLocalSmoothRepresentation.Borel F ζ hζ q) :
     (C.canonical q).borel.coordinate ((C.canonical q).borel.retract b) =
       KPRankOneInduction.borelRatio F q
@@ -62,13 +64,13 @@ theorem finite_borel_ratio (q : KPFinitePlace F) (b : (C.canonical q).borel.B)
   obtain ⟨x,hx⟩ := T.borel.borel_decomposition b
   conv_rhs => rw [hx,map_mul,ht,hn,mul_one]
 
-def finiteIntegralIwasawa (q : KPFinitePlace F) : IwasawaData (C.canonical q).borel :=
+def finiteIntegralIwasawa : IwasawaData (C.canonical q).borel :=
   (ActualFiniteBorel.actual_compact_iwasawa F ζ hζ q
     (ActualFiniteBorel.chartDepth F ζ hζ q) (ActualFiniteBorel.chartDepth_admissible F ζ hζ q)
     (C.canonical q).heisenberg (C.canonical q).borel (C.canonical q).borel_eq
     (finite_borel_ratio R P C q)).choose
 
-theorem finiteIntegralIwasawa_compact (q : KPFinitePlace F) :
+theorem finiteIntegralIwasawa_compact :
     ((finiteIntegralIwasawa R P C q).compact.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) =
       KPRankOneCartanGeometry.coveredK0 F ζ hζ q := by
   have hJ := (ActualFiniteBorel.actual_compact_iwasawa F ζ hζ q
@@ -79,7 +81,7 @@ theorem finiteIntegralIwasawa_compact (q : KPFinitePlace F) :
   rw [hJ]
   rfl
 
-theorem finiteMax_mem_integral (q : KPFinitePlace F)
+theorem finiteMax_mem_integral
     (k : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
     (hk : k ∈ iwasawaCompactFactor R (Sum.inr q)) :
     KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) k ∈

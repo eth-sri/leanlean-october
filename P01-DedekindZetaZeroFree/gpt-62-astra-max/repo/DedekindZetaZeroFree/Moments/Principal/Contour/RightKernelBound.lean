@@ -15,8 +15,8 @@ open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.PoissonK
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 private lemma re_line (v s : ℝ) : ((v : ℂ) + (s : ℂ) * Complex.I).re = v := by simp
 
@@ -28,7 +28,7 @@ private lemma kern_norm (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ w 
           ‖D.Llam u ξ‖⁻¹) := by
   have hqc : ((D.q u : ℝ) : ℂ) = 1 := by
     rw [PrincipalResidueFormulas.q_principal D u hu]; simp
-  have hZn : ∀ c : ℂ, ‖(Z : ℂ) ^ c‖ = Z ^ c.re :=
+  have hZn :=
     fun c => Complex.norm_cpow_eq_rpow_re_of_pos hZ c
   have hre : ((((Scales.xExponent / 2 : ℝ) : ℂ) + ξ - 1 + (Scales.smoothingExponent : ℂ) * z +
       (Scales.yExponent : ℂ) * (w - 1)).re) =
@@ -49,7 +49,6 @@ private lemma kern_bound (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
     ∃ Cc : ℝ, 0 ≤ Cc ∧ ∀ ξ w z : ℂ, Scales.rightLine - Scales.contourOffset / 2 ≤ ξ.re → ξ.re ≤ 5 →
       Scales.rightLine - Scales.contourOffset / 2 ≤ w.re → w.re ≤ 5 → z.re = 1 / 6 + Scales.contourOffset →
         ‖kern D u Z ξ w z‖ ≤ Cc * ‖Complex.exp ((ξ + z - 1) ^ 2) * D.M z * D.W1Hat w‖ := by
-  have hq : D.q u = 1 := PrincipalResidueFormulas.q_principal D u hu
   have hx : Scales.rightLine = 1 + Scales.contourOffset := rfl
   have hd : Scales.contourOffset = 1 / 10000000 := rfl
   have hZ0 : 0 < Z := by linarith
@@ -66,29 +65,20 @@ private lemma kern_bound (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
   rw [kern_norm D u hu Z hZ0 ξ w z]
   have h6re : (6 * z).re = 6 * z.re := by simp [Complex.mul_re]
   have bZ : ‖D.zetaSCont (6 * z)‖ ≤ Cz := hCz _ (by rw [h6re, hz]; linarith)
-  have bP : ‖D.Lpsi u w‖ ≤ Cp := hCp u _ (by rw [hx] at hw1; linarith)
-  have bL : ‖D.Llam u ξ‖⁻¹ ≤ Cl := by
-    have := hCl u ξ (by rw [hx] at hξ1; linarith)
-    rwa [norm_inv] at this
   have hmem : ((ξ, w, z) : Coordinates) ∈ OmegaStarMargin (1 / 100) := by
     simp only [OmegaStarMargin, Set.mem_setOf_eq]
     rw [hz]
     rw [hx, hd] at hξ1 hw1
     rw [hd]
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
-  have bH : ‖EulerDomain.Hu D u ξ w z‖ ≤ CH := by
-    have := (hCH u _ hmem).2
-    rwa [hq, Real.one_rpow, mul_one] at this
-  have nZ := norm_nonneg (D.zetaSCont (6 * z))
-  have nP := norm_nonneg (D.Lpsi u w)
-  have nH := norm_nonneg (EulerDomain.Hu D u ξ w z)
-  have nL : 0 ≤ ‖D.Llam u ξ‖⁻¹ := by positivity
   have hP4 : ‖D.zetaSCont (6 * z)‖ * ‖D.Lpsi u w‖ * ‖EulerDomain.Hu D u ξ w z‖ *
       ‖D.Llam u ξ‖⁻¹ ≤ Cz * Cp * CH * Cl :=
-    mul_le_mul (mul_le_mul (mul_le_mul bZ bP nP hCz0.le) bH nH (by positivity)) bL nL
+    mul_le_mul (mul_le_mul (mul_le_mul bZ (hCp u _ (by rw [hx] at hw1; linarith)) (norm_nonneg (D.Lpsi u w)) hCz0.le) (by
+      have := (hCH u _ hmem).2
+      rwa [(PrincipalResidueFormulas.q_principal D u hu), Real.one_rpow, mul_one] at this) (norm_nonneg (EulerDomain.Hu D u ξ w z)) (by positivity)) (by
+      have := hCl u ξ (by rw [hx] at hξ1; linarith)
+      rwa [norm_inv] at this) (by positivity)
       (by positivity)
-  have hP0 : 0 ≤ ‖D.zetaSCont (6 * z)‖ * ‖D.Lpsi u w‖ * ‖EulerDomain.Hu D u ξ w z‖ *
-      ‖D.Llam u ξ‖⁻¹ := by positivity
   have hy1 : 1 ≤ w.re := by rw [hx, hd] at hw1; linarith
   have hb4 : |Scales.yExponent * (w.re - 1)| ≤ |Scales.yExponent| * 4 := by
     rw [abs_mul]
@@ -101,14 +91,11 @@ private lemma kern_bound (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
     have b5 := le_abs_self (Scales.yExponent * (w.re - 1))
     rw [hz, hMx]
     linarith
-  have hZE : 0 ≤ Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * z.re + Scales.yExponent * (w.re - 1)) :=
-    Real.rpow_nonneg hZ0.le _
-  have hW0 := norm_nonneg (Complex.exp ((ξ + z - 1) ^ 2) * D.M z * D.W1Hat w)
   have hc0 : 0 ≤ Cz * Cp * CH * Cl := by positivity
   calc _ ≤ Z ^ Mx * ‖Complex.exp ((ξ + z - 1) ^ 2) * D.M z * D.W1Hat w‖ *
         (Cz * Cp * CH * Cl) := by
-        refine mul_le_mul ?_ hP4 hP0 (by positivity)
-        exact mul_le_mul_of_nonneg_right hZe hW0
+        refine mul_le_mul ?_ hP4 (by positivity) (by positivity)
+        exact mul_le_mul_of_nonneg_right hZe (norm_nonneg (Complex.exp ((ξ + z - 1) ^ 2) * D.M z * D.W1Hat w))
     _ = _ := by ring
 
 theorem kern_differentiableOn (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) :
@@ -125,7 +112,7 @@ theorem kernel_weight_bound_strip (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 �
           Cc * WeightConvolution.weightModulus D ξ (1 / 6 + Scales.contourOffset) y (s, t) := by
   obtain ⟨Cc, hCc, h⟩ := kern_bound D u hu Z hZ
   refine ⟨Cc, hCc, fun ξ h1 h2 y hy1 hy2 s t => ?_⟩
-  exact h ξ _ _ h1 h2 (by rw [re_line]; exact hy1) (by rw [re_line]; exact hy2) (by exact re_line _ _)
+  exact h ξ _ _ h1 h2 (by rw [re_line]; exact hy1) (by rw [re_line]; exact hy2) (re_line _ _)
 
 theorem kernel_weight_bound (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
     ∃ Cc : ℝ, 0 ≤ Cc ∧ ∃ k : ℝ, 0 ≤ k ∧

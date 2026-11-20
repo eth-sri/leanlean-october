@@ -12,23 +12,26 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField ValuativeRel
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-theorem exterior_whittaker_value_generator_pow (R : PrincipalMellin.ActualRecipe S η)
-    (hR : RootAligned R) {N : TraceHaarTransport R} (C : JointHaarFactorizedSources R N)
-    (hW : ExteriorWhittakerEquivariance R C) (p : ThetaBranch.ExteriorPrime R.A) (e : ℤ) :
+section
+
+variable (R : PrincipalMellin.ActualRecipe S η) (hR : RootAligned R) {N : TraceHaarTransport R}
+    (C : JointHaarFactorizedSources R N) (hW : ExteriorWhittakerEquivariance R C)
+    (p : ThetaBranch.ExteriorPrime R.A)
+
+include hR hW in
+theorem exterior_whittaker_value_generator_pow (e : ℤ) :
     exteriorWhittakerValue R C p (exteriorCompletionGenerator R p ^ e) =
       sexticSphericalCoefficient (ThetaBranch.residueCharacter R.A R.σ p) (Characters.psi R p) e := by
   by_cases he : e < 0
   · rw [exterior_whittaker_value_eq_zero_of_neg R C hW p e he]
     simp [sexticSphericalCoefficient, he]
-  · have he0 : 0 ≤ e := le_of_not_gt he
-    simpa only [Int.toNat_of_nonneg he0] using
+  · simpa only [Int.toNat_of_nonneg (le_of_not_gt he)] using
       exterior_whittaker_value_generator_pow_nat R hR C hW p e.toNat
 
-theorem exterior_whittaker_value_generator_pow_mul_unit (R : PrincipalMellin.ActualRecipe S η) (hR : RootAligned R)
-    {N : TraceHaarTransport R} (C : JointHaarFactorizedSources R N) (hW : ExteriorWhittakerEquivariance R C)
-    (p : ThetaBranch.ExteriorPrime R.A) (e : ℤ)
+include hR hW in
+theorem exterior_whittaker_value_generator_pow_mul_unit (e : ℤ)
     (u : (p.val.adicCompletion F)ˣ) (t : 𝓞 F)
     (ht : ‖(u : p.val.adicCompletion F) - algebraMap (𝓞 F) (p.val.adicCompletion F) t‖ < 1)
     (hu : valuation (p.val.adicCompletion F) (u : p.val.adicCompletion F) = 1) :
@@ -38,15 +41,16 @@ theorem exterior_whittaker_value_generator_pow_mul_unit (R : PrincipalMellin.Act
   rw [exterior_whittaker_value_unit_covariance R hR C p e u t ht hu,
     exterior_whittaker_value_generator_pow R hR C hW p e]
 
-theorem exterior_rational_value_eq_spherical_factor (R : PrincipalMellin.ActualRecipe S η) (hR : RootAligned R)
-    {N : TraceHaarTransport R} (C : JointHaarFactorizedSources R N) (hW : ExteriorWhittakerEquivariance R C)
-    (p : ThetaBranch.ExteriorPrime R.A) (x : Fˣ) :
+include hR hW in
+theorem exterior_rational_value_eq_spherical_factor (x : Fˣ) :
     C.factorization.exteriorValue R p x =
       ThetaBranch.sphericalFactor R.A R.probe.allowed R.σ (Characters.psi R) p x := by
   obtain ⟨u, t, he, ht, hu, hr⟩ := exterior_rational_completion_decomposition R p x
   change exteriorWhittakerValue R C p (Units.map (algebraMap F (p.val.adicCompletion F)).toMonoidHom x) = _
   rw [he, exterior_whittaker_value_generator_pow_mul_unit R hR C hW p _ u t ht hu, hr]
   rfl
+
+end
 
 theorem exterior_coefficients
     (R : PrincipalMellin.ActualRecipe S η) (hR : RootAligned R) (N : TraceHaarTransport R)

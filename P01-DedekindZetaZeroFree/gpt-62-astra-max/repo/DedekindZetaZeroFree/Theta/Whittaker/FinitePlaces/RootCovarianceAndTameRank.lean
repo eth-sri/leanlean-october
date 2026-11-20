@@ -14,8 +14,8 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 
 def finiteTrace (q : KPFinitePlace F) : Multiplicative (q.adicCompletion F) →ₜ* ℂˣ where
@@ -44,7 +44,7 @@ theorem finiteTrace_ne_one (q : KPFinitePlace F) :
     (χ (Multiplicative.ofAdd z) : ℂ)) h
   apply Subtype.ext
   change (localFiniteCharacter F q z : ℂ) = 1 at he
-  simpa only [one_mul, Circle.coe_one] using he
+  simpa using he
 
 namespace TensorActions
 
@@ -71,10 +71,6 @@ theorem finite_period_translate (D : TensorActions R N)
       (PiTensorProduct.tprod ℂ x)))
       (g * KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
         (KPAdelicCoverRestrictedProduct.localInjection F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) a)) := by
-  have _hi := D.toTensorHC.integrable
-    (RestrictedTensorSimple.stageInclusion _ D.references D.bad s (PiTensorProduct.tprod ℂ x))
-    (g * KPAdelicCoverRestrictedProduct.scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
-      (KPAdelicCoverRestrictedProduct.localInjection F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) a))
   unfold MomentSources.fourier
   apply integral_congr_ae
   filter_upwards [] with t
@@ -146,12 +142,11 @@ theorem sliceLine_le_finiteWhittaker (D : TensorActions R N) (q : KPFinitePlace 
 theorem finite_slice_rank_le_one_of_tame (D : TensorActions R N) (q : KPFinitePlace F)
     (ht : (3 : (ValuativeRel.valuation (q.adicCompletion F)).integer) ∉
       IsLocalRing.maximalIdeal (ValuativeRel.valuation (q.adicCompletion F)).integer) :
-    Module.rank ℂ (D.toTensorHC.sliceLine (Sum.inr q)) ≤ 1 := by
-  exact (Submodule.rank_mono (D.sliceLine_le_finiteWhittaker q)).trans
+    Module.rank ℂ (D.toTensorHC.sliceLine (Sum.inr q)) ≤ 1 := (Submodule.rank_mono (D.sliceLine_le_finiteWhittaker q)).trans
     (ExteriorWhittakerValues.ActualWhittaker.rank_le_one F R.A.zeta12 R.A.primitive_zeta12
       q (D.finiteData q).inducing (D.finiteData q).inducing.polarization
       (D.finiteData q).haar (D.finiteData q).haar_integer ht
-      (finiteTrace (F := F) q) (finiteTrace_ne_one q))
+      (finiteTrace q) (finiteTrace_ne_one q))
 
 end TensorActions
 end DedekindZetaZeroFree.FourierContinuation

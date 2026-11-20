@@ -1,5 +1,4 @@
 module
-
 public import ClassFieldTheory.Theorems.FrobeniusAndHilbertClassFields.ArithmeticFrobeniusEqOneIffSplitsCompletely
 public import ClassFieldTheory.Theorems.FrobeniusAndHilbertClassFields.ArithmeticFrobeniusAlgEquivTransport
 public import ClassFieldTheory.Theorems.FrobeniusAndHilbertClassFields.ArithmeticFrobeniusIndependentOfPrime
@@ -26,48 +25,3 @@ public import ClassFieldTheory.Theorems.FrobeniusAndHilbertClassFields.SmallHilb
 public import ClassFieldTheory.Theorems.FrobeniusAndHilbertClassFields.SmallHilbertClassFieldPrincipalization
 public import ClassFieldTheory.Theorems.FrobeniusAndHilbertClassFields.SmallHilbertClassFieldUniqueUpToEquiv
 public import ClassFieldTheory.Theorems.FrobeniusAndHilbertClassFields.SmallHilbertClassFieldUnique
-
-@[expose] public section
-
-/-
-Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
--/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
-/-!
-# Frobenius and Hilbert class fields
-
-This `All` module collects the Mathlib-native arithmetic Frobenius statements
-and the intrinsic existence, Artin isomorphism, degree, splitting, and
-principalization results for small and big Hilbert class fields.
--/

@@ -45,7 +45,6 @@ private theorem rationalPInverted_integral_at_other (p l : Nat.Primes)
     apply Subring.closure_le.mpr
     intro x hx
     rcases Set.mem_singleton_iff.mp hx with rfl
-    change ‖(((p.1 : ℚ)⁻¹ : ℚ) : ℚ_[l])‖ ≤ 1
     have hnd : ¬ l.1 ∣ p.1 := by
       intro hd
       apply h
@@ -65,8 +64,8 @@ private theorem rational_character_prod_exp (q : ℚ) (s : Finset Nat.Primes) :
   | empty => simp
   | @insert p s hp ih =>
     rw [Finset.prod_insert hp, Finset.sum_insert hp, ih]
-    change Circle.exp (-(2 * Real.pi * (padicFractionalPart p (q : ℚ_[p]) : ℝ))) *
-      Circle.exp (-(2 * Real.pi * ((∑ p ∈ s, padicFractionalPart p (q : ℚ_[p]) : ℚ) : ℝ))) = _
+    change Circle.exp (-(2 * Real.pi * (padicFractionalPart p q : ℝ))) *
+      Circle.exp (-(2 * Real.pi * ((∑ p ∈ s, padicFractionalPart p q : ℚ) : ℝ))) = _
     rw [← Circle.exp_add]
     congr 1
     push_cast
@@ -85,7 +84,7 @@ private theorem rational_fractional_parts_difference_integral (q : ℚ) :
   have hi : ((q - ∑ a ∈ s, padicFractionalPart a (q : ℚ_[a]) : ℚ) : ℚ_[p]) ∈
       PadicInt.subring p := by
     by_cases hp : p ∈ s
-    · have hs : ((∑ a ∈ s.erase p, padicFractionalPart a (q : ℚ_[a]) : ℚ) : ℚ_[p]) ∈
+    · have hs : ((∑ a ∈ s.erase p, padicFractionalPart a q : ℚ) : ℚ_[p]) ∈
           PadicInt.subring p := by
         push_cast
         apply (PadicInt.subring p).sum_mem
@@ -93,8 +92,8 @@ private theorem rational_fractional_parts_difference_integral (q : ℚ) :
         exact rationalPInverted_integral_at_other a p
           (Ne.symm (Finset.mem_erase.mp ha).1) _
           (padicFractionalPart_spec a _).1
-      obtain ⟨z, hz⟩ := (padicFractionalPart_spec p (q : ℚ_[p])).2.2.2
-      have hz' : (q : ℚ_[p]) - (padicFractionalPart p (q : ℚ_[p]) : ℚ_[p]) ∈
+      obtain ⟨z, hz⟩ := (padicFractionalPart_spec p q).2.2.2
+      have hz' : q - (padicFractionalPart p q : ℚ_[p]) ∈
           PadicInt.subring p := hz ▸ z.2
       rw [← Finset.add_sum_erase s _ hp]
       push_cast
@@ -106,7 +105,7 @@ private theorem rational_fractional_parts_difference_integral (q : ℚ) :
         intro hd
         apply hp
         exact Finset.mem_subtype.mpr (Nat.mem_primeFactors.mpr ⟨hl, hd, q.den_ne_zero⟩)
-      have hs : ((∑ a ∈ s, padicFractionalPart a (q : ℚ_[a]) : ℚ) : ℚ_[p]) ∈
+      have hs : ((∑ a ∈ s, padicFractionalPart a q : ℚ) : ℚ_[p]) ∈
           PadicInt.subring p := by
         push_cast
         apply (PadicInt.subring p).sum_mem
@@ -115,9 +114,9 @@ private theorem rational_fractional_parts_difference_integral (q : ℚ) :
         · intro h
           exact hp (h.symm ▸ ha)
         · exact (padicFractionalPart_spec a _).1
-      simpa only [Rat.cast_sub] using (PadicInt.subring p).sub_mem hq hs
+      simpa using (PadicInt.subring p).sub_mem hq hs
   have hu := PadicInt.isUnit_den
-    (q - ∑ a ∈ s, padicFractionalPart a (q : ℚ_[a])) hi
+    (q - ∑ a ∈ s, padicFractionalPart a q) hi
   rw [PadicInt.isUnit_iff, PadicInt.norm_natCast_eq_one_iff,
     hl.coprime_iff_not_dvd] at hu
   exact hu
@@ -127,26 +126,21 @@ theorem rational_diagonal_additive_product (q : ℚ) :
       (∏ᶠ p : Nat.Primes, rationalPadicCharacter p (q : ℚ_[p])) = 1 := by
   classical
   rw [rationalPadicCharacter_finprod_eq_denominator_prod]
-  change Circle.exp (2 * Real.pi * (q : ℝ)) *
-    (q.den.primeFactors.subtype Nat.Prime : Finset Nat.Primes).prod
-      (fun p : Nat.Primes => rationalPadicCharacter p (q : ℚ_[p])) = 1
   erw [rational_character_prod_exp q (q.den.primeFactors.subtype Nat.Prime)]
   rw [← Circle.exp_add]
-  let r : ℚ := q - (q.den.primeFactors.subtype Nat.Prime : Finset Nat.Primes).sum
-    (fun p : Nat.Primes => padicFractionalPart p (q : ℚ_[p]))
-  have hr : (r.num : ℚ) = r :=
-    Rat.coe_int_num_of_den_eq_one (rational_fractional_parts_difference_integral q)
+  let r := q - (q.den.primeFactors.subtype Nat.Prime : Finset Nat.Primes).sum
+    (fun p : Nat.Primes => padicFractionalPart p q)
   have he : 2 * Real.pi * (q : ℝ) +
       -(2 * Real.pi * (((q.den.primeFactors.subtype Nat.Prime : Finset Nat.Primes).sum
-        (fun p : Nat.Primes => padicFractionalPart p (q : ℚ_[p])) : ℚ) : ℝ)) =
+        (fun p : Nat.Primes => padicFractionalPart p q) : ℚ) : ℝ)) =
       (r.num : ℝ) * (2 * Real.pi) := by
-    have hrc : (r.num : ℝ) = (r : ℝ) := by exact_mod_cast hr
+    have hrc : (r.num : ℝ) = (r : ℝ) := by exact_mod_cast (Rat.coe_int_num_of_den_eq_one (rational_fractional_parts_difference_integral q))
     rw [hrc]
     dsimp [r]
     push_cast
     ring
   erw [he]
-  exact Circle.exp_int_mul_two_pi r.num
+  apply Circle.exp_int_mul_two_pi
 
 end DedekindZetaZeroFree
 

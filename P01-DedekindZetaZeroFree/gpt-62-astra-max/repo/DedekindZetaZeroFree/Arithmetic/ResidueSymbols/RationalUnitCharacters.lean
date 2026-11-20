@@ -12,19 +12,15 @@ set_option backward.isDefEq.respectTransparency true
 namespace DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 open MomentSources NumberField IsDedekindDomain ThetaExpansion ValuativeRel
 open scoped NumberField Classical
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming reduction_spec → reduction_spec
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming reduction_mul → reduction_mul
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming reduction_pow → reduction_pow
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
  theorem val_eq_one (p : KPFinitePlace F) (x : Fˣ) (hx : ThetaBranch.order p x = 0) :
     Valued.v (algebraMap F (p.adicCompletion F) x.val) = 1 := by
   change Valued.v ((x.val : F) : p.adicCompletion F) = 1
   rw [HeightOneSpectrum.adicCompletion.valued_coe]
-  have hn := (Valuation.ne_zero_iff (p.valuation F)).mpr x.ne_zero
-  rw [← WithZero.exp_log hn]
+  rw [← WithZero.exp_log ((Valuation.ne_zero_iff (p.valuation F)).mpr x.ne_zero)]
   have hh : WithZero.log (p.valuation F x.val) = 0 := by
     unfold ThetaBranch.order at hx
     omega
@@ -37,7 +33,7 @@ variable (R : PrincipalMellin.ActualRecipe S η)
   apply ExteriorWhittakerValues.UnitCovarianceCompletion.exists_integerUnit_of_valuation_one
   letI : (Valued.v : Valuation (p.val.adicCompletion F) (WithZero (Multiplicative ℤ))).Compatible :=
     Valuation.Compatible.ofValuation _
-  apply ((ValuativeRel.isEquiv (Valued.v : Valuation (p.val.adicCompletion F) (WithZero (Multiplicative ℤ)))
+  apply ((ValuativeRel.isEquiv Valued.v
     (valuation (p.val.adicCompletion F))).eq_one_iff_eq_one).mp
   exact val_eq_one p.val x hx
 
@@ -70,7 +66,7 @@ variable (R : PrincipalMellin.ActualRecipe S η)
   rw [← hr]
   apply ExteriorWhittakerValues.UnitCovarianceCompletion.unit_phase_of_norm_sub_lt_one R hR p u t
   have he := congrArg Units.val hu
-  change (u : p.val.adicCompletion F) = algebraMap F (p.val.adicCompletion F) x.val at he
+  change u = algebraMap F (p.val.adicCompletion F) x.val at he
   rw [he]
   exact ht
 

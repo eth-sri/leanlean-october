@@ -111,7 +111,7 @@ private lemma splitMap_bijective (π : Kˣ) (hπ : exponent K π = Multiplicativ
     simp
 private lemma exponent_cube_index :
     (powMonoidHom (α := Multiplicative ℤ) 3).range.index = 3 := by
-  have hr : (powMonoidHom (α := Multiplicative ℤ) 3).range =
+  have hr : (powMonoidHom 3).range =
       (AddSubgroup.zmultiples (3 : ℤ)).toSubgroup := by
     ext x
     change (∃ y : Multiplicative ℤ, y ^ 3 = x) ↔
@@ -119,7 +119,6 @@ private lemma exponent_cube_index :
     rw [Int.mem_zmultiples_iff]
     constructor
     · rintro ⟨y, rfl⟩
-      change (3 : ℤ) ∣ 3 * y.toAdd
       exact dvd_mul_right _ _
     · rintro ⟨n, hn⟩
       refine ⟨Multiplicative.ofAdd n, ?_⟩
@@ -134,9 +133,9 @@ theorem field_cube_index
     (powMonoidHom (α := Kˣ) 3).range.index = 3 * (cubeUnits K).index := by
   obtain ⟨π, hπ⟩ := exists_exponent_one K
   let f := splitMap K π
-  have hf : Function.Bijective f := splitMap_bijective K π hπ
-  have hr : (powMonoidHom (α := Kˣ) 3).range =
-      ((powMonoidHom (α := Multiplicative ℤ × (Integers K)ˣ) 3).range).map f := by
+  have hf := splitMap_bijective K π hπ
+  have hr : (powMonoidHom 3).range =
+      ((powMonoidHom 3).range).map f := by
     ext x
     constructor
     · rintro ⟨y, rfl⟩

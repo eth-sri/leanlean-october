@@ -10,16 +10,13 @@ namespace DedekindZetaZeroFree.LargeSieve.RootNumber
 open scoped NumberField Classical
 open IsDedekindDomain
 
-theorem primitive_conductor_lower
-    (F : Type) [Field F] [NumberField F]
-    (hF : NumberField.IsTotallyComplex F)
-    (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
-    (η : DedekindZetaZeroFree.RayClassCharacter F f)
-    (hq : ∀ I : Ideal (𝓞 F), η I ^ 3 = η I)
-    (hn : ¬η.IsPrincipal) (hp : η.IsPrimitive)
-    (d : QuadraticRayExtensionData η)
-    (c : ClassFieldTheory.RayClassModulus F)
-    (hc : ClassFieldTheory.IsAbelianConductor F d.extension c) :
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) (f : Ideal (𝓞 F))
+    (hf : f ≠ ⊥) (η : DedekindZetaZeroFree.RayClassCharacter F f) (hq : ∀ I : Ideal (𝓞 F), η I ^ 3 = η I)
+    (hn : ¬η.IsPrincipal) (hp : η.IsPrimitive) (d : QuadraticRayExtensionData η)
+    (c : ClassFieldTheory.RayClassModulus F) (hc : ClassFieldTheory.IsAbelianConductor F d.extension c)
+
+include hF hf hq hn hp hc in
+theorem primitive_conductor_lower :
     f ∣ finiteModulusIdeal c := by
   obtain ⟨θ, hθ⟩ :=
     conductor_character F hF f hf η hq hn d c hc
@@ -28,23 +25,13 @@ theorem primitive_conductor_lower
     η θ hp ?_
   intro I hI hcop
   exact conductor_frobenius_agreement F hF f hf η hq hn d c hc θ hθ I hI
-    (by simpa only [Ideal.mul_top] using hcop)
+    (by simpa using hcop)
 
-theorem primitive_conductor_support_lower
-    (F : Type) [Field F] [NumberField F]
-    (hF : NumberField.IsTotallyComplex F)
-    (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
-    (η : DedekindZetaZeroFree.RayClassCharacter F f)
-    (hq : ∀ I : Ideal (𝓞 F), η I ^ 3 = η I)
-    (hn : ¬η.IsPrincipal) (hp : η.IsPrimitive)
-    (d : QuadraticRayExtensionData η)
-    (c : ClassFieldTheory.RayClassModulus F)
-    (hc : ClassFieldTheory.IsAbelianConductor F d.extension c) :
+include hF hf hq hn hp hc in
+theorem primitive_conductor_support_lower :
     ∀ p : HeightOneSpectrum (𝓞 F),
       p.asIdeal ⊔ f ≠ ⊤ → p ∈ c.finitePart.support := by
-  have hdvd : f ∣ finiteModulusIdeal c :=
-    primitive_conductor_lower F hF f hf η hq hn hp d c hc
-  have hle : finiteModulusIdeal c ≤ f := Ideal.dvd_iff_le.mp hdvd
+  have hle := Ideal.dvd_iff_le.mp (primitive_conductor_lower F hF f hf η hq hn hp d c hc)
   intro p hp
   rw [mem_finitePart_support_iff]
   intro hcontra

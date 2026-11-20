@@ -14,10 +14,10 @@ namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
-variable (D : SourceFactorization R Q T)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {Q : AdmissibleFlatSources R} {T : Realization R Q}
+    (D : SourceFactorization R Q T)
 
 local notation "V" => actualLocal R D.finiteData
 local notation "Core" => RestrictedTensorSimple.Core V D.references D.bad
@@ -25,8 +25,7 @@ local notation "Core" => RestrictedTensorSimple.Core V D.references D.bad
 theorem tensor_period_integrable (x : Core) (g : Group R) :
     Integrable (fun q => D.coreMap x
       (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g) *
-        star (adelicTraceQuotientCharacter F q : ℂ)) Q.dq := by
-  exact FourierContinuation.sameResidue_period_integrable T (D.core_same_residue x) g
+        star (adelicTraceQuotientCharacter F q : ℂ)) Q.dq := FourierContinuation.sameResidue_period_integrable T (D.core_same_residue x) g
 
 def tensorPeriod (g : Group R) : Core →ₗ[ℂ] ℂ where
   toFun x := fourier R Q.dq (D.coreMap x) g
@@ -62,9 +61,6 @@ theorem tensor_finite_translate (s : RestrictedTensorSimple.Level D.bad)
           (x ⟨Sum.inr q, hq⟩)))))) g =
     fourier R Q.dq (D.coreMap (RestrictedTensorSimple.stageInclusion V D.references D.bad s
       (PiTensorProduct.tprod ℂ x))) (g * finitePeriodLift R q a) := by
-  have hi := tensor_period_integrable R D
-    (RestrictedTensorSimple.stageInclusion V D.references D.bad s (PiTensorProduct.tprod ℂ x))
-    (g * finitePeriodLift R q a)
   unfold MomentSources.fourier
   apply integral_congr_ae
   filter_upwards [] with t
@@ -97,7 +93,7 @@ theorem exteriorTrace_ne_one (q : KPFinitePlace F) :
     (χ (Multiplicative.ofAdd z) : ℂ)) h
   apply Subtype.ext
   change (localFiniteCharacter F q z : ℂ) = 1 at he
-  simpa only [one_mul, Circle.coe_one] using he
+  simpa using he
 
 theorem finiteSlotPeriod_root (s : RestrictedTensorSimple.Level D.bad)
     (x : ∀ p : s.val, V p) (q : KPFinitePlace F) (hq : Sum.inr q ∈ s.val)
@@ -129,12 +125,6 @@ theorem finiteSlotPeriod_root (s : RestrictedTensorSimple.Level D.bad)
     simp [y]
   simp only [finiteSlotPeriod, LinearMap.comp_apply, tensorPeriod, LinearMap.coe_mk,
     AddHom.coe_mk, MultilinearMap.toLinearMap_apply]
-  change MomentSources.fourier R Q.dq (D.coreMap (RestrictedTensorSimple.stageInclusion V
-    D.references D.bad s (PiTensorProduct.tprod ℂ (Function.update x i
-      (KPRankOneShellRepair.actualCanonicalImageRepresentation F R.A.zeta12 R.A.primitive_zeta12
-        q (D.finiteData q).inducing (D.finiteData q).inducing.polarization
-        (D.finiteData q).haar (D.finiteData q).haar_integer
-        (KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) t) b))))) g = _
   rw [← hu]
   unfold KPPGLLocalCover.N at he ⊢
   dsimp only [i] at hu ⊢
@@ -167,11 +157,10 @@ theorem finiteSlotPeriod_exterior (s : RestrictedTensorSimple.Level D.bad)
   let ρ := KPRankOneShellRepair.actualCanonicalImageRepresentation F R.A.zeta12 R.A.primitive_zeta12
     q M.inducing M.inducing.polarization M.haar M.haar_integer
   let W := RootEquivariantMaps ρ (KPLocalJacquetImage.root M.inducing.borel)
-    (exteriorTrace (F := F) q).toMonoidHom ℂ
+    (exteriorTrace q).toMonoidHom ℂ
   have hroot (t : Multiplicative (q.adicCompletion F)) :
       KPLocalJacquetImage.root M.inducing.borel t =
-        KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) t.toAdd := by
-    exact (M.inducing.openCell M.inducing.polarization).upper_eq t.toAdd
+        KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) t.toAdd := (M.inducing.openCell M.inducing.polarization).upper_eq t.toAdd
   have he : D.ell (Sum.inr q) ∈ W := by
     intro t v
     rw [hroot]
@@ -184,9 +173,9 @@ theorem finiteSlotPeriod_exterior (s : RestrictedTensorSimple.Level D.bad)
     intro t v
     rw [hroot]
     exact finiteSlotPeriod_root R D s x q hq g hg t.toAdd v
-  have hr : Module.rank ℂ W ≤ 1 := ExteriorWhittakerValues.ActualWhittaker.rank_le_one F R.A.zeta12
+  have hr := ExteriorWhittakerValues.ActualWhittaker.rank_le_one F R.A.zeta12
     R.A.primitive_zeta12 q M.inducing M.inducing.polarization M.haar M.haar_integer htame
-    (exteriorTrace (F := F) q) (exteriorTrace_ne_one q)
+    (exteriorTrace q) (exteriorTrace_ne_one q)
   letI : Module.Finite ℂ W := Module.rank_lt_aleph0_iff.mp (hr.trans_lt Cardinal.one_lt_aleph0)
   let e : W := ⟨D.ell (Sum.inr q), he⟩
   have hene : e ≠ 0 := by
@@ -196,9 +185,9 @@ theorem finiteSlotPeriod_exterior (s : RestrictedTensorSimple.Level D.bad)
     rw [href] at h
     exact one_ne_zero h
   letI : Nontrivial W := ⟨⟨e, 0, hene⟩⟩
-  have hdim : Module.finrank ℂ W = 1 := le_antisymm
-    (Module.finrank_le_of_rank_le (by simpa using hr : Module.rank ℂ W ≤ (1 : ℕ)))
-    (Module.finrank_pos (R := ℂ) (M := W))
+  have hdim := le_antisymm
+    (Module.finrank_le_of_rank_le (by exact hr : Module.rank ℂ W ≤ (1 : ℕ)))
+    (Module.finrank_pos)
   obtain ⟨c, hc⟩ := exists_smul_eq_of_finrank_eq_one hdim hene
     (⟨finiteSlotPeriod R D s x q hq g, hl⟩ : W)
   have hh : c • D.ell (Sum.inr q) = finiteSlotPeriod R D s x q hq g := congrArg Subtype.val hc

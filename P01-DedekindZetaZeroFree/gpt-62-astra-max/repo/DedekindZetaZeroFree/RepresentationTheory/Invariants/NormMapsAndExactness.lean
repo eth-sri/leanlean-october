@@ -30,27 +30,9 @@ variable {k G V : Type*} [CommRing k] [Group G] [AddCommGroup V] [Module k V]
 
 variable (ρ : Representation k G V) [Fintype G] [Invertible (Fintype.card G : k)]
 
-theorem averageMap_eq_invOf_card_smul_norm :
-    ρ.averageMap = ⅟(Fintype.card G : k) • ρ.norm := by
-  simp only [averageMap, GroupAlgebra.average, map_smul, map_sum, MonoidAlgebra.of_apply,
-    asAlgebraHom_single_one, norm]
-
-@[simp]
-theorem range_norm_eq_invariants : LinearMap.range ρ.norm = ρ.invariants := by
-  rw [← ρ.isProj_averageMap.range, averageMap_eq_invOf_card_smul_norm]
-  refine le_antisymm ?_ (LinearMap.range_smul_le_range _ _)
-  convert LinearMap.range_smul_le_range (⅟(Fintype.card G : k) • ρ.norm) (Fintype.card G : k)
-  rw [smul_smul, mul_invOf_self, one_smul]
-
 end Representation
 
 namespace Representation
-
-@[simp]
-theorem range_norm_trivial (k H : Type*) [CommSemiring k] [Group H] [Fintype H] :
-    LinearMap.range (Representation.trivial k H k).norm = Ideal.span {(Nat.card H : k)} := by
-  ext x
-  simp [Representation.norm, Ideal.mem_span_singleton', mul_comm]
 
 end Representation
 
@@ -69,8 +51,7 @@ private theorem norm_leftRegular_single_coeff_one {x : MonoidAlgebra k G}
     (leftRegular k G).norm (MonoidAlgebra.single 1 (x.coeff 1)) = x := by
   ext g
   have hcoeff : x.coeff g = x.coeff 1 := by
-    have h := congrArg (fun z : MonoidAlgebra k G => z.coeff g) (hx g)
-    simpa using h.symm
+    simpa using (congrArg (fun z : MonoidAlgebra k G => z.coeff g) (hx g)).symm
   simp [norm, hcoeff]
 
 private theorem range_norm_free_eq_invariants (ι : Type*) :
@@ -78,7 +59,7 @@ private theorem range_norm_free_eq_invariants (ι : Type*) :
       (ofModule' (k := k) (G := G) (ι →₀ MonoidAlgebra k G)).invariants := by
   apply le_antisymm
   · rintro _ ⟨x, rfl⟩
-    exact fun g => self_norm_apply _ g x
+    simp
   · rintro x hx
     have hxi (i : ι) : x i ∈ (leftRegular k G).invariants := fun g => by
       have h := DFunLike.congr_fun (hx g) i
@@ -87,9 +68,7 @@ private theorem range_norm_free_eq_invariants (ι : Type*) :
     refine ⟨Finsupp.mapRange (fun a => MonoidAlgebra.single 1 (a.coeff 1)) (by simp) x, ?_⟩
     ext i : 1
     rw [← norm_leftRegular_single_coeff_one (hxi i)]
-    simp only [norm, LinearMap.sum_apply, Finsupp.finsetSum_apply,
-      DedekindZetaZeroFree.TauCeti.Representation.ofModule'_apply, Finsupp.smul_apply, Finsupp.mapRange_apply,
-      smul_eq_mul, ← asAlgebraHom_ofMulAction_smul_eq_mul, asAlgebraHom_single_one]
+    simp [norm]
 
 @[simp]
 theorem range_norm_eq_invariants_of_projective (ρ : Representation k G V)
@@ -97,7 +76,7 @@ theorem range_norm_eq_invariants_of_projective (ρ : Representation k G V)
     LinearMap.range ρ.norm = ρ.invariants := by
   apply le_antisymm
   · rintro _ ⟨x, rfl⟩
-    exact fun g => self_norm_apply _ g x
+    simp
   · rintro x hx
     obtain ⟨s, hs⟩ := Module.projective_def.mp ‹Module.Projective k[G] ρ.asModule›
     let τ := ofModule' (k := k) (G := G) (ρ.asModule →₀ MonoidAlgebra k G)
@@ -139,16 +118,19 @@ namespace Representation.IsIrreducible
 
 variable {k G V : Type*} [Field k] [Group G] [AddCommGroup V] [Module k V]
 
-theorem invariants_eq_bot {ρ : Representation k G V} (h : ρ.IsIrreducible)
+variable {ρ : Representation k G V} (h : ρ.IsIrreducible)
+
+include h in
+theorem invariants_eq_bot
     (hρ : ρ ≠ trivial k G V) : ρ.invariants = ⊥ := by
   refine (Submodule.eq_bot_iff _).2 fun v hv => by_contra fun hv0 => hρ ?_
-  let f : IntertwiningMap (trivial k G k) ρ :=
+  let f :=
     (LinearMap.toSpanSingleton k V v).intertwiningMap_of_isIntertwiningMap _ _ fun g c => by
       rw [trivial_apply, LinearMap.toSpanSingleton_apply, map_smul]
       exact congrArg (c • ·) (hv g).symm
   have hf_one : f.toLinearMap 1 = v := by
     simp [f]
-  have hsurj : Function.Surjective f.toLinearMap :=
+  have hsurj :=
     (IsIrreducible.surjective_or_eq_zero f).resolve_right fun hf =>
       hv0 <| calc
         v = f.toLinearMap 1 := hf_one.symm
@@ -157,30 +139,31 @@ theorem invariants_eq_bot {ρ : Representation k G V} (h : ρ.IsIrreducible)
         _ = 0 := rfl
   ext g x
   obtain ⟨c, rfl⟩ := hsurj x
-  simpa using (IntertwiningMap.isIntertwining (trivial k G k) ρ f g c).symm
+  exact (IntertwiningMap.isIntertwining (trivial k G k) ρ f g c).symm
 
-theorem invariants_eq_bot_of_finrank_ne_one {ρ : Representation k G V} (h : ρ.IsIrreducible)
+include h in
+theorem invariants_eq_bot_of_finrank_ne_one
     (hV : Module.finrank k V ≠ 1) : ρ.invariants = ⊥ := by
   refine h.invariants_eq_bot fun hρ => hV ?_
   subst ρ
   let _ := h.nontrivial
   obtain ⟨v, hv⟩ := exists_ne (0 : V)
-  let f : IntertwiningMap (trivial k G k) (trivial k G V) :=
+  let IntertwiningMap₀ := IntertwiningMap (trivial k G k) (trivial k G V)
+  let f : IntertwiningMap₀ :=
     (LinearMap.toSpanSingleton k V v).intertwiningMap_of_isIntertwiningMap _ _ fun g c => by
-      simp only [trivial_apply, LinearMap.toSpanSingleton_apply, map_smul]
+      simp
   have hsurj : Function.Surjective f.toLinearMap :=
     (IsIrreducible.surjective_or_eq_zero f).resolve_right fun hf =>
       hv <| calc
         v = f.toLinearMap 1 := by simp [f]
-        _ = (0 : IntertwiningMap (trivial k G k) (trivial k G V)).toLinearMap 1 :=
-          congrArg (fun φ : IntertwiningMap (trivial k G k) (trivial k G V) =>
+        _ = (0 : IntertwiningMap₀).toLinearMap 1 :=
+          congrArg (fun φ : IntertwiningMap₀ =>
             φ.toLinearMap 1) hf
         _ = 0 := rfl
   apply finrank_eq_one v hv
   intro w
   obtain ⟨c, hc⟩ := hsurj w
-  exact ⟨c, by simpa only [f, LinearMap.intertwiningMap_of_isIntertwiningMap,
-    LinearMap.toSpanSingleton_apply] using hc⟩
+  exact ⟨c, by assumption⟩
 
 end Representation.IsIrreducible
 
@@ -189,5 +172,4 @@ namespace DedekindZetaZeroFree.TauCeti
 variable {k G : Type*} [CommRing k] [Group G] (S : Subgroup G) [S.Normal]
 
 instance : (Rep.quotientToInvariantsFunctor k S).Additive where
-
 end DedekindZetaZeroFree.TauCeti

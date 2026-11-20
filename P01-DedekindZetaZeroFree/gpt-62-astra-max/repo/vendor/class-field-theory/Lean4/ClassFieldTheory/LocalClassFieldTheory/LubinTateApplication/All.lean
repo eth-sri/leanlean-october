@@ -1,5 +1,4 @@
 module
-
 public import ClassFieldTheory.LocalClassFieldTheory.LubinTateApplication.EqualCharacteristicRealFilteredComparison
 public import ClassFieldTheory.LocalClassFieldTheory.LubinTateApplication.EqualCharacteristicTransportedArtinComparison
 public import ClassFieldTheory.LocalClassFieldTheory.LubinTateApplication.EqualCharacteristicTransportedFixedFieldComparison
@@ -20,45 +19,3 @@ public import ClassFieldTheory.LocalClassFieldTheory.LubinTateApplication.Standa
 public import ClassFieldTheory.LocalClassFieldTheory.LubinTateApplication.StandardNormSubgroupExact
 public import ClassFieldTheory.LocalClassFieldTheory.LubinTateApplication.StandardSubgroupIndex
 public import ClassFieldTheory.LocalClassFieldTheory.LubinTateApplication.TransportedNormSubgroupExact
-
-@[expose] public section
-
-/-
-Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
--/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
-/-!
-# Lubin--Tate application to local class field theory
-
-This is the dependency boundary between reusable Lubin--Tate theory and its
-local-class-field-theory application.  Finite local reciprocity identifies
-the exact norm subgroup both for the canonical characteristic-independent
-standard levels and for the transported Laurent-series model.  The lower
-`LubinTate` public root and all modules below it remain independent of
-`LocalClassFieldTheory`.
--/

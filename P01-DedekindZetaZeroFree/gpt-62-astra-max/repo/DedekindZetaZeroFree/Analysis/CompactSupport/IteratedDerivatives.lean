@@ -16,7 +16,7 @@ theorem contDiff_iteratedDeriv (h : ℝ → ℂ) (hh : ContDiff ℝ ∞ h) (n : 
 theorem hasCompactSupport_iteratedDeriv (h : ℝ → ℂ) (hh : HasCompactSupport h)
     (n : ℕ) : HasCompactSupport (iteratedDeriv n h) := by
   induction n with
-  | zero => simpa using hh
+  | zero => exact hh
   | succ n ih =>
       rw [iteratedDeriv_succ]
       exact ih.deriv

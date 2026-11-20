@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy
 open KPContLocalNorm KPContRightJets KPClearedResolvent
 open Filter Set Topology
 open scoped NumberField Classical
-open _root_.DedekindZetaZeroFree.KPContRightJets renaming rightWord_smooth → rightWord_smooth
+open _root_.DedekindZetaZeroFree.KPContRightJets (rightWord_smooth)
 
 private theorem rightWord_append {m b : ℕ}
     (fields : Fin b → Space m → Space m) (v w : List (Fin b)) (f : Space m → ℂ) :
@@ -91,10 +91,10 @@ open KPContSectorCoveredQuotientVocabulary
 
 section ActualChart
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
  theorem actualRightWord_compact_holomorphy
     (D : GroupChart F ζ hζ U R P H) (u : ℂ → ActualCover F ζ hζ → ℂ)
@@ -102,9 +102,8 @@ variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
       (fun s x => u s (D.groupLift x)) O) (w : List (Fin (groupDimension F))) :
     RightSmoothHolomorphicOn D.T D.fields
       (fun s x => actualRightWord F ζ hζ w (u s) (D.groupLift x)) O := by
-  have hw := rightSmoothHolomorphicOn_word D.T D.fields D.fields_smooth_actual
-    (fun s x => u s (D.groupLift x)) O hu w
-  apply rightSmoothHolomorphicOn_congr D.T D.fields _ _ O hw
+  apply rightSmoothHolomorphicOn_congr D.T D.fields _ _ O (rightSmoothHolomorphicOn_word D.T D.fields D.fields_smooth_actual
+    (fun s x => u s (D.groupLift x)) O hu w)
   intro s hs x hx
   exact (D.identification.right_iteration (u s) (hu.1 s hs) w x hx).symm
 

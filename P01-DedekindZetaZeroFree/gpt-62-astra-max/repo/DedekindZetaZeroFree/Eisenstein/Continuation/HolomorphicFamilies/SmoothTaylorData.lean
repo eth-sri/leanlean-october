@@ -17,10 +17,10 @@ open KPContActualSphericalRightFieldIdentification KPContSectorSmoothFramesSuppo
 open KPContSectorQuotientRelationsComparison KPContSectorLineL2Isometry
 open KPContActualCommonDiskRightHolomorphy KPContSectorScalarLineAlgebra
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 private lemma lifted_smooth (D : GroupChart F ζ hζ U R P H)
     (w : smoothSections F ζ hζ U R P H) :
@@ -34,6 +34,8 @@ private lemma lifted_smooth (D : GroupChart F ζ hζ U R P H)
   intro x hx
   simpa only [lift, he, KPContRightJets.scalarLift, Function.comp_apply] using D.global_scalar_pullback
     (scalarRepresentative F ζ hζ U R P H w.val) x hx
+
+alias SmoothTaylorData.lifted_smooth := lifted_smooth
 
 private lemma combination_smooth {m b : ℕ} (T : KPContLocalNorm.LocalBall m)
     (fields : Fin b → KPContLocalNorm.Space m → KPContLocalNorm.Space m)
@@ -49,6 +51,8 @@ private lemma combination_smooth {m b : ℕ} (T : KPContLocalNorm.LocalBall m)
   | nil => exact contDiffOn_const
   | cons t ts ih => exact (contDiffOn_const.mul (hw t.2)).add ih
 
+alias SmoothTaylorData.combination_smooth := combination_smooth
+
 private lemma combination_identification (D : GroupChart F ζ hζ U R P H)
     (terms : Combination F) (w : smoothSections F ζ hζ U R P H)
     (x : KPContLocalNorm.Space (groupDimension F)) (hx : x ∈ D.T.carrier) :
@@ -60,6 +64,8 @@ private lemma combination_identification (D : GroupChart F ζ hζ U R P H)
   apply List.map_congr_left
   intro t ht
   rw [D.identification.right_iteration _ (lifted_smooth D w) t.2 x hx]
+
+alias SmoothTaylorData.combination_identification := combination_identification
 
 private lemma right_holomorphic
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
@@ -88,7 +94,7 @@ private lemma right_holomorphic
   have hp := kp_cont_actual_common_disk_right_holomorphy F ζ hζ U R P H
     realization O hO W b s₀ ρ hρ (Set.Subset.trans Metric.ball_subset_closedBall hρO) hb C hC terms
   letI : CompactSpace C := isCompact_iff_compactSpace.mp hC
-  obtain ⟨f, a, hf, _, hfd, _, _⟩ := hp.2.2
+  obtain ⟨f, a, hf, _, hfd, _, _⟩ := hp.2
   let e : C(K, C) := ⟨fun x => ⟨D.groupLift x, ⟨x, x.property, rfl⟩⟩,
     ((D.groupLift_continuous.mono hKT).restrict).subtype_mk _⟩
 
@@ -138,7 +144,7 @@ theorem kp_cont_actual_cleared_smooth_promotion
       realization O hO W b c ρ hρ
       (Set.Subset.trans Metric.ball_subset_closedBall hdisk) hb
       (D.groupLift '' K) hC terms
-    obtain ⟨N, hN⟩ := hp.2.1 r' hr' hr'ρ ε hε
+    obtain ⟨N, hN⟩ := hp.1 r' hr' hr'ρ ε hε
     exact ⟨N, fun M hM s hs x hx => hN M hM s hs (D.groupLift x) ⟨x, hx, rfl⟩⟩
 
 end DedekindZetaZeroFree

@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -35,7 +31,7 @@ open ClassFormation CyclicCohomology KummerTheory
 
 -- Mathlib's `Rep ℤ G` currently fixes the acting group to universe zero.
 variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
-variable {D : DegreeData G} {A : Rep ℤ G}
+    {D : DegreeData G} {A : Rep ℤ G}
 
 namespace ValuationData
 
@@ -58,8 +54,7 @@ theorem maximalUnramifiedNormResidueSymbol_finiteRestriction
       (v.unramifiedReciprocityEquiv hAxiom
         K L.field L.below hUnramified).symm
         (finiteNormClass A K.field L.field L.below a) := by
-  let : Finite (K.field.toSubgroup ⧸
-      extensionSubgroup K.field L.field L.below) := L.finite
+  let := L.finite
   intro a
   exact (maximalUnramifiedNormResidueSymbol_finiteRestriction_of_generator v hAxiom
     K L hUnramified
@@ -88,42 +83,31 @@ theorem normResidueSymbol_finiteNormClass_eq_maximalUnramifiedRestriction
           (DegreeData.finiteUnramifiedRestriction D
             (K.toFiniteResidueAbstractField D) L hUnramified
             (maximalUnramifiedNormResidueSymbol v K a).toMul)) := by
-  let : Finite
-      (K.field.toSubgroup ⧸
-        extensionSubgroup K.field L.field L.below) := L.finite
+  let := L.finite
   let hAxiom :=
     v.classFieldAxiom_implies_unramifiedUnitCohomology hcf
   let q :=
     DegreeData.finiteUnramifiedRestriction D
       (K.toFiniteResidueAbstractField D) L hUnramified
       (maximalUnramifiedNormResidueSymbol v K a).toMul
-  have hrestriction :=
-    maximalUnramifiedNormResidueSymbol_finiteRestriction
-      v hAxiom K L hUnramified a
+  let unramifiedReciprocityEquiv₀ := v.unramifiedReciprocityEquiv hAxiom K L.field L.below hUnramified
   have hreciprocity :
-      v.unramifiedReciprocityEquiv hAxiom
-          K L.field L.below hUnramified
+      unramifiedReciprocityEquiv₀
           (Additive.ofMul q) =
         finiteNormClass A K.field L.field L.below a := by
     calc
       _ =
-          v.unramifiedReciprocityEquiv hAxiom
-            K L.field L.below hUnramified
-            ((v.unramifiedReciprocityEquiv hAxiom
-              K L.field L.below hUnramified).symm
+          unramifiedReciprocityEquiv₀
+            ((unramifiedReciprocityEquiv₀).symm
               (finiteNormClass A K.field L.field L.below a)) :=
         congrArg
-          (v.unramifiedReciprocityEquiv hAxiom
-            K L.field L.below hUnramified)
-          hrestriction
+          (unramifiedReciprocityEquiv₀)
+          (maximalUnramifiedNormResidueSymbol_finiteRestriction
+            v hAxiom K L hUnramified a)
       _ = _ :=
-        (v.unramifiedReciprocityEquiv hAxiom
-          K L.field L.below hUnramified).apply_symm_apply _
-  have hfinite : D.finiteReciprocityHom A v hAxiom K L.field L.below
-        (Additive.ofMul q) = finiteNormClass A K.field L.field L.below a :=
-    (v.unramifiedReciprocityEquiv_apply hAxiom K L.field L.below hUnramified
-      (Additive.ofMul q)).symm.trans hreciprocity
-  exact (congrArg (D.normResidueSymbol A v hcf K L) hfinite.symm).trans
+        (unramifiedReciprocityEquiv₀).apply_symm_apply _
+  exact (congrArg (D.normResidueSymbol A v hcf K L) ((v.unramifiedReciprocityEquiv_apply hAxiom K L.field L.below hUnramified
+    (Additive.ofMul q)).symm.trans hreciprocity).symm).trans
     (D.normResidueSymbol_finiteReciprocityHom A v hcf K L q)
 
 end ValuationData

@@ -10,21 +10,19 @@ open NumberField MeasureTheory Filter
 namespace DedekindZetaZeroFree.FourierContinuation
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η}
-variable {Q : AdmissibleFlatSources R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η}
+    {Q : AdmissibleFlatSources R}
 
 theorem cleared_eq_of_chamber_eq (T : Realization R Q) (v : R.A.UnitQuotient)
     (a b : Group R)
     (hab : ∀ s : ℂ, (1 / 3 : ℝ) < s.re → T.E v s a = T.E v s b)
     (s : ℂ) (hs : s ∈ Metric.ball (0 : ℂ) T.radius) :
     T.cleared v s a = T.cleared v s b := by
-  have hopen : IsOpen {z : ℂ | (1 : ℝ) / 3 < z.re} :=
-    isOpen_lt continuous_const Complex.continuous_re
   have h1 : (1 : ℂ) ∈ {z : ℂ | (1 : ℝ) / 3 < z.re} := by norm_num
   have htop : meromorphicOrderAt (fun z => T.E v z a - T.E v z b) 1 = ⊤ := by
     apply meromorphicOrderAt_eq_top_iff.mpr
-    filter_upwards [nhdsWithin_le_nhds (hopen.mem_nhds h1)] with z hz
+    filter_upwards [nhdsWithin_le_nhds ((isOpen_lt continuous_const Complex.continuous_re).mem_nhds h1)] with z hz
     exact sub_eq_zero.mpr (hab z hz)
   have hz : (0 : ℂ) ∈ Metric.ball (0 : ℂ) T.radius := Metric.mem_ball_self T.radius_pos
   have htop0 := ((T.meromorphic v a).sub (T.meromorphic v b)).meromorphicOrderAt_eq_top_of_isPreconnected
@@ -41,10 +39,9 @@ theorem cleared_eq_of_chamber_eq (T : Realization R Q) (v : R.A.UnitQuotient)
     rw [ha, hb, sub_eq_zero.mp he]
   have ha := T.analytic v a
   have hb := T.analytic v b
-  have he := ((ha 0 hz).continuousAt.eventuallyEq_nhds_iff_eventuallyEq_nhdsNE
-    (hb 0 hz).continuousAt).mp hcleared
   exact ha.eqOn_of_preconnected_of_eventuallyEq hb (convex_ball (0 : ℂ) T.radius).isPreconnected
-    hz he hs
+    hz (((ha 0 hz).continuousAt.eventuallyEq_nhds_iff_eventuallyEq_nhdsNE
+      (hb 0 hz).continuousAt).mp hcleared) hs
 
 theorem cleared_exterior_spherical (T : Realization R Q) (v : R.A.UnitQuotient)
     (p : KPFinitePlace F) (hp : p ∉ R.A.Sf)

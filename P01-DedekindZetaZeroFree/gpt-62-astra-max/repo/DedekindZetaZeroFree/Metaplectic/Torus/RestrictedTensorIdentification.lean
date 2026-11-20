@@ -13,47 +13,13 @@ namespace DedekindZetaZeroFree.KPGlobalTorusFiniteStagesIdentification
 noncomputable section
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-variable (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
+    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
+    (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
 
 open KPAdelicCoverRestrictedProduct
-private theorem raw_diagonal (g : KPGlobalTorusFunctionData.E F ζ hζ)
-    (x : RestrictedCover F ζ hζ)
-    (hx : scalarQuotient F ζ hζ (amalgamation F ζ hζ x) = g.val) :
-    ∀ v, (x v).g 1 0 = 0 ∧ (x v).g 0 1 = 0 := by
-  obtain ⟨A, hA, h10, h01⟩ := g.property
-  have he : QuotientGroup.mk' (scalarSubgroup F) (restrictedProjection F ζ hζ x) =
-      QuotientGroup.mk' (scalarSubgroup F) A := by
-    change pglProjection F ζ hζ (scalarQuotient F ζ hζ (amalgamation F ζ hζ x)) = _
-    rw [hx, hA]
-  obtain ⟨s, ⟨u, hu⟩, hs⟩ := (QuotientGroup.mk'_eq_mk' (scalarSubgroup F)).mp he
-  have hm : restrictedProjection F ζ hζ x = A * (Matrix.GeneralLinearGroup.scalar (Fin 2) u)⁻¹ := by
-    rw [← hu] at hs
-    exact eq_mul_inv_of_mul_eq hs
-  have hd : (restrictedProjection F ζ hζ x) 1 0 = 0 ∧
-      (restrictedProjection F ζ hζ x) 0 1 = 0 := by
-    rw [hm]
-    simp [Matrix.GeneralLinearGroup.coe_mul, ← map_inv,
-      Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, h10, h01]
-  intro v
-  have h := congrArg (adeleEval F v) hd.1
-  have h' := congrArg (adeleEval F v) hd.2
-  have hev := restrictedProjection_eval F ζ hζ x v
-  have hh := congrArg (fun M : KPLocalCover.LocalGL2 F v => M 1 0) hev
-  have hh' := congrArg (fun M : KPLocalCover.LocalGL2 F v => M 0 1) hev
-  exact ⟨hh.symm.trans (by simpa [matrixEval] using h),
-    hh'.symm.trans (by simpa [matrixEval] using h')⟩
+private alias raw_diagonal := DedekindZetaZeroFree.KPGlobalTorusTensorFibers.FiniteTensorFunctionalsAndSmoothLevels.raw_diagonal
 
-private theorem raw_image_torus (x : RestrictedCover F ζ hζ)
-    (hd : ∀ v, (x v).g 1 0 = 0 ∧ (x v).g 0 1 = 0) :
-    scalarQuotient F ζ hζ (amalgamation F ζ hζ x) ∈ KPGlobalTorusFunctionData.E F ζ hζ := by
-  refine ⟨restrictedProjection F ζ hζ x, rfl, ?_, ?_⟩
-  · apply Prod.ext
-    · funext w; exact (hd (Sum.inl w)).1
-    · apply RestrictedProduct.ext; intro q; exact (hd (Sum.inr q)).1
-  · apply Prod.ext
-    · funext w; exact (hd (Sum.inl w)).2
-    · apply RestrictedProduct.ext; intro q; exact (hd (Sum.inr q)).2
+private alias raw_image_torus := DedekindZetaZeroFree.KPGlobalTorusTensorFibers.FiniteTensorFunctionalsAndSmoothLevels.raw_image_torus
 
 private theorem arch_mem_B (x : RestrictedCover F ζ hζ)
     (hd : ∀ v, (x v).g 1 0 = 0 ∧ (x v).g 0 1 = 0)
@@ -161,8 +127,8 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalTorusTensorFibers
 noncomputable section
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
-variable (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
+    (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
+    (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
 
 theorem raw_formula_inserted_finprod
     (C : RawLocalScalarData F ζ hζ P T)
@@ -182,16 +148,16 @@ theorem raw_formula_inserted_finprod
     · simp only [dif_pos hqU, dif_neg hqS]
     · simp only [dif_neg hqU, dif_neg hqS]
 
-theorem raw_tensor_formula_insertion_agrees_reachable
-    (C : RawLocalScalarData F ζ hζ P T)
-    (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
+section
+
+variable (C : RawLocalScalarData F ζ hζ P T) (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (hQ : IsUnitProductModel F ζ hζ P T Q)
-    (R : ∀ (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S),
-      RestrictedTensorSimple.Stage
-        (fun q => KPLocalStoneVonNeumann.InducedModule (C.polarization q)) S →ₗ[ℂ]
-          KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ Q)
-    (hR : ∀ S hS, RawTensorFormula F ζ hζ P T C Q S (R S hS))
-    (S U : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S) (hSU : S ⊆ U)
+    (R : ∀ (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S), RestrictedTensorSimple.Stage (fun q => KPLocalStoneVonNeumann.InducedModule (C.polarization q)) S →ₗ[ℂ] KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ Q)
+    (hR : ∀ S hS, RawTensorFormula F ζ hζ P T C Q S (R S hS)) (S U : Finset (HeightOneSpectrum (𝓞 F)))
+    (hS : C.exceptional ⊆ S) (hSU : S ⊆ U)
+
+include hQ hR in
+theorem raw_tensor_formula_insertion_agrees_reachable
     (f : ∀ q : S, KPLocalStoneVonNeumann.InducedModule (C.polarization q))
     (raw : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ)
     (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
@@ -213,16 +179,8 @@ theorem raw_tensor_formula_insertion_agrees_reachable
       hR S hS f raw t g hraw ht hg]
   exact raw_formula_inserted_finprod F ζ hζ P T C S U hSU f t
 
+include hQ hR in
 theorem raw_tensor_formula_insertion_agrees_reachable_linear
-    (C : RawLocalScalarData F ζ hζ P T)
-    (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (hQ : IsUnitProductModel F ζ hζ P T Q)
-    (R : ∀ (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S),
-      RestrictedTensorSimple.Stage
-        (fun q => KPLocalStoneVonNeumann.InducedModule (C.polarization q)) S →ₗ[ℂ]
-          KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ Q)
-    (hR : ∀ S hS, RawTensorFormula F ζ hζ P T C Q S (R S hS))
-    (S U : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S) (hSU : S ⊆ U)
     (x : RestrictedTensorSimple.Stage
       (fun q => KPLocalStoneVonNeumann.InducedModule (C.polarization q)) S)
     (raw : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ)
@@ -239,12 +197,14 @@ theorem raw_tensor_formula_insertion_agrees_reachable_linear
           C.reference S U hSU)) x).val.val g = (R S hS x).val.val g := by
   induction x using PiTensorProduct.induction_on with
   | smul_tprod c f =>
-    simpa only [map_smul, Submodule.coe_smul, Pi.smul_apply, smul_eq_mul] using
+    simpa using
       congrArg (fun z : ℂ => c * z)
         (raw_tensor_formula_insertion_agrees_reachable F ζ hζ P T C Q hQ R hR
           S U hS hSU f raw t g hraw ht hg)
   | add x y hx hy =>
-    simpa only [map_add, Submodule.coe_add, Pi.add_apply] using congrArg₂ (· + ·) hx hy
+    simpa using congrArg₂ (· + ·) hx hy
+
+end
 
 theorem scalar_functions_ext_of_covariant_cover
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
@@ -267,8 +227,11 @@ def rawReachableTorus : Set (KPGlobalTorusFunctionData.E F ζ hζ) :=
     KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ raw) = g.val}
 
+section
+
+variable (C : RawLocalScalarData F ζ hζ P T)
+
 theorem raw_tensor_insertion_compatible_of_covariant_cover
-    (C : RawLocalScalarData F ζ hζ P T)
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (hQ : IsUnitProductModel F ζ hζ P T Q)
     (R : ∀ (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S),
@@ -294,7 +257,7 @@ theorem raw_tensor_insertion_compatible_of_covariant_cover
   exact raw_tensor_formula_insertion_agrees_reachable_linear F ζ hζ P T C Q hQ R hR
     S U hS hSU x raw t a hraw ht hg
 
-theorem rawEvaluation_zero_iff (C : RawLocalScalarData F ζ hζ P T)
+theorem rawEvaluation_zero_iff
     (q : HeightOneSpectrum (𝓞 F))
     (f : KPLocalStoneVonNeumann.InducedModule (C.polarization q)) :
     (∀ t, C.evaluation q f t = 0) ↔ f = 0 := by
@@ -311,7 +274,7 @@ theorem rawEvaluation_zero_iff (C : RawLocalScalarData F ζ hζ P T)
   · rintro rfl t
     simp [C.evaluation_formula]
 
-theorem rawEvaluation_span_dual (C : RawLocalScalarData F ζ hζ P T)
+theorem rawEvaluation_span_dual
     (q : HeightOneSpectrum (𝓞 F)) :
     Submodule.span ℂ (Set.range (rawEvaluationLinear F ζ hζ P T C q)) = ⊤ := by
   letI := KPLocalStoneVonNeumann.tau_moduleFinite (C.canonical q).heisenberg (C.polarization q)
@@ -320,7 +283,7 @@ theorem rawEvaluation_span_dual (C : RawLocalScalarData F ζ hζ P T)
   obtain ⟨t, ht⟩ := not_forall.mp (fun h => hf ((rawEvaluation_zero_iff F ζ hζ P T C q f).mp h))
   exact ⟨rawEvaluationLinear F ζ hζ P T C q t, ⟨t, rfl⟩, ht⟩
 
-theorem rawFiniteTensor_evaluations_separate (C : RawLocalScalarData F ζ hζ P T)
+theorem rawFiniteTensor_evaluations_separate
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (x : RestrictedTensorSimple.Stage
       (fun q => KPLocalStoneVonNeumann.InducedModule (C.polarization q)) S)
@@ -363,14 +326,14 @@ theorem rawFiniteTensor_evaluations_separate (C : RawLocalScalarData F ζ hζ P 
     change PiTensorProduct.dualDistrib a x = 0 at ha
     change PiTensorProduct.dualDistrib b x = 0 at hb
     simp only [map_add, LinearMap.add_apply, ha, hb, add_zero]
-theorem raw_reference_evaluation_one (C : RawLocalScalarData F ζ hζ P T)
+theorem raw_reference_evaluation_one
     (q : HeightOneSpectrum (𝓞 F)) : C.evaluation q (C.reference q) 1 = 1 := by
   rw [C.evaluation_formula, C.reference_formula]
   simp only [map_one, Subgroup.one_mem, dite_true, Units.val_one]
   rw [show (⟨1, _⟩ : (C.polarization q).L.comap (C.canonical q).heisenberg.π) = 1 from rfl, map_one]
   simp [KPGlobalCenterRationalCharacter.localAbs]
 
-theorem rawFiniteTensorFunctional_eq_dual_of_trivial_outside (C : RawLocalScalarData F ζ hζ P T)
+theorem rawFiniteTensorFunctional_eq_dual_of_trivial_outside
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
     (ht : ∀ q, q ∉ S → t q = 1) :
@@ -394,7 +357,6 @@ theorem rawFiniteTensorFunctional_eq_dual_of_trivial_outside (C : RawLocalScalar
     hout, one_smul, LinearMap.compMultilinearMap_apply]
 
 theorem raw_tensor_injective_of_finite_reachability
-    (C : RawLocalScalarData F ζ hζ P T)
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S)
     (R : RestrictedTensorSimple.Stage
@@ -430,32 +392,37 @@ theorem raw_tensor_injective_of_finite_reachability
   exact congrArg (rawEvaluationLinear F ζ hζ P T C q.val)
     (show t q = t' q.val by simp [t', q.property])
 
+end
+
 open KPAdelicCoverRestrictedProduct
- def localRaw (q : HeightOneSpectrum (𝓞 F))
-    (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
+ section
+
+variable (q : HeightOneSpectrum (𝓞 F)) (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
+
+def localRaw :
     KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q) :=
   KPLocalCover.centralInjection F ζ hζ (Sum.inr q) (ActualFiniteTorus.sheet F ζ hζ q t) *
     KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) (ActualFiniteTorus.coordinate F ζ hζ q t)
-private theorem localRaw_spec (q : HeightOneSpectrum (𝓞 F))
-    (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
+private theorem localRaw_spec :
     KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (localRaw F ζ hζ q t) = t.val := by
   rw [localRaw, map_mul]
   exact ((ActualFiniteTorus.actual_torus_normal_form F ζ hζ q).2.2.1 t).symm
-private theorem localRaw_diagonal (q : HeightOneSpectrum (𝓞 F))
-    (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
-    (localRaw F ζ hζ q t).g 1 0 = 0 ∧ (localRaw F ζ hζ q t).g 0 1 = 0 := by
-  simp [localRaw, KPLocalCover.centralInjection, KPStandardLocalRootLifts.A,
-    KPLocalCover.projection, KubotaRankTwo.d, Matrix.mul_apply,
-    MonoidHom.coe_mk, OneHom.coe_mk]
-  exact ⟨rfl, rfl⟩
- def finiteRawTuple (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q) : RestrictedCover F ζ hζ :=
+private theorem localRaw_diagonal :
+    (localRaw F ζ hζ q t).g 1 0 = 0 ∧ (localRaw F ζ hζ q t).g 0 1 = 0 := by apply @DedekindZetaZeroFree.KPGlobalTorusFiniteStagesIdentification.FiniteTupleRepresentatives.localRaw_diagonal <;> assumption
+
+end
+ section
+
+variable (S : Finset (HeightOneSpectrum (𝓞 F)))
+    (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
+
+def finiteRawTuple : RestrictedCover F ζ hζ :=
   ⟨fun v => match v with
     | Sum.inl _ => 1
     | Sum.inr q => if q ∈ S then localRaw F ζ hζ q (t q) else 1,
     by
       apply Filter.eventually_cofinite.mpr
-      apply (S.finite_toSet.image (Sum.inr : HeightOneSpectrum (𝓞 F) → KPHilbert.Place F)).subset
+      apply (S.finite_toSet.image Sum.inr).subset
       intro v hv
       cases v with
       | inl w => exact False.elim (hv (Subgroup.one_mem _))
@@ -467,27 +434,10 @@ private theorem localRaw_diagonal (q : HeightOneSpectrum (𝓞 F))
           change (if q ∈ S then localRaw F ζ hζ q (t q) else 1) ∈ compact F ζ hζ (Sum.inr q)
           rw [if_neg hq]
           exact (compact F ζ hζ (Sum.inr q)).one_mem⟩
-private theorem finiteRawTuple_diagonal (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
+private theorem finiteRawTuple_diagonal :
     restrictedProjection F ζ hζ (finiteRawTuple F ζ hζ S t) 1 0 = 0 ∧
-      restrictedProjection F ζ hζ (finiteRawTuple F ζ hζ S t) 0 1 = 0 := by
-  have hd (i j : Fin 2) (hij : i ≠ j) :
-      restrictedProjection F ζ hζ (finiteRawTuple F ζ hζ S t) i j = 0 := by
-    apply Prod.ext
-    · funext w
-      simp [restrictedProjection, matrixValue, KPAdelicCoverCertificatesRaw.matrixValue,
-        KPAdelicCoverCertificatesRaw.matrixEntry, matrixEntry, finiteRawTuple, hij]
-      rfl
-    · apply RestrictedProduct.ext
-      intro q
-      change (if q ∈ S then localRaw F ζ hζ q (t q) else 1).g i j = 0
-      by_cases hq : q ∈ S
-      · rw [if_pos hq]
-        fin_cases i <;> fin_cases j <;> simp_all [localRaw_diagonal F ζ hζ q (t q)]
-      · simp [hq, hij]
-  exact ⟨hd 1 0 (by decide), hd 0 1 (by decide)⟩
-theorem raw_finite_tuple_reachable (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
+      restrictedProjection F ζ hζ (finiteRawTuple F ζ hζ S t) 0 1 = 0 := by apply @DedekindZetaZeroFree.KPGlobalTorusFiniteStagesIdentification.FiniteTupleRepresentatives.finiteRawTuple_diagonal <;> assumption
+theorem raw_finite_tuple_reachable
     (ht : ∀ q, q ∉ S → t q = 1) :
     ∃ (raw : RestrictedCover F ζ hζ) (g : KPGlobalTorusFunctionData.E F ζ hζ),
       (∀ w : InfinitePlace F, raw (Sum.inl w) = 1) ∧
@@ -508,20 +458,19 @@ theorem raw_finite_tuple_reachable (S : Finset (HeightOneSpectrum (𝓞 F)))
   · rw [if_neg hq, map_one, ht q hq]
     rfl
 
+end
+
+variable (C : RawLocalScalarData F ζ hζ P T) (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
+
 theorem raw_tensor_formula_injective
-    (C : RawLocalScalarData F ζ hζ P T)
-    (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S)
     (R : RestrictedTensorSimple.Stage
       (fun q => KPLocalStoneVonNeumann.InducedModule (C.polarization q)) S →ₗ[ℂ]
         KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ Q)
-    (hR : RawTensorFormula F ζ hζ P T C Q S R) : Function.Injective R := by
-  exact raw_tensor_injective_of_finite_reachability F ζ hζ P T C Q S hS R hR
+    (hR : RawTensorFormula F ζ hζ P T C Q S R) : Function.Injective R := raw_tensor_injective_of_finite_reachability F ζ hζ P T C Q S hS R hR
     (fun t ht => raw_finite_tuple_reachable F ζ hζ S t ht)
 
 theorem raw_tensor_family_identification
-    (C : RawLocalScalarData F ζ hζ P T)
-    (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (hQ : IsUnitProductModel F ζ hζ P T Q)
     (R : ∀ (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : C.exceptional ⊆ S),
       RestrictedTensorSimple.Stage

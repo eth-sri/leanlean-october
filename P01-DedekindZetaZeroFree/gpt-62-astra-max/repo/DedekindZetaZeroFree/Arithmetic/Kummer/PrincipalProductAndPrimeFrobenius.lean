@@ -22,7 +22,7 @@ theorem principal_product (F : Type) [Field F] [NumberField F]
           (frozenPrincipalLocalUnit F α hα v) : ℂ)⁻¹ := by
   change frozenRayValue F _ _ _ _ = _
   rw [frozenRayValue_of_primeTo F _ _ _ _
-    (by simpa only [ne_eq, Ideal.span_singleton_eq_bot] using hα) hcop]
+    (by simpa using hα) hcop]
   change (RMKummerConductor.rho F h12 x
     (frozenPrincipalRayClass F _ _ α hα hcop) : ℂ) = _
   rw [rm_kummer_ray_principal_relation F (RMKummerConductor.totallyComplex F h12)]
@@ -35,18 +35,21 @@ theorem principal_product (F : Type) [Field F] [NumberField F]
       (frozenFinitePlaceRayClass F _ _ v (frozenPrincipalLocalUnit F α hα v)) =
     RMKummerLocalNormCharacter.lambda F h12 x v
       (frozenPrincipalLocalUnit F α hα v) at heq
-  simpa only [map_inv, Units.val_inv_eq_inv_val] using congrArg Units.val (congrArg Inv.inv heq)
+  simpa using congrArg Units.val (congrArg Inv.inv heq)
 
-theorem prime_arithmeticFrobenius (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
+section
+
+variable (F : Type) [Field F] [NumberField F] (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
     (v : HeightOneSpectrum (𝓞 F))
-    (hv : v ∉ (M F (RMKummerConductor.m F h12 x)
-      (RMKummerConductor.m_ne_bot F h12 x)).finitePart.support)
+    (hv : v ∉ (M F (RMKummerConductor.m F h12 x) (RMKummerConductor.m_ne_bot F h12 x)).finitePart.support)
+
+include hv in
+theorem prime_arithmeticFrobenius
     (w : HeightOneSpectrum (𝓞 (RMKummerConductor.E F h12 x)))
     (hw : w.asIdeal.LiesOver v.asIdeal) :
     RMKummerConductor.Xi F h12 x v.asIdeal =
       (RMKummerConductor.kappa F h12 x
-        (ClassFieldTheory.arithmeticFrobeniusAt (K := F) w) : ℂ) := by
+        (ClassFieldTheory.arithmeticFrobeniusAt w) : ℂ) := by
   have hcop : v.asIdeal ⊔ RMKummerConductor.m F h12 x = ⊤ := by
     apply (RayClassBridge.integralUnit_mem_primeTo_iff F _
       (RMKummerConductor.m_ne_bot F h12 x) _ v.ne_bot).mp
@@ -57,19 +60,15 @@ theorem prime_arithmeticFrobenius (F : Type) [Field F] [NumberField F]
   rw [frozenRayValue_of_primeTo F _ _ _ _ v.ne_bot hcop]
   exact congrArg Units.val (RMKummerConductor.rho_prime F h12 x v hv w hw)
 
+include hv in
 private theorem lambda_eq_of_order_one
-    (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F))
-    (hv : v ∉ (M F (RMKummerConductor.m F h12 x)
-      (RMKummerConductor.m_ne_bot F h12 x)).finitePart.support)
     (π π' : (v.adicCompletion F)ˣ)
     (hπ : (FiniteIdeleGroup.localOrder v π).toAdd = 1)
     (hπ' : (FiniteIdeleGroup.localOrder v π').toAdd = 1) :
     RMKummerLocalNormCharacter.lambda F h12 x v π =
       RMKummerLocalNormCharacter.lambda F h12 x v π' := by
   have he : idealPrimeExponent v.asIdeal (RMKummerConductor.m F h12 x) = 0 := by
-    simpa only [M_finitePart] using Finsupp.notMem_support_iff.mp hv
+    simpa using Finsupp.notMem_support_iff.mp hv
   have hu : π / π' ∈ (v.adicCompletionIntegers F).units := by
     apply (FiniteIdeleGroup.localOrder_eq_zero_iff v _).mp
     rw [map_div]
@@ -80,23 +79,24 @@ private theorem lambda_eq_of_order_one
     F h12 x v (π / π') (by
       rw [he, RMKummerLeastLocalExponent.higherUnitGroup_zero F v]
       exact hu)
-  rw [map_div] at hl
+  simp at hl
   exact eq_of_div_eq_one hl
 
-private theorem localOrder_of_uniformizer
-    (F : Type) [Field F] [NumberField F] (v : HeightOneSpectrum (𝓞 F))
+end
+
+variable (F : Type) [Field F] [NumberField F]
+
+private theorem localOrder_of_uniformizer (v : HeightOneSpectrum (𝓞 F))
     (π : (v.adicCompletion F)ˣ)
     (hπ : HeightOneSpectrum.adicCompletion.valuation F v (π : v.adicCompletion F) =
       WithZero.exp (-1 : ℤ)) :
     (FiniteIdeleGroup.localOrder v π).toAdd = 1 := by
-  rw [FiniteIdeleGroup.localOrder_apply]
   change -WithZero.log (HeightOneSpectrum.adicCompletion.valuation F v
-    (π : v.adicCompletion F)) = 1
+    π) = 1
   rw [hπ, WithZero.log_exp]
   rfl
 
 theorem arithmeticFrobenius_eq_lambda_uniformizer
-    (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
     (v : HeightOneSpectrum (𝓞 F))
     (hv : v ∉ (M F (RMKummerConductor.m F h12 x)
@@ -107,7 +107,7 @@ theorem arithmeticFrobenius_eq_lambda_uniformizer
     (hπ : HeightOneSpectrum.adicCompletion.valuation F v (π : v.adicCompletion F) =
       WithZero.exp (-1 : ℤ)) :
     RMKummerConductor.kappa F h12 x
-        (ClassFieldTheory.arithmeticFrobeniusAt (K := F) w) =
+        (ClassFieldTheory.arithmeticFrobeniusAt w) =
       RMKummerLocalNormCharacter.lambda F h12 x v π := by
   let m := M F (RMKummerConductor.m F h12 x)
     (RMKummerConductor.m_ne_bot F h12 x)

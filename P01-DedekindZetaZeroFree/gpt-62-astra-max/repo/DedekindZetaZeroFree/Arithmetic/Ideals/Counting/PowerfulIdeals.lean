@@ -20,8 +20,7 @@ def exteriorPowerfulDyad (cS : Ideal (𝓞 F)) (P : ℝ) : Set (ExteriorIdeal cS
   { h | Powerful h.val ∧ P ≤ idealNorm h.val ∧ idealNorm h.val < 2 * P }
 
 theorem normPowerfulIdeals_finite (F : Type) [Field F] [NumberField F] (X : ℝ) :
-    (normPowerfulIdeals F X).Finite := by
-  exact (normBoundedIdeals_finite F X).subset (fun _ h => h.2.le)
+    (normPowerfulIdeals F X).Finite := (normBoundedIdeals_finite F X).subset (fun _ h => h.2.le)
 
 theorem exteriorPowerfulDyad_finite (cS : Ideal (𝓞 F)) (P : ℝ) :
     (exteriorPowerfulDyad cS P).Finite := by
@@ -45,15 +44,6 @@ private theorem powerful_cutoff_eq (X q : ℝ) (hX : 0 ≤ X) (hq : 0 < q) :
   rw [Real.rpow_neg hq.le]
   simp [div_eq_mul_inv]
 
-private theorem powerful_factor_norm_le (r s : NonzeroIdeal F) (X : ℝ)
-    (hX : 0 ≤ X) (h : idealNorm (r.val ^ 2 * s.val ^ 3) < X) :
-    idealNorm r.val ≤ Real.sqrt (X / idealNorm s.val ^ 3) := by
-  have hr := idealNorm_ge_one r.val r.property
-  have hs := idealNorm_ge_one s.val s.property
-  apply (Real.le_sqrt (by linarith) (div_nonneg hX (by positivity))).2
-  apply (le_div_iff₀ (by positivity : 0 < idealNorm s.val ^ 3)).2
-  exact (powerful_norm_factor r s ▸ h).le
-
 def powerfulFactors (h : NonzeroIdeal F) : NonzeroIdeal F × NonzeroIdeal F :=
   if hp : Powerful h.val then
     (unique_powerful_square_cube_decomposition h.val h.property hp).exists.choose
@@ -64,13 +54,9 @@ private theorem powerfulFactors_spec (h : NonzeroIdeal F) (hp : Powerful h.val) 
   simpa [powerfulFactors, hp] using
     ((unique_powerful_square_cube_decomposition h.val h.property hp).exists.choose_spec).1
 
-private theorem powerfulFactors_inj (X : ℝ) :
-    Set.InjOn (powerfulFactors (F := F)) (normPowerfulIdeals F X) := by
-  intro a ha b hb hab
-  apply Subtype.ext
-  rw [powerfulFactors_spec a ha.1, powerfulFactors_spec b hb.1, hab]
+variable (F : Type) [Field F] [NumberField F]
 
-theorem powerful_ideal_count_bound (F : Type) [Field F] [NumberField F] :
+theorem powerful_ideal_count_bound :
     ∃ K : ℝ, 0 < K ∧ ∀ X : ℝ, 1 ≤ X →
       ((normPowerfulIdeals F X).ncard : ℝ) ≤ K * Real.sqrt X := by
   obtain ⟨C, C', hC, _, hcounts⟩ := ideal_counting_harmonic_bounds F
@@ -86,7 +72,7 @@ theorem powerful_ideal_count_bound (F : Type) [Field F] [NumberField F] :
       rw [he, Set.ncard_empty, Nat.cast_zero]
       exact mul_nonneg hC.le hY
   let w : NonzeroIdeal F → ℝ := fun s => Real.rpow (idealNorm s.val) (-(3 / 2 : ℝ))
-  have hw : Summable w := ideal_norm_rpow_summable F (3 / 2) (by norm_num)
+  have hw := ideal_norm_rpow_summable F (3 / 2) (by norm_num)
   have hw0 : ∀ s, 0 ≤ w s := fun s => Real.rpow_nonneg
     (le_trans (by norm_num) (idealNorm_ge_one s.val s.property)) _
   have hsum : 0 ≤ ∑' s, w s := tsum_nonneg hw0
@@ -94,7 +80,7 @@ theorem powerful_ideal_count_bound (F : Type) [Field F] [NumberField F] :
   intro X hX
   have hX0 : 0 ≤ X := by linarith
   let a := (normPowerfulIdeals_finite F X).toFinset
-  let t := a.image (powerfulFactors (F := F))
+  let t := a.image (powerfulFactors)
   have ht : ∀ rs ∈ t, idealNorm (rs.1.val ^ 2 * rs.2.val ^ 3) < X := by
     intro rs hrs
     obtain ⟨h, hh, rfl⟩ := Finset.mem_image.1 hrs
@@ -104,7 +90,10 @@ theorem powerful_ideal_count_bound (F : Type) [Field F] [NumberField F] :
   have hcard : (normPowerfulIdeals F X).ncard = t.card := by
     rw [Finset.card_image_of_injOn]
     · exact Set.ncard_eq_toFinset_card _ (normPowerfulIdeals_finite F X)
-    · simpa [a] using powerfulFactors_inj (F := F) X
+    · simpa [a] using (by
+      intro a ha b hb hab
+      apply Subtype.ext
+      rw [powerfulFactors_spec a ha.1, powerfulFactors_spec b hb.1, hab])
   have hfiber : ∀ s ∈ t.image Prod.snd,
       ((t.filter (fun rs => rs.2 = s)).card : ℝ) ≤ C * Real.sqrt X * w s := by
     intro s _
@@ -113,10 +102,13 @@ theorem powerful_ideal_count_bound (F : Type) [Field F] [NumberField F] :
     have hu : ∀ rs ∈ u, rs.1 ∈ normBoundedIdeals F Y := by
       intro rs hrs
       obtain ⟨hrs, hs⟩ := Finset.mem_filter.1 hrs
-      change idealNorm rs.1.val ≤ Y
       dsimp [Y]
       rw [← hs]
-      exact powerful_factor_norm_le rs.1 rs.2 X hX0 (ht rs hrs)
+      have hr := idealNorm_ge_one rs.1.val rs.1.property
+      have hs := idealNorm_ge_one rs.2.val rs.2.property
+      apply (Real.le_sqrt (by linarith) (div_nonneg hX0 (by positivity))).2
+      apply (le_div_iff₀ (by positivity : 0 < idealNorm rs.2.val ^ 3)).2
+      exact (powerful_norm_factor rs.1 rs.2 ▸ (ht rs hrs)).le
     have hi : Set.InjOn Prod.fst (↑u : Set (NonzeroIdeal F × NonzeroIdeal F)) := by
       intro rs hrs rs' hrs' he
       apply Prod.ext he
@@ -125,18 +117,16 @@ theorem powerful_ideal_count_bound (F : Type) [Field F] [NumberField F] :
       have := Set.ncard_le_ncard_of_injOn Prod.fst hu hi (normBoundedIdeals_finite F Y)
       simpa using this
     calc
-      (u.card : ℝ) ≤ ((normBoundedIdeals F Y).ncard : ℝ) := by exact_mod_cast huCard
+      _ ≤ ((normBoundedIdeals F Y).ncard : ℝ) := by exact_mod_cast huCard
       _ ≤ C * Y := hc Y (Real.sqrt_nonneg _)
       _ = C * Real.sqrt X * w s := by
         dsimp [Y, w]
         rw [powerful_cutoff_eq X _ hX0 (by
           have := idealNorm_ge_one s.val s.property
           linarith)]
-        change C * (Real.sqrt X * Real.rpow (idealNorm s.val) (-(3 / 2 : ℝ))) =
-          C * Real.sqrt X * Real.rpow (idealNorm s.val) (-(3 / 2 : ℝ))
         exact (mul_assoc _ _ _).symm
   calc
-    ((normPowerfulIdeals F X).ncard : ℝ) =
+    _ =
         ∑ s ∈ t.image Prod.snd, ((t.filter (fun rs => rs.2 = s)).card : ℝ) := by
       rw [hcard, Finset.card_eq_sum_card_image Prod.snd t, Nat.cast_sum]
     _ ≤ ∑ s ∈ t.image Prod.snd, C * Real.sqrt X * w s := Finset.sum_le_sum hfiber
@@ -146,23 +136,22 @@ theorem powerful_ideal_count_bound (F : Type) [Field F] [NumberField F] :
     _ ≤ (C * ((∑' s, w s) + 1)) * Real.sqrt X := by
       nlinarith [Real.sqrt_nonneg X]
 
-theorem exterior_powerful_dyad_count_bound (F : Type) [Field F] [NumberField F] :
+theorem exterior_powerful_dyad_count_bound :
     ∃ K' : ℝ, 0 < K' ∧ ∀ cS : Ideal (𝓞 F), cS ≠ ⊥ →
       ∀ P : ℝ, 1 ≤ P →
         ((exteriorPowerfulDyad cS P).ncard : ℝ) ≤ K' * Real.sqrt P := by
   obtain ⟨K, hK, hbound⟩ := powerful_ideal_count_bound F
   refine ⟨K * Real.sqrt 2, mul_pos hK (Real.sqrt_pos.2 (by norm_num)), ?_⟩
   intro cS _ P hP
-  let f : ExteriorIdeal cS → NonzeroIdeal F := fun h => ⟨h.val, h.property.1⟩
   have hc : (exteriorPowerfulDyad cS P).ncard ≤
       (normPowerfulIdeals F (2 * P)).ncard := by
-    apply Set.ncard_le_ncard_of_injOn f (ht := normPowerfulIdeals_finite F (2 * P))
+    apply Set.ncard_le_ncard_of_injOn (fun h => ⟨h.val, h.property.1⟩) (ht := normPowerfulIdeals_finite F (2 * P))
     · intro h hh
       exact ⟨hh.1, hh.2.2⟩
     · intro a _ b _ hab
       exact Subtype.ext (congrArg (fun h : NonzeroIdeal F => h.val) hab)
   calc
-    ((exteriorPowerfulDyad cS P).ncard : ℝ) ≤
+    _ ≤
         ((normPowerfulIdeals F (2 * P)).ncard : ℝ) := by exact_mod_cast hc
     _ ≤ K * Real.sqrt (2 * P) := hbound _ (by linarith)
     _ = (K * Real.sqrt 2) * Real.sqrt P := by

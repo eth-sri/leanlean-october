@@ -11,22 +11,28 @@ namespace DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 abbrev Ideles := KPAdelicCoverRestrictedProduct.Ideles F
 
 abbrev D := Ideles F ⧸ CubicCharacters.cubes (Ideles F)
 
-abbrev LocalD (v : KPHilbert.Place F) :=
+section
+
+variable (v : KPHilbert.Place F)
+
+abbrev LocalD :=
   KPLocalTorus.CubeClasses (KPHilbert.Completion F v)ˣ
 
-def localClass (v : KPHilbert.Place F) : (KPHilbert.Completion F v)ˣ →* LocalD F v :=
+def localClass : (KPHilbert.Completion F v)ˣ →* LocalD F v :=
   QuotientGroup.mk' (CubicCharacters.cubes (KPHilbert.Completion F v)ˣ)
 
-def U (v : KPHilbert.Place F) : Subgroup (LocalD F v) :=
+def U : Subgroup (LocalD F v) :=
   match v with
   | Sum.inl _ => ⊤
   | Sum.inr q => (KPHilbert.integerUnitInclusion F q).range.map (localClass F (Sum.inr q))
+
+end
 
 abbrev RestrictedClasses := RestrictedProduct (LocalD F)
   (fun v => (U F v : Set _)) Filter.cofinite
@@ -47,18 +53,15 @@ theorem ideleClass_restricted (x : Ideles F) :
         a ∈ (ValuativeRel.valuation (q.adicCompletion F)).integer := by
       rw [Valuation.mem_integer_iff, ← Valuation.vle_one_iff]
       exact (Valuation.vle_one_iff
-        (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ)))).mpr ha
+        Valued.v).mpr ha
     let z := ideleEval F (Sum.inr q) x
     let u : KPHilbert.LocalIntegerUnits F q :=
       ⟨⟨(z : q.adicCompletion F), mem _ hq⟩,
        ⟨(z⁻¹ : (q.adicCompletion F)ˣ), mem _ hqi⟩,
-       by apply Subtype.ext; exact z.val_inv,
-       by apply Subtype.ext; exact z.inv_val⟩
+       by exact Subtype.ext z.val_inv,
+       by exact Subtype.ext z.inv_val⟩
     exact ⟨u, rfl⟩
-  have hf : {q : HeightOneSpectrum (𝓞 F) | ¬ ∃ u : KPHilbert.LocalIntegerUnits F q,
-      KPHilbert.integerUnitInclusion F q u = ideleEval F (Sum.inr q) x}.Finite :=
-    Filter.mem_cofinite.mp hi
-  filter_upwards [(hf.image (Sum.inr : HeightOneSpectrum (𝓞 F) → KPHilbert.Place F)).compl_mem_cofinite] with v hv
+  filter_upwards [((Filter.mem_cofinite.mp hi).image Sum.inr).compl_mem_cofinite] with v hv
   cases v with
   | inl w => exact Subgroup.mem_top _
   | inr q =>
@@ -81,7 +84,6 @@ def restrictedClassMap : Ideles F →* RestrictedClasses F where
 theorem restrictedClassMap_kills_cubes :
     CubicCharacters.cubes (Ideles F) ≤ (restrictedClassMap F).ker := by
   rintro x ⟨y, rfl⟩
-  change restrictedClassMap F (y ^ 3) = 1
   ext v
   change localClass F v (ideleEval F v (y ^ 3)) = 1
   rw [map_pow]
@@ -91,7 +93,11 @@ theorem restrictedClassMap_kills_cubes :
 def classComparison : D F →* RestrictedClasses F :=
   QuotientGroup.lift _ (restrictedClassMap F) (restrictedClassMap_kills_cubes F)
 
-theorem localSymbol_congr (v : KPHilbert.Place F)
+section
+
+variable (v : KPHilbert.Place F)
+
+theorem localSymbol_congr
     (a b a' b' : (KPHilbert.Completion F v)ˣ)
     (ha : QuotientGroup.leftRel (CubicCharacters.cubes (KPHilbert.Completion F v)ˣ) a a')
     (hb : QuotientGroup.leftRel (CubicCharacters.cubes (KPHilbert.Completion F v)ˣ) b b') :
@@ -110,13 +116,15 @@ theorem localSymbol_congr (v : KPHilbert.Place F)
     (KPHilbert.B3_laws F ζ hζ v).2.2.2.2.1 a u |>.2]
   simp
 
-def localPairing (v : KPHilbert.Place F) (a b : LocalD F v) : rootsOfUnity 3 F :=
+def localPairing (a b : LocalD F v) : rootsOfUnity 3 F :=
   Quotient.liftOn₂ a b (KPHilbert.B3 F ζ hζ v) (localSymbol_congr F ζ hζ v)
 
-@[simp] theorem localPairing_representatives (v : KPHilbert.Place F)
+@[simp] theorem localPairing_representatives
     (a b : (KPHilbert.Completion F v)ˣ) :
     localPairing F ζ hζ v (localClass F v a) (localClass F v b) =
       KPHilbert.B3 F ζ hζ v a b := rfl
+
+end
 
 theorem tame_unit_isotropic (q : HeightOneSpectrum (𝓞 F))
     (hgood : ¬ KPAdelicCoverRestrictedProduct.Bad F q)
@@ -132,9 +140,8 @@ theorem pairing_finiteSupport (x y : RestrictedClasses F) :
     Function.HasFiniteMulSupport (fun v => localPairing F ζ hζ v (x v) (y v)) := by
   have hgood : ∀ᶠ v : KPHilbert.Place F in Filter.cofinite,
       ∀ q, v = Sum.inr q → ¬ KPAdelicCoverRestrictedProduct.Bad F q := by
-    have hf := (KPAdelicCoverRestrictedProduct.bad_finite F).image
-      (Sum.inr : HeightOneSpectrum (𝓞 F) → KPHilbert.Place F)
-    filter_upwards [hf.compl_mem_cofinite] with v hv q hq
+    filter_upwards [((KPAdelicCoverRestrictedProduct.bad_finite F).image
+      Sum.inr).compl_mem_cofinite] with v hv q hq
     intro hbad
     exact hv ⟨q, hbad, hq.symm⟩
   have heq : ∀ᶠ v in Filter.cofinite, localPairing F ζ hζ v (x v) (y v) = 1 := by
@@ -145,7 +152,7 @@ theorem pairing_finiteSupport (x y : RestrictedClasses F) :
       | H a =>
         induction (y (Sum.inl w)) using QuotientGroup.induction_on with
         | H b => simp [localPairing, KPHilbert.B3, KPHilbert.B6]
-    | inr q => exact tame_unit_isotropic F ζ hζ q (hv q rfl) _ _ hx hy
+    | inr q => solve_by_elim [tame_unit_isotropic]
   exact Filter.mem_cofinite.mp heq
 
 def restrictedBeta (x y : RestrictedClasses F) : rootsOfUnity 3 F :=
@@ -161,8 +168,9 @@ private theorem localPairing_mul_right (v : KPHilbert.Place F) (x y z : LocalD F
   | H x =>
     induction y using QuotientGroup.induction_on with
     | H y =>
-      induction z using QuotientGroup.induction_on with
-      | H z => exact (KPHilbert.B3_laws F ζ hζ v).2.1 x y z
+      exact QuotientGroup.induction_on z fun z => (KPHilbert.B3_laws F ζ hζ v).right.left x y z
+
+alias IdeleUnitValuationPairing.localPairing_mul_right := localPairing_mul_right
 
 def diagonalMatrix (y : Ideles F) : KPAdelicCoverRestrictedProduct.AdelicGL2 F where
   val := !![(y : KPAdelicCoverRestrictedProduct.Adeles F), 0; 0, 1]
@@ -197,7 +205,7 @@ def torusPullback : Subgroup
     ((KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ).comp (MonoidHom.fst _ _))
     ((diagonalPGL F).comp (MonoidHom.snd _ _))
 
-abbrev E := torusPullback F ζ hζ
+abbrev E := @torusPullback
 
 def torusProjection : E F ζ hζ →* Ideles F :=
   (MonoidHom.snd _ _).comp (torusPullback F ζ hζ).subtype
@@ -208,10 +216,9 @@ theorem torusCentral_mem (z : rootsOfUnity 3 F) :
   change KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ
     (KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ z) = diagonalPGL F 1
   rw [map_one]
-  have hz := KPAdelicCoverRestrictedProduct.pglCentralInjection_kernel F ζ hζ
   change KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ z ∈
     (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ).ker
-  rw [← hz]
+  rw [← (KPAdelicCoverRestrictedProduct.pglCentralInjection_kernel F ζ hζ)]
   exact ⟨z, rfl⟩
 
 def torusCentralInjection : rootsOfUnity 3 F →* E F ζ hζ where
@@ -229,20 +236,17 @@ abbrev ExteriorValuations (S : Finset (KPHilbert.Place F)) :=
 attribute [local instance] exteriorValuationsTopology
 
 abbrev LocalValuationClasses (v : KPHilbert.Place F) := LocalD F v ⧸ U F v
-theorem unitValuation_congr (q : HeightOneSpectrum (𝓞 F))
-    (hgood : ¬ KPAdelicCoverRestrictedProduct.Bad F q)
-    (u : U F (Sum.inr q)) (a b : LocalD F (Sum.inr q))
+variable (q : HeightOneSpectrum (𝓞 F)) (hgood : ¬ KPAdelicCoverRestrictedProduct.Bad F q)
+    (u : U F (Sum.inr q))
+
+include hgood in
+theorem unitValuation_congr (a b : LocalD F (Sum.inr q))
     (hab : QuotientGroup.leftRel (U F (Sum.inr q)) a b) :
     localPairing F ζ hζ (Sum.inr q) u.val a =
       localPairing F ζ hζ (Sum.inr q) u.val b := by
-  have hmul : a⁻¹ * b ∈ U F (Sum.inr q) := QuotientGroup.leftRel_apply.mp hab
-  have hiso := tame_unit_isotropic F ζ hζ q hgood u.val _ u.property hmul
-  have heq := localPairing_mul_right F ζ hζ (Sum.inr q) u.val a (a⁻¹ * b)
-  simpa [hiso] using heq.symm
+  simpa [(tame_unit_isotropic F ζ hζ q hgood u.val _ u.property (QuotientGroup.leftRel_apply.mp hab))] using (localPairing_mul_right F ζ hζ (Sum.inr q) u.val a (a⁻¹ * b)).symm
 
-def unitValuationPairing (q : HeightOneSpectrum (𝓞 F))
-    (hgood : ¬ KPAdelicCoverRestrictedProduct.Bad F q)
-    (u : U F (Sum.inr q)) (a : LocalValuationClasses F (Sum.inr q)) : rootsOfUnity 3 F :=
+def unitValuationPairing (a : LocalValuationClasses F (Sum.inr q)) : rootsOfUnity 3 F :=
   Quotient.liftOn a (fun b => localPairing F ζ hζ (Sum.inr q) u.val b)
     (unitValuation_congr F ζ hζ q hgood u)
 

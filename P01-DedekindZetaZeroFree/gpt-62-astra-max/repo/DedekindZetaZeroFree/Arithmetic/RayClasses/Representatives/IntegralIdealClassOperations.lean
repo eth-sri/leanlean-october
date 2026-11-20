@@ -11,9 +11,9 @@ open IsDedekindDomain
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
-@[simp] theorem rayIdealClass_top
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
+variable (K : Type) [Field K] [NumberField K] (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
+
+@[simp] theorem rayIdealClass_top :
     rayIdealClass K m hm ⊤ = some 1 := by
   rw [rayIdealClass_eq_some K m hm ⊤ top_ne_bot (by simp)]
   have heq : rayIdealClassRepresentative K m hm ⊤ top_ne_bot (by simp) = 1 := by
@@ -22,9 +22,7 @@ namespace DedekindZetaZeroFree.AbelianQuotient
     simp [rayIdealClassRepresentative]
   rw [heq, map_one]
 
-theorem rayIdealClass_mul
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) (I J : Ideal (𝓞 K)) :
+theorem rayIdealClass_mul (I J : Ideal (𝓞 K)) :
     rayIdealClass K m hm (I * J) =
       (rayIdealClass K m hm I).bind
         (fun a => (rayIdealClass K m hm J).map (fun b => a * b)) := by
@@ -50,13 +48,11 @@ theorem rayIdealClass_mul
     rw [rayIdealClass_eq_none K m hm (I * J) hIJ,
       rayIdealClass_eq_none K m hm J hJ]
     cases rayIdealClass K m hm I <;> rfl
-  have hIn : I ≠ ⊥ := fun h => hI (Or.inl h)
-  have hJn : J ≠ ⊥ := fun h => hJ (Or.inl h)
-  have hIc : I ⊔ m = ⊤ := not_not.mp (fun h => hI (Or.inr h))
-  have hJc : J ⊔ m = ⊤ := not_not.mp (fun h => hJ (Or.inr h))
-  have hIJn : I * J ≠ ⊥ := by
-    intro h
-    exact (not_or.mpr ⟨hIn, hJn⟩) (Ideal.mul_eq_bot.mp h)
+  have hIn := fun h => hI (Or.inl h)
+  have hJn := fun h => hJ (Or.inl h)
+  have hIc := not_not.mp (fun h => hI (Or.inr h))
+  have hJc := not_not.mp (fun h => hJ (Or.inr h))
+  have hIJn : I * J ≠ ⊥ := fun h => (not_or.mpr ⟨hIn, hJn⟩) (Ideal.mul_eq_bot.mp h)
   have hIJc : I * J ⊔ m = ⊤ := by
     rw [Ideal.mul_sup_eq_of_coprime_left hIc, hJc]
   rw [rayIdealClass_eq_some K m hm I hIn hIc,
@@ -72,8 +68,6 @@ theorem rayIdealClass_mul
   rw [heq, map_mul]
 
 theorem rayIdealClass_span
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
     (α : 𝓞 K) (hα : α ≠ 0) (hcong : α - 1 ∈ m)
     (hpos : ∀ φ : K →+* ℝ, 0 < φ (α : K)) :
     rayIdealClass K m hm (Ideal.span {α}) = some 1 := by

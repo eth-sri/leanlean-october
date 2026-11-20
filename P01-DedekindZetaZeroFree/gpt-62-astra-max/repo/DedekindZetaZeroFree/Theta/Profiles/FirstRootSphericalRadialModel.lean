@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 def firstRootBranch (R : PrincipalMellin.ActualRecipe S η)
     (v : R.A.UnitQuotient) : R.A.G →* ℂ := by
@@ -77,7 +77,7 @@ theorem first_root_cutoffs_exist (R : PrincipalMellin.ActualRecipe S η) :
     unfold SArithmeticData.H_S
     apply Finset.prod_eq_one
     intro p _
-    have hp : QuotientGroup.mk' (powMonoidHom (α := (p.val.adicCompletion F)ˣ) 6).range
+    have hp : QuotientGroup.mk' (powMonoidHom 6).range
         (y.2 p) = 1 := (QuotientGroup.eq_one_iff _).mpr (hU6 p (hy p))
     change R.A.actualLocalHilbert p.val 6 _ _
       (QuotientGroup.mk' (powMonoidHom (α := (p.val.adicCompletion F)ˣ) 6).range (y.2 p)) = 1

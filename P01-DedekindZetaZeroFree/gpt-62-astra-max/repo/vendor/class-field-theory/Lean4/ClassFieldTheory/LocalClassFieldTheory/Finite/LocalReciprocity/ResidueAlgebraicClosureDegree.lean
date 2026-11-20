@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 namespace LocalClassFieldTheory
@@ -66,6 +63,9 @@ coordinates are detected. -/
 noncomputable def finiteResidueExtensionEmbeddingInto
     (n : ℕ) [NeZero n] :
     FiniteField.Extension k (ringChar k) n →ₐ[k] Omega := by
+  letI : Module.IsTorsionFree k Omega :=
+    Module.isTorsionFree_iff_algebraMap_injective.mpr
+      (algebraMap k Omega).injective
   letI : Module.IsTorsionFree k Omega :=
     Module.isTorsionFree_iff_algebraMap_injective.mpr
       (algebraMap k Omega).injective
@@ -179,6 +179,7 @@ noncomputable def residueAbsoluteFrobeniusRangeIn :
     ClosedSubgroup (Omega ≃ₐ[k] Omega) where
   toSubgroup := (residueAbsoluteFrobenius k Omega).toMonoidHom.range
   isClosed' := by
+    change IsClosed (Set.range (residueAbsoluteFrobenius k Omega))
     change IsClosed (Set.range (residueAbsoluteFrobenius k Omega))
     exact (isCompact_range
       (residueAbsoluteFrobenius k Omega).continuous_toFun).isClosed
@@ -500,21 +501,6 @@ theorem residueAbsoluteDegreeIn_restrictScalars
   rw [← residueAbsoluteFrobenius_restrictScalars]
   exact congrArg (fun g : Omega ≃ₐ[E] Omega => g.restrictScalars k)
     ((residueAbsoluteFrobeniusEquivIn E Omega).apply_symm_apply sigma).symm
-
-/-- The intrinsic degree map sends arithmetic Frobenius to `1`. -/
-@[simp]
-theorem residueAbsoluteDegreeIn_frobenius :
-    residueAbsoluteDegreeIn k Omega
-        (FiniteField.frobeniusAlgEquivOfAlgebraic k Omega) =
-      Multiplicative.ofAdd (1 : ZHat) := by
-  apply (residueAbsoluteFrobeniusEquivIn k Omega).injective
-  change (residueAbsoluteFrobeniusEquivIn k Omega)
-      ((residueAbsoluteFrobeniusEquivIn k Omega).symm
-        (FiniteField.frobeniusAlgEquivOfAlgebraic k Omega)) =
-    (residueAbsoluteFrobeniusEquivIn k Omega)
-      (Multiplicative.ofAdd (1 : ZHat))
-  rw [(residueAbsoluteFrobeniusEquivIn k Omega).apply_symm_apply]
-  exact (residueAbsoluteFrobenius_one k Omega).symm
 
 /-- Finite-coordinate compatibility for the intrinsic residue degree. -/
 theorem finiteResidueFrobeniusExponentEquiv_symm_restrict_in

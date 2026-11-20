@@ -16,8 +16,8 @@ open DedekindZetaZeroFree.Quantitative.RawFixed
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
 theorem pkg_bridge :
     RawFrequencyPublicBridge.Bridge D (FixedData.pkg D).U (FixedData.pkg D).P
@@ -33,8 +33,12 @@ theorem pkg_bridge :
   plus_series := (FixedData.pkg D).plus_eq
   minus_series := (FixedData.pkg D).minus_eq
 
-theorem plus_eq_hecke_mul_mask (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (w : ℂ) (hw : 0 < w.re) :
+section
+
+variable (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe) (w : ℂ) (hw : 0 < w.re)
+
+include hw in
+theorem plus_eq_hecke_mul_mask :
     (FixedData.pkg D).plus u w =
       (RowHeckeBridge.hecke D.recipe.A (FixedData.primPlus D u)
           ((FixedData.pkg D).nonprincipal u hu).1).L w *
@@ -43,8 +47,8 @@ theorem plus_eq_hecke_mul_mask (u : Frequency D.recipe) (hu : u ≠ principalFre
           (fun v => (FixedData.primPlus D u).character v.asIdeal) w :=
   (pkg_bridge D).plus_eq_hecke_mul_mask u hu w hw
 
-theorem minus_eq_hecke_mul_mask (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
-    (w : ℂ) (hw : 0 < w.re) :
+include hw in
+theorem minus_eq_hecke_mul_mask :
     (FixedData.pkg D).minus u w =
       (RowHeckeBridge.hecke D.recipe.A (FixedData.primMinus D u)
           ((FixedData.pkg D).nonprincipal u hu).2).L w *
@@ -52,6 +56,8 @@ theorem minus_eq_hecke_mul_mask (u : Frequency D.recipe) (hu : u ≠ principalFr
           (RawHeckeRows.rawDeletionSet (FixedData.rawFrequency D u))
           (fun v => (FixedData.primMinus D u).character v.asIdeal) w :=
   (pkg_bridge D).minus_eq_hecke_mul_mask u hu w hw
+
+end
 
 theorem plus_conductor_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ u : Frequency D.recipe,

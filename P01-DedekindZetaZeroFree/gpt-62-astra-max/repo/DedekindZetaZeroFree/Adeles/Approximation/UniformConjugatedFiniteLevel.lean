@@ -29,11 +29,13 @@ private theorem finiteSubgroup_eq_finitePart :
   ext x
   simp [PGLComplex.AdelicSlices.finiteTuples, Subgroup.mem_iInf]
 
+alias UniformConjugatedFiniteLevel.finiteSubgroup_eq_finitePart := finiteSubgroup_eq_finitePart
+
  theorem exists_archFiniteSplit :
     ∃ e : (KPSmoothActualFlowData.GInfinity F ×
         KPGlobalTorusFunctionData.finitePart F ζ hζ) ≃ₜ* G F ζ hζ,
       ∀ a c, e (a, c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val := by
-  obtain ⟨e, he, _⟩ := PGLComplex.AdelicSlices.actual_product_splitting F ζ hζ
+  obtain ⟨e, he⟩ := PGLComplex.AdelicSlices.actual_product_splitting F ζ hζ
   have h : ∃ e : (PGLComplex.AdelicSlices.ArchGroup F ×
       PGLComplex.AdelicSlices.finiteSubgroup F ζ hζ) ≃ₜ*
       PGLComplex.AdelicSlices.ActualCover F ζ hζ,
@@ -50,26 +52,18 @@ theorem compact_uniform_conjugated_finite_level
         k⁻¹ * a * k ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U := by
   classical
   obtain ⟨e, he⟩ := exists_archFiniteSplit F ζ hζ
-  have h1 : KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
-      (1 : KPSmoothActualFlowData.GInfinity F) = 1 :=
+  have h1 :=
     (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).1
 
-  have hD : IsCompact (Prod.snd '' (e.symm '' C)) :=
-    (hC.image e.symm.continuous).image continuous_snd
-
   obtain ⟨W, hW, hconj⟩ :=
-    compact_conjugation_nhds (Prod.snd '' (e.symm '' C)) hD (U.toOpenSubgroup)
+    compact_conjugation_nhds (Prod.snd '' (e.symm '' C)) ((hC.image e.symm.continuous).image continuous_snd) (U.toOpenSubgroup)
 
   obtain ⟨V, hV⟩ := finitePart_compactOpen_basis F ζ hζ W hW
   refine ⟨V, ?_⟩
   intro k hk a ha
   obtain ⟨v, hv, hvval⟩ := ha
-  let x : KPSmoothActualFlowData.GInfinity F := (e.symm k).1
-  let c : KPGlobalTorusFunctionData.finitePart F ζ hζ := (e.symm k).2
-  have hcD : c ∈ Prod.snd '' (e.symm '' C) := ⟨e.symm k, ⟨k, hk, rfl⟩, rfl⟩
-  have hconjv : c⁻¹ * v * c ∈
-      (U.toOpenSubgroup : Subgroup (KPGlobalTorusFunctionData.finitePart F ζ hζ)) :=
-    hconj c hcD v (hV hv)
+  let x := (e.symm k).1
+  let c := (e.symm k).2
   have hk_eq : k = e (x, c) := by
     rw [← e.apply_symm_apply k]
   have ha_eq : a = e (1, v) := by
@@ -82,7 +76,7 @@ theorem compact_uniform_conjugated_finite_level
     congr 1
     ext <;> simp [mul_assoc]
   rw [hconj_eq, he 1 (c⁻¹ * v * c), h1, one_mul]
-  exact ⟨_, hconjv, rfl⟩
+  exact ⟨_, (hconj c (⟨e.symm k, ⟨k, hk, rfl⟩, rfl⟩) v (hV hv)), rfl⟩
 
 end DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation
 

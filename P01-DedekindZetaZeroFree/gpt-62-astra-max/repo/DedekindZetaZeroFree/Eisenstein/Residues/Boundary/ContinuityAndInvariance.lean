@@ -9,15 +9,14 @@ open scoped Classical NumberField Topology BigOperators
 open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open ResidualBoundaryInvariance
-open _root_.DedekindZetaZeroFree.KPMsRationalCompactCrossPairing renaming compact_core_scalar_continuous → compact_core_scalar_continuous
-open _root_.DedekindZetaZeroFree.KPMsRationalCompactCrossPairing renaming compact_source_core_smooth → compact_source_core_smooth
+open _root_.DedekindZetaZeroFree.KPMsRationalCompactCrossPairing (compact_core_scalar_continuous compact_source_core_smooth)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : KPGlobalTorusFiniteStages.CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : KPGlobalTorusFiniteStages.LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 local notation "G" => KPGlobalTorusFunctionData.G F ζ hζ
@@ -26,13 +25,11 @@ local notation "Source" => KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPCon
 
 theorem boundaryProduct_continuous (f : Source) (x : V) :
     Continuous (boundaryProduct R P C f x) := by
-  have hf : Continuous f.val.val := compact_core_scalar_continuous _ f.val
-    (compact_source_core_smooth f.property)
-  have hx := upper_continuous (coreResidue R P C x)
-    (coreResidue_raw_automorphic R P C x).1.1 (coreResidue_rational_subgroup R P C x)
   unfold boundaryProduct
   rw [KPContFlatSourceRecipe.flatR_zero]
-  exact hf.mul hx.star
+  exact (compact_core_scalar_continuous _ f.val
+    (compact_source_core_smooth f.property)).mul (upper_continuous (coreResidue R P C x)
+    (coreResidue_raw_automorphic R P C x).1.1 (coreResidue_rational_subgroup R P C x)).star
 
 theorem boundaryProduct_unipotent (f : Source) (x : V)
     (a : KPGlobalTorusFunctionData.Adeles F) (g : G) :

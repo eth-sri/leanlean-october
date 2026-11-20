@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 namespace LocalFieldTheory
@@ -70,7 +64,7 @@ theorem residueRootPolynomial_derivative_eval_ne_zero
         (Fintype.card F.residueFieldˣ : F.residueField) ≠ 0 := by
       simpa using
         (FiniteField.card_cast_subgroup_card_ne_zero
-          (K := F.residueField) (⊤ : Subgroup F.residueFieldˣ))
+           (⊤ : Subgroup F.residueFieldˣ))
     simpa [Nat.card_eq_fintype_card, Fintype.card_units] using hunitcard
   have hy :
       (y : F.residueField) ^ ((Nat.card F.residueField - 1) - 1) ≠ 0 :=
@@ -109,11 +103,8 @@ theorem exists_residueRootsOfUnity_lift
         (1 : F.valuationSubring) (ne_of_gt hnpos))
   have hroot : (f.map F.residueMap).eval (y : F.residueField) = 0 := by
     let := Fintype.ofFinite F.residueField
-    have hpow :
-        (y : F.residueField) ^ (Fintype.card F.residueField - 1) = 1 :=
-      FiniteField.pow_card_sub_one_eq_one
-        (K := F.residueField) (y : F.residueField) y.ne_zero
-    simp [f, n, Nat.card_eq_fintype_card, Polynomial.eval_sub, hpow]
+    simp [f, n, Nat.card_eq_fintype_card, Polynomial.eval_sub, (FiniteField.pow_card_sub_one_eq_one
+      (y : F.residueField) y.ne_zero)]
   have hsimple :
       ((f.map F.residueMap).derivative).eval
         (y : F.residueField) ≠ 0 := by
@@ -124,33 +115,33 @@ theorem exists_residueRootsOfUnity_lift
       F.toHenselianDVF.exists_monic_linear_factor_lift_of_reduced_simple_root
         f hf (y : F.residueField) hroot hsimple with
     ⟨a, q, ha_root, ha_residue, _hlinear, _hq, _hfactor⟩
-  have hunit : IsUnit a :=
+  have hunit :=
     (F.residue_ne_zero_iff_isUnit a).1
       (by
-        change F.toHenselianDVF.residueMap a ≠ 0
         rw [ha_residue]
         exact y.ne_zero)
   rcases hunit with ⟨u, hu⟩
   have ha_pow : a ^ n = 1 := by
-    have ha_eval : f.eval a = 0 := Polynomial.IsRoot.def.mp ha_root
-    have hsub : a ^ n - 1 = 0 := by
-      simpa [f, n, Polynomial.eval_sub] using ha_eval
-    exact sub_eq_zero.mp hsub
+    refine sub_eq_zero.mp ?_
+    simpa [f, n, Polynomial.eval_sub] using (Polynomial.IsRoot.def.mp ha_root)
   refine ⟨u, ?_, ?_⟩
-  · rw [mem_rootsOfUnity]
-    apply Units.ext
+  · apply Units.ext
     change
       (((u : F.toHenselianDVF.valuationSubring) : F.valuationSubring) ^
           (Nat.card F.residueField - 1)) =
         (1 : F.valuationSubring)
-    simpa [n, hu] using ha_pow
+    simpa [hu] using ha_pow
   · apply Units.ext
-    rw [higherPrincipalUnitGroup.residueUnitHom_apply]
+    simp
     rw [hu]
     exact ha_residue
 
+section
+
+variable [Finite F.residueField]
+
 /-- The residue map restricted to the Hensel-lifted `(q - 1)`-roots of unity. -/
-def residueRootsOfUnityResidueHom [Finite F.residueField] :
+def residueRootsOfUnityResidueHom :
     higherPrincipalUnitGroup.residueRootsOfUnityGroup F →* F.residueFieldˣ :=
   (higherPrincipalUnitGroup.residueUnitHom F).comp
     (higherPrincipalUnitGroup.residueRootsOfUnityGroup F).subtype
@@ -159,8 +150,7 @@ def residueRootsOfUnityResidueHom [Finite F.residueField] :
 The specified map is surjective: `Function.Surjective
 (higherPrincipalUnitGroup.residueRootsOfUnityResidueHom F)`.
 -/
-theorem residueRootsOfUnityResidueHom_surjective
-    [Finite F.residueField] :
+theorem residueRootsOfUnityResidueHom_surjective :
     Function.Surjective
       (higherPrincipalUnitGroup.residueRootsOfUnityResidueHom F) := by
   intro y
@@ -171,47 +161,43 @@ theorem residueRootsOfUnityResidueHom_surjective
 
 /-- A unit satisfying the Teichmuller equation is a root of
 `X^(q - 1) - 1` over the valuation ring. -/
-theorem residueRootPolynomial_isRoot_of_mem
-    [Finite F.residueField] {u : F.valuationSubringˣ}
+theorem residueRootPolynomial_isRoot_of_mem {u : F.valuationSubringˣ}
     (hu : u ∈ higherPrincipalUnitGroup.residueRootsOfUnityGroup F) :
     (Polynomial.X ^ (Nat.card F.residueField - 1) - 1 :
         Polynomial F.valuationSubring).IsRoot
       (u : F.valuationSubring) := by
-  rw [mem_rootsOfUnity] at hu
+  simp at hu
   have hpow :
       (u : F.valuationSubring) ^ (Nat.card F.residueField - 1) = 1 := by
-    have hunit :=
-      congrArg (fun z : F.valuationSubringˣ => (z : F.valuationSubring)) hu
-    simpa using hunit
+    exact (congrArg (fun z : F.valuationSubringˣ => (z : F.valuationSubring)) hu)
   exact Polynomial.IsRoot.def.mpr (by
     simp [Polynomial.eval_sub, hpow])
 
 /-- The derivative of `X^(q - 1) - 1` at a valuation-ring unit is a unit.
 This is the simple-root input for uniqueness of Teichmuller representatives. -/
-theorem residueRootPolynomial_derivative_eval_isUnit
-    [Finite F.residueField] (u : F.valuationSubringˣ) :
+theorem residueRootPolynomial_derivative_eval_isUnit (u : F.valuationSubringˣ) :
     IsUnit
       (((Polynomial.X ^ (Nat.card F.residueField - 1) - 1 :
           Polynomial F.valuationSubring).derivative).eval
         (u : F.valuationSubring)) := by
   let n := Nat.card F.residueField - 1
   let f : Polynomial F.valuationSubring := Polynomial.X ^ n - 1
+  let residueMap₀ := F.residueMap (u : F.valuationSubring)
   have hres :
       F.residueMap (f.derivative.eval (u : F.valuationSubring)) =
         ((f.map F.residueMap).derivative).eval
-          (F.residueMap (u : F.valuationSubring)) := by
+          (residueMap₀) := by
     calc
-      F.residueMap (f.derivative.eval (u : F.valuationSubring)) =
+      _ =
           (f.derivative.map F.residueMap).eval
-            (F.residueMap (u : F.valuationSubring)) := by
-        exact (Polynomial.eval_map_apply (f := F.residueMap)
+            (residueMap₀) := (Polynomial.eval_map_apply (f := F.residueMap)
           (p := f.derivative) (u : F.valuationSubring)).symm
       _ = ((f.map F.residueMap).derivative).eval
-          (F.residueMap (u : F.valuationSubring)) := by
-        rw [Polynomial.derivative_map]
+          (residueMap₀) := by
+        simp
   have hsimple :
       ((f.map F.residueMap).derivative).eval
-          (F.residueMap (u : F.valuationSubring)) ≠ 0 := by
+          (residueMap₀) ≠ 0 := by
     simpa [f, n, higherPrincipalUnitGroup.residueUnitHom] using
       higherPrincipalUnitGroup.residueRootPolynomial_derivative_eval_ne_zero
         (F := F) (higherPrincipalUnitGroup.residueUnitHom F u)
@@ -226,8 +212,7 @@ theorem residueRootPolynomial_derivative_eval_isUnit
 The specified map is injective: `Function.Injective
 (higherPrincipalUnitGroup.residueRootsOfUnityResidueHom F)`.
 -/
-theorem residueRootsOfUnityResidueHom_injective
-    [Finite F.residueField] :
+theorem residueRootsOfUnityResidueHom_injective :
     Function.Injective
       (higherPrincipalUnitGroup.residueRootsOfUnityResidueHom F) := by
   intro x y hxy
@@ -248,10 +233,8 @@ theorem residueRootsOfUnityResidueHom_injective
   have hres :
       F.residueMap ((y : F.valuationSubringˣ) : F.valuationSubring) =
         F.residueMap ((x : F.valuationSubringˣ) : F.valuationSubring) := by
-    have hval :=
-      congrArg (fun z : F.residueFieldˣ => (z : F.residueField)) hxy
     simpa [higherPrincipalUnitGroup.residueRootsOfUnityResidueHom,
-      higherPrincipalUnitGroup.residueUnitHom] using hval.symm
+      higherPrincipalUnitGroup.residueUnitHom] using (congrArg (fun z : F.residueFieldˣ => (z : F.residueField)) hxy).symm
   have hderiv :
       IsUnit
         (f.derivative.eval
@@ -260,25 +243,22 @@ theorem residueRootsOfUnityResidueHom_injective
     exact
       higherPrincipalUnitGroup.residueRootPolynomial_derivative_eval_isUnit
         (F := F) (x : F.valuationSubringˣ)
-  have hring :
-      ((y : F.valuationSubringˣ) : F.valuationSubring) =
-        ((x : F.valuationSubringˣ) : F.valuationSubring) :=
-    F.toHenselianDVF.eq_of_isRoot_of_isRoot_of_residue_eq_of_derivative_isUnit
-      (f := f) hxroot hyroot hres hderiv
   apply Subtype.ext
   apply Units.ext
-  exact hring.symm
+  exact (F.toHenselianDVF.eq_of_isRoot_of_isRoot_of_residue_eq_of_derivative_isUnit
+    hxroot hyroot hres hderiv).symm
 
 /--
 The specified map is bijective: `Function.Bijective
 (higherPrincipalUnitGroup.residueRootsOfUnityResidueHom F)`.
 -/
-theorem residueRootsOfUnityResidueHom_bijective
-    [Finite F.residueField] :
+theorem residueRootsOfUnityResidueHom_bijective :
     Function.Bijective
       (higherPrincipalUnitGroup.residueRootsOfUnityResidueHom F) :=
   ⟨higherPrincipalUnitGroup.residueRootsOfUnityResidueHom_injective F,
     higherPrincipalUnitGroup.residueRootsOfUnityResidueHom_surjective F⟩
+
+end
 
 /-- Hensel's splitting of the residue-unit map on the `(q - 1)`-roots of
 unity: the Teichmuller representatives in `O^*` are exactly `κ^*`. -/

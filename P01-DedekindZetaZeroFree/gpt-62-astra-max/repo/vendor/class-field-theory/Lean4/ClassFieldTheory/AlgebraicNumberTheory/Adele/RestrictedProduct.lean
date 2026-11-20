@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -33,7 +30,6 @@ open scoped NumberField TensorProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 universe u v
 
@@ -103,8 +99,7 @@ theorem relativeLocalAdeleCoefficient_infinite
     (a : RelativeLocalAdeleData (K := K) (L := L))
     (i : RelativeAdeleBasisIndex (K := K) (L := L))
     (w : InfinitePlace K) :
-    (relativeLocalAdeleCoefficient
-      (K := K) (L := L) a i).1 w =
+    (relativeLocalAdeleCoefficient a i).1 w =
       (Algebra.TensorProduct.basis
           w.Completion
           (relativeExtensionBasis
@@ -118,8 +113,7 @@ theorem relativeLocalAdeleCoefficient_finite
     (a : RelativeLocalAdeleData (K := K) (L := L))
     (i : RelativeAdeleBasisIndex (K := K) (L := L))
     (w : HeightOneSpectrum (𝓞 K)) :
-    (relativeLocalAdeleCoefficient
-      (K := K) (L := L) a i).2 w =
+    (relativeLocalAdeleCoefficient a i).2 w =
       (Algebra.TensorProduct.basis
           (w.adicCompletion K)
           (relativeExtensionBasis
@@ -144,22 +138,21 @@ theorem relativeAdeleOfLocalData_infiniteComponent
     (w : InfinitePlace K) :
     relativeAdeleInfiniteComponent
         (K := K) (L := L) w
-        (relativeAdeleOfLocalData
-          (K := K) (L := L) a) =
+        (relativeAdeleOfLocalData a) =
       a.infinite w := by
   apply
     (Algebra.TensorProduct.basis
       w.Completion
       (relativeExtensionBasis
-        (K := K) (L := L))).repr.injective
+         )).repr.injective
   apply Finsupp.ext
   intro i
-  rw [relativeAdeleInfiniteComponent_basis_repr]
+  simp
   have h :=
     relativeAdeleCoefficient_ofCoefficients
-      (K := K) (L := L)
+
       (relativeLocalAdeleCoefficient
-        (K := K) (L := L) a) i
+          a) i
   exact congrArg
     (fun q : NumberField.AdeleRing (𝓞 K) K =>
       q.1 w) h
@@ -171,22 +164,21 @@ theorem relativeAdeleOfLocalData_finiteComponent
     (w : HeightOneSpectrum (𝓞 K)) :
     relativeAdeleFiniteComponent
         (K := K) (L := L) w
-        (relativeAdeleOfLocalData
-          (K := K) (L := L) a) =
+        (relativeAdeleOfLocalData a) =
       a.finite w := by
   apply
     (Algebra.TensorProduct.basis
       (w.adicCompletion K)
       (relativeExtensionBasis
-        (K := K) (L := L))).repr.injective
+         )).repr.injective
   apply Finsupp.ext
   intro i
-  rw [relativeAdeleFiniteComponent_basis_repr]
+  simp
   have h :=
     relativeAdeleCoefficient_ofCoefficients
-      (K := K) (L := L)
+
       (relativeLocalAdeleCoefficient
-        (K := K) (L := L) a) i
+          a) i
   exact congrArg
     (fun q : NumberField.AdeleRing (𝓞 K) K =>
       q.2.1 w) h
@@ -205,11 +197,11 @@ noncomputable def relativeAdeleToLocalData
   eventually_integral i := by
     filter_upwards [
       (relativeAdeleCoefficient
-        (K := K) (L := L) z i).2.2] with w hw
+          z i).2.2] with w hw
     rw [relativeAdeleFiniteComponent_basis_repr]
     change
       (relativeAdeleCoefficient
-        (K := K) (L := L) z i).2.1 w ∈
+          z i).2.1 w ∈
           w.adicCompletionIntegers K at hw ⊢
     exact hw
 
@@ -219,63 +211,15 @@ theorem relativeAdeleOfLocalData_toLocalData
     (z : RelativeAdeleRing K L) :
     relativeAdeleOfLocalData
         (K := K) (L := L)
-        (relativeAdeleToLocalData
-          (K := K) (L := L) z) =
+        (relativeAdeleToLocalData z) =
       z := by
   apply relativeAdele_ext_of_components
   · intro w
-    rw [relativeAdeleOfLocalData_infiniteComponent
-      (K := K) (L := L)]
+    simp
     rfl
   · intro w
-    rw [relativeAdeleOfLocalData_finiteComponent
-      (K := K) (L := L)]
+    simp
     rfl
-
-omit [NumberField L] in
-@[simp]
-theorem relativeAdeleToLocalData_ofLocalData
-    (a : RelativeLocalAdeleData (K := K) (L := L)) :
-    relativeAdeleToLocalData
-        (K := K) (L := L)
-        (relativeAdeleOfLocalData
-          (K := K) (L := L) a) =
-      a := by
-  apply RelativeLocalAdeleData.ext
-  · funext w
-    change
-      relativeAdeleInfiniteComponent
-          (K := K) (L := L) w
-          (relativeAdeleOfLocalData
-            (K := K) (L := L) a) =
-        a.infinite w
-    rw [relativeAdeleOfLocalData_infiniteComponent
-      (K := K) (L := L)]
-  · funext w
-    change
-      relativeAdeleFiniteComponent
-          (K := K) (L := L) w
-          (relativeAdeleOfLocalData
-            (K := K) (L := L) a) =
-        a.finite w
-    rw [relativeAdeleOfLocalData_finiteComponent
-      (K := K) (L := L)]
-
-/-- Coordinatewise restricted local tensor families are exactly
-relative adeles. -/
-noncomputable def relativeAdeleEquivLocalData :
-    RelativeAdeleRing K L ≃
-      RelativeLocalAdeleData (K := K) (L := L) where
-  toFun :=
-    relativeAdeleToLocalData (K := K) (L := L)
-  invFun :=
-    relativeAdeleOfLocalData (K := K) (L := L)
-  left_inv :=
-    relativeAdeleOfLocalData_toLocalData
-      (K := K) (L := L)
-  right_inv :=
-    relativeAdeleToLocalData_ofLocalData
-      (K := K) (L := L)
 
 /-- A restricted family of local tensor units.  Restrictedness is
 required both for the family and for its pointwise inverse. -/
@@ -392,33 +336,32 @@ noncomputable def relativeIdeleOfLocalData
     RelativeIdeleGroup K L := by
   let x :=
     relativeAdeleOfLocalData
-      (K := K) (L := L) a.value
+        a.value
   let y :=
     relativeAdeleOfLocalData
-      (K := K) (L := L) a.inverse
-  have hxy : x * y = 1 := by
-    apply relativeAdele_ext_of_components
-    · intro w
-      rw [map_mul,
-        relativeAdeleOfLocalData_infiniteComponent,
-        relativeAdeleOfLocalData_infiniteComponent,
-        map_one]
-      change
-        (((a.infinite w) * (a.infinite w)⁻¹ :
-          (w.Completion ⊗[K] L)ˣ) :
-            w.Completion ⊗[K] L) = 1
-      simp
-    · intro w
-      rw [map_mul,
-        relativeAdeleOfLocalData_finiteComponent,
-        relativeAdeleOfLocalData_finiteComponent,
-        map_one]
-      change
-        (((a.finite w) * (a.finite w)⁻¹ :
-          (w.adicCompletion K ⊗[K] L)ˣ) :
-            w.adicCompletion K ⊗[K] L) = 1
-      simp
-  exact Units.mkOfMulEqOne x y hxy
+        a.inverse
+  apply Units.mkOfMulEqOne x y
+  apply relativeAdele_ext_of_components
+  · intro w
+    rw [map_mul,
+      relativeAdeleOfLocalData_infiniteComponent,
+      relativeAdeleOfLocalData_infiniteComponent,
+      map_one]
+    change
+      (((a.infinite w) * (a.infinite w)⁻¹ :
+        (w.Completion ⊗[K] L)ˣ) :
+          w.Completion ⊗[K] L) = 1
+    simp
+  · intro w
+    rw [map_mul,
+      relativeAdeleOfLocalData_finiteComponent,
+      relativeAdeleOfLocalData_finiteComponent,
+      map_one]
+    change
+      (((a.finite w) * (a.finite w)⁻¹ :
+        (w.adicCompletion K ⊗[K] L)ˣ) :
+          w.adicCompletion K ⊗[K] L) = 1
+    simp
 
 omit [NumberField L] in
 @[simp]
@@ -427,15 +370,14 @@ theorem relativeIdeleOfLocalData_infiniteComponent
     (w : InfinitePlace K) :
     RelativeIdeleGroup.infiniteComponent
         (K := K) (L := L) w
-        (relativeIdeleOfLocalData
-          (K := K) (L := L) a) =
+        (relativeIdeleOfLocalData a) =
       a.infinite w := by
   apply Units.ext
   change
     relativeAdeleInfiniteComponent
-        (K := K) (L := L) w
+          w
         (relativeAdeleOfLocalData
-          (K := K) (L := L) a.value) =
+            a.value) =
       (a.infinite w :
         w.Completion ⊗[K] L)
   rw [relativeAdeleOfLocalData_infiniteComponent]
@@ -453,15 +395,14 @@ theorem relativeIdeleOfLocalData_finiteComponent
     (w : HeightOneSpectrum (𝓞 K)) :
     RelativeIdeleGroup.finiteComponent
         (K := K) (L := L) w
-        (relativeIdeleOfLocalData
-          (K := K) (L := L) a) =
+        (relativeIdeleOfLocalData a) =
       a.finite w := by
   apply Units.ext
   change
     relativeAdeleFiniteComponent
-        (K := K) (L := L) w
+          w
         (relativeAdeleOfLocalData
-          (K := K) (L := L) a.value) =
+            a.value) =
       (a.finite w :
         w.adicCompletion K ⊗[K] L)
   rw [relativeAdeleOfLocalData_finiteComponent]
@@ -478,36 +419,33 @@ theorem relativeIdeleOfLocalData_toLocalData
     (z : RelativeIdeleGroup K L) :
     relativeIdeleOfLocalData
         (K := K) (L := L)
-        (relativeIdeleToLocalData
-          (K := K) (L := L) z) =
+        (relativeIdeleToLocalData z) =
       z := by
   apply relativeIdeleLocalComponents_injective
   apply Prod.ext
   · funext w
     change
       RelativeIdeleGroup.infiniteComponent
-          (K := K) (L := L) w
+            w
           (relativeIdeleOfLocalData
-            (K := K) (L := L)
+
             (relativeIdeleToLocalData
-              (K := K) (L := L) z)) =
+                z)) =
         RelativeIdeleGroup.infiniteComponent
-          (K := K) (L := L) w z
-    rw [relativeIdeleOfLocalData_infiniteComponent
-      (K := K) (L := L)]
+            w z
+    simp
     rfl
   · funext w
     change
       RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L) w
+            w
           (relativeIdeleOfLocalData
-            (K := K) (L := L)
+
             (relativeIdeleToLocalData
-              (K := K) (L := L) z)) =
+                z)) =
         RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L) w z
-    rw [relativeIdeleOfLocalData_finiteComponent
-      (K := K) (L := L)]
+            w z
+    simp
     rfl
 
 omit [NumberField L] in
@@ -516,28 +454,25 @@ theorem relativeIdeleToLocalData_ofLocalData
     (a : RelativeLocalIdeleData (K := K) (L := L)) :
     relativeIdeleToLocalData
         (K := K) (L := L)
-        (relativeIdeleOfLocalData
-          (K := K) (L := L) a) =
+        (relativeIdeleOfLocalData a) =
       a := by
   apply RelativeLocalIdeleData.ext
   · funext w
     change
       RelativeIdeleGroup.infiniteComponent
-          (K := K) (L := L) w
+            w
           (relativeIdeleOfLocalData
-            (K := K) (L := L) a) =
+              a) =
         a.infinite w
-    rw [relativeIdeleOfLocalData_infiniteComponent
-      (K := K) (L := L)]
+    simp
   · funext w
     change
       RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L) w
+            w
           (relativeIdeleOfLocalData
-            (K := K) (L := L) a) =
+              a) =
         a.finite w
-    rw [relativeIdeleOfLocalData_finiteComponent
-      (K := K) (L := L)]
+    simp
 
 /-- The relative idele group is exactly the coordinate-restricted
 product of all local tensor unit groups. -/
@@ -576,10 +511,8 @@ omit [NumberField L] in
 @[simp]
 theorem relativeIdeleMulEquivLocalData_apply
     (z : RelativeIdeleGroup K L) :
-    relativeIdeleMulEquivLocalData
-        (K := K) (L := L) z =
-      relativeIdeleToLocalData
-        (K := K) (L := L) z :=
+    relativeIdeleMulEquivLocalData z =
+      relativeIdeleToLocalData z :=
   rfl
 
 omit [NumberField L] in
@@ -590,24 +523,14 @@ theorem RelativeLocalIdeleData.infinite_mul
     (a * b).infinite w =
       a.infinite w * b.infinite w := by
   change
-    (relativeIdeleToLocalData
-      (K := K) (L := L)
-      (relativeIdeleOfLocalData
-          (K := K) (L := L) a *
-        relativeIdeleOfLocalData
-          (K := K) (L := L) b)).infinite w =
-      a.infinite w * b.infinite w
-  change
     RelativeIdeleGroup.infiniteComponent
-        (K := K) (L := L) w
+          w
         (relativeIdeleOfLocalData
-            (K := K) (L := L) a *
+              a *
           relativeIdeleOfLocalData
-            (K := K) (L := L) b) =
+              b) =
       a.infinite w * b.infinite w
-  rw [map_mul,
-    relativeIdeleOfLocalData_infiniteComponent,
-    relativeIdeleOfLocalData_infiniteComponent]
+  simp
 
 omit [NumberField L] in
 @[simp]
@@ -617,23 +540,13 @@ theorem RelativeLocalIdeleData.finite_mul
     (a * b).finite w =
       a.finite w * b.finite w := by
   change
-    (relativeIdeleToLocalData
-      (K := K) (L := L)
-      (relativeIdeleOfLocalData
-          (K := K) (L := L) a *
-        relativeIdeleOfLocalData
-          (K := K) (L := L) b)).finite w =
-      a.finite w * b.finite w
-  change
     RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) w
+          w
         (relativeIdeleOfLocalData
-            (K := K) (L := L) a *
+              a *
           relativeIdeleOfLocalData
-            (K := K) (L := L) b) =
+              b) =
       a.finite w * b.finite w
-  rw [map_mul,
-    relativeIdeleOfLocalData_finiteComponent,
-    relativeIdeleOfLocalData_finiteComponent]
+  simp
 
 end

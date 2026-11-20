@@ -12,8 +12,8 @@ namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource.CofactorChamber
 open KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
 open KPLocalPrincipalSeries
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
@@ -24,14 +24,18 @@ def chamberRaw (F : Type) [Field F] [NumberField F] (zeta : F) (hzeta : IsPrimit
     KPAdelicCoverRestrictedProduct.RestrictedCover F zeta hzeta :=
   KPRationalAdelicSplitting.WTuple F zeta hzeta * KPGlobalTorusFunctionData.rootTuple F zeta hzeta x
 
-theorem chamberRaw_arch_epsilon (x : KPGlobalTorusFunctionData.Adeles F) (w : InfinitePlace F) :
+section
+
+variable (x : KPGlobalTorusFunctionData.Adeles F) (w : InfinitePlace F)
+
+theorem chamberRaw_arch_epsilon :
     (chamberRaw F ζ hζ x (Sum.inl w)).epsilon = 1 := by
   simp [chamberRaw, KPGlobalTorusFunctionData.rootTuple,
     KPStandardLocalRootLifts.W, KPStandardLocalRootLifts.N,
     KPLocalCover.mul_epsilon, KPLocalCover.sectionMap, KPLocalCover.sigmaTwo,
     KubotaElementaryLastArgument.tau, KPHilbert.B3, KPHilbert.B6_infinite]
 
-theorem chamberRaw_complexMatrix (x : KPGlobalTorusFunctionData.Adeles F) (w : InfinitePlace F) :
+theorem chamberRaw_complexMatrix :
     LiteralSource.complexMatrix R.A w
       (chamberRaw F ζ hζ x (Sum.inl w)) =
       KPCplxCharacterHaar.weyl * KPCplxCharacterHaar.upperUnipotent
@@ -54,6 +58,8 @@ theorem chamberRaw_complexMatrix (x : KPGlobalTorusFunctionData.Adeles F) (w : I
         KPAdelicCoverRestrictedProduct.adeleEval]
     rfl
 
+end
+
 theorem chamberRaw_archCylinder (s : ℂ) (x : KPGlobalTorusFunctionData.Adeles F) :
     (∏ w : InfinitePlace F,
       (KPSourceConvention.ordinaryGenuineCharacter F ζ hζ
@@ -69,14 +75,12 @@ theorem chamberRaw_archCylinder (s : ℂ) (x : KPGlobalTorusFunctionData.Adeles 
   simp only [TraceBox.archCylinder, TateTensorProfile.archTensor,
     PoissonArch.infiniteAdeleToSpace_coordinates, InfiniteAdeleRing.ringEquiv_mixedSpace_apply,
     TraceBox.complexIntegrand, mul_one]
-  let e : {w : InfinitePlace F // w.IsComplex} ≃ InfinitePlace F :=
-    Equiv.subtypeUnivEquiv (fun w => NumberField.IsTotallyComplex.isComplex w)
-  exact (Fintype.prod_equiv e (fun w =>
+  exact (Fintype.prod_equiv (Equiv.subtypeUnivEquiv (fun w => NumberField.IsTotallyComplex.isComplex w)) (fun w =>
     KPComplexIntertwinerParameterMajorant.forwardSection s
       KPComplexStandardIntertwinerGerm.compactSpherical
       (KPCplxCharacterHaar.weyl * KPCplxCharacterHaar.upperUnipotent
         (InfinitePlace.Completion.extensionEmbedding w.val (x.1 w.val)))) _
-    (fun w => by rfl)).symm
+    (fun w => rfl)).symm
 
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource.CofactorChamber
 

@@ -74,13 +74,16 @@ def complexParameterOutput (z : ℂ) (g : KPCplxCharacterHaar.ComplexGL2) :
   else 0
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (N : TraceHaarTransport R)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 
-def finiteParameterInput (q : KPFinitePlace F) (J : IwasawaData (C.canonical q).borel)
-    (z : ℂ) : Plus R N P C (.inr q) →ₗ[ℂ]
+section
+
+variable (q : KPFinitePlace F) (J : IwasawaData (C.canonical q).borel) (z : ℂ)
+
+def finiteParameterInput : Plus R N P C (.inr q) →ₗ[ℂ]
       sectionSpace (C.canonical q).borel (C.polarization q) .plus z :=
   (compactTrivialization (C.canonical q).borel (C.polarization q)
     (C.canonical q).iwasawa .plus z).toLinearMap.comp
@@ -89,8 +92,7 @@ def finiteParameterInput (q : KPFinitePlace F) (J : IwasawaData (C.canonical q).
       (compactTrivialization (C.canonical q).borel (C.polarization q)
         (C.canonical q).iwasawa .plus 0).symm.toLinearMap)
 
-theorem finiteParameterInput_displacement (q : KPFinitePlace F)
-    (J : IwasawaData (C.canonical q).borel) (z : ℂ)
+theorem finiteParameterInput_displacement
     (f : Plus R N P C (.inr q)) (g : ActualCover F R.A.zeta12 R.A.primitive_zeta12 q) :
     (finiteParameterInput R N P C q J z f).val g =
       Complex.exp (z * (Real.log (LocalCompactChange.forwardAbs F R.A.zeta12
@@ -103,9 +105,12 @@ theorem finiteParameterInput_displacement (q : KPFinitePlace F)
         (C.canonical q).iwasawa .plus 0).symm f))).val g = _
   rw [LocalCompactChange.correctedCompact_displacement, LinearEquiv.apply_symm_apply]
 
-def parameterOutput (J : ∀ q, IwasawaData (C.canonical q).borel)
-    (p : KPHilbert.Place F)
-    (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 p) (z : ℂ) :
+end
+
+variable (J : ∀ q, IwasawaData (C.canonical q).borel) (p : KPHilbert.Place F)
+    (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 p)
+
+def parameterOutput (z : ℂ) :
     Plus R N P C p →ₗ[ℂ] Fiber R P C p :=
   match p with
   | .inl w =>
@@ -123,9 +128,7 @@ def parameterOutput (J : ∀ q, IwasawaData (C.canonical q).borel)
         map_add' f h := by simp only [map_add]; rfl
         map_smul' c f := by simp only [map_smul]; rfl }
 
-theorem parameterOutput_zero (J : ∀ q, IwasawaData (C.canonical q).borel)
-    (p : KPHilbert.Place F)
-    (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 p)
+theorem parameterOutput_zero
     (f : Plus R N P C p) :
     parameterOutput R N P C J p a 0 f =
       localMinusValue R N P C p a (arithmeticQuotient R N P C p f) := by
@@ -174,8 +177,6 @@ theorem parameterOutput_zero (J : ∀ q, IwasawaData (C.canonical q).borel)
     rfl
 
 theorem parameterOutput_coordinate_analytic
-    (J : ∀ q, IwasawaData (C.canonical q).borel) (p : KPHilbert.Place F)
-    (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 p)
     (f : Plus R N P C p) (j : InducingCoordinate R P C p) :
     AnalyticOnNhd ℂ (fun z => inducingCoordinates R P C p
       (parameterOutput R N P C J p a z f) j) KPContinuation.spectralDomain := by
@@ -218,9 +219,7 @@ theorem parameterOutput_coordinate_analytic
     change (arithmeticRootScale R (.inr q) : ℂ) * _ = _
     rfl
 
-def parameterKernel (J : ∀ q, IwasawaData (C.canonical q).borel)
-    (p : KPHilbert.Place F)
-    (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 p)
+def parameterKernel
     (z : ℂ) (x : RootPoint R p) : Plus R N P C p →ₗ[ℂ] Fiber R P C p :=
   match p with
   | .inl w =>
@@ -245,8 +244,6 @@ def parameterKernel (J : ∀ q, IwasawaData (C.canonical q).borel)
       map_smul' c f := by simp only [map_smul]; rfl }
 
 theorem parameterKernel_integrable
-    (J : ∀ q, IwasawaData (C.canonical q).borel) (p : KPHilbert.Place F)
-    (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 p)
     (z : ℂ) (hz : z ∈ KPContinuation.spectralDomain)
     (f : Plus R N P C p) (j : InducingCoordinate R P C p) :
     Integrable (fun x => inducingCoordinates R P C p
@@ -256,16 +253,14 @@ theorem parameterKernel_integrable
     have hz' : z ∈ KPComplexStandardIntertwinerGerm.halfPlane := by
       simpa only [KPContinuation.spectralDomain, KPComplexStandardIntertwinerGerm.halfPlane,
         neg_div] using hz
-    have hi := (haarIntegral_integrable 1 z hz' (complexInput f.val) (complexMatrix R w a)).const_mul
-      (KPSourceConvention.ordinaryGenuineCharacter F R.A.zeta12 R.A.primitive_zeta12 a.epsilon : ℂ)
     rw [arithmeticRootMeasure_eq R N (imageData R N P C) (.inl w)]
-    exact hi.smul_measure ENNReal.ofReal_ne_top
+    exact ((haarIntegral_integrable 1 z hz' (complexInput f.val) (complexMatrix R w a)).const_mul
+      (KPSourceConvention.ordinaryGenuineCharacter F R.A.zeta12 R.A.primitive_zeta12 a.epsilon : ℂ)).smul_measure ENNReal.ofReal_ne_top
   | inr q =>
-    have hz' : convergenceHalfPlane .plus z := by
-      simpa [convergenceHalfPlane, KPContinuation.spectralDomain, neg_div] using hz
     have hi := actualCanonicalContinued_integrable F q R.A.zeta12 R.A.primitive_zeta12
       (C.canonical q) (C.polarization q) (integerHaar R N q) (integerHaar_integer R N q)
-      .plus z hz' (finiteParameterInput R N P C q (J q) z f)
+      .plus z (by
+        simpa [convergenceHalfPlane, KPContinuation.spectralDomain, neg_div] using hz) (finiteParameterInput R N P C q (J q) z f)
       (KPPGLLocalCover.coverQuotient F R.A.zeta12 R.A.primitive_zeta12 (.inr q) a)
       (Function.surjInv (QuotientGroup.mk'_surjective
         ((C.polarization q).L.comap (C.canonical q).heisenberg.π)) j)
@@ -273,8 +268,6 @@ theorem parameterKernel_integrable
     exact hi.smul_measure ENNReal.ofReal_ne_top
 
 theorem parameterKernel_integral
-    (J : ∀ q, IwasawaData (C.canonical q).borel) (p : KPHilbert.Place F)
-    (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 p)
     (z : ℂ) (hz : z ∈ KPContinuation.spectralDomain)
     (f : Plus R N P C p) (j : InducingCoordinate R P C p) :
     (∫ x, inducingCoordinates R P C p (parameterKernel R N P C J p a z x f) j

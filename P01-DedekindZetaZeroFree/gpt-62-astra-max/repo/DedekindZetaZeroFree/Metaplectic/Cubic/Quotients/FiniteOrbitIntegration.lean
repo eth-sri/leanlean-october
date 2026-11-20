@@ -19,8 +19,7 @@ local instance : Fintype (rootsOfUnity 3 F) := Fintype.ofFinite _
 
 include ζ hζ in
 
-theorem card_cubic_center : Nat.card (rootsOfUnity 3 F) = 3 := by
-  exact (IsPrimitiveRoot.pow (by norm_num : 0 < 12) hζ
+theorem card_cubic_center : Nat.card (rootsOfUnity 3 F) = 3 := (IsPrimitiveRoot.pow (by norm_num : 0 < 12) hζ
     (by norm_num : 12 = 4 * 3)).card_rootsOfUnity
 
 private lemma ennreal_inv_mul_eq_inv {o c : ℕ} (h : o * c = 3) :
@@ -46,19 +45,20 @@ private lemma measurable_iff_comp_q (U : KPMsFixedHaarDisintegration.Level F ζ 
         borel (CoveredSpherical F ζ hζ U) from rfl]
   rw [measurable_iff_le_map, measurable_iff_le_map, ← hmap, MeasurableSpace.map_comp]
 
-def centralAverage (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞) :
+section
+
+variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ) (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞)
+
+def centralAverage :
     CoveredSpherical F ζ hζ U → ℝ≥0∞ :=
   fun v => (3 : ℝ≥0∞)⁻¹ * ∑ ε : rootsOfUnity 3 F, ψ (z F ζ hζ U ε v)
 
-def distinctOrbitAverage (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞)
+def distinctOrbitAverage
     (v : CoveredSpherical F ζ hζ U) : ℝ≥0∞ :=
   (Nat.card (MulAction.orbit (rootsOfUnity 3 F) v) : ℝ≥0∞)⁻¹ *
     ∑ w ∈ (Finite.finite_mulAction_orbit (M := rootsOfUnity 3 F) v).toFinset, ψ w
 
-theorem centralAverage_invariant (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞)
+theorem centralAverage_invariant
     (ε : rootsOfUnity 3 F) (v : CoveredSpherical F ζ hζ U) :
     centralAverage F ζ hζ U ψ (z F ζ hζ U ε v) =
       centralAverage F ζ hζ U ψ v := by
@@ -77,8 +77,7 @@ theorem centralAverage_invariant (U : KPMsFixedHaarDisintegration.Level F ζ hζ
     rw [Equiv.sum_comp (Equiv.mulRight ε) (fun δ => ψ (z F ζ hζ U δ v))]
   rw [h1, h2]
 
-theorem centralAverage_measurable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞) (hψ : Measurable ψ) :
+theorem centralAverage_measurable (hψ : Measurable ψ) :
     Measurable (centralAverage F ζ hζ U ψ) := by
   show Measurable (fun v => (3 : ℝ≥0∞)⁻¹ *
     ∑ ε : rootsOfUnity 3 F, ψ (z F ζ hζ U ε v))
@@ -87,11 +86,9 @@ theorem centralAverage_measurable (U : KPMsFixedHaarDisintegration.Level F ζ h�
   intro ε _
   exact hψ.comp (z F ζ hζ U ε).continuous.measurable
 
-theorem existsUnique_borel_descent (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞) (hψ : Measurable ψ) :
+theorem existsUnique_borel_descent (hψ : Measurable ψ) :
     ∃! a : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ≥0∞,
       Measurable a ∧ ∀ v, a (q F ζ hζ U v) = centralAverage F ζ hζ U ψ v := by
-  have hf : Measurable (centralAverage F ζ hζ U ψ) := centralAverage_measurable F ζ hζ U ψ hψ
   have hfiber : ∀ v w, q F ζ hζ U v = q F ζ hζ U w →
       centralAverage F ζ hζ U ψ v = centralAverage F ζ hζ U ψ w := by
     intro v w hvw
@@ -100,7 +97,7 @@ theorem existsUnique_borel_descent (U : KPMsFixedHaarDisintegration.Level F ζ h
     exact (centralAverage_invariant F ζ hζ U ψ ε v).symm
   obtain ⟨g, hg⟩ :=
     (KPContSectorQuotientRelationsComparison.q_surjective F ζ hζ U).hasRightInverse
-  have hgq : ∀ v, q F ζ hζ U (g (q F ζ hζ U v)) = q F ζ hζ U v :=
+  have hgq :=
     fun v => hg (q F ζ hζ U v)
   refine ⟨fun b => centralAverage F ζ hζ U ψ (g b), ⟨?_, ?_⟩, ?_⟩
   · rw [measurable_iff_comp_q F ζ hζ U]
@@ -109,7 +106,7 @@ theorem existsUnique_borel_descent (U : KPMsFixedHaarDisintegration.Level F ζ h
       funext v
       exact hfiber (g (q F ζ hζ U v)) v (hgq v)
     rw [hcomp]
-    exact hf
+    exact (centralAverage_measurable F ζ hζ U ψ hψ)
   · intro v
     exact hfiber (g (q F ζ hζ U v)) v (hgq v)
   · intro a ha
@@ -117,22 +114,21 @@ theorem existsUnique_borel_descent (U : KPMsFixedHaarDisintegration.Level F ζ h
     obtain ⟨v, rfl⟩ := KPContSectorQuotientRelationsComparison.q_surjective F ζ hζ U b
     exact (ha.2 v).trans (hfiber (g (q F ζ hζ U v)) v (hgq v)).symm
 
-def borelDescent (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞) (hψ : Measurable ψ) :
+def borelDescent (hψ : Measurable ψ) :
     KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ≥0∞ :=
   Classical.choose (existsUnique_borel_descent F ζ hζ U ψ hψ).exists
 
-theorem borelDescent_measurable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞) (hψ : Measurable ψ) :
+theorem borelDescent_measurable (hψ : Measurable ψ) :
     Measurable (borelDescent F ζ hζ U ψ hψ) :=
   (Classical.choose_spec (existsUnique_borel_descent F ζ hζ U ψ hψ).exists).1
 
-theorem borelDescent_q (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞) (hψ : Measurable ψ)
+theorem borelDescent_q (hψ : Measurable ψ)
     (v : CoveredSpherical F ζ hζ U) :
     borelDescent F ζ hζ U ψ hψ (q F ζ hζ U v) =
       centralAverage F ζ hζ U ψ v :=
   (Classical.choose_spec (existsUnique_borel_descent F ζ hζ U ψ hψ).exists).2 v
+
+end
 
 private lemma lintegral_centralAverage
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
@@ -140,24 +136,14 @@ private lemma lintegral_centralAverage
     (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞) (hψ : Measurable ψ) :
     (∫⁻ v, centralAverage F ζ hζ U ψ v ∂coveredMeasure F ζ hζ R U) =
       ∫⁻ v, ψ v ∂coveredMeasure F ζ hζ R U := by
-  have hcard : Nat.card (rootsOfUnity 3 F) = 3 :=
-    (IsPrimitiveRoot.pow (by norm_num : 0 < 12) hζ
-      (by norm_num : 12 = 4 * 3)).card_rootsOfUnity
-  have hzmeas : ∀ ε : rootsOfUnity 3 F, Measurable (z F ζ hζ U ε) :=
+  have hzmeas :=
     fun ε => (z F ζ hζ U ε).continuous.measurable
-  have hmp : ∀ ε : rootsOfUnity 3 F,
-      (∫⁻ v, ψ (z F ζ hζ U ε v) ∂coveredMeasure F ζ hζ R U) =
-        ∫⁻ v, ψ v ∂coveredMeasure F ζ hζ R U :=
-    fun ε =>
-      (KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε).lintegral_comp hψ
-  have hmeas : Measurable (fun v => ∑ ε : rootsOfUnity 3 F, ψ (z F ζ hζ U ε v)) :=
-    Finset.measurable_sum _ (fun ε _ => hψ.comp (hzmeas ε))
   calc
-    (∫⁻ v, centralAverage F ζ hζ U ψ v ∂coveredMeasure F ζ hζ R U)
+    _
         = ∫⁻ v, (3 : ℝ≥0∞)⁻¹ * (∑ ε : rootsOfUnity 3 F, ψ (z F ζ hζ U ε v))
             ∂coveredMeasure F ζ hζ R U := rfl
     _ = (3 : ℝ≥0∞)⁻¹ * ∫⁻ v, (∑ ε : rootsOfUnity 3 F, ψ (z F ζ hζ U ε v))
-            ∂coveredMeasure F ζ hζ R U := lintegral_const_mul _ hmeas
+            ∂coveredMeasure F ζ hζ R U := lintegral_const_mul _ (Finset.measurable_sum _ (fun ε _ => hψ.comp (hzmeas ε)))
     _ = (3 : ℝ≥0∞)⁻¹ * ∑ ε : rootsOfUnity 3 F,
             ∫⁻ v, ψ (z F ζ hζ U ε v) ∂coveredMeasure F ζ hζ R U := by
           rw [lintegral_finsetSum (f := fun ε v => ψ (z F ζ hζ U ε v)) Finset.univ
@@ -165,13 +151,15 @@ private lemma lintegral_centralAverage
     _ = (3 : ℝ≥0∞)⁻¹ * ∑ _ε : rootsOfUnity 3 F,
             ∫⁻ v, ψ v ∂coveredMeasure F ζ hζ R U := by
           congr 1
-          exact Finset.sum_congr rfl (fun ε _ => hmp ε)
+          exact Finset.sum_congr rfl (fun ε _ => (fun ε =>
+            (KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε).lintegral_comp hψ) ε)
     _ = (3 : ℝ≥0∞)⁻¹ * ((Nat.card (rootsOfUnity 3 F) : ℝ≥0∞) *
             ∫⁻ v, ψ v ∂coveredMeasure F ζ hζ R U) := by
           congr 1
           rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, ← Nat.card_eq_fintype_card]
     _ = ∫⁻ v, ψ v ∂coveredMeasure F ζ hζ R U := by
-          rw [hcard, show (↑(3 : ℕ) : ℝ≥0∞) = 3 from by norm_num, ← mul_assoc,
+          rw [((IsPrimitiveRoot.pow (by norm_num : 0 < 12) hζ
+            (by norm_num : 12 = 4 * 3)).card_rootsOfUnity), show (↑(3 : ℕ) : ℝ≥0∞) = 3 from by norm_num, ← mul_assoc,
             ENNReal.inv_mul_cancel (by norm_num) (by norm_num), one_mul]
 
 theorem lintegral_borelDescent
@@ -191,8 +179,11 @@ theorem lintegral_borelDescent
     lintegral_congr (fun v => borelDescent_q F ζ hζ U ψ hψ v)]
   exact (lintegral_centralAverage F ζ hζ R U ψ hψ).symm
 
+section
+
+variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+
 theorem orbit_card_mul_stabilizer_card
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (v : CoveredSpherical F ζ hζ U) :
     Nat.card (MulAction.orbit (rootsOfUnity 3 F) v) *
       Nat.card (MulAction.stabilizer (rootsOfUnity 3 F) v) = 3 := by
@@ -201,7 +192,7 @@ theorem orbit_card_mul_stabilizer_card
   rw [Nat.card_prod] at h
   rw [h, (IsPrimitiveRoot.pow (by norm_num : 0 < 12) hζ (by norm_num : 12 = 4 * 3)).card_rootsOfUnity]
 
-theorem fiber_point_repetitions (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+theorem fiber_point_repetitions
     (v w : CoveredSpherical F ζ hζ U) (hw : q F ζ hζ U w = q F ζ hζ U v) :
     Nat.card {ε : rootsOfUnity 3 F // z F ζ hζ U ε v = w} =
       Nat.card (MulAction.stabilizer (rootsOfUnity 3 F) v) := by
@@ -211,23 +202,21 @@ theorem fiber_point_repetitions (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     { toFun := fun e => ⟨ε₀⁻¹ * e.1, ?_⟩
       invFun := fun h => ⟨ε₀ * h.1, ?_⟩
       left_inv := fun e => Subtype.ext (by
-        show (ε₀ : rootsOfUnity 3 F) * (ε₀⁻¹ * (e : rootsOfUnity 3 F)) = (e : rootsOfUnity 3 F)
+        show ε₀ * (ε₀⁻¹ * e) = e
         rw [← mul_assoc, mul_inv_cancel, one_mul])
       right_inv := fun h => Subtype.ext (by
-        show (ε₀ : rootsOfUnity 3 F)⁻¹ * (ε₀ * (h : rootsOfUnity 3 F)) = (h : rootsOfUnity 3 F)
+        show ε₀⁻¹ * (ε₀ * h) = h
         rw [← mul_assoc, inv_mul_cancel, one_mul]) }
   · rw [MulAction.mem_stabilizer_iff]
-    show (ε₀⁻¹ * (e : rootsOfUnity 3 F)) • v = v
+    show (ε₀⁻¹ * e) • v = v
     have he : e.1 • v = w := e.2
     rw [mul_smul, he, hε₀, show z F ζ hζ U ε₀ v = ε₀ • v from rfl, ← mul_smul, inv_mul_cancel,
       one_smul]
-  · have hh : h.1 • v = v := h.2
-    rw [show z F ζ hζ U (ε₀ * (h : rootsOfUnity 3 F)) v =
-        (ε₀ * (h : rootsOfUnity 3 F)) • v from rfl, mul_smul, hh, hε₀,
+  · rw [show z F ζ hζ U (ε₀ * h) v =
+        (ε₀ * h) • v from rfl, mul_smul, h.2, hε₀,
       show z F ζ hζ U ε₀ v = ε₀ • v from rfl]
 
 theorem centralAverage_eq_distinctOrbitAverage
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞)
     (v : CoveredSpherical F ζ hζ U) :
     centralAverage F ζ hζ U ψ v = distinctOrbitAverage F ζ hζ U ψ v := by
@@ -264,7 +253,6 @@ theorem centralAverage_eq_distinctOrbitAverage
   rw [hsum, ← mul_assoc, ennreal_inv_mul_eq_inv (orbit_card_mul_stabilizer_card F ζ hζ U v)]
 
 theorem centralAverage_indicator
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞)
     (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) :
     centralAverage F ζ hζ U ((q F ζ hζ U ⁻¹' E).indicator ψ) =
@@ -279,7 +267,7 @@ theorem centralAverage_indicator
     show q F ζ hζ U (z F ζ hζ U ε v) ∈ E
     rw [KPContSectorCoveredQuotientVocabulary.q_z F ζ hζ U ε v]
     exact hv
-  · rw [Set.indicator_of_notMem (by simpa using hv), centralAverage]
+  · rw [Set.indicator_of_notMem (by exact hv), centralAverage]
     have hzero : (∑ ε : rootsOfUnity 3 F,
         ((q F ζ hζ U ⁻¹' E).indicator ψ) (z F ζ hζ U ε v)) = 0 := by
       apply Finset.sum_eq_zero
@@ -290,6 +278,8 @@ theorem centralAverage_indicator
       exact hv
     rw [hzero, mul_zero]
 
+end
+
 theorem lintegral_indicator_borelDescent
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
@@ -299,22 +289,20 @@ theorem lintegral_indicator_borelDescent
     (∫⁻ v, (q F ζ hζ U ⁻¹' E).indicator ψ v ∂coveredMeasure F ζ hζ R U) =
       ∫⁻ b, E.indicator (borelDescent F ζ hζ U ψ hψ) b
         ∂KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U := by
-  have hqm : Measurable (q F ζ hζ U) :=
-    (KPContSectorQuotientRelationsComparison.q_continuous F ζ hζ U).measurable
-  have hφ : Measurable ((q F ζ hζ U ⁻¹' E).indicator ψ) := hψ.indicator (hqm hE)
+  have hφ := hψ.indicator (((KPContSectorQuotientRelationsComparison.q_continuous F ζ hζ U).measurable) hE)
   rw [lintegral_borelDescent F ζ hζ R P U ((q F ζ hζ U ⁻¹' E).indicator ψ) hφ]
   refine lintegral_congr (fun b => ?_)
   obtain ⟨v, rfl⟩ := KPContSectorQuotientRelationsComparison.q_surjective F ζ hζ U b
   rw [borelDescent_q F ζ hζ U ((q F ζ hζ U ⁻¹' E).indicator ψ) hφ v,
     centralAverage_indicator F ζ hζ U ψ E]
   by_cases hv : q F ζ hζ U v ∈ E
-  · rw [Set.indicator_of_mem (s := q F ζ hζ U ⁻¹' E) (a := v) (by simpa using hv)
+  · rw [Set.indicator_of_mem (by exact hv)
         (centralAverage F ζ hζ U ψ),
-      Set.indicator_of_mem (s := E) (a := q F ζ hζ U v) hv (borelDescent F ζ hζ U ψ hψ),
+      Set.indicator_of_mem hv (borelDescent F ζ hζ U ψ hψ),
       borelDescent_q F ζ hζ U ψ hψ v]
-  · rw [Set.indicator_of_notMem (s := q F ζ hζ U ⁻¹' E) (a := v) (by simpa using hv)
+  · rw [Set.indicator_of_notMem (by exact hv)
         (centralAverage F ζ hζ U ψ),
-      Set.indicator_of_notMem (s := E) (a := q F ζ hζ U v) hv (borelDescent F ζ hζ U ψ hψ)]
+      Set.indicator_of_notMem hv (borelDescent F ζ hζ U ψ hψ)]
 
 end DedekindZetaZeroFree.KPContSectorFiniteOrbitIntegral
 

@@ -19,7 +19,7 @@ theorem disk_series_holomorphic (f : ℂ → E) (a : ℕ → E)
         ‖(∑ j ∈ Finset.range M, (z-c)^j • a j) - f z‖ < ε) :
     DifferentiableOn ℂ f (Metric.ball c r) ∧
       ∀ z ∈ Metric.ball c r, HasSum (fun j => (z-c)^j • a j) (f z) := by
-  let F : ℕ → ℂ → E := fun M z => ∑ j ∈ Finset.range M, (z-c)^j • a j
+  let F := fun M z => ∑ j ∈ Finset.range M, (z-c)^j • a j
   have hu (t : ℝ) (ht : 0 ≤ t) (htr : t < r) :
       TendstoUniformlyOn F f atTop (Metric.closedBall c t) := by
     rw [Metric.tendstoUniformlyOn_iff]
@@ -30,10 +30,8 @@ theorem disk_series_holomorphic (f : ℂ → E) (a : ℕ → E)
     exact hN M hM z hz
   have hl : TendstoLocallyUniformlyOn F f atTop (Metric.ball c r) := by
     intro u hu' z hz
-    have hz' : dist z c < r := hz
-    obtain ⟨t,hzt,htr⟩ := exists_between hz'
-    have ht : 0 ≤ t := (dist_nonneg).trans hzt.le
-    refine ⟨Metric.closedBall c t, mem_nhdsWithin_of_mem_nhds ?_, (hu t ht htr) u hu'⟩
+    obtain ⟨t,hzt,htr⟩ := exists_between hz
+    refine ⟨Metric.closedBall c t, mem_nhdsWithin_of_mem_nhds ?_, (hu t ((dist_nonneg).trans hzt.le) htr) u hu'⟩
     exact mem_of_superset (Metric.isOpen_ball.mem_nhds hzt) Metric.ball_subset_closedBall
   constructor
   · apply hl.differentiableOn _ Metric.isOpen_ball
@@ -44,9 +42,9 @@ theorem disk_series_holomorphic (f : ℂ → E) (a : ℕ → E)
     exact ((differentiable_id.sub_const c).pow j).smul_const (a j)
   · intro z hz
     have ht : 0 ≤ dist z c := dist_nonneg
-    have htr : dist z c < r := hz
+    have htr := hz
     obtain ⟨t,hzt,htr'⟩ := exists_between htr
-    have ht' : 0 < t := lt_of_le_of_lt ht hzt
+    have ht' := lt_of_le_of_lt ht hzt
     have hs : Tendsto (fun n => F n (c + t)) atTop (𝓝 (f (c+t))) :=
       (hu t ht'.le htr').tendsto_at
         (by simp [Complex.dist_eq,Complex.norm_real,abs_of_pos ht'])
@@ -56,11 +54,9 @@ theorem disk_series_holomorphic (f : ℂ → E) (a : ℕ → E)
     obtain ⟨B,hB⟩ := (hterm.norm).bddAbove_range
     have hb (n : ℕ) : ‖(t : ℂ)^n • a n‖ ≤ B := hB (Set.mem_range_self n)
     have hn : Summable (fun n => ‖(z-c)^n • a n‖) := by
-      have hratio : ‖z-c‖ / t < 1 :=
-        (div_lt_one ht').mpr (by simpa [dist_eq_norm] using hzt)
       have hratio0 : 0 ≤ ‖z-c‖ / t := div_nonneg (norm_nonneg _) ht'.le
-      have hgeom : Summable (fun n => B * (‖z-c‖ / t)^n) :=
-        (summable_geometric_of_lt_one hratio0 hratio).mul_left B
+      have hgeom :=
+        (summable_geometric_of_lt_one hratio0 ((div_lt_one ht').mpr (by simpa [dist_eq_norm] using hzt))).mul_left B
       refine Summable.of_nonneg_of_le (fun n => norm_nonneg _) ?_ hgeom
       intro n
       have hh := mul_le_mul_of_nonneg_right (hb n) (pow_nonneg hratio0 n)

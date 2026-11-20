@@ -15,8 +15,7 @@ open scoped Classical Topology
 namespace DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration.Slice
 open KPMeanZeroWeightedEnergy HyperbolicChart
 
-private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  ext i <;> simp [arch, real]
+private alias arch_real := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.arch_real
 
  def realL (d : ℕ) : KPArch.Space d →L[ℝ] Space d :=
   LinearMap.toContinuousLinearMap {
@@ -49,7 +48,7 @@ private theorem hasDerivAt_gamma {F : Type} [Field F] [NumberField F]
     HasDerivAt (fun s : ℝ => real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F (c, s)))
       (∑ j : Fin (KPCuspLogShape.dimension F), coordinateVector (KPCuspLogShape.dimension F) j 2) t := by
   have h := (realL (KPCuspLogShape.dimension F)).hasFDerivAt.comp_hasDerivAt t
-    (hasDerivAt_toArch (F := F) c t)
+    (hasDerivAt_toArch c t)
   rwa [realL_tauVec] at h
 
 private theorem re_sum' {n : ℕ} (z : Fin n → ℂ) : (∑ i, z i).re = ∑ i, (z i).re := by
@@ -78,37 +77,13 @@ private theorem codiff_add_tang {F : Type} [Field F] [NumberField F]
   norm_num
   ring
 
-private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply ContDiff.prodMk
-  · exact Complex.equivRealProdCLM.symm.contDiff.comp
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
-       (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+private alias smooth_arch := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.smooth_arch
 
-private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
-  unfold KPCuspLogShape.meanHeight
-  apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+private alias smooth_mean := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.smooth_mean
 
-private theorem derivative_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := by
-  exact (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
+private alias derivative_smoothAt := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.derivative_smoothAt
 
-private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (fun q => differential d g q i k) x := by
-  have he : ContDiffAt ℝ (⊤ : ℕ∞) (fun q : Space d => (Real.exp (q (i,2)) : ℂ)) x :=
-    Complex.ofRealCLM.contDiff.contDiffAt.comp x
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff.contDiffAt.exp)
-  fin_cases k
-  · simpa [differential] using derivative_smoothAt d g x hg i 2
-  · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 0)
-  · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 1)
+private alias differential_smoothAt := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.differential_smoothAt
 
 private theorem u_arch_smoothAt {F : Type} [Field F] [NumberField F] {T : ℝ}
     (u : KPArch.Space (KPCuspLogShape.dimension F) → ℝ)
@@ -119,31 +94,8 @@ private theorem u_arch_smoothAt {F : Type} [Field F] [NumberField F] {T : ℝ}
       (arch (KPCuspLogShape.dimension F) x)) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun q : Space (KPCuspLogShape.dimension F) =>
       (u (arch (KPCuspLogShape.dimension F) q) : ℂ)) x := by
-  have hopen : IsOpen {z : KPArch.Space (KPCuspLogShape.dimension F) |
-      T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z} :=
-    isOpen_lt continuous_const (smooth_mean _).continuous
   exact Complex.ofRealCLM.contDiff.contDiffAt.comp x
-    ((hu.contDiffAt (hopen.mem_nhds hx)).comp x (smooth_arch _).contDiffAt)
-
-private theorem cutoffScalarFlux_component_smoothAt {F : Type} [Field F] [NumberField F] {T : ℝ}
-    (u : KPArch.Space (KPCuspLogShape.dimension F) → ℝ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u
-      {z | T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z})
-    (a : ℝ → ℝ) (ha : CompactRadialTest T a)
-    (x : Space (KPCuspLogShape.dimension F))
-    (hx : T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
-      (arch (KPCuspLogShape.dimension F) x))
-    (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞)
-      (fun q => cutoffScalarFlux (KPCuspLogShape.dimension F) u a q i k) x := by
-  have hg := u_arch_smoothAt u hu x hx
-  have hd1 := differential_smoothAt _ _ x hg i k
-  have haa : ContDiffAt ℝ (⊤ : ℕ∞) (fun q : Space (KPCuspLogShape.dimension F) =>
-      (a (KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
-        (arch (KPCuspLogShape.dimension F) q)) : ℂ)) x :=
-    Complex.ofRealCLM.contDiff.contDiffAt.comp x
-      (ha.1.contDiffAt.comp x ((smooth_mean _).comp (smooth_arch _)).contDiffAt)
-  simpa [cutoffScalarFlux, scalarDifferential] using haa.mul hd1
+    ((hu.contDiffAt ((isOpen_lt continuous_const (smooth_mean _).continuous).mem_nhds hx)).comp x (smooth_arch _).contDiffAt)
 
 end DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration.Slice
 
@@ -191,7 +143,9 @@ theorem cutoff_scalar_codifferential_pointwise
     by_cases hT : T < t
     · have hxT : T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
           (arch (KPCuspLogShape.dimension F) x) := by rw [hxmean]; exact hT
-      have hsm := cutoffScalarFlux_component_smoothAt u hu a ha x hxT i 0
+      have hsm := (by
+        simpa [cutoffScalarFlux, scalarDifferential] using (Complex.ofRealCLM.contDiff.contDiffAt.comp x
+          (ha.1.contDiffAt.comp x ((smooth_mean _).comp (smooth_arch _)).contDiffAt)).mul (differential_smoothAt _ _ x (u_arch_smoothAt u hu x hxT) i 0))
       have hF : HasFDerivAt (fun q : Space (KPCuspLogShape.dimension F) => W q i 0)
           (fderiv ℝ (fun q : Space (KPCuspLogShape.dimension F) => W q i 0) x) x :=
         (hsm.differentiableAt (by simp)).hasFDerivAt
@@ -208,7 +162,7 @@ theorem cutoff_scalar_codifferential_pointwise
       rw [hgoal] at hreal
       simpa [Function.comp_def, Complex.reCLM_apply] using hreal
     ·
-      have ht_not : t ∉ tsupport a := fun h => hT (ha.2.2 h)
+      have ht_not := fun h => hT (ha.2.2 h)
       have ha_ev : a =ᶠ[nhds t] 0 := notMem_tsupport_iff_eventuallyEq.mp ht_not
       have hcomp : (fun q : Space (KPCuspLogShape.dimension F) =>
           a (KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
@@ -291,8 +245,7 @@ open scoped Classical Topology
 namespace DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration.Slice
 open KPMeanZeroWeightedEnergy HyperbolicChart
 
-private theorem arch_real_for_radialCoefficient (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  ext i <;> simp [arch, real]
+private alias arch_real_for_radialCoefficient := arch_real
 
  def radialCoefficientRealification (d : ℕ) : KPArch.Space d →L[ℝ] Space d :=
   LinearMap.toContinuousLinearMap {
@@ -306,46 +259,20 @@ private theorem arch_real_for_radialCoefficient (d : ℕ) (z : KPArch.Space d) :
 
 private theorem hasDerivAt_toArch_for_radialCoefficient {F : Type} [Field F] [NumberField F]
     (c : KPCuspCharts.Cross F) (t : ℝ) :
-    HasDerivAt (fun s : ℝ => KPCuspCharts.toArch F (c, s)) (radialCoefficientHeightVector (KPCuspLogShape.dimension F)) t := by
-  rw [hasDerivAt_pi]
-  intro i
-  have h1 : HasDerivAt (fun s : ℝ => s + (c.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i) 1 t :=
-    (hasDerivAt_id t).add_const _
-  have h2 := (hasDerivAt_const (x := t) (c := (c.1 i))).prodMk h1
-  simpa [KPCuspCharts.toArch, radialCoefficientHeightVector] using h2
+    HasDerivAt (fun s : ℝ => KPCuspCharts.toArch F (c, s)) (radialCoefficientHeightVector (KPCuspLogShape.dimension F)) t := by apply @hasDerivAt_toArch <;> assumption
 
 private theorem radialCoefficientRealification_heightVector (d : ℕ) :
-    radialCoefficientRealification d (radialCoefficientHeightVector d) = ∑ j : Fin d, coordinateVector d j 2 := by
-  ext ⟨i,k⟩
-  fin_cases k <;> simp [radialCoefficientRealification, real, radialCoefficientHeightVector, coordinateVector, PiLp.toLp_apply,
-    Finset.sum_apply, Finset.sum_ite, Finset.mem_univ, PiLp.proj_apply]
+    radialCoefficientRealification d (radialCoefficientHeightVector d) = ∑ j : Fin d, coordinateVector d j 2 := by apply @realL_tauVec <;> assumption
 
-private theorem hasDerivAt_realChart_for_radialCoefficient {F : Type} [Field F] [NumberField F]
-    (c : KPCuspCharts.Cross F) (t : ℝ) :
-    HasDerivAt (fun s : ℝ => real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F (c, s)))
-      (∑ j : Fin (KPCuspLogShape.dimension F), coordinateVector (KPCuspLogShape.dimension F) j 2) t := by
-  have h := (radialCoefficientRealification (KPCuspLogShape.dimension F)).hasFDerivAt.comp_hasDerivAt t
-    (hasDerivAt_toArch_for_radialCoefficient (F := F) c t)
-  rwa [radialCoefficientRealification_heightVector] at h
+private alias hasDerivAt_realChart_for_radialCoefficient := hasDerivAt_gamma
 
-private theorem contDiff_arch_for_radialCoefficient (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply ContDiff.prodMk
-  · exact Complex.equivRealProdCLM.symm.contDiff.comp
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
-       (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+private alias contDiff_arch_for_radialCoefficient := smooth_arch
 
-private theorem contDiff_meanHeight_for_radialCoefficient (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
-  unfold KPCuspLogShape.meanHeight
-  apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+private alias contDiff_meanHeight_for_radialCoefficient := smooth_mean
 
-private theorem radial_eq_slice_deriv
-    {F : Type} [Field F] [NumberField F] {T : ℝ}
+variable {F : Type} [Field F] [NumberField F]
+
+private theorem radial_eq_slice_deriv {T : ℝ}
     (hd : 0 < KPCuspLogShape.dimension F)
     (u : KPArch.Space (KPCuspLogShape.dimension F) → ℝ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u
@@ -356,20 +283,17 @@ private theorem radial_eq_slice_deriv
         (KPCuspLogShape.dimension F : ℝ) := by
   let d := KPCuspLogShape.dimension F
   let x := real d (KPCuspCharts.toArch F (c,t))
-  let g : Space d → ℂ := fun q => (u (arch d q) : ℂ)
+  let g := fun q => (u (arch d q) : ℂ)
   have hx : T < KPCuspLogShape.meanHeight d (arch d x) := by
     rw [arch_real_for_radialCoefficient, KPCuspCharts.toArch_meanHeight F hd]; exact ht
   have hu' : ContDiffAt ℝ (⊤ : ℕ∞) g x :=
     Complex.ofRealCLM.contDiff.contDiffAt.comp x
       ((hu.contDiffAt ((isOpen_lt continuous_const (contDiff_meanHeight_for_radialCoefficient d).continuous).mem_nhds hx)).comp x
         (contDiff_arch_for_radialCoefficient d).contDiffAt)
-  have hγ := hasDerivAt_realChart_for_radialCoefficient (F := F) c t
-  have hcomp := (hu'.differentiableAt (by simp)).hasFDerivAt.comp_hasDerivAt t hγ
-  have hr := Complex.reCLM.hasFDerivAt.comp_hasDerivAt t hcomp
   have hr' : HasDerivAt (fun v => u (KPCuspCharts.toArch F (c,v)))
       (∑ i : Fin d, (coordinateDerivative d i 2 g x).re) t := by
     simpa [Function.comp_def, g, d, arch_real_for_radialCoefficient, Complex.reCLM_apply, map_sum,
-      coordinateDerivative] using hr
+      coordinateDerivative] using (Complex.reCLM.hasFDerivAt.comp_hasDerivAt t ((hu'.differentiableAt (by simp)).hasFDerivAt.comp_hasDerivAt t (hasDerivAt_realChart_for_radialCoefficient c t)))
   unfold radialCoefficient
   simp only [cutoffScalarFlux, scalarDifferential, differential, Fin.isValue,
     arch_real_for_radialCoefficient, KPCuspCharts.toArch_meanHeight F hd, Complex.mul_re,
@@ -378,7 +302,6 @@ private theorem radial_eq_slice_deriv
   simp [d, x, g]
 
 theorem cutoff_tangentialDivergence_crossAction_invariant
-    {F : Type} [Field F] [NumberField F]
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
     (G : KPCuspCharts.ChartOutput F hF S D)
@@ -404,10 +327,6 @@ theorem cutoff_tangentialDivergence_crossAction_invariant
           u (KPCuspCharts.toArch F (c,v)) := by
       apply hinv ⟨(G.crossAction s c,v), hv⟩ ⟨(c,v), hv⟩
       exact ⟨s, hact v⟩
-    have huEv : (fun v => u (KPCuspCharts.toArch F (G.crossAction s c,v))) =ᶠ[nhds t]
-        (fun v => u (KPCuspCharts.toArch F (c,v))) := by
-      filter_upwards [isOpen_Ioi.mem_nhds ht] with v hv
-      exact huEq v hv
     have hrEv : radialCoefficient F (cutoffScalarFlux (KPCuspLogShape.dimension F) u a)
         (G.crossAction s c) =ᶠ[nhds t]
         radialCoefficient F (cutoffScalarFlux (KPCuspLogShape.dimension F) u a) c := by
@@ -425,7 +344,7 @@ theorem cutoff_tangentialDivergence_crossAction_invariant
       cutoff_scalar_codifferential_pointwise G.positive_dimension u hu a ha,
       hrEv.deriv_eq, hrEv.eq_of_nhds] at hd
     linarith
-  · have hnot : t ∉ tsupport a := fun hm => ht (ha.2.2 hm)
+  · have hnot := fun hm => ht (ha.2.2 hm)
     rw [cutoff_tangentialDivergence_eq_zero_of_notMem_tsupport G.positive_dimension u a _ t hnot,
       cutoff_tangentialDivergence_eq_zero_of_notMem_tsupport G.positive_dimension u a _ t hnot]
 
@@ -572,48 +491,15 @@ open scoped Classical Topology
 namespace DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration.Slice
 open KPMeanZeroWeightedEnergy HyperbolicChart
 
-private theorem contDiff_arch_for_cutoffFlux (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply ContDiff.prodMk
-  · exact Complex.equivRealProdCLM.symm.contDiff.comp
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
-       (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+private alias contDiff_arch_for_cutoffFlux := smooth_arch
 
-private theorem contDiff_meanHeight_for_cutoffFlux (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
-  unfold KPCuspLogShape.meanHeight
-  apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+private alias contDiff_meanHeight_for_cutoffFlux := smooth_mean
 
-private theorem smooth_real (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (real d) := by
-  apply (contDiff_piLp 2).mpr
-  intro j
-  rcases j with ⟨i, k⟩
-  fin_cases k
-  · simpa [real, Function.comp_def] using
-      Complex.reCLM.contDiff.comp (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
-  · simpa [real, Function.comp_def] using
-      Complex.imCLM.contDiff.comp (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
-  · simpa [real, Function.comp_def] using contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+private alias smooth_real := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.smooth_real
 
-private theorem coordinateDerivative_contDiffAt_for_cutoffFlux (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := by
-  exact (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
+private alias coordinateDerivative_contDiffAt_for_cutoffFlux := derivative_smoothAt
 
-private theorem differential_contDiffAt_for_cutoffFlux (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (fun q => differential d g q i k) x := by
-  have he : ContDiffAt ℝ (⊤ : ℕ∞) (fun q : Space d => (Real.exp (q (i,2)) : ℂ)) x :=
-    Complex.ofRealCLM.contDiff.contDiffAt.comp x
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff.contDiffAt.exp)
-  fin_cases k
-  · simpa [differential] using coordinateDerivative_contDiffAt_for_cutoffFlux d g x hg i 2
-  · simpa [differential] using he.mul (coordinateDerivative_contDiffAt_for_cutoffFlux d g x hg i 0)
-  · simpa [differential] using he.mul (coordinateDerivative_contDiffAt_for_cutoffFlux d g x hg i 1)
+private alias differential_contDiffAt_for_cutoffFlux := differential_smoothAt
 
 private theorem cutoffScalarFlux_smooth (d : ℕ) (u : KPArch.Space d → ℝ) {T : ℝ}
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u {z | T < KPCuspLogShape.meanHeight d z})
@@ -646,10 +532,9 @@ private theorem cutoffScalarFlux_smooth (d : ℕ) (u : KPArch.Space d → ℝ) {
       simp [cutoffScalarFlux, scalarDifferential, hq]
     exact contDiffAt_const.congr_of_eventuallyEq hWz
 
-private theorem chart_smooth {F : Type} [Field F] [NumberField F] :
-    ContDiff ℝ (⊤ : ℕ∞) (fun p : KPCuspCharts.Coordinates F =>
-      real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F p)) :=
-  (smooth_real _).comp ((KPCuspCharts.toArch_contDiff F).of_le (by simp))
+alias SliceIdentity.cutoffScalarFlux_smooth := cutoffScalarFlux_smooth
+
+private alias chart_smooth := DedekindZetaZeroFree.KPCompactGreenRadialIntegrability.GradientDensityInvariance.chart_smooth
 
 theorem cutoff_radialCoefficient_regular
     {F : Type} [Field F] [NumberField F]
@@ -665,17 +550,10 @@ theorem cutoff_radialCoefficient_regular
     ∀ c : KPCuspCharts.Cross F,
       Differentiable ℝ
         (radialCoefficient F (cutoffScalarFlux (KPCuspLogShape.dimension F) u a) c) := by
-  let W : Space (KPCuspLogShape.dimension F) → Cotangent (KPCuspLogShape.dimension F) :=
+  let W :=
     cutoffScalarFlux (KPCuspLogShape.dimension F) u a
-  change Continuous (fun p : KPCuspCharts.Coordinates F => radialCoefficient F W p.1 p.2) ∧
-    Continuous (fun p : KPCuspCharts.Coordinates F => deriv (radialCoefficient F W p.1) p.2) ∧
-    ∀ c : KPCuspCharts.Cross F, Differentiable ℝ (radialCoefficient F W c)
   set R : KPCuspCharts.Coordinates F → ℝ := fun p =>
     radialCoefficient F W p.1 p.2 with hRdef
-  have hW : ContDiff ℝ (⊤ : ℕ∞) W := cutoffScalarFlux_smooth _ u hu a ha
-  have hWchart : ContDiff ℝ (⊤ : ℕ∞) (fun p : KPCuspCharts.Coordinates F =>
-      W (real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F p))) :=
-    hW.comp chart_smooth
   have hR : ContDiff ℝ (⊤ : ℕ∞) R := by
     have hfun : R = fun p : KPCuspCharts.Coordinates F =>
         (∑ i : Fin (KPCuspLogShape.dimension F),
@@ -688,25 +566,19 @@ theorem cutoff_radialCoefficient_regular
     apply ContDiff.div_const
     apply ContDiff.sum
     intro i _
-    exact Complex.reCLM.contDiff.comp (contDiff_pi.mp (contDiff_pi.mp hWchart i) 0)
+    exact Complex.reCLM.contDiff.comp (contDiff_pi.mp (contDiff_pi.mp ((cutoffScalarFlux_smooth _ u hu a ha).comp chart_smooth) i) 0)
   refine ⟨hR.continuous, ?_, ?_⟩
   · have hderiv : (fun p : KPCuspCharts.Coordinates F =>
         deriv (radialCoefficient F W p.1) p.2) =
         fun p => fderiv ℝ R p (ContinuousLinearMap.inr ℝ (KPCuspCharts.Cross F) ℝ 1) := by
       funext p
-      have hg : HasFDerivAt (fun t : ℝ => (p.1, t))
-          (ContinuousLinearMap.inr ℝ (KPCuspCharts.Cross F) ℝ) p.2 :=
-        hasFDerivAt_prodMk_right p.1 p.2
-      have hcomp : HasFDerivAt (R ∘ (fun t : ℝ => (p.1, t)))
-          ((fderiv ℝ R p).comp (ContinuousLinearMap.inr ℝ (KPCuspCharts.Cross F) ℝ)) p.2 :=
-        (hR.differentiable (by simp) p).hasFDerivAt.comp p.2 hg
       have hfun2 : (R ∘ (fun t : ℝ => (p.1, t))) =
           radialCoefficient F W p.1 := by
         funext t
         rw [Function.comp_apply, hRdef]
       have h1 : deriv (radialCoefficient F W p.1) p.2
           = (fderiv ℝ R p) (ContinuousLinearMap.inr ℝ (KPCuspCharts.Cross F) ℝ 1) := by
-        rw [← fderiv_apply_one_eq_deriv, ← hfun2, hcomp.fderiv]
+        rw [← fderiv_apply_one_eq_deriv, ← hfun2, ((hR.differentiable (by simp) p).hasFDerivAt.comp p.2 (hasFDerivAt_prodMk_right p.1 p.2)).fderiv]
         rfl
       exact h1
     rw [hderiv]
@@ -745,12 +617,10 @@ theorem finite_measure_integrable_deriv_of_compact_bounds
     Integrable (fun x => deriv (f x) t) μ ∧
     (∫ x, deriv (f x) t ∂μ) = deriv (fun v => ∫ x, f x v ∂μ) t := by
   obtain ⟨C, hC⟩ := hbound (t - 1) (t + 1)
-  have ht : t ∈ Set.Icc (t - 1) (t + 1) := ⟨by linarith, by linarith⟩
-  have hint_f : Integrable (fun x => f x t) μ :=
-    Integrable.of_bound (hf t) C (Filter.Eventually.of_forall fun x => (hC x t ht).1)
+  have hint_f :=
+    Integrable.of_bound (hf t) C (Filter.Eventually.of_forall fun x => (hC x t (⟨by linarith, by linarith⟩)).1)
   obtain ⟨hint_d, hderiv⟩ := hasDerivAt_integral_of_dominated_loc_of_deriv_le
-    (μ := μ) (F := fun v (x : X) => f x v) (F' := fun v (x : X) => deriv (f x) v)
-    (x₀ := t) (s := Set.Icc (t - 1) (t + 1)) (bound := fun _ => C)
+
     (Icc_mem_nhds (by linarith) (by linarith))
     (Filter.Eventually.of_forall fun v => hf v)
     hint_f
@@ -781,12 +651,13 @@ open KPMeanZeroWeightedEnergy HyperbolicChart
     map_add' := by intro x y; ext i <;> simp [arch, Complex.add_re, Complex.add_im]; rfl
     map_smul' := by intro a x; ext i : 1; apply Prod.ext <;> simp [arch, Complex.real_smul]; apply Complex.ext <;> simp }
 
-private lemma arch_real' (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  ext i <;> simp [real, arch]
+private alias arch_real' := arch_real
 
 private lemma continuous_meanHeight (d : ℕ) : Continuous (KPCuspLogShape.meanHeight d) := by
   unfold KPCuspLogShape.meanHeight
   fun_prop
+
+alias SliceIdentity.continuous_meanHeight := continuous_meanHeight
 
 private lemma radialCoefficient_cutoff_eq
     {F : Type} [Field F] [NumberField F]
@@ -813,7 +684,7 @@ private lemma radialCoefficient_scalarDifferential_eq
         (KPCuspLogShape.dimension F : ℝ) := by
   let d := KPCuspLogShape.dimension F
   let x := real d (KPCuspCharts.toArch F (c,t))
-  let v : Space d := ∑ i : Fin d, coordinateVector d i 2
+  let v := ∑ i : Fin d, coordinateVector d i 2
   have hv (j : Fin d × Fin 3) : v j = if j.2 = 2 then 1 else 0 := by
     simp only [v, map_sum, coordinateVector, WithLp.ofLp_toLp]
     by_cases h : j.2 = 2
@@ -849,18 +720,19 @@ private lemma radialCoefficient_scalarDifferential_eq
   rw [hcomp.deriv]
   simp only [radialCoefficient, scalarDifferential, differential, Matrix.cons_val_zero,
     coordinateDerivative, v, map_sum, x, d]
-  simp only [← Complex.reCLM_apply, map_sum]
+  simp
 
-private lemma bounded_on_height_interval
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+variable {F : Type} [Field F] [NumberField F] {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
     (G : KPCuspCharts.ChartOutput F hF S D)
+
+include G in
+private lemma bounded_on_height_interval
     (f : KPCuspCharts.Coordinates F → ℝ) (hf : Continuous f)
     (hi : ∀ p q, KPCuspCharts.totalRelation F S p q → f p = f q)
     (r s : ℝ) : ∃ C : ℝ, ∀ c t, t ∈ Set.Icc r s → ‖f (c,t)‖ ≤ C := by
-  let d : KPCuspCharts.TotalQuotient F S → ℝ := Quotient.lift f hi
-  have hd : Continuous d := Continuous.quotient_lift hf hi
+  let d := Quotient.lift f hi
+  have hd := Continuous.quotient_lift hf hi
   let g : KPCuspCharts.CrossQuotient F S × Set.Icc r s → ℝ :=
     fun p => d (G.radialPresentation (p.1, p.2.val))
   have hg : Continuous g := hd.comp (G.radialPresentation.continuous.comp
@@ -869,14 +741,10 @@ private lemma bounded_on_height_interval
   obtain ⟨C, hC⟩ := isCompact_univ.exists_bound_of_continuousOn hg.continuousOn
   refine ⟨C, ?_⟩
   intro c t ht
-  have hx := hC (Quotient.mk _ c, ⟨t,ht⟩) (Set.mem_univ _)
-  simpa [g, G.radialPresentation_formula, d] using hx
+  simpa [g, G.radialPresentation_formula, d] using (hC (Quotient.mk _ c, ⟨t,ht⟩) (Set.mem_univ _))
 
+include G in
 theorem cutoff_radialCoefficient_compact_height_bound
-    {F : Type} [Field F] [NumberField F]
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    (G : KPCuspCharts.ChartOutput F hF S D)
     {T : ℝ} (u : KPArch.Space (KPCuspLogShape.dimension F) → ℝ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u
       {z | T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z})
@@ -976,16 +844,17 @@ theorem cutoff_radialCoefficient_integrable_deriv
     simpa [μ] using h
   letI := hfinite
   obtain ⟨hc, hdc, hd⟩ := cutoff_radialCoefficient_regular (F := F) u hu a ha
+  let radialCoefficient₀ := radialCoefficient F (cutoffScalarFlux (KPCuspLogShape.dimension F) u a)
   have hc_slice (v : ℝ) : Continuous (fun c : KPCuspCharts.Cross F =>
-      radialCoefficient F (cutoffScalarFlux (KPCuspLogShape.dimension F) u a) c v) :=
+      radialCoefficient₀ c v) :=
     hc.comp (f := fun c : KPCuspCharts.Cross F => (c, v))
       (continuous_id.prodMk continuous_const)
   have hdc_slice (v : ℝ) : Continuous (fun c : KPCuspCharts.Cross F =>
-      deriv (radialCoefficient F (cutoffScalarFlux (KPCuspLogShape.dimension F) u a) c)
+      deriv (radialCoefficient₀ c)
         v) := hdc.comp (f := fun c : KPCuspCharts.Cross F => (c, v))
       (continuous_id.prodMk continuous_const)
   exact finite_measure_integrable_deriv_of_compact_bounds μ
-      (radialCoefficient F (cutoffScalarFlux (KPCuspLogShape.dimension F) u a))
+      (radialCoefficient₀)
       (fun v => (hc_slice v).aestronglyMeasurable)
       (fun v => (hdc_slice v).aestronglyMeasurable) hd
       (cutoff_radialCoefficient_compact_height_bound G u hu hinv a ha) t

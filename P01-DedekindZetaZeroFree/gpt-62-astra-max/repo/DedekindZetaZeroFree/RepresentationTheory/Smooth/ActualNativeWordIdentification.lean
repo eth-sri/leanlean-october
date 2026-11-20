@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.RepresentationTheory.RankOne.ArchimedeanBigCellBasePoint
 
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.PositiveNativeCharts
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.RightChartJetsAndFlowWords
@@ -9,8 +10,8 @@ noncomputable section
 open scoped NumberField Classical
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction
 open KPGlobalResidualConstruction KPContActualSphericalRightFieldIdentification
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming word → word
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativePositiveChart renaming word_reindex → word_reindex
+open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets (word)
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativePositiveChart (word_reindex)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -41,35 +42,14 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction
 open scoped Topology ContDiff Matrix Matrix.Norms.Elementwise
 open Filter KPGlobalResidualConstruction KPContActualSphericalRightFieldIdentification
 open KPLiteralChamber
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming word → word
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming rightWord_level → rightWord_level
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming rightWord_continuous_of_chart_smooth → rightWord_continuous_of_chart_smooth
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming word_add → word_add
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming word_smul → word_smul
-open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming rightWord_hasDerivAt_of_chart_smooth → rightWord_hasDerivAt_of_chart_smooth
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativePositiveChart renaming word_reindex → word_reindex
-open _root_.DedekindZetaZeroFree.RightFrame.PullbackWords renaming word_smooth → word_smooth
-open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming rightCoordinates_nonzero → rightCoordinates_nonzero
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeChartProduct renaming domain_open → domain_open
+open _root_.DedekindZetaZeroFree.RightFrame.PullbackWords (word_smooth)
+open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeChartProduct (domain_open)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
- theorem chart_base : archChart F ζ hζ (archBase F) = 1 := by
-  rw [right_insertion]
-  have hh : (fun v : NumberField.InfinitePlace F => Matrix.ProjGenLinGroup.mk
-      (rightMatrix (archBase F v))) = 1 := by
-    funext v
-    have hm : rightMatrix (archBase F v) = 1 := by
-      apply Units.ext
-      rw [rightMatrix_val _ (by simp [archBase])]
-      ext i j
-      fin_cases i <;> fin_cases j <;> simp [archBase]
-    rw [hm, map_one]
-    rfl
-  rw [hh]
-  exact (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).1
+ alias chart_base := DedekindZetaZeroFree.KPInterface.ResidueConstruction.Raw.archChart_base
 
 private theorem recenter (O : Set (ArchCoordinates F)) (hO : IsOpen O)
     (hb : archBase F ∈ O) (x₀ : ArchCoordinates F) (hx₀ : x₀ ∈ archDomain F) :
@@ -109,7 +89,6 @@ private theorem recenter (O : Set (ArchCoordinates F)) (hO : IsOpen O)
     constructor
     · intro hx v; exact ⟨hx.1, hx.2 v⟩
     · intro hx; exact ⟨(hx (Classical.choice inferInstance)).1, fun v => (hx v).2⟩
-  have hxA : x₀ ∈ A := ⟨hx₀, by intro v; simp [hm0]⟩
   have hq : ContDiffOn ℝ (⊤ : ℕ∞) q A := by
     apply contDiffOn_pi.mpr; intro v
     apply contDiffOn_pi.mpr; intro i
@@ -122,9 +101,8 @@ private theorem recenter (O : Set (ArchCoordinates F)) (hO : IsOpen O)
     · exact (hentry 0 1).mul ((hentry 1 1).inv hn)
     · exact hdet.mul (((hentry 1 1).pow 2).inv (fun x hx => pow_ne_zero _ (hn x hx)))
     · exact (hentry 1 0).mul ((hentry 1 1).inv hn)
-  let V := A ∩ q ⁻¹' O
-  refine ⟨V, q, hq.continuousOn.isOpen_inter_preimage hA hO,
-    ⟨hxA, by change q x₀ ∈ O; rw [hq0]; exact hb⟩, hq.mono Set.inter_subset_left, fun x hx => hx.2, ?_⟩
+  refine ⟨(A ∩ q ⁻¹' O), q, hq.continuousOn.isOpen_inter_preimage hA hO,
+    ⟨(⟨hx₀, by intro v; simp [hm0]⟩), by change q x₀ ∈ O; rw [hq0]; exact hb⟩, hq.mono Set.inter_subset_left, fun x hx => hx.2, ?_⟩
   intro x hx
   rw [right_insertion, right_insertion, right_insertion,
     ← (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1]
@@ -147,8 +125,7 @@ private theorem recenter (O : Set (ArchCoordinates F)) (hO : IsOpen O)
   apply contDiffOn_of_locally_contDiffOn
   intro x₀ hx₀
   obtain ⟨V, q, hV, hxV, hq, hqO, he⟩ := recenter F ζ hζ O hO hb x₀ hx₀
-  have hs := word_smooth O hO fields hf w _ ((hu (g * archChart F ζ hζ x₀)).mono hOD)
-  refine ⟨V, hV, hxV, ((hs.comp hq hqO).mono Set.inter_subset_right).congr ?_⟩
+  refine ⟨V, hV, hxV, (((word_smooth O hO fields hf w _ ((hu (g * archChart F ζ hζ x₀)).mono hOD)).comp hq hqO).mono Set.inter_subset_right).congr ?_⟩
   intro x hx
   rw [he x hx.2, ← mul_assoc]
   exact hreal u hu w (g * archChart F ζ hζ x₀) (q x) (hqO hx.2)

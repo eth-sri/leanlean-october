@@ -30,18 +30,18 @@ theorem oneEquiv_map (m : Ideal R) :
   ext x
   constructor
   · rintro ⟨r, hr, rfl⟩
-    change algebraMap R K r ∈ (((m : FractionalIdeal R⁰ K) * 1) : FractionalIdeal R⁰ K)
-    simpa using (FractionalIdeal.mem_coeIdeal_of_mem R⁰ hr : algebraMap R K r ∈ (m : FractionalIdeal R⁰ K))
+    change algebraMap R K r ∈ ((m * 1) : FractionalIdeal R⁰ K)
+    simp_all
   · intro hx
-    change (x : K) ∈ (((m : FractionalIdeal R⁰ K) * 1) : FractionalIdeal R⁰ K) at hx
-    rw [mul_one] at hx
+    change (x : K) ∈ ((m * 1) : FractionalIdeal R⁰ K) at hx
+    simp at hx
     obtain ⟨r, hr, he⟩ := (FractionalIdeal.mem_coeIdeal R⁰).mp hx
     exact ⟨r, hr, Subtype.ext he⟩
 
-def rankEquivR (m : Ideal R) (I : FractionalIdeal R⁰ K)
+variable (m : Ideal R) (I : FractionalIdeal R⁰ K)
+
+def rankEquivR
     (hm : m ≠ ⊥) (hI : I ≠ 0) : (R ⧸ m) ≃ₗ[R] fractionalResidueModule m I := by
-  let e := Submodule.Quotient.equiv m (fractionalResidueDenominator m (1 : FractionalIdeal R⁰ K))
-    (oneEquiv (R := R) (K := K)) (oneEquiv_map m)
   let e' : fractionalResidueModule m (1 : FractionalIdeal R⁰ K) ≃ₗ[R]
       fractionalResidueModule m I := by
     unfold fractionalResidueModule fractionalResidueDenominator
@@ -50,16 +50,15 @@ def rankEquivR (m : Ideal R) (I : FractionalIdeal R⁰ K)
         (by simp [mul_comm]) FractionalIdeal.coeIdeal_le_one
         (fractionalResidue_mul_le m I)
         (mul_ne_zero (fun h => hm (FractionalIdeal.coeIdeal_eq_zero.mp h)) hI) one_ne_zero)
-  exact e.trans e'
+  exact (Submodule.Quotient.equiv m (fractionalResidueDenominator m (1 : FractionalIdeal R⁰ K))
+    (oneEquiv) (oneEquiv_map m)).trans e'
 
-theorem residue_smul (m : Ideal R) (I : FractionalIdeal R⁰ K)
+theorem residue_smul
     (r : R) (x : fractionalResidueModule m I) :
     Ideal.Quotient.mk m r • x = r • x := by
-  induction x using Submodule.Quotient.induction_on
-  rename_i x
-  rw [fractionalResidueModule_mk_smul_mk, Submodule.Quotient.mk_smul]
+  rfl
 
-noncomputable def fractionalResidueEquiv (m : Ideal R) (I : FractionalIdeal R⁰ K)
+noncomputable def fractionalResidueEquiv
     (hm : m ≠ ⊥) (hI : I ≠ 0) :
     (R ⧸ m) ≃ₗ[R ⧸ m] fractionalResidueModule m I := by
   let e := rankEquivR m I hm hI

@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -34,18 +32,17 @@ namespace ValuedExtension
 variable {K : Type u} {L : Type w} [Field K] [Field L]
 variable [Algebra K L] [FiniteDimensional K L] [Algebra.IsSeparable K L]
 
+section
+
+variable {M : Type y} [Field M] {GammaL : Type x} {GammaM : Type z}
+    [LinearOrderedCommGroupWithZero GammaL] [LinearOrderedCommGroupWithZero GammaM]
+    (vL : _root_.Valuation L GammaL) (vM : _root_.Valuation M GammaM) (ι : L →+* M)
+    (hEquiv : vL.IsEquiv (vM.comap ι))
+
 /-- An embedding into an ambient valued field restricts to valuation rings
 whenever the chosen source valuation is equivalent to the pulled-back
 ambient valuation. -/
-noncomputable def valuationSubringMapOfIsEquivComap
-    {M : Type y} [Field M]
-    {GammaL : Type x} {GammaM : Type z}
-    [LinearOrderedCommGroupWithZero GammaL]
-    [LinearOrderedCommGroupWithZero GammaM]
-    (vL : _root_.Valuation L GammaL)
-    (vM : _root_.Valuation M GammaM)
-    (ι : L →+* M)
-    (hEquiv : vL.IsEquiv (vM.comap ι)) :
+noncomputable def valuationSubringMapOfIsEquivComap :
     vL.valuationSubring →+* vM.valuationSubring where
   toFun a :=
     ⟨ι (a : L), by
@@ -76,14 +73,6 @@ noncomputable def valuationSubringMapOfIsEquivComap
 through the original field embedding. -/
 @[simp]
 theorem valuationSubringMapOfIsEquivComap_apply
-    {M : Type y} [Field M]
-    {GammaL : Type x} {GammaM : Type z}
-    [LinearOrderedCommGroupWithZero GammaL]
-    [LinearOrderedCommGroupWithZero GammaM]
-    (vL : _root_.Valuation L GammaL)
-    (vM : _root_.Valuation M GammaM)
-    (ι : L →+* M)
-    (hEquiv : vL.IsEquiv (vM.comap ι))
     (a : vL.valuationSubring) :
     ((valuationSubringMapOfIsEquivComap vL vM ι hEquiv a :
       vM.valuationSubring) : M) =
@@ -92,15 +81,7 @@ theorem valuationSubringMapOfIsEquivComap_apply
 
 /-- The valuation-ring map induced by an equivalent ambient pullback is a
 local homomorphism. -/
-theorem valuationSubringMapOfIsEquivComap_isLocalHom
-    {M : Type y} [Field M]
-    {GammaL : Type x} {GammaM : Type z}
-    [LinearOrderedCommGroupWithZero GammaL]
-    [LinearOrderedCommGroupWithZero GammaM]
-    (vL : _root_.Valuation L GammaL)
-    (vM : _root_.Valuation M GammaM)
-    (ι : L →+* M)
-    (hEquiv : vL.IsEquiv (vM.comap ι)) :
+theorem valuationSubringMapOfIsEquivComap_isLocalHom :
     IsLocalHom
       (valuationSubringMapOfIsEquivComap vL vM ι hEquiv) := by
   let f := valuationSubringMapOfIsEquivComap vL vM ι hEquiv
@@ -115,20 +96,11 @@ theorem valuationSubringMapOfIsEquivComap_isLocalHom
         rw [map_one]
         exact haVal)
   exact (_root_.Valuation.mem_maximalIdeal_iff (v := vM)).2 <| by
-    simpa only [f, valuationSubringMapOfIsEquivComap_apply,
-      _root_.Valuation.comap_apply, map_one] using hlt
+    simp_all [f]
 
 /-- The induced injection from the chosen residue field into the ambient
 residue field. -/
-noncomputable def residueFieldMapOfIsEquivComap
-    {M : Type y} [Field M]
-    {GammaL : Type x} {GammaM : Type z}
-    [LinearOrderedCommGroupWithZero GammaL]
-    [LinearOrderedCommGroupWithZero GammaM]
-    (vL : _root_.Valuation L GammaL)
-    (vM : _root_.Valuation M GammaM)
-    (ι : L →+* M)
-    (hEquiv : vL.IsEquiv (vM.comap ι)) :
+noncomputable def residueFieldMapOfIsEquivComap :
     IsLocalRing.ResidueField vL.valuationSubring →+*
       IsLocalRing.ResidueField vM.valuationSubring := by
   letI :
@@ -144,14 +116,6 @@ automorphisms of the source and ambient valuation rings.  This is the
 residue-field naturality needed when a finite valued subfield is realized
 inside a larger complete discrete valuation field. -/
 theorem residueFieldMapOfIsEquivComap_mapEquiv
-    {M : Type y} [Field M]
-    {GammaL : Type x} {GammaM : Type z}
-    [LinearOrderedCommGroupWithZero GammaL]
-    [LinearOrderedCommGroupWithZero GammaM]
-    (vL : _root_.Valuation L GammaL)
-    (vM : _root_.Valuation M GammaM)
-    (ι : L →+* M)
-    (hEquiv : vL.IsEquiv (vM.comap ι))
     (σL : vL.valuationSubring ≃+* vL.valuationSubring)
     (σM : vM.valuationSubring ≃+* vM.valuationSubring)
     (hcompat :
@@ -165,28 +129,18 @@ theorem residueFieldMapOfIsEquivComap_mapEquiv
         (IsLocalRing.ResidueField.mapEquiv σL a) =
       IsLocalRing.ResidueField.mapEquiv σM
         (residueFieldMapOfIsEquivComap vL vM ι hEquiv a) := by
-  let :
-      IsLocalHom
-        (valuationSubringMapOfIsEquivComap vL vM ι hEquiv) :=
+  let :=
     valuationSubringMapOfIsEquivComap_isLocalHom vL vM ι hEquiv
-  let : IsLocalHom σL.toRingHom :=
+  let :=
     IsLocalHom.of_surjective σL.toRingHom σL.surjective
-  let : IsLocalHom σM.toRingHom :=
+  let :=
     IsLocalHom.of_surjective σM.toRingHom σM.surjective
   obtain ⟨b, rfl⟩ := Ideal.Quotient.mk_surjective a
-  change
-    IsLocalRing.ResidueField.map
-        (valuationSubringMapOfIsEquivComap vL vM ι hEquiv)
-        (IsLocalRing.ResidueField.map σL.toRingHom
-          (IsLocalRing.residue vL.valuationSubring b)) =
-      IsLocalRing.ResidueField.map σM.toRingHom
-        (IsLocalRing.ResidueField.map
-          (valuationSubringMapOfIsEquivComap vL vM ι hEquiv)
-          (IsLocalRing.residue vL.valuationSubring b))
-  simp only [IsLocalRing.ResidueField.map_residue]
   exact congrArg
     (IsLocalRing.residue vM.valuationSubring)
     (hcompat b)
+
+end
 
 /-- Let `L / K` be finite separable with a chosen complete discrete valuation
 extending the one on `K`.  If a field embedding of `L` into another complete
@@ -264,7 +218,6 @@ theorem isUniformizer_of_ambient_image_isUniformizer
         calc
           ι π * (c : M) = ι (a : L) := hc_field.symm
           _ = ι (π * (π⁻¹ * (a : L))) := by
-            congr 1
             rw [← mul_assoc, mul_inv_cancel₀ hπ_ne, one_mul]
           _ = ι π * ι (π⁻¹ * (a : L)) := by
             rw [map_mul]
@@ -292,17 +245,12 @@ theorem isUniformizer_of_ambient_image_isUniformizer
       rw [← mul_assoc, mul_inv_cancel₀ hπ_ne, one_mul]
     · rw [Ideal.span_le]
       intro a ha
-      have ha_eq : a = πtarget := by
-        simpa using ha
       subst a
       exact
         (_root_.Valuation.mem_maximalIdeal_iff
           (v := target.valuation)).2
-          (by simpa [πtarget] using hπ_target_lt)
-  have hπtarget :
-      target.valuation.IsUniformizer (πtarget : L) :=
-    target.valuation.isUniformizer_of_maximalIdeal_eq_span hmaximal
-  simpa [πtarget] using hπtarget
+          (by assumption)
+  exact Valuation.isUniformizer_of_maximalIdeal_eq_span target.valuation hmaximal
 
 end ValuedExtension
 end DiscreteValuationField

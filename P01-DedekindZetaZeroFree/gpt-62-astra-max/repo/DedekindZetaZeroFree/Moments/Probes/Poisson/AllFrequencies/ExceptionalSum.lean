@@ -36,8 +36,8 @@ private theorem dyad_geom (β : ℝ) (hβ : 0 < β) :
   have hsub : K ⊆ Finset.range (N+1) := by
     intro k hk
     rw [Finset.mem_range]
-    have h1 : (2:ℝ)^k ≤ X := hK k hk
-    have h2 : 2^k ≤ ⌊X⌋₊ := Nat.le_floor (by exact_mod_cast h1)
+    have h1 := hK k hk
+    have h2 := Nat.le_floor (by exact_mod_cast h1)
     have h3 : k ≤ Nat.log 2 ⌊X⌋₊ := Nat.le_log_of_pow_le (by norm_num) h2
     omega
   calc ∑ k ∈ K, ((2:ℝ)^k)^β ≤ ∑ k ∈ Finset.range (N+1), ((2:ℝ)^k)^β :=
@@ -66,8 +66,8 @@ private theorem kappa_s_ge (U₀ Z : ℝ) (hU : 0 ≤ U₀) (hZ : (2*U₀)^5 ≤
   linarith
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
 private theorem sum_reassoc (K : Finset ℕ) (C1 C2 Z E α c : ℝ) (hZ : 0 < Z) :
     ∑ k ∈ K, (C2 * ((2:ℝ)^k) ^ α) * (C1 * Z ^ E * ((2:ℝ)^k) ^ c)
@@ -91,17 +91,16 @@ theorem finset_norm_sum_le (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExpo
   obtain ⟨C3, hC3, hgeom⟩ := dyad_geom ((317:ℝ)/500 + ((1:ℝ)/25 + (1:ℝ)/4000)) (by norm_num)
   refine ⟨C1 * C2 * C3, by positivity, max 2 ((2 * U₀)^5), le_max_left _ _, ?_⟩
   intro Z hZ G hG
-  have hZ2 : 2 ≤ Z := le_trans (le_max_left _ _) hZ
+  have hZ2 := le_trans (le_max_left _ _) hZ
   have hZ1 : 1 ≤ Z := by linarith
-  have hZ5 : (2 * U₀)^5 ≤ Z := le_trans (le_max_right _ _) hZ
-  have hZs : 2 * U₀ ≤ Z ^ DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent := kappa_s_ge U₀ Z (by linarith) hZ5
+  have hZs := kappa_s_ge U₀ Z (by linarith) (le_trans (le_max_right _ _) hZ)
 
   have hlow : ∀ u ∈ G, U₀ ≤ (2:ℝ) ^ dyadIndex D u ∧ (2:ℝ) ^ dyadIndex D u ≤ Z ^ DedekindZetaZeroFree.Quantitative.Scales.largeCutoffExponent := by
     intro u hu
     have hm := hG (Finset.mem_coe.mpr hu)
     have hd := dyadIndex_spec' D u
-    have hs : Z ^ DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent < q D u := hm.1.2.1
-    have hl : q D u ≤ Z ^ DedekindZetaZeroFree.Quantitative.Scales.largeCutoffExponent := hm.1.2.2
+    have hs := hm.1.2.1
+    have hl := hm.1.2.2
     constructor
     · linarith [hd.2]
     · linarith [hd.1]
@@ -110,11 +109,8 @@ theorem finset_norm_sum_le (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExpo
         * ((2:ℝ) ^ dyadIndex D u) ^ ((1:ℝ)/25 + (1:ℝ)/4000) := by
     intro u hu
     have hm := hG (Finset.mem_coe.mpr hu)
-    have hex := exceptionalMedium_mem_dyad D hm
     have hd := dyadIndex_spec' D u
-    have hl := hlow u hu
-    have h2 : (2:ℝ) ≤ (2:ℝ) ^ dyadIndex D u := le_trans hU₀ hl.1
-    exact hrow u hm.1.1 ((2:ℝ) ^ dyadIndex D u) h2 hd.1 hd.2 Z hZ2
+    exact hrow u hm.1.1 ((2:ℝ) ^ dyadIndex D u) (le_trans hU₀ (hlow u hu).1) hd.1 hd.2 Z hZ2
 
   set K : Finset ℕ := G.image (fun u => dyadIndex D u) with hK
   have hKmem : ∀ k ∈ K, ∃ u ∈ G, dyadIndex D u = k := by
@@ -133,8 +129,7 @@ theorem finset_norm_sum_le (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExpo
         ⊆ rawExceptionalSet D ρ ((2:ℝ)^k) := by
       intro u hu
       simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_coe] at hu
-      have hm := hG (Finset.mem_coe.mpr hu.1)
-      have hex := (exceptionalMedium_mem_dyad D hm).1
+      have hex := (exceptionalMedium_mem_dyad D (hG (Finset.mem_coe.mpr hu.1))).1
       rw [hu.2] at hex
       exact hex
     have := Set.ncard_le_ncard hsub hcb.1
@@ -150,10 +145,6 @@ theorem finset_norm_sum_le (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExpo
     norm_num [DedekindZetaZeroFree.Quantitative.Scales.kernelExponent, DedekindZetaZeroFree.Quantitative.Scales.xExponent, DedekindZetaZeroFree.Quantitative.Scales.yExponent,
       DedekindZetaZeroFree.Quantitative.Scales.smoothingExponent, DedekindZetaZeroFree.Quantitative.Scales.rightLine, DedekindZetaZeroFree.Quantitative.Scales.contourOffset,
       DedekindZetaZeroFree.Quantitative.Scales.wLine, DedekindZetaZeroFree.Quantitative.Scales.zLine, DedekindZetaZeroFree.Quantitative.Scales.largeCutoffExponent]
-  have hZE : 0 ≤ Z ^ (DedekindZetaZeroFree.Quantitative.Scales.kernelExponent DedekindZetaZeroFree.Quantitative.Scales.rightLine DedekindZetaZeroFree.Quantitative.Scales.wLine DedekindZetaZeroFree.Quantitative.Scales.zLine) :=
-    Real.rpow_nonneg (by linarith) _
-  have hC12 : 0 ≤ C1 * C2 := by positivity
-  have hZpos : (0:ℝ) < Z := by linarith
   have hα : DedekindZetaZeroFree.Quantitative.DetectorDef.α = (317:ℝ)/500 := by
     norm_num [DedekindZetaZeroFree.Quantitative.DetectorDef.α]
   calc ∑ u ∈ G, ‖initialRowIntegral D u Z‖
@@ -190,7 +181,7 @@ theorem finset_norm_sum_le (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExpo
     _ = (C1 * C2 * Z ^ (DedekindZetaZeroFree.Quantitative.Scales.kernelExponent DedekindZetaZeroFree.Quantitative.Scales.rightLine DedekindZetaZeroFree.Quantitative.Scales.wLine DedekindZetaZeroFree.Quantitative.Scales.zLine))
           * ∑ k ∈ K, ((2:ℝ)^k) ^ ((317:ℝ)/500 + ((1:ℝ)/25 + (1:ℝ)/4000)) := by
         rw [hα]
-        exact sum_reassoc K C1 C2 _ _ _ _ hZpos
+        exact sum_reassoc K C1 C2 _ _ _ _ (by linarith)
     _ ≤ (C1 * C2 * Z ^ (DedekindZetaZeroFree.Quantitative.Scales.kernelExponent DedekindZetaZeroFree.Quantitative.Scales.rightLine DedekindZetaZeroFree.Quantitative.Scales.wLine DedekindZetaZeroFree.Quantitative.Scales.zLine))
           * (C3 * (Z ^ DedekindZetaZeroFree.Quantitative.Scales.largeCutoffExponent) ^ ((317:ℝ)/500 + ((1:ℝ)/25 + (1:ℝ)/4000))) := by
         apply mul_le_mul_of_nonneg_left _ (by positivity)
@@ -203,12 +194,12 @@ theorem finset_norm_sum_le (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExpo
 
 theorem exceptionalRows_norm_tsum_le (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
     (hρ : HeightSpec D A ρ) :
-    ∃ C : ℝ, 0 < C ∧ ∃ Z₀ : ℝ, 2 ≤ Z₀ ∧ ∀ Z : ℝ, Z₀ ≤ Z →
+    ∃ C : ℝ, ∃ Z₀ : ℝ, 2 ≤ Z₀ ∧ ∀ Z : ℝ, Z₀ ≤ Z →
       Summable (fun u : exceptionalMedium D ρ Z => ‖initialRowIntegral D u.1 Z‖) ∧
         ∑' u : exceptionalMedium D ρ Z, ‖initialRowIntegral D u.1 Z‖ ≤
           C * Z ^ ((717 : ℝ) / 2000) := by
   obtain ⟨C, hC, Z₀, hZ₀, h⟩ := finset_norm_sum_le D A ρ hA hconv hρ
-  refine ⟨C, hC, Z₀, hZ₀, fun Z hZ => ?_⟩
+  refine ⟨C, Z₀, hZ₀, fun Z hZ => ?_⟩
   have hfin : (exceptionalMedium D ρ Z).Finite :=
     (mediumSet_finite D Z).subset (exceptionalMedium_subset D ρ Z)
   haveI : Finite (exceptionalMedium D ρ Z) := hfin.to_subtype

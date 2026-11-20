@@ -20,9 +20,8 @@ theorem primeEulerRegroup
   let u : IsDedekindDomain.HeightOneSpectrum (𝓞 L) →
       IsDedekindDomain.HeightOneSpectrum (𝓞 K) :=
     IsDedekindDomain.HeightOneSpectrum.under (𝓞 K)
-  have hprod := (Equiv.sigmaFiberEquiv u).hasProd_iff.mpr
-    (dedekindZeta_idealEulerProduct_hasProd L s hs)
-  refine hprod.sigma fun p => ?_
+  refine ((Equiv.sigmaFiberEquiv u).hasProd_iff.mpr
+    (dedekindZeta_idealEulerProduct_hasProd L s hs)).sigma fun p => ?_
   let e : {Q : IsDedekindDomain.HeightOneSpectrum (𝓞 L) // u Q = p} ≃
       {Q : Ideal (𝓞 L) // Q ∈ IsDedekindDomain.primesOverFinset p.asIdeal (𝓞 L)} :=
     { toFun := fun Q => ⟨Q.1.asIdeal, by
@@ -42,11 +41,6 @@ theorem primeEulerRegroup
         apply Subtype.ext
         rfl }
   letI := Fintype.ofEquiv _ e.symm
-  change HasProd
-    (fun Q : {Q : IsDedekindDomain.HeightOneSpectrum (𝓞 L) // u Q = p} =>
-      (1 - (Ideal.absNorm Q.1.asIdeal : ℂ) ^ (-s))⁻¹)
-    (∏ Q ∈ IsDedekindDomain.primesOverFinset p.asIdeal (𝓞 L),
-      (1 - (Ideal.absNorm Q : ℂ) ^ (-s))⁻¹)
   rw [← Finset.prod_coe_sort,
     ← Fintype.prod_equiv e
       (fun Q => (1 - (Ideal.absNorm Q.1.asIdeal : ℂ) ^ (-s))⁻¹)

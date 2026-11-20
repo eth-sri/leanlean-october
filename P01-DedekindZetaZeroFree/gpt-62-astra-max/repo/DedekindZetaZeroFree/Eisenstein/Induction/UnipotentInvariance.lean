@@ -1,4 +1,6 @@
 module
+public import DedekindZetaZeroFree.Eisenstein.Induction.MetaplecticSectionCovariance
+public import DedekindZetaZeroFree.Eisenstein.Induction.ScalarRealizationAndCompactFiniteness
 
 public import DedekindZetaZeroFree.Eisenstein.Sections.LiteralSeries
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.CompactPicture.RationalPeriodizationPairingData
@@ -17,17 +19,7 @@ private theorem sqrt_eq_halfPower (r : ℝ) (hr : 0 < r) :
   congr 1
   push_cast
   ring
- theorem normalized_multiplier (s : ℂ) (t : KPGlobalTorusFunctionData.E F ζ hζ) :
-    KPGlobalExceptionalParameter.realLogPower
-      (((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ)) (1 / 2 + s) =
-    KPGlobalTorusFunctionData.deltaHalf F ζ hζ t *
-      KPGlobalTorusBorelTwistCompatibility.normPower F ζ hζ s t := by
-  have hr : 0 < (((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ)) := by
-    exact_mod_cast (pos_iff_ne_zero.mpr (Units.ne_zero _))
-  unfold KPGlobalTorusFunctionData.deltaHalf
-  rw [sqrt_eq_halfPower _ hr]
-  unfold KPGlobalExceptionalParameter.realLogPower KPGlobalTorusBorelTwistCompatibility.normPower
-  rw [add_mul, Complex.exp_add]
+ alias normalized_multiplier := DedekindZetaZeroFree.EisensteinReferenceSections.SeedScalarTransport.normalized_multiplier
 
 def literalSource (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K) (s : ℂ) :
     KPMsRationalCompactCrossPairing.Source F ζ hζ s := by
@@ -41,11 +33,7 @@ def literalSource (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K) (s : ℂ) :
   rw [h]
   ring
 
-theorem literal_unipotent_invariance (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K) (s : ℂ)
-    (x : KPAdeles F) (g : G F ζ hζ) :
-    f.val s (KPGlobalTorusFunctionData.N F ζ hζ x * g) = f.val s g := by
-  have h := (f.property.1 s).2 1 x g
-  simpa [KPGlobalExceptionalParameter.realLogPower] using h
+alias literal_unipotent_invariance := DedekindZetaZeroFree.KPLiteralExceptionalResidue.val_N_invariant
 end DedekindZetaZeroFree.KPLiteralChamber
 
 end

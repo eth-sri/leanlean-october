@@ -53,11 +53,8 @@ private lemma Lc_rec (ℓ k : ℕ) :
       simp [this]
     rw [hA1, mul_zero]
     rcases eq_or_lt_of_le (not_lt.mp hk) with h | h
-    · subst h
-      simp only [Lc]
-      push_cast
-      ring
-    · have : ℓ.choose k = 0 := Nat.choose_eq_zero_of_lt h
+    · simp_all [Lc]
+    · have := Nat.choose_eq_zero_of_lt h
       simp [Lc, this]
 
 private lemma coeff_op {K : Type*} [Field K] (c : K) (R : Polynomial K) (k : ℕ) :
@@ -66,13 +63,7 @@ private lemma coeff_op {K : Type*} [Field K] (c : K) (R : Polynomial K) (k : ℕ
     = ((k + 1 : ℕ) : K) ^ 2 * R.coeff (k + 1)
       - (((k : ℕ) : K) * ((k + 1 : ℕ) : K) - c) * R.coeff k := by
   rcases k with _ | m
-  · have e : Polynomial.X * (1 - Polynomial.X) * R.derivative
-        = Polynomial.X * R.derivative - Polynomial.X ^ 2 * R.derivative := by ring
-    rw [e]
-    simp only [coeff_add, coeff_sub, coeff_derivative, coeff_C_mul, pow_two, mul_assoc,
-      coeff_X_mul, coeff_X_mul_zero, Nat.cast_zero, Nat.cast_one, zero_mul, one_mul, mul_one,
-      mul_zero, sub_zero, zero_add]
-    ring
+  · simp [coeff_add, coeff_sub, coeff_derivative]
   · have e : Polynomial.X * (1 - Polynomial.X) * R.derivative
         = Polynomial.X * R.derivative - Polynomial.X ^ 2 * R.derivative := by ring
     rw [e]

@@ -11,12 +11,11 @@ open scoped Classical NumberField Topology ENNReal NNReal BigOperators
 open MeasureTheory
 namespace DedekindZetaZeroFree.CurrentBoundaryShapeTransport
 open KPMsActualAngularSource KPMsNativeOffsetMass KPMsNativeOffsetComparison
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeFullDomain → nativeFullDomain
-open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming actualFrame_spec → actualFrame_spec
+open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof (actualFrame_spec)
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable (M : NativeMeasuredSource F ζ hζ R P) (V : Level F ζ hζ)
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    (M : NativeMeasuredSource F ζ hζ R P) (V : Level F ζ hζ)
 
 theorem cross_shape_cusp (Y : ℝ)
     (hY : OffsetAdmissible F ζ hζ R P (nativeRecipe F ζ hζ R P) V Y)

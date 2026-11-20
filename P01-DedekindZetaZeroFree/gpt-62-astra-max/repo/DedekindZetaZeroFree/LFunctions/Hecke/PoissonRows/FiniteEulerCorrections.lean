@@ -23,8 +23,8 @@ open DedekindZetaZeroFree NumberField
 open scoped Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 def rowPrimes (u : D.Row) : Finset (Ideal (NumberField.RingOfIntegers F)) :=
   (UniqueFactorizationMonoid.normalizedFactors
@@ -38,19 +38,13 @@ private theorem rowPrimes_eq (u : D.Row) :
   unfold rowPrimes idealPrimeSupport
   congr
 
-private theorem two_le_absNorm_of_ne (p : Ideal (NumberField.RingOfIntegers F))
-    (h0 : p ≠ ⊥) (h1 : p ≠ ⊤) : 2 ≤ Ideal.absNorm p := by
-  have ha : Ideal.absNorm p ≠ 0 := fun h => h0 (Ideal.absNorm_eq_zero_iff.mp h)
-  have hb : Ideal.absNorm p ≠ 1 := fun h => h1 (Ideal.absNorm_eq_one_iff.mp h)
-  omega
-
 private theorem idealNorm_nonneg' (p : Ideal (NumberField.RingOfIntegers F)) :
     0 ≤ idealNorm p := by
   unfold idealNorm
   positivity
 
 private theorem inv_facts (σ : ℝ) (hσ : 0 < σ) (n : ℝ) (hn : 2 ≤ n) :
-    0 < 1 - n ^ (-σ) ∧ 0 ≤ n ^ (-σ) ∧ 1 ≤ (1 - n ^ (-σ))⁻¹ ∧
+    1 ≤ (1 - n ^ (-σ))⁻¹ ∧
       (1 - n ^ (-σ))⁻¹ ≤ 1 + (1 / (1 - (2:ℝ) ^ (-σ))) * n ^ (-σ) := by
   have hr1 : (2:ℝ) ^ (-σ) < 1 :=
     Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
@@ -65,7 +59,7 @@ private theorem inv_facts (σ : ℝ) (hσ : 0 < σ) (n : ℝ) (hn : 2 ≤ n) :
     nlinarith [mul_nonneg hCpos.le (sub_nonneg.mpr hxr)]
   have hi := inv_pos.mpr hpos
   have hinv : (1 - n ^ (-σ)) * (1 - n ^ (-σ))⁻¹ = 1 := mul_inv_cancel₀ hpos.ne'
-  refine ⟨hpos, hx0, ?_, ?_⟩
+  refine ⟨?_, ?_⟩
   · nlinarith [mul_nonneg hi.le hx0]
   · rw [inv_eq_one_div, div_le_iff₀ hpos]
     nlinarith [mul_nonneg hx0 (sub_nonneg.mpr h1)]
@@ -73,9 +67,11 @@ private theorem inv_facts (σ : ℝ) (hσ : 0 < σ) (n : ℝ) (hn : 2 ≤ n) :
 private theorem sset_two (p : Ideal (NumberField.RingOfIntegers F))
     (hp : p ∈ D.recipe.A.Sf.image (fun v => v.asIdeal)) : 2 ≤ idealNorm p := by
   obtain ⟨v, _, rfl⟩ := Finset.mem_image.mp hp
-  have h := two_le_absNorm_of_ne v.asIdeal v.ne_bot v.isPrime.ne_top
   unfold idealNorm
-  exact_mod_cast h
+  exact_mod_cast (by
+    have ha : Ideal.absNorm v.asIdeal ≠ 0 := fun h => v.ne_bot (Ideal.absNorm_eq_zero_iff.mp h)
+    have hb : Ideal.absNorm v.asIdeal ≠ 1 := fun h => v.isPrime.ne_top (Ideal.absNorm_eq_one_iff.mp h)
+    omega)
 
 private theorem prime_norm_two (I : Ideal (NumberField.RingOfIntegers F))
     (p : Ideal (NumberField.RingOfIntegers F)) (hp : p ∈ idealPrimeSupport I) :
@@ -128,9 +124,9 @@ private theorem row_bounds (σ ε : ℝ) (hσ : 0 < σ) (hε : 0 < ε) :
     apply Finset.prod_le_prod₀
     · intro p hp
       exact le_trans zero_le_one (inv_facts σ hσ (idealNorm p)
-        (prime_norm_two _ p hp)).2.2.1
+        (prime_norm_two _ p hp)).1
     · intro p hp
-      exact (inv_facts σ hσ (idealNorm p) (prime_norm_two _ p hp)).2.2.2
+      exact (inv_facts σ hσ (idealNorm p) (prime_norm_two _ p hp)).2
 
 theorem euler_product_bound_with_S (σs : ℝ) (hσs : 0 < σs) (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ u : D.Row, 1 ≤ D.q u →
@@ -144,7 +140,7 @@ theorem euler_product_bound_with_S (σs : ℝ) (hσs : 0 < σs) (ε : ℝ) (hε 
       linarith)
   have hPS2 : 0 < ∏ p ∈ Sset, (1 - idealNorm p ^ (-σs))⁻¹ :=
     Finset.prod_pos (fun p hp => lt_of_lt_of_le zero_lt_one
-      (inv_facts σs hσs (idealNorm p) (sset_two D p hp)).2.2.1)
+      (inv_facts σs hσs (idealNorm p) (sset_two D p hp)).1)
   refine ⟨(K1 + K2) * ((∏ p ∈ Sset, (1 + idealNorm p ^ (-σs))) +
       ∏ p ∈ Sset, (1 - idealNorm p ^ (-σs))⁻¹), mul_pos (by linarith) (by linarith),
     fun u hu => ?_⟩
@@ -161,12 +157,12 @@ theorem euler_product_bound_with_S (σs : ℝ) (hσs : 0 < σs) (ε : ℝ) (hε 
     linarith
   have hA2 : ∀ p ∈ idealPrimeSupport (DedekindZetaZeroFree.Quantitative.FixedData.Row.ideal u).val,
       0 ≤ (1 - idealNorm p ^ (-σs))⁻¹ := fun p hp =>
-    le_trans zero_le_one (inv_facts σs hσs (idealNorm p) (prime_norm_two _ p hp)).2.2.1
+    le_trans zero_le_one (inv_facts σs hσs (idealNorm p) (prime_norm_two _ p hp)).1
   have hB1 : ∀ p ∈ Sset, 1 ≤ 1 + idealNorm p ^ (-σs) := fun p _ => by
     have := Real.rpow_nonneg (idealNorm_nonneg' p) (-σs)
     linarith
   have hB2 : ∀ p ∈ Sset, 1 ≤ (1 - idealNorm p ^ (-σs))⁻¹ := fun p hp =>
-    (inv_facts σs hσs (idealNorm p) (sset_two D p hp)).2.2.1
+    (inv_facts σs hσs (idealNorm p) (sset_two D p hp)).1
   have m1 := prod_union_le_aux _ Sset (fun p => 1 + idealNorm p ^ (-σs)) hA1 hB1
   have m2 := prod_union_le_aux _ Sset (fun p => (1 - idealNorm p ^ (-σs))⁻¹) hA2 hB2
   have e1 := mul_le_mul_of_nonneg_right h1 hPS1.le

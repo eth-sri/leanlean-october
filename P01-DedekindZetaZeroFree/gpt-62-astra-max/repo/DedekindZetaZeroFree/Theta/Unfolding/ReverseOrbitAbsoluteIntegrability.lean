@@ -11,21 +11,21 @@ namespace DedekindZetaZeroFree.OrbitFrequencies
 open MomentSources NumberField MeasureTheory ThetaProfileHaarSheets ThetaSheetExactUnfolding
 open scoped NumberField Classical Topology
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
 
 lemma orbitMass_reverse_joint_bound (N : TraceHaarTransport R)
     {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
     (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D)
     (H : SameResidueProfiles R Q T P) :
-    ∃ K : ℝ, 0 ≤ K ∧ ∀ v m d (l : PositiveAxis),
+    ∃ K : ℝ, ∀ v m d (l : PositiveAxis),
       Summable (fun i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A =>
         orbitMass R N T P v m false i.1 i.2 d l) ∧
       (∑' i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A,
         orbitMass R N T P v m false i.1 i.2 d l) ≤
         K * l.val ^ 2 * (∑' ξ, frequencyMajorant R m ξ) := by
   obtain ⟨K, hK, hb⟩ := orbitMass_reverse_summable_bound R N T P D E H
-  refine ⟨K, hK, ?_⟩
+  refine ⟨K, ?_⟩
   intro v m d l
   have hξ : Summable (fun ξ => ∑' γ, orbitMass R N T P v m false ξ γ d l) :=
     Summable.of_nonneg_of_le (fun ξ => tsum_nonneg (fun γ => orbitMass_nonneg R N T P v m false ξ γ d l))
@@ -49,7 +49,7 @@ lemma orbitMass_reverse_smoothed (N : TraceHaarTransport R)
     Summable (fun i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A =>
       ∫ t : PositiveAxis, ‖P.kernel t.val‖ * ‖digitWeight R m d‖ *
         orbitMass R N T P v m false i.1 i.2 d ⟨t.val / Z, div_pos t.property hZ⟩ ∂positiveHaar) := by
-  obtain ⟨K, hK, hb⟩ := orbitMass_reverse_joint_bound R N T P D E H
+  obtain ⟨K, hb⟩ := orbitMass_reverse_joint_bound R N T P D E H
   let C : ℝ := ‖digitWeight R m d‖ * K / Z ^ 2 * (∑' ξ, frequencyMajorant R m ξ)
   apply dominated_nonnegative_series
     (g := fun t : PositiveAxis => C * (‖P.kernel t.val‖ * t.val ^ 2))
@@ -107,12 +107,11 @@ theorem reverse_orbit_product_integrable (N : TraceHaarTransport R)
     have hi := continuous_pregroupingSheet_integrable R N P.v₀ _ _ hc
     rw [pregroupingSheetHaar_eq_map] at hi
     exact (sheetTranslation R.A P.v₀ _).measurableEmbedding.integrable_map_iff.mp hi
-  · have hi := (orbitMass_reverse_smoothed R N T P D E H v m d Z hZ).1 i
-    have he (t : PositiveAxis) := (sheet_mass_coordinates R N P.v₀
+  · have he (t : PositiveAxis) := (sheet_mass_coordinates R N P.v₀
       ⟨t.val / Z, div_pos t.property hZ⟩ (fun y =>
         P.kernel t.val * digitWeight R m d * orbitFrequencyValue R Q T v i (signedArgument R m false y.val d))).symm
     simp_rw [he, orbitMass_weighted_eq R N T P]
-    exact hi
+    exact (orbitMass_reverse_smoothed R N T P D E H v m d Z hZ).1 i
 
 theorem reverse_orbit_pregrouping (N : TraceHaarTransport R)
     {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)

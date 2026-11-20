@@ -10,20 +10,17 @@ open scoped Classical NumberField Topology ContDiff BigOperators
 namespace DedekindZetaZeroFree.SharedSource
 open KPGlobalResidualConstruction KPContActualSphericalRightFieldIdentification
 open KPContActualCutoffPlusClearedGerm
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming scalar_line_construction → scalar_line_construction
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming scalar_analytic_of_right_holomorphic → scalar_analytic_of_right_holomorphic
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming word_smul → word_smul
-open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy renaming actualRightWord_compact_holomorphy → actualRightWord_compact_holomorphy
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator renaming scalar_eq_lift → scalar_eq_lift
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming word_zero → word_zero
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming smooth_zero → smooth_zero
-open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy renaming finite_level_exists → finite_level_exists
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer (scalar_line_construction scalar_analytic_of_right_holomorphic word_smul)
+open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy (actualRightWord_compact_holomorphy)
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.NativeCompactNumerator (scalar_eq_lift)
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (word_zero)
+open _root_.DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy (smooth_zero finite_level_exists)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 set_option maxHeartbeats 1200000
 set_option backward.isDefEq.respectTransparency false
 
@@ -76,7 +73,7 @@ theorem sphericalWord_coherent_numerator
       obtain ⟨r, hr, hb, W, hW, he⟩ := hlocal c hc
       let T : ℂ → KPLiteralRaw.Functions F ζ hζ := fun s =>
         actualRightWord F ζ hζ w (groupScalar F ζ hζ C R P H U (W s))
-      have ha : AnalyticOnNhd ℂ (fun s => T s g) (Metric.ball c r) :=
+      have ha :=
         scalar_analytic_of_right_holomorphic F ζ hζ C R P H U T _ Metric.isOpen_ball
           (fun D => actualRightWord_compact_holomorphy D _ _ (hW.right_holomorphic D) w) g
       have hq : MeromorphicAt (fun s => T s g / (s-c)) c :=
@@ -94,7 +91,7 @@ theorem sphericalWord_coherent_numerator
     obtain ⟨t, ht, htb, W, hW, hWe⟩ := hlocal 0 (by norm_num [KPContinuation.spectralDomain])
     let L : ℂ → KPLiteralRaw.Functions F ζ hζ := fun s =>
       actualRightWord F ζ hζ w (groupScalar F ζ hζ C R P H U (W s))
-    have hLa : ∀ g, AnalyticOnNhd ℂ (fun s => L s g) (Metric.ball (0 : ℂ) t) :=
+    have hLa :=
       scalar_analytic_of_right_holomorphic F ζ hζ C R P H U L _ Metric.isOpen_ball
         (fun D => actualRightWord_compact_holomorphy D _ _ (hW.right_holomorphic D) w)
     let ρ := t / 2

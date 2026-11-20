@@ -16,14 +16,16 @@ private lemma units_borel (K : Type*) [Field K] [ValuativeRel K]
   constructor
   unfold Units.instMeasurableSpace
   rw [‹BorelSpace K›.measurable_eq, ← borel_comap]
-  rw [← (Units.isEmbedding_val₀ (G₀ := K)).isInducing.eq_induced]
+  rw [← (Units.isEmbedding_val₀).isInducing.eq_induced]
+
+alias CubicPowerPushforward.units_borel := units_borel
 variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   [TopologicalSpace K] [IsNonarchimedeanLocalField K]
   [MeasurableSpace K] [BorelSpace K]
 private lemma abs_pos {x : K} (hx : x ≠ 0) : 0 < abs K x := by
-  have hq : (0 : ℝ) < residueCard K := by exact_mod_cast (two_le_residueCard K).trans_lt' (by decide)
   simp only [abs, if_neg hx]
-  exact zpow_pos hq _
+  refine zpow_pos ?_ _
+  exact_mod_cast (two_le_residueCard K).trans_lt' (by decide)
 private lemma abs_mul (x y : K) : abs K (x * y) = abs K x * abs K y := by
   by_cases hx : x = 0
   · subst x; simp [abs]
@@ -92,13 +94,12 @@ private lemma haar_left (dx : Measure K) [dx.IsAddHaarMeasure]
         rw [he]; simp
   rw [hpre, withDensity_apply _ (by exact (ev.measurableSet_image.mpr hs).preimage (by fun_prop)),
     withDensity_apply _ (ev.measurableSet_image.mpr hs)]
-  have hscale : Measure.map (fun x : K => (g : K) * x) dx =
-      (ENNReal.ofReal (abs K (g : K)))⁻¹ • dx :=
+  have hscale :=
     hscale (g : K) g.ne_zero
   have hmul (x : K) : D ((g : K) * x) = (ENNReal.ofReal (abs K (g : K)))⁻¹ * D x := by
     dsimp [D]
     have ha : abs K ((g : K) * x) = abs K (g : K) * abs K x := abs_mul K _ _
-    have hp : 0 < abs K (g : K) := abs_pos K g.ne_zero
+    have hp := abs_pos K g.ne_zero
     rw [ha, mul_inv, ENNReal.ofReal_mul (inv_nonneg.mpr hp.le),
       ENNReal.ofReal_inv_of_pos hp]
   have hm := setLIntegral_map (μ := dx) (g := fun x : K => (g : K) * x)
@@ -107,10 +108,14 @@ private lemma haar_left (dx : Measure K) [dx.IsAddHaarMeasure]
   simp only [ENNReal.smul_def, smul_eq_mul] at hm
   simp_rw [hmul] at hm
   rw [lintegral_const_mul _ hD] at hm
-  have hp : 0 < abs K (g : K) := abs_pos K g.ne_zero
-  exact (ENNReal.mul_right_inj (by simp) (by simp [hp])).mp hm.symm
-private lemma unit_mass (dx : Measure K) [dx.IsAddHaarMeasure]
-    (m : ℝ) (hm : 0 < m) (hvol : dx (Integers K : Set K) = ENNReal.ofReal m)
+  exact (ENNReal.mul_right_inj (by simp) (by simp [(abs_pos K g.ne_zero)])).mp hm.symm
+section
+
+variable (dx : Measure K) [dx.IsAddHaarMeasure] (m : ℝ) (hm : 0 < m)
+    (hvol : dx (Integers K : Set K) = ENNReal.ofReal m)
+
+include hm hvol in
+private lemma unit_mass
     (hres : (residueCard K : ℝ≥0∞) * dx ((Integers K).subtype ''
       (IsLocalRing.maximalIdeal (Integers K) : Set (Integers K))) = dx (Integers K : Set K)) :
     haar K dx {x : Kˣ | (x : K) ∈ Integers K ∧ ((x⁻¹ : Kˣ) : K) ∈ Integers K} =
@@ -125,7 +130,7 @@ private lemma unit_mass (dx : Measure K) [dx.IsAddHaarMeasure]
   have hU : IsOpen U := (Valued.isOpen_integer K).preimage Units.continuous_val |>.inter
     ((Valued.isOpen_integer K).preimage Units.continuous_coe_inv)
   have hP : MeasurableSet P := by
-    have hi : MeasurableSet (IsLocalRing.maximalIdeal R : Set R) :=
+    have hi :=
       (IsNoetherianRing.isClosed_ideal (IsLocalRing.maximalIdeal R)).measurableSet
     exact (MeasurableEmbedding.subtype_coe (Valued.isClosed_integer K).measurableSet).measurableSet_image.mpr hi
   have hset : Units.val '' U = (R : Set K) \ P := by
@@ -178,9 +183,8 @@ private lemma unit_mass (dx : Measure K) [dx.IsAddHaarMeasure]
   rw [hp, hvol, ← ENNReal.ofReal_sub]
   · congr 1; ring
   · positivity
+include hm hvol in
 private theorem haar_of_scaling_and_residue
-    (dx : Measure K) [dx.IsAddHaarMeasure]
-    (m : ℝ) (hm : 0 < m) (hvol : dx (Integers K : Set K) = ENNReal.ofReal m)
     (hscale : ∀ (c : K) (hc : c ≠ 0), Measure.map (fun x : K => c * x) dx =
       (ENNReal.ofReal (abs K c))⁻¹ • dx)
     (hres : (residueCard K : ℝ≥0∞) * dx ((Integers K).subtype ''
@@ -208,6 +212,8 @@ private theorem haar_of_scaling_and_residue
     have hq : (1 : ℝ) < residueCard K := by exact_mod_cast two_le_residueCard K
     exact mul_pos hm (sub_pos.mpr ((inv_lt_one₀ (by positivity)).mpr hq))
   · rw [hmass]; simp
+
+end
 
 theorem haar_structure_and_unit_mass
     (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
@@ -258,27 +264,20 @@ private theorem cube_proper : IsProperMap (fun x : Kˣ => x^3) := by
    convert (Polynomial.X ^ 3 : Polynomial K).isProperMap_eval (by simp) using 1
    funext x
    simp
- have hprod : IsProperMap (fun p : K × Kᵐᵒᵖ => (p.1^3, p.2^3)) := hp.prodMap (by
-   simpa only [MulOpposite.op_pow] using
-     (MulOpposite.opHomeomorph.isProperMap.comp hp).comp MulOpposite.opHomeomorph.symm.isProperMap)
  have hcomm : (fun p : K × Kᵐᵒᵖ => (p.1^3, p.2^3)) ∘ Units.embedProduct K =
      Units.embedProduct K ∘ (fun x : Kˣ => x^3) := by funext x; ext <;> simp [Units.embedProduct]
  apply isProperMap_of_comp_of_inj (by fun_prop) Units.continuous_embedProduct
-   (by rw [← hcomm]; exact hprod.comp Units.isClosedEmbedding_embedProduct.isProperMap)
+   (by rw [← hcomm]; exact (hp.prodMap (by
+     simpa using
+       (MulOpposite.opHomeomorph.isProperMap.comp hp).comp MulOpposite.opHomeomorph.symm.isProperMap)).comp Units.isClosedEmbedding_embedProduct.isProperMap)
  exact Units.embedProduct_injective K
 
+alias CubicPowerPushforward.cube_proper := cube_proper
+
  def unitGroup : Subgroup Kˣ := (valuation K).integer.toSubmonoid.units
-private theorem unitGroup_open : IsOpen (unitGroup K : Set Kˣ) := by
- letI := IsTopologicalAddGroup.rightUniformSpace K
- haveI := isUniformAddGroup_of_addCommGroup (G := K)
- exact Submonoid.isOpen_units (Valued.isOpen_integer K)
-private theorem unitGroup_compact : IsCompact (unitGroup K : Set Kˣ) := by
- letI := IsTopologicalAddGroup.rightUniformSpace K
- haveI := isUniformAddGroup_of_addCommGroup (G := K)
- exact Submonoid.units_isCompact (IsNonarchimedeanLocalField.isCompact_closedBall K 1)
+
 private theorem cube_preimage_units : (fun x : Kˣ => x^3) ⁻¹' (unitGroup K : Set Kˣ) = unitGroup K := by
  ext x
- change (x^3 : Kˣ) ∈ (unitGroup K : Set Kˣ) ↔ x ∈ (unitGroup K : Set Kˣ)
  change (valuation K ((x^3 : Kˣ) : K) ≤ 1 ∧ valuation K (((x^3)⁻¹ : Kˣ) : K) ≤ 1) ↔
    (valuation K (x : K) ≤ 1 ∧ valuation K ((x⁻¹ : Kˣ) : K) ≤ 1)
  rw [← inv_pow]
@@ -292,7 +291,7 @@ private theorem cube_preimage_units : (fun x : Kˣ => x^3) ⁻¹' (unitGroup K :
 private theorem cube_unit_index :
  (powMonoidHom (α := Kˣ) 3).range.relIndex (unitGroup K) = (KPCubicUnitIndices.cubeUnits K).index := by
  let O := KPCubicUnitIndices.Integers K
- let f : Oˣ →* Kˣ := Units.map O.subtype.toMonoidHom
+ let f := Units.map O.subtype.toMonoidHom
  have hrange : f.range = unitGroup K := by
    ext x
    constructor
@@ -327,13 +326,14 @@ private theorem cube_unit_index :
 private theorem haar_isHaar (dx : Measure K) [dx.IsAddHaarMeasure] : (haar K dx).IsHaarMeasure := by
  letI := IsTopologicalAddGroup.rightUniformSpace K
  haveI := isUniformAddGroup_of_addCommGroup (G := K)
- have hc : IsCompact (KPCubicUnitIndices.Integers K : Set K) :=
+ have hc :=
    IsNonarchimedeanLocalField.isCompact_closedBall K 1
- have ho : IsOpen (KPCubicUnitIndices.Integers K : Set K) := Valued.isOpen_integer K
  have hp : 0 < dx (KPCubicUnitIndices.Integers K : Set K) :=
-   ho.measure_pos (μ := dx) ⟨0, by simp⟩
+   (Valued.isOpen_integer K).measure_pos (μ := dx) ⟨0, by simp⟩
  exact (haar_structure_and_unit_mass K dx _
    (ENNReal.toReal_pos hp.ne' hc.measure_lt_top.ne) (ENNReal.ofReal_toReal hc.measure_lt_top.ne).symm).1
+
+alias CubicPowerPushforward.haar_isHaar := haar_isHaar
 
 theorem cube_pushforward
     (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
@@ -382,8 +382,14 @@ theorem cube_pushforward
  let c := Measure.haarScalarFactor ρ ν
  have heq : ρ = c • ν := Measure.isMulLeftInvariant_eq_smul ρ ν
  let U := unitGroup K
- have hUo : IsOpen (U : Set Kˣ) := unitGroup_open K
- have hUc : IsCompact (U : Set Kˣ) := unitGroup_compact K
+ have hUo : IsOpen (U : Set Kˣ) := (by
+   letI := IsTopologicalAddGroup.rightUniformSpace K
+   haveI := isUniformAddGroup_of_addCommGroup (G := K)
+   exact Submonoid.isOpen_units (Valued.isOpen_integer K))
+ have hUc : IsCompact (U : Set Kˣ) := (by
+   letI := IsTopologicalAddGroup.rightUniformSpace K
+   haveI := isUniformAddGroup_of_addCommGroup (G := K)
+   exact Submonoid.units_isCompact (IsNonarchimedeanLocalField.isCompact_closedBall K 1))
  let W : Set H := H.subtype ⁻¹' (U : Set Kˣ)
  have hρW : ρ W = μ U := by
    change μ.map g W = μ U
@@ -454,22 +460,25 @@ namespace KPCubicHaar
 noncomputable section
 open MeasureTheory ValuativeRel KPCubicUnitIndices
 
-def abs (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (x : K) : ℝ := by
+section
+
+variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+
+def abs (x : K) : ℝ := by
   classical
   exact if x = 0 then 0 else
     (KPCubicUnitIndices.residueCard K : ℝ) ^
       WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K x))
 
-def ball (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (y : K) (r : ℝ) : Set K :=
+def ball (y : K) (r : ℝ) : Set K :=
   {x | abs K (x - y) < r}
 
-def multiplicativeHaar (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K]
+def multiplicativeHaar [MeasurableSpace K] [BorelSpace K]
     (dx : Measure K) : Measure Kˣ :=
   Measure.comap (fun x : Kˣ => (x : K))
     (dx.withDensity (fun x => ENNReal.ofReal ((abs K x)⁻¹)))
+
+end
 
 variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
@@ -477,9 +486,9 @@ variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
 @[simp] theorem abs_zero : abs K 0 = 0 := by simp [abs]
 @[simp] theorem abs_one : abs K 1 = 1 := by simp [abs]
 theorem abs_pos {x : K} (hx : x ≠ 0) : 0 < abs K x := by
-  have hq : (0 : ℝ) < residueCard K := by exact_mod_cast (two_le_residueCard K).trans_lt' (by decide)
   simp only [abs, if_neg hx]
-  exact zpow_pos hq _
+  refine zpow_pos ?_ _
+  exact_mod_cast (two_le_residueCard K).trans_lt' (by decide)
 
 @[simp] theorem abs_mul (x y : K) : abs K (x*y) = abs K x * abs K y := by
   by_cases hx : x = 0
@@ -515,19 +524,22 @@ theorem abs_lt_iff {x y : K} (hy : y ≠ 0) :
   have hey : e (valuation K y) ≠ 0 := by simpa [e] using hvy
   have hq : (1 : ℝ) < residueCard K := by exact_mod_cast (two_le_residueCard K)
   simp only [abs, if_neg hx, if_neg hy, zpow_lt_zpow_iff_right₀ hq]
-  change WithZero.log (e (valuation K x)) < WithZero.log (e (valuation K y)) ↔ _
   rw [← e.toOrderIso.lt_iff_lt]
   change WithZero.log (e (valuation K x)) < WithZero.log (e (valuation K y)) ↔
     e (valuation K x) < e (valuation K y)
   conv_rhs => rw [← WithZero.exp_log hex, ← WithZero.exp_log hey]
   exact WithZero.exp_lt_exp.symm
 
-theorem ball_nonzero_constant_abs (y : K) (hy : y ≠ 0) :
+section
+
+variable (y : K) (hy : y ≠ 0)
+
+include hy in
+theorem ball_nonzero_constant_abs :
     ∀ x ∈ ball K y (abs K y), x ≠ 0 ∧ abs K x = abs K y := by
   intro x hx
-  have hlt : valuation K (x-y) < valuation K y := (abs_lt_iff K hy).mp hx
   have hval : valuation K x = valuation K y := by
-    simpa only [sub_add_cancel] using (valuation K).map_add_eq_of_lt_right hlt
+    simpa using (valuation K).map_add_eq_of_lt_right ((abs_lt_iff K hy).mp hx)
   have hne : x ≠ 0 := by
     intro hzero
     have : valuation K y = 0 := by simpa [hzero] using hval.symm
@@ -535,7 +547,8 @@ theorem ball_nonzero_constant_abs (y : K) (hy : y ≠ 0) :
   refine ⟨hne, ?_⟩
   simp only [abs, if_neg hne, if_neg hy, hval]
 
-theorem ball_abs_isOpen (y : K) (hy : y ≠ 0) : IsOpen (ball K y (abs K y)) := by
+include hy in
+theorem ball_abs_isOpen : IsOpen (ball K y (abs K y)) := by
   have hset : ball K y (abs K y) =
       (fun x : K => x-y) ⁻¹' {x | (valuation K).restrict x < (valuation K).restrict y} := by
     ext x
@@ -544,6 +557,8 @@ theorem ball_abs_isOpen (y : K) (hy : y ≠ 0) : IsOpen (ball K y (abs K y)) := 
     exact (valuation K).restrict_lt_iff.symm
   rw [hset]
   exact ((valuation K).isOpen_ball _).preimage (continuous_id.sub continuous_const)
+
+end
 theorem abs_units_locallyConstant : IsLocallyConstant (fun x : Kˣ => abs K (x : K)) := by
   rw [IsLocallyConstant.iff_exists_open]
   intro x
@@ -581,7 +596,7 @@ theorem cubeUnits_eq_comap : cubeUnits K =
       (Valuation.integer.integers (valuation K)).isUnit_of_one' hvt
     have hft : f hunit.unit = t := by
       apply Units.ext
-      change (↑(hunit.unit : Integers K) : K) = (t : K)
+      change (↑hunit.unit : K) = (t : K)
       rw [hunit.unit_spec]
     refine ⟨hunit.unit, hf ?_⟩
     rw [map_pow, hft, ht]
@@ -609,13 +624,12 @@ theorem abs_uniformizer (π : K) (hπ : valuation K π = ValuativeRel.uniformize
   have hπ0 : π ≠ 0 := by
     intro h
     rw [h, map_zero] at hπ
-    exact (ValuativeRel.uniformizer_pos (R := K)).ne' hπ.symm
+    exact (ValuativeRel.uniformizer_pos).ne' hπ.symm
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-  have hu_ne : ValuativeRel.uniformizer K ≠ 0 := (ValuativeRel.uniformizer_pos (R := K)).ne'
-  have hx_ne : e (ValuativeRel.uniformizer K) ≠ 0 := by simpa [e] using hu_ne
+  have hx_ne : e (ValuativeRel.uniformizer K) ≠ 0 := by simpa [e] using ((ValuativeRel.uniformizer_pos).ne')
   have hx_lt : e (ValuativeRel.uniformizer K) < 1 := by
     rw [← map_one e]
-    exact e.toOrderIso.lt_iff_lt.mpr (ValuativeRel.uniformizer_lt_one (R := K))
+    exact e.toOrderIso.lt_iff_lt.mpr (ValuativeRel.uniformizer_lt_one)
   have hlog : WithZero.log (e (ValuativeRel.uniformizer K)) = -1 := by
     refine le_antisymm ?_ ?_
     · have h : WithZero.log (e (ValuativeRel.uniformizer K)) < 0 := by
@@ -624,13 +638,12 @@ theorem abs_uniformizer (π : K) (hπ : valuation K π = ValuativeRel.uniformize
         exact WithZero.exp_lt_one_iff.mp hh
       omega
     · rw [WithZero.le_log_iff_exp_le hx_ne]
-      have h2 : e.symm (WithZero.exp (-1 : ℤ)) ≤ ValuativeRel.uniformizer K := by
-        refine ValuativeRel.le_uniformizer_iff.mpr ?_
-        rw [← map_one e.symm]
-        exact e.symm.toOrderIso.lt_iff_lt.mpr
-          (WithZero.exp_lt_one_iff.mpr (by norm_num : (-1 : ℤ) < 0))
       rw [← e.apply_symm_apply (WithZero.exp (-1 : ℤ))]
-      exact e.toOrderIso.le_iff_le.mpr h2
+      refine e.toOrderIso.le_iff_le.mpr ?_
+      refine ValuativeRel.le_uniformizer_iff.mpr ?_
+      rw [← map_one e.symm]
+      exact e.symm.toOrderIso.lt_iff_lt.mpr
+        (WithZero.exp_lt_one_iff.mpr (by norm_num : (-1 : ℤ) < 0))
   rw [abs, if_neg hπ0, hπ, hlog, zpow_neg_one]
 
 end
@@ -638,9 +651,10 @@ end KPCubicHaar
 
 open MeasureTheory KPCubicHaar KPCubicUnitIndices
 
+variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K]
+
 theorem kp_rankone_cubic_haar_power
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     (ζ : Integers K) (hζ : IsPrimitiveRoot ζ 3) :
     (powMonoidHom (α := Kˣ) 3).ker = rootsOfUnity 3 K ∧
     Nat.card (rootsOfUnity 3 K) = 3 ∧
@@ -657,15 +671,12 @@ theorem kp_rankone_cubic_haar_power
     ring
 
 theorem kp_rankone_cubic_haar_power_measure
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     [MeasurableSpace K] [BorelSpace K]
     (dx : Measure K) [dx.IsAddHaarMeasure]
     (m : ℝ) (hm : 0 < m) (hvol : dx (Integers K : Set K) = ENNReal.ofReal m) :
     (multiplicativeHaar K dx).IsHaarMeasure ∧
     multiplicativeHaar K dx {x : Kˣ | (x : K) ∈ Integers K ∧ ((x⁻¹ : Kˣ) : K) ∈ Integers K} =
-      ENNReal.ofReal (m * (1 - (residueCard K : ℝ)⁻¹)) := by
-  exact KPCubicHaarTransport.haar_structure_and_unit_mass K dx m hm hvol
+      ENNReal.ofReal (m * (1 - (residueCard K : ℝ)⁻¹)) := KPCubicHaarTransport.haar_structure_and_unit_mass K dx m hm hvol
 
 end DedekindZetaZeroFree
 

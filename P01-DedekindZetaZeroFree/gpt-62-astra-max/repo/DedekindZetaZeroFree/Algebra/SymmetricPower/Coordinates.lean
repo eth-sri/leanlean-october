@@ -37,11 +37,6 @@ private theorem prod_eq_of_ofFn_eq (c : κ → R) {p q : Fin n → κ}
   obtain ⟨σ, rfl⟩ := DedekindZetaZeroFree.TauCeti.Sym.ofFn_eq_ofFn_iff.1 h
   exact (Equiv.prod_comp σ fun i => c (p i)).symm
 
-private theorem eq_const_of_ofFn_eq_ofFn_const {p : Fin n → κ} {k : κ}
-    (h : DedekindZetaZeroFree.TauCeti.Sym.ofFn p = DedekindZetaZeroFree.TauCeti.Sym.ofFn fun _ => k) : p = fun _ => k := by
-  obtain ⟨σ, hσ⟩ := DedekindZetaZeroFree.TauCeti.Sym.ofFn_eq_ofFn_iff.1 h
-  exact funext fun i => by simpa using congrFun hσ (σ.symm i)
-
 variable (b : Basis κ R M)
 
 private theorem repr_basis_symmetricPower_tprod_smul_basis [DecidableEq κ] (c : Fin n → R)
@@ -70,8 +65,7 @@ theorem repr_basis_symmetricPower_tprod_ofFn_const (v : Fin n → M) (k : κ) :
   classical
   have hvi : ∀ i, ∑ j ∈ insert k (b.repr (v i)).support, b.repr (v i) j • b j = v i := fun i => by
     conv_rhs => rw [← b.linearCombination_repr (v i), Finsupp.linearCombination_apply, Finsupp.sum]
-    exact (Finset.sum_subset (Finset.subset_insert k _)
-      fun j _ hj => by rw [Finsupp.notMem_support_iff.1 hj, zero_smul]).symm
+    simp_all
   have hv : (⨂ₛ[R] i, v i) =
       ⨂ₛ[R] i, ∑ j ∈ insert k (b.repr (v i)).support, b.repr (v i) j • b j :=
     congrArg _ (funext fun i => (hvi i).symm)
@@ -82,7 +76,9 @@ theorem repr_basis_symmetricPower_tprod_ofFn_const (v : Fin n → M) (k : κ) :
     Finset.sum_eq_single_of_mem (fun _ => k) (by simp)]
   · simp
   · intro p _ hne
-    simpa using fun h => absurd (eq_const_of_ofFn_eq_ofFn_const h) hne
+    simpa using fun h => absurd (by
+      obtain ⟨σ, hσ⟩ := DedekindZetaZeroFree.TauCeti.Sym.ofFn_eq_ofFn_iff.1 h
+      exact funext fun i => by simpa using congrFun hσ (σ.symm i)) hne
 
 end CommSemiring
 
@@ -96,18 +92,16 @@ theorem repr_basis_symmetricPower_tprod_const_ne_zero {u : M}
     (b.symmetricPower n).repr (⨂ₛ[R] (_ : Fin n), u) s ≠ 0 := by
   classical
 
-  have : Finite κ := Finite.of_injective
+  have := Finite.of_injective
     (fun k : κ => (⟨k, Finsupp.mem_support_iff.2 (hu k)⟩ : {j // j ∈ (b.repr u).support}))
     fun _ _ h => congrArg Subtype.val h
   have := Fintype.ofFinite κ
   obtain ⟨p₀, hp₀⟩ := DedekindZetaZeroFree.TauCeti.Sym.ofFn_surjective s
-  have hne : ({p : Fin n → κ | DedekindZetaZeroFree.TauCeti.Sym.ofFn p = s} : Finset (Fin n → κ)).Nonempty :=
-    ⟨p₀, by simp [hp₀]⟩
   rw [repr_basis_symmetricPower_tprod,
     Finset.sum_congr rfl fun p hp => prod_eq_of_ofFn_eq (fun k => b.repr u k) (p := p) (q := p₀)
       (by rw [(Finset.mem_filter.1 hp).2, hp₀]),
     Finset.sum_const, nsmul_eq_mul]
-  exact mul_ne_zero (Nat.cast_ne_zero.2 (Finset.card_pos.2 hne).ne')
+  exact mul_ne_zero (Nat.cast_ne_zero.2 (Finset.card_pos.2 (⟨p₀, by simp [hp₀]⟩)).ne')
     (Finset.prod_ne_zero_iff.2 fun i _ => hu _)
 
 end Domain

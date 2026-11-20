@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -49,9 +45,9 @@ noncomputable instance finiteNormalClosure_isGalois :
     IsGalois K (finiteNormalClosure K L) := by
   let f : L →ₐ[K] AlgebraicClosure K :=
     IsAlgClosed.lift
-  let : Algebra L (AlgebraicClosure K) :=
+  let :=
     f.toRingHom.toAlgebra
-  let : IsScalarTower K L (AlgebraicClosure K) :=
+  let :=
     IsScalarTower.of_algebraMap_eq'
       f.comp_algebraMap.symm
   infer_instance
@@ -93,9 +89,9 @@ theorem normalClosure_eq_top_of_source_algEquiv
   rw [← hclosure]
   apply
     (normalClosure_le_iff
-      (K := L)).2
+      ).2
   intro f
-  let g : E →ₐ[K] M :=
+  let g :=
     f.comp e.symm.toAlgHom
   have hRange :
       f.fieldRange = g.fieldRange := by
@@ -117,37 +113,20 @@ theorem finiteNormalClosureOriginalField_normalClosure_eq_top :
       ⊤ := by
   let : Nonempty (L →ₐ[K] AlgebraicClosure K) :=
     ⟨IsAlgClosed.lift⟩
-  have hAbstract :
-      IntermediateField.normalClosure K L
-          (finiteNormalClosure K L) =
-        ⊤ :=
-    (Algebra.IsAlgebraic.isNormalClosure_iff.mp
-      (show IsNormalClosure K L
-          (finiteNormalClosure K L) from inferInstance)).2
   exact
     normalClosure_eq_top_of_source_algEquiv
       (K := K) (L := L)
       (finiteNormalClosureOriginalFieldEquiv K L)
-      hAbstract
+      ((Algebra.IsAlgebraic.isNormalClosure_iff.mp
+        (show IsNormalClosure K L
+            (finiteNormalClosure K L) from inferInstance)).2)
 
 /-- The degree of the original extension is bounded by the degree of
 its finite normal closure. -/
 theorem finrank_le_finiteNormalClosure :
     Module.finrank K L ≤
-      Module.finrank K (finiteNormalClosure K L) := by
-  exact
-    (finiteNormalClosureEmbedding K L).toLinearMap
+      Module.finrank K (finiteNormalClosure K L) := (finiteNormalClosureEmbedding K L).toLinearMap
       |>.finrank_le_finrank_of_injective
         (finiteNormalClosureEmbedding K L).injective
-
-/-- A degree-one finite field extension is the base field as an
-algebra. -/
-noncomputable def algEquivBaseOfFinrankEqOne
-    (hdegree : Module.finrank K L = 1) :
-    L ≃ₐ[K] K :=
-  (AlgEquiv.ofBijective
-    (Algebra.ofId K L)
-    ((Algebra.finrank_eq_one_iff_bijective_algebraMap).mp
-      hdegree)).symm
 
 end

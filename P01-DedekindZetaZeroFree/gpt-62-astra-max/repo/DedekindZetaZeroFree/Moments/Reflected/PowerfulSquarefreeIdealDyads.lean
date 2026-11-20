@@ -29,15 +29,19 @@ def rawDyadMass (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F 
 
 private theorem bounded_finite (A : SArithmeticData F) (X : ℝ) :
     {I : A.Exterior | A.exteriorNorm I ≤ X}.Finite := by
-  refine ((Ideal.finite_setOfPred_absNorm_le (S := 𝓞 F) (Nat.ceil X)).preimage
+  refine ((Ideal.finite_setOfPred_absNorm_le (Nat.ceil X)).preimage
     Subtype.val_injective.injOn).subset ?_
   intro I hI
-  change Ideal.absNorm I.val ≤ Nat.ceil X
   exact_mod_cast (show (Ideal.absNorm I.val : ℝ) ≤ (Nat.ceil X : ℝ) from
     hI.trans (Nat.le_ceil X))
 
- def rawPair (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
-    (u : A.Rˣ) (Z : ℝ) (p q : ℕ) (hd : A.Exterior × A.Exterior) : ℝ :=
+alias PowerfulSquarefreeIdealDyads.bounded_finite := bounded_finite
+
+ section
+
+variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A) (u : A.Rˣ) (Z : ℝ) (p q : ℕ)
+
+def rawPair (hd : A.Exterior × A.Exterior) : ℝ :=
   if Powerful hd.1.val ∧ Squarefree hd.2.val ∧ hd.1.val ⊔ hd.2.val = ⊤ ∧
       (2 : ℝ) ^ p ≤ A.exteriorNorm hd.1 ∧ A.exteriorNorm hd.1 < 2 * (2 : ℝ) ^ p ∧
       (2 : ℝ) ^ q ≤ A.exteriorNorm hd.2 ∧ A.exteriorNorm hd.2 < 2 * (2 : ℝ) ^ q then
@@ -46,14 +50,11 @@ private theorem bounded_finite (A : SArithmeticData F) (X : ℝ) :
         mul_ne_zero (mul_ne_zero u.ne_zero (D.generates hd.1).1) (D.generates hd.2).1⟩ Z‖ ^ 2
   else 0
 
-private theorem rawPair_nonneg (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (u : A.Rˣ) (Z : ℝ)
-    (p q : ℕ) (hd : A.Exterior × A.Exterior) : 0 ≤ rawPair A D u Z p q hd := by
+private theorem rawPair_nonneg (hd : A.Exterior × A.Exterior) : 0 ≤ rawPair A D u Z p q hd := by
   unfold rawPair
   split_ifs <;> positivity
 
-private theorem rawPair_summable (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (u : A.Rˣ) (Z : ℝ) (p q : ℕ) :
+private theorem rawPair_summable :
     Summable (rawPair A D u Z p q) := by
   apply summable_of_hasFiniteSupport
   refine ((bounded_finite A (2 * (2 : ℝ) ^ p)).prod
@@ -65,7 +66,11 @@ private theorem rawPair_summable (A : SArithmeticData F)
   · exact ⟨h.2.2.2.2.1.le, h.2.2.2.2.2.2.le⟩
   · exact False.elim (hh rfl)
 
-private theorem generator_product_B (A : SArithmeticData F)
+end
+
+variable (A : SArithmeticData F)
+
+private theorem generator_product_B
     (D : ComparisonPoissonCoefficientData F A)
     (hCl : Subsingleton (ClassGroup A.R)) (H : A.V → A.V → Fˣ)
     (L : Subgroup A.V) (hL : A.IsSUnitIsotropicComplement H L)
@@ -102,14 +107,13 @@ private theorem generator_product_B (A : SArithmeticData F)
     rw [← hg.2, FractionalIdeal.coeIdeal_span_singleton]
     rfl
   obtain ⟨ε, hε, he⟩ := A.allowed_generator_unique_mod_sixth hCl H L hL _ a b ha' hb'
-  let v : A.Rˣ := A.unitEquiv ⟨ε, hε⟩
+  let v := A.unitEquiv ⟨ε, hε⟩
   have hv : D.generator I = (v : A.R) ^ 6 * (D.generator h * D.generator d) := by
     apply Subtype.ext
     have hh := congrArg (fun x : Fˣ => (x : F)) he
     simp only [powMonoidHom_apply, Units.val_pow_eq_pow_val,
       Units.val_div_eq_div_val] at hh
-    have heq := (eq_div_iff b.ne_zero).mp hh
-    exact heq.symm.trans (by rfl)
+    exact ((eq_div_iff b.ne_zero).mp hh).symm.trans (rfl)
   have hr : (⟨(u : A.R) * D.generator I,
       mul_ne_zero u.ne_zero (D.generates I).1⟩ : ThetaReflectionData.Row A) =
       ThetaReflectionData.sixthTranslate A v
@@ -120,17 +124,17 @@ private theorem generator_product_B (A : SArithmeticData F)
     ring
   rw [hr, ThetaReflectionData.forwardB_sixthTranslate A D hchar]
 
-private theorem factors_exist (A : SArithmeticData F) (I : A.Exterior) :
+private theorem factors_exist (I : A.Exterior) :
     ∃ hd : A.Exterior × A.Exterior, I.val = hd.1.val * hd.2.val ∧
       Powerful hd.1.val ∧ Squarefree hd.2.val ∧ hd.1.val ⊔ hd.2.val = ⊤ := by
   obtain ⟨⟨h, d⟩, hf, _⟩ := unique_coprime_powerful_squarefree_decomposition I.val I.property.1
   obtain ⟨hh, hd⟩ := exterior_of_powerful_squarefree_factorization I.property.2 hf.1
   exact ⟨(⟨h.val, h.property, hh⟩, ⟨d.val, d.property, hd⟩), hf⟩
 
-private theorem norm_dyad (A : SArithmeticData F) (I : A.Exterior) :
+private theorem norm_dyad (I : A.Exterior) :
     (2 : ℝ) ^ (Ideal.absNorm I.val).log2 ≤ A.exteriorNorm I ∧
       A.exteriorNorm I < 2 * (2 : ℝ) ^ (Ideal.absNorm I.val).log2 := by
-  have hn : Ideal.absNorm I.val ≠ 0 := Ideal.absNorm_eq_zero_iff.not.mpr I.property.1
+  have hn := Ideal.absNorm_eq_zero_iff.not.mpr I.property.1
   change (2 : ℝ) ^ (Ideal.absNorm I.val).log2 ≤ (Ideal.absNorm I.val : ℝ) ∧
     (Ideal.absNorm I.val : ℝ) < 2 * (2 : ℝ) ^ (Ideal.absNorm I.val).log2
   constructor
@@ -139,31 +143,27 @@ private theorem norm_dyad (A : SArithmeticData F) (I : A.Exterior) :
     rw [pow_succ, mul_comm] at hh
     exact_mod_cast hh
 
-private theorem dyad_mem (A : SArithmeticData F) (X : ℝ)
+private theorem dyad_mem (X : ℝ)
     (I h d : A.Exterior) (hI : I.val = h.val * d.val) (hX : A.exteriorNorm I ≤ X) :
     ((Ideal.absNorm h.val).log2, (Ideal.absNorm d.val).log2) ∈ dyadIndices X := by
   have hnorm : A.exteriorNorm I = A.exteriorNorm h * A.exteriorNorm d := by
     simp only [SArithmeticData.exteriorNorm, idealNorm, hI, map_mul, Nat.cast_mul]
-  have hh := norm_dyad A h
-  have hd := norm_dyad A d
   have hh1 := idealNorm_ge_one h.val h.property.1
   have hd1 := idealNorm_ge_one d.val d.property.1
   have hhX : A.exteriorNorm h ≤ X := by nlinarith
   have hdX : A.exteriorNorm d ≤ X := by nlinarith
   have hb (J : A.Exterior) (hJ : A.exteriorNorm J ≤ X) :
       (Ideal.absNorm J.val).log2 < Nat.ceil X + 1 := by
-    have hn : Ideal.absNorm J.val ≤ Nat.ceil X := by
-      exact_mod_cast (show (Ideal.absNorm J.val : ℝ) ≤ (Nat.ceil X : ℝ) from
-        hJ.trans (Nat.le_ceil X))
-    exact Nat.lt_succ_of_le ((Nat.log2_le_self _).trans hn)
+    refine Nat.lt_succ_of_le ((Nat.log2_le_self _).trans ?_)
+    exact_mod_cast (show (Ideal.absNorm J.val : ℝ) ≤ (Nat.ceil X : ℝ) from
+    hJ.trans (Nat.le_ceil X))
   apply Finset.mem_filter.mpr
   refine ⟨Finset.mem_product.mpr ⟨Finset.mem_range.mpr (hb h hhX),
     Finset.mem_range.mpr (hb d hdX)⟩, ?_⟩
-  exact (mul_le_mul hh.1 hd.1 (by positivity) (A.exteriorNorm_pos h).le).trans
+  exact (mul_le_mul (norm_dyad A h).1 (norm_dyad A d).1 (by positivity) (A.exteriorNorm_pos h).le).trans
     (hnorm ▸ hX)
 
-theorem canonical_mass_le_sum_dyads
-    (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+theorem canonical_mass_le_sum_dyads (D : ComparisonPoissonCoefficientData F A)
     (hCl : Subsingleton (ClassGroup A.R)) (H : A.V → A.V → Fˣ)
     (L : Subgroup A.V) (hL : A.IsSUnitIsotropicComplement H L)
     (hgen : ∀ I, A.IsAllowed L (ThetaReflectionData.rowUnit A

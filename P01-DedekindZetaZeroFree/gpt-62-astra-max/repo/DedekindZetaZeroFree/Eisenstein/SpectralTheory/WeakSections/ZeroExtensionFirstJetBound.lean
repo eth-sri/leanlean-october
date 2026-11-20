@@ -21,13 +21,13 @@ open KPContActualSectorTestDifferentialDescent KPContActualSectorChartEquivarian
 open KPContCotangentActualOverlap KPContCotangentOverlapRationalBranches KPContLocalNorm
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable {μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)} {hμG : μG.IsHaarMeasure}
-variable {hR : R.adelicHaar = μG}
-variable {realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H}
+    {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
+    {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
+    {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
+    {μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)} {hμG : μG.IsHaarMeasure}
+    {hR : R.adelicHaar = μG}
+    {realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H}
 
 section FirstJetHelpers
 open scoped ContDiff
@@ -41,22 +41,12 @@ set_option maxHeartbeats 2000000 in
  theorem canonicalRealization :
     KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H := by
   refine
-    { actual_projection := rfl
-      quotient_projection := (piTilde_isOpenMap F ζ hζ U).isQuotientMap
-        (piTilde_continuous F ζ hζ U) (piTilde_surjective F ζ hζ U)
+    {
       covered_pushforward := rfl
-      support := levelSupport F ζ hζ R P ((KPSmoothLocalQuotientCharts.quotient_full_support F ζ hζ R).1) U
-      local_finiteness :=
-        KPContSectorFixedMeasureLocalFiniteness.levelLocalFiniteness F ζ hζ R P H U
-      central_measure_preserving := fun ε =>
-        KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε
-      sector_closed := KPContSectorClosedLpSubspace.H_isClosed F ζ hζ R U
-      sector_complete := inferInstance
-      sector_membership := KPContSectorClosedLpSubspace.mem_H_iff F ζ hζ R U
-      line_l2 := kp_cont_sector_line_l2_isometry F ζ hζ U R P H
+      support := levelSupport F ζ hζ R P ((KPSmoothLocalQuotientCharts.quotient_full_support F ζ hζ R)) U
       sector_line_norm := by
         intro u
-        obtain ⟨g, hg, hgLp, hgu, f, hf, hfLp, hfavg, hfLp_toLp, heq, hzero⟩ :=
+        obtain ⟨g, hg, hgLp, f, hf, hfLp, hfLp_toLp, heq⟩ :=
           KPContSectorExactBorelRepresentatives.exists_exact_borel_representative
             F ζ hζ R U u
         let f' : GenuineCoveredScalars F ζ hζ U := ⟨f, heq⟩
@@ -77,34 +67,9 @@ set_option maxHeartbeats 2000000 in
             (KPContSectorLineL2Isometry.borelS F ζ hζ U R P H Fb)
       norm_integrals := fun f hf =>
         kp_cont_sector_fixed_line_norm_integrals F ζ hζ U R P H f hf
-      orbit_stabilizer := fun v =>
-        KPContSectorFiniteOrbitIntegral.orbit_card_mul_stabilizer_card F ζ hζ U v
-      fiber_repetitions := fun v w h =>
-        KPContSectorFiniteOrbitIntegral.fiber_point_repetitions F ζ hζ U v w h
-      finite_fiber_average := fun ψ v =>
-        KPContSectorFiniteOrbitIntegral.centralAverage_eq_distinctOrbitAverage F ζ hζ U ψ v
-      scalar_descent := fun f x c => J_apply F ζ hζ U f x c
-      group_lift := fun f a c => group_lift_formula F ζ hζ U f a c
-      smooth_realization := fun f => smoothS_apply F ζ hζ U R P H f
-      smooth_iff := fun f => smooth_iff F ζ hζ U R P H f
-      smooth_actual_charts :=
-        (kp_cont_sector_smooth_frames_support F ζ hζ U R P H).2.1
-      phase_formula := (kp_cont_sector_smooth_frames_support F ζ hζ U R P H).2.2.1
-      chart_exists := fun i x =>
-        KPContSectorPhaseComponentCharts.orbifoldChart_exists F ζ hζ U R P H i x
-      chart_isotropy_finite := fun i x O =>
-        KPContSectorPhaseComponentCharts.chart_stabilizer_finite F ζ hζ U R P H i x O
-      frame_unitary := fun x v => liftFrame_unitary F ζ hζ U x v
-      frame_equivariant := fun i γ x v => liftFrame_equivariant F ζ hζ U R P H i γ x v
       chart_restriction := fun f i x O m y =>
         orbifold_restriction_commutes F ζ hζ U R P H f i x O m y
-      cusp_restriction := fun f i j p t =>
-        cusp_restriction_commutes F ζ hζ U R P H f i j p t
-      cusp_transition := fun s i j g p t =>
-        cuspCoefficient_transition F ζ hζ U R P H s i j g p t
-      cusp_atlas_overlap := fun s i j => actual_cusp_atlas_overlap F ζ hζ U R P H s i j
-      support_image := fun f => tsupport_sectionNorm F ζ hζ U R P H f
-      compact_support := fun f => hasCompactSupport_iff F ζ hζ U R P H f }
+       }
 
 end Canonical
 private theorem base_direction (j : Fin (3*d F)) :
@@ -123,12 +88,12 @@ private theorem flat_derivative (g : M F → ℂ) (hg : ContDiff ℝ (⊤ : ℕ�
         ((coefficientIndex (F:=F)).symm j).2 g ((baseReindex (F:=F)).symm x) := by
   unfold KPCompactInteriorH1.coordinatePartial
   have hd := ((hg.differentiable (by simp) _).hasFDerivAt.comp x
-    ((baseReindex (F:=F)).symm.toContinuousLinearEquiv.hasFDerivAt)).fderiv
-  change fderiv ℝ (g ∘ (baseReindex (F:=F)).symm) x _ = _
+    ((baseReindex).symm.toContinuousLinearEquiv.hasFDerivAt)).fderiv
+  change fderiv ℝ (g ∘ (baseReindex).symm) x _ = _
   change fderiv ℝ (g ∘ (baseReindex (F:=F)).symm) x = _ at hd
   rw [hd, ContinuousLinearMap.comp_apply]
   rw [show KPCompactInteriorH1.coordinateDirection j = EuclideanSpace.single j 1 from rfl]
-  change fderiv ℝ g _ ((baseReindex (F:=F)).symm _) = _
+  change fderiv ℝ g _ ((baseReindex).symm _) = _
   rw [base_direction]
   rfl
 private theorem smooth_flat (a : ActualChart (U := U) (H := H)) (f : localScalarTests a)
@@ -137,10 +102,10 @@ private theorem smooth_flat (a : ActualChart (U := U) (H := H)) (f : localScalar
     (hs : tsupport (fun x => liftExtension a f.val ((baseReindex (F:=F)).symm x)) ⊆ L) :
     ContDiff ℝ (⊤ : ℕ∞) (liftExtension a f.val) := by
   apply KPContActualGlobalGreen.interior_liftExtension_contDiff a f.val f.property.1
-  have ht := tsupport_comp_eq_preimage (liftExtension a f.val) (baseReindex (F:=F)).toHomeomorph.symm
-  change tsupport (fun y => liftExtension a f.val ((baseReindex (F:=F)).symm y)) = _ at ht
+  have ht := tsupport_comp_eq_preimage (liftExtension a f.val) (baseReindex).toHomeomorph.symm
+  change tsupport (fun y => liftExtension a f.val ((baseReindex).symm y)) = _ at ht
   intro x hx
-  have hx' : baseReindex x ∈ tsupport (fun y => liftExtension a f.val ((baseReindex (F:=F)).symm y)) := by
+  have hx' : baseReindex x ∈ tsupport (fun y => liftExtension a f.val ((baseReindex).symm y)) := by
     rw [ht]
     simpa using hx
   simpa using hLω (hs hx')
@@ -152,7 +117,7 @@ private theorem coframe_bound (g : M F → ℂ) (hg : ContDiff ℝ (⊤ : ℕ∞
         (fun y => g ((baseReindex (F:=F)).symm y)) x‖ ^ 2 := by
   rw [EuclideanSpace.norm_sq_eq, Fintype.sum_prod_type]
   simp_rw [CotangentLogCoframe.j_apply]
-  conv_rhs => rw [← Equiv.sum_comp (coefficientIndex (F:=F)), Fintype.sum_prod_type]
+  conv_rhs => rw [← Equiv.sum_comp (coefficientIndex), Fintype.sum_prod_type]
   simp_rw [flat_derivative g hg]
   simp only [Equiv.symm_apply_apply]
   rw [Finset.mul_sum]
@@ -161,16 +126,16 @@ private theorem coframe_bound (g : M F → ℂ) (hg : ContDiff ℝ (⊤ : ℕ∞
   rw [Fin.sum_univ_three, Fin.sum_univ_three, HyperbolicChart.differential]
   simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.vecHead, Matrix.vecTail, norm_mul, Complex.norm_real, Real.norm_eq_abs,
     abs_of_pos (Real.exp_pos _), mul_pow]
-  have he : Real.exp (((baseReindex (F:=F)).symm x) (i,2)) ^ 2 =
-      Real.exp (2 * ((baseReindex (F:=F)).symm x) (i,2)) := by rw [← Real.exp_nat_mul]; norm_num
+  have he : Real.exp (((baseReindex).symm x) (i,2)) ^ 2 =
+      Real.exp (2 * ((baseReindex).symm x) (i,2)) := by rw [← Real.exp_nat_mul]; norm_num
   simp only [Matrix.vecHead, Matrix.vecTail, Function.comp_def, Fin.succ_zero_eq_one, Matrix.cons_val_one, Matrix.cons_val_zero, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), mul_pow]
   rw [he]
   have h0 := mul_le_mul_of_nonneg_right (hbound i) (sq_nonneg
-    (‖HyperbolicChart.coordinateDerivative (d F) i 0 g ((baseReindex (F:=F)).symm x)‖))
+    (‖HyperbolicChart.coordinateDerivative (d F) i 0 g ((baseReindex).symm x)‖))
   have h1 := mul_le_mul_of_nonneg_right (hbound i) (sq_nonneg
-    (‖HyperbolicChart.coordinateDerivative (d F) i 1 g ((baseReindex (F:=F)).symm x)‖))
+    (‖HyperbolicChart.coordinateDerivative (d F) i 1 g ((baseReindex).symm x)‖))
   have h2 := mul_le_mul_of_nonneg_right hC (sq_nonneg
-    (‖HyperbolicChart.coordinateDerivative (d F) i 2 g ((baseReindex (F:=F)).symm x)‖))
+    (‖HyperbolicChart.coordinateDerivative (d F) i 2 g ((baseReindex).symm x)‖))
   nlinarith
 
 open KPContActualSectorTestEmbeddings KPContActualCotangentMeasurableFamilies

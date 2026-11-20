@@ -11,35 +11,31 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open KPGlobalTorusFiniteStages KPLiteralRaw KPLocalPrincipalSeries KPLocalExceptionalConstruction
 open KPRankOneShellRepair
-open _root_.DedekindZetaZeroFree.KPLocalStoneVonNeumann renaming inducedCosetEquiv → inducedCosetEquiv
+open _root_.DedekindZetaZeroFree.KPLocalStoneVonNeumann (inducedCosetEquiv)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
-variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
+    (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local notation "ζ" => R.A.zeta12
 local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
-theorem scatteringSlotOutput_coordinate_analytic (q : KPFinitePlace F)
-    (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure]
-    (hμ : μ ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
-    (g : Raw R.A) (f : Plus R.A P C (Sum.inr q))
+variable (q : KPFinitePlace F) (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure]
+    (hμ : μ ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1) (g : Raw R.A)
+
+theorem scatteringSlotOutput_coordinate_analytic (f : Plus R.A P C (Sum.inr q))
     (h : actualTorus F ζ hζ q) :
     AnalyticOnNhd ℂ (fun z => (scatteringSlotOutput R P C q μ hμ z g f).val h)
-      KPContinuation.spectralDomain := by
-  exact KPGlobalResidualKernel.IntertwinerRegularization.FactorizationSources.NormalizedCoordinateAnalyticity.CorrectedOutputAnalytic.finite_corrected_full_right_coordinate_analytic
+      KPContinuation.spectralDomain := KPGlobalResidualKernel.IntertwinerRegularization.FactorizationSources.NormalizedCoordinateAnalyticity.CorrectedOutputAnalytic.finite_corrected_full_right_coordinate_analytic
     F ζ hζ q (C.canonical q) (C.polarization q) (finiteIntegralIwasawa R P C q) μ hμ
     ((compactTrivialization (C.canonical q).borel (C.polarization q)
       (C.canonical q).iwasawa .plus 0).symm f)
     (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
       (KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) (-1) * g (Sum.inr q))) h
 
-theorem scatteringSlotOutput_frame (q : KPFinitePlace F)
-    (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure]
-    (hμ : μ ((ValuativeRel.valuation (q.adicCompletion F)).integer : Set _) = 1)
-    (g : Raw R.A) :
+theorem scatteringSlotOutput_frame :
     ∃ (ι : Type) (_ : Fintype ι) (e : LocalFiber F ζ hζ P C q ≃ₗ[ℂ] (ι → ℂ))
       (tests : ι → Plus R.A P C (Sum.inr q)) (d : ℂ → ℂ)
       (c : Plus R.A P C (Sum.inr q) → ℂ → ι → ℂ),

@@ -40,17 +40,15 @@ theorem integralAdeles_mem_iff (a : FiniteAdeles F) :
 
 theorem completionIntegers_isCompact (v : HeightOneSpectrum (RingOfIntegers F)) :
     IsCompact (v.adicCompletionIntegers F : Set (v.adicCompletion F)) := by
-  change IsCompact ((Valued.integer (v.adicCompletion F)) : Set (v.adicCompletion F))
   exact isCompact_iff_compactSpace.mpr
     (Valued.integer.properSpace_iff_compactSpace_integer.mp inferInstance)
 
 theorem completionIntegers_isOpen (v : HeightOneSpectrum (RingOfIntegers F)) :
-    IsOpen (v.adicCompletionIntegers F : Set (v.adicCompletion F)) := by
-  exact Valued.isOpen_valuationSubring _
+    IsOpen (v.adicCompletionIntegers F : Set (v.adicCompletion F)) := Valued.isOpen_valuationSubring _
 
 set_option backward.isDefEq.respectTransparency false in
 theorem integralAdeles_isCompact : IsCompact (integralAdeles F : Set (FiniteAdeles F)) := by
-  letI : ∀ v : HeightOneSpectrum (RingOfIntegers F), CompactSpace (v.adicCompletionIntegers F) :=
+  letI :=
     fun v => isCompact_iff_compactSpace.mp (completionIntegers_isCompact F v)
   change IsCompact {a : RestrictedProduct
     (fun v : HeightOneSpectrum (RingOfIntegers F) => v.adicCompletion F)
@@ -58,15 +56,14 @@ theorem integralAdeles_isCompact : IsCompact (integralAdeles F : Set (FiniteAdel
   have h := isCompact_range (RestrictedProduct.isEmbedding_structureMap
       (R := fun v : HeightOneSpectrum (RingOfIntegers F) => v.adicCompletion F)
       (A := fun v => (v.adicCompletionIntegers F : Set _)) (𝓕 := Filter.cofinite)).continuous
-  rw [RestrictedProduct.range_structureMap] at h
-  convert h using 1 <;> rfl
+  simp_all [RestrictedProduct.range_structureMap]
 
-theorem integralAdeles_isOpen : IsOpen (integralAdeles F : Set (FiniteAdeles F)) := by
-  exact RestrictedProduct.isOpen_forall_mem (completionIntegers_isOpen F)
+theorem integralAdeles_isOpen : IsOpen (integralAdeles F : Set (FiniteAdeles F)) := RestrictedProduct.isOpen_forall_mem (completionIntegers_isOpen F)
 
-instance finiteAdeles_t2Space : T2Space (FiniteAdeles F) := by
-  exact inferInstanceAs (T2Space (RestrictedProduct
-    (fun v : HeightOneSpectrum (RingOfIntegers F) => v.adicCompletion F)
+local notation "FinitePlace" => HeightOneSpectrum (RingOfIntegers F)
+
+instance finiteAdeles_t2Space : T2Space (FiniteAdeles F) := inferInstanceAs (T2Space (RestrictedProduct
+    (fun v : FinitePlace => v.adicCompletion F)
     (fun v => (v.adicCompletionIntegers F : Set (v.adicCompletion F))) Filter.cofinite))
 
 instance finiteAdeles_locallyCompactSpace : LocallyCompactSpace (FiniteAdeles F) := by
@@ -87,31 +84,31 @@ instance finiteAdeles_secondCountableTopology : SecondCountableTopology (FiniteA
     Function.Injective.countable RingOfIntegers.coe_injective
   letI : Countable (Ideal (RingOfIntegers F)) := by
     have h : Function.Surjective (fun s : Finset (RingOfIntegers F) =>
-        Ideal.span (↑s : Set (RingOfIntegers F))) := by
-      intro I
-      exact IsNoetherian.noetherian I
+        Ideal.span (↑s : Set (RingOfIntegers F))) := fun I => IsNoetherian.noetherian I
     exact h.countable
-  letI : Countable (HeightOneSpectrum (RingOfIntegers F)) :=
+  letI : Countable FinitePlace :=
     Function.Injective.countable (fun _ _ h => HeightOneSpectrum.ext h)
-  letI : ∀ v : HeightOneSpectrum (RingOfIntegers F),
+  letI : ∀ v : FinitePlace,
       SecondCountableTopology (v.adicCompletion F) := fun v => by
     letI : TopologicalSpace.SeparableSpace (v.adicCompletion F) :=
       ⟨⟨Set.range (algebraMap F (v.adicCompletion F)), Set.countable_range _,
         HeightOneSpectrum.denseRange_algebraMap F v⟩⟩
+    letI : TopologicalSpace.SeparableSpace (v.adicCompletion F) :=
+      ⟨⟨Set.range (algebraMap F (v.adicCompletion F)), Set.countable_range _,
+        HeightOneSpectrum.denseRange_algebraMap F v⟩⟩
     infer_instance
-  let X := fun v : HeightOneSpectrum (RingOfIntegers F) => v.adicCompletion F
-  let C := fun v : HeightOneSpectrum (RingOfIntegers F) => (v.adicCompletionIntegers F : Set (X v))
-  let f (s : Finset (HeightOneSpectrum (RingOfIntegers F))) :=
+  let X := fun v : FinitePlace => v.adicCompletion F
+  let C := fun v : FinitePlace => (v.adicCompletionIntegers F : Set (X v))
+  let f (s : Finset FinitePlace) :=
     RestrictedProduct.inclusion X C (Filter.le_principal_iff.mpr s.finite_toSet.compl_mem_cofinite)
-  change SecondCountableTopology (RestrictedProduct X C Filter.cofinite)
-  let U (s : Finset (HeightOneSpectrum (RingOfIntegers F))) : Set (RestrictedProduct X C Filter.cofinite) :=
+  let U (s : Finset FinitePlace) : Set (RestrictedProduct X C Filter.cofinite) :=
     Set.range (f s)
-  have hf (s : Finset (HeightOneSpectrum (RingOfIntegers F))) : Topology.IsOpenEmbedding (f s) :=
+  have hf (s : Finset FinitePlace) : Topology.IsOpenEmbedding (f s) :=
     RestrictedProduct.isOpenEmbedding_inclusion_principal (completionIntegers_isOpen F) _
-  letI (s : Finset (HeightOneSpectrum (RingOfIntegers F))) :
+  letI (s : Finset FinitePlace) :
       SecondCountableTopology (RestrictedProduct X C (Filter.principal (↑s : Set _)ᶜ)) :=
     RestrictedProduct.isEmbedding_coe_of_principal.secondCountableTopology
-  letI : ∀ s : Finset (HeightOneSpectrum (RingOfIntegers F)), SecondCountableTopology (U s) :=
+  letI : ∀ s : Finset FinitePlace, SecondCountableTopology (U s) :=
     fun s => (hf s).toIsEmbedding.toHomeomorph.symm.secondCountableTopology
   apply TopologicalSpace.secondCountableTopology_of_countable_cover (U := U) (fun s => (hf s).isOpen_range)
   apply Set.eq_univ_of_forall
@@ -128,8 +125,7 @@ instance adeles_t2Space : T2Space (Adeles F) := by
     (T2Space ((v : InfinitePlace F) → v.Completion))
   exact inferInstanceAs (T2Space (InfiniteAdeleRing F × FiniteAdeles F))
 
-instance adeles_locallyCompactSpace : LocallyCompactSpace (Adeles F) := by
-  exact inferInstanceAs (LocallyCompactSpace (InfiniteAdeleRing F × FiniteAdeles F))
+instance adeles_locallyCompactSpace : LocallyCompactSpace (Adeles F) := inferInstanceAs (LocallyCompactSpace (InfiniteAdeleRing F × FiniteAdeles F))
 
 instance adeles_secondCountableTopology : SecondCountableTopology (Adeles F) := by
   letI : ∀ v : InfinitePlace F, SecondCountableTopology v.Completion := fun v => by
@@ -148,10 +144,10 @@ instance adeles_measurableSpace : MeasurableSpace (Adeles F) := borel _
 
 instance adeles_borelSpace : BorelSpace (Adeles F) := ⟨rfl⟩
 
-instance completion_measurableSpace (v : HeightOneSpectrum (RingOfIntegers F)) :
+instance completion_measurableSpace (v : FinitePlace) :
     MeasurableSpace (v.adicCompletion F) := borel _
 
-instance completion_borelSpace (v : HeightOneSpectrum (RingOfIntegers F)) :
+instance completion_borelSpace (v : FinitePlace) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
 end DedekindZetaZeroFree.KPAdelicTopology

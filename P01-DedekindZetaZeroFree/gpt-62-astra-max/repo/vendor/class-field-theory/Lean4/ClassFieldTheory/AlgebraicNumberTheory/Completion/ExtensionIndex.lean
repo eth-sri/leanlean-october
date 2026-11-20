@@ -16,14 +16,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -100,7 +92,7 @@ theorem finitePlaceBelow_finitePlaceBelow
   apply HeightOneSpectrum.ext
   exact
     Ideal.under_under
-      (A := 𝓞 K) (B := 𝓞 M) (C := 𝓞 L) W.asIdeal
+         W.asIdeal
 
 end Tower
 
@@ -205,10 +197,10 @@ theorem mem_finitePlaceExtensionCentreIdeal_iff
       w.1 (x : L) < 1 := by
   let A :=
     finitePlaceExtensionValuationSubring
-      (K := K) (L := L) v w
+        v w
   let f :=
     ringOfIntegersToFinitePlaceExtensionValuationSubring
-      (K := K) (L := L) v w
+        v w
   change
     f x ∈ IsLocalRing.maximalIdeal A ↔
       w.1 (((f x : A) : L)) < 1
@@ -219,7 +211,7 @@ theorem mem_finitePlaceExtensionCentreIdeal_iff
       (fun y => by
         change
           y ∈ finitePlaceExtensionValuationSubring
-              (K := K) (L := L) v w ↔
+                v w ↔
             w.1 y ≤ 1
         rw [finitePlaceExtensionValuationSubring,
           mem_absoluteValueValuationSubring_iff])
@@ -248,13 +240,12 @@ theorem finitePlaceExtensionCentreIdeal_under
   change
     algebraMap (𝓞 K) (𝓞 L) x ∈
         finitePlaceExtensionCentreIdeal
-          (K := K) (L := L) v w ↔
+            v w ↔
       x ∈ v.asIdeal
   rw [mem_finitePlaceExtensionCentreIdeal_iff]
   have hcoe :
       ((algebraMap (𝓞 K) (𝓞 L) x : 𝓞 L) : L) =
-        algebraMap K L (x : K) := by
-    rfl
+        algebraMap K L (x : K) := rfl
   rw [hcoe, w.2]
   rw [← FinitePlace.norm_embedding]
   exact FinitePlace.norm_lt_one_iff_mem (K := K) v x
@@ -269,7 +260,7 @@ theorem finitePlaceExtensionCentreIdeal_ne_bot
   intro hbot
   apply v.ne_bot
   rw [← finitePlaceExtensionCentreIdeal_under
-    (K := K) (L := L) v w, hbot]
+      v w, hbot]
   simp
 
 /-- The finite place of `L` centred at an exact extension of the
@@ -314,7 +305,7 @@ theorem finitePlaceBelow_finitePlaceExtensionCentre
   apply HeightOneSpectrum.ext
   exact
     finitePlaceExtensionCentreIdeal_under
-      (K := K) (L := L) v w
+        v w
 
 omit [FiniteDimensional K L] in
 /-- The centre of an exact extension of the normalized absolute value
@@ -328,7 +319,7 @@ theorem finitePlaceExtensionCentre_liesOver
   constructor
   exact congrArg HeightOneSpectrum.asIdeal
     (finitePlaceBelow_finitePlaceExtensionCentre
-      (K := K) (L := L) v w).symm
+        v w).symm
 
 omit [FiniteDimensional K L] in
 /-- The valuation subring defined by an exact extension is the
@@ -341,38 +332,33 @@ theorem finitePlaceExtensionValuationSubring_eq_localization
         (K := K) (L := L) v w =
       (finitePlaceExtensionCentre
         (K := K) (L := L) v w).valuationSubringAtPrime L := by
-  let P :=
-    finitePlaceExtensionCentreIdeal
-      (K := K) (L := L) v w
-  let : P.IsPrime :=
+  let :=
     finitePlaceExtensionCentreIdeal_isPrime
-      (K := K) (L := L) v w
-  let W :=
-    finitePlaceExtensionCentre
-      (K := K) (L := L) v w
-  let V := W.valuationSubringAtPrime L
+        v w
+  let V := (finitePlaceExtensionCentre
+    v w).valuationSubringAtPrime L
   let A :=
     finitePlaceExtensionValuationSubring
-      (K := K) (L := L) v w
+        v w
   have hVA : V ≤ A := by
     rintro x ⟨a, s, hs, rfl⟩
-    have haA : (a : L) ∈ A :=
+    have haA :=
       ringOfIntegers_mem_finitePlaceExtensionValuationSubring
-        (K := K) (L := L) v w a
-    have hsA : (s : L) ∈ A :=
+          v w a
+    have hsA :=
       ringOfIntegers_mem_finitePlaceExtensionValuationSubring
-        (K := K) (L := L) v w s
+          v w s
     have haLe : w.1 (a : L) ≤ 1 := by
       change (a : L) ∈
         finitePlaceExtensionValuationSubring
-          (K := K) (L := L) v w at haA
+            v w at haA
       rw [finitePlaceExtensionValuationSubring,
         mem_absoluteValueValuationSubring_iff] at haA
       exact haA
     have hsLe : w.1 (s : L) ≤ 1 := by
       change (s : L) ∈
         finitePlaceExtensionValuationSubring
-          (K := K) (L := L) v w at hsA
+            v w at hsA
       rw [finitePlaceExtensionValuationSubring,
         mem_absoluteValueValuationSubring_iff] at hsA
       exact hsA
@@ -381,28 +367,25 @@ theorem finitePlaceExtensionValuationSubring_eq_localization
       apply hs
       exact
         (mem_finitePlaceExtensionCentreIdeal_iff
-          (K := K) (L := L) v w s).2 hlt
-    have hsEq : w.1 (s : L) = 1 :=
-      le_antisymm hsLe (not_lt.mp hsNotLt)
+            v w s).2 hlt
     change
       (a : L) * (s : L)⁻¹ ∈
         finitePlaceExtensionValuationSubring
-          (K := K) (L := L) v w
+            v w
     rw [finitePlaceExtensionValuationSubring,
       mem_absoluteValueValuationSubring_iff,
-      map_mul, map_inv₀, hsEq, inv_one, mul_one]
+      map_mul, map_inv₀, (le_antisymm hsLe (not_lt.mp hsNotLt)), inv_one, mul_one]
     exact haLe
   have hAne : A ≠ ⊤ := by
     intro htop
     obtain ⟨x, hx0, hx1⟩ :=
       RayClass.adicAbv_isNontrivial v
-    let y : L := algebraMap K L x
+    let y := algebraMap K L x
     have hy0 : y ≠ 0 := by
       change algebraMap K L x ≠ 0
       simpa only [map_zero] using
         (algebraMap K L).injective.ne hx0
     have hy1 : w.1 y ≠ 1 := by
-      change w.1 (algebraMap K L x) ≠ 1
       rw [w.2]
       exact hx1
     have hle (z : L) : w.1 z ≤ 1 := by
@@ -411,18 +394,17 @@ theorem finitePlaceExtensionValuationSubring_eq_localization
         trivial
       change
         z ∈ finitePlaceExtensionValuationSubring
-          (K := K) (L := L) v w at hzA
+            v w at hzA
       rw [finitePlaceExtensionValuationSubring,
         mem_absoluteValueValuationSubring_iff] at hzA
       exact hzA
-    have honeLe : 1 ≤ w.1 y := by
-      calc
-        1 = w.1 y * w.1 y⁻¹ := by
-          rw [← map_mul, mul_inv_cancel₀ hy0, map_one]
-        _ ≤ w.1 y * 1 :=
-          mul_le_mul_of_nonneg_left (hle y⁻¹) (w.1.nonneg y)
-        _ = w.1 y := mul_one _
-    exact hy1 (le_antisymm (hle y) honeLe)
+    refine hy1 (le_antisymm (hle y) ?_)
+    calc
+    1 = w.1 y * w.1 y⁻¹ := by
+      rw [← map_mul, mul_inv_cancel₀ hy0, map_one]
+    _ ≤ w.1 y * 1 :=
+      mul_le_mul_of_nonneg_left (hle y⁻¹) (w.1.nonneg y)
+    _ = w.1 y := mul_one _
   exact (V.eq_of_le_of_ne_top hVA hAne).symm
 
 section CrossBaseEquivalence
@@ -453,9 +435,9 @@ theorem finitePlaceExtensions_isEquiv_of_centres_eq
     wF.1.IsEquiv wM.1 := by
   have hsubring :
       finitePlaceExtensionValuationSubring
-          (K := F) (L := L) vF wF =
+            vF wF =
         finitePlaceExtensionValuationSubring
-          (K := M) (L := L) vM wM := by
+            vM wM := by
     rw [finitePlaceExtensionValuationSubring_eq_localization,
       finitePlaceExtensionValuationSubring_eq_localization,
       hcentre]
@@ -464,10 +446,10 @@ theorem finitePlaceExtensions_isEquiv_of_centres_eq
     change
       x ∈
           finitePlaceExtensionValuationSubring
-            (K := F) (L := L) vF wF ↔
+              vF wF ↔
         x ∈
           finitePlaceExtensionValuationSubring
-            (K := M) (L := L) vM wM
+              vM wM
     rw [hsubring]
   apply AbsoluteValue.isEquiv_iff_lt_one_iff.mpr
   intro x
@@ -499,15 +481,13 @@ theorem finitePlaceExtensionCentre_injective
       (finitePlaceExtensionCentre
         (K := K) (L := L) v) := by
   intro w w' hcentre
-  have hequiv : w.1.IsEquiv w'.1 :=
-    finitePlaceExtensions_isEquiv_of_centres_eq
-      (F := K) (M := K) v v w w' hcentre
   exact
     equivalent_exactExtensions_eq
       (HeightOneSpectrum.adicAbv K v)
       (RayClass.adicAbv_isNontrivial v) w w'
       ((LubinTate.Valuations.equivalentAbsoluteValues_iff_isEquiv
-        w.1 w'.1).2 hequiv)
+        w.1 w'.1).2 (finitePlaceExtensions_isEquiv_of_centres_eq
+          v v w w' hcentre))
 
 omit [NumberField L] [FiniteDimensional K L] in
 /-- Pulling an exact extension back by `σ` carries its centre by the
@@ -528,13 +508,13 @@ theorem finitePlaceExtensionCentre_conjugate
   ext x
   change
     x ∈ finitePlaceExtensionCentreIdeal
-        (K := K) (L := L) v
+          v
         (absoluteValueExtensionConjugate
           (HeightOneSpectrum.adicAbv K v) w σ) ↔
       NumberField.RingOfIntegers.mapRingHom
           σ.toRingHom x ∈
         finitePlaceExtensionCentreIdeal
-          (K := K) (L := L) v w
+            v w
   rw [mem_finitePlaceExtensionCentreIdeal_iff,
     mem_finitePlaceExtensionCentreIdeal_iff]
   rfl
@@ -572,7 +552,7 @@ theorem finitePlaceExtensionCentreInFibre_injective
         (K := K) (L := L) v) := by
   intro w w' h
   apply finitePlaceExtensionCentre_injective
-    (K := K) (L := L) v
+      v
   exact congrArg Subtype.val h
 
 private theorem
@@ -589,11 +569,10 @@ private theorem
       (RayClass.adicAbv_isNontrivial v)
       IsAlgClosed.lift
   let W₀ :=
-    finitePlaceExtensionCentre (K := K) (L := L) v w₀
-  let : Finite (L ≃ₐ[K] L) :=
+    finitePlaceExtensionCentre v w₀
+  let :=
     IsGaloisGroup.finite (L ≃ₐ[K] L) K L
-  let :
-      IsGaloisGroup (L ≃ₐ[K] L) (𝓞 K) (𝓞 L) :=
+  let :=
     IsGaloisGroup.of_isFractionRing
       (L ≃ₐ[K] L) (𝓞 K) (𝓞 L) K L
   intro W
@@ -601,8 +580,7 @@ private theorem
     ⟨(finitePlaceExtensionCentreIdeal_under
       (K := K) (L := L) v w₀).symm⟩
   let : W.1.asIdeal.LiesOver v.asIdeal := ⟨by
-    have h := congrArg HeightOneSpectrum.asIdeal W.2
-    simpa only [finitePlaceBelow_asIdeal] using h.symm⟩
+    simpa using (congrArg HeightOneSpectrum.asIdeal W.2).symm⟩
   obtain ⟨σ, hσ⟩ :=
     HilbertRamification.Dedekind.exists_smul_eq_of_isGaloisGroup
       v.asIdeal W₀.asIdeal W.1.asIdeal (L ≃ₐ[K] L)
@@ -616,7 +594,7 @@ private theorem
   apply Subtype.ext
   rw [finitePlaceExtensionCentreInFibre_coe,
     finitePlaceExtensionCentre_conjugate]
-  simpa only [inv_inv] using hplace
+  simpa using hplace
 
 /-- Every finite place of `L` above `v` is the centre of an exact extension
 of the normalized absolute value at `v`. -/
@@ -627,19 +605,19 @@ theorem finitePlaceExtensionCentreInFibre_surjective
         (K := K) (L := L) v) := by
   intro W
   let M := finiteNormalClosure K L
-  let e : L →ₐ[K] M :=
+  let e :=
     finiteNormalClosureEmbedding K L
-  let : Algebra L M :=
+  let :=
     e.toRingHom.toAlgebra
-  let : IsScalarTower K L M :=
+  let :=
     IsScalarTower.of_algebraMap_eq'
       e.comp_algebraMap.symm
-  let : FiniteDimensional L M :=
+  let :=
     FiniteDimensional.right K L M
   obtain ⟨Q, hQmax, hQover⟩ :=
     Ideal.exists_maximal_ideal_liesOver_of_isIntegral
       (S := 𝓞 M) W.1.asIdeal
-  let : Q.IsMaximal :=
+  let :=
     hQmax
   let U : HeightOneSpectrum (𝓞 M) :=
     { asIdeal := Q
@@ -647,7 +625,7 @@ theorem finitePlaceExtensionCentreInFibre_surjective
       ne_bot :=
         Ideal.IsMaximal.ne_bot_of_isIntegral_int Q }
   have hUbelowL :
-      finitePlaceBelow (K := L) U = W.1 := by
+      finitePlaceBelow U = W.1 := by
     apply HeightOneSpectrum.ext
     exact hQover.over.symm
   have hUbelowK :
@@ -661,22 +639,14 @@ theorem finitePlaceExtensionCentreInFibre_surjective
         Ideal.under_under
           (A := 𝓞 K) (B := 𝓞 L) (C := 𝓞 M) Q
     rw [← htrans, hUbelowL, W.2]
-  let Uv :
-      {U : HeightOneSpectrum (𝓞 M) //
-        finitePlaceBelow (K := K) U = v} :=
-    ⟨U, hUbelowK⟩
   obtain ⟨uM, huM⟩ :=
     finitePlaceExtensionCentreInFibre_surjective_of_isGalois
-      (K := K) (L := M) v Uv
-  have hcentreM :
-      finitePlaceExtensionCentre
-          (K := K) (L := M) v uM = U :=
-    congrArg Subtype.val huM
+        v (⟨U, hUbelowK⟩)
   have hcentreIdealM :
       finitePlaceExtensionCentreIdeal
-          (K := K) (L := M) v uM = Q := by
-    simpa only [finitePlaceExtensionCentre_asIdeal] using
-      congrArg HeightOneSpectrum.asIdeal hcentreM
+            v uM = Q := by
+    simpa using
+      congrArg HeightOneSpectrum.asIdeal (congrArg Subtype.val huM)
   let uL :
       AbsoluteValueExtension
         (HeightOneSpectrum.adicAbv K v) L :=
@@ -710,7 +680,7 @@ theorem finitePlaceExtensionCentreInFibre_surjective
     rfl
   rw [← hmap]
   rw [← mem_finitePlaceExtensionCentreIdeal_iff
-      (K := K) (L := M) v uM
+        v uM
       (algebraMap (𝓞 L) (𝓞 M) x),
     hcentreIdealM, hQover.over]
   rfl

@@ -18,7 +18,11 @@ local instance (A : SArithmeticData F) : BorelSpace (SLocalProduct F A.Sf) := �
 local instance (A : SArithmeticData F) : MeasurableSpace A.G1 := borel _
 local instance (A : SArithmeticData F) : BorelSpace A.G1 := ⟨rfl⟩
 
-theorem exists_domain_with_disintegration (A : SArithmeticData F)
+section
+
+variable (A : SArithmeticData F)
+
+theorem exists_domain_with_disintegration
     (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)
     (hS : A.ContainsTraceBadPlaces) (C : A.GeneralArithmeticContext σ η hS) :
     ∃ (Q : NormalizedProbe.DomainData A)
@@ -38,15 +42,12 @@ theorem exists_domain_with_disintegration (A : SArithmeticData F)
     constructor
     unfold Units.instMeasurableSpace
     have he : Topology.IsEmbedding (Units.val : (SLocalProduct F A.Sf)ˣ → SLocalProduct F A.Sf) := by
-      let e := Homeomorph.prodUnits (α := InfiniteAdeleRing F) (β := (v : A.Sf) → v.val.adicCompletion F)
-      have h1 := (Topology.IsEmbedding.piMap (fun w : InfinitePlace F =>
-        Units.isEmbedding_val₀ (G₀ := w.Completion))).comp
-        (ContinuousMulEquiv.piUnits (M := fun w : InfinitePlace F => w.Completion)).isEmbedding
-      have h2 := (Topology.IsEmbedding.piMap (fun v : A.Sf =>
-        Units.isEmbedding_val₀ (G₀ := v.val.adicCompletion F))).comp
-        (ContinuousMulEquiv.piUnits (M := fun v : A.Sf => v.val.adicCompletion F)).isEmbedding
-      exact (h1.prodMap h2).comp e.isEmbedding
-    change MeasurableSpace.comap (Units.val : (SLocalProduct F A.Sf)ˣ → SLocalProduct F A.Sf)
+      exact (((Topology.IsEmbedding.piMap (fun w : InfinitePlace F =>
+        Units.isEmbedding_val₀)).comp
+        (ContinuousMulEquiv.piUnits).isEmbedding).prodMap ((Topology.IsEmbedding.piMap (fun v : A.Sf =>
+        Units.isEmbedding_val₀)).comp
+        (ContinuousMulEquiv.piUnits).isEmbedding)).comp (Homeomorph.prodUnits).isEmbedding
+    change MeasurableSpace.comap Units.val
       (borel (SLocalProduct F A.Sf)) = borel (SLocalProduct F A.Sf)ˣ
     rw [← borel_comap, ← he.isInducing.eq_induced]
   let ν : Measure (SLocalProduct F A.Sf)ˣ := Measure.haar
@@ -54,8 +55,8 @@ theorem exists_domain_with_disintegration (A : SArithmeticData F)
   obtain ⟨dt, hdt, hdis⟩ := probe_sheet_norm_one_haar_exists F A ν hν
   exact ⟨⟨D, hD, hDc, hDf, dt, hdt⟩, ν, hν, hdis⟩
 
- def freeReps (A : SArithmeticData F) : Detector.FrequencyRepresentatives F A.Sf := by
-  let H := Detector.frequencyGamma F (A.Sf : Set (HeightOneSpectrum (𝓞 F)))
+ def freeReps : Detector.FrequencyRepresentatives F A.Sf := by
+  let H := Detector.frequencyGamma F A.Sf
   let P (q : Fˣ ⧸ H) := ∃ x : Fˣ, Detector.sixthPowerFreeFrequency F A.Sf x ∧ QuotientGroup.mk x = q
   have h1 : Detector.sixthPowerFreeFrequency F A.Sf 1 := by
     refine ⟨one_mem _, fun v hv => ⟨0, ?_⟩⟩
@@ -87,27 +88,24 @@ theorem exists_domain_with_disintegration (A : SArithmeticData F)
         exact (div_eq_one.mp ht)
       exact congrArg pick he.symm
 
- def rowOf (A : SArithmeticData F) (u : Fˣ)
+ def rowOf (u : Fˣ)
     (hu : (u : F) ∈ A.R) : ThetaReflectionData.Row A :=
-  ⟨⟨(u : F), hu⟩, by intro h; exact u.ne_zero (congrArg Subtype.val h)⟩
- theorem rowOf_unit (A : SArithmeticData F) (u : Fˣ) (hu : (u : F) ∈ A.R) :
+  ⟨⟨(u : F), hu⟩, fun h => u.ne_zero (congrArg Subtype.val h)⟩
+ theorem rowOf_unit (u : Fˣ) (hu : (u : F) ∈ A.R) :
     ThetaReflectionData.rowUnit A (rowOf A u hu) = u := by
   apply Units.ext; rfl
 
- def unitReps (A : SArithmeticData F) : ThetaBranch.UnitRepresentatives A :=
+ def unitReps : ThetaBranch.UnitRepresentatives A :=
   ⟨fun q => Quotient.out q, fun q => Quotient.out_eq q⟩
 
-private theorem presentation (A : SArithmeticData F) (G : ThetaBranch.AllowedRecipe A)
+private theorem presentation (G : ThetaBranch.AllowedRecipe A)
     (U : Detector.FrequencyRepresentatives F A.Sf) (h : ThetaReflectionData.Row A)
     [IsPrincipalIdealRing A.R] :
     ∃! x : U.carrier × A.Exterior,
       ∃ γ : A.U, ThetaReflectionData.rowUnit A h = x.1.val * G.generator x.2 ^ 6 * γ.val ^ 6 := by
   let hu := ThetaReflectionData.rowUnit A h
-  have hint : (hu : F) ∈ A.R := h.val.property
-  obtain ⟨p, hp, huniq⟩ := Detector.frequency_unique_presentation F A.Sf A.Sf.finite_toSet U hu hint
+  obtain ⟨p, hp, huniq⟩ := Detector.frequency_unique_presentation F A.Sf A.Sf.finite_toSet U hu h.val.property
   let I := A.exteriorIdealEquiv.symm p.2
-  have hI : A.extendIdeal I = p.2.val := by
-    rw [← A.exteriorIdealEquiv_apply, Equiv.apply_symm_apply]
   have convert (q : U.carrier × {J : Ideal A.R // J ≠ ⊥})
       (hq : ∃ r : A.R, r ≠ 0 ∧ Ideal.span {r} = q.2.val ∧
         ∃ rF : Fˣ, (rF : F) = (r : F) ∧
@@ -146,17 +144,15 @@ private theorem presentation (A : SArithmeticData F) (G : ThetaBranch.AllowedRec
     obtain ⟨r, hr, hrF⟩ := G.generates x.2
     refine ⟨r, hr.1, ?_, G.generator x.2, hrF, γ.val, γ.property, ?_⟩
     · rw [hr.2, A.exteriorIdealEquiv_apply]
-    · change γ.val ^ 6 = hu / (x.1.val * G.generator x.2 ^ 6)
-      dsimp [hu]
+    · dsimp [hu]
       rw [hγ]
       exact (mul_div_cancel_left _ _).symm
   have he := huniq (x.1, A.exteriorIdealEquiv x.2) hx'
   have hfst := congrArg Prod.fst he
-  have hsnd := congrArg Prod.snd he
   refine Prod.ext (by exact hfst) ?_
   apply A.exteriorIdealEquiv.injective
-  simpa [I] using hsnd
- def rowRepsEquiv (A : SArithmeticData F) (U : Detector.FrequencyRepresentatives F A.Sf) :
+  simpa [I] using (congrArg Prod.snd he)
+ def rowRepsEquiv (U : Detector.FrequencyRepresentatives F A.Sf) :
     {h : ThetaReflectionData.Row A // ThetaReflectionData.rowUnit A h ∈ U.carrier} ≃ U.carrier where
   toFun h := ⟨ThetaReflectionData.rowUnit A h.val, h.property⟩
   invFun u := ⟨rowOf A u.val (U.power_free u.val u.property).1, by
@@ -167,6 +163,8 @@ private theorem presentation (A : SArithmeticData F) (G : ThetaBranch.AllowedRec
     apply Subtype.ext
     rfl
   right_inv u := by apply Subtype.ext; exact rowOf_unit _ _ _
+
+end
 
 set_option maxHeartbeats 800000 in
 
@@ -183,7 +181,6 @@ theorem exists_frequency_representatives (A : SArithmeticData F)
     reps := {h | ThetaReflectionData.rowUnit A h ∈ U.carrier}
     containsOne := ?_
     sixthFree := ?_
-    unitClasses := ?_
     factorization := ?_ }⟩⟩
   · change ThetaReflectionData.rowUnit A ⟨1, one_ne_zero⟩ ∈ U.carrier
     have he : ThetaReflectionData.rowUnit A ⟨1, one_ne_zero⟩ = 1 := by
@@ -195,22 +192,6 @@ theorem exists_frequency_representatives (A : SArithmeticData F)
       rw [ThetaBranch.order, he, WithZero.log_exp, neg_neg]
     rw [ho]
     exact ⟨by omega, by exact_mod_cast e.isLt⟩
-  · intro ε
-    let u := V.representative ε
-    have hf : Detector.sixthPowerFreeFrequency F A.Sf u.val := by
-      refine ⟨(A.unitEquiv u).val.property, fun p hp => ⟨0, ?_⟩⟩
-      change p.valuation F (u.val : F) = 1
-      exact u.property p hp
-    obtain ⟨v, hv, hvuniq⟩ := U.represents u.val hf
-    obtain ⟨γ, hγ, he⟩ := hv
-    refine ⟨rowOf A v.val (U.power_free v.val v.property).1, ?_, ⟨γ, hγ⟩⁻¹, ?_⟩
-    · change ThetaReflectionData.rowUnit A (rowOf A v.val _) ∈ U.carrier
-      rw [rowOf_unit]; exact v.property
-    · rw [rowOf_unit]
-      change v.val = u.val * (γ⁻¹) ^ 6
-      change γ ^ 6 = u.val / v.val at he
-      rw [inv_pow, he]
-      simp
   · intro h
     let e := (rowRepsEquiv A U).prodCongr (Equiv.refl A.Exterior)
     obtain ⟨x, hx, huniq⟩ := presentation A G U h
@@ -250,7 +231,9 @@ theorem canonical_trace_compatible (A : SArithmeticData F)
   rw [map_mul, map_prod, map_prod] at hr
   simpa only [ProbeAdditive.phase, harch, sIntegerDiagonal_apply, Circle.coeHom_apply] using hr
 
-theorem canonical_trace_contract (A : SArithmeticData F)
+variable (A : SArithmeticData F)
+
+theorem canonical_trace_contract
     (hS : A.ContainsTraceBadPlaces) :
     (∀ v : ↥A.Sf, Continuous (ResidueTrace.localTraceCharacter v.val)) ∧
     ProbeAdditive.TraceCompatible F A.Sf (fun v => ResidueTrace.localTraceCharacter v.val) ∧
@@ -259,7 +242,7 @@ theorem canonical_trace_contract (A : SArithmeticData F)
     canonical_trace_compatible A hS, ?_⟩
   exact canonical_trace_conductor A
 
-theorem exists_trace_normalized_haar (A : SArithmeticData F) :
+theorem exists_trace_normalized_haar :
     ∃ μ : (v : ↥A.Sf) → @Measure (v.val.adicCompletion F) (borel _),
       (∀ v, @Measure.IsAddHaarMeasure (v.val.adicCompletion F) _ _ (borel _) (μ v)) ∧
       PoissonS.LocalNormalization F A.Sf μ ∧
@@ -290,8 +273,6 @@ theorem exists_trace_normalized_haar (A : SArithmeticData F) :
   letI := hμ
   refine ⟨μ, hμ, ?_, ?_⟩
   · intro v
-    change (ENNReal.ofReal (PoissonS.integerVolume F v.val) /
-      μ₀ v {x | ‖x‖ ≤ (1 : ℝ)}) * μ₀ v {x | ‖x‖ ≤ (1 : ℝ)} = _
     exact ENNReal.div_mul_cancel (hp v).ne' (hf v)
   · haveI : (PoissonArch.traceMeasure F).IsAddHaarMeasure :=
       Measure.IsAddHaarMeasure.smul volume
@@ -304,12 +285,11 @@ theorem exists_trace_normalized_haar (A : SArithmeticData F) :
     · exact (PoissonArch.infiniteAdeleToSpace F).symm.continuous.prodMap continuous_id
     · exact (PoissonArch.infiniteAdeleToSpace F).continuous.prodMap continuous_id
 
-theorem poisson_measure_coordinate_coherence (A : SArithmeticData F)
+theorem poisson_measure_coordinate_coherence
     (μ : (v : ↥A.Sf) → @Measure (v.val.adicCompletion F) (borel _)) :
     NormalizedProbe.poissonAdditiveMeasure A μ =
       Measure.map (PoissonS.localProductToSpace F A.Sf).symm
-        (PoissonS.productMeasure F A.Sf μ) := by
-  rfl
+        (PoissonS.productMeasure F A.Sf μ) := rfl
 
 end DedekindZetaZeroFree.PrincipalProbeConstruction
 

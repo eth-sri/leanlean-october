@@ -14,7 +14,7 @@ open NumberField IsDedekindDomain MeasureTheory TopologicalSpace
 namespace DedekindZetaZeroFree.KPAdelicHaarLocalCharts
 
 variable (F : Type) [Field F] [NumberField F]
-variable (T : Finset (HeightOneSpectrum (𝓞 F)))
+    (T : Finset (HeightOneSpectrum (𝓞 F)))
 
 def chartSubgroup : AddSubgroup (KPAdelicTopology.FiniteAdeles F) where
   carrier := {a | ∀ v : HeightOneSpectrum (𝓞 F), v ∉ T →
@@ -32,8 +32,7 @@ def chartSubgroup : AddSubgroup (KPAdelicTopology.FiniteAdeles F) where
       a v ∈ v.adicCompletionIntegers F := Iff.rfl
 
 theorem chartSubgroup_isOpen :
-    IsOpen (chartSubgroup F T : Set (KPAdelicTopology.FiniteAdeles F)) := by
-  exact RestrictedProduct.isOpen_forall_imp_mem
+    IsOpen (chartSubgroup F T : Set (KPAdelicTopology.FiniteAdeles F)) := RestrictedProduct.isOpen_forall_imp_mem
     (KPAdelicTopology.completionIntegers_isOpen F)
 
 abbrev Head := (v : T) → (v : HeightOneSpectrum (𝓞 F)).adicCompletion F
@@ -72,7 +71,11 @@ instance tail_borelSpace : BorelSpace (Tail F T) := by
 instance tail_secondCountableTopology : SecondCountableTopology (Tail F T) := by
   infer_instance
 
-def assemble (x : Coordinates F T) : KPAdelicTopology.FiniteAdeles F :=
+section
+
+variable (x : Coordinates F T)
+
+def assemble : KPAdelicTopology.FiniteAdeles F :=
   ⟨fun v => if hv : v ∈ T then x.1 ⟨v, hv⟩ else (x.2 ⟨v, hv⟩ : v.adicCompletion F),
     by
       apply Filter.eventually_cofinite.mpr
@@ -85,23 +88,23 @@ def assemble (x : Coordinates F T) : KPAdelicTopology.FiniteAdeles F :=
       rw [dif_neg h']
       exact (x.2 ⟨v, h'⟩).2⟩
 
-private theorem assemble_apply (x : Coordinates F T) (v : HeightOneSpectrum (𝓞 F)) :
+private theorem assemble_apply (v : HeightOneSpectrum (𝓞 F)) :
     assemble F T x v = if hv : v ∈ T then x.1 ⟨v, hv⟩ else
       (x.2 ⟨v, hv⟩ : v.adicCompletion F) := rfl
 
-private theorem assemble_val_apply (x : Coordinates F T) (v : HeightOneSpectrum (𝓞 F)) :
+private theorem assemble_val_apply (v : HeightOneSpectrum (𝓞 F)) :
     (assemble F T x).1 v = if hv : v ∈ T then x.1 ⟨v, hv⟩ else
       (x.2 ⟨v, hv⟩ : v.adicCompletion F) := rfl
 
-theorem assemble_mem (x : Coordinates F T) : assemble F T x ∈ chartSubgroup F T := by
+theorem assemble_mem : assemble F T x ∈ chartSubgroup F T := by
   intro v hv
-  rw [assemble_apply, dif_neg hv]
-  exact (x.2 ⟨v, hv⟩).2
+  simp_all [assemble_apply]
+
+end
 
 theorem assemble_continuous : Continuous (assemble F T) := by
   let X := fun v : HeightOneSpectrum (𝓞 F) => v.adicCompletion F
-  let A := fun v => (v.adicCompletionIntegers F : Set (X v))
-  let g : Coordinates F T → RestrictedProduct X A (Filter.principal (T : Set _)ᶜ) :=
+  let g : Coordinates F T → RestrictedProduct X (fun v => (v.adicCompletionIntegers F : Set (X v))) (Filter.principal Tᶜ) :=
     fun x => ⟨(assemble F T x).1, assemble_mem F T x⟩
   have hg : Continuous g := by
     apply RestrictedProduct.continuous_rng_of_principal_iff_forall.mpr
@@ -174,7 +177,7 @@ def tailMeasure : Measure (Tail F T) := Measure.addHaarMeasure (tailPositiveComp
 
 instance tailMeasure_isProbabilityMeasure : IsProbabilityMeasure (tailMeasure F T) := by
   constructor
-  exact Measure.addHaarMeasure_self (K₀ := tailPositiveCompacts F T)
+  exact Measure.addHaarMeasure_self
 
 instance tailMeasure_isAddHaarMeasure : (tailMeasure F T).IsAddHaarMeasure := by
   unfold tailMeasure
@@ -192,8 +195,7 @@ def subgroupMeasure : Measure (chartSubgroup F T) :=
 instance finiteAdeles_measurableAdd : MeasurableAdd (KPAdelicTopology.FiniteAdeles F) :=
   ContinuousAdd.measurableAdd
 
-instance subgroupMeasure_isAddHaarMeasure : (subgroupMeasure F T).IsAddHaarMeasure := by
-  exact Measure.IsAddHaarMeasure.comap (KPAdelicHaarReference.finiteMeasure F)
+instance subgroupMeasure_isAddHaarMeasure : (subgroupMeasure F T).IsAddHaarMeasure := Measure.IsAddHaarMeasure.comap (KPAdelicHaarReference.finiteMeasure F)
     (mH := finiteAdeles_measurableAdd F) (f := (chartSubgroup F T).subtype) (chartSubgroup_isOpen F T).isOpenEmbedding_subtypeVal
 
 def chartAddEquiv : chartSubgroup F T ≃+ Coordinates F T where
@@ -201,8 +203,7 @@ def chartAddEquiv : chartSubgroup F T ≃+ Coordinates F T where
   map_add' := chartHomeomorph_add F T
 
 instance transported_isAddHaarMeasure :
-    (Measure.map (chartHomeomorph F T) (subgroupMeasure F T)).IsAddHaarMeasure := by
-  exact (chartAddEquiv F T).isAddHaarMeasure_map (subgroupMeasure F T)
+    (Measure.map (chartHomeomorph F T) (subgroupMeasure F T)).IsAddHaarMeasure := (chartAddEquiv F T).isAddHaarMeasure_map (subgroupMeasure F T)
     (chartHomeomorph F T).continuous (chartHomeomorph F T).symm.continuous
 
 instance chartMeasure_isAddHaarMeasure : (chartMeasure F T).IsAddHaarMeasure := by
@@ -213,8 +214,7 @@ def integerMeasure (v : HeightOneSpectrum (𝓞 F)) :
     Measure (v.adicCompletionIntegers F) := Measure.comap Subtype.val (localNormalizedHaar F v)
 
 instance integerMeasure_isAddHaarMeasure (v : HeightOneSpectrum (𝓞 F)) :
-    (integerMeasure F v).IsAddHaarMeasure := by
-  exact Measure.IsAddHaarMeasure.comap (localNormalizedHaar F v)
+    (integerMeasure F v).IsAddHaarMeasure := Measure.IsAddHaarMeasure.comap (localNormalizedHaar F v)
     (mH := inferInstance) (f := (v.adicCompletionIntegers F).toAddSubgroup.subtype)
     (KPAdelicTopology.completionIntegers_isOpen F v).isOpenEmbedding_subtypeVal
 
@@ -241,7 +241,7 @@ open NumberField IsDedekindDomain MeasureTheory TopologicalSpace
 namespace DedekindZetaZeroFree.KPAdelicHaarLocalCharts
 
 variable (F : Type) [Field F] [NumberField F]
-variable (T : Finset (HeightOneSpectrum (𝓞 F)))
+    (T : Finset (HeightOneSpectrum (𝓞 F)))
 
 def tailCylinder
     (U : Finset {v : HeightOneSpectrum (𝓞 F) // v ∉ T})
@@ -254,32 +254,20 @@ private theorem integerMeasure_apply (v : HeightOneSpectrum (𝓞 F))
     integerMeasure F v s = localNormalizedHaar F v (Subtype.val '' s) :=
   (MeasurableEmbedding.subtype_coe (KPAdelicTopology.completionIntegers_isOpen F v).measurableSet).comap_apply _ _
 
-private theorem integerMeasure_probability
-    (hT : localDifferentSupport F ⊆ (T : Set (HeightOneSpectrum (𝓞 F))))
-    (v : {v : HeightOneSpectrum (𝓞 F) // v ∉ T}) :
-    IsProbabilityMeasure (integerMeasure F v) := by
-  constructor
-  rw [integerMeasure_apply, Set.image_univ, Subtype.range_coe]
-  exact localNormalizedHaar_integerRing_of_not_mem F T hT v v.2
+section
 
-private def tailProjection
-    (U : Finset {v : HeightOneSpectrum (𝓞 F) // v ∉ T}) :
+variable (U : Finset {v : HeightOneSpectrum (𝓞 F) // v ∉ T})
+
+private def tailProjection :
     Tail F T →+ ((v : U) → v.1.1.adicCompletionIntegers F) where
   toFun x v := x v.1
   map_zero' := rfl
   map_add' _ _ := rfl
 
-private theorem tailProjection_continuous
-    (U : Finset {v : HeightOneSpectrum (𝓞 F) // v ∉ T}) :
+private theorem tailProjection_continuous :
     Continuous (tailProjection F T U) := continuous_pi fun v => continuous_apply v.1
 
-private theorem tailProjection_surjective
-    (U : Finset {v : HeightOneSpectrum (𝓞 F) // v ∉ T}) :
-    Function.Surjective (tailProjection F T U) := by
-  intro x
-  refine ⟨fun v => if hv : v ∈ U then x ⟨v, hv⟩ else 0, ?_⟩
-  funext v
-  exact dif_pos v.2
+end
 
 theorem tailMeasure_cylinder
     (hT : localDifferentSupport F ⊆ (T : Set (HeightOneSpectrum (𝓞 F))))
@@ -291,15 +279,21 @@ theorem tailMeasure_cylinder
       ∏ v ∈ U, localNormalizedHaar F v
         (Subtype.val '' s v) := by
   letI : ∀ v : U, IsProbabilityMeasure (integerMeasure F v.1) :=
-    fun v => integerMeasure_probability F T hT v.1
+    fun v => (by
+      constructor
+      rw [integerMeasure_apply, Set.image_univ, Subtype.range_coe]
+      exact localNormalizedHaar_integerRing_of_not_mem F T hT v.1 v.1.2)
   let μ := Measure.map (tailProjection F T U) (tailMeasure F T)
   let ν := Measure.pi (fun v : U => integerMeasure F v.1)
   haveI : μ.IsAddHaarMeasure := Measure.isAddHaarMeasure_map_of_isFiniteMeasure
     (tailMeasure F T) (tailProjection F T U) (tailProjection_continuous F T U)
-    (tailProjection_surjective F T U)
+    (by
+      intro x
+      refine ⟨fun v => if hv : v ∈ U then x ⟨v, hv⟩ else 0, ?_⟩
+      funext v
+      exact dif_pos v.2)
   haveI : IsProbabilityMeasure μ := by
     constructor
-    change Measure.map (tailProjection F T U) (tailMeasure F T) Set.univ = 1
     rw [Measure.map_apply (tailProjection_continuous F T U).measurable MeasurableSet.univ]
     simp
   haveI : IsProbabilityMeasure ν := by
@@ -308,7 +302,7 @@ theorem tailMeasure_cylinder
   haveI : ν.IsAddHaarMeasure := by unfold ν; infer_instance
   letI : ∀ v : U, CompactSpace (v.1.1.adicCompletionIntegers F) := fun v =>
     isCompact_iff_compactSpace.mp (KPAdelicTopology.completionIntegers_isCompact F v)
-  have he : μ = ν := Measure.isAddHaarMeasure_eq_of_isProbabilityMeasure μ ν
+  have he := Measure.isAddHaarMeasure_eq_of_isProbabilityMeasure μ ν
   have hc : (tailProjection F T U) ⁻¹' (Set.univ.pi fun v : U => s v.1) =
       tailCylinder F T U s := by
     ext x
@@ -325,11 +319,6 @@ theorem tailMeasure_cylinder
 private def normSet : Set (Coordinates F T) :=
   (Set.univ.pi fun v : T => (v.1.adicCompletionIntegers F : Set (v.1.adicCompletion F))) ×ˢ
     Set.univ
-
-private theorem normSet_measurable : MeasurableSet (normSet F T) := by
-  unfold normSet
-  exact (MeasurableSet.univ_pi fun v : T =>
-    (KPAdelicTopology.completionIntegers_isOpen F v).measurableSet).prod MeasurableSet.univ
 
 private theorem normSet_chart_mass
     (hT : localDifferentSupport F ⊆ (T : Set (HeightOneSpectrum (𝓞 F)))) :
@@ -353,21 +342,24 @@ private theorem normSet_inverse_image :
     · exact hb.1 ⟨v, hv⟩ (Set.mem_univ _)
     · exact b.2 v hv
   · intro ha
-    have hb : a ∈ chartSubgroup F T := fun v _ => ha v
-    refine ⟨⟨a, hb⟩, ?_, rfl⟩
+    refine ⟨⟨a, (fun v _ => ha v)⟩, ?_, rfl⟩
     exact ⟨fun v _ => ha v, Set.mem_univ _⟩
 
 private theorem normSet_transported_mass :
     Measure.map (chartHomeomorph F T) (subgroupMeasure F T) (normSet F T) =
       ENNReal.ofReal (KPAdelicHaarReference.referenceMass F) := by
-  rw [Measure.map_apply (chartHomeomorph F T).measurable (normSet_measurable F T),
+  rw [Measure.map_apply (chartHomeomorph F T).measurable (by
+    exact (MeasurableSet.univ_pi fun v : T =>
+      (KPAdelicTopology.completionIntegers_isOpen F v).measurableSet).prod MeasurableSet.univ),
     subgroupMeasure]
   exact ((MeasurableEmbedding.subtype_coe (chartSubgroup_isOpen F T).measurableSet).comap_apply
       (KPAdelicHaarReference.finiteMeasure F) ((chartHomeomorph F T) ⁻¹' normSet F T)).trans
     (by rw [normSet_inverse_image, KPAdelicHaarReference.finiteMeasure_integralAdeles])
 
-theorem map_subgroupMeasure
-    (hT : localDifferentSupport F ⊆ (T : Set (HeightOneSpectrum (𝓞 F)))) :
+variable (hT : localDifferentSupport F ⊆ (T : Set (HeightOneSpectrum (𝓞 F))))
+
+include hT in
+theorem map_subgroupMeasure :
     Measure.map (chartHomeomorph F T) (subgroupMeasure F T) = chartMeasure F T := by
   let μ := Measure.map (chartHomeomorph F T) (subgroupMeasure F T)
   have h := Measure.isAddLeftInvariant_eq_smul μ (chartMeasure F T)
@@ -382,8 +374,8 @@ theorem map_subgroupMeasure
     simpa only [mul_comm] using hh.symm
   simpa [hc] using h
 
-theorem map_chartMeasure
-    (hT : localDifferentSupport F ⊆ (T : Set (HeightOneSpectrum (𝓞 F)))) :
+include hT in
+theorem map_chartMeasure :
     Measure.map (assemble F T) (chartMeasure F T) =
       (KPAdelicHaarReference.finiteMeasure F).restrict
         (chartSubgroup F T : Set (KPAdelicTopology.FiniteAdeles F)) := by

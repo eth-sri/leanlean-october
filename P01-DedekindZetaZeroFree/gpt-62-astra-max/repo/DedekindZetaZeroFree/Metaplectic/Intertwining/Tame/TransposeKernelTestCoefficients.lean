@@ -45,17 +45,23 @@ def diagonalLift (π : (LocalField F q)ˣ) (f : DiagonalValuations) :
     (KPLocalCover.sectionMap F ζ hζ (Sum.inr q)
       (KubotaRankTwo.d (LocalField F q) (π ^ f.1) (π ^ f.2)))
 
-def testSupport (a : ActualCover F ζ hζ q) (m : ℕ) : Set (ActualCover F ζ hζ q) :=
+section
+
+variable (a : ActualCover F ζ hζ q) (m : ℕ)
+
+def testSupport : Set (ActualCover F ζ hζ q) :=
   {g | ∃ (b : BL F ζ hζ q S P) (k : ActualCover F ζ hζ q),
     k ∈ splitCongruenceSet F ζ hζ q m ∧
       g = b * a * k * KPPGLLocalCover.W F ζ hζ (Sum.inr q)}
 
-def IsMinusTest (a : ActualCover F ζ hζ q) (m : ℕ)
+def IsMinusTest
     (f : scalarSections F ζ hζ q S P hP .minus) : Prop :=
   (∀ k ∈ splitCongruenceSet F ζ hζ q m,
     scalarAction F ζ hζ q S P hP .minus k f = f) ∧
   Function.support f.val ⊆ testSupport F ζ hζ q S P a m ∧
   f.val (a * KPPGLLocalCover.W F ζ hζ (Sum.inr q)) = 1
+
+end
 
 def lowShell : Set (LocalField F q) := (valuation (LocalField F q)).integer
 

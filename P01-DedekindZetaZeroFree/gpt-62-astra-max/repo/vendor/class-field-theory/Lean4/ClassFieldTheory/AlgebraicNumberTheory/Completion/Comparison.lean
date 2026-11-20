@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -68,21 +65,13 @@ theorem finitePlaceExtension_adicAbv_valuationSubring
         (K := K) (L := L) v w := by
   rw [finitePlaceExtensionValuationSubring_eq_localization,
     (finitePlaceExtensionCentre
-      (K := K) (L := L) v w).valuationSubringAtPrime_eq_valuationSubring]
+        v w).valuationSubringAtPrime_eq_valuationSubring]
   ext x
-  rw [mem_absoluteValueValuationSubring_iff]
-  change
-    HeightOneSpectrum.adicAbv L
-        (finitePlaceExtensionCentre
-          (K := K) (L := L) v w) x ≤ 1 ↔
-      (finitePlaceExtensionCentre
-        (K := K) (L := L) v w).valuation L x ≤ 1
-  rw [HeightOneSpectrum.adicAbv_def]
   exact_mod_cast
     WithZeroMulInt.toNNReal_le_one_iff
       (HeightOneSpectrum.one_lt_absNorm_nnreal
         (finitePlaceExtensionCentre
-          (K := K) (L := L) v w))
+            v w))
 
 omit [FiniteDimensional K L] in
 /-- The exact extension and the standard absolute value at its centre are
@@ -97,40 +86,31 @@ theorem finitePlaceExtension_isEquiv_adicAbv
           (K := K) (L := L) v w)) := by
   apply AbsoluteValue.isEquiv_iff_lt_one_iff.mpr
   intro x
+  let adicAbv₀ := HeightOneSpectrum.adicAbv L (finitePlaceExtensionCentre v w)
   have hle (y : L) :
       w.1 y ≤ 1 ↔
-        HeightOneSpectrum.adicAbv L
-            (finitePlaceExtensionCentre
-              (K := K) (L := L) v w) y ≤ 1 := by
+        adicAbv₀ y ≤ 1 := by
     rw [← mem_absoluteValueValuationSubring_iff
         w.1 (finitePlaceExtension_nonarchimedean
-          (K := K) (L := L) v w),
+            v w),
       ← mem_absoluteValueValuationSubring_iff
-        (HeightOneSpectrum.adicAbv L
-          (finitePlaceExtensionCentre
-            (K := K) (L := L) v w))
+        (adicAbv₀)
         (finitePlaceExtension_nonarchimedean
-          (K := L) (L := L)
+
           (finitePlaceExtensionCentre
-            (K := K) (L := L) v w)
-          ⟨HeightOneSpectrum.adicAbv L
-              (finitePlaceExtensionCentre
-                (K := K) (L := L) v w),
+              v w)
+          ⟨adicAbv₀,
             fun _ => rfl⟩)]
     change
       y ∈ finitePlaceExtensionValuationSubring
-          (K := K) (L := L) v w ↔
+            v w ↔
         y ∈ absoluteValueValuationSubring
-          (HeightOneSpectrum.adicAbv L
-            (finitePlaceExtensionCentre
-              (K := K) (L := L) v w))
+          (adicAbv₀)
           (finitePlaceExtension_nonarchimedean
-            (K := L) (L := L)
+
             (finitePlaceExtensionCentre
-              (K := K) (L := L) v w)
-            ⟨HeightOneSpectrum.adicAbv L
-                (finitePlaceExtensionCentre
-                  (K := K) (L := L) v w),
+                v w)
+            ⟨adicAbv₀,
               fun _ => rfl⟩)
     rw [finitePlaceExtension_adicAbv_valuationSubring]
   by_cases hx : x = 0
@@ -141,24 +121,14 @@ theorem finitePlaceExtension_isEquiv_adicAbv
       (one_lt_inv₀ (w.1.pos hx)).symm
     _ ↔ 1 < w.1 x⁻¹ := by rw [map_inv₀]
     _ ↔ ¬ w.1 x⁻¹ ≤ 1 := not_le.symm
-    _ ↔ ¬ HeightOneSpectrum.adicAbv L
-          (finitePlaceExtensionCentre
-            (K := K) (L := L) v w) x⁻¹ ≤ 1 :=
+    _ ↔ ¬ adicAbv₀ x⁻¹ ≤ 1 :=
       not_congr (hle x⁻¹)
-    _ ↔ 1 < HeightOneSpectrum.adicAbv L
-          (finitePlaceExtensionCentre
-            (K := K) (L := L) v w) x⁻¹ := not_le
-    _ ↔ 1 < (HeightOneSpectrum.adicAbv L
-          (finitePlaceExtensionCentre
-            (K := K) (L := L) v w) x)⁻¹ := by
+    _ ↔ 1 < adicAbv₀ x⁻¹ := not_le
+    _ ↔ 1 < (adicAbv₀ x)⁻¹ := by
       rw [map_inv₀]
-    _ ↔ HeightOneSpectrum.adicAbv L
-          (finitePlaceExtensionCentre
-            (K := K) (L := L) v w) x < 1 :=
+    _ ↔ adicAbv₀ x < 1 :=
       one_lt_inv₀
-        ((HeightOneSpectrum.adicAbv L
-          (finitePlaceExtensionCentre
-            (K := K) (L := L) v w)).pos hx)
+        ((adicAbv₀).pos hx)
 
 /-- The positive exponent relating an exact extension to the standard
 absolute value at its centre. -/
@@ -234,12 +204,10 @@ theorem finitePlaceExtensionWithAbsRingEquiv_symm_continuous
     Continuous
       (finitePlaceExtensionWithAbsRingEquiv
         (K := K) (L := L) v w).symm := by
-  rw [finitePlaceExtensionWithAbsRingEquiv,
-    WithAbs.congr_symm]
   exact
     ((AbsoluteValue.isEquiv_iff_isHomeomorph _ _).mp
       (finitePlaceExtension_isEquiv_adicAbv
-        (K := K) (L := L) v w).symm).continuous
+          v w).symm).continuous
 
 /-- The completion comparison induced by the identity on `L`. -/
 noncomputable def finitePlaceExtensionCompletionRingEquiv
@@ -275,18 +243,18 @@ theorem finitePlaceExtensionCompletionRingEquiv_toCompletion
   change
     UniformSpace.Completion.mapRingEquiv
         (finitePlaceExtensionWithAbsRingEquiv
-          (K := K) (L := L) v w)
+            v w)
         (finitePlaceExtensionWithAbsRingEquiv_continuous
-          (K := K) (L := L) v w)
+            v w)
         (finitePlaceExtensionWithAbsRingEquiv_symm_continuous
-          (K := K) (L := L) v w)
+            v w)
       (((WithAbs.equiv w.1).symm x : WithAbs w.1) :
         w.1.Completion) = _
   rw [UniformSpace.Completion.mapRingEquiv_apply,
     UniformSpace.Completion.map_coe
       (uniformContinuous_addMonoidHom_of_continuous
         (finitePlaceExtensionWithAbsRingEquiv_continuous
-          (K := K) (L := L) v w))]
+            v w))]
   rfl
 
 omit [FiniteDimensional K L] in
@@ -313,34 +281,33 @@ theorem finitePlaceExtensionCompletionRingEquiv_norm
       ‖x‖ ^ finitePlaceExtensionExponent
         (K := K) (L := L) v w := by
   refine UniformSpace.Completion.induction_on
-    (α := WithAbs w.1) x ?_ ?_
+     x ?_ ?_
   · exact isClosed_eq
       (continuous_norm.comp
         (finitePlaceExtensionCompletionRingEquiv_continuous
-          (K := K) (L := L) v w))
+            v w))
       (continuous_norm.rpow_const
         (fun _ => Or.inr
           (finitePlaceExtensionExponent_pos
-            (K := K) (L := L) v w).le))
+              v w).le))
   · intro a
     change
       ‖UniformSpace.Completion.map
           (finitePlaceExtensionWithAbsRingEquiv
-            (K := K) (L := L) v w)
+              v w)
           (a : w.1.Completion)‖ =
         ‖(a : w.1.Completion)‖ ^
           finitePlaceExtensionExponent
-            (K := K) (L := L) v w
+              v w
     rw [UniformSpace.Completion.map_coe
         (uniformContinuous_addMonoidHom_of_continuous
           (finitePlaceExtensionWithAbsRingEquiv_continuous
-            (K := K) (L := L) v w)),
+              v w)),
       UniformSpace.Completion.norm_coe,
       UniformSpace.Completion.norm_coe,
       WithAbs.norm_eq_apply_ofAbs,
       WithAbs.norm_eq_apply_ofAbs]
-    exact finitePlaceExtension_adicAbv_eq_rpow
-      (K := K) (L := L) v w (WithAbs.equiv w.1 a)
+    solve_by_elim [finitePlaceExtension_adicAbv_eq_rpow]
 
 /-- The existing comparison from the standard absolute-value completion
 to the concrete adic completion is an isometry. -/
@@ -348,7 +315,6 @@ theorem relativeFinitePlaceCompletionRingEquiv_norm
     (W : HeightOneSpectrum (𝓞 L))
     (x : (HeightOneSpectrum.adicAbv L W).Completion) :
     ‖relativeFinitePlaceCompletionRingEquiv W x‖ = ‖x‖ := by
-  change ‖relativeFinitePlaceCompletionRingHom W x‖ = ‖x‖
   exact
     (relativeFinitePlaceCompletionRingHom_isometry W).norm_map_of_map_zero
       (map_zero (relativeFinitePlaceCompletionRingHom W)) x
@@ -402,18 +368,18 @@ theorem finitePlaceExtensionAdicCompletionRingEquiv_toCompletion
   change
     relativeFinitePlaceCompletionRingHom
         (finitePlaceExtensionCentre
-          (K := K) (L := L) v w)
+            v w)
         (((WithAbs.equiv
           (HeightOneSpectrum.adicAbv L
             (finitePlaceExtensionCentre
-              (K := K) (L := L) v w))).symm x :
+                v w))).symm x :
           WithAbs
             (HeightOneSpectrum.adicAbv L
               (finitePlaceExtensionCentre
-                (K := K) (L := L) v w))) :
+                  v w))) :
           (HeightOneSpectrum.adicAbv L
             (finitePlaceExtensionCentre
-              (K := K) (L := L) v w)).Completion) = _
+                v w)).Completion) = _
   rw [relativeFinitePlaceCompletionRingHom_coe]
   rfl
 
@@ -436,25 +402,23 @@ theorem finitePlaceExtensionAdicCompletionRingEquiv_mem_integers_iff
   rw [mem_absoluteValueCompletionIntegers_iff]
   have hrpow :
       ‖x‖ ^ finitePlaceExtensionExponent
-          (K := K) (L := L) v w ≤ 1 ↔
+            v w ≤ 1 ↔
         ‖x‖ ≤ 1 := by
-    simpa only [Real.one_rpow] using
+    simpa using
       Real.rpow_le_rpow_iff (norm_nonneg x) zero_le_one
         (finitePlaceExtensionExponent_pos
-          (K := K) (L := L) v w)
+            v w)
   constructor
   · intro hx
     have hnorm :=
       norm_le_one_of_mem_adicCompletionIntegers
         (finitePlaceExtensionCentre
-          (K := K) (L := L) v w) hx
-    rw [finitePlaceExtensionAdicCompletionRingEquiv_norm] at hnorm
-    exact hrpow.mp hnorm
+            v w) hx
+    simp_all [finitePlaceExtensionAdicCompletionRingEquiv_norm]
   · intro hx
     apply mem_adicCompletionIntegers_of_norm_le_one
       (finitePlaceExtensionCentre
-        (K := K) (L := L) v w)
-    rw [finitePlaceExtensionAdicCompletionRingEquiv_norm]
-    exact hrpow.mpr hx
+          v w)
+    simp_all [finitePlaceExtensionAdicCompletionRingEquiv_norm]
 
 end

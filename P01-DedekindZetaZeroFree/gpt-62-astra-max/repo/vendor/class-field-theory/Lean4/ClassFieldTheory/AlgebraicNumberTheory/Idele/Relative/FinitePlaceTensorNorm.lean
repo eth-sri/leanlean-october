@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -42,7 +38,6 @@ noncomputable section
 
 open LocalClassFieldTheory
 
-
 open AlgebraicNumberTheory.Valuations
 open LocalFieldTheory
 
@@ -51,10 +46,13 @@ variable {K L : Type}
     [Field L] [NumberField L] [Algebra K L]
     [FiniteDimensional K L] [IsGalois K L]
 
+section
+
+variable (v : HeightOneSpectrum (𝓞 K))
+
 /-- The canonical completion comparison as a `K`-algebra
 equivalence. -/
-noncomputable def finitePlaceCompletionAlgEquiv
-    (v : HeightOneSpectrum (𝓞 K)) :
+noncomputable def finitePlaceCompletionAlgEquiv :
     (NumberField.HeightOneSpectrum.adicAbv K v).Completion ≃ₐ[K]
       v.adicCompletion K where
   __ := finitePlaceCompletionRingEquiv v
@@ -72,8 +70,7 @@ noncomputable def finitePlaceCompletionAlgEquiv
 
 /-- Base change of the first tensor factor gives the concrete tensor
 algebra at `v`. -/
-noncomputable def finitePlaceLocalTensorAlgEquiv
-    (v : HeightOneSpectrum (𝓞 K)) :
+noncomputable def finitePlaceLocalTensorAlgEquiv :
     LocalTensorAlgebra (L := L)
         (NumberField.HeightOneSpectrum.adicAbv K v) ≃ₐ[K]
       v.adicCompletion K ⊗[K] L :=
@@ -82,14 +79,15 @@ noncomputable def finitePlaceLocalTensorAlgEquiv
     (AlgEquiv.refl : L ≃ₐ[K] L)
 
 /-- The induced equivalence on tensor-algebra unit groups. -/
-noncomputable def finitePlaceLocalTensorUnitsEquiv
-    (v : HeightOneSpectrum (𝓞 K)) :
+noncomputable def finitePlaceLocalTensorUnitsEquiv :
     (LocalTensorAlgebra (L := L)
       (NumberField.HeightOneSpectrum.adicAbv K v))ˣ ≃*
       (v.adicCompletion K ⊗[K] L)ˣ :=
   Units.mapEquiv
     (finitePlaceLocalTensorAlgEquiv
       (K := K) (L := L) v).toMulEquiv
+
+end
 
 omit [NumberField L] [IsGalois K L] in
 /-- The completed-base comparison intertwines the two determinant norm
@@ -137,37 +135,37 @@ theorem finitePlaceLocalTensorNorm_range_eq_transport
   · rintro ⟨z, hz⟩
     refine
       ⟨localTensorDetNorm
-          (K := K) (L := L)
+
           (NumberField.HeightOneSpectrum.adicAbv K v)
           (T.symm z),
         ⟨T.symm z, rfl⟩, ?_⟩
     calc
       e
           (localTensorDetNorm
-            (K := K) (L := L)
+
             (NumberField.HeightOneSpectrum.adicAbv K v)
             (T.symm z)) =
           _root_.localTensorNorm
-            (K := K) (L := L) v
+              v
             (T (T.symm z)) :=
         finitePlaceLocalTensorNorm_commutes
-          (K := K) (L := L) v (T.symm z)
+            v (T.symm z)
       _ =
           _root_.localTensorNorm
-            (K := K) (L := L) v z := by
+              v z := by
         rw [T.apply_symm_apply]
       _ = x := hz
   · rintro ⟨y, ⟨z, hz⟩, hy⟩
     refine ⟨T z, ?_⟩
     calc
       _root_.localTensorNorm
-          (K := K) (L := L) v (T z) =
+            v (T z) =
           e
             (localTensorDetNorm
-              (K := K) (L := L)
+
               (NumberField.HeightOneSpectrum.adicAbv K v) z) :=
         (finitePlaceLocalTensorNorm_commutes
-          (K := K) (L := L) v z).symm
+            v z).symm
       _ = e y := congrArg e hz
       _ = x := hy
 
@@ -184,93 +182,29 @@ theorem finitePlaceLocalTensorNorm_range_eq_chosenLocalNormSubgroup
   let vK :=
     NumberField.HeightOneSpectrum.adicAbv K v
   let w := chosenFinitePlaceExtension (L := L) v
-  let hvK : vK.IsNontrivial :=
+  let hvK :=
     RayClass.adicAbv_isNontrivial v
   let hK :=
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) w.1
-  let : SMul K w.1.Completion := hK.toSMul
-  let : Algebra vK.Completion w.1.Completion :=
+  let := hK.toSMul
+  let :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   let E := LocalizedCompletion vK w
-  let : Module.Finite vK.Completion E :=
+  let :=
     localizedCompletionModuleFinite vK hvK w
   rw [finitePlaceLocalTensorNorm_range_eq_transport
-    (K := K) (L := L) v]
+      v]
   change
     (localTensorNormSubgroup
-      (K := K) (L := L) vK).map
+        vK).map
         (finitePlaceCompletionUnitsContinuousMulEquiv
           v).toMonoidHom =
       (localNormSubgroup vK.Completion E).map
         (finitePlaceCompletionUnitsContinuousMulEquiv
           v).toMonoidHom
   rw [localTensorNormSubgroup_eq_localNormSubgroup
-    (K := K) (L := L) vK w hvK]
-
-omit [NumberField L] in
-/-- The quotient projection whose kernel is the finite-place tensor
-norm image. -/
-noncomputable def finitePlaceTensorNormClass
-    (v : HeightOneSpectrum (𝓞 K)) :
-    (v.adicCompletion K)ˣ →*
-      ChosenFinitePlaceNormQuotient
-        (K := K) (L := L) v :=
-  QuotientGroup.mk'
-    (chosenFinitePlaceLocalNormSubgroup
-      (K := K) (L := L) v)
-
-omit [NumberField L] in
-/-- A concrete local class is trivial exactly when its representative
-is a determinant norm from `K_v ⊗[K] L`. -/
-theorem finitePlaceTensorNormClass_eq_one_iff
-    (v : HeightOneSpectrum (𝓞 K))
-    (x : (v.adicCompletion K)ˣ) :
-    finitePlaceTensorNormClass
-        (K := K) (L := L) v x = 1 ↔
-      ∃ z : (v.adicCompletion K ⊗[K] L)ˣ,
-        _root_.localTensorNorm
-          (K := K) (L := L) v z = x := by
-  change
-    QuotientGroup.mk'
-        (chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v) x = 1 ↔ _
-  constructor
-  · intro hx
-    have hxmem :
-        x ∈ chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v :=
-      (QuotientGroup.eq_one_iff
-        (N := chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v)
-        (x := x)).mp hx
-    rw [← finitePlaceLocalTensorNorm_range_eq_chosenLocalNormSubgroup
-      (K := K) (L := L) v] at hxmem
-    exact hxmem
-  · intro hx
-    apply
-      (QuotientGroup.eq_one_iff
-        (N := chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v)
-        (x := x)).mpr
-    rw [← finitePlaceLocalTensorNorm_range_eq_chosenLocalNormSubgroup
-      (K := K) (L := L) v]
-    exact hx
-
-omit [NumberField L] in
-/-- The kernel of the concrete quotient projection is precisely the
-finite-place determinant norm image. -/
-theorem finitePlaceTensorNormClass_ker
-    (v : HeightOneSpectrum (𝓞 K)) :
-    (finitePlaceTensorNormClass
-      (K := K) (L := L) v).ker =
-      (_root_.localTensorNorm
-        (K := K) (L := L) v).range := by
-  ext x
-  rw [MonoidHom.mem_ker,
-    finitePlaceTensorNormClass_eq_one_iff
-      (K := K) (L := L) v]
-  rfl
+      vK w hvK]
 
 omit [NumberField L] in
 /-- Every finite component of a global relative-idele norm lies in the
@@ -283,30 +217,11 @@ theorem relativeIdeleNorm_finiteComponent_mem_chosenLocalNormSubgroup
       chosenFinitePlaceLocalNormSubgroup
         (K := K) (L := L) v := by
   rw [← finitePlaceLocalTensorNorm_range_eq_chosenLocalNormSubgroup
-    (K := K) (L := L) v]
+      v]
   exact
     ⟨RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) v a,
+          v a,
       (RelativeIdeleGroup.finiteComponent_norm
-        (K := K) (L := L) v a).symm⟩
-
-omit [NumberField L] in
-/-- Hence the local tensor-norm class of every finite component of a
-global relative-idele norm is trivial. -/
-@[simp]
-theorem finitePlaceTensorNormClass_relativeIdeleNorm
-    (v : HeightOneSpectrum (𝓞 K))
-    (a : RelativeIdeleGroup K L) :
-    finitePlaceTensorNormClass
-        (K := K) (L := L) v
-        (IdeleGroup.finiteComponent v
-          (RelativeIdeleGroup.norm K L a)) = 1 := by
-  rw [finitePlaceTensorNormClass_eq_one_iff
-    (K := K) (L := L) v]
-  exact
-    ⟨RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) v a,
-      (RelativeIdeleGroup.finiteComponent_norm
-        (K := K) (L := L) v a).symm⟩
+          v a).symm⟩
 
 end

@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -57,11 +53,11 @@ theorem infiniteTensorNormSubgroup_eq_localNormSubgroup
   let hL :=
     AbsoluteValue.extensionCompletionAlgebra
       (K := K) u.1
-  let : SMul K u.1.Completion :=
+  let :=
     hL.toSMul
-  let : Algebra v.1.Completion u.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra v.1 u.1 u.2
-  let : Algebra v.1.Completion w.1.Completion :=
+  let :=
     AbsoluteValue.completionAlgebra v.1 w.1
       (infinitePlaceAbsoluteValueExtension v w hw).2
   let E :=

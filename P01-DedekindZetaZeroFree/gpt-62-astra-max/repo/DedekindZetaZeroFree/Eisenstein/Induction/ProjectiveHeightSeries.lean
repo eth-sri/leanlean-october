@@ -13,11 +13,17 @@ abbrev P1 (F : Type) [Field F] := Projectivization F (Fin 2 → F)
 def compactExponent (T : Set ℂ) : ℝ :=
   2 / 3 + sInf (Complex.re '' T)
 
-def term {F : Type} [Field F] (H : P1 F → ℝ) (a : ℝ) (ℓ : P1 F) : ℝ :=
+section
+
+variable {F : Type} [Field F] (H : P1 F → ℝ)
+
+def term (a : ℝ) (ℓ : P1 F) : ℝ :=
   (H ℓ) ^ (-2 * a)
 
-def tail {F : Type} [Field F] (H : P1 F → ℝ) (a B : ℝ) : ℝ :=
+def tail (a B : ℝ) : ℝ :=
   ∑' ℓ : {ℓ : P1 F // B < H ℓ}, term H a ℓ.1
+
+end
 
 private lemma shell_identity (C B a : ℝ) (hB : 0 < B) (n : ℕ) :
     C * ((2 : ℝ) ^ (n + 1) * B) ^ 2 * ((2 : ℝ) ^ n * B) ^ (-2 * a) =
@@ -32,7 +38,11 @@ private lemma shell_identity (C B a : ℝ) (hB : 0 < B) (n : ℕ) :
   norm_num
   ring
 
-private lemma finite_sum_bound {α : Type*} (H : α → ℝ) (C a B : ℝ)
+section
+
+variable {α : Type*} (H : α → ℝ)
+
+private lemma finite_sum_bound (C a B : ℝ)
     (hC : 0 < C) (ha : 1 < a) (hB : 1 ≤ B)
     (hcount : ∀ R : ℝ, 1 ≤ R → {x : α | H x ≤ R}.Finite ∧
       ({x : α | H x ≤ R}.ncard : ℝ) ≤ C * R ^ 2)
@@ -40,7 +50,7 @@ private lemma finite_sum_bound {α : Type*} (H : α → ℝ) (C a B : ℝ)
     ∑ x ∈ u, (H x) ^ (-2 * a) ≤
       (4 * C / (1 - (2 : ℝ) ^ (2 - 2 * a))) * B ^ (2 - 2 * a) := by
   classical
-  have hBp : 0 < B := lt_of_lt_of_le zero_lt_one hB
+  have hBp := lt_of_lt_of_le zero_lt_one hB
   have hex : ∀ x : α, ∃ n : ℕ, B ≤ H x →
       (2 : ℝ) ^ n * B ≤ H x ∧ H x < (2 : ℝ) ^ (n + 1) * B := by
     intro x
@@ -50,10 +60,9 @@ private lemma finite_sum_bound {α : Type*} (H : α → ℝ) (C a B : ℝ)
       exact ⟨n, fun _ => ⟨(le_div_iff₀ hBp).1 hn, (div_lt_iff₀ hBp).1 hn'⟩⟩
     · exact ⟨0, fun h => (hx h).elim⟩
   choose k hk using hex
-  let r : ℝ := (2 : ℝ) ^ (2 - 2 * a)
+  let r := (2 : ℝ) ^ (2 - 2 * a)
   have hr0 : 0 ≤ r := by dsimp [r]; positivity
   have hr1 : r < 1 := Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
-  have hsum : Summable (fun n : ℕ => r ^ n) := summable_geometric_of_lt_one hr0 hr1
   have hshell : ∀ n ∈ u.image k,
       ∑ x ∈ u with k x = n, (H x) ^ (-2 * a) ≤
         (4 * C * B ^ (2 - 2 * a)) * r ^ n := by
@@ -94,10 +103,10 @@ private lemma finite_sum_bound {α : Type*} (H : α → ℝ) (C a B : ℝ)
     _ = (4 * C * B ^ (2 - 2 * a)) * ∑ n ∈ u.image k, r ^ n := by
       rw [Finset.mul_sum]
     _ ≤ (4 * C * B ^ (2 - 2 * a)) * ∑' n : ℕ, r ^ n :=
-      mul_le_mul_of_nonneg_left (hsum.sum_le_tsum _ (fun _ _ => pow_nonneg hr0 _)) (by positivity)
+      mul_le_mul_of_nonneg_left ((summable_geometric_of_lt_one hr0 hr1).sum_le_tsum _ (fun _ _ => pow_nonneg hr0 _)) (by positivity)
     _ = _ := by rw [tsum_geometric_of_lt_one hr0 hr1]; dsimp [r]; ring
 
-private lemma series_of_count {α : Type*} (H : α → ℝ) (a : ℝ) (ha : 1 < a)
+private lemma series_of_count (a : ℝ) (ha : 1 < a)
     (hH : ∀ x, 1 ≤ H x)
     (hcount : ∃ C : ℝ, 0 < C ∧ ∀ R : ℝ, 1 ≤ R → {x : α | H x ≤ R}.Finite ∧
       ({x : α | H x ≤ R}.ncard : ℝ) ≤ C * R ^ 2) :
@@ -123,12 +132,13 @@ private lemma series_of_count {α : Type*} (H : α → ℝ) (a : ℝ) (ha : 1 < 
       exact y.2.le)
     simpa [e, Finset.sum_map] using hb
 
+end
+
 theorem relativeHeight_summable_tail (F : Type) [Field F] [NumberField F]
     (a : ℝ) (ha : 1 < a) :
     Summable (term (Projectivization.mulHeight (K := F)) a) ∧
       ∃ C : ℝ, 0 < C ∧ ∀ B : ℝ, 1 ≤ B →
-        tail (Projectivization.mulHeight (K := F)) a B ≤ C * B ^ (2 - 2 * a) := by
-  exact series_of_count _ a ha Projectivization.one_le_mulHeight
+        tail (Projectivization.mulHeight (K := F)) a B ≤ C * B ^ (2 - 2 * a) := series_of_count _ a ha Projectivization.one_le_mulHeight
     (KPChamberProjectiveCount.relativeHeight_count F)
 
 end

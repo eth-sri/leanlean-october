@@ -21,7 +21,7 @@ theorem sign_projection (D : RayCoset.Data K) (x : RayCoset.X D) :
   induction x using Quotient.inductionOn with
   | h α =>
     change ((2 : ℂ) ^ NumberField.InfinitePlace.nrRealPlaces K)⁻¹ *
-        (∑ δ ∈ (Finset.univ : Finset (RayCoset.RealPlaces K)).powerset,
+        (∑ δ ∈ Finset.univ.powerset,
           (RayCoset.representativeSign δ α.val : ℂ)) =
         if RayCoset.TotallyPositive K α.val then 1 else 0
     simp only [RayCoset.representativeSign, Complex.ofReal_prod]
@@ -38,7 +38,7 @@ theorem sign_projection (D : RayCoset.Data K) (x : RayCoset.X D) :
     · rw [if_neg hp]
       obtain ⟨φ, hφ⟩ : ∃ φ : K →+* ℝ, ¬ 0 < φ (α.val : K) := by
         simpa only [RayCoset.TotallyPositive, not_forall] using hp
-      let ψ : K →+* ℂ := Complex.ofRealHom.comp φ
+      let ψ := Complex.ofRealHom.comp φ
       have hψ : NumberField.ComplexEmbedding.IsReal ψ := by
         ext y
         simp [ψ, NumberField.ComplexEmbedding.conjugate]
@@ -49,13 +49,10 @@ theorem sign_projection (D : RayCoset.Data K) (x : RayCoset.X D) :
         apply Complex.ofReal_injective
         change ((NumberField.InfinitePlace.embedding_of_isReal v.property) y : ℂ) = _
         rw [NumberField.InfinitePlace.embedding_of_isReal_apply]
-        change NumberField.InfinitePlace.embedding (NumberField.InfinitePlace.mk ψ) y = _
         rw [NumberField.InfinitePlace.embedding_mk_eq_of_isReal hψ]
         rfl
-      have hn : φ (α.val : K) ≠ 0 :=
-        (map_ne_zero φ).mpr (NumberField.RingOfIntegers.coe_ne_zero_iff.mpr α.property.2)
       have hz : (1 + (Real.sign (RayCoset.realEmbedding K v (α.val : K)) : ℂ)) = 0 := by
-        rw [hv, Real.sign_of_neg (lt_of_le_of_ne (not_lt.mp hφ) hn)]
+        rw [hv, Real.sign_of_neg (lt_of_le_of_ne (not_lt.mp hφ) ((map_ne_zero φ).mpr (NumberField.RingOfIntegers.coe_ne_zero_iff.mpr α.property.2)))]
         norm_num
       rw [Finset.prod_eq_zero (Finset.mem_univ v) hz, mul_zero]
 
@@ -81,16 +78,12 @@ theorem rayParityProjection {K : Type} [Field K] [NumberField K]
         ∑ δ ∈ (Finset.univ : Finset (RayCoset.RealPlaces K)).powerset,
           RayCoset.Zδ D δ s) := by
   classical
-  let A : ℂ := ((2 : ℂ) ^ NumberField.InfinitePlace.nrRealPlaces K)⁻¹
+  let A := ((2 : ℂ) ^ NumberField.InfinitePlace.nrRealPlaces K)⁻¹
   let S := (Finset.univ : Finset (RayCoset.RealPlaces K)).powerset
-  let W : RayCoset.X D → ℂ := fun x => (RayCoset.normWeight D x : ℂ) ^ (-s)
-  have hsum : HasSum
-      (fun x => A * ∑ δ ∈ S, RayCoset.signedOrbitWeight D δ s x)
-      (A * ∑ δ ∈ S, RayCoset.Zδ D δ s) :=
-    (hasSum_sum (fun δ _ => RayCoset.hasSum_signedOrbitWeight D δ s hs)).mul_left A
+  let W := fun x => (RayCoset.normWeight D x : ℂ) ^ (-s)
   have hind : HasSum ((RayCoset.positiveOrbits D).indicator W)
       (A * ∑ δ ∈ S, RayCoset.Zδ D δ s) := by
-    apply hsum.congr_fun
+    apply ((hasSum_sum (fun δ _ => RayCoset.hasSum_signedOrbitWeight D δ s hs)).mul_left A).congr_fun
     intro x
     change (RayCoset.positiveOrbits D).indicator W x =
       A * ∑ δ ∈ S, (RayCoset.signδ D δ x : ℂ) * W x
@@ -98,16 +91,12 @@ theorem rayParityProjection {K : Type} [Field K] [NumberField K]
     rw [RayParity.Projection.sign_projection D x]
     by_cases hx : x ∈ RayCoset.positiveOrbits D <;>
       simp [Set.indicator_apply, hx]
-  have hpos : HasSum (fun x : RayCoset.Xpos D => W x.val)
-      (A * ∑ δ ∈ S, RayCoset.Zδ D δ s) :=
-    hasSum_subtype_iff_indicator.mpr hind
-  let e := RayCoset.positiveIdealEquiv D c hc
   have hclass : HasSum
       (fun I : {I : Ideal (𝓞 K) | rayIdealClass K D.m D.modulus_ne_bot I = some c} =>
         (Ideal.absNorm I.val : ℂ) ^ (-s))
       (A * ∑ δ ∈ S, RayCoset.Zδ D δ s) := by
-    apply e.hasSum_iff.mp
-    apply hpos.congr_fun
+    apply (RayCoset.positiveIdealEquiv D c hc).hasSum_iff.mp
+    apply (hasSum_subtype_iff_indicator.mpr hind).congr_fun
     intro x
     change (Ideal.absNorm (RayCoset.orbitIdeal D x.val) : ℂ) ^ (-s) = W x.val
     dsimp [W]

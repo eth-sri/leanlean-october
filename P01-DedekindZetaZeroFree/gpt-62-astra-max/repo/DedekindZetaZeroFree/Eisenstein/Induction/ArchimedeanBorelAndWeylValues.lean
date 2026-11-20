@@ -11,7 +11,7 @@ open scoped NumberField Classical NNReal
 open NumberField
 namespace DedekindZetaZeroFree.CompactPeriodAnalyticity.ArchValue
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-open _root_.DedekindZetaZeroFree.KPGlobalTorusFiniteStagesCofinality renaming arch_center → arch_center
+open _root_.DedekindZetaZeroFree.KPGlobalTorusFiniteStagesCofinality (arch_center)
 
 theorem source_arch_character (z : KPGlobalTorusFunctionData.TorusArch F) :
     ∃ r : KPGlobalCenterRationalCharacter.R F ζ hζ,
@@ -68,9 +68,9 @@ theorem actual_arch_single_diagonal (w : InfinitePlace F) (y : ℂˣ) :
     rw [← KPStandardLocalRootLifts.A_one F ζ hζ (Sum.inr q)]
     congr 1
 
+variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (f : KPLiteralRaw.Flat F ζ hζ K) (s : ℂ)
+
 theorem literal_arch_borel_covariance
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ))
-    (f : KPLiteralRaw.Flat F ζ hζ K) (s : ℂ)
     (z : KPGlobalTorusFunctionData.TorusArch F)
     (hz : z ∈ KPGlobalTorusFunctionData.torusArchDomain F)
     (x : KPAdeles F) (g : KPLiteralRaw.G F ζ hζ) :
@@ -100,8 +100,6 @@ theorem literal_arch_borel_covariance
   ring
 
 theorem literal_single_arch_borel_covariance
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ))
-    (f : KPLiteralRaw.Flat F ζ hζ K) (s : ℂ)
     (w : InfinitePlace F) (y : ℂˣ) (g : KPLiteralRaw.G F ζ hζ) :
     f.val s (KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ
       (Function.update (fun _ => (1 : ℂ)) w (y : ℂ)) * g) =
@@ -126,8 +124,6 @@ theorem literal_single_arch_borel_covariance
   simpa only [KPGlobalTorusFunctionData.torusArchChart, hn, mul_one, hp] using hc
 
 theorem literal_single_arch_weyl_value
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ))
-    (f : KPLiteralRaw.Flat F ζ hζ K) (s : ℂ)
     (w : InfinitePlace F) (y : ℂˣ) (x : KPAdeles F) (g : KPLiteralRaw.G F ζ hζ) :
     f.val s (KPRationalAdelicSplitting.pglW F ζ hζ *
       KPGlobalTorusFunctionData.N F ζ hζ x *
@@ -143,7 +139,6 @@ theorem literal_single_arch_weyl_value
   let a := KPRationalAdelicSplitting.localIdele F (Sum.inl w)
     (Units.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex
       (KPHilbert.infinite_isComplex F ζ hζ w)).symm.toMonoidHom y)
-  have ha := actual_arch_single_diagonal F ζ hζ w y
   have hn := KPRationalAdelicSplitting.quotient_upper_diagonal F ζ hζ x a
   change KPGlobalTorusFunctionData.N F ζ hζ x * KPRationalAdelicSplitting.pglA F ζ hζ a =
     KPRationalAdelicSplitting.pglA F ζ hζ a *
@@ -155,16 +150,14 @@ theorem literal_single_arch_weyl_value
       KPRationalAdelicSplitting.pglA F ζ hζ a⁻¹ *
         (KPRationalAdelicSplitting.pglW F ζ hζ *
           KPGlobalTorusFunctionData.N F ζ hζ (x * (↑a⁻¹ : KPAdeles F))) := by
-    rw [ha]
-    change _ * _ * KPRationalAdelicSplitting.pglA F ζ hζ a = _
+    rw [(actual_arch_single_diagonal F ζ hζ w y)]
     rw [mul_assoc, hn, ← mul_assoc,
       KPRationalAdelicSplitting.quotient_weyl_diagonal, mul_assoc]
   rw [← mul_assoc, ht, mul_assoc]
   have hai : KPRationalAdelicSplitting.pglA F ζ hζ a⁻¹ =
       KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ
         (Function.update (fun _ => (1 : ℂ)) w (↑(y⁻¹) : ℂ)) := by
-    have hh := actual_arch_single_diagonal F ζ hζ w y⁻¹
-    simpa only [a, KPRationalAdelicSplitting.localIdele, map_inv] using hh.symm
+    simpa only [a, KPRationalAdelicSplitting.localIdele, map_inv] using (actual_arch_single_diagonal F ζ hζ w y⁻¹).symm
   rw [hai, literal_single_arch_borel_covariance]
   congr 1
   have hi : ‖((y⁻¹ : ℂˣ) : ℂ)‖ ^ 2 = (‖(y : ℂ)‖ ^ 2)⁻¹ := by

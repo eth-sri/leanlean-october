@@ -29,10 +29,9 @@ variable (F : Type) [Field F] [NumberField F]
     simpa only [KPRankOneOpenCellKernel.signedWeyl,
       KPRankOneOpenCellKernel.signedWeyl_eq_prescribed_signed, KPPGLLocalCover.signedW] using
       KPPGLLocalCover.signedW_sq F ζ hζ (Sum.inr q)
-  have hi : S.borel.liftedW⁻¹ = S.borel.liftedW := inv_eq_of_mul_eq_one_left (by simpa [pow_two] using hs)
   apply S.borel.torus_injective
   apply Subtype.ext
-  rw [S.borel.weyl_from_lift, S.borel.weyl_from_lift, hi]
+  rw [S.borel.weyl_from_lift, S.borel.weyl_from_lift, (inv_eq_of_mul_eq_one_left (by simpa [pow_two] using hs))]
   simp only [← mul_assoc]
   have hm : S.borel.liftedW * S.borel.liftedW = 1 := by simpa [pow_two] using hs
   rw [hm, one_mul, mul_assoc, hm, mul_one]
@@ -213,17 +212,23 @@ def diagonalLift (π : (LocalField F q)ˣ) (f : DiagonalValuations) :
     (KPLocalCover.sectionMap F ζ hζ (Sum.inr q)
       (KubotaRankTwo.d (LocalField F q) (π ^ f.1) (π ^ f.2)))
 
-def testSupport (a : ActualCover F ζ hζ q) (m : ℕ) : Set (ActualCover F ζ hζ q) :=
+section
+
+variable (a : ActualCover F ζ hζ q) (m : ℕ)
+
+def testSupport : Set (ActualCover F ζ hζ q) :=
   {g | ∃ (b : BL F ζ hζ q S P) (k : ActualCover F ζ hζ q),
     k ∈ splitCongruenceSet F ζ hζ q m ∧
       g = b * a * k * KPPGLLocalCover.W F ζ hζ (Sum.inr q)}
 
-def IsMinusTest (a : ActualCover F ζ hζ q) (m : ℕ)
+def IsMinusTest
     (f : scalarSections F ζ hζ q S P hP .minus) : Prop :=
   (∀ k ∈ splitCongruenceSet F ζ hζ q m,
     scalarAction F ζ hζ q S P hP .minus k f = f) ∧
   Function.support f.val ⊆ testSupport F ζ hζ q S P a m ∧
   f.val (a * KPPGLLocalCover.W F ζ hζ (Sum.inr q)) = 1
+
+end
 
 def lowShell : Set (LocalField F q) := (valuation (LocalField F q)).integer
 

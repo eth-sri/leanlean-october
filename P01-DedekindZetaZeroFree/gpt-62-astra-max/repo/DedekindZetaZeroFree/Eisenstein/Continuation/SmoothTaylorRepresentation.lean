@@ -12,9 +12,9 @@ open Filter MeasureTheory
 namespace DedekindZetaZeroFree.SharedSource
 open MomentSources EisensteinSmoothGerms KPGlobalResidualConstruction KPGlobalEisensteinData
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
-variable {C : ScalarContinuation R Q} {v : R.A.UnitQuotient}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
+    {C : ScalarContinuation R Q} {v : R.A.UnitQuotient}
 set_option maxHeartbeats 1800000
 set_option backward.isDefEq.respectTransparency false
 
@@ -45,7 +45,7 @@ theorem literal_moving_series_exists
   obtain ⟨M, _⟩ := KPGlobalTorusFiniteStages.compatibleModelData_exists
     F R.A.zeta12 R.A.primitive_zeta12 L
   obtain ⟨μ, _, _, P, ⟨J⟩⟩ := kp_ms_fixed_haar_disintegration
-    F R.A.zeta12 R.A.primitive_zeta12 (Measure.haar : Measure (Group R)) inferInstance
+    F R.A.zeta12 R.A.primitive_zeta12 Measure.haar inferInstance
   exact literal_moving_series F R.A.zeta12 R.A.primitive_zeta12 M μ P J K hK f
 
 theorem regularized_moving_numerator_pin (H : ScalarGerm C v)
@@ -85,7 +85,6 @@ theorem scalarGerm_coherent_moving_series (H : ScalarGerm C v) :
     ∃ (r : ℝ) (N : ℂ → nativeSmoothSpace F R.A.zeta12 R.A.primitive_zeta12)
       (b : ℕ → nativeSmoothSpace F R.A.zeta12 R.A.primitive_zeta12),
       0 < r ∧ r ≤ H.radius ∧
-      Metric.ball (0 : ℂ) r ⊆ KPContinuation.spectralDomain ∧
       (∀ s ∈ Metric.ball (0 : ℂ) r, (N s).val = (H.cleared s : Functions R)) ∧
       SmoothPowerSeriesOn (movingJetMap F R.A.zeta12 R.A.primitive_zeta12) 0 r b N := by
   obtain ⟨q, A, t, hq, hq0, hA, hch, ht, hb, hne, NN, hNa, hclear, bb, hseries⟩ :=
@@ -110,7 +109,7 @@ theorem scalarGerm_coherent_moving_series (H : ScalarGerm C v) :
     fun s => (q s)⁻¹ • NN s
   let b := AnalyticScalarMultiplication.coefficientConvolution
     (cauchyPowerSeries (fun s => (q s)⁻¹) 0 r).coeff bb
-  refine ⟨r, N, b, hr, hrH, hsub.trans hb, ?_, ?_⟩
+  refine ⟨r, N, b, hr, hrH, ?_, ?_⟩
   · intro s hs
     have he := regularized_moving_numerator_pin H q A hq hA hch NN t hNa hclear
       r hrt.le hrH (hsub.trans hb) s hs

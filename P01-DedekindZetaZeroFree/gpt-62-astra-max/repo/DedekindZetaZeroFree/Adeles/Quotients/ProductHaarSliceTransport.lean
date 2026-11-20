@@ -40,8 +40,7 @@ theorem productHaarTransport
   haveI : SFinite μArch := inferInstance
   let μ₀ := Measure.map e (μArch.prod ν₀)
   let c := Measure.haarScalarFactor μ μ₀
-  have hc : c ≠ 0 := (Measure.haarScalarFactor_pos_of_isHaarMeasure μ μ₀).ne'
-  letI : (c • ν₀).IsHaarMeasure := Measure.IsHaarMeasure.nnreal_smul ν₀ hc
+  letI : (c • ν₀).IsHaarMeasure := Measure.IsHaarMeasure.nnreal_smul ν₀ ((Measure.haarScalarFactor_pos_of_isHaarMeasure μ μ₀).ne')
   refine ⟨c • ν₀, inferInstance, ?_⟩
   have heq : (fun p : ArchGroup F × finiteSubgroup F ζ hζ =>
       archimedeanInsertion F ζ hζ p.1 * p.2) = e := by

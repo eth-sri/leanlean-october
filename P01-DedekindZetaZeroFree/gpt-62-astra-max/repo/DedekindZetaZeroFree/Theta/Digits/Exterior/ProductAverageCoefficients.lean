@@ -11,11 +11,11 @@ set_option backward.isDefEq.respectTransparency true
 namespace DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 open MomentSources NumberField IsDedekindDomain ThetaExpansion
 open scoped NumberField Classical
-open _root_.DedekindZetaZeroFree.ThetaBranch renaming exteriorLocalFactor_finite → exteriorLocalFactor_finite
+open _root_.DedekindZetaZeroFree.ThetaBranch (exteriorLocalFactor_finite)
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η)
-variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η)
+    {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
 
 theorem actual_product_average (m : ThetaReflectionData.Row R.A) (x : Fˣ) :
     ThetaExpansion.SignedExpansion.exteriorDigitCoefficient R C m x =
@@ -25,12 +25,11 @@ theorem actual_product_average (m : ThetaReflectionData.Row R.A) (x : Fˣ) :
       localDigitValue R C (exteriorRowPrime R m p) x ((ThetaDigitAverage.residueLifts _).lift p v)) *
     ∏ᶠ p : ThetaBranch.ExteriorPrime R.A, if p ∈ exteriorRows R m then 1 else
       ThetaBranch.sphericalFactor R.A R.probe.allowed R.σ (Characters.psi R) p x := by
-  let off := ∏ᶠ p : ThetaBranch.ExteriorPrime R.A, if p ∈ exteriorRows R m then 1 else
-    ThetaBranch.sphericalFactor R.A R.probe.allowed R.σ (Characters.psi R) p x
   have hs (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property)) :
       (∏ᶠ p : ThetaBranch.ExteriorPrime R.A, ThetaExpansion.SignedExpansion.exteriorDigitFactor R C m x d p) =
       (∏ p : RowPrime R m, localDigitValue R C (exteriorRowPrime R m p) x
-        ((ThetaDigitAverage.residueLifts _).lift p (d p))) * off := by
+        ((ThetaDigitAverage.residueLifts _).lift p (d p))) * (∏ᶠ p : ThetaBranch.ExteriorPrime R.A, if p ∈ exteriorRows R m then 1 else
+          ThetaBranch.sphericalFactor R.A R.probe.allowed R.σ (Characters.psi R) p x) := by
     rw [split_product (exteriorRows R m) _ (finite_support R C m x d), prod_exteriorRows]
     congr 1
     · apply Finset.prod_congr rfl
@@ -47,7 +46,7 @@ theorem actual_product_average (m : ThetaReflectionData.Row R.A) (x : Fˣ) :
   rw [← Finset.sum_mul]
   congr 1
   simp only [digitWeight, ← Finset.prod_mul_distrib]
-  rw [← Fintype.prod_sum (fun (p : RowPrime R m) (v : ThetaDigitAverage.Residue p.val) =>
+  rw [← Fintype.prod_sum (fun p v =>
     sexticFourierMask (ThetaBranch.residueCharacter R.A R.σ (exteriorRowPrime R m p))
       (Characters.psi R (exteriorRowPrime R m p)) (ThetaDigitAverage.rowExponent R.A m.val p.val) v *
       localDigitValue R C (exteriorRowPrime R m p) x ((ThetaDigitAverage.residueLifts _).lift p v))]

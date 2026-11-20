@@ -22,11 +22,11 @@ namespace DedekindZetaZeroFree.PrincipalCorrection
 set_option autoImplicit false
 
 open LocalFiniteSums CorrectionFactors InitialSeparatedEuler
-open FrequencyCharacterMasks MaskedHeckeMeromorphic MeromorphicSeparationGluing
+open FrequencyCharacterMasks MaskedHeckeMeromorphic
 
 variable {F : Type} [Field F] [NumberField F]
-variable {A : SArithmeticData F} {σ : F →+* ℂ}
-variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
+    {A : SArithmeticData F} {σ : F →+* ℂ}
+    {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 theorem probe_arithmetic_compatibility
     (C : A.GeneralArithmeticContext σ η hS)
@@ -43,7 +43,6 @@ theorem probe_arithmetic_compatibility
       apply Units.ext
       exact (B.sameGenerator I).symm
     rw [hu]
-    change ThetaReflectionData.rationalClass A (P.allowed.generator I) ∈ C.correction.B
     rw [← B.sameComplement]
     exact P.allowed.allowed I
   · intro I a ha
@@ -80,12 +79,9 @@ theorem probe_arithmetic_compatibility
     rw [hχ]
     congr 1
     rw [B.fieldTrace]
-    have hout : Ideal.Quotient.mk (Ideal.span {a})
-        ((FiniteTransform.canonicalLifts A.R.toSubring a).val x) = x :=
-      (FiniteTransform.canonicalLifts A.R.toSubring a).property x
     have hE : E.toEquiv x = Ideal.Quotient.mk (A.extendIdeal c.val)
         ((FiniteTransform.canonicalLifts A.R.toSubring a).val x) := by
-      conv_lhs => rw [← hout]
+      conv_lhs => rw [← ((FiniteTransform.canonicalLifts A.R.toSubring a).property x)]
       exact Ideal.quotientEquivAlgOfEq_mk A.R ha.2 _
     rw [hE, SArithmeticData.residueTraceCharacter_apply]
     change (A.fieldTraceCharacter ((1 : F) *
@@ -101,18 +97,9 @@ theorem probe_arithmetic_compatibility
 
 theorem principal_specialization (C : A.GeneralArithmeticContext σ η hS)
     (U : Frequency C) (hU : U.u = 1) :
-    (∀ (p : ExteriorPrime A) (s : ℂ), s ∈ principalRegion →
-      localFactor C U p s 1 (1 / 6) = h_p C p s ∧
-      h_p C p s =
-        (1 - qPower p (-2)) *
-          (1 - (1 - qPower p (-1)) * η p.val.asIdeal * qPower p (-s) -
-            vartheta C p ^ 6 * qPower p (2 - 6 * s)) /
-          ((1 - vartheta C p ^ 6 * qPower p (3 - 6 * s)) *
-            (1 - η p.val.asIdeal * qPower p (-s)))) ∧
     (∀ s : ℂ, (499 / 500 : ℝ) - 1 / 100000 < s.re →
       ∃ hm : Multipliable (fun p : ExteriorPrime A => localFactor C U p s 1 (1 / 6)),
         H_u C U s 1 (1 / 6) hm = H_eta C s) := by
-  refine ⟨fun p s hs => ⟨principal_localFactor_eq_h_p C U hU p s hs, rfl⟩, ?_⟩
   intro s hs
   exact principal_product_specialization C U hU s hs
 

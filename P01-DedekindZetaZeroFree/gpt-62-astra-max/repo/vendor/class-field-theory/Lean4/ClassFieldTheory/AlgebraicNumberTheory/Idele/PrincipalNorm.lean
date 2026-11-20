@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -29,7 +25,6 @@ open scoped NumberField RestrictedProduct NNReal WithZero
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -71,8 +66,7 @@ theorem archimedeanNorm_principalIdele (x : Kˣ) :
   have hnorm_ne_zero :
       (Algebra.norm ℚ) (x : K) ≠ 0 :=
     Algebra.norm_ne_zero_iff.mpr (Units.ne_zero x)
-  have habs_ne_zero :
-      (|(Algebra.norm ℚ) (x : K)| : ℚ) ≠ 0 :=
+  have habs_ne_zero :=
     abs_ne_zero.mpr hnorm_ne_zero
   have hcast_ne_zero :
       ((|(Algebra.norm ℚ) (x : K)| : ℚ) : ℝ) ≠ 0 := by
@@ -106,12 +100,9 @@ def absoluteNorm :
           ((FractionalIdeal.absNorm
             (I : FractionalIdeal
               (nonZeroDivisors (𝓞 K)) K) : ℚ) : ℝ) = 0 at hr
-        have hq : FractionalIdeal.absNorm
-            (I : FractionalIdeal
-              (nonZeroDivisors (𝓞 K)) K) = 0 := by
-          exact_mod_cast hr
-        exact Units.ne_zero I
-          (FractionalIdeal.absNorm_eq_zero_iff.mp hq))
+        refine Units.ne_zero I
+          (FractionalIdeal.absNorm_eq_zero_iff.mp ?_)
+        exact_mod_cast hr)
   map_one' := by
     apply Units.ext
     apply NNReal.eq
@@ -123,44 +114,39 @@ def absoluteNorm :
     norm_num
   map_mul' I J := by
     apply Units.ext
+    let FractionalIdeal₀ := FractionalIdeal (nonZeroDivisors (𝓞 K)) K
     change
       (⟨(FractionalIdeal.absNorm
           ((I * J : FractionalIdealGroup K) :
-            FractionalIdeal (nonZeroDivisors (𝓞 K)) K) : ℝ),
+            FractionalIdeal₀) : ℝ),
         Rat.cast_nonneg.mpr
           (FractionalIdeal.absNorm_nonneg
             ((I * J : FractionalIdealGroup K) :
-              FractionalIdeal (nonZeroDivisors (𝓞 K)) K))⟩ : ℝ≥0) =
+              FractionalIdeal₀))⟩ : ℝ≥0) =
       ⟨(FractionalIdeal.absNorm
-          (I : FractionalIdeal
-            (nonZeroDivisors (𝓞 K)) K) : ℝ),
+          (I : FractionalIdeal₀) : ℝ),
         Rat.cast_nonneg.mpr
           (FractionalIdeal.absNorm_nonneg
-            (I : FractionalIdeal
-              (nonZeroDivisors (𝓞 K)) K))⟩ *
+            (I : FractionalIdeal₀))⟩ *
       ⟨(FractionalIdeal.absNorm
-          (J : FractionalIdeal
-            (nonZeroDivisors (𝓞 K)) K) : ℝ),
+          (J : FractionalIdeal₀) : ℝ),
         Rat.cast_nonneg.mpr
           (FractionalIdeal.absNorm_nonneg
-            (J : FractionalIdeal
-              (nonZeroDivisors (𝓞 K)) K))⟩
+            (J : FractionalIdeal₀))⟩
     apply NNReal.eq
     change
       ((FractionalIdeal.absNorm
         ((I * J : FractionalIdealGroup K) :
-          FractionalIdeal (nonZeroDivisors (𝓞 K)) K) : ℚ) : ℝ) =
+          FractionalIdeal₀) : ℚ) : ℝ) =
       ((FractionalIdeal.absNorm
-        (I : FractionalIdeal
-          (nonZeroDivisors (𝓞 K)) K) : ℚ) : ℝ) *
+        (I : FractionalIdeal₀) : ℚ) : ℝ) *
       ((FractionalIdeal.absNorm
-        (J : FractionalIdeal
-          (nonZeroDivisors (𝓞 K)) K) : ℚ) : ℝ)
+        (J : FractionalIdeal₀) : ℚ) : ℝ)
     norm_cast
-    simpa only [Units.val_mul] using
+    simpa using
       (map_mul FractionalIdeal.absNorm
-        (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K)
-        (J : FractionalIdeal (nonZeroDivisors (𝓞 K)) K))
+        I
+        J)
 
 @[simp]
 theorem absoluteNorm_prime (v : HeightOneSpectrum (𝓞 K)) :
@@ -221,9 +207,6 @@ theorem absoluteNorm_eq_fractionalIdealAbsoluteNorm
     (a : FiniteIdeleGroup K) :
     absoluteNorm a =
       FractionalIdealGroup.absoluteNorm (fractionalIdeal a) := by
-  change divisorNorm (valuationVector a) =
-    FractionalIdealGroup.absoluteNorm
-      (FractionalIdealGroup.factorization (valuationVector a))
   exact (FractionalIdealGroup.absoluteNorm_factorization
     (valuationVector a)).symm
 
@@ -289,19 +272,6 @@ theorem absoluteNorm_mk (a : IdeleGroup K) :
 /-- The norm-one idele classes. -/
 def normOneSubgroup : Subgroup (IdeleClassGroup K) :=
   (absoluteNorm (K := K)).ker
-
-/-- Pulling the norm-one idele classes back to the idele group recovers
-exactly the norm-one ideles. -/
-theorem comap_normOneSubgroup :
-    Subgroup.comap
-      (QuotientGroup.mk' (IdeleGroup.principalSubgroup K))
-      (normOneSubgroup (K := K)) =
-        IdeleGroup.normOneSubgroup (K := K) := by
-  ext a
-  change absoluteNorm
-      (QuotientGroup.mk' (IdeleGroup.principalSubgroup K) a) = 1 ↔
-    IdeleGroup.absoluteNorm a = 1
-  rw [absoluteNorm_mk]
 
 @[simp]
 theorem mk_mem_normOneSubgroup_iff (a : IdeleGroup K) :

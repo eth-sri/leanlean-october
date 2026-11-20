@@ -13,10 +13,10 @@ namespace DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 open ResidualSphericalGeometry KPContSectorSmoothFramesSupport
 open KPContSectorLineL2Isometry KPContSectorFixedPushforwardSupport
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (V : KPMsFixedHaarDisintegration.Level F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (V : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 theorem represented_original_memLp
     (Z : smoothSections F ζ hζ V R P H)
@@ -25,10 +25,7 @@ theorem represented_original_memLp
     MemLp (originalScalar F ζ hζ V R P H Z) 2 R.quotientHaar := by
   obtain ⟨hm, _⟩ := hz
   rw [scalarRepresentative_eq_symm] at hm
-  have hp : MeasurePreserving (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ V)
-      R.quotientHaar (coveredMeasure F ζ hζ R V) :=
-    ⟨(KPContSectorQuotientRelationsComparison.piTilde_continuous F ζ hζ V).measurable,rfl⟩
-  exact hm.comp_measurePreserving hp
+  exact hm.comp_measurePreserving (⟨(KPContSectorQuotientRelationsComparison.piTilde_continuous F ζ hζ V).measurable,rfl⟩)
 
 theorem original_pairing_eq_inner
     (Z T : smoothSections F ζ hζ V R P H)
@@ -58,10 +55,8 @@ theorem original_pairing_eq_inner
     dsimp [u]
     rw [scalarRepresentative_eq_symm]
     rfl
-  have hj := (hZ.star.integrable_mul hT).aestronglyMeasurable
-  have hm := integral_map
-    (KPContSectorQuotientRelationsComparison.piTilde_continuous F ζ hζ V).aemeasurable hj
-  simpa only [coveredMeasure, s, u, hs, hu, originalScalar, Function.comp_def, Pi.mul_apply, Pi.star_apply] using hm.symm
+  simpa only [coveredMeasure, s, u, hs, hu, originalScalar, Function.comp_def, Pi.mul_apply, Pi.star_apply] using (integral_map
+    (KPContSectorQuotientRelationsComparison.piTilde_continuous F ζ hζ V).aemeasurable ((hZ.star.integrable_mul hT).aestronglyMeasurable)).symm
 
 theorem original_pairing_zero_of_reverse_inner_zero
     (Z T : smoothSections F ζ hζ V R P H)
@@ -72,8 +67,6 @@ theorem original_pairing_zero_of_reverse_inner_zero
     (∫ x, star (originalScalar F ζ hζ V R P H Z x) *
       originalScalar F ζ hζ V R P H T x ∂ R.quotientHaar) = 0 := by
   rw [original_pairing_eq_inner F ζ hζ V R P H Z T z t hz ht]
-  change inner ℂ (z : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R V)
-    (t : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R V) = 0
   change inner ℂ (t : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R V)
     (z : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R V) = 0 at hi
   exact inner_eq_zero_symm.mp hi

@@ -19,7 +19,7 @@ theorem common_disks_imply_smooth_holomorphic {n : ℕ} (B : LocalBall n)
   intro z₀ hz₀
   obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.mp hO z₀ hz₀
   have hhalf : 0 < ε / 2 := by positivity
-  have hclosed : Metric.closedBall z₀ (ε / 2) ⊆ O :=
+  have hclosed :=
     (Metric.closedBall_subset_ball (by linarith : ε / 2 < ε)).trans hball
   exact ⟨ε / 2, hhalf, Metric.ball_subset_closedBall.trans hclosed,
     hseries z₀ (ε / 2) hhalf hclosed⟩

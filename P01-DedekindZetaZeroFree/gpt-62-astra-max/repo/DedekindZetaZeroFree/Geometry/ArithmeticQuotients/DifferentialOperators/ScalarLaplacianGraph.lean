@@ -51,41 +51,35 @@ def closedHighEnds (T : ℝ) : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U) :=
 def core : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U) :=
   Set.univ \ highEnds F ζ hζ hF U a a.threshold
 
-def scalarLift (r : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ) (i : Fin a.componentCount) :
+section
+
+variable (r : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ) (i : Fin a.componentCount)
+
+def scalarLift :
     Coordinates F → ℂ :=
   fun p => (r (basePoint F ζ hζ hF U a i (toArch F p)) : ℂ)
 
-def scalarGradientNorm (r : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
-    (i : Fin a.componentCount) (x : Arch F) : ℝ :=
+def scalarGradientNorm (x : Arch F) : ℝ :=
   Real.sqrt (∑ j : Fin (KPCuspLogShape.dimension F), ∑ k : Fin 3,
     ‖HyperbolicChart.differential (KPCuspLogShape.dimension F)
       (scalarLift F ζ hζ hF U a r i) (fromArch F x) j k‖ ^ 2)
 
-def scalarLaplacian (r : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
-    (i : Fin a.componentCount) (x : Arch F) : ℂ :=
+def scalarLaplacian (x : Arch F) : ℂ :=
   HyperbolicChart.laplacian (KPCuspLogShape.dimension F)
     (scalarLift F ζ hζ hF U a r i) (fromArch F x)
+
+end
 
 structure Cutoffs where
   rho : ℕ → KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ
   smooth : ∀ n i, ContDiff ℝ (⊤ : ℕ∞)
     (fun x : Arch F => rho n (basePoint F ζ hζ hF U a i x))
-  compact_support : ∀ n, HasCompactSupport (rho n)
-  nonnegative : ∀ n x, 0 ≤ rho n x
-  le_one : ∀ n x, rho n x ≤ 1
 
   height_bound : ℕ
-  above_atlas_threshold : a.threshold < (height_bound : ℝ)
-  on_core : ∀ n, height_bound ≤ n → ∀ x ∈ core F ζ hζ hF U a, rho n x = 1
   on_sublevel : ∀ n, height_bound ≤ n →
     ∀ x ∉ highEnds F ζ hζ hF U a n, rho n x = 1
   above_next : ∀ n, height_bound ≤ n →
     ∀ x ∈ closedHighEnds F ζ hζ hF U a (n+1), rho n x = 0
-  bound : ℝ
-  bound_nonnegative : 0 ≤ bound
-  derivative_bound : ∀ n i x,
-    scalarGradientNorm F ζ hζ hF U a (rho n) i x +
-      ‖scalarLaplacian F ζ hζ hF U a (rho n) i x‖ ≤ bound
 
 end DedekindZetaZeroFree.KPCuspCutoffGraphApproximation
 

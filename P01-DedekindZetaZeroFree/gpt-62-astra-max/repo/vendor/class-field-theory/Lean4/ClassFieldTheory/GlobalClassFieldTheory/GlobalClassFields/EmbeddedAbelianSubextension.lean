@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -57,11 +53,7 @@ noncomputable def numberFieldEmbeddedAbelianSubextension
     { toFiniteGaloisExtension :=
         numberFieldEmbeddedFiniteGaloisSubextension K E j
       commutative := by
-        let e :
-            (numberFieldEmbeddedFiniteGaloisSubextension K E j).extensionQuotient ≃*
-              Gal(E / K) := by
-          exact
-            numberFieldEmbeddedExtensionQuotientEquivGaloisGroup
+        let e := numberFieldEmbeddedExtensionQuotientEquivGaloisGroup
               K E j
         exact
           { is_comm.comm := fun x y => by

@@ -13,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -34,17 +29,16 @@ namespace ClassFieldTheory.HilbertPairing
 
 universe u
 
- theorem powerClass_pow_order
-    (K : Type u) [Field K] (n : ℕ+)
+ section
+
+variable (K : Type u) [Field K] (n : ℕ+)
+
+theorem powerClass_pow_order
     (a : PowerClassGroup K n) : a ^ (n : ℕ) = 1 := by
   obtain ⟨x, rfl⟩ := QuotientGroup.mk_surjective a
-  change (QuotientGroup.mk' (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range x) ^
-      (n : ℕ) = 1
-  rw [← map_pow]
   exact (QuotientGroup.eq_one_iff _).2 ⟨x, rfl⟩
 
- def characterUnitsEquiv
-    (K : Type u) [Field K] (n : ℕ+) :
+ def characterUnitsEquiv :
     (PowerClassGroup K n →* rootsOfUnity (n : ℕ) K) ≃
       (PowerClassGroup K n →* Kˣ) where
   toFun f := (rootsOfUnity (n : ℕ) K).subtype.comp f
@@ -58,6 +52,8 @@ universe u
   right_inv f := by
     ext a
     rfl
+
+end
 
 /-- A finite nondegenerate pairing on power classes is perfect: its adjoint
 map onto the full group of `μₙ`-valued characters is bijective. -/
@@ -74,31 +70,27 @@ theorem IsNondegenerate.bijective
         obtain ⟨ζ, hζ⟩ := hmu
         exact ⟨ζ, (mem_primitiveRoots n.pos).1 hζ⟩
       cyc := inferInstance }
-  have hExp : Monoid.exponent (PowerClassGroup K n) ∣ (n : ℕ) :=
-    Monoid.exponent_dvd_of_forall_pow_eq_one
-      (powerClass_pow_order K n)
-  let : HasEnoughRootsOfUnity K
-      (Monoid.exponent (PowerClassGroup K n)) :=
-    HasEnoughRootsOfUnity.of_dvd K hExp
+  let :=
+    HasEnoughRootsOfUnity.of_dvd K (Monoid.exponent_dvd_of_forall_pow_eq_one
+      (powerClass_pow_order K n))
   have hCard : Nat.card (PowerClassGroup K n) =
       Nat.card (PowerClassGroup K n →* rootsOfUnity (n : ℕ) K) := by
     calc
-      Nat.card (PowerClassGroup K n) =
+      _ =
           Nat.card (PowerClassGroup K n →* Kˣ) :=
         (CommGroup.card_monoidHom_of_hasEnoughRootsOfUnity
           (PowerClassGroup K n) K).symm
       _ = Nat.card (PowerClassGroup K n →* rootsOfUnity (n : ℕ) K) :=
         (Nat.card_congr (characterUnitsEquiv K n)).symm
-  have : Finite
-      (PowerClassGroup K n →* rootsOfUnity (n : ℕ) K) :=
+  have :=
     Nat.finite_of_card_ne_zero (by
       rw [← hCard]
-      exact (Nat.card_pos (α := PowerClassGroup K n)).ne')
+      exact (Nat.card_pos).ne')
   have hinj : Function.Injective B := by
     intro a b hab
     have hOne : B (a * b⁻¹) = 1 := by
       rw [map_mul, map_inv, hab, mul_inv_cancel]
-    have hEq : a * b⁻¹ = 1 := hB.1 _ (fun c => DFunLike.congr_fun hOne c)
+    have hEq := hB.1 _ (fun c => DFunLike.congr_fun hOne c)
     exact (mul_inv_eq_one).mp hEq
   exact (Nat.bijective_iff_injective_and_card B).2 ⟨hinj, hCard⟩
 

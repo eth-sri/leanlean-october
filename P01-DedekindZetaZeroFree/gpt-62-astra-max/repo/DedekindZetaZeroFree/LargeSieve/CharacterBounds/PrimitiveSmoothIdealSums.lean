@@ -20,12 +20,10 @@ theorem initial_primitive_smooth_sum
           ‖initialTheta F η X‖ ≤ A * (Ideal.absNorm f : ℝ) ^ ((1 : ℝ) / 2 + δ) := by
   obtain ⟨A, hA, hb⟩ := initial_primitive_sqrt_bound F hTC
   refine ⟨A, hA, fun f hf η hprim hnp X hX => ?_⟩
-  have h := hb f hf η hprim hnp X hX
   have hN : (1 : ℝ) ≤ (Ideal.absNorm f : ℝ) := by
-    have h0 : Ideal.absNorm f ≠ 0 := fun hz => hf (Ideal.absNorm_eq_zero_iff.mp hz)
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr h0
-  calc ‖initialTheta F η X‖
-      ≤ A * Real.sqrt (Ideal.absNorm f : ℝ) := h
+    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => hf (Ideal.absNorm_eq_zero_iff.mp hz))
+  calc _
+      ≤ A * Real.sqrt (Ideal.absNorm f : ℝ) := (hb f hf η hprim hnp X hX)
     _ ≤ A * (Ideal.absNorm f : ℝ) ^ ((1 : ℝ) / 2 + δ) := by
         refine mul_le_mul_of_nonneg_left ?_ hA
         rw [Real.sqrt_eq_rpow]

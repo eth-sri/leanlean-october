@@ -32,8 +32,13 @@ private theorem quotient_mem {F : Type} [Field F] [NumberField F]
   · rw [← mul_div_assoc]
     exact (le_div_iff₀ hpos).mpr (by rw [mul_comm]; exact hnorm ▸ hr)
 
-private theorem divisor_sum {F : Type} [Field F] [NumberField F]
-    {Z : Type*} [AddCommMonoid Z] (c d : Ideal (𝓞 F)) (N : ℝ) (hd : d ≠ ⊥)
+section
+
+variable {F : Type} [Field F] [NumberField F] {Z : Type*} [AddCommMonoid Z] (c d : Ideal (𝓞 F)) (N : ℝ)
+    (hd : d ≠ ⊥)
+
+include hd in
+private theorem divisor_sum
     (f : Ideal (𝓞 F) → Z) :
     (∑ b ∈ paperShell F c N, if d ∣ b then f b else 0) =
       ∑ u ∈ paperShell F c (N / (Ideal.absNorm d : ℝ)),
@@ -50,8 +55,8 @@ private theorem divisor_sum {F : Type} [Field F] [NumberField F]
     exact ⟨u, Finset.mem_filter.mpr ⟨quotient_mem hd hb, hb⟩, rfl⟩
   · intros; rfl
 
-private theorem divisor_sum_of_support {F : Type} [Field F] [NumberField F]
-    {Z : Type*} [AddCommMonoid Z] (c d : Ideal (𝓞 F)) (N : ℝ) (hd : d ≠ ⊥)
+include hd in
+private theorem divisor_sum_of_support
     (f : Ideal (𝓞 F) → Z) (hf : ∀ b, ¬ d ∣ b → f b = 0) :
     (∑ b ∈ paperShell F c N, f b) =
       ∑ u ∈ paperShell F c (N / (Ideal.absNorm d : ℝ)),
@@ -63,8 +68,8 @@ private theorem divisor_sum_of_support {F : Type} [Field F] [NumberField F]
   · simp [h]
   · simp [h, hf b h]
 
-private theorem divisor_pair_sum {F : Type} [Field F] [NumberField F]
-    {Z : Type*} [AddCommMonoid Z] (c d : Ideal (𝓞 F)) (N : ℝ) (hd : d ≠ ⊥)
+include hd in
+private theorem divisor_pair_sum
     (f : Ideal (𝓞 F) → Ideal (𝓞 F) → Z)
     (hf : ∀ b1 b2, ¬ d ∣ b1 ∨ ¬ d ∣ b2 → f b1 b2 = 0) :
     (∑ b1 ∈ paperShell F c N, ∑ b2 ∈ paperShell F c N, f b1 b2) =
@@ -82,6 +87,8 @@ private theorem divisor_pair_sum {F : Type} [Field F] [NumberField F]
   by_cases h : d * u ∈ paperShell F c N
   · simp only [h, ite_true, true_and]
   · simp [h]
+
+end
 
 private theorem gcd_mul_iff {F : Type} [Field F] [NumberField F]
     {d u v : Ideal (𝓞 F)} (hd : d ≠ ⊥) :
@@ -256,14 +263,7 @@ private lemma exists_sieveWeight_bound (W : ℝ → ℝ) (hW : SieveWeight W) :
   · rw [hW.zero_outside t ht]
     exact hW.nonneg x
 
-private lemma maskedRowWeight_nonneg (W : ℝ → ℝ) (hW : SieveWeight W)
-    (q d : Ideal (𝓞 F)) (M : ℝ) (rowMask : Ideal (𝓞 F) → ℝ)
-    (hrow : ∀ a : Ideal (𝓞 F), 0 ≤ rowMask a ∧ rowMask a ≤ 1) (a : Ideal (𝓞 F)) :
-    0 ≤ maskedRowWeight W q d M rowMask a := by
-  rw [maskedRowWeight]
-  split
-  · exact mul_nonneg (hW.nonneg _) (hrow a).1
-  · exact le_refl 0
+alias GcdTailAndMaskedShellBounds.exists_sieveWeight_bound := exists_sieveWeight_bound
 
 private lemma maskedRowWeight_le (W : ℝ → ℝ) (hW : SieveWeight W)
     (q d : Ideal (𝓞 F)) (M : ℝ) (rowMask : Ideal (𝓞 F) → ℝ)
@@ -278,17 +278,13 @@ private lemma rowSum_sq_le {c : Ideal (𝓞 F)}
     (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (T : ℝ)
     (lam : Ideal (𝓞 F) → ℂ) (a : Ideal (𝓞 F)) :
     ‖rowSum Q T lam a‖ ^ 2 ≤ ((paperShell F c T).card : ℝ) * energy F c T lam := by
-  have h2 : (∑ b ∈ paperShell F c T, ‖lam b * (Q.χ b) a‖) ^ 2 ≤
-      ((paperShell F c T).card : ℝ) * ∑ b ∈ paperShell F c T, ‖lam b * (Q.χ b) a‖ ^ 2 :=
-    sq_sum_le_card_mul_sum_sq
   have h3 : ∑ b ∈ paperShell F c T, ‖lam b * (Q.χ b) a‖ ^ 2 ≤
       ∑ b ∈ paperShell F c T, ‖lam b‖ ^ 2 := by
     refine Finset.sum_le_sum fun b hb => ?_
     have hb' := (mem_paperShell F c T b).mp hb
-    have hchi : ‖(Q.χ b) a‖ ≤ 1 := quadraticFamily_norm_le_one Q hb'.1 hb'.2.1 a
-    have hchi2 : ‖(Q.χ b) a‖ ^ 2 ≤ 1 := by nlinarith [norm_nonneg ((Q.χ b) a), hchi]
     rw [norm_mul, mul_pow]
-    exact mul_le_of_le_one_right (sq_nonneg _) hchi2
+    refine mul_le_of_le_one_right (sq_nonneg _) ?_
+    nlinarith [norm_nonneg ((Q.χ b) a), (quadraticFamily_norm_le_one Q hb'.1 hb'.2.1 a)]
   have h1 : ‖rowSum Q T lam a‖ ^ 2 ≤
       (∑ b ∈ paperShell F c T, ‖lam b * (Q.χ b) a‖) ^ 2 := by
     rw [rowSum]
@@ -296,7 +292,7 @@ private lemma rowSum_sq_le {c : Ideal (𝓞 F)}
   have h4 : ∑ b ∈ paperShell F c T, ‖lam b‖ ^ 2 = energy F c T lam := rfl
   calc ‖rowSum Q T lam a‖ ^ 2
       ≤ ((paperShell F c T).card : ℝ) * ∑ b ∈ paperShell F c T, ‖lam b * (Q.χ b) a‖ ^ 2 :=
-        h1.trans h2
+        h1.trans sq_sum_le_card_mul_sum_sq
     _ ≤ ((paperShell F c T).card : ℝ) * ∑ b ∈ paperShell F c T, ‖lam b‖ ^ 2 :=
         mul_le_mul_of_nonneg_left h3 (Nat.cast_nonneg _)
     _ = ((paperShell F c T).card : ℝ) * energy F c T lam := by rw [h4]
@@ -355,8 +351,7 @@ theorem masked_shell_operator_bound
         rw [Ideal.absNorm_bot]; norm_num
       rw [hbot]
       linarith
-    have hpos := Finset.card_pos.mpr ⟨⊥, hne⟩
-    exact_mod_cast hpos
+    exact_mod_cast (Finset.card_pos.mpr ⟨⊥, hne⟩)
   have hunit : (∑ a ∈ kernelRows F c M K,
       W ((Ideal.absNorm a : ℝ) / M) * ‖(Q.χ ⊤) a‖ ^ 2) ≤ Cb := by
     have h1 : ∑ a ∈ kernelRows F c M K,
@@ -370,8 +365,6 @@ theorem masked_shell_operator_bound
       calc W ((Ideal.absNorm a : ℝ) / M) * ‖(Q.χ ⊤) a‖ ^ 2
           ≤ Wb * 1 := mul_le_mul (hWb _) hsq (sq_nonneg _) hWb0
         _ = Wb := mul_one Wb
-    have hnn : (0 : ℝ) ≤ ((boundedNormIdeals F ((5 / 2) * M)).card : ℝ) * Wb :=
-      mul_nonneg (Nat.cast_nonneg _) hWb0
     calc ∑ a ∈ kernelRows F c M K, W ((Ideal.absNorm a : ℝ) / M) * ‖(Q.χ ⊤) a‖ ^ 2
         ≤ ∑ a ∈ kernelRows F c M K, Wb := h1
       _ = ((kernelRows F c M K).card : ℝ) * Wb := by rw [Finset.sum_const, nsmul_eq_mul]
@@ -379,7 +372,7 @@ theorem masked_shell_operator_bound
           mul_le_mul_of_nonneg_right (by exact_mod_cast hcard_kernel) hWb0
       _ ≤ ((boundedNormIdeals F ((5 / 2) * M)).card : ℝ) * Wb *
             ((boundedNormIdeals F (2 * X)).card : ℝ) :=
-          (mul_one _).symm.le.trans (mul_le_mul_of_nonneg_left hcardX hnn)
+          (mul_one _).symm.le.trans (mul_le_mul_of_nonneg_left hcardX (mul_nonneg (Nat.cast_nonneg _) hWb0))
       _ = Cb := by rw [hCbdef]; ring
   have hB2le : ∀ T : ℝ, T ≤ X → B2 F c Q W M T K ≤ Cb := by
     intro T hTX
@@ -396,8 +389,7 @@ theorem masked_shell_operator_bound
         have hsub : paperShell F c T ⊆ boundedNormIdeals F (2 * X) := by
           intro I hI
           rw [mem_boundedNormIdeals]
-          have hI' := (mem_paperShell F c T I).mp hI
-          linarith [hI'.2.2.2]
+          linarith [((mem_paperShell F c T I).mp hI).2.2.2]
         exact_mod_cast Finset.card_le_card hsub
       rw [Q2]
       calc ∑ a ∈ kernelRows F c M K,
@@ -405,16 +397,13 @@ theorem masked_shell_operator_bound
           ≤ ∑ a ∈ kernelRows F c M K,
               Wb * ((boundedNormIdeals F (2 * X)).card : ℝ) := by
             refine Finset.sum_le_sum fun a _ha => ?_
-            have hcardnn : (0 : ℝ) ≤ ((paperShell F c T).card : ℝ) := Nat.cast_nonneg _
-            have h1 : ‖rowSum Q T lam a‖ ^ 2 ≤
-                ((boundedNormIdeals F (2 * X)).card : ℝ) := by
-              calc ‖rowSum Q T lam a‖ ^ 2
-                  ≤ ((paperShell F c T).card : ℝ) * energy F c T lam := rowSum_sq_le Q T lam a
-                _ ≤ ((paperShell F c T).card : ℝ) * 1 :=
-                    mul_le_mul_of_nonneg_left hlam hcardnn
-                _ = ((paperShell F c T).card : ℝ) := mul_one _
-                _ ≤ ((boundedNormIdeals F (2 * X)).card : ℝ) := hshell_card
-            exact mul_le_mul (hWb _) h1 (sq_nonneg _) hWb0
+            refine mul_le_mul (hWb _) ?_ (sq_nonneg _) hWb0
+            calc _
+              ≤ ((paperShell F c T).card : ℝ) * energy F c T lam := rowSum_sq_le Q T lam a
+            _ ≤ ((paperShell F c T).card : ℝ) * 1 :=
+                mul_le_mul_of_nonneg_left hlam (Nat.cast_nonneg _)
+            _ = ((paperShell F c T).card : ℝ) := mul_one _
+            _ ≤ ((boundedNormIdeals F (2 * X)).card : ℝ) := hshell_card
         _ = ((kernelRows F c M K).card : ℝ) *
               (Wb * ((boundedNormIdeals F (2 * X)).card : ℝ)) := by
             rw [Finset.sum_const, nsmul_eq_mul]
@@ -441,43 +430,34 @@ theorem masked_shell_operator_bound
     refine le_csSup hBdd ?_
     exact Or.inl (Or.inl (Set.mem_singleton_iff.mpr rfl))
   · intro a _ha
-    exact maskedRowWeight_nonneg W hW q d M rowMask hrow a
+    rw [maskedRowWeight]
+    split
+    · exact mul_nonneg (hW.nonneg _) (hrow a).1
+    · exact le_refl 0
   · intro alpha
     by_cases hX1 : 1 ≤ X
-    · have hmem : B2 F c Q W M X K ∈ S := by
-        rw [hSdef]
-        exact Or.inl (Or.inr ⟨X, hX1, le_refl X, rfl⟩)
-      have hUX : B2 F c Q W M X K ≤ U := by
-        rw [hUdef]
-        exact le_csSup hBdd hmem
-      have hwe : weightedEnergy (kernelRows F c M K) (paperShell F c X)
+    · have hwe : weightedEnergy (kernelRows F c M K) (paperShell F c X)
           (maskedRowWeight W q d M rowMask) (fun a u => (Q.χ u) a) alpha ≤
           Q2 F c Q W M X K alpha := by
         simp only [weightedEnergy, Q2, rowSum]
         refine Finset.sum_le_sum fun a _ha => ?_
-        have hle : maskedRowWeight W q d M rowMask a ≤
-            W ((Ideal.absNorm a : ℝ) / M) := maskedRowWeight_le W hW q d M rowMask hrow a
-        have hinner : (∑ u ∈ paperShell F c X, (Q.χ u) a * alpha u) =
-            (∑ u ∈ paperShell F c X, alpha u * (Q.χ u) a) :=
-          Finset.sum_congr rfl fun u _hu => mul_comm _ _
-        rw [hinner]
-        exact mul_le_mul_of_nonneg_right hle (sq_nonneg _)
-      have hQ2 : Q2 F c Q W M X K alpha ≤ B2 F c Q W M X K * energy F c X alpha :=
-        Q2_le_B2_mul_energy Q W M X K alpha
-      have henergy_nn : 0 ≤ energy F c X alpha := by
-        simp only [energy]
-        exact Finset.sum_nonneg fun b _hb => sq_nonneg _
-      calc weightedEnergy (kernelRows F c M K) (paperShell F c X)
-            (maskedRowWeight W q d M rowMask) (fun a u => (Q.χ u) a) alpha
+        rw [(Finset.sum_congr rfl fun u _hu => mul_comm _ _)]
+        exact mul_le_mul_of_nonneg_right (maskedRowWeight_le W hW q d M rowMask hrow a) (sq_nonneg _)
+      calc _
           ≤ Q2 F c Q W M X K alpha := hwe
-        _ ≤ B2 F c Q W M X K * energy F c X alpha := hQ2
-        _ ≤ U * energy F c X alpha := mul_le_mul_of_nonneg_right hUX henergy_nn
-    · have hX1' : X < 1 := lt_of_not_ge hX1
+        _ ≤ B2 F c Q W M X K * energy F c X alpha := (Q2_le_B2_mul_energy Q W M X K alpha)
+        _ ≤ U * energy F c X alpha := mul_le_mul_of_nonneg_right (by
+          rw [hUdef]
+          exact le_csSup hBdd (by
+            rw [hSdef]
+            exact Or.inl (Or.inr ⟨X, hX1, le_refl X, rfl⟩))) (by
+          simp only [energy]
+          exact Finset.sum_nonneg fun b _hb => sq_nonneg _)
+    · have hX1' := lt_of_not_ge hX1
       rcases paperShell_eq_empty_or_singleton_of_lt_one (c := c) hX1' with hshell | hshell
       · simp [weightedEnergy, energy, hshell]
-      · have htop : ⊤ ∈ paperShell F c X := by rw [hshell]; simp
-        have h2X : 1 ≤ 2 * X := by
-          have := (mem_paperShell F c X ⊤).mp htop
+      · have h2X : 1 ≤ 2 * X := by
+          have := (mem_paperShell F c X ⊤).mp (by rw [hshell]; simp)
           simpa using this.2.2.2
         have henergy : energy F c X alpha = ‖alpha ⊤‖ ^ 2 := by
           rw [energy, hshell]; simp
@@ -528,7 +508,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 open scoped NumberField Classical
 
 variable {F : Type} [Field F] [NumberField F]
-variable {c : Ideal (𝓞 F)}
+    {c : Ideal (𝓞 F)}
 
 def GcdPairTransport (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (q : Ideal (𝓞 F)) : Prop :=
@@ -543,26 +523,24 @@ def GcdPairTransport (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
       (Q.χ (d * u)) a * (starRingEnd ℂ) ((Q.χ (d * v)) a) =
         (Q.χ u) a * (starRingEnd ℂ) ((Q.χ v) a)
 
-def B2unitColumn (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
+variable (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
+
+def B2unitColumn (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (W : ℝ → ℝ) (M K : ℝ) : ℝ :=
   ∑ a ∈ kernelRows F c M K,
     W ((Ideal.absNorm a : ℝ) / M) * ‖(Q.χ ⊤) a‖ ^ 2
 
-def B2env (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
+def B2env (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (W : ℝ → ℝ) (M X K : ℝ) : ℝ :=
   sSup ({0} ∪
     {x : ℝ | ∃ T : ℝ, 1 ≤ T ∧ T ≤ X ∧ x = B2 F c Q W M T K} ∪
     {x : ℝ | X < 1 ∧ 1 ≤ 2 * X ∧ x = B2unitColumn F c Q W M K})
 
-def gcdTailEnergy (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (N : ℝ) (d : Ideal (𝓞 F))
+def gcdTailEnergy (N : ℝ) (d : Ideal (𝓞 F))
     (lam : Ideal (𝓞 F) → ℂ) : ℝ :=
   ∑ b ∈ paperShell F c N, if d ∣ b then ‖lam b‖ ^ 2 else 0
 
-def maskedGcdBlock (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
+def maskedGcdBlock (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (W : ℝ → ℝ) (q : Ideal (𝓞 F)) (M N K : ℝ)
     (d : Ideal (𝓞 F)) (g : Q.G) (lam : Ideal (𝓞 F) → ℂ)
     (rowMask : Ideal (𝓞 F) → ℝ) (columnMask : Ideal (𝓞 F) → ℂ) : ℂ :=
@@ -605,8 +583,8 @@ theorem bilinear_gcd_tail
   obtain ⟨C, hC, hcost⟩ := Sieve.GcdTail.support_cost_energy_bound F ε hε
   refine ⟨C, hC, ?_⟩
   intro M N K hM hN hK d hd hdN lam hlam g rowMask columnMask hrow hcol
-  have hNpos : 0 < N := lt_of_lt_of_le zero_lt_one hN
-  have hdpos : 0 < Ideal.absNorm d :=
+  have hNpos := lt_of_lt_of_le zero_lt_one hN
+  have hdpos :=
     Nat.pos_of_ne_zero (fun h => hd (Ideal.absNorm_eq_zero_iff.mp h))
   have hdreal : 0 < (Ideal.absNorm d : ℝ) := by exact_mod_cast hdpos
   have hdge : 1 ≤ (Ideal.absNorm d : ℝ) := by exact_mod_cast hdpos
@@ -616,41 +594,42 @@ theorem bilinear_gcd_tail
   obtain ⟨alpha, halpha, hreindex⟩ := Sieve.GcdTail.quotient_reindex
     F c Q W q htransport M N K hNpos d hd g lam rowMask columnMask hcol
   change Sieve.energy F c X alpha ≤ Sieve.gcdTailEnergy F c N d lam at halpha
+  let maskedRowWeight₀ := Sieve.GcdTail.maskedRowWeight W q d M rowMask
   change Sieve.maskedGcdBlock F c Q W q M N K d g lam rowMask columnMask =
     Sieve.GcdTail.coprimeForm (Sieve.kernelRows F c M K)
-      (Sieve.paperShell F c X) (Sieve.GcdTail.maskedRowWeight W q d M rowMask)
+      (Sieve.paperShell F c X) (maskedRowWeight₀)
       (fun a u => (Q.χ u) a) alpha at hreindex
   have hop := Sieve.GcdTail.masked_shell_operator_bound
     F c Q W hW q d M X K hX rowMask hrow
-  change 0 ≤ Sieve.B2env F c Q W M X K ∧
+  let B2env₀ := Sieve.B2env F c Q W M X K
+  change 0 ≤ B2env₀ ∧
     (∀ a ∈ Sieve.kernelRows F c M K,
-      0 ≤ Sieve.GcdTail.maskedRowWeight W q d M rowMask a) ∧
+      0 ≤ maskedRowWeight₀ a) ∧
     (∀ beta : Ideal (𝓞 F) → ℂ,
       Sieve.GcdTail.weightedEnergy (Sieve.kernelRows F c M K)
-        (Sieve.paperShell F c X) (Sieve.GcdTail.maskedRowWeight W q d M rowMask)
+        (Sieve.paperShell F c X) (maskedRowWeight₀)
         (fun a u => (Q.χ u) a) beta ≤
-        Sieve.B2env F c Q W M X K * Sieve.energy F c X beta) at hop
+        B2env₀ * Sieve.energy F c X beta) at hop
   have hcols : ∀ u ∈ Sieve.paperShell F c X, u ≠ ⊥ := by
     intro u hu
-    have hsf := (Sieve.mem_paperShell F c X u).mp hu
-    simpa [Ideal.zero_eq_bot] using hsf.1.ne_zero
+    simpa [Ideal.zero_eq_bot] using ((Sieve.mem_paperShell F c X u).mp hu).1.ne_zero
   have hcop := Sieve.GcdTail.coprime_form_bound
     (Sieve.kernelRows F c M K) (Sieve.paperShell F c X) hcols
-    (Sieve.GcdTail.maskedRowWeight W q d M rowMask) hop.2.1
-    (fun a u => (Q.χ u) a) (Sieve.B2env F c Q W M X K) hop.1 hop.2.2 alpha
+    (maskedRowWeight₀) hop.2.1
+    (fun a u => (Q.χ u) a) (B2env₀) hop.1 hop.2.2 alpha
   have hloss := hcost c N X hN hX hXN alpha
-  have hCN : 0 ≤ C * Real.rpow N ε := mul_nonneg hC (Real.rpow_nonneg hNpos.le ε)
+  have hCN := mul_nonneg hC (Real.rpow_nonneg hNpos.le ε)
   rw [hreindex]
   calc
-    _ ≤ Sieve.B2env F c Q W M X K *
+    _ ≤ B2env₀ *
         ∑ u ∈ Sieve.paperShell F c X,
           Sieve.GcdTail.primeSupportCost u * ‖alpha u‖ ^ 2 := hcop
-    _ ≤ Sieve.B2env F c Q W M X K *
+    _ ≤ B2env₀ *
         (C * Real.rpow N ε * Sieve.energy F c X alpha) :=
       mul_le_mul_of_nonneg_left hloss hop.1
-    _ = (C * Real.rpow N ε * Sieve.B2env F c Q W M X K) *
+    _ = (C * Real.rpow N ε * B2env₀) *
         Sieve.energy F c X alpha := by ring
-    _ ≤ (C * Real.rpow N ε * Sieve.B2env F c Q W M X K) *
+    _ ≤ (C * Real.rpow N ε * B2env₀) *
         Sieve.gcdTailEnergy F c N d lam :=
       mul_le_mul_of_nonneg_left halpha (mul_nonneg hCN hop.1)
 

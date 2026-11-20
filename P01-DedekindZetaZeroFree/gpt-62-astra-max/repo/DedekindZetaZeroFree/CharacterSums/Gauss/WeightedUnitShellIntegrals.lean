@@ -486,10 +486,13 @@ def ConductorZero (ψ : AddChar K ℂ) (π : 𝒪[K]) : Prop :=
   (∀ u : 𝒪[K], ψ (u : K) = 1) ∧
     ∃ u : 𝒪[K], ψ ((π : K)⁻¹ * (u : K)) ≠ 1
 
-theorem residuePhase_lift_independent
-    (π : 𝒪[K]) (hπ : Irreducible π)
-    (ψ : AddChar K ℂ) (hψcont : Continuous ψ)
+section
+
+variable (π : 𝒪[K]) (hπ : Irreducible π) (ψ : AddChar K ℂ) (hψcont : Continuous ψ)
     (hψunitary : ∀ x : K, ‖ψ x‖ = 1) (hcond : ConductorZero ψ π)
+
+include hπ hψcont hψunitary hcond in
+theorem residuePhase_lift_independent
     (u v : 𝒪[K])
     (huv : IsLocalRing.residue 𝒪[K] u = IsLocalRing.residue 𝒪[K] v) :
     ψ ((π : K)⁻¹ * (u : K)) = ψ ((π : K)⁻¹ * (v : K)) := by
@@ -498,10 +501,8 @@ theorem residuePhase_lift_independent
   simpa [div_eq_mul_inv, mul_comm] using (hbar.2 u).symm.trans
     ((congrArg ψbar huv).trans (hbar.2 v))
 
-theorem exists_unique_residue_addChar
-    (π : 𝒪[K]) (hπ : Irreducible π)
-    (ψ : AddChar K ℂ) (hψcont : Continuous ψ)
-    (hψunitary : ∀ x : K, ‖ψ x‖ = 1) (hcond : ConductorZero ψ π) :
+include hπ hψcont hψunitary hcond in
+theorem exists_unique_residue_addChar :
     ∃! ψbar : AddChar 𝓀[K] ℂ,
       ψbar ≠ 1 ∧ ψbar.IsPrimitive ∧
         ∀ u : 𝒪[K], ψbar (IsLocalRing.residue 𝒪[K] u) =
@@ -514,15 +515,21 @@ theorem exists_unique_residue_addChar
     apply huniq ψbar'
     exact ⟨hbar'.1, by simpa [div_eq_mul_inv, mul_comm] using hbar'.2.2⟩
 
+end
+
 variable [Fintype 𝓀[K]]
 
 def qPower (r : ℝ) : ℂ :=
   (Real.rpow (Fintype.card 𝓀[K] : ℝ) r : ℂ)
 
-def g (χκ : MulChar 𝓀[K] ℂ) (ψbar : AddChar 𝓀[K] ℂ) (j : ℤ) : ℂ :=
+section
+
+variable (χκ : MulChar 𝓀[K] ℂ)
+
+def g (ψbar : AddChar 𝓀[K] ℂ) (j : ℤ) : ℂ :=
   qPower (K := K) (-(1 / 2 : ℝ)) * gaussSum (χκ ^ j) ψbar
 
-theorem g_eq_normalizedGaussPower (χκ : MulChar 𝓀[K] ℂ)
+theorem g_eq_normalizedGaussPower
     (ψbar : AddChar 𝓀[K] ℂ) (j : ℕ) :
     g χκ ψbar (j : ℤ) = FiniteGauss.normalizedGaussPower χκ ψbar j := by
   have hQ : (0 : ℝ) ≤ Fintype.card 𝓀[K] := by positivity
@@ -530,7 +537,7 @@ theorem g_eq_normalizedGaussPower (χκ : MulChar 𝓀[K] ℂ)
   rw [Real.rpow_eq_pow, Real.rpow_neg hQ, ← Real.sqrt_eq_rpow]
   simp only [zpow_natCast, Complex.ofReal_inv, div_eq_mul_inv, mul_comm]
 
-theorem g_periodic (χκ : MulChar 𝓀[K] ℂ) (hχκ : orderOf χκ = 6)
+theorem g_periodic (hχκ : orderOf χκ = 6)
     (ψbar : AddChar 𝓀[K] ℂ) (j : ℤ) :
     g χκ ψbar (j + 6) = g χκ ψbar j := by
   have h6 : χκ ^ (6 : ℤ) = 1 := by
@@ -539,7 +546,7 @@ theorem g_periodic (χκ : MulChar 𝓀[K] ℂ) (hχκ : orderOf χκ = 6)
     exact_mod_cast H
   simp only [g, zpow_add, h6, mul_one]
 
-theorem g_two_mul_four (χκ : MulChar 𝓀[K] ℂ) (hχκ : orderOf χκ = 6)
+theorem g_two_mul_four (hχκ : orderOf χκ = 6)
     (ψbar : AddChar 𝓀[K] ℂ) (hψbar : ψbar ≠ 1) :
     g χκ ψbar 2 * g χκ ψbar 4 = 1 := by
   have ho : orderOf (χκ ^ 2) = 3 := by
@@ -567,16 +574,18 @@ theorem g_two_mul_four (χκ : MulChar 𝓀[K] ℂ) (hχκ : orderOf χκ = 6)
     div_mul_div_comm, hprod, ← pow_two, hs2]
   exact div_self (by exact_mod_cast Fintype.card_pos.ne')
 
-def unitCharacter (χκ : MulChar 𝓀[K] ℂ) (u : 𝒪[K]ˣ) : ℂ :=
+def unitCharacter (u : 𝒪[K]ˣ) : ℂ :=
   χκ (IsLocalRing.residue 𝒪[K] (u : 𝒪[K]))
 
-def shellIntegrand (χκ : MulChar 𝓀[K] ℂ) (ψ : AddChar K ℂ)
+def shellIntegrand (ψ : AddChar K ℂ)
     (π : 𝒪[K]) (e : ℕ) (l : ℤ) (x : K) : ℂ := by
   classical
   exact if hx : x ∈ (𝒪[K] : Set K) then
     χκ (IsLocalRing.residue 𝒪[K] ⟨x, hx⟩) ^ (-2 * l) *
       star (ψ ((π : K) ^ ((e : ℤ) - l) * x))
   else 0
+
+end
 
 def A [MeasurableSpace K] (μ : Measure K) (χκ : MulChar 𝓀[K] ℂ)
     (ψ : AddChar K ℂ) (π : 𝒪[K]) (e : ℕ) (l : ℤ) : ℂ :=
@@ -686,19 +695,20 @@ end Local
 section Arithmetic
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (v : HeightOneSpectrum (𝓞 F))
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (v : HeightOneSpectrum (𝓞 F))
+
+section
+
+variable
+    (hgood : valuation (KPLocalExceptionalConstruction.LocalField F v) (6 : KPLocalExceptionalConstruction.LocalField F v) = 1)
 
 def arithmeticUnitCharacter
-    (hgood : valuation (KPLocalExceptionalConstruction.LocalField F v)
-      (6 : KPLocalExceptionalConstruction.LocalField F v) = 1)
     (u : (valuation (KPLocalExceptionalConstruction.LocalField F v)).integerˣ) : ℂ :=
   (KPLocalCover.coefficientEmbedding F ζ hζ
     (KPHilbert.residueSixCharacter F v ζ hζ hgood u) : ℂ)
 
-theorem exists_unique_arithmetic_residue_character
-    (hgood : valuation (KPLocalExceptionalConstruction.LocalField F v)
-      (6 : KPLocalExceptionalConstruction.LocalField F v) = 1) :
+theorem exists_unique_arithmetic_residue_character :
     ∃! χκ : MulChar (IsLocalRing.ResidueField (valuation (KPLocalExceptionalConstruction.LocalField F v)).integer) ℂ,
       orderOf χκ = 6 ∧
         ∀ u : (valuation (KPLocalExceptionalConstruction.LocalField F v)).integerˣ,
@@ -775,6 +785,8 @@ theorem exists_unique_arithmetic_residue_character
   rw [hu] at H
   exact H
 
+end
+
 theorem arithmetic_unit_shell_integrals
     [Fintype (IsLocalRing.ResidueField
       (valuation (KPLocalExceptionalConstruction.LocalField F v)).integer)]
@@ -796,14 +808,10 @@ theorem arithmetic_unit_shell_integrals
     orderOf χκ = 6 ∧
       ∃ ψbar : AddChar (IsLocalRing.ResidueField
         (valuation (KPLocalExceptionalConstruction.LocalField F v)).integer) ℂ,
-        ψbar ≠ 1 ∧ ψbar.IsPrimitive ∧
         (∀ u, ψbar (IsLocalRing.residue _ u) =
           ψ ((π : KPLocalExceptionalConstruction.LocalField F v)⁻¹ *
             (u : KPLocalExceptionalConstruction.LocalField F v))) ∧
-        (∀ j : ℤ, g χκ ψbar (j + 6) = g χκ ψbar j) ∧
-        g χκ ψbar 2 * g χκ ψbar 4 = 1 ∧
-        ∀ (e : ℕ) (l : ℤ), 1 ≤ l →
-          A μ χκ ψ π e l = shellValue χκ ψbar e l := by
+        g χκ ψbar 2 * g χκ ψbar 4 = 1 := by
   obtain ⟨χ₀, hχ₀, huniq⟩ := exists_unique_arithmetic_residue_character F ζ hζ v hgood
   have hχeq : χκ = χ₀ := by
     apply MulChar.ext
@@ -817,11 +825,8 @@ theorem arithmetic_unit_shell_integrals
     simpa only [unitCharacter, hu] using H
   have hχ : orderOf χκ = 6 := hχeq ▸ hχ₀.1
   obtain ⟨ψbar, hbar, _⟩ := exists_unique_residue_addChar π hπ ψ hψcont hψunitary hcond
-  refine ⟨hχ, ψbar, hbar.1, hbar.2.1, hbar.2.2, ?_, ?_, ?_⟩
-  · exact g_periodic χκ hχ ψbar
+  refine ⟨hχ, ψbar, hbar.2.2, ?_⟩
   · exact g_two_mul_four χκ hχ ψbar hbar.1
-  · exact fun e l hl => unit_shell_integral μ hμ π hπ ψ hψcont hψunitary hcond
-      χκ hχ ψbar hbar.2.2 e l hl
 
 end Arithmetic
 

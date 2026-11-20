@@ -13,10 +13,14 @@ open scoped NumberField Classical
 
 variable {F : Type*} [Field F] [NumberField F]
 
-def finiteModulusIdeal (c : ClassFieldTheory.RayClassModulus F) : Ideal (𝓞 F) :=
+section
+
+variable (c : ClassFieldTheory.RayClassModulus F)
+
+def finiteModulusIdeal : Ideal (𝓞 F) :=
   c.finitePart.prod (fun p n => p.asIdeal ^ n)
 
-private lemma coe_finiteModulusIdeal (c : ClassFieldTheory.RayClassModulus F) :
+private lemma coe_finiteModulusIdeal :
     (finiteModulusIdeal c : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
       ∏ p ∈ c.finitePart.support,
         ((p.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ^ c.finitePart p) := by
@@ -28,6 +32,8 @@ private lemma coe_finiteModulusIdeal (c : ClassFieldTheory.RayClassModulus F) :
   rw [map_prod]
   exact Finset.prod_congr rfl fun p _ =>
     FractionalIdeal.coeIdeal_pow (nonZeroDivisors (𝓞 F)) F p.asIdeal _
+
+end
 
 private lemma count_coe_finiteModulusIdeal (c : ClassFieldTheory.RayClassModulus F)
     (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
@@ -56,25 +62,27 @@ private lemma sup_eq_top_iff_of_isMaximal {I J : Ideal (𝓞 F)} (hI : I.IsMaxim
     by_contra hne
     exact h ((hI.eq_of_le hne le_sup_left) ▸ le_sup_right)
 
-theorem finiteModulusIdeal_ne_bot (c : ClassFieldTheory.RayClassModulus F) :
+section
+
+variable (c : ClassFieldTheory.RayClassModulus F)
+
+theorem finiteModulusIdeal_ne_bot :
     finiteModulusIdeal c ≠ ⊥ := by
   rw [← FractionalIdeal.coeIdeal_ne_zero (K := F)]
   rw [coe_finiteModulusIdeal, Finset.prod_ne_zero_iff]
   intro p _
   exact pow_ne_zero _ (FractionalIdeal.coeIdeal_ne_zero.mpr p.ne_bot)
 
-@[simp] theorem fullModulus_finiteModulusIdeal_finitePart
-    (c : ClassFieldTheory.RayClassModulus F) :
+@[simp] theorem fullModulus_finiteModulusIdeal_finitePart :
     (DedekindZetaZeroFree.LargeSieve.RayBridge.fullModulus (finiteModulusIdeal c)
       (finiteModulusIdeal_ne_bot c)).finitePart = c.finitePart := by
   ext v
-  rw [DedekindZetaZeroFree.LargeSieve.RayBridge.fullModulus_finitePart]
+  simp
   have h := FractionalIdeal.count_coe (K := F) (v := v) (finiteModulusIdeal_ne_bot c)
   rw [count_coe_finiteModulusIdeal c v] at h
   exact (Nat.cast_injective h).symm
 
 theorem mem_finitePart_support_iff
-    (c : ClassFieldTheory.RayClassModulus F)
     (p : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
     p ∈ c.finitePart.support ↔ p.asIdeal ⊔ finiteModulusIdeal c ≠ ⊤ := by
   have hg := finiteModulusIdeal_ne_bot c
@@ -87,12 +95,14 @@ theorem mem_finitePart_support_iff
     Ideal.dvd_iff_le]
   constructor
   · intro hle h
-    exact ((sup_eq_top_iff_of_isMaximal (I := p.asIdeal) (J := finiteModulusIdeal c)
+    exact ((sup_eq_top_iff_of_isMaximal
       p.isMaximal).mp h) hle
   · intro hne
     by_contra hle
-    exact hne ((sup_eq_top_iff_of_isMaximal (I := p.asIdeal) (J := finiteModulusIdeal c)
+    exact hne ((sup_eq_top_iff_of_isMaximal
       p.isMaximal).mpr hle)
+
+end
 
 @[simp] theorem fullModulus_finiteModulusIdeal
     (hF : NumberField.IsTotallyComplex F) (c : ClassFieldTheory.RayClassModulus F) :
@@ -101,8 +111,7 @@ theorem mem_finitePart_support_iff
   haveI : IsEmpty (ClassFieldTheory.RayClassRealPlace F) :=
     ⟨fun v => (NumberField.InfinitePlace.not_isReal_iff_isComplex.mpr (hF.isComplex v.1)) v.2⟩
   refine ClassFieldTheory.RayClassModulus.ext (fullModulus_finiteModulusIdeal_finitePart c) ?_
-  rw [DedekindZetaZeroFree.LargeSieve.RayBridge.fullModulus_infinitePart]
-  exact Subsingleton.elim _ _
+  apply Subsingleton.elim
 
 end DedekindZetaZeroFree.LargeSieve.RootNumber
 

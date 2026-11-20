@@ -57,10 +57,8 @@ private theorem seminorm_sum_bound {V K : Type*} [AddCommGroup V] [Module ℂ V]
         exact (hN ⟨k,hk⟩ M hkM z hz).le
   apply lt_of_le_of_lt hsum
   rw [← Finset.sum_mul]
-  have hb : (∑ k ∈ I, ‖c k‖) < B := by dsimp [B]; linarith
-  have hmul := mul_lt_mul_of_pos_right hb he
   have hc : B * (ε / B) = ε := by field_simp
-  exact hmul.trans_eq hc
+  exact (mul_lt_mul_of_pos_right (by dsimp [B]; linarith) he).trans_eq hc
 
 end DedekindZetaZeroFree.KPActualReflectionData.CanonicalStageCircle
 

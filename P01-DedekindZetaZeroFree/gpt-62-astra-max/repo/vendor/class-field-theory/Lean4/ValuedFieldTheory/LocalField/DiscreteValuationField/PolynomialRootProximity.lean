@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -39,8 +35,9 @@ universe u
 
 namespace Polynomial.Splits
 
+variable {R : Type u} [CommRing R] [IsDomain R] [IsDiscreteValuationRing R]
+
 private theorem addVal_multiset_prod_le
-    {R : Type u} [CommRing R] [IsDomain R] [IsDiscreteValuationRing R]
     {α : Type*} (s : Multiset α) (f g : α → R)
     (h :
       ∀ z ∈ s,
@@ -58,9 +55,7 @@ private theorem addVal_multiset_prod_le
         IsDiscreteValuationRing.addVal_mul]
       apply add_le_add
       · exact h z (by simp)
-      · apply ih
-        intro t ht
-        exact h t (by simp [ht])
+      · simp_all
 
 /-- Let `p` be a nonconstant monic polynomial that splits over a discrete
 valuation ring.  For every `x`, some root `y` satisfies
@@ -70,7 +65,6 @@ valuation ring.  For every `x`, some root `y` satisfies
 Choosing `y` with maximal `v(x-y)` makes every other factor `x-z` no deeper
 than `y-z`; multiplying those inequalities gives the result. -/
 theorem exists_root_addVal_eval_le_sub_add_derivative
-    {R : Type u} [CommRing R] [IsDomain R] [IsDiscreteValuationRing R]
     (p : R[X]) (hs : p.Splits) (hm : p.Monic)
     (hdeg : p.natDegree ≠ 0) (x : R) :
     ∃ y, y ∈ p.roots ∧
@@ -84,19 +78,13 @@ theorem exists_root_addVal_eval_le_sub_add_derivative
     simpa [hzero] using hs.natDegree_eq_card_roots
   obtain ⟨y, hy, hymax⟩ :=
     Multiset.exists_max_image
-      (s := p.roots)
+
       (fun z => IsDiscreteValuationRing.addVal R (x - z)) hroots
   have hfactor :
       ∀ z ∈ p.roots.erase y,
         IsDiscreteValuationRing.addVal R (x - z) ≤
           IsDiscreteValuationRing.addVal R (y - z) := by
     intro z hz
-    have hzroot : z ∈ p.roots :=
-      Multiset.mem_of_mem_erase hz
-    have hmax :
-        IsDiscreteValuationRing.addVal R (x - z) ≤
-          IsDiscreteValuationRing.addVal R (x - y) :=
-      hymax z hzroot
     have hneg :
         IsDiscreteValuationRing.addVal R (y - x) =
           IsDiscreteValuationRing.addVal R (x - y) := by
@@ -106,7 +94,7 @@ theorem exists_root_addVal_eval_le_sub_add_derivative
         IsDiscreteValuationRing.addVal R (x - z) ≤
           IsDiscreteValuationRing.addVal R (y - x) := by
       rw [hneg]
-      exact hmax
+      exact (hymax z (Multiset.mem_of_mem_erase hz))
     have hultra :=
       IsDiscreteValuationRing.addVal_add
         (R := R) (a := y - x) (b := x - z)
@@ -114,26 +102,19 @@ theorem exists_root_addVal_eval_le_sub_add_derivative
       ring
     rw [min_eq_right hmax', hsum] at hultra
     exact hultra
-  have hprod :
-      IsDiscreteValuationRing.addVal R
-          (((p.roots.erase y).map (x - ·)).prod) ≤
-        IsDiscreteValuationRing.addVal R
-          (((p.roots.erase y).map (y - ·)).prod) :=
-    addVal_multiset_prod_le (p.roots.erase y)
-      (x - ·) (y - ·) hfactor
   have hroot_prod :
       ((p.roots.map (x - ·)).prod) =
         (x - y) * (((p.roots.erase y).map (x - ·)).prod) := by
     calc
-      ((p.roots.map (x - ·)).prod) =
+      _ =
           (((y ::ₘ p.roots.erase y).map (x - ·)).prod) :=
         congrArg (fun s : Multiset R => (s.map (x - ·)).prod)
           (Multiset.cons_erase hy).symm
       _ = (x - y) * (((p.roots.erase y).map (x - ·)).prod) := by
-        rw [Multiset.map_cons, Multiset.prod_cons]
+        simp
   refine ⟨y, hy, ?_⟩
   calc
-    IsDiscreteValuationRing.addVal R (p.eval x) =
+    _ =
         IsDiscreteValuationRing.addVal R
           ((p.roots.map (x - ·)).prod) := by
             rw [hs.eval_eq_prod_roots_of_monic hm]
@@ -141,12 +122,13 @@ theorem exists_root_addVal_eval_le_sub_add_derivative
         IsDiscreteValuationRing.addVal R (x - y) +
           IsDiscreteValuationRing.addVal R
             (((p.roots.erase y).map (x - ·)).prod) := by
-              rw [hroot_prod, IsDiscreteValuationRing.addVal_mul]
+              simp [hroot_prod]
     _ ≤
         IsDiscreteValuationRing.addVal R (x - y) +
           IsDiscreteValuationRing.addVal R
             (((p.roots.erase y).map (y - ·)).prod) :=
-      add_le_add (le_refl _) hprod
+      add_le_add (le_refl _) (addVal_multiset_prod_le (p.roots.erase y)
+        (x - ·) (y - ·) hfactor)
     _ =
         IsDiscreteValuationRing.addVal R (x - y) +
           IsDiscreteValuationRing.addVal R

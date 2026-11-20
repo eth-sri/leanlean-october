@@ -16,10 +16,10 @@ abbrev Stage (U : KPMsRationalCompactCrossPairing.Level F ζ hζ) :=
   KPContFlatCommonLevelKernel.CommonSphericalStage F ζ hζ U
 
 variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S]
 variable [FiniteDimensional ℂ S]
@@ -44,8 +44,7 @@ theorem stage_smooth (v : S) :
 theorem sourceFlat_eq (s : ℂ) (v : S) :
     let _ := C; let _ := R; let _ := P; let _ := H
     L F ζ hζ U ι s v =
-      (KPContFlatSourceRecipe.flatR F ζ hζ s (coreInclusion F ζ hζ U ι v)).val := by
-  rfl
+      (KPContFlatSourceRecipe.flatR F ζ hζ s (coreInclusion F ζ hζ U ι v)).val := rfl
 
 def Covariance : Prop :=
   ∀ (s : ℂ), s ∈ KPContinuation.spectralDomain →
@@ -74,7 +73,7 @@ def Covariance : Prop :=
 
 theorem covariance : Covariance F ζ hζ U ι := by
   intro s hs
-  obtain ⟨hU, hK, hχ, _, hB⟩ := KPContFlatCommonLevelKernel.stage_properties F ζ hζ U ι s hs
+  obtain ⟨hU, hK, hχ, hB⟩ := KPContFlatCommonLevelKernel.stage_properties F ζ hζ U ι s hs
   refine ⟨hU, hK, fun v g ε => hχ v ε g, ?_, fun v g h x => hB v h x g⟩
   intro v g a
   exact KPContFlatRationalCosetCovariance.L_rationalBorel F ζ hζ s
@@ -114,8 +113,7 @@ theorem incoming_formula (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
     (v : S) (t : ℝ) (b : KPCuspCharts.Shape F) :
     KPContFlatCuspIncomingEvaluation.W F ζ hζ C R P H U a ι s v t b =
       Complex.exp (((Module.finrank ℚ F / 2 : ℕ) : ℂ) * ((4 : ℂ) / 3 + 2 * s) * (t : ℂ)) •
-        (KPContFlatCuspIncomingEvaluation.b F ζ hζ C R P H U a ι s hs v).val b := by
-  exact KPContFlatCuspIncomingEvaluation.incoming_formula F ζ hζ C R P H U a ι s hs v t b
+        (KPContFlatCuspIncomingEvaluation.b F ζ hζ C R P H U a ι s hs v).val b := KPContFlatCuspIncomingEvaluation.incoming_formula F ζ hζ C R P H U a ι s hs v t b
 
 end DedekindZetaZeroFree.KPContActualSphericalFlatStage
 
@@ -135,13 +133,13 @@ def localLaplacian (d : ℕ) (f : KPArch.Space d → ℂ) (z : KPArch.Space d) :
           fderiv ℝ f y (coordinateDirection d i j)) z (coordinateDirection d i j))
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] Stage F ζ hζ U)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (ι : S →ₗ[ℂ] Stage F ζ hζ U)
 variable (a : Cusps F ζ hζ C R P H U)
 
 def incomingOnArch (s : ℂ) (v : S)
@@ -218,8 +216,7 @@ structure StageConclusions : Prop where
       L F ζ hζ U ι s v (KPContFlatRationalCosetCovariance.matrixRationalHom F ζ hζ γ * g)
 
 private theorem lap_eq (d : ℕ) (f : KPArch.Space d → ℂ) (z : KPArch.Space d) :
-    localLaplacian d f z = KPContFlatCuspCasimirSpecialization.Δloc d f z := by
-  rfl
+    localLaplacian d f z = KPContFlatCuspCasimirSpecialization.Δloc d f z := rfl
  theorem stageConclusions (hι : Function.Injective ι) : StageConclusions F ζ hζ C R P H U ι := by
   refine {
     source := sourceFlat_eq F ζ hζ C R P H U ι
@@ -253,7 +250,7 @@ private theorem lap_eq (d : ℕ) (f : KPArch.Space d → ℂ) (z : KPArch.Space 
       F ζ hζ C R P H U a ι s hs v b
   · intro a s hs v g b q
     exact ⟨(KPContFlatCuspCoefficientTransition.transport_formula F ζ hζ C R P H U a ι
-      s hs v g b).1,
+      s hs v g b),
       (KPContFlatCuspIncomingEvaluation.frequencies F ζ hζ C R P H U a).constantSystem.transition_formula
         g ((KPContFlatCuspIncomingEvaluation.b F ζ hζ C R P H U a ι s hs v).val b) q⟩
   · intro a s hs v p q

@@ -58,20 +58,9 @@ private lemma joint_jet {h : A → E → Y} {U : Set E} (hU : IsOpen U)
      (continuousMultilinearCurryFin0 ℝ E Y).symm.contDiff.comp_contDiffOn hh
  | succ n ih =>
    intro p hp
-   have hio : IsOpen (Set.univ ×ˢ U : Set (A × E)) := isOpen_univ.prod hU
-   have hlocal := ih.contDiffAt (hio.mem_nhds hp)
-   have hcomp : ContDiffAt ℝ (⊤ : ℕ∞)
-       (fun q : (A × E) × E => iteratedFDeriv ℝ n (h q.1.1) q.2) (p, p.2) :=
-     hlocal.comp (p, p.2) (contDiff_fst.fst.prodMk contDiff_snd).contDiffAt
-   have hd := ContDiffAt.fderiv (f := fun q : A × E => iteratedFDeriv ℝ n (h q.1))
-     (g := fun q : A × E => q.2) (m := (⊤ : ℕ∞)) hcomp contDiff_snd.contDiffAt (by simp)
-   have hc := (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => E) Y).symm.contDiff.contDiffAt.comp p hd
-   simpa only [iteratedFDeriv_succ_eq_comp_left, Function.comp_apply, Function.comp_def] using hc.contDiffWithinAt
-set_option backward.isDefEq.respectTransparency.types false in
-private lemma partial_eq (h : A → E → Y) (s : A) (z : E)
- (hh : DifferentiableAt ℝ (Function.uncurry h) (s,z)) :
- fderiv ℝ (h s) z = (fderiv ℝ (Function.uncurry h) (s,z)).comp (ContinuousLinearMap.inr ℝ A E) := by
- exact (hh.hasFDerivAt.comp z (hasFDerivAt_prodMk_right s z)).fderiv
+   simpa only [iteratedFDeriv_succ_eq_comp_left, Function.comp_apply, Function.comp_def] using ((continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => E) Y).symm.contDiff.contDiffAt.comp p (ContDiffAt.fderiv
+     ((ih.contDiffAt ((isOpen_univ.prod hU).mem_nhds hp)).comp (p, p.2) (contDiff_fst.fst.prodMk contDiff_snd).contDiffAt) contDiff_snd.contDiffAt (by simp))).contDiffWithinAt
+
 set_option backward.isDefEq.respectTransparency.types false in
 private lemma mixed_partial (h : A → E → Y) (s : A) (z : E)
  (hh : ContDiffAt ℝ (⊤ : ℕ∞) (Function.uncurry h) (s,z)) (v : A) (w : E) :
@@ -79,29 +68,22 @@ private lemma mixed_partial (h : A → E → Y) (s : A) (z : E)
  (fderiv ℝ (fun x => fderiv ℝ (fun t => h t x) s) z) w v := by
  let H := Function.uncurry h
  let D := fderiv ℝ H
- let L := ContinuousLinearMap.inl ℝ A E
- let R := ContinuousLinearMap.inr ℝ A E
- let CR := (ContinuousLinearMap.compL ℝ E (A × E) Y).flip R
- let CL := (ContinuousLinearMap.compL ℝ A (A × E) Y).flip L
+ let CR := (ContinuousLinearMap.compL ℝ E (A × E) Y).flip (ContinuousLinearMap.inr ℝ A E)
+ let CL := (ContinuousLinearMap.compL ℝ A (A × E) Y).flip (ContinuousLinearMap.inl ℝ A E)
  have hD : HasFDerivAt D (fderiv ℝ D (s,z)) (s,z) :=
    (hh.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiableAt (by simp) |>.hasFDerivAt
  have hs : (fun t => fderiv ℝ (h t) z) =ᶠ[𝓝 s]
      (fun t => CR (D (t,z))) := by
-   have hn := (hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)
-   filter_upwards [(continuous_id.prodMk continuous_const).continuousAt.eventually hn] with t ht
-   exact partial_eq h t z (ht.differentiableAt (by simp))
+   filter_upwards [(continuous_id.prodMk continuous_const).continuousAt.eventually ((hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp))] with t ht
+   exact ((ht.differentiableAt (by simp)).hasFDerivAt.comp z (hasFDerivAt_prodMk_right t z)).fderiv
  have hz : (fun x => fderiv ℝ (fun t => h t x) s) =ᶠ[𝓝 z]
      (fun x => CL (D (s,x))) := by
-   have hn := (hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)
-   filter_upwards [(continuous_const.prodMk continuous_id).continuousAt.eventually hn] with x hx
-   have hd : HasFDerivAt H (D (s,x)) (s,x) := (hx.differentiableAt (by simp)).hasFDerivAt
+   filter_upwards [(continuous_const.prodMk continuous_id).continuousAt.eventually ((hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp))] with x hx
    have hleft : HasFDerivAt (fun t : A => H (t,x)) (CL (D (s,x))) s :=
-     by convert hd.comp s (hasFDerivAt_prodMk_left (𝕜 := ℝ) s x) using 1 <;> rfl
+     by convert ((hx.differentiableAt (by simp)).hasFDerivAt).comp s (hasFDerivAt_prodMk_left (𝕜 := ℝ) s x) using 1 <;> rfl
    exact hleft.fderiv
- have hsd := CR.hasFDerivAt.comp s (hD.comp s (hasFDerivAt_prodMk_left s z))
- have hzd := CL.hasFDerivAt.comp z (hD.comp z (hasFDerivAt_prodMk_right s z))
- have hsde := hsd.fderiv
- have hzde := hzd.fderiv
+ have hsde := (CR.hasFDerivAt.comp s (hD.comp s (hasFDerivAt_prodMk_left s z))).fderiv
+ have hzde := (CL.hasFDerivAt.comp z (hD.comp z (hasFDerivAt_prodMk_right s z))).fderiv
  dsimp only [Function.comp_def] at hsde hzde
  rw [hs.fderiv_eq, hz.fderiv_eq, hsde, hzde]
  exact (hh.isSymmSndFDerivAt (by simp)).eq (v,0) (0,w)
@@ -175,14 +157,11 @@ private lemma jets_hasDeriv (h k : ℂ → E → Y) (U : Set E) (hU : IsOpen U)
        map_add' := map_add _
        map_smul' := by intro c v; ext w; simp
        cont := (continuousMultilinearCurryFin0 ℝ E Y).symm.continuous }
-   have H := T.hasFDerivAt.comp s (hd s z hz).hasFDerivAt
-   change HasFDerivAt _ (ContinuousLinearMap.toSpanSingleton ℂ _) s
-   convert H using 1 <;> simp only [iteratedFDeriv_zero_eq_comp, Function.comp_def, ContinuousLinearMap.comp_toSpanSingleton] <;> rfl
+   convert (T.hasFDerivAt.comp s (hd s z hz).hasFDerivAt) using 1 <;> simp only [iteratedFDeriv_zero_eq_comp, Function.comp_def, ContinuousLinearMap.comp_toSpanSingleton] <;> rfl
  | succ n ih =>
-   have hp := partial_snd_hasDeriv (fun t x => iteratedFDeriv ℝ n (h t) x)
+   have H := (complexCurry n).hasFDerivAt.comp s (partial_snd_hasDeriv (fun t x => iteratedFDeriv ℝ n (h t) x)
      (fun t x => iteratedFDeriv ℝ n (k t) x) U hU
-     (joint_jet hU hh n) (joint_jet hU hk n) (fun t x hx => ih t x hx) s z hz
-   have H := (complexCurry (E := E) (Y := Y) n).hasFDerivAt.comp s hp.hasFDerivAt
+     (joint_jet hU hh n) (joint_jet hU hk n) (fun t x hx => ih t x hx) s z hz).hasFDerivAt
    change HasFDerivAt _ (ContinuousLinearMap.toSpanSingleton ℂ _) s
    convert H using 1 <;> simp only [iteratedFDeriv_succ_eq_comp_left, Function.comp_def, ContinuousLinearMap.comp_toSpanSingleton] <;> rfl
 end ComplexJets
@@ -201,17 +180,15 @@ private lemma compact_hasDeriv (h k : ℂ → C(X,Y))
  apply HasDerivAt.of_isLittleO
  rw [Asymptotics.isLittleO_iff]
  intro c hc
- have hu := Metric.tendstoUniformly_iff.mp (hk.tendstoUniformly (fun t x => k t x) s) c hc
  have hseg : ∀ᶠ t in 𝓝 s, ∀ r ∈ segment ℝ s t, ∀ x : X, ‖k r x - k s x‖ ≤ c := by
    have hs : ∀ᶠ t in 𝓝[Set.univ] s, ∀ x : X, ‖k t x - k s x‖ ≤ c := by
-     simpa only [nhdsWithin_univ, dist_eq_norm_sub, norm_sub_rev] using hu.mono (fun t ht x => (ht x).le)
-   simpa only [nhdsWithin_univ] using (convex_univ : Convex ℝ (Set.univ : Set ℂ)).eventually_nhdsWithin_segment (Set.mem_univ s) hs
+     simpa only [nhdsWithin_univ, dist_eq_norm_sub, norm_sub_rev] using (Metric.tendstoUniformly_iff.mp (hk.tendstoUniformly (fun t x => k t x) s) c hc).mono (fun t ht x => (ht x).le)
+   simpa using convex_univ.eventually_nhdsWithin_segment (Set.mem_univ s) hs
  filter_upwards [hseg] with t ht
  apply (ContinuousMap.norm_le (h t - h s - (t-s) • k s) (mul_nonneg hc.le (norm_nonneg _))).mpr
  intro x
  have H := (convex_segment s t).norm_image_sub_le_of_norm_hasFDerivWithin_le'
-   (f := fun r => h r x) (f' := fun r => ContinuousLinearMap.toSpanSingleton ℂ (k r x))
-   (φ := ContinuousLinearMap.toSpanSingleton ℂ (k s x)) (C := c)
+
    (fun r _ => (hd r x).hasFDerivAt.hasFDerivWithinAt)
    (fun r hr => by
      have he : ContinuousLinearMap.toSpanSingleton ℂ (k r x) - ContinuousLinearMap.toSpanSingleton ℂ (k s x) =
@@ -219,7 +196,7 @@ private lemma compact_hasDeriv (h k : ℂ → C(X,Y))
      rw [he, ContinuousLinearMap.norm_toSpanSingleton]
      exact ht r hr x)
    (left_mem_segment ℝ s t) (right_mem_segment ℝ s t)
- simpa using H
+ exact H
 
 end CompactDifferentiation
  lemma L_formula (s : ℂ) (v : S) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
@@ -227,24 +204,6 @@ end CompactDifferentiation
       Complex.exp (s * (KPContFlatSourceRecipe.alpha F ζ hζ g : ℂ)) * (ι v).val.val g := by
   unfold L
   rw [KPContFlatSourceRecipe.flatR_formula]
-
-private lemma induced_chart_contDiffOn (P : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (f : KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ P)
-    (g : KPGlobalTorusFunctionData.G F ζ hζ) :
-    ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun z => (f.val.val
-        (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g)).val.val 1)
-      (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) := by
-  have hf := f.property
-  change f.val ∈ ⨆ J, KPGlobalTorusBorelTwistCompatibility.InducedLevel F ζ hζ P J at hf
-  exact Submodule.iSup_induction
-    (motive := fun x : KPGlobalTorusBorelTwistCompatibility.InducedFunctions F ζ hζ P =>
-      ContDiffOn ℝ (⊤ : ℕ∞)
-        (fun z => (x.val
-          (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g)).val.val 1)
-        (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F))
-    (fun J => KPGlobalTorusBorelTwistCompatibility.InducedLevel F ζ hζ P J) hf
-    (fun J x hx => hx.1 g) contDiffOn_const (fun x y hx hy => hx.add hy)
 
 private lemma scalarSection_chart_contDiffOn
     (hSmooth : ∀ v : S, (ι v).val ∈
@@ -263,8 +222,7 @@ private lemma scalarSection_chart_contDiffOn
     funext z
     rw [← hf, KPGlobalTorusBorelTwistCompatibility.scalarSection_formula]
   rw [hfun]
-  exact induced_chart_contDiffOn F ζ hζ
-    (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) f g
+  apply @DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility.induced_smooth <;> assumption
 
 private lemma alpha_chart_contDiffOn (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
@@ -281,10 +239,13 @@ private lemma exp_alpha_chart_contDiffOn (s : ℂ) (g : KPGlobalTorusFunctionDat
       (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) :=
   ((contDiffOn_const (c := s)).mul (alpha_chart_contDiffOn F ζ hζ g)).cexp
 
+section
+
+variable
+    (hSmooth : ∀ v : S, (ι v).val ∈ KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0))
+
+include hSmooth in
 private lemma L_chart_contDiffOn
-    (hSmooth : ∀ v : S, (ι v).val ∈
-      KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ
-        (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0))
     (v : S) (s : ℂ) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z => L F ζ hζ ι s v
@@ -302,10 +263,8 @@ private lemma L_chart_contDiffOn
   exact (exp_alpha_chart_contDiffOn F ζ hζ s g).mul
     (scalarSection_chart_contDiffOn F ζ hζ ι hSmooth v g)
 
+include hSmooth in
 private lemma L_chart_varying_contDiffOn
-    (hSmooth : ∀ v : S, (ι v).val ∈
-      KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ
-        (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0))
     (f : ℂ → S) (s : ℂ) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z => L F ζ hζ ι s (f s)
@@ -323,10 +282,8 @@ private lemma L_chart_varying_contDiffOn
   exact (exp_alpha_chart_contDiffOn F ζ hζ s g).mul
     (scalarSection_chart_contDiffOn F ζ hζ ι hSmooth (f s) g)
 
- lemma parameterSection_chart_contDiffOn
-    (hSmooth : ∀ v : S, (ι v).val ∈
-      KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ
-        (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0))
+ include hSmooth in
+lemma parameterSection_chart_contDiffOn
     (g : KPGlobalTorusFunctionData.G F ζ hζ) (m : ℕ) (s : ℂ) (v : S) :
     ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z => parameterSection F ζ hζ ι m s v
@@ -348,6 +305,8 @@ private lemma L_chart_varying_contDiffOn
     ((exp_alpha_chart_contDiffOn F ζ hζ s g).mul
       (scalarSection_chart_contDiffOn F ζ hζ ι hSmooth v g))
 
+end
+
 variable (hSmooth : ∀ v : S, (ι v).val ∈
   KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ
     (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0))
@@ -368,11 +327,8 @@ private lemma parameterJet_joint_continuousOn
   have ha : ContDiffOn ℝ (⊤ : ℕ∞) (fun p : ℂ ×
       KPGlobalTorusBorelTwistCompatibility.GroupArch F => a p.2) (Set.univ ×ˢ U) :=
     (alpha_chart_contDiffOn F ζ hζ g).comp contDiffOn_snd (fun p hp => hp.2)
-  have hb : ContDiffOn ℝ (⊤ : ℕ∞) (fun p : ℂ ×
-      KPGlobalTorusBorelTwistCompatibility.GroupArch F => b p.2) (Set.univ ×ˢ U) :=
-    (scalarSection_chart_contDiffOn F ζ hζ ι hSmooth v g).comp
-      contDiffOn_snd (fun p hp => hp.2)
-  have hh := (ha.pow m).mul ((contDiffOn_fst.mul ha).cexp.mul hb)
+  have hh := (ha.pow m).mul ((contDiffOn_fst.mul ha).cexp.mul ((scalarSection_chart_contDiffOn F ζ hζ ι hSmooth v g).comp
+    contDiffOn_snd (fun p hp => hp.2)))
   have hj := (joint_jet (KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F)
     (h := fun s z => a z ^ m * (Complex.exp (s * a z) * b z)) hh n).continuousOn
   apply hj.congr
@@ -446,12 +402,8 @@ private lemma induced_uniform_level
       obtain ⟨K, hK⟩ := hy
       refine ⟨levelInter F ζ hζ J K, ?_⟩
       intro g j
-      have hleft : KPGlobalTorusFunctionData.globalLevel F ζ hζ (levelInter F ζ hζ J K) ≤
-          KPGlobalTorusFunctionData.globalLevel F ζ hζ J := Subgroup.map_mono inf_le_left
-      have hright : KPGlobalTorusFunctionData.globalLevel F ζ hζ (levelInter F ζ hζ J K) ≤
-          KPGlobalTorusFunctionData.globalLevel F ζ hζ K := Subgroup.map_mono inf_le_right
       change x.val (g * j.val) + y.val (g * j.val) = _
-      rw [hJ g ⟨j.val, hleft j.property⟩, hK g ⟨j.val, hright j.property⟩]
+      rw [hJ g ⟨j.val, (Subgroup.map_mono inf_le_left) j.property⟩, hK g ⟨j.val, (Subgroup.map_mono inf_le_right) j.property⟩]
       rfl)
 
 private lemma scalar_uniform_level (v : S) :
@@ -486,12 +438,10 @@ theorem stage_uniform_right_level :
       let W := levelInter F ζ hζ J K
       have hWJ : KPGlobalTorusFunctionData.globalLevel F ζ hζ W ≤
           KPGlobalTorusFunctionData.globalLevel F ζ hζ J := Subgroup.map_mono inf_le_left
-      have hWK : KPGlobalTorusFunctionData.globalLevel F ζ hζ W ≤
-          KPGlobalTorusFunctionData.globalLevel F ζ hζ K := Subgroup.map_mono inf_le_right
       refine ⟨W, hWJ.trans hJK, ?_⟩
       intro k hk g j
       rcases Finset.mem_insert.mp hk with rfl | hk
-      · exact hK g ⟨j.val, hWK j.property⟩
+      · exact hK g ⟨j.val, (Subgroup.map_mono inf_le_right) j.property⟩
       · exact hJ k hk g ⟨j.val, hWJ j.property⟩
   obtain ⟨J, hJK, hJ⟩ := hfinite Finset.univ
   refine ⟨J, ?_⟩
@@ -501,30 +451,15 @@ theorem stage_uniform_right_level :
     conv_rhs => rw [← e.sum_repr v]
     simp only [map_sum, map_smul, Submodule.coe_sum, Submodule.coe_smul,
       Finset.sum_apply, Finset.sum_fn, Pi.smul_apply, smul_eq_mul]
-    change (∑ i, e.repr v i * (ι (e i)).val.val (g * j.val)) =
-      ∑ i, e.repr v i * (ι (e i)).val.val g
     apply Finset.sum_congr rfl
     intro i hi
     rw [hJ i hi g j]
-  have ha := KPContFlatFullProductIwasawa.alpha_mul_compact F ζ hζ g ⟨j.val, hJK j.property⟩
   rw [L_formula, L_formula, hscalar]
-  exact congrArg (fun a : ℝ => Complex.exp (s * (a : ℂ)) * (ι v).val.val g) ha
+  exact congrArg (fun a : ℝ => Complex.exp (s * (a : ℂ)) * (ι v).val.val g) (KPContFlatFullProductIwasawa.alpha_mul_compact F ζ hζ g ⟨j.val, hJK j.property⟩)
 
-theorem parameterSection_contDiffOn
-    (g : KPGlobalTorusFunctionData.G F ζ hζ) (m : ℕ) (s : ℂ) (v : S) :
-    ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun z => parameterSection F ζ hζ ι m s v
-        (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g))
-      (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) :=
-  parameterSection_chart_contDiffOn F ζ hζ ι hSmooth g m s v
+alias parameterSection_contDiffOn := parameterSection_chart_contDiffOn
 
-theorem L_contDiffOn (f : ℂ → S) (s : ℂ)
-    (g : KPGlobalTorusFunctionData.G F ζ hζ) :
-    ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun z => L F ζ hζ ι s (f s)
-        (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g))
-      (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) :=
-  L_chart_varying_contDiffOn F ζ hζ ι hSmooth f s g
+alias L_contDiffOn := L_chart_varying_contDiffOn
 
 theorem parameterJet_continuousOn
     (g : KPGlobalTorusFunctionData.G F ζ hζ) (m n : ℕ)
@@ -535,21 +470,24 @@ theorem parameterJet_continuousOn
     (m := n) (by simp)
     (KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F).uniqueDiffOn).mono C.inside
 
-theorem spatialJet_continuousOn
-    (g : KPGlobalTorusFunctionData.G F ζ hζ) (n : ℕ)
-    (C : KPGlobalTorusFunctionData.JetCompact
-      (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F)) (s : ℂ) (v : S) :
+section
+
+variable (g : KPGlobalTorusFunctionData.G F ζ hζ) (n : ℕ)
+    (C : KPGlobalTorusFunctionData.JetCompact (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F))
+    (s : ℂ) (v : S)
+
+theorem spatialJet_continuousOn :
     ContinuousOn (spatialJet F ζ hζ ι g n s v) C.set :=
   ((L_chart_contDiffOn F ζ hζ ι hSmooth v s g).continuousOn_iteratedFDerivWithin
     (m := n) (by simp)
     (KPGlobalTorusBorelTwistCompatibility.groupArchDomain_open F).uniqueDiffOn).mono C.inside
 
-def compactJet (g : KPGlobalTorusFunctionData.G F ζ hζ) (n : ℕ)
-    (C : KPGlobalTorusFunctionData.JetCompact
-      (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F)) (s : ℂ) (v : S) :
+def compactJet :
     C(C.set, JetSpace F n) :=
   ⟨fun z => spatialJet F ζ hζ ι g n s v z.val,
     (spatialJet_continuousOn F ζ hζ ι hSmooth g n C s v).restrict⟩
+
+end
 
 def compactParameterJet (g : KPGlobalTorusFunctionData.G F ζ hζ) (m n : ℕ)
     (C : KPGlobalTorusFunctionData.JetCompact
@@ -584,29 +522,22 @@ theorem compactParameterJet_hasDerivWithinAt
       (alpha_chart_contDiffOn F ζ hζ g).comp
       (contDiffOn_snd (s := Set.univ ×ˢ KPGlobalTorusBorelTwistCompatibility.groupArchDomain F))
       (fun p hp => hp.2)
-    have hb : ContDiffOn ℝ (⊤ : ℕ∞)
-        (fun p : ℂ × KPGlobalTorusBorelTwistCompatibility.GroupArch F =>
-          (ι v).val.val (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ p.2 * g))
-        (Set.univ ×ˢ KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) :=
-      (scalarSection_chart_contDiffOn F ζ hζ ι hSmooth v g).comp
-      (contDiffOn_snd (s := Set.univ ×ˢ KPGlobalTorusBorelTwistCompatibility.groupArchDomain F))
-      (fun p hp => hp.2)
-    exact (ha.pow l).mul ((contDiffOn_fst.mul ha).cexp.mul hb)
+    exact (ha.pow l).mul ((contDiffOn_fst.mul ha).cexp.mul ((scalarSection_chart_contDiffOn F ζ hζ ι hSmooth v g).comp
+      (contDiffOn_snd)
+      (fun p hp => hp.2)))
   have hd (t : ℂ) (z : KPGlobalTorusBorelTwistCompatibility.GroupArch F)
       (_hz : z ∈ KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) :
       HasDerivAt (fun r => H m r z) (H (m+1) t z) t := by
-    let a : ℂ := (KPContFlatSourceRecipe.alpha F ζ hζ
+    let a := (KPContFlatSourceRecipe.alpha F ζ hζ
       (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g) : ℂ)
-    let b : ℂ := (ι v).val.val
+    let b := (ι v).val.val
       (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g)
-    have he := (((hasDerivAt_id t).mul_const a).cexp.mul_const b).const_mul (a^m)
-    convert he using 1 <;> simp only [H, parameterSection, L_formula, pow_succ, a, b, id_eq] <;>
+    convert ((((hasDerivAt_id t).mul_const a).cexp.mul_const b).const_mul (a^m)) using 1 <;> simp only [H, parameterSection, L_formula, pow_succ, a, b, id_eq] <;>
       first | (funext r; ring) | ring
   let h := fun t => compactParameterJet F ζ hζ ι hSmooth g m n C t v
   let k := fun t => compactParameterJet F ζ hζ ι hSmooth g (m+1) n C t v
   have hk : Continuous (Function.uncurry (fun t z => k t z)) := by
-    have hc := parameterJet_joint_continuousOn F ζ hζ ι hSmooth g (m+1) n v
-    exact hc.comp_continuous (continuous_fst.prodMk (continuous_subtype_val.comp continuous_snd))
+    exact (parameterJet_joint_continuousOn F ζ hζ ι hSmooth g (m+1) n v).comp_continuous (continuous_fst.prodMk (continuous_subtype_val.comp continuous_snd))
       (fun p => ⟨Set.mem_univ _, C.inside p.2.property⟩)
   have hp (t : ℂ) (z : C.set) : HasDerivAt (fun r => h r z) (k t z) t := by
     have hj := jets_hasDeriv (H m) (H (m+1))

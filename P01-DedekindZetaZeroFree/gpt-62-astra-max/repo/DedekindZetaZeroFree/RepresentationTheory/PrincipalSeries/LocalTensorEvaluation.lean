@@ -16,9 +16,9 @@ open NumberField IsDedekindDomain
 open KPGlobalTorusFiniteStages KPLocalPrincipalSeries
 open PrincipalOfKP.ResidueCoreBridge.CanonicalBinding
 variable {F : Type} [Field F] [NumberField F]
-variable (A : SArithmeticData F)
-variable (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
-variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
+    (A : SArithmeticData F)
+    (P : CompatibleModelData F A.zeta12 A.primitive_zeta12)
+    (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 
 abbrev Plus : KPHilbert.Place F → Type
   | Sum.inl _ => KPLiteralTensor.harmonicPlus
@@ -152,7 +152,7 @@ theorem rawStageInsertion_arch_factorization (s : RestrictedTensorSimple.Level (
   rw [rawStageInsertion_pure]
   simp_rw [localValue_factor]
   rw [(PiTensorProduct.tprod ℂ).map_smul_univ]
-  simp only [map_smul, Submodule.coe_smul_of_tower, Pi.smul_apply, smul_eq_mul]
+  simp
 
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 

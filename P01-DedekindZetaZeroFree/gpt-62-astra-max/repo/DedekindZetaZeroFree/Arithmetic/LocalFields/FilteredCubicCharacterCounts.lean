@@ -25,6 +25,8 @@ private lemma cube (z : Mu3) : z ^ 3 = 1 := by
   apply Subtype.ext
   exact (mem_rootsOfUnity 3 _).mp z.property
 
+alias FilteredCubicCharacterCounts.cube := cube
+
 private lemma homCard (Q : Type*) [CommGroup Q] [Finite Q]
     (hp : ∀ q : Q, q ^ 3 = 1) : Nat.card (Q →* Mu3) = Nat.card Q := by
   let e : (Q →* Mu3) ≃ (Q →* ℂˣ) :=
@@ -55,7 +57,7 @@ noncomputable def levelEquiv {U : Type*} [CommGroup U] [TopologicalSpace U]
       invFun := fun f => ⟨⟨f.comp (QuotientGroup.mk' H),
         (continuous_of_discreteTopology (f := f)).comp QuotientGroup.continuous_mk⟩,
         fun x hx => by
-          change f (x : U ⧸ H) = 1
+          change f x = 1
           rw [(QuotientGroup.eq_one_iff x).mpr ((show V ≤ H from le_sup_right) hx), map_one]⟩
       left_inv := fun χ => by apply Subtype.ext; ext x; rfl
       right_inv := fun f => by
@@ -70,15 +72,14 @@ private lemma levelCount {U : Type*} [CommGroup U] [TopologicalSpace U]
     Finite {χ : Character U // V ≤ χ.toMonoidHom.ker} ∧
     Nat.card {χ : Character U // V ≤ χ.toMonoidHom.ker} = (cubes U ⊔ V).index := by
   let H := cubes U ⊔ V
-  have hp : ∀ q : U ⧸ H, q ^ 3 = 1 := by
-    intro q
-    obtain ⟨x, rfl⟩ := QuotientGroup.mk'_surjective H q
-    rw [← map_pow]
-    exact (QuotientGroup.eq_one_iff _).mpr ((show cubes U ≤ H from le_sup_left) ⟨x, rfl⟩)
   letI : Finite ((U ⧸ H) →* Mu3) := Finite.of_injective
     (fun f : (U ⧸ H) →* Mu3 => (f : (U ⧸ H) → Mu3)) DFunLike.coe_injective
-  exact ⟨Finite.of_equiv _ (levelEquiv V hopen).symm,
-    (Nat.card_congr (levelEquiv V hopen)).trans (homCard (U ⧸ H) hp)⟩
+  refine ⟨Finite.of_equiv _ (levelEquiv V hopen).symm,
+    (Nat.card_congr (levelEquiv V hopen)).trans (homCard (U ⧸ H) ?_)⟩
+  intro q
+  obtain ⟨x, rfl⟩ := QuotientGroup.mk'_surjective H q
+  rw [← map_pow]
+  exact (QuotientGroup.eq_one_iff _).mpr ((show cubes U ≤ H from le_sup_left) ⟨x, rfl⟩)
 
 end CubicCharacters
 
@@ -108,15 +109,11 @@ theorem kp_filtered_cubic_character_count
   classical
   have hex : ∀ χ : Character U, ∃ j, V j ≤ χ.toMonoidHom.ker := by
     intro χ
-    have ho : IsOpen (χ.toMonoidHom.ker : Set U) :=
-      (isOpen_discrete {1}).preimage χ.continuous
-    exact hbasis _ (ho.mem_nhds (by simp))
-  have hmin : ∀ χ : Character U, V (conductor V χ) ≤ χ.toMonoidHom.ker :=
+    exact hbasis _ (((isOpen_discrete {1}).preimage χ.continuous).mem_nhds (by simp))
+  have hmin :=
     fun χ => Nat.sInf_mem (hex χ)
   have hiff : ∀ (χ : Character U) (j : ℕ),
-      conductor V χ ≤ j ↔ V j ≤ χ.toMonoidHom.ker := by
-    intro χ j
-    exact ⟨fun h => le_trans (hdescending h) (hmin χ), fun h => Nat.sInf_le h⟩
+      conductor V χ ≤ j ↔ V j ≤ χ.toMonoidHom.ker := fun χ j => ⟨fun h => le_trans (hdescending h) (hmin χ), fun h => Nat.sInf_le h⟩
   have hcount : ∀ j, Finite {χ : Character U // conductor V χ ≤ j} ∧
       Nat.card {χ : Character U // conductor V χ ≤ j} = levelIndex V j := by
     intro j
@@ -133,7 +130,7 @@ theorem kp_filtered_cubic_character_count
     let f : {χ : Character U // conductor V χ ≤ N} →
         {χ : Character U // conductor V χ ≤ k} :=
       fun χ => ⟨χ.val, le_trans χ.property (le_max_left _ _)⟩
-    have hf : Function.Bijective f :=
+    have hf :=
       (Nat.bijective_iff_injective_and_card f).mpr
         ⟨fun a b h => Subtype.ext (congrArg
             (fun c : {χ : Character U // conductor V χ ≤ k} => c.val) h),

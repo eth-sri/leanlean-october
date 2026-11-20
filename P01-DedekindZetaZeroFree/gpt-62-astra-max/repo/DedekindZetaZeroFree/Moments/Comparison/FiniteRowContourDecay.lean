@@ -68,16 +68,7 @@ theorem comparisonGaussianMellinWeight_polynomial_bound
     rwa [sq_abs] at h2
   have hexp : ‖Complex.exp ((ξ + z - 1) ^ 2)‖ ≤
       Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2) := by
-    have h := norm_exp_sq_le (ξ + z - 1) ((|a| + |e| + |b| + |f| + 1) ^ 2) hK
-    simpa only [Complex.add_im, Complex.sub_im, Complex.one_im, sub_zero] using h
-  have hMz : ‖M z‖ ≤ CM * (1 + |z.im|) ^ (-(A + D)) :=
-    hCM z (by simp only [comparisonClosedStrip, Set.mem_setOf_eq]; exact ⟨hze, hzf⟩)
-  have hWw : ‖W w‖ ≤ CW * (1 + |w.im|) ^ (-(A + B)) :=
-    hCW w (by simp only [comparisonClosedStrip, Set.mem_setOf_eq]; exact ⟨hwc, hwd⟩)
-  have hB1 : (2 + |w.im|) ^ B ≤ 2 ^ B * (1 + |w.im|) ^ B :=
-    rpow_two_add_le _ _ (abs_nonneg _) hB
-  have hD1 : (2 + |z.im|) ^ D ≤ 2 ^ D * (1 + |z.im|) ^ D :=
-    rpow_two_add_le _ _ (abs_nonneg _) hD
+    simpa using (norm_exp_sq_le (ξ + z - 1) ((|a| + |e| + |b| + |f| + 1) ^ 2) hK)
   have e1 : (1 + |z.im|) ^ (-(A + D)) * (1 + |z.im|) ^ D = (1 + |z.im|) ^ (-A) := by
     rw [← Real.rpow_add (by positivity : (0 : ℝ) < 1 + |z.im|)]
     congr 1
@@ -88,25 +79,6 @@ theorem comparisonGaussianMellinWeight_polynomial_bound
     ring
   have e3 : (2 : ℝ) ^ B * 2 ^ D = (2 : ℝ) ^ (B + D) := by
     rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 2)]
-  have s1 : ‖Complex.exp ((ξ + z - 1) ^ 2)‖ * ‖M z‖ ≤
-      (Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2)) *
-        (CM * (1 + |z.im|) ^ (-(A + D))) :=
-    mul_le_mul hexp hMz (norm_nonneg _) (by positivity)
-  have s2 : ‖Complex.exp ((ξ + z - 1) ^ 2)‖ * ‖M z‖ * ‖W w‖ ≤
-      (Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2)) *
-        (CM * (1 + |z.im|) ^ (-(A + D))) * (CW * (1 + |w.im|) ^ (-(A + B))) :=
-    mul_le_mul s1 hWw (norm_nonneg _) (by positivity)
-  have s3 : ‖Complex.exp ((ξ + z - 1) ^ 2)‖ * ‖M z‖ * ‖W w‖ * (2 + |w.im|) ^ B ≤
-      (Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2)) *
-        (CM * (1 + |z.im|) ^ (-(A + D))) * (CW * (1 + |w.im|) ^ (-(A + B))) *
-        (2 ^ B * (1 + |w.im|) ^ B) :=
-    mul_le_mul s2 hB1 (by positivity) (by positivity)
-  have s4 : ‖Complex.exp ((ξ + z - 1) ^ 2)‖ * ‖M z‖ * ‖W w‖ * (2 + |w.im|) ^ B *
-      (2 + |z.im|) ^ D ≤
-      (Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2)) *
-        (CM * (1 + |z.im|) ^ (-(A + D))) * (CW * (1 + |w.im|) ^ (-(A + B))) *
-        (2 ^ B * (1 + |w.im|) ^ B) * (2 ^ D * (1 + |z.im|) ^ D) :=
-    mul_le_mul s3 hD1 (by positivity) (by positivity)
   have eq : (Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2)) *
         (CM * (1 + |z.im|) ^ (-(A + D))) * (CW * (1 + |w.im|) ^ (-(A + B))) *
         (2 ^ B * (1 + |w.im|) ^ B) * (2 ^ D * (1 + |z.im|) ^ D) =
@@ -129,7 +101,7 @@ theorem comparisonGaussianMellinWeight_polynomial_bound
             Real.exp (-(ξ.im + z.im) ^ 2) * (1 + |z.im|) ^ (-A) * (1 + |w.im|) ^ (-A) := by
           ring
   rw [comparisonGaussianMellinWeight, norm_mul, norm_mul]
-  refine s4.trans (le_of_eq ?_)
+  refine (mul_le_mul (mul_le_mul (mul_le_mul (mul_le_mul hexp (hCM z (by simp only [comparisonClosedStrip, Set.mem_setOf_eq]; exact ⟨hze, hzf⟩)) (norm_nonneg _) (by positivity)) (hCW w (by simp only [comparisonClosedStrip, Set.mem_setOf_eq]; exact ⟨hwc, hwd⟩)) (norm_nonneg _) (by positivity)) (rpow_two_add_le _ _ (abs_nonneg _) hB) (by positivity) (by positivity)) (rpow_two_add_le _ _ (abs_nonneg _) hD) (by positivity) (by positivity)).trans (le_of_eq ?_)
   rw [comparisonHeightEnvelope]
   exact eq.trans (by ring)
 
@@ -142,23 +114,22 @@ private lemma weight_shift (k t ν : ℝ) (hk : 0 ≤ k) :
   have hh := Real.rpow_le_rpow (by positivity : 0 ≤ 1+|t|) ht hk
   rw [Real.mul_rpow (by positivity) (by positivity)] at hh
   rw [Real.rpow_neg (by positivity), Real.rpow_neg (by positivity)]
-  have hd : (1+|t|)^k / (1+|ν|)^k ≤ (1+|t+ν|)^k :=
-    (div_le_iff₀ (by positivity)).mpr hh
-  have hi := mul_le_mul_of_nonneg_left hd (by positivity : 0 ≤ ((1+|t|)^k)⁻¹)
   have ht0 : (1+|t|)^k ≠ 0 := by positivity
-  simpa [div_eq_mul_inv, ← mul_assoc, inv_mul_cancel₀ ht0] using hi
+  simpa [div_eq_mul_inv, ← mul_assoc, inv_mul_cancel₀ ht0] using (mul_le_mul_of_nonneg_left ((div_le_iff₀ (by positivity)).mpr hh) (by positivity : 0 ≤ ((1+|t|)^k)⁻¹))
 
 private lemma gauss_poly (k x : ℝ) (hk : 0 ≤ k) :
     Real.exp (-x^2) * (1+|x|)^k ≤
       Real.exp (k^2/2) * Real.exp (-(1/2:ℝ)*x^2) := by
   rw [Real.rpow_def_of_pos (by positivity), ← Real.exp_add, ← Real.exp_add]
   apply Real.exp_le_exp.mpr
-  have hl := Real.log_le_sub_one_of_pos (by positivity : 0 < 1+|x|)
-  have hm := mul_le_mul_of_nonneg_right hl hk
+  have hm := mul_le_mul_of_nonneg_right (Real.log_le_sub_one_of_pos (by positivity : 0 < 1+|x|)) hk
   have hs := sq_nonneg (|x|-k)
   nlinarith [sq_abs x]
 
-theorem comparisonHeightEnvelope_convolution (A : ℝ) (hA : 0 ≤ A) :
+variable (A : ℝ) (hA : 0 ≤ A)
+
+include hA in
+theorem comparisonHeightEnvelope_convolution :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ,
       Integrable (fun p : ℝ × ℝ => comparisonHeightEnvelope (A + 2) t p.1 p.2) ∧
       (∫ p : ℝ × ℝ, comparisonHeightEnvelope (A + 2) t p.1 p.2) ≤
@@ -218,7 +189,8 @@ theorem comparisonHeightEnvelope_convolution (A : ℝ) (hA : 0 ≤ A) :
     _ ≤ (Real.exp (k^2/2)*G*W+1)*(1+|t|)^(-(A+2)) := by
       apply mul_le_mul_of_nonneg_right (by linarith) (by positivity)
 
-theorem comparisonHeightEnvelope_integrable (A : ℝ) (hA : 0 ≤ A) :
+include hA in
+theorem comparisonHeightEnvelope_integrable :
     Integrable (fun p : ℝ × ℝ × ℝ =>
       comparisonHeightEnvelope (A + 2) p.1 p.2.1 p.2.2) := by
   obtain ⟨C, hC, h⟩ := comparisonHeightEnvelope_convolution A hA
@@ -229,13 +201,9 @@ theorem comparisonHeightEnvelope_integrable (A : ℝ) (hA : 0 ≤ A) :
       comparisonHeightEnvelope (A+2) p.1 p.2.1 p.2.2) volume := by
     unfold comparisonHeightEnvelope
     apply Continuous.aestronglyMeasurable
-    have hν : Continuous (fun p : ℝ × ℝ × ℝ => (1 + |p.2.2|) ^ (-(A+2))) :=
-      (by fun_prop : Continuous (fun p : ℝ × ℝ × ℝ => 1 + |p.2.2|)).rpow_const
-        (fun p => Or.inl (by positivity))
-    have hτ : Continuous (fun p : ℝ × ℝ × ℝ => (1 + |p.2.1|) ^ (-(A+2))) :=
-      (by fun_prop : Continuous (fun p : ℝ × ℝ × ℝ => 1 + |p.2.1|)).rpow_const
-        (fun p => Or.inl (by positivity))
-    exact ((by fun_prop : Continuous (fun p : ℝ × ℝ × ℝ => Real.exp (-(p.1 + p.2.2)^2))).mul hν).mul hτ
+    exact ((by fun_prop : Continuous (fun p : ℝ × ℝ × ℝ => Real.exp (-(p.1 + p.2.2)^2))).mul ((by fun_prop : Continuous (fun p : ℝ × ℝ × ℝ => 1 + |p.2.2|)).rpow_const
+      (fun p => Or.inl (by positivity)))).mul ((by fun_prop : Continuous (fun p : ℝ × ℝ × ℝ => 1 + |p.2.1|)).rpow_const
+      (fun p => Or.inl (by positivity)))
   have hn : ∀ p : ℝ × ℝ × ℝ, 0 ≤ comparisonHeightEnvelope (A+2) p.1 p.2.1 p.2.2 := by
     intro p; unfold comparisonHeightEnvelope; positivity
   apply (integrable_prod_iff hm).mpr

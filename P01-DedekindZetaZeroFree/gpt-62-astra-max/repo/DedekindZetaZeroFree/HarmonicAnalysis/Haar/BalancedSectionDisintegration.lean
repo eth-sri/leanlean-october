@@ -11,7 +11,7 @@ open scoped NumberField Classical ENNReal
 open NumberField MeasureTheory IsDedekindDomain
 namespace DedekindZetaZeroFree.TraceHaarTransport
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 local instance (A : SArithmeticData F) : MeasurableSpace A.G1 := borel _
 local instance (A : SArithmeticData F) : BorelSpace A.G1 := ⟨rfl⟩
 local instance (A : SArithmeticData F) : MeasurableSpace (SLocalProduct F A.Sf) := borel _
@@ -27,8 +27,7 @@ def balancedSplit (A : SArithmeticData F)
     (p : ThetaProfileHaarSheets.PositiveAxis × A.G1) : A.G :=
   p.2.val * A.radialSection p.1.val p.1.property
 
-theorem continuous_balancedSplit (A : SArithmeticData F) : Continuous (balancedSplit A) := by
-  exact (continuous_subtype_val.comp continuous_snd).mul
+theorem continuous_balancedSplit (A : SArithmeticData F) : Continuous (balancedSplit A) := (continuous_subtype_val.comp continuous_snd).mul
     (A.continuous_radialSection.comp continuous_fst)
 
 def sectionRatio (A : SArithmeticData F) (v : InfinitePlace F)
@@ -83,7 +82,7 @@ theorem map_balancedSplit (A : SArithmeticData F) (v : InfinitePlace F)
       ThetaProfileHaarSheets.positiveHaar = ProbeSheet.radialMeasure := by
   rw [ThetaProfileHaarSheets.positiveHaar_map_val, ProbeSheet.radialMeasure,
     restrict_withDensity measurableSet_Ioi]
-  simp only [one_div]
+  simp
 
 theorem balanced_probe_map (R : PrincipalMellin.ActualRecipe S η) :
     Measure.map (ProbeSheet.localUnits R.A)
@@ -93,7 +92,7 @@ theorem balanced_probe_map (R : PrincipalMellin.ActualRecipe S η) :
   letI := ProbeSheet.secondCountable_G1 R.A
   letI := ProbeSheet.locallyCompact_G1 R.A
   letI : R.probe.domain.measure.IsHaarMeasure := R.probe.domain.haar
-  have hm : Measure.map (Prod.map (Subtype.val : ThetaProfileHaarSheets.PositiveAxis → ℝ) id)
+  have hm : Measure.map (Prod.map Subtype.val id)
       (ThetaProfileHaarSheets.positiveHaar.prod R.probe.domain.measure) =
       ProbeSheet.radialMeasure.prod R.probe.domain.measure := by
     rw [← Measure.map_prod_map _ _ continuous_subtype_val.measurable measurable_id,
@@ -117,14 +116,12 @@ theorem balanced_probe_map (R : PrincipalMellin.ActualRecipe S η) :
   letI := ProbeSheet.secondCountable_G1 R.A
   letI := ProbeSheet.locallyCompact_G1 R.A
   letI : R.probe.domain.measure.IsHaarMeasure := R.probe.domain.haar
-  have _hi := hf.comp_mul_right (μ := R.probe.domain.measure) z
-  exact integral_mul_right_eq_self (μ := R.probe.domain.measure)
+  exact integral_mul_right_eq_self
     (fun y : R.A.G1 => f (y.val * R.A.radialSection x.val x.property)) z
 
  theorem finite_trace_mass (p : KPFinitePlace F) :
-    localNormalizedHaar F p {x | ‖x‖ ≤ 1} = ENNReal.ofReal (PoissonS.integerVolume F p) := by
-  have h := (ProbeFourierPoissonFoundation.productHaar_normalization F {p}).2.1 ⟨p, by simp⟩
-  exact h
+    localNormalizedHaar F p {x | ‖x‖ ≤ 1} = ENNReal.ofReal (PoissonS.integerVolume F p) :=
+  ProbeFourierPoissonFoundation.localNormalization_finiteHaar F {p} ⟨p, by simp⟩
 
 theorem probe_polar_factors (R : PrincipalMellin.ActualRecipe S η) :
     ∃ (μ : ∀ p : R.A.Sf, Measure (p.val.adicCompletion F)ˣ)

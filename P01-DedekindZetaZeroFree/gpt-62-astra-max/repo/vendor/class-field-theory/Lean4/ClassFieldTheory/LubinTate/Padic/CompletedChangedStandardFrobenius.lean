@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -90,40 +87,31 @@ theorem
       (arithmeticFrobeniusOfUnramifiedValuation D M)⁻¹ := by
   let D := padicCompletedChangedUniformizerFixedField p u n
   let M := padicCompletedStandardChangedCompositum p u n
-  let : FiniteDimensional D M :=
+  let :=
     FiniteDimensional.right ℚ_[p] D M
-  let : IsGalois D M :=
+  let :=
     IsGalois.tower_top_of_isGalois ℚ_[p] D M
-  let : NontriviallyNormedField D :=
+  let :=
     finiteExtensionSpectralNormedField ℚ_[p] D
-  let : ValuativeRel D :=
+  let :=
     finiteExtensionSpectralValuativeRel ℚ_[p] D
-  let : IsNonarchimedeanLocalField D :=
+  let :=
     finiteExtensionSpectralIsNonarchimedeanLocalField ℚ_[p] D
-  let : NontriviallyNormedField M :=
+  let :=
     finiteExtensionSpectralNormedField ℚ_[p] M
-  let : ValuativeRel M :=
+  let :=
     finiteExtensionSpectralValuativeRel ℚ_[p] M
-  let : IsNonarchimedeanLocalField M :=
+  let :=
     finiteExtensionSpectralIsNonarchimedeanLocalField ℚ_[p] M
-  let :
-      Valuation.HasExtension (ValuativeRel.valuation D)
-        (ValuativeRel.valuation M) :=
+  let :=
     finiteExtensionSpectralValuation_hasExtension_of_tower
       ℚ_[p] D M
-  let :
-      Module.Finite
-        (ValuativeRel.valuation D).integer
-        (ValuativeRel.valuation M).integer :=
+  let :=
     integerRing_moduleFinite_of_finite_separable D M
-  let :
-      IsIntegralClosure
-        (ValuativeRel.valuation M).integer
-        (ValuativeRel.valuation D).integer M :=
+  let :=
     padicCompletedStandardChangedCompositum_integerRing_isIntegralClosure
       p u n
-  let :
-      IsNonarchimedeanLocalField.IsUnramifiedValuedExtension D M :=
+  let :=
     padicCompletedStandardChangedCompositum_isUnramifiedValuedExtension
       p u n
   have hM :
@@ -144,8 +132,7 @@ theorem
     galoisGroupResidueAlgEquivHomOfIsIntegralClosure_injective_of_unramifiedValuation
       D M
   calc
-    galoisGroupResidueAlgEquivHomOfIsIntegralClosure D M
-        (padicCompletedChangedUniformizerRelativeArtinCandidate p u n) =
+    _ =
       (residueExtensionArithmeticFrobeniusOfValuationExtension D M)⁻¹ := by
         apply AlgEquiv.ext
         intro a
@@ -155,9 +142,7 @@ theorem
         let completedFrobenius :=
           IsLocalRing.ResidueField.mapEquiv
             (padicCompletedUnitFrobeniusIntegerEquiv p n u⁻¹)
-        let x :
-            IsLocalRing.ResidueField
-              (localCompleteDVF M).valuation.valuationSubring :=
+        let x :=
           (residueExtensionArithmeticFrobeniusOfValuationExtension D M)⁻¹ a
         apply embedding.injective
         change
@@ -176,15 +161,13 @@ theorem
             IsLocalRing.ResidueField.mapEquiv
                 (padicCompletedUnitFrobeniusIntegerEquiv p n u⁻¹).symm
               (embedding a) by
-            simpa only [localCompleteDVF_valuation_eq] using
+            simpa using
               padicCompletedStandardChangedCompositumResidueEmbedding_artinCandidate
                 p u n a]
         apply completedFrobenius.symm_apply_eq.2
         symm
         calc
-          completedFrobenius (embedding x) = embedding x ^ p := by
-            exact
-              padicCompletedUnitFrobeniusIntegerEquiv_residue_apply_eq_pow
+          _ = embedding x ^ p := padicCompletedUnitFrobeniusIntegerEquiv_residue_apply_eq_pow
                 p n u⁻¹ (embedding x)
           _ = embedding (x ^ p) := (embedding.map_pow x p).symm
           _ =
@@ -194,15 +177,14 @@ theorem
             exact
               (padicCompletedStandardChangedCompositum_residueArithmeticFrobenius_apply
                 p u n x).symm
-          _ = embedding a := by
-            exact congrArg embedding
+          _ = embedding a := congrArg embedding
               ((residueExtensionArithmeticFrobeniusOfValuationExtension
                 D M).apply_symm_apply a)
     _ =
         (galoisGroupResidueAlgEquivHomOfIsIntegralClosure D M
           (arithmeticFrobeniusOfUnramifiedValuation D M))⁻¹ := by
       apply congrArg (fun σ => σ⁻¹)
-      simpa only [galoisGroupResidueAlgEquivHomOfIsIntegralClosure_apply] using
+      simpa using
         (galoisGroupResidueAlgEquivOfIsIntegralClosure_arithmeticFrobenius D M).symm
 
 end LubinTate

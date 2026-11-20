@@ -12,21 +12,22 @@ theorem exists_totallyPositive_residue (F : Type) [Field F] [NumberField F]
     (r : Ideal (𝓞 F)) (hr : r ≠ ⊥) (a : 𝓞 F) :
     ∃ b : 𝓞 F, b ≠ 0 ∧ b - a ∈ r ∧
       (∀ φ : F →+* ℝ, 0 < φ (b : F)) := by
+  let algebraMap₀ := algebraMap (𝓞 F) F
   classical
 
   set d : ℕ := r.absNorm with hd
   have hd_ne : d ≠ 0 := by rw [hd, ne_eq, Ideal.absNorm_eq_zero_iff]; exact hr
-  have hd_pos : 0 < d := Nat.pos_iff_ne_zero.mpr hd_ne
+  have hd_pos := Nat.pos_iff_ne_zero.mpr hd_ne
   have hd_mem : (d : 𝓞 F) ∈ r := by rw [hd]; exact Ideal.absNorm_mem r
   have hdR : (0:ℝ) < (d:ℝ) := by exact_mod_cast hd_pos
   have hd_ne_ring : (d : 𝓞 F) ≠ 0 := Nat.cast_ne_zero.mpr hd_ne
 
   have hcoe_add : ∀ x y : 𝓞 F, ((x + y : 𝓞 F) : F) = (x:F) + (y:F) :=
-    fun x y => map_add (algebraMap (𝓞 F) F) x y
+    fun x y => map_add (algebraMap₀) x y
   have hcoe_mul : ∀ x y : 𝓞 F, ((x * y : 𝓞 F) : F) = (x:F) * (y:F) :=
-    fun x y => map_mul (algebraMap (𝓞 F) F) x y
+    fun x y => map_mul (algebraMap₀) x y
   have hcoe_nat : ∀ n : ℕ, ((n : 𝓞 F) : F) = (n:F) :=
-    fun n => map_natCast (algebraMap (𝓞 F) F) n
+    fun n => map_natCast (algebraMap₀) n
 
   set C : ℝ := ∑ φ : F →+* ℝ, |φ (a : F)| with hC
   obtain ⟨N, hN⟩ := exists_nat_gt (C / (d:ℝ))
@@ -61,7 +62,7 @@ theorem exists_totallyPositive_residue (F : Type) [Field F] [NumberField F]
       have h2 : ((b1 + (d : 𝓞 F) : 𝓞 F) : F) = (b1 : F) + (d : F) := by
         rw [hcoe_add, hcoe_nat]
       have hz : φ (b1 : F) = 0 := by
-        rw [hb1z, show ((0:𝓞 F) : F) = (0:F) from map_zero (algebraMap (𝓞 F) F),
+        rw [hb1z, show ((0:𝓞 F) : F) = (0:F) from map_zero (algebraMap₀),
           map_zero]
       rw [h2, map_add, hz, zero_add]
       simpa only [hcoe_nat d, map_natCast] using hdR

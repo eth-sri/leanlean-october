@@ -24,11 +24,7 @@ def mixedGaussian (x : K) (q : InfinitePlace K → ℝ) : ℂ :=
   Complex.exp (-(Real.pi : ℂ) *
     ((∑ v : InfinitePlace K, (v.mult : ℝ) * (q v) ^ 2 * (v x) ^ 2 : ℝ) : ℂ))
 
-theorem norm_sq_traceRadialScale_traceEmbedding
-    (q : InfinitePlace K → ℝ) (hq : ∀ v, q v ≠ 0) (x : K) :
-    ‖traceRadialScale K q hq (traceEmbedding K x)‖ ^ 2 =
-      ∑ v : InfinitePlace K, (v.mult : ℝ) * (q v) ^ 2 * (v x) ^ 2 := by
-  exact GaussianSchwartz.mixed_norm_sq K q hq x
+alias norm_sq_traceRadialScale_traceEmbedding := GaussianSchwartz.mixed_norm_sq
 
 theorem mixedGaussian_eq_latticeGaussian
     (x : K) (q : InfinitePlace K → ℝ) (hq : ∀ v, q v ≠ 0) :
@@ -61,8 +57,11 @@ theorem mixedGaussian_mul_unit
   rw [map_mul]
   ring
 
-theorem fractionalShapeIdealTheta_unit_invariant
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (u : (𝓞 K)ˣ)
+section
+
+variable (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
+
+theorem fractionalShapeIdealTheta_unit_invariant (u : (𝓞 K)ˣ)
     (q : InfinitePlace K → ℝ) (hq : ∀ v, q v ≠ 0)
     (huq : ∀ v, v (algebraMap (𝓞 K) K (u : 𝓞 K)) * q v ≠ 0) :
     fractionalShapeIdealTheta K I
@@ -72,10 +71,9 @@ theorem fractionalShapeIdealTheta_unit_invariant
     fractionalShapeIdealTheta_eq_tsum_mixedGaussian]
   simp_rw [← mixedGaussian_mul_unit]
   exact GaussianSchwartz.tsum_fractionalIdeal_mul_unit K
-    (I : FractionalIdeal (𝓞 K)⁰ K) u (fun x ↦ mixedGaussian K x q)
+    I u (fun x ↦ mixedGaussian K x q)
 
-theorem fractionalShapeIdealTheta_expMapBasis_add_unitCoordinateShift
-    (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (x : realSpace K)
+theorem fractionalShapeIdealTheta_expMapBasis_add_unitCoordinateShift (x : realSpace K)
     (z : {w : InfinitePlace K // w ≠ Units.dirichletUnitTheorem.w₀} → ℤ) :
     fractionalShapeIdealTheta K I
         (expMapBasis (x + unitCoordinateShift z))
@@ -91,8 +89,10 @@ theorem fractionalShapeIdealTheta_expMapBasis_add_unitCoordinateShift
     fractionalShapeIdealTheta_eq_tsum_mixedGaussian]
   simp_rw [heq, ← mixedGaussian_mul_unit]
   exact GaussianSchwartz.tsum_fractionalIdeal_mul_unit K
-    (I : FractionalIdeal (𝓞 K)⁰ K) (fundamentalUnitForShift z)
+    I (fundamentalUnitForShift z)
     (fun y ↦ mixedGaussian K y (expMapBasis x))
+
+end
 
 def traceCoordinates :
     euclidean.mixedSpace K ≃ₗᵢ[ℝ] EuclideanSpace ℝ (mixedEmbedding.index K) :=
@@ -107,19 +107,20 @@ def traceCoordinateCLM (i : mixedEmbedding.index K) :
     (i : mixedEmbedding.index K) (x : euclidean.mixedSpace K) :
     traceCoordinateCLM K i x = traceCoordinates K x i := rfl
 
-def traceRealCoordinateCLM (w : {v : InfinitePlace K // IsReal v}) :
+section
+
+variable (w : {v : InfinitePlace K // IsReal v})
+
+def traceRealCoordinateCLM :
     euclidean.mixedSpace K →L[ℝ] ℝ :=
   traceCoordinateCLM K (Sum.inl w)
 
-@[simp] theorem traceRealCoordinateCLM_apply
-    (w : {v : InfinitePlace K // IsReal v}) (x : euclidean.mixedSpace K) :
+@[simp] theorem traceRealCoordinateCLM_apply (x : euclidean.mixedSpace K) :
     traceRealCoordinateCLM K w x = traceCoordinates K x (Sum.inl w) := rfl
 
-theorem exists_latticeGaussianSchwartz
-    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
-    [FiniteDimensional ℝ E] (a : ℝ) (ha : 0 < a) :
-    ∃ f : SchwartzMap E ℂ, ∀ x, f x = latticeGaussian a x := by
-  exact GaussianSchwartz.exists_gaussian a ha
+end
+
+alias exists_latticeGaussianSchwartz := GaussianSchwartz.exists_gaussian
 
 theorem exists_traceGaussianSchwartz :
     ∃ f : SchwartzMap (euclidean.mixedSpace K) ℂ,

@@ -33,17 +33,14 @@ def dB : coveredBorel F v π →* (ℝ≥0)ˣ := halfModulus (deltaB F v π)
 
 theorem deltaB_eq (b : coveredBorel F v π) (A : GL2 F v)
     (hA : Matrix.ProjGenLinGroup.mk A = π b.val) (hupper : A 1 0 = 0) :
-    ((deltaB F v π b : ℝ≥0) : ℝ) = ‖A 0 0 / A 1 1‖ := by
-  exact ordinaryDelta_eq F v (borelProjection F v π b) A hA hupper
+    ((deltaB F v π b : ℝ≥0) : ℝ) = ‖A 0 0 / A 1 1‖ := ordinaryDelta_eq F v (borelProjection F v π b) A hA hupper
 
 theorem deltaB_locallyConstant (hπ : Continuous π) :
-    IsLocallyConstant (deltaB F v π) := by
-  exact (ordinaryDelta_locallyConstant F v).comp_continuous
+    IsLocallyConstant (deltaB F v π) := (ordinaryDelta_locallyConstant F v).comp_continuous
     ((hπ.comp continuous_subtype_val).subtype_mk (fun b => b.property))
 
 theorem dB_locallyConstant (hπ : Continuous π) :
-    IsLocallyConstant (dB F v π) := by
-  exact halfModulus_locallyConstant _ (deltaB_locallyConstant F v π hπ)
+    IsLocallyConstant (dB F v π) := halfModulus_locallyConstant _ (deltaB_locallyConstant F v π hπ)
 
 theorem deltaB_upperRoot (x : LocalField F v) (b : coveredBorel F v π)
     (hb : π b.val = upperRootElement F v x) : deltaB F v π b = 1 := by
@@ -54,8 +51,7 @@ theorem deltaB_upperRoot (x : LocalField F v) (b : coveredBorel F v π)
   exact ordinaryDelta_upperRoot F v x
 
 theorem coveredBorel_closed (hπ : Continuous π) :
-    IsClosed (coveredBorel F v π : Set G) := by
-  exact (upperBorel_closed F v).preimage hπ
+    IsClosed (coveredBorel F v π : Set G) := (upperBorel_closed F v).preimage hπ
 
  def coveredFlagMap : SectionCosetSpace (coveredBorel F v π) → SectionCosetSpace (upperBorel F v) :=
   Quotient.map π (by
@@ -63,7 +59,7 @@ theorem coveredBorel_closed (hπ : Continuous π) :
     apply (QuotientGroup.rightRel_apply).mpr
     have h := (QuotientGroup.rightRel_apply).mp hab
     change π (b * a⁻¹) ∈ upperBorel F v at h
-    simpa only [map_mul, map_inv] using h)
+    simpa using h)
 
 omit [TopologicalSpace G] [IsTopologicalGroup G] in
  theorem coveredFlagMap_bijective (hsurj : Function.Surjective π) : Function.Bijective (coveredFlagMap F v π) := by
@@ -74,9 +70,8 @@ omit [TopologicalSpace G] [IsTopologicalGroup G] in
     intro hab
     apply Quotient.sound
     apply (QuotientGroup.rightRel_apply).mpr
-    have h := (QuotientGroup.rightRel_apply).mp (Quotient.eq.mp hab)
     change π (b * a⁻¹) ∈ upperBorel F v
-    simpa only [map_mul, map_inv] using h
+    simpa only [map_mul, map_inv] using ((QuotientGroup.rightRel_apply).mp (Quotient.eq.mp hab))
   · intro a
     induction a using Quotient.inductionOn with | h a =>
     obtain ⟨b, rfl⟩ := hsurj a
@@ -86,15 +81,17 @@ omit [IsTopologicalGroup G] in
  theorem coveredFlagMap_quotient (hπ : Continuous π) (hopen : IsOpenMap π)
     (hsurj : Function.Surjective π) : Topology.IsQuotientMap (coveredFlagMap F v π) := by
   have hq : Topology.IsQuotientMap
-      (Quotient.mk (QuotientGroup.rightRel (upperBorel F v))) := by
-    exact MulAction.isOpenQuotientMap_quotientMk.isQuotientMap
+      (Quotient.mk (QuotientGroup.rightRel (upperBorel F v))) := MulAction.isOpenQuotientMap_quotientMk.isQuotientMap
   have hc : Topology.IsQuotientMap (coveredFlagMap F v π ∘
       Quotient.mk (QuotientGroup.rightRel (coveredBorel F v π))) :=
     hq.comp (hopen.isQuotientMap hπ hsurj)
   exact hc.of_comp_of_isCoinducing isQuotientMap_quot_mk.isCoinducing
 
-def coveredFlagHomeomorph (hπ : Continuous π) (hopen : IsOpenMap π)
-    (hsurj : Function.Surjective π) :
+section
+
+variable (hπ : Continuous π) (hopen : IsOpenMap π) (hsurj : Function.Surjective π)
+
+def coveredFlagHomeomorph :
     SectionCosetSpace (coveredBorel F v π) ≃ₜ OnePoint (LocalField F v) := by
   let e := Equiv.ofBijective (coveredFlagMap F v π) (coveredFlagMap_bijective F v π hsurj)
   have hq := coveredFlagMap_quotient F v π hπ hopen hsurj
@@ -108,11 +105,13 @@ def coveredFlagHomeomorph (hπ : Continuous π) (hopen : IsOpenMap π)
       continuous_invFun := hi }
   exact he.trans (ordinaryFlagHomeomorph F v)
 
-theorem coveredFlag_compact (hπ : Continuous π) (hopen : IsOpenMap π)
-    (hsurj : Function.Surjective π) :
+include hπ hopen hsurj in
+theorem coveredFlag_compact :
     IsCompact (Set.univ : Set (SectionCosetSpace (coveredBorel F v π))) := by
-  simpa using (coveredFlagHomeomorph F v π hπ hopen hsurj).isCompact_preimage.mpr
-    (isCompact_univ : IsCompact (Set.univ : Set (OnePoint (LocalField F v))))
+  exact (coveredFlagHomeomorph F v π hπ hopen hsurj).isCompact_preimage.mpr
+    isCompact_univ
+
+end
 
 def coveredUpperRoot (n : Multiplicative (LocalField F v) →* G) : Subgroup G := n.range
 
@@ -121,16 +120,19 @@ theorem coveredTorus_le_Borel : coveredTorus F v π ≤ coveredBorel F v π := b
   obtain ⟨A, hA, h10, h01⟩ := hg
   exact ⟨A, hA, h10⟩
 
-theorem rootLift_mem_Borel (n : Multiplicative (LocalField F v) →* G)
-    (hn : ∀ x, π (n x) = ordinaryUpperRootHom F v x)
+section
+
+variable (n : Multiplicative (LocalField F v) →* G) (hn : ∀ x, π (n x) = ordinaryUpperRootHom F v x)
+
+include hn in
+theorem rootLift_mem_Borel
     (x : Multiplicative (LocalField F v)) : n x ∈ coveredBorel F v π := by
   change π (n x) ∈ upperBorel F v
   rw [hn]
   exact upperRootElement_mem F v (Multiplicative.toAdd x)
 
- theorem uniqueTorusFactor
-    (n : Multiplicative (LocalField F v) →* G)
-    (hn : ∀ x, π (n x) = ordinaryUpperRootHom F v x)
+ include hn in
+theorem uniqueTorusFactor
     (b : coveredBorel F v π) :
     ∃! t : coveredTorus F v π,
       ∃ a : LocalField F v, b.val = n (Multiplicative.ofAdd a) * t.val := by
@@ -141,14 +143,10 @@ theorem rootLift_mem_Borel (n : Multiplicative (LocalField F v) →* G)
   exact Subtype.ext (hu a' t'.val t'.property hfac').2
 
  def torusFactor
-    (n : Multiplicative (LocalField F v) →* G)
-    (hn : ∀ x, π (n x) = ordinaryUpperRootHom F v x)
     (b : coveredBorel F v π) : coveredTorus F v π :=
   Classical.choose (uniqueTorusFactor F v π n hn b)
 
 private theorem torusFactor_spec
-    (n : Multiplicative (LocalField F v) →* G)
-    (hn : ∀ x, π (n x) = ordinaryUpperRootHom F v x)
     (b : coveredBorel F v π) :
     (∃ a : LocalField F v, b.val = n (Multiplicative.ofAdd a) *
       (torusFactor F v π n hn b).val) ∧
@@ -156,6 +154,8 @@ private theorem torusFactor_spec
       b.val = n (Multiplicative.ofAdd a) * t.val) →
       t = torusFactor F v π n hn b) :=
   Classical.choose_spec (uniqueTorusFactor F v π n hn b)
+
+end
 
 theorem exists_canonicalBorelRetraction [Finite π.ker]
     (hcentral : π.ker ≤ Subgroup.center G)

@@ -12,8 +12,8 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.FourierContinuation.DetectedDictionary
 open MomentSources TensorActionSource NonDegenerate
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R}
 
 theorem dictionary_of_source_stages
     (D : PeriodSource R N) (M : ∀ q, LocalImageData R q)
@@ -77,9 +77,8 @@ theorem dictionary_of_realized_source_stages
       ⟨(D.sources.flat v).val 0, Submodule.subset_span ⟨v, rfl⟩⟩) :
     ∃ B : Dictionary R N, B.toPeriodSource = D ∧
       B.coreMap (B.selected B.probe) ≠ 0 := by
-  let L := fun s => (FourierContinuation.translateSpan D.realization).subtype.comp
-    ((SharedSource.realizedSourceResidue D.realization).comp (A s))
-  refine dictionary_of_source_stages D M e bad hbad slot L ?_ hlocal a ?_
+  refine dictionary_of_source_stages D M e bad hbad slot (fun s => (FourierContinuation.translateSpan D.realization).subtype.comp
+    ((SharedSource.realizedSourceResidue D.realization).comp (A s))) ?_ hlocal a ?_
   · intro s t hst x
     change (SharedSource.realizedSourceResidue D.realization
       (A t (RestrictedTensorSimple.transition (plusLocal R M) e bad s t hst x))).val = _

@@ -79,12 +79,11 @@ theorem SmoothInd_le_LCSections : SmoothInd H τ d ≤ LCSections H τ d := by
   rcases hf with ⟨J, hJ⟩
   rw [IsLocallyConstant.iff_exists_open]
   intro x
-  refine ⟨(x * ·) '' (J : Set G), ?_, ?_, ?_⟩
+  refine ⟨(x * ·) '' J, ?_, ?_, ?_⟩
   · exact (Homeomorph.mulLeft x).isOpenMap _ J.isOpen
   · exact ⟨1, J.one_mem, by simp⟩
   · rintro y ⟨j, hj, rfl⟩
-    have h := congrFun (congrArg Subtype.val (hJ j hj)) x
-    simpa using h
+    exact (congrFun (congrArg Subtype.val (hJ j hj)) x)
 
 abbrev SectionCosetSpace := Quotient (QuotientGroup.rightRel H)
 
@@ -203,8 +202,7 @@ theorem CompactSmoothInd_stable (a : G) :
       ← Set.image_comp (cosetRightMap H a⁻¹) (Quotient.mk (QuotientGroup.rightRel H))
         (Function.support (f.val : G → E)), hcomp]
   rw [himg]
-  have hcompact : IsCompact (cosetRightMap H a⁻¹ '' closure
-      (Quotient.mk (QuotientGroup.rightRel H) '' Function.support (f.val : G → E))) :=
+  have hcompact :=
     hf.image (cosetRightHomeomorph H a⁻¹).continuous
   have hcl : closure (cosetRightMap H a⁻¹ ''
       (Quotient.mk (QuotientGroup.rightRel H) '' Function.support (f.val : G → E))) =

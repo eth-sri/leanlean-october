@@ -10,8 +10,7 @@ open scoped Classical Topology
 open Filter
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualPrincipalSlices
 open KPCplxCharacterHaar
-open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualPrincipalSlices renaming exponential_continuous → exponential_continuous
-open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualPrincipalSlices renaming exponential_zero → exponential_zero
+open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualPrincipalSlices (exponential_continuous exponential_zero)
 set_option backward.isDefEq.respectTransparency false
 variable {ι : Type} [Fintype ι] [DecidableEq ι]
 theorem tupleWord_germ (w : List (MatrixLetter ι))

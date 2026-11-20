@@ -14,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -46,14 +40,14 @@ theorem mvPowerSeries_expand_natCard
     {σ : Type w} [Finite σ] (f : MvPowerSeries σ k) :
     MvPowerSeries.expand (Nat.card k) (Nat.ne_of_gt Nat.card_pos) f =
       f ^ Nat.card k := by
-  let : Fintype k := Fintype.ofFinite k
+  let := Fintype.ofFinite k
   obtain ⟨p, hp⟩ := CharP.exists k
   rcases FiniteField.card k p with ⟨⟨n, npos⟩, ⟨hpprime, hn⟩⟩
   let : Fact p.Prime := ⟨hpprime⟩
   have hncard : Fintype.card k = p ^ n := by
-    simpa using hn
+    exact hn
   have hn' : Nat.card k = p ^ n := by
-    simpa only [Nat.card_eq_fintype_card] using hncard
+    simpa using hncard
   have hpow :
       MvPowerSeries.expand (p ^ n) (pow_ne_zero n hpprime.ne_zero) f =
         f ^ (p ^ n) := by
@@ -65,8 +59,8 @@ theorem mvPowerSeries_expand_natCard
   simpa only [hn'] using hpow
 
 variable {K : Type u} [Field K]
-variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
-variable {σ : Type w} [Fintype σ]
+    {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    {σ : Type w} [Fintype σ]
 
 omit [Fintype σ] in
 /-- Reduction of `e(X_i)` is `X_i ^ q`. -/
@@ -74,13 +68,10 @@ theorem map_inVariable (e : LubinTateSeries F π) (i : σ) :
     MvPowerSeries.map F.residueMap (inVariable e i) =
       (MvPowerSeries.X i : MvPowerSeries σ F.residueField) ^
         Nat.card F.residueField := by
-  have hX : PowerSeries.HasSubst
-      (MvPowerSeries.X i : MvPowerSeries σ F.valuationSubring) :=
-    PowerSeries.HasSubst.X i
   have hXbar : PowerSeries.HasSubst
       (MvPowerSeries.X i : MvPowerSeries σ F.residueField) :=
     PowerSeries.HasSubst.X i
-  rw [inVariable, PowerSeries.map_subst hX e.toPowerSeries,
+  rw [inVariable, PowerSeries.map_subst (PowerSeries.HasSubst.X i) e.toPowerSeries,
     e.map_residue_eq_frobenius, MvPowerSeries.map_X,
     PowerSeries.subst_pow hXbar, PowerSeries.subst_X hXbar]
 
@@ -114,7 +105,7 @@ theorem map_subst_inVariables
         (MvPowerSeries.map F.residueMap H) := by
   rw [MvPowerSeries.map_subst (inVariable_hasSubst ebar) H]
   simp_rw [map_inVariable]
-  rw [MvPowerSeries.expand, MvPowerSeries.substAlgHom_apply]
+  simp [MvPowerSeries.expand]
 
 /-- The same-uniformizer intertwining defect vanishes after reduction. -/
 theorem map_defect_eq_zero
@@ -137,9 +128,8 @@ theorem uniformizer_dvd_coeff_defect
     (d : σ →₀ ℕ) :
     π ∣ MvPowerSeries.coeff d (defect e ebar H) := by
   apply uniformizer_dvd_of_residueMap_eq_zero hπ
-  have hcoeff := congrArg (MvPowerSeries.coeff d)
-    (map_defect_eq_zero e ebar hH)
-  simpa using hcoeff
+  exact (congrArg (MvPowerSeries.coeff d)
+    (map_defect_eq_zero e ebar hH))
 
 end SameUniformizer
 end LubinTate

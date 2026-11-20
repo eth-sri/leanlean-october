@@ -16,21 +16,11 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 local notation "E" => KPGlobalTorusFunctionData.E F ζ hζ
 local notation "Q" => KPGlobalTorusBorelTwistCompatibility.rationalModel F ζ hζ
 
- theorem half_ne_zero (t : E) : KPGlobalTorusFunctionData.deltaHalf F ζ hζ t ≠ 0 := by
-  apply Complex.ofReal_ne_zero.mpr
-  apply ne_of_gt
-  apply Real.sqrt_pos.mpr
-  exact_mod_cast (pos_iff_ne_zero.mpr (Units.ne_zero (KPGlobalTorusFunctionData.delta F ζ hζ t)))
+ alias half_ne_zero := DedekindZetaZeroFree.KPSpatialSmoothing.half_ne_zero
 
- theorem half_mul (t u : E) :
-    KPGlobalTorusFunctionData.deltaHalf F ζ hζ (t*u) =
-      KPGlobalTorusFunctionData.deltaHalf F ζ hζ t * KPGlobalTorusFunctionData.deltaHalf F ζ hζ u := by
-  simp [KPGlobalTorusFunctionData.deltaHalf, map_mul, Units.val_mul, NNReal.coe_mul,
-    Real.sqrt_mul (show (0 : ℝ) ≤ ((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ) by positivity),
-    Complex.ofReal_mul]
+ alias half_mul := DedekindZetaZeroFree.KPSpatialSmoothing.half_mul
 
-private theorem half_one : KPGlobalTorusFunctionData.deltaHalf F ζ hζ (1 : E) = 1 := by
-  simp [KPGlobalTorusFunctionData.deltaHalf]
+private alias half_one := DedekindZetaZeroFree.KPSpatialSmoothing.half_one
 
  theorem scalar_torus_covariance (h : KPGlobalTorusFunctionData.BorelFunctions F ζ hζ Q)
     (r : (KPGlobalTorusBorelTwistCompatibility.rationalModel F ζ hζ).H) (g : G F ζ hζ) : h.val (r.val.val * g) =
@@ -61,12 +51,11 @@ def fiber (h : KPGlobalTorusFunctionData.BorelFunctions F ζ hζ Q) (g : G F ζ 
   have he : (u.val * t.val) * KPGlobalTorusFunctionData.N F ζ hζ x * g =
       KPGlobalTorusFunctionData.N F ζ hζ ((KPGlobalTorusFunctionData.p F ζ hζ (u*t)).val * x) *
         ((u*t).val * g) := by
-    have hc := ActualBorelRetraction.torus_conjugates_root F ζ hζ (u*t) x
     calc
       _ = ((u*t).val * KPGlobalTorusFunctionData.N F ζ hζ x * (u*t).val⁻¹) * ((u*t).val*g) := by
         rw [Subgroup.coe_mul]
         group
-      _ = _ := by rw [hc]
+      _ = _ := by rw [(ActualBorelRetraction.torus_conjugates_root F ζ hζ (u*t) x)]
   change (KPGlobalTorusFunctionData.deltaHalf F ζ hζ u)⁻¹ * h.val
     (u.val * ((t.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g)) = _
   rw [← mul_assoc, ← mul_assoc, he, hN]
@@ -124,7 +113,6 @@ private theorem rational_arch_character (z : KPGlobalTorusFunctionData.TorusArch
   simp only [KPGlobalTorusBorelNormTwistTransport.normPower, Complex.ofReal_mul,
     Complex.ofReal_div, Complex.ofReal_one, Complex.ofReal_natCast]
   congr 1
-  change _ = (1/6 : ℂ) * (Real.log (((KPGlobalTorusFunctionData.delta F ζ hζ h.val : ℝ≥0) : ℝ)) : ℂ)
   push_cast
   ring
 
@@ -144,9 +132,8 @@ theorem rational_fiber_archSmooth (f : RationalFiber F ζ hζ) :
     change ((KPGlobalTorusBorelTwistCompatibility.rationalModel F ζ hζ).character r : ℂ) * _ = _
     rw [hc]
   rw [he]
-  have hs := KPGlobalTorusBorelNormTwistTransport.normPowerArchSmooth_of_chart_formula F ζ hζ
-    (KPGlobalTorusBorelNormTwistTransport.AnalyticInputs.delta_chart_formula F ζ hζ) (1/6)
-  simpa using (show ContDiffOn ℝ (⊤ : ℕ∞) _ _ from hs (1 : E)).mul contDiffOn_const
+  simpa using (show ContDiffOn ℝ (⊤ : ℕ∞) _ _ from (KPGlobalTorusBorelNormTwistTransport.normPowerArchSmooth_of_chart_formula F ζ hζ
+    (KPGlobalTorusBorelNormTwistTransport.AnalyticInputs.delta_chart_formula F ζ hζ) (1/6)) (1 : E)).mul contDiffOn_const
 
 theorem fiber_mem_smoothUnion
     (h : KPGlobalTorusFunctionData.BorelFunctions F ζ hζ Q)
@@ -163,8 +150,6 @@ theorem fiber_mem_smoothUnion
     apply Subtype.ext
     funext u
     have hd := KPGlobalTorusBorelNormTwistTransport.delta_compact_subgroup F ζ hζ _ hc t
-    have hhalf : KPGlobalTorusFunctionData.deltaHalf F ζ hζ t.val = 1 := by
-      simp [KPGlobalTorusFunctionData.deltaHalf, hd]
     have hmul : KPGlobalTorusFunctionData.deltaHalf F ζ hζ (u * t.val) =
         KPGlobalTorusFunctionData.deltaHalf F ζ hζ u := by
       simp [KPGlobalTorusFunctionData.deltaHalf, map_mul, hd]

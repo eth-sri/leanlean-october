@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -48,61 +45,55 @@ open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
 
+section
+
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+
+include hπ in
 /-- Reduction modulo the maximal ideal sends the standard Lubin--Tate
 polynomial to `X ^ q`. -/
-theorem standardLubinTatePolynomial_map_residue
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) :
+theorem standardLubinTatePolynomial_map_residue :
     (standardLubinTatePolynomial F π).map F.residueMap =
       Polynomial.X ^ Nat.card F.residueField := by
   simp [standardLubinTatePolynomial,
     SameUniformizer.residueMap_uniformizer_eq_zero hπ]
 
+include hπ in
 /-- Reduction modulo the maximal ideal sends the `n`-fold standard iterate
 to `X ^ (q ^ n)`. -/
-theorem standardLubinTatePolynomialIterate_map_residue
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTatePolynomialIterate_map_residue (n : ℕ) :
     (standardLubinTatePolynomialIterate F π n).map F.residueMap =
       Polynomial.X ^ (Nat.card F.residueField ^ n) := by
   induction n with
   | zero =>
-      simp [standardLubinTatePolynomialIterate]
+      simp
   | succ n ih =>
-      rw [standardLubinTatePolynomialIterate_succ,
-        Polynomial.map_comp,
-        standardLubinTatePolynomial_map_residue hπ,
-        ih]
-      simp [← pow_mul, pow_succ]
+      simp [standardLubinTatePolynomialIterate_succ, Polynomial.map_comp, standardLubinTatePolynomial_map_residue, hπ, ih, pow_mul, pow_succ]
 
+include hπ in
 /-- Reduction modulo the maximal ideal sends the primitive quotient
 polynomial to its leading monomial. -/
-theorem standardLubinTatePrimitivePolynomial_map_residue
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTatePrimitivePolynomial_map_residue (n : ℕ) :
     (standardLubinTatePrimitivePolynomial F π n).map F.residueMap =
       Polynomial.X ^
         ((Nat.card F.residueField - 1) *
           Nat.card F.residueField ^ n) := by
-  simp [standardLubinTatePrimitivePolynomial,
-    standardLubinTatePolynomialIterate_map_residue hπ,
-    SameUniformizer.residueMap_uniformizer_eq_zero hπ,
-    ← pow_mul, Nat.mul_comm]
+  simp [standardLubinTatePrimitivePolynomial, standardLubinTatePolynomialIterate_map_residue, hπ, SameUniformizer.residueMap_uniformizer_eq_zero, pow_mul, Nat.mul_comm]
 
+include hπ in
 /-- The standard primitive quotient polynomial is Eisenstein at the maximal
 ideal of the valuation ring. -/
-theorem standardLubinTatePrimitivePolynomial_isEisensteinAt
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
+theorem standardLubinTatePrimitivePolynomial_isEisensteinAt (n : ℕ) :
     (standardLubinTatePrimitivePolynomial F π n).IsEisensteinAt
       F.maximalIdeal := by
   let Q := standardLubinTatePrimitivePolynomial F π n
   let d :=
     (Nat.card F.residueField - 1) *
       Nat.card F.residueField ^ n
-  have hmonic : Q.Monic :=
+  have hmonic :=
     standardLubinTatePrimitivePolynomial_monic F π n
-  have hprime : F.maximalIdeal.IsPrime :=
+  have hprime :=
     (IsLocalRing.maximalIdeal.isMaximal F.valuationSubring).isPrime
   refine hmonic.isEisensteinAt_of_mem_of_notMem hprime.ne_top ?_ ?_
   · intro i hi
@@ -119,8 +110,10 @@ theorem standardLubinTatePrimitivePolynomial_isEisensteinAt
       rw [hcoeff]
       simp [Polynomial.coeff_X_pow, ne_of_lt hid]
     exact (F.toCompleteDVF.residue_eq_zero_iff (Q.coeff i)).1 hzero
-  · simpa [Q] using
+  · simpa using
       F.toCompleteDVF.uniformizer_not_mem_maximalIdeal_sq hπ
+
+end
 
 /-- Every standard primitive quotient polynomial is primitive. -/
 theorem standardLubinTatePrimitivePolynomial_isPrimitive
@@ -140,7 +133,7 @@ theorem standardLubinTatePrimitivePolynomial_irreducible
   rw [standardLubinTatePrimitivePolynomial_natDegree]
   exact Nat.mul_pos
     (Nat.sub_pos_of_lt
-      (Finite.one_lt_card : 1 < Nat.card F.residueField))
+      Finite.one_lt_card)
     (Nat.pow_pos Nat.card_pos)
 
 end LubinTate

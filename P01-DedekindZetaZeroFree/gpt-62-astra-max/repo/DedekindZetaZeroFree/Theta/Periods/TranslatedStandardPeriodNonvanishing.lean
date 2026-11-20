@@ -117,86 +117,10 @@ set_option backward.isDefEq.respectTransparency false
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
- theorem global_root_continuous : Continuous (KPGlobalTorusFunctionData.N F ζ hζ) := by
-  letI : ∀ v : KPHilbert.Place F, TopologicalSpace (KPLocalCover.CubicGL2Raw F ζ hζ v) :=
-    KPAdelicCoverRestrictedProduct.localTopology F ζ hζ
-  letI : TopologicalSpace (KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ) :=
-    KPAdelicCoverRestrictedProduct.restrictedTopology F ζ hζ
-  letI : IsTopologicalGroup (KPGlobalTorusFunctionData.G F ζ hζ) :=
-    (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
-  have hcoord (v : KPHilbert.Place F) :
-      Continuous (fun x : KPGlobalTorusFunctionData.Adeles F =>
-        KPStandardLocalRootLifts.N F ζ hζ v
-          (KPAdelicCoverRestrictedProduct.adeleEval F v x)) := by
-    cases v with
-    | inl w =>
-      exact (KPStandardLocalRootLifts.complex_N_continuous F ζ hζ w).comp
-        ((continuous_apply w).comp continuous_fst)
-    | inr q =>
-      exact (KPStandardLocalRootLifts.finite_N_continuous F ζ hζ q _
-        (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q)).comp
-        ((RestrictedProduct.continuous_eval q).comp continuous_snd)
-  let U : Set (KPGlobalTorusFunctionData.Adeles F) :=
-    {x | ∀ q, ¬ KPAdelicCoverRestrictedProduct.Bad F q →
-      x.2 q ∈ q.adicCompletionIntegers F}
-  have hU : IsOpen U :=
-    (RestrictedProduct.isOpen_forall_imp_mem
-      (fun q : HeightOneSpectrum (𝓞 F) => Valued.isOpen_valuationSubring
-        (q.adicCompletion F))).preimage continuous_snd
-  have h0 : (0 : KPGlobalTorusFunctionData.Adeles F) ∈ U := by
-    intro q hq
-    exact zero_mem _
-  let S : Set (KPHilbert.Place F) :=
-    {v | match v with | .inl _ => True | .inr q => ¬ KPAdelicCoverRestrictedProduct.Bad F q}
-  have hS : Filter.cofinite ≤ Filter.principal S := by
-    rw [Filter.le_principal_iff]
-    change ∀ᶠ v in Filter.cofinite, v ∈ S
-    rw [Filter.eventually_cofinite, ← Set.finite_preimage_inl_and_inr]
-    exact ⟨Set.toFinite _, by simpa [S] using KPAdelicCoverRestrictedProduct.bad_finite F⟩
-  have hmem (x : U) (v : KPHilbert.Place F) (hv : v ∈ S) :
-      KPStandardLocalRootLifts.N F ζ hζ v
-        (KPAdelicCoverRestrictedProduct.adeleEval F v x) ∈
-          KPAdelicCoverRestrictedProduct.compact F ζ hζ v := by
-    cases v with
-    | inl w => exact Subgroup.mem_top _
-    | inr q =>
-      have hi (t : q.adicCompletion F) :
-          t ∈ KPTameCompact.O F q ↔ t ∈ q.adicCompletionIntegers F := by
-        letI : ValuativeRel (q.adicCompletion F) :=
-          ClassFieldTheory.finitePlaceCompletionValuativeRel F q
-        change (ValuativeRel.valuation (q.adicCompletion F)) t ≤ 1 ↔ Valued.v t ≤ 1
-        rw [← Valuation.vle_one_iff]
-        letI : Valued.v.Compatible := Valuation.Compatible.ofValuation
-          (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ)))
-        exact Valuation.vle_one_iff Valued.v
-      have hx : x.val.2 q ∈ KPTameCompact.O F q := (hi _).mpr (x.property q hv)
-      simp only [KPAdelicCoverRestrictedProduct.compact,
-        KPAdelicCoverRestrictedProduct.finiteCompact, dif_neg hv]
-      refine ⟨KPStandardLocalRootLifts.integralN F q ⟨_, hx⟩, ?_⟩
-      exact (KPStandardLocalRootLifts.N_eq_compact F ζ hζ q
-        (fun h3 => hv (Or.inr h3)) ⟨_, hx⟩).symm
-  let f : U → RestrictedProduct (fun v => KPLocalCover.CubicGL2Raw F ζ hζ v)
-      (fun v => (KPAdelicCoverRestrictedProduct.compact F ζ hζ v : Set _))
-      (Filter.principal S) :=
-    fun x => ⟨fun v => KPStandardLocalRootLifts.N F ζ hζ v
-      (KPAdelicCoverRestrictedProduct.adeleEval F v x), hmem x⟩
-  have hf : Continuous f := RestrictedProduct.continuous_rng_of_principal.mpr
-    (continuous_pi (fun v => (hcoord v).comp continuous_subtype_val))
-  have hrt : ContinuousAt (KPGlobalTorusFunctionData.rootTuple F ζ hζ) 0 := by
-    have hr : Continuous (U.domRestrict (KPGlobalTorusFunctionData.rootTuple F ζ hζ)) :=
-      (RestrictedProduct.continuous_inclusion hS).comp hf
-    exact (continuousOn_iff_continuous_restrict.mpr hr).continuousAt (hU.mem_nhds h0)
-  have hN : Continuous (KPGlobalTorusFunctionData.N F ζ hζ) := by
-    have hh : Continuous (KPGlobalTorusFunctionData.Nhom F ζ hζ) := by
-      apply continuous_of_continuousAt_one
-      exact QuotientGroup.continuous_mk.continuousAt.comp
-        (QuotientGroup.continuous_mk.continuousAt.comp hrt)
-    exact hh
-  exact hN
+ alias global_root_continuous := actual_upper_root_continuous
 
 private theorem globalRoot_eq_pglN (x : KPGlobalTorusFunctionData.Adeles F) :
-    KPGlobalTorusFunctionData.N F ζ hζ x = KPRationalAdelicSplitting.pglN F ζ hζ x := by
-  rfl
+    KPGlobalTorusFunctionData.N F ζ hζ x = KPRationalAdelicSplitting.pglN F ζ hζ x := rfl
 
  theorem globalRoot_rationalDiagonal_conjugation (t : Fˣ)
     (x : KPGlobalTorusFunctionData.Adeles F) :
@@ -205,7 +129,7 @@ private theorem globalRoot_eq_pglN (x : KPGlobalTorusFunctionData.Adeles F) :
       KPGlobalTorusFunctionData.rationalDiagonalLift F ζ hζ t *
         KPGlobalTorusFunctionData.N F ζ hζ
           (algebraMap F (KPGlobalTorusFunctionData.Adeles F) (↑t⁻¹ : F) * x) := by
-  let y : KPGlobalTorusFunctionData.Ideles F := Units.map
+  let y := Units.map
     (algebraMap F (KPGlobalTorusFunctionData.Adeles F)).toMonoidHom t
   have hy : KPGlobalTorusFunctionData.rationalDiagonalLift F ζ hζ t =
       KPRationalAdelicSplitting.pglA F ζ hζ y := by
@@ -214,15 +138,12 @@ private theorem globalRoot_eq_pglN (x : KPGlobalTorusFunctionData.Adeles F) :
     rw [KPRationalAdelicSplitting.A_rational]
     rfl
   simp_rw [hy, globalRoot_eq_pglN]
-  have h := KPRationalAdelicSplitting.quotient_upper_diagonal F ζ hζ x y
-  convert h using 2
+  convert (KPRationalAdelicSplitting.quotient_upper_diagonal F ζ hζ x y) using 2
   congr 1
   rw [mul_comm]
   rfl
 
-private theorem B_one_left (v : KPHilbert.Place F) (a : (KPHilbert.Completion F v)ˣ) :
-    KPHilbert.B3 F ζ hζ v 1 a = 1 :=
-  KubotaDefectSymbolAlgebra.one_left _ _ _ (KPHilbert.B3_laws F ζ hζ v).1 a
+private alias B_one_left := DedekindZetaZeroFree.KPStandardLocalRootLifts.B_one_left
 private theorem B_one_right (v : KPHilbert.Place F) (a : (KPHilbert.Completion F v)ˣ) :
     KPHilbert.B3 F ζ hζ v a 1 = 1 :=
   KubotaDefectSymbolAlgebra.one_right _ _ _ (KPHilbert.B3_laws F ζ hζ v).2.1 a
@@ -294,19 +215,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 theorem actual_rational_diagonal_conjugation (t : Fˣ) (x : A F) :
     KPGlobalTorusFunctionData.N F ζ hζ x * KPGlobalTorusFunctionData.rationalDiagonalLift F ζ hζ t =
       KPGlobalTorusFunctionData.rationalDiagonalLift F ζ hζ t *
-        KPGlobalTorusFunctionData.N F ζ hζ (algebraMap F (A F) (↑t⁻¹ : F) * x) := by
-  have h := KPRationalAdelicSplitting.quotient_upper_diagonal F ζ hζ x
-    (Units.map (algebraMap F (KPAdelicCoverRestrictedProduct.Adeles F)).toMonoidHom t)
-  unfold KPRationalAdelicSplitting.pglA at h
-  have he : KPRationalAdelicSplitting.A F ζ hζ
-      (Units.map (algebraMap F (KPAdelicCoverRestrictedProduct.Adeles F)).toMonoidHom t) =
-        KPAdelicCoverRestrictedProduct.rationalSection F ζ hζ (KubotaRankTwo.d F t 1) := by
-    exact KPRationalAdelicSplitting.A_rational F ζ hζ t
-  rw [he] at h
-  change KPGlobalTorusFunctionData.N F ζ hζ x * KPGlobalTorusFunctionData.rationalDiagonalLift F ζ hζ t =
-    KPGlobalTorusFunctionData.rationalDiagonalLift F ζ hζ t *
-      KPGlobalTorusFunctionData.N F ζ hζ (x * (algebraMap F (A F) (↑t⁻¹ : F))) at h
-  simpa only [mul_comm x] using h
+        KPGlobalTorusFunctionData.N F ζ hζ (algebraMap F (A F) (↑t⁻¹ : F) * x) := by apply @globalRoot_rationalDiagonal_conjugation <;> assumption
 
 end DedekindZetaZeroFree.KPWildIndependentGenericity.NonzeroPeriod
 

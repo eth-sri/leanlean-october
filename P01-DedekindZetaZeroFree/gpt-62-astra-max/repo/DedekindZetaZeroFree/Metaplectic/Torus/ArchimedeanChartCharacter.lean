@@ -10,11 +10,15 @@ namespace DedekindZetaZeroFree.KPGlobalTorusFiniteStagesCofinality
 noncomputable section
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
- def archUnit (z : KPGlobalTorusFunctionData.TorusArch F) (w : InfinitePlace F) : w.Completionˣ :=
+ section
+
+variable (z : KPGlobalTorusFunctionData.TorusArch F)
+
+def archUnit (w : InfinitePlace F) : w.Completionˣ :=
   let e := InfinitePlace.Completion.ringEquivComplexOfIsComplex (KPHilbert.infinite_isComplex F ζ hζ w)
   if h : z w = 0 then 1 else Units.mk0 (e.symm (z w))
-    (by exact fun h0 => h (by simpa using congrArg e h0))
- def archIdele (z : KPGlobalTorusFunctionData.TorusArch F) : KPGlobalTorusFunctionData.Ideles F where
+    (fun h0 => h (by simpa using congrArg e h0))
+ def archIdele : KPGlobalTorusFunctionData.Ideles F where
   val := (fun w => (archUnit F ζ hζ z w).val, 1)
   inv := (fun w => (archUnit F ζ hζ z w).inv, 1)
   val_inv := by
@@ -25,13 +29,13 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     apply Prod.ext
     · funext w; exact (archUnit F ζ hζ z w).inv_val
     · exact one_mul _
-private theorem arch_eval (z : KPGlobalTorusFunctionData.TorusArch F) (v : KPHilbert.Place F) :
+private theorem arch_eval (v : KPHilbert.Place F) :
     KPGlobalCubicIdelePairing.ideleEval F v (archIdele F ζ hζ z) =
       (match v with | Sum.inl w => archUnit F ζ hζ z w | Sum.inr q => 1) := by
   cases v with
   | inl w => apply Units.ext; rfl
   | inr q => apply Units.ext; rfl
-private theorem arch_cube (z : KPGlobalTorusFunctionData.TorusArch F) :
+private theorem arch_cube :
     archIdele F ζ hζ z ∈ CubicCharacters.cubes (KPGlobalTorusFunctionData.Ideles F) := by
   apply (QuotientGroup.eq_one_iff _).mp
   apply KPGlobalCubicIdelePairing.classComparison_injective F
@@ -44,6 +48,10 @@ private theorem arch_cube (z : KPGlobalTorusFunctionData.TorusArch F) :
     letI := KPGlobalCubicIdelePairing.local_complex_trivial F w
     exact Subsingleton.elim _ _
   | inr q => rw [arch_eval]; exact map_one _
+
+end
+
+alias ArchimedeanChartCharacter.arch_cube := arch_cube
 private theorem arch_tuple (z : KPGlobalTorusFunctionData.TorusArch F) :
     KPGlobalCenterRationalCharacter.diagonalTuple F ζ hζ (archIdele F ζ hζ z) =
       KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ z := by
@@ -54,6 +62,8 @@ private theorem arch_tuple (z : KPGlobalTorusFunctionData.TorusArch F) :
   cases v with
   | inl w => rfl
   | inr q => exact KPStandardLocalRootLifts.A_one F ζ hζ (Sum.inr q)
+
+alias ArchimedeanChartCharacter.arch_tuple := arch_tuple
 theorem arch_center (z : KPGlobalTorusFunctionData.TorusArch F) :
     ∃ c : KPGlobalCenterRationalCharacter.Z F ζ hζ,
       c.val = KPGlobalTorusFunctionData.torusArchChart F ζ hζ z ∧
@@ -75,15 +85,13 @@ theorem arch_center (z : KPGlobalTorusFunctionData.TorusArch F) :
   have ho := KPGlobalCenterRationalCharacter.omegaA_cube F ζ hζ y
   have hn := KPGlobalCenterRationalCharacter.omegaA_norm F ζ hζ c
   have hp (u : (ℝ≥0)ˣ) :
-      ‖((KPGlobalCenterRationalCharacter.positiveComplex u : ℂˣ) : ℂ)‖ = ((u : ℝ≥0) : ℝ) := by
-    change ‖(((u : ℝ≥0) : ℝ) : ℂ)‖ = _
+      ‖((KPGlobalCenterRationalCharacter.positiveComplex u : ℂˣ) : ℂ)‖ = (u : ℝ) := by
+    change ‖((u : ℝ) : ℂ)‖ = _
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
   rw [ho, hp] at hn
-  have hu : KPGlobalCenterRationalCharacter.sixthPower (KPGlobalTorusFunctionData.ideleAbs F y.val) =
-      KPGlobalCenterRationalCharacter.nu F ζ hζ c.val := by
-    apply Units.ext
-    exact NNReal.eq hn
-  exact ho.trans (congrArg KPGlobalCenterRationalCharacter.positiveComplex hu)
+  refine ho.trans (congrArg KPGlobalCenterRationalCharacter.positiveComplex ?_)
+  apply Units.ext
+  exact NNReal.eq hn
 
 theorem normalized_arch_chart_character_one
     (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
@@ -114,7 +122,7 @@ theorem normalized_arch_chart_character_one
     rw [hχ h r rfl]
     rw [KPGlobalCenterRationalCharacter.lambdaR_formula F ζ hζ r 1 c (by simp [r]), hχc]
     exact div_self' _
-  · have hb : c.val ∈ KPGlobalProductPolarizationCharacter.B F ζ hζ P :=
+  · have hb :=
       KPGlobalProductPolarizationCharacter.center_le_B F ζ hζ P c.property
     let b : KPGlobalProductPolarizationCharacter.B F ζ hζ P := ⟨c.val, hb⟩
     let h : Q.H := ⟨c.val, hH.symm ▸ hb⟩

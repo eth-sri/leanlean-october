@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -46,10 +42,8 @@ theorem standardLubinTateLevelCompleteDVF_hasUniqueValuationExtension
     ValuationTheory.DiscreteValuationField.ValuedExtension.HasUniqueValuationExtension.{u, v, u, 0, 0}
       (base := F.toCompleteDVF)
       (target := standardLubinTateLevelCompleteDVF hπ n) := by
-  let : FiniteDimensional K (standardLubinTateLevelField hπ n) :=
+  let :=
     standardLubinTateLevelField_finiteDimensional hπ n
-  let : IsGalois K (standardLubinTateLevelField hπ n) :=
-    standardLubinTateLevelField_isGalois hπ n
   intro Gamma' _ v'
   exact
     (hasUniqueValuationExtension_of_finite_separable.{u, v, u, 0, 0}

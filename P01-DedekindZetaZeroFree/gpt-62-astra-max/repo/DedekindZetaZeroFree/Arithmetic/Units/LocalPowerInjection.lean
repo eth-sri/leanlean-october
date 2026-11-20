@@ -20,11 +20,9 @@ theorem local_power_injection (F : Type) [Field F] [NumberField F]
       (∀ v : {v // v ∈ A.Sf}, ∃ b : (v.val.adicCompletion F)ˣ,
         b ^ ℓ = (A.diagonal ε.val).2 v)) :
     ∃ b : A.U, b ^ ℓ = ε := by
-  have hℓpos : 0 < ℓ := by
+  let n : ℕ+ := ⟨ℓ, by
     simp only [Finset.mem_insert, Finset.mem_singleton] at hℓ
-    omega
-  let n : ℕ+ := ⟨ℓ, hℓpos⟩
-  have hn : (n : ℕ) ∈ ({2, 3, 6} : Finset ℕ) := hℓ
+    omega⟩
   have hnF : ((n : ℕ) : F) ≠ 0 := by
     simp only [Finset.mem_insert, Finset.mem_singleton] at hℓ
     rcases hℓ with h | h | h <;> (subst h; norm_num)
@@ -42,8 +40,7 @@ theorem local_power_injection (F : Type) [Field F] [NumberField F]
     | Sum.inr w =>
         obtain ⟨b, hb⟩ := hlocal.2 w
         exact ⟨b, hb⟩
-  have hdeg := arith_sunit_kummer_degree_one F A hCl n hn ε hlocal' hnF
-  exact sunit_root_of_simpleKummerExtension_finrank_one F A n ε hnF hdeg
+  exact sunit_root_of_simpleKummerExtension_finrank_one F A n ε hnF (arith_sunit_kummer_degree_one F A hCl n hℓ ε hlocal' hnF)
 
 end SArithmeticData
 end DedekindZetaZeroFree

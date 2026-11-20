@@ -11,16 +11,18 @@ noncomputable section
 open DedekindZetaZeroFree MeasureTheory DedekindZetaZeroFree.Quantitative.WeightConvolution
 
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (D : FixedData S η)
 
 theorem one_add_abs_rpow_integrable (B : ℝ) (hB : 1 < B) :
     Integrable (fun t : ℝ => (1 + |t|) ^ (-B)) volume := by
   have := integrable_one_add_norm (μ := volume) (E := ℝ) (r := B) (by norm_num; linarith)
   simpa [Real.norm_eq_abs] using this
 
-theorem joint_integral_bound (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a₁) (hab₁ : a₁ ≤ b₁)
-    (hab₂ : a₂ ≤ b₂) (hx : x₀ ≤ x₁) (B k : ℝ) (hB : 0 < B) (hk : 0 ≤ k) :
+variable (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a₁) (hab₁ : a₁ ≤ b₁) (hab₂ : a₂ ≤ b₂) (hx : x₀ ≤ x₁)
+
+include ha₁ hab₁ hab₂ hx in
+theorem joint_integral_bound (B k : ℝ) (hB : 0 < B) (hk : 0 ≤ k) :
     ∃ Cw : ℝ, 0 ≤ Cw ∧ ∀ ξ : ℂ, x₀ ≤ ξ.re → ξ.re ≤ x₁ →
       ∀ v y : ℝ, a₁ ≤ v → v ≤ b₁ → a₂ ≤ y → y ≤ b₂ →
       ∀ (C : ℝ), 0 ≤ C → ∀ Fn : ℝ × ℝ → ℂ, AEStronglyMeasurable Fn volume →
@@ -30,11 +32,10 @@ theorem joint_integral_bound (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < 
   obtain ⟨C, hC0, hdec⟩ := weight_kernel_decay D a₁ b₁ a₂ b₂ x₀ x₁ ha₁ hab₁ hab₂ hx B k hB hk
   refine ⟨C, hC0, fun ξ hx0 hx1 v y hv1 hv2 hy1 hy2 Cc hCc Fn hmeas hbd => ?_⟩
   obtain ⟨hint, hle⟩ := hdec ξ hx0 hx1 v y hv1 hv2 hy1 hy2
-  have hI' : Integrable (fun p : ℝ × ℝ => Cc * (weightModulus D ξ v y p *
-      (2 + |p.1| + |p.2| + |ξ.im|) ^ k)) volume := hint.const_mul Cc
+  have hI' := hint.const_mul Cc
   refine ⟨Integrable.mono' hI' hmeas (Filter.Eventually.of_forall fun p => by
     simpa only [mul_assoc] using hbd p), ?_⟩
-  calc ‖∫ p, Fn p‖ ≤ ∫ p, ‖Fn p‖ := norm_integral_le_integral_norm _
+  calc _ ≤ ∫ p, ‖Fn p‖ := norm_integral_le_integral_norm _
     _ ≤ ∫ p, Cc * (weightModulus D ξ v y p * (2 + |p.1| + |p.2| + |ξ.im|) ^ k) :=
         integral_mono_of_nonneg (Filter.Eventually.of_forall fun p => norm_nonneg _) hI'
           (Filter.Eventually.of_forall fun p => by simpa only [mul_assoc] using hbd p)
@@ -43,8 +44,8 @@ theorem joint_integral_bound (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < 
     _ ≤ Cc * (C * (1 + |ξ.im|) ^ (-B)) := mul_le_mul_of_nonneg_left hle hCc
     _ = Cc * C * (1 + |ξ.im|) ^ (-B) := by ring
 
-theorem nested_integral_bound (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a₁) (hab₁ : a₁ ≤ b₁)
-    (hab₂ : a₂ ≤ b₂) (hx : x₀ ≤ x₁) (B k : ℝ) (hB : 0 < B) (hk : 0 ≤ k) :
+include ha₁ hab₁ hab₂ hx in
+theorem nested_integral_bound (B k : ℝ) (hB : 0 < B) (hk : 0 ≤ k) :
     ∃ Cw : ℝ, 0 ≤ Cw ∧ ∀ ξ : ℂ, x₀ ≤ ξ.re → ξ.re ≤ x₁ →
       ∀ v y : ℝ, a₁ ≤ v → v ≤ b₁ → a₂ ≤ y → y ≤ b₂ →
       ∀ (C : ℝ), 0 ≤ C → ∀ G : ℂ → ℂ → ℂ,
@@ -91,8 +92,8 @@ theorem nested_integral_bound (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 <
           exact mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hle' hpi) hpi
       _ = ((2 * Real.pi)⁻¹) ^ 2 * (C * Cw * (1 + |ξ.im|) ^ (-B)) := by ring
 
-theorem section_integrable (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a₁) (hab₁ : a₁ ≤ b₁)
-    (hab₂ : a₂ ≤ b₂) (hx : x₀ ≤ x₁) (k : ℝ) (hk : 0 ≤ k) :
+include ha₁ hab₁ hab₂ hx in
+theorem section_integrable (k : ℝ) (hk : 0 ≤ k) :
     ∀ ξ : ℂ, x₀ ≤ ξ.re → ξ.re ≤ x₁ →
       ∀ v y : ℝ, a₁ ≤ v → v ≤ b₁ → a₂ ≤ y → y ≤ b₂ →
       ∀ (C : ℝ), ∀ Fn : ℝ × ℝ → ℂ, Continuous Fn →
@@ -102,7 +103,6 @@ theorem section_integrable (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a�
   obtain ⟨n, hn⟩ : ∃ n : ℕ, k + 2 ≤ (n : ℝ) :=
     ⟨⌈k⌉₊ + 2, by have := Nat.le_ceil k; push_cast; linarith⟩
   obtain ⟨C1, hC1⟩ := D.M_vertical_decay a₁ b₁ ha₁ hab₁ n
-  have hB : 1 < (n : ℝ) - k := by linarith
   have hexpb : ∀ s : ℝ, ‖Complex.exp ((ξ + ((v : ℂ) + (s : ℂ) * Complex.I) - 1) ^ 2)‖ ≤
       Real.exp ((|x₀ + a₁ - 1| + |x₁ + b₁ - 1|) ^ 2) := by
     intro s
@@ -131,7 +131,7 @@ theorem section_integrable (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a�
         ‖D.W1Hat ((y : ℂ) + (t : ℂ) * Complex.I)‖ * (2 + |t| + |ξ.im|) ^ k) *
         (1 + |s|) ^ (-((n : ℝ) - k)) := by
     intro s
-    have hs : ‖Fn (s, t)‖ ≤ C * weightModulus D ξ v y (s, t) * (2 + |s| + |t| + |ξ.im|) ^ k :=
+    have hs :=
       hbd (s, t)
     have hwm : weightModulus D ξ v y (s, t) =
         ‖Complex.exp ((ξ + ((v : ℂ) + (s : ℂ) * Complex.I) - 1) ^ 2)‖ *
@@ -145,7 +145,7 @@ theorem section_integrable (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a�
       nlinarith [abs_nonneg s, abs_nonneg t, abs_nonneg ξ.im,
         mul_nonneg (abs_nonneg s) (add_nonneg (abs_nonneg t) (abs_nonneg ξ.im))]
     have hP : (2 + |s| + |t| + |ξ.im|) ^ k ≤ (1 + |s|) ^ k * (2 + |t| + |ξ.im|) ^ k := by
-      calc (2 + |s| + |t| + |ξ.im|) ^ k ≤ ((1 + |s|) * (2 + |t| + |ξ.im|)) ^ k :=
+      calc _ ≤ ((1 + |s|) * (2 + |t| + |ξ.im|)) ^ k :=
             Real.rpow_le_rpow (by positivity) h1 hk
         _ = _ := Real.mul_rpow (by positivity) (by positivity)
     have he := hexpb s
@@ -170,7 +170,7 @@ theorem section_integrable (a₁ b₁ a₂ b₂ x₀ x₁ : ℝ) (ha₁ : 0 < a�
           ‖D.W1Hat ((y : ℂ) + (t : ℂ) * Complex.I)‖ * (2 + |t| + |ξ.im|) ^ k) *
           ((1 + |s|) ^ (-(n : ℝ)) * (1 + |s|) ^ k) := by ring
       _ = _ := by rw [hexp]
-  have hI := (one_add_abs_rpow_integrable ((n : ℝ) - k) hB).const_mul
+  have hI := (one_add_abs_rpow_integrable ((n : ℝ) - k) (by linarith)).const_mul
     (|C| * Real.exp ((|x₀ + a₁ - 1| + |x₁ + b₁ - 1|) ^ 2) * |C1| *
         ‖D.W1Hat ((y : ℂ) + (t : ℂ) * Complex.I)‖ * (2 + |t| + |ξ.im|) ^ k)
   exact Integrable.mono' hI

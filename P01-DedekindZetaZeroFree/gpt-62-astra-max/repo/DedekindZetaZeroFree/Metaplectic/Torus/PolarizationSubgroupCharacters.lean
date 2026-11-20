@@ -79,10 +79,8 @@ open KPGlobalTorusFunctionData
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
  theorem half_ne_zero (t : E F ζ hζ) : deltaHalf F ζ hζ t ≠ 0 := by
-  have hp : 0 < (((delta F ζ hζ t : ℝ≥0) : ℝ)) :=
-    NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr (Units.ne_zero _))
   unfold deltaHalf
-  exact_mod_cast (ne_of_gt (Real.sqrt_pos.2 hp))
+  exact_mod_cast (ne_of_gt (Real.sqrt_pos.2 (NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr (Units.ne_zero _)))))
 
 def actualChi : actualC F ζ hζ →* ℂˣ where
   toFun c := Units.mk0

@@ -11,39 +11,29 @@ namespace DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel
 open MeasureTheory Filter Set Topology
 open scoped NumberField Classical Topology Matrix.Norms.Elementwise
 
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming pgl_locallyCompact → pgl_locallyCompact
-open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming pgl_secondCountable → pgl_secondCountable
+open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel (pgl_locallyCompact pgl_secondCountable)
 
-private theorem integrable_compact_weight
-    {A : Type*} [TopologicalSpace A] [MeasurableSpace A] [OpensMeasurableSpace A]
-    (μ : Measure A) [IsFiniteMeasureOnCompacts μ]
-    (k : A → ℝ) (f : A → ℂ) (hk : Continuous k)
-    (hs : HasCompactSupport k) (hf : Continuous f) :
+section
+
+variable {A : Type*} [TopologicalSpace A] [MeasurableSpace A] [OpensMeasurableSpace A] (μ : Measure A)
+    [IsFiniteMeasureOnCompacts μ] (k : A → ℝ) (f : A → ℂ) (hk : Continuous k) (hs : HasCompactSupport k)
+    (hf : Continuous f)
+
+include hk hs hf in
+private theorem integrable_compact_weight :
     Integrable (fun a => (k a : ℂ) * f a) μ := by
-  have hc : Continuous (fun a => (k a : ℂ) * f a) :=
-    (Complex.continuous_ofReal.comp hk).mul hf
-  have hcs : HasCompactSupport (fun a => (k a : ℂ)) :=
-    hs.comp_left Complex.ofReal_zero
-  have hprod : HasCompactSupport (fun a => (k a : ℂ) * f a) :=
-    HasCompactSupport.mul_right (f := fun a => (k a : ℂ)) (f' := f) hcs
-  exact hc.integrable_of_hasCompactSupport hprod
+  exact ((Complex.continuous_ofReal.comp hk).mul hf).integrable_of_hasCompactSupport (HasCompactSupport.mul_right (hs.comp_left Complex.ofReal_zero))
 
+include hk hs hf in
 private theorem compact_weight_error_le
-    {A : Type*} [TopologicalSpace A] [MeasurableSpace A] [OpensMeasurableSpace A]
-    (μ : Measure A) [IsFiniteMeasureOnCompacts μ]
-    (k : A → ℝ) (f : A → ℂ) (hk : Continuous k)
-    (hs : HasCompactSupport k) (hf : Continuous f)
     (hn : ∀ a, 0 ≤ k a) (hm : (∫ a, k a ∂μ) = 1)
     (c : ℂ) (ε : ℝ) (_hε : 0 ≤ ε)
     (hbound : ∀ a ∈ tsupport k, ‖f a - c‖ ≤ ε) :
     ‖(∫ a, (k a : ℂ) * f a ∂μ) - c‖ ≤ ε := by
-  have hki := hk.integrable_of_hasCompactSupport hs (μ := μ)
-  have hfi := integrable_compact_weight μ k f hk hs hf
-  have hci := integrable_compact_weight μ k (fun _ => c) hk hs continuous_const
   have hmass : (∫ a, (k a : ℂ) * c ∂μ) = c := by
     rw [integral_mul_const, integral_complex_ofReal, hm]
     simp
-  rw [← hmass, ← integral_sub hfi hci]
+  rw [← hmass, ← integral_sub (integrable_compact_weight μ k f hk hs hf) (integrable_compact_weight μ k (fun _ => c) hk hs continuous_const)]
   have hb : ∀ a, ‖(k a : ℂ) * f a - (k a : ℂ) * c‖ ≤ k a * ε := by
     intro a
     by_cases ha : a ∈ tsupport k
@@ -51,8 +41,10 @@ private theorem compact_weight_error_le
       exact mul_le_mul_of_nonneg_left (hbound a ha) (hn a)
     · rw [image_eq_zero_of_notMem_tsupport ha]
       simp
-  apply (norm_integral_le_of_norm_le (hki.mul_const ε) (Eventually.of_forall hb)).trans_eq
+  apply (norm_integral_le_of_norm_le ((hk.integrable_of_hasCompactSupport hs).mul_const ε) (Eventually.of_forall hb)).trans_eq
   rw [integral_mul_const, hm, one_mul]
+
+end
 
 private theorem compact_weights_tendsto
     {A : Type*} [TopologicalSpace A] [MeasurableSpace A] [OpensMeasurableSpace A]
@@ -66,9 +58,8 @@ private theorem compact_weights_tendsto
   apply Metric.tendsto_nhds.mpr
   intro ε hε
   have ho : {a | ‖f a - f x‖ < ε / 2} ∈ 𝓝 x := by
-    have h := (hf.continuousAt.tendsto : Tendsto f (𝓝 x) (𝓝 (f x)))
     have hpre : f ⁻¹' Metric.ball (f x) (ε / 2) ∈ 𝓝 x :=
-      h (Metric.ball_mem_nhds (f x) (half_pos hε))
+      hf.continuousAt.tendsto (Metric.ball_mem_nhds (f x) (half_pos hε))
     simpa only [Metric.ball, dist_eq_norm, Set.preimage_ofPred_eq] using hpre
   filter_upwards [hshrink _ ho] with m hsub
   rw [dist_eq_norm]
@@ -87,15 +78,15 @@ theorem actual_kernel_pointwise_approximation
     Tendsto (fun m => ∫ a : L F, (kappa F ζ hζ D μL μK (b m) a : ℂ) *
       v (g * PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ a) ∂μL)
       atTop (𝓝 (v g)) := by
-  let : IsTopologicalGroup (G F ζ hζ) :=
+  let :=
     (KPCubicCoverConstruction.adelic_topological_covers F ζ hζ).2.2.2.1
-  let : CompactSpace D.K := isCompact_iff_compactSpace.mp D.compact
-  let : T2Space (G F ζ hζ) := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).1
-  let : LocallyCompactSpace (L F) :=
+  let := isCompact_iff_compactSpace.mp D.compact
+  let := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).1
+  let :=
     @Pi.locallyCompactSpace_of_finite (NumberField.InfinitePlace F)
       (fun _ => PGLComplex.Group) (fun _ => PGLComplex.instTopologicalSpaceGroup)
       (fun _ => pgl_locallyCompact) inferInstance
-  let : SecondCountableTopology (L F) :=
+  let :=
     @TopologicalSpace.instSecondCountableTopologyForallOfCountable
       (NumberField.InfinitePlace F) (fun _ => PGLComplex.Group) inferInstance
       (fun _ => PGLComplex.instTopologicalSpaceGroup) (fun _ => pgl_secondCountable)
@@ -115,8 +106,7 @@ theorem actual_kernel_pointwise_approximation
       AverageBasic.integral_average π hπ μL μK _ (hb.2.2.2.1 m).1
         (hb.2.2.2.1 m).2.2.1]
     exact (hb.2.2.2.1 m).2.2.2.2
-  have hshrink : ∀ O ∈ 𝓝 (1 : L F), ∀ᶠ m in atTop,
-      tsupport (kappa F ζ hζ D μL μK (b m)) ⊆ O :=
+  have hshrink :=
     AverageBasic.average_support_shrinks π hπ μK _
       (fun m => (hb.2.2.2.1 m).2.2.1) hb.2.2.2.2
   have hi : Continuous (PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ) :=

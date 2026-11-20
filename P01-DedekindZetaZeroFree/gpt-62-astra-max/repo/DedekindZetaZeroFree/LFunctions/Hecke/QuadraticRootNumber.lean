@@ -24,8 +24,6 @@ theorem quadratic_entireHeckeWitness_root_number
     w.Λdual = w.Λ ∧ w.W = 1 ∧
       (∀ s : ℂ, w.Λ s = w.Λ (1 - s)) ∧ w.Λ (2 : ℂ) ≠ 0 := by
 
-  have hdual : w.Λdual = w.Λ := w.dual_eq_self hq
-
   obtain ⟨d⟩ := exists_quadraticRayExtensionData F hF f hf η hq hn
 
   have hsig := quadraticExtension_signature F d.extension hF d.degree_two
@@ -36,7 +34,7 @@ theorem quadratic_entireHeckeWitness_root_number
 
   have hfactor := poleClearedHecke_factorization F hF f hf η hq hn hp d pF pE w
 
-  have hW1 : w.W = 1 :=
+  have hW1 :=
     rootNumber_eq_one_of_positive_scaling (heckeCompletionLogScale F d.extension f)
       pE.U pF.U w.Λ w.W
       (fun s => PrincipalHeckeWitness.U_reflection pE s)
@@ -47,12 +45,11 @@ theorem quadratic_entireHeckeWitness_root_number
       (principalUnitHeckeWitness_U_two_ne_zero d.extension pE)
 
   have hL2 : w.Λ (2 : ℂ) ≠ 0 := by
-    have hpE2 := principalUnitHeckeWitness_U_two_ne_zero d.extension pE
     intro hw0
-    refine hpE2 ?_
+    refine (principalUnitHeckeWitness_U_two_ne_zero d.extension pE) ?_
     rw [hfactor 2, hw0]
     ring
-  refine ⟨hdual, hW1, fun s => ?_, hL2⟩
+  refine ⟨(w.dual_eq_self hq), hW1, fun s => ?_, hL2⟩
   rw [w.selfdual_functionalEquation hq s, hW1, one_mul]
 
 end DedekindZetaZeroFree.LargeSieve

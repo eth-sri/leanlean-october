@@ -15,13 +15,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -79,24 +72,18 @@ theorem galoisRank_le_totalPlaceCard_enlargedS
       Nat.card Gal(E/K) = (n : ℕ) ^ r := by
     rw [Nat.card_congr eG.toEquiv, Nat.card_pi]
     simp
-  have hcardN :
-      Nat.card Gal(N/K) =
-        (n : ℕ) ^ totalPlaceCard (K := K) S' :=
-    card_fullSUnitKummerExtension_galois
-      (K := K) (Omega := Omega) n hnK hmu S'
-  have hexponentE :
-      ∀ sigma : Gal(E/K), sigma ^ (n : ℕ) = 1 :=
+  have hexponentE :=
     galois_pow_eq_one_of_equiv_pi_zmod E n r eG
-  have hcardLe :
-      Nat.card Gal(E/K) ≤ Nat.card Gal(N/K) :=
+  have hcardLe :=
     Nat.card_le_card_of_surjective
       (enlargedSUnitKummerRestrictionHom
-        (K := K) (Omega := Omega) E n hmu
+          E n hmu
         hexponentE S)
       (enlargedSUnitKummerRestrictionHom_surjective
-        (K := K) (Omega := Omega) E n hmu
+          E n hmu
         hexponentE S)
-  rw [hcardE, hcardN] at hcardLe
+  rw [hcardE, (card_fullSUnitKummerExtension_galois
+    n hnK hmu S')] at hcardLe
   exact (Nat.pow_le_pow_iff_right hn).mp hcardLe
 
 /-- The restriction kernel in the finite S-unit preparation argument has the expected
@@ -157,9 +144,7 @@ theorem card_enlargedSUnitKummerRestrictionHom_ker
         (n : ℕ) ^ totalPlaceCard (K := K) S' :=
     card_fullSUnitKummerExtension_galois
       (K := K) (Omega := Omega) n hnK hmu S'
-  have hquotient :
-      Nat.card (Gal(N/K) ⧸ f.ker) =
-        Nat.card Gal(E/K) :=
+  have hquotient :=
     Nat.card_congr
       (QuotientGroup.quotientKerEquivOfSurjective
         f hf).toEquiv
@@ -170,21 +155,16 @@ theorem card_enlargedSUnitKummerRestrictionHom_ker
     exact
       Subgroup.card_eq_card_quotient_mul_card_subgroup
         f.ker
-  have hr :
-      r ≤ totalPlaceCard (K := K) S' :=
+  have hr :=
     galoisRank_le_totalPlaceCard_enlargedS
       (K := K) (Omega := Omega) E n hn hmu r eG S
   have hsplit :
-      (n : ℕ) ^ totalPlaceCard (K := K) S' =
+      (n : ℕ) ^ totalPlaceCard S' =
         (n : ℕ) ^ r *
           (n : ℕ) ^
-            (totalPlaceCard (K := K) S' - r) := by
+            (totalPlaceCard S' - r) := by
     rw [← pow_add, Nat.add_sub_of_le hr]
-  have hcancel :
-      (n : ℕ) ^ r * Nat.card f.ker =
-        (n : ℕ) ^ r *
-          (n : ℕ) ^
-            (totalPlaceCard (K := K) S' - r) :=
+  have hcancel :=
     hfactor.symm.trans hsplit
   exact Nat.eq_of_mul_eq_mul_left
     (pow_pos n.pos r) hcancel
@@ -254,27 +234,22 @@ theorem
         (K := K) (Omega := Omega) n hmu S')
   let : Module (ZMod (n : ℕ)) (Additive H) :=
     additiveZModModuleOfPowEqOne (n : ℕ) hexponentE
-  have hfreeG : Module.Free (ZMod (n : ℕ)) (Additive G) :=
+  have hfreeG :=
     fullSUnitKummerExtension_galois_moduleFree
       (K := K) (Omega := Omega) n hnK hmu S'
-  let eH :
-      Additive H ≃ₗ[ZMod (n : ℕ)]
-        (Fin r → ZMod (n : ℕ)) :=
+  let eH :=
     additivePiLinearEquiv (n : ℕ) eG
-  have hfreeH : Module.Free (ZMod (n : ℕ)) (Additive H) :=
+  have hfreeH :=
     Module.Free.of_equiv eH.symm
   let f : G →* H :=
     enlargedSUnitKummerRestrictionHom
       (K := K) (Omega := Omega) E n hmu
         hexponentE S
-  have hf : Function.Surjective f :=
+  have hf :=
     enlargedSUnitKummerRestrictionHom_surjective
       (K := K) (Omega := Omega) E n hmu
         hexponentE S
-  have hcard :
-      Nat.card f.ker =
-        (n : ℕ) ^
-          (totalPlaceCard (K := K) S' - r) :=
+  have hcard :=
     card_enlargedSUnitKummerRestrictionHom_ker
       (K := K) (Omega := Omega) E n hnOne
         hmu r eG S

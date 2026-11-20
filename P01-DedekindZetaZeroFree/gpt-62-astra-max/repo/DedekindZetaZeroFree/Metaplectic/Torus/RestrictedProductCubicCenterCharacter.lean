@@ -11,33 +11,37 @@ namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-theorem localAbs_mul (v : KPHilbert.Place F) (u u' : (KPHilbert.Completion F v)ˣ) :
+section
+
+variable (v : KPHilbert.Place F)
+
+theorem localAbs_mul (u u' : (KPHilbert.Completion F v)ˣ) :
     localAbs F v (u * u') = localAbs F v u * localAbs F v u' := by
   cases v with
   | inl w => simp [localAbs, Units.val_mul, norm_mul, mul_pow]
   | inr q => simp [localAbs, Units.val_mul, norm_mul]
 
-theorem localAbs_inv (v : KPHilbert.Place F) (u : (KPHilbert.Completion F v)ˣ) :
+theorem localAbs_inv (u : (KPHilbert.Completion F v)ˣ) :
     localAbs F v u⁻¹ = (localAbs F v u)⁻¹ := by
   cases v with
   | inl w => simp [localAbs]
   | inr q => simp [localAbs]
 
-theorem isUnit_diag_entries (v : KPHilbert.Place F)
+theorem isUnit_diag_entries
     (g : KPLocalCover.CubicGL2Raw F ζ hζ v)
     (h10 : (g.g : Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 1 0 = 0)
     (h01 : (g.g : Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 0 1 = 0) :
     IsUnit (g.g 0 0) ∧ IsUnit (g.g 1 1) := by
-  have hdet : IsUnit ((g.g : Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 0 0 *
-      (g.g : Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 1 1) := by
+  have hdet : IsUnit (g.g 0 0 *
+      g.g 1 1) := by
     have h := (KubotaRankTwo.det (KPHilbert.Completion F v) g.g).isUnit
     rw [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, h10, h01] at h
     simpa using h
   exact ⟨isUnit_of_mul_isUnit_left hdet, isUnit_of_mul_isUnit_right hdet⟩
 
-theorem localValue_diag (v : KPHilbert.Place F) (g : KPLocalCover.CubicGL2Raw F ζ hζ v)
+theorem localValue_diag (g : KPLocalCover.CubicGL2Raw F ζ hζ v)
     (h10 : g.g 1 0 = 0) (h01 : g.g 0 1 = 0) :
     localValue F ζ hζ v g = KPGlobalTorusFunctionData.iota F ζ hζ g.epsilon *
       positiveComplex (sixthPower (Units.mk0 (localAbs F v
@@ -46,7 +50,7 @@ theorem localValue_diag (v : KPHilbert.Place F) (g : KPLocalCover.CubicGL2Raw F 
         (ne_of_gt (localAbs_pos F v _)))) := by
   rw [localValue, dif_pos (isUnit_diag_entries F ζ hζ v g h10 h01)]
 
-theorem localValue_mul_diagonal (v : KPHilbert.Place F)
+theorem localValue_mul_diagonal
     (g h : KPLocalCover.CubicGL2Raw F ζ hζ v)
     (hg10 : g.g 1 0 = 0) (hg01 : g.g 0 1 = 0)
     (hh10 : h.g 1 0 = 0) (hh01 : h.g 0 1 = 0) :
@@ -97,6 +101,8 @@ theorem localValue_mul_diagonal (v : KPHilbert.Place F)
     hratio, KPLocalCover.mul_epsilon]
   simp only [map_mul]
   ac_rfl
+
+end
 
 theorem rawCenter_local_diagonal (x : rawCenter F ζ hζ) (v : KPHilbert.Place F) :
     (x.val v).g 1 0 = 0 ∧ (x.val v).g 0 1 = 0 := by
@@ -192,7 +198,6 @@ private theorem sigmaTwo_diag_cubes (v : KPHilbert.Place F)
     B (KubotaRankTwo.det K g.g) (KubotaRankTwo.det K h.g) ^ 2 = 1
   rw [hXg, hXh, hXgh, hdg, hdh]
   rw [show u * w / u = w from by simp [mul_comm], hquot]
-  change B w ((a ^ 3)⁻¹ * u⁻¹) * B (a ^ 3 * u ^ 2) (b ^ 3 * w ^ 2) ^ 2 = 1
   rw [hR, hInv, (hc w a).2, inv_one, one_mul, hInv, hL,
     (hc a (b ^ 3 * w ^ 2)).1, one_mul, hR, (hc (u ^ 2) b).2, one_mul]
   simp only [pow_two, hL, hR]
@@ -238,8 +243,11 @@ theorem rawCenter_cocycle_twist (x y : rawCenter F ζ hζ) :
         (rawCenter_local_diagonal F ζ hζ y v).2 a b ha hb, map_one]
     _ = 1 := finprod_one
 
-private theorem integral_diagonal_value (q : HeightOneSpectrum (𝓞 F))
-    (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
+section
+
+variable (q : HeightOneSpectrum (𝓞 F)) (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
+
+private theorem integral_diagonal_value
     (h10 : g.g 1 0 = 0) (h01 : g.g 0 1 = 0)
     (he : g.epsilon = 1) (k : KPTameCompact.K0 F q)
     (hk : g.g = KPTameCompact.inclusion F q k) :
@@ -267,8 +275,7 @@ private theorem integral_diagonal_value (q : HeightOneSpectrum (𝓞 F))
   rw [localValue_diag F ζ hζ (Sum.inr q) g h10 h01, he, hr]
   simp
 
-private theorem compact_diagonal_value (q : HeightOneSpectrum (𝓞 F))
-    (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
+private theorem compact_diagonal_value
     (hg : g ∈ KPAdelicCoverRestrictedProduct.finiteCompact F ζ hζ q)
     (h10 : g.g 1 0 = 0) (h01 : g.g 0 1 = 0) :
     localValue F ζ hζ (Sum.inr q) g = 1 := by
@@ -279,15 +286,15 @@ private theorem compact_diagonal_value (q : HeightOneSpectrum (𝓞 F))
     apply integral_diagonal_value F ζ hζ q _ h10 h01 rfl i
     exact he.symm
   · obtain ⟨k, rfl⟩ := hg
-    have hz : KPTameCompact.c F q k = 0 := h10
     exact integral_diagonal_value F ζ hζ q _ h10 h01
-      (KPTameCompact.kappa_zero F q ζ hζ k hz) k rfl
+      (KPTameCompact.kappa_zero F q ζ hζ k h10) k rfl
+
+end
 
 private theorem raw_value_finiteSupport (x : rawCenter F ζ hζ) :
     Function.HasFiniteMulSupport (fun v => localValue F ζ hζ v (x.val v)) := by
-  have hf := Filter.mem_cofinite.mp x.val.property
-  apply ((Set.finite_univ : (Set.univ : Set (InfinitePlace F)).Finite).image
-    (Sum.inl : InfinitePlace F → KPHilbert.Place F)).union hf |>.subset
+  apply (Set.finite_univ.image
+    Sum.inl).union (Filter.mem_cofinite.mp x.val.property) |>.subset
   intro v hv
   cases v with
   | inl w => exact Or.inl ⟨w, trivial, rfl⟩
@@ -306,22 +313,20 @@ private theorem raw_product_mul (x y : rawCenter F ζ hζ) :
     (KPLocalCover.sigmaTwo F ζ hζ v (x.val v).g (y.val v).g)
   have hloc : ∀ v, localValue F ζ hζ v ((x * y).val v) = c v * (f v * g v) := by
     intro v
-    have hh := localValue_mul_diagonal F ζ hζ v (x.val v) (y.val v)
-      (rawCenter_local_diagonal F ζ hζ x v).1 (rawCenter_local_diagonal F ζ hζ x v).2
-      (rawCenter_local_diagonal F ζ hζ y v).1 (rawCenter_local_diagonal F ζ hζ y v).2
     change localValue F ζ hζ v (x.val v * y.val v) = _
-    simpa only [mul_assoc] using hh
-  have hf : Function.HasFiniteMulSupport f := raw_value_finiteSupport F ζ hζ x
-  have hg : Function.HasFiniteMulSupport g := raw_value_finiteSupport F ζ hζ y
+    simpa only [mul_assoc] using (localValue_mul_diagonal F ζ hζ v (x.val v) (y.val v)
+      (rawCenter_local_diagonal F ζ hζ x v).1 (rawCenter_local_diagonal F ζ hζ x v).2
+      (rawCenter_local_diagonal F ζ hζ y v).1 (rawCenter_local_diagonal F ζ hζ y v).2)
+  have hf := raw_value_finiteSupport F ζ hζ x
+  have hg := raw_value_finiteSupport F ζ hζ y
   have hc : Function.HasFiniteMulSupport c := by
-    have hm := raw_value_finiteSupport F ζ hζ (x * y)
     have hh : c = (fun v => localValue F ζ hζ v ((x * y).val v)) * (f * g)⁻¹ := by
       funext v
       change c v = localValue F ζ hζ v ((x * y).val v) * (f v * g v)⁻¹
       rw [hloc]
       exact (mul_inv_cancel_right (c v) (f v * g v)).symm
     rw [hh]
-    exact hm.mul (hf.mul hg).inv
+    exact (raw_value_finiteSupport F ζ hζ (x * y)).mul (hf.mul hg).inv
   change (∏ᶠ v, localValue F ζ hζ v ((x * y).val v)) = (∏ᶠ v, f v) * ∏ᶠ v, g v
   simp_rw [hloc]
   change (∏ᶠ v, c v * (f * g) v) = _
@@ -329,6 +334,8 @@ private theorem raw_product_mul (x y : rawCenter F ζ hζ) :
   change (∏ᶠ v, c v) * (∏ᶠ v, f v * g v) = _
   rw [finprod_mul_distrib hf hg]
   rw [show (∏ᶠ v, c v) = 1 from rawCenter_cocycle_twist F ζ hζ x y, one_mul]
+
+alias RestrictedProductCubicCenterCharacter.raw_product_mul := raw_product_mul
 
 private theorem complex_raw_value_continuous (w : InfinitePlace F) :
     Continuous (fun x : rawCenter F ζ hζ => localValue F ζ hζ (Sum.inl w) (x.val (Sum.inl w))) := by
@@ -367,8 +374,7 @@ private theorem complex_raw_value_continuous (w : InfinitePlace F) :
         simp [r, d, div_eq_mul_inv]
       simp_rw [hh]
       exact (hent 0 0).div (hent 1 1) (fun x => (d x).2.ne_zero)
-    · change Continuous (fun x => ((r x)⁻¹ : (w.Completion)ˣ).val)
-      have hh : ∀ x, ((r x)⁻¹ : (w.Completion)ˣ).val =
+    · have hh : ∀ x, ((r x)⁻¹ : (w.Completion)ˣ).val =
           (x.val (Sum.inl w)).g 1 1 / (x.val (Sum.inl w)).g 0 0 := by
         intro x
         simp [r, d, div_eq_mul_inv]
@@ -379,12 +385,9 @@ private theorem complex_raw_value_continuous (w : InfinitePlace F) :
   have ha : Continuous a := by
     apply Units.continuous_iff.mpr
     constructor
-    · change Continuous (fun x => localAbs F (Sum.inl w) (r x))
-      exact (Units.continuous_val.comp hrat).nnnorm.pow 2
-    · change Continuous (fun x => ((a x)⁻¹ : (ℝ≥0)ˣ).val)
-      have hh : ∀ x, ((a x)⁻¹ : (ℝ≥0)ˣ).val = localAbs F (Sum.inl w) ((r x)⁻¹) := by
+    · exact (Units.continuous_val.comp hrat).nnnorm.pow 2
+    · have hh : ∀ x, ((a x)⁻¹ : (ℝ≥0)ˣ).val = localAbs F (Sum.inl w) ((r x)⁻¹) := by
         intro x
-        change (localAbs F (Sum.inl w) (r x))⁻¹ = _
         exact (localAbs_inv F (Sum.inl w) (r x)).symm
       simp_rw [hh]
       exact (Units.continuous_val.comp hrat.inv).nnnorm.pow 2
@@ -394,8 +397,7 @@ private theorem complex_raw_value_continuous (w : InfinitePlace F) :
   have hsix : Continuous sixthPower := by
     apply Units.continuous_map
     exact NNReal.continuous_rpow_const (by norm_num : (0 : ℝ) ≤ 1 / 6)
-  have hi : Continuous (KPGlobalTorusFunctionData.iota F ζ hζ) := continuous_of_discreteTopology
-  convert (hi.comp heps).mul (hpos.comp (hsix.comp ha)) using 1
+  convert (continuous_of_discreteTopology.comp heps).mul (hpos.comp (hsix.comp ha)) using 1
   funext x
   exact (localValue_diag F ζ hζ (Sum.inl w) (x.val (Sum.inl w))
     (rawCenter_local_diagonal F ζ hζ x (Sum.inl w)).1
@@ -446,19 +448,11 @@ theorem raw_character_laws :
   let S : Finset (KPHilbert.Place F) := Finset.univ.image Sum.inl
   let f := fun x : rawCenter F ζ hζ =>
     ∏ w : InfinitePlace F, localValue F ζ hζ (Sum.inl w) (x.val (Sum.inl w))
-  have hf : Continuous f := continuous_finset_prod _
-    (fun w _ => complex_raw_value_continuous F ζ hζ w)
-  have ho : IsOpen {x : Raw F ζ hζ | ∀ v, x v ∈ KPAdelicCoverRestrictedProduct.compact F ζ hζ v} :=
-    RestrictedProduct.isOpen_forall_mem (KPAdelicCoverRestrictedProduct.compact_open F ζ hζ)
-  have hevent : ∀ᶠ x : rawCenter F ζ hζ in 𝓝 1,
-      ∀ v, x.val v ∈ KPAdelicCoverRestrictedProduct.compact F ζ hζ v :=
-    (ho.preimage continuous_subtype_val).mem_nhds (by intro v; exact Subgroup.one_mem _)
   have heq : rawProduct F ζ hζ =ᶠ[𝓝 (1 : rawCenter F ζ hζ)] f := by
-    filter_upwards [hevent] with x hx
+    filter_upwards [(((RestrictedProduct.isOpen_forall_mem (KPAdelicCoverRestrictedProduct.compact_open F ζ hζ)).preimage continuous_subtype_val).mem_nhds (fun v => Subgroup.one_mem _))] with x hx
     unfold rawProduct
-    rw [finprod_eq_prod_of_mulSupport_subset _ (s := S)]
-    · change (∏ v ∈ Finset.univ.image Sum.inl, localValue F ζ hζ v (x.val v)) = _
-      rw [Finset.prod_image (fun _ _ _ _ h => Sum.inl_injective h)]
+    rw [finprod_eq_prod_of_mulSupport_subset _]
+    · rw [Finset.prod_image (fun _ _ _ _ h => Sum.inl_injective h)]
     · intro v hv
       cases v with
       | inl w => exact Finset.mem_image.mpr ⟨w, Finset.mem_univ _, rfl⟩
@@ -466,7 +460,8 @@ theorem raw_character_laws :
         exact False.elim (hv (compact_diagonal_value F ζ hζ q (x.val (Sum.inr q))
           (hx (Sum.inr q)) (rawCenter_local_diagonal F ζ hζ x (Sum.inr q)).1
           (rawCenter_local_diagonal F ζ hζ x (Sum.inr q)).2))
-  exact hf.continuousAt.congr heq.symm
+  exact (continuous_finset_prod _
+    (fun w _ => complex_raw_value_continuous F ζ hζ w)).continuousAt.congr heq.symm
 
 end
 end DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension

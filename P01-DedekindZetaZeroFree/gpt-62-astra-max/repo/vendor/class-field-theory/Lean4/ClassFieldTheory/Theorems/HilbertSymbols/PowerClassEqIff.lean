@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 set_option autoImplicit false
 
 /-!
@@ -30,7 +28,6 @@ an `n`-th power. -/
 theorem powerClass_eq_iff
     (K : Type u) [Field K] (n : ℕ+) (a b : Kˣ) :
     powerClass K n a = powerClass K n b ↔
-      a / b ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
-  exact QuotientGroup.eq_iff_div_mem
+      a / b ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := QuotientGroup.eq_iff_div_mem
 
 end ClassFieldTheory

@@ -12,57 +12,53 @@ open scoped NumberField Classical ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-def squareMellinSpectrum (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (s : ℂ) : ℂ :=
+section
+
+variable (D : ℝ) (r : ℕ)
+
+def squareMellinSpectrum (W : ℝ → ℂ) (s : ℂ) : ℂ :=
   (1 / 2 : ℂ) * B D r W (s / 2)
 
-def squareReflectionFactor (D : ℝ) (r : ℕ) (s : ℂ) : ℂ :=
+def squareReflectionFactor (s : ℂ) : ℂ :=
   (D : ℂ) ^ (s - 1 / 2) *
     (Complex.Gammaℂ s * (Complex.Gammaℂ (1 - s))⁻¹) ^ r
 
-def reflectedSquareSpectrum (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (s : ℂ) : ℂ :=
+def reflectedSquareSpectrum (W : ℝ → ℂ) (s : ℂ) : ℂ :=
   (1 / 2 : ℂ) * (D : ℂ) ^ ((s - 1) / 2) *
     ((2 : ℂ) ^ (2 * s - 1) * Complex.Gammaℂ (s / 2) *
       (Complex.Gammaℂ (1 - s / 2))⁻¹) ^ r *
     mellin W ((1 + s) / 2)
 
-theorem reflectedSquareSpectrum_differentiableOn
-    (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hW : ContDiff ℝ ∞ W)
-    (hsupp : Function.support W ⊆ Set.Icc a b)
-    (ha : 0 < a) (hab : a < b) :
-    DifferentiableOn ℂ (reflectedSquareSpectrum D r W) {s : ℂ | 0 < s.re} := by
-  have hpow : Differentiable ℂ (fun s : ℂ => (D : ℂ) ^ ((s - 1) / 2)) :=
-    ((differentiable_id.sub_const 1).div_const (2 : ℂ)).const_cpow
-      (Or.inl (Complex.ofReal_ne_zero.mpr (ne_of_gt hD)))
-  have hmel : Differentiable ℂ (fun s : ℂ => mellin W ((1 + s) / 2)) :=
-    (Vendor.compact_mellin_differentiable W a b hW hsupp ha hab).comp
-      (((differentiable_const (1 : ℂ)).add differentiable_id).div_const (2 : ℂ))
-  exact (((differentiable_const (c := (1 / 2 : ℂ))).differentiableOn.mul
-    hpow.differentiableOn).mul
-    (Vendor.reflectedSquareGammaContinuation_differentiableOn.pow r)).mul hmel.differentiableOn
+end
 
-theorem reflectedSquareSpectrum_eq_of_im_ne_zero
-    (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hW : ContDiff ℝ ∞ W)
-    (hsupp : Function.support W ⊆ Set.Icc a b)
-    (ha : 0 < a) (hab : a < b) (s : ℂ)
+section
+
+variable (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ) (hD : 0 < D) (hr : 1 ≤ r) (hW : ContDiff ℝ ∞ W)
+    (hsupp : Function.support W ⊆ Set.Icc a b) (ha : 0 < a) (hab : a < b)
+
+include hD hr hW hsupp ha hab in
+theorem reflectedSquareSpectrum_differentiableOn :
+    DifferentiableOn ℂ (reflectedSquareSpectrum D r W) {s : ℂ | 0 < s.re} := by
+  exact (((differentiable_const (c := (1 / 2 : ℂ))).differentiableOn.mul
+    (((differentiable_id.sub_const 1).div_const (2 : ℂ)).const_cpow
+      (Or.inl (Complex.ofReal_ne_zero.mpr (ne_of_gt hD)))).differentiableOn).mul
+    (Vendor.reflectedSquareGammaContinuation_differentiableOn.pow r)).mul ((Vendor.compact_mellin_differentiable W a b hW hsupp ha hab).comp
+      (((differentiable_const (1 : ℂ)).add differentiable_id).div_const (2 : ℂ))).differentiableOn
+
+include hD hr hW hsupp ha hab in
+theorem reflectedSquareSpectrum_eq_of_im_ne_zero (s : ℂ)
     (hs : 0 < s.re) (hsi : s.im ≠ 0) :
     reflectedSquareSpectrum D r W s =
       squareReflectionFactor D r s * squareMellinSpectrum D r W (1 - s) := by
-  have hc : HasCompactSupport W :=
-    HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp
   have harg : 1 - (1 - s) / 2 = (1 + s) / 2 := by ring
-  have hq := Vendor.originMellinQ_eq_mellin_div_Gammaℂ W hW hc ((1 + s) / 2)
-    (by simp [Complex.div_re, Complex.add_re]; linarith)
-  have hdup := Vendor.reflected_square_gamma_duplication s hsi
-  have hDne : (D : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hD)
   have hcp : (D : ℂ) ^ (s - 1 / 2) * (D : ℂ) ^ ((1 - s) / 2 - 1 / 2) =
       (D : ℂ) ^ ((s - 1) / 2) := by
-    rw [← Complex.cpow_add _ _ hDne]
+    rw [← Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr (ne_of_gt hD))]
     congr 1
     ring
   unfold reflectedSquareSpectrum squareReflectionFactor squareMellinSpectrum B
-  rw [harg, hq]
+  rw [harg, (Vendor.originMellinQ_eq_mellin_div_Gammaℂ W hW (HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp) ((1 + s) / 2)
+    (by simp [Complex.div_re, Complex.add_re]; linarith))]
   have hpow : (Complex.Gammaℂ ((1 + s) / 2))⁻¹ ^ (r - 1) *
       (Complex.Gammaℂ ((1 + s) / 2))⁻¹ = (Complex.Gammaℂ ((1 + s) / 2))⁻¹ ^ r := by
     rw [← pow_succ, Nat.sub_add_cancel hr]
@@ -80,7 +76,7 @@ theorem reflectedSquareSpectrum_eq_of_im_ne_zero
           (Complex.Gammaℂ (1 - s) * Complex.Gammaℂ ((1 + s) / 2)) := by
         simp only [div_eq_mul_inv, mul_inv_rev]
         ring
-      _ = _ := by rw [hdup, div_eq_mul_inv]
+      _ = _ := by rw [(Vendor.reflected_square_gamma_duplication s hsi), div_eq_mul_inv]
   rw [div_eq_mul_inv]
   calc
     _ = (1 / 2 : ℂ) * ((D : ℂ) ^ (s - 1 / 2) *
@@ -90,15 +86,13 @@ theorem reflectedSquareSpectrum_eq_of_im_ne_zero
         ((Complex.Gammaℂ ((1 + s) / 2))⁻¹ ^ (r - 1) *
         (Complex.Gammaℂ ((1 + s) / 2))⁻¹)) * mellin W ((1 + s) / 2) := by
       rw [hcp, hgam]
-      simp only [div_eq_mul_inv]
+      simp
     _ = _ := by simp only [div_eq_mul_inv]; ring
 
+end
+
 private lemma square_S_mono (b : ℝ) (m n : ℕ) (W : ℝ → ℂ)
-    (hmn : m ≤ n) : Vendor.S b m W ≤ Vendor.S b n W := by
-  unfold Vendor.S
-  exact Finset.sum_le_sum_of_subset_of_nonneg
-    (Finset.range_mono (Nat.add_le_add_right hmn 1))
-    (fun i _ _ => Real.sSup_nonneg fun y ⟨x, _, hy⟩ => hy ▸ norm_nonneg _)
+    (hmn : m ≤ n) : Vendor.S b m W ≤ Vendor.S b n W := by apply @SpectralMultiplier.kernel_S_mono <;> assumption
 
 private lemma square_cpow_strip_bound (D u v : ℝ) (hD : 0 < D) :
     ∃ C : ℝ, 0 < C ∧ ∀ s : ℂ, s.re ∈ Set.Icc u v → ‖(D : ℂ) ^ s‖ ≤ C := by
@@ -111,41 +105,31 @@ private lemma square_cpow_strip_bound (D u v : ℝ) (hD : 0 < D) :
   · exact (Real.rpow_le_rpow_of_exponent_ge hD h1 hs.1).trans (le_max_left _ _)
 
 private lemma square_gamma_diff_pos (s : ℂ) (hs : 0 < s.re) :
-    DifferentiableAt ℂ Complex.Gammaℂ s := by
-  have hGam : DifferentiableAt ℂ Complex.Gamma s := by
-    refine Complex.differentiableAt_Gamma s fun m h => ?_
-    have h2 : s.re = -(m : ℝ) := by rw [h]; simp
-    have hm : (0 : ℝ) ≤ (m : ℝ) := Nat.cast_nonneg m
-    linarith
-  unfold Complex.Gammaℂ
-  exact ((differentiableAt_const (2 : ℂ)).mul (differentiableAt_id.neg.const_cpow
-    (Or.inl (by norm_num : (2 * (Real.pi : ℂ)) ≠ 0)))).mul hGam
+    DifferentiableAt ℂ Complex.Gammaℂ s := by apply @DedekindZetaZeroFree.CompletionFactor.differentiableAt_Gammaℂ <;> assumption
 
-private lemma square_small_factor_bound (D : ℝ) (r : ℕ) (u v : ℝ)
+variable (D : ℝ) (r : ℕ)
+
+private lemma square_small_factor_bound (u v : ℝ)
     (hD : 0 < D) (hu : 0 < u) :
     ∃ C : ℝ, 0 < C ∧ ∀ σ ∈ Set.Icc u v, ∀ t : ℝ, |t| ≤ 2 →
       ‖(1 / 2 : ℂ) * (D : ℂ) ^ ((((σ : ℂ) + (t : ℂ) * Complex.I) - 1) / 2) *
         Vendor.reflectedSquareGammaContinuation ((σ : ℂ) + (t : ℂ) * Complex.I) ^ r *
         Complex.Gammaℂ ((1 + ((σ : ℂ) + (t : ℂ) * Complex.I)) / 2)‖ ≤ C := by
-  let f : ℂ → ℂ := fun s => (1 / 2 : ℂ) * (D : ℂ) ^ ((s - 1) / 2) *
+  let f := fun s => (1 / 2 : ℂ) * (D : ℂ) ^ ((s - 1) / 2) *
     Vendor.reflectedSquareGammaContinuation s ^ r * Complex.Gammaℂ ((1 + s) / 2)
-  have hp : Differentiable ℂ (fun s : ℂ => (D : ℂ) ^ ((s - 1) / 2)) :=
-    ((differentiable_id.sub_const 1).div_const (2 : ℂ)).const_cpow
-      (Or.inl (Complex.ofReal_ne_zero.mpr (ne_of_gt hD)))
   have hc : ContinuousOn (fun p : ℝ × ℝ => f ((p.1 : ℂ) + (p.2 : ℂ) * Complex.I))
       (Set.Icc u v ×ˢ Set.Icc (-2 : ℝ) 2) := by
     intro p hp'
-    let s : ℂ := (p.1 : ℂ) + (p.2 : ℂ) * Complex.I
+    let s := (p.1 : ℂ) + (p.2 : ℂ) * Complex.I
     have hs : 0 < s.re := by
       simpa [s] using lt_of_lt_of_le hu hp'.1.1
-    have hg : DifferentiableAt ℂ Vendor.reflectedSquareGammaContinuation s :=
-      Vendor.reflectedSquareGammaContinuation_differentiableOn.differentiableAt
-        ((isOpen_lt continuous_const Complex.continuous_re).mem_nhds hs)
     have hG : DifferentiableAt ℂ (fun s : ℂ => Complex.Gammaℂ ((1 + s) / 2)) s :=
       (square_gamma_diff_pos _ (by simp; linarith)).comp s
         (((differentiableAt_const (1 : ℂ)).add differentiableAt_id).div_const (2 : ℂ))
     have hf : ContinuousAt f s :=
-      ((((differentiableAt_const (1 / 2 : ℂ)).mul (hp s)).mul (hg.pow r)).mul hG).continuousAt
+      ((((differentiableAt_const (1 / 2 : ℂ)).mul ((((differentiable_id.sub_const 1).div_const (2 : ℂ)).const_cpow
+        (Or.inl (Complex.ofReal_ne_zero.mpr (ne_of_gt hD)))) s)).mul ((Vendor.reflectedSquareGammaContinuation_differentiableOn.differentiableAt
+        ((isOpen_lt continuous_const Complex.continuous_re).mem_nhds hs)).pow r)).mul hG).continuousAt
     have hz : ContinuousAt (fun q : ℝ × ℝ =>
         (q.1 : ℂ) + (q.2 : ℂ) * Complex.I) p := by fun_prop
     exact (ContinuousAt.comp (f := fun q : ℝ × ℝ =>
@@ -155,8 +139,7 @@ private lemma square_small_factor_bound (D : ℝ) (r : ℕ) (u v : ℝ)
   exact (hC (σ, t) ⟨hσ, by simpa [Set.mem_Icc, abs_le] using ht⟩).trans
     (by linarith [le_max_left C 0])
 
-theorem reflectedSquareSpectrum_uniform_rapid_bound
-    (D : ℝ) (r : ℕ) (a b u v : ℝ) (n : ℕ)
+theorem reflectedSquareSpectrum_uniform_rapid_bound (a b u v : ℝ) (n : ℕ)
     (hD : 0 < D) (hr : 1 ≤ r) (ha : 0 < a) (hab : a < b)
     (hu : 0 < u) (huv : u ≤ v) :
     ∃ (N : ℕ) (C₀ : ℝ), 0 < C₀ ∧
@@ -267,8 +250,7 @@ theorem reflectedSquareSpectrum_uniform_rapid_bound
       _ ≤ Csmall * Vendor.S b (max NH NQ) W := mul_le_mul_of_nonneg_left hSQ hsm.le
       _ ≤ (Cbig + Csmall) * Vendor.S b (max NH NQ) W := by gcongr; linarith
 
-theorem reflectedSquareSpectrum_rapid_bound
-    (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b u v : ℝ) (n : ℕ)
+theorem reflectedSquareSpectrum_rapid_bound (W : ℝ → ℂ) (a b u v : ℝ) (n : ℕ)
     (hD : 0 < D) (hr : 1 ≤ r) (hW : ContDiff ℝ ∞ W)
     (hsupp : Function.support W ⊆ Set.Icc a b)
     (ha : 0 < a) (hab : a < b) (hu : 0 < u) (huv : u ≤ v) :

@@ -18,16 +18,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -73,17 +63,17 @@ private theorem
       (_root_.ideleClassNorm K L).range := by
   apply
     ideleClassNorm_narrowFiniteConductor_isDefiningModulus
-      (K := K) (L := L)
+
   apply
     RayClass.localHigherUnitClassSubgroup_le_congruenceSubgroup
       (RayClass.Modulus.narrowOfFinite
         (ideleClassNormNarrowFiniteConductor
-          (K := K) (L := L))) v
+           )) v
   refine ⟨x, ?_, rfl⟩
   change
     x ∈ RayClass.localHigherUnitGroup v
       (ideleClassNormNarrowFiniteConductor
-        (K := K) (L := L) v)
+          v)
   exact hx
 
 private theorem
@@ -97,23 +87,28 @@ private theorem
   intro x hx
   apply
     (Reciprocity.chosenFinitePlaceArtinMonoidHom_eq_one_iff_chosenLocalNorm
-      (K := K) (L := L) v x).1
-  have hglobal :
-      Reciprocity.globalNormResidueMonoidHom K L
-          (IdeleGroup.finitePlaceIdeleClass v x) = 1 :=
+        v x).1
+  have hglobal :=
     (Reciprocity.globalNormResidueMonoidHom_eq_one_iff
       K L (IdeleGroup.finitePlaceIdeleClass v x)).2
-      (finitePlaceIdeleClass_mem_normRange_of_mem_narrowFiniteHigherUnit
-        (K := K) (L := L) v x hx)
-  have hcompat :
-      Reciprocity.globalNormResidueMonoidHom K L
-          (IdeleGroup.finitePlaceIdeleClass v x) =
-        Reciprocity.chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) v x :=
-    DFunLike.congr_fun
-      (Reciprocity.globalNormResidueMonoidHom_comp_finitePlaceIdeleClass
-        (K := K) (L := L) v) x
-  exact hcompat.symm.trans hglobal
+      ((by
+        apply
+          ideleClassNorm_narrowFiniteConductor_isDefiningModulus
+
+        apply
+          RayClass.localHigherUnitClassSubgroup_le_congruenceSubgroup
+            (RayClass.Modulus.narrowOfFinite
+              (ideleClassNormNarrowFiniteConductor
+                 )) v
+        refine ⟨x, ?_, rfl⟩
+        change
+          x ∈ RayClass.localHigherUnitGroup v
+            (ideleClassNormNarrowFiniteConductor
+                v)
+        exact hx))
+  exact (DFunLike.congr_fun
+    (Reciprocity.globalNormResidueMonoidHom_comp_finitePlaceIdeleClass
+        v) x).symm.trans hglobal
 
 /-- The modulus obtained from the actual chosen local norm groups is
 bounded by the minimal narrow finite conductor.  The substantive input is the
@@ -122,13 +117,11 @@ class is a global class norm exactly when its local component is a norm
 from the chosen completion. -/
 theorem ideleClassNormDefiningModulus_le_narrowFiniteConductor :
     ideleClassNormDefiningModulus (K := K) (L := L) ≤
-      ideleClassNormNarrowFiniteConductor (K := K) (L := L) := by
-  exact
-    ideleClassNormDefiningModulus_le_of_localHigherUnitGroup_le
-      (K := K) (L := L)
-      (ideleClassNormNarrowFiniteConductor (K := K) (L := L))
+      ideleClassNormNarrowFiniteConductor (K := K) (L := L) := ideleClassNormDefiningModulus_le_of_localHigherUnitGroup_le
+
+      (ideleClassNormNarrowFiniteConductor)
       (narrowFiniteHigherUnitGroup_le_chosenFinitePlaceLocalNormSubgroup
-        (K := K) (L := L))
+         )
 
 /-- The minimal narrow finite conductor of an actual finite abelian extension
 is exactly the modulus obtained from its actual chosen local norm
@@ -154,19 +147,19 @@ theorem
       ideleClassNormChosenFinitePlaceLocalConductorExponent
         (K := K) (L := L) v := by
   calc
-    ideleClassNormNarrowFiniteConductor (K := K) (L := L) v =
-        ideleClassNormDefiningModulus (K := K) (L := L) v := by
+    ideleClassNormNarrowFiniteConductor v =
+        ideleClassNormDefiningModulus v := by
       rw [ideleClassNorm_narrowFiniteConductor_eq_normDefiningModulus]
     _ =
         ideleClassNormLocalHigherUnitExponent
-          (K := K) (L := L) v :=
+            v :=
       ideleClassNormDefiningModulus_apply
-        (K := K) (L := L) v
+          v
     _ =
         ideleClassNormChosenFinitePlaceLocalConductorExponent
-          (K := K) (L := L) v :=
+            v :=
       ideleClassNormLocalHigherUnitExponent_eq_localConductorExponent
-        (K := K) (L := L) v
+          v
 
 /-- For a finite abelian extension, the support of the modulus obtained
 from the actual chosen local norm subgroups is precisely the set of
@@ -186,66 +179,24 @@ theorem
     let w :=
       _root_.chosenFinitePlaceExtension
         (L := L) v
-    let W :=
-      _root_.finitePlaceExtensionCentre
-        (K := K) (L := L) v w
     refine
-      ⟨W,
+      ⟨(_root_.finitePlaceExtensionCentre
+        v w),
         _root_.finitePlaceExtensionCentre_liesOver
-          (K := K) (L := L) v w, ?_⟩
+            v w, ?_⟩
     intro hW
     exact
       hramified
         (_root_.chosenFinitePlaceIsUnramified_of_isUnramifiedAt
-          (K := K) (L := L) v hW)
+            v hW)
   · rintro ⟨P, hP, hP_ramified⟩ hchosen
     apply hP_ramified
     apply
       _root_.isUnramifiedAt_at_finitePlaceAbove_of_chosenFinitePlaceIsUnramified
-        (K := K) (L := L) v P
+          v P
     · apply HeightOneSpectrum.ext
       exact hP.over.symm
     · exact hchosen
-
-/-- The actual local norm modulus vanishes exactly when no finite base
-place ramifies. -/
-theorem
-    ideleClassNormDefiningModulus_eq_zero_iff_ramifiedBaseFinitePlaces_eq_empty :
-    ideleClassNormDefiningModulus (K := K) (L := L) = 0 ↔
-      _root_.ramifiedBaseFinitePlaces
-          (K := K) (L := L) = ∅ := by
-  rw [
-    ← Finsupp.support_eq_empty,
-    ideleClassNormDefiningModulus_support_eq_ramifiedBaseFinitePlaces]
-
-/-- The actual local norm modulus vanishes exactly when the extension
-is unramified at every finite place upstairs. -/
-theorem
-    ideleClassNormDefiningModulus_eq_zero_iff_all_finitePlaces_unramified :
-    ideleClassNormDefiningModulus (K := K) (L := L) = 0 ↔
-      ∀ P : HeightOneSpectrum (𝓞 L),
-        Algebra.IsUnramifiedAt (𝓞 K) P.asIdeal := by
-  rw [
-    ideleClassNormDefiningModulus_eq_zero_iff_ramifiedBaseFinitePlaces_eq_empty]
-  constructor
-  · intro hempty P
-    by_contra hP
-    have hramified :
-        _root_.finitePlaceBelow (K := K) P ∈
-          _root_.ramifiedBaseFinitePlaces
-            (K := K) (L := L) := by
-      rw [_root_.mem_ramifiedBaseFinitePlaces_iff]
-      refine ⟨P, ?_, hP⟩
-      exact ⟨by simp only [_root_.finitePlaceBelow_asIdeal]⟩
-    exact
-      (Finset.eq_empty_iff_forall_notMem.mp hempty
-        (_root_.finitePlaceBelow (K := K) P)) hramified
-  · intro hunramified
-    apply Finset.eq_empty_iff_forall_notMem.mpr
-    intro v hv
-    rw [_root_.mem_ramifiedBaseFinitePlaces_iff] at hv
-    obtain ⟨P, _hP, hP_ramified⟩ := hv
-    exact hP_ramified (hunramified P)
 
 /-- The support of the minimal narrow finite conductor of a finite abelian
 extension is exactly its finite ramification locus. -/
@@ -258,17 +209,6 @@ theorem
   rw [
     ideleClassNorm_narrowFiniteConductor_eq_normDefiningModulus,
     ideleClassNormDefiningModulus_support_eq_ramifiedBaseFinitePlaces]
-
-/-- The minimal narrow finite conductor vanishes exactly when the extension
-is unramified at every finite place upstairs. -/
-theorem
-    ideleClassNorm_narrowFiniteConductor_eq_zero_iff_all_finitePlaces_unramified :
-    ideleClassNormNarrowFiniteConductor (K := K) (L := L) = 0 ↔
-      ∀ P : HeightOneSpectrum (𝓞 L),
-        Algebra.IsUnramifiedAt (𝓞 K) P.asIdeal := by
-  rw [
-    ideleClassNorm_narrowFiniteConductor_eq_normDefiningModulus,
-    ideleClassNormDefiningModulus_eq_zero_iff_all_finitePlaces_unramified]
 
 omit [FiniteDimensional K L] in
 /-- A ramified real-to-complex completion makes the corresponding
@@ -284,30 +224,21 @@ private theorem infiniteTensorNormSubgroup_ne_top_of_isRamified
     ⟨congrArg (fun q : InfinitePlace K => q.1) hw⟩
   rw [
     _root_.infiniteTensorNormSubgroup_eq_localNormSubgroup
-      (K := K) (L := L) v w hw]
+        v w hw]
   have hvReal : v.IsReal := by
     rw [← hw]
     exact hramified.isReal
-  let eRealField :
-      v.Completion ≃+* ℝ :=
+  let eRealField :=
     InfinitePlace.Completion.ringEquivRealOfIsReal
       hvReal
-  let eRealUnits :
-      v.Completionˣ ≃* ℝˣ :=
+  let eRealUnits :=
     Units.mapEquiv eRealField.toMulEquiv
-  have hwComplex : w.IsComplex :=
-    hramified.isComplex
-  let eComplexField :
-      w.Completion ≃+* ℂ :=
+  let eComplexField :=
     InfinitePlace.Completion.ringEquivComplexOfIsComplex
-      hwComplex
-  let eComplexUnits :
-      w.Completionˣ ≃* ℂˣ :=
+      hramified.isComplex
+  let eComplexUnits :=
     Units.mapEquiv eComplexField.toMulEquiv
-  let :
-      NumberField.ComplexEmbedding.LiesOver
-        (InfinitePlace.Completion.extensionEmbedding w)
-        (InfinitePlace.Completion.extensionEmbedding v) :=
+  let :=
     InfinitePlace.LiesOver.extensionEmbedding_liesOver_of_isReal
       w hvReal
   have hCompletionCompatible :
@@ -344,12 +275,9 @@ private theorem infiniteTensorNormSubgroup_ne_top_of_isRamified
         ⟨normUnits ℝ ℂ (eComplexUnits z),
           ⟨eComplexUnits z, rfl⟩, ?_⟩
       calc
-        eRealUnits.symm
-            (normUnits ℝ ℂ (eComplexUnits z)) =
+        _ =
             normUnits v.Completion w.Completion
-              (eComplexUnits.symm (eComplexUnits z)) := by
-          exact
-            LocalClassFieldTheory.normUnits_map_ringEquiv
+              (eComplexUnits.symm (eComplexUnits z)) := LocalClassFieldTheory.normUnits_map_ringEquiv
               eRealField.symm eComplexField.symm
               hCompletionCompatibleSymm
               (eComplexUnits z)
@@ -369,9 +297,7 @@ private theorem infiniteTensorNormSubgroup_ne_top_of_isRamified
     exact Subgroup.mem_top _
   rw [← hRealComplexNormTransport] at hx
   obtain ⟨z, hz, hzEq⟩ := hx
-  have hzNegativeOne : z = (-1 : ℝˣ) :=
-    eRealUnits.symm.injective hzEq
-  exact hNegativeOne (hzNegativeOne ▸ hz)
+  exact hNegativeOne ((eRealUnits.symm.injective hzEq) ▸ hz)
 
 omit [FiniteDimensional K L] in
 /-- At a base infinite place, the determinant-norm image is the whole
@@ -392,18 +318,16 @@ theorem infiniteTensorNormSubgroup_eq_top_iff_isUnramifiedIn
   constructor
   · intro htop
     by_contra hramified
-    have hRamified : w.IsRamified K :=
-      hramified
     exact
       (infiniteTensorNormSubgroup_ne_top_of_isRamified
-        (K := K) (L := L) v w hw hRamified)
+          v w hw hramified)
         htop
   · intro hunramified
     let : w.1.LiesOver v.1 :=
       ⟨congrArg (fun q : InfinitePlace K => q.1) hw⟩
     rw [
       _root_.infiniteTensorNormSubgroup_eq_localNormSubgroup
-        (K := K) (L := L) v w hw]
+          v w hw]
     apply top_unique
     intro x _
     refine
@@ -433,7 +357,7 @@ theorem ideleClassNormFullConductor_infinitePart_eq_realRamificationLocus :
   ext v
   change
     v ∈ (ideleClassNormConductorialSubgroup
-        (K := K) (L := L)).fullConductorInfinitePart ↔
+         ).fullConductorInfinitePart ↔
       v ∈ (Finset.univ.filter fun w : RayClass.RealPlace K =>
         ¬ w.1.IsUnramifiedIn L)
   rw [ConductorialSubgroup.mem_fullConductorInfinitePart_iff,
@@ -445,75 +369,28 @@ theorem ideleClassNormFullConductor_infinitePart_eq_realRamificationLocus :
       ¬ v.1.IsUnramifiedIn L
   apply not_congr
   calc
-    (IdeleGroup.infinitePlaceIdeleClass v.1).range ≤
+    _ ≤
           (_root_.ideleClassNorm K L).range ↔
         _root_.infiniteTensorNormSubgroup
-            (K := K) (L := L) v.1 = ⊤ := by
+              v.1 = ⊤ := by
       constructor
       · intro hRange
         apply top_unique
         intro x _hx
         apply
           (Reciprocity.infinitePlaceIdeleClass_mem_ideleClassNorm_range_iff
-            (K := K) (L := L) v.1 x).1
+              v.1 x).1
         exact hRange ⟨x, rfl⟩
       · intro hTop
         rintro _ ⟨x, rfl⟩
         apply
           (Reciprocity.infinitePlaceIdeleClass_mem_ideleClassNorm_range_iff
-            (K := K) (L := L) v.1 x).2
+              v.1 x).2
         rw [hTop]
         exact Subgroup.mem_top x
     _ ↔ v.1.IsUnramifiedIn L :=
       infiniteTensorNormSubgroup_eq_top_iff_isUnramifiedIn
-        (K := K) (L := L) v.1
-
-omit [FiniteDimensional K L] in
-/-- A finite abelian number-field extension is unramified at every
-infinite place exactly when every archimedean tensor determinant-norm
-image is the whole local multiplicative group. -/
-theorem
-    infiniteTensorNormSubgroups_eq_top_iff_isUnramifiedAtInfinitePlaces :
-    (∀ v : InfinitePlace K,
-        _root_.infiniteTensorNormSubgroup
-          (K := K) (L := L) v = ⊤) ↔
-      IsUnramifiedAtInfinitePlaces K L := by
-  constructor
-  · intro htop
-    exact
-      ⟨fun w =>
-        (infiniteTensorNormSubgroup_eq_top_iff_isUnramifiedIn
-          (K := K) (L := L)
-          (w.comap (algebraMap K L))).1
-          (htop (w.comap (algebraMap K L))) w rfl⟩
-  · intro hunramified
-    let : IsUnramifiedAtInfinitePlaces K L :=
-      hunramified
-    exact fun v =>
-      infiniteTensorNormSubgroup_eq_top_of_isUnramifiedAtInfinitePlaces
-        (K := K) (L := L) v
-
-/-- In the repository's modulus convention, the finite conductor is
-zero and every archimedean determinant-norm image is the full local
-group exactly when the extension is unramified at every finite and
-infinite place.
-
-This combines the finite support of the narrow finite conductor with the
-separate archimedean clause, so no ramification place is omitted by
-the fact that `RayClass.Modulus` records only finite exponents. -/
-theorem
-    ideleClassNorm_everywhereUnramified_iff_conductor_zero_and_infiniteNorms_top :
-    ((∀ P : HeightOneSpectrum (𝓞 L),
-          Algebra.IsUnramifiedAt (𝓞 K) P.asIdeal) ∧
-        IsUnramifiedAtInfinitePlaces K L) ↔
-      (ideleClassNormNarrowFiniteConductor
-            (K := K) (L := L) = 0 ∧
-        ∀ v : InfinitePlace K,
-          _root_.infiniteTensorNormSubgroup
-            (K := K) (L := L) v = ⊤) := by
-  rw [
-    ideleClassNorm_narrowFiniteConductor_eq_zero_iff_all_finitePlaces_unramified,
-    infiniteTensorNormSubgroups_eq_top_iff_isUnramifiedAtInfinitePlaces]
+          v.1
 
 end GlobalClassFields
 end GlobalClassFieldTheory
@@ -538,36 +415,10 @@ theorem abelianFullConductor_finiteExponent_eq_localConductorExponent
         (K := K) (L := L) v := by
   change
     GlobalClassFieldTheory.GlobalClassFields.ideleClassNormNarrowFiniteConductor
-        (K := K) (L := L) v = _
+          v = _
   exact
     GlobalClassFieldTheory.GlobalClassFields.ideleClassNorm_narrowFiniteConductor_apply_eq_chosenLocalConductorExponent
-      (K := K) (L := L) v
-
-/-- A finite place has conductor exponent zero precisely when the chosen
-local extension is unramified. -/
-theorem abelianFullConductor_finiteExponent_eq_zero_iff_unramified
-    (v : HeightOneSpectrum (𝓞 K)) :
-    (GlobalClassFieldTheory.GlobalClassFields.ideleClassNormConductorialSubgroup
-        (K := K) (L := L)).fullConductor.finitePart v = 0 ↔
-      _root_.ChosenFinitePlaceIsUnramified
-        (K := K) (L := L) v := by
-  rw [abelianFullConductor_finiteExponent_eq_localConductorExponent]
-  rw [← GlobalClassFieldTheory.GlobalClassFields.ideleClassNormLocalHigherUnitExponent_eq_localConductorExponent
-    (K := K) (L := L) v]
-  exact
-    GlobalClassFieldTheory.GlobalClassFields.ideleClassNormLocalHigherUnitExponent_eq_zero_iff_chosenFinitePlaceIsUnramified
-      (K := K) (L := L) v
-
-/-- A real place belongs to the full norm conductor exactly when it
-ramifies, equivalently complexifies, in the extension. -/
-theorem abelianFullConductor_mem_infinitePart_iff_realRamified
-    (v : RayClass.RealPlace K) :
-    v ∈
-        (GlobalClassFieldTheory.GlobalClassFields.ideleClassNormConductorialSubgroup
-          (K := K) (L := L)).fullConductor.infinitePart ↔
-      ¬ v.1.IsUnramifiedIn L := by
-  rw [GlobalClassFieldTheory.GlobalClassFields.ideleClassNormFullConductor_infinitePart_eq_realRamificationLocus]
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+        v
 
 end ClassFieldTheory
 

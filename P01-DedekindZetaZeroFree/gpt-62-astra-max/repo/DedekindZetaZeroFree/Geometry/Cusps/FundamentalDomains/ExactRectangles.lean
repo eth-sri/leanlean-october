@@ -19,7 +19,7 @@ theorem sum_restrict_of_constant_multiplicity
     (hc : ∀ᵐ x ∂ν.restrict s, (∑' i, (T i).indicator (fun _ => (1 : ℝ≥0∞)) x) = c) :
     (Measure.sum fun i => ν.restrict (T i ∩ s)) = c • ν.restrict s := by
   calc
-    (Measure.sum fun i => ν.restrict (T i ∩ s)) =
+    _ =
         Measure.sum (fun i => (ν.restrict s).withDensity
           ((T i).indicator (fun _ => (1 : ℝ≥0∞)))) := by
       congr 1
@@ -35,39 +35,33 @@ theorem sum_restrict_of_constant_multiplicity
     _ = (ν.restrict s).withDensity (fun _ => c) := withDensity_congr_ae hc
     _ = c • ν.restrict s := withDensity_const c
 
-theorem integral_comparison
-    {H X : Type*} [Group H] [Countable H] [MeasurableSpace X]
-    [MulAction H X] [MeasurableConstSMul H X]
-    (ν : Measure X) [SMulInvariantMeasure H X ν]
-    {s t : Set X} (hs : IsFundamentalDomain H s ν)
-    (ht : MeasurableSet t) (c : ℝ≥0∞) (hctop : c ≠ ⊤)
+variable {H X : Type*} [Group H] [Countable H] [MeasurableSpace X] [MulAction H X]
+    [MeasurableConstSMul H X] (ν : Measure X) [SMulInvariantMeasure H X ν] {s t : Set X}
+    (hs : IsFundamentalDomain H s ν) (ht : MeasurableSet t) (c : ℝ≥0∞)
+
+include hs ht in
+theorem integral_comparison (hctop : c ≠ ⊤)
     (hcount : ∀ᵐ x ∂ν.restrict s,
       (∑' g : H, (g • t).indicator (fun _ => (1 : ℝ≥0∞)) x) = c)
     (f : X → ℝ) (hinv : ∀ (g : H) (x : X), f (g • x) = f x)
     (hfs : IntegrableOn f s ν) (hft : IntegrableOn f t ν) :
     (∫ x in t, f x ∂ν) = c.toReal * ∫ x in s, f x ∂ν := by
-  have hm : (Measure.sum fun g : H => ν.restrict (g • t ∩ s)) =
-      c • ν.restrict s :=
+  have hm :=
     sum_restrict_of_constant_multiplicity ν s (fun g : H => g • t)
       (fun g => ht.const_smul g) c hcount
-  have hi : Integrable f (Measure.sum fun g : H => ν.restrict (g • t ∩ s)) := by
-    rw [hm]
-    exact hfs.smul_measure hctop
   calc
-    (∫ x in t, f x ∂ν) = ∑' g : H, ∫ x in g • t ∩ s, f x ∂ν := by
+    _ = ∑' g : H, ∫ x in g • t ∩ s, f x ∂ν := by
       rw [hs.setIntegral_eq_tsum' hft]
       simp only [hinv]
     _ = ∫ x, f x ∂(Measure.sum fun g : H => ν.restrict (g • t ∩ s)) :=
-      (integral_sum_measure hi).symm
+      (integral_sum_measure (by
+        rw [hm]
+        exact hfs.smul_measure hctop)).symm
     _ = c.toReal * ∫ x in s, f x ∂ν := by
       rw [hm, integral_smul_measure, smul_eq_mul]
 
-theorem integral_eq_zero
-    {H X : Type*} [Group H] [Countable H] [MeasurableSpace X]
-    [MulAction H X] [MeasurableConstSMul H X]
-    (ν : Measure X) [SMulInvariantMeasure H X ν]
-    {s t : Set X} (hs : IsFundamentalDomain H s ν)
-    (ht : MeasurableSet t) (c : ℝ≥0∞) (hc0 : c ≠ 0) (hctop : c ≠ ⊤)
+include hs ht in
+theorem integral_eq_zero (hc0 : c ≠ 0) (hctop : c ≠ ⊤)
     (hcount : ∀ᵐ x ∂ν.restrict s,
       (∑' g : H, (g • t).indicator (fun _ => (1 : ℝ≥0∞)) x) = c)
     (f : X → ℝ) (hinv : ∀ (g : H) (x : X), f (g • x) = f x)
@@ -103,12 +97,16 @@ private theorem actual_translation_action
   obtain ⟨A, hA, hc⟩ := D.upper s.val s.property
   have h := G.actual_action s A hA hc (x, 0)
   rw [G.unipotent_action l (x, 0)] at h
-  have hp := (KPCuspCharts.toArchHomeomorph F G.positive_dimension).injective h
   rw [G.crossAction_formula s A hA hc]
-  exact (congrArg Prod.fst hp).symm
+  exact (congrArg Prod.fst ((KPCuspCharts.toArchHomeomorph F G.positive_dimension).injective h)).symm
+
+alias ExactRectangles.actual_translation_action := actual_translation_action
+
+section
+
+variable (G : KPCuspCharts.ChartOutput F hF S D)
 
 theorem existsUnique_ratio_horizontal_representative
-    (G : KPCuspCharts.ChartOutput F hF S D)
     (A : Set (KPCuspCharts.Horizontal F))
     (hA : ∀ y : KPCuspCharts.Horizontal F, ∃! l : D.L,
       y + KPCuspCharts.embedding F l.val ∈ A)
@@ -132,19 +130,18 @@ theorem existsUnique_ratio_horizontal_representative
     obtain ⟨m, hm⟩ := hk
     have hsform : s = D.inclusion m * t := by
       rw [hm, inv_mul_cancel_right]
-    have he : Multiplicative.toAdd m = l := by
-      apply hlu
-      have hh := hs.2
-      rw [hsform, map_mul, Homeomorph.mul_apply] at hh
-      change (G.crossAction (D.inclusion (Multiplicative.ofAdd (Multiplicative.toAdd m)))
-        (G.crossAction t x)).1 ∈ A at hh
-      rw [actual_translation_action] at hh
-      exact hh
     rw [hsform]
     congr 1
-    exact congrArg D.inclusion (congrArg Multiplicative.ofAdd he)
+    refine congrArg D.inclusion (congrArg Multiplicative.ofAdd ?_)
+    apply hlu
+    have hh := hs.2
+    rw [hsform, map_mul, Homeomorph.mul_apply] at hh
+    change (G.crossAction (D.inclusion (Multiplicative.ofAdd (Multiplicative.toAdd m)))
+      (G.crossAction t x)).1 ∈ A at hh
+    rw [actual_translation_action] at hh
+    exact hh
 
-theorem crossAction_shape (G : KPCuspCharts.ChartOutput F hF S D)
+theorem crossAction_shape
     (s : S) (x : KPCuspCharts.Cross F) :
     (G.crossAction s x).2 = x.2 +
       KPCuspLogShape.logarithm F hF D.E D.integralUnits (Additive.ofMul (D.ratio s)) := by
@@ -152,7 +149,7 @@ theorem crossAction_shape (G : KPCuspCharts.ChartOutput F hF S D)
   rw [G.crossAction_formula s A hA hc]
   rfl
 
-def orbitRatioEquiv (G : KPCuspCharts.ChartOutput F hF S D)
+def orbitRatioEquiv
  (A : Set (KPCuspCharts.Horizontal F))
  (hA : ∀ y : KPCuspCharts.Horizontal F, ∃! l : D.L,
    y + KPCuspCharts.embedding F l.val ∈ A)
@@ -178,6 +175,8 @@ def orbitRatioEquiv (G : KPCuspCharts.ChartOutput F hF S D)
    apply Subtype.ext
    exact (P u.val).choose_spec.1.1
 
+end
+
 def shapeUnitEquivKernel
  (B : Set (KPCuspCharts.Shape F))
  (hB : ∀ b : KPCuspCharts.Shape F, ∃! v : KPCuspLogShape.logLattice F hF D.E D.integralUnits,
@@ -191,7 +190,7 @@ def shapeUnitEquivKernel
  have hvu := (hB b).choose_spec.2
  let w := v.property.choose
  have hw := v.property.choose_spec
- let t : D.E := Additive.toMul w
+ let t := Additive.toMul w
  have ht : L (Additive.ofMul t) = v.val := hw
  refine {
    toFun := fun u => ⟨u.val * t⁻¹, ?_⟩
@@ -263,13 +262,11 @@ theorem lattice_exact_domain {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ
   ∃ A : Set X, MeasurableSet A ∧ Bornology.IsBounded A ∧
     ∀ x : X, ∃! l : L, x + l.val ∈ A := by
   let b := (Module.Free.chooseBasis ℤ L).ofZLatticeBasis ℝ
-  have hb : Submodule.span ℤ (Set.range b) = L :=
-    (Module.Free.chooseBasis ℤ L).ofZLatticeBasis_span ℝ
   refine ⟨ZSpan.fundamentalDomain b, ZSpan.fundamentalDomain_measurableSet b,
     ZSpan.fundamentalDomain_isBounded b, ?_⟩
   intro x
   have h := ZSpan.exist_unique_vadd_mem_fundamentalDomain b x
-  rw [hb] at h
+  rw [((Module.Free.chooseBasis ℤ L).ofZLatticeBasis_span ℝ)] at h
   simpa only [Submodule.vadd_def, vadd_eq_add, add_comm] using h
 
 variable {F : Type} [Field F] [NumberField F]
@@ -296,18 +293,15 @@ theorem actual_exact_comparison_rectangle (G : KPCuspCharts.ChartOutput F hF S D
  refine ⟨A, B, hAm, hAb, hBm, hBb, ?_, hB⟩
  have hinj : Function.Injective (KPCuspCharts.embedding F) := by
    intro a b hab
-   have h0 := congrFun hab ⟨0, G.positive_dimension⟩
-   exact (KPCusp.complexPlace F ⟨0, G.positive_dimension⟩).embedding.injective h0
+   exact (KPCusp.complexPlace F ⟨0, G.positive_dimension⟩).embedding.injective (congrFun hab ⟨0, G.positive_dimension⟩)
  intro y
  obtain ⟨z, hz, hzu⟩ := hA y
  obtain ⟨a, ha, haz⟩ := z.property
  refine ⟨⟨a, ha⟩, ?_, ?_⟩
  · simpa only [haz] using hz
  · intro l hl
-   have he : KPCuspCharts.embedding F l.val = z.val :=
-     congrArg Subtype.val (hzu ⟨_, ⟨l.val, l.property, rfl⟩⟩ hl)
    apply Subtype.ext
-   exact hinj (he.trans haz.symm)
+   exact hinj ((congrArg Subtype.val (hzu ⟨_, ⟨l.val, l.property, rfl⟩⟩ hl)).trans haz.symm)
 end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection
 
 end

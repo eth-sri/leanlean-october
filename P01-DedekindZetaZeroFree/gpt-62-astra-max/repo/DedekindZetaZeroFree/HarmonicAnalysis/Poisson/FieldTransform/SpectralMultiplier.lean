@@ -14,18 +14,21 @@ open scoped NumberField Classical ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-def B (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (s : ℂ) : ℂ :=
+section
+
+variable (D : ℝ) (r : ℕ)
+
+def B (h : ℝ → ℂ) (s : ℂ) : ℂ :=
   (D : ℂ) ^ (s - 1 / 2) * Complex.Gammaℂ s ^ r *
     ((Complex.Gammaℂ (1 - s))⁻¹) ^ (r - 1) * Vendor.originMellinQ h (1 - s)
 
-private lemma kernelFactor_diff (D : ℝ) (r : ℕ) (hD : 0 < D)
+private lemma kernelFactor_diff (hD : 0 < D)
     (s : ℂ) (hs : 0 < s.re) :
     DifferentiableAt ℂ (fun z : ℂ => (D : ℂ) ^ (z - 1 / 2) *
       Complex.Gammaℂ z ^ r * (Complex.Gammaℂ (1 - z))⁻¹ ^ (r - 1)) s := by
   have hGam : DifferentiableAt ℂ Complex.Gamma s := by
     refine Complex.differentiableAt_Gamma s fun m h => ?_
     have h2 : s.re = -(m : ℝ) := by rw [h]; simp
-    have hm : (0 : ℝ) ≤ (m : ℝ) := Nat.cast_nonneg m
     rw [h2] at hs
     linarith
   have hnum : DifferentiableAt ℂ (fun z : ℂ => Complex.Gammaℂ z) s := by
@@ -35,22 +38,18 @@ private lemma kernelFactor_diff (D : ℝ) (r : ℕ) (hD : 0 < D)
     rw [heq]
     exact ((differentiableAt_const (2 : ℂ)).mul (differentiableAt_id.neg.const_cpow
       (Or.inl (by norm_num : (2 * (Real.pi : ℂ)) ≠ 0)))).mul hGam
-  have hden : DifferentiableAt ℂ (fun z : ℂ => (Complex.Gammaℂ (1 - z))⁻¹) s :=
-    Complex.differentiable_Gammaℂ_inv.differentiableAt.comp s
-      ((differentiableAt_const (1 : ℂ)).sub differentiableAt_id)
-  have hpow : DifferentiableAt ℂ (fun z : ℂ => (D : ℂ) ^ (z - 1 / 2)) s :=
-    (differentiableAt_id.sub (differentiableAt_const _)).const_cpow
-      (Or.inl (Complex.ofReal_ne_zero.mpr hD.ne'))
-  exact (hpow.mul (hnum.pow r)).mul (hden.pow (r - 1))
+  exact (((differentiableAt_id.sub (differentiableAt_const _)).const_cpow
+    (Or.inl (Complex.ofReal_ne_zero.mpr hD.ne'))).mul (hnum.pow r)).mul ((Complex.differentiable_Gammaℂ_inv.differentiableAt.comp s
+    ((differentiableAt_const (1 : ℂ)).sub differentiableAt_id)).pow (r - 1))
 
-theorem B_differentiableOn (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
+theorem B_differentiableOn (h : ℝ → ℂ)
     (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
     (hhc : HasCompactSupport h) :
-    DifferentiableOn ℂ (B D r h) {s : ℂ | 0 < s.re} := by
-  intro s hs
-  exact ((kernelFactor_diff D r hD s hs).mul
+    DifferentiableOn ℂ (B D r h) {s : ℂ | 0 < s.re} := fun s hs => ((kernelFactor_diff D r hD s hs).mul
     ((Vendor.originMellinQ_differentiable h hh hhc).differentiableAt.comp s
       ((differentiableAt_const (1 : ℂ)).sub differentiableAt_id))).differentiableWithinAt
+
+end
 
 private lemma kernel_S_mono (b : ℝ) (m n : ℕ) (h : ℝ → ℂ)
     (hmn : m ≤ n) : Vendor.S b m h ≤ Vendor.S b n h := by
@@ -58,6 +57,8 @@ private lemma kernel_S_mono (b : ℝ) (m n : ℕ) (h : ℝ → ℂ)
   exact Finset.sum_le_sum_of_subset_of_nonneg
     (Finset.range_mono (Nat.add_le_add_right hmn 1))
     (fun i _ _ => Real.sSup_nonneg fun y ⟨x, _, hy⟩ => hy ▸ norm_nonneg _)
+
+alias SpectralMultiplier.kernel_S_mono := kernel_S_mono
 
 private lemma kernel_power_bound (D a v : ℝ) (hD : 0 < D) :
     ∃ C : ℝ, 0 < C ∧ ∀ s : ℂ, s.re ∈ Set.Icc a v →
@@ -74,13 +75,17 @@ private lemma kernel_power_bound (D a v : ℝ) (hD : 0 < D) :
   · exact (Real.rpow_le_rpow_of_exponent_ge hD h1 (by linarith [hs.1])).trans
       (le_max_left _ _)
 
-private lemma kernel_small_factor_bound (D : ℝ) (r : ℕ) (a v : ℝ)
+alias SpectralMultiplier.kernel_power_bound := kernel_power_bound
+
+variable (D : ℝ) (r : ℕ)
+
+private lemma kernel_small_factor_bound (a v : ℝ)
     (hD : 0 < D) (ha : 0 < a) :
     ∃ C : ℝ, 0 < C ∧ ∀ σ ∈ Set.Icc a v, ∀ t : ℝ, |t| ≤ 1 →
       ‖(D : ℂ) ^ (((σ : ℂ) + (t : ℂ) * Complex.I) - 1 / 2) *
         Complex.Gammaℂ ((σ : ℂ) + (t : ℂ) * Complex.I) ^ r *
         (Complex.Gammaℂ (1 - ((σ : ℂ) + (t : ℂ) * Complex.I)))⁻¹ ^ (r - 1)‖ ≤ C := by
-  let f : ℂ → ℂ := fun z : ℂ => (D : ℂ) ^ (z - 1 / 2) * Complex.Gammaℂ z ^ r *
+  let f := fun z : ℂ => (D : ℂ) ^ (z - 1 / 2) * Complex.Gammaℂ z ^ r *
     (Complex.Gammaℂ (1 - z))⁻¹ ^ (r - 1)
   have hc : ContinuousOn (fun p : ℝ × ℝ => f ((p.1 : ℂ) + (p.2 : ℂ) * Complex.I))
       (Set.Icc a v ×ˢ Set.Icc (-1 : ℝ) 1) := by
@@ -88,18 +93,14 @@ private lemma kernel_small_factor_bound (D : ℝ) (r : ℕ) (a v : ℝ)
     have hs : 0 < ((p.1 : ℂ) + (p.2 : ℂ) * Complex.I).re := by
       simp only [Set.mem_prod, Set.mem_Icc] at hp
       simpa using lt_of_lt_of_le ha hp.1.1
-    have hf : ContinuousAt f ((p.1 : ℂ) + (p.2 : ℂ) * Complex.I) :=
-      (kernelFactor_diff D r hD _ hs).continuousAt
-    have hg : ContinuousAt (fun q : ℝ × ℝ =>
-        (q.1 : ℂ) + (q.2 : ℂ) * Complex.I) p := by fun_prop
     exact (ContinuousAt.comp (f := fun q : ℝ × ℝ =>
-      (q.1 : ℂ) + (q.2 : ℂ) * Complex.I) (x := p) hf hg).continuousWithinAt
+      (q.1 : ℂ) + (q.2 : ℂ) * Complex.I) (x := p) ((kernelFactor_diff D r hD _ hs).continuousAt) (by fun_prop)).continuousWithinAt
   obtain ⟨C, hC⟩ := (isCompact_Icc.prod isCompact_Icc).exists_bound_of_continuousOn hc
   refine ⟨max C 0 + 1, by positivity, fun σ hσ t ht => ?_⟩
   exact (hC (σ, t) ⟨hσ, by simpa [Set.mem_Icc, abs_le] using ht⟩).trans
     (by linarith [le_max_left C 0])
 
-private lemma kernel_large_identity (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
+private lemma kernel_large_identity (h : ℝ → ℂ)
     (hr : 1 ≤ r) (s : ℂ) (hs : s.im ≠ 0) :
     B D r h s = (D : ℂ) ^ (s - 1 / 2) *
       (Complex.Gammaℂ s / Complex.Gammaℂ (1 - s)) ^ r *
@@ -113,8 +114,7 @@ private lemma kernel_large_identity (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
       rw [Complex.Gamma_eq_zero_iff] at h0
       obtain ⟨m, hm⟩ := h0
       apply hs
-      have him := congrArg Complex.im hm
-      simpa using him
+      simpa using (congrArg Complex.im hm)
   have hp : (Complex.Gammaℂ (1 - s))⁻¹ ^ r * Complex.Gammaℂ (1 - s) =
       (Complex.Gammaℂ (1 - s))⁻¹ ^ (r - 1) := by
     conv_lhs => rw [← Nat.sub_add_cancel hr, pow_succ]
@@ -125,7 +125,7 @@ private lemma kernel_large_identity (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
         Vendor.originMellinQ h (1 - s) := by rw [hp]
     _ = _ := by ring
 
-theorem B_uniform_rapid_bound (D : ℝ) (r : ℕ) (b a v : ℝ) (k : ℕ)
+theorem B_uniform_rapid_bound (b a v : ℝ) (k : ℕ)
     (hD : 0 < D) (hr : 1 ≤ r) (hb : 0 < b) (ha : 0 < a) (hav : a ≤ v) :
     ∃ (N : ℕ) (C : ℝ), 0 < C ∧
       ∀ h : ℝ → ℂ, ContDiff ℝ ∞ h → HasCompactSupport h →
@@ -206,7 +206,7 @@ theorem B_uniform_rapid_bound (D : ℝ) (r : ℕ) (b a v : ℝ) (k : ℕ)
       _ ≤ (Cbig + Csmall) * Vendor.S b (max NH NQ) h := by
         gcongr; linarith
 
-theorem B_rapid_bound (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (a v : ℝ) (k : ℕ)
+theorem B_rapid_bound (h : ℝ → ℂ) (a v : ℝ) (k : ℕ)
     (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
     (hhc : HasCompactSupport h) (ha : 0 < a) (hav : a ≤ v) :
     ∃ C : ℝ, 0 < C ∧ ∀ (σ : ℝ), σ ∈ Set.Icc a v → ∀ t : ℝ,
@@ -214,16 +214,15 @@ theorem B_rapid_bound (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (a v : ℝ) (k : ℕ
   obtain ⟨K, hK, hK0⟩ := exists_compact_iff_hasCompactSupport.mpr hhc
   obtain ⟨b, hb⟩ := hK.bddAbove
   have hb0 : 0 < max b 1 := lt_of_lt_of_le zero_lt_one (le_max_right _ _)
-  have hpos : ∀ x : ℝ, max b 1 < x → h x = 0 := by
-    intro x hx
-    apply hK0 x
-    intro hxK
-    exact absurd (hb hxK) (not_le.mpr (lt_of_le_of_lt (le_max_left _ _) hx))
   obtain ⟨N, C, hC, hbound⟩ := B_uniform_rapid_bound D r (max b 1) a v k hD hr hb0 ha hav
-  have hS : 0 ≤ Vendor.S (max b 1) N h := Vendor.S_nonneg _ hb0 N h hh
+  have hS := Vendor.S_nonneg _ hb0 N h hh
   refine ⟨C * Vendor.S (max b 1) N h + 1, by positivity, ?_⟩
   intro σ hσ t
-  exact (hbound h hh hhc hpos σ hσ t).trans (by linarith)
+  refine (hbound h hh hhc ?_ σ hσ t).trans (by linarith)
+  intro x hx
+  apply hK0 x
+  intro hxK
+  exact absurd (hb hxK) (not_le.mpr (lt_of_le_of_lt (le_max_left _ _) hx))
 
 end DedekindZetaZeroFree.LargeSieve
 

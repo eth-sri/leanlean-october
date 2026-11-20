@@ -9,22 +9,31 @@ namespace DedekindZetaZeroFree.ComplexWeil
 noncomputable section
 open MeasureTheory
 
-def unitMulCLE (u : ℂ) (hu : ‖u‖ = 1) : ℂ ≃L[ℝ] ℂ :=
+section
+
+variable (u : ℂ) (hu : ‖u‖ = 1)
+
+def unitMulCLE : ℂ ≃L[ℝ] ℂ :=
   ContinuousLinearEquiv.smulLeft
     (Units.mk0 u (norm_ne_zero_iff.mp (by rw [hu]; norm_num)))
 
-theorem unitMulCLE_apply (u : ℂ) (hu : ‖u‖ = 1) (z : ℂ) :
+theorem unitMulCLE_apply (z : ℂ) :
     unitMulCLE u hu z = u * z := rfl
 
-theorem quadratic_radius_pos (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
-    0 < ‖β * a‖ := by
-  exact norm_pos_iff.mpr (mul_ne_zero hβ ha)
+end
 
-theorem exists_quadratic_unit (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
+section
+
+variable (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
+
+include hβ ha in
+theorem quadratic_radius_pos :
+    0 < ‖β * a‖ := norm_pos_iff.mpr (mul_ne_zero hβ ha)
+
+include hβ ha in
+theorem exists_quadratic_unit :
     ∃ u : ℂ, ‖u‖ = 1 ∧ β * a * u ^ 2 = (‖β * a‖ : ℂ) := by
-  have hba : β * a ≠ 0 := mul_ne_zero hβ ha
-  have hr : 0 < ‖β * a‖ := norm_pos_iff.mpr hba
-
+  have hba := mul_ne_zero hβ ha
   set d := (‖β * a‖ : ℂ) / (β * a) with hdd
   have hdnorm : ‖d‖ = 1 := by
     rw [hdd, norm_div]
@@ -41,6 +50,8 @@ theorem exists_quadratic_unit (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
       rw [this, hdexp]
     rw [hsq, hdd]
     field_simp
+
+end
 
 theorem unitMulCLE_measurePreserving (u : ℂ) (hu : ‖u‖ = 1) :
     MeasurePreserving (unitMulCLE u hu) (volume : Measure ℂ) volume := by
@@ -93,9 +104,6 @@ theorem frequency_square_difference (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a �
     (hrotate : β * a * u ^ 2 = (‖β * a‖ : ℂ)) :
     ((β * u * ξ).re ^ 2 - (β * u * ξ).im ^ 2) / ‖β * a‖ =
       (β * ξ ^ 2 / a).re := by
-  have hba : β * a ≠ 0 := mul_ne_zero hβ ha
-  have hrne : (‖β * a‖) ≠ 0 := norm_ne_zero_iff.mpr hba
-
   have key : (β * u * ξ) ^ 2 = (‖β * a‖ : ℂ) * (β * ξ ^ 2 / a) := by
     have h : (β * u * ξ) ^ 2 * a = (‖β * a‖ : ℂ) * (β * ξ ^ 2) := by
       rw [mul_pow]

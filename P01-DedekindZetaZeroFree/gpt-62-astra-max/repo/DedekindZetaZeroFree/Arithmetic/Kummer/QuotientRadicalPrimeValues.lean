@@ -11,8 +11,9 @@ noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain
 
-private theorem prime_eq_lambda (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
+variable (F : Type) [Field F] [NumberField F] (h12 : (primitiveRoots 12 F).Nonempty)
+
+private theorem prime_eq_lambda (x : Fˣ)
     (v : HeightOneSpectrum (𝓞 F)) (hv : ¬ v.asIdeal ∣ RMKummerConductor.m F h12 x)
     (π : (v.adicCompletion F)ˣ)
     (hπ : HeightOneSpectrum.adicCompletion.valuation F v (π : v.adicCompletion F) =
@@ -35,27 +36,20 @@ private theorem prime_eq_lambda (F : Type) [Field F] [NumberField F]
     RMKummerPrincipalPrime.arithmeticFrobenius_eq_lambda_uniformizer
       F h12 x v hs w hQover π hπ]
 
-theorem quotient_prime (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x y : Fˣ)
+theorem quotient_prime (x y : Fˣ)
     (v : HeightOneSpectrum (𝓞 F))
     (hv : ¬ v.asIdeal ∣ RMKummerConductor.m F h12 x *
       RMKummerConductor.m F h12 y * RMKummerConductor.m F h12 (x / y)) :
     RMKummerConductor.Xi F h12 (x / y) v.asIdeal =
       RMKummerConductor.Xi F h12 x v.asIdeal *
         star (RMKummerConductor.Xi F h12 y v.asIdeal) := by
-  have hx : ¬ v.asIdeal ∣ RMKummerConductor.m F h12 x := by
-    intro h
-    exact hv (dvd_mul_of_dvd_left
+  have hx : ¬ v.asIdeal ∣ RMKummerConductor.m F h12 x := fun h => hv (dvd_mul_of_dvd_left
       (dvd_mul_of_dvd_left h (RMKummerConductor.m F h12 y))
       (RMKummerConductor.m F h12 (x / y)))
-  have hy : ¬ v.asIdeal ∣ RMKummerConductor.m F h12 y := by
-    intro h
-    exact hv (dvd_mul_of_dvd_left
+  have hy : ¬ v.asIdeal ∣ RMKummerConductor.m F h12 y := fun h => hv (dvd_mul_of_dvd_left
       (dvd_mul_of_dvd_right h (RMKummerConductor.m F h12 x))
       (RMKummerConductor.m F h12 (x / y)))
-  have hxy : ¬ v.asIdeal ∣ RMKummerConductor.m F h12 (x / y) := by
-    intro h
-    exact hv (dvd_mul_of_dvd_right h
+  have hxy : ¬ v.asIdeal ∣ RMKummerConductor.m F h12 (x / y) := fun h => hv (dvd_mul_of_dvd_right h
       (RMKummerConductor.m F h12 x * RMKummerConductor.m F h12 y))
   obtain ⟨a, ha⟩ := HeightOneSpectrum.valuedAdicCompletion_surjective F v
     (WithZero.exp (-1 : ℤ))
@@ -63,13 +57,11 @@ theorem quotient_prime (F : Type) [Field F] [NumberField F]
     intro h
     rw [h, map_zero] at ha
     exact WithZero.exp_ne_zero ha.symm
-  let π : (v.adicCompletion F)ˣ := Units.mk0 a ha0
-  have hπ : HeightOneSpectrum.adicCompletion.valuation F v (π : v.adicCompletion F) =
-      WithZero.exp (-1 : ℤ) := ha
+  let π := Units.mk0 a ha0
+  have hπ := ha
   rw [prime_eq_lambda F h12 (x / y) v hxy π hπ,
     prime_eq_lambda F h12 x v hx π hπ, prime_eq_lambda F h12 y v hy π hπ]
-  have h := congrArg Units.val (RMKummerLocalSquareLaws.lambda_div F h12 x y v π)
-  simpa only [Units.val_mul, RMKummerLocalSquareLaws.lambda_inv_eq_conj] using h
+  simpa only [Units.val_mul, RMKummerLocalSquareLaws.lambda_inv_eq_conj] using (congrArg Units.val (RMKummerLocalSquareLaws.lambda_div F h12 x y v π))
 
 end
 end DedekindZetaZeroFree.RMKummerQuotientPrime

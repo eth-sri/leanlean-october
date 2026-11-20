@@ -10,13 +10,13 @@ open scoped Classical NumberField BigOperators
 namespace DedekindZetaZeroFree.KPContActualChamberMeanZeroAdapter
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U) (f : ℂ → S)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U) (f : ℂ → S)
 
 open MeasureTheory Topology
 set_option backward.isDefEq.respectTransparency false
@@ -43,16 +43,18 @@ private theorem partialJets_smooth (f : E → X → ℂ)
        cont := by convert L.continuous using 1 }
    apply ContDiff.continuousLinearMap_comp (𝕜 := ℝ) (E := E × X)
      (F := E →L[ℝ] E [×n]→L[ℝ] ℂ) (G := E [×(n+1)]→L[ℝ] ℂ) (g := Lc)
-   apply ContDiff.fderiv (f := fun p : E × X => fun g => iteratedFDeriv ℝ n (fun g => f g p.2) g)
+   apply ContDiff.fderiv
    · exact ih.comp (contDiff_snd.prodMk (contDiff_fst.snd))
    · exact contDiff_fst
    · simp
 
-private theorem periodic_integral_smooth [FiniteDimensional ℝ E]
-    (L : AddSubgroup X) [CompactSpace (X ⧸ L)] [MeasurableSpace (X ⧸ L)] [BorelSpace (X ⧸ L)]
-    (μ : Measure (X ⧸ L)) [IsProbabilityMeasure μ]
-    (f : E → X → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) (Function.uncurry f))
-    (hrep : ∀ g x y, (QuotientAddGroup.mk x : X ⧸ L) = QuotientAddGroup.mk y → f g x = f g y) :
+variable [FiniteDimensional ℝ E] (L : AddSubgroup X) [CompactSpace (X ⧸ L)] [MeasurableSpace (X ⧸ L)]
+    [BorelSpace (X ⧸ L)] (μ : Measure (X ⧸ L)) [IsProbabilityMeasure μ] (f : E → X → ℂ)
+    (hf : ContDiff ℝ (⊤ : ℕ∞) (Function.uncurry f))
+    (hrep : ∀ g x y, (QuotientAddGroup.mk x : X ⧸ L) = QuotientAddGroup.mk y → f g x = f g y)
+
+include hf hrep in
+private theorem periodic_integral_smooth :
     ContDiff ℝ (⊤ : ℕ∞) (fun g => ∫ q, f g (Quotient.out q) ∂μ) ∧
       ∀ n g, iteratedFDeriv ℝ n (fun g => ∫ q, f g (Quotient.out q) ∂μ) g =
         ∫ q, iteratedFDeriv ℝ n (fun g => f g (Quotient.out q)) g ∂μ := by
@@ -60,9 +62,8 @@ private theorem periodic_integral_smooth [FiniteDimensional ℝ E]
   · intro q
     exact hf.comp (contDiff_id.prodMk contDiff_const)
   · intro n
-    have hm := (IsOpenQuotientMap.id (X := E)).prodMap
-      (QuotientAddGroup.isOpenQuotientMap_mk (N := L))
-    apply hm.continuous_comp_iff.mp
+    apply ((IsOpenQuotientMap.id).prodMap
+      (QuotientAddGroup.isOpenQuotientMap_mk)).continuous_comp_iff.mp
     have he (x : X) : (fun g => f g (Quotient.out (QuotientAddGroup.mk x : X ⧸ L))) =
         (fun g => f g x) := by
       funext g
@@ -72,22 +73,18 @@ private theorem periodic_integral_smooth [FiniteDimensional ℝ E]
     simp_rw [he]
     exact (partialJets_smooth f hf n).continuous
 
-private theorem periodic_jet_integrable [FiniteDimensional ℝ E]
-    (L : AddSubgroup X) [CompactSpace (X ⧸ L)] [MeasurableSpace (X ⧸ L)] [BorelSpace (X ⧸ L)]
-    (μ : Measure (X ⧸ L)) [IsProbabilityMeasure μ]
-    (f : E → X → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) (Function.uncurry f))
-    (hrep : ∀ g x y, (QuotientAddGroup.mk x : X ⧸ L) = QuotientAddGroup.mk y → f g x = f g y)
+include hf hrep in
+private theorem periodic_jet_integrable
     (n : ℕ) (g : E) :
     Integrable (fun q => iteratedFDeriv ℝ n (fun w => f w (Quotient.out q)) g) μ := by
-  have hm := (IsOpenQuotientMap.id (X := E)).prodMap
-    (QuotientAddGroup.isOpenQuotientMap_mk (N := L))
   have he (x : X) : (fun g => f g (Quotient.out (QuotientAddGroup.mk x : X ⧸ L))) =
       (fun g => f g x) := by
     funext g
     exact hrep g _ _ (Quotient.out_eq _)
   have hc : Continuous (fun p : E × (X ⧸ L) =>
       iteratedFDeriv ℝ n (fun w => f w (Quotient.out p.2)) p.1) := by
-    apply hm.continuous_comp_iff.mp
+    apply ((IsOpenQuotientMap.id).prodMap
+      (QuotientAddGroup.isOpenQuotientMap_mk)).continuous_comp_iff.mp
     change Continuous (fun p : E × X =>
       iteratedFDeriv ℝ n (fun g => f g (Quotient.out (QuotientAddGroup.mk p.2 : X ⧸ L))) p.1)
     simp_rw [he]
@@ -117,7 +114,7 @@ private theorem laplacian_jets (d : ℕ) (f : KPArch.Space d → ℂ)
  change Δloc d f z = _
  rw [Δloc_coordinate_expression d f (hf.of_le (by norm_num))]
  simp_rw [second_eq_jet f hf, iteratedFDeriv_one_apply]
- simp only [smul_eq_mul, Complex.ofReal_pow]
+ simp
 
 private theorem localLaplacian_sub (d : ℕ) (f g : KPArch.Space d → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hg : ContDiff ℝ (⊤ : ℕ∞) g) (z : KPArch.Space d) :
@@ -159,7 +156,7 @@ private theorem localLaplacian_sub (d : ℕ) (f g : KPArch.Space d → ℂ)
 
 section Helpers
 variable (a : Cusps F ζ hζ C R P H U)
-variable (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
+    (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
  def wholeJet (k : ℕ) (s : ℂ) (z : KPArch.Space (d F)) : ℂ :=
   (KPContSectorScalarLineAlgebra.J F ζ hζ (level F ζ hζ C R P H U)
     (KPContActualChamberCasimirJets.coveredJet F ζ hζ C R P H U ι f hι hf k s)).val
@@ -172,10 +169,6 @@ private theorem wholeJet_coordinates (k : ℕ) (s : ℂ) (hs : s ∈ V) (p : KPC
   rw [← KPContSectorArchSphericalFibers.archBasepoint_iwasawaSection F ζ hζ (KPCuspCharts.toArch F p)]
   rw [← KPContSectorScalarLineAlgebra.group_lift_formula]
   rw [KPContActualChamberCasimirJets.coveredJet_projection F ζ hζ C R P H U ι f hι hf k s hs]
-  change KPContActualChamberCasimirJets.jet F ζ hζ U ι f k s
-    (KPContFlatCuspIncomingEvaluation.localGroup F ζ hζ C R P H U a p.2 p.1.1 p.1.2 1) =
-    KPContActualChamberCasimirJets.jet F ζ hζ U ι f k s
-    (KPContFlatCuspIncomingEvaluation.cuspGroup F ζ hζ C R P H U a p.2 p.1.1 p.1.2 1)
   unfold KPContActualChamberCasimirJets.jet
   apply iteratedDerivWithin_congr _ hs
   intro z hz
@@ -183,8 +176,7 @@ private theorem wholeJet_coordinates (k : ℕ) (s : ℂ) (hs : s ∈ V) (p : KPC
     (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a) _).symm
 
 private theorem wholeJet_smooth (k : ℕ) (s : ℂ) (hs : s ∈ V) :
-    ContDiff ℝ (⊤ : ℕ∞) (wholeJet F ζ hζ C R P H U ι f a hι hf k s) := by
-  exact ((KPContSectorSmoothFramesSupport.smooth_iff F ζ hζ (level F ζ hζ C R P H U)
+    ContDiff ℝ (⊤ : ℕ∞) (wholeJet F ζ hζ C R P H U ι f a hι hf k s) := ((KPContSectorSmoothFramesSupport.smooth_iff F ζ hζ (level F ζ hζ C R P H U)
     R P H (KPContActualChamberCasimirJets.coveredJet F ζ hζ C R P H U ι f hι hf k s)).mpr
       (KPContActualChamberCasimirJets.lineJet_smooth F ζ hζ C R P H U ι f hι hf k s hs))
         (KPContFlatCuspIncomingEvaluation.finiteRepresentative F ζ hζ C R P H U a 1)
@@ -240,27 +232,22 @@ private theorem kernel_integral_holomorphic (hι : Function.Injective ι)
   letI : CompactSpace B := isCompact_iff_compactSpace.mp hB
   let π : C(B,KernelTorus F ζ hζ C R P H U a) :=
     ⟨fun x => QuotientAddGroup.mk x.val, QuotientAddGroup.continuous_mk.comp continuous_subtype_val⟩
-  have hπ : Function.Surjective π := fun q => by
+  obtain ⟨I,hI⟩ := integral_extension (fiberMeasure F ζ hζ C R P H U a) π (fun q => by
     obtain ⟨x,hx,he⟩ := hrep q
-    exact ⟨⟨x,hx⟩,he⟩
-  obtain ⟨I,hI⟩ := integral_extension (fiberMeasure F ζ hζ C R P H U a) π hπ
-  let c : KPCuspCharts.Horizontal F → KPContActualChamberNormalSeries.G F ζ hζ :=
+    exact ⟨⟨x,hx⟩,he⟩)
+  let c :=
     fun x => KPContFlatCuspIncomingEvaluation.cuspGroup F ζ hζ C R P H U a t x b ε
   have hc : Continuous c := by
-    have harch : Continuous (fun x : KPCuspCharts.Horizontal F => KPCuspCharts.toArch F ((x,b),t)) :=
-      (KPCuspCharts.toArch_contDiff F).continuous.comp
-        ((continuous_id.prodMk continuous_const).prodMk continuous_const)
-    have hsec := (KPContSectorArchSphericalFibers.section_continuous F ζ hζ).comp harch
-    have hins := (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1.comp hsec
-    exact continuous_const.mul (hins.mul continuous_const)
+    exact continuous_const.mul (((KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1.comp ((KPContSectorArchSphericalFibers.section_continuous F ζ hζ).comp ((KPCuspCharts.toArch_contDiff F).continuous.comp
+      ((continuous_id.prodMk continuous_const).prodMk continuous_const)))).mul continuous_const)
   let A := c '' B
-  have hA : IsCompact A := hB.image hc
+  have hA := hB.image hc
   letI : CompactSpace A := isCompact_iff_compactSpace.mp hA
   let cB : C(B,A) := ⟨fun x => ⟨c x.val, ⟨x.val,x.property,rfl⟩⟩,
     (hc.comp continuous_subtype_val).subtype_mk _⟩
-  let g : ℂ → C(B,ℂ) := fun s =>
+  let g := fun s =>
     (KPContActualChamberNormalSeries.compactMixedJet F ζ hζ U ι f hι hf 0 [] A s).comp cB
-  have hg : DifferentiableOn ℂ g V :=
+  have hg :=
     (ContinuousMap.compCLM ℂ ℂ cB).differentiable.comp_differentiableOn
       (KPContActualChamberNormalSeries.compactMixedJet_holomorphic F ζ hζ U ι f hι hf 0 [] A hA)
   apply (I.differentiable.comp_differentiableOn hg).congr
@@ -292,10 +279,7 @@ private theorem projection_holomorphic (t : ℝ) (b : KPCuspCharts.Shape F)
     { toFun := fun e => (KPContFlatCuspIncomingEvaluation.zeroProjection F ζ hζ C R P H U a e).val q
       map_add' := fun x y => by rw [map_add]; rfl
       map_smul' := fun c x => by rw [map_smul]; rfl }
-  have he : DifferentiableOn ℂ (fun z ε => ∫ q : KernelTorus F ζ hζ C R P H U a,
-      KPContActualChamberNormalSeries.E F ζ hζ U ι f z
-        (KPContFlatCuspIncomingEvaluation.cuspGroup F ζ hζ C R P H U a t (Quotient.out q) b ε)
-      ∂fiberMeasure F ζ hζ C R P H U a) V :=
+  have he :=
     differentiableOn_pi.mpr (fun ε => kernel_integral_holomorphic F ζ hζ C R P H U ι f a hι hf t b ε)
   exact J.toContinuousLinearMap.differentiable.comp_differentiableOn he
 
@@ -307,8 +291,7 @@ private theorem sheet_holomorphic (t : ℝ) (x : KPCuspCharts.Horizontal F)
   let g := KPContFlatCuspIncomingEvaluation.cuspGroup F ζ hζ C R P H U a t x b ε
   let A : Set (KPContActualChamberNormalSeries.G F ζ hζ) := {g}
   letI : CompactSpace A := isCompact_iff_compactSpace.mp isCompact_singleton
-  have hg := KPContActualChamberNormalSeries.compactMixedJet_holomorphic F ζ hζ U ι f hι hf 0 [] A isCompact_singleton
-  exact ((ContinuousMap.evalCLM ℂ (⟨g,Set.mem_singleton g⟩ : A)).differentiable.comp_differentiableOn hg).congr
+  exact ((ContinuousMap.evalCLM ℂ (⟨g,Set.mem_singleton g⟩ : A)).differentiable.comp_differentiableOn (KPContActualChamberNormalSeries.compactMixedJet_holomorphic F ζ hζ U ι f hι hf 0 [] A isCompact_singleton)).congr
     (fun z hz => by simp [KPContActualChamberNormalSeries.compactMixedJet,hz,
       KPContActualChamberNormalSeries.mixedJet,KPContActualChamberNormalSeries.rightWord,
       KPContActualChamberCasimirJets.cuspSheet,KPContActualChamberCasimirJets.jet,g])
@@ -367,8 +350,7 @@ private theorem wholeJet_horizontal_representative (k : ℕ) (s : ℂ) (hs : s �
     (hxy : (QuotientAddGroup.mk x : KernelTorus F ζ hζ C R P H U a) = QuotientAddGroup.mk y) :
     wholeJet F ζ hζ C R P H U ι f a hι hf k s (fun i => (x i, (z i).2)) =
       wholeJet F ζ hζ C R P H U ι f a hι hf k s (fun i => (y i, (z i).2)) := by
-  let e := KPCuspCharts.toArchHomeomorph F (geometry F ζ hζ C R P H U a).positive_dimension
-  obtain ⟨p, rfl⟩ := e.surjective z
+  obtain ⟨p, rfl⟩ := (KPCuspCharts.toArchHomeomorph F (geometry F ζ hζ C R P H U a).positive_dimension).surjective z
   change wholeJet F ζ hζ C R P H U ι f a hι hf k s (KPCuspCharts.toArch F ((x,p.1.2),p.2)) =
     wholeJet F ζ hζ C R P H U ι f a hι hf k s (KPCuspCharts.toArch F ((y,p.1.2),p.2))
   rw [wholeJet_coordinates F ζ hζ C R P H U ι f a hι hf k s hs,
@@ -387,8 +369,7 @@ private theorem parameterScalar_eq_whole_sub_rawMean (k : ℕ) (s : ℂ) (hs : s
           wholeJet F ζ hζ C R P H U ι f a hι hf k s
             (fun i => (Quotient.out q i, (z i).2))
           ∂KPContActualChamberOutgoingAdapter.fiberMeasure F ζ hζ C R P H U a := by
-  let e := KPCuspCharts.toArchHomeomorph F (geometry F ζ hζ C R P H U a).positive_dimension
-  obtain ⟨p, rfl⟩ := e.surjective z
+  obtain ⟨p, rfl⟩ := (KPCuspCharts.toArchHomeomorph F (geometry F ζ hζ C R P H U a).positive_dimension).surjective z
   change parameterScalar F ζ hζ C R P H U a ι f k s
     (KPCuspCharts.toArch F p) =
     wholeJet F ζ hζ C R P H U ι f a hι hf k s (KPCuspCharts.toArch F p) -
@@ -408,10 +389,6 @@ private theorem parameterScalar_eq_whole_sub_rawMean (k : ℕ) (s : ℂ) (hs : s
     KPContActualChamberCasimirJets.cuspSheet F ζ hζ C R P H U ι f a k s p.2 p.1.1 p.1.2 1 - c)
   apply integral_congr_ae
   filter_upwards [] with q
-  change KPContActualChamberCasimirJets.cuspSheet F ζ hζ C R P H U ι f a k s
-      p.2 (Quotient.out q) p.1.2 1 =
-    wholeJet F ζ hζ C R P H U ι f a hι hf k s
-      (KPCuspCharts.toArch F ((Quotient.out q,p.1.2),p.2))
   exact (wholeJet_coordinates F ζ hζ C R P H U ι f a hι hf k s hs
     ((Quotient.out q,p.1.2),p.2)).symm
 
@@ -467,9 +444,7 @@ private theorem wholeJet_component (z : KPArch.Space (KPCuspLogShape.dimension F
     wholeJet F ζ hζ C R P H U ι f a hι hf k s z =
       (KPContActualChamberCasimirJets.lineJet F ζ hζ C R P H U ι f hι hf k s a.1).val
         (KPCuspSiegel.action F (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a) z) := by
-  let e := KPContActualChamberCasimirJets.coveredJet F ζ hζ C R P H U ι f hι hf k s
-  let j := KPContSectorScalarLineAlgebra.J F ζ hζ (KPContFlatCuspIncomingEvaluation.atlasLevel F ζ hζ C R P H U) e
-  have hr := j.property.1 z (KPContFlatCuspIncomingEvaluation.finiteRepresentative F ζ hζ C R P H U a 1)
+  have hr := (KPContSectorScalarLineAlgebra.J F ζ hζ (KPContFlatCuspIncomingEvaluation.atlasLevel F ζ hζ C R P H U) (KPContActualChamberCasimirJets.coveredJet F ζ hζ C R P H U ι f hι hf k s)).property.1 z (KPContFlatCuspIncomingEvaluation.finiteRepresentative F ζ hζ C R P H U a 1)
     (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a)
   have hc : KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ
       (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a) * KPContFlatCuspIncomingEvaluation.finiteRepresentative F ζ hζ C R P H U a 1 =
@@ -525,7 +500,7 @@ private theorem shiftedMean_eq_rawMean (z : KPArch.Space (KPCuspLogShape.dimensi
   letI := KPContinuation.ChamberOutgoingSource.actual_fiberMeasure_isAddHaarMeasure F ζ hζ C R P H U a
   let φ : KernelTorus F ζ hζ C R P H U a → ℂ := fun q =>
     wholeJet F ζ hζ C R P H U ι f a hι hf k s (fun i => (Quotient.out q i, (z i).2))
-  let x : KPCuspCharts.Horizontal F := fun i => (z i).1
+  let x := fun i => (z i).1
   have he (q : KernelTorus F ζ hζ C R P H U a) :
       φ (q + QuotientAddGroup.mk x) =
         wholeJet F ζ hζ C R P H U ι f a hι hf k s (z + horizontalInsertion F (Quotient.out q)) := by
@@ -561,7 +536,7 @@ private theorem shiftedMean_spatial_jets :
   letI := KPContActualChamberOutgoingAdapter.kernelTorus_borelSpace F ζ hζ C R P H U a
   letI := KPContActualChamberOutgoingAdapter.fiber_probability F ζ hζ C R P H U a
   apply periodic_integral_smooth
-    (E := KPArch.Space (KPCuspLogShape.dimension F)) (X := KPCuspCharts.Horizontal F)
+
     (KPCuspCharts.translationLattice F (KPCuspGenuineMonodromy.kernelLattice
       (KPContFlatCuspIncomingEvaluation.stabilizer F ζ hζ C R P H U a) (KPContFlatCuspIncomingEvaluation.parabolic F ζ hζ C R P H U a)
       (KPContFlatCuspIncomingEvaluation.rho F ζ hζ C R P H U a)))
@@ -594,13 +569,13 @@ private theorem shiftedMean_jet_integrable (n : ℕ) (z : KPArch.Space (KPCuspLo
   letI := KPContActualChamberOutgoingAdapter.kernelTorus_borelSpace F ζ hζ C R P H U a
   letI := KPContActualChamberOutgoingAdapter.fiber_probability F ζ hζ C R P H U a
   apply periodic_jet_integrable
-    (E := KPArch.Space (KPCuspLogShape.dimension F)) (X := KPCuspCharts.Horizontal F)
+
     (KPCuspCharts.translationLattice F (KPCuspGenuineMonodromy.kernelLattice
       (KPContFlatCuspIncomingEvaluation.stabilizer F ζ hζ C R P H U a) (KPContFlatCuspIncomingEvaluation.parabolic F ζ hζ C R P H U a)
       (KPContFlatCuspIncomingEvaluation.rho F ζ hζ C R P H U a)))
     (KPContActualChamberOutgoingAdapter.fiberMeasure F ζ hζ C R P H U a)
     (fun z x => wholeJet F ζ hζ C R P H U ι f a hι hf k s (z + horizontalInsertion F x))
-    (n := n) (g := z)
+
   · apply (wholeJet_smooth F ζ hζ C R P H U ι f a hι hf k s hs).comp
     apply contDiff_fst.add
     apply contDiff_pi.mpr
@@ -682,10 +657,9 @@ private theorem shiftedMean_integrable (z : KPArch.Space (d F)) :
     Integrable (fun q : KernelTorus F ζ hζ C R P H U a =>
       wholeJet F ζ hζ C R P H U ι f a hι hf k s (z + horizontalInsertion F (Quotient.out q)))
       (fiberMeasure F ζ hζ C R P H U a) := by
-  have hi := (ContinuousMultilinearMap.apply ℝ (fun _ : Fin 0 => KPArch.Space (d F)) ℂ
+  simpa using ((ContinuousMultilinearMap.apply ℝ (fun _ : Fin 0 => KPArch.Space (d F)) ℂ
     (fun _ => 0)).integrable_comp
-    (shiftedMean_jet_integrable F ζ hζ C R P H U ι f a hι hf k s hs 0 z)
-  simpa only [ContinuousMultilinearMap.apply_apply, iteratedFDeriv_zero_apply] using hi
+    (shiftedMean_jet_integrable F ζ hζ C R P H U ι f a hι hf k s hs 0 z))
 
 private theorem shiftedMean_casimir (z : KPArch.Space (d F)) :
     KPContActualSphericalFlatStage.localLaplacian (d F)
@@ -703,8 +677,10 @@ private theorem shiftedMean_casimir (z : KPArch.Space (d F)) :
   simp_rw [integral_const_mul]
   rfl
 
+local notation "cuspJetScalar" => parameterScalar F ζ hζ C R P H U
+
 private theorem parameterScalar_eq_sub_shifted :
-    parameterScalar F ζ hζ C R P H U a ι f k s =
+    cuspJetScalar a ι f k s =
       fun z => wholeJet F ζ hζ C R P H U ι f a hι hf k s z -
         shiftedMean F ζ hζ C R P H U ι f a hι hf k s z := by
   funext z
@@ -712,17 +688,17 @@ private theorem parameterScalar_eq_sub_shifted :
     shiftedMean_eq_rawMean F ζ hζ C R P H U ι f a hι hf k s hs]
 
 private theorem parameterScalar_smooth :
-    ContDiff ℝ (⊤ : ℕ∞) (parameterScalar F ζ hζ C R P H U a ι f k s) := by
+    ContDiff ℝ (⊤ : ℕ∞) (cuspJetScalar a ι f k s) := by
   rw [parameterScalar_eq_sub_shifted F ζ hζ C R P H U ι f a hι hf k s hs]
   exact (wholeJet_smooth F ζ hζ C R P H U ι f a hι hf k s hs).sub
     (shiftedMean_spatial_jets F ζ hζ C R P H U ι f a hι hf k s hs).1
 
 private theorem parameterScalar_casimir (z : KPArch.Space (d F)) :
     KPContActualSphericalFlatStage.localLaplacian (d F)
-      (parameterScalar F ζ hζ C R P H U a ι f k s) z =
-      KPContActualChamberCasimirJets.lambda F s * parameterScalar F ζ hζ C R P H U a ι f k s z +
+      (cuspJetScalar a ι f k s) z =
+      KPContActualChamberCasimirJets.lambda F s * cuspJetScalar a ι f k s z +
       ∑ j ∈ Finset.Icc 1 (min k 2), (Nat.choose k j : ℂ) * KPContActualChamberCasimirJets.lambdaJet F j s *
-        parameterScalar F ζ hζ C R P H U a ι f (k-j) s z := by
+        cuspJetScalar a ι f (k-j) s z := by
   have he (n : ℕ) := parameterScalar_eq_sub_shifted F ζ hζ C R P H U ι f a hι hf n s hs
   rw [he k, localLaplacian_sub _ _ _
     (wholeJet_smooth F ζ hζ C R P H U ι f a hι hf k s hs)
@@ -734,12 +710,12 @@ private theorem parameterScalar_casimir (z : KPArch.Space (d F)) :
   ring
 
 private theorem parameterScalar_jet (z : KPArch.Space (d F)) :
-    iteratedDerivWithin k (fun w => parameterScalar F ζ hζ C R P H U a ι f 0 w z) V s =
-      parameterScalar F ζ hζ C R P H U a ι f k s z := by
+    iteratedDerivWithin k (fun w => cuspJetScalar a ι f 0 w z) V s =
+      cuspJetScalar a ι f k s z := by
   simp only [parameterScalar, iteratedDerivWithin_zero]
 
 private theorem parameterScalar_fiber (z : KPArch.Space (d F)) :
-    parameterScalar F ζ hζ C R P H U a ι f k s z ∈
+    cuspJetScalar a ι f k s z ∈
       KPCuspGenuineMonodromy.scalarFiber F ζ hζ (level F ζ hζ C R P H U) := by
   intro ε hε
   rw [← parameterScalar_jet F ζ hζ C R P H U ι f a hι hf k s hs,
@@ -762,9 +738,7 @@ private theorem parameterScalar_equivariant
         (KPCuspSiegel.action F h.val z))
       (fun w => (KPCuspGenuineMonodromy.chi F ζ hζ
         ((KPGlobalResidualConstruction.ActualMeanZeroSection.actualEnd F ζ hζ C R P H U a).rho h) : ℂ) *
-        parameterScalar F ζ hζ C R P H U a ι f 0 w z) V := by
-    intro w hw
-    exact KPGlobalResidualConstruction.ActualMeanZeroSection.actual_parameterScalar_zero_equivariant
+        parameterScalar F ζ hζ C R P H U a ι f 0 w z) V := fun w hw => KPGlobalResidualConstruction.ActualMeanZeroSection.actual_parameterScalar_zero_equivariant
       F ζ hζ C R P H U a ι hι f hf w hw h z
   have hd := iteratedDerivWithin_congr (n := k) he hs
   rw [iteratedDerivWithin_const_mul_field,
@@ -811,7 +785,7 @@ private theorem meanZeroJet_rawMean_zero (t : ℝ) (b : KPCuspCharts.Shape F) :
   rw [integral_sub (sheet_raw_integrable F ζ hζ C R P H U ι f a hι hf k s hs t b)
     (integrable_const _), integral_const,
     projection_rawMean F ζ hζ C R P H U ι f a hι hf k s hs t b]
-  simp only [probReal_univ, one_smul, sub_self]
+  simp
 
 private theorem section_torusSlice {T : ℝ}
     (v : KPMeanZeroWeightedEnergy.Section
@@ -862,8 +836,7 @@ theorem actual_meanZero_jet_sections
         (v k).laplacian p = KPContActualChamberCasimirJets.lambda F s * (v k).scalar p +
           ∑ j ∈ Finset.Icc 1 (min k 2), (Nat.choose k j : ℂ) *
             KPContActualChamberCasimirJets.lambdaJet F j s * (v (k-j)).scalar p := by
-  let E := KPGlobalResidualConstruction.ActualMeanZeroSection.actualEnd F ζ hζ C R P H U a
-  let v (k : ℕ) : KPMeanZeroWeightedEnergy.Section E T :=
+  let v (k : ℕ) : KPMeanZeroWeightedEnergy.Section (KPGlobalResidualConstruction.ActualMeanZeroSection.actualEnd F ζ hζ C R P H U a) T :=
     { val := parameterScalar F ζ hζ C R P H U a ι f k s
       smooth := (parameterScalar_smooth F ζ hζ C R P H U ι f a hι hf k s hs).contDiffOn
       fiber := fun z _ => parameterScalar_fiber F ζ hζ C R P H U ι f a hι hf k s hs z
@@ -874,9 +847,6 @@ theorem actual_meanZero_jet_sections
     exact section_rawMeanZero F ζ hζ C R P H U ι f a hι hf k s hs (v k) rfl
   · intro k p _
     unfold KPMeanZeroWeightedEnergy.Section.laplacian KPMeanZeroWeightedEnergy.Section.scalar
-    change HyperbolicChart.laplacian (d F)
-      (parameterScalar F ζ hζ C R P H U a ι f k s ∘ KPMeanZeroWeightedEnergy.archCoordinates (d F))
-      (KPMeanZeroWeightedEnergy.realCoordinates (d F) (KPCuspCharts.toArch F p)) = _
     have hb := KPContArchLaplacianCoordinateBridge.bridge F
       (parameterScalar F ζ hζ C R P H U a ι f k s)
       (parameterScalar_smooth F ζ hζ C R P H U ι f a hι hf k s hs)

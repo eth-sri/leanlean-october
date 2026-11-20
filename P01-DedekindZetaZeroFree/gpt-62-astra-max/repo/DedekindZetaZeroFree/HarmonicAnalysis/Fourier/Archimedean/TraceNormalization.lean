@@ -73,14 +73,12 @@ theorem tracePairing_eq_inner (x y : Space F) :
   intro v hv
   ring
 
-theorem haarScalar_pos : 0 < haarScalar F := by
-  exact pow_pos (by norm_num) _
+theorem haarScalar_pos : 0 < haarScalar F := pow_pos (by norm_num) _
 
 theorem traceFourier_eq_euclidean (f : 𝓢(Space F, ℂ)) (y : Space F) :
     traceFourier F f y = (haarScalar F : ℂ) * (𝓕 f) (traceAdapter F y) := by
   rw [traceFourier, traceMeasure, integral_smul_measure, ENNReal.toReal_ofReal
     (le_of_lt (haarScalar_pos F))]
-  change (haarScalar F : ℂ) * _ = _
   congr 1
   rw [SchwartzMap.fourier_coe, Real.fourier_eq]
   simp only [Circle.smul_def, Real.fourierChar_apply]
@@ -97,18 +95,15 @@ theorem traceFourier_schwartz (f : 𝓢(Space F, ℂ)) :
   refine ⟨(haarScalar F : ℂ) •
     SchwartzMap.compCLMOfContinuousLinearEquiv ℂ (traceAdapter F) (𝓕 f), ?_⟩
   intro y
-  simpa using (traceFourier_eq_euclidean F f y).symm
+  exact (traceFourier_eq_euclidean F f y).symm
 
 private theorem integral_comp_equiv (A : Space F ≃L[ℝ] Space F)
     (g : Space F → ℂ) :
     (∫ x, g (A x)) = |(LinearMap.det A.toLinearMap)⁻¹| • ∫ x, g x := by
-  have hdet : LinearMap.det A.toLinearMap ≠ 0 :=
-    (A.toLinearEquiv.isUnit_det').ne_zero
-  have hmap := Measure.map_linearMap_addHaar_eq_smul_addHaar
-    (volume : Measure (Space F)) hdet
-  have hi := integral_map_equiv (μ := (volume : Measure (Space F))) A.toHomeomorph.toMeasurableEquiv g
+  have hi := integral_map_equiv (μ := volume) A.toHomeomorph.toMeasurableEquiv g
   rw [show Measure.map A.toHomeomorph.toMeasurableEquiv volume =
-    Measure.map A.toLinearMap volume from rfl, hmap,
+    Measure.map A.toLinearMap volume from rfl, (Measure.map_linearMap_addHaar_eq_smul_addHaar
+      volume ((A.toLinearEquiv.isUnit_det').ne_zero)),
     integral_smul_measure, ENNReal.toReal_ofReal (abs_nonneg _)] at hi
   exact hi.symm
 
@@ -127,6 +122,8 @@ private theorem fieldEquiv_apply (a : Fˣ) (x : Space F) :
     ContinuousLinearEquiv.apply_symm_apply, ContinuousLinearEquiv.prodCongr_apply]
   ext v <;> simp [ContinuousLinearEquiv.piCongrRight_apply,
     ContinuousLinearEquiv.unitsEquivAut_apply, mul_comm]
+
+alias TraceNormalization.fieldEquiv_apply := fieldEquiv_apply
 
 private theorem complex_mul_det (z : ℂ) :
     LinearMap.det ((LinearMap.mulLeft ℂ z).restrictScalars ℝ) = Complex.normSq z := by

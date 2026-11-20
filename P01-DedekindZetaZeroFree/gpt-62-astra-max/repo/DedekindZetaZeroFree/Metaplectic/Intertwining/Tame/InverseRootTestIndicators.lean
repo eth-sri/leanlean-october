@@ -12,9 +12,7 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann
 open KPTameJacquetTestDuality KPTameTransposeKernelUnfolding
-open _root_.DedekindZetaZeroFree.TameInverseRootValueAudit renaming actual_full_inverse_root_factorization → actual_full_inverse_root_factorization
-open _root_.DedekindZetaZeroFree.TameInverseRootValueAudit renaming normalized_centre_torus_value → normalized_centre_torus_value
-open _root_.DedekindZetaZeroFree.TameInverseRootValueAudit renaming hilbert_shift_by_cube → hilbert_shift_by_cube
+open _root_.DedekindZetaZeroFree.TameInverseRootValueAudit (actual_full_inverse_root_factorization normalized_centre_torus_value hilbert_shift_by_cube)
 
 theorem eventual_inverse_root_normalized_test_indicator
     (F : Type) [Field F] [NumberField F]
@@ -57,6 +55,7 @@ theorem eventual_inverse_root_normalized_test_indicator
       ((KPTameCompact.unitInclusion F q u : LocalField F q) + (π : LocalField F q) * t)
   change _ = ((chart '' rootLevelSet F ζ hζ q m).indicator (fun _ => _)) v
   by_cases hv : v ∈ chart '' rootLevelSet F ζ hζ q m
+  let N₀ := KPPGLLocalCover.N F ζ hζ (Sum.inr q)
   · rw [Set.indicator_of_mem hv]
     obtain ⟨t, ht, rfl⟩ := hv
     have htint := ht
@@ -77,7 +76,7 @@ theorem eventual_inverse_root_normalized_test_indicator
     let x : LocalField F q := -(KPTameCompact.unitInclusion F q w : LocalField F q) /
       ((π ^ ((i.val : ℤ) + 1) : (LocalField F q)ˣ) : LocalField F q)
     let n := S.borel.upperRoot (Multiplicative.ofAdd x)
-    have hn : (n : ActualCover F ζ hζ q) = KPPGLLocalCover.N F ζ hζ (Sum.inr q) x :=
+    have hn : n = N₀ x :=
       (S.openCell P).upper_eq _
     let b : BL F ζ hζ q S P :=
       ⟨(n * S.borel.torus h : S.borel.B), ⟨n * S.borel.torus h, by
@@ -92,7 +91,7 @@ theorem eventual_inverse_root_normalized_test_indicator
     have hcentral : Commute
         (KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q)
           (KPHilbert.B3 F ζ hζ (Sum.inr q) π (KPTameCompact.unitInclusion F q w) ^
-            ((i.val : ℤ) + 1))) (KPPGLLocalCover.N F ζ hζ (Sum.inr q) x) := by
+            ((i.val : ℤ) + 1))) (N₀ x) := by
       have hz := KPPGLLocalCover.centralInjection_range_le_center F ζ hζ (Sum.inr q)
         ⟨KPHilbert.B3 F ζ hζ (Sum.inr q) π (KPTameCompact.unitInclusion F q w) ^
           ((i.val : ℤ) + 1), rfl⟩
@@ -100,19 +99,20 @@ theorem eventual_inverse_root_normalized_test_indicator
     have hbval : (b : ActualCover F ζ hζ q) =
         KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q)
           (KPHilbert.B3 F ζ hζ (Sum.inr q) π (KPTameCompact.unitInclusion F q w) ^
-            ((i.val : ℤ) + 1)) * KPPGLLocalCover.N F ζ hζ (Sum.inr q) x *
+            ((i.val : ℤ) + 1)) * N₀ x *
           KPPGLLocalCover.A F ζ hζ (Sum.inr q) ((KPTameCompact.unitInclusion F q w)^2) := by
       change (n : ActualCover F ζ hζ q) * (S.borel.torus h : ActualCover F ζ hζ q) = _
       rw [hn, S.torus_full, hh, ← mul_assoc, hcentral.eq]
-    have hfixed : f.val ((diagonalLift F ζ hζ q π (-1, (i.val : ℤ) + 1) *
-        KPPGLLocalCover.W F ζ hζ (Sum.inr q)) * KPPGLLocalCover.N F ζ hζ (Sum.inr q) t) = 1 := by
+    let diagonalLift₀ := diagonalLift F ζ hζ q π (-1, (i.val : ℤ) + 1)
+    have hfixed : f.val ((diagonalLift₀ *
+        KPPGLLocalCover.W F ζ hζ (Sum.inr q)) * N₀ t) = 1 := by
       have he := congrArg (fun g : scalarSections F ζ hζ q S P hP .minus =>
-        g.val (diagonalLift F ζ hζ q π (-1, (i.val : ℤ) + 1) *
+        g.val (diagonalLift₀ *
           KPPGLLocalCover.W F ζ hζ (Sum.inr q))) (hf.1 _ ht)
-      change f.val (_ * KPPGLLocalCover.N F ζ hζ (Sum.inr q) t) = _ at he
+      change f.val (_ * N₀ t) = _ at he
       exact he.trans hf.2.2
-    change f.val (_ * _ * _ * ((diagonalLift F ζ hζ q π (-1, (i.val : ℤ) + 1) *
-      KPPGLLocalCover.W F ζ hζ (Sum.inr q)) * KPPGLLocalCover.N F ζ hζ (Sum.inr q) t)) = _
+    change f.val (_ * _ * _ * ((diagonalLift₀ *
+      KPPGLLocalCover.W F ζ hζ (Sum.inr q)) * N₀ t)) = _
     rw [← hbval, f.property.1, hfixed, mul_one, chi, hb, hχ]
     obtain ⟨y, hy⟩ := hR m hmr u w t ht hw'
     rw [hilbert_shift_by_cube F ζ hζ q π (KPTameCompact.unitInclusion F q u)

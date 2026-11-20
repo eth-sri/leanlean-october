@@ -14,16 +14,16 @@ open IsDedekindDomain
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
+variable (K : Type) [Field K] [NumberField K]
+
 theorem exists_integral_inverse_rayIdealClass
-    (K : Type) [Field K] [NumberField K]
     (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) (c : RayIdealClass K m hm) :
     ∃ a : Ideal (𝓞 K), a ≠ ⊥ ∧ a ⊔ m = ⊤ ∧
       rayIdealClass K m hm a = some (c⁻¹) := by
   let μ := narrowIdealModulus K m hm
-  let V := {v : HeightOneSpectrum (𝓞 K) // v ∉ μ.finitePart.support}
-  let : Finite (RayIdealClass K m hm) := ClassFieldTheory.rayClassGroup_finite K μ
+  let := ClassFieldTheory.rayClassGroup_finite K μ
   obtain ⟨s, e, he⟩ := rayClassFinitePrimeFactorization K μ c⁻¹
-  have key : ∀ v : V, ∃ n : ℕ,
+  have key : ∀ v : ({v : HeightOneSpectrum (𝓞 K) // v ∉ μ.finitePart.support}), ∃ n : ℕ,
       (ClassFieldTheory.rayClassOfFinitePrime μ v.val v.property) ^ n =
         (ClassFieldTheory.rayClassOfFinitePrime μ v.val v.property) ^ e v := by
     intro v
@@ -41,7 +41,6 @@ theorem exists_integral_inverse_rayIdealClass
   exact Finset.prod_congr rfl fun v _ => hn v
 
 theorem exists_ray_congruence_basepoint
-    (K : Type) [Field K] [NumberField K]
     (m a : Ideal (𝓞 K)) (hcoprime : a ⊔ m = ⊤) :
     ∃ b : 𝓞 K, b ∈ a ∧ b - 1 ∈ m := by
   obtain ⟨b, hb, d, hd, hbd⟩ := (Ideal.isCoprime_iff_sup_eq.mpr hcoprime).exists

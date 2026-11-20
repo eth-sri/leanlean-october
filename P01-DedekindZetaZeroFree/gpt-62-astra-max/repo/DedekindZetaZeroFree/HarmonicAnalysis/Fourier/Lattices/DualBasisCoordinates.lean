@@ -15,10 +15,8 @@ variable (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V]
 
 theorem innerₗ_nondegenerate : (innerₗ V).Nondegenerate := by
   constructor
-  · intro x hx
-    exact inner_self_eq_zero.mp (hx x)
-  · intro x hx
-    exact inner_self_eq_zero.mp (hx x)
+  · solve_by_elim [inner_self_eq_zero.mp]
+  · solve_by_elim [inner_self_eq_zero.mp]
 
 def dualLattice {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
     (L : Submodule ℤ V) : Submodule ℤ V :=
@@ -33,9 +31,8 @@ theorem dualLattice_span [FiniteDimensional ℝ V]
       (LinearMap.BilinForm.dualBasis (innerₗ V) (innerₗ_nondegenerate V)
         (b.ofZLatticeBasis ℝ L))) := by
   classical
-  unfold dualLattice
   conv_lhs => rw [← b.ofZLatticeBasis_span ℝ]
-  exact LinearMap.BilinForm.dualSubmodule_span_of_basis _ (innerₗ_nondegenerate V) _
+  solve_by_elim [LinearMap.BilinForm.dualSubmodule_span_of_basis]
 
 instance dualLattice_discreteTopology [FiniteDimensional ℝ V]
     (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L] :
@@ -56,12 +53,11 @@ instance dualLattice_isZLattice [FiniteDimensional ℝ V]
 
 variable [FiniteDimensional ℝ V]
 variable (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-variable {ι : Type*} [Fintype ι] (b : Basis ι ℤ L)
+    {ι : Type*} [Fintype ι] (b : Basis ι ℤ L)
 
 theorem dualLattice_eq_span_dualBasis :
     dualLattice L = Submodule.span ℤ (Set.range
-      (LinearMap.BilinForm.dualBasis (innerₗ V) (innerₗ_nondegenerate V) (b.ofZLatticeBasis ℝ L))) := by
-  exact dualLattice_span L b
+      (LinearMap.BilinForm.dualBasis (innerₗ V) (innerₗ_nondegenerate V) (b.ofZLatticeBasis ℝ L))) := dualLattice_span L b
 
 def dualVector_b : (ι → ℤ) ≃+ dualLattice L :=
   AddEquiv.ofBijective
@@ -83,13 +79,11 @@ def dualVector_b : (ι → ℤ) ≃+ dualLattice L :=
     (by
       constructor
       · intro n m h
-        have heq := congrArg Subtype.val h
         funext i
         apply Int.cast_injective (α := ℝ)
-        have hi := congrArg (fun x : V =>
+        simpa [Finsupp.single_apply] using (congrArg (fun x : V =>
           (LinearMap.BilinForm.dualBasis (innerₗ V) (innerₗ_nondegenerate V)
-            (b.ofZLatticeBasis ℝ L)).repr x i) heq
-        simpa [Finsupp.single_apply] using hi
+            (b.ofZLatticeBasis ℝ L)).repr x i) (congrArg Subtype.val h))
       · intro x
         have hx := x.property
         simp only [dualLattice_eq_span_dualBasis L b] at hx
@@ -102,8 +96,7 @@ def dualVector_b : (ι → ℤ) ≃+ dualLattice L :=
 
 theorem dualVector_b_coe (n : ι → ℤ) :
     (dualVector_b L b n : V) = ∑ i, (n i : ℝ) •
-      LinearMap.BilinForm.dualBasis (innerₗ V) (innerₗ_nondegenerate V) (b.ofZLatticeBasis ℝ L) i := by
-  rfl
+      LinearMap.BilinForm.dualBasis (innerₗ V) (innerₗ_nondegenerate V) (b.ofZLatticeBasis ℝ L) i := rfl
 
 theorem dualVector_b_inner_basis (n : ι → ℤ) (j : ι) :
     inner ℝ (dualVector_b L b n : V) (b j : V) = (n j : ℝ) := by

@@ -11,28 +11,23 @@ open NumberField
 namespace DedekindZetaZeroFree.KPContinuation.ArchCompact
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private lemma row_det_identity (a b c d : ℂ) :
-    ‖a * d - b * c‖ ^ 2 = (‖a‖ ^ 2 + ‖b‖ ^ 2) * (‖c‖ ^ 2 + ‖d‖ ^ 2) -
-      ‖a * star c + b * star d‖ ^ 2 := by
-  simp only [← Complex.normSq_eq_norm_sq, Complex.normSq_apply,
-    Complex.mul_re, Complex.mul_im, Complex.sub_re, Complex.sub_im,
-    Complex.add_re, Complex.add_im, Complex.star_def, Complex.conj_re, Complex.conj_im]
-  ring
+private alias row_det_identity := DedekindZetaZeroFree.KPArithmeticAction.ArithmeticProperActionsAndOrbifoldCharts.row_det_identity
 
-private lemma fixed_origin_rows (g : GL (Fin 2) ℂ)
-    (h : KPArch.action g (0, 0) = (0, 0)) :
+section
+
+variable (g : GL (Fin 2) ℂ) (h : KPArch.action g (0, 0) = (0, 0))
+
+include h in
+private lemma fixed_origin_rows :
     (‖g 0 0‖ ^ 2 + ‖g 0 1‖ ^ 2 = ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖) ∧
     (‖g 1 0‖ ^ 2 + ‖g 1 1‖ ^ 2 = ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖) ∧
     g 0 0 * star (g 1 0) + g 0 1 * star (g 1 1) = 0 := by
-  have hd := KPArch.actionDenominator_pos g (0, 0)
   have hbottom : 0 < ‖g 1 0‖ ^ 2 + ‖g 1 1‖ ^ 2 := by
-    simpa [KPArch.actionDenominator, KPArch.height, add_comm] using hd
-  have ht := congrArg Prod.snd h
+    simpa [KPArch.actionDenominator, KPArch.height, add_comm] using (KPArch.actionDenominator_pos g (0, 0))
   have hb : ‖g 1 0‖ ^ 2 + ‖g 1 1‖ ^ 2 = ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ := by
-    have hh := congrArg Real.exp ht
-    have hx := KPArch.action_height g (0, 0)
+    have hh := congrArg Real.exp (congrArg Prod.snd h)
     change KPArch.height (KPArch.action g (0, 0)) = Real.exp 0 at hh
-    rw [hx, Real.exp_zero] at hh
+    rw [(KPArch.action_height g (0, 0)), Real.exp_zero] at hh
     simp only [KPArch.height, Real.exp_zero, mul_one, mul_zero, zero_add, norm_zero,
       zero_pow (by decide : 2 ≠ 0), zero_mul, add_zero] at hh
     have he := (div_eq_one_iff_eq (by nlinarith :
@@ -48,30 +43,31 @@ private lemma fixed_origin_rows (g : GL (Fin 2) ℂ)
   refine ⟨?_, hb, hz⟩
   have hi := row_det_identity (g 0 0) (g 0 1) (g 1 0) (g 1 1)
   rw [← Matrix.det_fin_two, hz, norm_zero, zero_pow (by decide : 2 ≠ 0), sub_zero, hb] at hi
-  have hp : 0 < ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ := norm_pos_iff.mpr g.det_ne_zero
+  have hp := norm_pos_iff.mpr g.det_ne_zero
   nlinarith
 
-theorem fixed_origin_has_su2 (g : GL (Fin 2) ℂ)
-    (h : KPArch.action g (0, 0) = (0, 0)) :
+include h in
+theorem fixed_origin_has_su2 :
     ∃ k : KPCplxCharacterHaar.ComplexSU2,
       Matrix.ProjGenLinGroup.mk (KPCplxCharacterHaar.complexSU2Embedding k) =
         Matrix.ProjGenLinGroup.mk g := by
-  obtain ⟨t, ht⟩ := IsAlgClosed.exists_pow_nat_eq (g : Matrix (Fin 2) (Fin 2) ℂ).det
+  let Matrix₀ := Matrix (Fin 2) (Fin 2) ℂ
+  obtain ⟨t, ht⟩ := IsAlgClosed.exists_pow_nat_eq (g : Matrix₀).det
     (by decide : 0 < 2)
   have ht0 : t ≠ 0 := by
     intro he
     rw [he, zero_pow (by decide : 2 ≠ 0)] at ht
     exact g.det_ne_zero ht.symm
-  let A : Matrix (Fin 2) (Fin 2) ℂ := t⁻¹ • (g : Matrix (Fin 2) (Fin 2) ℂ)
+  let A : Matrix₀ := t⁻¹ • (g : Matrix₀)
   have hdet : A.det = 1 := by
     dsimp only [A]
     rw [Matrix.det_smul]
     simp only [Fintype.card_fin]
     rw [← ht, ← mul_pow, inv_mul_cancel₀ ht0, one_pow]
   obtain ⟨ha, hb, hz⟩ := fixed_origin_rows g h
-  have htNorm : ‖t‖ ^ 2 = ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ := by
+  have htNorm : ‖t‖ ^ 2 = ‖(g : Matrix₀).det‖ := by
     rw [← norm_pow, ht]
-  have hnorm : ‖t⁻¹‖ ^ 2 * ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ = 1 := by
+  have hnorm : ‖t⁻¹‖ ^ 2 * ‖(g : Matrix₀).det‖ = 1 := by
     rw [← htNorm, norm_inv, ← mul_pow, inv_mul_cancel₀ (norm_ne_zero_iff.mpr ht0), one_pow]
   have ha' : ‖A 0 0‖ ^ 2 + ‖A 0 1‖ ^ 2 = 1 := by
     simp only [A, Matrix.smul_apply, smul_eq_mul, norm_mul, mul_pow]
@@ -91,8 +87,7 @@ theorem fixed_origin_has_su2 (g : GL (Fin 2) ℂ)
     · simpa [Matrix.mul_apply, Fin.sum_univ_two, Complex.mul_conj, Complex.normSq_eq_norm_sq] using
         congrArg (fun r : ℝ => (r : ℂ)) ha'
     · simpa [Matrix.mul_apply, Fin.sum_univ_two] using hz'
-    · have hh := congrArg star hz'
-      simpa [Matrix.mul_apply, Fin.sum_univ_two, star_add, star_mul, mul_comm] using hh
+    · simpa [Matrix.mul_apply, Fin.sum_univ_two, star_add, star_mul, mul_comm] using (congrArg star hz')
     · simpa [Matrix.mul_apply, Fin.sum_univ_two, Complex.mul_conj, Complex.normSq_eq_norm_sq] using
         congrArg (fun r : ℝ => (r : ℂ)) hb'
   let k : KPCplxCharacterHaar.ComplexSU2 :=
@@ -106,6 +101,8 @@ theorem fixed_origin_has_su2 (g : GL (Fin 2) ℂ)
       Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar,
       Matrix.mul_apply, Matrix.diagonal]
   rw [he, map_mul, Matrix.ProjGenLinGroup.mk_scalar, one_mul]
+
+end
 
 include ζ hζ in
 

@@ -10,20 +10,18 @@ open Filter
 namespace DedekindZetaZeroFree.EisensteinSmoothGerms.ScalarSource
 open KPLiteralRaw KPContActualSphericalRightFieldIdentification
 open KPContActualCutoffPlusClearedGerm
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming scalar_line_construction → scalar_line_construction
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming scalar_analytic_of_right_holomorphic → scalar_analytic_of_right_holomorphic
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming word_smul → word_smul
-open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy renaming actualRightWord_compact_holomorphy → actualRightWord_compact_holomorphy
-open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming word_zero → word_zero
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer (scalar_line_construction scalar_analytic_of_right_holomorphic word_smul)
+open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy (actualRightWord_compact_holomorphy)
+open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber (word_zero)
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
+    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
+    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
+    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
+    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 local notation "level" => KPContActualAllCuspSource.level F ζ hζ C R P H U
 local notation "G" => KPContSectorCoveredQuotientVocabulary.ActualCover F ζ hζ
 
@@ -58,14 +56,11 @@ theorem spherical_word_local_continuation
       exact ⟨r, fun _ _ => 0, hr, hb, fun _ _ _ => analyticAt_const,
         fun _ _ _ _ => by simp⟩
   · obtain ⟨Z, hch, hlocal⟩ := scalar_line_construction F ζ hζ C R P H U v hv
-    let A : ℂ → G → ℂ := fun s => actualRightWord F ζ hζ w
+    let A := fun s => actualRightWord F ζ hζ w
       (groupScalar F ζ hζ C R P H U (Z s))
     refine ⟨A, ?_, ?_⟩
     · intro s hs g
-      have hz : groupScalar F ζ hζ C R P H U (Z s) =
-          fun h => ∑' c : KPChamberBruhatTwoCells.RationalQuotient F,
-            (KPContFlatSourceRecipe.flatR F ζ hζ s v.val).val
-              (rationalLift F ζ hζ (Quotient.out c) * h) := funext (hch s hs)
+      have hz := funext (hch s hs)
       exact congrFun (congrArg (actualRightWord F ζ hζ w) hz) g
     · intro c hc
       obtain ⟨r, hr, hb, N, hN, he⟩ := hlocal c hc

@@ -44,9 +44,8 @@ private lemma beta_norm_le_real (s : ℂ) {d : ℝ} (hs : 0 < s.re) (hd : 0 < d)
   intro t ht
   dsimp only
   rw [norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos ht.1]
-  have hp : 0 < 1-t := sub_pos.mpr ht.2
   rw [show (1:ℂ)-(t:ℂ) = ((1-t:ℝ):ℂ) by push_cast; rfl,
-    Complex.norm_cpow_eq_rpow_re_of_pos hp]
+    Complex.norm_cpow_eq_rpow_re_of_pos (sub_pos.mpr ht.2)]
   simp
 
 theorem gamma_real_shift_ratio_bound (s : ℂ) (d : ℝ)
@@ -54,8 +53,8 @@ theorem gamma_real_shift_ratio_bound (s : ℂ) (d : ℝ)
     ‖Complex.Gamma s‖ / ‖Complex.Gamma (s + (d : ℂ))‖ ≤
       Real.Gamma s.re / Real.Gamma (s.re + d) := by
   have h := beta_norm_le_real s hs hd
-  have hg : 0 < Real.Gamma d := Real.Gamma_pos_of_pos hd
-  rw [Complex.betaIntegral_eq_Gamma_mul_div _ _ hs (by simpa using hd),
+  have hg := Real.Gamma_pos_of_pos hd
+  rw [Complex.betaIntegral_eq_Gamma_mul_div _ _ hs (by exact hd),
     norm_div,norm_mul,Complex.Gamma_ofReal,Complex.norm_real,Real.norm_eq_abs,
     abs_of_pos hg] at h
   apply (mul_le_mul_iff_right₀ hg).mp
@@ -68,10 +67,9 @@ theorem gammaC_reflected_ratio_left_bound (δ : ℝ)
         Kδ * (2 + |s.im|) ^ 2 := by
   have hgap : 0 < 1 - 2 * δ := by linarith
   have hx : 0 < 1 + δ := by linarith
-  have hy : 0 < 2 - δ := by linarith
-  let A : ℝ := Real.Gamma (1 + δ) / Real.Gamma (2 - δ)
-  let B : ℝ := (2 * Real.pi) ^ (- (1 + δ)) / (2 * Real.pi) ^ δ
-  have hA : 0 < A := div_pos (Real.Gamma_pos_of_pos hx) (Real.Gamma_pos_of_pos hy)
+  let A := Real.Gamma (1 + δ) / Real.Gamma (2 - δ)
+  let B := (2 * Real.pi) ^ (- (1 + δ)) / (2 * Real.pi) ^ δ
+  have hA : 0 < A := div_pos (Real.Gamma_pos_of_pos hx) (Real.Gamma_pos_of_pos (by linarith))
   have hbase : 0 < 2 * Real.pi := by positivity
   have hB : 0 < B := div_pos (Real.rpow_pos_of_pos hbase _) (Real.rpow_pos_of_pos hbase _)
   refine ⟨B * A, mul_pos hB hA, ?_⟩
@@ -83,15 +81,13 @@ theorem gammaC_reflected_ratio_left_bound (δ : ℝ)
   rw [hshift] at hb
   change ‖Complex.Gamma (1 - s)‖ / ‖Complex.Gamma ((starRingEnd ℂ) (s + 2))‖ ≤ _ at hb
   rw [Complex.Gamma_conj, Complex.norm_conj, hw] at hb
-  have hb' : ‖Complex.Gamma (1 - s)‖ / ‖Complex.Gamma (s + 2)‖ ≤ A := by
-    convert hb using 1 <;> dsimp [A] <;> congr 2 <;> ring
   have hn : ‖s‖ ≤ 2 + |s.im| := by
     calc
       ‖s‖ ≤ |s.re| + |s.im| := Complex.norm_le_abs_re_add_abs_im s
       _ ≤ 2 + |s.im| := by rw [hs, abs_neg, abs_of_pos hδ]; linarith
   have hn1 : ‖s + 1‖ ≤ 2 + |s.im| := by
     calc
-      ‖s + 1‖ ≤ |(s + 1).re| + |(s + 1).im| := Complex.norm_le_abs_re_add_abs_im _
+      _ ≤ |(s + 1).re| + |(s + 1).im| := Complex.norm_le_abs_re_add_abs_im _
       _ ≤ 2 + |s.im| := by
         simp only [Complex.add_re, Complex.add_im, Complex.one_re, Complex.one_im, add_zero, hs]
         rw [abs_of_pos (by linarith : 0 < -δ + 1)]
@@ -108,7 +104,8 @@ theorem gammaC_reflected_ratio_left_bound (δ : ℝ)
       _ = (‖Complex.Gamma (1 - s)‖ / ‖Complex.Gamma (s + 2)‖) *
           (‖s‖ * ‖s + 1‖) := by ring
       _ ≤ A * (2 + |s.im|) ^ 2 :=
-        mul_le_mul hb' hpoly (mul_nonneg (norm_nonneg _) (norm_nonneg _)) hA.le
+        mul_le_mul (by
+          convert hb using 1 <;> dsimp [A] <;> congr 2 <;> ring) hpoly (mul_nonneg (norm_nonneg _) (norm_nonneg _)) hA.le
   have hnorm : ‖Complex.Gammaℂ (1 - s) * (Complex.Gammaℂ s)⁻¹‖ =
       B * ‖Complex.Gamma (1 - s) * (Complex.Gamma s)⁻¹‖ := by
     simp only [Complex.Gammaℂ_def, norm_mul, norm_inv]
@@ -127,7 +124,7 @@ theorem gammaC_reflected_ratio_left_bound (δ : ℝ)
     ring
   rw [hnorm]
   calc
-    B * ‖Complex.Gamma (1 - s) * (Complex.Gamma s)⁻¹‖ ≤
+    _ ≤
         B * (A * (2 + |s.im|) ^ 2) := mul_le_mul_of_nonneg_left hg hB.le
     _ = _ := by ring
 

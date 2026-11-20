@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Adeles.Approximation.UniformConjugatedFiniteLevel
 
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.SphericalCoefficientSupport
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.CompactOrbits.FiniteDimensionality
@@ -15,11 +16,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 
 private theorem finiteSubgroup_eq_finitePart :
     PGLComplex.AdelicSlicesRaw.finiteSubgroup F ζ hζ =
-      KPGlobalTorusFunctionData.finitePart F ζ hζ := by
-  unfold PGLComplex.AdelicSlicesRaw.finiteSubgroup KPGlobalTorusFunctionData.finitePart
-  congr 1
-  ext x
-  simp [PGLComplex.AdelicSlicesRaw.finiteTuples, Subgroup.mem_iInf]
+      KPGlobalTorusFunctionData.finitePart F ζ hζ := by apply @DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation.UniformConjugatedFiniteLevel.finiteSubgroup_eq_finitePart <;> assumption
 
  theorem exists_archFiniteEquiv :
     ∃ e : (KPSmoothActualFlowData.GInfinity F × KPGlobalTorusFunctionData.finitePart F ζ hζ) ≃ₜ*
@@ -83,7 +80,7 @@ private theorem diagonal_projective (B : KPCplxCharacterHaar.ComplexGL2)
     intro i j
     fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar,
       KubotaRankTwo.d, Matrix.mul_apply, Fin.sum_univ_two, u, v, h10, h01, div_eq_mul_inv]
-    have hv : B 1 1 ≠ 0 := (KPGlobalTorusMatrixCertificates.diagonal_units B h10).2.ne_zero
+    have hv := (KPGlobalTorusMatrixCertificates.diagonal_units B h10).2.ne_zero
     field_simp
   rw [hB, map_mul, Matrix.ProjGenLinGroup.mk_scalar, one_mul]
 
@@ -109,7 +106,6 @@ private theorem archProjection_torus_diagonal (F : Type) [Field F] [NumberField 
   refine ⟨z, ?_⟩
   unfold PGLComplex.AdelicSlicesRaw.archProjection
   rw [MonoidHom.comp_apply, ← hB]
-  change PGLComplex.AdelicSlicesRaw.glArchProjection F ζ hζ B = _
   funext w
   exact hz w
 
@@ -132,11 +128,10 @@ private theorem archProjection_torus_diagonal (F : Type) [Field F] [NumberField 
       change PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ
         (PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ _) = _
       rw [PGLComplex.AdelicSlicesRaw.archProjection_archimedeanInsertion, hz]
-    have hker := (PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ).choose_spec.2.2.2.1
     have hf : ef.val ∈ (PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ).ker := by
       change PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ (d.val⁻¹ * e.val) = 1
       rw [map_mul, map_inv, hp, inv_mul_cancel]
-    rw [hker] at hf
+    rw [((PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ).choose_spec.2.2.2.1)] at hf
     unfold PGLComplex.AdelicSlicesRaw.finiteSubgroup KPGlobalTorusFunctionData.finitePart at *
     have hh : PGLComplex.AdelicSlicesRaw.finiteTuples F ζ hζ =
         ⨅ w : InfinitePlace F, (RestrictedProduct.evalMonoidHom
@@ -171,7 +166,7 @@ private theorem sphericalProduct_diagonal_covariance (F : Type) [Field F] [Numbe
   rw [Real.finsetProd_rpow Finset.univ (fun w => ‖(z w : ℂ)‖ ^ 2) (by intros; positivity)]
 
 variable (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
-variable {m : ℕ} (k : Fin m → KPContSectorArchSphericalFibers.KInfinity F) (A : Fin m → ℂ)
+    {m : ℕ} (k : Fin m → KPContSectorArchSphericalFibers.KInfinity F) (A : Fin m → ℂ)
 
 theorem scalarSeed_right_level
     (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
@@ -186,8 +181,6 @@ theorem scalarSeed_right_level
   have hu : e (1, u.val) = u.val.val := by
     rw [archFiniteEquiv_apply, (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).1, one_mul]
   rw [← hg, ← hu, ← map_mul]
-  change sphericalPGL F (e.symm (e (a * 1, c * u.val))).1 *
-      evalCoefficient F ζ hζ t k A (e.symm (e (a * 1, c * u.val))).2 = _
   change sphericalPGL F (e.symm (e (a * 1, c * u.val))).1 *
       evalCoefficient F ζ hζ t k A (e.symm (e (a * 1, c * u.val))).2 =
     sphericalPGL F (e.symm (e (a, c))).1 * evalCoefficient F ζ hζ t k A (e.symm (e (a, c))).2
@@ -223,15 +216,7 @@ theorem scalarSeed_finite_borel_covariance
   rw [evalCoefficient_finite_borel_covariance F ζ hζ t k A h x b hb c]
   ring
 
-private theorem archInsertion_commutes_finite
-    (a : KPSmoothActualFlowData.GInfinity F)
-    (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
-    Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) c.val := by
-  apply RepresentationTheory.ArchFiniteSplitting.insertion_commutes_finite F ζ hζ a
-    ⟨c.val, ?_⟩
-  change c.val ∈ PGLComplex.AdelicSlicesRaw.finiteSubgroup F ζ hζ
-  rw [finiteSubgroup_eq_finitePart F ζ hζ]
-  exact c.property
+private alias archInsertion_commutes_finite := DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal.insertion_commutes_finite
 
 theorem seedFibre_arch_finite_at_finite_torus
     (a : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2)
@@ -258,8 +243,7 @@ theorem seedFibre_arch_finite_at_finite_torus
   have hk := archInsertion_commutes_finite F ζ hζ (k ν).val ef
   change _ * (_ * (A ν * t.val.val
     (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (k ν).val * (e.val * c.val)))) = _
-  have hk' : e.val * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (k ν).val =
-      KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (k ν).val * e.val := hk.eq.symm
+  have hk' := hk.eq.symm
   have heq : e.val * (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (k ν).val * c.val) =
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (k ν).val * (e.val * c.val) := by
     rw [← mul_assoc, hk', mul_assoc]
@@ -273,7 +257,7 @@ theorem scalarSeed_arch_diagonal_covariance
       (((∏ w : InfinitePlace F, ‖(z w : ℂ)‖ ^ 2) ^ (2 / 3 : ℝ) : ℝ) : ℂ) *
         scalarSeed F ζ hζ t k A g := by
   let e := archFiniteEquiv F ζ hζ
-  let a : InfinitePlace F → KPCplxCharacterHaar.ComplexGL2 := fun w => (e.symm g).1 w |>.out
+  let a := fun w => (e.symm g).1 w |>.out
   let c := (e.symm g).2
   have ha : (fun w => Matrix.ProjGenLinGroup.mk (a w)) = (e.symm g).1 := by
     funext w
@@ -282,11 +266,10 @@ theorem scalarSeed_arch_diagonal_covariance
       (fun w => Matrix.ProjGenLinGroup.mk (a w)) * c.val = g := by
     rw [ha, ← archFiniteEquiv_apply]
     exact e.apply_symm_apply g
-  have hd := KPContinuation.ChamberFlatCasimir.arch_diagonal_insertion F ζ hζ
-    (fun w => (z w : ℂ)) (fun w => Units.ne_zero (z w))
   change scalarSeed F ζ hζ t k A
     (KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ (fun w => (z w : ℂ)) * g) = _
-  rw [← hg, ← hd]
+  rw [← hg, ← (KPContinuation.ChamberFlatCasimir.arch_diagonal_insertion F ζ hζ
+    (fun w => (z w : ℂ)) (fun w => Units.ne_zero (z w)))]
   change scalarSeed F ζ hζ t k A
     (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
       (fun w => Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d ℂ (z w) 1)) *
@@ -335,10 +318,7 @@ theorem seedFibre_arch_finite_all_torus
   rw [he', mul_assoc, hs]
   have hd : KPGlobalTorusFunctionData.deltaHalf F ζ hζ ef ≠ 0 := by
     unfold KPGlobalTorusFunctionData.deltaHalf
-    have hn : (((KPGlobalTorusFunctionData.delta F ζ hζ ef : ℝ≥0) : ℝ)) ≠ 0 :=
-      NNReal.coe_ne_zero.mpr (Units.ne_zero _)
-    have hp := Real.sqrt_pos.mpr (lt_of_le_of_ne (NNReal.coe_nonneg _) (Ne.symm hn))
-    exact Complex.ofReal_ne_zero.mpr hp.ne'
+    exact Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr (lt_of_le_of_ne (NNReal.coe_nonneg _) (Ne.symm (NNReal.coe_ne_zero.mpr (Units.ne_zero _))))).ne'
   have hh := congrArg (fun x : ℂ => KPGlobalTorusFunctionData.deltaHalf F ζ hζ ef * x) hf
   have hclear : scalarSeed F ζ hζ t k A (ef.val *
       (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
@@ -350,8 +330,7 @@ theorem seedFibre_arch_finite_all_torus
           ((KPGlobalTorusFunctionData.deltaHalf F ζ hζ ef)⁻¹ *
             scalarSeed F ζ hζ t k A (ef.val *
               (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
-                (fun w => Matrix.ProjGenLinGroup.mk (a w)) * c.val))) := by
-            exact (mul_inv_cancel_left₀ hd _).symm
+                (fun w => Matrix.ProjGenLinGroup.mk (a w)) * c.val))) := (mul_inv_cancel_left₀ hd _).symm
       _ = _ := by
         rw [hf]
         simp only [Finset.mul_sum]
@@ -382,7 +361,7 @@ theorem smoothSeedFibre_value
     (g : KPGlobalTorusFunctionData.G F ζ hζ) (e : KPGlobalTorusFunctionData.E F ζ hζ) :
     (smoothSeedFibre F ζ hζ k A T g).val.val e = seedFibre F ζ hζ t k A g e := by
   let E := archFiniteEquiv F ζ hζ
-  let a : InfinitePlace F → KPCplxCharacterHaar.ComplexGL2 := fun w => (E.symm g).1 w |>.out
+  let a := fun w => (E.symm g).1 w |>.out
   let c := (E.symm g).2
   have ha : (fun w => Matrix.ProjGenLinGroup.mk (a w)) = (E.symm g).1 := by
     funext w
@@ -430,10 +409,8 @@ theorem smoothSeedFibre_torus_covariance
   rw [hd]
   have hb : KPGlobalTorusFunctionData.deltaHalf F ζ hζ b ≠ 0 := by
     unfold KPGlobalTorusFunctionData.deltaHalf
-    have hn : (((KPGlobalTorusFunctionData.delta F ζ hζ b : ℝ≥0) : ℝ)) ≠ 0 :=
-      NNReal.coe_ne_zero.mpr (Units.ne_zero _)
     exact Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr
-      (lt_of_le_of_ne (NNReal.coe_nonneg _) (Ne.symm hn))).ne'
+      (lt_of_le_of_ne (NNReal.coe_nonneg _) (Ne.symm (NNReal.coe_ne_zero.mpr (Units.ne_zero _))))).ne'
   change _ * scalarSeed F ζ hζ t k A (e.val * (b.val * g)) =
     _ * (_ * scalarSeed F ζ hζ t k A ((e.val * b.val) * g))
   rw [mul_assoc e.val b.val g, mul_inv_rev]
@@ -534,10 +511,9 @@ theorem smoothSeedFibre_borel_covariance
   rw [smoothSeedFibre_value F ζ hζ t k A T hT, smoothSeedFibre_value F ζ hζ t k A T hT]
   unfold seedFibre
   congr 1
-  have hh := ActualBorelRetraction.torus_conjugates_root F ζ hζ e x
   have hr : e.val * KPGlobalTorusFunctionData.N F ζ hζ x =
       KPGlobalTorusFunctionData.N F ζ hζ ((KPGlobalTorusFunctionData.p F ζ hζ e : KPGlobalTorusFunctionData.Adeles F) * x) * e.val := by
-    rw [← hh]
+    rw [← (ActualBorelRetraction.torus_conjugates_root F ζ hζ e x)]
     group
   rw [← mul_assoc, hr, mul_assoc, scalarSeed_upper_root_invariant F ζ hζ t k A]
 
@@ -592,7 +568,7 @@ theorem scalarSeed_group_chart_smooth
         (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g))
       (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) := by
   let E := archFiniteEquiv F ζ hζ
-  let a : InfinitePlace F → KPCplxCharacterHaar.ComplexGL2 := fun w => (E.symm g).1 w |>.out
+  let a := fun w => (E.symm g).1 w |>.out
   let c := (E.symm g).2
   have ha : (fun w => Matrix.ProjGenLinGroup.mk (a w)) = (E.symm g).1 := by
     funext w; exact Quotient.out_eq _
@@ -609,8 +585,7 @@ theorem scalarSeed_group_chart_smooth
         (fun w => Matrix.ProjGenLinGroup.mk (a w))) =
         fun w => Matrix.ProjGenLinGroup.mk (KPLiteralChamber.leftMatrix (z w) * a w) := by
       funext w
-      exact (map_mul (Matrix.ProjGenLinGroup.mk : KPCplxCharacterHaar.ComplexGL2 →*
-        Matrix.ProjGenLinGroup (Fin 2) ℂ) _ _).symm
+      exact (map_mul Matrix.ProjGenLinGroup.mk _ _).symm
     rw [hh, scalarSeed_arch_finite]
   simpa only [he] using (sphericalProduct_left_chart_smooth F a).mul contDiffOn_const
 
@@ -671,8 +646,7 @@ theorem sphericalPGL_right_KInfinity
   unfold sphericalPGL
   apply Finset.prod_congr rfl
   intro w _
-  have hmem : q.val w ∈ KPCplxPrincipalSeriesCharts.compactSubgroup := by
-    exact ⟨r w, hr w⟩
+  have hmem : q.val w ∈ KPCplxPrincipalSeriesCharts.compactSubgroup := ⟨r w, hr w⟩
   change (KPCplxPrincipalSeriesCharts.pi _ (a w * q.val w) _) 1 = _
   rw [KPCplxPrincipalSeriesCharts.pi_mul,
     KPCplxPrincipalSeriesCharts.sphericalSection_fixed _ ⟨q.val w, hmem⟩]
@@ -687,10 +661,9 @@ theorem scalarSeed_right_KInfinity
   let E := archFiniteEquiv F ζ hζ
   let a := (E.symm g).1
   let c := (E.symm g).2
-  have hg : g = E (a, c) := (E.apply_symm_apply g).symm
   have hq : KPSmoothActualFlowData.archimedeanInsertion F ζ hζ q.val = E (q.val, 1) := by
     simp [E, archFiniteEquiv_apply]
-  rw [hg, hq, ← map_mul]
+  rw [((E.apply_symm_apply g).symm), hq, ← map_mul]
   change sphericalPGL F (E.symm (E (a * q.val, c * 1))).1 *
     evalCoefficient F ζ hζ t k A (E.symm (E (a * q.val, c * 1))).2 =
     sphericalPGL F (E.symm (E (a, c))).1 *
@@ -731,7 +704,7 @@ theorem scalarReset_finite_equivariant
   let E := archFiniteEquiv F ζ hζ
   let a := (E.symm g).1
   let c := (E.symm g).2
-  have hg : g = E (a, c) := (E.apply_symm_apply g).symm
+  have hg := (E.apply_symm_apply g).symm
   have hb : b.val = E (1, b) := by
     dsimp only [E]
     rw [archFiniteEquiv_apply,
@@ -751,12 +724,10 @@ private theorem archProjection_compact
     (q : (KPContFlatSourceRecipe.D F ζ hζ).K) (w : InfinitePlace F) :
     PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ q.val w ∈
       KPCplxPrincipalSeriesCharts.compactSubgroup := by
-  have hq : q.val ∈ PrincipalOfKP.iwasawaCompactSubgroupMax F ζ hζ := q.property
-  obtain ⟨x, hx, he⟩ := Subgroup.mem_map.mp hq
+  obtain ⟨x, hx, he⟩ := Subgroup.mem_map.mp q.property
   rw [← he]
   rw [MonoidHom.comp_apply, PGLComplex.AdelicSlicesRaw.archProjection_restricted_eval]
-  let p : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w) →*
-      Matrix.ProjGenLinGroup (Fin 2) ℂ :=
+  let p :=
     Matrix.ProjGenLinGroup.mk.comp ((Matrix.GeneralLinearGroup.map
       (InfinitePlace.Completion.ringEquivComplexOfIsComplex
         (KPHilbert.infinite_isComplex F ζ hζ w)).toRingHom).comp
@@ -787,10 +758,9 @@ private theorem split_archProjection (g : KPGlobalTorusFunctionData.G F ζ hζ) 
   obtain ⟨⟨a, c⟩, hg⟩ := (archFiniteEquiv F ζ hζ).surjective g
   rw [← hg, (archFiniteEquiv F ζ hζ).symm_apply_apply, archFiniteEquiv_apply, map_mul]
   have hc : PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ c.val = 1 := by
-    have hk := (PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ).choose_spec.2.2.2.1
     have hle : KPGlobalTorusFunctionData.finitePart F ζ hζ ≤
         (PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ).ker := by
-      rw [hk, finiteSubgroup_eq_finitePart F ζ hζ]
+      rw [((PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ).choose_spec.2.2.2.1), finiteSubgroup_eq_finitePart F ζ hζ]
     exact hle c.property
   have ha : PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ
       (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) = a :=
@@ -825,7 +795,7 @@ theorem full_compact_arch_finite_factor
     intro g hg
     obtain ⟨w, _, rfl⟩ := List.mem_map.mp hg
     exact KPContFlatFullProductIwasawa.complexCompactLift_mem F ζ hζ w (r w)
-  have he : q.val = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * b.val :=
+  have he :=
     (E.apply_symm_apply q.val).symm.trans (archFiniteEquiv_apply F ζ hζ a b)
   refine ⟨a, b, ha, ?_, he⟩
   have hb : b.val = (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a)⁻¹ * q.val := by
@@ -858,7 +828,7 @@ theorem scalarSeed_raw_compact_orbit_finiteDimensional
   change scalarSeed F ζ hζ t k A (g * b.val) = scalarSeed F ζ hζ t k A (g * q.val)
   rw [hq]
   let E := archFiniteEquiv F ζ hζ
-  have he : KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * b.val = E (a, b) :=
+  have he :=
     (archFiniteEquiv_apply F ζ hζ a b).symm
   rw [he]
   have hg : g = E (E.symm g) := (E.apply_symm_apply g).symm
@@ -921,14 +891,13 @@ private theorem seed_sourceCore_mem_of_raw_compact_orbit
         rw [map_mul]; rfl
       rw [heq]
       exact Submodule.subset_span ⟨k * l, rfl⟩
-    · simpa using W.zero_mem
+    · exact W.zero_mem
     · intro x y hx hy hxm hym
-      simpa only [map_add] using W.add_mem hxm hym
+      simpa using W.add_mem hxm hym
     · intro c x hx hxm
-      simpa only [map_smul] using W.smul_mem c hxm
-  let τ : KPGlobalEisensteinData.CompactTypeStage ρ := ⟨W, inferInstance, hstable⟩
+      simpa using W.smul_mem c hxm
   apply Submodule.mem_iSup_of_mem U
-  apply Submodule.mem_iSup_of_mem τ
+  apply Submodule.mem_iSup_of_mem (⟨W, inferInstance, hstable⟩)
   refine ⟨⟨hv, ?_⟩, ?_⟩
   · intro u
     ext g

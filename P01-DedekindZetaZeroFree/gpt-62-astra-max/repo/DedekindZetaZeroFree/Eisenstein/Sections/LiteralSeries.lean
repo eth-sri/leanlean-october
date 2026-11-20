@@ -43,18 +43,22 @@ def Induced (s : ℂ) (f : Functions F ζ hζ) : Prop :=
         (((KPGlobalTorusFunctionData.delta F ζ hζ r.val : NNReal) : ℝ)) (1 / 2 + s) *
       (KPGlobalCenterRationalCharacter.lambdaR F ζ hζ r : ℂ) * f g
 
-def IwasawaCompact (K : Subgroup (G F ζ hζ)) : Prop :=
+section
+
+variable (K : Subgroup (G F ζ hζ))
+
+def IwasawaCompact : Prop :=
   IsCompact (K : Set (G F ζ hζ)) ∧
   (∀ g, ∃ (t : KPGlobalTorusFunctionData.E F ζ hζ) (x : KPAdeles F) (k : K),
     g = (t.val * KPGlobalTorusFunctionData.N F ζ hζ x) * k.val) ∧
   ∀ (w : InfinitePlace F) (k : KPCplxCharacterHaar.ComplexSU2),
     KPGlobalResidualConstruction.complexCompactLift F ζ hζ w k ∈ K
 
-def KFinite (K : Subgroup (G F ζ hζ)) (f : Functions F ζ hζ) : Prop :=
+def KFinite (f : Functions F ζ hζ) : Prop :=
   ∃ S : Submodule ℂ (Functions F ζ hζ), Module.Finite ℂ S ∧ f ∈ S ∧
     ∀ k : K, ∀ v ∈ S, rightAction F ζ hζ k.val v ∈ S
 
-abbrev Flat (K : Subgroup (G F ζ hζ)) :=
+abbrev Flat :=
   {f : ℂ → Functions F ζ hζ // (∀ s, Induced F ζ hζ s (f s)) ∧
     (∀ s (t : KPGlobalTorusFunctionData.E F ζ hζ) (k : K),
       f s (t.val * k.val) =
@@ -62,9 +66,11 @@ abbrev Flat (K : Subgroup (G F ζ hζ)) :=
           (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) s *
         f 0 (t.val * k.val)) ∧ KFinite F ζ hζ K (f 0)}
 
-def eisenstein (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K) (s : ℂ) (g : G F ζ hζ) : ℂ :=
+def eisenstein (f : Flat F ζ hζ K) (s : ℂ) (g : G F ζ hζ) : ℂ :=
   ∑' c : KPChamberBruhatTwoCells.RationalQuotient F,
     f.val s (rationalLift F ζ hζ (Quotient.out c) * g)
+
+end
 
 def Automorphic (f : Functions F ζ hζ) : Prop :=
   Smooth F ζ hζ f ∧

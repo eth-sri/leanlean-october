@@ -1,4 +1,5 @@
 module
+public import DedekindZetaZeroFree.Metaplectic.Torus.ReferenceTensorEvaluation
 
 public import DedekindZetaZeroFree.Eisenstein.Induction.ArchimedeanScalarEquivalence
 public import DedekindZetaZeroFree.Metaplectic.Torus.FiniteTensorPolarizationComparison
@@ -18,27 +19,33 @@ open KPGlobalTorusFiniteStages
 attribute [local instance] KPGlobalTorusPeriodizationInverse.modelTopology
 
 variable (F : Type) [Field F] [NumberField F]
-variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+    (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 
-def badSet (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P) :
+section
+
+variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+
+def badSet :
     Finset (KPGlobalResidualConstruction.Places F) :=
   (Finset.univ.image (Sum.inl : NumberField.InfinitePlace F →
       KPGlobalResidualConstruction.Places F)) ∪
     (C.exceptional.image (Sum.inr : HeightOneSpectrum (𝓞 F) →
       KPGlobalResidualConstruction.Places F))
 
-theorem finite_mem_badSet (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+theorem finite_mem_badSet
     (q : HeightOneSpectrum (𝓞 F)) (hq : q ∈ C.exceptional) :
     Sum.inr q ∈ badSet F ζ hζ P C :=
   Finset.mem_union_right _ (Finset.mem_image_of_mem Sum.inr hq)
 
-abbrev LocalFiberOnPlaces (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P) :
+abbrev LocalFiberOnPlaces :
     KPGlobalResidualConstruction.Places F → Type
   | Sum.inl _ => ℂ
   | Sum.inr q => LocalFiber F ζ hζ P C q
+
+end
 
 instance localFiberOnPlacesAdd (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
     (v : KPGlobalResidualConstruction.Places F) :
@@ -59,16 +66,7 @@ def canonRef (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P) 
   | Sum.inl _ => 1
   | Sum.inr q => localReference F ζ hζ P C q
 
-theorem localReference_ne_zero (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
-    (q : HeightOneSpectrum (𝓞 F)) : localReference F ζ hζ P C q ≠ 0 := by
-  intro h
-  have hone : (localReference F ζ hζ P C q).val 1 = 1 := by
-    simp only [localReference, map_one]
-    simp only [Subgroup.one_mem, dite_true]
-    change (((C.polarization q).ωL 1 : ℂˣ) : ℂ) = 1
-    rw [map_one, Units.val_one]
-  rw [h] at hone
-  exact one_ne_zero hone.symm
+alias localReference_ne_zero := DedekindZetaZeroFree.EisensteinReferenceSections.TorusReference.localReference_ne_zero
 
 def productUnitaryToRational (P : CompatibleModelData F ζ hζ) :
     KPGlobalTorusPeriodizationInverse.ProductUnitary F ζ hζ P →ₗ[ℂ]
@@ -86,20 +84,18 @@ theorem productUnitaryToRational_injective (P : CompatibleModelData F ζ hζ) :
       KPGlobalTorusPeriodizationInverse.unitaryAveraging_unitaryPeriodization F ζ hζ P b] at h'
     exact h'
   intro a b h
-  have h' : (KPGlobalTorusPeriodizationInverse.untwistRational F ζ hζ).symm
-        (KPGlobalTorusPeriodizationInverse.unitaryPeriodization F ζ hζ P a) =
-      (KPGlobalTorusPeriodizationInverse.untwistRational F ζ hζ).symm
-        (KPGlobalTorusPeriodizationInverse.unitaryPeriodization F ζ hζ P b) := h
-  exact hper_inj ((KPGlobalTorusPeriodizationInverse.untwistRational F ζ hζ).symm.injective h')
+  exact hper_inj ((KPGlobalTorusPeriodizationInverse.untwistRational F ζ hζ).symm.injective h)
 
-@[simp] theorem canonRef_arch (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+
+@[simp] theorem canonRef_arch
     (w : NumberField.InfinitePlace F) : canonRef F ζ hζ P C (Sum.inl w) = 1 := rfl
 
-@[simp] theorem canonRef_finite (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
+@[simp] theorem canonRef_finite
     (q : HeightOneSpectrum (𝓞 F)) :
     canonRef F ζ hζ P C (Sum.inr q) = localReference F ζ hζ P C q := rfl
 
-theorem badSet_eq_fullBad (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P) :
+theorem badSet_eq_fullBad :
     badSet F ζ hζ P C =
       KPGlobalResidualConstruction.ScalarAbsorption.fullBad
         (A := NumberField.InfinitePlace F) C.exceptional := by

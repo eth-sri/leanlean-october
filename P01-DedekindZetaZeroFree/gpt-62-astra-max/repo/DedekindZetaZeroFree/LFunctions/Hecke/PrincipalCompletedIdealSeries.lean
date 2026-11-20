@@ -21,24 +21,15 @@ theorem principal_prefactor_all_ideal_hasSum
         (η I * (Ideal.absNorm I : ℂ) ^ (-s)))
       ((DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).Λ s) := by
   classical
-  have hm : m = ⊤ := primitivePrincipal_modulus_eq_top η hprimitive hprincipal
-  have hr : NumberField.InfinitePlace.nrRealPlaces F = 0 :=
-    NumberField.nrRealPlaces_eq_zero_iff.mpr hF
   have hpref :
       (((|NumberField.discr F| : ℤ) : ℂ) * (Ideal.absNorm m : ℂ)) ^ (s / 2) *
         Complex.Gammaℂ s ^ NumberField.InfinitePlace.nrComplexPlaces F =
       DedekindZetaZeroFree.AbelianQuotient.zetaGammaFactor F s := by
-    simp [hm, DedekindZetaZeroFree.AbelianQuotient.zetaGammaFactor, hr]
-  have hM := (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).hasMellin
-    (s := s) (by simpa using hs)
-  have hZ := DedekindZetaZeroFree.AbelianQuotient.Theta.hasMellin_mixedThetaPair F hs
-  have hΛ : (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).Λ s =
-      DedekindZetaZeroFree.AbelianQuotient.zetaGammaFactor F s *
-        NumberField.dedekindZeta F s := hM.2.symm.trans hZ.2
-  rw [hΛ]
-  have hsum := (DedekindZetaZeroFree.Odlyzko.hasSum_idealInverseNormPower F hs).mul_left
-    (DedekindZetaZeroFree.AbelianQuotient.zetaGammaFactor F s)
-  convert hsum using 1
+    simp [(primitivePrincipal_modulus_eq_top η hprimitive hprincipal), DedekindZetaZeroFree.AbelianQuotient.zetaGammaFactor, (NumberField.nrRealPlaces_eq_zero_iff.mpr hF)]
+  rw [(((DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).hasMellin
+    (by exact hs)).2.symm.trans (DedekindZetaZeroFree.AbelianQuotient.Theta.hasMellin_mixedThetaPair F hs).2)]
+  convert ((DedekindZetaZeroFree.Odlyzko.hasSum_idealInverseNormPower F hs).mul_left
+    (DedekindZetaZeroFree.AbelianQuotient.zetaGammaFactor F s)) using 1
   funext I
   rw [hpref, primitivePrincipal_apply_eq_ite η hprimitive hprincipal I]
   by_cases hI : I = ⊥

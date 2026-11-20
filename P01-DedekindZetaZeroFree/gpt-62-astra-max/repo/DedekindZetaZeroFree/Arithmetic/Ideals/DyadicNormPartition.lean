@@ -9,8 +9,11 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical
 
+section
+
+variable (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
+
 private lemma absNorm_le_two_pow_of_mem_idealDyadicBlock
-    (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
     {j : ℕ} {I : Ideal (𝓞 F)} (h : I ∈ idealDyadicBlock F c j) :
     (Ideal.absNorm I : ℝ) ≤ (2 : ℝ) ^ j := by
   rcases j with _ | k
@@ -24,7 +27,6 @@ private lemma absNorm_le_two_pow_of_mem_idealDyadicBlock
     exact hup
 
 private lemma absNorm_eq_one_of_mem_idealDyadicBlock_zero
-    (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
     {I : Ideal (𝓞 F)} (h : I ∈ idealDyadicBlock F c 0) :
     Ideal.absNorm I = 1 := by
   change I ∈ ({⊤} : Finset (Ideal (𝓞 F))) at h
@@ -33,23 +35,19 @@ private lemma absNorm_eq_one_of_mem_idealDyadicBlock_zero
   simp
 
 private lemma two_pow_pred_lt_absNorm_of_mem_idealDyadicBlock
-    (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
     {j : ℕ} (hj : j ≠ 0) {I : Ideal (𝓞 F)} (h : I ∈ idealDyadicBlock F c j) :
     (2 : ℝ) ^ (j - 1) < (Ideal.absNorm I : ℝ) := by
   obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hj
   change I ∈ paperShell F c ((2 : ℝ) ^ k) at h
   obtain ⟨_, _, hlow, _⟩ := (mem_paperShell F c ((2 : ℝ) ^ k) I).mp h
-  simpa using hlow
+  exact hlow
 
-private lemma exists_dyadicBlock_of_mem_idealAdmissibleFinset
-    (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F)) (X : ℝ) (hX : 1 ≤ X)
+private lemma exists_dyadicBlock_of_mem_idealAdmissibleFinset (X : ℝ) (hX : 1 ≤ X)
     {I : Ideal (𝓞 F)} (hI : I ∈ idealAdmissibleFinset F c X) :
     ∃ j ≤ DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength X, I ∈ idealDyadicBlock F c j := by
   obtain ⟨hsf, hcop, hnorm⟩ := (mem_idealAdmissibleFinset F c X I).mp hI
-  have hne : I ≠ ⊥ := hsf.ne_zero
-  have hnat : Ideal.absNorm I ≠ 0 := fun h => hne (Ideal.absNorm_eq_zero_iff.mp h)
   have hpos : (1 : ℝ) ≤ (Ideal.absNorm I : ℝ) := by
-    have : 1 ≤ Ideal.absNorm I := Nat.one_le_iff_ne_zero.mpr hnat
+    have := Nat.one_le_iff_ne_zero.mpr (fun h => hsf.ne_zero (Ideal.absNorm_eq_zero_iff.mp h))
     exact_mod_cast this
   have hex : ∃ j : ℕ, (Ideal.absNorm I : ℝ) ≤ (2 : ℝ) ^ j :=
     ⟨DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength X,
@@ -64,22 +62,15 @@ private lemma exists_dyadicBlock_of_mem_idealAdmissibleFinset
   obtain ⟨j, hspec, hjL, hjmin⟩ := hmain
   refine ⟨j, hjL, ?_⟩
   rcases j with _ | k
-  · have hone : (Ideal.absNorm I : ℝ) = 1 := le_antisymm (by simpa using hspec) hpos
-    have hnat1 : Ideal.absNorm I = 1 := by exact_mod_cast hone
-    have htop : I = ⊤ := Ideal.absNorm_eq_one_iff.mp hnat1
+  · have htop := Ideal.absNorm_eq_one_iff.mp (by exact_mod_cast (le_antisymm (by exact hspec) hpos))
     rw [htop]
     change (⊤ : Ideal (𝓞 F)) ∈ ({⊤} : Finset (Ideal (𝓞 F)))
     simp
-  · have hlow : (2 : ℝ) ^ k < (Ideal.absNorm I : ℝ) :=
-      lt_of_not_ge (hjmin k (Nat.lt_succ_self k))
-    have hup : (Ideal.absNorm I : ℝ) ≤ 2 * (2 : ℝ) ^ k := by
-      rw [pow_succ'] at hspec
-      exact hspec
-    change I ∈ paperShell F c ((2 : ℝ) ^ k)
-    exact (mem_paperShell F c ((2 : ℝ) ^ k) I).mpr ⟨hsf, hcop, hlow, hup⟩
+  · refine (mem_paperShell F c ((2 : ℝ) ^ k) I).mpr ⟨hsf, hcop, (lt_of_not_ge (hjmin k (Nat.lt_succ_self k))), ?_⟩
+    rw [pow_succ'] at hspec
+    exact hspec
 
-theorem biUnion_clippedDyadicBlock (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (X : ℝ) (hX : 1 ≤ X) :
+theorem biUnion_clippedDyadicBlock (X : ℝ) (hX : 1 ≤ X) :
     (Finset.range (DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength X + 1)).biUnion
       (clippedDyadicBlock F c X) = idealAdmissibleFinset F c X := by
   apply Finset.Subset.antisymm
@@ -95,8 +86,7 @@ theorem biUnion_clippedDyadicBlock (F : Type) [Field F] [NumberField F]
     simp only [clippedDyadicBlock, Finset.mem_inter]
     exact ⟨hblk, hI⟩
 
-theorem pairwiseDisjoint_clippedDyadicBlock (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (X : ℝ) (hX : 1 ≤ X) :
+theorem pairwiseDisjoint_clippedDyadicBlock (X : ℝ) (hX : 1 ≤ X) :
     Set.PairwiseDisjoint
       (↑(Finset.range (DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength X + 1)) : Set ℕ)
       (clippedDyadicBlock F c X) := by
@@ -117,7 +107,7 @@ theorem pairwiseDisjoint_clippedDyadicBlock (F : Type) [Field F] [NumberField F]
       have h2' : (2 : ℝ) ^ (b - 1) < 1 := by simpa using h2
       have hge : (1 : ℝ) ≤ (2 : ℝ) ^ (b - 1) := one_le_pow₀ (by norm_num)
       linarith
-    · have hle : (Ideal.absNorm I : ℝ) ≤ (2 : ℝ) ^ a :=
+    · have hle :=
         absNorm_le_two_pow_of_mem_idealDyadicBlock F c ha
       have hbne : b ≠ 0 := by omega
       have h2 := two_pow_pred_lt_absNorm_of_mem_idealDyadicBlock F c hbne hb
@@ -133,13 +123,15 @@ theorem pairwiseDisjoint_clippedDyadicBlock (F : Type) [Field F] [NumberField F]
       have h2' : (2 : ℝ) ^ (a - 1) < 1 := by simpa using h2
       have hge : (1 : ℝ) ≤ (2 : ℝ) ^ (a - 1) := one_le_pow₀ (by norm_num)
       linarith
-    · have hle : (Ideal.absNorm I : ℝ) ≤ (2 : ℝ) ^ b :=
+    · have hle :=
         absNorm_le_two_pow_of_mem_idealDyadicBlock F c hb
       have hane : a ≠ 0 := by omega
       have h2 := two_pow_pred_lt_absNorm_of_mem_idealDyadicBlock F c hane ha
       have hp : (2 : ℝ) ^ b ≤ (2 : ℝ) ^ (a - 1) :=
         pow_le_pow_right₀ (by norm_num) (by omega)
       linarith
+
+end
 
 theorem dyadicScale_bounds (X : ℝ) (hX : 1 ≤ X) :
     ∀ j ∈ Finset.range (DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength X + 1),
@@ -149,9 +141,7 @@ theorem dyadicScale_bounds (X : ℝ) (hX : 1 ≤ X) :
   rcases j with _ | k
   · refine ⟨le_refl 1, ?_⟩
     simpa [dyadicScale] using hX
-  · have hk : k < DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength X := by omega
-    have hlt : (2 : ℝ) ^ k < X := DedekindZetaZeroFree.LargeSieve.Vendor.pow_lt_of_lt_dyadicLength hX hk
-    refine ⟨?_, le_of_lt hlt⟩
+  · refine ⟨?_, le_of_lt (DedekindZetaZeroFree.LargeSieve.Vendor.pow_lt_of_lt_dyadicLength hX (by omega))⟩
     show (1 : ℝ) ≤ (2 : ℝ) ^ k
     exact one_le_pow₀ (by norm_num)
 

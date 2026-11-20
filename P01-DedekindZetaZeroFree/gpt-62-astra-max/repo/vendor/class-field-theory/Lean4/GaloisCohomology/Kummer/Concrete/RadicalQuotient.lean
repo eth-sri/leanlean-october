@@ -11,9 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -39,9 +36,12 @@ namespace RadicalDatum
 
 variable {n : ℕ+} (D : RadicalDatum (K := K) (L := L) n)
 
+section
+
+variable (hfixed : ∀ σ : Gal(L/K), ∀ u : Lˣ, u ^ (n : ℕ) = 1 → σ • u = u)
+
 /-- Multiplicativity of root characters does not require a multiplicative choice of roots. -/
 theorem rootCharacter_mul_withoutSection
-    (hfixed : ∀ σ : Gal(L/K), ∀ u : Lˣ, u ^ (n : ℕ) = 1 → σ • u = u)
     (a b : D.carrier) :
     D.rootCharacter (a * b) hfixed =
       D.rootCharacter a hfixed * D.rootCharacter b hfixed := by
@@ -49,25 +49,28 @@ theorem rootCharacter_mul_withoutSection
   intro σ
   change D.rootCocycle (a * b) σ = D.rootCocycle a σ * D.rootCocycle b σ
   rw [← D.rootQuotient_eq_rootCocycle_of_same_pow hfixed (a * b) (u := D.root a * D.root b)]
-  · exact rootQuotient_mul_root (K := K) (L := L) (D.root a) (D.root b) σ
-  · rw [mul_pow, D.root_pow_eq_map, D.root_pow_eq_map]
-    exact (map_mul (Units.map (algebraMap K L).toMonoidHom) a.1 b.1).symm
+  · apply rootQuotient_mul_root
+  · simp [mul_pow, D.root_pow_eq_map]
 
 /-- The root character of `1` is trivial, without choosing roots multiplicatively. -/
-theorem rootCharacter_one_withoutSection
-    (hfixed : ∀ σ : Gal(L/K), ∀ u : Lˣ, u ^ (n : ℕ) = 1 → σ • u = u) :
+theorem rootCharacter_one_withoutSection :
     D.rootCharacter 1 hfixed = 1 := by
   apply MonoidHom.ext
   intro σ
   rw [D.rootCharacter_apply]
   rw [← D.rootQuotient_eq_rootCocycle_of_same_pow hfixed (1 : D.carrier)
-    (u := Units.map (algebraMap K L).toMonoidHom (1 : Kˣ))]
-  · exact rootQuotient_algebraMap_unit (K := K) (L := L) 1 σ
+    ]
+  · exact rootQuotient_algebraMap_unit 1 σ
   · simp
 
+end
+
+section
+
+variable (a : D.carrier) (hfixed : ∀ σ : Gal(L/K), ∀ u : Lˣ, u ^ (n : ℕ) = 1 → σ • u = u)
+
 /-- The root character, bundled with its codomain restricted to `μₙ(L)`. -/
-def rootCharacterToMuWithoutSection (a : D.carrier)
-    (hfixed : ∀ σ : Gal(L/K), ∀ u : Lˣ, u ^ (n : ℕ) = 1 → σ • u = u) :
+def rootCharacterToMuWithoutSection :
     Gal(L/K) →* nthRootsSubgroup L (n : ℕ) where
   toFun := fun σ =>
     ⟨D.rootCharacter a hfixed σ, D.rootCharacter_mem_nthRootsSubgroup a hfixed σ⟩
@@ -81,12 +84,13 @@ def rootCharacterToMuWithoutSection (a : D.carrier)
 
 /-- The section-free root character evaluates as the quotient of the transported
 root by the root itself. -/
-@[simp] theorem rootCharacterToMuWithoutSection_apply (a : D.carrier)
-    (hfixed : ∀ σ : Gal(L/K), ∀ u : Lˣ, u ^ (n : ℕ) = 1 → σ • u = u)
+@[simp] theorem rootCharacterToMuWithoutSection_apply
     (σ : Gal(L/K)) :
     D.rootCharacterToMuWithoutSection a hfixed σ =
       ⟨D.rootCharacter a hfixed σ, D.rootCharacter_mem_nthRootsSubgroup a hfixed σ⟩ :=
   rfl
+
+end
 
 /-- The root-character construction is a homomorphism on the radical subgroup. -/
 def kummerCharacterWithoutSection
@@ -126,8 +130,8 @@ theorem rootCharacter_eq_one_of_mem_ambientNthPowers
   intro σ
   rw [D.rootCharacter_apply]
   rw [← D.rootQuotient_eq_rootCocycle_of_same_pow hfixed a
-    (u := Units.map (algebraMap K L).toMonoidHom b)]
-  · exact rootQuotient_algebraMap_unit (K := K) (L := L) b σ
+    ]
+  · exact rootQuotient_algebraMap_unit b σ
   · rw [← map_pow, hb]
 
 /-- The ambient `n`-th-power subgroup lies in the kernel of the Kummer character. -/
@@ -135,12 +139,10 @@ theorem ambientNthPowersSubgroup_le_ker
     (hfixed : ∀ σ : Gal(L/K), ∀ u : Lˣ, u ^ (n : ℕ) = 1 → σ • u = u) :
     D.ambientNthPowersSubgroup ≤ MonoidHom.ker (D.kummerCharacterWithoutSection hfixed) := by
   intro a ha
-  change D.kummerCharacterWithoutSection hfixed a = 1
   apply MonoidHom.ext
   intro σ
   apply Subtype.ext
-  exact congrArg (fun χ : Gal(L/K) →* Lˣ => χ σ)
-    (D.rootCharacter_eq_one_of_mem_ambientNthPowers hfixed ha)
+  exact congrArg (fun χ ↦ χ σ) (rootCharacter_eq_one_of_mem_ambientNthPowers D hfixed ha)
 
 /-- For a Galois extension, triviality of the Kummer character forces the
 chosen root to come from the base field.  Consequently the kernel is exactly
@@ -155,18 +157,13 @@ theorem ker_kummerCharacterWithoutSection_eq_ambientNthPowers
     have hroot : ∀ σ : Gal(L/K), σ • D.root a = D.root a := by
       intro σ
       have hvalue : D.rootCharacterToMuWithoutSection a hfixed σ = 1 := by
-        have happ := congrArg
-          (fun χ : Gal(L/K) →* nthRootsSubgroup L (n : ℕ) ↦ χ σ) ha
-        simpa [kummerCharacterWithoutSection] using happ
-      have hquot : rootQuotient (K := K) (L := L) (D.root a) σ = 1 := by
-        exact congrArg Subtype.val hvalue
-      exact (rootQuotient_eq_one_iff (K := K) (L := L) (D.root a) σ).1 hquot
-    have hfixedVal : ∀ σ : Gal(L/K), σ (D.root a : L) = D.root a := by
-      intro σ
-      exact congrArg Units.val (hroot σ)
+        simpa [kummerCharacterWithoutSection] using (congrArg
+          (fun χ : Gal(L/K) →* nthRootsSubgroup L (n : ℕ) ↦ χ σ) ha)
+      refine (rootQuotient_eq_one_iff (D.root a) σ).1 ?_
+      exact congrArg Subtype.val hvalue
     obtain ⟨b, hb⟩ :=
-      (InfiniteGalois.mem_range_algebraMap_iff_fixed (k := K) (K := L) (D.root a : L)).2
-        hfixedVal
+      (InfiniteGalois.mem_range_algebraMap_iff_fixed (D.root a : L)).2
+        (fun σ => congrArg Units.val (hroot σ))
     have hb0 : b ≠ 0 := by
       intro hbzero
       have : (D.root a : L) = 0 := by simpa [hbzero] using hb.symm
@@ -174,14 +171,14 @@ theorem ker_kummerCharacterWithoutSection_eq_ambientNthPowers
     refine (D.mem_ambientNthPowersSubgroup_iff).2 ⟨Units.mk0 b hb0, ?_⟩
     apply Units.ext
     calc
-      ((Units.mk0 b hb0 : Kˣ) ^ (n : ℕ) : K) = b ^ (n : ℕ) := rfl
+      _ = b ^ (n : ℕ) := rfl
       _ = a.1 := by
         apply (algebraMap K L).injective
         calc
-          algebraMap K L (b ^ (n : ℕ)) = (D.root a : L) ^ (n : ℕ) := by
+          _ = (D.root a : L) ^ (n : ℕ) := by
             rw [map_pow, hb]
           _ = algebraMap K L (a.1 : K) := congrArg Units.val (D.root_pow_eq_map a)
-  · exact D.ambientNthPowersSubgroup_le_ker hfixed
+  apply ambientNthPowersSubgroup_le_ker
 
 /-- The ambient radical quotient `Δ / (Δ ∩ Kˣⁿ)`. -/
 def RadicalQuotient : Type _ :=
@@ -210,59 +207,44 @@ theorem radicalQuotientMk_apply (a : D.carrier) :
       (QuotientGroup.mk a : D.carrier ⧸ D.ambientNthPowersSubgroup) :=
   rfl
 
-/-- A radical quotient class is trivial exactly when its representative is an
-ambient `n`th power. -/
-@[simp]
-theorem radicalQuotientMk_eq_one_iff (a : D.carrier) :
-    D.radicalQuotientMk a = 1 ↔ a ∈ D.ambientNthPowersSubgroup := by
-  change
-    (QuotientGroup.mk' D.ambientNthPowersSubgroup) a = 1 ↔
-      a ∈ D.ambientNthPowersSubgroup
-  exact QuotientGroup.eq_one_iff a
-
 /-- Two radical quotient representatives agree exactly when their ratio is an
 ambient `n`th power. -/
 @[simp]
 theorem radicalQuotientMk_eq_iff (a b : D.carrier) :
     D.radicalQuotientMk a = D.radicalQuotientMk b ↔
       a / b ∈ D.ambientNthPowersSubgroup := by
-  change
-    (QuotientGroup.mk' D.ambientNthPowersSubgroup) a =
-        (QuotientGroup.mk' D.ambientNthPowersSubgroup) b ↔
-      a / b ∈ D.ambientNthPowersSubgroup
   exact QuotientGroup.eq_iff_div_mem
 
 /-- Every ambient radical class has a representative in `D.carrier`. -/
 theorem radicalQuotientMk_surjective :
     Function.Surjective D.radicalQuotientMk := by
-  change Function.Surjective
-    (QuotientGroup.mk' D.ambientNthPowersSubgroup)
-  exact QuotientGroup.mk'_surjective D.ambientNthPowersSubgroup
+  apply QuotientGroup.mk'_surjective
 
 /-- Eliminate a named ambient radical quotient through its canonical
 representatives. -/
 protected theorem radicalQuotient_inductionOn
     {motive : D.RadicalQuotient → Prop} (q : D.RadicalQuotient)
     (mk : ∀ a : D.carrier, motive (D.radicalQuotientMk a)) :
-    motive q := by
-  exact QuotientGroup.induction_on' q mk
+    motive q := QuotientGroup.induction_on' q mk
+
+section
+
+variable {M : Type*} [Group M] (f : D.carrier →* M) (hf : D.ambientNthPowersSubgroup ≤ MonoidHom.ker f)
 
 /-- Descend a homomorphism through the named ambient radical quotient. -/
-def radicalQuotientLift {M : Type*} [Group M]
-    (f : D.carrier →* M)
-    (hf : D.ambientNthPowersSubgroup ≤ MonoidHom.ker f) :
+def radicalQuotientLift :
     D.RadicalQuotient →* M :=
   (QuotientGroup.lift D.ambientNthPowersSubgroup f hf).comp
     D.radicalQuotientMulEquiv.toMonoidHom
 
 /-- The radical quotient lift evaluates on a representative by the prescribed lift. -/
 @[simp]
-theorem radicalQuotientLift_mk {M : Type*} [Group M]
-    (f : D.carrier →* M)
-    (hf : D.ambientNthPowersSubgroup ≤ MonoidHom.ker f)
+theorem radicalQuotientLift_mk
     (a : D.carrier) :
     D.radicalQuotientLift f hf (D.radicalQuotientMk a) = f a :=
   rfl
+
+end
 
 /-- The Kummer character descended to the correct ambient-power quotient. -/
 def quotientKummerCharacterWithoutSection
@@ -303,11 +285,7 @@ theorem quotientKummerCharacterWithoutSection_injective
   intro b hab
   apply (D.radicalQuotientMk_eq_iff a b).2
   rw [← D.ker_kummerCharacterWithoutSection_eq_ambientNthPowers hfixed]
-  have hab' : D.kummerCharacterWithoutSection hfixed a =
-      D.kummerCharacterWithoutSection hfixed b := by
-    simpa using hab
-  rw [MonoidHom.mem_ker, map_div, hab']
-  exact div_self' (D.kummerCharacterWithoutSection hfixed b)
+  simp_all
 
 end RadicalDatum
 end RadicalQuotient

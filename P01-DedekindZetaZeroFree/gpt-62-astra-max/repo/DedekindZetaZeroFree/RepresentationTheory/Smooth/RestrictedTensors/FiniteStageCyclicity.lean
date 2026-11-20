@@ -10,8 +10,8 @@ namespace DedekindZetaZeroFree.FourierContinuation.HCGeneration
 
 section Algebraic
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
-variable {V : ι → Type*} [∀ i, AddCommGroup (V i)] [∀ i, Module ℂ (V i)]
-variable {A : ι → Type*} (op : ∀ i, A i → Module.End ℂ (V i))
+    {V : ι → Type*} [∀ i, AddCommGroup (V i)] [∀ i, Module ℂ (V i)]
+    {A : ι → Type*} (op : ∀ i, A i → Module.End ℂ (V i))
 
 def tupleOperator (a : ∀ i, A i) : Module.End ℂ (PiTensorProduct ℂ V) :=
   PiTensorProduct.map (fun i => op i (a i))
@@ -32,12 +32,10 @@ private theorem tprod_mem_of_slot_spans (v x : ∀ i, V i)
     | empty =>
       intro y hy ho
       choose a ha using fun i => ho i (by simp)
-      have he : y = fun i => op i (a i) (v i) := funext ha
-      rw [he]
+      rw [(funext ha)]
       exact Submodule.subset_span ⟨a, PiTensorProduct.map_tprod _ _⟩
     | @insert i s hi ih =>
       intro y hy ho
-      have hyi := hy i (Finset.mem_insert_self i s)
       have hm : ∀ z ∈ Submodule.span ℂ (Set.range (fun a => op i a (v i))),
           PiTensorProduct.tprod ℂ (Function.update y i z) ∈ tupleOrbitSpan op v := by
         intro z hz
@@ -62,7 +60,7 @@ private theorem tprod_mem_of_slot_spans (v x : ∀ i, V i)
         | smul c z hz ihz =>
           rw [(PiTensorProduct.tprod ℂ).map_update_smul]
           exact Submodule.smul_mem _ c ihz
-      simpa only [Function.update_eq_self] using hm (y i) hyi
+      simpa using hm (y i) (hy i (Finset.mem_insert_self i s))
   apply hP Finset.univ x
   · exact fun i _ => hx i
   · intro i hi
@@ -85,8 +83,8 @@ end Algebraic
 
 open MomentSources KPGlobalResidualConstruction
 variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (R : PrincipalMellin.ActualRecipe S η) (M : ∀ q, LocalImageData R q)
+    {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+    (R : PrincipalMellin.ActualRecipe S η) (M : ∀ q, LocalImageData R q)
 
 abbrev LocalOperation : KPHilbert.Place F → Type
   | Sum.inl _ => List ComplexGenerator

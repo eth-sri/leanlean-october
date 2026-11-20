@@ -12,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -34,7 +30,6 @@ open NumberField IsDedekindDomain
 noncomputable section
 
 open LocalClassFieldTheory
-
 
 open AlgebraicNumberTheory.Valuations
 open HilbertRamification
@@ -87,20 +82,10 @@ theorem finitePlaceLocalTensorUnitsEquiv_smul
         (K := K) (L := L) v (σ • z) =
       σ • finitePlaceLocalTensorUnitsEquiv
         (K := K) (L := L) v z := by
-  let :=
-    localTensorUnitsAction
-      (K := K) (L := L)
-      (HeightOneSpectrum.adicAbv K v)
-  let :=
-    scalarTensorUnitsAction
-      (K := K) (L := L)
-      (A := v.adicCompletion K)
   apply Units.ext
   exact finitePlaceLocalTensorAlgEquiv_conjugation
-    (K := K) (L := L) v σ
-      (z :
-        LocalTensorAlgebra (L := L)
-          (HeightOneSpectrum.adicAbv K v))
+      v σ
+      z
 
 omit [NumberField L] [FiniteDimensional K L] [IsGalois K L] in
 /-- Equivariance of the inverse finite-completion comparison. -/
@@ -121,17 +106,9 @@ theorem finitePlaceLocalTensorUnitsEquiv_symm_smul
       σ •
         (finitePlaceLocalTensorUnitsEquiv
           (K := K) (L := L) v).symm z := by
-  let :=
-    localTensorUnitsAction
-      (K := K) (L := L)
-      (HeightOneSpectrum.adicAbv K v)
-  let :=
-    scalarTensorUnitsAction
-      (K := K) (L := L)
-      (A := v.adicCompletion K)
   apply
     (finitePlaceLocalTensorUnitsEquiv
-      (K := K) (L := L) v).injective
+        v).injective
   rw [MulEquiv.apply_symm_apply,
     finitePlaceLocalTensorUnitsEquiv_smul,
     MulEquiv.apply_symm_apply]
@@ -239,37 +216,30 @@ theorem finitePlaceTensorUnitsEquivLocalPlaceBlock_smul
       σ •
         finitePlaceTensorUnitsEquivLocalPlaceBlock
           (K := K) (L := L) v w z := by
-  have hsource :
-      (finitePlaceLocalTensorUnitsEquiv
-          (K := K) (L := L) v).symm (σ • z) =
-        σ •
-          (finitePlaceLocalTensorUnitsEquiv
-            (K := K) (L := L) v).symm z :=
-    finitePlaceLocalTensorUnitsEquiv_symm_smul
-      (K := K) (L := L) v σ z
   calc
     finitePlaceTensorUnitsEquivLocalPlaceBlock
-        (K := K) (L := L) v w (σ • z) =
+          v w (σ • z) =
       localTensorUnitsEquivLocalPlaceBlock
         (HeightOneSpectrum.adicAbv K v)
         (RayClass.adicAbv_isNontrivial v) w
         (σ •
           (finitePlaceLocalTensorUnitsEquiv
-            (K := K) (L := L) v).symm z) :=
+              v).symm z) :=
       congrArg
         (localTensorUnitsEquivLocalPlaceBlock
           (HeightOneSpectrum.adicAbv K v)
           (RayClass.adicAbv_isNontrivial v) w)
-        hsource
+        (finitePlaceLocalTensorUnitsEquiv_symm_smul
+          v σ z)
     _ =
       σ •
         finitePlaceTensorUnitsEquivLocalPlaceBlock
-          (K := K) (L := L) v w z :=
+            v w z :=
       localTensorUnitsEquivLocalPlaceBlock_smul
         (HeightOneSpectrum.adicAbv K v)
         (RayClass.adicAbv_isNontrivial v) w σ
         ((finitePlaceLocalTensorUnitsEquiv
-          (K := K) (L := L) v).symm z)
+            v).symm z)
 
 end Equivariance
 

@@ -27,10 +27,12 @@ variable {F : Type} [Field F] [NumberField F]
     rw [map_mul]
     exact (mul_le_mul_of_nonneg_right (a.property v hv) zero_le).trans (by simpa using hb)
 
-theorem generator_valuation (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
+variable (S : Finset (HeightOneSpectrum (𝓞 F))) (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
     (r : (S : Set (HeightOneSpectrum (𝓞 F))).integer F) (hr : r ≠ 0)
     (hspan : Ideal.span {r} = Ideal.map (algebraMap (𝓞 F) _) I)
+
+include hI hr hspan in
+theorem generator_valuation
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ S) :
     v.valuation F (r : F) = WithZero.exp (-(idealPrimeExponent v.asIdeal I : ℤ)) := by
   let n := idealPrimeExponent v.asIdeal I
@@ -38,7 +40,6 @@ theorem generator_valuation (S : Finset (HeightOneSpectrum (𝓞 F)))
     rw [pow_dvd_iff_le_emultiplicity,
       UniqueFactorizationMonoid.emultiplicity_eq_count_normalizedFactors v.irreducible hI]
     simp [n, idealPrimeExponent]
-  have hIn : I ≤ v.asIdeal ^ n := Ideal.dvd_iff_le.mp ((hdvd n).mpr le_rfl)
   have hnot : ¬ I ≤ v.asIdeal ^ (n + 1) := by
     rw [← Ideal.dvd_iff_le, hdvd]; omega
   have hmap : Ideal.map (algebraMap (𝓞 F) _) I ≤ boundIdeal S v hv n := by
@@ -46,7 +47,7 @@ theorem generator_valuation (S : Finset (HeightOneSpectrum (𝓞 F)))
     intro a ha
     change v.valuation F (a : F) ≤ WithZero.exp (-(n : ℤ))
     rw [v.valuation_of_algebraMap]
-    exact (v.intValuation_le_pow_iff_mem a n).mpr (hIn ha)
+    exact (v.intValuation_le_pow_iff_mem a n).mpr ((Ideal.dvd_iff_le.mp ((hdvd n).mpr le_rfl)) ha)
   have hrv : v.valuation F (r : F) ≤ WithZero.exp (-(n : ℤ)) := by
     apply hmap
     rw [← hspan]
@@ -54,10 +55,9 @@ theorem generator_valuation (S : Finset (HeightOneSpectrum (𝓞 F)))
   obtain ⟨a, ha, han⟩ : ∃ a : 𝓞 F, a ∈ I ∧ a ∉ v.asIdeal ^ (n + 1) := by
     contrapose! hnot
     exact hnot
-  have ham : algebraMap (𝓞 F) _ a ∈ Ideal.span ({r} : Set _) := by
+  obtain ⟨y, hy⟩ := Ideal.mem_span_singleton.mp (by
     rw [hspan]
-    exact Ideal.mem_map_of_mem _ ha
-  obtain ⟨y, hy⟩ := Ideal.mem_span_singleton.mp ham
+    exact Ideal.mem_map_of_mem _ ha)
   have hav : v.valuation F (a : F) ≤ v.valuation F (r : F) := by
     have hh := congrArg (fun t : (S : Set (HeightOneSpectrum (𝓞 F))).integer F => (t : F)) hy
     change (a : F) = (r : F) * (y : F) at hh
@@ -77,10 +77,8 @@ theorem generator_valuation (S : Finset (HeightOneSpectrum (𝓞 F)))
     omega
   rw [← WithZero.exp_log hnz, he]
 
-theorem generator_completion_valuation (S : Finset (HeightOneSpectrum (𝓞 F)))
-    (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
-    (r : (S : Set (HeightOneSpectrum (𝓞 F))).integer F) (hr : r ≠ 0)
-    (hspan : Ideal.span {r} = Ideal.map (algebraMap (𝓞 F) _) I)
+include hI hr hspan in
+theorem generator_completion_valuation
     (a : Fˣ) (ha : (a : F) = (r : F))
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ S) :
     Valued.v (algebraMap F (v.adicCompletion F) (a : F)) =
